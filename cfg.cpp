@@ -1,6 +1,8 @@
 #include "cfg.h"
 #include "ui_cfg.h"
 
+//awwww
+
 
 cfg::cfg(QDir *dir_, int ns_, int spLength_, double error_, double lrate_, QString FileName_) :
     ui(new Ui::cfg)
