@@ -1,0 +1,1372 @@
+==10592== Memcheck, a memory error detector
+==10592== Copyright (C) 2002-2011, and GNU GPL'd, by Julian Seward et al.
+==10592== Using Valgrind-3.7.0 and LibVEX; rerun with -h for copyright info
+==10592== Command: ./SecondGUI
+==10592== Parent PID: 9753
+==10592== 
+--10592-- 
+--10592-- Valgrind options:
+--10592--    --suppressions=/usr/lib/valgrind/debian-libc6-dbg.supp
+--10592--    -v
+--10592--    --track-fds=yes
+--10592--    --log-file=/home/michael/Qt/Projects/SecondGUI/valgring.log
+--10592--    --leak-check=full
+--10592--    --leak-resolution=high
+--10592-- Contents of /proc/version:
+--10592--   Linux version 3.2.0-49-generic (buildd@komainu) (gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #75-Ubuntu SMP Tue Jun 18 17:39:32 UTC 2013
+--10592-- Arch and hwcaps: AMD64, amd64-sse3-cx16
+--10592-- Page sizes: currently 4096, max supported 4096
+--10592-- Valgrind library directory: /usr/lib/valgrind
+--10592-- Reading syms from /home/michael/Qt/Projects/SecondGUI-build-desktop/SecondGUI (0x400000)
+--10592-- Reading syms from /lib/x86_64-linux-gnu/ld-2.15.so (0x4000000)
+--10592--   Considering /lib/x86_64-linux-gnu/ld-2.15.so ..
+--10592--   .. CRC mismatch (computed 269450ce wanted 94894502)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- Reading syms from /usr/lib/valgrind/memcheck-amd64-linux (0x38000000)
+--10592--   Considering /usr/lib/valgrind/memcheck-amd64-linux ..
+--10592--   .. CRC mismatch (computed fd32bc40 wanted 1b1bde8c)
+--10592--    object doesn't have a symbol table
+--10592--    object doesn't have a dynamic symbol table
+--10592-- Reading suppressions file: /usr/lib/valgrind/debian-libc6-dbg.supp
+--10592-- Reading suppressions file: /usr/lib/valgrind/default.supp
+==10592== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-10592-by-michael-on-???
+==10592== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-10592-by-michael-on-???
+==10592== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-10592-by-michael-on-???
+==10592== 
+==10592== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==10592== don't want to do, unless you know exactly what you're doing,
+==10592== or are doing some strange experiment):
+==10592==   /usr/lib/valgrind/../../bin/vgdb --pid=10592 ...command...
+==10592== 
+==10592== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==10592==   /path/to/gdb ./SecondGUI
+==10592== and then give GDB the following command
+==10592==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=10592
+==10592== --pid is optional if only one valgrind process is running
+==10592== 
+--10592-- REDIR: 0x40189e0 (strlen) redirected to 0x380625c7 (???)
+--10592-- Reading syms from /usr/lib/valgrind/vgpreload_core-amd64-linux.so (0x4a25000)
+--10592--   Considering /usr/lib/valgrind/vgpreload_core-amd64-linux.so ..
+--10592--   .. CRC mismatch (computed 8f05ac98 wanted c6d0ab1a)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so (0x4c27000)
+--10592--   Considering /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so ..
+--10592--   .. CRC mismatch (computed fc059af4 wanted ffc668e8)
+--10592--    object doesn't have a symbol table
+--10592-- REDIR: 0x4018850 (index) redirected to 0x4c2bc60 (index)
+--10592-- REDIR: 0x40188d0 (strcmp) redirected to 0x4c2cc20 (strcmp)
+--10592-- Reading syms from /home/michael/Qt/qt/lib/libQtSvg.so.4.7.0 (0x4e32000)
+--10592-- Reading syms from /home/michael/Qt/qt/lib/libQtGui.so.4.7.0 (0x5092000)
+--10592-- Reading syms from /home/michael/Qt/qt/lib/libQtCore.so.4.7.0 (0x5e37000)
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libpthread-2.15.so (0x631a000)
+--10592--   Considering /lib/x86_64-linux-gnu/libpthread-2.15.so ..
+--10592--   .. CRC mismatch (computed 8e430e5b wanted e619a829)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libpthread-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.16 (0x6537000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.16 ..
+--10592--   .. CRC mismatch (computed ef748751 wanted e44c0328)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libm-2.15.so (0x6837000)
+--10592--   Considering /lib/x86_64-linux-gnu/libm-2.15.so ..
+--10592--   .. CRC mismatch (computed e81d4037 wanted fad28d48)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libm-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x6b33000)
+--10592--   Considering /lib/x86_64-linux-gnu/libgcc_s.so.1 ..
+--10592--   .. CRC mismatch (computed c8e4b229 wanted 098e39f6)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libc-2.15.so (0x6d49000)
+--10592--   Considering /lib/x86_64-linux-gnu/libc-2.15.so ..
+--10592--   .. CRC mismatch (computed d1cc6f49 wanted 7994f9f0)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libc-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- REDIR: 0x4019bf0 (stpcpy) redirected to 0x4c2dfb0 (stpcpy)
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgthread-2.0.so.0.3200.3 (0x7108000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgthread-2.0.so.0.3200.3 ..
+--10592--   .. CRC mismatch (computed fc705789 wanted c13d5b16)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/librt-2.15.so (0x730a000)
+--10592--   Considering /lib/x86_64-linux-gnu/librt-2.15.so ..
+--10592--   .. CRC mismatch (computed aca1815f wanted f26cc34e)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/librt-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3 (0x7512000)
+--10592--   Considering /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3 ..
+--10592--   .. CRC mismatch (computed 37ae07d9 wanted defe77e8)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libfreetype.so.6.8.0 (0x7807000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libfreetype.so.6.8.0 ..
+--10592--   .. CRC mismatch (computed 10cd8134 wanted 271d120b)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.3200.3 (0x7aa3000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.3200.3 ..
+--10592--   .. CRC mismatch (computed 07c196cf wanted 254f397a)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libSM.so.6.0.1 (0x7cf2000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libSM.so.6.0.1 ..
+--10592--   .. CRC mismatch (computed dac0687e wanted 858f55db)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libICE.so.6.3.0 (0x7efa000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libICE.so.6.3.0 ..
+--10592--   .. CRC mismatch (computed bedb728e wanted 9ac9f1e0)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXrender.so.1.3.0 (0x8114000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libXrender.so.1.3.0 ..
+--10592--   .. CRC mismatch (computed d9920b98 wanted 40abaa71)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4 (0x831e000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4 ..
+--10592--   .. CRC mismatch (computed 986e4b75 wanted 4007e287)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libz.so.1.2.3.4 (0x8554000)
+--10592--   Considering /lib/x86_64-linux-gnu/libz.so.1.2.3.4 ..
+--10592--   .. CRC mismatch (computed 5752fbc5 wanted 1a2f92f0)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXext.so.6.4.0 (0x876b000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libXext.so.6.4.0 ..
+--10592--   .. CRC mismatch (computed 90b8e8cc wanted 6a20854e)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libX11.so.6.3.0 (0x897c000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libX11.so.6.3.0 ..
+--10592--   .. CRC mismatch (computed b515820a wanted cbe61b79)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libdl-2.15.so (0x8cb1000)
+--10592--   Considering /lib/x86_64-linux-gnu/libdl-2.15.so ..
+--10592--   .. CRC mismatch (computed 1e39c2e0 wanted 5d14a047)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libdl-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libpcre.so.3.12.1 (0x8eb5000)
+--10592--   Considering /lib/x86_64-linux-gnu/libpcre.so.3.12.1 ..
+--10592--   .. CRC mismatch (computed fbaf99ff wanted a6117827)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libffi.so.6.0.0 (0x90f2000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libffi.so.6.0.0 ..
+--10592--   .. CRC mismatch (computed 64aa3db1 wanted 300c6ad6)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libuuid.so.1.3.0 (0x92fa000)
+--10592--   Considering /lib/x86_64-linux-gnu/libuuid.so.1.3.0 ..
+--10592--   .. CRC mismatch (computed 3f864a75 wanted 418990b6)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libexpat.so.1.5.2 (0x94ff000)
+--10592--   Considering /lib/x86_64-linux-gnu/libexpat.so.1.5.2 ..
+--10592--   .. CRC mismatch (computed 843b6b79 wanted bd1f2513)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0 (0x9729000)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXau.so.6.0.0 (0x9947000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libXau.so.6.0.0 ..
+--10592--   .. CRC mismatch (computed 82cbef80 wanted ca72644f)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0 (0x9b4a000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0 ..
+--10592--   .. CRC mismatch (computed aa48a267 wanted d38510a9)
+--10592--    object doesn't have a symbol table
+--10592-- REDIR: 0x6dd5e40 (strcasecmp) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6dd21e0 (strnlen) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6dd8110 (strncasecmp) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6dd22c0 (strncmp) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6dd3bd0 (__GI_strrchr) redirected to 0x4c2ba80 (__GI_strrchr)
+--10592-- REDIR: 0x6dd2100 (__GI_strlen) redirected to 0x4c2bfc0 (__GI_strlen)
+--10592-- REDIR: 0x65ecdd0 (operator new(unsigned long)) redirected to 0x4c2b160 (operator new(unsigned long))
+--10592-- REDIR: 0x6dcbf50 (malloc) redirected to 0x4c2b660 (malloc)
+--10592-- REDIR: 0x6dcc660 (realloc) redirected to 0x4c2b730 (realloc)
+--10592-- REDIR: 0x6dd20b0 (strlen) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6eabbe0 (__strlen_sse2_pminub) redirected to 0x4c2bfa0 (strlen)
+--10592-- REDIR: 0x6dd4bd0 (memcpy@GLIBC_2.2.5) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6e96540 (__memmove_ssse3_back) redirected to 0x4c2cd20 (memcpy@GLIBC_2.2.5)
+--10592-- REDIR: 0x6e7bbd0 (__strncmp_sse42) redirected to 0x4c2c400 (strncmp)
+--10592-- REDIR: 0x6dd05c0 (strcmp) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6e7ae20 (__strcmp_sse42) redirected to 0x4c2cb60 (strcmp)
+--10592-- REDIR: 0x6dcc560 (free) redirected to 0x4c2a7c0 (free)
+--10592-- REDIR: 0x6dd4c20 (memset) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6dd4c60 (__GI_memset) redirected to 0x4c2e080 (memset)
+--10592-- REDIR: 0x6dcd2c0 (calloc) redirected to 0x4c29cf0 (calloc)
+--10592-- REDIR: 0x6dd0600 (__GI_strcmp) redirected to 0x4c2cbc0 (__GI_strcmp)
+--10592-- REDIR: 0x6dd2300 (__GI_strncmp) redirected to 0x4c2c480 (__GI_strncmp)
+--10592-- REDIR: 0x6dd0540 (__GI_strchr) redirected to 0x4c2bb60 (__GI_strchr)
+--10592-- REDIR: 0x6ddbd10 (strchrnul) redirected to 0x4c2e3b0 (strchrnul)
+--10592-- REDIR: 0xffffffffff600000 (???) redirected to 0x380625b3 (???)
+--10592-- REDIR: 0x6dcdcc0 (posix_memalign) redirected to 0x4c29c60 (posix_memalign)
+--10592-- REDIR: 0x65ecf00 (operator new[](unsigned long)) redirected to 0x4c2abc0 (operator new[](unsigned long))
+--10592-- REDIR: 0x65eb150 (operator delete(void*)) redirected to 0x4c2a450 (operator delete(void*))
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/gconv/UTF-16.so (0xa965000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/gconv/UTF-16.so ..
+--10592--   .. CRC mismatch (computed 83850587 wanted fa572e2b)
+--10592--   Considering /usr/lib/debug/usr/lib/x86_64-linux-gnu/gconv/UTF-16.so ..
+--10592--   .. CRC is valid
+--10592-- REDIR: 0x6e7d3c0 (__strcasecmp_sse42) redirected to 0x4c2c500 (strcasecmp)
+--10592-- REDIR: 0xffffffffff600400 (???) redirected to 0x380625bd (???)
+--10592-- REDIR: 0x6dd1a50 (strcpy) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6ddfb70 (__strcpy_sse2_unaligned) redirected to 0x4c2bfe0 (strcpy)
+--10592-- REDIR: 0x6dd0300 (strcat) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6de2990 (__strcat_sse2_unaligned) redirected to 0x4c2bca0 (strcat)
+==10592== Invalid read of size 4
+==10592==    at 0x83260D3: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8328464: FcConfigFilename (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331176: FcInitLoadConfig (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331265: FcInitLoadConfigAndFonts (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331484: FcInit (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x531EABE: qt_init(QApplicationPrivate*, int, _XDisplay*, unsigned long, unsigned long) (qapplication_x11.cpp:1681)
+==10592==    by 0x52A066B: QApplicationPrivate::construct(_XDisplay*, unsigned long, unsigned long) (qapplication.cpp:793)
+==10592==    by 0x52A15F1: QApplication::QApplication(int&, char**, int) (qapplication.cpp:712)
+==10592==    by 0x4094CB: main (main.cpp:9)
+==10592==  Address 0x9d72e74 is 20 bytes inside a block of size 22 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x832602C: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8328464: FcConfigFilename (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331176: FcInitLoadConfig (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331265: FcInitLoadConfigAndFonts (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331484: FcInit (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x531EABE: qt_init(QApplicationPrivate*, int, _XDisplay*, unsigned long, unsigned long) (qapplication_x11.cpp:1681)
+==10592==    by 0x52A066B: QApplicationPrivate::construct(_XDisplay*, unsigned long, unsigned long) (qapplication.cpp:793)
+==10592==    by 0x52A15F1: QApplication::QApplication(int&, char**, int) (qapplication.cpp:712)
+==10592==    by 0x4094CB: main (main.cpp:9)
+==10592== 
+--10592-- REDIR: 0x6dda7f0 (memcpy@@GLIBC_2.14) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6e90fa0 (__memcpy_ssse3_back) redirected to 0x4c2cf30 (memcpy@@GLIBC_2.14)
+--10592-- REDIR: 0x6dd4600 (bcmp) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6ea6510 (__memcmp_sse4_1) redirected to 0x4c2dca0 (bcmp)
+==10592== Invalid read of size 4
+==10592==    at 0x83260E8: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8328464: FcConfigFilename (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950A950: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x95077C6: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950917A: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950C75C: XML_ParseBuffer (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x833BB70: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331176: FcInitLoadConfig (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331265: FcInitLoadConfigAndFonts (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==  Address 0x9d7b030 is 16 bytes inside a block of size 18 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x832602C: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8328464: FcConfigFilename (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950A950: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x95077C6: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950917A: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950C75C: XML_ParseBuffer (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x833BB70: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331176: FcInitLoadConfig (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592== 
+==10592== Invalid read of size 4
+==10592==    at 0x83260E8: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BE77: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950A950: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x95077C6: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950917A: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950C75C: XML_ParseBuffer (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x833BB70: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331176: FcInitLoadConfig (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331265: FcInitLoadConfigAndFonts (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==  Address 0x9d914e8 is 40 bytes inside a block of size 42 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x832602C: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BE77: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950A950: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x95077C6: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950917A: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950C75C: XML_ParseBuffer (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x833BB70: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331176: FcInitLoadConfig (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592== 
+--10592-- REDIR: 0x6dd0500 (index) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6e7ad70 (__strchr_sse42) redirected to 0x4c2bb20 (index)
+==10592== Invalid read of size 4
+==10592==    at 0x83260D3: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BE77: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950A950: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x95077C6: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950917A: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950C75C: XML_ParseBuffer (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x833BB70: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331176: FcInitLoadConfig (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331265: FcInitLoadConfigAndFonts (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==  Address 0x9dc4cf4 is 36 bytes inside a block of size 39 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x832602C: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BE77: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950A950: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x95077C6: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950917A: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950C75C: XML_ParseBuffer (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x833BB70: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8331176: FcInitLoadConfig (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592== 
+==10592== Invalid read of size 4
+==10592==    at 0x83260E8: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950A950: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x95077C6: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950917A: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950C75C: XML_ParseBuffer (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x833BB70: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BE77: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==  Address 0x9deaa08 is 24 bytes inside a block of size 27 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x832602C: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950A950: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x95077C6: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950917A: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950C75C: XML_ParseBuffer (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x833BB70: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BE77: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592== 
+==10592== Invalid read of size 4
+==10592==    at 0x83260D3: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8328464: FcConfigFilename (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950A950: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x95077C6: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950917A: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950C75C: XML_ParseBuffer (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x833BB70: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BE77: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==  Address 0x9df2a74 is 20 bytes inside a block of size 22 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x832602C: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x8328464: FcConfigFilename (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BA15: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833C0FD: ??? (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x95096F3: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950A950: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x95077C6: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950917A: ??? (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x950C75C: XML_ParseBuffer (in /lib/x86_64-linux-gnu/libexpat.so.1.5.2)
+==10592==    by 0x833BB70: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592==    by 0x833BE77: FcConfigParseAndLoad (in /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.4.4)
+==10592== 
+--10592-- REDIR: 0x6e511a0 (__memcpy_chk) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6e90f90 (__memcpy_chk_ssse3_back) redirected to 0x4c2e690 (__memcpy_chk)
+--10592-- REDIR: 0x6dd3b90 (rindex) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6e7cbb0 (__strrchr_sse42) redirected to 0x4c2ba50 (rindex)
+--10592-- REDIR: 0x6e515f0 (__strcpy_chk) redirected to 0x4c2e420 (__strcpy_chk)
+--10592-- REDIR: 0x6dd3b50 (strncpy) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6de01a0 (__strncpy_sse2_unaligned) redirected to 0x4c2c180 (strncpy)
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXrandr.so.2.2.0 (0xab69000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libXrandr.so.2.2.0 ..
+--10592--   .. CRC mismatch (computed f5040a78 wanted 91cee14f)
+--10592--    object doesn't have a symbol table
+--10592-- REDIR: 0x6dd5ce0 (__GI_stpcpy) redirected to 0x4c2de10 (__GI_stpcpy)
+--10592-- REDIR: 0x6dd2210 (__GI_strnlen) redirected to 0x4c2bf70 (__GI_strnlen)
+--10592-- REDIR: 0x6dd1a90 (__GI_strcpy) redirected to 0x4c2c0b0 (__GI_strcpy)
+--10592-- REDIR: 0x6dd42b0 (memchr) redirected to 0x4c2cce0 (memchr)
+--10592-- REDIR: 0x6dd5ea0 (__GI___strcasecmp_l) redirected to 0x4c2c8e0 (__GI___strcasecmp_l)
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXfixes.so.3.1.0 (0xad71000)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXcursor.so.1.0.2 (0xaf77000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libXcursor.so.1.0.2 ..
+--10592--   .. CRC mismatch (computed 86696958 wanted ac0ba89e)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXinerama.so.1.0.0 (0xb181000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libXinerama.so.1.0.0 ..
+--10592--   .. CRC mismatch (computed 8a7c3318 wanted 1b2ce1e3)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXi.so.6.1.0 (0xb384000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libXi.so.6.1.0 ..
+--10592--   .. CRC mismatch (computed 6212c903 wanted 3e2fc756)
+--10592--    object doesn't have a symbol table
+--10592-- REDIR: 0x6de93c0 (strstr) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6e7cd50 (__strstr_sse42) redirected to 0x4c2e7a0 (strstr)
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgconf-2.so.4.1.5 (0xb593000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgconf-2.so.4.1.5 ..
+--10592--   .. CRC mismatch (computed c8529a25 wanted 3c95cdb3)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0.3200.3 (0xb7c1000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0.3200.3 ..
+--10592--   .. CRC mismatch (computed 6f0c5135 wanted dd3948b7)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libdbus-glib-1.so.2.2.2 (0xb9c5000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libdbus-glib-1.so.2.2.2 ..
+--10592--   .. CRC mismatch (computed 72a43f74 wanted 5a157988)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libdbus-1.so.3.5.8 (0xbbeb000)
+--10592--   Considering /lib/x86_64-linux-gnu/libdbus-1.so.3.5.8 ..
+--10592--   .. CRC mismatch (computed 64817fb3 wanted dd59853c)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.3200.3 (0xbe2f000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.3200.3 ..
+--10592--   .. CRC mismatch (computed 036898e4 wanted 7168a12f)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libselinux.so.1 (0xc17e000)
+--10592--   Considering /lib/x86_64-linux-gnu/libselinux.so.1 ..
+--10592--   .. CRC mismatch (computed 133de689 wanted 57ec8263)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libresolv-2.15.so (0xc39d000)
+--10592--   Considering /lib/x86_64-linux-gnu/libresolv-2.15.so ..
+--10592--   .. CRC mismatch (computed f24145a2 wanted e9bb8847)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libresolv-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- REDIR: 0x6d845b0 (unsetenv) redirected to 0x4c2eac0 (unsetenv)
+--10592-- REDIR: 0x6ddbb00 (__GI___rawmemchr) redirected to 0x4c2e400 (__GI___rawmemchr)
+--10592-- REDIR: 0x65eb190 (operator delete[](void*)) redirected to 0x4c2a030 (operator delete[](void*))
+--10592-- memcheck GC: 1024 nodes, 1024 survivors (100.0%)
+--10592-- memcheck GC: increase table size to 2048
+--10592-- memcheck GC: 2048 nodes, 2048 survivors (100.0%)
+--10592-- memcheck GC: increase table size to 4096
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10 (0xc5b9000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10 ..
+--10592--   .. CRC mismatch (computed 3d27243d wanted c363516c)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgdk-x11-2.0.so.0.2400.10 (0xcbf3000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgdk-x11-2.0.so.0.2400.10 ..
+--10592--   .. CRC mismatch (computed b20f2965 wanted ad1ca52b)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libpangocairo-1.0.so.0.3000.0 (0xcea5000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libpangocairo-1.0.so.0.3000.0 ..
+--10592--   .. CRC mismatch (computed 282cb7d8 wanted 28703788)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libatk-1.0.so.0.20409.1 (0xd0b1000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libatk-1.0.so.0.20409.1 ..
+--10592--   .. CRC mismatch (computed b7deea8e wanted f422a39d)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2 (0xd2d3000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2 ..
+--10592--   .. CRC mismatch (computed 996bf16a wanted dd341065)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1 (0xd591000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1 ..
+--10592--   .. CRC mismatch (computed 5fbf6f75 wanted 910c55b4)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libpangoft2-1.0.so.0.3000.0 (0xd7b1000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libpangoft2-1.0.so.0.3000.0 ..
+--10592--   .. CRC mismatch (computed 2db670af wanted 2d801977)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libpango-1.0.so.0.3000.0 (0xd9db000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libpango-1.0.so.0.3000.0 ..
+--10592--   .. CRC mismatch (computed 74a52777 wanted ed78b88e)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXcomposite.so.1.0.0 (0xdc24000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libXcomposite.so.1.0.0 ..
+--10592--   .. CRC mismatch (computed 0b5d94bf wanted 097b37a7)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libXdamage.so.1.1.0 (0xde27000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libXdamage.so.1.1.0 ..
+--10592--   .. CRC mismatch (computed 7c4bc0f8 wanted f7ee9491)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4 (0xe02a000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4 ..
+--10592--   .. CRC mismatch (computed f9415962 wanted 1b584c65)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libpng12.so.0.46.0 (0xe2b1000)
+--10592--   Considering /lib/x86_64-linux-gnu/libpng12.so.0.46.0 ..
+--10592--   .. CRC mismatch (computed 1ea14df0 wanted cb23d646)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libxcb-shm.so.0.0.0 (0xe4d9000)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libxcb-render.so.0.0.0 (0xe6dc000)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgnomeui-2.so.0.2400.5 (0xe8e6000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgnomeui-2.so.0.2400.5 ..
+--10592--   .. CRC mismatch (computed e707f54c wanted cd74a989)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libbonoboui-2.so.0.0.0 (0xeb81000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libbonoboui-2.so.0.0.0 ..
+--10592--   .. CRC mismatch (computed d3b7343d wanted cd31323d)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgnomecanvas-2.so.0.3000.3 (0xedee000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgnomecanvas-2.so.0.3000.3 ..
+--10592--   .. CRC mismatch (computed f506a0d3 wanted 71f432bd)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgnome-2.so.0.3200.1 (0xf023000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgnome-2.so.0.3200.1 ..
+--10592--   .. CRC mismatch (computed cf465c1c wanted f91ee271)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libart_lgpl_2.so.2.3.21 (0xf23a000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libart_lgpl_2.so.2.3.21 ..
+--10592--   .. CRC mismatch (computed 17264498 wanted 8d1b7381)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgnomevfs-2.so.0.2400.4 (0xf453000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgnomevfs-2.so.0.2400.4 ..
+--10592--   .. CRC mismatch (computed 008218d8 wanted 0f3ec59c)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgnome-keyring.so.0.2.0 (0xf6bb000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgnome-keyring.so.0.2.0 ..
+--10592--   .. CRC mismatch (computed 0be4ae14 wanted 81861bf8)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libbonobo-2.so.0.0.0 (0xf8dd000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libbonobo-2.so.0.0.0 ..
+--10592--   .. CRC mismatch (computed 847bac1c wanted 6e087487)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libbonobo-activation.so.4.0.0 (0xfb50000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libbonobo-activation.so.4.0.0 ..
+--10592--   .. CRC mismatch (computed e80aaa84 wanted 54a8df01)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libORBit-2.so.0.1.0 (0xfd6a000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libORBit-2.so.0.1.0 ..
+--10592--   .. CRC mismatch (computed 7a1d23e1 wanted d36a7e0f)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libxml2.so.2.7.8 (0xffd6000)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libpopt.so.0.0.0 (0x10332000)
+--10592--   Considering /lib/x86_64-linux-gnu/libpopt.so.0.0.0 ..
+--10592--   .. CRC mismatch (computed 7e8f76b1 wanted c8fc2a57)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgailutil.so.18.0.1 (0x1053e000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgailutil.so.18.0.1 ..
+--10592--   .. CRC mismatch (computed a6d9499c wanted 97ea0dc6)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libcanberra.so.0.2.5 (0x10746000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libcanberra.so.0.2.5 ..
+--10592--   .. CRC mismatch (computed e428cace wanted 2e960630)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libgnutls.so.26.21.8 (0x10956000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libgnutls.so.26.21.8 ..
+--10592--   .. CRC mismatch (computed ec88cd21 wanted ef8d48a9)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libavahi-glib.so.1.0.2 (0x10c12000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libavahi-glib.so.1.0.2 ..
+--10592--   .. CRC mismatch (computed cb2975df wanted 5abac049)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libavahi-common.so.3.5.3 (0x10e16000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libavahi-common.so.3.5.3 ..
+--10592--   .. CRC mismatch (computed a81cc8ab wanted 15086b00)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libavahi-client.so.3.2.9 (0x11022000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libavahi-client.so.3.2.9 ..
+--10592--   .. CRC mismatch (computed 85e57cf6 wanted 87b92830)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libutil-2.15.so (0x11233000)
+--10592--   Considering /lib/x86_64-linux-gnu/libutil-2.15.so ..
+--10592--   .. CRC mismatch (computed fd32bf43 wanted 825c5663)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libutil-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libgcrypt.so.11.7.0 (0x11436000)
+--10592--   Considering /lib/x86_64-linux-gnu/libgcrypt.so.11.7.0 ..
+--10592--   .. CRC mismatch (computed 588a90f5 wanted 7c4e7a49)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libORBitCosNaming-2.so.0.1.0 (0x116b4000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libORBitCosNaming-2.so.0.1.0 ..
+--10592--   .. CRC mismatch (computed 9215ee63 wanted 3cf7b1eb)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libvorbisfile.so.3.3.4 (0x118bb000)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libtdb.so.1.2.9 (0x11ac3000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libtdb.so.1.2.9 ..
+--10592--   .. CRC mismatch (computed a629b95a wanted 4dbe50e4)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libltdl.so.7.3.0 (0x11cd4000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libltdl.so.7.3.0 ..
+--10592--   .. CRC mismatch (computed b14f68e6 wanted 35251e3d)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libtasn1.so.3.1.12 (0x11ede000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libtasn1.so.3.1.12 ..
+--10592--   .. CRC mismatch (computed b9ea3425 wanted f10c4120)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libp11-kit.so.0.0.0 (0x120ef000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libp11-kit.so.0.0.0 ..
+--10592--   .. CRC mismatch (computed 95900f2c wanted 5872bbfc)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libgpg-error.so.0.8.0 (0x12301000)
+--10592--   Considering /lib/x86_64-linux-gnu/libgpg-error.so.0.8.0 ..
+--10592--   .. CRC mismatch (computed a74aaebf wanted 6fb0a5c7)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libvorbis.so.0.4.5 (0x12505000)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libogg.so.0.7.1 (0x12731000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libogg.so.0.7.1 ..
+--10592--   .. CRC mismatch (computed 01cb6461 wanted c5cbc6c1)
+--10592--    object doesn't have a symbol table
+--10592-- REDIR: 0x6dd5ca0 (stpcpy) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6de1180 (__stpcpy_sse2_unaligned) redirected to 0x4c2dd40 (stpcpy)
+--10592-- REDIR: 0x6e7ef70 (__strncasecmp_sse42) redirected to 0x4c2c600 (strncasecmp)
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libnss_compat-2.15.so (0x12938000)
+--10592--   Considering /lib/x86_64-linux-gnu/libnss_compat-2.15.so ..
+--10592--   .. CRC mismatch (computed 0f99e502 wanted 9efdf084)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libnss_compat-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libnsl-2.15.so (0x12b41000)
+--10592--   Considering /lib/x86_64-linux-gnu/libnsl-2.15.so ..
+--10592--   .. CRC mismatch (computed 7158b88c wanted 689f7851)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libnsl-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libnss_nis-2.15.so (0x12d5b000)
+--10592--   Considering /lib/x86_64-linux-gnu/libnss_nis-2.15.so ..
+--10592--   .. CRC mismatch (computed a282f977 wanted bc84fe4d)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libnss_nis-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libnss_files-2.15.so (0x12f67000)
+--10592--   Considering /lib/x86_64-linux-gnu/libnss_files-2.15.so ..
+--10592--   .. CRC mismatch (computed 93b6e136 wanted 0e7fce87)
+--10592--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libnss_files-2.15.so ..
+--10592--   .. CRC is valid
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/gtk-2.0/2.10.0/engines/libmurrine.so (0x13174000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/gtk-2.0/2.10.0/engines/libmurrine.so ..
+--10592--   .. CRC mismatch (computed 8c0e157c wanted 2dd0b629)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/gtk-2.0/modules/libcanberra-gtk-module.so (0x137a5000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/gtk-2.0/modules/libcanberra-gtk-module.so ..
+--10592--   .. CRC mismatch (computed 023f4528 wanted 6574ca44)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libcanberra-gtk.so.0.1.8 (0x139ab000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libcanberra-gtk.so.0.1.8 ..
+--10592--   .. CRC mismatch (computed 6bb80b1f wanted b621825f)
+--10592--    object doesn't have a symbol table
+--10592-- memcheck GC: 4096 nodes, 3139 survivors ( 76.6%)
+--10592-- memcheck GC: increase table size to 8192
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/gtk-2.0/2.10.0/menuproxies/libappmenu.so (0x13bb0000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/gtk-2.0/2.10.0/menuproxies/libappmenu.so ..
+--10592--   .. CRC mismatch (computed aed889fc wanted 1b9334a8)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libdbusmenu-gtk.so.4.0.13 (0x13db6000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libdbusmenu-gtk.so.4.0.13 ..
+--10592--   .. CRC mismatch (computed 160f0152 wanted 89287b96)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libdbusmenu-glib.so.4.0.13 (0x13fc9000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libdbusmenu-glib.so.4.0.13 ..
+--10592--   .. CRC mismatch (computed cb091f47 wanted 8d5f33f5)
+--10592--    object doesn't have a symbol table
+--10592-- REDIR: 0x6dd3c70 (strpbrk) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6e83430 (__strpbrk_sse42) redirected to 0x4c2e810 (strpbrk)
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/pango/1.6.0/modules/pango-basic-fc.so (0x149e5000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/pango/1.6.0/modules/pango-basic-fc.so ..
+--10592--   .. CRC mismatch (computed c1aa38f9 wanted 0e74ba4b)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/gtk-2.0/2.10.0/immodules/im-ibus.so (0x14be8000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/gtk-2.0/2.10.0/immodules/im-ibus.so ..
+--10592--   .. CRC mismatch (computed 867a5daa wanted addccfd2)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libibus-1.0.so.0.401.0 (0x14def000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libibus-1.0.so.0.401.0 ..
+--10592--   .. CRC mismatch (computed eacea34b wanted 907febde)
+--10592--    object doesn't have a symbol table
+--10592-- REDIR: 0x6dd3fe0 (strspn) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6e83580 (__strspn_sse42) redirected to 0x4c2e8f0 (strspn)
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/gio/modules/libgvfsdbus.so (0x15837000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/gio/modules/libgvfsdbus.so ..
+--10592--   .. CRC mismatch (computed 964b630f wanted 8c6f146f)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/gvfs/libgvfscommon.so (0x15a60000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/gvfs/libgvfscommon.so ..
+--10592--   .. CRC mismatch (computed fe029121 wanted e88ac168)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /lib/x86_64-linux-gnu/libudev.so.0.13.0 (0x15c77000)
+--10592--   Considering /lib/x86_64-linux-gnu/libudev.so.0.13.0 ..
+--10592--   .. CRC mismatch (computed 5bbfcd46 wanted 09e42721)
+--10592--    object doesn't have a symbol table
+--10592-- REDIR: 0x6dd1b70 (strcspn) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--10592-- REDIR: 0x6dd5770 (mempcpy) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+==10592== Use of uninitialised value of size 8
+==10592==    at 0x5367B36: QHash<unsigned int, int>::findNode(unsigned int const&, unsigned int*) const (qhash.h:884)
+==10592==    by 0x553B376: QTextFormatCollection::indexForFormat(QTextFormat const&) (qhash.h:865)
+==10592==    by 0x553B701: QTextFormatCollection::createObjectIndex(QTextFormat const&) (qtextformat.cpp:3142)
+==10592==    by 0x5550E1E: QTextDocumentPrivate::createObject(QTextFormat const&, int) (qtextdocument_p.cpp:1588)
+==10592==    by 0x5551607: QTextDocumentPrivate::rootFrame() const (qtextdocument_p.cpp:1407)
+==10592==    by 0x5571C60: QTextDocumentLayout::doLayout(int, int, int) (qtextdocumentlayout.cpp:2908)
+==10592==    by 0x5571DCC: QTextDocumentLayoutPrivate::ensureLayoutedByPosition(int) const (qtextdocumentlayout.cpp:3076)
+==10592==    by 0x5572228: QTextDocumentLayoutPrivate::layoutStep() const (qtextdocumentlayout.cpp:3082)
+==10592==    by 0x5572AEC: QTextDocumentLayout::documentChanged(int, int, int) (qtextdocumentlayout.cpp:2874)
+==10592==    by 0x5541083: QTextDocument::documentLayout() const (qtextdocument.cpp:1070)
+==10592==    by 0x55125E6: QTextControlPrivate::_q_documentLayoutChanged() (qtextcontrol.cpp:624)
+==10592==    by 0x55128FE: QTextControlPrivate::setContent(Qt::TextFormat, QString const&, QTextDocument*) (qtextcontrol.cpp:434)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0x5367B5E: QHash<unsigned int, int>::findNode(unsigned int const&, unsigned int*) const (qhash.h:884)
+==10592==    by 0x553B376: QTextFormatCollection::indexForFormat(QTextFormat const&) (qhash.h:865)
+==10592==    by 0x553B701: QTextFormatCollection::createObjectIndex(QTextFormat const&) (qtextformat.cpp:3142)
+==10592==    by 0x5550E1E: QTextDocumentPrivate::createObject(QTextFormat const&, int) (qtextdocument_p.cpp:1588)
+==10592==    by 0x5551607: QTextDocumentPrivate::rootFrame() const (qtextdocument_p.cpp:1407)
+==10592==    by 0x5571C60: QTextDocumentLayout::doLayout(int, int, int) (qtextdocumentlayout.cpp:2908)
+==10592==    by 0x5571DCC: QTextDocumentLayoutPrivate::ensureLayoutedByPosition(int) const (qtextdocumentlayout.cpp:3076)
+==10592==    by 0x5572228: QTextDocumentLayoutPrivate::layoutStep() const (qtextdocumentlayout.cpp:3082)
+==10592==    by 0x5572AEC: QTextDocumentLayout::documentChanged(int, int, int) (qtextdocumentlayout.cpp:2874)
+==10592==    by 0x5541083: QTextDocument::documentLayout() const (qtextdocument.cpp:1070)
+==10592==    by 0x55125E6: QTextControlPrivate::_q_documentLayoutChanged() (qtextcontrol.cpp:624)
+==10592==    by 0x55128FE: QTextControlPrivate::setContent(Qt::TextFormat, QString const&, QTextDocument*) (qtextcontrol.cpp:434)
+==10592== 
+==10592== Use of uninitialised value of size 8
+==10592==    at 0x5367B36: QHash<unsigned int, int>::findNode(unsigned int const&, unsigned int*) const (qhash.h:884)
+==10592==    by 0x553B451: QTextFormatCollection::indexForFormat(QTextFormat const&) (qhash.h:858)
+==10592==    by 0x553B701: QTextFormatCollection::createObjectIndex(QTextFormat const&) (qtextformat.cpp:3142)
+==10592==    by 0x5550E1E: QTextDocumentPrivate::createObject(QTextFormat const&, int) (qtextdocument_p.cpp:1588)
+==10592==    by 0x5551607: QTextDocumentPrivate::rootFrame() const (qtextdocument_p.cpp:1407)
+==10592==    by 0x5571C60: QTextDocumentLayout::doLayout(int, int, int) (qtextdocumentlayout.cpp:2908)
+==10592==    by 0x5571DCC: QTextDocumentLayoutPrivate::ensureLayoutedByPosition(int) const (qtextdocumentlayout.cpp:3076)
+==10592==    by 0x5572228: QTextDocumentLayoutPrivate::layoutStep() const (qtextdocumentlayout.cpp:3082)
+==10592==    by 0x5572AEC: QTextDocumentLayout::documentChanged(int, int, int) (qtextdocumentlayout.cpp:2874)
+==10592==    by 0x5541083: QTextDocument::documentLayout() const (qtextdocument.cpp:1070)
+==10592==    by 0x55125E6: QTextControlPrivate::_q_documentLayoutChanged() (qtextcontrol.cpp:624)
+==10592==    by 0x55128FE: QTextControlPrivate::setContent(Qt::TextFormat, QString const&, QTextDocument*) (qtextcontrol.cpp:434)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0x5367B5E: QHash<unsigned int, int>::findNode(unsigned int const&, unsigned int*) const (qhash.h:884)
+==10592==    by 0x553B451: QTextFormatCollection::indexForFormat(QTextFormat const&) (qhash.h:858)
+==10592==    by 0x553B701: QTextFormatCollection::createObjectIndex(QTextFormat const&) (qtextformat.cpp:3142)
+==10592==    by 0x5550E1E: QTextDocumentPrivate::createObject(QTextFormat const&, int) (qtextdocument_p.cpp:1588)
+==10592==    by 0x5551607: QTextDocumentPrivate::rootFrame() const (qtextdocument_p.cpp:1407)
+==10592==    by 0x5571C60: QTextDocumentLayout::doLayout(int, int, int) (qtextdocumentlayout.cpp:2908)
+==10592==    by 0x5571DCC: QTextDocumentLayoutPrivate::ensureLayoutedByPosition(int) const (qtextdocumentlayout.cpp:3076)
+==10592==    by 0x5572228: QTextDocumentLayoutPrivate::layoutStep() const (qtextdocumentlayout.cpp:3082)
+==10592==    by 0x5572AEC: QTextDocumentLayout::documentChanged(int, int, int) (qtextdocumentlayout.cpp:2874)
+==10592==    by 0x5541083: QTextDocument::documentLayout() const (qtextdocument.cpp:1070)
+==10592==    by 0x55125E6: QTextControlPrivate::_q_documentLayoutChanged() (qtextcontrol.cpp:624)
+==10592==    by 0x55128FE: QTextControlPrivate::setContent(Qt::TextFormat, QString const&, QTextDocument*) (qtextcontrol.cpp:434)
+==10592== 
+==10592== Use of uninitialised value of size 8
+==10592==    at 0x5367B36: QHash<unsigned int, int>::findNode(unsigned int const&, unsigned int*) const (qhash.h:884)
+==10592==    by 0x553B4B0: QTextFormatCollection::indexForFormat(QTextFormat const&) (qhash.h:776)
+==10592==    by 0x553B701: QTextFormatCollection::createObjectIndex(QTextFormat const&) (qtextformat.cpp:3142)
+==10592==    by 0x5550E1E: QTextDocumentPrivate::createObject(QTextFormat const&, int) (qtextdocument_p.cpp:1588)
+==10592==    by 0x5551607: QTextDocumentPrivate::rootFrame() const (qtextdocument_p.cpp:1407)
+==10592==    by 0x5571C60: QTextDocumentLayout::doLayout(int, int, int) (qtextdocumentlayout.cpp:2908)
+==10592==    by 0x5571DCC: QTextDocumentLayoutPrivate::ensureLayoutedByPosition(int) const (qtextdocumentlayout.cpp:3076)
+==10592==    by 0x5572228: QTextDocumentLayoutPrivate::layoutStep() const (qtextdocumentlayout.cpp:3082)
+==10592==    by 0x5572AEC: QTextDocumentLayout::documentChanged(int, int, int) (qtextdocumentlayout.cpp:2874)
+==10592==    by 0x5541083: QTextDocument::documentLayout() const (qtextdocument.cpp:1070)
+==10592==    by 0x55125E6: QTextControlPrivate::_q_documentLayoutChanged() (qtextcontrol.cpp:624)
+==10592==    by 0x55128FE: QTextControlPrivate::setContent(Qt::TextFormat, QString const&, QTextDocument*) (qtextcontrol.cpp:434)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0x5367B5E: QHash<unsigned int, int>::findNode(unsigned int const&, unsigned int*) const (qhash.h:884)
+==10592==    by 0x553B4B0: QTextFormatCollection::indexForFormat(QTextFormat const&) (qhash.h:776)
+==10592==    by 0x553B701: QTextFormatCollection::createObjectIndex(QTextFormat const&) (qtextformat.cpp:3142)
+==10592==    by 0x5550E1E: QTextDocumentPrivate::createObject(QTextFormat const&, int) (qtextdocument_p.cpp:1588)
+==10592==    by 0x5551607: QTextDocumentPrivate::rootFrame() const (qtextdocument_p.cpp:1407)
+==10592==    by 0x5571C60: QTextDocumentLayout::doLayout(int, int, int) (qtextdocumentlayout.cpp:2908)
+==10592==    by 0x5571DCC: QTextDocumentLayoutPrivate::ensureLayoutedByPosition(int) const (qtextdocumentlayout.cpp:3076)
+==10592==    by 0x5572228: QTextDocumentLayoutPrivate::layoutStep() const (qtextdocumentlayout.cpp:3082)
+==10592==    by 0x5572AEC: QTextDocumentLayout::documentChanged(int, int, int) (qtextdocumentlayout.cpp:2874)
+==10592==    by 0x5541083: QTextDocument::documentLayout() const (qtextdocument.cpp:1070)
+==10592==    by 0x55125E6: QTextControlPrivate::_q_documentLayoutChanged() (qtextcontrol.cpp:624)
+==10592==    by 0x55128FE: QTextControlPrivate::setContent(Qt::TextFormat, QString const&, QTextDocument*) (qtextcontrol.cpp:434)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0x553B38D: QTextFormatCollection::indexForFormat(QTextFormat const&) (qtextformat.cpp:3075)
+==10592==    by 0x5553615: QTextDocumentPrivate::init() (qtextdocument_p.cpp:228)
+==10592==    by 0x5554DBB: QTextDocumentPrivate::clear() (qtextdocument_p.cpp:275)
+==10592==    by 0x5542361: QTextDocument::clear() (qtextdocument.cpp:396)
+==10592==    by 0x55128DC: QTextControlPrivate::setContent(Qt::TextFormat, QString const&, QTextDocument*) (qtextcontrol.cpp:489)
+==10592==    by 0x5517013: QTextControlPrivate::init(Qt::TextFormat, QString const&, QTextDocument*) (qtextcontrol.cpp:405)
+==10592==    by 0x551754F: QTextControl::QTextControl(QObject*) (qtextcontrol.cpp:774)
+==10592==    by 0x57654DD: QTextEditPrivate::init(QString const&) (qtextedit.cpp:85)
+==10592==    by 0x5768603: QTextEdit::QTextEdit(QWidget*) (qtextedit.cpp:604)
+==10592==    by 0x431B1B: Ui_MainWindow::setupUi(QMainWindow*) (ui_mainwindow.h:502)
+==10592==    by 0x409A09: MainWindow::MainWindow() (mainwindow.cpp:62)
+==10592==    by 0x4094DA: main (main.cpp:10)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0x553B38D: QTextFormatCollection::indexForFormat(QTextFormat const&) (qtextformat.cpp:3075)
+==10592==    by 0x553B701: QTextFormatCollection::createObjectIndex(QTextFormat const&) (qtextformat.cpp:3142)
+==10592==    by 0x5550E1E: QTextDocumentPrivate::createObject(QTextFormat const&, int) (qtextdocument_p.cpp:1588)
+==10592==    by 0x5551607: QTextDocumentPrivate::rootFrame() const (qtextdocument_p.cpp:1407)
+==10592==    by 0x5571C60: QTextDocumentLayout::doLayout(int, int, int) (qtextdocumentlayout.cpp:2908)
+==10592==    by 0x5571DCC: QTextDocumentLayoutPrivate::ensureLayoutedByPosition(int) const (qtextdocumentlayout.cpp:3076)
+==10592==    by 0x5572228: QTextDocumentLayoutPrivate::layoutStep() const (qtextdocumentlayout.cpp:3082)
+==10592==    by 0x5572AEC: QTextDocumentLayout::documentChanged(int, int, int) (qtextdocumentlayout.cpp:2874)
+==10592==    by 0x5551FB2: QTextDocumentPrivate::finishEdit() (qtextdocument_p.cpp:1208)
+==10592==    by 0x555324C: QTextDocumentPrivate::insertBlock(QChar const&, int, int, int, QTextUndoCommand::Operation) (qtextdocument_p.cpp:442)
+==10592==    by 0x555356F: QTextDocumentPrivate::insertBlock(int, int, int, QTextUndoCommand::Operation) (qtextdocument_p.cpp:448)
+==10592==    by 0x555362A: QTextDocumentPrivate::init() (qtextdocument_p.cpp:228)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0x5EDF8EE: QHashData::nextNode(QHashData::Node*) (qhash.cpp:296)
+==10592==    by 0x553B3C4: QTextFormatCollection::indexForFormat(QTextFormat const&) (qhash.h:423)
+==10592==    by 0x553B701: QTextFormatCollection::createObjectIndex(QTextFormat const&) (qtextformat.cpp:3142)
+==10592==    by 0x5550E1E: QTextDocumentPrivate::createObject(QTextFormat const&, int) (qtextdocument_p.cpp:1588)
+==10592==    by 0x5551607: QTextDocumentPrivate::rootFrame() const (qtextdocument_p.cpp:1407)
+==10592==    by 0x5571C60: QTextDocumentLayout::doLayout(int, int, int) (qtextdocumentlayout.cpp:2908)
+==10592==    by 0x5571DCC: QTextDocumentLayoutPrivate::ensureLayoutedByPosition(int) const (qtextdocumentlayout.cpp:3076)
+==10592==    by 0x5572228: QTextDocumentLayoutPrivate::layoutStep() const (qtextdocumentlayout.cpp:3082)
+==10592==    by 0x5572AEC: QTextDocumentLayout::documentChanged(int, int, int) (qtextdocumentlayout.cpp:2874)
+==10592==    by 0x5551FB2: QTextDocumentPrivate::finishEdit() (qtextdocument_p.cpp:1208)
+==10592==    by 0x555324C: QTextDocumentPrivate::insertBlock(QChar const&, int, int, int, QTextUndoCommand::Operation) (qtextdocument_p.cpp:442)
+==10592==    by 0x555356F: QTextDocumentPrivate::insertBlock(int, int, int, QTextUndoCommand::Operation) (qtextdocument_p.cpp:448)
+==10592== 
+==10592== Use of uninitialised value of size 8
+==10592==    at 0x5EDF8F7: QHashData::nextNode(QHashData::Node*) (qhash.cpp:297)
+==10592==    by 0x553B3C4: QTextFormatCollection::indexForFormat(QTextFormat const&) (qhash.h:423)
+==10592==    by 0x553B701: QTextFormatCollection::createObjectIndex(QTextFormat const&) (qtextformat.cpp:3142)
+==10592==    by 0x5550E1E: QTextDocumentPrivate::createObject(QTextFormat const&, int) (qtextdocument_p.cpp:1588)
+==10592==    by 0x5551607: QTextDocumentPrivate::rootFrame() const (qtextdocument_p.cpp:1407)
+==10592==    by 0x5571C60: QTextDocumentLayout::doLayout(int, int, int) (qtextdocumentlayout.cpp:2908)
+==10592==    by 0x5571DCC: QTextDocumentLayoutPrivate::ensureLayoutedByPosition(int) const (qtextdocumentlayout.cpp:3076)
+==10592==    by 0x5572228: QTextDocumentLayoutPrivate::layoutStep() const (qtextdocumentlayout.cpp:3082)
+==10592==    by 0x5572AEC: QTextDocumentLayout::documentChanged(int, int, int) (qtextdocumentlayout.cpp:2874)
+==10592==    by 0x5551FB2: QTextDocumentPrivate::finishEdit() (qtextdocument_p.cpp:1208)
+==10592==    by 0x555324C: QTextDocumentPrivate::insertBlock(QChar const&, int, int, int, QTextUndoCommand::Operation) (qtextdocument_p.cpp:442)
+==10592==    by 0x555356F: QTextDocumentPrivate::insertBlock(int, int, int, QTextUndoCommand::Operation) (qtextdocument_p.cpp:448)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0x553B479: QTextFormatCollection::indexForFormat(QTextFormat const&) (qhash.h:981)
+==10592==    by 0x553B701: QTextFormatCollection::createObjectIndex(QTextFormat const&) (qtextformat.cpp:3142)
+==10592==    by 0x5550E1E: QTextDocumentPrivate::createObject(QTextFormat const&, int) (qtextdocument_p.cpp:1588)
+==10592==    by 0x5551607: QTextDocumentPrivate::rootFrame() const (qtextdocument_p.cpp:1407)
+==10592==    by 0x5571C60: QTextDocumentLayout::doLayout(int, int, int) (qtextdocumentlayout.cpp:2908)
+==10592==    by 0x5571DCC: QTextDocumentLayoutPrivate::ensureLayoutedByPosition(int) const (qtextdocumentlayout.cpp:3076)
+==10592==    by 0x5572228: QTextDocumentLayoutPrivate::layoutStep() const (qtextdocumentlayout.cpp:3082)
+==10592==    by 0x5572AEC: QTextDocumentLayout::documentChanged(int, int, int) (qtextdocumentlayout.cpp:2874)
+==10592==    by 0x5551FB2: QTextDocumentPrivate::finishEdit() (qtextdocument_p.cpp:1208)
+==10592==    by 0x555324C: QTextDocumentPrivate::insertBlock(QChar const&, int, int, int, QTextUndoCommand::Operation) (qtextdocument_p.cpp:442)
+==10592==    by 0x555356F: QTextDocumentPrivate::insertBlock(int, int, int, QTextUndoCommand::Operation) (qtextdocument_p.cpp:448)
+==10592==    by 0x555362A: QTextDocumentPrivate::init() (qtextdocument_p.cpp:228)
+==10592== 
+--10592-- memcheck GC: 8192 nodes, 7599 survivors ( 92.7%)
+--10592-- memcheck GC: increase table size to 16384
+--10592-- REDIR: 0x6dcca10 (memalign) redirected to 0x4c29b50 (memalign)
+--10592-- memcheck GC: 16384 nodes, 15892 survivors ( 96.9%)
+--10592-- memcheck GC: increase table size to 32768
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/gio/modules/libgioremote-volume-monitor.so (0x1773b000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/gio/modules/libgioremote-volume-monitor.so ..
+--10592--   .. CRC mismatch (computed b38323d2 wanted 4b13e3f4)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so (0x1dac9000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so ..
+--10592--   .. CRC mismatch (computed c3c27d52 wanted fa845065)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/librsvg-2.so.2.36.1 (0x1dce9000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/librsvg-2.so.2.36.1 ..
+--10592--   .. CRC mismatch (computed 86de12f3 wanted f356f21b)
+--10592--    object doesn't have a symbol table
+--10592-- Reading syms from /usr/lib/x86_64-linux-gnu/libcroco-0.6.so.3.0.1 (0x1df1e000)
+--10592--   Considering /usr/lib/x86_64-linux-gnu/libcroco-0.6.so.3.0.1 ..
+--10592--   .. CRC mismatch (computed 44ffcd20 wanted e72ea02f)
+--10592--    object doesn't have a symbol table
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0xE07EC40: ??? (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xE06B3AF: ??? (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xE033487: pixman_image_composite32 (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xD2FA95C: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2FC3CB: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2FD6EA: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2FD968: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD31B7C3: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2F53FC: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2EC29F: cairo_fill_preserve (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2EC2B8: cairo_fill (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0x1DD128A4: ??? (in /usr/lib/x86_64-linux-gnu/librsvg-2.so.2.36.1)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0xE07EEA2: ??? (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xE06B3AF: ??? (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xE033487: pixman_image_composite32 (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xD2FA95C: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2FC3CB: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2FD6EA: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2FD968: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD31B7C3: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2F53FC: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2EC29F: cairo_fill_preserve (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2EC2B8: cairo_fill (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0x1DD128A4: ??? (in /usr/lib/x86_64-linux-gnu/librsvg-2.so.2.36.1)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0x1DD12D17: ??? (in /usr/lib/x86_64-linux-gnu/librsvg-2.so.2.36.1)
+==10592==    by 0x1DD13956: rsvg_handle_get_pixbuf_sub (in /usr/lib/x86_64-linux-gnu/librsvg-2.so.2.36.1)
+==10592==    by 0x1DAC9D2A: ??? (in /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so)
+==10592==    by 0xD59D6F0: gdk_pixbuf_loader_close (in /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1)
+==10592==    by 0xD5999F8: ??? (in /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1)
+==10592==    by 0xD59B240: gdk_pixbuf_new_from_stream_at_scale (in /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1)
+==10592==    by 0xC6BE9B7: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6C1411: gtk_icon_info_load_icon (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6C15AE: gtk_icon_theme_load_icon (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC69C846: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A0342: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7AB96E3: g_object_newv (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.3200.3)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0xE07EC40: ??? (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xE06B3AF: ??? (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xE033487: pixman_image_composite32 (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xD2FB306: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2FD07D: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2FDA34: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD31B7C3: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2F53FC: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2EC29F: cairo_fill_preserve (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2EC2B8: cairo_fill (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0x1DD128A4: ??? (in /usr/lib/x86_64-linux-gnu/librsvg-2.so.2.36.1)
+==10592==    by 0x1DD0F2C9: ??? (in /usr/lib/x86_64-linux-gnu/librsvg-2.so.2.36.1)
+==10592== 
+==10592== Conditional jump or move depends on uninitialised value(s)
+==10592==    at 0xE07EEA2: ??? (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xE06B3AF: ??? (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xE033487: pixman_image_composite32 (in /usr/lib/x86_64-linux-gnu/libpixman-1.so.0.24.4)
+==10592==    by 0xD2FB306: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2FD07D: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2FDA34: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD31B7C3: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2F53FC: ??? (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2EC29F: cairo_fill_preserve (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0xD2EC2B8: cairo_fill (in /usr/lib/x86_64-linux-gnu/libcairo.so.2.11000.2)
+==10592==    by 0x1DD128A4: ??? (in /usr/lib/x86_64-linux-gnu/librsvg-2.so.2.36.1)
+==10592==    by 0x1DD0F2C9: ??? (in /usr/lib/x86_64-linux-gnu/librsvg-2.so.2.36.1)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB59F: wcslen (wcslen.S:48)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x7583799: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A0F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x1ed0ee80 is 32 bytes inside a block of size 36 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A0F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB59F: wcslen (wcslen.S:48)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x75837BE: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A0F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x1ed0ee80 is 32 bytes inside a block of size 36 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A0F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB59F: wcslen (wcslen.S:48)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x7583799: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A6F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x1ed11908 is 0 bytes after a block of size 40 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A6F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB59F: wcslen (wcslen.S:48)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x75837BE: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A6F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x1ed11908 is 0 bytes after a block of size 40 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A6F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+--10592-- memcheck GC: 32768 nodes, 31067 survivors ( 94.8%)
+--10592-- memcheck GC: increase table size to 65536
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB5CF: wcslen (wcslen.S:62)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x7583799: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x75839CE: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699D1A: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x17a609e8 is 72 bytes inside a block of size 76 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x75839CE: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699D1A: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB5CF: wcslen (wcslen.S:62)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x75837BE: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x75839CE: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699D1A: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x17a609e8 is 72 bytes inside a block of size 76 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x75839CE: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699D1A: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB5B7: wcslen (wcslen.S:55)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x7583799: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A6F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x17ab1e08 is 56 bytes inside a block of size 60 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A6F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB5B7: wcslen (wcslen.S:55)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x75837BE: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A6F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x17ab1e08 is 56 bytes inside a block of size 60 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A6F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB59F: wcslen (wcslen.S:48)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x7583799: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x75839CE: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x17ac0be0 is 32 bytes inside a block of size 36 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x75839CE: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB59F: wcslen (wcslen.S:48)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x75837BE: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x75839CE: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x17ac0be0 is 32 bytes inside a block of size 36 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x75839CE: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699CFF: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7566FF3: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB5B7: wcslen (wcslen.S:55)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x7583799: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A0F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699D1A: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x17ac76a8 is 0 bytes after a block of size 56 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A0F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699D1A: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 8
+==10592==    at 0x6DEB5B7: wcslen (wcslen.S:55)
+==10592==    by 0x6DF5C0E: wcsxfrm_l (strxfrm_l.c:107)
+==10592==    by 0x75837BE: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A0F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699D1A: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==  Address 0x17ac76a8 is 0 bytes after a block of size 56 alloc'd
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x755FA78: g_malloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7584381: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x758378A: g_utf8_collate_key (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7583A0F: g_utf8_collate_key_for_filename (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xC69474D: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6AB258: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC699D1A: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0xC6A932F: ??? (in /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0.2400.10)
+==10592==    by 0x7567283: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x7567003: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592== 
+==10592== Invalid read of size 4
+==10592==    at 0x410D37: MainWindow::Bayes() (mainwindow.cpp:1037)
+==10592==    by 0x48379C: MainWindow::qt_metacall(QMetaObject::Call, int, void**) (moc_mainwindow.cpp:136)
+==10592==    by 0x5FE00F7: QMetaObject::activate(QObject*, QMetaObject const*, int, void**) (qobject.cpp:3272)
+==10592==    by 0x59A5531: QAbstractButton::clicked(bool) (moc_qabstractbutton.cpp:206)
+==10592==    by 0x56A5A9A: QAbstractButtonPrivate::emitClicked() (qabstractbutton.cpp:546)
+==10592==    by 0x56A7224: QAbstractButtonPrivate::click() (qabstractbutton.cpp:539)
+==10592==    by 0x56A746E: QAbstractButton::mouseReleaseEvent(QMouseEvent*) (qabstractbutton.cpp:1121)
+==10592==    by 0x52F5C58: QWidget::event(QEvent*) (qwidget.cpp:8187)
+==10592==    by 0x56A636F: QAbstractButton::event(QEvent*) (qabstractbutton.cpp:1080)
+==10592==    by 0x574484D: QPushButton::event(QEvent*) (qpushbutton.cpp:683)
+==10592==    by 0x5295D5E: QApplicationPrivate::notify_helper(QObject*, QEvent*) (qapplication.cpp:4396)
+==10592==    by 0x529DE8D: QApplication::notify(QObject*, QEvent*) (qapplication.cpp:3959)
+==10592==  Address 0x176c59e8 is 8 bytes before a block of size 320 alloc'd
+==10592==    at 0x4C2AC27: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x41096F: MainWindow::Bayes() (mainwindow.cpp:1009)
+==10592==    by 0x48379C: MainWindow::qt_metacall(QMetaObject::Call, int, void**) (moc_mainwindow.cpp:136)
+==10592==    by 0x5FE00F7: QMetaObject::activate(QObject*, QMetaObject const*, int, void**) (qobject.cpp:3272)
+==10592==    by 0x59A5531: QAbstractButton::clicked(bool) (moc_qabstractbutton.cpp:206)
+==10592==    by 0x56A5A9A: QAbstractButtonPrivate::emitClicked() (qabstractbutton.cpp:546)
+==10592==    by 0x56A7224: QAbstractButtonPrivate::click() (qabstractbutton.cpp:539)
+==10592==    by 0x56A746E: QAbstractButton::mouseReleaseEvent(QMouseEvent*) (qabstractbutton.cpp:1121)
+==10592==    by 0x52F5C58: QWidget::event(QEvent*) (qwidget.cpp:8187)
+==10592==    by 0x56A636F: QAbstractButton::event(QEvent*) (qabstractbutton.cpp:1080)
+==10592==    by 0x574484D: QPushButton::event(QEvent*) (qpushbutton.cpp:683)
+==10592==    by 0x5295D5E: QApplicationPrivate::notify_helper(QObject*, QEvent*) (qapplication.cpp:4396)
+==10592== 
+==10592== Invalid write of size 4
+==10592==    at 0x410D3C: MainWindow::Bayes() (mainwindow.cpp:1037)
+==10592==    by 0x48379C: MainWindow::qt_metacall(QMetaObject::Call, int, void**) (moc_mainwindow.cpp:136)
+==10592==    by 0x5FE00F7: QMetaObject::activate(QObject*, QMetaObject const*, int, void**) (qobject.cpp:3272)
+==10592==    by 0x59A5531: QAbstractButton::clicked(bool) (moc_qabstractbutton.cpp:206)
+==10592==    by 0x56A5A9A: QAbstractButtonPrivate::emitClicked() (qabstractbutton.cpp:546)
+==10592==    by 0x56A7224: QAbstractButtonPrivate::click() (qabstractbutton.cpp:539)
+==10592==    by 0x56A746E: QAbstractButton::mouseReleaseEvent(QMouseEvent*) (qabstractbutton.cpp:1121)
+==10592==    by 0x52F5C58: QWidget::event(QEvent*) (qwidget.cpp:8187)
+==10592==    by 0x56A636F: QAbstractButton::event(QEvent*) (qabstractbutton.cpp:1080)
+==10592==    by 0x574484D: QPushButton::event(QEvent*) (qpushbutton.cpp:683)
+==10592==    by 0x5295D5E: QApplicationPrivate::notify_helper(QObject*, QEvent*) (qapplication.cpp:4396)
+==10592==    by 0x529DE8D: QApplication::notify(QObject*, QEvent*) (qapplication.cpp:3959)
+==10592==  Address 0x176c59e8 is 8 bytes before a block of size 320 alloc'd
+==10592==    at 0x4C2AC27: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x41096F: MainWindow::Bayes() (mainwindow.cpp:1009)
+==10592==    by 0x48379C: MainWindow::qt_metacall(QMetaObject::Call, int, void**) (moc_mainwindow.cpp:136)
+==10592==    by 0x5FE00F7: QMetaObject::activate(QObject*, QMetaObject const*, int, void**) (qobject.cpp:3272)
+==10592==    by 0x59A5531: QAbstractButton::clicked(bool) (moc_qabstractbutton.cpp:206)
+==10592==    by 0x56A5A9A: QAbstractButtonPrivate::emitClicked() (qabstractbutton.cpp:546)
+==10592==    by 0x56A7224: QAbstractButtonPrivate::click() (qabstractbutton.cpp:539)
+==10592==    by 0x56A746E: QAbstractButton::mouseReleaseEvent(QMouseEvent*) (qabstractbutton.cpp:1121)
+==10592==    by 0x52F5C58: QWidget::event(QEvent*) (qwidget.cpp:8187)
+==10592==    by 0x56A636F: QAbstractButton::event(QEvent*) (qabstractbutton.cpp:1080)
+==10592==    by 0x574484D: QPushButton::event(QEvent*) (qpushbutton.cpp:683)
+==10592==    by 0x5295D5E: QApplicationPrivate::notify_helper(QObject*, QEvent*) (qapplication.cpp:4396)
+==10592== 
+--10592-- VALGRIND INTERNAL ERROR: Valgrind received a signal 11 (SIGSEGV) - exiting
+--10592-- si_code=1;  Faulting address: 0x1176C5E98;  sp: 0x402bdadf0
+
+valgrind: the 'impossible' happened:
+   Killed by fatal signal
+==10592==    at 0x38058DC9: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==10592==    by 0x3802144C: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==10592==    by 0x38021A80: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==10592==    by 0x38021C6A: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==10592==    by 0x380902A7: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==10592==    by 0x3809F7D5: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+
+sched status:
+  running_tid=1
+
+Thread 1: status = VgTs_Runnable
+==10592==    at 0x4C2B6CD: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10592==    by 0x5F11155: QString::realloc(int) (qstring.cpp:1262)
+==10592==    by 0x5F112D4: QString::append(QChar) (qstring.cpp:1563)
+==10592==    by 0x4109D9: MainWindow::Bayes() (mainwindow.cpp:1013)
+==10592==    by 0x48379C: MainWindow::qt_metacall(QMetaObject::Call, int, void**) (moc_mainwindow.cpp:136)
+==10592==    by 0x5FE00F7: QMetaObject::activate(QObject*, QMetaObject const*, int, void**) (qobject.cpp:3272)
+==10592==    by 0x59A5531: QAbstractButton::clicked(bool) (moc_qabstractbutton.cpp:206)
+==10592==    by 0x56A5A9A: QAbstractButtonPrivate::emitClicked() (qabstractbutton.cpp:546)
+==10592==    by 0x56A7224: QAbstractButtonPrivate::click() (qabstractbutton.cpp:539)
+==10592==    by 0x56A746E: QAbstractButton::mouseReleaseEvent(QMouseEvent*) (qabstractbutton.cpp:1121)
+==10592==    by 0x52F5C58: QWidget::event(QEvent*) (qwidget.cpp:8187)
+==10592==    by 0x56A636F: QAbstractButton::event(QEvent*) (qabstractbutton.cpp:1080)
+==10592==    by 0x574484D: QPushButton::event(QEvent*) (qpushbutton.cpp:683)
+==10592==    by 0x5295D5E: QApplicationPrivate::notify_helper(QObject*, QEvent*) (qapplication.cpp:4396)
+==10592==    by 0x529DE8D: QApplication::notify(QObject*, QEvent*) (qapplication.cpp:3959)
+==10592==    by 0x5FCA0A3: QCoreApplication::notifyInternal(QObject*, QEvent*) (qcoreapplication.cpp:732)
+==10592==    by 0x5298F26: QApplicationPrivate::sendMouseEvent(QWidget*, QMouseEvent*, QWidget*, QWidget*, QWidget**, QPointer<QWidget>&, bool) (qcoreapplication.h:215)
+==10592==    by 0x531D61C: QETWidget::translateMouseEvent(_XEvent const*) (qapplication_x11.cpp:4403)
+==10592==    by 0x531C865: QApplication::x11ProcessEvent(_XEvent*) (qapplication_x11.cpp:3536)
+==10592==    by 0x5347037: x11EventSourceDispatch(_GSource*, int (*)(void*), void*) (qguieventdispatcher_glib.cpp:146)
+==10592==    by 0x7559D52: g_main_context_dispatch (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x755A09F: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x755A163: g_main_context_iteration (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x5FF7BCB: QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>) (qeventdispatcher_glib.cpp:415)
+==10592==    by 0x5346BCE: QGuiEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>) (qguieventdispatcher_glib.cpp:204)
+==10592==    by 0x5FC93F4: QEventLoop::processEvents(QFlags<QEventLoop::ProcessEventsFlag>) (qeventloop.cpp:149)
+==10592==    by 0x5FC9645: QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>) (qeventloop.cpp:201)
+==10592==    by 0x5FCB483: QCoreApplication::exec() (qcoreapplication.cpp:1009)
+==10592==    by 0x4094EE: main (main.cpp:13)
+
+Thread 3: status = VgTs_WaitSys
+==10592==    at 0x6E31313: poll (poll.c:87)
+==10592==    by 0x755A035: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x755A499: g_main_loop_run (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0xBEF8405: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.3200.3)
+==10592==    by 0x757B9E4: ??? (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.3200.3)
+==10592==    by 0x6321E99: start_thread (pthread_create.c:308)
+==10592==    by 0x6E3CCCC: clone (clone.S:112)
+
+
+Note: see also the FAQ in the source distribution.
+It contains workarounds to several common problems.
+In particular, if Valgrind aborted or crashed after
+identifying problems in your program, there's a good chance
+that fixing those problems will prevent Valgrind aborting or
+crashing, especially if it happened in m_mallocfree.c.
+
+If that doesn't help, please report this bug to: www.valgrind.org
+
+In the bug report, send all the above text, the valgrind
+version, and what OS and version you are using.  Thanks.
+
