@@ -1543,7 +1543,7 @@ int Spectre::readFilePhase(int &num, double ***dataPhase)
 //                    dataPhase[c1][c2][ i ] *= help[0] * help[1];
                     if(QString::number(dataPhase[c1][c2][i]).contains('n')) //why nan and inf???
                     {
-//                        cout<<num << "\t" << c1<< "\t" << c2<< "\t" << i<<endl;
+                        cout<<"dataPhase[" << c1 << "][" << c2 << "][" << i << "] = "<< dataPhase[c1][c2][i] <<endl;
                         return 0;
                     }
                 }

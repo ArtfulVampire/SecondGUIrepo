@@ -104,7 +104,7 @@ Net::Net(QDir *dir_, int left_, int right_, double spStep_, QString ExpName_) :
     paint = new QPainter;
     tempEvent = new QTempEvent;
 
-    myThread.start();
+//    myThread.start();
     QObject::connect(this, SIGNAL(destroyed()), &myThread, SLOT(quit()));
 
 
@@ -156,7 +156,29 @@ Net::Net(QDir *dir_, int left_, int right_, double spStep_, QString ExpName_) :
     this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
+Net::~Net()
+{
+//    delete ui;
+//    delete dir;
+//    delete dirBC;
 
+//    for(int i=0; i<NumberOfVectors; ++i)
+//    {
+//        delete []matrix[i];
+//    }
+//    delete []matrix;
+
+
+//    for(int i=0; i<NumberOfVectors; ++i)
+//    {
+//        delete []FileName[i];
+//    }
+//    delete []FileName;
+
+    myThread.quit();
+    myThread.wait();
+
+}
 
 
 
@@ -1232,28 +1254,7 @@ void Net::stopActivity()
     stopFlag=1;
 }
 
-Net::~Net()
-{
-//    delete ui;
-//    delete dir;
-//    delete dirBC;
 
-//    for(int i=0; i<NumberOfVectors; ++i)
-//    {
-//        delete []matrix[i];
-//    }
-//    delete []matrix;
-
-
-//    for(int i=0; i<NumberOfVectors; ++i)
-//    {
-//        delete []FileName[i];
-//    }
-//    delete []FileName;
-    myThread.quit();
-    myThread.wait();
-
-}
 
 void Net::saveWts()
 {
@@ -2606,18 +2607,32 @@ void Net::pca()
         }
     }
 
+    cout<<"centeredMatrix counted"<<endl;
 
+    //NetLength ~= 45000
+    //NumberOfVectors ~= 100
     //covariation between different spectra-bins
+    double tempDouble;
+    QTime initTime;
+    initTime.start();
+
     for(int i = 0; i < NetLength; ++i)
     {
+//        cout<< i << endl;
+        if((i+1)%50 == 0)
+        {
+            cout << "50 passed, time = " << initTime.elapsed() << " i = " << i <<endl;
+            initTime.restart();
+        }
         for(int k = 0; k < NetLength; ++k)
         {
-            covMatrix[i][k]=0.;
+            tempDouble = 0.;
             for(int j = 0; j < NumberOfVectors; ++j)
             {
-                covMatrix[i][k] += centeredMatrix[j][i] * centeredMatrix[j][k];
+                tempDouble += centeredMatrix[j][i] * centeredMatrix[j][k];
             }
-            covMatrix[i][k] /= (NumberOfVectors - 1);
+            tempDouble /= (NumberOfVectors - 1);
+            covMatrix[i][k] = tempDouble;
         }
     }
 
@@ -2766,7 +2781,7 @@ void Net::pca()
         {
             sum1 += eigenValues[j];
         }
-//        cout<<"Part of dispersion explained = "<<sum1*100./double(trace)<<" %"<<endl;
+        cout<<"Part of dispersion explained = "<<sum1*100./double(trace)<<" %"<<endl;
 
         cout<<k<<"  "<<eigenValues[k]<<"   Disp expl = "<<sum1*100./double(trace)<<" %"<<endl;
         for(int i = 0; i < NetLength; ++i)

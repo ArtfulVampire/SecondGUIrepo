@@ -1667,7 +1667,7 @@ void MainWindow::drawRealisations()
             fclose(file);
             continue;
         }
-        fscanf(file, "%*s %d \n", &Eyes);
+        fscanf(file, "Eyes %d \n", &Eyes);
         for(int j = 0; j < ns; ++j)
         {
             dataD[j] = new double [NumOfSlices]; /////////generality for 32 seconds
@@ -3795,6 +3795,7 @@ void MainWindow::sliceOneByOneNew()
             h = -1;
             j = i;
             continue;
+            ui->progressBar->setValue(double(i)/ndr*nr[ns-1]*100.);
         }
 
     }

@@ -20,6 +20,7 @@
 #include <fstream>
 #include <ios>
 #include <unistd.h>
+#include <QTime>
 
 using namespace std;
 
