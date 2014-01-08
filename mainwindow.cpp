@@ -433,7 +433,7 @@ void MainWindow::autoProcessingFB()
 
         //cycle Net + write to file
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth").append(QDir::separator()).append("windows"));
-        MakePa *mkPa = new MakePa(helpString, ns, left, right, spStep);
+        MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
         mkPa->setRdcCoeff(20);
 
         Net * ANN = new Net(dir, left, right, spStep, ExpName);
@@ -496,7 +496,7 @@ void MainWindow::autoProcessingFB()
         cout << "spectra counted" << endl;
         //cycle Net + write to file
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth").append(QDir::separator()).append("windows"));
-        MakePa *mkPa2 = new MakePa(helpString, ns, left, right, spStep);
+        MakePa *mkPa2 = new MakePa(helpString, ExpName, ns, left, right, spStep);
         mkPa2->setRdcCoeff(20);
 
         Net * ANN2 = new Net(dir, left, right, spStep, ExpName);
@@ -629,7 +629,7 @@ void MainWindow::autoWindowsProcessing()
 
         //cycle Net + write to file
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth").append(QDir::separator()).append("windows"));
-        MakePa *mkPa = new MakePa(helpString, ns, left, right, spStep);
+        MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
         mkPa->setRdcCoeff(20);
 
         Net * ANN = new Net(dir, left, right, spStep, ExpName);
@@ -809,7 +809,7 @@ void MainWindow::autoProcessing()
 
     //cycle Net + write to file
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
-    MakePa *mkPa = new MakePa(helpString, ns, left, right, spStep);
+    MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
     mkPa->setRdcCoeff(5);
     mkPa->mwTest();
 
@@ -1649,7 +1649,11 @@ void MainWindow::drawRealisations()
 
     dir->cd(ui->drawDirBox->currentText());    //->windows or Realisations or cut
     lst.clear();
-    lst=dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
+    nameFilters.clear();
+    nameFilters.append("*_241*");
+    nameFilters.append("*_247*");
+    nameFilters.append("*_254*");
+    lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
     cout << "lst.len = " << lst.length() << endl;
     FILE * file;
     for(int i = 0; i < lst.length(); ++i)
@@ -1657,13 +1661,13 @@ void MainWindow::drawRealisations()
         if(stopFlag) break;
         helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(i));
         file=fopen(helpString.toStdString().c_str(), "r");
-        fscanf(file, "NumOfSlices %d \n", &NumOfSlices);
+        fscanf(file, "%*s %d \n", &NumOfSlices);
         if(NumOfSlices > 15000)
         {
             fclose(file);
             continue;
         }
-        fscanf(file, "NumOfSlicesEyesCut %d \n", &Eyes);
+        fscanf(file, "%*s %d \n", &Eyes);
         for(int j = 0; j < ns; ++j)
         {
             dataD[j] = new double [NumOfSlices]; /////////generality for 32 seconds
@@ -1723,9 +1727,13 @@ void MainWindow::drawRealisations()
             {
                 helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("after").append(QDir::separator()).append(helpString).append(".jpg");
             }
-            if(ns==21)
+            else if(ns==21)
             {
                 helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("before").append(QDir::separator()).append(helpString).append(".jpg");
+            }
+            else
+            {
+                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("other").append(QDir::separator()).append(helpString).append(".jpg");
             }
         }
         dir->cd(ui->drawDirBox->currentText());  //back to the windows or Realisations dir
@@ -1832,7 +1840,7 @@ void MainWindow::makePaSlot() //250 - frequency generality
     else helpString = QDir::toNativeSeparators(dir->absolutePath());
 
 
-    MakePa *mkPa = new MakePa(helpString, ns, left, right, spStep);
+    MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
     mkPa->show();
 }
 
@@ -1909,6 +1917,7 @@ void MainWindow::setEdfFile()
     dir->mkdir("Signals/windows");
     dir->mkdir("Signals/windows/after");
     dir->mkdir("Signals/windows/before");
+    dir->mkdir("Signals/windows/other");
     dir->mkdir("SignalsCut");
     dir->mkdir("SignalsCut/before");
     dir->mkdir("SignalsCut/after");
@@ -1948,6 +1957,37 @@ void MainWindow::setEdfFile()
         fclose(res);
         autoWindowsProcessing();
     }
+
+/*
+    FILE * file = fopen("/media/Files/Data/AAX/test.txt", "w");
+    fprintf(file, "NumOfSlices 3000\n");
+    double **arr = new double * [2];
+    arr[0] = new double [3000];
+    arr[1] = new double [3000];
+    for(int i = 0; i < 3000; ++i)
+    {
+        arr[0][i] = sin(10. * 2.*M_PI * i/250.);
+        arr[1][i] = sin(10. * 2.*M_PI * (i + 25)/250.);
+        fprintf(file, "%lf\n%lf\n", arr[0][i], arr[1][i]);
+    }
+    fclose(file);
+
+
+
+    //test wavelet
+    helpString = dir->absolutePath() + "/test.txt";
+    file = fopen(helpString.toStdString().c_str(), "r");
+
+//    helpString = dir->absolutePath() + "/ww1.jpg";
+//    wavelet(helpString, file, 2, 0, 20., 5., 0.98, 32);
+
+//    helpString = dir->absolutePath() + "/ww2.jpg";
+//    wavelet(helpString, file, 2, 1, 20., 5., 0.98, 32);
+
+    helpString = dir->absolutePath() + "/www.jpg";
+    waveletPhase(helpString, file, 2, 0, 1, 20., 5., 0.98, 32);
+    fclose(file);
+    this->close();*/
 }
 
 void MainWindow::setExpName()
@@ -2372,6 +2412,9 @@ void MainWindow::readData()
     delete []physMax;
     delete []digMin;
     delete []digMax;
+    delete []annotations;
+
+    cout<<"ndr*ddr = " << ndr*ddr << endl;
 
 
 //    cout << "data have been read" << endl;
@@ -2429,7 +2472,6 @@ void MainWindow::makeDatFile()
     }
     delete []data;
     delete []nr;
-
 }
 
 void MainWindow::avTime()
@@ -2974,7 +3016,8 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                 }
                 else
                 {
-                    sliceOneByOne();
+//                    sliceOneByOne();
+                    sliceOneByOneNew();
 //                    sliceGaps();
 //                    sliceByNumberAfter(241, 241, "241"); //Spatial
 //                    sliceByNumberAfter(247, 247, "247"); //Verbal
@@ -3580,12 +3623,17 @@ void MainWindow::sliceOneByOne() //generality, just for my current
     FILE * file;
     int number = 0;
     int k;
-    int j = 0;                                     //
-    int h = 1;                                     //
+    int j = 0;
+    int h = 1;
     QString marker = "000";
+    //200, 255, (241||247, num, 254, 255)
     for(int i = 0; i < ndr*nr[ns-1]; ++i)
     {
-        if((data[ns-1][i] > 200 && data[ns-1][i] < 241) || data[ns-1][i] == 255 || data[ns-1][i] == 250 || data[ns-1][i] == 251) //order inportant!
+        if(data[ns-1][i] == 0)
+        {
+            continue;
+        }
+        if((data[ns-1][i] > 200 && data[ns-1][i] < 241) || data[ns-1][i] == 255 || data[ns-1][i] == 250 || data[ns-1][i] == 251) //order inportant! - not interesting markers
         {
             continue;
         }
@@ -3596,23 +3644,24 @@ void MainWindow::sliceOneByOne() //generality, just for my current
             marker.setNum(data[ns-1][i]);
             continue;
         }
-        if((data[ns-1][i] == 241 || data[ns-1][i] == 247) && h != 1)
+//        if((data[ns-1][i] == 241 || data[ns-1][i] == 247) && h != 1) //start task
+        if((data[ns-1][i] == 241 || data[ns-1][i] == 247) && h == 0) //start task
         {
             j = i;
             h = 2;
             marker.setNum(data[ns-1][i]);
             continue;
         }
-        if(data[ns-1][i] != 0 && h == 2)
+        if(data[ns-1][i] != 0 && h == 2) //write between unknown marker and 241 || 247
         {
             ++number;
-            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append("num");
+            helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append("num");
 //            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
-            file=fopen(helpString.toStdString().c_str(), "w");
+            file = fopen(helpString.toStdString().c_str(), "w");
             fprintf(file, "NumOfSlices %d \n", i-j);
-            if(i-j > 15000 && marker=="255")
+            if(i-j > 15000 && (marker == "255" || marker == "254"))
             {
-                for(int l=j; l < i; ++l)         //save BY SLICES!!
+                for(int l = j; l < i; ++l)         //save BY SLICES!!
                 {
                     for(int m = 0; m < ns-1; ++m)
                     {
@@ -3622,7 +3671,7 @@ void MainWindow::sliceOneByOne() //generality, just for my current
             }
             else
             {
-                for(int l=j; l < i; ++l)         //save BY SLICES!!
+                for(int l = j; l < i; ++l)         //save BY SLICES!!
                 {
                     for(int m = 0; m < ns-1; ++m)
                     {
@@ -3638,28 +3687,16 @@ void MainWindow::sliceOneByOne() //generality, just for my current
             continue;
         }
 
-//        if(data[ns-1][i]==201) //don't consider with pauses
-//        {
-//            h = 0;
-//            continue;
-//        }
-
-        if(h == 1 && data[ns-1][i] != 0) //generality first nonzero marker after start
+        if(data[ns-1][i] != 0 && h == 1) //generality first nonzero marker after start - write
         {
-            k=i;
+            k = i;
             h = 0;
-            //dont consider too long
-//            if((k-j)>10030)
-//            {
-//                --i;
-//                continue;
-//            }
             ++number;
-            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
+            helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
 //            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
-            file=fopen(helpString.toStdString().c_str(), "w");
+            file = fopen(helpString.toStdString().c_str(), "w");
             fprintf(file, "NumOfSlices %d \n", k-j);
-            for(int l=j; l < k; ++l)         //save BY SLICES!!
+            for(int l = j; l < k; ++l)         //save BY SLICES!!
             {
                 for(int m = 0; m < ns-1; ++m)
                 {
@@ -3668,19 +3705,109 @@ void MainWindow::sliceOneByOne() //generality, just for my current
 
             }
             fclose(file);
-            --i;
+            --i; //for checking the last marker once more
         }
+//        if(number == 125) cout<<i<<endl;
     }
 
     //write last rest state
     marker = "end";
     k = ndr*nr[ns-1];
     ++number;
-    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
+    helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
 //    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
     file=fopen(helpString.toStdString().c_str(), "w");
     fprintf(file, "NumOfSlices %d \n", k-j);
-    for(int l=j; l < k; ++l)         //save BY SLICES!!
+    for(int l = j; l < k; ++l)         //save BY SLICES!!
+    {
+        for(int m = 0; m < ns-1; ++m)
+        {
+            fprintf(file, "%lf\n", data[m][l*nr[m]/nr[ns-1]]);
+        }
+
+    }
+    fclose(file);
+}
+
+void MainWindow::sliceOneByOneNew()
+{
+    FILE * file;
+    int number = 0;
+    int k;
+    int j = 0;
+    int h = 0; //h == 0 - 241, h == 1 - 247
+    QString marker = "000";
+    //200, 255, (241||247, num, 254, 255)
+    for(int i = 0; i < ndr*nr[ns-1]; ++i)
+    {
+        if(data[ns-1][i] == 0)
+        {
+            continue;
+        }
+        if((data[ns-1][i] > 200 && data[ns-1][i] < 241) || data[ns-1][i] == 255 || data[ns-1][i] == 250 || data[ns-1][i] == 251) //order inportant! - not interesting markers
+        {
+            continue;
+        }
+        if(data[ns-1][i] == 241 || data[ns-1][i] == 247)
+        {
+            marker = "254";
+            if(data[ns-1][i] == 241) h=0;
+            else if (data[ns-1][i] == 247) h=1;
+            continue;
+        }
+        if(1)
+        {
+            if(marker.isEmpty())
+            {
+                marker = "sht";
+            }
+            ++number;
+            helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
+
+//            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
+            file = fopen(helpString.toStdString().c_str(), "w");
+            fprintf(file, "NumOfSlices %d \n", i-j);
+            if(i-j > 15000 && (marker == "254"))
+            {
+                for(int l = j; l < i; ++l)         //save BY SLICES!!
+                {
+                    for(int m = 0; m < ns-1; ++m)
+                    {
+                        fprintf(file, "0.000\n");
+                    }
+                }
+            }
+            else
+            {
+                for(int l = j; l < i; ++l)         //save BY SLICES!!
+                {
+                    for(int m = 0; m < ns-1; ++m)
+                    {
+                        fprintf(file, "%lf\n", data[m][l*nr[m]/nr[ns-1]]);
+                    }
+                }
+            }
+            fclose(file);
+
+            marker.clear();
+            if(h == 0) marker = "241";
+            else if(h == 1) marker = "247";
+            h = -1;
+            j = i;
+            continue;
+        }
+
+    }
+
+    //write last rest state
+    marker = "end";
+    k = ndr*nr[ns-1];
+    ++number;
+    helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
+//    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
+    file=fopen(helpString.toStdString().c_str(), "w");
+    fprintf(file, "NumOfSlices %d \n", k-j);
+    for(int l = j; l < k; ++l)         //save BY SLICES!!
     {
         for(int m = 0; m < ns-1; ++m)
         {
@@ -4132,11 +4259,11 @@ void MainWindow::constructEDF()
     int currSlice = 0;
     for(int i = 0; i < lst.length(); ++i)
     {
-        cout<<"currSlice = "<<currSlice<<endl;
+//        cout<<"currSlice = "<<currSlice<<endl;
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Realisations").append(QDir::separator()).append(lst[i]));
         file = fopen(helpString.toStdString().c_str(), "r");
         fscanf(file, "NumOfSlices %d\n", &NumOfSlices);
-        cout<<"NumOfSlices = "<<NumOfSlices<<endl;
+//        cout<<"NumOfSlices = "<<NumOfSlices<<endl;
         for(int i = 0; i < NumOfSlices; ++i)
         {
             for(int j = 0; j < ns; ++j) //19 most generality?
@@ -4151,6 +4278,7 @@ void MainWindow::constructEDF()
 
 
     int nsB = ns;
+    cout<<ns<<endl;
 
 
     helpString = ExpName.append("_clean.edf");
@@ -4467,7 +4595,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
 //            }
 //        }
 //    }
-    cout << "data write start" << endl;
+    cout << "data write start, indepNum = " << indepNum << endl;
 
     if(ui->enRadio->isChecked())
     {
@@ -4478,9 +4606,13 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
                 for(int k = 0; k < nr[j]; ++k)
                 {
                     fread(&a, sizeof(short), 1, edf);
-                    if(j < indepNum) //generality
+                    if(j < 19) //generality EEG Channels
                     {
                         a = (short)((inData[j][i*nr[j]+k] - physMin[j]) * (digMax[j] - digMin[j]) / (physMax[j]-physMin[j]) + digMin[j]);
+                    }
+                    if(indepNum > 19 && (j == 21 || j == 22))
+                    {
+                        a = (short)((inData[j-2][i*nr[j]+k] - physMin[j]) * (digMax[j] - digMin[j]) / (physMax[j]-physMin[j]) + digMin[j]); //-3 generality for EOG
                     }
                     fwrite(&a, sizeof(short), 1, edfNew);
 //                    cout << "current nr = " << k << " current channel = " << j << " current ndr = " << i << endl;
@@ -4535,6 +4667,8 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
     delete [] physMax;
     delete [] digMin;
     delete [] digMax;
+
+    cout << "EDF constructed" <<endl;
 
 }
 

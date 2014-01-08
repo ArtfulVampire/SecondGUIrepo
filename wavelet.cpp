@@ -132,7 +132,7 @@ void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double fr
             else fscanf(file, "%lf", &input[i]);
         }
     }
-    fclose(file);
+//    fclose(file);
     QPixmap pic(150*NumOfSlices/250,800); //150 pixels/sec generality
     pic.fill();
     QPainter * painter = new QPainter;
@@ -141,21 +141,32 @@ void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double fr
 
     double freq=20.;
     double timeStep=0.;
-    double * temp = new double[NumOfSlices];
+
+    int numberOfFreqs = int(log(freqMin/freqMax) / log(freqStep)) + 1;
+    double **temp = new double * [numberOfFreqs];
+    for(int i = 0; i < numberOfFreqs; ++i)
+    {
+        temp[i] = new double [NumOfSlices];
+        for(int j = 0; j < NumOfSlices; ++j)
+        {
+            temp[i][j] = 0.;
+        }
+    }
     double tempR=0., tempI=0.;
     int i=0;
     int jMin=0, jMax=0;
 
+    int range = 256;
     int numb;
-    helpDouble=50000;
 //    cout<<"1"<<endl;
+    int j=0;
     for(freq=freqMax; freq>freqMin; freq*=freqStep)
     {
         timeStep = 1./freq * 250./1.5;  //250 Hz
         i=0;
         while(i<NumOfSlices)
         {
-            temp[i]=0.;
+            temp[j][i]=0.;
             tempR=0.;
             tempI=0.;
             jMin=max(0, int(i - sqrt(5*pot*pot*250.*250./4/pi/pi/freq/freq)));
@@ -165,25 +176,28 @@ void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double fr
                 tempI+=(morletSin(freq, i, pot, j)*input[j]);
                 tempR+=(morletCos(freq, i, pot, j)*input[j]);
             }
-            temp[i]=tempI*tempI + tempR*tempR;
+            temp[j][i]=tempI*tempI + tempR*tempR;
             i+=timeStep;
         }
-
-        int range=128;
-
-        i=0;
-         while(i<NumOfSlices)
+        ++j;
+    }
+    helpDouble = 0.;
+    for(int j = 0; j < numberOfFreqs; ++j)
+    {
+        for(int i = 0; i < NumOfSlices; ++i)
         {
-//             for(int j=0; j<range; ++j)
-//             {
-//                 if(temp[i]>=helpDouble*j/double(range) && temp[i]<=helpDouble*(j+1)/double(range))
-//                 {
-//                     painter->setBrush(QBrush(qcolor(range, j)));
-//                     painter->setPen(qcolor(range, j));
-//                     break;
-//                 }
-//             }
-             numb = min(floor(temp[i]*range/double(helpDouble)), double(range));
+            helpDouble = fmax (helpDouble, temp[j][i]);
+        }
+    }
+
+
+    j = 0;
+    for(freq=freqMax; freq>freqMin; freq*=freqStep)
+    {
+        i=0;
+        while(i<NumOfSlices)
+        {
+             numb = min(floor(temp[j][i]*range/double(helpDouble)), double(range));
 
              painter->setBrush(QBrush(qcolor(range, numb)));
              painter->setPen(qcolor(range, numb));
@@ -191,6 +205,7 @@ void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double fr
              painter->drawRect(i*pic.width()/NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep)/(freqMax-freqMin)), timeStep*pic.width()/NumOfSlices,     int(pic.height()*(- 0.5*freq*(1./freqStep - freqStep))/(freqMax-freqMin)));
              i+=timeStep;
         }
+        ++j;
 
     }
     painter->setPen("black");
@@ -210,9 +225,13 @@ void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double fr
 
     }
 
-\
+    rewind(file);
     delete []input;
-    delete []temp;
+    for(int i = 0; i < numberOfFreqs; ++i)
+    {
+        delete[] temp[i];\
+    }
+    delete[] temp;
     pic.save(out, 0, 100);
     painter->end();
     delete painter;
@@ -233,9 +252,12 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
     }
     fscanf(file, "NumOfSlices %d", &NumOfSlices);
     if(NumOfSlices<200) return;
-    input1 = new double [NumOfSlices];
-    input2 = new double [NumOfSlices];
 
+
+    input1 = new double [NumOfSlices]; //first channel signal
+    input2 = new double [NumOfSlices]; //second channel signal
+
+    //read data
     for(int i=0; i<NumOfSlices; ++i)
     {
         for(int j=0; j<ns; ++j)
@@ -245,7 +267,7 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
             else fscanf(file, "%lf", &helpDouble);
         }
     }
-    fclose(file);
+//    fclose(file);
     QPixmap pic(150*NumOfSlices/250,800); //150 pixels/sec
     pic.fill();
     QPainter * painter = new QPainter;
@@ -259,30 +281,31 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
     int i=0;
     int jMin=0, jMax=0;
 
-    int numb;
-    helpDouble=50000;
 
-    cout<<"1"<<endl;
+//    cout<<"1"<<endl;
     for(freq=freqMax; freq>freqMin; freq*=freqStep)
     {
-        timeStep = 1./freq * 250./1.5;  //250 Hz
+        timeStep = 1. / ( freq ) * 250./1.5;  //250 Hz
         i=0;
         while(i<NumOfSlices)
         {
-            temp[i]=0.;
-            tempR=0.;
-            tempI=0.;
+            temp[i]=0.; //phase difference
             jMin=max(0, int(i - sqrt(5*pot*pot*250.*250./4/pi/pi/freq/freq)));
             jMax=min(int(i + sqrt(5*pot*pot*250.*250./4/pi/pi/freq/freq)), NumOfSlices);
+
+            //count phase in the first channel
+            tempR=0.;
+            tempI=0.;
             for(int j=jMin; j<jMax; ++j)
             {
                 tempI+=(morletSin(freq, i, pot, j)*input1[j]);
                 tempR+=(morletCos(freq, i, pot, j)*input1[j]);
             }
-            if(tempR != 0) temp[i] = atan(tempI / tempR);
-            else if(tempI > 0) temp[i] = M_PI/2.;
-            else temp[i] = -M_PI/2.;
+            if(tempR != 0.) temp[i] = atan(tempI / tempR);
+            else if(tempI > 0) temp[i] = pi/2.;
+            else temp[i] = -pi/2.;
 
+            //count phase in the second channel
             tempR=0.;
             tempI=0.;
             for(int j=jMin; j<jMax; ++j)
@@ -290,42 +313,29 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
                 tempI+=(morletSin(freq, i, pot, j)*input2[j]);
                 tempR+=(morletCos(freq, i, pot, j)*input2[j]);
             }
-            if(tempR != 0) helpDouble = atan(tempI / tempR);
-            else if(tempI > 0) helpDouble = M_PI/2.;
-            else helpDouble = -M_PI/2.;
-            temp[i] -= helpDouble;
+            if(tempR != 0.) helpDouble = atan(tempI / tempR);
+            else if(tempI > 0) helpDouble = pi/2.;
+            else helpDouble = -pi/2.;
+
+            //count the difference
+//            temp[i] -= helpDouble;
             i+=timeStep;
         }
 
-        int range=128;
+        int range=500;
 
         i=0;
          while(i<NumOfSlices)
         {
-//             for(int j=0; j<range; ++j)
-//             {
-//                 if(temp[i]>=helpDouble*j/double(range) && temp[i]<=helpDouble*(j+1)/double(range))
-//                 {
-//                     painter->setBrush(QBrush(qcolor(range, j)));
-//                     painter->setPen(qcolor(range, j));
-//                     break;
-//                 }
-//             }
-//             numb = min(floor(temp[i]*range/double(helpDouble)), double(range));
-
-//             painter->setBrush(QBrush(qcolor(range, numb)));
-//             painter->setPen(qcolor(range, numb));
-
-             cout<<"3 ";
-             painter->setBrush(QBrush(hue(range, (temp[i] + M_PI)*range/2./M_PI, 0.95, 1.)));
-             painter->setPen(hue(range, (temp[i] + M_PI)*range/2./M_PI, 0.95, 1.));
+             painter->setBrush(QBrush(hue(range, (temp[i] + pi)/2./pi * range, 0.95, 1.)));
+             painter->setPen(hue(range, (temp[i] + pi)/2./pi * range, 0.95, 1.));
 
              painter->drawRect(i*pic.width()/NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep)/(freqMax-freqMin)), timeStep*pic.width()/NumOfSlices,     int(pic.height()*(- 0.5*freq*(1./freqStep - freqStep))/(freqMax-freqMin)));
              i+=timeStep;
         }
 
     }
-    cout<<"2"<<endl;
+//    cout<<"2"<<endl;
     painter->setPen("black");
 
 
@@ -349,7 +359,7 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
     delete []temp;
 
     pic.save(out, 0, 100);
-//    rewind(file);
+    rewind(file);
 
     painter->end();
     delete painter;

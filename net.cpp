@@ -49,6 +49,7 @@ Net::Net(QDir *dir_, int left_, int right_, double spStep_, QString ExpName_) :
     ui->tempBox->setSingleStep(10);
     ui->errorBox->setValue(0.10);
     ui->errorBox->setSingleStep(0.01);
+    ui->errorBox->setDecimals(8);
     ui->learnRateBox->setValue(0.1);
     ui->learnRateBox->setSingleStep(0.05);
     ui->epochSpinBox->setMaximum(500);
@@ -300,7 +301,7 @@ void Net::autoClassification(QString spectraDir)
 
 
 
-    MakePa *mkPa = new MakePa(spectraDir, ns, left, right, spStep);
+    MakePa *mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep);
     mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
     mkPa->setNumOfClasses(NumOfClasses);
 
@@ -489,7 +490,7 @@ void Net::clearSets1()
     if(helpString=="") return;
     //make PA
     cout<<helpString.toStdString()<<endl;
-    MakePa *mkPa = new MakePa(helpString, ns, left, right, spStep);
+    MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
     mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
     mkPa->setNumOfClasses(NumOfClasses);
 //    return;
@@ -654,7 +655,7 @@ void Net::clearSets()
     if(helpString == "") return;
     cout<<helpString.toStdString()<<endl;
     dir->setPath(helpString);
-    MakePa *mkPa = new MakePa(helpString, ns, left, right, spStep);
+    MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
     mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
     mkPa->setNumOfClasses(NumOfClasses);
 
@@ -1249,6 +1250,8 @@ Net::~Net()
 //        delete []FileName[i];
 //    }
 //    delete []FileName;
+    myThread.quit();
+    myThread.wait();
 
 }
 
@@ -1942,7 +1945,7 @@ void Net::LearnNet()
 //    if(output!=NULL) delete [] output;
 
     output = new double [NumOfClasses];
-    double error=2.*ecrit;
+    double error=ecrit + 1.;
     int type=0;
     int mixNum[NumberOfVectors];
 
@@ -3108,7 +3111,7 @@ void Net::SVM()
         cout<<"spectraDir for SVM is empty"<<endl;
         return;
     }
-    MakePa * mkPa = new MakePa(spectraDir, ns, left, right, spStep);
+    MakePa * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep);
 
     for(int i = 0; i < ui->numOfPairsBox->value(); ++i)
     {

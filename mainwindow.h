@@ -26,7 +26,6 @@
 #include <cmath>
 
 #include "four1.h"
-#include <cstdlib>
 #include <unistd.h>
 #include <QMessageBox>
 
@@ -99,6 +98,7 @@ public:
     void kernelest(const QString &str);
     void writeEdf(FILE * edf, double ** components, QString fileName, int indepNum);
     void sliceOneByOne();
+    void sliceOneByOneNew();
     void drawMap(double ** matrixA, int num);
     double fractalDimension(double * arr, int N, QString picPath);
 

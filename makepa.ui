@@ -226,7 +226,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Van der Varden test</string>
+    <string>Pearson difference</string>
    </property>
   </widget>
   <widget class="QDoubleSpinBox" name="alphaSpinBox">

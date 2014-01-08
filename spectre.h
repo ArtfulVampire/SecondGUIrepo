@@ -31,6 +31,7 @@ public:
     int readFile(int &num, double ** dataFFT);
     void setSmooth(int);
     bool eventFilter(QObject *obj, QEvent *event);
+    int readFilePhase(int &num, double ***dataPhase);
 
 
 
@@ -80,6 +81,7 @@ private:
     time_t duration;
     int chanNum;
     QString rangePicPath;
+    FILE * file1;
 
 
 };

@@ -248,7 +248,7 @@ void Cut::cutEyesAll()
     }
 
 //    cout<<"1"<<endl;
-    dir->setSorting(QDir::Name);
+//    dir->setSorting(QDir::Name);
     dir->cd(ui->dirBox->currentText());  //generality
     nameFilters.clear();
     nameFilters.append("*_241*");
@@ -281,7 +281,7 @@ void Cut::cutEyesAll()
 
         for(int j=0; j<NumOfSlices; ++j)
         {
-            for(int i=ns-NumEog; i<ns; ++i)
+            for(int i = ns-NumEog; i<ns; ++i)
             {
                 eogArray[i-(ns-NumEog)][currentSlice] = data3[i][j];
             }
@@ -1200,15 +1200,13 @@ void Cut::zero()
             if(data3[k][i]==0.) h+=1;
             data3[k][i]=0.;
         }
-        if(h < ns) Eyes+=1;      ///generality if there are channel with non-zero values
+        if(h < ns) Eyes+=1;      //generality if there are channel with non-zero values
     }
 
     this->ui->spinBox->setValue(NumOfSlices-Eyes);
     this->ui->doubleSpinBox->setValue((NumOfSlices-Eyes)/250.);
 
     paint();
-
-
 }
 
 void Cut::cut()

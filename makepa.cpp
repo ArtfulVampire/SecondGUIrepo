@@ -1,9 +1,10 @@
 #include "makepa.h"
 #include "ui_makepa.h"
 
-MakePa::MakePa(QString spectraPath, int ns_, int left_, int right_, double spStep_) :
+MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int right_, double spStep_) :
     ui(new Ui::MakePa)
 {
+
     ui->setupUi(this);
     browser = new QFileDialog();
 
@@ -12,6 +13,7 @@ MakePa::MakePa(QString spectraPath, int ns_, int left_, int right_, double spSte
     right = right_;
     spLength = right_ - left_ + 1;
     spStep = spStep_;
+    ExpName = ExpName_;
 
     ns=ns_;
 
@@ -25,7 +27,7 @@ MakePa::MakePa(QString spectraPath, int ns_, int left_, int right_, double spSte
     ui->spLBox->setMinimum(1);
     ui->spLBox->setValue(spLength);
 
-    ui->nsBox->setMaximum(50);
+    ui->nsBox->setMaximum(300);
     ui->nsBox->setMinimum(1);
     ui->nsBox->setValue(ns);
 
@@ -69,6 +71,7 @@ MakePa::MakePa(QString spectraPath, int ns_, int left_, int right_, double spSte
     QObject::connect(ui->mwTestButton, SIGNAL(clicked()), this, SLOT(mwTest()));
     QObject::connect(ui->kwTestButton, SIGNAL(clicked()), this, SLOT(kwTest()));
     QObject::connect(ui->dispersionAnalysisButton, SIGNAL(clicked()), this, SLOT(dispersionAnalysis()));
+    QObject::connect(ui->vdvTestButton, SIGNAL(clicked()), this, SLOT(correlationDifference()));
     this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
@@ -189,15 +192,25 @@ void MakePa::mwTest()
     }
 
     double temp;
-    int sum0;
+    double sum0;
     int sumAll;
     double average = n[0]*n[1]/2.;
     double dispersion = sqrt(n[0]*n[1]*(n[0]+n[1])/12.);
-    int numOfDiff=0;
+    int numOfDiff = 0;
 
     double *U = new double [ns*spLength];
 
     int numOfZero = 0;
+
+//    cout<<n[0]<<"\t"<<n[1]<<endl;
+//    for(int i = 0; i < n[0]; ++i)
+//    {
+//        cout<<lst[0][i].toStdString()<<endl;
+//    }
+//    for(int i = 0; i < n[1]; ++i)
+//    {
+//        cout<<lst[1][i].toStdString()<<endl;
+//    }
 
     //for every spectra-bin
     for(int j=0; j<ns*spLength; ++j)
@@ -222,7 +235,7 @@ void MakePa::mwTest()
         {
             sum0 += max(array[0][i], array[1][i]);
         }
-        if(sum0 == 0)
+        if(sum0 == 0.)
         {
             U[j] = average;
             numOfZero +=1;
@@ -252,10 +265,10 @@ void MakePa::mwTest()
 
         //count sums
 
-        sum0=0;
+        sum0 = 0;
         for(int i=0; i<n[0] + n[1]; ++i)
         {
-            if(array[0][i]!=0) sum0+=(i+1);
+            if(array[0][i]!=0) sum0 += (i+1);
         }
 
         //if sum0 is bigger
@@ -267,7 +280,7 @@ void MakePa::mwTest()
         }
         else
         {
-            U[j] = double(n[1]*n[0] + n[1]*(n[1]+1)/2. - (sumAll - sum0));
+            U[j] = double(n[1]*n[0] + n[1]*(n[1]+1)/2. - double(sumAll - sum0));
         }
 
 //        if(j%200==0) cout<<"j="<<j<<"  U="<<U[j]<<endl;
@@ -1685,6 +1698,9 @@ void MakePa::makePaSlot()
 
     helpString="PA-files have been made \n";
     this->ui->lineEdit->setText(helpString);
+
+    QTimer::singleShot(600, ui->lineEdit, SLOT(clear()));
+    cout<<"PA-files have been made"<<endl;
 }
 
 void MakePa::setRdcCoeff(int newCoeff)
@@ -1775,7 +1791,7 @@ void MakePa::dispersionAnalysis()
         return;
     }
 
-    cout<<"memory"<<endl;
+//    cout<<"memory"<<endl;
 
     double ** average = new double * [NumOfClasses];
     for(int i = 0; i < NumOfClasses; ++i)
@@ -1787,10 +1803,10 @@ void MakePa::dispersionAnalysis()
     {
         dispersion[i] = new double [ns*spLength+1];
     }
-    double ** mean_var = new double * [NumOfClasses];
+    double ** meanVar = new double * [NumOfClasses];
     for(int i = 0; i < NumOfClasses; ++i)
     {
-        mean_var[i] = new double [ns*spLength+1];
+        meanVar[i] = new double [ns*spLength+1];
     }
 
     double ** matrix = new double * [list.length()];
@@ -1798,7 +1814,7 @@ void MakePa::dispersionAnalysis()
     {
         matrix[i] = new double [ns*spLength];
     }
-    cout<<"memory end"<<endl;
+//    cout<<"memory end"<<endl;
 
 //    for(int k = 0; k < list.length(); ++k)
 //    {
@@ -1811,7 +1827,7 @@ void MakePa::dispersionAnalysis()
 //        cout<<average[k][ns*spLength]<<endl;
 //    }
 
-    cout<<"ready"<<endl;
+//    cout<<"ready"<<endl;
 
     QFile curr;
     int num;
@@ -1840,6 +1856,7 @@ void MakePa::dispersionAnalysis()
             }
             curr.close();
         }
+
         for(int i = 0; i < ns*spLength; ++i)
         {
             average[j][i] = 0.;
@@ -1858,53 +1875,352 @@ void MakePa::dispersionAnalysis()
             dispersion[j][i] /= lst[j].length();
             dispersion[j][i] = sqrt(dispersion[j][i]);
 
-            mean_var[j][i] = average[j][i] / dispersion[j][i];
-            cout<<mean_var[j][i]<<endl;
+            meanVar[j][i] = average[j][i] / dispersion[j][i];
+//            cout<<meanVar[j][i]<<endl;
         }
     }
-    cout<<"mean_var counted"<<endl;
+
+    cout<<"meanVar counted"<<endl;
     for(int i = 0; i < ns*spLength; ++i)
     {
-//        cout<<mean_var[0][i]<<endl;
+//        cout<<meanVar[0][i]<<endl;
+    }
+    double maxMean = 0.;
+    double minMean = 100500.;
+    double maxVar = 0.;
+    double minVar = 100500.;
+    double maxMeanVar = 0.;
+    double minMeanVar = 100500.;
+
+
+
+    minMean = 0.;
+    minVar = 0.;
+    minMeanVar = 0.;
+    for(int j = 0; j < NumOfClasses; ++j)
+    {
+        for(int i = 0; i < ns*spLength; ++i)
+        {
+            maxMean = max(maxMean, average[j][i]);
+//            minMean = min(minMean, average[j][i]);
+            maxVar = max(maxVar, dispersion[j][i]);
+//            minVar = min(minVar, dispersion[j][i]);
+            maxMeanVar = max(maxMeanVar, meanVar[j][i]);
+//            minMeanVar = min(minMeanVar, meanVar[j][i]);
+        }
     }
 
-    //histogramm mean_var - kernelestimation?
 
-    for(int j = 0; j < 3; ++j)
+    //3 histogramms of stability of each class
+    for(int j = 0; j < NumOfClasses; ++j)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("Mean_var_").append(QString::number(j)));
+//        maxVar = 0.;
+//        minVar = 100500.;
+//        for(int i = 0; i < ns*spLength; ++i)
+//        {
+//            maxVar = max(maxVar, dispersion[j][i]);
+//            minVar = min(minVar, dispersion[j][i]);
+//        }
+
+        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append('_').append("Variance_").append(QString::number(j)));
         if(!ui->addNameLineEdit->text().isEmpty())
         {
             helpString.append("-").append(ui->addNameLineEdit->text());
         }
         helpString.append(".jpg");
-        kernelest(mean_var[j], lst[j].length(), helpString);
+        kernelest(dispersion[j], ns*spLength, helpString, minVar, maxVar, 800);
     }
 
+    for(int j = 0; j < NumOfClasses; ++j)
+    {
+//        maxMean = 0.;
+//        minMean = 100500.;
+//        for(int i = 0; i < ns*spLength; ++i)
+//        {
+//            maxMean = max(maxMean, average[j][i]);
+//            minMean = min(minMean, average[j][i]);
+//        }
 
+        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append('_').append("Mean_").append(QString::number(j)));
+        if(!ui->addNameLineEdit->text().isEmpty())
+        {
+            helpString.append("-").append(ui->addNameLineEdit->text());
+        }
+        helpString.append(".jpg");
+        kernelest(average[j], ns*spLength, helpString, minMean, maxMean, 800);
+    }
 
+    for(int j = 0; j < NumOfClasses; ++j)
+    {
+//        maxMeanVar = 0.;
+//        minMeanVar = 100500.;
+//        for(int i = 0; i < ns*spLength; ++i)
+//        {
+//            maxMeanVar = max(maxMeanVar, average[j][i]);
+//            minMeanVar = min(minMeanVar, average[j][i]);
+//        }
+        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append('_').append("meanVar_").append(QString::number(j)));
+        if(!ui->addNameLineEdit->text().isEmpty())
+        {
+            helpString.append("-").append(ui->addNameLineEdit->text());
+        }
+        helpString.append(".jpg");
+        kernelest(meanVar[j], ns*spLength, helpString, minMeanVar, maxMeanVar, 800);
+    }
 
+    //cross stability
+    maxMeanVar = 0.;
+    for(int i = 0; i < ns*spLength; ++i)
+    {
+        meanVar[0][i] = fabs(average[0][i] - average[1][i]) / (dispersion[0][i] + dispersion[1][i]);
+        maxMeanVar = fmax(maxMeanVar, meanVar[0][i]);
+    }
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append('_').append("meanVar_diff"));
+    if(!ui->addNameLineEdit->text().isEmpty())
+    {
+        helpString.append("-").append(ui->addNameLineEdit->text());
+    }
+    helpString.append(".jpg");
+    kernelest(meanVar[0], ns*spLength, helpString, 0, maxMeanVar, 800);
 
-
+    drawSamples(meanVar[0], 0.65, 1.5);
 
     for(int i = 0; i < NumOfClasses; ++i)
     {
         delete [] average[i];
         delete [] dispersion[i];
-        delete [] mean_var[i];
+        delete [] meanVar[i];
     }
     delete [] average;
     delete [] dispersion;
-    delete [] mean_var;
+    delete [] meanVar;
 
     delete dir_;
+    cout<<"dispersion analysis made"<<endl;
+}
+
+double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
+{
+
+    ui->mwTestLine->clear();
+
+    QDir *dir_ = new QDir();
+    dir_->cd(ui->paLineEdit->text());          /////////which dir?
+    helpString=dir_->absolutePath();
+
+    QStringList nameFilters, list, lst[2]; //0 - Spatial, 1 - Verbal
+    FILE * currFile;
+
+    //make lists of files
+    //Spatial
+    nameFilters.clear();
+    list.clear();
+    list = ui->lineEdit_1->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+    for(int i=0; i<list.length(); ++i)
+    {
+        helpString.clear();
+        helpString.append("*");
+        helpString.append(list.at(i));
+        helpString.append("*");
+        nameFilters.append(helpString);
+    }
+    lst[0]=dir_->entryList(nameFilters, QDir::Files);
+
+    //Verbal
+    nameFilters.clear();
+    list.clear();
+    list = ui->lineEdit_2->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+    for(int i=0; i<list.length(); ++i)
+    {
+        helpString.clear();
+        helpString.append("*");
+        helpString.append(list.at(i));
+        helpString.append("*");
+        nameFilters.append(helpString);
+    }
+    lst[1]=dir_->entryList(nameFilters, QDir::Files);
+
+
+    int * n = new int[2];
+    n[0]=lst[0].length();
+    n[1]=lst[1].length();
+
+    double *** spectre = new double ** [2];
+    for(int i=0; i<2; ++i)
+    {
+        spectre[i] = new double * [n[i]];
+        for(int j=0; j<n[i]; ++j)
+        {
+            spectre[i][j] = new double [ns*spLength];
+        }
+    }
+
+    //read the spectra into matrixes
+    for(int j=0; j<2; ++j)
+    {
+        for(int i=0; i<n[j]; ++i)
+        {
+            helpString=dir_->absolutePath().append(QDir::separator()).append(lst[j][i]);
+            currFile = fopen(helpString.toStdString().c_str(), "r");
+            for(int k=0; k<ns*spLength; ++k)
+            {
+                fscanf(currFile, "%lf", &spectre[j][i][k]);
+            }
+            fclose(currFile);
+        }
+    }
+
+    //paint
+    int * spL = new int [2];
+    for(int i=0; i<2; ++i)
+    {
+        spL[i] = spLength;
+    }
+
+    double *** sp = new double **[2];
+    for(int i=0; i<2; ++i)
+    {
+        sp[i] = new double * [ns];
+        for(int j=0; j<ns; ++j)
+        {
+            sp[i][j] = new double [spL[i]];
+        }
+    }
+
+    //create sp1 & sp2 - average spectra
+    for(int i=0; i<ns; ++i)
+    {
+        for(int j=0; j<spLength; ++j)
+        {
+            for(int h=0; h<2; ++h)
+            {
+
+                sp[h][i][j]=0.;
+                for(int k=0; k<n[h]; ++k)
+                {
+                    sp[h][i][j]+=spectre[h][k][i*spL[h]+j];
+                }
+                sp[h][i][j]/=n[h];
+            }
+        }
+    }
+
+
+
+    QPixmap pic(1600,1600);
+//    cout<<"before QPainter"<<endl;
+    QPainter *paint = new QPainter;
+//    cout<<"after QPainter"<<endl;
+    pic.fill();
+    paint->begin(&pic);
+
+
+    double norm = ui->mwNormSpinBox->value(); //10 pixels=1mV^2 / Hz
+    double barWidth=1/2.;
+    for(int c2=0; c2<ns; ++c2)  //exept markers channel
+    {
+
+        //average spectra drawing
+        for(int k=0; k<250-1; ++k)
+        {
+            for(int h=0; h<2; ++h)
+            {
+                if(h==0) paint->setPen(QPen(QBrush("blue"), 2));
+                if(h==1) paint->setPen(QPen(QBrush("red"), 2));
+                if(h==2) paint->setPen(QPen(QBrush("green"), 2));
+                paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - sp[h][c2][int(k*spL[h]/250.)]*norm, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - sp[h][c2][int((k+1)*spL[h]/250.)]*norm);
+            }
+        }
+
+        paint->setPen("black");
+        paint->setBrush(QBrush("black"));
+
+        //statistic difference bars
+        for(int j=c2*spLength; j<(c2+1)*spLength; ++j)
+        {
+            for(int h=0; h<2; ++h)
+            {
+                if(h==0)
+                {
+                    paint->setPen("blue");
+                    paint->setBrush(QBrush("blue"));
+                }
+                if(h==1)
+                {
+                    paint->setPen("red");
+                    paint->setBrush(QBrush("red"));
+                }
+                if(leftLim < drawArray[j] && drawArray[j] < rightLim)
+                {
+                    paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*spLength))*(250./spLength), paint->device()->height() * coords::y[c2] + 15 + 7*h , 2*barWidth*(250./spLength), 5); //-15 graphical 1/3 graphical
+                }
+            }
+
+        }
+        paint->setPen("black");
+
+        paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2]-250);
+        paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250, paint->device()->height() * coords::y[c2]);
+
+        paint->setFont(QFont("Helvitica", 8));
+
+        //Hz markers
+        for(int k=0; k<250-1; ++k) //for every Hz generality
+        {
+//            paint->drawLine(paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2]+10);
+            if( (left + k*(spLength)/250.)*spStep - floor((left + k*(spLength)/250.)*spStep) < spLength/250.*spStep/2. || ceil((left + k*(spLength)/250.)*spStep) - (left + k*(spLength)/250.)*spStep < spLength/250.*spStep/2.)
+            {
+                paint->drawLine(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]+5);
+
+                helpInt = int((left + k*(spLength)/250.)*spStep + 0.5);
+                helpString.setNum(helpInt);
+                if(helpInt<10)
+                {
+                    paint->drawText(paint->device()->width() * coords::x[c2] + k-3, paint->device()->height() * coords::y[c2]+15, helpString);
+                }
+                else
+                {
+                    paint->drawText(paint->device()->width() * coords::x[c2] + k-5, paint->device()->height() * coords::y[c2]+15, helpString);
+                }
+            }
+        }
+
+    }
+    paint->setFont(QFont("Helvetica", 24, -1, false));
+
+    //channel labels
+    for(int c2=0; c2<ns; ++c2)  //exept markers channel
+    {
+        paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]));
+    }
+
+    //draw scale
+    //draw scale
+    paint->drawLine(QPointF(paint->device()->width() * coords::x[6], paint->device()->height() * coords::y[1]), QPointF(paint->device()->width() * coords::x[6], paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())));  //250 - graph height generality
+
+    //returning norm = max magnitude
+
+    norm = (coords::scale * paint->device()->height()) / norm;
+    norm = int(norm*10)/10.;
+    helpString.setNum(norm);
+    helpString.append(tr(" mcV^2/Hz"));
+    paint->drawText(QPointF(paint->device()->width() * coords::x[6]+5., paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())/2.), helpString);
+
+
+
+    //save
+    helpString = dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("meanVar_samples").append(ui->addNameLineEdit->text()).append(".jpg");
+    cout<<helpString.toStdString()<<endl;
+    pic.save(helpString, 0, 100);
+    paint->end();
+
 }
 
 double MakePa::gaussian(double x)
 {
     return 1/(sqrt(2*M_PI))*exp(-x*x/2.);
 }
-void MakePa::kernelest(double * arr, int num, QString path)
+void MakePa::kernelest(double * arr, int num, QString path, double minVal, double maxVal, int numOfRanges)
 {
     double average = 0.;
     double sigma = 0.;
@@ -1928,10 +2244,6 @@ void MakePa::kernelest(double * arr, int num, QString path)
     pnt->begin(&pic);
     pnt->setPen("black");
 
-    double minVal = 0.;
-    double maxVal = 3.;
-    int numOfRanges = 300;
-
 //    for(int i = 0; i < pic.width(); ++i)
 //    {
 //        average = 0.;
@@ -1953,17 +2265,176 @@ void MakePa::kernelest(double * arr, int num, QString path)
         drawVec[i] = 0.;
         for(int j = 0; j < num; ++j)
         {
-            drawVec[i] += 1/(num*h) * gaussian((i*(maxVal-minVal)/numOfRanges - arr[j])/h); //1e4 - graphics param
+            drawVec[i] += 1/(num*h) * gaussian((i*(maxVal-minVal)/numOfRanges - arr[j])/h);
         }
         norm = fmax(norm, drawVec[i]);
     }
+
+    double heightNorm = 0.95;
     for(int i = 0; i < numOfRanges; ++i)
     {
 //         pnt->drawLine(i-1, pic.height()*0.9 - sigma, i, pic.height()*0.9 - average);
-        pnt->drawRect(pic.width()/double(numOfRanges) * i, pic.height() * (1. - drawVec[i]/norm), pic.width()/double(numOfRanges), pic.height() * drawVec[i]/norm);
+        pnt->drawRect(pic.width()/double(numOfRanges) * i, pic.height() * heightNorm, pic.width()/double(numOfRanges), -pic.height() * drawVec[i]/norm * heightNorm);
+    }
+    double step = int((maxVal - minVal)) + 1;
+    step /= 0.1;
+    step = int(step/20.);
+    if(step == 0) step = 0.5;
+    step *= 0.1;
+
+
+    cout<<step<<endl;
+    for(double i = minVal; i < maxVal; i += step)
+    {
+        pnt->drawLine(pic.width() * i / (maxVal - minVal), pic.height() * heightNorm, pic.width() * i / (maxVal - minVal), pic.height());
+        pnt->drawText(pic.width() * i / (maxVal - minVal), pic.height(), QString::number(i));
     }
     pic.save(path, 0, 100);
 
     delete pnt;
     delete [] drawVec;
 }
+
+void MakePa::correlationDifference()
+{
+    ui->mwTestLine->clear();
+
+    QDir *dir_ = new QDir();
+    dir_->cd(ui->paLineEdit->text());          /////////which dir?
+    helpString=dir_->absolutePath();
+
+    QStringList nameFilters, list, lst[2]; //0 - Spatial, 1 - Verbal
+    FILE * currFile;
+
+    //make lists of files
+    //Spatial
+    nameFilters.clear();
+    list.clear();
+    list = ui->lineEdit_1->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+    for(int i=0; i<list.length(); ++i)
+    {
+        helpString.clear();
+        helpString.append("*");
+        helpString.append(list.at(i));
+        helpString.append("*");
+        nameFilters.append(helpString);
+    }
+    lst[0]=dir_->entryList(nameFilters, QDir::Files);
+
+    //Verbal
+    nameFilters.clear();
+    list.clear();
+    list = ui->lineEdit_2->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+    for(int i=0; i<list.length(); ++i)
+    {
+        helpString.clear();
+        helpString.append("*");
+        helpString.append(list.at(i));
+        helpString.append("*");
+        nameFilters.append(helpString);
+    }
+    lst[1]=dir_->entryList(nameFilters, QDir::Files);
+
+
+    int * n = new int[2];
+    n[0]=lst[0].length();
+    n[1]=lst[1].length();
+
+    double *** spectre = new double ** [2];
+    for(int i=0; i<2; ++i)
+    {
+        spectre[i] = new double * [n[i]];
+        for(int j=0; j<n[i]; ++j)
+        {
+            spectre[i][j] = new double [ns*spLength];
+        }
+    }
+
+    //read the spectra into matrixes
+    for(int j=0; j<2; ++j)
+    {
+        for(int i=0; i<n[j]; ++i)
+        {
+            helpString=dir_->absolutePath().append(QDir::separator()).append(lst[j][i]);
+            currFile = fopen(helpString.toStdString().c_str(), "r");
+            for(int k=0; k<ns*spLength; ++k)
+            {
+                fscanf(currFile, "%lf", &spectre[j][i][k]);
+            }
+            fclose(currFile);
+        }
+    }
+
+    double mean[2];
+    double ** pointMean = new double *[2];
+    pointMean[0] = new double [ns*spLength];
+    pointMean[1] = new double [ns*spLength];
+
+    double variance[2];
+    double covariance = 0.;
+
+    double distance = 0.;
+
+
+    for(int h = 0; h < ns*spLength; ++h)
+    {
+        pointMean[0][h] = 0.;
+        pointMean[1][h] = 0.;
+    }
+
+    for(int j = 0; j < 2; ++j) //j - number of set
+    {
+        mean[j] = 0.;
+        variance[j] = 0.;
+        for(int h = 0; h < ns*spLength; ++h)
+        {
+            for(int i = 0; i < n[j]; ++i)
+            {
+                mean[j] += spectre[j][i][h];
+                pointMean[j][h] += spectre[j][i][h];
+            }
+            pointMean[j][h] /= n[j];
+        }
+        mean[j] /= n[j];
+        mean[j] /= ns*spLength;
+
+
+        for(int i = 0; i < n[j]; ++i)
+        {
+            for(int h = 0; h < ns*spLength; ++h)
+            {
+                variance[j] += (pointMean[j][h]- mean[j]) * (pointMean[j][h] - mean[j]);
+            }
+        }
+        variance[j] /=n[j];
+        variance[j] = sqrt(variance[j]);
+    }
+    for(int h = 0; h < ns*spLength; ++h)
+    {
+        covariance += (pointMean[0][h]- mean[0]) * (pointMean[1][h] - mean[1]);
+    }
+    distance = covariance/(variance[0]*variance[1]);
+
+    //automatization
+    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
+    fprintf(res, "Correlation difference\t%lf\n", distance);
+    fclose(res);
+
+
+    for(int h=0; h<2; ++h)
+    {
+        for(int i=0; i<n[h]; ++i)
+        {
+            delete []spectre[h][i];
+        }
+        delete []spectre[h];
+    }
+
+
+//    delete []U;
+    delete dir_;
+
+    helpString = "Pearson difference made";
+    ui->mwTestLine->setText(helpString);
+}
+

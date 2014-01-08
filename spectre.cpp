@@ -18,11 +18,6 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     this->setWindowTitle("Spectra Counter");
 
     norm = 20.;
-//    ui->checkBox_2->setChecked(true);
-//    ui->checkBox_2->setVisible(true);
-//    cout<<ui->checkBox_2->isChecked()<<endl;
-
-//    else norm = 20.;
     Eyes=0;
 
     ExpName = ExpName_;
@@ -38,9 +33,19 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     group1 = new QButtonGroup;
     group1->addButton(ui->jpgButton);
     group1->addButton(ui->svgButton);
+    ui->jpgButton->setChecked(true);
+
     group2 = new QButtonGroup;
     group2->addButton(ui->spectraRadioButton);
     group2->addButton(ui->brainRateRadioButton);
+    group2->addButton(ui->phaseDifferenceRadioButton);
+    ui->spectraRadioButton->setChecked(true);
+
+    group3 = new QButtonGroup;
+    group3->addButton(ui->amplitudeWaveletButton);
+    group3->addButton(ui->phaseWaveletButton);
+    ui->amplitudeWaveletButton->setChecked(true);
+
 
     paint = new QPainter();
 
@@ -61,16 +66,14 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     ui->scalingDoubleSpinBox->setValue(1.0);
     ui->scalingDoubleSpinBox->setSingleStep(0.05);
 
-    ui->jpgButton->setChecked(1);
 
 
     rangeLimits = new int * [ns];
     for(int i=0; i<ns; ++i)
     {
         rangeLimits[i] = new int [2];
-
         rangeLimits[i][0] = 0;
-        rangeLimits[i][1] = 247;  //generality
+        rangeLimits[i][1] = 247;
     }
 
 
@@ -80,9 +83,6 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     browser1->setDirectory(QDir::toNativeSeparators(dir->absolutePath()));
     browser2->setFilter(QDir::NoFilter|QDir::NoDotAndDotDot);
     browser2->setDirectory(QDir::toNativeSeparators(dir->absolutePath()));
-//    browser1->hide();
-//    browser2->hide();
-
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Realisations"));
     ui->lineEdit_1->setText(helpString);
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));   //smooth right after spectra count
@@ -100,6 +100,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
 
     QObject::connect(ui->countButton, SIGNAL(clicked()), this, SLOT(countSpectra()));
 
+    QObject::connect(ui->fftComboBox, SIGNAL(activated(int)), this, SLOT(setFftLength()));
     QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFftLength()));
 
     QObject::connect(ui->leftSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLeft()));
@@ -162,7 +163,7 @@ int findChannel(int x, int y, QSize siz)
 
 bool Spectre::eventFilter(QObject *obj, QEvent *event)
 {
-    if (obj == ui->specLabel)
+    if (obj == ui->specLabel) //this is magic
     {
         if (event->type() == QEvent::MouseButtonPress)
         {
@@ -502,9 +503,13 @@ void Spectre::psaSlot()
         {
             for(int j=0; j<count; ++j)
             {
-                if(j==0) paint->setPen(QPen(QBrush("blue"), 2));
-                if(j==1) paint->setPen(QPen(QBrush("red"), 2));
-                if(j==2) paint->setPen(QPen(QBrush("green"), 2));
+//                if(j==0) paint->setPen(QPen(QBrush("blue"), 2));
+//                if(j==1) paint->setPen(QPen(QBrush("red"), 2));
+//                if(j==2) paint->setPen(QPen(QBrush("green"), 2));
+
+                if(j==0) paint->setPen(QPen(QBrush(QColor(0,0,0,255)), 2));
+                if(j==1) paint->setPen(QPen(QBrush(QColor(80,80,80,255)), 2));
+                if(j==2) paint->setPen(QPen(QBrush(QColor(160,160,160,255)), 2));
                 paint->drawLine(QPointF(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - sp[j][c2][int(k*spL[j]/(coords::scale * paint->device()->width()))]*norm), QPointF(paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - sp[j][c2][int((k+1)*spL[j]/(coords::scale * paint->device()->width()))]*norm));
             }
         }
@@ -883,19 +888,10 @@ void Spectre::setFftLength()
     ui->rightSpinBox->setValue(right);
 
     spLength=right-left+1;
-
-
-    //for range specification
-
-//    boolArrrPirate = new bool * [ns];
-//    for(int i=0; i<ns; ++i)
-//    {
-//        boolArrrPirate[i] = new bool [spLength];
-//        for(int j=0; j<spLength; ++j)
-//        {
-//            boolArrrPirate[i][j] = true;
-//        }
-//    }
+    for(int i=0; i<ns; ++i)
+    {
+        rangeLimits[i][1] = spLength;
+    }
 
 
     spStep = 250./double(fftLength); //generality 250 = frequency
@@ -1049,6 +1045,16 @@ void Spectre::countSpectra()
         dataFFT[i] = new double [fftLength/2];
     }
 
+    double *** dataPhase = new double ** [ns];
+    for(int i = 0; i < ns; ++i)
+    {
+        dataPhase[i] = new double * [ns];
+        for(int j = 0; j < ns; ++j)
+        {
+            dataPhase[i][j] = new double [fftLength/2];
+        }
+    }
+
     double sum1 = 0.;
     double sum2 = 0.;
     FILE * file;
@@ -1056,46 +1062,88 @@ void Spectre::countSpectra()
     for(int a = 0; a < lst.length(); ++a)
     {
         if(lst[a].contains("_num") || lst[a].contains("_300")) continue;
-        if(!readFile(a, dataFFT)) continue;
 
-        dir->cd(ui->lineEdit_2->text());  //cd to output dir
-        helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
-        file = fopen(helpString.toStdString().c_str(), "w");
-        if(file == NULL)
+
+        if(!ui->phaseDifferenceRadioButton->isChecked())
         {
-            cout<<"file to write spectra == NULL"<<endl;
-            return;
-        }
-        if(ui->spectraRadioButton->isChecked())
-        {
-            // write spectra
-            for(int i=0; i<ns; ++i)                               ///save BY CHANNELS!!!  except markers
+            if(!readFile(a, dataFFT)) continue;
+
+            dir->cd(ui->lineEdit_2->text());  //cd to output dir
+            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
+            file = fopen(helpString.toStdString().c_str(), "w");
+            if(file == NULL)
             {
-                for(int k=left; k<right+1; ++k)
+                cout<<"file to write spectra == NULL"<<endl;
+                return;
+            }
+
+
+            if(ui->spectraRadioButton->isChecked())
+            {
+                // write spectra
+                for(int i=0; i<ns; ++i)                               ///save BY CHANNELS!!!  except markers
                 {
-                    if((k-left)>=rangeLimits[i][0] && (k-left)<=rangeLimits[i][1])
-                        fprintf(file, "%lf\n", dataFFT[i][k]);
-                    else
-                        fprintf(file, "0.000\n");
+                    for(int k=left; k<right+1; ++k)
+                    {
+                        if((k-left)>=rangeLimits[i][0] && (k-left)<=rangeLimits[i][1])
+                            fprintf(file, "%lf\n", dataFFT[i][k]);
+                        else
+                            fprintf(file, "0.000\n");
+                    }
+                    fprintf(file, "\n");
                 }
-                fprintf(file, "\n");
+            }
+            if(ui->brainRateRadioButton->isChecked())
+            {
+                // write brainRate
+                for(int i = 0; i < ns; ++i)
+                {
+                    sum1 = 0.;
+                    sum2 = 0.;
+                    for(int j = left; j < right+1; ++j)
+                    {
+                        sum1 += dataFFT[i][j];
+                        sum2 += dataFFT[i][j] * (j * 250. / fftLength);
+                    }
+                    sum2 /= sum1;
+                    //                cout<<sum2<<endl;
+                    fprintf(file, "%lf\n", sum2);
+                }
             }
         }
-        if(ui->brainRateRadioButton->isChecked())
+        else
         {
-            // write brainRate
-            for(int i = 0; i < ns; ++i)
+            if(!readFilePhase(a, dataPhase))
             {
-                sum1 = 0.;
-                sum2 = 0.;
-                for(int j = left; j < right+1; ++j)
+                cout<<"bad file "<<lst[a].toStdString()<<endl;
+                continue;
+            }
+
+            dir->cd(ui->lineEdit_2->text());  //cd to output dir
+            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
+            file = fopen(helpString.toStdString().c_str(), "w");
+            if(file == NULL)
+            {
+                cout<<"file to write spectra == NULL"<<endl;
+                return;
+            }
+
+            // write spectra
+            for(int i = 0; i < ns; ++i)                               ///save BY CHANNELS!!!  except markers
+            {
+                for(int j = i+1; j < ns; ++j)
                 {
-                    sum1 += dataFFT[i][j];
-                    sum2 += dataFFT[i][j] * (j * 250. / fftLength);
+                    for(int k=left; k<right+1; ++k)
+                    {
+                        if((k-left)>=rangeLimits[i][0] && (k-left)<=rangeLimits[i][1])
+                        {
+                            fprintf(file, "%lf\n", dataPhase[i][j][k]);
+                        }
+                        else
+                            fprintf(file, "0.000\n");
+                    }
+                    fprintf(file, "\n");
                 }
-                sum2 /= sum1;
-                //                cout<<sum2<<endl;
-                fprintf(file, "%lf\n", sum2);
             }
         }
         fclose(file);
@@ -1109,6 +1157,8 @@ void Spectre::countSpectra()
     }
     ui->progressBar->setValue(0);
 
+    dir->cd(dirBC->absolutePath());
+
 
     for(int i=0; i<ns; ++i)
     {
@@ -1116,6 +1166,16 @@ void Spectre::countSpectra()
     }
     delete []dataFFT;
 
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            delete []dataPhase[i][j];
+        }
+
+        delete []dataPhase[i];
+    }
+    delete []dataPhase;
 
 
     //generality
@@ -1197,7 +1257,7 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
 
 
 
-    fscanf(file, "NumOfSlices %d \n", &NumOfSlices);
+    fscanf(file, "%*s %d\n", &NumOfSlices);
 //    cout<<NumOfSlices<<endl;
     fscanf(file, "NumOfSlicesEyesCut %d \n", &Eyes);
 //    cout<<Eyes<<endl;
@@ -1264,7 +1324,8 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
         if(h==ns) Eyes+=1;
     }
 
-    if((NumOfSlices-Eyes)/double(NumOfSlices)<0.1) // 0.2*4096/250 = 3.1 sec
+//    if((NumOfSlices-Eyes)/double(NumOfSlices)<0.1) // 0.2*4096/250 = 3.1 sec
+    if((NumOfSlices-Eyes) < 500) // 0.2*4096/250 = 3.1 sec
     {
 //        if(remove(helpString.toStdString().c_str()) != 0)
 //        {
@@ -1306,27 +1367,28 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
         }
         four1(spectre-1, fftLength, 1);        //Fourier transform
 
-//        spect = (struct complex *)(spectre+1);
-        for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
-        {
-            dataFFT[c1][ i ] = ( spectre[ i * 2 +1] * spectre[ i * 2 +1] + spectre[ i * 2 + 1 +1] * spectre[ i * 2 + 1 +1] )*2*0.004/fftLength;
-        }
-
-
-        leftSmoothLimit = max((left-ui->smoothBox->value()), 0);
-        rightSmoothLimit = min((right+1+ui->smoothBox->value()), fftLength/2-1);
-        //smooth spectre
-        for(int a=0; a<ui->smoothBox->value(); ++a)
-        {
-            help1=dataFFT[c1][leftSmoothLimit-1];
-            for(int k=leftSmoothLimit; k<rightSmoothLimit; ++k)
+            for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
             {
-                help2=dataFFT[c1][k];
-                dataFFT[c1][k]=(help1+help2+dataFFT[c1][k+1])/3.;
-                help1=help2;
+//                dataFFT[c1][ i ] = ( spectre[ i * 2 +1] * spectre[ i * 2 +1] + spectre[ i * 2 + 1 +1] * spectre[ i * 2 + 1 +1] )*2*0.004/fftLength; //0.004 = 1/250 generality
+                dataFFT[c1][ i ] = ( spectre[ i * 2 +1] * spectre[ i * 2 +1] + spectre[ i * 2] * spectre[ i * 2] )*2*0.004/fftLength; //0.004 = 1/250 generality
             }
 
-        }
+
+            leftSmoothLimit = max((left-ui->smoothBox->value()), 0);
+            rightSmoothLimit = min((right+1+ui->smoothBox->value()), fftLength/2-1);
+            //smooth spectre
+            for(int a=0; a<ui->smoothBox->value(); ++a)
+            {
+                help1=dataFFT[c1][leftSmoothLimit-1];
+                for(int k=leftSmoothLimit; k<rightSmoothLimit; ++k)
+                {
+                    help2=dataFFT[c1][k];
+                    dataFFT[c1][k]=(help1+help2+dataFFT[c1][k+1])/3.;
+                    help1=help2;
+                }
+
+            }
+
     }
 
 
@@ -1344,8 +1406,185 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
     return 1;
 }
 
+
+int Spectre::readFilePhase(int &num, double ***dataPhase)
+{
+        int h = 0;
+
+        dir->cd(ui->lineEdit_1->text());
+//        FILE * file;
+
+        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[num]));
+        file1=fopen(helpString.toStdString().c_str(), "r");
+        if(file1==NULL)
+        {
+            cout<<"file==NULL"<< endl;
+            return 0;
+        }
+
+
+
+        fscanf(file1, "%*s %d\n", &NumOfSlices);
+        fscanf(file1, "%*s %d \n", &Eyes);
+
+
+
+        double ** data2 = new double* [ns];
+        for(int i=0; i<ns; ++i)
+        {
+            data2[i] = new double [fftLength];
+        }
+
+        double uh;
+        if(NumOfSlices>fftLength)   //too long - take the end of realisation
+        {
+            for(int i=fftLength; i<NumOfSlices; ++i)
+            {
+
+                for(int k=0; k<ns; ++k)
+                {
+                    fscanf(file1, "%lf", &uh);
+                }
+            }
+            for(int i=0; i<fftLength; ++i)         //saved BY SLICES!!
+            {
+                for(int k=0; k<ns; ++k)
+                {
+                    fscanf(file1, "%lf\n", &data2[k][i]);
+                }
+            }
+        }
+        else
+        {
+            for(int i=0; i<NumOfSlices; ++i)         //saved BY SLICES!!
+            {
+                for(int k=0; k<ns; ++k)
+                {
+                    fscanf(file1, "%lf\n", &data2[k][i]);
+                }
+            }
+            //fill the rest with zeros
+            for(int i=NumOfSlices; i<fftLength; ++i)
+            {
+                for(int k=0; k<ns; ++k)
+                {
+                    data2[k][i]=0.;
+                }
+            }
+
+
+        }
+        fclose(file1);
+
+        //correct Eyes number
+        Eyes=0;
+        NumOfSlices = fftLength;
+        for(int i=0; i<NumOfSlices; ++i)
+        {
+            h=0;
+            for(int j=0; j<ns; ++j)
+            {
+                if(data2[j][i]==0.) ++h;
+            }
+            if(h==ns) Eyes+=1;
+        }
+
+//        if((NumOfSlices-Eyes)/double(NumOfSlices)<0.1) // 0.2*4096/250 = 3.1 sec
+        if((NumOfSlices-Eyes) < 500) // 0.2*4096/250 = 3.1 sec
+        {
+            cout<<"Too short real signal "<<helpString.toStdString()<<endl;//<<NumOfSlices<<"  "<<Eyes<<endl<<endl;
+
+            for(int i=0; i<ns; ++i)
+            {
+                delete []data2[i];
+            }
+            delete []data2;
+
+            return 0;
+        }
+    //    cout<<"!!"<<endl;
+
+
+        double norm1=fftLength/double(fftLength-Eyes);              //norm with eyes
+
+
+        double ** spectre = new double *[2];
+        spectre[0] = new double [fftLength*2];
+        spectre[1] = new double [fftLength*2];
+
+        double * help = new double [2];
+//        int leftSmoothLimit, rightSmoothLimit;
+
+        for(int c1 = 0; c1 < ns; ++c1)
+        {
+            for(int i = 0; i < fftLength; ++i)            //make appropriate array
+            {
+                spectre[0][ i * 2 ] = 0.;
+                spectre[0][ i * 2 + 1 ] = (double)(data2[c1][ i ]*sqrt(norm1));
+            }
+            four1(spectre[0] - 1, fftLength, 1);        //Fourier transform
+
+            for(int c2 = c1+1; c2 < ns; ++c2)
+            {
+
+
+                for(int i = 0; i < fftLength; ++i)            //make appropriate array
+                {
+                    spectre[1][ i * 2 ] = 0.;
+                    spectre[1][ i * 2 + 1 ] = (double)(data2[c2][ i ]*sqrt(norm1));
+                }
+                four1(spectre[1] - 1, fftLength, 1);        //Fourier transform
+
+                for(int i = 0; i < right + 2; ++i )      //get the absolute value of FFT
+                {
+                    dataPhase[c1][c2][ i ] = atan(spectre[0][ i * 2] / spectre[0][ i * 2 +1]) - atan(spectre[1][ i * 2] / spectre[1][ i * 2 +1]); //!!!!!!!!!!atan(Im/Re)
+                    help[0] = ( spectre[0][ i * 2 +1] * spectre[0][ i * 2 +1] + spectre[0][ i * 2 ] * spectre[0][ i * 2 ] ) * 2 * 0.004/fftLength;
+                    help[1] = ( spectre[1][ i * 2 +1] * spectre[1][ i * 2 +1] + spectre[1][ i * 2 ] * spectre[1][ i * 2 ] ) * 2 * 0.004/fftLength;
+//                    dataPhase[c1][c2][ i ] *= help[0] * help[1];
+                    if(QString::number(dataPhase[c1][c2][i]).contains('n')) //why nan and inf???
+                    {
+//                        cout<<num << "\t" << c1<< "\t" << c2<< "\t" << i<<endl;
+                        return 0;
+                    }
+                }
+            }
+
+        }
+
+
+
+
+
+        for(int i=0; i<ns; ++i)
+        {
+            delete []data2[i];
+        }
+        delete []spectre[0];
+        delete []spectre[1];
+        delete []spectre;
+        delete []data2;
+        delete []help;
+        dir->cd(dirBC->absolutePath());
+        return 1;
+}
+
 void Spectre::drawWavelets()
 {
+    dir->cd(dirBC->absolutePath() + QDir::separator() + "visualisation" + QDir::separator() + "wavelets");
+    //make dirs
+    for(int i = 0; i < ns; ++i)
+    {
+        dir->mkdir(QString::number(i));
+        dir->cd(QString::number(i));
+        for(int j = 0; j < ns; ++j)
+        {
+            dir->mkdir(QString::number(j));
+        }
+        dir->cdUp();
+    }
+
+
+
     dir->cd(ui->lineEdit_1->text());
     nameFilters.clear(); //generality
     nameFilters.append("*_241*");
@@ -1359,40 +1598,43 @@ void Spectre::drawWavelets()
     {
 
 
-
-        for(int channel = 0; channel < ns; ++channel)
+        helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[a]));
+        cout<<helpString.toStdString()<<endl;
+        file1 = fopen(helpString.toStdString().c_str(),"r");
+        if(file1==NULL)
         {
-            helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[a]));
-            cout<<helpString.toStdString()<<endl;
-            file1 = fopen(helpString.toStdString().c_str(),"r");
-            if(file1==NULL)
-            {
-                QMessageBox::warning((QWidget*)this, tr("Warning"), tr("wrong filename"), QMessageBox::Ok);
-                continue;
-            }
-
-            helpString = lst[a];
-            helpString.replace('.', '_');
-            helpString=QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append("wavelets").append(QDir::separator()).append(str_(channel)).append(QDir::separator()).append(helpString).append("_wavelet_").append(str_(channel)).append(".jpg"));
-            cout<<helpString.toStdString()<<endl;
-            wavelet(helpString, file1, ns, channel, 20., 5., 0.95, 32);
-//            fclose(file1);
-
-//            cout<<"jkhbjhvbjh"<<endl;
-//            std::rewind(file1);
-
-
-//            for(int channel2 = 5; channel2 < 8; ++channel2)
-//            {
-//                helpString = lst[a];
-//                helpString.replace('.', '_');
-
-//                helpString=QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append("wavelets").append(QDir::separator()).append(str_(channel)).append(QDir::separator()).append(helpString).append("_wavelet_").append(QString::number(channel)).append(QString::number(channel2)).append(".jpg"));
-//                cout<<helpString.toStdString()<<endl;
-//                waveletPhase(helpString, file1, ns, channel, channel2, 20., 5., 0.98, 32);
-//            }
+            QMessageBox::warning((QWidget*)this, tr("Warning"), tr("wrong filename"), QMessageBox::Ok);
+            continue;
         }
 
+        if(ui->amplitudeWaveletButton->isChecked())
+        {
+            for(int channel = 0; channel < ns; ++channel)
+            {
+                helpString = lst[a];
+                helpString.replace('.', '_');
+                helpString=QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append("wavelets").append(QDir::separator()).append(QString::number(channel)).append(QDir::separator()).append(helpString).append("_wavelet_").append(QString::number(channel)).append(".jpg"));
+                cout<<helpString.toStdString()<<endl;
+                wavelet(helpString, file1, ns, channel, 20., 5., 0.95, 32);
+            }
+        }
+        if(ui->phaseWaveletButton->isChecked())
+        {
+            for(int channel1 = 0; channel1 < ns; ++channel1)
+            {
+                for(int channel2 = channel1+1; channel2 < ns; ++channel2)
+                {
+                    helpString = lst[a];
+                    helpString.replace('.', '_');
+                    helpString = QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append("wavelets").append(QDir::separator()).append(QString::number(channel1)).append(QDir::separator()).append(QString::number(channel2)).append(QDir::separator()).append(helpString).append("_wavelet_").append(QString::number(channel1)).append("_").append(QString::number(channel2)).append(".jpg"));
+                    cout<<helpString.toStdString()<<endl;
+                    waveletPhase(helpString, file1, ns, channel1, channel2, 20., 5., 0.95, 32);
+//                    if(channel2 == 2) return;
+                }
+            }
+        }
+        fclose(file1);
+        if(a==2) return;
 
         if(100*(a+1)/lst.length() > ui->progressBar->value())
         {

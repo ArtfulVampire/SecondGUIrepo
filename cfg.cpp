@@ -1,6 +1,7 @@
 #include "cfg.h"
 #include "ui_cfg.h"
 
+
 cfg::cfg(QDir *dir_, int ns_, int spLength_, double error_, double lrate_, QString FileName_) :
     ui(new Ui::cfg)
 {
@@ -8,7 +9,7 @@ cfg::cfg(QDir *dir_, int ns_, int spLength_, double error_, double lrate_, QStri
     dir=dir_;
 
     this->setWindowTitle("Make CFG");
-    ui->nsBox->setMaximum(50);
+    ui->nsBox->setMaximum(300);
     ui->nsBox->setMinimum(1);
     ui->nsBox->setValue(ns_);
 
@@ -56,4 +57,5 @@ void cfg::makeCfg()
     fprintf(cfgFile, "temp    %d\n", ui->tempSpinBox->value());
     fprintf(cfgFile, "srand    %d\n", int(time (NULL))%1234);
     fclose(cfgFile);
+    this->close();
 }
