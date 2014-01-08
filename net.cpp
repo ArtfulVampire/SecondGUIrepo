@@ -3,7 +3,7 @@
 //#include "mainwindow.h"
 
 
-Net::Net(QDir *dir_, int left_, int right_, double spStep_, QString ExpName_) :
+Net::Net(QDir *dir_, int ns_, int left_, int right_, double spStep_, QString ExpName_) :
     ui(new Ui::Net)
 {
     paFileBC="";
@@ -27,7 +27,7 @@ Net::Net(QDir *dir_, int left_, int right_, double spStep_, QString ExpName_) :
     right = right_;
     spLength = right_ - left_ + 1;
     spStep = spStep_;
-    ns = 19;
+    ns = ns_;
 
     cout<<"left = "<<left<<endl;
     cout<<"right = "<<right<<endl;
@@ -44,6 +44,19 @@ Net::Net(QDir *dir_, int left_, int right_, double spStep_, QString ExpName_) :
     loadPAflag = 0;
 
     helpCharArr = new char [200];
+
+
+    QButtonGroup *group1, *group2;
+    group1 = new QButtonGroup();
+    group1->addButton(ui->leaveOneOutRadioButton);
+    group1->addButton(ui->crossRadioButton);
+    group2 = new QButtonGroup();
+    group2->addButton(ui->realsRadioButton);
+    group2->addButton(ui->windowsRadioButton);
+    group2->addButton(ui->pcRadioButton);
+
+    ui->crossRadioButton->setChecked(true);
+    ui->realsRadioButton->setChecked(true);
 
     ui->tempBox->setValue(10);
     ui->tempBox->setSingleStep(10);
@@ -62,7 +75,7 @@ Net::Net(QDir *dir_, int left_, int right_, double spStep_, QString ExpName_) :
     ui->rdcCoeffSpinBox->setValue(10);
 
 
-    ui->numOfPcSpinBox->setValue(15);
+    ui->pcaNumberSpinBox->setValue(15);
     ui->traceDoubleSpinBox->setMaximum(1.0);
     ui->traceDoubleSpinBox->setMinimum(0.05);
     ui->traceDoubleSpinBox->setSingleStep(0.01);
@@ -87,20 +100,7 @@ Net::Net(QDir *dir_, int left_, int right_, double spStep_, QString ExpName_) :
     ui->autoPCAStepSpinBox->setMinimum(0);
     ui->autoPCAStepSpinBox->setMaximum(5);
 
-
-
-
-//    ui->reduceNsBox->addItem("Boris Nt->En");
-//    var = QVariant("1 3 7 4 5 6 8 25 14 15 16 26 27 20 21 22 28 29 31");
-//    ui->reduceNsBox->setItemData(3, var);
-
     ui->sizeSpinBox->setValue(6);
-//    ui->normSpinBox->setValue(8.);
-//    ui->normSpinBox->setSingleStep(0.1);
-
-//    ui->offsetXspinBox->setMaximum(1000);
-//    ui->offsetYspinBox->setMaximum(1000);
-
     paint = new QPainter;
     tempEvent = new QTempEvent;
 
@@ -118,8 +118,6 @@ Net::Net(QDir *dir_, int left_, int right_, double spStep_, QString ExpName_) :
 
     QObject::connect(ui->testAllButton, SIGNAL(clicked()), this, SLOT(tall()));
 
-//    QObject::connect(ui->resetButton, SIGNAL(clicked()), this, SLOT(reset()));
-
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopActivity()));
 
     QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(saveWts()));
@@ -129,8 +127,6 @@ Net::Net(QDir *dir_, int left_, int right_, double spStep_, QString ExpName_) :
     QObject::connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(next()));
 
     QObject::connect(ui->prevButton, SIGNAL(clicked()), this, SLOT(prev()));
-
-//    QObject::connect(ui->compressButton, SIGNAL(clicked()), this, SLOT(compressWts()));
 
     QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWts()));
 
@@ -262,14 +258,19 @@ double Net::setPercentageForClean()
 
 void Net::autoClassificationSimple()
 {
-    if(!ui->wndCheckBox->isChecked())
+    if(ui->realsRadioButton->isChecked())
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
         autoClassification(helpString);
     }
-    else
+    else if(ui->windowsRadioButton->isChecked())
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth").append(QDir::separator()).append("windows"));
+        autoClassification(helpString);
+    }
+    else
+    {
+        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraPCA"));
         autoClassification(helpString);
     }
 }
@@ -301,33 +302,28 @@ void Net::autoClassification(QString spectraDir)
     autoFlag = 1;
     int numOfPairs = ui->numOfPairsBox->value();
 
-//    if(spStep == 0.1) //generality
-//    {
-//        ui->learnRateBox->setValue(0.1);
-//        ui->rdcCoeffSpinBox->setValue(5);
-//        ui->tempBox->setValue(10);
-//    }
-
-
-//    cout<<"left = "<<left<<endl;
-//    cout<<"right = "<<right<<endl;
-//    cout<<"spStep = "<<spStep<<endl;
-//    cout<<"ns = "<<ns<<endl;
-//    cout<<"spLength = "<<spLength<<endl;
-
-
-
-    ///////////////////////////////////WAT?
-//    left = 81;
-//    right = 160;
-
-
 
     MakePa *mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep);
+
+    cout<<spectraDir.toStdString()<<endl;
+
     mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
     mkPa->setNumOfClasses(NumOfClasses);
 
-//    ui->wndCheckBox->setChecked(true); //for windows
+    QString typeString;
+    if(spectraDir.contains("windows", Qt::CaseInsensitive))
+    {
+        typeString = "_wnd";
+    }
+    else if(spectraDir.contains("pca", Qt::CaseInsensitive))
+    {
+        typeString = "_pca";
+    }
+    else
+    {
+        typeString = "";
+    }
+    cout << typeString.toStdString()<<endl;
 
     for(int i=0; i<numOfPairs; ++i)
     {
@@ -337,42 +333,29 @@ void Net::autoClassification(QString spectraDir)
 
         if(ui->crossRadioButton->isChecked())
         {
-            if(spStep == 250./4096.) PaIntoMatrixByName("1");
-            else if(spStep == 250./1024.) PaIntoMatrixByName("1_wnd");
-            else PaIntoMatrixByName("1_pca");
+            helpString = "1" + typeString;
+
+            PaIntoMatrixByName(helpString);
 
             reset();
             LearnNet();
-            if(spStep == 250./4096.) PaIntoMatrixByName("2");
-            else if(spStep == 250./1024.) PaIntoMatrixByName("2_wnd");
-            else PaIntoMatrixByName("2_pca");
+            helpString = "2" + typeString;
+            PaIntoMatrixByName(helpString);
 
             tall();
             reset();
             LearnNet();
-            if(spStep == 250./4096.) PaIntoMatrixByName("1");
-            else if(spStep == 250./1024.) PaIntoMatrixByName("1_wnd");
-            else PaIntoMatrixByName("1_pca");
+            helpString = "1" + typeString;
+            PaIntoMatrixByName(helpString);
             tall();
         }
         else if(ui->leaveOneOutRadioButton->isChecked())
         {
-            if(spStep == 250./4096.) PaIntoMatrixByName("all");
-            else if(spStep == 250./1024.) PaIntoMatrixByName("all_wnd");
-            else PaIntoMatrixByName("all_pca");
+            helpString = "all" + typeString;
+            PaIntoMatrixByName(helpString);
             leaveOneOut();
-
-
         }
-
-//        QApplication::sendEvent(this, tempEvent);
-
 //        qApp->processEvents();
-//        if(stopFlag == 1)
-//        {
-//            stopFlag = 0;
-//            break;
-//        }
 
     }
     //leaveOneOut
@@ -2544,28 +2527,23 @@ void Net::drawSammon() //uses coords array
 //principal component analisys
 void Net::pca()
 {
+    QTime wholeTime;
+    wholeTime.start();
 //    spLength - 1 channel
 //    spLength*ns = NetLength
 //    matrix - matrix of data
 //    centeredMatrix - matrix of centered data: matrix[i][j]-=average[j]
 //    random quantity is a spectre-vector of spLength dimension
 //    there are NumberOfVectors samples of this random quantity
-//        covMatrix - matrix of covariations of different components of the random quantity. Its size is spLength*spLength
-//        sampleCovMatrix - matrix of sample covariations
 //        similarMatrix - matrix of similarity
 //        differenceMatrix - matrix of difference, according to some metric
     //projectedMatrix - vectors with just some PCs left
     cout<<"NetLength = "<<NetLength<<endl;
     cout<<"NumberOfVectors = "<<NumberOfVectors<<endl;
-    double ** covMatrix = new double * [NetLength];
     double ** differenceMatrix = new double * [NumberOfVectors];
     double ** centeredMatrix = new double * [NumberOfVectors];
     double ** pcaMatrix = new double * [NumberOfVectors];
 
-    for(int i = 0; i < NetLength; ++i)
-    {
-        covMatrix[i] = new double [NetLength];
-    }
 
     //i - spectral point
     //j - number of current vector
@@ -2613,47 +2591,66 @@ void Net::pca()
     //NumberOfVectors ~= 100
     //covariation between different spectra-bins
     double tempDouble;
+
     QTime initTime;
     initTime.start();
+//    dir->mkdir("PCA");
+//    FILE * covMatrixFile;
+//    for(int i = 0; i < NetLength; ++i)
+//    {
+//        if((i+1)%50 == 0)
+//        {
+//            cout << "50 passed, time = " << initTime.elapsed() << " i = " << i <<endl;
+//            initTime.restart();
+//        }
+//        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PCA" + QDir::separator() + "covMatrix_" + QString::number(i));
+//        covMatrixFile = fopen(helpString.toStdString().c_str(), "w");
+//        for(int k = 0; k < NetLength; ++k)
+//        {
+//            tempDouble = 0.;
+//            for(int j = 0; j < NumberOfVectors; ++j)
+//            {
+//                tempDouble += centeredMatrix[j][i] * centeredMatrix[j][k];
+//            }
+//            tempDouble /= (NumberOfVectors - 1);
+//            fprintf(covMatrixFile, "%lf\n", tempDouble); //covariation between i'th and k'th components of vectors
+////            covMatrix[i][k] = tempDouble;
+//        }
+//        fclose(covMatrixFile);
+//    }
 
+
+//    //test covMatrix symmetric - OK
+//    for(int i = 0; i < NetLength; ++i)
+//    {
+//        for(int k = 0; k < NetLength; ++k)
+//        {
+//            if(covMatrix[i][k] != covMatrix[k][i]) cout<<i<<" "<<k<<" warning"<<endl;
+//        }
+//    }
+
+
+    double trace = 0.;
     for(int i = 0; i < NetLength; ++i)
     {
-//        cout<< i << endl;
-        if((i+1)%50 == 0)
+        tempDouble = 0.;
+        for(int j = 0; j < NumberOfVectors; ++j)
         {
-            cout << "50 passed, time = " << initTime.elapsed() << " i = " << i <<endl;
-            initTime.restart();
+            tempDouble += centeredMatrix[j][i] * centeredMatrix[j][i];
         }
-        for(int k = 0; k < NetLength; ++k)
-        {
-            tempDouble = 0.;
-            for(int j = 0; j < NumberOfVectors; ++j)
-            {
-                tempDouble += centeredMatrix[j][i] * centeredMatrix[j][k];
-            }
-            tempDouble /= (NumberOfVectors - 1);
-            covMatrix[i][k] = tempDouble;
-        }
+        tempDouble /= (NumberOfVectors - 1);
+        trace += tempDouble;
     }
+    cout << "trace covMatrix = " << trace << endl;
 
-    cout<<"covMatrix counted"<<endl;
-
-    //test covMatrix symmetric - OK
-    for(int i = 0; i < NetLength; ++i)
-    {
-        for(int k = 0; k < NetLength; ++k)
-        {
-            if(covMatrix[i][k] != covMatrix[k][i]) cout<<i<<" "<<k<<" warning"<<endl;
-        }
-    }
-
+//    return;
 
     //count eigenvalues & eigenvectors of covMatrix
     double * eigenValues = new double [NetLength];
     double ** eigenVectors = new double * [NetLength]; //vector is a coloumn
     for(int i = 0; i < NetLength; ++i)
     {
-        eigenVectors[i] = new double [NetLength];
+        eigenVectors[i] = new double [ui->pcaNumberSpinBox->value()];
     }
     double * tempA = new double [NetLength]; //i
     double * tempB = new double [NumberOfVectors];//j
@@ -2661,12 +2658,6 @@ void Net::pca()
     double dF, F;
     int counter;
 
-    double trace = 0.;
-    for(int i = 0; i < NetLength; ++i)
-    {
-        trace += covMatrix[i][i];
-    }
-    cout << "trace covMatrix = " << trace << endl;
 
 
 
@@ -2677,6 +2668,7 @@ void Net::pca()
     //matrix
     for(int k = 0; k < NetLength; ++k)
     {
+        initTime.restart();
         dF = 1.0;
         F = 1.0;
 
@@ -2781,16 +2773,16 @@ void Net::pca()
         {
             sum1 += eigenValues[j];
         }
-        cout<<"Part of dispersion explained = "<<sum1*100./double(trace)<<" %"<<endl;
+//        cout<<"Part of dispersion explained = "<<sum1*100./double(trace)<<" %"<<endl;
 
-        cout<<k<<"  "<<eigenValues[k]<<"   Disp expl = "<<sum1*100./double(trace)<<" %"<<endl;
+        cout << k << "\t" << eigenValues[k] << "\tDisp expl = " << sum1*100./double(trace) << " %\ttimeElapsed = " << initTime.elapsed()/1000. << " seconds" <<endl;
         for(int i = 0; i < NetLength; ++i)
         {
             eigenVectors[i][k] = tempA[i]; //1-normalized
         }
 
         //need a rule
-        if(k+1 == ui->numOfPcSpinBox->value() || sum1/trace>=ui->traceDoubleSpinBox->value())
+        if(k+1 == ui->pcaNumberSpinBox->value() || sum1/trace>=ui->traceDoubleSpinBox->value())
         {
             cout<<"numOfEigenValues = "<<k+1<<endl;
             numOfPc = k+1;
@@ -2910,19 +2902,22 @@ void Net::pca()
         delete [] centeredMatrix[i];
     }
 
-    for(int i=0; i<NetLength; ++i)
-    {
-        delete [] covMatrix[i];
-    }
+
     delete [] centeredMatrix;
     delete [] pcaMatrix;
-    delete [] covMatrix;
     delete [] differenceMatrix;
+
     delete [] averages;
     delete [] eigenValues;
+    for(int i = 0; i < ui->pcaNumberSpinBox->value(); ++i)
+    {
+        delete eigenVectors[i];
+    }
     delete [] eigenVectors;
     delete [] tempA;
     delete [] tempB;
+
+    cout << "whole time elapsed " << wholeTime.elapsed()/1000. << " sec" << endl;
 
 //    delete painter;
 

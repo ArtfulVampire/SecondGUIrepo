@@ -38,7 +38,7 @@ class Net : public QWidget
     Q_OBJECT
 
 public:
-    explicit Net(QDir *dir_ = new QDir("/"), int left_ = 82, int right_ = 328, double spStep_=250./4096., QString ExpName_="nobody");
+    explicit Net(QDir *dir_ = new QDir("/"), int ns_ = 19., int left_ = 82, int right_ = 328, double spStep_=250./4096., QString ExpName_="nobody");
     ~Net();
     bool ClassificateVector(int &vecNum);
     void closeLogFile();

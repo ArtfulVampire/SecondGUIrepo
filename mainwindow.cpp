@@ -436,7 +436,7 @@ void MainWindow::autoProcessingFB()
         MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
         mkPa->setRdcCoeff(20);
 
-        Net * ANN = new Net(dir, left, right, spStep, ExpName);
+        Net * ANN = new Net(dir, ns, left, right, spStep, ExpName);
         ANN->setAutoProcessingFlag(true);
         ANN->readCfg();
         switch(this->ui->wndLengthBox->currentIndex())
@@ -499,7 +499,7 @@ void MainWindow::autoProcessingFB()
         MakePa *mkPa2 = new MakePa(helpString, ExpName, ns, left, right, spStep);
         mkPa2->setRdcCoeff(20);
 
-        Net * ANN2 = new Net(dir, left, right, spStep, ExpName);
+        Net * ANN2 = new Net(dir, ns, left, right, spStep, ExpName);
         ANN2->setAutoProcessingFlag(true);
         ANN2->readCfg();
 
@@ -632,7 +632,7 @@ void MainWindow::autoWindowsProcessing()
         MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
         mkPa->setRdcCoeff(20);
 
-        Net * ANN = new Net(dir, left, right, spStep, ExpName);
+        Net * ANN = new Net(dir, ns, left, right, spStep, ExpName);
         ANN->setAutoProcessingFlag(true);
         ANN->readCfg();
         switch(this->ui->wndLengthBox->currentIndex())
@@ -813,7 +813,7 @@ void MainWindow::autoProcessing()
     mkPa->setRdcCoeff(5);
     mkPa->mwTest();
 
-    Net * ANN = new Net(dir, left, right, spStep, ExpName);
+    Net * ANN = new Net(dir, ns, left, right, spStep, ExpName);
     ANN->setAutoProcessingFlag(true);
     ANN->readCfg();
 
@@ -1786,7 +1786,7 @@ void MainWindow::diffSmooth()
         sp->close();
         delete sp;
 
-        ANN = new Net(dir, left, right, spStep, ExpName);        
+        ANN = new Net(dir, ns, left, right, spStep, ExpName);
         ANN->setAutoProcessingFlag(true);
         ANN->readCfg();
         ANN->autoClassification("SpectraSmooth");
@@ -1821,7 +1821,7 @@ void MainWindow::setNs2(int a)
 
 void MainWindow::netShow()
 {
-    Net * ANN = new Net(dir, left, right, spStep, ExpName);
+    Net * ANN = new Net(dir, ns, left, right, spStep, ExpName);
     ANN->show();
 }
 

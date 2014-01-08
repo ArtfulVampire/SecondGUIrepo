@@ -214,7 +214,7 @@
      <x>5</x>
      <y>0</y>
      <width>546</width>
-     <height>315</height>
+     <height>351</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
@@ -253,10 +253,10 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="testAllButton">
+    <item row="2" column="1">
+     <widget class="QPushButton" name="stopButton">
       <property name="text">
-       <string>Test All</string>
+       <string>STOP</string>
       </property>
      </widget>
     </item>
@@ -267,10 +267,10 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
-     <widget class="QPushButton" name="stopButton">
+    <item row="1" column="2">
+     <widget class="QPushButton" name="testAllButton">
       <property name="text">
-       <string>STOP</string>
+       <string>Test All</string>
       </property>
      </widget>
     </item>
@@ -281,17 +281,24 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="autoClassButton">
-      <property name="text">
-       <string>AutoClass</string>
-      </property>
-     </widget>
-    </item>
     <item row="4" column="0">
      <widget class="QPushButton" name="autoPCAButton">
       <property name="text">
        <string>AutoPCA</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="3">
+     <widget class="QLabel" name="clearSetsLabel">
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QPushButton" name="leaveOneOutButton">
+      <property name="text">
+       <string>LeaveOneOut</string>
       </property>
      </widget>
     </item>
@@ -308,41 +315,6 @@
        <widget class="QRadioButton" name="crossRadioButton">
         <property name="text">
          <string>cross</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="wndCheckBox">
-        <property name="text">
-         <string>wnd?</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="3" column="2">
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QSpinBox" name="numOfPairsBox"/>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="rdcCoeffSpinBox"/>
-      </item>
-     </layout>
-    </item>
-    <item row="3" column="3">
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <widget class="QLabel" name="label_12">
-        <property name="text">
-         <string>Num Of Pairs</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string>rdc coeff</string>
         </property>
        </widget>
       </item>
@@ -386,20 +358,6 @@
       </item>
      </layout>
     </item>
-    <item row="4" column="3">
-     <widget class="QLabel" name="clearSetsLabel">
-      <property name="text">
-       <string>TextLabel</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3">
-     <widget class="QPushButton" name="leaveOneOutButton">
-      <property name="text">
-       <string>LeaveOneOut</string>
-      </property>
-     </widget>
-    </item>
     <item row="2" column="3">
      <widget class="QCheckBox" name="clearSetsWaitBox">
       <property name="text">
@@ -411,6 +369,70 @@
      <widget class="QPushButton" name="clearSetsButton">
       <property name="text">
        <string>Clear Window Sets</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="3">
+     <layout class="QHBoxLayout" name="horizontalLayout_9">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QSpinBox" name="numOfPairsBox"/>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="rdcCoeffSpinBox"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>Num Of Pairs</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>rdc coeff</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item row="3" column="2">
+     <layout class="QVBoxLayout" name="verticalLayout_6">
+      <item>
+       <widget class="QRadioButton" name="realsRadioButton">
+        <property name="text">
+         <string>reals</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="windowsRadioButton">
+        <property name="text">
+         <string>windows</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="pcRadioButton">
+        <property name="text">
+         <string>pca</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="3" column="0">
+     <widget class="QPushButton" name="autoClassButton">
+      <property name="text">
+       <string>AutoClass</string>
       </property>
      </widget>
     </item>
@@ -449,7 +471,7 @@
     <item row="0" column="1">
      <layout class="QHBoxLayout" name="horizontalLayout_6">
       <item>
-       <widget class="QSpinBox" name="numOfPcSpinBox"/>
+       <widget class="QSpinBox" name="pcaNumberSpinBox"/>
       </item>
       <item>
        <widget class="QLabel" name="label_10">

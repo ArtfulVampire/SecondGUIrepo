@@ -40,7 +40,7 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     ui->rdcCoeffBox->setValue(20);
 
 
-    helpString=QDir::toNativeSeparators(spectraPath);
+    helpString = QDir::toNativeSeparators(spectraPath);
     ui->paLineEdit->setText(helpString);
 
 
@@ -1175,6 +1175,22 @@ void MakePa::kwTest()
 
 void MakePa::makePaSlot()
 {
+    QString typeString;
+
+    if(ui->paLineEdit->text().contains("windows", Qt::CaseInsensitive))
+    {
+        typeString = "_wnd.pa";
+    }
+    else if(ui->paLineEdit->text().contains("PCA", Qt::CaseInsensitive))
+    {
+        typeString = "_pca.pa";
+    }
+    else
+    {
+        typeString = ".pa";
+    }
+    cout << "makePa typeString = " << typeString.toStdString() << endl;
+
     ui->lineEdit->clear();
 //    sleep(1);
 
@@ -1341,19 +1357,8 @@ void MakePa::makePaSlot()
 
     //all.pa
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()));
-    if(spStep == 250./1024.) //generality
-    {
-        helpString.append("all_wnd.pa");
-    }
-    else if(spStep == 250./4096.)
-    {
-        helpString.append("all.pa");
-    }
-    else
-    {
-        helpString.append("all_pca.pa");
-    }
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("all").append(typeString));
+
 
     FILE * paAll=fopen(helpString.toStdString().c_str(), "w");   ////////separator
     if(paAll==NULL)
@@ -1370,19 +1375,7 @@ void MakePa::makePaSlot()
     }
 
     //create first PA
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()));
-    if(spStep == 250./1024.) //generality
-    {
-        helpString.append("1_wnd.pa");
-    }
-    else if(spStep == 250./4096.)
-    {
-        helpString.append("1.pa");
-    }
-    else
-    {
-        helpString.append("1_pca.pa");
-    }
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("1").append(typeString));
     pa=fopen(helpString.toStdString().c_str(), "w");   ////////separator
     if(pa == NULL)
     {
@@ -1482,19 +1475,7 @@ void MakePa::makePaSlot()
 //    cout<<endl;
 
     //create second PA
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()));
-    if(spStep == 250./1024.) //generality
-    {
-        helpString.append("2_wnd.pa");
-    }
-    else if(spStep == 250./4096.)
-    {
-        helpString.append("2.pa");
-    }
-    else
-    {
-        helpString.append("2_pca.pa");
-    }
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("2").append(typeString));
     pa=fopen(helpString.toStdString().c_str(), "w");   ////////separator
     if(pa == NULL)
     {
@@ -1596,19 +1577,7 @@ void MakePa::makePaSlot()
 
 
     FILE * paWhole;
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()));
-    if(spStep == 250./1024.) //generality
-    {
-        helpString.append("whole_wnd.pa");
-    }
-    else if(spStep == 250./4096.)
-    {
-        helpString.append("whole.pa");
-    }
-    else
-    {
-        helpString.append("whole_pca.pa");
-    }
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("whole").append(typeString));
     list = dir_->entryList(QDir::Files);
     paWhole = fopen(helpString.toStdString().c_str(), "w");
 
