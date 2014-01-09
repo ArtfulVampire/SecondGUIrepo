@@ -2909,7 +2909,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 //        testSignals2[i] = new double [ndr*nr[i]];
 //    }
 
-//    srand(time(NULL));
+//    srand(QTime::currentTime().msec());
 //    for(int i = 0; i < ndr*nr[0]; ++i)
 //    {
 //        testSignals[0][i] = 20.*sin(2*3.1415926*(double(i)/23.)) + 1.; //23 bins period
@@ -3795,7 +3795,7 @@ void MainWindow::sliceOneByOneNew()
             h = -1;
             j = i;
             continue;
-            ui->progressBar->setValue(double(i)/ndr*nr[ns-1]*100.);
+            ui->progressBar->setValue(double(i)*100./ndr*nr[ns-1]);
         }
 
     }
@@ -4224,7 +4224,7 @@ double * randomVector(int ns)
 {
 
     double * tempVector2 = new double [ns];
-    srand(time(NULL));
+    srand(QTime::currentTime().msec());
     double sum = 0.;
     for(int i = 0; i < ns; ++i)
     {

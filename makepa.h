@@ -11,6 +11,7 @@
 #include <cmath>
 #include <QPainter>
 #include <QTimer>
+#include <QTime>
 
 using namespace std;
 

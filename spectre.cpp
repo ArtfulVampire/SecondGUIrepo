@@ -1538,9 +1538,9 @@ int Spectre::readFilePhase(int &num, double ***dataPhase)
                 for(int i = 0; i < right + 2; ++i )      //get the absolute value of FFT
                 {
                     dataPhase[c1][c2][ i ] = atan(spectre[0][ i * 2] / spectre[0][ i * 2 +1]) - atan(spectre[1][ i * 2] / spectre[1][ i * 2 +1]); //!!!!!!!!!!atan(Im/Re)
-                    help[0] = ( spectre[0][ i * 2 +1] * spectre[0][ i * 2 +1] + spectre[0][ i * 2 ] * spectre[0][ i * 2 ] ) * 2 * 0.004/fftLength;
-                    help[1] = ( spectre[1][ i * 2 +1] * spectre[1][ i * 2 +1] + spectre[1][ i * 2 ] * spectre[1][ i * 2 ] ) * 2 * 0.004/fftLength;
-//                    dataPhase[c1][c2][ i ] *= help[0] * help[1];
+                    help[0] = ( spectre[0][ i * 2 +1 ] * spectre[0][ i * 2 +1 ] + spectre[0][ i * 2 ] * spectre[0][ i * 2 ] ) * 2 * 0.004/fftLength;
+                    help[1] = ( spectre[1][ i * 2 +1 ] * spectre[1][ i * 2 +1 ] + spectre[1][ i * 2 ] * spectre[1][ i * 2 ] ) * 2 * 0.004/fftLength;
+                    dataPhase[c1][c2][ i ] *= sqrt(help[0] * help[1]) / (help[0] + help[1]); //normalisation
                     if(QString::number(dataPhase[c1][c2][i]).contains('n')) //why nan and inf???
                     {
                         cout<<"dataPhase[" << c1 << "][" << c2 << "][" << i << "] = "<< dataPhase[c1][c2][i] <<endl;
