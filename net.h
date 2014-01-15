@@ -53,6 +53,8 @@ public:
     void readCfgByName(QString FileName);
     double setPercentageForClean();
     double mouseClick(QLabel * label, QMouseEvent * ev);
+    void leaveOneOut();
+    void leaveOneOutCL();
 
 protected:
     bool event(QEvent * ev);
@@ -76,7 +78,7 @@ public slots:
     void compressWts();
     void PaIntoMatrixByName(QString fileName);
     void PaIntoMatrix();
-    void leaveOneOut();
+    void leaveOneOutSlot();
     void neuronGas();
     void pca();
     void drawSammon();

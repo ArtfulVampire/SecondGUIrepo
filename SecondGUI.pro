@@ -9,6 +9,8 @@ QT       += core gui svg
 TARGET = SecondGUI
 TEMPLATE = app
 
+LIBS += -L/usr/lib/x86_64-linux-gnu -lOpenCL
+
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -44,6 +46,7 @@ FORMS    += mainwindow.ui \
     makepa.ui \
     eyes.ui
 
-OTHER_FILES +=
+OTHER_FILES += \
+    kernels.cl
 
 RESOURCES +=

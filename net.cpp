@@ -1,5 +1,6 @@
 #include "net.h"
 #include "ui_net.h"
+#include <CL/cl.h>
 //#include "mainwindow.h"
 
 
@@ -130,7 +131,7 @@ Net::Net(QDir *dir_, int ns_, int left_, int right_, double spStep_, QString Exp
 
     QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWts()));
 
-    QObject::connect(ui->leaveOneOutButton, SIGNAL(clicked()), this, SLOT(leaveOneOut()));
+    QObject::connect(ui->leaveOneOutButton, SIGNAL(clicked()), this, SLOT(leaveOneOutSlot()));
 
     QObject::connect(ui->neuronGasPushButton, SIGNAL(clicked()), this, SLOT(neuronGas()));
 
@@ -1541,6 +1542,473 @@ void Net::PaIntoMatrix()
     fclose(paSrc);
     NumberOfVectors=num;
 //    cout<<"NumberOfVectors="<<NumberOfVectors<<endl;
+}
+
+void Net::leaveOneOutSlot()
+{
+    if(1)
+    {
+        leaveOneOut();
+    }
+    else
+    {
+        leaveOneOutCL();
+    }
+}
+
+
+const char* kernelFromFile(char* path)
+{
+    char* tempString = new char [300];
+    char* shaderString = new char [30000];
+    int currentIndex = 0;
+    FILE * shad = fopen(path, "r");
+    if(shad == NULL)
+    {
+        cout<<"Cannot open file\n"<<endl;
+        return (const char*)NULL;
+    }
+    while(1)
+    {
+
+        fgets(tempString, 50, shad);
+        if(feof(shad)) break;
+        for(int i = 0; i < strlen(tempString); ++i)
+        {
+            shaderString[currentIndex++] = tempString[i];
+        }
+    }
+    shaderString[currentIndex] = '\0';
+    fclose(shad);
+
+    delete []tempString;
+    return shaderString;
+}
+
+
+const char* errorMessage(int err_)
+{
+    return QString::number(err_).toStdString().c_str();
+}
+
+void Net::leaveOneOutCL()
+{
+
+    QTime myTime;
+    myTime.start();
+    cout << "leaveOneOuntCL started" << endl;
+    NumberOfErrors = new int[NumOfClasses];
+    helpString="";
+    for(int i=0; i<NumOfClasses; ++i)
+    {
+        NumberOfErrors[i]=0;
+    }
+
+    cl_int clError;
+    cl_device_id device;
+    cl_context context;
+    cl_command_queue queue;
+    cl_program program;
+    cl_kernel leaveOneOutKernel;
+    cl_device_type devType;
+    cl_platform_id platform;
+
+
+    devType = CL_DEVICE_TYPE_CPU;
+//    devType = CL_DEVICE_TYPE_GPU;
+
+
+    // Find the device.
+    clError = clGetDeviceIDs( platform,
+                    devType,
+                    1,
+                    &device,
+                    NULL);
+    if(clError != CL_SUCCESS)
+    {
+        cout << "Error getting device ids: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+//    cl_device_fp_config doubleSupport;
+//    cl_int doubleWork = clGetDeviceInfo(device, CL_DEVICE_DOUBLE_FP_CONFIG, sizeof(cl_device_fp_config), &doubleSupport, NULL);
+//    cout << doubleWork << "\tDoubleSupport = " << doubleSupport << endl;
+//    return -2;
+
+
+    // 4. Compute work sizes.
+    cl_uint compute_units;
+    size_t global_work_size;
+    size_t local_work_size;
+//    size_t num_groups;
+    clError = clGetDeviceInfo(device,
+                     CL_DEVICE_MAX_COMPUTE_UNITS,
+                     sizeof(cl_uint),
+                     &compute_units,
+                     NULL);
+    if(clError != CL_SUCCESS)
+    {
+        cout << "Error getting device info: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+    cout << "Max compute units = " << compute_units << endl;
+    if(compute_units > NumberOfVectors)
+    {
+        global_work_size = NumberOfVectors;
+        local_work_size = 1;
+    }
+    else
+    {
+        local_work_size = ceil(double(NumberOfVectors)/compute_units);
+        global_work_size = NumberOfVectors;
+//        global_work_size = NumberOfVectors/local_work_size;
+    }
+
+//    num_groups = global_work_size / local_work_size;
+
+    // Create a context and command queue on that device.
+    context = clCreateContext( NULL,
+                               1,
+                               &device,
+                               NULL, NULL, NULL);
+    queue = clCreateCommandQueue(context,
+                                 device,
+                                 0, NULL);
+    // Minimal error check.
+    if( queue == NULL )
+    {
+        cout << "Compute device setup failed" << endl; ;
+        return;
+    }
+
+    // Perform runtime source compilation, and obtain kernel entry point.
+    const char *kernel_source = (const char*)kernelFromFile("/home/michael/Qt/Projects/SecondGUI/kernels.cl"); //generality
+    cl_int ret = 0;
+    program = clCreateProgramWithSource( context,
+                                         1,
+                                         &kernel_source,
+                                         NULL, &ret );
+
+    clBuildProgram( program, 1, &device, NULL, NULL, NULL);
+    //Tell compiler to dump intermediate .il and .isa GPU files.
+    // 5. Print compiler error messages
+    if(ret != CL_SUCCESS)
+    {
+        cout << "clBuildProgram failed: " << errorMessage(ret) << endl;
+        char buf[0x10000];
+        clGetProgramBuildInfo( program,
+                               device,
+                               CL_PROGRAM_BUILD_LOG,
+                               0x10000,
+                               buf,
+                               NULL);
+        printf("\n%s\n", buf);
+        exit(ret);
+    }
+
+    leaveOneOutKernel = clCreateKernel( program, "leaveOneOut", &clError );
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create kernel leaveOneOut: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+    cout << "all the preparations done, memory allocation start, elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    myTime.restart();
+    // Create input, output and debug buffers.
+//    __global double ecrit,
+//    __global double lrate,
+//    __global double error,
+//    __global double temp,
+//    __global double matrix,
+//    __global int NumberOfVectors,
+//    __global int NumOfClasses,
+//    __global int NetLength,
+//    __private double ** weight,
+//    __private int * mixNum,
+//    __private double * output,
+//    __private bool answer,
+//    __private double outError,
+//    __private double * outputClass,
+//    __global double * NumberOfErrors,
+//    __private int NumOfThread
+    cl_mem ecritBuf;
+    cl_mem lrateBuf;
+    cl_mem errorBuf;
+    cl_mem tempBuf;
+    cl_mem matrixBuf;
+    cl_mem numOfVectsBuf;
+    cl_mem numOfClassesBuf;
+    cl_mem netLengthBuf;
+    cl_mem weightBuf;
+    cl_mem mixNumBuf;
+    cl_mem outputBuf;
+    cl_mem answerBuf;
+    cl_mem outErrorBuf;
+    cl_mem outputClassBuf;
+    cl_mem numOfErrorsBuf;
+    cl_mem NumOfThreadBuf;
+
+//    values to look at the results
+    cl_bool *returnedAnswer;
+    cl_double *returnedError;
+    cl_int *returnedNumofthread;
+
+    ecritBuf = clCreateBuffer(context,
+                              CL_MEM_READ_ONLY,
+                              sizeof(cl_double),
+                              &ecrit,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    lrateBuf = clCreateBuffer(context,
+                              CL_MEM_READ_ONLY,
+                              sizeof(cl_double),
+                              &lrate,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    errorBuf = clCreateBuffer(context,
+                              CL_MEM_READ_ONLY,
+                              sizeof(cl_double),
+                              &Error,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    tempBuf = clCreateBuffer(context,
+                              CL_MEM_READ_ONLY,
+                              sizeof(cl_double),
+                              &temp,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    matrixBuf = clCreateBuffer(context,
+                              CL_MEM_READ_ONLY,
+                              sizeof(cl_double) * NumberOfVectors * (NetLength + 2),
+                              &matrix,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    numOfVectsBuf = clCreateBuffer(context,
+                              CL_MEM_READ_ONLY,
+                              sizeof(cl_int),
+                              &NumberOfVectors,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    numOfClassesBuf = clCreateBuffer(context,
+                              CL_MEM_READ_ONLY,
+                              sizeof(cl_int),
+                              &NumOfClasses,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    netLengthBuf = clCreateBuffer(context,
+                              CL_MEM_READ_ONLY,
+                              sizeof(cl_int),
+                              &NetLength,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    //privates:
+
+    weightBuf = clCreateBuffer(context,
+                              CL_MEM_READ_WRITE,
+                              sizeof(cl_double) * NumOfClasses * (NetLength + 1),
+                              NULL,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+
+    mixNumBuf = clCreateBuffer(context,
+                              CL_MEM_READ_WRITE,
+                              sizeof(cl_int) * NumberOfVectors,
+                              NULL,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    outputBuf = clCreateBuffer(context,
+                              CL_MEM_READ_WRITE,
+                              sizeof(cl_double) * NumOfClasses,
+                              NULL,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    answerBuf = clCreateBuffer(context,
+                              CL_MEM_WRITE_ONLY,
+                              sizeof(cl_bool),
+                              NULL,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    outErrorBuf = clCreateBuffer(context,
+                              CL_MEM_READ_WRITE,
+                              sizeof(cl_double),
+                              NULL,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    outputClassBuf = clCreateBuffer(context,
+                              CL_MEM_READ_WRITE,
+                              sizeof(cl_double) * NumOfClasses,
+                              NULL,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    //global:
+    numOfErrorsBuf = clCreateBuffer(context,
+                              CL_MEM_READ_WRITE,
+                              sizeof(cl_int),
+                              &NumberOfErrors,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    //private:
+    NumOfThreadBuf = clCreateBuffer(context,
+                              CL_MEM_WRITE_ONLY,
+                              sizeof(cl_int),
+                              NULL,
+                              &clError);
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    cout << "memory allocated, elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+
+
+
+
+    clSetKernelArg(leaveOneOutKernel, 0, sizeof(void *), (void*) &ecritBuf);
+    clSetKernelArg(leaveOneOutKernel, 1, sizeof(void *), (void*) &lrateBuf);
+    clSetKernelArg(leaveOneOutKernel, 2, sizeof(void *), (void*) &errorBuf);
+    clSetKernelArg(leaveOneOutKernel, 3, sizeof(void *), (void*) &tempBuf);
+    clSetKernelArg(leaveOneOutKernel, 4, sizeof(void *), (void*) &matrixBuf);
+    clSetKernelArg(leaveOneOutKernel, 5, sizeof(void *), (void*) &numOfVectsBuf);
+    clSetKernelArg(leaveOneOutKernel, 6, sizeof(void *), (void*) &numOfClassesBuf);
+    clSetKernelArg(leaveOneOutKernel, 7, sizeof(void *), (void*) &netLengthBuf);
+    clSetKernelArg(leaveOneOutKernel, 8, sizeof(void *), (void*) &weightBuf);
+    clSetKernelArg(leaveOneOutKernel, 9, sizeof(void *), (void*) &mixNumBuf);
+    clSetKernelArg(leaveOneOutKernel, 10, sizeof(void *), (void*) &outputBuf);
+    clSetKernelArg(leaveOneOutKernel, 11, sizeof(void *), (void*) &answerBuf);
+    clSetKernelArg(leaveOneOutKernel, 12, sizeof(void *), (void*) &outErrorBuf);
+    clSetKernelArg(leaveOneOutKernel, 13, sizeof(void *), (void*) &outputClassBuf);
+    clSetKernelArg(leaveOneOutKernel, 14, sizeof(void *), (void*) &numOfErrorsBuf);
+
+    clEnqueueNDRangeKernel( queue,
+                            leaveOneOutKernel,
+                            1,
+                            NULL,
+                            &global_work_size,
+                            &local_work_size,
+                            0, NULL, NULL);
+
+    clFinish( queue );
+
+    // 7. Look at the results via synchronous buffer map.
+    returnedAnswer = (cl_bool *) clEnqueueMapBuffer( queue,
+                                                  answerBuf,
+                                                  CL_TRUE,
+                                                  CL_MAP_READ,
+                                                  0,
+                                                  sizeof(cl_bool),
+                                                  0, NULL, NULL, &clError );
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    returnedError = (cl_double *) clEnqueueMapBuffer( queue,
+                                                  outErrorBuf,
+                                                  CL_TRUE,
+                                                  CL_MAP_READ,
+                                                  0,
+                                                  sizeof(cl_double),
+                                                  0, NULL, NULL, &clError );
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    returnedNumofthread = (cl_int *) clEnqueueMapBuffer( queue,
+                                                  NumOfThreadBuf,
+                                                  CL_TRUE,
+                                                  CL_MAP_READ,
+                                                  0,
+                                                  sizeof(cl_int),
+                                                  0, NULL, NULL, &clError );
+    if (clError != CL_SUCCESS)
+    {
+        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+
+    cout << "NumOfThread = " << *returnedNumofthread << "\tError = " << *returnedError << "\tAnswer = " << *returnedAnswer <<endl;
+
+
+    delete []NumberOfErrors;
 }
 
 void Net::leaveOneOut()
