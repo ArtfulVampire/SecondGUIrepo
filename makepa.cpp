@@ -1338,7 +1338,7 @@ void MakePa::makePaSlot()
     }
 
     /////////////////mix lst///////////////////////
-    srand(time(NULL));
+    srand(QTime::currentTime().msec());
 
     int a1,a2, tmp;
 
@@ -1363,7 +1363,7 @@ void MakePa::makePaSlot()
     FILE * paAll=fopen(helpString.toStdString().c_str(), "w");   ////////separator
     if(paAll==NULL)
     {
-        cout<<helpString.toStdString().c_str()<<endl<<" all.pa==NULL"<<endl;
+        cout<<helpString.toStdString().c_str() << endl << " all.pa==NULL" << endl;
         return;
     }
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("svmAll"));
