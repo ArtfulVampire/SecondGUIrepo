@@ -3789,13 +3789,14 @@ void MainWindow::sliceOneByOneNew()
             }
             fclose(file);
 
+            ui->progressBar->setValue(double(i)*100./ndr*nr[ns-1]);
+
             marker.clear();
             if(h == 0) marker = "241";
             else if(h == 1) marker = "247";
             h = -1;
             j = i;
             continue;
-            ui->progressBar->setValue(double(i)*100./ndr*nr[ns-1]);
         }
 
     }

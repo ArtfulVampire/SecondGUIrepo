@@ -133,6 +133,7 @@ private:
     TempThread myThread;
     double ** coords; //new coords for Sammon method
     double mouseShit;
+    QTime mytime;
 };
 
 #endif // NET_H

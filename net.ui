@@ -213,8 +213,8 @@
     <rect>
      <x>5</x>
      <y>0</y>
-     <width>546</width>
-     <height>351</height>
+     <width>551</width>
+     <height>321</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
@@ -430,11 +430,22 @@
      </layout>
     </item>
     <item row="3" column="0">
-     <widget class="QPushButton" name="autoClassButton">
-      <property name="text">
-       <string>AutoClass</string>
-      </property>
-     </widget>
+     <layout class="QVBoxLayout" name="verticalLayout_7">
+      <item>
+       <widget class="QPushButton" name="autoClassButton">
+        <property name="text">
+         <string>AutoClass</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="openclCheckBox">
+        <property name="text">
+         <string>use OpenCL</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
