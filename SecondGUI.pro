@@ -10,7 +10,7 @@ TARGET = SecondGUI
 TEMPLATE = app
 
 LIBS += -L/usr/lib/x86_64-linux-gnu -lOpenCL
-
+LIBS += -L/usr/lib/x86_64-linux-gnu/mesa
 
 SOURCES += main.cpp\
         mainwindow.cpp \

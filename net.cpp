@@ -1856,12 +1856,14 @@ void Net::leaveOneOutCL()
 //    cout << doubleWork << "\tDoubleSupport = " << doubleSupport << endl;
 //    return -2;
 
+    CL_INVALID_DEVICE;// if device is not valid.
+    CL_INVALID_VALUE;// if param_name is not one of the supported values or if size in bytes specified by param_value_size is less than size of return type as shown in the table above and param_value is not a NULL value or if param_name is a value that is available as an extension and the corresponding extension is not supported by the device.
+    CL_OUT_OF_RESOURCES;// if there is a failure to allocate resources required by the OpenCL implementation on the device.
+    CL_OUT_OF_HOST_MEMORY;// if there is a failure to allocate resources required by the OpenCL implementation on the host.
 
     // 4. Compute work sizes.
     cl_uint compute_units;
     size_t global_work_size;
-    size_t local_work_size;
-//    size_t num_groups;
     clError = clGetDeviceInfo(device,
                      CL_DEVICE_MAX_COMPUTE_UNITS,
                      sizeof(cl_uint),
@@ -1872,21 +1874,39 @@ void Net::leaveOneOutCL()
         cout << "Error getting device info: " << errorMessage(clError) << endl;
         exit(clError);
     }
-
     cout << "Max compute units = " << compute_units << endl;
-    if(compute_units > NumberOfVectors)
-    {
-        global_work_size = NumberOfVectors;
-        local_work_size = 1;
-    }
-    else
-    {
-        local_work_size = ceil(double(NumberOfVectors)/compute_units);
-        global_work_size = NumberOfVectors;
-//        global_work_size = NumberOfVectors/local_work_size;
-    }
 
-//    num_groups = global_work_size / local_work_size;
+    cl_ulong maxConstBufSize;
+    clError = clGetDeviceInfo(device,
+                     CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,
+                     sizeof(cl_ulong),
+                     &maxConstBufSize,
+                     NULL);
+    if(clError != CL_SUCCESS)
+    {
+        cout << "Error getting device info: " << errorMessage(clError) << endl;
+        exit(clError);
+    }
+    cout << "Max const buffer size = " << maxConstBufSize << " bytes"<< endl;
+    cout << "it is = " << maxConstBufSize/sizeof(double) << " doubles"<< endl;
+
+
+
+//    if(compute_units > NumberOfVectors)
+//    {
+//        global_work_size = NumberOfVectors;
+//        local_work_size = 1;
+//    }
+//    else
+//    {
+//        local_work_size = ceil(double(NumberOfVectors)/compute_units);
+//        global_work_size = NumberOfVectors;
+//    }
+
+
+    global_work_size = NumberOfVectors;
+
+
 
     // Create a context and command queue on that device.
     context = clCreateContext( NULL,
@@ -1976,22 +1996,26 @@ void Net::leaveOneOutCL()
     cl_mem NumOfVectorToSkipBuf;
 
 
-    CL_INVALID_CONTEXT;
-    CL_INVALID_VALUE;
-    CL_INVALID_BUFFER_SIZE;
-    CL_INVALID_HOST_PTR;
-    CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    CL_OUT_OF_RESOURCES;
-    CL_OUT_OF_HOST_MEMORY;
+//    CL_INVALID_CONTEXT;
+//    CL_INVALID_VALUE;
+//    CL_INVALID_BUFFER_SIZE;
+//    CL_INVALID_HOST_PTR;
+//    CL_MEM_OBJECT_ALLOCATION_FAILURE;
+//    CL_OUT_OF_RESOURCES;
+//    CL_OUT_OF_HOST_MEMORY;
     ecritBuf = clCreateBuffer(context,
                               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
                               sizeof(cl_double),
-                              (void *)&ecrit,
+                              &ecrit,
                               &clError);
     if (clError != CL_SUCCESS)
     {
         cout << "Cannot create memory buffer 0: " << errorMessage(clError) << endl;
         exit(clError);
+    }
+    else
+    {
+        cout << "Memory buffer created" << endl;
     }
 
     lrateBuf = clCreateBuffer(context,
@@ -2004,6 +2028,10 @@ void Net::leaveOneOutCL()
         cout << "Cannot create memory buffer 1: " << errorMessage(clError) << endl;
         exit(clError);
     }
+    else
+    {
+        cout << "Memory buffer created" << endl;
+    }
 
     errorBuf = clCreateBuffer(context,
                               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
@@ -2014,6 +2042,10 @@ void Net::leaveOneOutCL()
     {
         cout << "Cannot create memory buffer 2: " << errorMessage(clError) << endl;
         exit(clError);
+    }
+    else
+    {
+        cout << "Memory buffer created" << endl;
     }
 
     tempBuf = clCreateBuffer(context,
@@ -2026,16 +2058,33 @@ void Net::leaveOneOutCL()
         cout << "Cannot create memory buffer 2.5: " << errorMessage(clError) << endl;
         exit(clError);
     }
+    else
+    {
+        cout << "Memory buffer created" << endl;
+    }
+
+    double *matrixArray = new double [NumberOfVectors * (NetLength + 2)];
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        for(int j = 0; j < (NetLength + 2); ++j)
+        {
+            matrixArray[i * (NetLength + 2) + j] = matrix[i][j];
+        }
+    }
 
     matrixBuf = clCreateBuffer(context,
                               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
                               sizeof(cl_double) * NumberOfVectors * (NetLength + 2),
-                              &matrix,
+                              matrixArray,
                               &clError);
     if (clError != CL_SUCCESS)
     {
         cout << "Cannot create memory buffer 3: " << errorMessage(clError) << endl;
         exit(clError);
+    }
+    else
+    {
+        cout << "Memory buffer created" << endl;
     }
 
     numOfVectsBuf = clCreateBuffer(context,
@@ -2048,6 +2097,10 @@ void Net::leaveOneOutCL()
         cout << "Cannot create memory buffer 4: " << errorMessage(clError) << endl;
         exit(clError);
     }
+    else
+    {
+        cout << "Memory buffer created" << endl;
+    }
 
     numOfClassesBuf = clCreateBuffer(context,
                               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
@@ -2059,6 +2112,10 @@ void Net::leaveOneOutCL()
         cout << "Cannot create memory buffer 5: " << errorMessage(clError) << endl;
         exit(clError);
     }
+    else
+    {
+        cout << "Memory buffer created" << endl;
+    }
 
     netLengthBuf = clCreateBuffer(context,
                               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
@@ -2069,6 +2126,10 @@ void Net::leaveOneOutCL()
     {
         cout << "Cannot create memory buffer 6: " << errorMessage(clError) << endl;
         exit(clError);
+    }
+    else
+    {
+        cout << "Memory buffer created" << endl;
     }
 
     //privates:
@@ -2083,17 +2144,25 @@ void Net::leaveOneOutCL()
         cout << "Cannot create memory buffer 7: " << errorMessage(clError) << endl;
         exit(clError);
     }
+    else
+    {
+        cout << "Memory buffer created" << endl;
+    }
 
 
     mixNumBuf = clCreateBuffer(context,
                               CL_MEM_READ_WRITE,
-                              sizeof(cl_int) * NumberOfVectors,
+                              sizeof(cl_int) * global_work_size,
                               NULL,
                               &clError);
     if (clError != CL_SUCCESS)
     {
         cout << "Cannot create memory buffer 8: " << errorMessage(clError) << endl;
         exit(clError);
+    }
+    else
+    {
+        cout << "Memory buffer created" << endl;
     }
 
     outputBuf = clCreateBuffer(context,
@@ -2106,10 +2175,14 @@ void Net::leaveOneOutCL()
         cout << "Cannot create memory buffer 9: " << errorMessage(clError) << endl;
         exit(clError);
     }
+    else
+    {
+        cout << "Memory buffer created" << endl;
+    }
 
     answerBuf = clCreateBuffer(context,
-                              CL_MEM_WRITE_ONLY,
-                              sizeof(cl_bool) * NumberOfVectors,
+                              CL_MEM_READ_WRITE,
+                              sizeof(cl_bool) * global_work_size,
                               NULL,
                               &clError);
     if (clError != CL_SUCCESS)
@@ -2117,16 +2190,24 @@ void Net::leaveOneOutCL()
         cout << "Cannot create memory buffer 10: " << errorMessage(clError) << endl;
         exit(clError);
     }
+    else
+    {
+        cout << "Memory buffer created" << endl;
+    }
 
     outErrorBuf = clCreateBuffer(context,
-                              CL_MEM_WRITE_ONLY,
-                              sizeof(cl_double) * NumberOfVectors,
+                              CL_MEM_READ_WRITE,
+                              sizeof(cl_double) * global_work_size,
                               NULL,
                               &clError);
     if (clError != CL_SUCCESS)
     {
         cout << "Cannot create memory buffer 11: " << errorMessage(clError) << endl;
         exit(clError);
+    }
+    else
+    {
+        cout << "Memory buffer created" << endl;
     }
 
     outputClassBuf = clCreateBuffer(context,
@@ -2138,6 +2219,10 @@ void Net::leaveOneOutCL()
     {
         cout << "Cannot create memory buffer 12: " << errorMessage(clError) << endl;
         exit(clError);
+    }
+    else
+    {
+        cout << "Memory buffer created" << endl;
     }
 
     //global:
@@ -2151,6 +2236,10 @@ void Net::leaveOneOutCL()
         cout << "Cannot create memory buffer 13: " << errorMessage(clError) << endl;
         exit(clError);
     }
+    else
+    {
+        cout << "Memory buffer created" << endl;
+    }
 
     //private:
     NumOfThreadBuf = clCreateBuffer(context,
@@ -2163,6 +2252,10 @@ void Net::leaveOneOutCL()
         cout << "Cannot create memory buffer 14: " << errorMessage(clError) << endl;
         exit(clError);
     }
+    else
+    {
+        cout << "Memory buffer created" << endl;
+    }
 
     NumOfVectorToSkipBuf = clCreateBuffer(context,
                                           CL_MEM_READ_WRITE,
@@ -2174,29 +2267,38 @@ void Net::leaveOneOutCL()
         cout << "Cannot create memory buffer 15: " << errorMessage(clError) << endl;
         exit(clError);
     }
+    else
+    {
+        cout << "Memory buffer created" << endl;
+    }
+
+    cout << "buffers ready, elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    myTime.restart();
 
 
 
 
-    clSetKernelArg(leaveOneOutKernel, 0, sizeof(void *), (void*) &ecritBuf);
-    clSetKernelArg(leaveOneOutKernel, 1, sizeof(void *), (void*) &lrateBuf);
-    clSetKernelArg(leaveOneOutKernel, 2, sizeof(void *), (void*) &errorBuf);
-    clSetKernelArg(leaveOneOutKernel, 3, sizeof(void *), (void*) &tempBuf);
-    clSetKernelArg(leaveOneOutKernel, 4, sizeof(void *), (void*) &matrixBuf);
-    clSetKernelArg(leaveOneOutKernel, 5, sizeof(void *), (void*) &numOfVectsBuf);
-    clSetKernelArg(leaveOneOutKernel, 6, sizeof(void *), (void*) &numOfClassesBuf);
-    clSetKernelArg(leaveOneOutKernel, 7, sizeof(void *), (void*) &netLengthBuf);
-    clSetKernelArg(leaveOneOutKernel, 8, sizeof(void *), (void*) &weightBuf);
-    clSetKernelArg(leaveOneOutKernel, 9, sizeof(void *), (void*) &mixNumBuf);
-    clSetKernelArg(leaveOneOutKernel, 10, sizeof(void *), (void*) &outputBuf);
-    clSetKernelArg(leaveOneOutKernel, 11, sizeof(void *), (void*) &answerBuf);
-    clSetKernelArg(leaveOneOutKernel, 12, sizeof(void *), (void*) &outErrorBuf);
-    clSetKernelArg(leaveOneOutKernel, 13, sizeof(void *), (void*) &outputClassBuf);
-    clSetKernelArg(leaveOneOutKernel, 14, sizeof(void *), (void*) &numOfErrorsBuf);
-    clSetKernelArg(leaveOneOutKernel, 15, sizeof(void *), (void*) &NumOfThreadBuf);
-    clSetKernelArg(leaveOneOutKernel, 16, sizeof(void *), (void*) &NumOfVectorToSkipBuf);
+    clSetKernelArg(leaveOneOutKernel, 0, sizeof(ecritBuf), (void*) &ecritBuf);
+    clSetKernelArg(leaveOneOutKernel, 1, sizeof(lrateBuf), (void*) &lrateBuf);
+    clSetKernelArg(leaveOneOutKernel, 2, sizeof(errorBuf), (void*) &errorBuf);
+    clSetKernelArg(leaveOneOutKernel, 3, sizeof(tempBuf), (void*) &tempBuf);
+    clSetKernelArg(leaveOneOutKernel, 4, sizeof(matrixBuf), (void*) &matrixBuf);
+    clSetKernelArg(leaveOneOutKernel, 5, sizeof(numOfVectsBuf), (void*) &numOfVectsBuf);
+    clSetKernelArg(leaveOneOutKernel, 6, sizeof(numOfClassesBuf), (void*) &numOfClassesBuf);
+    clSetKernelArg(leaveOneOutKernel, 7, sizeof(netLengthBuf), (void*) &netLengthBuf);
+    clSetKernelArg(leaveOneOutKernel, 8, sizeof(weightBuf), (void*) &weightBuf);
+    clSetKernelArg(leaveOneOutKernel, 9, sizeof(mixNumBuf), (void*) &mixNumBuf);
+    clSetKernelArg(leaveOneOutKernel, 10, sizeof(outputBuf), (void*) &outputBuf);
+    clSetKernelArg(leaveOneOutKernel, 11, sizeof(answerBuf), (void*) &answerBuf);
+    clSetKernelArg(leaveOneOutKernel, 12, sizeof(outErrorBuf), (void*) &outErrorBuf);
+    clSetKernelArg(leaveOneOutKernel, 13, sizeof(outputClassBuf), (void*) &outputClassBuf);
+    clSetKernelArg(leaveOneOutKernel, 14, sizeof(numOfErrorsBuf), (void*) &numOfErrorsBuf);
+    clSetKernelArg(leaveOneOutKernel, 15, sizeof(NumOfThreadBuf), (void*) &NumOfThreadBuf);
+    clSetKernelArg(leaveOneOutKernel, 16, sizeof(NumOfVectorToSkipBuf), (void*) &NumOfVectorToSkipBuf);
 
-    cout << "memory allocated, elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+
+    cout << "kernelArgs are set, elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    myTime.restart();
 
     clEnqueueNDRangeKernel( queue,
                             leaveOneOutKernel,
@@ -2215,32 +2317,33 @@ void Net::leaveOneOutCL()
     cl_double *returnedError;
     cl_int *returnedNumofthread;
     cl_int *returnedNumOfSkipped;
-    // 7. Look at the results via synchronous buffer map.
-    returnedAnswer = (cl_bool *) clEnqueueMapBuffer( queue,
-                                                  answerBuf,
-                                                  CL_TRUE,
-                                                  CL_MAP_READ,
-                                                  0,
-                                                  sizeof(cl_bool) * global_work_size,
-                                                  0, NULL, NULL, &clError );
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
 
-    returnedError = (cl_double *) clEnqueueMapBuffer( queue,
-                                                  outErrorBuf,
-                                                  CL_TRUE,
-                                                  CL_MAP_READ,
-                                                  0,
-                                                  sizeof(cl_double) * global_work_size,
-                                                  0, NULL, NULL, &clError );
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
+
+//    returnedAnswer = (cl_bool *) clEnqueueMapBuffer( queue,
+//                                                  answerBuf,
+//                                                  CL_TRUE,
+//                                                  CL_MAP_READ,
+//                                                  0,
+//                                                  sizeof(cl_bool) * global_work_size,
+//                                                  0, NULL, NULL, &clError );
+//    if (clError != CL_SUCCESS)
+//    {
+//        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+//        exit(clError);
+//    }
+
+//    returnedError = (cl_double *) clEnqueueMapBuffer( queue,
+//                                                  outErrorBuf,
+//                                                  CL_TRUE,
+//                                                  CL_MAP_READ,
+//                                                  0,
+//                                                  sizeof(cl_double) * global_work_size,
+//                                                  0, NULL, NULL, &clError );
+//    if (clError != CL_SUCCESS)
+//    {
+//        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+//        exit(clError);
+//    }
 
     returnedNumofthread = (cl_int *) clEnqueueMapBuffer( queue,
                                                   NumOfThreadBuf,
@@ -2255,26 +2358,29 @@ void Net::leaveOneOutCL()
         exit(clError);
     }
 
-    returnedNumOfSkipped = (cl_int *) clEnqueueMapBuffer( queue,
-                                                         NumOfVectorToSkipBuf,
-                                                         CL_TRUE,
-                                                         CL_MAP_READ,
-                                                         0,
-                                                         sizeof(cl_int) * global_work_size,
-                                                         0, NULL, NULL, &clError );
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
+//    returnedNumOfSkipped = (cl_int *) clEnqueueMapBuffer( queue,
+//                                                         NumOfVectorToSkipBuf,
+//                                                         CL_TRUE,
+//                                                         CL_MAP_READ,
+//                                                         0,
+//                                                         sizeof(cl_int) * global_work_size,
+//                                                         0, NULL, NULL, &clError );
+//    if (clError != CL_SUCCESS)
+//    {
+//        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
+//        exit(clError);
+//    }
 
     for(int i = 0; i < global_work_size; ++i)
     {
-        cout << "NumOfThread = " << returnedNumofthread[i] << " NumOfSkipped = " << returnedNumOfSkipped[i] << "\tError = " << returnedError[i] << "\tAnswer = " << returnedAnswer[i] <<endl;
+//        cout << "NumOfThread = " << returnedNumofthread[i] << " NumOfSkipped = " << returnedNumOfSkipped[i] << "\tError = " << returnedError[i] << "\tAnswer = " << returnedAnswer[i] <<endl;
+        cout << "NumOfThread = " << returnedNumofthread[i] <<endl;
     }
 
 
+
     delete []NumberOfErrors;
+    delete []matrixArray;
 }
 
 void Net::leaveOneOut()
