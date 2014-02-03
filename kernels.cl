@@ -19,7 +19,6 @@ double logistic(double x, double t)
 __kernel void leaveOneOut(
  double ecrit,
  double lrate,
- double error,
  double temp,
 global double * matrix, //NumberOfVectors * (NetLength+2)
  int NumberOfVectors,
@@ -43,13 +42,13 @@ global int * NumOfVectorToSkip)
     NumOfThread[get_global_id(0)] = get_global_id(0);
 
     NumOfVectorToSkip[get_global_id(0)] = get_global_id(0);/////////
-    outError[get_global_id(0)] = 0.;
-    answer[get_global_id(0)] = 1;
-}
+//    outError[get_global_id(0)] = 0.;
+//    answer[get_global_id(0)] = 1;
 
 
 
-/*
+
+
 
     //set zero weights
 
@@ -196,4 +195,4 @@ answer[NumOfVectorToSkip[get_global_id(0)]] = right; //return value
 }
 
 
-*/
+

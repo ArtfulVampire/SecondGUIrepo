@@ -503,13 +503,13 @@ void Spectre::psaSlot()
         {
             for(int j=0; j<count; ++j)
             {
-//                if(j==0) paint->setPen(QPen(QBrush("blue"), 2));
-//                if(j==1) paint->setPen(QPen(QBrush("red"), 2));
-//                if(j==2) paint->setPen(QPen(QBrush("green"), 2));
+                if(j==0) paint->setPen(QPen(QBrush("blue"), 2));
+                if(j==1) paint->setPen(QPen(QBrush("red"), 2));
+                if(j==2) paint->setPen(QPen(QBrush("green"), 2));
 
-                if(j==0) paint->setPen(QPen(QBrush(QColor(0,0,0,255)), 2));
-                if(j==1) paint->setPen(QPen(QBrush(QColor(80,80,80,255)), 2));
-                if(j==2) paint->setPen(QPen(QBrush(QColor(160,160,160,255)), 2));
+//                if(j==0) paint->setPen(QPen(QBrush(QColor(0,0,0,255)), 2));
+//                if(j==1) paint->setPen(QPen(QBrush(QColor(80,80,80,255)), 2));
+//                if(j==2) paint->setPen(QPen(QBrush(QColor(160,160,160,255)), 2));
                 paint->drawLine(QPointF(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - sp[j][c2][int(k*spL[j]/(coords::scale * paint->device()->width()))]*norm), QPointF(paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - sp[j][c2][int((k+1)*spL[j]/(coords::scale * paint->device()->width()))]*norm));
             }
         }
