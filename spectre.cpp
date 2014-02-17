@@ -28,7 +28,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     dirBC->cd(QDir::toNativeSeparators(dir_->absolutePath()));
     ns=ns_;
 
-    QButtonGroup * group1, *group2, *group3;
+    QButtonGroup * group1, *group2, *group3, *group4;
 
     group1 = new QButtonGroup;
     group1->addButton(ui->jpgButton);
@@ -44,6 +44,14 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     group3 = new QButtonGroup;
     group3->addButton(ui->amplitudeWaveletButton);
     group3->addButton(ui->phaseWaveletButton);
+    ui->amplitudeWaveletButton->setChecked(true);
+
+    group4 = new QButtonGroup;
+    group4->addButton(ui->grayRadioButton);
+    group4->addButton(ui->colourRadioButton);
+    ui->colourRadioButton->setChecked(true);
+
+
     ui->amplitudeWaveletButton->setChecked(true);
 
 
@@ -503,13 +511,18 @@ void Spectre::psaSlot()
         {
             for(int j=0; j<count; ++j)
             {
-                if(j==0) paint->setPen(QPen(QBrush("blue"), 2));
-                if(j==1) paint->setPen(QPen(QBrush("red"), 2));
-                if(j==2) paint->setPen(QPen(QBrush("green"), 2));
-
-//                if(j==0) paint->setPen(QPen(QBrush(QColor(0,0,0,255)), 2));
-//                if(j==1) paint->setPen(QPen(QBrush(QColor(80,80,80,255)), 2));
-//                if(j==2) paint->setPen(QPen(QBrush(QColor(160,160,160,255)), 2));
+                if(ui->colourRadioButton->isChecked())
+                {
+                    if(j==0) paint->setPen(QPen(QBrush("blue"), 2));
+                    if(j==1) paint->setPen(QPen(QBrush("red"), 2));
+                    if(j==2) paint->setPen(QPen(QBrush("green"), 2));
+                }
+                if(ui->grayRadioButton->isChecked())
+                {
+                    if(j==0) paint->setPen(QPen(QBrush(QColor(0,0,0,255)), 2));
+                    if(j==1) paint->setPen(QPen(QBrush(QColor(80,80,80,255)), 2));
+                    if(j==2) paint->setPen(QPen(QBrush(QColor(160,160,160,255)), 2));
+                }
                 paint->drawLine(QPointF(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - sp[j][c2][int(k*spL[j]/(coords::scale * paint->device()->width()))]*norm), QPointF(paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - sp[j][c2][int((k+1)*spL[j]/(coords::scale * paint->device()->width()))]*norm));
             }
         }
@@ -569,6 +582,7 @@ void Spectre::psaSlot()
     if(ui->jpgButton->isChecked())
     {
         helpString = dirBC->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ui->lineEdit_m2->text()).append(".jpg");
+        helpString = dirBC->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ui->lineEdit_m2->text()).append(".png");
         pic.save(helpString, 0, 100);
         rangePicPath = helpString;
         ui->specLabel->setPixmap(pic.scaled(ui->specLabel->size()));

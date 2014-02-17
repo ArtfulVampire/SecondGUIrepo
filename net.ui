@@ -295,13 +295,6 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="3">
-     <widget class="QPushButton" name="leaveOneOutButton">
-      <property name="text">
-       <string>LeaveOneOut</string>
-      </property>
-     </widget>
-    </item>
     <item row="3" column="1">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -357,20 +350,6 @@
        </widget>
       </item>
      </layout>
-    </item>
-    <item row="2" column="3">
-     <widget class="QCheckBox" name="clearSetsWaitBox">
-      <property name="text">
-       <string>wait 5</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <widget class="QPushButton" name="clearSetsButton">
-      <property name="text">
-       <string>Clear Window Sets</string>
-      </property>
-     </widget>
     </item>
     <item row="3" column="3">
      <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -446,6 +425,27 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="0" column="3">
+     <widget class="QPushButton" name="clearSetsButton">
+      <property name="text">
+       <string>Clear Window Sets</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QCheckBox" name="clearSetsWaitBox">
+      <property name="text">
+       <string>wait 5</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QPushButton" name="hopfieldPushButton">
+      <property name="text">
+       <string>Hopfield</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

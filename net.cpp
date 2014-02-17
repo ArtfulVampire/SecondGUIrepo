@@ -134,8 +134,6 @@ Net::Net(QDir *dir_, int ns_, int left_, int right_, double spStep_, QString Exp
 
     QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWts()));
 
-    QObject::connect(ui->leaveOneOutButton, SIGNAL(clicked()), this, SLOT(leaveOneOutSlot()));
-
     QObject::connect(ui->neuronGasPushButton, SIGNAL(clicked()), this, SLOT(neuronGas()));
 
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
@@ -152,6 +150,7 @@ Net::Net(QDir *dir_, int ns_, int left_, int right_, double spStep_, QString Exp
 
     QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(SVM()));
 
+    QObject::connect(ui->hopfieldPushButton, SIGNAL(clicked()), this, SLOT(Hopfield()));
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 }
@@ -181,6 +180,17 @@ Net::~Net()
 }
 
 
+double distance(double * vec1, double * vec2, int dim)
+{
+    double dist = 0.;
+    //Euclid
+    for(int i = 0; i < dim; ++i)
+    {
+        dist += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
+    }
+    return dist;
+
+}
 
 double logistic(double &x, double t)
 {
@@ -362,7 +372,6 @@ void Net::autoClassification(QString spectraDir)
             PaIntoMatrixByName(helpString);
             leaveOneOutSlot();
         }
-
     }
     //leaveOneOut
     if(ui->leaveOneOutRadioButton->isChecked())
@@ -2425,7 +2434,7 @@ void Net::leaveOneOut()
 //    cout<<"LeaveOneOut start"<<endl;
     for(int h=0; h<NumberOfVectors; ++h) //learn & classificate every vector
     {
-        cout<<h<<endl;
+//        cout<<h<<endl;
 
         //set zero weights
         for(int i=0; i<NetLength+1; ++i)
@@ -2439,9 +2448,8 @@ void Net::leaveOneOut()
 
 
         epoch=0;
-//        cout<<h<<" ";
         //start learning
-        while(error>ecrit)
+        while(error>ecrit && epoch<ui->epochSpinBox->value())
         {
             error=0.0;
             //mix vectors
@@ -2608,8 +2616,6 @@ void Net::PaIntoMatrixByName(QString fileName)
     }
     else
     {
-
-
         if(fileName=="1")
         {
             helpString = dirBC->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("1.pa");
@@ -2707,6 +2713,260 @@ void Net::PaIntoMatrixByName(QString fileName)
 //    cout<<"NumberOfVectors="<<NumberOfVectors<<endl;
 }
 
+double HopfieldActivation(double x, double temp)
+{
+    return ((1./(1. + exp(-x/temp/300.)) * 2.) - 1.) * temp;
+}
+
+void Net::Hopfield()
+{
+    double maxH = 0.;
+    double * output1 = new double [NetLength];
+    double * output2 = new double [NetLength];
+    MakePa *mkPa = new MakePa(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"), ExpName, ns, left, right, spStep);
+    mkPa->setRdcCoeff(10);
+    mkPa->makePaSlot();
+
+    PaIntoMatrixByName("all");
+    for(int i = 0; i < NetLength; ++i)
+    {
+        for(int j = 0; j < NumberOfVectors; ++j)
+        {
+            maxH = fmax(fabs(matrix[j][i]), maxH);
+        }
+    }
+    cout << "maxH = " << maxH << endl;
+//    LearnNet();
+
+    double ** weightH = new double * [NetLength];
+    for(int i = 0; i < NetLength; ++i)
+    {
+        weightH[i] = new double [NetLength];
+    }
+
+
+    PaIntoMatrixByName("1");
+    for(int i = 0; i < NetLength; ++i)
+    {
+        for(int j = 0; j < NetLength; ++j)
+        {
+            weightH[i][j] = 0.;
+            for(int k = 0; k < NumberOfVectors; ++k)
+            {
+                weightH[i][j] += matrix[k][i] * matrix[k][j];
+            }
+            weightH[i][j] /= NumberOfVectors;
+        }
+    }
+
+
+    int * mixNumH = new int [NetLength];
+    for(int i = 0; i < NetLength; ++i)
+    {
+        mixNumH[i] = i;
+    }
+    int a1,a2,buff;
+    srand(QTime::currentTime().msec());
+
+
+
+    double sumH;
+
+    double * outputClass = new double [NumOfClasses];
+    int type;
+    bool answer;
+    int NumberOfErrorsH = 0;
+    double ** attractorsH = new double * [NumberOfVectors];
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        attractorsH[i] = new double [NetLength+1];
+    }
+
+    for(int i = 0; i < NumberOfVectors; ++i) //number of vector to classify
+    {
+        for(int j = 0; j < NetLength; ++j)
+        {
+            output1[j] = matrix[i][j];
+            output2[j] = matrix[i][j] + 1;
+        }
+
+        for(int j = 0; j < NetLength * 10; ++j)
+        {
+            a1 = rand()%NetLength;
+            a2 = rand()%NetLength;
+            buff = mixNumH[a1];
+            mixNumH[a1] = mixNumH[a2];
+            mixNumH[a2] = buff;
+        }
+        cout << i << " vector Hopfield start" << endl;
+
+        //Hopfield convergence
+        while(distance(output1, output2, NetLength) > 1e-4)
+        {
+            for(int j = 0; j < NetLength; ++j)
+            {
+                output2[j] = output1[j];
+            }
+
+            for(int j = 0; j < NetLength * 5; ++j)
+            {
+                a1 = rand()%NetLength;
+                a2 = rand()%NetLength;
+                buff = mixNumH[a1];
+                mixNumH[a1] = mixNumH[a2];
+                mixNumH[a2] = buff;
+            }
+
+            for(int j = 0; j < NetLength; ++j) //mixNum[j] - number of neuron to recalculate
+            {
+                //asynchronous
+                sumH = 0.;
+                for(int k = 0; k < NetLength; ++k)
+                {
+                    sumH += weightH[mixNumH[j]][k] * output1[k];
+                }
+                output1[mixNumH[j]] = HopfieldActivation(sumH, maxH);
+
+            }
+//            cout << "diff = " << distance(output1, output2, NetLength) <<endl;
+        }
+        for(int j = 0; j < NetLength; ++j)
+        {
+            attractorsH[i][j] = output1[j];
+        }
+        attractorsH[i][NetLength] = matrix[i][NetLength+1];
+
+    }
+
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        for(int j = 0; j < NumberOfVectors; ++j)
+        {
+            if( distance(attractorsH[i], attractorsH[j], NetLength) > 1.) cout << " x  ";
+            else cout << "000 ";
+        }
+        cout << matrix[i][NetLength+1] << endl;
+    }
+//    return;
+//    LearnNet();
+
+
+    PaIntoMatrixByName("2");
+
+    for(int i = 0; i < NumberOfVectors; ++i) //number of vector to classify
+    {
+        for(int j = 0; j < NetLength; ++j)
+        {
+            output1[j] = matrix[i][j];
+            output2[j] = matrix[i][j] + 1;
+        }
+
+        for(int j = 0; j < NetLength * 10; ++j)
+        {
+            a1 = rand()%NetLength;
+            a2 = rand()%NetLength;
+            buff = mixNumH[a1];
+            mixNumH[a1] = mixNumH[a2];
+            mixNumH[a2] = buff;
+        }
+        cout << i << " vector Hopfield start" << endl;
+
+        //Hopfield convergence
+        while(distance(output1, output2, NetLength) > 1e-4)
+        {
+            for(int j = 0; j < NetLength; ++j)
+            {
+                output2[j] = output1[j];
+            }
+
+            for(int j = 0; j < NetLength * 5; ++j)
+            {
+                a1 = rand()%NetLength;
+                a2 = rand()%NetLength;
+                buff = mixNumH[a1];
+                mixNumH[a1] = mixNumH[a2];
+                mixNumH[a2] = buff;
+            }
+
+            for(int j = 0; j < NetLength; ++j) //number of neuron
+            {
+                //asynchronous
+                sumH = 0.;
+                for(int k = 0; k < NetLength; ++k)
+                {
+                    sumH += weightH[mixNumH[j]][k] * output1[k];
+                }
+                output1[mixNumH[j]] = HopfieldActivation(sumH, maxH);
+            }
+//            cout << "diff = " << distance(output1, output2, NetLength) <<endl;
+        }
+
+        buff = 0;
+        sumH = distance(output1, attractorsH[0], NetLength);
+
+        for(int j = 0; j < NumberOfVectors; ++j)
+        {
+            if(sumH > distance(output1, attractorsH[j], NetLength))
+            {
+                buff = j;
+                sumH = distance(output1, attractorsH[j], NetLength);
+            }
+//            cout << distance(output1, attractorsH[j], NetLength) << " ";
+        }
+        cout<<endl;
+        if(matrix[i][NetLength+1] == attractorsH[buff][NetLength]) answer = true;
+        else answer = false;
+        cout << "classification: dist = " << sumH << " attrNum = " << buff << " class coincidence = " << answer <<endl;
+
+//        //classifying perceptron
+//        type = int(matrix[i][NetLength+1]);
+//        for(int j = 0; j < NumOfClasses; ++j) //calculate output //2 = numberOfTypes
+//        {
+//            outputClass[j] = 0.;
+//            for(int h = 0; h < NetLength; ++h)
+//            {
+//                outputClass[j] += weight[j][h] * output1[h];
+//            }
+//            outputClass[j] += weight[j][NetLength] * matrix[i][NetLength];
+//            outputClass[j] = logistic(outputClass[j], temp); // unlinear conformation
+//        }
+//        answer = true;
+//        for(int k=0; k<NumOfClasses; ++k)
+//        {
+//            if(k!=type && outputClass[k] >= outputClass[type])
+//            {
+//                answer=false;
+//            }
+//        }
+//        cout << int(answer) << endl;
+        if(!answer) ++NumberOfErrorsH;
+    }
+    cout << "Percentage right = " << (1. - double(NumberOfErrorsH)/NumberOfVectors)*100. << " %" << endl;
+
+
+
+
+
+    for(int i = 0; i < NetLength; ++i)
+    {
+        delete [] weightH[i];
+    }
+    delete [] weightH;
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        delete [] attractorsH[i];
+    }
+    delete [] attractorsH;
+
+    delete [] mixNumH;
+    delete [] output1;
+    delete [] output2;
+    delete [] outputClass;
+    delete mkPa;
+
+
+}
+
 void Net::LearnNet()
 {
     time_t duration = time(NULL);
@@ -2720,7 +2980,7 @@ void Net::LearnNet()
 //    if(output!=NULL) delete [] output;
 
     output = new double [NumOfClasses];
-    double error=ecrit + 1.;
+    double error = ecrit + 1.;
     int type=0;
     int mixNum[NumberOfVectors];
 
@@ -2934,17 +3194,6 @@ void Net::setErrcrit(double a)
     this->ecrit = a;
 }
 
-double distance(double * vec1, double * vec2, int dim)
-{
-    double dist = 0.;
-    //Euclid
-    for(int i = 0; i < dim; ++i)
-    {
-        dist += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
-    }
-    return dist;
-
-}
 
 
 //matrix product B = A*B
