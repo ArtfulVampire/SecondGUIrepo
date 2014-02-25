@@ -20,7 +20,7 @@ Net::Net(QDir *dir_, int ns_, int left_, int right_, double spStep_, QString Exp
     ExpName = ExpName_;
 
     epoch=150;
-    mytime.start();
+    myTime.start();
 
 
     log = fopen(dir->absolutePath().append(QDir::separator()).append("log.txt").toStdString().c_str(),"w");
@@ -298,7 +298,7 @@ void Net::setAutoProcessingFlag(bool a)
 
 void Net::autoClassification(QString spectraDir)
 {
-    mytime.restart();
+    myTime.restart();
     if(loadPAflag!=1)
     {
         QMessageBox::critical((QWidget*)this, tr("Warning"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
@@ -383,7 +383,7 @@ void Net::autoClassification(QString spectraDir)
     mkPa->close();
     delete mkPa;
     autoFlag = tempBool;
-    cout<< "time elapsed = " << mytime.elapsed()/1000. << " sec" << endl;
+    cout<< "time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 
     if(autoFlag == 0) QMessageBox::information((QWidget*)this, tr("Info"), tr("Auto classification done"), QMessageBox::Ok);
 
@@ -1816,8 +1816,7 @@ const char* errorMessage(int err_)
 void Net::leaveOneOutCL()
 {
 
-    QTime myTime;
-    myTime.start();
+    myTime.restart();
     cout << "leaveOneOutCL started" << endl;
     NumberOfErrors = new int[NumOfClasses];
     helpString="";
@@ -2969,7 +2968,7 @@ void Net::Hopfield()
 
 void Net::LearnNet()
 {
-    time_t duration = time(NULL);
+    myTime.restart();
     ecrit = ui->errorBox->value();
     temp = ui->tempBox->value();
     lrate = ui->learnRateBox->value();
@@ -3100,14 +3099,7 @@ void Net::LearnNet()
     }//endof all epoches, end of learning
     cout<<"learning ended "<<epoch<<" epoches"<<endl;
 
-    duration = time(NULL) - duration;
-    tmp="";
-    tmp.setNum(int(duration)).prepend("Time elapsed = ").append(" sec\n");
-    helpString.setNum(epoch);
-    helpString.prepend("Learning ended \nNumber of epoches = ").prepend(tmp);
-    //automatization
-    if(!autoFlag) QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
-
+    cout << "time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
     delete [] output;
     stopFlag = 0;
 }
@@ -4202,13 +4194,13 @@ void Net::SVM()
         helpString = dir->absolutePath();
         helpString.append(QDir::separator()).append("PA");
         helpString.prepend("cd ");
-        helpString.append(" && svm-train -t 0 svm1 && svm-predict svm2 svm1.model output >> output1");
+        helpString.append(" && svm-train -t ").append(QString::number(ui->svmKernelSpinBox->value())).append(" svm1 && svm-predict svm2 svm1.model output >> output1");
         system(helpString.toStdString().c_str());
 
         helpString = dir->absolutePath();
         helpString.append(QDir::separator()).append("PA");
         helpString.prepend("cd ");
-        helpString.append(" && svm-train -t 0 svm2 && svm-predict svm1 svm2.model output >> output1");
+        helpString.append(" && svm-train -t ").append(QString::number(ui->svmKernelSpinBox->value())).append(" svm2 && svm-predict svm1 svm2.model output >> output1");
         system(helpString.toStdString().c_str());
     }
 
@@ -4225,7 +4217,7 @@ void Net::SVM()
     {
         helpString = file.readLine();
         if(!helpString.contains(QRegExp("[%= ]"))) break;
-        helpString = helpString.split(QRegExp("[%= ]"), QString::SkipEmptyParts)[1];
+        helpString = helpString.split(QRegExp("[%= ]"), QString::SkipEmptyParts)[1]; //generality [1]
         helpDouble = helpString.toDouble();
         average += helpDouble;
         ++lines;
