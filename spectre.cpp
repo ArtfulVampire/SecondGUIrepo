@@ -1049,7 +1049,7 @@ void Spectre::countSpectra()
 
     dir->cd(ui->lineEdit_1->text());
     nameFilters.clear();
-    lst=dir->entryList(QDir::Files, QDir::NoSort);
+    lst=dir->entryList(QDir::Files, QDir::Name);
     dir->cd(dirBC->absolutePath());
     //        cout<<"left="<<left<<" right="<<right<<endl;
 
@@ -1272,7 +1272,7 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
 
 
     fscanf(file, "%*s %d\n", &NumOfSlices);
-//    cout<<NumOfSlices<<endl;
+    cout<<NumOfSlices<<endl;
     fscanf(file, "NumOfSlicesEyesCut %d \n", &Eyes);
 //    cout<<Eyes<<endl;
 
@@ -1328,7 +1328,7 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
     //correct Eyes number
     Eyes=0;
     NumOfSlices = fftLength;
-    for(int i=0; i<NumOfSlices; ++i)
+    for(int i = 0; i < NumOfSlices; ++i)
     {
         h=0;
         for(int j=0; j<ns; ++j)
@@ -1345,6 +1345,7 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
 //        {
 //            perror("cannot delete file");
 //        }
+
         cout<<"Too short real signal "<<helpString.toStdString()<<endl;//<<NumOfSlices<<"  "<<Eyes<<endl<<endl;
 
         for(int i=0; i<ns; ++i)
@@ -1388,10 +1389,11 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
             }
 
 
-            leftSmoothLimit = max((left-ui->smoothBox->value()), 0);
-            rightSmoothLimit = min((right+1+ui->smoothBox->value()), fftLength/2-1);
+            leftSmoothLimit = 0;
+            rightSmoothLimit = fftLength/2-1;
             //smooth spectre
-            for(int a=0; a<ui->smoothBox->value(); ++a)
+            for(int a=0; a < (int)(ui->smoothBox->value() / sqrt(norm1)); ++a)
+//            for(int a=0; a < ui->smoothBox->value(); ++a)
             {
                 help1=dataFFT[c1][leftSmoothLimit-1];
                 for(int k=leftSmoothLimit; k<rightSmoothLimit; ++k)

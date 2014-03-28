@@ -48,7 +48,7 @@ Net::Net(QDir *dir_, int ns_, int left_, int right_, double spStep_, QString Exp
     helpCharArr = new char [200];
 
 
-    QButtonGroup *group1, *group2;
+    QButtonGroup *group1, *group2, *group3;
     group1 = new QButtonGroup();
     group1->addButton(ui->leaveOneOutRadioButton);
     group1->addButton(ui->crossRadioButton);
@@ -56,9 +56,13 @@ Net::Net(QDir *dir_, int ns_, int left_, int right_, double spStep_, QString Exp
     group2->addButton(ui->realsRadioButton);
     group2->addButton(ui->windowsRadioButton);
     group2->addButton(ui->pcRadioButton);
+    group3 = new QButtonGroup();
+    group3->addButton(ui->deltaRadioButton);
+    group3->addButton(ui->backpropRadioButton);
 
     ui->crossRadioButton->setChecked(true);
     ui->realsRadioButton->setChecked(true);
+    ui->deltaRadioButton->setChecked(true);
 
     ui->tempBox->setValue(10);
     ui->tempBox->setSingleStep(10);
@@ -2968,6 +2972,18 @@ void Net::Hopfield()
 
 void Net::LearnNet()
 {
+    if(ui->deltaRadioButton->isChecked())
+    {
+        LearnNetDelta();
+    }
+    else if(ui->backpropRadioButton->isChecked())
+    {
+        LearnNetBackProp();
+    }
+}
+
+void Net::LearnNetDelta()
+{
     myTime.restart();
     ecrit = ui->errorBox->value();
     temp = ui->tempBox->value();
@@ -3101,6 +3117,132 @@ void Net::LearnNet()
 
     cout << "time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
     delete [] output;
+    stopFlag = 0;
+}
+
+void Net::LearnNetBackProp()
+{
+    myTime.restart();
+    ecrit = ui->errorBox->value();
+    temp = ui->tempBox->value();
+    lrate = ui->learnRateBox->value();
+
+    srand (myTime.currentTime().msec());
+
+    output = new double [NumOfClasses];
+    double error = ecrit + 1.;
+    int type=0;
+    int * mixNum = new int [NumberOfVectors];
+
+
+    for(int i = 0; i < NetLength+1; ++i)
+    {
+        for(int j = 0; j < NumOfClasses; ++j)
+        {
+            weight[j][i] = 0.;
+        }
+    }
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        mixNum[i] = i;
+    }
+
+    epoch = 0;
+
+    double * deltaWeigths = new double [NumOfClasses];
+
+    int a1, a2, buffer;
+    int index;
+    while(error > ecrit && epoch < ui->epochSpinBox->value())
+    {
+        error = 0.0;
+        //mix vectors
+        for(int i=0; i<5*NumberOfVectors; ++i)
+        {
+            a1=rand()%(NumberOfVectors);
+            a2=rand()%(NumberOfVectors);
+            buffer=mixNum[a2];
+            mixNum[a2]=mixNum[a1];
+            mixNum[a1]=buffer;
+        }
+//        cout<<"epoch="<<epoch<<endl;
+
+        for(int vecNum=0; vecNum<NumberOfVectors; ++vecNum)
+        {
+            index = mixNum[vecNum];
+            type = int(matrix[index][NetLength+1]);
+
+
+            for(int j = 0; j < NumOfClasses; ++j) //calculate output
+            {
+                output[j] = 0.;
+                for(int i = 0; i < NetLength+1; ++i)   // +bias, coz +1
+                {
+                    output[j] += weight[j][i] * matrix[index][i];
+                }
+                output[j] = logistic(output[j], temp); // unlinear logistic conformation
+            }
+
+            //error count + weight differ
+            for(int i=0; i<NumOfClasses; ++i)
+            {
+                error += ((type==i) - output[i]) * ((type==i) - output[i]);
+            }
+
+            for(int j = 0; j < NumOfClasses; ++j) //calculate output
+            {
+                deltaWeigths[j] = -1./temp * output[j] * (1. - output[j]) * ((type==j) - output[j]);
+            }
+
+            //vary weights
+            for(int k=0; k<NumOfClasses; ++k)
+            {
+                for(int i=0; i<NetLength+1; ++i)
+                {
+                    weight[k][i] -= lrate * matrix[index][i] * deltaWeigths[k];
+                }
+            }
+//            int i=0;
+//            while(i<(NetLength+1))
+//            {
+//                //cbypass of channels not to consider
+//                for(int z=0; z<zeroChanLength; ++z)
+//                {
+//                    if((i/spLength+1)==zeroChan[z]) i+=spLength;
+//                }
+
+//                weight[type][i] += lrate * (1.-output[type]) * matrix[index][i];
+//                for(int k=0; k<NumOfClasses; ++k)
+//                {
+//                    if (k!=type) weight[k][i] -= lrate * output[k] * matrix[index][i];
+//                }
+//                ++i;
+//            }
+
+//            cout<<"weights"<<endl;
+        }
+
+        error/=NumberOfVectors;
+        error=sqrt(error);
+
+        if(!autoFlag) cout<<"epoch="<<epoch<<" error="<<error<<endl;
+        ++epoch;
+        this->ui->errorSpinBox->setValue(error);
+//        this->ui->epochSpinBox->setValue(epoch);
+
+//        qApp->processEvents();
+//        if(stopFlag == 1)
+//        {
+//            stopFlag = 0;
+//            return;
+//        }
+    }//endof all epoches, end of learning
+    cout<<"learning ended "<<epoch<<" epoches"<<endl;
+
+    cout << "time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
+    delete [] output;
+    delete [] mixNum;
+    delete [] deltaWeigths;
     stopFlag = 0;
 }
 
@@ -4248,3 +4390,4 @@ void Net::SVM()
 
     delete mkPa;
 }
+

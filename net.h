@@ -56,6 +56,8 @@ public:
     double mouseClick(QLabel * label, QMouseEvent * ev);
     void leaveOneOut();
     void leaveOneOutCL();
+    void LearnNetBackProp();
+    void LearnNetDelta();
 
 protected:
     bool event(QEvent * ev);
