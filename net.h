@@ -95,6 +95,7 @@ public slots:
     void clearSets2();
     void SVM();
     void Hopfield();
+    void methodSetParam(int);
 
 private:
     Ui::Net *ui;

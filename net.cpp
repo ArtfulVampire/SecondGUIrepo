@@ -65,13 +65,13 @@ Net::Net(QDir *dir_, int ns_, int left_, int right_, double spStep_, QString Exp
     ui->deltaRadioButton->setChecked(true);
 
     ui->tempBox->setValue(10);
-    ui->tempBox->setSingleStep(10);
+    ui->tempBox->setSingleStep(1);
     ui->errorBox->setValue(0.10);
     ui->errorBox->setSingleStep(0.01);
-    ui->errorBox->setDecimals(8);
+    ui->errorBox->setDecimals(4);
     ui->learnRateBox->setValue(0.1);
     ui->learnRateBox->setSingleStep(0.05);
-    ui->epochSpinBox->setMaximum(500);
+    ui->epochSpinBox->setMaximum(1000);
     ui->epochSpinBox->setSingleStep(50);
     ui->epochSpinBox->setValue(250);
     ui->numOfPairsBox->setMaximum(100);
@@ -155,6 +155,8 @@ Net::Net(QDir *dir_, int ns_, int left_, int right_, double spStep_, QString Exp
     QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(SVM()));
 
     QObject::connect(ui->hopfieldPushButton, SIGNAL(clicked()), this, SLOT(Hopfield()));
+
+    QObject::connect(group3, SIGNAL(buttonClicked(int)), this, SLOT(methodSetParam(int)));
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 }
@@ -2970,6 +2972,24 @@ void Net::Hopfield()
 
 }
 
+void Net::methodSetParam(int a)
+{
+    if(a == -2)
+    {
+        ui->epochSpinBox->setValue(250);
+        ui->tempBox->setValue(10);
+        ui->learnRateBox->setValue(0.1);
+        ui->errorBox->setValue(0.1);
+    }
+    if(a == -3)
+    {
+        ui->epochSpinBox->setValue(300);
+        ui->tempBox->setValue(2);
+        ui->learnRateBox->setValue(1.0);
+        ui->errorBox->setValue(0.05);
+    }
+}
+
 void Net::LearnNet()
 {
     if(ui->deltaRadioButton->isChecked())
@@ -3140,6 +3160,7 @@ void Net::LearnNetBackProp()
         for(int j = 0; j < NumOfClasses; ++j)
         {
             weight[j][i] = 0.;
+            weight[j][i] = (-500 + rand()%1000)/10000;
         }
     }
     for(int i = 0; i < NumberOfVectors; ++i)

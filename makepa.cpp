@@ -1173,6 +1173,7 @@ void MakePa::kwTest()
 }
 
 
+
 void MakePa::makePaSlot()
 {
     QString typeString;
@@ -1192,8 +1193,6 @@ void MakePa::makePaSlot()
     cout << "makePa typeString = " << typeString.toStdString() << endl;
 
     ui->lineEdit->clear();
-//    sleep(1);
-
     double coeff = ui->rdcCoeffBox->value();
 
 
