@@ -78,7 +78,6 @@ public slots:
     void next();
     void prev();
     void drawWts();
-    void compressWts();
     void PaIntoMatrixByName(QString fileName);
     void PaIntoMatrix();
     void leaveOneOutSlot();
@@ -90,9 +89,6 @@ public slots:
     void autoClassificationSimple();
     void drawWindows();
     void autoPCAClassification();
-    void clearSets();
-    void clearSets1();    
-    void clearSets2();
     void SVM();
     void Hopfield();
     void methodSetParam(int);
@@ -126,8 +122,6 @@ private:
     double Error;
     QPixmap columns;
     FILE * log;
-    int *zeroChan;
-    int zeroChanLength;
     int numOfTall;
     int loadPAflag;
     bool stopFlag;
