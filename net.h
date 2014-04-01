@@ -41,7 +41,7 @@ public:
     explicit Net(QDir *dir_ = new QDir("/"), int ns_ = 19., int left_ = 82, int right_ = 328, double spStep_=250./4096., QString ExpName_="nobody");
     ~Net();
     bool ClassificateVector(int &vecNum);
-    double ClassificateVectorError(int &vecNum);
+//    double ClassificateVectorError(int &vecNum);
     void closeLogFile();
     void setAutoProcessingFlag(bool);
     int getEpoch();
@@ -56,20 +56,20 @@ public:
     double mouseClick(QLabel * label, QMouseEvent * ev);
     void leaveOneOut();
     void leaveOneOutCL();
-    void LearnNetBackProp();
-    void LearnNetDelta();
+//    void LearnNetBackPropGen();
+//    void LearnNetDelta();
 
 protected:
     bool event(QEvent * ev);
     void mousePressEvent(QMouseEvent * event);
-//    void customEvent(QEvent * ev);
-//    bool tempEvent(QTempEvent * ev);
 
 public slots:
     void readCfg();
     void loadWts();
     void loadWtsByName(QString);
+
     void LearnNet();
+
     void tall();
     void reset();
     void saveWts();
@@ -87,11 +87,12 @@ public slots:
     void averageClassification();
     void autoClassification(QString spectraDir);
     void autoClassificationSimple();
-    void drawWindows();
+//    void drawWindows();
     void autoPCAClassification();
     void SVM();
     void Hopfield();
     void methodSetParam(int);
+    void memoryAndParamsAllocation();
 
 private:
     Ui::Net *ui;
@@ -99,21 +100,27 @@ private:
     QString ExpName;
     QDir *dir, *dirBC;
     double **matrix;
-    double **weight; //perceptron weights
+    double *** weight;
+    int * dimensionality; //for backprop
+//    double **weight; //delta-rule weights
+//    double *** weightBP; //backprop weights
     double * output;
     char * helpCharArr;
+
     QPixmap pic;
     QPainter *paint;
+    int numOfLayers; //for backprop
     int numTest;
     int epoch;
     int  NetLength; //inputs
     int NumOfClasses; //outputs
     int NumberOfVectors;
     bool autoFlag;
-    double lrate;
-    double ecrit;
-    double temp;
-    int *NumberOfErrors;
+    double critError;
+    double currentError;
+    double temperature;
+    double learnRate;
+    int * NumberOfErrors;
     char **FileName;
     int spLength;
     int left, right;

@@ -24,6 +24,7 @@
 #include <string>
 #include <stdio.h>
 #include <cmath>
+#include <cstddef>
 
 #include "four1.h"
 #include <unistd.h>
