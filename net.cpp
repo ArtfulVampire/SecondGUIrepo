@@ -1906,17 +1906,28 @@ void Net::leaveOneOutCL()
 
 void Net::leaveOneOut()
 {
-    /*
+
     myTime.restart();
+
+    srand(myTime.currentTime().msec() * (myTime.currentTime().msec() +13));
+
     critError = ui->critErrorDoubleSpinBox->value();
     temperature = ui->tempBox->value();
     learnRate = ui->learnRateBox->value();
     currentError = critError + 0.1;
 
-    srand (myTime.currentTime().msec());
+    double ** output = new double * [numOfLayers]; //data and global output together
+    for(int i = 0; i < numOfLayers; ++i)
+    {
+        output[i] = new double [dimensionality[i] + 1];
+    }
+    double ** deltaWeights = new double * [numOfLayers]; // 0 - unused for lowest layer
+    for(int i = 0; i < numOfLayers; ++i)
+    {
+        deltaWeights[i] = new double [dimensionality[i]];
+    }
 
-    output = new double [NumOfClasses];
-    int type = 0;
+
     int * mixNum = new int [NumberOfVectors];
     for(int i = 0; i < NumberOfVectors; ++i)
     {
@@ -1935,20 +1946,12 @@ void Net::leaveOneOut()
 
     int a1, a2, buffer;
     int index;
-
+    int type;
     for(int h = 0; h < NumberOfVectors; ++h) //learn & classify every vector
     {
-        //set zero weights
-        for(int i = 0; i < NetLength + 1; ++i)
-        {
-            for(int j = 0; j < NumOfClasses; ++j)
-            {
-                weight[i][j] = 0.;
-            }
-        }
+        myTime.restart();
 
-
-
+        reset();
         epoch = 0;
         //start learning
         while(currentError > critError && epoch < ui->epochSpinBox->value())
@@ -1968,50 +1971,86 @@ void Net::leaveOneOut()
             for(int vecNum = 0; vecNum <NumberOfVectors; ++vecNum)
             {
                 index = mixNum[vecNum];
+                type = matrix[index][NetLength + 1];
                 if(index == h) continue; //not to learn with h'th vector
 
-                type = int(matrix[index][NetLength + 1]);
-
-                for(int j = 0; j < NumOfClasses; ++j) //calculate output
+                for(int j = 0; j < dimensionality[0]; ++j)
                 {
-                    output[j] = 0.;
-                    for(int i = 0; i < NetLength+1; ++i)   // +bias, coz +1
+                    output[0][j] = matrix[index][j];
+                }
+                output[0][dimensionality[0]] = 1.;
+
+                //obtain outputs
+                for(int i = 1; i < numOfLayers; ++i)
+                {
+                    for(int j = 0; j < dimensionality[i]; ++j)
                     {
-                        output[j] += weight[i][j] * matrix[index][i];
+                        output[i][j] = 0.;
+                        for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
+                        {
+                            output[i][j] += weight[i-1][k][j] * output[i-1][k];
+                        }
+                        output[i][j] = logistic(output[i][j], temperature);
                     }
-                    output[j] = logistic(output[j], temperature); // unlinear logistic conformation
+                    output[i][dimensionality[i]] = 1.; //unused for the highest layer
                 }
 
-                //            cout << "output[0] = " << output[0] << "  output[1] = " << output[1] << endl;
-
-                //error count + weight differ
-                for(int i = 0; i < NumOfClasses; ++i)
+                //error in the last layer
+                for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
                 {
-                    currentError += ((type == i) - output[i]) * ((type == i) - output[i]);
+                    currentError += (output[numOfLayers-1][j] - (type == j)) * (output[numOfLayers-1][j] - (type == j));
                 }
 
-                //vary weights
-                for(int i = 0; i < NetLength+1; ++i)
+                //count deltaweights
+                //for the last layer
+                for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
                 {
-                    for(int k = 0; k < NumOfClasses; ++k)
+                    deltaWeights[numOfLayers-1][j] = -1./temperature * output[numOfLayers-1][j] * (1. - output[numOfLayers-1][j]) * ((type == j) - output[numOfLayers-1][j]); //~0.1
+                }
+
+
+                //for the other layers, upside->down
+                for(int i = numOfLayers-2; i >= 1; --i)
+                {
+                    for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
                     {
-                        weight[i][k] += learnRate * ((type == k) - output[k]) * matrix[index][i];
+                        deltaWeights[i][j] = 0.;
+                        for(int k = 0; k < dimensionality[i+1]; ++k) //connected to the higher-layer
+                        {
+                            deltaWeights[i][j] += deltaWeights[i+1][k] * weight[i][j][k];
+                        }
+                        deltaWeights[i][j]  *= 1./temperature * output[i][j] * (1. - output[i][j]);
                     }
                 }
 
-
+                for(int i = 0; i < numOfLayers-1; ++i)
+                {
+                    for(int j = 0; j < dimensionality[i]; ++j)
+                    {
+                        for(int k = 0; k < dimensionality[i+1]; ++k)
+                        {
+                            if(ui->backpropRadioButton->isChecked())    weight[i][j][k] -= learnRate * deltaWeights[i+1][k] * output[i][j];
+                            else if(ui->deltaRadioButton->isChecked())  weight[i][j][k] += learnRate * output[i][j] * ((type == k) - output[i+1][k]);
+                        }
+                    }
+                }
             }
 
             currentError/=NumberOfVectors;
             currentError = sqrt(currentError);
             ++epoch;
             this->ui->currentErrorDoubleSpinBox->setValue(currentError);
+
         }//endof all epoches, end of learning
 
         ClassificateVector(h);
-
+        cout << h << " vector ended\t" << epoch << " epoches\t" << myTime.elapsed()/1000. << " sec" << endl;
         currentError = critError + 0.1;
     }
+
+    cout << "leaveOneOut ended " << endl;
+
+    cout << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
     if(log == NULL)
@@ -2027,6 +2066,7 @@ void Net::leaveOneOut()
     }
 
 
+
     for(int i = 0; i < NumOfClasses; ++i)
     {
         fprintf(log, "%.2lf\t", double((1. - double(NumberOfErrors[i] * NumOfClasses/double(NumberOfVectors))) * 100.));
@@ -2040,9 +2080,18 @@ void Net::leaveOneOut()
     //time
 
     delete [] NumberOfErrors;
-    delete [] output;
 
-    */
+
+
+    for(int i = 0; i < numOfLayers; ++i)
+    {
+        delete []deltaWeights[i];
+        delete []output[i];
+    }
+    delete []deltaWeights;
+    delete []output;
+
+
 
 }
 
@@ -2610,7 +2659,8 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     learnRate = ui->learnRateBox->value();
     double momentum = ui->momentumDoubleSpinBox->value(); //unused yet
     int type = 0;
-    int epoch = 0;
+
+    epoch = 0;
 
     int  * mixNum = new int [NumberOfVectors];
     for(int i = 0; i < NumberOfVectors; ++i)
