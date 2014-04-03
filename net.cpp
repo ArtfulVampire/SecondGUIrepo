@@ -2767,7 +2767,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
 
 
 
-    delete[]mixNum;
+    delete []mixNum;
     for(int i = 0; i < numOfLayers; ++i)
     {
         delete []deltaWeights[i];
@@ -2816,6 +2816,8 @@ bool Net::ClassificateVector(int &vecNum)
     {
         outputClass[j] = output[numOfLayers - 1][j];
     }
+
+
     for(int i = 0; i < numOfLayers; ++i)
     {
         delete []output[i];

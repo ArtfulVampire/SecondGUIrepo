@@ -1272,7 +1272,7 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
 
 
     fscanf(file, "%*s %d\n", &NumOfSlices);
-    cout<<NumOfSlices<<endl;
+//    cout<<NumOfSlices<<endl;
     fscanf(file, "NumOfSlicesEyesCut %d \n", &Eyes);
 //    cout<<Eyes<<endl;
 

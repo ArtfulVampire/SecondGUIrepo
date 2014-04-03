@@ -162,6 +162,10 @@ MainWindow::MainWindow() :
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 24");
     ui->reduceNsBox->setItemData(7, var);
 
+    ui->reduceNsBox->addItem("NewEncephEyes");
+    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22-23-20 24 25");
+    ui->reduceNsBox->setItemData(8, var);
+
 
     ui->reduceNsBox->setCurrentIndex(4);
     ui->nsLine->setText(ui->reduceNsBox->itemData(ui->reduceNsBox->currentIndex()).toString());
@@ -3881,32 +3885,89 @@ void MainWindow::kernelest(const QString &inputString)
 
 void MainWindow::reduceChannelsFast()
 {
-    int *num = new int[maxNs];
 
     QStringList list = this->ui->nsLine->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
 
-    for(int i = 0; i < list.length(); ++i)
-    {
-        num[i]=list.at(i).toInt();
-    }
     double ** temp = new double *[ns];
     for(int i = 0; i < ns; ++i)
     {
         temp[i] = new double [250*60*200]; //generality for 200 minutes
     }
+    int sign;
+    int lengthCounter;
     for(int k = 0; k < list.length(); ++k)
     {
-        for(int j = 0; j < ndr*nr[num[k]-1]; ++j)
+        if(QString::number(list[k].toInt()) == list[k])
         {
-            temp[k][j]=data[num[k]-1][j];
+            for(int j = 0; j < ndr*nr[list[k].toInt()-1]; ++j)
+            {
+                temp[k][j] = data[list[k].toInt()-1][j];
+            }
+        }
+        else if(list[k].contains('-') || list[k].contains('+'))
+        {
+            lengthCounter = 0;
+            lst = list[k].split(QRegExp("[-+]"), QString::SkipEmptyParts);
+            for(int h = 0; h < lst.length(); ++ h)
+            {
+                if(QString::number(lst[h].toInt()) != lst[h]) // if nan
+                {
+                    cout << "bad rdc chan string" << endl;
+                    for(int i = 0; i < ns; ++i)
+                    {
+                        delete []temp[i];
+                    }
+                    delete []temp;
+                    return;
+                }
+            }
+            for(int j = 0; j < ndr*nr[k]; ++j) //generality k
+            {
+                temp[k][j] = data[lst[0].toInt() - 1][j];
+            }
+            lengthCounter += lst[0].length();
+            for(int h = 1; h < lst.length(); ++h)
+            {
+                if(list[k][lengthCounter] == '+') sign = 1;
+                else if(list[k][lengthCounter] == '-') sign = -1;
+                else
+                {
+                    cout << "bad rdc chan string" << endl;
+                    for(int i = 0; i < ns; ++i)
+                    {
+                        delete []temp[i];
+                    }
+                    delete []temp;
+                    return;
+                }
+                lengthCounter += 1; //sign length
+                cout << sign*(lst[h].toInt() - 1)  <<endl;
+                for(int j = 0; j < ndr*nr[k]; ++j) //generality k
+                {
+                    temp[k][j] += sign*data[lst[h].toInt() - 1][j];
+                }
+                lengthCounter += lst[h].length();
+            }
+
+
+
+        }
+        else
+        {
+            cout << "bad rdc chan string" << endl;
+            for(int i = 0; i < ns; ++i)
+            {
+                delete []temp[i];
+            }
+            delete []temp;
+            return;
         }
     }
     for(int k = 0; k < list.length(); ++k)
     {
-//        nr[k]=nr[num[k]-1];             //generality
         for(int j = 0; j < ddr*ndr*nr[k]; ++j)
         {            
-            data[k][j]=temp[k][j];
+            data[k][j] = temp[k][j];
         }
     }
 
@@ -3920,7 +3981,6 @@ void MainWindow::reduceChannelsFast()
 
     ns=list.length();
     cout << "channels reduced, ns=" << ns << endl;
-    delete []num;
 
     helpString="channels reduced fast ";
     this->ui->textEdit->append(helpString);
