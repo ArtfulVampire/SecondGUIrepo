@@ -2126,7 +2126,6 @@ void MainWindow::readData()
     cout << "ns=" << ns << endl;
 
     //labels
-    char **label;
     label = new char* [ns];     //memory for channels' labels
 
     for(int i = 0; i < ns; ++i)
@@ -2146,12 +2145,6 @@ void MainWindow::readData()
     {
         fprintf(labels, "%s \n", label[i]);
     }
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []label[i];
-    }
-    delete []label;
-
 
     //transducer type
     for(int i = 0; i < ns*80; ++i)                      //rest of header
@@ -2950,6 +2943,14 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
     if(this->ui->sliceBox->isChecked())
     {
+
+        QStringList list = this->ui->nsLine->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+        if(!QString(label[list.last().toInt() - 1]).contains("Markers") )
+        {
+            QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
+            return;
+        }
+
         if(ui->ntRadio->isChecked())
         {
             slice(10, 49, "m"); //math.operation
@@ -3885,8 +3886,8 @@ void MainWindow::kernelest(const QString &inputString)
 
 void MainWindow::reduceChannelsFast()
 {
-
     QStringList list = this->ui->nsLine->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+
 
     double ** temp = new double *[ns];
     for(int i = 0; i < ns; ++i)

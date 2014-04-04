@@ -74,9 +74,6 @@ public slots:
     void reset();
     void saveWts();
     void stopActivity();
-    void test();
-    void next();
-    void prev();
     void drawWts();
     void PaIntoMatrixByName(QString fileName);
     void PaIntoMatrix();
@@ -87,7 +84,6 @@ public slots:
     void averageClassification();
     void autoClassification(QString spectraDir);
     void autoClassificationSimple();
-//    void drawWindows();
     void autoPCAClassification();
     void SVM();
     void Hopfield();

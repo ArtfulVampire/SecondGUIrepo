@@ -13,81 +13,6 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="testButton">
-   <property name="geometry">
-    <rect>
-     <x>580</x>
-     <y>510</y>
-     <width>85</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Test</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit">
-   <property name="geometry">
-    <rect>
-     <x>580</x>
-     <y>470</y>
-     <width>300</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="nextButton">
-   <property name="geometry">
-    <rect>
-     <x>790</x>
-     <y>510</y>
-     <width>93</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Next</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="prevButton">
-   <property name="geometry">
-    <rect>
-     <x>680</x>
-     <y>510</y>
-     <width>93</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Prev</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_7">
-   <property name="geometry">
-    <rect>
-     <x>580</x>
-     <y>290</y>
-     <width>180</width>
-     <height>121</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>TextLabel</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_8">
-   <property name="geometry">
-    <rect>
-     <x>790</x>
-     <y>290</y>
-     <width>180</width>
-     <height>121</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>TextLabel</string>
-   </property>
-  </widget>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
@@ -351,19 +276,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QPushButton" name="drawWindowsButton">
-   <property name="geometry">
-    <rect>
-     <x>580</x>
-     <y>430</y>
-     <width>120</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>draw windows</string>
-   </property>
-  </widget>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
@@ -517,7 +429,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>11</x>
@@ -587,7 +499,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>290</x>

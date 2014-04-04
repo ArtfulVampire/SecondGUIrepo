@@ -139,12 +139,6 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(saveWts()));
 
-    QObject::connect(ui->testButton, SIGNAL(clicked()), this, SLOT(test()));
-
-    QObject::connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(next()));
-
-    QObject::connect(ui->prevButton, SIGNAL(clicked()), this, SLOT(prev()));
-
     QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWts()));
 
     QObject::connect(ui->neuronGasPushButton, SIGNAL(clicked()), this, SLOT(neuronGas()));
@@ -157,15 +151,11 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     QObject::connect(ui->autoPCAButton, SIGNAL(clicked()), this, SLOT(autoPCAClassification()));
 
-//    QObject::connect(ui->drawWindowsButton, SIGNAL(clicked()), this, SLOT(drawWindows()));
-
     QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(SVM()));
 
     QObject::connect(ui->hopfieldPushButton, SIGNAL(clicked()), this, SLOT(Hopfield()));
 
     QObject::connect(group3, SIGNAL(buttonClicked(int)), this, SLOT(methodSetParam(int)));
-
-//    QObject::connect(ui->numOfLayersSpinBox, SIGNAL(valueChanged(int)), this, SLOT(memoryAndParamsAllocation()));
 
     QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(memoryAndParamsAllocation()));
 
@@ -681,171 +671,6 @@ void Net::drawWts()  //generality
     {
         QMessageBox::information((QWidget * )this, tr("Info"), tr("wts is drawn"), QMessageBox::Ok);
     }
-}
-
-//void Net::drawWindows()
-//{
-//    int ns = 19;
-//    helpString = dir->absolutePath().append(QDir::separator()).append("windows.txt");
-//    cout << helpString.toStdString() << endl;
-//    FILE * windows = fopen(helpString.toStdString().c_str(), "r");
-
-//    int length;// = int(pic.width()/(NumOfClasses * 2+1));
-//    double helpDouble;
-//    helpInt = 0;
-//    int tmp;
-//    while(!feof(windows))
-//    {
-
-//        pic = QPixmap(240, 200);
-//        pic.fill();
-//        paint->begin(&pic);
-//        fscanf(windows, "%d ", &tmp);
-//        cout << helpInt << endl;
-
-
-//        length = int(pic.width()/(NumOfClasses * 2+1));
-//        paint->setPen("black");
-//        for(int i = 0; i < NumOfClasses; ++i)
-//        {
-//            if(i == 0) paint->setBrush(QBrush("blue"));
-//            if(i == 1) paint->setBrush(QBrush("red"));
-//            if(i == 2) paint->setBrush(QBrush("green"));
-//            if(i == 3) paint->setBrush(QBrush("orange"));
-//            if(i == 4) paint->setBrush(QBrush("lightgray"));
-//            fscanf(windows, "%lf ", &helpDouble);
-//            paint->drawRect(length * (2 * i+1), pic.height() * (1-helpDouble), length, pic.height() * helpDouble);
-//        }
-//        helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("winKOD").append(QDir::separator()).append("win_").append(rightNumber2(helpInt)).append(".jpg");
-//        cout << helpString.toStdString() << endl;
-//        pic.save(helpString, 0, 100);
-
-//        paint->end();
-//        ++helpInt;
-//    }
-//    fclose(windows);
-
-//    dir->cd("SpectraSmooth");
-//    dir->cd("windows");
-//    QStringList lst = dir->entryList(QDir::Files, QDir::Name);
-//    FILE * wnd;
-//    double * vect = new double [ns * spLength];
-//    double * out = new double [NumOfClasses];
-//    for(int m = 0; m < lst.length(); ++m)
-//    {
-//        helpString = dir->absolutePath().append(QDir::separator()).append(lst[m]);
-//        wnd = fopen(helpString.toStdString().c_str(), "r");
-//        for(int j = 0; j < ns; ++j)
-//        {
-//            for(int k = 0; k < spLength; ++k)
-//            {
-//                fscanf(wnd, "%lf", &vect[j * spLength+k]);
-//            }
-//        }
-//        for(int j = 0; j < NumOfClasses; ++j)
-//        {
-//            out[j] = 0.;
-//            for(int i = 0; i < NetLength; ++i)
-//            {
-//                out[j] += weight[i][j] * vect[i]/20.;
-//            }
-//            out[j] += weight[NetLength][j];
-//            out[j] = logistic(out[j], 10.); // unlinear conformation
-//        }
-
-//        pic = QPixmap(240, 200);
-//        pic.fill();
-//        paint->begin(&pic);
-//        cout << helpInt << endl;
-//        length = int(pic.width()/(NumOfClasses * 2+1));
-
-
-//        paint->setPen("black");
-//        for(int i = 0; i < NumOfClasses; ++i)
-//        {
-//            if(i == 0) paint->setBrush(QBrush("blue"));
-//            if(i == 1) paint->setBrush(QBrush("red"));
-//            if(i == 2) paint->setBrush(QBrush("green"));
-//            if(i == 3) paint->setBrush(QBrush("orange"));
-//            if(i == 4) paint->setBrush(QBrush("lightgray"));
-//            paint->drawRect(length * (2 * i+1), pic.height() * (1-out[i]), length, pic.height() * out[i]);
-//        }
-//        helpString = lst[m];
-//        helpString.replace(".txt", ".jpg");
-//        if(!helpString.contains(".jpg")) helpString.append(".jpg");
-//        helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("winMY").append(QDir::separator()).append(helpString);
-//        cout << helpString.toStdString() << endl;
-//        pic.save(helpString, 0, 100);
-
-//        paint->end();
-
-
-
-//        fclose(wnd);
-//        if(m == 400) break;
-//    }
-//    delete []vect;
-//    delete []out;
-//    dir->cdUp();
-//    dir->cdUp();
-//}
-
-void Net::test()
-{
-    if(numTest<0)
-    {
-        cout << "end of vectors, too litle" << endl;
-
-        QMessageBox::information((QWidget * )this, tr("Information"), tr("end of vectors, too litle"), QMessageBox::Ok);
-        numTest = 0;
-        return;
-    }
-    if(numTest >= NumberOfVectors)
-    {
-        cout << "end of vectors, too many" << endl;
-        QMessageBox::information((QWidget * )this, tr("Information"), tr("end of vectors, too many"), QMessageBox::Ok);
-        numTest = NumberOfVectors;
-        return;
-    }
-
-    ClassificateVector(numTest);
-    ui->lineEdit->setText(QString(FileName[numTest]));
-
-    pic = QPixmap(240, 200);
-    pic.fill();
-    paint->begin(&pic);
-
-    int length = int(pic.width()/(NumOfClasses * 2+1));
-    paint->setPen("black");
-    for(int i = 0; i < NumOfClasses; ++i)
-    {
-        if(i == 0) paint->setBrush(QBrush("blue"));
-        if(i == 1) paint->setBrush(QBrush("red"));
-        if(i == 2) paint->setBrush(QBrush("green"));
-        if(i == 3) paint->setBrush(QBrush("orange"));
-        if(i == 4) paint->setBrush(QBrush("lightgray"));
-        paint->drawRect(length * (2 * i+1), pic.height() * (1-output[i]), length, pic.height() * output[i]);
-    }
-    ui->label_7->setPixmap(pic.scaled(ui->label_7->size()));    
-    paint->end();
-
-    helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("winKOD/win_").append(rightNumber2(numTest)).append(".jpg");
-    columns.load(helpString);
-    ui->label_8->setPixmap(columns.scaled(ui->label_8->size()));
-
-    delete [] output; //generality
-}
-
-void Net::next()
-{
-    numTest += 1;
-    test();
-}
-
-void Net::prev()
-{
-    numTest-=1;
-    test();
 }
 
 void Net::stopActivity()

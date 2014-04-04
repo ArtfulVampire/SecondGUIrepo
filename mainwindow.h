@@ -118,6 +118,7 @@ private:
     int *nr;
     int NumOfSlices, eyes;
     double ** data;
+    char **label;
     QPixmap pic;
     QPainter *paint;
     int spLength, left, right, offset;
