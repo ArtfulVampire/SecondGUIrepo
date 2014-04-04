@@ -523,22 +523,25 @@ void Net::averageClassification()
 
 void Net::drawWts()  //generality
 {
+    if( numOfLayers != 2 ) return;
     QString out;
 
     QPixmap pic;
     QPainter * paint = new QPainter();
-//    int NetLength = 19 * 63, NumOfClasses = 3, spLength = 63;
 
-    double ** weight = new double * [NetLength+1];
-    for(int i = 0; i < NetLength+1; ++i)
+    double *** weight = new double ** [numOfLayers - 1]; // 0 - the lowest layer
+    for(int i = 0; i < numOfLayers - 1; ++i)
     {
-        weight[i] = new double [NumOfClasses];
+        weight[i] = new double * [dimensionality[i] + 1]; //+1 for bias
+        for(int j = 0; j < dimensionality[i] + 1; ++j) //
+        {
+            weight[i][j] = new double [dimensionality[i+1]];
+        }
     }
 
-//automatization
     if(!autoFlag)
     {
-        helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )this, tr("wts to draw"), dirBC->absolutePath(), tr("wts files ( * .wts)")));
+        helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )this, tr("wts to draw"), dirBC->absolutePath(), tr("wts files (*.wts)")));
     }
     else
     {
@@ -560,29 +563,31 @@ void Net::drawWts()  //generality
         QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open wts-file"), QMessageBox::Ok);
         return;
     }
+
     double maxWeight = 0.;
-    for(int i = 0; i < NumOfClasses * (NetLength); ++i)
-    {
-        if(feof(w))
-        {
-            cout << "wts-file too small" << endl;
 
-            QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Wts-file too small. Nothing happened"), QMessageBox::Ok);
-            return;
-        }
-        fscanf(w, "%lf\n", &weight[i%(NetLength)][i/(NetLength)]);
-        maxWeight = max(weight[i%(NetLength)][i/(NetLength)], maxWeight);
-    }
-    for(int i = 0; i < NumOfClasses; ++i)
-    {
-        if(feof(w))
-        {
-            cout << "wts-file too small" << endl;
 
-            QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Wts-file too small. Nothing happened"), QMessageBox::Ok);
-            return;
+
+    for(int i = 0; i < numOfLayers-1; ++i)
+    {
+        for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
+        {
+            for(int k = 0; k < dimensionality[i+1]; ++k)
+            {
+                if(feof(w))
+                {
+                    cout << "wts-file too small" << endl;
+
+                    QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Wts-file too small. Nothing happened"), QMessageBox::Ok);
+                    return;
+                }
+
+                fscanf(w, "%lf\r\n", &weight[i][j][k]);
+                maxWeight = fmax(weight[i][j][k], maxWeight);
+            }
+            fscanf(w, "\r\n");
         }
-        fscanf(w, "%lf\n", &weight[NetLength][i]);
+        fscanf(w, "\r\n");
     }
     if(!feof(w))
     {
@@ -600,18 +605,18 @@ void Net::drawWts()  //generality
     paint->begin(&pic);
 
     double ext = spLength/250.;   //extension - graphical parameter
-    for(int c2 = 0; c2<ns; ++c2)  //exept markers channel & Fp1,2
+    for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel & Fp1,2
     {
-        for(int k = 0; k<250-1; ++k)
+        for(int k = 0; k < 250-1; ++k)
         {
             paint->setPen(QPen(QBrush("blue"), 2));
-            paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - weight[int((c2) * spLength+k * ext)][0] * 250/maxWeight, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - weight[int((c2) * spLength+(k+1) * ext)][0] * 250/maxWeight);
+            paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+k * ext)][0] * 250/maxWeight, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+(k+1) * ext)][0] * 250/maxWeight);
             paint->setPen(QPen(QBrush("red"), 2));
-            paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - weight[int((c2) * spLength+k * ext)][1] * 250/maxWeight, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - weight[int((c2) * spLength+(k+1) * ext)][1] * 250/maxWeight);
+            paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+k * ext)][1] * 250/maxWeight, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+(k+1) * ext)][1] * 250/maxWeight);
             if(NumOfClasses == 3)
             {
                 paint->setPen(QPen(QBrush("green"), 2));
-                paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - weight[int((c2) * spLength+k * ext)][2] * 250/maxWeight, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - weight[int((c2) * spLength+(k+1) * ext)][2] * 250/maxWeight);
+                paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+k * ext)][2] * 250/maxWeight, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+(k+1) * ext)][2] * 250/maxWeight);
             }
         }
         paint->setPen("black");
@@ -657,20 +662,19 @@ void Net::drawWts()  //generality
 
 
     paint->end();
-
-//    QFileInfo inf(helpString);
-//    helpString = inf.fileName();
-//    helpString.resize(helpString.lastIndexOf('.'));
-//    cout << helpString.toStdString() << endl;
     out.replace(".wts", ".jpg");
     cout << out.toStdString() << endl;
     pic.save(out, 0, 100);
 
-    for(int i = 0; i < NetLength + 1; ++i)
+    for(int i = 0; i < numOfLayers - 1; ++i)
     {
-        delete [] weight[i];
+        for(int j = 0; j < dimensionality[i] + 1; ++j) //
+        {
+            delete []weight[i][j];
+        }
+        delete []weight[i];
     }
-    delete [] weight;
+    delete []weight;
 
     //automatization
     if(!autoFlag)
@@ -858,7 +862,7 @@ void Net::saveWts()
 
     if(!autoFlag)
     {
-        helpString = QDir::toNativeSeparators(QFileDialog::getSaveFileName((QWidget * )this, tr("wts to save"), dirBC->absolutePath(), tr("wts files ( * .wts)")));
+        helpString = QDir::toNativeSeparators(QFileDialog::getSaveFileName((QWidget * )this, tr("wts to save"), dirBC->absolutePath(), tr("wts files (*.wts)")));
         if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
         {
             helpString.append(".wts");
@@ -882,36 +886,20 @@ void Net::saveWts()
         QMessageBox::critical((QWidget * )this, tr("Warning"), tr("cannot open target wts-file"), QMessageBox::Ok);
         return;
     }
-    //save weights into files
-    if(ui->deltaRadioButton->isChecked())
+
+    for(int i = 0; i < numOfLayers-1; ++i)
     {
-        for(int j = 0; j < NumOfClasses; ++j)
+        for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
         {
-            for(int i = 0; i < NetLength; ++i)
+            for(int k = 0; k < dimensionality[i+1]; ++k)
             {
-                fprintf(weights, "%lf\r\n", weight[i][j]);
-            }
-        }
-        for(int j = 0; j < NumOfClasses; ++j)
-        {
-            fprintf(weights, "%lf\r\n", weight[NetLength][j]);
-        }
-    }
-    else if(ui->backpropRadioButton->isChecked())
-    {
-        for(int i = 0; i < numOfLayers-1; ++i)
-        {
-            for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
-            {
-                for(int k = 0; k < dimensionality[i+1]; ++k)
-                {
-                    fprintf(weights, "%lf\r\n", weight[i][j][k]);
-                }
-                fprintf(weights, "\r\n");
+                fprintf(weights, "%lf\r\n", weight[i][j][k]);
             }
             fprintf(weights, "\r\n");
         }
+        fprintf(weights, "\r\n");
     }
+
     fclose(weights);
 }
 
@@ -927,7 +915,7 @@ void Net::reset()
             for(int k = 0; k < dimensionality[i+1]; ++k)
             {
                 if(ui->deltaRadioButton->isChecked()) {weight[i][j][k] = 0.;}
-                else if(ui->backpropRadioButton->isChecked()) {weight[i][j][k] = (-500 + rand()%1000)/5000.;}
+                else if(ui->backpropRadioButton->isChecked()) {weight[i][j][k] = (-500 + rand()%1000)/50000.;}
             }
         }
     }
@@ -983,7 +971,7 @@ void Net::readCfg()
     //automatization
     if(!autoFlag)
     {
-        helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,tr("open cfg"), dirBC->absolutePath(), tr("cfg files ( * .net)")));
+        helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,tr("open cfg"), dirBC->absolutePath(), tr("cfg files (*.net)")));
         if(helpString == "")
         {
             QMessageBox::information((QWidget * )this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
@@ -1109,7 +1097,7 @@ void Net::loadWtsByName(QString filename)
 //?????
 void Net::loadWts()
 {
-    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,tr("load wts"), dir->absolutePath(), tr("wts files ( * .wts)")));
+    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,tr("load wts"), dir->absolutePath(), tr("wts files (*.wts)")));
     if(helpString == "")
     {
         QMessageBox::information((QWidget * )this, tr("Warning"), tr("No wts-file was chosen"), QMessageBox::Ok);
@@ -1117,19 +1105,6 @@ void Net::loadWts()
     }
     FILE * wts = fopen(helpString.toStdString().c_str(),"r");
 
-    if(ui->deltaRadioButton->isChecked())
-    {
-        for(int i = 0; i < NumOfClasses * (NetLength); ++i)
-        {
-            fscanf(wts, "%lf", &weight[i%(NetLength)][i/(NetLength)]);
-        }
-        for(int i = 0; i < NumOfClasses; ++i)
-        {
-            fscanf(wts, "%lf", &weight[NetLength][i]);
-        }
-    }
-    else if(ui->backpropRadioButton->isChecked())
-    {
         if(weight == NULL) //if hasn't been allocated
         {
             numOfLayers = ui->numOfLayersSpinBox->value();
@@ -1181,7 +1156,7 @@ void Net::loadWts()
             }
             fscanf(wts, "\r\n");
         }
-    }
+
     fclose(wts);
 }
 
@@ -1193,7 +1168,7 @@ void Net::PaIntoMatrix()
         return;
     }
 
-    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL, tr("load PA"), dir->absolutePath(), tr("PA files ( * .pa)")));
+    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL, tr("load PA"), dir->absolutePath(), tr("PA files (*.pa)")));
     if(helpString == "")
     {
         QMessageBox::information((QWidget * )this, tr("Information"), tr("No file was chosen"), QMessageBox::Ok);
