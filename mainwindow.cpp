@@ -88,6 +88,8 @@ MainWindow::MainWindow() :
 
     NumOfEdf = 0; //for EDF cut
 
+    myTime.start();
+
     paint = new QPainter();
 
 
@@ -165,6 +167,10 @@ MainWindow::MainWindow() :
     ui->reduceNsBox->addItem("NewEncephEyes");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22-23-20 24 25");
     ui->reduceNsBox->setItemData(8, var);
+
+    ui->reduceNsBox->addItem("Mati");
+    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22 23 28");
+    ui->reduceNsBox->setItemData(9, var);
 
 
     ui->reduceNsBox->setCurrentIndex(4);
@@ -2224,6 +2230,8 @@ void MainWindow::readData()
         if(flag==1) fprintf(edfNew, "%c", helpChar);
     }
 
+    cout << digMin[ns-1] << "\t" << digMax[ns-1] << "\t" << physMin[ns-1] << "\t" << physMax[ns-1] << endl;
+
 
 
     //number of records (nr samples in ddr seconds)
@@ -2254,12 +2262,6 @@ void MainWindow::readData()
         if(flag==1) fprintf(edfNew, "%c", helpChar);
     }
 
-//    int maxNr = 0;
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        maxNr = max(maxNr, nr[i]);
-//    }
-
 
     data = new double* [ns];         //array for all data[numOfChan][numOfTimePin]
     nsBackup=ns;
@@ -2285,6 +2287,8 @@ void MainWindow::readData()
     edf = fopen(QDir::toNativeSeparators(ui->filePath->text()).toStdString().c_str(), "rb"); //generality
     fsetpos(edf, position);
     delete position;
+    bool byteMarker[8];
+    bool boolBuf;
 
 //    cout << "start data read ndr=" << ndr << " ns=" << ns << endl;
     if(ui->ntRadio->isChecked())
@@ -2331,6 +2335,7 @@ void MainWindow::readData()
             }
         }
     }
+
     if(ui->enRadio->isChecked())
     {
         for(int i = 0; i < ndr; ++i)
@@ -2348,15 +2353,60 @@ void MainWindow::readData()
                     }
                     data[j][i*nr[j]+k] = physMin[j] + (physMax[j]-physMin[j]) * (double(a)-digMin[j]) / (digMax[j] - digMin[j]);   //enc
 
+                    if(ui->matiCheckBox->isChecked() && j == ns-1)
+                    {
+                        a += (a<0)*65536;
+                        data[j][i*nr[j]+k] = a + (a<0)*65536;
+
+                        if(data[j][i*nr[j]+k] < 32768. && data[j][i*nr[j]+k] != 0 )
+                        {
+                            cout << data[j][i*nr[j]+k] << "\t";
+
+                            for(int h = 0; h < 16; ++h)
+                            {
+                                byteMarker[h] = (int(data[j][i*nr[j]+k])%(int(pow(2,h+1))))/(int(pow(2,h)));
+                            }
+                            for(int h = 15; h >= 0; --h)
+                            {
+                                cout << byteMarker[h];
+                                if(h%4==0) cout << " ";
+                            }
+                            cout<<endl;
+
+                            if(!(byteMarker[15] || byteMarker[7])) break;
+
+                            for(int i = 0; i < 8; ++i)
+                            {
+                                boolBuf = byteMarker[i];
+                                byteMarker[i] = byteMarker[i+8];
+                                byteMarker[i+8] = boolBuf;
+                            }
+
+                            data[j][i*nr[j]+k] = 0.;
+                            for(int h = 0; h < 16; ++h)
+                            {
+                                data[j][i*nr[j]+k] += byteMarker[h]*pow(2,h);
+                            }
+                            cout << data[j][i*nr[j]+k] << "\t";
+                            for(int h = 15; h >= 0; --h)
+                            {
+                                cout << byteMarker[h];
+                                if(h%4==0) cout << " ";
+                            }
+                            cout<<endl<<endl;
+
+                        }
+                    }
+
                     if(j==(ns-1))
                     {
-                        if(a>=1)
+                        if(data[j][i*nr[j]+k]>=1)
                         {
                             bytes=i*nr[j]+k;
-                            fprintf(markers, "%d %d\n", bytes, int(a));
+                            fprintf(markers, "%d %d\n", bytes, int(data[j][i*nr[j]+k]));
                         }
 
-                        if(a==200)
+                        if(data[j][i*nr[j]+k]==200)
                         {
                             staSlice=i*nr[j]+k;
                         }
@@ -2943,178 +2993,115 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
     if(this->ui->sliceBox->isChecked())
     {
-
-        QStringList list = this->ui->nsLine->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-        if(!QString(label[list.last().toInt() - 1]).contains("Markers") )
+        if(!ui->matiCheckBox->isChecked())
         {
-            QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
-            return;
-        }
 
-        if(ui->ntRadio->isChecked())
-        {
-            slice(10, 49, "m"); //math.operation
-            slice(50, 89, "e"); //emotional verb
-            slice(90, 129, "v"); //verb
-            slice(130, 169, "n"); //noun
-            slice(170, 209, "a"); //number
-        }
-
-        if(ui->enRadio->isChecked())
-        {
-            if(ui->windButton->isChecked())
+            QStringList list = this->ui->nsLine->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+            if(!QString(label[list.last().toInt() - 1]).contains("Markers") )
             {
-                timeShift=ui->timeShiftBox->value();
-                wndLength=ui->wndLengthBox->currentText().toInt();
-
-                for(int i = 0; i < (ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift; ++i)
-                {
-
-                    for(int j = 0; j < wndLength; ++j)
-                    {
-                        if(data[ns-1][staSlice+i*timeShift + j]==241)
-                        {
-                            markerFlag = 0;
-                            marker=300;
-                        }
-                        if(data[ns-1][staSlice+i*timeShift + j]==247)
-                        {
-                            markerFlag = 0;
-                            marker=300;
-                        }
-                        if(data[ns-1][staSlice+i*timeShift + j]==254)
-                        {
-                            markerFlag = 0;
-                            marker=300;
-                        }
-                    }
-                    if(markerFlag==1) marker=241;
-                    if(markerFlag==2) marker=247;
-                    if(markerFlag==3) marker=254;
-
-//                    cout << i << endl;
-                    if(marker!=300) sliceWindow(staSlice+i*timeShift, staSlice+i*timeShift+wndLength, int(i+1), marker);
-
-                    for(int j = 0; j < wndLength; ++j)
-                    {
-//                        if(data[ns-1][staSlice+i*timeShift + j]==241) {markerFlag=1; break;}
-//                        if(data[ns-1][staSlice+i*timeShift + j]==247) {markerFlag=2; break;}
-//                        if(data[ns-1][staSlice+i*timeShift + j]==254) {markerFlag=3; break;}
-                        if(data[ns-1][staSlice+i*timeShift + j]==241) {markerFlag=1;}
-                        if(data[ns-1][staSlice+i*timeShift + j]==247) {markerFlag=2;}
-                        if(data[ns-1][staSlice+i*timeShift + j]==254) {markerFlag=3;}
-                    }
-                    if(int(100*(i+1)/((ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift)) > ui->progressBar->value()) ui->progressBar->setValue(int(100*(i+1)/((ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift)));
-
-//                                        if(i==50) break; //20 windows
-
-                }
-            }
-            if(ui->realButton->isChecked())
-            {
-                if(ui->reduceNsBox->currentText().contains("MichaelBak"))
-                {
-                    sliceBak(1, 60, "241");
-                    sliceBak(61, 120, "247");
-                    sliceBak(121, 180, "241");
-                    sliceBak(181, 240, "247");
-                }
-                else
-                {
-//                    sliceOneByOne();
-                    sliceOneByOneNew();
-//                    sliceGaps();
-//                    sliceByNumberAfter(241, 241, "241"); //Spatial
-//                    sliceByNumberAfter(247, 247, "247"); //Verbal
-
-                    sliceFromTo(241, 231, "241_pre");
-                    sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
-                    sliceFromTo(247, 237, "247_pre");
-
-                    //                    cout << dir->absolutePath().toStdString() << endl;
-
-                    //delete pre-files from Realisations
-                    dir->cd("Realisations");
-                    lst.clear();
-                    lst = dir->entryList(QStringList("*_pre*"));
-                    for(int i = 0; i < lst.length(); ++i)
-                    {
-                        helpString = dir->absolutePath().append(QDir::separator()).append(lst.at(i));
-                        if(remove(helpString.toStdString().c_str()) != 0)
-                        {
-                            perror("cannot delete file");
-                            break;
-                        }
-                    }
-                    dir->cdUp();
-
-
-                    //                    //count average time of solving
-                    //                    dir->cd("Realisations");
-                    //                    lst = dir->entryList(QStringList("*_241*"));
-
-                    //                    FILE * real;
-                    //                    int tmp;
-
-                    //                    helpInt = 0;
-                    //                    for(int i = 0; i < lst.length(); ++i)
-                    //                    {
-                    //                        helpString = dir->absolutePath().append(QDir::separator()).append(lst.at(i));
-                    //                        real = fopen(helpString.toStdString().c_str(), "r");
-                    //                        fscanf(real, "NumOfSlices %d", &tmp);
-                    //                        helpInt += tmp;
-                    //                        fclose(real);
-                    //                    }
-                    //                    helpInt/=lst.length()*250.;
-                    //                    dir->cdUp();
-                    //                    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a");
-                    //                    fprintf(res, "solve time 241 \t %lf \n", helpInt);
-                    //                    fclose(res);
-
-
-                    //                    dir->cd("Realisations");
-                    //                     lst = dir->entryList(QStringList("*_247*"));
-
-                    //                    helpInt = 0;
-                    //                    for(int i = 0; i < lst.length(); ++i)
-                    //                    {
-                    //                        helpString = dir->absolutePath().append(QDir::separator()).append(lst.at(i));
-                    //                        real = fopen(helpString.toStdString().c_str(), "r");
-                    //                        fscanf(real, "NumOfSlices %d", &tmp);
-                    //                        helpInt += tmp;
-                    //                        fclose(real);
-                    //                    }
-                    //                    helpInt/=lst.length()*250.;
-                    //                    dir->cdUp();
-                    //                    res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a");
-                    //                    fprintf(res, "solve time 247 \t %lf \n", helpInt);
-                    //                    fclose(res);
-
-
-                }
+                QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
+                return;
             }
 
-            /*
-                //Ilya
+            if(ui->ntRadio->isChecked()) // for Boris
+            {
+                slice(10, 49, "m"); //math.operation
+                slice(50, 89, "e"); //emotional verb
+                slice(90, 129, "v"); //verb
+                slice(130, 169, "n"); //noun
+                slice(170, 209, "a"); //number
+            }
 
-                ns=20;
-                sliceIlya(101, 160, helpString);
-                dir->cd("Realisations");
-
-                dir->mkdir("DODO");
-                dir->mkdir("DONT");
-                dir->mkdir("Begin");
-                dir->mkdir("St");
-                dir->mkdir("Beep");
-
-                QStringList lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
-                for(int i = 0; i < lst.length(); ++i)
+            if(ui->enRadio->isChecked())
+            {
+                if(ui->windButton->isChecked())
                 {
-                    sliceIlya(lst.at(i), helpString);
-                }
-                dir->cdUp();
-*/
+                    timeShift=ui->timeShiftBox->value();
+                    wndLength=ui->wndLengthBox->currentText().toInt();
+                    sliceWindow(0, 1000, 0, 300);
+                    return;
 
+                    for(int i = 0; i < (ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift; ++i)
+                    {
+
+                        for(int j = 0; j < wndLength; ++j)
+                        {
+                            if((data[ns-1][staSlice+i*timeShift + j] - 241) * (data[ns-1][staSlice+i*timeShift + j] - 247) * (data[ns-1][staSlice+i*timeShift + j] - 254) == 0 )
+                            {
+                                markerFlag = 0;
+                                marker=300;
+                            }
+                        }
+                        if(markerFlag == 1) marker=241;
+                        if(markerFlag == 2) marker=247;
+                        if(markerFlag == 3) marker=254;
+
+                        if(marker!=300) sliceWindow(staSlice+i*timeShift, staSlice+i*timeShift+wndLength, int(i+1), marker);
+
+                        for(int j = 0; j < wndLength; ++j)
+                        {
+                            switch(int(data[ns-1][staSlice + i*timeShift + j]))
+                            {
+                            case 241:{markerFlag = 0; break;}
+                            case 247:{markerFlag = 1; break;}
+                            case 254:{markerFlag = 2; break;}
+                            }
+                            //                        if(data[ns-1][staSlice+i*timeShift + j]==241) {markerFlag=1;}
+                            //                        if(data[ns-1][staSlice+i*timeShift + j]==247) {markerFlag=2;}
+                            //                        if(data[ns-1][staSlice+i*timeShift + j]==254) {markerFlag=3;}
+                        }
+                        if(int(100*(i+1)/((ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift)) > ui->progressBar->value()) ui->progressBar->setValue(int(100*(i+1)/((ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift)));
+
+                        //                                        if(i==50) break; //20 windows
+
+                    }
+                }
+                if(ui->realButton->isChecked())
+                {
+                    if(ui->reduceNsBox->currentText().contains("MichaelBak"))
+                    {
+                        sliceBak(1, 60, "241");
+                        sliceBak(61, 120, "247");
+                        sliceBak(121, 180, "241");
+                        sliceBak(181, 240, "247");
+                    }
+                    else
+                    {
+                        //                    sliceOneByOne();
+                        sliceOneByOneNew();
+                        //                    sliceGaps();
+                        //                    sliceByNumberAfter(241, 241, "241"); //Spatial
+                        //                    sliceByNumberAfter(247, 247, "247"); //Verbal
+
+                        sliceFromTo(241, 231, "241_pre");
+                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
+                        sliceFromTo(247, 237, "247_pre");
+
+                        //                    cout << dir->absolutePath().toStdString() << endl;
+
+                        //delete pre-files from Realisations
+                        dir->cd("Realisations");
+                        lst.clear();
+                        lst = dir->entryList(QStringList("*_pre*"));
+                        for(int i = 0; i < lst.length(); ++i)
+                        {
+                            helpString = dir->absolutePath().append(QDir::separator()).append(lst.at(i));
+                            if(remove(helpString.toStdString().c_str()) != 0)
+                            {
+                                perror("cannot delete file");
+                                break;
+                            }
+                        }
+                        dir->cdUp();
+
+
+                    }
+                }
+            }
+        }
+        else //if matiCheckBox->isChecked()
+        {
+            sliceMati();
         }
         --ns; //-markers channel generality
         ui->progressBar->setValue(0);
@@ -3661,7 +3648,6 @@ void MainWindow::sliceOneByOne() //generality, just for my current
         {
             ++number;
             helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append("num");
-//            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
             file = fopen(helpString.toStdString().c_str(), "w");
             fprintf(file, "NumOfSlices %d \n", i-j);
             if(i-j > 15000 && (marker == "255" || marker == "254"))
@@ -3823,6 +3809,102 @@ void MainWindow::sliceOneByOneNew()
 
     }
     fclose(file);
+}
+
+void MainWindow::sliceMati()
+{
+//    bool flagStartEnd = 1; //0 - start not set, 1 - start already set
+    int start = 0;
+    int end = -1;
+    bool markers[16];
+    QString fileMark;
+    int number = 0;
+    FILE * file;
+    int piece = 5000; //length of a piece
+
+    for(int i = 0; i < ndr*nr[ns-1]; ++i)
+    {
+        if(data[ns-1][i] == 0)
+        {
+            continue;
+        }
+        else
+        {
+            for(int j = 0; j < 16; ++j)
+            {
+                markers[j] = (int(data[ns-1][i])%(int(pow(2,j+1))))/(int(pow(2,j)));
+            }
+            if(!(markers[0] || markers[1] || markers[2])) continue; //if not an interesting marker;
+            //output marker number
+            cout << data[ns-1][i] << "\t";
+            for(int j = 15; j >= 0; --j)
+            {
+                cout << markers[j];
+                if(j%4==0) cout << " ";
+            }
+            cout<<endl;
+
+            if(markers[2] == 1) //the end of a session
+            {
+                if(markers[1] == 0 && markers[0] == 1) //end of a counting session
+                {
+                    end = i;
+                    fileMark = "241"; //count
+                }
+                if(markers[1] == 1 && markers[0] == 0) //end of a following session
+                {
+                    end = i;
+                    fileMark = "247"; //follow
+                }
+                if(markers[1] == 1 && markers[0] == 1) //end of a composed session
+                {
+                    end = i;
+                    fileMark = "244"; //compose
+                }
+            }
+            else //if the start of a session
+            {
+                end = i;
+                fileMark = "254"; //rest
+            }
+        }
+
+        if(end > start)
+        {
+            for(int j = 0; j < int(ceil((end-start)/piece)); ++j)
+            {
+                ++number;
+                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(fileMark);
+                file = fopen(helpString.toStdString().c_str(), "w");
+                cout << helpString.toStdString() << endl;
+                NumOfSlices = min(end - start - j*piece, piece);
+                fprintf(file, "NumOfSlices %d \n", NumOfSlices);
+                {
+                    for(int l = start+j*piece; l < min(start+(j+1)*piece, end); ++l)         //save BY SLICES!!
+                    {
+                        for(int m = 0; m < ns-1; ++m)
+                        {
+                            fprintf(file, "%lf\n", data[m][l*nr[m]/nr[ns-1]]);
+                        }
+                    }
+                }
+                fclose(file);
+            }
+
+            ui->progressBar->setValue(double(i)*100./ndr*nr[ns-1]);
+
+            fileMark.clear();
+            start = i+1;
+            end = -1;
+        }
+
+    }
+
+
+
+
+
+
 }
 
 double gaussian(double x)
@@ -4735,7 +4817,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
 
 }
 
-void MainWindow::ICA()
+void MainWindow::ICA() //fastICA
 {
     //we have data[ns][ndr*nr], ns, ndr, nr
     //at first - whiten signals using eigen linear superposition to get E as covMatrix
@@ -4744,8 +4826,7 @@ void MainWindow::ICA()
     //count inverse matrixW^-1 and draw maps of components
     //write automatization for classification different sets of components, find best set, explain
 
-
-    duration=time(NULL);
+    myTime.restart();
     this->readData();
     ns = ui->numOfIcSpinBox->value();
 
@@ -4765,10 +4846,7 @@ void MainWindow::ICA()
     cout << "ndr*fr = " << ndr*fr << endl;
 
     double ** covMatrix = new double * [ns];
-//    double * projectedVector = new double [NetLength];
-//    double ** differenceMatrix = new double * [NumberOfVectors];
     double ** centeredMatrix = new double * [ns];
-
 
     for(int i = 0; i < ns; ++i)
     {
@@ -4777,19 +4855,8 @@ void MainWindow::ICA()
 
     for(int i = 0; i < ns; ++i)
 //    {
-//        differenceMatrix[i] = new double [NumberOfVectors];
         centeredMatrix[i] = new double [ndr*fr];
 //    }
-
-
-//    for(int i = 0; i < NumberOfVectors; ++i)
-//    {
-//        for(int j = 0; j < NumberOfVectors; ++j)
-//        {
-//            differenceMatrix[i][j] = 0.;
-//        }
-//    }
-
 
     //count covariations
     //count averages
@@ -4817,7 +4884,6 @@ void MainWindow::ICA()
 
 
     //covariation between different spectra-bins
-//    cout << "covMatrix = " << endl;
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ns; ++j)
@@ -4829,9 +4895,7 @@ void MainWindow::ICA()
             }
             //should norm!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
             covMatrix[i][j] /= (ndr*fr - 1);
-//            cout << covMatrix[i][j] << " ";
         }
-//        cout << endl;
     }
     cout << "covMatrix counted" << endl;
 
@@ -4852,12 +4916,14 @@ void MainWindow::ICA()
     {
         eigenVectors[j] = new double [ns];
     }
+
     double * tempA = new double [ns]; //i
     double * tempB = new double [ndr*fr]; //j
     double sum1, sum2; //temporary help values
     double dF, F;
     int counter;
     double trace = 0.;
+
     for(int j = 0; j < ns; ++j)
     {
         trace += covMatrix[j][j];
@@ -5011,9 +5077,6 @@ void MainWindow::ICA()
             numOfPc = k+1;
 //            break;
         }
-
-
-
         //heat control
     }
     numOfPc = ns;
@@ -5061,7 +5124,7 @@ void MainWindow::ICA()
 
 //    }
 
-    //count linear decomposition
+    //count linear decomposition on PCAs
 
     for(int j = 0; j < ndr*fr; ++j) //columns X
     {
@@ -5077,28 +5140,29 @@ void MainWindow::ICA()
     }
     cout << "linear decomposition counted" << endl;
 
+
+
     //now dataICA are uncovariated signals with variance 1
+    //test of covMatrix dataICA
+    cout << "covMatrixICA = " << endl;
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            covMatrix[i][j] = 0.;
+            for(int k = 0; k < ndr*fr; ++k)
+            {
+                covMatrix[i][j] += dataICA[i][k] * dataICA[j][k];
+            }
+            covMatrix[i][j] /= ( ndr*fr - 1 );
+            cout << covMatrix[i][j] << " ";
+        }
+        cout<<endl;
+    }
+    cout<<"covMatrixICA counted"<<endl<<endl;
 
-//    //test of covMatrix dataICA
-//    cout << "covMatrixICA = " << endl;
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        for(int j = 0; j < ns; ++j)
-//        {
-//            covMatrix[i][j] = 0.;
-//            for(int k = 0; k < ndr*fr; ++k)
-//            {
-//                covMatrix[i][j] += dataICA[i][k] * dataICA[j][k];
-//            }
-//            covMatrix[i][j] /= ( ndr*fr - 1 );
-//            cout << covMatrix[i][j] << " ";
-//        }
-//        cout<<endl;
-//    }
-//    cout<<"covMatrixICA counted"<<endl;
 
-
-    //PCA itself!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //ICA itself!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     double ** vectorW = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
@@ -5175,20 +5239,21 @@ void MainWindow::ICA()
 //    }
 
     //test orthoNorm VectorsW  -OK
-//    cout << "W*W^t = " << endl;
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        for(int j = 0; j < ns; ++j)
-//        {
-//            sum1 = 0.;
-//            for(int k = 0; k < ns; ++k)
-//            {
-//                sum1 += vectorW[i][k] * vectorW[j][k];
-//            }
-//            cout << sum1 << " ";
-//        }
-//        cout << endl;
-//    }
+    cout << "test W*W^t = " << endl;
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            sum1 = 0.;
+            for(int k = 0; k < ns; ++k)
+            {
+                sum1 += vectorW[i][k] * vectorW[j][k];
+            }
+            cout << sum1 << " ";
+        }
+        cout << endl;
+    }
+    cout<<endl;
 
 
     double ** components = new double * [ns];

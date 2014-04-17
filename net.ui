@@ -224,20 +224,6 @@
       </item>
      </layout>
     </item>
-    <item row="0" column="3">
-     <widget class="QPushButton" name="clearSetsButton">
-      <property name="text">
-       <string>Clear Window Sets</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <widget class="QCheckBox" name="clearSetsWaitBox">
-      <property name="text">
-       <string>wait 5</string>
-      </property>
-     </widget>
-    </item>
     <item row="2" column="3">
      <widget class="QPushButton" name="hopfieldPushButton">
       <property name="text">
@@ -273,6 +259,13 @@
        </layout>
       </item>
      </layout>
+    </item>
+    <item row="1" column="3">
+     <widget class="QPushButton" name="distancesPushButton">
+      <property name="text">
+       <string>Test Distances</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

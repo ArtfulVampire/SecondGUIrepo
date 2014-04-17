@@ -35,7 +35,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     cout << "ns = " << ns << endl;
     cout << "spLength = " << spLength << endl;
 
-//    cout << "spLength = " << spLength << endl;
+
     stopFlag = 0;
     numTest = 0;
     numOfTall = 0;
@@ -153,12 +153,13 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(SVM()));
 
-    QObject::connect(ui->hopfieldPushButton, SIGNAL(clicked()), this, SLOT(Hopfield()));
+//    QObject::connect(ui->hopfieldPushButton, SIGNAL(clicked()), this, SLOT(Hopfield()));
 
     QObject::connect(group3, SIGNAL(buttonClicked(int)), this, SLOT(methodSetParam(int)));
 
     QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(memoryAndParamsAllocation()));
 
+    QObject::connect(ui->distancesPushButton, SIGNAL(clicked()), this, SLOT(testDistances()));
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 }
@@ -744,6 +745,99 @@ void Net::reset()
             }
         }
     }
+
+}
+
+void Net::testDistances()
+{
+    PaIntoMatrixByName("1");
+    NumberOfErrors = new int[NumOfClasses];
+    double ** averageSpectra = new double *[NumOfClasses];
+    FILE * toread;
+    for(int i = 0; i < NumOfClasses; ++i)
+    {
+        NumberOfErrors[i] = 0;
+        averageSpectra[i] = new double [NetLength];
+        for(int j = 0; j < NetLength; ++j)
+        {
+            averageSpectra[i][j] = 0.;
+        }
+
+    }
+
+    int * count = new int [NumOfClasses];
+    for(int i = 0; i < NumOfClasses; ++i)
+    {
+        count[i] = 0;
+    }
+
+    int inType;
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        inType = int(matrix[i][NetLength+1]);
+        ++count[inType];
+        for(int j = 0; j < NetLength; ++j)
+        {
+            averageSpectra[inType][j] += matrix[i][j];
+        }
+    }
+    for(int i = 0; i < NumOfClasses; ++i)
+    {
+        for(int j = 0; j < NetLength; ++j)
+        {
+            averageSpectra[i][j] /= count[i];
+        }
+
+    }
+    PaIntoMatrixByName("2");
+
+
+    double *distances = new double [NumOfClasses];
+    int outType;
+    double helpDist = 0;
+
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+
+        inType = int(matrix[i][NetLength+1]);
+        for(int j = 0; j < NumOfClasses; ++j)
+        {
+            distances[j] = distance(averageSpectra[j], matrix[i], NetLength);
+        }
+        outType = 0;
+        helpDist = distances[0];
+        for(int j = 1; j < NumOfClasses; ++j)
+        {
+            if(distances[j] < helpDist)
+            {
+                outType = j;
+                helpDist = distances[j];
+            }
+        }
+        if(outType != inType) ++NumberOfErrors[inType];
+    }
+    cout << "NumberOfVectors = " << NumberOfVectors << endl;
+    for(int j = 0; j < NumOfClasses; ++j)
+    {
+        cout << "NumberOfErrors = " << NumberOfErrors[j] << endl;
+    }
+    int sum = 0;
+    for(int j = 0; j < NumOfClasses; ++j)
+    {
+        sum += NumberOfErrors[j];
+    }
+
+    cout << "Percentage = " <<  100. * (1. - double(sum)/NumberOfVectors) << endl;
+
+
+    for(int i = 0; i < NumOfClasses; ++i)
+    {
+        delete averageSpectra[i];
+    }
+    delete []averageSpectra;
+    delete []distances;
+    delete []NumberOfErrors;
+    delete []count;
 
 }
 
@@ -2439,7 +2533,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     srand(myTime.currentTime().msec() * (myTime.currentTime().msec() +13));
     myTime.restart();
 
-    memoryAndParamsAllocation();
+//    memoryAndParamsAllocation();
 
     double ** deltaWeights = new double * [numOfLayers]; // 0 - unused for lowest layer
     for(int i = 0; i < numOfLayers; ++i)

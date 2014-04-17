@@ -95,6 +95,7 @@ public:
     void sliceIlya(const QString &fileName, QString marker);
     void sliceIlya(int marker1, int marker2, QString marker);
     void sliceFromTo(int marker1, int marker2, QString marker);
+    void sliceMati();
     void visualisation();
     void kernelest(const QString &str);
     void writeEdf(FILE * edf, double ** components, QString fileName, int indepNum);
@@ -106,6 +107,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    QTime myTime;
     time_t duration;
     QVariant var;
     FILE *edf;

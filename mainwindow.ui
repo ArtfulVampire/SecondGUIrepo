@@ -101,6 +101,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="matiCheckBox">
+           <property name="text">
+            <string>MATI</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -626,7 +633,7 @@
      <string>TextLabel</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>290</x>

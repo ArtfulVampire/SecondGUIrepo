@@ -89,6 +89,7 @@ public slots:
     void Hopfield();
     void methodSetParam(int);
     void memoryAndParamsAllocation();
+    void testDistances();
 
 private:
     Ui::Net *ui;
