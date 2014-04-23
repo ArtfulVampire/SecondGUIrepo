@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1346</width>
-    <height>871</height>
+    <width>1145</width>
+    <height>820</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,19 +41,6 @@
     </property>
     <property name="text">
      <string/>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="autoProcessingBox">
-    <property name="geometry">
-     <rect>
-      <x>670</x>
-      <y>0</y>
-      <width>81</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>auto</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="setNsLine">
@@ -326,34 +313,49 @@
      <item row="6" column="2">
       <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
-        <widget class="QSpinBox" name="numOfIcSpinBox"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>Nuber of IC</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="drawMapsPushButton">
-         <property name="text">
-          <string>draw maps</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>78</width>
-           <height>24</height>
-          </size>
-         </property>
-        </spacer>
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QSpinBox" name="numOfIcSpinBox"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Number of IC</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="gridLayout_4">
+           <item row="0" column="0">
+            <widget class="QDoubleSpinBox" name="svdDoubleSpinBox"/>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>SVD treshold e</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QDoubleSpinBox" name="vectwDoubleSpinBox"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>vectW treshold e</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="drawMapsPushButton">
+           <property name="text">
+            <string>draw maps</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>
@@ -555,7 +557,7 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>1060</x>
+      <x>970</x>
       <y>100</y>
       <width>161</width>
       <height>71</height>
@@ -581,36 +583,10 @@
      </item>
     </layout>
    </widget>
-   <widget class="QCheckBox" name="autoWindowsCheckBox">
-    <property name="geometry">
-     <rect>
-      <x>670</x>
-      <y>30</y>
-      <width>130</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>autoWindows</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="autoFBPushButton">
-    <property name="geometry">
-     <rect>
-      <x>820</x>
-      <y>10</y>
-      <width>97</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="stopButton">
     <property name="geometry">
      <rect>
-      <x>1070</x>
+      <x>980</x>
       <y>240</y>
       <width>97</width>
       <height>27</height>
@@ -618,19 +594,6 @@
     </property>
     <property name="text">
      <string>STOP</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="picLabel">
-    <property name="geometry">
-     <rect>
-      <x>1020</x>
-      <y>390</y>
-      <width>231</width>
-      <height>161</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>TextLabel</string>
     </property>
    </widget>
    <widget class="QWidget" name="layoutWidget">
@@ -751,13 +714,36 @@
      </item>
     </layout>
    </widget>
+   <widget class="QPushButton" name="makeTestDataPushButton">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>30</y>
+      <width>114</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>makeTestData</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="numComponentsSpinBox">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>30</y>
+      <width>47</width>
+      <height>24</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1346</width>
+     <width>1145</width>
      <height>20</height>
     </rect>
    </property>

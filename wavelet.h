@@ -15,6 +15,7 @@
 #include <QTextStream>
 #include <QPainter>
 #include <four1.h>
+#define pi 3.141592653589
 
 using namespace std;
 

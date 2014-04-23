@@ -63,7 +63,6 @@ public slots:
     void waveletCount();
     void setBoxMax(double);
     void makeDatFile();
-    void autoProcessingFB();
     void setNs2(int);
     void sliceWindFromReal();
     void diffSmooth();
@@ -73,12 +72,10 @@ public slots:
     void drawMaps();
     void stop();
     void Bayes();
-
+    void makeTestData();
 
 
 public:
-    void autoProcessing();
-    void autoWindowsProcessing();
     void makeDirs();
     void sliceGaps();
     void slice(int marker1, int marker2, QString marker);
@@ -103,6 +100,7 @@ public:
     void sliceOneByOneNew();
     void drawMap(double ** matrixA, int num);
     double fractalDimension(double * arr, int N, QString picPath);
+//    void stopControl(int &a, int b);
 
 
 private:
@@ -113,6 +111,8 @@ private:
     FILE *edf;
     QDir *dir;
     QString helpString;
+    int helpInt;
+    double helpDouble;
     QString ExpName;
     QStringList lst, nameFilters;
 //    QSignalMapper *signalMapper;
@@ -128,7 +128,6 @@ private:
     int wndLength;
     int staSlice;
     int NumOfEdf;
-    int helpInt;
     bool autoProcessingFlag;
     bool stopFlag;
     double spStep;

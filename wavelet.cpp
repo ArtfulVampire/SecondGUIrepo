@@ -1,4 +1,4 @@
-#define pi 3.14159265358972
+
 #include "wavelet.h"
 
 //offset hue
