@@ -73,6 +73,7 @@ public slots:
     void stop();
     void Bayes();
     void makeTestData();
+    void spoc();
 
 
 public:

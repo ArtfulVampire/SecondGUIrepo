@@ -57,7 +57,7 @@ MainWindow::MainWindow() :
     ui(new Ui::MainWindow)
 {
 
-    QButtonGroup * group1, *group2, *group3;
+    QButtonGroup * group1, *group2, *group3, *group4;
     autoProcessingFlag = false;
     ui->setupUi(this);
     this->setWindowTitle("Main");
@@ -103,12 +103,16 @@ MainWindow::MainWindow() :
     group3 = new QButtonGroup();
     group3->addButton(ui->BayesRadioButton);
     group3->addButton(ui->HiguchiRadioButton);
+    group4 = new QButtonGroup();
+    group4->addButton(ui->lambdaRadioButton);
+    group4->addButton(ui->r2RadioButton);
 
     //wavelets
     ui->classBox->setChecked(true);
     ui->weightsBox->setChecked(true);
     ui->waveletsBox->setChecked(true);
     ui->fullBox->setChecked(true);
+    ui->r2RadioButton->setChecked(true);
 
     ui->tempBox->setMaximum(1e7);
     ui->tempBox->setValue(2e3);
@@ -291,6 +295,8 @@ MainWindow::MainWindow() :
     QObject::connect(ui->BayesPushButton, SIGNAL(clicked()), this, SLOT(Bayes()));
 
     QObject::connect(ui->makeTestDataPushButton, SIGNAL(clicked()), this, SLOT(makeTestData()));
+
+    QObject::connect(ui->spocPushButton, SIGNAL(clicked()), this, SLOT(spoc()));
 
 
 }
@@ -4456,6 +4462,7 @@ void MainWindow::ICA() //fastICA
     //counter j - for B, i - for A
     for(int k = 0; k < ns; ++k)
     {
+        myTime.restart();
         dF = 1.0;
         F = 1.0;
 
@@ -4523,7 +4530,7 @@ void MainWindow::ICA() //fastICA
             }
             dF = (F-dF)/F;
             ++counter;
-            if(counter==200)
+            if(counter==150)
             {
 //                cout<<"dF = "<<abs(dF)<<endl;
                 break;
@@ -4533,6 +4540,7 @@ void MainWindow::ICA() //fastICA
             qApp->processEvents();
             if(stopFlag == 1)
             {
+                cout << "ICA stopped by user" << endl;
                 stopFlag = 0;
                 if(1)
                 {
@@ -4600,7 +4608,7 @@ void MainWindow::ICA() //fastICA
         }
 
         eigenValues[k] = sum1*sum2/double(ndr*fr-1.);
-        cout << k << "  " << eigenValues[k] << "  " << counter << endl;
+        cout << k << "  " << eigenValues[k] << "  " << counter << "\t" << myTime.elapsed()/1000. << " sec" << endl;
         for(int i = 0; i < ns; ++i)
         {
             eigenVectors[i][k] = tempA[i]; //1-normalized
@@ -4686,12 +4694,12 @@ void MainWindow::ICA() //fastICA
 
     //count linear decomposition on PCAs
 
-    for(int j = 0; j < ndr*fr; ++j) //columns X
+    for(int j = 0; j < ndr*fr; ++j) //columns initData
     {
         for(int i = 0; i < ns; ++i) //rows tempMatrix
         {
             sum1 = 0.;
-            for(int k = 0; k < ns; ++k)
+            for(int k = 0; k < ns; ++k) //rows initData = coloumns tempMatrix
             {
                 sum1 += eigenVectors[k][i] * data[k][j] / sqrt(eigenValues[i]);
             }
@@ -4742,8 +4750,9 @@ void MainWindow::ICA() //fastICA
 
     for(int i = 0; i < ns; ++i)
     {
+        myTime.restart();
         counter = 0;
-        cout << "Num of vectorW = " << i;
+        cout << i;
         for(int j = 0; j < ns; ++j)
         {
             vectorW[i][j] = randomVector(ns)[j];
@@ -4795,6 +4804,7 @@ void MainWindow::ICA() //fastICA
             qApp->processEvents();
             if(stopFlag == 1)
             {
+                cout << "ICA stopped by user" << endl;
                 stopFlag = 0;
                 if(1)
                 {
@@ -4830,7 +4840,7 @@ void MainWindow::ICA() //fastICA
                 return;
             }
         }
-        cout << "\t" << counter << endl;
+        cout << "\t" << counter << "\t" << myTime.elapsed()/1000. << " sec" << endl;
         //heat control
 
     }
@@ -4941,7 +4951,7 @@ void MainWindow::ICA() //fastICA
             {
                 sum1 += matrixA[i][k] * components[k][j];
             }
-            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.01)
+            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.03)
             {
                 cout << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << endl;
             }
@@ -5078,6 +5088,160 @@ void MainWindow::ICA() //fastICA
     delete [] matrixA;
     delete [] components;
     delete [] dataICA;
+}
+
+void MainWindow::spoc()
+{
+    this->readData();
+
+    double * Wvector = new double  [ns];
+    double * WvectorOld = new double  [ns];
+    int epochLength = ui->wndLengthBox->currentText().toInt();
+    timeShift = ui->timeShiftBox->value();
+    int numOfEpoches = (ndr*nr[0] - epochLength)/timeShift;
+
+    double * Z = new double [numOfEpoches];
+
+    double *** Cmatrix = new double ** [numOfEpoches]; //covariance matrix
+    for(int i = 0; i < numOfEpoches; ++i)
+    {
+        Cmatrix[i] = new double [ns];
+        for(int j = 0; j < ns; ++j)
+        {
+            Cmatrix[i][j] = new double [ns];
+        }
+    }
+
+    double * averages = new double [ns];
+
+    double ** Caverage = new double * [ns];
+    for(int i = 0; i < ns; ++i)
+    {
+        Caverage[i] = new double [ns];
+    }
+
+    double ** Cz = new double * [ns];
+    for(int i = 0; i < ns; ++i)
+    {
+        Cz[i] = new double [ns];
+    }
+
+    double * Znew = new double [numOfEpoches];
+
+    //count Z
+    //FIXME
+
+    //count Cmatrix
+    for(int i = 0; i < numOfEpoches; ++i)
+    {
+        //count averages
+        for(int j = 0; j < ns; ++j)
+        {
+            averages[j] = 0.;
+            for(int h = 0; h < epochLength; ++h)
+            {
+                averages[j] += data[j][i * timeShift + h];
+            }
+            averages[j] /= epochLength;
+        }
+
+        for(int j = 0; j < ns; ++j)
+        {
+            for(int k = 0; k < ns; ++k)
+            {
+                helpDouble = 0.;
+                for(int h = 0; h < epochLength; ++h)
+                {
+                    helpDouble += (data[j][i * timeShift + h] - averages[j]) * (data[k][i * timeShift + h] - averages[k]);
+                }
+                helpDouble /= epochLength;
+                Cmatrix[i][j][k] = helpDouble;
+            }
+        }
+    }
+
+    //count Caverage
+    for(int j = 0; j < ns; ++j)
+    {
+        for(int k = 0; k < ns; ++k)
+        {
+            Caverage[j][k] = 0.;
+        }
+    }
+
+    for(int i = 0; i < numOfEpoches; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            for(int k = 0; k < ns; ++k)
+            {
+                Caverage[j][k] += Cmatrix[i][j][k];
+            }
+        }
+    }
+    for(int j = 0; j < ns; ++j)
+    {
+        for(int k = 0; k < ns; ++k)
+        {
+            Caverage[j][k] /= numOfEpoches;
+        }
+    }
+
+    //count Cz
+    for(int j = 0; j < ns; ++j)
+    {
+        for(int k = 0; k < ns; ++k)
+        {
+            Cz[j][k] = 0.;
+        }
+    }
+
+    for(int i = 0; i < numOfEpoches; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            for(int k = 0; k < ns; ++k)
+            {
+                Cz[j][k] += Cmatrix[i][j][k] * Z[i];
+            }
+        }
+    }
+    for(int j = 0; j < ns; ++j)
+    {
+        for(int k = 0; k < ns; ++k)
+        {
+            Cz[j][k] /= numOfEpoches;
+        }
+    }
+
+
+
+
+
+
+    for(int i = 0; i < numOfEpoches; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            delete []Cmatrix[i][j];
+        }
+        delete []Cmatrix[i];
+    }
+    delete []Cmatrix;
+
+    for(int i = 0; i < ns; ++i)
+    {
+        delete []Caverage[i];
+        delete []Cz[i];
+    }
+    delete []Wvector;
+    delete []WvectorOld;
+    delete []Caverage;
+    delete []Cz;
+    delete []Z;
+    delete []Znew;
+    delete []averages;
+
 }
 
 QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY)

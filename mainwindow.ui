@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1145</width>
-    <height>820</height>
+    <width>1177</width>
+    <height>906</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -282,10 +282,24 @@
        </property>
       </widget>
      </item>
+     <item row="1" column="0">
+      <widget class="QPushButton" name="avTimeButton">
+       <property name="text">
+        <string>av time</string>
+       </property>
+      </widget>
+     </item>
      <item row="7" column="0">
       <widget class="QPushButton" name="makePA">
        <property name="text">
         <string>Make P&amp;A</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QPushButton" name="icaButton">
+       <property name="text">
+        <string>ICA</string>
        </property>
       </widget>
      </item>
@@ -296,17 +310,10 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QPushButton" name="avTimeButton">
+     <item row="3" column="1">
+      <widget class="QPushButton" name="BayesPushButton">
        <property name="text">
-        <string>av time</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QPushButton" name="icaButton">
-       <property name="text">
-        <string>ICA</string>
+        <string>Bayes</string>
        </property>
       </widget>
      </item>
@@ -451,10 +458,10 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QPushButton" name="BayesPushButton">
+     <item row="7" column="1">
+      <widget class="QPushButton" name="spocPushButton">
        <property name="text">
-        <string>Bayes</string>
+        <string>SPoC</string>
        </property>
       </widget>
      </item>
@@ -507,6 +514,44 @@
           <string>DiffSmooth</string>
          </property>
         </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="7" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_11">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_11"/>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_12">
+         <item>
+          <widget class="QRadioButton" name="lambdaRadioButton">
+           <property name="text">
+            <string>lambda</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="r2RadioButton">
+           <property name="text">
+            <string>r2</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
@@ -600,9 +645,9 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>611</y>
+      <y>650</y>
       <width>671</width>
-      <height>133</height>
+      <height>151</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -743,7 +788,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1145</width>
+     <width>1177</width>
      <height>20</height>
     </rect>
    </property>
