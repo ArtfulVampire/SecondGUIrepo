@@ -196,8 +196,9 @@ MainWindow::MainWindow() :
 
     ui->timeShiftBox->setMinimum(25);
     ui->timeShiftBox->setMaximum(1000);
-    ui->timeShiftBox->setValue(125);
+    ui->timeShiftBox->setValue(250);
     ui->timeShiftBox->setSingleStep(25);
+    ui->wndLengthBox->addItem("250");
     ui->wndLengthBox->addItem("400");
     ui->wndLengthBox->addItem("450");
     ui->wndLengthBox->addItem("500");
@@ -205,7 +206,7 @@ MainWindow::MainWindow() :
     ui->wndLengthBox->addItem("750");
     ui->wndLengthBox->addItem("875");
     ui->wndLengthBox->addItem("1000");
-    ui->wndLengthBox->setCurrentIndex(6);
+    ui->wndLengthBox->setCurrentIndex(0);
     ui->realButton->setChecked(true);
 
     ui->numOfIcSpinBox->setMaximum(19); //generality
@@ -228,6 +229,18 @@ MainWindow::MainWindow() :
 //    ui->vectwDoubleSpinBox->setValue(1.5);
     ui->vectwDoubleSpinBox->setValue(3.0);
     ui->vectwDoubleSpinBox->setSingleStep(0.1);
+
+    ui->spocCoeffDoubleSpinBox->setMaximum(5);
+    ui->spocCoeffDoubleSpinBox->setMinimum(0);
+    ui->spocCoeffDoubleSpinBox->setSingleStep(0.1);
+    ui->spocCoeffDoubleSpinBox->setDecimals(1);
+    ui->spocCoeffDoubleSpinBox->setValue(2.2);
+
+    ui->spocTresholdDoubleSpinBox->setMaximum(1.0);
+    ui->spocTresholdDoubleSpinBox->setMinimum(0.6);
+    ui->spocTresholdDoubleSpinBox->setSingleStep(0.01);
+    ui->spocTresholdDoubleSpinBox->setDecimals(2);
+    ui->spocTresholdDoubleSpinBox->setValue(0.8);
 
     ui->finishTimeBox->setMaximum(60*30.);
     ui->startTimeBox->setMaximum(ui->finishTimeBox->maximum());
@@ -2412,6 +2425,7 @@ void MainWindow::makeTestData()
         testSignals2[i] = new double [ndr*nr[i]];
     }
 
+
     double x,y;
     srand(QTime::currentTime().msec());
     //signals
@@ -2419,7 +2433,7 @@ void MainWindow::makeTestData()
     {
         testSignals[0][i] = sin(2*3.1415926*(double(i)/23.)); //23 bins period
         testSignals[1][i] = i%41 - 20.;      //a saw 40 period
-        testSignals[2][i] = sin(2*3.1415926*(double(i)/23.) + 0.175);//square signal 32 period
+//        testSignals[2][i] = sin(2*3.1415926*(double(i)/23.) + 0.175);//
 
 //        x = (1 + rand()%10000)/10001.;
 //        y = (1 + rand()%10000)/10001.;
@@ -2431,19 +2445,24 @@ void MainWindow::makeTestData()
         testSignals[3][i] = ((i%34 >13) - 0.5); //rectangle
 
 
-//        x = (1 + rand()%10000)/10001.;
-//        y = (1 + rand()%10000)/10001.;
-        testSignals[4][i] = fabs(i%55 - 27) - 27./2.; //triangle
+        testSignals[2][i] = fabs(i%55 - 27) - 27./2.; //triangle
     }
-
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "spocVar.txt");
+    FILE * in = fopen(helpString.toStdString().c_str(), "w");
     //modulation
-//    for(int i = 0; i < ndr*nr[0]; ++i)
-//    {
-//        testSignals[0][i] *= sin(2*3.1415926*i/250. * 0.07 + 0.15) + 2.3;
-//        testSignals[1][i] *= sin(2*3.1415926*i/250. * 0.173 + 0.27) + 2.5;
-//        testSignals[2][i] *= sin(2*3.1415926*i/250. * 0.25 + 0.09) + 3.9;
-//        testSignals[3][i] *= sin(2*3.1415926*i/250. * 0.009 - 0.138) + 2.7;
-//    }
+    for(int i = 0; i < ndr*nr[0]; ++i)
+    {
+        testSignals[0][i] *= sin(2*3.1415926*i/250. * 0.07 + 0.15) + 2.3;
+        testSignals[1][i] *= sin(2*3.1415926*i/250. * 0.173 + 0.27) + 2.5;
+        testSignals[2][i] *= sin(2*3.1415926*i/250. * 0.25 + 0.09) + 3.9;
+        testSignals[3][i] *= sin(2*3.1415926*i/250. * 0.009 - 0.138) + 1.3;
+        helpDouble = sin(2*3.1415926*i/250. * 0.009 - 0.138) + 1.3;
+        if(i%250 == 0)
+        {
+            fprintf(in, "%lf\n", helpDouble);
+        }
+    }
+    fclose(in);
 
     double sum1, sum2;
     //normalize by dispersion = 10
@@ -5090,34 +5109,57 @@ void MainWindow::ICA() //fastICA
     delete [] dataICA;
 }
 
+double det(double ** matrix, int dim)
+{
+    double coef;
+    for(int i = 1; i < dim; ++i)
+    {
+        for(int k = 0; k < i; ++k)
+        {
+            coef = matrix[i][k]/matrix[k][k];
+            for(int j = 0; j < dim; ++j)
+            {
+                matrix[i][j] -= coef * matrix[k][j];
+            }
+        }
+    }
+    coef = 1.;
+    for(int i = 0; i < dim; ++i)
+    {
+        coef *= matrix[i][i];
+    }
+    return coef;
+}
+
 void MainWindow::spoc()
 {
     this->readData();
+    ns = 4; //test
 
-    double * Wvector = new double  [ns];
-    double * WvectorOld = new double  [ns];
+    double * W = new double  [ns];
+    double * WOld = new double  [ns];
     int epochLength = ui->wndLengthBox->currentText().toInt();
     timeShift = ui->timeShiftBox->value();
     int numOfEpoches = (ndr*nr[0] - epochLength)/timeShift;
 
     double * Z = new double [numOfEpoches];
 
-    double *** Cmatrix = new double ** [numOfEpoches]; //covariance matrix
+    double *** Ce = new double ** [numOfEpoches]; //covariance matrix
     for(int i = 0; i < numOfEpoches; ++i)
     {
-        Cmatrix[i] = new double [ns];
+        Ce[i] = new double * [ns];
         for(int j = 0; j < ns; ++j)
         {
-            Cmatrix[i][j] = new double [ns];
+            Ce[i][j] = new double [ns];
         }
     }
 
     double * averages = new double [ns];
 
-    double ** Caverage = new double * [ns];
+    double ** Cav = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-        Caverage[i] = new double [ns];
+        Cav[i] = new double [ns];
     }
 
     double ** Cz = new double * [ns];
@@ -5128,10 +5170,42 @@ void MainWindow::spoc()
 
     double * Znew = new double [numOfEpoches];
 
-    //count Z
-    //FIXME
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "spocVar.txt");
+    FILE * in = fopen(helpString.toStdString().c_str(), "r");
+    helpInt = 0;
+    while(!feof(in) && helpInt < numOfEpoches)
+    {
+        fscanf(in, "%lf", &Z[helpInt++]);
+    }
+    fclose(in);
 
-    //count Cmatrix
+    //zero mean
+    helpDouble = 0.;
+    for(int i = 0; i < numOfEpoches; ++i)
+    {
+        helpDouble += Z[i];
+    }
+    helpDouble /= numOfEpoches;
+    for(int i = 0; i < numOfEpoches; ++i)
+    {
+        Z[i] -= helpDouble;
+    }
+
+    //unit variance
+    helpDouble = 0.;
+    for(int i = 0; i < numOfEpoches; ++i)
+    {
+        helpDouble += Z[i]*Z[i];
+    }
+    helpDouble /= numOfEpoches;
+    helpDouble = sqrt(helpDouble);
+    for(int i = 0; i < numOfEpoches; ++i)
+    {
+        Z[i] /= helpDouble;
+    }
+
+
+    //count Ce
     for(int i = 0; i < numOfEpoches; ++i)
     {
         //count averages
@@ -5155,17 +5229,17 @@ void MainWindow::spoc()
                     helpDouble += (data[j][i * timeShift + h] - averages[j]) * (data[k][i * timeShift + h] - averages[k]);
                 }
                 helpDouble /= epochLength;
-                Cmatrix[i][j][k] = helpDouble;
+                Ce[i][j][k] = helpDouble;
             }
         }
     }
 
-    //count Caverage
+    //count Cav
     for(int j = 0; j < ns; ++j)
     {
         for(int k = 0; k < ns; ++k)
         {
-            Caverage[j][k] = 0.;
+            Cav[j][k] = 0.;
         }
     }
 
@@ -5175,7 +5249,7 @@ void MainWindow::spoc()
         {
             for(int k = 0; k < ns; ++k)
             {
-                Caverage[j][k] += Cmatrix[i][j][k];
+                Cav[j][k] += Ce[i][j][k];
             }
         }
     }
@@ -5183,7 +5257,7 @@ void MainWindow::spoc()
     {
         for(int k = 0; k < ns; ++k)
         {
-            Caverage[j][k] /= numOfEpoches;
+            Cav[j][k] /= numOfEpoches;
         }
     }
 
@@ -5202,7 +5276,7 @@ void MainWindow::spoc()
         {
             for(int k = 0; k < ns; ++k)
             {
-                Cz[j][k] += Cmatrix[i][j][k] * Z[i];
+                Cz[j][k] += Ce[i][j][k] * Z[i];
             }
         }
     }
@@ -5214,6 +5288,300 @@ void MainWindow::spoc()
         }
     }
 
+    double * gradientW = new double [ns];
+    double sum1, sum2;
+    double value1, value2;
+    int counter1, counter2;
+    double coeff = pow(10., -ui->spocCoeffDoubleSpinBox->value());
+//    srand(QTime::currentTime().msec());
+
+
+    if(ui->r2RadioButton->isChecked())
+    {
+
+        //W = randomVector
+        for(int i = 0; i < ns; ++i)
+        {
+            W[i] = rand()%30 - 15.;
+            sum1 += W[i] * W[i];
+        }
+        for(int i = 0; i < ns; ++i)
+        {
+            W[i] /= sqrt(sum1);
+        }
+
+        counter1 = 0;
+        do
+        {
+
+            srand(time(NULL));
+            sum1 = 1.;
+            sum2 = 1.;
+            for(int i = 0; i < ns; ++i)
+            {
+                sum1 *= WOld[i];
+                sum2 *= W[i];
+            }
+
+            for(int i = 0; i < ns; ++i)
+            {
+                WOld[i] = W[i];
+            }
+
+            if(sum1 == sum2)
+            {
+                for(int i = 0; i < ns; ++i)
+                {
+                    W[i] = rand()%30 - 15.;
+                    sum1 += W[i] * W[i];
+                }
+                for(int i = 0; i < ns; ++i)
+                {
+                    W[i] /= sqrt(sum1);
+                }
+            }
+
+            //count gradient
+            for(int i = 0; i < ns; ++i)
+            {
+                gradientW[i] = 0.;
+            }
+            for(int i = 0; i < ns; ++i)
+            {
+                //count <(wt*(Ce-Cav)w)^2>
+                sum1 = 0.;
+                for(int h = 0; h < numOfEpoches; ++h)
+                {
+                    for(int j = 0; j < ns; ++j)
+                    {
+                        for(int k = 0; k < ns; ++k)
+                        {
+                            sum1 += ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]) * ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]);
+                        }
+                    }
+                }
+                sum1 /= numOfEpoches; //sum1 = <(wt*(Ce-Cav)w)^2>
+
+                //count (wt*Cz*w)'
+                sum2 = 0.;
+                for(int j = 0; j < ns; ++j)
+                {
+                    sum2 += Cz[i][j] * W[j];
+                }
+                gradientW[i] = sum1 * sum2; //gradientW[i] = <(wt*(Ce-Cav)w)^2> * (wt*Cz*w)'
+
+                //count <(wt*(Ce-Cav)*w) * (wt*(Ce-Cav)*w)'> * (wt * Cz * w)
+
+                //1)
+                //count <(wt*(Ce-Cav)*w) * (wt*(Ce-Cav)*w)'>
+                helpDouble = 0.;
+                for(int h = 0; h < numOfEpoches; ++h)
+                {
+
+                    sum1 = 0.;
+                    sum2 = 0.;
+                    for(int j = 0; j < ns; ++j)
+                    {
+                        for(int k = 0; k < ns; ++k)
+                        {
+                            sum1 += ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]); //(wt*(Ce-Cav)*w)
+                        }
+                        sum2 += ((Ce[h][i][j] - Cav[i][j]) * W[j] ); //(wt*(Ce-Cav)*w)'
+                    }
+                    helpDouble += sum1 * sum2;
+
+                }
+                helpDouble /= numOfEpoches;
+
+                //count (wt*Cz*w)
+                sum1 = 0.;
+                for(int j = 0; j < ns; ++j)
+                {
+                    for(int k = 0; k < ns; ++k)
+                    {
+                        sum1 += (Cz[j][k] * W[j] * W[k]);
+                    }
+                }
+                sum2 = ((sum1 > 0.) - 0.5) * 2.; //sum2 = sign(sum1)
+                gradientW[i] -= sum1 * helpDouble;
+                gradientW[i] *= sum2;
+
+
+            }
+            //1-norm gradient
+            sum1 = 0.;
+            for(int i = 0; i < ns; ++i)
+            {
+                sum1 += gradientW[i] * gradientW[i];
+            }
+            sum1 = sqrt(sum1);
+            for(int i = 0; i < ns; ++i)
+            {
+                gradientW[i] /= sum1;
+            }
+
+            //count r2 before move
+            sum1 = 0.;
+            for(int j = 0; j < ns; ++j)
+            {
+                for(int k = 0; k < ns; ++k)
+                {
+                    sum1 += (Cz[j][k] * W[j] * W[k]) * (Cz[j][k] * W[j] * W[k]);
+                }
+            }
+            sum2 = 0.;
+            for(int h = 0; h < numOfEpoches; ++h)
+            {
+                for(int j = 0; j < ns; ++j)
+                {
+                    for(int k = 0; k < ns; ++k)
+                    {
+                        sum2 += ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]) * ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]);
+                    }
+                }
+            }
+            sum2 /= numOfEpoches;
+
+            value1 = sum1/sum2; //sum1 = r2
+            value2 = value1;
+
+            counter2 = 0;
+            do
+            {
+                value1 = value2;
+//                cout << value1 << " -> ";
+
+                for(int i = 0; i < ns; ++i)
+                {
+                    W[i] += gradientW[i] * coeff;
+                }
+
+                //count new r2
+                sum1 = 0.;
+                for(int j = 0; j < ns; ++j)
+                {
+                    for(int k = 0; k < ns; ++k)
+                    {
+                        sum1 += (Cz[j][k] * W[j] * W[k]) * (Cz[j][k] * W[j] * W[k]);
+                    }
+                }
+                sum2 = 0.;
+                for(int h = 0; h < numOfEpoches; ++h)
+                {
+                    for(int j = 0; j < ns; ++j)
+                    {
+                        for(int k = 0; k < ns; ++k)
+                        {
+                            sum2 += ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]) * ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]);
+                        }
+                    }
+                }
+                sum2 /= numOfEpoches;
+
+                value2 = sum1/sum2; //sum1 = r2
+//                cout << value2 << endl;
+
+                ++counter2;
+            } while (value2 > value1 * 1.001);
+            //step back
+            for(int i = 0; i < ns; ++i)
+            {
+                W[i] -= gradientW[i] * coeff;
+            }
+
+            if(counter2 > 1)
+            {
+//                cout << "value = " << value2 << "\t" << counter2 << " iterations" << endl;
+            }
+
+
+            qApp->processEvents();
+            if(stopFlag)
+            {
+                for(int i = 0; i < numOfEpoches; ++i)
+                {
+                    for(int j = 0; j < ns; ++j)
+                    {
+                        delete []Ce[i][j];
+                    }
+                    delete []Ce[i];
+                }
+                delete []Ce;
+
+                for(int i = 0; i < ns; ++i)
+                {
+                    delete []Cav[i];
+                    delete []Cz[i];
+                }
+                delete []W;
+                delete []WOld;
+                delete []Cav;
+                delete []Cz;
+                delete []Z;
+                delete []Znew;
+                delete []averages;
+                delete []gradientW;
+                stopFlag = 0;
+                cout << "STOPPED" << endl;
+                return;
+            }
+
+
+            sum1 = 0.;
+            for(int i = 0; i < ns; ++i)
+            {
+                sum1 += (W[i] - WOld[i]) * (W[i] - WOld[i]);
+            }
+            sum1 = sqrt(sum1);
+            ++counter1;
+        } while(sum1 > pow(10., -1.5) || value2 < ui->spocTresholdDoubleSpinBox->value());
+        cout << "final r2 = " << value2 << "\t" << counter1 << " iterations" << endl;
+
+
+        for(int i = 0; i < ns; ++i)
+        {
+            cout << W[i] << "   ";
+        }
+        cout << endl;
+
+    }
+    else if (ui->lambdaRadioButton->isChecked())
+    {
+        double ** detMatrix = new double * [ns];
+        for(int i = 0; i < ns; ++i)
+        {
+            detMatrix[i] = new double [ns];
+        }
+        double * dets = new double [ndr*nr[0]];
+
+        //(Cz-l*Cav)*w = 0
+        //det(Cz-l*Cav) = 0
+        for(double L = 0.; L < ndr*nr[0]; L+=1.)
+        {
+//            if(int(L+1)%100 == 0) cout << "!" << endl;
+            for(int j = 0; j < ns; ++j)
+            {
+                for(int k = 0; k < ns; ++k)
+                {
+                    detMatrix[j][k] = Cz[j][k] - L*Cav[j][k];
+                }
+            }
+            dets[int(L)] = det(detMatrix, ns);
+            if(dets[int(L)] * dets[int(L-1)] < 0 || ( L > 2. && (dets[int(L)] > dets[int(L-1)]) && (dets[int(L-2)] > dets[int(L-1)]) && dets[int(L-1)] < 10.))
+            {
+                cout << "L = " << L << endl;
+            }
+        }
+
+        for(int i = 0; i < ns; ++i)
+        {
+            delete []detMatrix[i];
+        }
+        delete []detMatrix;
+        delete []dets;
+    }
+
+
 
 
 
@@ -5223,25 +5591,25 @@ void MainWindow::spoc()
     {
         for(int j = 0; j < ns; ++j)
         {
-            delete []Cmatrix[i][j];
+            delete []Ce[i][j];
         }
-        delete []Cmatrix[i];
+        delete []Ce[i];
     }
-    delete []Cmatrix;
+    delete []Ce;
 
     for(int i = 0; i < ns; ++i)
     {
-        delete []Caverage[i];
+        delete []Cav[i];
         delete []Cz[i];
     }
-    delete []Wvector;
-    delete []WvectorOld;
-    delete []Caverage;
+    delete []W;
+    delete []WOld;
+    delete []Cav;
     delete []Cz;
     delete []Z;
     delete []Znew;
     delete []averages;
-
+    delete []gradientW;
 }
 
 QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY)
