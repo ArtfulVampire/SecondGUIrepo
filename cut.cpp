@@ -1333,13 +1333,13 @@ void Cut::paint()
 
     painter->setPen(QPen(QBrush("black"), 1));
 
-    double norm=1.0;
-    double stretch=1.0;
-    for(int c1=0; c1<currentPic.width(); ++c1)
+    double norm = 1.0;
+    double stretch = 1.0;
+    for(int c1 = 0; c1 < currentPic.width(); ++c1)
     {
-        for(int c2=0; c2<ns; ++c2)
+        for(int c2 = 0; c2 < ns; ++c2)
         {
-            if(ns==21 && c2==19) painter->setPen("red");
+            if(ns==21 && c2 == 19) painter->setPen("red");
             else if(ns==21 && c2==20) painter->setPen("blue");
             else painter->setPen("black");
 
