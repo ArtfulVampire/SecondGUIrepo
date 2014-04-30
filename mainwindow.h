@@ -121,6 +121,8 @@ private:
     int *nr;
     int NumOfSlices, eyes;
     double ** data;
+    double ** spocMixMatrix;
+    double * spocWVector;
     char **label;
     QPixmap pic;
     QPainter *paint;

@@ -213,8 +213,8 @@ MainWindow::MainWindow() :
     ui->numOfIcSpinBox->setMinimum(2);
     ui->numOfIcSpinBox->setValue(19);
 
-    ui->numComponentsSpinBox->setMaximum(5);
-    ui->numComponentsSpinBox->setValue(4);
+    ui->numComponentsSpinBox->setMaximum(19);
+    ui->numComponentsSpinBox->setValue(10);
 
     ui->svdDoubleSpinBox->setDecimals(1);
     ui->svdDoubleSpinBox->setMaximum(15);
@@ -240,7 +240,7 @@ MainWindow::MainWindow() :
     ui->spocTresholdDoubleSpinBox->setMinimum(0.6);
     ui->spocTresholdDoubleSpinBox->setSingleStep(0.005);
     ui->spocTresholdDoubleSpinBox->setDecimals(3);
-    ui->spocTresholdDoubleSpinBox->setValue(0.8);
+    ui->spocTresholdDoubleSpinBox->setValue(0.95);
 
     ui->finishTimeBox->setMaximum(60*30.);
     ui->startTimeBox->setMaximum(ui->finishTimeBox->maximum());
@@ -2412,7 +2412,8 @@ void MainWindow::makeTestData()
 {
 
     this->readData();
-    int indepNum = 5;
+    nsBackup = ns;
+    int indepNum = ui->numComponentsSpinBox->value();
     double ** testSignals = new double * [indepNum];
     for(int i = 0; i < indepNum; ++i)
     {
@@ -2429,10 +2430,24 @@ void MainWindow::makeTestData()
     double x,y;
     srand(QTime::currentTime().msec());
     //signals
-    for(int i = 0; i < ndr*nr[0]; ++i)
+
+    for(int j = 0; j < ui->numComponentsSpinBox->value(); ++j)
     {
-        testSignals[0][i] = sin(2*3.1415926*(double(i)/23.)); //23 bins period
-        testSignals[1][i] = i%41 - 20.;      //a saw 40 period
+        x = (rand()%30)/40.;
+        y = (-0.3 + (rand()%600)/100.);
+        for(int i = 0; i < ndr*nr[0]; ++i)
+        {
+            helpDouble = 2.*3.1415926*double(i)/250. * (10.1 + x) + y;
+            testSignals[j][i] = sin(helpDouble);
+        }
+    }
+//        helpDouble = 2.*3.1415926*double(i)/250. * 10.3;
+//        testSignals[1][i] = sin(helpDouble);//+ 0.17); //10.5 Hz
+//        helpDouble = 2.*3.1415926*double(i)/250. * 10.25;
+//        testSignals[2][i] = sin(helpDouble);//- 0.17); //10.5 Hz
+//        helpDouble = 2.*3.1415926*double(i)/250. * 10.0;
+//        testSignals[3][i] = sin(helpDouble);//- 0.06); //10.5 Hz
+//        testSignals[1][i] = i%41 - 20.;      //a saw 40 period
 //        testSignals[2][i] = sin(2*3.1415926*(double(i)/23.) + 0.175);//
 
 //        x = (1 + rand()%10000)/10001.;
@@ -2442,21 +2457,30 @@ void MainWindow::makeTestData()
 //        x = (1 + rand()%10000)/10001.;
 //        y = (1 + rand()%10000)/10001.;
 //        testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * M_PI * y);
-        testSignals[3][i] = ((i%34 >13) - 0.5); //rectangle
+//        testSignals[3][i] = ((i%34 >13) - 0.5); //rectangle
 
 
-        testSignals[2][i] = fabs(i%55 - 27) - 27./2.; //triangle
-    }
+//        testSignals[2][i] = fabs(i%55 - 27) - 27./2.; //triangle
+
     helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "spocVar.txt");
     FILE * in = fopen(helpString.toStdString().c_str(), "w");
     //modulation
+
+    for(int j = 0; j < ui->numComponentsSpinBox->value()-1; ++j)
+    {
+        helpDouble = 0.05 + (rand()%100)/500.;
+        x = (rand()%100)/100.;
+        y = 1.5 + (rand()%20)/10.;
+        for(int i = 0; i < ndr*nr[0]; ++i)
+        {
+//            testSignals[j][i] *= sin(2*3.1415926*i/250. * helpDouble + x) + y;
+        }
+    }
+    //object signal
     for(int i = 0; i < ndr*nr[0]; ++i)
     {
-        testSignals[0][i] *= sin(2*3.1415926*i/250. * 0.07 + 0.15) + 2.3;
-        testSignals[1][i] *= sin(2*3.1415926*i/250. * 0.173 + 0.27) + 2.5;
-        testSignals[2][i] *= sin(2*3.1415926*i/250. * 0.25 + 0.09) + 3.9;
-        helpDouble = sin(2*3.1415926*i/250. * 0.009 - 0.138) + 1.3;
-        testSignals[3][i] *= helpDouble;
+        helpDouble = sin(2.*3.1415926*int(i/250) * 0.02 - 0.138) + 1.8;
+        testSignals[ui->numComponentsSpinBox->value() - 1][i] *= helpDouble;
         if(i%250 == 0)
         {
             fprintf(in, "%lf\n", helpDouble);
@@ -2495,6 +2519,11 @@ void MainWindow::makeTestData()
 
 
 
+    spocMixMatrix = new double * [ui->numComponentsSpinBox->value()];
+    for(int k = 0; k < ui->numComponentsSpinBox->value(); ++k)
+    {
+        spocMixMatrix[k] = new double [ui->numComponentsSpinBox->value()];
+    }
     for(int j = 0; j < 19; ++j)
     {
         for(int i = 0; i < ndr*nr[0]; ++i)
@@ -2504,22 +2533,22 @@ void MainWindow::makeTestData()
         for(int k = 0; k < ui->numComponentsSpinBox->value(); ++k)
         {
             helpDouble = (-0.5 + (rand()%21)/20.);
+
             for(int i = 0; i < ndr*nr[0]; ++i)
             {
                 testSignals2[j][i] += helpDouble * testSignals[k][i];
+//                testSignals2[j][i] += (j==k) * testSignals[k][i];
             }
-            cout << helpDouble << "\t";
+            if(j < ui->numComponentsSpinBox->value())
+            {
+                cout << helpDouble << "\t";
+                spocMixMatrix[j][k] = helpDouble;
+            }
         }
-        cout << endl;
+        if(j < ui->numComponentsSpinBox->value()) cout << endl;
     }
     cout << endl;
-//    for(int j = indepNum-1; j < ns; ++j)
-//    {
-//        for(int i = 0; i < ndr*nr[0]; ++i)
-//        {
-//            testSignals2[j][i] = data[j][i];
-//        }
-//    }
+
 
     cout << "1" << endl;
 //    helpString = ExpName; helpString.append("_test.edf");
@@ -2538,6 +2567,12 @@ void MainWindow::makeTestData()
     }
     delete []testSignals2;
     delete []testSignals;
+    for(int i = 0; i < nsBackup; ++i)
+    {
+        delete []data[i];
+    }
+    delete []data;
+    delete []nr;
 }
 
 void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
@@ -5139,15 +5174,8 @@ double objFunc(double *W_, double ***Ce_, double **Cz_, double **Cav_, double ns
 {
     //count new r2
     double sum1 = 0.;
-
-    for(int j = 0; j < ns_; ++j)
-    {
-        for(int k = 0; k < ns_; ++k)
-        {
-            sum1 += (Cz_[j][k] * W_[j] * W_[k]) * (Cz_[j][k] * W_[j] * W_[k]);
-        }
-    }
     double sum2 = 0.;
+    double sum3 = 0.;
 
     for(int h = 0; h < numOfEpoches_; ++h)
     {
@@ -5159,27 +5187,31 @@ double objFunc(double *W_, double ***Ce_, double **Cz_, double **Cav_, double ns
                 sum1 += ((Ce_[h][j][k] - Cav_[j][k]) * W_[j] * W_[k]);
             }
         }
-        sum2 += pow(sum1, 2.);
+        sum3 += pow(sum1, 2.);
 
     }
-    sum2 /= numOfEpoches_;
+    sum3 /= numOfEpoches_;
+
 
     sum1 = 0.;
+    sum2 = 0.;
     for(int j = 0; j < ns_; ++j)
     {
         for(int k = 0; k < ns_; ++k)
         {
-            sum1 += (Cz_[j][k] * W_[j] * W_[k]) * (Cz_[j][k] * W_[j] * W_[k]);
+            sum2 += (Cz_[j][k] * W_[j] * W_[k]);
         }
     }
+    sum1 = pow(sum2, 2.);
 
-    return sum1/sum2;
+    return sum1/sum3;
 
 }
 
 void MainWindow::spoc()
 {
     this->readData();
+    nsBackup = ns;
     ns = ui->numComponentsSpinBox->value(); //test
 
     double * W = new double  [ns];
@@ -5376,6 +5408,7 @@ void MainWindow::spoc()
 
             if(sum1 == sum2)
             {
+                srand(time(NULL));
                 for(int i = 0; i < ns; ++i)
                 {
                     W[i] = rand()%30 - 15.;
@@ -5485,29 +5518,9 @@ void MainWindow::spoc()
                 gradientW[i] /= sum1;
             }
 
-            //count r2 before move
-            sum1 = 0.;
-            for(int j = 0; j < ns; ++j)
-            {
-                for(int k = 0; k < ns; ++k)
-                {
-                    sum1 += (Cz[j][k] * W[j] * W[k]) * (Cz[j][k] * W[j] * W[k]);
-                }
-            }
-            sum2 = 0.;
-            for(int h = 0; h < numOfEpoches; ++h)
-            {
-                for(int j = 0; j < ns; ++j)
-                {
-                    for(int k = 0; k < ns; ++k)
-                    {
-                        sum2 += ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]) * ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]);
-                    }
-                }
-            }
-            sum2 /= numOfEpoches;
+            //count objFunc before move
+            value1 = objFunc(W, Ce, Cz, Cav, ns, numOfEpoches);
 
-            value1 = sum1/sum2; //sum1 = r2
             value2 = value1;
 
             counter2 = 0;
@@ -5515,35 +5528,15 @@ void MainWindow::spoc()
             {
                 value1 = value2;
 //                cout << value1 << " -> ";
+                coeff = pow(10., -fmax(ui->spocCoeffDoubleSpinBox->value(), (value1 - 6.5)));
 
                 for(int i = 0; i < ns; ++i)
                 {
                     W[i] += gradientW[i] * coeff;
                 }
 
-                //count new r2
-                sum1 = 0.;
-                for(int j = 0; j < ns; ++j)
-                {
-                    for(int k = 0; k < ns; ++k)
-                    {
-                        sum1 += (Cz[j][k] * W[j] * W[k]) * (Cz[j][k] * W[j] * W[k]);
-                    }
-                }
-                sum2 = 0.;
-                for(int h = 0; h < numOfEpoches; ++h)
-                {
-                    for(int j = 0; j < ns; ++j)
-                    {
-                        for(int k = 0; k < ns; ++k)
-                        {
-                            sum2 += ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]) * ((Ce[h][j][k] - Cav[j][k]) * W[j] * W[k]);
-                        }
-                    }
-                }
-                sum2 /= numOfEpoches;
-
-                value2 = sum1/sum2; //sum1 = r2
+                //count objFunc after move
+                value2 = objFunc(W, Ce, Cz, Cav, ns, numOfEpoches);
 //                cout << value2 << endl;
 
                 ++counter2;
@@ -5552,6 +5545,11 @@ void MainWindow::spoc()
                 qApp->processEvents();
                 if(stopFlag)
                 {
+                    for(int i = 0; i < nsBackup; ++i)
+                    {
+                        delete []data[i];
+                    }
+                    delete []data;delete []nr;
                     for(int i = 0; i < numOfEpoches; ++i)
                     {
                         for(int j = 0; j < ns; ++j)
@@ -5607,6 +5605,11 @@ void MainWindow::spoc()
             qApp->processEvents();
             if(stopFlag)
             {
+                for(int i = 0; i < nsBackup; ++i)
+                {
+                    delete []data[i];
+                }
+                delete []data;delete []nr;
                 for(int i = 0; i < numOfEpoches; ++i)
                 {
                     for(int j = 0; j < ns; ++j)
@@ -5644,7 +5647,7 @@ void MainWindow::spoc()
             sum1 = sqrt(sum1);
             ++counter1;
         } while(sum1 > pow(10., -1.5) || value2 < ui->spocTresholdDoubleSpinBox->value());
-        cout << "final r2 = " << value2 << "\t" << counter1 << " iterations" << endl;
+        cout << "final correlation = " << value2 << "\t" << counter1 << " iterations" << endl;
 
 
         //1-norm W
@@ -5666,7 +5669,48 @@ void MainWindow::spoc()
         }
         cout << endl;
 
+        spocWVector = new double [ns];
+        for(int i = 0; i < ns; ++i)
+        {
+            spocWVector[i] = W[i];
+        }
+
+        for(int i = 0; i < ns; ++i)
+        {
+            W[i] = 0.;
+            for(int j = 0; j < ns; ++j)
+            {
+                W[i] += spocWVector[j] * spocMixMatrix[j][i];
+            }
+        }
+
+        sum1 = 0.;
+        sum2 = 0.;
+        for(int i = 0; i < ns; ++i)
+        {
+            if(fabs(W[i]) > sum1)
+            {
+                sum1 = fabs(W[i]);
+                sum2 = (W[i] > 0.)?1:-1;
+            }
+        }
+        for(int i = 0; i < ns; ++i)
+        {
+            W[i] /= sum1*sum2;
+        }
+
+
+        cout << "wt*MixMatrix = " << endl;
+        for(int i = 0; i < ns; ++i)
+        {
+            cout << W[i] << "   ";
+        }
+        cout << endl;
+
+
+
     }
+    /*
     else if (ui->lambdaRadioButton->isChecked())
     {
         double ** detMatrix = new double * [ns];
@@ -5680,7 +5724,6 @@ void MainWindow::spoc()
         //det(Cz-l*Cav) = 0
         for(double L = 0.; L < ndr*nr[0]; L+=1.)
         {
-//            if(int(L+1)%100 == 0) cout << "!" << endl;
             for(int j = 0; j < ns; ++j)
             {
                 for(int k = 0; k < ns; ++k)
@@ -5702,7 +5745,7 @@ void MainWindow::spoc()
         delete []detMatrix;
         delete []dets;
     }
-
+*/
 
 
 
@@ -5732,6 +5775,11 @@ void MainWindow::spoc()
     delete []Znew;
     delete []averages;
     delete []gradientW;
+    for(int i = 0; i < nsBackup; ++i)
+    {
+        delete []data[i];
+    }
+    delete []data;delete []nr;
 }
 
 QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY)
