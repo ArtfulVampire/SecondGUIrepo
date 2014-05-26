@@ -84,7 +84,7 @@ MakePa::~MakePa()
 {
     delete ui;
     delete dir;
-    delete browser;
+//    delete browser;
 }
 
 void MakePa::dirSlot()
@@ -1197,7 +1197,7 @@ void MakePa::makePaSlot()
     {
         typeString = ".pa";
     }
-    cout << "makePa typeString = " << typeString.toStdString() << endl;
+//    cout << "makePa typeString = " << typeString.toStdString() << endl;
 
     ui->lineEdit->clear();
     double coeff = ui->rdcCoeffBox->value();
@@ -1308,7 +1308,12 @@ void MakePa::makePaSlot()
         Length=min(Length, lst[i].length());
     }
 
-    cout<<"Length="<<Length<<endl;  //get the maximum quantity of files belong to one type
+
+
+//    cout<<"Length="<<Length<<endl;  //get the maximum quantity of files belong to one type
+
+
+
     if(Length==0)
     {
         cout<<"Length==0"<<endl; return;
@@ -1678,7 +1683,7 @@ void MakePa::makePaSlot()
     this->ui->lineEdit->setText(helpString);
 
     QTimer::singleShot(600, ui->lineEdit, SLOT(clear()));
-    cout<<"PA-files have been made"<<endl;
+//    cout<<"PA-files have been made"<<endl;
 }
 
 void MakePa::setRdcCoeff(int newCoeff)

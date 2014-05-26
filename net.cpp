@@ -301,8 +301,6 @@ void Net::autoClassification(QString spectraDir)
 
     MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
 
-//    cout << spectraDir.toStdString() << endl;
-
     mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
     mkPa->setNumOfClasses(NumOfClasses);
 
@@ -319,7 +317,7 @@ void Net::autoClassification(QString spectraDir)
     {
         typeString = "";
     }
-    cout << typeString.toStdString() << endl;
+//    cout << typeString.toStdString() << endl;
 
     for(int i = 0; i < numOfPairs; ++i)
     {
@@ -356,13 +354,15 @@ void Net::autoClassification(QString spectraDir)
         numOfTall = ui->numOfPairsBox->value();
     }
 
+
     averageClassification();
     mkPa->close();
     delete mkPa;
     autoFlag = tempBool;
-    cout <<  "time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+//    cout <<  "time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 
-    if(autoFlag == 0) QMessageBox::information((QWidget * )this, tr("Info"), tr("Auto classification done"), QMessageBox::Ok);
+//    if(autoFlag == 0) QMessageBox::information((QWidget * )this, tr("Info"), tr("Auto classification done"), QMessageBox::Ok);
+//    cout << "averageClassification ended" << endl;
 }
 
 void Net::autoPCAClassification()
@@ -2062,9 +2062,9 @@ void Net::PaIntoMatrixByName(QString fileName)
     {
         FileName[i] = new char[40];
     }
-//    cout << "4" << endl;
+    cout << "PaIntoMatrixByName: NetLength = " << NetLength << endl;
 
-//    cout << "start pa-reading" << endl;
+
     while(!feof(paSrc))
     {
         fscanf(paSrc, "%s\n", FileName[num]);  //read FileName
@@ -2072,7 +2072,6 @@ void Net::PaIntoMatrixByName(QString fileName)
         for(int i = 0; i < NetLength; ++i)
         {
             fscanf(paSrc, "%lf", &matrix[num][i]);
-//            matrix[num][i] *=20;
         }
 
         if(NumOfClasses == 3) fscanf(paSrc, "%lf %lf %lf\n", &g[0], &g[1], &g[2]); //read the class
@@ -2505,7 +2504,6 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     srand(myTime.currentTime().msec() * (myTime.currentTime().msec() +13));
     myTime.restart();
 
-//    memoryAndParamsAllocation();
 
     double ** deltaWeights = new double * [numOfLayers]; // 0 - unused for lowest layer
     for(int i = 0; i < numOfLayers; ++i)
@@ -2524,6 +2522,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     temperature = ui->tempBox->value();
     learnRate = ui->learnRateBox->value();
     double momentum = ui->momentumDoubleSpinBox->value(); //unused yet
+
     int type = 0;
 
     epoch = 0;
@@ -2537,6 +2536,9 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     int index;
 
     reset();
+
+//    cout << "LearnNet: dimensionality[0] = " << dimensionality[0] << endl;
+//    cout << "LearnNet: NetLength = " << NetLength << endl;
 
     while(currentError > critError && epoch < ui->epochSpinBox->value())
     {
@@ -2554,14 +2556,20 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
         {
 
             index = mixNum[num];
-            type = matrix[index][NetLength + 1];
+            type = matrix[index][dimensionality[0] + 1]; //generality
+            if( type*(type-1.)*(type-2.) != 0. )
+            {
+                cout << "bad type" << endl;
+                this->close();
+                this->~Net();
+            }
 
 
             for(int j = 0; j < dimensionality[0]; ++j)
             {
                 output[0][j] = matrix[index][j];
             }
-            output[0][dimensionality[0]] = 1.;
+            output[0][dimensionality[0]] = 1.; //bias???
 
             //obtain outputs
             for(int i = 1; i < numOfLayers; ++i)
@@ -2612,7 +2620,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
                     for(int k = 0; k < dimensionality[i+1]; ++k)
                     {
                         if(ui->backpropRadioButton->isChecked())    weight[i][j][k] -= learnRate * deltaWeights[i+1][k] * output[i][j];
-                        else if(ui->deltaRadioButton->isChecked())  weight[i][j][k] += learnRate * output[i][j] * ((type == k) - output[i+1][k]);
+                        else if(ui->deltaRadioButton->isChecked())  weight[i][j][k] += learnRate * output[i][j] * ((type == k) - output[i+1][k]); // numOfLayers = 2 in this case
                     }
                 }
             }
@@ -2627,9 +2635,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     }
 
 
-    cout << "learning ended " << epoch << " epoches" << endl;
-
-    cout << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+//    cout << "learning ended " << epoch << " epoches" << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
 
@@ -3792,16 +3798,39 @@ void Net::SVM()
 
 void Net::optimizeChannelsSet()
 {
+
     int tempItem;
     int tempIndex;
-    //1) classify whole set
-    //2) save average classification
-    //3) while(1) {
-    //try classify w/o any channel, return channel into the list
-    //choose the best result
-    //if the best is worse than previous maximum - return;}
-
     cout << "optimization started" << endl;
+
+
+    //test
+//    tempItem = channelsSet[0];
+//    channelsSet.remove(0);
+//    channelsSetExclude.push_back(tempItem);
+//    cout << "current set:" << "\n";
+//    for(int i = 0; i < channelsSet.length(); ++i)
+//    {
+//        cout << channelsSet[i] << "  ";
+//    }
+//    cout << endl;
+//    cout << "exclude set:" << "\n";
+//    for(int i = 0; i < channelsSetExclude.length(); ++i)
+//    {
+//        cout << channelsSetExclude[i] << "  ";
+//    }
+//    cout << endl;
+
+
+
+
+//    NetLength = spLength * (NetLength/spLength - 1);
+//    dimensionality[0] = NetLength;
+//    autoClassificationSimple();
+//    cout << "classified\t" << averageAccuracy << endl << endl;
+
+
+//    return;
 
 
 
@@ -3811,13 +3840,17 @@ void Net::optimizeChannelsSet()
     double tempAccuracy = averageAccuracy;
 
 
+    cout << "AverageAccuracy = " << averageAccuracy << endl;
+
 
     while(1)
     {
-        cout << "Optimize iteration" << endl << endl;
+
+        cout << endl << "optimization iteration" << endl;
         tempIndex = -1;
-        NetLength = spLength * (NetLength/spLength-1);
+        NetLength = spLength * (NetLength/spLength - 1);
         dimensionality[0] = NetLength;
+        cout << "Optimizing: NetLength = " << NetLength << endl;
 
         for(int i = 0; i < channelsSet.length(); ++i)
         {
@@ -3828,7 +3861,7 @@ void Net::optimizeChannelsSet()
 
             //try classify w/o tempitem
             autoClassificationSimple();
-            cout << "classified" << endl;
+            cout << "classified\t" << i << " " << averageAccuracy << endl << endl;
 
             if(averageAccuracy > tempAccuracy)
             {
@@ -3840,18 +3873,20 @@ void Net::optimizeChannelsSet()
         }
         if(tempIndex >= 0)
         {
-            channelsSet.remove(channelsSet.indexOf(tempItem));
-            cout << "current set:" << "\n";
-            for(int i = 0; i < channelsSet.length(); ++i)
-            {
-                cout << channelsSet[i] << "  ";
-            }
-            cout << "\n";
-            for(int i = 0; i < channelsSet.length(); ++i)
-            {
-                cout << coords::lbl[channelsSet[i]] << "  ";
-            }
-            cout << endl;
+            cout << "removed channel "<< tempIndex << " " << coords::lbl[channelsSet[tempIndex]] << endl;
+            channelsSetExclude.push_back(channelsSet.at(tempIndex));
+            channelsSet.remove(tempIndex);
+//            cout << "current set:" << "\n";
+//            for(int i = 0; i < channelsSet.length(); ++i)
+//            {
+//                cout << channelsSet[i] << "  ";
+//            }
+//            cout << "\n";
+//            for(int i = 0; i < channelsSet.length(); ++i)
+//            {
+//                cout << coords::lbl[channelsSet[i]] << "  ";
+//            }
+//            cout << endl;
 
         }
         else
@@ -3867,8 +3902,7 @@ void Net::optimizeChannelsSet()
                 cout << coords::lbl[channelsSet[i]] << "  ";
             }
             cout << endl;
-
-            NetLength = spLength * (NetLength/spLength-1);
+            NetLength = spLength * (NetLength/spLength + 1);
             dimensionality[0] = NetLength;
 
             break;
@@ -3885,6 +3919,8 @@ void Net::optimizeChannelsSet()
         helpString += QString(coords::lbl[channelsSet[i]]) + "  ";
     }
     helpString += "\n";
+
+    autoFlag = 0;
 
     QMessageBox::information((QWidget * )this, tr("Optimization results"), helpString, QMessageBox::Ok);
 }
