@@ -1,15 +1,6 @@
 #include "spectre.h"
 #include "ui_spectre.h"
 
-
-QString str_(int input)
-{
-    QString a;
-    a.setNum(input);
-    return a;
-}
-
-
 Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     ui(new Ui::Spectre)
 {
@@ -85,36 +76,30 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     }
 
 
-    browser1 = new QFileDialog();
-    browser2 = new QFileDialog();
-    browser1->setFilter(QDir::NoFilter|QDir::NoDotAndDotDot);
-    browser1->setDirectory(QDir::toNativeSeparators(dir->absolutePath()));
-    browser2->setFilter(QDir::NoFilter|QDir::NoDotAndDotDot);
-    browser2->setDirectory(QDir::toNativeSeparators(dir->absolutePath()));
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Realisations"));
-    ui->lineEdit_1->setText(helpString);
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));   //smooth right after spectra count
-    ui->lineEdit_2->setText(helpString);
+//    browser1 = new QFileDialog(this, tr("Browser1"), dir->absolutePath(), "");
+//    browser2 = new QFileDialog(this, tr("Browser2"), dir->absolutePath(), "");
+//    browser1->setFilter(QDir::NoDotAndDotDot);
+//    browser2->setFilter(QDir::NoDotAndDotDot);
+//    QObject::connect(ui->inputBroswe, SIGNAL(clicked()), browser1, SLOT(show()));
+//    QObject::connect(browser1, SIGNAL(directoryEntered(QString)), ui->lineEdit_1, SLOT(setText(QString)));
+//    QObject::connect(browser1, SIGNAL(fileSelected(QString)), ui->lineEdit_1, SLOT(setText(QString)));
 
-    QObject::connect(ui->inputBroswe, SIGNAL(clicked()), browser1, SLOT(show()));
-    QObject::connect(browser1, SIGNAL(directoryEntered(QString)), ui->lineEdit_1, SLOT(setText(QString)));    
-    QObject::connect(browser1, SIGNAL(fileSelected(QString)), ui->lineEdit_1, SLOT(setText(QString)));
+//    QObject::connect(ui->outputBroswe, SIGNAL(clicked()), browser2, SLOT(show()));
+//    QObject::connect(browser2, SIGNAL(directoryEntered(QString)), ui->lineEdit_2, SLOT(setText(QString)));
+//    QObject::connect(browser2, SIGNAL(fileSelected(QString)), ui->lineEdit_2, SLOT(setText(QString)));
 
 
-
-    QObject::connect(ui->outputBroswe, SIGNAL(clicked()), browser2, SLOT(show()));
-    QObject::connect(browser2, SIGNAL(directoryEntered(QString)), ui->lineEdit_2, SLOT(setText(QString)));    
-    QObject::connect(browser2, SIGNAL(fileSelected(QString)), ui->lineEdit_2, SLOT(setText(QString)));
+        QObject::connect(ui->inputBroswe, SIGNAL(clicked()), this, SLOT(inputDirSlot()));
+        QObject::connect(ui->outputBroswe, SIGNAL(clicked()), this, SLOT(outputDirSlot()));
 
     QObject::connect(ui->countButton, SIGNAL(clicked()), this, SLOT(countSpectra()));
 
     QObject::connect(ui->fftComboBox, SIGNAL(activated(int)), this, SLOT(setFftLength()));
     QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFftLength()));
+    QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFftLength()));
 
     QObject::connect(ui->leftSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLeft()));
     QObject::connect(ui->rightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setRight()));
-
-//    QObject::connect(ui->smoothButton, SIGNAL(clicked()), this, SLOT(smooth()));
 
     QObject::connect(ui->avButton, SIGNAL(clicked()), this, SLOT(compare()));
 
@@ -128,12 +113,15 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
 
     QObject::connect(ui->rangeButton, SIGNAL(clicked()), this, SLOT(specifyRange()));
 
-
-
     ui->specLabel->installEventFilter(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     ui->fftComboBox->setCurrentIndex(2); //0 for 1024   2 for 4096
+
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Realisations"));
+    ui->lineEdit_1->setText(helpString);
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));   //smooth right after spectra count
+    ui->lineEdit_2->setText(helpString);
 }
 
 int findChannel(int x, int y, QSize siz)
@@ -237,83 +225,23 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
-/*
-void Spectre::smooth()
+void Spectre::inputDirSlot()
 {
-
-
-        dir->cd(ui->lineEdit_1->text());
-        nameFilters.clear();
-        lst=dir->entryList(QDir::Files, QDir::NoSort);
-        dir->cd(dirBC->absolutePath());
-        FILE * file;
-
-        double ** spectre = new double * [ns];
-        for(int i=0; i<ns; ++i)
-        {
-            spectre[i] = new double [spLength];
-        }
-        double help1, help2;
-
-        for(int a=0; a<lst.length(); ++a)
-        {
-            helpString = QDir::toNativeSeparators(ui->lineEdit_1->text().append(QDir::separator()).append(lst.at(a)));
-
-            file=fopen(helpString.toStdString().c_str(), "r");
-            if(file==NULL)
-              {
-                cout<<"file==NULL"<< endl;
-                return;
-              }
-
-            for(int i=0; i<ns; ++i)                                ////////save BY CHANNELS!!!  except markers
-            {
-                for(int k=0; k<spLength; ++k)
-                {
-                    fscanf(file, "%lf\n", &spectre[i][k]);
-                }
-
-                for(int s=0; s<ui->smoothBox->value(); ++s)
-                {
-                    help1=spectre[i][0];
-                    for(int k=1; k<spLength-1; ++k)
-                    {
-                        help2=spectre[i][k];
-                        spectre[i][k]=(help1+help2+spectre[i][k+1])/3.;
-                        help1=help2;
-                    }
-                }
-            }
-            fclose(file);
-
-
-
-            helpString = QDir::toNativeSeparators(ui->lineEdit_1->text().append(QDir::separator()).append(lst.at(a)));  /////separator
-
-            file=fopen(helpString.toStdString().c_str(), "w");
-
-            for(int i=0; i<ns; ++i)                                ////////save BY CHANNELS!!!  except markers
-            {
-                for(int k=0; k<spLength; ++k)
-                {
-                    fprintf(file, "%lf\n", spectre[i][k]);
-                }
-                fprintf(file, "\n");
-            }
-            fclose(file);
-
-
-
-            if(100*(a+1)/lst.length() > ui->progressBar->value())
-            {
-                ui->progressBar->setValue(100*(a+1)/lst.length());
-            }
-        }
-        ui->progressBar->setValue(0);
-
-
+    helpString = QFileDialog::getExistingDirectory(this, tr("Choose input dir"), dirBC->absolutePath());
+    if(!helpString.isEmpty())
+    {
+        ui->lineEdit_1->setText(helpString);
+    }
 }
-*/
+
+void Spectre::outputDirSlot()
+{
+    helpString = QFileDialog::getExistingDirectory(this, tr("Choose input dir"), dirBC->absolutePath());
+    if(!helpString.isEmpty())
+    {
+        ui->lineEdit_2->setText(helpString);
+    }
+}
 
 void Spectre::integrate()
 {
@@ -462,6 +390,8 @@ void Spectre::psaSlot()
     }
 //    cout<<"3"<<endl;
 
+
+/*
     QSvgGenerator svgGen;
     if(ui->svgButton->isChecked())
     {
@@ -588,6 +518,9 @@ void Spectre::psaSlot()
         ui->specLabel->setPixmap(pic.scaled(ui->specLabel->size()));
     }
     paint->end();
+    */
+
+
 
     for(int k=0; k<count; ++k)
     {
@@ -699,7 +632,6 @@ void Spectre::compare()
         fprintf(file, "\n");
     }
     fclose(file);
-
     pic = QPixmap(1600, 1600);
     pic.fill();
     paint->begin(&pic);
@@ -710,9 +642,6 @@ void Spectre::compare()
         {
             //spectre itslef
             paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - dataFFT[c2][int(k*ext)]/double(NumOfPatterns)*norm, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - dataFFT[c2][int((k+1)*ext)]/double(NumOfPatterns)*norm);
-
-
-
         }
 
         paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2]-250);
@@ -753,6 +682,7 @@ void Spectre::compare()
     pic.save(helpString, 0, 100);
 
     paint->end();
+
     for(int i=0; i<ns; ++i)
     {
         delete []dataFFT[i];
@@ -1009,8 +939,8 @@ Spectre::~Spectre()
     delete ui;
     delete dir;
     delete dirBC;
-    delete browser1;
-    delete browser2;
+//    delete browser1;
+//    delete browser2;
 }
 
 void Spectre::setSmooth(int a)
@@ -1051,7 +981,6 @@ void Spectre::countSpectra()
     nameFilters.clear();
     lst=dir->entryList(QDir::Files, QDir::Name);
     dir->cd(dirBC->absolutePath());
-    //        cout<<"left="<<left<<" right="<<right<<endl;
 
     double ** dataFFT = new double * [ns];
     for(int i=0; i<ns; ++i)
@@ -1273,7 +1202,7 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
 
     fscanf(file, "%*s %d\n", &NumOfSlices);
 //    cout<<NumOfSlices<<endl;
-    fscanf(file, "NumOfSlicesEyesCut %d \n", &Eyes);
+//    fscanf(file, "NumOfSlicesEyesCut %d \n", &Eyes);
 //    cout<<Eyes<<endl;
 
 
@@ -1346,7 +1275,7 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
 //            perror("cannot delete file");
 //        }
 
-        cout<<"Too short real signal "<<helpString.toStdString()<<endl;//<<NumOfSlices<<"  "<<Eyes<<endl<<endl;
+//        cout<<"Too short real signal "<<helpString.toStdString()<<endl;//<<NumOfSlices<<"  "<<Eyes<<endl<<endl;
 
         for(int i=0; i<ns; ++i)
         {
@@ -1377,15 +1306,18 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
     {
         for(int i=0; i<fftLength; ++i)            //make appropriate array
         {
-            spectre[ i * 2 ] = 0.;
-            spectre[ i * 2 + 1 ] = (double)(data2[c1][ i ]*sqrt(norm1));
+            spectre[ i * 2 + 0 ] = (double)(data2[c1][ i ]*sqrt(norm1));
+            spectre[ i * 2 + 1 ] = 0.;//(double)(data2[c1][ i ]*sqrt(norm1));//0.;
+
+//            spectre[ i * 2 + 0 ] = 0.;//(double)(data2[c1][ i ]*sqrt(norm1));
+//            spectre[ i * 2 + 1 ] = (double)(data2[c1][ i ]*sqrt(norm1));//0.;
         }
-        four1(spectre-1, fftLength, 1);        //Fourier transform
+        four1(spectre-1, fftLength, 1);       //Fourier transform
 
             for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
             {
 //                dataFFT[c1][ i ] = ( spectre[ i * 2 +1] * spectre[ i * 2 +1] + spectre[ i * 2 + 1 +1] * spectre[ i * 2 + 1 +1] )*2*0.004/fftLength; //0.004 = 1/250 generality
-                dataFFT[c1][ i ] = ( spectre[ i * 2 +1] * spectre[ i * 2 +1] + spectre[ i * 2] * spectre[ i * 2] )*2*0.004/fftLength; //0.004 = 1/250 generality
+                dataFFT[c1][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 * 0.004 / fftLength; //0.004 = 1/250 generality
             }
 
 
@@ -1535,8 +1467,8 @@ int Spectre::readFilePhase(int &num, double ***dataPhase)
         {
             for(int i = 0; i < fftLength; ++i)            //make appropriate array
             {
-                spectre[0][ i * 2 ] = 0.;
-                spectre[0][ i * 2 + 1 ] = (double)(data2[c1][ i ]*sqrt(norm1));
+                spectre[0][ i * 2 ] = (double)(data2[c1][ i ]*sqrt(norm1));
+                spectre[0][ i * 2 + 1 ] = 0.;
             }
             four1(spectre[0] - 1, fftLength, 1);        //Fourier transform
 
@@ -1546,8 +1478,8 @@ int Spectre::readFilePhase(int &num, double ***dataPhase)
 
                 for(int i = 0; i < fftLength; ++i)            //make appropriate array
                 {
-                    spectre[1][ i * 2 ] = 0.;
-                    spectre[1][ i * 2 + 1 ] = (double)(data2[c2][ i ]*sqrt(norm1));
+                    spectre[1][ i * 2 ] = (double)(data2[c2][ i ]*sqrt(norm1));
+                    spectre[1][ i * 2 + 1 ] = 0.;
                 }
                 four1(spectre[1] - 1, fftLength, 1);        //Fourier transform
 

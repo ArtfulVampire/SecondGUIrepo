@@ -41,7 +41,7 @@ public slots:
     void setSpLength();
     void setNs();
     void mwTest();
-//    void vdvTest();
+    void dirSlot();
     void kwTest();
     void setNumOfClasses(int a);
     void dispersionAnalysis();

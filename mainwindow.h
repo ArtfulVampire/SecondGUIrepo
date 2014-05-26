@@ -16,7 +16,6 @@
 #include "spectre.h"
 #include "makepa.h"
 #include "eyes.h"
-#include "wavelet.h"
 
 #include <iostream>
 #include <sstream>
@@ -26,7 +25,7 @@
 #include <cmath>
 #include <cstddef>
 
-#include "four1.h"
+#include "library.h"
 #include <unistd.h>
 #include <QMessageBox>
 
@@ -100,8 +99,6 @@ public:
     void sliceOneByOne();
     void sliceOneByOneNew();
     void drawMap(double ** matrixA, int num);
-    double fractalDimension(double * arr, int N, QString picPath);
-//    void stopControl(int &a, int b);
 
 
 private:

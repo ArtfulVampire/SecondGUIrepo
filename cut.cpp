@@ -4,12 +4,6 @@
 
 /*after every function the QDir dir is set to the ExpName directory*/
 
-QString qstr(int &input)
-{
-    QString a;
-    a.setNum(input);
-    return a;
-}
 
 Cut::Cut(QDir * dir_, int ns_) :
     ui(new Ui::Cut)
@@ -357,7 +351,7 @@ void Cut::cutEyesAll()
     file->close();
     file->open(QIODevice::WriteOnly);
     file->write("NumOfSlices ");
-    file->write(qstr(NumOfEogSlices).toStdString().c_str());
+    file->write(QString::number(NumOfEogSlices).toStdString().c_str());
     file->write("\r\n");
     file->write(contents);
     file->close();
@@ -854,12 +848,12 @@ void Cut::paintDistr()  ///////////generality//////////////
 
         helpString.clear();
         num1=2*i;
-        helpString.append(qstr(num1)).append(" sec");
+        helpString.append(QString::number(num1)).append(" sec");
         paint1->drawText(pic1.width()/(7500/250.)*i*2-10, 500+20+5, helpString); // x-stick description
 
         helpString.clear();
         num1=5*i;
-        helpString.append(qstr(num1)).append(" wnd");
+        helpString.append(QString::number(num1)).append(" wnd");
         paint1->drawText(12, 500-extY*5*i, helpString);                                 // y-stick description
 
 
@@ -869,12 +863,12 @@ void Cut::paintDistr()  ///////////generality//////////////
 
         helpString.clear();
         num2=2*i;
-        helpString.append(qstr(num2)).append(" sec");
+        helpString.append(QString::number(num2)).append(" sec");
         paint2->drawText(pic2.width()/(7500/250.)*i*2-10, 500+20+5, helpString);          // x-stick description
 
         helpString.clear();
         num2=5*i;
-        helpString.append(qstr(num2)).append(" wnd");
+        helpString.append(QString::number(num2)).append(" wnd");
         paint2->drawText(12, 500-extY*5*i, helpString);                                           // y-stick description
 
         //2 type - verbal
@@ -883,12 +877,12 @@ void Cut::paintDistr()  ///////////generality//////////////
 
         helpString.clear();
         num3=2*i;
-        helpString.append(qstr(num3)).append(" sec");
+        helpString.append(QString::number(num3)).append(" sec");
         paint3->drawText(pic3.width()/(7500/250.)*i*2-10, 500+20+5, helpString);          // x-stick description
 
         helpString.clear();
         num3=5*i;
-        helpString.append(qstr(num3)).append(" wnd");
+        helpString.append(QString::number(num3)).append(" wnd");
         paint3->drawText(12, 500-extY*5*i, helpString);                                           // y-stick description
     }
 
@@ -1212,8 +1206,8 @@ void Cut::zero()
 void Cut::cut()
 {
     dir->cd("windows");
-    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(fileName).append(".").append(qstr(addNum)); //TSL
-//    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(fileName).append("_").append(qstr(addNum)).append(".").append(fileNumber); //Ln
+    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(fileName).append(".").append(QString::number(addNum)); //TSL
+//    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(fileName).append("_").append(QString::number(addNum)).append(".").append(fileNumber); //Ln
     ++addNum;
     file=fopen(helpString.toStdString().c_str(),"w");
     fprintf(file, "NumOfSlices %d\n", int(rightLimit*NumOfSlices/ui->picLabel->width())-int(leftLimit*NumOfSlices/ui->picLabel->width()));

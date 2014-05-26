@@ -208,18 +208,6 @@ double logistic(double &x, double t)
     return 1. / ( 1. + exp(-x/t) );
 }
 
-QString rightNumber2(int input)
-{
-    QString hlp1 = "", hlp2;
-    hlp2.setNum(input);
-    if(input<10) hlp1.append("000").append(hlp2);
-    if((input >= 10)&&(input<100)) hlp1.append("00").append(hlp2);
-    if(input >= 100 && input<1000) hlp1.append("0").append(hlp2);
-    if(input >= 1000 && input<10000) hlp1.append(hlp2);
-    if(input >= 10000 && input<100000) hlp1.append(hlp2);
-    return hlp1;
-}
-
 //void Net::customEvent(QEvent  * ev)
 bool Net::event(QEvent  * ev)
 {
@@ -333,7 +321,7 @@ void Net::autoClassification(QString spectraDir)
 
     MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep);
 
-    cout << spectraDir.toStdString() << endl;
+//    cout << spectraDir.toStdString() << endl;
 
     mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
     mkPa->setNumOfClasses(NumOfClasses);
@@ -3166,7 +3154,6 @@ void Net::drawSammon() //uses coords array
 
     cout << helpString.toStdString() << endl;
     pic.save(helpString, 0, 100);
-//    ui->sammonLineEdit->setText(rightNumber2(ui->sammonLineEdit->text().toInt()+1));
 
     painter->end();
 //    delete [] painter;

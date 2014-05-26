@@ -1,21 +1,18 @@
 #ifndef SPECTRE_H
 #define SPECTRE_H
 
-//#include <QtWidgets>
 #include <QWidget>
 #include <QDir>
 #include <QString>
 #include <QStringList>
 #include <QFileDialog>
-#include <four1.h>
 #include <QMessageBox>
 #include <QtSvg>
+#include "mainwindow.h"
 
 #include "coord.cpp"
 using namespace coords;
 
-#include "mainwindow.h"
-#include "rangewidget.h"
 
 namespace Ui {
     class Spectre;
@@ -37,6 +34,8 @@ public:
 
 public slots:
     void countSpectra();
+    void inputDirSlot();
+    void outputDirSlot();
     void setFftLength();
     void setLeft();
     void setRight();
@@ -45,7 +44,6 @@ public slots:
     void psaSlot();
     void integrate();
     void specifyRange();
-//    void smooth();
     void center();
 
 signals:

@@ -6,7 +6,6 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
 {
 
     ui->setupUi(this);
-    browser = new QFileDialog();
 
     //left & right for drawing only
     left = left_;
@@ -56,14 +55,15 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     dir->cdUp();
     if(spStep == 250./1024.) dir->cdUp(); //generality
 
-    browser->setDirectory(QDir::toNativeSeparators(dir->absolutePath()));
+//    browser = new QFileDialog();
+//    browser->setDirectory(QDir::toNativeSeparators(dir->absolutePath()));
 
     helpCharArr = new char [64];
 
-//    browser->setFilter(QDir::Dirs|QDir::NoDotAndDotDot);
     browser->setWindowTitle("Choose spectra directory");
     ui->cl3_Button->setChecked(true);
-    QObject::connect(ui->browseButton, SIGNAL(clicked()), browser, SLOT(show()));
+//    QObject::connect(ui->browseButton, SIGNAL(clicked()), browser, SLOT(show()));
+    QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(dirSlot()));
     QObject::connect(browser, SIGNAL(directoryEntered(QString)), ui->paLineEdit, SLOT(setText(QString)));
     QObject::connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(makePaSlot()));
     QObject::connect(ui->spLBox, SIGNAL(valueChanged(int)), this, SLOT(setSpLength()));
@@ -81,6 +81,16 @@ MakePa::~MakePa()
     delete dir;
     delete browser;
 }
+
+void MakePa::dirSlot()
+{
+    helpString = QFileDialog::getExistingDirectory(this, tr("Choose input dir"), dir->absolutePath());
+    if(!helpString.isEmpty())
+    {
+        ui->paLineEdit->setText(helpString);
+    }
+}
+
 
 void MakePa::setNumOfClasses(int a)
 {

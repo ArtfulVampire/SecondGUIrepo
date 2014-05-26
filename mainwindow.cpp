@@ -2,38 +2,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-
-QString str(int &input)
-{
-    QString a;
-    a.setNum(input);
-    return a;
-}
-
-QString rightNumber(int &input, int N)
-{
-    QString h;
-    h.setNum(input);
-    if(input== 0)
-    {
-        h="";
-        for(int j = 0; j < N; ++j)
-        {
-            h.prepend("0");
-        }
-        return h;
-    }
-    for(int i=1; i < N; ++i)
-    {
-        if(log10(input)>=i-1 && log10(input) < i)
-            for(int j=i; j < N; ++j)
-            {
-                h.prepend("0");
-            }
-    }
-    return h;
-}
-
 int len(QString s) //lentgh till double \0-byte for EDF+annotations
 {
     int l = 0;
@@ -310,8 +278,6 @@ MainWindow::MainWindow() :
     QObject::connect(ui->makeTestDataPushButton, SIGNAL(clicked()), this, SLOT(makeTestData()));
 
     QObject::connect(ui->spocPushButton, SIGNAL(clicked()), this, SLOT(spoc()));
-
-
 }
 
 MainWindow::~MainWindow()
@@ -381,7 +347,7 @@ void MainWindow::waveletCount()
                 break;
             }
 
-            helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append(ExpName).append("_wavelet_").append(str(channel)).append(".jpg"));
+            helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append(ExpName).append("_wavelet_").append(QString::number(channel)).append(".jpg"));
             //                cout << helpString.toStdString() << endl;
 
             wavelet(helpString, file1, ns, channel, 20., 5., 0.98, 32);
@@ -413,14 +379,14 @@ void MainWindow::waveletCount()
 
             //weights
             target = QRectF(0, (i+1)*(800 + 50), 600, 800);
-            helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append(ExpName).append("_weights_").append(str(i)).append(".jpg"));
+            helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append(ExpName).append("_weights_").append(QString::number(i)).append(".jpg"));
             pic = QPixmap(helpString);
             source = QRectF(pic.rect());
             painter->drawPixmap(target, pic, source);
 
             //wavelets
             target = QRectF(600, (i+1)*(800 + 50), 150*NumOfSlices/250, 800);
-            helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append(ExpName).append("_wavelet_").append(str(i)).append(".jpg"));
+            helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append(ExpName).append("_wavelet_").append(QString::number(i)).append(".jpg"));
             pic = QPixmap(helpString);
             source = QRectF(pic.rect());
             painter->drawPixmap(target, pic, source);
@@ -441,121 +407,6 @@ double logistic2(double &x, double t)
     if( x >   37.*t )  return 1.;
     if( x < -115.*t )  return 0.;
     return 1. / ( 1. + exp(-x/t) );
-}
-
-double MainWindow::fractalDimension(double *arr, int N, QString picPath)
-{
-    int k; //timeShift
-    double L; //average length
-//    double sum; //tempSumm
-
-    //NumOfSlices = 8000;
-    //max k = 1000; log2(kmax) = 10
-    //log(Lmax) = ?
-
-    int minLimit = 2;
-//    int maxLimit = int(N/10);
-    int maxLimit = floor(log(sqrt(N)) * 4. - 5.);
-
-//    cout<<"minLimit = "<<minLimit<<endl;
-//    cout<<"maxLimit = "<<maxLimit<<endl<<endl;
-
-    double * drawK = new double [maxLimit - minLimit];
-    double * drawL = new double [maxLimit - minLimit];
-//    for(int i = 0; i < N; ++i)
-//    {
-//        cout<<arr[i]<<" ";
-//    }
-//    cout<<endl;
-
-//    cout<<"1"<<endl;
-//    pic = QPixmap(800, 600);
-//    QPainter *pnt     = new QPainter;
-//    pic.fill();
-//    pnt->begin(&pic);
-//    pnt->setPen("black");
-//    pnt->setBrush(QBrush("black"));
-
-    for(int h = minLimit; h < maxLimit; ++h)
-    {
-        k=h;
-//        if(h < 5) k = h;
-//        else k = exp(log(2) * (h + 5.)/4.);
-
-        L = 0.;
-        //count L(k) by averaging Lm(k) over m
-//        cout<<"2"<<endl;
-        for(int m = 0; m < k; ++m)
-        {
-            for(int i = 1; i < floor((N - m) / k); ++i)
-            {
-//                cout<<"3.5 k="<<k<<" m="<<m<<" i="<<i<<" L="<<L<<endl;
-//                cout<<arr[m + i * k]
-                L += fabs(arr[m + i * k] - arr[m + (i - 1) * k]);
-            }
-            L = L * (N - 1) / (floor((N - m) / k) * k);
-        }
-        L /= k;
-        drawK[h - minLimit] = log(k);
-        drawL[h - minLimit] = log(L);
-    }
-    for(int h = 0; h < maxLimit - minLimit; ++h)
-    {
-//        pnt->drawRect(abs((drawK[h] - drawK[0])/(drawK[0] - drawK[maxLimit - minLimit - 1])) * pic.width() - 1, (1. - abs(drawL[h] - drawL[maxLimit - minLimit - 1])/(drawL[0] - drawL[maxLimit - minLimit - 1])) * pic.height() - 1, 2, 2);
-    }
-
-
-
-//    for(int h = minLimit; h < maxLimit; ++h)
-//    {
-//        cout<<drawK[h - minLimit]<<"\t";
-//    }
-//    cout<<endl;
-//    for(int h = minLimit; h < maxLimit; ++h)
-//    {
-//        cout<<drawL[h - minLimit]<<"\t";
-//    }
-//    cout<<endl;
-
-
-
-    //least square approximation
-    double slope;
-    double add;
-    double *temp = new double [5];
-    for(int i = 0; i < 5; ++i)
-    {
-        temp[i] = 0.;
-    }
-    for(int h = 0; h < maxLimit - minLimit; ++h)
-    {
-        temp[0] += drawK[h]*drawL[h];
-        temp[1] += drawK[h];
-        temp[2] += drawL[h];
-        temp[3] += drawK[h]*drawK[h];
-        temp[4] += drawK[h];
-    }
-    for(int i = 0; i < 5; ++i)
-    {
-        temp[i] /= (maxLimit - minLimit);
-    }
-
-    slope = (temp[0] - temp[1]*temp[2]) / (temp[3] - temp[1]*temp[1]); // ???????????????????
-    add = temp[2] - slope*temp[1]; ///???
-
-//    pnt->setPen("red");
-//    pnt->setBrush(QBrush("red"));
-//    pnt->drawLine(0, ( (slope*drawK[0]+add - drawL[0])/(drawL[maxLimit - minLimit - 1] - drawL[0])) * pic.height(), pic.width(), ( (slope*drawK[maxLimit - minLimit - 1]+add - drawL[0])/(drawL[maxLimit - minLimit - 1] - drawL[0])) * pic.height());
-
-
-    slope = -slope;
-//    if(picPath.contains("_12.png")) pic.save(picPath);
-//    pnt->end();
-//    delete pnt;
-    delete []temp;
-    delete []drawK;
-    delete []drawL;
-    return slope;
 }
 
 void MainWindow::Bayes()
@@ -733,7 +584,7 @@ void MainWindow::drawWeights()
                 painter->drawLine(pic.width()/2-weight[k][i*63+j]/norm, pic.height()*(1.-j/63.), pic.width()/2-weight[k][i*63+(j+1)]/norm, pic.height()*(1.-(j+1)/63.));  //generality 63
             }
         }
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append(ExpName).append("_weights_").append(str(i)).append(".jpg"));
+        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append(ExpName).append("_weights_").append(QString::number(i)).append(".jpg"));
         pic.save(helpString, 0, 100);
 
     }
@@ -1063,7 +914,7 @@ void MainWindow::cleanDirs()
     this->ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
 }
 
@@ -1097,7 +948,7 @@ void MainWindow::drawEeg(int NumOfSlices_, double **dataD_, QString helpString_,
 
         paint_->drawLine(c3*freq/5, pic.height()-2, c3*freq/5, pic.height()-2*norm);
         int helpInt=c3;
-        helpString=str(helpInt);
+        helpString=QString::number(helpInt);
         paint_->drawText(c3*freq, pic.height()-35, helpString);
         norm=10.;
     }
@@ -1142,7 +993,7 @@ void MainWindow::drawEeg(double **dataD_, double startTime, double endTime, QStr
 
         paint_->drawLine(c3*freq/5, pic.height()-2, c3*freq/5, pic.height()-2*norm);
         int helpInt=c3;
-        helpString=str(helpInt);
+        helpString=QString::number(helpInt);
         paint_->drawText(c3*freq, pic.height()-35, helpString);
         norm=10.;
     }
@@ -1169,6 +1020,8 @@ void MainWindow::drawRealisations()
     nameFilters.append("*_241*");
     nameFilters.append("*_247*");
     nameFilters.append("*_254*");
+    nameFilters.append("*_244*");
+//    nameFilters.append("*_100*");
     lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
     cout << "lst.len = " << lst.length() << endl;
     FILE * file;
@@ -1273,7 +1126,7 @@ void MainWindow::drawRealisations()
     this->ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
 
     ui->progressBar->setValue(0);
@@ -1321,7 +1174,7 @@ void MainWindow::setNs()
 {
     ns=ui->setNsLine->text().toInt();
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
     ui->setNsLine->clear();
 }
@@ -1330,7 +1183,7 @@ void MainWindow::setNs2(int a)
 {
     ns=a;
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
     ui->setNsLine->clear();
 }
@@ -1453,7 +1306,7 @@ void MainWindow::setEdfFile()
     this->ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
 
 }
@@ -1513,7 +1366,7 @@ void MainWindow::readData()
         flag=1;
         helpString = tempFile->fileName();
         helpString.resize(helpString.length()-4);
-        helpString.append(str(NumOfEdf)).append(".edf");
+        helpString.append(QString::number(NumOfEdf)).append(".edf");
         edfNew = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
         ++NumOfEdf;
     }
@@ -1850,11 +1703,11 @@ void MainWindow::readData()
 
                                 if(byteMarker[15] || byteMarker[7])
                                 {
-                                    for(int i = 0; i < 8; ++i)
+                                    for(int h = 0; h < 8; ++h)
                                     {
-                                        boolBuf = byteMarker[i];
-                                        byteMarker[i] = byteMarker[i+8];
-                                        byteMarker[i+8] = boolBuf;
+                                        boolBuf = byteMarker[h];
+                                        byteMarker[h] = byteMarker[h+8];
+                                        byteMarker[h+8] = boolBuf;
                                     }
 
                                     data[j][i*nr[j]+k] = 0.;
@@ -1945,7 +1798,7 @@ void MainWindow::readData()
     this->ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
 
     staSlice += 3; //generality LAWL
@@ -2391,7 +2244,7 @@ void MainWindow::sliceWindFromReal()
     this->ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
 
     duration = time(NULL) - duration;
@@ -2593,6 +2446,8 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
     if(ui->chRdcBox->isChecked()) this->reduceChannelsFast();
 
+
+
     if(this->ui->sliceBox->isChecked())
     {
         if(!ui->matiCheckBox->isChecked())
@@ -2616,11 +2471,10 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
             if(ui->enRadio->isChecked())
             {
-                if(ui->windButton->isChecked())
+                if(ui->windButton->isChecked()) //bad work
                 {
                     timeShift=ui->timeShiftBox->value();
                     wndLength=ui->wndLengthBox->currentText().toInt();
-                    sliceWindow(0, 1000, 0, 300);
                     return;
 
                     for(int i = 0; i < (ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift; ++i)
@@ -2642,20 +2496,17 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
                         for(int j = 0; j < wndLength; ++j)
                         {
-                            switch(int(data[ns-1][staSlice + i*timeShift + j]))
-                            {
-                            case 241:{markerFlag = 0; break;}
-                            case 247:{markerFlag = 1; break;}
-                            case 254:{markerFlag = 2; break;}
-                            }
-                            //                        if(data[ns-1][staSlice+i*timeShift + j]==241) {markerFlag=1;}
-                            //                        if(data[ns-1][staSlice+i*timeShift + j]==247) {markerFlag=2;}
-                            //                        if(data[ns-1][staSlice+i*timeShift + j]==254) {markerFlag=3;}
+//                            switch(int(data[ns-1][staSlice + i*timeShift + j]))
+//                            {
+//                            case 241:{markerFlag = 0; break;}
+//                            case 247:{markerFlag = 1; break;}
+//                            case 254:{markerFlag = 2; break;}
+//                            }
+                            if(data[ns-1][staSlice+i*timeShift + j]==241) {markerFlag=1;}
+                            if(data[ns-1][staSlice+i*timeShift + j]==247) {markerFlag=2;}
+                            if(data[ns-1][staSlice+i*timeShift + j]==254) {markerFlag=3;}
                         }
                         if(int(100*(i+1)/((ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift)) > ui->progressBar->value()) ui->progressBar->setValue(int(100*(i+1)/((ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift)));
-
-                        //                                        if(i==50) break; //20 windows
-
                     }
                 }
                 if(ui->realButton->isChecked())
@@ -2742,7 +2593,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     this->ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
 
     duration = time(NULL) - duration;
@@ -3028,7 +2879,7 @@ void MainWindow::sliceFromTo(int marker1, int marker2, QString marker) //beginni
     file2->close();
     file2->open(QIODevice::WriteOnly);
     file2->write("NumOfFiles ");
-    file2->write(str(number).toStdString().c_str());
+    file2->write(QString::number(number).toStdString().c_str());
     file2->write("\r\n");
     file2->write(contents);
     file2->close();
@@ -3145,8 +2996,23 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning 
 void MainWindow::sliceWindow(int startSlice, int endSlice, int number, int marker)
 {
     if(endSlice - startSlice > 2500) return;
+
+
+    helpDouble = 0.;
+    //check real signal contained
+    for(int l=startSlice; l < endSlice; ++l)
+    {
+        helpInt = 0;
+        for(int m = 0; m < ns-1; ++m) // no marker channel
+        {
+            if(data[m][l*nr[m]/nr[ns-1]] == 0) ++helpInt;
+        }
+        if(helpInt == ns-1) helpDouble +=1.;
+    }
+    if(helpDouble > 0.1 * wndLength) return;
+
     FILE * file;
-    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("windows").append(QDir::separator()).append(ExpName).append("-").append(rightNumber(number, 4)).append("_").append(str(marker)); //number.marker
+    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("windows").append(QDir::separator()).append(ExpName).append("-").append(rightNumber(number, 4)).append("_").append(QString::number(marker)); //number.marker
     file=fopen(helpString.toStdString().c_str(), "w");
     if(file==NULL)
     {
@@ -3157,7 +3023,7 @@ void MainWindow::sliceWindow(int startSlice, int endSlice, int number, int marke
     fprintf(file, "NumOfSlices %d \n", endSlice-startSlice);
     for(int l=startSlice; l < endSlice; ++l)
     {
-        for(int m = 0; m < ns-1; ++m)
+        for(int m = 0; m < ns-1; ++m) // no marker channel
         {
             fprintf(file, "%lf\n", data[m][l*nr[m]/nr[ns-1]]);
         }
@@ -3422,7 +3288,7 @@ void MainWindow::sliceMati()
     QString fileMark;
     int number = 0;
     FILE * file;
-    int piece = 5000; //length of a piece
+    int piece = 16*250; //length of a piece
 
     for(int i = 0; i < ndr*nr[ns-1]; ++i)
     {
@@ -3556,11 +3422,6 @@ void MainWindow::sliceMati()
 
 }
 
-double gaussian(double x)
-{
-    return 1/(sqrt(2*M_PI))*exp(-x*x/2.);
-}
-
 void MainWindow::kernelest(const QString &inputString)
 {
     FILE * file = fopen(QDir::toNativeSeparators(inputString).toStdString().c_str(), "r");
@@ -3579,9 +3440,9 @@ void MainWindow::kernelest(const QString &inputString)
     {
         sigma += (average-arr[i])*(average-arr[i]);
     }
-    sigma=sqrt(sigma)/num;   //// (sigma)/num ??
-    average=-0.2*log(num);
-    double h=1.06*sigma*exp(average);
+    sigma = sqrt(sigma)/num;   //// (sigma)/num ??
+    average = -0.2*log(num);
+    double h = 1.06*sigma*exp(average);
 
     QPixmap pic(1000, 400);
     QPainter * pnt = new QPainter();
@@ -3604,7 +3465,7 @@ void MainWindow::kernelest(const QString &inputString)
     for(int i = 0; i < int(pic.width()/250); ++i)
     {
         pnt->drawLine(i*250, pic.height()*0.9+1, i*250, pic.height());
-        pnt->drawText(i*250+10, pic.height()*0.95, str(i));
+        pnt->drawText(i*250+10, pic.height()*0.95, QString::number(i));
     }
     helpString = inputString;
     helpString.append(".jpg");
@@ -3718,7 +3579,7 @@ void MainWindow::reduceChannelsFast()
     this->ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
 
 }
@@ -3795,7 +3656,7 @@ void MainWindow::eyesFast()  //generality
     this->ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
 }
 
@@ -3890,7 +3751,7 @@ void MainWindow::reduceChannels()
     this->ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(str(ns));
+    helpString.append(QString::number(ns));
     this->ui->textEdit->append(helpString);
 }
 
@@ -5148,7 +5009,7 @@ void MainWindow::ICA() //fastICA
     delete [] dataICA;
 }
 
-double det(double ** matrix, int dim)
+double det(double ** matrix, int dim) //- bad Det
 {
     double coef;
     for(int i = 1; i < dim; ++i)

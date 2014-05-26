@@ -16,27 +16,25 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     cut.cpp \
     cfg.cpp \
-    four1.cpp \
     net.cpp \
     spectre.cpp \
     makepa.cpp \
     eyes.cpp \
-    wavelet.cpp \
     coord.cpp \
     qtempevent.cpp \
-    tempthread.cpp
+    tempthread.cpp \
+    library.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
     cfg.h \
-    four1.h \
     net.h \
     spectre.h \
     makepa.h \
     eyes.h \
-    wavelet.h \
     qtempevent.h \
-    tempthread.h
+    tempthread.h \
+    library.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

@@ -17,9 +17,9 @@
 #include <cstdlib>
 #include <QFileDialog>
 #include <cmath>
-#include <four1.h>
 #include <QMessageBox>
 #include <QScrollBar>
+#include "mainwindow.h"
 
 using namespace std;
 
