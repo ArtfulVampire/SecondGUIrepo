@@ -1,7 +1,6 @@
 #include "net.h"
 #include "ui_net.h"
 #include <CL/cl.h>
-//#include "mainwindow.h"
 
 
 Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString ExpName_) :
@@ -26,6 +25,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     left = left_;
     right = right_;
     spLength = right_ - left_ + 1;
+
     spStep = spStep_;
     ns = ns_;
 
@@ -161,6 +161,8 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     QObject::connect(ui->distancesPushButton, SIGNAL(clicked()), this, SLOT(testDistances()));
 
+    QObject::connect(ui->optimizeChannelsPushButton, SIGNAL(clicked()), this, SLOT(optimizeChannelsSet()));
+
     this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
@@ -187,27 +189,6 @@ Net::~Net()
     myThread.wait();
 
 }
-
-
-double distance(double * vec1, double * vec2, int dim)
-{
-    double dist = 0.;
-    //Euclid
-    for(int i = 0; i < dim; ++i)
-    {
-        dist += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
-    }
-    return dist;
-
-}
-
-double logistic(double &x, double t)
-{
-    if( x >   37. * t )  return 1.;
-    if( x < -115. * t )  return 0.;
-    return 1. / ( 1. + exp(-x/t) );
-}
-
 //void Net::customEvent(QEvent  * ev)
 bool Net::event(QEvent  * ev)
 {
@@ -271,21 +252,20 @@ double Net::setPercentageForClean()
 
 void Net::autoClassificationSimple()
 {
+    helpString.clear();
     if(ui->realsRadioButton->isChecked())
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
-        autoClassification(helpString);
     }
     else if(ui->windowsRadioButton->isChecked())
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth").append(QDir::separator()).append("windows"));
-        autoClassification(helpString);
     }
-    else
+    else if(ui->pcRadioButton->isChecked())
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraPCA"));
-        autoClassification(helpString);
     }
+    if(!helpString.isEmpty()) autoClassification(helpString);
 }
 
 void Net::setAutoProcessingFlag(bool a)
@@ -319,7 +299,7 @@ void Net::autoClassification(QString spectraDir)
     int numOfPairs = ui->numOfPairsBox->value();
 
 
-    MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep);
+    MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
 
 //    cout << spectraDir.toStdString() << endl;
 
@@ -383,8 +363,6 @@ void Net::autoClassification(QString spectraDir)
     cout <<  "time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 
     if(autoFlag == 0) QMessageBox::information((QWidget * )this, tr("Info"), tr("Auto classification done"), QMessageBox::Ok);
-
-
 }
 
 void Net::autoPCAClassification()
@@ -496,6 +474,7 @@ void Net::averageClassification()
     fprintf(res, "%.2lf", averagePercentage[NumOfClasses-1]);
     fprintf(res, ")  -  %.2lf ", averagePercentage[NumOfClasses]);
     fclose(res);
+    averageAccuracy = averagePercentage[NumOfClasses];
     delete []averagePercentage;
     delete []tempDouble;
 }
@@ -904,7 +883,12 @@ void Net::readCfg()
     }
     readCfgByName(helpString);
 
-
+    channelsSet.clear();
+    channelsSetExclude.clear();
+    for(int i = 0; i < ns; ++i)
+    {
+        channelsSet << i;
+    }
 }
 
 void Net::memoryAndParamsAllocation()
@@ -2768,30 +2752,6 @@ void Net::setErrcrit(double a)
     this->critError = a;
 }
 
-
-
-//matrix product B = A * B
-void matrixProduct(double ** A, double ** B, int dim)
-{
-    double * temp = new double [dim];
-    for(int j = 0; j < dim; ++j)
-    {
-        for(int i = 0; i < dim; ++i)
-        {
-            temp[i] = 0.;
-            for(int k = 0; k<dim; ++k)
-            {
-                temp[i] += A[i][k] * B[k][j];
-            }
-        }
-        for(int i = 0; i < dim; ++i)
-        {
-            B[i][j] = temp[i];
-        }
-    }
-    delete [] temp;
-}
-
 double errorSammon(double ** distOld, double ** distNew, int size)
 {
     double sum1_ = 0., sum2_ = 0., ret;
@@ -3828,5 +3788,104 @@ void Net::SVM()
     fclose(res);
 
     delete mkPa;
+}
+
+void Net::optimizeChannelsSet()
+{
+    int tempItem;
+    int tempIndex;
+    //1) classify whole set
+    //2) save average classification
+    //3) while(1) {
+    //try classify w/o any channel, return channel into the list
+    //choose the best result
+    //if the best is worse than previous maximum - return;}
+
+    cout << "optimization started" << endl;
+
+
+
+    spLength = NetLength/ns;
+    channelsSetExclude.clear();
+    autoClassificationSimple();
+    double tempAccuracy = averageAccuracy;
+
+
+
+    while(1)
+    {
+        cout << "Optimize iteration" << endl << endl;
+        tempIndex = -1;
+        NetLength = spLength * (NetLength/spLength-1);
+        dimensionality[0] = NetLength;
+
+        for(int i = 0; i < channelsSet.length(); ++i)
+        {
+
+            tempItem = channelsSet[i];
+            channelsSet.remove(i);
+            channelsSetExclude.push_back(tempItem);
+
+            //try classify w/o tempitem
+            autoClassificationSimple();
+            cout << "classified" << endl;
+
+            if(averageAccuracy > tempAccuracy)
+            {
+                tempAccuracy = averageAccuracy;
+                tempIndex = i;
+            }
+            channelsSet.insert(i, tempItem);
+            channelsSetExclude.removeLast();
+        }
+        if(tempIndex >= 0)
+        {
+            channelsSet.remove(channelsSet.indexOf(tempItem));
+            cout << "current set:" << "\n";
+            for(int i = 0; i < channelsSet.length(); ++i)
+            {
+                cout << channelsSet[i] << "  ";
+            }
+            cout << "\n";
+            for(int i = 0; i < channelsSet.length(); ++i)
+            {
+                cout << coords::lbl[channelsSet[i]] << "  ";
+            }
+            cout << endl;
+
+        }
+        else
+        {
+            cout << "optimal set:" << "\n";
+            for(int i = 0; i < channelsSet.length(); ++i)
+            {
+                cout << channelsSet[i] << "  ";
+            }
+            cout << "\n";
+            for(int i = 0; i < channelsSet.length(); ++i)
+            {
+                cout << coords::lbl[channelsSet[i]] << "  ";
+            }
+            cout << endl;
+
+            NetLength = spLength * (NetLength/spLength-1);
+            dimensionality[0] = NetLength;
+
+            break;
+        }
+    }
+    helpString = "optimal set:\n";
+    for(int i = 0; i < channelsSet.length(); ++i)
+    {
+        helpString += QString::number(channelsSet[i]) + "  ";
+    }
+    helpString += "\n";
+    for(int i = 0; i < channelsSet.length(); ++i)
+    {
+        helpString += QString(coords::lbl[channelsSet[i]]) + "  ";
+    }
+    helpString += "\n";
+
+    QMessageBox::information((QWidget * )this, tr("Optimization results"), helpString, QMessageBox::Ok);
 }
 

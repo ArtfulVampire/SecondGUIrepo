@@ -21,7 +21,6 @@ SOURCES += main.cpp\
     makepa.cpp \
     eyes.cpp \
     coord.cpp \
-    qtempevent.cpp \
     tempthread.cpp \
     library.cpp
 

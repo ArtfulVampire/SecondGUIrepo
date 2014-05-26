@@ -37,29 +37,6 @@ void Eyes::setAutoProcessingFlag(bool a)
     autoFlag = a;
 }
 
-
-//matrix product square matrixes B = A*B
-void product(double ** A, double ** B, int dim)
-{
-    double * temp = new double [dim];
-    for(int j=0; j<dim; ++j)
-    {
-        for(int i=0; i<dim; ++i)
-        {
-            temp[i]=0.;
-            for(int k=0; k<dim; ++k)
-            {
-                temp[i]+=A[i][k]*B[k][j];
-            }
-        }
-        for(int i=0; i<dim; ++i)
-        {
-            B[i][j]=temp[i];
-        }
-    }
-    delete []temp;
-}
-
 void Eyes::eyesClean()
 {
 
@@ -406,8 +383,8 @@ void Eyes::eyesProcessing()
                     }
                 }
             }
-            product(matrixTemp, matrixInv, lst.length()+1);
-            product(matrixTemp, matrix, lst.length()+1);
+            matrixProduct(matrixTemp, matrixInv, lst.length()+1);
+            matrixProduct(matrixTemp, matrix, lst.length()+1);
         }
 
         //set coeffs

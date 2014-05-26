@@ -1,9 +1,10 @@
 #include "makepa.h"
 #include "ui_makepa.h"
 
-MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int right_, double spStep_) :
+MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int right_, double spStep_, QVector<int> vect_) :
     ui(new Ui::MakePa)
 {
+//    cout << "makePa constructed" << endl;
 
     ui->setupUi(this);
 
@@ -14,6 +15,9 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     spStep = spStep_;
     ExpName = ExpName_;
 
+//    cout << "before vect" << endl;
+    vect = vect_;
+//    cout << "after vect" << endl;
     ns=ns_;
 
 
@@ -60,11 +64,12 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
 
     helpCharArr = new char [64];
 
-    browser->setWindowTitle("Choose spectra directory");
+//    browser->setWindowTitle("Choose spectra directory");
     ui->cl3_Button->setChecked(true);
+
 //    QObject::connect(ui->browseButton, SIGNAL(clicked()), browser, SLOT(show()));
+    //    QObject::connect(browser, SIGNAL(directoryEntered(QString)), ui->paLineEdit, SLOT(setText(QString)));
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(dirSlot()));
-    QObject::connect(browser, SIGNAL(directoryEntered(QString)), ui->paLineEdit, SLOT(setText(QString)));
     QObject::connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(makePaSlot()));
     QObject::connect(ui->spLBox, SIGNAL(valueChanged(int)), this, SLOT(setSpLength()));
     QObject::connect(ui->nsBox, SIGNAL(valueChanged(int)), this, SLOT(setNs()));
@@ -105,14 +110,6 @@ void MakePa::setNumOfClasses(int a)
         return;
     }
     return;
-}
-
-double quantile(double arg)
-{
-    double a, b;
-    a=exp(0.14*log(arg));
-    b=exp(0.14*log(1-arg));
-    return (4.91*(a-b));
 }
 
 void MakePa::setSpLength()
@@ -1427,6 +1424,7 @@ void MakePa::makePaSlot()
 
             for(int l=0; l<ns; ++l)
             {
+                if(vect.contains(l)) continue; //do not write listed channels
                 for(int k=0; k<spLength; ++k)
                 {
                     fprintf(svm, "%d:%lf ", int(l*spLength+k+1), data4[l][k]/coeff);
@@ -1526,6 +1524,7 @@ void MakePa::makePaSlot()
 
             for(int l=0; l<ns; ++l)
             {
+                if(vect.contains(l)) continue; //do not write listed channels
                 for(int k=0; k<spLength; ++k)
                 {
                     fprintf(svm, "%d:%lf ", int(l*spLength+k+1), data4[l][k]/coeff);
@@ -1613,6 +1612,7 @@ void MakePa::makePaSlot()
 
             for(int l=0; l<ns; ++l)
             {
+                if(vect.contains(l)) continue; //do not write listed channels
                 for(int k=0; k<spLength; ++k)
                 {
                     fprintf(paWhole, "  %lf ", data4[l][k]/coeff);

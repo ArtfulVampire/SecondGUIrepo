@@ -17,6 +17,8 @@
 #include "cfg.h"
 #include "qtempevent.h"
 #include "tempthread.h"
+#include"library.h"
+#include "coord.h"
 #include <fstream>
 #include <ios>
 #include <unistd.h>
@@ -90,6 +92,7 @@ public slots:
     void methodSetParam(int);
     void memoryAndParamsAllocation();
     void testDistances();
+    void optimizeChannelsSet();
 
 private:
     Ui::Net *ui;
@@ -99,10 +102,12 @@ private:
     double **matrix;
     double *** weight;
     int * dimensionality; //for backprop
-//    double **weight; //delta-rule weights
-//    double *** weightBP; //backprop weights
     double * output;
     char * helpCharArr;
+
+    QVector<int> channelsSet;
+    QVector<int> channelsSetExclude;
+    double averageAccuracy;
 
     QPixmap pic;
     QPainter *paint;

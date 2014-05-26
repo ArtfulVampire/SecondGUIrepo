@@ -12,6 +12,7 @@
 #include <QPainter>
 #include <QTimer>
 #include <QTime>
+#include"library.h"
 
 using namespace std;
 
@@ -28,7 +29,7 @@ class MakePa : public QWidget
     Q_OBJECT
 
 public:
-    explicit MakePa(QString spectraPath, QString ExpName_, int ns_=20, int left_=82, int right_=328, double spStep_=250./4096.);
+    explicit MakePa(QString spectraPath, QString ExpName_, int ns_=20, int left_=82, int right_=328, double spStep_=250./4096., QVector<int> vect_ = QVector<int> ());
     ~MakePa();
     void setRdcCoeff(int);
     int getRdcCoeff();
@@ -58,6 +59,7 @@ private:
     int NumOfClasses;
     char * helpCharArr;
     QString ExpName;
+    QVector<int> vect;
 };
 
 #endif // MAKEPA_H

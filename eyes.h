@@ -13,6 +13,7 @@
 #include <string>
 #include <cstdlib>
 #include <stdio.h>
+#include "library.h"
 
 #include <cmath>
 #include <QMessageBox>

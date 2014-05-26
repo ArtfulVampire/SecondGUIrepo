@@ -58,83 +58,35 @@ void four1(double *dataF, int nn, int isign)
 
 double fractalDimension(double *arr, int N, QString picPath)
 {
-    int k; //timeShift
+    int timeShift; //timeShift
     double L; //average length
-//    double sum; //tempSumm
-
-    //NumOfSlices = 8000;
-    //max k = 1000; log2(kmax) = 10
-    //log(Lmax) = ?
 
     int minLimit = 2;
-//    int maxLimit = int(N/10);
     int maxLimit = floor(log(sqrt(N)) * 4. - 5.);
 
-//    cout<<"minLimit = "<<minLimit<<endl;
-//    cout<<"maxLimit = "<<maxLimit<<endl<<endl;
 
     double * drawK = new double [maxLimit - minLimit];
     double * drawL = new double [maxLimit - minLimit];
-//    for(int i = 0; i < N; ++i)
-//    {
-//        cout<<arr[i]<<" ";
-//    }
-//    cout<<endl;
-
-//    cout<<"1"<<endl;
-//    pic = QPixmap(800, 600);
-//    QPainter *pnt     = new QPainter;
-//    pic.fill();
-//    pnt->begin(&pic);
-//    pnt->setPen("black");
-//    pnt->setBrush(QBrush("black"));
 
     for(int h = minLimit; h < maxLimit; ++h)
     {
-        k=h;
-//        if(h < 5) k = h;
-//        else k = exp(log(2) * (h + 5.)/4.);
-
+        timeShift = h;
         L = 0.;
-        //count L(k) by averaging Lm(k) over m
-//        cout<<"2"<<endl;
-        for(int m = 0; m < k; ++m)
+        for(int m = 0; m < timeShift; ++m)
         {
-            for(int i = 1; i < floor((N - m) / k); ++i)
+            for(int i = 1; i < floor((N - m) / timeShift); ++i)
             {
-//                cout<<"3.5 k="<<k<<" m="<<m<<" i="<<i<<" L="<<L<<endl;
-//                cout<<arr[m + i * k]
-                L += fabs(arr[m + i * k] - arr[m + (i - 1) * k]);
+                L += fabs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]);
             }
-            L = L * (N - 1) / (floor((N - m) / k) * k);
+            L = L * (N - 1) / (floor((N - m) / timeShift) * timeShift);
         }
-        L /= k;
-        drawK[h - minLimit] = log(k);
+        L /= timeShift;
+        drawK[h - minLimit] = log(timeShift);
         drawL[h - minLimit] = log(L);
     }
-    for(int h = 0; h < maxLimit - minLimit; ++h)
-    {
-//        pnt->drawRect(abs((drawK[h] - drawK[0])/(drawK[0] - drawK[maxLimit - minLimit - 1])) * pic.width() - 1, (1. - abs(drawL[h] - drawL[maxLimit - minLimit - 1])/(drawL[0] - drawL[maxLimit - minLimit - 1])) * pic.height() - 1, 2, 2);
-    }
-
-
-
-//    for(int h = minLimit; h < maxLimit; ++h)
-//    {
-//        cout<<drawK[h - minLimit]<<"\t";
-//    }
-//    cout<<endl;
-//    for(int h = minLimit; h < maxLimit; ++h)
-//    {
-//        cout<<drawL[h - minLimit]<<"\t";
-//    }
-//    cout<<endl;
-
-
 
     //least square approximation
     double slope;
-    double add;
     double *temp = new double [5];
     for(int i = 0; i < 5; ++i)
     {
@@ -154,21 +106,97 @@ double fractalDimension(double *arr, int N, QString picPath)
     }
 
     slope = (temp[0] - temp[1]*temp[2]) / (temp[3] - temp[1]*temp[1]); // ???????????????????
-    add = temp[2] - slope*temp[1]; ///???
-
-//    pnt->setPen("red");
-//    pnt->setBrush(QBrush("red"));
-//    pnt->drawLine(0, ( (slope*drawK[0]+add - drawL[0])/(drawL[maxLimit - minLimit - 1] - drawL[0])) * pic.height(), pic.width(), ( (slope*drawK[maxLimit - minLimit - 1]+add - drawL[0])/(drawL[maxLimit - minLimit - 1] - drawL[0])) * pic.height());
-
-
     slope = -slope;
-//    if(picPath.contains("_12.png")) pic.save(picPath);
-//    pnt->end();
-//    delete pnt;
+
     delete []temp;
     delete []drawK;
     delete []drawL;
     return slope;
+}
+
+double chaosDimension(double *arr, int N, QString picPath)
+{
+    return 0.;
+}
+
+
+double quantile(double arg)
+{
+    double a, b;
+    a=exp(0.14*log(arg));
+    b=exp(0.14*log(1-arg));
+    return (4.91*(a-b));
+}
+
+double enthropy(double *arr, int N, QString picPath, int numOfRanges) // ~30 is ok
+{
+//    numOfRanges = 50;
+    double max_ = 0.;
+    double min_ = 0.;
+    double result = 0.;
+
+    for(int i = 0; i < N; ++i)
+    {
+//        maxAbs = fmax(maxAbs, fabs(arr[i]));
+        max_ = fmax(max_, arr[i]);
+        min_ = fmin(min_, arr[i]);
+    }
+    max_ *= 1.0001;
+    int tempCount = 0;
+    for(int j = 0; j < numOfRanges; ++j)
+    {
+        tempCount = 0;
+        for(int i = 0; i < N; ++i)
+        {
+//            if((-maxAbs + 2. * maxAbs/double(numOfRanges) * j < arr[i]) && (-maxAbs + 2. * maxAbs/double(numOfRanges) * (j + 1) > arr[i]))
+            if((min_ + (max_ - min_)/double(numOfRanges) * j <= arr[i]) && (min_ + (max_ - min_)/double(numOfRanges) * (j + 1) > arr[i]))
+            {
+                ++tempCount;
+            }
+        }
+//        cout<< tempCount << endl;
+        if(tempCount!=0)
+        {
+            result -= (tempCount/double(N)) * log(tempCount/double(N));
+        }
+    }
+
+    return result;
+}
+
+//matrix product B = A * B
+void matrixProduct(double ** A, double ** B, int dim)
+{
+    double * temp = new double [dim];
+    for(int j = 0; j < dim; ++j)
+    {
+        for(int i = 0; i < dim; ++i)
+        {
+            temp[i] = 0.;
+            for(int k = 0; k<dim; ++k)
+            {
+                temp[i] += A[i][k] * B[k][j];
+            }
+        }
+        for(int i = 0; i < dim; ++i)
+        {
+            B[i][j] = temp[i];
+        }
+    }
+    delete [] temp;
+}
+
+
+double distance(double * vec1, double * vec2, int dim)
+{
+    double dist = 0.;
+    //Euclid
+    for(int i = 0; i < dim; ++i)
+    {
+        dist += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
+    }
+    return dist;
+
 }
 
 QString rightNumber(int &input, int N)

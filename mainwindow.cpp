@@ -278,6 +278,56 @@ MainWindow::MainWindow() :
     QObject::connect(ui->makeTestDataPushButton, SIGNAL(clicked()), this, SLOT(makeTestData()));
 
     QObject::connect(ui->spocPushButton, SIGNAL(clicked()), this, SLOT(spoc()));
+/*
+    //function test
+    int leng = 65536;
+    double * array = new double [leng];
+
+    for(int i = 0; i < leng; ++i)
+    {
+        array[i] = 0.;
+    }
+    double freq, ampl, phas;
+
+    for(int j = 0; j < 10; ++j)
+    {
+        srand(QTime::currentTime().msec());
+        freq = 1. + (rand()%5000)/100.;
+        ampl = 5. + (rand()%200)/10.;
+        phas = -1. + (rand()%2000)/1000.;
+
+        for(int i = 0; i < leng; ++i)
+        {
+            array[i] += ampl*sin(2 * pi * i/250. * freq - phas);
+        }
+    }
+
+    for(int i = 0; i < leng; ++i)
+    {
+
+        ampl = (1. + rand()%10000)/10001.;
+        phas = (1. + rand()%10000)/10001.;
+        array[i] = 20.*sqrt(-2. * log(ampl)) * sin(2. * M_PI * phas);
+
+
+        freq = 5. + (rand()%1000)/100.;
+        ampl = 5. + (rand()%200)/10.;
+        phas = -1. + (rand()%2000)/1000.;
+        array[i] =  ampl*sin(2 * pi * i/250. * freq - phas);// * sin (2 * pi * i/250. * freq/4.);
+        array[i] = 50. * (rand()%1000)/1000.;
+        array[i] = i%150;
+    }
+
+    for(int i = 10; i < 100; i += 5)
+    {
+        cout << i << "   " << enthropy(array, leng, "", i) << endl;
+    }
+//    cout << "   " << enthropy(array, leng, "", 50) << endl;
+
+    */
+//    delete []array;
+//    this->~MainWindow();
+
 }
 
 MainWindow::~MainWindow()
@@ -400,13 +450,6 @@ void MainWindow::waveletCount()
         delete painter;
     }
     if(ui->visualisationBox->isChecked()) visualisation();
-}
-
-double logistic2(double &x, double t)
-{
-    if( x >   37.*t )  return 1.;
-    if( x < -115.*t )  return 0.;
-    return 1. / ( 1. + exp(-x/t) );
 }
 
 void MainWindow::Bayes()
@@ -725,7 +768,7 @@ void MainWindow::drawClassification()  //needs *.dat & weights.wts
                 output[j][l] += weight[j][i]*matrix[i];
             }
             output[j][l] += weight[j][NetLength]*matrix[NetLength];
-            output[j][l]=logistic2(output[j][l], temperature); // unlinear conformation
+            output[j][l]=logistic(output[j][l], temperature); // unlinear conformation
         }
 
         ++l; //l=number of windows processed
@@ -1209,7 +1252,7 @@ void MainWindow::makePaSlot() //250 - frequency generality
     else helpString = QDir::toNativeSeparators(dir->absolutePath());
 
 
-    MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+    MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep, QVector<int>());
     mkPa->show();
 }
 
@@ -3757,8 +3800,6 @@ void MainWindow::reduceChannels()
 
 
 //products for ICA
-
-
 double *  product1(double ** arr, int length, int ns, double * vec)
 {
     //<X*g(Wt*X)>
@@ -5066,7 +5107,6 @@ double objFunc(double *W_, double ***Ce_, double **Cz_, double **Cav_, double ns
     sum1 = pow(sum2, 2.);
 
     return sum1/sum3;
-
 }
 
 void MainWindow::spoc()
@@ -5664,8 +5704,6 @@ QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double
 //    cout<<"val = "<<val<<"\tval/maxMagn = "<<val/maxMagn<<endl;
 
     return hue(256, (val/maxMagn)*256., 1., 1.);
-
-
 }
 
 
@@ -6014,7 +6052,7 @@ void MainWindow::visualisation()   //just video
                     output[j][l/timeShift] += weight[j][i]*matrix[i];
                 }
                 output[j][l/timeShift] += weight[j][NetLength]*matrix[NetLength];
-                output[j][l/timeShift]=logistic2(output[j][l/timeShift], temperature); // unlinear conformation
+                output[j][l/timeShift]=logistic(output[j][l/timeShift], temperature); // unlinear conformation
             }
 
 //            cout << "5 " << i << endl;

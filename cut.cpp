@@ -218,13 +218,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
-double logistic_(double &x, double t)
-{
-    if( x >   37.*t )  return 1.;
-    if( x < -115.*t )  return 0.;
-    return 1. / ( 1. + exp(-x/t) );
-}
-
 void Cut::cutEyesAll()
 {
 //    duration = time(NULL);
@@ -622,7 +615,7 @@ void Cut::lnWnd16()
             }
 
             output[j]+=weight[j][247*19];
-            output[j]=logistic_(output[j], double(ui->tempSpinBox->value()));
+            output[j]=logistic(output[j], double(ui->tempSpinBox->value()));
         }
         cls=0;
         for(int j=1; j<3; ++j) //generality 3 NumOfClasses
