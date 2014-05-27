@@ -2389,20 +2389,8 @@ void MainWindow::makeTestData()
     double coeff = 10.;
     for(int i = 0; i < indepNum; ++i)
     {
-        sum1 = 0.;
-        sum2 = 0.;
-
-        for(int j = 0; j < ndr*nr[0]; ++j)
-        {
-            sum1 += testSignals[i][j]; //average
-        }
-        sum1 /= ndr*nr[0];
-
-        for(int j = 0; j < ndr*nr[0]; ++j)
-        {
-            sum2 += (testSignals[i][j] - sum1) * (testSignals[i][j] - sum1); //variance
-        }
-        sum2 /= ndr*nr[0];
+        sum1 = mean(testSignals[i], ndr*nr[0]);
+        sum2 = variance(testSignals[i], ndr*nr[0]);
 
         for(int j = 0; j < ndr*nr[0]; ++j)
         {
@@ -3476,14 +3464,12 @@ void MainWindow::kernelest(const QString &inputString)
     for(int i = 0; i < num; ++i)
     {
         fscanf(file, "%d", &arr[i]);
-        average += arr[i];
     }
-    average/=num;
-    for(int i = 0; i < num; ++i)
-    {
-        sigma += (average-arr[i])*(average-arr[i]);
-    }
-    sigma = sqrt(sigma)/num;   //// (sigma)/num ??
+
+    sigma = variance(arr, num);
+    sigma = sqrt(sigma);   //// (sigma)/num ??
+
+
     average = -0.2*log(num);
     double h = 1.06*sigma*exp(average);
 
@@ -4334,13 +4320,13 @@ void MainWindow::ICA() //fastICA
     double * averages = new double [ns];
     for(int i = 0; i < ns; ++i)
     {
-        averages[i] = 0.;
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            averages[i] += data[i][j];
-        }
-        averages[i] /= ndr*fr;
-//        cout << i << " average = " << averages[i] << endl; //test
+//        averages[i] = 0.;
+//        for(int j = 0; j < ndr*fr; ++j)
+//        {
+//            averages[i] += data[i][j];
+//        }
+//        averages[i] /= ndr*fr;
+        averages[i] = mean(data[i], ndr*fr);
     }
 
 
@@ -4418,7 +4404,6 @@ void MainWindow::ICA() //fastICA
     }
     int numOfPc = 0;
 
-    //data "is transposed"
     //counter j - for B, i - for A
     for(int k = 0; k < ns; ++k)
     {
@@ -4949,18 +4934,8 @@ void MainWindow::ICA() //fastICA
         sum1 = 0.;
         sum2 = 0.;
 
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            sum1 += components[i][j]; //average
-        }
-        sum1 /= ndr*fr;
-        //        cout<<"average of component = "<<sum1<<endl; // e-15
-
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            sum2 += (components[i][j] - sum1) * (components[i][j] - sum1); //variance
-        }
-        sum2 /= ndr*fr;
+        sum1 = mean(components[i], ndr*fr);
+        sum2 = variance(components[i], ndr*fr);
 
         for(int j = 0; j < ndr*fr; ++j)
         {
@@ -5171,12 +5146,7 @@ void MainWindow::spoc()
     }
 
     //unit variance
-    helpDouble = 0.;
-    for(int i = 0; i < numOfEpoches; ++i)
-    {
-        helpDouble += Z[i]*Z[i];
-    }
-    helpDouble /= numOfEpoches;
+    helpDouble = variance(Z, numOfEpoches);
     helpDouble = sqrt(helpDouble);
     for(int i = 0; i < numOfEpoches; ++i)
     {
@@ -5190,25 +5160,29 @@ void MainWindow::spoc()
         //count averages
         for(int j = 0; j < ns; ++j)
         {
-            averages[j] = 0.;
-            for(int h = 0; h < epochLength; ++h)
-            {
-                averages[j] += data[j][i * timeShift + h];
-            }
-            averages[j] /= epochLength;
+//            averages[j] = 0.;
+//            for(int h = 0; h < epochLength; ++h)
+//            {
+//                averages[j] += data[j][i * timeShift + h];
+//            }
+//            averages[j] /= epochLength;
+
+            averages[j] = mean((data[j]+i*timeShift), epochLength);
         }
 
         for(int j = 0; j < ns; ++j)
         {
             for(int k = 0; k < ns; ++k)
             {
-                helpDouble = 0.;
-                for(int h = 0; h < epochLength; ++h)
-                {
-                    helpDouble += (data[j][i * timeShift + h] - averages[j]) * (data[k][i * timeShift + h] - averages[k]);
-                }
-                helpDouble /= epochLength;
-                Ce[i][j][k] = helpDouble;
+//                helpDouble = 0.;
+//                for(int h = 0; h < epochLength; ++h)
+//                {
+//                    helpDouble += (data[j][i * timeShift + h] - averages[j]) * (data[k][i * timeShift + h] - averages[k]);
+//                }
+//                helpDouble /= epochLength;
+//                Ce[i][j][k] = helpDouble;
+
+                Ce[i][j][k] = variance(data[j] + i*timeShift, epochLength);
             }
         }
     }
@@ -5843,9 +5817,6 @@ void MainWindow::eyesShow()
     trololo->setAutoProcessingFlag(false);
     trololo->show();
     QObject::connect(trololo, SIGNAL(setNsMain(int)), this, SLOT(setNs2(int)));
-//    trololo->eyesProcessing();
-//    trololo->close();
-
 }
 
 void MainWindow::visualisation()   //just video

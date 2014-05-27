@@ -127,6 +127,52 @@ double quantile(double arg)
     b=exp(0.14*log(1-arg));
     return (4.91*(a-b));
 }
+double mean(double *arr, int length)
+{
+    double sum = 0.;
+    for(int i = 0; i < length; ++i)
+    {
+        sum += arr[i];
+    }
+    sum /= (double)length;
+    return sum;
+}
+
+double variance(double *arr, int length)
+{
+    double sum1 = 0.;
+    double m = mean(arr, length);
+    for(int i = 0; i < length; ++i)
+    {
+        sum1 += (arr[i] - m) * (arr[i] - m);
+    }
+    sum1 /= (double)length;
+    return sum1;
+}
+
+double mean(int *arr, int length)
+{
+    double sum = 0.;
+    for(int i = 0; i < length; ++i)
+    {
+        sum += arr[i];
+    }
+    sum /= (double)length;
+    return sum;
+}
+
+double variance(int *arr, int length)
+{
+    double sum1 = 0.;
+    double m = mean(arr, length);
+    for(int i = 0; i < length; ++i)
+    {
+        sum1 += (arr[i] - m) * (arr[i] - m);
+    }
+    sum1 /= (double)length;
+    return sum1;
+}
+
 
 double enthropy(double *arr, int N, QString picPath, int numOfRanges) // ~30 is ok
 {
@@ -433,10 +479,6 @@ double *hilbert(double * arr, int fftLen, double sampleFreq, double lowFreq, dou
     return spectre;
 }
 
-
-#include "wavelet.h"
-
-//offset hue
 double red(int range, int j, double V, double S)
 {
     if(0.000 <= j/double(range) && j/double(range) <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(j/double(range))*3.;
@@ -540,8 +582,6 @@ void drawColorScale(QString filename, int range)
     pic.save(filename, 0, 100);
 
     delete painter;
-
-
 }
 
 void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double freqMax=20., double freqMin=5., double freqStep=0.99, double pot=32.)
@@ -799,4 +839,45 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
     painter->end();
     delete painter;
 }
+
+void readDataFile(QString filename, double ** outData, int ns)
+{
+    ifstream file(filename.toStdString().c_str());
+    if(!file.good())
+    {
+        cout << "bad file" << endl;
+        return;
+    }
+    int NumOfSlices;
+    file.ignore(12); // "NumOfSlices "
+    file >> NumOfSlices;
+    for(int i = 0; i < NumOfSlices; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            file >> outData[i][j];
+        }
+    }
+    file.close();
+}
+
+void readSpectraFile(QString filename, double ** outData, int ns, int spLength)
+{
+    ifstream file(filename.toStdString().c_str());
+    if(!file.good())
+    {
+        cout << "bad file" << endl;
+        return;
+    }
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < spLength; ++j)
+        {
+            file >> outData[i][j];
+        }
+    }
+    file.close();
+}
+
+
 

@@ -1813,7 +1813,7 @@ void MakePa::dispersionAnalysis()
 //    cout<<"ready"<<endl;
 
     QFile curr;
-    int num;
+//    int num;
     for(int j = 0; j < NumOfClasses; ++j)
     {
         for(int k = 0; k < lst[j].length(); ++k)
@@ -2196,6 +2196,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
     cout<<helpString.toStdString()<<endl;
     pic.save(helpString, 0, 100);
     paint->end();
+    return 0.;
 
 }
 

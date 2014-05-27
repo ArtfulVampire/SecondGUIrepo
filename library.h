@@ -6,6 +6,8 @@
 #include <QtGui>
 #include <QtSvg>
 #include "coord.cpp"
+#include <fstream>
+#include <ios>
 #include <iostream>
 #include <cmath>
 #include <stdio.h>
@@ -36,8 +38,17 @@ double enthropy(double *arr, int N, QString picPath, int numOfRanges);
 void four1(double *dataF, int nn, int isign);
 double * hilbert(double * arr, int fftLen, double sampleFreq, double lowFreq, double highFreq);
 
+double mean(double *arr, int length);
+double variance(double *arr, int length);
+
+
+double mean(int *arr, int length);
+double variance(int *arr, int length);
 
 double quantile(double arg);
+
+void readDataFile(QString filename, double ** outData, int ns);
+void readSpectraFile(QString filename, double ** outData, int ns, int spLength);
 
 double distance(double * vec1, double * vec2, int dim);
 void matrixProduct(double ** A, double ** B, int dim);  //matrix product B = A * B

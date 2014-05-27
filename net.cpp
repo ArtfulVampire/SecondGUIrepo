@@ -189,7 +189,7 @@ Net::~Net()
     myThread.wait();
 
 }
-//void Net::customEvent(QEvent  * ev)
+
 bool Net::event(QEvent  * ev)
 {
     if(ev->type() != 1200)
@@ -720,7 +720,7 @@ void Net::testDistances()
     PaIntoMatrixByName("1");
     NumberOfErrors = new int[NumOfClasses];
     double ** averageSpectra = new double *[NumOfClasses];
-    FILE * toread;
+//    FILE * toread;
     for(int i = 0; i < NumOfClasses; ++i)
     {
         NumberOfErrors[i] = 0;
@@ -971,18 +971,62 @@ void Net::readCfgByName(QString FileName)
 
 }
 
-void Net::loadWtsByName(QString filename)
+void Net::loadWtsByName(QString filename) //
 {
     FILE * wts = fopen(filename.toStdString().c_str(),"r");
 
-    for(int i = 0; i < NumOfClasses * (NetLength); ++i)
-    {
-        fscanf(wts, "%lf", &weight[i%(NetLength)][i/(NetLength)]);
-    }
-    for(int i = 0; i < NumOfClasses; ++i)
-    {
-        fscanf(wts, "%lf", &weight[NetLength][i]);
-    }
+        if(weight == NULL) //if hasn't been allocated
+        {
+            numOfLayers = ui->numOfLayersSpinBox->value();
+            helpString = ui->dimensionalityLineEdit->text();
+            QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
+            if(lst.length() != numOfLayers)
+            {
+                QMessageBox::critical(this, tr("Error"), tr("Dimensionality and numOfLayers dont correspond\nweightBP hasn't been read"), QMessageBox::Ok);
+                return;
+            }
+
+            int * dimensionality = new int [numOfLayers];
+
+            dimensionality[0] = NetLength;
+            for(int i = 1; i < numOfLayers-1; ++i)
+            {
+                if(QString::number(lst[i].toInt()) != lst[i])
+                {
+                    helpString = QString::number(i) + "'th dimensionality has bad format";
+                    QMessageBox::critical(this, tr("Error"), tr(helpString.toStdString().c_str()), QMessageBox::Ok);
+                    return;
+                }
+                dimensionality[i] = lst[i].toInt();
+            }
+            dimensionality[numOfLayers-1] = NumOfClasses;
+
+            weight = new double ** [numOfLayers - 1]; // 0 - the lowest layer
+            for(int i = 0; i < numOfLayers - 1; ++i)
+            {
+                weight[i] = new double * [dimensionality[i] + 1]; //+1 for bias
+                for(int j = 0; j < dimensionality[i] + 1; ++j) //
+                {
+                    weight[i][j] = new double [dimensionality[i+1]];
+                }
+            }
+            delete []dimensionality;
+        }
+
+
+        for(int i = 0; i < numOfLayers-1; ++i)
+        {
+            for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
+            {
+                for(int k = 0; k < dimensionality[i+1]; ++k)
+                {
+                    fscanf(wts, "%lf\r\n", &weight[i][j][k]);
+                }
+                fscanf(wts, "\r\n");
+            }
+            fscanf(wts, "\r\n");
+        }
+
     fclose(wts);
 }
 //?????
@@ -1239,10 +1283,10 @@ void Net::leaveOneOutCL()
 //    cout << doubleWork << "\tDoubleSupport = " << doubleSupport << endl;
 //    return -2;
 
-    CL_INVALID_DEVICE;// if device is not valid.
-    CL_INVALID_VALUE;// if param_name is not one of the supported values or if size in bytes specified by param_value_size is less than size of return type as shown in the table above and param_value is not a NULL value or if param_name is a value that is available as an extension and the corresponding extension is not supported by the device.
-    CL_OUT_OF_RESOURCES;// if there is a failure to allocate resources required by the OpenCL implementation on the device.
-    CL_OUT_OF_HOST_MEMORY;// if there is a failure to allocate resources required by the OpenCL implementation on the host.
+//    CL_INVALID_DEVICE;// if device is not valid.
+//    CL_INVALID_VALUE;// if param_name is not one of the supported values or if size in bytes specified by param_value_size is less than size of return type as shown in the table above and param_value is not a NULL value or if param_name is a value that is available as an extension and the corresponding extension is not supported by the device.
+//    CL_OUT_OF_RESOURCES;// if there is a failure to allocate resources required by the OpenCL implementation on the device.
+//    CL_OUT_OF_HOST_MEMORY;// if there is a failure to allocate resources required by the OpenCL implementation on the host.
 
     // 4. Compute work sizes.
     cl_uint compute_units;
@@ -1696,10 +1740,10 @@ void Net::leaveOneOutCL()
 
 
     //    values to look at the results
-    cl_bool  * returnedAnswer;
-    cl_double  * returnedError;
+//    cl_bool  * returnedAnswer;
+//    cl_double  * returnedError;
     cl_int  * returnedNumofthread;
-    cl_int  * returnedNumOfSkipped;
+//    cl_int  * returnedNumOfSkipped;
 
 
 //    returnedAnswer = (cl_bool  * ) clEnqueueMapBuffer( queue,
@@ -2162,7 +2206,7 @@ void Net::Hopfield()
     double sumH;
 
     double * outputClass = new double [NumOfClasses];
-    int type;
+//    int type;
     bool answer;
     int NumberOfErrorsH = 0;
     double ** attractorsH = new double * [NumberOfVectors];
@@ -2521,7 +2565,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     currentError = critError + 0.1;
     temperature = ui->tempBox->value();
     learnRate = ui->learnRateBox->value();
-    double momentum = ui->momentumDoubleSpinBox->value(); //unused yet
+//    double momentum = ui->momentumDoubleSpinBox->value(); //unused yet
 
     int type = 0;
 
@@ -3790,7 +3834,7 @@ void Net::SVM()
 
     FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
     fprintf(res, "\nSVM\t");
-    fprintf(res, "%.2lf\%\n", average);
+    fprintf(res, "%.2lf %\n", average);
     fclose(res);
 
     delete mkPa;

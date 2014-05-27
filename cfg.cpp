@@ -19,7 +19,7 @@ cfg::cfg(QDir *dir_, int ns_, int spLength_, double error_, double lrate_, QStri
 
     ui->numOfOutsBox->setValue(3);
     ui->epsilonSpinBox->setValue(lrate_);
-    ui->errorSpinBox->setValue(0.1);
+    ui->errorSpinBox->setValue(error_);
     ui->tempSpinBox->setValue(10);
     ui->nameEdit->setText(FileName_);
     QObject::connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(makeCfg()));
