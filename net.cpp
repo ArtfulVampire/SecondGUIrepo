@@ -1095,93 +1095,6 @@ void Net::loadWts()
     fclose(wts);
 }
 
-void Net::PaIntoMatrix()
-{
-    if(loadPAflag  != 1)
-    {
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
-        return;
-    }
-
-    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL, tr("load PA"), dir->absolutePath(), tr("PA files (*.pa)")));
-    if(helpString == "")
-    {
-        QMessageBox::information((QWidget * )this, tr("Information"), tr("No file was chosen"), QMessageBox::Ok);
-        return;
-    }
-
-
-
-    FILE  * paSrc = fopen(helpString.toStdString().c_str(), "r");
-    if(paSrc == NULL)
-    {
-        cout << "pa-file == NULL" << endl;
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("cannot open pa-file"), QMessageBox::Ok);
-        return;
-    }
-    if(matrix  != NULL && NumberOfVectors>0)
-    {
-//        cout << "delete matrix" << endl;
-        for(int i = 0; i < NumberOfVectors; ++i)
-        {
-            if(matrix[i]  != NULL) delete []matrix[i];
-        }
-        delete []matrix;
-    }
-
-    NumberOfVectors = 6000; //generality
-
-    matrix = new double * [NumberOfVectors];
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        matrix[i] = new double[NetLength+2];
-    }
-    int num = 0;
-    double g[3];  //generality
-
-    FileName = new char * [NumberOfVectors];
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        FileName[i] = new char[40];
-    }
-
-//    cout << "start pa-reading" << endl;
-    while(!feof(paSrc))
-    {
-        fscanf(paSrc, "%s\n", FileName[num]);  //read FileName
-
-        for(int i = 0; i < NetLength; ++i)
-        {
-            fscanf(paSrc, "%lf", &matrix[num][i]);
-//            matrix[num][i] *=20;
-        }
-
-        if(NumOfClasses == 3) fscanf(paSrc, "%lf %lf %lf\n", &g[0], &g[1], &g[2]); //read the class
-        if(NumOfClasses == 2)
-        {
-            fscanf(paSrc, "%lf %lf\n", &g[0], &g[1]);
-            g[2] = 0.;
-//            cout << "g[0] = " << g[0] << " g[1] = " << g[1] << " g[2] = " << g[2] << endl;
-        }
-
-        matrix[num][NetLength] = 1.; //bias
-        matrix[num][NetLength+1] = 0. * g[0] + 1. * g[1] + 2. * g[2]; //type
-        if(matrix[num][NetLength+1]  != 0. && matrix[num][NetLength+1]  != 1. && matrix[num][NetLength+1]  != 2. && matrix[num][NetLength+1]  != 1.5)
-        {
-            cout << "type is wrong " << matrix[num][NetLength+1] << endl;
-            return;
-        }
-        ++num;
-    }
-    for(int i = num; i < NumberOfVectors; ++i)
-    {
-        delete []matrix[i];
-        delete []FileName[i];
-    }
-    fclose(paSrc);
-    NumberOfVectors = num;
-//    cout << "NumberOfVectors = " << NumberOfVectors << endl;
-}
 
 void Net::leaveOneOutSlot()
 {
@@ -2006,6 +1919,27 @@ void Net::leaveOneOut()
 }
 
 
+void Net::PaIntoMatrix()
+{
+    if(loadPAflag  != 1)
+    {
+        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
+        return;
+    }
+
+    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL, tr("load PA"), dir->absolutePath(), tr("PA files (*.pa)")));
+    if(helpString == "")
+    {
+        QMessageBox::information((QWidget * )this, tr("Information"), tr("No file was chosen"), QMessageBox::Ok);
+        return;
+    }
+    myTime.restart();
+    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+//    cout << "PaRead: " << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+
+}
+
+
 void Net::PaIntoMatrixByName(QString fileName)
 {
     if(loadPAflag  != 1)
@@ -2013,137 +1947,12 @@ void Net::PaIntoMatrixByName(QString fileName)
         QMessageBox::critical((QWidget * )this, tr("net.cpp: PaIntoMatrixByName"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
         return;
     }
-//    cout << "1" << endl;
-
-    if(fileName.contains("wnd"))
-    {
-        if(fileName.contains("1"))
-        {
-            helpString = dirBC->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("1_wnd.pa");
-            fprintf(log, "\n");
-        }
-        else if(fileName.contains("2"))
-        {
-            helpString = dirBC->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("2_wnd.pa");
-        }
-        else
-        {
-            helpString = dirBC->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("all_wnd.pa");
-        }
-    }
-    else if(fileName.contains("pca"))
-    {
-
-        if(fileName.contains("1"))
-        {
-            helpString = dirBC->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("1_pca.pa");
-            fprintf(log, "\n");
-        }
-        else if(fileName.contains("2"))
-        {
-            helpString = dirBC->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("2_pca.pa");
-        }
-        else
-        {
-            helpString = dirBC->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("all_pca.pa");
-        }
-    }
-    else
-    {
-        if(fileName == "1")
-        {
-            helpString = dirBC->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("1.pa");
-            fprintf(log, "\n");
-        }
-        else if(fileName == "2")
-        {
-            helpString = dirBC->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("2.pa");
-        }
-        else
-        {
-            helpString = dirBC->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("all.pa");
-        }
-    }
-//    cout << helpString.toStdString() << endl;
-//    cout << "2" << endl;
-//    cout << helpString.toStdString() << endl;
+    helpString = dirBC->absolutePath() + QDir::separator() + "PA" + QDir::separator() + fileName + ".pa";
     paFileBC = helpString;
 
-    FILE  * paSrc = fopen(helpString.toStdString().c_str(), "r");
-    if(paSrc == NULL)
-    {
-        cout << "pa-file == NULL" << endl;
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("cannot open pa-file"), QMessageBox::Ok);
-        return;
-    }
-
-//    cout << "3" << endl;
-
-    if(matrix  != NULL && NumberOfVectors>0)
-    {
-//        cout << "delete matrix" << endl;
-        for(int i = 0; i < NumberOfVectors; ++i)
-        {
-            if(matrix[i]  != NULL) delete [] matrix[i];
-        }
-        delete [] matrix;
-    }
-
-//    cout << "4" << endl;
-
-    NumberOfVectors = 6000; //generality
-
-    matrix = new double * [NumberOfVectors];
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        matrix[i] = new double[NetLength+2]; // + bias + type
-    }
-    int num = 0;
-    double g[3];  //generality
-
-    FileName = new char * [NumberOfVectors];
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        FileName[i] = new char[40];
-    }
-    cout << "PaIntoMatrixByName: NetLength = " << NetLength << endl;
-
-
-    while(!feof(paSrc))
-    {
-        fscanf(paSrc, "%s\n", FileName[num]);  //read FileName
-
-        for(int i = 0; i < NetLength; ++i)
-        {
-            fscanf(paSrc, "%lf", &matrix[num][i]);
-        }
-
-        if(NumOfClasses == 3) fscanf(paSrc, "%lf %lf %lf\n", &g[0], &g[1], &g[2]); //read the class
-        if(NumOfClasses == 2)
-        {
-            fscanf(paSrc, "%lf %lf\n", &g[0], &g[1]);
-            g[2] = 0.;
-//            cout << "g[0] = " << g[0] << " g[1] = " << g[1] << " g[2] = " << g[2] << endl;
-        }
-
-        matrix[num][NetLength] = 1.; //bias
-        matrix[num][NetLength+1] = 0. * g[0] + 1. * g[1] + 2. * g[2]; //type
-        if(matrix[num][NetLength+1]  != 0. && matrix[num][NetLength+1]  != 1. && matrix[num][NetLength+1]  != 2. && matrix[num][NetLength+1]  != 1.5)
-        {
-            cout << "type is wrong " << matrix[num][NetLength+1] << endl;
-            return;
-        }
-        ++num;
-    }
-    for(int i = num; i < NumberOfVectors; ++i)
-    {
-        delete [] matrix[i];
-        delete [] FileName[i];
-    }
-    fclose(paSrc);
-    NumberOfVectors = num;
-//    cout << "5" << endl;
-//    cout << "NumberOfVectors = " << NumberOfVectors << endl;
+    myTime.restart();
+    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+//    cout << "PaRead: " << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 }
 
 double HopfieldActivation(double x, double temp)
@@ -2679,7 +2488,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     }
 
 
-//    cout << "learning ended " << epoch << " epoches" << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+    cout << "learning ended " << epoch << " epoches" << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
 
@@ -3914,6 +3723,7 @@ void Net::optimizeChannelsSet()
             }
             channelsSet.insert(i, tempItem);
             channelsSetExclude.removeLast();
+            if(averageAccuracy > tempAccuracy + 1.0) break;
         }
         if(tempIndex >= 0)
         {

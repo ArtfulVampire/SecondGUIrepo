@@ -92,12 +92,12 @@ public:
     void sliceIlya(const QString &fileName, QString marker);
     void sliceIlya(int marker1, int marker2, QString marker);
     void sliceFromTo(int marker1, int marker2, QString marker);
-    void sliceMati();
+    void sliceMati(int numChanWrite);
     void visualisation();
     void kernelest(const QString &str);
-    void writeEdf(FILE * edf, double ** components, QString fileName, int indepNum);
+    void writeEdf(FILE * edf, double ** components, QString fileName, int indepNum, int numSlices);
     void sliceOneByOne();
-    void sliceOneByOneNew();
+    void sliceOneByOneNew(int numChanWrite);
     void drawMap(double ** matrixA, int num);
 
 
@@ -113,7 +113,6 @@ private:
     double helpDouble;
     QString ExpName;
     QStringList lst, nameFilters;
-//    QSignalMapper *signalMapper;
     int ndr, ddr, ns, nsBackup;
     int *nr;
     int NumOfSlices, eyes;

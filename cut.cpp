@@ -55,6 +55,7 @@ Cut::Cut(QDir * dir_, int ns_) :
     ui->cutButton->setShortcut(tr("c"));
     ui->zeroButton->setShortcut(tr("z"));
     ui->saveButton->setShortcut(tr("s"));
+    ui->splitButton->setShortcut(tr("x"));
     ui->rewriteButton->setShortcut(tr("r"));
 
     ui->eyesSlicesSpinBox->setMaximum(1e5);
@@ -96,6 +97,7 @@ Cut::Cut(QDir * dir_, int ns_) :
 
     QObject::connect(ui->tempSpinBox, SIGNAL(valueChanged(int)), this, SLOT(drawLogistic()));
     QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
+    QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitCut()));
     QObject::connect(ui->paintDistrButton, SIGNAL(clicked()), this, SLOT(paintDistr()));
 
     this->ui->tempSpinBox->setValue(10);
@@ -983,9 +985,13 @@ void Cut::createImage(QString str) //
         {
             currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
         }
-        if(ns==21)
+        else if(ns==21)
         {
             currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+        }
+        else
+        {
+            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("other").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
         }
     }
     else if(str.contains("windows") && !str.contains("fromreal"))
@@ -994,9 +1000,13 @@ void Cut::createImage(QString str) //
         {
             currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
         }
-        if(ns==21)
+        else if(ns==21)
         {
             currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+        }
+        else
+        {
+            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("other").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
         }
     }
     else if(str.contains("cut"))
@@ -1048,11 +1058,6 @@ void Cut::createImage(QString str) //
             rightLimit = ui->scrollArea->size().width();
         }
         //endof initial zoom
-
-
-
-//        ui->picLabel->setPixmap(currentPic.scaled(ui->scrollArea->size().width(), ui->scrollArea->size().height()-20)); //-20 generality
-//        rightLimit=ui->picLabel->size().width();
     }
     else
     {
@@ -1218,6 +1223,30 @@ void Cut::cut()
     paint();
 }
 
+void Cut::splitCut()
+{
+
+    int h=0;
+    int leftEdge = int(leftLimit*NumOfSlices/ui->picLabel->width());
+    int rightEdge = int(rightLimit*NumOfSlices/ui->picLabel->width());
+    for(int i = leftEdge; i < NumOfSlices - (rightEdge - leftEdge); ++i)         //zoom
+    {
+        for(int k = 0; k < ns; ++k)
+        {
+            data3[k][i] = data3[k][i + (rightEdge - leftEdge)];
+//            if(data3[k][i]==0.) h+=1;
+//            data3[k][i]=0.;
+        }
+//        if(h < ns) Eyes+=1;      //generality if there are channel with non-zero values
+    }
+    NumOfSlices -= (rightEdge - leftEdge);
+
+    this->ui->spinBox->setValue(NumOfSlices-Eyes);
+    this->ui->doubleSpinBox->setValue((NumOfSlices-Eyes)/250.);
+
+    paint();
+}
+
 void Cut::save()
 {
     dir->setPath(currentFile);  //.../expName/Realisations/fileName;
@@ -1314,7 +1343,7 @@ void Cut::paint()
 {
     if(!painter->isActive()) {return;}
     painter->end();
-    currentPic = QPixmap(NumOfSlices, 600); //mainwindow.cpp MainWindow::drawEeg generality
+    currentPic = QPixmap(NumOfSlices, 600); //600 - mainwindow.cpp MainWindow::drawEeg generality
     currentPic.fill();
     painter->begin(&currentPic);
 
@@ -1350,8 +1379,8 @@ void Cut::paint()
     currentPicPath = helpString;
     currentPic.save(helpString, 0, 100);  //generality path
 
-    ui->picLabel->setPixmap(currentPic.scaled(ui->picLabel->size()));
-
+//    ui->picLabel->setPixmap(currentPic.scaled(ui->picLabel->size()));
+    ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->picLabel->height()));
 
     rightLimit=ui->picLabel->width();
     leftLimit=0;

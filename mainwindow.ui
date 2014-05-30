@@ -119,6 +119,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="sliceWithMarkersCheckBox">
+           <property name="text">
+            <string>with markers (ica)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="eyesBox">
            <property name="text">
             <string>clean from eyes?</string>

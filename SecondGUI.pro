@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     eyes.cpp \
     coord.cpp \
     tempthread.cpp \
-    library.cpp
+    library.cpp \
+    edffile.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -33,7 +34,8 @@ HEADERS  += mainwindow.h \
     eyes.h \
     qtempevent.h \
     tempthread.h \
-    library.h
+    library.h \
+    edffile.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

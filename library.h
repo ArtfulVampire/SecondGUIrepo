@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QTextStream>
 #include <QPainter>
+#include <QMessageBox>
 #define pi 3.141592653589
 
 using namespace std;
@@ -44,11 +45,17 @@ double variance(double *arr, int length);
 
 double mean(int *arr, int length);
 double variance(int *arr, int length);
-
+double correlation(double *arr1, double *arr2, int length, int t = 0);
 double quantile(double arg);
 
-void readDataFile(QString filename, double ** outData, int ns);
+
+void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength);
+void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices);
 void readSpectraFile(QString filename, double ** outData, int ns, int spLength);
+void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
+
+void calcSpectre(double ** inData, double ** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth);
+
 
 double distance(double * vec1, double * vec2, int dim);
 void matrixProduct(double ** A, double ** B, int dim);  //matrix product B = A * B

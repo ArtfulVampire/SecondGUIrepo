@@ -352,24 +352,23 @@ void Spectre::psaSlot()
     {
         count = 3;
     }
-    cout<<"count = "<<count<<endl;
+    cout << "count = " << count << endl;
     spL = new int [count];
     sp = new double ** [count];
 
     for(int i=0; i<count; ++i)
     {
         fscanf(f[i], "spLength %d", &spL[i]);
-//        cout<<"spL["<<i<<"] = "<<spL[i]<<endl;
     }
 
 
-    for(int k=0; k<count; ++k)
+    for(int k = 0; k < count; ++k)
     {
         sp[k] = new double* [ns];
     }
 
 //    cout<<"1"<<endl;
-    for(int k=0; k<count; ++k)
+    for(int k = 0; k < count; ++k)
     {
         for(int i=0; i<ns; ++i)
         {
@@ -378,11 +377,11 @@ void Spectre::psaSlot()
     }
 //    cout<<"2"<<endl;
 
-    for(int k=0; k<count; ++k)
+    for(int k = 0; k < count; ++k)
     {
-        for(int i=0; i<ns; ++i)
+        for(int i = 0; i < ns; ++i)
         {
-            for(int j=0; j<spL[k]; ++j)
+            for(int j = 0; j < spL[k]; ++j)
             {
                 fscanf(f[k], "%lf", &sp[k][i][j]);
             }
@@ -391,7 +390,7 @@ void Spectre::psaSlot()
 //    cout<<"3"<<endl;
 
 
-/*
+
     QSvgGenerator svgGen;
     if(ui->svgButton->isChecked())
     {
@@ -518,11 +517,11 @@ void Spectre::psaSlot()
         ui->specLabel->setPixmap(pic.scaled(ui->specLabel->size()));
     }
     paint->end();
-    */
 
 
 
-    for(int k=0; k<count; ++k)
+
+    for(int k = 0; k < count; ++k)
     {
         for(int i=0; i<ns; ++i)
         {
@@ -531,12 +530,10 @@ void Spectre::psaSlot()
         delete []sp[k];
     }
     delete []sp;
-    for(int k=0; k<count; ++k)
+    for(int k = 0; k < count; ++k)
     {
         fclose(f[k]);
     }
-    //automatization
-//    QMessageBox::information((QWidget*)this, tr("Info"), tr("average spectra drawn"), QMessageBox::Ok);
 
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()+1);
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()-1);
@@ -974,7 +971,8 @@ void Spectre::setLeft()
 
 void Spectre::countSpectra()
 {
-    duration = time(NULL);    
+    QTime myTime;
+    myTime.start();
     emit spValues(left, right, spStep);
 
     dir->cd(ui->lineEdit_1->text());
@@ -1167,14 +1165,7 @@ void Spectre::countSpectra()
         ui->lineEdit_m2->setText(helpString);
     }
 
-
-    duration = time(NULL) - duration;
-
-    helpString.setNum(int(duration));
-    helpString.prepend("Spectra counted \nTime = ");
-    helpString.append(" sec");
-    //automatization
-//    QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
+    cout << "time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 
@@ -1183,171 +1174,47 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
 
 //    cout<<QDir::toNativeSeparators(dir->absolutePath()).toStdString()<<endl;
 
-    int h = 0;
 
 
     dir->cd(ui->lineEdit_1->text());
     FILE * file;
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst.at(num)));
-//    cout<<helpString.toStdString()<<endl;
-    file=fopen(helpString.toStdString().c_str(), "r");
-    if(file==NULL)
-      {
-        cout<<"file==NULL"<< endl;
-        return 0;
-      }
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[num]));
 
-
-
-    fscanf(file, "%*s %d\n", &NumOfSlices);
-//    cout<<NumOfSlices<<endl;
-//    fscanf(file, "NumOfSlicesEyesCut %d \n", &Eyes);
-//    cout<<Eyes<<endl;
-
-
-
-    double ** data2 = new double* [ns];
-    for(int i=0; i<ns; ++i)
-    {
-        data2[i] = new double [fftLength];
-    }
-
-    double uh;
-    if(NumOfSlices>fftLength)   //too long - take the end of realisation
-    {
-        for(int i=fftLength; i<NumOfSlices; ++i)
-        {
-
-            for(int k=0; k<ns; ++k)
-            {
-                fscanf(file, "%lf", &uh);
-            }
-        }
-        for(int i=0; i<fftLength; ++i)         //saved BY SLICES!!
-        {
-            for(int k=0; k<ns; ++k)
-            {
-                fscanf(file, "%lf\n", &data2[k][i]);
-            }
-        }
-    }
-    else
-    {
-        for(int i=0; i<NumOfSlices; ++i)         //saved BY SLICES!!
-        {
-            for(int k=0; k<ns; ++k)
-            {
-                fscanf(file, "%lf\n", &data2[k][i]);
-            }
-        }
-        //fill the rest with zeros
-        for(int i=NumOfSlices; i<fftLength; ++i)
-        {
-            for(int k=0; k<ns; ++k)
-            {
-                data2[k][i]=0.;
-            }
-        }
-
-
-    }
-    fclose(file);
+    double ** data2;
+    readDataFile(helpString, &data2, ns, &NumOfSlices, fftLength);
 
     //correct Eyes number
-    Eyes=0;
+    Eyes = 0;
     NumOfSlices = fftLength;
-    for(int i = 0; i < NumOfSlices; ++i)
+    int h = 0;
+    for(int i = 0; i < fftLength; ++i)
     {
-        h=0;
-        for(int j=0; j<ns; ++j)
+        h = 0;
+        for(int j = 0; j < ns; ++j)
         {
-            if(data2[j][i]==0.) ++h;
+            if(data2[j][i] == 0.) ++h;
         }
-        if(h==ns) Eyes+=1;
+        if(h == ns) Eyes += 1;
     }
 
-//    if((NumOfSlices-Eyes)/double(NumOfSlices)<0.1) // 0.2*4096/250 = 3.1 sec
     if((NumOfSlices-Eyes) < 500) // 0.2*4096/250 = 3.1 sec
     {
-//        if(remove(helpString.toStdString().c_str()) != 0)
-//        {
-//            perror("cannot delete file");
-//        }
-
-//        cout<<"Too short real signal "<<helpString.toStdString()<<endl;//<<NumOfSlices<<"  "<<Eyes<<endl<<endl;
-
         for(int i=0; i<ns; ++i)
         {
             delete []data2[i];
         }
         delete []data2;
-
         return 0;
     }
-//    cout<<"!!"<<endl;
 
-
-    double norm1=fftLength/double(fftLength-Eyes);              //norm with eyes
-
-
-
-    double * spectre = new double [fftLength*2];
-
-
-
-
-//    cout<<"data allocated"<<endl;
-
-    double help1, help2;
-    int leftSmoothLimit, rightSmoothLimit;
-
-    for(int c1=0; c1<ns; ++c1)
-    {
-        for(int i=0; i<fftLength; ++i)            //make appropriate array
-        {
-            spectre[ i * 2 + 0 ] = (double)(data2[c1][ i ]*sqrt(norm1));
-            spectre[ i * 2 + 1 ] = 0.;//(double)(data2[c1][ i ]*sqrt(norm1));//0.;
-
-//            spectre[ i * 2 + 0 ] = 0.;//(double)(data2[c1][ i ]*sqrt(norm1));
-//            spectre[ i * 2 + 1 ] = (double)(data2[c1][ i ]*sqrt(norm1));//0.;
-        }
-        four1(spectre-1, fftLength, 1);       //Fourier transform
-
-            for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
-            {
-//                dataFFT[c1][ i ] = ( spectre[ i * 2 +1] * spectre[ i * 2 +1] + spectre[ i * 2 + 1 +1] * spectre[ i * 2 + 1 +1] )*2*0.004/fftLength; //0.004 = 1/250 generality
-                dataFFT[c1][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 * 0.004 / fftLength; //0.004 = 1/250 generality
-            }
-
-
-            leftSmoothLimit = 0;
-            rightSmoothLimit = fftLength/2-1;
-            //smooth spectre
-            for(int a=0; a < (int)(ui->smoothBox->value() / sqrt(norm1)); ++a)
-//            for(int a=0; a < ui->smoothBox->value(); ++a)
-            {
-                help1=dataFFT[c1][leftSmoothLimit-1];
-                for(int k=leftSmoothLimit; k<rightSmoothLimit; ++k)
-                {
-                    help2=dataFFT[c1][k];
-                    dataFFT[c1][k]=(help1+help2+dataFFT[c1][k+1])/3.;
-                    help1=help2;
-                }
-
-            }
-
-    }
-
-
-
+    calcSpectre(data2, dataFFT, ns, fftLength, Eyes, ui->smoothBox->value());
 
 
     for(int i=0; i<ns; ++i)
     {
         delete []data2[i];
     }
-    delete []spectre;
     delete []data2;
 
     dir->cd(dirBC->absolutePath());

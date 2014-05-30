@@ -58,6 +58,7 @@ public slots:
     void setNs(int);
     void cutEyesAll();
     void browse();
+    void splitCut();
 
 
 protected:
