@@ -47,6 +47,8 @@ MainWindow::MainWindow() :
 //    right = 82;
 //    spStep = 250./1024.;
 
+
+
     staSlice = 0;
 
     stopFlag = 0;
@@ -61,6 +63,11 @@ MainWindow::MainWindow() :
     paint = new QPainter();
 
 
+    label = new char* [maxNs];     //memory for channels' labels
+    for(int i = 0; i < maxNs; ++i)
+    {
+        label[i] = new char [17];
+    }
 
     group1 = new QButtonGroup();
     group1->addButton(ui->enRadio);
@@ -88,10 +95,10 @@ MainWindow::MainWindow() :
     ui->enRadio->setChecked(true);
 
     ui->doubleSpinBox->setValue(1.0); //draw coeff
-    ui->sliceBox->setChecked(true);
-    ui->eyesBox->setChecked(false);
-    ui->eyesBox->setChecked(true);   ///for windows
-    ui->chRdcBox->setChecked(true);
+    ui->sliceCheckBox->setChecked(true);
+    ui->eyesCleanCheckBox->setChecked(false);
+    ui->eyesCleanCheckBox->setChecked(true);   ///for windows
+    ui->reduceChannelsCheckBox->setChecked(true);
     ui->progressBar->setValue(0);
     ui->setNsLine->property("S&et");
 
@@ -103,63 +110,71 @@ MainWindow::MainWindow() :
     ui->rdcChannelBox->addItem("windows");
 
     helpInt = 0;
-    ui->reduceNsBox->addItem("old En->real-time");   //encephalan for real time
+    ui->reduceChannelsComboBox->addItem("old En->real-time");   //encephalan for real time
     var = QVariant("19 18 16 14 11 9 6 4 2 1 17 13 12 8 7 3 15 10 5 24");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("En-19");   //encephalan w/o veget channels
+    ui->reduceChannelsComboBox->addItem("En-19");   //encephalan w/o veget channels
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("LN->En");
+    ui->reduceChannelsComboBox->addItem("LN->En");
     var = QVariant("1 2 11 3 17 4 12 13 5 18 6 14 15 7 19 8 16 9 10");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("Boris Nt->En");
+    ui->reduceChannelsComboBox->addItem("Boris Nt->En");
     var = QVariant("1 3 7 4 5 6 8 25 14 15 16 26 27 20 21 22 28 29 31");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
 
-
-    ui->reduceNsBox->addItem("MichaelBak");
+    //0
+    ui->reduceChannelsComboBox->addItem("MichaelBak");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 23 24 31");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("MichaelBakNew");
+    //1
+    ui->reduceChannelsComboBox->addItem("MichaelBakNew");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 23 24 27");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("MichaelBakNewNoEyes");
+    //2
+    ui->reduceChannelsComboBox->addItem("MichaelBakNewNoEyes");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 27");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("MyCurrent");
+    //3
+    ui->reduceChannelsComboBox->addItem("MyCurrent");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22 23 24");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("MyCurrentNoEyes");
+    //4
+    ui->reduceChannelsComboBox->addItem("MyCurrentNoEyes");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 24");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("NewEnceph");
+    //5
+    ui->reduceChannelsComboBox->addItem("NewEnceph");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22-23-20 24 25");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("NewEncephNoEyes");
+    //6
+    ui->reduceChannelsComboBox->addItem("NewEncephNoEyes");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 25");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("Mati");
+    //7
+    ui->reduceChannelsComboBox->addItem("Mati");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22 23 28");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceNsBox->addItem("MatiNoEyes");
+    //8
+    ui->reduceChannelsComboBox->addItem("MatiNoEyes");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
-    ui->reduceNsBox->setItemData(helpInt++, var);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-
-    ui->reduceNsBox->setCurrentText("Mati");
-    ui->nsLine->setText(ui->reduceNsBox->itemData(ui->reduceNsBox->currentIndex()).toString());
+    //9
+    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
+    ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(ui->reduceChannelsComboBox->currentIndex()).toString());
 
 
     ui->timeShiftBox->setMinimum(25);
@@ -242,7 +257,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(netShow()));
 
-    QObject::connect(ui->rdcNsButton, SIGNAL(clicked()), this, SLOT(reduceChannels()));
+    QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannels()));
 
     QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawRealisations()));
 
@@ -250,8 +265,8 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
 
-    QObject::connect(ui->reduceNsBox, SIGNAL(highlighted(int)), this, SLOT(changeNsLine(int)));
-    QObject::connect(ui->reduceNsBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeNsLine(int)));
+    QObject::connect(ui->reduceChannelsComboBox, SIGNAL(highlighted(int)), this, SLOT(changeNsLine(int)));
+    QObject::connect(ui->reduceChannelsComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeNsLine(int)));
 
     QObject::connect(ui->setNsLine, SIGNAL(returnPressed()), this, SLOT(setNs()));
 
@@ -863,7 +878,7 @@ void MainWindow::drawClassification()  //needs *.dat & weights.wts
 
 void MainWindow::changeNsLine(int a)
 {
-    ui->nsLine->setText(ui->reduceNsBox->itemData(a).toString());
+    ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
 }
 
 void MainWindow::cleanDirs()
@@ -1274,7 +1289,7 @@ void MainWindow::setEdfFile()
         QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
         return;
     }
-//    ui->reduceNsBox->setCurrentIndex(4);
+//    ui->reduceChannelsComboBox->setCurrentIndex(4);
 
 
     ui->filePath->setText(helpString);
@@ -1487,17 +1502,11 @@ void MainWindow::readData()
     cout << "ns=" << ns << endl;
 
     //labels
-    label = new char* [ns];     //memory for channels' labels
-
-    for(int i = 0; i < ns; ++i)
-    {
-        label[i] = new char [16];
-    }
-    for(int i = 0; i < ns*16; ++i)                      //label read
+    for(int i = 0; i < ns*16; ++i)
     {
         fscanf(edf, "%c", &label[i/16][i%16]);
         if(flag==1) fprintf(edfNew, "%c", label[i/16][i%16]);
-        if(i%16==15) label[i/16][i%16]='\0';
+        if(i%16==15) label[i/16][16]='\0';
 
     }
     helpString=dir->absolutePath().append(QDir::separator()).append("labels.txt");
@@ -1566,7 +1575,7 @@ void MainWindow::readData()
 
     //digital maximum
     double *digMax;
-    digMax = new double [ns];     //memory for channels' labels
+    digMax = new double [ns];
 
     for(int i = 0; i < ns; ++i)                      //rest of header
     {
@@ -1851,9 +1860,9 @@ void MainWindow::readData()
 void MainWindow::makeDatFile()
 {
     readData();
-    if(ui->eyesBox->isChecked()) eyesFast();
-    ui->reduceNsBox->setCurrentIndex(7); //20 channels 19+markers
-    if(ui->chRdcBox->isChecked()) reduceChannelsFast();
+    if(ui->eyesCleanCheckBox->isChecked()) eyesFast();
+    ui->reduceChannelsComboBox->setCurrentIndex(7); //20 channels 19+markers
+    if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
 
 
 //    helpString=dir->absolutePath().append(QDir::separator()).append(ExpName).append(".dat");
@@ -2437,7 +2446,7 @@ void MainWindow::makeTestData()
     cout << "1" << endl;
 //    helpString = ExpName; helpString.append("_test.edf");
     helpString = "SDA_test.edf";
-    writeEdf(edf, testSignals2, helpString, 19, ndr*nr[0]);
+//    writeEdf(edf, testSignals2, helpString, ndr*nr[0]);
 
 
 
@@ -2468,15 +2477,15 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
     readData();
 
-    if(ui->eyesBox->isChecked())
+    if(ui->eyesCleanCheckBox->isChecked())
     {
         eyesFast();
-        if(!ui->reduceNsBox->currentText().contains("NoEyes", Qt::CaseInsensitive)) ui->reduceNsBox->setCurrentIndex(ui->reduceNsBox->currentIndex()+1); //generality
+        if(!ui->reduceChannelsComboBox->currentText().contains("NoEyes", Qt::CaseInsensitive)) ui->reduceChannelsComboBox->setCurrentIndex(ui->reduceChannelsComboBox->currentIndex()+1); //generality
 //        helpString = ExpName.append("_ec.edf");
     }
 
 
-    if(ui->chRdcBox->isChecked()) reduceChannelsFast();
+    if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
 
     if(ui->sliceWithMarkersCheckBox->isChecked())
     {
@@ -2489,13 +2498,13 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
 
 
-    if(ui->sliceBox->isChecked())
+    if(ui->sliceCheckBox->isChecked())
     {
         if(!ui->matiCheckBox->isChecked())
         {
 
-            QStringList list = ui->nsLine->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-            if(!QString(label[list.last().toInt() - 1]).contains("Markers") )
+            QStringList list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+            if(!QString(label[list.last().toInt() - 1]).contains("Markers") || ui->reduceChannelsCheckBox->isChecked())
             {
                 QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
                 return;
@@ -2552,7 +2561,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                 }
                 if(ui->realButton->isChecked())
                 {
-                    if(ui->reduceNsBox->currentText().contains("MichaelBak"))
+                    if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak"))
                     {
                         sliceBak(1, 60, "241");
                         sliceBak(61, 120, "247");
@@ -2841,7 +2850,7 @@ void MainWindow::slice(int marker1, int marker2, QString marker) //beginning - f
     cout << "solveTime " << marker.toStdString() << " =" << solveTime << endl << endl;
 
     FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
-    if(ui->eyesBox->isChecked()) fprintf(res, "solve time %s \t %lf \n", marker.toStdString().c_str(), solveTime);
+    if(ui->eyesCleanCheckBox->isChecked()) fprintf(res, "solve time %s \t %lf \n", marker.toStdString().c_str(), solveTime);
     fclose(res);
 }
 
@@ -3534,12 +3543,12 @@ void MainWindow::eyesFast()  //generality
 
     if(ui->enRadio->isChecked())
     {
-        if(ui->reduceNsBox->currentText().contains("MichaelBak"))  //generality
+        if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak"))  //generality
         {
             a[0]=22; //NumOfEEg channel for En (19 EEG, A1-A2, A1-N, ECG, Eog1, Eog2) //generality
             a[1]=23;
         }
-        else if(ui->reduceNsBox->currentText().contains("MyCurrent") || ui->reduceNsBox->currentText().contains("Mati", Qt::CaseInsensitive))
+        else if(ui->reduceChannelsComboBox->currentText().contains("MyCurrent") || ui->reduceChannelsComboBox->currentText().contains("Mati", Qt::CaseInsensitive))
         {
             //my current
             a[0]=21; //NumOfEEg channel for En (19 EEG, A1-A2, A1-N, Eog1, Eog2) //generality
@@ -3593,7 +3602,7 @@ void MainWindow::countSpectra()
 
 void MainWindow::reduceChannels()
 {
-    helpString=ui->nsLine->text();
+    helpString=ui->reduceChannelsLineEdit->text();
 
     int *num = new int[maxNs];
     FILE * file;
@@ -3671,7 +3680,7 @@ void MainWindow::reduceChannels()
 
 void MainWindow::reduceChannelsFast()
 {
-    QStringList list = ui->nsLine->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    QStringList list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
 
 
     double ** temp = new double *[ns];
@@ -3907,10 +3916,16 @@ double * randomVector(int ns)
 
 void MainWindow::constructEDF()
 {
+    readData(); // needed?
+    //all bounded to nsLine
+
+    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    ns = lst.length();
+
     double ** newData = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-        newData[i] = new double [ndr*nr[i]]; //generality, maybe bad nr from other channel?
+        newData[i] = new double [ndr*nr[0]];  //generality, maybe bad nr from other channel?
     }
 
     dir->cd("Realisations");
@@ -3944,8 +3959,8 @@ void MainWindow::constructEDF()
 
     cout << "construct EDF: Initial NumOfSlices = " << ndr*ddr*nr[0] << endl;
     cout << "construct EDF: NumOfSlices to write = " << currSlice << endl;
-    helpString = ExpName.append("_clean.edf");
-    writeEdf(edf, newData, helpString, nsB, currSlice);
+    helpString = ExpName.append("_new.edf");
+    writeEdf(edf, newData, helpString, currSlice);
 
     for(int i = 0; i < nsB; ++i)
     {
@@ -3955,9 +3970,36 @@ void MainWindow::constructEDF()
 }
 
 
-void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int indepNum, int numSlices)
+void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int numSlices)
 {
+    //    8 ascii : version of this data format (0)
+    //    80 ascii : local patient identification (mind item 3 of the additional EDF+ specs)
+    //    80 ascii : local recording identification (mind item 4 of the additional EDF+ specs)
+    //    8 ascii : startdate of recording (dd.mm.yy) (mind item 2 of the additional EDF+ specs)
+    //    8 ascii : starttime of recording (hh.mm.ss)
+    //    8*3 + 80*2 = 184
+    //    8 ascii : number of bytes in header record
+    //    44 ascii : reserved
+    //    184 + 8 + 44 = 236
+    //    8 ascii : number of data records (-1 if unknown, obey item 10 of the additional EDF+ specs)
+    //    8 ascii : duration of a data record, in seconds
+    //    4 ascii : number of signals (ns) in data record
+    //    236 + 8 + 8 + 4 = 256
 
+    //    ns * 16 ascii : ns * label (e.g. EEG Fpz-Cz or Body temp) (mind item 9 of the additional EDF+ specs)
+    //    ns * 80 ascii : ns * transducer type (e.g. AgAgCl electrode)
+    //    ns * 8 ascii : ns * physical dimension (e.g. uV or degreeC)
+    //    ns * 8 ascii : ns * physical minimum (e.g. -500 or 34)
+    //    ns * 8 ascii : ns * physical maximum (e.g. 500 or 40)
+    //    ns * 8 ascii : ns * digital minimum (e.g. -2048)
+    //    ns * 8 ascii : ns * digital maximum (e.g. 2047)
+    //    ns * 80 ascii : ns * prefiltering (e.g. HP:0.1Hz LP:75Hz)
+    //    ns * 8 ascii : ns * nr of samples in each data record
+    //    ns * 32 ascii : ns * reserved
+    //    16 + 80 + 8 + 8 + 8 + 8 + 8 + 80 + 8 + 32 = 256
+
+
+    //all bounded to nsLine
     char *helpCharArr = new char[50];
     char helpChar;
     int bytes;
@@ -3967,7 +4009,19 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
     FILE *edfNew;
 
 
+    lst.clear();
+    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    int newNs = lst.length();
+    cout << "writeEDF: newNs = " << newNs << endl;
+    for(int i = 0; i < newNs; ++i)
+    {
+        cout << lst[i].toStdString() << " ";
+    }
+    cout << endl;
+
+
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(fileName));
+    cout << "writeEDF: output path = " << helpString.toStdString() << endl;
     edfNew = fopen(helpString.toStdString().c_str(), "w");
 
     //header read
@@ -3981,12 +4035,17 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
     for(int i = 0; i < 8; ++i)
     {
         fscanf(edf, "%c", &helpCharArr[i]);
-        fprintf(edfNew, "%c", helpCharArr[i]);
     }
-    bytes=atoi(helpCharArr);
+    bytes = atoi(helpCharArr);
 
+    bytes = 256 * (newNs + 1);
 
-
+    helpString = QString::number(bytes);
+    for(int i = helpString.length(); i < 8; ++i)
+    {
+        helpString.append(' ');
+    }
+    fprintf(edfNew, "%s", helpString.toStdString().c_str());
 
     //"reserved"
     for(int i = 0; i < 44; ++i)
@@ -4004,7 +4063,6 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
     for(int i = 0; i < 8; ++i)
     {
         fscanf(edf, "%c", &helpCharArr[i]);
-//        fprintf(edfNew, "%c", helpCharArr[i]);
     }
     ndr=atoi(helpCharArr);//NumberOfDataRecords
 
@@ -4012,7 +4070,6 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
     for(int i = 0; i < 8; ++i)
     {
         fscanf(edf, "%c", &helpCharArr[i]);
-//        fprintf(edfNew, "%c", helpCharArr[i]);
     }
     ddr=atoi(helpCharArr); //generality double ddr
 
@@ -4021,12 +4078,10 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
     helpString = QString::number(ndr);
     for(int i = helpString.length(); i < 8; ++i)
     {
-        helpString.prepend(' ');
+        helpString.append(' ');
     }
-    for(int i = 0; i < 8; ++i)
-    {
-        fprintf(edf, "%c", helpString.toStdString().c_str()[i]); //ndr
-    }
+    fprintf(edfNew, "%s", helpString.toStdString().c_str());
+
     for(int i = 0; i < 8; ++i)
     {
         fprintf(edfNew, "%c", helpCharArr[i]); //ddr
@@ -4036,22 +4091,18 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
 
 
 
-
-
-
-
     for(int i = 0; i < 4; ++i)
     {
         fscanf(edf, "%c", &helpCharArr[i]);
-        fprintf(edfNew, "%c", helpCharArr[i]);
     }
-    ns=atoi(helpCharArr);                        //Number of channels
-    cout << "ns = " << ns << endl;
+    ns = atoi(helpCharArr);                        //Number of channels
 
-
-
-
-
+    helpString = QString::number(newNs);
+    for(int i = helpString.length(); i < 4; ++i)
+    {
+        helpString.append(' ');
+    }
+    fprintf(edfNew, "%s", helpString.toStdString().c_str());
 
 
 //    //labels
@@ -4060,73 +4111,97 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
 //    {
 //        label_[i] = new char [16];
 //    }
-//    for(int i = 0; i < ns*16; ++i)                      //label read
-//    {
-//        fscanf(edf, "%c", &label_[i/16][i%16]);
+
+    for(int i = 0; i < ns*16; ++i)                      //label read
+    {
+        fscanf(edf, "%*c");
 //        fprintf(edfNew, "%c", label_[i/16][i%16]);
 //        if(i%16==15) label_[i/16][i%16]='\0';
-//    }
+    }
 
     //better labels
-    lst.clear();
-    lst = ui->nsLine->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < indepNum; ++i)
+    for(int i = 0; i < newNs; ++i)
     {
-        cout << label[lst[i].toInt() - 1] << endl;
-        for(int j = 0; j < 16; ++j)
-        {
-            fprintf(edfNew, "%c", label[lst[i].toInt() - 1][j]);
-        }
+//        cout << label[lst[i].toInt() - 1] << endl;
+        fprintf(edfNew, "%s", label[lst[i].toInt() - 1]);
     }
     helpString=dir->absolutePath().append(QDir::separator()).append("labels.txt");
     FILE * labels=fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
-    for(int i = 0; i < indepNum; ++i)                         //label write in file
+    for(int i = 0; i < newNs; ++i)                         //label write in file
     {
-        fprintf(labels, "%s \n", label[lst[i].toInt() - 1]);
+        fprintf(labels, "%s\n", label[lst[i].toInt() - 1]);
     }
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        delete []label_[i];
-//    }
-//    delete []label_;
-
-
-    cout << "labels written" << endl;
-
-
-
-
-
-
-
+//    cout << "labels written" << endl;
 
     //transducer type
-    for(int i = 0; i < ns*80; ++i)                      //rest of header
+    char ** transducer = new char * [ns];
+    for(int i = 0; i < ns; ++i)
     {
-        fscanf(edf, "%c", &helpChar);
-        fprintf(edfNew, "%c", helpChar);
+        transducer[i] = new char [80 + 1];
+        for(int j = 0; j < 80; ++j)
+        {
+            fscanf(edf, "%c", &transducer[i][j]);
+        }
+        transducer[i][80] = '\0';
     }
+    for(int i = 0; i < newNs; ++i)
+    {
+        fprintf(edfNew, "%s", transducer[lst[i].toInt() - 1]);
+    }
+    for(int i = 0; i < ns; ++i)
+    {
+        delete []transducer[i];
+    }
+    delete []transducer;
+
+
 
 
     //physical dimension
-    for(int i = 0; i < ns*8; ++i)                      //rest of header
+//    cout << "writeEDF: physDim = " << endl;
+    char ** physDim = new char * [ns];
+    for(int i = 0; i < ns; ++i)
     {
-        fscanf(edf, "%c", &helpChar);
-        fprintf(edfNew, "%c", helpChar);
+        physDim[i] = new char [8 + 1];
+        for(int j = 0; j < 8; ++j)
+        {
+            fscanf(edf, "%c", &physDim[i][j]);
+        }
+        physDim[i][8] = '\0';
+//        cout << physDim[i] << endl;
     }
+
+    for(int i = 0; i < newNs; ++i)
+    {
+        fprintf(edfNew, "%s", physDim[lst[i].toInt() - 1]);
+    }
+    for(int i = 0; i < ns; ++i)
+    {
+        delete []physDim[i];
+    }
+    delete []physDim;
+
 
     //physical minimum
     double *physMin;
     physMin = new double [ns];
-
     for(int i = 0; i < ns; ++i)                      //rest of header
     {
         for(int j = 0; j < 8; ++j)
         {
             fscanf(edf, "%c", &helpCharArr[j]);
-            fprintf(edfNew, "%c", helpCharArr[j]);
         }
         physMin[i]=double(atoi(helpCharArr));
+    }
+
+    for(int i = 0; i < newNs; ++i)
+    {
+        helpString = QString::number(physMin[lst[i].toInt() - 1]);
+        for(int i = helpString.length(); i < 8; ++i)
+        {
+            helpString.append(' ');
+        }
+        fprintf(edfNew, "%s", helpString.toStdString().c_str());
     }
 
     //physical maximum
@@ -4138,9 +4213,18 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
         for(int j = 0; j < 8; ++j)
         {
             fscanf(edf, "%c", &helpCharArr[j]);
-            fprintf(edfNew, "%c", helpCharArr[j]);
         }
         physMax[i]=double(atoi(helpCharArr));
+    }
+
+    for(int i = 0; i < newNs; ++i)
+    {
+        helpString = QString::number(physMax[lst[i].toInt() - 1]);
+        for(int i = helpString.length(); i < 8; ++i)
+        {
+            helpString.append(' ');
+        }
+        fprintf(edfNew, "%s", helpString.toStdString().c_str());
     }
 
     //digital minimum
@@ -4152,9 +4236,18 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
         for(int j = 0; j < 8; ++j)
         {
             fscanf(edf, "%c", &helpCharArr[j]);
-            fprintf(edfNew, "%c", helpCharArr[j]);
         }
         digMin[i]=double(atoi(helpCharArr));
+    }
+
+    for(int i = 0; i < newNs; ++i)
+    {
+        helpString = QString::number(digMin[lst[i].toInt() - 1]);
+        for(int i = helpString.length(); i < 8; ++i)
+        {
+            helpString.append(' ');
+        }
+        fprintf(edfNew, "%s", helpString.toStdString().c_str());
     }
 
     //digital maximum
@@ -4166,43 +4259,95 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
         for(int j = 0; j < 8; ++j)
         {
             fscanf(edf, "%c", &helpCharArr[j]);
-            fprintf(edfNew, "%c", helpCharArr[j]);
         }
         digMax[i]=double(atoi(helpCharArr));
     }
 
-    //prefiltering
-    for(int i = 0; i < ns*80; ++i)                      //rest of header
+    for(int i = 0; i < newNs; ++i)
     {
-        fscanf(edf, "%c", &helpChar);
-        fprintf(edfNew, "%c", helpChar);
+        helpString = QString::number(digMax[lst[i].toInt() - 1]);
+        for(int i = helpString.length(); i < 8; ++i)
+        {
+            helpString.append(' ');
+        }
+        fprintf(edfNew, "%s", helpString.toStdString().c_str());
     }
 
 
+    //prefiltering
+//    cout << "writeEDF: prefiltering = " << endl;
+    char ** prefilter = new char * [ns];
+    for(int i = 0; i < ns; ++i)
+    {
+        prefilter[i] = new char [80 + 1];
+        for(int j = 0; j < 80; ++j)
+        {
+            fscanf(edf, "%c", &prefilter[i][j]);
+        }
+        prefilter[i][80] = '\0';
+    }
+    for(int i = 0; i < newNs; ++i)
+    {
+//        cout << prefilter[lst[i].toInt() - 1] << endl;
+        fprintf(edfNew, "%s", prefilter[lst[i].toInt() - 1]);
+    }
+    for(int i = 0; i < ns; ++i)
+    {
+        delete []prefilter[i];
+    }
+    delete []prefilter;
+
 
     //number of records (nr samples in ddr seconds)
+
+//    cout << "writeEDF: nr = " << endl;
     nr = new int [ns];
     for(int i = 0; i < ns; ++i)                      //rest of header
     {
         for(int j = 0; j < 8; ++j)
         {
             fscanf(edf, "%c", &helpCharArr[j]);
-            fprintf(edfNew, "%c", helpCharArr[j]);
         }
         helpCharArr[8] = '\0';
         nr[i]=atoi(helpCharArr);
     }
-
-
-    //reserved
-    for(int i = 0; i < ns*32; ++i)                      //rest of header
+    for(int i = 0; i < newNs; ++i)
     {
-        fscanf(edf, "%c", &helpChar);
-        fprintf(edfNew, "%c", helpChar);
+        helpString = QString::number(nr[lst[i].toInt() - 1]);
+        for(int i = helpString.length(); i < 8; ++i)
+        {
+            helpString.append(' ');
+        }
+
+//        cout << nr[lst[i].toInt() - 1] << endl;
+        fprintf(edfNew, "%s", helpString.toStdString().c_str());
     }
 
 
-    for(int i = 0; i < (bytes-(ns+1)*256); ++i)                      //Neurotravel//generality//strange
+    //reserved
+    char ** reserved = new char * [ns];
+    for(int i = 0; i < ns; ++i)
+    {
+        reserved[i] = new char [32 + 1];
+        for(int j = 0; j < 32; ++j)
+        {
+            fscanf(edf, "%c", &reserved[i][j]);
+        }
+        reserved[i][32] = '\0';
+    }
+    for(int i = 0; i < newNs; ++i)
+    {
+        fprintf(edfNew, "%s", reserved[lst[i].toInt() - 1]);
+    }
+    for(int i = 0; i < ns; ++i)
+    {
+        delete []reserved[i];
+    }
+    delete []reserved;
+
+
+//    cout << "writeEDF: bytes left = " << (bytes-(newNs+1)*256) << endl;
+    for(int i = 0; i < (bytes-(newNs+1)*256); ++i)                      //Neurotravel//generality//strange
     {
         fscanf(edf, "%c", &helpChar);
         fprintf(edfNew, "%c", helpChar);
@@ -4216,67 +4361,44 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int in
 
 
     fpos_t *position = new fpos_t;
+
     fgetpos(edf, position);
     fclose(edf);
-    return;
-
-
-
-
-
-
     edf = fopen(QDir::toNativeSeparators(ui->filePath->text()).toStdString().c_str(), "rb"); //generality
     fsetpos(edf, position);
+
+//    fgetpos(edfNew, position);
+//    fclose(edfNew);
+//    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(fileName));
+//    edfNew = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "wb"); //generality
+//    fsetpos(edfNew, position);
+
     delete position;
 
-    cout << "data write start, indepNum = " << indepNum << endl;
+    cout << "data write start, newNs = " << newNs << endl;
+    int newIndex;
     if(ui->enRadio->isChecked())
     {
         for(int i = 0; i < ndr; ++i)
         {
-            for(int j = 0; j < ns; ++j) //j -> list[j].toInt()-1
+            for(int j = 0; j < newNs; ++j)
             {
-                for(int k = 0; k < nr[j]; ++k)
+                newIndex = lst[j].toInt() - 1;
+                for(int k = 0; k < nr[newIndex]; ++k)
                 {
+                    a = (short)((inData[ j ][ i * nr[newIndex] + k] - physMin[newIndex]) * (digMax[newIndex] - digMin[newIndex]) / (physMax[newIndex] - physMin[newIndex]) + digMin[newIndex]);
+                    if(j == newNs - 1 && a != 0)
+                    {
+                        cout << i*nr[newIndex] + k << "\t" << a <<endl;
+                    }
+
                     if(!ui->matiCheckBox->isChecked())
                     {
-                        fread(&a, sizeof(short), 1, edf);
-                        if(j < indepNum) //generality EEG Channels
-                        {
-                            a = (short)((inData[j][i*nr[j]+k] - physMin[j]) * (digMax[j] - digMin[j]) / (physMax[j]-physMin[j]) + digMin[j]);
-                        }
-                        if(indepNum > 19 && (j == 21 || j == 22)) //21 22 generality
-                        {
-                            a = (short)((inData[j-2][i*nr[j]+k] - physMin[j]) * (digMax[j] - digMin[j]) / (physMax[j]-physMin[j]) + digMin[j]); //-3 generality for EOG
-                        }
                         fwrite(&a, sizeof(short), 1, edfNew);
                     }
-                    else //if mati box checked
+                    else
                     {
-                        if(j != ns-1)
-                        {
-
-//                            cout << "start data\t";
-                            fread(&a, sizeof(short), 1, edf);
-                            if(j < indepNum)
-                            {
-                                a = (short)((inData[j][i*nr[j]+k] - physMin[j]) * (digMax[j] - digMin[j]) / (physMax[j]-physMin[j]) + digMin[j]);
-                            }
-                            if(indepNum > 19 && (j == 21 || j == 22)) //generality
-                            {
-                                a = (short)((inData[j-2][i*nr[j]+k] - physMin[j]) * (digMax[j] - digMin[j]) / (physMax[j]-physMin[j]) + digMin[j]); //-3 generality for EOG
-                            }
-                            fwrite(&a, sizeof(short), 1, edfNew);
-//                            cout << "end data" << endl;
-                        }
-                        else //
-                        {
-//                            cout << "start mark\t";
-                            fread(&markA, sizeof(unsigned short), 1, edf);
-//                            markA = (unsigned short)(inData[ns-1][i*nr[j]+k]);
-                            fwrite(&markA, sizeof(unsigned short), 1, edfNew); //generality
-//                            cout<< "end mark" << endl;
-                        }
+                        fwrite(&a, sizeof(unsigned short), 1, edfNew);
                     }
                 }
             }
@@ -5044,7 +5166,8 @@ void MainWindow::ICA() //fastICA
 
     FILE * edf0 = fopen(ui->filePath->text().toStdString().c_str(), "r");
     helpString = ExpName; helpString.append("_ica.edf");
-    writeEdf(edf, components, helpString, ns, ndr*nr[0]);
+    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes"); //generality
+    writeEdf(edf, components, helpString, ndr*nr[0]);
     fclose(edf0);
 
     cout << "ICA ended. Time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;

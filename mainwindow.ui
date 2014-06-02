@@ -112,7 +112,7 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <widget class="QCheckBox" name="sliceBox">
+          <widget class="QCheckBox" name="sliceCheckBox">
            <property name="text">
             <string>Slice?</string>
            </property>
@@ -126,14 +126,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="eyesBox">
+          <widget class="QCheckBox" name="eyesCleanCheckBox">
            <property name="text">
             <string>clean from eyes?</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="chRdcBox">
+          <widget class="QCheckBox" name="reduceChannelsCheckBox">
            <property name="text">
             <string>reduce channels?</string>
            </property>
@@ -218,19 +218,19 @@
       </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QPushButton" name="rdcNsButton">
+      <widget class="QPushButton" name="reduceChannesPushButton">
        <property name="text">
         <string>Reduce ns</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QComboBox" name="reduceNsBox"/>
+      <widget class="QComboBox" name="reduceChannelsComboBox"/>
      </item>
      <item row="2" column="2">
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
-        <widget class="QLineEdit" name="nsLine"/>
+        <widget class="QLineEdit" name="reduceChannelsLineEdit"/>
        </item>
        <item>
         <widget class="QComboBox" name="rdcChannelBox"/>

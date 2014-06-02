@@ -95,7 +95,7 @@ public:
     void sliceMati(int numChanWrite);
     void visualisation();
     void kernelest(const QString &str);
-    void writeEdf(FILE * edf, double ** components, QString fileName, int indepNum, int numSlices);
+    void writeEdf(FILE * edf, double ** components, QString fileName, int numSlices);
     void sliceOneByOne();
     void sliceOneByOneNew(int numChanWrite);
     void drawMap(double ** matrixA, int num);
