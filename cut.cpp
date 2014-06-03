@@ -1184,15 +1184,15 @@ void Cut::prev()
 
 void Cut::zero()
 {
-    int h=0;
+    int h = 0;
     for(int i=int(leftLimit*NumOfSlices/ui->picLabel->width()); i<int(rightLimit*NumOfSlices/ui->picLabel->width()); ++i)         //zoom
     {
-        for(int k=0; k<ns; ++k)
+        for(int k = 0; k < ns; ++k)
         {
-            if(data3[k][i]==0.) h+=1;
-            data3[k][i]=0.;
+            if(data3[k][i] == 0.) h += 1;
+            if(!(ns == 20 && k == ns-1) ) data3[k][i] = 0.; //generality
         }
-        if(h < ns) Eyes+=1;      //generality if there are channel with non-zero values
+        if(h < ns) Eyes += 1;      //generality if there are channel with non-zero values
     }
 
     this->ui->spinBox->setValue(NumOfSlices-Eyes);
@@ -1309,9 +1309,9 @@ void Cut::rewrite()
     fprintf(file, "NumOfSlices %d \n", NumOfSlices);
 //    fprintf(file, "NumOfSlicesEyesCut %d \n", Eyes);
 
-    for(int i=0; i<NumOfSlices; ++i)         //saved BY SLICES!!
+    for(int i = 0; i < NumOfSlices; ++i)         //saved BY SLICES!!
     {
-        for(int k=0; k<ns; ++k)
+        for(int k = 0; k < ns; ++k)
         {
             fprintf(file, "%lf\n", data3[k][i]);
         }
@@ -1333,6 +1333,10 @@ void Cut::rewrite()
     if(ns==21)
     {
         helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Signals").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"));
+    }
+    else
+    {
+        helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Signals").append(QDir::separator()).append("other").append(QDir::separator()).append(fileName).append(".jpg"));
     }
 //         helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append(fileName).append(".jpg"));
     currentPic.save(helpString, 0 ,100);

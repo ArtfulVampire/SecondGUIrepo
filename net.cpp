@@ -15,7 +15,6 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     this->setWindowTitle("Net");
     ExpName = ExpName_;
-    myTime.start();
 
     weight = 0;
     dimensionality = 0;
@@ -275,7 +274,8 @@ void Net::setAutoProcessingFlag(bool a)
 
 void Net::autoClassification(QString spectraDir)
 {
-    myTime.restart();
+    QTime myTime;
+    myTime.start();
     numOfTall = 0;
 
     if(loadPAflag  != 1)
@@ -692,7 +692,6 @@ void Net::saveWts()
         }
         fprintf(weights, "\r\n");
     }
-
     fclose(weights);
 }
 
@@ -700,7 +699,8 @@ void Net::saveWts()
 
 void Net::reset()
 {
-    srand(myTime.currentTime().msec());
+
+    srand(QTime::currentTime().msec());
     for(int i = 0; i < numOfLayers - 1; ++i)
     {
         for(int j = 0; j < dimensionality[i] + 1; ++j) //
@@ -1148,7 +1148,8 @@ const char *  errorMessage(int err_)
 void Net::leaveOneOutCL()
 {
 
-    myTime.restart();
+    QTime myTime;
+    myTime.start();
     cout << "leaveOneOutCL started" << endl;
     NumberOfErrors = new int[NumOfClasses];
     helpString = "";
@@ -1729,8 +1730,8 @@ void Net::leaveOneOutCL()
 
 void Net::leaveOneOut()
 {
-
-    myTime.restart();
+    QTime myTime;
+    myTime.start();
 
     srand(myTime.currentTime().msec() * (myTime.currentTime().msec() +13));
 
@@ -1933,9 +1934,10 @@ void Net::PaIntoMatrix()
         QMessageBox::information((QWidget * )this, tr("Information"), tr("No file was chosen"), QMessageBox::Ok);
         return;
     }
-    myTime.restart();
+//    QTime myTime;
+//    myTime.start();
     readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
-//    cout << "PaRead: " << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+//    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 }
 
@@ -1949,10 +1951,10 @@ void Net::PaIntoMatrixByName(QString fileName)
     }
     helpString = dirBC->absolutePath() + QDir::separator() + "PA" + QDir::separator() + fileName + ".pa";
     paFileBC = helpString;
-
-    myTime.restart();
+//    QTime myTime;
+//    myTime.start();
     readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
-//    cout << "PaRead: " << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+//    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 }
 
 double HopfieldActivation(double x, double temp)
@@ -2354,8 +2356,10 @@ void Net::methodSetParam(int a)
 
 void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int numOfLayers, int * dimensionality) //data[NumOfVectors][dimensionality[0]]. dimensionality doesn't include bias
 {
+    QTime myTime;
+    myTime.start();
     srand(myTime.currentTime().msec() * (myTime.currentTime().msec() +13));
-    myTime.restart();
+
 
 
     double ** deltaWeights = new double * [numOfLayers]; // 0 - unused for lowest layer

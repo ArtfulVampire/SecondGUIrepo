@@ -103,8 +103,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QTime myTime;
-    time_t duration;
     QVariant var;
     FILE *edf;
     QDir *dir;

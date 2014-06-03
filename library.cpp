@@ -226,25 +226,41 @@ double enthropy(double *arr, int N, QString picPath, int numOfRanges) // ~30 is 
 }
 
 //matrix product B = A * B
-void matrixProduct(double ** A, double ** B, int dim)
+void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL)
 {
-    double * temp = new double [dim];
-    for(int j = 0; j < dim; ++j)
+      double result;
+//    double ** result = new double * [dimH];
+//    for(int i = 0; i < dimH; ++i)
+//    {
+//        result[i] = new double [dimL];
+//    }
+    for(int j = 0; j < dimL; ++j)
     {
-        for(int i = 0; i < dim; ++i)
+        for(int i = 0; i < dimH; ++i)
         {
-            temp[i] = 0.;
-            for(int k = 0; k<dim; ++k)
+//            result[i][j] = 0.;
+            result = 0.;
+            for(int k = 0; k < dimH; ++k)
             {
-                temp[i] += A[i][k] * B[k][j];
+//                result[i][j] += A[i][k] * B[k][j];
+                result += A[i][k] * B[k][j];
             }
-        }
-        for(int i = 0; i < dim; ++i)
-        {
-            B[i][j] = temp[i];
+            (*out)[i][j] = result;
         }
     }
-    delete [] temp;
+    for(int j = 0; j < dimL; ++j)
+    {
+        for(int i = 0; i < dimH; ++i)
+        {
+//            out[i][j] = result[i][j];
+        }
+    }
+
+//    for(int i = 0; i < dimH; ++i)
+//    {
+//        delete []result[i];
+//    }
+//    delete []result;
 }
 
 
@@ -487,10 +503,6 @@ double *hilbert(double * arr, int fftLen, double sampleFreq, double lowFreq, dou
     delete pnt;
     //end check draw
 */
-
-
-
-
     return spectre;
 }
 
@@ -996,7 +1008,7 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
 {
 //    int NetLength = ns*spLength;
     ifstream paSrc(paFile.toStdString().c_str());
-    if(!paSrc.good())
+    if(!paSrc.is_open())
     {
         cout << "bad Pa File" << endl;
         return;
@@ -1069,4 +1081,18 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
     (*NumberOfVectors) = num;
 }
 
+void readICAMatrix(QDir * dir, double *** matrixA)
+{
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("maps.txt"));
+    FILE * map = fopen(helpString.toStdString().c_str(), "r");
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            fscanf(map, "%.3lf\t", &((*matrixA)[i][j]));
+        }
+    }
+    fclose(map);
+
+}
 

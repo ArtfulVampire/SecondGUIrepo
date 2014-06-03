@@ -58,7 +58,6 @@ MainWindow::MainWindow() :
 
     NumOfEdf = 0; //for EDF cut
 
-    myTime.start();
 
     paint = new QPainter();
 
@@ -1067,7 +1066,8 @@ void MainWindow::drawEeg(double **dataD_, double startTime, double endTime, QStr
 void MainWindow::drawRealisations()
 {
 
-    duration = time(NULL);
+    QTime myTime;
+    myTime.start();
     ui->progressBar->setValue(0);
     double **dataD = new double * [ns];
     int Eyes;
@@ -1189,10 +1189,9 @@ void MainWindow::drawRealisations()
 
     ui->progressBar->setValue(0);
 
-    duration = time(NULL) - duration;
-    cout << "Duration of DrawRealisations = " << duration << " sec" << endl;
+    cout << "DrawRealisations: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 
-    helpString.setNum(int(duration));
+    helpString.setNum(myTime.elapsed()/1000.);
     helpString.prepend("Signals drawn \nTime = ");
     helpString.append(" sec");
     stopFlag = 0;
@@ -1203,7 +1202,8 @@ void MainWindow::diffSmooth()
 {
     Spectre *sp;
     Net * ANN;
-    duration = time(NULL);
+    QTime myTime;
+    myTime.start();
     for(int i = 10; i <= 100; i += 10)
     {
         sp = new Spectre(dir, ns, ExpName);
@@ -1223,8 +1223,7 @@ void MainWindow::diffSmooth()
         sleep(60);
 
     }
-    duration = time(NULL) - duration;
-    cout << "Duration of diffSmooth = " << duration << " sec" << endl;
+    cout << "diffSmooth: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 
@@ -1731,9 +1730,7 @@ void MainWindow::readData()
                         {
                             fread(&markA, sizeof(unsigned short), 1, edf);
                             data[j][i*nr[j]+k] = markA;
-                        }
-                        if(j == ns-1)
-                        {
+
 //                            a += (a<0)*65536;
 //                            data[j][i*nr[j]+k] = a + (a<0)*65536;
 
@@ -1755,7 +1752,7 @@ void MainWindow::readData()
 
                                 if(byteMarker[15] || byteMarker[7])
                                 {
-                                    for(int h = 0; h < 8; ++h)
+                                    for(int h = 0; h < 8; ++h) //swap bytes if wrong order
                                     {
                                         boolBuf = byteMarker[h];
                                         byteMarker[h] = byteMarker[h+8];
@@ -2166,7 +2163,8 @@ void MainWindow::sliceWindFromReal()
 {
 
     int eyesCounter;
-    duration = time(NULL);
+    QTime myTime;
+    myTime.start();
     FILE *real;
     FILE *out;
     dir->cd("Realisations");
@@ -2299,10 +2297,9 @@ void MainWindow::sliceWindFromReal()
     helpString.append(QString::number(ns));
     ui->textEdit->append(helpString);
 
-    duration = time(NULL) - duration;
-    cout << "Duration of WindRealSlice = " << duration << " sec" << endl;
+    cout << "WindFromReals: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 
-    helpString.setNum(int(duration));
+    helpString.setNum(myTime.elapsed()/1000.);
     helpString.prepend("Data sliced \nTime = ");
     helpString.append(" sec");
     //automatization
@@ -2470,7 +2467,8 @@ void MainWindow::makeTestData()
 
 void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 {
-    duration=time(NULL);
+    QTime myTime;
+    myTime.start();
     int marker=254;
     int markerFlag = 0;
     int numChanToWrite = -1;
@@ -2504,7 +2502,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
         {
 
             QStringList list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-            if(!QString(label[list.last().toInt() - 1]).contains("Markers") || ui->reduceChannelsCheckBox->isChecked())
+            if(!QString(label[list.last().toInt() - 1]).contains("Markers") && ui->reduceChannelsCheckBox->isChecked())
             {
                 QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
                 return;
@@ -2637,10 +2635,10 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     helpString.append(QString::number(ns));
     ui->textEdit->append(helpString);
 
-    duration = time(NULL) - duration;
-    cout << "Duration of SliceAll = " << duration << " sec" << endl;
+    cout << "SliceAll: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 
-    helpString.setNum(int(duration));
+
+    helpString.setNum(myTime.elapsed()/1000.);
     helpString.prepend("Data sliced \nTime = ");
     helpString.append(" sec");
     //automatization
@@ -3954,7 +3952,6 @@ void MainWindow::constructEDF()
 
 
     int nsB = ns;
-    cout<<ns<<endl;
 
 
     cout << "construct EDF: Initial NumOfSlices = " << ndr*ddr*nr[0] << endl;
@@ -3997,6 +3994,8 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     //    ns * 8 ascii : ns * nr of samples in each data record
     //    ns * 32 ascii : ns * reserved
     //    16 + 80 + 8 + 8 + 8 + 8 + 8 + 80 + 8 + 32 = 256
+    QTime myTime;
+    myTime.start();
 
 
     //all bounded to nsLine
@@ -4096,6 +4095,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
         fscanf(edf, "%c", &helpCharArr[i]);
     }
     ns = atoi(helpCharArr);                        //Number of channels
+    cout << "writeEDF: oldNs = " << ns << endl;
 
     helpString = QString::number(newNs);
     for(int i = helpString.length(); i < 4; ++i)
@@ -4377,6 +4377,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
 
     cout << "data write start, newNs = " << newNs << endl;
     int newIndex;
+
     if(ui->enRadio->isChecked())
     {
         for(int i = 0; i < ndr; ++i)
@@ -4386,24 +4387,23 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
                 newIndex = lst[j].toInt() - 1;
                 for(int k = 0; k < nr[newIndex]; ++k)
                 {
-                    a = (short)((inData[ j ][ i * nr[newIndex] + k] - physMin[newIndex]) * (digMax[newIndex] - digMin[newIndex]) / (physMax[newIndex] - physMin[newIndex]) + digMin[newIndex]);
-                    if(j == newNs - 1 && a != 0)
+                    a = (short)((inData[ j ][ i * nr[newIndex] + k ] - physMin[newIndex]) * (digMax[newIndex] - digMin[newIndex]) / (physMax[newIndex] - physMin[newIndex]) + digMin[newIndex]);
+//                    if(j == newNs - 1 && a != 0)
+//                    {
+//                        cout << i*nr[newIndex] + k << "\t" << a <<endl;
+//                    }
+                    if(ui->matiCheckBox->isChecked() && j == newNs-1)
                     {
-                        cout << i*nr[newIndex] + k << "\t" << a <<endl;
-                    }
-
-                    if(!ui->matiCheckBox->isChecked())
-                    {
-                        fwrite(&a, sizeof(short), 1, edfNew);
+                        fwrite(&a, sizeof(unsigned short), 1, edfNew);
                     }
                     else
                     {
-                        fwrite(&a, sizeof(unsigned short), 1, edfNew);
+                        fwrite(&a, sizeof(short), 1, edfNew);
                     }
                 }
             }
         }
-        cout << "staSlice=" << staSlice << " staTime=" << staSlice/250. << endl;
+//        cout << "staSlice=" << staSlice << " staTime = " << staSlice/250. << endl;
     }
     delete [] helpCharArr;
     fclose(labels);
@@ -4416,7 +4416,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     delete [] digMin;
     delete [] digMax;
 
-    cout << "EDF constructed" <<endl;
+    cout << "EDF constructed: ime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 
@@ -4428,13 +4428,16 @@ void MainWindow::ICA() //fastICA
     //count components matrixW*data and write to ExpName_ICA.edf
     //count inverse matrixW^-1 and draw maps of components
     //write automatization for classification different sets of components, find best set, explain
-    myTime.restart();
+    QTime wholeTime;
+    wholeTime.start();
+    QTime myTime;
+    myTime.start();
 
     readData();
-    ns = ui->numOfIcSpinBox->value();
+    ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
 
     double eigenValuesTreshold = pow(10., -ui->svdDoubleSpinBox->value());
-    double vectorWTreshold = pow(10., -ui->vectwDoubleSpinBox->value());;
+    double vectorWTreshold = pow(10., -ui->vectwDoubleSpinBox->value());
 
     int fr = nr[0];
 
@@ -4482,16 +4485,65 @@ void MainWindow::ICA() //fastICA
     double * tempVector = new double [ns];
 
     //components time-flow
-    double ** components = new double * [ns];
-    for(int i = 0; i < ns; ++i)
+    double ** components = new double * [ns + 1]; //+1 for markers channel
+    for(int i = 0; i < ns + 1; ++i)
     {
         components[i] = new double [ndr*fr];
     }
+    double ** dataICA;
+    double * averages;
+    double * eigenValues;
+    double ** eigenVectors;
+    double * tempA;
+    double * tempB;
 
+//    inline void clearMem()
+//    {
+//        for(int i = 0; i < ns; ++i)
+//        {
+//            delete [] covMatrix[i];
+//            delete [] centeredMatrix[i];
+//            delete [] eigenVectors[i];
+//            delete [] vectorW[i];
+//            delete [] matrixA[i];
+//            delete [] components[i];
+//            delete [] dataICA[i];
+//        }
+//        delete [] centeredMatrix;
+//        delete [] covMatrix;
+//        delete [] eigenVectors;
+//        delete [] averages;
+//        delete [] eigenValues;
+//        delete [] tempA;
+//        delete [] tempB;
+//        delete [] vector1;
+//        delete [] vector2;
+//        delete [] vector3;
+//        delete [] vectorOld;
+//        delete [] tempVector;
+//        delete [] vectorW;
+//        delete [] matrixA;
+//        delete [] components[ns];
+//        delete [] components;
+//        delete [] dataICA;
+//    };
+
+
+
+    int numOfMark = 0;
+    while(1)
+    {
+        if(QString(label[numOfMark]).contains("Markers")) break;
+        ++numOfMark;
+    }
+    for(int i = 0; i < ndr*fr; ++i)
+    {
+        components[ns][i] = data[numOfMark][i];
+    }
 
     //count covariations
     //count averages
-    double * averages = new double [ns];
+    averages = new double [ns];
     for(int i = 0; i < ns; ++i)
     {
 //        averages[i] = 0.;
@@ -4525,7 +4577,7 @@ void MainWindow::ICA() //fastICA
                 covMatrix[i][j] += data[i][k] * data[j][k];
             }
             //should norm!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-            covMatrix[i][j] /= (ndr*fr - 1);
+            covMatrix[i][j] /= (ndr*fr); //should be -1 ?
         }
     }
     cout << "covMatrix counted" << endl;
@@ -4535,21 +4587,21 @@ void MainWindow::ICA() //fastICA
     {
         for(int j = 0; j < ns; ++j)
         {
-            if(covMatrix[i][j]!=covMatrix[j][i]) cout << i << " " << j << " warning" << endl;
+            if(covMatrix[i][j] != covMatrix[j][i]) cout << i << " " << j << " warning" << endl;
         }
     }
 
 
     //count eigenvalues & eigenvectors of covMatrix
-    double * eigenValues = new double [ns];
-    double ** eigenVectors = new double * [ns]; //vector is a coloumn
+    eigenValues = new double [ns];
+    eigenVectors = new double * [ns]; //vector is a coloumn
     for(int j = 0; j < ns; ++j)
     {
         eigenVectors[j] = new double [ns];
     }
 
-    double * tempA = new double [ns]; //i
-    double * tempB = new double [ndr*fr]; //j
+    tempA = new double [ns]; //i
+    tempB = new double [ndr*fr]; //j
     double sum1, sum2; //temporary help values
     double dF, F;
     int counter;
@@ -4567,7 +4619,7 @@ void MainWindow::ICA() //fastICA
 
 
     //array for components
-    double ** dataICA = new double * [ns];
+    dataICA = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
         dataICA[i] = new double [ndr*fr];
@@ -4686,6 +4738,7 @@ void MainWindow::ICA() //fastICA
                     delete [] tempVector;
                     delete [] vectorW;
                     delete [] matrixA;
+                    delete [] components[ns];
                     delete [] components;
                     delete [] dataICA;
 
@@ -4812,7 +4865,6 @@ void MainWindow::ICA() //fastICA
 //    }
 
     //count linear decomposition on PCAs
-
     for(int j = 0; j < ndr*fr; ++j) //columns initData
     {
         for(int i = 0; i < ns; ++i) //rows tempMatrix
@@ -4825,7 +4877,6 @@ void MainWindow::ICA() //fastICA
             components[i][j] = sum1;
         }
     }
-
 
 
     for(int j = 0; j < ndr*fr; ++j) //columns X
@@ -4918,7 +4969,7 @@ void MainWindow::ICA() //fastICA
             sum2 = sqrt(sum2);
             ++counter;
             if(sum2 < vectorWTreshold) break;
-            if(counter == 250) break;
+            if(counter == 300) break;
 
             qApp->processEvents();
             if(stopFlag == 1)
@@ -4952,6 +5003,7 @@ void MainWindow::ICA() //fastICA
                     delete [] tempVector;
                     delete [] vectorW;
                     delete [] matrixA;
+                    delete [] components[ns];
                     delete [] components;
                     delete [] dataICA;
 
@@ -4959,7 +5011,7 @@ void MainWindow::ICA() //fastICA
                 return;
             }
         }
-        cout << "\t" << counter << "\t" << myTime.elapsed()/1000. << " sec" << endl;
+        cout << "\t" << counter << "\terror = " << sum2 << "\t" << myTime.elapsed()/1000. << " sec" << endl;
 
     }
     cout << "VectorsW counted" << endl;
@@ -4995,19 +5047,19 @@ void MainWindow::ICA() //fastICA
 
 
     //count components
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            sum1 = 0.;
-            for(int k = 0; k < ns; ++k)
-            {
-                sum1 += vectorW[i][k] * dataICA[k][j]; //initial
-            }
-            components[i][j] = sum1;
-        }
-    }
-
+    matrixProduct(vectorW, dataICA, components, ns, ndr*fr);
+//    for(int i = 0; i < ns; ++i)
+//    {
+//        for(int j = 0; j < ndr*fr; ++j)
+//        {
+//            sum1 = 0.;
+//            for(int k = 0; k < ns; ++k)
+//            {
+//                sum1 += vectorW[i][k] * dataICA[k][j]; //initial
+//            }
+//            components[i][j] = sum1;
+//        }
+//    }
 
 
     //count full mixing matrix A = E * D^0.5 * Et * Wt
@@ -5019,6 +5071,7 @@ void MainWindow::ICA() //fastICA
             matrixA[i][k] = vectorW[k][i]; //A = Wt
         }
     }
+
     for(int i = 0; i < ns; ++i)
     {
         for(int k = 0; k < ns; ++k)
@@ -5041,6 +5094,7 @@ void MainWindow::ICA() //fastICA
             matrixA[i][k] *= sqrt(eigenValues[i]);//A = D^0.5 * Et * Wt
         }
     }
+
     for(int i = 0; i < ns; ++i)
     {
         for(int k = 0; k < ns; ++k)
@@ -5059,7 +5113,7 @@ void MainWindow::ICA() //fastICA
 
 
     //test matrix A
-
+/*
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ndr*fr; ++j)
@@ -5076,6 +5130,7 @@ void MainWindow::ICA() //fastICA
         }
     }
 
+*/
 
 
 //    //norm components - by 1-length vector of mixing matrix
@@ -5166,11 +5221,11 @@ void MainWindow::ICA() //fastICA
 
     FILE * edf0 = fopen(ui->filePath->text().toStdString().c_str(), "r");
     helpString = ExpName; helpString.append("_ica.edf");
-    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes"); //generality
+//    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes"); //generality
     writeEdf(edf, components, helpString, ndr*nr[0]);
     fclose(edf0);
 
-    cout << "ICA ended. Time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "ICA ended. Time elapsed = " << wholeTime.elapsed()/1000. << " sec" << endl;
 
 
     ns = ui->numOfIcSpinBox->value();
@@ -5195,6 +5250,7 @@ void MainWindow::ICA() //fastICA
     delete [] tempVector;
     delete [] vectorW;
     delete [] matrixA;
+    delete [] components[ns];
     delete [] components;
     delete [] dataICA;
 }

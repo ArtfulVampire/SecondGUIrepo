@@ -53,12 +53,15 @@ void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlice
 void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices);
 void readSpectraFile(QString filename, double ** outData, int ns, int spLength);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
+void readICAMatrix(QDir * dir, double *** matrixA, int ns);
 
 void calcSpectre(double ** inData, double ** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth);
 
 
 double distance(double * vec1, double * vec2, int dim);
-void matrixProduct(double ** A, double ** B, int dim);  //matrix product B = A * B
+void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL);  //matrix product = A(H*H) * B(H*L)
+
+
 
 
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
