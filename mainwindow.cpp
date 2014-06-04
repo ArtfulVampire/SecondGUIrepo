@@ -279,7 +279,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->avTimeButton, SIGNAL(clicked()), this, SLOT(avTime()));
 
-    QObject::connect(ui->icaButton, SIGNAL(clicked()), this, SLOT(ICA()));
+    QObject::connect(ui->icaPushButton, SIGNAL(clicked()), this, SLOT(ICA()));
 
     QObject::connect(ui->constructEdfButton, SIGNAL(clicked()), this, SLOT(constructEDF()));
 
@@ -290,6 +290,8 @@ MainWindow::MainWindow() :
     QObject::connect(ui->BayesPushButton, SIGNAL(clicked()), this, SLOT(Bayes()));
 
     QObject::connect(ui->makeTestDataPushButton, SIGNAL(clicked()), this, SLOT(makeTestData()));
+
+    QObject::connect(ui->icaTestClassPushButton, SIGNAL(clicked()), this, SLOT(icaClassTest()));
 
     QObject::connect(ui->spocPushButton, SIGNAL(clicked()), this, SLOT(spoc()));
 /*
@@ -2644,7 +2646,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     //automatization
     if(!autoProcessingFlag)
     {
-        QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
+//        QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
     }
 }
 
@@ -5047,7 +5049,7 @@ void MainWindow::ICA() //fastICA
 
 
     //count components
-    matrixProduct(vectorW, dataICA, components, ns, ndr*fr);
+    matrixProduct(vectorW, dataICA, &components, ns, ndr*fr);
 //    for(int i = 0; i < ns; ++i)
 //    {
 //        for(int j = 0; j < ndr*fr; ++j)
@@ -5255,26 +5257,148 @@ void MainWindow::ICA() //fastICA
     delete [] dataICA;
 }
 
-double det(double ** matrix, int dim) //- bad Det
+void MainWindow::icaClassTest() //non-optimized
 {
-    double coef;
-    for(int i = 1; i < dim; ++i)
+
+    int tempIndex = -1;
+    //load ica file
+    readData();
+
+    int fr = nr[0]; // generality
+
+
+    double ** dataICA = new double * [ns]; //with markers
+    for(int i = 0; i < ns; ++i)
     {
-        for(int k = 0; k < i; ++k)
+        dataICA[i] = new double [ndr*fr];
+        for(int j = 0; j < ndr*fr; ++j)
         {
-            coef = matrix[i][k]/matrix[k][k];
-            for(int j = 0; j < dim; ++j)
-            {
-                matrix[i][j] -= coef * matrix[k][j];
-            }
+            dataICA[i][j] = data[i][j];
         }
     }
-    coef = 1.;
-    for(int i = 0; i < dim; ++i)
+    int numOfIC = ui->numOfIcSpinBox->value();
+
+    double ** matrixA = new double * [numOfIC];
+    for(int i = 0; i < ns; ++i)
     {
-        coef *= matrix[i][i];
+        matrixA[i] = new double [numOfIC];
     }
-    return coef;
+    readICAMatrix(dir, &matrixA, numOfIC);
+    matrixProduct(matrixA, dataICA, &data, numOfIC, ndr*fr);
+
+    Spectre * spectr;// = Spectre(dir, numOfIC, ExpName);
+    helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
+    Net * ANN = new Net(dir, numOfIC, left, right, spStep, ExpName);
+    helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
+    ANN->readCfgByName(helpString);
+    ANN->setReduceCoeff(5.);
+    double tempAccuracy;
+    double currentAccuracy;
+    this->ui->cleanRealisationsCheckBox->setChecked(true);
+    QList<int> thrownComp;
+    thrownComp.clear();
+
+    for(int i = 0; i < numOfIC; ++i)
+    {
+        thrownComp << i;
+    }
+    thrownComp.removeOne(1);
+    thrownComp.removeOne(2);
+    thrownComp.removeOne(4);
+    thrownComp.removeOne(5);
+    thrownComp.removeOne(8);
+    thrownComp.removeOne(9);
+    thrownComp.removeOne(14);
+    thrownComp.removeOne(15);
+    thrownComp.removeOne(16);
+    thrownComp.removeOne(17);
+
+    for(int i = 0; i < thrownComp.length(); ++i)
+    {
+        cout << thrownComp[i] << endl;
+    }
+    for(int j = 0; j < fr*ndr; ++j)
+    {
+        for(int i = 0; i < numOfIC; ++i)
+        {
+            helpDouble = 0.;
+            for(int k = 0; k < numOfIC; ++k)
+            {
+                if(!thrownComp.contains(k)) helpDouble += matrixA[i][k] * dataICA[k][j];
+            }
+            data[i][j] = helpDouble;
+        }
+    }
+
+
+
+
+    cleanDirs();
+    sliceOneByOneNew(ns-1);
+    cout << "sliced" << endl;
+    spectr = new Spectre(dir, numOfIC, ExpName);
+    cout << "spectra widget created" << endl;
+    spectr->countSpectra();
+    cout << "spectra counted" << endl;
+    ANN->autoClassificationSimple();
+    tempAccuracy = ANN->getAverageAccuracy();
+    cout << "AverageAccuracy init = " << tempAccuracy << endl;
+
+//    delete ANN;
+//    delete spectr;
+    return;
+
+    for(int j = numOfIC; j > 0; --j) //num of components left
+    {
+        tempIndex = -1;
+        for(int i = 0; i < j; ++i)
+        {
+            thrownComp.push_back(i);
+            for(int j = 0; j < fr*ndr; ++j)
+            {
+                for(int i = 0; i < numOfIC; ++i)
+                {
+                    helpDouble = 0.;
+                    for(int k = 0; k < numOfIC; ++k)
+                    {
+                        if(!thrownComp.contains(k)) helpDouble += matrixA[i][k] * dataICA[k][j];
+                    }
+                    data[i][j] = helpDouble;
+                }
+            }
+
+            cleanDirs();
+            sliceOneByOneNew(ns-1);
+            spectr->defaultState();
+            spectr->countSpectra();
+            ANN->autoClassificationSimple();
+            currentAccuracy = ANN->getAverageAccuracy();
+            cout << "AverageAccuracy " << i << " = " << currentAccuracy << endl;
+
+
+            if(currentAccuracy > tempAccuracy)
+            {
+                tempAccuracy = currentAccuracy;
+                tempIndex = i;
+            }
+            thrownComp.removeLast();
+            if(currentAccuracy > tempAccuracy + 1.) break;
+        }
+        if(tempIndex != -1) thrownComp.push_back(tempIndex);
+        else
+        {
+            cout << "optimal components set:" << "\n";
+            for(int i = 0; i < numOfIC; ++i)
+            {
+                if(!thrownComp.contains(i)) cout << i << "  ";
+            }
+            cout << "\n";
+            cout << endl;
+            break;
+        }
+    }
+    delete ANN;
+    delete spectr;
 }
 
 double objFunc(double *W_, double ***Ce_, double **Cz_, double **Cav_, double ns_, double numOfEpoches_)

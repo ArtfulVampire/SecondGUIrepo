@@ -124,6 +124,15 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     ui->lineEdit_2->setText(helpString);
 }
 
+void Spectre::defaultState()
+{
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Realisations"));
+    ui->lineEdit_1->setText(helpString);
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));   //smooth right after spectra count
+    ui->lineEdit_2->setText(helpString);
+    ui->fftComboBox->setCurrentIndex(2); //4096
+}
+
 int findChannel(int x, int y, QSize siz)
 {
     int a, b, num;

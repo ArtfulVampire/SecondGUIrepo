@@ -150,7 +150,7 @@
          <widget class="QSpinBox" name="numOfPairsBox"/>
         </item>
         <item>
-         <widget class="QSpinBox" name="rdcCoeffSpinBox"/>
+         <widget class="QDoubleSpinBox" name="rdcCoeffSpinBox"/>
         </item>
        </layout>
       </item>

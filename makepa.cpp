@@ -1686,12 +1686,12 @@ void MakePa::makePaSlot()
 //    cout<<"PA-files have been made"<<endl;
 }
 
-void MakePa::setRdcCoeff(int newCoeff)
+void MakePa::setRdcCoeff(double newCoeff)
 {
     ui->rdcCoeffBox->setValue(newCoeff);
 }
 
-int MakePa::getRdcCoeff()
+double MakePa::getRdcCoeff()
 {
     return ui->rdcCoeffBox->value();
 }

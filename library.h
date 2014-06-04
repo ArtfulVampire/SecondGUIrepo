@@ -60,6 +60,7 @@ void calcSpectre(double ** inData, double ** dataFFT, int ns, int fftLength, int
 
 double distance(double * vec1, double * vec2, int dim);
 void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL);  //matrix product = A(H*H) * B(H*L)
+double det(double ** matrix, int dim);
 
 
 

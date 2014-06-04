@@ -39,6 +39,8 @@ class Net : public QWidget
 {
     Q_OBJECT
 
+//    friend class MainWindow;
+
 public:
     explicit Net(QDir *dir_ = new QDir("/"), int ns_ = 19., int left_ = 82, int right_ = 328, double spStep_=250./4096., QString ExpName_="nobody");
     ~Net();
@@ -58,6 +60,8 @@ public:
     double mouseClick(QLabel * label, QMouseEvent * ev);
     void leaveOneOut();
     void leaveOneOutCL();
+    double getAverageAccuracy();
+    void setReduceCoeff(double coeff);
 //    void LearnNetBackPropGen();
 //    void LearnNetDelta();
 
@@ -89,7 +93,7 @@ public slots:
     void autoPCAClassification();
     void SVM();
     void Hopfield();
-    void methodSetParam(int);
+    void methodSetParam(int, bool);
     void memoryAndParamsAllocation();
     void testDistances();
     void optimizeChannelsSet();

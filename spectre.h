@@ -29,6 +29,7 @@ public:
     void setSmooth(int);
     bool eventFilter(QObject *obj, QEvent *event);
     int readFilePhase(int &num, double ***dataPhase);
+    void defaultState();
 
 
 

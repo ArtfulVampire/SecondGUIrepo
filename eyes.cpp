@@ -383,8 +383,8 @@ void Eyes::eyesProcessing()
                     }
                 }
             }
-            matrixProduct(matrixTemp, matrixInv, matrixInv, lst.length()+1, lst.length()+1);
-            matrixProduct(matrixTemp, matrix, matrix, lst.length()+1, lst.length()+1);
+            matrixProduct(matrixTemp, matrixInv, &matrixInv, lst.length()+1, lst.length()+1);
+            matrixProduct(matrixTemp, matrix, &matrix, lst.length()+1, lst.length()+1);
         }
 
         //set coeffs

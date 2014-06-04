@@ -73,9 +73,9 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->epochSpinBox->setSingleStep(50);
     ui->epochSpinBox->setValue(250);
     ui->numOfPairsBox->setMaximum(100);
-    ui->numOfPairsBox->setValue(20);
+    ui->numOfPairsBox->setValue(40);
     ui->rdcCoeffSpinBox->setMaximum(50);
-    ui->rdcCoeffSpinBox->setMinimum(1);
+    ui->rdcCoeffSpinBox->setMinimum(0.01);
     ui->rdcCoeffSpinBox->setValue(10);
 
 
@@ -154,7 +154,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
 //    QObject::connect(ui->hopfieldPushButton, SIGNAL(clicked()), this, SLOT(Hopfield()));
 
-    QObject::connect(group3, SIGNAL(buttonClicked(int)), this, SLOT(methodSetParam(int)));
+    QObject::connect(group3, SIGNAL(buttonToggled(int,bool)), this, SLOT(methodSetParam(int,bool)));
 
     QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(memoryAndParamsAllocation()));
 
@@ -163,6 +163,12 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     QObject::connect(ui->optimizeChannelsPushButton, SIGNAL(clicked()), this, SLOT(optimizeChannelsSet()));
 
     this->setAttribute(Qt::WA_DeleteOnClose);
+
+    //generality
+    helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
+    readCfgByName(helpString);
+    this->ui->deltaRadioButton->setChecked(true);
+
 }
 
 Net::~Net()
@@ -251,6 +257,8 @@ double Net::setPercentageForClean()
 
 void Net::autoClassificationSimple()
 {
+
+//    ui->deltaRadioButton->setChecked(true); //generality
     helpString.clear();
     if(ui->realsRadioButton->isChecked())
     {
@@ -420,6 +428,17 @@ void Net::autoPCAClassification()
 
 
 }
+
+double Net::getAverageAccuracy()
+{
+    return this->averageAccuracy;
+}
+
+void Net::setReduceCoeff(double coeff)
+{
+    this->ui->rdcCoeffSpinBox->setValue(coeff);
+}
+
 
 void Net::averageClassification()
 {
@@ -695,8 +714,6 @@ void Net::saveWts()
     fclose(weights);
 }
 
-
-
 void Net::reset()
 {
 
@@ -896,6 +913,7 @@ void Net::memoryAndParamsAllocation()
     //NetLength should be set
     //NumOfClasses should be set
 
+//    cout << "memoryAndParamsAllocation: before memdel" << endl;
     if((weight != NULL) && (dimensionality != NULL) && loadPAflag)
     {
         for(int i = 0; i < numOfLayers - 1; ++i)
@@ -909,6 +927,7 @@ void Net::memoryAndParamsAllocation()
         delete []weight;
         delete []dimensionality;
     }
+//    cout << "memoryAndParamsAllocation: after memdel" << endl;
 
     numOfLayers = ui->numOfLayersSpinBox->value();
     helpString = ui->dimensionalityLineEdit->text();
@@ -918,6 +937,7 @@ void Net::memoryAndParamsAllocation()
         QMessageBox::critical(this, tr("Error"), tr("Dimensionality and numOfLayers dont correspond"), QMessageBox::Ok);
         return;
     }
+//    cout << "memoryAndParamsAllocation: before dimensionality" << endl;
     dimensionality = new int [numOfLayers];
     dimensionality[0] = NetLength;
     for(int i = 1; i < numOfLayers-1; ++i)
@@ -932,15 +952,24 @@ void Net::memoryAndParamsAllocation()
     }
     dimensionality[numOfLayers-1] = NumOfClasses;
 
+//    cout << "memoryAndParamsAllocation: after dimensionality, before weight" << endl;
+
     weight = new double ** [numOfLayers - 1]; // 0 - the lowest layer
+
+//    cout << "memoryAndParamsAllocation: weight **" << endl;
     for(int i = 0; i < numOfLayers - 1; ++i)
     {
         weight[i] = new double * [dimensionality[i] + 1]; //+1 for bias
+//        cout << "memoryAndParamsAllocation: weight *" << endl;
         for(int j = 0; j < dimensionality[i] + 1; ++j) //
         {
             weight[i][j] = new double [dimensionality[i+1]];
+
         }
+//        cout << "memoryAndParamsAllocation: after weight " << endl;
     }
+
+//    cout << "memoryAndParamsAllocation: after weight" << endl;
     reset();
 
 }
@@ -2211,10 +2240,12 @@ void Net::Hopfield()
 
 }
 
-void Net::methodSetParam(int a)
+void Net::methodSetParam(int a, bool ch)
 {
-    if(a == -2)
+    if(!ch) return;
+    if(a == -2 )
     {
+        cout << "delta button pressed" << endl;
         ui->epochSpinBox->setValue(250);
         ui->tempBox->setValue(10);
         ui->learnRateBox->setValue(0.1);
@@ -2229,6 +2260,7 @@ void Net::methodSetParam(int a)
     }
     if(a == -3)
     {
+        cout << "backprop button pressed" << endl;
         ui->epochSpinBox->setValue(300);
         ui->tempBox->setValue(2);
         ui->learnRateBox->setValue(1.0);

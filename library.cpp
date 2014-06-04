@@ -228,39 +228,19 @@ double enthropy(double *arr, int N, QString picPath, int numOfRanges) // ~30 is 
 //matrix product B = A * B
 void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL)
 {
-      double result;
-//    double ** result = new double * [dimH];
-//    for(int i = 0; i < dimH; ++i)
-//    {
-//        result[i] = new double [dimL];
-//    }
+    double result;
     for(int j = 0; j < dimL; ++j)
     {
         for(int i = 0; i < dimH; ++i)
         {
-//            result[i][j] = 0.;
             result = 0.;
             for(int k = 0; k < dimH; ++k)
             {
-//                result[i][j] += A[i][k] * B[k][j];
                 result += A[i][k] * B[k][j];
             }
             (*out)[i][j] = result;
         }
     }
-    for(int j = 0; j < dimL; ++j)
-    {
-        for(int i = 0; i < dimH; ++i)
-        {
-//            out[i][j] = result[i][j];
-        }
-    }
-
-//    for(int i = 0; i < dimH; ++i)
-//    {
-//        delete []result[i];
-//    }
-//    delete []result;
 }
 
 
@@ -1081,18 +1061,40 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
     (*NumberOfVectors) = num;
 }
 
-void readICAMatrix(QDir * dir, double *** matrixA)
+void readICAMatrix(QDir * dir, double *** matrixA, int ns)
 {
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("maps.txt"));
+    QString helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("maps.txt"));
     FILE * map = fopen(helpString.toStdString().c_str(), "r");
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ns; ++j)
         {
-            fscanf(map, "%.3lf\t", &((*matrixA)[i][j]));
+            fscanf(map, "%lf", &((*matrixA)[i][j]));
         }
     }
     fclose(map);
 
 }
 
+
+double det(double ** matrix, int dim) //- bad Det
+{
+    double coef;
+    for(int i = 1; i < dim; ++i)
+    {
+        for(int k = 0; k < i; ++k)
+        {
+            coef = matrix[i][k]/matrix[k][k];
+            for(int j = 0; j < dim; ++j)
+            {
+                matrix[i][j] -= coef * matrix[k][j];
+            }
+        }
+    }
+    coef = 1.;
+    for(int i = 0; i < dim; ++i)
+    {
+        coef *= matrix[i][i];
+    }
+    return coef;
+}

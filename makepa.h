@@ -31,8 +31,8 @@ class MakePa : public QWidget
 public:
     explicit MakePa(QString spectraPath, QString ExpName_, int ns_=20, int left_=82, int right_=328, double spStep_=250./4096., QVector<int> vect_ = QVector<int> ());
     ~MakePa();
-    void setRdcCoeff(int);
-    int getRdcCoeff();
+    void setRdcCoeff(double);
+    double getRdcCoeff();
     void kernelest(double * arr, int num, QString path, double minVal, double maxVal, int numOfRanges);
     double gaussian(double x);
     double drawSamples(double * drawArray, double leftLim, double rightLim);
