@@ -680,7 +680,7 @@ void Spectre::compare()
     paint->setFont(QFont("Helvetica", 24, -1, false));
     for(int c2=0; c2<ns; ++c2)  //exept markers channel
     {
-        paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]));
+        paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]) + " " + QString::number(c2));
     }
 
     helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(ui->lineEdit_m2->text()).append(".jpg");
@@ -1174,7 +1174,7 @@ void Spectre::countSpectra()
         ui->lineEdit_m2->setText(helpString);
     }
 
-    cout << "time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "countSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 

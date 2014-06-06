@@ -12,7 +12,7 @@
 #include <QPainter>
 #include <QTimer>
 #include <QTime>
-#include"library.h"
+#include "library.h"
 
 using namespace std;
 

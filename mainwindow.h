@@ -28,6 +28,7 @@
 #include "library.h"
 #include <unistd.h>
 #include <QMessageBox>
+#include <libxml2/libxml/parser.h>
 
 using namespace std;
 

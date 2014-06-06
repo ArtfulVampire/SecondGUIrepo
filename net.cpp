@@ -73,7 +73,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->epochSpinBox->setSingleStep(50);
     ui->epochSpinBox->setValue(250);
     ui->numOfPairsBox->setMaximum(100);
-    ui->numOfPairsBox->setValue(40);
+    ui->numOfPairsBox->setValue(30);
     ui->rdcCoeffSpinBox->setMaximum(50);
     ui->rdcCoeffSpinBox->setMinimum(0.01);
     ui->rdcCoeffSpinBox->setValue(10);
@@ -494,6 +494,7 @@ void Net::averageClassification()
     fprintf(res, ")  -  %.2lf ", averagePercentage[NumOfClasses]);
     fclose(res);
     averageAccuracy = averagePercentage[NumOfClasses];
+    cout << "average accuracy = " << averageAccuracy << endl;
     delete []averagePercentage;
     delete []tempDouble;
 }

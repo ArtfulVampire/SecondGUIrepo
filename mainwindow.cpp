@@ -206,11 +206,11 @@ MainWindow::MainWindow() :
     ui->svdDoubleSpinBox->setSingleStep(0.5);
 
     ui->vectwDoubleSpinBox->setDecimals(1);
-    ui->vectwDoubleSpinBox->setMaximum(3.5);
+    ui->vectwDoubleSpinBox->setMaximum(10.0);
     ui->vectwDoubleSpinBox->setMinimum(1.5);
 //    ui->vectwDoubleSpinBox->setValue(1.5);
     ui->vectwDoubleSpinBox->setValue(3.0);
-    ui->vectwDoubleSpinBox->setSingleStep(0.1);
+    ui->vectwDoubleSpinBox->setSingleStep(0.5);
 
     ui->spocCoeffDoubleSpinBox->setMaximum(5);
     ui->spocCoeffDoubleSpinBox->setMinimum(0);
@@ -343,6 +343,33 @@ MainWindow::MainWindow() :
     */
 //    delete []array;
 //    ~MainWindow();
+
+
+//int dim = 3;
+//    double ** mat1 = crMatrix(dim, dim);
+//    double ** inv = crMatrix(dim, dim);
+
+//    mat1[0][0] = 1.;
+//    mat1[0][1] = 2.;
+//    mat1[0][2] = 5.;
+
+//    mat1[1][0] = 7.;
+//    mat1[1][1] = 3.;
+//    mat1[1][2] = -1.;
+
+//    mat1[2][0] = -2.;
+//    mat1[2][1] = 1.;
+//    mat1[2][2] = -8.;
+
+
+////    invertMatrix(mat, 2, &inv);
+//    invertMatrix2(mat1, dim, &inv);
+
+//    delMatrix(&inv, dim, dim);
+//    delMatrix(&mat1, dim, dim);
+
+
+
 
 }
 
@@ -2477,6 +2504,8 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
     readData();
 
+
+
     if(ui->eyesCleanCheckBox->isChecked())
     {
         eyesFast();
@@ -3681,6 +3710,11 @@ void MainWindow::reduceChannels()
 void MainWindow::reduceChannelsFast()
 {
     QStringList list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    if(!QString(label[list[list.length() - 1].toInt() - 1]).contains("Markers"))
+    {
+        QMessageBox::critical(this, tr("Error"), tr("bad channels list"), QMessageBox::Ok);
+        return;
+    }
 
 
     double ** temp = new double *[ns];
@@ -3789,17 +3823,16 @@ void MainWindow::reduceChannelsFast()
 
 
 //products for ICA
-double *  product1(double ** arr, int length, int ns, double * vec)
+void product1(double ** arr, int length, int ns, double * vec, double ** outVector)
 {
     //<X*g(Wt*X)>
     //vec = Wt
-    //X = arr[][j]
+    //X[j] = arr[][j] dimension = ns
     //average over j
 
-    double * tempVector2 = new double [ns];
     for(int i = 0; i < ns; ++i)
     {
-        tempVector2[i] = 0.;
+        (*outVector)[i] = 0.;
     }
 
     double sum = 0.;
@@ -3815,30 +3848,23 @@ double *  product1(double ** arr, int length, int ns, double * vec)
         }
         for(int i = 0; i < ns; ++i)
         {
-            tempVector2[i] += tanh(sum)*arr[i][j];
+            (*outVector)[i] += tanh(sum)*arr[i][j];
         }
     }
     for(int i = 0; i < ns; ++i)
     {
-        tempVector2[i] /= length;
+        (*outVector)[i] /= length;
     }
-
-    return tempVector2;
 }
 
 
 
-double * product2(double ** arr, int length, int ns, double * vec)
+void product2(double ** arr, int length, int ns, double * vec, double ** outVector)
 {
     //g'(Wt*X)*1*W
     //vec = Wt
     //X = arr[][j]
     //average over j
-    double * tempVector2 = new double [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        tempVector2[i] = 0.;
-    }
 
     double sum = 0.;
     double sum1 = 0.;
@@ -3857,41 +3883,37 @@ double * product2(double ** arr, int length, int ns, double * vec)
 
     for(int i = 0; i < ns; ++i)
     {
-        tempVector2[i] += sum1 * vec[i];
+        (*outVector)[i] = sum1 * vec[i];
     }
-
-    return tempVector2;
 
 }
 
 
 
-double * product3(double ** vec, int ns, int i)
+void product3(double ** vec, int ns, int currNum, double ** outVector)
 {
     //sum(Wt*Wi*Wi)
 
-    double * tempVector2 = new double [ns];
     for(int k = 0; k < ns; ++k)
     {
-        tempVector2[k] = 0.;
+        (*outVector)[k] = 0.;
     }
     double sum = 0.;
 
-    for(int j = 0; j < i; ++j)
+    for(int j = 0; j < currNum; ++j)
     {
         sum = 0.;
         for(int k = 0; k < ns; ++k)
         {
-            sum += vec[i][k]*vec[j][k];
+            sum += vec[currNum][k]*vec[j][k];
         }
         for(int k = 0; k < ns; ++k)
         {
-            tempVector2[k] += vec[j][k] * sum;
+            (*outVector)[k] += vec[j][k] * sum;
         }
 
     }
 
-    return tempVector2;
 
 }
 
@@ -4436,6 +4458,19 @@ void MainWindow::ICA() //fastICA
     myTime.start();
 
     readData();
+    //check reduceChannelsLineEdit for write edf
+
+    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+//    for(int i = 0; i < lst.length(); ++i)
+//    {
+//        cout << label[lst[i].toInt()-1] << endl;
+//    }
+
+    if(!QString(label[lst[lst.length() - 1].toInt() - 1]).contains("Markers"))
+    {
+        QMessageBox::critical(this, tr("Error"), tr("bad channels list"), QMessageBox::Ok);
+        return;
+    }
     ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
 
     double eigenValuesTreshold = pow(10., -ui->svdDoubleSpinBox->value());
@@ -4473,9 +4508,9 @@ void MainWindow::ICA() //fastICA
     {
         vectorW[i] = new double [ns];
     }
-    double * vector1;// = new double [ns];
-    double * vector2;// = new double [ns];
-    double * vector3;// = new double [ns];
+    double * vector1 = new double [ns];
+    double * vector2 = new double [ns];
+    double * vector3 = new double [ns];
     double * vectorOld = new double [ns];
 
     //for full A-matrix count
@@ -4529,6 +4564,7 @@ void MainWindow::ICA() //fastICA
 //        delete [] components;
 //        delete [] dataICA;
 //    };
+
 
 
 
@@ -4631,6 +4667,8 @@ void MainWindow::ICA() //fastICA
         }
     }
     int numOfPc = 0;
+
+
 
     //counter j - for B, i - for A
     for(int k = 0; k < ns; ++k)
@@ -4802,7 +4840,11 @@ void MainWindow::ICA() //fastICA
 //        }
 
     }
+
+
+
     numOfPc = ns;
+
 
 
 
@@ -4919,34 +4961,58 @@ void MainWindow::ICA() //fastICA
 
     //ICA itself!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //fastIca wiki - first function
-
-    for(int i = 0; i < ns; ++i)
+    for(int i = 0; i < ns; ++i) //number of current vectorW
     {
         myTime.restart();
         counter = 0;
-        cout << i;
-        for(int j = 0; j < ns; ++j)
-        {
-            vectorW[i][j] = randomVector(ns)[j];
-        }
+
+        memcpy(vectorW[i], randomVector(ns), ns*sizeof(double));
+
         while(1)
         {
             for(int j = 0; j < ns; ++j)
             {
                 vectorOld[j] = vectorW[i][j];
             }
-            vector1 = product1(dataICA, ndr*fr, ns, vectorW[i]);
-            vector2 = product2(dataICA, ndr*fr, ns, vectorW[i]);
+            product1(dataICA, ndr*fr, ns, vectorW[i], &vector1);
+            product2(dataICA, ndr*fr, ns, vectorW[i], &vector2);
             for(int j = 0; j < ns; ++j)
             {
-                vectorW[i][j] = 1./(ndr*fr) * vector1[j] - 1/(ndr*fr) * vector2[j];
+                vectorW[i][j] = vector1[j] - vector2[j];
             }
 
             //orthogonalization
-            vector3 = product3(vectorW, ns, i);
+            product3(vectorW, ns, i, &vector3);
             for(int j = 0; j < ns; ++j)
             {
                 vectorW[i][j] -= vector3[j];
+            }
+            //check norma
+            for(int k = 0; k < i; ++k)
+            {
+                sum1 = 0.;
+                for(int h = 0; h < ns; ++h)
+                {
+                    sum1 += vectorW[k][h]*vectorW[k][h];
+                }
+                if(fabs(sum1 - 1.) > 0.01)
+                {
+                    cout << i << "'th vector not 1-l" << endl;
+                }
+            }
+            //check ortho
+            for(int k = 0; k < i; ++k)
+            {
+                sum1 = 0.;
+                for(int h = 0; h < ns; ++h)
+                {
+                    sum1 += vectorW[k][h]*vectorW[i][h];
+                }
+                if(sum1 > 0.01)
+                {
+                    cout << i << "'th and " << k << "'th  vectors not ortho" << endl;
+                }
+
             }
 
             sum2 = 0.;
@@ -4970,7 +5036,7 @@ void MainWindow::ICA() //fastICA
             }
             sum2 = sqrt(sum2);
             ++counter;
-            if(sum2 < vectorWTreshold) break;
+            if(sum2 < vectorWTreshold || 2 - sum2 < vectorWTreshold) break;
             if(counter == 300) break;
 
             qApp->processEvents();
@@ -5013,10 +5079,16 @@ void MainWindow::ICA() //fastICA
                 return;
             }
         }
-        cout << "\t" << counter << "\terror = " << sum2 << "\t" << myTime.elapsed()/1000. << " sec" << endl;
+        cout << i << "\t" << counter << "\terror = " << sum2 << "\t" << myTime.elapsed()/1000. << " sec" << endl;
 
     }
     cout << "VectorsW counted" << endl;
+
+
+    //infomax
+    if(0)
+    {
+    }
 
 //    //test vectorsW - ok
 //    cout << "Mixing matrix = " << endl; //A, W^-1
@@ -5113,9 +5185,10 @@ void MainWindow::ICA() //fastICA
         }
     }
 
+//    invertMatrix2(vectorW, ns, &matrixA);
 
     //test matrix A
-/*
+
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ndr*fr; ++j)
@@ -5125,14 +5198,14 @@ void MainWindow::ICA() //fastICA
             {
                 sum1 += matrixA[i][k] * components[k][j];
             }
-            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.03)
+            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.05 && fabs(data[i][j]) > 0.1)
             {
-                cout << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << endl;
+                cout << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << data[i][j] << endl;
             }
         }
     }
 
-*/
+
 
 
 //    //norm components - by 1-length vector of mixing matrix
@@ -5279,44 +5352,34 @@ void MainWindow::icaClassTest() //non-optimized
     int numOfIC = ui->numOfIcSpinBox->value();
 
     double ** matrixA = new double * [numOfIC];
-    for(int i = 0; i < ns; ++i)
+    for(int i = 0; i < numOfIC; ++i)
     {
         matrixA[i] = new double [numOfIC];
     }
-    readICAMatrix(dir, &matrixA, numOfIC);
-    matrixProduct(matrixA, dataICA, &data, numOfIC, ndr*fr);
+
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "maps.txt");
+    readICAMatrix(helpString, &matrixA, numOfIC);
+
+//    matrixProduct(matrixA, dataICA, &data, numOfIC, ndr*fr);
 
     Spectre * spectr;// = Spectre(dir, numOfIC, ExpName);
     helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
     Net * ANN = new Net(dir, numOfIC, left, right, spStep, ExpName);
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
     ANN->readCfgByName(helpString);
-    ANN->setReduceCoeff(5.);
+    ANN->setReduceCoeff(6.);
     double tempAccuracy;
     double currentAccuracy;
     this->ui->cleanRealisationsCheckBox->setChecked(true);
     QList<int> thrownComp;
     thrownComp.clear();
 
-    for(int i = 0; i < numOfIC; ++i)
-    {
-        thrownComp << i;
-    }
-    thrownComp.removeOne(1);
-    thrownComp.removeOne(2);
-    thrownComp.removeOne(4);
-    thrownComp.removeOne(5);
-    thrownComp.removeOne(8);
-    thrownComp.removeOne(9);
-    thrownComp.removeOne(14);
-    thrownComp.removeOne(15);
-    thrownComp.removeOne(16);
-    thrownComp.removeOne(17);
 
     for(int i = 0; i < thrownComp.length(); ++i)
     {
         cout << thrownComp[i] << endl;
     }
+
     for(int j = 0; j < fr*ndr; ++j)
     {
         for(int i = 0; i < numOfIC; ++i)
@@ -5330,11 +5393,8 @@ void MainWindow::icaClassTest() //non-optimized
         }
     }
 
-
-
-
     cleanDirs();
-    sliceOneByOneNew(ns-1);
+    sliceOneByOneNew(numOfIC);
     cout << "sliced" << endl;
     spectr = new Spectre(dir, numOfIC, ExpName);
     cout << "spectra widget created" << endl;
@@ -5346,13 +5406,26 @@ void MainWindow::icaClassTest() //non-optimized
 
 //    delete ANN;
 //    delete spectr;
-    return;
 
+    tempIndex = -1;
     for(int j = numOfIC; j > 0; --j) //num of components left
     {
-        tempIndex = -1;
-        for(int i = 0; i < j; ++i)
+        if(thrownComp.length() == 3)
         {
+            ANN->setReduceCoeff(5.);
+        }
+        if(thrownComp.length() == 5)
+        {
+            ANN->setReduceCoeff(4.);
+        }
+        if(thrownComp.length() == 8)
+        {
+            ANN->setReduceCoeff(3.);
+        }
+        for(int i = tempIndex+1; i < j; ++i) //generality
+        {
+//            if(i<0) i=0;//bicycle
+
             thrownComp.push_back(i);
             for(int j = 0; j < fr*ndr; ++j)
             {
@@ -5374,17 +5447,27 @@ void MainWindow::icaClassTest() //non-optimized
             ANN->autoClassificationSimple();
             currentAccuracy = ANN->getAverageAccuracy();
             cout << "AverageAccuracy " << i << " = " << currentAccuracy << endl;
-
-
-            if(currentAccuracy > tempAccuracy)
-            {
-                tempAccuracy = currentAccuracy;
-                tempIndex = i;
-            }
             thrownComp.removeLast();
-            if(currentAccuracy > tempAccuracy + 1.) break;
+
+            if(currentAccuracy > tempAccuracy + 1.0)
+            {
+                tempIndex = i;
+                tempAccuracy = currentAccuracy;
+//                cout << "break" << endl;
+                break;
+            }
+            else if(currentAccuracy > tempAccuracy)
+            {
+                tempIndex = i;
+                tempAccuracy = currentAccuracy;
+            }
+
         }
-        if(tempIndex != -1) thrownComp.push_back(tempIndex);
+        if(tempIndex != -1)
+        {
+            cout << tempIndex << "'th component thrown" <<endl;
+            thrownComp.push_back(tempIndex);
+        }
         else
         {
             cout << "optimal components set:" << "\n";

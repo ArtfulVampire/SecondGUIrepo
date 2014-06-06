@@ -184,6 +184,7 @@ double correlation(double *arr1, double *arr2, int length, int t)
     {
         res += (arr1[i + t] - m1) * (arr2[i] - m2);
     }
+    res /= double(length);
     res /= sqrt(variance(arr1, length) * variance(arr2, length));
     return res;
 }
@@ -943,6 +944,24 @@ void readSpectraFile(QString filename, double ** outData, int ns, int spLength)
     file.close();
 }
 
+void readSpectraFileLine(QString filename, double **outData, int ns, int spLength)
+{
+    ifstream file(filename.toStdString().c_str());
+    if(!file.good())
+    {
+        cout << "bad file" << endl;
+        return;
+    }
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < spLength; ++j)
+        {
+            file >> (*outData)[i*spLength + j];
+        }
+    }
+    file.close();
+}
+
 
 void calcSpectre(double ** inData, double ** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth)
 {
@@ -1057,14 +1076,13 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
         delete [] (*matrix)[i];
         delete [] (*FileName)[i];
     }
-    paSrc.close();
+    paSrc.close();    
     (*NumberOfVectors) = num;
 }
 
-void readICAMatrix(QDir * dir, double *** matrixA, int ns)
+void readICAMatrix(QString path, double *** matrixA, int ns)
 {
-    QString helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("maps.txt"));
-    FILE * map = fopen(helpString.toStdString().c_str(), "r");
+    FILE * map = fopen(path.toStdString().c_str(), "r");
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ns; ++j)
@@ -1076,25 +1094,288 @@ void readICAMatrix(QDir * dir, double *** matrixA, int ns)
 
 }
 
+void cofactor(double ** inMatrix, int size, int i, int j, double *** outMatrix)
+{
+    int indexA, indexB;
+    for(int a = 0; a < size; ++a)
+    {
+        if(a == i) continue;
+        indexA = a - (a > i);
+        for(int b = 0; b < size; ++b)
+        {
+            if(b == j) continue;
+            indexB = b - (b > j);
+
+            (*outMatrix)[indexA][indexB] = inMatrix[a][b];
+        }
+    }
+}
+
+void invertMatrix(double ** inMat, int size, double *** outMat)
+{
+
+    double ** matrixTemp = new double * [size];
+    for(int i = 0; i < size; ++i)
+    {
+        matrixTemp[i] = new double [size];
+    }
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = 0; j < size; ++j)
+        {
+            (*outMat)[i][j] = (i == j);
+        }
+    }
+
+
+    for(int col = 0; col < size; ++col)
+    {
+        for(int j = 0; j < size; ++j)
+        {
+            for(int z = 0; z < size; ++z)
+            {
+                if(z == col)
+                {
+                    if(z != j) matrixTemp[j][z] =- inMat[j][z]/inMat[col][col];
+                    else matrixTemp[j][z] = 1/inMat[col][col];
+                }
+                else
+                {
+                    if(z == j) matrixTemp[j][z] = 1.;
+                    else matrixTemp[j][z] = 0.;
+                }
+            }
+        }
+        matrixProduct(matrixTemp, *outMat, outMat, size, size);
+        matrixProduct(matrixTemp, inMat, &inMat, size, size);
+    }
+
+
+    for(int i = 0; i < size; ++i)
+    {
+        delete []matrixTemp[i];
+    }
+    delete []matrixTemp;
+}
+
+void invertMatrix2(double ** inMat, int size, double *** outMat) //cofactors
+{
+    double ** cof = new double * [size - 1];
+    for(int i = 0; i < size - 1; ++i)
+    {
+        cof[i] = new double [size - 1];
+    }
+    double Det = det(inMat, size);
+    cout << "fill det = " << Det << endl;
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = 0; j < size; ++j)
+        {
+            cofactor(inMat, size, j, i, &cof);
+            (*outMat)[i][j] = pow(-1, i+j) * det(cof, size - 1)/Det;
+        }
+    }
+    for(int i = 0; i < size - 1; ++i)
+    {
+        delete []cof[i];
+    }
+    delete []cof;
+}
+
+void matcpy(double ** inMat, double *** outMat, int i, int j)
+{
+    for(int a = 0; a < i; ++a)
+    {
+        for(int b = 0; b < j; ++b)
+        {
+            (*outMat)[a][b] = inMat[a][b];
+        }
+    }
+}
 
 double det(double ** matrix, int dim) //- bad Det
 {
+    if(dim==1) return matrix[0][0];
+
+    double ** matrix2 = crMatrix(dim,dim);
+    matcpy(matrix, &matrix2, dim, dim);
     double coef;
     for(int i = 1; i < dim; ++i)
     {
         for(int k = 0; k < i; ++k)
         {
-            coef = matrix[i][k]/matrix[k][k];
+            if(matrix2[k][k] != 0.) coef = matrix2[i][k]/matrix2[k][k];
+            else continue;
             for(int j = 0; j < dim; ++j)
             {
-                matrix[i][j] -= coef * matrix[k][j];
+                matrix2[i][j] -= coef * matrix2[k][j];
             }
         }
     }
+
     coef = 1.;
     for(int i = 0; i < dim; ++i)
     {
-        coef *= matrix[i][i];
+        coef *= matrix2[i][i];
     }
+    delMatrix(&matrix2, dim, dim);
     return coef;
+}
+
+double ** crMatrix(int i, int j)
+{
+    double ** mat = new double * [i];
+    for(int k = 0; k < i; ++k)
+    {
+        mat[k] = new double [j];
+    }
+    return mat;
+}
+void delMatrix(double *** matrix, int i, int j)
+{
+    for(int k = 0; k < i; ++k)
+    {
+        delete [](*matrix)[k];
+    }
+    delete [](*matrix);
+}
+
+void print(double ** mat, int i, int j)
+{
+    for(int a = 0; a < i; ++a)
+    {
+        for(int b = 0; b < j; ++b)
+        {
+            cout << mat[a][b] << "\t";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+
+void svd(double ** inData, int size, int length, double *** eigenVects, double ** eigenValues)
+{
+    double dF, F;
+
+    double eigenValuesTreshold = pow(10., -9.);
+    double * tempA = new double [size];
+    double * tempB = new double [length];
+
+    double sum1, sum2;
+
+    //counter j - for B, i - for A
+    for(int k = 0; k < size; ++k)
+    {
+        dF = 1.0;
+        F = 1.0;
+
+        //set 1-normalized vector tempA
+        for(int i = 0; i < size; ++i)
+        {
+            tempA[i] = 1./sqrt(size);
+        }
+        for(int j = 0; j < length; ++j)
+        {
+            tempB[j] = 1./sqrt(length);
+        }
+
+
+
+        //approximate P[i] = tempA x tempB;
+        int counter = 0;
+//        cout<<"curr val = "<<k<<endl;
+        while(1) //when stop approximate?
+        {
+            //countF - error
+            F = 0.;
+            for(int i = 0; i < size; ++i)
+            {
+                for(int j = 0; j < length; ++j)
+                {
+                    F += 0.5*(inData[i][j]-tempB[j]*tempA[i])*(inData[i][j]-tempB[j]*tempA[i]);
+                }
+            }
+            //count vector tempB
+            for(int j = 0; j < length; ++j)
+            {
+                sum1 = 0.;
+                sum2 = 0.;
+                for(int i = 0; i < size; ++i)
+                {
+                    sum1 += inData[i][j]*tempA[i];
+                    sum2 += tempA[i]*tempA[i];
+                }
+                tempB[j] = sum1/sum2;
+            }
+
+            //count vector tempA
+            for(int i = 0; i < size; ++i)
+            {
+                sum1 = 0.;
+                sum2 = 0.;
+                for(int j = 0; j < length; ++j)
+                {
+                    sum1 += tempB[j]*inData[i][j];
+                    sum2 += tempB[j]*tempB[j];
+                }
+                tempA[i] = sum1/sum2;
+            }
+
+            dF = 0.;
+            for(int i = 0; i < size; ++i)
+            {
+                for(int j = 0; j < length; ++j)
+                {
+                    dF += 0.5*(inData[i][j]-tempB[j]*tempA[i])*(inData[i][j]-tempB[j]*tempA[i]);
+
+                }
+//                cout << dF << " ";
+            }
+            dF = (F-dF)/F;
+            ++counter;
+            if(counter==150)
+            {
+//                cout<<"dF = "<<abs(dF)<<endl;
+                break;
+            }
+            if(fabs(dF) < eigenValuesTreshold) break; //crucial cap
+        }
+
+        //edit covMatrix
+        for(int i = 0; i < size; ++i)
+        {
+            for(int j = 0; j < length; ++j)
+            {
+                inData[i][j] -= tempB[j]*tempA[i];
+            }
+        }
+
+        //count eigenVectors && eigenValues
+        sum1 = 0.;
+        sum2 = 0.;
+        for(int i = 0; i < size; ++i)
+        {
+            sum1 += tempA[i]*tempA[i];
+        }
+        for(int j = 0; j < length; ++j)
+        {
+            sum2 += tempB[j]*tempB[j];
+        }
+        for(int i = 0; i < size; ++i)
+        {
+            tempA[i]/=sqrt(sum1);
+        }
+        for(int j = 0; j < length; ++j)
+        {
+            tempB[j] /= sqrt(sum2);
+        }
+
+        (*eigenValues)[k] = sum1*sum2/double(length - 1.);
+        cout << "numOfPC = " << k << "\tvalue = " << (*eigenValues)[k] << "\t iterations = " << counter << endl;
+        for(int i = 0; i < size; ++i)
+        {
+            (*eigenVects)[i][k] = tempA[i]; //1-normalized
+        }
+    }
+
 }

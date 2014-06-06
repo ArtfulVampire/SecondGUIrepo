@@ -22,9 +22,14 @@
 #include <QTextStream>
 #include <QPainter>
 #include <QMessageBox>
+//#include <itpp/itbase.h>
+//#include <mlpack/core.hpp>
+//#include <mlpack/methods/pca/pca.hpp>
 #define pi 3.141592653589
 
 using namespace std;
+//using namespace itpp;
+//using namespace mlpack;
 
 QString rightNumber(int &input, int N);
 
@@ -41,6 +46,7 @@ double * hilbert(double * arr, int fftLen, double sampleFreq, double lowFreq, do
 
 double mean(double *arr, int length);
 double variance(double *arr, int length);
+void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
 
 
 double mean(int *arr, int length);
@@ -52,18 +58,24 @@ double quantile(double arg);
 void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength);
 void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices);
 void readSpectraFile(QString filename, double ** outData, int ns, int spLength);
+void readSpectraFileLine(QString filename, double ** outData, int ns, int spLength);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
-void readICAMatrix(QDir * dir, double *** matrixA, int ns);
+void readICAMatrix(QString path, double *** matrixA, int ns);
 
 void calcSpectre(double ** inData, double ** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth);
 
 
 double distance(double * vec1, double * vec2, int dim);
-void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL);  //matrix product = A(H*H) * B(H*L)
+void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
+void invertMatrix(double ** inMat, int size, double *** outMat);
+void invertMatrix2(double ** inMat, int size, double *** outMat); //cofactors
 double det(double ** matrix, int dim);
+void cofactor(double ** inMatrix, int size, int i, int j, double *** outMatrix);
+void matcpy(double ** inMat, double *** outMat, int i, int j);
 
-
-
+double ** crMatrix(int i, int j);
+void delMatrix(double *** matrix, int i, int j);
+void print(double ** mat, int i, int j);
 
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
