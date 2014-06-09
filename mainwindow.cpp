@@ -371,11 +371,20 @@ MainWindow::MainWindow() :
 
 
 
+
+
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    for(int i = 0; i < maxNs; ++i)
+    {
+        delete []label[i];
+    }
+    delete []label;
+    delete dir;
+    delete paint;
 }
 
 void MainWindow::setBoxMax(double a)
@@ -5367,12 +5376,15 @@ void MainWindow::icaClassTest() //non-optimized
     Net * ANN = new Net(dir, numOfIC, left, right, spStep, ExpName);
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
     ANN->readCfgByName(helpString);
-    ANN->setReduceCoeff(6.);
+    ANN->setReduceCoeff(7.);
     double tempAccuracy;
     double currentAccuracy;
+    double initAccuracy;
     this->ui->cleanRealisationsCheckBox->setChecked(true);
     QList<int> thrownComp;
     thrownComp.clear();
+    QList<int> stayComp;
+    stayComp.clear();
 
 
     for(int i = 0; i < thrownComp.length(); ++i)
@@ -5402,7 +5414,7 @@ void MainWindow::icaClassTest() //non-optimized
     cout << "spectra counted" << endl;
     ANN->autoClassificationSimple();
     tempAccuracy = ANN->getAverageAccuracy();
-    cout << "AverageAccuracy init = " << tempAccuracy << endl;
+    cout << "initAccuracy = " << tempAccuracy << endl;
 
 //    delete ANN;
 //    delete spectr;
@@ -5422,9 +5434,12 @@ void MainWindow::icaClassTest() //non-optimized
         {
             ANN->setReduceCoeff(3.);
         }
-        for(int i = tempIndex+1; i < j; ++i) //generality
+        tempIndex = -1;
+        initAccuracy = tempAccuracy;
+        for(int i = 0; i < numOfIC; ++i) //generality
         {
-//            if(i<0) i=0;//bicycle
+            if(thrownComp.contains(i)) continue;
+            if(stayComp.contains(i)) continue;
 
             thrownComp.push_back(i);
             for(int j = 0; j < fr*ndr; ++j)
@@ -5449,17 +5464,22 @@ void MainWindow::icaClassTest() //non-optimized
             cout << "AverageAccuracy " << i << " = " << currentAccuracy << endl;
             thrownComp.removeLast();
 
-            if(currentAccuracy > tempAccuracy + 1.0)
+            if(currentAccuracy > initAccuracy + 1.5)
             {
                 tempIndex = i;
                 tempAccuracy = currentAccuracy;
-//                cout << "break" << endl;
                 break;
             }
-            else if(currentAccuracy > tempAccuracy)
+            else if(currentAccuracy > initAccuracy + 0.3 && currentAccuracy > tempAccuracy)
             {
                 tempIndex = i;
+                cout << tempIndex << "'th component saved as temp" <<endl;
                 tempAccuracy = currentAccuracy;
+            }
+            else if(currentAccuracy < initAccuracy - 0.5)
+            {
+                stayComp.push_back(i);
+                cout << tempIndex << "'th component is necessary" <<endl;
             }
 
         }

@@ -848,9 +848,9 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
     delete painter;
 }
 
-void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices)
+void readDataFile(ifstream &file, QString filename, double *** outData, int ns, int * NumOfSlices)
 {
-    ifstream file(filename.toStdString().c_str());
+    file.open(filename.toStdString().c_str());
     if(!file.good())
     {
         cout << "bad file" << endl;
@@ -870,9 +870,9 @@ void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlice
     file.close();
 }
 
-void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength)
+void readDataFile(ifstream & file, QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength)
 {
-    ifstream file(filename.toStdString().c_str());
+    file.open(filename.toStdString().c_str());
     if(!file.good())
     {
         cout << "bad file" << endl;
@@ -963,7 +963,7 @@ void readSpectraFileLine(QString filename, double **outData, int ns, int spLengt
 }
 
 
-void calcSpectre(double ** inData, double ** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth)
+void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth)
 {
 
     double norm1 = fftLength / double(fftLength-Eyes);
@@ -982,7 +982,7 @@ void calcSpectre(double ** inData, double ** dataFFT, int ns, int fftLength, int
         four1(spectre-1, fftLength, 1);       //Fourier transform
         for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
         {
-            dataFFT[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fftLength; //0.004 = 1/250 generality
+            (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fftLength; //0.004 = 1/250 generality
         }
 
         leftSmoothLimit = 0;
@@ -991,11 +991,11 @@ void calcSpectre(double ** inData, double ** dataFFT, int ns, int fftLength, int
         //smooth spectre
         for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
         {
-            help1 = dataFFT[j][leftSmoothLimit-1];
+            help1 = (*dataFFT)[j][leftSmoothLimit-1];
             for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
             {
-                help2 = dataFFT[j][k];
-                dataFFT[j][k] = (help1 + help2 + dataFFT[j][k+1]) / 3.;
+                help2 = (*dataFFT)[j][k];
+                (*dataFFT)[j][k] = (help1 + help2 + (*dataFFT)[j][k+1]) / 3.;
                 help1 = help2;
             }
         }
@@ -1003,25 +1003,32 @@ void calcSpectre(double ** inData, double ** dataFFT, int ns, int fftLength, int
     delete []spectre;
 }
 
-void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName)
+void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName)
 {
-//    int NetLength = ns*spLength;
-    ifstream paSrc(paFile.toStdString().c_str());
+    paSrc.open(paFile.toStdString().c_str());
     if(!paSrc.is_open())
     {
         cout << "bad Pa File" << endl;
+        cout << paSrc.is_open() << endl;
+        cout << paSrc.eof() << endl;
+        cout << paSrc.good() << endl;
+        cout << paSrc.bad() << endl;
+        cout << paSrc.fail() << endl;
+        cout << errno << endl;
+
         return;
     }
-    if((*matrix) != NULL && (*NumberOfVectors) > 0)
-    {
-        for(int i = 0; i < (*NumberOfVectors); ++i)
-        {
-            if((*matrix)[i]  != NULL) delete [](*matrix)[i];
-        }
-        delete [](*matrix);
-    }
 
-    (*NumberOfVectors) = 6000; //generality
+    for(int i = 0; i < (*NumberOfVectors); ++i)
+    {
+        if((*matrix)[i]  != NULL) delete [](*matrix)[i];
+        if((*FileName)[i]  != NULL) delete [](*FileName)[i];
+    }
+    if((*matrix) != NULL) delete [](*matrix);
+    if((*FileName) != NULL) delete [](*FileName);
+
+
+    (*NumberOfVectors) = 200; //generality
 
     (*matrix) = new double * [(*NumberOfVectors)];
     for(int i = 0; i < (*NumberOfVectors); ++i)
@@ -1034,7 +1041,7 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
     (*FileName) = new char * [(*NumberOfVectors)];
     for(int i = 0; i < (*NumberOfVectors); ++i)
     {
-        (*FileName)[i] = new char[64];
+        (*FileName)[i] = new char [64];
     }
 
     while(!paSrc.eof())
@@ -1076,7 +1083,7 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
         delete [] (*matrix)[i];
         delete [] (*FileName)[i];
     }
-    paSrc.close();    
+    paSrc.close();
     (*NumberOfVectors) = num;
 }
 

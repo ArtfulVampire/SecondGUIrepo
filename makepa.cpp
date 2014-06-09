@@ -1324,16 +1324,13 @@ void MakePa::makePaSlot()
         while(lst[i].length()>Length) {lst[i].removeAt(rand()%(lst[i].length()));} //fit all lists to appropriate number of files
     }
 
-    int **arr = new int* [NumOfClasses];
-    for(int i=0; i<NumOfClasses; ++i)
+    int **arr = new int * [NumOfClasses];
+    for(int i = 0; i < NumOfClasses; ++i)
     {
         arr[i] = new int [Length];
-    }
-    for(int i=0; i<NumOfClasses; ++i)
-    {
-        for(int j=0; j<Length; ++j)
+        for(int j = 0; j < Length; ++j)
         {
-            arr[i][j]=j;
+            arr[i][j] = j;
         }
     }
 
@@ -1343,7 +1340,7 @@ void MakePa::makePaSlot()
     if(spLength==-1) return;
 
     double ** data4 = new double * [ns];
-    for(int i=0; i<ns; ++i)
+    for(int i = 0; i < ns; ++i)
     {
         data4[i] = new double [spLength];
     }
@@ -1358,11 +1355,11 @@ void MakePa::makePaSlot()
     {
         for(int i=0; i<15*Length; ++i)
         {
-            a1=rand()%Length;
-            a2=rand()%Length;
-            tmp=arr[j][a1];
-            arr[j][a1]=arr[j][a2];
-            arr[j][a2]=tmp;
+            a1 = rand()%Length;
+            a2  =rand()%Length;
+            tmp = arr[j][a1];
+            arr[j][a1] = arr[j][a2];
+            arr[j][a2] = tmp;
         }
     }
 
@@ -1395,19 +1392,19 @@ void MakePa::makePaSlot()
     }
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("svm1"));
     svm = fopen(helpString.toStdString().c_str(), "w");
-    if(svm==NULL)
+    if(svm == NULL)
     {
         cout<<helpString.toStdString().c_str()<<endl<<" svm1==NULL"<<endl;
         return;
     }
 
 
-    for(int i=0; i<Length/2; ++i)  //Length - number of files every type
+    for(int i = 0; i < Length/2; ++i)  //Length - number of files every type
     {
-        for(int j=0; j<NumOfClasses; ++j)
+        for(int j = 0; j < NumOfClasses; ++j)
         {
 
-            helpString=dir_->absolutePath();
+            helpString = dir_->absolutePath();
             helpString.append(QDir::separator()).append(lst[j].at(arr[j][i]));
 //            cout<<helpString.toStdString()<<endl;
 
@@ -1496,15 +1493,15 @@ void MakePa::makePaSlot()
     }
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("svm2"));
     svm = fopen(helpString.toStdString().c_str(), "w");
-    if(svm==NULL)
+    if(svm == NULL)
     {
         cout<<helpString.toStdString().c_str()<<endl<<" svm2==NULL"<<endl;
         return;
     }
 
-    for(int i=Length/2; i<(Length/2)*2; ++i)
+    for(int i = Length/2; i < (Length/2)*2; ++i)
     {
-        for(int j=0; j<NumOfClasses; ++j)
+        for(int j = 0; j < NumOfClasses; ++j)
         {
 
             helpString=dir_->absolutePath();
@@ -1594,16 +1591,16 @@ void MakePa::makePaSlot()
     list = dir_->entryList(QDir::Files);
     paWhole = fopen(helpString.toStdString().c_str(), "w");
 
-    for(int i=0; i<list.length(); ++i)
+    for(int i = 0; i < list.length(); ++i)
     {
         if(list[i].contains("300")) continue;
 
             helpString=dir_->absolutePath();
             helpString.append(QDir::separator()).append(list[i]);
 
-            spectre=fopen(helpString.toStdString().c_str(), "r");
+            spectre = fopen(helpString.toStdString().c_str(), "r");
             fprintf(paWhole, "%s\n", list[i].toStdString().c_str());
-            if(spectre==NULL) return;
+            if(spectre == NULL) return;
 
             for(int l=0; l<ns; ++l)
             {
@@ -1615,10 +1612,10 @@ void MakePa::makePaSlot()
             }
             fclose(spectre);
 
-            for(int l=0; l<ns; ++l)
+            for(int l = 0; l < ns; ++l)
             {
                 if(vect.contains(l)) continue; //do not write listed channels
-                for(int k=0; k<spLength; ++k)
+                for(int k = 0; k < spLength; ++k)
                 {
                     fprintf(paWhole, "  %lf ", data4[l][k]/coeff);
                     if(k%10==9)

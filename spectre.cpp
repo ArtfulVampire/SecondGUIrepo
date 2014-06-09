@@ -1110,7 +1110,7 @@ void Spectre::countSpectra()
     dir->cd(dirBC->absolutePath());
 
 
-    for(int i=0; i<ns; ++i)
+    for(int i = 0; i < ns; ++i)
     {
         delete []dataFFT[i];
     }
@@ -1191,7 +1191,7 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[num]));
 
     double ** data2;
-    readDataFile(helpString, &data2, ns, &NumOfSlices, fftLength);
+    readDataFile(inStream, helpString, &data2, ns, &NumOfSlices, fftLength);
 
     //correct Eyes number
     Eyes = 0;
@@ -1217,10 +1217,10 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
         return 0;
     }
 
-    calcSpectre(data2, dataFFT, ns, fftLength, Eyes, ui->smoothBox->value());
+    calcSpectre(data2, &dataFFT, ns, fftLength, Eyes, ui->smoothBox->value());
 
 
-    for(int i=0; i<ns; ++i)
+    for(int i = 0; i < ns; ++i)
     {
         delete []data2[i];
     }

@@ -81,6 +81,7 @@ private:
     int chanNum;
     QString rangePicPath;
     FILE * file1;
+    ifstream inStream;
 
 
 };

@@ -73,7 +73,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->epochSpinBox->setSingleStep(50);
     ui->epochSpinBox->setValue(250);
     ui->numOfPairsBox->setMaximum(100);
-    ui->numOfPairsBox->setValue(30);
+    ui->numOfPairsBox->setValue(50);
     ui->rdcCoeffSpinBox->setMaximum(50);
     ui->rdcCoeffSpinBox->setMinimum(0.01);
     ui->rdcCoeffSpinBox->setValue(10);
@@ -168,6 +168,27 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
     readCfgByName(helpString);
     this->ui->deltaRadioButton->setChecked(true);
+
+//    for(int i = 0; i < 10000; ++i)
+//    {
+//        readPaFile(inStream, "/media/Files/Data/AAX/PA/1.pa", &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+//        if(i%500 == 0)
+//        {
+//            cout << i << endl;
+//        }
+//    }
+
+    NumberOfVectors = 200;
+    matrix = new double * [NumberOfVectors];
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        matrix[i] = new double [1];
+    }
+    FileName = new char * [NumberOfVectors];
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        FileName[i] = new char [1];
+    }
 
 }
 
@@ -312,6 +333,7 @@ void Net::autoClassification(QString spectraDir)
     mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
     mkPa->setNumOfClasses(NumOfClasses);
 
+
     QString typeString;
     if(spectraDir.contains("windows", Qt::CaseInsensitive))
     {
@@ -325,6 +347,7 @@ void Net::autoClassification(QString spectraDir)
     {
         typeString = "";
     }
+
 //    cout << typeString.toStdString() << endl;
 
     for(int i = 0; i < numOfPairs; ++i)
@@ -479,7 +502,7 @@ void Net::averageClassification()
     }
     fclose(logFile);
 
-    log = fopen(dir->absolutePath().append(QDir::separator()).append("log.txt").toStdString().c_str(),"w");
+    log = fopen(dir->absolutePath().append(QDir::separator()).append("log.txt").toStdString().c_str(),"w"); //what???
 
 
 
@@ -831,7 +854,7 @@ void Net::tall()
     Error = 0.;
     NumberOfErrors = new int[NumOfClasses];
     helpString = "";
-    double NumOfVectorsOfClass[3];
+    double * NumOfVectorsOfClass = new double [3];
     for(int i = 0; i < NumOfClasses; ++i)
     {
         NumberOfErrors[i] = 0;
@@ -859,6 +882,7 @@ void Net::tall()
     //automatization
     if(!autoFlag) QMessageBox::information((QWidget * )this, tr("Classification results"), helpString, QMessageBox::Ok);
     delete [] NumberOfErrors;
+    delete [] NumOfVectorsOfClass;
     ++numOfTall;
 }
 
@@ -1966,7 +1990,7 @@ void Net::PaIntoMatrix()
     }
 //    QTime myTime;
 //    myTime.start();
-    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+    readPaFile(inStream, helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 }
@@ -1983,7 +2007,7 @@ void Net::PaIntoMatrixByName(QString fileName)
     paFileBC = helpString;
 //    QTime myTime;
 //    myTime.start();
-    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+    readPaFile(inStream, helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 }
 
@@ -2521,7 +2545,8 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
         currentError /= NumberOfVectors;
         currentError = sqrt(currentError);
         if(!autoFlag) cout << "epoch = " << epoch << "\terror = " << currentError << endl;
-        this->ui->currentErrorDoubleSpinBox->setValue(currentError);
+        this->ui->currentErrorDoubleSpinBox->setValue(currentError);        
+//        if(epoch == 50) break;
     }
 
 

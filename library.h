@@ -22,6 +22,7 @@
 #include <QTextStream>
 #include <QPainter>
 #include <QMessageBox>
+#include <cerrno>
 //#include <itpp/itbase.h>
 //#include <mlpack/core.hpp>
 //#include <mlpack/methods/pca/pca.hpp>
@@ -55,14 +56,14 @@ double correlation(double *arr1, double *arr2, int length, int t = 0);
 double quantile(double arg);
 
 
-void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength);
-void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices);
-void readSpectraFile(QString filename, double ** outData, int ns, int spLength);
-void readSpectraFileLine(QString filename, double ** outData, int ns, int spLength);
-void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
+void readDataFile(ifstream & file, QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength);
+void readDataFile(ifstream & file, QString filename, double *** outData, int ns, int * NumOfSlices);
+void readSpectraFile(ifstream & file, QString filename, double ** outData, int ns, int spLength);
+void readSpectraFileLine(ifstream & file, QString filename, double ** outData, int ns, int spLength);
+void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
 void readICAMatrix(QString path, double *** matrixA, int ns);
 
-void calcSpectre(double ** inData, double ** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth);
+void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth);
 
 
 double distance(double * vec1, double * vec2, int dim);

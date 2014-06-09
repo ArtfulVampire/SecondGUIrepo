@@ -108,6 +108,7 @@ private:
     int * dimensionality; //for backprop
     double * output;
     char * helpCharArr;
+    ifstream inStream;
 
     QVector<int> channelsSet;
     QVector<int> channelsSetExclude;
