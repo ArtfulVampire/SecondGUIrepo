@@ -75,6 +75,7 @@ public slots:
     void makeTestData();
     void spoc();
     void icaClassTest();
+    void hilbertCount();
 
 
 public:

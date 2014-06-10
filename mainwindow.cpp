@@ -96,8 +96,9 @@ MainWindow::MainWindow() :
     ui->doubleSpinBox->setValue(1.0); //draw coeff
     ui->sliceCheckBox->setChecked(true);
     ui->eyesCleanCheckBox->setChecked(false);
-    ui->eyesCleanCheckBox->setChecked(true);   ///for windows
+//    ui->eyesCleanCheckBox->setChecked(true);   ///for windows
     ui->reduceChannelsCheckBox->setChecked(true);
+    ui->reduceChannelsCheckBox->setChecked(false);
     ui->progressBar->setValue(0);
     ui->setNsLine->property("S&et");
 
@@ -294,6 +295,8 @@ MainWindow::MainWindow() :
     QObject::connect(ui->icaTestClassPushButton, SIGNAL(clicked()), this, SLOT(icaClassTest()));
 
     QObject::connect(ui->spocPushButton, SIGNAL(clicked()), this, SLOT(spoc()));
+
+    QObject::connect(ui->hilbertPushButton, SIGNAL(clicked()), this, SLOT(hilbertCount()));
 /*
     //function test
     int leng = 65536;
@@ -367,10 +370,6 @@ MainWindow::MainWindow() :
 
 //    delMatrix(&inv, dim, dim);
 //    delMatrix(&mat1, dim, dim);
-
-
-
-
 
 
 }
@@ -1118,7 +1117,9 @@ void MainWindow::drawRealisations()
     nameFilters.append("*_254*");
     nameFilters.append("*_244*");
 //    nameFilters.append("*_100*");
-    lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
+//    lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
+
+    lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
     cout << "lst.len = " << lst.length() << endl;
     FILE * file;
     for(int i = 0; i < lst.length(); ++i)
@@ -1896,11 +1897,7 @@ void MainWindow::makeDatFile()
 {
     readData();
     if(ui->eyesCleanCheckBox->isChecked()) eyesFast();
-    ui->reduceChannelsComboBox->setCurrentIndex(7); //20 channels 19+markers
     if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
-
-
-//    helpString=dir->absolutePath().append(QDir::separator()).append(ExpName).append(".dat");
 
     int startTime=ui->startTimeBox->value();
     cout << "startTime=" << startTime << endl;
@@ -1919,7 +1916,7 @@ void MainWindow::makeDatFile()
 
     fprintf(datFile, "NumOfSlices %d\n", int(finishTime-startTime)*nr[0]);
 
-    for(int i=startTime*250; i < finishTime*250; ++i)
+    for(int i=startTime*250; i < finishTime*250; ++i) //generality 250
     {
         for(int j = 0; j < ns; ++j)
         {
@@ -2512,6 +2509,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     int numChanToWrite = -1;
 
     readData();
+
 
 
 
@@ -5502,6 +5500,35 @@ void MainWindow::icaClassTest() //non-optimized
     }
     delete ANN;
     delete spectr;
+}
+
+void MainWindow::hilbertCount()
+{
+    readData();
+    if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
+
+    double fr = nr[0]; //generality
+
+    double ** hilbertData = new double * [ns];
+    hilbertPieces(data[0], 45536, fr, 9., 11., &hilbertData[0], "");
+
+    cout << variance(hilbertData[0], 45536) << endl;
+    hilbert(data[0], 65536, fr, 9., 11., &hilbertData[0], "");
+    cout << variance(hilbertData[0], 65536) << endl;
+    return;
+
+
+
+
+    for(int i = 0; i < ns-1; ++i) //no markers
+    {
+//        hilbert(data[i], ndr*fr, fr, 5., 20., &hilbertData[i]);
+    }
+    memcpy(hilbertData[ns-1], data[ns-1], ndr*fr*sizeof(double)); //markers channel
+    helpString = dir->absolutePath() + QDir::separator() + ExpName + "_hilbert.edf";
+    writeEdf(edf, hilbertData, helpString, ndr*fr);
+
+    delMatrix(&hilbertData, ns, ndr*fr);
 }
 
 double objFunc(double *W_, double ***Ce_, double **Cz_, double **Cav_, double ns_, double numOfEpoches_)

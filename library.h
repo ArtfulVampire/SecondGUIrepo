@@ -42,8 +42,10 @@ void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int chan
 double fractalDimension(double *arr, int N, QString picPath);
 double chaosDimension(double *arr, int N, QString picPath);
 double enthropy(double *arr, int N, QString picPath, int numOfRanges);
-void four1(double *dataF, int nn, int isign);
-double * hilbert(double * arr, int fftLen, double sampleFreq, double lowFreq, double highFreq);
+void four1(double * dataF, int nn, int isign);
+void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath);
+void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath);
+void bayesCount(double * dataIn, int length, int numOfIntervals, double **out);
 
 double mean(double *arr, int length);
 double variance(double *arr, int length);
@@ -62,6 +64,8 @@ void readSpectraFile(ifstream & file, QString filename, double ** outData, int n
 void readSpectraFileLine(ifstream & file, QString filename, double ** outData, int ns, int spLength);
 void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
 void readICAMatrix(QString path, double *** matrixA, int ns);
+
+void splitZeros(double *** inData, int ns, int length, int * outLength);
 
 void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth);
 

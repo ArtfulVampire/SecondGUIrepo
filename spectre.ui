@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>310</y>
+     <y>370</y>
      <width>220</width>
      <height>30</height>
     </rect>
@@ -37,7 +37,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>340</y>
+     <y>400</y>
      <width>221</width>
      <height>95</height>
     </rect>
@@ -220,9 +220,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>129</y>
+     <y>120</y>
      <width>251</width>
-     <height>168</height>
+     <height>249</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -325,6 +325,27 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QRadioButton" name="bayesRadioButton">
+        <property name="text">
+         <string>Bayes</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="d2RadioButton">
+        <property name="text">
+         <string>D2 chaos dimension</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="hilbertsVarRadioButton">
+        <property name="text">
+         <string>hilbert's variance</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
@@ -366,11 +387,11 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>260</x>
-     <y>310</y>
+     <y>380</y>
      <width>257</width>
      <height>80</height>
     </rect>

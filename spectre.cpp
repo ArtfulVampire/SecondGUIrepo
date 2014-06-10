@@ -30,6 +30,9 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     group2->addButton(ui->spectraRadioButton);
     group2->addButton(ui->brainRateRadioButton);
     group2->addButton(ui->phaseDifferenceRadioButton);
+    group2->addButton(ui->bayesRadioButton);
+    group2->addButton(ui->hilbertsVarRadioButton);
+    group2->addButton(ui->d2RadioButton);
     ui->spectraRadioButton->setChecked(true);
 
     group3 = new QButtonGroup;
@@ -1007,40 +1010,62 @@ void Spectre::countSpectra()
 
     double sum1 = 0.;
     double sum2 = 0.;
-    FILE * file;
+    ofstream outStream;
+
+    double ** dataIn;
+    double * tempVec;
+    int numOfIntervals = 20;
 
     for(int a = 0; a < lst.length(); ++a)
     {
         if(lst[a].contains("_num") || lst[a].contains("_300")) continue;
 
+        //read data file
+        dir->cd(ui->lineEdit_1->text());
+        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[a]));
+        readDataFile(inStream, helpString, &dataIn, ns, &NumOfSlices, fftLength);
+        dir->cd(dirBC->absolutePath());
 
-        if(!ui->phaseDifferenceRadioButton->isChecked())
+        dir->cd(ui->lineEdit_2->text());  //cd to output dir
+        helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
+        outStream.open(helpString.toStdString().c_str());
+        if(!outStream.good())
         {
-            if(!readFile(a, dataFFT)) continue;
-
-            dir->cd(ui->lineEdit_2->text());  //cd to output dir
-            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
-            file = fopen(helpString.toStdString().c_str(), "w");
-            if(file == NULL)
+            cout << "bad outStream" << endl;
+            for(int i = 0; i < ns; ++i)
             {
-                cout<<"file to write spectra == NULL"<<endl;
-                return;
+                delete []dataIn[i];
             }
+            delete []dataIn;
 
+
+            continue;
+        }
+
+
+        if(ui->brainRateRadioButton->isChecked() || ui->spectraRadioButton->isChecked())
+        {
+            if(!readFile(a, dataIn, dataFFT))
+            {
+                outStream.close();
+                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
+                remove(helpString.toStdString().c_str());
+                continue;
+            }
 
             if(ui->spectraRadioButton->isChecked())
             {
                 // write spectra
-                for(int i=0; i<ns; ++i)                               ///save BY CHANNELS!!!  except markers
+                for(int i = 0; i < ns; ++i)                               ///save BY CHANNELS!!!  except markers
                 {
-                    for(int k=left; k<right+1; ++k)
+                    for(int k = left; k < right + 1; ++k)
                     {
-                        if((k-left)>=rangeLimits[i][0] && (k-left)<=rangeLimits[i][1])
-                            fprintf(file, "%lf\n", dataFFT[i][k]);
+                        if((k-left) >= rangeLimits[i][0] && (k-left) <= rangeLimits[i][1])
+                            outStream << dataFFT[i][k] << '\n';
                         else
-                            fprintf(file, "0.000\n");
+                            outStream << "0.000" << '\n';
                     }
-                    fprintf(file, "\n");
+                    outStream << '\n';
                 }
             }
             if(ui->brainRateRadioButton->isChecked())
@@ -1057,25 +1082,18 @@ void Spectre::countSpectra()
                     }
                     sum2 /= sum1;
                     //                cout<<sum2<<endl;
-                    fprintf(file, "%lf\n", sum2);
+                    outStream << sum2 << '\n';
                 }
             }
         }
-        else
+        else if(ui->phaseDifferenceRadioButton->isChecked())
         {
-            if(!readFilePhase(a, dataPhase))
+            if(!readFilePhase(a, dataIn, dataPhase))
             {
-                cout<<"bad file "<<lst[a].toStdString()<<endl;
+                outStream.close();
+                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
+                remove(helpString.toStdString().c_str());
                 continue;
-            }
-
-            dir->cd(ui->lineEdit_2->text());  //cd to output dir
-            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
-            file = fopen(helpString.toStdString().c_str(), "w");
-            if(file == NULL)
-            {
-                cout<<"file to write spectra == NULL"<<endl;
-                return;
             }
 
             // write spectra
@@ -1087,16 +1105,54 @@ void Spectre::countSpectra()
                     {
                         if((k-left)>=rangeLimits[i][0] && (k-left)<=rangeLimits[i][1])
                         {
-                            fprintf(file, "%lf\n", dataPhase[i][j][k]);
+                            outStream << dataPhase[i][j][k] << '\n';
                         }
                         else
-                            fprintf(file, "0.000\n");
+                            outStream << "0.000\n";
                     }
-                    fprintf(file, "\n");
+                    outStream << '\n';
                 }
             }
         }
-        fclose(file);
+        else if(ui->hilbertsVarRadioButton->isChecked())
+        {
+            //clean from zeros ????
+            for(int i = 0; i < ns; ++i)
+            {
+                hilbert(dataIn[i], fftLength, 250., ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
+                outStream << variance(tempVec, fftLength) << '\n';
+//                hilbertPieces(dataIn[i], NumOfSlices, 250., ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
+//                outStream << variance(tempVec, NumOfSlices) << '\n';
+
+                delete []tempVec;
+            }
+        }
+        else if(ui->bayesRadioButton->isChecked())
+        {
+            //clean from zeros
+            splitZeros(&dataIn, ns, fftLength, &NumOfSlices);
+
+            for(int i = 0; i < ns; ++i)
+            {
+
+                bayesCount(dataIn[i], NumOfSlices, numOfIntervals, &tempVec);
+                for(int j = 0; j < numOfIntervals; ++j)
+                {
+                    outStream << tempVec[j] << '\n';
+                }
+                outStream << '\n';
+                delete []tempVec;
+            }
+
+        }
+
+
+        outStream.close();
+        for(int i = 0; i < ns; ++i)
+        {
+            delete []dataIn[i];
+        }
+        delete []dataIn;
 
 
 
@@ -1104,6 +1160,12 @@ void Spectre::countSpectra()
         {
             ui->progressBar->setValue(100*(a+1)/lst.length());
         }
+    }
+
+    if(ui->bayesRadioButton->isChecked())
+    {
+        ui->leftSpinBox->setValue(1);
+        ui->rightSpinBox->setValue(numOfIntervals);
     }
     ui->progressBar->setValue(0);
 
@@ -1178,21 +1240,8 @@ void Spectre::countSpectra()
 
 }
 
-int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
+int Spectre::readFile(int &num, double ** data2, double **dataFFT)  /////////EDIT
 {
-
-//    cout<<QDir::toNativeSeparators(dir->absolutePath()).toStdString()<<endl;
-
-
-
-    dir->cd(ui->lineEdit_1->text());
-    FILE * file;
-
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[num]));
-
-    double ** data2;
-    readDataFile(inStream, helpString, &data2, ns, &NumOfSlices, fftLength);
-
     //correct Eyes number
     Eyes = 0;
     NumOfSlices = fftLength;
@@ -1202,103 +1251,30 @@ int Spectre::readFile(int &num, double **dataFFT)  /////////EDIT
         h = 0;
         for(int j = 0; j < ns; ++j)
         {
-            if(data2[j][i] == 0.) ++h;
+            if(fabs(data2[j][i]) <= 0.07) ++h;
         }
         if(h == ns) Eyes += 1;
     }
 
     if((NumOfSlices-Eyes) < 500) // 0.2*4096/250 = 3.1 sec
     {
-        for(int i=0; i<ns; ++i)
-        {
-            delete []data2[i];
-        }
-        delete []data2;
+        cout << num << "'th file too short" << endl;
         return 0;
     }
 
     calcSpectre(data2, &dataFFT, ns, fftLength, Eyes, ui->smoothBox->value());
 
 
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []data2[i];
-    }
-    delete []data2;
-
     dir->cd(dirBC->absolutePath());
     return 1;
 }
 
 
-int Spectre::readFilePhase(int &num, double ***dataPhase)
+int Spectre::readFilePhase(int &num, double ** data2, double ***dataPhase)
 {
         int h = 0;
 
         dir->cd(ui->lineEdit_1->text());
-//        FILE * file;
-
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[num]));
-        file1=fopen(helpString.toStdString().c_str(), "r");
-        if(file1==NULL)
-        {
-            cout<<"file==NULL"<< endl;
-            return 0;
-        }
-
-
-
-        fscanf(file1, "%*s %d\n", &NumOfSlices);
-        fscanf(file1, "%*s %d \n", &Eyes);
-
-
-
-        double ** data2 = new double* [ns];
-        for(int i=0; i<ns; ++i)
-        {
-            data2[i] = new double [fftLength];
-        }
-
-        double uh;
-        if(NumOfSlices>fftLength)   //too long - take the end of realisation
-        {
-            for(int i=fftLength; i<NumOfSlices; ++i)
-            {
-
-                for(int k=0; k<ns; ++k)
-                {
-                    fscanf(file1, "%lf", &uh);
-                }
-            }
-            for(int i=0; i<fftLength; ++i)         //saved BY SLICES!!
-            {
-                for(int k=0; k<ns; ++k)
-                {
-                    fscanf(file1, "%lf\n", &data2[k][i]);
-                }
-            }
-        }
-        else
-        {
-            for(int i=0; i<NumOfSlices; ++i)         //saved BY SLICES!!
-            {
-                for(int k=0; k<ns; ++k)
-                {
-                    fscanf(file1, "%lf\n", &data2[k][i]);
-                }
-            }
-            //fill the rest with zeros
-            for(int i=NumOfSlices; i<fftLength; ++i)
-            {
-                for(int k=0; k<ns; ++k)
-                {
-                    data2[k][i]=0.;
-                }
-            }
-
-
-        }
-        fclose(file1);
 
         //correct Eyes number
         Eyes=0;
@@ -1308,21 +1284,15 @@ int Spectre::readFilePhase(int &num, double ***dataPhase)
             h=0;
             for(int j=0; j<ns; ++j)
             {
-                if(data2[j][i]==0.) ++h;
+                if(fabs(data2[j][i]) <= 0.07) ++h;
             }
             if(h==ns) Eyes+=1;
         }
 
-//        if((NumOfSlices-Eyes)/double(NumOfSlices)<0.1) // 0.2*4096/250 = 3.1 sec
         if((NumOfSlices-Eyes) < 500) // 0.2*4096/250 = 3.1 sec
         {
             cout<<"Too short real signal "<<helpString.toStdString()<<endl;//<<NumOfSlices<<"  "<<Eyes<<endl<<endl;
 
-            for(int i=0; i<ns; ++i)
-            {
-                delete []data2[i];
-            }
-            delete []data2;
 
             return 0;
         }

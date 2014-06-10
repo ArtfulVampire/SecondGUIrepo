@@ -597,6 +597,13 @@
        </item>
       </layout>
      </item>
+     <item row="8" column="1">
+      <widget class="QPushButton" name="hilbertPushButton">
+       <property name="text">
+        <string>Hilbert</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="layoutWidget">

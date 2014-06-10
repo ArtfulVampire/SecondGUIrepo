@@ -395,96 +395,330 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
     paint->end();
 }
 
-double *hilbert(double * arr, int fftLen, double sampleFreq, double lowFreq, double highFreq )
+void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath="")
 {
-    double *spectre = new double [2*fftLen]; //Hilbert
+
+    int fftLen = int(pow(2., ceil(log(inLength)/log(2.))));
+    (*out) = new double [2*fftLen];
     double spStep = sampleFreq/fftLen;
 
+    double * tempArr = new double [fftLen];
+    double * filteredArr = new double [fftLen];
     for(int i = 0; i < fftLen; ++i)
     {
-        spectre[ 2 * i + 0] = arr[i];
-        spectre[ 2 * i + 1] = 0.;
+        tempArr[i] = 0.;
+        filteredArr[i] = 0.;
     }
-    four1(spectre-1, fftLen, 1);
 
+    for(int i = 0; i < inLength; ++i)
+    {
+        (*out)[ 2 * i + 0] = arr[i] * sqrt(fftLen/double(inLength));
+        (*out)[ 2 * i + 1] = 0.;
+    }
+    for(int i = inLength; i < fftLen; ++i)
+    {
+        (*out)[ 2 * i + 0] = 0.;
+        (*out)[ 2 * i + 1] = 0.;
+    }
+    four1((*out)-1, fftLen, 1);
     //start filtering
     for(int i = 0; i < fftLen; ++i)
     {
         if(i < 2.*lowFreq/spStep || i > 2.*highFreq/spStep)
-            spectre[i] = 0.;
+            (*out)[i] = 0.;
     }
     for(int i = fftLen; i < 2*fftLen; ++i)
     {
         if(((2*fftLen - i) < 2.*lowFreq/spStep) || (2*fftLen - i > 2.*highFreq/spStep))
-            spectre[i] = 0.;
+            (*out)[i] = 0.;
     }
-    spectre[0] = 0.;
-    spectre[1] = 0.;
-    spectre[fftLen] = 0.;
-    spectre[fftLen+1] = 0.;
+    (*out)[0] = 0.;
+    (*out)[1] = 0.;
+    (*out)[fftLen] = 0.;
+    (*out)[fftLen+1] = 0.;
     //end filtering
 
-    four1(spectre-1, fftLen, -1);
+    four1((*out)-1, fftLen, -1);
+    for(int i = 0; i < inLength; ++i)
+    {
+        filteredArr[i] = (*out)[2*i]/fftLen*2;
+    }
+
+
+    //Hilbert via FFT
+    for(int i = 0; i < inLength; ++i)
+    {
+        (*out)[ 2 * i + 0] = filteredArr[i] * sqrt(fftLen/double(inLength));
+        (*out)[ 2 * i + 1] = 0.;
+    }
+    for(int i = inLength; i < fftLen; ++i)
+    {
+        (*out)[ 2 * i + 0] = 0.;
+        (*out)[ 2 * i + 1] = 0.;
+    }
+    four1((*out)-1, fftLen, 1);
+
+    for(int i = 0; i < fftLen/2; ++i)
+    {
+        (*out)[2*i + 0] = 0.;
+        (*out)[2*i + 1] = 0.;
+    }
+    four1((*out)-1, fftLen, -1);
+
+    for(int i = 0; i < inLength; ++i)
+    {
+        tempArr[i] = (*out)[2*i+1]/fftLen*2; //hilbert
+    }
+    //end Hilbert via FFT
+
+
     for(int i = 0; i < fftLen; ++i)
     {
-        arr[i] = spectre[2*i]*2./fftLen;
+        (*out)[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
+    }
+
+
+
+
+
+    if(!picPath.isEmpty())
+    {
+
+        //start check draw - OK
+        QPixmap pic(fftLen,600);
+        QPainter *pnt = new QPainter;
+        pic.fill();
+        pnt->begin(&pic);
+        //    double sum, sum2;
+        double enlarge = 10.;
+
+        pnt->setPen("black");
+        for(int i = 0; i < pic.width()-1; ++i)
+        {
+            pnt->drawLine(i, pic.height()/2. - enlarge * filteredArr[i], i+1, pic.height()/2. - enlarge * filteredArr[i+1]);
+        }
+        pnt->setPen("blue");
+        for(int i = 0; i < pic.width()-1; ++i)
+        {
+            //        pnt->drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
+        }
+        pnt->setPen("green");
+        for(int i = 0; i < pic.width()-1; ++i)
+        {
+            pnt->drawLine(i, pic.height()/2. - enlarge * (*out)[i], i+1, pic.height()/2. - enlarge * (*out)[i+1]);
+        }
+
+        pic.save(picPath, 0, 100);
+        pic.fill();
+        pnt->end();
+        delete pnt;
+        cout << "hilber drawn" << endl;
+        //end check draw
+    }
+
+
+
+
+
+    delete []tempArr;
+    delete []filteredArr;
+
+}
+
+void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath="")
+{
+    int fftLen = int(pow(2., floor(log(inLength)/log(2.))));
+    (*out) = new double [2*fftLen];
+    double spStep = sampleFreq/fftLen;
+
+    double * tempArr = new double [inLength];
+    double * filteredArr = new double [inLength];
+
+    for(int i = 0; i < fftLen; ++i)
+    {
+        (*out)[ 2 * i + 0] = arr[i];
+        (*out)[ 2 * i + 1] = 0.;
+    }
+    four1((*out)-1, fftLen, 1);
+    //start filtering
+    for(int i = 0; i < fftLen; ++i)
+    {
+        if(i < 2.*lowFreq/spStep || i > 2.*highFreq/spStep)
+            (*out)[i] = 0.;
+    }
+    for(int i = fftLen; i < 2*fftLen; ++i)
+    {
+        if(((2*fftLen - i) < 2.*lowFreq/spStep) || (2*fftLen - i > 2.*highFreq/spStep))
+            (*out)[i] = 0.;
+    }
+    (*out)[0] = 0.;
+    (*out)[1] = 0.;
+    (*out)[fftLen] = 0.;
+    (*out)[fftLen+1] = 0.;
+    //end filtering
+
+    four1((*out)-1, fftLen, -1);
+    for(int i = 0; i < fftLen; ++i)
+    {
+        filteredArr[i] = (*out)[2*i]/fftLen*2;
     }
 
 
     //Hilbert via FFT
     for(int i = 0; i < fftLen; ++i)
     {
-        spectre[ 2 * i + 0] = arr[i];
-        spectre[ 2 * i + 1] = 0.;
+        (*out)[ 2 * i + 0] = filteredArr[i];
+        (*out)[ 2 * i + 1] = 0.;
     }
-    four1(spectre-1, fftLen, 1);
+    four1((*out)-1, fftLen, 1);
 
     for(int i = 0; i < fftLen/2; ++i)
     {
-        spectre[2*i + 0] = 0.;
-        spectre[2*i + 1] = 0.;
+        (*out)[2*i + 0] = 0.;
+        (*out)[2*i + 1] = 0.;
     }
-    four1(spectre-1, fftLen, -1);
+    four1((*out)-1, fftLen, -1);
 
     for(int i = 0; i < fftLen; ++i)
     {
-        spectre[i] = spectre[2*i+1]/fftLen*2;
+        tempArr[i] = (*out)[2*i+1]/fftLen*2; //hilbert
     }
     //end Hilbert via FFT
 
 
-
-/*
-    //start check draw - OK
-    QPixmap pic(fftLen,600);
-    QPainter *pnt = new QPainter;
-    pic.fill();
-    pnt->begin(&pic);
-    double sum, sum2;
-
-    pnt->setPen("black");
-    for(int i = 0; i < pic.width()-1; ++i)
+    for(int i = 0; i < fftLen; ++i)
     {
-        pnt->drawLine(i, pic.height()/2. - arr[i * fftLen/pic.width()], i+1, pic.height()/2. - arr[(i+1) * fftLen/pic.width()]);
-    }
-    pnt->setPen("blue");
-    pnt->setPen("green");
-    for(int i = 0; i < pic.width()-1; ++i)
-    {
-        sum = arr[i * fftLen/pic.width()] * arr[i * fftLen/pic.width()] + spectre[i * fftLen/pic.width()]*spectre[i * fftLen/pic.width()];
-        sum = sqrt(sum);
-        sum2 = arr[(i+1) * fftLen/pic.width()] * arr[(i+1) * fftLen/pic.width()] + spectre[(i+1) * fftLen/pic.width()] * spectre[(i+1) * fftLen/pic.width()];
-        sum2 = sqrt(sum2);
-        pnt->drawLine(i, pic.height()/2. - sum, i+1, pic.height()/2. - sum2);
+        (*out)[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
     }
 
-    pic.save("/media/Files/Data/Hilbert.png", 0, 100);
-    pic.fill();
-    pnt->end();
-    delete pnt;
-    //end check draw
-*/
-    return spectre;
+
+
+
+
+    //second piece
+
+    for(int i = 0; i < fftLen; ++i)
+    {
+        (*out)[ 2 * i + 0] = arr[i + inLength-fftLen];
+        (*out)[ 2 * i + 1] = 0.;
+    }
+    four1((*out)-1, fftLen, 1);
+    //start filtering
+    for(int i = 0; i < fftLen; ++i)
+    {
+        if(i < 2.*lowFreq/spStep || i > 2.*highFreq/spStep)
+            (*out)[i] = 0.;
+    }
+    for(int i = fftLen; i < 2*fftLen; ++i)
+    {
+        if(((2*fftLen - i) < 2.*lowFreq/spStep) || (2*fftLen - i > 2.*highFreq/spStep))
+            (*out)[i] = 0.;
+    }
+    (*out)[0] = 0.;
+    (*out)[1] = 0.;
+    (*out)[fftLen] = 0.;
+    (*out)[fftLen+1] = 0.;
+    //end filtering
+
+    four1((*out)-1, fftLen, -1);
+    for(int i = 0; i < fftLen; ++i)
+    {
+        filteredArr[i + inLength - fftLen] = (*out)[2*i]/fftLen*2;
+    }
+
+
+    //Hilbert via FFT
+    for(int i = 0; i < fftLen; ++i)
+    {
+        (*out)[ 2 * i + 0] = filteredArr[i + inLength - fftLen];
+        (*out)[ 2 * i + 1] = 0.;
+    }
+    four1((*out)-1, fftLen, 1);
+    for(int i = 0; i < fftLen/2; ++i)
+    {
+        (*out)[2*i + 0] = 0.;
+        (*out)[2*i + 1] = 0.;
+    }
+    four1((*out)-1, fftLen, -1);
+
+    for(int i = 0; i < fftLen; ++i)
+    {
+        tempArr[i + inLength - fftLen] = (*out)[2*i+1]/fftLen*2; //hilbert
+    }
+    //end Hilbert via FFT
+
+
+    for(int i = 0; i < inLength; ++i)
+    {
+        (*out)[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
+    }
+
+
+    if(!picPath.isEmpty())
+    {
+
+        //start check draw - OK
+        QPixmap pic(inLength,600);
+        QPainter *pnt = new QPainter;
+        pic.fill();
+        pnt->begin(&pic);
+        //    double sum, sum2;
+        double enlarge = 10.;
+
+        pnt->setPen("black");
+        for(int i = 0; i < pic.width()-1; ++i)
+        {
+            pnt->drawLine(i, pic.height()/2. - enlarge * filteredArr[i], i+1, pic.height()/2. - enlarge * filteredArr[i+1]);
+        }
+        pnt->setPen("blue");
+        for(int i = 0; i < pic.width()-1; ++i)
+        {
+            //        pnt->drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
+        }
+        pnt->setPen("green");
+        for(int i = 0; i < pic.width()-1; ++i)
+        {
+            pnt->drawLine(i, pic.height()/2. - enlarge * (*out)[i], i+1, pic.height()/2. - enlarge * (*out)[i+1]);
+        }
+
+        pic.save(picPath, 0, 100);
+        pic.fill();
+        pnt->end();
+        delete pnt;
+        cout << "hilber drawn" << endl;
+        //end check draw
+    }
+
+
+
+
+    delete []tempArr;
+    delete []filteredArr;
+
+}
+
+void bayesCount(double * dataIn, int length, int numOfIntervals, double ** out)
+{
+    double maxAmpl = 80.; //generality
+    int helpInt;
+    (*out) = new double [numOfIntervals];
+
+    for(int k = 0; k < numOfIntervals; ++k)
+    {
+        (*out)[k] = 0;
+    }
+    for(int j = 0; j < length; ++j)
+    {
+        helpInt = int(floor((dataIn[j] + maxAmpl) / (2.*maxAmpl/double(numOfIntervals))));
+
+        if(helpInt != min(max(0, helpInt), numOfIntervals-1)) continue; //if helpInt not in range
+
+        (*out)[helpInt] += 1;
+    }
+    for(int k = 0; k < numOfIntervals; ++k)
+    {
+        (*out)[k] /= double(length)*10.;
+    }
 }
 
 double red(int range, int j, double V, double S)
@@ -960,6 +1194,51 @@ void readSpectraFileLine(QString filename, double **outData, int ns, int spLengt
         }
     }
     file.close();
+}
+
+void splitZeros(double *** dataIn, int ns, int length, int * outLength)
+{
+    bool flag[length];
+    bool startFlag = 0;
+    int start = -1;
+    int finish = -1;
+    int allEyes = 0;
+    for(int i = 0; i < length; ++i)
+    {
+        flag[i] = 0;
+        for(int j = 0; j < ns; ++j)
+        {
+            if((*dataIn)[j][i] != 0.)
+            {
+                flag[i] = 1;
+                break;
+            }
+        }
+    }
+    for(int i = 0; i < length; ++i)
+    {
+        if(flag[i] == 0 && startFlag == 0)
+        {
+            start = i;
+            startFlag = 1;
+        }
+
+        if(flag[i] == 1 && startFlag == 1)
+        {
+            finish = i;
+            startFlag = 0;
+            //split
+            for(int k = start; k < finish; ++k)
+            {
+                for(int j = 0; j < ns; ++j)
+                {
+                    (*dataIn)[j][k] = (*dataIn)[j][k + finish - start - allEyes];
+                }
+            }
+            allEyes += finish-start;
+        }
+    }
+    (*outLength) = length - allEyes;
 }
 
 
