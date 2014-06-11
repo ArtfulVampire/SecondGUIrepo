@@ -312,13 +312,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="phaseDifferenceRadioButton">
-        <property name="text">
-         <string>phase difference</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QRadioButton" name="brainRateRadioButton">
         <property name="text">
          <string>brain rate</string>

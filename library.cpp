@@ -114,11 +114,6 @@ double fractalDimension(double *arr, int N, QString picPath)
     return slope;
 }
 
-double chaosDimension(double *arr, int N, QString picPath)
-{
-    return 0.;
-}
-
 
 double quantile(double arg)
 {
@@ -1242,6 +1237,58 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength)
 }
 
 
+void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength)
+{
+    bool flag[length];
+    (*outLength) = length;
+    for(int i = 0; i < length; ++i)
+    {
+        flag[i] = 0;
+        for(int j = 0; j < ns; ++j)
+        {
+            if((*dataIn)[j][i] != 0.)
+            {
+                flag[i] = 1;
+                break;
+            }
+        }
+    }
+    if(flag[0] == 0)
+    {
+        for(int i = 0; i < length; ++i)
+        {
+            if(flag[i] == 1)
+            {
+                //generality, use relocate pointer
+                for(int k = 0; k < i; ++k)
+                {
+                    for(int j = 0; j < ns; ++j)
+                    {
+                        (*dataIn)[j][k] = (*dataIn)[j][k + i];
+                    }
+                }
+                (*outLength) -= i;
+                break;
+            }
+
+        }
+    }
+    if(flag[(*outLength) - 1] == 0)
+    {
+        for(int i = (*outLength) - 1; i > 0; --i)
+        {
+            if(flag[i] == 1)
+            {
+                (*outLength) = i;
+                break;
+            }
+
+        }
+    }
+
+}
+
+
 void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth)
 {
 
@@ -1262,6 +1309,7 @@ void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, in
         for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
         {
             (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fftLength; //0.004 = 1/250 generality
+//            (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fmin(fftLength, fftLength-Eyes); //0.004 = 1/250 generality
         }
 
         leftSmoothLimit = 0;

@@ -29,7 +29,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     group2 = new QButtonGroup;
     group2->addButton(ui->spectraRadioButton);
     group2->addButton(ui->brainRateRadioButton);
-    group2->addButton(ui->phaseDifferenceRadioButton);
+//    group2->addButton(ui->phaseDifferenceRadioButton);
     group2->addButton(ui->bayesRadioButton);
     group2->addButton(ui->hilbertsVarRadioButton);
     group2->addButton(ui->d2RadioButton);
@@ -604,7 +604,7 @@ void Spectre::compare()
 
         if(file!=NULL)
         {
-            for(int i=0; i<ns; ++i)                                ////////save BY CHANNELS!!!!!!!!!!!
+            for(int i=0; i<ns; ++i)
             {
                 for(int k=0; k<spLength; ++k)
                 {
@@ -1068,7 +1068,7 @@ void Spectre::countSpectra()
                     outStream << '\n';
                 }
             }
-            if(ui->brainRateRadioButton->isChecked())
+            else if(ui->brainRateRadioButton->isChecked())
             {
                 // write brainRate
                 for(int i = 0; i < ns; ++i)
@@ -1086,37 +1086,38 @@ void Spectre::countSpectra()
                 }
             }
         }
-        else if(ui->phaseDifferenceRadioButton->isChecked())
-        {
-            if(!readFilePhase(a, dataIn, dataPhase))
-            {
-                outStream.close();
-                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
-                remove(helpString.toStdString().c_str());
-                continue;
-            }
+//        else if(ui->phaseDifferenceRadioButton->isChecked())
+//        {
+//            if(!readFilePhase(a, dataIn, dataPhase))
+//            {
+//                outStream.close();
+//                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
+//                remove(helpString.toStdString().c_str());
+//                continue;
+//            }
 
-            // write spectra
-            for(int i = 0; i < ns; ++i)                               ///save BY CHANNELS!!!  except markers
-            {
-                for(int j = i+1; j < ns; ++j)
-                {
-                    for(int k=left; k<right+1; ++k)
-                    {
-                        if((k-left)>=rangeLimits[i][0] && (k-left)<=rangeLimits[i][1])
-                        {
-                            outStream << dataPhase[i][j][k] << '\n';
-                        }
-                        else
-                            outStream << "0.000\n";
-                    }
-                    outStream << '\n';
-                }
-            }
-        }
+//            // write spectra
+//            for(int i = 0; i < ns; ++i)                               ///save BY CHANNELS!!!  except markers
+//            {
+//                for(int j = i+1; j < ns; ++j)
+//                {
+//                    for(int k=left; k<right+1; ++k)
+//                    {
+//                        if((k-left)>=rangeLimits[i][0] && (k-left)<=rangeLimits[i][1])
+//                        {
+//                            outStream << dataPhase[i][j][k] << '\n';
+//                        }
+//                        else
+//                            outStream << "0.000\n";
+//                    }
+//                    outStream << '\n';
+//                }
+//            }
+//        }
         else if(ui->hilbertsVarRadioButton->isChecked())
         {
             //clean from zeros ????
+            splitZerosEdges(&dataIn, ns, fftLength, &NumOfSlices);
             for(int i = 0; i < ns; ++i)
             {
                 hilbert(dataIn[i], fftLength, 250., ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
@@ -1145,6 +1146,14 @@ void Spectre::countSpectra()
             }
 
         }
+        else if(ui->d2RadioButton->isChecked())
+        {
+            splitZerosEdges(&dataIn, ns, fftLength, &NumOfSlices);
+            for(int i = 0; i < ns; ++i)
+            {
+                outStream << fractalDimension(dataIn[i], NumOfSlices, "") << '\n';
+            }
+        }
 
 
         outStream.close();
@@ -1167,6 +1176,12 @@ void Spectre::countSpectra()
         ui->leftSpinBox->setValue(1);
         ui->rightSpinBox->setValue(numOfIntervals);
     }
+    else if(ui->d2RadioButton->isChecked() || ui->brainRateRadioButton->isChecked() || ui->hilbertsVarRadioButton->isChecked())
+    {
+        ui->leftSpinBox->setValue(1);
+        ui->rightSpinBox->setValue(1);
+    }
+
     ui->progressBar->setValue(0);
 
     dir->cd(dirBC->absolutePath());

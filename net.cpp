@@ -3260,7 +3260,7 @@ void Net::pca()
             }
             dF = (F-dF)/F;
             ++counter;
-            if(fabs(dF) < 1e-5) break;
+            if(fabs(dF) < 1e-8) break;
         }
 //        cout << k << "   " << counter << endl;
 

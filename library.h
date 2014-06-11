@@ -40,7 +40,6 @@ QColor hue(int range, int j, double V, double S);
 void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
 double fractalDimension(double *arr, int N, QString picPath);
-double chaosDimension(double *arr, int N, QString picPath);
 double enthropy(double *arr, int N, QString picPath, int numOfRanges);
 void four1(double * dataF, int nn, int isign);
 void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath);
@@ -66,6 +65,7 @@ void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLeng
 void readICAMatrix(QString path, double *** matrixA, int ns);
 
 void splitZeros(double *** inData, int ns, int length, int * outLength);
+void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 
 void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth);
 
