@@ -1753,6 +1753,14 @@ void MainWindow::readData()
                             fwrite(&a, sizeof(short), 1, edfNew);
                         }
                         data[j][i*nr[j]+k] = physMin[j] + (physMax[j]-physMin[j]) * (double(a)-digMin[j]) / (digMax[j] - digMin[j]);   //enc
+                        if(j != ns-1)
+                        {
+                            data[j][i*nr[j]+k] = a *1./8.;
+                        }
+                        else
+                        {
+                            data[j][i*nr[j]+k] = a;
+                        }
                     }
                     else
                     {
@@ -1764,6 +1772,7 @@ void MainWindow::readData()
                                 fwrite(&a, sizeof(short), 1, edfNew);
                             }
                             data[j][i*nr[j]+k] = physMin[j] + (physMax[j]-physMin[j]) * (double(a)-digMin[j]) / (digMax[j] - digMin[j]);   //enc
+                            data[j][i*nr[j]+k] = a *1./8.;
                         }
                         else
                         {
@@ -5207,7 +5216,7 @@ void MainWindow::ICA() //fastICA
             }
             if(fabs((data[i][j] - sum1)/data[i][j]) > 0.05 && fabs(data[i][j]) > 0.1)
             {
-                cout << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << data[i][j] << endl;
+                cout << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << "\t"<< data[i][j] << endl;
             }
         }
     }

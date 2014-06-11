@@ -557,7 +557,6 @@ void Spectre::compare()
 {
     QStringList list; //0 - Spatial, 1 - Verbal, 2 - Gaps
 
-
     dir->cd(ui->lineEdit_1->text());   //input dir = /SpectraSmooth or
     nameFilters.clear();
     list.clear();
@@ -571,7 +570,7 @@ void Spectre::compare()
         nameFilters.append(helpString);
     }
     lst.clear();
-    lst=dir->entryList(nameFilters, QDir::Files, QDir::Size);
+    lst = dir->entryList(nameFilters, QDir::Files, QDir::Size);
 
     FILE * file;
     int NumOfPatterns=0;
@@ -1117,13 +1116,18 @@ void Spectre::countSpectra()
         else if(ui->hilbertsVarRadioButton->isChecked())
         {
             //clean from zeros ????
-            splitZerosEdges(&dataIn, ns, fftLength, &NumOfSlices);
+            splitZeros(&dataIn, ns, fftLength, &NumOfSlices);
+
             for(int i = 0; i < ns; ++i)
             {
-                hilbert(dataIn[i], fftLength, 250., ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
-                outStream << variance(tempVec, fftLength) << '\n';
+                helpString = "/media/Files/Data/AAX/Signals/" + QString::number(a) + ".png";
+//                hilbert(dataIn[i], fftLength, 250., ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
+                hilbert(dataIn[i], NumOfSlices, 250., 8., 12., &tempVec, helpString);
+                cout << lst[a].toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
+//                outStream << variance(tempVec, fftLength) << '\n';
+                outStream << mean(tempVec, NumOfSlices) << '\n';
 //                hilbertPieces(dataIn[i], NumOfSlices, 250., ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
-//                outStream << variance(tempVec, NumOfSlices) << '\n';
+//                outStream << variance(dataIn[i], NumOfSlices) << '\n';
 
                 delete []tempVec;
             }

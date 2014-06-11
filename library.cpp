@@ -122,14 +122,14 @@ double quantile(double arg)
     b=exp(0.14*log(1-arg));
     return (4.91*(a-b));
 }
+
 double mean(double *arr, int length)
 {
     double sum = 0.;
     for(int i = 0; i < length; ++i)
     {
-        sum += arr[i];
+        sum += arr[i] / double(length);
     }
-    sum /= (double)length;
     return sum;
 }
 
@@ -1109,6 +1109,7 @@ void readDataFile(ifstream & file, QString filename, double *** outData, int ns,
     }
     file.ignore(12); // "NumOfSlices "
     file >> *NumOfSlices;
+//    cout << filename.toStdString() << "\t" << *NumOfSlices << endl;
     *outData = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
@@ -1218,7 +1219,7 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength)
             startFlag = 1;
         }
 
-        if(flag[i] == 1 && startFlag == 1)
+        if((flag[i] == 1 && startFlag == 1) || (i == length-1 && startFlag == 1))
         {
             finish = i;
             startFlag = 0;
@@ -1234,6 +1235,7 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength)
         }
     }
     (*outLength) = length - allEyes;
+//    cout << length << "\t" << allEyes << "\t" << (*outLength) << "\t";
 }
 
 
