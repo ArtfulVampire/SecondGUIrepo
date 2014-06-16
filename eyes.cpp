@@ -5,7 +5,7 @@ Eyes::Eyes(QDir *dir_, int ns_) :
     ui(new Ui::Eyes)
 {
     ui->setupUi(this);
-    ns=ns_;
+    ns = ns_;
     dir = new QDir();
     dirBC = new QDir();
 
@@ -28,7 +28,7 @@ Eyes::Eyes(QDir *dir_, int ns_) :
 
 void Eyes::setDir(QAbstractButton* but)
 {
-    cout<<but->text().toStdString()<<endl;
+    cout << but->text().toStdString() << endl;
     ui->lineEdit_3->setText(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(but->text()));
 }
 
@@ -39,40 +39,33 @@ void Eyes::setAutoProcessingFlag(bool a)
 
 void Eyes::eyesClean()
 {
+//    cout << "eyesClean: ns = " << ns << endl;
+//    return;
 
 
-    FILE * coef=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("eyes.txt").toStdString().c_str(), "r");
-    if(coef==NULL)
+    FILE * coef = fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("eyes.txt").toStdString().c_str(), "r");
+    if(coef == NULL)
     {
         QMessageBox::critical((QWidget*)this, tr("Warning"), tr("no coeffs found"), QMessageBox::Ok);
         return;
     }
 
-
-//    QString str = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(NULL, tr("choose dir"), dir->absolutePath())); // ExpName/Realisations or ExpName/cut
-//    if(str=="")
-//    {
-//        QMessageBox::critical((QWidget*)this, tr("Warning"), tr("no dir was chosen"), QMessageBox::Ok);
-//        return;
-//    }
-//    ui->lineEdit_3->setText(str);
-
     dir->cd(ui->lineEdit_3->text()); //or you can write in manually
 
-    QStringList list = dir->entryList(QDir::Files|QDir::NoDotAndDotDot); // files in the directory concerned
+    QStringList list = dir->entryList(QDir::Files|QDir::NoDotAndDotDot); // files in the directory
 
     int NumEog, NumEeg;
-    int NumOfSlices=0;
+    int NumOfSlices = 0;
 
     lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts); //Numbers of eog channels
 
     fscanf(coef, "NumOfEyesChannels %d\n", &NumEog);
-    cout<<"NumEog="<<NumEog<<endl;
+    cout << "NumEog = " << NumEog << endl;
     fscanf(coef, "NumOfEegChannels %d\n", &NumEeg);
-    cout<<"NumEeg="<<NumEeg<<endl;
+    cout << "NumEeg = " << NumEeg << endl;
 
     double **coefficients = new double * [NumEeg];
-    for(int i=0; i<NumEeg; ++i)
+    for(int i = 0; i < NumEeg; ++i)
     {
         coefficients[i] = new double [NumEog];
     }
@@ -81,12 +74,12 @@ void Eyes::eyesClean()
     double **dataF = new double * [ns];
 
 
-    for(int k=0; k<NumEeg; ++k)
+    for(int k = 0; k < NumEeg; ++k)
     {
-        for(int i=0; i<NumEog; ++i)
+        for(int i = 0; i < NumEog; ++i)
         {
             fscanf(coef, "%lf ", &coefficients[k][i]);
-            cout<<"coefficients["<<k<<"]["<<i<<"] = " <<coefficients[k][i]<<endl;
+            cout << "coefficients[" << k << "][" << i << "] = " << coefficients[k][i] << endl;
         }
         fscanf(coef, "\n");
     }
@@ -94,70 +87,67 @@ void Eyes::eyesClean()
 
     int a, NumOfEyes = 0;
     FILE * file;
-    cout<<"ns = "<<ns<<endl;
-    cout<<"dir of files to clean from eyes = "<<dir->absolutePath().toStdString()<<endl;
-    for(int i=0; i<list.length(); ++i)
+//    cout << "ns = " << ns << endl;
+//    cout << "dir of files to clean from eyes = " << dir->absolutePath().toStdString() << endl;
+    for(int i = 0; i < list.length(); ++i)
     {
-//        cout<<list.at(i).toStdString()<<endl;
-        file=fopen((QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(list.at(i))).toStdString().c_str(), "r");
-        if(file==NULL)
+        file = fopen((QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(list.at(i))).toStdString().c_str(), "r");
+        if(file == NULL)
         {
-            cout<<"file to read==NULL"<<endl;
+            cout << "file to read == NULL" << endl;
             continue;
         }
-        fscanf(file, "NumOfSlices %d\n", &NumOfSlices);        
-        fscanf(file, "NumOfSlicesEyesCut %d\n", &NumOfEyes);
+        fscanf(file, "NumOfSlices %d\n", &NumOfSlices);
 
-        cout<<"NumOfSlices = "<<NumOfSlices<<endl;
-        for(int j=0; j<ns; ++j)
+
+        for(int j = 0; j < ns; ++j)
         {
             dataF[j] = new double [NumOfSlices]; //set memory for data
         }
-        for(int j=0; j<NumOfSlices; ++j)
+
+        for(int j = 0; j < NumOfSlices; ++j)
         {
-            for(int k=0; k<ns; ++k)
+            for(int k = 0; k < ns; ++k)
             {
                 fscanf(file, "%lf\n", &dataF[k][j]); //read data
             }
         }
         fclose(file);
 
-        for(int k=0; k<NumEeg; ++k)
+        for(int k = 0; k < NumEeg; ++k)
         {
-            for(int j=0; j<NumOfSlices; ++j)
+            for(int j = 0; j < NumOfSlices; ++j)
             {
-                for(int z=0; z<NumEog; ++z)
+                for(int z = 0; z < NumEog; ++z)
                 {
-                    a=lst.at(z).toInt()-1;
-                    dataF[k][j]-=coefficients[k][z]*dataF[a][j];
+                    a = lst.at(z).toInt() - 1;
+                    dataF[k][j] -= coefficients[k][z]*dataF[a][j];
                 }
             }
         }
 
-        file=fopen((QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(list.at(i))).toStdString().c_str(), "w");
-        if(file==NULL)
+        file = fopen((QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(list.at(i))).toStdString().c_str(), "w");
+        if(file == NULL)
         {
-            cout<<"file to write==NULL"<<endl;
+            cout << "file to write == NULL" << endl;
             continue;
         }
         fprintf(file, "NumOfSlices %d\r\n", NumOfSlices);
-//        fprintf(file, "NumOfSlicesEyesCut %d\n", &NumOfEyes);
 
-        for(int j=0; j<NumOfSlices; ++j)
+        for(int j = 0; j < NumOfSlices; ++j)
         {
-            for(int k=0; k< ns-lst.length(); ++k) //don't write eog channels - generality (if k!= lst[i] foreach i)
+            for(int k = 0; k < ns; ++k)
             {
+                if(lst.contains(QString::number(k+1))) continue;
                 fprintf(file, "%lf\n", dataF[k][j]);
             }
         }
         fclose(file);
-        cout<<list.at(i).toStdString()<<endl;
 
-        for(int i=0; i<ns; ++i)
+        for(int i = 0; i < ns; ++i)
         {
             delete []dataF[i];
         }
-
 
         NumOfEyes = 0;
 
@@ -165,19 +155,19 @@ void Eyes::eyesClean()
     }
     dir->cd(dirBC->absolutePath());
 
-    cout<<"eyes cleaned"<<endl;
+    cout << "eyes cleaned" << endl;
     if(!autoFlag) QMessageBox::information((QWidget*)this, tr("Info"), tr("Eyes cleaned"), QMessageBox::Ok);
 
-    ns-=lst.length();  // generality
+    ns -= lst.length();  // generality
     emit setNsMain(ns);
 
     //error here
     delete []dataF;
 
 
-    for(int i=0; i<NumEeg; ++i)
+    for(int i = 0; i<NumEeg; ++i)
     {
-        if(coefficients[i]!=NULL) delete []coefficients[i];
+        if(coefficients[i] != NULL) delete []coefficients[i];
     }
     delete []coefficients;
     this->close();
@@ -201,138 +191,138 @@ void Eyes::eyesProcessing()
 
         QString helpString = dir->absolutePath();
         helpString.append(QDir::separator()).append("eyesSlices");
-        //    cout<<helpString.toStdString()<<endl;
+        //    cout << helpString.toStdString() << endl;
         list = QStringList(helpString);
     }
 
     lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);  //numbers of eog channels
 
-    int NumOfSlices=0, help=0;
+    int NumOfSlices = 0, help = 0;
     FILE * file;
 
     dataE = new double* [ns];
-    for(int i=0; i<ns; ++i)
+    for(int i = 0; i<ns; ++i)
     {
         dataE[i] = new double [250*60*5];           //for 5 minutes generality
     }
 
     //arrays for usability
     double **signal = new double * [lst.length()+1];
-    for(int i=0; i<lst.length()+1; ++i)
+    for(int i = 0; i<lst.length()+1; ++i)
     {
         signal[i] = new double [250*60*5];           //for 5 minutes generality
     }
 
     double **matrix = new double * [lst.length()+1];
-    for(int i=0; i<lst.length()+1; ++i)
+    for(int i = 0; i<lst.length()+1; ++i)
     {
         matrix[i] = new double [lst.length()+1];
     }
 
     double **matrixInv = new double * [lst.length()+1];
-    for(int i=0; i<lst.length()+1; ++i)
+    for(int i = 0; i<lst.length()+1; ++i)
     {
         matrixInv[i] = new double [lst.length()+1];
     }
 
     double **matrixTemp = new double * [lst.length()+1];
-    for(int i=0; i<lst.length()+1; ++i)
+    for(int i = 0; i<lst.length()+1; ++i)
     {
         matrixTemp[i] = new double [lst.length()+1];
     }
 
     double **coefficients = new double * [ns];
-    for(int i=0; i<ns; ++i)
+    for(int i = 0; i<ns; ++i)
     {
         coefficients[i] = new double [lst.length()];
     }
 
     double *average = new double [lst.length()+1];
-//    cout<<"2"<<endl;
+//    cout << "2" << endl;
 
     //make dataE array to count covariation matrix
-    for(int i=0; i<list.length(); ++i)
+    for(int i = 0; i<list.length(); ++i)
     {
-        file=fopen((list.at(i)).toStdString().c_str(), "r");
-//        cout<<(list.at(i)).toStdString().c_str()<<endl;
+        file = fopen((list.at(i)).toStdString().c_str(), "r");
+//        cout << (list.at(i)).toStdString().c_str() << endl;
         fscanf(file, "NumOfSlices %d\n", &help);
-//        cout<<help<<endl;
-        for(int j=0; j<help; ++j)
+//        cout << help << endl;
+        for(int j = 0; j<help; ++j)
         {
-            for(int k=0; k<ns; ++k)
+            for(int k = 0; k<ns; ++k)
             {
                 fscanf(file, "%lf", &dataE[k][NumOfSlices+j]);
             }
         }
-        NumOfSlices+=help;
+        NumOfSlices += help;
 
         fclose(file);
     }
-//    cout<<NumOfSlices<<endl;
-    for(int j=0; j<lst.length()+1; ++j)
+//    cout << NumOfSlices << endl;
+    for(int j = 0; j<lst.length()+1; ++j)
     {
-        average[j]=0.;
+        average[j] = 0.;
     }
-//    cout<<"3"<<endl;
+//    cout << "3" << endl;
 
 
 
 
 
     //count eog averages
-//    for(int i=0; i<NumOfSlices; ++i)
+//    for(int i = 0; i<NumOfSlices; ++i)
 //    {
-//        for(int j=0; j<lst.length(); ++j)
+//        for(int j = 0; j<lst.length(); ++j)
 //        {
-//            average[j]+=(dataE[lst.at(j).toInt()-1][i])/double(NumOfSlices); //cool    //-1 coz of 0 as first
+//            average[j]+ = (dataE[lst.at(j).toInt()-1][i])/double(NumOfSlices); //cool    //-1 coz of 0 as first
 //        }
 //    }
-//    cout<<"4"<<endl;
+//    cout << "4" << endl;
 
 
 
 
 
 
-    for(int i=0; i<lst.length(); ++i)
+    for(int i = 0; i<lst.length(); ++i)
     {
-        signal[i]=dataE[lst.at(i).toInt()-1];     //-1 coz of 0 as first
+        signal[i] = dataE[lst.at(i).toInt()-1];     //-1 coz of 0 as first
     }
 
 
     //for every channel count eog coefficients
-    for(int k=0; k<ui->spinBox->value(); ++k)
+    for(int k = 0; k<ui->spinBox->value(); ++k)
     {
 
-        signal[lst.length()]=dataE[k];
-        average[lst.length()]=0.;
+        signal[lst.length()] = dataE[k];
+        average[lst.length()] = 0.;
 
 //        //print the signals
-//        for(int j=0; j<lst.length()+1; ++j)
+//        for(int j = 0; j<lst.length()+1; ++j)
 //        {
-//            for(int i=0; i<NumOfSlices; ++i)
+//            for(int i = 0; i<NumOfSlices; ++i)
 //            {
-//                cout<<signal[j][i]<<"  ";
+//                cout << signal[j][i] << "  ";
 //            }
-//            cout<<endl<<endl;
+//            cout << endl << endl;
 //        }
-        for(int j=0; j<lst.length()+1; ++j)
+        for(int j = 0; j<lst.length()+1; ++j)
         {
-            for(int z=0; z<lst.length()+1; ++z)
+            for(int z = 0; z<lst.length()+1; ++z)
             {
-                matrix[j][z]=0.;
+                matrix[j][z] = 0.;
             }
         }
 
         //count covariation-matrix
-        for(int i=0; i<NumOfSlices; ++i)
+        for(int i = 0; i<NumOfSlices; ++i)
         {
-            average[lst.length()]+=(dataE[k][i])/double(NumOfSlices);
-            for(int j=0; j<lst.length()+1; ++j)
+            average[lst.length()] += (dataE[k][i])/double(NumOfSlices);
+            for(int j = 0; j<lst.length()+1; ++j)
             {
-                for(int z=0; z<lst.length()+1; ++z)
+                for(int z = 0; z<lst.length()+1; ++z)
                 {
-                    matrix[j][z]+=(signal[j][i]-average[j])*(signal[z][i]-average[z])/double(NumOfSlices);
+                    matrix[j][z] += (signal[j][i]-average[j])*(signal[z][i]-average[z])/double(NumOfSlices);
                 }
             }
         }
@@ -340,23 +330,23 @@ void Eyes::eyesProcessing()
 
 
         //1) set E-matrix
-        for(int j=0; j<lst.length()+1; ++j)
+        for(int j = 0; j < lst.length() + 1; ++j)
         {
-            for(int z=0; z<lst.length()+1; ++z)
+            for(int z = 0; z < lst.length() + 1; ++z)
             {
-                if(j==z) matrixInv[j][z]=1.;
-                else matrixInv[j][z]=0.;
+                if(j == z) matrixInv[j][z] = 1.;
+                else matrixInv[j][z] = 0.;
             }
         }
 
 //        //print cov-matrix
-//        for(int j=0; j<lst.length()+1; ++j)
+//        for(int j = 0; j<lst.length()+1; ++j)
 //        {
-//            for(int z=0; z<lst.length()+1; ++z)
+//            for(int z = 0; z<lst.length()+1; ++z)
 //            {
-//                cout<<matrix[j][z]<<"  ";
+//                cout << matrix[j][z] << "  ";
 //            }
-//            cout<<endl;
+//            cout << endl;
 //        }
 
 
@@ -366,21 +356,21 @@ void Eyes::eyesProcessing()
         //matrixTemp - current new auxiliary matrix
         //matrixInv - current inverse matrix
 
-//        for(int col=0; col<lst.length()+1; ++col)
+//        for(int col = 0; col<lst.length()+1; ++col)
 //        {
-//            for(int j=0; j<lst.length()+1; ++j)
+//            for(int j = 0; j<lst.length()+1; ++j)
 //            {
-//                for(int z=0; z<lst.length()+1; ++z)
+//                for(int z = 0; z<lst.length()+1; ++z)
 //                {
-//                    if(z==col)
+//                    if(z == col)
 //                    {
-//                        if(z!=j) matrixTemp[j][z]=-matrix[j][z]/matrix[col][col];
-//                        else matrixTemp[j][z]=1/matrix[col][col];
+//                        if(z! = j) matrixTemp[j][z] = -matrix[j][z]/matrix[col][col];
+//                        else matrixTemp[j][z] = 1/matrix[col][col];
 //                    }
 //                    else
 //                    {
-//                        if(z==j) matrixTemp[j][z]=1.;
-//                        else matrixTemp[j][z]=0.;
+//                        if(z == j) matrixTemp[j][z] = 1.;
+//                        else matrixTemp[j][z] = 0.;
 //                    }
 //                }
 //            }
@@ -391,26 +381,26 @@ void Eyes::eyesProcessing()
         invertMatrix2(matrix, lst.length() + 1, &matrixInv);
 
         //set coeffs
-        for(int i=0; i<lst.length(); ++i)
+        for(int i = 0; i<lst.length(); ++i)
         {
-            coefficients[k][i]=-matrixInv[i][lst.length()]/matrixInv[lst.length()][lst.length()];
+            coefficients[k][i] = -matrixInv[i][lst.length()]/matrixInv[lst.length()][lst.length()];
         }
     }
 
     //print inv-matrix into file
-    FILE * coef=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("eyes.txt").toStdString().c_str(), "w");
+    FILE * coef = fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("eyes.txt").toStdString().c_str(), "w");
     fprintf(coef, "NumOfEyesChannels %d\n", lst.length());
     fprintf(coef, "NumOfEegChannels %d\n", ui->spinBox->value());
-    for(int k=0; k<ui->spinBox->value(); ++k)
+    for(int k = 0; k<ui->spinBox->value(); ++k)
     {
-        for(int i=0; i<lst.length(); ++i)
+        for(int i = 0; i<lst.length(); ++i)
         {
             fprintf(coef, "%lf ", coefficients[k][i]);
         }
         fprintf(coef, "\r\n");
     }
     fclose(coef);
-    cout<<"coeffs ready"<<endl;
+    cout << "coeffs ready" << endl;
 
     //automatization
     if(!autoFlag) QMessageBox::information((QWidget*)this, tr("Info"), tr("Coeffs ready"), QMessageBox::Ok);
@@ -421,7 +411,7 @@ void Eyes::eyesProcessing()
 
 
     //clear memory
-    for(int i=0; i<ns; ++i)
+    for(int i = 0; i<ns; ++i)
     {
         delete []coefficients[i];
         delete []dataE[i];
@@ -429,7 +419,7 @@ void Eyes::eyesProcessing()
     delete []coefficients;
     delete []dataE;
 
-    for(int i=0; i<lst.length()+1; ++i)
+    for(int i = 0; i<lst.length()+1; ++i)
     {
         delete []matrixTemp[i];
         delete []matrix[i];

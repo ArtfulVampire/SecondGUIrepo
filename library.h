@@ -63,6 +63,7 @@ void readSpectraFile(ifstream & file, QString filename, double ** outData, int n
 void readSpectraFileLine(ifstream & file, QString filename, double ** outData, int ns, int spLength);
 void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
 void readICAMatrix(QString path, double *** matrixA, int ns);
+void writeICAMatrix(QString path, double ** matrixA, int ns);
 
 void splitZeros(double *** inData, int ns, int length, int * outLength);
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);

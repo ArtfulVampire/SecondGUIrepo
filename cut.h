@@ -33,7 +33,7 @@ class Cut : public QWidget
     Q_OBJECT
 
 public:
-    explicit Cut(QDir * dir_ = 0, int ns_ = 21);
+    explicit Cut(QDir * dir_ = 0, int ns_ = 21, bool withMarkersFlag_ = false);
     ~Cut();
     void setLimits();
     void lnWnd16();
@@ -106,6 +106,7 @@ private:
     int numOfWndIdle;
     int flagWnd;
     time_t duration;
+    bool withMarkersFlag;
 
     double zoomPrev, zoomCurr;
 

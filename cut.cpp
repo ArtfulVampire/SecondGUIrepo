@@ -5,7 +5,7 @@
 /*after every function the QDir dir is set to the ExpName directory*/
 
 
-Cut::Cut(QDir * dir_, int ns_) :
+Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
     ui(new Ui::Cut)
 {
     ui->setupUi(this);
@@ -29,6 +29,7 @@ Cut::Cut(QDir * dir_, int ns_) :
 
     ui->nsBox->setValue(ns_);
     ns = ns_;
+    withMarkersFlag = withMarkersFlag_;
 
 
     ui->nsBox->setMaximum(40);
@@ -1190,7 +1191,11 @@ void Cut::zero()
         for(int k = 0; k < ns; ++k)
         {
             if(data3[k][i] == 0.) h += 1;
-            if(!(ns == 20 && k == ns-1) ) data3[k][i] = 0.; //generality
+            if(k == ns-1 && withMarkersFlag)
+            {
+                continue;
+            }
+            data3[k][i] = 0.; //generality dont touch markers channel
         }
         if(h < ns) Eyes += 1;      //generality if there are channel with non-zero values
     }
@@ -1233,11 +1238,12 @@ void Cut::splitCut()
     {
         for(int k = 0; k < ns; ++k)
         {
+            if(k == ns-1 && withMarkersFlag && (i==0)) //first marker value
+            {
+                continue;
+            }
             data3[k][i] = data3[k][i + (rightEdge - leftEdge)];
-//            if(data3[k][i]==0.) h+=1;
-//            data3[k][i]=0.;
         }
-//        if(h < ns) Eyes+=1;      //generality if there are channel with non-zero values
     }
     NumOfSlices -= (rightEdge - leftEdge);
 

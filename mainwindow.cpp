@@ -297,6 +297,8 @@ MainWindow::MainWindow() :
     QObject::connect(ui->spocPushButton, SIGNAL(clicked()), this, SLOT(spoc()));
 
     QObject::connect(ui->hilbertPushButton, SIGNAL(clicked()), this, SLOT(hilbertCount()));
+
+    QObject::connect(ui->throwICPushButton, SIGNAL(clicked()), this, SLOT(throwIC()));
 /*
     //function test
     int leng = 65536;
@@ -1292,10 +1294,8 @@ void MainWindow::netShow()
 
 void MainWindow::cutShow()
 {
-    Cut *cut_e = new Cut(dir, ns);
+    Cut *cut_e = new Cut(dir, ns, withMarkersFlag);
     cut_e->show();
-//    cut_e->cutEyesAll();
-//    cut_e->close();
 }
 
 void MainWindow::makePaSlot() //250 - frequency generality
@@ -1321,7 +1321,7 @@ void MainWindow::makeShow()//250 - frequency generality
 void MainWindow::setEdfFile()
 {
     NumOfEdf = 0;
-    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget*)this, tr("EDF to open"), "/media/Files/Data", tr("EDF files (*.edf)")));
+    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget*)this, tr("EDF to open"), tr("/media/Files/Data"), tr("EDF files (*.EDF *.edf)")));
     if(helpString=="")
     {
         QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
@@ -1900,6 +1900,16 @@ void MainWindow::readData()
 
     staSlice += 3; //generality LAWL
 
+}
+
+void MainWindow::cleanData()
+{
+    for(int i = 0; i < nsBackup; ++i) //////////////////////////////////////////////
+    {
+        if(data[i]==NULL) break;
+        delete []data[i];
+    }
+    delete []data;
 }
 
 void MainWindow::makeDatFile()
@@ -2535,6 +2545,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     if(ui->sliceWithMarkersCheckBox->isChecked())
     {
         numChanToWrite = ns;
+        withMarkersFlag = true;
     }
     else
     {
@@ -2654,26 +2665,14 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
         ui->progressBar->setValue(0);
 
-        for(int i = 0; i < nsBackup; ++i)  ///////////////////////////
-        {
-            if(data[i]==NULL) break;
-            delete []data[i];
-        }
-        delete []data;
         helpString="data has been sliced \n";
         ui->textEdit->append(helpString);
 
 
     }
-    else
-    {
-        for(int i = 0; i < nsBackup; ++i) //////////////////////////////////////////////
-        {
-            if(data[i]==NULL) break;
-            delete []data[i];
-        }
-        delete []data;
-    }
+
+    cleanData();
+
 
     helpString="data sliced ";
     ui->textEdit->append(helpString);
@@ -3150,7 +3149,7 @@ void MainWindow::sliceGaps()
                 helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_254.").append(rightNumber(number, 4));
                 file=fopen(helpString.toStdString().c_str(), "w");
                 fprintf(file, "NumOfSlices %d \n", k-j);
-                for(int l=j; l < k; ++l)         //save BY SLICES!!
+                for(int l=j; l < k; ++l)
                 {
                     for(int m = 0; m < ns-1; ++m)
                     {
@@ -3206,7 +3205,7 @@ void MainWindow::sliceOneByOne() //generality, just for my current
             fprintf(file, "NumOfSlices %d \n", i-j);
             if(i-j > 15000 && (marker == "255" || marker == "254"))
             {
-                for(int l = j; l < i; ++l)         //save BY SLICES!!
+                for(int l = j; l < i; ++l)
                 {
                     for(int m = 0; m < ns-1; ++m)
                     {
@@ -3216,7 +3215,7 @@ void MainWindow::sliceOneByOne() //generality, just for my current
             }
             else
             {
-                for(int l = j; l < i; ++l)         //save BY SLICES!!
+                for(int l = j; l < i; ++l)
                 {
                     for(int m = 0; m < ns-1; ++m)
                     {
@@ -3241,7 +3240,7 @@ void MainWindow::sliceOneByOne() //generality, just for my current
 //            helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
             file = fopen(helpString.toStdString().c_str(), "w");
             fprintf(file, "NumOfSlices %d \n", k-j);
-            for(int l = j; l < k; ++l)         //save BY SLICES!!
+            for(int l = j; l < k; ++l)
             {
                 for(int m = 0; m < ns-1; ++m)
                 {
@@ -3263,7 +3262,7 @@ void MainWindow::sliceOneByOne() //generality, just for my current
 //    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
     file=fopen(helpString.toStdString().c_str(), "w");
     fprintf(file, "NumOfSlices %d \n", k-j);
-    for(int l = j; l < k; ++l)         //save BY SLICES!!
+    for(int l = j; l < k; ++l)
     {
         for(int m = 0; m < ns-1; ++m)
         {
@@ -3306,32 +3305,26 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
             {
                 marker = "sht";
             }
+
             ++number;
 
             helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
-            file = fopen(helpString.toStdString().c_str(), "w");
-            fprintf(file, "NumOfSlices %d \n", i-j);
-            if(i-j > 15000 && (marker == "254"))
+
+
+            if(!((i-j > 15000 && (marker == "254")) || (marker == "000"))) // dont write big rests and beginning
             {
-                for(int l = j; l < i; ++l)         //save BY SLICES!!
-                {
-                    for(int m = 0; m < numChanWrite; ++m)
-                    {
-                        fprintf(file, "0.000\n");
-                    }
-                }
-            }
-            else
-            {
-                for(int l = j; l < i; ++l)         //save BY SLICES!!
+                file = fopen(helpString.toStdString().c_str(), "w");
+
+                fprintf(file, "NumOfSlices %d \n", i-j);
+                for(int l = j; l < i; ++l)
                 {
                     for(int m = 0; m < numChanWrite; ++m)
                     {
                         fprintf(file, "%lf\n", data[m][l*nr[m]/nr[ns-1]]);
                     }
                 }
+                fclose(file);
             }
-            fclose(file);
 
             ui->progressBar->setValue(double(i)*100./ndr*nr[ns-1]);
 
@@ -3345,6 +3338,7 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
 
     }
 
+    /*
     //write last rest state
     marker = "end";
     k = ndr*nr[ns-1];
@@ -3353,15 +3347,16 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
 //    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
     file=fopen(helpString.toStdString().c_str(), "w");
     fprintf(file, "NumOfSlices %d \n", k-j);
-    for(int l = j; l < k; ++l)         //save BY SLICES!!
+    for(int l = j; l < k; ++l)
     {
-        for(int m = 0; m < ns-1; ++m)
+        for(int m = 0; m < numChanWrite; ++m)
         {
             fprintf(file, "%lf\n", data[m][l*nr[m]/nr[ns-1]]);
         }
 
     }
     fclose(file);
+    */
 }
 
 void MainWindow::sliceMati(int numChanWrite)
@@ -3435,7 +3430,7 @@ void MainWindow::sliceMati(int numChanWrite)
                 NumOfSlices = min(end - start - j*piece, piece);
                 fprintf(file, "NumOfSlices %d \n", NumOfSlices);
                 {
-                    for(int l = start+j*piece; l < min(start+(j+1)*piece, end); ++l)         //save BY SLICES!!
+                    for(int l = start+j*piece; l < min(start+(j+1)*piece, end); ++l)
                     {
                         for(int m = 0; m < numChanWrite; ++m)
                         {
@@ -3468,7 +3463,7 @@ void MainWindow::sliceMati(int numChanWrite)
         NumOfSlices = min(end - start - j*piece, piece);
         fprintf(file, "NumOfSlices %d \n", NumOfSlices);
         {
-            for(int l = start+j*piece; l < min(start+(j+1)*piece, end); ++l)         //save BY SLICES!!
+            for(int l = start+j*piece; l < min(start+(j+1)*piece, end); ++l)
             {
                 for(int m = 0; m < numChanWrite; ++m)
                 {
@@ -3955,10 +3950,15 @@ double * randomVector(int ns)
 void MainWindow::constructEDF()
 {
     readData(); // needed?
-    //all bounded to nsLine
+    cleanData();
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     ns = lst.length();
+    if(!QString(label[lst[ns-1].toInt()-1]).contains("Markers"))
+    {
+        QMessageBox::critical(this, tr("Error"), tr("bad channels list"), QMessageBox::Ok);
+        return;
+    }
 
     double ** newData = new double * [ns];
     for(int i = 0; i < ns; ++i)
@@ -4456,7 +4456,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     delete [] digMin;
     delete [] digMax;
 
-    cout << "EDF constructed: ime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "EDF constructed: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 
@@ -4773,6 +4773,7 @@ void MainWindow::ICA() //fastICA
                 {
                     helpInt = 0;
                     //clear memory
+                    cleanData();
                     for(int i = 0; i < ns; ++i)
                     {
                         delete [] covMatrix[i];
@@ -5063,6 +5064,7 @@ void MainWindow::ICA() //fastICA
                 if(1)
                 {
                     //clear memory
+                    cleanData();
                     for(int i = 0; i < ns; ++i)
                     {
                         delete [] covMatrix[i];
@@ -5294,19 +5296,8 @@ void MainWindow::ICA() //fastICA
 
     //now should draw amplitude maps OR write to file
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("maps.txt"));
-    FILE * map = fopen(helpString.toStdString().c_str(), "w");
-    double maxMagn = 0.;
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < ns; ++j)
-        {
-            fprintf(map, "%.3lf\t", matrixA[i][j]);
-            maxMagn = max(maxMagn, double(fabs(matrixA[i][j])));
-        }
-        fprintf(map, "\n");
-    }
-    fprintf(map, "max = %.3lf\n", maxMagn);
-    fclose(map);
+    writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
+
 
 
 
@@ -5320,6 +5311,7 @@ void MainWindow::ICA() //fastICA
 
 
     ns = ui->numOfIcSpinBox->value();
+    cleanData();
     for(int i = 0; i < ns; ++i)
     {
         delete [] covMatrix[i];
@@ -5375,8 +5367,6 @@ void MainWindow::icaClassTest() //non-optimized
 
     helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "maps.txt");
     readICAMatrix(helpString, &matrixA, numOfIC);
-
-//    matrixProduct(matrixA, dataICA, &data, numOfIC, ndr*fr);
 
     Spectre * spectr;// = Spectre(dir, numOfIC, ExpName);
     helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
@@ -5509,6 +5499,93 @@ void MainWindow::icaClassTest() //non-optimized
     }
     delete ANN;
     delete spectr;
+    cleanData();
+}
+
+void MainWindow::throwIC()
+{
+    if(!ui->filePath->text().contains("ica"))
+    {
+        cout << "bad ica file" << endl;
+        return;
+    }
+
+    //load ica file
+    readData();
+
+    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    if(!QString(label[lst[ns-1].toInt()-1]).contains("Markers"))
+    {
+        QMessageBox::critical(this, tr("Error"), tr("bad channels list"), QMessageBox::Ok);
+        return;
+    }
+
+
+    lst = ui->throwICLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    cout << "throwIC: going to throw " << lst.length() << " components - ";
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        cout << lst[i].toInt() << " ";
+    }
+    cout << "count from 0" << endl;
+
+
+
+
+    int fr = nr[0]; // generality
+
+
+    double ** dataICA = new double * [ns]; //with markers
+    for(int i = 0; i < ns; ++i)
+    {
+        dataICA[i] = new double [ndr*fr];
+        for(int j = 0; j < ndr*fr; ++j)
+        {
+            dataICA[i][j] = data[i][j];
+        }
+    }
+
+    int numOfIC = ui->numOfIcSpinBox->value(); // = 19
+
+    double ** matrixA = new double * [numOfIC];
+    for(int i = 0; i < numOfIC; ++i)
+    {
+        matrixA[i] = new double [numOfIC];
+    }
+
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "maps.txt");
+    readICAMatrix(helpString, &matrixA, numOfIC);
+
+    QList<int> thrownComp;
+    thrownComp.clear();
+
+
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        thrownComp << (lst[i].toInt() - 1);
+    }
+
+    for(int j = 0; j < fr*ndr; ++j)
+    {
+        for(int i = 0; i < numOfIC; ++i)
+        {
+            helpDouble = 0.;
+            for(int k = 0; k < numOfIC; ++k)
+            {
+                if(!thrownComp.contains(k)) helpDouble += matrixA[i][k] * dataICA[k][j]; //generality -1
+            }
+            data[i][j] = helpDouble;
+        }
+    }
+
+    ui->cleanRealisationsCheckBox->setChecked(true);
+    cleanDirs();
+    sliceOneByOneNew(ns);
+    cout << "sliced" << endl;
+    cleanData();
+
+    constructEDF();
+
 }
 
 void MainWindow::hilbertCount()

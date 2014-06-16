@@ -1357,7 +1357,7 @@ void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLeng
     if((*FileName) != NULL) delete [](*FileName);
 
 
-    (*NumberOfVectors) = 200; //generality
+    (*NumberOfVectors) = 600; //generality
 
     (*matrix) = new double * [(*NumberOfVectors)];
     for(int i = 0; i < (*NumberOfVectors); ++i)
@@ -1428,6 +1428,24 @@ void readICAMatrix(QString path, double *** matrixA, int ns)
     }
     fclose(map);
 
+}
+
+
+void writeICAMatrix(QString path, double ** matrixA, int ns)
+{
+    FILE * map = fopen(path.toStdString().c_str(), "w");
+    double maxMagn = 0.;
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            fprintf(map, "%.3lf\t", matrixA[i][j]);
+            maxMagn = fmax(maxMagn, double(fabs(matrixA[i][j])));
+        }
+        fprintf(map, "\n");
+    }
+    fprintf(map, "max = %.3lf\n", maxMagn);
+    fclose(map);
 }
 
 void cofactor(double ** inMatrix, int size, int i, int j, double *** outMatrix)
@@ -1502,7 +1520,7 @@ void invertMatrix2(double ** inMat, int size, double *** outMat) //cofactors
         cof[i] = new double [size - 1];
     }
     double Det = det(inMat, size);
-    cout << "fill det = " << Det << endl;
+//    cout << "fill det = " << Det << endl;
     for(int i = 0; i < size; ++i)
     {
         for(int j = 0; j < size; ++j)

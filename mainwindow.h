@@ -76,6 +76,7 @@ public slots:
     void spoc();
     void icaClassTest();
     void hilbertCount();
+    void throwIC();
 
 
 public:
@@ -85,6 +86,7 @@ public:
     void sliceByNumberAfter(int marker1, int marker2, QString marker);
     void sliceBak(int marker1, int marker2, QString marker);
     void readData();
+    void cleanData();
     void sliceWindow(int startSlice, int endSlice, int number, int marker);    
     void eyesFast();
     void reduceChannelsFast();
@@ -131,6 +133,7 @@ private:
     bool autoProcessingFlag;
     bool stopFlag;
     double spStep;
+    bool withMarkersFlag;
 };
 
 #endif // MAINWINDOW_H

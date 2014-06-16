@@ -9,7 +9,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     this->setWindowTitle("Spectra Counter");
 
     norm = 20.;
-    Eyes=0;
+    Eyes = 0;
 
     ExpName = ExpName_;
     dir = new QDir();
@@ -561,7 +561,7 @@ void Spectre::compare()
     nameFilters.clear();
     list.clear();
     list = ui->lineEdit_m1->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
+    for(int i = 0; i < list.length(); ++i)
     {
         helpString.clear();
         helpString.append("*");
@@ -573,7 +573,7 @@ void Spectre::compare()
     lst = dir->entryList(nameFilters, QDir::Files, QDir::Size);
 
     FILE * file;
-    int NumOfPatterns=0;
+    int NumOfPatterns = 0;
 
     double ** dataFFT = new double * [ns];
     for(int i=0; i<ns; ++i)
@@ -582,60 +582,57 @@ void Spectre::compare()
     }
 
     double ** spectre = new double * [ns];
-    for(int i=0; i<ns; ++i)
+    for(int i = 0; i < ns; ++i)
     {
         spectre[i] = new double [spLength];
     }
 
-    for(int i=0; i<ns; ++i)                                //put zeros into dataFFT
+    for(int i = 0; i < ns; ++i)                                //put zeros into dataFFT
     {
-        for(int k=0; k<spLength; ++k)
+        for(int k = 0; k < spLength; ++k)
         {
             dataFFT[i][k]=0.;
         }
     }
 
-    for(int j=0; j<lst.length(); ++j)
+    for(int j = 0; j < lst.length(); ++j)
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(j));
-//        cout<<helpString.toStdString()<<endl;
-        file=fopen(helpString.toStdString().c_str(), "r");
+        file = fopen(helpString.toStdString().c_str(), "r");
 
         if(file!=NULL)
         {
-            for(int i=0; i<ns; ++i)
+            for(int i = 0; i < ns; ++i)
             {
-                for(int k=0; k<spLength; ++k)
+                for(int k = 0; k < spLength; ++k)
                 {
                     fscanf(file, "%lf\n", &spectre[i][k]);
-                    dataFFT[i][k]+=spectre[i][k];             //sum all spectra
+                    dataFFT[i][k] += spectre[i][k];             //sum all spectra
                 }
-                fscanf(file, "\n");
             }
             ++NumOfPatterns;
             fclose(file);
         }
     }
-
-//    cout<<NumOfPatterns<<endl;
     dir->cd(ui->lineEdit_2->text());  //output dir /Help
-    helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(ui->lineEdit_m2->text()).append(".psa"); ////////////////////////////////////LAWL?????
-//    cout<<helpString.toStdString()<<endl;
+    helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(ui->lineEdit_m2->text()).append(".psa");
 
 
     ////write AVspectra into .psa file
-    file=fopen(helpString.toStdString().c_str(), "w");
-    if(file==NULL)
+    file = fopen(helpString.toStdString().c_str(), "w");
+    if(file == NULL)
     {
         cout<<"cannot open file"<<endl;
         return;
     }
     fprintf(file, "spLength %d\n", spLength);
-    for(int i=0; i<ns; ++i)
+    double helpDouble = 0.;
+    for(int i = 0; i < ns; ++i)
     {
-        for(int k=0; k<spLength; ++k)
+        for(int k = 0; k < spLength; ++k)
         {
-            fprintf(file, "%lf\n", dataFFT[i][k]/double(NumOfPatterns));
+            helpDouble = dataFFT[i][k]/double(NumOfPatterns);
+            fprintf(file, "%lf\n", helpDouble);
         }
         fprintf(file, "\n");
     }
@@ -644,9 +641,9 @@ void Spectre::compare()
     pic.fill();
     paint->begin(&pic);
     double ext = spLength/250.;
-    for(int c2=0; c2<ns; ++c2)
+    for(int c2 = 0; c2 < ns; ++c2)
     {
-        for(int k=0; k<250-1; ++k)
+        for(int k = 0; k < 250-1; ++k)
         {
             //spectre itslef
             paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - dataFFT[c2][int(k*ext)]/double(NumOfPatterns)*norm, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - dataFFT[c2][int((k+1)*ext)]/double(NumOfPatterns)*norm);
@@ -680,7 +677,7 @@ void Spectre::compare()
     }
 
     paint->setFont(QFont("Helvetica", 24, -1, false));
-    for(int c2=0; c2<ns; ++c2)  //exept markers channel
+    for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel
     {
         paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]) + " " + QString::number(c2));
     }
@@ -691,7 +688,7 @@ void Spectre::compare()
 
     paint->end();
 
-    for(int i=0; i<ns; ++i)
+    for(int i = 0; i < ns; ++i)
     {
         delete []dataFFT[i];
         delete []spectre[i];
@@ -799,7 +796,7 @@ void Spectre::setFftLength()
 
     if(ui->fftComboBox->currentIndex()==0)
     {
-        left = 20; right=82; ui->smoothBox->setValue(3);
+        left = 20; right = 82; ui->smoothBox->setValue(3);
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("windows").append(QDir::separator()).append("fromreal"));
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("windows")); //for windows
         ui->lineEdit_1->setText(helpString);
@@ -1122,8 +1119,8 @@ void Spectre::countSpectra()
             {
                 helpString = "/media/Files/Data/AAX/Signals/" + QString::number(a) + ".png";
 //                hilbert(dataIn[i], fftLength, 250., ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
-                hilbert(dataIn[i], NumOfSlices, 250., 8., 12., &tempVec, helpString);
-                cout << lst[a].toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
+                hilbert(dataIn[i], NumOfSlices, 250., 8., 12., &tempVec, "");
+//                cout << lst[a].toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
 //                outStream << variance(tempVec, fftLength) << '\n';
                 outStream << mean(tempVec, NumOfSlices) << '\n';
 //                hilbertPieces(dataIn[i], NumOfSlices, 250., ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");

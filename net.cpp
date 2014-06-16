@@ -1990,6 +1990,8 @@ void Net::PaIntoMatrix()
     }
 //    QTime myTime;
 //    myTime.start();
+    cout << "PaIntoMatrix: NetLength = " << NetLength << endl;
+    cout << "PaIntoMatrix: ns = " << ns << endl;
     readPaFile(inStream, helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
