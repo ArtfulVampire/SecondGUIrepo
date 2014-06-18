@@ -373,6 +373,7 @@ MainWindow::MainWindow() :
 //    delMatrix(&inv, dim, dim);
 //    delMatrix(&mat1, dim, dim);
 
+    countRCP("/media/Files/Data/AAX/rcp.txt", "/media/Files/Data/AAX/rcp-25.png");
 
 }
 
@@ -2970,7 +2971,7 @@ void MainWindow::sliceFromTo(int marker1, int marker2, QString marker) //beginni
     file2->close();
     delete file2;
 
-    kernelest(helpString);
+//    kernelest(helpString);
 
     solveTime/=(250.*number);
     cout << "average time before feedback " << marker.toStdString() << " =" << solveTime << endl;
@@ -3497,6 +3498,7 @@ void MainWindow::sliceMati(int numChanWrite)
 
 void MainWindow::kernelest(const QString &inputString)
 {
+    /*
     FILE * file = fopen(QDir::toNativeSeparators(inputString).toStdString().c_str(), "r");
     int num;
     fscanf(file, "NumOfFiles %d\n", &num);
@@ -3509,6 +3511,7 @@ void MainWindow::kernelest(const QString &inputString)
     }
 
     sigma = variance(arr, num);
+
     sigma = sqrt(sigma);   //// (sigma)/num ??
 
 
@@ -3545,6 +3548,8 @@ void MainWindow::kernelest(const QString &inputString)
     delete pnt;
 
     delete []arr;
+    */
+
 }
 
 void MainWindow::eyesFast()  //generality

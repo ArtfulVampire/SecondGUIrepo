@@ -162,6 +162,8 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     QObject::connect(ui->optimizeChannelsPushButton, SIGNAL(clicked()), this, SLOT(optimizeChannelsSet()));
 
+    QObject::connect(ui->rcpPushButton, SIGNAL(clicked()), this, SLOT(rcpSlot()));
+
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     //generality
@@ -3842,4 +3844,21 @@ void Net::optimizeChannelsSet()
 
     QMessageBox::information((QWidget * )this, tr("Optimization results"), helpString, QMessageBox::Ok);
 }
+
+
+
+
+void Net::rcpSlot()
+{
+    FILE * file;
+    while(1)
+    {
+        autoClassificationSimple();\
+        helpString = dir->absolutePath() + QDir::separator() + "rcp.txt";
+        file = fopen(helpString.toStdString().c_str(), "a");
+        fprintf(file, "%.2lf\n", averageAccuracy);
+        fclose(file);
+    }
+}
+
 

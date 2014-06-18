@@ -23,6 +23,7 @@
 #include <QPainter>
 #include <QMessageBox>
 #include <cerrno>
+#include <ios>
 //#include <itpp/itbase.h>
 //#include <mlpack/core.hpp>
 //#include <mlpack/methods/pca/pca.hpp>
@@ -45,16 +46,20 @@ void four1(double * dataF, int nn, int isign);
 void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath);
 void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath);
 void bayesCount(double * dataIn, int length, int numOfIntervals, double **out);
+void kernelEst(double *arr, int num, QString picPath);
 
 double mean(double *arr, int length);
 double variance(double *arr, int length);
+void countRCP(QString filename, QString picPath = "");
 void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
 
 
 double mean(int *arr, int length);
-double variance(int *arr, int length);
+double variance(double *arr, int length);
 double correlation(double *arr1, double *arr2, int length, int t = 0);
 double quantile(double arg);
+double maxValue(double * arr, int length);
+double minValue(double * arr, int length);
 
 
 void readDataFile(ifstream & file, QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength);

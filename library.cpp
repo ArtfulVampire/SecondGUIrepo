@@ -168,6 +168,26 @@ double variance(int *arr, int length)
     return sum1;
 }
 
+double maxValue(double * arr, int length)
+{
+    double res = arr[0];
+    for(int i = 0; i < length; ++i)
+    {
+        res = fmax(res, arr[i]);
+    }
+    return res;
+}
+
+double minValue(double * arr, int length)
+{
+    double res = arr[0];
+    for(int i = 0; i < length; ++i)
+    {
+        res = fmin(res, arr[i]);
+    }
+    return res;
+}
+
 
 double correlation(double *arr1, double *arr2, int length, int t)
 {
@@ -714,6 +734,70 @@ void bayesCount(double * dataIn, int length, int numOfIntervals, double ** out)
     {
         (*out)[k] /= double(length)*10.;
     }
+}
+
+void kernelEst(double * arr, int num, QString picPath)
+{
+    double sigma = 0.;
+
+    sigma = variance(arr, num);
+    sigma = sqrt(sigma);
+
+
+    double h = 1.06 * sigma * pow(num, -0.2);
+
+
+
+    QPixmap pic(1000, 400);
+    double * values = new double [pic.width()];
+    QPainter * pnt = new QPainter();
+    pic.fill();
+    pnt->begin(&pic);
+    pnt->setPen("black");
+
+
+    double xMin, xMax;
+
+    xMin = minValue(arr, num);
+    xMax = maxValue(arr, num);
+
+    cout << "xMin = " << xMin << "\txMax = " << xMax << endl;
+    xMin = floor(xMin)-1;
+    xMax = ceil(xMax)+1;
+
+
+    for(int i = 0; i < pic.width(); ++i)
+    {
+        values[i] = 0.;
+        for(int j = 0; j < num; ++j)
+        {
+            values[i] += 1/(num*h) * gaussian((xMin + (xMax- xMin) / double(pic.width()) * i - arr[j])/h);
+        }
+    }
+
+    double valueMax;
+    valueMax = maxValue(values, pic.width());
+
+    for(int i = 0; i < pic.width() - 1; ++i)
+    {
+        pnt->drawLine(i, pic.height() * 0.9 * ( 1. - values[i] / valueMax), i+1, pic.height() * 0.9 * (1. - values[i+1] / valueMax));
+//        pnt->drawRect(i, pic.height() * 0.9, i+1, pic.height() * 0.9 * ( 1. - values[xMin + (xMax - Xmin)/pic.width() * (i+1)] / valueMax));
+    }
+    pnt->drawLine(0, pic.height()*0.9, pic.width(), pic.height()*0.9);
+
+//    int power = log10(xMin);
+//    int step = pow(10., floor(power));
+
+    //+=step
+    for(int i = ceil(xMin); i <= floor(xMax); ++i)
+    {
+        pnt->drawLine( (i - xMin) / (xMax - xMin) * pic.width(), pic.height()*0.9+1, (i - xMin) / (xMax - xMin) * pic.width(), pic.height());
+        pnt->drawText((i - xMin) / (xMax - xMin) * pic.width(), pic.height()*0.95, QString::number(i));
+    }
+    pic.save(picPath, 0, 100);
+
+    delete pnt;
+    delete []values;
 }
 
 double red(int range, int j, double V, double S)
@@ -1605,6 +1689,29 @@ void print(double ** mat, int i, int j)
         cout << endl;
     }
     cout << endl;
+}
+
+void countRCP(QString filename, QString picPath)
+{
+    int counter = 0;
+    ifstream inStream;
+    double * arr = new double [250];
+    inStream.open(filename.toStdString().c_str());
+    cout << filename.toStdString().c_str() << endl;
+    while(!inStream.eof())
+    {
+        inStream >> arr[counter++];
+    }
+    --counter;
+
+    cout << "average = " << mean(arr, counter) << endl;
+    cout << "variance = " << variance(arr, counter) << endl;
+    cout << "counter = " << counter << endl;
+
+    kernelEst(arr, counter, picPath);
+
+    delete []arr;
+
 }
 
 void svd(double ** inData, int size, int length, double *** eigenVects, double ** eigenValues)

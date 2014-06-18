@@ -97,6 +97,7 @@ public slots:
     void memoryAndParamsAllocation();
     void testDistances();
     void optimizeChannelsSet();
+    void rcpSlot();
 
 private:
     Ui::Net *ui;
@@ -109,6 +110,7 @@ private:
     double * output;
     char * helpCharArr;
     ifstream inStream;
+    ofstream outStream;
 
     QVector<int> channelsSet;
     QVector<int> channelsSetExclude;
