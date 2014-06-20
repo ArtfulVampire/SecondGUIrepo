@@ -389,13 +389,9 @@ void Net::autoClassification(QString spectraDir)
 
 
     averageClassification();
-    mkPa->close();
     delete mkPa;
     autoFlag = tempBool;
-//    cout <<  "time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
-
-//    if(autoFlag == 0) QMessageBox::information((QWidget * )this, tr("Info"), tr("Auto classification done"), QMessageBox::Ok);
-//    cout << "averageClassification ended" << endl;
+    cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void Net::autoPCAClassification()
@@ -464,6 +460,10 @@ void Net::setReduceCoeff(double coeff)
     this->ui->rdcCoeffSpinBox->setValue(coeff);
 }
 
+void Net::setNumOfPairs(int num)
+{
+    this->ui->numOfPairsBox->setValue(num);
+}
 
 void Net::averageClassification()
 {
@@ -1001,9 +1001,14 @@ void Net::memoryAndParamsAllocation()
 
 }
 
-void Net::readCfgByName(QString FileName)
+void Net::readCfgByName(QString FilePath)
 {
-    helpString = FileName;
+    helpString = FilePath;
+    if(!helpString.endsWith(".net"), Qt::CaseInsensitive)
+    {
+        helpString += ".net";
+    }
+
     FILE * cfg = fopen(helpString.toStdString().c_str(),"r");
     if(cfg == NULL)
     {
@@ -1778,7 +1783,7 @@ void Net::leaveOneOutCL()
 
     cout << "leaveOneOut ended " << endl;
 
-    cout << "time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "N-fold cross-validation: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 
     delete []NumberOfErrors;
     delete []matrixArray;
@@ -1930,7 +1935,7 @@ void Net::leaveOneOut()
 
     cout << "leaveOneOut ended " << endl;
 
-    cout << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+    cout << "N-fold cross-validation: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
     if(log == NULL)
@@ -2305,116 +2310,6 @@ void Net::methodSetParam(int a, bool ch)
     memoryAndParamsAllocation();
 }
 
-//void Net::LearnNet()
-//{
-//    if(ui->deltaRadioButton->isChecked())
-//    {
-//        LearnNetDelta();
-//    }
-//    else if(ui->backpropRadioButton->isChecked())
-//    {
-//        LearnNetBackPropGen();
-//    }
-//}
-
-//void Net::LearnNetDelta()
-//{
-//    myTime.restart();
-//    critError = ui->critErrorDoubleSpinBox->value();
-//    currentError = critError + 0.1;
-//    temperature = ui->tempBox->value();
-//    learnRate = ui->learnRateBox->value();
-
-//    srand (time (NULL));
-
-//    output = new double [NumOfClasses];
-//    int * mixNum = new int [NumberOfVectors];
-
-//    for(int i = 0; i < NetLength + 1; ++i)
-//    {
-//        for(int j = 0; j < NumOfClasses; ++j)
-//        {
-//            weight[i][j] = 0.;
-//        }
-//    }
-
-
-//    //create a random sequence of vectors to learn the net
-//    for(int i = 0; i < NumberOfVectors; ++i)
-//    {
-//        mixNum[i] = i;
-//    }
-////    cout << NetLength << endl;
-
-////    cout << "now will learn" << endl;
-//    //start learning
-
-//    epoch = 0;
-
-//    int a1, a2, buffer;
-//    int index;
-//    int type;
-//    while(currentError > critError && epoch < ui->epochSpinBox->value())
-//    {
-//        currentError = 0.0;
-//        //mix vectors
-//        for(int i = 0; i < 5 * NumberOfVectors; ++i)
-//        {
-//            a1 = rand() % (NumberOfVectors);
-//            a2 = rand() % (NumberOfVectors);
-//            buffer = mixNum[a2];
-//            mixNum[a2] = mixNum[a1];
-//            mixNum[a1] = buffer;
-//        }
-
-//        for(int vecNum = 0; vecNum < NumberOfVectors; ++vecNum)
-//        {
-//            index = mixNum[vecNum];
-//            type = int(matrix[index][NetLength + 1]);
-
-//            for(int j = 0; j < NumOfClasses; ++j) //calculate output
-//            {
-//                output[j] = 0.;
-//                for(int i = 0; i < NetLength + 1; ++i)   // +bias, coz +1
-//                {
-//                    output[j] += weight[i][j] * matrix[index][i];
-//                }
-//                output[j] = logistic(output[j], temperature); // unlinear logistic conformation
-//            }
-
-
-//            //error count + weight differ
-//            for(int i = 0; i < NumOfClasses; ++i)
-//            {
-//                currentError += ((type == i) - output[i]) * ((type == i) - output[i]);
-
-//            }
-
-//            //vary weights
-//            for(int i = 0; i < NetLength+1; ++i)
-//            {
-//                for(int k = 0; k < NumOfClasses; ++k)
-//                {
-//                    weight[i][k] += learnRate * ((type == k) - output[k]) * matrix[index][i];
-//                }
-//            }
-//        }
-//        ++epoch;
-//        //count error
-//        currentError /= NumberOfVectors;
-//        currentError = sqrt(currentError);
-//        if(!autoFlag) cout << "epoch = " << epoch << "\terror = " << currentError << endl;
-//        this->ui->currentErrorDoubleSpinBox->setValue(currentError);
-//    }//endof all epoches, end of learning
-//    cout << "learning ended " << epoch << " epoches" << endl;
-
-//    cout << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
-//    delete [] output;
-//    stopFlag = 0;
-//}
-
-
-
 void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int numOfLayers, int * dimensionality) //data[NumOfVectors][dimensionality[0]]. dimensionality doesn't include bias
 {
     QTime myTime;
@@ -2631,37 +2526,6 @@ bool Net::ClassificateVector(int &vecNum)
     return right;
 }
 
-//double Net::ClassificateVectorError(int &vecNum)
-//{
-//    double * outputClass = new double [NumOfClasses];
-//    double err = 0.;
-
-//    int type = int(matrix[vecNum][NetLength+1]);
-
-//    for(int j = 0; j < NumOfClasses; ++j) //calculate output //2 = numberOfTypes
-//    {
-//        outputClass[j] = 0.;
-//        for(int i = 0; i < NetLength + 1; ++i)
-//        {
-//            outputClass[j] += weight[i][j] * matrix[vecNum][i];
-//        }
-//        outputClass[j] = logistic(outputClass[j], temperature); // unlinear conformation
-//    }
-
-//    for(int k = 0; k<NumOfClasses; ++k)
-//    {
-//        if(k  != type)
-//        {
-//            err += outputClass[k] * outputClass[k];
-//        }
-
-//    }
-//    err += (1. - outputClass[type]) * (1. - outputClass[type]);
-//    err = sqrt(err);
-//    delete [] outputClass;
-//    return err;
-//}
-
 int Net::getEpoch()
 {
     return epoch;
@@ -2715,10 +2579,8 @@ void refreshDist( double ** dist, double ** coordsNew, int size, int i)
     for(int j = 0; j < size; ++j)
     {
         dist[i][j] = distance(coordsNew[i], coordsNew[j], 2);
-        dist[j][i] = dist[i][j]; //distance(coordsNew[i], coordsNew[j], 2);
+        dist[j][i] = dist[i][j];
     }
-
-
 }
 
 void countGradient(double ** coords, double ** distOld, double ** distNew, int size, double * gradient)
@@ -2793,7 +2655,7 @@ void Net::moveCoordsGradient(double ** coords, double ** distOld, double ** dist
             break;
         }
         ++j;
-        if(j%5 == 4) lambda  *= 2;
+        if(j%5 == 4) lambda *= 2;
     }
     cout << j  << endl;
 }
@@ -2962,8 +2824,6 @@ void Net::Sammon(double ** distArr, int size, int * types)
 
 
     QMessageBox::information((QWidget * )this, tr("info"), tr("Sammon projection counted"), QMessageBox::Ok);
-
-
 }
 
 void Net::drawSammon() //uses coords array
@@ -3047,9 +2907,6 @@ void Net::drawSammon() //uses coords array
         delete [] coords[i];
     }
     delete [] coords;
-
-
-
     cout << "Sammon projection done" << endl;
     QMessageBox::information((QWidget * )this, tr("info"), tr("Sammon projection drawn"), QMessageBox::Ok);
 }
@@ -3854,7 +3711,7 @@ void Net::rcpSlot()
     while(1)
     {
         autoClassificationSimple();\
-        helpString = dir->absolutePath() + QDir::separator() + "rcp.txt";
+        helpString = dir->absolutePath() + QDir::separator() + "rcp-" + QString::number(ui->numOfPairsBox->value()) + ".txt";
         file = fopen(helpString.toStdString().c_str(), "a");
         fprintf(file, "%.2lf\n", averageAccuracy);
         fclose(file);

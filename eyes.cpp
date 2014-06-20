@@ -378,7 +378,7 @@ void Eyes::eyesProcessing()
 //            matrixProduct(matrixTemp, matrix, &matrix, lst.length()+1, lst.length()+1);
 //        }
 
-        invertMatrix2(matrix, lst.length() + 1, &matrixInv);
+        matrixInvert(matrix, lst.length() + 1, &matrixInv);
 
         //set coeffs
         for(int i = 0; i<lst.length(); ++i)

@@ -62,8 +62,7 @@ public:
     void leaveOneOutCL();
     double getAverageAccuracy();
     void setReduceCoeff(double coeff);
-//    void LearnNetBackPropGen();
-//    void LearnNetDelta();
+    void setNumOfPairs(int num);
 
 protected:
     bool event(QEvent * ev);

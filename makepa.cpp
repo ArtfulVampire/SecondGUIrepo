@@ -1374,13 +1374,6 @@ void MakePa::makePaSlot()
         cout<<helpString.toStdString().c_str() << endl << " all.pa==NULL" << endl;
         return;
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("svmAll"));
-    FILE * svmAll = fopen(helpString.toStdString().c_str(), "w");
-    if(svmAll==NULL)
-    {
-        cout<<helpString.toStdString().c_str()<<endl<<" svmAll==NULL"<<endl;
-        return;
-    }
 
     //create first PA
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("1").append(typeString));

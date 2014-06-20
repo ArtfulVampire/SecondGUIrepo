@@ -48,7 +48,7 @@ public slots:
     void countSpectra();
     void setExpName();
     void sliceAll();
-    void setEdfFile();   
+    void setEdfFile();
     void cutShow();
     void makeShow();
     void makePaSlot();
@@ -77,6 +77,7 @@ public slots:
     void icaClassTest();
     void hilbertCount();
     void throwIC();
+    void randomDecomposition();
 
 
 public:
@@ -86,7 +87,6 @@ public:
     void sliceByNumberAfter(int marker1, int marker2, QString marker);
     void sliceBak(int marker1, int marker2, QString marker);
     void readData();
-    void cleanData();
     void sliceWindow(int startSlice, int endSlice, int number, int marker);    
     void eyesFast();
     void reduceChannelsFast();
@@ -104,6 +104,7 @@ public:
     void sliceOneByOne();
     void sliceOneByOneNew(int numChanWrite);
     void drawMap(double ** matrixA, int num);
+    void setEdfFile(QString filename);
 
 
 private:
@@ -112,6 +113,8 @@ private:
     FILE *edf;
     QDir *dir;
     QString helpString;
+    ifstream inStream;
+    ofstream outStream;
     int helpInt;
     double helpDouble;
     QString ExpName;

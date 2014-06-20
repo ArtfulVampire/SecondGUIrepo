@@ -114,6 +114,10 @@ double fractalDimension(double *arr, int N, QString picPath)
     return slope;
 }
 
+double doubleRound(double in, int numSigns)
+{
+    return int(in*pow(10., numSigns))/pow(10., numSigns);
+}
 
 double quantile(double arg)
 {
@@ -258,6 +262,24 @@ void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL)
         }
     }
 }
+
+void matrixProduct(double ** A, double ** B, double *** out, int dimA1, int dimB2, int dimA2B1)
+{
+    double result;
+    for(int j = 0; j < dimA1; ++j)
+    {
+        for(int i = 0; i < dimB2; ++i)
+        {
+            result = 0.;
+            for(int k = 0; k < dimA2B1; ++k)
+            {
+                result += A[i][k] * B[k][j];
+            }
+            (*out)[i][j] = result;
+        }
+    }
+}
+
 
 
 double distance(double * vec1, double * vec2, int dim)
@@ -1532,7 +1554,7 @@ void writeICAMatrix(QString path, double ** matrixA, int ns)
     fclose(map);
 }
 
-void cofactor(double ** inMatrix, int size, int i, int j, double *** outMatrix)
+void matrixCofactor(double ** inMatrix, int size, int i, int j, double *** outMatrix)
 {
     int indexA, indexB;
     for(int a = 0; a < size; ++a)
@@ -1549,68 +1571,40 @@ void cofactor(double ** inMatrix, int size, int i, int j, double *** outMatrix)
     }
 }
 
-void invertMatrix(double ** inMat, int size, double *** outMat)
+void matrixTranspose(double ** inMat, int size, double *** outMat)
 {
-
-    double ** matrixTemp = new double * [size];
-    for(int i = 0; i < size; ++i)
-    {
-        matrixTemp[i] = new double [size];
-    }
     for(int i = 0; i < size; ++i)
     {
         for(int j = 0; j < size; ++j)
         {
-            (*outMat)[i][j] = (i == j);
+            (*outMat)[i][j] = inMat[j][i];
         }
     }
-
-
-    for(int col = 0; col < size; ++col)
-    {
-        for(int j = 0; j < size; ++j)
-        {
-            for(int z = 0; z < size; ++z)
-            {
-                if(z == col)
-                {
-                    if(z != j) matrixTemp[j][z] =- inMat[j][z]/inMat[col][col];
-                    else matrixTemp[j][z] = 1/inMat[col][col];
-                }
-                else
-                {
-                    if(z == j) matrixTemp[j][z] = 1.;
-                    else matrixTemp[j][z] = 0.;
-                }
-            }
-        }
-        matrixProduct(matrixTemp, *outMat, outMat, size, size);
-        matrixProduct(matrixTemp, inMat, &inMat, size, size);
-    }
-
-
-    for(int i = 0; i < size; ++i)
-    {
-        delete []matrixTemp[i];
-    }
-    delete []matrixTemp;
 }
 
-void invertMatrix2(double ** inMat, int size, double *** outMat) //cofactors
+void matrixCopy(double ** inMat, double *** outMat, int dimH, int dimL)
+{
+    for(int i = 0; i < dimH; ++i)
+    {
+        memcpy((*outMat), inMat, dimL * sizeof(double));
+    }
+}
+
+void matrixInvert(double ** inMat, int size, double *** outMat) //cofactors
 {
     double ** cof = new double * [size - 1];
     for(int i = 0; i < size - 1; ++i)
     {
         cof[i] = new double [size - 1];
     }
-    double Det = det(inMat, size);
+    double Det = matrixDet(inMat, size);
 //    cout << "fill det = " << Det << endl;
     for(int i = 0; i < size; ++i)
     {
         for(int j = 0; j < size; ++j)
         {
-            cofactor(inMat, size, j, i, &cof);
-            (*outMat)[i][j] = pow(-1, i+j) * det(cof, size - 1)/Det;
+            matrixCofactor(inMat, size, j, i, &cof);
+            (*outMat)[i][j] = pow(-1, i+j) * matrixDet(cof, size - 1)/Det;
         }
     }
     for(int i = 0; i < size - 1; ++i)
@@ -1620,23 +1614,12 @@ void invertMatrix2(double ** inMat, int size, double *** outMat) //cofactors
     delete []cof;
 }
 
-void matcpy(double ** inMat, double *** outMat, int i, int j)
+double matrixDet(double ** matrix, int dim) //- bad Det
 {
-    for(int a = 0; a < i; ++a)
-    {
-        for(int b = 0; b < j; ++b)
-        {
-            (*outMat)[a][b] = inMat[a][b];
-        }
-    }
-}
+    if(dim == 1) return matrix[0][0];
 
-double det(double ** matrix, int dim) //- bad Det
-{
-    if(dim==1) return matrix[0][0];
-
-    double ** matrix2 = crMatrix(dim,dim);
-    matcpy(matrix, &matrix2, dim, dim);
+    double ** matrix2 = matrixCreate(dim,dim);
+    matrixCopy(matrix, &matrix2, dim, dim);
     double coef;
     for(int i = 1; i < dim; ++i)
     {
@@ -1651,16 +1634,36 @@ double det(double ** matrix, int dim) //- bad Det
         }
     }
 
+    matrixPrint(matrix2, dim, dim);
+
     coef = 1.;
     for(int i = 0; i < dim; ++i)
     {
         coef *= matrix2[i][i];
     }
-    delMatrix(&matrix2, dim, dim);
+    matrixDelete(&matrix2, dim, dim);
     return coef;
 }
 
-double ** crMatrix(int i, int j)
+
+double matrixDetB(double ** matrix, int dim) // Det
+{
+    if(dim == 1) return matrix[0][0];
+
+    double ** cof = matrixCreate(dim-1, dim-1);
+
+    double coef = 0.;
+    cout << dim << endl;
+    for(int i = 0; i < dim; ++i)
+    {
+        matrixCofactor(matrix, dim, 0, i, &cof);
+        coef += matrix[0][i] * pow(-1, i) * matrixDet(cof, dim-1);
+    }
+    matrixDelete(&cof, dim-1, dim-1);
+    return coef;
+}
+
+double ** matrixCreate(int i, int j)
 {
     double ** mat = new double * [i];
     for(int k = 0; k < i; ++k)
@@ -1669,7 +1672,7 @@ double ** crMatrix(int i, int j)
     }
     return mat;
 }
-void delMatrix(double *** matrix, int i, int j)
+void matrixDelete(double *** matrix, int i, int j)
 {
     for(int k = 0; k < i; ++k)
     {
@@ -1678,13 +1681,14 @@ void delMatrix(double *** matrix, int i, int j)
     delete [](*matrix);
 }
 
-void print(double ** mat, int i, int j)
+void matrixPrint(double ** mat, int i, int j)
 {
     for(int a = 0; a < i; ++a)
     {
         for(int b = 0; b < j; ++b)
         {
-            cout << mat[a][b] << "\t";
+//            cout << mat[a][b] << "\t";
+            cout << doubleRound(mat[a][b], 3) << "\t";
         }
         cout << endl;
     }

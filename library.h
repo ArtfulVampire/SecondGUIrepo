@@ -53,7 +53,7 @@ double variance(double *arr, int length);
 void countRCP(QString filename, QString picPath = "");
 void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
 
-
+double doubleRound(double in, int numSigns);
 double mean(int *arr, int length);
 double variance(double *arr, int length);
 double correlation(double *arr1, double *arr2, int length, int t = 0);
@@ -78,15 +78,17 @@ void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, in
 
 double distance(double * vec1, double * vec2, int dim);
 void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
-void invertMatrix(double ** inMat, int size, double *** outMat);
-void invertMatrix2(double ** inMat, int size, double *** outMat); //cofactors
-double det(double ** matrix, int dim);
-void cofactor(double ** inMatrix, int size, int i, int j, double *** outMatrix);
-void matcpy(double ** inMat, double *** outMat, int i, int j);
+void matrixProduct(double ** A, double ** B, double *** out, int dimA1, int dimB2, int dimA2B1);  //matrix product: out = A(H*H) * B(H*L)
+void matrixTranspose(double ** inMat, int size, double *** outMat);
+void matrixCopy(double ** inMat, double *** outMat, int dimH, int dimL);
+void matrixInvert(double ** inMat, int size, double *** outMat); //cofactors
+double matrixDet(double ** matrix, int dim);
+double matrixDetB(double ** matrix, int dim);
+void matrixCofactor(double ** inMatrix, int size, int i, int j, double *** outMatrix);
 
-double ** crMatrix(int i, int j);
-void delMatrix(double *** matrix, int i, int j);
-void print(double ** mat, int i, int j);
+double ** matrixCreate(int i, int j);
+void matrixDelete(double *** matrix, int i, int j);
+void matrixPrint(double ** mat, int i, int j);
 
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 

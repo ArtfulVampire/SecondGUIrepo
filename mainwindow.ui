@@ -59,7 +59,7 @@
       <x>297</x>
       <y>90</y>
       <width>651</width>
-      <height>521</height>
+      <height>554</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
@@ -400,6 +400,9 @@
        </item>
       </layout>
      </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="reduceChannelsComboBox"/>
+     </item>
      <item row="6" column="0">
       <widget class="QPushButton" name="makeCFG">
        <property name="text">
@@ -407,8 +410,12 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="reduceChannelsComboBox"/>
+     <item row="9" column="1">
+      <widget class="QPushButton" name="hilbertPushButton">
+       <property name="text">
+        <string>Hilbert</string>
+       </property>
+      </widget>
      </item>
      <item row="4" column="0">
       <widget class="QPushButton" name="cleanDirsButton">
@@ -451,6 +458,13 @@
        </item>
       </layout>
      </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="reduceChannesPushButton">
+       <property name="text">
+        <string>Reduce ns</string>
+       </property>
+      </widget>
+     </item>
      <item row="9" column="0">
       <widget class="QPushButton" name="netButton">
        <property name="text">
@@ -458,10 +472,10 @@
        </property>
       </widget>
      </item>
-     <item row="9" column="1">
-      <widget class="QPushButton" name="hilbertPushButton">
-       <property name="text">
-        <string>Hilbert</string>
+     <item row="1" column="1" colspan="2">
+      <widget class="QProgressBar" name="progressBar">
+       <property name="value">
+        <number>24</number>
        </property>
       </widget>
      </item>
@@ -514,17 +528,10 @@
        </item>
       </layout>
      </item>
-     <item row="2" column="0">
-      <widget class="QPushButton" name="reduceChannesPushButton">
+     <item row="8" column="1">
+      <widget class="QPushButton" name="spocPushButton">
        <property name="text">
-        <string>Reduce ns</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1" colspan="2">
-      <widget class="QProgressBar" name="progressBar">
-       <property name="value">
-        <number>24</number>
+        <string>SPoC</string>
        </property>
       </widget>
      </item>
@@ -535,10 +542,13 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
-      <widget class="QPushButton" name="spocPushButton">
+     <item row="7" column="2">
+      <widget class="QLineEdit" name="throwICLineEdit"/>
+     </item>
+     <item row="7" column="1">
+      <widget class="QPushButton" name="throwICPushButton">
        <property name="text">
-        <string>SPoC</string>
+        <string>ThrowIC</string>
        </property>
       </widget>
      </item>
@@ -604,15 +614,29 @@
        </item>
       </layout>
      </item>
-     <item row="7" column="1">
-      <widget class="QPushButton" name="throwICPushButton">
-       <property name="text">
-        <string>ThrowIC</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="2">
-      <widget class="QLineEdit" name="throwICLineEdit"/>
+     <item row="9" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_12">
+       <item>
+        <widget class="QPushButton" name="randomDecomposePushButton">
+         <property name="text">
+          <string>Rand decompose</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>

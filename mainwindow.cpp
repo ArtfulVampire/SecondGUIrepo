@@ -67,6 +67,12 @@ MainWindow::MainWindow() :
     {
         label[i] = new char [17];
     }
+    data = new double * [maxNs];
+    for(int i = 0; i < maxNs; ++i)
+    {
+        data[i] = new double [200*60*250];           //////////////for 200 minutes//////////////
+    }
+    nr = new int [maxNs];
 
     group1 = new QButtonGroup();
     group1->addButton(ui->enRadio);
@@ -239,6 +245,9 @@ MainWindow::MainWindow() :
     ui->cleanWindowsCheckBox->setChecked(false);
     ui->cleanWindSpectraCheckBox->setChecked(true);
 
+
+
+
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(setEdfFile()));
 
     QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(countSpectra()));
@@ -299,6 +308,8 @@ MainWindow::MainWindow() :
     QObject::connect(ui->hilbertPushButton, SIGNAL(clicked()), this, SLOT(hilbertCount()));
 
     QObject::connect(ui->throwICPushButton, SIGNAL(clicked()), this, SLOT(throwIC()));
+
+    QObject::connect(ui->randomDecomposePushButton, SIGNAL(clicked()), this, SLOT(randomDecomposition()));
 /*
     //function test
     int leng = 65536;
@@ -351,8 +362,8 @@ MainWindow::MainWindow() :
 
 
 //int dim = 3;
-//    double ** mat1 = crMatrix(dim, dim);
-//    double ** inv = crMatrix(dim, dim);
+//    double ** mat1 = matrixCreate(dim, dim);
+//    double ** inv = matrixCreate(dim, dim);
 
 //    mat1[0][0] = 1.;
 //    mat1[0][1] = 2.;
@@ -370,10 +381,13 @@ MainWindow::MainWindow() :
 ////    invertMatrix(mat, 2, &inv);
 //    invertMatrix2(mat1, dim, &inv);
 
-//    delMatrix(&inv, dim, dim);
-//    delMatrix(&mat1, dim, dim);
+//    matrixDelete(&inv, dim, dim);
+//    matrixDelete(&mat1, dim, dim);
 
-    countRCP("/media/Files/Data/AAX/rcp.txt", "/media/Files/Data/AAX/rcp-25.png");
+//    countRCP("/media/Files/Data/AAX/randomDecompose.txt", "/media/Files/Data/AAX/randomDecompose.png");
+
+//    cout << strerror(24) << endl;
+//    cout << time(NULL) << endl;
 
 }
 
@@ -1328,7 +1342,6 @@ void MainWindow::setEdfFile()
         QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
         return;
     }
-//    ui->reduceChannelsComboBox->setCurrentIndex(4);
 
 
     ui->filePath->setText(helpString);
@@ -1408,6 +1421,95 @@ void MainWindow::setEdfFile()
 
 }
 
+void MainWindow::setEdfFile(QString filename)
+{
+    NumOfEdf = 0;
+    helpString = filename;
+
+    if(helpString=="")
+    {
+        QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
+        return;
+    }
+
+
+    ui->filePath->setText(helpString);
+
+    edf = fopen(helpString.toStdString().c_str(), "r");
+    if(edf==NULL)
+    {
+        QMessageBox::critical((QWidget*)this, tr("Critical"), tr("Cannot open EDF file"), QMessageBox::Ok);
+        return;
+    }
+
+
+
+    //set ExpName
+    int pointNumber;
+    int slashNumber;
+
+    for(int i=helpString.length(); i>0; --i)
+    {
+        if(helpString[i]=='.') pointNumber=i;
+        if(helpString[i]==QDir::separator())
+        {
+            slashNumber=i;
+            break;
+        }
+    }
+
+    ExpName="";
+    for(int i=slashNumber+1; i < pointNumber; ++i)
+    {
+        ExpName.append(helpString[i]);
+    }
+    ui->Name->setText(ExpName);
+
+    helpString.resize(slashNumber);
+    dir->cd(helpString);                                            //current dir
+
+    dir->mkdir("Help");
+    dir->mkdir("PA");
+    dir->mkdir("visualisation");
+    dir->mkdir("visualisation/video");
+    dir->mkdir("visualisation/wavelets");
+
+    for(int i = 0; i < 19; ++i)
+    {
+        helpString = "visualisation/wavelets/";
+        dir->mkdir(helpString.append(QString::number(i)));
+    }
+    dir->mkdir("Signals");
+    dir->mkdir("Signals/before");
+    dir->mkdir("Signals/after");
+    dir->mkdir("Signals/other");
+    dir->mkdir("Signals/windows");
+    dir->mkdir("Signals/windows/after");
+    dir->mkdir("Signals/windows/before");
+    dir->mkdir("Signals/windows/other");
+    dir->mkdir("SignalsCut");
+    dir->mkdir("SignalsCut/before");
+    dir->mkdir("SignalsCut/after");
+    dir->mkdir("SpectraImg");
+    dir->mkdir("SpectraSmooth");
+    dir->mkdir("SpectraSmooth/Bayes");
+    dir->mkdir("SpectraSmooth/windows");
+    dir->mkdir("windows");
+    dir->mkdir("windows/fromreal");
+    dir->mkdir("Realisations");
+    dir->mkdir("Realisations/BC");
+    dir->mkdir("SpectraPCA");
+    dir->mkdir("cut");
+
+
+    helpString="EDF file read successfull";
+    ui->textEdit->append(helpString);
+
+    helpString="ns equals to ";
+    helpString.append(QString::number(ns));
+    ui->textEdit->append(helpString);
+
+}
 void MainWindow::setExpName()
 {
     ExpName=ui->Name->text();
@@ -1635,7 +1737,6 @@ void MainWindow::readData()
 
 
     //number of records (nr samples in ddr seconds)
-    nr = new int [ns];
     for(int i = 0; i < ns; ++i)                      //rest of header
     {
         for(int j = 0; j < 8; ++j)
@@ -1661,15 +1762,6 @@ void MainWindow::readData()
         fscanf(edf, "%c", &helpChar);
         if(flag==1) fprintf(edfNew, "%c", helpChar);
     }
-
-
-    data = new double* [ns];         //array for all data[numOfChan][numOfTimePin]
-    nsBackup=ns;
-    for(int i = 0; i < ns; ++i)
-    {
-        data[i] = new double [nr[i]*ndr];           //////////////for 200 minutes//////////////
-    }
-
 
     ui->finishTimeBox->setMaximum(ddr*ndr);
 
@@ -1903,15 +1995,6 @@ void MainWindow::readData()
 
 }
 
-void MainWindow::cleanData()
-{
-    for(int i = 0; i < nsBackup; ++i) //////////////////////////////////////////////
-    {
-        if(data[i]==NULL) break;
-        delete []data[i];
-    }
-    delete []data;
-}
 
 void MainWindow::makeDatFile()
 {
@@ -1945,13 +2028,7 @@ void MainWindow::makeDatFile()
     }
     fclose(datFile);
 
-    for(int i = 0; i < nsBackup; ++i)  ///////////////////////////
-    {
-        if(data[i]==NULL) break;
-        delete []data[i];
-    }
-    delete []data;
-    delete []nr;
+
 }
 
 void MainWindow::avTime()
@@ -2512,12 +2589,8 @@ void MainWindow::makeTestData()
     }
     delete []testSignals2;
     delete []testSignals;
-    for(int i = 0; i < nsBackup; ++i)
-    {
-        delete []data[i];
-    }
-    delete []data;
-    delete []nr;
+
+
 }
 
 void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
@@ -2671,8 +2744,6 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
 
     }
-
-    cleanData();
 
 
     helpString="data sliced ";
@@ -3955,7 +4026,6 @@ double * randomVector(int ns)
 void MainWindow::constructEDF()
 {
     readData(); // needed?
-    cleanData();
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     ns = lst.length();
@@ -4346,7 +4416,6 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     //number of records (nr samples in ddr seconds)
 
 //    cout << "writeEDF: nr = " << endl;
-    nr = new int [ns];
     for(int i = 0; i < ns; ++i)                      //rest of header
     {
         for(int j = 0; j < 8; ++j)
@@ -4450,7 +4519,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
         }
 //        cout << "staSlice=" << staSlice << " staTime = " << staSlice/250. << endl;
     }
-    delete [] helpCharArr;
+    delete []helpCharArr;
     fclose(labels);
     fclose(edfNew);
     rewind(edf);
@@ -4778,7 +4847,6 @@ void MainWindow::ICA() //fastICA
                 {
                     helpInt = 0;
                     //clear memory
-                    cleanData();
                     for(int i = 0; i < ns; ++i)
                     {
                         delete [] covMatrix[i];
@@ -4862,25 +4930,35 @@ void MainWindow::ICA() //fastICA
 //        }
 
     }
-
-
-
     numOfPc = ns;
 
 
 
 
-    //test eigenVectors - OK
-//    cout << "eigenVectors = " << endl;
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        for(int j = 0; j < ns; ++j)
-//        {
-//            cout << eigenVectors[i][j] << "\t";
-//        }
-//        cout << endl;
-//    }
-//    cout << endl;
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "eigenMatrix.txt";
+    outStream.open(helpString.toStdString().c_str());
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            outStream << eigenVectors[i][j] << "  ";
+        }
+        outStream << endl;
+    }
+    outStream << endl;
+    outStream.close();
+
+
+
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "eigenValues.txt";
+    outStream.open(helpString.toStdString().c_str());
+    for(int i = 0; i < ns; ++i)
+    {
+        outStream << eigenValues[i] << '\n';
+    }
+    outStream.close();
+
+
 
 //    cout << "eigenVectors dot product= " << endl;
 //    for(int i = 0; i < ns; ++i)
@@ -5069,7 +5147,6 @@ void MainWindow::ICA() //fastICA
                 if(1)
                 {
                     //clear memory
-                    cleanData();
                     for(int i = 0; i < ns; ++i)
                     {
                         delete [] covMatrix[i];
@@ -5208,7 +5285,6 @@ void MainWindow::ICA() //fastICA
         }
     }
 
-//    invertMatrix2(vectorW, ns, &matrixA);
 
     //test matrix A
 
@@ -5316,7 +5392,6 @@ void MainWindow::ICA() //fastICA
 
 
     ns = ui->numOfIcSpinBox->value();
-    cleanData();
     for(int i = 0; i < ns; ++i)
     {
         delete [] covMatrix[i];
@@ -5504,7 +5579,6 @@ void MainWindow::icaClassTest() //non-optimized
     }
     delete ANN;
     delete spectr;
-    cleanData();
 }
 
 void MainWindow::throwIC()
@@ -5587,7 +5661,6 @@ void MainWindow::throwIC()
     cleanDirs();
     sliceOneByOneNew(ns);
     cout << "sliced" << endl;
-    cleanData();
 
     constructEDF();
 
@@ -5619,7 +5692,7 @@ void MainWindow::hilbertCount()
     helpString = dir->absolutePath() + QDir::separator() + ExpName + "_hilbert.edf";
     writeEdf(edf, hilbertData, helpString, ndr*fr);
 
-    delMatrix(&hilbertData, ns, ndr*fr);
+    matrixDelete(&hilbertData, ns, ndr*fr);
 }
 
 double objFunc(double *W_, double ***Ce_, double **Cz_, double **Cav_, double ns_, double numOfEpoches_)
@@ -5995,11 +6068,7 @@ void MainWindow::spoc()
                 qApp->processEvents();
                 if(stopFlag)
                 {
-                    for(int i = 0; i < nsBackup; ++i)
-                    {
-                        delete []data[i];
-                    }
-                    delete []data;delete []nr;
+
                     for(int i = 0; i < numOfEpoches; ++i)
                     {
                         for(int j = 0; j < ns; ++j)
@@ -6055,11 +6124,8 @@ void MainWindow::spoc()
             qApp->processEvents();
             if(stopFlag)
             {
-                for(int i = 0; i < nsBackup; ++i)
-                {
-                    delete []data[i];
-                }
-                delete []data;delete []nr;
+
+
                 for(int i = 0; i < numOfEpoches; ++i)
                 {
                     for(int j = 0; j < ns; ++j)
@@ -6171,7 +6237,7 @@ void MainWindow::spoc()
         double * dets = new double [ndr*nr[0]];
 
         //(Cz-l*Cav)*w = 0
-        //det(Cz-l*Cav) = 0
+        //matrixDet(Cz-l*Cav) = 0
         for(double L = 0.; L < ndr*nr[0]; L+=1.)
         {
             for(int j = 0; j < ns; ++j)
@@ -6181,7 +6247,7 @@ void MainWindow::spoc()
                     detMatrix[j][k] = Cz[j][k] - L*Cav[j][k];
                 }
             }
-            dets[int(L)] = det(detMatrix, ns);
+            dets[int(L)] = matrixDet(detMatrix, ns);
             if(dets[int(L)] * dets[int(L-1)] < 0 || ( L > 2. && (dets[int(L)] > dets[int(L-1)]) && (dets[int(L-2)] > dets[int(L-1)]) && dets[int(L-1)] < 10.))
             {
                 cout << "L = " << L << endl;
@@ -6225,11 +6291,7 @@ void MainWindow::spoc()
     delete []Znew;
     delete []averages;
     delete []gradientW;
-    for(int i = 0; i < nsBackup; ++i)
-    {
-        delete []data[i];
-    }
-    delete []data;delete []nr;
+
 }
 
 QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY)
@@ -6669,11 +6731,9 @@ void MainWindow::visualisation()   //just video
 
         for(int k = 0; k < ns; ++k)
         {
-    //        delete []data[k];
             delete []dataFFT[k];
         }
         delete []dataFFT;
-        delete []data;
 
 
         for(int i = 0; i < NumOfClasses; ++i)
@@ -6684,4 +6744,177 @@ void MainWindow::visualisation()   //just video
 
 
         delete []matrix;
+}
+
+void MainWindow::randomDecomposition()
+{
+    readData(); //should have opened initial data-file
+
+    this->ui->reduceChannelsCheckBox->setChecked(true);
+    reduceChannelsFast();
+
+    cout << "data read" << endl;
+
+    lst.clear();
+    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    if(!QString(label[lst.last().toInt() - 1]).contains("Markers"))
+    {
+        QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
+        return;
+    }
+
+
+    int compNum = 19;
+    double ** randMatrix = matrixCreate(compNum, compNum);
+    double ** matrixW = matrixCreate(compNum, compNum);
+    double ** newData = matrixCreate(ns, ndr*nr[0]);
+
+//    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "maps.txt";
+//    cout << helpString.toStdString() << endl;
+//    readICAMatrix(helpString, &matrixA, compNum);
+//    cout << "ICA matrix read" << endl;
+
+    double sum1;
+    double sum2;
+
+    Spectre * spectr = new Spectre(dir, compNum, ExpName.left(3));
+    Net * ANN = new Net(dir, compNum, left, right, spStep, ExpName); //generality parameters
+    helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
+    ANN->readCfgByName(helpString);
+    ANN->setReduceCoeff(10.); //generality
+    ANN->setNumOfPairs(30);
+    FILE * outFile;
+
+    double ** eigenMatrix = matrixCreate(compNum, compNum);
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "eigenMatrix.txt";
+    inStream.open(helpString.toStdString().c_str());
+    for(int i = 0; i < compNum; ++i)
+    {
+        for(int j = 0; j < compNum; ++j)
+        {
+            inStream >> eigenMatrix[i][j];
+        }
+    }
+    inStream.close();
+
+    double ** eigenMatrixInv = matrixCreate(compNum, compNum);
+    matrixTranspose(eigenMatrix, compNum, &eigenMatrixInv);
+
+    double * eigenValues = new double [compNum];
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "eigenValues.txt";
+    inStream.open(helpString.toStdString().c_str());
+    for(int i = 0; i < compNum; ++i)
+    {
+        inStream >> eigenValues[i];
+    }
+    inStream.close();
+
+
+    while(1)
+    {
+        helpString = dir->absolutePath() + QDir::separator() + "AAX_f-clean.edf";
+        setEdfFile(helpString);
+        readData(); //should have opened initial data-file
+
+        this->ui->reduceChannelsCheckBox->setChecked(true);
+        reduceChannelsFast();
+
+
+        //set random matrix
+        srand(QTime::currentTime().second() * 13 + QTime::currentTime().msec() * 1028);
+        for(int i = 0; i < compNum; ++i) //i'th coloumn
+        {
+            sum1 = 0.;
+            for(int j = 0; j < compNum; ++j)
+            {
+                randMatrix[j][i] = (-20 + rand()%41)/20.;
+                sum1 += randMatrix[j][i] * randMatrix[j][i];
+            }
+            sum1 = sqrt(sum1);
+
+            //norm raandMatrix by 1-length coloumns
+            for(int j = 0; j < compNum; ++j)
+            {
+                randMatrix[j][i] /= sum1;
+            }
+        }
+        matrixProduct(randMatrix, eigenMatrix, &matrixW, compNum, compNum); //W = rand * Eig
+
+        for(int i = 0; i < compNum; ++i)
+        {
+            sum1 = 0.;
+            for(int j = 0; j < compNum; ++j)
+            {
+                matrixW[j][i] /= sqrt(eigenValues[i]);
+            }
+        }
+        //W = rand * Eig * D^-0.5
+
+        matrixProduct(matrixW, eigenMatrixInv, &randMatrix, compNum, compNum); //randMatrix = randW * Eig * d^-0.5 *Eig^t
+
+        //decompose
+        matrixProduct(randMatrix, data, &newData, compNum, ndr*nr[0]);
+        memcpy(newData[ns-1], data[ns-1], ndr*nr[0]*sizeof(double)); //markers
+
+        //norm components and rand matrix
+        for(int i = 0; i < compNum; ++i)
+        {
+            sum1 = mean(newData[i], ndr*nr[0]);
+            for(int j = 0; j < ndr*nr[0]; ++j)
+            {
+                newData[i][j] -= sum1;
+            }
+
+            sum2 = sqrt(variance(newData[i], ndr*nr[0]));
+            for(int j = 0; j < ndr*nr[0]; ++j)
+            {
+                newData[i][j] /= sum2;
+                newData[i][j] *= 10.;  //10 generality
+            }
+
+            for(int k = 0; k < compNum; ++k)
+            {
+                randMatrix[k][i] *= sum2;
+                randMatrix[k][i] /= 10.;
+            }
+
+        }
+
+        //write newData
+        helpString = ExpName.left(3) + "_randIca.edf";
+        writeEdf(edf, newData, helpString, ndr*nr[0]);
+
+        helpString = dir->absolutePath() + QDir::separator() + ExpName.left(3) + "_randIca.edf";
+        setEdfFile(helpString);
+        readData(); //read newData
+
+        ui->cleanRealisationsCheckBox->setChecked(true);
+        ui->cleanRealsSpectraCheckBox->setChecked(true);
+        cleanDirs();
+
+        sliceOneByOneNew(19);
+        spectr->defaultState();
+        spectr->countSpectra();
+        ANN->autoClassificationSimple();
+        helpString = dir->absolutePath() + QDir::separator() + "randomDecompose.txt";
+        outFile = fopen(helpString.toStdString().c_str(), "a");
+        fprintf(outFile, "%.2lf\n", ANN->getAverageAccuracy());
+        fclose(outFile);
+
+    }
+
+
+
+
+    matrixDelete(&randMatrix, compNum, compNum);
+    matrixDelete(&matrixW, compNum, compNum);
+    matrixDelete(&newData, ns, ndr*nr[0]);
+    matrixDelete(&eigenMatrix, compNum, compNum);
+    matrixDelete(&eigenMatrixInv, compNum, compNum);
+
+    delete []eigenValues;
+    delete ANN;
+    delete spectr;
+
+
 }

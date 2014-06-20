@@ -134,6 +134,7 @@ void Spectre::defaultState()
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));   //smooth right after spectra count
     ui->lineEdit_2->setText(helpString);
     ui->fftComboBox->setCurrentIndex(2); //4096
+    ui->spectraRadioButton->setChecked(true); // count FFT
 }
 
 int findChannel(int x, int y, QSize siz)
