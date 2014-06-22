@@ -3708,13 +3708,17 @@ void Net::optimizeChannelsSet()
 void Net::rcpSlot()
 {
     FILE * file;
-    while(1)
+    for(int i = 35; i < 40; i += 5)
     {
-        autoClassificationSimple();\
-        helpString = dir->absolutePath() + QDir::separator() + "rcp-" + QString::number(ui->numOfPairsBox->value()) + ".txt";
-        file = fopen(helpString.toStdString().c_str(), "a");
-        fprintf(file, "%.2lf\n", averageAccuracy);
-        fclose(file);
+        ui->numOfPairsBox->setValue(i);
+        for(int j = 0; j < 80; ++j)
+        {
+            autoClassificationSimple();\
+            helpString = dir->absolutePath() + QDir::separator() + "rcp-" + QString::number(ui->numOfPairsBox->value()) + ".txt";
+            file = fopen(helpString.toStdString().c_str(), "a");
+            fprintf(file, "%.2lf\n", averageAccuracy);
+            fclose(file);
+        }
     }
 }
 

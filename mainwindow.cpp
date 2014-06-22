@@ -384,7 +384,12 @@ MainWindow::MainWindow() :
 //    matrixDelete(&inv, dim, dim);
 //    matrixDelete(&mat1, dim, dim);
 
-//    countRCP("/media/Files/Data/AAX/randomDecompose.txt", "/media/Files/Data/AAX/randomDecompose.png");
+//    countRCP("/media/Files/Data/AAX/rcp-50.txt", "/media/Files/Data/AAX/rcp-50.png");
+//    countRCP("/media/Files/Data/AAX/rcp-40.txt", "/media/Files/Data/AAX/rcp-40.png");
+//    countRCP("/media/Files/Data/AAX/rcp-30.txt", "/media/Files/Data/AAX/rcp-30.png");
+//    countRCP("/media/Files/Data/AAX/rcp-25.txt", "/media/Files/Data/AAX/rcp-25.png");
+//    countRCP("/media/Files/Data/AAX/rcp-20.txt", "/media/Files/Data/AAX/rcp-20.png");
+    countRCP("/media/Files/Data/AAX/rcp-35.txt", "/media/Files/Data/AAX/rcp-35.png");
 
 //    cout << strerror(24) << endl;
 //    cout << time(NULL) << endl;

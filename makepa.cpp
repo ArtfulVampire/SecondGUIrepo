@@ -1221,7 +1221,8 @@ void MakePa::makePaSlot()
 
 
     //generality
-    QStringList nameFilters, list, lst[3]; //0 - Spatial, 1 - Verbal, 2 - Gaps
+    QStringList nameFilters, list;
+    QStringList * lst = new QStringList [3];//0 - Spatial, 1 - Verbal, 2 - Gaps
 
     nameFilters.clear();
     list.clear();
@@ -1668,6 +1669,7 @@ void MakePa::makePaSlot()
     delete []arr;
 
     delete dir_;
+    delete []lst;
 
     helpString="PA-files have been made \n";
     this->ui->lineEdit->setText(helpString);
