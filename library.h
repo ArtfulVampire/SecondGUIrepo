@@ -76,9 +76,9 @@ void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth);
 
 
-double distance(double * vec1, double * vec2, int dim);
-void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
-void matrixProduct(double ** A, double ** B, double *** out, int dimA1, int dimB2, int dimA2B1);  //matrix product: out = A(H*H) * B(H*L)
+double distance(double * const vec1, double * const vec2, int dim);
+void matrixProduct(double ** const A, double ** const B, double *** out, int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
+void matrixProduct(double ** const A, double ** const B, double *** out, int dimA1, int dimB2, int dimA2B1);  //matrix product: out = A(H*H) * B(H*L)
 void matrixTranspose(double ** inMat, int size, double *** outMat);
 void matrixCopy(double ** inMat, double *** outMat, int dimH, int dimL);
 void matrixInvert(double ** inMat, int size, double *** outMat); //cofactors

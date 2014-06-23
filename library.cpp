@@ -245,8 +245,8 @@ double enthropy(double *arr, int N, QString picPath, int numOfRanges) // ~30 is 
     return result;
 }
 
-//matrix product B = A * B
-void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL)
+//matrix product out = A(H*H) * B(H*L)
+void matrixProduct(double ** const A, double ** const B, double *** out, int dimH, int dimL)
 {
     double result;
     for(int j = 0; j < dimL; ++j)
@@ -263,7 +263,7 @@ void matrixProduct(double ** A, double ** B, double *** out, int dimH, int dimL)
     }
 }
 
-void matrixProduct(double ** A, double ** B, double *** out, int dimA1, int dimB2, int dimA2B1)
+void matrixProduct(double ** const A, double ** const B, double *** out, int dimA1, int dimB2, int dimA2B1)
 {
     double result;
     for(int j = 0; j < dimA1; ++j)
@@ -282,7 +282,7 @@ void matrixProduct(double ** A, double ** B, double *** out, int dimA1, int dimB
 
 
 
-double distance(double * vec1, double * vec2, int dim)
+double distance(double * const vec1, double * const vec2, int dim)
 {
     double dist = 0.;
     //Euclid
@@ -787,6 +787,9 @@ void kernelEst(double * arr, int num, QString picPath)
     xMin = floor(xMin)-1;
     xMax = ceil(xMax)+1;
 
+    //generality
+    xMin = 82;
+    xMax = 88;
 
     for(int i = 0; i < pic.width(); ++i)
     {
@@ -1710,12 +1713,12 @@ void countRCP(QString filename, QString picPath)
 
     cout << "average = " << mean(arr, counter) << endl;
     cout << "variance = " << variance(arr, counter) << endl;
+    cout << "sigma = " << sqrt(variance(arr, counter)) << endl;
     cout << "counter = " << counter << endl;
 
     kernelEst(arr, counter, picPath);
 
     delete []arr;
-
 }
 
 void svd(double ** inData, int size, int length, double *** eigenVects, double ** eigenValues)

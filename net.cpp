@@ -3708,7 +3708,7 @@ void Net::optimizeChannelsSet()
 void Net::rcpSlot()
 {
     FILE * file;
-    for(int i = 35; i < 40; i += 5)
+    for(int i = 30; i <= 50; i += 5)
     {
         ui->numOfPairsBox->setValue(i);
         for(int j = 0; j < 80; ++j)

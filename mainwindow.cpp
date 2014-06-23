@@ -209,14 +209,14 @@ MainWindow::MainWindow() :
     ui->svdDoubleSpinBox->setMaximum(15);
     ui->svdDoubleSpinBox->setMinimum(2);
     ui->svdDoubleSpinBox->setValue(4.0);
-    ui->svdDoubleSpinBox->setValue(9.0);
+    ui->svdDoubleSpinBox->setValue(8.0);
     ui->svdDoubleSpinBox->setSingleStep(0.5);
 
     ui->vectwDoubleSpinBox->setDecimals(1);
     ui->vectwDoubleSpinBox->setMaximum(10.0);
     ui->vectwDoubleSpinBox->setMinimum(1.5);
 //    ui->vectwDoubleSpinBox->setValue(1.5);
-    ui->vectwDoubleSpinBox->setValue(3.0);
+    ui->vectwDoubleSpinBox->setValue(8.0);
     ui->vectwDoubleSpinBox->setSingleStep(0.5);
 
     ui->spocCoeffDoubleSpinBox->setMaximum(5);
@@ -384,15 +384,14 @@ MainWindow::MainWindow() :
 //    matrixDelete(&inv, dim, dim);
 //    matrixDelete(&mat1, dim, dim);
 
-//    countRCP("/media/Files/Data/AAX/rcp-50.txt", "/media/Files/Data/AAX/rcp-50.png");
-//    countRCP("/media/Files/Data/AAX/rcp-40.txt", "/media/Files/Data/AAX/rcp-40.png");
-//    countRCP("/media/Files/Data/AAX/rcp-30.txt", "/media/Files/Data/AAX/rcp-30.png");
-//    countRCP("/media/Files/Data/AAX/rcp-25.txt", "/media/Files/Data/AAX/rcp-25.png");
-//    countRCP("/media/Files/Data/AAX/rcp-20.txt", "/media/Files/Data/AAX/rcp-20.png");
-    countRCP("/media/Files/Data/AAX/rcp-35.txt", "/media/Files/Data/AAX/rcp-35.png");
-
-//    cout << strerror(24) << endl;
-//    cout << time(NULL) << endl;
+    dir->cd("/media/Files/Data/AAX/RCP");
+    lst = dir->entryList(QStringList("*.txt"));
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        helpString = dir->absolutePath() + QDir::separator() + lst[i];
+        helpString.replace(".txt", ".png");
+//        countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString);
+    }
 
 }
 
@@ -1559,6 +1558,10 @@ void MainWindow::readData()
     short int a;
     unsigned short markA;
 
+    helpString = dir->absolutePath() + QDir::separator() + "header.txt";
+    FILE * header = fopen(helpString.toStdString().c_str(), "w");
+
+
 
     FILE *edfNew;
     int flag = 0;
@@ -1582,6 +1585,7 @@ void MainWindow::readData()
     for(int i = 0; i < 184; ++i)
     {
         fscanf(edf, "%c", &helpChar);
+        fprintf(header, "%c", helpChar);
         if(flag==1) fprintf(edfNew, "%c", helpChar);
     }
 
@@ -1589,6 +1593,8 @@ void MainWindow::readData()
     for(int i = 0; i < 8; ++i)
     {
         fscanf(edf, "%c", &helpCharArr[i]);
+
+        fprintf(header, "%c", helpCharArr[i]);
         if(flag==1) fprintf(edfNew, "%c", helpCharArr[i]);
     }
     bytes=atoi(helpCharArr);
@@ -1600,6 +1606,7 @@ void MainWindow::readData()
     for(int i = 0; i < 44; ++i)
     {
         fscanf(edf, "%c", &helpChar);
+        fprintf(header, "%c", helpChar);
         if(flag==1) fprintf(edfNew, "%c", helpChar);
     }
 
@@ -1607,6 +1614,7 @@ void MainWindow::readData()
     for(int i = 0; i < 8; ++i)
     {
         fscanf(edf, "%c", &helpCharArr[i]);
+        fprintf(header, "%c", helpCharArr[i]);
     }
     ndr=atoi(helpCharArr);                      //NumberOfDataRecords
 
@@ -1614,6 +1622,7 @@ void MainWindow::readData()
     for(int i = 0; i < 8; ++i)
     {
         fscanf(edf, "%c", &helpCharArr[i]);
+        fprintf(header, "%c", helpCharArr[i]);
     }
     ddr = atoi(helpCharArr);                       //DurationOfDataRecord
 //    cout << "ddr=" << ddr << endl;
@@ -1642,6 +1651,7 @@ void MainWindow::readData()
     for(int i = 0; i < 4; ++i)
     {
         fscanf(edf, "%c", &helpCharArr[i]);
+        fprintf(header, "%c", helpCharArr[i]);
         if(flag==1) fprintf(edfNew, "%c", helpCharArr[i]);
     }
     ns=atoi(helpCharArr);                        //Number of channels
@@ -1651,6 +1661,7 @@ void MainWindow::readData()
     for(int i = 0; i < ns*16; ++i)
     {
         fscanf(edf, "%c", &label[i/16][i%16]);
+        fprintf(header, "%c", label[i/16][i%16]);
         if(flag==1) fprintf(edfNew, "%c", label[i/16][i%16]);
         if(i%16==15) label[i/16][16]='\0';
 
@@ -1666,6 +1677,7 @@ void MainWindow::readData()
     for(int i = 0; i < ns*80; ++i)                      //rest of header
     {
         fscanf(edf, "%c", &helpChar);
+        fprintf(header, "%c", helpChar);
         if(flag==1) fprintf(edfNew, "%c", helpChar);
     }
 
@@ -1674,6 +1686,7 @@ void MainWindow::readData()
     for(int i = 0; i < ns*8; ++i)                      //rest of header
     {
         fscanf(edf, "%c", &helpChar);
+        fprintf(header, "%c", helpChar);
         if(flag==1) fprintf(edfNew, "%c", helpChar);
     }
 
@@ -1686,6 +1699,7 @@ void MainWindow::readData()
         for(int j = 0; j < 8; ++j)
         {
             fscanf(edf, "%c", &helpCharArr[j]);
+            fprintf(header, "%c", helpCharArr[j]);
             if(flag==1) fprintf(edfNew, "%c", helpCharArr[j]);
         }
         physMin[i]=double(atoi(helpCharArr));
@@ -1700,6 +1714,7 @@ void MainWindow::readData()
         for(int j = 0; j < 8; ++j)
         {
             fscanf(edf, "%c", &helpCharArr[j]);
+            fprintf(header, "%c", helpCharArr[j]);
             if(flag==1) fprintf(edfNew, "%c", helpCharArr[j]);
         }
         physMax[i]=double(atoi(helpCharArr));
@@ -1714,6 +1729,7 @@ void MainWindow::readData()
         for(int j = 0; j < 8; ++j)
         {
             fscanf(edf, "%c", &helpCharArr[j]);
+            fprintf(header, "%c", helpCharArr[j]);
             if(flag==1) fprintf(edfNew, "%c", helpCharArr[j]);
         }
         digMin[i]=double(atoi(helpCharArr));
@@ -1728,6 +1744,7 @@ void MainWindow::readData()
         for(int j = 0; j < 8; ++j)
         {
             fscanf(edf, "%c", &helpCharArr[j]);
+            fprintf(header, "%c", helpCharArr[j]);
             if(flag==1) fprintf(edfNew, "%c", helpCharArr[j]);
         }
         digMax[i]=double(atoi(helpCharArr));
@@ -1737,6 +1754,7 @@ void MainWindow::readData()
     for(int i = 0; i < ns*80; ++i)                      //rest of header
     {
         fscanf(edf, "%c", &helpChar);
+        fprintf(header, "%c", helpChar);
         if(flag==1) fprintf(edfNew, "%c", helpChar);
     }
 
@@ -1747,6 +1765,7 @@ void MainWindow::readData()
         for(int j = 0; j < 8; ++j)
         {
             fscanf(edf, "%c", &helpCharArr[j]);
+            fprintf(header, "%c", helpCharArr[j]);
             if(flag==1) fprintf(edfNew, "%c", helpCharArr[j]);
         }
         helpCharArr[8] = '\0';
@@ -1758,6 +1777,7 @@ void MainWindow::readData()
     for(int i = 0; i < ns*32; ++i)                      //rest of header
     {
         fscanf(edf, "%c", &helpChar);
+        fprintf(header, "%c", helpChar);
         if(flag==1) fprintf(edfNew, "%c", helpChar);
     }
 
@@ -1765,8 +1785,10 @@ void MainWindow::readData()
     for(int i = 0; i < (bytes-(ns+1)*256); ++i)                      //Neurotravel//generality//strange
     {
         fscanf(edf, "%c", &helpChar);
+        fprintf(header, "%c", helpChar);
         if(flag==1) fprintf(edfNew, "%c", helpChar);
     }
+    fclose(header);
 
     ui->finishTimeBox->setMaximum(ddr*ndr);
 
@@ -1850,10 +1872,10 @@ void MainWindow::readData()
                         {
                             fwrite(&a, sizeof(short), 1, edfNew);
                         }
-                        data[j][i*nr[j]+k] = physMin[j] + (physMax[j]-physMin[j]) * (double(a)-digMin[j]) / (digMax[j] - digMin[j]);   //enc
+//                        data[j][i*nr[j]+k] = physMin[j] + (physMax[j]-physMin[j]) * (double(a)-digMin[j]) / (digMax[j] - digMin[j]);   //enc
                         if(j != ns-1)
                         {
-                            data[j][i*nr[j]+k] = a *1./8.;
+                            data[j][i*nr[j]+k] = a *1./8.; //generality
                         }
                         else
                         {
@@ -2007,10 +2029,10 @@ void MainWindow::makeDatFile()
     if(ui->eyesCleanCheckBox->isChecked()) eyesFast();
     if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
 
-    int startTime=ui->startTimeBox->value();
-    cout << "startTime=" << startTime << endl;
-    int finishTime=ui->finishTimeBox->value();
-    cout << "finishTime=" << finishTime << endl;
+    double startTime=ui->startTimeBox->value();
+    cout << "startTime = " << startTime << endl;
+    double finishTime=ui->finishTimeBox->value();
+    cout << "finishTime = " << finishTime << endl;
 
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(ExpName).append(".dat"));
 
@@ -2022,9 +2044,9 @@ void MainWindow::makeDatFile()
         return;
     }
 
-    fprintf(datFile, "NumOfSlices %d\n", int(finishTime-startTime)*nr[0]);
+    fprintf(datFile, "NumOfSlices %d\n", int((finishTime - startTime)*nr[0]));
 
-    for(int i=startTime*250; i < finishTime*250; ++i) //generality 250
+    for(int i = int(startTime * 250.); i < int(finishTime * 250.); ++i) //generality 250
     {
         for(int j = 0; j < ns; ++j)
         {
@@ -3915,7 +3937,7 @@ void MainWindow::reduceChannelsFast()
 
 
 //products for ICA
-void product1(double ** arr, int length, int ns, double * vec, double ** outVector)
+void product1(double ** const arr, int length, int ns, double * vec, double ** outVector)
 {
     //<X*g(Wt*X)>
     //vec = Wt
@@ -3940,7 +3962,7 @@ void product1(double ** arr, int length, int ns, double * vec, double ** outVect
         }
         for(int i = 0; i < ns; ++i)
         {
-            (*outVector)[i] += tanh(sum)*arr[i][j];
+            (*outVector)[i] += tanh(sum) * arr[i][j];
         }
     }
     for(int i = 0; i < ns; ++i)
@@ -3951,7 +3973,7 @@ void product1(double ** arr, int length, int ns, double * vec, double ** outVect
 
 
 
-void product2(double ** arr, int length, int ns, double * vec, double ** outVector)
+void product2(double ** const arr, int length, int ns, double * vec, double ** outVector)
 {
     //g'(Wt*X)*1*W
     //vec = Wt
@@ -4507,10 +4529,21 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
                 for(int k = 0; k < nr[newIndex]; ++k)
                 {
                     a = (short)((inData[ j ][ i * nr[newIndex] + k ] - physMin[newIndex]) * (digMax[newIndex] - digMin[newIndex]) / (physMax[newIndex] - physMin[newIndex]) + digMin[newIndex]);
-//                    if(j == newNs - 1 && a != 0)
-//                    {
-//                        cout << i*nr[newIndex] + k << "\t" << a <<endl;
-//                    }
+
+                    //generality
+                    if(j != newNs -1)
+                    {
+                        a = (short)(inData[ j ][ i * nr[newIndex] + k ] * 8.);
+                    }
+                    else if(!ui->matiCheckBox->isChecked())
+                    {
+                        a = (short)(inData[ j ][ i * nr[newIndex] + k ]);
+                    }
+                    else
+                    {
+                        a = (unsigned short)(inData[ j ][ i * nr[newIndex] + k ]);
+                    }
+
                     if(ui->matiCheckBox->isChecked() && j == newNs-1)
                     {
                         fwrite(&a, sizeof(unsigned short), 1, edfNew);
@@ -4688,15 +4721,32 @@ void MainWindow::ICA() //fastICA
         averages[i] = mean(data[i], ndr*fr);
     }
 
+    //count zeros
+    int h = 0;
+    int Eyes = 0;
+    for(int i = 0; i < ndr*fr; ++i)
+    {
+        h = 0;
+        for(int j = 0; j < ns; ++j)
+        {
+            if(fabs(data[j][i]) == 0.) ++h;
+        }
+        if(h == ns) Eyes += 1;
+    }
 
     //subtract averages
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ndr*fr; ++j)
         {
-            data[i][j] -= averages[i];
+            if(data[i][j] != 0.) data[i][j] -= averages[i] * (double(ndr*fr)/(ndr*fr - Eyes));
         }
     }
+    for(int i = 0; i < ns; ++i)
+    {
+        cout << mean(data[i], ndr*fr) << " ";
+    }
+    cout << endl;
 
 
     //covariation between different spectra-bins
@@ -5028,6 +5078,7 @@ void MainWindow::ICA() //fastICA
     }
 
 
+
     for(int j = 0; j < ndr*fr; ++j) //columns X
     {
         for(int i = 0; i < ns; ++i) //rows tempMatrix
@@ -5092,13 +5143,14 @@ void MainWindow::ICA() //fastICA
             {
                 vectorW[i][j] -= vector3[j];
             }
+
             //check norma
             for(int k = 0; k < i; ++k)
             {
                 sum1 = 0.;
                 for(int h = 0; h < ns; ++h)
                 {
-                    sum1 += vectorW[k][h]*vectorW[k][h];
+                    sum1 += vectorW[k][h]  *vectorW[k][h];
                 }
                 if(fabs(sum1 - 1.) > 0.01)
                 {
@@ -5111,7 +5163,7 @@ void MainWindow::ICA() //fastICA
                 sum1 = 0.;
                 for(int h = 0; h < ns; ++h)
                 {
-                    sum1 += vectorW[k][h]*vectorW[i][h];
+                    sum1 += vectorW[k][h] * vectorW[i][h];
                 }
                 if(sum1 > 0.01)
                 {
@@ -5144,6 +5196,7 @@ void MainWindow::ICA() //fastICA
             if(sum2 < vectorWTreshold || 2 - sum2 < vectorWTreshold) break;
             if(counter == 300) break;
 
+            /*
             qApp->processEvents();
             if(stopFlag == 1)
             {
@@ -5183,6 +5236,7 @@ void MainWindow::ICA() //fastICA
                 }
                 return;
             }
+            */
         }
         cout << i << "\t" << counter << "\terror = " << sum2 << "\t" << myTime.elapsed()/1000. << " sec" << endl;
 
@@ -5190,10 +5244,6 @@ void MainWindow::ICA() //fastICA
     cout << "VectorsW counted" << endl;
 
 
-    //infomax
-    if(0)
-    {
-    }
 
 //    //test vectorsW - ok
 //    cout << "Mixing matrix = " << endl; //A, W^-1
@@ -5223,7 +5273,6 @@ void MainWindow::ICA() //fastICA
 //        cout << endl;
 //    }
 //    cout<<endl;
-
 
     //count components
     matrixProduct(vectorW, dataICA, &components, ns, ndr*fr);
@@ -5346,7 +5395,7 @@ void MainWindow::ICA() //fastICA
 
         for(int j = 0; j < ndr*fr; ++j)
         {
-            components[i][j] -= sum1;
+            if(components[i][j] != 0.) components[i][j] -= sum1 * (double(ndr*fr)/(ndr*fr - Eyes));
             components[i][j] /= sqrt(sum2);
             components[i][j] *= coeff;
         }
@@ -5378,7 +5427,6 @@ void MainWindow::ICA() //fastICA
 //        cout<<data[0][i]<<" ";
 //    }
 //    cout<<endl;
-
 
     //now should draw amplitude maps OR write to file
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("maps.txt"));
@@ -6786,8 +6834,8 @@ void MainWindow::randomDecomposition()
     Net * ANN = new Net(dir, compNum, left, right, spStep, ExpName); //generality parameters
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
     ANN->readCfgByName(helpString);
-    ANN->setReduceCoeff(10.); //generality
-    ANN->setNumOfPairs(30);
+    ANN->setReduceCoeff(8.); //generality
+    ANN->setNumOfPairs(40);
     FILE * outFile;
 
     double ** eigenMatrix = matrixCreate(compNum, compNum);
