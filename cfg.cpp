@@ -23,6 +23,7 @@ cfg::cfg(QDir *dir_, int ns_, int spLength_, double error_, double lrate_, QStri
     ui->tempSpinBox->setValue(10);
     ui->nameEdit->setText(FileName_);
     QObject::connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(makeCfg()));
+    QObject::connect(ui->nameEdit, SIGNAL(returnPressed()), this, SLOT(makeCfg()));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
 }

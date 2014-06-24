@@ -70,7 +70,7 @@ MainWindow::MainWindow() :
     data = new double * [maxNs];
     for(int i = 0; i < maxNs; ++i)
     {
-        data[i] = new double [200*60*250];           //////////////for 200 minutes//////////////
+        data[i] = new double [200*60*250];           //////////////for 200 minutes//////////////        
     }
     nr = new int [maxNs];
 
@@ -310,6 +310,8 @@ MainWindow::MainWindow() :
     QObject::connect(ui->throwICPushButton, SIGNAL(clicked()), this, SLOT(throwIC()));
 
     QObject::connect(ui->randomDecomposePushButton, SIGNAL(clicked()), this, SLOT(randomDecomposition()));
+
+    QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
 /*
     //function test
     int leng = 65536;
@@ -390,8 +392,9 @@ MainWindow::MainWindow() :
     {
         helpString = dir->absolutePath() + QDir::separator() + lst[i];
         helpString.replace(".txt", ".png");
-//        countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString);
+        countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString);
     }
+
 
 }
 
@@ -401,7 +404,9 @@ MainWindow::~MainWindow()
     for(int i = 0; i < maxNs; ++i)
     {
         delete []label[i];
+        delete []data[i];
     }
+    delete []data;
     delete []label;
     delete dir;
     delete paint;
@@ -1795,7 +1800,7 @@ void MainWindow::readData()
     helpString = dir->absolutePath().append(QDir::separator()).append(ExpName).append("_markers.txt");
     FILE * markers = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
 
-    QString *annotations = new QString [10000];
+    QString * annotations = new QString [1000];
     int numOfAnn = 0;
     int currStart;
 
@@ -2005,7 +2010,7 @@ void MainWindow::readData()
     delete []physMax;
     delete []digMin;
     delete []digMax;
-    delete []annotations;
+    delete[] annotations;
 
     cout<<"ndr*ddr = " << ndr*ddr << endl;
 
@@ -2471,8 +2476,8 @@ void MainWindow::sliceWindFromReal()
 
 void MainWindow::makeTestData()
 {
-
     readData();
+
     nsBackup = ns;
     int indepNum = ui->numComponentsSpinBox->value();
     double ** testSignals = new double * [indepNum];
@@ -2618,6 +2623,72 @@ void MainWindow::makeTestData()
     delete []testSignals;
 
 
+}
+
+void MainWindow::refilterDataSlot()
+{
+    QTime myTime;
+    myTime.start();
+
+    readData();
+    int fr = nr[0];
+    int fftLength = pow(2., ceil(log2(ndr*fr)));
+    spStep = fr/double(fftLength);
+    double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
+    double highFreq = ui->highFreqFilterDoubleSpinBox->value();
+    int numOfChan = 19;
+    for(int i = 0; i < numOfChan; ++i) //19 generality
+    {
+        for(int j = ndr*fr; j < fftLength; ++j)
+        {
+            data[i][j] = 0.;
+        }
+    }
+
+    double ** dataFFT = new double * [numOfChan];
+    for(int i = 0; i < numOfChan; ++i) //19 generality
+    {
+        dataFFT[i] = new double [fftLength];
+    }
+
+
+
+    double norm1 = fftLength / double(ndr*fr);
+    double * spectre = new double [fftLength*2];
+
+    for(int j = 0; j < numOfChan; ++j)
+    {
+        for(int i = 0; i < fftLength; ++i)            //make appropriate array
+        {
+            spectre[ i * 2 + 0 ] = (double)(data[j][ i ] * sqrt(norm1));
+            spectre[ i * 2 + 1 ] = 0.;
+        }
+        four1(spectre-1, fftLength, 1);       //Fourier transform
+
+        //filtering
+        for(int i = 0; i < fftLength; ++i)
+        {
+            if(i < 2.*lowFreq/spStep || i > 2.*highFreq/spStep)
+                spectre[i] = 0.;
+        }
+        for(int i = fftLength; i < 2*fftLength; ++i)
+        {
+            if(((2*fftLength - i) < 2.*lowFreq/spStep) || (2*fftLength - i > 2.*highFreq/spStep))
+                spectre[i] = 0.;
+        }
+        //end filtering
+
+        four1(spectre-1, fftLength, -1);
+        for(int i = 0; i < ndr*fr; ++i)
+        {
+            data[j][i] = spectre[2*i]/fftLength/sqrt(norm1);
+        }
+    }
+    memcpy(data[numOfChan], data[ns-1], ndr*fr*sizeof(double)); //stupid bicycle generality
+    helpString = ExpName + "_filtered.edf";
+    writeEdf(edf, data, helpString, ndr*fr);
+
+    cout << "RefilterData: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
@@ -2781,16 +2852,6 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     ui->textEdit->append(helpString);
 
     cout << "SliceAll: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
-
-
-    helpString.setNum(myTime.elapsed()/1000.);
-    helpString.prepend("Data sliced \nTime = ");
-    helpString.append(" sec");
-    //automatization
-    if(!autoProcessingFlag)
-    {
-//        QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
-    }
 }
 
 
@@ -4109,7 +4170,7 @@ void MainWindow::constructEDF()
 }
 
 
-void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int numSlices)
+void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int numSlices)
 {
     //    8 ascii : version of this data format (0)
     //    80 ascii : local patient identification (mind item 3 of the additional EDF+ specs)
@@ -4168,14 +4229,14 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     //header read
     for(int i = 0; i < 184; ++i)
     {
-        fscanf(edf, "%c", &helpChar);
+        fscanf(edfIn, "%c", &helpChar);
         fprintf(edfNew, "%c", helpChar);
     }
 
     //number of bytes in header record
     for(int i = 0; i < 8; ++i)
     {
-        fscanf(edf, "%c", &helpCharArr[i]);
+        fscanf(edfIn, "%c", &helpCharArr[i]);
     }
     bytes = atoi(helpCharArr);
 
@@ -4191,7 +4252,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     //"reserved"
     for(int i = 0; i < 44; ++i)
     {
-        fscanf(edf, "%c", &helpChar);
+        fscanf(edfIn, "%c", &helpChar);
         fprintf(edfNew, "%c", helpChar);
     }
 
@@ -4203,14 +4264,14 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     //number of data records
     for(int i = 0; i < 8; ++i)
     {
-        fscanf(edf, "%c", &helpCharArr[i]);
+        fscanf(edfIn, "%c", &helpCharArr[i]);
     }
     ndr=atoi(helpCharArr);//NumberOfDataRecords
 
     //duration of a data record, in seconds
     for(int i = 0; i < 8; ++i)
     {
-        fscanf(edf, "%c", &helpCharArr[i]);
+        fscanf(edfIn, "%c", &helpCharArr[i]);
     }
     ddr=atoi(helpCharArr); //generality double ddr
 
@@ -4234,7 +4295,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
 
     for(int i = 0; i < 4; ++i)
     {
-        fscanf(edf, "%c", &helpCharArr[i]);
+        fscanf(edfIn, "%c", &helpCharArr[i]);
     }
     ns = atoi(helpCharArr);                        //Number of channels
     cout << "writeEDF: oldNs = " << ns << endl;
@@ -4256,7 +4317,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
 
     for(int i = 0; i < ns*16; ++i)                      //label read
     {
-        fscanf(edf, "%*c");
+        fscanf(edfIn, "%*c");
 //        fprintf(edfNew, "%c", label_[i/16][i%16]);
 //        if(i%16==15) label_[i/16][i%16]='\0';
     }
@@ -4282,7 +4343,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
         transducer[i] = new char [80 + 1];
         for(int j = 0; j < 80; ++j)
         {
-            fscanf(edf, "%c", &transducer[i][j]);
+            fscanf(edfIn, "%c", &transducer[i][j]);
         }
         transducer[i][80] = '\0';
     }
@@ -4307,7 +4368,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
         physDim[i] = new char [8 + 1];
         for(int j = 0; j < 8; ++j)
         {
-            fscanf(edf, "%c", &physDim[i][j]);
+            fscanf(edfIn, "%c", &physDim[i][j]);
         }
         physDim[i][8] = '\0';
 //        cout << physDim[i] << endl;
@@ -4331,7 +4392,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     {
         for(int j = 0; j < 8; ++j)
         {
-            fscanf(edf, "%c", &helpCharArr[j]);
+            fscanf(edfIn, "%c", &helpCharArr[j]);
         }
         physMin[i]=double(atoi(helpCharArr));
     }
@@ -4354,7 +4415,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     {
         for(int j = 0; j < 8; ++j)
         {
-            fscanf(edf, "%c", &helpCharArr[j]);
+            fscanf(edfIn, "%c", &helpCharArr[j]);
         }
         physMax[i]=double(atoi(helpCharArr));
     }
@@ -4377,7 +4438,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     {
         for(int j = 0; j < 8; ++j)
         {
-            fscanf(edf, "%c", &helpCharArr[j]);
+            fscanf(edfIn, "%c", &helpCharArr[j]);
         }
         digMin[i]=double(atoi(helpCharArr));
     }
@@ -4400,7 +4461,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     {
         for(int j = 0; j < 8; ++j)
         {
-            fscanf(edf, "%c", &helpCharArr[j]);
+            fscanf(edfIn, "%c", &helpCharArr[j]);
         }
         digMax[i]=double(atoi(helpCharArr));
     }
@@ -4424,7 +4485,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
         prefilter[i] = new char [80 + 1];
         for(int j = 0; j < 80; ++j)
         {
-            fscanf(edf, "%c", &prefilter[i][j]);
+            fscanf(edfIn, "%c", &prefilter[i][j]);
         }
         prefilter[i][80] = '\0';
     }
@@ -4447,7 +4508,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
     {
         for(int j = 0; j < 8; ++j)
         {
-            fscanf(edf, "%c", &helpCharArr[j]);
+            fscanf(edfIn, "%c", &helpCharArr[j]);
         }
         helpCharArr[8] = '\0';
         nr[i]=atoi(helpCharArr);
@@ -4472,7 +4533,7 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
         reserved[i] = new char [32 + 1];
         for(int j = 0; j < 32; ++j)
         {
-            fscanf(edf, "%c", &reserved[i][j]);
+            fscanf(edfIn, "%c", &reserved[i][j]);
         }
         reserved[i][32] = '\0';
     }
@@ -4490,31 +4551,11 @@ void MainWindow::writeEdf(FILE * edf, double ** inData, QString fileName, int nu
 //    cout << "writeEDF: bytes left = " << (bytes-(newNs+1)*256) << endl;
     for(int i = 0; i < (bytes-(newNs+1)*256); ++i)                      //Neurotravel//generality//strange
     {
-        fscanf(edf, "%c", &helpChar);
+        fscanf(edfIn, "%c", &helpChar);
         fprintf(edfNew, "%c", helpChar);
     }
 
     ui->finishTimeBox->setMaximum(ddr*ndr);
-
-//    helpString = dir->absolutePath().append(QDir::separator()).append(ExpName).append("_markers.txt");
-//    FILE * markers = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
-
-
-
-    fpos_t *position = new fpos_t;
-
-    fgetpos(edf, position);
-    fclose(edf);
-    edf = fopen(QDir::toNativeSeparators(ui->filePath->text()).toStdString().c_str(), "rb"); //generality
-    fsetpos(edf, position);
-
-//    fgetpos(edfNew, position);
-//    fclose(edfNew);
-//    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(fileName));
-//    edfNew = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "wb"); //generality
-//    fsetpos(edfNew, position);
-
-    delete position;
 
     cout << "data write start, newNs = " << newNs << endl;
     int newIndex;
@@ -6822,11 +6863,6 @@ void MainWindow::randomDecomposition()
     double ** matrixW = matrixCreate(compNum, compNum);
     double ** newData = matrixCreate(ns, ndr*nr[0]);
 
-//    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "maps.txt";
-//    cout << helpString.toStdString() << endl;
-//    readICAMatrix(helpString, &matrixA, compNum);
-//    cout << "ICA matrix read" << endl;
-
     double sum1;
     double sum2;
 
@@ -6834,7 +6870,7 @@ void MainWindow::randomDecomposition()
     Net * ANN = new Net(dir, compNum, left, right, spStep, ExpName); //generality parameters
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
     ANN->readCfgByName(helpString);
-    ANN->setReduceCoeff(8.); //generality
+    ANN->setReduceCoeff(15.); //generality
     ANN->setNumOfPairs(40);
     FILE * outFile;
 
@@ -6873,6 +6909,8 @@ void MainWindow::randomDecomposition()
         reduceChannelsFast();
 
 
+
+
         //set random matrix
         srand(QTime::currentTime().second() * 13 + QTime::currentTime().msec() * 1028);
         for(int i = 0; i < compNum; ++i) //i'th coloumn
@@ -6891,6 +6929,9 @@ void MainWindow::randomDecomposition()
                 randMatrix[j][i] /= sum1;
             }
         }
+
+  /*
+   * //make randon matrix in terms of matrixW after whitening the initial signals
         matrixProduct(randMatrix, eigenMatrix, &matrixW, compNum, compNum); //W = rand * Eig
 
         for(int i = 0; i < compNum; ++i)
@@ -6904,6 +6945,11 @@ void MainWindow::randomDecomposition()
         //W = rand * Eig * D^-0.5
 
         matrixProduct(matrixW, eigenMatrixInv, &randMatrix, compNum, compNum); //randMatrix = randW * Eig * d^-0.5 *Eig^t
+*/
+
+
+
+
 
         //decompose
         matrixProduct(randMatrix, data, &newData, compNum, ndr*nr[0]);
@@ -6938,6 +6984,8 @@ void MainWindow::randomDecomposition()
         writeEdf(edf, newData, helpString, ndr*nr[0]);
 
         helpString = dir->absolutePath() + QDir::separator() + ExpName.left(3) + "_randIca.edf";
+
+        fclose(edf); //opened in setEdfFile();
         setEdfFile(helpString);
         readData(); //read newData
 
@@ -6953,6 +7001,7 @@ void MainWindow::randomDecomposition()
         outFile = fopen(helpString.toStdString().c_str(), "a");
         fprintf(outFile, "%.2lf\n", ANN->getAverageAccuracy());
         fclose(outFile);
+        fclose(edf); //opened in setEdfFile();
 
     }
 

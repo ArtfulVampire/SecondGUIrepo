@@ -45,6 +45,9 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     helpCharArr = new char [200];
 
 
+//    tempRandoms = new double [19];
+
+
     QButtonGroup  * group1,  * group2,  * group3;
     group1 = new QButtonGroup();
     group1->addButton(ui->leaveOneOutRadioButton);
@@ -2017,6 +2020,16 @@ void Net::PaIntoMatrixByName(QString fileName)
 //    QTime myTime;
 //    myTime.start();
     readPaFile(inStream, helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+//    for(int k = 0; k < NumberOfVectors; ++k)
+//    {
+//        for(int i = 0; i < ns; ++i)
+//        {
+//            for(int j = 0; j < spLength; ++j)
+//            {
+//                matrix[k][i*spLength + j] *= tempRandoms[i];
+//            }
+//        }
+//    }
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 }
 
@@ -3708,10 +3721,10 @@ void Net::optimizeChannelsSet()
 void Net::rcpSlot()
 {
     FILE * file;
-    for(int i = 30; i <= 50; i += 5)
+    for(int i = 50; i <= 50; i += 5)
     {
         ui->numOfPairsBox->setValue(i);
-        for(int j = 0; j < 80; ++j)
+        for(int j = 0; j < 50; ++j)
         {
             autoClassificationSimple();\
             helpString = dir->absolutePath() + QDir::separator() + "rcp-" + QString::number(ui->numOfPairsBox->value()) + ".txt";

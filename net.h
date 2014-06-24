@@ -111,6 +111,8 @@ private:
     ifstream inStream;
     ofstream outStream;
 
+//    double * tempRandoms;
+
     QVector<int> channelsSet;
     QVector<int> channelsSetExclude;
     double averageAccuracy;

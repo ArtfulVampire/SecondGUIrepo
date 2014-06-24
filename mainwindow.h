@@ -78,7 +78,7 @@ public slots:
     void hilbertCount();
     void throwIC();
     void randomDecomposition();
-
+    void refilterDataSlot();
 
 public:
     void makeDirs();
@@ -100,7 +100,7 @@ public:
     void sliceMati(int numChanWrite);
     void visualisation();
     void kernelest(const QString &str);
-    void writeEdf(FILE * edf, double ** components, QString fileName, int numSlices);
+    void writeEdf(FILE * edfIn, double ** components, QString fileName, int numSlices);
     void sliceOneByOne();
     void sliceOneByOneNew(int numChanWrite);
     void drawMap(double ** matrixA, int num);

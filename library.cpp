@@ -478,7 +478,7 @@ void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, doub
     four1((*out)-1, fftLen, -1);
     for(int i = 0; i < inLength; ++i)
     {
-        filteredArr[i] = (*out)[2*i]/fftLen*2;
+        filteredArr[i] = (*out)[2*i]/fftLen/sqrt(fftLen/double(inLength));
     }
 
 
@@ -787,9 +787,9 @@ void kernelEst(double * arr, int num, QString picPath)
     xMin = floor(xMin)-1;
     xMax = ceil(xMax)+1;
 
-    //generality
-    xMin = 82;
-    xMax = 88;
+//    //generality
+//    xMin = 82;
+//    xMax = 88;
 
     for(int i = 0; i < pic.width(); ++i)
     {

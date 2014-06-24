@@ -1024,7 +1024,7 @@ void Spectre::countSpectra()
         dir->cd(dirBC->absolutePath());
 
         dir->cd(ui->lineEdit_2->text());  //cd to output dir
-        helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
+        helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
         outStream.open(helpString.toStdString().c_str());
         if(!outStream.good())
         {
@@ -1045,6 +1045,12 @@ void Spectre::countSpectra()
             if(!readFile(a, dataIn, dataFFT))
             {
                 outStream.close();
+                for(int i = 0; i < ns; ++i)
+                {
+                    delete []dataIn[i];
+                }
+                delete []dataIn;
+
                 helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
                 remove(helpString.toStdString().c_str());
                 continue;
