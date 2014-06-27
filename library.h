@@ -79,14 +79,15 @@ void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, in
 double distance(double * const vec1, double * const vec2, int dim);
 void matrixProduct(double ** const A, double ** const B, double *** out, int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
 void matrixProduct(double ** const A, double ** const B, double *** out, int dimA1, int dimB2, int dimA2B1);  //matrix product: out = A(H*H) * B(H*L)
-void matrixTranspose(double ** inMat, int size, double *** outMat);
-void matrixCopy(double ** inMat, double *** outMat, int dimH, int dimL);
-void matrixInvert(double ** inMat, int size, double *** outMat); //cofactors
-double matrixDet(double ** matrix, int dim);
-double matrixDetB(double ** matrix, int dim);
-void matrixCofactor(double ** inMatrix, int size, int i, int j, double *** outMatrix);
+void matrixTranspose(double ** const inMat, int size, double *** outMat);
+void matrixCopy(double ** const inMat, double *** outMat, int dimH, int dimL);
+void matrixInvert(double ** const inMat, int size, double *** outMat); //cofactors
+double matrixDet(double ** const matrix, int dim);
+double matrixDetB(double ** const matrix, int dim);
+void matrixCofactor(double ** const inMatrix, int size, int i, int j, double *** outMatrix);
 
 double ** matrixCreate(int i, int j);
+void matrixCreate(double *** matrix, int i, int j);
 void matrixDelete(double *** matrix, int i, int j);
 void matrixPrint(double ** mat, int i, int j);
 

@@ -952,7 +952,7 @@ void Cut::createImage(QString str) //
     Eyes = 0;
 
     dir->cdUp();
-    cout<<"dir = "<<dir->absolutePath().toStdString()<<endl;
+//    cout<<"dir = "<<dir->absolutePath().toStdString()<<endl;
     lst = dir->entryList(QDir::Files);
     dir->cdUp();
     //now we are in ExpName dir
@@ -1016,15 +1016,19 @@ void Cut::createImage(QString str) //
             {
                 currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
             }
-            if(ns==21)
+            else if(ns==21)
             {
                 currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+            }
+            else
+            {
+                currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("other").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
             }
         }
 
 
-    cout<<"currentPicPath = "<<currentPicPath.toStdString()<<endl;
-    cout<<"currentFile = "<<currentFile.toStdString()<<endl;
+//    cout<<"currentPicPath = "<<currentPicPath.toStdString()<<endl;
+//    cout<<"currentFile = "<<currentFile.toStdString()<<endl;
 
 
     file=fopen(currentFile.toStdString().c_str(), "r+");
@@ -1302,7 +1306,7 @@ void Cut::save()
 void Cut::rewrite()
 {
     dir->setPath(currentFile);  //.../expName/Realisations/fileName;
-    fileName=dir->dirName();    // real fileName
+    fileName=dir->dirName();    // just fileName
     dir->cdUp();
     dir->cdUp();
     //ExpName dir
@@ -1313,8 +1317,6 @@ void Cut::rewrite()
 
     file = fopen(helpString.toStdString().c_str(), "w");
     fprintf(file, "NumOfSlices %d \n", NumOfSlices);
-//    fprintf(file, "NumOfSlicesEyesCut %d \n", Eyes);
-
     for(int i = 0; i < NumOfSlices; ++i)         //saved BY SLICES!!
     {
         for(int k = 0; k < ns; ++k)
@@ -1332,11 +1334,13 @@ void Cut::rewrite()
 
     fileName.replace('.', '_');
 
-    if(ns==19)
+    cout << "rewrite: ns = " << ns << endl;
+
+    if(ns == 19)
     {
         helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Signals").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"));
     }
-    if(ns==21)
+    else if(ns == 21)
     {
         helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Signals").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"));
     }
@@ -1344,12 +1348,13 @@ void Cut::rewrite()
     {
         helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Signals").append(QDir::separator()).append("other").append(QDir::separator()).append(fileName).append(".jpg"));
     }
+    cout << "rewrite: savePath = " << helpString.toStdString() << endl;
 //         helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append(fileName).append(".jpg"));
     currentPic.save(helpString, 0 ,100);
 
 }
 
-void Cut::paint()
+void Cut::paint() //save to tmp.jpg and display
 {
     if(!painter->isActive()) {return;}
     painter->end();
@@ -1389,7 +1394,6 @@ void Cut::paint()
     currentPicPath = helpString;
     currentPic.save(helpString, 0, 100);  //generality path
 
-//    ui->picLabel->setPixmap(currentPic.scaled(ui->picLabel->size()));
     ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->picLabel->height()));
 
     rightLimit=ui->picLabel->width();

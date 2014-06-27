@@ -1557,7 +1557,7 @@ void writeICAMatrix(QString path, double ** matrixA, int ns)
     fclose(map);
 }
 
-void matrixCofactor(double ** inMatrix, int size, int i, int j, double *** outMatrix)
+void matrixCofactor(double ** const inMatrix, int size, int i, int j, double *** outMatrix)
 {
     int indexA, indexB;
     for(int a = 0; a < size; ++a)
@@ -1574,7 +1574,7 @@ void matrixCofactor(double ** inMatrix, int size, int i, int j, double *** outMa
     }
 }
 
-void matrixTranspose(double ** inMat, int size, double *** outMat)
+void matrixTranspose(double ** const inMat, int size, double *** outMat)
 {
     for(int i = 0; i < size; ++i)
     {
@@ -1585,7 +1585,7 @@ void matrixTranspose(double ** inMat, int size, double *** outMat)
     }
 }
 
-void matrixCopy(double ** inMat, double *** outMat, int dimH, int dimL)
+void matrixCopy(double ** const inMat, double *** outMat, int dimH, int dimL)
 {
     for(int i = 0; i < dimH; ++i)
     {
@@ -1593,7 +1593,7 @@ void matrixCopy(double ** inMat, double *** outMat, int dimH, int dimL)
     }
 }
 
-void matrixInvert(double ** inMat, int size, double *** outMat) //cofactors
+void matrixInvert(double ** const inMat, int size, double *** outMat) //cofactors
 {
     double ** cof = new double * [size - 1];
     for(int i = 0; i < size - 1; ++i)
@@ -1601,12 +1601,14 @@ void matrixInvert(double ** inMat, int size, double *** outMat) //cofactors
         cof[i] = new double [size - 1];
     }
     double Det = matrixDet(inMat, size);
-//    cout << "fill det = " << Det << endl;
+
     for(int i = 0; i < size; ++i)
     {
         for(int j = 0; j < size; ++j)
         {
             matrixCofactor(inMat, size, j, i, &cof);
+            cout << "matrixInvert: cofactor\n";
+            matrixPrint(cof, size-1, size-1);
             (*outMat)[i][j] = pow(-1, i+j) * matrixDet(cof, size - 1)/Det;
         }
     }
@@ -1617,19 +1619,32 @@ void matrixInvert(double ** inMat, int size, double *** outMat) //cofactors
     delete []cof;
 }
 
-double matrixDet(double ** matrix, int dim) //- bad Det
+double matrixDet(double ** const matrix, int dim) //- Det
 {
     if(dim == 1) return matrix[0][0];
 
-    double ** matrix2 = matrixCreate(dim,dim);
+
+    double ** matrix2 = new double * [dim];
+    for(int i = 0; i < dim; ++i)
+    {
+        matrix2[i] = new double [dim];
+    }
     matrixCopy(matrix, &matrix2, dim, dim);
+
     double coef;
     for(int i = 1; i < dim; ++i)
     {
         for(int k = 0; k < i; ++k)
         {
-            if(matrix2[k][k] != 0.) coef = matrix2[i][k]/matrix2[k][k];
-            else continue;
+            if(matrix2[k][k] != 0.)
+            {
+                coef = matrix2[i][k]/matrix2[k][k];
+            }
+            else
+            {
+                continue;
+            }
+
             for(int j = 0; j < dim; ++j)
             {
                 matrix2[i][j] -= coef * matrix2[k][j];
@@ -1637,19 +1652,23 @@ double matrixDet(double ** matrix, int dim) //- bad Det
         }
     }
 
-    matrixPrint(matrix2, dim, dim);
 
     coef = 1.;
     for(int i = 0; i < dim; ++i)
     {
         coef *= matrix2[i][i];
     }
-    matrixDelete(&matrix2, dim, dim);
+
+    for(int k = 0; k < dim; ++k)
+    {
+        delete []matrix2[k];
+    }
+    delete []matrix2;
     return coef;
 }
 
 
-double matrixDetB(double ** matrix, int dim) // Det
+double matrixDetB(double ** const matrix, int dim) // Det
 {
     if(dim == 1) return matrix[0][0];
 
@@ -1675,6 +1694,18 @@ double ** matrixCreate(int i, int j)
     }
     return mat;
 }
+
+void matrixCreate(double *** matrix, int i, int j)
+{
+    (*matrix) = new double * [i];
+    cout << "matrixCreate: rows" << endl;
+    for(int k = 0; k < i; ++k)
+    {
+        (*matrix)[k] = new double [j];
+        cout << "matrixCreate: coloumn " << k << endl;
+    }
+}
+
 void matrixDelete(double *** matrix, int i, int j)
 {
     for(int k = 0; k < i; ++k)

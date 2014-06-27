@@ -356,29 +356,30 @@ void Eyes::eyesProcessing()
         //matrixTemp - current new auxiliary matrix
         //matrixInv - current inverse matrix
 
-//        for(int col = 0; col<lst.length()+1; ++col)
-//        {
-//            for(int j = 0; j<lst.length()+1; ++j)
-//            {
-//                for(int z = 0; z<lst.length()+1; ++z)
-//                {
-//                    if(z == col)
-//                    {
-//                        if(z! = j) matrixTemp[j][z] = -matrix[j][z]/matrix[col][col];
-//                        else matrixTemp[j][z] = 1/matrix[col][col];
-//                    }
-//                    else
-//                    {
-//                        if(z == j) matrixTemp[j][z] = 1.;
-//                        else matrixTemp[j][z] = 0.;
-//                    }
-//                }
-//            }
-//            matrixProduct(matrixTemp, matrixInv, &matrixInv, lst.length()+1, lst.length()+1);
-//            matrixProduct(matrixTemp, matrix, &matrix, lst.length()+1, lst.length()+1);
-//        }
+        for(int col = 0; col<lst.length()+1; ++col)
+        {
+            for(int j = 0; j<lst.length()+1; ++j)
+            {
+                for(int z = 0; z<lst.length()+1; ++z)
+                {
+                    if(z == col)
+                    {
+                        if(z != j) matrixTemp[j][z] = -matrix[j][z]/matrix[col][col];
+                        else matrixTemp[j][z] = 1/matrix[col][col];
+                    }
+                    else
+                    {
+                        if(z == j) matrixTemp[j][z] = 1.;
+                        else matrixTemp[j][z] = 0.;
+                    }
+                }
+            }
+            matrixProduct(matrixTemp, matrixInv, &matrixInv, lst.length()+1, lst.length()+1);
+            matrixProduct(matrixTemp, matrix, &matrix, lst.length()+1, lst.length()+1);
+        }
 
-        matrixInvert(matrix, lst.length() + 1, &matrixInv);
+//        matrixPrint(matrix, lst.length() + 1, lst.length() + 1);
+//        matrixInvert(matrix, lst.length() + 1, &matrixInv);
 
         //set coeffs
         for(int i = 0; i<lst.length(); ++i)

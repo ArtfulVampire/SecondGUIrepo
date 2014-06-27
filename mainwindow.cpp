@@ -392,7 +392,7 @@ MainWindow::MainWindow() :
     {
         helpString = dir->absolutePath() + QDir::separator() + lst[i];
         helpString.replace(".txt", ".png");
-        countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString);
+        //countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString);
     }
 
 
@@ -1207,9 +1207,13 @@ void MainWindow::drawRealisations()
             {
                 helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("after").append(QDir::separator()).append(helpString).append(".jpg");
             }
-            if(ns==21)
+            else if(ns==21)
             {
                 helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("before").append(QDir::separator()).append(helpString).append(".jpg");
+            }
+            else
+            {
+                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("other").append(QDir::separator()).append(helpString).append(".jpg");
             }
         }
 
@@ -2636,7 +2640,7 @@ void MainWindow::refilterDataSlot()
     spStep = fr/double(fftLength);
     double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
     double highFreq = ui->highFreqFilterDoubleSpinBox->value();
-    int numOfChan = 19;
+    int numOfChan = ns - 1;
     for(int i = 0; i < numOfChan; ++i) //19 generality
     {
         for(int j = ndr*fr; j < fftLength; ++j)
@@ -2684,7 +2688,7 @@ void MainWindow::refilterDataSlot()
             data[j][i] = spectre[2*i]/fftLength/sqrt(norm1);
         }
     }
-    memcpy(data[numOfChan], data[ns-1], ndr*fr*sizeof(double)); //stupid bicycle generality
+//    memcpy(data[numOfChan], data[ns-1], ndr*fr*sizeof(double)); //stupid bicycle generality
     helpString = ExpName + "_filtered.edf";
     writeEdf(edf, data, helpString, ndr*fr);
 
@@ -4119,7 +4123,13 @@ void MainWindow::constructEDF()
     ns = lst.length();
     if(!QString(label[lst[ns-1].toInt()-1]).contains("Markers"))
     {
-        QMessageBox::critical(this, tr("Error"), tr("bad channels list"), QMessageBox::Ok);
+        QMessageBox::critical(this, tr("Error"), tr("bad channels list - no markers"), QMessageBox::Ok);
+        return;
+    }
+
+    if(!ui->sliceWithMarkersCheckBox->isChecked())
+    {
+        QMessageBox::critical(this, tr("Error"), tr("withMarkersCheckBox is not checked"), QMessageBox::Ok);
         return;
     }
 
@@ -4564,15 +4574,15 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int 
     {
         for(int i = 0; i < ndr; ++i)
         {
-            for(int j = 0; j < newNs; ++j)
+            for(int j = 0; j < newNs; ++j) // j - number of channel in "new" file
             {
-                newIndex = lst[j].toInt() - 1;
+                newIndex = lst[j].toInt() - 1; //number of channel in "old" file
                 for(int k = 0; k < nr[newIndex]; ++k)
                 {
                     a = (short)((inData[ j ][ i * nr[newIndex] + k ] - physMin[newIndex]) * (digMax[newIndex] - digMin[newIndex]) / (physMax[newIndex] - physMin[newIndex]) + digMin[newIndex]);
 
                     //generality
-                    if(j != newNs -1)
+                    if(newIndex != ns - 1)
                     {
                         a = (short)(inData[ j ][ i * nr[newIndex] + k ] * 8.);
                     }
@@ -4585,7 +4595,7 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int 
                         a = (unsigned short)(inData[ j ][ i * nr[newIndex] + k ]);
                     }
 
-                    if(ui->matiCheckBox->isChecked() && j == newNs-1)
+                    if(ui->matiCheckBox->isChecked() && newIndex == ns - 1)
                     {
                         fwrite(&a, sizeof(unsigned short), 1, edfNew);
                     }
@@ -4596,7 +4606,6 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int 
                 }
             }
         }
-//        cout << "staSlice=" << staSlice << " staTime = " << staSlice/250. << endl;
     }
     delete []helpCharArr;
     fclose(labels);
@@ -4703,39 +4712,6 @@ void MainWindow::ICA() //fastICA
     double * tempA;
     double * tempB;
 
-//    inline void clearMem()
-//    {
-//        for(int i = 0; i < ns; ++i)
-//        {
-//            delete [] covMatrix[i];
-//            delete [] centeredMatrix[i];
-//            delete [] eigenVectors[i];
-//            delete [] vectorW[i];
-//            delete [] matrixA[i];
-//            delete [] components[i];
-//            delete [] dataICA[i];
-//        }
-//        delete [] centeredMatrix;
-//        delete [] covMatrix;
-//        delete [] eigenVectors;
-//        delete [] averages;
-//        delete [] eigenValues;
-//        delete [] tempA;
-//        delete [] tempB;
-//        delete [] vector1;
-//        delete [] vector2;
-//        delete [] vector3;
-//        delete [] vectorOld;
-//        delete [] tempVector;
-//        delete [] vectorW;
-//        delete [] matrixA;
-//        delete [] components[ns];
-//        delete [] components;
-//        delete [] dataICA;
-//    };
-
-
-
 
     int numOfMark = 0;
     while(1)
@@ -4783,11 +4759,7 @@ void MainWindow::ICA() //fastICA
             if(data[i][j] != 0.) data[i][j] -= averages[i] * (double(ndr*fr)/(ndr*fr - Eyes));
         }
     }
-    for(int i = 0; i < ns; ++i)
-    {
-        cout << mean(data[i], ndr*fr) << " ";
-    }
-    cout << endl;
+
 
 
     //covariation between different spectra-bins
@@ -5006,7 +4978,11 @@ void MainWindow::ICA() //fastICA
         }
 
         eigenValues[k] = sum1*sum2/double(ndr*fr-1.);
-        cout << "numOfPC = " << k << "\tvalue = " << eigenValues[k] << "\t iterations = " << counter << "\t" << myTime.elapsed()/1000. << " sec" << endl;
+        cout << "numOfPC = " << k << "\t";
+        cout << "value = " << eigenValues[k] << "\t";
+        cout << "disp = " << 100. * eigenValues[k]/trace << "\t";
+        cout << "iterations = " << counter << "\t";
+        cout << myTime.elapsed()/1000. << " sec" << endl;
         for(int i = 0; i < ns; ++i)
         {
             eigenVectors[i][k] = tempA[i]; //1-normalized
@@ -5279,7 +5255,9 @@ void MainWindow::ICA() //fastICA
             }
             */
         }
-        cout << i << "\t" << counter << "\terror = " << sum2 << "\t" << myTime.elapsed()/1000. << " sec" << endl;
+        cout << i << "\t" << counter << "\t";
+        cout << "error = " << sum2 << "\t";
+        cout << myTime.elapsed()/1000. << " sec" << endl;
 
     }
     cout << "VectorsW counted" << endl;
@@ -5547,7 +5525,7 @@ void MainWindow::icaClassTest() //non-optimized
     Net * ANN = new Net(dir, numOfIC, left, right, spStep, ExpName);
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
     ANN->readCfgByName(helpString);
-    ANN->setReduceCoeff(7.);
+    ANN->setReduceCoeff(10.);
     double tempAccuracy;
     double currentAccuracy;
     double initAccuracy;
@@ -5677,7 +5655,7 @@ void MainWindow::icaClassTest() //non-optimized
 
 void MainWindow::throwIC()
 {
-    if(!ui->filePath->text().contains("ica"))
+    if(!ui->filePath->text().contains("ica", Qt::CaseInsensitive))
     {
         cout << "bad ica file" << endl;
         return;
@@ -5700,7 +5678,7 @@ void MainWindow::throwIC()
     {
         cout << lst[i].toInt() << " ";
     }
-    cout << "count from 0" << endl;
+    cout << "count from 1" << endl;
 
 
 
