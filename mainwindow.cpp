@@ -209,14 +209,14 @@ MainWindow::MainWindow() :
     ui->svdDoubleSpinBox->setMaximum(15);
     ui->svdDoubleSpinBox->setMinimum(2);
     ui->svdDoubleSpinBox->setValue(4.0);
-    ui->svdDoubleSpinBox->setValue(8.0);
+    ui->svdDoubleSpinBox->setValue(9.0);
     ui->svdDoubleSpinBox->setSingleStep(0.5);
 
     ui->vectwDoubleSpinBox->setDecimals(1);
     ui->vectwDoubleSpinBox->setMaximum(10.0);
     ui->vectwDoubleSpinBox->setMinimum(1.5);
 //    ui->vectwDoubleSpinBox->setValue(1.5);
-    ui->vectwDoubleSpinBox->setValue(8.0);
+    ui->vectwDoubleSpinBox->setValue(9.0);
     ui->vectwDoubleSpinBox->setSingleStep(0.5);
 
     ui->spocCoeffDoubleSpinBox->setMaximum(5);
@@ -244,6 +244,9 @@ MainWindow::MainWindow() :
     ui->cleanRealsSpectraCheckBox->setChecked(true);
     ui->cleanWindowsCheckBox->setChecked(false);
     ui->cleanWindSpectraCheckBox->setChecked(true);
+
+    ui->highFreqFilterDoubleSpinBox->setValue(20.);
+    ui->lowFreqFilterDoubleSpinBox->setValue(1.);
 
 
 
@@ -1681,6 +1684,10 @@ void MainWindow::readData()
     {
         fprintf(labels, "%s \n", label[i]);
     }
+    for(int i = ns; i < maxNs; ++i)
+    {
+        label[i][0] = '\0';
+    }
 
     //transducer type
     for(int i = 0; i < ns*80; ++i)                      //rest of header
@@ -2649,14 +2656,6 @@ void MainWindow::refilterDataSlot()
         }
     }
 
-    double ** dataFFT = new double * [numOfChan];
-    for(int i = 0; i < numOfChan; ++i) //19 generality
-    {
-        dataFFT[i] = new double [fftLength];
-    }
-
-
-
     double norm1 = fftLength / double(ndr*fr);
     double * spectre = new double [fftLength*2];
 
@@ -2711,8 +2710,10 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     if(ui->eyesCleanCheckBox->isChecked())
     {
         eyesFast();
-        if(!ui->reduceChannelsComboBox->currentText().contains("NoEyes", Qt::CaseInsensitive)) ui->reduceChannelsComboBox->setCurrentIndex(ui->reduceChannelsComboBox->currentIndex()+1); //generality
-//        helpString = ExpName.append("_ec.edf");
+        if(!ui->reduceChannelsComboBox->currentText().contains("NoEyes", Qt::CaseInsensitive))
+        {
+            ui->reduceChannelsComboBox->setCurrentIndex(ui->reduceChannelsComboBox->currentIndex()+1); //generality
+        }
     }
 
 
@@ -3735,8 +3736,6 @@ void MainWindow::eyesFast()  //generality
         coefficients[i] = new double [NumEog];
     }
 
-
-
     for(int k = 0; k < NumEeg; ++k)
     {
         for(int i = 0; i < NumEog; ++i)
@@ -3751,16 +3750,27 @@ void MainWindow::eyesFast()  //generality
 
     if(ui->enRadio->isChecked())
     {
-        if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak"))  //generality
+//        if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak"))  //generality
+//        {
+//            a[0]=22; //NumOfEEg channel for En (19 EEG, A1-A2, A1-N, ECG, Eog1, Eog2) //generality
+//            a[1]=23;
+//        }
+//        else if(ui->reduceChannelsComboBox->currentText().contains("MyCurrent") || ui->reduceChannelsComboBox->currentText().contains("Mati", Qt::CaseInsensitive))
+//        {
+//            //my current
+//            a[0]=21; //NumOfEEg channel for En (19 EEG, A1-A2, A1-N, Eog1, Eog2) //generality
+//            a[1]=22;
+//        }
+        for(int i = 0; i < ns; ++i)
         {
-            a[0]=22; //NumOfEEg channel for En (19 EEG, A1-A2, A1-N, ECG, Eog1, Eog2) //generality
-            a[1]=23;
-        }
-        else if(ui->reduceChannelsComboBox->currentText().contains("MyCurrent") || ui->reduceChannelsComboBox->currentText().contains("Mati", Qt::CaseInsensitive))
-        {
-            //my current
-            a[0]=21; //NumOfEEg channel for En (19 EEG, A1-A2, A1-N, Eog1, Eog2) //generality
-            a[1]=22;
+            if(QString(label[i]).contains("EOG 1", Qt::CaseInsensitive))
+            {
+                a[0] = i;
+            }
+            else if(QString(label[i]).contains("EOG 2", Qt::CaseInsensitive))
+            {
+                a[1] = i;
+            }
         }
     }
 
@@ -4576,7 +4586,7 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int 
         {
             for(int j = 0; j < newNs; ++j) // j - number of channel in "new" file
             {
-                newIndex = lst[j].toInt() - 1; //number of channel in "old" file
+                newIndex = lst[j].toInt() - 1; //number of channel in "old" file edfIn
                 for(int k = 0; k < nr[newIndex]; ++k)
                 {
                     a = (short)((inData[ j ][ i * nr[newIndex] + k ] - physMin[newIndex]) * (digMax[newIndex] - digMin[newIndex]) / (physMax[newIndex] - physMin[newIndex]) + digMin[newIndex]);

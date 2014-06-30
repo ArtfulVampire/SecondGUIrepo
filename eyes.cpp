@@ -237,16 +237,12 @@ void Eyes::eyesProcessing()
         coefficients[i] = new double [lst.length()];
     }
 
-    double *average = new double [lst.length()+1];
-//    cout << "2" << endl;
 
     //make dataE array to count covariation matrix
-    for(int i = 0; i<list.length(); ++i)
+    for(int i = 0; i < list.length(); ++i)
     {
         file = fopen((list.at(i)).toStdString().c_str(), "r");
-//        cout << (list.at(i)).toStdString().c_str() << endl;
         fscanf(file, "NumOfSlices %d\n", &help);
-//        cout << help << endl;
         for(int j = 0; j<help; ++j)
         {
             for(int k = 0; k<ns; ++k)
@@ -258,71 +254,36 @@ void Eyes::eyesProcessing()
 
         fclose(file);
     }
-//    cout << NumOfSlices << endl;
-    for(int j = 0; j<lst.length()+1; ++j)
-    {
-        average[j] = 0.;
-    }
-//    cout << "3" << endl;
-
-
-
-
-
-    //count eog averages
-//    for(int i = 0; i<NumOfSlices; ++i)
-//    {
-//        for(int j = 0; j<lst.length(); ++j)
-//        {
-//            average[j]+ = (dataE[lst.at(j).toInt()-1][i])/double(NumOfSlices); //cool    //-1 coz of 0 as first
-//        }
-//    }
-//    cout << "4" << endl;
-
-
-
-
+    cout << "eyesProcessing: NumOfSlices = " << NumOfSlices << endl;
 
 
     for(int i = 0; i<lst.length(); ++i)
     {
-        signal[i] = dataE[lst.at(i).toInt()-1];     //-1 coz of 0 as first
+        signal[i] = dataE[lst[i].toInt() - 1];     //-1 coz of 0 as first
     }
 
 
     //for every channel count eog coefficients
     for(int k = 0; k<ui->spinBox->value(); ++k)
     {
-
         signal[lst.length()] = dataE[k];
-        average[lst.length()] = 0.;
-
-//        //print the signals
-//        for(int j = 0; j<lst.length()+1; ++j)
-//        {
-//            for(int i = 0; i<NumOfSlices; ++i)
-//            {
-//                cout << signal[j][i] << "  ";
-//            }
-//            cout << endl << endl;
-//        }
-        for(int j = 0; j<lst.length()+1; ++j)
+        for(int j = 0; j < lst.length()+1; ++j)
         {
-            for(int z = 0; z<lst.length()+1; ++z)
+            for(int z = 0; z < lst.length()+1; ++z)
             {
                 matrix[j][z] = 0.;
             }
         }
 
         //count covariation-matrix
-        for(int i = 0; i<NumOfSlices; ++i)
+
+        for(int j = 0; j < lst.length()+1; ++j)
         {
-            average[lst.length()] += (dataE[k][i])/double(NumOfSlices);
-            for(int j = 0; j<lst.length()+1; ++j)
+            for(int z = 0; z < lst.length()+1; ++z)
             {
-                for(int z = 0; z<lst.length()+1; ++z)
+                for(int i = 0; i < NumOfSlices; ++i)
                 {
-                    matrix[j][z] += (signal[j][i]-average[j])*(signal[z][i]-average[z])/double(NumOfSlices);
+                    matrix[j][z] += signal[j][i] * signal[z][i] / double(NumOfSlices);
                 }
             }
         }
