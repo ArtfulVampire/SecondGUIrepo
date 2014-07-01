@@ -104,7 +104,8 @@ public:
     void sliceOneByOne();
     void sliceOneByOneNew(int numChanWrite);
     void drawMap(double ** matrixA, int num);
-    void setEdfFile(QString filename);
+    void setEdfFile(QString filePath);
+    void autoIcaAnalysis();
 
 
 private:
@@ -137,6 +138,7 @@ private:
     bool stopFlag;
     double spStep;
     bool withMarkersFlag;
+    int reduceCoefficient;
 };
 
 #endif // MAINWINDOW_H

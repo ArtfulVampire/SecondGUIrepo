@@ -783,7 +783,7 @@ void kernelEst(double * arr, int num, QString picPath)
     xMin = minValue(arr, num);
     xMax = maxValue(arr, num);
 
-    cout << "xMin = " << xMin << "\txMax = " << xMax << endl;
+//    cout << "xMin = " << xMin << "\txMax = " << xMax << endl;
     xMin = floor(xMin)-1;
     xMax = ceil(xMax)+1;
 
@@ -1735,19 +1735,25 @@ void countRCP(QString filename, QString picPath)
     ifstream inStream;
     double * arr = new double [250];
     inStream.open(filename.toStdString().c_str());
-    cout << filename.toStdString().c_str() << endl;
+//    cout << filename.toStdString().c_str() << endl;
     while(!inStream.eof())
     {
         inStream >> arr[counter++];
     }
     --counter;
 
-    cout << "average = " << mean(arr, counter) << endl;
-    cout << "variance = " << variance(arr, counter) << endl;
-    cout << "sigma = " << sqrt(variance(arr, counter)) << endl;
-    cout << "counter = " << counter << endl;
+    cout << filename.left(3).toStdString() << endl;
+//    cout << "average = ";
+    cout << mean(arr, counter) << endl;
+//    cout << "variance = " << variance(arr, counter) << endl;
+    cout << "sigma = ";
+    cout << sqrt(variance(arr, counter)) << endl;
+//    cout << "counter = " << counter << endl;
 
-    kernelEst(arr, counter, picPath);
+    if(picPath != "")
+    {
+        kernelEst(arr, counter, picPath);
+    }
 
     delete []arr;
 }

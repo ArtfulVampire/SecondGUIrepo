@@ -2015,7 +2015,11 @@ void Net::PaIntoMatrixByName(QString fileName)
         QMessageBox::critical((QWidget * )this, tr("net.cpp: PaIntoMatrixByName"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
         return;
     }
-    helpString = dirBC->absolutePath() + QDir::separator() + "PA" + QDir::separator() + fileName + ".pa";
+    helpString = dirBC->absolutePath() + QDir::separator() + "PA" + QDir::separator() + fileName;
+    if(!fileName.contains(".pa"))
+    {
+        helpString += ".pa";
+    }
     paFileBC = helpString;
 //    QTime myTime;
 //    myTime.start();

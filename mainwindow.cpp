@@ -389,13 +389,14 @@ MainWindow::MainWindow() :
 //    matrixDelete(&inv, dim, dim);
 //    matrixDelete(&mat1, dim, dim);
 
-    dir->cd("/media/Files/Data/AAX/RCP");
+    dir->cd("/media/Files/Data/AA");
+    autoIcaAnalysis();
     lst = dir->entryList(QStringList("*.txt"));
     for(int i = 0; i < lst.length(); ++i)
     {
         helpString = dir->absolutePath() + QDir::separator() + lst[i];
         helpString.replace(".txt", ".png");
-        //countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString);
+        countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString);
     }
 
 
@@ -1437,10 +1438,14 @@ void MainWindow::setEdfFile()
 
 }
 
-void MainWindow::setEdfFile(QString filename)
+void MainWindow::setEdfFile(QString filePath)
 {
     NumOfEdf = 0;
-    helpString = filename;
+    helpString = filePath;
+    if(!helpString.endsWith(".edf", Qt::CaseInsensitive))
+    {
+        helpString += ".edf";
+    }
 
     if(helpString=="")
     {
@@ -4739,12 +4744,6 @@ void MainWindow::ICA() //fastICA
     averages = new double [ns];
     for(int i = 0; i < ns; ++i)
     {
-//        averages[i] = 0.;
-//        for(int j = 0; j < ndr*fr; ++j)
-//        {
-//            averages[i] += data[i][j];
-//        }
-//        averages[i] /= ndr*fr;
         averages[i] = mean(data[i], ndr*fr);
     }
 
@@ -5004,20 +5003,13 @@ void MainWindow::ICA() //fastICA
         {
             sum1 += eigenValues[i];
         }
-//        if(sum1 > 0.95*trace)
-//        {
-//            cout<<"numOf 95% PC = "<<k+1<<endl;
-//            numOfPc = k+1;
-//            break;
-//        }
-
     }
     numOfPc = ns;
 
 
 
 
-    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "eigenMatrix.txt";
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_eigenMatrix.txt";
     outStream.open(helpString.toStdString().c_str());
     for(int i = 0; i < ns; ++i)
     {
@@ -5032,7 +5024,7 @@ void MainWindow::ICA() //fastICA
 
 
 
-    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "eigenValues.txt";
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_eigenValues.txt";
     outStream.open(helpString.toStdString().c_str());
     for(int i = 0; i < ns; ++i)
     {
@@ -6494,7 +6486,7 @@ void MainWindow::drawMap(double ** matrixA, int num)
 
 void MainWindow::drawMaps()
 {
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("maps.txt"));
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_maps.txt");
     FILE * map = fopen(helpString.toStdString().c_str(), "r");
 //    double maxMagn = 0.;
 
@@ -6830,12 +6822,22 @@ void MainWindow::visualisation()   //just video
 
 void MainWindow::randomDecomposition()
 {
+    QString initName = ExpName;
     readData(); //should have opened initial data-file
 
-    this->ui->reduceChannelsCheckBox->setChecked(true);
-    reduceChannelsFast();
-
     cout << "data read" << endl;
+
+    int h = 0;
+    int Eyes = 0;
+    for(int i = 0; i < ndr*nr[0]; ++i)
+    {
+        h = 0;
+        for(int j = 0; j < ns; ++j)
+        {
+            if(fabs(data[j][i]) == 0.) ++h;
+        }
+        if(h == ns) Eyes += 1;
+    }
 
     lst.clear();
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -6846,7 +6848,7 @@ void MainWindow::randomDecomposition()
     }
 
 
-    int compNum = 19;
+    int compNum = ui->numOfIcSpinBox->value();
     double ** randMatrix = matrixCreate(compNum, compNum);
     double ** matrixW = matrixCreate(compNum, compNum);
     double ** newData = matrixCreate(ns, ndr*nr[0]);
@@ -6859,12 +6861,17 @@ void MainWindow::randomDecomposition()
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
     ANN->readCfgByName(helpString);
     ANN->setReduceCoeff(15.); //generality
-    ANN->setNumOfPairs(40);
+    ANN->setNumOfPairs(50);
     FILE * outFile;
 
     double ** eigenMatrix = matrixCreate(compNum, compNum);
-    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "eigenMatrix.txt";
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_eigenMatrix.txt";
     inStream.open(helpString.toStdString().c_str());
+    if(!inStream.good())
+    {
+        cout << "bad inStream eigenMatrix" << endl;
+        return;
+    }
     for(int i = 0; i < compNum; ++i)
     {
         for(int j = 0; j < compNum; ++j)
@@ -6878,8 +6885,13 @@ void MainWindow::randomDecomposition()
     matrixTranspose(eigenMatrix, compNum, &eigenMatrixInv);
 
     double * eigenValues = new double [compNum];
-    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "eigenValues.txt";
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_eigenValues.txt";
     inStream.open(helpString.toStdString().c_str());
+    if(!inStream.good())
+    {
+        cout << "bad inStream eigenValues" << endl;
+        return;
+    }
     for(int i = 0; i < compNum; ++i)
     {
         inStream >> eigenValues[i];
@@ -6887,14 +6899,12 @@ void MainWindow::randomDecomposition()
     inStream.close();
 
 
-    while(1)
+    for(int i = 0; i < 100; ++i)
     {
-        helpString = dir->absolutePath() + QDir::separator() + "AAX_f-clean.edf";
+        helpString = dir->absolutePath() + QDir::separator() + initName;
         setEdfFile(helpString);
         readData(); //should have opened initial data-file
 
-        this->ui->reduceChannelsCheckBox->setChecked(true);
-        reduceChannelsFast();
 
 
 
@@ -6917,6 +6927,8 @@ void MainWindow::randomDecomposition()
                 randMatrix[j][i] /= sum1;
             }
         }
+
+
 
   /*
    * //make randon matrix in terms of matrixW after whitening the initial signals
@@ -6949,7 +6961,7 @@ void MainWindow::randomDecomposition()
             sum1 = mean(newData[i], ndr*nr[0]);
             for(int j = 0; j < ndr*nr[0]; ++j)
             {
-                newData[i][j] -= sum1;
+                if(newData[i][j] != 0.) newData[i][j] -= sum1 * (double(ndr*nr[0])/(ndr*nr[0] - Eyes));
             }
 
             sum2 = sqrt(variance(newData[i], ndr*nr[0]));
@@ -6985,7 +6997,7 @@ void MainWindow::randomDecomposition()
         spectr->defaultState();
         spectr->countSpectra();
         ANN->autoClassificationSimple();
-        helpString = dir->absolutePath() + QDir::separator() + "randomDecompose.txt";
+        helpString = dir->absolutePath() + QDir::separator() + initName.left(3) + "_randIca.txt";
         outFile = fopen(helpString.toStdString().c_str(), "a");
         fprintf(outFile, "%.2lf\n", ANN->getAverageAccuracy());
         fclose(outFile);
@@ -7006,5 +7018,90 @@ void MainWindow::randomDecomposition()
     delete ANN;
     delete spectr;
 
+
+}
+
+void MainWindow::autoIcaAnalysis()
+{
+
+    ui->sliceCheckBox->setChecked(true);
+    ui->sliceWithMarkersCheckBox->setChecked(false);
+    ui->eyesCleanCheckBox->setChecked(false);
+    ui->reduceChannelsCheckBox->setChecked(false);
+
+    ui->cleanRealisationsCheckBox->setChecked(true);
+    ui->cleanRealsSpectraCheckBox->setChecked(true);
+
+    ui->reduceChannelsLineEdit->setText("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
+
+    dir->cd("/media/Files/Data/AA");
+    lst = dir->entryList(QStringList("*.edf"), QDir::Files);
+
+    Spectre * spectr;
+    Net * ANN;
+    MakePa * mkPa;
+
+    FILE * outFile = fopen("/media/Files/Data/AA/res.txt", "w");
+    fclose(outFile);
+
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        helpString = dir->absolutePath() + QDir::separator() + lst[i];
+        setEdfFile(helpString);
+        cleanDirs();
+        sliceAll();
+
+        spectr = new Spectre(dir, ns, ExpName);
+        spectr->countSpectra();
+        spectr->close();
+        delete spectr;
+
+        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
+        mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+        mkPa->setRdcCoeff(10);
+
+        ANN = new Net(dir, ns, left, right, spStep, ExpName);
+
+
+        //set appropriate coeff
+        while(1)
+        {
+            mkPa->makePaSlot();
+            ANN->PaIntoMatrixByName("1");
+            ANN->LearnNet();
+            if(ANN->getEpoch() > 120)
+            {
+                mkPa->setRdcCoeff(mkPa->getRdcCoeff() - 1);
+            }
+            else if(ANN->getEpoch() < 80)
+            {
+                mkPa->setRdcCoeff(mkPa->getRdcCoeff() + 2);
+            }
+            else
+            {
+                reduceCoefficient = mkPa->getRdcCoeff();
+                cout << "file = " << ExpName.toStdString() << "\t" << "reduceCoeff = " << reduceCoefficient << endl;
+                ANN->setReduceCoeff(reduceCoefficient);
+                break;
+            }
+        }
+        mkPa->close();
+        delete mkPa;
+
+        ANN->setNumOfPairs(50);
+        ANN->autoClassificationSimple();
+
+        outFile = fopen("/media/Files/Data/AA/res.txt", "a");
+        fprintf(outFile, "%s\t%.2lf\r\n", ExpName.toStdString().c_str(), ANN->getAverageAccuracy());
+        fclose(outFile);
+
+        ANN->close();
+        delete ANN;
+
+        if(!ExpName.contains("ica", Qt::CaseInsensitive))
+        {
+            randomDecomposition();
+        }
+    }
 
 }
