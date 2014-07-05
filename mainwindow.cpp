@@ -390,16 +390,44 @@ MainWindow::MainWindow() :
 //    matrixDelete(&mat1, dim, dim);
 
     dir->cd("/media/Files/Data/AA");
-    autoIcaAnalysis();
-    lst = dir->entryList(QStringList("*.txt"));
-    for(int i = 0; i < lst.length(); ++i)
+//    autoIcaAnalysis();
+
+    double * sigm = new double [20];
+    double * men = new double [20];
+    double * classf = new double [20];
+    double * drawVars = new double [20];
+    lst = dir->entryList(QStringList("*randIca.txt"), QDir::NoFilter, QDir::Name);
+//    FILE * means = fopen("/media/Files/Data/AA/means.txt", "w");
+//    FILE * vars = fopen("/media/Files/Data/AA/vars.txt", "w");
+
+    FILE * results = fopen("/media/Files/Data/AA/res.txt", "r");
+    FILE * outF = fopen("/media/Files/Data/AA/discr.txt", "w");
+
+    for(int i = 0; i < lst.length(); ++i) //10
     {
         helpString = dir->absolutePath() + QDir::separator() + lst[i];
         helpString.replace(".txt", ".png");
-        countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString);
+        countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString, &men[i], &sigm[i]);
+//        fprintf(means, "%lf\n", men);
+//        fprintf(vars, "%lf\n", var);
     }
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        cout << lst[i].left(3).toStdString() << endl;
+        helpString = dir->absolutePath() + QDir::separator() + lst[i];
+        cout << "normal? = " << gaussApproval(helpString) << endl;
 
+        fscanf(results, "%*s\t%lf", &classf[i]);
+        drawVars[2*i + 0] = (classf[i] - men[i]) / sigm[i];
+        cout << (classf[i] - men[i]) / sigm[i] << "\t";
 
+        fscanf(results, "%*s\t%lf", &classf[i]);
+        drawVars[2*i + 1] = (classf[i] - men[i]) / sigm[i];
+        cout << (classf[i] - men[i]) / sigm[i] << endl;
+    }
+    drawRCP(drawVars, 20);
+    fclose(results);
+    fclose(outF);
 }
 
 MainWindow::~MainWindow()
@@ -6898,8 +6926,10 @@ void MainWindow::randomDecomposition()
     }
     inStream.close();
 
+    fclose(edf);
 
-    for(int i = 0; i < 100; ++i)
+
+    for(int i = 0; i < 26; ++i)
     {
         helpString = dir->absolutePath() + QDir::separator() + initName;
         setEdfFile(helpString);
@@ -7035,18 +7065,18 @@ void MainWindow::autoIcaAnalysis()
     ui->reduceChannelsLineEdit->setText("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
 
     dir->cd("/media/Files/Data/AA");
-    lst = dir->entryList(QStringList("*.edf"), QDir::Files);
+    QStringList list0 = dir->entryList(QStringList("*.edf"), QDir::NoFilter, QDir::Name);
 
     Spectre * spectr;
     Net * ANN;
     MakePa * mkPa;
 
-    FILE * outFile = fopen("/media/Files/Data/AA/res.txt", "w");
-    fclose(outFile);
+    FILE * outFile; // = fopen("/media/Files/Data/AA/res.txt", "a");
+//    fclose(outFile);
 
-    for(int i = 0; i < lst.length(); ++i)
+    for(int i = 0; i < list0.length(); ++i)
     {
-        helpString = dir->absolutePath() + QDir::separator() + lst[i];
+        helpString = dir->absolutePath() + QDir::separator() + list0[i];
         setEdfFile(helpString);
         cleanDirs();
         sliceAll();
@@ -7058,7 +7088,7 @@ void MainWindow::autoIcaAnalysis()
 
         helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
         mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
-        mkPa->setRdcCoeff(10);
+        mkPa->setRdcCoeff(15);
 
         ANN = new Net(dir, ns, left, right, spStep, ExpName);
 
@@ -7069,11 +7099,11 @@ void MainWindow::autoIcaAnalysis()
             mkPa->makePaSlot();
             ANN->PaIntoMatrixByName("1");
             ANN->LearnNet();
-            if(ANN->getEpoch() > 120)
+            if(ANN->getEpoch() > 150)
             {
-                mkPa->setRdcCoeff(mkPa->getRdcCoeff() - 1);
+                mkPa->setRdcCoeff(mkPa->getRdcCoeff() - 2);
             }
-            else if(ANN->getEpoch() < 80)
+            else if(ANN->getEpoch() < 100)
             {
                 mkPa->setRdcCoeff(mkPa->getRdcCoeff() + 2);
             }
@@ -7100,7 +7130,7 @@ void MainWindow::autoIcaAnalysis()
 
         if(!ExpName.contains("ica", Qt::CaseInsensitive))
         {
-            randomDecomposition();
+            //randomDecomposition();
         }
     }
 

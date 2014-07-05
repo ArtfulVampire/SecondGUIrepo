@@ -9,6 +9,8 @@ Eyes::Eyes(QDir *dir_, int ns_) :
     dir = new QDir();
     dirBC = new QDir();
 
+    ui->progressBar->setValue(0);
+
     dir->cd(QDir::toNativeSeparators(dir_->absolutePath()));
     dirBC->cd(QDir::toNativeSeparators(dir_->absolutePath()));
     ui->lineEdit_3->setText(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()));
@@ -150,6 +152,8 @@ void Eyes::eyesClean()
         }
 
         NumOfEyes = 0;
+
+        ui->progressBar->setValue(i*100./list.length());
 
 
     }

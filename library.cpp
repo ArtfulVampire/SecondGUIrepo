@@ -122,31 +122,11 @@ double doubleRound(double in, int numSigns)
 double quantile(double arg)
 {
     double a, b;
-    a=exp(0.14*log(arg));
-    b=exp(0.14*log(1-arg));
+//    a = exp(0.14*log(arg));
+//    b = exp(0.14*log(1-arg));
+    a = pow(arg, 0.14);
+    b = pow(1. - arg, 0.14);
     return (4.91*(a-b));
-}
-
-double mean(double *arr, int length)
-{
-    double sum = 0.;
-    for(int i = 0; i < length; ++i)
-    {
-        sum += arr[i] / double(length);
-    }
-    return sum;
-}
-
-double variance(double *arr, int length)
-{
-    double sum1 = 0.;
-    double m = mean(arr, length);
-    for(int i = 0; i < length; ++i)
-    {
-        sum1 += (arr[i] - m) * (arr[i] - m);
-    }
-    sum1 /= (double)length;
-    return sum1;
 }
 
 double mean(int *arr, int length)
@@ -160,6 +140,16 @@ double mean(int *arr, int length)
     return sum;
 }
 
+double mean(double *arr, int length)
+{
+    double sum = 0.;
+    for(int i = 0; i < length; ++i)
+    {
+        sum += arr[i] / double(length);
+    }
+    return sum;
+}
+
 double variance(int *arr, int length)
 {
     double sum1 = 0.;
@@ -170,6 +160,118 @@ double variance(int *arr, int length)
     }
     sum1 /= (double)length;
     return sum1;
+}
+
+
+double variance(double * arr, int length)
+{
+    double sum1 = 0.;
+    double m = mean(arr, length);
+    for(int i = 0; i < length; ++i)
+    {
+        sum1 += (arr[i] - m) * (arr[i] - m);
+    }
+    sum1 /= (double)length;
+    return sum1;
+}
+
+
+double sigma(int *arr, int length)
+{
+    return sqrt(variance(arr, length));
+}
+
+double sigma(double *arr, int length)
+{
+    return sqrt(variance(arr, length));
+}
+
+
+double skewness(double *arr, int length)
+{
+    double sum = 0.;
+    double av = mean(arr, length);
+    double disp = variance(arr, length);
+    for(int i = 0; i < length; ++i)
+    {
+        sum += pow((arr[i] - av), 3);
+    }
+    sum /= double(length);
+    sum /= pow(disp, 1.5);
+    return sum;
+}
+
+double kurtosis(double *arr, int length)
+{
+    double sum = 0.;
+    double av = mean(arr, length);
+    double disp = variance(arr, length);
+    for(int i = 0; i < length; ++i)
+    {
+        sum += pow((arr[i] - av), 4);
+    }
+    sum /= double(length);
+    sum /= pow(disp, 2.);
+    sum -= 3.;
+    return sum;
+}
+
+double rankit(int i, int length, double k)
+{
+    return quantile( (i-k) / (length + 1. - 2. * k) );
+}
+
+void drawRCP(double * values, int length)
+{
+    QPixmap pic(1000, 400);
+    QPainter * pnt = new QPainter();
+    pic.fill();
+    pnt->begin(&pic);
+    pnt->setPen("black");
+
+
+    double xMin, xMax;
+//    //generality
+    xMin = -3;
+    xMax = 3;
+
+    double * line = new double [pic.width()];
+
+    for(int i = 0; i < pic.width(); ++i)
+    {
+        line[i] = gaussian( (i - pic.width()/2) / (pic.width()/2.) * 3. );
+    }
+
+    double valueMax;
+    valueMax = maxValue(line, pic.width());
+
+    for(int i = 0; i < pic.width() - 1; ++i)
+    {
+        pnt->drawLine(i, pic.height() * 0.9 * ( 1. - line[i] / valueMax), i+1, pic.height() * 0.9 * (1. - line[i+1] / valueMax));
+    }
+    pnt->drawLine(0, pic.height()*0.9, pic.width(), pic.height()*0.9);
+
+
+    int coordinate;
+
+    for(int i = 0; i < length; ++i) //draw the values
+    {
+        coordinate = pic.width()/2. * (1. + values[i] / 3.);
+        if(i%2 == 0) //raw data
+        {
+            pnt->setPen("blue");
+        }
+        else //ica data
+        {
+            pnt->setPen("red");
+        }
+        pnt->drawLine(coordinate, line[coordinate] , coordinate, line[coordinate] + 50);
+    }
+    pic.save("/media/Files/Data/AA/rcp.png", 0, 100);
+
+    delete pnt;
+    delete []values;
+
 }
 
 double maxValue(double * arr, int length)
@@ -249,6 +351,10 @@ double enthropy(double *arr, int N, QString picPath, int numOfRanges) // ~30 is 
 void matrixProduct(double ** const A, double ** const B, double *** out, int dimH, int dimL)
 {
     double result;
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) private(result)
+#endif
     for(int j = 0; j < dimL; ++j)
     {
         for(int i = 0; i < dimH; ++i)
@@ -266,6 +372,10 @@ void matrixProduct(double ** const A, double ** const B, double *** out, int dim
 void matrixProduct(double ** const A, double ** const B, double *** out, int dimA1, int dimB2, int dimA2B1)
 {
     double result;
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) private(result)
+#endif
     for(int j = 0; j < dimA1; ++j)
     {
         for(int i = 0; i < dimB2; ++i)
@@ -758,15 +868,15 @@ void bayesCount(double * dataIn, int length, int numOfIntervals, double ** out)
     }
 }
 
-void kernelEst(double * arr, int num, QString picPath)
+void kernelEst(double * arr, int length, QString picPath)
 {
     double sigma = 0.;
 
-    sigma = variance(arr, num);
+    sigma = variance(arr, length);
     sigma = sqrt(sigma);
 
 
-    double h = 1.06 * sigma * pow(num, -0.2);
+    double h = 1.06 * sigma * pow(length, -0.2);
 
 
 
@@ -780,23 +890,22 @@ void kernelEst(double * arr, int num, QString picPath)
 
     double xMin, xMax;
 
-    xMin = minValue(arr, num);
-    xMax = maxValue(arr, num);
+    xMin = minValue(arr, length);
+    xMax = maxValue(arr, length);
 
-//    cout << "xMin = " << xMin << "\txMax = " << xMax << endl;
     xMin = floor(xMin)-1;
     xMax = ceil(xMax)+1;
 
 //    //generality
-//    xMin = 82;
-//    xMax = 88;
+    xMin = 70;
+    xMax = 100;
 
     for(int i = 0; i < pic.width(); ++i)
     {
         values[i] = 0.;
-        for(int j = 0; j < num; ++j)
+        for(int j = 0; j < length; ++j)
         {
-            values[i] += 1/(num*h) * gaussian((xMin + (xMax- xMin) / double(pic.width()) * i - arr[j])/h);
+            values[i] += 1/(length*h) * gaussian((xMin + (xMax- xMin) / double(pic.width()) * i - arr[j])/h);
         }
     }
 
@@ -823,6 +932,69 @@ void kernelEst(double * arr, int num, QString picPath)
 
     delete pnt;
     delete []values;
+}
+
+
+bool gaussApproval(double * arr, int length) //kobzar page 239
+{
+    double z;
+    int m = int(length/2);
+    double a[m+1];
+    double disp = variance(arr, length) * length;
+    double B = 0.;
+    double W;
+
+    a[0] = 0.899/pow(length-2.4, 0.4162) - 0.02;
+    for(int j = 1; j <= m; ++j)
+    {
+        z = (length - 2*j + 1.) / (length - 0.5);
+        a[j] = a[0] * (z + 1483 / pow(3.-z, 10.845) + pow(71.61, -10.) / pow(1.1-z, 8.26));
+        B += a[j] * (arr[length-j+1] - arr[j-1]); //or without +1
+    }
+    B *= B;
+    W = (1 - 0.6695 / pow(length, 0.6518)) * disp / B;
+
+    if(W < 1.) return true;
+    return false;
+}
+
+
+bool gaussApproval(QString filePath)
+{
+    int length = 0;
+
+    ifstream inStream;
+    double * arr = new double [250];
+    inStream.open(filePath.toStdString().c_str());
+    while(!inStream.eof())
+    {
+        inStream >> arr[length++];
+    }
+    --length;
+    return gaussApproval(arr, length);
+
+}
+
+bool gaussApproval2(double * arr, int length) //kobzar page 238
+{
+    double W = 0.;
+    double disp = variance(arr, length) * length;
+    double c[length+1];
+    double sum = 0.;
+    for(int i = 1; i <= length; ++i)
+    {
+        sum += pow(rankit(i, length), 2.);
+    }
+    sum = sqrt(sum);
+    for(int j = 1; j < length; ++j)
+    {
+        c[j] = rankit(length - j + 1, length) / sum;
+        W += c[j] * (arr[length - j] - arr[j - 1]);
+    }
+    W /= disp;
+
+
+
 }
 
 double red(int range, int j, double V, double S)
@@ -1698,11 +1870,9 @@ double ** matrixCreate(int i, int j)
 void matrixCreate(double *** matrix, int i, int j)
 {
     (*matrix) = new double * [i];
-    cout << "matrixCreate: rows" << endl;
     for(int k = 0; k < i; ++k)
     {
         (*matrix)[k] = new double [j];
-        cout << "matrixCreate: coloumn " << k << endl;
     }
 }
 
@@ -1715,7 +1885,7 @@ void matrixDelete(double *** matrix, int i, int j)
     delete [](*matrix);
 }
 
-void matrixPrint(double ** mat, int i, int j)
+void matrixPrint(double ** const mat, int i, int j)
 {
     for(int a = 0; a < i; ++a)
     {
@@ -1729,28 +1899,27 @@ void matrixPrint(double ** mat, int i, int j)
     cout << endl;
 }
 
-void countRCP(QString filename, QString picPath)
+void countRCP(QString filename, QString picPath, double * outMean, double * outSigma)
 {
     int counter = 0;
     ifstream inStream;
     double * arr = new double [250];
     inStream.open(filename.toStdString().c_str());
-//    cout << filename.toStdString().c_str() << endl;
     while(!inStream.eof())
     {
         inStream >> arr[counter++];
     }
     --counter;
 
-    cout << filename.left(3).toStdString() << endl;
-//    cout << "average = ";
-    cout << mean(arr, counter) << endl;
-//    cout << "variance = " << variance(arr, counter) << endl;
-    cout << "sigma = ";
-    cout << sqrt(variance(arr, counter)) << endl;
-//    cout << "counter = " << counter << endl;
+//    cout << filename.left(3).toStdString() << endl;
 
-    if(picPath != "")
+//    cout << mean(arr, counter) << endl;
+//    cout << sigma(arr, counter) << endl;
+
+    (*outMean) = mean(arr, counter);
+    (*outSigma) = sigma(arr, counter);
+
+    if(!picPath.isEmpty())
     {
         kernelEst(arr, counter, picPath);
     }

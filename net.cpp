@@ -46,6 +46,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
 
 //    tempRandoms = new double [19];
+    matrixCreate(&tempRandomMatrix, 19, 19);
 
 
     QButtonGroup  * group1,  * group2,  * group3;
@@ -325,6 +326,18 @@ void Net::autoClassification(QString spectraDir)
         {
             QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
             return;
+        }
+    }
+
+
+    //set random matrix
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            tempRandomMatrix[i][j] = (i == j); //identity matrix
+//            tempRandomMatrix[i][j] = (i == j) * (-20. + rand()%41) / 10.; //random multiplication in each channel
+//            tempRandomMatrix[i][j] = (-20. + rand()%41) / 10.;
         }
     }
 
@@ -2024,16 +2037,27 @@ void Net::PaIntoMatrixByName(QString fileName)
 //    QTime myTime;
 //    myTime.start();
     readPaFile(inStream, helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
-//    for(int k = 0; k < NumberOfVectors; ++k)
-//    {
-//        for(int i = 0; i < ns; ++i)
-//        {
-//            for(int j = 0; j < spLength; ++j)
-//            {
-//                matrix[k][i*spLength + j] *= tempRandoms[i];
-//            }
-//        }
-//    }
+    double * tempVector = new double [ns*spLength];
+    for(int k = 0; k < NumberOfVectors; ++k)
+    {
+        for(int j = 0; j < spLength*ns; ++j)
+        {
+            tempVector[j] = 0.;
+        }
+
+        for(int i = 0; i < ns; ++i) //new channel number
+        {
+            for(int j = 0; j < spLength; ++j) // each spectra-bin
+            {
+                for(int h = 0; h < ns; ++h) //old channels number
+                {
+                    tempVector[i*spLength + j] += tempRandomMatrix[i][h] * matrix[k][h*spLength + j];
+                }
+                //memcpy(matrix[k], tempVector, sizeof(double) * ns*spLength);
+            }
+        }
+    }
+    delete []tempVector;
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 }
 
@@ -2479,6 +2503,8 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     delete []deltaWeights;
     delete []output;
 }
+
+
 
 bool Net::ClassificateVector(int &vecNum)
 {

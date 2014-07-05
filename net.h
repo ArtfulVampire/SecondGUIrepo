@@ -112,6 +112,7 @@ private:
     ofstream outStream;
 
 //    double * tempRandoms;
+    double ** tempRandomMatrix; //test linear transform
 
     QVector<int> channelsSet;
     QVector<int> channelsSetExclude;

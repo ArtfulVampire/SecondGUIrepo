@@ -24,14 +24,18 @@
 #include <QMessageBox>
 #include <cerrno>
 #include <ios>
+#include <omp.h>
 //#include <itpp/itbase.h>
 //#include <mlpack/core.hpp>
 //#include <mlpack/methods/pca/pca.hpp>
 #define pi 3.141592653589
 
+
+
 using namespace std;
 //using namespace itpp;
 //using namespace mlpack;
+
 
 QString rightNumber(int &input, int N);
 
@@ -46,18 +50,28 @@ void four1(double * dataF, int nn, int isign);
 void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath);
 void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath);
 void bayesCount(double * dataIn, int length, int numOfIntervals, double **out);
-void kernelEst(double *arr, int num, QString picPath);
-
+void kernelEst(double *arr, int length, QString picPath);
+bool gaussApproval(double * arr, int length);
+bool gaussApproval(QString filePath);
+bool gaussApproval2(double * arr, int length);
+double quantile(double arg);
+double mean(int *arr, int length);
 double mean(double *arr, int length);
+double variance(int *arr, int length);
 double variance(double *arr, int length);
-void countRCP(QString filename, QString picPath = "");
+double sigma(int *arr, int length);
+double sigma(double *arr, int length);
+double skewness(double *arr, int length);
+double kurtosis(double *arr, int length);
+double rankit(int i, int length, double k = 0.375);
+
+void drawRCP(double *values, int length);
+
+void countRCP(QString filename, QString picPath = "", double *outMean = NULL, double *outSigma = NULL);
 void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
 
 double doubleRound(double in, int numSigns);
-double mean(int *arr, int length);
-double variance(double *arr, int length);
 double correlation(double *arr1, double *arr2, int length, int t = 0);
-double quantile(double arg);
 double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 
@@ -89,11 +103,11 @@ void matrixCofactor(double ** const inMatrix, int size, int i, int j, double ***
 double ** matrixCreate(int i, int j);
 void matrixCreate(double *** matrix, int i, int j);
 void matrixDelete(double *** matrix, int i, int j);
-void matrixPrint(double ** mat, int i, int j);
+void matrixPrint(double ** const mat, int i, int j);
 
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
-inline double gaussian(double x)
+inline double gaussian(double x) //N(0,1)
 {
     return 1./(sqrt(2. * pi)) * exp(-x*x / 2.);
 }
