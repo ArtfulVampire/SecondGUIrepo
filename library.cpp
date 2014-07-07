@@ -232,14 +232,16 @@ void drawRCP(double * values, int length)
 
     double xMin, xMax;
 //    //generality
-    xMin = -3;
-    xMax = 3;
+
+    int numOfDisp = 4;
+    xMin = -numOfDisp;
+    xMax = numOfDisp;
 
     double * line = new double [pic.width()];
 
     for(int i = 0; i < pic.width(); ++i)
     {
-        line[i] = gaussian( (i - pic.width()/2) / (pic.width()/2.) * 3. );
+        line[i] = gaussian( (i - pic.width()/2) / (pic.width()/2.) * numOfDisp );
     }
 
     double valueMax;
@@ -256,7 +258,7 @@ void drawRCP(double * values, int length)
 
     for(int i = 0; i < length; ++i) //draw the values
     {
-        coordinate = pic.width()/2. * (1. + values[i] / 3.);
+        coordinate = pic.width()/2. * (1. + values[i] / numOfDisp);
         if(i%2 == 0) //raw data
         {
             pnt->setPen("blue");
@@ -265,7 +267,7 @@ void drawRCP(double * values, int length)
         {
             pnt->setPen("red");
         }
-        pnt->drawLine(coordinate, line[coordinate] , coordinate, line[coordinate] + 50);
+        pnt->drawLine(coordinate, pic.height() * 0.9 * ( 1. - line[coordinate] / valueMax) , coordinate, pic.height() * 0.9 * ( 1. - line[coordinate] / valueMax) - 50);
     }
     pic.save("/media/Files/Data/AA/rcp.png", 0, 100);
 
@@ -348,7 +350,7 @@ double enthropy(double *arr, int N, QString picPath, int numOfRanges) // ~30 is 
 }
 
 //matrix product out = A(H*H) * B(H*L)
-void matrixProduct(double ** const A, double ** const B, double *** out, int dimH, int dimL)
+void matrixProduct(double ** const A, double ** const inMat2, double *** outMat, int dimH, int dimL)
 {
     double result;
 
@@ -362,37 +364,37 @@ void matrixProduct(double ** const A, double ** const B, double *** out, int dim
             result = 0.;
             for(int k = 0; k < dimH; ++k)
             {
-                result += A[i][k] * B[k][j];
+                result += A[i][k] * inMat2[k][j];
             }
-            (*out)[i][j] = result;
+            (*outMat)[i][j] = result;
         }
     }
 }
 
-void matrixProduct(double ** const A, double ** const B, double *** out, int dimA1, int dimB2, int dimA2B1)
+void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int numRows1, int numCols2, int numCols1Rows2)
 {
     double result;
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) private(result)
 #endif
-    for(int j = 0; j < dimA1; ++j)
+    for(int j = 0; j < numRows1; ++j)
     {
-        for(int i = 0; i < dimB2; ++i)
+        for(int i = 0; i < numCols2; ++i)
         {
             result = 0.;
-            for(int k = 0; k < dimA2B1; ++k)
+            for(int k = 0; k < numCols1Rows2; ++k)
             {
-                result += A[i][k] * B[k][j];
+                result += inMat1[i][k] * inMat2[k][j];
             }
-            (*out)[i][j] = result;
+            (*outMat)[i][j] = result;
         }
     }
 }
 
 
 
-double distance(double * const vec1, double * const vec2, int dim)
+double distance(double * const vec1, double * const vec2, const int dim)
 {
     double dist = 0.;
     //Euclid
@@ -1062,7 +1064,7 @@ double morletSin(double freq, double timeShift, double pot, double time)
     return sin(freq*(time-timeShift))*exp(-freq*freq*(time-timeShift)*(time-timeShift)/(pot*pot));
 }
 
-void drawColorScale(QString filename, int range)
+void drawColorScale(QString filePath, int range)
 {
 //    double sigmaR=range*0.35;
 //    double sigmaG=range*0.25;
@@ -1097,7 +1099,7 @@ void drawColorScale(QString filename, int range)
 
     }
     painter->end();
-    pic.save(filename, 0, 100);
+    pic.save(filePath, 0, 100);
 
     delete painter;
 }
@@ -1358,9 +1360,11 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
     delete painter;
 }
 
-void readDataFile(ifstream &file, QString filename, double *** outData, int ns, int * NumOfSlices)
+void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices)
 {
-    file.open(filename.toStdString().c_str());
+
+    ifstream file;
+    file.open(filePath.toStdString().c_str());
     if(!file.good())
     {
         cout << "bad file" << endl;
@@ -1380,9 +1384,10 @@ void readDataFile(ifstream &file, QString filename, double *** outData, int ns, 
     file.close();
 }
 
-void readDataFile(ifstream & file, QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength)
+void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength)
 {
-    file.open(filename.toStdString().c_str());
+    ifstream file;
+    file.open(filePath.toStdString().c_str());
     if(!file.good())
     {
         cout << "bad file" << endl;
@@ -1390,7 +1395,6 @@ void readDataFile(ifstream & file, QString filename, double *** outData, int ns,
     }
     file.ignore(12); // "NumOfSlices "
     file >> *NumOfSlices;
-//    cout << filename.toStdString() << "\t" << *NumOfSlices << endl;
     *outData = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
@@ -1435,9 +1439,9 @@ void readDataFile(ifstream & file, QString filename, double *** outData, int ns,
     file.close();
 }
 
-void readSpectraFile(QString filename, double ** outData, int ns, int spLength)
+void readSpectraFile(QString filePath, double ** outData, int ns, int spLength)
 {
-    ifstream file(filename.toStdString().c_str());
+    ifstream file(filePath.toStdString().c_str());
     if(!file.good())
     {
         cout << "bad file" << endl;
@@ -1455,9 +1459,9 @@ void readSpectraFile(QString filename, double ** outData, int ns, int spLength)
     file.close();
 }
 
-void readSpectraFileLine(QString filename, double **outData, int ns, int spLength)
+void readSpectraFileLine(QString filePath, double **outData, int ns, int spLength)
 {
-    ifstream file(filename.toStdString().c_str());
+    ifstream file(filePath.toStdString().c_str());
     if(!file.good())
     {
         cout << "bad file" << endl;
@@ -1572,7 +1576,7 @@ void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength)
 }
 
 
-void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth)
+void calcSpectre(double ** const inData, double *** dataFFT, const int ns, const int fftLength, int Eyes, const int NumOfSmooth)
 {
 
     double norm1 = fftLength / double(fftLength-Eyes);
@@ -1613,8 +1617,52 @@ void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, in
     delete []spectre;
 }
 
-void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName)
+
+void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth)
 {
+
+    double norm1 = fftLength / double(fftLength-Eyes);
+    double * spectre = new double [fftLength*2];
+
+    double help1, help2;
+    int leftSmoothLimit, rightSmoothLimit;
+
+    for(int j = 0; j < ns; ++j)
+    {
+        for(int i = 0; i < fftLength; ++i)            //make appropriate array
+        {
+            spectre[ i * 2 + 0 ] = (double)(inData[j][ i ] * sqrt(norm1));
+            spectre[ i * 2 + 1 ] = 0.;
+        }
+        four1(spectre-1, fftLength, 1);       //Fourier transform
+        for(int i = 0; i < fftLength; ++i )      //get the absolute value of FFT
+        {
+            (*dataFFT)[j][ i ] = spectre[ i ] * 2. /250. / fftLength; //0.004 = 1/250 generality
+        }
+
+        leftSmoothLimit = 0;
+        rightSmoothLimit = fftLength/2-1;
+
+        //smooth spectre - odd and even split
+/*
+        for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
+        {
+            help1 = (*dataFFT)[j][leftSmoothLimit-1];
+            for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
+            {
+                help2 = (*dataFFT)[j][k];
+                (*dataFFT)[j][k] = (help1 + help2 + (*dataFFT)[j][k+1]) / 3.;
+                help1 = help2;
+            }
+        }
+*/
+    }
+    delete []spectre;
+}
+
+void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName)
+{
+    ifstream paSrc;
     paSrc.open(paFile.toStdString().c_str());
     if(!paSrc.is_open())
     {
@@ -1645,6 +1693,7 @@ void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLeng
     {
         (*matrix)[i] = new double [NetLength+2]; //+bias +type
     }
+//    cout << "readPaFile: data allocated" << endl;
     int num = 0;
     double g[3];  //generality
 
@@ -1657,6 +1706,7 @@ void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLeng
     while(!paSrc.eof())
     {
         paSrc.getline((*FileName)[num], 64);
+//        cout << (*FileName)[num] << endl;
 
         for(int i = 0; i < NetLength; ++i)
         {
@@ -1687,6 +1737,7 @@ void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLeng
             return;
         }
         ++num;
+//        cout << "readPaFile: " << num << " file is read" << endl;
     }
     for(int i = num; i < (*NumberOfVectors); ++i)
     {
@@ -1712,7 +1763,7 @@ void readICAMatrix(QString path, double *** matrixA, int ns)
 }
 
 
-void writeICAMatrix(QString path, double ** matrixA, int ns)
+void writeICAMatrix(QString path, double ** matrixA, int const ns)
 {
     FILE * map = fopen(path.toStdString().c_str(), "w");
     double maxMagn = 0.;
@@ -1729,35 +1780,35 @@ void writeICAMatrix(QString path, double ** matrixA, int ns)
     fclose(map);
 }
 
-void matrixCofactor(double ** const inMatrix, int size, int i, int j, double *** outMatrix)
+void matrixCofactor(double ** const inMatrix, int const size, int const numRows, int const numCols, double *** outMatrix)
 {
     int indexA, indexB;
     for(int a = 0; a < size; ++a)
     {
-        if(a == i) continue;
-        indexA = a - (a > i);
+        if(a == numRows) continue;
+        indexA = a - (a > numRows);
         for(int b = 0; b < size; ++b)
         {
-            if(b == j) continue;
-            indexB = b - (b > j);
+            if(b == numCols) continue;
+            indexB = b - (b > numCols);
 
             (*outMatrix)[indexA][indexB] = inMatrix[a][b];
         }
     }
 }
 
-void matrixTranspose(double ** const inMat, int size, double *** outMat)
+void matrixTranspose(double ** const inMat, int const numRows, int const numCols, double *** outMat)
 {
-    for(int i = 0; i < size; ++i)
+    for(int i = 0; i < numCols; ++i)
     {
-        for(int j = 0; j < size; ++j)
+        for(int j = 0; j < numRows; ++j)
         {
             (*outMat)[i][j] = inMat[j][i];
         }
     }
 }
 
-void matrixCopy(double ** const inMat, double *** outMat, int dimH, int dimL)
+void matrixCopy(double ** const inMat, double *** outMat, int const dimH, int const dimL)
 {
     for(int i = 0; i < dimH; ++i)
     {
@@ -1765,7 +1816,7 @@ void matrixCopy(double ** const inMat, double *** outMat, int dimH, int dimL)
     }
 }
 
-void matrixInvert(double ** const inMat, int size, double *** outMat) //cofactors
+void matrixInvert(double ** const inMat, int const size, double *** outMat) //cofactors
 {
     double ** cof = new double * [size - 1];
     for(int i = 0; i < size - 1; ++i)
@@ -1791,7 +1842,7 @@ void matrixInvert(double ** const inMat, int size, double *** outMat) //cofactor
     delete []cof;
 }
 
-double matrixDet(double ** const matrix, int dim) //- Det
+double matrixDet(double ** const matrix, int const dim) //- Det
 {
     if(dim == 1) return matrix[0][0];
 
@@ -1840,7 +1891,7 @@ double matrixDet(double ** const matrix, int dim) //- Det
 }
 
 
-double matrixDetB(double ** const matrix, int dim) // Det
+double matrixDetB(double ** const matrix, int const dim) // Det
 {
     if(dim == 1) return matrix[0][0];
 
@@ -1857,7 +1908,7 @@ double matrixDetB(double ** const matrix, int dim) // Det
     return coef;
 }
 
-double ** matrixCreate(int i, int j)
+double ** matrixCreate(int const i, int const j)
 {
     double ** mat = new double * [i];
     for(int k = 0; k < i; ++k)
@@ -1867,7 +1918,7 @@ double ** matrixCreate(int i, int j)
     return mat;
 }
 
-void matrixCreate(double *** matrix, int i, int j)
+void matrixCreate(double *** matrix, int const i, int const j)
 {
     (*matrix) = new double * [i];
     for(int k = 0; k < i; ++k)
@@ -1876,7 +1927,7 @@ void matrixCreate(double *** matrix, int i, int j)
     }
 }
 
-void matrixDelete(double *** matrix, int i, int j)
+void matrixDelete(double *** matrix, int const i, int const j)
 {
     for(int k = 0; k < i; ++k)
     {
@@ -1885,7 +1936,7 @@ void matrixDelete(double *** matrix, int i, int j)
     delete [](*matrix);
 }
 
-void matrixPrint(double ** const mat, int i, int j)
+void matrixPrint(double ** const mat, int const i, int const j)
 {
     for(int a = 0; a < i; ++a)
     {
@@ -1899,12 +1950,86 @@ void matrixPrint(double ** const mat, int i, int j)
     cout << endl;
 }
 
-void countRCP(QString filename, QString picPath, double * outMean, double * outSigma)
+
+double matrixInnerCorrelation(double ** const inMatrix, int const numRows, int const numCols)
+{
+    double res = 0.;
+    double temp;
+    double ** tempMat;
+    matrixCreate(&tempMat, numCols, numRows);
+    matrixTranspose(inMatrix, numRows, numCols, &tempMat);
+    for(int i = 0; i < numCols; ++i)
+    {
+        for(int j = i; j < numCols; ++j)
+        {
+            temp = correlation(tempMat[i], tempMat[j], numRows);
+            if(fabs(temp) > fabs(res))
+            {
+                res = temp;
+            }
+        }
+    }
+    return res;
+}
+
+double matrixCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols)
+{
+    double res = 0.;
+    double temp;
+    double ** tempMat1;
+    double ** tempMat2;
+    matrixCreate(&tempMat1, numCols, numRows);
+    matrixTranspose(inMat1, numRows, numCols, &tempMat1);
+    matrixCreate(&tempMat2, numCols, numRows);
+    matrixTranspose(inMat2, numRows, numCols, &tempMat2);
+
+    for(int i = 0; i < numCols; ++i)
+    {
+        for(int j = 0; j < numCols; ++j)
+        {
+            temp = correlation(tempMat1[i], tempMat2[j], numRows);
+            if(fabs(temp) > fabs(res))
+            {
+                res = temp;
+            }
+        }
+    }
+    return res;
+}
+
+
+void matrixCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols, double * resCorr)
+{
+    double res = 0.;
+    int * tempNum = new int [numCols];
+    double temp;
+    double ** tempMat1;
+    double ** tempMat2;
+    matrixCreate(&tempMat1, numCols, numRows);
+    matrixTranspose(inMat1, numRows, numCols, &tempMat1);
+    matrixCreate(&tempMat2, numCols, numRows);
+    matrixTranspose(inMat2, numRows, numCols, &tempMat2);
+
+    for(int i = 0; i < numCols; ++i)
+    {
+        for(int j = 0; j < numCols; ++j)
+        {
+            temp = correlation(tempMat1[i], tempMat2[j], numRows);
+            if(fabs(temp) > fabs(res))
+            {
+                res = temp;
+                tempNum[i] = j;
+            }
+        }
+    }
+}
+
+void countRCP(QString filePath, QString picPath, double * outMean, double * outSigma)
 {
     int counter = 0;
     ifstream inStream;
     double * arr = new double [250];
-    inStream.open(filename.toStdString().c_str());
+    inStream.open(filePath.toStdString().c_str());
     while(!inStream.eof())
     {
         inStream >> arr[counter++];

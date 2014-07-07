@@ -33,6 +33,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     group2->addButton(ui->bayesRadioButton);
     group2->addButton(ui->hilbertsVarRadioButton);
     group2->addButton(ui->d2RadioButton);
+    group2->addButton(ui->rawFourierRadioButton);
     ui->spectraRadioButton->setChecked(true);
 
     group3 = new QButtonGroup;
@@ -992,7 +993,7 @@ void Spectre::countSpectra()
     double ** dataFFT = new double * [ns];
     for(int i=0; i<ns; ++i)
     {
-        dataFFT[i] = new double [fftLength/2];
+        dataFFT[i] = new double [fftLength];
     }
 
     double *** dataPhase = new double ** [ns];
@@ -1020,7 +1021,7 @@ void Spectre::countSpectra()
         //read data file
         dir->cd(ui->lineEdit_1->text());
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[a]));
-        readDataFile(inStream, helpString, &dataIn, ns, &NumOfSlices, fftLength);
+        readDataFile(helpString, &dataIn, ns, &NumOfSlices, fftLength);
         dir->cd(dirBC->absolutePath());
 
         dir->cd(ui->lineEdit_2->text());  //cd to output dir
@@ -1162,6 +1163,39 @@ void Spectre::countSpectra()
                 outStream << fractalDimension(dataIn[i], NumOfSlices, "") << '\n';
             }
         }
+        else if(ui->rawFourierRadioButton->isChecked())
+        {
+            Eyes = 0;
+            NumOfSlices = fftLength;
+            int h = 0;
+            for(int i = 0; i < fftLength; ++i)
+            {
+                h = 0;
+                for(int j = 0; j < ns; ++j)
+                {
+                    if(fabs(dataIn[j][i]) <= 0.125) ++h;
+                }
+                if(h == ns) Eyes += 1;
+            }
+
+            if((NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
+            {
+                cout << a << "'th file too short" << endl;
+            }
+
+            calcRawFFT(dataIn, &dataFFT, ns, fftLength, Eyes, ui->smoothBox->value());
+            dir->cd(dirBC->absolutePath());
+
+            for(int i = 0; i < ns; ++i)                               ///save BY CHANNELS!!!  except markers
+            {
+                for(int k = 2*left; k <= 2*right; ++k)
+                {
+                    outStream << dataFFT[i][k] << '\n';
+                }
+                outStream << '\n';
+            }
+
+        }
 
 
         outStream.close();
@@ -1188,6 +1222,11 @@ void Spectre::countSpectra()
     {
         ui->leftSpinBox->setValue(1);
         ui->rightSpinBox->setValue(1);
+    }
+    else if(ui->rawFourierRadioButton->isChecked())
+    {
+        ui->leftSpinBox->setValue(left*2);
+        ui->rightSpinBox->setValue(right*2);
     }
 
     ui->progressBar->setValue(0);

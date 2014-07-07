@@ -76,29 +76,34 @@ double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 
 
-void readDataFile(ifstream & file, QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength);
-void readDataFile(ifstream & file, QString filename, double *** outData, int ns, int * NumOfSlices);
-void readSpectraFile(ifstream & file, QString filename, double ** outData, int ns, int spLength);
-void readSpectraFileLine(ifstream & file, QString filename, double ** outData, int ns, int spLength);
-void readPaFile(ifstream & paSrc, QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
+void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength);
+void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices);
+void readSpectraFile(QString filename, double ** outData, int ns, int spLength);
+void readSpectraFileLine(QString filename, double ** outData, int ns, int spLength);
+void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
 void readICAMatrix(QString path, double *** matrixA, int ns);
-void writeICAMatrix(QString path, double ** matrixA, int ns);
+void writeICAMatrix(QString path, double ** matrixA, const int ns);
 
 void splitZeros(double *** inData, int ns, int length, int * outLength);
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 
-void calcSpectre(double ** inData, double *** dataFFT, int ns, int fftLength, int Eyes, int NumOfSmooth);
+void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
+void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
 
 
-double distance(double * const vec1, double * const vec2, int dim);
-void matrixProduct(double ** const A, double ** const B, double *** out, int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
-void matrixProduct(double ** const A, double ** const B, double *** out, int dimA1, int dimB2, int dimA2B1);  //matrix product: out = A(H*H) * B(H*L)
-void matrixTranspose(double ** const inMat, int size, double *** outMat);
-void matrixCopy(double ** const inMat, double *** outMat, int dimH, int dimL);
-void matrixInvert(double ** const inMat, int size, double *** outMat); //cofactors
-double matrixDet(double ** const matrix, int dim);
-double matrixDetB(double ** const matrix, int dim);
-void matrixCofactor(double ** const inMatrix, int size, int i, int j, double *** outMatrix);
+double distance(double * const vec1, double * const vec2, int const dim);
+void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const dimH, int const dimL);  //matrix product: out = A(H*H) * B(H*L)
+void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const numRows1, int const numCols2, int const numCols1Rows2);  //matrix product: out = A(H*H) * B(H*L)
+void matrixTranspose(double ** const inMat, int const numRows, int const numCols, double *** outMat);
+void matrixCopy(double ** const inMat, double *** outMat, int const dimH, int const dimL);
+void matrixInvert(double ** const inMat, int const size, double *** outMat); //cofactors
+double matrixDet(double ** const matrix, int const dim);
+double matrixDetB(double ** const matrix, int const dim);
+void matrixCofactor(double ** const inMatrix, int size, int numRows, int numCols, double *** outMatrix);
+
+double matrixInnerCorrelation(double ** const inMatrix, const int numRows, const int numCols);
+double matrixCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols);
+void matrixCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols, double * resCorr);
 
 double ** matrixCreate(int i, int j);
 void matrixCreate(double *** matrix, int i, int j);

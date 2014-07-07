@@ -366,29 +366,7 @@ MainWindow::MainWindow() :
 //    ~MainWindow();
 
 
-//int dim = 3;
-//    double ** mat1 = matrixCreate(dim, dim);
-//    double ** inv = matrixCreate(dim, dim);
-
-//    mat1[0][0] = 1.;
-//    mat1[0][1] = 2.;
-//    mat1[0][2] = 5.;
-
-//    mat1[1][0] = 7.;
-//    mat1[1][1] = 3.;
-//    mat1[1][2] = -1.;
-
-//    mat1[2][0] = -2.;
-//    mat1[2][1] = 1.;
-//    mat1[2][2] = -8.;
-
-
-////    invertMatrix(mat, 2, &inv);
-//    invertMatrix2(mat1, dim, &inv);
-
-//    matrixDelete(&inv, dim, dim);
-//    matrixDelete(&mat1, dim, dim);
-
+    /*
     dir->cd("/media/Files/Data/AA");
 //    autoIcaAnalysis();
 
@@ -397,8 +375,6 @@ MainWindow::MainWindow() :
     double * classf = new double [20];
     double * drawVars = new double [20];
     lst = dir->entryList(QStringList("*randIca.txt"), QDir::NoFilter, QDir::Name);
-//    FILE * means = fopen("/media/Files/Data/AA/means.txt", "w");
-//    FILE * vars = fopen("/media/Files/Data/AA/vars.txt", "w");
 
     FILE * results = fopen("/media/Files/Data/AA/res.txt", "r");
     FILE * outF = fopen("/media/Files/Data/AA/discr.txt", "w");
@@ -408,8 +384,6 @@ MainWindow::MainWindow() :
         helpString = dir->absolutePath() + QDir::separator() + lst[i];
         helpString.replace(".txt", ".png");
         countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString, &men[i], &sigm[i]);
-//        fprintf(means, "%lf\n", men);
-//        fprintf(vars, "%lf\n", var);
     }
     for(int i = 0; i < lst.length(); ++i)
     {
@@ -428,6 +402,14 @@ MainWindow::MainWindow() :
     drawRCP(drawVars, 20);
     fclose(results);
     fclose(outF);
+
+    */
+
+//    int NumberOfVectors;
+//    double ** matrix;
+//    char ** FileName;
+
+//    readPaFile("/media/Files/Data/AAX/PA/1.pa", &matrix, 493*19, 3, &NumberOfVectors,  &FileName);
 }
 
 MainWindow::~MainWindow()
@@ -6910,7 +6892,7 @@ void MainWindow::randomDecomposition()
     inStream.close();
 
     double ** eigenMatrixInv = matrixCreate(compNum, compNum);
-    matrixTranspose(eigenMatrix, compNum, &eigenMatrixInv);
+    matrixTranspose(eigenMatrix, compNum, compNum, &eigenMatrixInv);
 
     double * eigenValues = new double [compNum];
     helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_eigenValues.txt";

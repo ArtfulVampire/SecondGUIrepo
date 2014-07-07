@@ -19,8 +19,6 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     weight = 0;
     dimensionality = 0;
 
-    log = fopen(dir->absolutePath().append(QDir::separator()).append("log.txt").toStdString().c_str(),"w");
-
     left = left_;
     right = right_;
     spLength = right_ - left_ + 1;
@@ -318,16 +316,15 @@ void Net::autoClassification(QString spectraDir)
         QMessageBox::critical((QWidget * )this, tr("Warning"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
         return;
     }
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
+    log = fopen(helpString.toStdString().c_str(),"w");
     if(log == NULL)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
-        log = fopen(helpString.toStdString().c_str(),"w");
-        if(log == NULL)
-        {
-            QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
-            return;
-        }
+        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
+        return;
     }
+    fclose(log);
+
 
 
     //set random matrix
@@ -335,9 +332,9 @@ void Net::autoClassification(QString spectraDir)
     {
         for(int j = 0; j < ns; ++j)
         {
-            tempRandomMatrix[i][j] = (i == j); //identity matrix
-//            tempRandomMatrix[i][j] = (i == j) * (-20. + rand()%41) / 10.; //random multiplication in each channel
-//            tempRandomMatrix[i][j] = (-20. + rand()%41) / 10.;
+//            tempRandomMatrix[i][j] = (i == j); //identity matrix
+//            tempRandomMatrix[i][j] = (i == j) * (5 + rand()%16) / 10.; //random multiplication in each channel
+            tempRandomMatrix[i][j] = (5. + rand()%16) / 50.;
         }
     }
 
@@ -396,6 +393,13 @@ void Net::autoClassification(QString spectraDir)
             PaIntoMatrixByName(helpString);
             leaveOneOutSlot();
         }
+        qApp->processEvents();
+        if(stopFlag)
+        {
+            delete mkPa;
+            stopFlag = 0;
+            return;
+        }
     }
     //leaveOneOut
     if(ui->leaveOneOutRadioButton->isChecked())
@@ -408,6 +412,8 @@ void Net::autoClassification(QString spectraDir)
     delete mkPa;
     autoFlag = tempBool;
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+
+
 }
 
 void Net::autoPCAClassification()
@@ -483,8 +489,6 @@ void Net::setNumOfPairs(int num)
 
 void Net::averageClassification()
 {
-    fclose(log);
-
     FILE * logFile;
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
     logFile = fopen(helpString.toStdString().c_str(),"r");
@@ -519,10 +523,6 @@ void Net::averageClassification()
         averagePercentage[j] /= num;
     }
     fclose(logFile);
-
-    log = fopen(dir->absolutePath().append(QDir::separator()).append("log.txt").toStdString().c_str(),"w"); //what???
-
-
 
     FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
     if(spStep != 250./1024.) fprintf(res, "\nPRR \t(");
@@ -884,6 +884,8 @@ void Net::tall()
         //generality
         NumOfVectorsOfClass[int(matrix[i][NetLength+1])] += 1;
     }
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
+    log = fopen(helpString.toStdString().c_str(),"a+");
     for(int i = 0; i < NumOfClasses; ++i)
     {
         fprintf(log, "%.2lf\t", double((1. - double(NumberOfErrors[i]/double(NumOfVectorsOfClass[i]))) * 100.));
@@ -895,8 +897,9 @@ void Net::tall()
         Error += NumberOfErrors[i];
     }
     helpString.append("Percentage[all] = ").append(tmp.setNum((1. - double(Error/double(NumberOfVectors))) * 100.)).append(" % \n");
-    fprintf(log, "%.2lf\n", double((1. - double(Error/double(NumberOfVectors))) * 100.));
 
+    fprintf(log, "%.2lf\n", double((1. - double(Error/double(NumberOfVectors))) * 100.));
+    fclose(log);
     //automatization
     if(!autoFlag) QMessageBox::information((QWidget * )this, tr("Classification results"), helpString, QMessageBox::Ok);
     delete [] NumberOfErrors;
@@ -1954,17 +1957,14 @@ void Net::leaveOneOut()
     cout << "N-fold cross-validation: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
+    log = fopen(helpString.toStdString().c_str(),"a+");
     if(log == NULL)
     {
-        cout << "log file = NULL" << endl;
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
-        log = fopen(helpString.toStdString().c_str(),"a+");
-        if(log == NULL)
-        {
-            QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
-            return;
-        }
+        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
+        return;
     }
+
 
 
 
@@ -1977,6 +1977,7 @@ void Net::leaveOneOut()
         Error += NumberOfErrors[i];
     }
     fprintf(log, "%.2lf\n", double((1. - double(Error/double(NumberOfVectors))) * 100.));
+    fclose(log);
 
     //time
 
@@ -2015,7 +2016,7 @@ void Net::PaIntoMatrix()
 //    myTime.start();
     cout << "PaIntoMatrix: NetLength = " << NetLength << endl;
     cout << "PaIntoMatrix: ns = " << ns << endl;
-    readPaFile(inStream, helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 }
@@ -2036,8 +2037,10 @@ void Net::PaIntoMatrixByName(QString fileName)
     paFileBC = helpString;
 //    QTime myTime;
 //    myTime.start();
-    readPaFile(inStream, helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
     double * tempVector = new double [ns*spLength];
+
+    /*
     for(int k = 0; k < NumberOfVectors; ++k)
     {
         for(int j = 0; j < spLength*ns; ++j)
@@ -2049,14 +2052,15 @@ void Net::PaIntoMatrixByName(QString fileName)
         {
             for(int j = 0; j < spLength; ++j) // each spectra-bin
             {
-                for(int h = 0; h < ns; ++h) //old channels number
+                for(int h = 0; h < ns; ++h) //new channel number
                 {
                     tempVector[i*spLength + j] += tempRandomMatrix[i][h] * matrix[k][h*spLength + j];
                 }
-                //memcpy(matrix[k], tempVector, sizeof(double) * ns*spLength);
             }
         }
+        memcpy(matrix[k], tempVector, sizeof(double) * ns*spLength);
     }
+    */
     delete []tempVector;
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 }
@@ -2358,6 +2362,9 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     srand(myTime.currentTime().msec() * (myTime.currentTime().msec() +13));
 
 
+    omp_set_dynamic(0);
+
+
 
     double ** deltaWeights = new double * [numOfLayers]; // 0 - unused for lowest layer
     for(int i = 0; i < numOfLayers; ++i)
@@ -2428,13 +2435,17 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
             //obtain outputs
             for(int i = 1; i < numOfLayers; ++i)
             {
+
+//#pragma omp parallel for schedule(dynamic) num_threads(dimensionality[i]) shared(output)
                 for(int j = 0; j < dimensionality[i]; ++j)
                 {
                     output[i][j] = 0.;
-                    for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
-                    {
-                        output[i][j] += weight[i-1][k][j] * output[i-1][k];
-                    }
+
+                        for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
+                        {
+                            output[i][j] += weight[i-1][k][j] * output[i-1][k];
+                        }
+
                     output[i][j] = logistic(output[i][j], temperature);
                 }
                 output[i][dimensionality[i]] = 1.; //unused for the highest layer
