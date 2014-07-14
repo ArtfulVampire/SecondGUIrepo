@@ -288,7 +288,9 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->datFileButton, SIGNAL(clicked()), this, SLOT(makeDatFile()));
 
-    QObject::connect(ui->smoothProcButton, SIGNAL(clicked()), this, SLOT(diffSmooth()));
+    QObject::connect(ui->diffSmoothPushButton, SIGNAL(clicked()), this, SLOT(diffSmooth()));
+
+    QObject::connect(ui->diffPowPushButton, SIGNAL(clicked()), this, SLOT(diffPow()));
 
     QObject::connect(ui->avTimeButton, SIGNAL(clicked()), this, SLOT(avTime()));
 
@@ -362,9 +364,6 @@ MainWindow::MainWindow() :
 //    cout << "   " << enthropy(array, leng, "", 50) << endl;
 
     */
-//    delete []array;
-//    ~MainWindow();
-
 
     /*
     dir->cd("/media/Files/Data/AA");
@@ -405,11 +404,128 @@ MainWindow::MainWindow() :
 
     */
 
-//    int NumberOfVectors;
-//    double ** matrix;
-//    char ** FileName;
 
-//    readPaFile("/media/Files/Data/AAX/PA/1.pa", &matrix, 493*19, 3, &NumberOfVectors,  &FileName);
+//    double ** mat1;
+//    double ** mat2;
+//    double * corrs = new double [19];
+//    matrixCreate(&mat1, 19,19);
+//    matrixCreate(&mat2, 19,19);
+//    readICAMatrix("/media/Files/Data/SUA/Help/SUA_maps_1.txt", &mat1, 19);
+//    readICAMatrix("/media/Files/Data/SUA/Help/SUA_maps_2.txt", &mat2, 19);
+//    cout << "read" << endl;
+//    matrixCorrelations(mat1, mat2, 19, 19, &corrs);
+
+
+/*
+
+    dir->cd("/media/Files/Data/GPP/edf/1");
+    QString pth = "/media/michael/Files/Data/GPP/Realisations";
+    lst = dir->entryList(QStringList("*.edf"), QDir::Files);
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        helpString = dir->absolutePath() + QDir::separator() + lst[i];
+
+//        cout << helpString.toStdString() << endl;
+        setEdfFile(helpString);
+        readData();
+        helpString = lst[i];
+        helpString.resize(helpString.indexOf('.'));
+        helpString += "_1";
+        outStream.open((pth + '/' + helpString).toStdString().c_str());
+        outStream << "NumOfSlices " << ndr*nr[0] << '\n';
+        for(int j = 0; j < ndr*nr[0]; ++j)
+        {
+            for(int k = 0; k < 19; ++k)
+            {
+                outStream << data[k][j] << '\n';
+            }
+            outStream << "0\n";
+        }
+        outStream.close();
+
+    }
+
+
+    dir->cd("/media/Files/Data/GPP/edf/2");
+    lst = dir->entryList(QStringList("*.edf"), QDir::Files);
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        helpString = dir->absolutePath() + QDir::separator() + lst[i];
+        setEdfFile(helpString);
+        readData();
+        helpString = lst[i];
+        helpString.resize(helpString.indexOf('.'));
+        helpString += "_2";
+        outStream.open((pth + '/' + helpString).toStdString().c_str());
+        outStream << "NumOfSlices " << ndr*nr[0] << '\n';
+        for(int j = 0; j < ndr*nr[0]; ++j)
+        {
+            for(int k = 0; k < 19; ++k)
+            {
+                outStream << data[k][j] << '\n';
+            }
+
+            outStream << "0\n";
+        }
+        outStream.close();
+    }
+*/
+
+/*
+
+    double ** mat1;
+    matrixCreate(&mat1, 19,19);
+    readICAMatrix("/media/Files/Data/GPP/Help/maps.txt", &mat1, 19);
+
+
+    double ** mat3;
+    matrixCreate(&mat3, 19, 19);
+
+    matrixInvert(mat1, 19, &mat3);
+
+//    matrixPrint(mat3, 19, 19);
+
+    double ** mat2;
+    matrixCreate(&mat2, 19, 250*50);
+
+    dir->cd("/media/Files/Data/GPP/Realisations");
+    lst = dir->entryList(QDir::Files);
+
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        helpString = dir->absolutePath() + QDir::separator() + lst[i];
+
+
+        inStream.open(helpString.toStdString().c_str());
+        inStream.ignore(12); //"NumOfSlices "
+        inStream >> NumOfSlices;
+        for(int j = 0; j < NumOfSlices; ++j)
+        {
+            for(int k = 0; k < 19; ++k)
+            {
+                inStream >> data[k][j];
+            }
+        }
+        inStream.close();
+        cout << NumOfSlices << endl;
+
+        matrixProduct(mat3, data, &mat2, 19, NumOfSlices);
+        cout << "product" << endl;
+
+        helpString = dir->absolutePath() + QDir::separator() + lst[i];
+        outStream.open((helpString + "_ica").toStdString().c_str());
+        outStream << "NumOfSlices " << NumOfSlices << '\n';
+        for(int j = 0; j < NumOfSlices; ++j)
+        {
+            for(int k = 0; k < 19; ++k)
+            {
+                outStream << mat2[k][j] << '\n';
+            }
+        }
+        outStream.close();
+    }
+*/
+
 }
 
 MainWindow::~MainWindow()
@@ -1156,6 +1272,8 @@ void MainWindow::drawRealisations()
     nameFilters.append("*_247*");
     nameFilters.append("*_254*");
     nameFilters.append("*_244*");
+    nameFilters.append("*_2");
+    nameFilters.append("*_1");
 //    nameFilters.append("*_100*");
 //    lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
 
@@ -1307,6 +1425,72 @@ void MainWindow::diffSmooth()
 
     }
     cout << "diffSmooth: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+
+}
+
+
+void MainWindow::diffPow()
+{
+    Spectre *sp;
+    Net * ANN;
+    MakePa * mkPa;
+    QTime myTime;
+    FILE * outFile;
+    myTime.start();
+    helpString = dir->absolutePath() + QDir::separator() + "diffPow.txt";
+//    for(double i = 0.45; i >= 0.45; i -= 0.0)
+        while(1)
+    {
+        double i = 0.45;
+        sp = new Spectre(dir, ns, ExpName);
+        QObject::connect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
+        sp->setPow(i);
+        sp->countSpectra();
+        sp->close();
+        delete sp;
+
+        ANN = new Net(dir, ns, left, right, spStep, ExpName);
+        ANN->setAutoProcessingFlag(1);
+
+
+        //set appropriate coeff
+
+        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
+        mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+        mkPa->setRdcCoeff(4);
+        while(1)
+        {
+            cout << "reduce coeff = " << mkPa->getRdcCoeff() << endl;
+            mkPa->makePaSlot();
+            ANN->PaIntoMatrixByName("1");
+            ANN->LearnNet();
+            if(ANN->getEpoch() > 140 || ANN->getEpoch() < 60)
+            {
+                mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 100.) );
+            }
+            else
+            {
+                reduceCoefficient = mkPa->getRdcCoeff();
+                cout << "file = " << ExpName.toStdString() << "\t" << "reduceCoeff = " << reduceCoefficient << endl;
+                ANN->setReduceCoeff(reduceCoefficient);
+                break;
+            }
+        }
+        mkPa->close();
+        delete mkPa;
+
+        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
+        ANN->autoClassification(helpString);
+        ANN->close();
+
+        helpString = dir->absolutePath() + QDir::separator() + "diffPow.txt";
+        outFile = fopen(helpString.toStdString().c_str(), "a");
+        fprintf(outFile, "pow = %.2lf\t%.2lf\n", i, ANN->getAverageAccuracy());
+        fclose(outFile);
+        delete ANN;
+
+    }
+    cout << "diffPow: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 
@@ -3541,14 +3725,13 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
 
 void MainWindow::sliceMati(int numChanWrite)
 {
-//    bool flagStartEnd = 1; //0 - start not set, 1 - start already set
     int start = 0;
     int end = -1;
     bool markers[16];
     QString fileMark;
     int number = 0;
     FILE * file;
-    int piece = 16*250; //length of a piece
+    int piece = 4096; //16*250; //length of a piece
 
     for(int i = 0; i < ndr*nr[ns-1]; ++i)
     {
@@ -3556,11 +3739,11 @@ void MainWindow::sliceMati(int numChanWrite)
         {
             continue;
         }
-        else
+        else //nonzero marker
         {
             for(int j = 0; j < 16; ++j)
             {
-                markers[j] = (int(data[ns-1][i])%(int(pow(2,j+1))))/(int(pow(2,j)));
+                markers[j] = (int(data[ns-1][i])%(int(pow(2,j+1))))/(int(pow(2,j))); //provide bitwise form
             }
             if(!(markers[0] || markers[1] || markers[2])) continue; //if not an interesting marker;
 
@@ -3594,13 +3777,13 @@ void MainWindow::sliceMati(int numChanWrite)
             else //if the start of a session
             {
                 end = i;
-                fileMark = "254"; //rest
+                fileMark = "254"; //rest. start of the session is sliced too
             }
         }
 
         if(end > start)
         {
-            for(int j = 0; j < int(ceil((end-start)/double(piece))); ++j)
+            for(int j = 0; j < int(ceil((end-start)/double(piece))); ++j) // num of pieces
             {
                 ++number;
                 helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(fileMark);
@@ -3762,6 +3945,8 @@ void MainWindow::eyesFast()  //generality
     fclose(coef);
 
     int a[2]; //generality 2
+    a[0] = -1;
+    a[1] = -1;
 
     if(ui->enRadio->isChecked())
     {
@@ -3778,15 +3963,25 @@ void MainWindow::eyesFast()  //generality
 //        }
         for(int i = 0; i < ns; ++i)
         {
-            if(QString(label[i]).contains("EOG 1", Qt::CaseInsensitive))
+            if(QString(label[i]).contains("EOG 1", Qt::CaseInsensitive)) //generality eog channels names
             {
                 a[0] = i;
             }
-            else if(QString(label[i]).contains("EOG 2", Qt::CaseInsensitive))
+            else if(QString(label[i]).contains("EOG 2", Qt::CaseInsensitive)) //generality eog channels names
             {
                 a[1] = i;
             }
         }
+    }
+    if(a[0] == -1 && a[1] == -1)
+    {
+        cout << "eyesFast: EOG channels not found" << endl;
+        for(int i = 0; i < NumEeg; ++i)
+        {
+            delete []coefficients[i];
+        }
+        delete []coefficients;
+        return;
     }
 
     for(int k = 0; k < NumEeg; ++k)
@@ -4161,7 +4356,7 @@ void MainWindow::constructEDF()
     double ** newData = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-        newData[i] = new double [ndr*nr[0]];  //generality, maybe bad nr from other channel?
+        newData[i] = new double [250*60*60*5];  //generality, maybe bad nr from other channel?
     }
 
     dir->cd("Realisations");

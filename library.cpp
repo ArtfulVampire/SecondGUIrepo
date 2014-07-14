@@ -354,9 +354,6 @@ void matrixProduct(double ** const A, double ** const inMat2, double *** outMat,
 {
     double result;
 
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) private(result)
-#endif
     for(int j = 0; j < dimL; ++j)
     {
         for(int i = 0; i < dimH; ++i)
@@ -375,9 +372,6 @@ void matrixProduct(double ** const inMat1, double ** const inMat2, double *** ou
 {
     double result;
 
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) private(result)
-#endif
     for(int j = 0; j < numRows1; ++j)
     {
         for(int i = 0; i < numCols2; ++i)
@@ -385,9 +379,9 @@ void matrixProduct(double ** const inMat1, double ** const inMat2, double *** ou
             result = 0.;
             for(int k = 0; k < numCols1Rows2; ++k)
             {
-                result += inMat1[i][k] * inMat2[k][j];
+                result += inMat1[j][k] * inMat2[k][i];
             }
-            (*outMat)[i][j] = result;
+            (*outMat)[j][i] = result;
         }
     }
 }
@@ -1576,7 +1570,7 @@ void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength)
 }
 
 
-void calcSpectre(double ** const inData, double *** dataFFT, const int ns, const int fftLength, int Eyes, const int NumOfSmooth)
+void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int const Eyes, int const NumOfSmooth, double const powArg)
 {
 
     double norm1 = fftLength / double(fftLength-Eyes);
@@ -1596,7 +1590,8 @@ void calcSpectre(double ** const inData, double *** dataFFT, const int ns, const
         for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
         {
             (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fftLength; //0.004 = 1/250 generality
-//            (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fmin(fftLength, fftLength-Eyes); //0.004 = 1/250 generality
+            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ]/5., powArg );
+
         }
 
         leftSmoothLimit = 0;
@@ -1782,6 +1777,7 @@ void writeICAMatrix(QString path, double ** matrixA, int const ns)
 
 void matrixCofactor(double ** const inMatrix, int const size, int const numRows, int const numCols, double *** outMatrix)
 {
+//    cout << "matrixCof: start" << endl;
     int indexA, indexB;
     for(int a = 0; a < size; ++a)
     {
@@ -1795,6 +1791,7 @@ void matrixCofactor(double ** const inMatrix, int const size, int const numRows,
             (*outMatrix)[indexA][indexB] = inMatrix[a][b];
         }
     }
+//    cout << "matrixCof: end" << endl;
 }
 
 void matrixTranspose(double ** const inMat, int const numRows, int const numCols, double *** outMat)
@@ -1812,7 +1809,11 @@ void matrixCopy(double ** const inMat, double *** outMat, int const dimH, int co
 {
     for(int i = 0; i < dimH; ++i)
     {
-        memcpy((*outMat), inMat, dimL * sizeof(double));
+//        memcpy((*outMat), inMat, dimL * sizeof(double));
+        for(int j = 0; j < dimL; ++j)
+        {
+            (*outMat)[i][j] = inMat[i][j];
+        }
     }
 }
 
@@ -1830,8 +1831,8 @@ void matrixInvert(double ** const inMat, int const size, double *** outMat) //co
         for(int j = 0; j < size; ++j)
         {
             matrixCofactor(inMat, size, j, i, &cof);
-            cout << "matrixInvert: cofactor\n";
-            matrixPrint(cof, size-1, size-1);
+//            cout << "matrixInvert: cofactor\n";
+//            matrixPrint(cof, size-1, size-1);
             (*outMat)[i][j] = pow(-1, i+j) * matrixDet(cof, size - 1)/Det;
         }
     }
@@ -1844,24 +1845,33 @@ void matrixInvert(double ** const inMat, int const size, double *** outMat) //co
 
 double matrixDet(double ** const matrix, int const dim) //- Det
 {
-    if(dim == 1) return matrix[0][0];
+//    cout << "matrixDet: start" << endl;
+    if(dim == 1)
+    {
+//        cout << "matrixDet: end" << endl;
+        return matrix[0][0];
+    }
 
 
-    double ** matrix2 = new double * [dim];
+    double ** matrixDet_;
+    matrixCreate(&matrixDet_, dim,dim);
+    /*
+    = new double * [dim];
     for(int i = 0; i < dim; ++i)
     {
-        matrix2[i] = new double [dim];
+        matrixDet_[i] = new double [dim];
     }
-    matrixCopy(matrix, &matrix2, dim, dim);
+    */
+    matrixCopy(matrix, &matrixDet_, dim, dim);
 
     double coef;
     for(int i = 1; i < dim; ++i)
     {
         for(int k = 0; k < i; ++k)
         {
-            if(matrix2[k][k] != 0.)
+            if(matrixDet_[k][k] != 0.)
             {
-                coef = matrix2[i][k]/matrix2[k][k];
+                coef = matrixDet_[i][k]/matrixDet_[k][k];
             }
             else
             {
@@ -1870,7 +1880,7 @@ double matrixDet(double ** const matrix, int const dim) //- Det
 
             for(int j = 0; j < dim; ++j)
             {
-                matrix2[i][j] -= coef * matrix2[k][j];
+                matrixDet_[i][j] -= coef * matrixDet_[k][j];
             }
         }
     }
@@ -1879,14 +1889,16 @@ double matrixDet(double ** const matrix, int const dim) //- Det
     coef = 1.;
     for(int i = 0; i < dim; ++i)
     {
-        coef *= matrix2[i][i];
+        coef *= matrixDet_[i][i];
     }
 
     for(int k = 0; k < dim; ++k)
     {
-        delete []matrix2[k];
+        delete []matrixDet_[k];
     }
-    delete []matrix2;
+    delete []matrixDet_;
+
+//    cout << "matrixDet: end" << endl;
     return coef;
 }
 
@@ -1951,7 +1963,7 @@ void matrixPrint(double ** const mat, int const i, int const j)
 }
 
 
-double matrixInnerCorrelation(double ** const inMatrix, int const numRows, int const numCols)
+double matrixInnerMaxCorrelation(double ** const inMatrix, int const numRows, int const numCols)
 {
     double res = 0.;
     double temp;
@@ -1972,7 +1984,7 @@ double matrixInnerCorrelation(double ** const inMatrix, int const numRows, int c
     return res;
 }
 
-double matrixCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols)
+double matrixMaxCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols)
 {
     double res = 0.;
     double temp;
@@ -1998,11 +2010,13 @@ double matrixCorrelation(double ** const inMat1, double ** const inMat2, int con
 }
 
 
-void matrixCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols, double * resCorr)
+void matrixCorrelations(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols, double ** resCorr)
 {
     double res = 0.;
-    int * tempNum = new int [numCols];
+    QList<int> tempNum;
+    tempNum.clear();
     double temp;
+    int index;
     double ** tempMat1;
     double ** tempMat2;
     matrixCreate(&tempMat1, numCols, numRows);
@@ -2010,18 +2024,30 @@ void matrixCorrelation(double ** const inMat1, double ** const inMat2, int const
     matrixCreate(&tempMat2, numCols, numRows);
     matrixTranspose(inMat2, numRows, numCols, &tempMat2);
 
+    cout << "ready" << endl;
+
     for(int i = 0; i < numCols; ++i)
     {
+        res = 0.;
         for(int j = 0; j < numCols; ++j)
         {
             temp = correlation(tempMat1[i], tempMat2[j], numRows);
-            if(fabs(temp) > fabs(res))
+            if(fabs(temp) > fabs(res) && !tempNum.contains(j))
             {
                 res = temp;
-                tempNum[i] = j;
+                if(!tempNum.isEmpty()) tempNum.pop_back();
+                tempNum << j;
+                index = j;
             }
         }
+        tempNum << index;
+        (*resCorr)[i] = res;
     }
+    for(int i = 0; i < numCols; ++i)
+    {
+        cout << tempNum[i] + 1 << " ";
+    }
+    cout << endl;
 }
 
 void countRCP(QString filePath, QString picPath, double * outMean, double * outSigma)

@@ -332,9 +332,9 @@ void Net::autoClassification(QString spectraDir)
     {
         for(int j = 0; j < ns; ++j)
         {
-//            tempRandomMatrix[i][j] = (i == j); //identity matrix
+            tempRandomMatrix[i][j] = (i == j); //identity matrix
 //            tempRandomMatrix[i][j] = (i == j) * (5 + rand()%16) / 10.; //random multiplication in each channel
-            tempRandomMatrix[i][j] = (5. + rand()%16) / 50.;
+//            tempRandomMatrix[i][j] = (5. + rand()%16) / 50.;
         }
     }
 
@@ -944,14 +944,9 @@ void Net::readCfg()
         helpString.prepend(dirBC->absolutePath().append(QDir::separator()));
         cout << "cfg auto path = " << helpString.toStdString() << endl;
     }
+
     readCfgByName(helpString);
 
-    channelsSet.clear();
-    channelsSetExclude.clear();
-    for(int i = 0; i < ns; ++i)
-    {
-        channelsSet << i;
-    }
 }
 
 void Net::memoryAndParamsAllocation()
@@ -1048,6 +1043,15 @@ void Net::readCfgByName(QString FilePath)
     ui->learnRateBox->setValue(learnRate);
 
     loadPAflag = 1;
+
+
+
+    channelsSet.clear();
+    channelsSetExclude.clear();
+    for(int i = 0; i < ns; ++i)
+    {
+        channelsSet << i;
+    }
 
 }
 
@@ -3673,6 +3677,8 @@ void Net::optimizeChannelsSet()
     cout << "AverageAccuracy = " << averageAccuracy << endl;
 
 
+
+
     while(1)
     {
 
@@ -3681,6 +3687,8 @@ void Net::optimizeChannelsSet()
         NetLength = spLength * (NetLength/spLength - 1);
         dimensionality[0] = NetLength;
         cout << "Optimizing: NetLength = " << NetLength << endl;
+        cout << "channelsSet.length() = " << channelsSet.length() << endl;
+
 
         for(int i = 0; i < channelsSet.length(); ++i)
         {
@@ -3693,18 +3701,28 @@ void Net::optimizeChannelsSet()
             autoClassificationSimple();
             cout << "classified\t" << i << " " << averageAccuracy << endl << endl;
 
-            if(averageAccuracy > tempAccuracy)
+
+            if(averageAccuracy > tempAccuracy + 1.0)
+            {
+                tempAccuracy = averageAccuracy;
+                tempIndex = i;
+                channelsSet.insert(i, tempItem);
+                channelsSetExclude.removeLast();
+                break;
+            }
+            else if(averageAccuracy > tempAccuracy)
             {
                 tempAccuracy = averageAccuracy;
                 tempIndex = i;
             }
             channelsSet.insert(i, tempItem);
             channelsSetExclude.removeLast();
-            if(averageAccuracy > tempAccuracy + 1.0) break;
+
         }
         if(tempIndex >= 0)
         {
             cout << "removed channel "<< tempIndex << " " << coords::lbl[channelsSet[tempIndex]] << endl;
+            cout << "current accuracy " << tempAccuracy << endl;
             channelsSetExclude.push_back(channelsSet.at(tempIndex));
             channelsSet.remove(tempIndex);
 //            cout << "current set:" << "\n";
@@ -3718,7 +3736,6 @@ void Net::optimizeChannelsSet()
 //                cout << coords::lbl[channelsSet[i]] << "  ";
 //            }
 //            cout << endl;
-
         }
         else
         {

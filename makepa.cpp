@@ -34,9 +34,17 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     ui->nsBox->setMinimum(1);
     ui->nsBox->setValue(ns);
 
+
+
     ui->lineEdit_1->setText("_241");
     ui->lineEdit_2->setText("_247");
     ui->lineEdit_3->setText("_254");
+
+//    ui->lineEdit_1->setText("RJ");
+//    ui->lineEdit_2->setText("CF");
+//    ui->cl2_Button->setChecked(true);
+    ui->cl3_Button->setChecked(true);
+
     //generality
 //    ui->lineEdit_4->setText("8"); //sqrt
 //    ui->lineEdit_4->setText("20"); //no sqrt
@@ -65,7 +73,6 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     helpCharArr = new char [64];
 
 //    browser->setWindowTitle("Choose spectra directory");
-    ui->cl3_Button->setChecked(true);
 
 //    QObject::connect(ui->browseButton, SIGNAL(clicked()), browser, SLOT(show()));
     //    QObject::connect(browser, SIGNAL(directoryEntered(QString)), ui->paLineEdit, SLOT(setText(QString)));
@@ -1291,7 +1298,7 @@ void MakePa::makePaSlot()
 
     if(list.empty())
     {
-        cout<<"no spectra-files found"<<endl;
+        cout << "no spectra-files found"<<endl;
         return;
     }
 

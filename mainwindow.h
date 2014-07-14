@@ -66,6 +66,7 @@ public slots:
     void setNs2(int);
     void sliceWindFromReal();
     void diffSmooth();
+    void diffPow();
     void avTime();
     void ICA();
     void constructEDF();
@@ -138,7 +139,7 @@ private:
     bool stopFlag;
     double spStep;
     bool withMarkersFlag;
-    int reduceCoefficient;
+    double reduceCoefficient;
 };
 
 #endif // MAINWINDOW_H

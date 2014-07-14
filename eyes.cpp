@@ -157,6 +157,8 @@ void Eyes::eyesClean()
 
 
     }
+
+    ui->progressBar->setValue(0);
     dir->cd(dirBC->absolutePath());
 
     cout << "eyes cleaned" << endl;

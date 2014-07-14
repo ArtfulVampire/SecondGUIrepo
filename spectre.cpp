@@ -69,6 +69,11 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     ui->scalingDoubleSpinBox->setValue(1.0);
     ui->scalingDoubleSpinBox->setSingleStep(0.05);
 
+    ui->powDoubleSpinBox->setDecimals(2);
+    ui->powDoubleSpinBox->setSingleStep(0.05);
+    ui->powDoubleSpinBox->setValue(0.8);
+    ui->powDoubleSpinBox->setMaximum(2.0);
+
 
 
     rangeLimits = new int * [ns];
@@ -76,7 +81,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     {
         rangeLimits[i] = new int [2];
         rangeLimits[i][0] = 0;
-        rangeLimits[i][1] = 247;
+        rangeLimits[i][1] = 247; //generality
     }
 
 
@@ -136,6 +141,11 @@ void Spectre::defaultState()
     ui->lineEdit_2->setText(helpString);
     ui->fftComboBox->setCurrentIndex(2); //4096
     ui->spectraRadioButton->setChecked(true); // count FFT
+}
+
+double Spectre::setPow(double a)
+{
+    ui->powDoubleSpinBox->setValue(a);
 }
 
 int findChannel(int x, int y, QSize siz)
@@ -525,6 +535,7 @@ void Spectre::psaSlot()
     if(ui->jpgButton->isChecked())
     {
         helpString = dirBC->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ui->lineEdit_m2->text()).append(".jpg");
+        pic.save(helpString, 0, 100);
         helpString = dirBC->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ui->lineEdit_m2->text()).append(".png");
         pic.save(helpString, 0, 100);
         rangePicPath = helpString;
@@ -1324,7 +1335,7 @@ int Spectre::readFile(int &num, double ** data2, double **dataFFT)  /////////EDI
         return 0;
     }
 
-    calcSpectre(data2, &dataFFT, ns, fftLength, Eyes, ui->smoothBox->value());
+    calcSpectre(data2, &dataFFT, ns, fftLength, Eyes, ui->smoothBox->value(), ui->powDoubleSpinBox->value());
 
 
     dir->cd(dirBC->absolutePath());

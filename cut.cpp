@@ -66,6 +66,8 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
     ui->scrollArea->setWidget(ui->picLabel);
     ui->scrollArea->installEventFilter(this);
 
+    ui->markersCheckBox->setChecked(true);
+
 
     QFileDialog *browser = new QFileDialog();
     browser->setDirectory(dir->absolutePath().append(QDir::separator()).append("Realisations"));
@@ -237,20 +239,19 @@ void Cut::cutEyesAll()
         emit createImage(helpString);
     }
 
-//    cout<<"1"<<endl;
-//    dir->setSorting(QDir::Name);
+
     dir->cd(ui->dirBox->currentText());  //generality
     nameFilters.clear();
     nameFilters.append("*_241*");
     nameFilters.append("*_247*");
     nameFilters.append("*_254*"); // no need?
 
-    lst=dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
+    lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
     dir->cdUp();
 
     int NumEog = ui->eogSpinBox->value();
     double * thresholdEog = new double [NumEog];
-    for(int i=0; i<NumEog; ++i)
+    for(int i = 0; i < NumEog; ++i)
     {
         thresholdEog[i]=0.;
     }
@@ -261,10 +262,10 @@ void Cut::cutEyesAll()
     {
         eogArray[i] = new double [8192*50]; //50, size generality
     }
-    int currentSlice=0;
+    int currentSlice = 0;
 //    cout<<"3"<<endl;
 
-    for(int k=0; k<int(lst.length()/4); ++k)
+    for(int k = 0; k < int(lst.length()/4); ++k)
     {
         helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(ui->dirBox->currentText()).append(QDir::separator()).append(lst.at(rand()%lst.length()));
         emit openFile(helpString);
@@ -285,10 +286,10 @@ void Cut::cutEyesAll()
     {
         for(int j=0; j<currentSlice; ++j)
         {
-            thresholdEog[i]+=eogArray[i][j]*eogArray[i][j];
+            thresholdEog[i] += eogArray[i][j]*eogArray[i][j];
         }
-        thresholdEog[i]/=currentSlice;
-        thresholdEog[i]=sqrt(thresholdEog[i]); //thresholdEog[i] = dispersion
+        thresholdEog[i] /= currentSlice;
+        thresholdEog[i] = sqrt(thresholdEog[i]); //thresholdEog[i] = sigma
     }
 
     for(int i=0; i<NumEog; ++i)
@@ -296,7 +297,6 @@ void Cut::cutEyesAll()
         delete[] eogArray[i];
     }
     delete[] eogArray;
-
 
 //    cout<<"5"<<endl;
     FILE * eyes;
@@ -314,10 +314,11 @@ void Cut::cutEyesAll()
         num+=NumOfSlices;
         for(int i=0; i<NumOfSlices; ++i)
         {
-            flag=1;
-            for(int j=0; j<NumEog; ++j)
+            flag = 1;
+            for(int j = 0; j < NumEog; ++j)
             {
-                if(fabs(data3[ns-NumEog + j][i]) < ui->eogDoubleSpinBox->value()*thresholdEog[j]) flag=0;
+                if(fabs(data3[ns - NumEog + j][i]) < ui->eogDoubleSpinBox->value()*thresholdEog[j] && !ui->markersCheckBox->isChecked()) flag = 0; //w/o markers
+                if(fabs(data3[ns-1 - NumEog + j][i]) < ui->eogDoubleSpinBox->value()*thresholdEog[j] && ui->markersCheckBox->isChecked()) flag = 0; //with markers
             }
             if(flag==1)
             {

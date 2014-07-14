@@ -87,7 +87,7 @@ void writeICAMatrix(QString path, double ** matrixA, const int ns);
 void splitZeros(double *** inData, int ns, int length, int * outLength);
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 
-void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
+void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth, const double powArg);
 void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
 
 
@@ -101,9 +101,9 @@ double matrixDet(double ** const matrix, int const dim);
 double matrixDetB(double ** const matrix, int const dim);
 void matrixCofactor(double ** const inMatrix, int size, int numRows, int numCols, double *** outMatrix);
 
-double matrixInnerCorrelation(double ** const inMatrix, const int numRows, const int numCols);
-double matrixCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols);
-void matrixCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols, double * resCorr);
+double matrixInnerMaxCorrelation(double ** const inMatrix, const int numRows, const int numCols);
+double matrixMaxCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols);
+void matrixCorrelations(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols, double **resCorr);
 
 double ** matrixCreate(int i, int j);
 void matrixCreate(double *** matrix, int i, int j);

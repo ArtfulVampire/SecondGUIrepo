@@ -206,11 +206,22 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="smoothProcButton">
-         <property name="text">
-          <string>DiffSmooth</string>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout" name="verticalLayout_14">
+         <item>
+          <widget class="QPushButton" name="diffSmoothPushButton">
+           <property name="text">
+            <string>DiffSmooth</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="diffPowPushButton">
+           <property name="text">
+            <string>DiffPow</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>

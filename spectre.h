@@ -30,6 +30,7 @@ public:
     bool eventFilter(QObject *obj, QEvent *event);
     int readFilePhase(int &num, double **data2, double ***dataPhase);
     void defaultState();
+    double setPow(double);
 
 
 

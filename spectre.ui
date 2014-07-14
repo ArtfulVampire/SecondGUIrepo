@@ -458,6 +458,29 @@
     </item>
    </layout>
   </widget>
+  <widget class="QLabel" name="label_13">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>310</y>
+     <width>105</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>pow</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="powDoubleSpinBox">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>310</y>
+     <width>66</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
