@@ -1590,7 +1590,7 @@ void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int c
         for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
         {
             (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fftLength; //0.004 = 1/250 generality
-            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ]/5., powArg );
+            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ], powArg );
 
         }
 
@@ -1681,7 +1681,7 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
     if((*FileName) != NULL) delete [](*FileName);
 
 
-    (*NumberOfVectors) = 600; //generality
+    (*NumberOfVectors) = 6000; //generality
 
     (*matrix) = new double * [(*NumberOfVectors)];
     for(int i = 0; i < (*NumberOfVectors); ++i)

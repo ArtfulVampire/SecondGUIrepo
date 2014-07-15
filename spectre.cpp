@@ -71,7 +71,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
 
     ui->powDoubleSpinBox->setDecimals(2);
     ui->powDoubleSpinBox->setSingleStep(0.05);
-    ui->powDoubleSpinBox->setValue(0.8);
+    ui->powDoubleSpinBox->setValue(1.0);
     ui->powDoubleSpinBox->setMaximum(2.0);
 
 

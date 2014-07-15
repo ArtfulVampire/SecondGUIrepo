@@ -80,6 +80,7 @@ public slots:
     void throwIC();
     void randomDecomposition();
     void refilterDataSlot();
+    void transformReals();
 
 public:
     void makeDirs();

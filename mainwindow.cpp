@@ -317,6 +317,8 @@ MainWindow::MainWindow() :
     QObject::connect(ui->randomDecomposePushButton, SIGNAL(clicked()), this, SLOT(randomDecomposition()));
 
     QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
+
+    QObject::connect(ui->transformRealsPushButton, SIGNAL(clicked()), this, SLOT(transformReals()));
 /*
     //function test
     int leng = 65536;
@@ -365,6 +367,8 @@ MainWindow::MainWindow() :
 
     */
 
+
+
     /*
     dir->cd("/media/Files/Data/AA");
 //    autoIcaAnalysis();
@@ -403,18 +407,22 @@ MainWindow::MainWindow() :
     fclose(outF);
 
     */
+/*
 
-
-//    double ** mat1;
-//    double ** mat2;
-//    double * corrs = new double [19];
-//    matrixCreate(&mat1, 19,19);
-//    matrixCreate(&mat2, 19,19);
-//    readICAMatrix("/media/Files/Data/SUA/Help/SUA_maps_1.txt", &mat1, 19);
-//    readICAMatrix("/media/Files/Data/SUA/Help/SUA_maps_2.txt", &mat2, 19);
-//    cout << "read" << endl;
-//    matrixCorrelations(mat1, mat2, 19, 19, &corrs);
-
+    double ** mat1;
+    double ** mat2;
+    double * corrs = new double [19];
+    matrixCreate(&mat1, 19,19);
+    matrixCreate(&mat2, 19,19);
+    readICAMatrix("/media/Files/Data/SUA/Help/SUA_maps_all.txt", &mat1, 19);
+    readICAMatrix("/media/Files/Data/SUA_3/Help/SUA_maps.txt", &mat2, 19);
+    cout << "read" << endl;
+    matrixCorrelations(mat1, mat2, 19, 19, &corrs);
+    for(int i = 0; i < 19; ++ i)
+    {
+        cout << corrs[i] << endl;
+    }
+*/
 
 /*
 
@@ -470,61 +478,7 @@ MainWindow::MainWindow() :
         outStream.close();
     }
 */
-
-/*
-
-    double ** mat1;
-    matrixCreate(&mat1, 19,19);
-    readICAMatrix("/media/Files/Data/GPP/Help/maps.txt", &mat1, 19);
-
-
-    double ** mat3;
-    matrixCreate(&mat3, 19, 19);
-
-    matrixInvert(mat1, 19, &mat3);
-
-//    matrixPrint(mat3, 19, 19);
-
-    double ** mat2;
-    matrixCreate(&mat2, 19, 250*50);
-
-    dir->cd("/media/Files/Data/GPP/Realisations");
-    lst = dir->entryList(QDir::Files);
-
-    for(int i = 0; i < lst.length(); ++i)
-    {
-        helpString = dir->absolutePath() + QDir::separator() + lst[i];
-
-
-        inStream.open(helpString.toStdString().c_str());
-        inStream.ignore(12); //"NumOfSlices "
-        inStream >> NumOfSlices;
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int k = 0; k < 19; ++k)
-            {
-                inStream >> data[k][j];
-            }
-        }
-        inStream.close();
-        cout << NumOfSlices << endl;
-
-        matrixProduct(mat3, data, &mat2, 19, NumOfSlices);
-        cout << "product" << endl;
-
-        helpString = dir->absolutePath() + QDir::separator() + lst[i];
-        outStream.open((helpString + "_ica").toStdString().c_str());
-        outStream << "NumOfSlices " << NumOfSlices << '\n';
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int k = 0; k < 19; ++k)
-            {
-                outStream << mat2[k][j] << '\n';
-            }
-        }
-        outStream.close();
-    }
-*/
+    autoIcaAnalysis();
 
 }
 
@@ -2950,14 +2904,13 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                 slice(130, 169, "n"); //noun
                 slice(170, 209, "a"); //number
             }
-
-            if(ui->enRadio->isChecked())
+            else if(ui->enRadio->isChecked())
             {
                 if(ui->windButton->isChecked()) //bad work
                 {
-                    timeShift=ui->timeShiftBox->value();
-                    wndLength=ui->wndLengthBox->currentText().toInt();
-                    return;
+                    timeShift = ui->timeShiftBox->value();
+                    wndLength = ui->wndLengthBox->currentText().toInt();
+//                    return;
 
                     for(int i = 0; i < (ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift; ++i)
                     {
@@ -3449,7 +3402,7 @@ void MainWindow::sliceWindow(int startSlice, int endSlice, int number, int marke
 
     helpDouble = 0.;
     //check real signal contained
-    for(int l=startSlice; l < endSlice; ++l)
+    for(int l = startSlice; l < endSlice; ++l)
     {
         helpInt = 0;
         for(int m = 0; m < ns-1; ++m) // no marker channel
@@ -3470,7 +3423,7 @@ void MainWindow::sliceWindow(int startSlice, int endSlice, int number, int marke
     }
 
     fprintf(file, "NumOfSlices %d \n", endSlice-startSlice);
-    for(int l=startSlice; l < endSlice; ++l)
+    for(int l = startSlice; l < endSlice; ++l)
     {
         for(int m = 0; m < ns-1; ++m) // no marker channel
         {
@@ -5655,7 +5608,7 @@ void MainWindow::ICA() //fastICA
 //    cout<<endl;
 
     //now should draw amplitude maps OR write to file
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("maps.txt"));
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_maps.txt");
     writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
 
 
@@ -5724,7 +5677,7 @@ void MainWindow::icaClassTest() //non-optimized
         matrixA[i] = new double [numOfIC];
     }
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "maps.txt");
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_maps.txt");
     readICAMatrix(helpString, &matrixA, numOfIC);
 
     Spectre * spectr;// = Spectre(dir, numOfIC, ExpName);
@@ -5911,7 +5864,7 @@ void MainWindow::throwIC()
         matrixA[i] = new double [numOfIC];
     }
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "maps.txt");
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_maps.txt");
     readICAMatrix(helpString, &matrixA, numOfIC);
 
     QList<int> thrownComp;
@@ -5942,6 +5895,80 @@ void MainWindow::throwIC()
     cout << "sliced" << endl;
 
     constructEDF();
+
+}
+
+void MainWindow::transformReals()
+{
+    helpString = QFileDialog::getOpenFileName(this, tr("choose maps file"), dir->absolutePath(), tr("*.txt"));
+    if(helpString.isEmpty())
+    {
+        QMessageBox::critical(this, tr("Error"), tr("No file chosen"), QMessageBox::Ok);
+        return;
+    }
+
+
+    double ** mat1;
+    matrixCreate(&mat1, 19,19);
+    readICAMatrix(helpString, &mat1, 19);
+
+
+    double ** mat3;
+    matrixCreate(&mat3, 19, 19);
+
+    matrixInvert(mat1, 19, &mat3);
+
+    double ** mat2;
+    matrixCreate(&mat2, 19, 250*50);
+
+    QString procDir = ui->drawDirBox->currentText();
+
+    dir->cd(procDir);
+
+    lst = dir->entryList(QDir::Files);
+
+    dir->cdUp();
+    qApp->processEvents();
+
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        helpString = dir->absolutePath() + QDir::separator() + procDir + QDir::separator() + lst[i];
+
+
+        inStream.open(helpString.toStdString().c_str());
+        inStream.ignore(12); //"NumOfSlices "
+        inStream >> NumOfSlices;
+        for(int j = 0; j < NumOfSlices; ++j)
+        {
+            for(int k = 0; k < 19; ++k)
+            {
+                inStream >> data[k][j];
+            }
+        }
+        inStream.close();
+//        cout << NumOfSlices << endl;
+
+        matrixProduct(mat3, data, &mat2, 19, NumOfSlices);
+//        cout << "product" << endl;
+
+        helpString = dir->absolutePath() + QDir::separator() + procDir + QDir::separator() + lst[i];
+        outStream.open((helpString).toStdString().c_str());
+        outStream << "NumOfSlices " << NumOfSlices << '\n';
+        for(int j = 0; j < NumOfSlices; ++j)
+        {
+            for(int k = 0; k < 19; ++k)
+            {
+                outStream << mat2[k][j] << '\n';
+            }
+        }
+        outStream.close();
+        ui->progressBar->setValue(i*100./lst.length());
+    }
+    ui->progressBar->setValue(0);
+
+    matrixDelete(&mat1, 19,19);
+    matrixDelete(&mat2, 19,250*50);
+    matrixDelete(&mat3, 19,19);
 
 }
 
@@ -7265,7 +7292,7 @@ void MainWindow::autoIcaAnalysis()
 
         helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
         mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
-        mkPa->setRdcCoeff(15);
+        mkPa->setRdcCoeff(10);
 
         ANN = new Net(dir, ns, left, right, spStep, ExpName);
 
@@ -7276,13 +7303,9 @@ void MainWindow::autoIcaAnalysis()
             mkPa->makePaSlot();
             ANN->PaIntoMatrixByName("1");
             ANN->LearnNet();
-            if(ANN->getEpoch() > 150)
+            if(ANN->getEpoch() > 150 || ANN->getEpoch() < 80)
             {
-                mkPa->setRdcCoeff(mkPa->getRdcCoeff() - 2);
-            }
-            else if(ANN->getEpoch() < 100)
-            {
-                mkPa->setRdcCoeff(mkPa->getRdcCoeff() + 2);
+                mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 120.));
             }
             else
             {

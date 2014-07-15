@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1177</width>
-    <height>906</height>
+    <width>1207</width>
+    <height>935</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,8 +58,8 @@
      <rect>
       <x>297</x>
       <y>90</y>
-      <width>651</width>
-      <height>613</height>
+      <width>710</width>
+      <height>626</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
@@ -476,13 +476,6 @@
        </item>
       </layout>
      </item>
-     <item row="2" column="1" colspan="2">
-      <widget class="QProgressBar" name="progressBar">
-       <property name="value">
-        <number>24</number>
-       </property>
-      </widget>
-     </item>
      <item row="9" column="1">
       <widget class="QPushButton" name="spocPushButton">
        <property name="text">
@@ -540,14 +533,25 @@
              </property>
             </widget>
            </item>
+           <item row="1" column="2">
+            <layout class="QVBoxLayout" name="verticalLayout_15">
+             <item>
+              <widget class="QPushButton" name="transformRealsPushButton">
+               <property name="text">
+                <string>transform reals</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="drawMapsPushButton">
+             <property name="text">
+              <string>draw maps</string>
+             </property>
+            </widget>
+           </item>
           </layout>
-         </item>
-         <item>
-          <widget class="QPushButton" name="drawMapsPushButton">
-           <property name="text">
-            <string>draw maps</string>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>
@@ -706,6 +710,20 @@
        </item>
       </layout>
      </item>
+     <item row="2" column="2">
+      <widget class="QProgressBar" name="progressBar">
+       <property name="value">
+        <number>24</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="stopButton">
+       <property name="text">
+        <string>STOP</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="layoutWidget">
@@ -753,8 +771,8 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>970</x>
-      <y>100</y>
+      <x>1010</x>
+      <y>90</y>
       <width>161</width>
       <height>71</height>
      </rect>
@@ -779,24 +797,11 @@
      </item>
     </layout>
    </widget>
-   <widget class="QPushButton" name="stopButton">
-    <property name="geometry">
-     <rect>
-      <x>970</x>
-      <y>220</y>
-      <width>97</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>STOP</string>
-    </property>
-   </widget>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>290</x>
-      <y>710</y>
+      <x>300</x>
+      <y>730</y>
       <width>671</width>
       <height>151</height>
      </rect>
@@ -933,13 +938,25 @@
      </rect>
     </property>
    </widget>
+   <zorder>browseButton</zorder>
+   <zorder>filePath</zorder>
+   <zorder>setNsLine</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>makeTestDataPushButton</zorder>
+   <zorder>numComponentsSpinBox</zorder>
+   <zorder>transformRealsPushButton</zorder>
+   <zorder>drawMapsPushButton</zorder>
+   <zorder>drawMapsPushButton</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1177</width>
+     <width>1207</width>
      <height>20</height>
     </rect>
    </property>

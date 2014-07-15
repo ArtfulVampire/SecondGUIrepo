@@ -871,7 +871,6 @@ void Net::tall()
 {
     Error = 0.;
     NumberOfErrors = new int[NumOfClasses];
-    helpString = "";
     double * NumOfVectorsOfClass = new double [3];
     for(int i = 0; i < NumOfClasses; ++i)
     {
@@ -886,6 +885,7 @@ void Net::tall()
     }
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
     log = fopen(helpString.toStdString().c_str(),"a+");
+    helpString.clear();
     for(int i = 0; i < NumOfClasses; ++i)
     {
         fprintf(log, "%.2lf\t", double((1. - double(NumberOfErrors[i]/double(NumOfVectorsOfClass[i]))) * 100.));
@@ -2528,9 +2528,6 @@ bool Net::ClassificateVector(int &vecNum)
     int type = int(matrix[vecNum][NetLength+1]);
 
 
-
-
-
     double ** output = new double * [numOfLayers]; //data and global output together
     for(int i = 0; i < numOfLayers; ++i)
     {
@@ -2578,6 +2575,7 @@ bool Net::ClassificateVector(int &vecNum)
         {
             right = false;
             ++NumberOfErrors[type];
+            break;
         }
     }
     delete [] outputClass;
@@ -3675,6 +3673,7 @@ void Net::optimizeChannelsSet()
 
 
     cout << "AverageAccuracy = " << averageAccuracy << endl;
+    bool foundFlag = false;
 
 
 
@@ -3689,8 +3688,10 @@ void Net::optimizeChannelsSet()
         cout << "Optimizing: NetLength = " << NetLength << endl;
         cout << "channelsSet.length() = " << channelsSet.length() << endl;
 
+        foundFlag = false;
 
-        for(int i = 0; i < channelsSet.length(); ++i)
+
+        for(int i = tempIndex+1; i < channelsSet.length(); ++i)
         {
 
             tempItem = channelsSet[i];
@@ -3708,18 +3709,20 @@ void Net::optimizeChannelsSet()
                 tempIndex = i;
                 channelsSet.insert(i, tempItem);
                 channelsSetExclude.removeLast();
+                foundFlag = true;
                 break;
             }
             else if(averageAccuracy > tempAccuracy)
             {
                 tempAccuracy = averageAccuracy;
                 tempIndex = i;
+                foundFlag = true;
             }
             channelsSet.insert(i, tempItem);
             channelsSetExclude.removeLast();
 
         }
-        if(tempIndex >= 0)
+        if(foundFlag)
         {
             cout << "removed channel "<< tempIndex << " " << coords::lbl[channelsSet[tempIndex]] << endl;
             cout << "current accuracy " << tempAccuracy << endl;
