@@ -171,6 +171,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     //generality
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
     readCfgByName(helpString);
+
     this->ui->deltaRadioButton->setChecked(true);
 
 //    for(int i = 0; i < 10000; ++i)
@@ -398,6 +399,7 @@ void Net::autoClassification(QString spectraDir)
         {
             delete mkPa;
             stopFlag = 0;
+            autoFlag = tempBool;
             return;
         }
     }
@@ -758,8 +760,7 @@ void Net::saveWts()
 
 void Net::reset()
 {
-
-    srand(QTime::currentTime().msec());
+    srand(time(NULL));
     for(int i = 0; i < numOfLayers - 1; ++i)
     {
         for(int j = 0; j < dimensionality[i] + 1; ++j) //
@@ -2122,7 +2123,7 @@ void Net::Hopfield()
         mixNumH[i] = i;
     }
     int a1,a2,buff;
-    srand(QTime::currentTime().msec());
+    srand(time(NULL));
 
 
 
@@ -2325,6 +2326,7 @@ void Net::Hopfield()
 
 void Net::methodSetParam(int a, bool ch)
 {
+    if(!loadPAflag) return;
     if(!ch) return;
     if(a == -2 )
     {
@@ -2769,7 +2771,7 @@ void moveCoords(double ** coords, double ** distOld, double ** distNew, int size
 //Sammon's projection
 void Net::Sammon(double ** distArr, int size, int * types)
 {
-    srand(QTime::currentTime().msec());
+    srand(time(NULL));
     double ** distNew = new double * [size];
     for(int i = 0; i < size; ++i)
     {
@@ -3382,7 +3384,7 @@ double Net::thetalpha(int bmu_, int j_, int step_, double ** arr, int length_)
 //length - dimension of input vectors
 void Net::Kohonen(double ** input, double ** eigenVects, double * averageProjection, int size, int length)
 {
-    srand(QTime::currentTime().msec());
+    srand(time(NULL));
 //    int numOfComponents = SizeOfArray(averageProjection); //=2
 //    cout << "size = " << size << " SizeOfArray(input) = " << SizeOfArray(input) << endl;
 
@@ -3782,9 +3784,14 @@ void Net::optimizeChannelsSet()
 void Net::rcpSlot()
 {
     FILE * file;
-    for(int i = 50; i <= 50; i += 5)
+    for(int i = 5; i <= 20; i += 5)
     {
         ui->numOfPairsBox->setValue(i);
+
+        helpString = dir->absolutePath() + QDir::separator() + "rcp-" + QString::number(ui->numOfPairsBox->value()) + ".txt";
+        file = fopen(helpString.toStdString().c_str(), "w");
+        fclose(file);
+
         for(int j = 0; j < 50; ++j)
         {
             autoClassificationSimple();\

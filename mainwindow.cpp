@@ -332,7 +332,7 @@ MainWindow::MainWindow() :
 
     for(int j = 0; j < 10; ++j)
     {
-        srand(QTime::currentTime().msec());
+        srand(time(NULL));
         freq = 1. + (rand()%5000)/100.;
         ampl = 5. + (rand()%200)/10.;
         phas = -1. + (rand()%2000)/1000.;
@@ -368,10 +368,9 @@ MainWindow::MainWindow() :
     */
 
 
+/*
 
-    /*
     dir->cd("/media/Files/Data/AA");
-//    autoIcaAnalysis();
 
     double * sigm = new double [20];
     double * men = new double [20];
@@ -390,9 +389,9 @@ MainWindow::MainWindow() :
     }
     for(int i = 0; i < lst.length(); ++i)
     {
-        cout << lst[i].left(3).toStdString() << endl;
-        helpString = dir->absolutePath() + QDir::separator() + lst[i];
-        cout << "normal? = " << gaussApproval(helpString) << endl;
+        cout << lst[i].left(3).toStdString() << "\t";
+//        helpString = dir->absolutePath() + QDir::separator() + lst[i];
+//        cout << "normal? = " << gaussApproval(helpString) << endl;
 
         fscanf(results, "%*s\t%lf", &classf[i]);
         drawVars[2*i + 0] = (classf[i] - men[i]) / sigm[i];
@@ -405,8 +404,11 @@ MainWindow::MainWindow() :
     drawRCP(drawVars, 20);
     fclose(results);
     fclose(outF);
+*/
 
-    */
+
+
+
 /*
 
     double ** mat1;
@@ -424,8 +426,10 @@ MainWindow::MainWindow() :
     }
 */
 
-/*
 
+
+/*
+//many edf to my format
     dir->cd("/media/Files/Data/GPP/edf/1");
     QString pth = "/media/michael/Files/Data/GPP/Realisations";
     lst = dir->entryList(QStringList("*.edf"), QDir::Files);
@@ -478,7 +482,16 @@ MainWindow::MainWindow() :
         outStream.close();
     }
 */
-    autoIcaAnalysis();
+
+
+//    double mean_, sigma_;
+//    countRCP("/media/Files/Data/AAX/rcp-40.txt", "/media/Files/Data/AAX/rcp-40.png", &mean_, &sigma_);
+//    cout << mean_ << " " << sigma_ << " " << gaussApproval("/media/Files/Data/AAX/rcp-40.txt") << endl;
+//    countRCP("/media/Files/Data/AAX/rcp-30.txt", "/media/Files/Data/AAX/rcp-30.png", &mean_, &sigma_);
+//    cout << mean_ << " " << sigma_ << " " << gaussApproval("/media/Files/Data/AAX/rcp-30.txt") << endl;
+//    countRCP("/media/Files/Data/AAX/rcp-20.txt", "/media/Files/Data/AAX/rcp-20.png", &mean_, &sigma_);
+//    cout << mean_ << " " << sigma_ << " " << gaussApproval("/media/Files/Data/AAX/rcp-20.txt") << endl;
+//    autoIcaAnalysis();
 
 }
 
@@ -2658,7 +2671,7 @@ void MainWindow::makeTestData()
 
 
     double x,y;
-    srand(QTime::currentTime().msec());
+    srand(time(NULL));
     //signals
 
     for(int j = 0; j < ui->numComponentsSpinBox->value(); ++j)
@@ -4273,7 +4286,7 @@ double * randomVector(int ns)
 {
 
     double * tempVector2 = new double [ns];
-    srand(QTime::currentTime().msec());
+    srand(time(NULL));
     double sum = 0.;
     for(int i = 0; i < ns; ++i)
     {
@@ -6200,7 +6213,7 @@ void MainWindow::spoc()
     double value1, value2;
     int counter1, counter2;
     double coeff = pow(10., -ui->spocCoeffDoubleSpinBox->value());
-//    srand(QTime::currentTime().msec());
+//    srand(time(NULL));
 
 
     if(ui->r2RadioButton->isChecked())
@@ -7093,7 +7106,7 @@ void MainWindow::randomDecomposition()
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
     ANN->readCfgByName(helpString);
     ANN->setReduceCoeff(15.); //generality
-    ANN->setNumOfPairs(50);
+    ANN->setNumOfPairs(30);
     FILE * outFile;
 
     double ** eigenMatrix = matrixCreate(compNum, compNum);
@@ -7133,7 +7146,7 @@ void MainWindow::randomDecomposition()
     fclose(edf);
 
 
-    for(int i = 0; i < 26; ++i)
+    for(int i = 0; i < 100; ++i)
     {
         helpString = dir->absolutePath() + QDir::separator() + initName;
         setEdfFile(helpString);
@@ -7144,7 +7157,7 @@ void MainWindow::randomDecomposition()
 
 
         //set random matrix
-        srand(QTime::currentTime().second() * 13 + QTime::currentTime().msec() * 1028);
+        srand(time(NULL));
         for(int i = 0; i < compNum; ++i) //i'th coloumn
         {
             sum1 = 0.;
@@ -7278,7 +7291,7 @@ void MainWindow::autoIcaAnalysis()
     FILE * outFile; // = fopen("/media/Files/Data/AA/res.txt", "a");
 //    fclose(outFile);
 
-    for(int i = 0; i < list0.length(); ++i)
+    for(int i = 12; i < list0.length(); ++i)
     {
         helpString = dir->absolutePath() + QDir::separator() + list0[i];
         setEdfFile(helpString);
@@ -7330,7 +7343,7 @@ void MainWindow::autoIcaAnalysis()
 
         if(!ExpName.contains("ica", Qt::CaseInsensitive))
         {
-            //randomDecomposition();
+            randomDecomposition();
         }
     }
 

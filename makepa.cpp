@@ -1354,7 +1354,7 @@ void MakePa::makePaSlot()
     }
 
     /////////////////mix lst///////////////////////
-    srand(QTime::currentTime().msec());
+    srand(time(NULL));
 
     int a1,a2, tmp;
 

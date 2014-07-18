@@ -967,6 +967,7 @@ bool gaussApproval(QString filePath)
         inStream >> arr[length++];
     }
     --length;
+    inStream.close();
     return gaussApproval(arr, length);
 
 }
@@ -1590,7 +1591,7 @@ void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int c
         for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
         {
             (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fftLength; //0.004 = 1/250 generality
-            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ], powArg );
+//            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ], powArg );
 
         }
 
