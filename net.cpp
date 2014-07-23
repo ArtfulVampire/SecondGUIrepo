@@ -76,7 +76,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->epochSpinBox->setValue(250);
     ui->numOfPairsBox->setMaximum(100);
     ui->numOfPairsBox->setValue(50);
-    ui->rdcCoeffSpinBox->setMaximum(50);
+    ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setMinimum(0.01);
     ui->rdcCoeffSpinBox->setValue(10);
 
@@ -2507,7 +2507,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     }
 
 
-    cout << "learning ended " << epoch << " epoches" << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+    cout << "learning ended " << epoch << " epoches" << "\terror = " << currentError << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
 

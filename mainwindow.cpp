@@ -246,7 +246,9 @@ MainWindow::MainWindow() :
     ui->cleanWindSpectraCheckBox->setChecked(true);
 
     ui->highFreqFilterDoubleSpinBox->setValue(20.);
-    ui->lowFreqFilterDoubleSpinBox->setValue(1.);
+    ui->highFreqFilterDoubleSpinBox->setSingleStep(1.0);
+    ui->lowFreqFilterDoubleSpinBox->setValue(0.5);
+    ui->lowFreqFilterDoubleSpinBox->setSingleStep(0.1);
 
 
 
@@ -379,19 +381,26 @@ MainWindow::MainWindow() :
     lst = dir->entryList(QStringList("*randIca.txt"), QDir::NoFilter, QDir::Name);
 
     FILE * results = fopen("/media/Files/Data/AA/res.txt", "r");
-    FILE * outF = fopen("/media/Files/Data/AA/discr.txt", "w");
 
-    for(int i = 0; i < lst.length(); ++i) //10
+
+
+    outStream.open("/media/Files/Data/AA/discr.txt");
+    outStream << "name" << "\t";
+    outStream << "mean" << "\t";
+    outStream << "sigma" << endl;
+
+    for(int i = 0; i < lst.length(); ++i)
     {
         helpString = dir->absolutePath() + QDir::separator() + lst[i];
         helpString.replace(".txt", ".png");
         countRCP(QString(dir->absolutePath() + QDir::separator() + lst[i]), helpString, &men[i], &sigm[i]);
+
+        outStream << lst[i].left(3).toStdString() << "\t" << doubleRound(men[i], 2) << "\t" << doubleRound(sigm[i], 2) << endl;
+
     }
     for(int i = 0; i < lst.length(); ++i)
     {
         cout << lst[i].left(3).toStdString() << "\t";
-//        helpString = dir->absolutePath() + QDir::separator() + lst[i];
-//        cout << "normal? = " << gaussApproval(helpString) << endl;
 
         fscanf(results, "%*s\t%lf", &classf[i]);
         drawVars[2*i + 0] = (classf[i] - men[i]) / sigm[i];
@@ -403,10 +412,9 @@ MainWindow::MainWindow() :
     }
     drawRCP(drawVars, 20);
     fclose(results);
-    fclose(outF);
+
+
 */
-
-
 
 
 /*
@@ -491,7 +499,7 @@ MainWindow::MainWindow() :
 //    cout << mean_ << " " << sigma_ << " " << gaussApproval("/media/Files/Data/AAX/rcp-30.txt") << endl;
 //    countRCP("/media/Files/Data/AAX/rcp-20.txt", "/media/Files/Data/AAX/rcp-20.png", &mean_, &sigma_);
 //    cout << mean_ << " " << sigma_ << " " << gaussApproval("/media/Files/Data/AAX/rcp-20.txt") << endl;
-//    autoIcaAnalysis();
+    //autoIcaAnalysis();
 
 }
 
@@ -2810,11 +2818,15 @@ void MainWindow::refilterDataSlot()
     readData();
     int fr = nr[0];
     int fftLength = pow(2., ceil(log2(ndr*fr)));
+
     spStep = fr/double(fftLength);
+
     double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
     double highFreq = ui->highFreqFilterDoubleSpinBox->value();
-    int numOfChan = ns - 1;
-    for(int i = 0; i < numOfChan; ++i) //19 generality
+
+    int numOfChan = ns - 1; //NOT MARKERS
+
+    for(int i = 0; i < numOfChan; ++i)
     {
         for(int j = ndr*fr; j < fftLength; ++j)
         {
@@ -2854,6 +2866,13 @@ void MainWindow::refilterDataSlot()
         }
     }
 //    memcpy(data[numOfChan], data[ns-1], ndr*fr*sizeof(double)); //stupid bicycle generality
+    helpString.clear();
+    for(int i = 0; i < ns; ++i)
+    {
+        helpString += QString::number(i+1) + " ";
+    }
+
+    ui->reduceChannelsLineEdit->setText(helpString);
     helpString = ExpName + "_filtered.edf";
     writeEdf(edf, data, helpString, ndr*fr);
 
@@ -7106,7 +7125,7 @@ void MainWindow::randomDecomposition()
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
     ANN->readCfgByName(helpString);
     ANN->setReduceCoeff(15.); //generality
-    ANN->setNumOfPairs(30);
+    ANN->setNumOfPairs(50);
     FILE * outFile;
 
     double ** eigenMatrix = matrixCreate(compNum, compNum);
@@ -7288,10 +7307,9 @@ void MainWindow::autoIcaAnalysis()
     Net * ANN;
     MakePa * mkPa;
 
-    FILE * outFile; // = fopen("/media/Files/Data/AA/res.txt", "a");
-//    fclose(outFile);
+    FILE * outFile;
 
-    for(int i = 12; i < list0.length(); ++i)
+    for(int i = 0; i < list0.length(); ++i)
     {
         helpString = dir->absolutePath() + QDir::separator() + list0[i];
         setEdfFile(helpString);
