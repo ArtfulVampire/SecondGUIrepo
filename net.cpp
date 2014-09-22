@@ -2368,7 +2368,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     srand(myTime.currentTime().msec() * (myTime.currentTime().msec() +13));
 
 
-    omp_set_dynamic(0);
+//    omp_set_dynamic(0);
 
 
 
@@ -2507,7 +2507,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     }
 
 
-    cout << "learning ended " << epoch << " epoches" << "\terror = " << currentError << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+    cout << "learning ended " << epoch << " epoches" << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
 

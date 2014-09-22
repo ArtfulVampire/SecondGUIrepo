@@ -2,6 +2,8 @@
 
 #define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 
+
+
 void four1(double *dataF, int nn, int isign)
 {
     int n,mmax,m,j,istep,i;
@@ -55,6 +57,25 @@ void four1(double *dataF, int nn, int isign)
 }
 #undef SWAP
 
+
+int len(QString s) //lentgh till double \0-byte for EDF+annotations
+{
+    int l = 0;
+    for(int i = 0; i < 100500; ++i)
+    {
+        if(s[i]!='\0') ++l;
+        else
+        {
+            if(s[i+1]!='\0') ++l;
+            if(s[i+1]=='\0')
+            {
+                ++l;
+                return l;
+            }
+        }
+    }
+    return -1;
+}
 
 double fractalDimension(double *arr, int N, QString picPath)
 {

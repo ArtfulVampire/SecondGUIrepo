@@ -1365,20 +1365,30 @@ void Cut::paint() //save to tmp.jpg and display
 
     painter->setPen(QPen(QBrush("black"), 1));
 
+    QString colour;
+
     double norm = 1.0;
     double stretch = 1.0;
     for(int c1 = 0; c1 < currentPic.width(); ++c1)
     {
         for(int c2 = 0; c2 < ns; ++c2)
         {
-            if(ns==21 && c2 == 19) painter->setPen("red");
-            else if(ns==21 && c2==20) painter->setPen("blue");
-            else painter->setPen("black");
+//            if(ns==21 && c2 == 19) painter->setPen("red");
+//            else if(ns==21 && c2==20) painter->setPen("blue");
+//            else painter->setPen("black");
+
+            if(ns==21 && c2==19) colour = "red"; //paint_->setPen("red");
+            else if(ns==21 && c2==20) colour = "blue"; //paint_->setPen("blue");
+            else colour = "black";//paint_->setPen("black");
+
+            painter->setPen(QPen(QBrush(QColor(colour)), 2));
 
             painter->drawLine(c1, (c2+1)*currentPic.height()/(ns+2) +data3[c2][int(c1*stretch)]/norm, c1+1, (c2+1)*currentPic.height()/(ns+2) +data3[c2][int((c1+1)*stretch)]/norm);
         }
     }
     painter->setPen("black");
+
+    painter->setPen(QPen(QBrush("black"), 2));
     for(int c3=0; c3<150; ++c3)
     {
         if(c3%5==0) norm=15.;

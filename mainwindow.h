@@ -45,42 +45,54 @@ public:
     ~MainWindow();
 
 public slots:
+    //other widgets
     void countSpectra();
-    void setExpName();
-    void sliceAll();
-    void setEdfFile();
     void cutShow();
     void makeShow();
-    void makePaSlot();
-    void netShow();
-    void takeSpValues(int, int, double);
-    void reduceChannels();
-    void setNs();
-    void drawRealisations();
+    void makePaShow();
     void eyesShow();
-    void cleanDirs();
+    void netShow();
+
+    //parameters processing
+    void setExpName();
+    void takeSpValues(int, int, double);
+    void setNs();
     void changeNsLine(int);
-    void waveletCount();
     void setBoxMax(double);
-    void makeDatFile();
-    void setNs2(int);
+    void setNsSlot(int);
+
+    //in-window calculations, substantional actions
+    //files
+    void sliceAll();
+    void reduceChannels();
+    void drawRealisations();
+    void setEdfFile();
+    void cleanDirs();
     void sliceWindFromReal();
+    void avTime();
+    void drawMaps();
+    void makeDatFile();
+    void constructEDF();
+    //signals
+    void ICA();
+    void waveletCount();
+    void Bayes();
+    void spoc();
+    void hilbertCount();
+    void refilterData();
+    void transformReals(); //reads ICA map file and transforms all the realisations in the chosen folder (windows e.g.)
+
+    //different automatizations
+    void makeTestData();
     void diffSmooth();
     void diffPow();
-    void avTime();
-    void ICA();
-    void constructEDF();
-    void drawMaps();
-    void stop();
-    void Bayes();
-    void makeTestData();
-    void spoc();
     void icaClassTest();
-    void hilbertCount();
     void throwIC();
     void randomDecomposition();
-    void refilterDataSlot();
-    void transformReals();
+
+    //other
+    void stop();
+
 
 public:
     void makeDirs();

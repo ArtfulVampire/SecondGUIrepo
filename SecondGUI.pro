@@ -28,8 +28,7 @@ SOURCES += main.cpp\
     coord.cpp \
     tempthread.cpp \
     library.cpp \
-    edffile.cpp \
-    libraryMP.cpp
+    edffile.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -41,8 +40,7 @@ HEADERS  += mainwindow.h \
     qtempevent.h \
     tempthread.h \
     library.h \
-    edffile.h \
-    libraryMP.h
+    edffile.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

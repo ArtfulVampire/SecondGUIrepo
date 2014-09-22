@@ -5,7 +5,7 @@
 #include <QString>
 #include <QtGui>
 #include <QtSvg>
-#include "coord.cpp"
+#include <coord.cpp>
 #include <fstream>
 #include <ios>
 #include <iostream>
@@ -24,7 +24,7 @@
 #include <QMessageBox>
 #include <cerrno>
 #include <ios>
-#include <omp.h>
+//#include <omp.h>
 //#include <itpp/itbase.h>
 //#include <mlpack/core.hpp>
 //#include <mlpack/methods/pca/pca.hpp>
@@ -37,6 +37,7 @@ using namespace std;
 //using namespace mlpack;
 
 
+int len(QString s);
 QString rightNumber(int &input, int N);
 
 void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax, double freqMin, double freqStep, double pot);

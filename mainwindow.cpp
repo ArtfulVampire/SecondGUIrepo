@@ -2,24 +2,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-int len(QString s) //lentgh till double \0-byte for EDF+annotations
-{
-    int l = 0;
-    for(int i = 0; i < 100500; ++i)
-    {
-        if(s[i]!='\0') ++l;
-        else
-        {
-            if(s[i+1]!='\0') ++l;
-            if(s[i+1]=='\0')
-            {
-                ++l;
-                return l;
-            }
-        }
-    }
-    return -1;
-}
+
 
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow)
@@ -37,14 +20,24 @@ MainWindow::MainWindow() :
 
     ns=19;
 
-    spLength=247;
+    //usual
     left = 82;
     right = 328;
+    spLength=right-left+1;
     spStep = 250./4096.;
 
-//    spLength=63;
+
+    //michaelBak
+//    left = 41;
+//    right = 164;
+//    spLength=right-left+1;
+//    spStep = 250./2048.;
+
+
+    //windows
 //    left = 20;
 //    right = 82;
+//    spLength=right-left+1;
 //    spStep = 250./1024.;
 
 
@@ -267,7 +260,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->makeCFG, SIGNAL(clicked()), this, SLOT(makeShow()));
 
-    QObject::connect(ui->makePA, SIGNAL(clicked()), this, SLOT(makePaSlot()));
+    QObject::connect(ui->makePA, SIGNAL(clicked()), this, SLOT(makePaShow()));
 
     QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(netShow()));
 
@@ -318,7 +311,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->randomDecomposePushButton, SIGNAL(clicked()), this, SLOT(randomDecomposition()));
 
-    QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
+    QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterData()));
 
     QObject::connect(ui->transformRealsPushButton, SIGNAL(clicked()), this, SLOT(transformReals()));
 /*
@@ -370,15 +363,10 @@ MainWindow::MainWindow() :
     */
 
 
-/*
 
+/*
     dir->cd("/media/Files/Data/AA");
 
-    double * sigm = new double [20];
-    double * men = new double [20];
-    double * classf = new double [20];
-    double * drawVars = new double [20];
-    lst = dir->entryList(QStringList("*randIca.txt"), QDir::NoFilter, QDir::Name);
 
     FILE * results = fopen("/media/Files/Data/AA/res.txt", "r");
 
@@ -389,6 +377,12 @@ MainWindow::MainWindow() :
     outStream << "mean" << "\t";
     outStream << "sigma" << endl;
 
+    lst = dir->entryList(QStringList("*randIca.txt"), QDir::NoFilter, QDir::Name);
+    int num1 = lst.length()*2;
+    double * sigm = new double [num1];
+    double * men = new double [num1];
+    double * classf = new double [num1];
+    double * drawVars = new double [num1];
     for(int i = 0; i < lst.length(); ++i)
     {
         helpString = dir->absolutePath() + QDir::separator() + lst[i];
@@ -402,19 +396,21 @@ MainWindow::MainWindow() :
     {
         cout << lst[i].left(3).toStdString() << "\t";
 
-        fscanf(results, "%*s\t%lf", &classf[i]);
+        fscanf(results, "%*s %lf", &classf[i]);
+//        cout << classf[i] << "\t";
         drawVars[2*i + 0] = (classf[i] - men[i]) / sigm[i];
         cout << (classf[i] - men[i]) / sigm[i] << "\t";
 
-        fscanf(results, "%*s\t%lf", &classf[i]);
+        fscanf(results, "%*s %lf", &classf[i]);
+//        cout << classf[i] << "\t";
         drawVars[2*i + 1] = (classf[i] - men[i]) / sigm[i];
         cout << (classf[i] - men[i]) / sigm[i] << endl;
     }
-    drawRCP(drawVars, 20);
+    drawRCP(drawVars, num1);
     fclose(results);
-
-
 */
+
+
 
 
 /*
@@ -499,7 +495,8 @@ MainWindow::MainWindow() :
 //    cout << mean_ << " " << sigma_ << " " << gaussApproval("/media/Files/Data/AAX/rcp-30.txt") << endl;
 //    countRCP("/media/Files/Data/AAX/rcp-20.txt", "/media/Files/Data/AAX/rcp-20.png", &mean_, &sigma_);
 //    cout << mean_ << " " << sigma_ << " " << gaussApproval("/media/Files/Data/AAX/rcp-20.txt") << endl;
-    //autoIcaAnalysis();
+//    autoIcaAnalysis();
+//    system("sudo shutdown -P now");
 
 }
 
@@ -1151,21 +1148,25 @@ void MainWindow::drawEeg(int NumOfSlices_, double **dataD_, QString helpString_,
     QPainter * paint_ = new QPainter();
     paint_->begin(&pic);
 
+    QString colour;
+
     double norm=ui->doubleSpinBox->value();              //////////////////////
 
     for(int c1 = 0; c1 < pic.width(); ++c1)
     {
         for(int c2 = 0; c2 < ns; ++c2)
         {
-            if(ns==21 && c2==19) paint_->setPen("red");
-            else if(ns==21 && c2==20) paint_->setPen("blue");
-            else paint_->setPen("black");
+            if(ns==21 && c2==19) colour = "red"; //paint_->setPen("red");
+            else if(ns==21 && c2==20) colour = "blue"; //paint_->setPen("blue");
+            else colour = "black";//paint_->setPen("black");
+            paint_->setPen(QPen(QBrush(QColor(colour)), 2));
 
             paint_->drawLine(c1, (c2+1)*pic.height()/(ns+2) +dataD_[c2][c1+start]/norm, c1+1, (c2+1)*pic.height()/(ns+2) +dataD_[c2][c1+1+start]/norm);
         }
     }
     norm=1.;
-    paint_->setPen("black");
+//    paint_->setPen("black");
+    paint_->setPen(QPen(QBrush("black"), 2));
     for(int c3 = 0; c3 < NumOfSlices_*10/250; ++c3)
     {
         if(c3%5  == 0) norm=15.;
@@ -1247,9 +1248,9 @@ void MainWindow::drawRealisations()
     nameFilters.append("*_247*");
     nameFilters.append("*_254*");
     nameFilters.append("*_244*");
+    //for Roma's files
     nameFilters.append("*_2");
     nameFilters.append("*_1");
-//    nameFilters.append("*_100*");
 //    lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
 
     lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
@@ -1478,13 +1479,21 @@ void MainWindow::setNs()
     ui->setNsLine->clear();
 }
 
-void MainWindow::setNs2(int a)
+void MainWindow::setNsSlot(int a)
 {
     ns=a;
     helpString="ns equals to ";
     helpString.append(QString::number(ns));
     ui->textEdit->append(helpString);
     ui->setNsLine->clear();
+}
+
+void MainWindow::eyesShow()
+{
+    Eyes *trololo = new Eyes(dir, ns);
+    trololo->setAutoProcessingFlag(false);
+    trololo->show();
+    QObject::connect(trololo, SIGNAL(setNsMain(int)), this, SLOT(setNsSlot(int)));
 }
 
 void MainWindow::netShow()
@@ -1499,7 +1508,7 @@ void MainWindow::cutShow()
     cut_e->show();
 }
 
-void MainWindow::makePaSlot() //250 - frequency generality
+void MainWindow::makePaShow() //250 - frequency generality
 {
     if(spStep == 250./4096.) helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
     else if(spStep == 250./1024.)     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth").append(QDir::separator()).append("windows"));
@@ -2810,7 +2819,7 @@ void MainWindow::makeTestData()
 
 }
 
-void MainWindow::refilterDataSlot()
+void MainWindow::refilterData()
 {
     QTime myTime;
     myTime.start();
@@ -5954,12 +5963,10 @@ void MainWindow::transformReals()
     matrixCreate(&mat2, 19, 250*50);
 
     QString procDir = ui->drawDirBox->currentText();
-
     dir->cd(procDir);
-
     lst = dir->entryList(QDir::Files);
-
     dir->cdUp();
+
     qApp->processEvents();
 
     for(int i = 0; i < lst.length(); ++i)
@@ -6786,13 +6793,6 @@ void MainWindow::drawMaps()
 }
 
 
-void MainWindow::eyesShow()
-{
-    Eyes *trololo = new Eyes(dir, ns);
-    trololo->setAutoProcessingFlag(false);
-    trololo->show();
-    QObject::connect(trololo, SIGNAL(setNsMain(int)), this, SLOT(setNs2(int)));
-}
 
 void MainWindow::visualisation()   //just video
 {
@@ -7128,7 +7128,10 @@ void MainWindow::randomDecomposition()
     ANN->setNumOfPairs(50);
     FILE * outFile;
 
+
     double ** eigenMatrix = matrixCreate(compNum, compNum);
+
+    /*
     helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_eigenMatrix.txt";
     inStream.open(helpString.toStdString().c_str());
     if(!inStream.good())
@@ -7144,11 +7147,13 @@ void MainWindow::randomDecomposition()
         }
     }
     inStream.close();
-
+*/
     double ** eigenMatrixInv = matrixCreate(compNum, compNum);
     matrixTranspose(eigenMatrix, compNum, compNum, &eigenMatrixInv);
 
     double * eigenValues = new double [compNum];
+
+    /*
     helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName.left(3) + "_eigenValues.txt";
     inStream.open(helpString.toStdString().c_str());
     if(!inStream.good())
@@ -7161,7 +7166,7 @@ void MainWindow::randomDecomposition()
         inStream >> eigenValues[i];
     }
     inStream.close();
-
+*/
     fclose(edf);
 
 
@@ -7177,6 +7182,7 @@ void MainWindow::randomDecomposition()
 
         //set random matrix
         srand(time(NULL));
+
         for(int i = 0; i < compNum; ++i) //i'th coloumn
         {
             sum1 = 0.;
@@ -7248,10 +7254,9 @@ void MainWindow::randomDecomposition()
         //write newData
         helpString = ExpName.left(3) + "_randIca.edf";
         writeEdf(edf, newData, helpString, ndr*nr[0]);
+        fclose(edf); //opened in setEdfFile();
 
         helpString = dir->absolutePath() + QDir::separator() + ExpName.left(3) + "_randIca.edf";
-
-        fclose(edf); //opened in setEdfFile();
         setEdfFile(helpString);
         readData(); //read newData
 
@@ -7311,6 +7316,12 @@ void MainWindow::autoIcaAnalysis()
 
     for(int i = 0; i < list0.length(); ++i)
     {
+        //for new icas
+        if(list0[i].contains("randIca")) continue;
+        if(!(list0[i].contains("GAN") || list0[i].contains("RMS") ||  list0[i].contains("VDA") ||  list0[i].contains("SEV") ||  list0[i].contains("PMI") || list0[i].contains("PAS"))) continue;
+
+
+
         helpString = dir->absolutePath() + QDir::separator() + list0[i];
         setEdfFile(helpString);
         cleanDirs();
@@ -7319,6 +7330,10 @@ void MainWindow::autoIcaAnalysis()
         spectr = new Spectre(dir, ns, ExpName);
         spectr->countSpectra();
         spectr->close();
+        spectr->compare();
+        spectr->compare();
+        spectr->compare();
+        spectr->psaSlot();
         delete spectr;
 
         helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
@@ -7359,10 +7374,15 @@ void MainWindow::autoIcaAnalysis()
         ANN->close();
         delete ANN;
 
+
+
         if(!ExpName.contains("ica", Qt::CaseInsensitive))
         {
+            helpString = "/media/Files/Data/AA/" + ExpName.left(3) + "_randIca.txt";
+            outFile = fopen(helpString.toStdString().c_str(), "w");
+            fclose(outFile);
+
             randomDecomposition();
         }
     }
-
 }
