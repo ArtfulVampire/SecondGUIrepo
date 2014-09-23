@@ -59,7 +59,7 @@ public:
     double setPercentageForClean();
     double mouseClick(QLabel * label, QMouseEvent * ev);
     void leaveOneOut();
-    void leaveOneOutCL();
+//    void leaveOneOutCL();
     double getAverageAccuracy();
     void setReduceCoeff(double coeff);
     void setNumOfPairs(int num);

@@ -13,7 +13,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
 
     ExpName = ExpName_;
     dir = new QDir();
-    dirBC = new QDir();
+    dirBC = new QDir();    
 
     dir->cd(QDir::toNativeSeparators(dir_->absolutePath()));
     dirBC->cd(QDir::toNativeSeparators(dir_->absolutePath()));
@@ -125,12 +125,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     ui->specLabel->installEventFilter(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
 
-    ui->fftComboBox->setCurrentIndex(2); //0 for 1024   2 for 4096
-
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Realisations"));
-    ui->lineEdit_1->setText(helpString);
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));   //smooth right after spectra count
-    ui->lineEdit_2->setText(helpString);
+    ui->fftComboBox->setCurrentText(QString::number(defaults::fftLength));
 }
 
 void Spectre::defaultState()
@@ -1136,7 +1131,6 @@ void Spectre::countSpectra()
 
             for(int i = 0; i < ns; ++i)
             {
-                helpString = "/media/Files/Data/AAX/Signals/" + QString::number(a) + ".png";
 //                hilbert(dataIn[i], fftLength, 250., ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
                 hilbert(dataIn[i], NumOfSlices, 250., 8., 12., &tempVec, "");
 //                cout << lst[a].toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;

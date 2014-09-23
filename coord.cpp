@@ -1,9 +1,39 @@
 #pragma once
 //relative coords
+#include <QString>
+
 namespace coords
 {
     const double scale = 250./1600.; //250 - generality frequency
     const double x[] = {0.21875, 0.59375, 0.03125, 0.21875, 0.40625, 0.59375, 0.78125, 0.03125, 0.21875, 0.40625, 0.59375, 0.78125, 0.03125, 0.21875, 0.40625, 0.59375, 0.78125, 0.21875, 0.59375}; //-0.5/16
     const double y[] = {0.1875, 0.1875, 0.375, 0.375, 0.375, 0.375, 0.375, 0.5625, 0.5625, 0.5625, 0.5625, 0.5625, 0.75, 0.75, 0.75, 0.75, 0.75, 0.9375, 0.9375};
     const char lbl[][19] = {"Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8", "T3", "C3", "Cz", "C4", "T4", "T5", "P3", "Pz", "P4", "T6", "O1", "O2"};
+}
+
+namespace defaults
+{
+    //Atanov
+    const QString dataFolder = "/media/Files/Data";
+    const int fftLength = 4096;
+    const int left = 82;
+    const int right = 328;
+    const int numOfClasses = 3;
+    const bool opencl = true;
+    const bool openmp = true;
+//    //Baklushev
+//    const QString dataFolder = "c:/EEG";
+//    const int fftLength = 2048;
+//    const int left = 41;
+//    const int right = 164;
+//    const int numOfClasses = 2;
+//    const bool opencl = 0;
+//    const bool openmp = 0;
+//    //Ivanitsky
+//    const QString dataFolder = "d:/AtanovMichael/Data";
+//    const int fftLength = 4096;
+//    const int left = 82;
+//    const int right = 328;
+//    const int numOfClasses = 3;
+//    const bool opencl = 0;
+//    const bool openmp = 0;
 }
