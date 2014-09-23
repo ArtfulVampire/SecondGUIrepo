@@ -58,6 +58,30 @@ void four1(double *dataF, int nn, int isign)
 #undef SWAP
 
 
+int readDefaults(QString filePath, char * dataFolder, int fftLength, int numOfClasses, bool opencl, bool openmp)
+{
+    FILE * inFile;
+    inFile = fopen(filePath.toStdString().c_str(), "r");
+    if(inFile == NULL)
+    {
+        cout << "cannot open defaults file" << endl;
+        return 0;
+    }
+
+    fscanf(inFile, "%*s %s", dataFolder);
+    if(&fftLength != NULL) fscanf(inFile, "%*s %d", &fftLength);
+    else fscanf(inFile, "%*s %*s");
+    if(&numOfClasses != NULL) fscanf(inFile, "%*s %d", &numOfClasses);
+    else fscanf(inFile, "%*s %*s");
+    if(&opencl != NULL) fscanf(inFile, "%*s %d", &opencl);
+    else fscanf(inFile, "%*s %*s");
+    if(&openmp != NULL) fscanf(inFile, "%*s %d", &openmp);
+    else fscanf(inFile, "%*s %*s");
+
+    fclose(inFile);
+    return 1;
+}
+
 int len(QString s) //lentgh till double \0-byte for EDF+annotations
 {
     int l = 0;

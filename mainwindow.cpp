@@ -18,34 +18,17 @@ MainWindow::MainWindow() :
     ns=-1;
     spLength=-1;
 
-    ns=19;
-    //usual
-    left = 82;
-    right = 328;
-    spLength=right-left+1;
-    spStep = 250./4096.;
+    ns = 19;
+    right = defaults::right;
+    left = defaults::left;
+    spStep = 250./defaults::fftLength;
+    spLength = right - left + 1;
 
 
-    //michaelBak
-//    left = 41;
-//    right = 164;
-//    spLength=right-left+1;
-//    spStep = 250./2048.;
-
-
-    //windows
-//    left = 20;
-//    right = 82;
-//    spLength=right-left+1;
-//    spStep = 250./1024.;
 
     withMarkersFlag = 0;
     ui->sliceWithMarkersCheckBox->setChecked(false);
-
-
-
     staSlice = 0;
-
     stopFlag = 0;
 
     dir = new QDir();
@@ -370,14 +353,14 @@ MainWindow::MainWindow() :
 
 
 /*
-    dir->cd("/media/Files/Data/AA");
+    dir->cd(defaults::dataFolder + "/AA");
 
 
-    FILE * results = fopen("/media/Files/Data/AA/res.txt", "r");
+    FILE * results = fopen(QString(defaults::dataFolder + "/AA/res.txt").toStdString().c_str(), "r");
 
 
 
-    outStream.open("/media/Files/Data/AA/discr.txt");
+    outStream.open(defaults::dataFolder + "AA/discr.txt");
     outStream << "name" << "\t";
     outStream << "mean" << "\t";
     outStream << "sigma" << endl;
@@ -416,30 +399,9 @@ MainWindow::MainWindow() :
 */
 
 
-
-
-/*
-
-    double ** mat1;
-    double ** mat2;
-    double * corrs = new double [19];
-    matrixCreate(&mat1, 19,19);
-    matrixCreate(&mat2, 19,19);
-    readICAMatrix("/media/Files/Data/SUA/Help/SUA_maps_all.txt", &mat1, 19);
-    readICAMatrix("/media/Files/Data/SUA_3/Help/SUA_maps.txt", &mat2, 19);
-    cout << "read" << endl;
-    matrixCorrelations(mat1, mat2, 19, 19, &corrs);
-    for(int i = 0; i < 19; ++ i)
-    {
-        cout << corrs[i] << endl;
-    }
-*/
-
-
-
 /*
     //many edf to my format
-    dir->cd("/media/Files/Data/GPP/edf/1");
+    dir->cd(defaults::dataFolder + "/GPP/edf/1");
     QString pth = "/media/michael/Files/Data/GPP/Realisations";
     lst = dir->entryList(QStringList("*.edf"), QDir::Files);
     for(int i = 0; i < lst.length(); ++i)
@@ -465,7 +427,7 @@ MainWindow::MainWindow() :
     }
 
 
-    dir->cd("/media/Files/Data/GPP/edf/2");
+    dir->cd(defaults::dataFolder + "/GPP/edf/2");
     lst = dir->entryList(QStringList("*.edf"), QDir::Files);
     for(int i = 0; i < lst.length(); ++i)
     {
@@ -492,12 +454,12 @@ MainWindow::MainWindow() :
 
 
 //    double mean_, sigma_;
-//    countRCP("/media/Files/Data/AAX/rcp-40.txt", "/media/Files/Data/AAX/rcp-40.png", &mean_, &sigma_);
-//    cout << mean_ << " " << sigma_ << " " << gaussApproval("/media/Files/Data/AAX/rcp-40.txt") << endl;
-//    countRCP("/media/Files/Data/AAX/rcp-30.txt", "/media/Files/Data/AAX/rcp-30.png", &mean_, &sigma_);
-//    cout << mean_ << " " << sigma_ << " " << gaussApproval("/media/Files/Data/AAX/rcp-30.txt") << endl;
-//    countRCP("/media/Files/Data/AAX/rcp-20.txt", "/media/Files/Data/AAX/rcp-20.png", &mean_, &sigma_);
-//    cout << mean_ << " " << sigma_ << " " << gaussApproval("/media/Files/Data/AAX/rcp-20.txt") << endl;
+//    countRCP(defaults::dataFolder + "/AAX/rcp-40.txt", defaults::dataFolder + "/AAX/rcp-40.png", &mean_, &sigma_);
+//    cout << mean_ << " " << sigma_ << " " << gaussApproval(defaults::dataFolder + "/AAX/rcp-40.txt") << endl;
+//    countRCP(defaults::dataFolder + "/AAX/rcp-30.txt", defaults::dataFolder + "/AAX/rcp-30.png", &mean_, &sigma_);
+//    cout << mean_ << " " << sigma_ << " " << gaussApproval(defaults::dataFolder + "/AAX/rcp-30.txt") << endl;
+//    countRCP(defaults::dataFolder + "/AAX/rcp-20.txt", defaults::dataFolder + "/AAX/rcp-20.png", &mean_, &sigma_);
+//    cout << mean_ << " " << sigma_ << " " << gaussApproval(defaults::dataFolder + "/AAX/rcp-20.txt") << endl;
 //    autoIcaAnalysis();
 //    system("sudo shutdown -P now");
 
@@ -1540,7 +1502,7 @@ void MainWindow::makeShow()//250 - frequency generality
 void MainWindow::setEdfFile()
 {
     NumOfEdf = 0;
-    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget*)this, tr("EDF to open"), tr("/media/Files/Data"), tr("EDF files (*.EDF *.edf)")));
+    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget*)this, tr("EDF to open"), defaults::dataFolder, tr("EDF files (*.EDF *.edf)")));
     if(helpString=="")
     {
         QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
@@ -7313,7 +7275,7 @@ void MainWindow::autoIcaAnalysis()
 
     ui->reduceChannelsLineEdit->setText("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
 
-    dir->cd("/media/Files/Data/AA");
+    dir->cd(defaults::dataFolder + "/AA");
     QStringList list0 = dir->entryList(QStringList("*.edf"), QDir::NoFilter, QDir::Name);
 
     Spectre * spectr;
@@ -7375,7 +7337,7 @@ void MainWindow::autoIcaAnalysis()
         ANN->setNumOfPairs(50);
         ANN->autoClassificationSimple();
 
-        outFile = fopen("/media/Files/Data/AA/res.txt", "a");
+        outFile = fopen(QString(defaults::dataFolder + "/AA/res.txt").toStdString().c_str(), "a");
         fprintf(outFile, "%s\t%.2lf\r\n", ExpName.toStdString().c_str(), ANN->getAverageAccuracy());
         fclose(outFile);
 
@@ -7386,7 +7348,7 @@ void MainWindow::autoIcaAnalysis()
 
         if(!ExpName.contains("ica", Qt::CaseInsensitive))
         {
-            helpString = "/media/Files/Data/AA/" + ExpName.left(3) + "_randIca.txt";
+            helpString = defaults::dataFolder + "/AA/" + ExpName.left(3) + "_randIca.txt";
             outFile = fopen(helpString.toStdString().c_str(), "w");
             fclose(outFile);
 

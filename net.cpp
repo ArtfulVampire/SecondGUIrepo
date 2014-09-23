@@ -1,6 +1,8 @@
 #include "net.h"
 #include "ui_net.h"
-#include <CL/cl.h>
+//#include <CL/cl.h>
+
+
 
 
 Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString ExpName_) :
@@ -18,6 +20,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     weight = 0;
     dimensionality = 0;
+
 
     left = left_;
     right = right_;
@@ -1205,7 +1208,7 @@ void Net::leaveOneOutSlot()
     else
     {
 //        cout << "OpenCL leaveOneOut"  << endl;
-        leaveOneOutCL();
+//        leaveOneOutCL();
     }
 }
 
@@ -1244,6 +1247,8 @@ const char *  errorMessage(int err_)
     return QString::number(err_).toStdString().c_str();
 }
 
+
+/*
 void Net::leaveOneOutCL()
 {
 
@@ -1826,6 +1831,8 @@ void Net::leaveOneOutCL()
     delete []NumberOfErrors;
     delete []matrixArray;
 }
+*/
+
 
 void Net::leaveOneOut()
 {

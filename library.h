@@ -24,7 +24,11 @@
 #include <QMessageBox>
 #include <cerrno>
 #include <ios>
-//#include <omp.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 //#include <itpp/itbase.h>
 //#include <mlpack/core.hpp>
 //#include <mlpack/methods/pca/pca.hpp>
@@ -36,6 +40,8 @@ using namespace std;
 //using namespace itpp;
 //using namespace mlpack;
 
+
+int readDefaults(QString filePath, char *dataFolder, int fftLength, int numOfClasses, bool opencl, bool openmp);
 
 int len(QString s);
 QString rightNumber(int &input, int N);
