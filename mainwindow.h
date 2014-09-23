@@ -60,6 +60,7 @@ public slots:
     void changeNsLine(int);
     void setBoxMax(double);
     void setNsSlot(int);
+    void sliceWithMarkersSlot(int);
 
     //in-window calculations, substantional actions
     //files

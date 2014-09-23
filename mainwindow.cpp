@@ -19,7 +19,6 @@ MainWindow::MainWindow() :
     spLength=-1;
 
     ns=19;
-
     //usual
     left = 82;
     right = 328;
@@ -39,6 +38,9 @@ MainWindow::MainWindow() :
 //    right = 82;
 //    spLength=right-left+1;
 //    spStep = 250./1024.;
+
+    withMarkersFlag = 0;
+    ui->sliceWithMarkersCheckBox->setChecked(false);
 
 
 
@@ -109,6 +111,7 @@ MainWindow::MainWindow() :
     ui->rdcChannelBox->addItem("windows");
 
     helpInt = 0;
+    /*
     ui->reduceChannelsComboBox->addItem("old En->real-time");   //encephalan for real time
     var = QVariant("19 18 16 14 11 9 6 4 2 1 17 13 12 8 7 3 15 10 5 24");
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
@@ -124,7 +127,7 @@ MainWindow::MainWindow() :
     ui->reduceChannelsComboBox->addItem("Boris Nt->En");
     var = QVariant("1 3 7 4 5 6 8 25 14 15 16 26 27 20 21 22 28 29 31");
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
+*/
 
     //0
     ui->reduceChannelsComboBox->addItem("MichaelBak");
@@ -314,6 +317,8 @@ MainWindow::MainWindow() :
     QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterData()));
 
     QObject::connect(ui->transformRealsPushButton, SIGNAL(clicked()), this, SLOT(transformReals()));
+
+    QObject::connect(ui->sliceWithMarkersCheckBox, SIGNAL(stateChanged(int)), this, SLOT(sliceWithMarkersSlot(int)));
 /*
     //function test
     int leng = 65536;
@@ -433,15 +438,13 @@ MainWindow::MainWindow() :
 
 
 /*
-//many edf to my format
+    //many edf to my format
     dir->cd("/media/Files/Data/GPP/edf/1");
     QString pth = "/media/michael/Files/Data/GPP/Realisations";
     lst = dir->entryList(QStringList("*.edf"), QDir::Files);
     for(int i = 0; i < lst.length(); ++i)
     {
         helpString = dir->absolutePath() + QDir::separator() + lst[i];
-
-//        cout << helpString.toStdString() << endl;
         setEdfFile(helpString);
         readData();
         helpString = lst[i];
@@ -518,6 +521,11 @@ void MainWindow::setBoxMax(double a)
 {
     ui->startTimeBox->setValue(min(a-1., ui->startTimeBox->value()));
     ui->startTimeBox->setMaximum(a-1.);
+}
+
+void MainWindow::sliceWithMarkersSlot(int a)
+{
+    withMarkersFlag = a;
 }
 
 //enable Escape key for all widgets
@@ -1510,7 +1518,7 @@ void MainWindow::cutShow()
 
 void MainWindow::makePaShow() //250 - frequency generality
 {
-    if(spStep == 250./4096.) helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
+    if(spStep == 250./4096. || spStep == 250./2048.) helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
     else if(spStep == 250./1024.)     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth").append(QDir::separator()).append("windows"));
     else helpString = QDir::toNativeSeparators(dir->absolutePath());
 
@@ -1523,6 +1531,7 @@ void MainWindow::makeShow()//250 - frequency generality
 {
     if(spStep == 250./4096.) helpString = "16sec19ch";
     else if(spStep == 250./1024.) helpString = "4sec19ch";
+    else if(spStep == 250./2048.) helpString = "8sec19ch";
     else helpString = "netFile";
     cfg *config = new cfg(dir, ns, spLength, 0.10, 0.10, helpString);
     config->show();
@@ -2916,7 +2925,6 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     if(ui->sliceWithMarkersCheckBox->isChecked())
     {
         numChanToWrite = ns;
-        withMarkersFlag = true;
     }
     else
     {

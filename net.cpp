@@ -174,15 +174,6 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     this->ui->deltaRadioButton->setChecked(true);
 
-//    for(int i = 0; i < 10000; ++i)
-//    {
-//        readPaFile(inStream, "/media/Files/Data/AAX/PA/1.pa", &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
-//        if(i%500 == 0)
-//        {
-//            cout << i << endl;
-//        }
-//    }
-
     NumberOfVectors = 200;
     matrix = new double * [NumberOfVectors];
     for(int i = 0; i < NumberOfVectors; ++i)
@@ -348,6 +339,25 @@ void Net::autoClassification(QString spectraDir)
 
     mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
     mkPa->setNumOfClasses(NumOfClasses);
+
+    //adjust reduce coefficient
+    while(1)
+    {
+        mkPa->makePaSlot();
+        PaIntoMatrixByName("1");
+        LearnNet();
+        if(epoch > 150 || epoch < 80)
+        {
+            mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(epoch / 120.));
+        }
+        else
+        {
+            cout << "reduceCoeff = " << mkPa->getRdcCoeff() << endl;
+            setReduceCoeff(mkPa->getRdcCoeff());
+            break;
+        }
+    }
+
 
 
     QString typeString;
@@ -937,6 +947,10 @@ void Net::readCfg()
         else if(spStep == 250./4096.)
         {
             helpString = "16sec19ch.net";     //for realisations
+        }
+        else if(spStep == 250./2048.)
+        {
+            helpString = "8sec19ch.net";     //for realisations
         }
         else
         {
@@ -1818,7 +1832,7 @@ void Net::leaveOneOut()
     QTime myTime;
     myTime.start();
 
-    srand(myTime.currentTime().msec() * (myTime.currentTime().msec() +13));
+    srand(time(NULL));
 
     critError = ui->critErrorDoubleSpinBox->value();
     temperature = ui->tempBox->value();
@@ -2356,7 +2370,6 @@ void Net::methodSetParam(int a, bool ch)
 
         ui->numOfLayersSpinBox->setValue(3);
         ui->numOfLayersSpinBox->setReadOnly(false);
-
     }
     memoryAndParamsAllocation();
 }
@@ -2365,10 +2378,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
 {
     QTime myTime;
     myTime.start();
-    srand(myTime.currentTime().msec() * (myTime.currentTime().msec() +13));
-
-
-//    omp_set_dynamic(0);
+    srand(time(NULL));
 
 
 
@@ -2409,7 +2419,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
 
     while(currentError > critError && epoch < ui->epochSpinBox->value())
     {
-        srand(myTime.currentTime().msec() * (myTime.currentTime().msec() +7));
+        srand(time(NULL));
         currentError = 0.0;
         for(int i = 0; i < 5 * NumberOfVectors; ++i)
         {

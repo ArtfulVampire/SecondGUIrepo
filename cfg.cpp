@@ -35,10 +35,10 @@ cfg::~cfg()
 
 void cfg::makeCfg()
 {
-//    inputs    882
-//    outputs     2
+//    inputs    19*247
+//    outputs     3
 //    lrate       0.1
-//    ecrit       0.5
+//    ecrit       0.1
 //    temp       10
 //    srand      77
     int helpInt=ui->spLBox->value() * ui->nsBox->value();
