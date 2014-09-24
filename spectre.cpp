@@ -1215,6 +1215,7 @@ void Spectre::countSpectra()
         if(100*(a+1)/lst.length() > ui->progressBar->value())
         {
             ui->progressBar->setValue(100*(a+1)/lst.length());
+            qApp->processEvents();
         }
     }
 
