@@ -154,6 +154,7 @@ void Eyes::eyesClean()
         NumOfEyes = 0;
 
         ui->progressBar->setValue(i*100./list.length());
+        qApp->processEvents();
 
 
     }

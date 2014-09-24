@@ -7,7 +7,6 @@
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow)
 {
-
     QButtonGroup * group1, *group2, *group3, *group4;
     autoProcessingFlag = false;
     ui->setupUi(this);
@@ -2869,9 +2868,6 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
     readData();
 
-
-
-
     if(ui->eyesCleanCheckBox->isChecked())
     {
         eyesFast();
@@ -2880,7 +2876,6 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
             ui->reduceChannelsComboBox->setCurrentIndex(ui->reduceChannelsComboBox->currentIndex()+1); //generality
         }
     }
-
 
     if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
 
@@ -2892,8 +2887,6 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     {
         numChanToWrite = ns - 1;
     }
-
-
 
     if(ui->sliceCheckBox->isChecked())
     {
@@ -3639,7 +3632,7 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
             helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
 
 
-            if(!((i-j > 15000 && (marker == "254")) || (marker == "000"))) // dont write big rests and beginning
+//            if(!((i-j > 15000 && (marker == "254")) || (marker == "000"))) // dont write big rests and beginning
             {
                 file = fopen(helpString.toStdString().c_str(), "w");
 
@@ -3655,6 +3648,7 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
             }
 
             ui->progressBar->setValue(double(i)*100./ndr*nr[ns-1]);
+            qApp->processEvents();
 
             marker.clear();
             if(h == 0) marker = "241";
@@ -3666,25 +3660,26 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
 
     }
 
-    /*
-    //write last rest state
-    marker = "end";
-    k = ndr*nr[ns-1];
-    ++number;
-    helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
-//    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
-    file=fopen(helpString.toStdString().c_str(), "w");
-    fprintf(file, "NumOfSlices %d \n", k-j);
-    for(int l = j; l < k; ++l)
+    if(0)
     {
-        for(int m = 0; m < numChanWrite; ++m)
+        //write last rest state
+        marker = "end";
+        k = ndr*nr[ns-1];
+        ++number;
+        helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
+//        helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
+        file=fopen(helpString.toStdString().c_str(), "w");
+        fprintf(file, "NumOfSlices %d \n", k-j);
+        for(int l = j; l < k; ++l)
         {
-            fprintf(file, "%lf\n", data[m][l*nr[m]/nr[ns-1]]);
+            for(int m = 0; m < numChanWrite; ++m)
+            {
+                fprintf(file, "%lf\n", data[m][l*nr[m]/nr[ns-1]]);
+            }
         }
-
+        fclose(file);
     }
-    fclose(file);
-    */
+
 }
 
 void MainWindow::sliceMati(int numChanWrite)
@@ -4079,14 +4074,14 @@ void MainWindow::reduceChannelsFast()
         return;
     }
 
-
-    double ** temp = new double *[ns];
+    double ** temp = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-        temp[i] = new double [250*60*200]; //generality for 200 minutes
+        temp[i] = new double [ndr*nr[i]];
     }
     int sign;
     int lengthCounter;
+
     for(int k = 0; k < list.length(); ++k)
     {
         if(QString::number(list[k].toInt()) == list[k])
@@ -4320,7 +4315,7 @@ void MainWindow::constructEDF()
     double ** newData = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-        newData[i] = new double [250*60*60*5];  //generality, maybe bad nr from other channel?
+        newData[i] = new double [ndr * nr[i]];  //generality, maybe bad nr from other channel?
     }
 
     dir->cd("Realisations");
@@ -4333,7 +4328,7 @@ void MainWindow::constructEDF()
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Realisations").append(QDir::separator()).append(lst[i]));
         file = fopen(helpString.toStdString().c_str(), "r");
-        fscanf(file, "NumOfSlices %d\n", &NumOfSlices);
+        fscanf(file, "NumOfSlices %d", &NumOfSlices);
 
         for(int i = 0; i < NumOfSlices; ++i)
         {
@@ -4347,9 +4342,7 @@ void MainWindow::constructEDF()
 
     }
 
-
     int nsB = ns;
-
 
     cout << "construct EDF: Initial NumOfSlices = " << ndr*ddr*nr[0] << endl;
     cout << "construct EDF: NumOfSlices to write = " << currSlice << endl;
@@ -4749,10 +4742,16 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int 
         fprintf(edfNew, "%c", helpChar);
     }
 
+    //header write ended
+    fclose(edfNew);
+    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(fileName));
+    cout << "writeEDF: output path (byte mode) = " << helpString.toStdString() << endl;
+    edfNew = fopen(helpString.toStdString().c_str(), "ab");
+
     ui->finishTimeBox->setMaximum(ddr*ndr);
 
     cout << "data write start, newNs = " << newNs << endl;
-    int newIndex;
+    int oldIndex;
 
     if(ui->enRadio->isChecked())
     {
@@ -4760,27 +4759,28 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int 
         {
             for(int j = 0; j < newNs; ++j) // j - number of channel in "new" file
             {
-                newIndex = lst[j].toInt() - 1; //number of channel in "old" file edfIn
-                for(int k = 0; k < nr[newIndex]; ++k)
+                oldIndex = lst[j].toInt() - 1; //number of channel in "old" file edfIn
+                for(int k = 0; k < nr[oldIndex]; ++k)
                 {
-                    a = (short)((inData[ j ][ i * nr[newIndex] + k ] - physMin[newIndex]) * (digMax[newIndex] - digMin[newIndex]) / (physMax[newIndex] - physMin[newIndex]) + digMin[newIndex]);
+//                    a = (short)((inData[ j ][ i * nr[oldIndex] + k ] - physMin[oldIndex]) * (digMax[oldIndex] - digMin[oldIndex]) / (physMax[oldIndex] - physMin[oldIndex]) + digMin[oldIndex]);
 
                     //generality
-                    if(newIndex != ns - 1)
+                    if(oldIndex != ns - 1)
                     {
-                        a = (short)(inData[ j ][ i * nr[newIndex] + k ] * 8.);
+                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ] * 8.);
                     }
                     else if(!ui->matiCheckBox->isChecked())
                     {
-                        a = (short)(inData[ j ][ i * nr[newIndex] + k ]);
+                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ]);
                     }
                     else
                     {
-                        a = (unsigned short)(inData[ j ][ i * nr[newIndex] + k ]);
+                        a = (unsigned short)(inData[ j ][ i * nr[oldIndex] + k ]);
                     }
 
-                    if(ui->matiCheckBox->isChecked() && newIndex == ns - 1)
+                    if(ui->matiCheckBox->isChecked() && oldIndex == ns - 1)
                     {
+
                         fwrite(&a, sizeof(unsigned short), 1, edfNew);
                     }
                     else

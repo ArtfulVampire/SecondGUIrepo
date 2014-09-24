@@ -12,14 +12,14 @@ namespace coords
 
 namespace defaults
 {
-    //Atanov
-    const QString dataFolder = "/media/Files/Data";
-    const int fftLength = 4096;
-    const int left = 82;
-    const int right = 328;
-    const int numOfClasses = 3;
-    const bool opencl = true;
-    const bool openmp = true;
+//    //Atanov
+//    const QString dataFolder = "/media/Files/Data";
+//    const int fftLength = 4096;
+//    const int left = 82;
+//    const int right = 328;
+//    const int numOfClasses = 3;
+//    const bool opencl = true;
+//    const bool openmp = true;
 //    //Baklushev
 //    const QString dataFolder = "c:/EEG";
 //    const int fftLength = 2048;
@@ -29,11 +29,11 @@ namespace defaults
 //    const bool opencl = 0;
 //    const bool openmp = 0;
 //    //Ivanitsky
-//    const QString dataFolder = "d:/AtanovMichael/Data";
-//    const int fftLength = 4096;
-//    const int left = 82;
-//    const int right = 328;
-//    const int numOfClasses = 3;
-//    const bool opencl = 0;
-//    const bool openmp = 0;
+    const QString dataFolder = "d:/AtanovMichael/Data";
+    const int fftLength = 4096;
+    const int left = 82;
+    const int right = 328;
+    const int numOfClasses = 3;
+    const bool opencl = 0;
+    const bool openmp = 0;
 }

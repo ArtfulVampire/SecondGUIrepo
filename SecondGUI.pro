@@ -9,13 +9,13 @@ QT       += core gui svg
 TARGET = SecondGUI
 TEMPLATE = app
 
-INCLUDEPATH += /usr/include/libxml2
-LIBS += -L/usr/lib/x86_64-linux-gnu -lOpenCL
-LIBS += -L/usr/lib/x86_64-linux-gnu/mesa
-LIBS += -lxml2 -lmlpack
+#INCLUDEPATH += /usr/include/libxml2
+#LIBS += -L/usr/lib/x86_64-linux-gnu -lOpenCL
+#LIBS += -L/usr/lib/x86_64-linux-gnu/mesa
+#LIBS += -lxml2 -lmlpack
 
-QMAKE_LFLAGS += -fopenmp
-QMAKE_CXXFLAGS += -fopenmp
+#QMAKE_LFLAGS += -fopenmp
+#QMAKE_CXXFLAGS += -fopenmp
 
 SOURCES += main.cpp\
         mainwindow.cpp \
