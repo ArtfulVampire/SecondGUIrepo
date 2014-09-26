@@ -912,6 +912,8 @@ void Net::tall()
     }
     helpString.append("Percentage[all] = ").append(tmp.setNum((1. - double(Error/double(NumberOfVectors))) * 100.)).append(" % \n");
 
+    averageAccuracy = (1. - double(Error/double(NumberOfVectors))) * 100.;
+
     fprintf(log, "%.2lf\n", double((1. - double(Error/double(NumberOfVectors))) * 100.));
     fclose(log);
     //automatization
@@ -1033,18 +1035,21 @@ void Net::memoryAndParamsAllocation()
 
 }
 
-void Net::readCfgByName(QString FilePath)
+void Net::readCfgByName(QString FileName)
 {
-    helpString = FilePath;
+    helpString = FileName;
     if(!helpString.endsWith(".net"), Qt::CaseInsensitive)
     {
         helpString += ".net";
     }
 
+    if(!FileName.contains(QDir::separator())) helpString = dir->absolutePath() + QDir::separator() + helpString;
+
     FILE * cfg = fopen(helpString.toStdString().c_str(),"r");
     if(cfg == NULL)
     {
         QMessageBox::critical((QWidget * )this, tr("Warning"), tr("cannot open cfg-file"), QMessageBox::Ok);
+        cout << "wrong cfg path = " << helpString.toStdString() << endl;
         return;
     }
     fscanf(cfg, "%*s%d\n", &NetLength);

@@ -17,7 +17,7 @@ cfg::cfg(QDir *dir_, int ns_, int spLength_, double error_, double lrate_, QStri
     ui->spLBox->setMinimum(1);
     ui->spLBox->setValue(spLength_);
 
-    ui->numOfOutsBox->setValue(3);
+    ui->numOfOutsBox->setValue(defaults::numOfClasses);
     ui->epsilonSpinBox->setValue(lrate_);
     ui->errorSpinBox->setValue(error_);
     ui->tempSpinBox->setValue(10);

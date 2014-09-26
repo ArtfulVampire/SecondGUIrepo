@@ -344,9 +344,6 @@
        </item>
        <item>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
-          <widget class="QComboBox" name="wndLengthBox"/>
-         </item>
          <item row="0" column="1">
           <widget class="QLabel" name="label_2">
            <property name="text">
@@ -363,6 +360,9 @@
             <string>timeShift</string>
            </property>
           </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QSpinBox" name="windowLengthBox"/>
          </item>
         </layout>
        </item>
@@ -938,18 +938,6 @@
      </rect>
     </property>
    </widget>
-   <zorder>browseButton</zorder>
-   <zorder>filePath</zorder>
-   <zorder>setNsLine</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>makeTestDataPushButton</zorder>
-   <zorder>numComponentsSpinBox</zorder>
-   <zorder>transformRealsPushButton</zorder>
-   <zorder>drawMapsPushButton</zorder>
-   <zorder>drawMapsPushButton</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

@@ -103,9 +103,9 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
 
     QObject::connect(ui->countButton, SIGNAL(clicked()), this, SLOT(countSpectra()));
 
-    QObject::connect(ui->fftComboBox, SIGNAL(activated(int)), this, SLOT(setFftLength()));
-    QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFftLength()));
-    QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFftLength()));
+    QObject::connect(ui->fftComboBox, SIGNAL(activated(int)), this, SLOT(setFftLengthSlot()));
+    QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFftLengthSlot()));
+    QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFftLengthSlot()));
 
     QObject::connect(ui->leftSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLeft()));
     QObject::connect(ui->rightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setRight()));
@@ -136,6 +136,11 @@ void Spectre::defaultState()
     ui->lineEdit_2->setText(helpString);
     ui->fftComboBox->setCurrentIndex(2); //4096
     ui->spectraRadioButton->setChecked(true); // count FFT
+}
+
+void Spectre::setFftLength(int i)
+{
+    ui->fftComboBox->setCurrentText(QString::number(i));
 }
 
 double Spectre::setPow(double a)
@@ -792,7 +797,7 @@ void Spectre::compare()
 
 }
 
-void Spectre::setFftLength()
+void Spectre::setFftLengthSlot()
 {
     fftLength = ui->fftComboBox->currentText().toInt();
 

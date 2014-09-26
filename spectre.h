@@ -31,6 +31,7 @@ public:
     int readFilePhase(int &num, double **data2, double ***dataPhase);
     void defaultState();
     double setPow(double);
+    void setFftLength(int);
 
 
 
@@ -38,7 +39,7 @@ public slots:
     void countSpectra();
     void inputDirSlot();
     void outputDirSlot();
-    void setFftLength();
+    void setFftLengthSlot();
     void setLeft();
     void setRight();
     void drawWavelets();

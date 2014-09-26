@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <time.h>
 #include <iostream>
+#include "coord.cpp"
 
 using namespace std;
 

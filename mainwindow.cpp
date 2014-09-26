@@ -157,6 +157,10 @@ MainWindow::MainWindow() :
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
     //9
+    ui->reduceChannelsComboBox->addItem("20");
+    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
+
     ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
     ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(ui->reduceChannelsComboBox->currentIndex()).toString());
 
@@ -165,15 +169,9 @@ MainWindow::MainWindow() :
     ui->timeShiftBox->setMaximum(1000);
     ui->timeShiftBox->setValue(250);
     ui->timeShiftBox->setSingleStep(25);
-    ui->wndLengthBox->addItem("250");
-    ui->wndLengthBox->addItem("400");
-    ui->wndLengthBox->addItem("450");
-    ui->wndLengthBox->addItem("500");
-    ui->wndLengthBox->addItem("625");
-    ui->wndLengthBox->addItem("750");
-    ui->wndLengthBox->addItem("875");
-    ui->wndLengthBox->addItem("1000");
-    ui->wndLengthBox->setCurrentIndex(0);
+    ui->windowLengthBox->setMaximum(1000);
+    ui->windowLengthBox->setMinimum(250);
+    ui->windowLengthBox->setSingleStep(125);
     ui->realButton->setChecked(true);
 
     ui->numOfIcSpinBox->setMaximum(19); //generality
@@ -462,6 +460,8 @@ MainWindow::MainWindow() :
 //    autoIcaAnalysis();
 //    system("sudo shutdown -P now");
 
+    //conf youung scientists automatization
+    autoIcaAnalysis2();
 }
 
 MainWindow::~MainWindow()
@@ -2507,7 +2507,7 @@ void MainWindow::sliceWindFromReal()
 
 
     timeShift=ui->timeShiftBox->value();
-    wndLength=ui->wndLengthBox->currentText().toInt();
+    wndLength = ui->windowLengthBox->value();
 
 //    cout << "timeShift = " << timeShift << endl;
 //    cout << "wndLength = " << wndLength << endl;
@@ -2913,7 +2913,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                 if(ui->windButton->isChecked()) //bad work
                 {
                     timeShift = ui->timeShiftBox->value();
-                    wndLength = ui->wndLengthBox->currentText().toInt();
+                    wndLength = ui->windowLengthBox->value();
 //                    return;
 
                     for(int i = 0; i < (ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift; ++i)
@@ -3632,7 +3632,7 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
             helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
 
 
-//            if(!((i-j > 15000 && (marker == "254")) || (marker == "000"))) // dont write big rests and beginning
+            if(!((i-j > 15000 && (marker == "254")) || (marker == "000")) && !defaults::wirteStartEndLong) // dont write big rests and beginning
             {
                 file = fopen(helpString.toStdString().c_str(), "w");
 
@@ -3660,7 +3660,7 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
 
     }
 
-    if(0)
+    if(defaults::wirteStartEndLong)
     {
         //write last rest state
         marker = "end";
@@ -5826,6 +5826,7 @@ void MainWindow::icaClassTest() //non-optimized
 
 void MainWindow::throwIC()
 {
+    //makes a signals-file from opened ICA file and appropriate matrixA file
     if(!ui->filePath->text().contains("ica", Qt::CaseInsensitive))
     {
         cout << "bad ica file" << endl;
@@ -6055,7 +6056,7 @@ void MainWindow::spoc()
 
     double * W = new double  [ns];
     double * WOld = new double  [ns];
-    int epochLength = ui->wndLengthBox->currentText().toInt();
+    int epochLength = ui->windowLengthBox->value();
     timeShift = ui->timeShiftBox->value();
     int numOfEpoches = (ndr*nr[0] - epochLength)/timeShift;
 
@@ -7354,5 +7355,236 @@ void MainWindow::autoIcaAnalysis()
 
             randomDecomposition();
         }
+    }
+}
+
+
+void MainWindow::autoIcaAnalysis2()
+{
+    //for young scientists conference
+
+
+
+    ui->sliceCheckBox->setChecked(true);
+    ui->sliceWithMarkersCheckBox->setChecked(false);
+    ui->eyesCleanCheckBox->setChecked(false);
+    ui->reduceChannelsCheckBox->setChecked(false);
+
+    ui->cleanRealisationsCheckBox->setChecked(true);
+    ui->cleanRealsSpectraCheckBox->setChecked(true);
+
+    ui->reduceChannelsLineEdit->setText("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
+    ui->reduceChannelsComboBox->setCurrentText("20");
+
+    dir->cd(defaults::dataFolder + "/AB");
+    QStringList list0 = dir->entryList(QStringList("*_1.edf"), QDir::NoFilter, QDir::Name); ///////////////////////////// list of first files!!!!
+
+    Spectre * spectr;
+    Net * ANN;
+    MakePa * mkPa;
+
+    //make needed cfgs
+//    cfg * config;
+//    config = new cfg(dir, 19, 247, 0.1, 0.1, "16sec19ch");
+//    config->makeCfg();
+//    delete config;
+//    config = new cfg(dir, 19, 63, 0.1, 0.1, "4sec19ch");
+//    config->makeCfg();
+//    delete config;
+
+    FILE * outFile;
+
+
+    for(int i = 0; i < list0.length(); ++i)
+    {
+        /////////////////////////////////////////////////////////////////////////////Net::numOfTall PROBLEM???? /////////////////////////////////////////////////////////////////
+        ui->realButton->setChecked(true);
+
+        helpString = dir->absolutePath() + QDir::separator() + list0[i];
+        setEdfFile(helpString); // open ExpName_1.edf
+        cleanDirs();
+        sliceAll();
+        fclose(edf);
+
+        spectr = new Spectre(dir, ns, ExpName);
+        spectr->setFftLength(4096);
+        spectr->countSpectra();
+        spectr->close(); //// /???????
+        spectr->compare();
+        spectr->compare();
+        spectr->compare();
+        spectr->psaSlot();
+        delete spectr;
+
+        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
+        mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+        mkPa->setRdcCoeff(10);
+        ANN = new Net(dir, ns, left, right, spStep, ExpName);
+        ANN->readCfgByName("16sec19ch.net");
+
+        //set appropriate rdc coeff
+        while(1)
+        {
+            mkPa->makePaSlot();
+            ANN->PaIntoMatrixByName("1");
+            ANN->LearnNet();
+            if(ANN->getEpoch() > 150 || ANN->getEpoch() < 80)
+            {
+                mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 120.));
+            }
+            else
+            {
+                reduceCoefficient = mkPa->getRdcCoeff();
+                cout << "file = " << ExpName.toStdString() << "\t" << "reduceCoeff = " << reduceCoefficient << endl;
+                ANN->setReduceCoeff(reduceCoefficient);
+                break;
+            }
+        }
+        mkPa->makePaSlot();
+        mkPa->close();
+        delete mkPa;
+        ANN->PaIntoMatrixByName("all");
+        ANN->LearnNet();
+
+        helpString = dir->absolutePath() + QDir::separator() + list0[i];
+        helpString.replace("_1.edf", "_2.edf");
+        setEdfFile(helpString); // open ExpName_2.edf
+        cleanDirs();
+        sliceAll();
+        fclose(edf);
+
+        spectr = new Spectre(dir, ns, ExpName);
+        spectr->countSpectra();
+        spectr->close();////// /????????
+        spectr->compare();
+        spectr->compare();
+        spectr->compare();
+        spectr->psaSlot();
+        delete spectr;
+
+        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
+        mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+        mkPa->setRdcCoeff(reduceCoefficient); //is it right value?
+        mkPa->makePaSlot();
+        mkPa->close();
+        delete mkPa;
+
+        ANN->PaIntoMatrixByName("all");
+        ANN->tall();
+
+        outFile = fopen(QString(defaults::dataFolder + "/AB/res.txt").toStdString().c_str(), "a");
+        fprintf(outFile, "%s_reals\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), ANN->getAverageAccuracy());
+        fclose(outFile);
+
+        ANN->close();
+        delete ANN;
+        //end of 1-4 points
+
+
+        ////////////////////////////////////////////////////fails!/////////////////////////////////////////////////
+
+        ICA();
+        helpString = dir->absolutePath() + QDir::separator() + list0[i];
+        setEdfFile(helpString); // open ExpName_1.edf
+        cleanDirs();
+        sliceAll();
+        fclose(edf);
+        ICA();
+
+
+
+
+
+
+
+
+        ui->windButton->setChecked(true);
+        ui->cleanWindowsCheckBox->setChecked(true);
+        ui->cleanWindSpectraCheckBox->setChecked(true);
+
+        for(int wndL = 1000; wndL >=250; wndL -= 125)
+        {
+            //process with windows
+            ui->windowLengthBox->setValue(wndL);
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            setEdfFile(helpString); // open ExpName_1.edf
+            cleanDirs();
+            sliceAll();
+            fclose(edf);
+
+            spectr = new Spectre(dir, ns, ExpName);
+            spectr->setFftLength(1024);
+            spectr->countSpectra();
+            spectr->close(); ///??????
+            spectr->compare();
+            spectr->compare();
+            spectr->compare();
+            spectr->psaSlot();
+            delete spectr;
+
+            ANN = new Net(dir, ns, left, right, spStep, ExpName);
+            ANN->readCfgByName("4sec19ch");
+
+            helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows";
+            mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+            mkPa->setRdcCoeff(10); //is it right value?
+            while(1)
+            {
+                mkPa->makePaSlot();
+                ANN->PaIntoMatrixByName("1");
+                ANN->LearnNet();
+                if(ANN->getEpoch() > 150 || ANN->getEpoch() < 80)
+                {
+                    mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 120.));
+                }
+                else
+                {
+                    reduceCoefficient = mkPa->getRdcCoeff();
+                    cout << "file = " << ExpName.toStdString() << "\t" << "reduceCoeff = " << reduceCoefficient << endl;
+                    ANN->setReduceCoeff(reduceCoefficient);
+                    break;
+                }
+            }
+            mkPa->makePaSlot();
+            mkPa->close();
+            delete mkPa;
+
+            ANN->PaIntoMatrixByName("all");
+            ANN->LearnNet();
+
+            //2nd file
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString.replace("_1.edf", "_2.edf");
+            setEdfFile(helpString); // open ExpName_2.edf
+            cleanDirs();
+            sliceAll();
+            fclose(edf);
+
+            spectr = new Spectre(dir, ns, ExpName);
+            spectr->setFftLength(1024);
+            spectr->countSpectra();
+            spectr->close(); ///??????
+            spectr->compare();
+            spectr->compare();
+            spectr->compare();
+            spectr->psaSlot();
+            delete spectr;
+
+            helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows";
+            mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+            mkPa->setRdcCoeff(reduceCoefficient); //is it right value?
+            mkPa->makePaSlot();
+            mkPa->close();
+            delete mkPa;
+
+            ANN->PaIntoMatrixByName("all");
+            ANN->tall();
+
+            outFile = fopen(QString(defaults::dataFolder + "/AB/res.txt").toStdString().c_str(), "a");
+            fprintf(outFile, "%s_winds\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), ANN->getAverageAccuracy());
+            fclose(outFile);
+        }
+
+
     }
 }

@@ -16,6 +16,8 @@
 #include "spectre.h"
 #include "makepa.h"
 #include "eyes.h"
+#include "library.h"
+#include "coord.cpp"
 
 #include <iostream>
 #include <sstream>
@@ -25,7 +27,6 @@
 #include <cmath>
 #include <cstddef>
 
-#include "library.h"
 #include <unistd.h>
 #include <QMessageBox>
 //#include <libxml2/libxml/parser.h>
@@ -121,6 +122,7 @@ public:
     void drawMap(double ** matrixA, int num);
     void setEdfFile(QString filePath);
     void autoIcaAnalysis();
+    void autoIcaAnalysis2();
 
 
 private:
