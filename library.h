@@ -40,9 +40,6 @@ using namespace std;
 //using namespace itpp;
 //using namespace mlpack;
 
-
-int readDefaults(QString filePath, char *dataFolder, int fftLength, int numOfClasses, bool opencl, bool openmp);
-
 int len(QString s);
 QString rightNumber(int &input, int N);
 
@@ -97,11 +94,14 @@ void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth, const double powArg);
 void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
 
+void ICsSequence(QString EDFica1, QString EDFica2, QString maps1, QString maps2);
+
 
 double distance(double * const vec1, double * const vec2, int const dim);
 void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const dimH, int const dimL);  //matrix product: out = A(H*H) * B(H*L)
 void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const numRows1, int const numCols2, int const numCols1Rows2);  //matrix product: out = A(H*H) * B(H*L)
 void matrixTranspose(double ** const inMat, int const numRows, int const numCols, double *** outMat);
+void matrixTranspose(double *** inMat, int const numRowsCols);
 void matrixCopy(double ** const inMat, double *** outMat, int const dimH, int const dimL);
 void matrixInvert(double ** const inMat, int const size, double *** outMat); //cofactors
 double matrixDet(double ** const matrix, int const dim);

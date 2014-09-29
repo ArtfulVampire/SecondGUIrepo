@@ -75,6 +75,7 @@ public slots:
     void drawMaps();
     void makeDatFile();
     void constructEDF();
+    void reduceChannelsEDF();
     //signals
     void ICA();
     void waveletCount();
@@ -131,6 +132,7 @@ private:
     FILE *edf;
     QDir *dir;
     QString helpString;
+    QString helpString2;
     ifstream inStream;
     ofstream outStream;
     int helpInt;

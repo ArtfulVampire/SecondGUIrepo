@@ -29,12 +29,14 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     spStep = spStep_;
     ns = ns_;
 
+
+/*
     cout << "left = " << left << endl;
     cout << "right = " << right << endl;
     cout << "spStep = " << spStep << endl;
     cout << "ns = " << ns << endl;
     cout << "spLength = " << spLength << endl;
-
+*/
 
     stopFlag = 0;
     numTest = 0;
@@ -3236,7 +3238,7 @@ void Net::pca()
 
 
         sum1 = 0.;
-        for(int j = 0; j < k+1; ++j)
+        for(int j = 0; j <= k; ++j)
         {
             sum1 += eigenValues[j];
         }

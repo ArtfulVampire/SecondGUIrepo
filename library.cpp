@@ -1272,6 +1272,32 @@ void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double fr
     delete painter;
 }
 
+void matrixTranspose(double ***inMat, int const numRowsCols)
+{
+    double ** tmp;
+    matrixCreate(&tmp, numRowsCols, numRowsCols);
+
+     //transpose to tmp
+    for(int i = 0; i < numRowsCols; ++i)
+    {
+        for(int j = 0; j < numRowsCols; ++j)
+        {
+            tmp[i][j] = (*inMat)[j][i];
+        }
+    }
+
+
+    //tmp to inMat
+    for(int i = 0; i < numRowsCols; ++i)
+    {
+        for(int j = 0; j < numRowsCols; ++j)
+        {
+            (*inMat)[i][j] = tmp[i][j];
+        }
+    }
+    matrixDelete(&tmp, numRowsCols, numRowsCols);
+}
+
 void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int channelNumber2=1, double freqMax=20., double freqMin=5., double freqStep=0.99, double pot=32.)
 {
     int NumOfSlices;
@@ -1800,7 +1826,6 @@ void readICAMatrix(QString path, double *** matrixA, int ns)
         }
     }
     fclose(map);
-
 }
 
 

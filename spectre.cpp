@@ -106,6 +106,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     QObject::connect(ui->fftComboBox, SIGNAL(activated(int)), this, SLOT(setFftLengthSlot()));
     QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFftLengthSlot()));
     QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFftLengthSlot()));
+    QObject::connect(ui->fftComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(setFftLengthSlot()));
 
     QObject::connect(ui->leftSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLeft()));
     QObject::connect(ui->rightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setRight()));
@@ -376,7 +377,7 @@ void Spectre::psaSlot()
     {
         count = 3;
     }
-    cout << "count = " << count << endl;
+//    cout << "count = " << count << endl;
     spL = new int [count];
     sp = new double ** [count];
 
@@ -562,7 +563,7 @@ void Spectre::psaSlot()
 
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()+1);
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()-1);
-    cout<<"average spectra drawn"<<endl<<endl;
+//    cout << "average spectra drawn" << endl << endl;
 
 }
 
@@ -1188,7 +1189,15 @@ void Spectre::countSpectra()
                 if(h == ns) Eyes += 1;
             }
 
-            if((NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
+            if(fftLength == 4096 && (NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
+            {
+                cout << a << "'th file too short" << endl;
+            }
+            else if(fftLength == 1024 && (NumOfSlices-Eyes) < 250*2.)
+            {
+                cout << a << "'th file too short" << endl;
+            }
+            else if(fftLength == 2048 && (NumOfSlices-Eyes) < 250*3.)
             {
                 cout << a << "'th file too short" << endl;
             }
@@ -1329,7 +1338,18 @@ int Spectre::readFile(int &num, double ** data2, double **dataFFT)  /////////EDI
         if(h == ns) Eyes += 1;
     }
 
-    if((NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
+    //generality
+    if(fftLength == 4096 && (NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
+    {
+        cout << num << "'th file too short" << endl;
+        return 0;
+    }
+    else if(fftLength == 1024 && (NumOfSlices-Eyes) < 250*2.)
+    {
+        cout << num << "'th file too short" << endl;
+        return 0;
+    }
+    else if(fftLength == 2048 && (NumOfSlices-Eyes) < 250*3.)
     {
         cout << num << "'th file too short" << endl;
         return 0;

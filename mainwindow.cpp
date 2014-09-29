@@ -89,8 +89,6 @@ MainWindow::MainWindow() :
     ui->drawDirBox->addItem("cut");
     ui->drawDirBox->addItem("windows");
     ui->drawDirBox->addItem("windows/fromreal"); //generality
-    ui->rdcChannelBox->addItem("Realisations");
-    ui->rdcChannelBox->addItem("windows");
 
     helpInt = 0;
     /*
@@ -299,6 +297,8 @@ MainWindow::MainWindow() :
     QObject::connect(ui->transformRealsPushButton, SIGNAL(clicked()), this, SLOT(transformReals()));
 
     QObject::connect(ui->sliceWithMarkersCheckBox, SIGNAL(stateChanged(int)), this, SLOT(sliceWithMarkersSlot(int)));
+
+    QObject::connect(ui->reduceChannelsEDFComboBox, SIGNAL(clicked()), this, SLOT(reduceChannelsEDF()));
 /*
     //function test
     int leng = 65536;
@@ -461,7 +461,7 @@ MainWindow::MainWindow() :
 //    system("sudo shutdown -P now");
 
     //conf youung scientists automatization
-//    autoIcaAnalysis2();
+    autoIcaAnalysis2();
 }
 
 MainWindow::~MainWindow()
@@ -1457,6 +1457,14 @@ void MainWindow::setNsSlot(int a)
     ui->setNsLine->clear();
 }
 
+
+void MainWindow::countSpectra()
+{
+    Spectre *sp = new Spectre(dir, ns, ExpName);
+    QObject::connect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
+    sp->show();
+}
+
 void MainWindow::eyesShow()
 {
     Eyes *trololo = new Eyes(dir, ns);
@@ -1820,7 +1828,7 @@ void MainWindow::readData()
         if(flag==1) fprintf(edfNew, "%c", helpCharArr[i]);
     }
     ns=atoi(helpCharArr);                        //Number of channels
-    cout << "ns=" << ns << endl;
+//    cout << "ns = " << ns << endl;
 
     //labels
     for(int i = 0; i < ns*16; ++i)
@@ -2130,7 +2138,7 @@ void MainWindow::readData()
 
             }
         }
-        cout << "staSlice=" << staSlice << " staTime=" << staSlice/250. << endl;
+//        cout << "staSlice=" << staSlice << " staTime=" << staSlice/250. << endl;
     }
     fclose(markers);
 
@@ -2176,7 +2184,7 @@ void MainWindow::readData()
     delete []digMax;
     delete[] annotations;
 
-    cout<<"ndr*ddr = " << ndr*ddr << endl;
+//    cout<<"ndr*ddr = " << ndr*ddr << endl;
 
 
 //    cout << "data have been read" << endl;
@@ -2858,6 +2866,14 @@ void MainWindow::refilterData()
     cout << "RefilterData: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
+void MainWindow::reduceChannelsEDF()
+{
+    readData();
+    reduceChannelsFast();
+    helpString = ExpName + "_rdcChan.edf";
+    writeEdf(edf, data, helpString, ndr*nr[0]);
+}
+
 void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 {
     QTime myTime;
@@ -3294,7 +3310,7 @@ void MainWindow::sliceFromTo(int marker1, int marker2, QString marker) //beginni
 //    kernelest(helpString);
 
     solveTime/=(250.*number);
-    cout << "average time before feedback " << marker.toStdString() << " =" << solveTime << endl;
+//    cout << "average time before feedback " << marker.toStdString() << " =" << solveTime << endl;
 
     FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
     if(ExpName.contains("FB")) fprintf(res, "time before feedback %s\t%lf\n", marker.toStdString().c_str(), solveTime);
@@ -3980,12 +3996,6 @@ void MainWindow::takeSpValues(int b, int c, double d)
     ui->textEdit->append(helpString);
 }
 
-void MainWindow::countSpectra()
-{    
-    Spectre *sp = new Spectre(dir, ns, ExpName);
-    QObject::connect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
-    sp->show();
-}
 
 void MainWindow::reduceChannels()
 {
@@ -4811,8 +4821,11 @@ void MainWindow::ICA() //fastICA
     //we have data[ns][ndr*nr], ns, ndr, nr
     //at first - whiten signals using eigen linear superposition to get E as covMatrix
     //then count matrixW
-    //count components matrixW*data and write to ExpName_ICA.edf
-    //count inverse matrixW^-1 and draw maps of components
+
+    //data = A * comps, comps = W * data
+
+    //count components = matrixW*data and write to ExpName_ICA.edf
+    //count inverse matrixA = matrixW^-1 and draw maps of components
     //write automatization for classification different sets of components, find best set, explain
     QTime wholeTime;
     wholeTime.start();
@@ -5161,7 +5174,7 @@ void MainWindow::ICA() //fastICA
 
         sum1 = 0.;
 
-        for(int i = 0; i < k; ++i)
+        for(int i = 0; i <= k; ++i)
         {
             sum1 += eigenValues[i];
         }
@@ -5433,9 +5446,9 @@ void MainWindow::ICA() //fastICA
             }
             */
         }
-        cout << "NumOf vectorW component" << i << "\t";
+        cout << "NumOf vectorW component = " << i << "\t";
         cout << "iterations = " << counter << "\t";
-        cout << "error = " << sum2 << "\t";
+        cout << "error = " << fabs(sum2 - int(sum2+0.5)) << "\t";
         cout << "time = " << myTime.elapsed()/1000. << " sec" << endl;
 
     }
@@ -5981,6 +5994,7 @@ void MainWindow::transformReals()
         }
         outStream.close();
         ui->progressBar->setValue(i*100./lst.length());
+        qApp->processEvents();
     }
     ui->progressBar->setValue(0);
 
@@ -7370,7 +7384,8 @@ void MainWindow::autoIcaAnalysis()
 void MainWindow::autoIcaAnalysis2()
 {
     //for young scientists conference
-
+    QTime myTime;
+    myTime.start();
 
 
     ui->sliceCheckBox->setChecked(true);
@@ -7403,8 +7418,10 @@ void MainWindow::autoIcaAnalysis2()
     FILE * outFile;
 
 
+
     for(int i = 0; i < list0.length(); ++i)
     {
+           ///////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////Net::numOfTall PROBLEM???? /////////////////////////////////////////////////////////////////
         ui->realButton->setChecked(true);
 
@@ -7428,6 +7445,7 @@ void MainWindow::autoIcaAnalysis2()
         mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
         mkPa->setRdcCoeff(10);
         ANN = new Net(dir, ns, left, right, spStep, ExpName);
+        ANN->setAutoProcessingFlag(true);
         ANN->readCfgByName("16sec19ch.net");
 
         //set appropriate rdc coeff
@@ -7489,112 +7507,190 @@ void MainWindow::autoIcaAnalysis2()
         delete ANN;
         //end of 1-4 points
 
-
-        ////////////////////////////////////////////////////fails!/////////////////////////////////////////////////
-
         ICA();
+        helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_maps.txt";
+        helpString2 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_1_maps.txt";
+        QFile::copy(helpString, helpString2);
         helpString = dir->absolutePath() + QDir::separator() + list0[i];
         setEdfFile(helpString); // open ExpName_1.edf
         cleanDirs();
-        sliceAll();
         //dont close edf before ICA
 //        fclose(edf);
         ICA();
+        helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_maps.txt";
+        helpString2 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_2_maps.txt";
+        QFile::copy(helpString, helpString2);
+        cleanDirs();
+
+
+        //ICA realisations ///////////////////////////////////////////////////////////////////////////
+
+
+
+
+        //sequence ICs
+        double ** mat1;
+        double ** mat2;
+        matrixCreate(&mat1, 19, 19);
+        matrixCreate(&mat2, 19, 19);
+
+        //read matrices
+        helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_1_maps.txt";
+        readICAMatrix(helpString, &mat1, 19);
+        helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_2_maps.txt";
+        readICAMatrix(helpString, &mat2, 19);
+
+        //transpose ICA maps
+        matrixTranspose(&mat1, 19);
+        matrixTranspose(&mat2, 19);
+
+        QList<int> listIC;
+        listIC.clear();
+
+        double tempDouble;
+        int tempNumber;
+
+        helpString.clear();
+        for(int i = 0; i < 19; ++i)
+        {
+            tempDouble = 0.;
+            for(int j = 0; j < 19; ++j)
+            {
+                if(listIC.contains(j)) continue;
+                helpDouble = fabs(correlation(mat1[i], mat2[j], 19, 0));
+                if(helpDouble > tempDouble)
+                {
+                    tempDouble = helpDouble;
+                    tempNumber = j;
+                }
+            }
+            listIC << tempNumber;
+            helpString += QString::number(tempNumber+1) + " ";
+            cout << i << "\t" << tempNumber << "\t" << tempDouble << endl;
+        }
+        helpString += "20";
+
+        //set appropriate channel sequence for 2nd ica file
+        ui->reduceChannelsLineEdit->setText(helpString);
+
+        //write new 2nd ica file with needed channels
+        helpString = dir->absolutePath() + QDir::separator() + list0[i];
+        helpString.replace("_1.edf", "_2_ica.edf");
+        setEdfFile(helpString); // open ExpName_2_ica.edf
+        cleanDirs();
+        this->reduceChannelsEDF();
+        //remake 2nd ica maps file????? //////////////////////////////////////////////////////////////////////////////////////////////
+
+        matrixDelete(&mat1, 19, 19);
+        matrixDelete(&mat2, 19, 19);
 
 
 
 
 
-
-
+           ////////////////////////////////////////
 
         ui->windButton->setChecked(true);
         ui->cleanWindowsCheckBox->setChecked(true);
         ui->cleanWindSpectraCheckBox->setChecked(true);
+        cleanDirs();
 
-        for(int wndL = 1000; wndL >=250; wndL -= 125)
+        for(int j = 0; j <=1; ++j)
         {
-            //process with windows
-            ui->windowLengthBox->setValue(wndL);
-            helpString = dir->absolutePath() + QDir::separator() + list0[i];
-            setEdfFile(helpString); // open ExpName_1.edf
-            cleanDirs();
-            sliceAll();
-            fclose(edf);
-
-            spectr = new Spectre(dir, ns, ExpName);
-            spectr->setFftLength(1024);
-            spectr->countSpectra();
-            spectr->close(); ///??????
-            spectr->compare();
-            spectr->compare();
-            spectr->compare();
-            spectr->psaSlot();
-            delete spectr;
-
-            ANN = new Net(dir, ns, left, right, spStep, ExpName);
-            ANN->readCfgByName("4sec19ch");
-
-            helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows";
-            mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
-            mkPa->setRdcCoeff(10); //is it right value?
-            while(1)
+            //0 for initial
+            //1 for ica
+            for(int wndL = 1000; wndL >=500; wndL -= 125)
             {
+                cout << wndL << " windows start" << endl;
+                //process with windows
+                ui->windowLengthBox->setValue(wndL);
+                helpString = dir->absolutePath() + QDir::separator() + list0[i];
+                if(j == 1) helpString.replace("_1.edf", "_1_ica.edf");
+                setEdfFile(helpString); // open ExpName_1.edf
+                cleanDirs();
+                sliceAll();
+                fclose(edf);
+
+                spectr = new Spectre(dir, ns, ExpName);
+                QObject::connect(spectr, SIGNAL(spValues(int,int,double)), this, SLOT(takeSpValues(int,int,double)));
+                spectr->setFftLength(1024);
+                spectr->countSpectra();
+                spectr->close(); ///??????
+                spectr->compare();
+                spectr->compare();
+                spectr->compare();
+                spectr->psaSlot();
+//                QObject::disconnect(spectr, SIGNAL(spValues(int,int,double)), this, SLOT(takeSpValues(int,int,double)));
+                delete spectr;
+
+                ANN = new Net(dir, ns, left, right, spStep, ExpName);
+                ANN->setAutoProcessingFlag(true);
+                ANN->readCfgByName("4sec19ch");
+
+                helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows";
+                mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+                mkPa->setRdcCoeff(10); //is it right value?
+                while(1)
+                {
+                    mkPa->makePaSlot();
+                    ANN->PaIntoMatrixByName("1_wnd");
+                    ANN->LearnNet();
+                    if(ANN->getEpoch() > 150 || ANN->getEpoch() < 80)
+                    {
+                        mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 120.));
+                    }
+                    else
+                    {
+                        reduceCoefficient = mkPa->getRdcCoeff();
+                        cout << "file = " << ExpName.toStdString() << "\t" << "reduceCoeff = " << reduceCoefficient << endl;
+                        ANN->setReduceCoeff(reduceCoefficient);
+                        break;
+                    }
+                }
                 mkPa->makePaSlot();
-                ANN->PaIntoMatrixByName("1");
+                mkPa->close();
+                delete mkPa;
+
+                ANN->PaIntoMatrixByName("all_wnd");
                 ANN->LearnNet();
-                if(ANN->getEpoch() > 150 || ANN->getEpoch() < 80)
-                {
-                    mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 120.));
-                }
-                else
-                {
-                    reduceCoefficient = mkPa->getRdcCoeff();
-                    cout << "file = " << ExpName.toStdString() << "\t" << "reduceCoeff = " << reduceCoefficient << endl;
-                    ANN->setReduceCoeff(reduceCoefficient);
-                    break;
-                }
+
+                //2nd file
+                helpString = dir->absolutePath() + QDir::separator() + list0[i];
+                if(j == 0) helpString.replace("_1.edf", "_2.edf");
+                else if(j == 1) helpString.replace("_1.edf", "_2_ica_rdcChan.edf");
+                setEdfFile(helpString); // open ExpName_2.edf
+                cleanDirs();
+                sliceAll();
+                fclose(edf);
+
+                spectr = new Spectre(dir, ns, ExpName);
+                spectr->setFftLength(1024);
+                spectr->countSpectra();
+                spectr->close(); ///??????
+                spectr->compare();
+                spectr->compare();
+                spectr->compare();
+                spectr->psaSlot();
+                delete spectr;
+
+                helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows";
+                mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+                mkPa->setRdcCoeff(reduceCoefficient); //is it right value?
+                mkPa->makePaSlot();
+                mkPa->close();
+                delete mkPa;
+
+//                ANN->PaIntoMatrixByName("all_wnd");
+                ANN->PaIntoMatrixByName("whole_wnd");
+                ANN->tall();
+
+                outFile = fopen(QString(defaults::dataFolder + "/AB/res.txt").toStdString().c_str(), "a");
+                if(j == 0) fprintf(outFile, "%s_winds %d\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), wndL, ANN->getAverageAccuracy());
+                else if(j == 1) fprintf(outFile, "%s_winds_ica %d\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), wndL, ANN->getAverageAccuracy());
+                fclose(outFile);
             }
-            mkPa->makePaSlot();
-            mkPa->close();
-            delete mkPa;
-
-            ANN->PaIntoMatrixByName("all");
-            ANN->LearnNet();
-
-            //2nd file
-            helpString = dir->absolutePath() + QDir::separator() + list0[i];
-            helpString.replace("_1.edf", "_2.edf");
-            setEdfFile(helpString); // open ExpName_2.edf
-            cleanDirs();
-            sliceAll();
-            fclose(edf);
-
-            spectr = new Spectre(dir, ns, ExpName);
-            spectr->setFftLength(1024);
-            spectr->countSpectra();
-            spectr->close(); ///??????
-            spectr->compare();
-            spectr->compare();
-            spectr->compare();
-            spectr->psaSlot();
-            delete spectr;
-
-            helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows";
-            mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
-            mkPa->setRdcCoeff(reduceCoefficient); //is it right value?
-            mkPa->makePaSlot();
-            mkPa->close();
-            delete mkPa;
-
-            ANN->PaIntoMatrixByName("all");
-            ANN->tall();
-
-            outFile = fopen(QString(defaults::dataFolder + "/AB/res.txt").toStdString().c_str(), "a");
-            fprintf(outFile, "%s_winds\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), ANN->getAverageAccuracy());
-            fclose(outFile);
         }
 
-
     }
+    cout << "auto Ica analysis time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 }
