@@ -172,7 +172,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     //generality
-    helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
+    helpString = dir->absolutePath() + QDir::separator() + defaults::cfgFileName;
     readCfgByName(helpString);
 
     this->ui->deltaRadioButton->setChecked(true);
@@ -1038,7 +1038,7 @@ void Net::memoryAndParamsAllocation()
 void Net::readCfgByName(QString FileName)
 {
     helpString = FileName;
-    if(!helpString.endsWith(".net"), Qt::CaseInsensitive)
+    if(!helpString.endsWith(".net", Qt::CaseInsensitive))
     {
         helpString += ".net";
     }

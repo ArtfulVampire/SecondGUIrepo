@@ -461,7 +461,7 @@ MainWindow::MainWindow() :
 //    system("sudo shutdown -P now");
 
     //conf youung scientists automatization
-    autoIcaAnalysis2();
+//    autoIcaAnalysis2();
 }
 
 MainWindow::~MainWindow()
@@ -5156,15 +5156,8 @@ void MainWindow::ICA() //fastICA
         }
 
         eigenValues[k] = sum1*sum2/double(ndr*fr-1.);
-        cout << "numOfPC = " << k << "\t";
-        cout << "value = " << eigenValues[k] << "\t";
-        cout << "disp = " << 100. * eigenValues[k]/trace << "\t";
-        cout << "iterations = " << counter << "\t";
-        cout << myTime.elapsed()/1000. << " sec" << endl;
-        for(int i = 0; i < ns; ++i)
-        {
-            eigenVectors[i][k] = tempA[i]; //1-normalized
-        }
+
+
 
         sum1 = 0.;
 
@@ -5172,6 +5165,20 @@ void MainWindow::ICA() //fastICA
         {
             sum1 += eigenValues[i];
         }
+
+        cout << "numOfPC = " << k << "\t";
+        cout << "value = " << eigenValues[k] << "\t";
+        cout << "disp = " << 100. * eigenValues[k]/trace << "\t";
+        cout << "total = " << 100. * sum1/trace << "\t";
+        cout << "iterations = " << counter << "\t";
+        cout << myTime.elapsed()/1000. << " sec" << endl;
+
+
+        for(int i = 0; i < ns; ++i)
+        {
+            eigenVectors[i][k] = tempA[i]; //1-normalized
+        }
+
     }
     numOfPc = ns;
 
@@ -5426,9 +5433,10 @@ void MainWindow::ICA() //fastICA
             }
             */
         }
-        cout << i << "\t" << counter << "\t";
+        cout << "NumOf vectorW component" << i << "\t";
+        cout << "iterations = " << counter << "\t";
         cout << "error = " << sum2 << "\t";
-        cout << myTime.elapsed()/1000. << " sec" << endl;
+        cout << "time = " << myTime.elapsed()/1000. << " sec" << endl;
 
     }
     cout << "VectorsW counted" << endl;
@@ -7451,7 +7459,8 @@ void MainWindow::autoIcaAnalysis2()
         setEdfFile(helpString); // open ExpName_2.edf
         cleanDirs();
         sliceAll();
-        fclose(edf);
+        //dont close edf before ICA
+//        fclose(edf);
 
         spectr = new Spectre(dir, ns, ExpName);
         spectr->countSpectra();
@@ -7488,7 +7497,8 @@ void MainWindow::autoIcaAnalysis2()
         setEdfFile(helpString); // open ExpName_1.edf
         cleanDirs();
         sliceAll();
-        fclose(edf);
+        //dont close edf before ICA
+//        fclose(edf);
         ICA();
 
 

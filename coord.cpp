@@ -20,6 +20,7 @@ namespace defaults
     const int numOfClasses = 3;
     const bool opencl = true;
     const bool openmp = true;
+    const QString cfgFileName = "16sec19ch";
 //    //Baklushev
 //    const QString dataFolder = "c:/EEG";
 //    const int fftLength = 2048;
@@ -28,6 +29,7 @@ namespace defaults
 //    const int numOfClasses = 2;
 //    const bool opencl = 0;
 //    const bool openmp = 0;
+//    const QString cfgFileName = "8sec19ch";
 //    //Ivanitsky
 //    const QString dataFolder = "d:/AtanovMichael/Data";
 //    const int fftLength = 4096;
@@ -36,6 +38,7 @@ namespace defaults
 //    const int numOfClasses = 3;
 //    const bool opencl = 0;
 //    const bool openmp = 0;
+//    const QString cfgFileName = "16sec19ch";
 
     const bool wirteStartEndLong = false;
 }
