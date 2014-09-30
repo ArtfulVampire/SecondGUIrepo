@@ -29,6 +29,16 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     spStep = spStep_;
     ns = ns_;
 
+    //clean log file
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "log.txt");
+    log = fopen(helpString.toStdString().c_str(),"w");
+    if(log == NULL)
+    {
+        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
+        return;
+    }
+    fclose(log);
+
 
 /*
     cout << "left = " << left << endl;
@@ -284,15 +294,15 @@ void Net::autoClassificationSimple()
     helpString.clear();
     if(ui->realsRadioButton->isChecked())
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth");
     }
     else if(ui->windowsRadioButton->isChecked())
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth").append(QDir::separator()).append("windows"));
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows");
     }
     else if(ui->pcRadioButton->isChecked())
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraPCA"));
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraPCA");
     }
     if(!helpString.isEmpty()) autoClassification(helpString);
 }
@@ -313,7 +323,7 @@ void Net::autoClassification(QString spectraDir)
         QMessageBox::critical((QWidget * )this, tr("Warning"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
         return;
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "log.txt");
     log = fopen(helpString.toStdString().c_str(),"w");
     if(log == NULL)
     {
@@ -439,7 +449,7 @@ void Net::autoPCAClassification()
     cfg * config;
 //    MakePa * mkPa;
 
-//    helpString = QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
+//    helpString = QDir::toNativeSeparators(dirBC->absolutePath( + QDir::separator() + "SpectraSmooth"));
 //    MakePa * mkPaW;
 
     int nsBC = ns;
@@ -459,7 +469,7 @@ void Net::autoPCAClassification()
         config->close();
         if(config != NULL) delete config;
 
-        helpString = QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("pca.net"));
+        helpString = QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "pca.net");
         readCfgByName(helpString);
 
         ns = 1;
@@ -467,7 +477,7 @@ void Net::autoPCAClassification()
         right = i;
         spStep = 0.1;
 
-        helpString = QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("SpectraPCA"));
+        helpString = QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "SpectraPCA");
         autoClassification(helpString);
 
 
@@ -507,7 +517,7 @@ void Net::setNumOfPairs(int num)
 void Net::averageClassification()
 {
     FILE * logFile;
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "log.txt");
     logFile = fopen(helpString.toStdString().c_str(),"r");
     if(logFile == NULL)
     {
@@ -541,9 +551,11 @@ void Net::averageClassification()
     }
     fclose(logFile);
 
-    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
+    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "results.txt").toStdString().c_str(), "a+");
+    //indents
     if(spStep != 250./1024.) fprintf(res, "\nPRR \t(");
     else fprintf(res, "\nPRR wnd \t(");
+
     for(int j = 0; j < NumOfClasses-1; ++j)
     {
         fprintf(res, "%.2lf - ", averagePercentage[j]);
@@ -582,7 +594,7 @@ void Net::drawWts()  //generality
     else
     {
         helpString = dir->absolutePath();
-        helpString.append(QDir::separator()).append(ExpName).append("_weights.wts");
+        helpString.append(QDir::separator() + ExpName + "_weights.wts");
     }
     if(helpString == "")
     {
@@ -730,6 +742,7 @@ void Net::saveWts()
 {
     FILE * weights;
     //automatization
+    int wtsCounter = 0;
 
     if(!autoFlag)
     {
@@ -741,8 +754,11 @@ void Net::saveWts()
     }
     else
     {
-        helpString = dir->absolutePath();
-        helpString.append(QDir::separator()).append(ExpName).append("_weights.wts");
+        do
+        {
+            helpString = dir->absolutePath() + QDir::separator() + ExpName + "_weights_" + QString::number(wtsCounter) + ".wts";
+            ++wtsCounter;
+        } while(QFile(helpString).exists());
     }
 
     if(helpString == "")
@@ -899,20 +915,20 @@ void Net::tall()
         //generality
         NumOfVectorsOfClass[int(matrix[i][NetLength+1])] += 1;
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "log.txt");
     log = fopen(helpString.toStdString().c_str(),"a+");
     helpString.clear();
     for(int i = 0; i < NumOfClasses; ++i)
     {
         fprintf(log, "%.2lf\t", double((1. - double(NumberOfErrors[i]/double(NumOfVectorsOfClass[i]))) * 100.));
-        helpString.append("Percentage[").append(tmp.setNum(i)).append("] = ");
-        helpString.append(tmp.setNum((1. - double(NumberOfErrors[i]/double(NumOfVectorsOfClass[i]))) * 100.)).append(" % \n");
+        helpString.append("Percentage[" + tmp.setNum(i) + "] = ");
+        helpString.append(tmp.setNum((1. - double(NumberOfErrors[i]/double(NumOfVectorsOfClass[i]))) * 100.) + " % \n");
     }
     for(int i = 0; i < NumOfClasses; ++i)
     {
         Error += NumberOfErrors[i];
     }
-    helpString.append("Percentage[all] = ").append(tmp.setNum((1. - double(Error/double(NumberOfVectors))) * 100.)).append(" % \n");
+    helpString.append("Percentage[all] = " + tmp.setNum((1. - double(Error/double(NumberOfVectors))) * 100.) + " % \n");
 
     averageAccuracy = (1. - double(Error/double(NumberOfVectors))) * 100.;
 
@@ -927,7 +943,7 @@ void Net::tall()
 
 void Net::closeLogFile()
 {
-    if(log  != NULL)
+    if(log != NULL)
     {
         fclose(log);
     }
@@ -963,7 +979,7 @@ void Net::readCfg()
         {
             helpString = "pca.net";     //for PCAs
         }
-        helpString.prepend(dirBC->absolutePath().append(QDir::separator()));
+        helpString.prepend(dirBC->absolutePath() + QDir::separator());
         cout << "cfg auto path = " << helpString.toStdString() << endl;
     }
 
@@ -1139,6 +1155,8 @@ void Net::loadWtsByName(QString filename) //
     fclose(wts);
 }
 //?????
+
+
 void Net::loadWts()
 {
     helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,tr("load wts"), dir->absolutePath(), tr("wts files (*.wts)")));
@@ -1990,7 +2008,7 @@ void Net::leaveOneOut()
     cout << "N-fold cross-validation: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("log.txt"));
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "log.txt");
     log = fopen(helpString.toStdString().c_str(),"a+");
     if(log == NULL)
     {
@@ -2108,7 +2126,7 @@ void Net::Hopfield()
     double maxH = 0.;
     double * output1 = new double [NetLength];
     double * output2 = new double [NetLength];
-    MakePa  * mkPa = new MakePa(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"), ExpName, ns, left, right, spStep);
+    MakePa  * mkPa = new MakePa(dir->absolutePath() + QDir::separator() + "SpectraSmooth", ExpName, ns, left, right, spStep);
     mkPa->setRdcCoeff(10);
     mkPa->makePaSlot();
 
@@ -2977,7 +2995,7 @@ void Net::drawSammon() //uses coords array
 
     }
 
-    helpString = dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("Sammon-").append(ui->sammonLineEdit->text()).append(".jpg");
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "Sammon-" + ui->sammonLineEdit->text() + ".jpg";
 
     cout << helpString.toStdString() << endl;
     pic.save(helpString, 0, 100);
@@ -3301,7 +3319,7 @@ void Net::pca()
     //count reduced Data - first some PC
     for(int j = 0; j < NumberOfVectors; ++j) //i->j
     {
-        pcaFile = fopen(QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("SpectraPCA").append(QDir::separator()).append(FileName[j])).toStdString().c_str(), "w");
+        pcaFile = fopen(QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "SpectraPCA" + QDir::separator() + FileName[j]).toStdString().c_str(), "w");
         for(int k = 0; k < numOfPc; ++k) //j->k
         {
             fprintf(pcaFile, "%lf\n", double(10. * pcaMatrix[j][k])); //PC coefficients
@@ -3578,13 +3596,12 @@ void Net::neuronGas()
 
 void Net::SVM()
 {
-    helpString = dir->absolutePath();
-    helpString.append(QDir::separator()).append("PA").append(QDir::separator()).append("output1");
+    helpString = dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "output1";
     FILE * out = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
     fclose(out);
-//    QString spectraDir = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
+//    QString spectraDir = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth"));
     QString spectraDir = QFileDialog::getExistingDirectory(this, tr("Choose spectra dir"), dir->absolutePath());
-    if(spectraDir.isEmpty()) spectraDir = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
+    if(spectraDir.isEmpty()) spectraDir = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth");
     if(spectraDir.isEmpty())
     {
         cout << "spectraDir for SVM is empty" << endl;
@@ -3596,22 +3613,19 @@ void Net::SVM()
     {
         mkPa->makePaSlot();
 
-        helpString = dir->absolutePath();
-        helpString.append(QDir::separator()).append("PA");
+        helpString = dir->absolutePath() + QDir::separator() + "PA";
         helpString.prepend("cd ");
-        helpString.append(" && svm-train -t ").append(QString::number(ui->svmKernelSpinBox->value())).append(" svm1 && svm-predict svm2 svm1.model output >> output1");
+        helpString.append(" && svm-train -t " + QString::number(ui->svmKernelSpinBox->value()) + " svm1 && svm-predict svm2 svm1.model output >> output1");
         system(helpString.toStdString().c_str());
 
-        helpString = dir->absolutePath();
-        helpString.append(QDir::separator()).append("PA");
+        helpString = dir->absolutePath() + QDir::separator() + "PA";
         helpString.prepend("cd ");
-        helpString.append(" && svm-train -t ").append(QString::number(ui->svmKernelSpinBox->value())).append(" svm2 && svm-predict svm1 svm2.model output >> output1");
+        helpString += " && svm-train -t " + QString::number(ui->svmKernelSpinBox->value()) + " svm2 && svm-predict svm1 svm2.model output >> output1";
         system(helpString.toStdString().c_str());
     }
 
 
-    helpString = dir->absolutePath();
-    helpString.append(QDir::separator()).append("PA").append(QDir::separator()).append("output1");
+    helpString = dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "output1";
 
     double helpDouble, average = 0.;
 
@@ -3632,7 +3646,7 @@ void Net::SVM()
     file.close();
 
 //    helpString = dir->absolutePath();
-//    helpString.append(QDir::separator()).append("PA").append(QDir::separator()).append("output1");
+//    helpString.append(QDir::separator() + "PA" + QDir::separator() + "output1");
 //    fstream in;
 //    in.open(QDir::toNativeSeparators(helpString).toStdString().c_str(), fstream::in);
 
@@ -3646,9 +3660,9 @@ void Net::SVM()
 //    cout << average << endl;
 //    in.close();
 
-    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
+    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "results.txt").toStdString().c_str(), "a+");
     fprintf(res, "\nSVM\t");
-    fprintf(res, "%.2lf %\n", average);
+    fprintf(res, "%.2lf %%\n", average);
     fclose(res);
 
     delete mkPa;

@@ -1341,17 +1341,17 @@ int Spectre::readFile(int &num, double ** data2, double **dataFFT)  /////////EDI
     //generality
     if(fftLength == 4096 && (NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
     {
-        cout << num << "'th file too short" << endl;
+//        cout << num << "'th file too short" << endl;
         return 0;
     }
     else if(fftLength == 1024 && (NumOfSlices-Eyes) < 250*2.)
     {
-        cout << num << "'th file too short" << endl;
+//        cout << num << "'th file too short" << endl;
         return 0;
     }
     else if(fftLength == 2048 && (NumOfSlices-Eyes) < 250*3.)
     {
-        cout << num << "'th file too short" << endl;
+//        cout << num << "'th file too short" << endl;
         return 0;
     }
 

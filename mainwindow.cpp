@@ -7418,6 +7418,9 @@ void MainWindow::autoIcaAnalysis2()
     FILE * outFile;
 
 
+    int NumOfRepeats = 20;
+    QString ExpName1;
+
 
     for(int i = 0; i < list0.length(); ++i)
     {
@@ -7427,6 +7430,7 @@ void MainWindow::autoIcaAnalysis2()
 
         helpString = dir->absolutePath() + QDir::separator() + list0[i];
         setEdfFile(helpString); // open ExpName_1.edf
+        ExpName1 = ExpName;
         cleanDirs();
         sliceAll();
         fclose(edf);
@@ -7440,6 +7444,7 @@ void MainWindow::autoIcaAnalysis2()
         spectr->compare();
         spectr->psaSlot();
         delete spectr;
+
 
         helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
         mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
@@ -7462,15 +7467,31 @@ void MainWindow::autoIcaAnalysis2()
             {
                 reduceCoefficient = mkPa->getRdcCoeff();
                 cout << "file = " << ExpName.toStdString() << "\t" << "reduceCoeff = " << reduceCoefficient << endl;
-                ANN->setReduceCoeff(reduceCoefficient);
+                ANN->setReduceCoeff(reduceCoefficient); // not needed
                 break;
             }
         }
-        mkPa->makePaSlot();
+
+
+        //clean wts
+        lst = dir->entryList(QStringList("*.wts"), QDir::Files|QDir::NoDotAndDotDot);
+        for(int i = 0; i < lst.length(); ++i)
+        {
+            remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[i]).toStdString().c_str());
+        }
+
+        //learn many times and save wts
+        for(int j = 0; j < NumOfRepeats; ++j)
+        {
+            mkPa->makePaSlot();
+
+            ANN->PaIntoMatrixByName("all");
+            ANN->LearnNet();
+            ANN->saveWts();
+        }
         mkPa->close();
         delete mkPa;
-        ANN->PaIntoMatrixByName("all");
-        ANN->LearnNet();
+
 
         helpString = dir->absolutePath() + QDir::separator() + list0[i];
         helpString.replace("_1.edf", "_2.edf");
@@ -7496,9 +7517,18 @@ void MainWindow::autoIcaAnalysis2()
         mkPa->close();
         delete mkPa;
 
-        ANN->PaIntoMatrixByName("all");
-        ANN->tall();
-
+        //classify many times, write into log.txt, average into res.txt
+        ANN->PaIntoMatrixByName("whole");
+//        ExpName1 = list0[i];
+//        ExpName1 = ExpName1.remove(".edf");
+        for(int j = 0; j < NumOfRepeats; ++j)
+        {
+            helpString = dir->absolutePath() + QDir::separator() + ExpName1 + "_weights_" + QString::number(j) + ".wts";
+            cout << "wts: " << helpString.toStdString() << endl;
+            ANN->loadWtsByName(helpString);
+            ANN->tall();
+        }
+        ANN->averageClassification();
         outFile = fopen(QString(defaults::dataFolder + "/AB/res.txt").toStdString().c_str(), "a");
         fprintf(outFile, "%s_reals\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), ANN->getAverageAccuracy());
         fclose(outFile);
@@ -7506,6 +7536,8 @@ void MainWindow::autoIcaAnalysis2()
         ANN->close();
         delete ANN;
         //end of 1-4 points
+
+/*
 
         ICA();
         helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_maps.txt";
@@ -7521,12 +7553,6 @@ void MainWindow::autoIcaAnalysis2()
         helpString2 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_2_maps.txt";
         QFile::copy(helpString, helpString2);
         cleanDirs();
-
-
-        //ICA realisations ///////////////////////////////////////////////////////////////////////////
-
-
-
 
         //sequence ICs
         double ** mat1;
@@ -7579,22 +7605,28 @@ void MainWindow::autoIcaAnalysis2()
         setEdfFile(helpString); // open ExpName_2_ica.edf
         cleanDirs();
         this->reduceChannelsEDF();
-        //remake 2nd ica maps file????? //////////////////////////////////////////////////////////////////////////////////////////////
 
         matrixDelete(&mat1, 19, 19);
         matrixDelete(&mat2, 19, 19);
+        */
 
 
 
+        //remake 2nd ica maps file????? //////////////////////////////////////////////////////////////////////////////////////////////
 
 
-           ////////////////////////////////////////
+        //ICA realisations ///////////////////////////////////////////////////////////////////////////
+
+
 
         ui->windButton->setChecked(true);
         ui->cleanWindowsCheckBox->setChecked(true);
         ui->cleanWindSpectraCheckBox->setChecked(true);
         cleanDirs();
 
+        ui->timeShiftBox->setValue(125); //0.5 seconds shift
+
+        //start windows
         for(int j = 0; j <=1; ++j)
         {
             //0 for initial
@@ -7602,11 +7634,20 @@ void MainWindow::autoIcaAnalysis2()
             for(int wndL = 1000; wndL >=500; wndL -= 125)
             {
                 cout << wndL << " windows start" << endl;
+
+                //clean wts - optional not needed
+                lst = dir->entryList(QStringList("*.wts"), QDir::Files|QDir::NoDotAndDotDot);
+                for(int i = 0; i < lst.length(); ++i)
+                {
+                    remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[i]).toStdString().c_str());
+                }
+
                 //process with windows
                 ui->windowLengthBox->setValue(wndL);
                 helpString = dir->absolutePath() + QDir::separator() + list0[i];
                 if(j == 1) helpString.replace("_1.edf", "_1_ica.edf");
                 setEdfFile(helpString); // open ExpName_1.edf
+                ExpName1 = ExpName;
                 cleanDirs();
                 sliceAll();
                 fclose(edf);
@@ -7647,12 +7688,18 @@ void MainWindow::autoIcaAnalysis2()
                         break;
                     }
                 }
-                mkPa->makePaSlot();
+
+                for(int j = 0; j < NumOfRepeats; ++j)
+                {
+                    mkPa->makePaSlot();
+
+                    ANN->PaIntoMatrixByName("all_wnd");
+                    ANN->LearnNet();
+                    ANN->saveWts();
+                }
                 mkPa->close();
                 delete mkPa;
 
-                ANN->PaIntoMatrixByName("all_wnd");
-                ANN->LearnNet();
 
                 //2nd file
                 helpString = dir->absolutePath() + QDir::separator() + list0[i];
@@ -7680,10 +7727,14 @@ void MainWindow::autoIcaAnalysis2()
                 mkPa->close();
                 delete mkPa;
 
-//                ANN->PaIntoMatrixByName("all_wnd");
                 ANN->PaIntoMatrixByName("whole_wnd");
-                ANN->tall();
-
+                for(int j = 0; j < NumOfRepeats; ++j)
+                {
+                    helpString = dir->absolutePath() + QDir::separator() + ExpName1 + "_weights_" + QString::number(j) + ".wts";
+                    ANN->loadWtsByName(helpString);
+                    ANN->tall();
+                }
+                ANN->averageClassification();
                 outFile = fopen(QString(defaults::dataFolder + "/AB/res.txt").toStdString().c_str(), "a");
                 if(j == 0) fprintf(outFile, "%s_winds %d\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), wndL, ANN->getAverageAccuracy());
                 else if(j == 1) fprintf(outFile, "%s_winds_ica %d\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), wndL, ANN->getAverageAccuracy());
