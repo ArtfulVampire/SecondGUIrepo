@@ -758,7 +758,7 @@ void Net::saveWts()
         {
             helpString = dir->absolutePath() + QDir::separator() + ExpName + "_weights_" + QString::number(wtsCounter) + ".wts";
             ++wtsCounter;
-        } while(QFile(helpString).exists());
+        } while(QFile::exists(helpString));
     }
 
     if(helpString == "")
@@ -2376,7 +2376,7 @@ void Net::methodSetParam(int a, bool ch)
     if(!ch) return;
     if(a == -2 )
     {
-        cout << "delta button pressed" << endl;
+//        cout << "delta button pressed" << endl;
         ui->epochSpinBox->setValue(250);
         ui->tempBox->setValue(10);
         ui->learnRateBox->setValue(0.1);
@@ -2391,7 +2391,7 @@ void Net::methodSetParam(int a, bool ch)
     }
     if(a == -3)
     {
-        cout << "backprop button pressed" << endl;
+//        cout << "backprop button pressed" << endl;
         ui->epochSpinBox->setValue(300);
         ui->tempBox->setValue(2);
         ui->learnRateBox->setValue(1.0);

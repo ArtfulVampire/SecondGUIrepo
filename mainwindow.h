@@ -115,13 +115,15 @@ public:
     void sliceIlya(int marker1, int marker2, QString marker);
     void sliceFromTo(int marker1, int marker2, QString marker);
     void sliceMati(int numChanWrite);
+
     void visualisation();
     void kernelest(const QString &str);
-    void writeEdf(FILE * edfIn, double ** components, QString fileName, int numSlices);
+    void writeEdf(FILE * edfIn, double ** components, QString outFilePath, int numSlices);
     void sliceOneByOne();
     void sliceOneByOneNew(int numChanWrite);
     void drawMap(double ** matrixA, int num);
     void setEdfFile(QString filePath);
+    void transformEDF(QString edfPath, QString mapsPath, QString newEdfPath);
     void autoIcaAnalysis();
     void autoIcaAnalysis2();
 

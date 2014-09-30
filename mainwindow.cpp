@@ -461,7 +461,8 @@ MainWindow::MainWindow() :
 //    system("sudo shutdown -P now");
 
     //conf youung scientists automatization
-    autoIcaAnalysis2();
+//    autoIcaAnalysis2();
+    transformEDF("/media/Files/Data/AB/AAX_1.edf", "/media/Files/Data/AB/Help/AAX_1_maps.txt", "/media/Files/Data/AB/AAX_1_ica0.edf");
 }
 
 MainWindow::~MainWindow()
@@ -2860,7 +2861,7 @@ void MainWindow::refilterData()
     }
 
     ui->reduceChannelsLineEdit->setText(helpString);
-    helpString = ExpName + "_filtered.edf";
+    helpString = dir->absolutePath() + QDir::separator() + ExpName + "_filtered.edf";
     writeEdf(edf, data, helpString, ndr*fr);
 
     cout << "RefilterData: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
@@ -2870,7 +2871,7 @@ void MainWindow::reduceChannelsEDF()
 {
     readData();
     reduceChannelsFast();
-    helpString = ExpName + "_rdcChan.edf";
+    helpString = dir->absolutePath() + QDir::separator() + ExpName + "_rdcChan.edf";
     writeEdf(edf, data, helpString, ndr*nr[0]);
 }
 
@@ -4306,6 +4307,8 @@ double * randomVector(int ns)
 
 void MainWindow::constructEDF()
 {
+    QTime myTime;
+    myTime.start();
     readData(); // needed?
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -4356,7 +4359,7 @@ void MainWindow::constructEDF()
 
     cout << "construct EDF: Initial NumOfSlices = " << ndr*ddr*nr[0] << endl;
     cout << "construct EDF: NumOfSlices to write = " << currSlice << endl;
-    helpString = ExpName.append("_new.edf");
+    helpString = dir->absolutePath() + QDir::separator() + ExpName + "_new.edf";
     writeEdf(edf, newData, helpString, currSlice);
 
     for(int i = 0; i < nsB; ++i)
@@ -4364,10 +4367,11 @@ void MainWindow::constructEDF()
         delete []newData[i];
     }
     delete []newData;
+    cout << "construct EDF: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 
-void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int numSlices)
+void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString outFilePath, int numSlices)
 {
     //    8 ascii : version of this data format (0)
     //    80 ascii : local patient identification (mind item 3 of the additional EDF+ specs)
@@ -4411,17 +4415,22 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int 
     lst.clear();
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     int newNs = lst.length();
-    cout << "writeEDF: newNs = " << newNs << endl;
-    for(int i = 0; i < newNs; ++i)
+
+//    cout << "writeEDF: newNs = " << newNs << endl;
+//    for(int i = 0; i < newNs; ++i)
+//    {
+//        cout << lst[i].toStdString() << " ";
+//    }
+//    cout << endl;
+
+
+    cout << "writeEDF: output path = " << outFilePath.toStdString() << endl;
+    edfNew = fopen(outFilePath.toStdString().c_str(), "w");
+    if(edfNew == NULL)
     {
-        cout << lst[i].toStdString() << " ";
+        cout << "writeEDF: cannot open edf file to write" << endl;
+        return;
     }
-    cout << endl;
-
-
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(fileName));
-    cout << "writeEDF: output path = " << helpString.toStdString() << endl;
-    edfNew = fopen(helpString.toStdString().c_str(), "w");
 
     //header read
     for(int i = 0; i < 184; ++i)
@@ -4495,7 +4504,7 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int 
         fscanf(edfIn, "%c", &helpCharArr[i]);
     }
     ns = atoi(helpCharArr);                        //Number of channels
-    cout << "writeEDF: oldNs = " << ns << endl;
+//    cout << "writeEDF: oldNs = " << ns << endl;
 
     helpString = QString::number(newNs);
     for(int i = helpString.length(); i < 4; ++i)
@@ -4754,13 +4763,12 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString fileName, int 
 
     //header write ended
     fclose(edfNew);
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(fileName));
-    cout << "writeEDF: output path (byte mode) = " << helpString.toStdString() << endl;
-    edfNew = fopen(helpString.toStdString().c_str(), "ab");
+
+    edfNew = fopen(outFilePath.toStdString().c_str(), "ab");
 
     ui->finishTimeBox->setMaximum(ddr*ndr);
 
-    cout << "data write start, newNs = " << newNs << endl;
+    cout << "writeEDF: data write start, newNs = " << newNs << endl;
     int oldIndex;
 
     if(ui->enRadio->isChecked())
@@ -4863,8 +4871,8 @@ void MainWindow::ICA() //fastICA
 //        similarMatrix - matrix of similarity
 //        differenceMatrix - matrix of difference, according to some metric
 
-    cout << "ns = " << ns << endl;
-    cout << "ndr*fr = " << ndr*fr << endl;
+//    cout << "ns = " << ns << endl;
+//    cout << "ndr*fr = " << ndr*fr << endl;
 
     double ** covMatrix = new double * [ns];
     double ** centeredMatrix = new double * [ns];
@@ -4967,7 +4975,7 @@ void MainWindow::ICA() //fastICA
             covMatrix[i][j] /= (ndr*fr); //should be -1 ?
         }
     }
-    cout << "covMatrix counted" << endl;
+//    cout << "covMatrix counted" << endl;
 
     //test covMatrix symmetric
     for(int i = 0; i < ns; ++i)
@@ -4998,10 +5006,10 @@ void MainWindow::ICA() //fastICA
     {
         trace += covMatrix[j][j];
     }
-    cout << "trace covMatrix = " << trace << endl;
+//    cout << "trace covMatrix = " << trace << endl;
 
 
-    cout << "start eigenValues processing" << endl;
+//    cout << "start eigenValues processing" << endl;
     //count eigenValues & eigenVectors
 
 
@@ -5299,7 +5307,7 @@ void MainWindow::ICA() //fastICA
             dataICA[i][j] = sum1;
         }
     }
-    cout << "linear decomposition counted" << endl;
+//    cout << "linear decomposition counted" << endl;
 
 
 
@@ -5452,7 +5460,7 @@ void MainWindow::ICA() //fastICA
         cout << "time = " << myTime.elapsed()/1000. << " sec" << endl;
 
     }
-    cout << "VectorsW counted" << endl;
+//    cout << "VectorsW counted" << endl;
 
 
 
@@ -5647,8 +5655,8 @@ void MainWindow::ICA() //fastICA
 
 
     FILE * edf0 = fopen(ui->filePath->text().toStdString().c_str(), "r");
-    helpString = ExpName; helpString.append("_ica.edf");
-//    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes"); //generality
+    //    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes"); //generality
+    helpString = dir->absolutePath() + QDir::separator() + ExpName + "_ica.edf";
     writeEdf(edf, components, helpString, ndr*nr[0]);
     fclose(edf0);
 
@@ -5929,6 +5937,26 @@ void MainWindow::throwIC()
 
     constructEDF();
 
+}
+
+void MainWindow::transformEDF(QString edfPath, QString mapsPath, QString newEdfPath)
+{
+    setEdfFile(edfPath);
+
+    readData();
+
+    double ** mat1;
+    matrixCreate(&mat1, 19,19);
+    readICAMatrix(mapsPath, &mat1, 19);
+
+    double ** newData;
+    matrixCreate(&newData, 19, ndr*nr[0]);
+    matrixProduct(mat1, data, &newData, 19, ndr*nr[0]);
+
+    writeEdf(edf, newData, newEdfPath, ndr*nr[0]);
+
+    matrixDelete(&mat1, 19, 19);
+    matrixDelete(&newData, 19, ndr*nr[0]);
 }
 
 void MainWindow::transformReals()
@@ -6921,7 +6949,7 @@ void MainWindow::visualisation()   //just video
             output[i] = new double [helpInt];
         }
 
-        cout << "start" << endl;
+//        cout << "start" << endl;
 
         int l;                  //
         int percentage = 0;
@@ -7245,7 +7273,7 @@ void MainWindow::randomDecomposition()
         }
 
         //write newData
-        helpString = ExpName.left(3) + "_randIca.edf";
+        helpString = dir->absolutePath() + QDir::separator() + ExpName.left(3) + "_randIca.edf";
         writeEdf(edf, newData, helpString, ndr*nr[0]);
         fclose(edf); //opened in setEdfFile();
 
@@ -7424,16 +7452,15 @@ void MainWindow::autoIcaAnalysis2()
 
     for(int i = 0; i < list0.length(); ++i)
     {
-           ///////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////Net::numOfTall PROBLEM???? /////////////////////////////////////////////////////////////////
         ui->realButton->setChecked(true);
-        if(0)
+        if(1)
         {
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
             setEdfFile(helpString); // open ExpName_1.edf
             ICA();
             helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_maps.txt";
             helpString2 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_1_maps.txt";
+            if(QFile::exists(helpString2)) QFile::remove(helpString2);
             QFile::copy(helpString, helpString2);
 
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
@@ -7445,6 +7472,7 @@ void MainWindow::autoIcaAnalysis2()
             ICA();
             helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_maps.txt";
             helpString2 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_2_maps.txt";
+            if(QFile::exists(helpString2)) QFile::remove(helpString2);
             QFile::copy(helpString, helpString2);
             cleanDirs();
 
@@ -7503,8 +7531,11 @@ void MainWindow::autoIcaAnalysis2()
             matrixDelete(&mat1, 19, 19);
             matrixDelete(&mat2, 19, 19);
         }
-
         ui->timeShiftBox->setValue(125); //0.5 seconds shift
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
         for(int k = 0; k <= 1; ++k)
         {
@@ -7528,8 +7559,9 @@ void MainWindow::autoIcaAnalysis2()
             {
                 //j == 0 for initial
                 //j == 1 for ica
-                for(int wndL = 1000; wndL >= 500; wndL -= 125)
+                for(int wndL = 1000; wndL >= 500; wndL -= 125) //too short limit in spectre.cpp::readFile();
                 {
+                    if(k == 0) cout << wndL << " windows start" << endl;
                     //clean wts
                     lst = dir->entryList(QStringList("*.wts"), QDir::Files|QDir::NoDotAndDotDot);
                     for(int h = 0; h < lst.length(); ++h)
@@ -7553,11 +7585,11 @@ void MainWindow::autoIcaAnalysis2()
                     if(k == 0) spectr->setFftLength(4096);
                     else if(k == 1) spectr->setFftLength(1024);
                     spectr->countSpectra();
-                    spectr->close(); ///??????
-                    spectr->compare();
-                    spectr->compare();
-                    spectr->compare();
-                    spectr->psaSlot();
+                    spectr->defaultState();
+//                    spectr->compare();
+//                    spectr->compare();
+//                    spectr->compare();
+//                    spectr->psaSlot();
                     if(k == 0) spectr->setFftLength(4096);
                     else if(k == 1) spectr->setFftLength(1024);
 
@@ -7611,11 +7643,11 @@ void MainWindow::autoIcaAnalysis2()
                     fclose(edf);
 
                     spectr->countSpectra();
-                    spectr->close(); ///??????
-                    spectr->compare();
-                    spectr->compare();
-                    spectr->compare();
-                    spectr->psaSlot();
+//                    spectr->compare();
+//                    spectr->compare();
+//                    spectr->compare();
+//                    spectr->psaSlot();
+                    spectr->close();
                     delete spectr;
 
                     mkPa->makePaSlot();
@@ -7651,6 +7683,11 @@ void MainWindow::autoIcaAnalysis2()
             }
         }
 
+    }
+    lst = dir->entryList(QStringList("*.wts"), QDir::Files|QDir::NoDotAndDotDot);
+    for(int h = 0; h < lst.length(); ++h)
+    {
+        remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());
     }
     cout << "auto Ica analysis time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 }
