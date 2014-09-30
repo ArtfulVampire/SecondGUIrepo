@@ -103,7 +103,8 @@ void matrixProduct(double ** const inMat1, double ** const inMat2, double *** ou
 void matrixTranspose(double ** const inMat, int const numRows, int const numCols, double *** outMat);
 void matrixTranspose(double *** inMat, int const numRowsCols);
 void matrixCopy(double ** const inMat, double *** outMat, int const dimH, int const dimL);
-void matrixInvert(double ** const inMat, int const size, double *** outMat); //cofactors
+void matrixInvert(double ** const inMat, int const size, double *** outMat);
+void matrixInvert(double *** mat, int const size);
 double matrixDet(double ** const matrix, int const dim);
 double matrixDetB(double ** const matrix, int const dim);
 void matrixCofactor(double ** const inMatrix, int size, int numRows, int numCols, double *** outMatrix);

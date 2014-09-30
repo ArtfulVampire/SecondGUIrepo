@@ -462,6 +462,21 @@ MainWindow::MainWindow() :
 
     //conf youung scientists automatization
 //    autoIcaAnalysis2();
+
+
+//    helpString = "/media/Files/Data/AB/Help/AAX_0_maps.txt";
+//    outStream.open(helpString.toStdString().c_str());
+//    for(int i = 0; i < 19; ++i)
+//    {
+//        for(int j = 0; j < 19; ++j)
+//        {
+//            outStream << (i==j) << " ";
+//        }
+//        outStream << endl;
+//    }
+//    outStream.close();
+
+    ui->reduceChannelsComboBox->setCurrentText("20");
     transformEDF("/media/Files/Data/AB/AAX_1.edf", "/media/Files/Data/AB/Help/AAX_1_maps.txt", "/media/Files/Data/AB/AAX_1_ica0.edf");
 }
 
@@ -4429,7 +4444,6 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString outFilePath, i
     if(edfNew == NULL)
     {
         cout << "writeEDF: cannot open edf file to write" << endl;
-        return;
     }
 
     //header read
@@ -4764,11 +4778,16 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString outFilePath, i
     //header write ended
     fclose(edfNew);
 
+
+//    return;
+
+
+
     edfNew = fopen(outFilePath.toStdString().c_str(), "ab");
 
     ui->finishTimeBox->setMaximum(ddr*ndr);
 
-    cout << "writeEDF: data write start, newNs = " << newNs << endl;
+//    cout << "writeEDF: data write start, newNs = " << newNs << endl;
     int oldIndex;
 
     if(ui->enRadio->isChecked())
@@ -4780,6 +4799,7 @@ void MainWindow::writeEdf(FILE * edfIn, double ** inData, QString outFilePath, i
                 oldIndex = lst[j].toInt() - 1; //number of channel in "old" file edfIn
                 for(int k = 0; k < nr[oldIndex]; ++k)
                 {
+
 //                    a = (short)((inData[ j ][ i * nr[oldIndex] + k ] - physMin[oldIndex]) * (digMax[oldIndex] - digMin[oldIndex]) / (physMax[oldIndex] - physMin[oldIndex]) + digMin[oldIndex]);
 
                     //generality
@@ -5944,14 +5964,16 @@ void MainWindow::transformEDF(QString edfPath, QString mapsPath, QString newEdfP
     setEdfFile(edfPath);
 
     readData();
-
     double ** mat1;
-    matrixCreate(&mat1, 19,19);
+    matrixCreate(&mat1, 19, 19);
     readICAMatrix(mapsPath, &mat1, 19);
+    matrixInvert(&mat1, 19);
 
     double ** newData;
-    matrixCreate(&newData, 19, ndr*nr[0]);
+    matrixCreate(&newData, 20, ndr*nr[0]);
     matrixProduct(mat1, data, &newData, 19, ndr*nr[0]);
+    //copy markers
+    memcpy(newData[19], data[19], ndr*nr[0]*sizeof(double));
 
     writeEdf(edf, newData, newEdfPath, ndr*nr[0]);
 
@@ -7488,9 +7510,12 @@ void MainWindow::autoIcaAnalysis2()
             helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_2_maps.txt";
             readICAMatrix(helpString, &mat2, 19);
 
-            //transpose ICA maps
-            matrixTranspose(&mat1, 19);
-            matrixTranspose(&mat2, 19);
+            //invert ICA maps
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//            matrixTranspose(&mat1, 19);
+//            matrixTranspose(&mat2, 19);
+            matrixInvert(&mat1, 19);
+            matrixInvert(&mat2, 19);
 
             QList<int> listIC;
             listIC.clear();

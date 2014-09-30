@@ -1914,6 +1914,15 @@ void matrixInvert(double ** const inMat, int const size, double *** outMat) //co
     delete []cof;
 }
 
+void matrixInvert(double *** mat, int const size)
+{
+    double ** tempMat;
+    matrixCreate(&tempMat, size, size);
+    matrixInvert(*mat, size, &tempMat);
+    matrixCopy(tempMat, mat, size, size);
+    matrixDelete(&tempMat, size, size);
+}
+
 double matrixDet(double ** const matrix, int const dim) //- Det
 {
 //    cout << "matrixDet: start" << endl;
