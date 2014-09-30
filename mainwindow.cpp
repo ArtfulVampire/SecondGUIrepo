@@ -7517,14 +7517,11 @@ void MainWindow::autoIcaAnalysis2()
             readICAMatrix(helpString, &mat2, 19);
 
             //invert ICA maps
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//            matrixTranspose(&mat1, 19);
-//            matrixTranspose(&mat2, 19);
-            matrixInvert(&mat1, 19);
-            matrixInvert(&mat2, 19);
+            matrixTranspose(&mat1, 19);
+            matrixTranspose(&mat2, 19);
 
-            matrixPrint(mat1, 19, 19);
-            matrixPrint(mat2, 19, 19);
+//            matrixPrint(mat1, 19, 19);
+//            matrixPrint(mat2, 19, 19);
 
             QList<int> listIC;
             listIC.clear();
@@ -7587,7 +7584,7 @@ void MainWindow::autoIcaAnalysis2()
         for(int k = 0; k <= 1; ++k)
         {
 
-            if(k == 1) return; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//            if(k == 1) return; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             //k == 0 for realisations
             //k == 1 for windows
@@ -7606,7 +7603,7 @@ void MainWindow::autoIcaAnalysis2()
             }
             for(int j = 0; j <= 2; ++j)
             {
-                j=2;  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                j=2;  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 //j == 0 for initial
                 //j == 1 for ica
                 //j == 2 for ica by maps_1 only
@@ -7715,11 +7712,13 @@ void MainWindow::autoIcaAnalysis2()
                     {
                         if(j == 0) fprintf(outFile, "%s_winds %d\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), wndL, ANN->getAverageAccuracy());
                         else if(j == 1) fprintf(outFile, "%s_winds_ica %d\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), wndL, ANN->getAverageAccuracy());
+                        else if(j == 2) fprintf(outFile, "%s_winds_ica_by1 %d\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), wndL, ANN->getAverageAccuracy());
                     }
                     else if(k == 0)
                     {
                         if(j == 0) fprintf(outFile, "%s_reals\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), ANN->getAverageAccuracy());
                         else if(j == 1) fprintf(outFile, "%s_reals_ica\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), ANN->getAverageAccuracy());
+                        else if(j == 2) fprintf(outFile, "%s_reals_ica_by1\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), ANN->getAverageAccuracy());
                     }
                     fclose(outFile);
                     ANN->close();
