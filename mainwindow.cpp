@@ -460,9 +460,8 @@ MainWindow::MainWindow() :
 //    autoIcaAnalysis();
 //    system("sudo shutdown -P now");
 
-    //conf youung scientists automatization
-//    autoIcaAnalysis2();
 
+    //conf youung scientists automatization
 
 //    helpString = "/media/Files/Data/AB/Help/AAX_0_maps.txt";
 //    outStream.open(helpString.toStdString().c_str());
@@ -476,8 +475,9 @@ MainWindow::MainWindow() :
 //    }
 //    outStream.close();
 
-    ui->reduceChannelsComboBox->setCurrentText("20");
-    transformEDF("/media/Files/Data/AB/AAX_1.edf", "/media/Files/Data/AB/Help/AAX_1_maps.txt", "/media/Files/Data/AB/AAX_1_ica0.edf");
+//    ui->reduceChannelsComboBox->setCurrentText("20");
+//    transformEDF("/media/Files/Data/AB/AAX_1.edf", "/media/Files/Data/AB/Help/AAX_1_maps.txt", "/media/Files/Data/AB/AAX_1_ica0.edf");
+    autoIcaAnalysis2();
 }
 
 MainWindow::~MainWindow()
@@ -5590,7 +5590,7 @@ void MainWindow::ICA() //fastICA
             {
                 sum1 += matrixA[i][k] * components[k][j];
             }
-            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.05 && fabs(data[i][j]) > 0.1)
+            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.03 && fabs(data[i][j]) > 0.1)
             {
                 cout << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << "\t"<< data[i][j] << endl;
             }
@@ -7437,6 +7437,11 @@ void MainWindow::autoIcaAnalysis2()
     QTime myTime;
     myTime.start();
 
+    ui->svdDoubleSpinBox->setValue(7.5);
+    ui->vectwDoubleSpinBox->setValue(7.5);
+
+    ui->svdDoubleSpinBox->setValue(9.0);
+    ui->vectwDoubleSpinBox->setValue(9.0);
 
     ui->sliceCheckBox->setChecked(true);
     ui->sliceWithMarkersCheckBox->setChecked(false);
@@ -7468,7 +7473,7 @@ void MainWindow::autoIcaAnalysis2()
     FILE * outFile;
 
 
-    int NumOfRepeats = 30;
+    int NumOfRepeats = 50;
     QString ExpName1;
 
 
@@ -7479,6 +7484,7 @@ void MainWindow::autoIcaAnalysis2()
         {
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
             setEdfFile(helpString); // open ExpName_1.edf
+            ExpName1 = ExpName;
             ICA();
             helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_maps.txt";
             helpString2 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_1_maps.txt";
@@ -7516,6 +7522,9 @@ void MainWindow::autoIcaAnalysis2()
 //            matrixTranspose(&mat2, 19);
             matrixInvert(&mat1, 19);
             matrixInvert(&mat2, 19);
+
+            matrixPrint(mat1, 19, 19);
+            matrixPrint(mat2, 19, 19);
 
             QList<int> listIC;
             listIC.clear();
@@ -7555,15 +7564,30 @@ void MainWindow::autoIcaAnalysis2()
 
             matrixDelete(&mat1, 19, 19);
             matrixDelete(&mat2, 19, 19);
+
+            //transform 2nd file with 1st maps
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString.replace("_1.edf", "_2.edf"); //open ExpName_2.edf
+
+            ExpName1 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_1_maps.txt";
+
+            helpString2 = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString2.replace("_1.edf", "_2_ica_by1.edf"); //write to ExpName_2_ica_by1.edf
+
+            cout << helpString.toStdString() << endl;
+            cout << ExpName1.toStdString() << endl;
+            cout << helpString2.toStdString() << endl;
+
+            transformEDF(helpString, ExpName1, helpString2);
+
         }
         ui->timeShiftBox->setValue(125); //0.5 seconds shift
 
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
         for(int k = 0; k <= 1; ++k)
         {
+
+            if(k == 1) return; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             //k == 0 for realisations
             //k == 1 for windows
@@ -7580,13 +7604,18 @@ void MainWindow::autoIcaAnalysis2()
                 ui->cleanWindowsCheckBox->setChecked(true);
                 ui->cleanWindSpectraCheckBox->setChecked(true);
             }
-            for(int j = 0; j <= 1; ++j)
+            for(int j = 0; j <= 2; ++j)
             {
+                j=2;  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 //j == 0 for initial
                 //j == 1 for ica
+                //j == 2 for ica by maps_1 only
                 for(int wndL = 1000; wndL >= 500; wndL -= 125) //too short limit in spectre.cpp::readFile();
                 {
-                    if(k == 0) cout << wndL << " windows start" << endl;
+                    if(k == 1) cout << wndL << " windows start" << endl;
+                    else if (j == 0) cout << "reals start" << endl;
+                    else cout << "reals ica start" << endl;
+
                     //clean wts
                     lst = dir->entryList(QStringList("*.wts"), QDir::Files|QDir::NoDotAndDotDot);
                     for(int h = 0; h < lst.length(); ++h)
@@ -7598,7 +7627,7 @@ void MainWindow::autoIcaAnalysis2()
                     ui->windowLengthBox->setValue(wndL);
 
                     helpString = dir->absolutePath() + QDir::separator() + list0[i];
-                    if(j == 1) helpString.replace("_1.edf", "_1_ica.edf");
+                    if(j != 0) helpString.replace("_1.edf", "_1_ica.edf");
                     setEdfFile(helpString); // open ExpName_1.edf
                     ExpName1 = ExpName;
                     cleanDirs();
@@ -7611,10 +7640,6 @@ void MainWindow::autoIcaAnalysis2()
                     else if(k == 1) spectr->setFftLength(1024);
                     spectr->countSpectra();
                     spectr->defaultState();
-//                    spectr->compare();
-//                    spectr->compare();
-//                    spectr->compare();
-//                    spectr->psaSlot();
                     if(k == 0) spectr->setFftLength(4096);
                     else if(k == 1) spectr->setFftLength(1024);
 
@@ -7662,16 +7687,13 @@ void MainWindow::autoIcaAnalysis2()
                     helpString = dir->absolutePath() + QDir::separator() + list0[i];
                     if(j == 0) helpString.replace("_1.edf", "_2.edf");
                     else if(j == 1) helpString.replace("_1.edf", "_2_ica_rdcChan.edf");
+                    else if(j == 2) helpString.replace("_1.edf", "_2_ica_by1.edf");
                     setEdfFile(helpString); // open ExpName_2.edf
                     cleanDirs();
                     sliceAll();
                     fclose(edf);
 
                     spectr->countSpectra();
-//                    spectr->compare();
-//                    spectr->compare();
-//                    spectr->compare();
-//                    spectr->psaSlot();
                     spectr->close();
                     delete spectr;
 
