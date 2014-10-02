@@ -5604,6 +5604,16 @@ void MainWindow::ICA() //fastICA
         }
     }
 
+    cout << "correlations of A*comps[i] and data[i]:" << endl;
+    matrixProduct(matrixA, components, &dataICA, ns, ndr*fr);
+    for(int i = 0; i < ns; ++i)
+    {
+        cout << correlation(dataICA[i], data[i], ndr*fr) << endl;
+    }
+
+
+
+
 
 
 
