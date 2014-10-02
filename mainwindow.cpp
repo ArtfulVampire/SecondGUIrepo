@@ -7491,6 +7491,7 @@ void MainWindow::autoIcaAnalysis2()
 
 
     int NumOfRepeats = 50;
+
     QString ExpName1;
 
     struct ICAcorr
@@ -7501,7 +7502,7 @@ void MainWindow::autoIcaAnalysis2()
     };
 
     ICAcorr ICAcorrArr[19];
-    double ICAcorrThreshold = 0.8;
+    double ICAcorrThreshold = 0.666;
 
 
     for(int i = 0; i < list0.length(); ++i)
@@ -7647,6 +7648,21 @@ void MainWindow::autoIcaAnalysis2()
             helpString.replace("_1.edf", "_2_highCorr.edf");
             reduceChannelsEDF(helpString);
 
+            helpInt = 0;
+            for(int k = 0; k < 19; ++k)
+            {
+                if(!(ICAcorrArr[k].coeff < ICAcorrThreshold)) ++helpInt;
+            }
+
+
+            config = new cfg(dir, helpInt, 247, 0.1, 0.1, "highCorr");
+            config->makeCfg();
+            delete config;
+
+            config = new cfg(dir, helpInt, 63, 0.1, 0.1, "highCorr_wnd");
+            config->makeCfg();
+            delete config;
+
 
         }
         ui->timeShiftBox->setValue(125); //0.5 seconds shift
@@ -7672,17 +7688,17 @@ void MainWindow::autoIcaAnalysis2()
                 ui->cleanWindowsCheckBox->setChecked(true);
                 ui->cleanWindSpectraCheckBox->setChecked(true);
             }
-            for(int j = 0; j <= 2; ++j)
+            for(int j = 0; j <= 3; ++j)
             {
 //                j=2;  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 //j == 0 for initial
                 //j == 1 for ica
                 //j == 2 for ica by maps_1 only
+                //j == 3 for high correlations
                 for(int wndL = 1000; wndL >= 500; wndL -= 125) //too short limit in spectre.cpp::readFile();
                 {
                     if(k == 1) cout << wndL << " windows start" << endl;
-                    else if (j == 0) cout << "reals start" << endl;
-                    else cout << "reals ica start" << endl;
+                    else cout << "reals start" << endl;
 
                     //clean wts
                     lst = dir->entryList(QStringList("*.wts"), QDir::Files|QDir::NoDotAndDotDot);
@@ -7695,7 +7711,8 @@ void MainWindow::autoIcaAnalysis2()
                     ui->windowLengthBox->setValue(wndL);
 
                     helpString = dir->absolutePath() + QDir::separator() + list0[i];
-                    if(j != 0) helpString.replace("_1.edf", "_1_ica.edf");
+                    if(j == 1 || j == 2) helpString.replace("_1.edf", "_1_ica.edf");
+                    else if(j == 3) helpString.replace("_1.edf", "_1_highCorr.edf");
                     setEdfFile(helpString); // open ExpName_1.edf
                     ExpName1 = ExpName;
                     cleanDirs();
@@ -7713,8 +7730,16 @@ void MainWindow::autoIcaAnalysis2()
 
                     ANN = new Net(dir, ns, left, right, spStep, ExpName);
                     ANN->setAutoProcessingFlag(true);
-                    if(k == 0) ANN->readCfgByName("16sec19ch");
-                    else if(k == 1) ANN->readCfgByName("4sec19ch");
+                    if(j == 3)
+                    {
+                        if(k == 0) ANN->readCfgByName("highCorr");
+                        else if(k == 1) ANN->readCfgByName("highCorr_wnd");
+                    }
+                    else
+                    {
+                        if(k == 0) ANN->readCfgByName("16sec19ch");
+                        else if(k == 1) ANN->readCfgByName("4sec19ch");
+                    }
 
                     helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
                     if(k == 1) helpString += QString(QDir::separator()) + "windows";
@@ -7756,6 +7781,7 @@ void MainWindow::autoIcaAnalysis2()
                     if(j == 0) helpString.replace("_1.edf", "_2.edf");
                     else if(j == 1) helpString.replace("_1.edf", "_2_ica_rdcChan.edf");
                     else if(j == 2) helpString.replace("_1.edf", "_2_ica_by1.edf");
+                    else if(j == 3) helpString.replace("_1.edf", "_2_highCorr.edf");
                     setEdfFile(helpString); // open ExpName_2.edf
                     cleanDirs();
                     sliceAll();
@@ -7779,18 +7805,25 @@ void MainWindow::autoIcaAnalysis2()
                     }
                     ANN->averageClassification();
                     outFile = fopen(QString(defaults::dataFolder + "/AB/res.txt").toStdString().c_str(), "a");
+
+                    //print to res.txt
+                    fprintf(outFile, "%s", ExpName.left(3).toStdString().c_str());
                     if(k == 1)
                     {
-                        if(j == 0) fprintf(outFile, "%s_winds %d\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), wndL, ANN->getAverageAccuracy());
-                        else if(j == 1) fprintf(outFile, "%s_winds_ica %d\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), wndL, ANN->getAverageAccuracy());
-                        else if(j == 2) fprintf(outFile, "%s_winds_ica_by1 %d\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), wndL, ANN->getAverageAccuracy());
+                        fprintf(outFile, "_winds");
                     }
                     else if(k == 0)
                     {
-                        if(j == 0) fprintf(outFile, "%s_reals\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), ANN->getAverageAccuracy());
-                        else if(j == 1) fprintf(outFile, "%s_reals_ica\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), ANN->getAverageAccuracy());
-                        else if(j == 2) fprintf(outFile, "%s_reals_ica_by1\t%.2lf\r\n", ExpName.left(3).toStdString().c_str(), ANN->getAverageAccuracy());
+                        fprintf(outFile, "_reals");
                     }
+                    if(j == 0) fprintf(outFile, "");
+                    else if(j == 1) fprintf(outFile, "_ica");
+                    else if(j == 2) fprintf(outFile, "_by1");
+                    else if(j == 3) fprintf(outFile, "_highCorr");
+
+                    if(k == 1) fprintf(outFile, "\t%d", wndL);
+                    fprintf(outFile, "\t%.2lf\r\n", ANN->getAverageAccuracy());
+
                     fclose(outFile);
                     ANN->close();
                     delete ANN;
