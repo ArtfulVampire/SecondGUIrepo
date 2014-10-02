@@ -462,22 +462,51 @@ MainWindow::MainWindow() :
 
 
     //conf youung scientists automatization
+//    autoIcaAnalysis2();
 
-//    helpString = "/media/Files/Data/AB/Help/AAX_0_maps.txt";
-//    outStream.open(helpString.toStdString().c_str());
-//    for(int i = 0; i < 19; ++i)
-//    {
-//        for(int j = 0; j < 19; ++j)
-//        {
-//            outStream << (i==j) << " ";
-//        }
-//        outStream << endl;
-//    }
-//    outStream.close();
+    //sequence ICs
+    double ** mat1;
+    double ** mat2;
+    matrixCreate(&mat1, 19, 19);
+    matrixCreate(&mat2, 19, 19);
+    dir->cd("/media/Files/Data/AAX");
 
-//    ui->reduceChannelsComboBox->setCurrentText("20");
-//    transformEDF("/media/Files/Data/AB/AAX_1.edf", "/media/Files/Data/AB/Help/AAX_1_maps.txt", "/media/Files/Data/AB/AAX_1_ica0.edf");
-    autoIcaAnalysis2();
+    //read matrices
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "AAX_maps.txt";
+    readICAMatrix(helpString, &mat1, 19);
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "AAX_maps_05.txt";
+    readICAMatrix(helpString, &mat2, 19);
+
+    //invert ICA maps
+    matrixTranspose(&mat1, 19);
+    matrixTranspose(&mat2, 19);
+
+    QList<int> listIC;
+    listIC.clear();
+
+    double tempDouble;
+    int tempNumber;
+
+    helpString.clear();
+    for(int k = 0; k < 19; ++k)
+    {
+        tempDouble = 0.;
+        for(int j = 0; j < 19; ++j)
+        {
+            if(listIC.contains(j)) continue;
+            helpDouble = fabs(correlation(mat1[k], mat2[j], 19, 0));
+            if(helpDouble > tempDouble)
+            {
+                tempDouble = helpDouble;
+                tempNumber = j;
+            }
+        }
+        listIC << tempNumber;
+        helpString += QString::number(tempNumber+1) + " ";
+        cout << k << "\t" << tempNumber << "\t" << tempDouble << endl;
+    }
+
+
 }
 
 MainWindow::~MainWindow()
@@ -2989,7 +3018,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                 }
                 if(ui->realButton->isChecked())
                 {
-                    if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak"))
+                    if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) //generality
                     {
                         sliceBak(1, 60, "241");
                         sliceBak(61, 120, "247");
@@ -4332,6 +4361,7 @@ void MainWindow::constructEDF()
     QTime myTime;
     myTime.start();
     readData(); // needed?
+    cout << "constructEDF: data read" << endl;
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     ns = lst.length();
@@ -4352,6 +4382,7 @@ void MainWindow::constructEDF()
     {
         newData[i] = new double [ndr * nr[i]];  //generality, maybe bad nr from other channel?
     }
+    cout << "constructEDF: memory allocated" << endl;
 
     dir->cd("Realisations");
     lst = dir->entryList(QDir::Files, QDir::Name); //generality
@@ -4361,7 +4392,7 @@ void MainWindow::constructEDF()
     int currSlice = 0;
     for(int i = 0; i < lst.length(); ++i)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Realisations").append(QDir::separator()).append(lst[i]));
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + lst[i]);
         file = fopen(helpString.toStdString().c_str(), "r");
         fscanf(file, "NumOfSlices %d", &NumOfSlices);
 
@@ -5597,7 +5628,7 @@ void MainWindow::ICA() //fastICA
             {
                 sum1 += matrixA[i][k] * components[k][j];
             }
-            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.03 && fabs(data[i][j]) > 0.1)
+            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.03 && fabs(data[i][j]) > 0.3)
             {
                 cout << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << "\t"<< data[i][j] << endl;
             }
@@ -7472,7 +7503,7 @@ void MainWindow::autoIcaAnalysis2()
     ui->reduceChannelsComboBox->setCurrentText("20");
 
     dir->cd(defaults::dataFolder + "/AB");
-    QStringList list0 = dir->entryList(QStringList("*_1.edf"), QDir::NoFilter, QDir::Name); ///////////////////////////// list of first files!!!!
+    QStringList list0 = dir->entryList(QStringList("*_1.edf"), QDir::NoFilter, QDir::Name);
 
     Spectre * spectr;
     Net * ANN;
@@ -7670,9 +7701,6 @@ void MainWindow::autoIcaAnalysis2()
 
         for(int k = 0; k <= 1; ++k)
         {
-
-//            if(k == 1) return; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
             //k == 0 for realisations
             //k == 1 for windows
 
@@ -7690,7 +7718,6 @@ void MainWindow::autoIcaAnalysis2()
             }
             for(int j = 0; j <= 3; ++j)
             {
-//                j=2;  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 //j == 0 for initial
                 //j == 1 for ica
                 //j == 2 for ica by maps_1 only
@@ -7835,6 +7862,12 @@ void MainWindow::autoIcaAnalysis2()
 
     }
     lst = dir->entryList(QStringList("*.wts"), QDir::Files|QDir::NoDotAndDotDot);
+    for(int h = 0; h < lst.length(); ++h)
+    {
+        remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());
+    }
+
+    lst = dir->entryList(QStringList("*markers*"), QDir::Files|QDir::NoDotAndDotDot);
     for(int h = 0; h < lst.length(); ++h)
     {
         remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());

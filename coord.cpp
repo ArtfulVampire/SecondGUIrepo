@@ -40,5 +40,5 @@ namespace defaults
 //    const bool openmp = 0;
 //    const QString cfgFileName = "16sec19ch";
 
-    const bool wirteStartEndLong = false;
+    const bool wirteStartEndLong = false; //for slice
 }
