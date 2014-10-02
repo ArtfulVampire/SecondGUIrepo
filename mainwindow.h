@@ -75,7 +75,7 @@ public slots:
     void drawMaps();
     void makeDatFile();
     void constructEDF();
-    void reduceChannelsEDF();
+    void reduceChannelsEDFSlot();
     //signals
     void ICA();
     void waveletCount();
@@ -124,6 +124,7 @@ public:
     void drawMap(double ** matrixA, int num);
     void setEdfFile(QString filePath);
     void transformEDF(QString edfPath, QString mapsPath, QString newEdfPath);
+    void reduceChannelsEDF(QString newFilePath);
     void autoIcaAnalysis();
     void autoIcaAnalysis2();
 

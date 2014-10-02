@@ -298,7 +298,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->sliceWithMarkersCheckBox, SIGNAL(stateChanged(int)), this, SLOT(sliceWithMarkersSlot(int)));
 
-    QObject::connect(ui->reduceChannelsEDFComboBox, SIGNAL(clicked()), this, SLOT(reduceChannelsEDF()));
+    QObject::connect(ui->reduceChannelsEDFComboBox, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
 /*
     //function test
     int leng = 65536;
@@ -2882,12 +2882,19 @@ void MainWindow::refilterData()
     cout << "RefilterData: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
-void MainWindow::reduceChannelsEDF()
+void MainWindow::reduceChannelsEDFSlot()
+{
+    helpString = dir->absolutePath() + QDir::separator() + ExpName + "_rdcChan.edf";
+    reduceChannelsEDF(helpString);
+}
+
+
+
+void MainWindow::reduceChannelsEDF(QString newFilePath)
 {
     readData();
     reduceChannelsFast();
-    helpString = dir->absolutePath() + QDir::separator() + ExpName + "_rdcChan.edf";
-    writeEdf(edf, data, helpString, ndr*nr[0]);
+    writeEdf(edf, data, newFilePath, ndr*nr[0]);
 }
 
 void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
@@ -7476,6 +7483,16 @@ void MainWindow::autoIcaAnalysis2()
     int NumOfRepeats = 50;
     QString ExpName1;
 
+    struct ICAcorr
+    {
+        int num1;
+        int num2;
+        double coeff;
+    };
+
+    ICAcorr ICAcorrArr[19];
+    double ICAcorrThreshold = 0.8;
+
 
     for(int i = 0; i < list0.length(); ++i)
     {
@@ -7546,18 +7563,21 @@ void MainWindow::autoIcaAnalysis2()
                 listIC << tempNumber;
                 helpString += QString::number(tempNumber+1) + " ";
                 cout << k << "\t" << tempNumber << "\t" << tempDouble << endl;
+                ICAcorrArr[k].num1 = k;
+                ICAcorrArr[k].num2 = tempNumber;
+                ICAcorrArr[k].coeff = tempDouble;
             }
             helpString += "20";
 
             //set appropriate channel sequence for 2nd ica file
             ui->reduceChannelsLineEdit->setText(helpString);
 
-            //write new 2nd ica file with needed channels
+            //write new 2nd ica file with needed channels' sequence
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
             helpString.replace("_1.edf", "_2_ica.edf");
             setEdfFile(helpString); //open ExpName_2_ica.edf
             cleanDirs();
-            reduceChannelsEDF();
+            reduceChannelsEDFSlot(); //_rdcChan.edf
 
             matrixDelete(&mat1, 19, 19);
             matrixDelete(&mat2, 19, 19);
@@ -7565,17 +7585,58 @@ void MainWindow::autoIcaAnalysis2()
             //transform 2nd file with 1st maps
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
             helpString.replace("_1.edf", "_2.edf"); //open ExpName_2.edf
-
             ExpName1 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_1_maps.txt";
-
             helpString2 = dir->absolutePath() + QDir::separator() + list0[i];
             helpString2.replace("_1.edf", "_2_ica_by1.edf"); //write to ExpName_2_ica_by1.edf
-
-            cout << helpString.toStdString() << endl;
-            cout << ExpName1.toStdString() << endl;
-            cout << helpString2.toStdString() << endl;
-
             transformEDF(helpString, ExpName1, helpString2);
+
+
+
+
+            //drop low correlated components - 1st file
+            helpString.clear();
+            cout << "high corr 1st file" << endl;
+            for(int k = 0; k < 19; ++k)
+            {
+                if(ICAcorrArr[k].coeff < ICAcorrThreshold) continue;
+                else helpString += QString::number(k+1) + " ";
+                cout << k+1 << " ";
+            }
+            helpString += "20";
+            cout << "20" << endl;
+            ui->reduceChannelsLineEdit->setText(helpString);
+
+            //write new 1st ica file with high correlated components
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            setEdfFile(helpString);
+            cleanDirs();
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString.replace("_1.edf", "_1_highCorr.edf");
+            reduceChannelsEDF(helpString);
+
+
+            //2nd file
+            helpString.clear();
+            cout << "high corr 1st file" << endl;
+            for(int k = 0; k < 19; ++k)
+            {
+                if(ICAcorrArr[k].coeff < ICAcorrThreshold) continue;
+                else helpString += QString::number(ICAcorrArr[k].num2+1) + " ";
+                cout << ICAcorrArr[k].num2+1 << " ";
+            }
+            helpString += "20";
+            cout << "20" << endl;
+            ui->reduceChannelsLineEdit->setText(helpString);
+
+            //write new 2st ica file with high correlated components
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString.replace("_1.edf", "_2.edf"); //open ExpName_2.edf
+            setEdfFile(helpString);
+            cleanDirs();
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString.replace("_1.edf", "_2_highCorr.edf");
+            reduceChannelsEDF(helpString);
+
 
         }
         ui->timeShiftBox->setValue(125); //0.5 seconds shift
