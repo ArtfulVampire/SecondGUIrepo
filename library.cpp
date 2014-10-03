@@ -2052,8 +2052,9 @@ double matrixInnerMaxCorrelation(double ** const inMatrix, int const numRows, in
     matrixTranspose(inMatrix, numRows, numCols, &tempMat);
     for(int i = 0; i < numCols; ++i)
     {
-        for(int j = i; j < numCols; ++j)
+        for(int j = 0; j < numCols; ++j)
         {
+            if(j==i) continue;
             temp = correlation(tempMat[i], tempMat[j], numRows);
             if(fabs(temp) > fabs(res))
             {

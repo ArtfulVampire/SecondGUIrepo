@@ -221,7 +221,7 @@ MainWindow::MainWindow() :
 
     ui->highFreqFilterDoubleSpinBox->setValue(20.);
     ui->highFreqFilterDoubleSpinBox->setSingleStep(1.0);
-    ui->lowFreqFilterDoubleSpinBox->setValue(0.5);
+    ui->lowFreqFilterDoubleSpinBox->setValue(5.0);
     ui->lowFreqFilterDoubleSpinBox->setSingleStep(0.1);
 
 
@@ -464,6 +464,9 @@ MainWindow::MainWindow() :
     //conf youung scientists automatization
 //    autoIcaAnalysis2();
 
+
+
+/*
     //sequence ICs
     double ** mat1;
     double ** mat2;
@@ -476,6 +479,10 @@ MainWindow::MainWindow() :
     readICAMatrix(helpString, &mat1, 19);
     helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "AAX_maps_05.txt";
     readICAMatrix(helpString, &mat2, 19);
+    cout << matrixInnerMaxCorrelation(mat1, 19, 19) << endl;
+    cout << matrixInnerMaxCorrelation(mat2, 19, 19) << endl;
+
+
 
     //invert ICA maps
     matrixTranspose(&mat1, 19);
@@ -505,8 +512,17 @@ MainWindow::MainWindow() :
         helpString += QString::number(tempNumber+1) + " ";
         cout << k << "\t" << tempNumber << "\t" << tempDouble << endl;
     }
+*/
 
+    ui->sliceCheckBox->setChecked(true);
+    ui->sliceWithMarkersCheckBox->setChecked(true);
+    ui->reduceChannelsCheckBox->setChecked(true);
+    ui->reduceChannelsComboBox->setCurrentText("MyCurrent");
 
+    ui->cleanRealisationsCheckBox->setChecked(true);
+    ui->cleanWindowsCheckBox->setChecked(true);
+
+    autoIcaAnalysis2();
 }
 
 MainWindow::~MainWindow()
@@ -2905,7 +2921,7 @@ void MainWindow::refilterData()
     }
 
     ui->reduceChannelsLineEdit->setText(helpString);
-    helpString = dir->absolutePath() + QDir::separator() + ExpName + "_filtered.edf";
+    helpString = dir->absolutePath() + QDir::separator() + ExpName + "_f.edf";
     writeEdf(edf, data, helpString, ndr*fr);
 
     cout << "RefilterData: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
@@ -3700,7 +3716,7 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
             helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
 
 
-            if(!((i-j > 15000 && (marker == "254")) || (marker == "000")) && !defaults::wirteStartEndLong) // dont write big rests and beginning
+            if(!( (marker == "000") ) && !defaults::wirteStartEndLong) // dont write big rests and beginning
             {
                 file = fopen(helpString.toStdString().c_str(), "w");
 
@@ -3710,6 +3726,20 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
                     for(int m = 0; m < numChanWrite; ++m)
                     {
                         fprintf(file, "%lf\n", data[m][l*nr[m]/nr[ns-1]]);
+                    }
+                }
+                fclose(file);
+            }
+            else if (i-j > 2500 && (marker == "254"))
+            {
+                file = fopen(helpString.toStdString().c_str(), "w");
+
+                fprintf(file, "NumOfSlices 1000 \n");
+                for(int l = 0; l < 1000; ++l)
+                {
+                    for(int m = 0; m < numChanWrite; ++m)
+                    {
+                        fprintf(file, "0.000\n");
                     }
                 }
                 fclose(file);
@@ -3727,6 +3757,28 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
         }
 
     }
+
+    //write last file
+    marker = "254";
+    ++number;
+    helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(ExpName).append(".").append(rightNumber(number, 4)).append("_").append(marker);
+    file = fopen(helpString.toStdString().c_str(), "w");
+    fprintf(file, "NumOfSlices 10 \n");
+    for(int l = 0; l < 10; ++l)
+    {
+        for(int m = 0; m < numChanWrite; ++m)
+        {
+            if(m != numChanWrite-1 && l != 0)
+            {
+                fprintf(file, "0.000\n");
+            }
+            else
+            {
+                fprintf(file, "254.000\n");
+            }
+        }
+    }
+    fclose(file);
 
     if(defaults::wirteStartEndLong)
     {
@@ -4361,7 +4413,7 @@ void MainWindow::constructEDF()
     QTime myTime;
     myTime.start();
     readData(); // needed?
-    cout << "constructEDF: data read" << endl;
+//    cout << "constructEDF: data read" << endl;
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     ns = lst.length();
@@ -4382,7 +4434,7 @@ void MainWindow::constructEDF()
     {
         newData[i] = new double [ndr * nr[i]];  //generality, maybe bad nr from other channel?
     }
-    cout << "constructEDF: memory allocated" << endl;
+//    cout << "constructEDF: memory allocated" << endl;
 
     dir->cd("Realisations");
     lst = dir->entryList(QDir::Files, QDir::Name); //generality
@@ -5628,7 +5680,7 @@ void MainWindow::ICA() //fastICA
             {
                 sum1 += matrixA[i][k] * components[k][j];
             }
-            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.03 && fabs(data[i][j]) > 0.3)
+            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.05 && fabs(data[i][j]) > 0.5)
             {
                 cout << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << "\t"<< data[i][j] << endl;
             }
@@ -7535,6 +7587,11 @@ void MainWindow::autoIcaAnalysis2()
     ICAcorr ICAcorrArr[19];
     double ICAcorrThreshold = 0.666;
 
+    //final test
+    NumOfRepeats = 1;
+    ui->svdDoubleSpinBox->setValue(6.0);
+    ui->vectwDoubleSpinBox->setValue(6.0);
+
 
     for(int i = 0; i < list0.length(); ++i)
     {
@@ -7554,14 +7611,21 @@ void MainWindow::autoIcaAnalysis2()
             helpString.replace("_1.edf", "_2.edf");
             setEdfFile(helpString); // open ExpName_1.edf
             cleanDirs();
-            //dont close edf before ICA
-//            fclose(edf);
             ICA();
             helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_maps.txt";
             helpString2 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_2_maps.txt";
             if(QFile::exists(helpString2)) QFile::remove(helpString2);
             QFile::copy(helpString, helpString2);
+
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString.replace("_1.edf", "_sum.edf");
+            setEdfFile(helpString); // open ExpName_sum.edf
             cleanDirs();
+            ICA();
+            helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_maps.txt";
+            helpString2 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_sum_maps.txt";
+            if(QFile::exists(helpString2)) QFile::remove(helpString2);
+            QFile::copy(helpString, helpString2);
 
             //sequence ICs
             double ** mat1;
@@ -7624,6 +7688,10 @@ void MainWindow::autoIcaAnalysis2()
             matrixDelete(&mat1, 19, 19);
             matrixDelete(&mat2, 19, 19);
 
+
+
+
+
             //transform 2nd file with 1st maps
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
             helpString.replace("_1.edf", "_2.edf"); //open ExpName_2.edf
@@ -7631,6 +7699,25 @@ void MainWindow::autoIcaAnalysis2()
             helpString2 = dir->absolutePath() + QDir::separator() + list0[i];
             helpString2.replace("_1.edf", "_2_ica_by1.edf"); //write to ExpName_2_ica_by1.edf
             transformEDF(helpString, ExpName1, helpString2);
+
+
+
+
+            //transform both files with general maps
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            ExpName1 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_sum_maps.txt";
+            helpString2 = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString2.replace("_1.edf", "_1_ica_sum.edf"); //write to ExpName_2_ica_by1.edf
+            transformEDF(helpString, ExpName1, helpString2);
+
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString.replace("_1.edf", "_2.edf"); //open ExpName_2.edf
+            ExpName1 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_sum_maps.txt";
+            helpString2 = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString2.replace("_1.edf", "_2_ica_sum.edf"); //write to ExpName_2_ica_by1.edf
+            transformEDF(helpString, ExpName1, helpString2);
+
+
 
 
 
@@ -7656,10 +7743,9 @@ void MainWindow::autoIcaAnalysis2()
             helpString.replace("_1.edf", "_1_highCorr.edf");
             reduceChannelsEDF(helpString);
 
-
             //2nd file
             helpString.clear();
-            cout << "high corr 1st file" << endl;
+            cout << "high corr 2nd file" << endl;
             for(int k = 0; k < 19; ++k)
             {
                 if(ICAcorrArr[k].coeff < ICAcorrThreshold) continue;
@@ -7670,7 +7756,7 @@ void MainWindow::autoIcaAnalysis2()
             cout << "20" << endl;
             ui->reduceChannelsLineEdit->setText(helpString);
 
-            //write new 2st ica file with high correlated components
+            //write new 1st ica file with high correlated components
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
             helpString.replace("_1.edf", "_2.edf"); //open ExpName_2.edf
             setEdfFile(helpString);
@@ -7716,12 +7802,14 @@ void MainWindow::autoIcaAnalysis2()
                 ui->cleanWindowsCheckBox->setChecked(true);
                 ui->cleanWindSpectraCheckBox->setChecked(true);
             }
-            for(int j = 0; j <= 3; ++j)
+            for(int j = 0; j <= 4; ++j)
             {
+                if(j == 1 || j == 3) continue;
                 //j == 0 for initial
                 //j == 1 for ica
                 //j == 2 for ica by maps_1 only
                 //j == 3 for high correlations
+                //j == 4 by whole ica
                 for(int wndL = 1000; wndL >= 500; wndL -= 125) //too short limit in spectre.cpp::readFile();
                 {
                     if(k == 1) cout << wndL << " windows start" << endl;
@@ -7734,12 +7822,21 @@ void MainWindow::autoIcaAnalysis2()
                         remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());
                     }
 
+                    //clean markers.txt
+                    lst = dir->entryList(QStringList("*markers*"), QDir::Files|QDir::NoDotAndDotDot);
+                    for(int h = 0; h < lst.length(); ++h)
+                    {
+                        remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());
+                    }
+
                     //process
                     ui->windowLengthBox->setValue(wndL);
 
                     helpString = dir->absolutePath() + QDir::separator() + list0[i];
-                    if(j == 1 || j == 2) helpString.replace("_1.edf", "_1_ica.edf");
+                    if(j == 1) helpString.replace("_1.edf", "_1_ica.edf");
+                    else if(j == 2) helpString.replace("_1.edf", "_1_ica.edf");
                     else if(j == 3) helpString.replace("_1.edf", "_1_highCorr.edf");
+                    else if(j == 4) helpString.replace("_1.edf", "_1_ica_sum.edf");
                     setEdfFile(helpString); // open ExpName_1.edf
                     ExpName1 = ExpName;
                     cleanDirs();
@@ -7809,6 +7906,7 @@ void MainWindow::autoIcaAnalysis2()
                     else if(j == 1) helpString.replace("_1.edf", "_2_ica_rdcChan.edf");
                     else if(j == 2) helpString.replace("_1.edf", "_2_ica_by1.edf");
                     else if(j == 3) helpString.replace("_1.edf", "_2_highCorr.edf");
+                    else if(j == 4) helpString.replace("_1.edf", "_2_ica_sum.edf");
                     setEdfFile(helpString); // open ExpName_2.edf
                     cleanDirs();
                     sliceAll();
@@ -7847,6 +7945,7 @@ void MainWindow::autoIcaAnalysis2()
                     else if(j == 1) fprintf(outFile, "_ica");
                     else if(j == 2) fprintf(outFile, "_by1");
                     else if(j == 3) fprintf(outFile, "_highCorr");
+                    else if(j == 4) fprintf(outFile, "_ica_sum");
 
                     if(k == 1) fprintf(outFile, "\t%d", wndL);
                     fprintf(outFile, "\t%.2lf\r\n", ANN->getAverageAccuracy());
