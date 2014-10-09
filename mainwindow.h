@@ -125,6 +125,8 @@ public:
     void setEdfFile(QString filePath);
     void transformEDF(QString edfPath, QString mapsPath, QString newEdfPath);
     void reduceChannelsEDF(QString newFilePath);
+    void writeCorrelationMatrix(QString edfPath, QString outPath);
+    void ICsSequence(QString EDFica1, QString EDFica2, QString maps1, QString maps2);
     void autoIcaAnalysis();
     void autoIcaAnalysis2();
 

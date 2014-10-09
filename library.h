@@ -92,9 +92,9 @@ void splitZeros(double *** inData, int ns, int length, int * outLength);
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 
 void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth, const double powArg);
+void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const NumOfSmooth, const double powArg);
 void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
 
-void ICsSequence(QString EDFica1, QString EDFica2, QString maps1, QString maps2);
 
 
 double distance(double * const vec1, double * const vec2, int const dim);

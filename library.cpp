@@ -1641,6 +1641,52 @@ void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength)
 
 }
 
+void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const NumOfSmooth, const double powArg)
+{
+    /*
+    int Eyes;
+
+
+    double norm1 = fftLength / double(fftLength-Eyes);
+    double * spectre = new double [fftLength*2];
+
+    double help1, help2;
+    int leftSmoothLimit, rightSmoothLimit;
+
+    for(int j = 0; j < ns; ++j)
+    {
+        for(int i = 0; i < fftLength; ++i)            //make appropriate array
+        {
+            spectre[ i * 2 + 0 ] = (double)(inData[j][ i ] * sqrt(norm1));
+            spectre[ i * 2 + 1 ] = 0.;
+        }
+        four1(spectre-1, fftLength, 1);       //Fourier transform
+        for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
+        {
+            (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fftLength; //0.004 = 1/250 generality
+//            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ], powArg );
+
+        }
+
+        leftSmoothLimit = 0;
+        rightSmoothLimit = fftLength/2-1;
+
+        //smooth spectre
+        for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
+        {
+            help1 = (*dataFFT)[j][leftSmoothLimit-1];
+            for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
+            {
+                help2 = (*dataFFT)[j][k];
+                (*dataFFT)[j][k] = (help1 + help2 + (*dataFFT)[j][k+1]) / 3.;
+                help1 = help2;
+            }
+        }
+    }
+    delete []spectre;
+    */
+}
+
 
 void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int const Eyes, int const NumOfSmooth, double const powArg)
 {
@@ -1733,16 +1779,17 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
     paSrc.open(paFile.toStdString().c_str());
     if(!paSrc.is_open())
     {
-        cout << "bad Pa File" << endl;
-        cout << paSrc.is_open() << endl;
-        cout << paSrc.eof() << endl;
-        cout << paSrc.good() << endl;
-        cout << paSrc.bad() << endl;
-        cout << paSrc.fail() << endl;
+        cout << "bad Pa File:" << endl;
+        cout << "is_open:\t" << paSrc.is_open() << endl;
+        cout << "eof:\t" << paSrc.eof() << endl;
+        cout << "good:\t" << paSrc.good() << endl;
+        cout << "bad:\t" << paSrc.bad() << endl;
+        cout << "fail:\t" << paSrc.fail() << endl;
         cout << errno << endl;
 
         return;
     }
+
 
     for(int i = 0; i < (*NumberOfVectors); ++i)
     {
@@ -1770,6 +1817,7 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
         (*FileName)[i] = new char [64];
     }
 
+//    cout << "readPaFile: mem ok" << endl;
     while(!paSrc.eof())
     {
         paSrc.getline((*FileName)[num], 64);

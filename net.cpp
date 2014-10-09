@@ -1099,6 +1099,11 @@ void Net::readCfgByName(QString FileName)
 void Net::loadWtsByName(QString filename) //
 {
     FILE * wts = fopen(filename.toStdString().c_str(),"r");
+    if(wts == NULL)
+    {
+        cout << "wts-file == NULL" << endl;
+        return;
+    }
 
         if(weight == NULL) //if hasn't been allocated
         {
@@ -2085,10 +2090,12 @@ void Net::PaIntoMatrixByName(QString fileName)
     {
         helpString += ".pa";
     }
+//    cout << "Pa file to load: " << helpString.toStdString() << endl;
     paFileBC = helpString;
 //    QTime myTime;
 //    myTime.start();
     readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+//    cout << "readPaFile success" << endl;
     double * tempVector = new double [ns*spLength];
 
     /*

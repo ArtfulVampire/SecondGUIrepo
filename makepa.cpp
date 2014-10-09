@@ -1217,7 +1217,7 @@ void MakePa::makePaSlot()
     QDir *dir_ = new QDir();
     dir_->cd(ui->paLineEdit->text());          /////////which dir?
     helpString=dir_->absolutePath();
-//    cout<<"spectra path = "<<helpString.toStdString()<<endl;
+//    cout<< "spectra path = " << helpString.toStdString() << endl;
 
 
     FILE * spectre;
@@ -1294,11 +1294,11 @@ void MakePa::makePaSlot()
         nameFilters.append(helpString);
     }
 
-    list=dir_->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
+    list = dir_->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
 
     if(list.empty())
     {
-        cout << "no spectra-files found"<<endl;
+        cout << "no spectra-files found" << endl;
         return;
     }
 
@@ -1310,7 +1310,7 @@ void MakePa::makePaSlot()
 
     int Length = lst[0].length();
 
-    for(int i=0; i<NumOfClasses; ++i)
+    for(int i =0 ; i<NumOfClasses; ++i)
     {
 //        cout<<"Length["<<i<<"]="<<lst[i].length()<<endl;
         Length=min(Length, lst[i].length());
@@ -1322,7 +1322,7 @@ void MakePa::makePaSlot()
 
 
 
-    if(Length==0)
+    if(Length == 0)
     {
         cout<<"Length==0"<<endl; return;
     }
@@ -1342,7 +1342,6 @@ void MakePa::makePaSlot()
         }
     }
 
-//    cout<<"ns="<<ns<<endl;
     //generality
     if(ns==-1) return;
     if(spLength==-1) return;
@@ -1385,7 +1384,7 @@ void MakePa::makePaSlot()
 
     //create first PA
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("1").append(typeString));
-    pa=fopen(helpString.toStdString().c_str(), "w");   ////////separator
+    pa = fopen(helpString.toStdString().c_str(), "w");   ////////separator
     if(pa == NULL)
     {
         cout<<helpString.toStdString().c_str()<<endl<<"1.pa==NULL"<<endl;
@@ -1399,24 +1398,25 @@ void MakePa::makePaSlot()
         return;
     }
 
-
     for(int i = 0; i < Length/2; ++i)  //Length - number of files every type
     {
         for(int j = 0; j < NumOfClasses; ++j)
         {
+//            cout << lst[j][arr[j][i]].toStdString() << endl;
 
-            helpString = dir_->absolutePath();
-            helpString.append(QDir::separator()).append(lst[j].at(arr[j][i]));
-//            cout<<helpString.toStdString()<<endl;
-
+            helpString = dir_->absolutePath() + QDir::separator() + lst[j][arr[j][i]];
             spectre=fopen(helpString.toStdString().c_str(), "r");
-            fprintf(pa, "%s\n", lst[j].at(arr[j][i]).toStdString().c_str());
-            fprintf(paAll, "%s\n", lst[j].at(arr[j][i]).toStdString().c_str());
-            if(spectre == NULL) return;
-
-            for(int l=0; l<ns; ++l)
+            if(spectre == NULL)
             {
-                for(int k=0; k<spLength; ++k)
+                cout << "spectre-file == NULL" << endl;
+                return;
+            }
+            fprintf(pa, "%s\n", lst[j][arr[j][i]].toStdString().c_str());
+            fprintf(paAll, "%s\n", lst[j][arr[j][i]].toStdString().c_str());
+
+            for(int l = 0; l < ns; ++l)
+            {
+                for(int k = 0; k < spLength; ++k)
                 {
                     fscanf(spectre, "%lf\n", &data4[l][k]);
                 }
@@ -1504,6 +1504,8 @@ void MakePa::makePaSlot()
     {
         for(int j = 0; j < NumOfClasses; ++j)
         {
+
+//            cout << lst[j][arr[j][i]].toStdString() << endl;
 
             helpString=dir_->absolutePath();
             helpString.append(QDir::separator()).append(lst[j].at(arr[j][i]));

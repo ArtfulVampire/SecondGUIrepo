@@ -522,7 +522,9 @@ MainWindow::MainWindow() :
     ui->cleanRealisationsCheckBox->setChecked(true);
     ui->cleanWindowsCheckBox->setChecked(true);
 
-    autoIcaAnalysis2();
+//    autoIcaAnalysis2();
+//    system("sudo shutdown -P now");
+
 }
 
 MainWindow::~MainWindow()
@@ -2942,6 +2944,106 @@ void MainWindow::reduceChannelsEDF(QString newFilePath)
     writeEdf(edf, data, newFilePath, ndr*nr[0]);
 }
 
+void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath)
+{
+    setEdfFile(edfPath);
+    readData();
+    --ns; // markers out
+    int fr = nr[0];
+
+    //write components cross-correlation matrix
+    double ** corrs;
+    matrixCreate(&corrs, ns, ns);
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = i; j < ns; ++j)
+        {
+            corrs[i][j] = correlation(data[i], data[j], ndr*fr);
+            corrs[j][i] = corrs[i][j];
+        }
+        corrs[i][i] = 0.;
+    }
+    writeICAMatrix(outPath, corrs, ns); //generality 19-ns
+    matrixDelete(&corrs, ns, ns);
+
+
+}
+
+
+void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1, QString maps2)
+{
+    /*
+    double * spectr;
+
+    setEdfFile(EDFica1);
+    readData();
+
+
+    //sequence ICs
+    double ** mat1;
+    double ** mat2;
+    matrixCreate(&mat1, 19, 19);
+    matrixCreate(&mat2, 19, 19);
+
+    //read matrices
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_1_maps.txt";
+    readICAMatrix(helpString, &mat1, 19);
+    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_2_maps.txt";
+    readICAMatrix(helpString, &mat2, 19);
+
+    //invert ICA maps
+    matrixTranspose(&mat1, 19);
+    matrixTranspose(&mat2, 19);
+
+//            matrixPrint(mat1, 19, 19);
+//            matrixPrint(mat2, 19, 19);
+
+    QList<int> listIC;
+    listIC.clear();
+
+    double tempDouble;
+    int tempNumber;
+
+    helpString.clear();
+    for(int k = 0; k < 19; ++k)
+    {
+        tempDouble = 0.;
+        for(int j = 0; j < 19; ++j)
+        {
+            if(listIC.contains(j)) continue;
+            helpDouble = fabs(correlation(mat1[k], mat2[j], 19, 0));
+            if(helpDouble > tempDouble)
+            {
+                tempDouble = helpDouble;
+                tempNumber = j;
+            }
+        }
+        listIC << tempNumber;
+        helpString += QString::number(tempNumber+1) + " ";
+        cout << k << "\t" << tempNumber << "\t" << tempDouble << endl;
+        ICAcorrArr[k].num1 = k;
+        ICAcorrArr[k].num2 = tempNumber;
+        ICAcorrArr[k].coeff = tempDouble;
+    }
+    helpString += "20";
+
+    //set appropriate channel sequence for 2nd ica file
+    ui->reduceChannelsLineEdit->setText(helpString);
+
+    //write new 2nd ica file with needed channels' sequence
+    helpString = dir->absolutePath() + QDir::separator() + list0[i];
+    helpString.replace("_1.edf", "_2_ica.edf");
+    setEdfFile(helpString); //open ExpName_2_ica.edf
+    cleanDirs();
+    reduceChannelsEDFSlot(); //_rdcChan.edf
+
+    matrixDelete(&mat1, 19, 19);
+    matrixDelete(&mat2, 19, 19);
+
+*/
+
+}
+
 void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 {
     QTime myTime;
@@ -4950,6 +5052,9 @@ void MainWindow::ICA() //fastICA
     QTime myTime;
     myTime.start();
 
+    helpString = dir->absolutePath() + QDir::separator() + ExpName + ".edf";
+    cout << "Ica started: " << helpString.toStdString() << endl;
+
     readData();
     //check reduceChannelsLineEdit for write edf
 
@@ -5687,12 +5792,12 @@ void MainWindow::ICA() //fastICA
         }
     }
 
-    cout << "correlations of A*comps[i] and data[i]:" << endl;
-    matrixProduct(matrixA, components, &dataICA, ns, ndr*fr);
-    for(int i = 0; i < ns; ++i)
-    {
-        cout << correlation(dataICA[i], data[i], ndr*fr) << endl;
-    }
+//    cout << "correlations of A*comps[i] and data[i]:" << endl;
+//    matrixProduct(matrixA, components, &dataICA, ns, ndr*fr);
+//    for(int i = 0; i < ns; ++i)
+//    {
+//        cout << correlation(dataICA[i], data[i], ndr*fr) << endl;
+//    }
 
 
 
@@ -5723,7 +5828,7 @@ void MainWindow::ICA() //fastICA
 
 
     //norm components - by equal dispersion ????????????????????
-    double coeff = 10.;
+    double coeff = 1.5;
     for(int i = 0; i < ns; ++i)
     {
         sum1 = 0.;
@@ -7546,11 +7651,11 @@ void MainWindow::autoIcaAnalysis2()
     ui->sliceCheckBox->setChecked(true);
     ui->sliceWithMarkersCheckBox->setChecked(false);
     ui->eyesCleanCheckBox->setChecked(false);
-    ui->reduceChannelsCheckBox->setChecked(false);
 
     ui->cleanRealisationsCheckBox->setChecked(true);
     ui->cleanRealsSpectraCheckBox->setChecked(true);
 
+    ui->reduceChannelsCheckBox->setChecked(false);
     ui->reduceChannelsLineEdit->setText("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
     ui->reduceChannelsComboBox->setCurrentText("20");
 
@@ -7587,16 +7692,14 @@ void MainWindow::autoIcaAnalysis2()
     ICAcorr ICAcorrArr[19];
     double ICAcorrThreshold = 0.666;
 
-    //final test
-    NumOfRepeats = 1;
-    ui->svdDoubleSpinBox->setValue(6.0);
-    ui->vectwDoubleSpinBox->setValue(6.0);
 
-
-    for(int i = 0; i < list0.length(); ++i)
+    for(int i = 0; i < list0.length(); ++i) /////////////////////////////////////////////////////////////start with GAS+
     {
+//        if(!list0[i].contains("SUA") && !list0[i].contains("BED") && !list0[i].contains("VDA")) continue;
+        cout << endl << list0[i].toStdString()  << endl;
+
         ui->realButton->setChecked(true);
-        if(1)
+        if(1 && i != 2)
         {
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
             setEdfFile(helpString); // open ExpName_1.edf
@@ -7607,6 +7710,8 @@ void MainWindow::autoIcaAnalysis2()
             if(QFile::exists(helpString2)) QFile::remove(helpString2);
             QFile::copy(helpString, helpString2);
 
+
+            /*
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
             helpString.replace("_1.edf", "_2.edf");
             setEdfFile(helpString); // open ExpName_1.edf
@@ -7616,6 +7721,9 @@ void MainWindow::autoIcaAnalysis2()
             helpString2 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_2_maps.txt";
             if(QFile::exists(helpString2)) QFile::remove(helpString2);
             QFile::copy(helpString, helpString2);
+
+            */
+
 
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
             helpString.replace("_1.edf", "_sum.edf");
@@ -7627,69 +7735,6 @@ void MainWindow::autoIcaAnalysis2()
             if(QFile::exists(helpString2)) QFile::remove(helpString2);
             QFile::copy(helpString, helpString2);
 
-            //sequence ICs
-            double ** mat1;
-            double ** mat2;
-            matrixCreate(&mat1, 19, 19);
-            matrixCreate(&mat2, 19, 19);
-
-            //read matrices
-            helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_1_maps.txt";
-            readICAMatrix(helpString, &mat1, 19);
-            helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_2_maps.txt";
-            readICAMatrix(helpString, &mat2, 19);
-
-            //invert ICA maps
-            matrixTranspose(&mat1, 19);
-            matrixTranspose(&mat2, 19);
-
-//            matrixPrint(mat1, 19, 19);
-//            matrixPrint(mat2, 19, 19);
-
-            QList<int> listIC;
-            listIC.clear();
-
-            double tempDouble;
-            int tempNumber;
-
-            helpString.clear();
-            for(int k = 0; k < 19; ++k)
-            {
-                tempDouble = 0.;
-                for(int j = 0; j < 19; ++j)
-                {
-                    if(listIC.contains(j)) continue;
-                    helpDouble = fabs(correlation(mat1[k], mat2[j], 19, 0));
-                    if(helpDouble > tempDouble)
-                    {
-                        tempDouble = helpDouble;
-                        tempNumber = j;
-                    }
-                }
-                listIC << tempNumber;
-                helpString += QString::number(tempNumber+1) + " ";
-                cout << k << "\t" << tempNumber << "\t" << tempDouble << endl;
-                ICAcorrArr[k].num1 = k;
-                ICAcorrArr[k].num2 = tempNumber;
-                ICAcorrArr[k].coeff = tempDouble;
-            }
-            helpString += "20";
-
-            //set appropriate channel sequence for 2nd ica file
-            ui->reduceChannelsLineEdit->setText(helpString);
-
-            //write new 2nd ica file with needed channels' sequence
-            helpString = dir->absolutePath() + QDir::separator() + list0[i];
-            helpString.replace("_1.edf", "_2_ica.edf");
-            setEdfFile(helpString); //open ExpName_2_ica.edf
-            cleanDirs();
-            reduceChannelsEDFSlot(); //_rdcChan.edf
-
-            matrixDelete(&mat1, 19, 19);
-            matrixDelete(&mat2, 19, 19);
-
-
-
 
 
             //transform 2nd file with 1st maps
@@ -7699,8 +7744,6 @@ void MainWindow::autoIcaAnalysis2()
             helpString2 = dir->absolutePath() + QDir::separator() + list0[i];
             helpString2.replace("_1.edf", "_2_ica_by1.edf"); //write to ExpName_2_ica_by1.edf
             transformEDF(helpString, ExpName1, helpString2);
-
-
 
 
             //transform both files with general maps
@@ -7720,7 +7763,7 @@ void MainWindow::autoIcaAnalysis2()
 
 
 
-
+/*
 
             //drop low correlated components - 1st file
             helpString.clear();
@@ -7779,6 +7822,7 @@ void MainWindow::autoIcaAnalysis2()
             config = new cfg(dir, helpInt, 63, 0.1, 0.1, "highCorr_wnd");
             config->makeCfg();
             delete config;
+            */
 
 
         }
@@ -7789,6 +7833,7 @@ void MainWindow::autoIcaAnalysis2()
         {
             //k == 0 for realisations
             //k == 1 for windows
+            if (k == 1) continue;
 
             if(k == 0)
             {
@@ -7873,12 +7918,12 @@ void MainWindow::autoIcaAnalysis2()
                     while(1)
                     {
                         mkPa->makePaSlot();
-                        if(k == 0) ANN->PaIntoMatrixByName("1");
-                        else if(k == 1) ANN->PaIntoMatrixByName("1_wnd");
+                        if(k == 0) ANN->PaIntoMatrixByName("all");
+                        else if(k == 1) ANN->PaIntoMatrixByName("all_wnd");
                         ANN->LearnNet();
-                        if(ANN->getEpoch() > 120 || ANN->getEpoch() < 80)
+                        if(ANN->getEpoch() > 160 || ANN->getEpoch() < 100)
                         {
-                            mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 100.));
+                            mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 130.));
                         }
                         else
                         {
@@ -7900,7 +7945,7 @@ void MainWindow::autoIcaAnalysis2()
                         ANN->saveWts();
                     }
 
-                    //2nd file
+                    //open 2nd file
                     helpString = dir->absolutePath() + QDir::separator() + list0[i];
                     if(j == 0) helpString.replace("_1.edf", "_2.edf");
                     else if(j == 1) helpString.replace("_1.edf", "_2_ica_rdcChan.edf");
@@ -7916,15 +7961,18 @@ void MainWindow::autoIcaAnalysis2()
                     spectr->close();
                     delete spectr;
 
+
                     mkPa->makePaSlot();
                     mkPa->close();
                     delete mkPa;
 
                     if(k == 0) ANN->PaIntoMatrixByName("whole");
                     else if(k == 1) ANN->PaIntoMatrixByName("whole_wnd");
+
                     for(int l = 0; l < NumOfRepeats; ++l)
                     {
                         helpString = dir->absolutePath() + QDir::separator() + ExpName1 + "_weights_" + QString::number(l) + ".wts";
+//                        cout << "wts-file to load: " << helpString.toStdString() << endl;
                         ANN->loadWtsByName(helpString);
                         ANN->tall();
                     }
@@ -7971,5 +8019,8 @@ void MainWindow::autoIcaAnalysis2()
     {
         remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());
     }
-    cout << "auto Ica analysis time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    helpString = dir->absolutePath() + QDir::separator() + "results.txt";
+    outStream.open(helpString.toStdString().c_str());
+    outStream << "auto Ica analysis time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    outStream.close();
 }

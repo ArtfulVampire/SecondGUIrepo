@@ -1028,7 +1028,7 @@ void Spectre::countSpectra()
 
     for(int a = 0; a < lst.length(); ++a)
     {
-        if(lst[a].contains("_num") || lst[a].contains("_300")) continue;
+        if(lst[a].contains("_num") || lst[a].contains("_300") || lst[a].contains("_sht")) continue;
 
         //read data file
         dir->cd(ui->lineEdit_1->text());
