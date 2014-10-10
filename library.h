@@ -75,14 +75,14 @@ void countRCP(QString filename, QString picPath = "", double *outMean = NULL, do
 void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
 
 double doubleRound(double in, int numSigns);
-double correlation(double *arr1, double *arr2, int length, int t = 0);
+double correlation(double * const arr1, double * const arr2, int length, int t = 0);
 double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 
 
 void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength);
 void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices);
-void readSpectraFile(QString filename, double ** outData, int ns, int spLength);
+void readSpectraFile(QString filename, double ***outData, int ns, int spLength);
 void readSpectraFileLine(QString filename, double ** outData, int ns, int spLength);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
 void readICAMatrix(QString path, double *** matrixA, int ns);
@@ -92,7 +92,7 @@ void splitZeros(double *** inData, int ns, int length, int * outLength);
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 
 void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth, const double powArg);
-void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const NumOfSmooth, const double powArg);
+void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth, const double powArg);
 void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
 
 
@@ -115,7 +115,7 @@ void matrixCorrelations(double ** const inMat1, double ** const inMat2, int cons
 
 double ** matrixCreate(int i, int j);
 void matrixCreate(double *** matrix, int i, int j);
-void matrixDelete(double *** matrix, int i, int j);
+void matrixDelete(double *** matrix, int i);
 void matrixPrint(double ** const mat, int i, int j);
 
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);

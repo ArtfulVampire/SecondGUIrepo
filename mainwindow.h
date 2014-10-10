@@ -74,7 +74,7 @@ public slots:
     void avTime();
     void drawMaps();
     void makeDatFile();
-    void constructEDF();
+    void constructEDFSlot();
     void reduceChannelsEDFSlot();
     //signals
     void ICA();
@@ -125,8 +125,9 @@ public:
     void setEdfFile(QString filePath);
     void transformEDF(QString edfPath, QString mapsPath, QString newEdfPath);
     void reduceChannelsEDF(QString newFilePath);
+    void constructEDF(QString newPath);
     void writeCorrelationMatrix(QString edfPath, QString outPath);
-    void ICsSequence(QString EDFica1, QString EDFica2, QString maps1, QString maps2);
+    void ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path);
     void autoIcaAnalysis();
     void autoIcaAnalysis2();
 

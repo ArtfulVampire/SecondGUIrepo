@@ -383,7 +383,8 @@ void Spectre::psaSlot()
 
     for(int i=0; i<count; ++i)
     {
-        fscanf(f[i], "spLength %d", &spL[i]);
+//        fscanf(f[i], "spLength %d", &spL[i]);
+        spL[i] = spLength;
     }
 
 
@@ -639,7 +640,7 @@ void Spectre::compare()
         cout<<"cannot open file"<<endl;
         return;
     }
-    fprintf(file, "spLength %d\n", spLength);
+//    fprintf(file, "spLength %d\n", spLength);
     double helpDouble = 0.;
     for(int i = 0; i < ns; ++i)
     {
@@ -1002,7 +1003,8 @@ void Spectre::countSpectra()
     lst=dir->entryList(QDir::Files, QDir::Name);
     dir->cd(dirBC->absolutePath());
 
-    double ** dataFFT = new double * [ns];
+    double ** dataFFT;
+    dataFFT = new double * [ns];
     for(int i=0; i<ns; ++i)
     {
         dataFFT[i] = new double [fftLength];

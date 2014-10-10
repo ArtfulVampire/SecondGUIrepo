@@ -342,7 +342,7 @@ double minValue(double * arr, int length)
 }
 
 
-double correlation(double *arr1, double *arr2, int length, int t)
+double correlation(double * const arr1, double * const arr2, int length, int t)
 {
     double res = 0.;
     double m1, m2;
@@ -1295,7 +1295,7 @@ void matrixTranspose(double ***inMat, int const numRowsCols)
             (*inMat)[i][j] = tmp[i][j];
         }
     }
-    matrixDelete(&tmp, numRowsCols, numRowsCols);
+    matrixDelete(&tmp, numRowsCols);
 }
 
 void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int channelNumber2=1, double freqMax=20., double freqMin=5., double freqStep=0.99, double pot=32.)
@@ -1505,7 +1505,7 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
     file.close();
 }
 
-void readSpectraFile(QString filePath, double ** outData, int ns, int spLength)
+void readSpectraFile(QString filePath, double *** outData, int ns, int spLength)
 {
     ifstream file(filePath.toStdString().c_str());
     if(!file.good())
@@ -1513,13 +1513,13 @@ void readSpectraFile(QString filePath, double ** outData, int ns, int spLength)
         cout << "bad file" << endl;
         return;
     }
-    outData = new double * [ns];
+    (*outData) = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-        outData[i] = new double [spLength];
+        (*outData)[i] = new double [spLength];
         for(int j = 0; j < spLength; ++j)
         {
-            file >> outData[i][j];
+            file >> (*outData[i][j]);
         }
     }
     file.close();
@@ -1641,36 +1641,79 @@ void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength)
 
 }
 
-void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const NumOfSmooth, const double powArg)
+void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth, const double powArg)
 {
-    /*
+    //allocates memory for dataFFT
+    //counts best-fit fftLength, Eyes and spectra
+
     int Eyes;
 
+    if((*fftLength) <= 0)
+    {
+        if(log(leng)/log(2.) != int(log(leng)/log(2.)))
+        {
+            (*fftLength) = pow(2, int(log(leng)/log(2.))+1); //nearest exceeding power of 2
+        }
+        else
+        {
+            (*fftLength) = leng;
+        }
+    }
+    cout << (*fftLength) << endl;
 
-    double norm1 = fftLength / double(fftLength-Eyes);
-    double * spectre = new double [fftLength*2];
+    matrixCreate(dataFFT, ns, (*fftLength));
+
+    double ** newData;
+    matrixCreate(&newData, ns, (*fftLength));
+    for(int j = 0; j < ns; ++j)
+    {
+        for(int i = 0; i < leng; ++i)
+        {
+            newData[j][i] = inData[j][i];
+        }
+//        memcpy(newData[j], inData[j], sizeof(double) * leng);
+        for(int i = leng; i < (*fftLength); ++i)
+        {
+            newData[j][i] = 0.;
+        }
+    }
+
+    Eyes = 0;
+    int h = 0;
+    for(int i = 0; i < (*fftLength); ++i)
+    {
+        h = 0;
+        for(int j = 0; j < ns; ++j)
+        {
+            if(fabs(newData[j][i]) <= 0.125) ++h;
+        }
+        if(h == ns) Eyes += 1;
+    }
+
+
+    double norm1 = (*fftLength) / double((*fftLength)-Eyes);
+    double * spectre = new double [(*fftLength)*2];
 
     double help1, help2;
     int leftSmoothLimit, rightSmoothLimit;
 
     for(int j = 0; j < ns; ++j)
     {
-        for(int i = 0; i < fftLength; ++i)            //make appropriate array
+        for(int i = 0; i < (*fftLength); ++i)            //make appropriate array
         {
-            spectre[ i * 2 + 0 ] = (double)(inData[j][ i ] * sqrt(norm1));
+            spectre[ i * 2 + 0 ] = (double)(newData[j][ i ] * sqrt(norm1));
             spectre[ i * 2 + 1 ] = 0.;
         }
-        four1(spectre-1, fftLength, 1);       //Fourier transform
-        for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
+        four1(spectre-1, (*fftLength), 1);       //Fourier transform
+        for(int i = 0; i < (*fftLength)/2; ++i )      //get the absolute value of FFT
         {
-            (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fftLength; //0.004 = 1/250 generality
+            (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / (*fftLength); //0.004 = 1/250 generality
 //            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ], powArg );
 
         }
 
         leftSmoothLimit = 0;
-        rightSmoothLimit = fftLength/2-1;
-
+        rightSmoothLimit = (*fftLength)/2-1;
         //smooth spectre
         for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
         {
@@ -1684,7 +1727,7 @@ void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int c
         }
     }
     delete []spectre;
-    */
+    matrixDelete(&newData, ns);
 }
 
 
@@ -1968,7 +2011,7 @@ void matrixInvert(double *** mat, int const size)
     matrixCreate(&tempMat, size, size);
     matrixInvert(*mat, size, &tempMat);
     matrixCopy(tempMat, mat, size, size);
-    matrixDelete(&tempMat, size, size);
+    matrixDelete(&tempMat, size);
 }
 
 double matrixDet(double ** const matrix, int const dim) //- Det
@@ -2044,7 +2087,7 @@ double matrixDetB(double ** const matrix, int const dim) // Det
         matrixCofactor(matrix, dim, 0, i, &cof);
         coef += matrix[0][i] * pow(-1, i) * matrixDet(cof, dim-1);
     }
-    matrixDelete(&cof, dim-1, dim-1);
+    matrixDelete(&cof, dim-1);
     return coef;
 }
 
@@ -2067,7 +2110,7 @@ void matrixCreate(double *** matrix, int const i, int const j)
     }
 }
 
-void matrixDelete(double *** matrix, int const i, int const j)
+void matrixDelete(double *** matrix, int const i)
 {
     for(int k = 0; k < i; ++k)
     {
