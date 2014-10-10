@@ -466,53 +466,7 @@ MainWindow::MainWindow() :
 
 
 
-/*
-    //sequence ICs
-    double ** mat1;
-    double ** mat2;
-    matrixCreate(&mat1, 19, 19);
-    matrixCreate(&mat2, 19, 19);
-    dir->cd("/media/Files/Data/AAX");
 
-    //read matrices
-    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "AAX_maps.txt";
-    readICAMatrix(helpString, &mat1, 19);
-    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "AAX_maps_05.txt";
-    readICAMatrix(helpString, &mat2, 19);
-    cout << matrixInnerMaxCorrelation(mat1, 19, 19) << endl;
-    cout << matrixInnerMaxCorrelation(mat2, 19, 19) << endl;
-
-
-
-    //invert ICA maps
-    matrixTranspose(&mat1, 19);
-    matrixTranspose(&mat2, 19);
-
-    QList<int> listIC;
-    listIC.clear();
-
-    double tempDouble;
-    int tempNumber;
-
-    helpString.clear();
-    for(int k = 0; k < 19; ++k)
-    {
-        tempDouble = 0.;
-        for(int j = 0; j < 19; ++j)
-        {
-            if(listIC.contains(j)) continue;
-            helpDouble = fabs(correlation(mat1[k], mat2[j], 19, 0));
-            if(helpDouble > tempDouble)
-            {
-                tempDouble = helpDouble;
-                tempNumber = j;
-            }
-        }
-        listIC << tempNumber;
-        helpString += QString::number(tempNumber+1) + " ";
-        cout << k << "\t" << tempNumber << "\t" << tempDouble << endl;
-    }
-*/
 
 //    ui->sliceCheckBox->setChecked(true);
 //    ui->sliceWithMarkersCheckBox->setChecked(true);
@@ -525,44 +479,16 @@ MainWindow::MainWindow() :
 
 
 
-    QString map1 = "/media/Files/Data/AC/AAX_1_maps.txt";
-    QString map2 = "/media/Files/Data/AC/AAX_2_maps.txt";
-    helpString = "/media/Files/Data/AC/AAX_1_ica.edf";
-    helpString2 = "/media/Files/Data/AC/AAX_2_ica.edf";
-    ICsSequence(helpString, helpString2, map1, map2);
+//    QString map1 = "/media/Files/Data/AC/AAX_1_maps.txt";
+//    QString map2 = "/media/Files/Data/AC/AAX_2_maps.txt";
+//    helpString = "/media/Files/Data/AC/AAX_1_ica.edf";
+//    helpString2 = "/media/Files/Data/AC/AAX_2_ica.edf";
+//    ICsSequence(helpString, helpString2, map1, map2);
 
-//        autoIcaAnalysis2();
+        autoIcaAnalysis2();
         return;
 //        system("sudo shutdown -P now");
 
-    double * spectr1 = new double [19*247];
-    double * spectr2 = new double [19*247];
-    helpString = "/media/Files/Data/AC/Help/AAX_1_ica_newSeq_241.psa";
-    inStream.open(helpString.toStdString().c_str());
-    for(int i = 0; i < 19*247; ++i)
-    {
-        inStream >> spectr1[i];
-    }
-    inStream.close();
-
-    helpString = "/media/Files/Data/AC/Help/AAX_2_ica_newSeq_241.psa";
-    inStream.open(helpString.toStdString().c_str());
-    for(int i = 0; i < 19*247; ++i)
-    {
-        inStream >> spectr2[i];
-    }
-    inStream.close();
-
-
-    int asd = 0;
-    for(int i = 0; i < 19; ++i)
-    {
-        for(int shift = -asd; shift <= asd; ++shift)
-        {
-            cout << shift << "\t";
-            cout << correlation(spectr1 + i*247, spectr2 + i*247, 247, shift) * correlation(spectr1 + i*247, spectr2 + i*247, 247, shift) << endl;
-        }
-    }
 }
 
 MainWindow::~MainWindow()
@@ -3139,7 +3065,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     matrixCreate(&corrs, ns_, ns_);
 
     double tempDouble;
-    int maxShift = 0;
+    int maxShift = 8;
 
     helpString.clear();
     for(int k = 0; k < ns_; ++k)
@@ -3147,7 +3073,10 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         for(int j = 0; j < ns_; ++j)
         {
             corrMap = (correlation(mat1[k], mat2[j], ns_));
-            helpDouble = corrMap * corrMap;
+            corrMap = corrMap * corrMap;
+
+            helpDouble = corrMap;
+            helpDouble = 0.;
             coeffs[k][j].cMap = corrMap;
 
             for(int h = 0; h < 3; ++h)
@@ -3156,10 +3085,8 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
                 for(int shift = -maxShift; shift <= maxShift; ++shift)
                 {
                     corrSpectr[h] = fmax( fabs(correlation(dataFFT1[h] + k*247, dataFFT2[h] + j*247, 247, shift)), corrSpectr[h]);
-                    if(k == 12 && j == 0 && h == 0) cout << corrSpectr[h] << endl;
                 }
                 corrSpectr[h] = corrSpectr[h] * corrSpectr[h];
-//                corrSpectr[h] *= mean(dataFFT1[h] + k*247, 247) * mean(dataFFT2[h] + j*247, 247) * 10;
                 helpDouble += corrSpectr[h];
 
                 coeffs[k][j].cSpectr[h] = corrSpectr[h];
@@ -3169,7 +3096,6 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
             coeffs[k][j].sumCoef = helpDouble;
         }
     }
-
 
     //find best correlations
     int temp1;
@@ -7930,8 +7856,8 @@ void MainWindow::autoIcaAnalysis2()
     QTime myTime;
     myTime.start();
 
-    ui->svdDoubleSpinBox->setValue(9.0);
-    ui->vectwDoubleSpinBox->setValue(9.0);
+    ui->svdDoubleSpinBox->setValue(9.5);
+    ui->vectwDoubleSpinBox->setValue(9.5);
 
     ui->sliceCheckBox->setChecked(true);
     ui->sliceWithMarkersCheckBox->setChecked(false);
@@ -7971,12 +7897,13 @@ void MainWindow::autoIcaAnalysis2()
 
     for(int i = 0; i < list0.length(); ++i)
     {
+//        if(i==1) break;
         cout << endl << list0[i].toStdString()  << endl;
 
         ui->realButton->setChecked(true);
         if(1)
         {
-            /*
+
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
             setEdfFile(helpString); // open ExpName_1.edf
             ExpName2 = ExpName;
@@ -7993,7 +7920,7 @@ void MainWindow::autoIcaAnalysis2()
             setEdfFile(helpString); // open ExpName_sum.edf
             cleanDirs();
             ICA();
-            */
+
 
             //transform 2nd file with 1st maps
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
@@ -8091,7 +8018,6 @@ void MainWindow::autoIcaAnalysis2()
 
 
         }
-        return;
         ui->timeShiftBox->setValue(125); //0.5 seconds shift
 
 
@@ -8127,6 +8053,7 @@ void MainWindow::autoIcaAnalysis2()
             }
             for(int j = 0; j <= 4; ++j)
             {
+//                if(j != 1) continue;
                 if(j == 3) continue;
                 //j == 0 for initial
                 //j == 1 for correctly sequenced ica
