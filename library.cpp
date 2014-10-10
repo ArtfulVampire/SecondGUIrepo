@@ -346,14 +346,31 @@ double correlation(double * const arr1, double * const arr2, int length, int t)
 {
     double res = 0.;
     double m1, m2;
-    m1 = mean(arr1, length);
-    m2 = mean(arr1, length);
-    for(int i = 0; i < length - t; ++i)
+    int T = abs(t);
+    if(t >= 0) //start from arr1[0] and arr1[t]
     {
-        res += (arr1[i + t] - m1) * (arr2[i] - m2);
+        m1 = mean(arr1, length-t);
+        m2 = mean(arr2+t, length-t);
+        for(int i = 0; i < length - t; ++i)
+        {
+            res += (arr1[i] - m1) * (arr2[i + t] - m2);
+        }
+
+        res /= sqrt(variance(arr1, length-t) * variance(arr2+t, length-t));
     }
-    res /= double(length);
-    res /= sqrt(variance(arr1, length) * variance(arr2, length));
+    else  //start from arr1[0] and arr1[t]
+    {
+        m1 = mean(arr1+T, length-T);
+        m2 = mean(arr2, length-T);
+        for(int i = 0; i < length - t; ++i)
+        {
+            res += (arr1[i + T] - m1) * (arr2[i] - m2);
+        }
+
+        res /= sqrt(variance(arr1 + T, length - T) * variance(arr2, length - T));
+    }
+
+    res /= double(length - T);
     return res;
 }
 
