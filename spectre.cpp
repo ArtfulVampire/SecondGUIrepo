@@ -515,7 +515,9 @@ void Spectre::psaSlot()
     paint->setFont(QFont("Helvetica", int(24*paint->device()->height()/1600.), -1, false));
     for(int c2=0; c2<ns; ++c2)  //exept markers channel
     {
-        paint->drawText(QPointF((paint->device()->width() * coords::x[c2] - 20 * (paint->device()->width()/1600.)), (paint->device()->height() * coords::y[c2] - (coords::scale * paint->device()->height()) - 2)), QString(coords::lbl[c2]));
+        helpString = QString(coords::lbl[c2]);
+        helpString += " (" + QString::number(c2+1) + ")";
+        paint->drawText(QPointF((paint->device()->width() * coords::x[c2] - 20 * (paint->device()->width()/1600.)), (paint->device()->height() * coords::y[c2] - (coords::scale * paint->device()->height()) - 2)), helpString);
     }
 
     //draw coords::scale

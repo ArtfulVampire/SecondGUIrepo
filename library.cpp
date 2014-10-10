@@ -362,7 +362,7 @@ double correlation(double * const arr1, double * const arr2, int length, int t)
     {
         m1 = mean(arr1+T, length-T);
         m2 = mean(arr2, length-T);
-        for(int i = 0; i < length - t; ++i)
+        for(int i = 0; i < length - T; ++i)
         {
             res += (arr1[i + T] - m1) * (arr2[i] - m2);
         }

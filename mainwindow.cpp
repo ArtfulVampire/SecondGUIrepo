@@ -525,15 +525,44 @@ MainWindow::MainWindow() :
 
 
 
-//    QString map1 = "/media/Files/Data/AC/AAX_3_maps.txt";
-//    QString map2 = "/media/Files/Data/AC/AAX_2_maps.txt";
-//    helpString = "/media/Files/Data/AC/AAX_3_ica.edf";
-//    helpString2 = "/media/Files/Data/AC/AAX_2_ica.edf";
-//    ICsSequence(helpString, helpString2, map1, map2);
+    QString map1 = "/media/Files/Data/AC/AAX_1_maps.txt";
+    QString map2 = "/media/Files/Data/AC/AAX_2_maps.txt";
+    helpString = "/media/Files/Data/AC/AAX_1_ica.edf";
+    helpString2 = "/media/Files/Data/AC/AAX_2_ica.edf";
+    ICsSequence(helpString, helpString2, map1, map2);
 
-        autoIcaAnalysis2();
+//        autoIcaAnalysis2();
+        return;
 //        system("sudo shutdown -P now");
 
+    double * spectr1 = new double [19*247];
+    double * spectr2 = new double [19*247];
+    helpString = "/media/Files/Data/AC/Help/AAX_1_ica_newSeq_241.psa";
+    inStream.open(helpString.toStdString().c_str());
+    for(int i = 0; i < 19*247; ++i)
+    {
+        inStream >> spectr1[i];
+    }
+    inStream.close();
+
+    helpString = "/media/Files/Data/AC/Help/AAX_2_ica_newSeq_241.psa";
+    inStream.open(helpString.toStdString().c_str());
+    for(int i = 0; i < 19*247; ++i)
+    {
+        inStream >> spectr2[i];
+    }
+    inStream.close();
+
+
+    int asd = 0;
+    for(int i = 0; i < 19; ++i)
+    {
+        for(int shift = -asd; shift <= asd; ++shift)
+        {
+            cout << shift << "\t";
+            cout << correlation(spectr1 + i*247, spectr2 + i*247, 247, shift) * correlation(spectr1 + i*247, spectr2 + i*247, 247, shift) << endl;
+        }
+    }
 }
 
 MainWindow::~MainWindow()
@@ -3024,6 +3053,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     sp->compare();
     sp->compare();
     sp->compare();
+    sp->psaSlot();
     sp->close();
     delete sp;
     for(int i = 0; i < 3; ++i)
@@ -3049,6 +3079,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     sp->compare();
     sp->compare();
     sp->compare();
+    sp->psaSlot();
     sp->close();
     delete sp;
     for(int i = 0; i < 3; ++i)
@@ -3108,7 +3139,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     matrixCreate(&corrs, ns_, ns_);
 
     double tempDouble;
-    int maxShift = 3;
+    int maxShift = 0;
 
     helpString.clear();
     for(int k = 0; k < ns_; ++k)
@@ -3124,7 +3155,8 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
                 corrSpectr[h] = 0.;
                 for(int shift = -maxShift; shift <= maxShift; ++shift)
                 {
-                    corrSpectr[h] = fmax( fabs(correlation(dataFFT1[h] + k*247, dataFFT2[h] + j*247, 247)), corrSpectr[h]);
+                    corrSpectr[h] = fmax( fabs(correlation(dataFFT1[h] + k*247, dataFFT2[h] + j*247, 247, shift)), corrSpectr[h]);
+                    if(k == 12 && j == 0 && h == 0) cout << corrSpectr[h] << endl;
                 }
                 corrSpectr[h] = corrSpectr[h] * corrSpectr[h];
 //                corrSpectr[h] *= mean(dataFFT1[h] + k*247, 247) * mean(dataFFT2[h] + j*247, 247) * 10;
@@ -3200,6 +3232,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
 
     helpString += "20";
     ui->reduceChannelsLineEdit->setText(helpString);
+    cout << helpString.toStdString() << endl;
 
     setEdfFile(EDFica1);
     cleanDirs();
@@ -3233,6 +3266,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
 
     helpString += "20";
     ui->reduceChannelsLineEdit->setText(helpString);
+    cout << helpString.toStdString() << endl;
     setEdfFile(EDFica2);
     cleanDirs();
     sliceAll();
@@ -3245,6 +3279,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
 
 
     ui->sliceWithMarkersCheckBox->setChecked(false);
+    ui->reduceChannelsCheckBox->setChecked(false);
     ui->reduceChannelsComboBox->setCurrentText("20");
     helpString2 = EDFica1;
     helpString2.replace(".edf", "_newSeq.edf");
@@ -3279,8 +3314,8 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     for(int k = 0; k < ns_; ++k)
     {
         cout << "num = " << k+1 << "\t";
-        cout << ICAcorrArr[k].num1 << "\t";
-        cout << ICAcorrArr[k].num2 <<  "\t";
+        cout << ICAcorrArr[k].num1 + 1 << "\t";
+        cout << ICAcorrArr[k].num2 + 1 <<  "\t";
         cout << doubleRound(ICAcorrArr[k].coeff.cMap, 3) <<  "\t";
         for(int h = 0; h < 3; ++h)
         {
