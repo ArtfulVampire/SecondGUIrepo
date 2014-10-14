@@ -63,8 +63,12 @@ double mean(int *arr, int length);
 double mean(double *arr, int length);
 double variance(int *arr, int length);
 double variance(double *arr, int length);
+double varianceFromZero(int *arr, int length);
+double varianceFromZero(double *arr, int length);
 double sigma(int *arr, int length);
 double sigma(double *arr, int length);
+double sigmaFromZero(int *arr, int length);
+double sigmaFromZero(double *arr, int length);
 double skewness(double *arr, int length);
 double kurtosis(double *arr, int length);
 double rankit(int i, int length, double k = 0.375);
@@ -76,14 +80,16 @@ void svd(double ** inData, int dim, int length, double *** eigenVects, double **
 
 double doubleRound(double in, int numSigns);
 double correlation(double * const arr1, double * const arr2, int length, int t = 0);
+double correlationFromZero(double * const arr1, double * const arr2, int length, int t = 0);
 double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 
 
-void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices, int fftLength);
-void readDataFile(QString filename, double *** outData, int ns, int * NumOfSlices);
-void readSpectraFile(QString filename, double ***outData, int ns, int spLength);
-void readSpectraFileLine(QString filename, double ** outData, int ns, int spLength);
+void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
+void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
+void readSpectraFile(QString filePath, double ***outData, int ns, int spLength);
+void readSpectraFileLine(QString filePath, double ** outData, int ns, int spLength);
+void readFileInLine(QString filePath, double ** outData, int len);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
 void readICAMatrix(QString path, double *** matrixA, int ns);
 void writeICAMatrix(QString path, double ** matrixA, const int ns);

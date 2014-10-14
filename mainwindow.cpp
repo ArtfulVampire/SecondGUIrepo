@@ -485,6 +485,13 @@ MainWindow::MainWindow() :
 //    helpString2 = "/media/Files/Data/AC/AAX_2_ica.edf";
 //    ICsSequence(helpString, helpString2, map1, map2);
 
+//    setEdfFile("/media/Files/Data/AB/VDA_1_ica.edf");
+//    readData();
+//    for(int i = 0; i < 19; ++i)
+//    {
+//        cout << variance(data[i], ndr * nr[i]) << endl;
+//    }
+
         autoIcaAnalysis2();
         return;
 //        system("sudo shutdown -P now");
@@ -2943,6 +2950,8 @@ void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath)
 void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path)
 {
 
+
+
     QTime myTime;
     myTime.start();
     //count cross-correlation by maps and spectra
@@ -3050,7 +3059,6 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         double cSpectr[3];
         double sumCoef;
     };
-
     ICAcoeff coeffs[ns_][ns_];
 
     struct ICAcorr
@@ -3065,18 +3073,17 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     matrixCreate(&corrs, ns_, ns_);
 
     double tempDouble;
-    int maxShift = 8;
+    int maxShift = 4; ////////////////////////////////////////////////////////////
 
     helpString.clear();
     for(int k = 0; k < ns_; ++k)
     {
         for(int j = 0; j < ns_; ++j)
         {
-            corrMap = (correlation(mat1[k], mat2[j], ns_));
+            corrMap = (correlationFromZero(mat1[k], mat2[j], ns_));
             corrMap = corrMap * corrMap;
 
-            helpDouble = corrMap;
-            helpDouble = 0.;
+            helpDouble = corrMap * 1.5;
             coeffs[k][j].cMap = corrMap;
 
             for(int h = 0; h < 3; ++h)
@@ -3106,9 +3113,10 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         for(int i = 0; i < ns_; ++i) //rows
         {
             if(list1.contains(i)) continue;
-            for(int k = 0; k < ns_; ++k) //rows
+            for(int k = 0; k < ns_; ++k) //cols
             {
                 if(list2.contains(k)) continue;
+//                if(i == k) continue;  ////////////////////////////////////////////////////////////////////////////////////////////////////////
                 if(corrs[i][k] > tempDouble)
                 {
                     tempDouble = corrs[i][k];
@@ -3237,9 +3245,11 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
 
 
     cout << endl;
+    outStream.open("/media/Files/Data/AB/12", ios_base::out|ios_base::app);
+    outStream << ExpName.left(3).toStdString() << endl;
     for(int k = 0; k < ns_; ++k)
     {
-        cout << "num = " << k+1 << "\t";
+        cout << k+1 << "\t";
         cout << ICAcorrArr[k].num1 + 1 << "\t";
         cout << ICAcorrArr[k].num2 + 1 <<  "\t";
         cout << doubleRound(ICAcorrArr[k].coeff.cMap, 3) <<  "\t";
@@ -3248,12 +3258,48 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
             cout << doubleRound(ICAcorrArr[k].coeff.cSpectr[h], 3) <<  "\t";
         }
         cout << doubleRound(ICAcorrArr[k].coeff.sumCoef, 3) << endl;
+
+        outStream << k+1 << "\t";
+        outStream << ICAcorrArr[k].num1 + 1 << "\t";
+        outStream << ICAcorrArr[k].num2 + 1 <<  "\t";
+        outStream << doubleRound(ICAcorrArr[k].coeff.cMap, 3) <<  "\t";
+        for(int h = 0; h < 3; ++h)
+        {
+            outStream << doubleRound(ICAcorrArr[k].coeff.cSpectr[h], 3) <<  "\t";
+        }
+        outStream << doubleRound(ICAcorrArr[k].coeff.sumCoef, 3) << endl;
     }
+    outStream.close();
+
+    //leave only high-score components
+    double mapCoeffThreshold = 0.7;
+    double spectrCoeffThreshold = 0.8;
+
+
+
+    //_1_highCorr.edf
+
+    cfg * config;
+    config = new cfg(dir, helpInt, 247, 0.1, 0.1, "highCorr");
+    config->makeCfg();
+    delete config;
+
+    config = new cfg(dir, helpInt, 63, 0.1, 0.1, "highCorr_wnd");
+    config->makeCfg();
+    delete config;
+
+
+
+
+
 
     matrixDelete(&mat1, ns_);
     matrixDelete(&mat2, ns_);
     matrixDelete(&newMaps, ns_);
     matrixDelete(&corrs, ns_);
+
+    matrixDelete(&dataFFT1, 3);
+    matrixDelete(&dataFFT2, 3);
 
     cout << "ICsSequence ended. Time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 }
@@ -6064,6 +6110,22 @@ void MainWindow::ICA() //fastICA
         }
     }
 
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ndr*fr; ++j)
+        {
+            sum1 = 0.;
+            for(int k = 0; k < ns; ++k)
+            {
+                sum1 += matrixA[i][k] * components[k][j];
+            }
+            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.05 && fabs(data[i][j]) > 0.5)
+            {
+                cout << "after norm\t" << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << "\t"<< data[i][j] << endl;
+            }
+        }
+    }
+
 
 
     //now matrixA is true Mixing matrix A*components = initialSignals
@@ -7895,13 +7957,14 @@ void MainWindow::autoIcaAnalysis2()
     QString mapsPath2;
 
 
-    for(int i = 0; i < list0.length(); ++i)
+    for(int i = 0; i < list0.length(); ++i) ///////////////////////////////////////////////////////////////////////////
     {
-//        if(i==1) break;
+
+//        if(i == 1) break;  ///////////////////////////////////////////////////////////////////////////
         cout << endl << list0[i].toStdString()  << endl;
 
         ui->realButton->setChecked(true);
-        if(1)
+        if(0) //////////////////////////////////////////////////////////////////////
         {
 
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
@@ -7920,7 +7983,10 @@ void MainWindow::autoIcaAnalysis2()
             setEdfFile(helpString); // open ExpName_sum.edf
             cleanDirs();
             ICA();
+        }
 
+        if(0) //////////////////////////////////////////////////////////////////////
+        {
 
             //transform 2nd file with 1st maps
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
@@ -7944,6 +8010,10 @@ void MainWindow::autoIcaAnalysis2()
             helpString2 = dir->absolutePath() + QDir::separator() + list0[i];
             helpString2.replace("_1.edf", "_2_ica_sum.edf"); //write to ExpName_2_ica_by1.edf
             transformEDF(helpString, mapsPath, helpString2);
+        }
+
+        if(1) //////////////////////////////////////////////////////////////////////
+        {
 
             //transform 1st and 2nd correspondingly
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
@@ -7955,77 +8025,20 @@ void MainWindow::autoIcaAnalysis2()
             ICsSequence(helpString, helpString2, mapsPath, mapsPath2);
 
 
-            /*
-            //drop low correlated components - 1st file
-            helpString.clear();
-            cout << "high corr 1st file" << endl;
-            for(int k = 0; k < 19; ++k)
-            {
-                if(ICAcorrArr[k].coeff < ICAcorrThreshold) continue;
-                else helpString += QString::number(k+1) + " ";
-                cout << k+1 << " ";
-            }
-            helpString += "20";
-            cout << "20" << endl;
-            ui->reduceChannelsLineEdit->setText(helpString);
+//            ICsSequence(helpString, helpString, mapsPath, mapsPath);
 
-            //write new 1st ica file with high correlated components
-            helpString = dir->absolutePath() + QDir::separator() + list0[i];
-            setEdfFile(helpString);
-            cleanDirs();
-            helpString = dir->absolutePath() + QDir::separator() + list0[i];
-            helpString.replace("_1.edf", "_1_highCorr.edf");
-            reduceChannelsEDF(helpString);
-
-            //2nd file
-            helpString.clear();
-            cout << "high corr 2nd file" << endl;
-            for(int k = 0; k < 19; ++k)
-            {
-                if(ICAcorrArr[k].coeff < ICAcorrThreshold) continue;
-                else helpString += QString::number(ICAcorrArr[k].num2+1) + " ";
-                cout << ICAcorrArr[k].num2+1 << " ";
-            }
-            helpString += "20";
-            cout << "20" << endl;
-            ui->reduceChannelsLineEdit->setText(helpString);
-
-            //write new 1st ica file with high correlated components
-            helpString = dir->absolutePath() + QDir::separator() + list0[i];
-            helpString.replace("_1.edf", "_2.edf"); //open ExpName_2.edf
-            setEdfFile(helpString);
-            cleanDirs();
-            helpString = dir->absolutePath() + QDir::separator() + list0[i];
-            helpString.replace("_1.edf", "_2_highCorr.edf");
-            reduceChannelsEDF(helpString);
-
-            helpInt = 0;
-            for(int k = 0; k < 19; ++k)
-            {
-                if(!(ICAcorrArr[k].coeff < ICAcorrThreshold)) ++helpInt;
-            }
-
-
-            config = new cfg(dir, helpInt, 247, 0.1, 0.1, "highCorr");
-            config->makeCfg();
-            delete config;
-
-            config = new cfg(dir, helpInt, 63, 0.1, 0.1, "highCorr_wnd");
-            config->makeCfg();
-            delete config;
-            */
-
-
-
+//            helpString2 = dir->absolutePath() + QDir::separator() + list0[i];
+//            helpString2.replace("_1.edf", "_2_ica.edf");
+//            ICsSequence(helpString2, helpString2, mapsPath2, mapsPath2);
         }
         ui->timeShiftBox->setValue(125); //0.5 seconds shift
+        continue; //////////////////////////////////////////////////////////////////////
 
 
         for(int k = 0; k <= 1; ++k)
         {
             //k == 0 for realisations
             //k == 1 for windows
-//            if (k == 1) continue;
 
             if(k == 0)
             {
@@ -8053,14 +8066,15 @@ void MainWindow::autoIcaAnalysis2()
             }
             for(int j = 0; j <= 4; ++j)
             {
-//                if(j != 1) continue;
-                if(j == 3) continue;
+                if(j != 4) continue; /////////////////////////////////////////////////
+
+
                 //j == 0 for initial
                 //j == 1 for correctly sequenced ica
                 //j == 2 for ica by maps_1 only
                 //j == 3 for high correlations
                 //j == 4 by whole ica
-                for(int wndL = 1000; wndL >= 500; wndL -= 125) //too short limit in spectre.cpp::readFile();
+                for(int wndL = 1000; wndL >= 625; wndL -= 125) //too short limit in spectre.cpp::readFile();
                 {
                     if(k == 1) cout << wndL << " windows start" << endl;
                     else cout << "reals start" << endl;
@@ -8185,7 +8199,7 @@ void MainWindow::autoIcaAnalysis2()
                     outFile = fopen(QString(defaults::dataFolder + "/AB/res.txt").toStdString().c_str(), "a");
 
                     //print to res.txt
-                    fprintf(outFile, "%s", ExpName.toStdString().c_str());
+                    fprintf(outFile, "%s", ExpName.left(3).toStdString().c_str());
                     if(k == 1)
                     {
                         fprintf(outFile, "_winds");

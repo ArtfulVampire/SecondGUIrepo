@@ -220,6 +220,29 @@ double variance(double * arr, int length)
     return sum1;
 }
 
+double varianceFromZero(int *arr, int length)
+{
+    double sum1 = 0.;
+    for(int i = 0; i < length; ++i)
+    {
+        sum1 += arr[i] * arr[i];
+    }
+    sum1 /= (double)length;
+    return sum1;
+}
+
+
+double varianceFromZero(double * arr, int length)
+{
+    double sum1 = 0.;
+    for(int i = 0; i < length; ++i)
+    {
+        sum1 += arr[i]* arr[i];
+    }
+    sum1 /= (double)length;
+    return sum1;
+}
+
 
 double sigma(int *arr, int length)
 {
@@ -229,6 +252,16 @@ double sigma(int *arr, int length)
 double sigma(double *arr, int length)
 {
     return sqrt(variance(arr, length));
+}
+
+double sigmaFromZero(int *arr, int length)
+{
+    return sqrt(varianceFromZero(arr, length));
+}
+
+double sigmaFromZero(double *arr, int length)
+{
+    return sqrt(varianceFromZero(arr, length));
 }
 
 
@@ -356,7 +389,7 @@ double correlation(double * const arr1, double * const arr2, int length, int t)
             res += (arr1[i] - m1) * (arr2[i + t] - m2);
         }
 
-        res /= sqrt(variance(arr1, length-t) * variance(arr2+t, length-t));
+        res /= sigma(arr1, length-t) * sigma(arr2+t, length-t);
     }
     else  //start from arr1[0] and arr1[t]
     {
@@ -367,7 +400,35 @@ double correlation(double * const arr1, double * const arr2, int length, int t)
             res += (arr1[i + T] - m1) * (arr2[i] - m2);
         }
 
-        res /= sqrt(variance(arr1 + T, length - T) * variance(arr2, length - T));
+        res /= sigma(arr1 + T, length - T) * sigma(arr2, length - T);
+    }
+
+    res /= double(length - T);
+    return res;
+}
+
+
+double correlationFromZero(double * const arr1, double * const arr2, int length, int t)
+{
+    double res = 0.;
+    int T = abs(t);
+    if(t >= 0) //start from arr1[0] and arr1[t]
+    {
+        for(int i = 0; i < length - t; ++i)
+        {
+            res += arr1[i] * arr2[i + t];
+        }
+
+        res /= sigmaFromZero(arr1, length-t) * sigmaFromZero(arr2+t, length-t);
+    }
+    else  //start from arr1[0] and arr1[t]
+    {
+        for(int i = 0; i < length - T; ++i)
+        {
+            res += arr1[i + T] * arr2[i];
+        }
+
+        res /= sigmaFromZero(arr1 + T, length - T) * sigmaFromZero(arr2, length - T);
     }
 
     res /= double(length - T);
@@ -1560,6 +1621,22 @@ void readSpectraFileLine(QString filePath, double **outData, int ns, int spLengt
     file.close();
 }
 
+void readFileInLine(QString filePath, double ** outData, int len)
+{
+    ifstream file(filePath.toStdString().c_str());
+    if(!file.good())
+    {
+        cout << "bad file" << endl;
+        return;
+    }
+    for(int j = 0; j < len; ++j)
+    {
+        file >> (*outData)[j];
+    }
+
+    file.close();
+}
+
 void splitZeros(double *** dataIn, int ns, int length, int * outLength)
 {
     bool flag[length];
@@ -2163,7 +2240,7 @@ double matrixInnerMaxCorrelation(double ** const inMatrix, int const numRows, in
         for(int j = 0; j < numCols; ++j)
         {
             if(j==i) continue;
-            temp = correlation(tempMat[i], tempMat[j], numRows);
+            temp = correlationFromZero(tempMat[i], tempMat[j], numRows); ///////////////////////////////////
             if(fabs(temp) > fabs(res))
             {
                 res = temp;
