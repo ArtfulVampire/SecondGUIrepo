@@ -3,6 +3,109 @@
 #define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 
 
+QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY)
+{
+    double a[4];
+    a[0] = helpMatrix[numY][numX];
+    a[1] = helpMatrix[numY][numX+1];
+    a[2] = helpMatrix[numY+1][numX];
+    a[3] = helpMatrix[numY+1][numX+1];
+
+    //mean harmonic
+    double val = 0.;
+    val += a[0] / (partX * partX + partY * partY) ;
+    val += a[1] / ( (1. - partX) * (1. - partX) + partY * partY ) ;
+    val += a[2] / ( partX * partX + (1. - partY) * (1. - partY) );
+    val += a[3] / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
+    val /= 1. / (partX * partX + partY * partY) + 1. / ( (1. - partX) * (1. - partX) + partY * partY ) + 1. / ( partX * partX + (1. - partY) * (1. - partY) ) + 1. / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
+
+    return hue(256, (val/maxMagn)*256., 1., 1.);
+}
+
+
+void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size)
+{
+    double maxMagn = 0.;
+
+    QPixmap pic = QPixmap(size, size);
+    QPainter * painter = new QPainter;
+    pic.fill();
+    painter->begin(&pic);
+
+    double ** helpMatrix;
+    matrixCreate(&helpMatrix, 5, 5); //generality for ns = 19
+
+    int currIndex = 0.;
+    for(int i = 0; i < 25; ++i) //generality for ns = 19
+    {
+        if(i == 0 || i == 2 || i == 4 || i == 20 || i == 22 || i == 24)  //generality for ns = 19
+        {
+            helpMatrix[i/5][i%5] = 0.;
+        }
+        else
+        {
+            helpMatrix[i/5][i%5] = fabs(matrixA[currIndex++][num]);
+        }
+    }
+
+    //approximation
+    helpMatrix[0][0] = (helpMatrix[0][1] + helpMatrix[1][0] + helpMatrix[1][1])/3.;
+    helpMatrix[0][2] = (helpMatrix[0][1] + helpMatrix[1][1] + helpMatrix[1][2] + helpMatrix[1][2] + helpMatrix[1][3] + helpMatrix[0][3])/6.;
+    helpMatrix[0][4] = (helpMatrix[0][3] + helpMatrix[1][3] + helpMatrix[1][4])/3.;;
+    helpMatrix[4][0] = (helpMatrix[3][0] + helpMatrix[3][1] + helpMatrix[4][1])/3.;
+    helpMatrix[4][2] = (helpMatrix[4][1] + helpMatrix[3][1] + helpMatrix[3][2] + helpMatrix[3][2] + helpMatrix[3][3] + helpMatrix[4][3])/6.;
+    helpMatrix[4][4] = (helpMatrix[4][3] + helpMatrix[3][3] + helpMatrix[3][4])/3.;
+
+    double scale = size/6.;
+    int numX, numY;
+    double leftCoeff = 1.0;
+    double rightCoeff = 5.0;
+
+    //generality 5 -> ns=19
+    for(int i = 0; i < 5 ; ++i)
+    {
+        for(int j = 0; j < 5 ; ++j)
+        {
+            maxMagn = max(helpMatrix[i][j], maxMagn);
+        }
+    }
+
+
+    for(int x = floor(size/6.)*leftCoeff; x < floor(size/6.)*rightCoeff; ++x)
+    {
+        for(int y = floor(size/6.)*leftCoeff; y < floor(size/6.)*rightCoeff; ++y)
+        {
+            numX = floor(x/int(scale)) - 1; //1 2
+            numY = floor(y/int(scale)) - 1; //3 4
+
+            painter->setPen(mapColor(maxMagn, helpMatrix, numX, numY, double(double(x%int(scale))/scale + 0.003/scale), double(double(y%int(scale))/scale) + 0.003/scale)); // why 0.003
+            painter->drawPoint(x,y);
+        }
+    }
+
+    QString helpString = outDir + QDir::separator() + outName + "_map_" + QString::number(num) + ".png";
+    pic.save(helpString, 0, 100);
+
+
+    matrixDelete(&helpMatrix, 5);
+    delete painter;
+}
+
+void drawICAMaps(QString mapsPath, int ns, QString outDir, QString outName)
+{
+    FILE * map = fopen(mapsPath.toStdString().c_str(), "r");
+
+
+    double ** matrixA;
+    matrixCreate(&matrixA, ns, ns);
+    readICAMatrix(mapsPath, &matrixA, ns);
+
+    for(int i = 0; i < ns; ++i)
+    {
+        drawMap(matrixA, outDir, outName, i);
+    }
+    matrixDelete(&matrixA, ns);
+}
 
 void four1(double *dataF, int nn, int isign)
 {

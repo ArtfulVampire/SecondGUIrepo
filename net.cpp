@@ -339,9 +339,10 @@ void Net::autoClassification(QString spectraDir)
     {
         for(int j = 0; j < ns; ++j)
         {
-            tempRandomMatrix[i][j] = (i == j); //identity matrix
-//            tempRandomMatrix[i][j] = (i == j) * (5 + rand()%16) / 10.; //random multiplication in each channel
-//            tempRandomMatrix[i][j] = (5. + rand()%16) / 50.;
+//            tempRandomMatrix[i][j] = (i == j); //identity matrix
+//            tempRandomMatrix[i][j] = (i == j) * (5 + rand()%36) / 10.; //random multiplication in each channel
+//            tempRandomMatrix[i][j] = (5. + rand()%36) / 50.;
+            tempRandomMatrix[i][j] = (i == j) * (1. + (rand()%8 == 0) * (5. + rand()%35) / 5.);
         }
     }
 
@@ -354,24 +355,6 @@ void Net::autoClassification(QString spectraDir)
 
     mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
     mkPa->setNumOfClasses(NumOfClasses);
-
-    //adjust reduce coefficient
-    while(1)
-    {
-        mkPa->makePaSlot();
-        PaIntoMatrixByName("1");
-        LearnNet();
-        if(epoch > 150 || epoch < 80)
-        {
-            mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(epoch / 120.));
-        }
-        else
-        {
-            cout << "reduceCoeff = " << mkPa->getRdcCoeff() << endl;
-            setReduceCoeff(mkPa->getRdcCoeff());
-            break;
-        }
-    }
 
 
 
@@ -387,6 +370,26 @@ void Net::autoClassification(QString spectraDir)
     else
     {
         typeString = "";
+    }
+
+    //adjust reduce coefficient
+    while(1)
+    {
+        mkPa->makePaSlot();
+
+        helpString = "1" + typeString;
+        PaIntoMatrixByName(helpString);
+        LearnNet();
+        if(epoch > 150 || epoch < 80)
+        {
+            mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(epoch / 120.));
+        }
+        else
+        {
+            cout << "reduceCoeff = " << mkPa->getRdcCoeff() << endl;
+            setReduceCoeff(mkPa->getRdcCoeff());
+            break;
+        }
     }
 
 //    cout << typeString.toStdString() << endl;
@@ -2090,15 +2093,11 @@ void Net::PaIntoMatrixByName(QString fileName)
     {
         helpString += ".pa";
     }
-//    cout << "Pa file to load: " << helpString.toStdString() << endl;
     paFileBC = helpString;
-//    QTime myTime;
-//    myTime.start();
     readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
-//    cout << "readPaFile success" << endl;
     double * tempVector = new double [ns*spLength];
 
-    /*
+
     for(int k = 0; k < NumberOfVectors; ++k)
     {
         for(int j = 0; j < spLength*ns; ++j)
@@ -2112,13 +2111,13 @@ void Net::PaIntoMatrixByName(QString fileName)
             {
                 for(int h = 0; h < ns; ++h) //new channel number
                 {
-                    tempVector[i*spLength + j] += tempRandomMatrix[i][h] * matrix[k][h*spLength + j];
+                    tempVector[i*spLength + j] += tempRandomMatrix[i][h] * matrix[k][h*spLength + j]; //matrixNew^T = tempRandom* matrix^T
                 }
             }
         }
         memcpy(matrix[k], tempVector, sizeof(double) * ns*spLength);
     }
-    */
+
     delete []tempVector;
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 }

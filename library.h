@@ -20,6 +20,7 @@
 #include <QString>
 #include <QDir>
 #include <QTextStream>
+#include <QPixmap>
 #include <QPainter>
 #include <QMessageBox>
 #include <cerrno>
@@ -93,6 +94,10 @@ void readFileInLine(QString filePath, double ** outData, int len);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
 void readICAMatrix(QString path, double *** matrixA, int ns);
 void writeICAMatrix(QString path, double ** matrixA, const int ns);
+
+QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY);
+void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size = 240);
+void drawICAMaps(QString mapsPath, int ns, QString outDir, QString outName);
 
 void splitZeros(double *** inData, int ns, int length, int * outLength);
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);

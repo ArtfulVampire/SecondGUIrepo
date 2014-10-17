@@ -274,7 +274,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->constructEdfButton, SIGNAL(clicked()), this, SLOT(constructEDFSlot()));
 
-    QObject::connect(ui->drawMapsPushButton, SIGNAL(clicked()), this, SLOT(drawMaps()));
+    QObject::connect(ui->drawMapsPushButton, SIGNAL(clicked()), this, SLOT(drawMapsSlot()));
 
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
 
@@ -451,6 +451,12 @@ MainWindow::MainWindow() :
 
 
 //    double mean_, sigma_;
+//    countRCP(defaults::dataFolder + "/AAX/percIdent.txt", defaults::dataFolder + "/AAX/percIdent.png", &mean_, &sigma_);
+//    cout << mean_ << " " << sigma_ << " " << gaussApproval(defaults::dataFolder + "/AAX/percIdent.txt") << endl;
+//    countRCP(defaults::dataFolder + "/AAX/percDiag.txt", defaults::dataFolder + "/AAX/percDiag.png", &mean_, &sigma_);
+//    cout << mean_ << " " << sigma_ << " " << gaussApproval(defaults::dataFolder + "/AAX/percDiag.txt") << endl;
+//    countRCP(defaults::dataFolder + "/AAX/percRand.txt", defaults::dataFolder + "/AAX/percRand.png", &mean_, &sigma_);
+//    cout << mean_ << " " << sigma_ << " " << gaussApproval(defaults::dataFolder + "/AAX/percRand.txt") << endl;
 //    countRCP(defaults::dataFolder + "/AAX/rcp-40.txt", defaults::dataFolder + "/AAX/rcp-40.png", &mean_, &sigma_);
 //    cout << mean_ << " " << sigma_ << " " << gaussApproval(defaults::dataFolder + "/AAX/rcp-40.txt") << endl;
 //    countRCP(defaults::dataFolder + "/AAX/rcp-30.txt", defaults::dataFolder + "/AAX/rcp-30.png", &mean_, &sigma_);
@@ -479,11 +485,21 @@ MainWindow::MainWindow() :
 
 
 
-//    QString map1 = "/media/Files/Data/AC/AAX_1_maps.txt";
-//    QString map2 = "/media/Files/Data/AC/AAX_2_maps.txt";
-//    helpString = "/media/Files/Data/AC/AAX_1_ica.edf";
-//    helpString2 = "/media/Files/Data/AC/AAX_2_ica.edf";
-//    ICsSequence(helpString, helpString2, map1, map2);
+//    QString map1 = "/media/Files/Data/AB/Help/AAX_sum_maps.txt";
+//    QString map2 = "/media/Files/Data/AB/AAX_2_maps.txt";
+//    helpString = "/media/Files/Data/AB/AAX_sum_ica.edf";
+//    helpString2 = "/media/Files/Data/AB/AAX_2_ica.edf";/
+//    ICsSequence(helpString, helpString, map1, map1);
+
+//    dir->cd("/media/Files/Data/AB/");
+//    QStringList lst11 = dir->entryList(QStringList("*_sum_ica.edf"));
+//    for(int i = 0; i < lst11.length(); ++i)
+//    {
+//        helpString = "/media/Files/Data/AB/" + lst11[i].left(3) + "_sum_ica.edf";
+//        helpString2 = "/media/Files/Data/AB/Help/" + lst11[i].left(3) + "_sum_maps.txt";
+//        ICsSequence(helpString, helpString, helpString2, helpString2);
+
+//    }
 
 //    setEdfFile("/media/Files/Data/AB/VDA_1_ica.edf");
 //    readData();
@@ -492,8 +508,25 @@ MainWindow::MainWindow() :
 //        cout << variance(data[i], ndr * nr[i]) << endl;
 //    }
 
-        autoIcaAnalysis2();
-        return;
+
+
+//    setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
+//    Net * ann = new Net(dir, ns, left, right, spStep, ExpName);
+//    ann->setAutoProcessingFlag(1);
+//    for(int i = 0; i < 50; ++i)
+//    {
+//        ann->autoClassificationSimple();
+//        outStream.open("/media/Files/Data/AAX/percRand.txt", ios_base::out|ios_base::app);
+//        outStream << ann->getAverageAccuracy() << endl;
+//        outStream.close();
+//    }
+
+    drawICAMaps("/media/Files/Data/AB/Help/FIX_sum_maps.txt", 19, "/media/Files/Data/AB/Help", "FIX-m");
+
+
+
+//        autoIcaAnalysis2();
+//        return;
 //        system("sudo shutdown -P now");
 
 }
@@ -3073,7 +3106,9 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     matrixCreate(&corrs, ns_, ns_);
 
     double tempDouble;
-    int maxShift = 4; ////////////////////////////////////////////////////////////
+    int maxShift = 2; ////////////////////////////////////////////////////////////
+
+    cout << "1" << endl;
 
     helpString.clear();
     for(int k = 0; k < ns_; ++k)
@@ -3083,7 +3118,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
             corrMap = (correlationFromZero(mat1[k], mat2[j], ns_));
             corrMap = corrMap * corrMap;
 
-            helpDouble = corrMap * 1.5;
+            helpDouble = corrMap; /////////////////////////////////////////////////////////////////////////////////////
             coeffs[k][j].cMap = corrMap;
 
             for(int h = 0; h < 3; ++h)
@@ -3094,7 +3129,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
                     corrSpectr[h] = fmax( fabs(correlation(dataFFT1[h] + k*247, dataFFT2[h] + j*247, 247, shift)), corrSpectr[h]);
                 }
                 corrSpectr[h] = corrSpectr[h] * corrSpectr[h];
-                helpDouble += corrSpectr[h];
+//                helpDouble += corrSpectr[h]; /////////////////////////////////////////////////////////////////////////////////////
 
                 coeffs[k][j].cSpectr[h] = corrSpectr[h];
             }
@@ -3116,7 +3151,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
             for(int k = 0; k < ns_; ++k) //cols
             {
                 if(list2.contains(k)) continue;
-//                if(i == k) continue;  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+                if(i == k) continue;  ////////////////////////////////////////////////////////////////////////////////////////////////////////
                 if(corrs[i][k] > tempDouble)
                 {
                     tempDouble = corrs[i][k];
@@ -3125,6 +3160,35 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
                 }
             }
         }
+
+
+
+        if(j == ns_ - 1 && EDFica1 == EDFica2) ////////////////////////////////////////////////////////////////////////////////////////////////////////
+        {
+            for(int i = 0; i < ns_; ++i) //rows
+            {
+                if(list1.contains(i)) continue;
+                list1 << i;
+                list2 << i;
+
+                ICAcorrArr[j].num1 = i;
+                ICAcorrArr[j].num2 = i;
+
+
+            }
+            ICAcorrArr[j].coeff.cMap = 1;
+            for(int h = 0; h < 3; ++h)
+            {
+                ICAcorrArr[j].coeff.cSpectr[h] = 1;
+            }
+            ICAcorrArr[j].coeff.sumCoef = 1;
+            break;
+
+        }
+
+
+
+
         list1 << temp1;
         list2 << temp2;
         ICAcorrArr[j].num1 = temp1;
@@ -3134,6 +3198,16 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         {
             ICAcorrArr[j].coeff.cSpectr[h] = coeffs[temp1][temp2].cSpectr[h];
         }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        tempDouble = ICAcorrArr[j].coeff.cMap;
+        for(int h = 0; h < 3; ++h)
+        {
+            tempDouble += ICAcorrArr[j].coeff.cSpectr[h];
+        }
+        tempDouble = sqrt(tempDouble);
+
+
         ICAcorrArr[j].coeff.sumCoef = tempDouble;
     }
 
@@ -3252,23 +3326,28 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         cout << k+1 << "\t";
         cout << ICAcorrArr[k].num1 + 1 << "\t";
         cout << ICAcorrArr[k].num2 + 1 <<  "\t";
-        cout << doubleRound(ICAcorrArr[k].coeff.cMap, 3) <<  "\t";
+        cout << doubleRound(sqrt(ICAcorrArr[k].coeff.cMap), 3) <<  "\t";
+
         for(int h = 0; h < 3; ++h)
         {
-            cout << doubleRound(ICAcorrArr[k].coeff.cSpectr[h], 3) <<  "\t";
+            cout << doubleRound(sqrt(ICAcorrArr[k].coeff.cSpectr[h]), 3) <<  "\t";
         }
         cout << doubleRound(ICAcorrArr[k].coeff.sumCoef, 3) << endl;
+
 
         outStream << k+1 << "\t";
         outStream << ICAcorrArr[k].num1 + 1 << "\t";
         outStream << ICAcorrArr[k].num2 + 1 <<  "\t";
-        outStream << doubleRound(ICAcorrArr[k].coeff.cMap, 3) <<  "\t";
+        outStream << doubleRound(sqrt(ICAcorrArr[k].coeff.cMap), 3) <<  "\t";
+
         for(int h = 0; h < 3; ++h)
         {
-            outStream << doubleRound(ICAcorrArr[k].coeff.cSpectr[h], 3) <<  "\t";
+            outStream << doubleRound(sqrt(ICAcorrArr[k].coeff.cSpectr[h]), 3) <<  "\t";
         }
         outStream << doubleRound(ICAcorrArr[k].coeff.sumCoef, 3) << endl;
     }
+
+
     outStream.close();
 
     //leave only high-score components
@@ -6191,6 +6270,22 @@ void MainWindow::ICA() //fastICA
     delete [] dataICA;
 }
 
+void MainWindow::drawMapsSlot()
+{
+    helpString = QFileDialog::getOpenFileName(this, tr("Choose maps file"), dir->absolutePath(), tr("*.txt"));
+    if(helpString.isEmpty())
+    {
+        helpString = dir->absolutePath() + QDir::separator() + "Help";
+
+    }
+    if(!QFile::exists(helpString))
+    {
+        return;
+    }
+
+    drawICAMaps(dir->absolutePath(), ns, helpString, ExpName);
+}
+
 void MainWindow::icaClassTest() //non-optimized
 {
 
@@ -7162,161 +7257,6 @@ void MainWindow::spoc()
     delete []gradientW;
 
 }
-
-QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY)
-{
-//    cout<<partX<<"\t"<<partY<<endl;
-    double a[4];
-    a[0] = helpMatrix[numY][numX];
-    a[1] = helpMatrix[numY][numX+1];
-    a[2] = helpMatrix[numY+1][numX];
-    a[3] = helpMatrix[numY+1][numX+1];
-
-    //mean harmonic
-    double val = 0.;
-    val += a[0] / (partX * partX + partY * partY) ;
-    val += a[1] / ( (1. - partX) * (1. - partX) + partY * partY ) ;
-    val += a[2] / ( partX * partX + (1. - partY) * (1. - partY) );
-    val += a[3] / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
-    val /= 1. / (partX * partX + partY * partY) + 1. / ( (1. - partX) * (1. - partX) + partY * partY ) + 1. / ( partX * partX + (1. - partY) * (1. - partY) ) + 1. / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
-
-
-//    cout<<"val = "<<val<<"\tval/maxMagn = "<<val/maxMagn<<endl;
-
-    return hue(256, (val/maxMagn)*256., 1., 1.);
-}
-
-
-void MainWindow::drawMap(double ** matrixA, int num)
-{
-    double maxMagn = 0.;
-    int size = 240;
-    QPixmap pic = QPixmap(size, size);
-    QPainter * painter = new QPainter;
-    pic.fill();
-    painter->begin(&pic);
-
-    double ** helpMatrix = new double * [5];
-    for(int i = 0; i < 5 ; ++i)
-    {
-        helpMatrix[i] = new double [5];
-    }
-
-    int currIndex = 0.;
-    for(int i = 0; i < 25; ++i)
-    {
-        if(i == 0 || i == 2 || i == 4 || i == 20 || i == 22 || i == 24)
-        {
-            helpMatrix[i/5][i%5] = 0.;
-            continue;
-        }
-
-        helpMatrix[i/5][i%5] = fabs(matrixA[currIndex++][num]);
-    }
-
-    //approximation
-    helpMatrix[0][0] = (helpMatrix[0][1] + helpMatrix[1][0] + helpMatrix[1][1])/3.;
-    helpMatrix[0][2] = (helpMatrix[0][1] + helpMatrix[1][1] + helpMatrix[1][2] + helpMatrix[1][2] + helpMatrix[1][3] + helpMatrix[0][3])/6.;
-    helpMatrix[0][4] = (helpMatrix[0][3] + helpMatrix[1][3] + helpMatrix[1][4])/3.;;
-    helpMatrix[4][0] = (helpMatrix[3][0] + helpMatrix[3][1] + helpMatrix[4][1])/3.;
-    helpMatrix[4][2] = (helpMatrix[4][1] + helpMatrix[3][1] + helpMatrix[3][2] + helpMatrix[3][2] + helpMatrix[3][3] + helpMatrix[4][3])/6.;
-    helpMatrix[4][4] = (helpMatrix[4][3] + helpMatrix[3][3] + helpMatrix[3][4])/3.;
-
-    double scale = size/6.;
-    int numX, numY;
-    double leftCoeff = 1.0;
-    double rightCoeff = 5.0;
-
-//    test - OK
-//    if(num==0)
-//    {
-//        for(int i = 0; i < 5 ; ++i)
-//        {
-//            for(int j = 0; j < 5 ; ++j)
-//            {
-//                cout<<helpMatrix[i][j]<<"\t";
-//            }
-//            cout<<endl;
-//        }
-
-//    }
-
-    //generality 5 -> ns=19
-    for(int i = 0; i < 5 ; ++i)
-    {
-        for(int j = 0; j < 5 ; ++j)
-        {
-            maxMagn = max(helpMatrix[i][j], maxMagn);
-        }
-    }
-
-
-    for(int x = floor(size/6.)*leftCoeff; x < floor(size/6.)*rightCoeff; ++x)
-    {
-        for(int y = floor(size/6.)*leftCoeff; y < floor(size/6.)*rightCoeff; ++y)
-        {
-//            cout<<x<<"\t"<<y;
-            numX = floor(x/int(scale)) - 1; //1 2
-            numY = floor(y/int(scale)) - 1; //3 4
-//            cout<<"\t"<<numX<<"\t"<<numY;
-            painter->setPen(mapColor(maxMagn, helpMatrix, numX, numY, double(double(x%int(scale))/scale + 0.003/scale), double(double(y%int(scale))/scale) + 0.003/scale));
-            painter->drawPoint(x,y);
-//            cout<<endl;
-
-        }
-    }
-
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("map_").append(QString::number(num)).append(".jpg"));
-    pic.save(helpString, 0, 100);
-
-
-
-    for(int i = 0; i < 5 ; ++i)
-    {
-        delete []helpMatrix[i];
-    }
-    delete []helpMatrix;
-    delete painter;
-}
-
-void MainWindow::drawMaps()
-{
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName + "_maps.txt");
-    FILE * map = fopen(helpString.toStdString().c_str(), "r");
-//    double maxMagn = 0.;
-
-    double ** matrixA = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        matrixA[i] = new double [ns];
-    }
-
-
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < ns; ++j)
-        {
-            fscanf(map, "%lf\t", &matrixA[i][j]);
-        }
-    }
-//    fscanf(map, "max = %lf\n", &maxMagn);
-    fclose(map);
-
-    for(int i = 0; i < ns; ++i)
-    {
-        drawMap(matrixA, i);
-    }
-
-
-
-    for(int i = 0; i < ns; ++i)
-    {
-        delete [] matrixA[i];
-    }
-    delete [] matrixA;
-}
-
-
 
 void MainWindow::visualisation()   //just video
 {

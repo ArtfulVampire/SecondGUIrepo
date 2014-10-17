@@ -72,7 +72,7 @@ public slots:
     void cleanDirs();
     void sliceWindFromReal();
     void avTime();
-    void drawMaps();
+    void drawMapsSlot();
     void makeDatFile();
     void constructEDFSlot();
     void reduceChannelsEDFSlot();
