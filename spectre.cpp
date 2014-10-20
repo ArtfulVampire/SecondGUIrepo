@@ -216,7 +216,7 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
 
 
             chanNum = findChannel(mouseEvent->x(), mouseEvent->y(), ui->specLabel->size());
-//            cout<<chanNum<<endl;
+//            cout << chanNum << endl;
 
             if(mouseEvent->button()==Qt::LeftButton)
             {
@@ -228,8 +228,8 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
             {
                 rangeLimits[chanNum][1] = ceil((mouseEvent->x()*paint->device()->width()/ui->specLabel->width() - coords::x[chanNum]*paint->device()->width())/(coords::scale*paint->device()->width())*spLength);
             }
-//            cout<<paint->device()->width()<<endl;
-//            cout<<pic.width()<<endl;
+//            cout << paint->device()->width() << endl;
+//            cout << pic.width() << endl;
             for(int i=0; i<ns; ++i)
             {
                 paint->setPen(QPen(QBrush("blue"), 2));
@@ -311,7 +311,7 @@ void Spectre::integrate()
 
         dir->cd(ui->lineEdit_2->text());
         helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(i));
-        cout<<helpString.toStdString()<<endl;
+        cout << helpString.toStdString() << endl;
         file = fopen(helpString.toStdString().c_str(), "w");
         for(int h=0; h<ns; ++h)
         {
@@ -393,7 +393,7 @@ void Spectre::psaSlot()
         sp[k] = new double* [ns];
     }
 
-//    cout<<"1"<<endl;
+//    cout << "1" << endl;
     for(int k = 0; k < count; ++k)
     {
         for(int i=0; i<ns; ++i)
@@ -401,7 +401,7 @@ void Spectre::psaSlot()
             sp[k][i] = new double [spL[k]];
         }
     }
-//    cout<<"2"<<endl;
+//    cout << "2" << endl;
 
     for(int k = 0; k < count; ++k)
     {
@@ -413,7 +413,7 @@ void Spectre::psaSlot()
             }
         }
     }
-//    cout<<"3"<<endl;
+//    cout << "3" << endl;
 
 
 
@@ -447,18 +447,18 @@ void Spectre::psaSlot()
             }
         }
     }
-    cout<<"max magnitude = "<<norm<<endl;
+    cout << "max magnitude = " << norm << endl;
 
 //    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
 //    fprintf(res, "\n%.3lf\n", norm);
 //    fclose(res);
 
     norm = (coords::scale * paint->device()->height())/norm ; //250 - pixels per graph, generality
-//    cout<<"norm = "<<norm<<endl;
+//    cout << "norm = " << norm << endl;
     norm *= ui->scalingDoubleSpinBox->value();
 
 
-//    cout<<"prep spectra draw"<<endl;
+//    cout << "prep spectra draw" << endl;
     for(int c2=0; c2<ns; ++c2)  //exept markers channel
     {
         //draw spectra
@@ -509,7 +509,7 @@ void Spectre::psaSlot()
         }
 
     }
-//    cout<<"spectra drawn"<<endl;
+//    cout << "spectra drawn" << endl;
 
     //write channels labels
     paint->setFont(QFont("Helvetica", int(24*paint->device()->height()/1600.), -1, false));
@@ -639,7 +639,7 @@ void Spectre::compare()
     file = fopen(helpString.toStdString().c_str(), "w");
     if(file == NULL)
     {
-        cout<<"cannot open file"<<endl;
+        cout << "cannot open file" << endl;
         return;
     }
 //    fprintf(file, "spLength %d\n", spLength);
@@ -735,7 +735,7 @@ void Spectre::compare()
         {
 //            helpString = ui->lineEdit_1->text();
 //            helpString.resize(helpString.lastIndexOf(QDir::separator())+1);
-//            cout<<helpString.toStdString()<<endl;
+//            cout << helpString.toStdString() << endl;
 //            helpString.append("Help").append(QDir::separator()).append(ExpName).append("_241.psa");
             helpString = dirBC->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append("_241.psa");
             ui->lineEdit_1->setText(QDir::toNativeSeparators(helpString));
@@ -743,7 +743,7 @@ void Spectre::compare()
 
 //            helpString = ui->lineEdit_2->text();
 //            helpString.resize(helpString.lastIndexOf(QDir::separator())+1);
-//            cout<<helpString.toStdString()<<endl;
+//            cout << helpString.toStdString() << endl;
 //            helpString.append("Help").append(QDir::separator()).append(ExpName).append("_247.psa");
             helpString = dirBC->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append("_247.psa");
             ui->lineEdit_2->setText(QDir::toNativeSeparators(helpString));
@@ -778,7 +778,7 @@ void Spectre::compare()
 //            helpString = ui->lineEdit_1->text();
 //            helpString.resize(helpString.lastIndexOf(QDir::separator()));
 //            helpString.resize(helpString.lastIndexOf(QDir::separator())+1);
-//            cout<<helpString.toStdString()<<endl;
+//            cout << helpString.toStdString() << endl;
 //            helpString.append("Help").append(QDir::separator()).append(ExpName).append("_241_wnd.psa");
             helpString = dirBC->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append("_241_wnd.psa");
             ui->lineEdit_1->setText(QDir::toNativeSeparators(helpString));
@@ -786,7 +786,7 @@ void Spectre::compare()
 
 //            helpString = ui->lineEdit_2->text();
 //            helpString.resize(helpString.lastIndexOf(QDir::separator())+1);
-//            cout<<helpString.toStdString()<<endl;
+//            cout << helpString.toStdString() << endl;
 //            helpString.append("Help").append(QDir::separator()).append(ExpName).append("_247_wnd.psa");
             helpString = dirBC->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append("_247_wnd.psa");
             ui->lineEdit_2->setText(QDir::toNativeSeparators(helpString));
@@ -869,8 +869,8 @@ void Spectre::center()
     helpString = QFileDialog::getExistingDirectory(this, tr("Choose dir"), dir->absolutePath());
     if(helpString=="") return;
     dir->setPath(helpString);
-    cout<<dir->absolutePath().toStdString()<<endl;
-    cout<<ns<<" "<<spLength<<endl;
+    cout << dir->absolutePath().toStdString() << endl;
+    cout << ns << " " << spLength << endl;
 
     lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
     FILE * fil;
@@ -910,9 +910,9 @@ void Spectre::center()
     {
         for(int k = 0; k < spLength; ++k)
         {
-            cout<<averages[j][k]<<"\t";
+            cout << averages[j][k] << "\t";
         }
-        cout<<endl;
+        cout << endl;
     }
 
     for(int i = 0; i < lst.length(); ++i)
@@ -1101,7 +1101,7 @@ void Spectre::countSpectra()
                         sum2 += dataFFT[i][j] * (j * 250. / fftLength);
                     }
                     sum2 /= sum1;
-                    //                cout<<sum2<<endl;
+                    //                cout << sum2 << endl;
                     outStream << sum2 << '\n';
                 }
             }
@@ -1388,12 +1388,12 @@ int Spectre::readFilePhase(int &num, double ** data2, double ***dataPhase)
 
         if((NumOfSlices-Eyes) < 500) // 0.2*4096/250 = 3.1 sec
         {
-            cout<<"Too short real signal "<<helpString.toStdString()<<endl;//<<NumOfSlices<<"  "<<Eyes<<endl<<endl;
+            cout << "Too short real signal " << helpString.toStdString() << endl;// << NumOfSlices << "  " << Eyes << endl << endl;
 
 
             return 0;
         }
-    //    cout<<"!!"<<endl;
+    //    cout << "!!" << endl;
 
 
         double norm1=fftLength/double(fftLength-Eyes);              //norm with eyes
@@ -1434,7 +1434,7 @@ int Spectre::readFilePhase(int &num, double ** data2, double ***dataPhase)
                     dataPhase[c1][c2][ i ] *= sqrt(help[0] * help[1]) / (help[0] + help[1]); //normalisation
                     if(QString::number(dataPhase[c1][c2][i]).contains('n')) //why nan and inf???
                     {
-                        cout<<"dataPhase[" << c1 << "][" << c2 << "][" << i << "] = "<< dataPhase[c1][c2][i] <<endl;
+                        cout << "dataPhase[" << c1 << "][" << c2 << "][" << i << "] = " <<  dataPhase[c1][c2][i]  << endl;
                         return 0;
                     }
                 }
@@ -1485,14 +1485,14 @@ void Spectre::drawWavelets()
 
     FILE * file1;
 
-    for(int a = 0; a < lst.length(); ++a) // wtf a = 54?
+    for(int a = 0; a < lst.length(); ++a)
     {
 
 
         helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[a]));
-        cout<<helpString.toStdString()<<endl;
+        cout << helpString.toStdString() << endl;
         file1 = fopen(helpString.toStdString().c_str(),"r");
-        if(file1==NULL)
+        if(file1 == NULL)
         {
             QMessageBox::warning((QWidget*)this, tr("Warning"), tr("wrong filename"), QMessageBox::Ok);
             continue;
@@ -1504,9 +1504,10 @@ void Spectre::drawWavelets()
             {
                 helpString = lst[a];
                 helpString.replace('.', '_');
-                helpString=QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append("wavelets").append(QDir::separator()).append(QString::number(channel)).append(QDir::separator()).append(helpString).append("_wavelet_").append(QString::number(channel)).append(".jpg"));
-                cout<<helpString.toStdString()<<endl;
-                wavelet(helpString, file1, ns, channel, 20., 5., 0.95, 32);
+                helpString = QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "visualisation" + QDir::separator() + "wavelets" + QDir::separator()
+                                                      + QString::number(channel) + QDir::separator() + helpString + "_wavelet_" + QString::number(channel) + ".jpg");
+                cout << helpString.toStdString() << endl;
+                wavelet(helpString, file1, ns, channel, 20., 5., 0.99, 32);
             }
         }
         if(ui->phaseWaveletButton->isChecked())
@@ -1518,14 +1519,13 @@ void Spectre::drawWavelets()
                     helpString = lst[a];
                     helpString.replace('.', '_');
                     helpString = QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append("wavelets").append(QDir::separator()).append(QString::number(channel1)).append(QDir::separator()).append(QString::number(channel2)).append(QDir::separator()).append(helpString).append("_wavelet_").append(QString::number(channel1)).append("_").append(QString::number(channel2)).append(".jpg"));
-                    cout<<helpString.toStdString()<<endl;
+                    cout << helpString.toStdString() << endl;
                     waveletPhase(helpString, file1, ns, channel1, channel2, 20., 5., 0.95, 32);
 //                    if(channel2 == 2) return;
                 }
             }
         }
         fclose(file1);
-        if(a==2) return;
 
         if(100*(a+1)/lst.length() > ui->progressBar->value())
         {

@@ -44,9 +44,11 @@ using namespace std;
 int len(QString s);
 QString rightNumber(int &input, int N);
 
-void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax, double freqMin, double freqStep, double pot);
+double morletCos(double const freq1, double timeShift, double pot, double time);
+double morletSin(double const freq1, double timeShift, double pot, double time);
+void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double freqMax=20., double freqMin=5., double freqStep=0.99, double pot=32.);
 void drawColorScale(QString filename, int range);
-QColor hue(int range, int j, double V, double S);
+QColor hue(int range, int j, double V = 0.95, double S = 1.0);
 void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
 double fractalDimension(double *arr, int N, QString picPath);
@@ -74,8 +76,9 @@ double skewness(double *arr, int length);
 double kurtosis(double *arr, int length);
 double rankit(int i, int length, double k = 0.375);
 
-void drawRCP(double *values, int length);
+bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
 
+void drawRCP(double *values, int length);
 void countRCP(QString filename, QString picPath = "", double *outMean = NULL, double *outSigma = NULL);
 void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
 

@@ -529,6 +529,10 @@ MainWindow::MainWindow() :
 //        return;
 //        system("sudo shutdown -P now");
 
+    FILE * fil = fopen("/media/Files/Data/AAX/Realisations/AAX_new.0002_254", "r");
+    wavelet("/media/Files/Data/AAX/wavelet.png", fil, 19, 10, 20., 5., 0.99, 32);
+    exit(0);
+
 }
 
 MainWindow::~MainWindow()

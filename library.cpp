@@ -402,6 +402,102 @@ double rankit(int i, int length, double k)
     return quantile( (i-k) / (length + 1. - 2. * k) );
 }
 
+bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p)
+{
+
+    int * n = new int[2];
+    n[0] = len1;
+    n[1] = len2;
+
+    double ** array = new double * [2];
+    array[0] = new double [n[0] + n[1]];
+    array[1] = new double [n[0] + n[1]];
+    for(int i = 0; i < n[0]; ++i)
+    {
+        array[0][i] = arr1[i];
+    }
+    for(int i = 0 + n[0]; i < n[1] + n[0]; ++i)
+    {
+        array[1][i] = arr2[i];
+    }
+
+
+    for(int i = 0; i < n[0]; ++i)
+    {
+        array[1][i] = 0.;
+    }
+    for(int i = n[0]; i < n[0] + n[1]; ++i)
+    {
+        array[0][i] = 0.;
+    }
+
+
+    double temp;
+    int sum0;
+    int sumAll;
+    double average = n[0]*n[1]/2.;
+    double dispersion = sqrt(n[0]*n[1]*(n[0]+n[1])/12.);
+
+
+    double U = 0.;
+
+    double tmp1, tmp2;
+    for(int k = 0; k < n[0] + n[1]; ++k)
+    {
+        for(int i = 0; i < n[0] + n[1] - 1; ++i)
+        {
+            if( array[0][i] != 0. ) tmp1 = array[0][i];
+            else tmp1 = array[1][i];
+
+            if( array[0][i+1] != 0. ) tmp2 = array[0][i+1];
+            else tmp2 = array[1][i+1];
+
+            if( tmp1 > tmp2 )
+            {
+                for(int j = 0; j < 2; ++j)
+                {
+                    temp = array[j][i];
+                    array[j][i] = array[j][i+1];
+                    array[j][i+1] = temp;
+                }
+            }
+        }
+    }
+
+    //count sums
+
+    sum0 = 0;
+    for(int i = 0; i<n[0] + n[1]; ++i)
+    {
+        if(array[0][i]!=0) sum0 += (i+1);
+    }
+
+    //if sum0 is bigger
+
+    sumAll = (n[0]+n[1])*(n[0]+n[1]+1)/2;
+    if(sum0 > sumAll/2 )
+    {
+        U = double(n[0]*n[1] + n[0]*(n[0]+1)/2. - sum0);
+    }
+    else
+    {
+        U = double(n[1]*n[0] + n[1]*(n[1]+1)/2. - (sumAll - sum0));
+    }
+
+    cout<<"U = "<<U<<endl;
+    if(abs((U-average)/double(dispersion)) > quantile((1.00 + (1-p))/2.))
+    {
+        cout<<"different"<<endl;
+            return true;
+
+    }
+    else
+    {
+        cout<<"not different"<<endl;
+        return false;
+    }
+}
+
 void drawRCP(double * values, int length)
 {
     QPixmap pic(1000, 400);
@@ -1254,34 +1350,34 @@ double blue(int range, int j, double V, double S)
 
 QColor hue(int range, int j, double V, double S)
 {
-    S = 1.0;
-    V = 0.95;
     return QColor(255.*red(range,j,V,S), 255.*green(range,j,V,S), 255.*blue(range,j,V,S));
 }
 
+
 QColor qcolor(int range, int j)
 {
-    double sigmaR=range*0.35;
-    double sigmaG=range*0.25;
-    double sigmaB=range*0.4;
+    double sigmaR = range*0.35;
+    double sigmaG = range*0.25;
+    double sigmaB = range*0.4;
 
-    double offR=range*(1.0 - 0.3);
-    double offG=range*(0.5 + 0.25);
-    double offB=range*(0.0 + 0.15);
+    double offR = range*(1.0 - 0.3);
+    double offG = range*(0.5 + 0.25);
+    double offB = range*(0.0 + 0.15);
 
     return QColor(255*exp(-(j-offR)*(j-offR)/(2*sigmaR*sigmaR)), 255*exp(-(j-offG)*(j-offG)/(2*sigmaG*sigmaG)), 255*exp((-(j-offB)*(j-offB)/(2*sigmaB*sigmaB))));
 //    return QColor(255*red(j/double(range)),255* green(j/double(range)), 255*blue(j/double(range)));
 }
 
-double morletCos(double freq, double timeShift, double pot, double time)
+
+double morletCos(double const freq1, double timeShift, double pot, double time)
 {
-    freq*=2.*pi/250.;
+    double freq = freq1 * 2.*pi/250.;
     return cos(freq*(time-timeShift))*exp(-freq*freq*(time-timeShift)*(time-timeShift)/(pot*pot));
 }
 
-double morletSin(double freq, double timeShift, double pot, double time)
+double morletSin(double const freq1, double timeShift, double pot, double time)
 {
-    freq*=2.*pi/250.;
+    double freq = freq1 * 2.*pi/250.;
     return sin(freq*(time-timeShift))*exp(-freq*freq*(time-timeShift)*(time-timeShift)/(pot*pot));
 }
 
@@ -1325,19 +1421,20 @@ void drawColorScale(QString filePath, int range)
     delete painter;
 }
 
-void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double freqMax=20., double freqMin=5., double freqStep=0.99, double pot=32.)
+void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax, double freqMin, double freqStep, double pot)
 {
     int NumOfSlices;
     double * input, helpDouble;
     QString helpString;
 
-    if(file==NULL)
+    if(file == NULL)
     {
         cout<<"file==NULL"<<endl;
         return;
     }
     fscanf(file, "NumOfSlices %d", &NumOfSlices);
-    if(NumOfSlices<200) return;
+    if(NumOfSlices < 200) return;
+
     input = new double [NumOfSlices];
 
     for(int i=0; i<NumOfSlices; ++i)
@@ -1349,17 +1446,16 @@ void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double fr
         }
     }
 //    fclose(file);
-    QPixmap pic(150*NumOfSlices/250,800); //150 pixels/sec generality
+    QPixmap pic(150*NumOfSlices/250,800); //125 pixels/sec generality
     pic.fill();
     QPainter * painter = new QPainter;
     painter->begin(&pic);
 
 
-    double freq=20.;
-    double timeStep=0.;
+    double timeStep = 0.;
 
     int numberOfFreqs = int(log(freqMin/freqMax) / log(freqStep)) + 1;
-    double **temp = new double * [numberOfFreqs];
+    double ** temp = new double * [numberOfFreqs];
     for(int i = 0; i < numberOfFreqs; ++i)
     {
         temp[i] = new double [NumOfSlices];
@@ -1370,33 +1466,35 @@ void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double fr
     }
     double tempR=0., tempI=0.;
     int i=0;
-    int jMin=0, jMax=0;
+    int jMin = 0, jMax = 0;
 
     int range = 256;
     int numb;
-//    cout<<"1"<<endl;
+
     int j=0;
-    for(freq=freqMax; freq>freqMin; freq*=freqStep)
+
+    for(double freq = freqMax; freq > freqMin; freq *= freqStep)
     {
         timeStep = 1./freq * 250./1.5;  //250 Hz
-        i=0;
+        i = 0;
         while(i<NumOfSlices)
         {
-            temp[j][i]=0.;
-            tempR=0.;
-            tempI=0.;
-            jMin=max(0, int(i - sqrt(5*pot*pot*250.*250./4/pi/pi/freq/freq)));
-            jMax=min(int(i + sqrt(5*pot*pot*250.*250./4/pi/pi/freq/freq)), NumOfSlices);
-            for(int j=jMin; j<jMax; ++j)
+            temp[j][i] = 0.;
+            tempR = 0.;
+            tempI = 0.;
+            jMin = max(0, int(i - sqrt(5*pot*pot*250.*250./4/pi/pi/freq/freq)));
+            jMax = min(int(i + sqrt(5*pot*pot*250.*250./4/pi/pi/freq/freq)), NumOfSlices);
+            for(int j = jMin; j < jMax; ++j)
             {
-                tempI+=(morletSin(freq, i, pot, j)*input[j]);
-                tempR+=(morletCos(freq, i, pot, j)*input[j]);
+                tempI += (morletSin(freq, i, pot, j) * input[j]);
+                tempR += (morletCos(freq, i, pot, j) * input[j]);
             }
-            temp[j][i]=tempI*tempI + tempR*tempR;
-            i+=timeStep;
+            temp[j][i] = tempI*tempI + tempR*tempR;
+            i += timeStep;
         }
         ++j;
     }
+
     helpDouble = 0.;
     for(int j = 0; j < numberOfFreqs; ++j)
     {
@@ -1408,18 +1506,18 @@ void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double fr
 
 
     j = 0;
-    for(freq=freqMax; freq>freqMin; freq*=freqStep)
+    for(double freq = freqMax; freq > freqMin; freq*=freqStep)
     {
-        i=0;
-        while(i<NumOfSlices)
+        i = 0;
+        while(i < NumOfSlices)
         {
-             numb = min(floor(temp[j][i]*range/double(helpDouble)), double(range));
+             numb = fmin(floor(temp[j][i]*range/double(helpDouble)), double(range));
 
-             painter->setBrush(QBrush(qcolor(range, numb)));
-             painter->setPen(qcolor(range, numb));
+             painter->setBrush(QBrush(hue(range, numb)));
+             painter->setPen(hue(range, numb));
 
-             painter->drawRect(i*pic.width()/NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep)/(freqMax-freqMin)), timeStep*pic.width()/NumOfSlices,     int(pic.height()*(- 0.5*freq*(1./freqStep - freqStep))/(freqMax-freqMin)));
-             i+=timeStep;
+             painter->drawRect(i*pic.width()/NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep)/(freqMax-freqMin)), timeStep*pic.width()/NumOfSlices, int(pic.height()*(- 0.5*freq*(1./freqStep - freqStep))/(freqMax-freqMin)));
+             i += timeStep;
         }
         ++j;
 
@@ -1428,13 +1526,13 @@ void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double fr
 
 
     painter->setFont(QFont("Helvetica", 32, -1, -1));
-    for(int i=freqMax; i>freqMin; --i)
+    for(int i = freqMax; i > freqMin; --i)
     {
         painter->drawLine(0, pic.height()*(freqMax-i)/(freqMax-freqMin), pic.width(), pic.height()*(freqMax-i)/(freqMax-freqMin));
         painter->drawText(0, pic.height()*(freqMax-i)/(freqMax-freqMin)-2, helpString.setNum(i));
 
     }
-    for(int i=0; i<int(NumOfSlices/250); ++i)
+    for(int i = 0; i < int(NumOfSlices/250); ++i)
     {
         painter->drawLine(pic.width()*i*250/NumOfSlices, pic.height(), pic.width()*i*250/NumOfSlices, pic.height()-20);
         painter->drawText(pic.width()*i*250/NumOfSlices-8, pic.height()-2, helpString.setNum(i));
