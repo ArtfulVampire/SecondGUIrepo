@@ -472,7 +472,7 @@
         <widget class="QLineEdit" name="reduceChannelsLineEdit"/>
        </item>
        <item>
-        <widget class="QPushButton" name="reduceChannelsEDFComboBox">
+        <widget class="QPushButton" name="reduceChannelsNewEDFPushButton">
          <property name="text">
           <string>New EDF</string>
          </property>

@@ -118,18 +118,21 @@ public:
 
     void visualisation();
     void kernelest(const QString &str);
-    void writeEdf(FILE * edfIn, double ** components, QString outFilePath, int numSlices);
+    void writeEdf(QString inFilePath, double ** components, QString outFilePath, int numSlices);
     void sliceOneByOne();
     void sliceOneByOneNew(int numChanWrite);
     void drawMap(double ** matrixA, int num);
     void setEdfFile(QString filePath);
-    void transformEDF(QString edfPath, QString mapsPath, QString newEdfPath);
+    void transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath);
     void reduceChannelsEDF(QString newFilePath);
     void constructEDF(QString newPath);
     void writeCorrelationMatrix(QString edfPath, QString outPath);
-    void ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path);
+    void ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path, int mode = 0);
     void autoIcaAnalysis();
     void autoIcaAnalysis2();
+    void autoIcaAnalysis3();
+    void autoIcaAnalysis4();
+    void autoIcaAnalysis5();
 
 
 private:

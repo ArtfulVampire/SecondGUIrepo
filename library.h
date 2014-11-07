@@ -43,14 +43,17 @@ using namespace std;
 
 int len(QString s);
 QString rightNumber(int &input, int N);
+double doubleRound(double in, int numSigns);
 
+//wavelets
+void drawColorScale(QString filename, int range);
+QColor hueJet(int range, int j, double V = 0.95, double S = 1.0);
 double morletCos(double const freq1, double timeShift, double pot, double time);
 double morletSin(double const freq1, double timeShift, double pot, double time);
 void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double freqMax=20., double freqMin=5., double freqStep=0.99, double pot=32.);
-void drawColorScale(QString filename, int range);
-QColor hue(int range, int j, double V = 0.95, double S = 1.0);
 void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
+//signal processing
 double fractalDimension(double *arr, int N, QString picPath);
 double enthropy(double *arr, int N, QString picPath, int numOfRanges);
 void four1(double * dataF, int nn, int isign);
@@ -75,18 +78,18 @@ double sigmaFromZero(double *arr, int length);
 double skewness(double *arr, int length);
 double kurtosis(double *arr, int length);
 double rankit(int i, int length, double k = 0.375);
+double correlation(double * const arr1, double * const arr2, int length, int t = 0);
+double correlationFromZero(double * const arr1, double * const arr2, int length, int t = 0);
+double maxValue(double * arr, int length);
+double minValue(double * arr, int length);
+void splitZeros(double *** inData, int ns, int length, int * outLength);
+void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 
 bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
 
 void drawRCP(double *values, int length);
 void countRCP(QString filename, QString picPath = "", double *outMean = NULL, double *outSigma = NULL);
 void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
-
-double doubleRound(double in, int numSigns);
-double correlation(double * const arr1, double * const arr2, int length, int t = 0);
-double correlationFromZero(double * const arr1, double * const arr2, int length, int t = 0);
-double maxValue(double * arr, int length);
-double minValue(double * arr, int length);
 
 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
@@ -95,23 +98,22 @@ void readSpectraFile(QString filePath, double ***outData, int ns, int spLength);
 void readSpectraFileLine(QString filePath, double ** outData, int ns, int spLength);
 void readFileInLine(QString filePath, double ** outData, int len);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
-void readICAMatrix(QString path, double *** matrixA, int ns);
+bool readICAMatrix(QString path, double *** matrixA, int ns);
 void writeICAMatrix(QString path, double ** matrixA, const int ns);
 
-QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY);
+QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY);
 void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size = 240);
 void drawICAMaps(QString mapsPath, int ns, QString outDir, QString outName);
+void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
 
-void splitZeros(double *** inData, int ns, int length, int * outLength);
-void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 
-void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth, const double powArg);
-void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth, const double powArg);
+void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth = 15, const double powArg = 1.);
+void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth = 15, const double powArg = 1.);
 void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
 
 
-
 double distance(double * const vec1, double * const vec2, int const dim);
+double distance(double const x1, double const y1, double const x2, double const y2);
 void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const dimH, int const dimL);  //matrix product: out = A(H*H) * B(H*L)
 void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const numRows1, int const numCols2, int const numCols1Rows2);  //matrix product: out = A(H*H) * B(H*L)
 void matrixTranspose(double ** const inMat, int const numRows, int const numCols, double *** outMat);
@@ -123,7 +125,9 @@ double matrixDet(double ** const matrix, int const dim);
 double matrixDetB(double ** const matrix, int const dim);
 void matrixCofactor(double ** const inMatrix, int size, int numRows, int numCols, double *** outMatrix);
 
-double matrixInnerMaxCorrelation(double ** const inMatrix, const int numRows, const int numCols);
+double matrixInnerMaxCorrelation(double ** const inMatrix, const int numRows, const int numCols,
+                                 double (*corrFunc)(double * const arr1, double * const arr2, int length, int t) = &correlationFromZero);
+
 double matrixMaxCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols);
 void matrixCorrelations(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols, double **resCorr);
 
@@ -132,6 +136,9 @@ void matrixCreate(double *** matrix, int i, int j);
 void matrixDelete(double *** matrix, int i);
 void matrixPrint(double ** const mat, int i, int j);
 
+
+
+void drawArray(double * array, int length, QString outPath); ///////////////////////////////////////////to do
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
 inline double gaussian(double x) //N(0,1)

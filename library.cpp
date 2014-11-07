@@ -3,7 +3,7 @@
 #define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 
 
-QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY)
+QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY)
 {
     double a[4];
     a[0] = helpMatrix[numY][numX];
@@ -19,13 +19,14 @@ QColor mapColor(double maxMagn, double ** helpMatrix, int numX, int numY, double
     val += a[3] / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
     val /= 1. / (partX * partX + partY * partY) + 1. / ( (1. - partX) * (1. - partX) + partY * partY ) + 1. / ( partX * partX + (1. - partY) * (1. - partY) ) + 1. / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
 
-    return hue(256, (val/maxMagn)*256., 1., 1.);
+    return hueJet(256, ((val - minMagn) / (maxMagn - minMagn))*256., 1., 1.);
 }
 
 
 void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size)
 {
     double maxMagn = 0.;
+    double minMagn = 0.;
 
     QPixmap pic = QPixmap(size, size);
     QPainter * painter = new QPainter;
@@ -56,29 +57,33 @@ void drawMap(double ** const matrixA, QString outDir, QString outName, int num, 
     helpMatrix[4][2] = (helpMatrix[4][1] + helpMatrix[3][1] + helpMatrix[3][2] + helpMatrix[3][2] + helpMatrix[3][3] + helpMatrix[4][3])/6.;
     helpMatrix[4][4] = (helpMatrix[4][3] + helpMatrix[3][3] + helpMatrix[3][4])/3.;
 
-    double scale = size/6.;
     int numX, numY;
-    double leftCoeff = 1.0;
-    double rightCoeff = 5.0;
+    double leftCoeff = 0.0;
+    double rightCoeff = 4.0;
+    double scale1 = size/(leftCoeff + rightCoeff);
 
     //generality 5 -> ns=19
+    minMagn = helpMatrix[0][0];
     for(int i = 0; i < 5 ; ++i)
     {
         for(int j = 0; j < 5 ; ++j)
         {
             maxMagn = max(helpMatrix[i][j], maxMagn);
+            minMagn = min(helpMatrix[i][j], minMagn);
         }
     }
 
 
-    for(int x = floor(size/6.)*leftCoeff; x < floor(size/6.)*rightCoeff; ++x)
+    for(int x = floor(scale1)*leftCoeff; x < floor(scale1)*rightCoeff; ++x)
     {
-        for(int y = floor(size/6.)*leftCoeff; y < floor(size/6.)*rightCoeff; ++y)
+        for(int y = floor(scale1)*leftCoeff; y < floor(scale1)*rightCoeff; ++y)
         {
-            numX = floor(x/int(scale)) - 1; //1 2
-            numY = floor(y/int(scale)) - 1; //3 4
+            if(distance(x, y, size/2, size/2) > size/2 ) continue; // make it round
 
-            painter->setPen(mapColor(maxMagn, helpMatrix, numX, numY, double(double(x%int(scale))/scale + 0.003/scale), double(double(y%int(scale))/scale) + 0.003/scale)); // why 0.003
+            numX = floor(x/int(scale1)) ; //1 2
+            numY = floor(y/int(scale1)) ; //3 4
+
+            painter->setPen(mapColor(minMagn, maxMagn, helpMatrix, numX, numY, double(double(x%int(scale1))/scale1 + 0.003/scale1), double(double(y%int(scale1))/scale1) + 0.003/scale1)); // why 0.003
             painter->drawPoint(x,y);
         }
     }
@@ -105,6 +110,77 @@ void drawICAMaps(QString mapsPath, int ns, QString outDir, QString outName)
         drawMap(matrixA, outDir, outName, i);
     }
     matrixDelete(&matrixA, ns);
+}
+
+
+void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames)
+{
+    QPixmap pic;
+    pic = QPixmap(spectraFilePath);
+    QPainter * pnt = new QPainter;
+    pnt->begin(&pic);
+
+    QPixmap pic1;
+    QString helpString;
+    double offsetX = 0.7;
+    QRect earRect;
+    int earSize = 14; //generality
+    double shitCoeff = 1.10; //smth about width of map on spectra pic
+
+    for(int i = 0; i < 19; ++i) /////////////////////////// generality 19
+    {
+        helpString = mapsPath + QDir::separator() + mapsNames + "_map_" + QString::number(i) + ".png";
+        pic1 = QPixmap(helpString);
+
+        pnt->drawPixmap(QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width(),
+                              coords::y[i] * pic.height() - coords::scale * pic.height(),
+                              (shitCoeff - offsetX) * coords::scale * pic.width(),
+                              (shitCoeff - offsetX) * coords::scale * pic.height()),
+                        pic1);
+
+        pnt->setPen(QPen(QBrush("black"), 2));
+        //draw the nose
+        pnt->drawLine(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2 - 8,
+                      coords::y[i] * pic.height() - coords::scale * pic.height(),
+                      coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2,
+                      coords::y[i] * pic.height() - coords::scale * pic.height() - 13);
+
+        pnt->drawLine(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2 + 8,
+                      coords::y[i] * pic.height() - coords::scale * pic.height(),
+                      coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2,
+                      coords::y[i] * pic.height() - coords::scale * pic.height() - 13);
+
+        earRect = QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() - 0.75 * earSize,
+                        coords::y[i] * pic.height() - coords::scale * pic.height() + (shitCoeff - offsetX) * coords::scale * pic.height()/2 - earSize,
+                        earSize, 2*earSize);
+        pnt->drawArc(earRect, 60*16, 240*16);
+//        pnt->drawRect(earRect);
+
+
+        earRect = QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width() - 0.25 * earSize,
+                        coords::y[i] * pic.height() - coords::scale * pic.height() + (shitCoeff - offsetX) * coords::scale * pic.height()/2 - earSize,
+                        earSize, 2*earSize);
+        pnt->drawArc(earRect, 240*16, 240*16);
+//        pnt->drawRect(earRect);
+
+
+
+    }
+    pic.save(outSpectraFilePath, 0, 100);
+    helpString = outSpectraFilePath;
+    if(helpString.contains(".png"))
+    {
+        helpString.replace(".png", ".jpg");
+        pic.save(helpString, 0, 100);
+    }
+    else if(helpString.contains(".jpg"))
+    {
+        helpString.replace(".jpg", ".png");
+        pic.save(helpString, 0, 100);
+    }
+
+    pnt->end();
+    delete pnt;
 }
 
 void four1(double *dataF, int nn, int isign)
@@ -487,13 +563,13 @@ bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p)
     cout<<"U = "<<U<<endl;
     if(abs((U-average)/double(dispersion)) > quantile((1.00 + (1-p))/2.))
     {
-        cout<<"different"<<endl;
-            return true;
+//        cout<<"different"<<endl;
+        return true;
 
     }
     else
     {
-        cout<<"not different"<<endl;
+//        cout<<"not different"<<endl;
         return false;
     }
 }
@@ -559,6 +635,16 @@ double maxValue(double * arr, int length)
     for(int i = 0; i < length; ++i)
     {
         res = fmax(res, arr[i]);
+    }
+    return res;
+}
+
+double maxAbsValue(double * arr, int length)
+{
+    double res = fabs(arr[0]);
+    for(int i = 0; i < length; ++i)
+    {
+        res = fmax(res, fabs(arr[i]));
     }
     return res;
 }
@@ -722,6 +808,11 @@ double distance(double * const vec1, double * const vec2, const int dim)
 
 }
 
+double distance(double const x1, double const y1, double const x2, double const y2)
+{
+    return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+}
+
 QString rightNumber(int &input, int N)
 {
     QString h;
@@ -744,6 +835,17 @@ QString rightNumber(int &input, int N)
             }
     }
     return h;
+}
+
+void drawArray(double * array, int length, QString outPath)
+{
+    QPixmap pic;
+    pic.fill();
+    QPainter * pnt;
+    pnt->begin(&pic);
+
+    double maxVal = maxValue(array, length);
+
 }
 
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC)
@@ -1215,7 +1317,10 @@ void kernelEst(double * arr, int length, QString picPath)
     xMax = ceil(xMax)+1;
 
 //    //generality
-    xMin = 70;
+    xMin = -20;
+    xMax = 20;
+
+    xMin = 65;
     xMax = 100;
 
     for(int i = 0; i < pic.width(); ++i)
@@ -1316,42 +1421,74 @@ bool gaussApproval2(double * arr, int length) //kobzar page 238
 
 }
 
+//hot-to-cold, http://stackoverflow.com/questions/7706339/grayscale-to-red-green-blue-matlab-jet-color-scale
+double red1(int range, int j)
+{
+    double part = j / double(range);
+    if(0.000 <= part && part <= 0.5) return 0.;
+    else if(0.500 < part && part <= 0.800) return (part - 0.5) / (0.8 - 0.5);
+    else if(0.800 < part && part <= 1.000) return 1.;
+    else return 0.0;
+}
+double green1(int range, int j)
+{
+    double part = j / double(range);
+    if(0.000 <= part && part <= 0.2) return part * 5;
+    else if(0.200 < part && part <= 0.800) return 1.;
+    else if(0.800 < part && part <= 1.000) return 1. - (part - 0.8) / (1.0 - 0.8);
+    else return 0.0;
+}
+double blue1(int range, int j)
+{
+    double part = j / double(range);
+    if(0.000 <= part && part <= 0.2) return 1.;
+    else if(0.200 < part && part <= 0.500) return 1 - (part - 0.2) / (0.5 - 0.2);
+    else if(0.500 < part && part <= 1.000) return 0.;
+    else return 0.0;
+}
+
+//jet
 double red(int range, int j, double V, double S)
 {
-    if(0.000 <= j/double(range) && j/double(range) <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(j/double(range))*3.;
-    if(0.167 < j/double(range) && j/double(range) <= 0.400) return V*(1.-S);
-    if(0.400 < j/double(range) && j/double(range) <= 0.500) return V*(1.-S) + V*S*(j/double(range)-0.400)/(0.500-0.400)/2.;
-    if(0.500 < j/double(range) && j/double(range) <= 0.600) return V*(1.-S) + V*S*(j/double(range)-0.400)/(0.500-0.400)/2.;
-    if(0.600 < j/double(range) && j/double(range) <= 0.833) return V;
-    if(0.833 < j/double(range) && j/double(range) <= 1.000) return V - V*S*(j/double(range)-0.833)/(1.000-0.833)/2.;
-    return 0.0;
+    double part = j / double(range);
+    if(0.000 <= part && part <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(part)*3.;
+    else if(0.167 < part && part <= 0.400) return V*(1.-S);
+    else if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
+    else if(0.500 < part && part <= 0.600) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
+    else if(0.600 < part && part <= 0.833) return V;
+    else if(0.833 < part && part <= 1.000) return V - V*S*(part-0.833)/(1.000-0.833)/2.;
+    else return 0.0;
 }
 double green(int range, int j, double V, double S)
 {
+    double part = j / double(range);
     double hlp = 0.95;
-    if(0.000 <= j/double(range) && j/double(range) <= 0.167) return V*(1.-S);
-    if(0.167 < j/double(range) && j/double(range) <= 0.400) return V*(1.-S) + V*S*hlp*(j/double(range)-0.167)/(0.400-0.167);
-    if(0.400 < j/double(range) && j/double(range) <= 0.500) return V-V*S*(1.-hlp);
-    if(0.500 < j/double(range) && j/double(range) <= 0.600) return V-V*S*(1.-hlp);
-    if(0.600 < j/double(range) && j/double(range) <= 0.833) return V-V*S*(1.-hlp) - V*S*hlp*(j/double(range)-0.600)/(0.833-0.600);
-    if(0.833 < j/double(range) && j/double(range) <= 1.000) return V*(1.-S);
-    return 0.0;
+    if(0.000 <= part && part <= 0.167) return V*(1.-S);
+    else if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
+    else if(0.400 < part && part <= 0.500) return V-V*S*(1.-hlp);
+    else if(0.500 < part && part <= 0.600) return V-V*S*(1.-hlp);
+    else if(0.600 < part && part <= 0.833) return V-V*S*(1.-hlp) - V*S*hlp*(part-0.600)/(0.833-0.600);
+    else if(0.833 < part && part <= 1.000) return V*(1.-S);
+    else return 0.0;
 }
 double blue(int range, int j, double V, double S)
 {
-    if(0.000 <= j/double(range) && j/double(range) <= 0.167) return V -V*S/2. + V*S*(j/double(range))/(0.167-0.000)/2.;
-    if(0.167 < j/double(range) && j/double(range) <= 0.400) return V;
-    if(0.400 < j/double(range) && j/double(range) <= 0.500) return V - V*S*(j/double(range)-0.400)/(0.500-0.400)/2.;
-    if(0.500 < j/double(range) && j/double(range) <= 0.600) return V - V*S*(j/double(range)-0.400)/(0.500-0.400)/2.;
-    if(0.600 < j/double(range) && j/double(range) <= 0.833) return V*(1.-S);
-    if(0.833 < j/double(range) && j/double(range) <= 1.000) return V*(1.-S);
-    return 0.0;
+    double part = j / double(range);
+    if(0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
+    else if(0.167 < part && part <= 0.400) return V;
+    else if(0.400 < part && part <= 0.500) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
+    else if(0.500 < part && part <= 0.600) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
+    else if(0.600 < part && part <= 0.833) return V*(1.-S);
+    else if(0.833 < part && part <= 1.000) return V*(1.-S);
+    else return 0.0;
 }
 
-QColor hue(int range, int j, double V, double S)
+QColor hueJet(int range, int j, double V, double S)
 {
+//    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
     return QColor(255.*red(range,j,V,S), 255.*green(range,j,V,S), 255.*blue(range,j,V,S));
 }
+
 
 
 QColor qcolor(int range, int j)
@@ -1365,7 +1502,7 @@ QColor qcolor(int range, int j)
     double offB = range*(0.0 + 0.15);
 
     return QColor(255*exp(-(j-offR)*(j-offR)/(2*sigmaR*sigmaR)), 255*exp(-(j-offG)*(j-offG)/(2*sigmaG*sigmaG)), 255*exp((-(j-offB)*(j-offB)/(2*sigmaB*sigmaB))));
-//    return QColor(255*red(j/double(range)),255* green(j/double(range)), 255*blue(j/double(range)));
+//    return QColor(255*red(part),255* green(part), 255*blue(part));
 }
 
 
@@ -1398,8 +1535,8 @@ void drawColorScale(QString filePath, int range)
 
     for(int i=0; i<range; ++i)
     {
-        painter->setBrush(QBrush(hue(range, i, 0.95, 1.0)));
-        painter->setPen(hue(range, i, 0.95, 1.0));
+        painter->setBrush(QBrush(hueJet(range, i, 0.95, 1.0)));
+        painter->setPen(hueJet(range, i, 0.95, 1.0));
         painter->drawRect(i*pic.width()/double(range), 0, (i+1)*pic.width()/double(range), 30);
     }
     for(int i=0; i<range; ++i)
@@ -1437,16 +1574,27 @@ void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax
 
     input = new double [NumOfSlices];
 
-    for(int i=0; i<NumOfSlices; ++i)
+
+    //read the appropriate channel
+    for(int i = 0; i < NumOfSlices; ++i)
     {
-        for(int j=0; j<ns; ++j)
+        for(int j = 0; j < ns; ++j)
         {
-            if(j!=channelNumber) fscanf(file, "%lf", &helpDouble);
-            else fscanf(file, "%lf", &input[i]);
+            if(j!=channelNumber)
+            {
+                fscanf(file, "%*lf");
+            }
+            else
+            {
+                fscanf(file, "%lf", &input[i]);
+//                cout << input[i] << endl;
+            }
         }
     }
-//    fclose(file);
-    QPixmap pic(150*NumOfSlices/250,800); //125 pixels/sec generality
+
+
+
+    QPixmap pic(NumOfSlices,800);
     pic.fill();
     QPainter * painter = new QPainter;
     painter->begin(&pic);
@@ -1455,6 +1603,7 @@ void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax
     double timeStep = 0.;
 
     int numberOfFreqs = int(log(freqMin/freqMax) / log(freqStep)) + 1;
+//    cout << "numberOfFreqs = " << numberOfFreqs << endl;
     double ** temp = new double * [numberOfFreqs];
     for(int i = 0; i < numberOfFreqs; ++i)
     {
@@ -1464,30 +1613,34 @@ void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax
             temp[i][j] = 0.;
         }
     }
-    double tempR=0., tempI=0.;
-    int i=0;
-    int jMin = 0, jMax = 0;
+
+
+    double tempR = 0., tempI = 0.;
+    int i = 0;
+    int kMin = 0, kMax = 0;
 
     int range = 256;
     int numb;
 
-    int j=0;
+    int j = 0;
 
     for(double freq = freqMax; freq > freqMin; freq *= freqStep)
     {
-        timeStep = 1./freq * 250./1.5;  //250 Hz
+        timeStep = 1./freq * 250./1.5;  //in time-bins 250 Hz ////////////////////////////////////////////////////////////////////////////////////////////////
         i = 0;
-        while(i<NumOfSlices)
+        while(i < NumOfSlices)
         {
             temp[j][i] = 0.;
             tempR = 0.;
             tempI = 0.;
-            jMin = max(0, int(i - sqrt(5*pot*pot*250.*250./4/pi/pi/freq/freq)));
-            jMax = min(int(i + sqrt(5*pot*pot*250.*250./4/pi/pi/freq/freq)), NumOfSlices);
-            for(int j = jMin; j < jMax; ++j)
+            //set left & right limits of counting - 5 variances
+            kMin = max(0, int(i - sqrt(5 * pow(pot, 2) / pow((freq*2.*pi/250.), 2))));
+            kMax = min(NumOfSlices, int(i + sqrt(5 * pow(pot, 2) / pow((freq*2.*pi/250.), 2)))); //i - kMin ~= kMax - i = 5 variances of morlet
+
+            for(int k = kMin; k < kMax; ++k)
             {
-                tempI += (morletSin(freq, i, pot, j) * input[j]);
-                tempR += (morletCos(freq, i, pot, j) * input[j]);
+                tempI += (morletSin(freq, i, pot, k) * input[k]);
+                tempR += (morletCos(freq, i, pot, k) * input[k]);
             }
             temp[j][i] = tempI*tempI + tempR*tempR;
             i += timeStep;
@@ -1496,27 +1649,35 @@ void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax
     }
 
     helpDouble = 0.;
-    for(int j = 0; j < numberOfFreqs; ++j)
+    j = 0;
+    for(double freq = freqMax; freq > freqMin; freq *= freqStep)
     {
-        for(int i = 0; i < NumOfSlices; ++i)
+        timeStep = 1./freq * 250./1.5;
+        for(int i = 0; i < NumOfSlices; i += timeStep)
         {
             helpDouble = fmax (helpDouble, temp[j][i]);
+//            cout << temp[j][i] << endl;
         }
+        ++j;
     }
+
+//    cout << "max = " << helpDouble << endl;
 
 
     j = 0;
-    for(double freq = freqMax; freq > freqMin; freq*=freqStep)
+    for(double freq = freqMax; freq > freqMin; freq *= freqStep)
     {
+        timeStep = 1./freq * 250./1.5;  //in time-bins 250 Hz ////////////////////////////////////////////////////////////////////////////////////////////////
         i = 0;
         while(i < NumOfSlices)
         {
-             numb = fmin(floor(temp[j][i]*range/double(helpDouble)), double(range));
+             numb = fmin( floor(temp[j][i]*range / double(helpDouble)), double(range));
+             numb = pow(numb/double(range), 0.8) * range;
 
-             painter->setBrush(QBrush(hue(range, numb)));
-             painter->setPen(hue(range, numb));
+             painter->setBrush(QBrush(hueJet(range, numb)));
+             painter->setPen(hueJet(range, numb));
 
-             painter->drawRect(i*pic.width()/NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep)/(freqMax-freqMin)), timeStep*pic.width()/NumOfSlices, int(pic.height()*(- 0.5*freq*(1./freqStep - freqStep))/(freqMax-freqMin)));
+             painter->drawRect( i*pic.width() / NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep) / (freqMax-freqMin) ), timeStep*pic.width()/NumOfSlices, int(pic.height()*( - 0.5*freq*(1./freqStep - freqStep)) / (freqMax-freqMin)));
              i += timeStep;
         }
         ++j;
@@ -1667,8 +1828,8 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
         i=0;
          while(i<NumOfSlices)
         {
-             painter->setBrush(QBrush(hue(range, (temp[i] + pi)/2./pi * range, 0.95, 1.)));
-             painter->setPen(hue(range, (temp[i] + pi)/2./pi * range, 0.95, 1.));
+             painter->setBrush(QBrush(hueJet(range, (temp[i] + pi)/2./pi * range, 0.95, 1.)));
+             painter->setPen(hueJet(range, (temp[i] + pi)/2./pi * range, 0.95, 1.));
 
              painter->drawRect(i*pic.width()/NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep)/(freqMax-freqMin)), timeStep*pic.width()/NumOfSlices,     int(pic.height()*(- 0.5*freq*(1./freqStep - freqStep))/(freqMax-freqMin)));
              i+=timeStep;
@@ -1954,7 +2115,7 @@ void calcSpectre(double ** const inData, int leng, int const ns, double *** data
             (*fftLength) = leng;
         }
     }
-    cout << (*fftLength) << endl;
+//    cout << (*fftLength) << endl;
 
     matrixCreate(dataFFT, ns, (*fftLength));
 
@@ -2201,17 +2362,24 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
     (*NumberOfVectors) = num;
 }
 
-void readICAMatrix(QString path, double *** matrixA, int ns)
+bool readICAMatrix(QString path, double *** matrixA, int ns)
 {
-    FILE * map = fopen(path.toStdString().c_str(), "r");
+    ifstream inStream;
+    inStream.open(path.toStdString().c_str());
+    if(!inStream.is_open())
+    {
+        cout << "cannot open maps File:" << endl << path.toStdString() << endl;
+        return 0;
+    }
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ns; ++j)
         {
-            fscanf(map, "%lf", &((*matrixA)[i][j]));
+            inStream >> (*matrixA)[i][j];
         }
     }
-    fclose(map);
+    inStream.close();
+    return 1;
 }
 
 
@@ -2429,7 +2597,8 @@ void matrixPrint(double ** const mat, int const i, int const j)
 }
 
 
-double matrixInnerMaxCorrelation(double ** const inMatrix, int const numRows, int const numCols)
+
+double matrixInnerMaxCorrelation(double ** const inMatrix, int const numRows, int const numCols, double (*corrFunc)(double * const arr1, double * const arr2, int length, int t))
 {
     double res = 0.;
     double temp;
@@ -2441,7 +2610,7 @@ double matrixInnerMaxCorrelation(double ** const inMatrix, int const numRows, in
         for(int j = 0; j < numCols; ++j)
         {
             if(j==i) continue;
-            temp = correlationFromZero(tempMat[i], tempMat[j], numRows); ///////////////////////////////////
+            temp = corrFunc(tempMat[i], tempMat[j], numRows, 0); ///////////////////////////////////
             if(fabs(temp) > fabs(res))
             {
                 res = temp;
@@ -2523,6 +2692,10 @@ void countRCP(QString filePath, QString picPath, double * outMean, double * outS
     ifstream inStream;
     double * arr = new double [250];
     inStream.open(filePath.toStdString().c_str());
+    if(!inStream.is_open())
+    {
+        cout << "cant open rcp File: " << filePath.toStdString() << endl;
+    }
     while(!inStream.eof())
     {
         inStream >> arr[counter++];

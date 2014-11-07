@@ -88,12 +88,15 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->learnRateBox->setSingleStep(0.05);
     ui->epochSpinBox->setMaximum(1000);
     ui->epochSpinBox->setSingleStep(50);
-    ui->epochSpinBox->setValue(250);
+    ui->epochSpinBox->setValue(300);
     ui->numOfPairsBox->setMaximum(100);
-    ui->numOfPairsBox->setValue(50);
+
+    ui->numOfPairsBox->setValue(50); /////////////////////////////
+
     ui->rdcCoeffSpinBox->setMaximum(100);
-    ui->rdcCoeffSpinBox->setMinimum(0.01);
-    ui->rdcCoeffSpinBox->setValue(10);
+    ui->rdcCoeffSpinBox->setDecimals(3);
+    ui->rdcCoeffSpinBox->setMinimum(0.001);
+    ui->rdcCoeffSpinBox->setValue(4);
 
 
     ui->pcaNumberSpinBox->setMinimum(2);
@@ -339,10 +342,10 @@ void Net::autoClassification(QString spectraDir)
     {
         for(int j = 0; j < ns; ++j)
         {
-//            tempRandomMatrix[i][j] = (i == j); //identity matrix
+            tempRandomMatrix[i][j] = (i == j); //identity matrix
 //            tempRandomMatrix[i][j] = (i == j) * (5 + rand()%36) / 10.; //random multiplication in each channel
 //            tempRandomMatrix[i][j] = (5. + rand()%36) / 50.;
-            tempRandomMatrix[i][j] = (i == j) * (1. + (rand()%8 == 0) * (5. + rand()%35) / 5.);
+//            tempRandomMatrix[i][j] = (i == j) * (1. + (rand()%8 == 0) * (5. + rand()%35) / 5.);
         }
     }
 
@@ -373,6 +376,7 @@ void Net::autoClassification(QString spectraDir)
     }
 
     //adjust reduce coefficient
+    mkPa->setRdcCoeff(this->ui->rdcCoeffSpinBox->value());
     while(1)
     {
         mkPa->makePaSlot();
@@ -380,7 +384,7 @@ void Net::autoClassification(QString spectraDir)
         helpString = "1" + typeString;
         PaIntoMatrixByName(helpString);
         LearnNet();
-        if(epoch > 150 || epoch < 80)
+        if(epoch > 150 || epoch < 90)
         {
             mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(epoch / 120.));
         }
@@ -391,8 +395,6 @@ void Net::autoClassification(QString spectraDir)
             break;
         }
     }
-
-//    cout << typeString.toStdString() << endl;
 
     for(int i = 0; i < numOfPairs; ++i)
     {
@@ -442,7 +444,6 @@ void Net::autoClassification(QString spectraDir)
     delete mkPa;
     autoFlag = tempBool;
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
-
 
 }
 
@@ -2095,8 +2096,8 @@ void Net::PaIntoMatrixByName(QString fileName)
     }
     paFileBC = helpString;
     readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+    /*
     double * tempVector = new double [ns*spLength];
-
 
     for(int k = 0; k < NumberOfVectors; ++k)
     {
@@ -2119,7 +2120,8 @@ void Net::PaIntoMatrixByName(QString fileName)
     }
 
     delete []tempVector;
-//    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+*/
+
 }
 
 double HopfieldActivation(double x, double temp)
@@ -3676,11 +3678,8 @@ void Net::SVM()
 
 void Net::optimizeChannelsSet()
 {
-
     int tempItem;
     int tempIndex;
-    cout << "optimization started" << endl;
-
 
     //test
 //    tempItem = channelsSet[0];
@@ -3708,9 +3707,6 @@ void Net::optimizeChannelsSet()
 //    cout << "classified\t" << averageAccuracy << endl << endl;
 
 
-//    return;
-
-
 
     spLength = NetLength/ns;
     channelsSetExclude.clear();
@@ -3718,43 +3714,56 @@ void Net::optimizeChannelsSet()
     double tempAccuracy = averageAccuracy;
 
 
-    cout << "AverageAccuracy = " << averageAccuracy << endl;
+    cout << "Init Accuracy = " << averageAccuracy << endl;
     bool foundFlag = false;
 
-
+    channelsSet.clear();
+    for(int i = 0; i < 19; ++i)
+    {
+        channelsSet << i;
+    }
+    QList <int> neededChannels;
+    neededChannels.clear();
 
 
     while(1)
     {
 
         cout << endl << "optimization iteration" << endl;
-        tempIndex = -1;
+        foundFlag = false;
         NetLength = spLength * (NetLength/spLength - 1);
         dimensionality[0] = NetLength;
         cout << "Optimizing: NetLength = " << NetLength << endl;
         cout << "channelsSet.length() = " << channelsSet.length() << endl;
 
-        foundFlag = false;
 
 
+        tempIndex = -1;
         for(int i = tempIndex+1; i < channelsSet.length(); ++i)
         {
 
             tempItem = channelsSet[i];
-            channelsSet.remove(i);
+            if(neededChannels.contains(tempItem))
+            {
+                cout << "needed channel[" << i << "] = " << tempItem << endl;
+                continue;
+            }
+
+            channelsSet.removeAt(i);
             channelsSetExclude.push_back(tempItem);
 
             //try classify w/o tempitem
             autoClassificationSimple();
-            cout << "classified\t" << i << " " << averageAccuracy << endl << endl;
+            channelsSet.insert(i, tempItem);
+            channelsSetExclude.removeLast();
+
+            cout << "classified ch[" << i << "] = " << tempItem << "  accuracy = " << averageAccuracy << endl << endl;
 
 
-            if(averageAccuracy > tempAccuracy + 1.0)
+            if(averageAccuracy > tempAccuracy + 0.6)
             {
                 tempAccuracy = averageAccuracy;
                 tempIndex = i;
-                channelsSet.insert(i, tempItem);
-                channelsSetExclude.removeLast();
                 foundFlag = true;
                 break;
             }
@@ -3764,66 +3773,54 @@ void Net::optimizeChannelsSet()
                 tempIndex = i;
                 foundFlag = true;
             }
-            channelsSet.insert(i, tempItem);
-            channelsSetExclude.removeLast();
+            else if(averageAccuracy < tempAccuracy - 1.5)
+            {
+                neededChannels << tempItem;
+                cout << "new needed channel[" << i << "] = " << tempItem << endl;
+            }
 
         }
+
         if(foundFlag)
         {
-            cout << "removed channel "<< tempIndex << " " << coords::lbl[channelsSet[tempIndex]] << endl;
+            cout << "removed channel " << channelsSet[tempIndex] << endl;
             cout << "current accuracy " << tempAccuracy << endl;
-            channelsSetExclude.push_back(channelsSet.at(tempIndex));
-            channelsSet.remove(tempIndex);
-//            cout << "current set:" << "\n";
-//            for(int i = 0; i < channelsSet.length(); ++i)
-//            {
-//                cout << channelsSet[i] << "  ";
-//            }
-//            cout << "\n";
-//            for(int i = 0; i < channelsSet.length(); ++i)
-//            {
-//                cout << coords::lbl[channelsSet[i]] << "  ";
-//            }
-//            cout << endl;
+
+            channelsSetExclude.push_back(channelsSet[tempIndex]);
+            channelsSet.removeAt(tempIndex);
+
         }
         else
         {
-            cout << "optimal set:" << "\n";
-            for(int i = 0; i < channelsSet.length(); ++i)
-            {
-                cout << channelsSet[i] << "  ";
-            }
-            cout << "\n";
-            for(int i = 0; i < channelsSet.length(); ++i)
-            {
-                cout << coords::lbl[channelsSet[i]] << "  ";
-            }
-            cout << endl;
             NetLength = spLength * (NetLength/spLength + 1);
             dimensionality[0] = NetLength;
-
             break;
         }
     }
-    helpString = "optimal set:\n";
+
+
+    helpString = dir->absolutePath() + "/optimalChannels.txt";
+    outStream.open(helpString.toStdString().c_str(), ios_base::app);
+
+    helpString = ExpName;
+    helpString += "\r\nNumOfChannels " + QString::number(channelsSet.length()) + "\n";
     for(int i = 0; i < channelsSet.length(); ++i)
     {
-        helpString += QString::number(channelsSet[i]) + "  ";
+        helpString += QString::number(channelsSet[i] + 1) + "\t"; //count from 1
     }
     helpString += "\n";
     for(int i = 0; i < channelsSet.length(); ++i)
     {
-        helpString += QString(coords::lbl[channelsSet[i]]) + "  ";
+        helpString += QString(coords::lbl[channelsSet[i]]) + "\t";
     }
     helpString += "\n";
 
     autoFlag = 0;
 
-    QMessageBox::information((QWidget * )this, tr("Optimization results"), helpString, QMessageBox::Ok);
+    outStream << helpString.toStdString() << endl;
+    outStream.close();
+//    QMessageBox::information((QWidget * )this, tr("Optimization results"), helpString, QMessageBox::Ok);
 }
-
-
-
 
 void Net::rcpSlot()
 {

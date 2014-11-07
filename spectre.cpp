@@ -484,8 +484,15 @@ void Spectre::psaSlot()
 
         //draw axes
         paint->setPen("black");
-        paint->drawLine(QPointF(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2]), QPointF(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2] - coords::scale * paint->device()->height())); //250 - length of axes generality
-        paint->drawLine(QPointF(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2]), QPointF(paint->device()->width() * coords::x[c2] + coords::scale * paint->device()->width(), paint->device()->height() * coords::y[c2])); //250 - length of axes generality
+        paint->drawLine(QPointF(paint->device()->width() * coords::x[c2],
+                                paint->device()->height() * coords::y[c2]),
+                        QPointF(paint->device()->width() * coords::x[c2],
+                                paint->device()->height() * coords::y[c2] - coords::scale * paint->device()->height())); //250 - length of axes generality
+
+        paint->drawLine(QPointF(paint->device()->width() * coords::x[c2],
+                                paint->device()->height() * coords::y[c2]),
+                        QPointF(paint->device()->width() * coords::x[c2] + coords::scale * paint->device()->width(),
+                                paint->device()->height() * coords::y[c2])); //250 - length of axes generality
 
         //draw Herzes
         paint->setFont(QFont("Helvitica", int(8*(paint->device()->height()/1600.))));

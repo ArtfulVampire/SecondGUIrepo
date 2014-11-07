@@ -49,6 +49,10 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
 //    ui->lineEdit_4->setText("8"); //sqrt
 //    ui->lineEdit_4->setText("20"); //no sqrt
     ui->rdcCoeffBox->setValue(20);
+    ui->rdcCoeffBox->setDecimals(3);
+    ui->rdcCoeffBox->setMinimum(1e-3);
+    ui->rdcCoeffBox->setMaximum(1e3);
+
 
 
     helpString = QDir::toNativeSeparators(spectraPath);
@@ -65,7 +69,7 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     dir = new QDir();
     dir->cd(spectraPath);
     dir->cdUp();
-    if(spStep == 250./1024.) dir->cdUp(); //generality
+    if(spStep == 250./1024.) dir->cdUp(); //generality for windows
 
 //    browser = new QFileDialog();
 //    browser->setDirectory(QDir::toNativeSeparators(dir->absolutePath()));
@@ -171,10 +175,10 @@ void MakePa::mwTest()
 
 
     int * n = new int[2];
-    n[0]=lst[0].length();
-    n[1]=lst[1].length();
+    n[0] = lst[0].length();
+    n[1] = lst[1].length();
 
-    double *** spectre = new double ** [2];
+    double *** spectre = new double ** [2]; ///////////////////////////////////////////////change i-j
     for(int i=0; i<2; ++i)
     {
         spectre[i] = new double * [n[i]];
@@ -215,16 +219,6 @@ void MakePa::mwTest()
     double *U = new double [ns*spLength];
 
     int numOfZero = 0;
-
-//    cout<<n[0]<<"\t"<<n[1]<<endl;
-//    for(int i = 0; i < n[0]; ++i)
-//    {
-//        cout<<lst[0][i].toStdString()<<endl;
-//    }
-//    for(int i = 0; i < n[1]; ++i)
-//    {
-//        cout<<lst[1][i].toStdString()<<endl;
-//    }
 
     //for every spectra-bin
     for(int j=0; j<ns*spLength; ++j)
@@ -299,7 +293,10 @@ void MakePa::mwTest()
 
 //        if(j%200==0) cout<<"j="<<j<<"  U="<<U[j]<<endl;
 
-        if(fabs((U[j]-average)/double(dispersion))>quantile((1.00+ui->alphaSpinBox->value())/2.)) numOfDiff+=1;
+        if(fabs((U[j]-average)/double(dispersion)) > quantile( (1. + ui->alphaSpinBox->value()) / 2.))
+        {
+            numOfDiff+=1;
+        }
     }
     cout<<"num of different freq-bins "<<numOfDiff<<endl;
 
@@ -1372,13 +1369,13 @@ void MakePa::makePaSlot()
 
     //all.pa
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("all").append(typeString));
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "all" + typeString);
 
 
     FILE * paAll=fopen(helpString.toStdString().c_str(), "w");   ////////separator
     if(paAll==NULL)
     {
-        cout<<helpString.toStdString().c_str() << endl << " all.pa==NULL" << endl;
+        cout << "cannot open all.pa to write:" << endl << helpString.toStdString() << endl;
         return;
     }
 
