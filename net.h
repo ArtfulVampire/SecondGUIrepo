@@ -110,6 +110,7 @@ private:
     char * helpCharArr;
     ifstream inStream;
     ofstream outStream;
+    double * classCount;
 
 //    double * tempRandoms;
     double ** tempRandomMatrix; //test linear transform

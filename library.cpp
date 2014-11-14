@@ -560,7 +560,9 @@ bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p)
         U = double(n[1]*n[0] + n[1]*(n[1]+1)/2. - (sumAll - sum0));
     }
 
-    cout<<"U = "<<U<<endl;
+    delete []n;
+    matrixDelete(&array, 2);
+
     if(abs((U-average)/double(dispersion)) > quantile((1.00 + (1-p))/2.))
     {
 //        cout<<"different"<<endl;
@@ -572,6 +574,98 @@ bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p)
 //        cout<<"not different"<<endl;
         return false;
     }
+}
+
+int typeOfFileName(QString fileName)
+{
+    if(fileName.contains("_241")) return 0;
+    else if(fileName.contains("_247")) return 1;
+    else if(fileName.contains("_254")) return 2;
+    else return -1;
+}
+
+
+void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength, int NumOfClasses, double coeff, QString outFile)
+{
+    QTime myTime;
+    myTime.start();
+    ofstream outStream(outFile.toStdString().c_str());
+    if(!outStream.good())
+    {
+        cout << "bad out pa-file" << endl;
+        return;
+    }
+    double ** data4;
+    matrixCreate(&data4, ns, spLength);
+
+    int type;
+    QString helpString;
+
+    for(int i = 0; i < fileNames.length(); ++i)
+    {
+        type = typeOfFileName(fileNames[i]);
+        helpString = spectraDir + QDir::separator() + fileNames[i];
+        readSpectraFile(helpString, &data4, ns, spLength);
+        outStream << fileNames[i].toStdString() << endl;
+
+        for(int l = 0; l < ns; ++l)
+        {
+            for(int k = 0; k < spLength; ++k)
+            {
+                outStream << doubleRound(data4[l][k]/coeff, 5) << '\t';
+                if(k%10 == 9)
+                {
+                    outStream << '\n';
+                }
+            }
+            outStream << '\n';
+        }
+
+
+        for(int k = 0; k < NumOfClasses; ++k)
+        {
+
+            outStream << (k==type) << ' ';
+        }
+
+        outStream << "\n\n";
+        outStream.flush();
+    }
+    outStream.close();
+    matrixDelete(&data4, ns);
+    cout << "makePaFile: time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
+}
+
+void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int spLength, double coeff, double *** outMatrix)
+{
+//    QTime myTime;
+//    myTime.start();
+
+    double ** data4;
+    matrixCreate(&data4, ns, spLength);
+
+    int type;
+    QString helpString;
+
+    for(int i = 0; i < fileNames.length(); ++i)
+    {
+        type = typeOfFileName(fileNames[i]);
+        helpString = spectraDir + QDir::separator() + fileNames[i];
+        readSpectraFile(helpString, &data4, ns, spLength);
+
+        for(int l = 0; l < ns; ++l)
+        {
+            for(int k = 0; k < spLength; ++k)
+            {
+                (*outMatrix)[i][l*spLength + k] = data4[l][k]/coeff;
+            }
+        }
+        (*outMatrix)[i][ns*spLength] = 1.;
+        (*outMatrix)[i][ns*spLength + 1] = type;
+
+    }
+    matrixDelete(&data4, ns);
+//    cout << "makeMatrixFromFiles: time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
 }
 
 void drawRCP(double * values, int length)
@@ -794,6 +888,38 @@ void matrixProduct(double ** const inMat1, double ** const inMat2, double *** ou
     }
 }
 
+void matrixProduct(double * const vect, double ** const mat, double ** outVect, int dimVect, int dimMat) //outVect(dimMat) = vect(dimVect) * mat(dimVect * dimMat)
+{
+    for(int i = 0; i < dimMat; ++i)
+    {
+        (*outVect)[i] = 0.;
+        for(int j = 0; j < dimVect; ++j)
+        {
+            (*outVect)[i] += vect[j] * mat[j][i];
+        }
+    }
+}
+void matrixProduct(double ** const mat, double * const vect, double ** outVect, int dimVect, int dimMat) //outVect(dimMat) = mat(dimMat*dimVect) * vect(dimVect)
+{
+    for(int i = 0; i < dimMat; ++i)
+    {
+        (*outVect)[i] = 0.;
+        for(int j = 0; j < dimVect; ++j)
+        {
+            (*outVect)[i] += mat[i][j] * vect[j];
+        }
+    }
+}
+void matrixProduct(double * const vect1, double * const vect2, int dim, double * out)
+{
+    (*out) = 0.;
+    for(int j = 0; j < dim; ++j)
+    {
+        (*out) += vect1[j] * vect2[j];
+    }
+
+}
+
 
 
 double distance(double * const vec1, double * const vec2, const int dim)
@@ -811,6 +937,66 @@ double distance(double * const vec1, double * const vec2, const int dim)
 double distance(double const x1, double const y1, double const x2, double const y2)
 {
     return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+}
+
+void matrixMahCount(double ** const matrix, int number, int dimension, double *** outMat, double ** meanVect) //matrix(number * dimension)
+{
+    double ** newMat;
+    matrixCreate(&newMat, dimension, number);
+    matrixTranspose(matrix, number, dimension, &newMat);
+
+    for(int i = 0; i < dimension; ++i)
+    {
+        for(int j = 0; j < dimension; ++j)
+        {
+            (*outMat)[i][j] = correlation(newMat[i], newMat[j], number);
+        }
+    }
+
+    for(int i = 0; i < dimension; ++i)
+    {
+        (*meanVect)[i] = 0.;
+        for(int j = 0; j < number; ++j)
+        {
+            (*meanVect)[i] += newMat[i][j];
+        }
+        (*meanVect)[i] /= number;
+    }
+    matrixDelete(&newMat, dimension);
+
+}
+
+double distanceMah(double * const vect, double ** const covMatrix, double * const groupMean, int dimension)
+{
+    double * tempVec = new double [dimension];
+    double * difVec = new double [dimension];
+    for(int i = 0; i < dimension; ++i)
+    {
+        difVec[i] = groupMean[i] - vect[i];
+    }
+
+    double res;
+    matrixProduct(difVec, covMatrix, &tempVec, dimension, dimension);
+    matrixProduct(tempVec, difVec, dimension, &res);
+
+    delete []tempVec;
+    delete []difVec;
+    return res;
+}
+
+double distanceMah(double * const vect, double ** const group, int dimension, int number) //group[number][dimension]
+{
+    double ** covMatrix;
+    matrixCreate(&covMatrix, dimension, dimension);
+    double * meanGroup = new double [dimension];
+
+    matrixMahCount(group, number, dimension, &covMatrix, &meanGroup);
+    matrixInvert(&covMatrix, dimension);
+
+    double res = distanceMah(vect, covMatrix, meanGroup, dimension);
+    matrixDelete(&covMatrix, dimension);
+    delete []meanGroup;
+    return res;
 }
 
 QString rightNumber(int &input, int N)
@@ -1950,16 +2136,14 @@ void readSpectraFile(QString filePath, double *** outData, int ns, int spLength)
     ifstream file(filePath.toStdString().c_str());
     if(!file.good())
     {
-        cout << "bad file" << endl;
+        cout << "bad input spectra file:\n" << filePath.toStdString() << endl;
         return;
     }
-    (*outData) = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-        (*outData)[i] = new double [spLength];
         for(int j = 0; j < spLength; ++j)
         {
-            file >> (*outData[i][j]);
+            file >> (*outData)[i][j];
         }
     }
     file.close();
@@ -2272,7 +2456,7 @@ void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int co
     delete []spectre;
 }
 
-void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName)
+void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double ** classCount)
 {
     ifstream paSrc;
     paSrc.open(paFile.toStdString().c_str());
@@ -2284,7 +2468,7 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
         cout << "good:\t" << paSrc.good() << endl;
         cout << "bad:\t" << paSrc.bad() << endl;
         cout << "fail:\t" << paSrc.fail() << endl;
-        cout << errno << endl;
+        cout << "errno = " << errno << endl;
 
         return;
     }
@@ -2317,10 +2501,13 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
     }
 
 //    cout << "readPaFile: mem ok" << endl;
+    for(int i = 0; i < NumOfClasses; ++i)
+    {
+        (*classCount)[i] = 0.;
+    }
     while(!paSrc.eof())
     {
         paSrc.getline((*FileName)[num], 64);
-//        cout << (*FileName)[num] << endl;
 
         for(int i = 0; i < NetLength; ++i)
         {
@@ -2344,6 +2531,7 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
 
         (*matrix)[num][NetLength] = 1.; //bias
         (*matrix)[num][NetLength + 1] = 0. * g[0] + 1. * g[1] + 2. * g[2]; //type
+        (*classCount)[int((*matrix)[num][NetLength + 1])] += 1.; //set number of vectors of each class
 
         if((*matrix)[num][NetLength + 1]  != 0. && (*matrix)[num][NetLength + 1]  != 1. && (*matrix)[num][NetLength + 1]  != 2. && (*matrix)[num][NetLength + 1]  != 1.5)
         {
@@ -2574,6 +2762,15 @@ void matrixCreate(double *** matrix, int const i, int const j)
 }
 
 void matrixDelete(double *** matrix, int const i)
+{
+    for(int k = 0; k < i; ++k)
+    {
+        delete [](*matrix)[k];
+    }
+    delete [](*matrix);
+}
+
+void matrixDelete(int *** matrix, int const i)
 {
     for(int k = 0; k < i; ++k)
     {

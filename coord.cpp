@@ -12,6 +12,9 @@ namespace coords
 
 namespace defaults
 {
+
+    const double frequency = 250.;
+    const int genNs = 19;
 //    //Atanov
     const QString dataFolder = "/media/Files/Data";
     const int fftLength = 4096;

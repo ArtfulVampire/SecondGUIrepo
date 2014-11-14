@@ -86,6 +86,9 @@ void splitZeros(double *** inData, int ns, int length, int * outLength);
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 
 bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
+int typeOfFileName(QString fileName);
+void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength, int NumOfClasses, double coeff, QString outFile);
+void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int spLength, double coeff, double *** outMatrix);
 
 void drawRCP(double *values, int length);
 void countRCP(QString filename, QString picPath = "", double *outMean = NULL, double *outSigma = NULL);
@@ -94,10 +97,10 @@ void svd(double ** inData, int dim, int length, double *** eigenVects, double **
 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
-void readSpectraFile(QString filePath, double ***outData, int ns, int spLength);
+void readSpectraFile(QString filePath, double *** outData, int ns, int spLength);
 void readSpectraFileLine(QString filePath, double ** outData, int ns, int spLength);
 void readFileInLine(QString filePath, double ** outData, int len);
-void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName);
+void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double **classCount);
 bool readICAMatrix(QString path, double *** matrixA, int ns);
 void writeICAMatrix(QString path, double ** matrixA, const int ns);
 
@@ -114,8 +117,16 @@ void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int co
 
 double distance(double * const vec1, double * const vec2, int const dim);
 double distance(double const x1, double const y1, double const x2, double const y2);
+double distanceMah(double * const vect, double ** const covMatrix, double * const groupMean, int dimension);
+double distanceMah(double * const vect, double ** const group, int dimension, int number);
+double distanceMah(double ** const group1, double ** const group2, int dimension, int number1, int number2);
+void matrixMahCount(double ** const matrix, int number, int dimension, double *** outMat, double **meanVect);
 void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const dimH, int const dimL);  //matrix product: out = A(H*H) * B(H*L)
-void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const numRows1, int const numCols2, int const numCols1Rows2);  //matrix product: out = A(H*H) * B(H*L)
+void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const numRows1, int const numCols2, int const numCols1Rows2);  //matrix product: out = A(K*H) * B(H*L)
+void matrixProduct(double * const vect, double ** const mat, double ** outVect, int dimVect, int dimMat); //outVect = vect * mat
+void matrixProduct(double ** const mat, double * const vect, double ** outVect, int dimVect, int dimMat); //outVect = mat * vect
+void matrixProduct(double * const vect1, double * const vect2, int dim, double * out);
+
 void matrixTranspose(double ** const inMat, int const numRows, int const numCols, double *** outMat);
 void matrixTranspose(double *** inMat, int const numRowsCols);
 void matrixCopy(double ** const inMat, double *** outMat, int const dimH, int const dimL);
@@ -134,6 +145,7 @@ void matrixCorrelations(double ** const inMat1, double ** const inMat2, int cons
 double ** matrixCreate(int i, int j);
 void matrixCreate(double *** matrix, int i, int j);
 void matrixDelete(double *** matrix, int i);
+void matrixDelete(int *** matrix, int i);
 void matrixPrint(double ** const mat, int i, int j);
 
 

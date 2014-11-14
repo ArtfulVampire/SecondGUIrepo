@@ -47,7 +47,7 @@ public:
 
 public slots:
     //other widgets
-    void countSpectra();
+    void countSpectraShow();
     void cutShow();
     void makeShow();
     void makePaShow();
@@ -66,9 +66,9 @@ public slots:
     //in-window calculations, substantional actions
     //files
     void sliceAll();
-    void reduceChannels();
+    void reduceChannelsSlot();
     void drawRealisations();
-    void setEdfFile();
+    void setEdfFileSlot();
     void cleanDirs();
     void sliceWindFromReal();
     void avTime();
@@ -118,7 +118,7 @@ public:
 
     void visualisation();
     void kernelest(const QString &str);
-    void writeEdf(QString inFilePath, double ** components, QString outFilePath, int numSlices);
+    void writeEdf(QString inFilePath, double ** components, QString outFilePath, int numSlices, QList<int> chanList = QList<int>());
     void sliceOneByOne();
     void sliceOneByOneNew(int numChanWrite);
     void drawMap(double ** matrixA, int num);
@@ -138,7 +138,6 @@ public:
 private:
     Ui::MainWindow *ui;
     QVariant var;
-    FILE *edf;
     QDir *dir;
     QString helpString;
     QString helpString2;

@@ -57,6 +57,8 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     helpCharArr = new char [200];
 
+    classCount = new double [3]; //generality in cfg
+
 
 //    tempRandoms = new double [19];
     matrixCreate(&tempRandomMatrix, 19, 19);
@@ -358,6 +360,7 @@ void Net::autoClassification(QString spectraDir)
 
     mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
     mkPa->setNumOfClasses(NumOfClasses);
+//    mkPa->setFold(3);
 
 
 
@@ -413,10 +416,11 @@ void Net::autoClassification(QString spectraDir)
             PaIntoMatrixByName(helpString);
 
             tall();
-            LearnNet();
-            helpString = "1" + typeString;
-            PaIntoMatrixByName(helpString);
-            tall();
+            //comment because of k-fold cross-validation
+//            LearnNet();
+//            helpString = "1" + typeString;
+//            PaIntoMatrixByName(helpString);
+//            tall();
         }
         else if(ui->leaveOneOutRadioButton->isChecked())
         {
@@ -907,7 +911,7 @@ void Net::tall()
 {
     Error = 0.;
     NumberOfErrors = new int[NumOfClasses];
-    double * NumOfVectorsOfClass = new double [3];
+    double * NumOfVectorsOfClass = new double [3]; // countClass
     for(int i = 0; i < NumOfClasses; ++i)
     {
         NumberOfErrors[i] = 0;
@@ -2060,7 +2064,7 @@ void Net::leaveOneOut()
 
 void Net::PaIntoMatrix()
 {
-    if(loadPAflag  != 1)
+    if(loadPAflag != 1)
     {
         QMessageBox::critical((QWidget * )this, tr("Warning"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
         return;
@@ -2076,7 +2080,7 @@ void Net::PaIntoMatrix()
 //    myTime.start();
     cout << "PaIntoMatrix: NetLength = " << NetLength << endl;
     cout << "PaIntoMatrix: ns = " << ns << endl;
-    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName, &classCount);
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 }
@@ -2084,7 +2088,7 @@ void Net::PaIntoMatrix()
 
 void Net::PaIntoMatrixByName(QString fileName)
 {
-    if(loadPAflag  != 1)
+    if(loadPAflag != 1)
     {
         QMessageBox::critical((QWidget * )this, tr("net.cpp: PaIntoMatrixByName"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
         return;
@@ -2095,7 +2099,7 @@ void Net::PaIntoMatrixByName(QString fileName)
         helpString += ".pa";
     }
     paFileBC = helpString;
-    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName);
+    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName, &classCount);
     /*
     double * tempVector = new double [ns*spLength];
 
@@ -2457,6 +2461,17 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
 //    cout << "LearnNet: dimensionality[0] = " << dimensionality[0] << endl;
 //    cout << "LearnNet: NetLength = " << NetLength << endl;
 
+    double * normCoeff = new double [NumOfClasses];
+    double helpMin = classCount[0];
+    for(int i = 1; i < NumOfClasses; ++i)
+    {
+        helpMin = min(helpMin, classCount[i]);
+    }
+    for(int i = 0; i < NumOfClasses; ++i)
+    {
+        normCoeff[i] = helpMin/classCount[i];
+    }
+
     while(currentError > critError && epoch < ui->epochSpinBox->value())
     {
         srand(time(NULL));
@@ -2540,8 +2555,8 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
                 {
                     for(int k = 0; k < dimensionality[i+1]; ++k)
                     {
-                        if(ui->backpropRadioButton->isChecked())    weight[i][j][k] -= learnRate * deltaWeights[i+1][k] * output[i][j];
-                        else if(ui->deltaRadioButton->isChecked())  weight[i][j][k] += learnRate * output[i][j] * ((type == k) - output[i+1][k]); // numOfLayers = 2 in this case
+                        if(ui->backpropRadioButton->isChecked())    weight[i][j][k] -= learnRate * normCoeff[type] * deltaWeights[i+1][k] * output[i][j];
+                        else if(ui->deltaRadioButton->isChecked())  weight[i][j][k] += learnRate * normCoeff[type] * output[i][j] * ((type == k) - output[i+1][k]); // numOfLayers = 2 in this case
                     }
                 }
             }
@@ -3270,7 +3285,7 @@ void Net::pca()
         }
 //        cout << "Part of dispersion explained = " << sum1 * 100./double(trace) << " %" << endl;
 
-        cout << k << "\t" << eigenValues[k] << "\tDisp expl = " << sum1 * 100./double(trace) << " %\ttimeElapsed = " << initTime.elapsed()/1000. << " seconds"  << endl;
+        cout << k+1 << "\t" << eigenValues[k] << "\tDisp = " << eigenValues[k]*100./trace << "\tTotal = " << sum1 * 100./trace << "\ttimeElapsed = " << initTime.elapsed()/1000. << " seconds"  << endl;
         for(int i = 0; i < NetLength; ++i)
         {
             eigenVectors[i][k] = tempA[i]; //1-normalized
@@ -3334,7 +3349,6 @@ void Net::pca()
         }
         fclose(pcaFile);
     }
-    cout << "some PC projections written" << endl;
 
 
     //count distances between different spectre-vectors (projections on first numOfPc PCs)

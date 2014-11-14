@@ -160,6 +160,7 @@ MainWindow::MainWindow() :
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
     ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
+    ui->reduceChannelsComboBox->setCurrentText("20");
     ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(ui->reduceChannelsComboBox->currentIndex()).toString());
 
 
@@ -227,9 +228,9 @@ MainWindow::MainWindow() :
 
 
 
-    QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(setEdfFile()));
+    QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(setEdfFileSlot()));
 
-    QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(countSpectra()));
+    QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(countSpectraShow()));
 
     QObject::connect(ui->Name, SIGNAL(returnPressed()), this, SLOT(setExpName()));
 
@@ -245,7 +246,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(netShow()));
 
-    QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannels()));
+    QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
 
     QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawRealisations()));
 
@@ -640,6 +641,101 @@ MainWindow::MainWindow() :
     }
 */
 
+//    setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
+//    MakePa * mkpa = new MakePa("/media/Files/Data/AAX/SpectraSmooth", "AAX", 19, left, right, spStep);
+//    mkpa->makePaSlot();
+
+//    return;
+    //mahalanobis test
+    dir->cd("/media/Files/Data/AAX/SpectraPCA");
+    QString pcaPath = "/media/Files/Data/AAX/SpectraPCA";
+
+//    dir->cd("/media/Files/Data/AAX/SpectraSmooth");
+//    QString pcaPath = "/media/Files/Data/AAX/SpectraSmooth";
+    QStringList vars;
+    vars.clear();
+    vars << "*_241" << "*_247" << "*_254";
+
+    for(spLength = 10; spLength < 112; spLength +=5)
+    {
+        ns = 1;
+        int dim = spLength * ns;
+
+        double ** matrix;
+        matrixCreate(&matrix, 200, dim+2);
+
+        double *** covMatrix = new double ** [3];
+        for(int i = 0; i < 3; ++i)
+        {
+            matrixCreate(&(covMatrix[i]), dim, dim);
+        }
+
+        double ** meanVect;
+        matrixCreate(&meanVect, 3, dim);
+
+        double * dists = new double [3];
+        double * currentVect = new double [dim];
+
+        QString tempItem;
+
+        int errors = 0;
+        for(int k = 0; k < vars.length(); ++k)
+        {
+            for(int h = 0; h < vars.length(); ++h)
+            {
+                if(h == k) continue;
+                //count covMatrices and meanVectors
+                lst = dir->entryList(QStringList(vars[h]), QDir::Files, QDir::Name);
+                makeMatrixFromFiles(pcaPath, lst, ns, spLength, 1., &matrix);
+                matrixMahCount(matrix, lst.length(), dim, &(covMatrix[h]), &(meanVect[h]));
+            }
+            lst = dir->entryList(QStringList(vars[k]), QDir::Files, QDir::Name);
+            for(int i = 0; i < lst.length(); ++i)
+            {
+                //            cout << k << " " << i << endl;
+                tempItem = lst[i];
+                lst.removeAt(i);
+
+                //count covMatrices and meanVectors
+                makeMatrixFromFiles(pcaPath, lst, ns, spLength, 1., &matrix);
+                matrixMahCount(matrix, lst.length(), dim, &(covMatrix[k]), &(meanVect[k]));
+
+                helpString = pcaPath + QDir::separator() + tempItem;
+                readFileInLine(helpString, &currentVect, dim);
+
+                //count distances
+                for(int l = 0; l < 3; ++l)
+                {
+                    dists[l] = distanceMah(currentVect, covMatrix[l], meanVect[l], dim);
+                }
+
+                //count errors
+                if(dists[(k+1) % 3] < dists [k]) ++errors;
+                else if(dists[(k+2) % 3] < dists [k]) ++errors;
+
+
+                lst.insert(i, tempItem);
+            }
+
+        }
+
+        matrixDelete(&matrix, 200);
+        for(int i = 0; i < 3; ++i)
+        {
+            matrixDelete(&(covMatrix[i]), dim);
+        }
+        delete covMatrix;
+
+        matrixDelete(&meanVect, 3);
+
+        delete []dists;
+        delete []currentVect;
+
+
+        lst = dir->entryList(QDir::Files);
+        cout << "spL = " << spLength << "\tpercentage = " << errors * 100. / lst.length() << " %" << endl;
+    }
+    exit(0);
 
 }
 
@@ -1637,7 +1733,7 @@ void MainWindow::setNsSlot(int a)
 }
 
 
-void MainWindow::countSpectra()
+void MainWindow::countSpectraShow()
 {
     Spectre *sp = new Spectre(dir, ns, ExpName);
     QObject::connect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
@@ -1685,7 +1781,7 @@ void MainWindow::makeShow()//250 - frequency generality
     config->show();
 }
 
-void MainWindow::setEdfFile()
+void MainWindow::setEdfFileSlot()
 {
     NumOfEdf = 0;
     helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget*)this, tr("EDF to open"), defaults::dataFolder, tr("EDF files (*.EDF *.edf)")));
@@ -1694,7 +1790,6 @@ void MainWindow::setEdfFile()
         QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
         return;
     }
-
     setEdfFile(helpString);
 }
 
@@ -1821,7 +1916,12 @@ void MainWindow::readData()
         cout << "readData: edf file doent exist\n" << helpString.toStdString() << endl;
         return;
     }
-    edf = fopen(helpString.toStdString().c_str(), "r"); //generality
+    FILE * edf = fopen(helpString.toStdString().c_str(), "r"); //generality
+    if(edf == NULL)
+    {
+        cout << "readData: cannot open edf file, but it should exist" << endl;
+        return;
+    }
 
     char *helpCharArr = new char[50];
     char helpChar;
@@ -2983,13 +3083,14 @@ void MainWindow::reduceChannelsEDFSlot()
 void MainWindow::reduceChannelsEDF(QString newFilePath)
 {
     readData();
-    if(!QString(label[lst[ns-1].toInt()-1]).contains("Markers"))
+    lst.clear();
+    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    if(!QString(label[lst[lst.length() - 1].toInt()-1]).contains("Markers"))
     {
-//        QMessageBox::critical(this, tr("Error"), tr("bad channels list - no markers"), QMessageBox::Ok);
         cout << "reduceChannelsEDF: bad reduceChannelsLineEdit - no markers" << endl;
         return;
     }
-    reduceChannelsFast();
+//    reduceChannelsFast();
     writeEdf(ui->filePath->text(), data, newFilePath, ndr*nr[0]);
 }
 
@@ -3014,8 +3115,7 @@ void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath)
     }
     writeICAMatrix(outPath, corrs, ns); //generality 19-ns
     matrixDelete(&corrs, ns);
-
-
+    ++ns; //back ns
 }
 
 
@@ -4597,7 +4697,7 @@ void MainWindow::takeSpValues(int b, int c, double d)
 }
 
 
-void MainWindow::reduceChannels()
+void MainWindow::reduceChannelsSlot()
 {
     helpString=ui->reduceChannelsLineEdit->text();
 
@@ -4776,14 +4876,13 @@ void MainWindow::reduceChannelsFast()
     delete []temp;
 
 
-    ns=list.length();
-    cout << "channels reduced, ns=" << ns << endl;
+    ns = list.length();
+    cout << "channels reduced, ns = " << ns << endl;
 
     helpString="channels reduced fast ";
     ui->textEdit->append(helpString);
 
-    helpString="ns equals to ";
-    helpString.append(QString::number(ns));
+    helpString="ns equals to " + QString::number(ns);
     ui->textEdit->append(helpString);
 
 }
@@ -4908,7 +5007,7 @@ void MainWindow::constructEDF(QString newPath) // all the realisations, to newPa
 {
     QTime myTime;
     myTime.start();
-    readData(); // needed?
+    readData(); // needed for nr
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     ns = lst.length();
@@ -4959,6 +5058,7 @@ void MainWindow::constructEDF(QString newPath) // all the realisations, to newPa
 
     cout << "construct EDF: Initial NumOfSlices = " << ndr*ddr*nr[0] << endl;
     cout << "construct EDF: NumOfSlices to write = " << currSlice << endl;
+
     writeEdf(ui->filePath->text(), newData, newPath, currSlice);
 
     for(int i = 0; i < nsB; ++i)
@@ -4970,7 +5070,7 @@ void MainWindow::constructEDF(QString newPath) // all the realisations, to newPa
 }
 
 
-void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFilePath, int numSlices)
+void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFilePath, int numSlices, QList<int> chanList)
 {
     //    8 ascii : version of this data format (0)
     //    80 ascii : local patient identification (mind item 3 of the additional EDF+ specs)
@@ -5021,10 +5121,30 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     FILE * edfIn;
 
 
-
+//old
+    /*
     lst.clear();
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     int newNs = lst.length();
+    */
+//new
+    if(chanList.isEmpty())
+    {
+        chanList.clear();
+        lst.clear();
+        lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+        cout << "channels for new Edf:" << endl;
+        for(int i = 0; i < lst.length(); ++i)
+        {
+            chanList << lst[i].toInt();
+            cout << chanList[i] << endl;
+        }
+        cout << endl;
+    }
+
+    int newNs = chanList.length();
+
+
 
 
 
@@ -5138,13 +5258,20 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     for(int i = 0; i < newNs; ++i)
     {
 //        cout << label[lst[i].toInt() - 1] << endl;
-        fprintf(edfNew, "%s", label[lst[i].toInt() - 1]);
+        //was
+//        fprintf(edfNew, "%s", label[lst[i].toInt() - 1]);
+        //new
+        fprintf(edfNew, "%s", label[chanList[i] - 1]);
     }
     helpString=dir->absolutePath().append(QDir::separator()).append("labels.txt");
     FILE * labels = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
     for(int i = 0; i < newNs; ++i)                         //label write in file
     {
-        fprintf(labels, "%s\n", label[lst[i].toInt() - 1]);
+        //was
+//        fprintf(labels, "%s\n", label[lst[i].toInt() - 1]);
+        //new
+        fprintf(labels, "%s\n", label[chanList[i] - 1]);
+
     }
 
     //transducer type
@@ -5160,7 +5287,10 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     }
     for(int i = 0; i < newNs; ++i)
     {
-        fprintf(edfNew, "%s", transducer[lst[i].toInt() - 1]);
+        //was
+//        fprintf(edfNew, "%s", transducer[lst[i].toInt() - 1]);
+        //new
+        fprintf(edfNew, "%s", transducer[chanList[i] - 1]);
     }
     for(int i = 0; i < ns; ++i)
     {
@@ -5187,7 +5317,10 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 
     for(int i = 0; i < newNs; ++i)
     {
-        fprintf(edfNew, "%s", physDim[lst[i].toInt() - 1]);
+        //was
+//        fprintf(edfNew, "%s", physDim[lst[i].toInt() - 1]);
+        //new
+        fprintf(edfNew, "%s", physDim[chanList[i] - 1]);
     }
     for(int i = 0; i < ns; ++i)
     {
@@ -5210,7 +5343,10 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 
     for(int i = 0; i < newNs; ++i)
     {
-        helpString = QString::number(physMin[lst[i].toInt() - 1]);
+        //was
+//        helpString = QString::number(physMin[lst[i].toInt() - 1]);
+        //new
+        helpString = QString::number(physMin[chanList[i] - 1]);
         for(int i = helpString.length(); i < 8; ++i)
         {
             helpString.append(' ');
@@ -5233,7 +5369,10 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 
     for(int i = 0; i < newNs; ++i)
     {
-        helpString = QString::number(physMax[lst[i].toInt() - 1]);
+        //was
+//        helpString = QString::number(physMax[lst[i].toInt() - 1]);
+        //new
+        helpString = QString::number(physMax[chanList[i] - 1]);
         for(int i = helpString.length(); i < 8; ++i)
         {
             helpString.append(' ');
@@ -5256,7 +5395,10 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 
     for(int i = 0; i < newNs; ++i)
     {
-        helpString = QString::number(digMin[lst[i].toInt() - 1]);
+        //was
+//        helpString = QString::number(digMin[lst[i].toInt() - 1]);
+        //new
+        helpString = QString::number(digMin[chanList[i] - 1]);
         for(int i = helpString.length(); i < 8; ++i)
         {
             helpString.append(' ');
@@ -5279,7 +5421,10 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 
     for(int i = 0; i < newNs; ++i)
     {
-        helpString = QString::number(digMax[lst[i].toInt() - 1]);
+        //was
+//        helpString = QString::number(digMax[lst[i].toInt() - 1]);
+        //new
+        helpString = QString::number(digMax[chanList[i] - 1]);
         for(int i = helpString.length(); i < 8; ++i)
         {
             helpString.append(' ');
@@ -5303,7 +5448,10 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     for(int i = 0; i < newNs; ++i)
     {
 //        cout << prefilter[lst[i].toInt() - 1] << endl;
-        fprintf(edfNew, "%s", prefilter[lst[i].toInt() - 1]);
+        //was
+//        fprintf(edfNew, "%s", prefilter[lst[i].toInt() - 1]);
+        //new
+        fprintf(edfNew, "%s", prefilter[chanList[i] - 1]);
     }
     for(int i = 0; i < ns; ++i)
     {
@@ -5326,13 +5474,14 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     }
     for(int i = 0; i < newNs; ++i)
     {
-        helpString = QString::number(nr[lst[i].toInt() - 1]);
+        //was
+//        helpString = QString::number(nr[lst[i].toInt() - 1]);
+        //new
+        helpString = QString::number(nr[chanList[i] - 1]);
         for(int i = helpString.length(); i < 8; ++i)
         {
-            helpString.append(' ');
+            helpString += ' ';
         }
-
-//        cout << nr[lst[i].toInt() - 1] << endl;
         fprintf(edfNew, "%s", helpString.toStdString().c_str());
     }
 
@@ -5350,7 +5499,10 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     }
     for(int i = 0; i < newNs; ++i)
     {
-        fprintf(edfNew, "%s", reserved[lst[i].toInt() - 1]);
+        //was
+//        fprintf(edfNew, "%s", reserved[lst[i].toInt() - 1]);
+        //new
+        fprintf(edfNew, "%s", reserved[chanList[i] - 1]);
     }
     for(int i = 0; i < ns; ++i)
     {
@@ -5382,13 +5534,18 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 //    cout << "writeEDF: data write start, newNs = " << newNs << endl;
     int oldIndex;
 
+
     if(ui->enRadio->isChecked())
     {
         for(int i = 0; i < ndr; ++i)
         {
             for(int j = 0; j < newNs; ++j) // j - number of channel in "new" file
             {
-                oldIndex = lst[j].toInt() - 1; //number of channel in "old" file edfIn
+                //was
+//                oldIndex = lst[j].toInt() - 1; //number of channel in "old" file edfIn
+                //new
+                oldIndex = chanList[j] - 1;
+
                 for(int k = 0; k < nr[oldIndex]; ++k)
                 {
 
@@ -5397,14 +5554,17 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
                     //generality
                     if(oldIndex != ns - 1)
                     {
-                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ] * 8.);
+                        a = (short)(inData[ oldIndex ][ i * nr[oldIndex] + k ] * 8.); //*8 generality
+                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ] * 8.); //*8 generality
                     }
                     else if(!ui->matiCheckBox->isChecked())
                     {
+                        a = (short)(inData[ oldIndex ][ i * nr[oldIndex] + k ]);
                         a = (short)(inData[ j ][ i * nr[oldIndex] + k ]);
                     }
                     else
                     {
+                        a = (unsigned short)(inData[ oldIndex ][ i * nr[oldIndex] + k ]);
                         a = (unsigned short)(inData[ j ][ i * nr[oldIndex] + k ]);
                     }
 
@@ -5424,7 +5584,6 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     delete []helpCharArr;
     fclose(labels);
     fclose(edfNew);
-    rewind(edf);
 
 
     delete [] physMin;
@@ -6296,6 +6455,7 @@ void MainWindow::ICA() //fastICA
 
     //    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes"); //generality
     helpString = dir->absolutePath() + QDir::separator() + ExpName + "_ica.edf";
+
     writeEdf(ui->filePath->text(), components, helpString, ndr*nr[0]);
 
     cout << "ICA ended. Time elapsed = " << wholeTime.elapsed()/1000. << " sec" << endl;
@@ -6589,7 +6749,7 @@ void MainWindow::throwIC()
 
 }
 
-void MainWindow::transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath)
+void MainWindow::transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath) // for 19 channels generality
 {
     setEdfFile(inEdfPath);
     readData();
@@ -6604,7 +6764,13 @@ void MainWindow::transformEDF(QString inEdfPath, QString mapsPath, QString newEd
     matrixProduct(mat1, data, &newData, 19, ndr*nr[0]);
     memcpy(newData[19], data[19], ndr*nr[0]*sizeof(double));    //copy markers
 
-    writeEdf(ui->filePath->text(), newData, newEdfPath, ndr*nr[0]);
+    QList<int> chanList;
+    chanList.clear();
+    for(int i = 1; i <= 20; ++i)
+    {
+        chanList << i;
+    }
+    writeEdf(ui->filePath->text(), newData, newEdfPath, ndr*nr[0], chanList);
 
     matrixDelete(&mat1, 19);
     matrixDelete(&newData, 20);
@@ -6707,7 +6873,7 @@ void MainWindow::hilbertCount()
     }
     memcpy(hilbertData[ns-1], data[ns-1], ndr*fr*sizeof(double)); //markers channel
     helpString = dir->absolutePath() + QDir::separator() + ExpName + "_hilbert.edf";
-    writeEdf(ui->filePath->text(), hilbertData, helpString, ndr*fr);
+    writeEdf(ui->filePath->text(), hilbertData, helpString, ndr*fr); ////////////////////////////need fix
 
     matrixDelete(&hilbertData, ns);
 }
@@ -7735,11 +7901,6 @@ void MainWindow::randomDecomposition()
 
         matrixProduct(matrixW, eigenMatrixInv, &randMatrix, compNum, compNum); //randMatrix = randW * Eig * d^-0.5 *Eig^t
 */
-
-
-
-
-
         //decompose
         matrixProduct(randMatrix, data, &newData, compNum, ndr*nr[0]);
         memcpy(newData[ns-1], data[ns-1], ndr*nr[0]*sizeof(double)); //markers

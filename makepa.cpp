@@ -34,6 +34,11 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     ui->nsBox->setMinimum(1);
     ui->nsBox->setValue(ns);
 
+    ui->crossValidSpinBox->setMaximum(10);
+    ui->crossValidSpinBox->setMinimum(2);
+    ui->crossValidSpinBox->setSingleStep(1);
+    ui->crossValidSpinBox->setValue(2);
+
 
 
     ui->lineEdit_1->setText("_241");
@@ -1183,7 +1188,10 @@ void MakePa::kwTest()
     ui->mwTestLine->setText(helpString);
 }
 
-
+void MakePa::setFold(int a)
+{
+    ui->crossValidSpinBox->setValue(a);
+}
 
 void MakePa::makePaSlot()
 {
@@ -1201,28 +1209,23 @@ void MakePa::makePaSlot()
     {
         typeString = ".pa";
     }
-//    cout << "makePa typeString = " << typeString.toStdString() << endl;
 
     ui->lineEdit->clear();
     double coeff = ui->rdcCoeffBox->value();
+    int fold = ui->crossValidSpinBox->value();
 
-
-
-    if(ui->cl3_Button->isChecked()) NumOfClasses=3;    ///////////////generality
-    if(ui->cl2_Button->isChecked()) NumOfClasses=2;
+    if(ui->cl3_Button->isChecked()) NumOfClasses = 3;    ///////////////generality
+    if(ui->cl2_Button->isChecked()) NumOfClasses = 2;
 
     QDir *dir_ = new QDir();
-    dir_->cd(ui->paLineEdit->text());          /////////which dir?
-    helpString=dir_->absolutePath();
-//    cout<< "spectra path = " << helpString.toStdString() << endl;
+    dir_->cd(ui->paLineEdit->text());
+    helpString = dir_->absolutePath();
 
 
     FILE * spectre;
-
     FILE * pa;
     FILE * svm;
     dir_->setSorting(QDir::Name);
-
 
     //generality
     QStringList nameFilters, list;
@@ -1231,448 +1234,136 @@ void MakePa::makePaSlot()
     nameFilters.clear();
     list.clear();
     list = ui->lineEdit_1->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
+    for(int i = 0; i < list.length(); ++i)
     {
         helpString.clear();
         helpString.append("*");
-        helpString.append(list.at(i));
+        helpString.append(list[i]);
         helpString.append("*");
         nameFilters.append(helpString);
     }
-
-//    lst[0]=dir_->entryList(nameFilters, QDir::Files, QDir::Size);
-    lst[0]=dir_->entryList(nameFilters, QDir::Files, QDir::Name);
+    lst[0] = dir_->entryList(nameFilters, QDir::Files, QDir::Name);
 
     nameFilters.clear();
 
     list.clear();
     list = ui->lineEdit_2->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
+    for(int i = 0; i < list.length(); ++i)
     {
         helpString.clear();
         helpString.append("*");
-        helpString.append(list.at(i));
+        helpString.append(list[i]);
         helpString.append("*");
         nameFilters.append(helpString);
     }
-
-//    lst[1]=dir_->entryList(nameFilters, QDir::Files, QDir::Size);
     lst[1]=dir_->entryList(nameFilters, QDir::Files, QDir::Name);
 
     nameFilters.clear();
     list.clear();
     list = ui->lineEdit_3->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
+    for(int i = 0; i < list.length(); ++i)
     {
         helpString.clear();
         helpString.append("*");
-        helpString.append(list.at(i));
+        helpString.append(list[i]);
         helpString.append("*");
         nameFilters.append(helpString);
     }
-//    lst[2]=dir_->entryList(nameFilters, QDir::Files, QDir::Size);
-    lst[2]=dir_->entryList(nameFilters, QDir::Files, QDir::Name);
+    lst[2] = dir_->entryList(nameFilters, QDir::Files, QDir::Name);
 
-
-
-    //all.pa
-    list.clear();
-    nameFilters.clear();
-    helpString.clear();
-    helpString.append(ui->lineEdit_1->text()).append(" ").append(ui->lineEdit_2->text()).append(" ").append(ui->lineEdit_3->text()).append(" ");
-
-    list = helpString.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
+    int * len = new int [3];
+    for(int i = 0; i < 3; ++i)
     {
-        helpString.clear();
-        helpString.append("*");
-        helpString.append(list.at(i));
-        helpString.append("*");
-        nameFilters.append(helpString);
-    }
-
-    list = dir_->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
-
-    if(list.empty())
-    {
-        cout << "no spectra-files found" << endl;
-        return;
-    }
-
-//    for(int i = 0; i < 3; ++i)
-//    {
-//        cout<<"lst["<<i<<"].length() = "<<lst[i].length()<<endl;
-//    }
-
-
-    int Length = lst[0].length();
-
-    for(int i =0 ; i<NumOfClasses; ++i)
-    {
-//        cout<<"Length["<<i<<"]="<<lst[i].length()<<endl;
-        Length=min(Length, lst[i].length());
+        len[i] = lst[i].length();
+        if(len[i] == 0)
+        {
+            cout << "no spectra files found of type " << i << " found" << endl;
+            return;
+        }
     }
 
 
-
-//    cout<<"Length="<<Length<<endl;  //get the maximum quantity of files belong to one type
-
-
-
-    if(Length == 0)
+    int Length;
+    Length = len[0];
+    for(int i = 0 ; i < NumOfClasses; ++i)
     {
-        cout<<"Length==0"<<endl; return;
+        Length = min(Length, len[i]);
     }
 
-    for(int i=0; i<NumOfClasses; ++i)
-    {
-        while(lst[i].length()>Length) {lst[i].removeAt(rand()%(lst[i].length()));} //fit all lists to appropriate number of files
-    }
-
-    int **arr = new int * [NumOfClasses];
+    int ** arr = new int * [NumOfClasses];
     for(int i = 0; i < NumOfClasses; ++i)
     {
-        arr[i] = new int [Length];
-        for(int j = 0; j < Length; ++j)
+        arr[i] = new int [len[i]];
+        for(int j = 0; j < len[i]; ++j)
         {
             arr[i][j] = j;
         }
     }
 
     //generality
-    if(ns==-1) return;
-    if(spLength==-1) return;
+    if(ns == -1) return;
+    if(spLength == -1) return;
 
-    double ** data4 = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        data4[i] = new double [spLength];
-    }
-
-    /////////////////mix lst///////////////////////
+    double ** data4;
+    matrixCreate(&data4, ns, spLength);
     srand(time(NULL));
 
     int a1,a2, tmp;
 
     //mix list
-    for(int j=0; j<NumOfClasses; ++j)
+    for(int j = 0; j < NumOfClasses; ++j)
     {
-        for(int i=0; i<15*Length; ++i)
+        for(int i = 0; i < 15 * len[j]; ++i)
         {
-            a1 = rand()%Length;
-            a2  =rand()%Length;
+            a1 = rand() % len[j];
+            a2 = rand() % len[j];
             tmp = arr[j][a1];
             arr[j][a1] = arr[j][a2];
             arr[j][a2] = tmp;
         }
     }
 
-    //all.pa
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //make svm????
 
+    QStringList listToWrite;
+    listToWrite.clear();
+    for(int j = 0; j < NumOfClasses; ++j)
+    {
+        for(int i = 0; i < (len[j]/fold) * (fold-1); ++i)
+        {
+            listToWrite << lst[j][arr[j][i]];
+        }
+    }
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "1" + typeString);
+    makePaFile(dir_->absolutePath(), listToWrite, ns, spLength, NumOfClasses, coeff, helpString);
+
+    listToWrite.clear();
+    for(int j = 0; j < NumOfClasses; ++j)
+    {
+        for(int i = (len[j]/fold) * (fold-1); i < (len[j]/fold) * fold; ++i)
+        {
+            listToWrite << lst[j][arr[j][i]];
+        }
+    }
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "2" + typeString);
+    makePaFile(dir_->absolutePath(), listToWrite, ns, spLength, NumOfClasses, coeff, helpString);
+
+    listToWrite.clear();
+    for(int j = 0; j < NumOfClasses; ++j)
+    {
+        for(int i = 0; i < (len[j]/fold) * fold; ++i)
+        {
+            listToWrite << lst[j][arr[j][i]];
+        }
+    }
     helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "all" + typeString);
-
-
-    FILE * paAll=fopen(helpString.toStdString().c_str(), "w");   ////////separator
-    if(paAll==NULL)
-    {
-        cout << "cannot open all.pa to write:" << endl << helpString.toStdString() << endl;
-        return;
-    }
-
-    //create first PA
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("1").append(typeString));
-    pa = fopen(helpString.toStdString().c_str(), "w");   ////////separator
-    if(pa == NULL)
-    {
-        cout<<helpString.toStdString().c_str()<<endl<<"1.pa==NULL"<<endl;
-        return;
-    }
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("svm1"));
-    svm = fopen(helpString.toStdString().c_str(), "w");
-    if(svm == NULL)
-    {
-        cout<<helpString.toStdString().c_str()<<endl<<" svm1==NULL"<<endl;
-        return;
-    }
-
-    for(int i = 0; i < Length/2; ++i)  //Length - number of files every type
-    {
-        for(int j = 0; j < NumOfClasses; ++j)
-        {
-//            cout << lst[j][arr[j][i]].toStdString() << endl;
-
-            helpString = dir_->absolutePath() + QDir::separator() + lst[j][arr[j][i]];
-            spectre=fopen(helpString.toStdString().c_str(), "r");
-            if(spectre == NULL)
-            {
-                cout << "spectre-file == NULL" << endl;
-                return;
-            }
-            fprintf(pa, "%s\n", lst[j][arr[j][i]].toStdString().c_str());
-            fprintf(paAll, "%s\n", lst[j][arr[j][i]].toStdString().c_str());
-
-            for(int l = 0; l < ns; ++l)
-            {
-                for(int k = 0; k < spLength; ++k)
-                {
-                    fscanf(spectre, "%lf\n", &data4[l][k]);
-                }
-                fscanf(spectre, "\n");
-            }
-            fclose(spectre);
-            fprintf(svm, "%d ", j);
-
-            for(int l=0; l<ns; ++l)
-            {
-                if(vect.contains(l)) continue; //do not write listed channels
-                for(int k=0; k<spLength; ++k)
-                {
-                    fprintf(svm, "%d:%lf ", int(l*spLength+k+1), data4[l][k]/coeff);
-
-
-                    fprintf(pa, "  %lf ", data4[l][k]/coeff);
-                    fprintf(paAll, "  %lf ", data4[l][k]/coeff);
-                    if(k%10==9)
-                    {
-                        fprintf(pa, "\n");
-                        fprintf(paAll, "\n");
-                    }
-                }
-                fprintf(pa, "\n");
-                fprintf(paAll, "\n");
-            }
-            fprintf(svm, "\n");
-            if(NumOfClasses==3)
-                {
-                if(j==0)
-                {
-                    fprintf(pa, "1 0 0 \n\n");
-                    fprintf(paAll, "1 0 0 \n\n");
-                }
-                if(j==1)
-                {
-                    fprintf(pa, "0 1 0 \n\n");
-                    fprintf(paAll, "0 1 0 \n\n");
-                }
-                if(j==2)
-                {
-                    fprintf(pa, "0 0 1 \n\n");
-                    fprintf(paAll, "0 0 1 \n\n");
-                }
-            }
-            if(NumOfClasses==2)
-                {
-                if(j==0)
-                {
-                    fprintf(pa, "1 0 \n\n");
-                    fprintf(paAll, "1 0 \n\n");
-                }
-                if(j==1)
-                {
-                    fprintf(pa, "0 1 \n\n");
-                    fprintf(paAll, "0 1 \n\n");
-                }
-            }
-        }
-//        cout<<i<<" ";
-    }
-    fclose(svm);
-    fclose(pa);
-
-//    cout<<endl;
-
-    //create second PA
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("2").append(typeString));
-    pa=fopen(helpString.toStdString().c_str(), "w");   ////////separator
-    if(pa == NULL)
-    {
-        cout<<helpString.toStdString().c_str()<<endl<<"2.pa==NULL"<<endl;
-        return;
-    }
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("svm2"));
-    svm = fopen(helpString.toStdString().c_str(), "w");
-    if(svm == NULL)
-    {
-        cout<<helpString.toStdString().c_str()<<endl<<" svm2==NULL"<<endl;
-        return;
-    }
-
-    for(int i = Length/2; i < (Length/2)*2; ++i)
-    {
-        for(int j = 0; j < NumOfClasses; ++j)
-        {
-
-//            cout << lst[j][arr[j][i]].toStdString() << endl;
-
-            helpString=dir_->absolutePath();
-            helpString.append(QDir::separator()).append(lst[j].at(arr[j][i]));
-//            cout<<helpString.toStdString()<<endl;
-
-            spectre=fopen(helpString.toStdString().c_str(), "r");
-            fprintf(pa, "%s\n", lst[j].at(arr[j][i]).toStdString().c_str());
-            fprintf(paAll, "%s\n", lst[j].at(arr[j][i]).toStdString().c_str());
-            if(spectre==NULL) return;
-
-            for(int l=0; l<ns; ++l)
-            {
-                for(int k=0; k<spLength; ++k)
-                {
-                    fscanf(spectre, "%lf\n", &data4[l][k]);
-                }
-                fscanf(spectre, "\n");
-            }
-            fclose(spectre);
-            fprintf(svm, "%d ", j);
-
-            for(int l=0; l<ns; ++l)
-            {
-                if(vect.contains(l)) continue; //do not write listed channels
-                for(int k=0; k<spLength; ++k)
-                {
-                    fprintf(svm, "%d:%lf ", int(l*spLength+k+1), data4[l][k]/coeff);
-
-
-                    fprintf(pa, "  %lf ", data4[l][k]/coeff);
-                    fprintf(paAll, "  %lf ", data4[l][k]/coeff);
-                    if(k%10==9)
-                    {
-                        fprintf(pa, "\n");
-                        fprintf(paAll, "\n");
-                    }
-                }
-                fprintf(pa, "\n");
-                fprintf(paAll, "\n");
-            }
-            fprintf(svm, "\n");
-            if(NumOfClasses==3)
-                {
-                if(j==0)
-                {
-                    fprintf(pa, "1 0 0 \n\n");
-                    fprintf(paAll, "1 0 0 \n\n");
-                }
-                if(j==1)
-                {
-                    fprintf(pa, "0 1 0 \n\n");
-                    fprintf(paAll, "0 1 0 \n\n");
-                }
-                if(j==2)
-                {
-                    fprintf(pa, "0 0 1 \n\n");
-                    fprintf(paAll, "0 0 1 \n\n");
-                }
-            }
-            if(NumOfClasses==2)
-                {
-                if(j==0)
-                {
-                    fprintf(pa, "1 0 \n\n");
-                    fprintf(paAll, "1 0 \n\n");
-                }
-                if(j==1)
-                {
-                    fprintf(pa, "0 1 \n\n");
-                    fprintf(paAll, "0 1 \n\n");
-                }
-            }
-        }
-//        cout<<i<<" ";
-    }
-    fclose(svm);
-    fclose(pa);
-
-    fclose(paAll);
+    makePaFile(dir_->absolutePath(), listToWrite, ns, spLength, NumOfClasses, coeff, helpString);
 
 
 
-
-    FILE * paWhole;
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("PA").append(QDir::separator()).append("whole").append(typeString));
-    list = dir_->entryList(QDir::Files);
-    paWhole = fopen(helpString.toStdString().c_str(), "w");
-
-    for(int i = 0; i < list.length(); ++i)
-    {
-        if(list[i].contains("300")) continue;
-
-            helpString=dir_->absolutePath();
-            helpString.append(QDir::separator()).append(list[i]);
-
-            spectre = fopen(helpString.toStdString().c_str(), "r");
-            fprintf(paWhole, "%s\n", list[i].toStdString().c_str());
-            if(spectre == NULL) return;
-
-            for(int l=0; l<ns; ++l)
-            {
-                for(int k=0; k<spLength; ++k)
-                {
-                    fscanf(spectre, "%lf\n", &data4[l][k]);
-                }
-                fscanf(spectre, "\n");
-            }
-            fclose(spectre);
-
-            for(int l = 0; l < ns; ++l)
-            {
-                if(vect.contains(l)) continue; //do not write listed channels
-                for(int k = 0; k < spLength; ++k)
-                {
-                    fprintf(paWhole, "  %lf ", data4[l][k]/coeff);
-                    if(k%10==9)
-                    {
-                        fprintf(paWhole, "\n");
-                    }
-                }
-                fprintf(paWhole, "\n");
-            }
-
-            //generality
-            if(NumOfClasses==3)
-            {
-                if(list[i].contains("_241")) //generality
-                {
-                    fprintf(paWhole, "1 0 0 \n\n");
-                }
-                if(list[i].contains("_247")) //generality
-                {
-                    fprintf(paWhole, "0 1 0 \n\n");
-                }
-                if(list[i].contains("_254")) //generality
-                {
-                    fprintf(paWhole, "0 0 1 \n\n");
-                }
-            }
-            if(NumOfClasses==2)
-                {
-                if(list[i].contains("_241")) //generality
-                {
-                    fprintf(paWhole, "1 0 \n\n");
-                }
-                if(list[i].contains("_247")) //generality
-                {
-                    fprintf(paWhole, "0 1 \n\n");
-                }
-            }
-
-//        cout<<i<<" ";
-    }
-
-    fclose(paWhole);
-
-
-
-
-    for(int i=0; i<ns; ++i)
-    {
-        delete []data4[i];
-    }
-    delete []data4;
-
-    for(int i=0; i<NumOfClasses; ++i)
-    {
-        delete []arr[i];
-    }
-    delete []arr;
+    matrixDelete(&data4, ns);
+    matrixDelete(&arr, NumOfClasses);
 
     delete dir_;
     delete []lst;
@@ -1681,7 +1372,6 @@ void MakePa::makePaSlot()
     this->ui->lineEdit->setText(helpString);
 
     QTimer::singleShot(600, ui->lineEdit, SLOT(clear()));
-//    cout<<"PA-files have been made"<<endl;
 }
 
 void MakePa::setRdcCoeff(double newCoeff)

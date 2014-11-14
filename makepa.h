@@ -36,6 +36,7 @@ public:
     void kernelest(double * arr, int num, QString path, double minVal, double maxVal, int numOfRanges);
     double gaussian(double x);
     double drawSamples(double * drawArray, double leftLim, double rightLim);
+    void setFold(int a);
 
 public slots:
     void makePaSlot();
