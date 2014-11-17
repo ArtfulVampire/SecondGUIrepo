@@ -116,6 +116,8 @@ public:
     void sliceFromTo(int marker1, int marker2, QString marker);
     void sliceMati(int numChanWrite);
 
+
+    void countSpectraSimple(int fftLen);
     void visualisation();
     void kernelest(const QString &str);
     void writeEdf(QString inFilePath, double ** components, QString outFilePath, int numSlices, QList<int> chanList = QList<int>());
@@ -128,7 +130,9 @@ public:
     void constructEDF(QString newPath);
     void writeCorrelationMatrix(QString edfPath, QString outPath);
     void ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path, int mode = 0);
-    void autoIcaAnalysis();
+    void listFileInnerClassification(QString workPath, QStringList nameFilt, int NumOfPairs, QString outFilePath, bool windows = false, int wndLen = 1000, int tShift = 125);
+    void listFileCrossClassification(QString workPath, QStringList nameFilt1, QStringList nameFilt2, int NumOfPairs, QString outFilePath, bool windows = false, int wndLen = 1000, int tShift = 125);
+
     void autoIcaAnalysis2();
     void autoIcaAnalysis3();
     void autoIcaAnalysis4();

@@ -164,13 +164,13 @@ MainWindow::MainWindow() :
     ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(ui->reduceChannelsComboBox->currentIndex()).toString());
 
 
-    ui->timeShiftBox->setMinimum(25);
-    ui->timeShiftBox->setMaximum(1000);
-    ui->timeShiftBox->setValue(250);
-    ui->timeShiftBox->setSingleStep(25);
-    ui->windowLengthBox->setMaximum(1000);
-    ui->windowLengthBox->setMinimum(250);
-    ui->windowLengthBox->setSingleStep(125);
+    ui->timeShiftSpinBox->setMinimum(25);
+    ui->timeShiftSpinBox->setMaximum(1000);
+    ui->timeShiftSpinBox->setValue(250);
+    ui->timeShiftSpinBox->setSingleStep(25);
+    ui->windowLengthSpinBox->setMaximum(1000);
+    ui->windowLengthSpinBox->setMinimum(250);
+    ui->windowLengthSpinBox->setSingleStep(125);
     ui->realButton->setChecked(true);
 
     ui->numOfIcSpinBox->setMaximum(19); //generality
@@ -645,18 +645,20 @@ MainWindow::MainWindow() :
 //    MakePa * mkpa = new MakePa("/media/Files/Data/AAX/SpectraSmooth", "AAX", 19, left, right, spStep);
 //    mkpa->makePaSlot();
 
-//    return;
-    //mahalanobis test
-    dir->cd("/media/Files/Data/AAX/SpectraPCA");
-    QString pcaPath = "/media/Files/Data/AAX/SpectraPCA";
 
-//    dir->cd("/media/Files/Data/AAX/SpectraSmooth");
-//    QString pcaPath = "/media/Files/Data/AAX/SpectraSmooth";
+
+
+
+    /*
+    //mahalanobis test
+    dir->cd("/media/Files/Data/AB/SpectraPCA");
+    QString pcaPath = "/media/Files/Data/AB/SpectraPCA";
+
     QStringList vars;
     vars.clear();
     vars << "*_241" << "*_247" << "*_254";
 
-    for(spLength = 10; spLength < 112; spLength +=5)
+    for(spLength = 10; spLength < 78; spLength +=5)
     {
         ns = 1;
         int dim = spLength * ns;
@@ -736,6 +738,72 @@ MainWindow::MainWindow() :
         cout << "spL = " << spLength << "\tpercentage = " << errors * 100. / lst.length() << " %" << endl;
     }
     exit(0);
+    */
+
+
+
+    helpString = "/media/Files/Data/AB/out.txt";
+//    listFileInnerClassification("/media/Files/Data/AB", QStringList("???_sum.edf"), 50, helpString);
+    helpString = "/media/Files/Data/AB/out.txt";
+    listFileInnerClassification("/media/Files/Data/AB", QStringList("???_sum_ica.edf"), 50, helpString);
+    return;
+
+if(0)
+{
+    //check the dispersion of new perceptron
+    setEdfFile("/media/Files/Data/AB/AAX_sum.edf");
+    ui->reduceChannelsComboBox->setCurrentText("20");
+    cleanDirs();
+    sliceAll();
+    Spectre * sp = new Spectre(dir, ns, ExpName);
+    sp->countSpectra();
+    sp->close();
+    delete sp;
+    Net * ANN = new Net(dir, ns, left, right, spStep, ExpName);
+    ofstream outF;
+    double tempCoeff;
+    for(int i = 30; i <= 50; i+= 10)
+    {
+        helpString = "/media/Files/Data/AB/newPerceptron_" + QString::number(i) + ".txt";
+
+        outF.open(helpString.toStdString().c_str(), ios_base::app);
+        for(int j = 0; j < 50; ++j)
+        {
+            ANN->setNumOfPairs(i);
+            ANN->autoClassificationSimple();
+            outF << ANN->getAverageAccuracy() << endl;
+        }
+        outF.close();
+    }
+    ANN->close();
+    delete ANN;
+    exit(0);
+}
+
+//    for(int i = 3; i <= 5; i+= 1)
+//    {
+//        helpString = "/media/Files/Data/AB/newPerceptron_" + QString::number(i) + ".txt";
+//        listFileInnerClassification("/media/Files/Data/AB", QStringList("AAX_sum.edf"), i, helpString);
+//    }
+
+
+    double mean_, sigma_;
+    countRCP("/media/Files/Data/AB/newPerceptron_10.txt", "", &mean_, &sigma_);
+    cout << mean_ << " " << sigma_ << endl;
+
+    countRCP("/media/Files/Data/AB/newPerceptron_15.txt", "", &mean_, &sigma_);
+    cout << mean_ << " " << sigma_ << endl;
+
+    countRCP("/media/Files/Data/AB/newPerceptron_20.txt", "", &mean_, &sigma_);
+    cout << mean_ << " " << sigma_ << endl;
+
+    countRCP("/media/Files/Data/AB/newPerceptron_25.txt", "", &mean_, &sigma_);
+    cout << mean_ << " " << sigma_ << endl;
+
+    countRCP("/media/Files/Data/AB/newPerceptron_30_.txt", "", &mean_, &sigma_);
+    cout << mean_ << " " << sigma_ << endl;
+
+
 
 }
 
@@ -1289,6 +1357,8 @@ void MainWindow::changeNsLine(int a)
     ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
 }
 
+
+
 void MainWindow::cleanDirs()
 {
     if(dir->isRoot())
@@ -1300,78 +1370,44 @@ void MainWindow::cleanDirs()
     //windows
     if(ui->cleanWindowsCheckBox->isChecked())
     {
-        dir->cd("windows");
-        lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(i)).toStdString().c_str());
-        }
-        dir->cdUp();
+        helpString = dir->absolutePath() + QDir::separator() + "windows";
+        cleanDir(helpString);
     }
 
     //SpectraSmooth/windows
     if(ui->cleanWindSpectraCheckBox->isChecked())
     {
-        dir->cd("SpectraSmooth");
-        dir->cd("windows");
-        lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(i)).toStdString().c_str());
-        }
-        dir->cdUp();
-        dir->cdUp();
+        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows";
+        cleanDir(helpString);
     }
 
 
     //SpectraSmooth
     if(ui->cleanRealsSpectraCheckBox->isChecked())
     {
-        dir->cd("SpectraSmooth");
-        lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(i)).toStdString().c_str());
-        }
-        dir->cdUp();
+        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
+        cleanDir(helpString);
     }
 
     //windows/fromreal
     if(ui->cleanFromRealsCheckBox->isChecked())
     {
-        dir->cd("windows");
-        dir->cd("fromreal");
-        lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(i)).toStdString().c_str());
-        }
-        dir->cdUp();
-        dir->cdUp();
+        helpString = dir->absolutePath() + QDir::separator() + "windows" + QDir::separator() + "fromreal";
+        cleanDir(helpString);
     }
 
     //Realisations
     if(ui->cleanRealisationsCheckBox->isChecked())
     {
-        dir->cd("Realisations");
-        lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(i)).toStdString().c_str());
-        }
-        dir->cdUp();
+        helpString = dir->absolutePath() + QDir::separator() + "Realisations";
+        cleanDir(helpString);
     }
 
     //Help
     if(ui->cleanHelpCheckBox->isChecked())
     {
-        dir->cd("Help");
-        lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(i)).toStdString().c_str());
-        }
-        dir->cdUp();
+        helpString = dir->absolutePath() + QDir::separator() + "Help";
+        cleanDir(helpString);
     }
 
     cout << "dirs cleaned" << endl;
@@ -1730,6 +1766,22 @@ void MainWindow::setNsSlot(int a)
     helpString.append(QString::number(ns));
     ui->textEdit->append(helpString);
     ui->setNsLine->clear();
+}
+
+
+void MainWindow::countSpectraSimple(int fftLen)
+{
+    Spectre *sp = new Spectre(dir, ns, ExpName);
+    QObject::connect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
+    sp->setFftLength(fftLen);
+    sp->countSpectra();
+    sp->compare();
+    sp->compare();
+    sp->compare();
+    sp->psaSlot();
+    QObject::disconnect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
+    sp->close();
+    delete sp;
 }
 
 
@@ -2713,8 +2765,8 @@ void MainWindow::sliceWindFromReal()
     dir->cdUp();
 
 
-    timeShift=ui->timeShiftBox->value();
-    wndLength = ui->windowLengthBox->value();
+    timeShift=ui->timeShiftSpinBox->value();
+    wndLength = ui->windowLengthSpinBox->value();
 
 //    cout << "timeShift = " << timeShift << endl;
 //    cout << "wndLength = " << wndLength << endl;
@@ -3590,8 +3642,8 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                 if(ui->windButton->isChecked()) //bad work
                 {
 
-                    timeShift = ui->timeShiftBox->value();
-                    wndLength = ui->windowLengthBox->value();
+                    timeShift = ui->timeShiftSpinBox->value();
+                    wndLength = ui->windowLengthSpinBox->value();
 //                    return;
 
                     for(int i = 0; i < (ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift; ++i)
@@ -6923,8 +6975,8 @@ void MainWindow::spoc()
 
     double * W = new double  [ns];
     double * WOld = new double  [ns];
-    int epochLength = ui->windowLengthBox->value();
-    timeShift = ui->timeShiftBox->value();
+    int epochLength = ui->windowLengthSpinBox->value();
+    timeShift = ui->timeShiftSpinBox->value();
     int numOfEpoches = (ndr*nr[0] - epochLength)/timeShift;
 
     double * Z = new double [numOfEpoches];
@@ -7966,10 +8018,9 @@ void MainWindow::randomDecomposition()
 
 
 }
-
-void MainWindow::autoIcaAnalysis()
+//
+void MainWindow::listFileInnerClassification(QString workPath, QStringList nameFilt, int NumOfPairs, QString outFilePath, bool windows, int wndLen, int tShift)
 {
-
     ui->sliceCheckBox->setChecked(true);
     ui->sliceWithMarkersCheckBox->setChecked(false);
     ui->eyesCleanCheckBox->setChecked(false);
@@ -7978,88 +8029,146 @@ void MainWindow::autoIcaAnalysis()
     ui->cleanRealisationsCheckBox->setChecked(true);
     ui->cleanRealsSpectraCheckBox->setChecked(true);
 
-    ui->reduceChannelsLineEdit->setText("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
+    ui->reduceChannelsComboBox->setCurrentText("20");
 
-    dir->cd(defaults::dataFolder + "/AA");
-    QStringList list0 = dir->entryList(QStringList("*.edf"), QDir::NoFilter, QDir::Name);
+    dir->cd(workPath);
+    QStringList list0 = dir->entryList(nameFilt, QDir::Files, QDir::Name);
 
-    Spectre * spectr;
     Net * ANN;
-    MakePa * mkPa;
 
-    FILE * outFile;
+    ofstream outFile;
 
+    outFile.open(outFilePath.toStdString().c_str(), ios_base::app);
+    if(!windows)
+    {
+        ui->realButton->setChecked(true);
+    }
+    else
+    {
+        ui->windButton->setChecked(true);
+        ui->windowLengthSpinBox->setValue(wndLen);
+        ui->timeShiftSpinBox->setValue(tShift);
+    }
     for(int i = 0; i < list0.length(); ++i)
     {
-        //for new icas
-        if(list0[i].contains("randIca")) continue;
-        if(!(list0[i].contains("GAN") || list0[i].contains("RMS") ||  list0[i].contains("VDA") ||  list0[i].contains("SEV") ||  list0[i].contains("PMI") || list0[i].contains("PAS"))) continue;
-
-
-
         helpString = dir->absolutePath() + QDir::separator() + list0[i];
+        cout << list0[i].toStdString() << endl;
         setEdfFile(helpString);
         cleanDirs();
         sliceAll();
 
-        spectr = new Spectre(dir, ns, ExpName);
-        spectr->countSpectra();
-        spectr->close();
-        spectr->compare();
-        spectr->compare();
-        spectr->compare();
-        spectr->psaSlot();
-        delete spectr;
-
-        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
-        mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
-        mkPa->setRdcCoeff(10);
+        if(windows) countSpectraSimple(1024);
+        else countSpectraSimple(4096);
 
         ANN = new Net(dir, ns, left, right, spStep, ExpName);
+        ANN->setNumOfPairs(NumOfPairs);
+        ANN->autoClassificationSimple();
+
+        outFile << ExpName.toStdString() << "\t" << doubleRound(ANN->getAverageAccuracy(), 2) << endl;
 
 
-        //set appropriate coeff
-        while(1)
+        ANN->close();
+        delete ANN;
+    }
+    outFile.close();
+}
+
+
+void MainWindow::listFileCrossClassification(QString workPath, QStringList nameFilt1, QStringList nameFilt2, int NumOfPairs, QString outFilePath, bool windows, int wndLen, int tShift)
+{
+    ui->sliceCheckBox->setChecked(true);
+    ui->sliceWithMarkersCheckBox->setChecked(false);
+    ui->eyesCleanCheckBox->setChecked(false);
+    ui->reduceChannelsCheckBox->setChecked(false);
+
+    ui->cleanRealisationsCheckBox->setChecked(true);
+    ui->cleanRealsSpectraCheckBox->setChecked(true);
+
+    ui->reduceChannelsComboBox->setCurrentText("20");
+
+    dir->cd(workPath);
+    QStringList list1 = dir->entryList(nameFilt1, QDir::Files, QDir::Name);
+    QStringList list2 = dir->entryList(nameFilt2, QDir::Files, QDir::Name);
+    if(list1.length() != list2.length())
+    {
+        cout << "listFileCrossClassification: different list length" << endl;
+        return;
+    }
+
+    Net * ANN;
+    MakePa * mkPa;
+
+    ofstream outFile;
+
+    outFile.open(outFilePath.toStdString().c_str(), ios_base::app);
+    if(!windows)
+    {
+        ui->realButton->setChecked(true);
+    }
+    else
+    {
+        ui->windButton->setChecked(true);
+        ui->windowLengthSpinBox->setValue(wndLen);
+        ui->timeShiftSpinBox->setValue(tShift);
+    }
+    for(int i = 0; i < list1.length(); ++i)
+    {
+        helpString = dir->absolutePath() + QDir::separator() + list1[i];
+        setEdfFile(helpString);
+        cleanDirs();
+        sliceAll();
+
+        if(windows) countSpectraSimple(1024);
+        else countSpectraSimple(4096);
+
+        ANN = new Net(dir, ns, left, right, spStep, ExpName);
+        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
+        if(windows)
+        {
+            helpString += QString(QDir::separator()) + "windows";
+        }
+        mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+        ANN->adjustReduceCoeff(helpString, 90, 150, mkPa);
+        cleanDir(dir->absolutePath(), "wts");
+
+        for(int k = 0; k < NumOfPairs; ++k)
         {
             mkPa->makePaSlot();
             ANN->PaIntoMatrixByName("1");
             ANN->LearnNet();
-            if(ANN->getEpoch() > 150 || ANN->getEpoch() < 80)
-            {
-                mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 120.));
-            }
-            else
-            {
-                reduceCoefficient = mkPa->getRdcCoeff();
-                cout << "file = " << ExpName.toStdString() << "\t" << "reduceCoeff = " << reduceCoefficient << endl;
-                ANN->setReduceCoeff(reduceCoefficient);
-                break;
-            }
+            helpString = dir->absolutePath() + QDir::separator() + "crossClass_" + QString::number(k) + ".wts";
+            ANN->saveWts(helpString);
         }
+
+
+
+
+
+        helpString = dir->absolutePath() + QDir::separator() + list2[i];
+        setEdfFile(helpString);
+        if(windows) countSpectraSimple(1024);
+        else countSpectraSimple(4096);
+        mkPa->makePaSlot();
+
+        if(windows) ANN->PaIntoMatrixByName("all_wnd");
+        else ANN->PaIntoMatrixByName("all");
+
+        for(int k = 0; k < NumOfPairs; ++k)
+        {
+            helpString = dir->absolutePath() + QDir::separator() + "crossClass_" + QString::number(k) + ".wts";
+            ANN->loadWtsByName(helpString);
+            ANN->tall();
+        }
+        ANN->averageClassification();
+        outFile << ExpName.toStdString() << "\t" << doubleRound(ANN->getAverageAccuracy(), 2) << endl;
+
+
         mkPa->close();
         delete mkPa;
-
-        ANN->setNumOfPairs(50);
-        ANN->autoClassificationSimple();
-
-        outFile = fopen(QString(defaults::dataFolder + "/AA/res.txt").toStdString().c_str(), "a");
-        fprintf(outFile, "%s\t%.2lf\r\n", ExpName.toStdString().c_str(), ANN->getAverageAccuracy());
-        fclose(outFile);
-
         ANN->close();
         delete ANN;
-
-
-
-        if(!ExpName.contains("ica", Qt::CaseInsensitive))
-        {
-            helpString = defaults::dataFolder + "/AA/" + ExpName + "_randIca.txt";
-            outFile = fopen(helpString.toStdString().c_str(), "w");
-            fclose(outFile);
-
-            randomDecomposition();
-        }
     }
+    outFile.close();
 }
 
 
@@ -8166,7 +8275,7 @@ void MainWindow::autoIcaAnalysis2()
             transformEDF(helpString, mapsPath, helpString2);
         }
 
-        if(1) //////////////////////////////////////////////////////////////////////
+        if(0) //////////////////////////////////////////////////////////////////////
         {
             //transform 1st and 2nd correspondingly
             helpString = dir->absolutePath() + QDir::separator() + list0[i];
@@ -8185,8 +8294,8 @@ void MainWindow::autoIcaAnalysis2()
             mapsPath2 = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_2_maps.txt"; ///////////////////////// left( 3 ) generality
             ICsSequence(helpString, helpString2, mapsPath, mapsPath2);
         }
-        ui->timeShiftBox->setValue(125); //0.5 seconds shift
-        continue; //////////////////////////////////////////////////////////////////////
+        ui->timeShiftSpinBox->setValue(125); //0.5 seconds shift
+//        continue; //////////////////////////////////////////////////////////////////////
         /*
         cfg * config;
         config = new cfg(dir, NumOfComps, 247, 0.1, 0.1, "highCorr");
@@ -8257,15 +8366,11 @@ void MainWindow::autoIcaAnalysis2()
 //            if(k != 0) continue; /////////////////////////////////////////////////
             for(int j = 0; j <= 4; ++j)
             {
-//                if(j != 3) continue; /////////////////////////////////////////////////
-
-
-
                 //j == 0 for initial
                 //j == 1 for correctly sequenced ica
                 //j == 2 for ica by maps_1 only
                 //j == 3 for high correlations
-                //j == 4 by whole ica
+                //j == 4 for whole ica
                 for(int wndL = 1000; wndL >= 625; wndL -= 125) //too short limit in spectre.cpp::readFile();
                 {
 
@@ -8287,7 +8392,7 @@ void MainWindow::autoIcaAnalysis2()
                     }
 
                     //process
-                    ui->windowLengthBox->setValue(wndL);
+                    ui->windowLengthSpinBox->setValue(wndL);
 
                     helpString = dir->absolutePath() + QDir::separator() + list0[i];
                     if(j == 1) helpString.replace("_1.edf", "_1_ica_newSeq.edf");
@@ -8367,7 +8472,7 @@ void MainWindow::autoIcaAnalysis2()
                         else if(k == 1) ANN->PaIntoMatrixByName("all_wnd");
 
                         ANN->LearnNet();
-                        ANN->saveWts();
+                        ANN->saveWtsSlot();
                     }
 
                     //open 2nd file
@@ -8617,7 +8722,7 @@ void MainWindow::autoIcaAnalysis4()
                 }
 
 
-                ui->windowLengthBox->setValue(wndL);
+                ui->windowLengthSpinBox->setValue(wndL);
 
 
 
@@ -8689,7 +8794,7 @@ void MainWindow::autoIcaAnalysis4()
                     else if(k == 1) ANN->PaIntoMatrixByName("all_wnd");
 
                     ANN->LearnNet();
-                    ANN->saveWts();
+                    ANN->saveWtsSlot();
                 }
 
                 //classify
@@ -8909,7 +9014,7 @@ void MainWindow::autoIcaAnalysis5() ////////////////////////////////////////////
             ANN->PaIntoMatrixByName("all");
 
             ANN->LearnNet();
-            ANN->saveWts();
+            ANN->saveWtsSlot();
         }
 
         //open 2nd file
@@ -9091,7 +9196,7 @@ void MainWindow::autoIcaAnalysis5() ////////////////////////////////////////////
                     ANN->PaIntoMatrixByName("all");
 
                     ANN->LearnNet();
-                    ANN->saveWts();
+                    ANN->saveWtsSlot();
                 }
 
                 //open 2nd file

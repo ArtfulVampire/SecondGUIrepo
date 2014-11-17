@@ -89,6 +89,7 @@ bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
 int typeOfFileName(QString fileName);
 void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength, int NumOfClasses, double coeff, QString outFile);
 void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int spLength, double coeff, double *** outMatrix);
+void cleanDir(QString dirPath, QString ext = "");
 
 void drawRCP(double *values, int length);
 void countRCP(QString filename, QString picPath = "", double *outMean = NULL, double *outSigma = NULL);

@@ -48,13 +48,17 @@ public:
 //    double ClassificateVectorError(int &vecNum);
     void closeLogFile();
     void setAutoProcessingFlag(bool);
+
+    void adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa);
     int getEpoch();
     void setErrcrit(double);
     double getErrcrit();
+
     void Sammon(double ** distArr, int size, int * colors);
     void Kohonen(double ** input, double ** eigenVects, double * averageProjection, int size, int length);
     void moveCoordsGradient(double ** coords, double ** distOld, double ** distNew, int size);
     double thetalpha(int bmu_, int j_, int step_, double ** arr, int length_);
+
     void readCfgByName(QString FileName);
     double setPercentageForClean();
     double mouseClick(QLabel * label, QMouseEvent * ev);
@@ -62,7 +66,9 @@ public:
 //    void leaveOneOutCL();
     double getAverageAccuracy();
     void setReduceCoeff(double coeff);
+    double getReduceCoeff();
     void setNumOfPairs(int num);
+    void saveWts(QString wtsPath);
 
 protected:
     bool event(QEvent * ev);
@@ -77,7 +83,7 @@ public slots:
 
     void tall();
     void reset();
-    void saveWts();
+    void saveWtsSlot();
     void stopActivity();
     void drawWts();
     void PaIntoMatrixByName(QString fileName);

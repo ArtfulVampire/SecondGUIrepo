@@ -587,8 +587,8 @@ int typeOfFileName(QString fileName)
 
 void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength, int NumOfClasses, double coeff, QString outFile)
 {
-    QTime myTime;
-    myTime.start();
+//    QTime myTime;
+//    myTime.start();
     ofstream outStream(outFile.toStdString().c_str());
     if(!outStream.good())
     {
@@ -633,7 +633,7 @@ void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength,
     }
     outStream.close();
     matrixDelete(&data4, ns);
-    cout << "makePaFile: time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
+//    cout << "makePaFile: time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
 }
 
 void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int spLength, double coeff, double *** outMatrix)
@@ -666,6 +666,28 @@ void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int 
     }
     matrixDelete(&data4, ns);
 //    cout << "makeMatrixFromFiles: time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
+}
+void cleanDir(QString dirPath, QString ext)
+{
+    QDir * tmpDir = new QDir(dirPath);
+
+    QStringList lst;
+
+    if(ext.isEmpty()) lst = tmpDir->entryList(QDir::Files);
+    else
+    {
+        QStringList filter;
+        filter.clear();
+        filter << QString("*." + ext);
+        lst = tmpDir->entryList(filter, QDir::Files);
+    }
+
+    for(int h = 0; h < lst.length(); ++h)
+    {
+        QFile::remove(tmpDir->absolutePath() + QDir::separator() + lst[h]);
+    }
+    delete tmpDir;
+
 }
 
 void drawRCP(double * values, int length)

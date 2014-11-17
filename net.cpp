@@ -81,6 +81,9 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->deltaRadioButton->setChecked(false);
     ui->backpropRadioButton->setChecked(false);
 
+    if(spStep == 250./1024) ui->windowsRadioButton->setChecked(true);
+    else if(spStep == 250./4096) ui->realsRadioButton->setChecked(true);
+
     ui->tempBox->setValue(10);
     ui->tempBox->setSingleStep(1);
     ui->critErrorDoubleSpinBox->setValue(0.10);
@@ -158,7 +161,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopActivity()));
 
-    QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(saveWts()));
+    QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(saveWtsSlot()));
 
     QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWts()));
 
@@ -188,8 +191,17 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 
-    //generality
     helpString = dir->absolutePath() + QDir::separator() + defaults::cfgFileName;
+    readCfgByName(helpString);
+
+    if(spStep == 250./4096)
+    {
+        helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
+    }
+    else if(spStep == 250./1024)
+    {
+        helpString = dir->absolutePath() + QDir::separator() + "4sec19ch.net";
+    }
     readCfgByName(helpString);
 
     this->ui->deltaRadioButton->setChecked(true);
@@ -301,7 +313,7 @@ void Net::autoClassificationSimple()
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth");
     }
-    else if(ui->windowsRadioButton->isChecked())
+    else if(ui->windowsRadioButton->isChecked()) //generality
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows");
     }
@@ -315,6 +327,47 @@ void Net::autoClassificationSimple()
 void Net::setAutoProcessingFlag(bool a)
 {
     autoFlag = a;
+}
+
+void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa)
+{
+    QString typeString;
+    if(spectraDir.contains("windows", Qt::CaseInsensitive))
+    {
+        typeString = "_wnd";
+    }
+    else if(spectraDir.contains("pca", Qt::CaseInsensitive))
+    {
+        typeString = "_pca";
+    }
+    else
+    {
+        typeString = "";
+    }
+
+    MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
+
+    mkPa->setRdcCoeff(this->ui->rdcCoeffSpinBox->value());
+    while(1)
+    {
+        mkPa->makePaSlot();
+        helpString = "1" + typeString;
+        this->PaIntoMatrixByName(helpString);
+        LearnNet();
+        if(this->getEpoch() > highLimit || this->getEpoch() < lowLimit)
+        {
+            mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(2. * this->getEpoch() /  double(lowLimit + highLimit) ));
+        }
+        else
+        {
+            cout << "reduceCoeff = " << mkPa->getRdcCoeff() << endl;
+            this->setReduceCoeff(mkPa->getRdcCoeff());
+            break;
+        }
+    }
+    mkPa->close();
+    delete mkPa;
+    outMkPa->setRdcCoeff(this->getReduceCoeff());
 }
 
 void Net::autoClassification(QString spectraDir)
@@ -355,15 +408,6 @@ void Net::autoClassification(QString spectraDir)
     autoFlag = 1;
     int numOfPairs = ui->numOfPairsBox->value();
 
-
-    MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
-
-    mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
-    mkPa->setNumOfClasses(NumOfClasses);
-//    mkPa->setFold(3);
-
-
-
     QString typeString;
     if(spectraDir.contains("windows", Qt::CaseInsensitive))
     {
@@ -378,8 +422,11 @@ void Net::autoClassification(QString spectraDir)
         typeString = "";
     }
 
+
     //adjust reduce coefficient
-    mkPa->setRdcCoeff(this->ui->rdcCoeffSpinBox->value());
+    MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
+    mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
+    mkPa->setNumOfClasses(NumOfClasses);
     while(1)
     {
         mkPa->makePaSlot();
@@ -387,9 +434,9 @@ void Net::autoClassification(QString spectraDir)
         helpString = "1" + typeString;
         PaIntoMatrixByName(helpString);
         LearnNet();
-        if(epoch > 150 || epoch < 90)
+        if(epoch > 120 || epoch < 80)
         {
-            mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(epoch / 120.));
+            mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(epoch / 100.));
         }
         else
         {
@@ -401,7 +448,7 @@ void Net::autoClassification(QString spectraDir)
 
     for(int i = 0; i < numOfPairs; ++i)
     {
-        cout << i  << " iteration in process" << endl;
+        cout << i+1  << " iteration in process" << endl;
         //make PA
         mkPa->makePaSlot();
 
@@ -515,6 +562,11 @@ double Net::getAverageAccuracy()
 void Net::setReduceCoeff(double coeff)
 {
     this->ui->rdcCoeffSpinBox->setValue(coeff);
+}
+
+double Net::getReduceCoeff()
+{
+    return this->ui->rdcCoeffSpinBox->value();
 }
 
 void Net::setNumOfPairs(int num)
@@ -745,40 +797,14 @@ void Net::stopActivity()
 }
 
 
-
-void Net::saveWts()
+void Net::saveWts(QString wtsPath)
 {
-    FILE * weights;
-    //automatization
-    int wtsCounter = 0;
+    ofstream weights;
+    weights.open(wtsPath.toStdString().c_str());
 
-    if(!autoFlag)
+    if(!weights.good())
     {
-        helpString = QDir::toNativeSeparators(QFileDialog::getSaveFileName((QWidget * )this, tr("wts to save"), dirBC->absolutePath(), tr("wts files (*.wts)")));
-        if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
-        {
-            helpString.append(".wts");
-        }
-    }
-    else
-    {
-        do
-        {
-            helpString = dir->absolutePath() + QDir::separator() + ExpName + "_weights_" + QString::number(wtsCounter) + ".wts";
-            ++wtsCounter;
-        } while(QFile::exists(helpString));
-    }
-
-    if(helpString == "")
-    {
-        QMessageBox::information((QWidget * )this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
-    }
-    weights = fopen(helpString.toStdString().c_str(),"w");
-
-    if(weight == NULL)
-    {
-        cout << "file to write == NULL" << endl;
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("cannot open target wts-file"), QMessageBox::Ok);
+        cout << "saveWts: cannot open file = " << wtsPath.toStdString() << endl;
         return;
     }
 
@@ -788,13 +814,43 @@ void Net::saveWts()
         {
             for(int k = 0; k < dimensionality[i+1]; ++k)
             {
-                fprintf(weights, "%lf\r\n", weight[i][j][k]);
+                weights << weight[i][j][k] << endl;
             }
-            fprintf(weights, "\r\n");
+            weights << endl;
         }
-        fprintf(weights, "\r\n");
+        weights << endl;
     }
-    fclose(weights);
+    weights.close();
+}
+
+void Net::saveWtsSlot()
+{
+    //automatization
+    int wtsCounter = 0;
+    if(!autoFlag)
+    {
+        helpString = QDir::toNativeSeparators(QFileDialog::getSaveFileName((QWidget * )this, tr("wts to save"), dirBC->absolutePath(), tr("wts files (*.wts)")));
+        if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
+        {
+            helpString.append(".wts");
+        }
+    }
+    else /////////wtf?
+    {
+        do
+        {
+            helpString = dir->absolutePath() + QDir::separator() + ExpName + "_weights_" + QString::number(wtsCounter) + ".wts";
+            ++wtsCounter;
+        } while(QFile::exists(helpString));
+    }
+
+    if(helpString.isEmpty())
+    {
+        cout << "saveWtsSlot: no file is chosen to save" << endl;
+        return;
+    }
+    saveWts(helpString);
+
 }
 
 void Net::reset()
@@ -1056,7 +1112,6 @@ void Net::memoryAndParamsAllocation()
 //        cout << "memoryAndParamsAllocation: after weight " << endl;
     }
 
-//    cout << "memoryAndParamsAllocation: after weight" << endl;
     reset();
 
 }
@@ -1074,8 +1129,7 @@ void Net::readCfgByName(QString FileName)
     FILE * cfg = fopen(helpString.toStdString().c_str(),"r");
     if(cfg == NULL)
     {
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("cannot open cfg-file"), QMessageBox::Ok);
-        cout << "wrong cfg path = " << helpString.toStdString() << endl;
+        cout << "readCfgByName: wrong cfg path = " << helpString.toStdString() << endl;
         return;
     }
     fscanf(cfg, "%*s%d\n", &NetLength);
@@ -1092,8 +1146,6 @@ void Net::readCfgByName(QString FileName)
     ui->learnRateBox->setValue(learnRate);
 
     loadPAflag = 1;
-
-
 
     channelsSet.clear();
     channelsSetExclude.clear();
