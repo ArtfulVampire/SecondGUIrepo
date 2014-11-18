@@ -72,6 +72,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     group2->addButton(ui->realsRadioButton);
     group2->addButton(ui->windowsRadioButton);
     group2->addButton(ui->pcRadioButton);
+    group2->addButton(ui->bayesRadioButton);
     group3 = new QButtonGroup();
     group3->addButton(ui->deltaRadioButton);
     group3->addButton(ui->backpropRadioButton);
@@ -320,6 +321,10 @@ void Net::autoClassificationSimple()
     else if(ui->pcRadioButton->isChecked())
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraPCA");
+    }
+    else if(ui->bayesRadioButton->isChecked())
+    {
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "Bayes");
     }
     if(!helpString.isEmpty()) autoClassification(helpString);
 }
@@ -3394,7 +3399,11 @@ void Net::pca()
     //count reduced Data - first some PC
     for(int j = 0; j < NumberOfVectors; ++j) //i->j
     {
-        pcaFile = fopen(QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "SpectraPCA" + QDir::separator() + FileName[j]).toStdString().c_str(), "w");
+        helpString = dirBC->absolutePath();
+        helpString += QString(QDir::separator()) + "SpectraSmooth";
+        helpString += QString(QDir::separator()) + "PCA";
+        helpString += FileName[j];
+        pcaFile = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
         for(int k = 0; k < numOfPc; ++k) //j->k
         {
             fprintf(pcaFile, "%lf\n", double(10. * pcaMatrix[j][k])); //PC coefficients

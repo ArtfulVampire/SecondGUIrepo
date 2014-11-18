@@ -49,7 +49,7 @@ public slots:
     //other widgets
     void countSpectraShow();
     void cutShow();
-    void makeShow();
+    void makeCfgShow();
     void makePaShow();
     void eyesShow();
     void netShow();

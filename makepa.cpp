@@ -4,7 +4,6 @@
 MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int right_, double spStep_, QVector<int> vect_) :
     ui(new Ui::MakePa)
 {
-//    cout << "makePa constructed" << endl;
 
     ui->setupUi(this);
 
@@ -15,17 +14,13 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     spStep = spStep_;
     ExpName = ExpName_;
 
-//    cout << "before vect" << endl;
     vect = vect_;
-//    cout << "after vect" << endl;
     ns=ns_;
 
 
 
     this->setWindowTitle("Make PA");
 
-//    helpString.setNum(spLength);
-//    ui->lineEdit_5->setText(helpString);
     ui->spLBox->setMaximum(1000);
     ui->spLBox->setMinimum(1);
     ui->spLBox->setValue(spLength);
@@ -34,34 +29,36 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     ui->nsBox->setMinimum(1);
     ui->nsBox->setValue(ns);
 
-    ui->crossValidSpinBox->setMaximum(10);
-    ui->crossValidSpinBox->setMinimum(2);
-    ui->crossValidSpinBox->setSingleStep(1);
-    ui->crossValidSpinBox->setValue(2);
-
+    ui->foldSpinBox->setMaximum(10);
+    ui->foldSpinBox->setMinimum(2);
+    ui->foldSpinBox->setSingleStep(1);
+    ui->foldSpinBox->setValue(2);
 
 
     ui->lineEdit_1->setText("_241");
     ui->lineEdit_2->setText("_247");
     ui->lineEdit_3->setText("_254");
 
-//    ui->lineEdit_1->setText("RJ");
-//    ui->lineEdit_2->setText("CF");
-//    ui->cl2_Button->setChecked(true);
-    ui->cl3_Button->setChecked(true);
-
-    //generality
-//    ui->lineEdit_4->setText("8"); //sqrt
-//    ui->lineEdit_4->setText("20"); //no sqrt
     ui->rdcCoeffBox->setValue(20);
     ui->rdcCoeffBox->setDecimals(3);
     ui->rdcCoeffBox->setMinimum(1e-3);
     ui->rdcCoeffBox->setMaximum(1e3);
 
+    group1 = new QButtonGroup();
+    group1->addButton(ui->realsRadioButton);
+    group1->addButton(ui->windowsRadioButton);
+    group1->addButton(ui->bayesRadioButton);
+    group1->addButton(ui->pcaRadioButton);
+
+
+    ui->numOfClassesSpinBox->setMaximum(5);
+    ui->numOfClassesSpinBox->setMinimum(1);
+    ui->numOfClassesSpinBox->setValue(1);
+
 
 
     helpString = QDir::toNativeSeparators(spectraPath);
-    ui->paLineEdit->setText(helpString);
+    ui->spectraDirLineEdit->setText(helpString);
 
 
     ui->alphaSpinBox->setSingleStep(0.01);
@@ -72,19 +69,13 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
 
 
     dir = new QDir();
-    dir->cd(spectraPath);
-    dir->cdUp();
-    if(spStep == 250./1024.) dir->cdUp(); //generality for windows
+    helpString = spectraPath;
+    helpString.resize(helpString.lastIndexOf("SpectraSmooth") - 1); //QDir::separator();
+    dir->cd(helpString);
 
-//    browser = new QFileDialog();
-//    browser->setDirectory(QDir::toNativeSeparators(dir->absolutePath()));
+
 
     helpCharArr = new char [64];
-
-//    browser->setWindowTitle("Choose spectra directory");
-
-//    QObject::connect(ui->browseButton, SIGNAL(clicked()), browser, SLOT(show()));
-    //    QObject::connect(browser, SIGNAL(directoryEntered(QString)), ui->paLineEdit, SLOT(setText(QString)));
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(dirSlot()));
     QObject::connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(makePaSlot()));
     QObject::connect(ui->spLBox, SIGNAL(valueChanged(int)), this, SLOT(setSpLength()));
@@ -93,6 +84,11 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     QObject::connect(ui->kwTestButton, SIGNAL(clicked()), this, SLOT(kwTest()));
     QObject::connect(ui->dispersionAnalysisButton, SIGNAL(clicked()), this, SLOT(dispersionAnalysis()));
     QObject::connect(ui->vdvTestButton, SIGNAL(clicked()), this, SLOT(correlationDifference()));
+    QObject::connect(ui->numOfClassesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setNumOfClasses(int)));
+    QObject::connect(group1, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(changeSpectraDir(QAbstractButton*)));
+
+    ui->realsRadioButton->setChecked(true);
+    ui->numOfClassesSpinBox->setValue(3);
     this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
@@ -108,25 +104,29 @@ void MakePa::dirSlot()
     helpString = QFileDialog::getExistingDirectory(this, tr("Choose input dir"), dir->absolutePath());
     if(!helpString.isEmpty())
     {
-        ui->paLineEdit->setText(helpString);
+        ui->spectraDirLineEdit->setText(helpString);
     }
 }
 
+void MakePa::changeSpectraDir(QAbstractButton * button)
+{
+    QString str = button->text();
+    QString hlp = ui->spectraDirLineEdit->text();
+
+    hlp.resize(hlp.lastIndexOf("SpectraSmooth") + QString("SpectraSmooth").length());
+    if(!str.isEmpty())
+    {
+        hlp += QString(QDir::separator()) + str;
+    }
+    ui->spectraDirLineEdit->setText(hlp);
+}
 
 void MakePa::setNumOfClasses(int a)
 {
-    if(a==2)
-    {
-        ui->cl2_Button->setChecked(true);
-        return;
-    }
-    if(a==3)
-    {
-        ui->cl3_Button->setChecked(true);
-        return;
-    }
-    return;
+    NumOfClasses = a;
+    ui->numOfClassesSpinBox->setValue(NumOfClasses);
 }
+
 
 void MakePa::setSpLength()
 {
@@ -143,7 +143,7 @@ void MakePa::mwTest()
     ui->mwTestLine->clear();
 
     QDir *dir_ = new QDir();
-    dir_->cd(ui->paLineEdit->text());          /////////which dir?
+    dir_->cd(ui->spectraDirLineEdit->text());          /////////which dir?
     helpString=dir_->absolutePath();
 
     QStringList nameFilters, list, lst[2]; //0 - Spatial, 1 - Verbal
@@ -499,7 +499,7 @@ void MakePa::vdvTest()
     ui->mwTestLine->clear();
 
     QDir *dir_ = new QDir();
-    dir_->cd(ui->paLineEdit->text());          /////////which dir?
+    dir_->cd(ui->spectraDirLineEdit->text());          /////////which dir?
     helpString=dir_->absolutePath();
 
     QStringList nameFilters, list, lst[2]; //0 - Spatial, 1 - Verbal
@@ -816,7 +816,7 @@ void MakePa::kwTest()
     ui->mwTestLine->clear();
 
     QDir *dir_ = new QDir();
-    dir_->cd(ui->paLineEdit->text());          /////////which dir?
+    dir_->cd(ui->spectraDirLineEdit->text());          /////////which dir?
     helpString=dir_->absolutePath();
 
     QStringList nameFilters, list, lst[3]; //0 - Spatial, 1 - Verbal, 2- Idle
@@ -1190,18 +1190,18 @@ void MakePa::kwTest()
 
 void MakePa::setFold(int a)
 {
-    ui->crossValidSpinBox->setValue(a);
+    ui->foldSpinBox->setValue(a);
 }
 
 void MakePa::makePaSlot()
 {
     QString typeString;
 
-    if(ui->paLineEdit->text().contains("windows", Qt::CaseInsensitive))
+    if(ui->spectraDirLineEdit->text().contains("windows", Qt::CaseInsensitive))
     {
         typeString = "_wnd.pa";
     }
-    else if(ui->paLineEdit->text().contains("PCA", Qt::CaseInsensitive))
+    else if(ui->spectraDirLineEdit->text().contains("PCA", Qt::CaseInsensitive))
     {
         typeString = "_pca.pa";
     }
@@ -1212,13 +1212,10 @@ void MakePa::makePaSlot()
 
     ui->lineEdit->clear();
     double coeff = ui->rdcCoeffBox->value();
-    int fold = ui->crossValidSpinBox->value();
-
-    if(ui->cl3_Button->isChecked()) NumOfClasses = 3;    ///////////////generality
-    if(ui->cl2_Button->isChecked()) NumOfClasses = 2;
+    int fold = ui->foldSpinBox->value();
 
     QDir *dir_ = new QDir();
-    dir_->cd(ui->paLineEdit->text());
+    dir_->cd(ui->spectraDirLineEdit->text());
     helpString = dir_->absolutePath();
 
 
@@ -1386,11 +1383,10 @@ double MakePa::getRdcCoeff()
 
 void MakePa::dispersionAnalysis()
 {
-    if(ui->cl3_Button->isChecked()) NumOfClasses=3;    ///////////////generality
-    if(ui->cl2_Button->isChecked()) NumOfClasses=2;
+
 
     QDir *dir_ = new QDir();
-    dir_->cd(ui->paLineEdit->text());
+    dir_->cd(ui->spectraDirLineEdit->text());
     QStringList nameFilters, list, lst[3];
     nameFilters.clear();
     list.clear();
@@ -1676,7 +1672,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
     ui->mwTestLine->clear();
 
     QDir *dir_ = new QDir();
-    dir_->cd(ui->paLineEdit->text());          /////////which dir?
+    dir_->cd(ui->spectraDirLineEdit->text());          /////////which dir?
     helpString=dir_->absolutePath();
 
     QStringList nameFilters, list, lst[2]; //0 - Spatial, 1 - Verbal
@@ -1972,7 +1968,7 @@ void MakePa::correlationDifference()
     ui->mwTestLine->clear();
 
     QDir *dir_ = new QDir();
-    dir_->cd(ui->paLineEdit->text());          /////////which dir?
+    dir_->cd(ui->spectraDirLineEdit->text());          /////////which dir?
     helpString=dir_->absolutePath();
 
     QStringList nameFilters, list, lst[2]; //0 - Spatial, 1 - Verbal

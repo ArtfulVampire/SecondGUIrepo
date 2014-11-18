@@ -64,6 +64,8 @@ MainWindow::MainWindow() :
     group4->addButton(ui->lambdaRadioButton);
     group4->addButton(ui->r2RadioButton);
 
+    ui->BayesRadioButton->setChecked(true);
+
     //wavelets
     ui->classBox->setChecked(true);
     ui->weightsBox->setChecked(true);
@@ -240,7 +242,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->cut_e, SIGNAL(clicked()), this, SLOT(cutShow()));
 
-    QObject::connect(ui->makeCFG, SIGNAL(clicked()), this, SLOT(makeShow()));
+    QObject::connect(ui->makeCFG, SIGNAL(clicked()), this, SLOT(makeCfgShow()));
 
     QObject::connect(ui->makePA, SIGNAL(clicked()), this, SLOT(makePaShow()));
 
@@ -744,67 +746,82 @@ MainWindow::MainWindow() :
 
     helpString = "/media/Files/Data/AB/out.txt";
 //    listFileInnerClassification("/media/Files/Data/AB", QStringList("???_sum.edf"), 50, helpString);
-    helpString = "/media/Files/Data/AB/out.txt";
-    listFileInnerClassification("/media/Files/Data/AB", QStringList("???_sum_ica.edf"), 50, helpString);
-    return;
-
-if(0)
-{
-    //check the dispersion of new perceptron
-    setEdfFile("/media/Files/Data/AB/AAX_sum.edf");
-    ui->reduceChannelsComboBox->setCurrentText("20");
-    cleanDirs();
-    sliceAll();
-    Spectre * sp = new Spectre(dir, ns, ExpName);
-    sp->countSpectra();
-    sp->close();
-    delete sp;
-    Net * ANN = new Net(dir, ns, left, right, spStep, ExpName);
-    ofstream outF;
-    double tempCoeff;
-    for(int i = 30; i <= 50; i+= 10)
+//    helpString = "/media/Files/Data/AB/out.txt";
+//    listFileInnerClassification("/media/Files/Data/AB", QStringList("???_sum_ica.edf"), 50, helpString);
+//    return;
+    if(0)
     {
-        helpString = "/media/Files/Data/AB/newPerceptron_" + QString::number(i) + ".txt";
 
-        outF.open(helpString.toStdString().c_str(), ios_base::app);
-        for(int j = 0; j < 50; ++j)
+        for(int k = 0; k < 2; ++k)
         {
-            ANN->setNumOfPairs(i);
-            ANN->autoClassificationSimple();
-            outF << ANN->getAverageAccuracy() << endl;
+
+            //check the dispersion of new perceptron
+            if(k == 0) setEdfFile("/media/Files/Data/AB/AAX_sum.edf");
+            else setEdfFile("/media/Files/Data/AB/SUA_sum.edf");
+
+            ui->reduceChannelsComboBox->setCurrentText("20");
+            cleanDirs();
+            sliceAll();
+            Spectre * sp = new Spectre(dir, ns, ExpName);
+            sp->countSpectra();
+            sp->close();
+            delete sp;
+            Net * ANN = new Net(dir, ns, left, right, spStep, ExpName);
+            ofstream outF;
+            double tempCoeff;
+            for(int i = 30; i <= 60; i+= 10)
+            {
+                if(k == 0) helpString = "/media/Files/Data/AB/newPerceptron_AAX_" + QString::number(i) + ".txt";
+                else helpString = "/media/Files/Data/AB/newPerceptron_SUA_" + QString::number(i) + ".txt";
+
+                outF.open(helpString.toStdString().c_str(), ios_base::app);
+                for(int j = 0; j < 50; ++j)
+                {
+                    ANN->setNumOfPairs(i);
+                    ANN->autoClassificationSimple();
+                    outF << ANN->getAverageAccuracy() << endl;
+                }
+                outF.close();
+            }
+            ANN->close();
+            delete ANN;
         }
-        outF.close();
     }
-    ANN->close();
-    delete ANN;
-    exit(0);
-}
 
-//    for(int i = 3; i <= 5; i+= 1)
-//    {
-//        helpString = "/media/Files/Data/AB/newPerceptron_" + QString::number(i) + ".txt";
-//        listFileInnerClassification("/media/Files/Data/AB", QStringList("AAX_sum.edf"), i, helpString);
-//    }
 
+
+/*
 
     double mean_, sigma_;
     countRCP("/media/Files/Data/AB/newPerceptron_10.txt", "", &mean_, &sigma_);
     cout << mean_ << " " << sigma_ << endl;
-
     countRCP("/media/Files/Data/AB/newPerceptron_15.txt", "", &mean_, &sigma_);
     cout << mean_ << " " << sigma_ << endl;
-
     countRCP("/media/Files/Data/AB/newPerceptron_20.txt", "", &mean_, &sigma_);
     cout << mean_ << " " << sigma_ << endl;
-
     countRCP("/media/Files/Data/AB/newPerceptron_25.txt", "", &mean_, &sigma_);
     cout << mean_ << " " << sigma_ << endl;
-
     countRCP("/media/Files/Data/AB/newPerceptron_30_.txt", "", &mean_, &sigma_);
     cout << mean_ << " " << sigma_ << endl;
 
+    countRCP("/media/Files/Data/AB/newPerceptron_AAX_40.txt", "", &mean_, &sigma_);
+    cout << mean_ << " " << sigma_ << endl;
+
+    countRCP("/media/Files/Data/AB/newPerceptron_AAX_50.txt", "", &mean_, &sigma_);
+    cout << mean_ << " " << sigma_ << endl;
+
+    countRCP("/media/Files/Data/AB/newPerceptron_AAX_60.txt", "", &mean_, &sigma_);
+    cout << mean_ << " " << sigma_ << endl;
+
+    countRCP("/media/Files/Data/AB/newPerceptron_SUA_30.txt", "", &mean_, &sigma_);
+    cout << mean_ << " " << sigma_ << endl;
+    countRCP("/media/Files/Data/AB/newPerceptron_SUA_40.txt", "", &mean_, &sigma_);
+    cout << mean_ << " " << sigma_ << endl;
+*/
 
 
+    setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
+    makePaShow();
 }
 
 MainWindow::~MainWindow()
@@ -955,13 +972,13 @@ void MainWindow::Bayes()
     {
         dataBayes[i] = new double [250*60*5];
     }
-    double maxAmpl = 80.; //generality from readData
+    double maxAmpl = 10.; //generality from readData
 
     maxAmpl += 0.001; //bicycle
 
-//    int numOfIntervals = maxAmpl/2;
     int numOfIntervals = ui->BayesSpinBox->value();
-    numOfIntervals *=2; //odd or even?
+    numOfIntervals *= 2; //odd or even?
+    spLength = numOfIntervals;
 
     int * count = new int [numOfIntervals];
 
@@ -970,7 +987,7 @@ void MainWindow::Bayes()
     for(int i = 0; i < lst.length(); ++i)
     {
         if(lst[i].contains("num")) continue;
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Realisations").append(QDir::separator()).append(lst[i]));
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + lst[i]);
         file = fopen(helpString.toStdString().c_str(), "r");
         fscanf(file, "NumOfSlices %d\n", &NumOfSlices);
         if(NumOfSlices < 250)
@@ -978,10 +995,6 @@ void MainWindow::Bayes()
             fclose(file);
             continue;
         }
-
-
-//        cout<<helpString.toStdString()<<"\t"<<NumOfSlices<<endl;
-
 
         for(int j = 0; j < NumOfSlices; ++j)
         {
@@ -992,7 +1005,7 @@ void MainWindow::Bayes()
         }
         fclose(file);
 
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth").append(QDir::separator()).append("Bayes").append(QDir::separator()).append(lst[i]));
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "Bayes" + QDir::separator() + lst[i]);
         file = fopen(helpString.toStdString().c_str(), "w");
         for(int l = 0; l < ns; ++l)
         {
@@ -1006,13 +1019,14 @@ void MainWindow::Bayes()
                 for(int j = 0; j < NumOfSlices; ++j)
                 {
                     helpInt = int(floor((dataBayes[l][j] + maxAmpl) / (2.*maxAmpl/double(numOfIntervals))));
-                    if(helpInt != min(max(0, helpInt), numOfIntervals-1)) continue;
+
+                    if(helpInt != min(max(0, helpInt), numOfIntervals-1)) continue; // out of range
 
                     count[helpInt] += 1;
                 }
                 for(int k = 0; k < numOfIntervals; ++k)
                 {
-                    helpDouble = count[k]/double(NumOfSlices)*10.;
+                    helpDouble = count[k]/double(NumOfSlices); // norm coeff
                     fprintf(file, "%lf\n", helpDouble);
                 }
             }
@@ -1025,20 +1039,14 @@ void MainWindow::Bayes()
                 fprintf(file, "%.3lf\n", helpDouble);
             }
         }
-//        cout<<endl;
         fclose(file);
-
-
     }
-//    cout<<"1"<<endl;
     delete [] count;
-//    cout<<"1"<<endl;
     for(int i = 0; i < ns; ++i)
     {
         delete [] dataBayes[i];
     }
     delete [] dataBayes;
-    cout<<"Bayes counted"<<endl;
 }
 
 
@@ -1823,7 +1831,7 @@ void MainWindow::makePaShow() //250 - frequency generality
     mkPa->show();
 }
 
-void MainWindow::makeShow()//250 - frequency generality
+void MainWindow::makeCfgShow()//250 - frequency generality
 {
     if(spStep == 250./4096.) helpString = "16sec19ch";
     else if(spStep == 250./1024.) helpString = "4sec19ch";
@@ -1899,13 +1907,13 @@ void MainWindow::setEdfFile(QString filePath)
     dir->mkdir("SignalsCut/after");
     dir->mkdir("SpectraImg");
     dir->mkdir("SpectraSmooth");
-    dir->mkdir("SpectraSmooth/Bayes");
     dir->mkdir("SpectraSmooth/windows");
+    dir->mkdir("SpectraSmooth/Bayes");
+    dir->mkdir("SpectraSmooth/PCA");
     dir->mkdir("windows");
     dir->mkdir("windows/fromreal");
     dir->mkdir("Realisations");
     dir->mkdir("Realisations/BC");
-    dir->mkdir("SpectraPCA");
     dir->mkdir("cut");
 
 
@@ -9358,3 +9366,4 @@ void MainWindow::autoIcaAnalysis5() ////////////////////////////////////////////
     }
 
 }
+

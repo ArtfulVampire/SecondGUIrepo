@@ -45,9 +45,11 @@ public slots:
     void mwTest();
     void dirSlot();
     void kwTest();
-    void setNumOfClasses(int a);
     void dispersionAnalysis();
     void correlationDifference();
+    void changeSpectraDir(QAbstractButton * button);
+    void setNumOfClasses(int);
+
 
 
 private:
@@ -61,6 +63,7 @@ private:
     char * helpCharArr;
     QString ExpName;
     QVector<int> vect;
+    QButtonGroup * group1;
 };
 
 #endif // MAKEPA_H

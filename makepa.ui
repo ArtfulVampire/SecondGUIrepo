@@ -6,389 +6,305 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>595</width>
-    <height>367</height>
+    <width>592</width>
+    <height>380</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="browseButton">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>490</x>
-     <y>10</y>
-     <width>93</width>
-     <height>27</height>
+     <x>12</x>
+     <y>12</y>
+     <width>571</width>
+     <height>351</height>
     </rect>
    </property>
-   <property name="text">
-    <string>Browse</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="paLineEdit">
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>10</y>
-     <width>371</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QRadioButton" name="cl2_Button">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>40</y>
-     <width>109</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>2 classes</string>
-   </property>
-  </widget>
-  <widget class="QRadioButton" name="cl3_Button">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>60</y>
-     <width>109</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>3 classes</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>131</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Spectra Dir</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit_1">
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>50</y>
-     <width>113</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit_2">
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>90</y>
-     <width>113</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit_3">
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>130</y>
-     <width>113</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>50</y>
-     <width>80</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Markers 1</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>90</y>
-     <width>80</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Markers 2</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>130</y>
-     <width>80</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Markers 3</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>90</y>
-     <width>93</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Make PA</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>130</y>
-     <width>121</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_5">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>170</y>
-     <width>80</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Rdc coeff</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_6">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>210</y>
-     <width>70</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>spLength</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="mwTestButton">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>170</y>
-     <width>160</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Mann-Whitney U-test</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="mwTestLine">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>330</y>
-     <width>161</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="vdvTestButton">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>200</y>
-     <width>160</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Pearson difference</string>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="alphaSpinBox">
-   <property name="geometry">
-    <rect>
-     <x>430</x>
-     <y>170</y>
-     <width>62</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_7">
-   <property name="geometry">
-    <rect>
-     <x>500</x>
-     <y>170</y>
-     <width>30</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>1-p</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="addNameLineEdit">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>300</y>
-     <width>161</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_8">
-   <property name="geometry">
-    <rect>
-     <x>430</x>
-     <y>300</y>
-     <width>80</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>add name</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="kwTestButton">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>230</y>
-     <width>161</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Kruskal-Wallis test</string>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="mwNormSpinBox">
-   <property name="geometry">
-    <rect>
-     <x>430</x>
-     <y>200</y>
-     <width>62</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_9">
-   <property name="geometry">
-    <rect>
-     <x>500</x>
-     <y>207</y>
-     <width>67</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>norm</string>
-   </property>
-  </widget>
-  <widget class="QSpinBox" name="spLBox">
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>210</y>
-     <width>111</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QSpinBox" name="nsBox">
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>250</y>
-     <width>111</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_10">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>250</y>
-     <width>70</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>ns</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="dispersionAnalysisButton">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>260</y>
-     <width>160</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Dispersion analysis</string>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="rdcCoeffBox">
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>170</y>
-     <width>111</width>
-     <height>24</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QSpinBox" name="crossValidSpinBox">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>50</y>
-     <width>51</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_11">
-   <property name="geometry">
-    <rect>
-     <x>420</x>
-     <y>50</y>
-     <width>140</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>-fold cross-validation</string>
-   </property>
+   <layout class="QGridLayout" name="gridLayout_4">
+    <item row="0" column="0" colspan="2">
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Spectra Dir</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="spectraDirLineEdit"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="browseButton">
+        <property name="text">
+         <string>Browse</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Markers 3</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Markers 1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>ns</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Markers 2</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>spLength</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="lineEdit_3"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="lineEdit_1"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Rdc coeff</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="lineEdit_2"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="spLBox"/>
+          </item>
+          <item row="5" column="1">
+           <widget class="QSpinBox" name="nsBox"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="rdcCoeffBox"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="1">
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QSpinBox" name="numOfClassesSpinBox"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>classes</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QSpinBox" name="foldSpinBox"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>-fold</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>Make PA</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QRadioButton" name="realsRadioButton">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="windowsRadioButton">
+            <property name="text">
+             <string>windows</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="bayesRadioButton">
+            <property name="text">
+             <string>Bayes</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="pcaRadioButton">
+            <property name="text">
+             <string>PCA</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="mwTestButton">
+          <property name="text">
+           <string>Mann-Whitney U-test</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QDoubleSpinBox" name="alphaSpinBox"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>1-p</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="vdvTestButton">
+          <property name="text">
+           <string>Pearson difference</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QDoubleSpinBox" name="mwNormSpinBox"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>norm</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="2" column="0">
+         <widget class="QPushButton" name="kwTestButton">
+          <property name="text">
+           <string>Kruskal-Wallis test</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QPushButton" name="dispersionAnalysisButton">
+          <property name="text">
+           <string>Dispersion analysis</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLineEdit" name="addNameLineEdit"/>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>add name</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLineEdit" name="mwTestLine"/>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>output</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

@@ -19,7 +19,7 @@
      <x>5</x>
      <y>0</y>
      <width>551</width>
-     <height>300</height>
+     <height>314</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
@@ -173,6 +173,13 @@
        <widget class="QRadioButton" name="realsRadioButton">
         <property name="text">
          <string>reals</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="bayesRadioButton">
+        <property name="text">
+         <string>bayes</string>
         </property>
        </widget>
       </item>
