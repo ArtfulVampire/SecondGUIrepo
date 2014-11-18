@@ -45,7 +45,6 @@ public:
     explicit Net(QDir *dir_ = new QDir("/"), int ns_ = 19., int left_ = 82, int right_ = 328, double spStep_=250./4096., QString ExpName_="nobody");
     ~Net();
     bool ClassificateVector(int &vecNum);
-//    double ClassificateVectorError(int &vecNum);
     void closeLogFile();
     void setAutoProcessingFlag(bool);
 
@@ -102,10 +101,12 @@ public slots:
     void memoryAndParamsAllocation();
     void testDistances();
     void optimizeChannelsSet();
-    void rcpSlot();
+    void adjustParamsGroup2(QAbstractButton*);
 
 private:
     Ui::Net *ui;
+
+    QButtonGroup  * group1,  * group2,  * group3;
     QString helpString;
     QString ExpName;
     QDir *dir, *dirBC;

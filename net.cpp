@@ -64,14 +64,13 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     matrixCreate(&tempRandomMatrix, 19, 19);
 
 
-    QButtonGroup  * group1,  * group2,  * group3;
     group1 = new QButtonGroup();
     group1->addButton(ui->leaveOneOutRadioButton);
     group1->addButton(ui->crossRadioButton);
     group2 = new QButtonGroup();
     group2->addButton(ui->realsRadioButton);
     group2->addButton(ui->windowsRadioButton);
-    group2->addButton(ui->pcRadioButton);
+    group2->addButton(ui->pcaRadioButton);
     group2->addButton(ui->bayesRadioButton);
     group3 = new QButtonGroup();
     group3->addButton(ui->deltaRadioButton);
@@ -91,7 +90,8 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->critErrorDoubleSpinBox->setSingleStep(0.01);
     ui->critErrorDoubleSpinBox->setDecimals(4);
     ui->learnRateBox->setValue(0.1);
-    ui->learnRateBox->setSingleStep(0.05);
+    ui->learnRateBox->setSingleStep(0.01);
+    ui->learnRateBox->setDecimals(3);
     ui->epochSpinBox->setMaximum(1000);
     ui->epochSpinBox->setSingleStep(50);
     ui->epochSpinBox->setValue(300);
@@ -102,7 +102,16 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(4);
+    ui->rdcCoeffSpinBox->setValue(5.);
+
+    ui->highLimitSpinBox->setMaximum(500);
+    ui->highLimitSpinBox->setMinimum(100);
+    ui->lowLimitSpinBox->setMaximum(500);
+    ui->lowLimitSpinBox->setMinimum(50);
+
+    ui->foldSpinBox->setMaximum(10);
+    ui->foldSpinBox->setMinimum(1);
+    ui->foldSpinBox->setValue(2);
 
 
     ui->pcaNumberSpinBox->setMinimum(2);
@@ -149,7 +158,6 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     QObject::connect(this, SIGNAL(destroyed()), &myThread, SLOT(quit()));
 
-
     QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(readCfg()));
 
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(loadWts()));
@@ -174,8 +182,6 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     QObject::connect(ui->autoClassButton, SIGNAL(clicked()), this, SLOT(autoClassificationSimple()));
 
-    QObject::connect(ui->autoPCAButton, SIGNAL(clicked()), this, SLOT(autoPCAClassification()));
-
     QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(SVM()));
 
 //    QObject::connect(ui->hopfieldPushButton, SIGNAL(clicked()), this, SLOT(Hopfield()));
@@ -188,8 +194,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     QObject::connect(ui->optimizeChannelsPushButton, SIGNAL(clicked()), this, SLOT(optimizeChannelsSet()));
 
-    QObject::connect(ui->rcpPushButton, SIGNAL(clicked()), this, SLOT(rcpSlot()));
-
+    QObject::connect(group2, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(adjustParamsGroup2(QAbstractButton*)));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     helpString = dir->absolutePath() + QDir::separator() + defaults::cfgFileName;
@@ -318,13 +323,20 @@ void Net::autoClassificationSimple()
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows");
     }
-    else if(ui->pcRadioButton->isChecked())
-    {
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraPCA");
-    }
     else if(ui->bayesRadioButton->isChecked())
     {
+        //generality
+        spLength = NetLength/19;
+        left = 1;
+        right = spLength;
         helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "Bayes");
+    }
+    else if(ui->pcaRadioButton->isChecked())
+    {
+        autoPCAClassification();
+        return;
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "PCA");
+
     }
     if(!helpString.isEmpty()) autoClassification(helpString);
 }
@@ -336,28 +348,14 @@ void Net::setAutoProcessingFlag(bool a)
 
 void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa)
 {
-    QString typeString;
-    if(spectraDir.contains("windows", Qt::CaseInsensitive))
-    {
-        typeString = "_wnd";
-    }
-    else if(spectraDir.contains("pca", Qt::CaseInsensitive))
-    {
-        typeString = "_pca";
-    }
-    else
-    {
-        typeString = "";
-    }
-
     MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
-
+    mkPa->setNumOfClasses(NumOfClasses);
     mkPa->setRdcCoeff(this->ui->rdcCoeffSpinBox->value());
+    mkPa->setFold(ui->foldSpinBox->value());
     while(1)
     {
         mkPa->makePaSlot();
-        helpString = "1" + typeString;
-        this->PaIntoMatrixByName(helpString);
+        this->PaIntoMatrixByName("1");
         LearnNet();
         if(this->getEpoch() > highLimit || this->getEpoch() < lowLimit)
         {
@@ -373,6 +371,7 @@ void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
     mkPa->close();
     delete mkPa;
     outMkPa->setRdcCoeff(this->getReduceCoeff());
+    outMkPa->setFold(ui->foldSpinBox->value());
 }
 
 void Net::autoClassification(QString spectraDir)
@@ -413,86 +412,48 @@ void Net::autoClassification(QString spectraDir)
     autoFlag = 1;
     int numOfPairs = ui->numOfPairsBox->value();
 
-    QString typeString;
-    if(spectraDir.contains("windows", Qt::CaseInsensitive))
-    {
-        typeString = "_wnd";
-    }
-    else if(spectraDir.contains("pca", Qt::CaseInsensitive))
-    {
-        typeString = "_pca";
-    }
-    else
-    {
-        typeString = "";
-    }
-
-
     //adjust reduce coefficient
     MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
-    mkPa->setRdcCoeff(ui->rdcCoeffSpinBox->value());
-    mkPa->setNumOfClasses(NumOfClasses);
-    while(1)
+    adjustReduceCoeff(spectraDir, ui->lowLimitSpinBox->value(), ui->highLimitSpinBox->value(), mkPa);
+    mkPa->setFold(ui->foldSpinBox->value()); //double set
+
+    if(ui->crossRadioButton->isChecked())
     {
-        mkPa->makePaSlot();
-
-        helpString = "1" + typeString;
-        PaIntoMatrixByName(helpString);
-        LearnNet();
-        if(epoch > 120 || epoch < 80)
+        for(int i = 0; i < numOfPairs; ++i)
         {
-            mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(epoch / 100.));
-        }
-        else
-        {
-            cout << "reduceCoeff = " << mkPa->getRdcCoeff() << endl;
-            setReduceCoeff(mkPa->getRdcCoeff());
-            break;
-        }
-    }
+            cout << i+1  << " iteration in process" << endl;
+            //make PA
+            mkPa->makePaSlot();
 
-    for(int i = 0; i < numOfPairs; ++i)
-    {
-        cout << i+1  << " iteration in process" << endl;
-        //make PA
-        mkPa->makePaSlot();
 
-        if(ui->crossRadioButton->isChecked())
-        {
-            helpString = "1" + typeString;
-
-            PaIntoMatrixByName(helpString);
+            PaIntoMatrixByName("1");
 
             LearnNet();
-            helpString = "2" + typeString;
-            PaIntoMatrixByName(helpString);
+            PaIntoMatrixByName("2");
 
             tall();
             //comment because of k-fold cross-validation
-//            LearnNet();
-//            helpString = "1" + typeString;
-//            PaIntoMatrixByName(helpString);
-//            tall();
-        }
-        else if(ui->leaveOneOutRadioButton->isChecked())
-        {
-            helpString = "all" + typeString;
-            PaIntoMatrixByName(helpString);
-            leaveOneOutSlot();
-        }
-        qApp->processEvents();
-        if(stopFlag)
-        {
-            delete mkPa;
-            stopFlag = 0;
-            autoFlag = tempBool;
-            return;
+            //            LearnNet();
+            //            helpString = "1";
+            //            PaIntoMatrixByName(helpString);
+            //            tall();
+
+            qApp->processEvents();
+            if(stopFlag)
+            {
+                delete mkPa;
+                stopFlag = 0;
+                autoFlag = tempBool;
+                return;
+            }
         }
     }
-    //leaveOneOut
-    if(ui->leaveOneOutRadioButton->isChecked())
+    else if(ui->leaveOneOutRadioButton->isChecked())
     {
-        numOfTall = ui->numOfPairsBox->value();
+        cout << "N-fold cross-validation done" << endl;
+        PaIntoMatrixByName("all");
+        leaveOneOutSlot();
+        numOfTall = 1;
     }
 
 
@@ -507,19 +468,11 @@ void Net::autoPCAClassification()
 {
     autoFlag = 1;
     cfg * config;
-//    MakePa * mkPa;
-
-//    helpString = QDir::toNativeSeparators(dirBC->absolutePath( + QDir::separator() + "SpectraSmooth"));
-//    MakePa * mkPaW;
 
     int nsBC = ns;
     int leftBC = left;
     int rightBC = right;
     double spStepBC = spStep;
-
-
-//    ui->numOfPcSpinBox->setValue(30); //max count PCA
-//    pca();
 
     for(int i = ui->autpPCAMaxSpinBox->value(); i >= ui->autoPCAMinSpinBox->value(); i-=ui->autoPCAStepSpinBox->value())
     {
@@ -537,7 +490,8 @@ void Net::autoPCAClassification()
         right = i;
         spStep = 0.1;
 
-        helpString = QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "SpectraPCA");
+        helpString = QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "PCA");
+        cout << "numOfPc = " << i  << " ended" << endl;
         autoClassification(helpString);
 
 
@@ -545,7 +499,7 @@ void Net::autoPCAClassification()
         left = leftBC;
         right = rightBC;
         spStep = spStepBC;
-        cout << "numOfPc = " << i  << " ended" << endl;
+
 
         qApp->processEvents();
         if(stopFlag == 1)
@@ -1968,6 +1922,17 @@ void Net::leaveOneOut()
         NumberOfErrors[i] = 0;
     }
 
+    double * normCoeff = new double [NumOfClasses];
+    double helpMin = classCount[0];
+    for(int i = 1; i < NumOfClasses; ++i)
+    {
+        helpMin = min(helpMin, classCount[i]);
+    }
+    for(int i = 0; i < NumOfClasses; ++i)
+    {
+        normCoeff[i] = helpMin/classCount[i];
+    }
+
 
     int a1, a2, buffer;
     int index;
@@ -2054,8 +2019,8 @@ void Net::leaveOneOut()
                     {
                         for(int k = 0; k < dimensionality[i+1]; ++k)
                         {
-                            if(ui->backpropRadioButton->isChecked())    weight[i][j][k] -= learnRate * deltaWeights[i+1][k] * output[i][j];
-                            else if(ui->deltaRadioButton->isChecked())  weight[i][j][k] += learnRate * output[i][j] * ((type == k) - output[i+1][k]);
+                            if(ui->backpropRadioButton->isChecked())    weight[i][j][k] -= learnRate * normCoeff[type] * deltaWeights[i+1][k] * output[i][j];
+                            else if(ui->deltaRadioButton->isChecked())  weight[i][j][k] += learnRate * normCoeff[type] * output[i][j] * ((type == k) - output[i+1][k]);
                         }
                     }
                 }
@@ -3897,26 +3862,20 @@ void Net::optimizeChannelsSet()
 //    QMessageBox::information((QWidget * )this, tr("Optimization results"), helpString, QMessageBox::Ok);
 }
 
-void Net::rcpSlot()
+void Net::adjustParamsGroup2(QAbstractButton * but)
 {
-    FILE * file;
-    for(int i = 5; i <= 20; i += 5)
+    if(but->text().contains("Bayes", Qt::CaseInsensitive))
     {
-        ui->numOfPairsBox->setValue(i);
-
-        helpString = dir->absolutePath() + QDir::separator() + "rcp-" + QString::number(ui->numOfPairsBox->value()) + ".txt";
-        file = fopen(helpString.toStdString().c_str(), "w");
-        fclose(file);
-
-        for(int j = 0; j < 50; ++j)
-        {
-            autoClassificationSimple();\
-            helpString = dir->absolutePath() + QDir::separator() + "rcp-" + QString::number(ui->numOfPairsBox->value()) + ".txt";
-            file = fopen(helpString.toStdString().c_str(), "a");
-            fprintf(file, "%.2lf\n", averageAccuracy);
-            fclose(file);
-        }
+        ui->highLimitSpinBox->setValue(400);
+        ui->lowLimitSpinBox->setValue(300);
+        ui->epochSpinBox->setValue(500);
+        ui->rdcCoeffSpinBox->setValue(0.05);
+    }
+    else
+    {
+        ui->highLimitSpinBox->setValue(130);
+        ui->lowLimitSpinBox->setValue(80);
+        ui->epochSpinBox->setValue(250);
+        ui->rdcCoeffSpinBox->setValue(5.);
     }
 }
-
-

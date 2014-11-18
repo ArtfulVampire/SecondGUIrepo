@@ -25,6 +25,7 @@
 #include <QMessageBox>
 #include <cerrno>
 #include <ios>
+#include <QDoubleSpinBox>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -40,6 +41,10 @@
 using namespace std;
 //using namespace itpp;
 //using namespace mlpack;
+
+
+
+//void QDoubleSpinBox::mySlot(double val)
 
 int len(QString s);
 QString rightNumber(int &input, int N);

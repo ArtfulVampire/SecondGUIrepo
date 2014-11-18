@@ -144,7 +144,7 @@ void Cut::closeEvent ( QCloseEvent * event )
 
 bool Cut::eventFilter(QObject *obj, QEvent *event)
 {
-    if (obj == ui->picLabel)
+    if(obj == ui->picLabel)
     {
         if (event->type() == QEvent::MouseButtonPress)
         {
@@ -220,6 +220,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
             return false;
         }
     }
+
     return QWidget::eventFilter(obj, event);
 }
 

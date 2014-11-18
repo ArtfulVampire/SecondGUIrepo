@@ -43,6 +43,8 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     ui->rdcCoeffBox->setDecimals(3);
     ui->rdcCoeffBox->setMinimum(1e-3);
     ui->rdcCoeffBox->setMaximum(1e3);
+//    QObject::connect(ui->rdcCoeffBox, SIGNAL(valueChanged(double)), ui->rdcCoeffBox, SLOT(mySlot(double)));
+//    ui->rdcCoeffBox->setAdaptiveSingleStep();
 
     group1 = new QButtonGroup();
     group1->addButton(ui->realsRadioButton);
@@ -87,7 +89,6 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     QObject::connect(ui->numOfClassesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setNumOfClasses(int)));
     QObject::connect(group1, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(changeSpectraDir(QAbstractButton*)));
 
-    ui->realsRadioButton->setChecked(true);
     ui->numOfClassesSpinBox->setValue(3);
     this->setAttribute(Qt::WA_DeleteOnClose);
 }
@@ -1195,20 +1196,6 @@ void MakePa::setFold(int a)
 
 void MakePa::makePaSlot()
 {
-    QString typeString;
-
-    if(ui->spectraDirLineEdit->text().contains("windows", Qt::CaseInsensitive))
-    {
-        typeString = "_wnd.pa";
-    }
-    else if(ui->spectraDirLineEdit->text().contains("PCA", Qt::CaseInsensitive))
-    {
-        typeString = "_pca.pa";
-    }
-    else
-    {
-        typeString = ".pa";
-    }
 
     ui->lineEdit->clear();
     double coeff = ui->rdcCoeffBox->value();
@@ -1218,10 +1205,6 @@ void MakePa::makePaSlot()
     dir_->cd(ui->spectraDirLineEdit->text());
     helpString = dir_->absolutePath();
 
-
-    FILE * spectre;
-    FILE * pa;
-    FILE * svm;
     dir_->setSorting(QDir::Name);
 
     //generality
@@ -1332,7 +1315,7 @@ void MakePa::makePaSlot()
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "1" + typeString);
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "1.pa");
     makePaFile(dir_->absolutePath(), listToWrite, ns, spLength, NumOfClasses, coeff, helpString);
 
     listToWrite.clear();
@@ -1343,7 +1326,7 @@ void MakePa::makePaSlot()
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "2" + typeString);
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "2.pa");
     makePaFile(dir_->absolutePath(), listToWrite, ns, spLength, NumOfClasses, coeff, helpString);
 
     listToWrite.clear();
@@ -1354,7 +1337,7 @@ void MakePa::makePaSlot()
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "all" + typeString);
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "all.pa");
     makePaFile(dir_->absolutePath(), listToWrite, ns, spLength, NumOfClasses, coeff, helpString);
 
 
@@ -2106,3 +2089,8 @@ void MakePa::correlationDifference()
     ui->mwTestLine->setText(helpString);
 }
 
+
+void MakePa::on_rdcCoeffBox_valueChanged(double arg1)
+{
+    ui->rdcCoeffBox->setSingleStep(2.5 * pow(10., floor(log10(ui->rdcCoeffBox->value())) - 1.));
+}

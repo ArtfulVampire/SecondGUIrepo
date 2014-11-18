@@ -52,6 +52,9 @@ public slots:
 
 
 
+private slots:
+    void on_rdcCoeffBox_valueChanged(double arg1);
+
 private:
     Ui::MakePa *ui;
     QDir *dir;

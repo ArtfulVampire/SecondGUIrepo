@@ -821,7 +821,6 @@ MainWindow::MainWindow() :
 
 
     setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
-    makePaShow();
 }
 
 MainWindow::~MainWindow()
@@ -978,7 +977,10 @@ void MainWindow::Bayes()
 
     int numOfIntervals = ui->BayesSpinBox->value();
     numOfIntervals *= 2; //odd or even?
+
     spLength = numOfIntervals;
+    left = 1;
+    right = spLength;
 
     int * count = new int [numOfIntervals];
 
@@ -8158,8 +8160,7 @@ void MainWindow::listFileCrossClassification(QString workPath, QStringList nameF
         else countSpectraSimple(4096);
         mkPa->makePaSlot();
 
-        if(windows) ANN->PaIntoMatrixByName("all_wnd");
-        else ANN->PaIntoMatrixByName("all");
+        ANN->PaIntoMatrixByName("all");
 
         for(int k = 0; k < NumOfPairs; ++k)
         {
@@ -8444,8 +8445,7 @@ void MainWindow::autoIcaAnalysis2()
                     while(1)
                     {
                         mkPa->makePaSlot();
-                        if(k == 0) ANN->PaIntoMatrixByName("all");
-                        else if(k == 1) ANN->PaIntoMatrixByName("all_wnd");
+                        ANN->PaIntoMatrixByName("all");
                         ANN->LearnNet();
                         if(ANN->getEpoch() > 160 || ANN->getEpoch() < 100)
                         {
@@ -8476,8 +8476,7 @@ void MainWindow::autoIcaAnalysis2()
                     {
                         mkPa->makePaSlot();
 
-                        if(k == 0) ANN->PaIntoMatrixByName("all");
-                        else if(k == 1) ANN->PaIntoMatrixByName("all_wnd");
+                        ANN->PaIntoMatrixByName("all");
 
                         ANN->LearnNet();
                         ANN->saveWtsSlot();
@@ -8503,8 +8502,8 @@ void MainWindow::autoIcaAnalysis2()
                     mkPa->close();
                     delete mkPa;
 
-                    if(k == 0) ANN->PaIntoMatrixByName("whole");
-                    else if(k == 1) ANN->PaIntoMatrixByName("whole_wnd");
+                    if(k == 0) ANN->PaIntoMatrixByName("all");
+                    else if(k == 1) ANN->PaIntoMatrixByName("all");
 
                     for(int l = 0; l < NumOfRepeats; ++l)
                     {
@@ -8766,8 +8765,7 @@ void MainWindow::autoIcaAnalysis4()
                 while(1)
                 {
                     mkPa->makePaSlot();
-                    if(k == 0) ANN->PaIntoMatrixByName("all");
-                    else if(k == 1) ANN->PaIntoMatrixByName("all_wnd");
+                    ANN->PaIntoMatrixByName("all");
                     ANN->LearnNet();
                     if(ANN->getEpoch() > 160 || ANN->getEpoch() < 100)
                     {
@@ -8798,8 +8796,7 @@ void MainWindow::autoIcaAnalysis4()
                 {
                     mkPa->makePaSlot();
 
-                    if(k == 0) ANN->PaIntoMatrixByName("all");
-                    else if(k == 1) ANN->PaIntoMatrixByName("all_wnd");
+                    ANN->PaIntoMatrixByName("all");
 
                     ANN->LearnNet();
                     ANN->saveWtsSlot();
@@ -8822,8 +8819,8 @@ void MainWindow::autoIcaAnalysis4()
                 mkPa->close();
                 delete mkPa;
 
-                if(k == 0) ANN->PaIntoMatrixByName("whole");
-                else if(k == 1) ANN->PaIntoMatrixByName("whole_wnd");
+                if(k == 0) ANN->PaIntoMatrixByName("all");
+                else if(k == 1) ANN->PaIntoMatrixByName("all");
 
                 for(int l = 0; l < NumOfRepeats; ++l)
                 {
@@ -9043,7 +9040,7 @@ void MainWindow::autoIcaAnalysis5() ////////////////////////////////////////////
         mkPa->close();
         delete mkPa;
 
-        ANN->PaIntoMatrixByName("whole");
+        ANN->PaIntoMatrixByName("all");
 
         for(int p = 0; p < NumOfRepeats; ++p)
         {
@@ -9224,7 +9221,7 @@ void MainWindow::autoIcaAnalysis5() ////////////////////////////////////////////
                 mkPa->close();
                 delete mkPa;
 
-                ANN->PaIntoMatrixByName("whole");
+                ANN->PaIntoMatrixByName("all");
 
                 for(int p = 0; p < NumOfRepeats; ++p)
                 {
