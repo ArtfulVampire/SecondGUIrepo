@@ -48,7 +48,7 @@ public:
     void closeLogFile();
     void setAutoProcessingFlag(bool);
 
-    void adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa);
+    void adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa, QString paFileName = "1");
     int getEpoch();
     void setErrcrit(double);
     double getErrcrit();
@@ -58,25 +58,28 @@ public:
     void moveCoordsGradient(double ** coords, double ** distOld, double ** distNew, int size);
     double thetalpha(int bmu_, int j_, int step_, double ** arr, int length_);
 
-    void readCfgByName(QString FileName);
+    void loadCfgByName(QString FileName);
     double setPercentageForClean();
     double mouseClick(QLabel * label, QMouseEvent * ev);
     void leaveOneOut();
-//    void leaveOneOutCL();
     double getAverageAccuracy();
     void setReduceCoeff(double coeff);
     double getReduceCoeff();
     void setNumOfPairs(int num);
     void saveWts(QString wtsPath);
+    void loadWtsByName(QString);
+    void PaIntoMatrixByName(QString fileName);
+    void autoClassification(QString spectraDir);
+    void averageClassification();
 
 protected:
     bool event(QEvent * ev);
     void mousePressEvent(QMouseEvent * event);
 
 public slots:
-    void readCfg();
+    void loadCfg();
     void loadWts();
-    void loadWtsByName(QString);
+
 
     void LearnNet();
 
@@ -85,14 +88,11 @@ public slots:
     void saveWtsSlot();
     void stopActivity();
     void drawWts();
-    void PaIntoMatrixByName(QString fileName);
     void PaIntoMatrix();
     void leaveOneOutSlot();
     void neuronGas();
     void pca();
     void drawSammon();
-    void averageClassification();
-    void autoClassification(QString spectraDir);
     void autoClassificationSimple();
     void autoPCAClassification();
     void SVM();

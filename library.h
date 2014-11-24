@@ -53,6 +53,8 @@ double doubleRound(double in, int numSigns);
 //wavelets
 void drawColorScale(QString filename, int range);
 QColor hueJet(int range, int j, double V = 0.95, double S = 1.0);
+
+QColor grayScale(int range, int j);
 double morletCos(double const freq1, double timeShift, double pot, double time);
 double morletSin(double const freq1, double timeShift, double pot, double time);
 void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double freqMax=20., double freqMin=5., double freqStep=0.99, double pot=32.);
@@ -69,6 +71,7 @@ void kernelEst(double *arr, int length, QString picPath);
 bool gaussApproval(double * arr, int length);
 bool gaussApproval(QString filePath);
 bool gaussApproval2(double * arr, int length);
+double vectorLength(double * arr, int len);
 double quantile(double arg);
 double mean(int *arr, int length);
 double mean(double *arr, int length);
@@ -83,6 +86,7 @@ double sigmaFromZero(double *arr, int length);
 double skewness(double *arr, int length);
 double kurtosis(double *arr, int length);
 double rankit(int i, int length, double k = 0.375);
+double covariance(double * const arr1, double * const arr2, int length);
 double correlation(double * const arr1, double * const arr2, int length, int t = 0);
 double correlationFromZero(double * const arr1, double * const arr2, int length, int t = 0);
 double maxValue(double * arr, int length);
@@ -94,11 +98,12 @@ bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
 int typeOfFileName(QString fileName);
 void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength, int NumOfClasses, double coeff, QString outFile);
 void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int spLength, double coeff, double *** outMatrix);
-void cleanDir(QString dirPath, QString ext = "");
+void cleanDir(QString dirPath, QString nameFilter = "", bool ext = true);
 
 void drawRCP(double *values, int length);
 void countRCP(QString filename, QString picPath = "", double *outMean = NULL, double *outSigma = NULL);
 void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
+void makeCfgStatic(QString outFileDir, int NetLength = 19*247, QString FileName = "16sec19ch", int numOfOuts = 3, double lrate = 0.1, double error = 0.1, int temp = 10);
 
 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
@@ -110,8 +115,8 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
 bool readICAMatrix(QString path, double *** matrixA, int ns);
 void writeICAMatrix(QString path, double ** matrixA, const int ns);
 
-QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY);
-void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size = 240);
+QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour=true);
+void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size = 240, bool colourFlag=true);
 void drawICAMaps(QString mapsPath, int ns, QString outDir, QString outName);
 void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
 
@@ -153,8 +158,6 @@ void matrixCreate(double *** matrix, int i, int j);
 void matrixDelete(double *** matrix, int i);
 void matrixDelete(int *** matrix, int i);
 void matrixPrint(double ** const mat, int i, int j);
-
-
 
 void drawArray(double * array, int length, QString outPath); ///////////////////////////////////////////to do
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);

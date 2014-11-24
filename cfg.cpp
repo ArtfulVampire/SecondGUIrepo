@@ -60,3 +60,6 @@ void cfg::makeCfg()
     fclose(cfgFile);
     this->close();
 }
+
+
+

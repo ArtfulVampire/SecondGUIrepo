@@ -130,8 +130,10 @@ public:
     void constructEDF(QString newPath);
     void writeCorrelationMatrix(QString edfPath, QString outPath);
     void ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path, int mode = 0);
-    void listFileInnerClassification(QString workPath, QStringList nameFilt, int NumOfPairs, QString outFilePath, bool windows = false, int wndLen = 1000, int tShift = 125);
-    void listFileCrossClassification(QString workPath, QStringList nameFilt1, QStringList nameFilt2, int NumOfPairs, QString outFilePath, bool windows = false, int wndLen = 1000, int tShift = 125);
+    double fileInnerClassification(QString workPath, QString fileName, int NumOfPairs = 30, bool windows = false, int wndLen = 1000, int tShift = 125);
+    double filesCrossClassification(QString workPath, QString fileName1, QString fileName2, QString cfgFileName = "16sec19ch", int NumOfRepeats = 50, bool windows = false, int wndLen = 1000, int tShift = 125);
+    double filesDropComponents(QString workPath, QString fileName1, QString fileName2, int NumOfRepeats = 50, bool windows = false, int wndLen = 1000, int tShift = 125);
+
 
     void autoIcaAnalysis2();
     void autoIcaAnalysis3();

@@ -116,11 +116,11 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     ui->pcaNumberSpinBox->setMinimum(2);
     ui->pcaNumberSpinBox->setMaximum(500);
-    ui->pcaNumberSpinBox->setValue(50);
+    ui->pcaNumberSpinBox->setValue(60);
     ui->traceDoubleSpinBox->setMaximum(1.0);
     ui->traceDoubleSpinBox->setMinimum(0.05);
     ui->traceDoubleSpinBox->setSingleStep(0.01);
-    ui->traceDoubleSpinBox->setValue(0.9);
+    ui->traceDoubleSpinBox->setValue(1.0);
     ui->sammonComboBox->addItem("wetData");
     ui->sammonComboBox->addItem("some PCs");
     ui->sammonComboBox->setCurrentIndex(1);
@@ -158,7 +158,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     QObject::connect(this, SIGNAL(destroyed()), &myThread, SLOT(quit()));
 
-    QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(readCfg()));
+    QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(loadCfg()));
 
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(loadWts()));
 
@@ -198,7 +198,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     helpString = dir->absolutePath() + QDir::separator() + defaults::cfgFileName;
-    readCfgByName(helpString);
+    loadCfgByName(helpString);
 
     if(spStep == 250./4096)
     {
@@ -208,7 +208,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     {
         helpString = dir->absolutePath() + QDir::separator() + "4sec19ch.net";
     }
-    readCfgByName(helpString);
+    loadCfgByName(helpString);
 
     this->ui->deltaRadioButton->setChecked(true);
 
@@ -346,8 +346,10 @@ void Net::setAutoProcessingFlag(bool a)
     autoFlag = a;
 }
 
-void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa)
+void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa, QString paFileName)
 {
+    bool tmpAutoFlag = autoFlag;
+    autoFlag = 1;
     MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
     mkPa->setNumOfClasses(NumOfClasses);
     mkPa->setRdcCoeff(this->ui->rdcCoeffSpinBox->value());
@@ -355,7 +357,7 @@ void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
     while(1)
     {
         mkPa->makePaSlot();
-        this->PaIntoMatrixByName("1");
+        this->PaIntoMatrixByName(paFileName);
         LearnNet();
         if(this->getEpoch() > highLimit || this->getEpoch() < lowLimit)
         {
@@ -372,6 +374,7 @@ void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
     delete mkPa;
     outMkPa->setRdcCoeff(this->getReduceCoeff());
     outMkPa->setFold(ui->foldSpinBox->value());
+    autoFlag = tmpAutoFlag;
 }
 
 void Net::autoClassification(QString spectraDir)
@@ -483,7 +486,7 @@ void Net::autoPCAClassification()
         if(config != NULL) delete config;
 
         helpString = QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "pca.net");
-        readCfgByName(helpString);
+        loadCfgByName(helpString);
 
         ns = 1;
         left = 1;
@@ -972,7 +975,7 @@ void Net::closeLogFile()
     }
 }
 
-void Net::readCfg()
+void Net::loadCfg()
 {
     //automatization
     if(!autoFlag)
@@ -1006,7 +1009,7 @@ void Net::readCfg()
         cout << "cfg auto path = " << helpString.toStdString() << endl;
     }
 
-    readCfgByName(helpString);
+    loadCfgByName(helpString);
 
 }
 
@@ -1075,7 +1078,7 @@ void Net::memoryAndParamsAllocation()
 
 }
 
-void Net::readCfgByName(QString FileName)
+void Net::loadCfgByName(QString FileName)
 {
     helpString = FileName;
     if(!helpString.endsWith(".net", Qt::CaseInsensitive))
@@ -1088,7 +1091,7 @@ void Net::readCfgByName(QString FileName)
     FILE * cfg = fopen(helpString.toStdString().c_str(),"r");
     if(cfg == NULL)
     {
-        cout << "readCfgByName: wrong cfg path = " << helpString.toStdString() << endl;
+        cout << "loadCfgByName: wrong cfg path = " << helpString.toStdString() << endl;
         return;
     }
     fscanf(cfg, "%*s%d\n", &NetLength);
@@ -3266,7 +3269,10 @@ void Net::pca()
             }
             dF = (F-dF)/F;
             ++counter;
-            if(fabs(dF) < 1e-8) break;
+            if(fabs(dF) < 1e-8 || counter == 300)
+            {
+                break;
+            }
         }
 //        cout << k << "   " << counter << endl;
 
@@ -3307,7 +3313,13 @@ void Net::pca()
         }
 //        cout << "Part of dispersion explained = " << sum1 * 100./double(trace) << " %" << endl;
 
-        cout << k+1 << "\t" << eigenValues[k] << "\tDisp = " << eigenValues[k]*100./trace << "\tTotal = " << sum1 * 100./trace << "\ttimeElapsed = " << initTime.elapsed()/1000. << " seconds"  << endl;
+        cout << k+1;
+        cout << "\t" << eigenValues[k];
+        cout << "\tDisp = " << eigenValues[k]*100./trace;
+        cout << "\tTotal = " << sum1 * 100./trace;
+        cout << "\ttimeElapsed = " << initTime.elapsed()/1000. << " seconds";
+        cout << "\tSVD-iterations = " << counter;
+        cout << endl;
         for(int i = 0; i < NetLength; ++i)
         {
             eigenVectors[i][k] = tempA[i]; //1-normalized
@@ -3323,6 +3335,39 @@ void Net::pca()
 
     }
     ui->autpPCAMaxSpinBox->setValue(numOfPc);
+
+    double helpDouble;
+    if(0) //eigenVectors length - OK
+    {
+        for(int i = 0; i < numOfPc; ++i)
+        {
+            helpDouble = 0.;
+            for(int j = 0; j < NetLength; ++j)
+            {
+                helpDouble += eigenVectors[j][i] * eigenVectors[j][i];
+            }
+            helpDouble = sqrt(helpDouble);
+            cout << i << "'th eigenVector norm\t" << helpDouble << endl;
+        }
+    }
+
+
+    if(1) //eigenVectors output
+    {
+        ofstream eigenVectorsFile;
+        helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName + "_pcaEigenVectors.txt";
+        eigenVectorsFile.open(helpString.toStdString().c_str());
+        for(int k = 0; k < numOfPc; ++k)
+        {
+            for(int i = 0; i < NetLength; ++i)
+            {
+                eigenVectorsFile << eigenVectors[i][k] << "\t";
+            }
+            eigenVectorsFile << "\n";
+        }
+        eigenVectorsFile.close();
+    }
+
 
     sum1 = 0.;
     for(int k = 0; k < numOfPc; ++k)
@@ -3358,6 +3403,23 @@ void Net::pca()
             }
         }
     }
+
+    if(1)
+    {
+        double ** pcaMatrixTrans;
+        matrixCreate(&pcaMatrixTrans, numOfPc, NumberOfVectors);
+        matrixTranspose(pcaMatrix, NumberOfVectors, numOfPc, &pcaMatrixTrans);
+        for(int k = 0; k < numOfPc; ++k)
+        {
+            for(int j = 0; j < numOfPc; ++j)
+            {
+//                if(k!=j && covariance(pcaMatrixTrans[k], pcaMatrixTrans[j], NumberOfVectors) > 100.) cout << k << j << endl;
+            }
+            cout << "cov " << k << " = " << covariance(pcaMatrixTrans[k], pcaMatrixTrans[k], NumberOfVectors) << endl;
+        }
+    }
+
+
 
 
     FILE * pcaFile;

@@ -3,7 +3,7 @@
 #define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 
 
-QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY)
+QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour)
 {
     double a[4];
     a[0] = helpMatrix[numY][numX];
@@ -19,11 +19,18 @@ QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, 
     val += a[3] / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
     val /= 1. / (partX * partX + partY * partY) + 1. / ( (1. - partX) * (1. - partX) + partY * partY ) + 1. / ( partX * partX + (1. - partY) * (1. - partY) ) + 1. / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
 
-    return hueJet(256, ((val - minMagn) / (maxMagn - minMagn))*256., 1., 1.);
+    if(!colour)
+    {
+        return grayScale(256, ((val - minMagn) / (maxMagn - minMagn))*256.);
+    }
+    else
+    {
+        return hueJet(256, ((val - minMagn) / (maxMagn - minMagn))*256., 1., 1.);
+    }
 }
 
 
-void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size)
+void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size, bool colourFlag)
 {
     double maxMagn = 0.;
     double minMagn = 0.;
@@ -83,7 +90,7 @@ void drawMap(double ** const matrixA, QString outDir, QString outName, int num, 
             numX = floor(x/int(scale1)) ; //1 2
             numY = floor(y/int(scale1)) ; //3 4
 
-            painter->setPen(mapColor(minMagn, maxMagn, helpMatrix, numX, numY, double(double(x%int(scale1))/scale1 + 0.003/scale1), double(double(y%int(scale1))/scale1) + 0.003/scale1)); // why 0.003
+            painter->setPen(mapColor(minMagn, maxMagn, helpMatrix, numX, numY, double(double(x%int(scale1))/scale1 + 0.003/scale1), double(double(y%int(scale1))/scale1) + 0.003/scale1, colourFlag)); // why 0.003
             painter->drawPoint(x,y);
         }
     }
@@ -341,6 +348,16 @@ double fractalDimension(double *arr, int N, QString picPath)
 double doubleRound(double in, int numSigns)
 {
     return int(in*pow(10., numSigns))/pow(10., numSigns);
+}
+
+double vectorLength(double * arr, int len)
+{
+    double a = 0.;
+    for(int i = 0; i < len; ++i)
+    {
+        a += arr[i]*arr[i];
+    }
+    return sqrt(a);
 }
 
 double quantile(double arg)
@@ -667,18 +684,28 @@ void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int 
     matrixDelete(&data4, ns);
 //    cout << "makeMatrixFromFiles: time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
 }
-void cleanDir(QString dirPath, QString ext)
+
+void cleanDir(QString dirPath, QString nameFilter, bool ext)
 {
     QDir * tmpDir = new QDir(dirPath);
 
     QStringList lst;
 
-    if(ext.isEmpty()) lst = tmpDir->entryList(QDir::Files);
+    if(nameFilter.isEmpty()) lst = tmpDir->entryList(QDir::Files);
     else
     {
         QStringList filter;
+        QString hlp;
         filter.clear();
-        filter << QString("*." + ext);
+        if(ext)
+        {
+           hlp = "*." + nameFilter;
+        }
+        else
+        {
+            hlp = "*" + nameFilter + "*";
+        }
+        filter << hlp;
         lst = tmpDir->entryList(filter, QDir::Files);
     }
 
@@ -775,6 +802,19 @@ double minValue(double * arr, int length)
     return res;
 }
 
+
+double covariance(double * const arr1, double * const arr2, int length)
+{
+    double res = 0.;
+    double m1, m2;
+    m1 = mean(arr1, length);
+    m2 = mean(arr2, length);
+    for(int i = 0; i < length; ++i)
+    {
+        res += (arr1[i] - m1) * (arr2[i] - m2);
+    }
+    return res;
+}
 
 double correlation(double * const arr1, double * const arr2, int length, int t)
 {
@@ -1697,7 +1737,10 @@ QColor hueJet(int range, int j, double V, double S)
     return QColor(255.*red(range,j,V,S), 255.*green(range,j,V,S), 255.*blue(range,j,V,S));
 }
 
-
+QColor grayScale(int range, int j)
+{
+    return QColor(255. * j/range, 255. * j/range, 255. * j/range);
+}
 
 QColor qcolor(int range, int j)
 {
@@ -2935,6 +2978,24 @@ void countRCP(QString filePath, QString picPath, double * outMean, double * outS
     }
 
     delete []arr;
+}
+
+void makeCfgStatic(QString outFileDir, int NetLength, QString FileName, int numOfOuts, double lrate, double error, int temp)
+{
+    QString helpString = QDir::toNativeSeparators(outFileDir + QDir::separator() + FileName + ".net");
+    FILE * cfgFile = fopen(helpString.toStdString().c_str(), "w");
+    if(cfgFile == NULL)
+    {
+        cout << "static MakeCfg: cannot open file: " << helpString.toStdString() << endl;
+        return;
+    }
+    fprintf(cfgFile, "inputs    %d\n", NetLength);
+    fprintf(cfgFile, "outputs    %d\n", numOfOuts);
+    fprintf(cfgFile, "lrate    %.2lf\n", lrate);
+    fprintf(cfgFile, "ecrit    %.2lf\n", error);
+    fprintf(cfgFile, "temp    %d\n", temp);
+    fprintf(cfgFile, "srand    %d\n", int(time (NULL))%1234);
+    fclose(cfgFile);
 }
 
 void svd(double ** inData, int size, int length, double *** eigenVects, double ** eigenValues)

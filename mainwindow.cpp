@@ -754,7 +754,6 @@ MainWindow::MainWindow() :
 
         for(int k = 0; k < 2; ++k)
         {
-
             //check the dispersion of new perceptron
             if(k == 0) setEdfFile("/media/Files/Data/AB/AAX_sum.edf");
             else setEdfFile("/media/Files/Data/AB/SUA_sum.edf");
@@ -820,7 +819,159 @@ MainWindow::MainWindow() :
 */
 
 
-    setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
+
+    if(0)
+    {
+        double ** mat;
+        matrixCreate(&mat, 56, 2318);
+        FILE * inF = fopen("/media/Files/Data/AAX/TS_INPUT.txt", "r");
+        for(int i = 0; i < 56; ++i)
+        {
+            for(int j = 0; j < 2318; ++j)
+            {
+                fscanf(inF, "%lf", &mat[i][j]);
+                mat[i][j] /= 1.;
+            }
+        }
+        fclose(inF);
+
+        FILE * pa = fopen("/media/Files/Data/AAX/PA/all.pa", "w");
+        for(int i = 0; i < 56; ++i)
+        {
+            fprintf(pa, "YAY\n");
+            for(int k = 0; k < 19; ++k)
+            {
+                for(int j = 0; j < 122; ++j)
+                {
+                    fprintf(pa, "%.3lf\t", mat[i][k*122 + j]);
+                    if(j%10 == 9) fprintf(pa, "\n");
+                }
+                fprintf(pa, "\n");
+            }
+            fprintf(pa, "1 0 0\n\n");
+        }
+        fclose(pa);
+    }
+    if(0)
+    {
+        makeCfgStatic("/media/Files/Data/AAX", 19*122, "Ilya_TS");
+        setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
+        Net * ANN = new Net(dir, ns, left, right, spStep, ExpName);
+        ANN->loadCfgByName("Ilya_TS");
+        ANN->PaIntoMatrixByName("all");
+        ANN->pca();
+    }
+//    makeCfgStatic("/media/Files/Data/AB");
+//    filesCrossClassification("/media/Files/Data/AB", "AAX_1.edf", "AAX_2.edf", "16sec19ch", 1);
+    if(0)
+    {
+        double * vec1 = new double [2318];
+        double * vec2 = new double [2318];
+        ifstream fil1;
+        fil1.open("/media/Files/Data/AAX/Help/AAX_sum_pcaEigenVectors.txt");
+        ifstream fil2;
+        fil2.open("/media/Files/Data/AAX/TS_PCAcoef.txt");
+        for(int i = 0; i < 55; ++i)
+        {
+            for(int k = 0; k < 2318; ++k)
+            {
+                fil1 >> vec1[k];
+                fil2 >> vec2[k];
+            }
+//            cout << vectorLength(vec1, 2318) << endl;
+            cout << "corr " << i << "\t" << correlation(vec1, vec2, 2318) << endl;
+        }
+    }
+    if(0)
+    {
+        double ** mat;
+        matrixCreate(&mat, 56, 2318);
+        FILE * inF = fopen("/media/Files/Data/AAX/TS_INPUT.txt", "r");
+        for(int i = 0; i < 56; ++i)
+        {
+            for(int j = 0; j < 2318; ++j)
+            {
+                fscanf(inF, "%lf", &mat[i][j]);
+//                mat[i][j] /= 1.;
+            }
+        }
+        fclose(inF);
+
+
+        double * means = new double [2318];
+        for(int i = 0; i < 2318; ++i)
+        {
+            means[i] = 0.;
+            for(int j = 0; j < 56; ++j)
+            {
+                means[i] += mat[j][i]/56.;
+            }
+        }
+
+        for(int i = 0; i < 2318; ++i)
+        {
+            for(int j = 0; j < 56; ++j)
+            {
+                mat[j][i] -= means[i];
+            }
+        }
+
+
+
+        double ** vecs;
+        matrixCreate(&vecs, 55, 2318);
+//        FILE * inV = fopen("/media/Files/Data/AAX/TS_PCAcoef.txt", "r");
+        FILE * inV = fopen("/media/Files/Data/AAX/Help/AAX_sum_pcaEigenVectors.txt", "r");
+        for(int i = 0; i < 55; ++i)
+        {
+            for(int j = 0; j < 2318; ++j)
+            {
+                fscanf(inV, "%lf", &vecs[i][j]);
+            }
+        }
+        fclose(inV);
+
+        double ** pc;
+        matrixCreate(&pc, 56, 55);
+        for(int i = 0; i < 56; ++i) //num of out pc
+        {
+            for(int j = 0; j < 55; ++j) //num of out coord
+            {
+                pc[i][j] = 0.;
+                for(int k = 0; k < 2318; ++k)
+                {
+                    pc[i][j] += mat[i][k]*vecs[j][k];
+                }
+            }
+        }
+
+        double ** pcT;
+        matrixCreate(&pcT, 56, 56);
+        matrixTranspose(pc, 56, 55, &pcT);
+
+        for(int i = 0; i < 55; ++i)
+        {
+            for(int j = 0; j < 55; ++j)
+            {
+                if(abs(covariance(pcT[i], pcT[j], 56) > 100) && i!=j)
+                {
+//                    cout << i << "\t" << j << " " << abs(covariance(pcT[i], pcT[j], 56)) <<  endl;
+                }
+            }
+            cout << covariance(pcT[i], pcT[i], 56) << endl;
+        }
+    }
+
+//    cout << "Inner classification = ";
+//    cout << fileInnerClassification("/media/Files/Data/AB", "AAX_sum.edf") << endl;
+
+//    cout << "cross classification = ";
+//    cout << filesCrossClassification("/media/Files/Data/AB", "AAX_1.edf", "AAX_2.edf") << endl;
+
+    cout << "dropComps = ";
+    cout << filesDropComponents("/media/Files/Data/AB", "AAX_1.edf", "AAX_2.edf") << endl;
+    cout << filesDropComponents("/media/Files/Data/AB", "BED_1.edf", "BED_2.edf") << endl;
+
 }
 
 MainWindow::~MainWindow()
@@ -1682,7 +1833,7 @@ void MainWindow::diffSmooth()
 
         ANN = new Net(dir, ns, left, right, spStep, ExpName);
         ANN->setAutoProcessingFlag(true);
-        ANN->readCfg();
+        ANN->loadCfg();
         ANN->autoClassification("SpectraSmooth");
         ANN->close();
         cout << "smooth = " << i << " done" << endl;
@@ -6606,7 +6757,7 @@ void MainWindow::icaClassTest() //non-optimized
     helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
     Net * ANN = new Net(dir, numOfIC, left, right, spStep, ExpName);
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
-    ANN->readCfgByName(helpString);
+    ANN->loadCfgByName(helpString);
     ANN->setReduceCoeff(10.);
     double tempAccuracy;
     double currentAccuracy;
@@ -7868,7 +8019,7 @@ void MainWindow::randomDecomposition()
     Spectre * spectr = new Spectre(dir, compNum, ExpName);
     Net * ANN = new Net(dir, compNum, left, right, spStep, ExpName); //generality parameters
     helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
-    ANN->readCfgByName(helpString);
+    ANN->loadCfgByName(helpString);
 
     ANN->setReduceCoeff(15.); //generality
     ANN->setNumOfPairs(50);   ////////////////////////////////////////////////////////////////////////////////////////////
@@ -8029,7 +8180,7 @@ void MainWindow::randomDecomposition()
 
 }
 //
-void MainWindow::listFileInnerClassification(QString workPath, QStringList nameFilt, int NumOfPairs, QString outFilePath, bool windows, int wndLen, int tShift)
+double MainWindow::fileInnerClassification(QString workPath, QString fileName, int NumOfPairs, bool windows, int wndLen, int tShift)
 {
     ui->sliceCheckBox->setChecked(true);
     ui->sliceWithMarkersCheckBox->setChecked(false);
@@ -8041,14 +8192,10 @@ void MainWindow::listFileInnerClassification(QString workPath, QStringList nameF
 
     ui->reduceChannelsComboBox->setCurrentText("20");
 
-    dir->cd(workPath);
-    QStringList list0 = dir->entryList(nameFilt, QDir::Files, QDir::Name);
-
+    QDir * tmpDir = new QDir();
+    tmpDir->cd(workPath);
     Net * ANN;
 
-    ofstream outFile;
-
-    outFile.open(outFilePath.toStdString().c_str(), ios_base::app);
     if(!windows)
     {
         ui->realButton->setChecked(true);
@@ -8059,33 +8206,34 @@ void MainWindow::listFileInnerClassification(QString workPath, QStringList nameF
         ui->windowLengthSpinBox->setValue(wndLen);
         ui->timeShiftSpinBox->setValue(tShift);
     }
-    for(int i = 0; i < list0.length(); ++i)
-    {
-        helpString = dir->absolutePath() + QDir::separator() + list0[i];
-        cout << list0[i].toStdString() << endl;
-        setEdfFile(helpString);
-        cleanDirs();
-        sliceAll();
 
-        if(windows) countSpectraSimple(1024);
-        else countSpectraSimple(4096);
+    helpString = tmpDir->absolutePath() + QDir::separator() + fileName;
+    setEdfFile(helpString);
+    cleanDirs();
+    sliceAll();
 
-        ANN = new Net(dir, ns, left, right, spStep, ExpName);
-        ANN->setNumOfPairs(NumOfPairs);
-        ANN->autoClassificationSimple();
+    if(windows) countSpectraSimple(1024);
+    else countSpectraSimple(4096);
 
-        outFile << ExpName.toStdString() << "\t" << doubleRound(ANN->getAverageAccuracy(), 2) << endl;
+    ANN = new Net(tmpDir, ns, left, right, spStep, ExpName);
+    ANN->setAutoProcessingFlag(true);
+    ANN->setNumOfPairs(NumOfPairs);
+    ANN->autoClassificationSimple();
+    double res = ANN->getAverageAccuracy();
+    ANN->close();
+    delete ANN;
+    delete tmpDir;
+    return res;
 
-
-        ANN->close();
-        delete ANN;
-    }
-    outFile.close();
 }
 
 
-void MainWindow::listFileCrossClassification(QString workPath, QStringList nameFilt1, QStringList nameFilt2, int NumOfPairs, QString outFilePath, bool windows, int wndLen, int tShift)
+double MainWindow::filesCrossClassification(QString workPath, QString fileName1, QString fileName2, QString cfgFileName, int NumOfRepeats, bool windows, int wndLen, int tShift)
 {
+    //learn by 1 file
+    //recognize 2 file
+    //yet for 19 channels only
+
     ui->sliceCheckBox->setChecked(true);
     ui->sliceWithMarkersCheckBox->setChecked(false);
     ui->eyesCleanCheckBox->setChecked(false);
@@ -8096,21 +8244,12 @@ void MainWindow::listFileCrossClassification(QString workPath, QStringList nameF
 
     ui->reduceChannelsComboBox->setCurrentText("20");
 
-    dir->cd(workPath);
-    QStringList list1 = dir->entryList(nameFilt1, QDir::Files, QDir::Name);
-    QStringList list2 = dir->entryList(nameFilt2, QDir::Files, QDir::Name);
-    if(list1.length() != list2.length())
-    {
-        cout << "listFileCrossClassification: different list length" << endl;
-        return;
-    }
+    QDir * tmpDir = new QDir();
+    tmpDir->cd(workPath);
 
     Net * ANN;
     MakePa * mkPa;
 
-    ofstream outFile;
-
-    outFile.open(outFilePath.toStdString().c_str(), ios_base::app);
     if(!windows)
     {
         ui->realButton->setChecked(true);
@@ -8121,67 +8260,65 @@ void MainWindow::listFileCrossClassification(QString workPath, QStringList nameF
         ui->windowLengthSpinBox->setValue(wndLen);
         ui->timeShiftSpinBox->setValue(tShift);
     }
-    for(int i = 0; i < list1.length(); ++i)
+
+    helpString = tmpDir->absolutePath() + QDir::separator() + fileName1;
+    setEdfFile(helpString);
+    cleanDirs();
+    sliceAll();
+
+    if(windows) countSpectraSimple(1024);
+    else countSpectraSimple(4096);
+
+    ANN = new Net(tmpDir, ns, left, right, spStep, ExpName);
+    ANN->setAutoProcessingFlag(true);
+    ANN->loadCfgByName(cfgFileName);
+    helpString = tmpDir->absolutePath() + QDir::separator() + "SpectraSmooth";
+    if(windows)
     {
-        helpString = dir->absolutePath() + QDir::separator() + list1[i];
-        setEdfFile(helpString);
-        cleanDirs();
-        sliceAll();
-
-        if(windows) countSpectraSimple(1024);
-        else countSpectraSimple(4096);
-
-        ANN = new Net(dir, ns, left, right, spStep, ExpName);
-        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
-        if(windows)
-        {
-            helpString += QString(QDir::separator()) + "windows";
-        }
-        mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
-        ANN->adjustReduceCoeff(helpString, 90, 150, mkPa);
-        cleanDir(dir->absolutePath(), "wts");
-
-        for(int k = 0; k < NumOfPairs; ++k)
-        {
-            mkPa->makePaSlot();
-            ANN->PaIntoMatrixByName("1");
-            ANN->LearnNet();
-            helpString = dir->absolutePath() + QDir::separator() + "crossClass_" + QString::number(k) + ".wts";
-            ANN->saveWts(helpString);
-        }
-
-
-
-
-
-        helpString = dir->absolutePath() + QDir::separator() + list2[i];
-        setEdfFile(helpString);
-        if(windows) countSpectraSimple(1024);
-        else countSpectraSimple(4096);
-        mkPa->makePaSlot();
-
-        ANN->PaIntoMatrixByName("all");
-
-        for(int k = 0; k < NumOfPairs; ++k)
-        {
-            helpString = dir->absolutePath() + QDir::separator() + "crossClass_" + QString::number(k) + ".wts";
-            ANN->loadWtsByName(helpString);
-            ANN->tall();
-        }
-        ANN->averageClassification();
-        outFile << ExpName.toStdString() << "\t" << doubleRound(ANN->getAverageAccuracy(), 2) << endl;
-
-
-        mkPa->close();
-        delete mkPa;
-        ANN->close();
-        delete ANN;
+        helpString += QString(QDir::separator()) + "windows";
     }
-    outFile.close();
+    mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
+    ANN->adjustReduceCoeff(helpString, 90, 150, mkPa);
+    cleanDir(tmpDir->absolutePath(), "wts");
+
+    for(int k = 0; k < NumOfRepeats; ++k)
+    {
+        mkPa->makePaSlot();
+        ANN->PaIntoMatrixByName("1");
+        ANN->LearnNet();
+        helpString = tmpDir->absolutePath() + QDir::separator() + "crossClass_" + QString::number(k) + ".wts";
+        ANN->saveWts(helpString);
+    }
+
+
+    helpString = tmpDir->absolutePath() + QDir::separator() + fileName2;
+    setEdfFile(helpString);
+
+    if(windows) countSpectraSimple(1024);
+    else countSpectraSimple(4096);
+
+    mkPa->makePaSlot();
+    ANN->PaIntoMatrixByName("all");
+
+    for(int k = 0; k < NumOfRepeats; ++k)
+    {
+        helpString = tmpDir->absolutePath() + QDir::separator() + "crossClass_" + QString::number(k) + ".wts";
+        ANN->loadWtsByName(helpString);
+        ANN->tall();
+    }
+    cleanDir(tmpDir->absolutePath(), "wts");
+    ANN->averageClassification();
+    double res = ANN->getAverageAccuracy();
+    mkPa->close();
+    delete mkPa;
+    ANN->close();
+    delete ANN;
+    return res;
+
 }
 
 
-void MainWindow::autoIcaAnalysis2()
+void MainWindow::autoIcaAnalysis2() //to delete (listFileCrossClassification)
 {
     //for young scientists conference
     QTime myTime;
@@ -8224,9 +8361,6 @@ void MainWindow::autoIcaAnalysis2()
     QString ExpName2;
     QString mapsPath;
     QString mapsPath2;
-
-    int NumOfComps;
-    int rdcCoeffCounter;
 
 
     for(int i = 0; i < list0.length(); ++i) ///////////////////////////////////////////////////////////////////////////
@@ -8426,13 +8560,13 @@ void MainWindow::autoIcaAnalysis2()
                     ANN->setAutoProcessingFlag(true);
                     if(j == 3)
                     {
-                        if(k == 0) ANN->readCfgByName("highCorr");
-                        else if(k == 1) ANN->readCfgByName("highCorr_wnd");
+                        if(k == 0) ANN->loadCfgByName("highCorr");
+                        else if(k == 1) ANN->loadCfgByName("highCorr_wnd");
                     }
                     else
                     {
-                        if(k == 0) ANN->readCfgByName("16sec19ch");
-                        else if(k == 1) ANN->readCfgByName("4sec19ch");
+                        if(k == 0) ANN->loadCfgByName("16sec19ch");
+                        else if(k == 1) ANN->loadCfgByName("4sec19ch");
                     }
 
                     helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
@@ -8562,7 +8696,7 @@ void MainWindow::autoIcaAnalysis2()
     outStream.close();
 }
 
-void MainWindow::autoIcaAnalysis3()
+void MainWindow::autoIcaAnalysis3() //listFileInnerClassification
 {
     //for young scientists conference
     QTime myTime;
@@ -8668,7 +8802,7 @@ void MainWindow::autoIcaAnalysis4()
 
     for(int i = 0; i < list0.length(); ++i) /////////////////////////////////////////////////////////////// 10 files generality
     {
-        if(i == 7) break; ////////////////////////////////////////////////////////////////////////////////////
+//        if(i == 7) break; ////////////////////////////////////////////////////////////////////////////////////
 
         inStream.getline(tempString, 100); //read Name
         cout << "Name check: " << tempString << endl;
@@ -8751,8 +8885,8 @@ void MainWindow::autoIcaAnalysis4()
 
                 ANN = new Net(dir, NumOfChannels, left, right, spStep, ExpName);
                 ANN->setAutoProcessingFlag(true);
-                if(k == 0) ANN->readCfgByName("highCorr");
-                else if(k == 1) ANN->readCfgByName("highCorr_wnd");
+                if(k == 0) ANN->loadCfgByName("highCorr");
+                else if(k == 1) ANN->loadCfgByName("highCorr_wnd");
 
 
                 helpString2 = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
@@ -8858,7 +8992,7 @@ void MainWindow::autoIcaAnalysis4()
     inStream.close();
 }
 
-void MainWindow::autoIcaAnalysis5() ///////////////////////////////////////////////////////////////////realisations only
+double MainWindow::filesDropComponents(QString workPath, QString fileName1, QString fileName2, int NumOfRepeats, bool windows, int wndLen, int tShift)
 {
     //for young scientists conference
     //learn on 1 -> classify 2
@@ -8881,21 +9015,13 @@ void MainWindow::autoIcaAnalysis5() ////////////////////////////////////////////
     ui->reduceChannelsLineEdit->setText("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
     ui->reduceChannelsComboBox->setCurrentText("20");
 
-    dir->cd("/media/Files/Data/AB");
-//    QStringList list0 = dir->entryList(QStringList("???_1_ica.edf"), QDir::NoFilter, QDir::Name);
-    QStringList list0 = dir->entryList(QStringList("???_1.edf"), QDir::NoFilter, QDir::Name); ///////////////////////////////////////////
+    QDir * tmpDir = new QDir();
+    tmpDir->cd(workPath);
 
-    Spectre * spectr;
     Net * ANN;
     MakePa * mkPa;
 
-    //make needed cfgs
-    cfg * config;
-    int NumOfRepeats = 50;
-//    NumOfRepeats = 1;
-
     QString ExpName2;
-    QString mapsPath;
 
     QList <int> neededChannels;
     QList <int> channelsSet;
@@ -8903,464 +9029,219 @@ void MainWindow::autoIcaAnalysis5() ////////////////////////////////////////////
 
     int tempItem;
     int tempIndex;
-    int rdcCoeffCounter;
     double tempAccuracy;
     double lastAccuracy;
     bool foundFlag;
     ofstream logF;
-    QString logPath = dir->absolutePath() + QDir::separator() + "auto5logRaw.txt";
+    QString logPath = workPath + QDir::separator() + "dropCompsLog.txt";
 
 
-    for(int i = 0; i < list0.length(); ++i) ///////////////////////////////////////////////////////////////////////////
+    ns = 19;
+
+    channelsSet.clear();
+    for(int j = 0; j < 19; ++j)
     {
-        myTime.restart();
-        cout << endl << endl << list0[i].toStdString()  << endl;
-        ns = 19;
+        channelsSet << j;
+    }
+    channelsSetExclude.clear();
+    neededChannels.clear();
 
-        channelsSet.clear();
-        for(int j = 0; j < 19; ++j)
+    //////////////////////////////////////////////////////////initial accuracy count
+    //clean wts
+    cleanDir(workPath, "wts");
+    makeCfgStatic(workPath, 19*247, "Reduced");
+
+    helpString = fileName1;
+    helpString2 = fileName2;
+    tempAccuracy = filesCrossClassification(workPath, helpString, helpString2, "Reduced");
+
+    logF.open(logPath.toStdString().c_str(), ios_base::app);
+    if(!logF.is_open())
+    {
+        cout << "cannot open logFile: " << logPath.toStdString() << endl;
+    }
+    else
+    {
+        logF << ExpName.left(3).toStdString() << " initialAccuracy = " << tempAccuracy << endl << endl;
+        logF.close();
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////initial accuracy count end
+
+    while(1)
+    {
+        ns = channelsSet.length() - 1;
+        makeCfgStatic(tmpDir->absolutePath(), ns*247, "Reduced");
+        foundFlag = false;
+
+        for(int l = 0; l < channelsSet.length(); ++l)
         {
-            channelsSet << j;
-        }
-        channelsSetExclude.clear();
-        neededChannels.clear();
+            //clean wts
+            cleanDir(dir->absolutePath(), "wts");
+            cleanDir(dir->absolutePath(), "markers", 0);
 
+            tempItem = channelsSet[l];
+            if(neededChannels.contains(tempItem)) continue;
 
-
-        ///////////////////////////////////////////
-        /*
-        //transform 2nd file with 1st maps
-        helpString = dir->absolutePath() + QDir::separator() + list0[i];
-        helpString.replace("_1_ica.edf", "_2.edf"); //open ExpName_2.edf
-        mapsPath = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + list0[i].left(3) + "_1_maps.txt";
-        helpString2 = dir->absolutePath() + QDir::separator() + list0[i];
-        helpString2.replace("_1_ica.edf", "_2_ica_by1.edf"); //write to ExpName_2_ica_by1.edf
-
-        ui->reduceChannelsLineEdit->setText("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
-        transformEDF(helpString, mapsPath, helpString2);
-
-        helpString = dir->absolutePath() + QDir::separator() + list0[i];
-        helpString2 = dir->absolutePath() + QDir::separator() + list0[i];
-        helpString2.replace("_1_ica.edf", "_1_ica_by1.edf");
-        QFile::copy(helpString, helpString2);
-        */
-
-
-
-        //////////////////////////////////////////////////////////initial accuracy count
-        //clean wts
-        lst = dir->entryList(QStringList("*.wts"), QDir::Files|QDir::NoDotAndDotDot);
-        for(int h = 0; h < lst.length(); ++h)
-        {
-            remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());
-        }
-
-        config = new cfg(dir, 19, 247, 0.1, 0.1, "Reduced");
-        config->makeCfg();
-        delete config;
-
-
-        //open 1st file
-        helpString = dir->absolutePath() + QDir::separator() + list0[i];
-///////////////////////////////////////////
-//        helpString.replace("_1_ica.edf", "_1_ica_by1.edf");
-        setEdfFile(helpString);
-        ExpName2 = ExpName;
-        cleanDirs();
-        sliceAll();
-
-        spectr = new Spectre(dir, ns, ExpName);
-        QObject::connect(spectr, SIGNAL(spValues(int,int,double)), this, SLOT(takeSpValues(int,int,double)));
-        spectr->countSpectra();
-        spectr->defaultState();
-
-
-        ANN = new Net(dir, ns, left, right, spStep, ExpName);
-        ANN->setAutoProcessingFlag(true);
-        ANN->readCfgByName("Reduced");
-
-        helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
-        mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
-        mkPa->setRdcCoeff(6); //is it right value?
-        rdcCoeffCounter = 0;
-        while(1)
-        {
-            mkPa->makePaSlot();
-            ANN->PaIntoMatrixByName("all");
-            ANN->LearnNet();
-            if(ANN->getEpoch() > 160 || ANN->getEpoch() < 100)
+            logF.open(logPath.toStdString().c_str(), ios_base::app);
+            if(!logF.is_open())
             {
-                mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 130.));
+                cout << "cannot open logFile: " << logPath.toStdString() << endl;
             }
             else
             {
-                reduceCoefficient = mkPa->getRdcCoeff();
-                cout << "file = " << ExpName.toStdString() << "\t" << "reduceCoeff = " << reduceCoefficient << endl;
-                ANN->setReduceCoeff(reduceCoefficient);
-                break;
+                logF << endl << ExpName.left(3).toStdString() << "\tchannel " << tempItem+1 << " start" << endl;
+                logF.close();
             }
-            ++rdcCoeffCounter;
-            if(rdcCoeffCounter == 30 || mkPa->getRdcCoeff() == 0.001) break;
-        }
-        if(mkPa->getRdcCoeff() == 0.001)
-        {
-            cout << "cant do shit" << endl;
-            mkPa->close();
-            delete mkPa;
-            ANN->close();
-            delete ANN;
-            delete spectr;
-            continue;
-        }
 
-        for(int p = 0; p < NumOfRepeats; ++p)
-        {
-            mkPa->makePaSlot();
-            ANN->PaIntoMatrixByName("all");
+            channelsSet.removeAt(l);
+            channelsSetExclude.push_back(tempItem);
 
-            ANN->LearnNet();
-            ANN->saveWtsSlot();
-        }
-
-        //open 2nd file
-        helpString = dir->absolutePath() + QDir::separator() + list0[i];
-        ///////////////////////////////////////////
-//        helpString.replace("_1_ica.edf", "_2_ica_by1.edf");
-        helpString.replace("_1", "_2");
-        setEdfFile(helpString);
-        cleanDirs();
-        sliceAll();
-
-        spectr->countSpectra();
-        spectr->close();
-        delete spectr;
-
-
-        mkPa->makePaSlot();
-        mkPa->close();
-        delete mkPa;
-
-        ANN->PaIntoMatrixByName("all");
-
-        for(int p = 0; p < NumOfRepeats; ++p)
-        {
-            helpString = dir->absolutePath() + QDir::separator() + ExpName2 + "_weights_" + QString::number(p) + ".wts";
-            ANN->loadWtsByName(helpString);
-            ANN->tall();
-        }
-        ANN->averageClassification();
-        tempAccuracy = ANN->getAverageAccuracy();
-        ANN->close();
-        delete ANN;
-
-        logF.open(logPath.toStdString().c_str(), ios_base::app);
-        if(!logF.is_open())
-        {
-            cout << "cannot open logFile: " << logPath.toStdString() << endl;
-        }
-        else
-        {
-            logF << ExpName.left(3).toStdString() << " initialAccuracy = " << tempAccuracy << endl << endl;
-            logF.close();
-        }
-        ////////////////////////////////////////////////////////////////////////////////////////initial accuracy count end
-
-        while(1)
-        {
-            ns = channelsSet.length()-1;
-            config = new cfg(dir, ns, 247, 0.1, 0.1, "Reduced");
-            config->makeCfg();
-            delete config;
-            foundFlag = false;
-
-            for(int l = 0; l < channelsSet.length(); ++l)
+            //drop some channels
+            helpString.clear();
+            for(int k = 0; k < 19; ++k)
             {
-                //clean wts
-                lst = dir->entryList(QStringList("*.wts"), QDir::Files|QDir::NoDotAndDotDot);
-                for(int h = 0; h < lst.length(); ++h)
+                if(channelsSet.contains(k))
                 {
-                    remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());
+                    helpString += QString::number(k+1) + " ";
                 }
+            }
+            helpString += "20";
+            ui->reduceChannelsLineEdit->setText(helpString);
 
-                //clean markers.txt
-                lst = dir->entryList(QStringList("*markers*"), QDir::Files|QDir::NoDotAndDotDot);
-                for(int h = 0; h < lst.length(); ++h)
-                {
-                    remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());
-                }
+            //exclude channels from 1st file
+            helpString = tmpDir->absolutePath() + QDir::separator() + fileName1;
+            setEdfFile(helpString);
+            helpString = tmpDir->absolutePath() + QDir::separator() + fileName2;
+            helpString.replace(".edf", "_rdc.edf");
+            reduceChannelsEDF(helpString);
 
-
-                tempItem = channelsSet[l];
-
-                if(neededChannels.contains(tempItem)) continue;
-
-                logF.open(logPath.toStdString().c_str(), ios_base::app);
-                if(!logF.is_open())
-                {
-                    cout << "cannot open logFile: " << logPath.toStdString() << endl;
-                }
-                else
-                {
-                    logF << endl << ExpName.left(3).toStdString() << "\tchannel " << tempItem+1 << " start" << endl;
-                    logF.close();
-                }
-
-                channelsSet.removeAt(l);
-                channelsSetExclude.push_back(tempItem);
-
-                //drop some channels
-                helpString.clear();
-                for(int k = 0; k < 19; ++k)
-                {
-                    if(channelsSet.contains(k))
-                    {
-                        helpString += QString::number(k+1) + " ";
-                    }
-                }
-                helpString += "20";
-                ui->reduceChannelsLineEdit->setText(helpString);
-
-                //exclude channels from 1st file
-                helpString = dir->absolutePath() + QDir::separator() + list0[i];
-                ////////////////////////////////////
-//                helpString.replace("_1_ica.edf", "_1_ica_by1.edf");
-                setEdfFile(helpString);
-                helpString = dir->absolutePath() + QDir::separator() + list0[i];
-//                helpString.replace("_1_ica.edf", "_1_ica_rdc.edf");
-                helpString.replace("_1.edf", "_1_rdc.edf");
-                reduceChannelsEDF(helpString);
-
-                //exclude channels from 2nd file
-                helpString = dir->absolutePath() + QDir::separator() + list0[i];
-//                helpString.replace("_1_ica.edf", "_2_ica_by1.edf");
-                helpString.replace("_1.edf", "_2.edf");
-                setEdfFile(helpString);
-                helpString = dir->absolutePath() + QDir::separator() + list0[i];
-//                helpString.replace("_1_ica.edf", "_2_ica_rdc.edf");
-                helpString.replace("_1.edf", "_2_rdc.edf");
-                reduceChannelsEDF(helpString);
+            //exclude channels from 2nd file
+            helpString = tmpDir->absolutePath() + QDir::separator() + fileName1;
+            setEdfFile(helpString);
+            helpString = tmpDir->absolutePath() + QDir::separator() + fileName2;
+            helpString.replace(".edf", "_rdc.edf");
+            reduceChannelsEDF(helpString);
 
 
 
-                //open 1st file
-                helpString = dir->absolutePath() + QDir::separator() + list0[i];
-//                helpString.replace("_1_ica.edf", "_1_ica_rdc.edf");
-                helpString.replace("_1.edf", "_1_rdc.edf");
-                setEdfFile(helpString);
-                ExpName2 = ExpName;
-                cleanDirs();
-                sliceAll();
-
-                spectr = new Spectre(dir, ns, ExpName);
-                QObject::connect(spectr, SIGNAL(spValues(int,int,double)), this, SLOT(takeSpValues(int,int,double)));
-                spectr->countSpectra();
-                spectr->defaultState();
+            //cross class
+            helpString = fileName1;
+            helpString.replace(".edf", "_rdc.edf");
+            helpString2 = fileName2;
+            helpString2.replace(".edf", "_rdc.edf");
+            lastAccuracy = filesCrossClassification(workPath, helpString, helpString2, "Reduced");
 
 
-                ANN = new Net(dir, ns, left, right, spStep, ExpName);
-                ANN->setAutoProcessingFlag(true);
-                ANN->readCfgByName("Reduced");
-
-                helpString = dir->absolutePath() + QDir::separator() + "SpectraSmooth";
-                mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep);
-                mkPa->setRdcCoeff(2); //is it right value?
-                rdcCoeffCounter = 0;
-                while(1)
-                {
-                    mkPa->makePaSlot();
-                    ANN->PaIntoMatrixByName("all");
-                    ANN->LearnNet();
-                    if(ANN->getEpoch() > 160 || ANN->getEpoch() < 100)
-                    {
-                        mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(ANN->getEpoch() / 130.));
-                    }
-                    else
-                    {
-                        reduceCoefficient = mkPa->getRdcCoeff();
-                        cout << "file = " << ExpName.toStdString() << "\t" << "reduceCoeff = " << reduceCoefficient << endl;
-                        ANN->setReduceCoeff(reduceCoefficient);
-                        break;
-                    }
-                    ++rdcCoeffCounter;
-                    if(rdcCoeffCounter == 30 || mkPa->getRdcCoeff() == 0.001) break;
-                }
-                if(mkPa->getRdcCoeff() == 0.001)
-                {
-                    cout << "cant do shit" << endl;
-                    mkPa->close();
-                    delete mkPa;
-                    ANN->close();
-                    delete ANN;
-                    delete spectr;
-                    continue;
-                }
-
-                for(int p = 0; p < NumOfRepeats; ++p)
-                {
-                    mkPa->makePaSlot();
-                    ANN->PaIntoMatrixByName("all");
-
-                    ANN->LearnNet();
-                    ANN->saveWtsSlot();
-                }
-
-                //open 2nd file
-                helpString = dir->absolutePath() + QDir::separator() + list0[i];
-//                helpString.replace("_1_ica.edf", "_2_ica_rdc.edf");
-                helpString.replace("_1.edf", "_2_rdc.edf");
-                setEdfFile(helpString);
-                cleanDirs();
-                sliceAll();
-
-                spectr->countSpectra();
-                spectr->close();
-                delete spectr;
-
-
-                mkPa->makePaSlot();
-                mkPa->close();
-                delete mkPa;
-
-                ANN->PaIntoMatrixByName("all");
-
-                for(int p = 0; p < NumOfRepeats; ++p)
-                {
-                    helpString = dir->absolutePath() + QDir::separator() + ExpName2 + "_weights_" + QString::number(p) + ".wts";
-                    ANN->loadWtsByName(helpString);
-                    ANN->tall();
-                }
-                ANN->averageClassification();
-                lastAccuracy = ANN->getAverageAccuracy();
-                ANN->close();
-                delete ANN;
-
-
-
-
-                logF.open(logPath.toStdString().c_str(), ios_base::app);
-                if(!logF.is_open())
-                {
-                    cout << "cannot open logFile: " << logPath.toStdString() << endl;
-                }
-                else
-                {
-                    logF << ExpName.left(3).toStdString() << "\tchannel " << tempItem+1 << " done" << endl;
-                    logF << "channelsSet:" << endl;
-                    for(int q = 0; q < channelsSet.length(); ++q)
-                    {
-                        logF << channelsSet[q] + 1 << "  ";
-                    }
-                    logF << endl << "Accuracy = " << lastAccuracy << endl;
-                    logF.close();
-                }
-
-
-
-
-
-                //set back
-                channelsSet.insert(l, tempItem);
-                channelsSetExclude.removeLast();
-
-
-
-                if(lastAccuracy > tempAccuracy + 1.5)
-                {
-                    tempAccuracy = lastAccuracy;
-                    tempIndex = l;
-                    foundFlag = true;
-                    break;
-                }
-                else if(lastAccuracy > tempAccuracy + 0.7)
-                {
-                    tempAccuracy = lastAccuracy;
-                    tempIndex = l;
-                    foundFlag = true;
-                }
-                else if(lastAccuracy < tempAccuracy - 2.0)
-                {
-                    logF.open(logPath.toStdString().c_str(), ios_base::app);
-                    if(!logF.is_open())
-                    {
-                        cout << "cannot open logFile: " << logPath.toStdString() << endl;
-                    }
-                    else
-                    {
-                        logF << ExpName.left(3).toStdString() << "\tchannel " << tempItem+1 << " to needed channels" << endl;
-                        logF.close();
-                    }
-                    neededChannels << tempItem;
-                }
-
-            } //end of cycle l
-
-            if(foundFlag)
+            logF.open(logPath.toStdString().c_str(), ios_base::app);
+            if(!logF.is_open())
             {
-                channelsSetExclude.push_back(channelsSet[tempIndex]);
-                channelsSet.removeAt(tempIndex);
-
-                logF.open(logPath.toStdString().c_str(), ios_base::app);
-                if(!logF.is_open())
-                {
-                    cout << "cannot open logFile: " << logPath.toStdString() << endl;
-                }
-                else
-                {
-                    logF << ExpName.left(3).toStdString() << "\tchannel " << channelsSet[tempIndex] + 1 << " to drop\t";
-                    logF << "currentAccuracy" << tempAccuracy << endl;
-                    logF.close();
-                }
-
+                cout << "cannot open logFile: " << logPath.toStdString() << endl;
             }
             else
             {
-
-                break;
+                logF << ExpName.left(3).toStdString() << "\tchannel " << tempItem+1 << " done" << endl;
+                logF << "channelsSet:" << endl;
+                for(int q = 0; q < channelsSet.length(); ++q)
+                {
+                    logF << channelsSet[q] + 1 << "  ";
+                }
+                logF << endl << "Accuracy = " << lastAccuracy << endl;
+                logF.close();
             }
 
-        } //end of while(1)
-        cout << ExpName.left(3).toStdString() << " ended in " << myTime.elapsed()/1000. << " sec" << endl;
+
+            //set back
+            channelsSet.insert(l, tempItem);
+            channelsSetExclude.removeLast();
 
 
 
-        logF.open(logPath.toStdString().c_str(), ios_base::app);
-        if(!logF.is_open())
+            if(lastAccuracy > tempAccuracy + 1.5)
+            {
+                tempAccuracy = lastAccuracy;
+                tempIndex = l;
+                foundFlag = true;
+                break;
+            }
+            else if(lastAccuracy > tempAccuracy + 0.7)
+            {
+                tempAccuracy = lastAccuracy;
+                tempIndex = l;
+                foundFlag = true;
+            }
+            else if(lastAccuracy < tempAccuracy - 2.0)
+            {
+                logF.open(logPath.toStdString().c_str(), ios_base::app);
+                if(!logF.is_open())
+                {
+                    cout << "cannot open logFile: " << logPath.toStdString() << endl;
+                }
+                else
+                {
+                    logF << ExpName.left(3).toStdString() << "\tchannel " << tempItem+1 << " to needed channels" << endl;
+                    logF.close();
+                }
+                neededChannels << tempItem;
+            }
+
+        } //end of cycle l
+
+        if(foundFlag)
         {
-            cout << "cannot open logFile: " << logPath.toStdString() << endl;
+            channelsSetExclude.push_back(channelsSet[tempIndex]);
+            channelsSet.removeAt(tempIndex);
+
+            logF.open(logPath.toStdString().c_str(), ios_base::app);
+            if(!logF.is_open())
+            {
+                cout << "cannot open logFile: " << logPath.toStdString() << endl;
+            }
+            else
+            {
+                logF << ExpName.left(3).toStdString() << "\tchannel " << channelsSet[tempIndex] + 1 << " to drop\t";
+                logF << "currentAccuracy" << tempAccuracy << endl;
+                logF.close();
+            }
+
         }
         else
         {
-            logF << "FINAL SET" << endl;
-            logF << ExpName.left(3).toStdString() << endl;
-            logF << "channelsSet:" << endl;
-            for(int q = 0; q < channelsSet.length(); ++q)
-            {
-                logF << channelsSet[q] + 1 << "  ";
-            }
-            logF << endl << "neededChannels:" <<endl;
-            for(int q = 0; q < neededChannels.length(); ++q)
-            {
-                logF << neededChannels[q] + 1 << "  ";
-            }
-            logF << endl << "Accuracy = " << tempAccuracy << endl;
-            logF.close();
+
+            break;
         }
 
+    } //end of while(1)
+    cout << ExpName.left(3).toStdString() << " ended in " << myTime.elapsed()/1000. << " sec" << endl;
 
 
-    } //end of cycle files
 
-    lst = dir->entryList(QStringList("*.wts"), QDir::Files|QDir::NoDotAndDotDot);
-    for(int h = 0; h < lst.length(); ++h)
+    logF.open(logPath.toStdString().c_str(), ios_base::app);
+    if(!logF.is_open())
     {
-        remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());
+        cout << "cannot open logFile: " << logPath.toStdString() << endl;
+    }
+    else
+    {
+        logF << "FINAL SET" << endl;
+        logF << ExpName.left(3).toStdString() << endl;
+        logF << "channelsSet:" << endl;
+        for(int q = 0; q < channelsSet.length(); ++q)
+        {
+            logF << channelsSet[q] + 1 << "  ";
+        }
+        logF << endl << "neededChannels:" <<endl;
+        for(int q = 0; q < neededChannels.length(); ++q)
+        {
+            logF << neededChannels[q] + 1 << "  ";
+        }
+        logF << endl << "Accuracy = " << tempAccuracy << endl;
+        logF.close();
     }
 
-    lst = dir->entryList(QStringList("*markers*"), QDir::Files|QDir::NoDotAndDotDot);
-    for(int h = 0; h < lst.length(); ++h)
-    {
-        remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[h]).toStdString().c_str());
-    }
+
+
+    cleanDir(tmpDir->absolutePath(), "wts");
+    cleanDir(tmpDir->absolutePath(), "markers", 0);
 
 }
 
