@@ -134,8 +134,8 @@ public:
     double filesCrossClassification(QString workPath, QString fileName1, QString fileName2, QString cfgFileName = "16sec19ch", int NumOfRepeats = 50, bool windows = false, int wndLen = 1000, int tShift = 125);
     double filesDropComponents(QString workPath, QString fileName1, QString fileName2, int NumOfRepeats = 50, bool windows = false, int wndLen = 1000, int tShift = 125);
 
+    void countICAs(QString workPath, QString fileName, bool icaFlag = true, bool transformFlag = true, bool sequenceFlag = false); //to delete (listFileCrossClassification)
 
-    void autoIcaAnalysis2();
     void autoIcaAnalysis3();
     void autoIcaAnalysis4();
     void autoIcaAnalysis5();

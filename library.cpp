@@ -1009,14 +1009,6 @@ void matrixMahCount(double ** const matrix, int number, int dimension, double **
 
     for(int i = 0; i < dimension; ++i)
     {
-        for(int j = 0; j < dimension; ++j)
-        {
-            (*outMat)[i][j] = correlation(newMat[i], newMat[j], number);
-        }
-    }
-
-    for(int i = 0; i < dimension; ++i)
-    {
         (*meanVect)[i] = 0.;
         for(int j = 0; j < number; ++j)
         {
@@ -1024,21 +1016,29 @@ void matrixMahCount(double ** const matrix, int number, int dimension, double **
         }
         (*meanVect)[i] /= number;
     }
+
+    for(int i = 0; i < dimension; ++i)
+    {
+        for(int j = 0; j < dimension; ++j)
+        {
+            (*outMat)[i][j] = covariance(newMat[i], newMat[j], number);
+        }
+    }
     matrixDelete(&newMat, dimension);
 
 }
 
-double distanceMah(double * const vect, double ** const covMatrix, double * const groupMean, int dimension)
+double distanceMah(double * const vect, double ** const covMatrixInv, double * const groupMean, int dimension)
 {
     double * tempVec = new double [dimension];
     double * difVec = new double [dimension];
     for(int i = 0; i < dimension; ++i)
     {
-        difVec[i] = groupMean[i] - vect[i];
+        difVec[i] = vect[i] - groupMean[i];
     }
 
     double res;
-    matrixProduct(difVec, covMatrix, &tempVec, dimension, dimension);
+    matrixProduct(difVec, covMatrixInv, &tempVec, dimension, dimension);
     matrixProduct(tempVec, difVec, dimension, &res);
 
     delete []tempVec;
@@ -1053,7 +1053,7 @@ double distanceMah(double * const vect, double ** const group, int dimension, in
     double * meanGroup = new double [dimension];
 
     matrixMahCount(group, number, dimension, &covMatrix, &meanGroup);
-    matrixInvert(&covMatrix, dimension);
+    matrixInvertGauss(&covMatrix, dimension);
 
     double res = distanceMah(vect, covMatrix, meanGroup, dimension);
     matrixDelete(&covMatrix, dimension);
@@ -2251,7 +2251,7 @@ void readFileInLine(QString filePath, double ** outData, int len)
 void splitZeros(double *** dataIn, int ns, int length, int * outLength)
 {
     bool flag[length];
-    bool startFlag = 0;
+    bool startFlag = false;
     int start = -1;
     int finish = -1;
     int allEyes = 0;
@@ -2267,29 +2267,41 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength)
             }
         }
     }
-    for(int i = 0; i < length; ++i)
+    //flag[i] == 0 if it's eyes-cut interval
+    int i = 0;
+    do
     {
-        if(flag[i] == 0 && startFlag == 0)
+        if(!startFlag)
         {
-            start = i;
-            startFlag = 1;
-        }
-
-        if((flag[i] == 1 && startFlag == 1) || (i == length-1 && startFlag == 1))
-        {
-            finish = i;
-            startFlag = 0;
-            //split
-            for(int k = start; k < finish; ++k)
+            if(flag[i] == 0)
             {
-                for(int j = 0; j < ns; ++j)
-                {
-                    (*dataIn)[j][k] = (*dataIn)[j][k + finish - start - allEyes];
-                }
+                start = i;
+                startFlag = true;
             }
-            allEyes += finish-start;
         }
-    }
+        else
+        {
+            if(flag[i] || i == length-1 - allEyes)
+            {
+                finish = i;
+//                cout << start << " " << finish << endl;
+                startFlag = 0;
+                //split
+                for(int k = start; k < length - (finish - start) - allEyes; ++k)
+                {
+                    for(int j = 0; j < ns; ++j)
+                    {
+                        (*dataIn)[j][k] = (*dataIn)[j][k + (finish - start)];
+                        flag[k] = flag[k + (finish - start)];
+                    }
+                }
+                allEyes += finish-start;
+                i -= finish-start;
+                if(i == length-1 - allEyes) break;
+            }
+        }
+        ++i;
+    } while (i <= length-1 - allEyes);
     (*outLength) = length - allEyes;
 //    cout << length << "\t" << allEyes << "\t" << (*outLength) << "\t";
 }
@@ -2721,12 +2733,99 @@ void matrixInvert(double ** const inMat, int const size, double *** outMat) //co
     delete []cof;
 }
 
-void matrixInvert(double *** mat, int const size)
+void matrixInvert(double *** mat, int const size) // by definition - cofactors
 {
     double ** tempMat;
     matrixCreate(&tempMat, size, size);
     matrixInvert(*mat, size, &tempMat);
     matrixCopy(tempMat, mat, size, size);
+    matrixDelete(&tempMat, size);
+}
+
+void matrixInvertGauss(double *** mat, int const size) // by definition - cofactors
+{
+    double ** tempMat;
+    matrixCreate(&tempMat, size, size);
+    matrixInvertGauss((*mat), size, &tempMat);
+    matrixCopy(tempMat, mat, size, size);
+    matrixDelete(&tempMat, size);
+}
+
+void matrixInvertGauss(double ** const mat, int const size, double *** outMat) // by definition - cofactors
+{
+    double ** initMat;
+    matrixCreate(&initMat, size, size);
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = 0; j < size; ++j)
+        {
+            initMat[i][j] = mat[i][j];
+        }
+    }
+    double ** tempMat;
+    matrixCreate(&tempMat, size, size);
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = 0; j < size; ++j)
+        {
+            tempMat[i][j] = (j==i);
+        }
+    }
+    double coeff;
+
+
+    //1) make higher-triangular
+    for(int i = 0; i < size-1; ++i) //which line to substract
+    {
+        for(int j = i+1; j < size; ++j) //FROM which line to substract
+        {
+            coeff = initMat[j][i]/initMat[i][i];
+            //row[j] = row[j] - coeff * row[i] for both matrices
+            for(int k = i; k < size; ++k) //k = i because all previous values in a row are already 0
+            {
+                initMat[j][k] -= coeff * initMat[i][k];
+            }
+            for(int k = 0; k < size; ++k) //k = 0 because default
+            {
+                tempMat[j][k] -= coeff * tempMat[i][k];
+            }
+        }
+    }
+
+    //2) make lower-triangular
+    for(int i = size-1; i > 0; --i) //which line to substract
+    {
+        for(int j = i-1; j >= 0; --j) //FROM which line to substract
+        {
+            coeff = initMat[j][i]/initMat[i][i];
+            //row[j] = row[j] - coeff * row[i] for both matrices
+            initMat[j][i] -= coeff * initMat[i][i]; //optional subtraction
+            for(int k = 0; k < size; ++k) //k = 0 because default
+            {
+                tempMat[j][k] -= coeff * tempMat[i][k];
+            }
+        }
+    }
+
+    //3) divide on diagonal elements
+    for(int i = 0; i < size; ++i) //which line to substract
+    {
+        for(int k = 0; k < size; ++k) //k = 0 because default
+        {
+            tempMat[i][k] /= initMat[i][i];
+        }
+    }
+
+    //4) outmat = tempMat
+    for(int i = 0; i < size; ++i) //which line to substract
+    {
+        for(int k = 0; k < size; ++k) //k = 0 because default
+        {
+            (*outMat)[i][k] = tempMat[i][k];
+        }
+    }
+
+    matrixDelete(&initMat, size);
     matrixDelete(&tempMat, size);
 }
 

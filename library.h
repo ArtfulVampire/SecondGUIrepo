@@ -128,7 +128,7 @@ void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int co
 
 double distance(double * const vec1, double * const vec2, int const dim);
 double distance(double const x1, double const y1, double const x2, double const y2);
-double distanceMah(double * const vect, double ** const covMatrix, double * const groupMean, int dimension);
+double distanceMah(double * const vect, double ** const covMatrixInv, double * const groupMean, int dimension);
 double distanceMah(double * const vect, double ** const group, int dimension, int number);
 double distanceMah(double ** const group1, double ** const group2, int dimension, int number1, int number2);
 void matrixMahCount(double ** const matrix, int number, int dimension, double *** outMat, double **meanVect);
@@ -143,6 +143,8 @@ void matrixTranspose(double *** inMat, int const numRowsCols);
 void matrixCopy(double ** const inMat, double *** outMat, int const dimH, int const dimL);
 void matrixInvert(double ** const inMat, int const size, double *** outMat);
 void matrixInvert(double *** mat, int const size);
+void matrixInvertGauss(double *** mat, int const size);
+void matrixInvertGauss(double ** const mat, int const size, double *** outMat);
 double matrixDet(double ** const matrix, int const dim);
 double matrixDetB(double ** const matrix, int const dim);
 void matrixCofactor(double ** const inMatrix, int size, int numRows, int numCols, double *** outMatrix);

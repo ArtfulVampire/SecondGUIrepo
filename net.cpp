@@ -3404,7 +3404,7 @@ void Net::pca()
         }
     }
 
-    if(1)
+    if(0)
     {
         double ** pcaMatrixTrans;
         matrixCreate(&pcaMatrixTrans, numOfPc, NumberOfVectors);
@@ -3429,7 +3429,7 @@ void Net::pca()
         helpString = dirBC->absolutePath();
         helpString += QString(QDir::separator()) + "SpectraSmooth";
         helpString += QString(QDir::separator()) + "PCA";
-        helpString += FileName[j];
+        helpString += QString(QDir::separator()) + FileName[j];
         pcaFile = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
         for(int k = 0; k < numOfPc; ++k) //j->k
         {
