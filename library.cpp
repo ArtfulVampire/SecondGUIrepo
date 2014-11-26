@@ -11,13 +11,75 @@ QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, 
     a[2] = helpMatrix[numY+1][numX];
     a[3] = helpMatrix[numY+1][numX+1];
 
-    //mean harmonic
+
     double val = 0.;
-    val += a[0] / (partX * partX + partY * partY) ;
-    val += a[1] / ( (1. - partX) * (1. - partX) + partY * partY ) ;
-    val += a[2] / ( partX * partX + (1. - partY) * (1. - partY) );
-    val += a[3] / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
-    val /= 1. / (partX * partX + partY * partY) + 1. / ( (1. - partX) * (1. - partX) + partY * partY ) + 1. / ( partX * partX + (1. - partY) * (1. - partY) ) + 1. / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
+
+    //mean harmonic
+    if(0)
+    {
+        val = 0.;
+        val += a[0] / (partX * partX + partY * partY) ;
+        val += a[1] / ( (1. - partX) * (1. - partX) + partY * partY ) ;
+        val += a[2] / ( partX * partX + (1. - partY) * (1. - partY) );
+        val += a[3] / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
+        val /= 1. / (partX * partX + partY * partY) + 1. / ( (1. - partX) * (1. - partX) + partY * partY ) + 1. / ( partX * partX + (1. - partY) * (1. - partY) ) + 1. / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
+    }
+
+    //bilinear approximation - OK
+    if(0)
+    {
+        val = 0.;
+        val += a[3] * ( partX * partY );
+        val += a[2] * ( (1. - partX) * partY );
+        val += a[1] * ( partX * (1. - partY) );
+        val += a[0] * ( (1. - partX) * (1. - partY) );
+    }
+
+    //gaussian approximation
+    if(0)
+    {
+        double sigma = 0.45;
+        val = 0;
+        double deltaX;
+        double deltaY;
+        double probeX = numX + partX;
+        double probeY = numY + partY;
+        for(int i = 0; i < 25; ++i) //25 the number of values in helpMatrix
+        {
+            deltaX = (i%5) - probeX;
+            deltaY = (i/5) - probeY;
+            val += helpMatrix[i/5][i%5] * gaussian(sqrt(deltaX*deltaX + deltaY*deltaY), sigma);
+        }
+//        val += a[0] * gaussian(sqrt(partX * partX + partY * partY), sigma);
+//        val += a[1] * gaussian(sqrt((1. - partX) * (1. - partX) + partY * partY), sigma);
+//        val += a[2] * gaussian(sqrt(partX * partX + (1. - partY) * (1. - partY)), sigma);
+//        val += a[3] * gaussian(sqrt((1. - partX) * (1. - partX) + (1. - partY) * (1. - partY)), sigma);
+    }
+
+    //double spline approximation
+    if(1)
+    {
+        val = 0;
+        double ** A;
+        matrixCreate(&A, 5, 4); //As for horizontal splines
+        double ** B;
+        matrixCreate(&B, 5, 4); //Bs for horizontal splines
+        double * Av = new double [4]; //A for vertical
+        double * Bv = new double [4]; //B for vertical
+        double * inX = new double [5];
+        for(int i = 0; i < 5; ++i)
+        {
+            inX[i] = i;
+        }
+        double * inY = new double [5];
+        for(int i = 0; i < 5; ++i) //count 6 horizontal splines
+        {
+            splineCoeffCount(inX, helpMatrix[i], 5, &(A[i]), &(B[i]) );
+            inY[i] = splineOutput(inX, helpMatrix[i], 5, A[i], B[i], numX + partX);
+        }
+        splineCoeffCount(inX, inY, 5, &(Av), &(Bv) );
+        val = splineOutput(inX, inY, 5, Av, Bv, numY + partY);
+    }
 
     if(!colour)
     {
@@ -52,11 +114,11 @@ void drawMap(double ** const matrixA, QString outDir, QString outName, int num, 
         }
         else
         {
-            helpMatrix[i/5][i%5] = fabs(matrixA[currIndex++][num]);
+            helpMatrix[i/5][i%5] = matrixA[currIndex++][num]; //here was fabs()
         }
     }
 
-    //approximation
+    //approximation for square
     helpMatrix[0][0] = (helpMatrix[0][1] + helpMatrix[1][0] + helpMatrix[1][1])/3.;
     helpMatrix[0][2] = (helpMatrix[0][1] + helpMatrix[1][1] + helpMatrix[1][2] + helpMatrix[1][2] + helpMatrix[1][3] + helpMatrix[0][3])/6.;
     helpMatrix[0][4] = (helpMatrix[0][3] + helpMatrix[1][3] + helpMatrix[1][4])/3.;;
@@ -65,8 +127,8 @@ void drawMap(double ** const matrixA, QString outDir, QString outName, int num, 
     helpMatrix[4][4] = (helpMatrix[4][3] + helpMatrix[3][3] + helpMatrix[3][4])/3.;
 
     int numX, numY;
-    double leftCoeff = 0.0;
-    double rightCoeff = 4.0;
+    double leftCoeff = 0.0; //gap from left
+    double rightCoeff = 4.0; // gap from right
     double scale1 = size/(leftCoeff + rightCoeff);
 
     //generality 5 -> ns=19
@@ -103,18 +165,15 @@ void drawMap(double ** const matrixA, QString outDir, QString outName, int num, 
     delete painter;
 }
 
-void drawICAMaps(QString mapsPath, int ns, QString outDir, QString outName)
+void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag)
 {
-    FILE * map = fopen(mapsPath.toStdString().c_str(), "r");
-
-
     double ** matrixA;
     matrixCreate(&matrixA, ns, ns);
     readICAMatrix(mapsPath, &matrixA, ns);
 
     for(int i = 0; i < ns; ++i)
     {
-        drawMap(matrixA, outDir, outName, i);
+        drawMap(matrixA, outDir, outName, i, 240, colourFlag); //240 generality
     }
     matrixDelete(&matrixA, ns);
 }
@@ -137,6 +196,11 @@ void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QStr
     for(int i = 0; i < 19; ++i) /////////////////////////// generality 19
     {
         helpString = mapsPath + QDir::separator() + mapsNames + "_map_" + QString::number(i) + ".png";
+        if(!QFile::exists(helpString))
+        {
+            cout << "drawMapsOnSpectra: no map file found " << helpString.toStdString() << endl;
+            return;
+        }
         pic1 = QPixmap(helpString);
 
         pnt->drawPixmap(QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width(),
@@ -1734,12 +1798,16 @@ double blue(int range, int j, double V, double S)
 QColor hueJet(int range, int j, double V, double S)
 {
 //    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
+    if(j > range) j = range; //bicycle for no black colour
+    if(j < 0) j = 0; //bicycle for no black colour
     return QColor(255.*red(range,j,V,S), 255.*green(range,j,V,S), 255.*blue(range,j,V,S));
 }
 
 QColor grayScale(int range, int j)
 {
-    return QColor(255. * j/range, 255. * j/range, 255. * j/range);
+    if(j > range) j = range;
+    if(j < 0) j = 0;
+    return QColor(255. * (1. - double(j)/range), 255. * (1. - double(j)/range), 255. * (1. -  double(j)/range));
 }
 
 QColor qcolor(int range, int j)
@@ -2358,6 +2426,83 @@ void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength)
 
 }
 
+void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB)
+{
+     //[inX[i-1]...inX[i]] - q[i-1] = (1-t)*inY[i-1] + t*inY[i] + t(1-t)(outA[i-1](1-t) + outB[i-1]t));
+    double ** coefsMatrix;
+    matrixCreate(&coefsMatrix, dim, dim);
+    for(int i = 0; i < dim; ++i)
+    {
+        for(int j = 0; j < dim; ++j)
+        {
+            coefsMatrix[i][j] = 0.;
+        }
+    }
+
+    double * rightVec = new double [dim];
+    double * vectorK = new double [dim];
+
+    //set coefs and rightVec
+    coefsMatrix[0][0] = 2.*(inX[1] - inX[0]);
+    coefsMatrix[0][1] = (inX[1] - inX[0]);
+    rightVec[0] = 3. * (inY[1] - inY[0]);
+
+    coefsMatrix[dim-1][dim-1] = 2.*(inX[dim-1] - inX[dim-2]);
+    coefsMatrix[dim-1][dim-2] = (inX[dim-1] - inX[dim-2]);
+    rightVec[dim-1] = 3. * (inY[dim-1] - inY[dim-2]);
+    for(int i = 1; i < dim-1; ++i) //besides first and last rows
+    {
+        coefsMatrix[i][i-1] = 1 / (inX[i] - inX[i-1]);
+        coefsMatrix[i][i] = 2 * (1 / (inX[i] - inX[i-1]) + 1 / (inX[i+1] - inX[i]));
+        coefsMatrix[i][i+1] = 1 / (inX[i+1] - inX[i]);
+
+        rightVec[i] = 3 * ( (inY[i] - inY[i-1]) / ( (inX[i] - inX[i-1]) * (inX[i] - inX[i-1]) ) + (inY[i+1] - inY[i]) / ( (inX[i+1] - inX[i]) * (inX[i+1] - inX[i]) ));
+    }
+    if(0) //cout matrix and rightvec - OK
+    {
+        for(int i = 0; i < dim; ++i)
+        {
+            for(int j = 0; j < dim; ++j)
+            {
+                cout << coefsMatrix[i][j] << "\t ";
+            }
+            cout << rightVec[i] << endl;
+        }
+    }
+    //count K's
+    matrixSystemSolveGauss(coefsMatrix, rightVec, dim, &vectorK);
+    //count outA and outB
+    for(int i = 1; i < dim; ++i) //there is dim-1 intervals between dim points
+    {
+        (*outA)[i-1] = vectorK[i-1] * (inX[i] - inX[i-1]) - (inY[i] - inY[i-1]);
+        (*outB)[i-1] =  -vectorK[i] * (inX[i] - inX[i-1]) + (inY[i] - inY[i-1]);
+    }
+
+    matrixDelete(&coefsMatrix, dim);
+    delete []rightVec;
+    delete []vectorK;
+}
+
+double splineOutput(double * const inX, double * const inY, int dim, double * A, double * B, double probeX)
+{
+    //[inX[i-1]...inX[i]] - q[i] = (1-t)*inY[i1] + t*inY[i] + t(1-t)(outA[i](1-t) + outB[i]t));
+    double t;
+    //which interval we have?
+    int num = -1; //number of interval
+    for(int i = 0; i < dim-1; ++i)
+    {
+        if(inX[i] <= probeX && probeX < inX[i+1])
+        {
+            num = i;
+            break;
+        }
+    }
+    t = (probeX - inX[num]) / (inX[num+1] - inX[num]);
+    double res;
+    res = (1-t) * inY[num] + t * inY[num+1] + t * (1-t) * (A[num] * (1-t) + B[num] * t);
+    return res;
+}
+
 void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth, const double powArg)
 {
     //allocates memory for dataFFT
@@ -2533,6 +2678,19 @@ void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int co
     delete []spectre;
 }
 
+QString expName(QString const filePath)
+{
+    QString hlp;
+    hlp = filePath;
+    int a = hlp.lastIndexOf(QDir::separator());
+    if(a > 0)
+    {
+        hlp.remove(0, a + 1); // delete the start of the path
+    }
+    hlp.remove(hlp.indexOf('.'), 4); // delete the extension
+    return hlp;
+}
+
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double ** classCount)
 {
     ifstream paSrc;
@@ -2682,6 +2840,83 @@ void matrixCofactor(double ** const inMatrix, int const size, int const numRows,
         }
     }
 //    cout << "matrixCof: end" << endl;
+}
+
+void matrixSystemSolveGauss(double ** const inMat, double * const inVec, int size, double ** outVec)
+{
+    double ** initMat;
+    matrixCreate(&initMat, size, size);
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = 0; j < size; ++j)
+        {
+            initMat[i][j] = inMat[i][j];
+        }
+    }
+    ////////////////////////////////////////////////////////////
+    //too lazy to rewrite via double * tempVec
+    double ** tempMat;
+    matrixCreate(&tempMat, size, size);
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = 0; j < size; ++j)
+        {
+            tempMat[i][j] = (j==0) * inVec[i];
+        }
+    }
+    double coeff;
+
+
+    //1) make higher-triangular
+    for(int i = 0; i < size-1; ++i) //which line to substract
+    {
+        for(int j = i+1; j < size; ++j) //FROM which line to substract
+        {
+            coeff = initMat[j][i]/initMat[i][i];
+            //row[j] = row[j] - coeff * row[i] for both matrices
+            for(int k = i; k < size; ++k) //k = i because all previous values in a row are already 0
+            {
+                initMat[j][k] -= coeff * initMat[i][k];
+            }
+            for(int k = 0; k < size; ++k) //k = 0 because default
+            {
+                tempMat[j][k] -= coeff * tempMat[i][k];
+            }
+        }
+    }
+
+    //2) make lower-triangular
+    for(int i = size-1; i > 0; --i) //which line to substract
+    {
+        for(int j = i-1; j >= 0; --j) //FROM which line to substract
+        {
+            coeff = initMat[j][i]/initMat[i][i];
+            //row[j] = row[j] - coeff * row[i] for both matrices
+            initMat[j][i] -= coeff * initMat[i][i]; //optional subtraction
+            for(int k = 0; k < size; ++k) //k = 0 because default
+            {
+                tempMat[j][k] -= coeff * tempMat[i][k];
+            }
+        }
+    }
+
+    //3) divide on diagonal elements
+    for(int i = 0; i < size; ++i) //which line to substract
+    {
+        for(int k = 0; k < size; ++k) //k = 0 because default
+        {
+            tempMat[i][k] /= initMat[i][i];
+        }
+    }
+
+
+    for(int i = 0; i < size; ++i)
+    {
+        (*outVec)[i] = tempMat[i][0];
+    }
+
+    matrixDelete(&initMat, size);
+    matrixDelete(&tempMat, size);
 }
 
 void matrixTranspose(double ** const inMat, int const numRows, int const numCols, double *** outMat)

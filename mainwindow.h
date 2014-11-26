@@ -124,7 +124,7 @@ public:
     void sliceOneByOne();
     void sliceOneByOneNew(int numChanWrite);
     void drawMap(double ** matrixA, int num);
-    void setEdfFile(QString filePath);
+    void setEdfFile(const QString filePath);
     void transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath);
     void reduceChannelsEDF(QString newFilePath);
     void constructEDF(QString newPath);
@@ -134,7 +134,7 @@ public:
     double filesCrossClassification(QString workPath, QString fileName1, QString fileName2, QString cfgFileName = "16sec19ch", int NumOfRepeats = 50, bool windows = false, int wndLen = 1000, int tShift = 125);
     double filesDropComponents(QString workPath, QString fileName1, QString fileName2, int NumOfRepeats = 50, bool windows = false, int wndLen = 1000, int tShift = 125);
 
-    void countICAs(QString workPath, QString fileName, bool icaFlag = true, bool transformFlag = true, bool sequenceFlag = false); //to delete (listFileCrossClassification)
+    void countICAs(QString workPath, QString fileName, bool icaFlag = true, bool transformFlag = true, bool sequenceFlag = false, bool sumFlag = false); //to delete (listFileCrossClassification)
 
     void autoIcaAnalysis3();
     void autoIcaAnalysis4();
@@ -145,14 +145,11 @@ private:
     Ui::MainWindow *ui;
     QVariant var;
     QDir *dir;
-    QString helpString;
-    QString helpString2;
     ifstream inStream;
     ofstream outStream;
     int helpInt;
     double helpDouble;
     QString ExpName;
-    QStringList lst, nameFilters;
     int ndr, ddr, ns, nsBackup;
     int *nr;
     int NumOfSlices, eyes;

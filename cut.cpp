@@ -1236,8 +1236,6 @@ void Cut::cut()
 
 void Cut::splitCut()
 {
-
-    int h=0;
     int leftEdge = int(leftLimit*NumOfSlices/ui->picLabel->width());
     int rightEdge = int(rightLimit*NumOfSlices/ui->picLabel->width());
     for(int i = leftEdge; i < NumOfSlices - (rightEdge - leftEdge); ++i)         //zoom

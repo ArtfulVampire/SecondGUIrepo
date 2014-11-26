@@ -144,7 +144,7 @@ void Spectre::setFftLength(int i)
     ui->fftComboBox->setCurrentText(QString::number(i));
 }
 
-double Spectre::setPow(double a)
+void Spectre::setPow(double a)
 {
     ui->powDoubleSpinBox->setValue(a);
 }
@@ -1066,7 +1066,7 @@ void Spectre::countSpectra()
 
         if(ui->brainRateRadioButton->isChecked() || ui->spectraRadioButton->isChecked())
         {
-            if(!readFile(a, dataIn, dataFFT))
+            if(!countOneSpectre(dataIn, dataFFT))
             {
                 outStream.close();
                 for(int i = 0; i < ns; ++i)
@@ -1115,7 +1115,7 @@ void Spectre::countSpectra()
         }
 //        else if(ui->phaseDifferenceRadioButton->isChecked())
 //        {
-//            if(!readFilePhase(a, dataIn, dataPhase))
+//            if(!readFilePhase(dataIn, dataPhase))
 //            {
 //                outStream.close();
 //                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
@@ -1333,7 +1333,7 @@ void Spectre::countSpectra()
 
 }
 
-int Spectre::readFile(int &num, double ** data2, double **dataFFT)  /////////EDIT
+int Spectre::countOneSpectre(double ** data2, double **dataFFT)  /////////EDIT
 {
     //correct Eyes number
     Eyes = 0;
@@ -1374,7 +1374,7 @@ int Spectre::readFile(int &num, double ** data2, double **dataFFT)  /////////EDI
 }
 
 
-int Spectre::readFilePhase(int &num, double ** data2, double ***dataPhase)
+int Spectre::readFilePhase(double ** data2, double ***dataPhase)
 {
         int h = 0;
 

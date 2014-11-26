@@ -25,12 +25,12 @@ class Spectre : public QWidget
 public:
     explicit Spectre(QDir *dir_ = new QDir("/"), int ns_ = 20, QString ExpName_ = "TSL");
     ~Spectre();
-    int readFile(int &num, double **data2, double ** dataFFT);
+    int countOneSpectre(double **data2, double ** dataFFT);
     void setSmooth(int);
     bool eventFilter(QObject *obj, QEvent *event);
-    int readFilePhase(int &num, double **data2, double ***dataPhase);
+    int readFilePhase(double **data2, double ***dataPhase);
     void defaultState();
-    double setPow(double);
+    void setPow(double);
     void setFftLength(int);
 
 

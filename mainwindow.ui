@@ -452,7 +452,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cleanZerosCheckBox">
+        <widget class="QCheckBox" name="splitZerosCheckBox">
          <property name="text">
           <string>clean zeros?</string>
          </property>

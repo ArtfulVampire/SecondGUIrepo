@@ -93,6 +93,8 @@ double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 void splitZeros(double *** inData, int ns, int length, int * outLength);
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
+void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t)*inY[i1] + t*inY[i] + t(1-t)(outA[i](1-t) + outB[i]t));
+double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
 
 bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
 int typeOfFileName(QString fileName);
@@ -115,15 +117,16 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
 bool readICAMatrix(QString path, double *** matrixA, int ns);
 void writeICAMatrix(QString path, double ** matrixA, const int ns);
 
-QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour=true);
-void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size = 240, bool colourFlag=true);
-void drawICAMaps(QString mapsPath, int ns, QString outDir, QString outName);
+QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour = true);
+void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
+void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag = true);
 void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
 
 
 void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth = 15, const double powArg = 1.);
 void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth = 15, const double powArg = 1.);
 void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
+QString expName(const QString filePath);
 
 
 double distance(double * const vec1, double * const vec2, int const dim);
@@ -148,6 +151,7 @@ void matrixInvertGauss(double ** const mat, int const size, double *** outMat);
 double matrixDet(double ** const matrix, int const dim);
 double matrixDetB(double ** const matrix, int const dim);
 void matrixCofactor(double ** const inMatrix, int size, int numRows, int numCols, double *** outMatrix);
+void matrixSystemSolveGauss(double ** const inMat, double * const inVec, int size, double ** outVec);
 
 double matrixInnerMaxCorrelation(double ** const inMatrix, const int numRows, const int numCols,
                                  double (*corrFunc)(double * const arr1, double * const arr2, int length, int t) = &correlationFromZero);
@@ -164,10 +168,12 @@ void matrixPrint(double ** const mat, int i, int j);
 void drawArray(double * array, int length, QString outPath); ///////////////////////////////////////////to do
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
-inline double gaussian(double x) //N(0,1)
+inline double gaussian(double x, double sigma = 1.) //N(0,1)
 {
-    return 1./(sqrt(2. * pi)) * exp(-x*x / 2.);
+    return 1./(sigma * sqrt(2. * pi)) * exp(-x * x / (2. * sigma * sigma) );
 }
+
+
 
 inline double logistic(double &x, double t)
 {
