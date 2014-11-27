@@ -447,7 +447,7 @@ void Spectre::psaSlot()
             }
         }
     }
-    cout << "max magnitude = " << norm << endl;
+//    cout << "max magnitude = " << norm << endl;
 
 //    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
 //    fprintf(res, "\n%.3lf\n", norm);

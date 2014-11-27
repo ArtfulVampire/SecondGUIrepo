@@ -365,7 +365,7 @@ void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
         }
         else
         {
-            cout << "reduceCoeff = " << mkPa->getRdcCoeff() << endl;
+            cout << "adjustReduceCoeff: reduceCoeff = " << mkPa->getRdcCoeff() << endl;
             this->setReduceCoeff(mkPa->getRdcCoeff());
             break;
         }
@@ -2597,7 +2597,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     }
 
 
-    cout << "learning ended " << epoch << " epoches" << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+//    cout << "learning ended " << epoch << " epoches" << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
 

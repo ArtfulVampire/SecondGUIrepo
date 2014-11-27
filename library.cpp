@@ -50,37 +50,7 @@ QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, 
             deltaY = (i/5) - probeY;
             val += helpMatrix[i/5][i%5] * gaussian(sqrt(deltaX*deltaX + deltaY*deltaY), sigma);
         }
-//        val += a[0] * gaussian(sqrt(partX * partX + partY * partY), sigma);
-//        val += a[1] * gaussian(sqrt((1. - partX) * (1. - partX) + partY * partY), sigma);
-//        val += a[2] * gaussian(sqrt(partX * partX + (1. - partY) * (1. - partY)), sigma);
-//        val += a[3] * gaussian(sqrt((1. - partX) * (1. - partX) + (1. - partY) * (1. - partY)), sigma);
     }
-
-    //double spline approximation
-    if(1)
-    {
-        val = 0;
-        double ** A;
-        matrixCreate(&A, 5, 4); //As for horizontal splines
-        double ** B;
-        matrixCreate(&B, 5, 4); //Bs for horizontal splines
-        double * Av = new double [4]; //A for vertical
-        double * Bv = new double [4]; //B for vertical
-        double * inX = new double [5];
-        for(int i = 0; i < 5; ++i)
-        {
-            inX[i] = i;
-        }
-        double * inY = new double [5];
-        for(int i = 0; i < 5; ++i) //count 6 horizontal splines
-        {
-            splineCoeffCount(inX, helpMatrix[i], 5, &(A[i]), &(B[i]) );
-            inY[i] = splineOutput(inX, helpMatrix[i], 5, A[i], B[i], numX + partX);
-        }
-        splineCoeffCount(inX, inY, 5, &(Av), &(Bv) );
-        val = splineOutput(inX, inY, 5, Av, Bv, numY + partY);
-    }
-
     if(!colour)
     {
         return grayScale(256, ((val - minMagn) / (maxMagn - minMagn))*256.);
@@ -92,11 +62,183 @@ QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, 
 }
 
 
-void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size, bool colourFlag)
+void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
 {
-    double maxMagn = 0.;
-    double minMagn = 0.;
 
+    QPixmap pic = QPixmap(size, size);
+    QPainter * painter = new QPainter;
+    pic.fill();
+    painter->begin(&pic);
+    QString savePath1 = outDir + QDir::separator() + outName + "_map_" + QString::number(num) + "+.png";
+    double val;
+
+    QPixmap pic1 = QPixmap(size, size);
+    QPainter * painter1 = new QPainter;
+    pic1.fill();
+    painter1->begin(&pic1);
+    QString savePath2 = outDir + QDir::separator() + outName + "_map_" + QString::number(num) + "-.png";
+    double val1;
+    double drawArg;
+    int drawRange = 256;
+
+    int dim = 7;
+    double scale1 = double(dim-1)/size;
+
+    double ** helpMatrix;
+    matrixCreate(&helpMatrix, dim, dim); //generality for ns = 19
+
+    int currIndex = 0.;
+    for(int i = 0; i < dim*dim; ++i) //generality for ns = 19
+    {
+        if((i/dim)%(dim-1) == 0 || (i%dim)%(dim-1) == 0)  //set 0 to all edge values
+        {
+            helpMatrix[i/dim][i%dim] = 0.;
+        }
+        else if(i/dim == 1 && ((i%dim) - 1) * ((i%dim) - 3) * ((i%dim) - 5) == 0) //Fp3, Fpz, Fp4
+        {
+            helpMatrix[i/dim][i%dim] = 0.;
+        }
+        else if(i/dim == 5 && ((i%dim) - 1) * ((i%dim) - 3) * ((i%dim) - 5) == 0) //O3, Oz, O4
+        {
+            helpMatrix[i/dim][i%dim] = 0.;
+        }
+        else
+        {
+            helpMatrix[i/dim][i%dim] = matrixA[currIndex++][num];
+        }
+    }
+
+
+
+    //approximation for square - Fp3, Fpz, Fp, O3, Oz, O4
+    helpMatrix[1][1] = (helpMatrix[1][2] + helpMatrix[2][1] + helpMatrix[2][2])/3.;
+    helpMatrix[1][3] = (helpMatrix[1][2] + helpMatrix[1][4] + helpMatrix[2][2] + helpMatrix[2][3] + helpMatrix[2][4])/5.;
+    helpMatrix[1][5] = (helpMatrix[1][4] + helpMatrix[2][4] + helpMatrix[2][5])/3.;;
+    helpMatrix[5][1] = (helpMatrix[4][1] + helpMatrix[4][2] + helpMatrix[5][2])/3.;
+    helpMatrix[5][3] = (helpMatrix[5][2] + helpMatrix[4][2] + helpMatrix[4][3] + helpMatrix[4][4] + helpMatrix[4][5])/5.;
+    helpMatrix[5][5] = (helpMatrix[5][4] + helpMatrix[4][4] + helpMatrix[4][5])/3.;
+
+    double minMagn = helpMatrix[1][1];
+    double maxMagn = helpMatrix[1][1];
+    for(int i = 1; i < dim-1; ++i)
+    {
+        for(int j = 1; j < dim-1; ++j)
+        {
+            minMagn = min(minMagn, helpMatrix[i][j]);
+            maxMagn = max(maxMagn, helpMatrix[i][j]);
+        }
+    }
+
+
+    double ** Ah;
+    matrixCreate(&Ah, 5, 6);
+    double ** Bh;
+    matrixCreate(&Bh, 5, 6);
+    double * inX = new double [dim];
+    double * inY = new double [dim];
+    double * inYv = new double [dim];
+    double * Av = new double [dim-1];
+    double * Bv = new double [dim-1];
+
+    for(int k = 0; k < dim; ++k)
+    {
+        inX[k] = k; //hope, it's constant
+    }
+    for(int i = 1; i < dim-1; ++i) // number of helpMatrix row
+    {
+        for(int k = 0; k < dim; ++k)
+        {
+            inX[k] = k; //not necessary
+            inY[k] = helpMatrix[i][k];
+        }
+        splineCoeffCount(inX, inY, dim, &(Ah[i-1]), &(Bh[i-1])); // horizontal splines coeffs
+
+    }
+
+    for(int x = 0; x < size; ++x)
+    {
+        for(int k = 1; k < dim-1; ++k)
+        {
+            for(int h = 0; h < dim; ++h) //set inX and inY for k'th row of helpMatrix
+            {
+                inX[h] = h; // not necessary
+                inY[h] = helpMatrix[k][h];
+            }
+            inYv[k] = splineOutput(inX, inY, dim, Ah[k-1], Bh[k-1], x*scale1);
+        }
+        inYv[0] = 0.;
+        inYv[dim-1] = 0.;
+        splineCoeffCount(inX, inYv, dim, &Av, &Bv);
+        for(int y = 0; y < size; ++y)
+        {
+            if(distance(x, y, size/2, size/2) > size * 2. * sqrt(2.)/(dim-1) ) continue;
+            val = splineOutput(inX, inYv, dim, Av, Bv, y*scale1);
+
+
+            if(maxAbs == 0) drawArg = (val - minMagn) / (maxMagn - minMagn)*drawRange; //if private maxAbs
+            else drawArg = (val + maxAbs) / (2 * maxAbs)*drawRange; //if common maxAbs
+
+            if(!colourFlag)
+            {
+                painter->setPen(grayScale(drawRange, drawArg));
+                painter1->setPen(grayScale(drawRange, drawRange - drawArg));
+            }
+            else
+            {
+                painter->setPen(hueJet(drawRange, drawArg));
+                painter1->setPen(hueJet(drawRange, drawRange - drawArg));
+            }
+            painter->drawPoint(x,y);
+            painter1->drawPoint(x,y);
+        }
+    }
+
+    if(1) //draw channels locations
+    {
+        helpMatrix[1][1] = 0.;
+        helpMatrix[1][3] = 0.;
+        helpMatrix[1][5] = 0.;
+        helpMatrix[5][1] = 0.;
+        helpMatrix[5][3] = 0.;
+        helpMatrix[5][5] = 0.;
+        painter->setBrush(QBrush("black"));
+        painter1->setBrush(QBrush("black"));
+        painter->setPen("black");
+        painter1->setPen("black");
+        for(int i = 0; i < dim; ++i)
+        {
+            for(int j = 0; j < dim; ++j)
+            {
+                if(helpMatrix[i][j] != 0.)
+                {
+                    painter->drawEllipse(j/scale1-1, i/scale1-1, 2, 2);
+                    painter1->drawEllipse(j/scale1-1, i/scale1-1, 2, 2);
+                }
+            }
+        }
+    }
+    pic.save(savePath1, 0, 100);
+    pic1.save(savePath2, 0, 100);
+
+
+
+
+    matrixDelete(&Ah, 5);
+    matrixDelete(&Bh, 5);
+    delete []inX;
+    delete []inY;
+    delete []inYv;
+    delete []Av;
+    delete []Bv;
+
+    matrixDelete(&helpMatrix, 5);
+    delete painter;
+    delete painter1;
+}
+
+
+void drawMap(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
+{
     QPixmap pic = QPixmap(size, size);
     QPainter * painter = new QPainter;
     pic.fill();
@@ -132,17 +274,7 @@ void drawMap(double ** const matrixA, QString outDir, QString outName, int num, 
     double scale1 = size/(leftCoeff + rightCoeff);
 
     //generality 5 -> ns=19
-    minMagn = helpMatrix[0][0];
-    for(int i = 0; i < 5 ; ++i)
-    {
-        for(int j = 0; j < 5 ; ++j)
-        {
-            maxMagn = max(helpMatrix[i][j], maxMagn);
-            minMagn = min(helpMatrix[i][j], minMagn);
-        }
-    }
-
-
+    //usual approximations
     for(int x = floor(scale1)*leftCoeff; x < floor(scale1)*rightCoeff; ++x)
     {
         for(int y = floor(scale1)*leftCoeff; y < floor(scale1)*rightCoeff; ++y)
@@ -152,10 +284,11 @@ void drawMap(double ** const matrixA, QString outDir, QString outName, int num, 
             numX = floor(x/int(scale1)) ; //1 2
             numY = floor(y/int(scale1)) ; //3 4
 
-            painter->setPen(mapColor(minMagn, maxMagn, helpMatrix, numX, numY, double(double(x%int(scale1))/scale1 + 0.003/scale1), double(double(y%int(scale1))/scale1) + 0.003/scale1, colourFlag)); // why 0.003
+            painter->setPen(mapColor(-maxAbs, maxAbs, helpMatrix, numX, numY, double(double(x%int(scale1))/scale1 + 0.003/scale1), double(double(y%int(scale1))/scale1) + 0.003/scale1, colourFlag)); // why 0.003
             painter->drawPoint(x,y);
         }
     }
+
 
     QString helpString = outDir + QDir::separator() + outName + "_map_" + QString::number(num) + ".png";
     pic.save(helpString, 0, 100);
@@ -165,15 +298,23 @@ void drawMap(double ** const matrixA, QString outDir, QString outName, int num, 
     delete painter;
 }
 
-void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag)
+void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag, void (*draw1Map)(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag))
 {
     double ** matrixA;
     matrixCreate(&matrixA, ns, ns);
     readICAMatrix(mapsPath, &matrixA, ns);
+    double maxAbs = matrixA[0][0];
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            maxAbs = fmax(maxAbs, fabs(matrixA[i][j]));
+        }
+    }
 
     for(int i = 0; i < ns; ++i)
     {
-        drawMap(matrixA, outDir, outName, i, 240, colourFlag); //240 generality
+        draw1Map(matrixA, maxAbs, outDir, outName, i, 240, colourFlag); //240 generality
     }
     matrixDelete(&matrixA, ns);
 }
@@ -1760,10 +1901,10 @@ double blue1(int range, int j)
 }
 
 //jet
-double red(int range, int j, double V, double S)
+double red(int range, double j, double V, double S)
 {
     double part = j / double(range);
-    if(0.000 <= part && part <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(part)*3.;
+    if    (0.000 <= part && part <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(part)*3.;
     else if(0.167 < part && part <= 0.400) return V*(1.-S);
     else if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
     else if(0.500 < part && part <= 0.600) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
@@ -1771,11 +1912,11 @@ double red(int range, int j, double V, double S)
     else if(0.833 < part && part <= 1.000) return V - V*S*(part-0.833)/(1.000-0.833)/2.;
     else return 0.0;
 }
-double green(int range, int j, double V, double S)
+double green(int range, double j, double V, double S)
 {
     double part = j / double(range);
     double hlp = 0.95;
-    if(0.000 <= part && part <= 0.167) return V*(1.-S);
+    if    (0.000 <= part && part <= 0.167) return V*(1.-S);
     else if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
     else if(0.400 < part && part <= 0.500) return V-V*S*(1.-hlp);
     else if(0.500 < part && part <= 0.600) return V-V*S*(1.-hlp);
@@ -1783,10 +1924,10 @@ double green(int range, int j, double V, double S)
     else if(0.833 < part && part <= 1.000) return V*(1.-S);
     else return 0.0;
 }
-double blue(int range, int j, double V, double S)
+double blue(int range, double j, double V, double S)
 {
     double part = j / double(range);
-    if(0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
+    if    (0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
     else if(0.167 < part && part <= 0.400) return V;
     else if(0.400 < part && part <= 0.500) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
     else if(0.500 < part && part <= 0.600) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
@@ -1795,12 +1936,28 @@ double blue(int range, int j, double V, double S)
     else return 0.0;
 }
 
-QColor hueJet(int range, int j, double V, double S)
+QColor hueJet(int range, double j, int numOfContours, double V, double S)
 {
-//    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
     if(j > range) j = range; //bicycle for no black colour
     if(j < 0) j = 0; //bicycle for no black colour
+
+    for(int i = 1; i < numOfContours + 1; ++i)
+    {
+        if(fabs(j/range - double(i)/(numOfContours + 1)) < 0.003)
+        {
+            return QColor("black");
+        }
+    }
     return QColor(255.*red(range,j,V,S), 255.*green(range,j,V,S), 255.*blue(range,j,V,S));
+}
+
+
+QColor hueOld(int range, int j)
+{
+    if(j > range) j = range; //bicycle for no black colour
+    if(j < 0) j = 0; //bicycle for no black colour
+    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
+//    return QColor(255.*red(range,j,V,S), 255.*green(range,j,V,S), 255.*blue(range,j,V,S));
 }
 
 QColor grayScale(int range, int j)
@@ -1837,38 +1994,71 @@ double morletSin(double const freq1, double timeShift, double pot, double time)
     return sin(freq*(time-timeShift))*exp(-freq*freq*(time-timeShift)*(time-timeShift)/(pot*pot));
 }
 
-void drawColorScale(QString filePath, int range)
+void drawColorScale(QString filePath, int range, int type)
 {
-//    double sigmaR=range*0.35;
-//    double sigmaG=range*0.25;
-//    double sigmaB=range*0.4;
 
-//    double offR=range*(1.0 - 0.3);
-//    double offG=range*(0.5 + 0.25);
-//    double offB=range*(0.0 + 0.15);
+    //    double sigmaR = range*0.35;
+    //    double sigmaG = range*0.25;
+    //    double sigmaB = range*0.4;
 
+    //    double offR = range*(1.0 - 0.3);
+    //    double offG = range*(0.5 + 0.25);
+    //    double offB = range*(0.0 + 0.15);
+
+    //type == 0 - hueJet
+    //type == 1 - hueOld
+    //type == 2 - 3gauss
+    //type == 3 - grayScale
     QPixmap pic(1800, 600);
     pic.fill();
     QPainter * painter = new QPainter;
     painter->begin(&pic);
 
-    for(int i=0; i<range; ++i)
+    for(int i = 0; i < range; ++i)
     {
-        painter->setBrush(QBrush(hueJet(range, i, 0.95, 1.0)));
-        painter->setPen(hueJet(range, i, 0.95, 1.0));
+        switch(type)
+        {
+        case 0:
+        {
+            painter->setBrush(QBrush(hueJet(range, i)));
+            painter->setPen(hueJet(range, i));
+            break;
+        }
+        case 1:
+        {
+            painter->setBrush(QBrush(hueOld(range, i)));
+            painter->setPen(hueOld(range, i));
+            break;
+        }
+        case 2:
+        {
+            painter->setBrush(QBrush(grayScale(range, i)));
+            painter->setPen(grayScale(range, i));
+            break;
+        }
+        case 3:
+        {
+            painter->setBrush(QBrush(grayScale(range, i)));
+            painter->setPen(grayScale(range, i));
+            break;
+        }
+        }
         painter->drawRect(i*pic.width()/double(range), 0, (i+1)*pic.width()/double(range), 30);
     }
-    for(int i=0; i<range; ++i)
+    for(int i = 0; i < range; ++i)
     {
         painter->setPen(QPen(QBrush("red"), 2));
-//            painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offR)*(i-offR)/(2*sigmaR*sigmaR)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offR)*((i+1)-offR)/(2*sigmaR*sigmaR)));
-            painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red(range, int(i+1), 0.95, 1.0));
+//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offR)*(i-offR)/(2*sigmaR*sigmaR)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offR)*((i+1)-offR)/(2*sigmaR*sigmaR)));
+//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red(range, int(i+1), 0.95, 1.0));
+        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red1(range, int(i+1)));
         painter->setPen(QPen(QBrush("green"), 2));
-//            painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offG)*(i-offG)/(2*sigmaG*sigmaG)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offG)*((i+1)-offG)/(2*sigmaG*sigmaG)));
-            painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green(range, int(i+1), 0.95, 1.0));
+//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offG)*(i-offG)/(2*sigmaG*sigmaG)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offG)*((i+1)-offG)/(2*sigmaG*sigmaG)));
+//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green(range, int(i+1), 0.95, 1.0));
+        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green1(range, int(i+1)));
         painter->setPen(QPen(QBrush("blue"), 2));
-//            painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offB)*(i-offB)/(2*sigmaB*sigmaB)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offB)*((i+1)-offB)/(2*sigmaB*sigmaB)));
-            painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue(range, int(i+1), 0.95, 1.0));
+//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offB)*(i-offB)/(2*sigmaB*sigmaB)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offB)*((i+1)-offB)/(2*sigmaB*sigmaB)));
+//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue(range, int(i+1), 0.95, 1.0));
+        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue1(range, int(i+1)));
 
     }
     painter->end();

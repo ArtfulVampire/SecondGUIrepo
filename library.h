@@ -51,10 +51,15 @@ QString rightNumber(int &input, int N);
 double doubleRound(double in, int numSigns);
 
 //wavelets
-void drawColorScale(QString filename, int range);
-QColor hueJet(int range, int j, double V = 0.95, double S = 1.0);
+void drawColorScale(QString filename, int range, int type = 0);
 
+double red(int range, double j, double V = 0.95, double S = 1.0);
+double green(int range, double j, double V = 0.95, double S = 1.0);
+double blue(int range, double j, double V = 0.95, double S = 1.0);
+QColor hueJet(int range, double j, int numOfContours = 0, double V = 0.95, double S = 1.0);
+QColor hueOld(int range, int j);
 QColor grayScale(int range, int j);
+
 double morletCos(double const freq1, double timeShift, double pot, double time);
 double morletSin(double const freq1, double timeShift, double pot, double time);
 void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double freqMax=20., double freqMin=5., double freqStep=0.99, double pot=32.);
@@ -118,8 +123,10 @@ bool readICAMatrix(QString path, double *** matrixA, int ns);
 void writeICAMatrix(QString path, double ** matrixA, const int ns);
 
 QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour = true);
-void drawMap(double ** const matrixA, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
-void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag = true);
+void drawMap      (double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
+void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
+void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag = true,
+                 void (*draw1MapFunc)(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag) = &drawMapSpline);
 void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
 
 

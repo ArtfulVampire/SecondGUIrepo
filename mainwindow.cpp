@@ -614,90 +614,6 @@ MainWindow::MainWindow() :
 
 //    autoIcaAnalysis5();
 
-
-    if(0)
-    {
-        //spline test - OK
-        int dim = 5;
-        double * x = new double [dim];
-        double * y = new double [dim];
-        double * A = new double [dim-1];
-        double * B = new double [dim-1];
-        for(int i = 0; i < dim; ++ i)
-        {
-            x[i] = i;
-        }
-        y[0] = 2.;
-        y[1] = 4.;
-        y[2] = 3.;
-        y[3] = 0.5;
-        y[4] = 1.5;
-        y[5] = 7.;
-        y[6] = 3.;
-
-//        x[0] = -1; y[0] = 0.5;
-//        x[1] = 0; y[1] = 0;
-//        x[2] = 3; y[2] = 3;
-
-
-        splineCoeffCount(x, y, dim, &A, &B);
-//        exit(0);
-
-
-        double norm = 100;
-        QPixmap pic(dim*1000, 1500);
-        pic.fill();
-        QPainter * pnt = new QPainter();
-        pnt->begin(&pic);
-        double y1, y2;
-        y2 = splineOutput(x, y, dim, A, B, x[0]);
-        for(int i = 0; i < pic.width() - 1; ++i)
-        {
-            y1 = y2;
-            y2 = splineOutput(x, y, dim, A, B, x[0] + double(i)*(x[dim-1] - x[0])/pic.width());
-
-//            cout << y2 << endl;
-            if(i%10 == 9) cout << endl;
-            pnt->drawLine(i, pic.height() - norm * y1, i+1, pic.height() - norm * y2);
-
-        }
-        for(int i = 0; i < dim; ++i)
-        {
-            pnt->drawEllipse(x[i]*pic.width() / (x[dim-1] - x[0]) - (i==dim-1)*5, pic.height() - y[i] * norm, 5, 5);
-        }
-
-        pic.save("/media/Files/Data/splineTest.png", 0, 100);
-        pic.save("/media/Files/Data/splineTest.jpg", 0, 100);
-        exit(0);
-    }
-
-
-    if(1)
-    {
-        QString helpString;
-        QString helpString2;
-        dir->cd("/media/Files/Data/AB/Help");
-        QStringList list0 = dir->entryList(QStringList("???_1_maps.txt"), QDir::NoFilter, QDir::Name);
-        for(int i = 0; i < list0.length(); ++i)
-        {
-            if(i != list0.length() - 1)//for VDA only
-            {
-                continue;
-            }
-            helpString = dir->absolutePath() + QDir::separator() + list0[i];
-            drawMapsICA(helpString, 19, dir->absolutePath(), QString(list0[i].left(3) + "-m6"), false);
-            continue;
-
-            helpString = dir->absolutePath() + QDir::separator() + list0[i];
-            helpString = dir->absolutePath() + QDir::separator() + list0[i].left(3) + "_1_ica_all.png";
-            helpString2 = dir->absolutePath() + QDir::separator() + list0[i].left(3) + "_1_ica_all_withmaps_2.png";
-            drawMapsOnSpectra(helpString, helpString2, dir->absolutePath(), QString(list0[i].left(3) + "-m2"));
-        }
-        exit(0);
-    }
-
-
-
 /*
     //mahalanobis LDA test
     dir->cd("/media/Files/Data/AB/SpectraSmooth/PCA");
@@ -871,9 +787,92 @@ MainWindow::MainWindow() :
     */
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+    //spline test - OK
     if(0)
     {
-        //splitZeros !!!!
+        int dim = 5;
+        double * x = new double [dim];
+        double * y = new double [dim];
+        double * A = new double [dim-1];
+        double * B = new double [dim-1];
+        for(int i = 0; i < dim; ++ i)
+        {
+            x[i] = i;
+        }
+        y[0] = 2.;
+        y[1] = 4.;
+        y[2] = 3.;
+        y[3] = 0.5;
+        y[4] = 1.5;
+        y[5] = 7.;
+        y[6] = 3.;
+
+//        x[0] = -1; y[0] = 0.5;
+//        x[1] = 0; y[1] = 0;
+//        x[2] = 3; y[2] = 3;
+
+
+        splineCoeffCount(x, y, dim, &A, &B);
+//        exit(0);
+
+
+        double norm = 100;
+        QPixmap pic(dim*1000, 1500);
+        pic.fill();
+        QPainter * pnt = new QPainter();
+        pnt->begin(&pic);
+        double y1, y2;
+        y2 = splineOutput(x, y, dim, A, B, x[0]);
+        for(int i = 0; i < pic.width() - 1; ++i)
+        {
+            y1 = y2;
+            y2 = splineOutput(x, y, dim, A, B, x[0] + double(i)*(x[dim-1] - x[0])/pic.width());
+
+//            cout << y2 << endl;
+            if(i%10 == 9) cout << endl;
+            pnt->drawLine(i, pic.height() - norm * y1, i+1, pic.height() - norm * y2);
+
+        }
+        for(int i = 0; i < dim; ++i)
+        {
+            pnt->drawEllipse(x[i]*pic.width() / (x[dim-1] - x[0]) - (i==dim-1)*5, pic.height() - y[i] * norm, 5, 5);
+        }
+
+        pic.save("/media/Files/Data/splineTest.png", 0, 100);
+        pic.save("/media/Files/Data/splineTest.jpg", 0, 100);
+        exit(0);
+    }
+
+    //draw maps and on spectra
+    if(0)
+    {
+        QString helpString;
+        QString helpString2;
+        dir->cd("/media/Files/Data/AB/Help");
+        QStringList list0 = dir->entryList(QStringList("???_1_maps.txt"), QDir::NoFilter, QDir::Name);
+        for(int i = 0; i < list0.length(); ++i)
+        {
+            if(i != list0.length() - 1)//for VDA only
+            {
+                continue;
+            }
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            drawMapsICA(helpString, 19, dir->absolutePath(), QString(list0[i].left(3) + "-m7"));
+            continue;
+
+            helpString = dir->absolutePath() + QDir::separator() + list0[i];
+            helpString = dir->absolutePath() + QDir::separator() + list0[i].left(3) + "_1_ica_all.png";
+            helpString2 = dir->absolutePath() + QDir::separator() + list0[i].left(3) + "_1_ica_all_withmaps_2.png";
+            drawMapsOnSpectra(helpString, helpString2, dir->absolutePath(), QString(list0[i].left(3) + "-m2"));
+        }
+        exit(0);
+    }
+
+    //splitZeros listFiles !!!!
+    if(0)
+    {
         QStringList nameFilters;
         QString helpString;
         QString helpString2;
@@ -904,10 +903,9 @@ MainWindow::MainWindow() :
         exit(0);
     }
 
-
+    //drop components, all files
     if(0)
     {
-        //drop components, all files
         dir->cd("/media/Files/Data/AB");
         QStringList list11 = dir->entryList(QStringList("???_1.edf"));
         QStringList list22;
@@ -929,7 +927,14 @@ MainWindow::MainWindow() :
         }
         exit(0);
     }
-    exit(0);
+
+    dir->cd("/media/Files/Data/AB/");
+    filesAddComponents(dir->absolutePath(),
+                       "AAX_1_ica.edf",
+                       "AAX_2_ica.edf", 30);
+
+
+    exit(1);
 
 }
 
@@ -1542,7 +1547,7 @@ void MainWindow::cleanDirs()
         cleanDir(helpString);
     }
 
-    cout << "dirs cleaned" << endl;
+//    cout << "dirs cleaned" << endl;
 
     helpString="dirs cleaned ";
     ui->textEdit->append(helpString);
@@ -5353,7 +5358,7 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
         fclose(edfIn);
         return;
     }
-    cout << "writeEDF: output path = " << outFilePath.toStdString() << endl;
+
 
 
     //header read
@@ -5781,8 +5786,7 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     delete [] physMax;
     delete [] digMin;
     delete [] digMax;
-
-    cout << "EDF constructed: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "writeEDF: output path = " << outFilePath.toStdString() << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 
@@ -8218,7 +8222,7 @@ double MainWindow::fileInnerClassification(QString workPath, QString fileName, i
 }
 
 
-double MainWindow::filesCrossClassification(QString workPath, QString fileName1, QString fileName2, QString cfgFileName, int NumOfRepeats, bool windows, int wndLen, int tShift)
+double MainWindow::filesCrossClassification(QString workPath, QString fileName1, QString fileName2, QString cfgFileName, int NumOfRepeats, double startCoeff, bool windows, int wndLen, int tShift)
 {
     QString helpString;
 
@@ -8262,6 +8266,7 @@ double MainWindow::filesCrossClassification(QString workPath, QString fileName1,
     else countSpectraSimple(4096);
 
     ANN = new Net(tmpDir, ns, left, right, spStep, ExpName);
+    ANN->setReduceCoeff(startCoeff);
     ANN->setAutoProcessingFlag(true);
     ANN->loadCfgByName(cfgFileName);
     helpString = tmpDir->absolutePath() + QDir::separator() + "SpectraSmooth";
@@ -8306,7 +8311,6 @@ double MainWindow::filesCrossClassification(QString workPath, QString fileName1,
     ANN->close();
     delete ANN;
     return res;
-
 }
 
 
@@ -8968,3 +8972,299 @@ double MainWindow::filesDropComponents(QString workPath, QString fileName1, QStr
     return tempAccuracy;
 }
 
+double MainWindow::filesAddComponents(QString workPath, QString fileName1, QString fileName2, int NumOfRepeats, bool windows, int wndLen, int tShift)
+{
+
+    QString helpString2;
+    QString helpString;
+
+    //check the percentage on all of 3 components
+    //add the best one giving the maximum of percentage
+
+    QTime myTime;
+    myTime.start();
+
+    ui->sliceCheckBox->setChecked(true);
+    ui->sliceWithMarkersCheckBox->setChecked(false);
+    ui->eyesCleanCheckBox->setChecked(false);
+    ui->reduceChannelsCheckBox->setChecked(false);
+
+    ui->cleanRealisationsCheckBox->setChecked(true);
+    ui->cleanRealsSpectraCheckBox->setChecked(true);
+    ui->cleanWindowsCheckBox->setChecked(true);
+    ui->cleanWindSpectraCheckBox->setChecked(true);
+
+    ui->reduceChannelsLineEdit->setText("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
+    ui->reduceChannelsComboBox->setCurrentText("20");
+
+    QDir * tmpDir = new QDir();
+    tmpDir->cd(workPath);
+
+    QList <int> unneededChannels;
+    QList <int> channelsSet;
+    QList <int> channelsSetExclude;
+
+    int tempItem;
+    int tempIndex;
+    double tempAccuracy = 0.;
+    double lastAccuracy;
+    bool foundFlag;
+    ofstream logF;
+    QString logPath = workPath + QDir::separator() + "dropCompsLog .txt";
+
+
+
+    channelsSetExclude.clear();
+    channelsSet.clear();
+    unneededChannels.clear();
+    for(int j = 0; j < 19; ++j)
+    {
+        channelsSetExclude << j;
+    }
+
+    //////////////////////////////////////////////////////////initial accuracy count
+    //checkpercentage on the set of components (i, j, k)
+    double initAccuracy = 0;
+    int iS, jS, kS;
+    makeCfgStatic(workPath, 3*247, "Reduced");
+    for(int i = 0; i < 19; ++i) //19 is not ns
+    {
+        for(int j = i+1; j < 19; ++j) //19 is not ns
+        {
+            for(int k = j+1; k < 19; ++k) //19 is not ns
+            {
+
+                //clean wts
+                cleanDir(workPath, "wts");
+                channelsSet.clear();
+                channelsSet << i << j << k;
+
+                //drop some channels
+                helpString.clear();
+                for(int l = 0; l < 19; ++l)
+                {
+                    if(channelsSet.contains(l))
+                    {
+                        helpString += QString::number(l+1) + " ";
+                    }
+                }
+                helpString += "20";
+                ui->reduceChannelsLineEdit->setText(helpString);
+
+                //exclude channels from 1st file
+                helpString = tmpDir->absolutePath() + QDir::separator() + fileName1;
+                setEdfFile(helpString);
+                helpString = tmpDir->absolutePath() + QDir::separator() + fileName1;
+                helpString.replace(".edf", "_rdc.edf");
+                reduceChannelsEDF(helpString);
+
+                //exclude channels from 2nd file
+                helpString = tmpDir->absolutePath() + QDir::separator() + fileName2;
+                setEdfFile(helpString);
+                helpString = tmpDir->absolutePath() + QDir::separator() + fileName2;
+                helpString.replace(".edf", "_rdc.edf");
+                reduceChannelsEDF(helpString);
+
+
+                helpString = fileName1;
+                helpString.replace(".edf", "_rdc.edf");
+                helpString2 = fileName2;
+                helpString2.replace(".edf", "_rdc.edf");
+
+                tempAccuracy = filesCrossClassification(workPath, helpString, helpString2, "Reduced", NumOfRepeats, 0.5, windows, wndLen, tShift); //0.5 generality
+                cout << "check percentage (" << i << ", " << j << ", " << k << ") = " << tempAccuracy << endl;
+
+                if(tempAccuracy > initAccuracy + 0.5)
+                {
+                    initAccuracy = tempAccuracy;
+                    iS = i;
+                    jS = j;
+                    kS = k;
+                }
+
+            }
+        }
+    }
+    return initAccuracy;
+
+
+    logF.open(logPath.toStdString().c_str(), ios_base::app);
+    if(!logF.is_open())
+    {
+        cout << "cannot open logFile: " << logPath.toStdString() << endl;
+    }
+    else
+    {
+        logF << ExpName.left(3).toStdString() << " initialAccuracy = " << tempAccuracy << endl;
+        logF << ExpName.left(3).toStdString() << " initialSet: " << iS << " " << jS << " " << kS << " " << endl << endl;
+        logF.close();
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////initial accuracy count end
+
+    tempAccuracy = 0.;
+    while(1)
+    {
+        ns = channelsSet.length() + 1;
+        makeCfgStatic(tmpDir->absolutePath(), ns*247, "Reduced");
+        foundFlag = false;
+
+        for(int l = 0; l < channelsSetExclude.length(); ++l)
+        {
+            //clean wts
+            cleanDir(dir->absolutePath(), "wts");
+            cleanDir(dir->absolutePath(), "markers", 0);
+            tempItem = channelsSetExclude[l];
+
+            if(unneededChannels.contains(tempItem)) continue; //if the channel is veru bad
+
+            logF.open(logPath.toStdString().c_str(), ios_base::app);
+            if(!logF.is_open())
+            {
+                cout << "cannot open logFile: " << logPath.toStdString() << endl;
+            }
+            else
+            {
+                logF << endl << ExpName.left(3).toStdString() << "\tchannel " << tempItem+1 << " start" << endl;
+                logF.close();
+            }
+
+            channelsSet.push_back(l); //add to considered channels
+            channelsSetExclude.removeOne(tempItem); //temporarily remove from non-considered list
+
+            //drop some channels
+            helpString.clear();
+            for(int k = 0; k < 19; ++k)
+            {
+                if(channelsSet.contains(k))
+                {
+                    helpString += QString::number(k+1) + " ";
+                }
+            }
+            helpString += "20";
+            ui->reduceChannelsLineEdit->setText(helpString);
+
+            //exclude channels from 1st file
+            helpString = tmpDir->absolutePath() + QDir::separator() + fileName1;
+            setEdfFile(helpString);
+            helpString = tmpDir->absolutePath() + QDir::separator() + fileName1;
+            helpString.replace(".edf", "_rdc.edf");
+            reduceChannelsEDF(helpString);
+
+            //exclude channels from 2nd file
+            helpString = tmpDir->absolutePath() + QDir::separator() + fileName2;
+            setEdfFile(helpString);
+            helpString = tmpDir->absolutePath() + QDir::separator() + fileName2;
+            helpString.replace(".edf", "_rdc.edf");
+            reduceChannelsEDF(helpString);
+
+            //cross class
+            helpString = fileName1;
+            helpString.replace(".edf", "_rdc.edf");
+            helpString2 = fileName2;
+            helpString2.replace(".edf", "_rdc.edf");
+            lastAccuracy = filesCrossClassification(workPath, helpString, helpString2, "Reduced", NumOfRepeats, windows, wndLen, tShift);
+
+
+            logF.open(logPath.toStdString().c_str(), ios_base::app);
+            if(!logF.is_open())
+            {
+                cout << "cannot open logFile: " << logPath.toStdString() << endl;
+            }
+            else
+            {
+                logF << ExpName.left(3).toStdString() << "\tchannel " << tempItem+1 << " done" << endl;
+                logF << "channelsSet:" << endl;
+                for(int q = 0; q < channelsSet.length(); ++q)
+                {
+                    logF << channelsSet[q] + 1 << "  ";
+                }
+                logF << endl << "Accuracy = " << lastAccuracy << endl;
+                logF.close();
+            }
+
+
+            //set back
+            channelsSet.removeLast(); //pop tempItem back
+            channelsSetExclude.insert(l, tempItem); //return tempItem onto its place in channelsSetExclude
+
+
+
+            if(lastAccuracy > tempAccuracy + 0.5)
+            {
+                tempAccuracy = lastAccuracy;
+                tempIndex = l;
+                foundFlag = true;
+            }
+            else if(lastAccuracy < tempAccuracy - 2.0)
+            {
+                logF.open(logPath.toStdString().c_str(), ios_base::app);
+                if(!logF.is_open())
+                {
+                    cout << "cannot open logFile: " << logPath.toStdString() << endl;
+                }
+                else
+                {
+                    logF << ExpName.left(3).toStdString() << "\tchannel " << tempItem+1 << " to unneeded channels" << endl;
+                    logF.close();
+                }
+                unneededChannels << tempItem;
+            }
+
+        } //end of cycle l
+
+        if(foundFlag)
+        {
+            channelsSetExclude.removeOne(tempItem);
+            channelsSet.push_back(tempItem);
+
+            logF.open(logPath.toStdString().c_str(), ios_base::app);
+            if(!logF.is_open())
+            {
+                cout << "cannot open logFile: " << logPath.toStdString() << endl;
+            }
+            else
+            {
+                logF << ExpName.left(3).toStdString() << "\tchannel " << tempIndex+1 << " to add\t";
+                logF << "currentAccuracy" << tempAccuracy << endl;
+                logF.close();
+            }
+
+        }
+        else
+        {
+
+            break;
+        }
+
+    } //end of while(1)
+    cout << ExpName.left(3).toStdString() << " ended in " << myTime.elapsed()/1000. << " sec" << endl;
+
+
+    logF.open(logPath.toStdString().c_str(), ios_base::app);
+    if(!logF.is_open())
+    {
+        cout << "cannot open logFile: " << logPath.toStdString() << endl;
+    }
+    else
+    {
+        logF << "FINAL SET" << endl;
+        logF << ExpName.left(3).toStdString() << endl;
+        logF << "channelsSet:" << endl;
+        for(int q = 0; q < channelsSet.length(); ++q)
+        {
+            logF << channelsSet[q]+1 << "  ";
+        }
+        logF << endl << "unneededChannels:" <<endl;
+        for(int q = 0; q < unneededChannels.length(); ++q)
+        {
+            logF << unneededChannels[q]+1 << "  ";
+        }
+        logF << endl << "Accuracy = " << tempAccuracy << endl;
+        logF.close();
+    }
+    cleanDir(tmpDir->absolutePath(), "wts");
+    cleanDir(tmpDir->absolutePath(), "markers", 0);
+    delete tmpDir;
+    cout << initAccuracy << "->" << tempAccuracy << endl;
+    return tempAccuracy;
+}
