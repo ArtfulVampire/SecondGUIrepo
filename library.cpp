@@ -128,7 +128,7 @@ void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QStri
             maxMagn = max(maxMagn, helpMatrix[i][j]);
         }
     }
-
+//    matrixTranspose(&helpMatrix, dim);
 
     double ** Ah;
     matrixCreate(&Ah, 5, 6);
@@ -192,6 +192,17 @@ void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QStri
             painter1->drawPoint(x,y);
         }
     }
+
+    //for transposed helpMatrix
+//    painter->end();
+//    QTransform transform1(0, 1, 1, 0, 0, 0);
+//    pic = QPixmap(pic.transformed(transform1));
+//    painter->begin(&pic);
+
+
+//    painter1->end();
+//    pic1 = QPixmap(pic1.transformed(transform1));
+//    painter1->begin(&pic1);
 
     if(1) //draw channels locations
     {
@@ -311,7 +322,6 @@ void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool
             maxAbs = fmax(maxAbs, fabs(matrixA[i][j]));
         }
     }
-
     for(int i = 0; i < ns; ++i)
     {
         draw1Map(matrixA, maxAbs, outDir, outName, i, 240, colourFlag); //240 generality

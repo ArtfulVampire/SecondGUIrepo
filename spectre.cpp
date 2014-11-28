@@ -708,7 +708,8 @@ void Spectre::compare()
 
     helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(ui->lineEdit_m2->text()).append(".jpg");
 
-    pic.save(helpString, 0, 100);
+    //dont write average spectra
+//    pic.save(helpString, 0, 100);
 
     paint->end();
 
