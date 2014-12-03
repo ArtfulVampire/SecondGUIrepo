@@ -60,9 +60,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     classCount = new double [3]; //generality in cfg
 
 
-//    tempRandoms = new double [19];
     matrixCreate(&tempRandomMatrix, 19, 19);
-
 
     group1 = new QButtonGroup();
     group1->addButton(ui->leaveOneOutRadioButton);
@@ -75,7 +73,6 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     group3 = new QButtonGroup();
     group3->addButton(ui->deltaRadioButton);
     group3->addButton(ui->backpropRadioButton);
-
     ui->crossRadioButton->setChecked(true);
     ui->realsRadioButton->setChecked(true);
     ui->deltaRadioButton->setChecked(false);
@@ -155,7 +152,6 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->sizeSpinBox->setValue(6);
     paint = new QPainter;
     tempEvent = new QTempEvent;
-
     QObject::connect(this, SIGNAL(destroyed()), &myThread, SLOT(quit()));
 
     QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(loadCfg()));
@@ -197,6 +193,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     QObject::connect(group2, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(adjustParamsGroup2(QAbstractButton*)));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
+
     helpString = dir->absolutePath() + QDir::separator() + defaults::cfgFileName;
     loadCfgByName(helpString);
 
@@ -223,27 +220,44 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     {
         FileName[i] = new char [1];
     }
-
 }
 
 Net::~Net()
 {
-//    delete ui;
-//    delete dir;
-//    delete dirBC;
 
-//    for(int i = 0; i < NumberOfVectors; ++i)
-//    {
-//        delete []matrix[i];
-//    }
-//    delete []matrix;
+    delete dir;
+    delete dirBC;
+    delete []helpCharArr;
+    delete []classCount;
+    matrixDelete(&tempRandomMatrix, 19);
+    delete group1;
+    delete group2;
+    delete group3;
+    delete paint;
+    delete tempEvent;
+    delete ui;
+
+    for(int i = 0; i < numOfLayers - 1; ++i)
+    {
+        for(int j = 0; j < dimensionality[i] + 1; ++j) //
+        {
+            delete []weight[i][j];
+        }
+        delete []weight[i];
+    }
+    delete []weight;
+    delete []dimensionality;
 
 
-//    for(int i = 0; i < NumberOfVectors; ++i)
-//    {
-//        delete []FileName[i];
-//    }
-//    delete []FileName;
+
+
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        delete []matrix[i];
+        delete []FileName[i];
+    }
+    delete []matrix;
+    delete []FileName;
 
     myThread.quit();
     myThread.wait();
@@ -348,8 +362,11 @@ void Net::setAutoProcessingFlag(bool a)
 
 void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa, QString paFileName)
 {
+    QTime myTime;
+    myTime.start();
     bool tmpAutoFlag = autoFlag;
     autoFlag = 1;
+    double res;
     MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
     mkPa->setNumOfClasses(NumOfClasses);
     mkPa->setRdcCoeff(this->ui->rdcCoeffSpinBox->value());
@@ -365,16 +382,17 @@ void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
         }
         else
         {
-            cout << "adjustReduceCoeff: reduceCoeff = " << mkPa->getRdcCoeff() << endl;
-            this->setReduceCoeff(mkPa->getRdcCoeff());
+            res = mkPa->getRdcCoeff();
             break;
         }
     }
     mkPa->close();
     delete mkPa;
-    outMkPa->setRdcCoeff(this->getReduceCoeff());
-    outMkPa->setFold(ui->foldSpinBox->value());
+    outMkPa->setRdcCoeff(res);
+    outMkPa->setFold(ui->foldSpinBox->value()); //optional
     autoFlag = tmpAutoFlag;
+    cout << "adjustReduceCoeff: reduceCoeff = " << res << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+
 }
 
 void Net::autoClassification(QString spectraDir)
@@ -422,9 +440,12 @@ void Net::autoClassification(QString spectraDir)
 
     if(ui->crossRadioButton->isChecked())
     {
+        cout << "Net: autoclass (max " << numOfPairs << ") ";
         for(int i = 0; i < numOfPairs; ++i)
         {
-            cout << i+1  << " iteration in process" << endl;
+            cout << i+1;
+            cout << " "; cout.flush();
+//            cout << " iteration in process" << endl;
             //make PA
             mkPa->makePaSlot();
 
@@ -450,6 +471,7 @@ void Net::autoClassification(QString spectraDir)
                 return;
             }
         }
+        cout << endl;
     }
     else if(ui->leaveOneOutRadioButton->isChecked())
     {
@@ -2070,7 +2092,8 @@ void Net::leaveOneOut()
 
     //time
 
-    delete [] NumberOfErrors;
+    delete []NumberOfErrors;
+    delete []mixNum;
 
 
 
@@ -2576,7 +2599,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
             }
             for(int i = 0; i < numOfLayers-1; ++i)
             {
-                for(int j = 0; j < dimensionality[i]; ++j)
+                for(int j = 0; j < dimensionality[i] + 1; ++j)//+1 for bias? 01.12.2014
                 {
                     for(int k = 0; k < dimensionality[i+1]; ++k)
                     {
@@ -2597,7 +2620,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     }
 
 
-    cout << "learning ended " << epoch << " epoches" << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+//    cout << "learning ended " << epoch << " epoches" << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
 
@@ -2609,6 +2632,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     }
     delete []deltaWeights;
     delete []output;
+    delete []normCoeff;
 }
 
 

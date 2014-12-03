@@ -130,8 +130,8 @@ public:
     void constructEDF(QString newPath);
     void writeCorrelationMatrix(QString edfPath, QString outPath);
     void ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path, int mode = 0);
-    double fileInnerClassification(QString workPath, QString fileName, int NumOfPairs = 30, bool windows = false, int wndLen = 1000, int tShift = 125);
-    double filesCrossClassification(QString workPath, QString fileName1, QString fileName2, QString cfgFileName = "16sec19ch", int NumOfRepeats = 30, double startCoeff = 1., bool windows = false, int wndLen = 1000, int tShift = 125);
+    double fileInnerClassification(QString workPath, QString fileName, QString cfgFileName = "16sec19ch", int NumOfPairs = 50, bool windows = false, int wndLen = 1000, int tShift = 125);
+    double filesCrossClassification(QString workPath, QString fileName1, QString fileName2, QString cfgFileName = "16sec19ch", int NumOfRepeats = 50, double startCoeff = 2., bool windows = false, int wndLen = 1000, int tShift = 125);
     double filesDropComponents(QString workPath, QString fileName1, QString fileName2, int NumOfRepeats = 30, bool windows = false, int wndLen = 1000, int tShift = 125);
     double filesAddComponents(QString workPath, QString fileName1, QString fileName2, int NumOfRepeats = 30, bool windows = false, int wndLen = 1000, int tShift = 125);
 
@@ -144,6 +144,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    ofstream generalLogStream;
+    streambuf *coutBuf;
     QVariant var;
     QDir *dir;
     ifstream inStream;
@@ -169,6 +171,7 @@ private:
     bool stopFlag;
     double spStep;
     bool withMarkersFlag;
+    bool redirectCoutFlag;
     double reduceCoefficient;
 };
 

@@ -12,7 +12,11 @@ MainWindow::MainWindow() :
     ui->setupUi(this);
     setWindowTitle("Main");
 
+    redirectCoutFlag = false;
+    coutBuf = cout.rdbuf();
+
     setlocale(LC_NUMERIC, "C");
+
 
     ns=-1;
     spLength=-1;
@@ -924,34 +928,98 @@ MainWindow::MainWindow() :
         exit(0);
     }
 
+    if(1)
+    {
+        dir->cd("/media/Files/Data/AB");
+        QString helpString = dir->absolutePath() + "/AAX_sum.edf";
+        setEdfFile(helpString);
+        sliceAll();
+        readData();
+        Net * ANN;
+        ANN = new Net(dir, ns, left, right, spStep, ExpName);
+        for(int i = 0; i < 100000; ++i)
+        {
+            countSpectraSimple(4096);
+        }
+    }
 
     if(0)
     {
+        QTime myTime;
+        myTime.start();
         dir->cd("/media/Files/Data/AB");
+        cleanDir(dir->absolutePath(), "markers", 0);
         QStringList list1 = dir->entryList(QStringList("???_1.edf"));
         QString helpString;
         double res;
         ofstream outStream;
-        helpString = dir->absolutePath() + QDir::separator() + "classLog.txt";
-        outStream.open(helpString.toStdString().c_str(), ios_base::app);
-        for(int i = 0; i < list1.length(); ++i)
-        {
-            helpString = list1[i];
-            helpString.replace("_1", "_2");
-            res = filesCrossClassification(dir->absolutePath(), list1[i], helpString);
-            outStream << list1[i].left(3).toStdString() << " ica cross   " << res << endl;
-            continue;
 
-            helpString = list1[i];
-            helpString.replace("_1_ica_by1", "_sum");
-            res = fileInnerClassification(dir->absolutePath(), helpString);
-            outStream << list1[i].left(3).toStdString() << " ica inner   " << res << endl << endl;
+        //done
+        if(0)
+        {
+            helpString = dir->absolutePath() + "/classLog.txt";
+            outStream.open(helpString.toStdString().c_str(), ios_base::app);
+            for(int i = 0; i < list1.length(); ++i)
+            {
+                myTime.restart();
+                cout << list1[i].left(3).toStdString() << " start" << endl;
+                helpString = list1[i];
+                helpString.replace("_1", "_2");
+                res = filesCrossClassification(dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 01000, 125);
+                outStream << list1[i].left(3).toStdString() << " cross\t" << res << endl;
+                res = filesCrossClassification(dir->absolutePath(), list1[i], helpString, "4sec19ch", 50, 3, true, 1000, 125);
+                outStream << list1[i].left(3).toStdString() << " wnd cross\t" << res << endl;
+
+                helpString = list1[i];
+                helpString.replace("_1", "_sum");
+                res = fileInnerClassification(dir->absolutePath(), helpString, "16sec19ch", 50, false, 1000, 125);
+                outStream << list1[i].left(3).toStdString() << " inner\t" << res << endl << endl;
+                res = fileInnerClassification(dir->absolutePath(), helpString, "4sec19ch", 50, true, 1000, 125);
+                outStream << list1[i].left(3).toStdString() << " wnd inner\t" << res << endl << endl;
+                cout << list1[i].left(3).toStdString() << " finished\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+            }
+            outStream.close();
+            list1 = dir->entryList(QStringList("???_1_ica_by1.edf"));
+            helpString = dir->absolutePath() + "/classLog.txt";
+            outStream.open(helpString.toStdString().c_str(), ios_base::app);
+            for(int i = 0; i < list1.length(); ++i)
+            {
+                myTime.restart();
+                cout << list1[i].left(3).toStdString() << " start" << endl;
+                helpString = list1[i];
+                helpString.replace("_1", "_2");
+                res = filesCrossClassification(dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 01000, 125);
+                outStream << list1[i].left(3).toStdString() << " ica cross\t" << res << endl;
+                res = filesCrossClassification(dir->absolutePath(), list1[i], helpString, "4sec19ch", 50, 3, true, 1000, 125);
+                outStream << list1[i].left(3).toStdString() << " ica wnd cross\t" << res << endl;
+
+                helpString = list1[i];
+                helpString.replace("_1_ica_by1", "_sum_ica");
+                res = fileInnerClassification(dir->absolutePath(), helpString, "16sec19ch", 50, false, 1000, 125);
+                outStream << list1[i].left(3).toStdString() << " ica inner\t" << res << endl;
+                res = fileInnerClassification(dir->absolutePath(), helpString, "4sec19ch", 50, true, 1000, 125);
+                outStream << list1[i].left(3).toStdString() << " ica wnd inner\t" << res << endl;
+                cout << list1[i].left(3).toStdString() << " ica finished\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+            }
+            outStream.close();
         }
-        outStream.close();
+
+        if(1)
+        {
+            for(int i = 0; i < list1.length(); ++i)
+            {
+                myTime.restart();
+                cout << list1[i].left(3).toStdString() << " addComps start" << endl;
+                helpString = list1[i];
+                helpString.replace("_1", "_2");
+                res = filesAddComponents(dir->absolutePath(), list1[i], helpString);
+                cout << list1[i].left(3).toStdString() << " addComps finished\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+            }
+        }
+
     }
 
 
-//    exit(1);
 
 }
 
@@ -2026,6 +2094,9 @@ void MainWindow::setEdfFile(QString const filePath)
     NumOfEdf = 0;
     helpString = filePath;
 
+
+
+
     if(!helpString.endsWith(".edf", Qt::CaseInsensitive))
     {
         helpString += ".edf";
@@ -2048,6 +2119,24 @@ void MainWindow::setEdfFile(QString const filePath)
 
     helpString.resize(helpString.lastIndexOf(QDir::separator()));
     dir->cd(helpString);
+
+    if(redirectCoutFlag)
+    {
+        //redirect cout to logfile
+        if(generalLogStream.is_open())
+        {
+            generalLogStream.close();
+        }
+        helpString += QString(QDir::separator()) + "generalLog.txt";
+        generalLogStream.open(helpString.toStdString().c_str(), ios_base::app);
+        generalLogStream << endl << endl << endl;
+        cout.rdbuf(generalLogStream.rdbuf());
+    }
+    else
+    {
+        cout.rdbuf(coutBuf);
+    }
+
 
     dir->mkdir("Help");
     dir->mkdir("PA");
@@ -8189,7 +8278,7 @@ void MainWindow::randomDecomposition()
 
 }
 //
-double MainWindow::fileInnerClassification(QString workPath, QString fileName, int NumOfPairs, bool windows, int wndLen, int tShift)
+double MainWindow::fileInnerClassification(QString workPath, QString fileName, QString cfgFileName, int NumOfPairs, bool windows, int wndLen, int tShift)
 {
     QString helpString;
 
@@ -8227,6 +8316,7 @@ double MainWindow::fileInnerClassification(QString workPath, QString fileName, i
     else countSpectraSimple(4096);
 
     ANN = new Net(tmpDir, ns, left, right, spStep, ExpName);
+    ANN->loadCfgByName(cfgFileName);
     ANN->setAutoProcessingFlag(true);
     ANN->setNumOfPairs(NumOfPairs);
     ANN->autoClassificationSimple();
@@ -8297,14 +8387,18 @@ double MainWindow::filesCrossClassification(QString workPath, QString fileName1,
     ANN->adjustReduceCoeff(helpString, 90, 150, mkPa, "all");
     cleanDir(tmpDir->absolutePath(), "wts");
 
+    cout << "crossClass: learn (max " << NumOfRepeats << ") ";
     for(int k = 0; k < NumOfRepeats; ++k)
     {
+        cout << k+1 << " ";
+        flush(cout);
         mkPa->makePaSlot();
         ANN->PaIntoMatrixByName("all");
         ANN->LearnNet();
         helpString = tmpDir->absolutePath() + QDir::separator() + "crossClass_" + QString::number(k) + ".wts";
         ANN->saveWts(helpString);
     }
+    cout << endl;
 
 
     //open 2nd file
@@ -8319,12 +8413,16 @@ double MainWindow::filesCrossClassification(QString workPath, QString fileName1,
     mkPa->makePaSlot();
     ANN->PaIntoMatrixByName("all");
 
+    QStringList wtsFiles = tmpDir->entryList(QStringList("*.wts"));
+//    cout << "crossClass: tall (max " << NumOfRepeats << ") ";
     for(int k = 0; k < NumOfRepeats; ++k)
     {
-        helpString = tmpDir->absolutePath() + QDir::separator() + "crossClass_" + QString::number(k) + ".wts";
+//        cout << k+1 << " "; cout.flush();
+        helpString = tmpDir->absolutePath() + QDir::separator() + wtsFiles[k];
         ANN->loadWtsByName(helpString);
         ANN->tall();
     }
+//    cout << endl;
     cleanDir(tmpDir->absolutePath(), "wts");
     ANN->averageClassification();
     double res = ANN->getAverageAccuracy();
@@ -9031,8 +9129,7 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
     double tempAccuracy = 0.;
     double lastAccuracy;
     bool foundFlag;
-    ofstream logF;
-    QString logPath = workPath + QDir::separator() + "dropCompsLog .txt";
+    QString logPath = tmpDir->absolutePath() + QDir::separator() + "addCompsLog.txt";
 
 
 
@@ -9045,20 +9142,21 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
     int iS, jS, kS;
     makeCfgStatic(workPath, 1*247, "Reduced");
 
-    ofstream outStream;
-    outStream.open("/media/Files/Data/AB/addLog.txt", ios_base::app);
-    outStream << fileName1.toStdString() << endl;
+    ofstream logF;
+    logF.open(logPath.toStdString().c_str(), ios_base::app);
+    logF << fileName1.toStdString() << endl;
+
     for(int i = 0; i < 19; ++i) //19 is not ns
     {
         for(int j = i+1; j < 19; ++j) //19 is not ns
         {
             for(int k = j+1; k < 19; ++k) //19 is not ns
             {
+                myTime.restart();
 
                 //clean wts
                 cleanDir(workPath, "wts");
                 channelsSet.clear();
-//                channelsSet << 0 << 3 << 6;
                 channelsSet << i;
                 channelsSet << j;
                 channelsSet << k;
@@ -9100,11 +9198,11 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
                 cout << "check percentage: ";
                 for(int p = 0; p < channelsSet.length(); ++p)
                 {
-                    cout << channelsSet[p] << " ";
-                    outStream << channelsSet[p] << " ";
+                    cout << channelsSet[p]+1 << " ";
+                    logF << channelsSet[p]+1 << " ";
                 }
-                cout << " = " << tempAccuracy << endl;
-                outStream << " = " << tempAccuracy << endl;
+                cout << " = " << tempAccuracy << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+                logF << " = " << tempAccuracy << endl;
 
                 if(tempAccuracy > initAccuracy + 0.5)
                 {
@@ -9116,8 +9214,8 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
             }
         }
     }
-    outStream << "final set: " << iS << " " << jS << " " << kS << " " << initAccuracy << endl;
-    outStream.close();
+    logF << "final set: " << iS+1 <<" " << jS+1 << " " << kS+1 << " " << initAccuracy << endl << endl;
+    logF.close();
     return initAccuracy;
 
 
@@ -9129,7 +9227,7 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
     else
     {
         logF << ExpName.left(3).toStdString() << " initialAccuracy = " << tempAccuracy << endl;
-        logF << ExpName.left(3).toStdString() << " initialSet: " << iS << " " << jS << " " << kS << " " << endl << endl;
+        logF << ExpName.left(3).toStdString() << " initialSet: " << iS+1 << " " << jS+1 << " " << kS+1 << " " << endl << endl;
         logF.close();
     }
     ////////////////////////////////////////////////////////////////////////////////////////initial accuracy count end
