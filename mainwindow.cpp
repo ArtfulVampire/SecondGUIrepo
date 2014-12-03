@@ -928,7 +928,7 @@ MainWindow::MainWindow() :
         exit(0);
     }
 
-    if(1)
+    if(0)
     {
         dir->cd("/media/Files/Data/AB");
         QString helpString = dir->absolutePath() + "/AAX_sum.edf";
@@ -943,7 +943,7 @@ MainWindow::MainWindow() :
         }
     }
 
-    if(0)
+    if(1)
     {
         QTime myTime;
         myTime.start();
@@ -1003,7 +1003,7 @@ MainWindow::MainWindow() :
             }
             outStream.close();
         }
-
+        list1 = dir->entryList(QStringList("???_1_ica_by1.edf"));
         if(1)
         {
             for(int i = 0; i < list1.length(); ++i)
@@ -9201,7 +9201,7 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
                     cout << channelsSet[p]+1 << " ";
                     logF << channelsSet[p]+1 << " ";
                 }
-                cout << " = " << tempAccuracy << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+                cout << " = " << tempAccuracy << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl << endl;
                 logF << " = " << tempAccuracy << endl;
 
                 if(tempAccuracy > initAccuracy + 0.5)
