@@ -360,7 +360,7 @@ void Net::setAutoProcessingFlag(bool a)
     autoFlag = a;
 }
 
-void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa, QString paFileName)
+bool Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa, QString paFileName)
 {
     QTime myTime;
     myTime.start();
@@ -379,6 +379,12 @@ void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
         if(this->getEpoch() > highLimit || this->getEpoch() < lowLimit)
         {
             mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(2. * this->getEpoch() /  double(lowLimit + highLimit) ));
+            if(mkPa->getRdcCoeff() == 1e-3) //possible minimum
+            {
+                cout << "cant adjust rdc coefficient" << endl;
+                res = 1e-3;
+                break;
+            }
         }
         else
         {
@@ -392,6 +398,14 @@ void Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
     outMkPa->setFold(ui->foldSpinBox->value()); //optional
     autoFlag = tmpAutoFlag;
     cout << "adjustReduceCoeff: reduceCoeff = " << res << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    if(res == 1e-3)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 
 }
 
@@ -415,17 +429,15 @@ void Net::autoClassification(QString spectraDir)
     }
     fclose(log);
 
-
-
-    //set random matrix
+    //set random matrix - add in PaIntoMatrixByName
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ns; ++j)
         {
             tempRandomMatrix[i][j] = (i == j); //identity matrix
-//            tempRandomMatrix[i][j] = (i == j) * (5 + rand()%36) / 10.; //random multiplication in each channel
-//            tempRandomMatrix[i][j] = (5. + rand()%36) / 50.;
-//            tempRandomMatrix[i][j] = (i == j) * (1. + (rand()%8 == 0) * (5. + rand()%35) / 5.);
+//            tempRandomMatrix[i][j] = (i == j) * (5 + rand()%36) / 10.; //random diagonal
+//            tempRandomMatrix[i][j] = (5. + rand()%36) / 50.; //full random
+//            tempRandomMatrix[i][j] = (i == j) * (1. + (rand()%8 == 0) * (5. + rand()%35) / 5.); //random diagonal
         }
     }
 
@@ -435,7 +447,13 @@ void Net::autoClassification(QString spectraDir)
 
     //adjust reduce coefficient
     MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
-    adjustReduceCoeff(spectraDir, ui->lowLimitSpinBox->value(), ui->highLimitSpinBox->value(), mkPa);
+    if(!adjustReduceCoeff(spectraDir, ui->lowLimitSpinBox->value(), ui->highLimitSpinBox->value(), mkPa))
+    {
+        averageAccuracy = 0.;
+        delete mkPa;
+        autoFlag = tempBool;
+        cout <<  "AutoClass: unsuccessful, time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    }
     mkPa->setFold(ui->foldSpinBox->value()); //double set
 
     if(ui->crossRadioButton->isChecked())
