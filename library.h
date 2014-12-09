@@ -49,7 +49,7 @@ using namespace std;
 int len(QString s);
 QString rightNumber(int &input, int N);
 double doubleRound(double in, int numSigns);
-
+int findChannel(char ** const labelsArr, QString chanName, int ns = 21);
 //wavelets
 void drawColorScale(QString filename, int range, int type = 0);
 

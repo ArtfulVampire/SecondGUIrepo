@@ -30,7 +30,7 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QLineEdit" name="filePath">
+   <widget class="QLineEdit" name="filePathLineEdit">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -52,690 +52,6 @@
       <height>27</height>
      </rect>
     </property>
-   </widget>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>297</x>
-      <y>90</y>
-      <width>710</width>
-      <height>626</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_2">
-     <item row="4" column="0">
-      <widget class="QPushButton" name="countSpectra">
-       <property name="text">
-        <string>Count &amp;Spectra</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="2">
-      <layout class="QGridLayout" name="gridLayout_5">
-       <item row="0" column="0">
-        <widget class="QCheckBox" name="cleanRealisationsCheckBox">
-         <property name="text">
-          <string>Reals</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QCheckBox" name="cleanRealsSpectraCheckBox">
-         <property name="text">
-          <string>RealsSpectra</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="0">
-        <widget class="QCheckBox" name="cleanWindowsCheckBox">
-         <property name="text">
-          <string>winds</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="cleanWindSpectraCheckBox">
-         <property name="text">
-          <string>WindsSpectra</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <spacer name="horizontalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="2" column="0">
-        <widget class="QCheckBox" name="cleanFromRealsCheckBox">
-         <property name="text">
-          <string>fromreals</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QCheckBox" name="cleanHelpCheckBox">
-         <property name="text">
-          <string>Help</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <spacer name="horizontalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="4" column="1">
-      <widget class="QPushButton" name="BayesPushButton">
-       <property name="text">
-        <string>Bayes</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_8">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_8">
-         <item>
-          <widget class="QRadioButton" name="BayesRadioButton">
-           <property name="text">
-            <string>Bayes</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="HiguchiRadioButton">
-           <property name="text">
-            <string>Higuchi</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="BayesSpinBox"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>NumOfRanges</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_6">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>78</width>
-           <height>24</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_14">
-         <item>
-          <widget class="QPushButton" name="diffSmoothPushButton">
-           <property name="text">
-            <string>DiffSmooth</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="diffPowPushButton">
-           <property name="text">
-            <string>DiffPow</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
-     <item row="2" column="0">
-      <widget class="QPushButton" name="avTimeButton">
-       <property name="text">
-        <string>av time</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="1">
-      <widget class="QPushButton" name="hilbertPushButton">
-       <property name="text">
-        <string>Hilbert</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0" colspan="3">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_6">
-         <item>
-          <spacer name="verticalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="cutEDF">
-           <property name="text">
-            <string>Cut EDF</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="matiCheckBox">
-           <property name="text">
-            <string>MATI</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QCheckBox" name="sliceCheckBox">
-           <property name="text">
-            <string>Slice?</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="sliceWithMarkersCheckBox">
-           <property name="text">
-            <string>with markers (ica)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="eyesCleanCheckBox">
-           <property name="text">
-            <string>clean from eyes?</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="reduceChannelsCheckBox">
-           <property name="text">
-            <string>reduce channels?</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QRadioButton" name="realButton">
-           <property name="text">
-            <string>Realisations</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="windButton">
-           <property name="text">
-            <string>windows</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="windFromRealButton">
-           <property name="text">
-            <string>wind from real</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="1">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>wndLength</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QSpinBox" name="timeShiftSpinBox"/>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>timeShift</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QSpinBox" name="windowLengthSpinBox"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QRadioButton" name="ntRadio">
-           <property name="text">
-            <string>NeuroTravel</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="enRadio">
-           <property name="text">
-            <string>Encephalan</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
-     <item row="6" column="0">
-      <widget class="QPushButton" name="cut_e">
-       <property name="text">
-        <string>Look &amp;through</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QPushButton" name="eyesButton">
-       <property name="text">
-        <string>&amp;Eyes</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <layout class="QVBoxLayout" name="verticalLayout_13">
-       <item>
-        <widget class="QPushButton" name="icaPushButton">
-         <property name="text">
-          <string>ICA</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="icaTestClassPushButton">
-         <property name="text">
-          <string>Optimize ICA set</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="3" column="1">
-      <widget class="QComboBox" name="reduceChannelsComboBox"/>
-     </item>
-     <item row="7" column="0">
-      <widget class="QPushButton" name="makeCFG">
-       <property name="text">
-        <string>Make C&amp;FG</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QPushButton" name="reduceChannesPushButton">
-       <property name="text">
-        <string>Reduce ns</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QPushButton" name="cleanDirsButton">
-       <property name="text">
-        <string>&amp;Clean wndDirs</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QPushButton" name="constructEdfButton">
-         <property name="text">
-          <string>Construct EDF from Realisations</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="splitZerosCheckBox">
-         <property name="text">
-          <string>clean zeros?</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="3" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
-       <item>
-        <widget class="QLineEdit" name="reduceChannelsLineEdit"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="reduceChannelsNewEDFPushButton">
-         <property name="text">
-          <string>New EDF</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="9" column="1">
-      <widget class="QPushButton" name="spocPushButton">
-       <property name="text">
-        <string>SPoC</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="0">
-      <widget class="QPushButton" name="netButton">
-       <property name="text">
-        <string>&amp;Net</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="0">
-      <widget class="QPushButton" name="makePA">
-       <property name="text">
-        <string>Make P&amp;A</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_10">
-         <item>
-          <widget class="QSpinBox" name="numOfIcSpinBox"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_7">
-           <property name="text">
-            <string>Number of IC</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QGridLayout" name="gridLayout_4">
-           <item row="0" column="0">
-            <widget class="QDoubleSpinBox" name="svdDoubleSpinBox"/>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_10">
-             <property name="text">
-              <string>SVD treshold e</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QDoubleSpinBox" name="vectwDoubleSpinBox"/>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLabel" name="label_11">
-             <property name="text">
-              <string>vectW treshold e</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <layout class="QVBoxLayout" name="verticalLayout_15">
-             <item>
-              <widget class="QPushButton" name="transformRealsPushButton">
-               <property name="text">
-                <string>transform reals</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item row="0" column="2">
-            <widget class="QPushButton" name="drawMapsPushButton">
-             <property name="text">
-              <string>draw maps</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
-     <item row="8" column="1">
-      <widget class="QPushButton" name="throwICPushButton">
-       <property name="text">
-        <string>ThrowIC</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="2">
-      <widget class="QLineEdit" name="throwICLineEdit"/>
-     </item>
-     <item row="9" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_11">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_11"/>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_12">
-         <item>
-          <widget class="QRadioButton" name="lambdaRadioButton">
-           <property name="text">
-            <string>lambda</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="r2RadioButton">
-           <property name="text">
-            <string>r2</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="gridLayout_6">
-         <item row="0" column="0">
-          <widget class="QDoubleSpinBox" name="spocCoeffDoubleSpinBox"/>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLabel" name="label_12">
-           <property name="text">
-            <string>coeff</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QDoubleSpinBox" name="spocTresholdDoubleSpinBox"/>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="label_13">
-           <property name="text">
-            <string>threshold</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="10" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_12">
-       <item>
-        <widget class="QPushButton" name="randomDecomposePushButton">
-         <property name="text">
-          <string>Rand decompose</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_7">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="1" column="1">
-      <widget class="QPushButton" name="refilterDataPushButton">
-       <property name="text">
-        <string>Refilter Data</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <layout class="QGridLayout" name="gridLayout_7">
-       <item row="0" column="0">
-        <widget class="QDoubleSpinBox" name="highFreqFilterDoubleSpinBox"/>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="label_14">
-         <property name="text">
-          <string>highFreq</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <spacer name="horizontalSpacer_8">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="0">
-        <widget class="QDoubleSpinBox" name="lowFreqFilterDoubleSpinBox"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="label_15">
-         <property name="text">
-          <string>lowFreq</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <spacer name="horizontalSpacer_9">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="2" column="2">
-      <widget class="QProgressBar" name="progressBar">
-       <property name="value">
-        <number>24</number>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QPushButton" name="stopButton">
-       <property name="text">
-        <string>STOP</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </widget>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
@@ -948,6 +264,712 @@
       <height>24</height>
      </rect>
     </property>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>90</y>
+      <width>708</width>
+      <height>135</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="cutEDF">
+         <property name="text">
+          <string>Cut EDF</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="matiCheckBox">
+         <property name="text">
+          <string>MATI</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QCheckBox" name="sliceCheckBox">
+         <property name="text">
+          <string>Slice?</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="sliceWithMarkersCheckBox">
+         <property name="text">
+          <string>with markers (ica)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="eyesCleanCheckBox">
+         <property name="text">
+          <string>clean from eyes?</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="reduceChannelsCheckBox">
+         <property name="text">
+          <string>reduce channels?</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QRadioButton" name="realButton">
+         <property name="text">
+          <string>Realisations</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="windButton">
+         <property name="text">
+          <string>windows</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="windFromRealButton">
+         <property name="text">
+          <string>wind from real</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>wndLength</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QSpinBox" name="timeShiftSpinBox"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>timeShift</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QSpinBox" name="windowLengthSpinBox"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QRadioButton" name="ntRadio">
+         <property name="text">
+          <string>NeuroTravel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="enRadio">
+         <property name="text">
+          <string>Encephalan</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>291</x>
+      <y>231</y>
+      <width>881</width>
+      <height>485</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_7">
+     <item row="0" column="0">
+      <widget class="QPushButton" name="refilterDataPushButton">
+       <property name="text">
+        <string>Refilter Data</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QDoubleSpinBox" name="highFreqFilterDoubleSpinBox"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>highFreq</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QDoubleSpinBox" name="lowFreqFilterDoubleSpinBox"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>lowFreq</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_13">
+       <item>
+        <widget class="QPushButton" name="rereferenceDataPushButton">
+         <property name="text">
+          <string>Reref Data</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="rereferenceDataComboBox"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_8">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>248</width>
+           <height>17</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="0">
+      <widget class="QPushButton" name="avTimeButton">
+       <property name="text">
+        <string>av time</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="stopButton">
+       <property name="text">
+        <string>STOP</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QProgressBar" name="progressBar">
+       <property name="value">
+        <number>24</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="reduceChannesPushButton">
+       <property name="text">
+        <string>Reduce ns</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="reduceChannelsComboBox"/>
+     </item>
+     <item row="2" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLineEdit" name="reduceChannelsLineEdit"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="reduceChannelsNewEDFPushButton">
+         <property name="text">
+          <string>New EDF</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="3" column="0">
+      <widget class="QPushButton" name="countSpectra">
+       <property name="text">
+        <string>Count &amp;Spectra</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QPushButton" name="BayesPushButton">
+       <property name="text">
+        <string>Bayes</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <item>
+          <widget class="QRadioButton" name="BayesRadioButton">
+           <property name="text">
+            <string>Bayes</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="HiguchiRadioButton">
+           <property name="text">
+            <string>Higuchi</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="BayesSpinBox"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>NumOfRanges</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_6">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>78</width>
+           <height>24</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_14">
+         <item>
+          <widget class="QPushButton" name="diffSmoothPushButton">
+           <property name="text">
+            <string>DiffSmooth</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="diffPowPushButton">
+           <property name="text">
+            <string>DiffPow</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item row="4" column="1">
+      <widget class="QPushButton" name="cleanDirsButton">
+       <property name="text">
+        <string>&amp;Clean wndDirs</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="cleanRealisationsCheckBox">
+         <property name="text">
+          <string>Reals</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="cleanRealsSpectraCheckBox">
+         <property name="text">
+          <string>RealsSpectra</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="cleanWindowsCheckBox">
+         <property name="text">
+          <string>winds</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="cleanWindSpectraCheckBox">
+         <property name="text">
+          <string>WindsSpectra</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="cleanFromRealsCheckBox">
+         <property name="text">
+          <string>fromreals</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QCheckBox" name="cleanHelpCheckBox">
+         <property name="text">
+          <string>Help</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <spacer name="horizontalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="5" column="0">
+      <widget class="QPushButton" name="cut_e">
+       <property name="text">
+        <string>Look &amp;through</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QPushButton" name="eyesButton">
+       <property name="text">
+        <string>&amp;Eyes</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QPushButton" name="constructEdfButton">
+         <property name="text">
+          <string>Construct EDF from Realisations</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="splitZerosCheckBox">
+         <property name="text">
+          <string>clean zeros?</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="6" column="0">
+      <widget class="QPushButton" name="makeCFG">
+       <property name="text">
+        <string>Make C&amp;FG</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <layout class="QVBoxLayout" name="verticalLayout_13">
+       <item>
+        <widget class="QPushButton" name="icaPushButton">
+         <property name="text">
+          <string>ICA</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="icaTestClassPushButton">
+         <property name="text">
+          <string>Optimize ICA set</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="6" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QSpinBox" name="numOfIcSpinBox"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Number of IC</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_9">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>88</width>
+             <height>17</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="gridLayout_4">
+           <item row="0" column="0">
+            <widget class="QDoubleSpinBox" name="svdDoubleSpinBox"/>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>SVD treshold e</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QDoubleSpinBox" name="vectwDoubleSpinBox"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>vectW treshold e</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <layout class="QVBoxLayout" name="verticalLayout_15">
+             <item>
+              <widget class="QPushButton" name="transformRealsPushButton">
+               <property name="text">
+                <string>transform reals</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="drawMapsPushButton">
+             <property name="text">
+              <string>draw maps</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item row="7" column="1">
+      <widget class="QPushButton" name="throwICPushButton">
+       <property name="text">
+        <string>ThrowIC</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="2">
+      <widget class="QLineEdit" name="throwICLineEdit"/>
+     </item>
+     <item row="8" column="0">
+      <widget class="QPushButton" name="makePA">
+       <property name="text">
+        <string>Make P&amp;A</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QPushButton" name="spocPushButton">
+       <property name="text">
+        <string>SPoC</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_11">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_11"/>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_12">
+         <item>
+          <widget class="QRadioButton" name="lambdaRadioButton">
+           <property name="text">
+            <string>lambda</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="r2RadioButton">
+           <property name="text">
+            <string>r2</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <item row="0" column="0">
+          <widget class="QDoubleSpinBox" name="spocCoeffDoubleSpinBox"/>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="label_12">
+           <property name="text">
+            <string>coeff</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QDoubleSpinBox" name="spocTresholdDoubleSpinBox"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label_13">
+           <property name="text">
+            <string>threshold</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="9" column="0">
+      <widget class="QPushButton" name="netButton">
+       <property name="text">
+        <string>&amp;Net</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="1">
+      <widget class="QPushButton" name="hilbertPushButton">
+       <property name="text">
+        <string>Hilbert</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_12">
+       <item>
+        <widget class="QPushButton" name="randomDecomposePushButton">
+         <property name="text">
+          <string>Rand decompose</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

@@ -346,11 +346,16 @@ void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QStr
 
     for(int i = 0; i < 19; ++i) /////////////////////////// generality 19
     {
-        helpString = mapsPath + QDir::separator() + mapsNames + "_map_" + QString::number(i) + ".png";
+        //+- maps handler
+        helpString = mapsPath + QDir::separator() + mapsNames + "_map_" + QString::number(i) + "+.png";
         if(!QFile::exists(helpString))
         {
-            cout << "drawMapsOnSpectra: no map file found " << helpString.toStdString() << endl;
-            return;
+            helpString = mapsPath + QDir::separator() + mapsNames + "_map_" + QString::number(i) + "-.png";
+            if(!QFile::exists(helpString))
+            {
+                cout << "drawMapsOnSpectra: no map file found " << helpString.toStdString() << endl;
+                return;
+            }
         }
         pic1 = QPixmap(helpString);
 
@@ -563,6 +568,17 @@ double fractalDimension(double *arr, int N, QString picPath)
 double doubleRound(double in, int numSigns)
 {
     return int(in*pow(10., numSigns))/pow(10., numSigns);
+}
+
+int findChannel(char ** const labelsArr, QString chanName, int ns)
+{
+    for(int i = 0; i < ns; ++i)
+    {
+        if(QString(labelsArr[i]).contains(chanName))
+        {
+            return i;
+        }
+    }
 }
 
 double vectorLength(double * arr, int len)

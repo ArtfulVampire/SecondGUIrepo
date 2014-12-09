@@ -48,7 +48,7 @@ public:
     void closeLogFile();
     void setAutoProcessingFlag(bool);
 
-    void adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa, QString paFileName = "1");
+    bool adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa, QString paFileName = "1");
     int getEpoch();
     void setErrcrit(double);
     double getErrcrit();

@@ -82,7 +82,8 @@ public slots:
     void Bayes();
     void spoc();
     void hilbertCount();
-    void refilterData();
+    void refilterDataSlot();
+    void rereferenceDataSlot();
     void transformReals(); //reads ICA map file and transforms all the realisations in the chosen folder (windows e.g.)
 
     //different automatizations
@@ -116,7 +117,9 @@ public:
     void sliceFromTo(int marker1, int marker2, QString marker);
     void sliceMati(int numChanWrite);
 
+    void rereferenceData(QString newRef, QString newPath);
 
+    void refilterData(double lowFreq, double highFreq, QString newPath);
     void countSpectraSimple(int fftLen);
     void visualisation();
     void kernelest(const QString &str);
