@@ -234,7 +234,6 @@ MainWindow::MainWindow() :
     ui->rereferenceDataComboBox->addItem("A2");
     ui->rereferenceDataComboBox->addItem("Ar");
     ui->rereferenceDataComboBox->addItem("N");
-    ui->rereferenceDataComboBox->addItem("Cz");
 
 
 
@@ -2424,6 +2423,23 @@ void MainWindow::readData()
         if(i%16==15) label[i/16][16]='\0';
 
     }
+
+    //edit EOG channels generality for encephalan
+
+    //or A1 A2 vice versa???
+    for(int i = 0; i < ns; ++i)
+    {
+        if(QString(label[i]).contains("EOG 1"))
+        {
+            strcpy(label[i], "EOG EOG1-A1     ");
+        }
+        else if(QString(label[i]).contains("EOG 2"))
+        {
+            strcpy(label[i], "EOG EOG2-A2     ");
+        }
+    }
+
+
     helpString=dir->absolutePath().append(QDir::separator()).append("labels.txt");
     FILE * labels=fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
     for(int i = 0; i < ns; ++i)                         //label write in file
@@ -3434,7 +3450,6 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
 
     int groundChan = -1; //A1-N
     int earsChan = -1; //A1-A2
-    int czChan = -1; //Cz-A2
     for(int i = 0; i < ns; ++i)
     {
         if(QString(label[i]).contains("A1-N"))
@@ -3445,31 +3460,24 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
         {
             earsChan = i;
         }
-        else if(QString(label[i]).contains("Cz"))
-        {
-            czChan = i;
-        }
     }
-    if((groundChan+1) * (earsChan+1) * (czChan+1) == 0)
+    if((groundChan+1) * (earsChan+1) == 0)
     {
         cout << "some of reref channels is absent" << endl;
         return;
     }
 
-    for(int i = 0; i < ns; ++i) //ns -> 21
-    {
-        cout << label[i] << endl;
-    }
-//    return;
 
     helpString.clear();
-
-    cout << "newRef = " << newRef.toStdString() << endl;
     if(newRef == "A1")
     {
         for(int i = 0; i < ns; ++i) //ns -> 21
         {
-            if(!QString(label[i]).contains("-A1")) //generality
+            if(i == groundChan || i == earsChan)
+            {
+                helpString += QString::number(i+1);
+            }
+            else if(!QString(label[i]).contains("-A1")) //generality
             {
                 if(QString(label[i]).contains("-A2"))
                 {
@@ -3479,12 +3487,16 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
                 {
                     helpString += QString::number(i+1) + "-" + QString::number(groundChan+1);
                 }
+                else if(QString(label[i]).contains("-Ar"))
+                {
+                    helpString += QString::number(i+1) + "-" + QString::number(earsChan+1) + "/2";
+                }
                 else
                 {
                     helpString += QString::number(i+1);
                 }
             }
-            else
+            else //EOG and a shet
             {
                 helpString += QString::number(i+1);
             }
@@ -3495,7 +3507,11 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     {
         for(int i = 0; i < ns; ++i) //ns -> 21
         {
-            if(!QString(label[i]).contains("-A2")) //generality
+            if(i == groundChan || i == earsChan)
+            {
+                helpString += QString::number(i+1);
+            }
+            else if(!QString(label[i]).contains("-A2")) //generality
             {
                 if(QString(label[i]).contains("-A1"))
                 {
@@ -3504,6 +3520,10 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
                 else if(QString(label[i]).contains("-N"))
                 {
                     helpString += QString::number(i+1) + "-" + QString::number(groundChan+1) + "+" + QString::number(earsChan+1);
+                }
+                else if(QString(label[i]).contains("-Ar"))
+                {
+                    helpString += QString::number(i+1) + "+" + QString::number(earsChan+1) + "/2";
                 }
                 else
                 {
@@ -3521,7 +3541,11 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     {
         for(int i = 0; i < ns; ++i) //ns -> 21
         {
-            if(!QString(label[i]).contains("-N")) //generality
+            if(i == groundChan || i == earsChan)
+            {
+                helpString += QString::number(i+1);
+            }
+            else if(!QString(label[i]).contains("-N")) //generality
             {
                 if(QString(label[i]).contains("-A1"))
                 {
@@ -3530,6 +3554,10 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
                 else if(QString(label[i]).contains("-A2"))
                 {
                     helpString += QString::number(i+1) + "-" + QString::number(earsChan+1) + "+" + QString::number(groundChan+1);
+                }
+                else if(QString(label[i]).contains("-Ar"))
+                {
+                    helpString += QString::number(i+1) + "-" + QString::number(earsChan+1) + "/2" + "+" + QString::number(groundChan+1);
                 }
                 else
                 {
@@ -3547,7 +3575,11 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     {
         for(int i = 0; i < ns; ++i) //ns -> 21
         {
-            if(!QString(label[i]).contains("-Ar")) //generality
+            if(i == groundChan || i == earsChan)
+            {
+                helpString += QString::number(i+1);
+            }
+            else if(!QString(label[i]).contains("-Ar")) //generality
             {
                 if(QString(label[i]).contains("-A1"))
                 {
@@ -3573,58 +3605,24 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
             helpString += " "; // space after each channel
         }
     }
-//    else if(newRef == "Cz") //TO DO
-//    {
-//        break;
-//        for(int i = 0; i < ns; ++i) //ns -> 21
-//        {
-//            if(!QString(label[i]).contains("-N")) //generality
-//            {
-//                if(QString(label[i]).contains("-A1"))
-//                {
-//                    helpString += QString::number(i+1) + "+" + QString::number(groundChan+1);
-//                }
-//                else if(QString(label[i]).contains("-A2"))
-//                {
-//                    helpString += QString::number(i+1) + "-" + QString::number(earsChan+1) + "+" + QString::number(groundChan+1);
-//                }
-//    else
-//    {
-//        helpString += QString::number(i+1);
-//    }
-//            }
-//            else
-//            {
-//                helpString += QString::number(i+1);
-//            }
-//            helpString += " "; // space after each channel
-//        }
-//    }
     cout << helpString.toStdString() << endl;
     ui->reduceChannelsLineEdit->setText(helpString);
-//    return;
 
     //change labels
     for(int i = 0; i < ns; ++i)
     {
         helpString = QString(label[lst[i].toInt()-1]);
-        if(helpString.contains('-'))
+        if(helpString.contains('-') && (i != groundChan && i != earsChan))
         {
             helpString2 = helpString;
             helpString2.remove(0, helpString.indexOf('-')+1);
             helpString2.remove(helpString2.indexOf(' '), helpString2.length());
             helpString.replace(helpString2, newRef);
         }
-        for(int j = 0; j < 16; ++j)
-        {
-            label[i][j] = helpString.toStdString().c_str()[j];
-        }
-        label[i][16] = '\0';
+        strcpy(label[i], helpString.toStdString().c_str());
         cout << "reref Data: label[" << i << "]= " << label[i] << endl;
     }
-
-return;
-//    memcpy(data[numOfChan], data[ns-1], ndr*fr*sizeof(double)); //stupid bicycle generality
+    reduceChannelsFast();
 
     //set all of channels to the lineedit
     helpString.clear();
@@ -3634,9 +3632,9 @@ return;
     }
     ui->reduceChannelsLineEdit->setText(helpString);
 
-//    writeEdf(ui->filePathLineEdit->text(), data, newPath, ndr*fr);
+    writeEdf(ui->filePathLineEdit->text(), data, newPath, ndr*fr);
 
-    cout << "RefilterData: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "Reref Data: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::refilterDataSlot()
@@ -5419,6 +5417,8 @@ void MainWindow::reduceChannelsFast()
             {
                 temp[k][j] = data[list[k].toInt() - 1][j];
             }
+            //or
+//            memccpy(temp[k], data[list[k].toInt() - 1], ndr*nr[list[k].toInt() - 1] * sizeof(double));
         }
         else if(list[k].contains('-') || list[k].contains('+') || list[k].contains('/') )
         {
@@ -5441,6 +5441,8 @@ void MainWindow::reduceChannelsFast()
             {
                 temp[k][j] = data[lst[0].toInt() - 1][j]; //copy the data from first channel in the expression into temp
             }
+            //or
+//            memccpy(temp[k], data[lst[0].toInt() - 1], ndr*nr[k] * sizeof(double));
 
             lengthCounter += lst[0].length();
             for(int h = 1; h < lst.length(); ++h)
@@ -5458,7 +5460,6 @@ void MainWindow::reduceChannelsFast()
                     return;
                 }
                 lengthCounter += 1; //sign length
-                cout << sign << " * " << lst[h].toInt() << endl;
                 lengthCounter += lst[h].length();
 
                 //check '/' and '*'
@@ -5471,6 +5472,7 @@ void MainWindow::reduceChannelsFast()
                     sign *= lst[h+1].toDouble();
                 }
 
+                cout << sign << " * " << lst[h].toInt() << endl;
                 for(int j = 0; j < ndr*nr[k]; ++j) //generality k
                 {
                     temp[k][j] += sign * data[lst[h].toInt() - 1][j];
@@ -5504,6 +5506,8 @@ void MainWindow::reduceChannelsFast()
         {
             data[k][j] = temp[k][j];
         }
+        //or
+//        memcpy(data[k], temp[k], ddr*ndr*nr[k] * sizeof(double));
     }
 
 
