@@ -626,7 +626,7 @@ void Net::averageClassification()
     fprintf(res, ")  -  %.2lf ", averagePercentage[NumOfClasses]);
     fclose(res);
     averageAccuracy = averagePercentage[NumOfClasses];
-    cout << "average accuracy = " << averageAccuracy << endl;
+//    cout << "average accuracy = " << averageAccuracy << endl;
     delete []averagePercentage;
     delete []tempDouble;
 }
