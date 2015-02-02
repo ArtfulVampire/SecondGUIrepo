@@ -954,11 +954,9 @@ void Cut::createImage(QString str) //
     Eyes = 0;
 
     dir->cdUp();
-//    cout<<"dir = "<<dir->absolutePath().toStdString()<<endl;
     lst = dir->entryList(QDir::Files);
     dir->cdUp();
     //now we are in ExpName dir
-//    cout<<"ExpName dir"<<dir->absolutePath().toStdString()<<endl;
 
     for(int i=0; i<lst.length(); ++i)
     {
@@ -984,11 +982,11 @@ void Cut::createImage(QString str) //
 //    helpString.append("Realisations");
     if(str.contains("Realisations"))
     {
-        if(ns==19)
+        if(ns == 19)
         {
             currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
         }
-        else if(ns==21)
+        else if(ns == 21)
         {
             currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
         }
@@ -999,11 +997,11 @@ void Cut::createImage(QString str) //
     }
     else if(str.contains("windows") && !str.contains("fromreal"))
     {
-        if(ns==19)
+        if(ns == 19)
         {
             currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
         }
-        else if(ns==21)
+        else if(ns == 21)
         {
             currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
         }
@@ -1014,11 +1012,11 @@ void Cut::createImage(QString str) //
     }
     else if(str.contains("cut"))
         {
-            if(ns==19)
+            if(ns == 19)
             {
                 currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
             }
-            else if(ns==21)
+            else if(ns == 21)
             {
                 currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
             }
@@ -1033,7 +1031,7 @@ void Cut::createImage(QString str) //
 //    cout<<"currentFile = "<<currentFile.toStdString()<<endl;
 
 
-    file=fopen(currentFile.toStdString().c_str(), "r+");
+    file = fopen(currentFile.toStdString().c_str(), "r+");
 
     fscanf(file, "NumOfSlices %d \n", &NumOfSlices);
     fscanf(file, "NumOfSlicesEyesCut %d \n", &Eyes);
@@ -1238,6 +1236,7 @@ void Cut::splitCut()
 {
     int leftEdge = int(leftLimit*NumOfSlices/ui->picLabel->width());
     int rightEdge = int(rightLimit*NumOfSlices/ui->picLabel->width());
+
     for(int i = leftEdge; i < NumOfSlices - (rightEdge - leftEdge); ++i)         //zoom
     {
         for(int k = 0; k < ns; ++k)

@@ -2262,18 +2262,37 @@ void MainWindow::reduceChannelsFast()
 void MainWindow::constructEDFSlot()
 {
     QString helpString;
-    helpString = dir->absolutePath() + QDir::separator() + ExpName + "_new.edf";
-    constructEDF(helpString);
+    QStringList filters;
+    if(!ui->matiCheckBox->isChecked())
+    {
+        helpString = dir->absolutePath() + QDir::separator() + ExpName + "_new.edf";
+        constructEDF(helpString);
+    }
+    else //if(ui->matiCheckBox->isChecked())
+    {
+        for(int i = 0; i < 4; ++i) //every type
+        {
+            for(int j = 0; j < 4; ++j)
+            {
+                filters.clear();
+                helpString = ExpName + "_" + QString::number(i) + "_" + QString::number(j) + "*";
+                filters << helpString;
+                helpString = dir->absolutePath() + QDir::separator() + ExpName + "_" + QString::number(i) + "_" + QString::number(j) + ".edf";
+                constructEDF(helpString, filters);
+                return;
+            }
+
+        }
+    }
 }
 
-void MainWindow::constructEDF(QString newPath) // all the realisations, to newPath based on ui->filePathLineEdit
+void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all the realisations, to newPath based on ui->filePathLineEdit
 {
     QStringList lst;
     QString helpString;
 
     QTime myTime;
     myTime.start();
-//    int backupNs = ns;
     readData(); // needed for nr
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -2290,15 +2309,30 @@ void MainWindow::constructEDF(QString newPath) // all the realisations, to newPa
         return;
     }
 
+    dir->cd("Realisations");
+    if(!nameFilters.isEmpty())
+    {
+        lst = dir->entryList(nameFilters, QDir::Files, QDir::Name); //generality
+    }
+    else
+    {
+        lst = dir->entryList(QDir::Files, QDir::Name); //generality
+    }
+    dir->cdUp();
+
+    if(lst.isEmpty())
+    {
+        cout << "constructEDF: list of realisations is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
+        return;
+    }
+
     double ** newData = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
         newData[i] = new double [ndr * nr[i]];  //generality, maybe bad nr from other channel?
     }
 
-    dir->cd("Realisations");
-    lst = dir->entryList(QDir::Files, QDir::Name); //generality
-    dir->cdUp();
+
 
     FILE * file;
     int currSlice = 0;
@@ -2319,7 +2353,7 @@ void MainWindow::constructEDF(QString newPath) // all the realisations, to newPa
         fclose(file);
     }
 //    cout << "constructEDF: currSlice = " << currSlice << endl;
-    helpInt = currSlice;
+    int helpInt = currSlice;
     if(ui->splitZerosCheckBox->isChecked()) splitZeros(&newData, ns, helpInt, &currSlice);
 //    cout << "constructEDF: currSlice after zeros split = " << currSlice << endl;
 
@@ -2337,7 +2371,6 @@ void MainWindow::constructEDF(QString newPath) // all the realisations, to newPa
     ui->reduceChannelsLineEdit->setText(helpString);
 
     writeEdf(ui->filePathLineEdit->text(), newData, newPath, currSlice);
-//    writeEdf(ui->filePathLineEdit->text(), newData, newPath, currSlice);
 
     for(int i = 0; i < nsB; ++i)
     {
@@ -3889,9 +3922,25 @@ void MainWindow::sliceMati(int numChanWrite)
     bool state[3];
     QString fileMark;
     int number = 0;
-    int session = 0;
+    int session[4];
+    int type = 3;
     FILE * file;
-    int piece = 20*250; //length of a piece
+    int piece = 16*250; //length of a piece just for visual processing
+    for(int i = 0; i < 4; ++i)
+    {
+        session[i] = 0;
+    }
+
+    ofstream outStream;
+    helpString = dir->absolutePath() + QDir::separator() + "splitLog.txt";
+    outStream.open(helpString.toStdString().c_str());
+
+    outStream << "ExpName" << "\t";
+    outStream << "type" << "\t";
+    outStream << "sessn" << "\t";
+    outStream << "offset" << "\t";
+    outStream << "offsetS" << endl;
+
 
     for(int i = 0; i < ndr*nr[ns-1]; ++i)
     {
@@ -3937,37 +3986,47 @@ void MainWindow::sliceMati(int numChanWrite)
             {
                 if(state[1] == 0 && state[0] == 1) //end of a counting session
                 {
-                    end = i;
+                    type = 0;
                     fileMark = "241"; //count
                 }
-                if(state[1] == 1 && state[0] == 0) //end of a following session
+                if(state[1] == 1 && state[0] == 0) //end of a tracking session
                 {
-                    end = i;
+                    type = 1;
                     fileMark = "247"; //follow
                 }
                 if(state[1] == 1 && state[0] == 1) //end of a composed session
                 {
-                    end = i;
+                    type = 2;
                     fileMark = "244"; //composed
                 }
             }
             else //if the start of a session
             {
-                end = i;
+                type = 3;
                 fileMark = "254"; //rest. start of the session is sliced too
             }
+            end = i;
         }
 
         if(end > start)
         {
             number = int(ceil((end-start)/double(piece)));
+            outStream << ExpName.toStdString() << "\t";
+            outStream << type << "\t";
+            outStream << session[type] << "\t";
+            outStream << (end - piece * (number-2) - start) << "\t";
+            outStream << (end - piece * (number-2) - start)*0.004 << endl;
+
+
+
             //adjust for whole wndLen windows - cut start ~1,5 pieces
             start = end - piece * (number-2);  //////////////////////////////////////////////////////1 or 2
 
 
+
             for(int j = 0; j < number-2; ++j) // num of pieces
             {
-                helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + ExpName + "_" + rightNumber(session, 4) + "_" + rightNumber(j, 4) + "_" + fileMark);
+                helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + ExpName + "_" + QString::number(type) + "_" + QString::number(session[type]) + "_" + rightNumber(j, 2)) + '.' + fileMark;
                 file = fopen(helpString.toStdString().c_str(), "w");
                 NumOfSlices = min(end - start - j*piece, piece);
                 fprintf(file, "NumOfSlices %d \n", NumOfSlices);
@@ -3988,7 +4047,7 @@ void MainWindow::sliceMati(int numChanWrite)
             fileMark.clear();
             start = i;
             end = -1;
-            ++session;
+            ++session[type];
         }
 
     }
@@ -3996,7 +4055,9 @@ void MainWindow::sliceMati(int numChanWrite)
     //slice end piece
     if(defaults::wirteStartEndLong)
     {
+        type = 3;
         end = ndr*nr[ns-1];
+        ++session[type];
         fileMark = "254";
         number = int(ceil((end-start)/double(piece)));
         //adjust for whole wndLen windows - cut start ~1,5 pieces
@@ -4005,7 +4066,7 @@ void MainWindow::sliceMati(int numChanWrite)
 
         for(int j = 0; j < number-2; ++j) // num of pieces
         {
-            helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + ExpName + "_" + rightNumber(session, 4) + "_" + rightNumber(j, 4) + "_" + fileMark);
+            helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + ExpName + "_" + QString(type) + "_" + QString::number(session[type]) + "_" + rightNumber(j, 2) + '.' + fileMark);
             file = fopen(helpString.toStdString().c_str(), "w");
             NumOfSlices = min(end - start - j*piece, piece);
             fprintf(file, "NumOfSlices %d \n", NumOfSlices);
@@ -4021,6 +4082,7 @@ void MainWindow::sliceMati(int numChanWrite)
             fclose(file);
         }
     }
+    outStream.close();
 
     //count NumOfSlices
     cout << "init slices = " << ndr*nr[ns-1] << endl;
@@ -8899,7 +8961,6 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
     return tempAccuracy;
 }
 
-
 void MainWindow::customFunc()
 {
     //MATI
@@ -8907,7 +8968,12 @@ void MainWindow::customFunc()
     {
         setEdfFile("/media/Files/Data/Mati/SDA/SDA.EDF");
         ui->matiCheckBox->setChecked(true);
-        ui->sliceCheckBox->setChecked(false);
+        ui->sliceCheckBox->setChecked(true);
+        ui->sliceWithMarkersCheckBox->setChecked(true);
+        ui->reduceChannelsCheckBox->setChecked(true);
+        ui->reduceChannelsComboBox->setCurrentText("Mati");
+//        cleanDirs();
+//        sliceAll();
     }
 
     //pca for AAX

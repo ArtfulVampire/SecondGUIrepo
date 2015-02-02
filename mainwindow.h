@@ -135,7 +135,7 @@ public:
     void setEdfFile(const QString filePath);
     void transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath);
     void reduceChannelsEDF(QString newFilePath);
-    void constructEDF(QString newPath);
+    void constructEDF(QString newPath, QStringList nameFilters = QStringList());
     void writeCorrelationMatrix(QString edfPath, QString outPath);
     void ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path, int mode = 0);
     double fileInnerClassification(QString workPath, QString fileName, QString cfgFileName = "16sec19ch", int NumOfPairs = 50, bool windows = false, int wndLen = 1000, int tShift = 125);
