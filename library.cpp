@@ -488,6 +488,8 @@ int readDefaults(QString filePath, char * dataFolder, int fftLength, int numOfCl
     return 1;
 }
 
+
+
 int len(QString s) //lentgh till double \0-byte for EDF+annotations
 {
     int l = 0;
@@ -1213,7 +1215,17 @@ void matrixProduct(double * const vect1, double * const vect2, int dim, double *
 
 }
 
+double distance(vector<double> vec1, vector<double> vec2, const int dim)
+{
+    double dist = 0.;
+    //Euclid
+    for(int i = 0; i < dim; ++i)
+    {
+        dist += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
+    }
+    return dist;
 
+}
 
 double distance(double * const vec1, double * const vec2, const int dim)
 {
@@ -1292,7 +1304,7 @@ double distanceMah(double * const vect, double ** const group, int dimension, in
     return res;
 }
 
-QString rightNumber(int &input, int N)
+QString rightNumber(int input, int N)
 {
     QString h;
     h.setNum(input);
@@ -2717,6 +2729,73 @@ double splineOutput(double * const inX, double * const inY, int dim, double * A,
     double res;
     res = (1-t) * inY[num] + t * inY[num+1] + t * (1-t) * (A[num] * (1-t) + B[num] * t);
     return res;
+}
+
+double independence(double * const signal1, double * const signal2, int length)
+{
+    //determine amplitudes
+    double min1 = 0.;
+    double min2 = 0.;
+    double max1 = 0.;
+    double max2 = 0.;
+    for(int i = 0; i < length; ++i)
+    {
+        min1 = fmin(min1, signal1[i]);
+        min2 = fmin(min2, signal2[i]);
+        max1 = fmax(max1, signal1[i]);
+        max2 = fmax(max2, signal2[i]);
+    }
+    int numOfInts = 20;
+    double self1 = 0.;
+    double self2 = 0.;
+    double together = 0.;
+    double counter = 0.;
+    double haupt = 0.;
+    cout << "i\t" << "j\t" << "self1\t" << "self2\t" << "1*2\t" << "tog\t" << "error\t" << endl;
+
+    for(int i = 0; i < numOfInts; ++i) //intervals of 1
+    {
+        counter = 0;
+        for(int k = 0; k < length; ++ k)
+        {
+            if(signal1[k] >= min1 + (max1-min1)/numOfInts * i   &&   signal1[k] < min1 + (max1-min1)/numOfInts * (i+1)) counter += 1;
+        }
+        self1 = counter/length;
+        for(int j = 0; j < numOfInts; ++j) //intervals of 2
+        {
+            counter = 0;
+            for(int k = 0; k < length; ++ k)
+            {
+                if(signal2[k] >= min2 + (max2-min2)/numOfInts * j   &&   signal2[k] < min2 + (max2-min2)/numOfInts * (j+1)) counter += 1;
+            }
+            self2 = counter/length;
+
+
+            counter = 0;
+            for(int k = 0; k < length; ++ k)
+            {
+                if(signal2[k] >= min2 + (max2-min2)/numOfInts * j   &&   signal2[k] < min2 + (max2-min2)/numOfInts * (j+1) && signal1[k] >= min1 + (max1-min1)/numOfInts * i   &&   signal1[k] < min1 + (max1-min1)/numOfInts * (i+1)) counter += 1;
+            }
+            together = counter/length;
+
+            if(1)//together != 0.)
+            {
+                cout << i << "\t";
+                cout << j << "\t";
+                cout << doubleRound(self1, 5) << "\t";
+                cout << doubleRound(self2, 5) << "\t";
+                cout << doubleRound(self1*self2, 5) << "\t";
+                cout << doubleRound(together, 5) << "\t";
+
+//                cout << (together - self1*self2) / (together);
+                 cout << endl;
+            }
+
+            haupt += fabs(together - self1*self2);// / (together * pow(numOfInts, 2.));
+        }
+
+    }
+    return haupt;
 }
 
 void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth, const double powArg)

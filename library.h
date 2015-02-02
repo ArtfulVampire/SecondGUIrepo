@@ -45,9 +45,8 @@ using namespace std;
 
 
 //void QDoubleSpinBox::mySlot(double val)
-
 int len(QString s);
-QString rightNumber(int &input, int N);
+QString rightNumber(int input, int N);
 double doubleRound(double in, int numSigns);
 int findChannel(char ** const labelsArr, QString chanName, int ns = 21);
 //wavelets
@@ -62,7 +61,7 @@ QColor grayScale(int range, int j);
 
 double morletCos(double const freq1, double timeShift, double pot, double time);
 double morletSin(double const freq1, double timeShift, double pot, double time);
-void wavelet(QString out, FILE * file, int ns=19, int channelNumber=0, double freqMax=20., double freqMin=5., double freqStep=0.99, double pot=32.);
+void wavelet(QString out, FILE * file, int ns = 19, int channelNumber = 0, double freqMax = 20., double freqMin = 5., double freqStep = 0.99, double pot = 32.);
 void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
 //signal processing
@@ -100,6 +99,7 @@ void splitZeros(double *** inData, int ns, int length, int * outLength);
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t)*inY[i1] + t*inY[i] + t(1-t)(outA[i](1-t) + outB[i]t));
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
+double independence(double * const signal1, double * const signal2, int length);
 
 bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
 int typeOfFileName(QString fileName);
@@ -135,7 +135,7 @@ void calcSpectre(double ** const inData, int leng, int const ns, double *** data
 void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
 QString expName(const QString filePath);
 
-
+double distance(vector<double> vec1, vector<double> vec2, const int dim);
 double distance(double * const vec1, double * const vec2, int const dim);
 double distance(double const x1, double const y1, double const x2, double const y2);
 double distanceMah(double * const vect, double ** const covMatrixInv, double * const groupMean, int dimension);
@@ -185,6 +185,16 @@ inline double gaussian(double x, double sigma = 1.) //N(0,1)
 inline double logistic(double &x, double t)
 {
     return 1. / ( 1. + exp(-x/t) );
+}
+
+inline int numOfLim(double inFreq, double freq, int fftL)
+{
+    return floor(0.5 + inFreq/freq*fftL);
+}
+
+inline int fftL(int in)
+{
+    return pow(2., ceil(log2(in)));
 }
 
 #endif // LIBRARY_H

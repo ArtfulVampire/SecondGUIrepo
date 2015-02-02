@@ -14,12 +14,13 @@ namespace defaults
 {
 
     const double frequency = 250.;
+    const double leftFreq = 5.;
+    const double rightFreq = 20.;
     const int genNs = 19;
+
 //    //Atanov
     const QString dataFolder = "/media/Files/Data";
     const int fftLength = 4096;
-    const int left = 82;
-    const int right = 328;
     const int numOfClasses = 3;
     const bool opencl = true;
     const bool openmp = true;

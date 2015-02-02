@@ -47,6 +47,7 @@ public:
     bool ClassificateVector(int &vecNum);
     void closeLogFile();
     void setAutoProcessingFlag(bool);
+    void prelearnDeepBelief();
 
     bool adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa, QString paFileName = "1");
     int getEpoch();
@@ -73,7 +74,6 @@ public:
     void averageClassification();
 
 protected:
-    bool event(QEvent * ev);
     void mousePressEvent(QMouseEvent * event);
 
 public slots:
@@ -113,7 +113,7 @@ private:
     double **matrix;
     double *** weight;
     int * dimensionality; //for backprop
-    double * output;
+//    double * output;
     char * helpCharArr;
     ifstream inStream;
     ofstream outStream;
@@ -153,8 +153,6 @@ private:
     bool stopFlag;
     QString tmp, paFileBC;
     int ns;
-    QTempEvent * tempEvent;
-    TempThread myThread;
     double ** coords; //new coords for Sammon method
     double mouseShit;
 };

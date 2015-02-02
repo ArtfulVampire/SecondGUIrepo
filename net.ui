@@ -291,8 +291,8 @@
   <widget class="QLabel" name="clearSetsLabel">
    <property name="geometry">
     <rect>
-     <x>740</x>
-     <y>310</y>
+     <x>580</x>
+     <y>220</y>
      <width>156</width>
      <height>86</height>
     </rect>
@@ -510,6 +510,13 @@
        <widget class="QRadioButton" name="backpropRadioButton">
         <property name="text">
          <string>backprop</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="deepBeliefRadioButton">
+        <property name="text">
+         <string>deepBelief</string>
         </property>
        </widget>
       </item>

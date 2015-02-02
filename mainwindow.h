@@ -76,6 +76,11 @@ public slots:
     void makeDatFile();
     void constructEDFSlot();
     void reduceChannelsEDFSlot();
+    void markerGetSlot();
+    void markerSetSlot();
+    void markerSetSecTime(int);
+    void markerSetDecValueSlot();
+
     //signals
     void ICA();
     void waveletCount();
@@ -139,11 +144,7 @@ public:
     double filesAddComponents(QString workPath, QString fileName1, QString fileName2, int NumOfRepeats = 30, bool windows = false, int wndLen = 1000, int tShift = 125);
 
     void countICAs(QString workPath, QString fileName, bool icaFlag = true, bool transformFlag = true, bool sequenceFlag = false, bool sumFlag = false); //to delete (listFileCrossClassification)
-
-    void autoIcaAnalysis3();
-    void autoIcaAnalysis4();
-    void autoIcaAnalysis5();
-
+    void customFunc();
 
 private:
     Ui::MainWindow *ui;

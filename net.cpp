@@ -73,6 +73,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     group3 = new QButtonGroup();
     group3->addButton(ui->deltaRadioButton);
     group3->addButton(ui->backpropRadioButton);
+    group3->addButton(ui->deepBeliefRadioButton);
     ui->crossRadioButton->setChecked(true);
     ui->realsRadioButton->setChecked(true);
     ui->deltaRadioButton->setChecked(false);
@@ -151,8 +152,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 
     ui->sizeSpinBox->setValue(6);
     paint = new QPainter;
-    tempEvent = new QTempEvent;
-    QObject::connect(this, SIGNAL(destroyed()), &myThread, SLOT(quit()));
+//    QObject::connect(this, SIGNAL(destroyed()), &myThread, SLOT(quit()));
 
     QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(loadCfg()));
 
@@ -220,6 +220,12 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     {
         FileName[i] = new char [1];
     }
+
+
+
+//    loadCfgByName("111");
+//    ui->deepBeliefRadioButton->setChecked(true);
+//    PaIntoMatrixByName("1");
 }
 
 Net::~Net()
@@ -234,7 +240,6 @@ Net::~Net()
     delete group2;
     delete group3;
     delete paint;
-    delete tempEvent;
     delete ui;
 
     for(int i = 0; i < numOfLayers - 1; ++i)
@@ -258,34 +263,6 @@ Net::~Net()
     }
     delete []matrix;
     delete []FileName;
-
-    myThread.quit();
-    myThread.wait();
-
-}
-
-bool Net::event(QEvent  * ev)
-{
-    if(ev->type() != 1200)
-    {
-        return QWidget::event(ev);
-    }
-    else
-    {
-        QTempEvent * tempEvent = static_cast<QTempEvent * >(ev);
-        if(tempEvent->value() >= 90.)
-        {
-            cout << "CRIT temp = " << tempEvent->value() << endl;
-            sleep(2);///////////////////////////////////////////////////////////////wrong!!!!!!!1111111111
-//            QApplication::sendEvent(this, tempEvent);
-            return true;
-        }
-        else
-        {
-            cout << "curr temp = " << tempEvent->value() << endl;
-            return false;
-        }
-    }
 }
 
 void Net::mousePressEvent(QMouseEvent  * event)
@@ -864,8 +841,14 @@ void Net::reset()
         {
             for(int k = 0; k < dimensionality[i+1]; ++k)
             {
-                if(ui->deltaRadioButton->isChecked()) {weight[i][j][k] = 0.;}
-                else if(ui->backpropRadioButton->isChecked()) {weight[i][j][k] = (-500 + rand()%1000)/50000.;}
+                if(ui->deltaRadioButton->isChecked())
+                {
+                    weight[i][j][k] = 0.;
+                }
+                else
+                {
+                    weight[i][j][k] = (-500 + rand()%1000)/50000.;
+                }
             }
         }
     }
@@ -1050,71 +1033,6 @@ void Net::loadCfg()
     }
 
     loadCfgByName(helpString);
-
-}
-
-void Net::memoryAndParamsAllocation()
-{
-    //NetLength should be set
-    //NumOfClasses should be set
-
-//    cout << "memoryAndParamsAllocation: before memdel" << endl;
-    if((weight != NULL) && (dimensionality != NULL) && loadPAflag)
-    {
-        for(int i = 0; i < numOfLayers - 1; ++i)
-        {
-            for(int j = 0; j < dimensionality[i] + 1; ++j) //
-            {
-                delete []weight[i][j];
-            }
-            delete []weight[i];
-        }
-        delete []weight;
-        delete []dimensionality;
-    }
-//    cout << "memoryAndParamsAllocation: after memdel" << endl;
-
-    numOfLayers = ui->numOfLayersSpinBox->value();
-    helpString = ui->dimensionalityLineEdit->text();
-    QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
-    if(lst.length() != numOfLayers)
-    {
-        QMessageBox::critical(this, tr("Error"), tr("Dimensionality and numOfLayers dont correspond"), QMessageBox::Ok);
-        return;
-    }
-//    cout << "memoryAndParamsAllocation: before dimensionality" << endl;
-    dimensionality = new int [numOfLayers];
-    dimensionality[0] = NetLength;
-    for(int i = 1; i < numOfLayers-1; ++i)
-    {
-        if(QString::number(lst[i].toInt()) != lst[i])
-        {
-            helpString = QString::number(i) + "'th dimensionality has bad format";
-            QMessageBox::critical(this, tr("Error"), tr(helpString.toStdString().c_str()), QMessageBox::Ok);
-            return;
-        }
-        dimensionality[i] = lst[i].toInt();
-    }
-    dimensionality[numOfLayers-1] = NumOfClasses;
-
-//    cout << "memoryAndParamsAllocation: after dimensionality, before weight" << endl;
-
-    weight = new double ** [numOfLayers - 1]; // 0 - the lowest layer
-
-//    cout << "memoryAndParamsAllocation: weight **" << endl;
-    for(int i = 0; i < numOfLayers - 1; ++i)
-    {
-        weight[i] = new double * [dimensionality[i] + 1]; //+1 for bias
-//        cout << "memoryAndParamsAllocation: weight *" << endl;
-        for(int j = 0; j < dimensionality[i] + 1; ++j) //
-        {
-            weight[i][j] = new double [dimensionality[i+1]];
-
-        }
-//        cout << "memoryAndParamsAllocation: after weight " << endl;
-    }
-
-    reset();
 
 }
 
@@ -2062,8 +1980,8 @@ void Net::leaveOneOut()
                     {
                         for(int k = 0; k < dimensionality[i+1]; ++k)
                         {
-                            if(ui->backpropRadioButton->isChecked())    weight[i][j][k] -= learnRate * normCoeff[type] * deltaWeights[i+1][k] * output[i][j];
-                            else if(ui->deltaRadioButton->isChecked())  weight[i][j][k] += learnRate * normCoeff[type] * output[i][j] * ((type == k) - output[i+1][k]);
+                            if(ui->deltaRadioButton->isChecked())   weight[i][j][k] += learnRate * normCoeff[type] * output[i][j] * ((type == k) - output[i+1][k]);
+                            else                                    weight[i][j][k] -= learnRate * normCoeff[type] * deltaWeights[i+1][k] * output[i][j];
                         }
                     }
                 }
@@ -2452,7 +2370,7 @@ void Net::methodSetParam(int a, bool ch)
 {
     if(!loadPAflag) return;
     if(!ch) return;
-    if(a == -2 )
+    if(group3->button(a)->text().contains("delta")) ///generality
     {
 //        cout << "delta button pressed" << endl;
         ui->epochSpinBox->setValue(250);
@@ -2467,7 +2385,7 @@ void Net::methodSetParam(int a, bool ch)
         ui->numOfLayersSpinBox->setReadOnly(true);
 
     }
-    if(a == -3)
+    else if(group3->button(a)->text().contains("backprop"))  ///generality
     {
 //        cout << "backprop button pressed" << endl;
         ui->epochSpinBox->setValue(300);
@@ -2475,14 +2393,93 @@ void Net::methodSetParam(int a, bool ch)
         ui->learnRateBox->setValue(1.0);
         ui->critErrorDoubleSpinBox->setValue(0.05);
 
+        ui->numOfLayersSpinBox->setValue(3);
+        ui->numOfLayersSpinBox->setReadOnly(false);
+
         ui->dimensionalityLineEdit->setText("0 20 0");
         ui->dimensionalityLineEdit->setReadOnly(false);
+    }
+    else if(group3->button(a)->text().contains("deepBelief"))  ///generality
+    {
+        ui->epochSpinBox->setValue(300);
+        ui->tempBox->setValue(2);
+        ui->learnRateBox->setValue(1.0);
+        ui->critErrorDoubleSpinBox->setValue(0.05);
 
         ui->numOfLayersSpinBox->setValue(3);
         ui->numOfLayersSpinBox->setReadOnly(false);
+
+        ui->dimensionalityLineEdit->setText("0 22 0");
+        ui->dimensionalityLineEdit->setReadOnly(false);
     }
     memoryAndParamsAllocation();
 }
+
+
+void Net::memoryAndParamsAllocation()
+{
+    //NetLength should be set
+    //NumOfClasses should be set
+
+    if((weight != NULL) && (dimensionality != NULL) && loadPAflag)
+    {
+        for(int i = 0; i < numOfLayers - 1; ++i)
+        {
+            for(int j = 0; j < dimensionality[i] + 1; ++j) //
+            {
+                delete []weight[i][j];
+            }
+            delete []weight[i];
+        }
+        delete []weight;
+        delete []dimensionality;
+    }
+
+    numOfLayers = ui->numOfLayersSpinBox->value();
+    helpString = ui->dimensionalityLineEdit->text();
+    QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
+    if(lst.length() != numOfLayers)
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Dimensionality and numOfLayers dont correspond"), QMessageBox::Ok);
+        return;
+    }
+    dimensionality = new int [numOfLayers];
+    dimensionality[0] = NetLength;
+    for(int i = 1; i < numOfLayers-1; ++i)
+    {
+        if(QString::number(lst[i].toInt()) != lst[i])
+        {
+            helpString = QString::number(i) + "'th dimensionality has bad format";
+            QMessageBox::critical(this, tr("Error"), tr(helpString.toStdString().c_str()), QMessageBox::Ok);
+            return;
+        }
+        dimensionality[i] = lst[i].toInt();
+    }
+    dimensionality[numOfLayers-1] = NumOfClasses;
+
+
+    weight = new double ** [numOfLayers - 1]; // weights from i'th layer to (i+1)'th
+
+    for(int i = 0; i < numOfLayers - 1; ++i)
+    {
+        weight[i] = new double * [dimensionality[i] + 1]; //+1 for bias
+        for(int j = 0; j < dimensionality[i] + 1; ++j) //
+        {
+            weight[i][j] = new double [dimensionality[i+1]];
+
+        }
+    }
+    cout << "memparams:\n";
+    cout << "numOfLayers = " << numOfLayers << endl;
+    for(int i = 0; i < numOfLayers; ++i)
+    {
+        cout << "dim[" << i << "] = " << dimensionality[i] << endl;
+    }
+
+    reset();
+
+}
+
 
 void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int numOfLayers, int * dimensionality) //data[NumOfVectors][dimensionality[0]]. dimensionality doesn't include bias
 {
@@ -2512,22 +2509,21 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
 
     int type = 0;
 
-    epoch = 0;
 
-    int  * mixNum = new int [NumberOfVectors];
+//    int  * mixNum = new int [NumberOfVectors];
+    vector < int > mixNum;
     for(int i = 0; i < NumberOfVectors; ++i)
     {
-        mixNum[i] = i;
+        mixNum.push_back(i);
     }
     int a1, a2, buffer; //for mixNum mixing
     int index;
 
     reset();
 
-//    cout << "LearnNet: dimensionality[0] = " << dimensionality[0] << endl;
-//    cout << "LearnNet: NetLength = " << NetLength << endl;
 
-    double * normCoeff = new double [NumOfClasses];
+//    double * normCoeff = new double [NumOfClasses];
+    vector <double> normCoeff;
     double helpMin = classCount[0];
     for(int i = 1; i < NumOfClasses; ++i)
     {
@@ -2535,9 +2531,22 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     }
     for(int i = 0; i < NumOfClasses; ++i)
     {
-        normCoeff[i] = helpMin/classCount[i];
+        normCoeff.push_back(helpMin/classCount[i]);
     }
 
+
+    //test
+//    cout << "numOfLayers = " << numOfLayers << endl;
+//    cout << "dim[0] = " << dimensionality[0] << endl;
+//    cout << "dim[1] = " << dimensionality[1] << endl;
+//    cout << "dim[2] = " << dimensionality[2] << endl;
+
+    if(ui->deepBeliefRadioButton->isChecked())
+    {
+        prelearnDeepBelief();
+    }
+
+    epoch = 0;
     while(currentError > critError && epoch < ui->epochSpinBox->value())
     {
         srand(time(NULL));
@@ -2555,14 +2564,14 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
 
             index = mixNum[num];
             type = matrix[index][dimensionality[0] + 1]; //generality
-            if( type*(type-1.)*(type-2.) != 0. )
+            if( type * (type - 1.) * (type - 2.) != 0. )
             {
                 cout << "bad type" << endl;
                 this->close();
                 this->~Net();
             }
 
-
+//            memcpy(output[0], matrix[index], dimensionality[0]*sizeof(double));
             for(int j = 0; j < dimensionality[0]; ++j)
             {
                 output[0][j] = matrix[index][j];
@@ -2572,37 +2581,36 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
             //obtain outputs
             for(int i = 1; i < numOfLayers; ++i)
             {
-
 //#pragma omp parallel for schedule(dynamic) num_threads(dimensionality[i]) shared(output)
                 for(int j = 0; j < dimensionality[i]; ++j)
                 {
                     output[i][j] = 0.;
 
-                        for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
-                        {
-                            output[i][j] += weight[i-1][k][j] * output[i-1][k];
-                        }
+                    for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
+                    {
+                        output[i][j] += weight[i-1][k][j] * output[i-1][k];
+                    }
 
                     output[i][j] = logistic(output[i][j], temperature);
                 }
-                output[i][dimensionality[i]] = 1.; //unused for the highest layer
+                output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
             }
+
 
             //error in the last layer
             for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
             {
-                currentError += (output[numOfLayers-1][j] - (type == j)) * (output[numOfLayers-1][j] - (type == j));
+                currentError += pow((output[numOfLayers-1][j] - (type == j)), 2.);
             }
 
-            //count deltaweights
+
+            //count deltaweights (used for backprop only)
             //for the last layer
             for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
             {
                 deltaWeights[numOfLayers-1][j] = -1./temperature * output[numOfLayers-1][j] * (1. - output[numOfLayers-1][j]) * ((type == j) - output[numOfLayers-1][j]); //~0.1
             }
-
-
-            //for the other layers, upside->down
+            //for the other layers, besides the input one, upside->down
             for(int i = numOfLayers-2; i >= 1; --i)
             {
                 for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
@@ -2615,14 +2623,17 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
                     deltaWeights[i][j]  *= 1./temperature * output[i][j] * (1. - output[i][j]);
                 }
             }
+
+
             for(int i = 0; i < numOfLayers-1; ++i)
             {
                 for(int j = 0; j < dimensionality[i] + 1; ++j)//+1 for bias? 01.12.2014
                 {
                     for(int k = 0; k < dimensionality[i+1]; ++k)
                     {
-                        if(ui->backpropRadioButton->isChecked())    weight[i][j][k] -= learnRate * normCoeff[type] * deltaWeights[i+1][k] * output[i][j];
-                        else if(ui->deltaRadioButton->isChecked())  weight[i][j][k] += learnRate * normCoeff[type] * output[i][j] * ((type == k) - output[i+1][k]); // numOfLayers = 2 in this case
+                        if(ui->deltaRadioButton->isChecked())   weight[i][j][k] += learnRate * normCoeff[type] * output[i][j] * ((type == k) - output[i+1][k]); // numOfLayers = 2 and i == 0 in this case
+                        else                                    weight[i][j][k] -= learnRate * normCoeff[type] * deltaWeights[i+1][k] * output[i][j];
+
                     }
                 }
             }
@@ -2633,31 +2644,229 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
         currentError /= NumberOfVectors;
         currentError = sqrt(currentError);
         if(!autoFlag) cout << "epoch = " << epoch << "\terror = " << currentError << endl;
-        this->ui->currentErrorDoubleSpinBox->setValue(currentError);        
-//        if(epoch == 50) break;
+        this->ui->currentErrorDoubleSpinBox->setValue(currentError);
     }
+    cout << "learning ended " << epoch << " epoches" << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
+    matrixDelete(&output, numOfLayers);
+    matrixDelete(&deltaWeights, numOfLayers);
+}
 
-//    cout << "learning ended " << epoch << " epoches" << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLayers
+{
+//    int  * mixNum = new int [NumberOfVectors];
+    vector<int> mixNum;
+    mixNum.clear();
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        mixNum.push_back(i);
+    }
+    int a1, a2, buffer; //for mixNum mixing
+    int index;
 
+    //weights between current hidden layer and virtual/temp layer
+    double ** tempWeight;
+    matrixCreate(&tempWeight, dimensionality[0] + 1, dimensionality[0] + 1); // +1 for bias
 
-
-    delete []mixNum;
+    double ** output = new double * [numOfLayers]; //data and global output together
     for(int i = 0; i < numOfLayers; ++i)
     {
-        delete []deltaWeights[i];
-        delete []output[i];
+        output[i] = new double [dimensionality[i] + 1];
     }
-    delete []deltaWeights;
-    delete []output;
-    delete []normCoeff;
+    double ** tempOutput;
+    matrixCreate(&tempOutput, 3, dimensionality[0] + 1);
+
+
+    double ** tempDeltaWeights = new double * [3];
+    for(int i = 0; i < 3; ++i)
+    {
+        tempDeltaWeights[i] = new double [dimensionality[0] + 1];
+    }
+
+//    double * normCoeff = new double [NumOfClasses];
+    vector < double > normCoeff;
+    double helpMin = classCount[0];
+    for(int i = 1; i < NumOfClasses; ++i)
+    {
+        helpMin = min(helpMin, classCount[i]);
+    }
+    for(int i = 0; i < NumOfClasses; ++i)
+    {
+        normCoeff.push_back(helpMin/classCount[i]);
+    }
+
+
+
+
+    currentError = 2*critError;
+    for(int numLayer = 1; numLayer < numOfLayers - 1; ++numLayer) //for every hidden layer
+    {
+        cout << "layer " << numLayer << " starts to learn" << endl;
+        epoch = 0;
+        //reset tempWeight
+        for(int i = 0; i < dimensionality[0] + 1; ++i)
+        {
+            for(int j = 0; j < dimensionality[0]; ++j)
+            {
+                tempWeight[i][j] = (-500 + rand()%1000)/50000.;
+            }
+        }
+        while(currentError > critError && epoch < ui->epochSpinBox->value()) //while not good approximation
+        {
+            srand(time(NULL));
+            currentError = 0.0;
+            for(int i = 0; i < 5 * NumberOfVectors; ++i)
+            {
+                a1 = rand()%(NumberOfVectors);
+                a2 = rand()%(NumberOfVectors);
+                buffer = mixNum[a2];
+                mixNum[a2] = mixNum[a1];
+                mixNum[a1] = buffer;
+            }
+            for(int num = 0; num < NumberOfVectors; ++num)
+            {
+//                cout << num << " "; cout.flush();
+                index = mixNum[num];
+
+                //count input using all previously learned hidden layers
+                //1) set initial Layer
+                for(int j = 0; j < dimensionality[0]; ++j)
+                {
+                    output[0][j] = matrix[index][j];
+                }
+                output[0][dimensionality[0]] = 1.; //bias
+
+                //2) count ascend only on precomputed hidden layers
+                for(int i = 1; i < numLayer; ++i)
+                {
+    //#pragma omp parallel for schedule(dynamic) num_threads(dimensionality[i]) shared(output)
+                    for(int j = 0; j < dimensionality[i]; ++j)
+                    {
+                        output[i][j] = 0.;
+
+                        for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
+                        {
+                            output[i][j] += weight[i-1][k][j] * output[i-1][k];
+                        }
+
+                        output[i][j] = logistic(output[i][j], temperature);
+                    }
+                    output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
+                }
+
+                memcpy(tempOutput[0], output[numLayer-1], (dimensionality[numLayer-1] + 1) * sizeof(double)); //+1 for bias
+
+                //count outputs in current hidden layer
+                for(int j = 0; j < dimensionality[numLayer]; ++j) //for hidden layer dim[numLayer]
+                {
+                    tempOutput[1][j] = 0.;
+                    for(int k = 0; k < dimensionality[numLayer - 1] + 1; ++k) //for input layer dim[numLayer-1] + bias
+                    {
+                        tempOutput[1][j] += weight[numLayer - 1][k][j] * tempOutput[0][k];
+                    }
+
+                    tempOutput[1][j] = logistic(tempOutput[1][j], temperature);
+                }
+                tempOutput[1][dimensionality[numLayer]] = 1.; //bias in hidden layer
+
+
+                //count outputs in virtual/temp layer
+                for(int j = 0; j < dimensionality[numLayer - 1]; ++j) //for virtual/temp output dim[numLayer - 1]
+                {
+                    tempOutput[2][j] = 0.;
+                    for(int k = 0; k < dimensionality[numLayer] + 1; ++k) //for hidden learning layer dim[numLayer] + bias
+                    {
+                        tempOutput[2][j] += tempWeight[k][j] * tempOutput[1][k]; //tempWeight is important
+                    }
+
+                    tempOutput[2][j] = logistic(tempOutput[2][j], temperature);
+                }
+//                matrixPrint(tempOutput, 3, 10);
+
+//                cout << "outputs ready" << endl;
+
+
+
+                //error in the last layer
+                for(int j = 0; j < dimensionality[numLayer-1]; ++j) //virtual/temp output layer
+                {
+                    currentError += distance(tempOutput[2], tempOutput[0], dimensionality[numLayer - 1]);
+                }
+
+
+                //count deltaweights
+                for(int j = 0; j < dimensionality[numLayer - 1]; ++j)//for the last virtual/temp layer
+                {
+                    tempDeltaWeights[2][j] = -1./temperature * tempOutput[2][j] * (1. - tempOutput[2][j]) * (tempOutput[0][j] - tempOutput[2][j]);
+                }
+
+                //for the only hidden layer
+                for(int j = 0; j < dimensionality[numLayer] + 1; ++j) // + bias weight
+                {
+                    tempDeltaWeights[1][j] = 0.;
+                    for(int k = 0; k < dimensionality[numLayer - 1]; ++k) //connected to the higher-layer
+                    {
+                        tempDeltaWeights[1][j] += tempDeltaWeights[2][k] * tempWeight[j][k]; //tempWeigth
+                    }
+                    tempDeltaWeights[1][j]  *= 1./temperature * tempOutput[1][j] * (1. - tempOutput[1][j]);
+                }
+//                cout << "deltaweights ready" << endl;
+
+                //adjust tempWeight
+                for(int j = 0; j < dimensionality[numLayer] + 1; ++j) //hidden
+                {
+                    for(int k = 0; k < dimensionality[numLayer - 1]; ++k) //virtual/temp
+                    {
+                        tempWeight[j][k] -= learnRate * tempDeltaWeights[2][k] * tempOutput[1][j];// * normCoeff[type]; //normCoeff or not?
+                    }
+                }
+                //adjust weight
+                for(int j = 0; j < dimensionality[numLayer - 1] + 1; ++j) //input
+                {
+                    for(int k = 0; k < dimensionality[numLayer]; ++k) //hidden
+                    {
+                        weight[numLayer-1][j][k] -= learnRate  * tempDeltaWeights[1][k] * tempOutput[0][j];// * normCoeff[type]; //normCoeff or not?
+                    }
+                }
+//                cout << "weights ready" << endl;
+                qApp->processEvents();
+                if(stopFlag)
+                {
+                    matrixDelete(&output, numOfLayers);
+                    matrixDelete(&tempDeltaWeights, 3);
+                    matrixDelete(&tempOutput, 3);
+                    matrixDelete(&tempWeight, dimensionality[0] + 1);
+
+                    stopFlag = 0;
+                    return;
+                }
+            }
+
+            ++epoch;
+            currentError /= NumberOfVectors;
+            currentError = sqrt(currentError);
+            cout << endl;
+            cout << "epoch = " << epoch << "\terror = " << currentError << endl;
+            this->ui->currentErrorDoubleSpinBox->setValue(currentError);
+        }
+
+        cout << "layer " << numLayer << " finished to learn" << endl;
+        cout << "epoches = " << epoch << " error = " << currentError << endl;
+    }
+
+    matrixDelete(&output, numOfLayers);
+    matrixDelete(&tempDeltaWeights, 3);
+    matrixDelete(&tempOutput, 3);
+    matrixDelete(&tempWeight, dimensionality[0] + 1);
+
 }
 
 
 
 bool Net::ClassificateVector(int &vecNum)
 {
-    double * outputClass = new double [NumOfClasses];
+//    double * outputClass = new double [NumOfClasses]; //was
+    double * outputClass = new double [dimensionality[numOfLayers - 1]]; //new
 
     int type = int(matrix[vecNum][NetLength+1]);
 
@@ -2668,15 +2877,16 @@ bool Net::ClassificateVector(int &vecNum)
         output[i] = new double [dimensionality[i] + 1];
     }
 
+//    memcpy(output[0], matrix[vecNum], dimensionality[0]*sizeof(double));
     for(int j = 0; j < dimensionality[0]; ++j)
     {
         output[0][j] = matrix[vecNum][j];
     }
-    output[0][dimensionality[0]] = 1.;
+    output[0][dimensionality[0]] = 1.; //bias
 
     for(int i = 1; i < numOfLayers; ++i)
     {
-        for(int j = 0; j < dimensionality[i]; ++j)
+        for(int j = 0; j < dimensionality[i]; ++j) //higher level, w/o bias
         {
             output[i][j] = 0.;
             for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
@@ -2685,9 +2895,9 @@ bool Net::ClassificateVector(int &vecNum)
             }
             output[i][j] = logistic(output[i][j], temperature);
         }
-        output[i][dimensionality[i]] = 1.; //unused for the highest layer
+        output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
     }
-    for(int j = 0; j < NumOfClasses; ++j) //calculate output //2 = numberOfTypes
+    for(int j = 0; j < dimensionality[numOfLayers - 1]; ++j) //calculate output //2 = numberOfTypes
     {
         outputClass[j] = output[numOfLayers - 1][j];
     }
@@ -2703,7 +2913,8 @@ bool Net::ClassificateVector(int &vecNum)
 
 
     bool right = true;
-    for(int k = 0; k < NumOfClasses; ++k)
+
+    for(int k = 0; k < dimensionality[numOfLayers - 1]; ++k)
     {
         if(k != type && outputClass[k] >= outputClass[type])
         {
@@ -2712,6 +2923,7 @@ bool Net::ClassificateVector(int &vecNum)
             break;
         }
     }
+
     delete [] outputClass;
     return right;
 }

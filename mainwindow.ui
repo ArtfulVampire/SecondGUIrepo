@@ -115,7 +115,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+        <widget class="QDoubleSpinBox" name="drawCoeffSpinBox"/>
        </item>
       </layout>
      </item>
@@ -265,7 +265,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>290</x>
@@ -420,7 +420,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>291</x>
@@ -971,6 +971,123 @@
      </item>
     </layout>
    </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>480</y>
+      <width>211</width>
+      <height>162</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_8">
+     <item row="0" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_14">
+       <item>
+        <widget class="QPushButton" name="markerSetPushButton">
+         <property name="text">
+          <string>set marker</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_10">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="markerGetPushButton">
+       <property name="text">
+        <string>get marker</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="markerDecimalLineEdit"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label_17">
+       <property name="text">
+        <string>decimal</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLineEdit" name="markerBin0LineEdit"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_16">
+       <property name="text">
+        <string>bin 0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLineEdit" name="markerBin1LineEdit"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_19">
+       <property name="text">
+        <string>bin 1</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QSpinBox" name="markerBinTimeSpinBox"/>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_18">
+       <property name="text">
+        <string>bin time</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QDoubleSpinBox" name="markerSecTimeDoubleSpinBox"/>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="label_20">
+       <property name="text">
+        <string>sec time</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <zorder>browseButton</zorder>
+   <zorder>filePathLineEdit</zorder>
+   <zorder>setNsLine</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>makeTestDataPushButton</zorder>
+   <zorder>numComponentsSpinBox</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>markerSetPushButton</zorder>
+   <zorder>markerGetPushButton</zorder>
+   <zorder>label_16</zorder>
+   <zorder>label_17</zorder>
+   <zorder>label_18</zorder>
+   <zorder>label_19</zorder>
+   <zorder>label_20</zorder>
+   <zorder>markerBinTimeSpinBox</zorder>
+   <zorder>markerSecTimeDoubleSpinBox</zorder>
+   <zorder>markerDecimalLineEdit</zorder>
+   <zorder>markerBin0LineEdit</zorder>
+   <zorder>markerBin1LineEdit</zorder>
+   <zorder>horizontalSpacer_10</zorder>
+   <zorder>textEdit</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -978,7 +1095,7 @@
      <x>0</x>
      <y>0</y>
      <width>1207</width>
-     <height>20</height>
+     <height>19</height>
     </rect>
    </property>
   </widget>
