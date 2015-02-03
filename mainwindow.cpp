@@ -2272,7 +2272,7 @@ void MainWindow::constructEDFSlot()
     {
         for(int i = 0; i < 4; ++i) //every type
         {
-            for(int j = 0; j < 4; ++j)
+            for(int j = 0; j < 4; ++j) //every session
             {
                 filters.clear();
                 helpString = ExpName + "_" + QString::number(i) + "_" + QString::number(j) + "*";
@@ -2281,6 +2281,11 @@ void MainWindow::constructEDFSlot()
                 constructEDF(helpString, filters);
                 return;
             }
+            filters.clear();
+            helpString = ExpName + "_" + QString::number(i) + "*";
+            filters << helpString;
+            helpString = dir->absolutePath() + QDir::separator() + ExpName + "_" + QString::number(i) + ".edf";
+            constructEDF(helpString, filters);
 
         }
     }
@@ -2368,7 +2373,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     {
         helpString += QString::number(i+1) + " ";
     }
-    ui->reduceChannelsLineEdit->setText(helpString);
+//    ui->reduceChannelsLineEdit->setText(helpString);
 
     writeEdf(ui->filePathLineEdit->text(), newData, newPath, currSlice);
 
@@ -4789,7 +4794,8 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
                 //was
 //                oldIndex = lst[j].toInt() - 1; //number of channel in "old" file edfIn
                 //new
-                oldIndex = chanList[j] - 1; //newIndex == j
+                oldIndex = chanList[j] - 1;
+              //newIndex == j
 
 
                 for(int k = 0; k < nr[oldIndex]; ++k)
@@ -4800,15 +4806,15 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
                     //generality
                     if(oldIndex != ns - 1)
                     {
-                        a = (short)(inData[ oldIndex ][ i * nr[oldIndex] + k ] * 8.); //*8 generality
+                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ] * 8.); //*8 generality
                     }
                     else if(!ui->matiCheckBox->isChecked())
                     {
-                        a = (short)(inData[ oldIndex ][ i * nr[oldIndex] + k ]);
+                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ]);
                     }
                     else
                     {
-                        a = (unsigned short)(inData[ oldIndex ][ i * nr[oldIndex] + k ]);
+                        a = (unsigned short)(inData[ j ][ i * nr[oldIndex] + k ]);
                     }
 
                     if(ui->matiCheckBox->isChecked() && oldIndex == ns - 1)
