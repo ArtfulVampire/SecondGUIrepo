@@ -2573,6 +2573,10 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, QString 
     {
         outStream.open(logFile.toStdString().c_str(), ios_base::app);
     }
+    else
+    {
+        outStream.open(logFile.toStdString().c_str());
+    }
 
     //flag[i] == 0 if it's eyes-cut interval
     int i = 0;
@@ -2602,7 +2606,7 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, QString 
                 //split
                 for(int k = start; k < length - (finish - start) - allEyes; ++k)
                 {
-                    for(int j = 0; j < ns; ++j)
+                    for(int j = 0; j < ns; ++j) //shift with markers
                     {
                         (*dataIn)[j][k] = (*dataIn)[j][k + (finish - start)];
                         flag[k] = flag[k + (finish - start)];

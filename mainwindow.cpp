@@ -2391,7 +2391,7 @@ void MainWindow::constructEDFSlot()
             setEdfFile(initEDF);
             for(int j = 0; j < 15; ++j) //every session
             {
-                if(i != 3 && j >= 5) continue;
+                if(i != 3 && j >= 6) continue;
                 //filter for realisations
                 filters.clear();
                 helpString = ExpName + "_" + QString::number(i) + "_" + QString::number(j) + "*";
@@ -2486,7 +2486,6 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     }
 //    cout << "constructEDF: currSlice = " << currSlice << endl;
     int helpInt = currSlice;
-    if(ui->splitZerosCheckBox->isChecked()) splitZeros(&newData, ns, helpInt, &currSlice);
 
     int offset;
     if(ui->matiCheckBox->isChecked())
@@ -2551,7 +2550,10 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
 
     }
-    if(ui->splitZerosCheckBox->isChecked()) splitZeros(&newData, ns, helpInt, &currSlice);
+    else if(ui->splitZerosCheckBox->isChecked())
+    {
+        splitZeros(&newData, ns, helpInt, &currSlice);
+    }
 
 
     int nsB = ns;
@@ -2572,7 +2574,6 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     for(int i = 0; i < nsB; ++i)
     {
         newData[i] = newData[i] - offset;
-//        newData[i] = newData[i];
         delete []newData[i];
     }
     delete []newData;
@@ -4654,7 +4655,7 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     ddr=atoi(helpCharArr); //generality double ddr
 
 
-    ndr = int(numSlices/defaults::frequency)/ddr;
+    ndr = max(0, int(numSlices/defaults::frequency)/ddr);
     helpString = QString::number(ndr);
     for(int i = helpString.length(); i < 8; ++i)
     {
@@ -9136,7 +9137,7 @@ void MainWindow::customFunc()
     }
 
     //MATI
-    if(0)
+    if(1)
     {
 //        concatenateEDFs("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF",
 //                        "/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
@@ -9148,6 +9149,8 @@ void MainWindow::customFunc()
         ui->sliceWithMarkersCheckBox->setChecked(true);
         ui->reduceChannelsCheckBox->setChecked(true);
         ui->reduceChannelsComboBox->setCurrentText("Mati");
+        ns = 22;
+        return;
 
         QDir * tDir = new QDir();
         tDir->cd("/media/Files/Data/Mati");
