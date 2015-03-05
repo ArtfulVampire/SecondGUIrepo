@@ -182,6 +182,7 @@ void Eyes::eyesClean()
 
 void Eyes::eyesProcessing()
 {
+    ui->realisationsRadioButton->setChecked(true);
     QStringList list;
     if(!autoFlag)
     {

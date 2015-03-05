@@ -4125,7 +4125,7 @@ void MainWindow::sliceMati(int numChanWrite)
     int session[4]; //generality
     int type = 3;
     FILE * file;
-    int piece = 10*250; //length of a piece just for visual processing
+    int piece = 8*250; //length of a piece just for visual processing
     for(int i = 0; i < 4; ++i)
     {
         session[i] = 0;
