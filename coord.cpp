@@ -18,13 +18,22 @@ namespace defaults
     const double rightFreq = 20.;
     const int genNs = 19;
 
-//    //Atanov
-    const QString dataFolder = "/media/Files/Data";
+//    Atanov
+    const QString dataFolder = "/media/Files/Data/Mati";
     const int fftLength = 4096;
     const int numOfClasses = 3;
     const bool opencl = true;
     const bool openmp = true;
     const QString cfgFileName = "16sec19ch";
+
+//    MATI
+//    const QString dataFolder = "/media/Files/Data/Mati";
+//    const int fftLength = 4096;
+//    const int numOfClasses = 3;
+//    const bool opencl = true;
+//    const bool openmp = true;
+//    const QString cfgFileName = "16sec19ch";
+
 //    //Baklushev
 //    const QString dataFolder = "c:/EEG";
 //    const int fftLength = 2048;
@@ -34,6 +43,7 @@ namespace defaults
 //    const bool opencl = 0;
 //    const bool openmp = 0;
 //    const QString cfgFileName = "8sec19ch";
+
 //    //Ivanitsky
 //    const QString dataFolder = "d:/AtanovMichael/Data";
 //    const int fftLength = 4096;

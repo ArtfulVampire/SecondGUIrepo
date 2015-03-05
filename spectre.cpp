@@ -45,6 +45,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     group4->addButton(ui->grayRadioButton);
     group4->addButton(ui->colourRadioButton);
     ui->colourRadioButton->setChecked(true);
+    ui->grayRadioButton->setChecked(true);
 
 
     ui->amplitudeWaveletButton->setChecked(true);
@@ -458,7 +459,8 @@ void Spectre::psaSlot()
     norm *= ui->scalingDoubleSpinBox->value();
 
 
-//    cout << "prep spectra draw" << endl;
+    int lineWidth = 3;
+
     for(int c2=0; c2<ns; ++c2)  //exept markers channel
     {
         //draw spectra
@@ -468,17 +470,20 @@ void Spectre::psaSlot()
             {
                 if(ui->colourRadioButton->isChecked())
                 {
-                    if(j==0) paint->setPen(QPen(QBrush("blue"), 2));
-                    if(j==1) paint->setPen(QPen(QBrush("red"), 2));
-                    if(j==2) paint->setPen(QPen(QBrush("green"), 2));
+                    if(j==0) paint->setPen(QPen(QBrush("blue"), lineWidth));
+                    if(j==1) paint->setPen(QPen(QBrush("red"), lineWidth));
+                    if(j==2) paint->setPen(QPen(QBrush("green"), lineWidth));
                 }
                 if(ui->grayRadioButton->isChecked())
                 {
-                    if(j==0) paint->setPen(QPen(QBrush(QColor(0,0,0,255)), 2));
-                    if(j==1) paint->setPen(QPen(QBrush(QColor(80,80,80,255)), 2));
-                    if(j==2) paint->setPen(QPen(QBrush(QColor(160,160,160,255)), 2));
+                    if(j==0) paint->setPen(QPen(QBrush(QColor(0,0,0,255)), lineWidth)); // black
+                    if(j==1) paint->setPen(QPen(QBrush(QColor(90,90,90,255)), lineWidth)); // dark-gray
+                    if(j==2) paint->setPen(QPen(QBrush(QColor(180,180,180,255)), lineWidth)); // light-gray
                 }
-                paint->drawLine(QPointF(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - sp[j][c2][int(k*spL[j]/(coords::scale * paint->device()->width()))]*norm), QPointF(paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - sp[j][c2][int((k+1)*spL[j]/(coords::scale * paint->device()->width()))]*norm));
+                paint->drawLine(QPointF(paint->device()->width() * coords::x[c2] + k,
+                                        paint->device()->height()* coords::y[c2] - sp[j][c2][int(  k  *spL[j]/(coords::scale * paint->device()->width()))]*norm),
+                                QPointF(paint->device()->width() * coords::x[c2] + k + 1,
+                                        paint->device()->height()* coords::y[c2] - sp[j][c2][int((k+1)*spL[j]/(coords::scale * paint->device()->width()))]*norm));
             }
         }
 

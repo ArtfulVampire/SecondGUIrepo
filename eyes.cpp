@@ -377,8 +377,6 @@ void Eyes::eyesProcessing()
 
     dir->cd(dirBC->absolutePath());
 
-
-
     //clear memory
     for(int i = 0; i<ns; ++i)
     {
@@ -403,7 +401,3 @@ Eyes::~Eyes()
 {
     delete ui;
 }
-
-//SUICIDE SUICIDE SUICIDE SUICIDE SUICIDE SUICIDE SUICIDE SUICIDE SUICIDE SUICIDE
-//BLOOD GUTS DISMEMBERMENT
-//FCK YOU RKN FCK YOU ROSKOMNADZOR

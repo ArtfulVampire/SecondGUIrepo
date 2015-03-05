@@ -161,14 +161,14 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
         }
     }
 
-    if(obj==ui->scrollArea)
+    if(obj == ui->scrollArea)
     {
         if(event->type() == QEvent::Wheel)
         {
 
             QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
             double coeff = -0.9;
-            ui->scrollArea->horizontalScrollBar()->setSliderPosition( ui->scrollArea->horizontalScrollBar()->sliderPosition() + coeff*scrollEvent->delta());
+            ui->scrollArea->horizontalScrollBar()->setSliderPosition( ui->scrollArea->horizontalScrollBar()->sliderPosition() + coeff * scrollEvent->delta());
             return true;
 
 
@@ -1214,9 +1214,8 @@ void Cut::cut()
 {
     dir->cd("windows");
     helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(fileName).append(".").append(QString::number(addNum)); //TSL
-//    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(fileName).append("_").append(QString::number(addNum)).append(".").append(fileNumber); //Ln
     ++addNum;
-    file=fopen(helpString.toStdString().c_str(),"w");
+    file = fopen(helpString.toStdString().c_str(),"w");
     fprintf(file, "NumOfSlices %d\n", int(rightLimit*NumOfSlices/ui->picLabel->width())-int(leftLimit*NumOfSlices/ui->picLabel->width()));
     for(int i=int(leftLimit*NumOfSlices/ui->picLabel->width()); i<int(rightLimit*NumOfSlices/ui->picLabel->width()); ++i)         //zoom
     {

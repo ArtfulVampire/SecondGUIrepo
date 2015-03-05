@@ -322,6 +322,8 @@ void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool
             maxAbs = fmax(maxAbs, fabs(matrixA[i][j]));
         }
     }
+
+//    maxAbs = 0.;
     for(int i = 0; i < ns; ++i)
     {
         draw1Map(matrixA, maxAbs, outDir, outName, i, 240, colourFlag); //240 generality
@@ -2544,42 +2546,57 @@ void readFileInLine(QString filePath, double ** outData, int len)
     file.close();
 }
 
-void splitZeros(double *** dataIn, int ns, int length, int * outLength)
+void splitZeros(double *** dataIn, int ns, int length, int * outLength, QString logFile, QString dataName)
 {
-    bool flag[length];
+    bool flag[length]; //1 if usual, 0 if eyes
     bool startFlag = false;
     int start = -1;
     int finish = -1;
     int allEyes = 0;
+    ofstream outStream;
+
+
     for(int i = 0; i < length; ++i)
     {
-        flag[i] = 0;
-        for(int j = 0; j < ns; ++j)
+        flag[i] = false;
+        for(int j = 0; j < ns - 1; ++j) ////////dont consider markers
         {
             if((*dataIn)[j][i] != 0.)
             {
-                flag[i] = 1;
+                flag[i] = true;
                 break;
             }
         }
     }
+
+    if(!logFile.isEmpty())
+    {
+        outStream.open(logFile.toStdString().c_str(), ios_base::app);
+    }
+
     //flag[i] == 0 if it's eyes-cut interval
     int i = 0;
     do
     {
-        if(!startFlag)
+        if(!startFlag) //if startFlag == false
         {
-            if(flag[i] == 0)
+            if(!flag[i]) //if eyes-slice - set start
             {
                 start = i;
                 startFlag = true;
             }
         }
-        else
+        else //if start is set
         {
-            if(flag[i] || i == length-1 - allEyes)
+            if(flag[i] || i == length-1 - allEyes) //if we meet the end of eyes-interval OR reached end of a data
             {
                 finish = i;
+                if(outStream.is_open())
+                {
+                    outStream << dataName.toStdString() << "\t";
+                    outStream << start + allEyes << "\t" << finish - 1 + allEyes << "\t" << finish - start << "\t";
+                    outStream << (start + allEyes)/defaults::frequency << "\t" << (finish - 1 + allEyes)/defaults::frequency << "\t" << (finish - start)/defaults::frequency << endl;
+                }
 //                cout << start << " " << finish << endl;
                 startFlag = 0;
                 //split
@@ -2599,6 +2616,10 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength)
         ++i;
     } while (i <= length-1 - allEyes);
     (*outLength) = length - allEyes;
+    if(!outStream.is_open())
+    {
+        outStream.close();
+    }
 //    cout << length << "\t" << allEyes << "\t" << (*outLength) << "\t";
 }
 

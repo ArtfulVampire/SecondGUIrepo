@@ -2,7 +2,10 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-
+ostream & operator << (ostream &os, QString toOut)
+{
+    os << toOut.toStdString();
+}
 
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow)
@@ -55,6 +58,7 @@ MainWindow::MainWindow() :
         data[i] = new double [200*60*250];           //////////////for 200 minutes//////////////        
     }
     nr = new int [maxNs];
+    nr[0] = defaults::frequency;
 
     group1 = new QButtonGroup();
     group1->addButton(ui->enRadio);
@@ -235,6 +239,7 @@ MainWindow::MainWindow() :
     ui->rereferenceDataComboBox->addItem("A2");
     ui->rereferenceDataComboBox->addItem("Ar");
     ui->rereferenceDataComboBox->addItem("N");
+    ui->rereferenceDataComboBox->setCurrentText("Ar");
 
 
 
@@ -1940,7 +1945,7 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
 
     readData();
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    if(!QString(label[lst[ns-1].toInt()-1]).contains("Markers"))
+    if(!QString(label[lst[lst.length()-1].toInt()-1]).contains("Markers"))
     {
         cout << "refilterData: bad reduceChannelsLineEdit - no markers" << endl;
         return;
@@ -2394,6 +2399,7 @@ void MainWindow::constructEDFSlot()
 
                 helpString = dir->absolutePath() + QDir::separator() + ExpName + "_" + QString::number(i) + "_" + QString::number(j) + ".edf";
                 constructEDF(helpString, filters);
+//                return;
             }
 
             cout << "start concatenating" << endl;
@@ -2405,6 +2411,8 @@ void MainWindow::constructEDFSlot()
             }
             helpString = dir->absolutePath() + QDir::separator() + ExpName.left(3) + "_" + QString::number(i) + ".edf";
             concatenateEDFs(lst, helpString);
+
+            setEdfFile(initEDF);
         }
 
     }
@@ -2483,40 +2491,67 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     int offset;
     if(ui->matiCheckBox->isChecked())
     {
-        offset = currSlice%(16*250) + 16*250; ////////////////////////////////////////////////////Mati offset ~20 seconds
-        helpString = dir->absolutePath() + QDir::separator() + "sliceLog.txt";
-        ofstream outStream;
-        outStream.open(helpString.toStdString().c_str(), ios_base::app);
+        //save first marker
         vector<double> tempSlice;
-//        cout << "1" << endl;
         for(int i = 0; i < ns; ++i)
         {
             tempSlice.push_back(newData[i][0]); //save first slice with markers
         }
-//        cout << "2" << endl;
-        for (int i = 0; i < ns; ++i)
+
+//        offset = 10*250;
+//        offset = currSlice%(16*250) + 16*250; ////////////////Mati offset ~20 seconds
+//        cout << "constructEDF: offset = " << offset << endl;
+//        for(int i = 0; i < ns - 1; ++i)
+//        {
+//            for(int j = 1; j < offset; ++j)
+//            {
+//                newData[i][j] = 0.;
+//            }
+//        }
+
+
+        //move the data, remember the first marker
+//        for (int i = 0; i < ns; ++i)
+//        {
+//            newData[i] = newData[i] + offset;
+//            newData[i][0] = tempSlice[i];
+//        }
+        QString fileName = newPath;
+        fileName.remove(0, fileName.lastIndexOf(QDir::separator())+1);
+
+        helpString = dir->absolutePath() + QDir::separator() + "splitZerosLog.txt";
+        helpInt = currSlice;
+        splitZeros(&newData, ns, helpInt, &currSlice, helpString, fileName);
+
+
+        helpString = dir->absolutePath() + QDir::separator() + "splitZerosLog.txt";
+        ofstream outStream;
+        outStream.open(helpString.toStdString().c_str(), ios_base::app);
+
+
+        offset = currSlice%(16*250) + 16*250; //////Mati offset ~20 seconds in the beginning
+        for (int i = 0; i < ns; ++i) //with markers!
         {
             newData[i] = newData[i] + offset;
             newData[i][0] = tempSlice[i];
         }
-//        cout << "3" << endl;
-        helpString = newPath;
-        helpString.remove(0, helpString.lastIndexOf(QDir::separator())); //filename
-//        cout << helpString.toStdString() << endl;
-        QStringList ls = helpString.split(QRegExp("[_.]"), QString::SkipEmptyParts);
-//        cout << ls[3].toStdString() << endl;
-//        cout << ls[4].toStdString() << endl;
-//        cout << "4" << endl;
-        outStream << ExpName.left(3).toStdString() << "\t";
-        outStream << ls[3].toStdString() << "\t";
-        outStream << ls[4].toStdString() << "\t";
-        outStream << offset << "\t";
-        outStream << offset/double(nr[0]) << endl;
+
+        //write the exclusion of the first part
+        outStream << fileName.toStdString() << "\t";
+        outStream << 1 << "\t";
+        outStream << offset - 1 << "\t";
+        outStream << offset - 2 << "\t";
+
+        outStream << 1 << "\t";
+        outStream << (offset - 1)/defaults::frequency << "\t";
+        outStream << (offset - 2)/defaults::frequency << endl << endl;
         outStream.close();
-//        cout << "4" << endl;
+
         currSlice -= offset;
 
+
     }
+    if(ui->splitZerosCheckBox->isChecked()) splitZeros(&newData, ns, helpInt, &currSlice);
 
 
     int nsB = ns;
@@ -2537,6 +2572,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     for(int i = 0; i < nsB; ++i)
     {
         newData[i] = newData[i] - offset;
+//        newData[i] = newData[i];
         delete []newData[i];
     }
     delete []newData;
@@ -4085,10 +4121,10 @@ void MainWindow::sliceMati(int numChanWrite)
     bool state[3];
     QString fileMark;
     int number = 0;
-    int session[4];
+    int session[4]; //generality
     int type = 3;
     FILE * file;
-    int piece = 16*250; //length of a piece just for visual processing
+    int piece = 10*250; //length of a piece just for visual processing
     for(int i = 0; i < 4; ++i)
     {
         session[i] = 0;
@@ -9076,28 +9112,92 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 
 void MainWindow::customFunc()
 {
-    //MATI
-    if(1)
+    //copy EDFs into folders
+    if(0)
     {
-        setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
+        QDir * tDir = new QDir();
+        tDir->cd("/media/Files/Data/Mati");
+        QStringList nameFilters;
+        nameFilters << "*.edf" << "*.EDF";
+        QString fileName;
+
+        QStringList lst = tDir->entryList(nameFilters);
+        for(int i = 0; i < lst.length(); ++i)
+        {
+            fileName = lst[i];
+            fileName.resize(fileName.indexOf('.'));
+            cout << fileName.toStdString() << endl;
+
+            tDir->mkdir(fileName);
+            QFile::copy(tDir->absolutePath() + "/" + lst[i], tDir->absolutePath() + "/" + fileName + "/" + lst[i]);
+//            QFile::remove(tDir->absolutePath() + "/" + lst[i]);
+        }
+        exit(0);
+    }
+
+    //MATI
+    if(0)
+    {
+//        concatenateEDFs("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF",
+//                        "/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
+//                        "/media/Files/IHNA/Data/MATI/archive/NOS.edf");
+//        exit(0);
+
         ui->matiCheckBox->setChecked(true);
         ui->sliceCheckBox->setChecked(true);
         ui->sliceWithMarkersCheckBox->setChecked(true);
         ui->reduceChannelsCheckBox->setChecked(true);
-        ui->reduceChannelsComboBox->setCurrentText("MatiNoEyes");
-//        cleanDirs();
-//        sliceAll();
+        ui->reduceChannelsComboBox->setCurrentText("Mati");
+
+        QDir * tDir = new QDir();
+        tDir->cd("/media/Files/Data/Mati");
+        QStringList nameFilters;
+        nameFilters << "*.edf" << "*.EDF";
+        QString fileName;
+        QString helpString;
+
+        QStringList lst = tDir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+        for(int i = 0; i < lst.length(); ++i)
+        {
+            tDir->cd(lst[i]);
+
+            helpString = tDir->absolutePath() + "/" + lst[i] + ".EDF";
+            setEdfFile(helpString);
+            rereferenceDataSlot();
+
+            helpString = tDir->absolutePath() + "/" + lst[i] + "_rr.edf";
+            setEdfFile(helpString);
+            refilterDataSlot();
+
+            helpString = tDir->absolutePath() + "/" + lst[i] + "_rr_f.edf";
+            setEdfFile(helpString);
+            sliceAll();
+            drawRealisations();
+            tDir->cdUp();
+
+        }
+        exit(0);
     }
 
-    //pca for AAX
+    //AAX
     if(0)
     {
-        left = 1;
-        right = 48;
-        spLength = 48;
-        setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-        Net * ANN = new Net(dir, ns, left, right, spStep, ExpName);
-        ANN->show();
+        setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
+        cleanDirs();
+        ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
+        ui->matiCheckBox->setChecked(false);
+        ui->sliceCheckBox->setChecked(true);
+        ui->sliceWithMarkersCheckBox->setChecked(false);
+        ui->reduceChannelsCheckBox->setChecked(false);
+        sliceAll();
+        Spectre * sp = new Spectre(dir, ns, ExpName);
+        sp->countSpectra();
+        sp->compare();
+        sp->compare();
+        sp->compare();
+        sp->psaSlot();
+//        system("eog /media/Files/Data/AAX/Help/AAX_sum.jpg");
+        exit(0);
     }
 
 
@@ -9171,6 +9271,7 @@ void MainWindow::customFunc()
 
     }
 
+    //distribution
     if(0)
     {
         setEdfFile("/media/Files/Data/AB/SMM_sum_ica.edf");
@@ -9225,11 +9326,7 @@ void MainWindow::customFunc()
         delete pnt;
         system("eog /media/Files/Data/distr.png");
         exit(0);
-
-
-
     }
-
 
     //function test
     if(0)
@@ -9280,9 +9377,9 @@ void MainWindow::customFunc()
 
     }
 
-
-
-    /*
+    //RCP
+    if(0)
+    {
         dir->cd(defaults::dataFolder + "/AA");
 
 
@@ -9290,12 +9387,13 @@ void MainWindow::customFunc()
 
 
 
-        outStream.open(defaults::dataFolder + "AA/discr.txt");
+        outStream.open(QString(defaults::dataFolder + "AA/discr.txt").toStdString().c_str());
         outStream << "name" << "\t";
         outStream << "mean" << "\t";
         outStream << "sigma" << endl;
 
-        lst = dir->entryList(QStringList("*randIca.txt"), QDir::NoFilter, QDir::Name);
+        QString helpString;
+        QStringList lst = dir->entryList(QStringList("*randIca.txt"), QDir::NoFilter, QDir::Name);
         int num1 = lst.length()*2;
         double * sigm = new double [num1];
         double * men = new double [num1];
@@ -9326,8 +9424,7 @@ void MainWindow::customFunc()
         }
         drawRCP(drawVars, num1);
         fclose(results);
-    */
-
+    }
 
     if(0)
     {
@@ -9437,9 +9534,6 @@ void MainWindow::customFunc()
             outStream.close();
         }
     }
-
-
-
 
     //mahalanobis LDA test
     if(0)
@@ -9552,7 +9646,6 @@ void MainWindow::customFunc()
 
     }
 
-
     //test matrixInvert and Gauss - OK
     if(0)
     {
@@ -9616,9 +9709,6 @@ void MainWindow::customFunc()
         //    }
         exit(0);
     }
-
-
-
 
     //spline test - OK
     if(0)
@@ -9691,7 +9781,7 @@ void MainWindow::customFunc()
         for(int i = 0; i < list0.length(); ++i)
         {
             //draw separate maps only
-            if(0)
+            if(1)
             {
                 helpString = dir->absolutePath() + QDir::separator() + list0[i];
                 drawMapsICA(helpString, 19, dir->absolutePath(), QString(list0[i].left(3) + "-m"));
@@ -9707,7 +9797,7 @@ void MainWindow::customFunc()
                 countSpectraSimple(4096);
             }
             //draw maps on average spectra
-            if(1)
+            if(0)
             {
                 helpString = dir->absolutePath() + QDir::separator() + list0[i];
                 helpString = dir->absolutePath() + QDir::separator() + list0[i].left(3) + "_1_ica_all.png";
