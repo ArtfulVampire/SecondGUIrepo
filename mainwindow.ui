@@ -974,10 +974,10 @@
    <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>480</y>
-      <width>211</width>
-      <height>162</height>
+      <x>21</x>
+      <y>481</y>
+      <width>214</width>
+      <height>215</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_8">
@@ -1062,8 +1062,26 @@
        </property>
       </widget>
      </item>
+     <item row="6" column="0">
+      <widget class="QLineEdit" name="newEdfNameLineEdit"/>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="label_21">
+       <property name="text">
+        <string>addName</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QPushButton" name="saveEdfPushButton">
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
+   <zorder>layoutWidget</zorder>
    <zorder>browseButton</zorder>
    <zorder>filePathLineEdit</zorder>
    <zorder>setNsLine</zorder>
@@ -1074,20 +1092,9 @@
    <zorder>numComponentsSpinBox</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
-   <zorder>markerSetPushButton</zorder>
-   <zorder>markerGetPushButton</zorder>
-   <zorder>label_16</zorder>
-   <zorder>label_17</zorder>
-   <zorder>label_18</zorder>
-   <zorder>label_19</zorder>
-   <zorder>label_20</zorder>
-   <zorder>markerBinTimeSpinBox</zorder>
-   <zorder>markerSecTimeDoubleSpinBox</zorder>
-   <zorder>markerDecimalLineEdit</zorder>
-   <zorder>markerBin0LineEdit</zorder>
-   <zorder>markerBin1LineEdit</zorder>
-   <zorder>horizontalSpacer_10</zorder>
-   <zorder>textEdit</zorder>
+   <zorder>newEdfNameLineEdit</zorder>
+   <zorder>label_21</zorder>
+   <zorder>saveEdfPushButton</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

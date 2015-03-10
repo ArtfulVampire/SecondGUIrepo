@@ -25,6 +25,7 @@ MainWindow::MainWindow() :
     spLength = -1;
 
     ns = defaults::genNs;
+
     right = numOfLim(defaults::rightFreq, defaults::frequency, defaults::fftLength);
     left = numOfLim(defaults::leftFreq, defaults::frequency, defaults::fftLength);
 
@@ -241,6 +242,10 @@ MainWindow::MainWindow() :
     ui->rereferenceDataComboBox->addItem("N");
     ui->rereferenceDataComboBox->setCurrentText("Ar");
 
+    ui->markerBinTimeSpinBox->setMaximum(250*60*60*2);   //2 hours
+    ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); //2 hours
+
+
 
 
 
@@ -331,6 +336,8 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->markerBin1LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
     QObject::connect(ui->markerBin1LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
+
+    QObject::connect(ui->saveEdfPushButton, SIGNAL(clicked()), this, SLOT(saveEdfNewMarkersSlot()));
 
     customFunc();
 }
@@ -673,7 +680,6 @@ void MainWindow::drawRealisations()
 
     ui->progressBar->setValue(0);
 
-    cout << "DrawRealisations: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 
     helpString.setNum(myTime.elapsed()/1000.);
     helpString.prepend("Signals drawn \nTime = ");
@@ -681,8 +687,7 @@ void MainWindow::drawRealisations()
     stopFlag = 0;
 //    QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
 
-    helpString = "DrawReals: time elapsed " + QString::number(myTime.elapsed()/1000.) + " sec";
-    cout << helpString.toStdString() << endl;
+    cout << "DrawRealisations: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::diffSmooth()
@@ -2009,6 +2014,28 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
     writeEdf(ui->filePathLineEdit->text(), data, newPath, ndr*fr);
 
     cout << "RefilterData: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+void MainWindow::saveEdfNewMarkersSlot()
+{
+    QString helpString;
+    //set all fileNumbers to reduceChannels
+    for(int i = 0; i < ns; ++i)
+    {
+        helpString += QString::number(i+1) + " ";
+    }
+    ui->reduceChannelsLineEdit->setText(helpString);
+
+    helpString = dir->absolutePath() + QDir::separator() + ExpName + ui->newEdfNameLineEdit->text();
+    if(!helpString.endsWith(".edf", Qt::CaseInsensitive))
+    {
+        helpString += ".edf";
+    }
+    helpString = setFileName(helpString);
+    cout << helpString.toStdString() << endl;
+
+    writeEdf(ui->filePathLineEdit->text(), data, helpString, ndr*nr[0]);
 }
 
 void MainWindow::reduceChannelsEDFSlot()
@@ -9149,7 +9176,9 @@ void MainWindow::customFunc()
         ui->sliceWithMarkersCheckBox->setChecked(true);
         ui->reduceChannelsCheckBox->setChecked(true);
         ui->reduceChannelsComboBox->setCurrentText("Mati");
+//        setEdfFile("/media/Files/Data/Mati/NOS/NOS_rr_f.edf");
         ns = 22;
+//        cutShow();
         return;
 
         QDir * tDir = new QDir();

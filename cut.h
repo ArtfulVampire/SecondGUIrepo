@@ -52,17 +52,19 @@ public slots:
     void rewrite();
     void lnWndAll();
     void paintDistr();
-    void drawLogistic();
+//    void drawLogistic();
     void cycleTimeShift();
     void cycleWndLength();
     void setNs(int);
     void cutEyesAll();
     void browse();
     void splitCut();
+//    void adjustScrollArea();
 
 
 protected:
     void closeEvent(QCloseEvent *);
+    void resizeEvent(QResizeEvent *);
 
 signals:
     void openFile(QString);

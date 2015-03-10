@@ -27,6 +27,7 @@ namespace defaults
     const QString cfgFileName = "16sec19ch";
 
 //    MATI
+//    const int genNs = 20;
 //    const QString dataFolder = "/media/Files/Data/Mati";
 //    const int fftLength = 4096;
 //    const int numOfClasses = 3;

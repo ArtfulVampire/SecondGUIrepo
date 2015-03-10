@@ -585,6 +585,30 @@ int findChannel(char ** const labelsArr, QString chanName, int ns)
     }
 }
 
+QString setFileName(QString const initName)
+{
+    QString beforeDot = initName;
+    beforeDot.resize(beforeDot.lastIndexOf('.'));
+//    cout << "beforeDot = " << beforeDot.toStdString() << endl;
+
+    QString afterDot = initName; //with the dot
+    afterDot = afterDot.right(afterDot.length() - afterDot.lastIndexOf('.'));
+//    cout << "afterDot = " << afterDot.toStdString() << endl;
+
+    QString helpString;
+    helpString = beforeDot + afterDot;
+//    cout << helpString.toStdString() << endl;
+
+    int counter = 0;
+    while (QFile::exists(helpString))
+    {
+        helpString = beforeDot + "_" + QString::number(counter++) + afterDot;
+
+//        cout << helpString.toStdString() << endl;
+    }
+    return helpString;
+}
+
 double vectorLength(double * arr, int len)
 {
     double a = 0.;

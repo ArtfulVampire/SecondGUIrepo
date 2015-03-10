@@ -30,7 +30,7 @@ Eyes::Eyes(QDir *dir_, int ns_) :
 
 void Eyes::setDir(QAbstractButton* but)
 {
-    cout << but->text().toStdString() << endl;
+//    cout << but->text().toStdString() << endl;
     ui->lineEdit_3->setText(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(but->text()));
 }
 
@@ -182,7 +182,6 @@ void Eyes::eyesClean()
 
 void Eyes::eyesProcessing()
 {
-    ui->realisationsRadioButton->setChecked(true);
     QStringList list;
     if(!autoFlag)
     {

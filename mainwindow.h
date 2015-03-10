@@ -76,10 +76,12 @@ public slots:
     void makeDatFile();
     void constructEDFSlot();
     void reduceChannelsEDFSlot();
+    void saveEdfNewMarkersSlot();
     void markerGetSlot();
     void markerSetSlot();
     void markerSetSecTime(int);
     void markerSetDecValueSlot();
+
 
     //signals
     void ICA();

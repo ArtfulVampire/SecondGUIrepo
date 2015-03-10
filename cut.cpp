@@ -33,7 +33,7 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
 
 
     ui->nsBox->setMaximum(40);
-    ui->checkBox->setChecked(false);
+    ui->checkBox->setChecked(true);
     ui->checkBox_2->setChecked(true);
     ui->timeShiftSpinBox->setMaximum(1000.);
     ui->timeShiftSpinBox->setValue(125.);
@@ -70,7 +70,7 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
 
 
     QFileDialog *browser = new QFileDialog();
-    browser->setDirectory(dir->absolutePath().append(QDir::separator()).append("Realisations"));
+    browser->setDirectory(dir->absolutePath() + QDir::separator() + "Realisations");
     browser->setViewMode(QFileDialog::Detail);
 
     dir->cd("Realisations");
@@ -98,10 +98,11 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
     QObject::connect(ui->nsBox, SIGNAL(valueChanged(int)), this, SLOT(setNs(int)));
     QObject::connect(ui->cycleWndLengthButton, SIGNAL(clicked()), this, SLOT(cycleWndLength()));
 
-    QObject::connect(ui->tempSpinBox, SIGNAL(valueChanged(int)), this, SLOT(drawLogistic()));
+//    QObject::connect(ui->tempSpinBox, SIGNAL(valueChanged(int)), this, SLOT(drawLogistic()));
     QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
     QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitCut()));
     QObject::connect(ui->paintDistrButton, SIGNAL(clicked()), this, SLOT(paintDistr()));
+
 
     this->ui->tempSpinBox->setValue(10);
     this->setAttribute(Qt::WA_DeleteOnClose);
@@ -109,7 +110,7 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
 //    if(lst.length()!=0)
 //    {
 //        currentNumber=0;
-//        emit(createImage(dir->absolutePath().append(QDir::separator()).append("Realisations").append(QDir::separator()).append(lst.at(0))));
+//        emit(createImage(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + lst.at(0))));
 //    }
 
     data3 = new double* [ns];         //array for all data[numOfChan][numOfTimePin]
@@ -126,7 +127,7 @@ Cut::~Cut()
 
 void Cut::browse()
 {
-    helpString = QFileDialog::getOpenFileName((QWidget*)this, tr("Open realisation"), dir->absolutePath().append(QDir::separator()).append("Realisations"));    
+    helpString = QFileDialog::getOpenFileName((QWidget*)this, tr("Open realisation"), dir->absolutePath() + QDir::separator() + "Realisations");
     if(helpString=="")
     {
         QMessageBox::information((QWidget*)this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
@@ -142,6 +143,15 @@ void Cut::closeEvent ( QCloseEvent * event )
     event->accept();
 }
 
+void Cut::resizeEvent(QResizeEvent * event)
+{
+    //adjust scrollArea size
+    ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
+                                ui->scrollArea->geometry().y(),
+                                event->size().width() - 10 * 2,
+                                ui->scrollArea->geometry().height());
+}
+
 bool Cut::eventFilter(QObject *obj, QEvent *event)
 {
     if(obj == ui->picLabel)
@@ -149,10 +159,9 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::MouseButtonPress)
         {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-            if(mouseEvent->button()==Qt::LeftButton) emit buttonPressed('l', mouseEvent->x());
-            if(mouseEvent->button()==Qt::RightButton) emit buttonPressed('r', mouseEvent->x());
+            if(mouseEvent->button() == Qt::LeftButton)  emit buttonPressed('l', mouseEvent->x());
+            if(mouseEvent->button() == Qt::RightButton) emit buttonPressed('r', mouseEvent->x());
 
-//                            cout<<"left="<<leftLimit<<" right="<<rightLimit<<endl;
             return true;
         }
         else
@@ -235,7 +244,7 @@ void Cut::cutEyesAll()
         dir->cd("Realisations");
         helpString = dir->entryList(QDir::Files|QDir::NoDotAndDotDot).operator [](0);
         dir->cdUp();
-        helpString.prepend(dir->absolutePath().append(QDir::separator()).append("Realisations").append(QDir::separator()));
+        helpString.prepend(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator());
         cout<<helpString.toStdString()<<endl;
         emit createImage(helpString);
     }
@@ -243,9 +252,9 @@ void Cut::cutEyesAll()
 
     dir->cd(ui->dirBox->currentText());  //generality
     nameFilters.clear();
-    nameFilters.append("*_241*");
-    nameFilters.append("*_247*");
-    nameFilters.append("*_254*"); // no need?
+    nameFilters << "*_241*";
+    nameFilters << "*_247*";
+    nameFilters << "*_254*"; // no need?
 
     lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
     dir->cdUp();
@@ -268,7 +277,7 @@ void Cut::cutEyesAll()
 
     for(int k = 0; k < int(lst.length()/4); ++k)
     {
-        helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(ui->dirBox->currentText()).append(QDir::separator()).append(lst.at(rand()%lst.length()));
+        helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + ui->dirBox->currentText() + QDir::separator() + lst.at(rand()%lst.length()));
         emit openFile(helpString);
 
         for(int j=0; j<NumOfSlices; ++j)
@@ -301,7 +310,7 @@ void Cut::cutEyesAll()
 
 //    cout<<"5"<<endl;
     FILE * eyes;
-    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("eyesSlices");
+    helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "eyesSlices");
     eyes = fopen(helpString.toStdString().c_str(), "w");
 
     int flag;
@@ -309,7 +318,7 @@ void Cut::cutEyesAll()
     int num=0;
     for(int i=0; i<lst.length(); ++i)
     {
-        helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(ui->dirBox->currentText()).append(QDir::separator()).append(lst[i]);
+        helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + ui->dirBox->currentText() + QDir::separator() + lst[i]);
 
         emit openFile(helpString);
         num+=NumOfSlices;
@@ -343,7 +352,7 @@ void Cut::cutEyesAll()
 //    cout<<"num "<<num<<endl;
 //    cout<<"NumOfSlices "<<NumOfEogSlices<<endl;
 
-    QFile *file = new QFile(helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("eyesSlices"));
+    QFile *file = new QFile(helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "eyesSlices"));
     file->open(QIODevice::ReadOnly);
     QByteArray contents = file->readAll();
     file->close();
@@ -356,9 +365,8 @@ void Cut::cutEyesAll()
     delete file;
 
     ui->eyesSlicesSpinBox->setValue(NumOfEogSlices);
-//cout<<"7"<<endl;
 
-//    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(eyesSlices);
+//    helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + eyesSlices);
 //    eyes = fopen(helpString.toStdString().c_str(), "r+");
 //    rewind(eyes);
 //    fprintf(eyes, "NumOfSlices %d\n", NumOfEogSlices);
@@ -369,25 +377,19 @@ void Cut::cutEyesAll()
 //    duration = time(NULL) - duration;
 
     tmp.setNum(NumOfEogSlices);
-//    helpString.setNum(int(duration));
-//    helpString.prepend("Eyes cut \nTime = ");
-//    helpString.append(" sec\n");
     helpString = "NumOfEyesSlices = ";
-    helpString.append(tmp);
+    helpString += tmp;
 
     //automatization
     if(!autoFlag)QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
 }
 
-
-
-
-
 void Cut::setNs(int a)
 {
-    ns=a;
+    ns = a;
 }
 
+/*
 void Cut::drawLogistic()
 {
     QPixmap pic = QPixmap(800, 600);
@@ -432,13 +434,12 @@ void Cut::drawLogistic()
     paint->drawLine(1,  1,  1,  pic.height()-1);//vert left
     paint->drawLine(pic.width()-1,  1,  pic.width()-1,  pic.height()-1);// vert right
 
-
-
-    pic.save(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Logistic.jpg"), 0, 100);
+    pic.save(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Logistic.jpg"), 0, 100);
     paint->end();
     delete paint;
-    ui->label_7->setPixmap(QPixmap(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Logistic.jpg")).scaled(ui->label_7->size()));
+//    ui->label_7->setPixmap(QPixmap(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Logistic.jpg")).scaled(ui->label_7->size()));
 }
+*/
 
 void Cut::cycleWndLength()
 {
@@ -480,16 +481,16 @@ void Cut::lnWndAll()
     dir->cdUp();
 
     //cycle
-    wnd1=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Spatial.txt").toStdString().c_str(), "w");
-    wnd2=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Verbal.txt").toStdString().c_str(), "w");
-    wnd3=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Idle.txt").toStdString().c_str(), "w");
-    f1=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SpatialLen.txt").toStdString().c_str(), "w");
-    f2=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("VerbalLen.txt").toStdString().c_str(), "w");
-    f3=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("IdleLen.txt").toStdString().c_str(), "w");
+    wnd1=fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Spatial.txt").toStdString().c_str(), "w");
+    wnd2=fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Verbal.txt").toStdString().c_str(), "w");
+    wnd3=fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Idle.txt").toStdString().c_str(), "w");
+    f1=fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpatialLen.txt").toStdString().c_str(), "w");
+    f2=fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "VerbalLen.txt").toStdString().c_str(), "w");
+    f3=fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "IdleLen.txt").toStdString().c_str(), "w");
 
-//    weights=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("weights4s_rdc.wts").toStdString().c_str(),"r");    ////////generality
+//    weights=fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "weights4s_rdc.wts").toStdString().c_str(),"r");    ////////generality
 
-    weights=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("weights.wts").toStdString().c_str(),"r");
+    weights=fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "weights.wts").toStdString().c_str(),"r");
 
     weight = new double*[3];
     for(int i=0; i<3; ++i)
@@ -522,7 +523,7 @@ void Cut::lnWndAll()
 
     for(int i=0; i<lst.length(); ++i)
     {
-        helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Realisations").append(QDir::separator()).append(lst.at(i));
+        helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + lst.at(i));
         emit openFile(helpString);
         lnWnd16();
     }
@@ -673,13 +674,13 @@ void Cut::lnWnd16()
 
 void Cut::paintDistr()  ///////////generality//////////////
 {
-    wnd1=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Spatial.txt").toStdString().c_str(), "r");
-    wnd2=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Verbal.txt").toStdString().c_str(), "r");
-    wnd3=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Idle.txt").toStdString().c_str(), "r");
+    wnd1 = fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Spatial.txt").toStdString().c_str(), "r");
+    wnd2 = fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Verbal.txt").toStdString().c_str(), "r");
+    wnd3 = fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Idle.txt").toStdString().c_str(), "r");
 
-    f1=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SpatialLen.txt").toStdString().c_str(), "r");
-    f2=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("VerbalLen.txt").toStdString().c_str(), "r");
-    f3=fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("IdleLen.txt").toStdString().c_str(), "r");
+    f1 = fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpatialLen.txt").toStdString().c_str(), "r");
+    f2 = fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "VerbalLen.txt").toStdString().c_str(), "r");
+    f3 = fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "IdleLen.txt").toStdString().c_str(), "r");
 
     //offsets of right windows
     int * a1 = new int [numOfWndSpat];
@@ -846,12 +847,12 @@ void Cut::paintDistr()  ///////////generality//////////////
 
         helpString.clear();
         num1=2*i;
-        helpString.append(QString::number(num1)).append(" sec");
+        helpString.append(QString::number(num1) + " sec");
         paint1->drawText(pic1.width()/(7500/250.)*i*2-10, 500+20+5, helpString); // x-stick description
 
         helpString.clear();
         num1=5*i;
-        helpString.append(QString::number(num1)).append(" wnd");
+        helpString.append(QString::number(num1) + " wnd");
         paint1->drawText(12, 500-extY*5*i, helpString);                                 // y-stick description
 
 
@@ -861,12 +862,12 @@ void Cut::paintDistr()  ///////////generality//////////////
 
         helpString.clear();
         num2=2*i;
-        helpString.append(QString::number(num2)).append(" sec");
+        helpString.append(QString::number(num2) + " sec");
         paint2->drawText(pic2.width()/(7500/250.)*i*2-10, 500+20+5, helpString);          // x-stick description
 
         helpString.clear();
         num2=5*i;
-        helpString.append(QString::number(num2)).append(" wnd");
+        helpString.append(QString::number(num2) + " wnd");
         paint2->drawText(12, 500-extY*5*i, helpString);                                           // y-stick description
 
         //2 type - verbal
@@ -875,12 +876,12 @@ void Cut::paintDistr()  ///////////generality//////////////
 
         helpString.clear();
         num3=2*i;
-        helpString.append(QString::number(num3)).append(" sec");
+        helpString.append(QString::number(num3) + " sec");
         paint3->drawText(pic3.width()/(7500/250.)*i*2-10, 500+20+5, helpString);          // x-stick description
 
         helpString.clear();
         num3=5*i;
-        helpString.append(QString::number(num3)).append(" wnd");
+        helpString.append(QString::number(num3) + " wnd");
         paint3->drawText(12, 500-extY*5*i, helpString);                                           // y-stick description
     }
 
@@ -899,9 +900,9 @@ void Cut::paintDistr()  ///////////generality//////////////
         helpString.setNum(int(ui->timeShiftSpinBox->value()));
         helpString.prepend("_timeSh_");
     }
-    pic1.save(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Help").append(QDir::separator()).append("Distr-Spatial").append(helpString).append(".jpg"));
-    pic2.save(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Help").append(QDir::separator()).append("Distr-Verbal").append(helpString).append(".jpg"));
-    pic3.save(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Help").append(QDir::separator()).append("Distr-Idle").append(helpString).append(".jpg"));
+    pic1.save(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "Distr-Spatial" + helpString + ".jpg"));
+    pic2.save(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "Distr-Verbal" + helpString + ".jpg"));
+    pic3.save(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "Distr-Idle" + helpString + ".jpg"));
     paint1->end();
     paint2->end();
     paint3->end();
@@ -932,13 +933,13 @@ void Cut::paintDistr()  ///////////generality//////////////
     fclose(f2);
     fclose(f3);
 
-    remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Spatial.txt").toStdString().c_str());
-    remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Verbal.txt").toStdString().c_str());
-    remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Idle.txt").toStdString().c_str());
+    remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Spatial.txt").toStdString().c_str());
+    remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Verbal.txt").toStdString().c_str());
+    remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Idle.txt").toStdString().c_str());
 
-    remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SpatialLen.txt").toStdString().c_str());
-    remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("VerbalLen.txt").toStdString().c_str());
-    remove(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("IdleLen.txt").toStdString().c_str());
+    remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpatialLen.txt").toStdString().c_str());
+    remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "VerbalLen.txt").toStdString().c_str());
+    remove(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "IdleLen.txt").toStdString().c_str());
 }
 
 void Cut::createImage(QString str) //
@@ -969,60 +970,80 @@ void Cut::createImage(QString str) //
 
     //find a point  and replace with _
     fileName.replace('.', '_');
-//    for(int i=fileName.length(); i>0; --i)
-//    {
-//        if(fileName[i]=='.')
-//        {
-//            fileName[i]='_';
-//            break;
-//        }
-//    }
 
-//    helpString = QDir::separator();
-//    helpString.append("Realisations");
     if(str.contains("Realisations"))
     {
         if(ns == 19)
         {
-            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+            currentPicPath = QDir::toNativeSeparators(dir->absolutePath()
+                                                      + QDir::separator() + "Signals"
+                                                      + QDir::separator() + "after"
+                                                      + QDir::separator() + fileName + ".jpg"); //absolute path of appropriate signal.jpg
         }
         else if(ns == 21)
         {
-            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+            currentPicPath = QDir::toNativeSeparators(dir->absolutePath()
+                                                      + QDir::separator() + "Signals"
+                                                      + QDir::separator() + "before"
+                                                      + QDir::separator() + fileName + ".jpg"); //absolute path of appropriate signal.jpg
         }
         else
         {
-            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("other").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()
+                                                    + QDir::separator() + "Signals"
+                                                    + QDir::separator() + "other"
+                                                    + QDir::separator() + fileName + ".jpg"); //absolute path of appropriate signal.jpg
         }
     }
     else if(str.contains("windows") && !str.contains("fromreal"))
     {
         if(ns == 19)
         {
-            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()
+                                                    + QDir::separator() + "Signals"
+                                                    + QDir::separator() + "windows"
+                                                    + QDir::separator() + "after"
+                                                    + QDir::separator() + fileName + ".jpg"); //absolute path of appropriate signal.jpg
         }
         else if(ns == 21)
         {
-            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()
+                                                    + QDir::separator() + "Signals"
+                                                    + QDir::separator() + "windows"
+                                                    + QDir::separator() + "before"
+                                                    + QDir::separator() + fileName + ".jpg"); //absolute path of appropriate signal.jpg
         }
         else
         {
-            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("other").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+            currentPicPath=QDir::toNativeSeparators(dir->absolutePath()
+                                                    + QDir::separator() + "Signals"
+                                                    + QDir::separator() + "windows"
+                                                    + QDir::separator() + "other"
+                                                    + QDir::separator() + fileName + ".jpg"); //absolute path of appropriate signal.jpg
         }
     }
     else if(str.contains("cut"))
         {
             if(ns == 19)
             {
-                currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+                currentPicPath=QDir::toNativeSeparators(dir->absolutePath()
+                                                        + QDir::separator() + "SignalsCut"
+                                                        + QDir::separator() + "after"
+                                                        + QDir::separator() + fileName + ".jpg"); //absolute path of appropriate signal.jpg
             }
             else if(ns == 21)
             {
-                currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+                currentPicPath=QDir::toNativeSeparators(dir->absolutePath()
+                                                        + QDir::separator() + "SignalsCut"
+                                                        + QDir::separator() + "before"
+                                                        + QDir::separator() + fileName + ".jpg"); //absolute path of appropriate signal.jpg
             }
             else
             {
-                currentPicPath=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("other").append(QDir::separator()).append(fileName).append(".jpg"); //absolute path of appropriate signal.jpg
+                currentPicPath=QDir::toNativeSeparators(dir->absolutePath()
+                                                        + QDir::separator() + "SignalsCut"
+                                                        + QDir::separator() + "other"
+                                                        + QDir::separator() + fileName + ".jpg"); //absolute path of appropriate signal.jpg
             }
         }
 
@@ -1042,31 +1063,38 @@ void Cut::createImage(QString str) //
         if(painter->isActive()) painter->end();
         currentPic.load(currentPicPath);
         painter->begin(&currentPic);
-        ui->picLabel->setText(currentPicPath);
+        ui->picLabel->setText(currentPicPath); //unneeded
 
         //initial zoom
         zoomPrev = 1.;
-        zoomCurr = NumOfSlices/1050.; //generality
+        zoomCurr = NumOfSlices/double(ui->scrollArea->width()); //generality
+        ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->scrollArea->height() - 20)); //-20 generality
+        rightLimit = NumOfSlices;
 
+
+        /*
         //picLabel varies
-        //Pixmap & scrollArea are constant:NumOfSlices and 1050.
-        if(zoomCurr>1.)
+        //Pixmap & scrollArea are constant.
+        if(zoomCurr > 1.)
         {
             ui->picLabel->setPixmap(currentPic.scaled(ui->scrollArea->size().width()*zoomCurr, ui->scrollArea->size().height()-20));  //-20 generality
-            zoomPrev=zoomCurr;
+            zoomPrev = zoomCurr;
             rightLimit = NumOfSlices;
         }
         else
         {
             zoomCurr = 1.;
-            ui->picLabel->setPixmap(currentPic.scaled(ui->scrollArea->size().width(), ui->scrollArea->size().height()-20));  //-20 generality
+//            ui->picLabel->setPixmap(currentPic.scaled(ui->scrollArea->size().width(), ui->scrollArea->size().height()-20));  //-20 generality
+            ui->picLabel->setPixmap(currentPic.scaled(currentPic.size().width(), ui->scrollArea->size().height()-20));  //-20 generality
             rightLimit = ui->scrollArea->size().width();
         }
+
+        */
         //endof initial zoom
     }
     else
     {
-        rightLimit=ui->picLabel->size().width();
+        rightLimit = ui->picLabel->size().width();
     }
     ui->scrollArea->horizontalScrollBar()->setSliderPosition(0);
 //    rightLimit=ui->picLabel->size().width();
@@ -1084,9 +1112,9 @@ void Cut::createImage(QString str) //
 //        data3[i]=new double [NumOfSlices];         /////////generality
 //    }
 
-    for(int i=0; i<NumOfSlices; ++i)         //saved BY SLICES!!
+    for(int i = 0; i < NumOfSlices; ++i)         //saved BY SLICES!!
     {
-        for(int k=0; k<ns; ++k)
+        for(int k = 0; k < ns; ++k)
         {
             fscanf(file, "%lf\n", &data3[k][i]);
         }
@@ -1099,8 +1127,9 @@ void Cut::createImage(QString str) //
 
 void Cut::mousePressSlot(char btn, int coord)
 {
-    if(btn=='l' && coord<rightLimit) leftLimit=coord;
-    if(btn=='r' && coord>leftLimit) rightLimit=coord;
+    if(btn == 'l' && coord < rightLimit) leftLimit = coord;
+    if(btn == 'r' && coord > leftLimit && coord < NumOfSlices) rightLimit = coord;
+
 
     painter->end();
     currentPic.load(currentPicPath, 0, Qt::ColorOnly);
@@ -1108,12 +1137,12 @@ void Cut::mousePressSlot(char btn, int coord)
 
 
     painter->setPen(QPen(QBrush("blue"), 2));
-    painter->drawLine(leftLimit*(currentPic.width()/double(ui->picLabel->width())), 0, leftLimit*(currentPic.width()/double(ui->picLabel->width())), currentPic.height());
+    painter->drawLine(leftLimit, 0, leftLimit, currentPic.height());
 
     painter->setPen(QPen(QBrush("red"), 2));
-    painter->drawLine(rightLimit*(currentPic.width()/double(ui->picLabel->width())), 0, rightLimit*(currentPic.width()/double(ui->picLabel->width())), currentPic.height());
+    painter->drawLine(rightLimit, 0, rightLimit, currentPic.height());
+    ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->scrollArea->height() - 20)); //-20 generality
 
-    ui->picLabel->setPixmap(currentPic.scaled(ui->picLabel->size()));
 }
 
 void Cut::setAutoProcessingFlag(bool a)
@@ -1123,24 +1152,31 @@ void Cut::setAutoProcessingFlag(bool a)
 
 void Cut::next()
 {
+//    rewrite();
     if(currentNumber+1 < lst.length())  //generality
     {
         if(currentFile.contains("Realisations"))
         {
-            helpString = dir->absolutePath().append(QDir::separator()).append("Realisations").append(QDir::separator());
+            helpString = dir->absolutePath()
+                    + QDir::separator() + "Realisations"
+                    + QDir::separator();
         }
         else if(currentFile.contains("windows") && !currentFile.contains("fromreal"))
         {
-            helpString = dir->absolutePath().append(QDir::separator()).append("windows").append(QDir::separator());
+            helpString = dir->absolutePath()
+                    + QDir::separator() + "windows"
+                    + QDir::separator();
         }
         else if(currentFile.contains("cut"))
         {
-            helpString = dir->absolutePath().append(QDir::separator()).append("cut").append(QDir::separator());
+            helpString = dir->absolutePath()
+                    + QDir::separator() + "cut"
+                    + QDir::separator();
         }
 
         if(lst[currentNumber+1].contains("_num")) ++currentNumber; //generality crutch bicycle
 
-        helpString.append(lst[currentNumber+1]);
+        helpString += lst[currentNumber+1];
         if(painter->isActive() == true)
         {
             painter->end();
@@ -1156,25 +1192,32 @@ void Cut::next()
 
 void Cut::prev()
 {
+//    rewrite();
     if(currentNumber-1 >= 0)
     {
         if(currentFile.contains("Realisations"))
         {
-            helpString = dir->absolutePath().append(QDir::separator()).append("Realisations").append(QDir::separator());
+            helpString = dir->absolutePath()
+                    + QDir::separator() + "Realisations"
+                    + QDir::separator();
         }
         else if(currentFile.contains("windows") && !currentFile.contains("fromreal"))
         {
-            helpString = dir->absolutePath().append(QDir::separator()).append("windows").append(QDir::separator());
+            helpString = dir->absolutePath()
+                    + QDir::separator() + "windows"
+                    + QDir::separator();
         }
         else if(currentFile.contains("cut"))
         {
-            helpString = dir->absolutePath().append(QDir::separator()).append("cut").append(QDir::separator());
+            helpString = dir->absolutePath()
+                    + QDir::separator() + "cut"
+                    + QDir::separator();
         }
 
 
         if(lst[currentNumber-1].contains("_num")) --currentNumber; //generality crutch bicycle
 
-        helpString.append(lst.at(currentNumber-1));        
+        helpString += lst.at(currentNumber-1);
 //        cout<<painter->isActive()<<endl;
         if(painter->isActive())
             painter->end();
@@ -1190,7 +1233,7 @@ void Cut::prev()
 void Cut::zero()
 {
     int h = 0;
-    for(int i=int(leftLimit*NumOfSlices/ui->picLabel->width()); i<int(rightLimit*NumOfSlices/ui->picLabel->width()); ++i)         //zoom
+    for(int i = leftLimit; i < rightLimit; ++i)         //zoom
     {
         for(int k = 0; k < ns; ++k)
         {
@@ -1213,11 +1256,11 @@ void Cut::zero()
 void Cut::cut()
 {
     dir->cd("windows");
-    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(fileName).append(".").append(QString::number(addNum)); //TSL
+    helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + fileName + "." + QString::number(addNum)); //TSL
     ++addNum;
     file = fopen(helpString.toStdString().c_str(),"w");
     fprintf(file, "NumOfSlices %d\n", int(rightLimit*NumOfSlices/ui->picLabel->width())-int(leftLimit*NumOfSlices/ui->picLabel->width()));
-    for(int i=int(leftLimit*NumOfSlices/ui->picLabel->width()); i<int(rightLimit*NumOfSlices/ui->picLabel->width()); ++i)         //zoom
+    for(int i = leftLimit; i < rightLimit; ++i)         //zoom
     {
         for(int k=0; k<ns; ++k)
         {
@@ -1226,7 +1269,7 @@ void Cut::cut()
     }
     fclose(file);
     dir->cdUp();
-    rightLimit=ui->picLabel->width();
+    rightLimit = NumOfSlices;
     leftLimit=0;
     paint();
 }
@@ -1263,7 +1306,7 @@ void Cut::save()
     dir->cdUp();
     //ExpName dir
 
-    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("cut").append(QDir::separator()).append(fileName);
+    helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "cut" + QDir::separator() + fileName);
 
     cout<<helpString.toStdString()<<endl;
 
@@ -1290,13 +1333,19 @@ void Cut::save()
 
     if(ns==19)
     {
-        helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"));
+        helpString=QDir::toNativeSeparators(dir->absolutePath()
+                                            + QDir::separator() + "SignalsCut"
+                                            + QDir::separator() + "after"
+                                            + QDir::separator() + fileName + ".jpg");
     }
     if(ns==21)
     {
-        helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"));
+        helpString=QDir::toNativeSeparators(dir->absolutePath()
+                                            + QDir::separator() + "SignalsCut"
+                                            + QDir::separator() + "before"
+                                            + QDir::separator() + fileName + ".jpg");
     }
-//         helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append(fileName).append(".jpg"));
+//         helpString=QDir::toNativeSeparators(dir->absolutePath()+ QDir::separator() + "SignalsCut" + QDir::separator() + fileName + ".jpg");
     currentPic.save(helpString, 0 ,100);
 }
 
@@ -1336,18 +1385,27 @@ void Cut::rewrite()
 
     if(ns == 19)
     {
-        helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Signals").append(QDir::separator()).append("after").append(QDir::separator()).append(fileName).append(".jpg"));
+        helpString=QDir::toNativeSeparators(dir->absolutePath()
+                                            + QDir::separator() + "Signals"
+                                            + QDir::separator() + "after"
+                                            + QDir::separator() + fileName + ".jpg");
     }
     else if(ns == 21)
     {
-        helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Signals").append(QDir::separator()).append("before").append(QDir::separator()).append(fileName).append(".jpg"));
+        helpString=QDir::toNativeSeparators(dir->absolutePath()
+                                            + QDir::separator() + "Signals"
+                                            + QDir::separator() + "before"
+                                            + QDir::separator() + fileName + ".jpg");
     }
     else
     {
-        helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Signals").append(QDir::separator()).append("other").append(QDir::separator()).append(fileName).append(".jpg"));
+        helpString=QDir::toNativeSeparators(dir->absolutePath()
+                                            + QDir::separator() + "Signals"
+                                            + QDir::separator() + "other"
+                                            + QDir::separator() + fileName + ".jpg");
     }
     cout << "rewrite: savePath = " << helpString.toStdString() << endl;
-//         helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append(fileName).append(".jpg"));
+//         helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SignalsCut" + QDir::separator() + fileName + ".jpg"));
     currentPic.save(helpString, 0 ,100);
 
 }
@@ -1366,6 +1424,8 @@ void Cut::paint() //save to tmp.jpg and display
 
     double norm = 1.0;
     double stretch = 1.0;
+
+    //replace with drawEEG
     for(int c1 = 0; c1 < currentPic.width(); ++c1)
     {
         for(int c2 = 0; c2 < ns; ++c2)
@@ -1398,13 +1458,14 @@ void Cut::paint() //save to tmp.jpg and display
         norm=10.;
     }
     norm=1.;
-    helpString = dir->absolutePath().append(QDir::separator()).append("tmp.jpg");
+    helpString = dir->absolutePath() + QDir::separator() + "tmp.jpg";
     currentPicPath = helpString;
     currentPic.save(helpString, 0, 100);  //generality path
 
-    ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->picLabel->height()));
+    ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->scrollArea->height() - 20)); //-20 generality
 
-    rightLimit=ui->picLabel->width();
-    leftLimit=0;
+//    rightLimit = ui->picLabel->width();
+    rightLimit = NumOfSlices;
+    leftLimit = 0;
 }
 

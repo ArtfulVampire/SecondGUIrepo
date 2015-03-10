@@ -50,6 +50,7 @@ int len(QString s);
 QString rightNumber(int input, int N);
 double doubleRound(double in, int numSigns);
 int findChannel(char ** const labelsArr, QString chanName, int ns = 21);
+QString setFileName(QString const initName);
 //wavelets
 void drawColorScale(QString filename, int range, int type = 0);
 
@@ -101,6 +102,7 @@ void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t)*inY[i1] + t*inY[i] + t(1-t)(outA[i](1-t) + outB[i]t));
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
 double independence(double * const signal1, double * const signal2, int length);
+
 
 bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
 int typeOfFileName(QString fileName);
