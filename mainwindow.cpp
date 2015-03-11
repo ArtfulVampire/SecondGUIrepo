@@ -2557,15 +2557,30 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         currSlice -= offset;
 
         //set the last marker if it's not
-        newData[ns - 1][currSlice - 1] = tempSlice[ns - 1] + pow(2, 11);
-//        double lastMarker = newData[ns - 1][currSlice - 1];
-//        bool lastMarkerArray[16];
-//        for(int h = 0; h < 16; ++h)
-//        {
-//            lastMarkerArray[h] = (int(lastMarker) % int(pow(2,h+1))) / int(pow(2,h));
-//        }
+        //fix the first resting file
+        if(newData[ns - 1][0] == 0)
+        {
+            newData[ns - 1][0] = 0b0000010110000000; //as a count session end
+        }
 
+        double & firstMarker = newData[ns - 1][0];
+        double & lastMarker = newData[ns - 1][currSlice -  1];
+//        matiPrintMarker(firstMarker, "first");
+//        matiPrintMarker(lastMarker, "last");
 
+        matiFixMarker(firstMarker); //fix the start marker for this small edf file
+        matiFixMarker(lastMarker);  //fix the last  marker for this small edf file
+
+//        matiPrintMarker(firstMarker, "firstF");
+//        matiPrintMarker(lastMarker, "lastF");
+        if((matiCountBit(firstMarker, 10) == matiCountBit(lastMarker, 10)) || lastMarker == 0) //if not one of them is the end of some session
+        {
+            lastMarker = firstMarker
+                + pow(2, 10) * ((matiCountBit(firstMarker, 10))?-1:1); //adjust the last marker
+        }
+        matiPrintMarker(firstMarker, "newFirst");
+        matiPrintMarker(lastMarker, "newLast");
+//        matiPrintMarker(newData[ns - 1][currSlice -  1], "newData");
 
 
     }
@@ -2945,9 +2960,9 @@ void MainWindow::readData()
     edf = fopen(QDir::toNativeSeparators(ui->filePathLineEdit->text()).toStdString().c_str(), "rb"); //generality
     fsetpos(edf, position);
     delete position;
-    bool byteMarker[16];
-    bool boolBuf;
+    vector<bool> byteMarker;
 
+    double markerValue = 0.;
 //    cout << "start data read ndr=" << ndr << " ns=" << ns << endl;
     if(ui->ntRadio->isChecked())
     {
@@ -3009,10 +3024,9 @@ void MainWindow::readData()
     {
         for(int i = 0; i < ndr; ++i)
         {
-            if(flag==1 && (i+1)>ui->finishTimeBox->value()) break;  //save as EDF
+            if(flag == 1 && (i+1) > ui->finishTimeBox->value()) break;  //save as EDF
             for(int j = 0; j < ns; ++j)
             {
-
                 for(int k = 0; k < nr[j]; ++k)
                 {
                     if(!ui->matiCheckBox->isChecked())
@@ -3044,67 +3058,38 @@ void MainWindow::readData()
                             data[j][i*nr[j]+k] = physMin[j] + (physMax[j]-physMin[j]) * (double(a)-digMin[j]) / (digMax[j] - digMin[j]);   //enc
                             data[j][i*nr[j]+k] = a *1./8.;
                         }
-                        else
+                        else //if(j == ns - 1)
                         {
                             fread(&markA, sizeof(unsigned short), 1, edf);
                             data[j][i*nr[j]+k] = markA;
 
-
-                            if(data[j][i*nr[j]+k] != 0 ) //////////////////////////////////////////////////   wtf?
+                            if(data[j][i*nr[j]+k] != 0 )
                             {
-
-                                //throw 10000000 00000000 and 00000000 10000000
-                                if(data[j][i*nr[j]+k] == pow(2, 15) || data[j][i*nr[j]+k] == pow(2, 7))
-                                {
-                                    data[j][i*nr[j]+k] = 0;
-                                    continue;
-                                }
-
-
-                                for(int h = 0; h < 16; ++h)
-                                {
-                                    byteMarker[h] = (int(data[j][i*nr[j]+k]) % int(pow(2,h+1))) / int(pow(2,h));
-                                }
-
-                                if(!byteMarker[7]) //elder byte should start with 0 and younger - with 1
-                                {
-                                    //swap bytes if wrong order
-                                    for(int h = 0; h < 8; ++h)
-                                    {
-                                        boolBuf = byteMarker[h];
-                                        byteMarker[h] = byteMarker[h+8];
-                                        byteMarker[h+8] = boolBuf;
-                                    }
-                                    byteMarker[7] = 1;
-//                                    if(!byteMarker[7]) //if still not 1 in younger byte
-
-
-
-                                    //recalculate the value
-                                    data[j][i*nr[j]+k] = 0.;
-                                    for(int h = 0; h < 16; ++h)
-                                    {
-                                        data[j][i*nr[j]+k] += byteMarker[h] * pow(2,h);
-                                    }
-                                }
+                                matiFixMarker(data[j][i*nr[j]+k]);
+//                                matiPrintMarker("", data[j][i*nr[j]+k]);
                             }
                         }
                     }
 
                     if(j == ns-1)
                     {
-                        if(data[j][i*nr[j]+k] != 0)
+                        markerValue = data[j][i*nr[j]+k];
+                        if(markerValue != 0.)
                         {
                             bytes = i*nr[j]+k; //time
-                            fprintf(markers, "%d %d", bytes, int(data[j][i*nr[j]+k]));
+                            fprintf(markers, "%d %d", bytes, int(markerValue));
 
                             if(ui->matiCheckBox->isChecked())
                             {
+                                byteMarker = matiCountByte(markerValue);
                                 fprintf(markers, "\t");
                                 for(int s = 15; s >= 0; --s)
                                 {
-                                    fprintf(markers, "%d", byteMarker[s]);
-                                    if(s == 8) fprintf(markers, " ");
+                                    fprintf(markers, "%d", int(byteMarker[s]));
+                                    if(s == 8)
+                                    {
+                                        fprintf(markers, " ");  //byte delimiter
+                                    }
                                 }
                                 if(byteMarker[10])
                                 {
@@ -9177,6 +9162,26 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 
 void MainWindow::customFunc()
 {
+    //test matiMarkers functions
+    if(0)
+    {
+        double doub1 = 0b0000010110000000;
+        double doub2 = 0b0000000010000000;
+
+        double & firstMarker = doub1;
+        double & lastMarker  = doub2;
+
+        matiFixMarker(firstMarker); //fix the start marker for this small edf file
+        matiFixMarker(lastMarker);  //fix the last  marker for this small edf file
+        if(matiCountBit(firstMarker, 10) != matiCountBit(lastMarker, 10)) //if not one of them is the end of some session
+        {
+            lastMarker = firstMarker
+                + pow(2, 10) * ((matiCountBit(firstMarker, 10))?-1:1); //adjust the last marker
+        }
+        matiPrintMarker(lastMarker, "last");
+        matiPrintMarker(doub2, "newData");
+        exit(0);
+    }
     //copy EDFs into folders
     if(0)
     {
@@ -9213,9 +9218,10 @@ void MainWindow::customFunc()
         ui->sliceWithMarkersCheckBox->setChecked(true);
         ui->reduceChannelsCheckBox->setChecked(true);
         ui->reduceChannelsComboBox->setCurrentText("Mati");
-//        setEdfFile("/media/Files/Data/Mati/NOS/NOS_rr_f.edf");
-        ns = 22;
-//        cutShow();
+        setEdfFile("/media/Files/Data/Mati/NOS/NOS_rr_f.edf");
+        ns = 19;
+        ui->reduceChannelsLineEdit->setText("1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
+        constructEDFSlot();
         return;
 
         QDir * tDir = new QDir();

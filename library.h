@@ -178,12 +178,17 @@ void matrixPrint(double ** const mat, int i, int j);
 void drawArray(double * array, int length, QString outPath); ///////////////////////////////////////////to do
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
+void matiPrintMarker(double &marker, QString pre = "");
+vector<bool> matiCountByte(double &marker);
+void matiFixMarker(double & marker);
+int matiCountDecimal(vector<bool> byteMarker);
+
+
+
 inline double gaussian(double x, double sigma = 1.) //N(0,1)
 {
     return 1./(sigma * sqrt(2. * pi)) * exp(-x * x / (2. * sigma * sigma) );
 }
-
-
 
 inline double logistic(double &x, double t)
 {
@@ -198,6 +203,13 @@ inline int numOfLim(double inFreq, double freq, int fftL)
 inline int fftL(int in)
 {
     return pow(2., ceil(log2(in)));
+}
+
+
+inline bool matiCountBit(double & marker, int num)
+{
+//    return (marker % int(pow(2, num + 1))) / int(pow(2, num));
+    return (int(marker) / int(pow(2, num))) % 2;
 }
 
 #endif // LIBRARY_H
