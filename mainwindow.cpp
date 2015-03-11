@@ -23,7 +23,6 @@ MainWindow::MainWindow() :
 
     ns = -1;
     spLength = -1;
-
     ns = defaults::genNs;
 
     right = numOfLim(defaults::rightFreq, defaults::frequency, defaults::fftLength);
@@ -2524,31 +2523,13 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
             tempSlice.push_back(newData[i][0]); //save first slice with markers
         }
 
-//        offset = 10*250;
-//        offset = currSlice%(16*250) + 16*250; ////////////////Mati offset ~20 seconds
-//        cout << "constructEDF: offset = " << offset << endl;
-//        for(int i = 0; i < ns - 1; ++i)
-//        {
-//            for(int j = 1; j < offset; ++j)
-//            {
-//                newData[i][j] = 0.;
-//            }
-//        }
-
-
-        //move the data, remember the first marker
-//        for (int i = 0; i < ns; ++i)
-//        {
-//            newData[i] = newData[i] + offset;
-//            newData[i][0] = tempSlice[i];
-//        }
         QString fileName = newPath;
         fileName.remove(0, fileName.lastIndexOf(QDir::separator())+1);
 
         helpString = dir->absolutePath() + QDir::separator() + "splitZerosLog.txt";
         helpInt = currSlice;
-        splitZeros(&newData, ns, helpInt, &currSlice, helpString, fileName);
 
+        splitZeros(&newData, ns, helpInt, &currSlice, helpString, fileName);
 
         helpString = dir->absolutePath() + QDir::separator() + "splitZerosLog.txt";
         ofstream outStream;
@@ -2568,12 +2549,23 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         outStream << offset - 1 << "\t";
         outStream << offset - 2 << "\t";
 
-        outStream << 1 << "\t";
+        outStream << "0.000" << "\t";
         outStream << (offset - 1)/defaults::frequency << "\t";
         outStream << (offset - 2)/defaults::frequency << endl << endl;
         outStream.close();
 
         currSlice -= offset;
+
+        //set the last marker if it's not
+        newData[ns - 1][currSlice - 1] = tempSlice[ns - 1] + pow(2, 11);
+//        double lastMarker = newData[ns - 1][currSlice - 1];
+//        bool lastMarkerArray[16];
+//        for(int h = 0; h < 16; ++h)
+//        {
+//            lastMarkerArray[h] = (int(lastMarker) % int(pow(2,h+1))) / int(pow(2,h));
+//        }
+
+
 
 
     }
@@ -3042,7 +3034,7 @@ void MainWindow::readData()
                     }
                     else if(ui->matiCheckBox->isChecked())
                     {
-                        if(j!=ns-1)
+                        if(j != ns-1)
                         {
                             fread(&a, sizeof(short), 1, edf);
                             if(flag==1 && ((i*ddr)>=ui->startTimeBox->value()) && ((i*ddr+1) <=ui->finishTimeBox->value()))    //save as EDF
@@ -3057,18 +3049,24 @@ void MainWindow::readData()
                             fread(&markA, sizeof(unsigned short), 1, edf);
                             data[j][i*nr[j]+k] = markA;
 
-//                            a += (a<0)*65536;
-//                            data[j][i*nr[j]+k] = a + (a<0)*65536;
 
                             if(data[j][i*nr[j]+k] != 0 ) //////////////////////////////////////////////////   wtf?
                             {
 
-                                for(int h = 0; h < 16; ++h)
+                                //throw 10000000 00000000 and 00000000 10000000
+                                if(data[j][i*nr[j]+k] == pow(2, 15) || data[j][i*nr[j]+k] == pow(2, 7))
                                 {
-                                    byteMarker[h] = (int(data[j][i*nr[j]+k]) % (int(pow(2,h+1)))) / (int(pow(2,h)));
+                                    data[j][i*nr[j]+k] = 0;
+                                    continue;
                                 }
 
-                                if(byteMarker[15] && !byteMarker[7]) //elder byte should start with 0 and younger - with 1
+
+                                for(int h = 0; h < 16; ++h)
+                                {
+                                    byteMarker[h] = (int(data[j][i*nr[j]+k]) % int(pow(2,h+1))) / int(pow(2,h));
+                                }
+
+                                if(!byteMarker[7]) //elder byte should start with 0 and younger - with 1
                                 {
                                     //swap bytes if wrong order
                                     for(int h = 0; h < 8; ++h)
@@ -3077,6 +3075,9 @@ void MainWindow::readData()
                                         byteMarker[h] = byteMarker[h+8];
                                         byteMarker[h+8] = boolBuf;
                                     }
+                                    byteMarker[7] = 1;
+//                                    if(!byteMarker[7]) //if still not 1 in younger byte
+
 
 
                                     //recalculate the value
@@ -3090,12 +3091,13 @@ void MainWindow::readData()
                         }
                     }
 
-                    if(j==(ns-1))
+                    if(j == ns-1)
                     {
                         if(data[j][i*nr[j]+k] != 0)
                         {
                             bytes = i*nr[j]+k; //time
                             fprintf(markers, "%d %d", bytes, int(data[j][i*nr[j]+k]));
+
                             if(ui->matiCheckBox->isChecked())
                             {
                                 fprintf(markers, "\t");
@@ -3104,11 +3106,28 @@ void MainWindow::readData()
                                     fprintf(markers, "%d", byteMarker[s]);
                                     if(s == 8) fprintf(markers, " ");
                                 }
+                                if(byteMarker[10])
+                                {
+                                    fprintf(markers, " - session end");
+                                }
+                                else if(byteMarker[9] || byteMarker[8])
+                                {
+                                    fprintf(markers, " - session start");
+                                }
+                                if(byteMarker[12])
+                                {
+                                    fprintf(markers, " - 12 bit error");
+                                }
+                                if(byteMarker[11])
+                                {
+                                    fprintf(markers, " - 11 bit error");
+                                }
                             }
+
                             fprintf(markers, "\n");
                         }
 
-                        if(data[j][i*nr[j]+k]==200)
+                        if(data[j][i*nr[j]+k] == 200)
                         {
                             staSlice = i*nr[j]+k;
                         }
@@ -4166,18 +4185,26 @@ void MainWindow::sliceMati(int numChanWrite)
         }
         else //nonzero marker
         {
+
             for(int j = 0; j < 16; ++j)
             {
-                markers[j] = (int(data[ns-1][i])%(int(pow(2,j+1))))/(int(pow(2,j))); //provide bitwise form
+                markers[j] = (int(data[ns - 1][i]) % int(pow(2,j+1))) / int(pow(2,j)); //provide bitwise form
             }
 
-            //decide whether the marker is interesting: 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0
+            //decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
             if(!markers[7]) //0xxxxxxx 0xxxx(000) and 1xxxxxxx 0xxxx(000)
             {
                 for(int i = 0; i < 3; ++i)
                 {
                     state[i] = markers[i];
                 }
+
+//                markers[15] = true; //(1)xxxxxxx 0xxxxxxx
+//                for(int i = 14; i > 3; --i) //1(0000000) (0000)xxxx
+//                {
+//                    markers[i] = false;
+//                }
+
             }
             else if(!markers[15]) //xxxxx(000) 1xxxxxxx
             {
@@ -4185,6 +4212,16 @@ void MainWindow::sliceMati(int numChanWrite)
                 {
                     state[i] = markers[8 + i];
                 }
+
+//                for(int i = 0; i < 7; ++i) //xxxxxxxx 1(0000000)
+//                {
+//                    markers[i] = false;
+//                }
+//                for(int i = 15; i > 11; --i) //(0000)xxxx 10000000
+//                {
+//                    markers[i] = false;
+//                }
+
             }
 
             if(!(state[0] || state[1] || state[2])) continue;
@@ -4221,7 +4258,7 @@ void MainWindow::sliceMati(int numChanWrite)
                 type = 3;
                 fileMark = "254"; //rest. start of the session is sliced too
             }
-            end = i;
+            end = i + 1;
         }
 
         if(end > start)
@@ -4240,7 +4277,7 @@ void MainWindow::sliceMati(int numChanWrite)
                 NumOfSlices = min(end - start - j*piece, piece);
                 fprintf(file, "NumOfSlices %d \n", NumOfSlices);
                 {
-                    for(int l = start  + j*piece; l < min(start + (j+1)*piece, end); ++l) //end slice not included
+                    for(int l = start  + j*piece; l < min(start + (j+1)*piece, end); ++l) //end slice included with session end marker
                     {
                         for(int m = 0; m < numChanWrite; ++m)
                         {
