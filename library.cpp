@@ -2597,7 +2597,7 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, QString 
     {
         outStream.open(logFile.toStdString().c_str(), ios_base::app);
     }
-    else
+    else //////////////////////////////////////wtf?
     {
         outStream.open(logFile.toStdString().c_str());
     }

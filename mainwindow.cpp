@@ -4149,14 +4149,14 @@ void MainWindow::sliceMati(int numChanWrite)
     QString helpString;
     int start = 0;
     int end = -1;
-    bool markers[16];
+    vector<bool> markers;
     bool state[3];
     QString fileMark;
     int number = 0;
     int session[4]; //generality
     int type = 3;
     FILE * file;
-    int piece = 8*250; //length of a piece just for visual processing
+    int piece = 7*250; //length of a piece just for visual processing
     for(int i = 0; i < 4; ++i)
     {
         session[i] = 0;
@@ -4170,55 +4170,15 @@ void MainWindow::sliceMati(int numChanWrite)
         }
         else //nonzero marker
         {
-
-            for(int j = 0; j < 16; ++j)
-            {
-                markers[j] = (int(data[ns - 1][i]) % int(pow(2,j+1))) / int(pow(2,j)); //provide bitwise form
-            }
+//            matiFixMarker(data[ns-1][i]); //already done in readData();
+            markers = matiCountByte(data[ns - 1][i]);
 
             //decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
-            if(!markers[7]) //0xxxxxxx 0xxxx(000) and 1xxxxxxx 0xxxx(000)
+            for(int i = 0; i < 3; ++i)
             {
-                for(int i = 0; i < 3; ++i)
-                {
-                    state[i] = markers[i];
-                }
-
-//                markers[15] = true; //(1)xxxxxxx 0xxxxxxx
-//                for(int i = 14; i > 3; --i) //1(0000000) (0000)xxxx
-//                {
-//                    markers[i] = false;
-//                }
-
+                state[i] = markers[i + 8]; //always elder byte is for count adn type of the session
             }
-            else if(!markers[15]) //xxxxx(000) 1xxxxxxx
-            {
-                for(int i = 0; i < 3; ++i)
-                {
-                    state[i] = markers[8 + i];
-                }
-
-//                for(int i = 0; i < 7; ++i) //xxxxxxxx 1(0000000)
-//                {
-//                    markers[i] = false;
-//                }
-//                for(int i = 15; i > 11; --i) //(0000)xxxx 10000000
-//                {
-//                    markers[i] = false;
-//                }
-
-            }
-
             if(!(state[0] || state[1] || state[2])) continue;
-
-            //output marker number
-//            cout << i << "\t" << data[ns-1][i] << "\t";
-//            for(int j = 15; j >= 0; --j)
-//            {
-//                cout << markers[j];
-//                if(j%4==0) cout << " ";
-//            }
-//            cout<<endl;
 
             if(state[2] == 1) //the end of a session
             {
@@ -4250,11 +4210,6 @@ void MainWindow::sliceMati(int numChanWrite)
         {
             number = int(ceil((end-start)/double(piece)));
 
-            //adjust for whole wndLen windows - cut start ~1,5 pieces
-//            start = end - piece * (number-2);  //////////////////////////////////////////////////////1 or 2
-
-
-
             for(int j = 0; j < number; ++j) // num of pieces
             {
                 helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + ExpName + "_" + QString::number(type) + "_" + QString::number(session[type]) + "_" + rightNumber(j, 2)) + '.' + fileMark;
@@ -4276,7 +4231,7 @@ void MainWindow::sliceMati(int numChanWrite)
             ui->progressBar->setValue(double(i)*100./ndr*nr[ns-1]);
 
             fileMark.clear();
-            start = i;
+            start = end;
             end = -1;
             ++session[type];
         }
