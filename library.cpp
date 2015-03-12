@@ -2578,6 +2578,8 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, QString 
     int finish = -1;
     int allEyes = 0;
     ofstream outStream;
+    double firstMarker = (*dataIn)[ns-1][0];
+    double lastMarker =  (*dataIn)[ns-1][length - 1];
 
 
     for(int i = 0; i < length; ++i)
@@ -2596,10 +2598,16 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, QString 
     if(!logFile.isEmpty())
     {
         outStream.open(logFile.toStdString().c_str(), ios_base::app);
+        if(!outStream.good())
+        {
+            cout << "splitZeros: outStream is not good" << endl;
+            return;
+        }
     }
-    else //////////////////////////////////////wtf?
+    else
     {
-        outStream.open(logFile.toStdString().c_str());
+        cout << "splitZeros: logFilePath is empty" << endl;
+        return;
     }
 
     //flag[i] == 0 if it's eyes-cut interval
@@ -2614,21 +2622,18 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, QString 
                 startFlag = true;
             }
         }
-        else //if start is set
+        else //if startFlag is set
         {
             if(flag[i] || i == length-1 - allEyes) //if we meet the end of eyes-interval OR reached end of a data
             {
                 finish = i;
-                if(outStream.is_open())
-                {
-                    outStream << dataName.toStdString() << "\t";
-                    outStream << start + allEyes << "\t" << finish - 1 + allEyes << "\t" << finish - start << "\t";
-                    outStream << (start + allEyes)/defaults::frequency << "\t" << (finish - 1 + allEyes)/defaults::frequency << "\t" << (finish - start)/defaults::frequency << endl;
-                }
-//                cout << start << " " << finish << endl;
+                outStream << dataName.toStdString() << "\t";
+                outStream << start + allEyes << "\t" << finish - 1 + allEyes << "\t" << finish - start << "\t";
+                outStream << (start + allEyes)/defaults::frequency << "\t" << (finish - 1 + allEyes)/defaults::frequency << "\t" << (finish - start)/defaults::frequency << endl;
+
                 startFlag = 0;
                 //split
-                for(int k = start; k < length - (finish - start) - allEyes; ++k)
+                for(int k = start; k < length - allEyes - (finish - start); ++k)
                 {
                     for(int j = 0; j < ns; ++j) //shift with markers
                     {
@@ -2642,13 +2647,12 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, QString 
             }
         }
         ++i;
-    } while (i <= length-1 - allEyes);
+    } while (i <= length-1 - allEyes); // = for the last zero piece
     (*outLength) = length - allEyes;
-    if(!outStream.is_open())
-    {
-        outStream.close();
-    }
-//    cout << length << "\t" << allEyes << "\t" << (*outLength) << "\t";
+    outStream.close();
+
+    (*dataIn)[ns-1][0] = firstMarker;
+    (*dataIn)[ns-1][(*outLength) - 1] = lastMarker;
 }
 
 
@@ -3676,7 +3680,7 @@ void makeCfgStatic(QString outFileDir, int NetLength, QString FileName, int numO
     fclose(cfgFile);
 }
 
-void svd(double ** inData, int size, int length, double *** eigenVects, double ** eigenValues)
+void svd(double ** inData, int size, int length, double *** eigenVects, double ** eigenValues) // not finished
 {
     double dF, F;
 
@@ -3778,22 +3782,22 @@ void svd(double ** inData, int size, int length, double *** eigenVects, double *
         sum2 = 0.;
         for(int i = 0; i < size; ++i)
         {
-            sum1 += tempA[i]*tempA[i];
+            sum1 += tempA[i] * tempA[i];
         }
         for(int j = 0; j < length; ++j)
         {
-            sum2 += tempB[j]*tempB[j];
+            sum2 += tempB[j] * tempB[j];
         }
         for(int i = 0; i < size; ++i)
         {
-            tempA[i]/=sqrt(sum1);
+            tempA[i] /= sqrt(sum1);
         }
         for(int j = 0; j < length; ++j)
         {
             tempB[j] /= sqrt(sum2);
         }
 
-        (*eigenValues)[k] = sum1*sum2/double(length - 1.);
+        (*eigenValues)[k] = sum1 * sum2 / double(length - 1.);
         cout << "numOfPC = " << k << "\tvalue = " << (*eigenValues)[k] << "\t iterations = " << counter << endl;
         for(int i = 0; i < size; ++i)
         {
