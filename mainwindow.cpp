@@ -2361,7 +2361,7 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
 
 //    cout << "concatenate EDF: ndr1 = " << ndr << endl;
 //    cout << "concatenate EDF: newNdr = " << newNdr << endl;
-    cout << "concatenate EDF: tempPos = " << tempPos << /*e*/ndl;
+//    cout << "concatenate EDF: tempPos = " << tempPos << endl;
 
 
     double ** newData;
