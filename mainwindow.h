@@ -81,6 +81,7 @@ public slots:
     void markerSetSlot();
     void markerSetSecTime(int);
     void markerSetDecValueSlot();
+    void markerSetBinValueSlot();
 
 
     //signals

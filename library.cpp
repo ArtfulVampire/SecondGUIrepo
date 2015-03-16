@@ -2629,7 +2629,7 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, QString 
                 finish = i;
                 outStream << dataName.toStdString() << "\t";
                 outStream << start + allEyes << "\t" << finish - 1 + allEyes << "\t" << finish - start << "\t";
-                outStream << (start + allEyes)/defaults::frequency << "\t" << (finish - 1 + allEyes)/defaults::frequency << "\t" << (finish - start)/defaults::frequency << endl;
+                outStream << (start + allEyes)/def::freq << "\t" << (finish - 1 + allEyes)/def::freq << "\t" << (finish - start)/def::freq << endl;
 
                 startFlag = 0;
                 //split
@@ -3807,7 +3807,7 @@ void svd(double ** inData, int size, int length, double *** eigenVects, double *
 
 }
 
-void matiPrintMarker(double & marker, QString pre)
+void matiPrintMarker(const double &marker, QString pre)
 {
     vector<bool> byteMarker;
     byteMarker = matiCountByte(marker);
@@ -3825,7 +3825,7 @@ void matiPrintMarker(double & marker, QString pre)
     cout << endl;
 }
 
-vector<bool> matiCountByte(double & marker)
+vector<bool> matiCountByte(double const &  marker)
 {
     vector<bool> byteMarker;
     for(int h = 0; h < 16; ++h)

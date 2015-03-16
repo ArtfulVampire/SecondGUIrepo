@@ -178,8 +178,8 @@ void matrixPrint(double ** const mat, int i, int j);
 void drawArray(double * array, int length, QString outPath); ///////////////////////////////////////////to do
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
-void matiPrintMarker(double &marker, QString pre = "");
-vector<bool> matiCountByte(double &marker);
+void matiPrintMarker(double const & marker, QString pre = "");
+vector<bool> matiCountByte(const double & marker);
 void matiFixMarker(double & marker);
 int matiCountDecimal(vector<bool> byteMarker);
 
@@ -206,7 +206,7 @@ inline int fftL(int in)
 }
 
 
-inline bool matiCountBit(double & marker, int num)
+inline bool matiCountBit(double const & marker, int num)
 {
 //    return (marker % int(pow(2, num + 1))) / int(pow(2, num));
     return (int(marker) / int(pow(2, num))) % 2;

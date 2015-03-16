@@ -23,12 +23,12 @@ MainWindow::MainWindow() :
 
     ns = -1;
     spLength = -1;
-    ns = defaults::genNs;
+    ns = def::genNs;
 
-    right = numOfLim(defaults::rightFreq, defaults::frequency, defaults::fftLength);
-    left = numOfLim(defaults::leftFreq, defaults::frequency, defaults::fftLength);
+    right = numOfLim(def::rightFreq, def::freq, def::fftLength);
+    left = numOfLim(def::leftFreq, def::freq, def::fftLength);
 
-    spStep = defaults::frequency/defaults::fftLength;
+    spStep = def::freq/def::fftLength;
     spLength = right - left + 1;
 
 
@@ -58,7 +58,7 @@ MainWindow::MainWindow() :
         data[i] = new double [200*60*250];           //////////////for 200 minutes//////////////        
     }
     nr = new int [maxNs];
-    nr[0] = defaults::frequency;
+    nr[0] = def::freq;
 
     group1 = new QButtonGroup();
     group1->addButton(ui->enRadio);
@@ -329,6 +329,8 @@ MainWindow::MainWindow() :
     QObject::connect(ui->markerSetPushButton, SIGNAL(clicked()), this, SLOT(markerSetSlot()));
 
     QObject::connect(ui->markerBinTimeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(markerSetSecTime(int)));
+    QObject::connect(ui->markerDecimalLineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetBinValueSlot()));
+    QObject::connect(ui->markerDecimalLineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetBinValueSlot()));
 
     QObject::connect(ui->markerBin0LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
     QObject::connect(ui->markerBin0LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
@@ -950,11 +952,11 @@ void MainWindow::cutShow()
 void MainWindow::makePaShow() //250 - frequency generality
 {
     QString helpString;
-    if(spStep == defaults::frequency/4096. || spStep == defaults::frequency/2048.)
+    if(spStep == def::freq/4096. || spStep == def::freq/2048.)
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth");
     }
-    else if(spStep == defaults::frequency/1024.)
+    else if(spStep == def::freq/1024.)
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows");
     }
@@ -971,9 +973,9 @@ void MainWindow::makePaShow() //250 - frequency generality
 void MainWindow::makeCfgShow()//250 - frequency generality
 {
     QString helpString;
-    if(spStep == defaults::frequency/4096.) helpString = "16sec19ch";
-    else if(spStep == defaults::frequency/1024.) helpString = "4sec19ch";
-    else if(spStep == defaults::frequency/2048.) helpString = "8sec19ch";
+    if(spStep == def::freq/4096.) helpString = "16sec19ch";
+    else if(spStep == def::freq/1024.) helpString = "4sec19ch";
+    else if(spStep == def::freq/2048.) helpString = "8sec19ch";
     else helpString = "netFile";
     cfg *config = new cfg(dir, ns, spLength, 0.10, 0.10, helpString);
     config->show();
@@ -983,7 +985,7 @@ void MainWindow::setEdfFileSlot()
 {
     QString helpString;
     NumOfEdf = 0;
-    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget*)this, tr("EDF to open"), defaults::dataFolder, tr("EDF files (*.EDF *.edf)")));
+    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget*)this, tr("EDF to open"), def::dataFolder, tr("EDF files (*.EDF *.edf)")));
     if(helpString.isEmpty())
     {
         QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
@@ -1118,7 +1120,7 @@ void MainWindow::makeDatFile()
 
     fprintf(datFile, "NumOfSlices %d\n", int((finishTime - startTime)*nr[0]));
 
-    for(int i = int(startTime * defaults::frequency); i < int(finishTime * defaults::frequency); ++i) //generality 250
+    for(int i = int(startTime * def::freq); i < int(finishTime * def::freq); ++i) //generality 250
     {
         for(int j = 0; j < ns; ++j)
         {
@@ -1343,13 +1345,13 @@ void MainWindow::avTime()
 
         if(num < 750) ++shortReals;
         if(fabs(maxLen/double(num)-1.) < 0.01) ++numNotSolved;
-        else cout << num/defaults::frequency << endl;
+        else cout << num/def::freq << endl;
         fclose(fil);
 
     }
     dir->cdUp();
 
-    solveTime = av / (defaults::frequency*lst.length());
+    solveTime = av / (def::freq*lst.length());
     cout << "solveTime 241 = " << solveTime << endl << endl;
     cout << "num not solved 241 = " << numNotSolved << endl << endl;
 
@@ -1381,7 +1383,7 @@ void MainWindow::avTime()
     }
     dir->cdUp();
 
-    solveTime = av / (defaults::frequency*lst.length());
+    solveTime = av / (def::freq*lst.length());
     cout << "solveTime 247 = " << solveTime << endl << endl;
     cout << "num not solved 247 = " << numNotSolved << endl << endl;
 
@@ -1577,15 +1579,15 @@ void MainWindow::makeTestData()
         y = (-0.3 + (rand()%600)/100.);
         for(int i = 0; i < ndr*nr[0]; ++i)
         {
-            helpDouble = 2.*3.1415926*double(i)/defaults::frequency * (10.1 + x) + y;
+            helpDouble = 2.*3.1415926*double(i)/def::freq * (10.1 + x) + y;
             testSignals[j][i] = sin(helpDouble);
         }
     }
-//        helpDouble = 2.*3.1415926*double(i)/defaults::frequency * 10.3;
+//        helpDouble = 2.*3.1415926*double(i)/def::freq * 10.3;
 //        testSignals[1][i] = sin(helpDouble);//+ 0.17); //10.5 Hz
-//        helpDouble = 2.*3.1415926*double(i)/defaults::frequency * 10.25;
+//        helpDouble = 2.*3.1415926*double(i)/def::freq * 10.25;
 //        testSignals[2][i] = sin(helpDouble);//- 0.17); //10.5 Hz
-//        helpDouble = 2.*3.1415926*double(i)/defaults::frequency * 10.0;
+//        helpDouble = 2.*3.1415926*double(i)/def::freq * 10.0;
 //        testSignals[3][i] = sin(helpDouble);//- 0.06); //10.5 Hz
 //        testSignals[1][i] = i%41 - 20.;      //a saw 40 period
 //        testSignals[2][i] = sin(2*3.1415926*(double(i)/23.) + 0.175);//
@@ -1613,7 +1615,7 @@ void MainWindow::makeTestData()
         y = 1.5 + (rand()%20)/10.;
         for(int i = 0; i < ndr*nr[0]; ++i)
         {
-//            testSignals[j][i] *= sin(2*3.1415926*i/defaults::frequency * helpDouble + x) + y;
+//            testSignals[j][i] *= sin(2*3.1415926*i/def::freq * helpDouble + x) + y;
         }
     }
     //object signal
@@ -1912,7 +1914,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
             helpString.replace(helpString2, newRef);
         }
         strcpy(label[i], helpString.toStdString().c_str());
-        cout << "reref Data: label[" << i << "]= " << label[i] << endl;
+//        cout << "reref Data: label[" << i << "]= " << label[i] << endl;
     }
     reduceChannelsFast();
 
@@ -2232,7 +2234,7 @@ void MainWindow::reduceChannelsFast()
                     sign *= lst[h+1].toDouble();
                 }
 
-                cout << sign << " * " << lst[h].toInt() << endl;
+//                cout << sign << " * " << lst[h].toInt() << endl;
                 for(int j = 0; j < ndr*nr[k]; ++j) //generality k
                 {
                     temp[k][j] += sign * data[lst[h].toInt() - 1][j];
@@ -2350,17 +2352,23 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
     setEdfFile(inPath2);
     readData();
     newNdr += ndr;
+//    cout << "concatenate EDF: ndr2 = " << ndr << endl;
 
     setEdfFile(inPath1);
     readData();
     tempPos = ndr;
     newNdr += ndr;
 
+//    cout << "concatenate EDF: ndr1 = " << ndr << endl;
+//    cout << "concatenate EDF: newNdr = " << newNdr << endl;
+    cout << "concatenate EDF: tempPos = " << tempPos << /*e*/ndl;
+
+
     double ** newData;
-    matrixCreate(&newData, ns, newNdr * defaults::frequency); ////////generality
+    matrixCreate(&newData, ns, newNdr * def::freq); ////////generality ddr
     for(int i = 0; i < ns; ++i)
     {
-        for(int j = 0; j < tempPos*nr[0]; ++j)////////generality
+        for(int j = 0; j < tempPos * def::freq; ++j) ////////generality
         {
             newData[i][j] = data[i][j];
         }
@@ -2371,9 +2379,9 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
     readData();
     for(int i = 0; i < ns; ++i)
     {
-        for(int j = 0; j < ndr*nr[0]; ++j)////////generality
+        for(int j = 0; j < ndr * def::freq; ++j) ////////generality
         {
-            newData[i][j + tempPos*nr[0]] = data[i][j];
+            newData[i][j + tempPos * int(def::freq)] = data[i][j];
         }
     }
 
@@ -2383,10 +2391,9 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
         ls << i;
     }
 
-    writeEdf(inPath1, newData, outPath, newNdr*nr[0], ls);
+    writeEdf(inPath1, newData, outPath, newNdr * def::freq, ls);
     matrixDelete(&newData, ns);
     cout << "concatenate EDF: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
-
 }
 
 
@@ -2550,8 +2557,8 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         outStream << offset - 2 << "\t";
 
         outStream << "0.000" << "\t";
-        outStream << (offset - 1)/defaults::frequency << "\t";
-        outStream << (offset - 2)/defaults::frequency << endl << endl;
+        outStream << (offset - 1)/def::freq << "\t";
+        outStream << (offset - 2)/def::freq << endl << endl;
         outStream.close();
 
         currSlice -= offset;
@@ -3121,7 +3128,7 @@ void MainWindow::readData()
 
             }
         }
-//        cout << "staSlice=" << staSlice << " staTime=" << staSlice/defaults::frequency << endl;
+//        cout << "staSlice=" << staSlice << " staTime=" << staSlice/def::freq << endl;
     }
     fclose(markers);
 
@@ -3248,7 +3255,6 @@ void MainWindow::markerSetSlot()
 
 void MainWindow::markerSetDecValueSlot()
 {
-    int timeIndex = ui->markerBinTimeSpinBox->value();
     int marker = 0;
     QString helpString;
 
@@ -3267,6 +3273,30 @@ void MainWindow::markerSetDecValueSlot()
     }
     ui->markerDecimalLineEdit->setText(QString::number(marker));
 }
+
+
+void MainWindow::markerSetBinValueSlot()
+{
+    int marker = ui->markerDecimalLineEdit->text().toInt();
+    QString helpString;
+
+    vector<bool> byteMarker = matiCountByte(double(marker));
+
+    helpString.clear();
+    for(int h = 15; h >= 8; --h)
+    {
+        helpString += (byteMarker[h])?"1":"0";
+    }
+    ui->markerBin0LineEdit->setText(helpString);
+
+    helpString.clear();
+    for(int h = 7; h >= 0; --h)
+    {
+        helpString += (byteMarker[h])?"1":"0";
+    }
+    ui->markerBin1LineEdit->setText(helpString);
+}
+
 
 
 void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
@@ -3627,10 +3657,10 @@ void MainWindow::slice(int marker1, int marker2, QString marker) //beginning - f
 //    cout << number << endl;
 //    for(int i = 0; i < 4; ++i)
 //    {
-//        cout << "solve[" << i << "]=" << solve[i]/(12 *defaults::frequency) << endl;
+//        cout << "solve[" << i << "]=" << solve[i]/(12 *def::freq) << endl;
 //    }
 
-    solveTime/=(defaults::frequency*number);
+    solveTime/=(def::freq*number);
     cout << "solveTime " << marker.toStdString() << " =" << solveTime << endl << endl;
 
     FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
@@ -3713,7 +3743,7 @@ void MainWindow::sliceFromTo(int marker1, int marker2, QString marker) //beginni
 
 //    kernelest(helpString);
 
-    solveTime/=(defaults::frequency*number);
+    solveTime/=(def::freq*number);
 //    cout << "average time before feedback " << marker.toStdString() << " =" << solveTime << endl;
 
     FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
@@ -4057,7 +4087,7 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
 
             helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + ExpName + "." + rightNumber(number, 4) + "_" + marker);
 
-            if(((marker == "000") && defaults::wirteStartEndLong) || (marker != "000")) // write the beginning?
+            if(((marker == "000") && def::wirteStartEndLong) || (marker != "000")) // write the beginning?
             {
                 file = fopen(helpString.toStdString().c_str(), "w");
 
@@ -4239,7 +4269,7 @@ void MainWindow::sliceMati(int numChanWrite)
     }
 
     //slice end piece
-    if(defaults::wirteStartEndLong)
+    if(def::wirteStartEndLong)
     {
         type = 3;
         end = ndr*nr[ns-1];
@@ -4659,7 +4689,7 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     ddr=atoi(helpCharArr); //generality double ddr
 
 
-    ndr = max(0, int(numSlices/defaults::frequency)/ddr);
+    ndr = max(0, int(numSlices/def::freq)/ddr);
     helpString = QString::number(ndr);
     for(int i = helpString.length(); i < 8; ++i)
     {
@@ -5994,8 +6024,8 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     list2.clear();
 
     int fftLength = 4096;
-    offset5hz = 5./ (defaults::frequency/fftLength) - 1;
-    offset20hz = 20./ (defaults::frequency/fftLength) + 1;
+    offset5hz = 5./ (def::freq/fftLength) - 1;
+    offset20hz = 20./ (def::freq/fftLength) + 1;
 
     struct ICAcoeff
     {
@@ -9163,9 +9193,9 @@ void MainWindow::customFunc()
     //MATI
     if(1)
     {
-//        concatenateEDFs("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF",
-//                        "/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
-//                        "/media/Files/IHNA/Data/MATI/archive/NOS.edf");
+//        concatenateEDFs("/media/Files/Data/Mati/PYV/PY_1.EDF",
+//                        "/media/Files/Data/Mati/PYV/PY_2.EDF",
+//                        "/media/Files/Data/Mati/PYV/PY_3.edf");
 //        exit(0);
 
         ui->matiCheckBox->setChecked(true);
@@ -9173,10 +9203,10 @@ void MainWindow::customFunc()
         ui->sliceWithMarkersCheckBox->setChecked(true);
         ui->reduceChannelsCheckBox->setChecked(true);
         ui->reduceChannelsComboBox->setCurrentText("Mati");
-        setEdfFile("/media/Files/Data/Mati/NOS/NOS_rr_f.edf");
-        ns = 19;
-        ui->reduceChannelsLineEdit->setText("1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
-        constructEDFSlot();
+//        setEdfFile("/media/Files/Data/Mati/NOS/NOS_rr_f.edf");
+//        ns = 19;
+//        ui->reduceChannelsLineEdit->setText("1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
+//        constructEDFSlot();
         return;
 
         QDir * tDir = new QDir();
@@ -9242,7 +9272,7 @@ void MainWindow::customFunc()
 
         for(int i = 0; i < ndr*nr[0]; ++i)
         {
-            helpDouble = 2. * pi * double(i)/defaults::frequency * 5;
+            helpDouble = 2. * pi * double(i)/def::freq * 5;
             data[0][i] = 10 * sin(helpDouble - pi/2);//+ 0.17); //10.5 Hz
 
             if(i%50 < 25)
@@ -9254,7 +9284,7 @@ void MainWindow::customFunc()
                 data[1][i] = -(i%25) + 12.5;
             }
 
-//            helpDouble = 2. * pi * double(i)/defaults::frequency * 5;
+//            helpDouble = 2. * pi * double(i)/def::freq * 5;
 //            data[1][i] = 10 * sin(helpDouble);//+ 0.17); //10.5 Hz
         }
         cout << correlation(data[0], data[1], lent) << endl;
@@ -9379,7 +9409,7 @@ void MainWindow::customFunc()
 
             for(int i = 0; i < leng; ++i)
             {
-                array[i] += ampl*sin(2 * pi * i/defaults::frequency * freq - phas);
+                array[i] += ampl*sin(2 * pi * i/def::freq * freq - phas);
             }
         }
 
@@ -9394,7 +9424,7 @@ void MainWindow::customFunc()
             freq = 5. + (rand()%1000)/100.;
             ampl = 5. + (rand()%200)/10.;
             phas = -1. + (rand()%2000)/1000.;
-            array[i] =  ampl*sin(2 * pi * i/defaults::frequency * freq - phas);// * sin (2 * pi * i/defaults::frequency * freq/4.);
+            array[i] =  ampl*sin(2 * pi * i/def::freq * freq - phas);// * sin (2 * pi * i/def::freq * freq/4.);
             array[i] = 50. * (rand()%1000)/1000.;
             array[i] = i%150;
         }
@@ -9410,14 +9440,14 @@ void MainWindow::customFunc()
     //RCP
     if(0)
     {
-        dir->cd(defaults::dataFolder + "/AA");
+        dir->cd(def::dataFolder + "/AA");
 
 
-        FILE * results = fopen(QString(defaults::dataFolder + "/AA/res.txt").toStdString().c_str(), "r");
+        FILE * results = fopen(QString(def::dataFolder + "/AA/res.txt").toStdString().c_str(), "r");
 
 
 
-        outStream.open(QString(defaults::dataFolder + "AA/discr.txt").toStdString().c_str());
+        outStream.open(QString(def::dataFolder + "AA/discr.txt").toStdString().c_str());
         outStream << "name" << "\t";
         outStream << "mean" << "\t";
         outStream << "sigma" << endl;
@@ -9459,7 +9489,7 @@ void MainWindow::customFunc()
     if(0)
     {
         //many edf to my format
-        dir->cd(defaults::dataFolder + "/GPP/edf/1");
+        dir->cd(def::dataFolder + "/GPP/edf/1");
         QString pth = "/media/michael/Files/Data/GPP/Realisations";
         QStringList lst = dir->entryList(QStringList("*.edf"), QDir::Files);
         QString helpString;
@@ -9486,7 +9516,7 @@ void MainWindow::customFunc()
         }
 
 
-        dir->cd(defaults::dataFolder + "/GPP/edf/2");
+        dir->cd(def::dataFolder + "/GPP/edf/2");
         lst = dir->entryList(QStringList("*.edf"), QDir::Files);
         for(int i = 0; i < lst.length(); ++i)
         {

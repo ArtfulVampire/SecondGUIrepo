@@ -127,7 +127,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     ui->specLabel->installEventFilter(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
 
-    ui->fftComboBox->setCurrentText(QString::number(defaults::fftLength));
+    ui->fftComboBox->setCurrentText(QString::number(def::fftLength));
 }
 
 void Spectre::defaultState()
@@ -281,8 +281,8 @@ void Spectre::integrate()
         helpString = lst.at(i);
         nameFilters.clear();
         nameFilters = helpString.split('-', QString::SkipEmptyParts);
-        begins[i] = max(floor(nameFilters.at(0).toDouble() * fftLength / defaults::frequency) - left + 1, 0.);  //generality 250
-        ends[i] = min(ceil(nameFilters.at(1).toDouble() * fftLength / defaults::frequency) - left + 1, right - left + 1.);  //generality 250
+        begins[i] = max(floor(nameFilters.at(0).toDouble() * fftLength / def::freq) - left + 1, 0.);  //generality 250
+        ends[i] = min(ceil(nameFilters.at(1).toDouble() * fftLength / def::freq) - left + 1, right - left + 1.);  //generality 250
     }
 
     FILE * file;
@@ -669,7 +669,7 @@ void Spectre::compare()
     pic = QPixmap(1600, 1600);
     pic.fill();
     paint->begin(&pic);
-    double ext = spLength/defaults::frequency;
+    double ext = spLength/def::freq;
     for(int c2 = 0; c2 < ns; ++c2)
     {
         for(int k = 0; k < 250-1; ++k)
@@ -830,7 +830,7 @@ void Spectre::setFftLengthSlot()
     helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));
     ui->lineEdit_2->setText(helpString);
 
-    if(ui->fftComboBox->currentIndex()==0) //1024
+    if(ui->fftComboBox->currentIndex() == 0) //1024
     {
         ui->smoothBox->setValue(3);
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("windows").append(QDir::separator()).append("fromreal"));
@@ -839,20 +839,21 @@ void Spectre::setFftLengthSlot()
         helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth").append(QDir::separator()).append("windows"));
         ui->lineEdit_2->setText(helpString);
     }
-    if(ui->fftComboBox->currentIndex()==1) //2048
+    if(ui->fftComboBox->currentIndex() == 1) //2048
     {
         ui->smoothBox->setValue(4);
     }
-    if(ui->fftComboBox->currentIndex()==2) //4096
+    if(ui->fftComboBox->currentIndex() == 2) //4096
     {
         ui->smoothBox->setValue(15);
     }
-    if(ui->fftComboBox->currentIndex()==3) //8192
+    if(ui->fftComboBox->currentIndex() == 3) //8192
     {
         ui->smoothBox->setValue(6);
     }
-    left = numOfLim(defaults::leftFreq, defaults::frequency, fftLength);
-    right = numOfLim(defaults::rightFreq, defaults::frequency, fftLength);
+
+    left = numOfLim(def::leftFreq, def::freq, fftLength);
+    right = numOfLim(def::rightFreq, def::freq, fftLength);
     ui->leftSpinBox->setValue(left);
     ui->rightSpinBox->setValue(right);
 
@@ -863,8 +864,8 @@ void Spectre::setFftLengthSlot()
         rangeLimits[i][1] = spLength;
     }
 
+    spStep = def::freq/double(fftLength); //generality 250 = frequency
 
-    spStep = defaults::frequency/double(fftLength); //generality 250 = frequency
     emit spValues(left, right, spStep);
 }
 
@@ -897,7 +898,7 @@ void Spectre::center()
 
     for(int i = 0; i < lst.length(); ++i)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[i]));
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[i]);
         fil = fopen(helpString.toStdString().c_str(), "r");
 
         for(int j = 0; j < ns; ++j)
@@ -921,7 +922,7 @@ void Spectre::center()
 
     for(int i = 0; i < lst.length(); ++i)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[i]));
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[i]);
         fil = fopen(helpString.toStdString().c_str(), "r");
 
         for(int j = 0; j < ns; ++j)
@@ -933,7 +934,7 @@ void Spectre::center()
         }
         fclose(fil);
 
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[i]));
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + lst[i]);
         fil = fopen(helpString.toStdString().c_str(), "w");
 
         for(int j = 0; j < ns; ++j)
@@ -980,7 +981,7 @@ void Spectre::setRight()
 //    ui->rightSpinBox->setMinimum(ui->leftSpinBox->value());
 
     right = ui->rightSpinBox->value();
-    helpString.setNum(right * defaults::frequency/fftLength); //generality
+    helpString.setNum(right * def::freq/fftLength); //generality
     ui->rightHzEdit->setText(helpString);
     spLength = right - left + 1;
     emit spValues(left, right, spStep);
@@ -992,7 +993,7 @@ void Spectre::setLeft()
 //    ui->rightSpinBox->setMinimum(ui->leftSpinBox->value());
 
     left = ui->leftSpinBox->value();
-    helpString.setNum(left * defaults::frequency/fftLength);//generality
+    helpString.setNum(left * def::freq/fftLength);//generality
     ui->leftHzEdit->setText(helpString);
     spLength = right - left + 1;
     emit spValues(left, right, spStep);
@@ -1011,7 +1012,7 @@ void Spectre::countSpectra()
 
     double ** dataFFT;
     dataFFT = new double * [ns];
-    for(int i=0; i<ns; ++i)
+    for(int i = 0; i < ns; ++i)
     {
         dataFFT[i] = new double [fftLength];
     }
@@ -1102,7 +1103,7 @@ void Spectre::countSpectra()
                     for(int j = left; j < right+1; ++j)
                     {
                         sum1 += dataFFT[i][j];
-                        sum2 += dataFFT[i][j] * (j * defaults::frequency / fftLength);
+                        sum2 += dataFFT[i][j] * (j * def::freq / fftLength);
                     }
                     sum2 /= sum1;
                     //                cout << sum2 << endl;
@@ -1145,12 +1146,12 @@ void Spectre::countSpectra()
 
             for(int i = 0; i < ns; ++i)
             {
-//                hilbert(dataIn[i], fftLength, defaults::frequency, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
-                hilbert(dataIn[i], NumOfSlices, defaults::frequency, 8., 12., &tempVec, "");
+//                hilbert(dataIn[i], fftLength, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
+                hilbert(dataIn[i], NumOfSlices, def::freq, 8., 12., &tempVec, "");
 //                cout << lst[a].toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
 //                outStream << variance(tempVec, fftLength) << '\n';
                 outStream << mean(tempVec, NumOfSlices) << '\n';
-//                hilbertPieces(dataIn[i], NumOfSlices, defaults::frequency, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
+//                hilbertPieces(dataIn[i], NumOfSlices, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
 //                outStream << variance(dataIn[i], NumOfSlices) << '\n';
 
                 delete []tempVec;

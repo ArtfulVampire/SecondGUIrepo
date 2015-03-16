@@ -10,10 +10,10 @@ namespace coords
     const char lbl[][19] = {"Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8", "T3", "C3", "Cz", "C4", "T4", "T5", "P3", "Pz", "P4", "T6", "O1", "O2"};
 }
 
-namespace defaults
+namespace def
 {
 
-    const double frequency = 250.;
+    const double freq = 250.;
     const double leftFreq = 5.;
     const double rightFreq = 20.;
     const int genNs = 19;

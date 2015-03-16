@@ -194,7 +194,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     this->setAttribute(Qt::WA_DeleteOnClose);
 
 
-    helpString = dir->absolutePath() + QDir::separator() + defaults::cfgFileName;
+    helpString = dir->absolutePath() + QDir::separator() + def::cfgFileName;
     loadCfgByName(helpString);
 
     if(spStep == 250./4096)
