@@ -3334,7 +3334,7 @@ void matrixInvertGauss(double *** mat, int const size) // by definition - cofact
     matrixDelete(&tempMat, size);
 }
 
-void matrixInvertGauss(double ** const mat, int const size, double *** outMat) // by definition - cofactors
+void matrixInvertGauss(double ** const mat, int const size, double *** outMat)
 {
     double ** initMat;
     matrixCreate(&initMat, size, size);
@@ -3345,6 +3345,7 @@ void matrixInvertGauss(double ** const mat, int const size, double *** outMat) /
             initMat[i][j] = mat[i][j];
         }
     }
+
     double ** tempMat;
     matrixCreate(&tempMat, size, size);
     for(int i = 0; i < size; ++i)
@@ -3358,12 +3359,13 @@ void matrixInvertGauss(double ** const mat, int const size, double *** outMat) /
 
 
     //1) make higher-triangular
-    for(int i = 0; i < size-1; ++i) //which line to substract
+    for(int i = 0; i < size - 1; ++i) //which line to substract
     {
         for(int j = i+1; j < size; ++j) //FROM which line to substract
         {
-            coeff = initMat[j][i]/initMat[i][i];
-            //row[j] = row[j] - coeff * row[i] for both matrices
+            coeff = initMat[j][i] / initMat[i][i]; // coefficient
+
+            //row[j] -= coeff * row[i] for both matrices
             for(int k = i; k < size; ++k) //k = i because all previous values in a row are already 0
             {
                 initMat[j][k] -= coeff * initMat[i][k];
@@ -3375,14 +3377,18 @@ void matrixInvertGauss(double ** const mat, int const size, double *** outMat) /
         }
     }
 
-    //2) make lower-triangular
-    for(int i = size-1; i > 0; --i) //which line to substract
+    //2) make diagonal
+    for(int i = size - 1; i > 0; --i) //which line to substract (bottom -> up)
     {
-        for(int j = i-1; j >= 0; --j) //FROM which line to substract
+        for(int j = i - 1; j >= 0; --j) //FROM which line to substract
         {
-            coeff = initMat[j][i]/initMat[i][i];
-            //row[j] = row[j] - coeff * row[i] for both matrices
-            initMat[j][i] -= coeff * initMat[i][i]; //optional subtraction
+            coeff = initMat[j][i] / initMat[i][i];
+
+            //row[j] -= coeff * row[i] for both matrices
+            for(int k = i; k < size; ++k) // //k = i because all previous values in a row are already 0
+            {
+                initMat[j][k] -= coeff * initMat[i][k]; //optional subtraction
+            }
             for(int k = 0; k < size; ++k) //k = 0 because default
             {
                 tempMat[j][k] -= coeff * tempMat[i][k];
@@ -3407,7 +3413,6 @@ void matrixInvertGauss(double ** const mat, int const size, double *** outMat) /
             (*outMat)[i][k] = tempMat[i][k];
         }
     }
-
     matrixDelete(&initMat, size);
     matrixDelete(&tempMat, size);
 }

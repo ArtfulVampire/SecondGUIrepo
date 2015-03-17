@@ -242,6 +242,9 @@ MainWindow::MainWindow() :
     ui->rereferenceDataComboBox->addItem("N");
     ui->rereferenceDataComboBox->setCurrentText("Ar");
 
+    ui->matiPieceLengthSpinBox->setMaximum(32);
+    ui->matiPieceLengthSpinBox->setMinimum(4);
+    ui->matiPieceLengthSpinBox->setValue(7);
     ui->markerBinTimeSpinBox->setMaximum(250*60*60*2);   //2 hours
     ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); //2 hours
 
@@ -459,43 +462,48 @@ void MainWindow::drawEeg(int NumOfSlices_, double **dataD_, QString helpString_,
 {
     QString helpString;
     int start = 0; // staSlice; //generality
-    QPixmap pic = QPixmap(NumOfSlices_, 600);  //cut.cpp Cut::paint() generality
+    QPixmap pic = QPixmap(NumOfSlices_, 600);
     pic.fill();
     QPainter * paint_ = new QPainter();
     paint_->begin(&pic);
 
     QString colour;
 
-    double norm=ui->drawCoeffSpinBox->value();              //////////////////////
+    double norm = ui->drawCoeffSpinBox->value();
+    int lineWidth = 2;
 
     for(int c1 = 0; c1 < pic.width(); ++c1)
     {
         for(int c2 = 0; c2 < ns; ++c2)
         {
-            if(ns==21 && c2==19) colour = "red"; //paint_->setPen("red");
-            else if(ns==21 && c2==20) colour = "blue"; //paint_->setPen("blue");
-            else colour = "black";//paint_->setPen("black");
-            paint_->setPen(QPen(QBrush(QColor(colour)), 2));
+            if(ns == 21 || ns == 22)
+            {
+                if(c2 == 19)        colour = "red";
+                else if(c2 == 20)   colour = "blue";
+                else colour = "black";
+            }
+            else colour = "black";
+
+            paint_->setPen(QPen(QBrush(QColor(colour)), lineWidth));
 
             paint_->drawLine(c1, (c2+1)*pic.height()/(ns+2) +dataD_[c2][c1+start]/norm, c1+1, (c2+1)*pic.height()/(ns+2) +dataD_[c2][c1+1+start]/norm);
         }
     }
-    norm=1.;
-//    paint_->setPen("black");
-    paint_->setPen(QPen(QBrush("black"), 2));
-    for(int c3 = 0; c3 < NumOfSlices_*10/250; ++c3)
+    norm = 1.;
+    paint_->setPen(QPen(QBrush("black"), lineWidth));
+    for(int c3 = 0; c3 < NumOfSlices_ * 10 / 250; ++c3)
     {
-        if(c3%5  == 0) norm=15.;
-        if(c3%10 == 0) norm=20.;
+        if(c3%5  == 0) norm = 15.;
+        if(c3%10 == 0) norm = 20.;
 
-        paint_->drawLine(c3*freq/5, pic.height()-2, c3*freq/5, pic.height()-2*norm);
-        int helpInt=c3;
-        helpString=QString::number(helpInt);
-        paint_->drawText(c3*freq, pic.height()-35, helpString);
-        norm=10.;
+        paint_->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
+        int helpInt = c3;
+        helpString = QString::number(helpInt);
+        paint_->drawText(c3 * freq, pic.height() - 35, helpString);
+        norm = 10.;
     }
 
-    norm=1;
+    norm = 1;
     pic.save(helpString_, 0, 100);
     paint_->end();
     delete paint_;
@@ -4218,6 +4226,9 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
 
 void MainWindow::sliceMati(int numChanWrite)
 {
+    QTime myTime;
+    myTime.start();
+
     QString helpString;
     int start = 0;
     int end = -1;
@@ -4229,19 +4240,17 @@ void MainWindow::sliceMati(int numChanWrite)
     int type = 3;
     FILE * file;
     ofstream outStream;
-    QTime myTime;
 //    ifstream markersFile;
 //    int bufSize = 256;
 //    char * readBuf = new char [bufSize];
 //    QStringList markerList;
 
-    int piece = 7*250; //length of a piece just for visual processing
+    int piece = ui->matiPieceLengthSpinBox->value() * 250; //length of a piece just for visual processing
     for(int i = 0; i < 4; ++i)
     {
         session[i] = 0;
     }
 
-    myTime.start();
 
 //    helpString = QDir::toNativeSeparators(dir->absolutePath()
 //                                          + QDir::separator() + ExpName

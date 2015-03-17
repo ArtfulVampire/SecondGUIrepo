@@ -123,12 +123,13 @@ void Eyes::eyesClean()
                 for(int z = 0; z < NumEog; ++z)
                 {
                     a = lst.at(z).toInt() - 1;
-                    dataF[k][j] -= coefficients[k][z]*dataF[a][j];
+                    dataF[k][j] -= coefficients[k][z] * dataF[a][j];
                 }
             }
         }
 
-        file = fopen((QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(list.at(i))).toStdString().c_str(), "w");
+        file = fopen(QDir::toNativeSeparators(dir->absolutePath()
+                                               + QDir::separator() + list[i]).toStdString().c_str(), "w");
         if(file == NULL)
         {
             cout << "file to write == NULL" << endl;
@@ -153,7 +154,7 @@ void Eyes::eyesClean()
 
         NumOfEyes = 0;
 
-        ui->progressBar->setValue(i*100./list.length());
+        ui->progressBar->setValue(i*100. / list.length());
         qApp->processEvents();
 
 
@@ -182,7 +183,7 @@ void Eyes::eyesClean()
 
 void Eyes::eyesProcessing()
 {
-    QStringList list;
+    QStringList list; // list of filepaths with eye-movements
     if(!autoFlag)
     {
         list = QFileDialog::getOpenFileNames(NULL, tr("Files to build regression"), dir->absolutePath());
@@ -192,29 +193,25 @@ void Eyes::eyesProcessing()
             return;
         }
     }
-    //automatization
-    else
+    else //automatization
     {
-
-        QString helpString = dir->absolutePath();
-        helpString.append(QDir::separator()).append("eyesSlices");
-        //    cout << helpString.toStdString() << endl;
+        QString helpString = dir->absolutePath() + QDir::separator() + "eyesSlices";
         list = QStringList(helpString);
     }
 
-    lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);  //numbers of eog channels
+    lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);  //numbers of eog channels, counting from 1
 
     int NumOfSlices = 0, help = 0;
     FILE * file;
 
-    dataE = new double* [ns];
+    dataE = new double * [ns]; //data for all eye-movements concatenated together
     for(int i = 0; i<ns; ++i)
     {
         dataE[i] = new double [250*60*5];           //for 5 minutes generality
     }
 
     //arrays for usability
-    double **signal = new double * [lst.length()+1];
+    double **signal = new double * [lst.length()+1]; //for all EOG channels and one EEG channel
     for(int i = 0; i<lst.length()+1; ++i)
     {
         signal[i] = new double [250*60*5];           //for 5 minutes generality
@@ -238,7 +235,7 @@ void Eyes::eyesProcessing()
         matrixTemp[i] = new double [lst.length()+1];
     }
 
-    double **coefficients = new double * [ns];
+    double **coefficients = new double * [ns]; //final output coefficients
     for(int i = 0; i<ns; ++i)
     {
         coefficients[i] = new double [lst.length()];
@@ -248,62 +245,61 @@ void Eyes::eyesProcessing()
     //make dataE array to count covariation matrix
     for(int i = 0; i < list.length(); ++i)
     {
-        file = fopen((list.at(i)).toStdString().c_str(), "r");
+        file = fopen(list[i].toStdString().c_str(), "r");
         fscanf(file, "NumOfSlices %d\n", &help);
-        for(int j = 0; j<help; ++j)
+        for(int j = 0; j < help; ++j)
         {
-            for(int k = 0; k<ns; ++k)
+            for(int k = 0; k < ns; ++k)
             {
-                fscanf(file, "%lf", &dataE[k][NumOfSlices+j]);
+                fscanf(file, "%lf", &dataE[k][NumOfSlices + j]);
             }
         }
         NumOfSlices += help;
-
         fclose(file);
     }
-    cout << "eyesProcessing: NumOfSlices = " << NumOfSlices << endl;
+//    cout << "eyesProcessing: NumOfSlices = " << NumOfSlices << endl;
 
 
-    for(int i = 0; i<lst.length(); ++i)
+    for(int i = 0; i < lst.length(); ++i)
     {
-        signal[i] = dataE[lst[i].toInt() - 1];     //-1 coz of 0 as first
+        signal[i] = dataE[lst[i].toInt() - 1];     //-1 because of counting from 0
     }
 
 
     //for every channel count eog coefficients
-    for(int k = 0; k<ui->spinBox->value(); ++k)
+    //assuming EEG channels are from 1st to ui->spinBox->value()'th
+    //lst.length() + 1 is the dimensionality of all matrices
+
+    for(int k = 0; k < ui->spinBox->value(); ++k)
     {
         signal[lst.length()] = dataE[k];
-        for(int j = 0; j < lst.length()+1; ++j)
+        for(int j = 0; j < lst.length() + 1; ++j)
         {
-            for(int z = 0; z < lst.length()+1; ++z)
+            for(int z = 0; z < lst.length() + 1; ++z)
             {
                 matrix[j][z] = 0.;
             }
         }
 
-        //count covariation-matrix
-
-        for(int j = 0; j < lst.length()+1; ++j)
-        {
-            for(int z = 0; z < lst.length()+1; ++z)
-            {
-                for(int i = 0; i < NumOfSlices; ++i)
-                {
-                    matrix[j][z] += signal[j][i] * signal[z][i] / double(NumOfSlices);
-                }
-            }
-        }
-        //count Inverse Matrix
-
-
-        //1) set E-matrix
+        //count covariations into matrix
         for(int j = 0; j < lst.length() + 1; ++j)
         {
             for(int z = 0; z < lst.length() + 1; ++z)
             {
-                if(j == z) matrixInv[j][z] = 1.;
-                else matrixInv[j][z] = 0.;
+                for(int i = 0; i < NumOfSlices; ++i)
+                {
+                    matrix[j][z] += signal[j][i] * signal[z][i] / double(NumOfSlices); // maybe (NumOfSlices-1), but it's not important
+                }
+            }
+        }
+
+        //count Inverse Matrix, Gauss method
+        //1) set identity matrix into matrixInv
+        for(int j = 0; j < lst.length() + 1; ++j)
+        {
+            for(int z = 0; z < lst.length() + 1; ++z)
+            {
+                matrixInv[j][z] = (j == z);
             }
         }
 
@@ -317,18 +313,16 @@ void Eyes::eyesProcessing()
 //            cout << endl;
 //        }
 
-
-
-        //2) make diagonal matrix
+        //2)
         //col - current number of column
         //matrixTemp - current new auxiliary matrix
         //matrixInv - current inverse matrix
 
-        for(int col = 0; col<lst.length()+1; ++col)
+        for(int col = 0; col < lst.length() + 1; ++col) // number of coloumn of covariance matrix
         {
-            for(int j = 0; j<lst.length()+1; ++j)
+            for(int j = 0; j < lst.length() + 1; ++j) // number of row
             {
-                for(int z = 0; z<lst.length()+1; ++z)
+                for(int z = 0; z < lst.length() + 1; ++z)  // number of coloumn
                 {
                     if(z == col)
                     {
@@ -347,22 +341,23 @@ void Eyes::eyesProcessing()
         }
 
 //        matrixPrint(matrix, lst.length() + 1, lst.length() + 1);
-//        matrixInvert(matrix, lst.length() + 1, &matrixInv);
+        matrixInvert(matrix, lst.length() + 1, &matrixInv);
 
         //set coeffs
         for(int i = 0; i<lst.length(); ++i)
         {
-            coefficients[k][i] = -matrixInv[i][lst.length()]/matrixInv[lst.length()][lst.length()];
+            coefficients[k][i] = -matrixInv[i][lst.length()] / matrixInv[lst.length()][lst.length()];
         }
-    }
+
+    } // end of cycle through the channels
 
     //print inv-matrix into file
     FILE * coef = fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("eyes.txt").toStdString().c_str(), "w");
     fprintf(coef, "NumOfEyesChannels %d\n", lst.length());
     fprintf(coef, "NumOfEegChannels %d\n", ui->spinBox->value());
-    for(int k = 0; k<ui->spinBox->value(); ++k)
+    for(int k = 0; k < ui->spinBox->value(); ++k)
     {
-        for(int i = 0; i<lst.length(); ++i)
+        for(int i = 0; i < lst.length(); ++i)
         {
             fprintf(coef, "%lf ", coefficients[k][i]);
         }
