@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1207</width>
-    <height>935</height>
+    <height>890</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -71,7 +71,7 @@
        <item>
         <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>Testee name</string>
+          <string>Subject name</string>
          </property>
         </widget>
        </item>
@@ -128,9 +128,9 @@
     <property name="geometry">
      <rect>
       <x>300</x>
-      <y>730</y>
+      <y>710</y>
       <width>671</width>
-      <height>151</height>
+      <height>111</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -423,10 +423,133 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>291</x>
-      <y>231</y>
-      <width>881</width>
-      <height>485</height>
+      <x>21</x>
+      <y>481</y>
+      <width>214</width>
+      <height>215</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_8">
+     <item row="0" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_14">
+       <item>
+        <widget class="QPushButton" name="markerSetPushButton">
+         <property name="text">
+          <string>set marker</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_10">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="markerGetPushButton">
+       <property name="text">
+        <string>get marker</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="markerDecimalLineEdit"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label_17">
+       <property name="text">
+        <string>decimal</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLineEdit" name="markerBin0LineEdit"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_16">
+       <property name="text">
+        <string>bin 0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLineEdit" name="markerBin1LineEdit"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_19">
+       <property name="text">
+        <string>bin 1</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QSpinBox" name="markerBinTimeSpinBox"/>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_18">
+       <property name="text">
+        <string>bin time</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QDoubleSpinBox" name="markerSecTimeDoubleSpinBox"/>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="label_20">
+       <property name="text">
+        <string>sec time</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLineEdit" name="newEdfNameLineEdit"/>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="label_21">
+       <property name="text">
+        <string>addName</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QPushButton" name="saveEdfPushButton">
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QLabel" name="label_22">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>50</y>
+      <width>52</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Set ns</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>292</x>
+      <y>235</y>
+      <width>704</width>
+      <height>449</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_7">
@@ -616,91 +739,6 @@
         <string>&amp;Clean wndDirs</string>
        </property>
       </widget>
-     </item>
-     <item row="4" column="2">
-      <layout class="QGridLayout" name="gridLayout_5">
-       <item row="0" column="0">
-        <widget class="QCheckBox" name="cleanRealisationsCheckBox">
-         <property name="text">
-          <string>Reals</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QCheckBox" name="cleanRealsSpectraCheckBox">
-         <property name="text">
-          <string>RealsSpectra</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="0">
-        <widget class="QCheckBox" name="cleanWindowsCheckBox">
-         <property name="text">
-          <string>winds</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="cleanWindSpectraCheckBox">
-         <property name="text">
-          <string>WindsSpectra</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <spacer name="horizontalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="2" column="0">
-        <widget class="QCheckBox" name="cleanFromRealsCheckBox">
-         <property name="text">
-          <string>fromreals</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QCheckBox" name="cleanHelpCheckBox">
-         <property name="text">
-          <string>Help</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <spacer name="horizontalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
      </item>
      <item row="5" column="0">
       <widget class="QPushButton" name="cut_e">
@@ -969,29 +1007,85 @@
        </item>
       </layout>
      </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="">
-    <property name="geometry">
-     <rect>
-      <x>21</x>
-      <y>481</y>
-      <width>214</width>
-      <height>215</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_8">
-     <item row="0" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_14">
-       <item>
-        <widget class="QPushButton" name="markerSetPushButton">
+     <item row="4" column="2">
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="cleanRealisationsCheckBox">
          <property name="text">
-          <string>set marker</string>
+          <string>Reals</string>
          </property>
         </widget>
        </item>
-       <item>
-        <spacer name="horizontalSpacer_10">
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="cleanRealsSpectraCheckBox">
+         <property name="text">
+          <string>RealsSpectra</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QCheckBox" name="cleanMarkersCheckBox">
+         <property name="text">
+          <string>markers</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="cleanWindowsCheckBox">
+         <property name="text">
+          <string>winds</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="cleanWindSpectraCheckBox">
+         <property name="text">
+          <string>WindsSpectra</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="cleanFromRealsCheckBox">
+         <property name="text">
+          <string>fromreals</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QCheckBox" name="cleanHelpCheckBox">
+         <property name="text">
+          <string>Help</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <spacer name="horizontalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="3">
+        <spacer name="horizontalSpacer_4">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -1004,80 +1098,6 @@
         </spacer>
        </item>
       </layout>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="markerGetPushButton">
-       <property name="text">
-        <string>get marker</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLineEdit" name="markerDecimalLineEdit"/>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="label_17">
-       <property name="text">
-        <string>decimal</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLineEdit" name="markerBin0LineEdit"/>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label_16">
-       <property name="text">
-        <string>bin 0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLineEdit" name="markerBin1LineEdit"/>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLabel" name="label_19">
-       <property name="text">
-        <string>bin 1</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QSpinBox" name="markerBinTimeSpinBox"/>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLabel" name="label_18">
-       <property name="text">
-        <string>bin time</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QDoubleSpinBox" name="markerSecTimeDoubleSpinBox"/>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLabel" name="label_20">
-       <property name="text">
-        <string>sec time</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLineEdit" name="newEdfNameLineEdit"/>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLabel" name="label_21">
-       <property name="text">
-        <string>addName</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <widget class="QPushButton" name="saveEdfPushButton">
-       <property name="text">
-        <string>Save</string>
-       </property>
-      </widget>
      </item>
     </layout>
    </widget>
@@ -1092,9 +1112,8 @@
    <zorder>numComponentsSpinBox</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
-   <zorder>newEdfNameLineEdit</zorder>
-   <zorder>label_21</zorder>
-   <zorder>saveEdfPushButton</zorder>
+   <zorder>cleanMarkersCheckBox</zorder>
+   <zorder>label_22</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
