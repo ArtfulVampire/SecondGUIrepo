@@ -203,6 +203,7 @@ void Eyes::eyesProcessing()
 
     int NumOfSlices = 0, help = 0;
     FILE * file;
+    int Size = lst.length() + 1;
 
     dataE = new double * [ns]; //data for all eye-movements concatenated together
     for(int i = 0; i<ns; ++i)
@@ -211,32 +212,32 @@ void Eyes::eyesProcessing()
     }
 
     //arrays for usability
-    double **signal = new double * [lst.length()+1]; //for all EOG channels and one EEG channel
-    for(int i = 0; i<lst.length()+1; ++i)
+    double **signal = new double * [Size]; //for all EOG channels and one EEG channel
+    for(int i = 0; i < Size; ++i)
     {
         signal[i] = new double [250*60*5];           //for 5 minutes generality
     }
 
-    double **matrix = new double * [lst.length()+1];
-    for(int i = 0; i<lst.length()+1; ++i)
+    double **matrix = new double * [Size];
+    for(int i = 0; i < Size; ++i)
     {
-        matrix[i] = new double [lst.length()+1];
+        matrix[i] = new double [Size];
     }
 
-    double **matrixInv = new double * [lst.length()+1];
-    for(int i = 0; i<lst.length()+1; ++i)
+    double **matrixInv = new double * [Size];
+    for(int i = 0; i < Size; ++i)
     {
-        matrixInv[i] = new double [lst.length()+1];
+        matrixInv[i] = new double [Size];
     }
 
-    double **matrixTemp = new double * [lst.length()+1];
-    for(int i = 0; i<lst.length()+1; ++i)
+    double **matrixTemp = new double * [Size];
+    for(int i = 0; i < Size; ++i)
     {
-        matrixTemp[i] = new double [lst.length()+1];
+        matrixTemp[i] = new double [Size];
     }
 
     double **coefficients = new double * [ns]; //final output coefficients
-    for(int i = 0; i<ns; ++i)
+    for(int i = 0; i < ns; ++i)
     {
         coefficients[i] = new double [lst.length()];
     }
@@ -268,23 +269,23 @@ void Eyes::eyesProcessing()
 
     //for every channel count eog coefficients
     //assuming EEG channels are from 1st to ui->spinBox->value()'th
-    //lst.length() + 1 is the dimensionality of all matrices
+    //Size is the dimensionality of all matrices
 
     for(int k = 0; k < ui->spinBox->value(); ++k)
     {
         signal[lst.length()] = dataE[k];
-        for(int j = 0; j < lst.length() + 1; ++j)
+        for(int j = 0; j < Size; ++j)
         {
-            for(int z = 0; z < lst.length() + 1; ++z)
+            for(int z = 0; z < Size; ++z)
             {
                 matrix[j][z] = 0.;
             }
         }
 
         //count covariations into matrix
-        for(int j = 0; j < lst.length() + 1; ++j)
+        for(int j = 0; j < Size; ++j)
         {
-            for(int z = 0; z < lst.length() + 1; ++z)
+            for(int z = 0; z < Size; ++z)
             {
                 for(int i = 0; i < NumOfSlices; ++i)
                 {
@@ -292,61 +293,11 @@ void Eyes::eyesProcessing()
                 }
             }
         }
-
-        //count Inverse Matrix, Gauss method
-        //1) set identity matrix into matrixInv
-        for(int j = 0; j < lst.length() + 1; ++j)
-        {
-            for(int z = 0; z < lst.length() + 1; ++z)
-            {
-                matrixInv[j][z] = (j == z);
-            }
-        }
-
-//        //print cov-matrix
-//        for(int j = 0; j<lst.length()+1; ++j)
-//        {
-//            for(int z = 0; z<lst.length()+1; ++z)
-//            {
-//                cout << matrix[j][z] << "  ";
-//            }
-//            cout << endl;
-//        }
-
-        //2)
-        //col - current number of column
-        //matrixTemp - current new auxiliary matrix
-        //matrixInv - current inverse matrix
-
-        for(int col = 0; col < lst.length() + 1; ++col) // number of coloumn of covariance matrix
-        {
-            for(int j = 0; j < lst.length() + 1; ++j) // number of row
-            {
-                for(int z = 0; z < lst.length() + 1; ++z)  // number of coloumn
-                {
-                    if(z == col)
-                    {
-                        if(z != j) matrixTemp[j][z] = -matrix[j][z]/matrix[col][col];
-                        else matrixTemp[j][z] = 1/matrix[col][col];
-                    }
-                    else
-                    {
-                        if(z == j) matrixTemp[j][z] = 1.;
-                        else matrixTemp[j][z] = 0.;
-                    }
-                }
-            }
-            matrixProduct(matrixTemp, matrixInv, &matrixInv, lst.length()+1, lst.length()+1);
-            matrixProduct(matrixTemp, matrix, &matrix, lst.length()+1, lst.length()+1);
-        }
-
-//        matrixPrint(matrix, lst.length() + 1, lst.length() + 1);
-        matrixInvert(matrix, lst.length() + 1, &matrixInv);
-
+        matrixInvertGauss(matrix, Size, &matrixInv);
         //set coeffs
         for(int i = 0; i<lst.length(); ++i)
         {
-            coefficients[k][i] = -matrixInv[i][lst.length()] / matrixInv[lst.length()][lst.length()];
+            coefficients[k][i] = - matrixInv[i][lst.length()] / matrixInv[lst.length()][lst.length()];
         }
 
     } // end of cycle through the channels
@@ -381,7 +332,7 @@ void Eyes::eyesProcessing()
     delete []coefficients;
     delete []dataE;
 
-    for(int i = 0; i<lst.length()+1; ++i)
+    for(int i = 0; i < Size; ++i)
     {
         delete []matrixTemp[i];
         delete []matrix[i];
