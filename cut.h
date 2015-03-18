@@ -35,13 +35,11 @@ class Cut : public QWidget
 public:
     explicit Cut(QDir * dir_ = 0, int ns_ = 21, bool withMarkersFlag_ = false);
     ~Cut();
-    void setLimits();
-    void lnWnd16();
     bool eventFilter(QObject *obj, QEvent *event);
     void setAutoProcessingFlag(bool);
 
 public slots:
-    void createImage(QString str);
+    void createImage(QString dataFileName);
     void mousePressSlot(char btn__, int coord__);
     void next();
     void prev();
@@ -50,36 +48,27 @@ public slots:
     void paint();
     void save();
     void rewrite();
-    void lnWndAll();
-    void paintDistr();
-//    void drawLogistic();
-    void cycleTimeShift();
-    void cycleWndLength();
-    void setNs(int);
     void cutEyesAll();
     void browse();
     void splitCut();
-//    void adjustScrollArea();
+    void setNs(int);
 
 
 protected:
-    void closeEvent(QCloseEvent *);
     void resizeEvent(QResizeEvent *);
 
 signals:
     void openFile(QString);
     void buttonPressed(char btn, int coord);
 
-
 private:
     Ui::Cut *ui;
     int rightLimit;
     int leftLimit;
-    QString currentPicPath, currentFile, helpString, tmp;
-    QPixmap currentPic;
-    QPainter *painter;
+    QString currentPicPath, currentFile;
     QString fileNumber;
     QString fileName;
+    QPixmap currentPic;
     int addNum;
     QStringList lst;
     int currentNumber;
@@ -91,23 +80,12 @@ private:
     bool autoFlag;
     FILE * file;
     FILE * weights;
-    FILE * wnd1;
-    FILE * wnd2;
-    FILE * wnd3;
-    FILE * f1;
-    FILE * f2;
-    FILE * f3;
     QDir *dir;
     QStringList nameFilters;
     double coeff;      //for fft
     int timeShift;   //in time-bins
     double wndLength;  //in seconds
-    double **weight;
-    int numOfWndSpat;
-    int numOfWndVerb;
-    int numOfWndIdle;
     int flagWnd;
-    time_t duration;
     bool withMarkersFlag;
 
     double zoomPrev, zoomCurr;

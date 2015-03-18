@@ -523,7 +523,7 @@
       </widget>
      </item>
      <item row="7" column="1">
-      <widget class="QPushButton" name="saveEdfPushButton">
+      <widget class="QPushButton" name="markerSaveEdfPushButton">
        <property name="text">
         <string>Save</string>
        </property>
@@ -544,7 +544,7 @@
      <string>Set ns</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>292</x>
@@ -1113,11 +1113,7 @@
    <zorder>numComponentsSpinBox</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
-   <zorder>cleanMarkersCheckBox</zorder>
    <zorder>label_22</zorder>
-   <zorder>matiPieceLengthSpinBox</zorder>
-   <zorder>label_23</zorder>
-   <zorder>matiCheckBox</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

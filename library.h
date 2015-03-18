@@ -46,11 +46,16 @@ using namespace std;
 
 
 //void QDoubleSpinBox::mySlot(double val)
-int len(QString s);
-QString rightNumber(int input, int N);
+int len(QString s); // string length for EDF+ annotations
+QString rightNumber(int input, int N); // prepend zeros
 double doubleRound(double in, int numSigns);
 int findChannel(char ** const labelsArr, QString chanName, int ns = 21);
-QString setFileName(QString const initName);
+QString setFileName(QString const initName); //-> initName_i.ext
+QString getPicPath(const QString & dataPath, QDir *ExpNameDir, int ns);
+QString fileNameOf(QString filePath);
+QString extOf(QString filePath);
+ostream & operator << (ostream &os, QString toOut);
+
 //wavelets
 void drawColorScale(QString filename, int range, int type = 0);
 
@@ -67,16 +72,16 @@ void wavelet(QString out, FILE * file, int ns = 19, int channelNumber = 0, doubl
 void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
 //signal processing
-double fractalDimension(double *arr, int N, QString picPath);
-double enthropy(double *arr, int N, QString picPath, int numOfRanges);
+double fractalDimension(double *arr, int N, QString picPath = ""); // piPath deprecated
+double enthropy(double *arr, int N, QString picPath, int numOfRanges); // not finished?
 void four1(double * dataF, int nn, int isign);
-void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath);
-void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath);
+void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath = "");
+void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath = "");
 void bayesCount(double * dataIn, int length, int numOfIntervals, double **out);
 void kernelEst(double *arr, int length, QString picPath);
-bool gaussApproval(double * arr, int length);
-bool gaussApproval(QString filePath);
-bool gaussApproval2(double * arr, int length);
+bool gaussApproval(double * arr, int length); // not finished?
+bool gaussApproval(QString filePath); // not finished?
+bool gaussApproval2(double * arr, int length); // not finished?
 double vectorLength(double * arr, int len);
 double quantile(double arg);
 double mean(int *arr, int length);
@@ -99,7 +104,7 @@ double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 void splitZeros(double *** inData, int ns, int length, int * outLength, QString logFile = "", QString dataName = "");
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
-void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t)*inY[i1] + t*inY[i] + t(1-t)(outA[i](1-t) + outB[i]t));
+void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
 double independence(double * const signal1, double * const signal2, int length);
 
@@ -118,6 +123,8 @@ void makeCfgStatic(QString outFileDir, int NetLength = 19*247, QString FileName 
 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
+QPixmap drawEeg(double **dataD, int ns, int NumOfSlices, int freq, const QString picPath = "", double norm = 1.);
+QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int freq, QString const picPath = "", double norm = 1.); // haven't checked
 void readSpectraFile(QString filePath, double *** outData, int ns, int spLength);
 void readSpectraFileLine(QString filePath, double ** outData, int ns, int spLength);
 void readFileInLine(QString filePath, double ** outData, int len);

@@ -2,11 +2,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-ostream & operator << (ostream &os, QString toOut)
-{
-    os << toOut.toStdString();
-}
-
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow)
 {
@@ -231,9 +226,9 @@ MainWindow::MainWindow() :
     ui->cleanWindSpectraCheckBox->setChecked(true);
     ui->cleanMarkersCheckBox->setChecked(true);
 
-    ui->highFreqFilterDoubleSpinBox->setValue(20.);
+    ui->highFreqFilterDoubleSpinBox->setValue(def::rightFreq);
     ui->highFreqFilterDoubleSpinBox->setSingleStep(1.0);
-    ui->lowFreqFilterDoubleSpinBox->setValue(5.0);
+    ui->lowFreqFilterDoubleSpinBox->setValue(def::leftFreq);
     ui->lowFreqFilterDoubleSpinBox->setSingleStep(0.1);
 
     ui->rereferenceDataComboBox->addItem("A1");
@@ -326,20 +321,15 @@ MainWindow::MainWindow() :
     QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
 
     QObject::connect(ui->markerGetPushButton, SIGNAL(clicked()), this, SLOT(markerGetSlot()));
-
     QObject::connect(ui->markerSetPushButton, SIGNAL(clicked()), this, SLOT(markerSetSlot()));
-
     QObject::connect(ui->markerBinTimeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(markerSetSecTime(int)));
-    QObject::connect(ui->markerDecimalLineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetBinValueSlot()));
+//    QObject::connect(ui->markerDecimalLineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetBinValueSlot()));
     QObject::connect(ui->markerDecimalLineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetBinValueSlot()));
-
-    QObject::connect(ui->markerBin0LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
+//    QObject::connect(ui->markerBin0LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
     QObject::connect(ui->markerBin0LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
-
-    QObject::connect(ui->markerBin1LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
+//    QObject::connect(ui->markerBin1LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
     QObject::connect(ui->markerBin1LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
-
-    QObject::connect(ui->saveEdfPushButton, SIGNAL(clicked()), this, SLOT(saveEdfNewMarkersSlot()));
+    QObject::connect(ui->markerSaveEdfPushButton, SIGNAL(clicked()), this, SLOT(saveEdfNewMarkersSlot()));
 
     customFunc();
 }
@@ -458,110 +448,14 @@ void MainWindow::cleanDirs()
     ui->textEdit->append(helpString);
 }
 
-void MainWindow::drawEeg(int NumOfSlices_, double **dataD_, QString helpString_, int freq)
-{
-    QString helpString;
-    int start = 0; // staSlice; //generality
-    QPixmap pic = QPixmap(NumOfSlices_, 600);
-    pic.fill();
-    QPainter * paint_ = new QPainter();
-    paint_->begin(&pic);
 
-    QString colour;
-
-    double norm = ui->drawCoeffSpinBox->value();
-    int lineWidth = 2;
-
-    for(int c1 = 0; c1 < pic.width(); ++c1)
-    {
-        for(int c2 = 0; c2 < ns; ++c2)
-        {
-            if(ns == 21 || ns == 22)
-            {
-                if(c2 == 19)        colour = "red";
-                else if(c2 == 20)   colour = "blue";
-                else colour = "black";
-            }
-            else colour = "black";
-
-            paint_->setPen(QPen(QBrush(QColor(colour)), lineWidth));
-
-            paint_->drawLine(c1, (c2+1)*pic.height()/(ns+2) +dataD_[c2][c1+start]/norm, c1+1, (c2+1)*pic.height()/(ns+2) +dataD_[c2][c1+1+start]/norm);
-        }
-    }
-    norm = 1.;
-    paint_->setPen(QPen(QBrush("black"), lineWidth));
-    for(int c3 = 0; c3 < NumOfSlices_ * 10 / 250; ++c3)
-    {
-        if(c3%5  == 0) norm = 15.;
-        if(c3%10 == 0) norm = 20.;
-
-        paint_->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
-        int helpInt = c3;
-        helpString = QString::number(helpInt);
-        paint_->drawText(c3 * freq, pic.height() - 35, helpString);
-        norm = 10.;
-    }
-
-    norm = 1;
-    pic.save(helpString_, 0, 100);
-    paint_->end();
-    delete paint_;
-
-}
-
-void MainWindow::drawEeg(double **dataD_, double startTime, double endTime, QString helpString_, int freq)
-{
-    QString helpString;
-    double stretch = ceil(freq/512);
-    QPixmap pic = QPixmap((endTime-startTime)*freq/stretch, 600);  //cut.cpp 851
-    pic.fill();
-    QPainter * paint_ = new QPainter();
-    paint_->begin(&pic);
-
-    double norm=ui->drawCoeffSpinBox->value();              //////////////////////
-
-
-    for(int c1 = 0; c1 < pic.width(); ++c1)
-    {
-        for(int c2 = 0; c2 < ns; ++c2)
-        {
-            if(ns==21 && c2==19) paint_->setPen("red");
-            else
-            {
-                if(ns==21 && c2==20) paint_->setPen("blue");
-                else paint_->setPen("black");
-            }
-            paint_->drawLine(c1, (c2+1)*pic.height()/(ns+2) +dataD_[c2][int(startTime*freq+c1*stretch)]/norm, c1+1, (c2+1)*pic.height()/(ns+2) +dataD_[c2][int(startTime*freq+(c1+1)*stretch)]/norm);
-        }
-    }
-    paint_->setPen("black");
-    norm=1.;
-    for(int c3 = 0; c3 < 25*5+10; ++c3)
-    {
-        if(c3%5== 0) norm=15.;
-        if(c3%10== 0) norm=20.;
-
-        paint_->drawLine(c3*freq/5, pic.height()-2, c3*freq/5, pic.height()-2*norm);
-        int helpInt=c3;
-        helpString=QString::number(helpInt);
-        paint_->drawText(c3*freq, pic.height()-35, helpString);
-        norm=10.;
-    }
-
-    norm=1;
-
-    pic.save(helpString_, 0, 100);
-    paint_->end();
-    delete paint_;
-
-}
 
 void MainWindow::drawRealisations()
 {
     QStringList lst;
     QStringList nameFilters;
     QString helpString;
+    QString prePath;
 
     QTime myTime;
     myTime.start();
@@ -569,7 +463,6 @@ void MainWindow::drawRealisations()
     double **dataD = new double * [ns];
     int Eyes;
 
-    dir->cd(ui->drawDirBox->currentText());    //->windows or Realisations or cut
     lst.clear();
     nameFilters.clear();
     nameFilters.append("*_241*");
@@ -579,16 +472,24 @@ void MainWindow::drawRealisations()
     //for Roma's files
     nameFilters.append("*_2");
     nameFilters.append("*_1");
-//    lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
 
-    lst = dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
-    cout << "lst.len = " << lst.length() << endl;
+    dir->cd(ui->drawDirBox->currentText());    //->windows or Realisations or cut
+    prePath = dir->absolutePath();
+
+    lst = dir->entryList(QDir::Files);
+//    lst = dir->entryList(nameFilters, QDir::Files);
+
+    dir->cdUp();   //-> into EDF-file dir
+    if(ui->drawDirBox->currentText() == "windows/fromreal") dir->cdUp();
+
     FILE * file;
     for(int i = 0; i < lst.length(); ++i)
     {
         if(stopFlag) break;
-        helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(i));
-        file=fopen(helpString.toStdString().c_str(), "r");
+
+        helpString = prePath + QDir::separator() + lst[i];
+
+        file = fopen(helpString.toStdString().c_str(), "r");
         fscanf(file, "%*s %d \n", &NumOfSlices);
         if(NumOfSlices > 15000)
         {
@@ -598,9 +499,8 @@ void MainWindow::drawRealisations()
         fscanf(file, "Eyes %d \n", &Eyes);
         for(int j = 0; j < ns; ++j)
         {
-            dataD[j] = new double [NumOfSlices]; /////////generality for 32 seconds
+            dataD[j] = new double [NumOfSlices];
         }
-
         for(int j = 0; j < NumOfSlices; ++j)
         {
             for(int k = 0; k < ns; ++k)
@@ -608,70 +508,11 @@ void MainWindow::drawRealisations()
                 fscanf(file, "%lf", &dataD[k][j]);
             }
         }
-        helpString=lst.at(i);
-        helpString.replace('.', '_');
-
-        dir->cdUp();  //-> into EDF-file dir
-        if(ui->drawDirBox->currentText() == "windows/fromreal") dir->cdUp();
-
-        if(ui->drawDirBox->currentText().contains("Realisations"))
-        {
-            switch(ns)
-            {
-            case 19:
-                {
-                    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("after").append(QDir::separator()).append(helpString).append(".jpg");
-                    break;
-                }
-            case 21:
-                {
-                    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("before").append(QDir::separator()).append(helpString).append(".jpg");
-                    break;
-                }
-            default:
-                {
-                    helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("other").append(QDir::separator()).append(helpString).append(".jpg");
-                    break;
-                }
-            }
-
-        }
-
-        else if(ui->drawDirBox->currentText().contains("cut"))
-        {
-            if(ns==19)  //add eyesCleanFlag?
-            {
-                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("after").append(QDir::separator()).append(helpString).append(".jpg");
-            }
-            else if(ns==21)
-            {
-                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("before").append(QDir::separator()).append(helpString).append(".jpg");
-            }
-            else
-            {
-                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("SignalsCut").append(QDir::separator()).append("other").append(QDir::separator()).append(helpString).append(".jpg");
-            }
-        }
-
-        else //windows
-        {
-            if(ns==19)  //add eyesCleanFlag?
-            {
-                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("after").append(QDir::separator()).append(helpString).append(".jpg");
-            }
-            else if(ns==21)
-            {
-                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("before").append(QDir::separator()).append(helpString).append(".jpg");
-            }
-            else
-            {
-                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("Signals").append(QDir::separator()).append("windows").append(QDir::separator()).append("other").append(QDir::separator()).append(helpString).append(".jpg");
-            }
-        }
-        dir->cd(ui->drawDirBox->currentText());  //back to the windows or Realisations dir
-
-        drawEeg(NumOfSlices, dataD, helpString, 250);
         fclose(file);
+
+        helpString = getPicPath(helpString, dir, ns);
+        drawEeg(dataD, ns, NumOfSlices, def::freq, helpString, ui->drawCoeffSpinBox->value()); // generality freq
+
         for(int j = 0; j < ns; ++j)
         {
             delete []dataD[j];
@@ -680,28 +521,20 @@ void MainWindow::drawRealisations()
         qApp->processEvents();
     }
 
-    delete []dataD;
-    dir->cdUp();   //-> into EDF-file dir
-    if(ui->drawDirBox->currentText() == "windows/fromreal") dir->cdUp();
-    cout << dir->absolutePath().toStdString() << endl;
-
-    helpString="signals are drawn ";
-    ui->textEdit->append(helpString);
-
-    helpString="ns equals to ";
-    helpString.append(QString::number(ns));
-    ui->textEdit->append(helpString);
-
     ui->progressBar->setValue(0);
 
 
-    helpString.setNum(myTime.elapsed()/1000.);
-    helpString.prepend("Signals drawn \nTime = ");
-    helpString.append(" sec");
-    stopFlag = 0;
-//    QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
+    helpString = "signals are drawn ";
+    ui->textEdit->append(helpString);
 
-    cout << "DrawRealisations: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    helpString = "ns equals to ";
+    helpString.append(QString::number(ns));
+    ui->textEdit->append(helpString);
+
+    stopFlag = 0;
+
+    delete []dataD;
+    cout << "drawRealisations: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::diffSmooth()
@@ -729,7 +562,7 @@ void MainWindow::diffSmooth()
         sleep(60);
 
     }
-    cout << "diffSmooth: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "diffSmooth: time = " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 
@@ -796,7 +629,7 @@ void MainWindow::diffPow()
         delete ANN;
 
     }
-    cout << "diffPow: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "diffPow: time = " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 
@@ -1549,7 +1382,7 @@ void MainWindow::sliceWindFromReal()
     helpString.append(QString::number(ns));
     ui->textEdit->append(helpString);
 
-    cout << "WindFromReals: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "WindFromReals: time = " << myTime.elapsed()/1000. << " sec" << endl;
 
     helpString.setNum(myTime.elapsed()/1000.);
     helpString.prepend("Data sliced \nTime = ");
@@ -1941,7 +1774,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
 
     writeEdf(ui->filePathLineEdit->text(), data, newPath, ndr*fr);
 
-    cout << "Reref Data: time = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "rereferenceData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::refilterDataSlot()
@@ -2026,7 +1859,7 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
     ui->reduceChannelsLineEdit->setText(helpString);
     writeEdf(ui->filePathLineEdit->text(), data, newPath, ndr*fr);
 
-    cout << "RefilterData: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "refilterData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -2378,7 +2211,7 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
     readData();
     writeEdf(inPath[0], newData, outPath, tempPos, ls);
     matrixDelete(&newData, ns);
-    cout << "concatenate EDF: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "concatenate EDF: time = = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPath)
@@ -2433,7 +2266,7 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
 
     writeEdf(inPath1, newData, outPath, newNdr * def::freq, ls);
     matrixDelete(&newData, ns);
-    cout << "concatenate EDF: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "concatenate EDF: time = = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 
@@ -2665,7 +2498,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         delete []newData[i];
     }
     delete []newData;
-    cout << "construct EDF: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "construct EDF: time = = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unused
@@ -3509,7 +3342,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     helpString.append(QString::number(ns));
     ui->textEdit->append(helpString);
 
-    cout << "SliceAll: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 
@@ -5123,7 +4956,7 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     delete [] physMax;
     delete [] digMin;
     delete [] digMax;
-//    cout << "writeEDF: output path = " << outFilePath.toStdString() << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+//    cout << "writeEDF: output path = " << outFilePath.toStdString() << "\ttime = = " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 
@@ -5991,7 +5824,7 @@ void MainWindow::ICA() //fastICA
 
     helpString = dir->absolutePath() + QDir::separator() + ExpName + "_ica.edf";
     writeEdf(ui->filePathLineEdit->text(), components, helpString, ndr*nr[0]);
-    cout << "ICA ended. Time elapsed = " << wholeTime.elapsed()/1000. << " sec" << endl;
+    cout << "ICA ended. time = = " << wholeTime.elapsed()/1000. << " sec" << endl;
 
     ns = ui->numOfIcSpinBox->value();
     for(int i = 0; i < ns; ++i)
@@ -6435,7 +6268,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     matrixDelete(&dataFFT1, 3);
     matrixDelete(&dataFFT2, 3);
 
-    cout << "ICsSequence ended. Time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "ICsSequence ended. time = = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::drawMapsSlot()
@@ -8964,7 +8797,7 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
                     cout << channelsSet[p]+1 << " ";
                     logF << channelsSet[p]+1 << " ";
                 }
-                cout << " = " << tempAccuracy << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                cout << " = " << tempAccuracy << "\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
                 logF << " = " << tempAccuracy << endl;
 
                 if(tempAccuracy > initAccuracy + 0.5)
@@ -9254,6 +9087,62 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 
 void MainWindow::customFunc()
 {
+    //MATI
+    if(1)
+    {
+//        concatenateEDFs("/media/Files/Data/Mati/PYV/PY_1.EDF",
+//                        "/media/Files/Data/Mati/PYV/PY_2.EDF",
+//                        "/media/Files/Data/Mati/PYV/PY_3.edf");
+//        exit(0);
+
+//        QString helpString1 = "/media/Files/Data/Mati/PYV/PY_3.edf";
+//        cout << fileNameOf(helpString1) << endl;
+
+
+        ui->matiCheckBox->setChecked(true);
+        ui->sliceCheckBox->setChecked(true);
+        ui->sliceWithMarkersCheckBox->setChecked(true);
+        ui->reduceChannelsCheckBox->setChecked(true);
+        ui->reduceChannelsComboBox->setCurrentText("Mati");
+        setEdfFile("/media/Files/Data/Mati/ADA/ADA_rr_f.edf");
+        ns = 22;
+        cutShow();
+//        drawRealisations();
+//        sliceAll();
+//        ns = 19;
+//        ui->reduceChannelsLineEdit->setText("1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
+//        constructEDFSlot();
+        return;
+
+        QDir * tDir = new QDir();
+        tDir->cd("/media/Files/Data/Mati");
+        QStringList nameFilters;
+        nameFilters << "*.edf" << "*.EDF";
+        QString fileName;
+        QString helpString;
+
+        QStringList lst = tDir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+        for(int i = 0; i < lst.length(); ++i)
+        {
+            tDir->cd(lst[i]);
+
+            helpString = tDir->absolutePath() + "/" + lst[i] + ".EDF";
+            setEdfFile(helpString);
+            rereferenceDataSlot();
+
+            helpString = tDir->absolutePath() + "/" + lst[i] + "_rr.edf";
+            setEdfFile(helpString);
+            refilterDataSlot();
+
+            helpString = tDir->absolutePath() + "/" + lst[i] + "_rr_f.edf";
+            setEdfFile(helpString);
+            sliceAll();
+            drawRealisations();
+            tDir->cdUp();
+
+        }
+        exit(0);
+    }
     //test matiMarkers functions
     if(0)
     {
@@ -9297,55 +9186,7 @@ void MainWindow::customFunc()
         exit(0);
     }
 
-    //MATI
-    if(1)
-    {
-//        concatenateEDFs("/media/Files/Data/Mati/PYV/PY_1.EDF",
-//                        "/media/Files/Data/Mati/PYV/PY_2.EDF",
-//                        "/media/Files/Data/Mati/PYV/PY_3.edf");
-//        exit(0);
 
-        ui->matiCheckBox->setChecked(true);
-        ui->sliceCheckBox->setChecked(true);
-        ui->sliceWithMarkersCheckBox->setChecked(true);
-        ui->reduceChannelsCheckBox->setChecked(true);
-        ui->reduceChannelsComboBox->setCurrentText("Mati");
-//        setEdfFile("/media/Files/Data/Mati/SDV/SDV_rr_f.edf");
-//        sliceAll();
-//        ns = 19;
-//        ui->reduceChannelsLineEdit->setText("1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
-//        constructEDFSlot();
-        return;
-
-        QDir * tDir = new QDir();
-        tDir->cd("/media/Files/Data/Mati");
-        QStringList nameFilters;
-        nameFilters << "*.edf" << "*.EDF";
-        QString fileName;
-        QString helpString;
-
-        QStringList lst = tDir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            tDir->cd(lst[i]);
-
-            helpString = tDir->absolutePath() + "/" + lst[i] + ".EDF";
-            setEdfFile(helpString);
-            rereferenceDataSlot();
-
-            helpString = tDir->absolutePath() + "/" + lst[i] + "_rr.edf";
-            setEdfFile(helpString);
-            refilterDataSlot();
-
-            helpString = tDir->absolutePath() + "/" + lst[i] + "_rr_f.edf";
-            setEdfFile(helpString);
-            sliceAll();
-            drawRealisations();
-            tDir->cdUp();
-
-        }
-        exit(0);
-    }
 
     //AAX
     if(0)
@@ -10123,7 +9964,7 @@ void MainWindow::customFunc()
                 outStream << list1[i].left(3).toStdString() << " inner\t" << res << endl << endl;
                 res = fileInnerClassification(dir->absolutePath(), helpString, "4sec19ch", 50, true, 1000, 125);
                 outStream << list1[i].left(3).toStdString() << " wnd inner\t" << res << endl << endl;
-                cout << list1[i].left(3).toStdString() << " finished\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                cout << list1[i].left(3).toStdString() << " finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
             }
             outStream.close();
             list1 = dir->entryList(QStringList("???_1_ica_by1.edf"));
@@ -10146,7 +9987,7 @@ void MainWindow::customFunc()
                 outStream << list1[i].left(3).toStdString() << " ica inner\t" << res << endl;
                 res = fileInnerClassification(dir->absolutePath(), helpString, "4sec19ch", 50, true, 1000, 125);
                 outStream << list1[i].left(3).toStdString() << " ica wnd inner\t" << res << endl;
-                cout << list1[i].left(3).toStdString() << " ica finished\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                cout << list1[i].left(3).toStdString() << " ica finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
             }
             outStream.close();
         }
@@ -10161,7 +10002,7 @@ void MainWindow::customFunc()
                 helpString = list1[i];
                 helpString.replace("_1", "_2");
                 res = filesAddComponents(dir->absolutePath(), list1[i], helpString, 30, false);
-                cout << list1[i].left(3).toStdString() << " addComps from 3 finished\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                cout << list1[i].left(3).toStdString() << " addComps from 3 finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
             }
         }
 

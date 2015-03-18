@@ -118,8 +118,6 @@ public:
     void reduceChannelsFast();
     void drawClassification();    
     void drawWeights();
-    void drawEeg(int NumOfSlices_, double **dataD_, QString helpString_, int freq);
-    void drawEeg(double **dataD_, double startTime, double endTime, QString helpString_, int freq);
     void sliceIlya(const QString &fileName, QString marker);
     void sliceIlya(int marker1, int marker2, QString marker);
     void sliceFromTo(int marker1, int marker2, QString marker);

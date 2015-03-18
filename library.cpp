@@ -1,6 +1,5 @@
 #include "library.h"
 
-#define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 
 
 QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour)
@@ -412,7 +411,9 @@ void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QStr
     delete pnt;
 }
 
-void four1(double *dataF, int nn, int isign)
+
+#define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
+void four1(double * dataF, int nn, int isign)
 {
     int n,mmax,m,j,istep,i;
     double wtemp,wr,wpr,wpi,wi,theta;
@@ -439,7 +440,7 @@ void four1(double *dataF, int nn, int isign)
     while (n > mmax)
     {
         istep = mmax << 1; //istep = mmax * 2;
-        theta = isign * (6.28318530717959 / mmax);
+        theta = isign * (2 * pi / mmax);
         wtemp = sin(0.5 * theta);
         wpr = - 2.0 * wtemp * wtemp;
         wpi = sin(theta);
@@ -607,6 +608,71 @@ QString setFileName(QString const initName)
 //        cout << helpString.toStdString() << endl;
     }
     return helpString;
+}
+
+QString extOf(QString filePath)
+{
+    QString helpString = QDir::toNativeSeparators(filePath);
+    if(helpString.contains('.'))
+    {
+        helpString = helpString.right(helpString.length() - helpString.lastIndexOf('.') - 1);
+        return helpString;
+    }
+    else
+    {
+        return QString();
+    }
+}
+
+QString fileNameOf(QString filePath)
+{
+    QString helpString = QDir::toNativeSeparators(filePath);
+    helpString = helpString.left(helpString.lastIndexOf("."));
+    helpString = helpString.right(helpString.length() - helpString.lastIndexOf(QDir::separator()) - 1);
+    return helpString;
+}
+
+QString getPicPath(const QString & dataPath, QDir * ExpNameDir, int ns)
+{
+    QString fileName = QDir::toNativeSeparators(dataPath);
+    fileName = fileName.right(fileName.length() - fileName.lastIndexOf(QDir::separator()) - 1);
+    fileName.replace('.', '_');
+
+    QString helpString = QDir::toNativeSeparators(ExpNameDir->absolutePath() + QDir::separator());
+
+    if(dataPath.contains("Realisations"))
+    {
+        helpString += "Signals";
+    }
+    else if(dataPath.contains("windows") && !dataPath.contains("fromreal"))
+    {
+        helpString += "Signals" + QString(QDir::separator()) + "windows";
+    }
+    else if(dataPath.contains("cut"))
+    {
+        helpString += "SignalsCut";
+    }
+    helpString += QDir::separator();
+    if(ns == 19)
+    {
+        helpString += "after";
+    }
+    else if(ns == 21)
+    {
+        helpString += "before";
+    }
+    else
+    {
+        helpString += "other";
+    }
+    helpString += QDir::separator() + fileName + ".jpg";
+    return helpString;
+}
+
+ostream & operator << (ostream &os, QString toOut)
+{
+    os << toOut.toStdString();
+    return os;
 }
 
 double vectorLength(double * arr, int len)
@@ -1479,7 +1545,7 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
     paint->end();
 }
 
-void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath="")
+void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath)
 {
 
     int fftLen = int(pow(2., ceil(log(inLength)/log(2.))));
@@ -1562,9 +1628,6 @@ void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, doub
     }
 
 
-
-
-
     if(!picPath.isEmpty())
     {
 
@@ -1600,16 +1663,12 @@ void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, doub
         //end check draw
     }
 
-
-
-
-
     delete []tempArr;
     delete []filteredArr;
 
 }
 
-void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath="")
+void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath)
 {
     int fftLen = int(pow(2., floor(log(inLength)/log(2.))));
     (*out) = new double [2*fftLen];
@@ -2518,6 +2577,107 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
     file.close();
 }
 
+
+QPixmap drawEeg( double ** dataD, int ns, int NumOfSlices, int freq, QString const picPath, double norm)
+{
+    QPixmap pic = QPixmap(NumOfSlices, 600);
+    pic.fill();
+
+    QPainter * paint = new QPainter();
+    paint->begin(&pic);
+
+    QString colour;
+    int lineWidth = 2;
+
+
+    for(int c1 = 0; c1 < pic.width(); ++c1)
+    {
+        for(int c2 = 0; c2 < ns; ++c2)
+        {
+            if(ns == 21 || ns == 22)
+            {
+                if(c2 == 19)        colour = "red";
+                else if(c2 == 20)   colour = "blue";
+                else colour = "black";
+            }
+            else colour = "black";
+
+            paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
+
+            paint->drawLine(c1, (c2+1)*pic.height()/(ns+2) + dataD[c2][c1] / norm, c1+1, (c2+1)*pic.height()/(ns+2) + dataD[c2][c1+1] / norm);
+        }
+    }
+    norm = 1.;
+    paint->setPen(QPen(QBrush("black"), lineWidth));
+    for(int c3 = 0; c3 < NumOfSlices * 10 / 250; ++c3)
+    {
+        if(c3%10 == 0) norm = 20.;
+        else if(c3%5  == 0) norm = 15.;
+
+        paint->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
+        paint->drawText(c3 * freq, pic.height() - 35, QString::number(c3));
+        norm = 10.;
+    }
+
+
+    norm = 1;
+    pic.save(picPath, 0, 100);
+
+    paint->end();
+    delete paint;
+    return pic;
+}
+
+
+QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int freq, const QString picPath, double norm) // haven't checked
+{
+    double stretch = ceil(freq/512); // wtf????
+    QPixmap pic = QPixmap((endTime-startTime)*freq/stretch, 600);  //cut.cpp 851
+    pic.fill();
+    QPainter * paint = new QPainter;
+    paint->begin(&pic);
+
+    QString colour;
+    int lineWidth = 2;
+
+
+
+
+    for(int c1 = 0; c1 < pic.width(); ++c1)
+    {
+        for(int c2 = 0; c2 < ns; ++c2)
+        {
+            if(ns == 21 || ns == 22)
+            {
+                if(c2 == 19)        colour = "red";
+                else if(c2 == 20)   colour = "blue";
+                else colour = "black";
+            }
+            else colour = "black";
+
+            paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
+            paint->drawLine(c1, (c2+1)*pic.height()/(ns+2) +dataD[c2][int(startTime*freq+c1*stretch)]/norm, c1+1, (c2+1)*pic.height()/(ns+2) +dataD[c2][int(startTime*freq+(c1+1)*stretch)]/norm);
+        }
+    }
+
+    paint->setPen("black");
+    for(int c3 = 0; c3 < 25*5+10; ++c3)
+    {
+        if(c3%5  == 0) norm=15.;
+        if(c3%10 == 0) norm=20.;
+
+        paint->drawLine(c3*freq/5, pic.height() - 2, c3*freq/5, pic.height() - 2*norm);
+        paint->drawText(c3*freq, pic.height() - 35, QString::number(c3));
+        norm = 10.;
+    }
+
+    pic.save(picPath, 0, 100);
+
+    paint->end();
+    delete paint;
+    return pic;
+}
+
 void readSpectraFile(QString filePath, double *** outData, int ns, int spLength)
 {
     ifstream file(filePath.toStdString().c_str());
@@ -2709,7 +2869,8 @@ void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength)
 
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB)
 {
-     //[inX[i-1]...inX[i]] - q[i-1] = (1-t)*inY[i-1] + t*inY[i] + t(1-t)(outA[i-1](1-t) + outB[i-1]t));
+
+    //[inX[i-1]...inX[i]] - q[i-1] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
     double ** coefsMatrix;
     matrixCreate(&coefsMatrix, dim, dim);
     for(int i = 0; i < dim; ++i)
