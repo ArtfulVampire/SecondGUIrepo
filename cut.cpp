@@ -442,15 +442,16 @@ void Cut::mousePressSlot(char btn, int coord)
     if(btn == 'l' && coord < rightLimit) leftLimit = coord;
     if(btn == 'r' && coord > leftLimit && coord < NumOfSlices) rightLimit = coord;
 
+    QPixmap pic = currentPic;
     QPainter * painter = new QPainter();
-    painter->begin(&currentPic);
+    painter->begin(&pic);
 
     painter->setPen(QPen(QBrush("blue"), 2));
     painter->drawLine(leftLimit, 0, leftLimit, currentPic.height());
     painter->setPen(QPen(QBrush("red"), 2));
     painter->drawLine(rightLimit, 0, rightLimit, currentPic.height());
 
-    ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->scrollArea->height() - 20)); //-20 generality
+    ui->picLabel->setPixmap(pic.scaled(pic.width(), ui->scrollArea->height() - 20)); //-20 generality
 
     painter->end();
     delete painter;
@@ -670,8 +671,8 @@ void Cut::paint() //save to tmp.jpg and display
     QString helpString;
     helpString = dir->absolutePath() + QDir::separator() + "tmp.jpg";
     currentPic = drawEeg(data3, ns, NumOfSlices, def::freq, helpString, 1.); // generality freq
-    helpString = dir->absolutePath() + QDir::separator() + "tmp1.jpg";
-    currentPic.save(helpString, 0, 100);
+//    helpString = dir->absolutePath() + QDir::separator() + "tmp1.jpg";
+//    currentPic.save(helpString, 0, 100);
 
     ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->scrollArea->height() - 20)); //-20 generality
 
