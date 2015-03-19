@@ -2031,8 +2031,8 @@ void MainWindow::reduceChannelsFast()
         }
     }
 
-    if(!simple)
-//    if(1)
+//    if(!simple)
+    if(1)
     {
         for(int k = 0; k < list.length(); ++k)
         {
@@ -2097,8 +2097,6 @@ void MainWindow::reduceChannelsFast()
                     {
                         sign *= lst[h+1].toDouble();
                     }
-
-    //                cout << sign << " * " << lst[h].toInt() << endl;
                     for(int j = 0; j < ndr*nr[k]; ++j) //generality k
                     {
                         temp[k][j] += sign * data[lst[h].toInt() - 1][j];
@@ -2111,9 +2109,6 @@ void MainWindow::reduceChannelsFast()
                         ++h;
                     }
                 }
-
-
-
             }
             else
             {
@@ -2136,7 +2131,7 @@ void MainWindow::reduceChannelsFast()
             memcpy(data[k], temp[k], ddr*ndr*nr[k] * sizeof(double));
         }
     }
-    else
+    else // very BAD idea
     {
         for(int k = 0; k < list.length(); ++k)
         {
@@ -3218,16 +3213,15 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
     if(ui->sliceCheckBox->isChecked())
     {
+        QStringList list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+        if(!QString(label[list.last().toInt() - 1]).contains("Markers") && ui->reduceChannelsCheckBox->isChecked())
+        {
+            QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
+            return;
+        }
+
         if(!ui->matiCheckBox->isChecked())
         {
-
-            QStringList list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-            if(!QString(label[list.last().toInt() - 1]).contains("Markers") && ui->reduceChannelsCheckBox->isChecked())
-            {
-                QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
-                return;
-            }
-
             if(ui->ntRadio->isChecked()) // for Boris
             {
                 slice(10, 49, "m"); //math.operation
@@ -3240,11 +3234,8 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
             {
                 if(ui->windButton->isChecked()) //bad work
                 {
-
                     timeShift = ui->timeShiftSpinBox->value();
                     wndLength = ui->windowLengthSpinBox->value();
-//                    return;
-
                     for(int i = 0; i < (ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift; ++i)
                     {
 
@@ -3288,32 +3279,12 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                     }
                     else
                     {
-
                         sliceOneByOneNew(numChanToWrite);
-
-
 //                        sliceFromTo(241, 231, "241_pre");
 //                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
 //                        sliceFromTo(247, 237, "247_pre");
-
-                        //                    cout << dir->absolutePath().toStdString() << endl;
-
-                        //delete pre-files from Realisations
-                        dir->cd("Realisations");
-                        lst.clear();
-                        lst = dir->entryList(QStringList("*_pre*"));
-                        for(int i = 0; i < lst.length(); ++i)
-                        {
-                            helpString = dir->absolutePath().append(QDir::separator()).append(lst.at(i));
-                            if(remove(helpString.toStdString().c_str()) != 0)
-                            {
-                                perror("cannot delete file");
-                                break;
-                            }
-                        }
-                        dir->cdUp();
-
-
+//                        helpString = dir->absolutePath() + QDir::separator() + "Realisations";
+//                        cleanDir(helpString, "_pre", false);
                     }
                 }
             }
