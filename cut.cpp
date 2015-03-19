@@ -79,8 +79,6 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
     dir->cdUp();
     currentNumber=-1;
 
-//    QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
-
     QObject::connect(ui->browseButton, SIGNAL(clicked()), browser, SLOT(show()));
     QObject::connect(browser, SIGNAL(fileSelected(QString)), ui->lineEdit, SLOT(setText(QString)));
     QObject::connect(browser, SIGNAL(fileSelected(QString)), this, SLOT(createImage(QString)));

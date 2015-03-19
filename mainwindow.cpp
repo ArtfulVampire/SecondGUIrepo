@@ -2206,7 +2206,7 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
     readData();
     writeEdf(inPath[0], newData, outPath, tempPos, ls);
     matrixDelete(&newData, ns);
-    cout << "concatenate EDF: time = = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "concatenateEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPath)
@@ -2261,7 +2261,7 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
 
     writeEdf(inPath1, newData, outPath, newNdr * def::freq, ls);
     matrixDelete(&newData, ns);
-    cout << "concatenate EDF: time = = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "concatenateEDFs: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 
@@ -2397,7 +2397,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         {
             tempSlice.push_back(newData[i][0]); //save first slice with markers
         }
-        cout << "tempSlice[ns-1] = " << tempSlice[ns-1] << endl;
+//        cout << "tempSlice[ns-1] = " << tempSlice[ns-1] << endl;
 
         QString fileName = newPath;
         fileName.remove(0, fileName.lastIndexOf(QDir::separator())+1);
@@ -2407,7 +2407,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
         splitZeros(&newData, ns, helpInt, &currSlice, helpString, fileName);
 
-        cout << "after zerosSplit newData[ns-1][0] = " << newData[ns-1][0] << endl;
+//        cout << "after zerosSplit newData[ns-1][0] = " << newData[ns-1][0] << endl;
 
         helpString = dir->absolutePath() + QDir::separator() + "splitZerosLog.txt";
         ofstream outStream;
@@ -2442,7 +2442,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         }
         else
         {
-            matiPrintMarker(newData[ns - 1][0], "after if == 0");
+//            matiPrintMarker(newData[ns - 1][0], "after if == 0");
         }
 
         double & firstMarker = newData[ns - 1][0];
@@ -2493,7 +2493,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         delete []newData[i];
     }
     delete []newData;
-    cout << "construct EDF: time = = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "constructEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unused
@@ -9075,9 +9075,9 @@ void MainWindow::customFunc()
         ui->sliceWithMarkersCheckBox->setChecked(true);
         ui->reduceChannelsCheckBox->setChecked(true);
         ui->reduceChannelsComboBox->setCurrentText("Mati");
-        setEdfFile("/media/Files/Data/Mati/ADA/ADA_rr_f.edf");
-        ns = 22;
-        cutShow();
+//        setEdfFile("/media/Files/Data/Mati/ADA/ADA_rr_f.edf");
+//        ns = 22;
+//        cutShow();
 //        drawRealisations();
 //        sliceAll();
 //        ns = 19;

@@ -2594,13 +2594,21 @@ QPixmap drawEeg( double ** dataD, int ns, int NumOfSlices, int freq, QString con
     {
         for(int c2 = 0; c2 < ns; ++c2)
         {
-            if(ns == 21 || ns == 22)
+            if(ns >= 21 && ns < 25)
             {
                 if(c2 == 19)        colour = "red";
                 else if(c2 == 20)   colour = "blue";
                 else colour = "black";
             }
-            else colour = "black";
+            else
+            {
+                colour = "black";
+            }
+
+            if(ns == 23 && c2 == 21)
+            {
+                colour = "green";
+            }
 
             paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
 
@@ -2640,20 +2648,19 @@ QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int fr
     QString colour;
     int lineWidth = 2;
 
-
-
-
     for(int c1 = 0; c1 < pic.width(); ++c1)
     {
         for(int c2 = 0; c2 < ns; ++c2)
         {
-            if(ns == 21 || ns == 22)
+            if(ns > 20 && ns < 25)
             {
                 if(c2 == 19)        colour = "red";
                 else if(c2 == 20)   colour = "blue";
                 else colour = "black";
-            }
+            }            
             else colour = "black";
+
+            if(ns == 23 && c2 == 21) colour = "green";
 
             paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
             paint->drawLine(c1, (c2+1)*pic.height()/(ns+2) +dataD[c2][int(startTime*freq+c1*stretch)]/norm, c1+1, (c2+1)*pic.height()/(ns+2) +dataD[c2][int(startTime*freq+(c1+1)*stretch)]/norm);
