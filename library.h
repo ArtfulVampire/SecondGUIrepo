@@ -102,7 +102,7 @@ double correlation(double * const arr1, double * const arr2, int length, int t =
 double correlationFromZero(double * const arr1, double * const arr2, int length, int t = 0);
 double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
-void splitZeros(double *** inData, int ns, int length, int * outLength, QString logFile = "", QString dataName = "");
+void splitZeros(double *** inData, int ns, int length, int * outLength, const QString &logFile = "", QString dataName = "");
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);

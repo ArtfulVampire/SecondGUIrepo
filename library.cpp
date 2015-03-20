@@ -2737,7 +2737,7 @@ void readFileInLine(QString filePath, double ** outData, int len)
     file.close();
 }
 
-void splitZeros(double *** dataIn, int ns, int length, int * outLength, QString logFile, QString dataName)
+void splitZeros(double *** dataIn, int ns, int length, int * outLength, const QString &logFile, QString dataName)
 {
     bool flag[length]; //1 if usual, 0 if eyes
     bool startFlag = false;

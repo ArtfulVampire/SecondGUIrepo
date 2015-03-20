@@ -2371,7 +2371,9 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     int currSlice = 0;
     for(int i = 0; i < lst.length(); ++i)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator() + lst[i]);
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + QDir::separator() + "Realisations"
+                                              + QDir::separator() + lst[i]);
         file = fopen(helpString.toStdString().c_str(), "r");
         fscanf(file, "NumOfSlices %d", &NumOfSlices);
 
@@ -2389,7 +2391,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     int helpInt = currSlice;
 
     int offset;
-    if(ui->matiCheckBox->isChecked())
+    if(ui->matiCheckBox->isChecked()) // bicycle generality
     {
         //save first marker
         vector<double> tempSlice;
@@ -2402,14 +2404,11 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         QString fileName = newPath;
         fileName.remove(0, fileName.lastIndexOf(QDir::separator())+1);
 
-        helpString = dir->absolutePath() + QDir::separator() + "splitZerosLog.txt";
+        helpString = dir->absolutePath()
+                    + QDir::separator() + ExpName.left(3) + "_splitZerosLog.txt";
         helpInt = currSlice;
 
-        splitZeros(&newData, ns, helpInt, &currSlice, helpString, fileName);
-
-//        cout << "after zerosSplit newData[ns-1][0] = " << newData[ns-1][0] << endl;
-
-        helpString = dir->absolutePath() + QDir::separator() + "splitZerosLog.txt";
+        splitZeros(&newData, ns, helpInt, &currSlice, helpString, fileName); // helpString unchanged
         ofstream outStream;
         outStream.open(helpString.toStdString().c_str(), ios_base::app);
 
