@@ -2691,11 +2691,11 @@ void MainWindow::readData()
     {
         if(QString(label[i]).contains("EOG 1"))
         {
-            strcpy(label[i], "EOG EOG1-A1     ");
+            strcpy(label[i], "EOG EOG1-A2     ");
         }
         else if(QString(label[i]).contains("EOG 2"))
         {
-            strcpy(label[i], "EOG EOG2-A2     ");
+            strcpy(label[i], "EOG EOG2-A1     ");
         }
     }
 
