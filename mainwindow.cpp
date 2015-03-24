@@ -2681,12 +2681,9 @@ void MainWindow::readData()
         fprintf(header, "%c", label[i/16][i%16]);
         if(flag==1) fprintf(edfNew, "%c", label[i/16][i%16]);
         if(i%16==15) label[i/16][16]='\0';
-
     }
 
     //edit EOG channels generality for encephalan
-
-    //or A1 A2 vice versa???
     for(int i = 0; i < ns; ++i)
     {
         if(QString(label[i]).contains("EOG 1"))
