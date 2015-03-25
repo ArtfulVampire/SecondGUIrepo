@@ -1784,6 +1784,9 @@ void MainWindow::refilterDataSlot()
     QString helpString = dir->absolutePath() + QDir::separator() + ExpName + ".edf"; //ui->filePathLineEdit->text()
     helpString.replace(".edf", "_f.edf");
     refilterData(lowFreq, highFreq, helpString);
+    int tmp = ui->reduceChannelsComboBox->currentIndex();
+    ui->reduceChannelsComboBox->setCurrentIndex(0);
+    ui->reduceChannelsComboBox->setCurrentIndex(tmp);
 }
 
 void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
@@ -2267,6 +2270,8 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
 
 void MainWindow::constructEDFSlot()
 {
+    QTime myTime;
+    myTime.start();
     QString helpString;
     QStringList filters;
     if(!ui->matiCheckBox->isChecked())
@@ -2317,6 +2322,12 @@ void MainWindow::constructEDFSlot()
         }
 
     }
+    cout << "constructEdf: FULL time = " << myTime.elapsed()/1000. << " sec" << endl;
+
+    helpString = "constructEdf finished\n";
+    helpString += "ns equals to ";
+    helpString += QString::number(ns);
+    ui->textEdit->append(helpString);
 }
 
 void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all the realisations, to newPath based on ui->filePathLineEdit
@@ -2355,7 +2366,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
     if(lst.isEmpty())
     {
-        cout << "constructEDF: list of realisations is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
+//        cout << "constructEDF: list of realisations is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
         return;
     }
 
@@ -2422,13 +2433,13 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
         //write the exclusion of the first part
         outStream << fileName.toStdString() << "\t";
-        outStream << 1 << "\t";
-        outStream << offset - 1 << "\t";
-        outStream << offset - 2 << "\t";
+        outStream << 0 << "\t"; // first bin to exclude
+        outStream << offset - 1 << "\t"; // last bin to exclude
+        outStream << offset << "\t"; // length
 
-        outStream << "0.000" << "\t";
-        outStream << (offset - 1)/def::freq << "\t";
-        outStream << (offset - 2)/def::freq << endl << endl;
+        outStream << "0.000" << "\t"; // start time to exclude
+        outStream << (offset - 1) / def::freq << "\t"; // finish time to exclude
+        outStream << offset / def::freq << endl << endl; // length
         outStream.close();
 
         currSlice -= offset;
@@ -2457,7 +2468,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         if((matiCountBit(firstMarker, 10) == matiCountBit(lastMarker, 10)) || lastMarker == 0) //if not one of them is the end of some session
         {
             lastMarker = firstMarker
-                + pow(2, 10) * ((matiCountBit(firstMarker, 10))?-1:1); //adjust the last marker
+                    + pow(2, 10) * ((matiCountBit(firstMarker, 10))?-1:1); //adjust the last marker
         }
 //        matiPrintMarker(firstMarker, "newFirst");
 //        matiPrintMarker(lastMarker, "newLast");
@@ -3054,8 +3065,7 @@ void MainWindow::readData()
     helpString="data have been read ";
     ui->textEdit->append(helpString);
 
-    helpString="ns equals to ";
-    helpString.append(QString::number(ns));
+    helpString = "ns equals to " + QString::number(ns);
     ui->textEdit->append(helpString);
 
     staSlice += 3; //generality LAWL
@@ -3064,7 +3074,7 @@ void MainWindow::readData()
     ui->markerSecTimeDoubleSpinBox->setMaximum(ndr * ddr);
     ui->markerBinTimeSpinBox->setMaximum(nr[ns-1] * ndr * ddr);
 
-    cout << "readData: time = " << myTime.elapsed()/1000. << " sec" << endl;
+//    cout << "readData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 

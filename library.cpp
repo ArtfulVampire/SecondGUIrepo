@@ -2785,7 +2785,7 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, const QS
         {
             if(!flag[i]) //if eyes-slice - set start
             {
-                start = i;
+                start = i; // first bin to exclude
                 startFlag = true;
             }
         }
@@ -2793,16 +2793,21 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, const QS
         {
             if(flag[i] || i == length-1 - allEyes) //if we meet the end of eyes-interval OR reached end of a data
             {
-                finish = i;
+                finish = i - 1; // last bin to exclude
                 outStream << dataName.toStdString() << "\t";
-                outStream << start + allEyes << "\t" << finish - 1 + allEyes << "\t" << finish - start << "\t";
-                outStream << (start + allEyes)/def::freq << "\t" << (finish - 1 + allEyes)/def::freq << "\t" << (finish - start)/def::freq << endl;
+                outStream << start + allEyes << "\t";
+                outStream << finish + allEyes << "\t";
+                outStream << finish - start + 1 << "\t"; // length
+
+                outStream << (start + allEyes) / def::freq << "\t"; // start time
+                outStream << (finish + allEyes) / def::freq << "\t"; // finish time
+                outStream << (finish - start + 1) / def::freq << endl; // length
 
                 startFlag = 0;
                 //split
-                for(int k = start; k < length - allEyes - (finish - start); ++k)
+                for(int k = start; k < length - allEyes - (finish - start); ++k) ///////////////////////////////////////////// AllEyes problem ?????????????????
                 {
-                    for(int j = 0; j < ns; ++j) //shift with markers
+                    for(int j = 0; j < ns; ++j) //shift with markers and flags
                     {
                         (*dataIn)[j][k] = (*dataIn)[j][k + (finish - start)];
                         flag[k] = flag[k + (finish - start)];

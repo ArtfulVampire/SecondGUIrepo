@@ -81,7 +81,7 @@ void Eyes::eyesClean()
         for(int i = 0; i < NumEog; ++i)
         {
             fscanf(coef, "%lf ", &coefficients[k][i]);
-            cout << "coefficients[" << k << "][" << i << "] = " << coefficients[k][i] << endl;
+//            cout << "coefficients[" << k << "][" << i << "] = " << coefficients[k][i] << endl;
         }
         fscanf(coef, "\n");
     }

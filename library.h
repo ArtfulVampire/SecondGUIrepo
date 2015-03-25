@@ -52,8 +52,8 @@ double doubleRound(double in, int numSigns);
 int findChannel(char ** const labelsArr, QString chanName, int ns = 21);
 QString setFileName(QString const initName); //-> initName_i.ext
 QString getPicPath(const QString & dataPath, QDir *ExpNameDir, int ns);
-QString fileNameOf(QString filePath);
-QString extOf(QString filePath);
+QString getFileName(QString filePath);
+QString getExtOf(QString filePath);
 ostream & operator << (ostream &os, QString toOut);
 
 //wavelets

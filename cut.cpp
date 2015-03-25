@@ -31,16 +31,19 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
     ui->eogDoubleSpinBox->setValue(2.40);
     ui->eogDoubleSpinBox->setSingleStep(0.1);
 
+    ui->drawNormDoubleSpinBox->setValue(1.);
+    ui->drawNormDoubleSpinBox->setMaximum(10.);
+    ui->drawNormDoubleSpinBox->setMinimum(0.01);
+    ui->drawNormDoubleSpinBox->setDecimals(2);
 
 
     ui->nsBox->setMaximum(40);
     ui->checkBox->setChecked(true);
-    ui->checkBox_2->setChecked(true);
-    ui->timeShiftSpinBox->setMaximum(1000.);
-    ui->timeShiftSpinBox->setValue(125.);
-    ui->timeShiftSpinBox->setSingleStep(25.);
+//    ui->timeShiftSpinBox->setMaximum(1000.);
+//    ui->timeShiftSpinBox->setValue(125.);
+//    ui->timeShiftSpinBox->setSingleStep(25.);
 
-    ui->wndLengthSpinBox->setValue(4.0);
+//    ui->wndLengthSpinBox->setValue(4.0);
 
     ui->dirBox->addItem("Realisations");
     ui->dirBox->addItem("cut");
@@ -50,8 +53,8 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
 //    this->ui->lineEdit_1->setText("0.0");
 //    this->ui->lineEdit_2->setText("125");
 //    this->ui->lineEdit_3->setText("4.0");
-    this->ui->extYbox->setValue(7);
-    this->ui->tempSpinBox->setMaximum(1500);
+//    this->ui->extYbox->setValue(7);
+//    this->ui->tempSpinBox->setMaximum(1500);
     ui->nextButton->setShortcut(tr("d"));
     ui->prevButton->setShortcut(tr("a"));
     ui->cutButton->setShortcut(tr("c"));
@@ -97,7 +100,7 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
     QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
     QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitCut()));
 
-    this->ui->tempSpinBox->setValue(10);
+//    this->ui->tempSpinBox->setValue(10);
     this->setAttribute(Qt::WA_DeleteOnClose);
 
 
@@ -525,9 +528,76 @@ void Cut::prev()
     }
 }
 
+void Cut::matiAdjustLimits()
+{
+    QStringList lst = currentFile.split(QRegExp("[_.]"),
+                                        QString::SkipEmptyParts);
+    int tempNum;
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        if(QString(lst[i].toInt()) == lst[i])
+        {
+            tempNum = i;
+            break;
+        }
+    }
+    int typeNum = lst[tempNum].toInt();
+    int sesNum = lst[tempNum + 1].toInt();
+    int pieceNum = lst[tempNum + 2].toInt();
+
+    if(typeNum != 0 && typeNum != 2) return;
+
+    int newLeftLimit = leftLimit;
+    int newRightLimit = rightLimit;
+
+    while (!matiCountBit(data3[ns - 1][newLeftLimit], 14) && newLeftLimit > 0)
+    {
+        --newLeftLimit;
+    }
+    while (!matiCountBit(data3[ns - 1][newRightLimit], 14) && newRightLimit < NumOfSlices)
+    {
+        ++newRightLimit;
+    }
+
+    // adjust limits
+    ++newLeftLimit; // after the previous marker
+    --newRightLimit;
+    if(newLeftLimit == 0)
+    {
+        int tempLimit;
+        //cut end in previous file, suspect that there ARE count answers
+        if(pieceNum != 0) // if this piece is not the first in the session
+        {
+            prev();
+            tempLimit = rightLimit;
+            while (!matiCountBit(data3[ns - 1][tempLimit], 14) && newLeftLimit > 0)
+            {
+                --newLeftLimit;
+            }
+            ++newLeftLimit;
+        }
+
+        //zero this file
+    }
+
+
+}
+
 void Cut::zero()
 {
     int h = 0;
+
+    //if MATI with counts - adjust limits to problem edges
+    //move leftLimit after the nearest marker
+    //move rightLimit after the nearest marker
+
+    //ExpName.left(3)_rr_f_TYPE_SESSION_PIECE.MARKER
+    QString helpString = ExpName + "_0_";
+    if(currentFile.contains(helpString))
+    {
+        matiAdjustLimits();
+    }
+
     for(int i = leftLimit; i < rightLimit; ++i)         //zoom
     {
         for(int k = 0; k < ns; ++k)
@@ -543,7 +613,7 @@ void Cut::zero()
     }
 
     this->ui->spinBox->setValue(NumOfSlices-Eyes);
-    this->ui->doubleSpinBox->setValue((NumOfSlices-Eyes)/250.);
+    this->ui->doubleSpinBox->setValue((NumOfSlices-Eyes) / def::freq);
 
     paint();
 }
@@ -651,7 +721,7 @@ void Cut::rewrite()
     {
         for(int k = 0; k < ns; ++k)
         {
-            fprintf(file, "%lf\n", data3[k][i]);
+            fprintf(file, "%.4lf\n", data3[k][i]);
         }
     }
     fclose(file);
@@ -668,9 +738,16 @@ void Cut::paint() //save to tmp.jpg and display
 {
     QString helpString;
     helpString = dir->absolutePath() + QDir::separator() + "tmp.jpg";
-    currentPic = drawEeg(data3, ns, NumOfSlices, def::freq, helpString, 1.); // generality freq
-//    helpString = dir->absolutePath() + QDir::separator() + "tmp1.jpg";
-//    currentPic.save(helpString, 0, 100);
+
+    currentPic = drawEeg(data3,
+                         ns,
+                         NumOfSlices,
+                         def::freq,
+                         helpString,
+                         ui->drawNormDoubleSpinBox->value()); // generality freq
+
+//    helpString = getPicPath(currentFile, dir, ns);
+//    currentPic.load(helpString);
 
     ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->scrollArea->height() - 20)); //-20 generality
 

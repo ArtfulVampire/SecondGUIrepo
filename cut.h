@@ -37,6 +37,7 @@ public:
     ~Cut();
     bool eventFilter(QObject *obj, QEvent *event);
     void setAutoProcessingFlag(bool);
+    void matiAdjustLimits();
 
 public slots:
     void createImage(QString dataFileName);
