@@ -4,6 +4,59 @@ edfFile::edfFile()
 {
 }
 
+edfFile::edfFile(int in_ns, int in_dataLength)
+{
+    this->ns = in_ns;
+    this->dataLength = in_dataLength;
+}
+edfFile::edfFile(edfFile & other)
+{
+    (*this) = edfFile(other.getNs(),
+                   other.getNdr(),
+                   other.getDdr(),
+                   other.getNr(),
+                   other.getData(),
+                   other.getLabels(),
+                   other.getPhysMin(),
+                   other.getPhysMax(),
+                   other.getDigMin(),
+                   other.getDigMax());
+}
+
+edfFile::edfFile(int in_ns,
+                 int in_ndr,
+                 int in_ddr,
+                 vector<double> in_nr,
+                 vector < vector<double> > in_data,
+                 vector<QString> in_labels,
+                 vector<double> in_physMin,
+                 vector<double> in_physMax,
+                 vector<double> in_digMin,
+                 vector<double> in_digMax)
+{
+    this->ns = in_ns;
+    this->ndr = in_ndr;
+    this->ddr = in_ddr;
+    this->nr = in_nr;
+    this->data = in_data;
+    this->labels = in_labels;
+
+    this->physMax = in_physMax;
+    this->physMin = in_physMin;
+    this->digMax = in_digMax;
+    this->digMin = in_digMin;
+    this->dataLength = this->ndr * this->nr[0];
+
+    this->filePath = QString();
+    this->ExpName = QString();
+    this->dirPath = QString();
+
+    this->headerInitialInfo = QString(184, QChar(' '));
+    this->bytes = 256 * (this->ns + 1);
+    this->headerReservedField = QString(44, QChar(' '));
+    this->restOfHeader = QString();
+}
+
 template <typename Typ>
 void edfFile::handleParam(Typ & qStr,
                           int length,
@@ -109,7 +162,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
     //    8 ascii : number of data records (-1 if unknown, obey item 10 of the additional EDF+ specs)
     //    8 ascii : duration of a data record, in seconds
     //    4 ascii : number of signals (ns) in data record
-    //    ns * 16 ascii : ns * label (e.g. EEG Fpz-Cz or Body temp) (mind item 9 of the additional EDF+ specs)
+    //    ns * 16 ascii : ns * labels (e.g. EEG Fpz-Cz or Body temp) (mind item 9 of the additional EDF+ specs)
     //    ns * 80 ascii : ns * transducer type (e.g. AgAgCl electrode)
     //    ns * 8 ascii : ns * physical dimension (e.g. uV or degreeC)
     //    ns * 8 ascii : ns * physical minimum (e.g. -500 or 34)
@@ -163,32 +216,32 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
     handleParam(ndr, 8, readFlag, edfDescriptor, header);
     handleParam(ddr, 8, readFlag, edfDescriptor, header);
     handleParam(ns, 4, readFlag, edfDescriptor, header);
-    handleParamArray(label, ns, 16, readFlag, edfDescriptor, header);
+    handleParamArray(labels, ns, 16, readFlag, edfDescriptor, header);
     //edit EOG channels generality for encephalan
     for(int i = 0; i < ns; ++i)
     {
-        if(label[i].contains("EOG 1"))
+        if(labels[i].contains("EOG 1"))
         {
-            label[i] = "EOG EOG1-A2     ";
+            labels[i] = "EOG EOG1-A2     ";
         }
-        else if(label[i].contains("EOG 2"))
+        else if(labels[i].contains("EOG 2"))
         {
-            label[i] = "EOG EOG2-A1     ";
+            labels[i] = "EOG EOG2-A1     ";
         }
-        else if(label[i].contains("Marker"))
+        else if(labels[i].contains("Marker"))
         {
             markerChannel = i;
         }
     }
 
     helpString = QDir::toNativeSeparators( dirPath + slash() + "labels.txt" );
-    FILE * labels;
-    labels = fopen(helpString, "w");
-    for(int i = 0; i < ns; ++i)                         //label write in file
+    FILE * labelsFile;
+    labelsFile = fopen(helpString, "w");
+    for(int i = 0; i < ns; ++i)                         //labels write in file
     {
-        fprintf(labels, "%s\n", label[i].toStdString().c_str());
+        fprintf(labelsFile, "%s\n", labels[i].toStdString().c_str());
     }
-    fclose(labels);
+    fclose(labelsFile);
 
     handleParamArray(transducerType, ns, 80, readFlag, edfDescriptor, header);
     handleParamArray(physDim, ns, 8, readFlag, edfDescriptor, header);
@@ -522,4 +575,26 @@ const QString & edfFile::getDirPath() const
 const QString & edfFile::getExpName() const
 {
     return ExpName;
+}
+
+
+const vector<QString> & edfFile::getLabels() const
+{
+    return labels;
+}
+const vector<double> & edfFile::getPhysMax() const
+{
+    return physMax;
+}
+const vector<double> & edfFile::getPhysMin() const
+{
+    return physMin;
+}
+const vector<double> & edfFile::getDigMax() const
+{
+    return digMax;
+}
+const vector<double> & edfFile::getDigMin() const
+{
+    return digMin;
 }

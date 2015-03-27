@@ -9,9 +9,20 @@ using namespace std;
 class edfFile
 {
 public:
-    edfFile();
     typedef vector< vector <double> > dataType;
 
+    edfFile();
+    edfFile(int in_ns, int in_dataLength);
+    edfFile(int in_ns,
+            int in_ndr, int in_ddr, vector<double> in_nr,
+            vector < vector<double> > in_data,
+            vector<QString> in_labels,
+            vector<double> in_physMin,
+            vector<double> in_physMax,
+            vector<double> in_digMin,
+            vector<double> in_digMax);
+
+    edfFile(edfFile & other);
 
     void readEdfFile(QString EDFpath, bool matiFlag = true, bool ntFlag = false);
     void writeEdfFile(QString EDFpath, bool matiFlag = true, bool ntFlag = false);
@@ -64,33 +75,39 @@ public:
                            QString helpString,
                            vector<QString> annotations);
 
+//    void appendFile(QString initPath, QString addPath, QString outPath);
+//    void appendData(QString initPath, int addNs, double ** addData, vector<QString> addLabels);
+
 private:
+    QString filePath;
+    QString ExpName;
+    QString dirPath;
+
     int bytes;
-    int ns;
-    int ndr;
     int dataLength;
     int markerChannel;
+
+    int ns;
+    int ndr;
     double ddr;
     vector <double> nr; // it is int really
-    vector <QString> label;
+    vector <QString> labels;
     vector <QString> transducerType;
     vector <QString> physDim;
     vector <QString> prefiltering;
     vector <QString> reserved;
-
     vector <double> physMax;
     vector <double> physMin;
     vector <double> digMax;
     vector <double> digMin;
+
     QString headerInitialInfo;
     QString headerReservedField;
     QString restOfHeader;
     dataType data; // matrix.cpp
+
     int staSlice;
 
-    QString filePath;
-    QString ExpName;
-    QString dirPath;
 public:
     const dataType & getData() const;
     void getDataCopy(dataType & destination) const;
@@ -103,6 +120,13 @@ public:
     const QString & getFilePath() const;
     const QString & getDirPath() const ;
     const QString & getExpName() const;
+
+    const vector<QString> & getLabels() const;
+    const vector<double> & getPhysMax() const;
+    const vector<double> & getPhysMin() const;
+    const vector<double> & getDigMax() const;
+    const vector<double> & getDigMin() const;
+
 };
 
 #endif // EDFFILE_H
