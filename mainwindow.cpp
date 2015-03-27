@@ -867,7 +867,7 @@ void MainWindow::setEdfFile(QString const filePath)
 
     //set ExpName
 
-    ExpName = expName(filePath);
+    ExpName = getExpNameLib(filePath);
     ui->Name->setText(ExpName);
 
     helpString.resize(helpString.lastIndexOf(QDir::separator()));
@@ -2268,6 +2268,17 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
 }
 
 
+void MainWindow::appendChannelsSlot()
+{
+    //read the new
+//    appendChannels();
+}
+
+//void MainWindow::appendChannels(QString inEDFpath1, QString inEDFpath2, QString outPath)
+//{
+
+//}
+
 void MainWindow::constructEDFSlot()
 {
     QTime myTime;
@@ -2625,7 +2636,8 @@ void MainWindow::readData()
         fprintf(header, "%c", helpCharArr[i]);
         if(flag==1) fprintf(edfNew, "%c", helpCharArr[i]);
     }
-    bytes=atoi(helpCharArr);
+    helpCharArr[8] = '\0';
+    bytes = atoi(helpCharArr);
 
 
 
@@ -2644,7 +2656,8 @@ void MainWindow::readData()
         fscanf(edf, "%c", &helpCharArr[i]);
         fprintf(header, "%c", helpCharArr[i]);
     }
-    ndr=atoi(helpCharArr);                      //NumberOfDataRecords
+    helpCharArr[8] = '\0';
+    ndr = atoi(helpCharArr);                      //NumberOfDataRecords
 
     //duration of a data record, in seconds
     for(int i = 0; i < 8; ++i)
@@ -2652,8 +2665,10 @@ void MainWindow::readData()
         fscanf(edf, "%c", &helpCharArr[i]);
         fprintf(header, "%c", helpCharArr[i]);
     }
+    helpCharArr[8] = '\0';
     ddr = atoi(helpCharArr);                       //DurationOfDataRecord
 //    cout << "ddr=" << ddr << endl;
+
 
     if(flag==1)
     {
@@ -2661,14 +2676,14 @@ void MainWindow::readData()
         helpString.setNum(helpInt);
 
         int s = 0;
-        s=fprintf(edfNew, "%d", helpInt);
-        for(int i=s; i < 8; ++i)
+        s = fprintf(edfNew, "%d", helpInt);
+        for(int i = s; i < 8; ++i)
         {
-            fprintf(edfNew, "%c", char(32));
+            fprintf(edfNew, "%c", char(32)); // char(32) is space
         }
 
-        s=fprintf(edfNew, "%d", ddr);
-        for(int i=s; i < 8; ++i)
+        s = fprintf(edfNew, "%d", ddr);
+        for(int i = s; i < 8; ++i)
         {
             fprintf(edfNew, "%c", char(32));
         }
@@ -2682,8 +2697,8 @@ void MainWindow::readData()
         fprintf(header, "%c", helpCharArr[i]);
         if(flag==1) fprintf(edfNew, "%c", helpCharArr[i]);
     }
+    helpCharArr[4] = '\0';
     ns = atoi(helpCharArr);                        //Number of channels
-//    cout << "ns = " << ns << endl;
 
     //labels
     for(int i = 0; i < ns*16; ++i)
@@ -2719,7 +2734,7 @@ void MainWindow::readData()
     }
 
     //transducer type
-    for(int i = 0; i < ns*80; ++i)                      //rest of header
+    for(int i = 0; i < ns * 80; ++i)                      //rest of header
     {
         fscanf(edf, "%c", &helpChar);
         fprintf(header, "%c", helpChar);
@@ -2883,23 +2898,11 @@ void MainWindow::readData()
                     }
                 }
 
+                //handle annotations
                 //edf+
-                if(j==ns-1)  ////////generality?/////////
+                if(j == ns-1)  ////////generality?/////////
                 {
-                    currStart = 0;
-                    for(int l = 0; l < len(helpString); ++l)
-                    {
-                        if(int(helpString.toStdString()[l])== 0 || (int(helpString.toStdString()[l])==20 && (int(helpString.toStdString()[l+1])== 0 || int(helpString.toStdString()[l+1])==20)))
-                        {
-                            for(int p=currStart; p < l; ++p)
-                            {
-                                annotations[numOfAnn].append(helpString[p]);
-                            }
-                            ++numOfAnn;
-                            while((int(helpString.toStdString()[l])== 0 || int(helpString.toStdString()[l])==20) && l < len(helpString)) ++l;
-                            currStart=l;
-                        }
-                    }
+
                 }
 
             }
@@ -2962,6 +2965,7 @@ void MainWindow::readData()
                         }
                     }
 
+                    //handle markers
                     if(j == ns-1)
                     {
                         markerValue = data[j][i*nr[j]+k];
@@ -4167,6 +4171,11 @@ void MainWindow::sliceMati(int numChanWrite)
             ++session[type];
 
         }
+        qApp->processEvents();
+        if (stopFlag == 1)
+        {
+            break;
+        }
     }
 //    } while (!markersFile.eof());
 
@@ -4243,6 +4252,7 @@ void MainWindow::sliceMati(int numChanWrite)
     }
 
     cout << "sliceMati: time = " << myTime.elapsed()/1000. << " sec" << endl;
+    stopFlag = 0;
 }
 
 void MainWindow::eyesFast()  //generality
@@ -4530,10 +4540,9 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
         lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
         for(int i = 0; i < lst.length(); ++i)
         {
-            chanList << lst[i].toInt()-1;
+            chanList << lst[i].toInt() - 1;
         }
     }
-
     int newNs = chanList.length();
 
 
@@ -9076,12 +9085,14 @@ void MainWindow::customFunc()
 //        cout << fileNameOf(helpString1) << endl;
 
 
-        ui->matiCheckBox->setChecked(true);
-        ui->sliceCheckBox->setChecked(true);
-        ui->sliceWithMarkersCheckBox->setChecked(true);
-        ui->reduceChannelsCheckBox->setChecked(true);
-        ui->reduceChannelsComboBox->setCurrentText("Mati");
-//        setEdfFile("/media/Files/Data/Mati/ADA/ADA_rr_f.edf");
+//        ui->matiCheckBox->setChecked(true);
+//        ui->sliceCheckBox->setChecked(true);
+//        ui->sliceWithMarkersCheckBox->setChecked(true);
+//        ui->reduceChannelsCheckBox->setChecked(true);
+//        ui->reduceChannelsComboBox->setCurrentText("Mati");
+        setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
+        readData();
+        exit(0);
 //        ns = 22;
 //        cutShow();
 //        drawRealisations();

@@ -75,6 +75,7 @@ public slots:
     void drawMapsSlot();
     void makeDatFile();
     void constructEDFSlot();
+    void appendChannelsSlot();
     void reduceChannelsEDFSlot();
     void saveEdfNewMarkersSlot();
     void markerGetSlot();
@@ -137,6 +138,7 @@ public:
     void transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath);
     void reduceChannelsEDF(QString newFilePath);
     void constructEDF(QString newPath, QStringList nameFilters = QStringList());
+//    void appendChannels(QString inEDFpath, const double ** addData, const int & addNs);
     void concatenateEDFs(QString inPath1, QString inPath2, QString outPath);
     void concatenateEDFs(QStringList inPath, QString outPath);
     void writeCorrelationMatrix(QString edfPath, QString outPath);

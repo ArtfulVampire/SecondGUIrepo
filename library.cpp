@@ -610,7 +610,20 @@ QString setFileName(QString const initName)
     return helpString;
 }
 
-QString extOf(QString filePath)
+QString getExpNameLib(QString const filePath)
+{
+    QString hlp;
+    hlp = filePath;
+    int a = hlp.lastIndexOf(QDir::separator());
+    if(a > 0)
+    {
+        hlp.remove(0, a + 1); // delete the start of the path
+    }
+    hlp.remove(hlp.indexOf('.'), 4); // delete the extension
+    return hlp;
+}
+
+QString getExt(QString filePath)
 {
     QString helpString = QDir::toNativeSeparators(filePath);
     if(helpString.contains('.'))
@@ -624,7 +637,7 @@ QString extOf(QString filePath)
     }
 }
 
-QString fileNameOf(QString filePath)
+QString getFileName(QString filePath)
 {
     QString helpString = QDir::toNativeSeparators(filePath);
     helpString = helpString.left(helpString.lastIndexOf("."));
@@ -667,6 +680,31 @@ QString getPicPath(const QString & dataPath, QDir * ExpNameDir, int ns)
     }
     helpString += QDir::separator() + fileName + ".jpg";
     return helpString;
+}
+QString slash()
+{
+    return QString(QDir::separator());
+}
+
+char * strToChar(const QString & input)
+{
+    char * array = new char [input.length() + 1];
+    memcpy(array, input.toStdString().c_str(), input.length());
+    array[input.length()] = '\0';
+    return array;
+}
+
+char * QStrToCharArr(const QString & input)
+{
+    char * array = new char [input.length() + 1];
+    memcpy(array, input.toStdString().c_str(), input.length());
+    array[input.length()] = '\0';
+    return array;
+}
+
+FILE * fopen(QString filePath, const char *__modes)
+{
+    return fopen(filePath.toStdString().c_str(), __modes);
 }
 
 ostream & operator << (ostream &os, QString toOut)
@@ -1396,28 +1434,26 @@ double distanceMah(double * const vect, double ** const group, int dimension, in
     return res;
 }
 
-QString rightNumber(int input, int N)
+QString fitNumber(const double &input, int N)
 {
     QString h;
     h.setNum(input);
-    if(input== 0)
+    for(int i = 0; i < N; ++i)
     {
-        h="";
-        for(int j = 0; j < N; ++j)
-        {
-            h.prepend("0");
-        }
-        return h;
+        h += " ";
     }
-    for(int i=1; i < N; ++i)
+    return h.left(N);
+}
+
+QString rightNumber(const int &input, int N)
+{
+    QString h;
+    h.setNum(input);
+    for(int i = 0; i < N; ++i)
     {
-        if(log10(input)>=i-1 && log10(input) < i)
-            for(int j=i; j < N; ++j)
-            {
-                h.prepend("0");
-            }
+        h.prepend("0");
     }
-    return h;
+    return h.right(N);
 }
 
 void drawArray(double * array, int length, QString outPath)
@@ -2737,8 +2773,27 @@ void readFileInLine(QString filePath, double ** outData, int len)
     file.close();
 }
 
-void splitZeros(double *** dataIn, int ns, int length, int * outLength, const QString &logFile, QString dataName)
+void zeroData(double *** inData, const int &ns, const int &leftLimit, const int &rightLimit, const bool &withMarkersFlag)
 {
+    int h = 0;
+    for(int i = leftLimit; i < rightLimit; ++i)         // zoom
+    {
+        for(int k = 0; k < ns; ++k)
+        {
+            if((*inData)[k][i] == 0.) h += 1;
+            if(k == ns - 1 && withMarkersFlag)
+            {
+                continue; // generality dont touch markers channel
+            }
+            (*inData)[k][i] = 0.;
+        }
+    }
+}
+
+void splitZeros(double *** dataIn, const int & ns, const int & length, int * outLength, const QString &logFile, QString dataName)
+{
+    //remake with std::list of slices
+
     bool flag[length]; //1 if usual, 0 if eyes
     bool startFlag = false;
     int start = -1;
@@ -2803,18 +2858,20 @@ void splitZeros(double *** dataIn, int ns, int length, int * outLength, const QS
                 outStream << (finish + allEyes) / def::freq << "\t"; // finish time
                 outStream << (finish - start + 1) / def::freq << endl; // length
 
-                startFlag = 0;
                 //split
-                for(int k = start; k < length - allEyes - (finish - start); ++k) ///////////////////////////////////////////// AllEyes problem ?????????????????
+                for(int k = start; k < start + (length-1 - allEyes) - finish; ++k)
                 {
                     for(int j = 0; j < ns; ++j) //shift with markers and flags
                     {
-                        (*dataIn)[j][k] = (*dataIn)[j][k + (finish - start)];
-                        flag[k] = flag[k + (finish - start)];
+                        (*dataIn)[j][k] = (*dataIn)[j][k + (finish - start + 1)];
+                        flag[k] = flag[k + (finish - start + 1)];
                     }
                 }
-                allEyes += finish-start;
-                i -= finish-start;
+
+                allEyes += finish - start + 1;
+                i -= finish - start + 1;
+                startFlag = 0;
+
                 if(i == length-1 - allEyes) break;
             }
         }
@@ -3197,19 +3254,6 @@ void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int co
 */
     }
     delete []spectre;
-}
-
-QString expName(QString const filePath)
-{
-    QString hlp;
-    hlp = filePath;
-    int a = hlp.lastIndexOf(QDir::separator());
-    if(a > 0)
-    {
-        hlp.remove(0, a + 1); // delete the start of the path
-    }
-    hlp.remove(hlp.indexOf('.'), 4); // delete the extension
-    return hlp;
 }
 
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double ** classCount)

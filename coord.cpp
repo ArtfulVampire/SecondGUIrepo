@@ -13,6 +13,7 @@ namespace coords
 namespace def
 {
 
+
     const double freq = 250.;
     const double leftFreq = 5.;
     const double rightFreq = 20.;

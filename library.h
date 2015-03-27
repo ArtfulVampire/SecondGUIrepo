@@ -35,7 +35,6 @@
 //#include <itpp/itbase.h>
 //#include <mlpack/core.hpp>
 //#include <mlpack/methods/pca/pca.hpp>
-#define pi 3.141592653589
 
 
 
@@ -44,17 +43,25 @@ using namespace std;
 //using namespace mlpack;
 
 
+const double pi = 3.141592653589;
 
 //void QDoubleSpinBox::mySlot(double val)
 int len(QString s); // string length for EDF+ annotations
-QString rightNumber(int input, int N); // prepend zeros
+QString rightNumber(const int & input, int N); // prepend zeros
+QString fitNumber(const double & input, int N); // append spaces
 double doubleRound(double in, int numSigns);
 int findChannel(char ** const labelsArr, QString chanName, int ns = 21);
 QString setFileName(QString const initName); //-> initName_i.ext
 QString getPicPath(const QString & dataPath, QDir *ExpNameDir, int ns);
 QString getFileName(QString filePath);
-QString getExtOf(QString filePath);
+
+QString getExpNameLib(const QString filePath);
+QString getExt(QString filePath);
+QString slash();
 ostream & operator << (ostream &os, QString toOut);
+char * strToChar(const QString & input);
+FILE *fopen(QString filePath, const char *__modes);
+char * QStrToCharArr(const QString & input);
 
 //wavelets
 void drawColorScale(QString filename, int range, int type = 0);
@@ -102,9 +109,10 @@ double correlation(double * const arr1, double * const arr2, int length, int t =
 double correlationFromZero(double * const arr1, double * const arr2, int length, int t = 0);
 double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
-void splitZeros(double *** inData, int ns, int length, int * outLength, const QString &logFile = "", QString dataName = "");
+void splitZeros(double *** inData, const int &ns, const int &length, int * outLength, const QString &logFile = "", QString dataName = "");
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+void zeroData(double *** inData, const int & ns, const int & leftLimit, const int & rightLimit, const bool & withMarkersFlag);
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
 double independence(double * const signal1, double * const signal2, int length);
 
@@ -143,7 +151,6 @@ void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QStr
 void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth = 15, const double powArg = 1.);
 void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth = 15, const double powArg = 1.);
 void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
-QString expName(const QString filePath);
 
 double distance(vector<double> vec1, vector<double> vec2, const int dim);
 double distance(double * const vec1, double * const vec2, int const dim);
