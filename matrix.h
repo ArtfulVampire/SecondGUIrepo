@@ -30,11 +30,20 @@ public:
     int cols();
     int rows();
 
+    vector <Typ> & operator [](int i)
+    {
+        return data[i];
+    }
 
-private:
+    friend ostream & operator << (ostream &os, matrix<Typ> toOut);
+
+
+
+public:
     vector < vector <Typ> > data;
-
-
 };
+
+
+
 
 #endif // MATRIX_H

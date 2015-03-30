@@ -9,18 +9,65 @@ edfFile::edfFile(int in_ns, int in_dataLength)
     this->ns = in_ns;
     this->dataLength = in_dataLength;
 }
-edfFile::edfFile(edfFile & other)
+edfFile::edfFile(const edfFile &other)
 {
-    (*this) = edfFile(other.getNs(),
-                   other.getNdr(),
-                   other.getDdr(),
-                   other.getNr(),
-                   other.getData(),
-                   other.getLabels(),
-                   other.getPhysMin(),
-                   other.getPhysMax(),
-                   other.getDigMin(),
-                   other.getDigMax());
+    this->headerInitialInfo = other.getHeaderInit();
+    this->bytes = other.getBytes();
+    this->headerReservedField = other.getHeaderReserved();
+
+    this->ndr = other.getNdr();
+    this->ddr = other.getDdr();
+    this->ns = other.getNs();
+
+    this->labels = other.getLabels();
+    this->transducerType = other.getTransducer();
+    this->physDim = other.getPhysDim();
+    this->physMax = other.getPhysMax();
+    this->physMin = other.getPhysMin();
+    this->digMax = other.getDigMax();
+    this->digMin = other.getDigMin();
+    this->prefiltering = other.getPrefiltering();
+    this->nr = other.getNr();
+    this->reserved = other.getReserved();
+    this->headerRest = other.getHeaderRest();
+
+    this->data = other.getData();
+
+    this->dataLength = this->ndr * this->nr[0];
+    this->filePath = other.getFilePath();
+    this->ExpName = other.getExpName();
+    this->dirPath = other.getDirPath();
+}
+
+edfFile edfFile::operator=(edfFile & other)
+{
+    this->headerInitialInfo = other.getHeaderInit();
+    this->bytes = other.getBytes();
+    this->headerReservedField = other.getHeaderReserved();
+
+    this->ndr = other.getNdr();
+    this->ddr = other.getDdr();
+    this->ns = other.getNs();
+
+    this->labels = other.getLabels();
+    this->transducerType = other.getTransducer();
+    this->physDim = other.getPhysDim();
+    this->physMax = other.getPhysMax();
+    this->physMin = other.getPhysMin();
+    this->digMax = other.getDigMax();
+    this->digMin = other.getDigMin();
+    this->prefiltering = other.getPrefiltering();
+    this->nr = other.getNr();
+    this->reserved = other.getReserved();
+    this->headerRest = other.getHeaderRest();
+
+    this->data = other.getData();
+
+    this->dataLength = this->ndr * this->nr[0];
+    this->filePath = other.getFilePath();
+    this->ExpName = other.getExpName();
+    this->dirPath = other.getDirPath();
+    return (*this);
 }
 
 edfFile::edfFile(int in_ns,
@@ -54,7 +101,7 @@ edfFile::edfFile(int in_ns,
     this->headerInitialInfo = QString(184, QChar(' '));
     this->bytes = 256 * (this->ns + 1);
     this->headerReservedField = QString(44, QChar(' '));
-    this->restOfHeader = QString();
+    this->headerRest = QString();
 }
 
 template <typename Typ>
@@ -185,7 +232,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
         cout << "handleFile: file to read doesn't exist\n" << EDFpath << endl;
         return;
     }
-
     FILE * edfDescriptor;
     edfDescriptor = fopen(EDFpath, (readFlag)?"r":"w"); //generality
     if(edfDescriptor == NULL)
@@ -194,7 +240,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
         return;
     }
 
-    cout << "1" << endl;
+
 
     filePath = EDFpath;
     dirPath = EDFpath.left(EDFpath.lastIndexOf(slash()));
@@ -210,6 +256,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
         return;
     }
 
+
     handleParam(headerInitialInfo, 184, readFlag, edfDescriptor, header);
     handleParam(bytes, 8, readFlag, edfDescriptor, header);
     handleParam(headerReservedField, 44, readFlag, edfDescriptor, header);
@@ -217,6 +264,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
     handleParam(ddr, 8, readFlag, edfDescriptor, header);
     handleParam(ns, 4, readFlag, edfDescriptor, header);
     handleParamArray(labels, ns, 16, readFlag, edfDescriptor, header);
+
     //edit EOG channels generality for encephalan
     for(int i = 0; i < ns; ++i)
     {
@@ -252,7 +300,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
     handleParamArray(prefiltering, ns, 80, readFlag, edfDescriptor, header);
     handleParamArray(nr, ns, 8, readFlag, edfDescriptor, header);
     handleParamArray(reserved, ns, 32, readFlag, edfDescriptor, header);
-    handleParam(restOfHeader, int(bytes-(ns+1)*256), readFlag, edfDescriptor, header);
+    handleParam(headerRest, int(bytes-(ns+1)*256), readFlag, edfDescriptor, header);
     fclose(header);
 
     fpos_t *position = new fpos_t;
@@ -266,6 +314,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
     {
         dataLength = ndr * nr[0]; // generality
     }
+
 
     handleData(readFlag, matiFlag, ntFlag, edfDescriptor);
 
@@ -285,7 +334,7 @@ void edfFile::handleData(bool readFlag,
         data.resize(ns);
         for(int i = 0; i < ns; ++i)
         {
-            data[i].reserve(dataLength);
+            data[i].resize(dataLength);
         }
     }
 
@@ -530,16 +579,17 @@ void edfFile::handleAnnotations(const int & currNs,
 
 }
 
-const edfFile::dataType & edfFile::getData() const
-{
-//    const dataType & result = data;
-//    return result;
-    return data;
-}
+
 void edfFile::getDataCopy(dataType & destination) const
 {
     destination = data;
 }
+
+//const edfFile::dataType & edfFile::getData() const
+//{
+//    return data;
+//}
+
 const int & edfFile::getNs() const
 {
     return ns;
@@ -551,6 +601,10 @@ const int & edfFile::getNdr() const
 const int & edfFile::getDdr() const
 {
     return ddr;
+}
+const int & edfFile::getBytes() const
+{
+    return bytes;
 }
 const int & edfFile::getDataLen() const
 {
@@ -576,11 +630,39 @@ const QString & edfFile::getExpName() const
 {
     return ExpName;
 }
+const QString & edfFile::getHeaderInit() const
+{
+    return headerInitialInfo;
+}
+const QString & edfFile::getHeaderReserved() const
+{
+    return headerReservedField;
+}
+const QString & edfFile::getHeaderRest() const
+{
+    return headerRest;
+}
 
 
 const vector<QString> & edfFile::getLabels() const
 {
     return labels;
+}
+const vector<QString> & edfFile::getTransducer() const
+{
+    return transducerType;
+}
+const vector<QString> & edfFile::getPrefiltering() const
+{
+    return prefiltering;
+}
+const vector<QString> & edfFile::getPhysDim() const
+{
+    return physDim;
+}
+const vector<QString> & edfFile::getReserved() const
+{
+    return reserved;
 }
 const vector<double> & edfFile::getPhysMax() const
 {

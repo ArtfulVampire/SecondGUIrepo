@@ -713,6 +713,32 @@ ostream & operator << (ostream &os, QString toOut)
     return os;
 }
 
+
+ostream & operator << (ostream &os, vector<double> toOut)
+{
+    for(int i = 0; i < 10; ++i)
+    {
+        os << toOut[i] << " ";
+    }
+    os << endl;
+    return os;
+}
+
+//vector< vector<double> > operator=(const vector< vector<double> > & other)
+//{
+//    vector< vector<double> > temp;
+//    temp.resize(other.size());
+//    for(int i = 0; i < other.size(); ++i)
+//    {
+//        temp[i].resize(other[i].size());
+//        for(int j = 0; j < other[i].size(); ++j)
+//        {
+//            temp[i][j] = other[i][j];
+//        }
+//    }
+//    return temp;
+//}
+
 double vectorLength(double * arr, int len)
 {
     double a = 0.;

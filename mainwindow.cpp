@@ -9073,6 +9073,17 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 
 void MainWindow::customFunc()
 {
+    //test edfFile class
+    if(1)
+    {
+        edfFile fil;
+        fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
+//        fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_pew.edf");
+        edfFile fil2;
+        fil2 = fil;
+        fil2.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_pew.edf");
+        exit(0);
+    }
     //MATI
     if(1)
     {
@@ -9090,7 +9101,7 @@ void MainWindow::customFunc()
 //        ui->sliceWithMarkersCheckBox->setChecked(true);
 //        ui->reduceChannelsCheckBox->setChecked(true);
 //        ui->reduceChannelsComboBox->setCurrentText("Mati");
-        setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
+//        setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
         readData();
         exit(0);
 //        ns = 22;
@@ -9130,6 +9141,20 @@ void MainWindow::customFunc()
 
         }
         exit(0);
+    }
+    if(0)
+    {
+        /*
+        // test matrix class
+        matrix<double> mat;
+        mat.resize(3, 3);
+        mat.fill(1.);
+        cout << mat[0][1] << endl;
+        mat[0][1] = 1.;
+        cout << mat[0][1] << endl;
+        exit(0);
+        */
+
     }
     //test matiMarkers functions
     if(0)

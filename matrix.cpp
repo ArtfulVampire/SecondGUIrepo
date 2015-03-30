@@ -1,6 +1,11 @@
 #include "matrix.h"
 
-
+template <typename Typ>
+matrix<Typ>::matrix()
+{
+    this = matrix(1, 1);
+    data[1][1] = 0;
+}
 
 template <typename Typ>
 matrix<Typ>::matrix(double **inData, int rows, int cols)
@@ -21,9 +26,9 @@ matrix<Typ>::~matrix()
 {
     for(typename vector< vector<Typ> >::iterator it = data.begin(); it < data.end(); ++it)
     {
-        ~(*it);
+//        ~(*it);
     }
-    ~data;
+//    ~data;
 }
 
 template <typename Typ>
@@ -106,7 +111,16 @@ int matrix<Typ>::cols()
     return data[0].size();
 }
 
-
-
-
-
+template <typename Typ>
+ostream & operator << (ostream &os, matrix<Typ> toOut)
+{
+    for(typename vector< vector<Typ> >::iterator it = toOut.data.begin(); it < toOut.data.end(); ++it)
+    {
+        for(typename vector<Typ>::iterator itt = (*it).begin(); itt < (*it).end(); ++itt)
+        {
+            os << (*itt) << "  ";
+        }
+        os << endl;
+    }
+    return os;
+}

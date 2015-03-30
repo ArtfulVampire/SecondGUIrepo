@@ -18,6 +18,8 @@
 #include "eyes.h"
 #include "library.h"
 #include "coord.cpp"
+#include "matrix.h"
+#include "edffile.h"
 
 #include <iostream>
 #include <sstream>

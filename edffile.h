@@ -22,7 +22,8 @@ public:
             vector<double> in_digMin,
             vector<double> in_digMax);
 
-    edfFile(edfFile & other);
+    edfFile(const edfFile &other);
+
 
     void readEdfFile(QString EDFpath, bool matiFlag = true, bool ntFlag = false);
     void writeEdfFile(QString EDFpath, bool matiFlag = true, bool ntFlag = false);
@@ -75,6 +76,8 @@ public:
                            QString helpString,
                            vector<QString> annotations);
 
+    edfFile operator=(edfFile & other);
+
 //    void appendFile(QString initPath, QString addPath, QString outPath);
 //    void appendData(QString initPath, int addNs, double ** addData, vector<QString> addLabels);
 
@@ -103,29 +106,39 @@ private:
 
     QString headerInitialInfo;
     QString headerReservedField;
-    QString restOfHeader;
+    QString headerRest;
     dataType data; // matrix.cpp
 
     int staSlice;
 
 public:
-    const dataType & getData() const;
+    const dataType & getData() const {return data;}
     void getDataCopy(dataType & destination) const;
     const int &getNs() const;
     const int &getNdr() const;
     const int &getDdr() const;
+    const int &getBytes() const;
     const int &getDataLen() const;
     const int &getMarkChan() const;
     const vector<double> & getNr() const;
     const QString & getFilePath() const;
     const QString & getDirPath() const ;
     const QString & getExpName() const;
+    const QString & getHeaderInit() const;
+    const QString & getHeaderReserved() const ;
+    const QString & getHeaderRest() const;
 
     const vector<QString> & getLabels() const;
+    const vector<QString> & getTransducer() const;
+    const vector<QString> & getPrefiltering() const;
+    const vector<QString> & getPhysDim() const;
+    const vector<QString> & getReserved() const;
     const vector<double> & getPhysMax() const;
     const vector<double> & getPhysMin() const;
     const vector<double> & getDigMax() const;
     const vector<double> & getDigMin() const;
+
+
 
 };
 

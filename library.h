@@ -27,6 +27,7 @@
 #include <ios>
 #include <QDoubleSpinBox>
 #include <vector>
+#include <typeinfo>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -59,6 +60,8 @@ QString getExpNameLib(const QString filePath);
 QString getExt(QString filePath);
 QString slash();
 ostream & operator << (ostream &os, QString toOut);
+ostream & operator << (ostream &os, vector<double> toOut); // template!
+//vector< vector<double> > operator=(const vector< vector<double> > & other);
 char * strToChar(const QString & input);
 FILE *fopen(QString filePath, const char *__modes);
 char * QStrToCharArr(const QString & input);
