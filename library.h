@@ -29,20 +29,15 @@
 #include <vector>
 #include <typeinfo>
 
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-//#include <itpp/itbase.h>
-//#include <mlpack/core.hpp>
-//#include <mlpack/methods/pca/pca.hpp>
-
 
 
 using namespace std;
 //using namespace itpp;
 //using namespace mlpack;
-
 
 const double pi = 3.141592653589;
 
@@ -50,6 +45,7 @@ const double pi = 3.141592653589;
 int len(QString s); // string length for EDF+ annotations
 QString rightNumber(const int & input, int N); // prepend zeros
 QString fitNumber(const double & input, int N); // append spaces
+QString fitString(const QString & input, int N); // append spaces
 double doubleRound(double in, int numSigns);
 int findChannel(char ** const labelsArr, QString chanName, int ns = 21);
 QString setFileName(QString const initName); //-> initName_i.ext

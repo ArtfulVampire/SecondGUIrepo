@@ -23,6 +23,7 @@ public:
             vector<double> in_digMax);
 
     edfFile(const edfFile &other);
+    edfFile(QString matiLogPath);
 
 
     void readEdfFile(QString EDFpath, bool matiFlag = true, bool ntFlag = false);

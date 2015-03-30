@@ -9,7 +9,7 @@ QT       += core gui svg
 TARGET = SecondGUI
 TEMPLATE = app
 CONFIG += console #for better display of processes with cout.flush()
-#MAKE_CXXFLAGS += -std=c++11 #for default template arguments
+QMAKE_CXXFLAGS += -std=c++11 #for default template arguments
 
 #INCLUDEPATH += /usr/include/libxml2
 #LIBS += -L/usr/lib/x86_64-linux-gnu -lOpenCL

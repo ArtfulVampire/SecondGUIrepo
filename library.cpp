@@ -21,7 +21,11 @@ QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, 
         val += a[1] / ( (1. - partX) * (1. - partX) + partY * partY ) ;
         val += a[2] / ( partX * partX + (1. - partY) * (1. - partY) );
         val += a[3] / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
-        val /= 1. / (partX * partX + partY * partY) + 1. / ( (1. - partX) * (1. - partX) + partY * partY ) + 1. / ( partX * partX + (1. - partY) * (1. - partY) ) + 1. / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
+
+        val /=    1. / (partX * partX + partY * partY)
+                + 1. / ( (1. - partX) * (1. - partX) + partY * partY )
+                + 1. / ( partX * partX + (1. - partY) * (1. - partY) )
+                + 1. / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
     }
 
     //bilinear approximation - OK
@@ -1464,10 +1468,13 @@ QString fitNumber(const double &input, int N)
 {
     QString h;
     h.setNum(input);
-    for(int i = 0; i < N; ++i)
-    {
-        h += " ";
-    }
+    h += QString(N, ' ');
+    return h.left(N);
+}
+QString fitString(const QString & input, int N)
+{
+    QString h(input);
+    h += QString(N, ' ');
     return h.left(N);
 }
 

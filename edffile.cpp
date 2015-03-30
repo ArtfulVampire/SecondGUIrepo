@@ -39,6 +39,8 @@ edfFile::edfFile(const edfFile &other)
     this->dirPath = other.getDirPath();
 }
 
+
+
 edfFile edfFile::operator=(edfFile & other)
 {
     this->headerInitialInfo = other.getHeaderInit();
@@ -70,6 +72,99 @@ edfFile edfFile::operator=(edfFile & other)
     return (*this);
 }
 
+edfFile::edfFile(QString matiLogPath)
+{
+    FILE* inStr;
+    inStr = fopen(matiLogPath, "r");
+    int numOfDoubleParams = 8;
+    int numOfParams = 15 - 2; // -currTime & quantLength
+    int currTimeIndex = 0;
+
+    this->headerInitialInfo = fitString("Edf for AMOD Data", 184);
+    this->headerReservedField = fitString("headerReservedField", 44);
+    this->headerRest = QString();
+
+
+    this->filePath = matiLogPath;
+    this->ExpName = getExpNameLib(matiLogPath);
+    this->dirPath = matiLogPath.left(EDFpath.lastIndexOf( slash() ) );
+
+    this->ns = numOfParams;
+    this->bytes = 256 * (this->ns + 1);
+
+    this->ddr = 1.;
+    this->labels = {fitString("AMOD amplX", 16),
+                    fitString("AMOD amplY", 16),
+                    fitString("AMOD freqX", 16),
+                    fitString("AMOD freqY", 16),
+                    fitString("AMOD targX", 16),
+                    fitString("AMOD targY", 16),
+                    fitString("AMOD mouseX", 16),
+                    fitString("AMOD mouseX", 16),
+                    fitString("AMOD tracePerf", 16),
+                    fitString("AMOD mouseMove", 16),
+                    fitString("AMOD rightAns", 16),
+                    fitString("AMOD wrongAns", 16),
+                    fitString("AMOD skipdAns", 16)
+                   };
+    this->transducerType = vector<QString> (this->ns, fitString("AMOD transducer", 80));
+    this->transducerType = vector<QString> (this->ns, fitString("AMODdim", 8));
+
+    this->physMin = {0, 0, 0, 0, // ampls, freqs
+                     -1, -1, -1, -1, // coordinates
+                     0, 0, // status values
+                     0,   0,   0}; // answers
+
+    this->physMax = {7, 7, 7, 7,
+                     1,  1,  1,  1,
+                     3, 1,
+                     255, 255, 16383};
+
+    this->digMin = {-32768, -32768, -32768, -32768,
+                    -32768, -32768, -32768, -32768,
+                    0, 0,
+                    0,   0,   0};
+
+    this->digMax = { 32767,  32767,  32767,  32767,
+                     32767,  32767,  32767,  32767,
+                     3, 1,
+                     255, 255, 16383};
+
+    this->prefiltering = vector<QString>(this->ns, QString(fitString("AMOD prefiltering", 80)));
+    this->nr = vector<double> (this->ns, def::freq);
+    this->reserved = vector<QString>(this->ns, QString(fitString("AMOD reserved", 32)));
+
+    this->data.resize(this->ns);
+    for(int i = 0; i < this->ns; ++i)
+    {
+        this->data[i].resize(6 * 60 * def::freq); // for 6 minutes generality
+    }
+
+    while(!feof(inStr))
+    {
+        fscanf(inStr, "%*s%*f"); // currTime & quantLength
+        for(int i = 0; i < numOfDoubleParams; ++i)
+        {
+            fscanf(inStr, "%lf", &data[i][currTimeIndex]);
+        }
+        for(int i = numOfDoubleParams; i < numOfParams; ++i)
+        {
+            fscanf(inStr, "%d", &data[i][currTimeIndex]);
+        }
+        ++currTimeIndex;
+    }
+    for(int i = currTimeIndex; i < 250 * ceil(currTimeIndex/250.); ++i)
+    {
+        for(int j = 0; j < numOfDoubleParams; ++j)
+        {
+            data[j][i] = 0.;
+        }
+    }
+
+    this->ndr = ceil(currTimeIndex/250.);
+    this->dataLength = this->ndr * this->nr[0];
+}
+
 edfFile::edfFile(int in_ns,
                  int in_ndr,
                  int in_ddr,
@@ -98,10 +193,15 @@ edfFile::edfFile(int in_ns,
     this->ExpName = QString();
     this->dirPath = QString();
 
-    this->headerInitialInfo = QString(184, QChar(' '));
+    this->headerInitialInfo = fitString("headerInitialInfo", 184);
     this->bytes = 256 * (this->ns + 1);
-    this->headerReservedField = QString(44, QChar(' '));
+    this->headerReservedField = fitString("headerReservedField", 44);
     this->headerRest = QString();
+
+    this->transducerType = vector<QString>(this->ns, QString(fitString("transducerType", 80)));
+    this->physDim = vector<QString>(this->ns, QString(fitString("physDim", 8)));
+    this->prefiltering = vector<QString>(this->ns, QString(fitString("prefiltering", 80)));
+    this->reserved = vector<QString>(this->ns, QString(fitString("reserved", 32)));
 }
 
 template <typename Typ>
