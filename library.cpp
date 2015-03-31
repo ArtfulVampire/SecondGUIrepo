@@ -590,13 +590,13 @@ int findChannel(char ** const labelsArr, QString chanName, int ns)
     }
 }
 
-QString setFileName(QString const initName)
+QString setFileName(const QString & initNameOrPath)
 {
-    QString beforeDot = initName;
+    QString beforeDot = initNameOrPath;
     beforeDot.resize(beforeDot.lastIndexOf('.'));
 //    cout << "beforeDot = " << beforeDot.toStdString() << endl;
 
-    QString afterDot = initName; //with the dot
+    QString afterDot = initNameOrPath; //with the dot
     afterDot = afterDot.right(afterDot.length() - afterDot.lastIndexOf('.'));
 //    cout << "afterDot = " << afterDot.toStdString() << endl;
 
@@ -647,6 +647,38 @@ QString getFileName(QString filePath)
     helpString = helpString.left(helpString.lastIndexOf("."));
     helpString = helpString.right(helpString.length() - helpString.lastIndexOf(QDir::separator()) - 1);
     return helpString;
+}
+
+bool areEqualFiles(QString path1, QString path2)
+{
+    QTime myTime;
+    myTime.start();
+
+
+    typedef size_t byte;
+//    typedef unsigned char byte;
+    FILE * fil1 = fopen(path1, "rb");
+    FILE * fil2 = fopen(path2, "rb");
+    byte byt1, byt2;
+    while(!feof(fil1) && !feof(fil2))
+    {
+        fread(&byt1, sizeof(byte), 1, fil1);
+        fread(&byt2, sizeof(byte), 1, fil2);
+        if(byt1 != byt2)
+        {
+
+            fclose(fil1);
+            fclose(fil2);
+            return false;
+        }
+
+    }
+    fclose(fil1);
+    fclose(fil2);
+    cout << "equalFiles: time = " << myTime.elapsed() / 1000. << " sec" << endl;
+    return true;
+
+
 }
 
 QString getPicPath(const QString & dataPath, QDir * ExpNameDir, int ns)
@@ -4122,6 +4154,19 @@ int matiCountDecimal(vector<bool> byteMarker)
     for(int h = 0; h < 16; ++h)
     {
         res += byteMarker[h] * pow(2, h);
+    }
+    return res;
+}
+
+int matiCountDecimal(QString byteMarker)
+{
+    byteMarker.remove(' ');
+    if(byteMarker.length() != 16) return 0;
+
+    int res = 0;
+    for(int h = 0; h < 16; ++h)
+    {
+        res += ((byteMarker[h]==QChar('1'))?1:0) * pow(2, 15-h);
     }
     return res;
 }

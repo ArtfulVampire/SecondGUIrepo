@@ -240,6 +240,7 @@ MainWindow::MainWindow() :
     ui->matiPieceLengthSpinBox->setMaximum(32);
     ui->matiPieceLengthSpinBox->setMinimum(4);
     ui->matiPieceLengthSpinBox->setValue(7);
+    ui->matiCheckBox->setChecked(true);
     ui->markerBinTimeSpinBox->setMaximum(250*60*60*2);   //2 hours
     ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); //2 hours
 
@@ -9073,16 +9074,42 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 
 void MainWindow::customFunc()
 {
+    return;
     //test edfFile class
     if(1)
     {
         edfFile fil;
-        fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
-//        fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_pew.edf");
-        edfFile fil2;
-        fil2 = fil;
-        fil2.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_pew.edf");
+        fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_small.edf");
+        fil.appendFile("/media/Files/Data/Mati/SDA/SDA_amod.edf",
+                       "/media/Files/Data/Mati/SDA/SDA_wAmod.edf");
+
+
         exit(0);
+        vector <double> markChan = fil.getData()[fil.getMarkChan()];
+        int start = 0, finish = 0;
+        int counter = 0;
+        double val1 = matiCountDecimal("00000001 10000000");
+        double val2 = matiCountDecimal("00000101 10000000");
+        while(counter < fil.getDataLen())
+        {
+            if(markChan[counter] == val1)
+            {
+                start = counter;
+            }
+            else if(markChan[counter] == val2)
+            {
+                finish = counter + 1;
+                break;
+            }
+            ++counter;
+
+        }
+
+        fil.saveSubsection(start, finish, "/media/Files/Data/Mati/SDA/SDA_small.edf");
+//        fil.appendFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
+//        fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_out.edf");
+        exit(0);
+//        return;
     }
     //MATI
     if(1)

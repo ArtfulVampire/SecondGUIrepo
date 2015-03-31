@@ -48,9 +48,10 @@ QString fitNumber(const double & input, int N); // append spaces
 QString fitString(const QString & input, int N); // append spaces
 double doubleRound(double in, int numSigns);
 int findChannel(char ** const labelsArr, QString chanName, int ns = 21);
-QString setFileName(QString const initName); //-> initName_i.ext
+QString setFileName(const QString & initNameOrPath); //-> initName_i.ext
 QString getPicPath(const QString & dataPath, QDir *ExpNameDir, int ns);
 QString getFileName(QString filePath);
+bool areEqualFiles(QString path1, QString path2);
 
 QString getExpNameLib(const QString filePath);
 QString getExt(QString filePath);
@@ -195,6 +196,7 @@ void matiPrintMarker(double const & marker, QString pre = "");
 vector<bool> matiCountByte(const double & marker);
 void matiFixMarker(double & marker);
 int matiCountDecimal(vector<bool> byteMarker);
+int matiCountDecimal(QString byteMarker);
 
 
 
