@@ -10,8 +10,7 @@
 #include <QtSvg>
 #include "mainwindow.h"
 
-#include "coord.cpp"
-using namespace coords;
+#include "coord.h"
 
 
 namespace Ui {

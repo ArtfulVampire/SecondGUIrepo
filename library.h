@@ -5,7 +5,7 @@
 #include <QString>
 #include <QtGui>
 #include <QtSvg>
-#include <coord.cpp>
+#include "coord.h"
 #include <fstream>
 #include <ios>
 #include <iostream>

@@ -27,7 +27,6 @@ SOURCES += main.cpp\
     spectre.cpp \
     makepa.cpp \
     eyes.cpp \
-    coord.cpp \
     tempthread.cpp \
     library.cpp \
     edffile.cpp \
@@ -44,7 +43,8 @@ HEADERS  += mainwindow.h \
     tempthread.h \
     library.h \
     edffile.h \
-    matrix.h
+    matrix.h \
+    coord.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

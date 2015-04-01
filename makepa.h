@@ -16,10 +16,6 @@
 
 using namespace std;
 
-
-#include "coord.cpp"
-using namespace coords;
-
 namespace Ui {
     class MakePa;
 }

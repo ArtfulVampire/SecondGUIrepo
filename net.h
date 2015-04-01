@@ -17,8 +17,7 @@
 #include "cfg.h"
 #include "qtempevent.h"
 #include "tempthread.h"
-#include"library.h"
-#include "coord.h"
+#include "library.h"
 #include <fstream>
 #include <ios>
 #include <unistd.h>
@@ -28,8 +27,6 @@ using namespace std;
 
 #include <QMessageBox>
 
-#include "coord.cpp"
-using namespace coords;
 
 namespace Ui {
     class Net;
