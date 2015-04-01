@@ -1239,7 +1239,7 @@ const char *  kernelFromFile(char *  path)
 
         fgets(tempString, 50, shad);
         if(feof(shad)) break;
-        for(int i = 0; i < strlen(tempString); ++i)
+        for(unsigned int i = 0; i < strlen(tempString); ++i)
         {
             shaderString[currentIndex++] = tempString[i];
         }

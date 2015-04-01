@@ -20,8 +20,8 @@ MainWindow::MainWindow() :
     spLength = -1;
     ns = def::genNs;
 
-    right = numOfLim(def::rightFreq, def::freq, def::fftLength);
-    left = numOfLim(def::leftFreq, def::freq, def::fftLength);
+    right = fftLimit(def::rightFreq, def::freq, def::fftLength);
+    left = fftLimit(def::leftFreq, def::freq, def::fftLength);
 
     spStep = def::freq/def::fftLength;
     spLength = right - left + 1;
@@ -2931,14 +2931,17 @@ void MainWindow::readData()
                         {
                             fwrite(&a, sizeof(short), 1, edfNew);
                         }
-//                        data[j][i*nr[j]+k] = physMin[j] + (physMax[j]-physMin[j]) * (double(a)-digMin[j]) / (digMax[j] - digMin[j]);   //enc
+                        data[j][i*nr[j]+k] = physMin[j]
+                                + (physMax[j]-physMin[j]  + 1)
+                                * (double(a)-digMin[j])
+                                / (digMax[j] - digMin[j]  + 1);
                         if(j != ns-1)
                         {
-                            data[j][i*nr[j]+k] = a *1./8.; //generality
+//                            data[j][i*nr[j]+k] = a *1./8.; //generality
                         }
                         else
                         {
-                            data[j][i*nr[j]+k] = a;
+//                            data[j][i*nr[j]+k] = a;
                         }
                     }
                     else if(ui->matiCheckBox->isChecked())
@@ -2950,13 +2953,20 @@ void MainWindow::readData()
                             {
                                 fwrite(&a, sizeof(short), 1, edfNew);
                             }
-                            data[j][i*nr[j]+k] = physMin[j] + (physMax[j]-physMin[j]) * (double(a)-digMin[j]) / (digMax[j] - digMin[j]);   //enc
-                            data[j][i*nr[j]+k] = a *1./8.;
+                            data[j][i*nr[j]+k] = physMin[j]
+                                    + (physMax[j]-physMin[j]  + 1)
+                                    * (double(a)-digMin[j])
+                                    / (digMax[j] - digMin[j]  + 1);
+//                            data[j][i*nr[j]+k] = a *1./8.;
                         }
                         else //if(j == ns - 1)
                         {
                             fread(&markA, sizeof(unsigned short), 1, edf);
-                            data[j][i*nr[j]+k] = markA;
+                            data[j][i*nr[j]+k] = physMin[j]
+                                    + (physMax[j]-physMin[j]  + 1)
+                                    * (double(markA)-digMin[j])
+                                    / (digMax[j] - digMin[j]  + 1);
+//                            data[j][i*nr[j]+k] = markA;
 
                             if(data[j][i*nr[j]+k] != 0 )
                             {
@@ -3201,6 +3211,9 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     int numChanToWrite = -1;
 
     readData();
+    //    glob::Edf.readEdfFile(ui->filePathLineEdit->text(), glob::matiFlag, glob::ntFlag);
+    //    glob::ns = glob::Edf.getNs();
+    //    glob::Edf.getDataCopy(&data);
 
     if(ui->eyesCleanCheckBox->isChecked())
     {
@@ -4521,7 +4534,6 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     char *helpCharArr = new char[50];
     char helpChar;
     int bytes;
-    short int a;
 
     FILE * edfNew;
     FILE * edfIn;
@@ -4891,6 +4903,9 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 
 //    cout << "writeEDF: data write start" << endl;
     int oldIndex;
+
+    short a;
+    unsigned short markA;
     if(ui->enRadio->isChecked())
     {
         for(int i = 0; i < ndr; ++i)
@@ -4906,31 +4921,50 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
                 {
 //                    cout << i << " " << j << " " << k << endl;
 
-//                    a = (short)((inData[ j ][ i * nr[oldIndex] + k ] - physMin[oldIndex]) * (digMax[oldIndex] - digMin[oldIndex]) / (physMax[oldIndex] - physMin[oldIndex]) + digMin[oldIndex]);
+                    if(!(ui->matiCheckBox->isChecked() && oldIndex == ns - 1))
+                    {
+                        a = (short)((inData[ j ][ i * nr[oldIndex] + k ] - physMin[oldIndex])
+                                * (digMax[oldIndex] - digMin[oldIndex] + 1)
+                                / (physMax[oldIndex] - physMin[oldIndex] + 1)
+                                + digMin[oldIndex]);
 
-                    //generality
-                    if(oldIndex != ns - 1)
-                    {
-                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ] * 8.); //*8 generality
-                    }
-                    else if(!ui->matiCheckBox->isChecked())
-                    {
-                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ]);
-                    }
-                    else
-                    {
-                        a = (unsigned short)(inData[ j ][ i * nr[oldIndex] + k ]);
-                    }
-
-                    if(ui->matiCheckBox->isChecked() && oldIndex == ns - 1)
-                    {
-
-                        fwrite(&a, sizeof(unsigned short), 1, edfNew);
-                    }
-                    else
-                    {
                         fwrite(&a, sizeof(short), 1, edfNew);
                     }
+                    else
+                    {
+                        markA = (unsigned short)((inData[ j ][ i * nr[oldIndex] + k ] - physMin[oldIndex])
+                                * (digMax[oldIndex] - digMin[oldIndex] + 1)
+                                / (physMax[oldIndex] - physMin[oldIndex] + 1)
+                                + digMin[oldIndex]);
+
+                        fwrite(&markA, sizeof(unsigned short), 1, edfNew);
+                    }
+
+
+
+                    //generality
+//                    if(oldIndex != ns - 1)
+//                    {
+//                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ] * 8.); //*8 generality
+//                    }
+//                    else if(!ui->matiCheckBox->isChecked())
+//                    {
+//                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ]);
+//                    }
+//                    else
+//                    {
+//                        a = (unsigned short)(inData[ j ][ i * nr[oldIndex] + k ]);
+//                    }
+
+//                    if(ui->matiCheckBox->isChecked() && oldIndex == ns - 1)
+//                    {
+
+//                        fwrite(&a, sizeof(unsigned short), 1, edfNew);
+//                    }
+//                    else
+//                    {
+//                        fwrite(&a, sizeof(short), 1, edfNew);
+//                    }
                 }
             }
         }

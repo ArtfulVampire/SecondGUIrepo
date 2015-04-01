@@ -520,12 +520,12 @@ void edfFile::handleDatum(const int & currNs,
         if(currNs != markerChannel) // usual data read
         {
             fread(&a, sizeof(short), 1, edfForDatum);
-//            currDatum = physMin[currNs] +
-//                    (physMax[currNs] - physMin[currNs])
-//                    * (double(a)  -digMin[currNs])
-//                    / (digMax[currNs] - digMin[currNs]);   //neurotravel
+            currDatum = physMin[currNs]
+                    + (physMax[currNs] - physMin[currNs]  + 1)
+                    * (double(a) - digMin[currNs])
+                    / (digMax[currNs] - digMin[currNs]  + 1);
 
-            currDatum = a * 1./8.; // generality encephalan
+//            currDatum = a * 1./8.; // generality encephalan
 
         }
         else //if markers channel
@@ -543,7 +543,11 @@ void edfFile::handleDatum(const int & currNs,
             else if(matiFlag)
             {
                 fread(&markA, sizeof(unsigned short), 1, edfForDatum);
-                currDatum = markA;
+                currDatum = physMin[currNs]
+                        + (physMax[currNs] - physMin[currNs]  + 1)
+                        * (double(markA) - digMin[currNs])
+                        / (digMax[currNs] - digMin[currNs]  + 1);
+//                currDatum = markA;
 
 
                 if(currDatum != 0 )
@@ -554,12 +558,12 @@ void edfFile::handleDatum(const int & currNs,
             else // simple encephalan
             {
                 fread(&a, sizeof(short), 1, edfForDatum);
-//                currDatum = physMin[currNs] +
-//                        (physMax[currNs] - physMin[currNs])
-//                        * (double(a) - digMin[currNs])
-//                        / (digMax[currNs] - digMin[currNs]);
+                currDatum = physMin[currNs]
+                        + (physMax[currNs] - physMin[currNs]  + 1)
+                        * (double(a) - digMin[currNs])
+                        / (digMax[currNs] - digMin[currNs]  + 1);
 
-                currDatum = a; //generality encephalan
+//                currDatum = a; //generality encephalan
             }
 
             if(!ntFlag && currDatum != 0)
@@ -577,12 +581,12 @@ void edfFile::handleDatum(const int & currNs,
     {
         if(currNs != markerChannel) // usual data read
         {
-//            a = (short)( (currDatum - physMin[currNs])
-//                        * (digMax[currNs] - digMin[currNs])
-//                        / (physMax[currNs] - physMin[currNs])
-//                        + digMin[currNs]);
+            a = (short)( (currDatum - physMin[currNs])
+                        * (digMax[currNs] - digMin[currNs] + 1)
+                        / (physMax[currNs] - physMin[currNs] + 1)
+                        + digMin[currNs]);
 
-            a  = (short)(currDatum * 8.); // generality encephalan
+//            a  = (short)(currDatum * 8.); // generality encephalan
 
             fwrite(&a, sizeof(short), 1, edfForDatum);
         }
@@ -595,12 +599,20 @@ void edfFile::handleDatum(const int & currNs,
             }
             else if(matiFlag)
             {
-                markA = (unsigned short) (currDatum);
+//                markA = (unsigned short) (currDatum);
+                markA = (unsigned short)( (currDatum - physMin[currNs])
+                                          * (digMax[currNs] - digMin[currNs] + 1)
+                                          / (physMax[currNs] - physMin[currNs] + 1)
+                                          + digMin[currNs]);
                 fwrite(&markA, sizeof(unsigned short), 1, edfForDatum);
             }
             else // simple encephalan
             {
-                a = (short) (currDatum);
+//                a = (short) (currDatum);
+                a = (short)( (currDatum - physMin[currNs])
+                            * (digMax[currNs] - digMin[currNs] + 1)
+                            / (physMax[currNs] - physMin[currNs] + 1)
+                            + digMin[currNs]);
                 fwrite(&a, sizeof(short), 1, edfForDatum);
             }
         }

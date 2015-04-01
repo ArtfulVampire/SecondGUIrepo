@@ -852,8 +852,8 @@ void Spectre::setFftLengthSlot()
         ui->smoothBox->setValue(6);
     }
 
-    left = numOfLim(def::leftFreq, def::freq, fftLength);
-    right = numOfLim(def::rightFreq, def::freq, fftLength);
+    left = fftLimit(def::leftFreq, def::freq, fftLength);
+    right = fftLimit(def::rightFreq, def::freq, fftLength);
     ui->leftSpinBox->setValue(left);
     ui->rightSpinBox->setValue(right);
 

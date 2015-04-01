@@ -35,6 +35,7 @@ public:
         return data[i];
     }
 
+    template <Typ>
     friend ostream & operator << (ostream &os, matrix<Typ> toOut);
 
 

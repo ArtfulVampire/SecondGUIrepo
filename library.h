@@ -210,7 +210,7 @@ inline double logistic(double &x, double t)
     return 1. / ( 1. + exp(-x/t) );
 }
 
-inline int numOfLim(double inFreq, double freq, int fftL)
+inline int fftLimit(double inFreq, double freq, int fftL)
 {
     return floor(0.5 + inFreq/freq*fftL);
 }
