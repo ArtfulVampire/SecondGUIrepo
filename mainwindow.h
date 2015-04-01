@@ -123,7 +123,8 @@ public:
     void sliceIlya(const QString &fileName, QString marker);
     void sliceIlya(int marker1, int marker2, QString marker);
     void sliceFromTo(int marker1, int marker2, QString marker);
-    void sliceMati(int numChanWrite);
+    void sliceMati();
+    void sliceMatiPieces();
 
     void rereferenceData(QString newRef, QString newPath);
 

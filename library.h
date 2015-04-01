@@ -198,8 +198,6 @@ void matiFixMarker(double & marker);
 int matiCountDecimal(vector<bool> byteMarker);
 int matiCountDecimal(QString byteMarker);
 
-
-
 inline double gaussian(double x, double sigma = 1.) //N(0,1)
 {
     return 1./(sigma * sqrt(2. * pi)) * exp(-x * x / (2. * sigma * sigma) );

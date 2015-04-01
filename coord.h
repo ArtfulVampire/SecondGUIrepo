@@ -14,10 +14,16 @@ namespace coords
 
 namespace def
 {
+    const bool matiFlag = true;
+    const bool ntFlag = false;
+    const bool withMarkersFlag = true;
+
     const double freq = 250.;
     const double leftFreq = 5.;
     const double rightFreq = 20.;
-    const int genNs = 19;
+    const int ns = 19;
+    const bool wirteStartEndLong = false; //for slice
+
 
 //    Atanov
     const QString dataFolder = "/media/Files/Data/Mati";
@@ -56,8 +62,8 @@ namespace def
 //    const bool openmp = 0;
 //    const QString cfgFileName = "16sec19ch";
 
-    const bool wirteStartEndLong = false; //for slice
 }
+
 
 #endif
 

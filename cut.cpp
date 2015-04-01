@@ -140,9 +140,8 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::MouseButtonPress)
         {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-            if(mouseEvent->button() == Qt::LeftButton)  emit buttonPressed('l', mouseEvent->x());
+            if(mouseEvent->button() == Qt::LeftButton) emit buttonPressed('l', mouseEvent->x());
             if(mouseEvent->button() == Qt::RightButton) emit buttonPressed('r', mouseEvent->x());
-
             return true;
         }
         else
@@ -432,6 +431,7 @@ void Cut::mousePressSlot(char btn, int coord)
 {
     if(btn == 'l' && coord < rightLimit) leftLimit = coord;
     if(btn == 'r' && coord > leftLimit && coord < NumOfSlices) rightLimit = coord;
+
 
     QPixmap pic = currentPic;
     QPainter * painter = new QPainter();

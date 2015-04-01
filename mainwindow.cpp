@@ -18,7 +18,7 @@ MainWindow::MainWindow() :
 
     ns = -1;
     spLength = -1;
-    ns = def::genNs;
+    ns = def::ns;
 
     right = fftLimit(def::rightFreq, def::freq, def::fftLength);
     left = fftLimit(def::leftFreq, def::freq, def::fftLength);
@@ -2931,16 +2931,20 @@ void MainWindow::readData()
                         {
                             fwrite(&a, sizeof(short), 1, edfNew);
                         }
-                        data[j][i*nr[j]+k] = physMin[j]
-                                + (physMax[j]-physMin[j]  + 1)
-                                * (double(a)-digMin[j])
-                                / (digMax[j] - digMin[j]  + 1);
                         if(j != ns-1)
                         {
+                            data[j][i*nr[j]+k] = physMin[j]
+                                    + (physMax[j]-physMin[j])
+                                    * (double(a)-digMin[j])
+                                    / (digMax[j] - digMin[j]  + 1);
 //                            data[j][i*nr[j]+k] = a *1./8.; //generality
                         }
                         else
                         {
+                            data[j][i*nr[j]+k] = physMin[j]
+                                    + (physMax[j]-physMin[j])
+                                    * (double(a)-digMin[j])
+                                    / (digMax[j] - digMin[j]);
 //                            data[j][i*nr[j]+k] = a;
                         }
                     }
@@ -2954,7 +2958,7 @@ void MainWindow::readData()
                                 fwrite(&a, sizeof(short), 1, edfNew);
                             }
                             data[j][i*nr[j]+k] = physMin[j]
-                                    + (physMax[j]-physMin[j]  + 1)
+                                    + (physMax[j]-physMin[j])
                                     * (double(a)-digMin[j])
                                     / (digMax[j] - digMin[j]  + 1);
 //                            data[j][i*nr[j]+k] = a *1./8.;
@@ -2963,9 +2967,9 @@ void MainWindow::readData()
                         {
                             fread(&markA, sizeof(unsigned short), 1, edf);
                             data[j][i*nr[j]+k] = physMin[j]
-                                    + (physMax[j]-physMin[j]  + 1)
-                                    * (double(markA)-digMin[j])
-                                    / (digMax[j] - digMin[j]  + 1);
+                                    + (double(markA) - digMin[j])
+                                    * (physMax[j] - physMin[j])
+                                    / (digMax[j] - digMin[j]);
 //                            data[j][i*nr[j]+k] = markA;
 
                             if(data[j][i*nr[j]+k] != 0 )
@@ -3315,7 +3319,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
         }
         else //if matiCheckBox->isChecked()
         {
-            sliceMati(numChanToWrite);
+            sliceMati();
         }
 
         --ns; //-markers channel generality
@@ -4052,7 +4056,7 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
 
 }
 
-void MainWindow::sliceMati(int numChanWrite)
+void MainWindow::sliceMati()
 {
     QTime myTime;
     myTime.start();
@@ -4066,18 +4070,15 @@ void MainWindow::sliceMati(int numChanWrite)
     int number = 0;
     int session[4]; //generality
     int type = 3;
-    FILE * file;
-    ofstream outStream;
-//    ifstream markersFile;
-//    int bufSize = 256;
-//    char * readBuf = new char [bufSize];
-//    QStringList markerList;
 
     int piece = ui->matiPieceLengthSpinBox->value() * 250; //length of a piece just for visual processing
     for(int i = 0; i < 4; ++i)
     {
         session[i] = 0;
     }
+
+    edfFile fil;
+    fil.readEdfFile(ui->filePathLineEdit->text());
 
 
 //    helpString = QDir::toNativeSeparators(dir->absolutePath()
@@ -4092,21 +4093,8 @@ void MainWindow::sliceMati(int numChanWrite)
         {
             continue;
         }
-//        myTime.restart();
-//        markersFile.getline(readBuf, bufSize);
-//        helpString = QString(readBuf);
-//        if(!helpString.contains("session")) // if it's an appropriate marker
-//        {
-//            continue;
-//        }
-        else // nonzero marker
+        else
         {
-//            cout << helpString.toStdString() << endl;
-//            continue;
-//            markerList = helpString.split(QRegExp("[\\s]"), QString::SkipEmptyParts); // time markerDec markerBin0 markerBin1
-
-
-//            matiFixMarker(data[ns-1][i]); //already done in readData();
             markers = matiCountByte(data[ns - 1][i]);
             //decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
             for(int i = 0; i < 3; ++i)
@@ -4141,132 +4129,99 @@ void MainWindow::sliceMati(int numChanWrite)
                 fileMark = "254"; //rest. start of the session is sliced too
             }
             end = i + 1; // end marker should be included
-//            end = markerList[0].toInt() + 1;
         }
 
+        //save session edf
         if(end > start)
         {
+            helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                                  + QDir::separator() + ExpName
+                                                  + "_" + QString::number(type)
+                                                  + "_" + QString::number(session[type])
+                                                  + ".edf");
+            fil.saveSubsection(start, end,
+                               helpString);
             number = int(ceil((end-start)/double(piece)));
 
-            for(int j = 0; j < number; ++j) // num of pieces
-            {
-                helpString = QDir::toNativeSeparators(dir->absolutePath()
-                                                      + QDir::separator() + "Realisations"
-                                                      + QDir::separator() + ExpName
-                                                      + "_" + QString::number(type)
-                                                      + "_" + QString::number(session[type])
-                                                      + "_" + rightNumber(j, 2)
-                                                      + '.' + fileMark);
-                file = fopen(helpString.toStdString().c_str(), "w");
-//                outStream.open(helpString.toStdString().c_str());
-                NumOfSlices = min(end - start - j*piece, piece);
-                fprintf(file, "NumOfSlices %d \n", NumOfSlices);
-//                outStream << "NumOfSlices " << NumOfSlices << endl;
-                {
-                    for(int l = start  + j*piece; l < min(start + (j+1)*piece, end); ++l) //end slice included with session end marker
-                    {
-                        for(int m = 0; m < numChanWrite; ++m)
-                        {
-                            fprintf(file, "%.4lf\n", data[m][l]); // generality l * nr[m] / nr[ns-1]
-//                            outStream << data[m][l] << '\n';
-                        }
-                    }
-                }
-                fclose(file);
-//                outStream.close();
-            }
-
-            ui->progressBar->setValue(end / double(ndr*nr[ns-1]) * 100.);
-            qApp->processEvents();
-
-            fileMark.clear();
             start = end - 1; //start marker should be included
             end = -1;
             ++session[type];
-
         }
+
         qApp->processEvents();
         if (stopFlag == 1)
         {
             break;
         }
     }
-//    } while (!markersFile.eof());
-
-
-    //slice end piece
-    if(def::wirteStartEndLong)
-    {
-        type = 3;
-        end = ndr*nr[ns-1];
-        ++session[type];
-        fileMark = "254";
-        number = int(ceil((end-start)/double(piece)));
-        //adjust for whole wndLen windows - cut start ~1,5 pieces
-//        start = end - piece * (number-2);  ////////////////1 or 2
-
-
-        for(int j = 0; j < number; ++j) // num of pieces
-        {
-            helpString = QDir::toNativeSeparators(dir->absolutePath()
-                                                  + QDir::separator() + "Realisations"
-                                                  + QDir::separator() + ExpName
-                                                  + "_" + QString(type)
-                                                  + "_" + QString::number(session[type])
-                                                  + "_" + rightNumber(j, 2)
-                                                  + '.' + fileMark);
-//            file = fopen(helpString.toStdString().c_str(), "w");
-            outStream.open(helpString.toStdString().c_str());
-            NumOfSlices = min(end - start - j*piece, piece);
-//            fprintf(file, "NumOfSlices %d \n", NumOfSlices);
-            outStream << "NumOfSlices " << NumOfSlices << endl;
-            {
-                for(int l = start  + j*piece; l < min(start + (j+1)*piece, end); ++l) //end slice not included
-                {
-                    for(int m = 0; m < numChanWrite; ++m)
-                    {
-//                        fprintf(file, "%.4lf\n", data[m][l*nr[m]/nr[ns-1]]);
-                        outStream << data[m][l*nr[m]/nr[ns-1]] << '\n';
-                    }
-                }
-            }
-//            fclose(file);
-            outStream.close();
-        }
-    }
-
-    if(0)
-    {
-
-        QStringList lst;
-        //count NumOfSlices
-        cout << "sliceMati: init slices = " << ndr*nr[ns-1] << endl;
-
-        dir->cd("Realisations");
-        lst.clear();
-        lst = dir->entryList(QDir::Files);
-        //    cout << lst.length() << endl;
-        dir->cdUp();
-        number = 0;
-        //    ifstream inStream;
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            helpString = QDir::toNativeSeparators(dir->absolutePath()
-                                                  + QDir::separator() + "Realisations"
-                                                  + QDir::separator() + lst[i]);
-
-            file = fopen(helpString.toStdString().c_str(), "r");
-            //        inStream.open(helpString.toStdString().c_str());
-            fscanf(file, "NumOfSlices %d", &NumOfSlices);
-
-            number += NumOfSlices;
-            fclose(file);
-        }
-        cout << "sliceMati: sliced = " << number << endl;
-    }
-
     cout << "sliceMati: time = " << myTime.elapsed()/1000. << " sec" << endl;
     stopFlag = 0;
+}
+
+void MainWindow::sliceMatiPieces()
+{
+    QTime myTime;
+    myTime.start();
+
+    QString helpString;
+    int dataLen;
+    QString fileMark;
+    int pieceNum;
+    int currStart;
+    int currEnd;
+    double pieceLength = ui->matiPieceLengthSpinBox->value();
+
+    edfFile fil;
+    fil.readEdfFile(ui->filePathLineEdit->text());
+
+    for(int type = 0; type < 3; ++type)
+    {
+        for(int session = 0; session < 15; ++ session)
+        {
+
+            helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                                  + QDir::separator() + ExpName
+                                                  + "_" + QString::number(type)
+                                                  + "_" + QString::number(session)
+                                                  + ".edf");
+            if(QFile::exists(helpString))
+            {
+                fil.readEdfFile(helpString);
+                dataLen = fil.getDataLen();
+                pieceNum = 0;
+                currStart = 0;
+                currEnd = -1; // notIncluded
+
+                if(type == 0)       fileMark = "241";
+                else if(type == 1)  fileMark = "247";
+                else if(type == 2)  fileMark = "244";
+                else                fileMark = "254";
+
+                do
+                {
+
+                    currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
+                    if (currEnd != dataLen && (type == 0 || type == 2))
+                    {
+                        while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd], 14)) // while not given answer
+                        {
+                            --currEnd;
+                        }
+                    }
+
+                    // type and session already in the ExpName
+                    helpString = QDir::toNativeSeparators(fil.getDirPath()
+                                                          + slash() + "Realisations"
+                                                          + slash() + fil.getExpName()
+                                                          + "_" + rightNumber(pieceNum, 2)
+                                                          + '.' + fileMark);
+                    fil.saveSubsection(currStart, currEnd, helpString);
+                    ++pieceNum;
+                    currStart = currEnd;
+                } while (currEnd < dataLen);
+            }
+        }
+    }
 }
 
 void MainWindow::eyesFast()  //generality
@@ -9108,41 +9063,113 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 
 void MainWindow::customFunc()
 {
+
     return;
     //test edfFile class
     if(1)
     {
-        edfFile fil;
-        fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_small.edf");
-        fil.appendFile("/media/Files/Data/Mati/SDA/SDA_amod.edf",
-                       "/media/Files/Data/Mati/SDA/SDA_wAmod.edf");
+        setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
 
-
+        sliceMatiPieces();
         exit(0);
-        vector <double> markChan = fil.getData()[fil.getMarkChan()];
-        int start = 0, finish = 0;
-        int counter = 0;
-        double val1 = matiCountDecimal("00000001 10000000");
-        double val2 = matiCountDecimal("00000101 10000000");
-        while(counter < fil.getDataLen())
+        if(0)
         {
-            if(markChan[counter] == val1)
+            edfFile fil;
+            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
+            int mem = 0;
+            for(int i = 0; i < fil.getDataLen(); ++i)
             {
-                start = counter;
+                if(fil.getData()[10][i] != mem)
+                {
+                    mem = fil.getData()[10][i];
+                    cout << i << "\t" << mem << endl;
+                }
             }
-            else if(markChan[counter] == val2)
+            exit(0);
+        }
+        if(1)
+        {
+            edfFile fil;
+            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amodWmark.edf");
+            ofstream outStr("/media/Files/Data/Mati/SDA/difMark.txt");
+            for(int i = 0; i < fil.getDataLen(); ++i)
             {
-                finish = counter + 1;
-                break;
+                if(fil.getData()[fil.getMarkChan()][i] != 0)
+                {
+                    for(int j = i - 50; j < i + 50; ++j)
+                    {
+                        if(fil.getData()[10][j+1] != fil.getData()[10][j])
+                        {
+                            outStr << i << "\t" << j+1 << "\t" << (i-j-1)*4 << endl;
+                            break;
+                        }
+                    }
+                }
             }
-            ++counter;
+            outStr.close();
+            exit(0);
+        }
+        if(1)
+        {
+            edfFile fil("/media/Files/Data/Mati/SDA_0_1.txt");
+            fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
+//            exit(0);
+        }
+        if(1)
+        {
+            edfFile fil;
+            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
 
+            vector <double> markChan = fil.getData()[fil.getMarkChan()];
+            int start = 0, finish = 0;
+            int counter = 0;
+            double val1 = matiCountDecimal("00000001 10000000");
+            double val2 = matiCountDecimal("00000101 10000000");
+            int num = 0;
+            while(counter < fil.getDataLen())
+            {
+                if(num == 1)
+                {
+                    if(markChan[counter] == val1)
+                    {
+                        start = counter;
+                    }
+                    else if(markChan[counter] == val2)
+                    {
+                        finish = counter + 1;
+                        break;
+                    }
+                }
+                else if(markChan[counter] == val2)
+                {
+                    ++num;
+                }
+                ++counter;
+            }
+            fil.saveSubsection(start, finish, "/media/Files/Data/Mati/SDA/SDA_small.edf");
+//            exit(0);
+        }
+        if(1)
+        {
+
+            edfFile fil;
+            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
+
+            edfFile fil1;
+            fil1.readEdfFile("/media/Files/Data/Mati/SDA/SDA_small.edf");
+
+            fil.appendChannel(fil1.getChannels()[fil1.getMarkChan()],
+                    "/media/Files/Data/Mati/SDA/SDA_amodWmark.edf");
+
+            exit(0);
+            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_small.edf");
+            fil.appendFile("/media/Files/Data/Mati/SDA/SDA_amod.edf",
+                           "/media/Files/Data/Mati/SDA/SDA_wAmod.edf");
+
+
+            exit(0);
         }
 
-        fil.saveSubsection(start, finish, "/media/Files/Data/Mati/SDA/SDA_small.edf");
-//        fil.appendFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
-//        fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_out.edf");
-        exit(0);
 //        return;
     }
     //MATI

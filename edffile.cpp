@@ -130,8 +130,8 @@ edfFile::edfFile(QString matiLogPath)
 
     this->physMax = {7, 7, 7, 7,
                      1,  1,  1,  1,
-                     3, 1,
-                     255, 255, 16383};
+                     3, 7,
+                     255, 255, 255};
 
     this->digMin = {-32768, -32768, -32768, -32768,
                     -32768, -32768, -32768, -32768,
@@ -140,8 +140,8 @@ edfFile::edfFile(QString matiLogPath)
 
     this->digMax = { 32767,  32767,  32767,  32767,
                      32767,  32767,  32767,  32767,
-                     3, 1,
-                     255, 255, 255};
+                     3-1, 7-1,
+                     255-1, 255-1, 255-1};
 
     this->prefiltering = vector<QString>(this->ns, QString(fitString("AMOD no prefiltering", 80)));
     this->reserved = vector<QString>(this->ns, QString(fitString("AMOD reserved", 32)));
@@ -156,42 +156,44 @@ edfFile::edfFile(QString matiLogPath)
     while(!feof(inStr))
     {
         fscanf(inStr, "%*d %*f"); // quantLength & currTime
-        for(int i = 0; i < numOfDoubleParams; ++i)
+        for(int i = 0; i < numOfParams; ++i)
         {
             fscanf(inStr, "%lf", &data[i][currTimeIndex]);
-        }
-        for(int i = numOfDoubleParams; i < numOfParams; ++i)
-        {
-            fscanf(inStr, "%d", &data[i][currTimeIndex]);
+
         }
         ++currTimeIndex;
     }
+    --currTimeIndex; // to loose the last read string;
+    for(int i = 0; i < currTimeIndex; ++i)
+    {
+//        cout << data[numOfDoubleParams - 2][i] << endl;
+    }
     this->ndr = ceil(currTimeIndex/250.);
-    this->dataLength = this->ndr * this->nr[0];
+    this->dataLength = this->ndr * def::freq;
 
     for(int j = 0; j < numOfParams; ++j)
     {
-        for(int i = currTimeIndex; i < 250 * this->ndr; ++i)
+        for(int i = currTimeIndex; i < this->dataLength; ++i)
         {
-            data[j][i] = 0;
+            data[j][i] = 0.; //.push_back(0.);
         }
-        data[j].resize(dataLength); // do we need it?
+        data[j].resize(dataLength);
     }
 
     for(int i = 0; i < this->ns; ++i)
     {
         this->channels.push_back(edfChannel(labels[i],
-                                               transducerType[i],
-                                               physDim[i],
-                                               physMax[i],
-                                               physMin[i],
-                                               digMax[i],
-                                               digMin[i],
-                                               prefiltering[i],
-                                               nr[i],
-                                               reserved[i],
-                                               data[i])
-                                    );
+                                            transducerType[i],
+                                            physDim[i],
+                                            physMax[i],
+                                            physMin[i],
+                                            digMax[i],
+                                            digMin[i],
+                                            prefiltering[i],
+                                            nr[i],
+                                            reserved[i],
+                                            data[i])
+                                 );
     }
 }
 /*
@@ -450,17 +452,17 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
     for(int i = 0; i < this->ns; ++i)
     {
         this->channels.push_back(edfChannel(labels[i],
-                                               transducerType[i],
-                                               physDim[i],
-                                               physMax[i],
-                                               physMin[i],
-                                               digMax[i],
-                                               digMin[i],
-                                               prefiltering[i],
-                                               nr[i],
-                                               reserved[i],
-                                               data[i])
-                                    );
+                                            transducerType[i],
+                                            physDim[i],
+                                            physMax[i],
+                                            physMin[i],
+                                            digMax[i],
+                                            digMin[i],
+                                            prefiltering[i],
+                                            nr[i],
+                                            reserved[i],
+                                            data[i])
+                                 );
     }
 }
 
@@ -521,7 +523,7 @@ void edfFile::handleDatum(const int & currNs,
         {
             fread(&a, sizeof(short), 1, edfForDatum);
             currDatum = physMin[currNs]
-                    + (physMax[currNs] - physMin[currNs]  + 1)
+                    + (physMax[currNs] - physMin[currNs])
                     * (double(a) - digMin[currNs])
                     / (digMax[currNs] - digMin[currNs]  + 1);
 
@@ -544,9 +546,9 @@ void edfFile::handleDatum(const int & currNs,
             {
                 fread(&markA, sizeof(unsigned short), 1, edfForDatum);
                 currDatum = physMin[currNs]
-                        + (physMax[currNs] - physMin[currNs]  + 1)
+                        + (physMax[currNs] - physMin[currNs])
                         * (double(markA) - digMin[currNs])
-                        / (digMax[currNs] - digMin[currNs]  + 1);
+                        / (digMax[currNs] - digMin[currNs]);
 //                currDatum = markA;
 
 
@@ -559,9 +561,9 @@ void edfFile::handleDatum(const int & currNs,
             {
                 fread(&a, sizeof(short), 1, edfForDatum);
                 currDatum = physMin[currNs]
-                        + (physMax[currNs] - physMin[currNs]  + 1)
+                        + (physMax[currNs] - physMin[currNs])
                         * (double(a) - digMin[currNs])
-                        / (digMax[currNs] - digMin[currNs]  + 1);
+                        / (digMax[currNs] - digMin[currNs]);
 
 //                currDatum = a; //generality encephalan
             }
@@ -583,7 +585,7 @@ void edfFile::handleDatum(const int & currNs,
         {
             a = (short)( (currDatum - physMin[currNs])
                         * (digMax[currNs] - digMin[currNs] + 1)
-                        / (physMax[currNs] - physMin[currNs] + 1)
+                        / (physMax[currNs] - physMin[currNs])
                         + digMin[currNs]);
 
 //            a  = (short)(currDatum * 8.); // generality encephalan
@@ -601,8 +603,8 @@ void edfFile::handleDatum(const int & currNs,
             {
 //                markA = (unsigned short) (currDatum);
                 markA = (unsigned short)( (currDatum - physMin[currNs])
-                                          * (digMax[currNs] - digMin[currNs] + 1)
-                                          / (physMax[currNs] - physMin[currNs] + 1)
+                                          * (digMax[currNs] - digMin[currNs])
+                                          / (physMax[currNs] - physMin[currNs])
                                           + digMin[currNs]);
                 fwrite(&markA, sizeof(unsigned short), 1, edfForDatum);
             }
@@ -610,8 +612,8 @@ void edfFile::handleDatum(const int & currNs,
             {
 //                a = (short) (currDatum);
                 a = (short)( (currDatum - physMin[currNs])
-                            * (digMax[currNs] - digMin[currNs] + 1)
-                            / (physMax[currNs] - physMin[currNs] + 1)
+                            * (digMax[currNs] - digMin[currNs])
+                            / (physMax[currNs] - physMin[currNs])
                             + digMin[currNs]);
                 fwrite(&a, sizeof(short), 1, edfForDatum);
             }
@@ -805,6 +807,13 @@ void edfFile::adjustArraysByChannels()
 
 }
 
+void edfFile::appendChannel(edfChannel addChan, QString outPath)
+{
+    this->channels.push_back(addChan);
+    this->adjustArraysByChannels();
+    this->writeEdfFile(outPath);
+}
+
 void edfFile::appendFile(QString addEdfPath, QString outPath)
 {
     edfFile addEdf;
@@ -830,7 +839,7 @@ void edfFile::swapChannels(int num1, int num2)
 
 void edfFile::saveSubsection(int startBin, int finishBin, QString outPath) // [start, finish)
 {
-    edfFile temp = (*this);
+    const edfFile temp = (*this);
 
     for(int i = 0; i < this->ns; ++i)
     {
@@ -840,29 +849,69 @@ void edfFile::saveSubsection(int startBin, int finishBin, QString outPath) // [s
 
     this->ndr = ceil((finishBin - startBin) / def::freq);
     this->dataLength = this->ndr * def::freq;
-
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = (finishBin - startBin); j < this->dataLength; ++j)
-        {
-            data[i].push_back(0.);
-        }
-    }
+    this->fitData(finishBin - startBin);
     this->writeEdfFile(outPath);
-    (*this) = edfFile(temp);
+    (*this) = temp;
 
 //    this->writeEdfFile(setFileName(this->filePath) ); // for test
 }
 
 
 
-//////////////////////////////////////////////////////////// BAAAAAAAADDDDDDDDD
-void edfFile::saveSubsection(vector <double>::iterator startIt,
-                    vector <double>::iterator finishIt,
-                    QString outPath)
+
+void edfFile::saveOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList)
 {
-    /// 0 generality
-    int startBin = std::distance(this->data[this->markerChannel].begin(), startIt);
-    int finishBin = std::distance(this->data[this->markerChannel].begin(), finishIt);
-    this->saveSubsection(startBin, finishBin, outPath);
+    const edfFile temp(*this);
+
+    //adjust channels
+    this->channels.clear();
+    for(int i = 0; i < chanList.length(); ++i)
+    {
+        this->channels.push_back( temp.getChannels()[chanList[i]] ); // count from 1 generality
+        this->channels[i].data = newData[i];
+    }
+    this->adjustArraysByChannels();
+
+    //adjust data
+    this->ndr = ceil(newData[0].size() / def::freq); // generality
+    this->dataLength = this->ndr * def::freq;
+    this->fitData(newData[0].size()); // generality
+
+    this->writeEdfFile(outPath);
+    *this = temp;
+
+}
+
+void edfFile::saveOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList)
+{
+    const edfFile temp(*this);
+
+    //adjust channels
+    this->channels.clear();
+    for(int i = 0; i < chanList.length(); ++i)
+    {
+        this->channels.push_back( temp.getChannels()[chanList[i]] ); // count from 1 generality
+        this->channels[i].data.resize(newDataLength);
+        memcpy(this->channels[i].data.data(), newData[i], sizeof(double) * newDataLength);
+    }
+    this->adjustArraysByChannels();
+
+    this->ndr = ceil(newDataLength / def::freq); // generality
+    this->dataLength = this->ndr * def::freq;
+    this->fitData(newDataLength); // generality
+
+    this->writeEdfFile(outPath);
+    *this = temp;
+}
+
+void edfFile::fitData(int initSize)
+{
+    for(int i = 0; i < this->ns; ++i)
+    {
+        for(int j = initSize; j < this->dataLength; ++j)
+        {
+            this->channels[i].data.push_back(0.);
+            this->data[i].push_back(0.);
+        }
+    }
 }

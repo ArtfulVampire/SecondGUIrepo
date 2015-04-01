@@ -143,13 +143,12 @@ public:
 
     void adjustArraysByChannels();
     void appendFile(QString addEdfPath, QString outPath);
+    void appendChannel(edfChannel addChan, QString outPath); // check ndr
     void swapChannels(int num1, int num2);
     void saveSubsection(int startBin, int finishBin, QString outPath);
-
-    // bad
-    void saveSubsection(vector <double>::iterator startIt,
-                        vector <double>::iterator finishIt,
-                        QString outPath);
+    void saveOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList);
+    void saveOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList);
+    void fitData(int initSize);
 
 private:
     QString headerInitialInfo = QString();
@@ -192,7 +191,7 @@ public:
     const QString & getHeaderReserved() const {return headerReservedField;}
 
     const int & getNdr() const {return ndr;}
-    const int & getDdr() const {return ddr;}
+    const double & getDdr() const {return ddr;}
     const int & getNs() const {return ns;}
     const vector <QString> & getLabels() const {return labels;}
     const vector <QString> & getTransducer() const {return transducerType;}
@@ -216,6 +215,14 @@ public:
     const QString & getFilePath() const {return filePath;}
     const QString & getDirPath() const  {return dirPath;}
     const QString & getExpName() const {return ExpName;}
+
+    void getDataCopy(double ** dest) const
+    {
+        for(int i = 0; i < this->ns; ++i)
+        {
+            memcpy(dest[i], this->data[i].data(), this->dataLength * sizeof(double));
+        }
+    }
 
 };
 
