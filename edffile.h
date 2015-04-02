@@ -37,6 +37,7 @@ struct edfChannel
         return *this;
     }
 
+    //edfChannel(edfFile, int);
     edfChannel(QString in_label,
                QString in_transducerType,
                QString in_physDim,
@@ -87,12 +88,10 @@ public:
     edfFile(const edfFile & other);
     edfFile(QString matiLogPath);
 
-    void readEdfFile(QString EDFpath, bool matiFlag = true, bool ntFlag = false);
-    void writeEdfFile(QString EDFpath, bool matiFlag = true, bool ntFlag = false);
+    void readEdfFile(QString EDFpath);
+    void writeEdfFile(QString EDFpath, bool asPlain = false);
     void handleEdfFile(QString EDFpath,
-                       bool readFlag = true,
-                       bool matiFlag = true,
-                       bool ntFlag = false);
+                       bool readFlag);
 
     template <typename Typ>
     void handleParam(Typ & qStr,
@@ -118,21 +117,16 @@ public:
                           FILE * headerFile);
 
     void handleData(bool readFlag,
-                    bool matiFlag,
-                    bool ntFlag,
                     FILE * edfForData);
 
     void handleDatum(const int & currNs,
                      const int & currTimeIndex,
                      bool readFlag,
-                     bool matiFlag,
-                     bool ntFlag,
                      QString & ntAnnot,
                      FILE * edfForDatum);
 
     void writeMarker(const int & currNs,
-                     const int & currTimeIndex,
-                     bool matiFlag);
+                     const int & currTimeIndex);
 
     void handleAnnotations(const int & currNs,
                            const int & currentTimeIndex,
@@ -145,7 +139,7 @@ public:
     void appendFile(QString addEdfPath, QString outPath);
     void appendChannel(edfChannel addChan, QString outPath); // check ndr
     void swapChannels(int num1, int num2);
-    void saveSubsection(int startBin, int finishBin, QString outPath);
+    void saveSubsection(int startBin, int finishBin, QString outPath, bool plainFlag = false);
     void saveOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList);
     void saveOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList);
     void fitData(int initSize);
@@ -184,6 +178,9 @@ private:
     QString ExpName = QString();
     QString dirPath = QString();
 
+    bool matiFlag = 1;
+    bool ntFlag = 0;
+
 
 public:
     const QString & getHeaderInit() const {return headerInitialInfo;}
@@ -215,6 +212,12 @@ public:
     const QString & getFilePath() const {return filePath;}
     const QString & getDirPath() const  {return dirPath;}
     const QString & getExpName() const {return ExpName;}
+
+    const bool & getMatiFlag() const {return matiFlag;}
+    const bool & getNtFlag() const {return ntFlag;}
+
+    void setMatiFlag(bool newFlag) {matiFlag = newFlag;}
+    void setNtFlag(bool newFlag) {ntFlag = newFlag;}
 
     void getDataCopy(double ** dest) const
     {

@@ -1496,21 +1496,21 @@ double distanceMah(double * const vect, double ** const group, int dimension, in
     return res;
 }
 
-QString fitNumber(const double &input, int N)
+QString fitNumber(const double &input, int N) // append spaces
 {
     QString h;
     h.setNum(input);
     h += QString(N, ' ');
     return h.left(N);
 }
-QString fitString(const QString & input, int N)
+QString fitString(const QString & input, int N) // append spaces
 {
     QString h(input);
     h += QString(N, ' ');
     return h.left(N);
 }
 
-QString rightNumber(const int &input, int N)
+QString rightNumber(const int &input, int N) // prepend zeros
 {
     QString h;
     h.setNum(input);
@@ -4093,7 +4093,20 @@ void svd(double ** inData, int size, int length, double *** eigenVects, double *
     }
 
 }
+QString matiCountByteStr(const double & marker)
+{
+    QString result;
+    vector<bool> byteMarker;
+    byteMarker = matiCountByte(marker);
 
+    for(int h = 15; h >= 0; --h)
+    {
+        result += QString::number(int(byteMarker[h]));
+        if(h == 8) result += " ";
+    }
+    return result;
+
+}
 void matiPrintMarker(const double &marker, QString pre)
 {
     vector<bool> byteMarker;
@@ -4103,13 +4116,7 @@ void matiPrintMarker(const double &marker, QString pre)
     {
         cout << pre.toStdString() << " = ";
     }
-    cout << marker << "\t";
-    for(int h = 15; h >= 0; --h)
-    {
-        cout << byteMarker[h];
-        if(h == 8) cout << " ";
-    }
-    cout << endl;
+    cout << marker << "\t" << matiCountByteStr(marker) << endl;
 }
 
 vector<bool> matiCountByte(double const &  marker)

@@ -124,7 +124,7 @@ public:
     void sliceIlya(int marker1, int marker2, QString marker);
     void sliceFromTo(int marker1, int marker2, QString marker);
     void sliceMati();
-    void sliceMatiPieces();
+    void sliceMatiPieces(bool plainFlag);
 
     void rereferenceData(QString newRef, QString newPath);
 

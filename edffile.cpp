@@ -265,7 +265,10 @@ void edfFile::handleParam(Typ & qStr,
         array = new char [length + 1];
         fread (array, sizeof(char), length, ioFile); array[length] = '\0';
         myTransform(qStr, array);
-        fwrite(array, sizeof(char), length, headerFile);
+        if(headerFile != NULL)
+        {
+            fwrite(array, sizeof(char), length, headerFile);
+        }
         delete []array;
     }
     else
@@ -290,32 +293,52 @@ void edfFile::handleParamArray(vector <Typ> & qStr,
     }
 }
 
-void edfFile::readEdfFile(QString EDFpath, bool matiFlag, bool ntFlag)
+void edfFile::readEdfFile(QString EDFpath)
 {
     QTime myTime;
     myTime.start();
-    handleEdfFile(EDFpath, true, matiFlag, ntFlag);
-    cout << "readEdfFile: time = " << myTime.elapsed()/1000. << " sec" << endl;
+    handleEdfFile(EDFpath, true);
+//    cout << "readEdfFile: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
-void edfFile::writeEdfFile(QString EDFpath, bool matiFlag, bool ntFlag)
+void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
 {
     QTime myTime;
     myTime.start();
-    if(!QFile::exists(EDFpath))
+    if(!asPlain)
     {
-        handleEdfFile(EDFpath, false, matiFlag, ntFlag);
+        if(!QFile::exists(EDFpath))
+        {
+            this->fitData(this->data[0].size());
+            this->handleEdfFile(EDFpath, false);
+        }
+        else
+        {
+            cout << "writeEdfFile: destination file already exists = \n" << EDFpath << endl;
+        }
     }
-    else
+    else // if(asPLain)
     {
-        cout << "writeEdfFile: destination file already exists = \n" << EDFpath << endl;
+        ofstream outStr;
+        outStr.open(EDFpath.toStdString().c_str());
+        outStr << "NumOfSlices " << this->dataLength << endl;
+        for (int i = 0; i < this->dataLength; ++i)
+        {
+            for(int j = 0; j < this->ns; ++j)
+            {
+                outStr << fitNumber(doubleRound(this->data[j][i], 3), 7) << '\t';
+            }
+            outStr << '\n';
+        }
+        outStr.flush();
+        outStr.close();
     }
 
-    cout << "writeEdfFile: time = " << myTime.elapsed()/1000. << " sec" << endl;
+//    cout << "writeEdfFile: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 // readFlag: 1 - read, 0 - write
-void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool ntFlag)
+void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
 {
     //    a = a0 + (a1-a0) * (d-d0) / (d1-d0).
     //    8 ascii : version of this data format (0)
@@ -370,11 +393,14 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
 
     FILE * header;
     helpString = dirPath + slash() + "header.txt";
-    header = fopen(helpString, "w");
+    if(readFlag)
+    {
+        header = fopen(helpString, "w");
     if(header == NULL)
     {
         cout << "handleFile: cannot open header.txt file" << endl;
         return;
+    }
     }
 
 
@@ -408,14 +434,18 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
         }
     }
 
-    helpString = QDir::toNativeSeparators( dirPath + slash() + "labels.txt" );
-    FILE * labelsFile;
-    labelsFile = fopen(helpString, "w");
-    for(int i = 0; i < ns; ++i)                         //labels write in file
+    if(readFlag)
     {
-        fprintf(labelsFile, "%s\n", labels[i].toStdString().c_str());
+        helpString = QDir::toNativeSeparators( dirPath + slash() + "labels.txt" );
+        FILE * labelsFile;
+        labelsFile = fopen(helpString, "w");
+        for(int i = 0; i < ns; ++i)                         //labels write in file
+        {
+            fprintf(labelsFile, "%s\n", labels[i].toStdString().c_str());
+        }
+        fclose(labelsFile);
     }
-    fclose(labelsFile);
+
     handleParamArray(transducerType, ns, 80, readFlag, edfDescriptor, header);
     handleParamArray(physDim, ns, 8, readFlag, edfDescriptor, header);
     handleParamArray(physMin, ns, 8, readFlag, edfDescriptor, header);
@@ -431,7 +461,10 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
 
 
     handleParam(headerRest, int(bytes-(ns+1)*256), readFlag, edfDescriptor, header);
-    fclose(header);
+    if(readFlag)
+    {
+        fclose(header);
+    }
 
     fpos_t *position = new fpos_t;
     fgetpos(edfDescriptor, position);
@@ -446,7 +479,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
     }
 
 
-    handleData(readFlag, matiFlag, ntFlag, edfDescriptor);
+    handleData(readFlag, edfDescriptor);
     fclose(edfDescriptor);
 
     for(int i = 0; i < this->ns; ++i)
@@ -467,8 +500,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool matiFlag, bool 
 }
 
 void edfFile::handleData(bool readFlag,
-                         bool matiFlag,
-                         bool ntFlag,
                          FILE * edfForData)
 {
     int currTimeIndex;
@@ -490,10 +521,10 @@ void edfFile::handleData(bool readFlag,
             for(int k = 0; k < nr[currNs]; ++k)
             {
                 currTimeIndex = i * nr[currNs] + k;
-                handleDatum(currNs, currTimeIndex, readFlag, matiFlag, ntFlag, helpString, edfForData);
+                handleDatum(currNs, currTimeIndex, readFlag, helpString, edfForData);
             }
 
-            if(currNs == markerChannel && ntFlag)
+            if(currNs == markerChannel && this->ntFlag)
             {
                 handleAnnotations(currNs, currTimeIndex, helpString, annotations);
             }
@@ -506,8 +537,6 @@ void edfFile::handleData(bool readFlag,
 void edfFile::handleDatum(const int & currNs,
                           const int & currTimeIndex,
                           bool readFlag,
-                          bool matiFlag,
-                          bool ntFlag,
                           QString & ntAnnot,
                           FILE * edfForDatum)
 {
@@ -532,7 +561,7 @@ void edfFile::handleDatum(const int & currNs,
         }
         else //if markers channel
         {
-            if(ntFlag)
+            if(this->ntFlag)
             {
                 //edf+
                 //            fscanf(edf, "%c", &helpChar);
@@ -542,7 +571,7 @@ void edfFile::handleDatum(const int & currNs,
                 fread(&helpChar, sizeof(char), 1, edfForDatum);
                 ntAnnot += helpChar;
             }
-            else if(matiFlag)
+            else if(this->matiFlag)
             {
                 fread(&markA, sizeof(unsigned short), 1, edfForDatum);
                 currDatum = physMin[currNs]
@@ -568,9 +597,9 @@ void edfFile::handleDatum(const int & currNs,
 //                currDatum = a; //generality encephalan
             }
 
-            if(!ntFlag && currDatum != 0)
+            if(!this->ntFlag && currDatum != 0 && readFlag) // make markers file when read only
             {
-                writeMarker(currNs, currTimeIndex, matiFlag);
+                writeMarker(currNs, currTimeIndex);
             }
 
             if(currDatum == 200 )
@@ -594,12 +623,12 @@ void edfFile::handleDatum(const int & currNs,
         }
         else //if markers channel
         {
-            if(ntFlag) ////////////////////////// to do???
+            if(this->ntFlag) ////////////////////////// to do???
             {
                 //edf+
 //                fwrite(&helpChar, sizeof(char), 1, edfDescriptor);
             }
-            else if(matiFlag)
+            else if(this->matiFlag)
             {
 //                markA = (unsigned short) (currDatum);
                 markA = (unsigned short)( (currDatum - physMin[currNs])
@@ -623,8 +652,7 @@ void edfFile::handleDatum(const int & currNs,
 
 
 void edfFile::writeMarker(const int & currNs,
-                           const int & currTimeIndex,
-                           bool matiFlag)
+                           const int & currTimeIndex)
 {
     vector<bool> byteMarker;
     QString helpString;
@@ -636,7 +664,7 @@ void edfFile::writeMarker(const int & currNs,
     helpString = dirPath + slash() + ExpName + "_markers.txt";
     markers = fopen(helpString, "a+");
     fprintf(markers, "%d %d", currTimeIndex, int(currDatum)); //////////////////// danger int()
-    if(matiFlag)
+    if(this->matiFlag)
     {
         byteMarker = matiCountByte(currDatum);
 
@@ -696,7 +724,7 @@ void edfFile::handleAnnotations(const int & currNs,
         }
     }
     // I dont care
-    if(ntFlag)
+    if(this->ntFlag)
     {
         double markTime;
         char * markNum = new char[60];
@@ -729,8 +757,6 @@ void edfFile::handleAnnotations(const int & currNs,
 
 void edfFile::adjustArraysByChannels()
 {
-
-
     this->ns = this->channels.size();
     this->bytes = 256 * (this->ns + 1);
 
@@ -805,6 +831,10 @@ void edfFile::adjustArraysByChannels()
     }
     this->headerRest = QString();
 
+    this->dataLength = this->data[0].size(); // dunno
+    this->ndr = ceil(this->data[0].size() / def::freq); // generality
+
+
 }
 
 void edfFile::appendChannel(edfChannel addChan, QString outPath)
@@ -837,7 +867,7 @@ void edfFile::swapChannels(int num1, int num2)
 }
 
 
-void edfFile::saveSubsection(int startBin, int finishBin, QString outPath) // [start, finish)
+void edfFile::saveSubsection(int startBin, int finishBin, QString outPath, bool plainFlag) // [start, finish)
 {
     const edfFile temp = (*this);
 
@@ -849,8 +879,7 @@ void edfFile::saveSubsection(int startBin, int finishBin, QString outPath) // [s
 
     this->ndr = ceil((finishBin - startBin) / def::freq);
     this->dataLength = this->ndr * def::freq;
-    this->fitData(finishBin - startBin);
-    this->writeEdfFile(outPath);
+    this->writeEdfFile(outPath, plainFlag);
     (*this) = temp;
 
 //    this->writeEdfFile(setFileName(this->filePath) ); // for test
@@ -875,8 +904,6 @@ void edfFile::saveOtherData(vector < vector <double> > newData, QString outPath,
     //adjust data
     this->ndr = ceil(newData[0].size() / def::freq); // generality
     this->dataLength = this->ndr * def::freq;
-    this->fitData(newData[0].size()); // generality
-
     this->writeEdfFile(outPath);
     *this = temp;
 
@@ -896,16 +923,14 @@ void edfFile::saveOtherData(double ** newData, int newDataLength, QString outPat
     }
     this->adjustArraysByChannels();
 
-    this->ndr = ceil(newDataLength / def::freq); // generality
-    this->dataLength = this->ndr * def::freq;
-    this->fitData(newDataLength); // generality
-
     this->writeEdfFile(outPath);
     *this = temp;
 }
 
 void edfFile::fitData(int initSize)
 {
+    this->ndr = ceil(initSize / def::freq); // generality
+    this->dataLength = this->ndr * def::freq;
     for(int i = 0; i < this->ns; ++i)
     {
         for(int j = initSize; j < this->dataLength; ++j)
@@ -914,4 +939,5 @@ void edfFile::fitData(int initSize)
             this->data[i].push_back(0.);
         }
     }
+
 }

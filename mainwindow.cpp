@@ -4080,22 +4080,17 @@ void MainWindow::sliceMati()
     edfFile fil;
     fil.readEdfFile(ui->filePathLineEdit->text());
 
-
-//    helpString = QDir::toNativeSeparators(dir->absolutePath()
-//                                          + QDir::separator() + ExpName
-//                                          + "_markers.txt");
-//    markersFile.open(helpString.toStdString().c_str());
-
-    for(int i = 0; i < ndr*nr[ns-1]; ++i)
+    for(int i = 0; i < fil.getDataLen(); ++i)
 //    do
     {
-        if(data[ns-1][i] == 0)
+        double currMarker = fil.getData()[fil.getMarkChan()][i];
+        if(currMarker == 0)
         {
             continue;
         }
         else
         {
-            markers = matiCountByte(data[ns - 1][i]);
+            markers = matiCountByte(currMarker);
             //decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
             for(int i = 0; i < 3; ++i)
             {
@@ -4141,6 +4136,7 @@ void MainWindow::sliceMati()
                                                   + ".edf");
             fil.saveSubsection(start, end,
                                helpString);
+
             number = int(ceil((end-start)/double(piece)));
 
             start = end - 1; //start marker should be included
@@ -4158,7 +4154,7 @@ void MainWindow::sliceMati()
     stopFlag = 0;
 }
 
-void MainWindow::sliceMatiPieces()
+void MainWindow::sliceMatiPieces(bool plainFlag)
 {
     QTime myTime;
     myTime.start();
@@ -4170,9 +4166,11 @@ void MainWindow::sliceMatiPieces()
     int currStart;
     int currEnd;
     double pieceLength = ui->matiPieceLengthSpinBox->value();
+    pieceLength = 7.;
 
     edfFile fil;
     fil.readEdfFile(ui->filePathLineEdit->text());
+//    cout << ui->filePathLineEdit->text() << endl;
 
     for(int type = 0; type < 3; ++type)
     {
@@ -4184,6 +4182,8 @@ void MainWindow::sliceMatiPieces()
                                                   + "_" + QString::number(type)
                                                   + "_" + QString::number(session)
                                                   + ".edf");
+//            cout << "currEdfTo slice = " << getExpNameLib(helpString) << endl;
+
             if(QFile::exists(helpString))
             {
                 fil.readEdfFile(helpString);
@@ -4199,15 +4199,21 @@ void MainWindow::sliceMatiPieces()
 
                 do
                 {
-
                     currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
+
                     if (currEnd != dataLen && (type == 0 || type == 2))
                     {
                         while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd], 14)) // while not given answer
                         {
+//                            if(fil.getData()[fil.getMarkChan()][currEnd] != 0)
+//                            {
+//                                cout << matiCountByteStr(fil.getData()[fil.getMarkChan()][currEnd]) << endl;
+//                            }
                             --currEnd;
                         }
                     }
+
+//                    cout << currEnd << endl;
 
                     // type and session already in the ExpName
                     helpString = QDir::toNativeSeparators(fil.getDirPath()
@@ -4215,13 +4221,16 @@ void MainWindow::sliceMatiPieces()
                                                           + slash() + fil.getExpName()
                                                           + "_" + rightNumber(pieceNum, 2)
                                                           + '.' + fileMark);
-                    fil.saveSubsection(currStart, currEnd, helpString);
+
+//                    cout << "currPiece to write = " << getExpNameLib(helpString) << endl;
+                    fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
                     ++pieceNum;
                     currStart = currEnd;
                 } while (currEnd < dataLen);
             }
         }
     }
+    cout << "sliceMatiPieces: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::eyesFast()  //generality
@@ -9064,13 +9073,12 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 void MainWindow::customFunc()
 {
 
-    return;
+//    return;
     //test edfFile class
     if(1)
     {
         setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
-
-        sliceMatiPieces();
+        sliceMatiPieces(true);
         exit(0);
         if(0)
         {

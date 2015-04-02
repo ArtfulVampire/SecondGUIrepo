@@ -192,8 +192,10 @@ void matrixPrint(double ** const mat, int i, int j);
 void drawArray(double * array, int length, QString outPath); ///////////////////////////////////////////to do
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
-void matiPrintMarker(double const & marker, QString pre = "");
+
 vector<bool> matiCountByte(const double & marker);
+QString matiCountByteStr(const double & marker);
+void matiPrintMarker(double const & marker, QString pre = "");
 void matiFixMarker(double & marker);
 int matiCountDecimal(vector<bool> byteMarker);
 int matiCountDecimal(QString byteMarker);
