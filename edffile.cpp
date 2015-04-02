@@ -298,7 +298,6 @@ void edfFile::readEdfFile(QString EDFpath)
     QTime myTime;
     myTime.start();
     handleEdfFile(EDFpath, true);
-//    cout << "readEdfFile: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
@@ -309,7 +308,7 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
     {
         if(!QFile::exists(EDFpath))
         {
-            this->fitData(this->data[0].size());
+            this->fitData(this->dataLength);
             this->handleEdfFile(EDFpath, false);
         }
         else
@@ -319,19 +318,7 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
     }
     else // if(asPLain)
     {
-        ofstream outStr;
-        outStr.open(EDFpath.toStdString().c_str());
-        outStr << "NumOfSlices " << this->dataLength << endl;
-        for (int i = 0; i < this->dataLength; ++i)
-        {
-            for(int j = 0; j < this->ns; ++j)
-            {
-                outStr << fitNumber(doubleRound(this->data[j][i], 3), 7) << '\t';
-            }
-            outStr << '\n';
-        }
-        outStr.flush();
-        outStr.close();
+        writePlainData(this->data, EDFpath);
     }
 
 //    cout << "writeEdfFile: time = " << myTime.elapsed()/1000. << " sec" << endl;
@@ -412,9 +399,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     handleParam(ns, 4, readFlag, edfDescriptor, header);
 
 
-
-
-
     //start channels read
     handleParamArray(labels, ns, 16, readFlag, edfDescriptor, header);
     //edit EOG channels generality for encephalan
@@ -458,9 +442,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     //end channels read
 
 
-
-
     handleParam(headerRest, int(bytes-(ns+1)*256), readFlag, edfDescriptor, header);
+
     if(readFlag)
     {
         fclose(header);
@@ -480,6 +463,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
 
 
     handleData(readFlag, edfDescriptor);
+
     fclose(edfDescriptor);
 
     for(int i = 0; i < this->ns; ++i)
@@ -832,9 +816,6 @@ void edfFile::adjustArraysByChannels()
     this->headerRest = QString();
 
     this->dataLength = this->data[0].size(); // dunno
-    this->ndr = ceil(this->data[0].size() / def::freq); // generality
-
-
 }
 
 void edfFile::appendChannel(edfChannel addChan, QString outPath)
@@ -848,8 +829,10 @@ void edfFile::appendFile(QString addEdfPath, QString outPath)
 {
     edfFile addEdf;
     addEdf.readEdfFile(addEdfPath);
-    edfChannel tempMarkChan = this->channels[markerChannel]; // save markerChannel
-    this->channels.erase(this->channels.begin() + markerChannel); // remove markerChannel
+    edfChannel tempMarkChan = this->channels[this->markerChannel]; // save markerChannel
+    cout << this->channels.size() << endl;
+    this->channels.erase(this->channels.begin() + this->markerChannel); // remove markerChannel
+    cout << this->channels.size() << endl;
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
         this->channels.push_back(addEdf.getChannels()[i]);
@@ -873,16 +856,14 @@ void edfFile::saveSubsection(int startBin, int finishBin, QString outPath, bool 
 
     for(int i = 0; i < this->ns; ++i)
     {
-        this->data[i].erase(this->data[i].begin() + finishBin, this->data[i].end());
-        this->data[i].erase(this->data[i].begin(), this->data[i].begin() + startBin);
+        //old version
+//        this->data[i].erase(this->data[i].begin() + finishBin, this->data[i].end());
+//        this->data[i].erase(this->data[i].begin(), this->data[i].begin() + startBin);
+        this->data[i].assign(this->data[i].begin() + startBin, this->data[i].begin() + finishBin);
     }
-
-    this->ndr = ceil((finishBin - startBin) / def::freq);
-    this->dataLength = this->ndr * def::freq;
+    this->dataLength = finishBin - startBin;
     this->writeEdfFile(outPath, plainFlag);
     (*this) = temp;
-
-//    this->writeEdfFile(setFileName(this->filePath) ); // for test
 }
 
 
@@ -900,10 +881,7 @@ void edfFile::saveOtherData(vector < vector <double> > newData, QString outPath,
         this->channels[i].data = newData[i];
     }
     this->adjustArraysByChannels();
-
-    //adjust data
-    this->ndr = ceil(newData[0].size() / def::freq); // generality
-    this->dataLength = this->ndr * def::freq;
+    this->dataLength = newData[0].size();
     this->writeEdfFile(outPath);
     *this = temp;
 
@@ -922,6 +900,7 @@ void edfFile::saveOtherData(double ** newData, int newDataLength, QString outPat
         memcpy(this->channels[i].data.data(), newData[i], sizeof(double) * newDataLength);
     }
     this->adjustArraysByChannels();
+    this->dataLength = newDataLength;
 
     this->writeEdfFile(outPath);
     *this = temp;

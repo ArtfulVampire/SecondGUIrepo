@@ -576,7 +576,7 @@ double fractalDimension(double *arr, int N, QString picPath)
 
 double doubleRound(double in, int numSigns)
 {
-    return int(in*pow(10., numSigns))/pow(10., numSigns);
+    return int(  floor(in*pow(10., numSigns) + 0.5)  ) / pow(10., numSigns);
 }
 
 int findChannel(char ** const labelsArr, QString chanName, int ns)
@@ -1510,7 +1510,7 @@ QString fitString(const QString & input, int N) // append spaces
     return h.left(N);
 }
 
-QString rightNumber(const int &input, int N) // prepend zeros
+QString rightNumber(const unsigned int input, int N) // prepend zeros
 {
     QString h;
     h.setNum(input);
@@ -2623,6 +2623,62 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
     file.close();
 }
 
+
+void writePlainData(double ** data, int ns, int numOfSlices, QString outPath)
+{
+    ofstream outStr;
+    outStr.open(outPath.toStdString().c_str());
+    outStr << "NumOfSlices " << numOfSlices << endl;
+    for (int i = 0; i < numOfSlices; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            outStr << fitNumber(doubleRound(data[j][i], 3), 7) << '\t';
+        }
+        outStr << '\n';
+    }
+    outStr.flush();
+    outStr.close();
+}
+
+void writePlainData(vector< vector <double> > data, QString outPath)
+{
+    ofstream outStr;
+    outStr.open(outPath.toStdString().c_str());
+    outStr << "NumOfSlices " << data[0].size() << endl;
+    for (int i = 0; i < data[0].size(); ++i)
+    {
+        for(int j = 0; j < data.size(); ++j)
+        {
+            outStr << fitNumber(doubleRound(data[j][i], 3), 7) << '\t';
+        }
+        outStr << '\n';
+    }
+    outStr.flush();
+    outStr.close();
+}
+
+void readPlainData(double **&data, int ns, int & numOfSlices, QString inPath) // data already allocated
+{
+    ifstream inStr;
+    inStr.open(inPath.toStdString().c_str());
+    if(!inStr.good())
+    {
+        cout << "readPlainData: cannot open file" << endl;
+        return;
+    }
+    inStr.ignore(12); // "NumOfSlices ";
+    inStr >> numOfSlices;
+    for (int i = 0; i < numOfSlices; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            inStr >> data[j][i];
+        }
+    }
+    inStr.close();
+}
+
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength)
 {
     ifstream file;
@@ -2840,18 +2896,13 @@ void readFileInLine(QString filePath, double ** outData, int len)
 
 void zeroData(double *** inData, const int &ns, const int &leftLimit, const int &rightLimit, const bool &withMarkersFlag)
 {
-    int h = 0;
     for(int i = leftLimit; i < rightLimit; ++i)         // zoom
     {
-        for(int k = 0; k < ns; ++k)
+        for(int k = 0; k < ns - 1; ++k)
         {
-            if((*inData)[k][i] == 0.) h += 1;
-            if(k == ns - 1 && withMarkersFlag)
-            {
-                continue; // generality dont touch markers channel
-            }
             (*inData)[k][i] = 0.;
         }
+        if(!withMarkersFlag) (*inData)[ns - 1][i] = 0.; /// should deprecate
     }
 }
 

@@ -368,17 +368,7 @@ void Cut::createImage(QString dataFileName) //
     dir->cdUp(); // go into ExpName dir
 
 
-    file = fopen(currentFile.toStdString().c_str(), "r+"); // dataFileName
-    fscanf(file, "NumOfSlices %d \n", &NumOfSlices);
-    fscanf(file, "NumOfSlicesEyesCut %d \n", &Eyes);
-    for(int i = 0; i < NumOfSlices; ++i)
-    {
-        for(int k = 0; k < ns; ++k)
-        {
-            fscanf(file, "%lf\n", &data3[k][i]);
-        }
-    }
-    fclose(file);
+    readPlainData(data3, ns, NumOfSlices, currentFile);
 
     currentNumber = lst.indexOf(fileName);
     currentPicPath = getPicPath(dataFileName, dir, ns);
@@ -521,8 +511,7 @@ void Cut::prev()
 void Cut::matiAdjustLimits() /////// should TEST !!!!!
 {
     QStringList lst = currentFile.split(QRegExp("[_.]"),
-                                        QString::SkipEmptyParts);
-    QString helpString;
+                                        QString::SkipEmptyParts); // to detect session, type, piece
     int tempNum = 0;
     for(int i = 0; i < lst.length(); ++i)
     {
@@ -536,11 +525,11 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     int sesNum = lst[tempNum + 1].toInt();
     int pieceNum = lst[tempNum + 2].toInt();
 
-    cout << "typeNum = " << typeNum << endl;
-    cout << "sesNum = " << sesNum << endl;
-    cout << "pieceNum = " << pieceNum << endl;
+//    cout << "typeNum = " << typeNum << endl;
+//    cout << "sesNum = " << sesNum << endl;
+//    cout << "pieceNum = " << pieceNum << endl;
 
-    if(typeNum != 0 && typeNum != 2) return;
+    if(typeNum != 0 && typeNum != 2) return; // adjust only if count or composed activity
 
     int newLeftLimit = leftLimit;
     int newRightLimit = rightLimit;
@@ -558,8 +547,17 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     cout << "newLeftLimit = " << newLeftLimit << endl;
     cout << "newRightLimit = " << newRightLimit << endl;
 
+    // adjust limits if slice by whole count problems
+    ++newLeftLimit;
+    if(newRightLimit != NumOfSlices) ++newRightLimit;
 
-    // adjust limits
+    leftLimit = newLeftLimit;
+    rightLimit = newRightLimit;
+    return;
+
+
+
+    // adjust limits if slice by N seconds
     if(newLeftLimit > 0 || matiCountBit(data3[ns - 1][0], 14))
     {
         ++newLeftLimit; // after the previous marker
@@ -634,25 +632,11 @@ void Cut::zero()
     QString helpString = "_0_[0-9]_[0-9]{2,2}";
     if(currentFile.contains(QRegExp(helpString)))
     {
-        cout << "zero: adjust limits" << currentFile << endl;
+        cout << "zero: adjust limits   " << currentFile << endl;
         matiAdjustLimits();
     }
-//    return;
 
     zeroData(&data3, ns, leftLimit, rightLimit, withMarkersFlag); ///////// should TEST !!!!!!!1111
-//    for(int i = leftLimit; i < rightLimit; ++i)         // zoom
-//    {
-//        for(int k = 0; k < ns; ++k)
-//        {
-//            if(data3[k][i] == 0.) h += 1;
-//            if(k == ns-1 && withMarkersFlag)
-//            {
-//                continue; // generality dont touch markers channel
-//            }
-//            data3[k][i] = 0.;
-//        }
-//    }
-
     paint();
 }
 
@@ -750,24 +734,9 @@ void Cut::save()
 
 void Cut::rewrite()
 {
-    // ExpName dir
-    file = fopen(currentFile.toStdString().c_str(), "w");
-    fprintf(file, "NumOfSlices %d\n", NumOfSlices);
-    for(int i = 0; i < NumOfSlices; ++i)         // saved BY SLICES!!
-    {
-        for(int k = 0; k < ns; ++k)
-        {
-            fprintf(file, "%.4lf\n", data3[k][i]);
-        }
-    }
-    fclose(file);
-
+    writePlainData(data3, ns, NumOfSlices, currentFile);
     currentPicPath = getPicPath(currentFile, dir, ns);
-
-    QTime myTime;
-    myTime.start();
     currentPic.save(currentPicPath, 0, 100);
-
 }
 
 void Cut::paint() // save to tmp.jpg and display

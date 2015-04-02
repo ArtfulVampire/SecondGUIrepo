@@ -33,7 +33,7 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
+/////// *** -> **&
 
 using namespace std;
 //using namespace itpp;
@@ -43,7 +43,7 @@ const double pi = 3.141592653589;
 
 //void QDoubleSpinBox::mySlot(double val)
 int len(QString s); // string length for EDF+ annotations
-QString rightNumber(const int & input, int N); // prepend zeros
+QString rightNumber(const unsigned int input, int N); // prepend zeros
 QString fitNumber(const double & input, int N); // append spaces
 QString fitString(const QString & input, int N); // append spaces
 double doubleRound(double in, int numSigns);
@@ -131,6 +131,9 @@ void makeCfgStatic(QString outFileDir, int NetLength = 19*247, QString FileName 
 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
+void writePlainData(double ** data, int ns, int numOfSlices, QString outPath);
+void writePlainData(vector< vector <double> > data, QString outPath);
+void readPlainData(double **&data, int ns, int & numOfSlices, QString inPath);
 QPixmap drawEeg(double **dataD, int ns, int NumOfSlices, int freq, const QString picPath = "", double norm = 1.);
 QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int freq, QString const picPath = "", double norm = 1.); // haven't checked
 void readSpectraFile(QString filePath, double *** outData, int ns, int spLength);
@@ -223,7 +226,7 @@ inline int fftL(int in)
 
 inline bool matiCountBit(double const & marker, int num)
 {
-//    return (marker % int(pow(2, num + 1))) / int(pow(2, num));
+//    return (int(marker) >> num) % 2;
     return (int(marker) / int(pow(2, num))) % 2;
 }
 

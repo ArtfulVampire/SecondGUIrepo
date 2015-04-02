@@ -4166,11 +4166,9 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     int currStart;
     int currEnd;
     double pieceLength = ui->matiPieceLengthSpinBox->value();
-    pieceLength = 7.;
 
     edfFile fil;
     fil.readEdfFile(ui->filePathLineEdit->text());
-//    cout << ui->filePathLineEdit->text() << endl;
 
     for(int type = 0; type < 3; ++type)
     {
@@ -4182,7 +4180,6 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                                                   + "_" + QString::number(type)
                                                   + "_" + QString::number(session)
                                                   + ".edf");
-//            cout << "currEdfTo slice = " << getExpNameLib(helpString) << endl;
 
             if(QFile::exists(helpString))
             {
@@ -4205,15 +4202,9 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                     {
                         while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd], 14)) // while not given answer
                         {
-//                            if(fil.getData()[fil.getMarkChan()][currEnd] != 0)
-//                            {
-//                                cout << matiCountByteStr(fil.getData()[fil.getMarkChan()][currEnd]) << endl;
-//                            }
                             --currEnd;
                         }
                     }
-
-//                    cout << currEnd << endl;
 
                     // type and session already in the ExpName
                     helpString = QDir::toNativeSeparators(fil.getDirPath()
@@ -4222,7 +4213,8 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                                                           + "_" + rightNumber(pieceNum, 2)
                                                           + '.' + fileMark);
 
-//                    cout << "currPiece to write = " << getExpNameLib(helpString) << endl;
+                    if(currEnd < currStart) break; // almost never
+
                     fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
                     ++pieceNum;
                     currStart = currEnd;
@@ -9077,8 +9069,12 @@ void MainWindow::customFunc()
     //test edfFile class
     if(1)
     {
-        setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
-        sliceMatiPieces(true);
+//        setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
+        edfFile fil;
+        fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
+
+        fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.txt", true);
+
         exit(0);
         if(0)
         {
@@ -9095,7 +9091,7 @@ void MainWindow::customFunc()
             }
             exit(0);
         }
-        if(1)
+        if(0)
         {
             edfFile fil;
             fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amodWmark.edf");
@@ -9117,62 +9113,28 @@ void MainWindow::customFunc()
             outStr.close();
             exit(0);
         }
-        if(1)
+        if(0)
         {
-            edfFile fil("/media/Files/Data/Mati/SDA_0_1.txt");
+            edfFile fil("/media/Files/Data/Mati/SDA_0_0.txt");
             fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
-//            exit(0);
-        }
-        if(1)
-        {
-            edfFile fil;
-            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
-
-            vector <double> markChan = fil.getData()[fil.getMarkChan()];
-            int start = 0, finish = 0;
-            int counter = 0;
-            double val1 = matiCountDecimal("00000001 10000000");
-            double val2 = matiCountDecimal("00000101 10000000");
-            int num = 0;
-            while(counter < fil.getDataLen())
-            {
-                if(num == 1)
-                {
-                    if(markChan[counter] == val1)
-                    {
-                        start = counter;
-                    }
-                    else if(markChan[counter] == val2)
-                    {
-                        finish = counter + 1;
-                        break;
-                    }
-                }
-                else if(markChan[counter] == val2)
-                {
-                    ++num;
-                }
-                ++counter;
-            }
-            fil.saveSubsection(start, finish, "/media/Files/Data/Mati/SDA/SDA_small.edf");
-//            exit(0);
+            exit(0);
         }
         if(1)
         {
 
-            edfFile fil;
-            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
+//            edfFile fil;
+//            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
 
             edfFile fil1;
-            fil1.readEdfFile("/media/Files/Data/Mati/SDA/SDA_small.edf");
+            fil1.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_0_0.edf");
 
-            fil.appendChannel(fil1.getChannels()[fil1.getMarkChan()],
-                    "/media/Files/Data/Mati/SDA/SDA_amodWmark.edf");
+//            fil.appendChannel(fil1.getChannels()[fil1.getMarkChan()],
+//                    "/media/Files/Data/Mati/SDA/SDA_amodWmark.edf");
 
-            exit(0);
-            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_small.edf");
-            fil.appendFile("/media/Files/Data/Mati/SDA/SDA_amod.edf",
-                           "/media/Files/Data/Mati/SDA/SDA_wAmod.edf");
+//            exit(0);
+//            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_small.edf");
+            fil1.appendFile("/media/Files/Data/Mati/SDA/SDA_amod.edf",
+                           "/media/Files/Data/Mati/SDA/SDA_0_0.edf");
 
 
             exit(0);
