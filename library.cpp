@@ -614,16 +614,12 @@ QString setFileName(const QString & initNameOrPath)
     return helpString;
 }
 
-QString getExpNameLib(QString const filePath)
+QString getExpNameLib(QString const filePath) // getFileName
 {
     QString hlp;
-    hlp = filePath;
-    int a = hlp.lastIndexOf(QDir::separator());
-    if(a > 0)
-    {
-        hlp.remove(0, a + 1); // delete the start of the path
-    }
-    hlp.remove(hlp.indexOf('.'), 4); // delete the extension
+    hlp = QDir::toNativeSeparators(filePath);
+    hlp = hlp.right(hlp.length() - hlp.lastIndexOf(slash()));
+    hlp = hlp.left(hlp.lastIndexOf('.'));
     return hlp;
 }
 
@@ -645,7 +641,7 @@ QString getFileName(QString filePath)
 {
     QString helpString = QDir::toNativeSeparators(filePath);
     helpString = helpString.left(helpString.lastIndexOf("."));
-    helpString = helpString.right(helpString.length() - helpString.lastIndexOf(QDir::separator()) - 1);
+    helpString = helpString.right(helpString.length() - helpString.lastIndexOf(slash()) - 1);
     return helpString;
 }
 

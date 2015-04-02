@@ -865,7 +865,6 @@ void MainWindow::setEdfFile(QString const filePath)
 
     ui->filePathLineEdit->setText(QDir::toNativeSeparators(helpString));
 
-
     //set ExpName
 
     ExpName = getExpNameLib(filePath);
@@ -9067,41 +9066,181 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 
 void MainWindow::customFunc()
 {
+//    QString outPath;
+//    QString addPath;
+//    QString helpString;
+//    edfFile tempEdf;
 
-//    return;
-    //test edfFile class
+//    helpString = def::dataFolder
+//            + slash() + "SDA"
+//            + slash() + "SDA_rr_f"
+//            + "_1"
+//            + "_0"
+//            + ".edf"; // generality
+//    if(!QFile::exists(helpString)) exit(0);
+//    tempEdf.readEdfFile(helpString);
+//    addPath = def::dataFolder
+//            + slash() + "SDA"
+//            + slash() + "SDA"
+//            + "_1"
+//            + "_0"
+//            + "_amod.edf"; // generality
+
+//    outPath = helpString;
+//    outPath.replace(".", "_a.");
+//    tempEdf.appendFile(addPath, outPath);
+//    exit(15);
+
+    // MATI preprocessing
     if(1)
     {
-        if(0) // change , to .
+        dir->cd(def::dataFolder); // "/media/Files/Data/Mati/"
+        QStringList dirList = dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+        for(int dirNum = 0; dirNum < dirList.length(); ++ dirNum)
         {
-            char * buf = new char [5000000];
-            char ch;
-            dir->cd("/media/Files/Data/Mati");
-            QStringList lst = dir->entryList(QStringList("*.txt"));
-            FILE * fil;
-            FILE * fil1;
-            QString helpString;
-            for(int i = 0; i < lst.length(); ++i)
+            if(!dirList[dirNum].contains("SDA")) continue; ////////////////////////////
+            if(0) // change , to . in logFiles
             {
-                helpString = dir->absolutePath() + slash() + lst[i];
-                fil = fopen(helpString, "r");
-                helpString = dir->absolutePath() + slash() + lst[i] + "_";
-                fil1 = fopen(helpString, "w");
-//                cout << lst[i] << endl;
-                while(!feof(fil))
+                char ch;
+                QString helpString;
+
+                helpString = def::dataFolder + slash() + dirList[dirNum] + slash() + "amod";
+                dir->cd(helpString);
+                QStringList lst = dir->entryList(QStringList("*.txt"));
+                FILE * fil;
+                FILE * fil1;
+                for(int i = 0; i < lst.length(); ++i)
                 {
-                    fread(&ch, sizeof(char), 1, fil);
-                    if(ch == ',') ch = '.';
-                    fwrite(&ch, sizeof(char), 1, fil1);
+                    helpString = def::dataFolder
+                            + slash() + dirList[dirNum]
+                            + slash() + "amod"
+                            + slash() + lst[i];
+                    fil = fopen(helpString, "r");
+                    helpString = def::dataFolder
+                            + slash() + dirList[dirNum]
+                            + slash() + "amod"
+                            + slash() + lst[i] + "_";
+                    fil1 = fopen(helpString, "w");
+                    while(!feof(fil))
+                    {
+                        fread(&ch, sizeof(char), 1, fil);
+                        if(ch == ',') ch = '.';
+                        fwrite(&ch, sizeof(char), 1, fil1);
+                    }
+                    fclose(fil);
+                    fclose(fil1);
                 }
-                fclose(fil);
-                fclose(fil1);
-
             }
-            exit(0);
+            if(0) // corrected logFiles to amod edfs
+            {
+                QStringList lst = dir->entryList(QStringList("*.txt_"));
+                edfFile tempEdf;
+                QString helpString;
 
+                for(int i = 0; i < lst.length(); ++i)
+                {
+                    helpString = def::dataFolder
+                            + slash() + dirList[dirNum]
+                            + slash() + "amod"
+                            + slash() + lst[i];
+                    tempEdf = edfFile(helpString);
+                    helpString = def::dataFolder
+                            + slash() + dirList[dirNum]
+                            + slash() + getExpNameLib(lst[i]) + "_amod.edf";
+                    tempEdf.writeEdfFile(helpString);
+                }
+            }
+            if(0) // slice edf by sessions
+            {
+                QString helpString;
+                helpString = def::dataFolder
+                        + slash() + dirList[dirNum]
+                        + slash() + dirList[dirNum] + "_rr_f.edf";
+                setEdfFile(helpString);
+                sliceMati();
+            }
+            if(1) // append amod data to EEG data
+            {
+                QString outPath;
+                QString addPath;
+                QString helpString;
+                edfFile tempEdf;
+                for(int type = 0; type < 3; ++type)
+                {
+                    for(int session = 0; session < 6; ++session)
+                    {
+                        helpString = def::dataFolder
+                                + slash() + dirList[dirNum]
+                                + slash() + dirList[dirNum] + "_rr_f"
+                                + "_" + QString::number(type)
+                                + "_" + QString::number(session)
+                                + ".edf"; // generality
+                        outPath = helpString;
+                        outPath.replace(".", "_a.");
 
+                        if(!QFile::exists(helpString)) continue;
+
+                        tempEdf.readEdfFile(helpString);
+
+                        addPath = def::dataFolder
+                                + slash() + dirList[dirNum]
+                                + slash() + dirList[dirNum]
+                                + "_" + QString::number(type)
+                                + "_" + QString::number(session)
+                                + "_amod.edf"; // generality
+                        cout << helpString << endl;
+                        cout << addPath << endl;
+                        cout << outPath << endl;
+                        cout << tempEdf.getNdr() << endl;
+                        cout << endl;
+
+                        tempEdf.appendFile(addPath, outPath);
+                    }
+                }
+            }
+            if(1) // make files of markers differences
+            {
+                edfFile fil;
+                QString diffMark;
+                QString helpString;
+                for(int type = 0; type < 3; ++type)
+                {
+                    for(int session = 0; session < 6; ++session)
+                    {
+                        helpString = def::dataFolder
+                                + slash() + dirList[dirNum]
+                                + slash() + dirList[dirNum] + "_rr_f"
+                                + "_" + QString::number(type)
+                                + "_" + QString::number(session)
+                                + "_a.edf";
+                        if(!QFile::exists(helpString)) continue;
+
+                        diffMark = helpString;
+                        diffMark.replace("_a.edf", "_diffMark.txt");
+
+                        fil.readEdfFile(helpString);
+                        ofstream outStr(diffMark.toStdString().c_str());
+                        for(int i = 0; i < fil.getDataLen(); ++i)
+                        {
+                            if(fil.getData()[fil.getMarkChan()][i] != 0)
+                            {
+                                for(int j = i - 40; j < i + 40; ++j)
+                                {
+                                    if(fil.getData()[37][j+1] != fil.getData()[37][j]) // 37 for EEG + AMOD
+                                    {
+                                        outStr << i << "\t" << j+1 << "\t" << (i-j-1)*4 << '\n';
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        outStr.flush();
+                        outStr.close();
+                    }
+                }
+            }
         }
+        exit(9);
         if(1)
         {
                     setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");

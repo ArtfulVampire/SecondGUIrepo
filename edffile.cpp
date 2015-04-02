@@ -375,7 +375,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
 
     filePath = EDFpath;
     dirPath = EDFpath.left(EDFpath.lastIndexOf(slash()));
-
     ExpName = getExpNameLib(filePath);
 
     FILE * header;
@@ -466,6 +465,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
 
     fclose(edfDescriptor);
 
+    this->channels.clear();
     for(int i = 0; i < this->ns; ++i)
     {
         this->channels.push_back(edfChannel(labels[i],
@@ -837,6 +837,7 @@ void edfFile::appendFile(QString addEdfPath, QString outPath)
     }
     this->channels.push_back(tempMarkChan); // return markerChannel to the end of a list
     this->adjustArraysByChannels();
+
     this->writeEdfFile(outPath);
 }
 
@@ -906,7 +907,7 @@ void edfFile::saveOtherData(double ** newData, int newDataLength, QString outPat
 
 void edfFile::fitData(int initSize)
 {
-    this->ndr = ceil(initSize / def::freq); // generality
+    this->ndr = ceil(double(initSize) / def::freq); // generality
     this->dataLength = this->ndr * def::freq;
     for(int i = 0; i < this->ns; ++i)
     {
