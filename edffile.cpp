@@ -830,9 +830,7 @@ void edfFile::appendFile(QString addEdfPath, QString outPath)
     edfFile addEdf;
     addEdf.readEdfFile(addEdfPath);
     edfChannel tempMarkChan = this->channels[this->markerChannel]; // save markerChannel
-    cout << this->channels.size() << endl;
     this->channels.erase(this->channels.begin() + this->markerChannel); // remove markerChannel
-    cout << this->channels.size() << endl;
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
         this->channels.push_back(addEdf.getChannels()[i]);

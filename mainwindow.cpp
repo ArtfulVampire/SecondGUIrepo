@@ -4198,13 +4198,16 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                 {
                     currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
 
-                    if (currEnd != dataLen && (type == 0 || type == 2))
+                    if (type == 0 || type == 2)
                     {
-                        while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd], 14)) // while not given answer
+                        while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 14) ||
+                                   matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) // while not given answer
                         {
                             --currEnd;
                         }
                     }
+
+
 
                     // type and session already in the ExpName
                     helpString = QDir::toNativeSeparators(fil.getDirPath()
@@ -4213,12 +4216,12 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                                                           + "_" + rightNumber(pieceNum, 2)
                                                           + '.' + fileMark);
 
-                    if(currEnd < currStart) break; // almost never
+//                    if(currEnd < currStart) currEnd = dataLen; // the last small piece for example
 
                     fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
                     ++pieceNum;
                     currStart = currEnd;
-                } while (currEnd < dataLen);
+                } while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10));
             }
         }
     }
@@ -9069,40 +9072,58 @@ void MainWindow::customFunc()
     //test edfFile class
     if(1)
     {
-//        setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
-        edfFile fil;
-        fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
-
-        fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.txt", true);
-
-        exit(0);
-        if(0)
+        if(0) // change , to .
         {
-            edfFile fil;
-            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
-            int mem = 0;
-            for(int i = 0; i < fil.getDataLen(); ++i)
+            char * buf = new char [5000000];
+            char ch;
+            dir->cd("/media/Files/Data/Mati");
+            QStringList lst = dir->entryList(QStringList("*.txt"));
+            FILE * fil;
+            FILE * fil1;
+            QString helpString;
+            for(int i = 0; i < lst.length(); ++i)
             {
-                if(fil.getData()[10][i] != mem)
+                helpString = dir->absolutePath() + slash() + lst[i];
+                fil = fopen(helpString, "r");
+                helpString = dir->absolutePath() + slash() + lst[i] + "_";
+                fil1 = fopen(helpString, "w");
+//                cout << lst[i] << endl;
+                while(!feof(fil))
                 {
-                    mem = fil.getData()[10][i];
-                    cout << i << "\t" << mem << endl;
+                    fread(&ch, sizeof(char), 1, fil);
+                    if(ch == ',') ch = '.';
+                    fwrite(&ch, sizeof(char), 1, fil1);
                 }
+                fclose(fil);
+                fclose(fil1);
+
             }
+            exit(0);
+
+
+        }
+        if(1)
+        {
+                    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
+                    sliceMatiPieces(true);
+                    exit(0);
+            edfFile fil;
+            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_0_0_a.edf");
+            fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_0_0_a.txt", true);
             exit(0);
         }
         if(0)
         {
             edfFile fil;
-            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amodWmark.edf");
+            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_0_0_a.edf");
             ofstream outStr("/media/Files/Data/Mati/SDA/difMark.txt");
             for(int i = 0; i < fil.getDataLen(); ++i)
             {
                 if(fil.getData()[fil.getMarkChan()][i] != 0)
                 {
-                    for(int j = i - 50; j < i + 50; ++j)
+                    for(int j = i - 40; j < i + 40; ++j)
                     {
-                        if(fil.getData()[10][j+1] != fil.getData()[10][j])
+                        if(fil.getData()[37][j+1] != fil.getData()[37][j]) // 37 for EEG + AMOD
                         {
                             outStr << i << "\t" << j+1 << "\t" << (i-j-1)*4 << endl;
                             break;
@@ -9122,19 +9143,10 @@ void MainWindow::customFunc()
         if(1)
         {
 
-//            edfFile fil;
-//            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
-
             edfFile fil1;
             fil1.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_0_0.edf");
-
-//            fil.appendChannel(fil1.getChannels()[fil1.getMarkChan()],
-//                    "/media/Files/Data/Mati/SDA/SDA_amodWmark.edf");
-
-//            exit(0);
-//            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_small.edf");
             fil1.appendFile("/media/Files/Data/Mati/SDA/SDA_amod.edf",
-                           "/media/Files/Data/Mati/SDA/SDA_0_0.edf");
+                           "/media/Files/Data/Mati/SDA/SDA_rr_f_0_0_a.edf");
 
 
             exit(0);

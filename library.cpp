@@ -576,7 +576,7 @@ double fractalDimension(double *arr, int N, QString picPath)
 
 double doubleRound(double in, int numSigns)
 {
-    return int(  floor(in*pow(10., numSigns) + 0.5)  ) / pow(10., numSigns);
+    return int(  ceil(in*pow(10., numSigns) - 0.5)  ) / pow(10., numSigns);
 }
 
 int findChannel(char ** const labelsArr, QString chanName, int ns)
@@ -2650,7 +2650,7 @@ void writePlainData(vector< vector <double> > data, QString outPath)
     {
         for(int j = 0; j < data.size(); ++j)
         {
-            outStr << fitNumber(doubleRound(data[j][i], 3), 7) << '\t';
+            outStr << fitNumber(doubleRound(data[j][i], 5), 8) << ' ';
         }
         outStr << '\n';
     }
