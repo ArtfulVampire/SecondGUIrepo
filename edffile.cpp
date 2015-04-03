@@ -596,10 +596,19 @@ void edfFile::handleDatum(const int & currNs,
     {
         if(currNs != markerChannel) // usual data read
         {
-            a = (short)( (currDatum - physMin[currNs])
+            if(this->labels[currNs].contains("EEG"))
+            {
+                // round better to N * 1/8.
+                currDatum = doubleRoundFraq(currDatum,
+                                            int( (digMax[currNs] - digMin[currNs] + 1)
+                                                 / (physMax[currNs] - physMin[currNs]) )
+                                            );
+            }
+            a = (short)((currDatum - physMin[currNs])
                         * (digMax[currNs] - digMin[currNs] + 1)
                         / (physMax[currNs] - physMin[currNs])
                         + digMin[currNs]);
+
 
 //            a  = (short)(currDatum * 8.); // generality encephalan
 

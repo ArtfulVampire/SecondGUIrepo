@@ -46,7 +46,7 @@ int len(QString s); // string length for EDF+ annotations
 QString rightNumber(const unsigned int input, int N); // prepend zeros
 QString fitNumber(const double & input, int N); // append spaces
 QString fitString(const QString & input, int N); // append spaces
-double doubleRound(double in, int numSigns);
+
 int findChannel(char ** const labelsArr, QString chanName, int ns = 21);
 QString setFileName(const QString & initNameOrPath); //-> initName_i.ext
 QString getPicPath(const QString & dataPath, QDir *ExpNameDir, int ns);
@@ -135,7 +135,7 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
 void writePlainData(double ** data, int ns, int numOfSlices, QString outPath);
 void writePlainData(vector< vector <double> > data, QString outPath);
 void readPlainData(double **&data, int ns, int & numOfSlices, QString inPath);
-QPixmap drawEeg(double **dataD, int ns, int NumOfSlices, int freq, const QString picPath = "", double norm = 1.);
+QPixmap drawEeg(double **dataD, int ns, int NumOfSlices, int freq, const QString picPath = "", double norm = 1., int blueChan = -1, int redChan = -1);
 QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int freq, QString const picPath = "", double norm = 1.); // haven't checked? now unused
 void readSpectraFile(QString filePath, double *** outData, int ns, int spLength);
 void readSpectraFileLine(QString filePath, double ** outData, int ns, int spLength);
@@ -203,6 +203,18 @@ void matiPrintMarker(double const & marker, QString pre = "");
 void matiFixMarker(double & marker);
 int matiCountDecimal(vector<bool> byteMarker);
 int matiCountDecimal(QString byteMarker);
+
+
+
+inline double doubleRound(const double & in, int numSigns)
+{
+    return int(  ceil(in*pow(10., numSigns) - 0.5)  ) / pow(10., numSigns);
+}
+
+inline double doubleRoundFraq(const double & in, int denom)
+{
+    return ceil(in * denom - 0.5) / denom;
+}
 
 inline double gaussian(double x, double sigma = 1.) //N(0,1)
 {

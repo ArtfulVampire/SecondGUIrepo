@@ -88,10 +88,9 @@ private:
     double wndLength;  //in seconds
     int flagWnd;
     bool withMarkersFlag;
+    int redCh, blueCh; // for drawing
 
     double zoomPrev, zoomCurr;
-
-
 };
 
 #endif // CUT_H

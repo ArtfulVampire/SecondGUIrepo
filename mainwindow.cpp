@@ -115,6 +115,7 @@ MainWindow::MainWindow() :
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 */
 
+    QString helpString;
     //0
     ui->reduceChannelsComboBox->addItem("MichaelBak");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 23 24 31");
@@ -161,8 +162,34 @@ MainWindow::MainWindow() :
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
     //9
+    ui->reduceChannelsComboBox->addItem("MatiAmod");
+    helpString.clear();
+    for(int i = 0; i < 41; ++i)
+    {
+        helpString += QString::number(i+1) + " ";
+    }
+    var = QVariant(helpString);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
+
+    //10
+    ui->reduceChannelsComboBox->addItem("MatiAmodNoEyes");
+    helpString.clear();
+    for(int i = 0; i < 41; ++i)
+    {
+        helpString += QString::number(i+1) + " ";
+    }
+    helpString.remove(" 22 23");
+    var = QVariant(helpString);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
+
+    //11
     ui->reduceChannelsComboBox->addItem("20");
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
+    helpString.clear();
+    for(int i = 0; i < 21; ++i)
+    {
+        helpString += QString::number(i+1) + " ";
+    }
+    var = QVariant(helpString);
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
     ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
@@ -252,6 +279,7 @@ MainWindow::MainWindow() :
     QObject::connect(ui->Name, SIGNAL(returnPressed()), this, SLOT(setExpName()));
 
     QObject::connect(ui->cutEDF, SIGNAL(clicked()), this, SLOT(sliceAll()));
+    QObject::connect(ui->matiPreprocessingPushButton, SIGNAL(clicked()), this, SLOT(matiPreprocessingSlot()));
 
     QObject::connect(ui->windFromRealButton, SIGNAL(clicked()), this, SLOT(sliceWindFromReal()));
 
@@ -331,6 +359,8 @@ MainWindow::MainWindow() :
 //    QObject::connect(ui->markerBin1LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
     QObject::connect(ui->markerBin1LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
     QObject::connect(ui->markerSaveEdfPushButton, SIGNAL(clicked()), this, SLOT(saveEdfNewMarkersSlot()));
+
+
 
     customFunc();
 }
@@ -483,6 +513,19 @@ void MainWindow::drawRealisations()
     dir->cdUp();   //-> into EDF-file dir
     if(ui->drawDirBox->currentText() == "windows/fromreal") dir->cdUp();
 
+    int redCh = -1;
+    int blueCh = -1;
+    if(ns == 41)
+    {
+        redCh = 21;
+        blueCh = 22;
+    }
+    else if(ns == 22 || ns == 21)
+    {
+        redCh = 19;
+        blueCh = 20;
+    }
+
     FILE * file;
     for(int i = 0; i < lst.length(); ++i)
     {
@@ -512,7 +555,14 @@ void MainWindow::drawRealisations()
         fclose(file);
 
         helpString = getPicPath(helpString, dir, ns);
-        drawEeg(dataD, ns, NumOfSlices, def::freq, helpString, ui->drawCoeffSpinBox->value()); // generality freq
+        drawEeg(dataD,
+                ns,
+                NumOfSlices,
+                def::freq,
+                helpString,
+                ui->drawCoeffSpinBox->value(),
+                blueCh,
+                redCh); // generality freq
 
         for(int j = 0; j < ns; ++j)
         {
@@ -849,8 +899,6 @@ void MainWindow::setEdfFile(QString const filePath)
     helpString = filePath;
 
 
-
-
     if(!helpString.endsWith(".edf", Qt::CaseInsensitive))
     {
         helpString += ".edf";
@@ -892,6 +940,7 @@ void MainWindow::setEdfFile(QString const filePath)
 
 
     dir->mkdir("Help");
+    dir->mkdir("amod");
     dir->mkdir("PA");
     dir->mkdir("visualisation");
     dir->mkdir("visualisation/video");
@@ -2293,7 +2342,8 @@ void MainWindow::constructEDFSlot()
     else //if(ui->matiCheckBox->isChecked())
     {
         QString const initEDF = ui->filePathLineEdit->text();
-        helpString = dir->absolutePath() + QDir::separator() + "sliceLog.txt";
+        helpString = dir->absolutePath()
+                    + QDir::separator() + ExpName.left(3) + "_splitZerosLog.txt";
         ofstream outStream;
         outStream.open(helpString.toStdString().c_str());
         outStream << ExpName.left(3).toStdString() << "\t";
@@ -2303,7 +2353,7 @@ void MainWindow::constructEDFSlot()
         outStream << "offsetS" << endl;
         outStream.close();
 
-        for(int i = 0; i < 4; ++i) //every type 0-count, 1-track, 2-composed, 3-rest
+        for(int i = 0; i < 3; ++i) //every type 0-count, 1-track, 2-composed, 3-rest
         {
             setEdfFile(initEDF);
             for(int j = 0; j < 15; ++j) //every session
@@ -2350,6 +2400,8 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     myTime.start();
     readData(); // needed for nr
 
+
+    //////////////////////////////////////////////// why????
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     ns = lst.length();
     if(!QString(label[lst[ns-1].toInt()-1]).contains("Markers"))
@@ -2381,10 +2433,12 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         return;
     }
 
+
     double ** newData = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-        newData[i] = new double [ndr * nr[i]];  //generality, maybe bad nr from other channel?
+//        newData[i] = new double [ndr * nr[i]];  //generality, maybe bad nr from other channel?
+        newData[i] = new double [250 * 60 * 120]; // for 2 hours
     }
 
 
@@ -2403,7 +2457,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         {
             for(int j = 0; j < ns; ++j)
             {
-                fscanf(file, "%lf\n", &newData[j][currSlice]);
+                fscanf(file, "%lf", &newData[j][currSlice]);
             }
             ++currSlice;
         }
@@ -2722,12 +2776,13 @@ void MainWindow::readData()
         }
     }
 
-    helpString=dir->absolutePath().append(QDir::separator()).append("labels.txt");
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "labels.txt");
     FILE * labels=fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
     for(int i = 0; i < ns; ++i)                         //label write in file
     {
         fprintf(labels, "%s \n", label[i]);
     }
+    fclose(labels);
     for(int i = ns; i < maxNs; ++i)
     {
         label[i][0] = '\0';
@@ -3062,7 +3117,6 @@ void MainWindow::readData()
         delete []markNum;
     }
     delete []helpCharArr;
-    fclose(labels);
     if(flag==1)     //save as EDF
     {
         fclose(edfNew);
@@ -3198,6 +3252,242 @@ void MainWindow::markerSetBinValueSlot()
         helpString += (byteMarker[h])?"1":"0";
     }
     ui->markerBin1LineEdit->setText(helpString);
+}
+
+void MainWindow::matiPreprocessingSlot()
+{
+    dir->cd(def::dataFolder); // "/media/Files/Data/Mati/"
+    QStringList dirList = dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+    bool flagCommaDot = true;
+    bool flagAmodLogToEdf = true;
+    bool flagSliceEdfBySessions = true;
+    bool flagAppendAmodToEeg = true;
+    bool flagMakeDiffMark = true;
+    bool flagSliceSessionsToPieces = true;
+
+    for(int dirNum = 0; dirNum < dirList.length(); ++ dirNum)
+    {
+        if(!dirList[dirNum].contains("SDA")) continue;
+
+        if(flagCommaDot) // change , to . in logFiles
+        {
+            QTime myTime;
+            myTime.start();
+            cout << "comma->dot replace start" << endl;
+
+            char ch;
+            QString helpString;
+
+            helpString = def::dataFolder + slash() + dirList[dirNum] + slash() + "amod";
+            dir->cd(helpString);
+            QStringList lst = dir->entryList(QStringList("*.txt"));
+            FILE * fil;
+            FILE * fil1;
+            for(int i = 0; i < lst.length(); ++i)
+            {
+                helpString = def::dataFolder
+                        + slash() + dirList[dirNum]
+                        + slash() + "amod"
+                        + slash() + lst[i];
+                fil = fopen(helpString, "r");
+                helpString = def::dataFolder
+                        + slash() + dirList[dirNum]
+                        + slash() + "amod"
+                        + slash() + lst[i] + "_";
+                fil1 = fopen(helpString, "w");
+                while(!feof(fil))
+                {
+                    fread(&ch, sizeof(char), 1, fil);
+                    if(ch == ',') ch = '.';
+                    fwrite(&ch, sizeof(char), 1, fil1);
+                }
+                fclose(fil);
+                fclose(fil1);
+            }
+
+            cout << "comma->dot replace finish: time = " << myTime.elapsed()/1000. << " sec" << endl;
+        }
+        if(flagAmodLogToEdf) // corrected logFiles to amod edfs
+        {
+            QTime myTime;
+            myTime.start();
+            cout << "amod.txt -> amod.edf start" << endl;
+            QString helpString = def::dataFolder + slash() + dirList[dirNum] + slash() + "amod";
+            dir->cd(helpString);
+            QStringList lst = dir->entryList(QStringList("*.txt_"));
+
+            edfFile tempEdf;
+            for(int i = 0; i < lst.length(); ++i)
+            {
+                helpString = def::dataFolder
+                        + slash() + dirList[dirNum]
+                        + slash() + "amod"
+                        + slash() + lst[i];
+//                cout << helpString << endl;
+                tempEdf = edfFile(helpString);
+
+                helpString = def::dataFolder
+                        + slash() + dirList[dirNum]
+                        + slash() + getExpNameLib(lst[i]) + "_amod.edf";
+//                cout << helpString << endl;
+                tempEdf.writeEdfFile(helpString);
+            }
+            cout << "amod.txt -> amod.edf: time = " << myTime.elapsed()/1000. << " sec" << endl;
+        }
+        if(flagSliceEdfBySessions) // slice edf by sessions
+        {
+            QTime myTime;
+            myTime.start();
+            cout << "slice edf by sessions start" << endl;
+
+            QString helpString;
+            helpString = def::dataFolder
+                    + slash() + dirList[dirNum]
+                    + slash() + dirList[dirNum] + "_rr_f.edf";
+            setEdfFile(helpString);
+            sliceMati();
+
+            cout << "slice edf by sessions: time = " << myTime.elapsed()/1000. << " sec" << endl;
+        }
+        if(flagAppendAmodToEeg) // append amod data to EEG data
+        {
+            QTime myTime;
+            myTime.start();
+            cout << "append amod.edf to eeg.edf start" << endl;
+
+
+            QString outPath;
+            QString addPath;
+            QString helpString;
+            edfFile tempEdf;
+            for(int type = 0; type < 3; ++type)
+            {
+                for(int session = 0; session < 6; ++session)
+                {
+                    helpString = def::dataFolder
+                            + slash() + dirList[dirNum]
+                            + slash() + dirList[dirNum] + "_rr_f"
+                            + "_" + QString::number(type)
+                            + "_" + QString::number(session)
+                            + ".edf"; // generality
+                    outPath = def::dataFolder
+                            + slash() + dirList[dirNum]
+                            + slash() + dirList[dirNum] + "_rr_f"
+                            + "_a"
+                            + "_" + QString::number(type)
+                            + "_" + QString::number(session)
+                            + ".edf"; // generality
+
+                    if(!QFile::exists(helpString)) continue;
+
+                    tempEdf.readEdfFile(helpString);
+
+                    addPath = def::dataFolder
+                            + slash() + dirList[dirNum]
+                            + slash() + dirList[dirNum]
+                            + "_" + QString::number(type)
+                            + "_" + QString::number(session)
+                            + "_amod.edf"; // generality
+                    tempEdf.appendFile(addPath, outPath);
+
+                    if(1) // copy the same files into amod dir
+                    {
+                        helpString = def::dataFolder
+                                + slash() + dirList[dirNum]
+                                + slash() + "amod"
+                                + slash() + dirList[dirNum] + "_rr_f"
+                                + "_a"
+                                + "_" + QString::number(type)
+                                + "_" + QString::number(session)
+                                + ".edf"; // generality
+                        QFile::copy(outPath, helpString);
+                    }
+
+                }
+            }
+            cout << "append amod.edf to eeg.edf: time = " << myTime.elapsed()/1000. << " sec" << endl;
+        }
+        if(flagMakeDiffMark) // make files of markers differences
+        {
+            QTime myTime;
+            myTime.start();
+            cout << "make diffMark files start" << endl;
+
+            edfFile fil;
+            QString diffMark;
+            QString helpString;
+            for(int type = 0; type < 3; ++type)
+            {
+                for(int session = 0; session < 6; ++session)
+                {
+                    helpString = def::dataFolder
+                            + slash() + dirList[dirNum]
+                            + slash() + dirList[dirNum] + "_rr_f"
+                            + "_a"
+                            + "_" + QString::number(type)
+                            + "_" + QString::number(session)
+                            + ".edf";
+                    if(!QFile::exists(helpString)) continue;
+
+                    diffMark = helpString;
+                    diffMark.replace(".edf", "_diffMark.txt");
+
+                    fil.readEdfFile(helpString);
+                    ofstream outStr(diffMark.toStdString().c_str());
+                    for(int i = 0; i < fil.getDataLen(); ++i)
+                    {
+                        if(fil.getData()[fil.getMarkChan()][i] != 0)
+                        {
+                            for(int j = i - 40; j < i + 40; ++j)
+                            {
+                                if(fil.getData()[37][j+1] != fil.getData()[37][j]) // 37 for EEG + AMOD
+                                {
+                                    outStr << i << "\t" << j+1 << "\t" << (i-j-1)*4 << '\n';
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    outStr.flush();
+                    outStr.close();
+                }
+            }
+
+            cout << "make diffMark files: time = " << myTime.elapsed()/1000. << " sec" << endl;
+        }
+        if(flagSliceSessionsToPieces) // slice for pieces
+        {
+            QTime myTime;
+            myTime.start();
+            cout << "slice sessions to pieces start" << endl;
+
+            QString outPath;
+            QString helpString;
+            helpString = def::dataFolder
+                    + slash() + dirList[dirNum]
+                    + slash() + dirList[dirNum] + "_rr_f"
+                    + "_a"
+                    + "_0"
+                    + "_1"
+                    + ".edf"; // generality
+            outPath = def::dataFolder
+                    + slash() + dirList[dirNum]
+                    + slash() + dirList[dirNum] + "_rr_f"
+                    + "_a"
+                    + ".edf"; // generality
+            QFile::copy(helpString, outPath);
+
+            helpString = def::dataFolder
+                    + slash() + dirList[dirNum]
+                    + slash() + dirList[dirNum] + "_rr_f"
+                    + "_a"
+                    + ".edf";
+            setEdfFile(helpString);
+            sliceMatiPieces(true);
+
+            cout << "slice sessions to pieces: time = " << myTime.elapsed()/1000. << " sec" << endl;
+        }
+    }
 }
 
 
@@ -4879,13 +5169,12 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 
                 for(int k = 0; k < nr[oldIndex]; ++k)
                 {
-//                    cout << i << " " << j << " " << k << endl;
 
                     if(!(ui->matiCheckBox->isChecked() && oldIndex == ns - 1))
                     {
                         a = (short)((inData[ j ][ i * nr[oldIndex] + k ] - physMin[oldIndex])
                                 * (digMax[oldIndex] - digMin[oldIndex] + 1)
-                                / (physMax[oldIndex] - physMin[oldIndex] + 1)
+                                / (physMax[oldIndex] - physMin[oldIndex])
                                 + digMin[oldIndex]);
 
                         fwrite(&a, sizeof(short), 1, edfNew);
@@ -4893,8 +5182,8 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
                     else
                     {
                         markA = (unsigned short)((inData[ j ][ i * nr[oldIndex] + k ] - physMin[oldIndex])
-                                * (digMax[oldIndex] - digMin[oldIndex] + 1)
-                                / (physMax[oldIndex] - physMin[oldIndex] + 1)
+                                * (digMax[oldIndex] - digMin[oldIndex])
+                                / (physMax[oldIndex] - physMin[oldIndex])
                                 + digMin[oldIndex]);
 
                         fwrite(&markA, sizeof(unsigned short), 1, edfNew);
@@ -9068,7 +9357,16 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 
 void MainWindow::customFunc()
 {
+//    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a.edf");
+//    ns = 41;
     return;
+    if(1)
+    {
+        edfFile fil;
+        fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_0_0.edf");
+        fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_0_0.txt", true);
+        exit(0);
+    }
     // MATI preprocessing
     if(1)
     {
@@ -9171,12 +9469,6 @@ void MainWindow::customFunc()
                                 + "_" + QString::number(type)
                                 + "_" + QString::number(session)
                                 + "_amod.edf"; // generality
-                        cout << helpString << endl;
-                        cout << addPath << endl;
-                        cout << outPath << endl;
-                        cout << tempEdf.getNdr() << endl;
-                        cout << endl;
-
                         tempEdf.appendFile(addPath, outPath);
                     }
                 }

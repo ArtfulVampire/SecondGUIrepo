@@ -84,6 +84,7 @@ public slots:
     void markerSetSecTime(int);
     void markerSetDecValueSlot();
     void markerSetBinValueSlot();
+    void matiPreprocessingSlot();
 
 
     //signals

@@ -574,10 +574,6 @@ double fractalDimension(double *arr, int N, QString picPath)
     return slope;
 }
 
-double doubleRound(double in, int numSigns)
-{
-    return int(  ceil(in*pow(10., numSigns) - 0.5)  ) / pow(10., numSigns);
-}
 
 int findChannel(char ** const labelsArr, QString chanName, int ns)
 {
@@ -2652,7 +2648,7 @@ void writePlainData(vector< vector <double> > data, QString outPath)
     {
         for(int j = 0; j < data.size(); ++j)
         {
-            outStr << fitNumber(doubleRound(data[j][i], 5), 8) << ' ';
+            outStr << fitNumber(doubleRound(data[j][i], 3), 7) << '\t';
         }
         outStr << '\n';
     }
@@ -2737,7 +2733,7 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
 }
 
 
-QPixmap drawEeg( double ** dataD, int ns, int NumOfSlices, int freq, QString const picPath, double norm)
+QPixmap drawEeg( double ** dataD, int ns, int NumOfSlices, int freq, QString const picPath, double norm, int blueChan, int redChan)
 {
     QPixmap pic = QPixmap(NumOfSlices, 600);
     pic.fill();
@@ -2746,25 +2742,39 @@ QPixmap drawEeg( double ** dataD, int ns, int NumOfSlices, int freq, QString con
     paint->begin(&pic);
 
     QString colour;
+    QString lab;
     int lineWidth = 2;
 
 
     for(int c2 = 0; c2 < ns; ++c2)
     {
-        if(ns >= 21 && ns < 25)
+//        if(ns >= 21 && ns < 25)
+//        {
+//            if(c2 == 19)        colour = "red";
+//            else if(c2 == 20)   colour = "blue";
+//            else colour = "black";
+//        }
+//        else
+//        {
+//            colour = "black";
+//        }
+//        if(ns == 23 && c2 == 21)
+//        {
+//            colour = "green";
+//        }
+        if(c2 == blueChan)
         {
-            if(c2 == 19)        colour = "red";
-            else if(c2 == 20)   colour = "blue";
-            else colour = "black";
+            colour = "blue";
+        }
+        else if(c2 == redChan)
+        {
+            colour = "red";
         }
         else
         {
             colour = "black";
         }
-        if(ns == 23 && c2 == 21)
-        {
-            colour = "green";
-        }
+
         paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
 
         for(int c1 = 0; c1 < pic.width(); ++c1)

@@ -9,6 +9,8 @@ Eyes::Eyes(QDir *dir_, int ns_) :
     dir = new QDir();
     dirBC = new QDir();
 
+
+
     ui->progressBar->setValue(0);
 
     dir->cd(QDir::toNativeSeparators(dir_->absolutePath()));
@@ -18,6 +20,13 @@ Eyes::Eyes(QDir *dir_, int ns_) :
 
     ui->spinBox->setValue(19);  //for encephalan
     ui->lineEdit_2->setText("20 21");
+
+    if(ns == 41) //generality mati + amod
+    {
+        ui->spinBox->setValue(21);
+        ui->lineEdit_2->setText("22 23");
+    }
+
     QButtonGroup *group1 = new QButtonGroup();
     group1->addButton(ui->realisationsRadioButton);
     group1->addButton(ui->cutRadioButton);
@@ -100,7 +109,6 @@ void Eyes::eyesClean()
         }
         fscanf(file, "NumOfSlices %d\n", &NumOfSlices);
 
-
         for(int j = 0; j < ns; ++j)
         {
             dataF[j] = new double [NumOfSlices]; //set memory for data
@@ -128,23 +136,29 @@ void Eyes::eyesClean()
         }
 
         helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + list[i]);
-        file = fopen(helpString, "w");
-        if(file == NULL)
+//        writePlainData(dataF, ns, NumOfSlices, helpString);
+
+        ofstream outStr;
+        outStr.open(helpString.toStdString().c_str());
+
+        if(!outStr.good())
         {
             cout << "file to write == NULL" << endl;
             continue;
         }
-        fprintf(file, "NumOfSlices %d\r\n", NumOfSlices);
-
-        for(int j = 0; j < NumOfSlices; ++j)
+        outStr << "NumOfSlices " << NumOfSlices << endl;
+        for (int i = 0; i < NumOfSlices; ++i)
         {
-            for(int k = 0; k < ns; ++k)
+            for(int j = 0; j < ns; ++j)
             {
-                if(lst.contains(QString::number(k+1))) continue;
-                fprintf(file, "%lf\n", dataF[k][j]);
+                if(lst.contains(QString::number(j+1))) continue;
+                outStr << fitNumber(doubleRound(dataF[j][i], 3), 7) << '\t';
             }
+            outStr << '\n';
         }
-        fclose(file);
+        outStr.flush();
+        outStr.close();
+
 
         for(int i = 0; i < ns; ++i)
         {

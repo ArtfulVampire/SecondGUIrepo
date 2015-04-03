@@ -18,10 +18,23 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
     dir = new QDir();
     dir->cd(dir_->absolutePath());
 
-    autoFlag=false;
+    autoFlag = false;
 
+    redCh = -1;
+    blueCh = -1;
 
-    flagWnd=0;
+    if(ns == 41)
+    {
+        redCh = 21;
+        blueCh = 22;
+    }
+    else if(ns == 22 || ns == 21)
+    {
+        redCh = 19;
+        blueCh = 20;
+    }
+
+    flagWnd = 0;
 
 
     ui->nsBox->setValue(21);
@@ -376,7 +389,14 @@ void Cut::createImage(QString dataFileName) //
     if(ui->checkBox->isChecked())
     {
         QPainter * painter = new QPainter();
-        currentPic = drawEeg(data3, ns, NumOfSlices, def::freq, currentPicPath);
+        currentPic = drawEeg(data3,
+                             ns,
+                             NumOfSlices,
+                             def::freq,
+                             currentPicPath,
+                             ui->drawNormDoubleSpinBox->value(),
+                             blueCh,
+                             redCh);
 //        currentPic.load(currentPicPath, "JPG", Qt::ColorOnly);
         painter->begin(&currentPic);
 
@@ -749,7 +769,9 @@ void Cut::paint() // save to tmp.jpg and display
                          NumOfSlices,
                          def::freq,
                          helpString,
-                         ui->drawNormDoubleSpinBox->value()); // generality freq
+                         ui->drawNormDoubleSpinBox->value(),
+                         blueCh,
+                         redCh); // generality freq
 
 //    helpString = getPicPath(currentFile, dir, ns);
 //    currentPic.load(helpString);

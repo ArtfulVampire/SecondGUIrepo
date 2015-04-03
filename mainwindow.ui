@@ -291,6 +291,13 @@
         </spacer>
        </item>
        <item>
+        <widget class="QPushButton" name="matiPreprocessingPushButton">
+         <property name="text">
+          <string>Mati Preprocessing</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="cutEDF">
          <property name="text">
           <string>Cut EDF</string>
