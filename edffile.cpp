@@ -760,6 +760,7 @@ void edfFile::adjustArraysByChannels()
         if(labels[i].contains("Markers"))
         {
             markerChannel = i;
+            break;
         }
     }
 
@@ -839,10 +840,19 @@ void edfFile::appendFile(QString addEdfPath, QString outPath)
     edfFile addEdf;
     addEdf.readEdfFile(addEdfPath);
     edfChannel tempMarkChan = this->channels[this->markerChannel]; // save markerChannel
+    edfChannel tempChan;
     this->channels.erase(this->channels.begin() + this->markerChannel); // remove markerChannel
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
-        this->channels.push_back(addEdf.getChannels()[i]);
+        tempChan = addEdf.getChannels()[i];
+
+        for(int i = tempChan.data.size(); i < this->data[0].size(); ++i)
+        {
+            tempChan.data.push_back(0.);
+        }
+        tempChan.data.resize(this->data[0].size());
+
+        this->channels.push_back(tempChan);
     }
     this->channels.push_back(tempMarkChan); // return markerChannel to the end of a list
     this->adjustArraysByChannels();
