@@ -4167,11 +4167,12 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     double pieceLength = ui->matiPieceLengthSpinBox->value();
 
     edfFile fil;
+    dir->cd(getDirPathLib(ui->filePathLineEdit->text()));
+
     for(int type = 0; type < 3; ++type)
     {
         for(int session = 0; session < 15; ++ session)
         {
-
             helpString = QDir::toNativeSeparators(dir->absolutePath()
                                                   + QDir::separator() + ExpName
                                                   + "_" + QString::number(type)
@@ -4218,7 +4219,10 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                     fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
                     ++pieceNum;
                     currStart = currEnd;
-                } while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10));
+
+                    if(currEnd == dataLen) break; // for type == 1
+
+                } while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10) );
             }
         }
     }
@@ -9064,31 +9068,7 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 
 void MainWindow::customFunc()
 {
-//    QString outPath;
-//    QString addPath;
-//    QString helpString;
-//    edfFile tempEdf;
-
-//    helpString = def::dataFolder
-//            + slash() + "SDA"
-//            + slash() + "SDA_rr_f"
-//            + "_1"
-//            + "_0"
-//            + ".edf"; // generality
-//    if(!QFile::exists(helpString)) exit(0);
-//    tempEdf.readEdfFile(helpString);
-//    addPath = def::dataFolder
-//            + slash() + "SDA"
-//            + slash() + "SDA"
-//            + "_1"
-//            + "_0"
-//            + "_amod.edf"; // generality
-
-//    outPath = helpString;
-//    outPath.replace(".", "_a.");
-//    tempEdf.appendFile(addPath, outPath);
-//    exit(15);
-
+    return;
     // MATI preprocessing
     if(1)
     {
@@ -9157,7 +9137,7 @@ void MainWindow::customFunc()
                 setEdfFile(helpString);
                 sliceMati();
             }
-            if(1) // append amod data to EEG data
+            if(0) // append amod data to EEG data
             {
                 QString outPath;
                 QString addPath;
@@ -9251,11 +9231,11 @@ void MainWindow::customFunc()
                         + "_a"
                         + ".edf";
                 ui->filePathLineEdit->setText(helpString);
+                ExpName = dirList[dirNum] + "_rr_f" + "_a";
                 sliceMatiPieces(true);
             }
         }
         exit(9);
-
     }
 
 

@@ -54,6 +54,7 @@ QString getFileName(QString filePath);
 bool areEqualFiles(QString path1, QString path2);
 
 QString getExpNameLib(const QString filePath);
+QString getDirPathLib(const QString filePath);
 QString getExt(QString filePath);
 QString slash();
 ostream & operator << (ostream &os, QString toOut);
@@ -135,7 +136,7 @@ void writePlainData(double ** data, int ns, int numOfSlices, QString outPath);
 void writePlainData(vector< vector <double> > data, QString outPath);
 void readPlainData(double **&data, int ns, int & numOfSlices, QString inPath);
 QPixmap drawEeg(double **dataD, int ns, int NumOfSlices, int freq, const QString picPath = "", double norm = 1.);
-QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int freq, QString const picPath = "", double norm = 1.); // haven't checked
+QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int freq, QString const picPath = "", double norm = 1.); // haven't checked? now unused
 void readSpectraFile(QString filePath, double *** outData, int ns, int spLength);
 void readSpectraFileLine(QString filePath, double ** outData, int ns, int spLength);
 void readFileInLine(QString filePath, double ** outData, int len);

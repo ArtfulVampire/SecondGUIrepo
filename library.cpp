@@ -618,9 +618,15 @@ QString getExpNameLib(QString const filePath) // getFileName
 {
     QString hlp;
     hlp = QDir::toNativeSeparators(filePath);
-    hlp = hlp.right(hlp.length() - hlp.lastIndexOf(slash()));
+    hlp = hlp.right(hlp.length() - hlp.lastIndexOf(slash()) - 1);
     hlp = hlp.left(hlp.lastIndexOf('.'));
     return hlp;
+}
+
+QString getDirPathLib(const QString filePath)
+{
+    QString str = filePath;
+    return str.left(str.lastIndexOf(slash()));
 }
 
 QString getExt(QString filePath)
@@ -2743,28 +2749,26 @@ QPixmap drawEeg( double ** dataD, int ns, int NumOfSlices, int freq, QString con
     int lineWidth = 2;
 
 
-    for(int c1 = 0; c1 < pic.width(); ++c1)
+    for(int c2 = 0; c2 < ns; ++c2)
     {
-        for(int c2 = 0; c2 < ns; ++c2)
+        if(ns >= 21 && ns < 25)
         {
-            if(ns >= 21 && ns < 25)
-            {
-                if(c2 == 19)        colour = "red";
-                else if(c2 == 20)   colour = "blue";
-                else colour = "black";
-            }
-            else
-            {
-                colour = "black";
-            }
+            if(c2 == 19)        colour = "red";
+            else if(c2 == 20)   colour = "blue";
+            else colour = "black";
+        }
+        else
+        {
+            colour = "black";
+        }
+        if(ns == 23 && c2 == 21)
+        {
+            colour = "green";
+        }
+        paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
 
-            if(ns == 23 && c2 == 21)
-            {
-                colour = "green";
-            }
-
-            paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
-
+        for(int c1 = 0; c1 < pic.width(); ++c1)
+        {
             paint->drawLine(c1, (c2+1)*pic.height()/(ns+2) + dataD[c2][c1] / norm, c1+1, (c2+1)*pic.height()/(ns+2) + dataD[c2][c1+1] / norm);
         }
     }
