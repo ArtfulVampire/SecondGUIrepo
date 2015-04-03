@@ -4167,8 +4167,6 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     double pieceLength = ui->matiPieceLengthSpinBox->value();
 
     edfFile fil;
-    fil.readEdfFile(ui->filePathLineEdit->text());
-
     for(int type = 0; type < 3; ++type)
     {
         for(int session = 0; session < 15; ++ session)
@@ -9175,8 +9173,13 @@ void MainWindow::customFunc()
                                 + "_" + QString::number(type)
                                 + "_" + QString::number(session)
                                 + ".edf"; // generality
-                        outPath = helpString;
-                        outPath.replace(".", "_a.");
+                        outPath = def::dataFolder
+                                + slash() + dirList[dirNum]
+                                + slash() + dirList[dirNum] + "_rr_f"
+                                + "_a"
+                                + "_" + QString::number(type)
+                                + "_" + QString::number(session)
+                                + ".edf"; // generality
 
                         if(!QFile::exists(helpString)) continue;
 
@@ -9198,7 +9201,7 @@ void MainWindow::customFunc()
                     }
                 }
             }
-            if(1) // make files of markers differences
+            if(0) // make files of markers differences
             {
                 edfFile fil;
                 QString diffMark;
@@ -9210,13 +9213,14 @@ void MainWindow::customFunc()
                         helpString = def::dataFolder
                                 + slash() + dirList[dirNum]
                                 + slash() + dirList[dirNum] + "_rr_f"
+                                + "_a"
                                 + "_" + QString::number(type)
                                 + "_" + QString::number(session)
-                                + "_a.edf";
+                                + ".edf";
                         if(!QFile::exists(helpString)) continue;
 
                         diffMark = helpString;
-                        diffMark.replace("_a.edf", "_diffMark.txt");
+                        diffMark.replace(".edf", "_diffMark.txt");
 
                         fil.readEdfFile(helpString);
                         ofstream outStr(diffMark.toStdString().c_str());
@@ -9239,60 +9243,24 @@ void MainWindow::customFunc()
                     }
                 }
             }
+            if(1) // slice for pieces
+            {
+                QString helpString = def::dataFolder
+                        + slash() + dirList[dirNum]
+                        + slash() + dirList[dirNum] + "_rr_f"
+                        + "_a"
+                        + ".edf";
+                ui->filePathLineEdit->setText(helpString);
+                sliceMatiPieces(true);
+            }
         }
         exit(9);
-        if(1)
-        {
-                    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
-                    sliceMatiPieces(true);
-                    exit(0);
-            edfFile fil;
-            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_0_0_a.edf");
-            fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_0_0_a.txt", true);
-            exit(0);
-        }
-        if(0)
-        {
-            edfFile fil;
-            fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_0_0_a.edf");
-            ofstream outStr("/media/Files/Data/Mati/SDA/difMark.txt");
-            for(int i = 0; i < fil.getDataLen(); ++i)
-            {
-                if(fil.getData()[fil.getMarkChan()][i] != 0)
-                {
-                    for(int j = i - 40; j < i + 40; ++j)
-                    {
-                        if(fil.getData()[37][j+1] != fil.getData()[37][j]) // 37 for EEG + AMOD
-                        {
-                            outStr << i << "\t" << j+1 << "\t" << (i-j-1)*4 << endl;
-                            break;
-                        }
-                    }
-                }
-            }
-            outStr.close();
-            exit(0);
-        }
-        if(0)
-        {
-            edfFile fil("/media/Files/Data/Mati/SDA_0_0.txt");
-            fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_amod.edf");
-            exit(0);
-        }
-        if(1)
-        {
 
-            edfFile fil1;
-            fil1.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_0_0.edf");
-            fil1.appendFile("/media/Files/Data/Mati/SDA/SDA_amod.edf",
-                           "/media/Files/Data/Mati/SDA/SDA_rr_f_0_0_a.edf");
-
-
-            exit(0);
-        }
-
-//        return;
     }
+
+
+
+
     //MATI
     if(1)
     {

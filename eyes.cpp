@@ -41,11 +41,9 @@ void Eyes::setAutoProcessingFlag(bool a)
 
 void Eyes::eyesClean()
 {
-//    cout << "eyesClean: ns = " << ns << endl;
-//    return;
 
-
-    FILE * coef = fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("eyes.txt").toStdString().c_str(), "r");
+    QString helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "eyes.txt");
+    FILE * coef = fopen(helpString, "r");
     if(coef == NULL)
     {
         QMessageBox::critical((QWidget*)this, tr("Warning"), tr("no coeffs found"), QMessageBox::Ok);
@@ -54,12 +52,12 @@ void Eyes::eyesClean()
 
     dir->cd(ui->lineEdit_3->text()); //or you can write in manually
 
-    QStringList list = dir->entryList(QDir::Files|QDir::NoDotAndDotDot); // files in the directory
+    QStringList list = dir->entryList(QDir::Files); // files in the directory
 
     int NumEog, NumEeg;
     int NumOfSlices = 0;
 
-    lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts); //Numbers of eog channels
+    lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
 
     fscanf(coef, "NumOfEyesChannels %d\n", &NumEog);
     cout << "NumEog = " << NumEog << endl;
@@ -93,7 +91,8 @@ void Eyes::eyesClean()
 //    cout << "dir of files to clean from eyes = " << dir->absolutePath().toStdString() << endl;
     for(int i = 0; i < list.length(); ++i)
     {
-        file = fopen((QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(list.at(i))).toStdString().c_str(), "r");
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + list[i]);
+        file = fopen(helpString, "r");
         if(file == NULL)
         {
             cout << "file to read == NULL" << endl;
@@ -128,8 +127,8 @@ void Eyes::eyesClean()
             }
         }
 
-        file = fopen(QDir::toNativeSeparators(dir->absolutePath()
-                                               + QDir::separator() + list[i]).toStdString().c_str(), "w");
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + list[i]);
+        file = fopen(helpString, "w");
         if(file == NULL)
         {
             cout << "file to write == NULL" << endl;
