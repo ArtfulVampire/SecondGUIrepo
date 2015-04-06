@@ -152,12 +152,14 @@ public:
 
     void adjustArraysByChannels();
     void appendFile(QString addEdfPath, QString outPath);
+    void concatFile(QString addEdfPath, QString outPath);
     void appendChannel(edfChannel addChan, QString outPath); // check ndr
     void swapChannels(int num1, int num2);
     void saveSubsection(int startBin, int finishBin, QString outPath, bool plainFlag = false);
-    void saveOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList);
-    void saveOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList);
+    void writeOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList);
+    void writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList);
     void fitData(int initSize);
+    void cutZerosAtEnd();
 
 private:
     QString headerInitialInfo = QString();
@@ -233,6 +235,17 @@ public:
 
     void setMatiFlag(bool newFlag) {matiFlag = newFlag;}
     void setNtFlag(bool newFlag) {ntFlag = newFlag;}
+
+    void getLabelsCopy(char **& dest)
+    {
+        for(int i = 0; i < this->ns; ++i)
+        {
+            memcpy(dest[i],
+                   this->labels[i].data(),
+                   this->labels[i].length() * sizeof(double));
+            dest[this->labels[i].length()] = '\0';
+        }
+    }
 
     void getDataCopy(double ** dest) const
     {

@@ -58,6 +58,7 @@ QString getDirPathLib(const QString filePath);
 QString getExt(QString filePath);
 QString slash();
 ostream & operator << (ostream &os, QString toOut);
+ostream & operator << (ostream &os, QList<int> toOut);
 ostream & operator << (ostream &os, vector<double> toOut); // template!
 //vector< vector<double> > operator=(const vector< vector<double> > & other);
 char * strToChar(const QString & input);

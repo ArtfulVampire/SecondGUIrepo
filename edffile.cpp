@@ -28,7 +28,7 @@ edfFile::edfFile(const edfFile &other)
 
     this->data = other.getData();
 
-    this->dataLength = this->ndr * this->nr[0];
+    this->dataLength = this->ndr * this->nr[0]; // other.getDataLen();
     this->channels = other.getChannels();
     this->markerChannel = other.getMarkChan();
     this->filePath = other.getFilePath();
@@ -62,7 +62,7 @@ edfFile edfFile::operator=(const edfFile & other)
 
     this->data = other.getData();
 
-    this->dataLength = this->ndr * this->nr[0];
+    this->dataLength = this->ndr * this->nr[0];  // other.getDataLen();
     this->channels = other.getChannels();
     this->markerChannel = other.getMarkChan();
     this->filePath = other.getFilePath();
@@ -82,13 +82,14 @@ edfFile::edfFile(QString matiLogPath)
 
     FILE* inStr;
     inStr = fopen(matiLogPath, "r");
+
     if(inStr == NULL)
     {
         cout << "edfFile(matiLogFile): input file is NULL" << endl;
         return;
     }
-    int numOfDoubleParams = 8;
-    int numOfParams = 15 - 2; // -currTime & quantLength
+
+    int numOfParams = 15 - 2; // -currTime & quantLength generality
     int currTimeIndex;
 
     this->headerInitialInfo = fitString("Edf for AMOD Data", 184);
@@ -102,6 +103,7 @@ edfFile::edfFile(QString matiLogPath)
 
     this->ns = numOfParams;
     this->ddr = 1.;
+
     this->nr = vector <double> (this->ns, def::freq);
     // ndr definedlater
     this->bytes = 256 * (this->ns + 1);
@@ -141,7 +143,7 @@ edfFile::edfFile(QString matiLogPath)
     this->digMax = { 32767,  32767,  32767,  32767,
                      32767,  32767,  32767,  32767,
                      3-1, 7-1,
-                     255-1, 255-1, 255-1};
+                     255-1, 255-1, 255-1}; // -1 for universal formula except markers
 
     this->prefiltering = vector <QString> (this->ns, QString(fitString("AMOD no prefiltering", 80)));
     this->reserved = vector <QString> (this->ns, QString(fitString("AMOD reserved", 32)));
@@ -159,7 +161,6 @@ edfFile::edfFile(QString matiLogPath)
         for(int i = 0; i < numOfParams; ++i)
         {
             fscanf(inStr, "%lf", &data[i][currTimeIndex]);
-
         }
         ++currTimeIndex;
     }
@@ -175,7 +176,7 @@ edfFile::edfFile(QString matiLogPath)
     {
         for(int i = currTimeIndex; i < this->dataLength; ++i)
         {
-            data[j][i] = 0.; //.push_back(0.);
+            data[j][i] = 0.;
         }
         data[j].resize(dataLength);
     }
@@ -306,15 +307,14 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
     myTime.start();
     if(!asPlain)
     {
-        if(!QFile::exists(EDFpath))
+        if(QFile::exists(EDFpath))
         {
-            this->fitData(this->dataLength);
-            this->handleEdfFile(EDFpath, false);
+//            cout << "writeEdfFile: destination file already exists = \n" << EDFpath << endl;
+            cout << "writeEdfFile: destination file already exists, REWRITE = \n" << EDFpath << endl;
+//            return;
         }
-        else
-        {
-            cout << "writeEdfFile: destination file already exists = \n" << EDFpath << endl;
-        }
+        this->handleEdfFile(EDFpath, false);
+
     }
     else // if(asPLain)
     {
@@ -382,11 +382,16 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     if(readFlag)
     {
         header = fopen(helpString, "w");
-    if(header == NULL)
-    {
-        cout << "handleFile: cannot open header.txt file" << endl;
-        return;
+        if(header == NULL)
+        {
+            cout << "handleFile: cannot open header.txt file" << endl;
+            return;
+        }
     }
+
+    if(!readFlag)
+    {
+        this->fitData(this->dataLength);
     }
 
 
@@ -455,15 +460,20 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     fsetpos(edfDescriptor, position);
     delete position;
 
+
+
     if(readFlag)
     {
         dataLength = ndr * nr[0]; // generality
     }
-
-
     handleData(readFlag, edfDescriptor);
-
     fclose(edfDescriptor);
+
+    if(readFlag)
+    {
+        this->cutZerosAtEnd();
+    }
+
 
     this->channels.clear();
     for(int i = 0; i < this->ns; ++i)
@@ -687,9 +697,7 @@ void edfFile::writeMarker(const int & currNs,
             fprintf(markers, " - 11 bit error");
         }
     }
-
     fprintf(markers, "\n");
-
     fclose(markers);
 
 }
@@ -860,6 +868,26 @@ void edfFile::appendFile(QString addEdfPath, QString outPath)
     this->writeEdfFile(outPath);
 }
 
+void edfFile::concatFile(QString addEdfPath, QString outPath)
+{
+    edfFile temp(*this);
+    edfFile addEdf;
+    addEdf.readEdfFile(addEdfPath);
+    for(int i = 0; i < this->ns; ++i)
+    {
+        this->channels[i].data.resize( this->dataLength + addEdf.getDataLen() );
+        memcpy(this->channels[i].data.data() + this->dataLength,
+               addEdf.getChannels()[i].data.data(),
+               sizeof(double) * addEdf.getDataLen() );
+    }
+    this->adjustArraysByChannels();
+//    this->dataLength = this->dataLength + addEdf.getDataLen();
+
+
+    this->writeEdfFile(outPath);
+    *this = temp;
+}
+
 void edfFile::swapChannels(int num1, int num2)
 {
     edfChannel tmp = this->channels[num1];
@@ -887,7 +915,7 @@ void edfFile::saveSubsection(int startBin, int finishBin, QString outPath, bool 
 
 
 
-void edfFile::saveOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList)
+void edfFile::writeOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList)
 {
     const edfFile temp(*this);
 
@@ -905,7 +933,7 @@ void edfFile::saveOtherData(vector < vector <double> > newData, QString outPath,
 
 }
 
-void edfFile::saveOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList)
+void edfFile::writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList)
 {
     const edfFile temp(*this);
 
@@ -913,7 +941,7 @@ void edfFile::saveOtherData(double ** newData, int newDataLength, QString outPat
     this->channels.clear();
     for(int i = 0; i < chanList.length(); ++i)
     {
-        this->channels.push_back( temp.getChannels()[chanList[i]] ); // count from 1 generality
+        this->channels.push_back( temp.getChannels()[chanList[i]] );
         this->channels[i].data.resize(newDataLength);
         memcpy(this->channels[i].data.data(), newData[i], sizeof(double) * newDataLength);
     }
@@ -924,7 +952,7 @@ void edfFile::saveOtherData(double ** newData, int newDataLength, QString outPat
     *this = temp;
 }
 
-void edfFile::fitData(int initSize)
+void edfFile::fitData(int initSize) // append zeros to whole ndr's
 {
     this->ndr = ceil(double(initSize) / def::freq); // generality
     this->dataLength = this->ndr * def::freq;
@@ -936,5 +964,38 @@ void edfFile::fitData(int initSize)
             this->data[i].push_back(0.);
         }
     }
+}
 
+void edfFile::cutZerosAtEnd() // cut zeros when readEdf
+{
+    int currEnd = this->dataLength;
+    bool doFlag = false;
+
+    while(1)
+    {
+        for(int j = 0; j < this->ns; ++j)
+        {
+            if(this->data[j][currEnd - 1] != 0)
+            {
+                doFlag = true;
+                break;
+            }
+        }
+        if(doFlag)
+        {
+            --currEnd;
+        }
+        else
+        {
+            break;
+        }
+        doFlag = false;
+    }
+    cout << "cutZerosAtEnd: slices cut = " << this->dataLength - currEnd << endl;
+    this->dataLength = currEnd;
+    for(int j = 0; j < this->ns; ++j)
+    {
+        this->data[j].resize(this->dataLength); // dont forget edfChannels if refactoring
+    }
+    this->ndr = ceil(this->dataLength / def::freq); // should be unchanged
 }

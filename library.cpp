@@ -586,26 +586,20 @@ int findChannel(char ** const labelsArr, QString chanName, int ns)
     }
 }
 
-QString setFileName(const QString & initNameOrPath)
+QString setFileName(const QString & initNameOrPath) // append _num before the dot
 {
     QString beforeDot = initNameOrPath;
     beforeDot.resize(beforeDot.lastIndexOf('.'));
-//    cout << "beforeDot = " << beforeDot.toStdString() << endl;
 
     QString afterDot = initNameOrPath; //with the dot
     afterDot = afterDot.right(afterDot.length() - afterDot.lastIndexOf('.'));
-//    cout << "afterDot = " << afterDot.toStdString() << endl;
 
     QString helpString;
     helpString = beforeDot + afterDot;
-//    cout << helpString.toStdString() << endl;
-
     int counter = 0;
     while (QFile::exists(helpString))
     {
         helpString = beforeDot + "_" + QString::number(counter++) + afterDot;
-
-//        cout << helpString.toStdString() << endl;
     }
     return helpString;
 }
@@ -757,7 +751,15 @@ ostream & operator << (ostream &os, vector<double> toOut)
     {
         os << toOut[i] << " ";
     }
-    os << endl;
+    return os;
+}
+
+ostream & operator << (ostream &os, QList<int> toOut)
+{
+    for(int i = 0; i < toOut.length(); ++i)
+    {
+        os << toOut[i] << " ";
+    }
     return os;
 }
 
@@ -3009,7 +3011,7 @@ void splitZeros(double *** dataIn, const int & ns, const int & length, int * out
     outStream.close();
 
     (*dataIn)[ns-1][0] = firstMarker;
-    cout << "splitZeros: lastMarker" << lastMarker << "\t" << matiCountByteStr(lastMarker) << endl;
+//    cout << "splitZeros: lastMarker" << lastMarker << "\t" << matiCountByteStr(lastMarker) << endl;
     (*dataIn)[ns-1][(*outLength) - 1] = lastMarker;
 }
 
