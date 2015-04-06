@@ -318,7 +318,7 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
     }
     else // if(asPLain)
     {
-        writePlainData(this->data, EDFpath);
+        writePlainData(EDFpath, this->data, this->ns, this->dataLength);
     }
 
 //    cout << "writeEdfFile: time = " << myTime.elapsed()/1000. << " sec" << endl;
@@ -466,6 +466,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     {
         dataLength = ndr * nr[0]; // generality
     }
+    QFile::remove(helpString = dirPath + slash() + this->ExpName + "_markers.txt");
+
     handleData(readFlag, edfDescriptor);
     fclose(edfDescriptor);
 
@@ -591,7 +593,7 @@ void edfFile::handleDatum(const int & currNs,
 //                currDatum = a; //generality encephalan
             }
 
-            if(!this->ntFlag && currDatum != 0 && readFlag) // make markers file when read only
+            if(!this->ntFlag && currDatum != 0) // make markers file when read only
             {
                 writeMarker(currNs, currTimeIndex);
             }
@@ -664,7 +666,7 @@ void edfFile::writeMarker(const int & currNs,
     FILE * markers;
 
 
-    helpString = dirPath + slash() + ExpName + "_markers.txt";
+    helpString = dirPath + slash() + this->ExpName + "_markers.txt";
     markers = fopen(helpString, "a+");
     fprintf(markers, "%d %d", currTimeIndex, int(currDatum)); //////////////////// danger int()
     if(this->matiFlag)
@@ -969,15 +971,15 @@ void edfFile::fitData(int initSize) // append zeros to whole ndr's
 void edfFile::cutZerosAtEnd() // cut zeros when readEdf
 {
     int currEnd = this->dataLength;
-    bool doFlag = false;
+    bool doFlag = true;
 
     while(1)
     {
         for(int j = 0; j < this->ns; ++j)
         {
-            if(this->data[j][currEnd - 1] != 0)
+            if(this->data[j][currEnd - 1] != 0.)
             {
-                doFlag = true;
+                doFlag = false;
                 break;
             }
         }
@@ -989,7 +991,7 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf
         {
             break;
         }
-        doFlag = false;
+        doFlag = true;
     }
     cout << "cutZerosAtEnd: slices cut = " << this->dataLength - currEnd << endl;
     this->dataLength = currEnd;

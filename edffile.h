@@ -236,14 +236,14 @@ public:
     void setMatiFlag(bool newFlag) {matiFlag = newFlag;}
     void setNtFlag(bool newFlag) {ntFlag = newFlag;}
 
-    void getLabelsCopy(char **& dest)
+    void getLabelsCopy(char ** & dest)
     {
         for(int i = 0; i < this->ns; ++i)
         {
             memcpy(dest[i],
-                   this->labels[i].data(),
-                   this->labels[i].length() * sizeof(double));
-            dest[this->labels[i].length()] = '\0';
+                   this->labels[i].toStdString().c_str(),
+                   this->labels[i].length() * sizeof(char));
+            dest[i][this->labels[i].length()] = '\0';
         }
     }
 

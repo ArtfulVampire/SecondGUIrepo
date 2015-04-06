@@ -133,9 +133,25 @@ void makeCfgStatic(QString outFileDir, int NetLength = 19*247, QString FileName 
 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
-void writePlainData(double ** data, int ns, int numOfSlices, QString outPath);
-void writePlainData(vector< vector <double> > data, QString outPath);
-void readPlainData(double **&data, int ns, int & numOfSlices, QString inPath);
+//void writePlainData(QString outPath, const double **& data, const int ns, const int numOfSlices, int start = 0, int end = -1);
+//void writePlainData(QString outPath, vector< vector <double> > data, int start = 0, int end = -1);
+//void readPlainData(QString inPath, double **&data, int ns, int & numOfSlices, int offsetSlices = 0);
+
+template <typename Typ = double **>
+void readPlainData(QString inPath,
+                   Typ & data,
+                   int ns,
+                   int & numOfSlices,
+                   int start = 0);
+template <typename Typ = double **>
+void writePlainData(QString outPath,
+                   Typ data,
+                   int ns,
+                   int numOfSlices,
+                   int start = 0);
+
+
+
 QPixmap drawEeg(double **dataD, int ns, int NumOfSlices, int freq, const QString picPath = "", double norm = 1., int blueChan = -1, int redChan = -1);
 QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int freq, QString const picPath = "", double norm = 1.); // haven't checked? now unused
 void readSpectraFile(QString filePath, double *** outData, int ns, int spLength);

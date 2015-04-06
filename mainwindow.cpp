@@ -1304,11 +1304,11 @@ void MainWindow::sliceWindFromReal()
     dir->cd("Realisations");
     lst.clear();
     nameFilters.clear();
-    nameFilters.append("*_241*");
-    nameFilters.append("*_247*");
-    nameFilters.append("*_254*");
+    nameFilters << "*_241*";
+    nameFilters << "*_247*";
+    nameFilters << "*_244*";
+    nameFilters << "*_254*";
     lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
-//    cout << "lst.len = " << lst.length() << endl;
     dir->cdUp();
 
 
@@ -1321,7 +1321,7 @@ void MainWindow::sliceWindFromReal()
     double ** dataReal = new double *[ns];
     for(int i = 0; i < ns; ++i)
     {
-        dataReal[i] = new double [250*60*1]; //generality 5 min
+        dataReal[i] = new double [250*60*1]; //generality 1 min
     }
 
     int eyes;
@@ -1329,52 +1329,13 @@ void MainWindow::sliceWindFromReal()
     for(int i = 0; i < lst.length(); ++i)
     {
         offset = 0;
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(slash()).append("Realisations").append(slash()).append(lst.at(i)));
-//        cout << "current file " << helpString.toStdString() << endl;
-        real = fopen(helpString.toStdString().c_str(), "r");
-        if(real == NULL)
-        {
-            QMessageBox::warning((QWidget*)this, tr("Warning"), tr("Cannot open file"), QMessageBox::Ok);
-            return;
-        }
-        fscanf(real, "NumOfSlices %d\n", &NumOfSlices);
-//        fscanf(real, "NumOfSlicesEyesCut %d\n", &eyes);
-//        cout << "NumOfSlices = " << NumOfSlices << " ns = " << ns << endl;
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int k = 0; k < ns; ++k)
-            {
-                fscanf(real, "%lf", &dataReal[k][j]);
-            }
-        }
-//        cout << "data read" << endl;
-
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash() + "Realisations"
+                                              + slash() + lst[i]);
+        readPlainData(helpString, dataReal, ns, NumOfSlices);
 
         for(int h = 0; h < ceil((NumOfSlices - wndLength)/double(timeShift)); ++h)
         {
-            if(helpString.contains("241"))
-            {
-                helpString=QDir::toNativeSeparators(dir->absolutePath().append(slash()).append("windows").append(slash()).append("fromreal").append(slash()).append(ExpName).append("_241_").append(QString::number(i)).append(".").append(QString::number(h)));
-            }
-            if(helpString.contains("247"))
-            {
-                helpString=QDir::toNativeSeparators(dir->absolutePath().append(slash()).append("windows").append(slash()).append("fromreal").append(slash()).append(ExpName).append("_247_").append(QString::number(i)).append(".").append(QString::number(h)));
-            }
-            if(helpString.contains("254"))
-            {
-                helpString=QDir::toNativeSeparators(dir->absolutePath().append(slash()).append("windows").append(slash()).append("fromreal").append(slash()).append(ExpName).append("_254_").append(QString::number(i)).append(".").append(QString::number(h)));
-            }
-
-//            cout << helpString.toStdString() << endl;
-
-            out = fopen(helpString.toStdString().c_str(), "w");
-            if(out == NULL)
-            {
-                QMessageBox::warning((QWidget*)this, tr("Warning"), tr("Cannot open file"), QMessageBox::Ok);
-                return;
-            }
-
-
 
             //correct eyes number
             eyes = 0;
@@ -1383,13 +1344,13 @@ void MainWindow::sliceWindFromReal()
                 eyesCounter = 0.;
                 for(int m = 0; m < ns; ++m)
                 {
-                    if(dataReal[m][l]== 0.)  //generality different nr
+                    if(dataReal[m][l] == 0.)  //generality different nr
                     eyesCounter += 1;
                 }
                 if(eyesCounter>=(ns-1)) eyes += 1;
             }
 
-            if(eyes/double(wndLength)>0.3)  //generality
+            if(eyes / double(wndLength) > 0.3)  //generality coefficient
             {
                 fclose(out);
 
@@ -1400,31 +1361,41 @@ void MainWindow::sliceWindFromReal()
 
                 continue;
             }
+            //else
 
-            fprintf(out, "NumOfSlices %d \n", wndLength);
-//            fprintf(out, "NumOfSlicesEyesCut %d \n", eyes);
 
-            for(int l = offset; l < (offset + wndLength); ++l)
+            helpString = dir->absolutePath()
+                    + slash() + "windows"
+                    + slash() + "fromreal"
+                    + slash() + ExpName
+                    + "_";
+            if(helpString.contains("241"))
             {
-                for(int m = 0; m < ns; ++m)
-                {
-                    fprintf(out, "%lf\n", dataReal[m][l]);  //generality different nr
-                }
+                helpString += "241";
             }
-            fclose(out);
+            if(helpString.contains("247"))
+            {
+                helpString += "247";
+            }
+            if(helpString.contains("254"))
+            {
+                helpString += "254";
+            }
+            helpString += QString::number(i)+ "." + rightNumber(h, 2);
+            helpString = QDir::toNativeSeparators(helpString);
+
+            writePlainData(helpString, dataReal, ns, wndLength, offset);
             offset += timeShift;
         }
-        fclose(real);
-        ui->progressBar->setValue(i*100/lst.length());
+        ui->progressBar->setValue(i * 100. / lst.length());
     }
     for(int i = 0; i < ns; ++i)
     {
         delete []dataReal[i];
     }
     delete []dataReal;
+
     ui->progressBar->setValue(0);
-
-
 
     helpString="windows from realisations sliced ";
     ui->textEdit->append(helpString);
@@ -1448,6 +1419,7 @@ void MainWindow::sliceWindFromReal()
 
 void MainWindow::makeTestData()
 {
+#if 0
     QString helpString;
     readData();
 
@@ -1597,7 +1569,7 @@ void MainWindow::makeTestData()
     delete []testSignals2;
     delete []testSignals;
 
-
+#endif
 }
 
 
@@ -1606,7 +1578,6 @@ void MainWindow::rereferenceDataSlot()
     QString helpString = dir->absolutePath() + slash() + ExpName + ".edf"; //ui->filePathLineEdit->text()
     helpString.replace(".edf", "_rr.edf");
     rereferenceData(ui->rereferenceDataComboBox->currentText(), helpString);
-
 }
 
 void MainWindow::rereferenceData(QString newRef, QString newPath)
@@ -2095,13 +2066,9 @@ void MainWindow::reduceChannelsFast()
         {
             if(QString::number(list[k].toInt()) == list[k])
             {
-
-    //            for(int j = 0; j < ndr*nr[list[k].toInt() - 1]; ++j)
-    //            {
-    //                temp[k][j] = data[list[k].toInt() - 1][j];
-    //            }
-                //or
-                memcpy(temp[k], data[list[k].toInt() - 1], ndr * nr[list[k].toInt() - 1] * sizeof(double));
+                memcpy(temp[k],
+                       data[list[k].toInt() - 1],
+                        ndr * nr[list[k].toInt() - 1] * sizeof(double)); // generality
             }
             else if(list[k].contains('-') || list[k].contains('+') || list[k].contains('/') )
             {
@@ -2180,19 +2147,7 @@ void MainWindow::reduceChannelsFast()
         }
         for(int k = 0; k < list.length(); ++k)
         {
-    //        for(int j = 0; j < ddr*ndr*nr[k]; ++j)
-    //        {
-    //            data[k][j] = temp[k][j];
-    //        }
-            //or
             memcpy(data[k], temp[k], ddr*ndr*nr[k] * sizeof(double));
-        }
-    }
-    else // very BAD idea
-    {
-        for(int k = 0; k < list.length(); ++k)
-        {
-            data[k] = data[list[k].toInt() - 1];
         }
     }
 
@@ -2245,15 +2200,15 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
         readData();
         for(int i = 0; i < ns; ++i)
         {
-//            memcpy(newData[i] + tempPos, data[i], sizeof(double) * ndr*def::freq);
-            for(int j = 0; j < ndr*def::freq; ++j)////////generality
-            {
-                newData[i][j + tempPos] = data[i][j];
-            }
+            memcpy(newData[i] + tempPos, data[i], sizeof(double) * ndr*def::freq);
+//            for(int j = 0; j < ndr*def::freq; ++j)////////generality
+//            {
+//                newData[i][j + tempPos] = data[i][j];
+//            }
         }
         tempPos += ndr*def::freq;
     }
-    QList<int> ls;
+    QList <int> ls;
     for(int i = 0; i < ns; ++i)
     {
         ls << i;
@@ -2371,9 +2326,13 @@ void MainWindow::constructEDFSlot()
             for(int j = 0; j < 15; ++j) //every session
             {
                 if(i != 3 && j >= 6) continue;
-                //filter for realisations
+
                 filters.clear();
-                helpString = ExpName + "_" + QString::number(i) + "_" + QString::number(j) + "*";
+                //filter for realisations
+                helpString = ExpName
+                        + "_" + QString::number(i)
+                        + "_" + QString::number(j)
+                        + "*";
                 filters << helpString;
 
                 //outPath
@@ -2385,14 +2344,23 @@ void MainWindow::constructEDFSlot()
 
                 constructEDF(helpString, filters);
             }
-            cout << "start concatenating" << endl;
-            helpString = ExpName + "_" + QString::number(i) + "_*.edf";
+            // template for session edfs
+            helpString = ExpName
+                    + "_" + QString::number(i)
+                    + "_*.edf";
             QStringList lst = dir->entryList(QStringList(helpString));  //filter for edfs
+
             for(int k = 0; k < lst.length(); ++k)
             {
-                lst[k].prepend(QString(dir->absolutePath() + slash()));
+                lst[k].prepend( dir->absolutePath() + slash() );
             }
-            helpString = dir->absolutePath() + slash() + ExpName.left(3) + "_" + QString::number(i) + ".edf";
+
+            //outPath for concatenate
+            helpString = dir->absolutePath()
+                    + slash() + ExpName.left(3)
+                    + "_" + QString::number(i)
+                    + ".edf";
+
             concatenateEDFs(lst, helpString);
 
             setEdfFile(initEDF);
@@ -2417,7 +2385,6 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     readData(); // needed for nr
 
 
-    //////////////////////////////////////////////// why????
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     ns = lst.length();
     if(!QString(label[lst[ns-1].toInt()-1]).contains("Markers"))
@@ -2455,31 +2422,17 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     double ** newData = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-//        newData[i] = new double [ndr * nr[i]];  //generality, maybe bad nr from other channel?
         newData[i] = new double [250 * 60 * 120]; // for 2 hours
     }
 
-
-
-    FILE * file;
     int currSlice = 0;
     for(int i = 0; i < lst.length(); ++i)
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath()
                                               + slash() + "Realisations"
                                               + slash() + lst[i]);
-
-        file = fopen(helpString, "r");
-        fscanf(file, "NumOfSlices %d", &NumOfSlices);
-        for(int i = 0; i < NumOfSlices; ++i)
-        {
-            for(int j = 0; j < ns; ++j)
-            {
-                fscanf(file, "%lf", &newData[j][currSlice]);
-            }
-            ++currSlice;
-        }
-        fclose(file);
+        readPlainData(helpString, newData, ns, NumOfSlices, currSlice);
+        currSlice += NumOfSlices;
     }
     int helpInt = currSlice;
 
@@ -2506,6 +2459,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
                 newData[i] = newData[i] + offset;
             }
             newData[ns - 1][0] = saveMarker;
+            currSlice -= offset;
         }
 
         //write the exclusion of the first part [start, finish)
@@ -2519,13 +2473,12 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         outStream << offset / def::freq << endl << endl; // length
         outStream.close();
 
-        currSlice -= offset;
 
         //set the last marker if it's not
         //fix the first resting file
         if(newData[ns - 1][0] == 0)
         {
-            newData[ns - 1][0] = 0b0000010110000000; //as a count session end
+            newData[ns - 1][0] = matiCountDecimal("00000101 10000000"); //as a count session end
         }
         else
         {
@@ -2534,24 +2487,14 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
         double & firstMarker = newData[ns - 1][0];
         double & lastMarker = newData[ns - 1][currSlice -  1];
-//        matiPrintMarker(firstMarker, "first");
-//        matiPrintMarker(lastMarker, "last");
-
         matiFixMarker(firstMarker); //fix the start marker for this small edf file
         matiFixMarker(lastMarker);  //fix the last  marker for this small edf file
 
-//        matiPrintMarker(firstMarker, "firstF");
-//        matiPrintMarker(lastMarker, "lastF");
         if((matiCountBit(firstMarker, 10) == matiCountBit(lastMarker, 10)) || lastMarker == 0) //if not one of them is the end of some session
         {
             lastMarker = firstMarker
                     + pow(2, 10) * ((matiCountBit(firstMarker, 10))?-1:1); //adjust the last marker
         }
-//        matiPrintMarker(firstMarker, "newFirst");
-//        matiPrintMarker(lastMarker, "newLast");
-//        matiPrintMarker(newData[ns - 1][currSlice -  1], "newData");
-
-
     }
     else if(ui->splitZerosCheckBox->isChecked())
     {
@@ -2560,18 +2503,6 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
 
     int nsB = ns;
-
-//    cout << "construct EDF: Initial NumOfSlices = " << ndr*ddr*def::freq << endl;
-//    cout << "construct EDF: NumOfSlices to write = " << currSlice << endl;
-
-//    helpString.clear();
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        helpString += QString::number(i+1) + " ";
-//    }
-//    ui->reduceChannelsLineEdit->setText(helpString);
-
-
 
     writeEdf(ui->filePathLineEdit->text(), newData, newPath, currSlice);
 
@@ -2653,7 +2584,7 @@ void MainWindow::readData()
     }
 
 
-
+#if 1
     edfFile fil;
     fil.readEdfFile(helpString);
     ns = fil.getNs();
@@ -2666,12 +2597,7 @@ void MainWindow::readData()
     fil.getLabelsCopy(label);
     fil.getDataCopy(data);
 
-
-#if 0
-
-
-
-
+#else
     FILE * edf = fopen(helpString, "r"); //generality
     if(edf == NULL)
     {
@@ -2755,6 +2681,7 @@ void MainWindow::readData()
 //    cout << "ddr=" << ddr << endl;
 
 
+    int helpInt = 0;
     if(flag==1)
     {
         helpInt=floor((ui->finishTimeBox->value() - ui->startTimeBox->value())/double(ddr));
@@ -3292,10 +3219,10 @@ void MainWindow::matiPreprocessingSlot()
     bool flagSliceSessionsToPieces = false;
 
 //    flagCommaDot = true;
-//    flagAmodLogToEdf = true;
-//    flagSliceEdfBySessions = true;
-//    flagAppendAmodToEeg = true;
-    flagMakeDiffMark = true;
+    flagAmodLogToEdf = true;
+    flagSliceEdfBySessions = true;
+    flagAppendAmodToEeg = true;
+//    flagMakeDiffMark = true;
     flagSliceSessionsToPieces = true;
 
 
@@ -3305,6 +3232,7 @@ void MainWindow::matiPreprocessingSlot()
 
         if(flagCommaDot) // change , to . in logFiles
         {
+            ui->progressBar->setValue(0.);
             QTime myTime;
             myTime.start();
             cout << "comma->dot replace start" << endl;
@@ -3337,12 +3265,15 @@ void MainWindow::matiPreprocessingSlot()
                 }
                 fclose(fil);
                 fclose(fil1);
+                ui->progressBar->setValue(i * 100. / lst.length());
             }
 
             cout << "comma->dot replace finish: time = " << myTime.elapsed()/1000. << " sec" << endl;
+            ui->progressBar->setValue(0.);
         }
         if(flagAmodLogToEdf) // corrected logFiles to amod edfs
         {
+            ui->progressBar->setValue(0.);
             QTime myTime;
             myTime.start();
             cout << "amod.txt -> amod.edf start" << endl;
@@ -3366,8 +3297,11 @@ void MainWindow::matiPreprocessingSlot()
                         + "_amod.edf";
 //                cout << helpString << endl;
                 tempEdf.writeEdfFile(helpString);
+
+                ui->progressBar->setValue(i * 100. / lst.length());
             }
             cout << "amod.txt -> amod.edf: time = " << myTime.elapsed()/1000. << " sec" << endl;
+            ui->progressBar->setValue(0);
         }
         if(flagSliceEdfBySessions) // slice edf by sessions
         {
@@ -4403,7 +4337,6 @@ void MainWindow::sliceMati()
     int session[4]; //generality
     int type = 3;
 
-    int piece = ui->matiPieceLengthSpinBox->value() * 250; //length of a piece just for visual processing
     for(int i = 0; i < 4; ++i)
     {
         session[i] = 0;
@@ -4427,10 +4360,9 @@ void MainWindow::sliceMati()
             for(int i = 0; i < 3; ++i)
             {
                 state[i] = markers[i + 8]; //always elder byte is for count adn type of the session
-//                state[i] = QString(markerList[2][markerList[2].length() - 1 - i]).toInt();
             }
 
-            if(!(state[0] || state[1] || state[2])) continue;
+            if(!(state[0] || state[1] || state[2])) continue; // if all are zeros
 
             if(state[2] == 1) //the end of a session
             {
@@ -4466,13 +4398,15 @@ void MainWindow::sliceMati()
                                                   + "_" + QString::number(type)
                                                   + "_" + QString::number(session[type])
                                                   + ".edf");
-            fil.saveSubsection(start, end,
+            fil.saveSubsection(start,
+                               end,
                                helpString);
 
             start = end - 1; //start marker should be included
             end = -1;
             ++session[type];
         }
+        ui->progressBar->setValue(end * 100. / fil.getDataLen());
 
         qApp->processEvents();
         if (stopFlag == 1)
@@ -4560,6 +4494,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                     currStart = currEnd;
 
                 } while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10) );
+//                ui->progressBar->setValue(1 / 3. * (type + 1 / 15. * (session + 1. / dataLen * (currEnd))));
             }
         }
     }
@@ -4834,13 +4769,11 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
             chanList << lst[i].toInt() - 1;
         }
     }
-    cout << chanList << endl;
 
     edfFile fil;
     fil.readEdfFile(inFilePath);
     fil.writeOtherData(inData, numSlices, outFilePath, chanList);
-    return;
-
+#if 0
 
     QString helpString;
 
@@ -5265,7 +5198,7 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     delete [] digMin;
     delete [] digMax;
 //    cout << "writeEDF: output path = " << outFilePath.toStdString() << "\ttime = = " << myTime.elapsed()/1000. << " sec" << endl;
-
+#endif
 }
 
 void MainWindow::ICA() //fastICA
@@ -9403,6 +9336,9 @@ void MainWindow::customFunc()
 {
 //    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a.edf");
 //    ns = 41;
+//    cout << areEqualFiles("/media/michael/Files/Data/Mati/SDA/Realisations/SDA_rr_f_a_0_0_00.241",
+//                          "/media/michael/Files/Data/Mati/SDA/Realisations/SDA_rr_f_a_0_0_00.241_") << endl;
+//    exit(0);
     return;
 #if 0
     {

@@ -381,7 +381,7 @@ void Cut::createImage(QString dataFileName) //
     dir->cdUp(); // go into ExpName dir
 
 
-    readPlainData(data3, ns, NumOfSlices, currentFile);
+    readPlainData(currentFile, data3, ns, NumOfSlices);
 
     currentNumber = lst.indexOf(fileName);
     currentPicPath = getPicPath(dataFileName, dir, ns);
@@ -754,7 +754,7 @@ void Cut::save()
 
 void Cut::rewrite()
 {
-    writePlainData(data3, ns, NumOfSlices, currentFile);
+    writePlainData(currentFile, data3, ns, NumOfSlices);
     currentPicPath = getPicPath(currentFile, dir, ns);
     currentPic.save(currentPicPath, 0, 100);
 }

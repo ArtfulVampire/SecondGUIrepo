@@ -654,6 +654,10 @@ bool areEqualFiles(QString path1, QString path2)
 //    typedef unsigned char byte;
     FILE * fil1 = fopen(path1, "rb");
     FILE * fil2 = fopen(path2, "rb");
+    if(fil1 == NULL || fil2 == NULL)
+    {
+        cout << "areEqualFiles: some of the files == NULL" << endl;
+    }
     byte byt1, byt2;
     while(!feof(fil1) && !feof(fil2))
     {
@@ -661,7 +665,6 @@ bool areEqualFiles(QString path1, QString path2)
         fread(&byt2, sizeof(byte), 1, fil2);
         if(byt1 != byt2)
         {
-
             fclose(fil1);
             fclose(fil2);
             return false;
@@ -672,8 +675,6 @@ bool areEqualFiles(QString path1, QString path2)
     fclose(fil2);
     cout << "equalFiles: time = " << myTime.elapsed() / 1000. << " sec" << endl;
     return true;
-
-
 }
 
 QString getPicPath(const QString & dataPath, QDir * ExpNameDir, int ns)
@@ -2626,8 +2627,12 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
     file.close();
 }
 
-
-void writePlainData(double ** data, int ns, int numOfSlices, QString outPath)
+template <typename Typ>
+void writePlainData(QString outPath,
+                    Typ data,
+                    int ns,
+                    int numOfSlices,
+                    int start)
 {
     ofstream outStr;
     outStr.open(outPath.toStdString().c_str());
@@ -2636,32 +2641,30 @@ void writePlainData(double ** data, int ns, int numOfSlices, QString outPath)
     {
         for(int j = 0; j < ns; ++j)
         {
-            outStr << fitNumber(doubleRound(data[j][i], 3), 7) << '\t';
+            outStr << fitNumber(doubleRound(data[j][i + start], 3), 7) << '\t';
         }
         outStr << '\n';
     }
     outStr.flush();
     outStr.close();
 }
+template void writePlainData(QString outPath,
+                            double ** data,
+                            int ns,
+                            int numOfSlices,
+                            int start);
+template void writePlainData(QString outPath,
+                            vector < vector <double> > data,
+                            int ns,
+                            int numOfSlices,
+                            int start);
 
-void writePlainData(vector< vector <double> > data, QString outPath)
-{
-    ofstream outStr;
-    outStr.open(outPath.toStdString().c_str());
-    outStr << "NumOfSlices " << data[0].size() << endl;
-    for (int i = 0; i < data[0].size(); ++i)
-    {
-        for(int j = 0; j < data.size(); ++j)
-        {
-            outStr << fitNumber(doubleRound(data[j][i], 3), 7) << '\t';
-        }
-        outStr << '\n';
-    }
-    outStr.flush();
-    outStr.close();
-}
-
-void readPlainData(double **&data, int ns, int & numOfSlices, QString inPath) // data already allocated
+template <typename Typ>
+void readPlainData(QString inPath,
+                   Typ & data,
+                   int ns,
+                   int & numOfSlices,
+                   int start) // data already allocated
 {
     ifstream inStr;
     inStr.open(inPath.toStdString().c_str());
@@ -2676,11 +2679,21 @@ void readPlainData(double **&data, int ns, int & numOfSlices, QString inPath) //
     {
         for(int j = 0; j < ns; ++j)
         {
-            inStr >> data[j][i];
+            inStr >> data[j][i + start];
         }
     }
     inStr.close();
 }
+template void readPlainData(QString inPath,
+                            double **& data,
+                            int ns,
+                            int & numOfSlices,
+                            int start);
+template void readPlainData(QString inPath,
+                            vector < vector <double> > & data,
+                            int ns,
+                            int & numOfSlices,
+                            int start);
 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength)
 {
