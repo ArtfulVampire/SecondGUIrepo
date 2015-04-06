@@ -3009,6 +3009,7 @@ void splitZeros(double *** dataIn, const int & ns, const int & length, int * out
     outStream.close();
 
     (*dataIn)[ns-1][0] = firstMarker;
+    cout << "splitZeros: lastMarker" << lastMarker << "\t" << matiCountByteStr(lastMarker) << endl;
     (*dataIn)[ns-1][(*outLength) - 1] = lastMarker;
 }
 

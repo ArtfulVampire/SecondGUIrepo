@@ -1953,7 +1953,7 @@ void MainWindow::reduceChannelsEDF(QString newFilePath)
 //    reduceChannelsFast();
 //    QString helpString;
 //    helpString.clear();
-//    for(int i = 0; i < ns; ++ i)
+//    for(int i = 0; i < ns; ++i)
 //    {
 //        helpString += QString(i+1) + " ";
 //    }
@@ -2102,7 +2102,7 @@ void MainWindow::reduceChannelsFast()
             {
                 lengthCounter = 0;
                 lst = list[k].split(QRegExp("[-+/*]"), QString::SkipEmptyParts);
-                for(int h = 0; h < lst.length(); ++ h)
+                for(int h = 0; h < lst.length(); ++h)
                 {
                     if(QString::number(lst[h].toInt()) != lst[h]) // if not a number between operations
                     {
@@ -3260,14 +3260,22 @@ void MainWindow::matiPreprocessingSlot()
 {
     dir->cd(def::dataFolder); // "/media/Files/Data/Mati/"
     QStringList dirList = dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-    bool flagCommaDot = true;
-    bool flagAmodLogToEdf = true;
-    bool flagSliceEdfBySessions = true;
-    bool flagAppendAmodToEeg = true;
-    bool flagMakeDiffMark = true;
-    bool flagSliceSessionsToPieces = true;
+    bool flagCommaDot = false;
+    bool flagAmodLogToEdf = false;
+    bool flagSliceEdfBySessions = false;
+    bool flagAppendAmodToEeg = false;
+    bool flagMakeDiffMark = false;
+    bool flagSliceSessionsToPieces = false;
 
-    for(int dirNum = 0; dirNum < dirList.length(); ++ dirNum)
+    flagCommaDot = true;
+    flagAmodLogToEdf = true;
+    flagSliceEdfBySessions = true;
+    flagAppendAmodToEeg = true;
+    flagMakeDiffMark = true;
+    flagSliceSessionsToPieces = true;
+
+
+    for(int dirNum = 0; dirNum < dirList.length(); ++dirNum)
     {
         if(!dirList[dirNum].contains("SDA")) continue;
 
@@ -3402,6 +3410,7 @@ void MainWindow::matiPreprocessingSlot()
                                 + "_" + QString::number(type)
                                 + "_" + QString::number(session)
                                 + ".edf"; // generality
+                        if(QFile::exists(helpString)) QFile::remove(helpString);
                         QFile::copy(outPath, helpString);
                     }
 
@@ -3436,9 +3445,11 @@ void MainWindow::matiPreprocessingSlot()
 
                     fil.readEdfFile(helpString);
                     ofstream outStr(diffMark.toStdString().c_str());
+
                     for(int i = 0; i < fil.getDataLen(); ++i)
                     {
-                        if(fil.getData()[fil.getMarkChan()][i] != 0)
+                        if(fil.getData()[fil.getMarkChan()][i] == 0) continue;
+                        if(matiCountBit(fil.getData()[fil.getMarkChan()][i], 14))
                         {
                             for(int j = i - 40; j < i + 40; ++j)
                             {
@@ -3477,6 +3488,7 @@ void MainWindow::matiPreprocessingSlot()
                     + slash() + dirList[dirNum] + "_rr_f"
                     + "_a"
                     + ".edf"; // generality
+            if(QFile::exists(outPath)) QFile::remove(outPath);
             QFile::copy(helpString, outPath);
 
             helpString = def::dataFolder
@@ -3484,6 +3496,7 @@ void MainWindow::matiPreprocessingSlot()
                     + slash() + dirList[dirNum] + "_rr_f"
                     + "_a"
                     + ".edf";
+
             setEdfFile(helpString);
             sliceMatiPieces(true);
 
@@ -4461,7 +4474,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 
     for(int type = 0; type < 3; ++type)
     {
-        for(int session = 0; session < 15; ++ session)
+        for(int session = 0; session < 15; ++session)
         {
             helpString = QDir::toNativeSeparators(dir->absolutePath()
                                                   + slash() + ExpName
@@ -4486,14 +4499,22 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                 {
                     currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
 
-                    if (type == 0 || type == 2)
+                    if(type == 0 || type == 2)
                     {
                         while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 14) ||
-                                   matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) // while not given answer
+                                   matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) // while not (given answer OR session End)
                         {
                             --currEnd;
                         }
                     }
+                    else if(currEnd == dataLen)
+                    {
+                        while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10)) ) // while not session end
+                        {
+                            --currEnd;
+                        }
+                    }
+
 
 
 
@@ -4510,9 +4531,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                     ++pieceNum;
                     currStart = currEnd;
 
-                    if(currEnd == dataLen) break; // for type == 1
-
-                } while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10) );
+                } while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10) );
             }
         }
     }
@@ -9372,7 +9391,7 @@ void MainWindow::customFunc()
     {
         dir->cd(def::dataFolder); // "/media/Files/Data/Mati/"
         QStringList dirList = dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-        for(int dirNum = 0; dirNum < dirList.length(); ++ dirNum)
+        for(int dirNum = 0; dirNum < dirList.length(); ++dirNum)
         {
             if(!dirList[dirNum].contains("SDA")) continue; ////////////////////////////
             if(0) // change , to . in logFiles
@@ -10189,7 +10208,7 @@ void MainWindow::customFunc()
         double * y = new double [dim];
         double * A = new double [dim-1];
         double * B = new double [dim-1];
-        for(int i = 0; i < dim; ++ i)
+        for(int i = 0; i < dim; ++i)
         {
             x[i] = i;
         }
