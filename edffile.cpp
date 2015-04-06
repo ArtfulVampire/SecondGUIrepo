@@ -102,7 +102,7 @@ edfFile::edfFile(QString matiLogPath)
 
     this->ns = numOfParams;
     this->ddr = 1.;
-    this->nr = vector<double> (this->ns, def::freq);
+    this->nr = vector <double> (this->ns, def::freq);
     // ndr definedlater
     this->bytes = 256 * (this->ns + 1);
 
@@ -120,8 +120,8 @@ edfFile::edfFile(QString matiLogPath)
                     fitString("AMOD wrongAns", 16),
                     fitString("AMOD skipdAns", 16)
                    };
-    this->transducerType = vector<QString> (this->ns, fitString("AMOD transducer", 80));
-    this->physDim = vector<QString> (this->ns, fitString("AMODdim", 8));
+    this->transducerType = vector <QString> (this->ns, fitString("AMOD transducer", 80));
+    this->physDim = vector <QString> (this->ns, fitString("AMODdim", 8));
 
     this->physMin = {0, 0, 0, 0, // ampls, freqs
                      -1, -1, -1, -1, // coordinates
@@ -143,8 +143,8 @@ edfFile::edfFile(QString matiLogPath)
                      3-1, 7-1,
                      255-1, 255-1, 255-1};
 
-    this->prefiltering = vector<QString>(this->ns, QString(fitString("AMOD no prefiltering", 80)));
-    this->reserved = vector<QString>(this->ns, QString(fitString("AMOD reserved", 32)));
+    this->prefiltering = vector <QString> (this->ns, QString(fitString("AMOD no prefiltering", 80)));
+    this->reserved = vector <QString> (this->ns, QString(fitString("AMOD reserved", 32)));
 
     this->data.resize(this->ns);
     for(int i = 0; i < this->ns; ++i)
@@ -199,13 +199,13 @@ edfFile::edfFile(QString matiLogPath)
 /*
 edfFile::edfFile(int in_ndr, int in_ns,
                  int in_ddr,
-                 vector<QString> in_labels,
-                 vector<double> in_physMin,
-                 vector<double> in_physMax,
-                 vector<double> in_digMin,
-                 vector<double> in_digMax,
-                 vector<double> in_nr,
-                 vector < vector<double> > in_data)
+                 vector <QString> in_labels,
+                 vector <double> in_physMin,
+                 vector <double> in_physMax,
+                 vector <double> in_digMin,
+                 vector <double> in_digMax,
+                 vector <double> in_nr,
+                 vector < vector <double> > in_data)
 {
     this->ns = in_ns;
     this->ndr = in_ndr;
@@ -229,10 +229,10 @@ edfFile::edfFile(int in_ndr, int in_ns,
     this->headerReservedField = fitString("headerReservedField", 44);
     this->headerRest = QString();
 
-    this->transducerType = vector<QString>(this->ns, QString(fitString("transducerType", 80)));
-    this->physDim = vector<QString>(this->ns, QString(fitString("physDim", 8)));
-    this->prefiltering = vector<QString>(this->ns, QString(fitString("prefiltering", 80)));
-    this->reserved = vector<QString>(this->ns, QString(fitString("reserved", 32)));
+    this->transducerType = vector <QString> (this->ns, QString(fitString("transducerType", 80)));
+    this->physDim = vector <QString> (this->ns, QString(fitString("physDim", 8)));
+    this->prefiltering = vector <QString> (this->ns, QString(fitString("prefiltering", 80)));
+    this->reserved = vector <QString> (this->ns, QString(fitString("reserved", 32)));
 
     for(int i = 0; i < this->ns; ++i)
     {
@@ -647,7 +647,7 @@ void edfFile::handleDatum(const int & currNs,
 void edfFile::writeMarker(const int & currNs,
                            const int & currTimeIndex)
 {
-    vector<bool> byteMarker;
+    vector <bool> byteMarker;
     QString helpString;
     double & currDatum = data[currNs][currTimeIndex];
 
@@ -697,7 +697,7 @@ void edfFile::writeMarker(const int & currNs,
 void edfFile::handleAnnotations(const int & currNs,
                                 const int & currentTimeIndex,
                                 QString helpString,
-                                vector<QString> annotations)
+                                vector <QString> annotations)
 {
 
 //    return; // I dont care

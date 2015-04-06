@@ -639,11 +639,14 @@ QString getExt(QString filePath)
     }
 }
 
-QString getFileName(QString filePath)
+QString getFileName(QString filePath, bool withExtension)
 {
     QString helpString = QDir::toNativeSeparators(filePath);
-    helpString = helpString.left(helpString.lastIndexOf("."));
     helpString = helpString.right(helpString.length() - helpString.lastIndexOf(slash()) - 1);
+    if(!withExtension)
+    {
+        helpString = helpString.left(helpString.lastIndexOf("."));
+    }
     return helpString;
 }
 

@@ -75,7 +75,7 @@ struct edfChannel
         this->prefiltering = QString();
         this->nr = 0.;
         this->reserved = QString();
-        this->data = vector<double>();
+        this->data = vector <double> ();
     }
 };
 

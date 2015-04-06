@@ -2473,25 +2473,24 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     }
     int helpInt = currSlice;
 
-    int offset;
+    int offset = 0;
     if(ui->matiCheckBox->isChecked()) // bicycle generality
     {
-        QString fileName = newPath;
-        fileName.remove(0, fileName.lastIndexOf(slash())+1);
-
+        QString fileName = getFileName(newPath, true);
         helpString = dir->absolutePath()
-                    + slash() + ExpName.left(3) + "_splitZerosLog.txt";
-        helpInt = currSlice;
+                + slash() + ExpName.left(3)
+                + "_splitZerosLog.txt";
 
+        helpInt = currSlice;
         splitZeros(&newData, ns, helpInt, &currSlice, helpString, fileName); // helpString unchanged
         ofstream outStream;
         outStream.open(helpString.toStdString().c_str(), ios_base::app);
 
-
         if(ui->roundOffsetCheckBox->isChecked())
         {
             double saveMarker = newData[ns - 1][0];
-            offset = currSlice%(16*250) + 16*250; //////Mati offset ~20 seconds in the beginning
+            offset = currSlice%(16*250) + 16*250; // Mati offset ~20 seconds in the beginning
+
             for (int i = 0; i < ns; ++i) //shift start pointers
             {
                 newData[i] = newData[i] + offset;
