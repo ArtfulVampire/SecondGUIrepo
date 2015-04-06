@@ -2920,7 +2920,7 @@ void splitZeros(double *** dataIn, const int & ns, const int & length, int * out
 {
     //remake with std::list of slices
 
-    bool flag[length]; //1 if usual, 0 if eyes
+    bool flag[length + 1]; //1 if usual, 0 if eyes, 1 for additional one point
     bool startFlag = false;
     int start = -1;
     int finish = -1;
@@ -2942,6 +2942,7 @@ void splitZeros(double *** dataIn, const int & ns, const int & length, int * out
             }
         }
     }
+    flag[length] = true; // for terminate zero piece
 
     if(!logFile.isEmpty())
     {
@@ -2972,37 +2973,35 @@ void splitZeros(double *** dataIn, const int & ns, const int & length, int * out
         }
         else //if startFlag is set
         {
-            if(flag[i] || i == length-1 - allEyes) //if we meet the end of eyes-interval OR reached end of a data
+            if(flag[i]) // if we meet the end of eyes-interval OR reached end of a data
             {
-                finish = i - 1; // last bin to exclude
+                finish = i; // first bin NOT TO exclude
                 outStream << dataName.toStdString() << "\t";
                 outStream << start + allEyes << "\t";
                 outStream << finish + allEyes << "\t";
-                outStream << finish - start + 1 << "\t"; // length
+                outStream << finish - start << "\t"; // length
 
                 outStream << (start + allEyes) / def::freq << "\t"; // start time
                 outStream << (finish + allEyes) / def::freq << "\t"; // finish time
-                outStream << (finish - start + 1) / def::freq << endl; // length
+                outStream << (finish - start) / def::freq << endl; // length
 
-                //split
+                //split. vector.erase();
                 for(int k = start; k < start + (length-1 - allEyes) - finish; ++k)
                 {
                     for(int j = 0; j < ns; ++j) //shift with markers and flags
                     {
-                        (*dataIn)[j][k] = (*dataIn)[j][k + (finish - start + 1)];
-                        flag[k] = flag[k + (finish - start + 1)];
+                        (*dataIn)[j][k] = (*dataIn)[j][k + (finish - start)];
+                        flag[k] = flag[k + (finish - start)];
                     }
                 }
 
-                allEyes += finish - start + 1;
-                i -= finish - start + 1;
+                allEyes += finish - start;
+                i -= finish - start;
                 startFlag = 0;
-
-                if(i == length-1 - allEyes) break;
             }
         }
         ++i;
-    } while (i <= length-1 - allEyes); // = for the last zero piece
+    } while (i <= length - allEyes); // = for the last zero piece
     (*outLength) = length - allEyes;
     outStream.close();
 

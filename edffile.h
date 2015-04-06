@@ -62,6 +62,21 @@ struct edfChannel
         this->reserved = in_reserved;
         this->data = in_data;
     }
+
+    edfChannel()
+    {
+        this->label = QString();
+        this->transducerType = QString();
+        this->physDim = QString();
+        this->physMax = 0.;
+        this->physMin = 0.;
+        this->digMax = 0.;
+        this->digMin = 0.;
+        this->prefiltering = QString();
+        this->nr = 0.;
+        this->reserved = QString();
+        this->data = vector<double>();
+    }
 };
 
 
