@@ -799,7 +799,7 @@ double quantile(double arg)
     return (4.91*(a-b));
 }
 
-double mean(int *arr, int length)
+double mean(const int *arr, int length)
 {
     double sum = 0.;
     for(int i = 0; i < length; ++i)
@@ -810,7 +810,7 @@ double mean(int *arr, int length)
     return sum;
 }
 
-double mean(double *arr, int length)
+double mean(const double * arr, int length)
 {
     double sum = 0.;
     for(int i = 0; i < length; ++i)
@@ -820,7 +820,7 @@ double mean(double *arr, int length)
     return sum;
 }
 
-double variance(int *arr, int length)
+double variance(const int *arr, int length)
 {
     double sum1 = 0.;
     double m = mean(arr, length);
@@ -833,7 +833,7 @@ double variance(int *arr, int length)
 }
 
 
-double variance(double * arr, int length)
+double variance(const double * arr, int length)
 {
     double sum1 = 0.;
     double m = mean(arr, length);
@@ -845,7 +845,7 @@ double variance(double * arr, int length)
     return sum1;
 }
 
-double varianceFromZero(int *arr, int length)
+double varianceFromZero(const int *arr, int length)
 {
     double sum1 = 0.;
     for(int i = 0; i < length; ++i)
@@ -857,7 +857,7 @@ double varianceFromZero(int *arr, int length)
 }
 
 
-double varianceFromZero(double * arr, int length)
+double varianceFromZero(const double * arr, int length)
 {
     double sum1 = 0.;
     for(int i = 0; i < length; ++i)
@@ -874,7 +874,7 @@ double sigma(int *arr, int length)
     return sqrt(variance(arr, length));
 }
 
-double sigma(double *arr, int length)
+double sigma(const double *arr, int length)
 {
     return sqrt(variance(arr, length));
 }
@@ -884,7 +884,7 @@ double sigmaFromZero(int *arr, int length)
     return sqrt(varianceFromZero(arr, length));
 }
 
-double sigmaFromZero(double *arr, int length)
+double sigmaFromZero(const double *arr, int length)
 {
     return sqrt(varianceFromZero(arr, length));
 }
@@ -1245,21 +1245,30 @@ double covariance(double * const arr1, double * const arr2, int length)
     return res;
 }
 
-double correlation(double * const arr1, double * const arr2, int length, int t)
+double correlation(const double * arr1, const double * arr2, int length, int shift)
 {
     double res = 0.;
     double m1, m2;
-    int T = abs(t);
-    if(t >= 0) //start from arr1[0] and arr1[t]
+    int T = abs(shift);
+    double sigmas;
+    if(shift >= 0) //start from arr1[0] and arr1[t]
     {
-        m1 = mean(arr1, length-t);
-        m2 = mean(arr2+t, length-t);
-        for(int i = 0; i < length - t; ++i)
+        m1 = mean(arr1, length-shift);
+        m2 = mean(arr2+shift, length-shift);
+        for(int i = 0; i < length - shift; ++i)
         {
-            res += (arr1[i] - m1) * (arr2[i + t] - m2);
+            res += (arr1[i] - m1) * (arr2[i + shift] - m2);
         }
-
-        res /= sigma(arr1, length-t) * sigma(arr2+t, length-t);
+        sigmas = sigma(arr1, length-shift) * sigma(arr2+shift, length-shift);
+        if(sigmas != 0.)
+        {
+            res /= sigmas;
+        }
+        else
+        {
+            cout << "const signal ";
+            return 0.;
+        }
     }
     else  //start from arr1[0] and arr1[t]
     {
@@ -1269,27 +1278,34 @@ double correlation(double * const arr1, double * const arr2, int length, int t)
         {
             res += (arr1[i + T] - m1) * (arr2[i] - m2);
         }
-
-        res /= sigma(arr1 + T, length - T) * sigma(arr2, length - T);
+        sigmas = sigma(arr1 + T, length - T) * sigma(arr2, length - T);
+        if(sigmas != 0.)
+        {
+            res /= sigmas;
+        }
+        else
+        {
+            cout << "const signal ";
+            return 0.;
+        }
     }
-
     res /= double(length - T);
     return res;
 }
 
 
-double correlationFromZero(double * const arr1, double * const arr2, int length, int t)
+double correlationFromZero(double * const arr1, double * const arr2, int length, int shift)
 {
     double res = 0.;
-    int T = abs(t);
-    if(t >= 0) //start from arr1[0] and arr1[t]
+    int T = abs(shift);
+    if(shift >= 0) //start from arr1[0] and arr1[t]
     {
-        for(int i = 0; i < length - t; ++i)
+        for(int i = 0; i < length - shift; ++i)
         {
-            res += arr1[i] * arr2[i + t];
+            res += arr1[i] * arr2[i + shift];
         }
 
-        res /= sigmaFromZero(arr1, length-t) * sigmaFromZero(arr2+t, length-t);
+        res /= sigmaFromZero(arr1, length-shift) * sigmaFromZero(arr2+shift, length-shift);
     }
     else  //start from arr1[0] and arr1[t]
     {

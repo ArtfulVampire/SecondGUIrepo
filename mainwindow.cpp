@@ -2310,7 +2310,8 @@ void MainWindow::constructEDFSlot()
     {
         const QString initEDF = ui->filePathLineEdit->text();
         helpString = dir->absolutePath()
-                    + slash() + ExpName.left(3) + "_splitZerosLog.txt";
+                + slash() + ExpName.left(3)
+                + "_splitZerosLog.txt";
         ofstream outStream;
         outStream.open(helpString.toStdString().c_str());
         outStream << ExpName.left(3).toStdString() << "\t";
@@ -2335,17 +2336,24 @@ void MainWindow::constructEDFSlot()
                         + "*";
                 filters << helpString;
 
-                //outPath
+                //outPath for session edfs
                 helpString = dir->absolutePath()
                         + slash() + ExpName
+
+                        + "_c"
+
                         + "_" + QString::number(i)
                         + "_" + QString::number(j)
                         + ".edf";
 
                 constructEDF(helpString, filters);
             }
+
             // template for session edfs
             helpString = ExpName
+
+                    + "_c"
+
                     + "_" + QString::number(i)
                     + "_*.edf";
             QStringList lst = dir->entryList(QStringList(helpString));  //filter for edfs
@@ -2512,7 +2520,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         delete []newData[i];
     }
     delete []newData;
-//    cout << "constructEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "constructEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unused
@@ -9336,19 +9344,39 @@ void MainWindow::customFunc()
 {
 //    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a.edf");
 //    ns = 41;
-//    cout << areEqualFiles("/media/michael/Files/Data/Mati/SDA/Realisations/SDA_rr_f_a_0_0_00.241",
-//                          "/media/michael/Files/Data/Mati/SDA/Realisations/SDA_rr_f_a_0_0_00.241_") << endl;
-//    exit(0);
-    return;
+
+
+
+
 #if 0
+    {
+        dir->cd("/media/Files/Data/Mati/SDA");
+        QStringList lst = dir->entryList(QStringList("*_a_c_*markers.txt"));
+        QString str1, str2;
+        for(int i = 0; i < lst.length(); ++i)
+        {
+            str1 = dir->absolutePath() + slash() + lst[i];
+            str2 = lst[i];
+            str2.replace("_a_c_", "_a_");
+            str2 = dir->absolutePath() + slash() + str2;
+            cout << str1 << '\n' << str2 << '\n' << areEqualFiles(str1, str2) << endl << endl;
+        }
+    }
+#endif
+#if 1
     {
         edfFile fil;
         fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_0_0.edf");
-        fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_0_0.txt", true);
-        exit(0);
+        edfFile fil2;
+        fil2.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_c_0_0.edf");
+        for(int i = 0; i < 41; ++i)
+        {
+            cout << correlation(fil.getData()[i].data(), fil2.getData()[i].data(), fil.getDataLen()) << endl;
+        }
+        exit(1);
     }
-//#endif
-//#if 0
+#endif
+#if 0
     //MATI
     if(1)
     {

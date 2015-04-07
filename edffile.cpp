@@ -608,7 +608,8 @@ void edfFile::handleDatum(const int & currNs,
     {
         if(currNs != markerChannel) // usual data read
         {
-            if(this->labels[currNs].contains("EEG"))
+//            if(this->labels[currNs].contains("EEG"))
+            if(!this->labels[currNs].contains("Markers"))
             {
                 // round better to N * 1/8.
                 currDatum = doubleRoundFraq(currDatum,
@@ -993,7 +994,7 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf
         }
         doFlag = true;
     }
-    cout << "cutZerosAtEnd: slices cut = " << this->dataLength - currEnd << endl;
+//    cout << "cutZerosAtEnd: slices cut = " << this->dataLength - currEnd << endl;
     this->dataLength = currEnd;
     for(int j = 0; j < this->ns; ++j)
     {
