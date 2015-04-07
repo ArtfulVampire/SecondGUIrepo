@@ -2182,15 +2182,19 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
     myTime.start();
 
     //assume the files are concatenable
-    int newNdr = 0;
-    int tempPos = 0;
-    for(int k = 0; k < inPath.length(); ++k)
+    edfFile resultEdf;
+    resultEdf.readEdfFile(inPath[0]);
+    edfFile tempEdf;
+    for(int k = 1; k < inPath.length(); ++k)
     {
-        setEdfFile(inPath[k]);
-        readData();
-        newNdr += ndr;
+        resultEdf.concatFile(inPath[k]);
     }
+    resultEdf.writeEdfFile(outPath);
+    return;
+#if 0
 
+    int newDataLen = 0;
+    int tempPos = 0;
     double ** newData;
     matrixCreate(&newData, ns, newNdr * def::freq); ////////generality
 
@@ -2201,10 +2205,6 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
         for(int i = 0; i < ns; ++i)
         {
             memcpy(newData[i] + tempPos, data[i], sizeof(double) * ndr*def::freq);
-//            for(int j = 0; j < ndr*def::freq; ++j)////////generality
-//            {
-//                newData[i][j + tempPos] = data[i][j];
-//            }
         }
         tempPos += ndr*def::freq;
     }
@@ -2218,6 +2218,7 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
     readData();
     writeEdf(inPath[0], newData, outPath, tempPos, ls);
     matrixDelete(&newData, ns);
+#endif
     cout << "concatenateEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
@@ -9363,16 +9364,17 @@ void MainWindow::customFunc()
         }
     }
 #endif
-#if 1
+#if 0
     {
         edfFile fil;
-        fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_0_0.edf");
-        edfFile fil2;
-        fil2.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_c_0_0.edf");
-        for(int i = 0; i < 41; ++i)
-        {
-            cout << correlation(fil.getData()[i].data(), fil2.getData()[i].data(), fil.getDataLen()) << endl;
-        }
+        fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_0_2.edf");
+        fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_0_2.txt", true);
+//        edfFile fil2;
+//        fil2.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_c_0_0.edf");
+//        for(int i = 0; i < 41; ++i)
+//        {
+//            cout << correlation(fil.getData()[i].data(), fil2.getData()[i].data(), fil.getDataLen()) << endl;
+//        }
         exit(1);
     }
 #endif

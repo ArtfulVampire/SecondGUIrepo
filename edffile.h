@@ -152,7 +152,7 @@ public:
 
     void adjustArraysByChannels();
     void appendFile(QString addEdfPath, QString outPath);
-    void concatFile(QString addEdfPath, QString outPath);
+    void concatFile(QString addEdfPath, QString outPath = QString());
     void appendChannel(edfChannel addChan, QString outPath); // check ndr
     void swapChannels(int num1, int num2);
     void saveSubsection(int startBin, int finishBin, QString outPath, bool plainFlag = false);

@@ -873,9 +873,16 @@ void edfFile::appendFile(QString addEdfPath, QString outPath)
 
 void edfFile::concatFile(QString addEdfPath, QString outPath)
 {
-    edfFile temp(*this);
+    edfFile temp;
+    if(!outPath.isEmpty())
+    {
+        temp = edfFile(*this);
+    }
     edfFile addEdf;
     addEdf.readEdfFile(addEdfPath);
+
+    this->cutZerosAtEnd();
+    addEdf.cutZerosAtEnd();
     for(int i = 0; i < this->ns; ++i)
     {
         this->channels[i].data.resize( this->dataLength + addEdf.getDataLen() );
@@ -884,11 +891,12 @@ void edfFile::concatFile(QString addEdfPath, QString outPath)
                sizeof(double) * addEdf.getDataLen() );
     }
     this->adjustArraysByChannels();
-//    this->dataLength = this->dataLength + addEdf.getDataLen();
 
-
-    this->writeEdfFile(outPath);
-    *this = temp;
+    if(!outPath.isEmpty())
+    {
+        this->writeEdfFile(outPath);
+        *this = temp;
+    }
 }
 
 void edfFile::swapChannels(int num1, int num2)
