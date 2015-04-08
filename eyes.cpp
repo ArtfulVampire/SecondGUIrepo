@@ -81,13 +81,16 @@ void Eyes::eyesClean()
 
 
     double **dataF = new double * [ns];
-
+    for(int j = 0; j < ns; ++j)
+    {
+        dataF[j] = new double [250 * 60]; // generality for 1 minute realisations
+    }
 
     for(int k = 0; k < NumEeg; ++k)
     {
         for(int i = 0; i < NumEog; ++i)
         {
-            fscanf(coef, "%lf ", &coefficients[k][i]);
+            fscanf(coef, "%lf", &coefficients[k][i]);
 //            cout << "coefficients[" << k << "][" << i << "] = " << coefficients[k][i] << endl;
         }
         fscanf(coef, "\n");
@@ -101,27 +104,8 @@ void Eyes::eyesClean()
     for(int i = 0; i < list.length(); ++i)
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + list[i]);
-        file = fopen(helpString, "r");
-        if(file == NULL)
-        {
-            cout << "file to read == NULL" << endl;
-            continue;
-        }
-        fscanf(file, "NumOfSlices %d\n", &NumOfSlices);
+        readPlainData(helpString, dataF, ns, NumOfSlices);
 
-        for(int j = 0; j < ns; ++j)
-        {
-            dataF[j] = new double [NumOfSlices]; //set memory for data
-        }
-
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int k = 0; k < ns; ++k)
-            {
-                fscanf(file, "%lf\n", &dataF[k][j]); //read data
-            }
-        }
-        fclose(file);
 
         for(int k = 0; k < NumEeg; ++k)
         {
@@ -129,7 +113,6 @@ void Eyes::eyesClean()
             {
                 for(int z = 0; z < NumEog; ++z)
                 {
-                    a = lst.at(z).toInt() - 1;
                     dataF[k][j] -= coefficients[k][z] * dataF[a][j];
                 }
             }
@@ -140,12 +123,6 @@ void Eyes::eyesClean()
 
         ofstream outStr;
         outStr.open(helpString.toStdString().c_str());
-
-        if(!outStr.good())
-        {
-            cout << "file to write == NULL" << endl;
-            continue;
-        }
         outStr << "NumOfSlices " << NumOfSlices << endl;
         for (int i = 0; i < NumOfSlices; ++i)
         {
@@ -160,10 +137,6 @@ void Eyes::eyesClean()
         outStr.close();
 
 
-        for(int i = 0; i < ns; ++i)
-        {
-            delete []dataF[i];
-        }
 
         NumOfEyes = 0;
 

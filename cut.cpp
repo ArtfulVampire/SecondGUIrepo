@@ -597,7 +597,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
             ++leftLimit;
             cout << "prev file leftLimit = " << leftLimit << endl;
             // zero() from tempLimit to rightLimit
-            zeroData(&data3, ns, leftLimit, rightLimit, withMarkersFlag);
+            zeroData(data3, ns, leftLimit, rightLimit, withMarkersFlag);
             rewrite();
             next();
         }
@@ -630,7 +630,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
             ++rightLimit;
             cout << "next file rightLimit = " << rightLimit << endl;
 
-            zeroData(&data3, ns, leftLimit, rightLimit, withMarkersFlag);
+            zeroData(data3, ns, leftLimit, rightLimit, withMarkersFlag);
             rewrite();
         }
         prev();
@@ -647,16 +647,17 @@ void Cut::zero()
     // if MATI with counts - adjust limits to problem edges
     // move leftLimit after the nearest marker
     // move rightLimit after the nearest marker
+    // delete [leftLimit, rightLimit)
 
     // ExpName.left(3)_rr_f_TYPE_SESSION_PIECE.MARKER
     QString helpString = "_0_[0-9]_[0-9]{2,2}";
     if(currentFile.contains(QRegExp(helpString)))
     {
         cout << "zero: adjust limits   " << currentFile << endl;
-        matiAdjustLimits();
+//        matiAdjustLimits();
     }
 
-    zeroData(&data3, ns, leftLimit, rightLimit, withMarkersFlag); ///////// should TEST !!!!!!!1111
+    zeroData(data3, ns, leftLimit, rightLimit, withMarkersFlag); ///////// should TEST !!!!!!!1111
     paint();
 }
 

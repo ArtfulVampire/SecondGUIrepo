@@ -114,7 +114,7 @@ double minValue(double * arr, int length);
 void splitZeros(double *** inData, const int &ns, const int &length, int * outLength, const QString &logFile = "", QString dataName = "");
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
-void zeroData(double *** inData, const int & ns, const int & leftLimit, const int & rightLimit, const bool & withMarkersFlag);
+void zeroData(double **& inData, const int & ns, const int & leftLimit, const int & rightLimit, const bool & withMarkersFlag);
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
 double independence(double * const signal1, double * const signal2, int length);
 

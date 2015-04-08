@@ -26,8 +26,6 @@ MainWindow::MainWindow() :
     spStep = def::freq/def::fftLength;
     spLength = right - left + 1;
 
-
-
     withMarkersFlag = 0;
     ui->sliceWithMarkersCheckBox->setChecked(false);
     staSlice = 0;
@@ -1923,18 +1921,6 @@ void MainWindow::reduceChannelsEDFSlot()
 void MainWindow::reduceChannelsEDF(QString newFilePath)
 {
     QStringList lst;
-    readData();
-
-    //bad
-//    reduceChannelsFast();
-//    QString helpString;
-//    helpString.clear();
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        helpString += QString(i+1) + " ";
-//    }
-//    ui->reduceChannelsLineEdit->setText(helpString);
-
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     if(!QString(label[lst[lst.length() - 1].toInt() - 1]).contains("Markers"))
     {
@@ -1942,14 +1928,21 @@ void MainWindow::reduceChannelsEDF(QString newFilePath)
         return;
     }
 
-    writeEdf(ui->filePathLineEdit->text(), data, newFilePath, ndr*def::freq);
+    QList <int> chanList;
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        chanList << lst[i].toInt() - 1;
+    }
+    edfFile temp;
+    temp.readEdfFile(ui->filePathLineEdit->text());
+    temp.reduceChannels(chanList);
+    temp.writeEdfFile(newFilePath);
 }
 
 void MainWindow::reduceChannelsSlot()
 {
     QStringList lst;
     QString helpString;
-    helpString = ui->reduceChannelsLineEdit->text();
 
     int * num = new int [maxNs];
     FILE * file;
@@ -1957,55 +1950,41 @@ void MainWindow::reduceChannelsSlot()
     double ** dataR = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-        dataR[i] = new double [10000];   ///////////////generality spLength
+        dataR[i] = new double [250 * 60];   // generality for 1 minute realisations
     }
 
-
+    helpString = ui->reduceChannelsLineEdit->text();
     QStringList list = helpString.split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     for(int i = 0; i < list.length(); ++i)
     {
-        num[i]=list[i].toInt();
+        num[i] = list[i].toInt();
     }
 
     dir->cd("Realisations");
     lst = dir->entryList(QDir::Files, QDir::NoSort);
 
+
     for(int i = 0; i < lst.length(); ++i)
     {
-        file = fopen((QDir::toNativeSeparators(dir->absolutePath()).append(slash()).append(lst.at(i))).toStdString().c_str(), "r");
-        if(file==NULL)
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash() + lst[i]);
+        readPlainData(helpString, dataR, ns, NumOfSlices);
+        file = fopen(helpString, "w");
+        if(file == NULL)
         {
-            QMessageBox::critical((QWidget*)this, tr("Warning"), tr("Cannot open file to read"), QMessageBox::Ok);
+//            QMessageBox::critical((QWidget*)this, tr("Warning"), tr("Cannot open file to write"), QMessageBox::Ok);
+            cout << "reduceChannelsSLot: cannot open file to write, return" << endl;
             return;
         }
-
-        fscanf(file, "NumOfSlices %d\n", &NumOfSlices);
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int k = 0; k < ns; ++k)
-            {
-                fscanf(file, "%lf", &dataR[k][j]);
-            }
-        }
-        fclose(file);
-
-        file=fopen((QDir::toNativeSeparators(dir->absolutePath()).append(slash()).append(lst.at(i))).toStdString().c_str(), "w");
-        if(file==NULL)
-        {
-            QMessageBox::critical((QWidget*)this, tr("Warning"), tr("Cannot open file to write"), QMessageBox::Ok);
-            return;
-        }
-
         fprintf(file, "NumOfSlices %d\n", NumOfSlices);
         for(int j = 0; j < NumOfSlices; ++j)
         {
             for(int k = 0; k < list.length(); ++k)
             {
-                fprintf(file, "%lf\n", dataR[num[k]-1][j]);
+                fprintf(file, "%lf\n", dataR[ num[k] - 1 ][j]);
             }
         }
         fclose(file);
-
     }
 
     for(int i = 0; i < ns; ++i)
@@ -2017,11 +1996,11 @@ void MainWindow::reduceChannelsSlot()
     delete []num;
     dir->cdUp();
 
-    helpString="channels reduced ";
+    helpString = "channels reduced ";
     ui->textEdit->append(helpString);
 
-    helpString="ns equals to ";
-    helpString.append(QString::number(ns));
+    helpString = "ns equals to ";
+    helpString + QString::number(ns);
     ui->textEdit->append(helpString);
 }
 
@@ -2045,7 +2024,7 @@ void MainWindow::reduceChannelsFast()
     double ** temp = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
-        temp[i] = new double [ndr*nr[i]];
+        temp[i] = new double [ndr * nr[i]];
     }
     double sign;
     int lengthCounter; //length of the expression in chars
@@ -2190,7 +2169,6 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
         resultEdf.concatFile(inPath[k]);
     }
     resultEdf.writeEdfFile(outPath);
-    return;
 #if 0
 
     int newDataLen = 0;
@@ -3228,11 +3206,14 @@ void MainWindow::matiPreprocessingSlot()
     bool flagSliceSessionsToPieces = false;
 
 //    flagCommaDot = true;
-    flagAmodLogToEdf = true;
-    flagSliceEdfBySessions = true;
-    flagAppendAmodToEeg = true;
-//    flagMakeDiffMark = true;
-    flagSliceSessionsToPieces = true;
+//    flagAmodLogToEdf = true;
+//    flagSliceEdfBySessions = true;
+//    flagAppendAmodToEeg = true;
+    flagMakeDiffMark = true;
+//    flagSliceSessionsToPieces = true;
+    QString fileSuffix;
+    fileSuffix = "_rr_f";
+    fileSuffix = "_w";
 
 
     for(int dirNum = 0; dirNum < dirList.length(); ++dirNum)
@@ -3321,7 +3302,8 @@ void MainWindow::matiPreprocessingSlot()
             QString helpString;
             helpString = def::dataFolder
                     + slash() + dirList[dirNum]
-                    + slash() + dirList[dirNum] + "_rr_f.edf";
+                    + slash() + dirList[dirNum] + fileSuffix
+                    + ".edf";
             setEdfFile(helpString);
             sliceMati();
 
@@ -3344,13 +3326,13 @@ void MainWindow::matiPreprocessingSlot()
                 {
                     helpString = def::dataFolder
                             + slash() + dirList[dirNum]
-                            + slash() + dirList[dirNum] + "_rr_f"
+                            + slash() + dirList[dirNum] + fileSuffix
                             + "_" + QString::number(type)
                             + "_" + QString::number(session)
                             + ".edf"; // generality
                     outPath = def::dataFolder
                             + slash() + dirList[dirNum]
-                            + slash() + dirList[dirNum] + "_rr_f"
+                            + slash() + dirList[dirNum] + fileSuffix
                             + "_a"
                             + "_" + QString::number(type)
                             + "_" + QString::number(session)
@@ -3373,7 +3355,7 @@ void MainWindow::matiPreprocessingSlot()
                         helpString = def::dataFolder
                                 + slash() + dirList[dirNum]
                                 + slash() + "amod"
-                                + slash() + dirList[dirNum] + "_rr_f"
+                                + slash() + dirList[dirNum] + fileSuffix
                                 + "_a"
                                 + "_" + QString::number(type)
                                 + "_" + QString::number(session)
@@ -3401,7 +3383,7 @@ void MainWindow::matiPreprocessingSlot()
                 {
                     helpString = def::dataFolder
                             + slash() + dirList[dirNum]
-                            + slash() + dirList[dirNum] + "_rr_f"
+                            + slash() + dirList[dirNum] + fileSuffix
                             + "_a"
                             + "_" + QString::number(type)
                             + "_" + QString::number(session)
@@ -3413,6 +3395,7 @@ void MainWindow::matiPreprocessingSlot()
 
                     fil.readEdfFile(helpString);
                     ofstream outStr(diffMark.toStdString().c_str());
+                    outStr << "board" << '\t' << "amod" << '\t' << endl;
 
                     for(int i = 0; i < fil.getDataLen(); ++i)
                     {
@@ -3446,14 +3429,14 @@ void MainWindow::matiPreprocessingSlot()
             QString helpString;
             helpString = def::dataFolder
                     + slash() + dirList[dirNum]
-                    + slash() + dirList[dirNum] + "_rr_f"
+                    + slash() + dirList[dirNum] + fileSuffix
                     + "_a"
                     + "_0"
                     + "_1"
                     + ".edf"; // generality
             outPath = def::dataFolder
                     + slash() + dirList[dirNum]
-                    + slash() + dirList[dirNum] + "_rr_f"
+                    + slash() + dirList[dirNum] + fileSuffix
                     + "_a"
                     + ".edf"; // generality
             if(QFile::exists(outPath)) QFile::remove(outPath);
@@ -3461,7 +3444,7 @@ void MainWindow::matiPreprocessingSlot()
 
             helpString = def::dataFolder
                     + slash() + dirList[dirNum]
-                    + slash() + dirList[dirNum] + "_rr_f"
+                    + slash() + dirList[dirNum] + fileSuffix
                     + "_a"
                     + ".edf";
 
@@ -3487,9 +3470,6 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     int numChanToWrite = -1;
 
     readData();
-    //    glob::Edf.readEdfFile(ui->filePathLineEdit->text(), glob::matiFlag, glob::ntFlag);
-    //    glob::ns = glob::Edf.getNs();
-    //    glob::Edf.getDataCopy(&data);
 
     if(ui->eyesCleanCheckBox->isChecked())
     {
@@ -4353,6 +4333,36 @@ void MainWindow::sliceMati()
 
     edfFile fil;
     fil.readEdfFile(ui->filePathLineEdit->text());
+
+    if(ui->reduceChannelsCheckBox->isChecked())
+    {
+        QList <int> chanList;
+        QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[ ,;]"), QString::SkipEmptyParts);
+        for(int i = 0; i < lst.length(); ++i)
+        {
+            chanList << lst[i].toInt() - 1;
+        }
+        fil.reduceChannels(chanList);
+    }
+
+    if(ui->eyesCleanCheckBox->isChecked())
+    {
+        helpString = fil.getDirPath() + slash() + "eyes.txt";
+        QList <int> eegList;
+        QList <int> eogList;
+        for(int i = 0; i < fil.getNs(); ++i)
+        {
+            if(fil.getLabels()[i].contains("EEG"))
+            {
+                eegList << i;
+            }
+            if(fil.getLabels()[i].contains("EOG"))
+            {
+                eogList << i;
+            }
+        }
+        fil.cleanFromEyes(helpString, eegList, eogList);
+    }
 
     for(int i = 0; i < fil.getDataLen(); ++i)
 //    do

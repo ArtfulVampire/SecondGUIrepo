@@ -2629,7 +2629,7 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
         cout << "bad file" << endl;
         return;
     }
-    file.ignore(12); // "NumOfSlices "
+    file.ignore(64, ' '); // "NumOfSlices "
     file >> *NumOfSlices;
     *outData = new double * [*NumOfSlices];
     for(int i = 0; i < *NumOfSlices; ++i)
@@ -2657,7 +2657,7 @@ void writePlainData(QString outPath,
     {
         for(int j = 0; j < ns; ++j)
         {
-            outStr << fitNumber(doubleRound(data[j][i + start], 3), 7) << '\t';
+            outStr << fitNumber(doubleRound(data[j][i + start], 4), 7) << '\t';
         }
         outStr << '\n';
     }
@@ -2689,7 +2689,7 @@ void readPlainData(QString inPath,
         cout << "readPlainData: cannot open file" << endl;
         return;
     }
-    inStr.ignore(12); // "NumOfSlices ";
+    inStr.ignore(64, ' '); // "NumOfSlices "
     inStr >> numOfSlices;
     for (int i = 0; i < numOfSlices; ++i)
     {
@@ -2720,7 +2720,7 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
         cout << "bad file" << endl;
         return;
     }
-    file.ignore(12); // "NumOfSlices "
+    file.ignore(64, ' '); // "NumOfSlices "
     file >> *NumOfSlices;
     *outData = new double * [ns];
     for(int i = 0; i < ns; ++i)
@@ -2938,15 +2938,15 @@ void readFileInLine(QString filePath, double ** outData, int len)
     file.close();
 }
 
-void zeroData(double *** inData, const int &ns, const int &leftLimit, const int &rightLimit, const bool &withMarkersFlag)
+void zeroData(double **& inData, const int &ns, const int &leftLimit, const int &rightLimit, const bool &withMarkersFlag)
 {
-    for(int i = leftLimit; i < rightLimit; ++i)         // zoom
+    for(int i = leftLimit; i < rightLimit; ++i)
     {
         for(int k = 0; k < ns - 1; ++k)
         {
-            (*inData)[k][i] = 0.;
+            inData[k][i] = 0.;
         }
-        if(!withMarkersFlag) (*inData)[ns - 1][i] = 0.; /// should deprecate
+        if(!withMarkersFlag) inData[ns - 1][i] = 0.; /// should deprecate
     }
 }
 

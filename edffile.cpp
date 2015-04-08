@@ -846,26 +846,43 @@ void edfFile::appendChannel(edfChannel addChan, QString outPath)
     this->writeEdfFile(outPath);
 }
 
+void edfFile::adjustMarkerChannel()
+{
+    if(!this->channels[this->ns - 1].label.contains("Marker"))
+    {
+        edfChannel tempMarkChan = this->channels[this->markerChannel]; // save markerChannel
+        this->channels.erase(this->channels.begin() + this->markerChannel); // remove markerChannel
+        this->channels.push_back(tempMarkChan); // return markerChannel to the end of a list
+    }
+}
+
 void edfFile::appendFile(QString addEdfPath, QString outPath)
 {
     edfFile addEdf;
     addEdf.readEdfFile(addEdfPath);
-    edfChannel tempMarkChan = this->channels[this->markerChannel]; // save markerChannel
+
     edfChannel tempChan;
-    this->channels.erase(this->channels.begin() + this->markerChannel); // remove markerChannel
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
         tempChan = addEdf.getChannels()[i];
 
+#if 0
+        tempChan.data.insert(tempChan.data.end(),
+                             this->dataLength - tempChan.data.size(),
+                             0.);
+
+#else
+        //old variant
         for(int i = tempChan.data.size(); i < this->data[0].size(); ++i)
         {
             tempChan.data.push_back(0.);
         }
         tempChan.data.resize(this->data[0].size());
+#endif
 
         this->channels.push_back(tempChan);
     }
-    this->channels.push_back(tempMarkChan); // return markerChannel to the end of a list
+    this->adjustMarkerChannel();
     this->adjustArraysByChannels();
 
     this->writeEdfFile(outPath);
@@ -923,8 +940,83 @@ void edfFile::saveSubsection(int startBin, int finishBin, QString outPath, bool 
     (*this) = temp;
 }
 
+double customSubtract(double in1, double in2, double coef)
+{
+    return in1 - in2*coef;
+}
 
+void edfFile::cleanFromEyes(QString eyesPath, QList <int> eegNums, QList <int> eogNums)
+{
+    int numEeg, numEog;
 
+    ifstream inStr;
+    inStr.open(eyesPath.toStdString().c_str());
+    if(!inStr.good())
+    {
+        cout << "cleanFromEyes: bad eyes file" << endl;
+        return;
+    }
+    inStr.ignore(64, ' '); // "NumOfEyesChannels "
+    inStr >> numEog;
+    inStr.ignore(64, ' '); // "NumOfEegChannels "
+    inStr >> numEeg;
+
+    if(numEog != eogNums.length() || numEeg != eegNums.length())
+    {
+        cout << "cleanFromEyes: bad input list" << endl;
+        inStr.close();
+        return;
+    }
+
+    vector < vector <double> > coefs;
+    coefs.resize(numEeg);
+    for(int i = 0; i < numEeg; ++i)
+    {
+        coefs[i].resize(numEog);
+        for(int j = 0; j < numEog; ++j)
+        {
+            inStr >> coefs[i][j];
+        }
+    }
+    inStr.close();
+
+    for(int i = 0; i < numEeg; ++i)
+    {
+        for(int k = 0; k < numEog; ++k)
+        {
+            std::transform(this->data[ eegNums[i] ].begin(),
+                    this->data[ eegNums[i] ].end(),
+                    this->data[ eogNums[k] ].begin(),
+                    this->data[ eegNums[i] ].begin(),
+//                    [&](double i, double j) {return customSubtract(i, j, coefs[k][i]);},
+                    [&](double a, double b) {return a - b * coefs[k][i];}
+            );
+
+//            for(int j = 0; j < this->dataLength; ++j)
+//            {
+//                this->data[ eegNums[i] ][j] -= coefs[ k ][ i ]
+//                        * this->data[ eegNums[i] ][j];
+//            }
+        }
+    }
+    for(int k = 0; k < numEog; ++k)
+    {
+        this->channels.erase(this->channels.begin() + eogNums[k]);
+    }
+//    this->writeEdfFile(this->filePath + "_");
+
+}
+
+void edfFile::reduceChannels(QList <int> chanList)
+{
+    edfFile temp(*this);
+    this->channels.clear();
+    for(int i = 0; i < chanList.length(); ++i)
+    {
+        this->channels.push_back( temp.getChannels()[chanList[i]] ); // count from 1 generality
+    }
+    this->adjustArraysByChannels();
+}
 
 void edfFile::writeOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList)
 {
@@ -941,7 +1033,6 @@ void edfFile::writeOtherData(vector < vector <double> > newData, QString outPath
     this->dataLength = newData[0].size();
     this->writeEdfFile(outPath);
     *this = temp;
-
 }
 
 void edfFile::writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList)
