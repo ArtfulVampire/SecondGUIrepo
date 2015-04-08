@@ -2668,12 +2668,12 @@ template void writePlainData(QString outPath,
                             double ** data,
                             int ns,
                             int numOfSlices,
-                            int start);
+                            int start = 0);
 template void writePlainData(QString outPath,
                             vector < vector <double> > data,
                             int ns,
                             int numOfSlices,
-                            int start);
+                            int start = 0);
 
 template <typename Typ>
 void readPlainData(QString inPath,
@@ -2766,8 +2766,15 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
     file.close();
 }
 
-
-QPixmap drawEeg( double ** dataD, int ns, int NumOfSlices, int freq, QString const picPath, double norm, int blueChan, int redChan)
+template <typename Typ>
+QPixmap drawEeg( Typ dataD,
+                 int ns,
+                 int NumOfSlices,
+                 int freq,
+                 const QString & picPath,
+                 double norm,
+                 int blueChan,
+                 int redChan)
 {
     QPixmap pic = QPixmap(NumOfSlices, 600);
     pic.fill();
@@ -2837,6 +2844,25 @@ QPixmap drawEeg( double ** dataD, int ns, int NumOfSlices, int freq, QString con
     return pic;
 }
 
+
+template QPixmap drawEeg(double ** dataD,
+                         int ns,
+                         int NumOfSlices,
+                         int freq,
+                         const QString & picPath = "",
+                         double norm = 1.,
+                         int blueChan = -1,
+                         int redChan = -1);
+
+template
+QPixmap drawEeg( vector < vector <double> > dataD,
+                 int ns,
+                 int NumOfSlices,
+                 int freq,
+                 const QString & picPath,
+                 double norm,
+                 int blueChan,
+                 int redChan);
 
 QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int freq, const QString picPath, double norm) // haven't checked
 {

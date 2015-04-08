@@ -933,7 +933,7 @@ void edfFile::saveSubsection(int startBin, int finishBin, QString outPath, bool 
         //old version
 //        this->data[i].erase(this->data[i].begin() + finishBin, this->data[i].end());
 //        this->data[i].erase(this->data[i].begin(), this->data[i].begin() + startBin);
-        this->data[i].assign(this->data[i].begin() + startBin, this->data[i].begin() + finishBin);
+        this->data[i].assign(temp.getData()[i].begin() + startBin, temp.getData()[i].begin() + finishBin);
     }
     this->dataLength = finishBin - startBin;
     this->writeEdfFile(outPath, plainFlag);
@@ -945,10 +945,21 @@ double customSubtract(double in1, double in2, double coef)
     return in1 - in2*coef;
 }
 
-void edfFile::cleanFromEyes(QString eyesPath, QList <int> eegNums, QList <int> eogNums)
+void edfFile::cleanFromEyes(QString eyesPath,
+                            bool removeEogChannels,
+                            QList <int> eegNums,
+                            QList <int> eogNums)
 {
+    QTime myTime;
+    myTime.start();
+
     int numEeg, numEog;
 
+
+    if(eyesPath.isEmpty())
+    {
+        eyesPath = this->dirPath + slash() + "eyes.txt";
+    }
     ifstream inStr;
     inStr.open(eyesPath.toStdString().c_str());
     if(!inStr.good())
@@ -960,6 +971,27 @@ void edfFile::cleanFromEyes(QString eyesPath, QList <int> eegNums, QList <int> e
     inStr >> numEog;
     inStr.ignore(64, ' '); // "NumOfEegChannels "
     inStr >> numEeg;
+
+    if(eegNums.isEmpty())
+    {
+        for(int i = 0; i < this->ns; ++i)
+        {
+            if(this->labels[i].contains("EEG"))
+            {
+                eegNums << i;
+            }
+        }
+    }
+    if(eogNums.isEmpty())
+    {
+        for(int i = 0; i < this->ns; ++i)
+        {
+            if(this->labels[i].contains("EOG"))
+            {
+                eogNums << i;
+            }
+        }
+    }
 
     if(numEog != eogNums.length() || numEeg != eegNums.length())
     {
@@ -984,26 +1016,33 @@ void edfFile::cleanFromEyes(QString eyesPath, QList <int> eegNums, QList <int> e
     {
         for(int k = 0; k < numEog; ++k)
         {
-            std::transform(this->data[ eegNums[i] ].begin(),
-                    this->data[ eegNums[i] ].end(),
-                    this->data[ eogNums[k] ].begin(),
-                    this->data[ eegNums[i] ].begin(),
-//                    [&](double i, double j) {return customSubtract(i, j, coefs[k][i]);},
-                    [&](double a, double b) {return a - b * coefs[k][i];}
+#if 1
+            std::transform(this->channels[ eegNums[i] ].data.begin(),
+                    this->channels[ eegNums[i] ].data.end(),
+                    this->channels[ eogNums[k] ].data.begin(),
+                    this->channels[ eegNums[i] ].data.begin(),
+                    [&](double a, double b) {return a - b * coefs[i][k];}
             );
+#else
 
-//            for(int j = 0; j < this->dataLength; ++j)
-//            {
-//                this->data[ eegNums[i] ][j] -= coefs[ k ][ i ]
-//                        * this->data[ eegNums[i] ][j];
-//            }
+            for(int j = 0; j < this->dataLength; ++j)
+            {
+                this->data[ eegNums[i] ][j] -= coefs[ i ][ k ]
+                        * this->data[ eogNums[k] ][j];
+            }
+#endif
         }
     }
-    for(int k = 0; k < numEog; ++k)
+
+    if(removeEogChannels)
     {
-        this->channels.erase(this->channels.begin() + eogNums[k]);
+        for(int k = 0; k < numEog; ++k)
+        {
+            this->channels.erase(this->channels.begin() + eogNums[k]);
+        }
     }
-//    this->writeEdfFile(this->filePath + "_");
+    this->adjustArraysByChannels();
+    cout << "cleanFromEyes: time = " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
 
@@ -1013,7 +1052,7 @@ void edfFile::reduceChannels(QList <int> chanList)
     this->channels.clear();
     for(int i = 0; i < chanList.length(); ++i)
     {
-        this->channels.push_back( temp.getChannels()[chanList[i]] ); // count from 1 generality
+        this->channels.push_back( temp.getChannels()[ chanList[i] ] ); // count from 1 generality
     }
     this->adjustArraysByChannels();
 }

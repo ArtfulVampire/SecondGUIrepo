@@ -26,8 +26,9 @@ MainWindow::MainWindow() :
     spStep = def::freq/def::fftLength;
     spLength = right - left + 1;
 
-    withMarkersFlag = 0;
-    ui->sliceWithMarkersCheckBox->setChecked(false);
+    withMarkersFlag = 1;
+    ui->sliceWithMarkersCheckBox->setChecked(true);
+
     staSlice = 0;
     stopFlag = 0;
 
@@ -2572,8 +2573,11 @@ void MainWindow::readData()
 
 
 #if 1
-    edfFile fil;
+
+    edfFile & fil = globalEdf;
+
     fil.readEdfFile(helpString);
+
     ns = fil.getNs();
     for(int i = 0; i < ns; ++i)
     {
@@ -3471,37 +3475,37 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
     readData();
 
-    if(ui->eyesCleanCheckBox->isChecked())
+    if(!ui->matiCheckBox->isChecked())
     {
-        eyesFast();
-        if(!ui->reduceChannelsComboBox->currentText().contains("NoEyes", Qt::CaseInsensitive))
+        if(ui->eyesCleanCheckBox->isChecked() && 0) /////////////////////////////////
         {
-            ui->reduceChannelsComboBox->setCurrentIndex(ui->reduceChannelsComboBox->currentIndex()+1); //generality
-        }
-    }
-
-    if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
-
-    if(ui->sliceWithMarkersCheckBox->isChecked())
-    {
-        numChanToWrite = ns;
-    }
-    else
-    {
-        numChanToWrite = ns - 1;
-    }
-
-    if(ui->sliceCheckBox->isChecked())
-    {
-        QStringList list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-        if(!QString(label[list.last().toInt() - 1]).contains("Markers") && ui->reduceChannelsCheckBox->isChecked())
-        {
-            QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
-            return;
+            eyesFast();
+            if(!ui->reduceChannelsComboBox->currentText().contains("NoEyes", Qt::CaseInsensitive))
+            {
+                ui->reduceChannelsComboBox->setCurrentIndex(ui->reduceChannelsComboBox->currentIndex()+1); //generality
+            }
         }
 
-        if(!ui->matiCheckBox->isChecked())
+        if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
+
+        if(ui->sliceWithMarkersCheckBox->isChecked())
         {
+            numChanToWrite = ns;
+        }
+        else
+        {
+            numChanToWrite = ns - 1;
+        }
+
+        if(ui->sliceCheckBox->isChecked())
+        {
+            QStringList list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+            if(!QString(label[list.last().toInt() - 1]).contains("Markers") && ui->reduceChannelsCheckBox->isChecked())
+            {
+                QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
+                return;
+            }
+
             if(ui->ntRadio->isChecked()) // for Boris
             {
                 slice(10, 49, "m"); //math.operation
@@ -3535,12 +3539,12 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
                         for(int j = 0; j < wndLength; ++j)
                         {
-//                            switch(int(data[ns-1][staSlice + i*timeShift + j]))
-//                            {
-//                            case 241:{markerFlag = 0; break;}
-//                            case 247:{markerFlag = 1; break;}
-//                            case 254:{markerFlag = 2; break;}
-//                            }
+                            //                            switch(int(data[ns-1][staSlice + i*timeShift + j]))
+                            //                            {
+                            //                            case 241:{markerFlag = 0; break;}
+                            //                            case 247:{markerFlag = 1; break;}
+                            //                            case 254:{markerFlag = 2; break;}
+                            //                            }
                             if(data[ns-1][staSlice+i*timeShift + j]==241) {markerFlag=1;}
                             if(data[ns-1][staSlice+i*timeShift + j]==247) {markerFlag=2;}
                             if(data[ns-1][staSlice+i*timeShift + j]==254) {markerFlag=3;}
@@ -3560,20 +3564,16 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                     else
                     {
                         sliceOneByOneNew(numChanToWrite);
-//                        sliceFromTo(241, 231, "241_pre");
-//                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
-//                        sliceFromTo(247, 237, "247_pre");
-//                        helpString = dir->absolutePath() + slash() + "Realisations";
-//                        cleanDir(helpString, "_pre", false);
+                        //                        sliceFromTo(241, 231, "241_pre");
+                        //                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
+                        //                        sliceFromTo(247, 237, "247_pre");
+                        //                        helpString = dir->absolutePath() + slash() + "Realisations";
+                        //                        cleanDir(helpString, "_pre", false);
                     }
                 }
             }
         }
-        else //if matiCheckBox->isChecked()
-        {
-            sliceMati();
-            sliceMatiPieces(true);
-        }
+
 
         --ns; //-markers channel generality
         ns = numChanToWrite; //generality
@@ -3585,9 +3585,35 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
 
     }
+    else //if matiCheckBox->isChecked()
+    {
+        edfFile & fil = globalEdf;
+        if(ui->eyesCleanCheckBox->isChecked())
+        {
+            fil.cleanFromEyes();
+        }
+        if(ui->reduceChannelsCheckBox->isChecked())
+        {
+            QList <int> chanList;
+            QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[ ,;]"),
+                                                                       QString::SkipEmptyParts);
+            for(int i = 0; i < lst.length(); ++i)
+            {
+                chanList << lst[i].toInt() - 1;
+                if(chanList[i] > fil.getNs())
+                {
+                    cout << "sliceAll: mati bad channels list " << endl;
+                    return;
+                }
+            }
+            fil.reduceChannels(chanList);
+        }
+        sliceMati();
+        sliceMatiPieces(true);
+    }
 
 
-    helpString="data sliced ";
+    helpString = "data sliced ";
     ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
@@ -4331,38 +4357,8 @@ void MainWindow::sliceMati()
         session[i] = 0;
     }
 
-    edfFile fil;
-    fil.readEdfFile(ui->filePathLineEdit->text());
-
-    if(ui->reduceChannelsCheckBox->isChecked())
-    {
-        QList <int> chanList;
-        QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[ ,;]"), QString::SkipEmptyParts);
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            chanList << lst[i].toInt() - 1;
-        }
-        fil.reduceChannels(chanList);
-    }
-
-    if(ui->eyesCleanCheckBox->isChecked())
-    {
-        helpString = fil.getDirPath() + slash() + "eyes.txt";
-        QList <int> eegList;
-        QList <int> eogList;
-        for(int i = 0; i < fil.getNs(); ++i)
-        {
-            if(fil.getLabels()[i].contains("EEG"))
-            {
-                eegList << i;
-            }
-            if(fil.getLabels()[i].contains("EOG"))
-            {
-                eogList << i;
-            }
-        }
-        fil.cleanFromEyes(helpString, eegList, eogList);
-    }
+    cout << "file read 0" << endl;
+    edfFile & fil = globalEdf;
 
     for(int i = 0; i < fil.getDataLen(); ++i)
 //    do
@@ -4450,15 +4446,15 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     int currEnd;
     double pieceLength = ui->matiPieceLengthSpinBox->value();
 
+    dir->cd(globalEdf.getDirPath());
     edfFile fil;
-    dir->cd(getDirPathLib(ui->filePathLineEdit->text()));
 
     for(int type = 0; type < 3; ++type)
     {
         for(int session = 0; session < 15; ++session)
         {
             helpString = QDir::toNativeSeparators(dir->absolutePath()
-                                                  + slash() + ExpName
+                                                  + slash() + globalEdf.getExpName()
                                                   + "_" + QString::number(type)
                                                   + "_" + QString::number(session)
                                                   + ".edf");
@@ -4469,7 +4465,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                 dataLen = fil.getDataLen();
                 pieceNum = 0;
                 currStart = 0;
-                currEnd = -1; // notIncluded
+                currEnd = -1; // [currStart, currEnd)
 
                 if(type == 0)       fileMark = "241";
                 else if(type == 1)  fileMark = "247";
@@ -4496,18 +4492,12 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                         }
                     }
 
-
-
-
                     // type and session already in the ExpName
                     helpString = QDir::toNativeSeparators(fil.getDirPath()
                                                           + slash() + "Realisations"
                                                           + slash() + fil.getExpName()
                                                           + "_" + rightNumber(pieceNum, 2)
                                                           + '.' + fileMark);
-
-//                    if(currEnd < currStart) currEnd = dataLen; // the last small piece for example
-
                     fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
                     ++pieceNum;
                     currStart = currEnd;

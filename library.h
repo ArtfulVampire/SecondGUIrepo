@@ -150,9 +150,16 @@ void writePlainData(QString outPath,
                    int numOfSlices,
                    int start = 0);
 
+template <typename Typ = double **>
+QPixmap drawEeg(Typ dataD,
+                int ns,
+                int NumOfSlices,
+                int freq,
+                const QString & picPath = "",
+                double norm = 1.,
+                int blueChan = -1,
+                int redChan = -1);
 
-
-QPixmap drawEeg(double **dataD, int ns, int NumOfSlices, int freq, const QString picPath = "", double norm = 1., int blueChan = -1, int redChan = -1);
 QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int freq, QString const picPath = "", double norm = 1.); // haven't checked? now unused
 void readSpectraFile(QString filePath, double *** outData, int ns, int spLength);
 void readSpectraFileLine(QString filePath, double ** outData, int ns, int spLength);

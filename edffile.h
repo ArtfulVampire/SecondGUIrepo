@@ -157,7 +157,10 @@ public:
     void swapChannels(int num1, int num2);
     void saveSubsection(int startBin, int finishBin, QString outPath, bool plainFlag = false);
     void reduceChannels(QList<int> chanList);
-    void cleanFromEyes(QString eyesPath, QList <int> eegNums = QList <int>(), QList <int> eogNums = QList <int>());
+    void cleanFromEyes(QString eyesPath = QString(),
+                       bool removeEogChannels = false,
+                       QList <int> eegNums = QList <int>(),
+                       QList <int> eogNums = QList <int>());
     void writeOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList);
     void writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList);
     void fitData(int initSize);

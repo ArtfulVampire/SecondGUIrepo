@@ -178,6 +178,7 @@ private:
     bool withMarkersFlag;
     bool redirectCoutFlag;
     double reduceCoefficient;
+    edfFile globalEdf;
 };
 
 #endif // MAINWINDOW_H
