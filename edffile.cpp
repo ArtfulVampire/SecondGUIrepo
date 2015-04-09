@@ -980,6 +980,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
             {
                 eegNums << i;
             }
+            if(eegNums.length() == numEeg) break; /// bicycle generality
         }
     }
     if(eogNums.isEmpty())
@@ -1052,7 +1053,7 @@ void edfFile::reduceChannels(QList <int> chanList)
     this->channels.clear();
     for(int i = 0; i < chanList.length(); ++i)
     {
-        this->channels.push_back( temp.getChannels()[ chanList[i] ] ); // count from 1 generality
+        this->channels.push_back( temp.getChannels()[ chanList[i] ] );
     }
     this->adjustArraysByChannels();
 }

@@ -191,6 +191,27 @@ MainWindow::MainWindow() :
     var = QVariant(helpString);
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
+    //12
+    ui->reduceChannelsComboBox->addItem("22");
+    helpString.clear();
+    for(int i = 0; i < 22; ++i)
+    {
+        helpString += QString::number(i+1) + " ";
+    }
+    var = QVariant(helpString);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
+
+    //13
+    ui->reduceChannelsComboBox->addItem("22NoEyes");
+    helpString.clear();
+    for(int i = 0; i < 20; ++i)
+    {
+        helpString += QString::number(i+1) + " ";
+    }
+    helpString += "22";
+    var = QVariant(helpString);
+    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
+
     ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
     ui->reduceChannelsComboBox->setCurrentText("20");
     ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(ui->reduceChannelsComboBox->currentIndex()).toString());
@@ -1598,7 +1619,6 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     {
         helpString += QString::number(i+1) + " ";
     }
-//    cout << helpString.toStdString() << endl;
     ui->reduceChannelsLineEdit->setText(helpString);
 
 
@@ -1609,7 +1629,6 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
         cout << "refilterData: bad reduceChannelsLineEdit - no markers" << endl;
         return;
     }
-    int fr = def::freq;
 
     int groundChan = -1; //A1-N
     int earsChan = -1; //A1-A2
@@ -1795,7 +1814,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     }
     ui->reduceChannelsLineEdit->setText(helpString);
 
-    writeEdf(ui->filePathLineEdit->text(), data, newPath, ndr*fr);
+    writeEdf(ui->filePathLineEdit->text(), data, newPath, ndr*def::freq);
 
     cout << "rereferenceData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
@@ -1817,44 +1836,42 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
     QTime myTime;
     myTime.start();
 
-    QStringList lst;
-    QString helpString;
 
     readData();
-    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    if(!QString(label[lst[lst.length()-1].toInt()-1]).contains("Markers"))
-    {
-        cout << "refilterData: bad reduceChannelsLineEdit - no markers" << endl;
-        return;
-    }
+    const edfFile & fil = globalEdf;
 
-    int fr = def::freq;
-    int fftLength = fftL(ndr*fr);
+    int fftLength = fftL(fil.getDataLen());
 
-    double spStep = fr/double(fftLength);
+    double spStep = def::freq / double(fftLength);
 
     /////////////////////////////////////////////////////////how many channels to filter????
-    int numOfChan = ns - 1; //NOT MARKERS
 
-    for(int i = 0; i < numOfChan; ++i)
+    QList <int> chanList;
+    for(int i = 0; i < fil.getNs(); ++i)
     {
-        for(int j = ndr*fr; j < fftLength; ++j)
+        if(fil.getLabels()[i].contains("EEG"))
         {
-            data[i][j] = 0.;
+            chanList << i;
         }
     }
+    int numOfChan = chanList.length(); //NOT MARKERS
 
-    double norm1 = fftLength / double(ndr*fr);
+    double norm1 = fftLength / double(fil.getDataLen());
     double * spectre = new double [fftLength*2];
 
     for(int j = 0; j < numOfChan; ++j)
     {
-        for(int i = 0; i < fftLength; ++i)            //make appropriate array
+        for(int i = 0; i < fil.getDataLen(); ++i)            //make appropriate array
         {
-            spectre[ i * 2 + 0 ] = (double)(data[j][ i ] * sqrt(norm1));
+            spectre[ i * 2 + 0 ] = (double)(data[ chanList[j] ][ i ] * sqrt(norm1));
             spectre[ i * 2 + 1 ] = 0.;
         }
-        four1(spectre-1, fftLength, 1);       //Fourier transform
+        for(int i = 0; i < fftLength; ++i)            //make appropriate array
+        {
+            spectre[ i * 2 + 0 ] = 0.;
+            spectre[ i * 2 + 1 ] = 0.;
+        }
+        four1(spectre - 1, fftLength, 1);       //Fourier transform
 
         //filtering
         for(int i = 0; i < fftLength; ++i)
@@ -1870,20 +1887,17 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
         //end filtering
 
         four1(spectre-1, fftLength, -1);
-        for(int i = 0; i < ndr*fr; ++i)
+        for(int i = 0; i < fil.getDataLen(); ++i)
         {
-            data[j][i] = spectre[2*i]/fftLength/sqrt(norm1);
+            data[ chanList[j] ][ i ] = spectre[2*i]/ (fftLength * sqrt(norm1));
         }
     }
-//    memcpy(data[numOfChan], data[ns-1], ndr*fr*sizeof(double)); //stupid bicycle generality
-    helpString.clear();
-    for(int i = 0; i < ns; ++i)
+    chanList.clear();
+    for(int i = 0; i < fil.getNs(); ++i)
     {
-        helpString += QString::number(i+1) + " ";
+        chanList << i;
     }
-
-    ui->reduceChannelsLineEdit->setText(helpString);
-    writeEdf(ui->filePathLineEdit->text(), data, newPath, ndr*fr);
+    writeEdf(ui->filePathLineEdit->text(), data, newPath, fil.getDataLen(), chanList );
 
     cout << "refilterData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
@@ -2039,7 +2053,6 @@ void MainWindow::reduceChannelsFast()
         }
     }
 
-//    if(!simple)
     if(1)
     {
         for(int k = 0; k < list.length(); ++k)
@@ -2448,18 +2461,18 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
             }
             newData[ns - 1][0] = saveMarker;
             currSlice -= offset;
+
+            //write the exclusion of the first part [start, finish)
+            outStream << fileName.toStdString() << "\t";
+            outStream << 0 << "\t"; // first bin to exclude
+            outStream << offset << "\t"; // first bin NOT TO exclude
+            outStream << offset << "\t"; // length
+
+            outStream << "0.000" << "\t"; // start time to exclude
+            outStream << offset / def::freq << "\t"; // first time NOT TO exclude
+            outStream << offset / def::freq << endl << endl; // length
+            outStream.close();
         }
-
-        //write the exclusion of the first part [start, finish)
-        outStream << fileName.toStdString() << "\t";
-        outStream << 0 << "\t"; // first bin to exclude
-        outStream << offset << "\t"; // first bin NOT TO exclude
-        outStream << offset << "\t"; // length
-
-        outStream << "0.000" << "\t"; // start time to exclude
-        outStream << offset / def::freq << "\t"; // first time NOT TO exclude
-        outStream << offset / def::freq << endl << endl; // length
-        outStream.close();
 
 
         //set the last marker if it's not
@@ -3475,9 +3488,45 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
     readData();
 
-    if(!ui->matiCheckBox->isChecked())
+    if(ui->matiCheckBox->isChecked())
     {
-        if(ui->eyesCleanCheckBox->isChecked() && 0) /////////////////////////////////
+        edfFile & fil = globalEdf;
+        if(ui->eyesCleanCheckBox->isChecked())
+        {
+            fil.cleanFromEyes();
+            ns = fil.getNs();
+        }
+        if(ui->reduceChannelsCheckBox->isChecked())
+        {
+            QList <int> chanList;
+            QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[ ,;]"),
+                                                                       QString::SkipEmptyParts);
+            for(int i = 0; i < lst.length(); ++i)
+            {
+                chanList << lst[i].toInt() - 1;
+                if(chanList[i] > fil.getNs())
+                {
+                    cout << "sliceAll: mati bad channels list, return" << endl;
+                    return;
+                }
+            }
+            fil.reduceChannels(chanList);
+            ns = fil.getNs();
+        }
+        // almost equal time, should use sessionEdges
+        if(ui->sliceCheckBox->isChecked())
+        {
+#if 1
+            sliceMati();
+            sliceMatiPieces(true);
+#else
+            sliceMatiSimple();
+#endif
+        }
+    }
+    else //if !matiCheckBox->isChecked()
+    {
+        if(ui->eyesCleanCheckBox->isChecked()) /////////////////////////////////
         {
             eyesFast();
             if(!ui->reduceChannelsComboBox->currentText().contains("NoEyes", Qt::CaseInsensitive))
@@ -3584,32 +3633,6 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
         ui->textEdit->append(helpString);
 
 
-    }
-    else //if matiCheckBox->isChecked()
-    {
-        edfFile & fil = globalEdf;
-        if(ui->eyesCleanCheckBox->isChecked())
-        {
-            fil.cleanFromEyes();
-        }
-        if(ui->reduceChannelsCheckBox->isChecked())
-        {
-            QList <int> chanList;
-            QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[ ,;]"),
-                                                                       QString::SkipEmptyParts);
-            for(int i = 0; i < lst.length(); ++i)
-            {
-                chanList << lst[i].toInt() - 1;
-                if(chanList[i] > fil.getNs())
-                {
-                    cout << "sliceAll: mati bad channels list " << endl;
-                    return;
-                }
-            }
-            fil.reduceChannels(chanList);
-        }
-        sliceMati();
-        sliceMatiPieces(true);
     }
 
 
@@ -4338,6 +4361,137 @@ void MainWindow::sliceOneByOneNew(int numChanWrite)
 
 }
 
+void MainWindow::sliceMatiSimple()
+{
+    QTime myTime;
+    myTime.start();
+
+    QString helpString;
+    int start = 0;
+    int end = -1;
+    vector<bool> markers;
+    bool state[3];
+    QString fileMark;
+    int session[4]; //generality
+    int type = 3;
+
+    for(int i = 0; i < 4; ++i)
+    {
+        session[i] = 0;
+    }
+
+    const edfFile & fil = globalEdf;
+    double currMarker;
+    int number;
+    double piece = ui->matiPieceLengthSpinBox->value() * def::freq;
+
+    for(int i = 0; i < fil.getDataLen(); ++i)
+    {
+        currMarker = fil.getData()[fil.getMarkChan()][i];
+        if(currMarker == 0)
+        {
+            continue;
+        }
+        else
+        {
+            markers = matiCountByte(currMarker);
+            //decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
+            for(int i = 0; i < 3; ++i)
+            {
+                state[i] = markers[i + 8]; //always elder byte is for count adn type of the session
+            }
+
+            if(!(state[0] || state[1] || state[2])) continue; // if all are zeros
+
+            if(state[2] == 1) //the end of a session
+            {
+                if(state[1] == 0 && state[0] == 1) //end of a counting session
+                {
+                    type = 0;
+                    fileMark = "241"; //count
+                }
+                if(state[1] == 1 && state[0] == 0) //end of a tracking session
+                {
+                    type = 1;
+                    fileMark = "247"; //follow
+                }
+                if(state[1] == 1 && state[0] == 1) //end of a composed session
+                {
+                    type = 2;
+                    fileMark = "244"; //composed
+                }
+            }
+            else //if the start of a session
+            {
+                type = 3;
+                fileMark = "254"; //rest. start of the session is sliced too
+            }
+            end = i + 1; // end marker should be included
+        }
+
+        //save session edf
+        if(end > start)
+        {
+            if(state[2]) // if not rest
+            {
+                number = int(ceil((end-start)/double(piece)));
+
+                for(int j = 0; j < number; ++j) // num of pieces
+                {
+                    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                                          + QDir::separator() + "Realisations"
+                                                          + QDir::separator() + ExpName
+                                                          + "_" + QString::number(type)
+                                                          + "_" + QString::number(session[type])
+                                                          + "_" + rightNumber(j, 2)
+                                                          + '.' + fileMark);
+
+                    //                outStream.open(helpString.toStdString().c_str());
+                    NumOfSlices = min(end - start - j*piece, piece);
+#if 1
+                    writePlainData(helpString, fil.getData(), ns, NumOfSlices, start + j*piece);
+#else
+
+                    file = fopen(helpString.toStdString().c_str(), "w");
+                    fprintf(file, "NumOfSlices %d \n", NumOfSlices);
+                    //                outStream << "NumOfSlices " << NumOfSlices << endl;
+                    {
+                        for(int l = start  + j*piece; l < min(start + (j+1)*piece, end); ++l) //end slice included with session end marker
+                        {
+                            for(int m = 0; m < numChanWrite; ++m)
+                            {
+                                fprintf(file, "%.4lf\n", data[m][l]); // generality l * nr[m] / nr[ns-1]
+                                //                            outStream << data[m][l] << '\n';
+                            }
+                        }
+                    }
+                    fclose(file);
+                    //                outStream.close();
+#endif
+                }
+
+                ui->progressBar->setValue(end / double(ndr*nr[ns-1]) * 100.);
+                qApp->processEvents();
+
+                fileMark.clear();
+                ++session[type];
+            }
+
+            start = end - 1; // = i // start marker should be included
+            end = -1;
+        }
+        ui->progressBar->setValue(end * 100. / fil.getDataLen());
+
+        qApp->processEvents();
+        if (stopFlag == 1)
+        {
+            break;
+        }
+    }
+    cout << "sliceMatiSimple: time = " << myTime.elapsed()/1000. << " sec" << endl;
+    stopFlag = 0;
+}
+
 void MainWindow::sliceMati()
 {
     QTime myTime;
@@ -4357,13 +4511,12 @@ void MainWindow::sliceMati()
         session[i] = 0;
     }
 
-    cout << "file read 0" << endl;
     edfFile & fil = globalEdf;
+    double currMarker;
 
     for(int i = 0; i < fil.getDataLen(); ++i)
-//    do
     {
-        double currMarker = fil.getData()[fil.getMarkChan()][i];
+        currMarker = fil.getData()[fil.getMarkChan()][i];
         if(currMarker == 0)
         {
             continue;
@@ -4518,6 +4671,7 @@ void MainWindow::eyesFast()  //generality
     QString helpString;
     helpString = QDir::toNativeSeparators(dir->absolutePath()
                                           + slash() + "eyes.txt");
+
     FILE * coef = fopen(helpString.toStdString().c_str(), "r");
     if(coef == NULL)
     {
@@ -4732,32 +4886,6 @@ double * randomVector(int ns)
 
 void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFilePath, int numSlices, QList<int> chanList)
 {
-    //    8 ascii : version of this data format (0)
-    //    80 ascii : local patient identification (mind item 3 of the additional EDF+ specs)
-    //    80 ascii : local recording identification (mind item 4 of the additional EDF+ specs)
-    //    8 ascii : startdate of recording (dd.mm.yy) (mind item 2 of the additional EDF+ specs)
-    //    8 ascii : starttime of recording (hh.mm.ss)
-    //    8*3 + 80*2 = 184
-    //    8 ascii : number of bytes in header record
-    //    44 ascii : reserved
-    //    184 + 8 + 44 = 236
-    //    8 ascii : number of data records (-1 if unknown, obey item 10 of the additional EDF+ specs)
-    //    8 ascii : duration of a data record, in seconds
-    //    4 ascii : number of signals (ns) in data record
-    //    236 + 8 + 8 + 4 = 256
-
-    //    ns * 16 ascii : ns * label (e.g. EEG Fpz-Cz or Body temp) (mind item 9 of the additional EDF+ specs)
-    //    ns * 80 ascii : ns * transducer type (e.g. AgAgCl electrode)
-    //    ns * 8 ascii : ns * physical dimension (e.g. uV or degreeC)
-    //    ns * 8 ascii : ns * physical minimum (e.g. -500 or 34)
-    //    ns * 8 ascii : ns * physical maximum (e.g. 500 or 40)
-    //    ns * 8 ascii : ns * digital minimum (e.g. -2048)
-    //    ns * 8 ascii : ns * digital maximum (e.g. 2047)
-    //    ns * 80 ascii : ns * prefiltering (e.g. HP:0.1Hz LP:75Hz)
-    //    ns * 8 ascii : ns * nr of samples in each data record
-    //    ns * 32 ascii : ns * reserved
-    //    16 + 80 + 8 + 8 + 8 + 8 + 8 + 80 + 8 + 32 = 256
-
     if(!QFile::exists(inFilePath))
     {
         cout << "writeEDF: bad inFilePath\n" << inFilePath.toStdString() << endl;
@@ -9343,8 +9471,10 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
 
 void MainWindow::customFunc()
 {
-//    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a.edf");
-//    ns = 41;
+//    setEdfFile("/media/Files/Data/Mati/SDA/SDA_w.edf");
+//    ui->eyesCleanCheckBox->setChecked(true);
+//    sliceAll();
+
 
 
 

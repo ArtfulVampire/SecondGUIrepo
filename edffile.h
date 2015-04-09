@@ -177,6 +177,8 @@ private:
     double ddr = 1;
     int ns = 0;
 
+    vector < pair <int, double> > sessionEdges; // fast access
+
     //channels arrays start
     vector <QString> labels;
     vector <QString> transducerType;
@@ -243,7 +245,7 @@ public:
     void setMatiFlag(bool newFlag) {matiFlag = newFlag;}
     void setNtFlag(bool newFlag) {ntFlag = newFlag;}
 
-    void getLabelsCopy(char ** & dest)
+    void getLabelsCopy(char ** & dest) const
     {
         for(int i = 0; i < this->ns; ++i)
         {

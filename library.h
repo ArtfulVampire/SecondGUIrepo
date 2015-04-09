@@ -255,7 +255,7 @@ inline int fftLimit(double inFreq, double freq, int fftL)
     return floor(0.5 + inFreq/freq*fftL);
 }
 
-inline int fftL(int in)
+inline int fftL(const int & in)
 {
     return pow(2., ceil(log2(in)));
 }

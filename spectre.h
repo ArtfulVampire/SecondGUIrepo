@@ -73,6 +73,7 @@ private:
     bool ** boolArrrPirate;
     int ** rangeLimits;
     double norm;
+    QButtonGroup * group1;
     struct complex
     {
       double r;

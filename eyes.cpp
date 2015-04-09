@@ -60,9 +60,7 @@ void Eyes::eyesClean()
     }
 
     dir->cd(ui->lineEdit_3->text()); //or you can write in manually
-
     QStringList list = dir->entryList(QDir::Files); // files in the directory
-
     int NumEog, NumEeg;
     int NumOfSlices = 0;
 
@@ -79,7 +77,6 @@ void Eyes::eyesClean()
         coefficients[i] = new double [NumEog];
     }
 
-
     double **dataF = new double * [ns];
     for(int j = 0; j < ns; ++j)
     {
@@ -91,21 +88,16 @@ void Eyes::eyesClean()
         for(int i = 0; i < NumEog; ++i)
         {
             fscanf(coef, "%lf", &coefficients[k][i]);
-//            cout << "coefficients[" << k << "][" << i << "] = " << coefficients[k][i] << endl;
         }
         fscanf(coef, "\n");
     }
     fclose(coef);
 
-    int a, NumOfEyes = 0;
-    FILE * file;
-//    cout << "ns = " << ns << endl;
-//    cout << "dir of files to clean from eyes = " << dir->absolutePath().toStdString() << endl;
+    int a;
     for(int i = 0; i < list.length(); ++i)
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + list[i]);
         readPlainData(helpString, dataF, ns, NumOfSlices);
-
 
         for(int k = 0; k < NumEeg; ++k)
         {
@@ -113,13 +105,12 @@ void Eyes::eyesClean()
             {
                 for(int z = 0; z < NumEog; ++z)
                 {
-                    dataF[k][j] -= coefficients[k][z] * dataF[a][j];
+                    dataF[k][j] -= coefficients[k][z] * dataF[ lst[z].toInt() - 1 ][j]; // generality
                 }
             }
         }
 
         helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + list[i]);
-//        writePlainData(dataF, ns, NumOfSlices, helpString);
 
         ofstream outStr;
         outStr.open(helpString.toStdString().c_str());
@@ -136,9 +127,6 @@ void Eyes::eyesClean()
         outStr.flush();
         outStr.close();
 
-
-
-        NumOfEyes = 0;
 
         ui->progressBar->setValue(i*100. / list.length());
         qApp->processEvents();

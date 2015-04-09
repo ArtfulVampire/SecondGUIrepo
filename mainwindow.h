@@ -125,7 +125,8 @@ public:
     void sliceIlya(int marker1, int marker2, QString marker);
     void sliceFromTo(int marker1, int marker2, QString marker);
     void sliceMati();
-    void sliceMatiPieces(bool plainFlag);
+    void sliceMatiPieces(bool plainFlag = true);
+    void sliceMatiSimple();
 
     void rereferenceData(QString newRef, QString newPath);
 
@@ -156,6 +157,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    edfFile globalEdf;
     ofstream generalLogStream;
     streambuf *coutBuf;
     QDir *dir;
@@ -178,7 +180,6 @@ private:
     bool withMarkersFlag;
     bool redirectCoutFlag;
     double reduceCoefficient;
-    edfFile globalEdf;
 };
 
 #endif // MAINWINDOW_H

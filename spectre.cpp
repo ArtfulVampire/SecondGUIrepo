@@ -19,7 +19,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     dirBC->cd(QDir::toNativeSeparators(dir_->absolutePath()));
     ns=ns_;
 
-    QButtonGroup * group1, *group2, *group3, *group4;
+    QButtonGroup *group2, *group3, *group4;
 
     group1 = new QButtonGroup;
     group1->addButton(ui->jpgButton);
@@ -123,6 +123,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     QObject::connect(ui->waveletsPushButton, SIGNAL(clicked()), this, SLOT(drawWavelets()));
 
     QObject::connect(ui->rangeButton, SIGNAL(clicked()), this, SLOT(specifyRange()));
+//    QObject::connect(group1, SIGNAL(buttonClicked(int)), this, SLOT(changePic(int)));
 
     ui->specLabel->installEventFilter(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
@@ -132,13 +133,23 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
 
 void Spectre::defaultState()
 {
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("Realisations"));
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "Realisations");
     ui->lineEdit_1->setText(helpString);
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("SpectraSmooth"));   //smooth right after spectra count
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "SpectraSmooth");   //smooth right after spectra count
     ui->lineEdit_2->setText(helpString);
     ui->fftComboBox->setCurrentIndex(2); //4096
     ui->spectraRadioButton->setChecked(true); // count FFT
 }
+
+//void Spectre::changePic(int num)
+//{
+//    QString helpString;
+//    if(group1->button(num)->text().contains("colo"))
+//    {
+//        helpString = dir->absolutePath() + slash() + "Help" +
+//        ui->specLabel->setPixmap();
+//    }
+//}
 
 void Spectre::setFftLength(int i)
 {
