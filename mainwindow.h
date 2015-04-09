@@ -48,12 +48,12 @@ public:
 
 public slots:
     //other widgets
-    void countSpectraShow();
-    void cutShow();
-    void makeCfgShow();
-    void makePaShow();
-    void eyesShow();
-    void netShow();
+    void showNet();
+    void showCountSpectra();
+    void showMakePa();
+    void showMakeCfg();
+    void showEyes();
+    void showCut();
 
     //parameters processing
     void setExpName();
@@ -76,7 +76,6 @@ public slots:
     void drawMapsSlot();
     void makeDatFile();
     void constructEDFSlot();
-    void appendChannelsSlot();
     void reduceChannelsEDFSlot();
     void markerSaveEdf();
     void markerGetSlot();
@@ -85,7 +84,6 @@ public slots:
     void markerSetDecValueSlot();
     void markerSetBinValueSlot();
     void matiPreprocessingSlot();
-
 
     //signals
     void ICA();
@@ -142,7 +140,6 @@ public:
     void transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath);
     void reduceChannelsEDF(QString newFilePath);
     void constructEDF(QString newPath, QStringList nameFilters = QStringList());
-//    void appendChannels(QString inEDFpath, const double ** addData, const int & addNs);
     void concatenateEDFs(QString inPath1, QString inPath2, QString outPath);
     void concatenateEDFs(QStringList inPath, QString outPath);
     void writeCorrelationMatrix(QString edfPath, QString outPath);

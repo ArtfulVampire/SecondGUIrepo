@@ -30,7 +30,11 @@ SOURCES += main.cpp\
     tempthread.cpp \
     library.cpp \
     edffile.cpp \
-    matrix.cpp
+    matrix.cpp \
+    slices.cpp \
+    autos.cpp \
+    ica.cpp \
+    editedf.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
