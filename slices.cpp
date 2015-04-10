@@ -954,10 +954,6 @@ void MainWindow::sliceMatiSimple()
                     //                outStream.close();
 #endif
                 }
-
-                ui->progressBar->setValue(end / double(ndr*nr[ns-1]) * 100.);
-                qApp->processEvents();
-
                 fileMark.clear();
                 ++session[type];
             }
@@ -973,6 +969,8 @@ void MainWindow::sliceMatiSimple()
             break;
         }
     }
+    ui->progressBar->setValue(0);
+
     cout << "sliceMatiSimple: time = " << myTime.elapsed()/1000. << " sec" << endl;
     stopFlag = 0;
 }
@@ -1046,14 +1044,21 @@ void MainWindow::sliceMati()
         //save session edf
         if(end > start)
         {
-            helpString = QDir::toNativeSeparators(dir->absolutePath()
-                                                  + slash() + ExpName
-                                                  + "_" + QString::number(type)
-                                                  + "_" + QString::number(session[type])
-                                                  + ".edf");
-            fil.saveSubsection(start,
-                               end,
-                               helpString);
+            if(type != 3) // dont write rests
+            {
+                helpString = QDir::toNativeSeparators(dir->absolutePath()
+
+                                                      + slash() + "auxEdfs"
+
+                                                      + slash() + ExpName
+                                                      + "_" + QString::number(type)
+                                                      + "_" + QString::number(session[type])
+                                                      + ".edf");
+
+                fil.saveSubsection(start,
+                                   end,
+                                   helpString);
+            }
 
             start = end - 1; //start marker should be included
             end = -1;
@@ -1067,6 +1072,7 @@ void MainWindow::sliceMati()
             break;
         }
     }
+    ui->progressBar->setValue(0);
     cout << "sliceMati: time = " << myTime.elapsed()/1000. << " sec" << endl;
     stopFlag = 0;
 }
@@ -1091,7 +1097,11 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     {
         for(int session = 0; session < 15; ++session)
         {
+            // edf session path
             helpString = QDir::toNativeSeparators(dir->absolutePath()
+
+                                                  + slash() + "auxEdfs"
+
                                                   + slash() + globalEdf.getExpName()
                                                   + "_" + QString::number(type)
                                                   + "_" + QString::number(session)
@@ -1122,7 +1132,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                             --currEnd;
                         }
                     }
-                    else if(currEnd == dataLen)
+                    else if(currEnd == dataLen) // should do nothing due to edfFile::cutZerosAtEnd
                     {
                         while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10)) ) // while not session end
                         {
@@ -1130,8 +1140,13 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                         }
                     }
 
+                    if(currEnd <= currStart) // no count answers during pieceLength seconds
+                    {
+                        currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
+                    }
+
                     // type and session already in the ExpName
-                    helpString = QDir::toNativeSeparators(fil.getDirPath()
+                    helpString = QDir::toNativeSeparators(dir->absolutePath()
                                                           + slash() + "Realisations"
                                                           + slash() + fil.getExpName()
                                                           + "_" + rightNumber(pieceNum, 2)
@@ -1141,7 +1156,6 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                     currStart = currEnd;
 
                 } while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10) );
-//                ui->progressBar->setValue(1 / 3. * (type + 1 / 15. * (session + 1. / dataLen * (currEnd))));
             }
         }
     }

@@ -208,12 +208,11 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
         if(helpString.contains('-') && (i != groundChan && i != earsChan))
         {
             helpString2 = helpString;
-            helpString2.remove(0, helpString.indexOf('-')+1);
+            helpString2.remove(0, helpString.indexOf('-') + 1);
             helpString2.remove(helpString2.indexOf(' '), helpString2.length());
             helpString.replace(helpString2, newRef);
         }
         strcpy(label[i], helpString.toStdString().c_str());
-//        cout << "reref Data: label[" << i << "]= " << label[i] << endl;
     }
     reduceChannelsFast();
 
@@ -265,7 +264,7 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
             chanList << i;
         }
     }
-    cout << chanList << endl;
+//    cout << chanList << endl;
     int numOfChan = chanList.length(); //NOT MARKERS
 
     double norm1 = fftLength / double(fil.getDataLen());
@@ -303,7 +302,10 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
         {
             data[ chanList[j] ][ i ] = spectre[2*i] / (fftLength * sqrt(norm1));
         }
+        ui->progressBar->setValue(j * 100. / numOfChan);
     }
+    ui->progressBar->setValue(0);
+
     chanList.clear();
     for(int i = 0; i < fil.getNs(); ++i)
     {
@@ -325,6 +327,7 @@ void MainWindow::reduceChannelsEDF(QString newFilePath)
 {
     QTime myTime;
     myTime.start();
+    readData();
 
     QStringList lst;
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -446,96 +449,96 @@ void MainWindow::reduceChannelsFast()
         }
     }
 
-    if(1)
+    for(int k = 0; k < list.length(); ++k)
     {
-        for(int k = 0; k < list.length(); ++k)
+        if(QString::number(list[k].toInt()) == list[k])
         {
-            if(QString::number(list[k].toInt()) == list[k])
+            memcpy(temp[k],
+                   data[list[k].toInt() - 1],
+                    ndr * nr[list[k].toInt() - 1] * sizeof(double)); // generality
+        }
+        else if(list[k].contains(QRegExp("[\\+\\-\\*\\/]")))
+        {
+            lengthCounter = 0;
+            lst = list[k].split(QRegExp("[-+/*]"), QString::SkipEmptyParts);
+            for(int h = 0; h < lst.length(); ++h)
             {
-                memcpy(temp[k],
-                       data[list[k].toInt() - 1],
-                        ndr * nr[list[k].toInt() - 1] * sizeof(double)); // generality
-            }
-            else if(list[k].contains('-') || list[k].contains('+') || list[k].contains('/') )
-            {
-                lengthCounter = 0;
-                lst = list[k].split(QRegExp("[-+/*]"), QString::SkipEmptyParts);
-                for(int h = 0; h < lst.length(); ++h)
+                if(QString::number(lst[h].toInt()) != lst[h]) // if not a number between operations
                 {
-                    if(QString::number(lst[h].toInt()) != lst[h]) // if not a number between operations
+                    cout << "bad rdc chan string" << endl;
+                    for(int i = 0; i < ns; ++i)
                     {
-                        cout << "bad rdc chan string" << endl;
-                        for(int i = 0; i < ns; ++i)
-                        {
-                            delete []temp[i];
-                        }
-                        delete []temp;
-                        return;
+                        delete []temp[i];
                     }
+                    delete []temp;
+                    return;
+                }
+            }
+            for(int j = 0; j < ndr*nr[k]; ++j) //generality k
+            {
+                temp[k][j] = data[lst[0].toInt() - 1][j]; //copy the data from first channel in the expression into temp
+            }
+            //or
+            //            memccpy(temp[k], data[lst[0].toInt() - 1], ndr*nr[k] * sizeof(double));
+
+            lengthCounter += lst[0].length();
+            for(int h = 1; h < lst.length(); ++h)
+            {
+                if(list[k][lengthCounter] == '+') sign = 1.;
+                else if(list[k][lengthCounter] == '-') sign = -1.;
+                else //this should never happen!
+                {
+                    cout << "bad rdc chan string" << endl;
+                    for(int i = 0; i < ns; ++i)
+                    {
+                        delete []temp[i];
+                    }
+                    delete []temp;
+                    return;
+                }
+                lengthCounter += 1; //sign length
+                lengthCounter += lst[h].length();
+
+                //check '/' and '*'
+                if(list[k][lengthCounter] == '/')
+                {
+                    sign /= lst[h+1].toDouble();
+                }
+                else if(list[k][lengthCounter] == '*')
+                {
+                    sign *= lst[h+1].toDouble();
                 }
                 for(int j = 0; j < ndr*nr[k]; ++j) //generality k
                 {
-                    temp[k][j] = data[lst[0].toInt() - 1][j]; //copy the data from first channel in the expression into temp
+                    temp[k][j] += sign * data[lst[h].toInt() - 1][j];
                 }
-                //or
-    //            memccpy(temp[k], data[lst[0].toInt() - 1], ndr*nr[k] * sizeof(double));
 
-                lengthCounter += lst[0].length();
-                for(int h = 1; h < lst.length(); ++h)
+                if(list[k][lengthCounter] == '/' || list[k][lengthCounter] == '*')
                 {
-                    if(list[k][lengthCounter] == '+') sign = 1.;
-                    else if(list[k][lengthCounter] == '-') sign = -1.;
-                    else //this should never happen!
-                    {
-                        cout << "bad rdc chan string" << endl;
-                        for(int i = 0; i < ns; ++i)
-                        {
-                            delete []temp[i];
-                        }
-                        delete []temp;
-                        return;
-                    }
-                    lengthCounter += 1; //sign length
-                    lengthCounter += lst[h].length();
-
-                    //check '/' and '*'
-                    if(list[k][lengthCounter] == '/')
-                    {
-                        sign /= lst[h+1].toDouble();
-                    }
-                    else if(list[k][lengthCounter] == '*')
-                    {
-                        sign *= lst[h+1].toDouble();
-                    }
-                    for(int j = 0; j < ndr*nr[k]; ++j) //generality k
-                    {
-                        temp[k][j] += sign * data[lst[h].toInt() - 1][j];
-                    }
-
-                    if(list[k][lengthCounter] == '/' || list[k][lengthCounter] == '*')
-                    {
-                        lengthCounter += 1; // / or *
-                        lengthCounter += lst[h+1].length(); //what was divided onto
-                        ++h;
-                    }
+                    lengthCounter += 1; // / or *
+                    lengthCounter += lst[h+1].length(); //what was divided onto
+                    ++h;
                 }
-            }
-            else
-            {
-                cout << "bad rdc chan string" << endl;
-                for(int i = 0; i < ns; ++i)
-                {
-                    delete []temp[i];
-                }
-                delete []temp;
-                return;
             }
         }
-        for(int k = 0; k < list.length(); ++k)
+        else
         {
-            memcpy(data[k], temp[k], ddr*ndr*nr[k] * sizeof(double));
+            cout << "bad rdc chan string" << endl;
+            for(int i = 0; i < ns; ++i)
+            {
+                delete []temp[i];
+            }
+            delete []temp;
+            return;
         }
+
+        ui->progressBar->setValue(k * 100. / list.length());
     }
+    for(int k = 0; k < list.length(); ++k)
+    {
+        memcpy(data[k], temp[k], ddr*ndr*nr[k] * sizeof(double));
+    }
+
 
     for(int i = 0; i < ns; ++i)
     {
@@ -555,6 +558,7 @@ void MainWindow::reduceChannelsFast()
     helpString="ns equals to " + QString::number(ns);
     ui->textEdit->append(helpString);
 
+    ui->progressBar->setValue(0);
 }
 
 void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
@@ -568,14 +572,14 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
     myTime.start();
 
     //assume the files are concatenable
-    edfFile resultEdf;
-    resultEdf.readEdfFile(inPath[0]);
-    edfFile tempEdf;
+    edfFile * resultEdf = new edfFile;
+    resultEdf->readEdfFile(inPath[0]);
     for(int k = 1; k < inPath.length(); ++k)
     {
-        resultEdf.concatFile(inPath[k]);
+        resultEdf->concatFile(inPath[k]);
     }
-    resultEdf.writeEdfFile(outPath);
+    resultEdf->writeEdfFile(outPath);
+    delete resultEdf;
 #if 0
 
     int newDataLen = 0;
@@ -698,36 +702,38 @@ void MainWindow::constructEDFSlot()
         for(int i = 0; i < 3; ++i) //every type 0-count, 1-track, 2-composed, 3-rest
         {
             setEdfFile(initEDF);
-            for(int j = 0; j < 15; ++j) //every session
+            for(int j = 0; j < 6; ++j) //every session
             {
-                if(i != 3 && j >= 6) continue;
 
                 filters.clear();
-                //filter for realisations
+                // filter for realisations
                 helpString = ExpName
                         + "_" + QString::number(i)
                         + "_" + QString::number(j)
                         + "*";
                 filters << helpString;
 
-                //outPath for session edfs
+                // outPath for session edfs
                 helpString = dir->absolutePath()
+
+                        + slash() + "auxEdfs"
+
                         + slash() + ExpName
-
                         + "_c"
-
                         + "_" + QString::number(i)
                         + "_" + QString::number(j)
                         + ".edf";
 
                 constructEDF(helpString, filters);
+                ui->progressBar->setValue(100. *
+                                          (1. / 3. * (i + 1. / 6. * j)));
+                qApp->processEvents();
             }
 
+            dir->cd("auxEdfs");
             // template for session edfs
             helpString = ExpName
-
                     + "_c"
-
                     + "_" + QString::number(i)
                     + "_*.edf";
             QStringList lst = dir->entryList(QStringList(helpString));  //filter for edfs
@@ -737,11 +743,15 @@ void MainWindow::constructEDFSlot()
                 lst[k].prepend( dir->absolutePath() + slash() );
             }
 
-            //outPath for concatenate
+//            dir->cdUp(); // if save concatenated into ExpName dir
+
+            //outPath for concatenated
             helpString = dir->absolutePath()
                     + slash() + ExpName.left(3)
                     + "_" + QString::number(i)
                     + ".edf";
+
+//            dir->cdUp(); // if save concatenated into auxEdfs
 
             concatenateEDFs(lst, helpString);
 
@@ -749,6 +759,7 @@ void MainWindow::constructEDFSlot()
         }
 
     }
+    ui->progressBar->setValue(0);
     cout << "constructEdf: FULL time = " << myTime.elapsed()/1000. << " sec" << endl;
 
     helpString = "constructEdf finished\n";

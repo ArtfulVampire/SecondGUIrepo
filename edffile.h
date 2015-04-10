@@ -1,5 +1,6 @@
 #ifndef EDFFILE_H
 #define EDFFILE_H
+#define DATA_IN_CHANS 0
 
 #include "library.h"
 
@@ -19,7 +20,9 @@ struct edfChannel
     QString prefiltering;
     double nr;
     QString reserved;
+#if DATA_IN_CHANS
     vector <double> data;
+#endif
 
     edfChannel operator = (const edfChannel & other)
     {
@@ -33,7 +36,9 @@ struct edfChannel
         this->prefiltering = other.prefiltering;
         this->nr = other.nr;
         this->reserved = other.reserved;
+#if DATA_IN_CHANS
         this->data = other.data;
+#endif
         return *this;
     }
 
@@ -47,8 +52,12 @@ struct edfChannel
                double in_digMin,
                QString in_prefiltering,
                double in_nr,
-               QString in_reserved,
-               vector <double> in_data)
+               QString in_reserved
+#if DATA_IN_CHANS
+               ,vector <double> in_data
+#endif
+               )
+//
     {
         this->label = in_label;
         this->transducerType = in_transducerType;
@@ -60,7 +69,9 @@ struct edfChannel
         this->prefiltering = in_prefiltering;
         this->nr = in_nr;
         this->reserved = in_reserved;
+#if DATA_IN_CHANS
         this->data = in_data;
+#endif
     }
 
     edfChannel()
@@ -75,7 +86,13 @@ struct edfChannel
         this->prefiltering = QString();
         this->nr = 0.;
         this->reserved = QString();
+#if DATA_IN_CHANS
         this->data = vector <double> ();
+#endif
+    }
+    ~edfChannel()
+    {
+
     }
 };
 
@@ -85,6 +102,7 @@ class edfFile
 public:
 
     edfFile();
+    ~edfFile();
 
     /*
     //yet unused
@@ -153,8 +171,8 @@ public:
     void adjustArraysByChannels();
     void appendFile(QString addEdfPath, QString outPath);
     void concatFile(QString addEdfPath, QString outPath = QString());
-    void appendChannel(edfChannel addChan, QString outPath); // check ndr
-    void swapChannels(int num1, int num2);
+//    void appendChannel(edfChannel addChan, QString outPath); // check ndr
+//    void swapChannels(int num1, int num2);
     void saveSubsection(int startBin, int finishBin, QString outPath, bool plainFlag = false);
     void reduceChannels(QList<int> chanList);
     void cleanFromEyes(QString eyesPath = QString(),
@@ -190,12 +208,13 @@ private:
     vector <QString> prefiltering;
     vector <double> nr; // it is int really
     vector <QString> reserved;
-    dataType data; // matrix.cpp
+
     //channels arrays end
 
     QString headerRest = QString();
 
     vector <edfChannel> channels;
+    dataType data; // matrix.cpp
 
     int staSlice = 0; // yet not useful
     int dataLength = 0;
@@ -209,6 +228,7 @@ private:
 
 
 public:
+
     const QString & getHeaderInit() const {return headerInitialInfo;}
     const int & getBytes() const {return bytes;}
     const QString & getHeaderReserved() const {return headerReservedField;}

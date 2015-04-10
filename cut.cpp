@@ -45,6 +45,7 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
     ui->drawNormDoubleSpinBox->setValue(1.);
     ui->drawNormDoubleSpinBox->setMaximum(10.);
     ui->drawNormDoubleSpinBox->setMinimum(0.01);
+    ui->drawNormDoubleSpinBox->setSingleStep(0.1);
     ui->drawNormDoubleSpinBox->setDecimals(2);
 
 

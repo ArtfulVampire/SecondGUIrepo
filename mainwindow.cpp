@@ -20,7 +20,7 @@ MainWindow::MainWindow() :
     ns = def::ns;
 
     right = fftLimit(def::rightFreq, def::freq, def::fftLength);
-    left = fftLimit(def::leftFreq, def::freq, def::fftLength);
+    left  = fftLimit(def::leftFreq, def::freq, def::fftLength);
 
     spStep = def::freq/def::fftLength;
     spLength = right - left + 1;
@@ -80,6 +80,7 @@ MainWindow::MainWindow() :
     ui->enRadio->setChecked(true);
 
     ui->drawCoeffSpinBox->setValue(1.0); //draw coeff
+    ui->drawCoeffSpinBox->setSingleStep(0.1); //draw coeff
     ui->sliceCheckBox->setChecked(true);
     ui->eyesCleanCheckBox->setChecked(false);
 //    ui->eyesCleanCheckBox->setChecked(true);   ///for windows
@@ -289,6 +290,8 @@ MainWindow::MainWindow() :
     ui->matiCheckBox->setChecked(true);
     ui->markerBinTimeSpinBox->setMaximum(250*60*60*2);   //2 hours
     ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); //2 hours
+
+    ui->roundOffsetCheckBox->setChecked(true);
 
 
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(setEdfFileSlot()));
@@ -542,6 +545,7 @@ void MainWindow::setEdfFile(QString const filePath)
 
     dir->mkdir("Help");
     dir->mkdir("amod");
+    dir->mkdir("auxEdfs");
     dir->mkdir("PA");
     dir->mkdir("visualisation");
     dir->mkdir("visualisation/video");
@@ -1337,13 +1341,13 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 
     QTime myTime;
     myTime.start();
-    QStringList lst;
+
 
     if(chanList.isEmpty()) //use ui->reduceChannelsLineEdit
     {
-        chanList.clear();
-        lst.clear();
+        QStringList lst;
         lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+        chanList.clear();
         for(int i = 0; i < lst.length(); ++i)
         {
             chanList << lst[i].toInt() - 1;
@@ -1353,432 +1357,10 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
     edfFile fil;
     fil.readEdfFile(inFilePath);
     fil.writeOtherData(inData, numSlices, outFilePath, chanList);
-#if 0
 
-    QString helpString;
+//    globalEdf.writeOtherData(inData, numSlices, outFilePath, chanList); // should test
 
-    //all bounded to nsLine
-    char *helpCharArr = new char[50];
-    char helpChar;
-    int bytes;
-
-    FILE * edfNew;
-    FILE * edfIn;
-
-
-    int newNs = chanList.length();
-
-
-    edfIn = fopen(inFilePath.toStdString().c_str(), "r");
-    if(edfIn == NULL)
-    {
-        cout << "writeEDF: cannot open edf file to read\n" << inFilePath.toStdString() << endl;
-        return;
-    }
-    edfNew = fopen(outFilePath.toStdString().c_str(), "w");
-    if(edfNew == NULL)
-    {
-        cout << "writeEDF: cannot open edf file to write\n" << outFilePath.toStdString()<< endl;
-        fclose(edfIn);
-        return;
-    }
-
-
-    //header read
-    for(int i = 0; i < 184; ++i)
-    {
-        fscanf(edfIn, "%c", &helpChar);
-        fprintf(edfNew, "%c", helpChar);
-    }
-
-    //number of bytes in header record
-    for(int i = 0; i < 8; ++i)
-    {
-        fscanf(edfIn, "%c", &helpCharArr[i]);
-    }
-    bytes = atoi(helpCharArr);
-
-    bytes = 256 * (newNs + 1);
-
-    helpString = QString::number(bytes);
-    for(int i = helpString.length(); i < 8; ++i)
-    {
-        helpString.append(' ');
-    }
-    fprintf(edfNew, "%s", helpString.toStdString().c_str());
-
-    //"reserved"
-    for(int i = 0; i < 44; ++i)
-    {
-        fscanf(edfIn, "%c", &helpChar);
-        fprintf(edfNew, "%c", helpChar);
-    }
-
-
-
-
-
-
-    //number of data records
-    for(int i = 0; i < 8; ++i)
-    {
-        fscanf(edfIn, "%c", &helpCharArr[i]);
-    }
-    ndr = atoi(helpCharArr);//NumberOfDataRecords
-
-    //duration of a data record, in seconds
-    for(int i = 0; i < 8; ++i)
-    {
-        fscanf(edfIn, "%c", &helpCharArr[i]);
-    }
-    ddr = atoi(helpCharArr); //generality double ddr
-    ndr = max(0, int(ceil(numSlices / def::freq) / ddr - 0.5));
-
-    helpString = QString::number(ndr);
-    for(int i = helpString.length(); i < 8; ++i)
-    {
-        helpString.append(' ');
-    }
-    fprintf(edfNew, "%s", helpString.toStdString().c_str());
-
-    for(int i = 0; i < 8; ++i)
-    {
-        fprintf(edfNew, "%c", helpCharArr[i]); //ddr
-    }
-
-    for(int i = 0; i < 4; ++i)
-    {
-        fscanf(edfIn, "%c", &helpCharArr[i]);
-    }
-    ns = atoi(helpCharArr);                        //Number of channels
-//    cout << "writeEDF: oldNs = " << ns << endl;
-
-    helpString = QString::number(newNs);
-    for(int i = helpString.length(); i < 4; ++i)
-    {
-        helpString.append(' ');
-    }
-    fprintf(edfNew, "%s", helpString.toStdString().c_str());
-
-
-    for(int i = 0; i < ns*16; ++i)                      //label read and DONT write yet
-    {
-        fscanf(edfIn, "%*c");
-    }
-
-    //better labels
-    for(int i = 0; i < newNs; ++i)
-    {
-        fprintf(edfNew, "%s", label[chanList[i]]);
-
-    }
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "labels.txt");
-    FILE * labels = fopen(helpString, "w");
-    for(int i = 0; i < newNs; ++i)                         //label write in file
-    {
-        fprintf(labels, "%s\n", label[chanList[i]]);
-    }
-    fclose(labels);
-
-    //transducer type
-    char ** transducer = new char * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        transducer[i] = new char [80 + 1];
-        for(int j = 0; j < 80; ++j)
-        {
-            fscanf(edfIn, "%c", &transducer[i][j]);
-        }
-        transducer[i][80] = '\0';
-    }
-    for(int i = 0; i < newNs; ++i)
-    {
-        fprintf(edfNew, "%s", transducer[chanList[i]]);
-    }
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []transducer[i];
-    }
-    delete []transducer;
-
-
-
-
-    //physical dimension
-//    cout << "writeEDF: physDim = " << endl;
-    char ** physDim = new char * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        physDim[i] = new char [8 + 1];
-        for(int j = 0; j < 8; ++j)
-        {
-            fscanf(edfIn, "%c", &physDim[i][j]);
-        }
-        physDim[i][8] = '\0';
-//        cout << physDim[i] << endl;
-    }
-
-    for(int i = 0; i < newNs; ++i)
-    {
-        fprintf(edfNew, "%s", physDim[chanList[i]]);
-    }
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []physDim[i];
-    }
-    delete []physDim;
-
-
-    //physical minimum
-    double *physMin;
-    physMin = new double [ns];
-    for(int i = 0; i < ns; ++i)                      //rest of header
-    {
-        for(int j = 0; j < 8; ++j)
-        {
-            fscanf(edfIn, "%c", &helpCharArr[j]);
-        }
-        physMin[i]=double(atoi(helpCharArr));
-    }
-
-    for(int i = 0; i < newNs; ++i)
-    {
-        helpString = QString::number(physMin[chanList[i]]);
-        for(int i = helpString.length(); i < 8; ++i)
-        {
-            helpString.append(' ');
-        }
-        fprintf(edfNew, "%s", helpString.toStdString().c_str());
-    }
-
-    //physical maximum
-    double *physMax;
-    physMax = new double [ns];
-
-    for(int i = 0; i < ns; ++i)                      //rest of header
-    {
-        for(int j = 0; j < 8; ++j)
-        {
-            fscanf(edfIn, "%c", &helpCharArr[j]);
-        }
-        physMax[i]=double(atoi(helpCharArr));
-    }
-
-    for(int i = 0; i < newNs; ++i)
-    {
-        helpString = QString::number(physMax[chanList[i]]);
-        for(int i = helpString.length(); i < 8; ++i)
-        {
-            helpString.append(' ');
-        }
-        fprintf(edfNew, "%s", helpString.toStdString().c_str());
-    }
-
-    //digital minimum
-    double *digMin;
-    digMin = new double [ns];
-
-    for(int i = 0; i < ns; ++i)                      //rest of header
-    {
-        for(int j = 0; j < 8; ++j)
-        {
-            fscanf(edfIn, "%c", &helpCharArr[j]);
-        }
-        digMin[i]=double(atoi(helpCharArr));
-    }
-
-    for(int i = 0; i < newNs; ++i)
-    {
-        helpString = QString::number(digMin[chanList[i]]);
-        for(int i = helpString.length(); i < 8; ++i)
-        {
-            helpString.append(' ');
-        }
-        fprintf(edfNew, "%s", helpString.toStdString().c_str());
-    }
-
-    //digital maximum
-    double *digMax;
-    digMax = new double [ns];     //memory for channels' labels
-
-    for(int i = 0; i < ns; ++i)                      //rest of header
-    {
-        for(int j = 0; j < 8; ++j)
-        {
-            fscanf(edfIn, "%c", &helpCharArr[j]);
-        }
-        digMax[i]=double(atoi(helpCharArr));
-    }
-
-    for(int i = 0; i < newNs; ++i)
-    {
-        helpString = QString::number(digMax[chanList[i]]);
-        for(int i = helpString.length(); i < 8; ++i)
-        {
-            helpString.append(' ');
-        }
-        fprintf(edfNew, "%s", helpString.toStdString().c_str());
-    }
-
-
-    //prefiltering
-//    cout << "writeEDF: prefiltering = " << endl;
-    char ** prefilter = new char * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        prefilter[i] = new char [80 + 1];
-        for(int j = 0; j < 80; ++j)
-        {
-            fscanf(edfIn, "%c", &prefilter[i][j]);
-        }
-        prefilter[i][80] = '\0';
-    }
-    for(int i = 0; i < newNs; ++i)
-    {
-        fprintf(edfNew, "%s", prefilter[chanList[i]]);
-    }
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []prefilter[i];
-    }
-    delete []prefilter;
-
-
-    //number of records (nr samples in ddr seconds)
-
-//    cout << "writeEDF: nr = " << endl;
-    for(int i = 0; i < ns; ++i)                      //rest of header
-    {
-        for(int j = 0; j < 8; ++j)
-        {
-            fscanf(edfIn, "%c", &helpCharArr[j]);
-        }
-        helpCharArr[8] = '\0';
-        nr[i]=atoi(helpCharArr);
-    }
-    for(int i = 0; i < newNs; ++i)
-    {
-        helpString = QString::number(nr[chanList[i]]);
-        for(int i = helpString.length(); i < 8; ++i)
-        {
-            helpString += ' ';
-        }
-        fprintf(edfNew, "%s", helpString.toStdString().c_str());
-    }
-
-
-    //reserved
-    char ** reserved = new char * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        reserved[i] = new char [32 + 1];
-        for(int j = 0; j < 32; ++j)
-        {
-            fscanf(edfIn, "%c", &reserved[i][j]);
-        }
-        reserved[i][32] = '\0';
-    }
-    for(int i = 0; i < newNs; ++i)
-    {
-        fprintf(edfNew, "%s", reserved[chanList[i]]);
-    }
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []reserved[i];
-    }
-    delete []reserved;
-
-
-    for(int i = 0; i < (bytes-(newNs+1)*256); ++i)                      //Neurotravel//generality//strange
-    {
-        fscanf(edfIn, "%c", &helpChar);
-        fprintf(edfNew, "%c", helpChar);
-    }
-
-    //header write ended
-    fclose(edfNew);
-    fclose(edfIn);
-    edfNew = fopen(outFilePath.toStdString().c_str(), "ab");
-
-    ui->finishTimeBox->setMaximum(ddr*ndr);
-
-//    cout << "writeEDF: data write start" << endl;
-    int oldIndex;
-
-    short a;
-    unsigned short markA;
-    if(ui->enRadio->isChecked())
-    {
-        for(int i = 0; i < ndr; ++i)
-        {
-//            cout << i << " "; cout.flush();
-            for(int j = 0; j < newNs; ++j) // j - number of channel in "new" file
-            {
-                oldIndex = chanList[j];
-              //newIndex == j
-
-
-                for(int k = 0; k < nr[oldIndex]; ++k)
-                {
-
-                    if(!(ui->matiCheckBox->isChecked() && oldIndex == ns - 1))
-                    {
-                        a = (short)((inData[ j ][ i * nr[oldIndex] + k ] - physMin[oldIndex])
-                                * (digMax[oldIndex] - digMin[oldIndex] + 1)
-                                / (physMax[oldIndex] - physMin[oldIndex])
-                                + digMin[oldIndex]);
-
-                        fwrite(&a, sizeof(short), 1, edfNew);
-                    }
-                    else
-                    {
-                        markA = (unsigned short)((inData[ j ][ i * nr[oldIndex] + k ] - physMin[oldIndex])
-                                * (digMax[oldIndex] - digMin[oldIndex])
-                                / (physMax[oldIndex] - physMin[oldIndex])
-                                + digMin[oldIndex]);
-
-                        fwrite(&markA, sizeof(unsigned short), 1, edfNew);
-                    }
-
-
-
-                    //generality
-//                    if(oldIndex != ns - 1)
-//                    {
-//                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ] * 8.); //*8 generality
-//                    }
-//                    else if(!ui->matiCheckBox->isChecked())
-//                    {
-//                        a = (short)(inData[ j ][ i * nr[oldIndex] + k ]);
-//                    }
-//                    else
-//                    {
-//                        a = (unsigned short)(inData[ j ][ i * nr[oldIndex] + k ]);
-//                    }
-
-//                    if(ui->matiCheckBox->isChecked() && oldIndex == ns - 1)
-//                    {
-
-//                        fwrite(&a, sizeof(unsigned short), 1, edfNew);
-//                    }
-//                    else
-//                    {
-//                        fwrite(&a, sizeof(short), 1, edfNew);
-//                    }
-                }
-            }
-        }
-    }
-    delete []helpCharArr;
-    fclose(edfNew);
-
-
-    delete [] physMin;
-    delete [] physMax;
-    delete [] digMin;
-    delete [] digMax;
 //    cout << "writeEDF: output path = " << outFilePath.toStdString() << "\ttime = = " << myTime.elapsed()/1000. << " sec" << endl;
-#endif
 }
 
 void MainWindow::drawRealisations()
@@ -1887,269 +1469,6 @@ void MainWindow::drawRealisations()
     delete []dataD;
     cout << "drawRealisations: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
-
-void MainWindow::matiPreprocessingSlot()
-{
-    dir->cd(def::dataFolder); // "/media/Files/Data/Mati/"
-    QStringList dirList = dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-    bool flagCommaDot = false;
-    bool flagAmodLogToEdf = false;
-    bool flagSliceEdfBySessions = false;
-    bool flagAppendAmodToEeg = false;
-    bool flagMakeDiffMark = false;
-    bool flagSliceSessionsToPieces = false;
-
-//    flagCommaDot = true;
-//    flagAmodLogToEdf = true;
-//    flagSliceEdfBySessions = true;
-//    flagAppendAmodToEeg = true;
-    flagMakeDiffMark = true;
-//    flagSliceSessionsToPieces = true;
-    QString fileSuffix;
-    fileSuffix = "_rr_f";
-    fileSuffix = "_w";
-
-
-    for(int dirNum = 0; dirNum < dirList.length(); ++dirNum)
-    {
-        if(!dirList[dirNum].contains("SDA")) continue;
-
-        if(flagCommaDot) // change , to . in logFiles
-        {
-            ui->progressBar->setValue(0.);
-            QTime myTime;
-            myTime.start();
-            cout << "comma->dot replace start" << endl;
-
-            char ch;
-            QString helpString;
-
-            helpString = def::dataFolder + slash() + dirList[dirNum] + slash() + "amod";
-            dir->cd(helpString);
-            QStringList lst = dir->entryList(QStringList("*.txt"));
-            FILE * fil;
-            FILE * fil1;
-            for(int i = 0; i < lst.length(); ++i)
-            {
-                helpString = def::dataFolder
-                        + slash() + dirList[dirNum]
-                        + slash() + "amod"
-                        + slash() + lst[i];
-                fil = fopen(helpString, "r");
-                helpString = def::dataFolder
-                        + slash() + dirList[dirNum]
-                        + slash() + "amod"
-                        + slash() + lst[i] + "_";
-                fil1 = fopen(helpString, "w");
-                while(!feof(fil))
-                {
-                    fread(&ch, sizeof(char), 1, fil);
-                    if(ch == ',') ch = '.';
-                    fwrite(&ch, sizeof(char), 1, fil1);
-                }
-                fclose(fil);
-                fclose(fil1);
-                ui->progressBar->setValue(i * 100. / lst.length());
-            }
-
-            cout << "comma->dot replace finish: time = " << myTime.elapsed()/1000. << " sec" << endl;
-            ui->progressBar->setValue(0.);
-        }
-        if(flagAmodLogToEdf) // corrected logFiles to amod edfs
-        {
-            ui->progressBar->setValue(0.);
-            QTime myTime;
-            myTime.start();
-            cout << "amod.txt -> amod.edf start" << endl;
-            QString helpString = def::dataFolder + slash() + dirList[dirNum] + slash() + "amod";
-            dir->cd(helpString);
-            QStringList lst = dir->entryList(QStringList("*.txt_"));
-
-            edfFile tempEdf;
-            for(int i = 0; i < lst.length(); ++i)
-            {
-                helpString = def::dataFolder
-                        + slash() + dirList[dirNum]
-                        + slash() + "amod"
-                        + slash() + lst[i];
-//                cout << helpString << endl;
-                tempEdf = edfFile(helpString);
-
-                helpString = def::dataFolder
-                        + slash() + dirList[dirNum]
-                        + slash() + getExpNameLib(lst[i])
-                        + "_amod.edf";
-//                cout << helpString << endl;
-                tempEdf.writeEdfFile(helpString);
-
-                ui->progressBar->setValue(i * 100. / lst.length());
-            }
-            cout << "amod.txt -> amod.edf: time = " << myTime.elapsed()/1000. << " sec" << endl;
-            ui->progressBar->setValue(0);
-        }
-        if(flagSliceEdfBySessions) // slice edf by sessions
-        {
-            QTime myTime;
-            myTime.start();
-            cout << "slice edf by sessions start" << endl;
-
-            QString helpString;
-            helpString = def::dataFolder
-                    + slash() + dirList[dirNum]
-                    + slash() + dirList[dirNum] + fileSuffix
-                    + ".edf";
-            setEdfFile(helpString);
-            sliceMati();
-
-            cout << "slice edf by sessions: time = " << myTime.elapsed()/1000. << " sec" << endl;
-        }
-        if(flagAppendAmodToEeg) // append amod data to EEG data
-        {
-            QTime myTime;
-            myTime.start();
-            cout << "append amod.edf to eeg.edf start" << endl;
-
-
-            QString outPath;
-            QString addPath;
-            QString helpString;
-            edfFile tempEdf;
-            for(int type = 0; type < 3; ++type)
-            {
-                for(int session = 0; session < 6; ++session)
-                {
-                    helpString = def::dataFolder
-                            + slash() + dirList[dirNum]
-                            + slash() + dirList[dirNum] + fileSuffix
-                            + "_" + QString::number(type)
-                            + "_" + QString::number(session)
-                            + ".edf"; // generality
-                    outPath = def::dataFolder
-                            + slash() + dirList[dirNum]
-                            + slash() + dirList[dirNum] + fileSuffix
-                            + "_a"
-                            + "_" + QString::number(type)
-                            + "_" + QString::number(session)
-                            + ".edf"; // generality
-
-                    if(!QFile::exists(helpString)) continue;
-
-                    tempEdf.readEdfFile(helpString);
-
-                    addPath = def::dataFolder
-                            + slash() + dirList[dirNum]
-                            + slash() + dirList[dirNum]
-                            + "_" + QString::number(type)
-                            + "_" + QString::number(session)
-                            + "_amod.edf"; // generality
-                    tempEdf.appendFile(addPath, outPath);
-
-                    if(1) // copy the same files into amod dir
-                    {
-                        helpString = def::dataFolder
-                                + slash() + dirList[dirNum]
-                                + slash() + "amod"
-                                + slash() + dirList[dirNum] + fileSuffix
-                                + "_a"
-                                + "_" + QString::number(type)
-                                + "_" + QString::number(session)
-                                + ".edf"; // generality
-                        if(QFile::exists(helpString)) QFile::remove(helpString);
-                        QFile::copy(outPath, helpString);
-                    }
-
-                }
-            }
-            cout << "append amod.edf to eeg.edf: time = " << myTime.elapsed()/1000. << " sec" << endl;
-        }
-        if(flagMakeDiffMark) // make files of markers differences
-        {
-            QTime myTime;
-            myTime.start();
-            cout << "make diffMark files start" << endl;
-
-            edfFile fil;
-            QString diffMark;
-            QString helpString;
-            for(int type = 0; type < 3; ++type)
-            {
-                for(int session = 0; session < 6; ++session)
-                {
-                    helpString = def::dataFolder
-                            + slash() + dirList[dirNum]
-                            + slash() + dirList[dirNum] + fileSuffix
-                            + "_a"
-                            + "_" + QString::number(type)
-                            + "_" + QString::number(session)
-                            + ".edf";
-                    if(!QFile::exists(helpString)) continue;
-
-                    diffMark = helpString;
-                    diffMark.replace(".edf", "_diffMark.txt");
-
-                    fil.readEdfFile(helpString);
-                    ofstream outStr(diffMark.toStdString().c_str());
-                    outStr << "board" << '\t' << "amod" << '\t' << endl;
-
-                    for(int i = 0; i < fil.getDataLen(); ++i)
-                    {
-                        if(fil.getData()[fil.getMarkChan()][i] == 0) continue;
-                        if(matiCountBit(fil.getData()[fil.getMarkChan()][i], 14))
-                        {
-                            for(int j = i - 40; j < i + 40; ++j)
-                            {
-                                if(fil.getData()[37][j+1] != fil.getData()[37][j]) // 37 for EEG + AMOD
-                                {
-                                    outStr << i << "\t" << j+1 << "\t" << (i-j-1)*4 << '\n';
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    outStr.flush();
-                    outStr.close();
-                }
-            }
-
-            cout << "make diffMark files: time = " << myTime.elapsed()/1000. << " sec" << endl;
-        }
-        if(flagSliceSessionsToPieces) // slice for pieces
-        {
-            QTime myTime;
-            myTime.start();
-            cout << "slice sessions to pieces start" << endl;
-
-            QString outPath;
-            QString helpString;
-            helpString = def::dataFolder
-                    + slash() + dirList[dirNum]
-                    + slash() + dirList[dirNum] + fileSuffix
-                    + "_a"
-                    + "_0"
-                    + "_1"
-                    + ".edf"; // generality
-            outPath = def::dataFolder
-                    + slash() + dirList[dirNum]
-                    + slash() + dirList[dirNum] + fileSuffix
-                    + "_a"
-                    + ".edf"; // generality
-            if(QFile::exists(outPath)) QFile::remove(outPath);
-            QFile::copy(helpString, outPath);
-
-            helpString = def::dataFolder
-                    + slash() + dirList[dirNum]
-                    + slash() + dirList[dirNum] + fileSuffix
-                    + "_a"
-                    + ".edf";
-
-            setEdfFile(helpString);
-            sliceMatiPieces(true);
-
-            cout << "slice sessions to pieces: time = " << myTime.elapsed()/1000. << " sec" << endl;
-        }
-    }
-}
-
 void MainWindow::cleanDirs()
 {
     QString helpString;
@@ -3566,11 +2885,19 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-//    setEdfFile("/media/Files/Data/Mati/SDA/SDA_w.edf");
+
+//    globalEdf.readEdfFile("/media/Files/Data/Mati/KMX/KMX_rr_f.edf");
+//    cout << sizeof(globalEdf.getData()) << endl;
+
+//    exit(0);
 //    ui->eyesCleanCheckBox->setChecked(true);
 //    sliceAll();
 
 
+//    edfFile fil;
+//    fil.readEdfFile("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF");
+//    fil.concatFile("/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
+//                    "/media/Files/IHNA/Data/MATI/archive/NOS.EDF");
 
 
 
