@@ -174,6 +174,7 @@ public:
 //    void appendChannel(edfChannel addChan, QString outPath); // check ndr
 //    void swapChannels(int num1, int num2);
     void saveSubsection(int startBin, int finishBin, QString outPath, bool plainFlag = false);
+    void drawSubsection(int startBin, int finishBin, QString outPath);
     void reduceChannels(QList<int> chanList);
     void cleanFromEyes(QString eyesPath = QString(),
                        bool removeEogChannels = false,

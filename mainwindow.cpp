@@ -269,7 +269,7 @@ MainWindow::MainWindow() :
     ui->cleanHelpCheckBox->setChecked(false);
     ui->cleanRealisationsCheckBox->setChecked(true);
     ui->cleanRealsSpectraCheckBox->setChecked(true);
-    ui->cleanWindowsCheckBox->setChecked(true);
+    ui->cleanWindowsCheckBox->setChecked(false);
     ui->cleanWindSpectraCheckBox->setChecked(true);
     ui->cleanMarkersCheckBox->setChecked(true);
 
@@ -2898,6 +2898,13 @@ void MainWindow::customFunc()
 //    fil.readEdfFile("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF");
 //    fil.concatFile("/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
 //                    "/media/Files/IHNA/Data/MATI/archive/NOS.EDF");
+//    edfFile fil;
+//    fil.readEdfFile("/media/Files/Data/Mati/ADA/auxEdfs/ADA_0.edf");
+//    fil.drawSubsection(23 * 8 * 250 - 4000, 23 * 8 * 250 + 4000, "/media/Files/Data/Mati/ADA/auxEdfs/1.jpg");
+
+    setEdfFile("/media/Files/Data/Mati/ADA/ADA_w.edf");
+    ui->reduceChannelsComboBox->setCurrentText("22NoEyes");
+    constructEDFSlot();
 
 
 

@@ -983,6 +983,16 @@ void edfFile::saveSubsection(int startBin, int finishBin, QString outPath, bool 
     (*this) = temp;
 }
 
+void edfFile::drawSubsection(int startBin, int finishBin, QString outPath)
+{
+    drawEeg(this->data,
+            this->ns,
+            startBin,
+            finishBin,
+            def::freq,
+            outPath);
+}
+
 void edfFile::cleanFromEyes(QString eyesPath,
                             bool removeEogChannels,
                             QList <int> eegNums,

@@ -2864,53 +2864,109 @@ QPixmap drawEeg( vector < vector <double> > dataD,
                  int blueChan,
                  int redChan);
 
-QPixmap drawEeg(double **dataD, int ns, double startTime, double endTime, int freq, const QString picPath, double norm) // haven't checked
+
+template <typename Typ>
+QPixmap drawEeg( Typ dataD,
+                 int ns,
+                 int startSlice,
+                 int endSlice,
+                 int freq,
+                 const QString & picPath,
+                 double norm,
+                 int blueChan,
+                 int redChan)
 {
-    double stretch = ceil(freq/512); // wtf????
-    QPixmap pic = QPixmap((endTime-startTime)*freq/stretch, 600);  //cut.cpp 851
+    int NumOfSlices = endSlice - startSlice;
+    QPixmap pic = QPixmap(NumOfSlices, 600);
     pic.fill();
-    QPainter * paint = new QPainter;
+
+    QPainter * paint = new QPainter();
     paint->begin(&pic);
 
     QString colour;
     int lineWidth = 2;
 
-    for(int c1 = 0; c1 < pic.width(); ++c1)
+
+    for(int c2 = 0; c2 < ns; ++c2)
     {
-        for(int c2 = 0; c2 < ns; ++c2)
+//        if(ns >= 21 && ns < 25)
+//        {
+//            if(c2 == 19)        colour = "red";
+//            else if(c2 == 20)   colour = "blue";
+//            else colour = "black";
+//        }
+//        else
+//        {
+//            colour = "black";
+//        }
+//        if(ns == 23 && c2 == 21)
+//        {
+//            colour = "green";
+//        }
+        if(c2 == blueChan)
         {
-            if(ns > 20 && ns < 25)
-            {
-                if(c2 == 19)        colour = "red";
-                else if(c2 == 20)   colour = "blue";
-                else colour = "black";
-            }            
-            else colour = "black";
+            colour = "blue";
+        }
+        else if(c2 == redChan)
+        {
+            colour = "red";
+        }
+        else
+        {
+            colour = "black";
+        }
 
-            if(ns == 23 && c2 == 21) colour = "green";
+        paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
 
-            paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
-            paint->drawLine(c1, (c2+1)*pic.height()/(ns+2) +dataD[c2][int(startTime*freq+c1*stretch)]/norm, c1+1, (c2+1)*pic.height()/(ns+2) +dataD[c2][int(startTime*freq+(c1+1)*stretch)]/norm);
+        for(int c1 = 0; c1 < pic.width(); ++c1)
+        {
+            paint->drawLine(c1,
+                            (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice] / norm,
+                            c1+1,
+                            (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice +1] / norm);
         }
     }
-
-    paint->setPen("black");
-    for(int c3 = 0; c3 < 25*5+10; ++c3)
+    norm = 1.;
+    paint->setPen(QPen(QBrush("black"), lineWidth));
+    for(int c3 = 0; c3 < NumOfSlices * 10 / 250; ++c3)
     {
-        if(c3%5  == 0) norm=15.;
-        if(c3%10 == 0) norm=20.;
+        if(c3%10 == 0) norm = 20.;
+        else if(c3%5  == 0) norm = 15.;
 
-        paint->drawLine(c3*freq/5, pic.height() - 2, c3*freq/5, pic.height() - 2*norm);
-        paint->drawText(c3*freq, pic.height() - 35, QString::number(c3));
+        paint->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
+        paint->drawText(c3 * freq, pic.height() - 35, QString::number(c3));
         norm = 10.;
     }
 
+
+    norm = 1;
     pic.save(picPath, 0, 100);
 
     paint->end();
     delete paint;
     return pic;
 }
+
+template QPixmap drawEeg(double ** dataD,
+                         int ns,
+                         int startSlice,
+                         int endSlice,
+                         int freq,
+                         const QString & picPath = "",
+                         double norm = 1.,
+                         int blueChan = -1,
+                         int redChan = -1);
+
+template
+QPixmap drawEeg( vector < vector <double> > dataD,
+                 int ns,
+                 int startSlice,
+                 int endSlice,
+                 int freq,
+                 const QString & picPath,
+                 double norm,
+                 int blueChan,
+                 int redChan);
 
 void readSpectraFile(QString filePath, double *** outData, int ns, int spLength)
 {
@@ -3046,7 +3102,7 @@ void splitZeros(double *** dataIn, const int & ns, const int & length, int * out
                 outStream << (finish - start) / def::freq << endl; // length
 
                 //split. vector.erase();
-                for(int k = start; k < start + (length-1 - allEyes) - finish; ++k)
+                for(int k = start; k <= start + (length - allEyes) - finish; ++k) // <= for the terminate flag
                 {
                     for(int j = 0; j < ns; ++j) //shift with markers and flags
                     {
@@ -3056,7 +3112,7 @@ void splitZeros(double *** dataIn, const int & ns, const int & length, int * out
                 }
 
                 allEyes += finish - start;
-                i -= finish - start;
+                i -= (finish - start);
                 startFlag = 0;
             }
         }
