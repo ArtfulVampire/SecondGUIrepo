@@ -2899,12 +2899,20 @@ void MainWindow::customFunc()
 //    fil.concatFile("/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
 //                    "/media/Files/IHNA/Data/MATI/archive/NOS.EDF");
 //    edfFile fil;
-//    fil.readEdfFile("/media/Files/Data/Mati/ADA/auxEdfs/ADA_0.edf");
-//    fil.drawSubsection(23 * 8 * 250 - 4000, 23 * 8 * 250 + 4000, "/media/Files/Data/Mati/ADA/auxEdfs/1.jpg");
+//    QList<int> leest;
+//    for(int i = 0; i < 18; ++i)
+//    {
+//        leest << i;
+//    }
+//    leest << 19;
+//    fil.readEdfFile("/media/Files/Data/Mati/FEV/auxEdfs/FEV_2.edf");
+//    fil.reduceChannels(leest);
+//    fil.writeEdfFile("/media/Files/Data/Mati/FEV/auxEdfs/FEV_18_2.edf");
+//    exit(0);
 
-    setEdfFile("/media/Files/Data/Mati/ADA/ADA_w.edf");
-    ui->reduceChannelsComboBox->setCurrentText("22NoEyes");
-    constructEDFSlot();
+//    setEdfFile("/media/Files/Data/Mati/ADA/ADA_w.edf");
+//    ui->reduceChannelsComboBox->setCurrentText("22NoEyes");
+//    constructEDFSlot();
 
 
 

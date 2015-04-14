@@ -839,16 +839,16 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
         helpInt = currSlice;
 
-        cout << "currSlice before = " << currSlice << endl;
-        drawEeg(newData, ns, currSlice - 4000, currSlice, def::freq,
-                "/media/Files/Data/Mati/ADA/auxEdfs/b.jpg");
+//        cout << "currSlice before = " << currSlice << endl;
+//        drawEeg(newData, ns, currSlice - 4000, currSlice, def::freq,
+//                "/media/Files/Data/Mati/ADA/auxEdfs/b.jpg");
 
         splitZeros(&newData, ns, helpInt, &currSlice, helpString, fileName); // helpString unchanged
 
-        drawEeg(newData, ns, currSlice - 4000, currSlice, def::freq,
-                "/media/Files/Data/Mati/ADA/auxEdfs/a.jpg");
-        cout << "currSlice after  = " << currSlice << endl;
-        if(newPath.contains("ADA_w_c_0_1")) exit(0);
+//        drawEeg(newData, ns, currSlice - 4000, currSlice, def::freq,
+//                "/media/Files/Data/Mati/ADA/auxEdfs/a.jpg");
+//        cout << "currSlice after  = " << currSlice << endl;
+//        if(newPath.contains("ADA_w_c_0_1")) exit(0);
 
         ofstream outStream;
         outStream.open(helpString.toStdString().c_str(), ios_base::app);
