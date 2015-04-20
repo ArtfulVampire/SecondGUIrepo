@@ -4743,41 +4743,38 @@ void countInvHessianAddDot(const vector < vector <double> > & distOld,
         const int & i = placedDots[j];
         //dydy
         invHessian[0][0] +=
-                2. * (distOld[min(i,b)][max(i, b)] *
-                (pow(distNew[min(i,b)][max(i, b)], -3.) *
-                pow(crds[placedDots.size() - 1].second - crds[j].second, 2.) -
-                pow(distNew[min(i,b)][max(i, b)], -1.)
+                2. * (distOld[i][b] *
+                (pow(distNew[i][b], -3.) *
+                pow(crds.back().second - crds[j].second, 2.) -
+                pow(distNew[i][b], -1.)
                 )
                 + 1.)
-                * pow(distOld[min(i,b)][max(i, b)], -2.);
+                * pow(distOld[i][b], -2.);
         //dxdx
         invHessian[1][1] +=
-                2. * (distOld[min(i,b)][max(i, b)] *
-                (pow(distNew[min(i,b)][max(i, b)], -3.) *
-                pow(crds[placedDots.size() - 1].first - crds[j].first, 2.) -
-                pow(distNew[min(i,b)][max(i, b)], -1.)
+                2. * (distOld[i][b] *
+                (pow(distNew[i][b], -3.) *
+                pow(crds.back().first - crds[j].first, 2.) -
+                pow(distNew[i][b], -1.)
                 )
                 + 1.)
-                * pow(distOld[min(i,b)][max(i, b)], -2.);
+                * pow(distOld[i][b], -2.);
         invHessian[0][1] +=
-                -2. * distOld[min(i,b)][max(i, b)] *
-                pow(distNew[min(i,b)][max(i, b)], -3.) *
-                (crds[placedDots.size() - 1].first - crds[j].first) *
-                (crds[placedDots.size() - 1].second - crds[j].second)
-                * pow(distOld[min(i,b)][max(i, b)], -2.);
+                -2. * distOld[i][b] *
+                pow(distNew[i][b], -3.) *
+                (crds.back().first - crds[j].first) *
+                (crds.back().second - crds[j].second)
+                * pow(distOld[i][b], -2.);
     }
     invHessian[1][0] = invHessian[0][1];
 
     double det = invHessian[1][1] * invHessian[0][0] - invHessian[1][0] * invHessian[0][1];
+//    cout << "det = " << det << endl;
     invHessian[0][0] /= det;
     invHessian[0][1] /= det;
     invHessian[1][0] /= det;
     invHessian[1][1] /= det;
-//    cout << invHessian[0][0] << "\t";
-//    cout << invHessian[0][1] << "\t";
-//    cout << invHessian[1][0] << "\t";
-//    cout << invHessian[1][1] << "\t";
-//    cout << endl;
+
 
 }
 
@@ -4791,49 +4788,44 @@ void countGradientAddDot(const vector < vector <double> > & distOld,
     const int & b = placedDots.back();
     gradient[0] = 0.;
     gradient[1] = 0.;
-//    cout << placedDots << endl;
     for(int j = 0; j < placedDots.size() - 1; ++j)
     {
 
         const int & i = placedDots[j];
-//        cout << "distOld[" << min(i, b) << "][" << max(i,b)  << "] = " << distOld[min(i,b)][max(i, b)] << endl;
-//        cout << "distNew[" << min(i, b) << "][" << max(i,b)  << "] = " << distNew[min(i,b)][max(i, b)] << endl;
-
         gradient[0] +=
-                2. * (1. - distOld[min(i,b)][max(i, b)] /
-                distNew[min(i,b)][max(i, b)]) *
-                (crds[placedDots.size() - 1].first - crds[j].first)
-                * pow(distOld[min(i,b)][max(i, b)], -2.);
+                2. * (1. - distOld[i][b] /
+                distNew[i][b]) *
+                (crds.back().first - crds[j].first)
+                * pow(distOld[i][b], -2.);
         gradient[1] +=
-                2. * (1. - distOld[min(i,b)][max(i, b)] /
-                distNew[min(i,b)][max(i, b)]) *
-                (crds[placedDots.size() - 1].second - crds[j].second)
-                * pow(distOld[min(i,b)][max(i, b)], -2.);
+                2. * (1. - distOld[i][b] /
+                distNew[i][b]) *
+                (crds.back().second - crds[j].second)
+                * pow(distOld[i][b], -2.);
     }
-//    cout << gradient[0] << "\t" << gradient[1] << endl;
 
 }
 
 void countDistNewAdd(vector < vector <double> > & distNew, // change only last coloumn
-                     vector < pair <double, double> > & crds,
+                     const vector < pair <double, double> > & crds,
                      const vector <int> & placedDots)
 {
+    const int & b = placedDots.back(); // placedDots[placedDots.size() - 1];
     for(int i = 0; i < placedDots.size() - 1; ++i)
     {
         const int & a = placedDots[i];
-        const int & b = placedDots.back(); // placedDots[placedDots.size() - 1];
-        distNew[min(a, b)][max(a,b)] = pow(pow(crds[a].first  - crds[placedDots.size() - 1].first , 2) +
-                                           pow(crds[a].second - crds[placedDots.size() - 1].second, 2),
+        distNew[a][b] = pow(pow(crds[i].first  - crds.back().first , 2) +
+                                           pow(crds[i].second - crds.back().second, 2),
                                            0.5);
+        distNew[b][a] = distNew[a][b];
     }
 
 }
 
-
 void sammonAddDot(const vector < vector <double> > & distOld,
                   vector < vector <double> > & distNew, // change only last coloumn
                   vector < pair <double, double> > & plainCoords,
-                  const vector<int> & placedDots)
+                  const vector <int> & placedDots)
 {
     const int addNum = placedDots.size() - 1;
     // set initial place
@@ -4851,13 +4843,10 @@ void sammonAddDot(const vector < vector <double> > & distOld,
     helpX /= sumW;
     helpY /= sumW;
 
-    plainCoords[addNum] = make_pair(helpX, helpY);
+    plainCoords.push_back(make_pair(helpX, helpY));
 
     //cout all the dots
-    for(int i = 0; i < addNum+1; ++i)
-    {
-        cout << "dot[" << i << "] = " << plainCoords[i].first << '\t' << plainCoords[i].second << endl;
-    }
+
 
 
     // gradien descent
@@ -4881,6 +4870,13 @@ void sammonAddDot(const vector < vector <double> > & distOld,
 
     double lambda = 0.2;
     int iterationsCount = 0;
+    double deltaX = 0.;
+    double deltaY = 0.;
+
+
+
+
+
     while(1)
     {
         tmpError1 = tmpError2;
@@ -4889,8 +4885,7 @@ void sammonAddDot(const vector < vector <double> > & distOld,
                             plainCoords,
                             placedDots,
                             gradient);
-
-        if(iterationsCount % 10 == 0) // sometimes recount Hessian
+        if(1)
         {
             countInvHessianAddDot(distOld,
                                   distNew,
@@ -4898,32 +4893,30 @@ void sammonAddDot(const vector < vector <double> > & distOld,
                                   placedDots,
                                   invHessian);
         }
+        deltaX = lambda * (invHessian[0][0] * gradient[0] + invHessian[0][1] * gradient[1]);
+        deltaY = lambda * (invHessian[1][0] * gradient[0] + invHessian[1][1] * gradient[1]);
 
-//        exit(0);
-
-
-        // make a step, need matrix struct
-        plainCoords[addNum].first  -= lambda *
-                (invHessian[0][0] * gradient[0] + invHessian[0][1] * gradient[1]);
-        plainCoords[addNum].second -= lambda *
-                (invHessian[1][0] * gradient[0] + invHessian[1][1] * gradient[1]);
-
+        plainCoords[addNum].first  -= deltaX;
+        plainCoords[addNum].second -= deltaY;
 
         countDistNewAdd(distNew,
                         plainCoords,
                         placedDots);
+
         tmpError2 = errorSammonAdd(distOld,
                                    distNew,
                                    placedDots);
 
-        lambda *= 1.2;
         ++iterationsCount;
 
         if(tmpError2 < 1e-10
                 || (fabs(tmpError1 - tmpError2) / tmpError1) < 1e-6
-                || iterationsCount > 1000) break;
+                || iterationsCount > 100) break;
     }
-    cout << "NumOfIterations addDot = " << iterationsCount << " error = " << tmpError2 << endl;
+//    cout << "NewDot = " << plainCoords[addNum].first << '\t' << plainCoords[addNum].second << endl;
+//    cout << "NumOfIterations addDot = " << iterationsCount << " error = " << tmpError2 << endl;
+
+//    if(addNum == 4) exit(1);
 }
 
 void sammonProj(const vector < vector <double> > & distOld,
@@ -4941,7 +4934,7 @@ void sammonProj(const vector < vector <double> > & distOld,
     }
 
     vector < pair <double, double> > plainCoords;
-    plainCoords.resize(size);
+//    plainCoords.resize(size);
 
     // find three most distant points
     // precise
@@ -4964,8 +4957,8 @@ void sammonProj(const vector < vector <double> > & distOld,
         }
     }
 //    cout << "maxDist = " << maxDist << endl;
-    plainCoords[0] = make_pair(0., 0.);
-    plainCoords[1] = make_pair(0., maxDist);
+    plainCoords.push_back(make_pair(0., 0.));
+    plainCoords.push_back(make_pair(maxDist, 0.));
     maxDist = 0.;
 
     for(int i = 0; i < size; ++i)
@@ -4984,18 +4977,23 @@ void sammonProj(const vector < vector <double> > & distOld,
                  pow(distOld[num2][num3], 2.)
                  ) * 0.5 / distOld[num1][num2];
 //    cout << "tm = " << tm << endl;
-    plainCoords[2] = make_pair(tm,
-                               pow( pow(distOld[num1][num3], 2.) -
-                                    pow(tm, 2.),
-                                    0.5)
-                               );
+    plainCoords.push_back(make_pair(tm,
+                                    pow( pow(distOld[num1][num3], 2.) -
+                                         pow(tm, 2.),
+                                         0.5)
+                                    )
+                          );
     placedDots.push_back(num1);
     placedDots.push_back(num2);
     placedDots.push_back(num3);
 
-    distNew[min(num1, num2)][max(num1,num2)] = distOld[min(num1, num2)][max(num1,num2)];
-    distNew[min(num2, num3)][max(num2,num3)] = distOld[min(num2, num3)][max(num2,num3)];
-    distNew[min(num3, num1)][max(num3,num1)] = distOld[min(num3, num1)][max(num3,num1)];
+    for(int i = 0; i < 3; ++i)
+    {
+        distNew[placedDots[i]][placedDots[(i+1)%3]] = distOld[placedDots[i]][placedDots[(i+1)%3]];
+        distNew[placedDots[(i+1)%3]][placedDots[i]] = distNew[placedDots[i]][placedDots[(i+1)%3]];
+    }
+
+//    cout << distNew << endl;
 
 
     double helpDist = 0.;
@@ -5021,62 +5019,31 @@ void sammonProj(const vector < vector <double> > & distOld,
                 num3 = i;
             }
         }
+//        cout << "newDotNum = " << num3 << endl;
 
         //place this dot
         placedDots.push_back(num3);
         sammonAddDot(distOld, distNew, plainCoords, placedDots);
+        if(addNum >= int(sqrt(size)))
+        {
+            ////TODO
+//            adjustSkeletonDots(distOld, distNew, plainCoords, placedDots);
+        }
     }
+//    cout << distNew << endl;
 
-
-//    std::transform(plainCoords.begin(),
-//                   plainCoords.end(),
-//                   plainCoords.begin(),
-//                   [&](pair<double, double> a){return make_pair(-5. + 10.*(rand()%300) / 150.,
-//                                                                -5. + 10.*(rand()%300) / 150.
-//                                                                );
-//                                              }
-//    );
-
-//    std::for_each (plainCoords.begin(),
-//                   plainCoords.end(),
-//                   [&](pair<double, double> a){cout << a.first << '\t' << a.second << endl;}
-//    );
-
-#if 0
-    vector < vector <double> > distNew = distOld;
-
-
-    refreshDistAll(distNew, plainCoords);
-
-
-    double tmpError1 = 0.;
-    double tmpError2 = errorSammon(distOld, distNew);
-
-
-    int iterationsCount = 0;
-    while(1)
+    for(int i = 0; i < size; ++i)
     {
-        tmpError1 = tmpError2; //error before
-        moveCoordsGradient(plainCoords, distOld, distNew);
-        tmpError2 = errorSammon(distOld, distNew);
-
-//        cout << iterationsCount << " error = " << tmpError2 << endl;
-        ++iterationsCount;
-//        cout << tmpError1 << "\t->\t" << tmpError2 << endl;
-
-        if(tmpError2 < 1e-10
-                || (fabs(tmpError1 - tmpError2) / tmpError1) < 1e-6
-                || iterationsCount > 1000) break;
+        cout << "dot[" << i << "] = " << plainCoords[i].first << '\t' << plainCoords[i].second << endl;
     }
-    cout << "NumOfIterations = " << iterationsCount << " error = " << tmpError2 << endl;
-#endif
+    cout << endl;
+
 
     drawSammon(plainCoords, types, picPath);
+    QString helpString = picPath;
+    helpString.replace(".jpg", "_.jpg");
+    drawShepard(distOld, distNew, helpString);
 }
-
-
-
-
 
 
 
@@ -5103,8 +5070,8 @@ void drawSammon(const vector < pair <double, double> > & plainCoords,
 
     double sum1 = 0., sum2 = 0.;
 
-    minX = plainCoords[0].first;
-    minY = plainCoords[0].second;
+    minX = plainCoords.front().first;
+    minY = plainCoords.front().second;
     for(int i = 0; i < NumberOfVectors; ++i)
     {
         maxX = fmax(maxX, plainCoords[i].first);
@@ -5119,8 +5086,8 @@ void drawSammon(const vector < pair <double, double> > & plainCoords,
     rangeX = (maxX - minX)/2.;
     rangeY = (maxY - minY)/2.;
 
-    rangeX *= 1.05;
-    rangeY *= 1.05;
+    rangeX *= 1.02;
+    rangeY *= 1.02;
 
     double range = fmax(rangeX, rangeY);
 
@@ -5160,7 +5127,7 @@ void drawSammon(const vector < pair <double, double> > & plainCoords,
     }
     sumAngle1 /= (NumberOfVectors/2);
     sumAngle2 /= (NumberOfVectors/2);
-    range = maxLeng * 1.05;
+    range = maxLeng * 1.02;
 
     int mirror = 1;
     if(cos(sumAngle1) * sin(sumAngle2) - cos(sumAngle2) * sin(sumAngle1) < 0.)
@@ -5168,52 +5135,76 @@ void drawSammon(const vector < pair <double, double> > & plainCoords,
         mirror = -1;
     }
 
+    int pew = 0;
     for(int i = 0; i < NumberOfVectors; ++i)
     {
         sum1 = plainCoords[i].first;
         sum2 = plainCoords[i].second;
 
-        switch(types[i])
-        {
-        case 0:
-        {
-            painter.setBrush(QBrush("blue"));
-            painter.setPen("blue");
-            break;
-        }
-        case 1:
+        if( i<3 )
         {
             painter.setBrush(QBrush("red"));
             painter.setPen("red");
-            break;
+
         }
-        case 2:
+        else if(0)
         {
-            painter.setBrush(QBrush("green"));
-            painter.setPen("green");
-            break;
+            switch(types[i])
+            {
+            case 0:
+            {
+                painter.setBrush(QBrush("blue"));
+                painter.setPen("blue");
+                break;
+            }
+            case 1:
+            {
+                painter.setBrush(QBrush("red"));
+                painter.setPen("red");
+                break;
+            }
+            case 2:
+            {
+                painter.setBrush(QBrush("green"));
+                painter.setPen("green");
+                break;
+            }
+            default:
+            {
+                painter.setBrush(QBrush("black"));
+                painter.setPen("black");
+                break;
+            }
+            }
         }
-        default:
+        else
         {
-            painter.setBrush(QBrush("black"));
-            painter.setPen("black");
-            break;
+//            painter.setBrush(QBrush("red"));
+//            painter.setPen("red");
+
+            pew = int(255.*i/NumberOfVectors);
+            painter.setBrush(QBrush(QColor(pew,0,pew)));
+            painter.setPen(QColor(pew,0,pew));
         }
-        }
+
+
+
+
+
         initX = sum1 - avX;
-        initY = sum2 - avY;
+        initY = -(sum2 - avY);
 
         leng = pow(pow(initX, 2.) + pow(initY, 2.), 0.5);
         angle = countAngle(initX, initY);
 
         angle -= sumAngle1;
-        initX = leng * cos(angle);
-        initY = leng * sin(angle);
-//        mirror = 1;
+//        initX = leng * cos(angle);
+//        initY = leng * sin(angle);
+        mirror = 1;
 
 
-        drawX = pic.width()  / 2. * (1. + (initX / range));
-        drawY = pic.height() / 2. * (1. + (initY / range) * mirror);
+        drawX = pic.width()  * 0.5 * (1. + (initX / range));
+        drawY = pic.height() * 0.5 * (1. + (initY / range) * mirror);
 
 //        cout << drawX << '\t' << drawY << endl;
 
@@ -5230,3 +5221,62 @@ void drawSammon(const vector < pair <double, double> > & plainCoords,
     cout << "Sammon projection done" << endl;
 }
 
+void drawShepard(const vector < vector <double> > & distOld,
+                 const vector < vector <double> > & distNew,
+                 const QString & picPath)
+{
+//    cout << distNew << endl;
+    const int num = distOld.size();
+    //draw the points
+    QPixmap pic(1200, 1200);
+    pic.fill();
+    QPainter painter;
+    painter.begin(&pic);
+
+    painter.setPen("black");
+    painter.setBrush(QBrush("black"));
+    painter.drawLine(QPointF(pic.width() * 0.1, pic.height() * 0.9),
+                     QPointF(pic.width() * 1.0, pic.height() * 0.9)
+                     );
+    painter.drawLine(QPointF(pic.width() * 0.1, pic.height() * 0.9),
+                     QPointF(pic.width() * 0.1, pic.height() * 0.0)
+                     );
+    painter.drawLine(QPointF(pic.width() * 0.1, pic.height() * 0.9),
+                     QPointF(pic.width() * 1.0, pic.height() * 0.0)
+                     );
+
+    double drawX = 0.;
+    double drawY = 0.;
+    double maxDistOld = 0.;
+    double maxDistNew = 0.;
+    for(int i = 0; i < num; ++i)
+    {
+        for(int j = i+1; j < num; ++j)
+        {
+            maxDistOld = fmax(distOld[i][j], maxDistOld);
+            maxDistNew = fmax(distNew[i][j], maxDistNew);
+        }
+    }
+    maxDistNew *= 1.02;
+    maxDistOld *= 1.02;
+//    cout << "maxDistNew = " << maxDistNew << endl;
+//    cout << "maxDistOld = " << maxDistOld << endl;
+
+    const int rectSize = 4;
+    for(int i = 0; i < num; ++i)
+    {
+        for(int j = i+1; j < num; ++j)
+        {
+            drawX = pic.width()  * (0.1 + 0.9 * distOld[i][j] / maxDistOld);
+            drawY = pic.height() * (0.9 - 0.9 * distNew[i][j] / maxDistNew);
+
+            painter.drawRect(QRectF(QPoint(drawX - rectSize, drawY - rectSize),
+                                    QPoint(drawX + rectSize, drawY + rectSize)
+                                    )
+                             );
+        }
+    }
+    painter.end();
+    pic.save(picPath, 0, 100);
+
+}

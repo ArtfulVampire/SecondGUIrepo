@@ -23,7 +23,7 @@ void MainWindow::clustering()
 {
     srand(time(NULL));
 
-    int numRow = 10;
+    int numRow = 300;
     int numCol = 18;
     vector < vector <double> > cData;
     cData.resize(numRow);
@@ -57,8 +57,6 @@ void MainWindow::clustering()
 
     vector < vector <double> > dists; // distance, i, j,
 
-    vector < vector <double> > newDists; // distance, i, j,
-
     vector <double> temp;
     temp.resize(4);
 
@@ -86,19 +84,12 @@ void MainWindow::clustering()
         }
     }
 
-
-
-
-
-
-
-
-
-
-
+    sammonProj(distOld, types,
+               "/media/Files/Data/Mati/sammon.jpg");
+#if 0
     //test
 
-    const int N = 7;
+    const int N = 15;
     const int dim = 2;
 
     distOld.clear();
@@ -124,15 +115,13 @@ void MainWindow::clustering()
         {
             ass[j] =  -5. + 10.*( (rand())%300 ) / 150.;
         }
-//        cout << ass << endl;
         dots[i] = ass;
-
     }
 
     for(int i = 0; i < N; ++i)
     {
         distOld[i][i] = 0.;
-        for(int j = 0; j < N; ++j)
+        for(int j = i+1; j < N; ++j)
         {
             distOld[i][j] = distance(dots[i], dots[j], dim);
             distOld[j][i] = distOld[i][j];
@@ -149,14 +138,11 @@ void MainWindow::clustering()
 exit(1);
 return;
 
+#endif
 
 
-
-
-
-
-
-
+#if 0
+    //smallest tree
     std::sort(dists.begin(), dists.end(), mySort);
     // make first bound
 
@@ -169,11 +155,6 @@ return;
     dists[0][3] = 2;
     newDists.push_back(dists[0]);
 
-    for(int j = 0; j < 3; ++j)
-    {
-        cout << dists[0][j] << '\t';
-    }
-    cout << endl;
 
 
     vector<vector<double> >::iterator itt;
@@ -192,11 +173,6 @@ return;
             {
                 (*iit)[3] += 1;
             }
-//            if((*iit)[3] >= 2)
-//            {
-//                dists.erase(iit);
-////                --iit; // :-)
-//            }
         }
 
         // set new bound ()
@@ -216,11 +192,11 @@ return;
         (*itt)[3] = 2;
         newDists.push_back(*itt);
 
-        for(int j = 0; j < 3; ++j)
-        {
-            cout << (*itt)[j] << '\t';
-        }
-        cout << endl;
+//        for(int j = 0; j < 3; ++j)
+//        {
+//            cout << (*itt)[j] << '\t';
+//        }
+//        cout << endl;
     }
     std::sort(newDists.begin(), newDists.end(), mySort);
     vector <double> newD;
@@ -228,39 +204,14 @@ return;
     {
         newD.push_back(newDists[i][0]);
     }
-    cout << newD << endl;
-
-
-
-
-
-
-
-
-    helpString = "/media/Files/Data/Mati/clust.jpg";
-    kernelEst(newD.data(), newD.size(), helpString);
-    helpString = "/media/Files/Data/Mati/clustH.jpg";
-    histogram(newD.data(), newD.size(), 40, helpString);
-
-
-//    for(int i = 0; i < dists.size(); ++i)
-//    {
-//        for(int j = 0; j < 4; ++j)
-//        {
-//            cout << dists[0][j] << '\t';
-//        }
-//        cout << endl;
-//    }
-
+//    cout << newD << endl;
 
 
 //    helpString = "/media/Files/Data/Mati/clust.jpg";
-//    kernelEst(dists.data(), dists.size(), helpString);
+//    kernelEst(newD.data(), newD.size(), helpString);
 //    helpString = "/media/Files/Data/Mati/clustH.jpg";
-//    histogram(dists.data(), dists.size(), 30, helpString);
-
-
-
+//    histogram(newD.data(), newD.size(), 40, helpString);
+#endif
 }
 
 void MainWindow::matiPreprocessingSlot()

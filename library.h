@@ -251,6 +251,10 @@ void drawSammon(const vector < pair <double, double> > & plainCoords,
                 const vector <int> & types,
                 const QString & picPath);
 
+void drawShepard(const vector < vector <double> > & distOld,
+                 const vector < vector <double> > & distNew,
+                 const QString & picPath);
+
 void sammonProj(const vector < vector <double> > & distOld,
                 const vector <int> & types,
                 const QString & picPath);
@@ -278,7 +282,7 @@ void sammonAddDot(const vector < vector <double> > & distOld,
                   const vector<int> & placedDots);
 
 void countDistNewAdd(vector < vector <double> > & distNew, // change only last coloumn
-                     vector < pair <double, double> > & crds,
+                     const vector<pair<double, double> > &crds,
                      const vector <int> & placedDots);
 
 void countGradientAddDot(const vector < vector <double> > & distOld,

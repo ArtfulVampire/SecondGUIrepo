@@ -2887,6 +2887,7 @@ void MainWindow::customFunc()
 {
 
     clustering();
+    exit(7);
 
 #if 0
     double ** dataFFT = new double * [maxNs];
