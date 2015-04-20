@@ -3023,7 +3023,7 @@ void Net::moveCoordsGradient(double ** coords, double ** distOld, double ** dist
 
     //gradient method
     double * gradient = new double [size * 2];
-    double lambda = ui->lambdaDoubleSpinBox->value(); //how to estimate - add into UI
+    double lambda = ui->lambdaDoubleSpinBox->value(); // how to estimate - add into UI
     double num = 0;
 
     double errorBackup;
@@ -3210,13 +3210,7 @@ void Net::Sammon(double ** distArr, int size, int * types)
         cout << "NumOfIterations = " << iterationsCount << " error = " << tmpError2 << endl;
     }
 
-
-
-
     delete [] mixNum;
-
-
-
 
     for(int i = 0; i < size; ++i)
     {

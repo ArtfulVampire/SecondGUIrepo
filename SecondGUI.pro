@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     slices.cpp \
     autos.cpp \
     ica.cpp \
-    editedf.cpp
+    editedf.cpp \
+    clustering.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -48,7 +49,8 @@ HEADERS  += mainwindow.h \
     library.h \
     edffile.h \
     matrix.h \
-    coord.h
+    coord.h \
+    clustering.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

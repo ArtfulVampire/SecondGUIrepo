@@ -13,37 +13,31 @@
 #include <iostream>
 
 using namespace std;
-
-template <typename Typ = double> class matrix
+#if 0
+struct matrix
 {
-public:
     matrix();
     ~matrix();
     matrix(int rows, int cols);
-    matrix(int rows, int cols, Typ value);
+    matrix(int rows, int cols, double value);
     matrix(double ** inData, int rows, int cols);
     void resize(int rows, int cols);
     void resizeRows(int rows);
     void resizeCols(int cols);
-    void fill(Typ value);
+    void fill(double value);
     void print(int rows = 0, int cols = 0);
     int cols();
     int rows();
 
-    vector <Typ> & operator [](int i)
+    vector <double> & operator [](int i)
     {
         return data[i];
     }
 
-    template <Typ>
-    friend ostream & operator << (ostream &os, matrix<Typ> toOut);
-
-
-
-public:
-    vector < vector <Typ> > data;
+    vector < vector <double> > data;
+    friend ostream & operator << (ostream &os, matrix toOut);
 };
-
+#endif
 
 
 

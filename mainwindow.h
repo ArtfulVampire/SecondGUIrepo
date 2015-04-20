@@ -102,6 +102,7 @@ public slots:
     void icaClassTest();
     void throwIC();
     void randomDecomposition();
+    void clustering();
 
     //other
     void stop();

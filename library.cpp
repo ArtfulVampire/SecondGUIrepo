@@ -69,16 +69,16 @@ void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QStri
 {
 
     QPixmap pic = QPixmap(size, size);
-    QPainter * painter = new QPainter;
+    QPainter painter;
     pic.fill();
-    painter->begin(&pic);
+    painter.begin(&pic);
     QString savePath1 = outDir + QDir::separator() + outName + "_map_" + QString::number(num) + "+.png";
     double val;
 
     QPixmap pic1 = QPixmap(size, size);
-    QPainter * painter1 = new QPainter;
+    QPainter painter1;
     pic1.fill();
-    painter1->begin(&pic1);
+    painter1.begin(&pic1);
     QString savePath2 = outDir + QDir::separator() + outName + "_map_" + QString::number(num) + "-.png";
     double val1;
     double drawArg;
@@ -183,29 +183,29 @@ void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QStri
 
             if(!colourFlag)
             {
-                painter->setPen(grayScale(drawRange, drawArg));
-                painter1->setPen(grayScale(drawRange, drawRange - drawArg));
+                painter.setPen(grayScale(drawRange, drawArg));
+                painter1.setPen(grayScale(drawRange, drawRange - drawArg));
             }
             else
             {
-                painter->setPen(hueJet(drawRange, drawArg));
-                painter1->setPen(hueJet(drawRange, drawRange - drawArg));
+                painter.setPen(hueJet(drawRange, drawArg));
+                painter1.setPen(hueJet(drawRange, drawRange - drawArg));
             }
-            painter->drawPoint(x,y);
-            painter1->drawPoint(x,y);
+            painter.drawPoint(x,y);
+            painter1.drawPoint(x,y);
         }
     }
 
     //for transposed helpMatrix
-//    painter->end();
+//    painter.end();
 //    QTransform transform1(0, 1, 1, 0, 0, 0);
 //    pic = QPixmap(pic.transformed(transform1));
-//    painter->begin(&pic);
+//    painter.begin(&pic);
 
 
-//    painter1->end();
+//    painter1.end();
 //    pic1 = QPixmap(pic1.transformed(transform1));
-//    painter1->begin(&pic1);
+//    painter1.begin(&pic1);
 
     if(1) //draw channels locations
     {
@@ -215,18 +215,18 @@ void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QStri
         helpMatrix[5][1] = 0.;
         helpMatrix[5][3] = 0.;
         helpMatrix[5][5] = 0.;
-        painter->setBrush(QBrush("black"));
-        painter1->setBrush(QBrush("black"));
-        painter->setPen("black");
-        painter1->setPen("black");
+        painter.setBrush(QBrush("black"));
+        painter1.setBrush(QBrush("black"));
+        painter.setPen("black");
+        painter1.setPen("black");
         for(int i = 0; i < dim; ++i)
         {
             for(int j = 0; j < dim; ++j)
             {
                 if(helpMatrix[i][j] != 0.)
                 {
-                    painter->drawEllipse(j/scale1-1, i/scale1-1, 2, 2);
-                    painter1->drawEllipse(j/scale1-1, i/scale1-1, 2, 2);
+                    painter.drawEllipse(j/scale1-1, i/scale1-1, 2, 2);
+                    painter1.drawEllipse(j/scale1-1, i/scale1-1, 2, 2);
                 }
             }
         }
@@ -246,17 +246,15 @@ void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QStri
     delete []Bv;
 
     matrixDelete(&helpMatrix, 5);
-    delete painter;
-    delete painter1;
 }
 
 
 void drawMap(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
 {
     QPixmap pic = QPixmap(size, size);
-    QPainter * painter = new QPainter;
+    QPainter painter;
     pic.fill();
-    painter->begin(&pic);
+    painter.begin(&pic);
 
     double ** helpMatrix;
     matrixCreate(&helpMatrix, 5, 5); //generality for ns = 19
@@ -298,8 +296,8 @@ void drawMap(double ** const matrixA, double maxAbs, QString outDir, QString out
             numX = floor(x/int(scale1)) ; //1 2
             numY = floor(y/int(scale1)) ; //3 4
 
-            painter->setPen(mapColor(-maxAbs, maxAbs, helpMatrix, numX, numY, double(double(x%int(scale1))/scale1 + 0.003/scale1), double(double(y%int(scale1))/scale1) + 0.003/scale1, colourFlag)); // why 0.003
-            painter->drawPoint(x,y);
+            painter.setPen(mapColor(-maxAbs, maxAbs, helpMatrix, numX, numY, double(double(x%int(scale1))/scale1 + 0.003/scale1), double(double(y%int(scale1))/scale1) + 0.003/scale1, colourFlag)); // why 0.003
+            painter.drawPoint(x,y);
         }
     }
 
@@ -309,7 +307,6 @@ void drawMap(double ** const matrixA, double maxAbs, QString outDir, QString out
 
 
     matrixDelete(&helpMatrix, 5);
-    delete painter;
 }
 
 void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag, void (*draw1Map)(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag))
@@ -339,8 +336,8 @@ void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QStr
 {
     QPixmap pic;
     pic = QPixmap(spectraFilePath);
-    QPainter * pnt = new QPainter;
-    pnt->begin(&pic);
+    QPainter pnt;
+    pnt.begin(&pic);
 
     QPixmap pic1;
     QString helpString;
@@ -364,20 +361,20 @@ void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QStr
         }
         pic1 = QPixmap(helpString);
 
-        pnt->drawPixmap(QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width(),
+        pnt.drawPixmap(QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width(),
                               coords::y[i] * pic.height() - coords::scale * pic.height(),
                               (shitCoeff - offsetX) * coords::scale * pic.width(),
                               (shitCoeff - offsetX) * coords::scale * pic.height()),
                         pic1);
 
-        pnt->setPen(QPen(QBrush("black"), 2));
+        pnt.setPen(QPen(QBrush("black"), 2));
         //draw the nose
-        pnt->drawLine(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2 - 8,
+        pnt.drawLine(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2 - 8,
                       coords::y[i] * pic.height() - coords::scale * pic.height(),
                       coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2,
                       coords::y[i] * pic.height() - coords::scale * pic.height() - 13);
 
-        pnt->drawLine(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2 + 8,
+        pnt.drawLine(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2 + 8,
                       coords::y[i] * pic.height() - coords::scale * pic.height(),
                       coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2,
                       coords::y[i] * pic.height() - coords::scale * pic.height() - 13);
@@ -385,15 +382,15 @@ void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QStr
         earRect = QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() - 0.75 * earSize,
                         coords::y[i] * pic.height() - coords::scale * pic.height() + (shitCoeff - offsetX) * coords::scale * pic.height()/2 - earSize,
                         earSize, 2*earSize);
-        pnt->drawArc(earRect, 60*16, 240*16);
-//        pnt->drawRect(earRect);
+        pnt.drawArc(earRect, 60*16, 240*16);
+//        pnt.drawRect(earRect);
 
 
         earRect = QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width() - 0.25 * earSize,
                         coords::y[i] * pic.height() - coords::scale * pic.height() + (shitCoeff - offsetX) * coords::scale * pic.height()/2 - earSize,
                         earSize, 2*earSize);
-        pnt->drawArc(earRect, 240*16, 240*16);
-//        pnt->drawRect(earRect);
+        pnt.drawArc(earRect, 240*16, 240*16);
+//        pnt.drawRect(earRect);
 
 
 
@@ -410,11 +407,73 @@ void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QStr
         helpString.replace(".jpg", ".png");
         pic.save(helpString, 0, 100);
     }
-
-    pnt->end();
-    delete pnt;
+    pnt.end();
 }
 
+
+void drawSpectra(double ** drawData, int ns, int start, int end, const QString & picPath)
+{
+
+    QPixmap pic;
+    pic = QPixmap(1600, 1600);
+    pic.fill();
+
+    QPainter paint;
+    paint.begin(&pic);
+
+    double norm = 0.;
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = start; j < end; ++j)
+        {
+            norm = fmax(norm, drawData[i][j]);
+        }
+    }
+    norm = (coords::scale * pic.height()) / norm ;
+    norm *= 6.;
+
+
+    int lineWidth = 3;
+    double spWidth = coords::scale * pic.width();
+
+    for(int c2 = 0; c2 < ns; ++c2)
+    {
+        paint.setPen(QPen(QBrush("black"), lineWidth));
+        for(int k = 0; k < spWidth - 1; ++k)
+        {
+
+            paint.drawLine(QPointF(pic.width() * coords::x[c2] + k,
+                                    pic.height()* coords::y[c2] - drawData[c2][int(start + k * (end - start) / spWidth)] * norm),
+                            QPointF(pic.width() * coords::x[c2] + k + 1,
+                                    pic.height()* coords::y[c2] - drawData[c2][int(start+(k+1)*(end - start) / spWidth)] * norm));
+        }
+
+        //draw axes
+        paint.setPen("black");
+        paint.drawLine(QPointF(pic.width() * coords::x[c2],
+                                pic.height() * coords::y[c2]),
+                        QPointF(pic.width() * coords::x[c2],
+                                pic.height() * coords::y[c2] - spWidth)); //250 - length of axes generality
+
+        paint.drawLine(QPointF(pic.width() * coords::x[c2],
+                                pic.height() * coords::y[c2]),
+                        QPointF(pic.width() * coords::x[c2] + spWidth,
+                                pic.height() * coords::y[c2])); //250 - length of axes generality
+
+    }
+
+    //write channels labels
+    QString helpString;
+    paint.setFont(QFont("Helvetica", int(24*pic.height()/1600.), -1, false));
+    for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel
+    {
+        helpString = QString(coords::lbl[c2]);
+        helpString += " (" + QString::number(c2+1) + ")";
+        paint.drawText(QPointF((pic.width() * coords::x[c2] - 20 * (pic.width()/1600.)), (pic.height() * coords::y[c2] - (coords::scale * pic.height()) - 2)), helpString);
+    }
+
+    pic.save(picPath, 0, 100);
+}
 
 #define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 void four1(double * dataF, int nn, int isign)
@@ -746,13 +805,24 @@ ostream & operator << (ostream &os, QString toOut)
 }
 
 
-ostream & operator << (ostream &os, vector<double> toOut)
+template <typename T>
+ostream & operator << (ostream &os, vector<T> toOut) // template!
 {
-    for(int i = 0; i < 10; ++i)
+    for(int i = 0; i < toOut.size(); ++i)
     {
-        os << toOut[i] << " ";
+        os << toOut[i] << '\t';
     }
     return os;
+}
+
+ostream & operator << (ostream &os, vector < vector < double > > toOut)
+{
+    for(int i = 0; i < toOut.size(); ++i)
+    {
+        os << toOut[i] << endl;
+    }
+    return os;
+
 }
 
 ostream & operator << (ostream &os, QList<int> toOut)
@@ -1149,10 +1219,10 @@ void cleanDir(QString dirPath, QString nameFilter, bool ext)
 void drawRCP(double * values, int length)
 {
     QPixmap pic(1000, 400);
-    QPainter * pnt = new QPainter();
+    QPainter pnt;
     pic.fill();
-    pnt->begin(&pic);
-    pnt->setPen("black");
+    pnt.begin(&pic);
+    pnt.setPen("black");
 
 
     double xMin, xMax;
@@ -1174,9 +1244,9 @@ void drawRCP(double * values, int length)
 
     for(int i = 0; i < pic.width() - 1; ++i)
     {
-        pnt->drawLine(i, pic.height() * 0.9 * ( 1. - line[i] / valueMax), i+1, pic.height() * 0.9 * (1. - line[i+1] / valueMax));
+        pnt.drawLine(i, pic.height() * 0.9 * ( 1. - line[i] / valueMax), i+1, pic.height() * 0.9 * (1. - line[i+1] / valueMax));
     }
-    pnt->drawLine(0, pic.height()*0.9, pic.width(), pic.height()*0.9);
+    pnt.drawLine(0, pic.height()*0.9, pic.width(), pic.height()*0.9);
 
 
     int coordinate;
@@ -1186,17 +1256,16 @@ void drawRCP(double * values, int length)
         coordinate = pic.width()/2. * (1. + values[i] / numOfDisp);
         if(i%2 == 0) //raw data
         {
-            pnt->setPen("blue");
+            pnt.setPen("blue");
         }
         else //ica data
         {
-            pnt->setPen("red");
+            pnt.setPen("red");
         }
-        pnt->drawLine(coordinate, pic.height() * 0.9 * ( 1. - line[coordinate] / valueMax) , coordinate, pic.height() * 0.9 * ( 1. - line[coordinate] / valueMax) - 50);
+        pnt.drawLine(coordinate, pic.height() * 0.9 * ( 1. - line[coordinate] / valueMax) , coordinate, pic.height() * 0.9 * ( 1. - line[coordinate] / valueMax) - 50);
     }
     pic.save("/media/Files/Data/AA/rcp.png", 0, 100);
 
-    delete pnt;
     delete []values;
 
 }
@@ -1545,11 +1614,10 @@ void drawArray(double * array, int length, QString outPath)
 {
     QPixmap pic;
     pic.fill();
-    QPainter * pnt;
-    pnt->begin(&pic);
+    QPainter pnt;
+    pnt.begin(&pic);
 
     double maxVal = maxValue(array, length);
-
 }
 
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC)
@@ -1583,15 +1651,15 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
     {
         for(int c2 = 0; c2 < ns; ++c2)
         {
-            for(int k = 0; k < int(coords::scale * paint->device()->width()); ++k)
+            for(int k = 0; k < int(coords::scale * pic.width()); ++k)
             {
-                norm = fmax(norm, sp[j][c2][int(k*spL[j]/(coords::scale * paint->device()->width()))]);  //doesn't work
+                norm = fmax(norm, sp[j][c2][int(k*spL[j]/(coords::scale * pic.width()))]);  //doesn't work
             }
         }
     }
     cout<<"max magnitude = "<<norm<<endl;
 
-    norm = (coords::scale * paint->device()->height())/norm ; //250 - pixels per graph, generality
+    norm = (coords::scale * pic.height())/norm ; //250 - pixels per graph, generality
     norm *= scaling;
 
 
@@ -1599,61 +1667,61 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
     for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel
     {
         //draw spectra
-        for(int k = 0; k < int(coords::scale * paint->device()->width())-1; ++k)
+        for(int k = 0; k < int(coords::scale * pic.width())-1; ++k)
         {
             for(int j = 0; j < count; ++j)
             {
                 paint->setPen(QPen(QBrush(QColor(colours[j])), 2));
-                paint->drawLine(QPointF(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - sp[j][c2][int(k*spL[j]/(coords::scale * paint->device()->width()))]*norm), QPointF(paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - sp[j][c2][int((k+1)*spL[j]/(coords::scale * paint->device()->width()))]*norm));
+                paint->drawLine(QPointF(pic.width() * coords::x[c2]+k, pic.height() * coords::y[c2] - sp[j][c2][int(k*spL[j]/(coords::scale * pic.width()))]*norm), QPointF(pic.width() * coords::x[c2]+k+1, pic.height() * coords::y[c2] - sp[j][c2][int((k+1)*spL[j]/(coords::scale * pic.width()))]*norm));
             }
         }
 
         //draw axes
         paint->setPen("black");
-        paint->drawLine(QPointF(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2]), QPointF(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2] - coords::scale * paint->device()->height())); //250 - length of axes generality
-        paint->drawLine(QPointF(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2]), QPointF(paint->device()->width() * coords::x[c2] + coords::scale * paint->device()->width(), paint->device()->height() * coords::y[c2])); //250 - length of axes generality
+        paint->drawLine(QPointF(pic.width() * coords::x[c2], pic.height() * coords::y[c2]), QPointF(pic.width() * coords::x[c2], pic.height() * coords::y[c2] - coords::scale * pic.height())); //250 - length of axes generality
+        paint->drawLine(QPointF(pic.width() * coords::x[c2], pic.height() * coords::y[c2]), QPointF(pic.width() * coords::x[c2] + coords::scale * pic.width(), pic.height() * coords::y[c2])); //250 - length of axes generality
 
         //draw Herzes
-        paint->setFont(QFont("Helvitica", int(8*(paint->device()->height()/1600.))));
-        for(int k=0; k<int(coords::scale * paint->device()->width()); ++k) //for every Hz generality
+        paint->setFont(QFont("Helvitica", int(8*(pic.height()/1600.))));
+        for(int k=0; k<int(coords::scale * pic.width()); ++k) //for every Hz generality
         {
-            if( (left + k*(spL[0])/(coords::scale * paint->device()->width()))*spStep - floor((left + k*(spL[0])/(coords::scale * paint->device()->width()))*spStep) < spL[0]/(coords::scale * paint->device()->width())*spStep/2. || ceil((left + k*(spL[0])/(coords::scale * paint->device()->width()))*spStep) - (left + k*(spL[0])/(coords::scale * paint->device()->width()))*spStep < spL[0]/(coords::scale * paint->device()->width())*spStep/2.)  //why spLength - generality 250 - length of axes //generality spL[0] for these left and right
+            if( (left + k*(spL[0])/(coords::scale * pic.width()))*spStep - floor((left + k*(spL[0])/(coords::scale * pic.width()))*spStep) < spL[0]/(coords::scale * pic.width())*spStep/2. || ceil((left + k*(spL[0])/(coords::scale * pic.width()))*spStep) - (left + k*(spL[0])/(coords::scale * pic.width()))*spStep < spL[0]/(coords::scale * pic.width())*spStep/2.)  //why spLength - generality 250 - length of axes //generality spL[0] for these left and right
             {
-                paint->drawLine(QPointF(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]), QPointF(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2] + 5 * (paint->device()->height()/1600.)));
+                paint->drawLine(QPointF(pic.width() * coords::x[c2] + k, pic.height() * coords::y[c2]), QPointF(pic.width() * coords::x[c2] + k, pic.height() * coords::y[c2] + 5 * (pic.height()/1600.)));
 
-                helpInt = int((left + k*(spL[0])/(coords::scale * paint->device()->width()))*spStep + 0.5); //generality spL[0] for these left and right
+                helpInt = int((left + k*(spL[0])/(coords::scale * pic.width()))*spStep + 0.5); //generality spL[0] for these left and right
                 helpString.setNum(helpInt);
                 if(helpInt<10)
                 {
-                    paint->drawText(QPointF(paint->device()->width() * coords::x[c2] + k - 3 * (paint->device()->width()/1600.), paint->device()->height() * coords::y[c2] + 15 * (paint->device()->height()/1600.)), helpString);  //-3 getFont->size
+                    paint->drawText(QPointF(pic.width() * coords::x[c2] + k - 3 * (pic.width()/1600.), pic.height() * coords::y[c2] + 15 * (pic.height()/1600.)), helpString);  //-3 getFont->size
                 }
                 else
                 {
-                    paint->drawText(QPointF(paint->device()->width() * coords::x[c2] + k - 5 * (paint->device()->width()/1600.), paint->device()->height() * coords::y[c2] + 15 * (paint->device()->height()/1600.)), helpString);  //-5 getFont->size
+                    paint->drawText(QPointF(pic.width() * coords::x[c2] + k - 5 * (pic.width()/1600.), pic.height() * coords::y[c2] + 15 * (pic.height()/1600.)), helpString);  //-5 getFont->size
                 }
             }
         }
 
     }
     //write channels labels
-    paint->setFont(QFont("Helvetica", int(24*paint->device()->height()/1600.), -1, false));
+    paint->setFont(QFont("Helvetica", int(24*pic.height()/1600.), -1, false));
     for(int c2=0; c2<ns; ++c2)  //exept markers channel
     {
-        paint->drawText(QPointF((paint->device()->width() * coords::x[c2] - 20 * (paint->device()->width()/1600.)), (paint->device()->height() * coords::y[c2] - (coords::scale * paint->device()->height()) - 2)), QString(coords::lbl[c2]));
+        paint->drawText(QPointF((pic.width() * coords::x[c2] - 20 * (pic.width()/1600.)), (pic.height() * coords::y[c2] - (coords::scale * pic.height()) - 2)), QString(coords::lbl[c2]));
     }
 
     //draw coords::scale
-    paint->drawLine(QPointF(paint->device()->width() * coords::x[6], paint->device()->height() * coords::y[1]), QPointF(paint->device()->width() * coords::x[6], paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())));  //250 - graph height generality
+    paint->drawLine(QPointF(pic.width() * coords::x[6], pic.height() * coords::y[1]), QPointF(pic.width() * coords::x[6], pic.height() * coords::y[1] - (coords::scale * pic.height())));  //250 - graph height generality
 
     //returning norm = max magnitude
     norm /= scaling;
-    norm = (coords::scale * paint->device()->height()) / norm;
+    norm = (coords::scale * pic.height()) / norm;
     norm /= scaling;  //scaling generality
     norm = int(norm*10.)/10.;
 
     helpString.setNum(norm);
     helpString.append(QObject::tr(" mcV^2/Hz"));
-    paint->drawText(QPointF(paint->device()->width() * coords::x[6]+5., paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())/2.), helpString);
+    paint->drawText(QPointF(pic.width() * coords::x[6]+5., pic.height() * coords::y[1] - (coords::scale * pic.height())/2.), helpString);
 
 
     if(type == 0)
@@ -1754,32 +1822,31 @@ void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, doub
 
         //start check draw - OK
         QPixmap pic(fftLen,600);
-        QPainter *pnt = new QPainter;
+        QPainter pnt;
         pic.fill();
-        pnt->begin(&pic);
+        pnt.begin(&pic);
         //    double sum, sum2;
         double enlarge = 10.;
 
-        pnt->setPen("black");
+        pnt.setPen("black");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            pnt->drawLine(i, pic.height()/2. - enlarge * filteredArr[i], i+1, pic.height()/2. - enlarge * filteredArr[i+1]);
+            pnt.drawLine(i, pic.height()/2. - enlarge * filteredArr[i], i+1, pic.height()/2. - enlarge * filteredArr[i+1]);
         }
-        pnt->setPen("blue");
+        pnt.setPen("blue");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            //        pnt->drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
+            //        pnt.drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
         }
-        pnt->setPen("green");
+        pnt.setPen("green");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            pnt->drawLine(i, pic.height()/2. - enlarge * (*out)[i], i+1, pic.height()/2. - enlarge * (*out)[i+1]);
+            pnt.drawLine(i, pic.height()/2. - enlarge * (*out)[i], i+1, pic.height()/2. - enlarge * (*out)[i+1]);
         }
 
         pic.save(picPath, 0, 100);
         pic.fill();
-        pnt->end();
-        delete pnt;
+        pnt.end();
         cout << "hilber drawn" << endl;
         //end check draw
     }
@@ -1923,32 +1990,31 @@ void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq
 
         //start check draw - OK
         QPixmap pic(inLength,600);
-        QPainter *pnt = new QPainter;
+        QPainter pnt;
         pic.fill();
-        pnt->begin(&pic);
+        pnt.begin(&pic);
         //    double sum, sum2;
         double enlarge = 10.;
 
-        pnt->setPen("black");
+        pnt.setPen("black");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            pnt->drawLine(i, pic.height()/2. - enlarge * filteredArr[i], i+1, pic.height()/2. - enlarge * filteredArr[i+1]);
+            pnt.drawLine(i, pic.height()/2. - enlarge * filteredArr[i], i+1, pic.height()/2. - enlarge * filteredArr[i+1]);
         }
-        pnt->setPen("blue");
+        pnt.setPen("blue");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            //        pnt->drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
+            //        pnt.drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
         }
-        pnt->setPen("green");
+        pnt.setPen("green");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            pnt->drawLine(i, pic.height()/2. - enlarge * (*out)[i], i+1, pic.height()/2. - enlarge * (*out)[i+1]);
+            pnt.drawLine(i, pic.height()/2. - enlarge * (*out)[i], i+1, pic.height()/2. - enlarge * (*out)[i+1]);
         }
 
         pic.save(picPath, 0, 100);
         pic.fill();
-        pnt->end();
-        delete pnt;
+        pnt.end();
         cout << "hilber drawn" << endl;
         //end check draw
     }
@@ -1985,6 +2051,60 @@ void bayesCount(double * dataIn, int length, int numOfIntervals, double ** out)
     }
 }
 
+void histogram(double *arr, int length, int numSteps, QString picPath)
+{
+    QPixmap pic(1000, 400);
+    double * values = new double [numSteps];
+    QPainter pnt;
+    pic.fill();
+    pnt.begin(&pic);
+    pnt.setPen("black");
+    pnt.setBrush(QBrush("black"));
+
+    double xMin, xMax;
+
+    xMin = minValue(arr, length);
+    xMax = maxValue(arr, length);
+
+
+    for(int i = 0; i < numSteps; ++i)
+    {
+        values[i] = 0.;
+    }
+
+    for(int j = 0; j < length; ++j)
+    {
+        values[ int(floor((arr[j] - xMin) / ((xMax-xMin) / numSteps))) ] += 1.;
+    }
+    double valueMax = maxValue(values, numSteps);
+
+    for(int i = 0; i < numSteps; ++i)
+    {
+        pnt.drawRect (QRect(QPoint(i * pic.width() / numSteps,
+                                   pic.height() * 0.9 * ( 1. - values[i] / valueMax)),
+                            QPoint((i+1) * pic.width() / numSteps,
+                                   pic.height() * 0.9)
+                            )
+                      );
+    }
+    pnt.drawLine(0, pic.height()*0.9, pic.width(), pic.height()*0.9);
+
+    //+=step
+//    for(int i = ceil(xMin); i <= floor(xMax); ++i)
+//    {
+//        pnt.drawLine( (i - xMin) / (xMax - xMin) * pic.width(),
+//                       pic.height()*0.9+1,
+//                       (i - xMin) / (xMax - xMin) * pic.width(),
+//                       pic.height());
+//        pnt.drawText((i - xMin) / (xMax - xMin) * pic.width(),
+//                      pic.height()*0.95,
+//                      QString::number(i));
+//    }
+    pic.save(picPath, 0, 100);
+
+    delete []values;
+}
+
 void kernelEst(double * arr, int length, QString picPath)
 {
     double sigma = 0.;
@@ -1999,10 +2119,10 @@ void kernelEst(double * arr, int length, QString picPath)
 
     QPixmap pic(1000, 400);
     double * values = new double [pic.width()];
-    QPainter * pnt = new QPainter();
+    QPainter pnt;
     pic.fill();
-    pnt->begin(&pic);
-    pnt->setPen("black");
+    pnt.begin(&pic);
+    pnt.setPen("black");
 
 
     double xMin, xMax;
@@ -2014,11 +2134,11 @@ void kernelEst(double * arr, int length, QString picPath)
     xMax = ceil(xMax)+1;
 
 //    //generality
-    xMin = -20;
-    xMax = 20;
+//    xMin = -20;
+//    xMax = 20;
 
-    xMin = 65;
-    xMax = 100;
+//    xMin = 65;
+//    xMax = 100;
 
     for(int i = 0; i < pic.width(); ++i)
     {
@@ -2034,10 +2154,10 @@ void kernelEst(double * arr, int length, QString picPath)
 
     for(int i = 0; i < pic.width() - 1; ++i)
     {
-        pnt->drawLine(i, pic.height() * 0.9 * ( 1. - values[i] / valueMax), i+1, pic.height() * 0.9 * (1. - values[i+1] / valueMax));
-//        pnt->drawRect(i, pic.height() * 0.9, i+1, pic.height() * 0.9 * ( 1. - values[xMin + (xMax - Xmin)/pic.width() * (i+1)] / valueMax));
+        pnt.drawLine(i, pic.height() * 0.9 * ( 1. - values[i] / valueMax), i+1, pic.height() * 0.9 * (1. - values[i+1] / valueMax));
+//        pnt.drawRect(i, pic.height() * 0.9, i+1, pic.height() * 0.9 * ( 1. - values[xMin + (xMax - Xmin)/pic.width() * (i+1)] / valueMax));
     }
-    pnt->drawLine(0, pic.height()*0.9, pic.width(), pic.height()*0.9);
+    pnt.drawLine(0, pic.height()*0.9, pic.width(), pic.height()*0.9);
 
 //    int power = log10(xMin);
 //    int step = pow(10., floor(power));
@@ -2045,12 +2165,11 @@ void kernelEst(double * arr, int length, QString picPath)
     //+=step
     for(int i = ceil(xMin); i <= floor(xMax); ++i)
     {
-        pnt->drawLine( (i - xMin) / (xMax - xMin) * pic.width(), pic.height()*0.9+1, (i - xMin) / (xMax - xMin) * pic.width(), pic.height());
-        pnt->drawText((i - xMin) / (xMax - xMin) * pic.width(), pic.height()*0.95, QString::number(i));
+        pnt.drawLine( (i - xMin) / (xMax - xMin) * pic.width(), pic.height()*0.9+1, (i - xMin) / (xMax - xMin) * pic.width(), pic.height());
+        pnt.drawText((i - xMin) / (xMax - xMin) * pic.width(), pic.height()*0.95, QString::number(i));
     }
     pic.save(picPath, 0, 100);
 
-    delete pnt;
     delete []values;
 }
 
@@ -2255,8 +2374,8 @@ void drawColorScale(QString filePath, int range, int type)
     //type == 3 - grayScale
     QPixmap pic(1800, 600);
     pic.fill();
-    QPainter * painter = new QPainter;
-    painter->begin(&pic);
+    QPainter painter;
+    painter.begin(&pic);
 
     for(int i = 0; i < range; ++i)
     {
@@ -2264,51 +2383,50 @@ void drawColorScale(QString filePath, int range, int type)
         {
         case 0:
         {
-            painter->setBrush(QBrush(hueJet(range, i)));
-            painter->setPen(hueJet(range, i));
+            painter.setBrush(QBrush(hueJet(range, i)));
+            painter.setPen(hueJet(range, i));
             break;
         }
         case 1:
         {
-            painter->setBrush(QBrush(hueOld(range, i)));
-            painter->setPen(hueOld(range, i));
+            painter.setBrush(QBrush(hueOld(range, i)));
+            painter.setPen(hueOld(range, i));
             break;
         }
         case 2:
         {
-            painter->setBrush(QBrush(grayScale(range, i)));
-            painter->setPen(grayScale(range, i));
+            painter.setBrush(QBrush(grayScale(range, i)));
+            painter.setPen(grayScale(range, i));
             break;
         }
         case 3:
         {
-            painter->setBrush(QBrush(grayScale(range, i)));
-            painter->setPen(grayScale(range, i));
+            painter.setBrush(QBrush(grayScale(range, i)));
+            painter.setPen(grayScale(range, i));
             break;
         }
         }
-        painter->drawRect(i*pic.width()/double(range), 0, (i+1)*pic.width()/double(range), 30);
+        painter.drawRect(i*pic.width()/double(range), 0, (i+1)*pic.width()/double(range), 30);
     }
     for(int i = 0; i < range; ++i)
     {
-        painter->setPen(QPen(QBrush("red"), 2));
-//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offR)*(i-offR)/(2*sigmaR*sigmaR)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offR)*((i+1)-offR)/(2*sigmaR*sigmaR)));
-//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red(range, int(i+1), 0.95, 1.0));
-        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red1(range, int(i+1)));
-        painter->setPen(QPen(QBrush("green"), 2));
-//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offG)*(i-offG)/(2*sigmaG*sigmaG)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offG)*((i+1)-offG)/(2*sigmaG*sigmaG)));
-//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green(range, int(i+1), 0.95, 1.0));
-        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green1(range, int(i+1)));
-        painter->setPen(QPen(QBrush("blue"), 2));
-//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offB)*(i-offB)/(2*sigmaB*sigmaB)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offB)*((i+1)-offB)/(2*sigmaB*sigmaB)));
-//        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue(range, int(i+1), 0.95, 1.0));
-        painter->drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue1(range, int(i+1)));
+        painter.setPen(QPen(QBrush("red"), 2));
+//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offR)*(i-offR)/(2*sigmaR*sigmaR)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offR)*((i+1)-offR)/(2*sigmaR*sigmaR)));
+//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red(range, int(i+1), 0.95, 1.0));
+        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red1(range, int(i+1)));
+        painter.setPen(QPen(QBrush("green"), 2));
+//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offG)*(i-offG)/(2*sigmaG*sigmaG)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offG)*((i+1)-offG)/(2*sigmaG*sigmaG)));
+//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green(range, int(i+1), 0.95, 1.0));
+        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green1(range, int(i+1)));
+        painter.setPen(QPen(QBrush("blue"), 2));
+//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offB)*(i-offB)/(2*sigmaB*sigmaB)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offB)*((i+1)-offB)/(2*sigmaB*sigmaB)));
+//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue(range, int(i+1), 0.95, 1.0));
+        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue1(range, int(i+1)));
 
     }
-    painter->end();
+    painter.end();
     pic.save(filePath, 0, 100);
 
-    delete painter;
 }
 
 void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax, double freqMin, double freqStep, double pot)
@@ -2349,8 +2467,8 @@ void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax
 
     QPixmap pic(NumOfSlices,800);
     pic.fill();
-    QPainter * painter = new QPainter;
-    painter->begin(&pic);
+    QPainter painter;
+    painter.begin(&pic);
 
 
     double timeStep = 0.;
@@ -2427,29 +2545,29 @@ void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax
              numb = fmin( floor(temp[j][i]*range / double(helpDouble)), double(range));
              numb = pow(numb/double(range), 0.8) * range;
 
-             painter->setBrush(QBrush(hueJet(range, numb)));
-             painter->setPen(hueJet(range, numb));
+             painter.setBrush(QBrush(hueJet(range, numb)));
+             painter.setPen(hueJet(range, numb));
 
-             painter->drawRect( i*pic.width() / NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep) / (freqMax-freqMin) ), timeStep*pic.width()/NumOfSlices, int(pic.height()*( - 0.5*freq*(1./freqStep - freqStep)) / (freqMax-freqMin)));
+             painter.drawRect( i*pic.width() / NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep) / (freqMax-freqMin) ), timeStep*pic.width()/NumOfSlices, int(pic.height()*( - 0.5*freq*(1./freqStep - freqStep)) / (freqMax-freqMin)));
              i += timeStep;
         }
         ++j;
 
     }
-    painter->setPen("black");
+    painter.setPen("black");
 
 
-    painter->setFont(QFont("Helvetica", 32, -1, -1));
+    painter.setFont(QFont("Helvetica", 32, -1, -1));
     for(int i = freqMax; i > freqMin; --i)
     {
-        painter->drawLine(0, pic.height()*(freqMax-i)/(freqMax-freqMin), pic.width(), pic.height()*(freqMax-i)/(freqMax-freqMin));
-        painter->drawText(0, pic.height()*(freqMax-i)/(freqMax-freqMin)-2, helpString.setNum(i));
+        painter.drawLine(0, pic.height()*(freqMax-i)/(freqMax-freqMin), pic.width(), pic.height()*(freqMax-i)/(freqMax-freqMin));
+        painter.drawText(0, pic.height()*(freqMax-i)/(freqMax-freqMin)-2, helpString.setNum(i));
 
     }
     for(int i = 0; i < int(NumOfSlices/250); ++i)
     {
-        painter->drawLine(pic.width()*i*250/NumOfSlices, pic.height(), pic.width()*i*250/NumOfSlices, pic.height()-20);
-        painter->drawText(pic.width()*i*250/NumOfSlices-8, pic.height()-2, helpString.setNum(i));
+        painter.drawLine(pic.width()*i*250/NumOfSlices, pic.height(), pic.width()*i*250/NumOfSlices, pic.height()-20);
+        painter.drawText(pic.width()*i*250/NumOfSlices-8, pic.height()-2, helpString.setNum(i));
 
     }
 
@@ -2461,8 +2579,7 @@ void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax
     }
     delete[] temp;
     pic.save(out, 0, 100);
-    painter->end();
-    delete painter;
+    painter.end();
 }
 
 void matrixTranspose(double ***inMat, int const numRowsCols)
@@ -2524,8 +2641,8 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
 //    fclose(file);
     QPixmap pic(150*NumOfSlices/250,800); //150 pixels/sec
     pic.fill();
-    QPainter * painter = new QPainter;
-    painter->begin(&pic);
+    QPainter painter;
+    painter.begin(&pic);
 
 
     double freq=20.;
@@ -2581,29 +2698,29 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
         i=0;
          while(i<NumOfSlices)
         {
-             painter->setBrush(QBrush(hueJet(range, (temp[i] + pi)/2./pi * range, 0.95, 1.)));
-             painter->setPen(hueJet(range, (temp[i] + pi)/2./pi * range, 0.95, 1.));
+             painter.setBrush(QBrush(hueJet(range, (temp[i] + pi)/2./pi * range, 0.95, 1.)));
+             painter.setPen(hueJet(range, (temp[i] + pi)/2./pi * range, 0.95, 1.));
 
-             painter->drawRect(i*pic.width()/NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep)/(freqMax-freqMin)), timeStep*pic.width()/NumOfSlices,     int(pic.height()*(- 0.5*freq*(1./freqStep - freqStep))/(freqMax-freqMin)));
+             painter.drawRect(i*pic.width()/NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep)/(freqMax-freqMin)), timeStep*pic.width()/NumOfSlices,     int(pic.height()*(- 0.5*freq*(1./freqStep - freqStep))/(freqMax-freqMin)));
              i+=timeStep;
         }
 
     }
 //    cout<<"2"<<endl;
-    painter->setPen("black");
+    painter.setPen("black");
 
 
-    painter->setFont(QFont("Helvetica", 32, -1, -1));
+    painter.setFont(QFont("Helvetica", 32, -1, -1));
     for(int i=freqMax; i>freqMin; --i)
     {
-        painter->drawLine(0, pic.height()*(freqMax-i)/(freqMax-freqMin), pic.width(), pic.height()*(freqMax-i)/(freqMax-freqMin));
-        painter->drawText(0, pic.height()*(freqMax-i)/(freqMax-freqMin)-2, helpString.setNum(i));
+        painter.drawLine(0, pic.height()*(freqMax-i)/(freqMax-freqMin), pic.width(), pic.height()*(freqMax-i)/(freqMax-freqMin));
+        painter.drawText(0, pic.height()*(freqMax-i)/(freqMax-freqMin)-2, helpString.setNum(i));
 
     }
     for(int i=0; i<int(NumOfSlices/250); ++i)
     {
-        painter->drawLine(pic.width()*i*250/NumOfSlices, pic.height(), pic.width()*i*250/NumOfSlices, pic.height()-20);
-        painter->drawText(pic.width()*i*250/NumOfSlices-8, pic.height()-2, helpString.setNum(i));
+        painter.drawLine(pic.width()*i*250/NumOfSlices, pic.height(), pic.width()*i*250/NumOfSlices, pic.height()-20);
+        painter.drawText(pic.width()*i*250/NumOfSlices-8, pic.height()-2, helpString.setNum(i));
 
     }
 
@@ -2615,8 +2732,7 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
     pic.save(out, 0, 100);
     rewind(file);
 
-    painter->end();
-    delete painter;
+    painter.end();
 }
 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices)
@@ -3322,6 +3438,22 @@ double independence(double * const signal1, double * const signal2, int length)
     }
     return haupt;
 }
+double countAngle(double initX, double initY)
+{
+    if(initX == 0.)
+    {
+        return (initY > 0.)?(pi/2.):(-pi/2);
+    }
+
+    if(initX > 0.)
+    {
+        return atan(initY/initX);
+    }
+    else
+    {
+        return atan(initY/initX) + pi;
+    }
+}
 
 void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth, const double powArg)
 {
@@ -3412,6 +3544,52 @@ void calcSpectre(double ** const inData, int leng, int const ns, double *** data
     matrixDelete(&newData, ns);
 }
 
+void calcSpectre(double ** const inData, double **& dataFFT, int const ns, int const inDataLen, int const NumOfSmooth, const double powArg)
+{
+    int fftLength = fftL(inDataLen);
+    double norm1 = fftLength / double(inDataLen);
+
+    double * spectre = new double [fftLength * 2];
+
+    double help1, help2;
+    int leftSmoothLimit, rightSmoothLimit;
+
+    for(int j = 0; j < ns; ++j)
+    {
+        for(int i = 0; i < inDataLen; ++i)            //make appropriate array
+        {
+            spectre[ i * 2 + 0 ] = (double)(inData[j][ i ] * sqrt(norm1));
+            spectre[ i * 2 + 1 ] = 0.;
+        }
+        for(int i = inDataLen; i < fftLength; ++i)            //make appropriate array
+        {
+            spectre[ i * 2 + 0 ] = 0.;
+            spectre[ i * 2 + 1 ] = 0.;
+        }
+        four1(spectre-1, fftLength, 1);       //Fourier transform
+        for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
+        {
+            dataFFT[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /def::freq / fftLength; //0.004 = 1/250 generality
+            dataFFT[j][ i ] = pow ( dataFFT[j][ i ], powArg );
+
+        }
+        leftSmoothLimit = 0;
+        rightSmoothLimit = fftLength/2-1;
+
+        //smooth spectre
+        for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
+        {
+            help1 = dataFFT[j][leftSmoothLimit-1];
+            for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
+            {
+                help2 = dataFFT[j][k];
+                dataFFT[j][k] = (help1 + help2 + dataFFT[j][k+1]) / 3.;
+                help1 = help2;
+            }
+        }
+    }
+    delete []spectre;
+}
 
 void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int const Eyes, int const NumOfSmooth, double const powArg)
 {
@@ -4354,3 +4532,701 @@ int matiCountDecimal(QString byteMarker)
     }
     return res;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+
+
+
+void refreshDist(vector < vector<double> > & dist,
+                 const vector <pair <double, double> > & testCoords,
+                 const int input)
+{
+
+    // numRow * (numRow + 1) / 2 = distSize
+    int size = testCoords.size();
+
+    double helpDist = 0;
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = i+1; j < size; ++j)
+        {
+            if(i != input && j != input) continue;
+
+            helpDist = pow( pow(testCoords[i].first - testCoords[j].first, 2)
+                    + pow(testCoords[i].second - testCoords[j].second, 2), 0.5);
+            dist[i][j] = helpDist;
+            dist[j][i] = helpDist; // unneeded?
+        }
+    }
+}
+
+void refreshDistAll(vector < vector <double> > & distNew,
+                    const vector <pair <double, double> > & plainCoords)
+{
+    // numRow * (numRow + 1) / 2 = distSize
+
+    int numRow = plainCoords.size();
+//    cout << "numRow = " << numRow << endl;
+
+
+
+    double helpDist = 0.;
+    for(int i = 0; i < numRow; ++i)
+    {
+        for(int j = i+1; j < numRow; ++j)
+        {
+            helpDist = pow( pow(plainCoords[i].first - plainCoords[j].first, 2)
+                    + pow(plainCoords[i].second - plainCoords[j].second, 2), 0.5);
+            distNew[i][j] = helpDist;
+            distNew[j][i] = helpDist;  // unneeded?
+        }
+    }
+}
+
+void countGradient(const vector <pair <double, double> > & plainCoords,
+                   const vector <vector <double> >  & distOld,
+                   vector <vector <double> > & distNew,
+                   vector <double> & gradient)
+{
+    const int size = plainCoords.size();
+    const double delta = 0.1;
+    vector <pair <double, double> > tempCoords = plainCoords;
+
+    for(int i = 0; i < size; ++i)
+    {
+        tempCoords[i].first += delta/2.;
+        refreshDist(distNew, tempCoords, i);
+        gradient[2 * i] = errorSammon(distOld, distNew);
+
+        tempCoords[i].first -= delta;
+        refreshDist(distNew, tempCoords, i);
+        gradient[2 * i] -= errorSammon(distOld, distNew);
+        gradient[2 * i] /= delta;
+        tempCoords[i].first += delta/2.;
+
+        if(fabs(tempCoords[i].first - plainCoords[i].first) > 1e-5)
+        {
+            cout << "coords1 changed " << plainCoords[i].first - tempCoords[i].first << endl;
+        }
+
+        tempCoords[i].second += delta/2.;
+        refreshDist(distNew, tempCoords, i);
+        gradient[2 * i + 1] = errorSammon(distOld, distNew);
+
+        tempCoords[i].second -= delta;
+        refreshDist(distNew, tempCoords, i);
+        gradient[2 * i + 1] -= errorSammon(distOld, distNew);
+        gradient[2 * i + 1] /= delta;
+        tempCoords[i].second += delta/2.;
+
+        if(fabs(tempCoords[i].second - plainCoords[i].second) > 1e-5)
+        {
+            cout << "coords2 changed " << plainCoords[i].second - tempCoords[i].second << endl;
+        }
+
+        refreshDist(distNew, tempCoords, i);
+    }
+}
+
+void moveCoordsGradient(vector <pair <double, double> > & plainCoords,
+                        const vector < vector <double> > & distOld,
+                        vector < vector <double> > & distNew)
+{
+    int size = plainCoords.size();
+
+    vector <double> gradient;
+    gradient.resize(size * 2);
+    double lambda = 0.1;
+
+    double errorBackup;
+
+    countGradient(plainCoords, distOld, distNew, gradient);
+    int numSteps = 0;
+    while(1)
+    {
+        errorBackup = errorSammon(distOld, distNew);
+        // a bit move coords
+        for(int i = 0; i < size; ++i)
+        {
+            plainCoords[i].first -= gradient[2 * i] * lambda;
+            plainCoords[i].second -= gradient[2 * i+1] * lambda;
+        }
+        // count new dists
+        refreshDistAll(distNew, plainCoords);
+
+        // if became worse - go back
+        if(errorBackup < errorSammon(distOld, distNew))
+        {
+            for(int i = 0; i < size; ++i)
+            {
+                plainCoords[i].first += gradient[2 * i] * lambda;
+                plainCoords[i].second += gradient[2 * i+1] * lambda;
+            }
+            refreshDistAll(distNew, plainCoords);
+            break;
+        }
+        ++numSteps;
+        if(numSteps % 5 == 4) lambda *= 2;
+    }
+//    cout << "gradient steps = " << numSteps  << endl;
+}
+
+double errorSammon(const vector < vector <double> > & distOld,
+                   const vector < vector <double> > & distNew) // square matrices
+{
+    int size = distOld.size();
+//    cout << "errorSammon size = " << size << endl;
+    double res = 0.;
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = i+1; j < size; ++j)
+        {
+            res += pow(distOld[i][j] - distNew[i][j], 2.) / pow(distOld[i][j], 2.);
+        }
+    }
+    return res;
+}
+#endif
+
+
+double errorSammonAdd(const vector < vector <double> > & distOld,
+                      const vector < vector <double> > & distNew,
+                      const vector <int> placedDots) // square matrices
+{
+    double res = 0.;
+    for(int i = 0; i < placedDots.size(); ++i)
+    {
+        for(int j = i+1; j < placedDots.size(); ++j)
+        {
+            res += pow(distOld[i][j] - distNew[i][j], 2.) / pow(distOld[i][j], 2.);
+        }
+    }
+    return res;
+}
+
+void countInvHessianAddDot(const vector < vector <double> > & distOld,
+                           const vector < vector <double> > & distNew,
+                           const vector <pair <double, double> > & crds,
+                           const vector <int> & placedDots,
+                           vector < vector <double> > & invHessian)
+{
+    invHessian[0][0] = 0.;
+    invHessian[0][1] = 0.;
+    invHessian[1][0] = 0.;
+    invHessian[1][1] = 0.;
+
+    const int & b = placedDots.back();
+    for(int j = 0; j < placedDots.size() - 1; ++j)
+    {
+        const int & i = placedDots[j];
+        //dydy
+        invHessian[0][0] +=
+                2. * (distOld[min(i,b)][max(i, b)] *
+                (pow(distNew[min(i,b)][max(i, b)], -3.) *
+                pow(crds[placedDots.size() - 1].second - crds[j].second, 2.) -
+                pow(distNew[min(i,b)][max(i, b)], -1.)
+                )
+                + 1.)
+                * pow(distOld[min(i,b)][max(i, b)], -2.);
+        //dxdx
+        invHessian[1][1] +=
+                2. * (distOld[min(i,b)][max(i, b)] *
+                (pow(distNew[min(i,b)][max(i, b)], -3.) *
+                pow(crds[placedDots.size() - 1].first - crds[j].first, 2.) -
+                pow(distNew[min(i,b)][max(i, b)], -1.)
+                )
+                + 1.)
+                * pow(distOld[min(i,b)][max(i, b)], -2.);
+        invHessian[0][1] +=
+                -2. * distOld[min(i,b)][max(i, b)] *
+                pow(distNew[min(i,b)][max(i, b)], -3.) *
+                (crds[placedDots.size() - 1].first - crds[j].first) *
+                (crds[placedDots.size() - 1].second - crds[j].second)
+                * pow(distOld[min(i,b)][max(i, b)], -2.);
+    }
+    invHessian[1][0] = invHessian[0][1];
+
+    double det = invHessian[1][1] * invHessian[0][0] - invHessian[1][0] * invHessian[0][1];
+    invHessian[0][0] /= det;
+    invHessian[0][1] /= det;
+    invHessian[1][0] /= det;
+    invHessian[1][1] /= det;
+//    cout << invHessian[0][0] << "\t";
+//    cout << invHessian[0][1] << "\t";
+//    cout << invHessian[1][0] << "\t";
+//    cout << invHessian[1][1] << "\t";
+//    cout << endl;
+
+}
+
+
+void countGradientAddDot(const vector < vector <double> > & distOld,
+                         const vector < vector <double> > & distNew,
+                         const vector <pair <double, double> > & crds,
+                         const vector <int> & placedDots,
+                         vector <double>  & gradient) // gradient for one dot
+{
+    const int & b = placedDots.back();
+    gradient[0] = 0.;
+    gradient[1] = 0.;
+//    cout << placedDots << endl;
+    for(int j = 0; j < placedDots.size() - 1; ++j)
+    {
+
+        const int & i = placedDots[j];
+//        cout << "distOld[" << min(i, b) << "][" << max(i,b)  << "] = " << distOld[min(i,b)][max(i, b)] << endl;
+//        cout << "distNew[" << min(i, b) << "][" << max(i,b)  << "] = " << distNew[min(i,b)][max(i, b)] << endl;
+
+        gradient[0] +=
+                2. * (1. - distOld[min(i,b)][max(i, b)] /
+                distNew[min(i,b)][max(i, b)]) *
+                (crds[placedDots.size() - 1].first - crds[j].first)
+                * pow(distOld[min(i,b)][max(i, b)], -2.);
+        gradient[1] +=
+                2. * (1. - distOld[min(i,b)][max(i, b)] /
+                distNew[min(i,b)][max(i, b)]) *
+                (crds[placedDots.size() - 1].second - crds[j].second)
+                * pow(distOld[min(i,b)][max(i, b)], -2.);
+    }
+//    cout << gradient[0] << "\t" << gradient[1] << endl;
+
+}
+
+void countDistNewAdd(vector < vector <double> > & distNew, // change only last coloumn
+                     vector < pair <double, double> > & crds,
+                     const vector <int> & placedDots)
+{
+    for(int i = 0; i < placedDots.size() - 1; ++i)
+    {
+        const int & a = placedDots[i];
+        const int & b = placedDots.back(); // placedDots[placedDots.size() - 1];
+        distNew[min(a, b)][max(a,b)] = pow(pow(crds[a].first  - crds[placedDots.size() - 1].first , 2) +
+                                           pow(crds[a].second - crds[placedDots.size() - 1].second, 2),
+                                           0.5);
+    }
+
+}
+
+
+void sammonAddDot(const vector < vector <double> > & distOld,
+                  vector < vector <double> > & distNew, // change only last coloumn
+                  vector < pair <double, double> > & plainCoords,
+                  const vector<int> & placedDots)
+{
+    const int addNum = placedDots.size() - 1;
+    // set initial place
+    double helpX = 0.;
+    double helpY = 0.;
+    double sumW = 0.;
+    double currW = 0.;
+    for(int i = 0; i < addNum; ++i)
+    {
+        currW = pow(distOld[placedDots[i]][placedDots.back()], -2.);
+        sumW += currW;
+        helpX += plainCoords[i].first  * currW;
+        helpY += plainCoords[i].second * currW;
+    }
+    helpX /= sumW;
+    helpY /= sumW;
+
+    plainCoords[addNum] = make_pair(helpX, helpY);
+
+    //cout all the dots
+    for(int i = 0; i < addNum+1; ++i)
+    {
+        cout << "dot[" << i << "] = " << plainCoords[i].first << '\t' << plainCoords[i].second << endl;
+    }
+
+
+    // gradien descent
+    vector <double> gradient;
+    gradient.resize(2);
+    vector < vector<double> > invHessian; // matrix 2x2
+    invHessian.resize(2);
+    invHessian[0].resize(2);
+    invHessian[1].resize(2);
+
+    double tmpError1 = 0.;
+    double tmpError2 = 0.;
+
+    // count initial error
+    countDistNewAdd(distNew,
+                    plainCoords,
+                    placedDots);
+    tmpError2 = errorSammonAdd(distOld,
+                               distNew,
+                               placedDots);
+
+    double lambda = 0.2;
+    int iterationsCount = 0;
+    while(1)
+    {
+        tmpError1 = tmpError2;
+        countGradientAddDot(distOld,
+                            distNew,
+                            plainCoords,
+                            placedDots,
+                            gradient);
+
+        if(iterationsCount % 10 == 0) // sometimes recount Hessian
+        {
+            countInvHessianAddDot(distOld,
+                                  distNew,
+                                  plainCoords,
+                                  placedDots,
+                                  invHessian);
+        }
+
+//        exit(0);
+
+
+        // make a step, need matrix struct
+        plainCoords[addNum].first  -= lambda *
+                (invHessian[0][0] * gradient[0] + invHessian[0][1] * gradient[1]);
+        plainCoords[addNum].second -= lambda *
+                (invHessian[1][0] * gradient[0] + invHessian[1][1] * gradient[1]);
+
+
+        countDistNewAdd(distNew,
+                        plainCoords,
+                        placedDots);
+        tmpError2 = errorSammonAdd(distOld,
+                                   distNew,
+                                   placedDots);
+
+        lambda *= 1.2;
+        ++iterationsCount;
+
+        if(tmpError2 < 1e-10
+                || (fabs(tmpError1 - tmpError2) / tmpError1) < 1e-6
+                || iterationsCount > 1000) break;
+    }
+    cout << "NumOfIterations addDot = " << iterationsCount << " error = " << tmpError2 << endl;
+}
+
+void sammonProj(const vector < vector <double> > & distOld,
+                const vector <int> & types,
+                const QString & picPath)
+{
+    srand(time(NULL));
+    int size = distOld.size();
+
+    vector < vector <double> > distNew; // use only higher triangle
+    distNew.resize(size);
+    for(int i = 0; i < size; ++i)
+    {
+        distNew[i].resize(size);
+    }
+
+    vector < pair <double, double> > plainCoords;
+    plainCoords.resize(size);
+
+    // find three most distant points
+    // precise
+    int num1 = -1;
+    int num2 = -1;
+    int num3 = -1;
+    vector <int> placedDots;
+    double maxDist = 0.;
+
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = i+1; j < size; ++j)
+        {
+            if(distOld[i][j] > maxDist)
+            {
+                maxDist = distOld[i][j];
+                num1 = i;
+                num2 = j;
+            }
+        }
+    }
+//    cout << "maxDist = " << maxDist << endl;
+    plainCoords[0] = make_pair(0., 0.);
+    plainCoords[1] = make_pair(0., maxDist);
+    maxDist = 0.;
+
+    for(int i = 0; i < size; ++i)
+    {
+        if(i == num1 || i == num2) continue;
+        if(fmin(distOld[i][num1], distOld[i][num2]) > maxDist)
+        {
+            maxDist = fmin(distOld[i][num1], distOld[i][num2]);
+            num3 = i;
+        }
+    }
+//    cout << "maxDist = " << maxDist << endl;
+    //count third dot coords
+    double tm = (pow(distOld[num1][num3], 2.) +
+                 pow(distOld[num1][num1], 2.) -
+                 pow(distOld[num2][num3], 2.)
+                 ) * 0.5 / distOld[num1][num2];
+//    cout << "tm = " << tm << endl;
+    plainCoords[2] = make_pair(tm,
+                               pow( pow(distOld[num1][num3], 2.) -
+                                    pow(tm, 2.),
+                                    0.5)
+                               );
+    placedDots.push_back(num1);
+    placedDots.push_back(num2);
+    placedDots.push_back(num3);
+
+    distNew[min(num1, num2)][max(num1,num2)] = distOld[min(num1, num2)][max(num1,num2)];
+    distNew[min(num2, num3)][max(num2,num3)] = distOld[min(num2, num3)][max(num2,num3)];
+    distNew[min(num3, num1)][max(num3,num1)] = distOld[min(num3, num1)][max(num3,num1)];
+
+
+    double helpDist = 0.;
+    for(int addNum = 3; addNum < size; ++addNum)
+    {
+        maxDist = 0.;
+        //search max distant dot
+        for(int i = 0; i < size; ++i)
+        {
+            if(std::find(placedDots.begin(),
+                         placedDots.end(),
+                         i) != placedDots.end()) {continue;}
+
+            helpDist = distOld[placedDots[0]][placedDots[1]];
+            for(int j = 0; j > placedDots.size(); ++j)
+            {
+                helpDist = fmin(helpDist, distOld[i][placedDots[j]]);
+            }
+
+            if(helpDist > maxDist)
+            {
+                maxDist = helpDist;
+                num3 = i;
+            }
+        }
+
+        //place this dot
+        placedDots.push_back(num3);
+        sammonAddDot(distOld, distNew, plainCoords, placedDots);
+    }
+
+
+//    std::transform(plainCoords.begin(),
+//                   plainCoords.end(),
+//                   plainCoords.begin(),
+//                   [&](pair<double, double> a){return make_pair(-5. + 10.*(rand()%300) / 150.,
+//                                                                -5. + 10.*(rand()%300) / 150.
+//                                                                );
+//                                              }
+//    );
+
+//    std::for_each (plainCoords.begin(),
+//                   plainCoords.end(),
+//                   [&](pair<double, double> a){cout << a.first << '\t' << a.second << endl;}
+//    );
+
+#if 0
+    vector < vector <double> > distNew = distOld;
+
+
+    refreshDistAll(distNew, plainCoords);
+
+
+    double tmpError1 = 0.;
+    double tmpError2 = errorSammon(distOld, distNew);
+
+
+    int iterationsCount = 0;
+    while(1)
+    {
+        tmpError1 = tmpError2; //error before
+        moveCoordsGradient(plainCoords, distOld, distNew);
+        tmpError2 = errorSammon(distOld, distNew);
+
+//        cout << iterationsCount << " error = " << tmpError2 << endl;
+        ++iterationsCount;
+//        cout << tmpError1 << "\t->\t" << tmpError2 << endl;
+
+        if(tmpError2 < 1e-10
+                || (fabs(tmpError1 - tmpError2) / tmpError1) < 1e-6
+                || iterationsCount > 1000) break;
+    }
+    cout << "NumOfIterations = " << iterationsCount << " error = " << tmpError2 << endl;
+#endif
+
+    drawSammon(plainCoords, types, picPath);
+}
+
+
+
+
+
+
+
+void drawSammon(const vector < pair <double, double> > & plainCoords,
+                const vector <int> & types,
+                const QString & picPath) //uses coords array
+{
+
+    const int NumberOfVectors = plainCoords.size();
+    //draw the points
+    QPixmap pic(1200, 1200);
+    pic.fill();
+    QPainter painter;
+    painter.begin(&pic);
+
+    painter.setPen("black");
+    painter.drawLine(QPointF(0, pic.height()/2.),
+                     QPointF(pic.width(), pic.height()/2.));
+    painter.drawLine(QPointF(pic.width()/2., 0),
+                     QPointF(pic.width()/2, pic.height()));
+
+    double minX = 0., minY = 0., maxX = 0., maxY = 0., avX, avY, rangeX, rangeY;
+    const double rectSize = 4;
+
+    double sum1 = 0., sum2 = 0.;
+
+    minX = plainCoords[0].first;
+    minY = plainCoords[0].second;
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        maxX = fmax(maxX, plainCoords[i].first);
+        maxY = fmax(maxY, plainCoords[i].second);
+
+        minX = fmin(minX, plainCoords[i].first);
+        minY = fmin(minY, plainCoords[i].second);
+    }
+    avX = (minX + maxX)/2.;
+    avY = (minY + maxY)/2.;
+
+    rangeX = (maxX - minX)/2.;
+    rangeY = (maxY - minY)/2.;
+
+    rangeX *= 1.05;
+    rangeY *= 1.05;
+
+    double range = fmax(rangeX, rangeY);
+
+    double initX = 0.;
+    double initY = 0.;
+    double leng = 0.;
+    double angle = 0.;
+    double drawX = 0.;
+    double drawY = 0.;
+
+    // count half of points for right angle
+    double sumAngle1 = 0.;
+    double sumAngle2 = 0.;
+    double maxLeng = 0;
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        sum1 = plainCoords[i].first;
+        sum2 = plainCoords[i].second;
+
+        // relative coordinates (centroid)
+        initX = sum1 - avX;
+        initY = sum2 - avY;
+
+        leng = pow(pow(initX, 2.) + pow(initY, 2.), 0.5);
+        maxLeng = fmax(leng, maxLeng);
+
+        angle = countAngle(initX, initY);
+
+        if(i < NumberOfVectors/2)
+        {
+            sumAngle1 += angle;
+        }
+        if(i >= NumberOfVectors/4 && i < NumberOfVectors*3/4)
+        {
+            sumAngle2 += angle;
+        }
+    }
+    sumAngle1 /= (NumberOfVectors/2);
+    sumAngle2 /= (NumberOfVectors/2);
+    range = maxLeng * 1.05;
+
+    int mirror = 1;
+    if(cos(sumAngle1) * sin(sumAngle2) - cos(sumAngle2) * sin(sumAngle1) < 0.)
+    {
+        mirror = -1;
+    }
+
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        sum1 = plainCoords[i].first;
+        sum2 = plainCoords[i].second;
+
+        switch(types[i])
+        {
+        case 0:
+        {
+            painter.setBrush(QBrush("blue"));
+            painter.setPen("blue");
+            break;
+        }
+        case 1:
+        {
+            painter.setBrush(QBrush("red"));
+            painter.setPen("red");
+            break;
+        }
+        case 2:
+        {
+            painter.setBrush(QBrush("green"));
+            painter.setPen("green");
+            break;
+        }
+        default:
+        {
+            painter.setBrush(QBrush("black"));
+            painter.setPen("black");
+            break;
+        }
+        }
+        initX = sum1 - avX;
+        initY = sum2 - avY;
+
+        leng = pow(pow(initX, 2.) + pow(initY, 2.), 0.5);
+        angle = countAngle(initX, initY);
+
+        angle -= sumAngle1;
+        initX = leng * cos(angle);
+        initY = leng * sin(angle);
+//        mirror = 1;
+
+
+        drawX = pic.width()  / 2. * (1. + (initX / range));
+        drawY = pic.height() / 2. * (1. + (initY / range) * mirror);
+
+//        cout << drawX << '\t' << drawY << endl;
+
+        painter.drawRect(QRectF(QPointF(drawX - rectSize,
+                                        drawY - rectSize),
+                                QPointF(drawX + rectSize,
+                                        drawY + rectSize)
+                                )
+                         );
+
+    }
+    pic.save(picPath, 0, 100);
+    painter.end();
+    cout << "Sammon projection done" << endl;
+}
+

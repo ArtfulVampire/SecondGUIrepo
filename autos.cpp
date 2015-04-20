@@ -3,6 +3,265 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+bool mySort(vector<double> i,
+            vector<double>  j)
+{
+    return (i[0] < j[0]);
+}
+
+template <class InputIterator, class T>
+bool contains (InputIterator first, InputIterator last, const T & val)
+{
+  while (first!=last) {
+    if (*first==val) return true;
+    ++first;
+  }
+  return false;
+}
+
+void MainWindow::clustering()
+{
+    srand(time(NULL));
+
+    int numRow = 10;
+    int numCol = 18;
+    vector < vector <double> > cData;
+    cData.resize(numRow);
+    for(int i = 0; i < numRow; ++i)
+    {
+        cData[i].resize(numCol);
+    }
+
+    ifstream inStr;
+    QString helpString = "/media/Files/Data/Mati/clust.txt";
+    inStr.open(helpString.toStdString().c_str());
+    for(int i = 0; i < numRow; ++i)
+    {
+        for(int j = 0; j < numCol; ++j)
+        {
+            inStr >> cData[i][j];
+        }
+    }
+
+
+
+    vector < vector <double> > distOld;
+    distOld.resize(numRow);
+    for(int i = 0; i < numRow; ++i)
+    {
+        distOld[i].resize(numRow);
+    }
+
+    vector <int> types;
+    types.resize(numRow);
+
+    vector < vector <double> > dists; // distance, i, j,
+
+    vector < vector <double> > newDists; // distance, i, j,
+
+    vector <double> temp;
+    temp.resize(4);
+
+    vector <bool> boundDots;
+    vector <bool> isolDots;
+    boundDots.resize(numRow);
+    std::fill(boundDots.begin(), boundDots.end(), false);
+    isolDots.resize(numRow);
+    std::fill(isolDots.begin(), isolDots.end(), true);
+
+    for(int i = 0; i < numRow; ++i)
+    {
+        types[i] = i % 3;
+        for(int j = i+1; j < numRow; ++j)
+        {
+            temp[0] = distance(cData[i].data(), cData[j].data(), numCol);
+            temp[1] = i;
+            temp[2] = j;
+            temp[3] = 0;
+
+            dists.push_back(temp);
+
+            distOld[i][j] = temp[0];
+            distOld[j][i] = temp[0];
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+    //test
+
+    const int N = 7;
+    const int dim = 2;
+
+    distOld.clear();
+    distOld.resize(N);
+    for(int i = 0; i < N; ++i)
+    {
+        distOld[i].resize(N);
+    }
+
+    vector < vector<double> > dots;
+    dots.resize(N);
+    vector <double> ass;
+    ass.resize(dim);
+
+    types.clear();
+    types.resize(N);
+
+    srand (756);
+    for(int i = 0; i < N; ++i)
+    {
+        types[i] = i % 3;
+        for(int j = 0; j < dim; ++j)
+        {
+            ass[j] =  -5. + 10.*( (rand())%300 ) / 150.;
+        }
+//        cout << ass << endl;
+        dots[i] = ass;
+
+    }
+
+    for(int i = 0; i < N; ++i)
+    {
+        distOld[i][i] = 0.;
+        for(int j = 0; j < N; ++j)
+        {
+            distOld[i][j] = distance(dots[i], dots[j], dim);
+            distOld[j][i] = distOld[i][j];
+        }
+    }
+
+//    cout << distOld << endl;
+
+    sammonProj(distOld, types,
+               "/media/Files/Data/Mati/sammon.jpg");
+
+
+
+exit(1);
+return;
+
+
+
+
+
+
+
+
+
+    std::sort(dists.begin(), dists.end(), mySort);
+    // make first bound
+
+    boundDots[ dists[0][1] ] = true;
+    isolDots[ dists[0][1] ] = false;
+
+    boundDots[ dists[0][2] ] = true;
+    isolDots[ dists[0][2] ] = false;
+
+    dists[0][3] = 2;
+    newDists.push_back(dists[0]);
+
+    for(int j = 0; j < 3; ++j)
+    {
+        cout << dists[0][j] << '\t';
+    }
+    cout << endl;
+
+
+    vector<vector<double> >::iterator itt;
+    while (contains(isolDots.begin(), isolDots.end(), true))
+    {
+        //adjust dists[i][3]
+        for(vector<vector<double> >::iterator iit = dists.begin();
+            iit < dists.end();
+            ++iit)
+        {
+            if(boundDots[ (*iit)[1] ])
+            {
+                (*iit)[3] += 1;
+            }
+            if(boundDots[ (*iit)[2] ])
+            {
+                (*iit)[3] += 1;
+            }
+//            if((*iit)[3] >= 2)
+//            {
+//                dists.erase(iit);
+////                --iit; // :-)
+//            }
+        }
+
+        // set new bound ()
+        for(itt = dists.begin();
+            itt < dists.end();
+            ++itt)
+        {
+            if((*itt)[3] == 1) break;
+        }
+
+        boundDots[ (*itt)[1] ] = true;
+        isolDots[ (*itt)[1] ] = false;
+
+        boundDots[ (*itt)[2] ] = true;
+        isolDots[ (*itt)[2] ] = false;
+
+        (*itt)[3] = 2;
+        newDists.push_back(*itt);
+
+        for(int j = 0; j < 3; ++j)
+        {
+            cout << (*itt)[j] << '\t';
+        }
+        cout << endl;
+    }
+    std::sort(newDists.begin(), newDists.end(), mySort);
+    vector <double> newD;
+    for(int i = 0; i < newDists.size(); ++i)
+    {
+        newD.push_back(newDists[i][0]);
+    }
+    cout << newD << endl;
+
+
+
+
+
+
+
+
+    helpString = "/media/Files/Data/Mati/clust.jpg";
+    kernelEst(newD.data(), newD.size(), helpString);
+    helpString = "/media/Files/Data/Mati/clustH.jpg";
+    histogram(newD.data(), newD.size(), 40, helpString);
+
+
+//    for(int i = 0; i < dists.size(); ++i)
+//    {
+//        for(int j = 0; j < 4; ++j)
+//        {
+//            cout << dists[0][j] << '\t';
+//        }
+//        cout << endl;
+//    }
+
+
+
+//    helpString = "/media/Files/Data/Mati/clust.jpg";
+//    kernelEst(dists.data(), dists.size(), helpString);
+//    helpString = "/media/Files/Data/Mati/clustH.jpg";
+//    histogram(dists.data(), dists.size(), 30, helpString);
+
+
+
+}
 
 void MainWindow::matiPreprocessingSlot()
 {

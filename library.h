@@ -58,12 +58,15 @@ QString getDirPathLib(const QString filePath);
 QString getExt(QString filePath);
 QString slash();
 ostream & operator << (ostream &os, QString toOut);
+ostream & operator << (ostream &os, vector < vector < double > > toOut);
 ostream & operator << (ostream &os, QList<int> toOut);
-ostream & operator << (ostream &os, vector<double> toOut); // template!
+template <typename T>
+ostream & operator << (ostream &os, vector<T> toOut); // template!
 //vector< vector<double> > operator=(const vector< vector<double> > & other);
 char * strToChar(const QString & input);
 FILE *fopen(QString filePath, const char *__modes);
 char * QStrToCharArr(const QString & input);
+int typeOfFileName(QString fileName);
 
 //wavelets
 void drawColorScale(QString filename, int range, int type = 0);
@@ -88,6 +91,7 @@ void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, doub
 void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath = "");
 void bayesCount(double * dataIn, int length, int numOfIntervals, double **out);
 void kernelEst(double *arr, int length, QString picPath);
+void histogram(double *arr, int length, int numSteps, QString picPath);
 bool gaussApproval(double * arr, int length); // not finished?
 bool gaussApproval(QString filePath); // not finished?
 bool gaussApproval2(double * arr, int length); // not finished?
@@ -117,10 +121,10 @@ void splineCoeffCount(double * const inX, double * const inY, int dim, double **
 void zeroData(double **& inData, const int & ns, const int & leftLimit, const int & rightLimit, const bool & withMarkersFlag);
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
 double independence(double * const signal1, double * const signal2, int length);
+double countAngle(double initX, double initY);
 
 
 bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
-int typeOfFileName(QString fileName);
 void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength, int NumOfClasses, double coeff, QString outFile);
 void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int spLength, double coeff, double *** outMatrix);
 void cleanDir(QString dirPath, QString nameFilter = "", bool ext = true);
@@ -133,9 +137,6 @@ void makeCfgStatic(QString outFileDir, int NetLength = 19*247, QString FileName 
 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
-//void writePlainData(QString outPath, const double **& data, const int ns, const int numOfSlices, int start = 0, int end = -1);
-//void writePlainData(QString outPath, vector< vector <double> > data, int start = 0, int end = -1);
-//void readPlainData(QString inPath, double **&data, int ns, int & numOfSlices, int offsetSlices = 0);
 
 template <typename Typ = double **>
 void readPlainData(QString inPath,
@@ -186,8 +187,9 @@ void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QStri
 void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag = true,
                  void (*draw1MapFunc)(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag) = &drawMapSpline);
 void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
+void drawSpectra(double ** drawData, int ns, int start, int end, const QString & picPath);
 
-
+void calcSpectre(double ** const inData, double **& dataFFT, int const ns, int const inDataLen, int const NumOfSmooth = 15, const double powArg = 1.);
 void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth = 15, const double powArg = 1.);
 void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth = 15, const double powArg = 1.);
 void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
@@ -242,6 +244,62 @@ int matiCountDecimal(QString byteMarker);
 
 
 
+
+// do sammon class
+//sammon
+void drawSammon(const vector < pair <double, double> > & plainCoords,
+                const vector <int> & types,
+                const QString & picPath);
+
+void sammonProj(const vector < vector <double> > & distOld,
+                const vector <int> & types,
+                const QString & picPath);
+double errorSammon(const vector < vector <double> > & distOld,
+                   const vector < vector <double> > & distNew);
+
+void moveCoordsGradient(vector < pair<double, double> > & plainCoords,
+                        const vector < vector <double> > & distOld,
+                        vector<vector<double> > & distNew);
+void refreshDistAll(vector < vector <double> > & distNew,
+                    const vector <pair <double, double> > & plainCoords);
+
+void refreshDist(vector < vector<double> > & dist,
+                 const vector <pair <double, double> > & testCoords,
+                 const int input);
+
+void countGradient(const vector <pair <double, double> > & plainCoords,
+                   const vector<vector<double> > &distOld,
+                   vector<vector<double> > &distNew,
+                   vector<double> &gradient);
+
+void sammonAddDot(const vector < vector <double> > & distOld,
+                  vector < vector <double> > & distNew, // change only last coloumn
+                  vector < pair <double, double> > & plainCoords,
+                  const vector<int> & placedDots);
+
+void countDistNewAdd(vector < vector <double> > & distNew, // change only last coloumn
+                     vector < pair <double, double> > & crds,
+                     const vector <int> & placedDots);
+
+void countGradientAddDot(const vector < vector <double> > & distOld,
+                         const vector < vector <double> > & distNew,
+                         const vector <pair <double, double> > & crds,
+                         const vector <int> & placedDots,
+                         vector <double>  & gradient);
+
+void countInvHessianAddDot(const vector < vector <double> > & distOld,
+                           const vector < vector <double> > & distNew,
+                           const vector <pair <double, double> > & crds,
+                           const vector <int> & placedDots,
+                           vector < vector <double> > & invHessian);
+
+double errorSammonAdd(const vector < vector <double> > & distOld,
+                      const vector < vector <double> > & distNew,
+                      const vector <int> placedDots);
+
+
+
+
 inline double doubleRound(const double & in, int numSigns)
 {
     return int(  ceil(in*pow(10., numSigns) - 0.5)  ) / pow(10., numSigns);
@@ -267,7 +325,7 @@ inline int fftLimit(double inFreq, double freq, int fftL)
     return floor(0.5 + inFreq/freq*fftL);
 }
 
-inline int fftL(const int & in)
+inline int fftL(int in)
 {
     return pow(2., ceil(log2(in)));
 }

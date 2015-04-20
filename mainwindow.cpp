@@ -2886,7 +2886,46 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
 
-//    globalEdf.readEdfFile("/media/Files/Data/Mati/KMX/KMX_rr_f.edf");
+    clustering();
+
+#if 0
+    double ** dataFFT = new double * [maxNs];
+    for(int i = 0; i < maxNs; ++i)
+    {
+        dataFFT[i] = new double [65536];
+    }
+    setEdfFile("/media/Files/Data/Mati/PYV/PYV_rr.edf");
+    readData();
+    globalEdf.saveSubsection(100000, 106000,
+                             "/media/Files/Data/Mati/PYV/test.edf");
+
+    setEdfFile("/media/Files/Data/Mati/PYV/test.edf");
+    readData();
+    calcSpectre(data, dataFFT, ns-1, 6000, 50);
+    drawSpectra(dataFFT, ns-1,
+                fftLimit(5., def::freq, fftL(6000)),
+                fftLimit(20., def::freq, fftL(6000)),
+                "/media/Files/Data/Mati/PYV/test0.jpg");
+
+
+    for(int i = 0; i < ns-1; ++i)
+    {
+        for(int j = 0; j < globalEdf.getDataLen(); ++j)
+        {
+            data[i][j] *= 0.5 * (1 - cos(2 * pi * j / (globalEdf.getDataLen() - 1)));
+        }
+    }
+    calcSpectre(data, dataFFT, ns-1, 6000, 50);
+
+    drawSpectra(dataFFT, ns-1,
+                fftLimit(5., def::freq, fftL(6000)),
+                fftLimit(20., def::freq, fftL(6000)),
+                "/media/Files/Data/Mati/PYV/test1.jpg");
+
+
+    exit(0);
+#endif
+
 //    cout << sizeof(globalEdf.getData()) << endl;
 
 //    exit(0);
