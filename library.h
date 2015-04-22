@@ -84,11 +84,11 @@ void wavelet(QString out, FILE * file, int ns = 19, int channelNumber = 0, doubl
 void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
 //signal processing
-double fractalDimension(double *arr, int N, QString picPath = ""); // piPath deprecated
+double fractalDimension(double *arr, int N);
 double enthropy(double *arr, int N, QString picPath, int numOfRanges); // not finished?
 void four1(double * dataF, int nn, int isign);
-void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath = "");
-void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath = "");
+void hilbert(const double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath = "");
+void hilbertPieces(const double *arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath = QString());
 void bayesCount(double * dataIn, int length, int numOfIntervals, double **out);
 void kernelEst(double *arr, int length, QString picPath);
 void histogram(double *arr, int length, int numSteps, QString picPath);
@@ -110,7 +110,7 @@ double sigmaFromZero(const double *arr, int length);
 double skewness(double *arr, int length);
 double kurtosis(double *arr, int length);
 double rankit(int i, int length, double k = 0.375);
-double covariance(double * const arr1, double * const arr2, int length);
+double covariance(const double *arr1, const double *arr2, int length);
 double correlation(const double *arr1, const double *arr2, int length, int shift = 0);
 double correlationFromZero(double * const arr1, double * const arr2, int length, int shift = 0);
 double maxValue(double * arr, int length);
@@ -201,8 +201,13 @@ double distanceMah(double * const vect, double ** const covMatrixInv, double * c
 double distanceMah(double * const vect, double ** const group, int dimension, int number);
 double distanceMah(double ** const group1, double ** const group2, int dimension, int number1, int number2);
 void matrixMahCount(double ** const matrix, int number, int dimension, double *** outMat, double **meanVect);
-void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const dimH, int const dimL);  //matrix product: out = A(H*H) * B(H*L)
-void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int const numRows1, int const numCols2, int const numCols1Rows2);  //matrix product: out = A(K*H) * B(H*L)
+
+template <typename Typ1, typename Typ2>
+void matrixProduct(Typ1 inMat1, Typ2 inMat2, double *** outMat, int const dimH, int const dimL);  //matrix product: out = A(H*H) * B(H*L)
+
+template <typename Typ1, typename Typ2>
+void matrixProduct(Typ1 inMat1, Typ2 inMat2, double *** outMat, int const numRows1, int const numCols2, int const numCols1Rows2);  //matrix product: out = A(K*H) * B(H*L)
+
 void matrixProduct(double * const vect, double ** const mat, double ** outVect, int dimVect, int dimMat); //outVect = vect * mat
 void matrixProduct(double ** const mat, double * const vect, double ** outVect, int dimVect, int dimMat); //outVect = mat * vect
 void matrixProduct(double * const vect1, double * const vect2, int dim, double * out);

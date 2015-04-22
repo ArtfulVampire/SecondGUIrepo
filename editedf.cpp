@@ -224,8 +224,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     }
     ui->reduceChannelsLineEdit->setText(helpString);
 
-    writeEdf(ui->filePathLineEdit->text(), data, newPath, ndr*def::freq);
-
+    globalEdf.writeEdfFile(newPath);
     cout << "rereferenceData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
@@ -248,7 +247,7 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
 
 
     readData();
-    const edfFile & fil = globalEdf;
+    edfFile & fil = globalEdf;
 
     int fftLength = fftL(fil.getDataLen());
 
@@ -259,7 +258,7 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
     QList <int> chanList;
     for(int i = 0; i < fil.getNs(); ++i)
     {
-        if(fil.getLabels()[i].contains(QRegExp("E[OE]G")))
+        if(fil.getLabels()[i].contains(QRegExp("E[OE]G"))) // filter only EEG, EOG signals
         {
             chanList << i;
         }
@@ -274,7 +273,7 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
     {
         for(int i = 0; i < fil.getDataLen(); ++i)            //make appropriate array
         {
-            spectre[ i * 2 + 0 ] = (double)(data[ chanList[j] ][ i ] * sqrt(norm1));
+            spectre[ i * 2 + 0 ] = (double)(fil.getData()[ chanList[j] ][ i ] * sqrt(norm1));
             spectre[ i * 2 + 1 ] = 0.;
         }
         for(int i = fil.getDataLen(); i < fftLength; ++i)            //make appropriate array
@@ -287,12 +286,12 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
         //filtering
         for(int i = 0; i < fftLength; ++i)
         {
-            if(i < 2.*lowFreq/spStep || i > 2.*highFreq/spStep)
+            if(i < 2. * lowFreq/spStep || i > 2. * highFreq/spStep)
                 spectre[i] = 0.;
         }
         for(int i = fftLength; i < 2*fftLength; ++i)
         {
-            if(((2*fftLength - i) < 2.*lowFreq/spStep) || (2*fftLength - i > 2.*highFreq/spStep))
+            if(((2*fftLength - i) < 2. * lowFreq/spStep) || (2 * fftLength - i > 2. * highFreq/spStep))
                 spectre[i] = 0.;
         }
         //end filtering
@@ -300,18 +299,15 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
         four1(spectre-1, fftLength, -1);
         for(int i = 0; i < fil.getDataLen(); ++i)
         {
-            data[ chanList[j] ][ i ] = spectre[2*i] / (fftLength * sqrt(norm1));
+            fil.setData(chanList[j],
+                        i,
+                        spectre[2*i] / (fftLength * sqrt(norm1)) );
         }
         ui->progressBar->setValue(j * 100. / numOfChan);
     }
     ui->progressBar->setValue(0);
 
-    chanList.clear();
-    for(int i = 0; i < fil.getNs(); ++i)
-    {
-        chanList << i;
-    }
-    writeEdf(ui->filePathLineEdit->text(), data, newPath, fil.getDataLen(), chanList );
+    fil.writeEdfFile(newPath);
 
     cout << "refilterData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
@@ -417,13 +413,12 @@ void MainWindow::reduceChannelsSlot()
 
 void MainWindow::reduceChannelsFast()
 {
-    QTime myTime;
-    myTime.start();
-
+#if !DATA_ARR
+    globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
+#else
     QStringList lst;
     QString helpString;
     QStringList list;
-    bool simple = true;
 
     list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
     if(!QString(label[list[list.length() - 1].toInt() - 1]).contains("Markers"))
@@ -432,35 +427,29 @@ void MainWindow::reduceChannelsFast()
         return;
     }
 
+
+    double sign;
+    int lengthCounter; //length of the expression in chars
+
+
+
     double ** temp = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
         temp[i] = new double [ndr * nr[i]];
     }
-    double sign;
-    int lengthCounter; //length of the expression in chars
-
     for(int k = 0; k < list.length(); ++k)
     {
-        if(QString::number(list[k].toInt()) != list[k])
-        {
-            simple = false;
-            break;
-        }
-    }
-
-    for(int k = 0; k < list.length(); ++k)
-    {
-        if(QString::number(list[k].toInt()) == list[k])
+        if(QString::number(list[k].toInt()) == list[k]) // just copy
         {
             memcpy(temp[k],
-                   data[list[k].toInt() - 1],
-                    ndr * nr[list[k].toInt() - 1] * sizeof(double)); // generality
+                   globalEdf.getData()[list[k].toInt() - 1].data(),
+                    ndr * nr[list[k].toInt() - 1] * sizeof(double));
         }
         else if(list[k].contains(QRegExp("[\\+\\-\\*\\/]")))
         {
             lengthCounter = 0;
-            lst = list[k].split(QRegExp("[-+/*]"), QString::SkipEmptyParts);
+            lst = list[k].split(QRegExp("[\\+\\-\\*\\/]"), QString::SkipEmptyParts);
             for(int h = 0; h < lst.length(); ++h)
             {
                 if(QString::number(lst[h].toInt()) != lst[h]) // if not a number between operations
@@ -474,12 +463,9 @@ void MainWindow::reduceChannelsFast()
                     return;
                 }
             }
-            for(int j = 0; j < ndr*nr[k]; ++j) //generality k
-            {
-                temp[k][j] = data[lst[0].toInt() - 1][j]; //copy the data from first channel in the expression into temp
-            }
-            //or
-            //            memccpy(temp[k], data[lst[0].toInt() - 1], ndr*nr[k] * sizeof(double));
+            memcpy(temp[k],
+                   globalEdf.getData()[lst[0].toInt() - 1].data(),
+                    ndr*nr[k] * sizeof(double));
 
             lengthCounter += lst[0].length();
             for(int h = 1; h < lst.length(); ++h)
@@ -510,7 +496,7 @@ void MainWindow::reduceChannelsFast()
                 }
                 for(int j = 0; j < ndr*nr[k]; ++j) //generality k
                 {
-                    temp[k][j] += sign * data[lst[h].toInt() - 1][j];
+                    temp[k][j] += sign * globalEdf.getData()[lst[h].toInt() - 1][j];
                 }
 
                 if(list[k][lengthCounter] == '/' || list[k][lengthCounter] == '*')
@@ -536,26 +522,22 @@ void MainWindow::reduceChannelsFast()
     }
     for(int k = 0; k < list.length(); ++k)
     {
-        memcpy(data[k], temp[k], ddr*ndr*nr[k] * sizeof(double));
+        memcpy(data[k], temp[k], ndr*nr[k] * sizeof(double));
     }
-
-
     for(int i = 0; i < ns; ++i)
     {
         delete []temp[i];
     }
     delete []temp;
 
-
     ns = list.length();
-    cout << "reduceChannelsFast: ns = " << ns;
-    cout << ", time = " << myTime.elapsed()/1000. << " sec";
-    cout << endl;
+#endif
 
-    helpString="channels reduced fast ";
+
+    QString helpString = "channels reduced fast ";
     ui->textEdit->append(helpString);
 
-    helpString="ns equals to " + QString::number(ns);
+    helpString = "ns equals to " + QString::number(ns);
     ui->textEdit->append(helpString);
 
     ui->progressBar->setValue(0);
@@ -580,34 +562,6 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
     }
     resultEdf->writeEdfFile(outPath);
     delete resultEdf;
-#if 0
-
-    int newDataLen = 0;
-    int tempPos = 0;
-    double ** newData;
-    matrixCreate(&newData, ns, newNdr * def::freq); ////////generality
-
-    for(int k = 0; k < inPath.length(); ++k)
-    {
-        setEdfFile(inPath[k]);
-        readData();
-        for(int i = 0; i < ns; ++i)
-        {
-            memcpy(newData[i] + tempPos, data[i], sizeof(double) * ndr*def::freq);
-        }
-        tempPos += ndr*def::freq;
-    }
-    QList <int> ls;
-    for(int i = 0; i < ns; ++i)
-    {
-        ls << i;
-    }
-
-    setEdfFile(inPath[0]);
-    readData();
-    writeEdf(inPath[0], newData, outPath, tempPos, ls);
-    matrixDelete(&newData, ns);
-#endif
     cout << "concatenateEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
@@ -615,61 +569,9 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
 {
     QTime myTime;
     myTime.start();
-
-    edfFile fil;
-    fil.readEdfFile(inPath1);
-    fil.concatFile(inPath2, outPath);
-    return;
-
-
-    //assume the files are concatenable
-    int newNdr = 0;
-    int tempPos = 0;
-
-    setEdfFile(inPath2);
-    readData();
-    newNdr += ndr;
-//    cout << "concatenate EDF: ndr2 = " << ndr << endl;
-
-    setEdfFile(inPath1);
-    readData();
-    tempPos = ndr;
-    newNdr += ndr;
-
-//    cout << "concatenate EDF: ndr1 = " << ndr << endl;
-//    cout << "concatenate EDF: newNdr = " << newNdr << endl;
-//    cout << "concatenate EDF: tempPos = " << tempPos << endl;
-
-
-    double ** newData;
-    matrixCreate(&newData, ns, newNdr * def::freq); ////////generality ddr
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < tempPos * def::freq; ++j) ////////generality
-        {
-            newData[i][j] = data[i][j];
-        }
-    }
-
-
-    setEdfFile(inPath2);
-    readData();
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < ndr * def::freq; ++j) ////////generality
-        {
-            newData[i][j + tempPos * int(def::freq)] = data[i][j];
-        }
-    }
-
-    QList<int> ls;
-    for(int i = 0; i < ns; ++i)
-    {
-        ls << i;
-    }
-
-    writeEdf(inPath1, newData, outPath, newNdr * def::freq, ls);
-    matrixDelete(&newData, ns);
+    QStringList lst;
+    lst << inPath1 << inPath2;
+    concatenateEDFs(lst, outPath);
     cout << "concatenateEDFs: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
@@ -837,7 +739,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
                 + slash() + ExpName.left(3)
                 + "_splitZerosLog.txt";
 
-        helpInt = currSlice;
+//        helpInt = currSlice;
 
 //        cout << "currSlice before = " << currSlice << endl;
 //        drawEeg(newData, ns, currSlice - 4000, currSlice, def::freq,
@@ -848,7 +750,6 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 //        drawEeg(newData, ns, currSlice - 4000, currSlice, def::freq,
 //                "/media/Files/Data/Mati/ADA/auxEdfs/a.jpg");
 //        cout << "currSlice after  = " << currSlice << endl;
-//        if(newPath.contains("ADA_w_c_0_1")) exit(0);
 
         ofstream outStream;
         outStream.open(helpString.toStdString().c_str(), ios_base::app);
@@ -921,6 +822,10 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
 void MainWindow::eyesFast()  //generality
 {
+    globalEdf.cleanFromEyes();
+    return;
+
+#if 0
     QTime myTime;
     myTime.start();
 
@@ -950,9 +855,8 @@ void MainWindow::eyesFast()  //generality
     {
         for(int i = 0; i < NumEog; ++i)
         {
-            fscanf(coef, "%lf ", &coefficients[k][i]);
+            fscanf(coef, "%lf", &coefficients[k][i]);
         }
-        fscanf(coef, "\n");
     }
     fclose(coef);
 
@@ -1012,6 +916,7 @@ void MainWindow::eyesFast()  //generality
     ui->textEdit->append(helpString);
 
     cout << "eyesFast: time = " << myTime.elapsed()/1000. << " sec" << endl;
+#endif
 }
 
 

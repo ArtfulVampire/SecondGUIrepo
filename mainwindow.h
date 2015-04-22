@@ -30,6 +30,7 @@
 
 #include <unistd.h>
 #include <QMessageBox>
+
 //#include <libxml2/libxml/parser.h>
 
 using namespace std;
@@ -163,7 +164,6 @@ private:
     int ndr, ddr, ns, nsBackup;
     int * nr;
     int NumOfSlices;
-    double ** data;
     double ** spocMixMatrix;
     double * spocWVector;
     char ** label;

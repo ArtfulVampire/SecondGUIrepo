@@ -551,7 +551,10 @@ void MainWindow::Bayes()
         }
         fclose(file);
 
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "SpectraSmooth" + slash() + "Bayes" + slash() + lst[i]);
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash() + "SpectraSmooth"
+                                              + slash() + "Bayes"
+                                              + slash() + lst[i]);
         file = fopen(helpString.toStdString().c_str(), "w");
         for(int l = 0; l < ns; ++l)
         {
@@ -580,8 +583,13 @@ void MainWindow::Bayes()
             if(ui->HiguchiRadioButton->isChecked())
             {
                 //fractal dimension
-                helpString = QDir::toNativeSeparators(dir->absolutePath().append(slash()).append("Help").append(slash()).append("Fractals").append(slash()).append(lst[i]).append("_").append(QString::number(l)).append(".png"));
-                helpDouble = fractalDimension(dataBayes[l], NumOfSlices, helpString);
+                helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                                      + slash() + "Help"
+                                                      + slash() + "Fractals"
+                                                      + slash() + lst[i]
+                                                      + "_" + QString::number(l)
+                                                      + ".png");
+                helpDouble = fractalDimension(dataBayes[l], NumOfSlices);
                 fprintf(file, "%.3lf\n", helpDouble);
             }
         }
@@ -596,7 +604,7 @@ void MainWindow::Bayes()
 }
 
 
-void MainWindow::hilbertCount()
+void MainWindow::hilbertCount() // not finished
 {
     QString helpString;
     readData();
@@ -605,10 +613,19 @@ void MainWindow::hilbertCount()
     double fr = def::freq; //generality
 
     double ** hilbertData = new double * [ns];
-    hilbertPieces(data[0], 45536, fr, 9., 11., &hilbertData[0], "");
+#if DATA_ARR
+    hilbertPieces(data[0], 45536, fr, 9., 11., &hilbertData[0]);
+#else
+    hilbertPieces(globalEdf.getData()[0].data(), 45536, fr, 9., 11., &hilbertData[0]);
+#endif
 
     cout << variance(hilbertData[0], 45536) << endl;
-    hilbert(data[0], 65536, fr, 9., 11., &hilbertData[0], "");
+#if DATA_ARR
+    hilbert(data[0], 65536, fr, 9., 11., &hilbertData[0]);
+#else
+    hilbert(globalEdf.getData()[0].data(), 65536, fr, 9., 11., &hilbertData[0]);
+#endif
+
     cout << variance(hilbertData[0], 65536) << endl;
     return;
 
@@ -619,9 +636,16 @@ void MainWindow::hilbertCount()
     {
 //        hilbert(data[i], ndr*fr, fr, 5., 20., &hilbertData[i]);
     }
+#if DATA_ARR
     memcpy(hilbertData[ns-1], data[ns-1], ndr*fr*sizeof(double)); //markers channel
+#else
+    memcpy(hilbertData[ns-1],
+            globalEdf.getData()[ns-1].data(),
+            ndr*fr*sizeof(double)); //markers channel
+#endif
+
     helpString = dir->absolutePath() + slash() + ExpName + "_hilbert.edf";
-    writeEdf(ui->filePathLineEdit->text(), hilbertData, helpString, ndr*fr); ////////////////////////////need fix
+    writeEdf(ui->filePathLineEdit->text(), hilbertData, helpString, ndr*fr);
 
     matrixDelete(&hilbertData, ns);
 }
@@ -1642,5 +1666,162 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
     cout << initAccuracy << "->" << tempAccuracy << endl;
     return tempAccuracy;
 }
+
+
+void MainWindow::makeTestData()
+{
+#if 0
+    QString helpString;
+    readData();
+
+    nsBackup = ns;
+    int indepNum = ui->numComponentsSpinBox->value();
+    double ** testSignals = new double * [indepNum];
+    for(int i = 0; i < indepNum; ++i)
+    {
+        testSignals[i] = new double [ndr*nr[i]];
+    }
+
+    double ** testSignals2 = new double * [ns];
+    for(int i = 0; i < ns; ++i)
+    {
+        testSignals2[i] = new double [ndr*nr[i]];
+    }
+
+
+    double x,y;
+    srand(time(NULL));
+    //signals
+
+    double helpDouble;
+
+    for(int j = 0; j < ui->numComponentsSpinBox->value(); ++j)
+    {
+        x = (rand()%30)/40.;
+        y = (-0.3 + (rand()%600)/100.);
+        for(int i = 0; i < ndr*def::freq; ++i)
+        {
+            helpDouble = 2.*3.1415926*double(i)/def::freq * (10.1 + x) + y;
+            testSignals[j][i] = sin(helpDouble);
+        }
+    }
+//        helpDouble = 2.*3.1415926*double(i)/def::freq * 10.3;
+//        testSignals[1][i] = sin(helpDouble);//+ 0.17); //10.5 Hz
+//        helpDouble = 2.*3.1415926*double(i)/def::freq * 10.25;
+//        testSignals[2][i] = sin(helpDouble);//- 0.17); //10.5 Hz
+//        helpDouble = 2.*3.1415926*double(i)/def::freq * 10.0;
+//        testSignals[3][i] = sin(helpDouble);//- 0.06); //10.5 Hz
+//        testSignals[1][i] = i%41 - 20.;      //a saw 40 period
+//        testSignals[2][i] = sin(2*3.1415926*(double(i)/23.) + 0.175);//
+
+//        x = (1 + rand()%10000)/10001.;
+//        y = (1 + rand()%10000)/10001.;
+//        testSignals[2][i] = sqrt(-2. * log(x)) * sin(2. * M_PI * y);
+
+//        x = (1 + rand()%10000)/10001.;
+//        y = (1 + rand()%10000)/10001.;
+//        testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * M_PI * y);
+//        testSignals[3][i] = ((i%34 >13) - 0.5); //rectangle
+
+
+//        testSignals[2][i] = fabs(i%55 - 27) - 27./2.; //triangle
+
+    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "spocVar.txt");
+    FILE * in = fopen(helpString.toStdString().c_str(), "w");
+    //modulation
+
+    for(int j = 0; j < ui->numComponentsSpinBox->value()-1; ++j)
+    {
+        helpDouble = 0.05 + (rand()%100)/500.;
+        x = (rand()%100)/100.;
+        y = 1.5 + (rand()%20)/10.;
+        for(int i = 0; i < ndr*def::freq; ++i)
+        {
+//            testSignals[j][i] *= sin(2*3.1415926*i/def::freq * helpDouble + x) + y;
+        }
+    }
+    //object signal
+    for(int i = 0; i < ndr*def::freq; ++i)
+    {
+        helpDouble = sin(2.*3.1415926*int(i/250) * 0.02 - 0.138) + 1.8;
+        testSignals[ui->numComponentsSpinBox->value() - 1][i] *= helpDouble;
+        if(i%250 == 0)
+        {
+            fprintf(in, "%lf\n", helpDouble);
+        }
+    }
+    fclose(in);
+
+    double sum1, sum2;
+    //normalize by dispersion = 10
+    double coeff = 10.;
+    for(int i = 0; i < indepNum; ++i)
+    {
+        sum1 = mean(testSignals[i], ndr*def::freq);
+        sum2 = variance(testSignals[i], ndr*def::freq);
+
+        for(int j = 0; j < ndr*def::freq; ++j)
+        {
+            testSignals[i][j] -= sum1;
+            testSignals[i][j] /= sqrt(sum2);
+            testSignals[i][j] *= coeff;
+        }
+    }
+
+
+
+
+    spocMixMatrix = new double * [ui->numComponentsSpinBox->value()];
+    for(int k = 0; k < ui->numComponentsSpinBox->value(); ++k)
+    {
+        spocMixMatrix[k] = new double [ui->numComponentsSpinBox->value()];
+    }
+    for(int j = 0; j < 19; ++j)
+    {
+        for(int i = 0; i < ndr*def::freq; ++i)
+        {
+            testSignals2[j][i] = 0.;
+        }
+        for(int k = 0; k < ui->numComponentsSpinBox->value(); ++k)
+        {
+            helpDouble = (-0.5 + (rand()%21)/20.);
+
+            for(int i = 0; i < ndr*def::freq; ++i)
+            {
+                testSignals2[j][i] += helpDouble * testSignals[k][i];
+//                testSignals2[j][i] += (j==k) * testSignals[k][i];
+            }
+            if(j < ui->numComponentsSpinBox->value())
+            {
+                cout << helpDouble << "\t";
+                spocMixMatrix[j][k] = helpDouble;
+            }
+        }
+        if(j < ui->numComponentsSpinBox->value()) cout << endl;
+    }
+    cout << endl;
+
+
+    cout << "1" << endl;
+//    helpString = ExpName; helpString.append("_test.edf");
+    helpString = "SDA_test.edf";
+//    writeEdf(ui->filePathLineEdit->text(), testSignals2, helpString, ndr*def::freq);
+
+
+
+    for(int i = 0; i < indepNum; ++i)
+    {
+        delete []testSignals[i];
+    }
+    for(int i = 0; i < ns; ++i)
+    {
+        delete []testSignals2[i];
+    }
+    delete []testSignals2;
+    delete []testSignals;
+
+#endif
+}
+
 
 #endif // AUTOS_CPP

@@ -575,7 +575,7 @@ int len(QString s) //lentgh till double \0-byte for EDF+annotations
     return -1;
 }
 
-double fractalDimension(double *arr, int N, QString picPath)
+double fractalDimension(double *arr, int N)
 {
     int timeShift; //timeShift
     double L; //average length
@@ -1301,7 +1301,7 @@ double minValue(double * arr, int length)
 }
 
 
-double covariance(double * const arr1, double * const arr2, int length)
+double covariance(const double * arr1, const double * arr2, int length)
 {
     double res = 0.;
     double m1, m2;
@@ -1391,7 +1391,7 @@ double correlationFromZero(double * const arr1, double * const arr2, int length,
 }
 
 
-double enthropy(double *arr, int N, QString picPath, int numOfRanges) // ~30 is ok
+double enthropy(double *arr, int N, int numOfRanges) // ~30 is ok
 {
 //    numOfRanges = 50;
     double max_ = 0.;
@@ -1428,7 +1428,8 @@ double enthropy(double *arr, int N, QString picPath, int numOfRanges) // ~30 is 
 }
 
 //matrix product out = A(H*H) * B(H*L)
-void matrixProduct(double ** const A, double ** const inMat2, double *** outMat, int dimH, int dimL)
+template <typename Typ1, typename Typ2>
+void matrixProduct(Typ1 A, Typ2 inMat2, double *** outMat, int dimH, int dimL)
 {
     double result;
 
@@ -1445,8 +1446,12 @@ void matrixProduct(double ** const A, double ** const inMat2, double *** outMat,
         }
     }
 }
+template void matrixProduct(double ** A, double ** inMat2, double *** outMat, int dimH, int dimL);
+template void matrixProduct(double ** A, vector < vector <double> > inMat2, double *** outMat, int dimH, int dimL);
+template void matrixProduct(vector < vector <double> > A, vector < vector <double> > inMat2, double *** outMat, int dimH, int dimL);
 
-void matrixProduct(double ** const inMat1, double ** const inMat2, double *** outMat, int numRows1, int numCols2, int numCols1Rows2)
+template <typename Typ1, typename Typ2>
+void matrixProduct(Typ1 inMat1, Typ2 inMat2, double *** outMat, int numRows1, int numCols2, int numCols1Rows2)
 {
     double result;
 
@@ -1463,6 +1468,10 @@ void matrixProduct(double ** const inMat1, double ** const inMat2, double *** ou
         }
     }
 }
+template void matrixProduct(double ** inMat1, double ** inMat2, double *** outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(double ** inMat1, vector < vector <double> > inMat2, double *** outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(vector < vector <double> > inMat1, vector < vector <double> > inMat2, double *** outMat, int numRows1, int numCols2, int numCols1Rows2);
+
 
 void matrixProduct(double * const vect, double ** const mat, double ** outVect, int dimVect, int dimMat) //outVect(dimMat) = vect(dimVect) * mat(dimVect * dimMat)
 {
@@ -1734,7 +1743,7 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
     paint->end();
 }
 
-void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath)
+void hilbert( const double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath)
 {
 
     int fftLen = int(pow(2., ceil(log(inLength)/log(2.))));
@@ -1856,9 +1865,17 @@ void hilbert(double * arr, int inLength, double sampleFreq, double lowFreq, doub
 
 }
 
-void hilbertPieces(double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath)
+void hilbertPieces(const double * arr,
+                   int inLength,
+                   double sampleFreq,
+                   double lowFreq,
+                   double highFreq,
+                   double ** out,
+                   QString picPath)
 {
-    int fftLen = int(pow(2., floor(log(inLength)/log(2.))));
+    //do hilbert transform for the last fftLen bins
+
+    int fftLen = fftL(inLength) / 2;
     (*out) = new double [2*fftLen];
     double spStep = sampleFreq/fftLen;
 

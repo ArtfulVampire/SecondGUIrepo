@@ -1191,7 +1191,7 @@ void Spectre::countSpectra()
             splitZerosEdges(&dataIn, ns, fftLength, &NumOfSlices);
             for(int i = 0; i < ns; ++i)
             {
-                outStream << fractalDimension(dataIn[i], NumOfSlices, "") << '\n';
+                outStream << fractalDimension(dataIn[i], NumOfSlices) << '\n';
             }
         }
         else if(ui->rawFourierRadioButton->isChecked())

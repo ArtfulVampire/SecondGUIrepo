@@ -163,7 +163,7 @@ void MainWindow::ICA() //fastICA
     double eigenValuesTreshold = pow(10., -ui->svdDoubleSpinBox->value());
     double vectorWTreshold = pow(10., -ui->vectwDoubleSpinBox->value());
 
-    int fr = def::freq;
+    const int & fr = def::freq;
 
 
 //    dataICA - matrix of data
@@ -223,6 +223,7 @@ void MainWindow::ICA() //fastICA
 
 
     //wtf is this?
+#if 0
     int numOfMark = 0;
     while(1)
     {
@@ -231,8 +232,15 @@ void MainWindow::ICA() //fastICA
     }
     for(int i = 0; i < ndr*fr; ++i)
     {
-        components[ns][i] = data[numOfMark][i];
+        components[ns-1][i] = data[numOfMark][i];
     }
+#else
+    memcpy(components[ns],
+            globalEdf.getData()[globalEdf.getMarkChan()].data(),
+            globalEdf.getDataLen() * sizeof(double));
+#endif
+
+
 
 
     //count covariations
@@ -240,7 +248,7 @@ void MainWindow::ICA() //fastICA
     averages = new double [ns];
     for(int i = 0; i < ns; ++i)
     {
-        averages[i] = mean(data[i], ndr*fr);
+        averages[i] = mean(globalEdf.getData()[i].data(), globalEdf.getDataLen());
     }
 
     //count zeros
@@ -251,22 +259,24 @@ void MainWindow::ICA() //fastICA
         h = 0;
         for(int j = 0; j < ns; ++j)
         {
-            if(fabs(data[j][i]) == 0.) ++h;
+            if(fabs(globalEdf.getData()[i][j]) == 0.) ++h;
         }
         if(h == ns) Eyes += 1;
     }
     double realSignalFrac = (double(ndr*fr - Eyes)/(ndr*fr));
 
+    double helpDouble = 0.;
     //subtract averages
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ndr*fr; ++j)
         {
-            if(data[i][j] != 0.) data[i][j] -= averages[i] / realSignalFrac;
+            //////
+            /// remake with lambdas
+            helpDouble = globalEdf.getData()[i][j] - averages[i] / realSignalFrac;
+            globalEdf.setData(i,j, helpDouble);
         }
     }
-
-
 
     //covariation between different spectra-bins
     for(int i = 0; i < ns; ++i)
@@ -274,11 +284,10 @@ void MainWindow::ICA() //fastICA
         for(int j = 0; j < ns; ++j)
         {
             covMatrix[i][j] = 0.;
-            for(int k = 0; k < ndr*fr; ++k)
-            {
-                covMatrix[i][j] += data[i][k] * data[j][k];
-            }
-            covMatrix[i][j] /= (ndr*fr); //should be -1 ?
+            covMatrix[i][j] = covariance(globalEdf.getData()[i].data(),
+                                         globalEdf.getData()[j].data(),
+                                         globalEdf.getDataLen());
+//            covMatrix[i][j] /= (ndr*fr); //should be -1 ?
         }
     }
 
@@ -287,7 +296,7 @@ void MainWindow::ICA() //fastICA
     {
         for(int j = 0; j < ns; ++j)
         {
-            if(covMatrix[i][j] != covMatrix[j][i]) cout << i << " " << j << " warning" << endl;
+            if(covMatrix[i][j] != covMatrix[j][i]) cout << i << " " << j << " warning covariances !=" << endl;
         }
     }
 
@@ -323,10 +332,9 @@ void MainWindow::ICA() //fastICA
     for(int i = 0; i < ns; ++i)
     {
         dataICA[i] = new double [ndr*fr];
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            dataICA[i][j] = data[i][j];
-        }
+        memcpy(dataICA[i],
+               globalEdf.getData()[i].data(),
+               globalEdf.getDataLen() * sizeof(double));
     }
     int numOfPc = 0;
 
@@ -396,16 +404,13 @@ void MainWindow::ICA() //fastICA
             {
                 for(int j = 0; j < ndr*fr; ++j)
                 {
-                    dF += 0.5*(dataICA[i][j]-tempB[j]*tempA[i])*(dataICA[i][j]-tempB[j]*tempA[i]);
-
+                    dF += 0.5 * pow((dataICA[i][j] - tempB[j] * tempA[i]), 2.);
                 }
-//                cout << dF << " ";
             }
             dF = (F-dF)/F;
             ++counter;
-            if(counter==150)
+            if(counter == 150)
             {
-//                cout<<"dF = "<<abs(dF)<<endl;
                 break;
             }
             if(fabs(dF) < eigenValuesTreshold) break; //crucial cap
@@ -454,7 +459,7 @@ void MainWindow::ICA() //fastICA
         {
             for(int j = 0; j < ndr*fr; ++j)
             {
-                dataICA[i][j] -= tempB[j]*tempA[i];
+                dataICA[i][j] -= tempB[j] * tempA[i];
             }
         }
 
@@ -463,15 +468,15 @@ void MainWindow::ICA() //fastICA
         sum2 = 0.;
         for(int i = 0; i < ns; ++i)
         {
-            sum1 += tempA[i]*tempA[i];
+            sum1 += pow(tempA[i], 2.);
         }
         for(int j = 0; j < ndr*fr; ++j)
         {
-            sum2 += tempB[j]*tempB[j];
+            sum2 += pow(tempB[j], 2.);
         }
         for(int i = 0; i < ns; ++i)
         {
-            tempA[i]/=sqrt(sum1);
+            tempA[i] /= sqrt(sum1);
             //test equality of left and right singular vectors
 //            if((abs((tempB[i]-tempA[i])/tempB[i]))>threshold) cout << k << " " << i << " warning" << endl;  //till k==19 - OK
         }
@@ -480,9 +485,7 @@ void MainWindow::ICA() //fastICA
             tempB[j] /= sqrt(sum2);
         }
 
-        eigenValues[k] = sum1*sum2/double(ndr*fr-1.);
-
-
+        eigenValues[k] = sum1 * sum2 / double(ndr*fr - 1.);
 
         sum1 = 0.;
 
@@ -591,7 +594,7 @@ void MainWindow::ICA() //fastICA
             sum1 = 0.;
             for(int k = 0; k < ns; ++k) //rows initData = coloumns tempMatrix
             {
-                sum1 += eigenVectors[k][i] * data[k][j] / sqrt(eigenValues[i]);
+                sum1 += eigenVectors[k][i] * globalEdf.getData()[k][j] / sqrt(eigenValues[i]);
             }
             components[i][j] = sum1;
         }
@@ -874,9 +877,12 @@ void MainWindow::ICA() //fastICA
             {
                 sum1 += matrixA[i][k] * components[k][j];
             }
-            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.05 && fabs(data[i][j]) > 0.5)
+            if(fabs((globalEdf.getData()[i][j] - sum1) / globalEdf.getData()[i][j]) > 0.05
+                    && fabs(globalEdf.getData()[i][j]) > 0.5)
             {
-                cout << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << "\t"<< data[i][j] << endl;
+                cout << i << "\t" << j << "\t";
+                cout << fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) << "\t";
+                cout << globalEdf.getData()[i][j] << endl;
             }
         }
     }
@@ -948,9 +954,12 @@ void MainWindow::ICA() //fastICA
             {
                 sum1 += matrixA[i][k] * components[k][j];
             }
-            if(fabs((data[i][j] - sum1)/data[i][j]) > 0.05 && fabs(data[i][j]) > 0.5)
+            if(fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) > 0.05
+                    && fabs(globalEdf.getData()[i][j]) > 0.5)
             {
-                cout << "after norm\t" << i << "\t" << j << "\t" << fabs((data[i][j] - sum1)/data[i][j]) << "\t"<< data[i][j] << endl;
+                cout << "after norm\t" << i << "\t" << j << "\t";
+                cout << fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) << "\t";
+                cout << globalEdf.getData()[i][j] << endl;
             }
         }
     }
@@ -1449,10 +1458,9 @@ void MainWindow::icaClassTest() //non-optimized
     for(int i = 0; i < ns; ++i)
     {
         dataICA[i] = new double [ndr*fr];
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            dataICA[i][j] = data[i][j];
-        }
+        memcpy(dataICA[i],
+               globalEdf.getData()[i].data(),
+               globalEdf.getDataLen() * sizeof(double));
     }
 
     int numOfIC = ui->numOfIcSpinBox->value();
@@ -1493,6 +1501,9 @@ void MainWindow::icaClassTest() //non-optimized
         cout << thrownComp[i] << endl;
     }
 
+
+
+    //remake via reduce channels
     for(int j = 0; j < fr*ndr; ++j)
     {
         for(int i = 0; i < numOfIC; ++i)
@@ -1502,7 +1513,7 @@ void MainWindow::icaClassTest() //non-optimized
             {
                 if(!thrownComp.contains(k)) helpDouble += matrixA[i][k] * dataICA[k][j];
             }
-            data[i][j] = helpDouble;
+            globalEdf.setData(i, j, helpDouble);
         }
     }
 
@@ -1539,7 +1550,7 @@ void MainWindow::icaClassTest() //non-optimized
                     {
                         if(!thrownComp.contains(k)) helpDouble += matrixA[i][k] * dataICA[k][j];
                     }
-                    data[i][j] = helpDouble;
+                    globalEdf.setData(i, j, helpDouble);
                 }
             }
 
@@ -1636,10 +1647,9 @@ void MainWindow::throwIC()
     for(int i = 0; i < ns; ++i)
     {
         dataICA[i] = new double [ndr*fr];
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            dataICA[i][j] = data[i][j];
-        }
+        memcpy(dataICA[i],
+               globalEdf.getData()[i].data(),
+               globalEdf.getDataLen() * sizeof(double));
     }
 
     int numOfIC = ui->numOfIcSpinBox->value(); // = 19
@@ -1673,7 +1683,7 @@ void MainWindow::throwIC()
             {
                 if(!thrownComp.contains(k)) helpDouble += matrixA[i][k] * dataICA[k][j]; //generality -1
             }
-            data[i][j] = helpDouble;
+            globalEdf.setData(i, j, helpDouble);
         }
     }
 
@@ -1698,8 +1708,12 @@ void MainWindow::transformEDF(QString inEdfPath, QString mapsPath, QString newEd
 
     double ** newData;
     matrixCreate(&newData, 20, ndr*def::freq);
+
+    /////////////////// remake with matrix struct
+#if 0
     matrixProduct(mat1, data, &newData, 19, ndr*def::freq);
     memcpy(newData[19], data[19], ndr*def::freq*sizeof(double));    //copy markers
+#endif
 
     QList<int> chanList;
     chanList.clear();
@@ -1728,13 +1742,12 @@ void MainWindow::transformReals() //move to library
 
     double ** mat1;
     matrixCreate(&mat1, 19,19);
-    readICAMatrix(helpString, &mat1, 19);
-
-
     double ** mat3;
     matrixCreate(&mat3, 19, 19);
 
+    readICAMatrix(helpString, &mat1, 19);
     matrixInvert(mat1, 19, &mat3);
+    matrixDelete(&mat1, 19);
 
     double ** mat2;
     matrixCreate(&mat2, 19, 250*50);
@@ -1746,40 +1759,19 @@ void MainWindow::transformReals() //move to library
 
     qApp->processEvents();
 
-    ifstream inStream;
-    ofstream outStream;
+//    ifstream inStream;
+//    ofstream outStream;
+    matrixCreate(&mat1, 19, 100500);
     for(int i = 0; i < lst.length(); ++i)
     {
         helpString = dir->absolutePath() + slash() + procDir + slash() + lst[i];
+        readPlainData(helpString, mat1, 19, NumOfSlices);
 
-
-        inStream.open(helpString.toStdString().c_str());
-        inStream.ignore(12); //"NumOfSlices "
-        inStream >> NumOfSlices;
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int k = 0; k < 19; ++k)
-            {
-                inStream >> data[k][j];
-            }
-        }
-        inStream.close();
-//        cout << NumOfSlices << endl;
-
-        matrixProduct(mat3, data, &mat2, 19, NumOfSlices);
-//        cout << "product" << endl;
+        matrixProduct(mat3, globalEdf.getData(), &mat2, 19, NumOfSlices);
 
         helpString = dir->absolutePath() + slash() + procDir + slash() + lst[i];
-        outStream.open((helpString).toStdString().c_str());
-        outStream << "NumOfSlices " << NumOfSlices << '\n';
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int k = 0; k < 19; ++k)
-            {
-                outStream << mat2[k][j] << '\n';
-            }
-        }
-        outStream.close();
+        writePlainData(helpString, mat2, 19, NumOfSlices);
+
         ui->progressBar->setValue(i*100./lst.length());
         qApp->processEvents();
     }
@@ -1810,7 +1802,7 @@ void MainWindow::randomDecomposition()
         h = 0;
         for(int j = 0; j < ns; ++j)
         {
-            if(fabs(data[j][i]) == 0.) ++h;
+            if(fabs(globalEdf.getData()[j][i]) == 0.) ++h;
         }
         if(h == ns) Eyes += 1;
     }
@@ -1931,8 +1923,10 @@ void MainWindow::randomDecomposition()
         matrixProduct(matrixW, eigenMatrixInv, &randMatrix, compNum, compNum); //randMatrix = randW * Eig * d^-0.5 *Eig^t
 */
         //decompose
-        matrixProduct(randMatrix, data, &newData, compNum, ndr*def::freq);
-        memcpy(newData[ns-1], data[ns-1], ndr*def::freq*sizeof(double)); //markers
+        matrixProduct(randMatrix, globalEdf.getData(), &newData, compNum, ndr*def::freq);
+        memcpy(newData[ns-1],
+                globalEdf.getData()[globalEdf.getMarkChan()].data(),
+                ndr * def::freq * sizeof(double)); //markers
 
         //norm components and rand matrix
         for(int i = 0; i < compNum; ++i)
@@ -1940,7 +1934,7 @@ void MainWindow::randomDecomposition()
             sum1 = mean(newData[i], ndr*def::freq);
             for(int j = 0; j < ndr*def::freq; ++j)
             {
-                if(newData[i][j] != 0.) newData[i][j] -= sum1 * (double(ndr*def::freq)/(ndr*def::freq - Eyes));
+                if(newData[i][j] != 0.) newData[i][j] -= sum1 * (ndr*def::freq / (ndr*def::freq - Eyes));
             }
 
             sum2 = sqrt(variance(newData[i], ndr*def::freq));
@@ -2120,7 +2114,7 @@ void MainWindow::spoc()
 //            }
 //            averages[j] /= epochLength;
 
-            averages[j] = mean((data[j]+i*timeShift), epochLength);
+            averages[j] = mean((globalEdf.getData()[j].data() + i*timeShift), epochLength);
         }
 
         for(int j = 0; j < ns; ++j)
@@ -2135,7 +2129,7 @@ void MainWindow::spoc()
 //                helpDouble /= epochLength;
 //                Ce[i][j][k] = helpDouble;
 
-                Ce[i][j][k] = variance(data[j] + i*timeShift, epochLength);
+                Ce[i][j][k] = variance(globalEdf.getData()[j].data() + i*timeShift, epochLength);
             }
         }
     }

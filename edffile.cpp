@@ -970,20 +970,35 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
 //}
 
 
-void edfFile::saveSubsection(int startBin, int finishBin, QString outPath, bool plainFlag) // [start, finish)
+void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag) const // [start, finish)
 {
-    const edfFile temp = (*this);
-
-    for(int i = 0; i < this->ns; ++i)
+    if(plainFlag)
     {
-        this->data[i].assign(temp.getData()[i].begin() + startBin, temp.getData()[i].begin() + finishBin);
+        writePlainData(outPath, this->getData(), this->ns, finishBin-startBin, startBin);
     }
-    this->dataLength = finishBin - startBin;
-    this->writeEdfFile(outPath, plainFlag);
-    (*this) = temp;
+    else
+    {
+        edfFile temp = (*this);
+#if 0
+        for(int i = 0; i < this->ns; ++i)
+        {
+            this->data[i].assign(temp.getData()[i].begin() + startBin, temp.getData()[i].begin() + finishBin);
+        }
+        this->dataLength = finishBin - startBin;
+        this->writeEdfFile(outPath, plainFlag);
+        (*this) = temp;
+#else
+        for(int i = 0; i < this->ns; ++i)
+        {
+            temp.data[i].assign(this->getData()[i].begin() + startBin, this->getData()[i].begin() + finishBin);
+        }
+        temp.dataLength = finishBin - startBin;
+        temp.writeEdfFile(outPath, plainFlag);
+#endif
+    }
 }
 
-void edfFile::drawSubsection(int startBin, int finishBin, QString outPath)
+void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
 {
     drawEeg(this->data,
             this->ns,
@@ -1002,8 +1017,6 @@ void edfFile::cleanFromEyes(QString eyesPath,
     myTime.start();
 
     int numEeg, numEog;
-
-
     if(eyesPath.isEmpty())
     {
         eyesPath = this->dirPath + slash() + "eyes.txt";
@@ -1024,7 +1037,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
     {
         for(int i = 0; i < this->ns; ++i)
         {
-            if(this->labels[i].contains("EEG"))
+            if(this->channels[i].label.contains("EEG"))
             {
                 eegNums << i;
             }
@@ -1035,7 +1048,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
     {
         for(int i = 0; i < this->ns; ++i)
         {
-            if(this->labels[i].contains("EOG"))
+            if(this->channels[i].label.contains("EOG"))
             {
                 eogNums << i;
             }
@@ -1044,7 +1057,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
 
     if(numEog != eogNums.length() || numEeg != eegNums.length())
     {
-        cout << "cleanFromEyes: bad input list" << endl;
+        cout << "cleanFromEyes: bad input eyes file or labels list" << endl;
         inStr.close();
         return;
     }
@@ -1060,6 +1073,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
         }
     }
     inStr.close();
+
 #if DATA_IN_CHANS
     for(int i = 0; i < numEeg; ++i)
     {
@@ -1095,35 +1109,26 @@ void edfFile::cleanFromEyes(QString eyesPath,
     {
         for(int k = 0; k < numEog; ++k)
         {
-#if 1
             std::transform(this->data[ eegNums[i] ].begin(),
                     this->data[ eegNums[i] ].end(),
                     this->data[ eogNums[k] ].begin(),
                     this->data[ eegNums[i] ].begin(),
                     [&](double a, double b) {return a - b * coefs[i][k];}
             );
-#else
-
-            for(int j = 0; j < this->dataLength; ++j)
-            {
-                this->data[ eegNums[i] ][j] -= coefs[ i ][ k ]
-                        * this->data[ eogNums[k] ][j];
-            }
-#endif
         }
     }
-
     if(removeEogChannels)
     {
         for(int k = 0; k < numEog; ++k)
         {
             this->data.erase(this->data.begin() + eogNums[k]);
+            this->channels.erase(this->channels.begin() + eogNums[k]);
         }
+        this->adjustArraysByChannels();
+        this->adjustMarkerChannel();
     }
 #endif
 
-
-    this->adjustArraysByChannels();
     cout << "cleanFromEyes: time = " << myTime.elapsed()/1000. << " sec" << endl;
 
 }
@@ -1147,6 +1152,100 @@ void edfFile::reduceChannels(QList <int> chanList)
     }
 
     this->adjustArraysByChannels();
+}
+
+void edfFile::reduceChannels(QString chanStr)
+{
+
+    QTime myTime;
+    myTime.start();
+
+    QStringList lst;
+    QStringList list = chanStr.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
+    if(list.last().toInt() - 1 != this->markerChannel)
+    {
+        cout << "Reduce channels: bad channels list - no markers" << endl;
+        return;
+    }
+
+    double sign = 0.;
+    int lengthCounter = 0; //length of the expression in chars
+
+    for(int k = 0; k < list.length(); ++k)
+    {
+        if(QString::number(list[k].toInt()) == list[k]) // just copy
+        {
+            this->data[k] = this->data[list[k].toInt() - 1];
+        }
+        else if(list[k].contains(QRegExp("[\\+\\-\\*\\/]")))
+        {
+            lengthCounter = 0;
+            lst = list[k].split(QRegExp("[\\+\\-\\*\\/]"), QString::SkipEmptyParts);
+            for(int h = 0; h < lst.length(); ++h)
+            {
+                if(QString::number(lst[h].toInt()) != lst[h]) // if not a number between operations
+                {
+                    cout << "nan between operators" << endl;
+                    return;
+                }
+            }
+
+            lengthCounter += lst[0].length();
+            for(int h = 1; h < lst.length(); ++h)
+            {
+                if(list[k][lengthCounter] == '+') sign = 1.;
+                else if(list[k][lengthCounter] == '-') sign = -1.;
+                else //this should never happen!
+                {
+                    cout << "first sign is not + or -" << endl;
+                    return;
+                }
+                lengthCounter += 1; //sign length
+                lengthCounter += lst[h].length();
+
+                //check '/' and '*'
+                if(list[k][lengthCounter] == '/')
+                {
+                    sign /= lst[h+1].toDouble();
+                }
+                else if(list[k][lengthCounter] == '*')
+                {
+                    sign *= lst[h+1].toDouble();
+                }
+                std::transform(this->data[k].begin(),
+                               this->data[k].end(),
+                               this->data[lst[h].toInt() - 1].begin(),
+                        this->data[k].begin(),
+                        [=,sign](double i, double j){cout << sign << endl; return i + sign * j;}
+                );
+
+                if(list[k][lengthCounter] == '/' || list[k][lengthCounter] == '*')
+                {
+                    lengthCounter += 1; // / or *
+                    lengthCounter += lst[h+1].length(); //what was divided onto
+                    ++h;
+                }
+            }
+        }
+        else
+        {
+            cout << "unknown format of the string" << endl;
+            return;
+        }
+    }
+    this->ns = list.length();
+    for(int i = 0; i < this->ns; ++i)
+    {
+        this->channels[i] = this->channels[list[i].toInt() - 1];
+    }
+    this->channels.resize(this->ns);
+    this->adjustArraysByChannels();
+    this->adjustMarkerChannel();
+
+
+    cout << "reduceChannelsFast: ns = " << ns;
+    cout << ", time = " << myTime.elapsed() / 1000. << " sec";
+    cout << endl;
 }
 
 void edfFile::writeOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList)

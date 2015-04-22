@@ -173,9 +173,10 @@ public:
     void concatFile(QString addEdfPath, QString outPath = QString());
 //    void appendChannel(edfChannel addChan, QString outPath); // check ndr
 //    void swapChannels(int num1, int num2);
-    void saveSubsection(int startBin, int finishBin, QString outPath, bool plainFlag = false);
-    void drawSubsection(int startBin, int finishBin, QString outPath);
+    void saveSubsection(int startBin, int finishBin, const QString &outPath, bool plainFlag = false) const;
+    void drawSubsection(int startBin, int finishBin, QString outPath) const;
     void reduceChannels(QList<int> chanList);
+    void reduceChannels(QString chanStr);
     void cleanFromEyes(QString eyesPath = QString(),
                        bool removeEogChannels = false,
                        QList <int> eegNums = QList <int>(),
@@ -248,6 +249,7 @@ public:
     const vector <double> & getNr() const {return nr;}
     const vector <QString> & getReserved() const {return reserved;}
     const dataType & getData() const {return data;}
+    void setData(int chanNum, int timeBin, double val) {data[chanNum][timeBin] = val;}
     const QString & getHeaderRest() const {return headerRest;}
 
     void getDataCopy(dataType & destination) const {destination = data;}
