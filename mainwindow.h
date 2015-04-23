@@ -64,6 +64,7 @@ public slots:
     void setBoxMax(double);
     void setNsSlot(int);
     void sliceWithMarkersSlot(int);
+    void matiCheckBoxSlot(int a);
 
     //in-window calculations, substantional actions
     //files

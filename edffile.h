@@ -20,12 +20,18 @@ struct edfChannel
     QString prefiltering;
     double nr;
     QString reserved;
+
 #if DATA_IN_CHANS
     vector <double> data;
 #endif
 
     edfChannel operator = (const edfChannel & other)
     {
+        if(this == &other)
+        {
+//            cout << "operator =: channels are the same" << endl;
+            return *this;
+        }
         this->label = other.label;
         this->transducerType = other.transducerType;
         this->physDim = other.physDim;
@@ -92,7 +98,6 @@ struct edfChannel
     }
     ~edfChannel()
     {
-
     }
 };
 
@@ -118,7 +123,7 @@ public:
             vector < vector <double> > in_data);
     */
 
-    edfFile(const edfFile & other);
+    edfFile(const edfFile & other, bool noData = false);
     edfFile(QString matiLogPath);
 
     void readEdfFile(QString EDFpath);
@@ -159,7 +164,7 @@ public:
                      FILE * edfForDatum);
 
     void writeMarker(const int & currNs,
-                     const int & currTimeIndex);
+                     const int & currTimeIndex) const;
 
     void handleAnnotations(const int & currNs,
                            const int & currentTimeIndex,
@@ -169,10 +174,9 @@ public:
     edfFile operator=(const edfFile & other);
 
     void adjustArraysByChannels();
-    void appendFile(QString addEdfPath, QString outPath);
+    void appendFile(QString addEdfPath, QString outPath) const;
     void concatFile(QString addEdfPath, QString outPath = QString());
-//    void appendChannel(edfChannel addChan, QString outPath); // check ndr
-//    void swapChannels(int num1, int num2);
+    void refilter(double lowFreq, double highFreq, QString newPath);
     void saveSubsection(int startBin, int finishBin, const QString &outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
     void reduceChannels(QList<int> chanList);
@@ -181,8 +185,8 @@ public:
                        bool removeEogChannels = false,
                        QList <int> eegNums = QList <int>(),
                        QList <int> eogNums = QList <int>());
-    void writeOtherData(vector < vector <double> > newData, QString outPath, QList<int> chanList);
-    void writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList);
+    void writeOtherData(vector<vector<double> > &newData, QString outPath, QList<int> chanList = QList<int>());
+    void writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList = QList<int>()) const;
     void fitData(int initSize);
     void cutZerosAtEnd();
     void adjustMarkerChannel();
@@ -197,7 +201,7 @@ private:
     double ddr = 1;
     int ns = 0;
 
-    vector < pair <int, double> > sessionEdges; // fast access
+    vector < pair <int, double> > sessionEdges = vector < pair <int, double> >(0); // fast access
 
     //channels arrays start
     vector <QString> labels;
@@ -217,6 +221,7 @@ private:
 
     vector <edfChannel> channels;
     dataType data; // matrix.cpp
+    dataType (*dataPointer) = &data;
 
     int staSlice = 0; // yet not useful
     int dataLength = 0;
@@ -227,10 +232,7 @@ private:
 
     bool matiFlag = 1;
     bool ntFlag = 0;
-
-
 public:
-
     const QString & getHeaderInit() const {return headerInitialInfo;}
     const int & getBytes() const {return bytes;}
     const QString & getHeaderReserved() const {return headerReservedField;}
@@ -279,7 +281,7 @@ public:
         }
     }
 
-    void getDataCopy(double ** dest) const
+    void getDataCopy(double ** & dest) const
     {
         for(int i = 0; i < this->ns; ++i)
         {

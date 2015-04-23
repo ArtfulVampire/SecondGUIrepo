@@ -1152,8 +1152,9 @@ void Spectre::countSpectra()
 //        }
         else if(ui->hilbertsVarRadioButton->isChecked())
         {
-            //clean from zeros ????
-            splitZeros(&dataIn, ns, fftLength, &NumOfSlices);
+            QMessageBox::critical(this, tr("error"), tr("look at code, fix split zeros"), QMessageBox::Ok);
+//            splitZeros(&dataIn, ns, fftLength, &NumOfSlices);
+            return;
 
             for(int i = 0; i < ns; ++i)
             {
@@ -1171,7 +1172,9 @@ void Spectre::countSpectra()
         else if(ui->bayesRadioButton->isChecked())
         {
             //clean from zeros
-            splitZeros(&dataIn, ns, fftLength, &NumOfSlices);
+            QMessageBox::critical(this, tr("error"), tr("look at code, fix split zeros"), QMessageBox::Ok);
+//            splitZeros(&dataIn, ns, fftLength, &NumOfSlices);
+            return;
 
             for(int i = 0; i < ns; ++i)
             {

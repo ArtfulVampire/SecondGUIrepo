@@ -613,6 +613,8 @@ void MainWindow::hilbertCount() // not finished
     double fr = def::freq; //generality
 
     double ** hilbertData = new double * [ns];
+
+
 #if DATA_ARR
     hilbertPieces(data[0], 45536, fr, 9., 11., &hilbertData[0]);
 #else
@@ -645,7 +647,10 @@ void MainWindow::hilbertCount() // not finished
 #endif
 
     helpString = dir->absolutePath() + slash() + ExpName + "_hilbert.edf";
-    writeEdf(ui->filePathLineEdit->text(), hilbertData, helpString, ndr*fr);
+
+    /// remake with vector < vector <double> >
+
+//    writeEdf(ui->filePathLineEdit->text(), hilbertData, helpString, ndr*fr);
 
     matrixDelete(&hilbertData, ns);
 }

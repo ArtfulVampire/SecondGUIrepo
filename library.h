@@ -6,6 +6,7 @@
 #include <QtGui>
 #include <QtSvg>
 #include "coord.h"
+#include "matrix.h"
 #include <fstream>
 #include <ios>
 #include <iostream>
@@ -60,6 +61,7 @@ QString slash();
 ostream & operator << (ostream &os, QString toOut);
 ostream & operator << (ostream &os, vector < vector < double > > toOut);
 ostream & operator << (ostream &os, QList<int> toOut);
+ostream & operator << (ostream &os, matrix toOut);
 template <typename T>
 ostream & operator << (ostream &os, vector<T> toOut); // template!
 //vector< vector<double> > operator=(const vector< vector<double> > & other);
@@ -115,7 +117,8 @@ double correlation(const double *arr1, const double *arr2, int length, int shift
 double correlationFromZero(double * const arr1, double * const arr2, int length, int shift = 0);
 double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
-void splitZeros(double *** inData, const int &ns, const int &length, int * outLength, const QString &logFile = "", QString dataName = "");
+
+void splitZeros(vector < vector <double> > & inData, const int &ns, const int &length, int * outLength, const QString &logFile = "", const QString &dataName = "");
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
 void zeroData(double **& inData, const int & ns, const int & leftLimit, const int & rightLimit, const bool & withMarkersFlag);
@@ -189,6 +192,8 @@ void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool
 void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
 void drawSpectra(double ** drawData, int ns, int start, int end, const QString & picPath);
 
+template <typename inTyp, typename outTyp>
+void calcSpectre(inTyp const inSignal, int length, outTyp outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 15, const double & powArg = 1.);
 void calcSpectre(double ** const inData, double **& dataFFT, int const ns, int const inDataLen, int const NumOfSmooth = 15, const double powArg = 1.);
 void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth = 15, const double powArg = 1.);
 void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth = 15, const double powArg = 1.);

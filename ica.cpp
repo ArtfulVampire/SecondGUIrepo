@@ -992,6 +992,7 @@ void MainWindow::ICA() //fastICA
 
 
     helpString = dir->absolutePath() + slash() + ExpName + "_ica.edf";
+    /// remake with dataType
     writeEdf(ui->filePathLineEdit->text(), components, helpString, ndr*def::freq);
     cout << "ICA ended. time = = " << wholeTime.elapsed()/1000. << " sec" << endl;
 

@@ -708,9 +708,7 @@ bool areEqualFiles(QString path1, QString path2)
     QTime myTime;
     myTime.start();
 
-
     typedef size_t byte;
-//    typedef unsigned char byte;
     FILE * fil1 = fopen(path1, "rb");
     FILE * fil2 = fopen(path2, "rb");
     if(fil1 == NULL || fil2 == NULL)
@@ -726,6 +724,7 @@ bool areEqualFiles(QString path1, QString path2)
         {
             fclose(fil1);
             fclose(fil2);
+            cout << "equalFiles: time = " << myTime.elapsed() / 1000. << " sec" << endl;
             return false;
         }
 
@@ -830,6 +829,19 @@ ostream & operator << (ostream &os, QList<int> toOut)
     for(int i = 0; i < toOut.length(); ++i)
     {
         os << toOut[i] << " ";
+    }
+    return os;
+}
+
+ostream & operator << (ostream &os, matrix toOut)
+{
+    for(auto it = toOut.data.begin(); it < toOut.data.end(); ++it)
+    {
+        for(auto itt = (*it).begin(); itt < (*it).end(); ++itt)
+        {
+            os << (*itt) << "  ";
+        }
+        os << endl;
     }
     return os;
 }
@@ -3165,33 +3177,36 @@ void zeroData(double **& inData, const int &ns, const int &leftLimit, const int 
     }
 }
 
-void splitZeros(double *** dataIn, const int & ns, const int & length, int * outLength, const QString &logFile, QString dataName)
+void splitZeros(vector < vector <double> > & dataIn,
+                const int & ns,
+                const int & length,
+                int * outLength,
+                const QString &logFile,
+                const QString & dataName)
 {
     //remake with std::list of slices
 
-    bool flag[length + 1]; //1 if usual, 0 if eyes, 1 for additional one point
+    vector<bool> flag(length + 1, false); //1 if usual, 0 if eyes, 1 for additional one point
     bool startFlag = false;
     int start = -1;
     int finish = -1;
     int allEyes = 0;
     ofstream outStream;
-    double firstMarker = (*dataIn)[ns-1][0];
-    double lastMarker =  (*dataIn)[ns-1][length - 1];
-
+    double firstMarker = dataIn[ns-1][0]; // generality markers channel
+    double lastMarker =  dataIn[ns-1][length - 1]; // generality markers channel
 
     for(int i = 0; i < length; ++i)
     {
-        flag[i] = false;
         for(int j = 0; j < ns - 1; ++j) ////////dont consider markers
         {
-            if((*dataIn)[j][i] != 0.)
+            if(dataIn[j][i] != 0.)
             {
                 flag[i] = true;
                 break;
             }
         }
     }
-    flag[length] = true; // for terminate zero piece
+    flag.back() = true; // for terminate zero piece
 
     if(!logFile.isEmpty())
     {
@@ -3235,13 +3250,12 @@ void splitZeros(double *** dataIn, const int & ns, const int & length, int * out
                 outStream << (finish - start) / def::freq << endl; // length
 
                 //split. vector.erase();
-                for(int k = start; k <= start + (length - allEyes) - finish; ++k) // <= for the terminate flag
+                for(int j = 0; j < ns; ++j) //shift with markers and flags
                 {
-                    for(int j = 0; j < ns; ++j) //shift with markers and flags
-                    {
-                        (*dataIn)[j][k] = (*dataIn)[j][k + (finish - start)];
-                        flag[k] = flag[k + (finish - start)];
-                    }
+                    dataIn[j].erase(dataIn[j].begin() + start,
+                                    dataIn[j].begin() + finish);
+                    flag.erase(flag.begin() + start,
+                               flag.begin() + finish);
                 }
 
                 allEyes += finish - start;
@@ -3254,9 +3268,9 @@ void splitZeros(double *** dataIn, const int & ns, const int & length, int * out
     (*outLength) = length - allEyes;
     outStream.close();
 
-    (*dataIn)[ns-1][0] = firstMarker;
+    dataIn[ns-1][0] = firstMarker;
 //    cout << "splitZeros: lastMarker" << lastMarker << "\t" << matiCountByteStr(lastMarker) << endl;
-    (*dataIn)[ns-1][(*outLength) - 1] = lastMarker;
+    dataIn[ns-1][(*outLength) - 1] = lastMarker;
 }
 
 
@@ -3471,6 +3485,53 @@ double countAngle(double initX, double initY)
         return atan(initY/initX) + pi;
     }
 }
+
+template <typename inTyp, typename outTyp>
+void calcSpectre(inTyp const inSignal, int length, outTyp outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg)
+{
+    int fftLen = fftL(length);
+    if (fftLength != nullptr)
+    {
+        *fftLength = fftLen;
+    }
+    double norm1 = fftLen / double(fftLen - Eyes);
+    double * spectre = new double [fftLen*2];
+
+    double help1, help2;
+    int leftSmoothLimit, rightSmoothLimit;
+
+    for(int i = 0; i < fftLen; ++i)            //make appropriate array
+    {
+        spectre[ i * 2 + 0 ] = double(inSignal[ i ] * sqrt(norm1));
+        spectre[ i * 2 + 1 ] = 0.;
+    }
+    four1(spectre-1, fftLen, 1);       //Fourier transform
+
+    for(int i = 0; i < fftLen/2; ++i )      //get the absolute value of FFT
+    {
+        outSpectre[ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / (*fftLength); //0.004 = 1/250 generality
+        outSpectre[ i ] = pow ( outSpectre[ i ], powArg );
+    }
+
+    leftSmoothLimit = 0;
+    rightSmoothLimit = fftLen / 2 - 1;
+    //smooth spectre
+    for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
+    {
+        help1 = outSpectre[leftSmoothLimit-1];
+        for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
+        {
+            help2 = outSpectre[k];
+            outSpectre[k] = (help1 + help2 + outSpectre[k+1]) / 3.;
+            help1 = help2;
+        }
+    }
+    delete []spectre;
+}
+template void calcSpectre(double * const inSignal, int length, double * outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
+template void calcSpectre(double * const inSignal, int length, vector <double> outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
+template void calcSpectre(vector <double> const inSignal, int length, double * outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
+template void calcSpectre(vector <double> const inSignal, int length, vector <double>  outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
 
 void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth, const double powArg)
 {

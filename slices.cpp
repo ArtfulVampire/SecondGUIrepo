@@ -879,8 +879,9 @@ void MainWindow::sliceMati()
         session[i] = 0;
     }
 
-    edfFile & fil = globalEdf;
+    const edfFile & fil = globalEdf;
     double currMarker;
+
 
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
@@ -1011,6 +1012,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 
                     if(type == 0 || type == 2)
                     {
+                        // std::search
                         while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 14) ||
                                    matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) // while not (given answer OR session End)
                         {

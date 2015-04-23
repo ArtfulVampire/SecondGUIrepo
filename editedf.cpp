@@ -242,9 +242,11 @@ void MainWindow::refilterDataSlot()
 
 void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
 {
+#if 1
+    globalEdf.refilter(lowFreq, highFreq, newPath);
+#else
     QTime myTime;
     myTime.start();
-
 
     readData();
     edfFile & fil = globalEdf;
@@ -310,6 +312,7 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
     fil.writeEdfFile(newPath);
 
     cout << "refilterData: time = " << myTime.elapsed()/1000. << " sec" << endl;
+#endif
 }
 
 void MainWindow::reduceChannelsEDFSlot()
@@ -323,11 +326,13 @@ void MainWindow::reduceChannelsEDF(QString newFilePath)
 {
     QTime myTime;
     myTime.start();
-    readData();
+    edfFile temp;
+    temp.readEdfFile(ui->filePathLineEdit->text());
 
     QStringList lst;
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    if(!QString(label[lst[lst.length() - 1].toInt() - 1]).contains("Markers"))
+//    if(!QString(temp.getLabels()[lst.last().toInt() - 1]).contains("Markers"))
+    if(lst.last().toInt() - 1 != temp.getMarkChan())
     {
         cout << "reduceChannelsEDF: no markers channel" << endl;
         return;
@@ -338,8 +343,6 @@ void MainWindow::reduceChannelsEDF(QString newFilePath)
     {
         chanList << lst[i].toInt() - 1;
     }
-    edfFile temp;
-    temp.readEdfFile(ui->filePathLineEdit->text());
     temp.reduceChannels(chanList);
     temp.writeEdfFile(newFilePath);
 
@@ -413,11 +416,14 @@ void MainWindow::reduceChannelsSlot()
 
 void MainWindow::reduceChannelsFast()
 {
-#if !DATA_ARR
+    QString helpString;
+#if 1
     globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
 #else
+
+    // more general, but needs tons of additional memory
+
     QStringList lst;
-    QString helpString;
     QStringList list;
 
     list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
@@ -522,7 +528,10 @@ void MainWindow::reduceChannelsFast()
     }
     for(int k = 0; k < list.length(); ++k)
     {
-        memcpy(data[k], temp[k], ndr*nr[k] * sizeof(double));
+        for(int j = 0; j < globalEdf.getDataLen(); ++j)
+        {
+            globalEdf.setData(k, j, temp[k][j]);
+        }
     }
     for(int i = 0; i < ns; ++i)
     {
@@ -533,8 +542,7 @@ void MainWindow::reduceChannelsFast()
     ns = list.length();
 #endif
 
-
-    QString helpString = "channels reduced fast ";
+    helpString = "channels reduced fast ";
     ui->textEdit->append(helpString);
 
     helpString = "ns equals to " + QString::number(ns);
@@ -562,7 +570,7 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
     }
     resultEdf->writeEdfFile(outPath);
     delete resultEdf;
-    cout << "concatenateEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "concatenateEDF: " << getFileName(outPath) << "\ttime = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPath)
@@ -572,7 +580,7 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
     QStringList lst;
     lst << inPath1 << inPath2;
     concatenateEDFs(lst, outPath);
-    cout << "concatenateEDFs: time = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "concatenateEDFs: " << getFileName(outPath) << "\ttime = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::constructEDFSlot()
@@ -677,7 +685,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
     QTime myTime;
     myTime.start();
-    readData(); // needed for nr
+    readData(); // read globalEdf
 
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -687,6 +695,12 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         cout << "constructEDF: bad reduceChannelsLineEdit - no markers" << endl;
         return;
     }
+    QList<int> chanList;
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        chanList << lst[i].toInt() - 1;
+    }
+
 
     if(!ui->sliceWithMarkersCheckBox->isChecked())
     {
@@ -713,12 +727,21 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         return;
     }
 
-
+#if 0
     double ** newData = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
         newData[i] = new double [250 * 60 * 120]; // for 2 hours
     }
+#else
+    vector < vector <double> > newData;
+    newData.resize(ns);
+    for(int i = 0; i < ns; ++i)
+    {
+        newData[i].resize(250 * 60 * 250);
+    }
+#endif
+
 
     int currSlice = 0;
     for(int i = 0; i < lst.length(); ++i)
@@ -739,17 +762,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
                 + slash() + ExpName.left(3)
                 + "_splitZerosLog.txt";
 
-//        helpInt = currSlice;
-
-//        cout << "currSlice before = " << currSlice << endl;
-//        drawEeg(newData, ns, currSlice - 4000, currSlice, def::freq,
-//                "/media/Files/Data/Mati/ADA/auxEdfs/b.jpg");
-
-        splitZeros(&newData, ns, helpInt, &currSlice, helpString, fileName); // helpString unchanged
-
-//        drawEeg(newData, ns, currSlice - 4000, currSlice, def::freq,
-//                "/media/Files/Data/Mati/ADA/auxEdfs/a.jpg");
-//        cout << "currSlice after  = " << currSlice << endl;
+        splitZeros(newData, ns, helpInt, &currSlice, helpString, fileName); // helpString unchanged
 
         ofstream outStream;
         outStream.open(helpString.toStdString().c_str(), ios_base::app);
@@ -761,8 +774,11 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
             for (int i = 0; i < ns; ++i) //shift start pointers
             {
-                newData[i] = newData[i] + offset;
+//                newData[i] = newData[i] + offset; // for double **
+                newData[i].erase(newData[i].begin(),
+                                 newData[i].begin() + offset);
             }
+
             newData[ns - 1][0] = saveMarker;
             currSlice -= offset;
 
@@ -783,7 +799,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         //fix the first resting file
         if(newData[ns - 1][0] == 0)
         {
-            newData[ns - 1][0] = matiCountDecimal("00000101 10000000"); //as a count session end
+            newData[ns - 1][0] = matiCountDecimal("0000 0101 1000 0000"); //as a count session end
         }
         else
         {
@@ -803,29 +819,21 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     }
     else if(ui->splitZerosCheckBox->isChecked())
     {
-        splitZeros(&newData, ns, helpInt, &currSlice);
+        splitZeros(newData, ns, helpInt, &currSlice);
     }
 
+    /// remake with dataType
+//    writeEdf(ui->filePathLineEdit->text(), newData, newPath, currSlice); // old
+    globalEdf.writeOtherData(newData, newPath, chanList); // new to check
 
-    int nsB = ns;
-
-    writeEdf(ui->filePathLineEdit->text(), newData, newPath, currSlice);
-
-    for(int i = 0; i < nsB; ++i)
-    {
-        newData[i] = newData[i] - offset;
-        delete []newData[i];
-    }
-    delete []newData;
-    cout << "constructEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "constructEDF: " << getFileName(newPath) << "\ttime = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
 void MainWindow::eyesFast()  //generality
 {
+#if 1
     globalEdf.cleanFromEyes();
-    return;
-
-#if 0
+#else
     QTime myTime;
     myTime.start();
 
@@ -833,7 +841,7 @@ void MainWindow::eyesFast()  //generality
     helpString = QDir::toNativeSeparators(dir->absolutePath()
                                           + slash() + "eyes.txt");
 
-    FILE * coef = fopen(helpString.toStdString().c_str(), "r");
+    FILE * coef = fopen(helpString, "r");
     if(coef == NULL)
     {
         QMessageBox::critical((QWidget*)this, tr("Warning"), tr("No eyes coefficients found"), QMessageBox::Ok);
@@ -889,13 +897,16 @@ void MainWindow::eyesFast()  //generality
         return;
     }
 
+    double helpDouble;
     for(int k = 0; k < NumEeg; ++k)
     {
         for(int j = 0; j < ndr * nr[k]; ++j) //generality nr
         {
             for(int z = 0; z < NumEog; ++z)
             {
-                data[k][j] -= coefficients[k][z] * data[ a[z] ][j]; //a[z]
+                helpDouble = globalEdf.getData()[k][j]
+                        - coefficients[k][z] * globalEdf.getData()[ a[z] ][j];
+                globalEdf.setData(k, j, helpDouble);
             }
         }
     }

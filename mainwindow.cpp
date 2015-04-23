@@ -377,8 +377,14 @@ MainWindow::MainWindow() :
 //    QObject::connect(ui->markerBin1LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
     QObject::connect(ui->markerBin1LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
     QObject::connect(ui->markerSaveEdfPushButton, SIGNAL(clicked()), this, SLOT(markerSaveEdf()));
+    QObject::connect(ui->matiCheckBox, SIGNAL(stateChanged(int)), this, SLOT(matiCheckBoxSlot(int)));
 
     customFunc();
+}
+
+void MainWindow::matiCheckBoxSlot(int a)
+{
+    globalEdf.setMatiFlag(a);
 }
 
 MainWindow::~MainWindow()
@@ -483,7 +489,6 @@ void MainWindow::setEdfFileSlot()
 
 void MainWindow::setEdfFile(QString const filePath)
 {
-    QString helpString2;
     QString helpString;
     NumOfEdf = 0;
     helpString = filePath;
@@ -495,9 +500,8 @@ void MainWindow::setEdfFile(QString const filePath)
     }
     if(!QFile::exists(helpString))
     {
-        helpString2 = "Cannot open EDF file:\n" + helpString;
-//        QMessageBox::critical((QWidget*)this, tr("Critical"), helpString2, QMessageBox::Ok);
-        cout << helpString2.toStdString() << endl;
+        helpString = "Cannot open EDF file:\n" + helpString;
+        cout << helpString << endl;
         return;
     }
 
@@ -801,18 +805,16 @@ void MainWindow::readData()
 
 #if 1
 
-    edfFile & fil = globalEdf;
+    globalEdf.readEdfFile(helpString);
 
-    fil.readEdfFile(helpString);
-
-    ns = fil.getNs();
+    ns = globalEdf.getNs();
     for(int i = 0; i < ns; ++i)
     {
-        nr[i] = int(fil.getNr()[i]);
+        nr[i] = int(globalEdf.getNr()[i]);
     }
-    ndr = fil.getNdr();
-    ddr = fil.getDdr();
-    fil.getLabelsCopy(label);
+    ndr = globalEdf.getNdr();
+    ddr = globalEdf.getDdr();
+    globalEdf.getLabelsCopy(label);
 #else
     FILE * edf = fopen(helpString, "r"); //generality
     if(edf == NULL)
@@ -1772,9 +1774,25 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
+//    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr.edf");
+//    readData();
+//    refilterData(5., 20., "/media/Files/Data/Mati/SDA/SDA_f_new.edf");
+//    exit(0);
+//    cout << areEqualFiles("/media/Files/Data/Mati/SDA/SDA_f_new.edf",
+//                          "/media/Files/Data/Mati/SDA/SDA_f_old.edf") << endl;     exit(0);
 
-    clustering();
-    exit(7);
+
+//    // check saveSubsection
+//    setEdfFile("/media/Files/Data/Mati/PYV/PYV_rr_f.edf");
+//    readData();
+//    globalEdf.saveSubsection(0, 10000, "/media/Files/Data/Mati/PYV/PYV_ss_1.txt", true);
+//    globalEdf.saveSubsection(0, 10000, "/media/Files/Data/Mati/PYV/PYV_ss.edf", false);
+
+//    edfFile fil;
+//    fil.readEdfFile("/media/Files/Data/Mati/PYV/PYV_ss.edf");
+//    fil.writeEdfFile("/media/Files/Data/Mati/PYV/PYV_ss.txt", true);
+
+//    exit(7);
 
 #if 0
     double ** dataFFT = new double * [maxNs];

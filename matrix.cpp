@@ -1,20 +1,17 @@
 #include "matrix.h"
-#if 0
+
 matrix::matrix()
 {
-    this = matrix(1, 1);
-    data[1][1] = 0;
 }
 
 matrix::matrix(double **inData, int rows, int cols)
 {
-    this = matrix(rows, cols);
-
-    for(typename vector< vector<double> >::iterator it = data.begin(); it < data.end(); ++it)
+    this->resize(rows, cols);
+    for(int i = 0; i < rows; ++i)
     {
-        for(typename vector<double>::iterator itt = (*it).begin(); itt < (*it).end(); ++itt)
+        for(int j = 0; j < cols; ++j)
         {
-            (*itt) = inData[it-data.begin()][itt - (*it).begin];
+            this->data[i][j] = inData[i][j];
         }
     }
 }
@@ -22,32 +19,54 @@ matrix::matrix(double **inData, int rows, int cols)
 
 matrix::~matrix()
 {
-    for(typename vector< vector<double> >::iterator it = data.begin(); it < data.end(); ++it)
-    {
-//        ~(*it);
-    }
-//    ~data;
 }
 
 
 matrix::matrix(int rows, int cols)
 {
-    this = matrix(rows, cols);
+    this->resize(rows, cols);
+}
+
+matrix::matrix(const matrix & other)
+{
+    this->data = other.data;
+}
+matrix::matrix(vector <double> vec, bool orientH)
+{
+    if(orientH)
+    {
+        this->resize(1, vec.size());
+        this->data[0] = vec;
+    }
+    else
+    {
+        this->resize(vec.size(), 1);
+        for(int i = 0; i < vec.size(); ++i)
+        {
+            this->data[i][0] = vec[i];
+        }
+    }
+}
+
+
+matrix matrix::operator = (const matrix & other)
+{
+    this->data = other.data;
 }
 
 
 matrix::matrix(int rows, int cols, double value)
 {
-    this = matrix(rows, cols);
+    this->resize(rows, cols);
     this->fill(value);
 }
 
 
 void matrix::fill(double value)
 {
-    for(typename vector< vector<double> >::iterator it = data.begin(); it < data.end(); ++it)
+    for(auto it = data.begin(); it < data.end(); ++it)
     {
-        for(typename vector<double>::iterator itt = (*it).begin(); itt < (*it).end(); ++itt)
+        for(auto itt = (*it).begin(); itt < (*it).end(); ++itt)
         {
             (*itt) = value;
         }
@@ -58,7 +77,7 @@ void matrix::fill(double value)
 void matrix::resize(int rows, int cols)
 {
     data.resize(rows);
-    for(typename vector< vector<double> >::iterator it = data.begin(); it < data.end(); ++it)
+    for(auto it = data.begin(); it < data.end(); ++it)
     {
         (*it).resize(cols);
     }
@@ -69,7 +88,7 @@ void matrix::resizeRows(int rows)
 {
     int cols = data[0].size();
     data.resize(rows);
-    for(typename vector< vector<double> >::iterator it = data.begin(); it < data.end(); ++it)
+    for(auto it = data.begin(); it < data.end(); ++it)
     {
         (*it).resize(cols);
     }
@@ -78,48 +97,38 @@ void matrix::resizeRows(int rows)
 
 void matrix::resizeCols(int cols)
 {
-    for(typename vector< vector<double> >::iterator it = data.begin(); it < data.end(); ++it)
+    for(auto it = data.begin(); it < data.end(); ++it)
     {
         (*it).resize(cols);
     }
 }
 
-
-void matrix::print(int rows, int cols)
-{
-    for(typename vector< vector<double> >::iterator it = data.begin(); it < (rows == 0) ? data.end() : (data.begin() + rows); ++it)
-    {
-        for(typename vector<double>::iterator itt = (*it).begin(); itt <(cols == 0) ? (*it).end() : ((*it).begin() + cols); ++itt)
-        {
-            cout << (*itt) << endl;
-        }
-    }
-    cout << endl;
-}
-
-
-int matrix::rows()
+int matrix::rows() const
 {
    return data.size();
 }
 
 
-int matrix::cols()
+int matrix::cols() const
 {
     return data[0].size();
 }
 
-
-ostream & operator << (ostream &os, matrix toOut)
+matrix matrix::transpose(const matrix &input)
 {
-    for(typename vector< vector<double> >::iterator it = toOut.data.begin(); it < toOut.data.end(); ++it)
+    matrix res;
+    res.resize(input.cols(), input.rows());
+    for(int i = 0; i < input.rows(); ++i)
     {
-        for(typename vector<double>::iterator itt = (*it).begin(); itt < (*it).end(); ++itt)
+        for(int j = 0; j < input.cols(); ++j)
         {
-            os << (*itt) << "  ";
+            res[j][i] = input[i][j];
         }
-        os << endl;
     }
-    return os;
+    return res;
 }
-#endif
+
+
+
+
+
