@@ -130,6 +130,7 @@ public:
     void sliceMatiSimple();
 
     void rereferenceData(QString newRef, QString newPath);
+    void makeChanList(QList<int> & chanList);
 
     void refilterData(double lowFreq, double highFreq, QString newPath);
     void countSpectraSimple(int fftLen);

@@ -1355,7 +1355,7 @@ void edfFile::reduceChannels(QString chanStr)
     cout << endl;
 }
 
-void edfFile::writeOtherData(vector < vector <double> > & newData, QString outPath, QList<int> chanList)
+void edfFile::writeOtherData(dataType &newData, QString outPath, QList<int> chanList)
 {
 
     edfFile temp(*this);
@@ -1396,6 +1396,12 @@ void edfFile::writeOtherData(vector < vector <double> > & newData, QString outPa
 
 void edfFile::writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList) const
 {
+    if(chanList.isEmpty())
+    {
+        cout << "edfFile::writeOtherData: chanList is empty, RETURN" << endl;
+        return;
+    }
+
     edfFile temp(*this);
 
 #if DATA_IN_CHANS

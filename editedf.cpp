@@ -4,6 +4,23 @@
 #include "ui_mainwindow.h"
 
 
+
+void MainWindow::makeChanList(QList<int> & chanList)
+{
+    chanList.clear();
+    QStringList lst;
+    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    if(lst.last().toInt() - 1 != globalEdf.getMarkChan())
+    {
+        cout << "makeChanList: no markers channel" << endl;
+        return;
+    }
+    for(int i = 0; i < lst.length(); ++i)
+    {
+        chanList << lst[i].toInt() - 1;
+    }
+}
+
 void MainWindow::rereferenceDataSlot()
 {
     QString helpString = dir->absolutePath() + slash() + ExpName + ".edf"; //ui->filePathLineEdit->text()
@@ -734,7 +751,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         newData[i] = new double [250 * 60 * 120]; // for 2 hours
     }
 #else
-    vector < vector <double> > newData;
+    mat newData;
     newData.resize(ns);
     for(int i = 0; i < ns; ++i)
     {

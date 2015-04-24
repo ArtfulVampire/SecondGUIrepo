@@ -158,6 +158,7 @@ void MainWindow::ICA() //fastICA
         cout << "ICA: bad reduceChannelsLineEdit - no markers" << endl;
         return;
     }
+
     ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
 
     double eigenValuesTreshold = pow(10., -ui->svdDoubleSpinBox->value());
@@ -209,10 +210,13 @@ void MainWindow::ICA() //fastICA
     double * tempVector = new double [ns];
 
     //components time-flow
-    double ** components = new double * [ns + 1]; //+1 for markers channel
+    mat components;
+    components.resize(ns+1);
+//    double ** components = new double * [ns + 1]; //+1 for markers channel
     for(int i = 0; i < ns + 1; ++i)
     {
-        components[i] = new double [ndr*fr];
+        components[i].resize(ndr*fr);
+//        components[i] = new double [ndr*fr];
     }
     double ** dataICA;
     double * averages;
@@ -223,22 +227,7 @@ void MainWindow::ICA() //fastICA
 
 
     //wtf is this?
-#if 0
-    int numOfMark = 0;
-    while(1)
-    {
-        if(QString(label[numOfMark]).contains("Markers")) break;
-        ++numOfMark;
-    }
-    for(int i = 0; i < ndr*fr; ++i)
-    {
-        components[ns-1][i] = data[numOfMark][i];
-    }
-#else
-    memcpy(components[ns],
-            globalEdf.getData()[globalEdf.getMarkChan()].data(),
-            globalEdf.getDataLen() * sizeof(double));
-#endif
+    components[ns-1] = globalEdf.getData()[globalEdf.getMarkChan()];
 
 
 
@@ -430,7 +419,6 @@ void MainWindow::ICA() //fastICA
                         delete [] eigenVectors[i];
                         delete [] vectorW[i];
                         delete [] matrixA[i];
-                        delete [] components[i];
                         delete [] dataICA[i];
                     }
                     delete [] centeredMatrix;
@@ -444,8 +432,6 @@ void MainWindow::ICA() //fastICA
                     delete [] tempVector;
                     delete [] vectorW;
                     delete [] matrixA;
-                    delete [] components[ns];
-                    delete [] components;
                     delete [] dataICA;
 
                 }
@@ -733,9 +719,7 @@ void MainWindow::ICA() //fastICA
                         delete [] covMatrix[i];
                         delete [] centeredMatrix[i];
                         delete [] eigenVectors[i];
-                        delete [] vectorW[i];
                         delete [] matrixA[i];
-                        delete [] components[i];
                         delete [] dataICA[i];
                     }
                     delete [] centeredMatrix;
@@ -750,10 +734,7 @@ void MainWindow::ICA() //fastICA
                     delete [] vector3;
                     delete [] vectorOld;
                     delete [] tempVector;
-                    delete [] vectorW;
                     delete [] matrixA;
-                    delete [] components[ns];
-                    delete [] components;
                     delete [] dataICA;
 
                 }
@@ -801,7 +782,9 @@ void MainWindow::ICA() //fastICA
 //    cout<<endl;
 
     //count components
-    matrixProduct(vectorW, dataICA, &components, ns, ndr*fr);
+    matrixProduct(matrix(vectorW, ns, ns),
+                  matrix(dataICA, ns, ndr*fr),
+                  components, ns);
 //    for(int i = 0; i < ns; ++i)
 //    {
 //        for(int j = 0; j < ndr*fr; ++j)
@@ -993,8 +976,14 @@ void MainWindow::ICA() //fastICA
 
     helpString = dir->absolutePath() + slash() + ExpName + "_ica.edf";
     /// remake with dataType
-    writeEdf(ui->filePathLineEdit->text(), components, helpString, ndr*def::freq);
-    cout << "ICA ended. time = = " << wholeTime.elapsed()/1000. << " sec" << endl;
+//    writeEdf(ui->filePathLineEdit->text(), components, helpString, ndr*def::freq);
+
+    ////to test
+    QList <int> chanList;
+    makeChanList(chanList);
+    globalEdf.writeOtherData(components, helpString, chanList);
+
+    cout << "ICA ended. time = " << wholeTime.elapsed()/1000. << " sec" << endl;
 
     ns = ui->numOfIcSpinBox->value();
     for(int i = 0; i < ns; ++i)
@@ -1004,7 +993,6 @@ void MainWindow::ICA() //fastICA
         delete [] eigenVectors[i];
         delete [] vectorW[i];
         delete [] matrixA[i];
-        delete [] components[i];
         delete [] dataICA[i];
     }
     delete [] centeredMatrix;
@@ -1018,8 +1006,6 @@ void MainWindow::ICA() //fastICA
     delete [] tempVector;
     delete [] vectorW;
     delete [] matrixA;
-    delete [] components[ns];
-    delete [] components;
     delete [] dataICA;
 }
 
@@ -1122,8 +1108,8 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     matrixCreate(&mat2, ns_, ns_);
 
     //read matrices
-    readICAMatrix(maps1Path, &mat1, ns_);
-    readICAMatrix(maps2Path, &mat2, ns_);
+    readICAMatrix(maps1Path, mat1, ns_);
+    readICAMatrix(maps2Path, mat2, ns_);
 
     //transpose ICA maps
     matrixTranspose(&mat1, ns_);
@@ -1168,7 +1154,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     {
         for(int j = 0; j < ns_; ++j)
         {
-            corrMap = (correlationFromZero(mat1[k], mat2[j], ns_));
+            corrMap = (correlation(mat1[k], mat2[j], ns_, 0, true));
             corrMap = corrMap * corrMap;
 
             helpDouble = corrMap; /////////////////////////////////////////////////////////////////////////////////////
@@ -1475,7 +1461,7 @@ void MainWindow::icaClassTest() //non-optimized
     helpString2 = ExpName;
     helpString2.replace("_ica", "");
     helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "Help" + slash() + helpString2 + "_maps.txt");
-    if(!readICAMatrix(helpString, &matrixA, numOfIC))
+    if(!readICAMatrix(helpString, matrixA, numOfIC))
     {
         return;
     }
@@ -1662,7 +1648,7 @@ void MainWindow::throwIC()
     }
 
     helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "Help" + slash() + ExpName + "_maps.txt");
-    readICAMatrix(helpString, &matrixA, numOfIC);
+    readICAMatrix(helpString, matrixA, numOfIC);
 
     QList<int> thrownComp;
     thrownComp.clear();
@@ -1697,39 +1683,38 @@ void MainWindow::throwIC()
 
 }
 
+
+////////////////////////// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA need test
 void MainWindow::transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath) // for 19 channels generality
 {
     setEdfFile(inEdfPath);
     readData();
 
-    double ** mat1;
-    matrixCreate(&mat1, 19, 19);
-    readICAMatrix(mapsPath, &mat1, 19);
-    matrixInvert(&mat1, 19);
+    matrix mat1(19, 19);
+    readICAMatrix(mapsPath, mat1, 19); // data = mat1 * comps
+    mat1.invert(); // mat1 * data = comps
 
-    double ** newData;
-    matrixCreate(&newData, 20, ndr*def::freq);
+    matrix newData;
+    newData.resize(19, ndr*def::freq);
 
-    /////////////////// remake with matrix struct
-#if 0
-    matrixProduct(mat1, data, &newData, 19, ndr*def::freq);
-    memcpy(newData[19], data[19], ndr*def::freq*sizeof(double));    //copy markers
-#endif
+    matrixProduct(mat1, globalEdf.getData(), newData);
+
+    newData.resizeRows(20); // for markers
+    newData[19] = globalEdf.getData()[19]; //copy markers
 
     QList<int> chanList;
     chanList.clear();
-    for(int i = 1; i <= 20; ++i)
+    for(int i = 0; i < 20; ++i)
     {
         chanList << i;
     }
-    writeEdf(ui->filePathLineEdit->text(), newData, newEdfPath, ndr*def::freq, chanList);
-
-    matrixDelete(&mat1, 19);
-    matrixDelete(&newData, 20);
+    globalEdf.writeOtherData(newData.data, newEdfPath, chanList);
 }
 
 void MainWindow::transformReals() //move to library
 {
+    // I dont care, I dont need this shit anymore
+#if 0
     QStringList lst;
     QString helpString;
 
@@ -1746,7 +1731,7 @@ void MainWindow::transformReals() //move to library
     double ** mat3;
     matrixCreate(&mat3, 19, 19);
 
-    readICAMatrix(helpString, &mat1, 19);
+    readICAMatrix(helpString, mat1, 19);
     matrixInvert(mat1, 19, &mat3);
     matrixDelete(&mat1, 19);
 
@@ -1768,7 +1753,7 @@ void MainWindow::transformReals() //move to library
         helpString = dir->absolutePath() + slash() + procDir + slash() + lst[i];
         readPlainData(helpString, mat1, 19, NumOfSlices);
 
-        matrixProduct(mat3, globalEdf.getData(), &mat2, 19, NumOfSlices);
+        matrixProduct(mat3, globalEdf.getData(), mat2, 19, NumOfSlices);
 
         helpString = dir->absolutePath() + slash() + procDir + slash() + lst[i];
         writePlainData(helpString, mat2, 19, NumOfSlices);
@@ -1781,10 +1766,9 @@ void MainWindow::transformReals() //move to library
     matrixDelete(&mat1, 19);
     matrixDelete(&mat2, 19);
     matrixDelete(&mat3, 19);
+#endif
 
 }
-
-
 
 void MainWindow::randomDecomposition()
 {
@@ -1818,9 +1802,11 @@ void MainWindow::randomDecomposition()
 
 
     int compNum = ui->numOfIcSpinBox->value();
-    double ** randMatrix = matrixCreate(compNum, compNum);
+//    double ** randMatrix = matrixCreate(compNum, compNum);
+    matrix randMatrix(compNum, compNum);
     double ** matrixW = matrixCreate(compNum, compNum);
-    double ** newData = matrixCreate(ns, ndr*def::freq);
+//    double ** newData = matrixCreate(ns, ndr*def::freq);
+    matrix newData(ns, globalEdf.getDataLen());
 
     double sum1;
     double sum2;
@@ -1877,6 +1863,9 @@ void MainWindow::randomDecomposition()
     QTime myTime;
     myTime.start();
 
+    QList<int> chanList;
+    makeChanList(chanList);
+
     for(int i = 0; i < 55; ++i) /////////////////////////////////////////////////////////////////////////////////
     {
         myTime.restart();
@@ -1924,10 +1913,8 @@ void MainWindow::randomDecomposition()
         matrixProduct(matrixW, eigenMatrixInv, &randMatrix, compNum, compNum); //randMatrix = randW * Eig * d^-0.5 *Eig^t
 */
         //decompose
-        matrixProduct(randMatrix, globalEdf.getData(), &newData, compNum, ndr*def::freq);
-        memcpy(newData[ns-1],
-                globalEdf.getData()[globalEdf.getMarkChan()].data(),
-                ndr * def::freq * sizeof(double)); //markers
+        matrixProduct(randMatrix, globalEdf.getData(), newData, compNum);
+        newData[ns-1] = globalEdf.getData()[globalEdf.getMarkChan()];
 
         //norm components and rand matrix
         for(int i = 0; i < compNum; ++i)
@@ -1955,7 +1942,8 @@ void MainWindow::randomDecomposition()
 
         //write newData
         helpString = dir->absolutePath() + slash() + ExpName + "_randIca.edf";
-        writeEdf(ui->filePathLineEdit->text(), newData, helpString, ndr*def::freq);
+        globalEdf.writeOtherData(newData.data, helpString, chanList);
+//        writeEdf(ui->filePathLineEdit->text(), newData, helpString, ndr*def::freq);
 
         helpString = dir->absolutePath() + slash() + ExpName + "_randIca.edf";
         setEdfFile(helpString);
@@ -1978,9 +1966,7 @@ void MainWindow::randomDecomposition()
 
 
 
-    matrixDelete(&randMatrix, compNum);
     matrixDelete(&matrixW, compNum);
-    matrixDelete(&newData, ns);
     matrixDelete(&eigenMatrix, compNum);
     matrixDelete(&eigenMatrixInv, compNum);
 

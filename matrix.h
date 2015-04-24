@@ -13,6 +13,9 @@
 #include <iostream>
 
 using namespace std;
+
+typedef vector<vector<double>> dataType;
+
 struct matrix
 {
     matrix();
@@ -22,6 +25,8 @@ struct matrix
     matrix(double ** inData, int rows, int cols);
     matrix(const matrix & other);
     matrix(vector <double> vec, bool orientH);
+
+    matrix(vector <double> vec, char orient);
     void resize(int rows, int cols);
     void resizeRows(int rows);
     void resizeCols(int cols);
@@ -30,16 +35,25 @@ struct matrix
     int cols() const;
     int rows() const;
 
+    // for compability with vector < vector<Type> >
+    int size() const {return data.size();}
+    void resize(int i) {data.resize(i);}
+
+
     vector <double> & operator [](int i)
     {
         return data[i];
+
     }
     const vector <double> & operator [](int i) const
     {
         return data[i];
     }
 
-    vector < vector <double> > data;
+
+
+    dataType data;
+
 
 
 
@@ -50,6 +64,22 @@ struct matrix
     //"static"
     // auto type
     matrix transpose(const matrix & input);
+
+    // "private"
+    void transpose();
+    void invert();
+//    double det();
+//    void cofactor();
+//    void systemGaussSolve();
+
+};
+
+template <typename Typ1, typename Typ2, typename Typ3>
+void matrixProduct(const Typ1 (&in1), const Typ2 (&in2), Typ3 (&result),
+                   int dim = -1, int rows1 = -1, int cols2 = -1);
+
+
+
 #if 0
     matrix invert(const matrix & input);
     matrix det(const matrix & input);
@@ -58,14 +88,9 @@ struct matrix
     matrix product(const matrix & in1, const matrix & in2);
 
     //"private"
-    void transpose(const matrix & result);
-    void invert(const matrix & result);
-    void det(const matrix & result);
-    void cofactor(const matrix & result);
-    void systemGaussSolve(const matrix & result);
     void product(const matrix & in2, matrix & result);
 #endif
-};
+
 
 
 

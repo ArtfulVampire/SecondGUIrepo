@@ -313,7 +313,7 @@ void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool
 {
     double ** matrixA;
     matrixCreate(&matrixA, ns, ns);
-    readICAMatrix(mapsPath, &matrixA, ns);
+    readICAMatrix(mapsPath, matrixA, ns);
     double maxAbs = matrixA[0][0];
     for(int i = 0; i < ns; ++i)
     {
@@ -846,9 +846,9 @@ ostream & operator << (ostream &os, matrix toOut)
     return os;
 }
 
-//vector< vector<double> > operator=(const vector< vector<double> > & other)
+//mat operator=(const mat & other)
 //{
-//    vector< vector<double> > temp;
+//    mat temp;
 //    temp.resize(other.size());
 //    for(int i = 0; i < other.size(); ++i)
 //    {
@@ -881,96 +881,104 @@ double quantile(double arg)
     return (4.91*(a-b));
 }
 
-double mean(const int *arr, int length)
+template <typename Typ>
+double mean(Typ arr, int length, int shift)
 {
     double sum = 0.;
     for(int i = 0; i < length; ++i)
     {
-        sum += arr[i];
+        sum += arr[i + shift];
     }
-    sum /= (double)length;
+    sum /= length;
     return sum;
 }
+template double mean(const double * arr, int length, int shift);
+template double mean(const int * arr, int length, int shift);
+template double mean(const vector<int> arr, int length, int shift);
+template double mean(const vector<double> arr, int length, int shift);
 
-double mean(const double * arr, int length)
-{
-    double sum = 0.;
-    for(int i = 0; i < length; ++i)
-    {
-        sum += arr[i] / double(length);
-    }
-    return sum;
-}
-
-double variance(const int *arr, int length)
+template <typename Typ>
+double variance(Typ arr, int length, int shift, bool fromZero)
 {
     double sum1 = 0.;
-    double m = mean(arr, length);
+    double m = mean(arr, length, shift);
     for(int i = 0; i < length; ++i)
     {
-        sum1 += (arr[i] - m) * (arr[i] - m);
+        sum1 += pow((arr[i + shift] - m * (!fromZero)?1.:0.), 2.);
     }
-    sum1 /= (double)length;
+    sum1 /= length;
     return sum1;
 }
+template double variance(const double * arr, int length, int shift, bool fromZero);
+template double variance(const int * arr, int length, int shift, bool fromZero);
+template double variance(const vector<int> arr, int length, int shift, bool fromZero);
+template double variance(const vector<double> arr, int length, int shift, bool fromZero);
 
-
-double variance(const double * arr, int length)
+template <typename Typ>
+double sigma(Typ arr, int length, int shift, bool fromZero)
 {
-    double sum1 = 0.;
-    double m = mean(arr, length);
+    return sqrt(variance(arr, length, shift, fromZero));
+}
+template double sigma(const double * arr, int length, int shift, bool fromZero);
+template double sigma(const int * arr, int length, int shift, bool fromZero);
+template double sigma(const vector<int> arr, int length, int shift, bool fromZero);
+template double sigma(const vector<double> arr, int length, int shift, bool fromZero);
+
+template <typename Typ>
+double covariance(Typ arr1, Typ arr2, int length, int shift, bool fromZero)
+{
+    double res = 0.;
+    double m1, m2;
+    m1 = mean(arr1, length, shift);
+    m2 = mean(arr2, length, shift);
+    int sign = (fromZero)?0:1;
     for(int i = 0; i < length; ++i)
     {
-        sum1 += (arr[i] - m) * (arr[i] - m);
+        res += (arr1[i + shift] - m1 * sign) *
+                (arr2[i + shift] - m2 * sign);
     }
-    sum1 /= (double)length;
-    return sum1;
+    return res;
 }
+template double covariance(const double * arr1, const double * arr2, int length, int shift, bool fromZero);
+template double covariance(const int * arr1, const int * arr2, int length, int shift, bool fromZero);
+template double covariance(const vector<int> arr1, const vector<int> arr2, int length, int shift, bool fromZero);
+template double covariance(const vector<double> arr1, const vector<double> arr2, int length, int shift, bool fromZero);
 
-double varianceFromZero(const int *arr, int length)
+template <typename Typ>
+double correlation(Typ arr1, Typ arr2, int length, int shift, bool fromZero)
 {
-    double sum1 = 0.;
-    for(int i = 0; i < length; ++i)
+    double res = 0.;
+    double m1, m2;
+    int T = abs(shift);
+    double sigmas;
+    int signM = (shift >= 0)?1:0;
+    int signL = (shift <= 0)?1:0;
+
+    m1 = mean(arr1, length - T, T * signL);
+    m2 = mean(arr2, length - T, T * signM);
+    for(int i = 0; i < length - T; ++i)
     {
-        sum1 += arr[i] * arr[i];
+        res += (arr1[i + T * signL] - m1) * (arr2[i + T * signM] - m2);
     }
-    sum1 /= (double)length;
-    return sum1;
-}
-
-
-double varianceFromZero(const double * arr, int length)
-{
-    double sum1 = 0.;
-    for(int i = 0; i < length; ++i)
+    sigmas = sigma(arr1, length - T, T * signL, fromZero) *
+             sigma(arr2, length - T, T * signM, fromZero);
+    if(sigmas != 0.)
     {
-        sum1 += arr[i]* arr[i];
+        res /= sigmas;
     }
-    sum1 /= (double)length;
-    return sum1;
+    else
+    {
+        cout << "correlation const signal" << endl;
+        return 0.;
+    }
+
+    res /= double(length - T);
+    return res;
 }
-
-
-double sigma(int *arr, int length)
-{
-    return sqrt(variance(arr, length));
-}
-
-double sigma(const double *arr, int length)
-{
-    return sqrt(variance(arr, length));
-}
-
-double sigmaFromZero(int *arr, int length)
-{
-    return sqrt(varianceFromZero(arr, length));
-}
-
-double sigmaFromZero(const double *arr, int length)
-{
-    return sqrt(varianceFromZero(arr, length));
-}
-
+template double correlation(const double * arr1, const double * arr2, int length, int shift, bool fromZero);
+template double correlation(const int * arr1, const int * arr2, int length, int shift, bool fromZero);
+template double correlation(const vector<int> arr1, const vector<int> arr2, int length, int shift, bool fromZero);
+template double correlation(const vector<double> arr1, const vector<double> arr2, int length, int shift, bool fromZero);
 
 double skewness(double *arr, int length)
 {
@@ -1313,95 +1321,6 @@ double minValue(double * arr, int length)
 }
 
 
-double covariance(const double * arr1, const double * arr2, int length)
-{
-    double res = 0.;
-    double m1, m2;
-    m1 = mean(arr1, length);
-    m2 = mean(arr2, length);
-    for(int i = 0; i < length; ++i)
-    {
-        res += (arr1[i] - m1) * (arr2[i] - m2);
-    }
-    return res;
-}
-
-double correlation(const double * arr1, const double * arr2, int length, int shift)
-{
-    double res = 0.;
-    double m1, m2;
-    int T = abs(shift);
-    double sigmas;
-    if(shift >= 0) //start from arr1[0] and arr1[t]
-    {
-        m1 = mean(arr1, length-shift);
-        m2 = mean(arr2+shift, length-shift);
-        for(int i = 0; i < length - shift; ++i)
-        {
-            res += (arr1[i] - m1) * (arr2[i + shift] - m2);
-        }
-        sigmas = sigma(arr1, length-shift) * sigma(arr2+shift, length-shift);
-        if(sigmas != 0.)
-        {
-            res /= sigmas;
-        }
-        else
-        {
-            cout << "const signal ";
-            return 0.;
-        }
-    }
-    else  //start from arr1[0] and arr1[t]
-    {
-        m1 = mean(arr1+T, length-T);
-        m2 = mean(arr2, length-T);
-        for(int i = 0; i < length - T; ++i)
-        {
-            res += (arr1[i + T] - m1) * (arr2[i] - m2);
-        }
-        sigmas = sigma(arr1 + T, length - T) * sigma(arr2, length - T);
-        if(sigmas != 0.)
-        {
-            res /= sigmas;
-        }
-        else
-        {
-            cout << "const signal ";
-            return 0.;
-        }
-    }
-    res /= double(length - T);
-    return res;
-}
-
-
-double correlationFromZero(double * const arr1, double * const arr2, int length, int shift)
-{
-    double res = 0.;
-    int T = abs(shift);
-    if(shift >= 0) //start from arr1[0] and arr1[t]
-    {
-        for(int i = 0; i < length - shift; ++i)
-        {
-            res += arr1[i] * arr2[i + shift];
-        }
-
-        res /= sigmaFromZero(arr1, length-shift) * sigmaFromZero(arr2+shift, length-shift);
-    }
-    else  //start from arr1[0] and arr1[t]
-    {
-        for(int i = 0; i < length - T; ++i)
-        {
-            res += arr1[i + T] * arr2[i];
-        }
-
-        res /= sigmaFromZero(arr1 + T, length - T) * sigmaFromZero(arr2, length - T);
-    }
-
-    res /= double(length - T);
-    return res;
-}
-
 
 double enthropy(double *arr, int N, int numOfRanges) // ~30 is ok
 {
@@ -1440,8 +1359,8 @@ double enthropy(double *arr, int N, int numOfRanges) // ~30 is ok
 }
 
 //matrix product out = A(H*H) * B(H*L)
-template <typename Typ1, typename Typ2>
-void matrixProduct(Typ1 A, Typ2 inMat2, double *** outMat, int dimH, int dimL)
+template <typename Typ1, typename Typ2, typename Typ3>
+void matrixProduct(Typ1 inMat1, Typ2 inMat2, Typ3 (&outMat), int dimH, int dimL)
 {
     double result;
 
@@ -1452,18 +1371,19 @@ void matrixProduct(Typ1 A, Typ2 inMat2, double *** outMat, int dimH, int dimL)
             result = 0.;
             for(int k = 0; k < dimH; ++k)
             {
-                result += A[i][k] * inMat2[k][j];
+                result += inMat1[i][k] * inMat2[k][j];
             }
-            (*outMat)[i][j] = result;
+            outMat[i][j] = result;
         }
     }
 }
-template void matrixProduct(double ** A, double ** inMat2, double *** outMat, int dimH, int dimL);
-template void matrixProduct(double ** A, vector < vector <double> > inMat2, double *** outMat, int dimH, int dimL);
-template void matrixProduct(vector < vector <double> > A, vector < vector <double> > inMat2, double *** outMat, int dimH, int dimL);
+template void matrixProduct(double ** A, double ** inMat2, double **& outMat, int dimH, int dimL);
+template void matrixProduct(double ** A, double ** inMat2, mat & outMat, int dimH, int dimL);
+template void matrixProduct(mat A, mat inMat2, double **& outMat, int dimH, int dimL);
+template void matrixProduct(mat A, mat inMat2, mat & outMat, int dimH, int dimL);
 
-template <typename Typ1, typename Typ2>
-void matrixProduct(Typ1 inMat1, Typ2 inMat2, double *** outMat, int numRows1, int numCols2, int numCols1Rows2)
+template <typename Typ1, typename Typ2, typename Typ3>
+void matrixProduct(Typ1 inMat1, Typ2 inMat2, Typ3 (&outMat), int numRows1, int numCols2, int numCols1Rows2)
 {
     double result;
 
@@ -1476,13 +1396,15 @@ void matrixProduct(Typ1 inMat1, Typ2 inMat2, double *** outMat, int numRows1, in
             {
                 result += inMat1[j][k] * inMat2[k][i];
             }
-            (*outMat)[j][i] = result;
+            outMat[j][i] = result;
         }
     }
 }
-template void matrixProduct(double ** inMat1, double ** inMat2, double *** outMat, int numRows1, int numCols2, int numCols1Rows2);
-template void matrixProduct(double ** inMat1, vector < vector <double> > inMat2, double *** outMat, int numRows1, int numCols2, int numCols1Rows2);
-template void matrixProduct(vector < vector <double> > inMat1, vector < vector <double> > inMat2, double *** outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(double ** inMat1, double ** inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(double ** inMat1, double ** inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(double ** inMat1, mat inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(mat inMat1, mat inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(mat inMat1, mat inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);
 
 
 void matrixProduct(double * const vect, double ** const mat, double ** outVect, int dimVect, int dimMat) //outVect(dimMat) = vect(dimVect) * mat(dimVect * dimMat)
@@ -2815,7 +2737,7 @@ template void writePlainData(QString outPath,
                             int numOfSlices,
                             int start = 0);
 template void writePlainData(QString outPath,
-                            vector < vector <double> > data,
+                            mat data,
                             int ns,
                             int numOfSlices,
                             int start = 0);
@@ -2851,7 +2773,7 @@ template void readPlainData(QString inPath,
                             int & numOfSlices,
                             int start);
 template void readPlainData(QString inPath,
-                            vector < vector <double> > & data,
+                            mat & data,
                             int ns,
                             int & numOfSlices,
                             int start);
@@ -3000,7 +2922,7 @@ template QPixmap drawEeg(double ** dataD,
                          int redChan = -1);
 
 template
-QPixmap drawEeg( vector < vector <double> > dataD,
+QPixmap drawEeg( mat dataD,
                  int ns,
                  int NumOfSlices,
                  int freq,
@@ -3103,7 +3025,7 @@ template QPixmap drawEeg(double ** dataD,
                          int redChan = -1);
 
 template
-QPixmap drawEeg( vector < vector <double> > dataD,
+QPixmap drawEeg( mat dataD,
                  int ns,
                  int startSlice,
                  int endSlice,
@@ -3177,7 +3099,7 @@ void zeroData(double **& inData, const int &ns, const int &leftLimit, const int 
     }
 }
 
-void splitZeros(vector < vector <double> > & dataIn,
+void splitZeros(mat & dataIn,
                 const int & ns,
                 const int & length,
                 int * outLength,
@@ -3848,7 +3770,8 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
     (*NumberOfVectors) = num;
 }
 
-bool readICAMatrix(QString path, double *** matrixA, int ns)
+template <typename Typ>
+bool readICAMatrix(QString path, Typ (&matrixA), int ns)
 {
     ifstream inStream;
     inStream.open(path.toStdString().c_str());
@@ -3857,16 +3780,21 @@ bool readICAMatrix(QString path, double *** matrixA, int ns)
         cout << "cannot open maps File:" << endl << path.toStdString() << endl;
         return 0;
     }
+    double helpDouble = 0.;
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ns; ++j)
         {
-            inStream >> (*matrixA)[i][j];
+            inStream >> helpDouble;
+            matrixA[i][j] = helpDouble;
         }
     }
     inStream.close();
     return 1;
 }
+                           template bool readICAMatrix(QString path, double **& matrixA, int ns);
+                           template bool readICAMatrix(QString path, matrix & matrixA, int ns);
+                           template bool readICAMatrix(QString path, mat & matrixA, int ns);
 
 
 void writeICAMatrix(QString path, double ** matrixA, int const ns)
@@ -4637,7 +4565,7 @@ int matiCountDecimal(QString byteMarker)
 
 
 
-void refreshDist(vector < vector<double> > & dist,
+void refreshDist(mat & dist,
                  const vector <pair <double, double> > & testCoords,
                  const int input)
 {
@@ -4660,7 +4588,7 @@ void refreshDist(vector < vector<double> > & dist,
     }
 }
 
-void refreshDistAll(vector < vector <double> > & distNew,
+void refreshDistAll(mat & distNew,
                     const vector <pair <double, double> > & plainCoords)
 {
     // numRow * (numRow + 1) / 2 = distSize
@@ -4729,8 +4657,8 @@ void countGradient(const vector <pair <double, double> > & plainCoords,
 }
 
 void moveCoordsGradient(vector <pair <double, double> > & plainCoords,
-                        const vector < vector <double> > & distOld,
-                        vector < vector <double> > & distNew)
+                        const mat & distOld,
+                        mat & distNew)
 {
     int size = plainCoords.size();
 
@@ -4771,8 +4699,8 @@ void moveCoordsGradient(vector <pair <double, double> > & plainCoords,
 //    cout << "gradient steps = " << numSteps  << endl;
 }
 
-double errorSammon(const vector < vector <double> > & distOld,
-                   const vector < vector <double> > & distNew) // square matrices
+double errorSammon(const mat & distOld,
+                   const mat & distNew) // square matrices
 {
     int size = distOld.size();
 //    cout << "errorSammon size = " << size << endl;
@@ -4789,8 +4717,8 @@ double errorSammon(const vector < vector <double> > & distOld,
 #endif
 
 
-double errorSammonAdd(const vector < vector <double> > & distOld,
-                      const vector < vector <double> > & distNew,
+double errorSammonAdd(const mat & distOld,
+                      const mat & distNew,
                       const vector <int> placedDots) // square matrices
 {
     double res = 0.;
@@ -4804,11 +4732,11 @@ double errorSammonAdd(const vector < vector <double> > & distOld,
     return res;
 }
 
-void countInvHessianAddDot(const vector < vector <double> > & distOld,
-                           const vector < vector <double> > & distNew,
+void countInvHessianAddDot(const mat & distOld,
+                           const mat & distNew,
                            const vector <pair <double, double> > & crds,
                            const vector <int> & placedDots,
-                           vector < vector <double> > & invHessian)
+                           mat & invHessian)
 {
     invHessian[0][0] = 0.;
     invHessian[0][1] = 0.;
@@ -4857,8 +4785,8 @@ void countInvHessianAddDot(const vector < vector <double> > & distOld,
 }
 
 
-void countGradientAddDot(const vector < vector <double> > & distOld,
-                         const vector < vector <double> > & distNew,
+void countGradientAddDot(const mat & distOld,
+                         const mat & distNew,
                          const vector <pair <double, double> > & crds,
                          const vector <int> & placedDots,
                          vector <double>  & gradient) // gradient for one dot
@@ -4884,7 +4812,7 @@ void countGradientAddDot(const vector < vector <double> > & distOld,
 
 }
 
-void countDistNewAdd(vector < vector <double> > & distNew, // change only last coloumn
+void countDistNewAdd(mat & distNew, // change only last coloumn
                      const vector < pair <double, double> > & crds,
                      const vector <int> & placedDots)
 {
@@ -4900,8 +4828,8 @@ void countDistNewAdd(vector < vector <double> > & distNew, // change only last c
 
 }
 
-void sammonAddDot(const vector < vector <double> > & distOld,
-                  vector < vector <double> > & distNew, // change only last coloumn
+void sammonAddDot(const mat & distOld,
+                  mat & distNew, // change only last coloumn
                   vector < pair <double, double> > & plainCoords,
                   const vector <int> & placedDots)
 {
@@ -4930,7 +4858,7 @@ void sammonAddDot(const vector < vector <double> > & distOld,
     // gradien descent
     vector <double> gradient;
     gradient.resize(2);
-    vector < vector<double> > invHessian; // matrix 2x2
+    mat invHessian; // matrix 2x2
     invHessian.resize(2);
     invHessian[0].resize(2);
     invHessian[1].resize(2);
@@ -4997,14 +4925,14 @@ void sammonAddDot(const vector < vector <double> > & distOld,
 //    if(addNum == 4) exit(1);
 }
 
-void sammonProj(const vector < vector <double> > & distOld,
+void sammonProj(const mat & distOld,
                 const vector <int> & types,
                 const QString & picPath)
 {
     srand(time(NULL));
     int size = distOld.size();
 
-    vector < vector <double> > distNew; // use only higher triangle
+    mat distNew; // use only higher triangle
     distNew.resize(size);
     for(int i = 0; i < size; ++i)
     {
@@ -5299,8 +5227,8 @@ void drawSammon(const vector < pair <double, double> > & plainCoords,
     cout << "Sammon projection done" << endl;
 }
 
-void drawShepard(const vector < vector <double> > & distOld,
-                 const vector < vector <double> > & distNew,
+void drawShepard(const mat & distOld,
+                 const mat & distNew,
                  const QString & picPath)
 {
 //    cout << distNew << endl;

@@ -30,7 +30,6 @@
 #include <vector>
 #include <typeinfo>
 
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -41,6 +40,8 @@ using namespace std;
 //using namespace mlpack;
 
 const double pi = 3.141592653589;
+
+typedef vector<vector<double> > mat;
 
 //void QDoubleSpinBox::mySlot(double val)
 int len(QString s); // string length for EDF+ annotations
@@ -99,26 +100,27 @@ bool gaussApproval(QString filePath); // not finished?
 bool gaussApproval2(double * arr, int length); // not finished?
 double vectorLength(double * arr, int len);
 double quantile(double arg);
-double mean(const int *arr, int length);
-double mean(const double *arr, int length);
-double variance(const int *arr, int length);
-double variance(const double *arr, int length);
-double varianceFromZero(const int *arr, int length);
-double varianceFromZero(const double *arr, int length);
-double sigma(int *arr, int length);
-double sigma(const double *arr, int length);
-double sigmaFromZero(const int *arr, int length);
-double sigmaFromZero(const double *arr, int length);
+
+template <typename Typ = const double *>
+double mean(Typ arr, int length, int shift = 0);
+template <typename Typ = const double *>
+double variance(Typ arr, int length, int shift = 0, bool fromZero = false);
+template <typename Typ = const double *>
+double sigma(Typ arr, int length, int shift = 0, bool fromZero = false);
+
+template <typename Typ = const double *>
+double correlation(Typ arr1, Typ arr2, int length, int shift = 0, bool fromZero = false);
+template <typename Typ = const double *>
+double covariance (Typ arr1, Typ arr2, int length, int shift = 0, bool fromZero = false);
+
 double skewness(double *arr, int length);
 double kurtosis(double *arr, int length);
 double rankit(int i, int length, double k = 0.375);
-double covariance(const double *arr1, const double *arr2, int length);
-double correlation(const double *arr1, const double *arr2, int length, int shift = 0);
 double correlationFromZero(double * const arr1, double * const arr2, int length, int shift = 0);
 double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 
-void splitZeros(vector < vector <double> > & inData, const int &ns, const int &length, int * outLength, const QString &logFile = "", const QString &dataName = "");
+void splitZeros(mat & inData, const int &ns, const int &length, int * outLength, const QString &logFile = "", const QString &dataName = "");
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
 void zeroData(double **& inData, const int & ns, const int & leftLimit, const int & rightLimit, const bool & withMarkersFlag);
@@ -181,7 +183,10 @@ void readSpectraFile(QString filePath, double *** outData, int ns, int spLength)
 void readSpectraFileLine(QString filePath, double ** outData, int ns, int spLength);
 void readFileInLine(QString filePath, double ** outData, int len);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double **classCount);
-bool readICAMatrix(QString path, double *** matrixA, int ns);
+
+template <typename Typ  = double **>
+bool readICAMatrix(QString path, Typ (&matrixA), int ns);
+
 void writeICAMatrix(QString path, double ** matrixA, const int ns);
 
 QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour = true);
@@ -207,11 +212,11 @@ double distanceMah(double * const vect, double ** const group, int dimension, in
 double distanceMah(double ** const group1, double ** const group2, int dimension, int number1, int number2);
 void matrixMahCount(double ** const matrix, int number, int dimension, double *** outMat, double **meanVect);
 
-template <typename Typ1, typename Typ2>
-void matrixProduct(Typ1 inMat1, Typ2 inMat2, double *** outMat, int const dimH, int const dimL);  //matrix product: out = A(H*H) * B(H*L)
+template <typename Typ1, typename Typ2, typename Typ3>
+void matrixProduct(Typ1 inMat1, Typ2 inMat2, Typ3 (&outMat), int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
 
-template <typename Typ1, typename Typ2>
-void matrixProduct(Typ1 inMat1, Typ2 inMat2, double *** outMat, int const numRows1, int const numCols2, int const numCols1Rows2);  //matrix product: out = A(K*H) * B(H*L)
+template <typename Typ1, typename Typ2, typename Typ3>
+void matrixProduct(Typ1 inMat1, Typ2 inMat2, Typ3 (&outMat), int const numRows1, int const numCols2, int const numCols1Rows2);  //matrix product: out = A(K*H) * B(H*L)
 
 void matrixProduct(double * const vect, double ** const mat, double ** outVect, int dimVect, int dimMat); //outVect = vect * mat
 void matrixProduct(double ** const mat, double * const vect, double ** outVect, int dimVect, int dimMat); //outVect = mat * vect
