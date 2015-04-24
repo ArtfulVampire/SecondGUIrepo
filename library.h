@@ -49,7 +49,7 @@ QString rightNumber(const unsigned int input, int N); // prepend zeros
 QString fitNumber(const double & input, int N); // append spaces
 QString fitString(const QString & input, int N); // append spaces
 
-int findChannel(char ** const labelsArr, QString chanName, int ns = 21);
+int findChannel(char ** const labelsArr, QString chanName, int ns = 21); // const fail
 QString setFileName(const QString & initNameOrPath); //-> initName_i.ext
 QString getPicPath(const QString & dataPath, QDir *ExpNameDir, int ns);
 QString getFileName(QString filePath, bool withExtension = true);
@@ -90,9 +90,9 @@ void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int chan
 double fractalDimension(double *arr, int N);
 double enthropy(double *arr, int N, QString picPath, int numOfRanges); // not finished?
 void four1(double * dataF, int nn, int isign);
-void hilbert(const double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath = "");
-void hilbertPieces(const double *arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath = QString());
-void bayesCount(double * dataIn, int length, int numOfIntervals, double **out);
+void hilbert(double * const &arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double *& out, QString picPath  = QString());
+void hilbertPieces(double * const arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double *& out, QString picPath = QString());
+void bayesCount(double * dataIn, int length, int numOfIntervals, double * &out);
 void kernelEst(double *arr, int length, QString picPath);
 void histogram(double *arr, int length, int numSteps, QString picPath);
 bool gaussApproval(double * arr, int length); // not finished?
@@ -101,26 +101,25 @@ bool gaussApproval2(double * arr, int length); // not finished?
 double vectorLength(double * arr, int len);
 double quantile(double arg);
 
-template <typename Typ = const double *>
-double mean(Typ arr, int length, int shift = 0);
-template <typename Typ = const double *>
-double variance(Typ arr, int length, int shift = 0, bool fromZero = false);
-template <typename Typ = const double *>
-double sigma(Typ arr, int length, int shift = 0, bool fromZero = false);
+template <typename Typ>
+double mean(const Typ &arr, int length, int shift = 0);
+template <typename Typ>
+double variance(const Typ &arr, int length, int shift = 0, bool fromZero = false);
+template <typename Typ>
+double sigma(const Typ &arr, int length, int shift = 0, bool fromZero = false);
 
-template <typename Typ = const double *>
-double correlation(Typ arr1, Typ arr2, int length, int shift = 0, bool fromZero = false);
-template <typename Typ = const double *>
-double covariance (Typ arr1, Typ arr2, int length, int shift = 0, bool fromZero = false);
+template <typename Typ>
+double correlation(const Typ &arr1, const Typ &arr2, int length, int shift = 0, bool fromZero = false);
+template <typename Typ>
+double covariance (const Typ &arr1, const Typ &arr2, int length, int shift = 0, bool fromZero = false);
 
 double skewness(double *arr, int length);
 double kurtosis(double *arr, int length);
 double rankit(int i, int length, double k = 0.375);
-double correlationFromZero(double * const arr1, double * const arr2, int length, int shift = 0);
 double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 
-void splitZeros(mat & inData, const int &ns, const int &length, int * outLength, const QString &logFile = "", const QString &dataName = "");
+void splitZeros(mat & inData, const int &ns, const int &length, int * outLength, const QString &logFile  = QString(), const QString &dataName  = QString());
 void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
 void zeroData(double **& inData, const int & ns, const int & leftLimit, const int & rightLimit, const bool & withMarkersFlag);
@@ -132,10 +131,10 @@ double countAngle(double initX, double initY);
 bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
 void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength, int NumOfClasses, double coeff, QString outFile);
 void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int spLength, double coeff, double *** outMatrix);
-void cleanDir(QString dirPath, QString nameFilter = "", bool ext = true);
+void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
 void drawRCP(double *values, int length);
-void countRCP(QString filename, QString picPath = "", double *outMean = NULL, double *outSigma = NULL);
+void countRCP(QString filename, QString picPath  = QString(), double *outMean = NULL, double *outSigma = NULL);
 void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
 void makeCfgStatic(QString outFileDir, int NetLength = 19*247, QString FileName = "16sec19ch", int numOfOuts = 3, double lrate = 0.1, double error = 0.1, int temp = 10);
 
@@ -143,25 +142,26 @@ void makeCfgStatic(QString outFileDir, int NetLength = 19*247, QString FileName 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
 
-template <typename Typ = double **>
+template <typename Typ>
 void readPlainData(QString inPath,
-                   Typ & data,
+                   Typ &data,
                    int ns,
                    int & numOfSlices,
                    int start = 0);
-template <typename Typ = double **>
-void writePlainData(QString outPath,
-                   Typ data,
-                   int ns,
-                   int numOfSlices,
-                   int start = 0);
 
-template <typename Typ = double **>
+template <typename Typ = double**>
+void writePlainData(QString outPath,
+                    const Typ & data,
+                    int ns,
+                    int numOfSlices,
+                    int start = 0);
+
+template <typename Typ>
 QPixmap drawEeg(Typ dataD,
                 int ns,
                 int NumOfSlices,
                 int freq,
-                const QString & picPath = "",
+                const QString & picPath = QString(),
                 double norm = 1.,
                 int blueChan = -1,
                 int redChan = -1);
@@ -172,7 +172,7 @@ QPixmap drawEeg( Typ dataD,
                  int startSlice,
                  int endSlice,
                  int freq,
-                 const QString & picPath,
+                 const QString & picPath = QString(),
                  double norm = 1.,
                  int blueChan = -1,
                  int redChan = -1);
@@ -180,79 +180,85 @@ QPixmap drawEeg( Typ dataD,
 
 
 void readSpectraFile(QString filePath, double *** outData, int ns, int spLength);
-void readSpectraFileLine(QString filePath, double ** outData, int ns, int spLength);
-void readFileInLine(QString filePath, double ** outData, int len);
+void readSpectraFileLine(QString filePath, double ** &outData, int ns, int spLength);
+void readFileInLine(QString filePath, double **& outData, int len);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double **classCount);
 
-template <typename Typ  = double **>
-bool readICAMatrix(QString path, Typ (&matrixA), int ns);
-
-void writeICAMatrix(QString path, double ** matrixA, const int ns);
+template <typename Typ>
+bool readICAMatrix(const QString & path, Typ &matrixA, const int & ns);
+template <typename Typ>
+void writeICAMatrix(const QString & path, Typ &matrixA, const int & ns);
 
 QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour = true);
-void drawMap      (double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
-void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
+void drawMap      (double ** &matrixA, double maxAbs, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
+void drawMapSpline(double ** &matrixA, double maxAbs, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
 void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag = true,
-                 void (*draw1MapFunc)(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag) = &drawMapSpline);
+                 void (*draw1MapFunc)(double ** &matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
+                 = &drawMapSpline);
 void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
 void drawSpectra(double ** drawData, int ns, int start, int end, const QString & picPath);
 
 template <typename inTyp, typename outTyp>
-void calcSpectre(inTyp const inSignal, int length, outTyp outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 15, const double & powArg = 1.);
-void calcSpectre(double ** const inData, double **& dataFFT, int const ns, int const inDataLen, int const NumOfSmooth = 15, const double powArg = 1.);
-void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, const int Eyes, int const NumOfSmooth = 15, const double powArg = 1.);
-void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth = 15, const double powArg = 1.);
-void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth);
+void calcSpectre(const inTyp &inSignal, int length, outTyp &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 15, const double & powArg = 1.);
 
-double distance(vector<double> vec1, vector<double> vec2, const int dim);
-double distance(double * const vec1, double * const vec2, int const dim);
+void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &inDataLen, const int &NumOfSmooth = 15, const double &powArg = 1.);
+
+void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth = 15, const double &powArg = 1.);
+
+void calcSpectre(double ** &inData, int leng, const int &ns, double **& dataFFT, int * fftLength, const int &NumOfSmooth = 15, const double &powArg = 1.);
+void calcRawFFT(double ** &inData, double **& dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
+
+template <typename T>
+double distance(const vector<T> &vec1, const vector<T> &vec2, const int &dim);
+
+double distance(double *vec1, double *vec2, const int &dim);
 double distance(double const x1, double const y1, double const x2, double const y2);
-double distanceMah(double * const vect, double ** const covMatrixInv, double * const groupMean, int dimension);
-double distanceMah(double * const vect, double ** const group, int dimension, int number);
-double distanceMah(double ** const group1, double ** const group2, int dimension, int number1, int number2);
-void matrixMahCount(double ** const matrix, int number, int dimension, double *** outMat, double **meanVect);
+double distanceMah(double * &vect, double ** &covMatrixInv, double *&groupMean, int dimension);
+double distanceMah(double * &vect, double ** &group, int dimension, int number);
+double distanceMah(double ** &group1, double ** &group2, int dimension, int number1, int number2);
+void matrixMahCount(double ** &matrix, int number, int dimension, double **&outMat, double *&meanVect);
 
 template <typename Typ1, typename Typ2, typename Typ3>
-void matrixProduct(Typ1 inMat1, Typ2 inMat2, Typ3 (&outMat), int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
+void matrixProduct(const Typ1 & inMat1, const Typ2 & inMat2, Typ3 & outMat, int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
 
 template <typename Typ1, typename Typ2, typename Typ3>
-void matrixProduct(Typ1 inMat1, Typ2 inMat2, Typ3 (&outMat), int const numRows1, int const numCols2, int const numCols1Rows2);  //matrix product: out = A(K*H) * B(H*L)
+void matrixProduct(const Typ1 &inMat1, const Typ2 &inMat2, Typ3 & outMat, const int &numRows1, const int &numCols2, const int &numCols1Rows2);  //matrix product: out = A(K*H) * B(H*L)
 
-void matrixProduct(double * const vect, double ** const mat, double ** outVect, int dimVect, int dimMat); //outVect = vect * mat
-void matrixProduct(double ** const mat, double * const vect, double ** outVect, int dimVect, int dimMat); //outVect = mat * vect
-void matrixProduct(double * const vect1, double * const vect2, int dim, double * out);
+void matrixProduct(double * &vect, double ** &mat, double * &outVect, int dimVect, int dimMat); //outVect = vect * mat
+void matrixProduct(double ** &mat, double * &vect, double * &outVect, int dimVect, int dimMat); //outVect = mat * vect
+void matrixProduct(double * &vect1, double * &vect2, int dim, double &out);
+void matrixTranspose(double ** &inMat, const int &numRows, const int &numCols, double ** &outMat);
+void matrixTranspose(double ** &inMat, const int &numRowsCols);
+void matrixCopy(double ** &inMat, double ** &outMat, const int &dimH, const int &dimL);
+void matrixInvert(double ** &inMat, const int &size, double **&outMat);
+void matrixInvert(double ** &mat, const int &size);
+void matrixInvertGauss(double ** &mat, const int &size);
+void matrixInvertGauss(double ** &mat, const int &size, double ** &outMat);
+double matrixDet(double ** &matrix, const int &dim);
+double matrixDetB(double ** &matrix, const int &dim);
+void matrixCofactor(double ** &inMatrix, const int &size, const int &numRows, const int &numCols, double ** &outMatrix);
+void matrixSystemSolveGauss(double ** &inMat, double * &inVec, int size, double * &outVec);
 
-void matrixTranspose(double ** const inMat, int const numRows, int const numCols, double *** outMat);
-void matrixTranspose(double *** inMat, int const numRowsCols);
-void matrixCopy(double ** const inMat, double *** outMat, int const dimH, int const dimL);
-void matrixInvert(double ** const inMat, int const size, double *** outMat);
-void matrixInvert(double *** mat, int const size);
-void matrixInvertGauss(double *** mat, int const size);
-void matrixInvertGauss(double ** const mat, int const size, double *** outMat);
-double matrixDet(double ** const matrix, int const dim);
-double matrixDetB(double ** const matrix, int const dim);
-void matrixCofactor(double ** const inMatrix, int size, int numRows, int numCols, double *** outMatrix);
-void matrixSystemSolveGauss(double ** const inMat, double * const inVec, int size, double ** outVec);
+double matrixInnerMaxCorrelation(double ** &inMatrix, const int numRows, const int numCols,
+                                 double (*corrFunc)(const double * const &arr1, const double * const &arr2, int length, int t, bool fromZero)
+                                 = &correlation
+        );
 
-double matrixInnerMaxCorrelation(double ** const inMatrix, const int numRows, const int numCols,
-                                 double (*corrFunc)(double * const arr1, double * const arr2, int length, int t) = &correlationFromZero);
+double matrixMaxCorrelation(double ** &inMat1, double ** &inMat2, const int &numRows, const int &numCols);
+void matrixCorrelations(double ** &inMat1, double ** &inMat2, const int &numRows, const int &numCols, double *&resCorr);
 
-double matrixMaxCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols);
-void matrixCorrelations(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols, double **resCorr);
-
-double ** matrixCreate(int i, int j);
-void matrixCreate(double *** matrix, int i, int j);
-void matrixDelete(double *** matrix, int i);
-void matrixDelete(int *** matrix, int i);
-void matrixPrint(double ** const mat, int i, int j);
+double ** matrixCreate( const int &i, const int &j);
+void matrixCreate(double *** matrix, const int &i, const int &j);
+void matrixDelete(double *** matrix, const int &i);
+void matrixDelete(int *** matrix, const int &i);
+void matrixPrint(double ** &mat, const int &i, const int &j);
 
 void drawArray(double * array, int length, QString outPath); ///////////////////////////////////////////to do
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
-
 vector<bool> matiCountByte(const double & marker);
 QString matiCountByteStr(const double & marker);
-void matiPrintMarker(double const & marker, QString pre = "");
+void matiPrintMarker(double const & marker, QString pre  = QString());
 void matiFixMarker(double & marker);
 int matiCountDecimal(vector<bool> byteMarker);
 int matiCountDecimal(QString byteMarker);

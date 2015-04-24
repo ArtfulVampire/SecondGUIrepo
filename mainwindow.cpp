@@ -1320,6 +1320,7 @@ void MainWindow::readData()
 //    cout << "readData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
+#if 0
 void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFilePath, int numSlices, QList<int> chanList)
 {
     if(!QFile::exists(inFilePath))
@@ -1352,6 +1353,7 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 //    cout << "writeEDF: output path = " << outFilePath.toStdString() << "\ttime = = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
+#endif
 void MainWindow::drawRealisations()
 {
     QStringList lst;
@@ -1362,8 +1364,7 @@ void MainWindow::drawRealisations()
     QTime myTime;
     myTime.start();
     ui->progressBar->setValue(0);
-    double **dataD = new double * [ns];
-    int Eyes;
+    matrix dataD(ns, 50 * 60 * 250); // for 50 seconds
 
     lst.clear();
     nameFilters.clear();
@@ -1371,6 +1372,7 @@ void MainWindow::drawRealisations()
     nameFilters.append("*_247*");
     nameFilters.append("*_254*");
     nameFilters.append("*_244*");
+
     //for Roma's files
     nameFilters.append("*_2");
     nameFilters.append("*_1");
@@ -1397,33 +1399,19 @@ void MainWindow::drawRealisations()
         blueCh = 20;
     }
 
-    FILE * file;
     for(int i = 0; i < lst.length(); ++i)
     {
         if(stopFlag) break;
-
         helpString = prePath + slash() + lst[i];
+        readPlainData(helpString,
+                      dataD,
+                      ns,
+                      NumOfSlices);
 
-        file = fopen(helpString.toStdString().c_str(), "r");
-        fscanf(file, "%*s %d \n", &NumOfSlices);
         if(NumOfSlices > 15000)
         {
-            fclose(file);
             continue;
         }
-        fscanf(file, "Eyes %d \n", &Eyes);
-        for(int j = 0; j < ns; ++j)
-        {
-            dataD[j] = new double [NumOfSlices];
-        }
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int k = 0; k < ns; ++k)
-            {
-                fscanf(file, "%lf", &dataD[k][j]);
-            }
-        }
-        fclose(file);
 
         helpString = getPicPath(helpString, dir, ns);
         drawEeg(dataD,
@@ -1435,10 +1423,6 @@ void MainWindow::drawRealisations()
                 blueCh,
                 redCh); // generality freq
 
-        for(int j = 0; j < ns; ++j)
-        {
-            delete []dataD[j];
-        }
         if(int(100*(i+1)/lst.length()) > ui->progressBar->value()) ui->progressBar->setValue(int(100*(i+1)/lst.length()));
         qApp->processEvents();
     }
@@ -1454,8 +1438,6 @@ void MainWindow::drawRealisations()
     ui->textEdit->append(helpString);
 
     stopFlag = 0;
-
-    delete []dataD;
     cout << "drawRealisations: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
@@ -1472,14 +1454,17 @@ void MainWindow::cleanDirs()
     //windows
     if(ui->cleanWindowsCheckBox->isChecked())
     {
-        helpString = dir->absolutePath() + slash() + "windows";
+        helpString = dir->absolutePath()
+                + slash() + "windows";
         cleanDir(helpString);
     }
 
     //SpectraSmooth/windows
     if(ui->cleanWindSpectraCheckBox->isChecked())
     {
-        helpString = dir->absolutePath() + slash() + "SpectraSmooth" + slash() + "windows";
+        helpString = dir->absolutePath()
+                + slash() + "SpectraSmooth"
+                + slash() + "windows";
         cleanDir(helpString);
     }
 
@@ -1487,28 +1472,33 @@ void MainWindow::cleanDirs()
     //SpectraSmooth
     if(ui->cleanRealsSpectraCheckBox->isChecked())
     {
-        helpString = dir->absolutePath() + slash() + "SpectraSmooth";
+        helpString = dir->absolutePath()
+                + slash() + "SpectraSmooth";
         cleanDir(helpString);
     }
 
     //windows/fromreal
     if(ui->cleanFromRealsCheckBox->isChecked())
     {
-        helpString = dir->absolutePath() + slash() + "windows" + slash() + "fromreal";
+        helpString = dir->absolutePath()
+                + slash() + "windows"
+                + slash() + "fromreal";
         cleanDir(helpString);
     }
 
     //Realisations
     if(ui->cleanRealisationsCheckBox->isChecked())
     {
-        helpString = dir->absolutePath() + slash() + "Realisations";
+        helpString = dir->absolutePath()
+                + slash() + "Realisations";
         cleanDir(helpString);
     }
 
     //Help
     if(ui->cleanHelpCheckBox->isChecked())
     {
-        helpString = dir->absolutePath() + slash() + "Help";
+        helpString = dir->absolutePath()
+                + slash() + "Help";
         cleanDir(helpString);
     }
 
@@ -1518,8 +1508,6 @@ void MainWindow::cleanDirs()
         helpString = dir->absolutePath();
         cleanDir(helpString, "markers", 0);
     }
-
-//    cout << "dirs cleaned" << endl;
 
     helpString="dirs cleaned ";
     ui->textEdit->append(helpString);
@@ -1709,26 +1697,24 @@ void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unus
 {
     setEdfFile(edfPath);
     readData();
-    --ns; // markers out
     int fr = def::freq;
 
     //write components cross-correlation matrix
-    double ** corrs;
-    matrixCreate(&corrs, ns, ns);
-    for(int i = 0; i < ns; ++i)
+    int size = ns - 1;
+    matrix corrs(size, size);
+    for(int i = 0; i < size; ++i)
     {
-        for(int j = i; j < ns; ++j)
+        for(int j = i+1; j < size; ++j)
         {
             corrs[i][j] = correlation(globalEdf.getData()[i].data(),
                                       globalEdf.getData()[j].data(),
-                                      ndr*fr);
+                                      globalEdf.getDataLen());
             corrs[j][i] = corrs[i][j];
         }
         corrs[i][i] = 0.;
     }
-    writeICAMatrix(outPath, corrs, ns); //generality 19-ns
-    matrixDelete(&corrs, ns);
-    ++ns; //back ns
+    writeICAMatrix(outPath, corrs, size); //generality 19-ns
+
 }
 
 void MainWindow::setBoxMax(double a)

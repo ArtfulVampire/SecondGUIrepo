@@ -1159,7 +1159,7 @@ void Spectre::countSpectra()
             for(int i = 0; i < ns; ++i)
             {
 //                hilbert(dataIn[i], fftLength, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
-                hilbert(dataIn[i], NumOfSlices, def::freq, 8., 12., &tempVec, "");
+                hilbert(dataIn[i], NumOfSlices, def::freq, 8., 12., tempVec, "");
 //                cout << lst[a].toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
 //                outStream << variance(tempVec, fftLength) << '\n';
                 outStream << mean(tempVec, NumOfSlices) << '\n';
@@ -1179,7 +1179,7 @@ void Spectre::countSpectra()
             for(int i = 0; i < ns; ++i)
             {
 
-                bayesCount(dataIn[i], NumOfSlices, numOfIntervals, &tempVec);
+                bayesCount(dataIn[i], NumOfSlices, numOfIntervals, tempVec);
                 for(int j = 0; j < numOfIntervals; ++j)
                 {
                     outStream << tempVec[j] << '\n';
@@ -1225,7 +1225,7 @@ void Spectre::countSpectra()
                 cout << a << "'th file too short" << endl;
             }
 
-            calcRawFFT(dataIn, &dataFFT, ns, fftLength, Eyes, ui->smoothBox->value());
+            calcRawFFT(dataIn, dataFFT, ns, fftLength, Eyes, ui->smoothBox->value());
             dir->cd(dirBC->absolutePath());
 
             for(int i = 0; i < ns; ++i)                               ///save BY CHANNELS!!!  except markers
@@ -1345,7 +1345,7 @@ void Spectre::countSpectra()
 
 }
 
-int Spectre::countOneSpectre(double ** data2, double **dataFFT)  /////////EDIT
+int Spectre::countOneSpectre(double ** &data2, double ** &dataFFT)  /////////EDIT
 {
     //correct Eyes number
     Eyes = 0;
@@ -1378,7 +1378,7 @@ int Spectre::countOneSpectre(double ** data2, double **dataFFT)  /////////EDIT
         return 0;
     }
 
-    calcSpectre(data2, &dataFFT, ns, fftLength, Eyes, ui->smoothBox->value(), ui->powDoubleSpinBox->value());
+    calcSpectre(data2, dataFFT, ns, fftLength, Eyes, ui->smoothBox->value(), ui->powDoubleSpinBox->value());
 
 
     dir->cd(dirBC->absolutePath());

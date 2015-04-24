@@ -72,7 +72,9 @@ void MainWindow::clustering()
         types[i] = i % 3;
         for(int j = i+1; j < numRow; ++j)
         {
-            temp[0] = distance(cData[i].data(), cData[j].data(), numCol);
+            temp[0] = distance(cData[i].data(),
+                               cData[j].data(),
+                               numCol);
             temp[1] = i;
             temp[2] = j;
             temp[3] = 0;
@@ -603,56 +605,15 @@ void MainWindow::Bayes()
     delete [] dataBayes;
 }
 
-
+///////////// FULL REMAKE
 void MainWindow::hilbertCount() // not finished
 {
     QString helpString;
-    readData();
-    if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
-
-    double fr = def::freq; //generality
-
-    double ** hilbertData = new double * [ns];
-
-
-#if DATA_ARR
-    hilbertPieces(data[0], 45536, fr, 9., 11., &hilbertData[0]);
-#else
-    hilbertPieces(globalEdf.getData()[0].data(), 45536, fr, 9., 11., &hilbertData[0]);
-#endif
-
-    cout << variance(hilbertData[0], 45536) << endl;
-#if DATA_ARR
-    hilbert(data[0], 65536, fr, 9., 11., &hilbertData[0]);
-#else
-    hilbert(globalEdf.getData()[0].data(), 65536, fr, 9., 11., &hilbertData[0]);
-#endif
-
-    cout << variance(hilbertData[0], 65536) << endl;
-    return;
-
-
-
-
-    for(int i = 0; i < ns-1; ++i) //no markers
-    {
-//        hilbert(data[i], ndr*fr, fr, 5., 20., &hilbertData[i]);
-    }
-#if DATA_ARR
-    memcpy(hilbertData[ns-1], data[ns-1], ndr*fr*sizeof(double)); //markers channel
-#else
-    memcpy(hilbertData[ns-1],
-            globalEdf.getData()[ns-1].data(),
-            ndr*fr*sizeof(double)); //markers channel
-#endif
-
     helpString = dir->absolutePath() + slash() + ExpName + "_hilbert.edf";
 
     /// remake with vector < vector <double> >
 
-//    writeEdf(ui->filePathLineEdit->text(), hilbertData, helpString, ndr*fr);
 
-    matrixDelete(&hilbertData, ns);
 }
 
 void MainWindow::diffSmooth()

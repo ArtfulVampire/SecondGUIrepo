@@ -3656,7 +3656,8 @@ void Net::pca()
     {
         double ** pcaMatrixTrans;
         matrixCreate(&pcaMatrixTrans, numOfPc, NumberOfVectors);
-        matrixTranspose(pcaMatrix, NumberOfVectors, numOfPc, &pcaMatrixTrans);
+        matrixTranspose(pcaMatrix, NumberOfVectors, numOfPc, pcaMatrixTrans);
+
         for(int k = 0; k < numOfPc; ++k)
         {
             for(int j = 0; j < numOfPc; ++j)

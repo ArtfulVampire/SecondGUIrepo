@@ -1071,7 +1071,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         case 1: {helpString += "_247.psa"; break;}
         case 2: {helpString += "_254.psa"; break;}
         }
-        readSpectraFileLine(helpString, &dataFFT1[i], 19, 247);
+        readSpectraFileLine(helpString, dataFFT1, 19, 247);
     }
 
 
@@ -1097,7 +1097,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         case 1: {helpString += "_247.psa"; break;}
         case 2: {helpString += "_254.psa"; break;}
         }
-        readSpectraFileLine(helpString, &dataFFT2[i], 19, 247);
+        readSpectraFileLine(helpString, dataFFT2, 19, 247);
     }
 
 
@@ -1112,8 +1112,8 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     readICAMatrix(maps2Path, mat2, ns_);
 
     //transpose ICA maps
-    matrixTranspose(&mat1, ns_);
-    matrixTranspose(&mat2, ns_);
+    matrixTranspose(mat1, ns_);
+    matrixTranspose(mat2, ns_);
 
     QList<int> list1;
     QList<int> list2;
@@ -1278,7 +1278,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
             }
             //        memcpy(newMaps[k], mat1[ICAcorrArr[k].num1], ns_*sizeof(double));
         }
-        matrixTranspose(&newMaps, ns_);
+        matrixTranspose(newMaps, ns_);
         helpString2 = maps1Path;
         helpString2.replace("_maps.txt", "_newSeq_maps.txt");
         writeICAMatrix(helpString2, newMaps, ns_);
@@ -1328,7 +1328,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         }
 //        memcpy(newMaps[k], mat1[ICAcorrArr[k].num2], ns_*sizeof(double));
     }
-    matrixTranspose(&newMaps, ns_);
+    matrixTranspose(newMaps, ns_);
     helpString2 = maps2Path;
     helpString2.replace("_maps.txt", "_newSeq_maps.txt");
     writeICAMatrix(helpString2, newMaps, ns_);
@@ -1841,7 +1841,7 @@ void MainWindow::randomDecomposition()
     inStream.close();
 */
     double ** eigenMatrixInv = matrixCreate(compNum, compNum);
-    matrixTranspose(eigenMatrix, compNum, compNum, &eigenMatrixInv);
+    matrixTranspose(eigenMatrix, compNum, compNum, eigenMatrixInv);
 
     double * eigenValues = new double [compNum];
 

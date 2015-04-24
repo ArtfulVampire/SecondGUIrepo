@@ -1357,19 +1357,8 @@ void edfFile::reduceChannels(QString chanStr)
 
 void edfFile::writeOtherData(dataType &newData, QString outPath, QList<int> chanList)
 {
+    edfFile temp(*this, true); // copy-construct everything but data
 
-    edfFile temp(*this);
-
-#if DATA_IN_CHANS
-
-    //adjust channels
-    this->channels.clear();
-    for(int i = 0; i < chanList.length(); ++i)
-    {
-        this->channels.push_back( temp.getChannels()[chanList[i]] ); // count from 1 generality
-        this->channels[i].data = newData[i];
-    }
-#else
     //adjust channels
     temp.channels.clear();
     for(int i = 0; i < chanList.length(); ++i)
@@ -1377,21 +1366,10 @@ void edfFile::writeOtherData(dataType &newData, QString outPath, QList<int> chan
         temp.channels.push_back( this->channels[chanList[i]] );
     }
 
-
-
-    #if 1
-        this->dataPointer = &newData;
-    #else
-        temp.data = newData;
-    #endif
-
-
-
-
-    temp.adjustArraysByChannels();
-    temp.dataLength = newData[0].size(); ////////////////////////////
+    temp.dataPointer = &newData; // set a pointer to the data, which should write
+    temp.adjustArraysByChannels(); // set in particular ns = chanList.length();
+    temp.dataLength = newData[0].size(); // YAY!
     temp.writeEdfFile(outPath);
-#endif
 }
 
 void edfFile::writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList) const

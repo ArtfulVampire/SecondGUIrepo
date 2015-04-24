@@ -267,7 +267,7 @@ void Eyes::eyesProcessing()
                 }
             }
         }
-        matrixInvertGauss(matrix, Size, &matrixInv);
+        matrixInvertGauss(matrix, Size, matrixInv);
         //set coeffs
         for(int i = 0; i<lst.length(); ++i)
         {

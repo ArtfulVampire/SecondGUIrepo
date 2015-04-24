@@ -65,7 +65,7 @@ QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, 
 }
 
 
-void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
+void drawMapSpline(double ** &matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
 {
 
     QPixmap pic = QPixmap(size, size);
@@ -249,7 +249,7 @@ void drawMapSpline(double ** const matrixA, double maxAbs, QString outDir, QStri
 }
 
 
-void drawMap(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
+void drawMap(const double ** const &matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
 {
     QPixmap pic = QPixmap(size, size);
     QPainter painter;
@@ -309,7 +309,8 @@ void drawMap(double ** const matrixA, double maxAbs, QString outDir, QString out
     matrixDelete(&helpMatrix, 5);
 }
 
-void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag, void (*draw1Map)(double ** const matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag))
+void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag,
+                 void (*draw1Map)(double ** &matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag))
 {
     double ** matrixA;
     matrixCreate(&matrixA, ns, ns);
@@ -882,7 +883,7 @@ double quantile(double arg)
 }
 
 template <typename Typ>
-double mean(Typ arr, int length, int shift)
+double mean(const Typ &arr, int length, int shift)
 {
     double sum = 0.;
     for(int i = 0; i < length; ++i)
@@ -892,13 +893,13 @@ double mean(Typ arr, int length, int shift)
     sum /= length;
     return sum;
 }
-template double mean(const double * arr, int length, int shift);
-template double mean(const int * arr, int length, int shift);
-template double mean(const vector<int> arr, int length, int shift);
-template double mean(const vector<double> arr, int length, int shift);
+template double mean(const double * const &arr, int length, int shift);
+template double mean(const int * const &arr, int length, int shift);
+template double mean(const vector<int> &arr, int length, int shift);
+template double mean(const vector<double> &arr, int length, int shift);
 
 template <typename Typ>
-double variance(Typ arr, int length, int shift, bool fromZero)
+double variance(const Typ &arr, int length, int shift, bool fromZero)
 {
     double sum1 = 0.;
     double m = mean(arr, length, shift);
@@ -909,23 +910,23 @@ double variance(Typ arr, int length, int shift, bool fromZero)
     sum1 /= length;
     return sum1;
 }
-template double variance(const double * arr, int length, int shift, bool fromZero);
-template double variance(const int * arr, int length, int shift, bool fromZero);
-template double variance(const vector<int> arr, int length, int shift, bool fromZero);
-template double variance(const vector<double> arr, int length, int shift, bool fromZero);
+template double variance(const double * const &arr, int length, int shift, bool fromZero);
+template double variance(const int * const &arr, int length, int shift, bool fromZero);
+template double variance(const vector<int> &arr, int length, int shift, bool fromZero);
+template double variance(const vector<double> &arr, int length, int shift, bool fromZero);
 
 template <typename Typ>
-double sigma(Typ arr, int length, int shift, bool fromZero)
+double sigma(const Typ &arr, int length, int shift, bool fromZero)
 {
     return sqrt(variance(arr, length, shift, fromZero));
 }
-template double sigma(const double * arr, int length, int shift, bool fromZero);
-template double sigma(const int * arr, int length, int shift, bool fromZero);
-template double sigma(const vector<int> arr, int length, int shift, bool fromZero);
-template double sigma(const vector<double> arr, int length, int shift, bool fromZero);
+template double sigma(const double * const &arr, int length, int shift, bool fromZero);
+template double sigma(const int * const &arr, int length, int shift, bool fromZero);
+template double sigma(const vector<int> &arr, int length, int shift, bool fromZero);
+template double sigma(const vector<double> &arr, int length, int shift, bool fromZero);
 
 template <typename Typ>
-double covariance(Typ arr1, Typ arr2, int length, int shift, bool fromZero)
+double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool fromZero)
 {
     double res = 0.;
     double m1, m2;
@@ -939,13 +940,13 @@ double covariance(Typ arr1, Typ arr2, int length, int shift, bool fromZero)
     }
     return res;
 }
-template double covariance(const double * arr1, const double * arr2, int length, int shift, bool fromZero);
-template double covariance(const int * arr1, const int * arr2, int length, int shift, bool fromZero);
-template double covariance(const vector<int> arr1, const vector<int> arr2, int length, int shift, bool fromZero);
-template double covariance(const vector<double> arr1, const vector<double> arr2, int length, int shift, bool fromZero);
+template double covariance(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
+template double covariance(const int * const &arr1, const int * const &arr2, int length, int shift, bool fromZero);
+template double covariance(const vector<int> &arr1, const vector<int> &arr2, int length, int shift, bool fromZero);
+template double covariance(const vector<double> &arr1, const vector<double> &arr2, int length, int shift, bool fromZero);
 
 template <typename Typ>
-double correlation(Typ arr1, Typ arr2, int length, int shift, bool fromZero)
+double correlation(const Typ &arr1, const Typ &arr2, int length, int shift, bool fromZero)
 {
     double res = 0.;
     double m1, m2;
@@ -975,10 +976,10 @@ double correlation(Typ arr1, Typ arr2, int length, int shift, bool fromZero)
     res /= double(length - T);
     return res;
 }
-template double correlation(const double * arr1, const double * arr2, int length, int shift, bool fromZero);
-template double correlation(const int * arr1, const int * arr2, int length, int shift, bool fromZero);
-template double correlation(const vector<int> arr1, const vector<int> arr2, int length, int shift, bool fromZero);
-template double correlation(const vector<double> arr1, const vector<double> arr2, int length, int shift, bool fromZero);
+template double correlation(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
+template double correlation(const int * const  &arr1, const int * const &arr2, int length, int shift, bool fromZero);
+template double correlation(const vector<int> &arr1, const vector<int> &arr2, int length, int shift, bool fromZero);
+template double correlation(const vector<double> &arr1, const vector<double> &arr2, int length, int shift, bool fromZero);
 
 double skewness(double *arr, int length)
 {
@@ -1320,8 +1321,6 @@ double minValue(double * arr, int length)
     return res;
 }
 
-
-
 double enthropy(double *arr, int N, int numOfRanges) // ~30 is ok
 {
 //    numOfRanges = 50;
@@ -1358,9 +1357,8 @@ double enthropy(double *arr, int N, int numOfRanges) // ~30 is ok
     return result;
 }
 
-//matrix product out = A(H*H) * B(H*L)
 template <typename Typ1, typename Typ2, typename Typ3>
-void matrixProduct(Typ1 inMat1, Typ2 inMat2, Typ3 (&outMat), int dimH, int dimL)
+void matrixProduct(const Typ1 & inMat1, const Typ2 & inMat2, Typ3 &outMat, int dimH, int dimL)
 {
     double result;
 
@@ -1377,13 +1375,13 @@ void matrixProduct(Typ1 inMat1, Typ2 inMat2, Typ3 (&outMat), int dimH, int dimL)
         }
     }
 }
-template void matrixProduct(double ** A, double ** inMat2, double **& outMat, int dimH, int dimL);
-template void matrixProduct(double ** A, double ** inMat2, mat & outMat, int dimH, int dimL);
-template void matrixProduct(mat A, mat inMat2, double **& outMat, int dimH, int dimL);
-template void matrixProduct(mat A, mat inMat2, mat & outMat, int dimH, int dimL);
+template void matrixProduct(const double ** const &inMat1, const double ** const &inMat2, double **& outMat, int dimH, int dimL);
+template void matrixProduct(const double ** const &inMat1, const double ** const &inMat2, mat & outMat, int dimH, int dimL);
+template void matrixProduct(const mat & inMat1, const mat & inMat2, double **& outMat, int dimH, int dimL);
+template void matrixProduct(const mat & inMat1, const mat & inMat2, mat & outMat, int dimH, int dimL);
 
 template <typename Typ1, typename Typ2, typename Typ3>
-void matrixProduct(Typ1 inMat1, Typ2 inMat2, Typ3 (&outMat), int numRows1, int numCols2, int numCols1Rows2)
+void matrixProduct(const Typ1 & inMat1, const Typ2 & inMat2, Typ3 &outMat, int numRows1, int numCols2, int numCols1Rows2)
 {
     double result;
 
@@ -1400,46 +1398,14 @@ void matrixProduct(Typ1 inMat1, Typ2 inMat2, Typ3 (&outMat), int numRows1, int n
         }
     }
 }
-template void matrixProduct(double ** inMat1, double ** inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);
-template void matrixProduct(double ** inMat1, double ** inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
-template void matrixProduct(double ** inMat1, mat inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
-template void matrixProduct(mat inMat1, mat inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
-template void matrixProduct(mat inMat1, mat inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(const double ** const & inMat1, const double ** const & inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(const double ** const & inMat1, const double ** const & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(const double ** const & inMat1, const mat & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(const mat & inMat1, const mat & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(const mat & inMat1, const mat & inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);
 
-
-void matrixProduct(double * const vect, double ** const mat, double ** outVect, int dimVect, int dimMat) //outVect(dimMat) = vect(dimVect) * mat(dimVect * dimMat)
-{
-    for(int i = 0; i < dimMat; ++i)
-    {
-        (*outVect)[i] = 0.;
-        for(int j = 0; j < dimVect; ++j)
-        {
-            (*outVect)[i] += vect[j] * mat[j][i];
-        }
-    }
-}
-void matrixProduct(double ** const mat, double * const vect, double ** outVect, int dimVect, int dimMat) //outVect(dimMat) = mat(dimMat*dimVect) * vect(dimVect)
-{
-    for(int i = 0; i < dimMat; ++i)
-    {
-        (*outVect)[i] = 0.;
-        for(int j = 0; j < dimVect; ++j)
-        {
-            (*outVect)[i] += mat[i][j] * vect[j];
-        }
-    }
-}
-void matrixProduct(double * const vect1, double * const vect2, int dim, double * out)
-{
-    (*out) = 0.;
-    for(int j = 0; j < dim; ++j)
-    {
-        (*out) += vect1[j] * vect2[j];
-    }
-
-}
-
-double distance(vector<double> vec1, vector<double> vec2, const int dim)
+template <typename T>
+double distance(const vector<T> &vec1, const vector<T> &vec2, const int &dim)
 {
     double dist = 0.;
     //Euclid
@@ -1448,10 +1414,43 @@ double distance(vector<double> vec1, vector<double> vec2, const int dim)
         dist += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
     }
     return dist;
+}
+
+void matrixProduct(double * &vect, double ** &mat, double *& outVect, int dimVect, int dimMat) //outVect(dimMat) = vect(dimVect) * mat(dimVect * dimMat)
+{
+    for(int i = 0; i < dimMat; ++i)
+    {
+        outVect[i] = 0.;
+        for(int j = 0; j < dimVect; ++j)
+        {
+            outVect[i] += vect[j] * mat[j][i];
+        }
+    }
+}
+
+void matrixProduct(double ** &mat, double * &vect, double *& outVect, int dimVect, int dimMat) //outVect(dimMat) = mat(dimMat*dimVect) * vect(dimVect)
+{
+    for(int i = 0; i < dimMat; ++i)
+    {
+        outVect[i] = 0.;
+        for(int j = 0; j < dimVect; ++j)
+        {
+            outVect[i] += mat[i][j] * vect[j];
+        }
+    }
+}
+
+void matrixProduct(double * &vect1, double * &vect2, int dim, double & out)
+{
+    out = 0.;
+    for(int j = 0; j < dim; ++j)
+    {
+        out += vect1[j] * vect2[j];
+    }
 
 }
 
-double distance(double * const vec1, double * const vec2, const int dim)
+double distance(double * vec1, double * vec2, const int &dim)
 {
     double dist = 0.;
     //Euclid
@@ -1465,37 +1464,37 @@ double distance(double * const vec1, double * const vec2, const int dim)
 
 double distance(double const x1, double const y1, double const x2, double const y2)
 {
-    return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+    return pow(pow(x1 - x2, 2.) + pow(y1 - y2, 2.), 0.5);
 }
 
-void matrixMahCount(double ** const matrix, int number, int dimension, double *** outMat, double ** meanVect) //matrix(number * dimension)
+void matrixMahCount(double ** &matrix, int number, int dimension, double ** &outMat, double *& meanVect) //matrix(number * dimension)
 {
     double ** newMat;
     matrixCreate(&newMat, dimension, number);
-    matrixTranspose(matrix, number, dimension, &newMat);
+    matrixTranspose(matrix, number, dimension, newMat);
 
     for(int i = 0; i < dimension; ++i)
     {
-        (*meanVect)[i] = 0.;
+        meanVect[i] = 0.;
         for(int j = 0; j < number; ++j)
         {
-            (*meanVect)[i] += newMat[i][j];
+            meanVect[i] += newMat[i][j];
         }
-        (*meanVect)[i] /= number;
+        meanVect[i] /= number;
     }
 
     for(int i = 0; i < dimension; ++i)
     {
         for(int j = 0; j < dimension; ++j)
         {
-            (*outMat)[i][j] = covariance(newMat[i], newMat[j], number);
+            outMat[i][j] = covariance(newMat[i], newMat[j], number);
         }
     }
     matrixDelete(&newMat, dimension);
 
 }
 
-double distanceMah(double * const vect, double ** const covMatrixInv, double * const groupMean, int dimension)
+double distanceMah(double * &vect, double ** &covMatrixInv, double * &groupMean, int dimension)
 {
     double * tempVec = new double [dimension];
     double * difVec = new double [dimension];
@@ -1505,22 +1504,22 @@ double distanceMah(double * const vect, double ** const covMatrixInv, double * c
     }
 
     double res;
-    matrixProduct(difVec, covMatrixInv, &tempVec, dimension, dimension);
-    matrixProduct(tempVec, difVec, dimension, &res);
+    matrixProduct(difVec, covMatrixInv, tempVec, dimension, dimension);
+    matrixProduct(tempVec, difVec, dimension, res);
 
     delete []tempVec;
     delete []difVec;
     return res;
 }
 
-double distanceMah(double * const vect, double ** const group, int dimension, int number) //group[number][dimension]
+double distanceMah(double * &vect, double ** &group, int dimension, int number) //group[number][dimension]
 {
     double ** covMatrix;
     matrixCreate(&covMatrix, dimension, dimension);
     double * meanGroup = new double [dimension];
 
-    matrixMahCount(group, number, dimension, &covMatrix, &meanGroup);
-    matrixInvertGauss(&covMatrix, dimension);
+    matrixMahCount(group, number, dimension, covMatrix, meanGroup);
+    matrixInvertGauss(covMatrix, dimension);
 
     double res = distanceMah(vect, covMatrix, meanGroup, dimension);
     matrixDelete(&covMatrix, dimension);
@@ -1677,11 +1676,11 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
     paint->end();
 }
 
-void hilbert( const double * arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double ** out, QString picPath)
+void hilbert( double * &arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double *& out, QString picPath)
 {
 
     int fftLen = int(pow(2., ceil(log(inLength)/log(2.))));
-    (*out) = new double [2*fftLen];
+    out = new double [2*fftLen];
     double spStep = sampleFreq/fftLen;
 
     double * tempArr = new double [fftLen];
@@ -1694,69 +1693,69 @@ void hilbert( const double * arr, int inLength, double sampleFreq, double lowFre
 
     for(int i = 0; i < inLength; ++i)
     {
-        (*out)[ 2 * i + 0] = arr[i] * sqrt(fftLen/double(inLength));
-        (*out)[ 2 * i + 1] = 0.;
+        out[ 2 * i + 0] = arr[i] * sqrt(fftLen/double(inLength));
+        out[ 2 * i + 1] = 0.;
     }
     for(int i = inLength; i < fftLen; ++i)
     {
-        (*out)[ 2 * i + 0] = 0.;
-        (*out)[ 2 * i + 1] = 0.;
+        out[ 2 * i + 0] = 0.;
+        out[ 2 * i + 1] = 0.;
     }
-    four1((*out)-1, fftLen, 1);
+    four1(out-1, fftLen, 1);
     //start filtering
     for(int i = 0; i < fftLen; ++i)
     {
         if(i < 2.*lowFreq/spStep || i > 2.*highFreq/spStep)
-            (*out)[i] = 0.;
+            out[i] = 0.;
     }
     for(int i = fftLen; i < 2*fftLen; ++i)
     {
         if(((2*fftLen - i) < 2.*lowFreq/spStep) || (2*fftLen - i > 2.*highFreq/spStep))
-            (*out)[i] = 0.;
+            out[i] = 0.;
     }
-    (*out)[0] = 0.;
-    (*out)[1] = 0.;
-    (*out)[fftLen] = 0.;
-    (*out)[fftLen+1] = 0.;
+    out[0] = 0.;
+    out[1] = 0.;
+    out[fftLen] = 0.;
+    out[fftLen+1] = 0.;
     //end filtering
 
-    four1((*out)-1, fftLen, -1);
+    four1(out-1, fftLen, -1);
     for(int i = 0; i < inLength; ++i)
     {
-        filteredArr[i] = (*out)[2*i]/fftLen/sqrt(fftLen/double(inLength));
+        filteredArr[i] = out[2*i]/fftLen/sqrt(fftLen/double(inLength));
     }
 
 
     //Hilbert via FFT
     for(int i = 0; i < inLength; ++i)
     {
-        (*out)[ 2 * i + 0] = filteredArr[i] * sqrt(fftLen/double(inLength));
-        (*out)[ 2 * i + 1] = 0.;
+        out[ 2 * i + 0] = filteredArr[i] * sqrt(fftLen/double(inLength));
+        out[ 2 * i + 1] = 0.;
     }
     for(int i = inLength; i < fftLen; ++i)
     {
-        (*out)[ 2 * i + 0] = 0.;
-        (*out)[ 2 * i + 1] = 0.;
+        out[ 2 * i + 0] = 0.;
+        out[ 2 * i + 1] = 0.;
     }
-    four1((*out)-1, fftLen, 1);
+    four1(out-1, fftLen, 1);
 
     for(int i = 0; i < fftLen/2; ++i)
     {
-        (*out)[2*i + 0] = 0.;
-        (*out)[2*i + 1] = 0.;
+        out[2*i + 0] = 0.;
+        out[2*i + 1] = 0.;
     }
-    four1((*out)-1, fftLen, -1);
+    four1(out-1, fftLen, -1);
 
     for(int i = 0; i < inLength; ++i)
     {
-        tempArr[i] = (*out)[2*i+1]/fftLen*2; //hilbert
+        tempArr[i] = out[2*i+1]/fftLen*2; //hilbert
     }
     //end Hilbert via FFT
 
 
     for(int i = 0; i < fftLen; ++i)
     {
-        (*out)[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
+        out[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
     }
 
 
@@ -1784,7 +1783,7 @@ void hilbert( const double * arr, int inLength, double sampleFreq, double lowFre
         pnt.setPen("green");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            pnt.drawLine(i, pic.height()/2. - enlarge * (*out)[i], i+1, pic.height()/2. - enlarge * (*out)[i+1]);
+            pnt.drawLine(i, pic.height()/2. - enlarge * out[i], i+1, pic.height()/2. - enlarge * out[i+1]);
         }
 
         pic.save(picPath, 0, 100);
@@ -1799,18 +1798,18 @@ void hilbert( const double * arr, int inLength, double sampleFreq, double lowFre
 
 }
 
-void hilbertPieces(const double * arr,
+void hilbertPieces(double * const arr,
                    int inLength,
                    double sampleFreq,
                    double lowFreq,
                    double highFreq,
-                   double ** out,
+                   double *& out,
                    QString picPath)
 {
     //do hilbert transform for the last fftLen bins
 
     int fftLen = fftL(inLength) / 2;
-    (*out) = new double [2*fftLen];
+    out = new double [2*fftLen];
     double spStep = sampleFreq/fftLen;
 
     double * tempArr = new double [inLength];
@@ -1818,59 +1817,59 @@ void hilbertPieces(const double * arr,
 
     for(int i = 0; i < fftLen; ++i)
     {
-        (*out)[ 2 * i + 0] = arr[i];
-        (*out)[ 2 * i + 1] = 0.;
+        out[ 2 * i + 0] = arr[i];
+        out[ 2 * i + 1] = 0.;
     }
-    four1((*out)-1, fftLen, 1);
+    four1(out-1, fftLen, 1);
     //start filtering
     for(int i = 0; i < fftLen; ++i)
     {
         if(i < 2.*lowFreq/spStep || i > 2.*highFreq/spStep)
-            (*out)[i] = 0.;
+            out[i] = 0.;
     }
     for(int i = fftLen; i < 2*fftLen; ++i)
     {
         if(((2*fftLen - i) < 2.*lowFreq/spStep) || (2*fftLen - i > 2.*highFreq/spStep))
-            (*out)[i] = 0.;
+            out[i] = 0.;
     }
-    (*out)[0] = 0.;
-    (*out)[1] = 0.;
-    (*out)[fftLen] = 0.;
-    (*out)[fftLen+1] = 0.;
+    out[0] = 0.;
+    out[1] = 0.;
+    out[fftLen] = 0.;
+    out[fftLen+1] = 0.;
     //end filtering
 
-    four1((*out)-1, fftLen, -1);
+    four1(out-1, fftLen, -1);
     for(int i = 0; i < fftLen; ++i)
     {
-        filteredArr[i] = (*out)[2*i]/fftLen*2;
+        filteredArr[i] = out[2*i]/fftLen*2;
     }
 
 
     //Hilbert via FFT
     for(int i = 0; i < fftLen; ++i)
     {
-        (*out)[ 2 * i + 0] = filteredArr[i];
-        (*out)[ 2 * i + 1] = 0.;
+        out[ 2 * i + 0] = filteredArr[i];
+        out[ 2 * i + 1] = 0.;
     }
-    four1((*out)-1, fftLen, 1);
+    four1(out-1, fftLen, 1);
 
     for(int i = 0; i < fftLen/2; ++i)
     {
-        (*out)[2*i + 0] = 0.;
-        (*out)[2*i + 1] = 0.;
+        out[2*i + 0] = 0.;
+        out[2*i + 1] = 0.;
     }
-    four1((*out)-1, fftLen, -1);
+    four1(out-1, fftLen, -1);
 
     for(int i = 0; i < fftLen; ++i)
     {
-        tempArr[i] = (*out)[2*i+1]/fftLen*2; //hilbert
+        tempArr[i] = out[2*i+1]/fftLen*2; //hilbert
     }
     //end Hilbert via FFT
 
 
     for(int i = 0; i < fftLen; ++i)
     {
-        (*out)[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
+        out[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
     }
 
 
@@ -1881,58 +1880,58 @@ void hilbertPieces(const double * arr,
 
     for(int i = 0; i < fftLen; ++i)
     {
-        (*out)[ 2 * i + 0] = arr[i + inLength-fftLen];
-        (*out)[ 2 * i + 1] = 0.;
+        out[ 2 * i + 0] = arr[i + inLength-fftLen];
+        out[ 2 * i + 1] = 0.;
     }
-    four1((*out)-1, fftLen, 1);
+    four1(out-1, fftLen, 1);
     //start filtering
     for(int i = 0; i < fftLen; ++i)
     {
         if(i < 2.*lowFreq/spStep || i > 2.*highFreq/spStep)
-            (*out)[i] = 0.;
+            out[i] = 0.;
     }
     for(int i = fftLen; i < 2*fftLen; ++i)
     {
         if(((2*fftLen - i) < 2.*lowFreq/spStep) || (2*fftLen - i > 2.*highFreq/spStep))
-            (*out)[i] = 0.;
+            out[i] = 0.;
     }
-    (*out)[0] = 0.;
-    (*out)[1] = 0.;
-    (*out)[fftLen] = 0.;
-    (*out)[fftLen+1] = 0.;
+    out[0] = 0.;
+    out[1] = 0.;
+    out[fftLen] = 0.;
+    out[fftLen+1] = 0.;
     //end filtering
 
-    four1((*out)-1, fftLen, -1);
+    four1(out-1, fftLen, -1);
     for(int i = 0; i < fftLen; ++i)
     {
-        filteredArr[i + inLength - fftLen] = (*out)[2*i]/fftLen*2;
+        filteredArr[i + inLength - fftLen] = out[2*i]/fftLen*2;
     }
 
 
     //Hilbert via FFT
     for(int i = 0; i < fftLen; ++i)
     {
-        (*out)[ 2 * i + 0] = filteredArr[i + inLength - fftLen];
-        (*out)[ 2 * i + 1] = 0.;
+        out[ 2 * i + 0] = filteredArr[i + inLength - fftLen];
+        out[ 2 * i + 1] = 0.;
     }
-    four1((*out)-1, fftLen, 1);
+    four1(out-1, fftLen, 1);
     for(int i = 0; i < fftLen/2; ++i)
     {
-        (*out)[2*i + 0] = 0.;
-        (*out)[2*i + 1] = 0.;
+        out[2*i + 0] = 0.;
+        out[2*i + 1] = 0.;
     }
-    four1((*out)-1, fftLen, -1);
+    four1(out-1, fftLen, -1);
 
     for(int i = 0; i < fftLen; ++i)
     {
-        tempArr[i + inLength - fftLen] = (*out)[2*i+1]/fftLen*2; //hilbert
+        tempArr[i + inLength - fftLen] = out[2*i+1]/fftLen*2; //hilbert
     }
     //end Hilbert via FFT
 
 
     for(int i = 0; i < inLength; ++i)
     {
-        (*out)[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
+        out[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
     }
 
 
@@ -1960,7 +1959,7 @@ void hilbertPieces(const double * arr,
         pnt.setPen("green");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            pnt.drawLine(i, pic.height()/2. - enlarge * (*out)[i], i+1, pic.height()/2. - enlarge * (*out)[i+1]);
+            pnt.drawLine(i, pic.height()/2. - enlarge * out[i], i+1, pic.height()/2. - enlarge * out[i+1]);
         }
 
         pic.save(picPath, 0, 100);
@@ -1978,15 +1977,15 @@ void hilbertPieces(const double * arr,
 
 }
 
-void bayesCount(double * dataIn, int length, int numOfIntervals, double ** out)
+void bayesCount(double * dataIn, int length, int numOfIntervals, double *& out)
 {
     double maxAmpl = 80.; //generality
     int helpInt;
-    (*out) = new double [numOfIntervals];
+    out = new double [numOfIntervals];
 
     for(int k = 0; k < numOfIntervals; ++k)
     {
-        (*out)[k] = 0;
+        out[k] = 0;
     }
     for(int j = 0; j < length; ++j)
     {
@@ -1994,11 +1993,11 @@ void bayesCount(double * dataIn, int length, int numOfIntervals, double ** out)
 
         if(helpInt != min(max(0, helpInt), numOfIntervals-1)) continue; //if helpInt not in range
 
-        (*out)[helpInt] += 1;
+        out[helpInt] += 1;
     }
     for(int k = 0; k < numOfIntervals; ++k)
     {
-        (*out)[k] /= double(length)*10.;
+        out[k] /= double(length)*10.;
     }
 }
 
@@ -2265,7 +2264,6 @@ QColor hueJet(int range, double j, int numOfContours, double V, double S)
     return QColor(255.*red(range,j,V,S), 255.*green(range,j,V,S), 255.*blue(range,j,V,S));
 }
 
-
 QColor hueOld(int range, int j)
 {
     if(j > range) j = range; //bicycle for no black colour
@@ -2294,7 +2292,6 @@ QColor qcolor(int range, int j)
     return QColor(255*exp(-(j-offR)*(j-offR)/(2*sigmaR*sigmaR)), 255*exp(-(j-offG)*(j-offG)/(2*sigmaG*sigmaG)), 255*exp((-(j-offB)*(j-offB)/(2*sigmaB*sigmaB))));
 //    return QColor(255*red(part),255* green(part), 255*blue(part));
 }
-
 
 double morletCos(double const freq1, double timeShift, double pot, double time)
 {
@@ -2533,7 +2530,7 @@ void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax
     painter.end();
 }
 
-void matrixTranspose(double ***inMat, int const numRowsCols)
+void matrixTranspose(double **&inMat, const int &numRowsCols)
 {
     double ** tmp;
     matrixCreate(&tmp, numRowsCols, numRowsCols);
@@ -2543,7 +2540,7 @@ void matrixTranspose(double ***inMat, int const numRowsCols)
     {
         for(int j = 0; j < numRowsCols; ++j)
         {
-            tmp[i][j] = (*inMat)[j][i];
+            tmp[i][j] = inMat[j][i];
         }
     }
 
@@ -2553,7 +2550,7 @@ void matrixTranspose(double ***inMat, int const numRowsCols)
     {
         for(int j = 0; j < numRowsCols; ++j)
         {
-            (*inMat)[i][j] = tmp[i][j];
+            inMat[i][j] = tmp[i][j];
         }
     }
     matrixDelete(&tmp, numRowsCols);
@@ -2712,7 +2709,7 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
 
 template <typename Typ>
 void writePlainData(QString outPath,
-                    Typ data,
+                    const Typ & data,
                     int ns,
                     int numOfSlices,
                     int start)
@@ -2732,15 +2729,20 @@ void writePlainData(QString outPath,
     outStr.close();
 }
 template void writePlainData(QString outPath,
-                            double ** data,
+                            const mat & data,
                             int ns,
                             int numOfSlices,
-                            int start = 0);
+                            int start);
 template void writePlainData(QString outPath,
-                            mat data,
+                            const matrix & data,
                             int ns,
                             int numOfSlices,
-                            int start = 0);
+                            int start);
+template void writePlainData(QString outPath,
+                            double ** const &data,
+                            int ns,
+                            int numOfSlices,
+                            int start);
 
 template <typename Typ>
 void readPlainData(QString inPath,
@@ -2768,12 +2770,17 @@ void readPlainData(QString inPath,
     inStr.close();
 }
 template void readPlainData(QString inPath,
-                            double **& data,
+                            double ** &data,
                             int ns,
                             int & numOfSlices,
                             int start);
 template void readPlainData(QString inPath,
                             mat & data,
+                            int ns,
+                            int & numOfSlices,
+                            int start);
+template void readPlainData(QString inPath,
+                            matrix & data,
                             int ns,
                             int & numOfSlices,
                             int start);
@@ -2850,26 +2857,11 @@ QPixmap drawEeg( Typ dataD,
     paint->begin(&pic);
 
     QString colour;
-    QString lab;
     int lineWidth = 2;
 
 
     for(int c2 = 0; c2 < ns; ++c2)
     {
-//        if(ns >= 21 && ns < 25)
-//        {
-//            if(c2 == 19)        colour = "red";
-//            else if(c2 == 20)   colour = "blue";
-//            else colour = "black";
-//        }
-//        else
-//        {
-//            colour = "black";
-//        }
-//        if(ns == 23 && c2 == 21)
-//        {
-//            colour = "green";
-//        }
         if(c2 == blueChan)
         {
             colour = "blue";
@@ -2912,17 +2904,28 @@ QPixmap drawEeg( Typ dataD,
 }
 
 
-template QPixmap drawEeg(double ** dataD,
-                         int ns,
-                         int NumOfSlices,
-                         int freq,
-                         const QString & picPath = "",
-                         double norm = 1.,
-                         int blueChan = -1,
-                         int redChan = -1);
+template
+QPixmap drawEeg(double ** dataD,
+                int ns,
+                int NumOfSlices,
+                int freq,
+                const QString & picPath = "",
+                double norm = 1.,
+                int blueChan = -1,
+                int redChan = -1);
 
 template
 QPixmap drawEeg( mat dataD,
+                 int ns,
+                 int NumOfSlices,
+                 int freq,
+                 const QString & picPath,
+                 double norm,
+                 int blueChan,
+                 int redChan);
+
+template
+QPixmap drawEeg( matrix dataD,
                  int ns,
                  int NumOfSlices,
                  int freq,
@@ -3053,7 +3056,7 @@ void readSpectraFile(QString filePath, double *** outData, int ns, int spLength)
     file.close();
 }
 
-void readSpectraFileLine(QString filePath, double **outData, int ns, int spLength)
+void readSpectraFileLine(QString filePath, double **&outData, int ns, int spLength)
 {
     ifstream file(filePath.toStdString().c_str());
     if(!file.good())
@@ -3071,7 +3074,7 @@ void readSpectraFileLine(QString filePath, double **outData, int ns, int spLengt
     file.close();
 }
 
-void readFileInLine(QString filePath, double ** outData, int len)
+void readFileInLine(QString filePath, double **&outData, int len)
 {
     ifstream file(filePath.toStdString().c_str());
     if(!file.good())
@@ -3292,7 +3295,7 @@ void splineCoeffCount(double * const inX, double * const inY, int dim, double **
         }
     }
     //count K's
-    matrixSystemSolveGauss(coefsMatrix, rightVec, dim, &vectorK);
+    matrixSystemSolveGauss(coefsMatrix, rightVec, dim, vectorK);
     //count outA and outB
     for(int i = 1; i < dim; ++i) //there is dim-1 intervals between dim points
     {
@@ -3409,7 +3412,7 @@ double countAngle(double initX, double initY)
 }
 
 template <typename inTyp, typename outTyp>
-void calcSpectre(inTyp const inSignal, int length, outTyp outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg)
+void calcSpectre(const inTyp &inSignal, int length, outTyp &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg)
 {
     int fftLen = fftL(length);
     if (fftLength != nullptr)
@@ -3450,12 +3453,12 @@ void calcSpectre(inTyp const inSignal, int length, outTyp outSpectre, const int 
     }
     delete []spectre;
 }
-template void calcSpectre(double * const inSignal, int length, double * outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
-template void calcSpectre(double * const inSignal, int length, vector <double> outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
-template void calcSpectre(vector <double> const inSignal, int length, double * outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
-template void calcSpectre(vector <double> const inSignal, int length, vector <double>  outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
+template void calcSpectre(const double * const &inSignal, int length, double * &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
+template void calcSpectre(const double * const &inSignal, int length, vector <double> &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
+template void calcSpectre(const vector <double> &inSignal, int length, double * &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
+template void calcSpectre(const vector <double> &inSignal, int length, vector <double> &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
 
-void calcSpectre(double ** const inData, int leng, int const ns, double *** dataFFT, int * fftLength, int const NumOfSmooth, const double powArg)
+void calcSpectre(double ** &inData, int leng, const int &ns, double **& dataFFT, int * fftLength, const int &NumOfSmooth, const double &powArg)
 {
     //allocates memory for dataFFT
     //counts best-fit fftLength, Eyes and spectra
@@ -3475,7 +3478,7 @@ void calcSpectre(double ** const inData, int leng, int const ns, double *** data
     }
 //    cout << (*fftLength) << endl;
 
-    matrixCreate(dataFFT, ns, (*fftLength));
+    matrixCreate(&dataFFT, ns, (*fftLength));
 
     double ** newData;
     matrixCreate(&newData, ns, (*fftLength));
@@ -3521,7 +3524,7 @@ void calcSpectre(double ** const inData, int leng, int const ns, double *** data
         four1(spectre-1, (*fftLength), 1);       //Fourier transform
         for(int i = 0; i < (*fftLength)/2; ++i )      //get the absolute value of FFT
         {
-            (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / (*fftLength); //0.004 = 1/250 generality
+            dataFFT[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / (*fftLength); //0.004 = 1/250 generality
 //            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ], powArg );
 
         }
@@ -3531,11 +3534,11 @@ void calcSpectre(double ** const inData, int leng, int const ns, double *** data
         //smooth spectre
         for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
         {
-            help1 = (*dataFFT)[j][leftSmoothLimit-1];
+            help1 = dataFFT[j][leftSmoothLimit-1];
             for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
             {
-                help2 = (*dataFFT)[j][k];
-                (*dataFFT)[j][k] = (help1 + help2 + (*dataFFT)[j][k+1]) / 3.;
+                help2 = dataFFT[j][k];
+                dataFFT[j][k] = (help1 + help2 + dataFFT[j][k+1]) / 3.;
                 help1 = help2;
             }
         }
@@ -3544,7 +3547,7 @@ void calcSpectre(double ** const inData, int leng, int const ns, double *** data
     matrixDelete(&newData, ns);
 }
 
-void calcSpectre(double ** const inData, double **& dataFFT, int const ns, int const inDataLen, int const NumOfSmooth, const double powArg)
+void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &inDataLen, const int &NumOfSmooth, const double & powArg)
 {
     int fftLength = fftL(inDataLen);
     double norm1 = fftLength / double(inDataLen);
@@ -3591,7 +3594,7 @@ void calcSpectre(double ** const inData, double **& dataFFT, int const ns, int c
     delete []spectre;
 }
 
-void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int const Eyes, int const NumOfSmooth, double const powArg)
+void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth, double const &powArg)
 {
 
     double norm1 = fftLength / double(fftLength-Eyes);
@@ -3610,7 +3613,7 @@ void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int c
         four1(spectre-1, fftLength, 1);       //Fourier transform
         for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
         {
-            (*dataFFT)[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fftLength; //0.004 = 1/250 generality
+            dataFFT[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / fftLength; //0.004 = 1/250 generality
 //            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ], powArg );
 
         }
@@ -3621,11 +3624,11 @@ void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int c
         //smooth spectre
         for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
         {
-            help1 = (*dataFFT)[j][leftSmoothLimit-1];
+            help1 = dataFFT[j][leftSmoothLimit-1];
             for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
             {
-                help2 = (*dataFFT)[j][k];
-                (*dataFFT)[j][k] = (help1 + help2 + (*dataFFT)[j][k+1]) / 3.;
+                help2 = dataFFT[j][k];
+                dataFFT[j][k] = (help1 + help2 + dataFFT[j][k+1]) / 3.;
                 help1 = help2;
             }
         }
@@ -3634,7 +3637,7 @@ void calcSpectre(double ** const inData, double *** dataFFT, int const ns, int c
 }
 
 
-void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int const fftLength, int Eyes, int const NumOfSmooth)
+void calcRawFFT(double ** &inData, double **& dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth)
 {
 
     double norm1 = fftLength / double(fftLength-Eyes);
@@ -3653,7 +3656,7 @@ void calcRawFFT(double ** const inData, double *** dataFFT, int const ns, int co
         four1(spectre-1, fftLength, 1);       //Fourier transform
         for(int i = 0; i < fftLength; ++i )      //get the absolute value of FFT
         {
-            (*dataFFT)[j][ i ] = spectre[ i ] * 2. /250. / fftLength; //0.004 = 1/250 generality
+            dataFFT[j][ i ] = spectre[ i ] * 2. /250. / fftLength; //0.004 = 1/250 generality
         }
 
         leftSmoothLimit = 0;
@@ -3771,7 +3774,7 @@ void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClass
 }
 
 template <typename Typ>
-bool readICAMatrix(QString path, Typ (&matrixA), int ns)
+bool readICAMatrix(const QString & path, Typ &matrixA, const int & ns)
 {
     ifstream inStream;
     inStream.open(path.toStdString().c_str());
@@ -3792,12 +3795,13 @@ bool readICAMatrix(QString path, Typ (&matrixA), int ns)
     inStream.close();
     return 1;
 }
-                           template bool readICAMatrix(QString path, double **& matrixA, int ns);
-                           template bool readICAMatrix(QString path, matrix & matrixA, int ns);
-                           template bool readICAMatrix(QString path, mat & matrixA, int ns);
+template bool readICAMatrix(const QString & path, double **& matrixA, const int & ns);
+template bool readICAMatrix(const QString & path, matrix & matrixA, const int & ns);
+template bool readICAMatrix(const QString & path, mat & matrixA, const int & ns);
 
 
-void writeICAMatrix(QString path, double ** matrixA, int const ns)
+template <typename Typ  = double **>
+void writeICAMatrix(const QString & path, Typ &matrixA, const int & ns)
 {
     FILE * map = fopen(path.toStdString().c_str(), "w");
     double maxMagn = 0.;
@@ -3813,8 +3817,12 @@ void writeICAMatrix(QString path, double ** matrixA, int const ns)
     fprintf(map, "max = %.3lf\n", maxMagn);
     fclose(map);
 }
+template void writeICAMatrix(const QString & path, double ** &matrixA, const int & ns);
+template void writeICAMatrix(const QString & path, matrix & matrixA, const int & ns);
+template void writeICAMatrix(const QString & path, mat & matrixA, const int & ns);
 
-void matrixCofactor(double ** const inMatrix, int const size, int const numRows, int const numCols, double *** outMatrix)
+
+void matrixCofactor(double ** &inMatrix, const int &size, const int &numRows, const int &numCols, double **& outMatrix)
 {
 //    cout << "matrixCof: start" << endl;
     int indexA, indexB;
@@ -3827,13 +3835,13 @@ void matrixCofactor(double ** const inMatrix, int const size, int const numRows,
             if(b == numCols) continue;
             indexB = b - (b > numCols);
 
-            (*outMatrix)[indexA][indexB] = inMatrix[a][b];
+            outMatrix[indexA][indexB] = inMatrix[a][b];
         }
     }
 //    cout << "matrixCof: end" << endl;
 }
 
-void matrixSystemSolveGauss(double ** const inMat, double * const inVec, int size, double ** outVec)
+void matrixSystemSolveGauss(double ** &inMat, double * &inVec, int size, double * &outVec)
 {
     double ** initMat;
     matrixCreate(&initMat, size, size);
@@ -3903,37 +3911,37 @@ void matrixSystemSolveGauss(double ** const inMat, double * const inVec, int siz
 
     for(int i = 0; i < size; ++i)
     {
-        (*outVec)[i] = tempMat[i][0];
+        outVec[i] = tempMat[i][0];
     }
 
     matrixDelete(&initMat, size);
     matrixDelete(&tempMat, size);
 }
 
-void matrixTranspose(double ** const inMat, int const numRows, int const numCols, double *** outMat)
+void matrixTranspose(double ** &inMat, const int &numRows, const int &numCols, double ** &outMat)
 {
     for(int i = 0; i < numCols; ++i)
     {
         for(int j = 0; j < numRows; ++j)
         {
-            (*outMat)[i][j] = inMat[j][i];
+            outMat[i][j] = inMat[j][i];
         }
     }
 }
 
-void matrixCopy(double ** const inMat, double *** outMat, int const dimH, int const dimL)
+void matrixCopy(double ** &inMat, double ** &outMat, const int &dimH, const int &dimL)
 {
     for(int i = 0; i < dimH; ++i)
     {
 //        memcpy((*outMat), inMat, dimL * sizeof(double));
         for(int j = 0; j < dimL; ++j)
         {
-            (*outMat)[i][j] = inMat[i][j];
+            outMat[i][j] = inMat[i][j];
         }
     }
 }
 
-void matrixInvert(double ** const inMat, int const size, double *** outMat) //cofactors
+void matrixInvert(double ** &inMat, const int &size, double **& outMat) //cofactors
 {
     double ** cof = new double * [size - 1];
     for(int i = 0; i < size - 1; ++i)
@@ -3946,10 +3954,10 @@ void matrixInvert(double ** const inMat, int const size, double *** outMat) //co
     {
         for(int j = 0; j < size; ++j)
         {
-            matrixCofactor(inMat, size, j, i, &cof);
+            matrixCofactor(inMat, size, j, i, cof);
 //            cout << "matrixInvert: cofactor\n";
 //            matrixPrint(cof, size-1, size-1);
-            (*outMat)[i][j] = pow(-1, i+j) * matrixDet(cof, size - 1)/Det;
+            outMat[i][j] = pow(-1, i+j) * matrixDet(cof, size - 1)/Det;
         }
     }
     for(int i = 0; i < size - 1; ++i)
@@ -3959,25 +3967,25 @@ void matrixInvert(double ** const inMat, int const size, double *** outMat) //co
     delete []cof;
 }
 
-void matrixInvert(double *** mat, int const size) // by definition - cofactors
+void matrixInvert(double ** &mat, const int &size) // by definition - cofactors
 {
     double ** tempMat;
     matrixCreate(&tempMat, size, size);
-    matrixInvert(*mat, size, &tempMat);
+    matrixInvert(mat, size, tempMat);
     matrixCopy(tempMat, mat, size, size);
     matrixDelete(&tempMat, size);
 }
 
-void matrixInvertGauss(double *** mat, int const size) // by definition - cofactors
+void matrixInvertGauss(double **& mat, const int &size) // by definition - cofactors
 {
     double ** tempMat;
     matrixCreate(&tempMat, size, size);
-    matrixInvertGauss((*mat), size, &tempMat);
+    matrixInvertGauss(mat, size, tempMat);
     matrixCopy(tempMat, mat, size, size);
     matrixDelete(&tempMat, size);
 }
 
-void matrixInvertGauss(double ** const mat, int const size, double *** outMat)
+void matrixInvertGauss(double ** &mat, const int &size, double ** &outMat)
 {
     double ** initMat;
     matrixCreate(&initMat, size, size);
@@ -4053,14 +4061,14 @@ void matrixInvertGauss(double ** const mat, int const size, double *** outMat)
     {
         for(int k = 0; k < size; ++k) //k = 0 because default
         {
-            (*outMat)[i][k] = tempMat[i][k];
+            outMat[i][k] = tempMat[i][k];
         }
     }
     matrixDelete(&initMat, size);
     matrixDelete(&tempMat, size);
 }
 
-double matrixDet(double ** const matrix, int const dim) //- Det
+double matrixDet(double ** &matrix, const int &dim) //- Det
 {
 //    cout << "matrixDet: start" << endl;
     if(dim == 1)
@@ -4079,7 +4087,7 @@ double matrixDet(double ** const matrix, int const dim) //- Det
         matrixDet_[i] = new double [dim];
     }
     */
-    matrixCopy(matrix, &matrixDet_, dim, dim);
+    matrixCopy(matrix, matrixDet_, dim, dim);
 
     double coef;
     for(int i = 1; i < dim; ++i)
@@ -4120,7 +4128,7 @@ double matrixDet(double ** const matrix, int const dim) //- Det
 }
 
 
-double matrixDetB(double ** const matrix, int const dim) // Det
+double matrixDetB(double ** &matrix, const int &dim) // Det
 {
     if(dim == 1) return matrix[0][0];
 
@@ -4130,14 +4138,14 @@ double matrixDetB(double ** const matrix, int const dim) // Det
     cout << dim << endl;
     for(int i = 0; i < dim; ++i)
     {
-        matrixCofactor(matrix, dim, 0, i, &cof);
+        matrixCofactor(matrix, dim, 0, i, cof);
         coef += matrix[0][i] * pow(-1, i) * matrixDet(cof, dim-1);
     }
     matrixDelete(&cof, dim-1);
     return coef;
 }
 
-double ** matrixCreate(int const i, int const j)
+double ** matrixCreate(const int &i, const int &j)
 {
     double ** mat = new double * [i];
     for(int k = 0; k < i; ++k)
@@ -4147,7 +4155,7 @@ double ** matrixCreate(int const i, int const j)
     return mat;
 }
 
-void matrixCreate(double *** matrix, int const i, int const j)
+void matrixCreate(double *** matrix, const int &i, const int &j)
 {
     (*matrix) = new double * [i];
     for(int k = 0; k < i; ++k)
@@ -4156,7 +4164,7 @@ void matrixCreate(double *** matrix, int const i, int const j)
     }
 }
 
-void matrixDelete(double *** matrix, int const i)
+void matrixDelete(double *** matrix, const int &i)
 {
     for(int k = 0; k < i; ++k)
     {
@@ -4165,7 +4173,7 @@ void matrixDelete(double *** matrix, int const i)
     delete [](*matrix);
 }
 
-void matrixDelete(int *** matrix, int const i)
+void matrixDelete(int *** matrix, const int &i)
 {
     for(int k = 0; k < i; ++k)
     {
@@ -4174,7 +4182,7 @@ void matrixDelete(int *** matrix, int const i)
     delete [](*matrix);
 }
 
-void matrixPrint(double ** const mat, int const i, int const j)
+void matrixPrint(const double ** const &mat, const int &i, const int &j)
 {
     for(int a = 0; a < i; ++a)
     {
@@ -4190,13 +4198,13 @@ void matrixPrint(double ** const mat, int const i, int const j)
 
 
 
-double matrixInnerMaxCorrelation(double ** const inMatrix, int const numRows, int const numCols, double (*corrFunc)(double * const arr1, double * const arr2, int length, int t))
+double matrixInnerMaxCorrelation(double ** &inMatrix, const int &numRows, const int &numCols, double (*corrFunc)(double * const arr1, double * const arr2, int length, int t))
 {
     double res = 0.;
     double temp;
     double ** tempMat;
     matrixCreate(&tempMat, numCols, numRows);
-    matrixTranspose(inMatrix, numRows, numCols, &tempMat);
+    matrixTranspose(inMatrix, numRows, numCols, tempMat);
     for(int i = 0; i < numCols; ++i)
     {
         for(int j = 0; j < numCols; ++j)
@@ -4212,16 +4220,16 @@ double matrixInnerMaxCorrelation(double ** const inMatrix, int const numRows, in
     return res;
 }
 
-double matrixMaxCorrelation(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols)
+double matrixMaxCorrelation(double ** &inMat1, double ** &inMat2, const int &numRows, const int &numCols)
 {
     double res = 0.;
     double temp;
     double ** tempMat1;
     double ** tempMat2;
     matrixCreate(&tempMat1, numCols, numRows);
-    matrixTranspose(inMat1, numRows, numCols, &tempMat1);
+    matrixTranspose(inMat1, numRows, numCols, tempMat1);
     matrixCreate(&tempMat2, numCols, numRows);
-    matrixTranspose(inMat2, numRows, numCols, &tempMat2);
+    matrixTranspose(inMat2, numRows, numCols, tempMat2);
 
     for(int i = 0; i < numCols; ++i)
     {
@@ -4238,7 +4246,7 @@ double matrixMaxCorrelation(double ** const inMat1, double ** const inMat2, int 
 }
 
 
-void matrixCorrelations(double ** const inMat1, double ** const inMat2, int const numRows, int const numCols, double ** resCorr)
+void matrixCorrelations(double ** &inMat1, double ** &inMat2, const int &numRows, const int &numCols, double *& resCorr)
 {
     double res = 0.;
     QList<int> tempNum;
@@ -4248,9 +4256,9 @@ void matrixCorrelations(double ** const inMat1, double ** const inMat2, int cons
     double ** tempMat1;
     double ** tempMat2;
     matrixCreate(&tempMat1, numCols, numRows);
-    matrixTranspose(inMat1, numRows, numCols, &tempMat1);
+    matrixTranspose(inMat1, numRows, numCols, tempMat1);
     matrixCreate(&tempMat2, numCols, numRows);
-    matrixTranspose(inMat2, numRows, numCols, &tempMat2);
+    matrixTranspose(inMat2, numRows, numCols, tempMat2);
 
     cout << "ready" << endl;
 
@@ -4269,7 +4277,7 @@ void matrixCorrelations(double ** const inMat1, double ** const inMat2, int cons
             }
         }
         tempNum << index;
-        (*resCorr)[i] = res;
+        resCorr[i] = res;
     }
     for(int i = 0; i < numCols; ++i)
     {

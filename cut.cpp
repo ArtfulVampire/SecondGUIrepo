@@ -756,7 +756,10 @@ void Cut::save()
 
 void Cut::rewrite()
 {
-    writePlainData(currentFile, data3, ns, NumOfSlices);
+    writePlainData(currentFile,
+                   data3,
+                   ns,
+                   NumOfSlices);
     currentPicPath = getPicPath(currentFile, dir, ns);
     currentPic.save(currentPicPath, 0, 100);
 }
