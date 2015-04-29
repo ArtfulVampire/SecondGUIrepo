@@ -1789,5 +1789,164 @@ void MainWindow::makeTestData()
 #endif
 }
 
+void MainWindow::GalyaProcessing()
+{
+
+    const QString enthropyFileName = "entrop.txt";
+    const QString d2dimFileName = "d2_dim.txt";
+    const QString hilbertFileName = "med_freq.txt";
+
+    const double leftFreqLim = 4.;
+    const double rightFreqLim = 24.;
+    const double stepFreq = 2.;
+    const double hilbertFreqLimit = 10.;
+    const int numChan = 19;
+
+    QString helpString;
+    QString expName;
+    QDir dir;
+    dir.cd("/media/Files/Data/Galya");
+    QStringList filesList;
+    filesList = dir.entryList(QStringList("*.EDF"), QDir::NoFilter, QDir::Size|QDir::Reversed);
+
+    edfFile initEdf;
+    edfFile currEdf;
+    initEdf.setMatiFlag(false);
+    currEdf.setMatiFlag(false);
+
+    ofstream outStr;
+    double helpDouble;
+    double * env;
+    double * envSpec;
+    double sumSpec = 0.;
+
+
+    for(int i = 0; i < filesList.length(); ++i)
+    {
+        expName = filesList[i];
+        expName.remove(".EDF");
+
+        helpString = dir.absolutePath()
+                + slash() + filesList[i];
+        initEdf.readEdfFile(helpString);
+
+        cout << expName << "\t" << initEdf.getDataLen() << endl;
+
+
+        dir.cd("out");
+        // how to check all frequency ranges?
+        for(double freqCounter = leftFreqLim;
+            freqCounter <= rightFreqLim;
+            freqCounter += stepFreq)
+        {
+
+            if(freqCounter != rightFreqLim) continue;
+
+
+            currEdf = initEdf;
+            if(freqCounter != rightFreqLim)
+            {
+                currEdf.refilter(freqCounter, freqCounter + stepFreq);
+            }
+
+
+
+            // write d2 dimension
+            helpString = dir.absolutePath()
+                    + slash() + expName;
+            if(freqCounter != rightFreqLim)
+            {
+                helpString += "_" + QString::number(freqCounter)
+                        + "-" + QString::number(freqCounter + stepFreq);
+            }
+            helpString += "_" + d2dimFileName;
+            outStr.open(helpString.toStdString().c_str());
+            for(int i = 0; i < numChan; ++i)
+            {
+                helpString = dir.absolutePath()
+                        + slash() + expName
+                        + "_" + QString::number(i)
+                        + "_h.jpg";
+                if(freqCounter != rightFreqLim)
+                {
+                    helpString.clear();
+                }
+                helpDouble = fractalDimension(currEdf.getData()[i].data(),
+                                              currEdf.getDataLen(),
+                                              helpString);
+                outStr << doubleRound(helpDouble, 4) << endl;
+            }
+            outStr.close();
+
+
+#if 0
+            // write enthropy
+            helpString = dir.absolutePath()
+                    + slash() + expName;
+            if(freqCounter != rightFreqLim)
+            {
+                helpString += "_" + QString::number(freqCounter)
+                        + "-" + QString::number(freqCounter + stepFreq);
+            }
+            helpString += "_" + enthropyFileName;
+            outStr.open(helpString.toStdString().c_str());
+            for(int i = 0; i < numChan; ++i)
+            {
+                helpDouble = enthropy(currEdf.getData()[i].data(),
+                                      currEdf.getDataLen());
+                outStr << doubleRound(helpDouble, 4) << endl;
+            }
+            outStr.close();
+#endif
+
+
+
+            // write envelope median spectre
+            helpString = dir.absolutePath()
+                    + slash() + expName;
+            if(freqCounter != rightFreqLim)
+            {
+                helpString += "_" + QString::number(freqCounter)
+                        + "-" + QString::number(freqCounter + stepFreq);
+            }
+            helpString += "_" + hilbertFileName;
+            outStr.open(helpString.toStdString().c_str());
+            for(int i = 0; i < numChan; ++i)
+            {
+                hilbertPieces(currEdf.getData()[i].data(),
+                              currEdf.getDataLen(),
+                              def::freq,
+                              1.,
+                              35.,
+                              env);
+                spectre(env,
+                        currEdf.getDataLen(),
+                        envSpec);
+
+                helpDouble = 0.;
+                sumSpec = 0.;
+                for(int j = 1;
+                    j < fftLimit(hilbertFreqLimit, def::freq, fftL(currEdf.getDataLen()));
+                    ++j)
+                {
+                    sumSpec += envSpec[j];
+                    helpDouble += envSpec[j] * j;
+                }
+                helpDouble /= sumSpec;
+                helpDouble /= fftLimit(1., def::freq, fftL(currEdf.getDataLen()));
+
+                outStr << doubleRound(helpDouble, 4) << endl;
+            }
+            outStr.close();
+        }
+        dir.cdUp();
+
+//        break;
+//        if(i == 3) break;
+    }
+
+
+}
+
 
 #endif // AUTOS_CPP

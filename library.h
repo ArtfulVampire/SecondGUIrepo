@@ -87,11 +87,11 @@ void wavelet(QString out, FILE * file, int ns = 19, int channelNumber = 0, doubl
 void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
 //signal processing
-double fractalDimension(double *arr, int N);
-double enthropy(double *arr, int N, QString picPath, int numOfRanges); // not finished?
+double fractalDimension(const double *arr, int N, const QString &picPath = QString());
+double enthropy(const double *arr, const int N, const int numOfRanges = 30); // not finished?
 void four1(double * dataF, int nn, int isign);
-void hilbert(double * const &arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double *& out, QString picPath  = QString());
-void hilbertPieces(double * const arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double *& out, QString picPath = QString());
+void hilbert(const double *arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double *& out, QString picPath  = QString());
+void hilbertPieces(const double *arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double *& out, QString picPath = QString());
 void bayesCount(double * dataIn, int length, int numOfIntervals, double * &out);
 void kernelEst(double *arr, int length, QString picPath);
 void histogram(double *arr, int length, int numSteps, QString picPath);
@@ -149,9 +149,9 @@ void readPlainData(QString inPath,
                    int & numOfSlices,
                    int start = 0);
 
-template <typename Typ = double**>
+template <typename Typ>
 void writePlainData(QString outPath,
-                    const Typ & data,
+                    const Typ &data,
                     int ns,
                     int numOfSlices,
                     int start = 0);
@@ -177,10 +177,8 @@ QPixmap drawEeg( Typ dataD,
                  int blueChan = -1,
                  int redChan = -1);
 
-
-
-void readSpectraFile(QString filePath, double *** outData, int ns, int spLength);
-void readSpectraFileLine(QString filePath, double ** &outData, int ns, int spLength);
+void readSpectraFile(QString filePath, double **&outData, const int &ns, const int &spLength);
+void readSpectraFileLine(QString filePath, double *&outData, const int &ns, const int &spLength);
 void readFileInLine(QString filePath, double **& outData, int len);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double **classCount);
 
@@ -200,6 +198,8 @@ void drawSpectra(double ** drawData, int ns, int start, int end, const QString &
 
 template <typename inTyp, typename outTyp>
 void calcSpectre(const inTyp &inSignal, int length, outTyp &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 15, const double & powArg = 1.);
+
+void spectre(const double * data, const int &length, double *& spectr);
 
 void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &inDataLen, const int &NumOfSmooth = 15, const double &powArg = 1.);
 

@@ -1,6 +1,7 @@
 #ifndef EDFFILE_H
 #define EDFFILE_H
 #define DATA_IN_CHANS 0
+#define DATA_POINTER_IN_CHANS 0
 
 #include "library.h"
 
@@ -20,7 +21,9 @@ struct edfChannel
     QString prefiltering;
     double nr;
     QString reserved;
-
+#if DATA_IN_CHANS
+    vector <double> * dataP;
+#endif
 #if DATA_IN_CHANS
     vector <double> data;
 #endif
@@ -42,6 +45,10 @@ struct edfChannel
         this->prefiltering = other.prefiltering;
         this->nr = other.nr;
         this->reserved = other.reserved;
+
+#if DATA_POINTER_IN_CHANS
+        this->dataP = other.dataP;
+#endif
 #if DATA_IN_CHANS
         this->data = other.data;
 #endif
@@ -59,9 +66,13 @@ struct edfChannel
                QString in_prefiltering,
                double in_nr,
                QString in_reserved
-#if DATA_IN_CHANS
+
+           #if DATA_POINTER_IN_CHANS
+               , vector<double> * in_dataP
+           #endif
+           #if DATA_IN_CHANS
                ,vector <double> in_data
-#endif
+           #endif
                )
 //
     {
@@ -75,6 +86,9 @@ struct edfChannel
         this->prefiltering = in_prefiltering;
         this->nr = in_nr;
         this->reserved = in_reserved;
+#if DATA_POINTER_IN_CHANS
+        this->dataP = in_dataP;
+#endif
 #if DATA_IN_CHANS
         this->data = in_data;
 #endif
@@ -92,6 +106,9 @@ struct edfChannel
         this->prefiltering = QString();
         this->nr = 0.;
         this->reserved = QString();
+#if DATA_POINTER_IN_CHANS
+    this->dataP = nullptr;
+#endif
 #if DATA_IN_CHANS
         this->data = vector <double> ();
 #endif
@@ -163,7 +180,7 @@ public:
                      QString & ntAnnot,
                      FILE * edfForDatum);
 
-    void writeMarker(const int & currNs,
+    void writeMarker(const double & currDatum,
                      const int & currTimeIndex) const;
 
     void handleAnnotations(const int & currNs,
@@ -176,7 +193,7 @@ public:
     void adjustArraysByChannels();
     void appendFile(QString addEdfPath, QString outPath) const;
     void concatFile(QString addEdfPath, QString outPath = QString());
-    void refilter(double lowFreq, double highFreq, QString newPath);
+    void refilter(const double &lowFreq, const double &highFreq, QString newPath = QString());
     void saveSubsection(int startBin, int finishBin, const QString &outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
     void reduceChannels(QList<int> chanList);

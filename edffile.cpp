@@ -203,6 +203,11 @@ edfFile::edfFile(QString matiLogPath)
                                             prefiltering[i],
                                             nr[i],
                                             reserved[i]
+
+
+                                    #if DATA_POINTER_IN_CHANS
+                                        ,&data[i] // edfChannel::dataP
+                                    #endif
                                     #if DATA_IN_CHANS
                                             ,data[i]
                                     #endif
@@ -477,13 +482,13 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     fsetpos(edfDescriptor, position);
     delete position;
 
+    QFile::remove(helpString = dirPath + slash() + this->ExpName + "_markers.txt");
 
 
     if(readFlag)
     {
         dataLength = ndr * nr[0]; // generality
     }
-    QFile::remove(helpString = dirPath + slash() + this->ExpName + "_markers.txt");
 
     handleData(readFlag, edfDescriptor);
     fclose(edfDescriptor);
@@ -494,25 +499,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     }
 
 
-    this->channels.clear();
-    for(int i = 0; i < this->ns; ++i)
-    {
-        this->channels.push_back(edfChannel(labels[i],
-                                            transducerType[i],
-                                            physDim[i],
-                                            physMax[i],
-                                            physMin[i],
-                                            digMax[i],
-                                            digMin[i],
-                                            prefiltering[i],
-                                            nr[i],
-                                            reserved[i]
-                                    #if DATA_IN_CHANS
-                                            ,data[i]
-                                    #endif
-                                            )
-                                 );
-    }
+
 }
 
 void edfFile::handleData(bool readFlag,
@@ -531,6 +518,31 @@ void edfFile::handleData(bool readFlag,
             (*(this->dataPointer))[i].resize(dataLength);
 //            data[i].resize(dataLength);
         }
+
+        this->channels.clear();
+        for(int i = 0; i < this->ns; ++i)
+        {
+            this->channels.push_back(edfChannel(labels[i],
+                                                transducerType[i],
+                                                physDim[i],
+                                                physMax[i],
+                                                physMin[i],
+                                                digMax[i],
+                                                digMin[i],
+                                                prefiltering[i],
+                                                nr[i],
+                                                reserved[i]
+
+                                        #if DATA_POINTER_IN_CHANS
+                                            ,&data[i] // edfChannel::dataP
+                                        #endif
+
+                                        #if DATA_IN_CHANS
+                                                ,data[i]
+                                        #endif
+                                                )
+                                     );
+        }
     }
     for(int i = 0; i < ndr; ++i)
     {
@@ -543,6 +555,7 @@ void edfFile::handleData(bool readFlag,
                 handleDatum(currNs, currTimeIndex, readFlag, helpString, edfForData);
             }
 
+            /// bad if
             if(currNs == markerChannel && this->ntFlag)
             {
                 handleAnnotations(currNs, currTimeIndex, helpString, annotations);
@@ -562,7 +575,12 @@ void edfFile::handleDatum(const int & currNs,
     short a = 0;
     unsigned short markA = 0;
 
+
+#if DATA_POINTER_IN_CHANS
+    double & currDatum = (*(this->channels[currNs].dataP))[currTimeIndex];
+#else
     double & currDatum = (*(this->dataPointer))[currNs][currTimeIndex];
+#endif
 
     if(readFlag)
     {
@@ -615,7 +633,7 @@ void edfFile::handleDatum(const int & currNs,
             }
             if(!this->ntFlag && currDatum != 0) // make markers file when read only
             {
-                writeMarker(currNs, currTimeIndex);
+                writeMarker(currDatum, currTimeIndex);
             }
             if(currDatum == 200 )
             {
@@ -676,19 +694,19 @@ void edfFile::handleDatum(const int & currNs,
 }
 
 
-void edfFile::writeMarker(const int & currNs,
+void edfFile::writeMarker(const double & currDatum,
                            const int & currTimeIndex) const
 {
     vector <bool> byteMarker;
     QString helpString;
-    const double & currDatum = (*dataPointer)[currNs][currTimeIndex];
+//    const double & currDatum = (*dataPointer)[currNs][currTimeIndex];
 
     FILE * markers;
 
 
     helpString = dirPath + slash() + this->ExpName + "_markers.txt";
     markers = fopen(helpString, "a+");
-    fprintf(markers, "%d %d", currTimeIndex, int(currDatum)); //////////////////// danger int()
+    fprintf(markers, "%d %d", currTimeIndex, int(currDatum));
     if(this->matiFlag)
     {
         byteMarker = matiCountByte(currDatum);
@@ -855,6 +873,16 @@ void edfFile::adjustArraysByChannels()
         this->data.push_back(this->channels[i].data);
     }
 #endif
+
+
+#if DATA_POINTER_IN_CHANS
+    for(int i = 0; i < this->ns; ++i)
+    {
+        this->data[i] = *(this->channels[i].dataP);
+    }
+#endif
+
+
     this->headerRest = QString();
 
     this->dataLength = this->data[0].size(); // dunno
@@ -876,6 +904,8 @@ void edfFile::adjustMarkerChannel()
         edfChannel tempMarkChan = this->channels[this->markerChannel]; // save markerChannel
         this->channels.erase(this->channels.begin() + this->markerChannel); // remove markerChannel
         this->channels.push_back(tempMarkChan); // return markerChannel to the end of a list
+#elif DATA_POINTER_IN_CHANS
+
 #else
         edfChannel tempMarkChan = this->channels[this->markerChannel]; // save markerChannel
         vector <double> tempMarkData = this->data[this->markerChannel];
@@ -994,7 +1024,7 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
     }
 }
 
-void edfFile::refilter(double lowFreq, double highFreq, QString newPath)
+void edfFile::refilter(const double &lowFreq, const double &highFreq, QString newPath)
 {
     QTime myTime;
     myTime.start();
@@ -1019,7 +1049,6 @@ void edfFile::refilter(double lowFreq, double highFreq, QString newPath)
 
     for(int j = 0; j < numOfChan; ++j)
     {
-//        myTime.restart();
         std::fill(spectre, spectre + fftLength * 2, 0.);
         for(auto it = this->data[chanList[j]].begin();
             it < this->data[chanList[j]].end();
@@ -1027,11 +1056,8 @@ void edfFile::refilter(double lowFreq, double highFreq, QString newPath)
         {
             spectre[2 * (it - this->data[chanList[j]].begin()) ] = (*it) * sqrt(norm1);
         }
-//        cout << "fill    time = " << myTime.elapsed()/1000. << " sec" << endl;
-
-//        myTime.restart();
         four1(spectre - 1, fftLength, 1);       //Fourier transform
-//        cout << "fourier time = " << myTime.elapsed()/1000. << " sec" << endl;
+
         //filtering
         for(int i = 0; i < fftLength; ++i)
         {
@@ -1044,24 +1070,20 @@ void edfFile::refilter(double lowFreq, double highFreq, QString newPath)
                 spectre[i] = 0.;
         }
         //end filtering
-
-//        myTime.restart();
         four1(spectre - 1, fftLength, 1);       // reverse transform
-//        cout << "reverse time = " << myTime.elapsed()/1000. << " sec" << endl;
 
-
-//        myTime.restart();
         for(auto it = this->data[chanList[j]].begin();
             it < this->data[chanList[j]].end();
             ++it)
         {
             (*it) = spectre[2 * (it - this->data[chanList[j]].begin()) ] / (fftLength * sqrt(norm1));
         }
-//        cout << "reassgn time = " << myTime.elapsed()/1000. << " sec" << endl;
-//        cout << endl;
     }
-    this->writeEdfFile(newPath);
-    cout << "refilterData: time = " << myTime.elapsed()/1000. << " sec ";
+    if(!newPath.isEmpty())
+    {
+        this->writeEdfFile(newPath);
+    }
+    cout << "refilter: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag) const // [start, finish)

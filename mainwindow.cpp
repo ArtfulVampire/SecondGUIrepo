@@ -1760,6 +1760,39 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
+    globalEdf.setMatiFlag(false);
+//    globalEdf.readEdfFile("/media/Files/Data/AAX/AAX_rr_f.edf");
+
+//    globalEdf.readEdfFile("/media/Files/Data/Galya/M35_CE_5.EDF");
+//    cout << globalEdf.getDataLen() << endl;
+//    cout << fractalDimension(globalEdf.getData()[0].data(),
+//                                     globalEdf.getDataLen(),
+//                                     QString("/media/Files/Data/AAX/d2Dim_0.jpg")) << endl;
+//    exit(0);
+
+
+//    for(int i = 0; i < 19; ++i)
+//    {
+//        cout << fractalDimension(globalEdf.getData()[i].data(),
+//                                 globalEdf.getDataLen(),
+//                                 QString("/media/Files/Data/AAX/d2Dim_" + QString::number(i) +".jpg")) << endl;
+//    }
+//    exit(0);
+
+
+
+//    for(int i = 20; i < 500; i+= 20)
+//    {
+//        cout << i << "\t" <<
+//                enthropy(globalEdf.getData()[10].data(),
+//                globalEdf.getDataLen(),
+//                i) << endl;
+//    }
+
+
+
+    GalyaProcessing();
+    exit(0);
 //    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr.edf");
 //    readData();
 //    refilterData(5., 20., "/media/Files/Data/Mati/SDA/SDA_f_new.edf");

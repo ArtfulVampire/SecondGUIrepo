@@ -576,14 +576,21 @@ int len(QString s) //lentgh till double \0-byte for EDF+annotations
     return -1;
 }
 
-double fractalDimension(double *arr, int N)
+double fractalDimension(const double * arr, int N, const QString &picPath)
 {
     int timeShift; //timeShift
-    double L; //average length
+    long double L = 0.; //average length
+    long double tempL = 0.;
+    long double coeff = 0.;
 
-    int minLimit = 2;
-    int maxLimit = floor(log(sqrt(N)) * 4. - 5.);
+    /// what are the limits?
+    int maxLimit = floor( log(sqrt(N)) * 4. - 5.);
 
+    maxLimit = 100;
+
+    int minLimit = max(maxLimit - 10, 3);
+
+    minLimit = 15;
 
     double * drawK = new double [maxLimit - minLimit];
     double * drawL = new double [maxLimit - minLimit];
@@ -592,43 +599,75 @@ double fractalDimension(double *arr, int N)
     {
         timeShift = h;
         L = 0.;
-        for(int m = 0; m < timeShift; ++m)
+        for(int m = 0; m < timeShift; ++m) // m = startShift
         {
+            tempL = 0.;
+            coeff = (N - 1) / (floor((N - m) / timeShift)) / timeShift;
             for(int i = 1; i < floor((N - m) / timeShift); ++i)
             {
-                L += fabs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]);
+                tempL += fabs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]) * coeff;
+
             }
-            L = L * (N - 1) / (floor((N - m) / timeShift) * timeShift);
+            L += tempL / timeShift;
         }
-        L /= timeShift;
         drawK[h - minLimit] = log(timeShift);
         drawL[h - minLimit] = log(L);
+//        cout << drawK[h - minLimit] << '\t' << drawL[h - minLimit] << endl;
     }
 
     //least square approximation
-    double slope;
-    double *temp = new double [5];
-    for(int i = 0; i < 5; ++i)
+    double slope = covariance(drawK, drawL, maxLimit - minLimit) / covariance(drawK, drawK, maxLimit - minLimit);
+//    cout << "slope = " << slope << endl;
+
+    double drawX = 0.;
+    double drawY = 0.;
+    if(!picPath.isEmpty())
     {
-        temp[i] = 0.;
-    }
-    for(int h = 0; h < maxLimit - minLimit; ++h)
-    {
-        temp[0] += drawK[h]*drawL[h];
-        temp[1] += drawK[h];
-        temp[2] += drawL[h];
-        temp[3] += drawK[h]*drawK[h];
-        temp[4] += drawK[h];
-    }
-    for(int i = 0; i < 5; ++i)
-    {
-        temp[i] /= (maxLimit - minLimit);
+        QPixmap pic = QPixmap(800, 600);
+        QPainter pnt;
+        pic.fill();
+        pnt.begin(&pic);
+
+        pnt.setPen("black");
+        pnt.setBrush(QBrush("black"));
+
+        double minX = fmin(drawK[0], drawK[maxLimit - minLimit - 1]);
+        double maxX = fmax(drawK[0], drawK[maxLimit - minLimit - 1]);
+        double minY = fmin(drawL[0], drawL[maxLimit - minLimit - 1]);
+        double maxY = fmax(drawL[0], drawL[maxLimit - minLimit - 1]);
+        double lenX = maxX - minX;
+        double lenY = maxY - minY;
+
+        for(int h = 0; h < maxLimit - minLimit; ++h) // drawK, drawL [last] is bottom-left
+        {
+            drawX = fabs(drawK[h] - minX) / lenX * pic.width() - 3;
+            drawY = (1. - fabs(drawL[h] - minY) / lenY) * pic.height() - 3;
+            pnt.drawRect(QRect(int(drawX), int(drawY), 3, 3));
+        }
+
+        pnt.setPen("red");
+        pnt.setBrush(QBrush("red"));
+
+        // line passes (meanX, meanY)
+        double add = mean(drawL, maxLimit - minLimit) - slope * mean(drawK, maxLimit - minLimit);
+//        cout << "add = " << add << endl;
+
+        drawX = (1. - (slope * minX + add - minY) / lenY) * pic.height(); // startY
+        drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); // endY
+//        cout << drawX << '\t' << drawY << endl;
+
+        pnt.drawLine(0,
+                     drawX,
+                     pic.width(),
+                     drawY
+                     );
+
+        pnt.end();
+        pic.save(picPath, 0, 100);
+
+
     }
 
-    slope = (temp[0] - temp[1]*temp[2]) / (temp[3] - temp[1]*temp[1]); // ???????????????????
-    slope = -slope;
-
-    delete []temp;
     delete []drawK;
     delete []drawL;
     return slope;
@@ -903,11 +942,12 @@ double variance(const Typ &arr, int length, int shift, bool fromZero)
 {
     double sum1 = 0.;
     double m = mean(arr, length, shift);
+    double sign = (fromZero)?0.:1.;
     for(int i = 0; i < length; ++i)
     {
-        sum1 += pow((arr[i + shift] - m * (!fromZero)?1.:0.), 2.);
+        sum1 += pow((arr[i + shift] - m * sign), 2.);
     }
-    sum1 /= length;
+    sum1 /= length; // needed ?
     return sum1;
 }
 template double variance(const double * const &arr, int length, int shift, bool fromZero);
@@ -929,10 +969,9 @@ template <typename Typ>
 double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool fromZero)
 {
     double res = 0.;
-    double m1, m2;
-    m1 = mean(arr1, length, shift);
-    m2 = mean(arr2, length, shift);
-    int sign = (fromZero)?0:1;
+    double m1 = mean(arr1, length, shift);
+    double m2 = mean(arr2, length, shift);
+    double sign = (fromZero)?0.:1.;
     for(int i = 0; i < length; ++i)
     {
         res += (arr1[i + shift] - m1 * sign) *
@@ -1142,7 +1181,7 @@ void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength,
     {
         type = typeOfFileName(fileNames[i]);
         helpString = spectraDir + QDir::separator() + fileNames[i];
-        readSpectraFile(helpString, &data4, ns, spLength);
+        readSpectraFile(helpString, data4, ns, spLength);
         outStream << fileNames[i].toStdString() << endl;
 
         for(int l = 0; l < ns; ++l)
@@ -1188,7 +1227,7 @@ void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int 
     {
         type = typeOfFileName(fileNames[i]);
         helpString = spectraDir + QDir::separator() + fileNames[i];
-        readSpectraFile(helpString, &data4, ns, spLength);
+        readSpectraFile(helpString, data4, ns, spLength);
 
         for(int l = 0; l < ns; ++l)
         {
@@ -1321,9 +1360,8 @@ double minValue(double * arr, int length)
     return res;
 }
 
-double enthropy(double *arr, int N, int numOfRanges) // ~30 is ok
+double enthropy(const double * arr, const int N, const int numOfRanges) // ~30 is ok
 {
-//    numOfRanges = 50;
     double max_ = 0.;
     double min_ = 0.;
     double result = 0.;
@@ -1353,7 +1391,6 @@ double enthropy(double *arr, int N, int numOfRanges) // ~30 is ok
             result -= (tempCount/double(N)) * log(tempCount/double(N));
         }
     }
-
     return result;
 }
 
@@ -1676,10 +1713,16 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
     paint->end();
 }
 
-void hilbert( double * &arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double *& out, QString picPath)
+void hilbert( const double * arr,
+              int inLength,
+              double sampleFreq,
+              double lowFreq,
+              double highFreq,
+              double *& out,
+              QString picPath)
 {
 
-    int fftLen = int(pow(2., ceil(log(inLength)/log(2.))));
+    int fftLen = fftL(inLength); // int(pow(2., ceil(log(inLength)/log(2.))));
     out = new double [2*fftLen];
     double spStep = sampleFreq/fftLen;
 
@@ -1798,18 +1841,19 @@ void hilbert( double * &arr, int inLength, double sampleFreq, double lowFreq, do
 
 }
 
-void hilbertPieces(double * const arr,
+void hilbertPieces(const double * arr,
                    int inLength,
                    double sampleFreq,
                    double lowFreq,
                    double highFreq,
-                   double *& out,
+                   double * &outHilbert,
                    QString picPath)
 {
-    //do hilbert transform for the last fftLen bins
+    /// do hilbert transform for the last fftLen bins ???
 
     int fftLen = fftL(inLength) / 2;
-    out = new double [2*fftLen];
+    double * out = new double [2*fftLen]; // temp
+    outHilbert = new double [2*fftLen];
     double spStep = sampleFreq/fftLen;
 
     double * tempArr = new double [inLength];
@@ -1836,13 +1880,14 @@ void hilbertPieces(double * const arr,
     out[1] = 0.;
     out[fftLen] = 0.;
     out[fftLen+1] = 0.;
-    //end filtering
 
     four1(out-1, fftLen, -1);
     for(int i = 0; i < fftLen; ++i)
     {
-        filteredArr[i] = out[2*i]/fftLen*2;
+        filteredArr[i] = out[2*i] / fftLen*2;
     }
+    //end filtering
+
 
 
     //Hilbert via FFT
@@ -1862,14 +1907,13 @@ void hilbertPieces(double * const arr,
 
     for(int i = 0; i < fftLen; ++i)
     {
-        tempArr[i] = out[2*i+1]/fftLen*2; //hilbert
+        tempArr[i] = out[2*i+1] / fftLen*2; //hilbert
     }
     //end Hilbert via FFT
 
-
     for(int i = 0; i < fftLen; ++i)
     {
-        out[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
+        outHilbert[i] = pow(pow(tempArr[i], 2.) + pow(filteredArr[i], 2.), 0.5);
     }
 
 
@@ -1877,7 +1921,6 @@ void hilbertPieces(double * const arr,
 
 
     //second piece
-
     for(int i = 0; i < fftLen; ++i)
     {
         out[ 2 * i + 0] = arr[i + inLength-fftLen];
@@ -1899,13 +1942,13 @@ void hilbertPieces(double * const arr,
     out[1] = 0.;
     out[fftLen] = 0.;
     out[fftLen+1] = 0.;
-    //end filtering
 
     four1(out-1, fftLen, -1);
     for(int i = 0; i < fftLen; ++i)
     {
-        filteredArr[i + inLength - fftLen] = out[2*i]/fftLen*2;
+        filteredArr[i + inLength - fftLen] = out[2*i] / fftLen*2;
     }
+    //end filtering
 
 
     //Hilbert via FFT
@@ -1924,14 +1967,29 @@ void hilbertPieces(double * const arr,
 
     for(int i = 0; i < fftLen; ++i)
     {
-        tempArr[i + inLength - fftLen] = out[2*i+1]/fftLen*2; //hilbert
+        tempArr[i + inLength - fftLen] = out[2*i+1] / fftLen*2; //hilbert
     }
     //end Hilbert via FFT
 
 
-    for(int i = 0; i < inLength; ++i)
+    int startReplace = 0;
+    double minD = 100.;
+
+    double helpDouble = 0.;
+    for(int i = inLength - fftLen; i < fftLen; ++i)
     {
-        out[i] = sqrt(tempArr[i]*tempArr[i] + filteredArr[i]*filteredArr[i]);
+        helpDouble = outHilbert[i] - pow(pow(tempArr[i], 2.) +
+                                  pow(filteredArr[i], 2.), 0.5);
+        if(fabs(helpDouble) <= fabs(minD))
+        {
+            minD = helpDouble;
+            startReplace = i;
+        }
+    }
+
+    for(int i = startReplace; i < inLength; ++i)
+    {
+        outHilbert[i] = pow(pow(tempArr[i], 2.) + pow(filteredArr[i], 2.), 0.5);
     }
 
 
@@ -1959,8 +2017,16 @@ void hilbertPieces(double * const arr,
         pnt.setPen("green");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            pnt.drawLine(i, pic.height()/2. - enlarge * out[i], i+1, pic.height()/2. - enlarge * out[i+1]);
+            pnt.drawLine(i, pic.height()/2. - enlarge * outHilbert[i],
+                         i+1, pic.height()/2. - enlarge * outHilbert[i+1]);
         }
+
+        pnt.setPen("blue");
+        pnt.drawLine(startReplace, pic.height(),
+                     startReplace, 0.);
+//        pnt.drawLine(inLength - fftLen, pic.height(),
+//                     inLength - fftLen, 0.);
+
 
         pic.save(picPath, 0, 100);
         pic.fill();
@@ -1969,12 +2035,8 @@ void hilbertPieces(double * const arr,
         //end check draw
     }
 
-
-
-
     delete []tempArr;
     delete []filteredArr;
-
 }
 
 void bayesCount(double * dataIn, int length, int numOfIntervals, double *& out)
@@ -2709,7 +2771,7 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
 
 template <typename Typ>
 void writePlainData(QString outPath,
-                    const Typ & data,
+                    const Typ &data,
                     int ns,
                     int numOfSlices,
                     int start)
@@ -2840,205 +2902,36 @@ void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlice
     file.close();
 }
 
-template <typename Typ>
-QPixmap drawEeg( Typ dataD,
-                 int ns,
-                 int NumOfSlices,
-                 int freq,
-                 const QString & picPath,
-                 double norm,
-                 int blueChan,
-                 int redChan)
+
+void spectre(const double * data, const int &length, double *& spectr)
 {
-    QPixmap pic = QPixmap(NumOfSlices, 600);
-    pic.fill();
+    int fftLen = fftL(length); // nearest exceeding power of 2
+    double norm = fftLen/double(length);
 
-    QPainter * paint = new QPainter();
-    paint->begin(&pic);
-
-    QString colour;
-    int lineWidth = 2;
-
-
-    for(int c2 = 0; c2 < ns; ++c2)
+    double * tempSpectre = new double [2*fftLen];
+    for(int i = 0; i < length; ++i)
     {
-        if(c2 == blueChan)
-        {
-            colour = "blue";
-        }
-        else if(c2 == redChan)
-        {
-            colour = "red";
-        }
-        else
-        {
-            colour = "black";
-        }
-
-        paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
-
-        for(int c1 = 0; c1 < pic.width(); ++c1)
-        {
-            paint->drawLine(c1, (c2+1)*pic.height()/(ns+2) + dataD[c2][c1] / norm, c1+1, (c2+1)*pic.height()/(ns+2) + dataD[c2][c1+1] / norm);
-        }
+        tempSpectre[ 2 * i + 0] = data[i] * sqrt(norm);
+        tempSpectre[ 2 * i + 1] = 0.;
     }
-    norm = 1.;
-    paint->setPen(QPen(QBrush("black"), lineWidth));
-    for(int c3 = 0; c3 < NumOfSlices * 10 / 250; ++c3)
+    for(int i = length; i < fftLen; ++i)
     {
-        if(c3%10 == 0) norm = 20.;
-        else if(c3%5  == 0) norm = 15.;
-
-        paint->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
-        paint->drawText(c3 * freq, pic.height() - 35, QString::number(c3));
-        norm = 10.;
+        tempSpectre[ 2 * i + 0] = 0.;
+        tempSpectre[ 2 * i + 1] = 0.;
     }
+    four1(tempSpectre-1, fftLen, 1);
 
 
-    norm = 1;
-    pic.save(picPath, 0, 100);
-
-    paint->end();
-    delete paint;
-    return pic;
+    spectr = new double [fftLen/2];
+    for(int i = 0; i < fftLen/2; ++i )      //get the absolute value of FFT
+    {
+        spectr[ i ] = (pow(tempSpectre[ i * 2 ], 2.) +
+                pow(tempSpectre[ i * 2 + 1 ], 2.)) *
+                2. / (def::freq * fftLen);
+    }
 }
 
-
-template
-QPixmap drawEeg(double ** dataD,
-                int ns,
-                int NumOfSlices,
-                int freq,
-                const QString & picPath = "",
-                double norm = 1.,
-                int blueChan = -1,
-                int redChan = -1);
-
-template
-QPixmap drawEeg( mat dataD,
-                 int ns,
-                 int NumOfSlices,
-                 int freq,
-                 const QString & picPath,
-                 double norm,
-                 int blueChan,
-                 int redChan);
-
-template
-QPixmap drawEeg( matrix dataD,
-                 int ns,
-                 int NumOfSlices,
-                 int freq,
-                 const QString & picPath,
-                 double norm,
-                 int blueChan,
-                 int redChan);
-
-
-template <typename Typ>
-QPixmap drawEeg( Typ dataD,
-                 int ns,
-                 int startSlice,
-                 int endSlice,
-                 int freq,
-                 const QString & picPath,
-                 double norm,
-                 int blueChan,
-                 int redChan)
-{
-    int NumOfSlices = endSlice - startSlice;
-    QPixmap pic = QPixmap(NumOfSlices, 600);
-    pic.fill();
-
-    QPainter * paint = new QPainter();
-    paint->begin(&pic);
-
-    QString colour;
-    int lineWidth = 2;
-
-
-    for(int c2 = 0; c2 < ns; ++c2)
-    {
-//        if(ns >= 21 && ns < 25)
-//        {
-//            if(c2 == 19)        colour = "red";
-//            else if(c2 == 20)   colour = "blue";
-//            else colour = "black";
-//        }
-//        else
-//        {
-//            colour = "black";
-//        }
-//        if(ns == 23 && c2 == 21)
-//        {
-//            colour = "green";
-//        }
-        if(c2 == blueChan)
-        {
-            colour = "blue";
-        }
-        else if(c2 == redChan)
-        {
-            colour = "red";
-        }
-        else
-        {
-            colour = "black";
-        }
-
-        paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
-
-        for(int c1 = 0; c1 < pic.width(); ++c1)
-        {
-            paint->drawLine(c1,
-                            (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice] / norm,
-                            c1+1,
-                            (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice +1] / norm);
-        }
-    }
-    norm = 1.;
-    paint->setPen(QPen(QBrush("black"), lineWidth));
-    for(int c3 = 0; c3 < NumOfSlices * 10 / 250; ++c3)
-    {
-        if(c3%10 == 0) norm = 20.;
-        else if(c3%5  == 0) norm = 15.;
-
-        paint->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
-        paint->drawText(c3 * freq, pic.height() - 35, QString::number(c3));
-        norm = 10.;
-    }
-
-
-    norm = 1;
-    pic.save(picPath, 0, 100);
-
-    paint->end();
-    delete paint;
-    return pic;
-}
-
-template QPixmap drawEeg(double ** dataD,
-                         int ns,
-                         int startSlice,
-                         int endSlice,
-                         int freq,
-                         const QString & picPath = "",
-                         double norm = 1.,
-                         int blueChan = -1,
-                         int redChan = -1);
-
-template
-QPixmap drawEeg( mat dataD,
-                 int ns,
-                 int startSlice,
-                 int endSlice,
-                 int freq,
-                 const QString & picPath,
-                 double norm,
-                 int blueChan,
-                 int redChan);
-
-void readSpectraFile(QString filePath, double *** outData, int ns, int spLength)
+void readSpectraFile(QString filePath, double ** &outData, const int &ns, const int &spLength)
 {
     ifstream file(filePath.toStdString().c_str());
     if(!file.good())
@@ -3050,13 +2943,13 @@ void readSpectraFile(QString filePath, double *** outData, int ns, int spLength)
     {
         for(int j = 0; j < spLength; ++j)
         {
-            file >> (*outData)[i][j];
+            file >> outData[i][j];
         }
     }
     file.close();
 }
 
-void readSpectraFileLine(QString filePath, double **&outData, int ns, int spLength)
+void readSpectraFileLine(QString filePath, double * &outData, const int &ns, const int &spLength)
 {
     ifstream file(filePath.toStdString().c_str());
     if(!file.good())
@@ -3068,7 +2961,7 @@ void readSpectraFileLine(QString filePath, double **&outData, int ns, int spLeng
     {
         for(int j = 0; j < spLength; ++j)
         {
-            file >> (*outData)[i*spLength + j];
+            file >> outData[i*spLength + j];
         }
     }
     file.close();
@@ -3394,6 +3287,7 @@ double independence(double * const signal1, double * const signal2, int length)
     }
     return haupt;
 }
+
 double countAngle(double initX, double initY)
 {
     if(initX == 0.)
@@ -3456,7 +3350,8 @@ void calcSpectre(const inTyp &inSignal, int length, outTyp &outSpectre, const in
 template void calcSpectre(const double * const &inSignal, int length, double * &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
 template void calcSpectre(const double * const &inSignal, int length, vector <double> &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
 template void calcSpectre(const vector <double> &inSignal, int length, double * &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
-template void calcSpectre(const vector <double> &inSignal, int length, vector <double> &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
+template void calcSpectre(const vector <double> &inSignal, int length, vector <double> &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);                                         
+
 
 void calcSpectre(double ** &inData, int leng, const int &ns, double **& dataFFT, int * fftLength, const int &NumOfSmooth, const double &powArg)
 {
@@ -4546,6 +4441,203 @@ int matiCountDecimal(QString byteMarker)
     }
     return res;
 }
+
+
+
+template <typename Typ>
+QPixmap drawEeg( Typ dataD,
+                 int ns,
+                 int NumOfSlices,
+                 int freq,
+                 const QString & picPath,
+                 double norm,
+                 int blueChan,
+                 int redChan)
+{
+    QPixmap pic = QPixmap(NumOfSlices, 600);
+    pic.fill();
+
+    QPainter * paint = new QPainter();
+    paint->begin(&pic);
+
+    QString colour;
+    int lineWidth = 2;
+
+
+    for(int c2 = 0; c2 < ns; ++c2)
+    {
+        if(c2 == blueChan)
+        {
+            colour = "blue";
+        }
+        else if(c2 == redChan)
+        {
+            colour = "red";
+        }
+        else
+        {
+            colour = "black";
+        }
+
+        paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
+
+        for(int c1 = 0; c1 < pic.width(); ++c1)
+        {
+            paint->drawLine(c1, (c2+1)*pic.height()/(ns+2) + dataD[c2][c1] / norm, c1+1, (c2+1)*pic.height()/(ns+2) + dataD[c2][c1+1] / norm);
+        }
+    }
+    norm = 1.;
+    paint->setPen(QPen(QBrush("black"), lineWidth));
+    for(int c3 = 0; c3 < NumOfSlices * 10 / 250; ++c3)
+    {
+        if(c3%10 == 0) norm = 20.;
+        else if(c3%5  == 0) norm = 15.;
+
+        paint->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
+        paint->drawText(c3 * freq, pic.height() - 35, QString::number(c3));
+        norm = 10.;
+    }
+
+
+    norm = 1;
+    pic.save(picPath, 0, 100);
+
+    paint->end();
+    delete paint;
+    return pic;
+}
+
+template
+QPixmap drawEeg(double ** dataD,
+                int ns,
+                int NumOfSlices,
+                int freq,
+                const QString & picPath = QString(),
+                double norm = 1.,
+                int blueChan = -1,
+                int redChan = -1);
+
+template
+QPixmap drawEeg( mat dataD,
+                 int ns,
+                 int NumOfSlices,
+                 int freq,
+                 const QString & picPath,
+                 double norm,
+                 int blueChan,
+                 int redChan);
+
+template
+QPixmap drawEeg( matrix dataD,
+                 int ns,
+                 int NumOfSlices,
+                 int freq,
+                 const QString & picPath,
+                 double norm,
+                 int blueChan,
+                 int redChan);
+
+
+template <typename Typ>
+QPixmap drawEeg( Typ dataD,
+                 int ns,
+                 int startSlice,
+                 int endSlice,
+                 int freq,
+                 const QString & picPath,
+                 double norm,
+                 int blueChan,
+                 int redChan)
+{
+    int NumOfSlices = endSlice - startSlice;
+    QPixmap pic = QPixmap(NumOfSlices, 600);
+    pic.fill();
+
+    QPainter * paint = new QPainter();
+    paint->begin(&pic);
+
+    QString colour;
+    int lineWidth = 2;
+
+
+    for(int c2 = 0; c2 < ns; ++c2)
+    {
+//        if(ns >= 21 && ns < 25)
+//        {
+//            if(c2 == 19)        colour = "red";
+//            else if(c2 == 20)   colour = "blue";
+//            else colour = "black";
+//        }
+//        else
+//        {
+//            colour = "black";
+//        }
+//        if(ns == 23 && c2 == 21)
+//        {
+//            colour = "green";
+//        }
+        if(c2 == blueChan)
+        {
+            colour = "blue";
+        }
+        else if(c2 == redChan)
+        {
+            colour = "red";
+        }
+        else
+        {
+            colour = "black";
+        }
+
+        paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
+
+        for(int c1 = 0; c1 < pic.width(); ++c1)
+        {
+            paint->drawLine(c1,
+                            (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice] / norm,
+                            c1+1,
+                            (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice +1] / norm);
+        }
+    }
+    norm = 1.;
+    paint->setPen(QPen(QBrush("black"), lineWidth));
+    for(int c3 = 0; c3 < NumOfSlices * 10 / 250; ++c3)
+    {
+        if(c3%10 == 0) norm = 20.;
+        else if(c3%5  == 0) norm = 15.;
+
+        paint->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
+        paint->drawText(c3 * freq, pic.height() - 35, QString::number(c3));
+        norm = 10.;
+    }
+
+
+    norm = 1;
+    pic.save(picPath, 0, 100);
+
+    paint->end();
+    delete paint;
+    return pic;
+}
+template QPixmap drawEeg(double ** dataD,
+                         int ns,
+                         int startSlice,
+                         int endSlice,
+                         int freq,
+                         const QString & picPath = QString(),
+                         double norm = 1.,
+                         int blueChan = -1,
+                         int redChan = -1);
+template
+QPixmap drawEeg( mat dataD,
+                 int ns,
+                 int startSlice,
+                 int endSlice,
+                 int freq,
+                 const QString & picPath,
+                 double norm,
+                 int blueChan,
+                 int redChan);
 
 
 

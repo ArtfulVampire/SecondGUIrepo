@@ -1013,8 +1013,8 @@ void MainWindow::ICA() //fastICA
 
 void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path, int mode)
 {
-
-    ////////////////////////////////////////////////////////////////////////////// TO REWORK ////////////////////////////////////////////////////
+#if 0
+    /////////////////////// REWORK read spectra in line
     //mode == 0 -> sequency by most stability
     //mode == 1 -> sequency by first File & no overwrite
     if(mode != 0 && mode != 1)
@@ -1428,6 +1428,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     matrixDelete(&dataFFT2, 3);
 
     cout << "ICsSequence ended. time = = " << myTime.elapsed()/1000. << " sec" << endl;
+#endif
 }
 void MainWindow::icaClassTest() //non-optimized
 {
