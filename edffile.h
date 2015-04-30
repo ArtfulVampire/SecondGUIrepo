@@ -46,7 +46,7 @@ struct edfChannel
         this->digMax = other.digMax;
         this->digMin = other.digMin;
         this->prefiltering = other.prefiltering;
-        this->nr = other.nr;
+      Z  this->nr = other.nr;
         this->reserved = other.reserved;
 
 #if DATA_POINTER_IN_CHANS
@@ -242,6 +242,7 @@ private:
 
     vector <edfChannel> channels;
     dataType data; // matrix.cpp
+
 #if DATA_POINTER
     dataType (*dataPointer) = &data;
 #endif
