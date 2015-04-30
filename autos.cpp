@@ -1816,8 +1816,11 @@ void MainWindow::GalyaProcessing()
 
     ofstream outStr;
     double helpDouble;
-    double * env;
-    double * envSpec;
+    vector<double> env;
+    vector<double> envSpec;
+    env.resize(525000);
+    envSpec.resize(525000); // ~2^19
+
     double sumSpec = 0.;
 
 
@@ -1919,9 +1922,9 @@ void MainWindow::GalyaProcessing()
                               1.,
                               35.,
                               env);
-                spectre(env,
-                        currEdf.getDataLen(),
-                        envSpec);
+                calcSpectre(env,
+                            currEdf.getDataLen(),
+                            envSpec);
 
                 helpDouble = 0.;
                 sumSpec = 0.;

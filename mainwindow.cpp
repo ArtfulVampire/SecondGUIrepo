@@ -487,7 +487,7 @@ void MainWindow::setEdfFileSlot()
     setEdfFile(helpString);
 }
 
-void MainWindow::setEdfFile(QString const filePath)
+void MainWindow::setEdfFile(QString const &filePath)
 {
     QString helpString;
     NumOfEdf = 0;
@@ -806,7 +806,6 @@ void MainWindow::readData()
 #if 1
 
     globalEdf.readEdfFile(helpString);
-
     ns = globalEdf.getNs();
     for(int i = 0; i < ns; ++i)
     {
@@ -1760,24 +1759,51 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
+    setEdfFile("/media/Files/Data/AAX/AAX_h.edf");
+    ui->matiCheckBox->setChecked(false);
+    ui->sliceCheckBox->setChecked(true);
+    ui->eyesCleanCheckBox->setChecked(false);
+
+    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
+    ui->reduceChannelsCheckBox->setChecked(false);
+
+    sliceAll();
+    return;
+
+
+
     globalEdf.setMatiFlag(false);
-//    globalEdf.readEdfFile("/media/Files/Data/AAX/AAX_rr_f.edf");
+    globalEdf.readEdfFile("/media/Files/Data/AAX/AAX_rr_f.edf");
+    mat newData;
+    int newLen = globalEdf.getDataLen();
+    newLen = 100000;
 
-//    globalEdf.readEdfFile("/media/Files/Data/Galya/M35_CE_5.EDF");
-//    cout << globalEdf.getDataLen() << endl;
-//    cout << fractalDimension(globalEdf.getData()[0].data(),
-//                                     globalEdf.getDataLen(),
-//                                     QString("/media/Files/Data/AAX/d2Dim_0.jpg")) << endl;
-//    exit(0);
+    newData.resize(globalEdf.getNs());
+    for(int i = 0; i < globalEdf.getNs(); ++i)
+    {
+        newData[i].resize(newLen);
+    }
 
-
-//    for(int i = 0; i < 19; ++i)
-//    {
-//        cout << fractalDimension(globalEdf.getData()[i].data(),
-//                                 globalEdf.getDataLen(),
-//                                 QString("/media/Files/Data/AAX/d2Dim_" + QString::number(i) +".jpg")) << endl;
-//    }
-//    exit(0);
+    for(int i = 0; i < 19; ++i)
+    {
+        hilbertPieces(globalEdf.getData()[i].data(),
+                      newLen,
+                      def::freq,
+                      5,
+                      20,
+                      newData[i]);
+    }
+    newData[19].assign(globalEdf.getData()[globalEdf.getMarkChan()].begin(),
+            globalEdf.getData()[globalEdf.getMarkChan()].begin() + newLen);
+    cout << "pew" << endl;
+    QList <int> chanList;
+    for(int i = 0; i < 19; ++i)
+    {
+        chanList << i;
+    }
+    chanList << globalEdf.getMarkChan();
+    globalEdf.writeOtherData(newData, "/media/Files/Data/AAX/AAX_h.edf", chanList);
+    exit(0);
 
 
 

@@ -142,7 +142,7 @@ public:
     void sliceOneByOne();
     void sliceOneByOneNew(int numChanWrite);
     void drawMap(double ** matrixA, int num);
-    void setEdfFile(const QString filePath);
+    void setEdfFile(const QString &filePath);
     void transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath);
     void reduceChannelsEDF(QString newFilePath);
     void constructEDF(QString newPath, QStringList nameFilters = QStringList());

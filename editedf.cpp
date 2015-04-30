@@ -436,6 +436,7 @@ void MainWindow::reduceChannelsFast()
     QString helpString;
 #if 1
     globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
+    ns = globalEdf.getNs();
 #else
 
     // more general, but needs tons of additional memory

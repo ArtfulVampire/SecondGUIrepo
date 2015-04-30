@@ -1,7 +1,9 @@
 #ifndef EDFFILE_H
 #define EDFFILE_H
+
 #define DATA_IN_CHANS 0
 #define DATA_POINTER_IN_CHANS 0
+#define DATA_POINTER 1
 
 #include "library.h"
 
@@ -24,6 +26,7 @@ struct edfChannel
 #if DATA_IN_CHANS
     vector <double> * dataP;
 #endif
+
 #if DATA_IN_CHANS
     vector <double> data;
 #endif
@@ -49,6 +52,7 @@ struct edfChannel
 #if DATA_POINTER_IN_CHANS
         this->dataP = other.dataP;
 #endif
+
 #if DATA_IN_CHANS
         this->data = other.data;
 #endif
@@ -238,7 +242,10 @@ private:
 
     vector <edfChannel> channels;
     dataType data; // matrix.cpp
+#if DATA_POINTER
     dataType (*dataPointer) = &data;
+#endif
+
 
     int staSlice = 0; // yet not useful
     int dataLength = 0;
@@ -267,11 +274,7 @@ public:
     const vector <QString> & getPrefiltering() const {return prefiltering;}
     const vector <double> & getNr() const {return nr;}
     const vector <QString> & getReserved() const {return reserved;}
-    const dataType & getData() const {return data;}
-    void setData(int chanNum, int timeBin, double val) {data[chanNum][timeBin] = val;}
     const QString & getHeaderRest() const {return headerRest;}
-
-    void getDataCopy(dataType & destination) const {destination = data;}
     const vector <edfChannel> & getChannels() const {return channels;}
 
     const int &getDataLen() const {return dataLength;}
@@ -298,6 +301,27 @@ public:
         }
     }
 
+    // operations with data
+#if DATA_POINTER
+    const dataType & getData() const {return (*dataPointer);}
+    void setData(int chanNum, int timeBin, double val) {(*dataPointer)[chanNum][timeBin] = val;}
+    void getDataCopy(dataType & destination) const {destination = (*dataPointer);}
+
+    void getDataCopy(double ** & dest) const
+    {
+        for(int i = 0; i < this->ns; ++i)
+        {
+            memcpy(dest[i],
+                   (*this->dataPointer)[i].data(),
+                   this->dataLength * sizeof(double));
+        }
+    }
+#else
+
+    const dataType & getData() const {return data;}
+    void setData(int chanNum, int timeBin, double val) {data[chanNum][timeBin] = val;}
+    void getDataCopy(dataType & destination) const {destination = data;}
+
     void getDataCopy(double ** & dest) const
     {
         for(int i = 0; i < this->ns; ++i)
@@ -305,6 +329,7 @@ public:
             memcpy(dest[i], this->data[i].data(), this->dataLength * sizeof(double));
         }
     }
+#endif
 
 };
 

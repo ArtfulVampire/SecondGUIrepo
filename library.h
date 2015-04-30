@@ -90,8 +90,15 @@ void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int chan
 double fractalDimension(const double *arr, int N, const QString &picPath = QString());
 double enthropy(const double *arr, const int N, const int numOfRanges = 30); // not finished?
 void four1(double * dataF, int nn, int isign);
-void hilbert(const double *arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double *& out, QString picPath  = QString());
-void hilbertPieces(const double *arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double *& out, QString picPath = QString());
+void hilbert(const double *arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double * &out, QString picPath  = QString());
+template <typename Typ>
+void hilbertPieces(const double *arr,
+                   int inLength,
+                   double sampleFreq,
+                   double lowFreq,
+                   double highFreq,
+                   Typ &out,
+                   QString picPath = QString());
 void bayesCount(double * dataIn, int length, int numOfIntervals, double * &out);
 void kernelEst(double *arr, int length, QString picPath);
 void histogram(double *arr, int length, int numSteps, QString picPath);

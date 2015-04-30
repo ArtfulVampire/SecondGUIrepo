@@ -697,12 +697,13 @@ void MainWindow::sliceOneByOneNew(int numChanWrite) // deprecated numChanWrite -
     int j = 0;
     int h = 0; //h == 0 - 241, h == 1 - 247
     QString marker = "000";
+//    QTime myTime;
+//    myTime.start();
+//    int wholeTime = 0;
 
     const edfFile & fil = globalEdf;
-    double * markChanArr = new double [fil.getDataLen()];
-    memcpy(markChanArr,
-           fil.getData()[fil.getMarkChan()].data(),
-            fil.getDataLen() * sizeof(double));
+
+    const double * markChanArr = fil.getData()[fil.getMarkChan()].data();
 
     //200, 255, (241||247, num, 254, 255)
     for(int i = 0; i < ndr*nr[ns-1]; ++i)
@@ -736,7 +737,9 @@ void MainWindow::sliceOneByOneNew(int numChanWrite) // deprecated numChanWrite -
                                                   + slash() + ExpName
                                                   + "." + rightNumber(number, 4)
                                                   + "_" + marker);
+//            myTime.restart();
             fil.saveSubsection(j, i, helpString, true);
+//            wholeTime += myTime.elapsed();
 
             ui->progressBar->setValue(double(i)*100./ndr*nr[ns-1]);
             qApp->processEvents();
@@ -749,6 +752,7 @@ void MainWindow::sliceOneByOneNew(int numChanWrite) // deprecated numChanWrite -
             continue;
         }
     }
+//    cout << wholeTime/1000. << endl;
 }
 
 void MainWindow::sliceMatiSimple()

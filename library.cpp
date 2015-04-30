@@ -1841,19 +1841,20 @@ void hilbert( const double * arr,
 
 }
 
+template <typename Typ>
 void hilbertPieces(const double * arr,
                    int inLength,
                    double sampleFreq,
                    double lowFreq,
                    double highFreq,
-                   double * &outHilbert,
+                   Typ &outHilbert,
                    QString picPath)
 {
     /// do hilbert transform for the last fftLen bins ???
 
     int fftLen = fftL(inLength) / 2;
     double * out = new double [2*fftLen]; // temp
-    outHilbert = new double [2*fftLen];
+//    outHilbert = new double [2*fftLen];
     double spStep = sampleFreq/fftLen;
 
     double * tempArr = new double [inLength];
@@ -2038,6 +2039,22 @@ void hilbertPieces(const double * arr,
     delete []tempArr;
     delete []filteredArr;
 }
+template
+void hilbertPieces(const double * arr,
+                   int inLength,
+                   double sampleFreq,
+                   double lowFreq,
+                   double highFreq,
+                   vector<double> &outHilbert,
+                   QString picPath);
+template
+void hilbertPieces(const double * arr,
+                   int inLength,
+                   double sampleFreq,
+                   double lowFreq,
+                   double highFreq,
+                   double * &outHilbert,
+                   QString picPath);
 
 void bayesCount(double * dataIn, int length, int numOfIntervals, double *& out)
 {
@@ -2783,7 +2800,8 @@ void writePlainData(QString outPath,
     {
         for(int j = 0; j < ns; ++j)
         {
-            outStr << fitNumber(doubleRound(data[j][i + start], 4), 7) << '\t';
+//            outStr << fitNumber(doubleRound(data[j][i + start], 4), 7) << '\t';
+            outStr << data[j][i + start] << '\t';
         }
         outStr << '\n';
     }
@@ -3306,7 +3324,13 @@ double countAngle(double initX, double initY)
 }
 
 template <typename inTyp, typename outTyp>
-void calcSpectre(const inTyp &inSignal, int length, outTyp &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg)
+void calcSpectre(const inTyp &inSignal,
+                               int length,
+                               outTyp &outSpectre,
+                               const int & Eyes,
+                               int * fftLength,
+                               const int & NumOfSmooth,
+                               const double & powArg)
 {
     int fftLen = fftL(length);
     if (fftLength != nullptr)
