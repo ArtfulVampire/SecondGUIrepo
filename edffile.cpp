@@ -341,14 +341,14 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
             cout << "writeEdfFile: destination file already exists, REWRITE = \n" << EDFpath;
         }
         this->handleEdfFile(EDFpath, false);
-        cout << " write time = " << doubleRound( myTime.elapsed() / 1000., 2) << " sec";
+        cout << "write time = " << doubleRound( myTime.elapsed() / 1000., 2) << " sec";
         cout << endl;
 
     }
     else // if(asPLain)
     {
 #if DATA_POINTER
-        writePlainData(EDFpath, *this->dataPointer, this->ns, this->dataLength);
+        writePlainData(EDFpath, *(this->dataPointer), this->ns, this->dataLength);
 #else
         writePlainData(EDFpath, this->data, this->ns, this->dataLength);
 #endif
@@ -997,6 +997,9 @@ void edfFile::appendFile(QString addEdfPath, QString outPath) const
 
 void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only data concat
 {
+    // remake
+
+
     if(!outPath.isEmpty())
     {
         edfFile temp(*this);
@@ -1025,7 +1028,7 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
         temp.adjustArraysByChannels();
         temp.writeEdfFile(outPath);
     }
-    else // if(outPath.isEmpty()) // I dontKnow
+    else // if(outPath.isEmpty())
     {
         edfFile addEdf;
         addEdf.readEdfFile(addEdfPath);
@@ -1043,6 +1046,7 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
 #else
         for(int i = 0; i < this->ns; ++i)
         {
+            // cocncat data form addEdf
 #if DATA_POINTER
             (*(this->dataPointer))[i].resize( this->dataLength + addEdf.getDataLen() );
             memcpy((*(this->dataPointer))[i].data() + this->dataLength,
@@ -1054,6 +1058,7 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
                    addEdf.getData()[i].data(),
                    sizeof(double) * addEdf.getDataLen() );
 #endif
+            // no need to touch edfChannels
         }
 #endif
         this->adjustArraysByChannels();
@@ -1138,6 +1143,7 @@ void edfFile::refilter(const double &lowFreq, const double &highFreq, QString ne
     {
         this->writeEdfFile(newPath);
     }
+    delete []spectre;
     cout << "refilter: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 

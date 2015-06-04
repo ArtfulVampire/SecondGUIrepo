@@ -1759,85 +1759,64 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-    setEdfFile("/media/Files/Data/AAX/AAX_h.edf");
-    ui->matiCheckBox->setChecked(false);
-    ui->sliceCheckBox->setChecked(true);
-    ui->eyesCleanCheckBox->setChecked(false);
 
-    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
-    ui->reduceChannelsCheckBox->setChecked(false);
-
-    sliceAll();
     return;
+    // concat all mati sessions
 
-
-
-    globalEdf.setMatiFlag(false);
-    globalEdf.readEdfFile("/media/Files/Data/AAX/AAX_rr_f.edf");
-    mat newData;
-    int newLen = globalEdf.getDataLen();
-    newLen = 100000;
-
-    newData.resize(globalEdf.getNs());
-    for(int i = 0; i < globalEdf.getNs(); ++i)
-    {
-        newData[i].resize(newLen);
-    }
-
-    for(int i = 0; i < 19; ++i)
-    {
-        hilbertPieces(globalEdf.getData()[i].data(),
-                      newLen,
-                      def::freq,
-                      5,
-                      20,
-                      newData[i]);
-    }
-    newData[19].assign(globalEdf.getData()[globalEdf.getMarkChan()].begin(),
-            globalEdf.getData()[globalEdf.getMarkChan()].begin() + newLen);
-    cout << "pew" << endl;
-    QList <int> chanList;
-    for(int i = 0; i < 19; ++i)
-    {
-        chanList << i;
-    }
-    chanList << globalEdf.getMarkChan();
-    globalEdf.writeOtherData(newData, "/media/Files/Data/AAX/AAX_h.edf", chanList);
-    exit(0);
-
-
-
-//    for(int i = 20; i < 500; i+= 20)
+//    dir->cd("/media/Files/Data/Mati");
+//    QStringList dirLst = dir->entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
+//    for(QString & guy : dirLst)
 //    {
-//        cout << i << "\t" <<
-//                enthropy(globalEdf.getData()[10].data(),
-//                globalEdf.getDataLen(),
-//                i) << endl;
+//        dir->cd(guy);
+//        dir->cd("auxEdfs");
+
+//        QString helpString = dir->absolutePath() + slash() + guy + "_0.edf";
+//        if(!QFile::exists(helpString))
+//        {
+//            dir->cdUp();
+//            dir->cdUp();
+//            continue;
+//        }
+//        edfFile initFile;
+//        initFile.readEdfFile(helpString);
+//        helpString.replace("_0.edf", "_1.edf");
+//        initFile.concatFile(helpString);
+//        helpString.replace("_1.edf", "_2.edf");
+//        initFile.concatFile(helpString);
+
+//        dir->cdUp();
+//        QString helpString2 = dir->absolutePath() + slash() + guy + "_full.edf";
+//        initFile.writeEdfFile(helpString2);
+//        dir->cdUp();
 //    }
+//    exit(0);
+
+    // do the ICA
+    dir->cd("/media/Files/Data/Mati");
+    QStringList dirLst = dir->entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
+    for(QString & guy : dirLst)
+    {
+        if(guy == "ADA") continue;
+        dir->cd(guy);
+
+        QString helpString = dir->absolutePath() + slash() + guy + "_full.edf";
+        if(!QFile::exists(helpString))
+        {
+            dir->cdUp();
+            continue;
+        }
+        setEdfFile(helpString);
+        ICA();
+        dir->cdUp();
+
+    }
+    exit(0);
 
 
 
     GalyaProcessing();
     exit(0);
-//    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr.edf");
-//    readData();
-//    refilterData(5., 20., "/media/Files/Data/Mati/SDA/SDA_f_new.edf");
-//    exit(0);
-//    cout << areEqualFiles("/media/Files/Data/Mati/SDA/SDA_f_new.edf",
-//                          "/media/Files/Data/Mati/SDA/SDA_f_old.edf") << endl;     exit(0);
 
-
-//    // check saveSubsection
-//    setEdfFile("/media/Files/Data/Mati/PYV/PYV_rr_f.edf");
-//    readData();
-//    globalEdf.saveSubsection(0, 10000, "/media/Files/Data/Mati/PYV/PYV_ss_1.txt", true);
-//    globalEdf.saveSubsection(0, 10000, "/media/Files/Data/Mati/PYV/PYV_ss.edf", false);
-
-//    edfFile fil;
-//    fil.readEdfFile("/media/Files/Data/Mati/PYV/PYV_ss.edf");
-//    fil.writeEdfFile("/media/Files/Data/Mati/PYV/PYV_ss.txt", true);
-
-//    exit(7);
 
 #if 0
     double ** dataFFT = new double * [maxNs];

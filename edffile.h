@@ -46,7 +46,7 @@ struct edfChannel
         this->digMax = other.digMax;
         this->digMin = other.digMin;
         this->prefiltering = other.prefiltering;
-      Z  this->nr = other.nr;
+        this->nr = other.nr;
         this->reserved = other.reserved;
 
 #if DATA_POINTER_IN_CHANS

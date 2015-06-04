@@ -670,7 +670,7 @@ double fractalDimension(const double * arr, int N, const QString &picPath)
 
     delete []drawK;
     delete []drawL;
-    return slope;
+    return -slope;
 }
 
 
@@ -1591,12 +1591,27 @@ QString rightNumber(const unsigned int input, int N) // prepend zeros
 
 void drawArray(double * array, int length, QString outPath)
 {
-    QPixmap pic;
+    if(outPath.isEmpty()) return;
+
+    const double picH = 600;
+    const int penWidth = 2;
+
+    QPixmap pic(length, picH);
     pic.fill();
     QPainter pnt;
     pnt.begin(&pic);
 
     double maxVal = maxValue(array, length);
+    pnt.setPen(QPen(QBrush("black"), penWidth));
+    for(int i = 0; i < pic.width() - 1; ++i)
+    {
+        pnt.drawLine(i,
+                     pic.height() * (1. - array[i] / maxVal),
+                     i + 1,
+                     pic.height() * (1. - array[i + 1] / maxVal));
+    }
+    pnt.end();
+    pic.save(outPath, 0, 100);
 }
 
 void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC)
@@ -1854,7 +1869,6 @@ void hilbertPieces(const double * arr,
 
     int fftLen = fftL(inLength) / 2;
     double * out = new double [2*fftLen]; // temp
-//    outHilbert = new double [2*fftLen];
     double spStep = sampleFreq/fftLen;
 
     double * tempArr = new double [inLength];
@@ -2002,40 +2016,45 @@ void hilbertPieces(const double * arr,
         QPainter pnt;
         pic.fill();
         pnt.begin(&pic);
-        //    double sum, sum2;
-        double enlarge = 10.;
+        double maxVal = maxValue(filteredArr, inLength) * 1.1;
 
         pnt.setPen("black");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            pnt.drawLine(i, pic.height()/2. - enlarge * filteredArr[i], i+1, pic.height()/2. - enlarge * filteredArr[i+1]);
+            pnt.drawLine(i,
+                         pic.height()/2. * (1. - filteredArr[i] / maxVal),
+                         i+1,
+                         pic.height()/2. * (1. - filteredArr[i + 1] / maxVal)
+                    );
         }
-        pnt.setPen("blue");
-        for(int i = 0; i < pic.width()-1; ++i)
-        {
-            //        pnt.drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
-        }
+
+//        pnt.setPen("blue");
+//        for(int i = 0; i < pic.width()-1; ++i)
+//        {
+//            pnt.drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
+//        }
+
         pnt.setPen("green");
         for(int i = 0; i < pic.width()-1; ++i)
         {
-            pnt.drawLine(i, pic.height()/2. - enlarge * outHilbert[i],
-                         i+1, pic.height()/2. - enlarge * outHilbert[i+1]);
+            pnt.drawLine(i,
+                         pic.height()/2. * (1. - outHilbert[i] / maxVal),
+                         i+1,
+                         pic.height()/2. * (1. - outHilbert[i + 1] / maxVal)
+                    );
         }
 
         pnt.setPen("blue");
-        pnt.drawLine(startReplace, pic.height(),
-                     startReplace, 0.);
-//        pnt.drawLine(inLength - fftLen, pic.height(),
-//                     inLength - fftLen, 0.);
+        pnt.drawLine(startReplace,
+                     pic.height(),
+                     startReplace,
+                     0.);
 
-
-        pic.save(picPath, 0, 100);
-        pic.fill();
         pnt.end();
-        cout << "hilber drawn" << endl;
+        pic.save(picPath, 0, 100);
         //end check draw
     }
-
+    delete []out;
     delete []tempArr;
     delete []filteredArr;
 }
@@ -3352,7 +3371,8 @@ void calcSpectre(const inTyp &inSignal,
 
     for(int i = 0; i < fftLen/2; ++i )      //get the absolute value of FFT
     {
-        outSpectre[ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / (*fftLength); //0.004 = 1/250 generality
+        outSpectre[ i ] = (pow(spectre[ i * 2 ], 2) + pow(spectre[ i * 2 + 1 ], 2))
+                       * 2 /250. / fftLen; //0.004 = 1/250 generality
         outSpectre[ i ] = pow ( outSpectre[ i ], powArg );
     }
 
@@ -3371,10 +3391,10 @@ void calcSpectre(const inTyp &inSignal,
     }
     delete []spectre;
 }
-template void calcSpectre(const double * const &inSignal, int length, double * &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
-template void calcSpectre(const double * const &inSignal, int length, vector <double> &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
-template void calcSpectre(const vector <double> &inSignal, int length, double * &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);
-template void calcSpectre(const vector <double> &inSignal, int length, vector <double> &outSpectre, const int & Eyes, int * fftLength, const int & NumOfSmooth, const double & powArg);                                         
+template void calcSpectre(const double * const &inSignal, int length, double * &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 0, const double & powArg = 1.);
+template void calcSpectre(const double * const &inSignal, int length, vector <double> &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 0, const double & powArg = 1.);
+template void calcSpectre(const vector <double> &inSignal, int length, double * &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 0, const double & powArg = 1.);
+template void calcSpectre(const vector <double> &inSignal, int length, vector <double> &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 0, const double & powArg = 1.);
 
 
 void calcSpectre(double ** &inData, int leng, const int &ns, double **& dataFFT, int * fftLength, const int &NumOfSmooth, const double &powArg)

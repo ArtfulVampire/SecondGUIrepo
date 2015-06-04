@@ -159,12 +159,16 @@ void MainWindow::ICA() //fastICA
         return;
     }
 
+    //ns = 19
     ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
+
 
     double eigenValuesTreshold = pow(10., -ui->svdDoubleSpinBox->value());
     double vectorWTreshold = pow(10., -ui->vectwDoubleSpinBox->value());
 
     const int & fr = def::freq;
+
+
 
 
 //    dataICA - matrix of data
@@ -212,11 +216,9 @@ void MainWindow::ICA() //fastICA
     //components time-flow
     mat components;
     components.resize(ns+1);
-//    double ** components = new double * [ns + 1]; //+1 for markers channel
     for(int i = 0; i < ns + 1; ++i)
     {
         components[i].resize(ndr*fr);
-//        components[i] = new double [ndr*fr];
     }
     double ** dataICA;
     double * averages;
@@ -226,8 +228,8 @@ void MainWindow::ICA() //fastICA
     double * tempB;
 
 
-    //wtf is this?
-    components[ns-1] = globalEdf.getData()[globalEdf.getMarkChan()];
+    // save markers
+    components[ns] = globalEdf.getData()[globalEdf.getMarkChan()];
 
 
 
@@ -248,10 +250,11 @@ void MainWindow::ICA() //fastICA
         h = 0;
         for(int j = 0; j < ns; ++j)
         {
-            if(fabs(globalEdf.getData()[i][j]) == 0.) ++h;
+            if(fabs(globalEdf.getData()[j][i]) == 0.) ++h;
         }
         if(h == ns) Eyes += 1;
     }
+
     double realSignalFrac = (double(ndr*fr - Eyes)/(ndr*fr));
 
     double helpDouble = 0.;
@@ -276,7 +279,7 @@ void MainWindow::ICA() //fastICA
             covMatrix[i][j] = covariance(globalEdf.getData()[i].data(),
                                          globalEdf.getData()[j].data(),
                                          globalEdf.getDataLen());
-//            covMatrix[i][j] /= (ndr*fr); //should be -1 ?
+            covMatrix[i][j] /= (ndr*fr); //should be -1 ? needed for trace
         }
     }
 
@@ -303,13 +306,13 @@ void MainWindow::ICA() //fastICA
     double sum1, sum2; //temporary help values
     double dF, F;
     int counter;
-    double trace = 0.;
 
+    double trace = 0.;
     for(int j = 0; j < ns; ++j)
     {
         trace += covMatrix[j][j];
     }
-//    cout << "trace covMatrix = " << trace << endl;
+    cout << "trace covMatrix = " << trace << endl;
 
 
 //    cout << "start eigenValues processing" << endl;
@@ -353,13 +356,14 @@ void MainWindow::ICA() //fastICA
 //        cout<<"curr val = "<<k<<endl;
         while(1) //when stop approximate?
         {
+
             //countF - error
             F = 0.;
             for(int i = 0; i < ns; ++i)
             {
                 for(int j = 0; j < ndr*fr; ++j)
                 {
-                    F += 0.5*(dataICA[i][j]-tempB[j]*tempA[i])*(dataICA[i][j]-tempB[j]*tempA[i]);
+                    F += 0.5 * pow(dataICA[i][j] - tempB[j] * tempA[i], 2.);
                 }
             }
             //count vector tempB
@@ -369,8 +373,8 @@ void MainWindow::ICA() //fastICA
                 sum2 = 0.;
                 for(int i = 0; i < ns; ++i)
                 {
-                    sum1 += dataICA[i][j]*tempA[i];
-                    sum2 += tempA[i]*tempA[i];
+                    sum1 += dataICA[i][j] * tempA[i];
+                    sum2 += tempA[i] * tempA[i];
                 }
                 tempB[j] = sum1/sum2;
             }
@@ -382,8 +386,8 @@ void MainWindow::ICA() //fastICA
                 sum2 = 0.;
                 for(int j = 0; j < ndr*fr; ++j)
                 {
-                    sum1 += tempB[j]*dataICA[i][j];
-                    sum2 += tempB[j]*tempB[j];
+                    sum1 += tempB[j] * dataICA[i][j];
+                    sum2 += tempB[j] * tempB[j];
                 }
                 tempA[i] = sum1/sum2;
             }
@@ -398,7 +402,9 @@ void MainWindow::ICA() //fastICA
             }
             dF = (F-dF)/F;
             ++counter;
-            if(counter == 150)
+
+
+            if(counter == 50)
             {
                 break;
             }
@@ -482,7 +488,7 @@ void MainWindow::ICA() //fastICA
 
         cout << "numOfPC = " << k << "\t";
         cout << "value = " << eigenValues[k] << "\t";
-        cout << "disp = " << 100. * eigenValues[k]/trace << "\t";
+        cout << "disp = " << 100. * eigenValues[k] / trace << "\t";
         cout << "total = " << 100. * sum1/trace << "\t";
         cout << "iterations = " << counter << "\t";
         cout << myTime.elapsed()/1000. << " sec" << endl;
@@ -703,7 +709,7 @@ void MainWindow::ICA() //fastICA
             sum2 = sqrt(sum2);
             ++counter;
             if(sum2 < vectorWTreshold || 2 - sum2 < vectorWTreshold) break;
-            if(counter == 300) break;
+            if(counter == 100) break;
 
             /*
             qApp->processEvents();
@@ -928,6 +934,59 @@ void MainWindow::ICA() //fastICA
         }
     }
 
+    //ordering components by sum of squares of the matrixA coloumn
+    std::vector <std::pair <double, int>> colsNorms;
+    double sumSquares = 0.;
+    std::vector <double> explainedVariance;
+
+    for(int i = 0; i < ns; ++i) // w/o markers
+    {
+        helpDouble = 0.;
+        for(int j = 0; j < ns; ++j)
+        {
+            helpDouble += pow(matrixA[j][i], 2.);
+        }
+        sumSquares += helpDouble;
+        colsNorms.push_back(std::make_pair(helpDouble, i));
+    }
+    std::sort(colsNorms.begin(),
+              colsNorms.end(),
+              [](std::pair <double, int> i, std::pair <double, int> j)
+    {return i.first > j.first;});
+
+    for(int i = 0; i < ns; ++i)
+    {
+        cout << colsNorms[i].second << endl;
+    }
+
+    double * tempCol = new double [ns];
+    std::vector <double> tempComp;
+    for(int i = 0; i < ns - 1; ++i) // dont move the last
+    {
+        //swap cols and components
+
+        for(int j = 0; j < ns; ++j) // swap j'th elements in i'th and colsNorms[i].second'th cols
+        {
+            tempCol[j] = matrixA[j][i];
+            matrixA[j][i] = matrixA[j][ colsNorms[i].second ];
+            matrixA[j][ colsNorms[i].second ] = tempCol[j];
+        }
+        tempComp = components[i];
+        components[i] = components[ colsNorms[i].second ];
+        components[ colsNorms[i].second ] = tempComp;
+    }
+    delete []tempCol;
+
+//    for(int i = 0; i < ns; ++i)
+//    {
+//        explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
+//        cout << "comp = " << i+1 << "\t";
+//        cout << "explVar = " << explainedVariance[i] << endl;
+//    }
+    //end componets ordering
+
+
+
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ndr*fr; ++j)
@@ -975,12 +1034,9 @@ void MainWindow::ICA() //fastICA
 
 
     helpString = dir->absolutePath() + slash() + ExpName + "_ica.edf";
-    /// remake with dataType
-//    writeEdf(ui->filePathLineEdit->text(), components, helpString, ndr*def::freq);
-
-    ////to test
     QList <int> chanList;
     makeChanList(chanList);
+    cout << chanList << endl;
     globalEdf.writeOtherData(components, helpString, chanList);
 
     cout << "ICA ended. time = " << wholeTime.elapsed()/1000. << " sec" << endl;

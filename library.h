@@ -184,6 +184,10 @@ QPixmap drawEeg( Typ dataD,
                  int blueChan = -1,
                  int redChan = -1);
 
+
+void drawArray(double * array, int length, QString outPath);
+void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
+
 void readSpectraFile(QString filePath, double **&outData, const int &ns, const int &spLength);
 void readSpectraFileLine(QString filePath, double *&outData, const int &ns, const int &spLength);
 void readFileInLine(QString filePath, double **& outData, int len);
@@ -204,7 +208,7 @@ void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QStr
 void drawSpectra(double ** drawData, int ns, int start, int end, const QString & picPath);
 
 template <typename inTyp, typename outTyp>
-void calcSpectre(const inTyp &inSignal, int length, outTyp &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 15, const double & powArg = 1.);
+void calcSpectre(const inTyp &inSignal, int length, outTyp &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 0, const double & powArg = 1.);
 
 void spectre(const double * data, const int &length, double *& spectr);
 
@@ -260,8 +264,6 @@ void matrixDelete(double *** matrix, const int &i);
 void matrixDelete(int *** matrix, const int &i);
 void matrixPrint(double ** &mat, const int &i, const int &j);
 
-void drawArray(double * array, int length, QString outPath); ///////////////////////////////////////////to do
-void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
 vector<bool> matiCountByte(const double & marker);
 QString matiCountByteStr(const double & marker);

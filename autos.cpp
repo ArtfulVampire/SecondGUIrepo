@@ -1791,21 +1791,24 @@ void MainWindow::makeTestData()
 
 void MainWindow::GalyaProcessing()
 {
+    const QString procDirPath = "/media/Files/Data/Galya/TBI/severe TBI";
+
 
     const QString enthropyFileName = "entrop.txt";
     const QString d2dimFileName = "d2_dim.txt";
     const QString hilbertFileName = "med_freq.txt";
 
     const double leftFreqLim = 4.;
-    const double rightFreqLim = 24.;
+    const double rightFreqLim = 20.;
     const double stepFreq = 2.;
-    const double hilbertFreqLimit = 10.;
+    const double hilbertFreqLimit = 40.;
     const int numChan = 19;
 
     QString helpString;
     QString expName;
     QDir dir;
-    dir.cd("/media/Files/Data/Galya");
+    dir.cd(procDirPath);
+    dir.mkdir("out");
     QStringList filesList;
     filesList = dir.entryList(QStringList("*.EDF"), QDir::NoFilter, QDir::Size|QDir::Reversed);
 
@@ -1828,12 +1831,13 @@ void MainWindow::GalyaProcessing()
     {
         expName = filesList[i];
         expName.remove(".EDF");
+        cout << expName << endl;
 
         helpString = dir.absolutePath()
                 + slash() + filesList[i];
         initEdf.readEdfFile(helpString);
 
-        cout << expName << "\t" << initEdf.getDataLen() << endl;
+//        cout << expName << "\t" << initEdf.getDataLen() << endl;
 
 
         dir.cd("out");
@@ -1842,17 +1846,12 @@ void MainWindow::GalyaProcessing()
             freqCounter <= rightFreqLim;
             freqCounter += stepFreq)
         {
-
-            if(freqCounter != rightFreqLim) continue;
-
-
+//            cout << "freq = " << freqCounter << endl;
             currEdf = initEdf;
             if(freqCounter != rightFreqLim)
             {
                 currEdf.refilter(freqCounter, freqCounter + stepFreq);
             }
-
-
 
             // write d2 dimension
             helpString = dir.absolutePath()
@@ -1875,8 +1874,7 @@ void MainWindow::GalyaProcessing()
                     helpString.clear();
                 }
                 helpDouble = fractalDimension(currEdf.getData()[i].data(),
-                                              currEdf.getDataLen(),
-                                              helpString);
+                                              currEdf.getDataLen());
                 outStr << doubleRound(helpDouble, 4) << endl;
             }
             outStr.close();
@@ -1913,22 +1911,58 @@ void MainWindow::GalyaProcessing()
                         + "-" + QString::number(freqCounter + stepFreq);
             }
             helpString += "_" + hilbertFileName;
+
             outStr.open(helpString.toStdString().c_str());
             for(int i = 0; i < numChan; ++i)
             {
+                if(freqCounter == rightFreqLim)
+                {
+                    helpString = dir.absolutePath()
+                            + slash() + expName
+                            + "_" + QString::number(numChan)
+                            + "_hilbert.jpg";
+                }
+                else
+                {
+                    helpString.clear();
+                }
+
+                helpString.clear();
                 hilbertPieces(currEdf.getData()[i].data(),
                               currEdf.getDataLen(),
                               def::freq,
-                              1.,
-                              35.,
-                              env);
+                              1., // no difference
+                              40., // no difference
+                              env,
+                              helpString);
+
                 calcSpectre(env,
                             currEdf.getDataLen(),
                             envSpec);
+                envSpec[0] = 0.;
+
+                if(freqCounter <= rightFreqLim + stepFreq)
+                {
+                    helpString = dir.absolutePath()
+                            + slash() + expName
+                            + "_" + QString::number(freqCounter)
+                            + "_" + QString::number(numChan)
+                            + "_fSpec.jpg";
+                }
+                else
+                {
+                    helpString.clear();
+                }
+                helpString.clear();
+                drawArray(envSpec.data(),
+                          currEdf.getDataLen(),
+                          helpString);
+
+
 
                 helpDouble = 0.;
                 sumSpec = 0.;
-                for(int j = 1;
+                for(int j = 0;
                     j < fftLimit(hilbertFreqLimit, def::freq, fftL(currEdf.getDataLen()));
                     ++j)
                 {
@@ -1943,9 +1977,6 @@ void MainWindow::GalyaProcessing()
             outStr.close();
         }
         dir.cdUp();
-
-//        break;
-//        if(i == 3) break;
     }
 
 
