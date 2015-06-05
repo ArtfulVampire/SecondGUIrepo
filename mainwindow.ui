@@ -305,11 +305,22 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="matiCheckBox">
-         <property name="text">
-          <string>MATI</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_16">
+         <item>
+          <widget class="QCheckBox" name="matiCheckBox">
+           <property name="text">
+            <string>MATI</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="adjustPiecesCheckBox">
+           <property name="text">
+            <string>adjust</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_15">
@@ -1128,6 +1139,8 @@
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>label_22</zorder>
+   <zorder>matiCheckBox</zorder>
+   <zorder>adjustPiecesCheckBox</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

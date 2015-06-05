@@ -979,6 +979,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     int currStart;
     int currEnd;
     double pieceLength = ui->matiPieceLengthSpinBox->value();
+    bool adjustPieces = ui->adjustPiecesCheckBox->isChecked();
 
     dir->cd(globalEdf.getDirPath());
     edfFile fil;
@@ -1010,43 +1011,61 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                 else if(type == 2)  fileMark = "244";
                 else                fileMark = "254";
 
-                do
+                if(adjustPieces)
                 {
-                    currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
-
-                    if(type == 0 || type == 2)
-                    {
-                        // std::search
-                        while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 14) ||
-                                   matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) // while not (given answer OR session End)
-                        {
-                            --currEnd;
-                        }
-                    }
-                    else if(currEnd == dataLen) // should do nothing due to edfFile::cutZerosAtEnd
-                    {
-                        while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10)) ) // while not session end
-                        {
-                            --currEnd;
-                        }
-                    }
-
-                    if(currEnd <= currStart) // no count answers during pieceLength seconds
+                    do
                     {
                         currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
+
+                        if(type == 0 || type == 2)
+                        {
+                            // std::search
+                            while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 14) ||
+                                       matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) // while not (given answer OR session End)
+                            {
+                                --currEnd;
+                            }
+                        }
+                        else if(currEnd == dataLen) // should do nothing due to edfFile::cutZerosAtEnd
+                        {
+                            while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10)) ) // while not session end
+                            {
+                                --currEnd;
+                            }
+                        }
+
+                        if(currEnd <= currStart) // no count answers during pieceLength seconds
+                        {
+                            currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
+                        }
+
+                        // type and session already in the ExpName
+                        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                                              + slash() + "Realisations"
+                                                              + slash() + fil.getExpName()
+                                                              + "_" + rightNumber(pieceNum, 2)
+                                                              + '_' + fileMark);
+                        fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
+                        ++pieceNum;
+                        currStart = currEnd;
+
+                    } while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10) );
+                }
+                else
+                {
+                    while(currStart < dataLen)
+                    {
+                        currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
+                        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                                              + slash() + "Realisations"
+                                                              + slash() + fil.getExpName()
+                                                              + "_" + rightNumber(pieceNum, 2)
+                                                              + '_' + fileMark);
+                        fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
+                        ++pieceNum;
+                        currStart = currEnd;
                     }
-
-                    // type and session already in the ExpName
-                    helpString = QDir::toNativeSeparators(dir->absolutePath()
-                                                          + slash() + "Realisations"
-                                                          + slash() + fil.getExpName()
-                                                          + "_" + rightNumber(pieceNum, 2)
-                                                          + '.' + fileMark);
-                    fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
-                    ++pieceNum;
-                    currStart = currEnd;
-
-                } while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10) );
+                }
             }
         }
     }

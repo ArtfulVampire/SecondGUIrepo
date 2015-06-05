@@ -142,7 +142,8 @@ void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
 void drawRCP(double *values, int length);
 void countRCP(QString filename, QString picPath  = QString(), double *outMean = NULL, double *outSigma = NULL);
-void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
+//void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
+void svd(const mat & inData, mat & eigenVectors, vector <double> & eigenValues, double threshold = 1e-9);
 void makeCfgStatic(QString outFileDir, int NetLength = 19*247, QString FileName = "16sec19ch", int numOfOuts = 3, double lrate = 0.1, double error = 0.1, int temp = 10);
 
 

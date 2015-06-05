@@ -1760,9 +1760,9 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
 
-    return;
-    // concat all mati sessions
+//    return;
 
+    // concat all mati sessions
 //    dir->cd("/media/Files/Data/Mati");
 //    QStringList dirLst = dir->entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
 //    for(QString & guy : dirLst)
@@ -1796,7 +1796,7 @@ void MainWindow::customFunc()
     QStringList dirLst = dir->entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
     for(QString & guy : dirLst)
     {
-        if(guy == "ADA") continue;
+//        if(guy == "ADA") continue;
         dir->cd(guy);
 
         QString helpString = dir->absolutePath() + slash() + guy + "_full.edf";
@@ -1807,7 +1807,35 @@ void MainWindow::customFunc()
         }
         setEdfFile(helpString);
         ICA();
+
+
+        setEdfFile(dir->absolutePath() + slash() + guy + "_full_ica.edf");
+        cleanDirs();
+        sliceAll();
+
+        Spectre * sp = new Spectre(dir, ns, ExpName);
+        sp->countSpectra();
+        for(int i = 0; i < 4; ++i)
+        {
+            sp->compare();
+        }
+        sp->psaSlot();
+        sp->close();
+
+
+//        drawMapsOnSpectra(dir->absolutePath()
+//                          + slash() + "Help"
+//                          + slash() + ExpName.left(3)
+//                          + "_full_ica.jpg",
+//                          dir->absolutePath()
+//                          + slash() + "Help"
+//                          + slash() + ExpName.left(3)
+//                          + "_full_ica_wm.jpg",
+//                          dir->absolutePath() + slash() + "Help",
+//                          ExpName.left(3));
         dir->cdUp();
+
+//        return;
 
     }
     exit(0);

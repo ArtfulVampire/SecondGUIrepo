@@ -333,7 +333,10 @@ void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool
 }
 
 
-void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames)
+void drawMapsOnSpectra(QString spectraFilePath,
+                       QString outSpectraFilePath,
+                       QString mapsPath,
+                       QString mapsNames)
 {
     QPixmap pic;
     pic = QPixmap(spectraFilePath);
@@ -353,7 +356,7 @@ void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QStr
         helpString = mapsPath + QDir::separator() + mapsNames + "_map_" + QString::number(i) + "+.png";
         if(!QFile::exists(helpString))
         {
-            helpString = mapsPath + QDir::separator() + mapsNames + "_map_" + QString::number(i) + "-.png";
+            helpString.replace("+.png", "-.png");
             if(!QFile::exists(helpString))
             {
                 cout << "drawMapsOnSpectra: no map file found " << helpString.toStdString() << endl;
@@ -1726,6 +1729,268 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
         rangePicPath = helpString;
     }
     paint->end();
+}
+
+void svd(const mat & inData, mat & eigenVectors, vector <double> & eigenValues, double threshold)
+{
+    const int iterationsThreshold = 100;
+    const int ns = inData.size() - 1; // markers
+    const int dataLen = inData[0].size();
+    const int errorStep = 10;
+
+#define MATS 0
+#if MATS
+    mat tempData = inData;
+    mat covMatrix;
+    covMatrix.resize(ns);
+    for(int i = 0; i < ns; ++i)
+    {
+        covMatrix[i].resize(ns);
+    }
+#else
+    double ** tempData = new double * [ns];
+    double ** covMatrix = new double * [ns];
+    for(int i = 0; i < ns; ++i)
+    {
+        covMatrix[i] = new double [ns];
+        tempData[i] = new double [dataLen];
+        memcpy(tempData[i], inData[i].data(), sizeof(double) * dataLen);
+    }
+
+#endif
+
+
+//    vector <double> averages;
+    double * averages = new double [ns];
+    for(int i = 0; i < ns; ++i)
+    {
+//        averages.push_back(mean(inData[i].data(), dataLen));
+        averages[i] = mean(inData[i].data(), dataLen);
+    }
+    //count zeros
+    int h = 0;
+    int Eyes = 0;
+    for(int i = 0; i < dataLen; ++i)
+    {
+        h = 0;
+        for(int j = 0; j < ns; ++j)
+        {
+            if(fabs(inData[j][i]) == 0.) ++h;
+        }
+        if(h == ns) Eyes += 1;
+    }
+    double realSignalFrac = dataLen / double(dataLen - Eyes); ///deprecate!!!!!!
+
+    //subtract averages
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < dataLen; ++j)
+        {
+            if(tempData[i][j] != 0.)
+            {
+                tempData[i][j] = (tempData[i][j] - averages[i]) * realSignalFrac;
+            }
+        }
+    }
+    delete []averages;
+
+    //count covMatrix
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            covMatrix[i][j] = 0.;
+            covMatrix[i][j] = covariance(tempData[i],
+                                         tempData[j],
+                                         dataLen);
+            covMatrix[i][j] /= dataLen; //should be -1 ? needed for trace
+        }
+    }
+
+    double trace = 0.;
+    for(int i = 0; i < ns; ++i)
+    {
+        trace += covMatrix[i][i];
+    }
+
+    eigenValues.resize(ns);
+    eigenVectors.resize(ns);
+    for(int i = 0; i < ns; ++i)
+    {
+        eigenVectors[i].resize(ns);
+    }
+
+    double * tempA = new double [ns];
+    double * tempB = new double [dataLen];
+
+    double sum1, sum2; //temporary help values
+    double dF, F;
+    int counter;
+
+    QTime myTime;
+    myTime.start();
+    //counter j - for B, i - for A
+    for(int k = 0; k < ns; ++k)
+    {
+        myTime.restart();
+        dF = 0.5;
+        F = 1.0;
+
+        //set 1-normalized vector tempA
+        sum1 = 1. / sqrt(ns);
+        for(int i = 0; i < ns; ++i)
+        {
+            tempA[i] = sum1;
+        }
+        sum2 = 1. / sqrt(dataLen);
+        for(int j = 0; j < dataLen; ++j)
+        {
+            tempB[j] = sum2;
+        }
+
+
+        //approximate P[i] = tempA x tempB;
+        counter = 0;
+
+        while(1) //when stop approximate?
+        {
+
+            if((counter + 1) % errorStep == 0)
+            {
+                //countF - error
+                F = 0.;
+                for(int i = 0; i < ns; ++i)
+                {
+                    for(int j = 0; j < dataLen; ++j)
+                    {
+                        F += 0.5 * pow(tempData[i][j] - tempB[j] * tempA[i], 2.);
+                    }
+                }
+            }
+
+            //count vector tempB
+            sum2 = 0.;
+            for(int i = 0; i < ns; ++i)
+            {
+                sum2 += tempA[i] * tempA[i];
+            }
+            sum2 = 1. / sum2; // to save time, multiplication faster than division
+
+            for(int j = 0; j < dataLen; ++j)
+            {
+                sum1 = 0.;
+                for(int i = 0; i < ns; ++i)
+                {
+                    sum1 += tempData[i][j] * tempA[i];
+                }
+                tempB[j] = sum1 * sum2;
+            }
+
+            //count vector tempA
+
+            sum2 = 0.;
+            for(int j = 0; j < dataLen; ++j)
+            {
+                sum2 += tempB[j] * tempB[j];
+            }
+            sum2 = 1. / sum2; // to save time, multiplication faster than division
+
+            for(int i = 0; i < ns; ++i)
+            {
+                sum1 = 0.;
+                for(int j = 0; j < dataLen; ++j)
+                {
+                    sum1 += tempB[j] * tempData[i][j];
+                }
+                tempA[i] = sum1 * sum2;
+            }
+
+            if((counter + 1) % errorStep == 0)
+            {
+                dF = 0.;
+                for(int i = 0; i < ns; ++i)
+                {
+                    for(int j = 0; j < dataLen; ++j)
+                    {
+                        dF += 0.5 * pow((tempData[i][j] - tempB[j] * tempA[i]), 2.);
+                    }
+                }
+
+                dF = (F-dF)/F;
+            }
+
+
+            if(counter == iterationsThreshold)
+            {
+                break;
+            }
+            ++counter;
+            if(fabs(dF) < threshold) break; //crucial cap
+
+        }
+
+        //edit covMatrix
+        for(int i = 0; i < ns; ++i)
+        {
+            for(int j = 0; j < dataLen; ++j)
+            {
+                tempData[i][j] -= tempB[j] * tempA[i];
+            }
+        }
+
+        //count eigenVectors && eigenValues
+        sum1 = 0.;
+        sum2 = 0.;
+        for(int i = 0; i < ns; ++i)
+        {
+            sum1 += pow(tempA[i], 2.);
+        }
+        for(int j = 0; j < dataLen; ++j)
+        {
+            sum2 += pow(tempB[j], 2.);
+        }
+        eigenValues[k] = sum1 * sum2 / double(dataLen - 1.);
+
+        sum1 = 1. / sqrt(sum1);
+        for(int i = 0; i < ns; ++i)
+        {
+            tempA[i] *= sum1;
+        }
+
+        sum1 = 0.;
+        for(int i = 0; i <= k; ++i)
+        {
+            sum1 += eigenValues[i];
+        }
+
+        cout << "numOfPC = " << k << "\t";
+        cout << "value = " << eigenValues[k] << "\t";
+        cout << "disp = " << 100. * eigenValues[k] / trace << "\t";
+        cout << "total = " << 100. * sum1 / trace << "\t";
+        cout << "iterations = " << counter << "\t";
+        cout << myTime.elapsed()/1000. << " sec" << endl;
+
+        for(int i = 0; i < ns; ++i)
+        {
+            eigenVectors[i][k] = tempA[i]; //1-normalized coloumns
+        }
+    }
+
+#if !MATS
+    for(int i = 0; i < ns; ++i)
+    {
+        delete []tempData[i];
+        delete []covMatrix[i];
+    }
+    delete []tempData;
+    delete []covMatrix;
+#endif
+
+#if ARRS
+    delete []tempA;
+    delete []tempB;
+#endif
+
 }
 
 void hilbert( const double * arr,
@@ -4275,6 +4540,7 @@ void makeCfgStatic(QString outFileDir, int NetLength, QString FileName, int numO
     fclose(cfgFile);
 }
 
+/*
 void svd(double ** inData, int size, int length, double *** eigenVects, double ** eigenValues) // not finished
 {
     double dF, F;
@@ -4401,6 +4667,9 @@ void svd(double ** inData, int size, int length, double *** eigenVects, double *
     }
 
 }
+
+                       */
+
 QString matiCountByteStr(const double & marker)
 {
     QString result;

@@ -172,7 +172,6 @@ void MainWindow::ICA() //fastICA
 
 
 //    dataICA - matrix of data
-//    centeredMatrix - matrix of centered data: data[i][j] -= average[j]
 //    random quantity is a amplitude-vector of ns dimension
 //    there are ndr*nr samples of this random quantity
 //        covMatrix - matrix of covariations of different components of the random quantity. Its size is ns*ns
@@ -184,14 +183,9 @@ void MainWindow::ICA() //fastICA
 //    cout << "ndr*fr = " << ndr*fr << endl;
 
     double ** covMatrix = new double * [ns];
-    double ** centeredMatrix = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
         covMatrix[i] = new double [ns];
-    }
-    for(int i = 0; i < ns; ++i)
-    {
-        centeredMatrix[i] = new double [ndr*fr];
     }
 
     //vectors for the las stage
@@ -220,12 +214,6 @@ void MainWindow::ICA() //fastICA
     {
         components[i].resize(ndr*fr);
     }
-    double ** dataICA;
-    double * averages;
-    double * eigenValues;
-    double ** eigenVectors;
-    double * tempA;
-    double * tempB;
 
 
     // save markers
@@ -236,7 +224,7 @@ void MainWindow::ICA() //fastICA
 
     //count covariations
     //count averages
-    averages = new double [ns];
+    double * averages = new double [ns];
     for(int i = 0; i < ns; ++i)
     {
         averages[i] = mean(globalEdf.getData()[i].data(), globalEdf.getDataLen());
@@ -292,216 +280,25 @@ void MainWindow::ICA() //fastICA
         }
     }
 
-
-    //count eigenvalues & eigenvectors of covMatrix
-    eigenValues = new double [ns];
-    eigenVectors = new double * [ns]; //vector is a coloumn
-    for(int j = 0; j < ns; ++j)
-    {
-        eigenVectors[j] = new double [ns];
-    }
-
-    tempA = new double [ns]; //i
-    tempB = new double [ndr*fr]; //j
+    int numOfPc = 0;
     double sum1, sum2; //temporary help values
-    double dF, F;
-    int counter;
-
-    double trace = 0.;
-    for(int j = 0; j < ns; ++j)
-    {
-        trace += covMatrix[j][j];
-    }
-    cout << "trace covMatrix = " << trace << endl;
-
-
-//    cout << "start eigenValues processing" << endl;
-    //count eigenValues & eigenVectors
-
-
-    //array for components
-    dataICA = new double * [ns];
+    int counter = 0;
+    double ** dataICA = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
         dataICA[i] = new double [ndr*fr];
-        memcpy(dataICA[i],
-               globalEdf.getData()[i].data(),
-               globalEdf.getDataLen() * sizeof(double));
     }
-    int numOfPc = 0;
 
+    // count eigenvalue decomposition
+    mat eigenVectors;
+    vector <double> eigenValues;
 
+    svd(globalEdf.getData(),
+        eigenVectors,
+        eigenValues,
+        eigenValuesTreshold);
 
-    //counter j - for B, i - for A
-    for(int k = 0; k < ns; ++k)
-    {
-        myTime.restart();
-        dF = 1.0;
-        F = 1.0;
-
-        //set 1-normalized vector tempA
-        for(int i = 0; i < ns; ++i)
-        {
-            tempA[i] = 1./sqrt(ns);
-        }
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            tempB[j] = 1./sqrt(ndr*fr);
-        }
-
-
-
-        //approximate P[i] = tempA x tempB;
-        counter = 0;
-//        cout<<"curr val = "<<k<<endl;
-        while(1) //when stop approximate?
-        {
-
-            //countF - error
-            F = 0.;
-            for(int i = 0; i < ns; ++i)
-            {
-                for(int j = 0; j < ndr*fr; ++j)
-                {
-                    F += 0.5 * pow(dataICA[i][j] - tempB[j] * tempA[i], 2.);
-                }
-            }
-            //count vector tempB
-            for(int j = 0; j < ndr*fr; ++j)
-            {
-                sum1 = 0.;
-                sum2 = 0.;
-                for(int i = 0; i < ns; ++i)
-                {
-                    sum1 += dataICA[i][j] * tempA[i];
-                    sum2 += tempA[i] * tempA[i];
-                }
-                tempB[j] = sum1/sum2;
-            }
-
-            //count vector tempA
-            for(int i = 0; i < ns; ++i)
-            {
-                sum1 = 0.;
-                sum2 = 0.;
-                for(int j = 0; j < ndr*fr; ++j)
-                {
-                    sum1 += tempB[j] * dataICA[i][j];
-                    sum2 += tempB[j] * tempB[j];
-                }
-                tempA[i] = sum1/sum2;
-            }
-
-            dF = 0.;
-            for(int i = 0; i < ns; ++i)
-            {
-                for(int j = 0; j < ndr*fr; ++j)
-                {
-                    dF += 0.5 * pow((dataICA[i][j] - tempB[j] * tempA[i]), 2.);
-                }
-            }
-            dF = (F-dF)/F;
-            ++counter;
-
-
-            if(counter == 50)
-            {
-                break;
-            }
-            if(fabs(dF) < eigenValuesTreshold) break; //crucial cap
-
-            qApp->processEvents();
-            if(stopFlag == 1)
-            {
-                cout << "ICA stopped by user" << endl;
-                stopFlag = 0;
-                if(1)
-                {
-                    //clear memory
-                    for(int i = 0; i < ns; ++i)
-                    {
-                        delete [] covMatrix[i];
-                        delete [] centeredMatrix[i];
-                        delete [] eigenVectors[i];
-                        delete [] vectorW[i];
-                        delete [] matrixA[i];
-                        delete [] dataICA[i];
-                    }
-                    delete [] centeredMatrix;
-                    delete [] covMatrix;
-                    delete [] eigenVectors;
-                    delete [] averages;
-                    delete [] eigenValues;
-                    delete [] tempA;
-                    delete [] tempB;
-                    delete [] vectorOld;
-                    delete [] tempVector;
-                    delete [] vectorW;
-                    delete [] matrixA;
-                    delete [] dataICA;
-
-                }
-                return;
-            }
-        }
-//        cout<<"val № " << k <<" dF = "<<abs(dF)<< " counter = " << counter << endl;
-
-        //edit covMatrix
-        for(int i = 0; i < ns; ++i)
-        {
-            for(int j = 0; j < ndr*fr; ++j)
-            {
-                dataICA[i][j] -= tempB[j] * tempA[i];
-            }
-        }
-
-        //count eigenVectors && eigenValues
-        sum1 = 0.;
-        sum2 = 0.;
-        for(int i = 0; i < ns; ++i)
-        {
-            sum1 += pow(tempA[i], 2.);
-        }
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            sum2 += pow(tempB[j], 2.);
-        }
-        for(int i = 0; i < ns; ++i)
-        {
-            tempA[i] /= sqrt(sum1);
-            //test equality of left and right singular vectors
-//            if((abs((tempB[i]-tempA[i])/tempB[i]))>threshold) cout << k << " " << i << " warning" << endl;  //till k==19 - OK
-        }
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            tempB[j] /= sqrt(sum2);
-        }
-
-        eigenValues[k] = sum1 * sum2 / double(ndr*fr - 1.);
-
-        sum1 = 0.;
-
-        for(int i = 0; i <= k; ++i)
-        {
-            sum1 += eigenValues[i];
-        }
-
-        cout << "numOfPC = " << k << "\t";
-        cout << "value = " << eigenValues[k] << "\t";
-        cout << "disp = " << 100. * eigenValues[k] / trace << "\t";
-        cout << "total = " << 100. * sum1/trace << "\t";
-        cout << "iterations = " << counter << "\t";
-        cout << myTime.elapsed()/1000. << " sec" << endl;
-
-
-        for(int i = 0; i < ns; ++i)
-        {
-            eigenVectors[i][k] = tempA[i]; //1-normalized
-        }
-
-    }
     numOfPc = ns;
-
 
 
     ofstream outStream;
@@ -511,7 +308,7 @@ void MainWindow::ICA() //fastICA
     {
         for(int j = 0; j < ns; ++j)
         {
-            outStream << eigenVectors[i][j] << "  ";
+            outStream << doubleRound(eigenVectors[i][j], 4) << "\t";
         }
         outStream << endl;
     }
@@ -528,55 +325,7 @@ void MainWindow::ICA() //fastICA
     }
     outStream.close();
 
-
-
-//    cout << "eigenVectors dot product= " << endl;
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        for(int j = 0; j < ns; ++j)
-//        {
-//            sum1 = 0.;
-//            for(int k = 0; k < ns; ++k)
-//            {
-//                sum1 += eigenVectors[i][k] * eigenVectors[j][k];
-
-//            }
-//            sum1 = int(sum1*100)/100.;
-//            cout << sum1 << "\t";
-//        }
-//        cout << endl;
-//    }
-//    cout<<endl;
-
-
-
-
-//    //matrix E * D^-0.5 * Et
-//    double ** tempMatrix = new double * [ns];
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        tempMatrix[i] = new double [ns];
-//    }
-
-//    double * tempVector = new double [ns];
-
-//    for(int i = 0; i < ns; ++i) //columns Et
-//    {
-//        for(int k = 0; k < ns; ++k) //rows E
-//        {
-
-//            tempVector[k] = 0.;
-//            for(int s = 0; s < ns; ++s) //counter
-//            {
-//                tempVector[k] += /*eigenVectors[k][s] * */ eigenVectors[s][i] / sqrt(eigenValues[k]);
-//            }
-//        }
-//        for(int s = 0; s < ns; ++s) //counter
-//        {
-//            tempMatrix[s][i] = tempVector[s];
-//        }
-
-//    }
+    cout << "time svd = " << wholeTime.elapsed()/1000. << " sec" << endl;
 
     //count linear decomposition on PCAs
     for(int j = 0; j < ndr*fr; ++j) //columns initData
@@ -723,12 +472,10 @@ void MainWindow::ICA() //fastICA
                     for(int i = 0; i < ns; ++i)
                     {
                         delete [] covMatrix[i];
-                        delete [] centeredMatrix[i];
                         delete [] eigenVectors[i];
                         delete [] matrixA[i];
                         delete [] dataICA[i];
                     }
-                    delete [] centeredMatrix;
                     delete [] covMatrix;
                     delete [] eigenVectors;
                     delete [] averages;
@@ -750,7 +497,7 @@ void MainWindow::ICA() //fastICA
         }
         cout << "NumOf vectorW component = " << i << "\t";
         cout << "iterations = " << counter << "\t";
-        cout << "error = " << fabs(sum2 - int(sum2+0.5)) << "\t";
+        cout << "error = " << fabs(sum2 - int(sum2 + 0.5)) << "\t";
         cout << "time = " << myTime.elapsed()/1000. << " sec" << endl;
 
     }
@@ -857,56 +604,22 @@ void MainWindow::ICA() //fastICA
 
     //test matrix A
 
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < ndr*fr; ++j)
-        {
-            sum1 = 0.;
-            for(int k = 0; k < ns; ++k)
-            {
-                sum1 += matrixA[i][k] * components[k][j];
-            }
-            if(fabs((globalEdf.getData()[i][j] - sum1) / globalEdf.getData()[i][j]) > 0.05
-                    && fabs(globalEdf.getData()[i][j]) > 0.5)
-            {
-                cout << i << "\t" << j << "\t";
-                cout << fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) << "\t";
-                cout << globalEdf.getData()[i][j] << endl;
-            }
-        }
-    }
-
-//    cout << "correlations of A*comps[i] and data[i]:" << endl;
-//    matrixProduct(matrixA, components, &dataICA, ns, ndr*fr);
 //    for(int i = 0; i < ns; ++i)
 //    {
-//        cout << correlation(dataICA[i], data[i], ndr*fr) << endl;
-//    }
-
-
-
-
-
-
-
-//    //norm components - by 1-length vector of mixing matrix
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        sum1 = 0.;
-
-//        for(int k = 0; k < ns; ++k)
-//        {
-//            sum1 += matrixA[k][i] * matrixA[k][i];
-//        }
-//        sum1 = sqrt(sum1);
-//        for(int k = 0; k < ns; ++k)
-//        {
-//            matrixA[k][i] /= sum1;
-//        }
-
 //        for(int j = 0; j < ndr*fr; ++j)
 //        {
-//            components[i][j] *= sum1;
+//            sum1 = 0.;
+//            for(int k = 0; k < ns; ++k)
+//            {
+//                sum1 += matrixA[i][k] * components[k][j];
+//            }
+//            if(fabs((globalEdf.getData()[i][j] - sum1) / globalEdf.getData()[i][j]) > 0.05
+//                    && fabs(globalEdf.getData()[i][j]) > 0.5)
+//            {
+//                cout << i << "\t" << j << "\t";
+//                cout << fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) << "\t";
+//                cout << globalEdf.getData()[i][j] << endl;
+//            }
 //        }
 //    }
 
@@ -977,12 +690,12 @@ void MainWindow::ICA() //fastICA
     }
     delete []tempCol;
 
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
-//        cout << "comp = " << i+1 << "\t";
-//        cout << "explVar = " << explainedVariance[i] << endl;
-//    }
+    for(int i = 0; i < ns; ++i)
+    {
+        explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
+        cout << "comp = " << i+1 << "\t";
+        cout << "explVar = " << explainedVariance[i] << endl;
+    }
     //end componets ordering
 
 
@@ -1009,7 +722,6 @@ void MainWindow::ICA() //fastICA
 
 
     //now matrixA is true Mixing matrix A*components = initialSignals
-
 //    //test - ok
 //    for(int i = 0; i < 30; ++i)
 //    {
@@ -1029,8 +741,14 @@ void MainWindow::ICA() //fastICA
 //    cout<<endl;
 
     //now should draw amplitude maps OR write to file
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "Help" + slash() + ExpName + "_maps.txt");
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + ExpName + "_maps.txt");
     writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
+    drawMapsICA(helpString,
+                ns,
+                helpString.left(helpString.lastIndexOf(slash())),
+                ExpName.left(3));
 
 
     helpString = dir->absolutePath() + slash() + ExpName + "_ica.edf";
@@ -1045,19 +763,12 @@ void MainWindow::ICA() //fastICA
     for(int i = 0; i < ns; ++i)
     {
         delete [] covMatrix[i];
-        delete [] centeredMatrix[i];
-        delete [] eigenVectors[i];
         delete [] vectorW[i];
         delete [] matrixA[i];
         delete [] dataICA[i];
     }
-    delete [] centeredMatrix;
     delete [] covMatrix;
-    delete [] eigenVectors;
     delete [] averages;
-    delete [] eigenValues;
-    delete [] tempA;
-    delete [] tempB;
     delete [] vectorOld;
     delete [] tempVector;
     delete [] vectorW;

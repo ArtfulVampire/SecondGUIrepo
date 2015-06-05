@@ -9,7 +9,7 @@
 
 using namespace std;
 
-typedef vector < vector <double> > dataType;
+typedef vector < vector <double> > mat;
 
 struct edfChannel
 {
@@ -206,7 +206,7 @@ public:
                        bool removeEogChannels = false,
                        QList <int> eegNums = QList <int>(),
                        QList <int> eogNums = QList <int>());
-    void writeOtherData(dataType &newData, QString outPath, QList<int> chanList = QList<int>());
+    void writeOtherData(mat &newData, QString outPath, QList<int> chanList = QList<int>());
     void writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList = QList<int>()) const;
     void fitData(int initSize);
     void cutZerosAtEnd();
@@ -241,10 +241,10 @@ private:
     QString headerRest = QString();
 
     vector <edfChannel> channels;
-    dataType data; // matrix.cpp
+    mat data; // matrix.cpp
 
 #if DATA_POINTER
-    dataType (*dataPointer) = &data;
+    mat (*dataPointer) = &data;
 #endif
 
 
@@ -304,9 +304,9 @@ public:
 
     // operations with data
 #if DATA_POINTER
-    const dataType & getData() const {return (*dataPointer);}
+    const mat & getData() const {return (*dataPointer);}
     void setData(int chanNum, int timeBin, double val) {(*dataPointer)[chanNum][timeBin] = val;}
-    void getDataCopy(dataType & destination) const {destination = (*dataPointer);}
+    void getDataCopy(mat & destination) const {destination = (*dataPointer);}
 
     void getDataCopy(double ** & dest) const
     {
@@ -319,9 +319,9 @@ public:
     }
 #else
 
-    const dataType & getData() const {return data;}
+    const mat & getData() const {return data;}
     void setData(int chanNum, int timeBin, double val) {data[chanNum][timeBin] = val;}
-    void getDataCopy(dataType & destination) const {destination = data;}
+    void getDataCopy(mat & destination) const {destination = data;}
 
     void getDataCopy(double ** & dest) const
     {

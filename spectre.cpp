@@ -45,7 +45,7 @@ Spectre::Spectre(QDir *dir_, int ns_, QString ExpName_) :
     group4->addButton(ui->grayRadioButton);
     group4->addButton(ui->colourRadioButton);
     ui->colourRadioButton->setChecked(true);
-    ui->grayRadioButton->setChecked(true);
+//    ui->grayRadioButton->setChecked(true);
 
 
     ui->amplitudeWaveletButton->setChecked(true);
@@ -353,6 +353,9 @@ void Spectre::specifyRange()
 //    RangeWidget * specWidget = new RangeWidget(NULL, ns, left, right, spStep, spLength, dirBC);
 //    specWidget->show();
 }
+
+
+// remake
 void Spectre::psaSlot()
 {
     dir->cd(dirBC->absolutePath());
@@ -362,8 +365,8 @@ void Spectre::psaSlot()
     double ***sp;
 
     FILE **f = new FILE * [3];
-    f[0]=fopen(ui->lineEdit_1->text().toStdString().c_str(), "r");
-    f[1]=fopen(ui->lineEdit_2->text().toStdString().c_str(), "r");
+    f[0] = fopen(ui->lineEdit_1->text().toStdString().c_str(), "r");
+    f[1] = fopen(ui->lineEdit_2->text().toStdString().c_str(), "r");
     if(f[0]==NULL)
     {
         QMessageBox::critical((QWidget*)this, tr("Critical"), tr("cannot open the first file"), QMessageBox::Ok);
@@ -385,6 +388,12 @@ void Spectre::psaSlot()
     }
     f[2] = fopen(helpString.toStdString().c_str(), "r");
 
+    if(f[2] == NULL)
+    {
+        helpString = dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append("_244.psa");
+    }
+    f[2] = fopen(helpString.toStdString().c_str(), "r");
+
     if(f[2] != NULL)
     {
         count = 3;
@@ -393,7 +402,7 @@ void Spectre::psaSlot()
     spL = new int [count];
     sp = new double ** [count];
 
-    for(int i=0; i<count; ++i)
+    for(int i = 0; i < count; ++i)
     {
 //        fscanf(f[i], "spLength %d", &spL[i]);
         spL[i] = spLength;
@@ -402,18 +411,17 @@ void Spectre::psaSlot()
 
     for(int k = 0; k < count; ++k)
     {
-        sp[k] = new double* [ns];
+        sp[k] = new double * [ns];
     }
 
 //    cout << "1" << endl;
     for(int k = 0; k < count; ++k)
     {
-        for(int i=0; i<ns; ++i)
+        for(int i = 0; i < ns; ++i)
         {
             sp[k][i] = new double [spL[k]];
         }
     }
-//    cout << "2" << endl;
 
     for(int k = 0; k < count; ++k)
     {
@@ -425,8 +433,6 @@ void Spectre::psaSlot()
             }
         }
     }
-//    cout << "3" << endl;
-
 
 
     QSvgGenerator svgGen;
@@ -447,49 +453,46 @@ void Spectre::psaSlot()
         pic.fill();
         paint->begin(&pic);
     }
+
+    double graphWidth = coords::scale * paint->device()->width();
+    double graphScale = spLength / graphWidth;
+
     //finding maximum magnitude
     norm = 0.;
-    for(int j=0; j<count; ++j)
+    for(int j = 0; j < count; ++j)
     {
-        for(int c2=0; c2<ns; ++c2)
+        for(int c2 = 0; c2 < ns - 1; ++c2) //w/o markers
         {
-            for(int k=0; k<int(coords::scale * paint->device()->width()); ++k)
+            for(int k = 0; k < spL[j]; ++k)
             {
-                norm = max(norm, sp[j][c2][int(k*spL[j]/(coords::scale * paint->device()->width()))]);  //doesn't work
+                norm = max(norm, sp[j][c2][k]);
             }
         }
     }
-//    cout << "max magnitude = " << norm << endl;
-
-//    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
-//    fprintf(res, "\n%.3lf\n", norm);
-//    fclose(res);
-
-    norm = (coords::scale * paint->device()->height())/norm ; //250 - pixels per graph, generality
-//    cout << "norm = " << norm << endl;
+    norm = (coords::scale * paint->device()->height()) / norm ; //250 - pixels per graph, generality
     norm *= ui->scalingDoubleSpinBox->value();
 
 
     int lineWidth = 3;
 
-    for(int c2=0; c2<ns; ++c2)  //exept markers channel
+    for(int c2 = 0; c2 < ns - 1; ++c2)  //exept markers channel
     {
         //draw spectra
-        for(int k=0; k<int(coords::scale * paint->device()->width())-1; ++k)
+        for(int k = 0; k < int(coords::scale * paint->device()->width()) - 1; ++k)
         {
-            for(int j=0; j<count; ++j)
+            for(int j = 0; j < count; ++j)
             {
                 if(ui->colourRadioButton->isChecked())
                 {
-                    if(j==0) paint->setPen(QPen(QBrush("blue"), lineWidth));
-                    if(j==1) paint->setPen(QPen(QBrush("red"), lineWidth));
-                    if(j==2) paint->setPen(QPen(QBrush("green"), lineWidth));
+                    if(j == 0) paint->setPen(QPen(QBrush("blue"), lineWidth));
+                    if(j == 1) paint->setPen(QPen(QBrush("red"), lineWidth));
+                    if(j == 2) paint->setPen(QPen(QBrush("green"), lineWidth));
                 }
                 if(ui->grayRadioButton->isChecked())
                 {
-                    if(j==0) paint->setPen(QPen(QBrush(QColor(0,0,0,255)), lineWidth)); // black
-                    if(j==1) paint->setPen(QPen(QBrush(QColor(90,90,90,255)), lineWidth)); // dark-gray
-                    if(j==2) paint->setPen(QPen(QBrush(QColor(180,180,180,255)), lineWidth)); // light-gray
+                    if(j == 0) paint->setPen(QPen(QBrush(QColor(0,0,0,255)), lineWidth)); // black
+                    if(j == 1) paint->setPen(QPen(QBrush(QColor(90,90,90,255)), lineWidth)); // dark-gray
+                    if(j == 2) paint->setPen(QPen(QBrush(QColor(180,180,180,255)), lineWidth)); // light-gray
                 }
                 paint->drawLine(QPointF(paint->device()->width() * coords::x[c2] + k,
                                         paint->device()->height()* coords::y[c2] - sp[j][c2][int(  k  *spL[j]/(coords::scale * paint->device()->width()))]*norm),
@@ -511,10 +514,18 @@ void Spectre::psaSlot()
                                 paint->device()->height() * coords::y[c2])); //250 - length of axes generality
 
         //draw Herzes
+        ////// REMAKE
         paint->setFont(QFont("Helvitica", int(8*(paint->device()->height()/1600.))));
-        for(int k=0; k<int(coords::scale * paint->device()->width()); ++k) //for every Hz generality
+
+        for(int k = 0; k < graphWidth; ++k) //for every Hz generality
         {
-            if( (left + k*(spLength)/(coords::scale * paint->device()->width()))*spStep - floor((left + k*(spLength)/(coords::scale * paint->device()->width()))*spStep) < spLength/(coords::scale * paint->device()->width())*spStep/2. || ceil((left + k*(spLength)/(coords::scale * paint->device()->width()))*spStep) - (left + k*(spLength)/(coords::scale * paint->device()->width()))*spStep < spLength/(coords::scale * paint->device()->width())*spStep/2.)  //why spLength - generality 250 - length of axes
+            if( (left + k * graphScale) * spStep
+                    - floor((left + k * graphScale) * spStep)
+                    < graphScale * spStep / 2.
+
+                    || ceil((left + k * graphScale) * spStep)
+                    - (left + k * graphScale) * spStep
+                    < graphScale * spStep / 2.)
             {
                 paint->drawLine(QPointF(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]), QPointF(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2] + 5 * (paint->device()->height()/1600.)));
 
@@ -536,7 +547,7 @@ void Spectre::psaSlot()
 
     //write channels labels
     paint->setFont(QFont("Helvetica", int(24*paint->device()->height()/1600.), -1, false));
-    for(int c2=0; c2<ns; ++c2)  //exept markers channel
+    for(int c2 = 0; c2 < ns - 1; ++c2)  //exept markers channel
     {
         helpString = QString(coords::lbl[c2]);
         helpString += " (" + QString::number(c2+1) + ")";
@@ -571,11 +582,9 @@ void Spectre::psaSlot()
     paint->end();
 
 
-
-
     for(int k = 0; k < count; ++k)
     {
-        for(int i=0; i<ns; ++i)
+        for(int i = 0; i < ns; ++i)
         {
             delete []sp[k][i];
         }
@@ -589,8 +598,6 @@ void Spectre::psaSlot()
 
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()+1);
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()-1);
-//    cout << "average spectra drawn" << endl << endl;
-
 }
 
 void Spectre::compare()
@@ -611,7 +618,6 @@ void Spectre::compare()
     }
     lst.clear();
     lst = dir->entryList(nameFilters, QDir::Files, QDir::Size);
-
     FILE * file;
     int NumOfPatterns = 0;
 
@@ -637,7 +643,9 @@ void Spectre::compare()
 
     for(int j = 0; j < lst.length(); ++j)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst.at(j));
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash()
+                                              + lst[j]);
         file = fopen(helpString.toStdString().c_str(), "r");
 
         if(file!=NULL)
@@ -655,79 +663,90 @@ void Spectre::compare()
         }
     }
     dir->cd(ui->lineEdit_2->text());  //output dir /Help
-    helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(ui->lineEdit_m2->text()).append(".psa");
+
 
 
     ////write AVspectra into .psa file
-    file = fopen(helpString.toStdString().c_str(), "w");
-    if(file == NULL)
+    if(NumOfPatterns != 0)
     {
-        cout << "cannot open file" << endl;
-        return;
-    }
-//    fprintf(file, "spLength %d\n", spLength);
-    double helpDouble = 0.;
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int k = 0; k < spLength; ++k)
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash()
+                                              + ui->lineEdit_m2->text()
+                                              + ".psa");
+        file = fopen(helpString.toStdString().c_str(), "w");
+        if(file == NULL)
         {
-            helpDouble = dataFFT[i][k]/double(NumOfPatterns);
-            fprintf(file, "%lf\n", helpDouble);
+            cout << "cannot open file" << endl;
+            return;
         }
-        fprintf(file, "\n");
-    }
-    fclose(file);
-    pic = QPixmap(1600, 1600);
-    pic.fill();
-    paint->begin(&pic);
-    double ext = spLength/def::freq;
-    for(int c2 = 0; c2 < ns; ++c2)
-    {
-        for(int k = 0; k < 250-1; ++k)
+        double helpDouble = 0.;
+        for(int i = 0; i < ns; ++i)
         {
-            //spectre itslef
-            paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - dataFFT[c2][int(k*ext)]/double(NumOfPatterns)*norm, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - dataFFT[c2][int((k+1)*ext)]/double(NumOfPatterns)*norm);
-        }
-
-        paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2]-250);
-        paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250, paint->device()->height() * coords::y[c2]);
-
-
-        paint->setFont(QFont("Helvitica", 8));
-        for(int k=0; k<250-1; ++k) //for every Hz generality
-        {
-//            paint->drawLine(paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2]+10);
-            if( (left + k*(spLength)/250.)*spStep - floor((left + k*(spLength)/250.)*spStep) < spLength/250.*spStep/2. || ceil((left + k*(spLength)/250.)*spStep) - (left + k*(spLength)/250.)*spStep < spLength/250.*spStep/2.)
+            for(int k = 0; k < spLength; ++k)
             {
-                paint->drawLine(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]+5);
+                helpDouble = dataFFT[i][k]/double(NumOfPatterns);
+                fprintf(file, "%lf\n", helpDouble);
+            }
+            fprintf(file, "\n");
+        }
+        fclose(file);
 
-                helpInt = int((left + k*(spLength)/250.)*spStep + 0.5);
-                helpString.setNum(helpInt);
-                if(helpInt<10)
+
+
+
+        pic = QPixmap(1600, 1600);
+        pic.fill();
+        paint->begin(&pic);
+        double ext = spLength/def::freq;
+        for(int c2 = 0; c2 < ns; ++c2)
+        {
+            for(int k = 0; k < 250-1; ++k)
+            {
+                //spectre itslef
+                paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - dataFFT[c2][int(k*ext)]/double(NumOfPatterns)*norm, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - dataFFT[c2][int((k+1)*ext)]/double(NumOfPatterns)*norm);
+            }
+
+            paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2]-250);
+            paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250, paint->device()->height() * coords::y[c2]);
+
+
+            paint->setFont(QFont("Helvitica", 8));
+            for(int k=0; k<250-1; ++k) //for every Hz generality
+            {
+                //            paint->drawLine(paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2]+10);
+                if( (left + k*(spLength)/250.)*spStep - floor((left + k*(spLength)/250.)*spStep) < spLength/250.*spStep/2. || ceil((left + k*(spLength)/250.)*spStep) - (left + k*(spLength)/250.)*spStep < spLength/250.*spStep/2.)
                 {
-                    paint->drawText(paint->device()->width() * coords::x[c2] + k-3, paint->device()->height() * coords::y[c2]+15, helpString);
-                }
-                else
-                {
-                    paint->drawText(paint->device()->width() * coords::x[c2] + k-5, paint->device()->height() * coords::y[c2]+15, helpString);
+                    paint->drawLine(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]+5);
+
+                    helpInt = int((left + k*(spLength)/250.)*spStep + 0.5);
+                    helpString.setNum(helpInt);
+                    if(helpInt<10)
+                    {
+                        paint->drawText(paint->device()->width() * coords::x[c2] + k-3, paint->device()->height() * coords::y[c2]+15, helpString);
+                    }
+                    else
+                    {
+                        paint->drawText(paint->device()->width() * coords::x[c2] + k-5, paint->device()->height() * coords::y[c2]+15, helpString);
+                    }
                 }
             }
+
+        }
+        paint->setFont(QFont("Helvetica", 24, -1, false));
+        for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel
+        {
+            paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]) + " " + QString::number(c2));
         }
 
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash()
+                                              + ui->lineEdit_m2->text()
+                                              + ".jpg");
+
+        pic.save(helpString, 0, 100);
+
+        paint->end();
     }
-
-    paint->setFont(QFont("Helvetica", 24, -1, false));
-    for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel
-    {
-        paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]) + " " + QString::number(c2));
-    }
-
-    helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(ui->lineEdit_m2->text()).append(".jpg");
-
-    //dont write average spectra
-//    pic.save(helpString, 0, 100);
-
-    paint->end();
 
     for(int i = 0; i < ns; ++i)
     {
@@ -746,15 +765,20 @@ void Spectre::compare()
             helpString.append("_247");
             ui->lineEdit_m2->setText(helpString);
         }
-
         else if(ui->lineEdit_m1->text().contains("247"))
+        {
+            ui->lineEdit_m1->setText("_244");
+            helpString = ExpName;
+            helpString.append("_244");
+            ui->lineEdit_m2->setText(helpString);
+        }
+        else if(ui->lineEdit_m1->text().contains("244"))
         {
             ui->lineEdit_m1->setText("_254");
             helpString = ExpName;
             helpString.append("_254");
             ui->lineEdit_m2->setText(helpString);
         }
-
         else if(ui->lineEdit_m1->text().contains("254"))
         {
 //            helpString = ui->lineEdit_1->text();
@@ -1016,10 +1040,10 @@ void Spectre::countSpectra()
     myTime.start();
     emit spValues(left, right, spStep);
 
-    dir->cd(ui->lineEdit_1->text());
+    dir->cd(ui->lineEdit_1->text()); // go to realisations
     nameFilters.clear();
-    lst=dir->entryList(QDir::Files, QDir::Name);
-    dir->cd(dirBC->absolutePath());
+    lst = dir->entryList(QDir::Files, QDir::Name);
+    dir->cd(dirBC->absolutePath()); // go back
 
     double ** dataFFT;
     dataFFT = new double * [ns];
@@ -1052,12 +1076,12 @@ void Spectre::countSpectra()
 
         //read data file
         dir->cd(ui->lineEdit_1->text());
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[a]));
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + lst[a]);
         readDataFile(helpString, &dataIn, ns, &NumOfSlices, fftLength);
         dir->cd(dirBC->absolutePath());
 
         dir->cd(ui->lineEdit_2->text());  //cd to output dir
-        helpString = QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
+        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + lst[a]);
         outStream.open(helpString.toStdString().c_str());
         if(!outStream.good())
         {
@@ -1067,7 +1091,6 @@ void Spectre::countSpectra()
                 delete []dataIn[i];
             }
             delete []dataIn;
-
 
             continue;
         }
@@ -1084,15 +1107,17 @@ void Spectre::countSpectra()
                 }
                 delete []dataIn;
 
-                helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(lst[a]);  /////separator
-                remove(helpString.toStdString().c_str());
+                helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                                      + slash()
+                                                      + lst[a]);
+                QFile::remove(helpString);
                 continue;
             }
 
             if(ui->spectraRadioButton->isChecked())
             {
                 // write spectra
-                for(int i = 0; i < ns; ++i)                               ///save BY CHANNELS!!!  except markers
+                for(int i = 0; i < ns; ++i) // what with markers
                 {
                     for(int k = left; k < right + 1; ++k)
                     {
