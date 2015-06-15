@@ -713,7 +713,13 @@ void MainWindow::diffPow()
 }
 
 
-double MainWindow::fileInnerClassification(QString workPath, QString fileName, QString cfgFileName, int NumOfPairs, bool windows, int wndLen, int tShift)
+double MainWindow::fileInnerClassification(QString workPath,
+                                           QString fileName,
+                                           QString cfgFileName,
+                                           int NumOfPairs,
+                                           bool windows,
+                                           int wndLen,
+                                           int tShift)
 {
     QString helpString;
 
@@ -729,7 +735,6 @@ double MainWindow::fileInnerClassification(QString workPath, QString fileName, Q
 
     QDir * tmpDir = new QDir();
     tmpDir->cd(workPath);
-    Net * ANN;
 
     if(!windows)
     {
@@ -747,9 +752,11 @@ double MainWindow::fileInnerClassification(QString workPath, QString fileName, Q
     cleanDirs();
     sliceAll();
 
+
     if(windows) countSpectraSimple(1024);
     else countSpectraSimple(4096);
 
+    Net * ANN;
     ANN = new Net(tmpDir, ns, left, right, spStep, ExpName);
     ANN->loadCfgByName(cfgFileName);
     ANN->setAutoProcessingFlag(true);
@@ -1235,7 +1242,13 @@ double MainWindow::filesDropComponents(QString workPath, QString fileName1, QStr
     return tempAccuracy;
 }
 
-double MainWindow::filesAddComponents(QString workPath, QString fileName1, QString fileName2, int NumOfRepeats, bool windows, int wndLen, int tShift)
+double MainWindow::filesAddComponentsCross(QString workPath,
+                                      QString fileName1,
+                                      QString fileName2,
+                                      int NumOfRepeats,
+                                      bool windows,
+                                      int wndLen,
+                                      int tShift)
 {
 
     QString helpString2;
@@ -1274,8 +1287,6 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
     bool foundFlag;
     QString logPath = tmpDir->absolutePath() + slash() + "addCompsLog.txt";
 
-
-
     channelsSet.clear();
     unneededChannels.clear();
 
@@ -1283,7 +1294,6 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
     //checkpercentage on the set of components (i, j, k)
     double initAccuracy = 0;
     int iS, jS, kS;
-    makeCfgStatic(workPath, 1*247, "Reduced");
 
     ofstream logF;
     logF.open(logPath.toStdString().c_str(), ios_base::app);
@@ -1305,7 +1315,7 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
                 channelsSet << j;
                 channelsSet << k;
 
-                makeCfgStatic(workPath, channelsSet.length()*247, "Reduced");
+                makeCfgStatic(workPath, channelsSet.length() * 247, "Reduced");
                 //drop some channels
                 helpString.clear();
                 for(int l = 0; l < 19; ++l)
@@ -1613,6 +1623,295 @@ double MainWindow::filesAddComponents(QString workPath, QString fileName1, QStri
     {
         logF << "FINAL SET" << endl;
         logF << ExpName.left(3).toStdString() << endl;
+        logF << "channelsSet:" << endl;
+        for(int q = 0; q < channelsSet.length(); ++q)
+        {
+            logF << channelsSet[q]+1 << "  ";
+        }
+        logF << endl << "unneededChannels:" <<endl;
+        for(int q = 0; q < unneededChannels.length(); ++q)
+        {
+            logF << unneededChannels[q]+1 << "  ";
+        }
+        logF << endl << "Accuracy = " << tempAccuracy << endl;
+        logF.close();
+    }
+    cleanDir(tmpDir->absolutePath(), "wts");
+    cleanDir(tmpDir->absolutePath(), "markers", 0);
+    delete tmpDir;
+    cout << initAccuracy << "->" << tempAccuracy << endl;
+    return tempAccuracy;
+}
+
+
+double MainWindow::filesAddComponentsInner(const QString &workPath,
+                                      const QString &fileName,
+                                      int NumOfRepeats,
+                                      bool windows,
+                                      int wndLen,
+                                      int tShift)
+{
+    QString helpString;
+
+    //check the percentage on all of 3 components
+    //add the best one giving the maximum of percentage
+
+    QTime myTime;
+    myTime.start();
+
+    ui->sliceCheckBox->setChecked(true);
+    ui->sliceWithMarkersCheckBox->setChecked(false);
+    ui->eyesCleanCheckBox->setChecked(false);
+    ui->reduceChannelsCheckBox->setChecked(false);
+
+    ui->cleanRealisationsCheckBox->setChecked(true);
+    ui->cleanRealsSpectraCheckBox->setChecked(true);
+    ui->cleanWindowsCheckBox->setChecked(true);
+    ui->cleanWindSpectraCheckBox->setChecked(true);
+
+    ui->reduceChannelsLineEdit->setText("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20");
+    ui->reduceChannelsComboBox->setCurrentText("20");
+
+    QDir * tmpDir = new QDir();
+    tmpDir->cd(workPath);
+
+    QList <int> unneededChannels;
+    QList <int> channelsSet;
+    QList <int> channelsSetExclude;
+
+    int tempItem;
+    int tempIndex;
+    double tempAccuracy = 0.;
+    double lastAccuracy;
+    bool foundFlag;
+    QString logPath = tmpDir->absolutePath() + slash() + "addCompsLog.txt";
+
+    channelsSet.clear();
+    unneededChannels.clear();
+
+    //////////////////////////////////////////////////////////initial accuracy count
+    //checkpercentage on the set of components (i, j, k)
+    double initAccuracy = 0;
+    int iS, jS, kS;
+
+    ofstream logF;
+    logF.open(logPath.toStdString().c_str(), ios_base::app);
+    makeCfgStatic(workPath, 3 * 247, "Reduced");
+
+    helpString = tmpDir->absolutePath()
+            + slash() + fileName;
+    globalEdf.readEdfFile(helpString);
+
+    int numOfChan = globalEdf.getNs() - 1; // w/o markers
+
+
+    for(int i = 0; i < numOfChan; ++i)
+    {
+        for(int j = i+1; j < numOfChan; ++j)
+        {
+            for(int k = j+1; k < numOfChan; ++k)
+            {
+                myTime.restart();
+
+                //clean wts
+                cleanDir(workPath, "wts");
+                channelsSet.clear();
+                channelsSet << i;
+                channelsSet << j;
+                channelsSet << k;
+                channelsSet << numOfChan; // markers
+
+                //exclude channels from 1st file
+                helpString = tmpDir->absolutePath()
+                        + slash() + fileName;
+                globalEdf.readEdfFile(helpString);
+                globalEdf.reduceChannels(channelsSet);
+
+                helpString.replace(".edf", "_rdc.edf");
+                globalEdf.writeEdfFile(helpString);
+
+                helpString = fileName;
+                helpString.replace(".edf", "_rdc.edf");
+
+                tempAccuracy = fileInnerClassification(workPath,
+                                                       helpString,
+                                                       "Reduced",
+                                                       NumOfRepeats,
+                                                       windows,
+                                                       wndLen,
+                                                       tShift); //0.5 generality
+                cout << "check percentage: ";
+                for(int p = 0; p < channelsSet.length(); ++p)
+                {
+                    cout << channelsSet[p]+1 << " ";
+                    logF << channelsSet[p]+1 << " ";
+                }
+                cout << " = " << tempAccuracy << "\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                logF << " = " << tempAccuracy << endl;
+
+                if(tempAccuracy > initAccuracy + 0.5)
+                {
+                    initAccuracy = tempAccuracy;
+                    iS = i;
+                    jS = j;
+                    kS = k;
+                }
+            }
+        }
+    }
+    channelsSet.clear();
+    channelsSet << iS << jS << kS << numOfChan;
+
+    logF << globalEdf.getExpName() << " initialAccuracy = " << initAccuracy << endl;
+    logF << globalEdf.getExpName() << " initialSet: " << iS + 1 << " " << jS + 1 << " " << kS + 1 << " " << endl << endl;
+    logF.close();
+
+    ////////////////////////////////////////////////////////////////////////////////////////initial accuracy count end
+
+    channelsSetExclude.clear();
+    for(int j = 0; j < numOfChan; ++j)
+    {
+        channelsSetExclude << j;
+    }
+    channelsSetExclude.removeOne(iS);
+    channelsSetExclude.removeOne(jS);
+    channelsSetExclude.removeOne(kS);
+
+
+    tempAccuracy = 0.;
+    while(1)
+    {
+        ns = channelsSet.length() + 1;
+        makeCfgStatic(tmpDir->absolutePath(), ns * 247, "Reduced");
+        foundFlag = false;
+
+        for(int l = 0; l < channelsSetExclude.length(); ++l)
+        {
+            //clean wts
+            cleanDir(dir->absolutePath(), "wts");
+            cleanDir(dir->absolutePath(), "markers", 0);
+            tempItem = channelsSetExclude[l];
+
+            if(unneededChannels.contains(tempItem)) continue; //if the channel is veru bad
+
+            logF.open(logPath.toStdString().c_str(), ios_base::app);
+            if(!logF.is_open())
+            {
+                cout << "cannot open logFile: " << logPath.toStdString() << endl;
+            }
+            else
+            {
+                logF << endl << globalEdf.getExpName() << "\tchannel " << tempItem+1 << " start" << endl;
+                logF.close();
+            }
+
+            channelsSet.push_back(tempItem); //add to considered channels
+            channelsSetExclude.removeOne(tempItem); //temporarily remove from non-considered list
+
+            //exclude channels from file
+            helpString = tmpDir->absolutePath()
+                    + slash() + fileName;
+            globalEdf.readEdfFile(helpString);
+            globalEdf.reduceChannels(channelsSet);
+            helpString.replace(".edf", "_rdc.edf");
+            globalEdf.writeEdfFile(helpString);
+
+            lastAccuracy = fileInnerClassification(workPath,
+                                                   helpString,
+                                                   "Reduced",
+                                                   NumOfRepeats,
+                                                   windows,
+                                                   wndLen,
+                                                   tShift);
+
+
+            logF.open(logPath.toStdString().c_str(), ios_base::app);
+            if(!logF.is_open())
+            {
+                cout << "cannot open logFile: " << logPath.toStdString() << endl;
+            }
+            else
+            {
+                logF << globalEdf.getExpName() << "\tchannel " << tempItem+1 << " done" << endl;
+                logF << "channelsSet:" << endl;
+                for(int q = 0; q < channelsSet.length(); ++q)
+                {
+                    logF << channelsSet[q] + 1 << "  ";
+                }
+                logF << endl << "Accuracy = " << lastAccuracy << endl;
+                logF.close();
+            }
+
+
+            //set back
+            channelsSet.removeOne(tempItem); //pop tempItem back
+            channelsSetExclude.insert(l, tempItem); //return tempItem onto its place in channelsSetExclude
+
+
+
+            if(lastAccuracy > tempAccuracy + 0.5)
+            {
+                tempAccuracy = lastAccuracy;
+                tempIndex = l;
+                foundFlag = true;
+            }
+            else if(lastAccuracy < tempAccuracy - 2.0)
+            {
+                logF.open(logPath.toStdString().c_str(), ios_base::app);
+                if(!logF.is_open())
+                {
+                    cout << "cannot open logFile: " << logPath.toStdString() << endl;
+                }
+                else
+                {
+                    logF << globalEdf.getExpName() << "\tchannel " << tempItem+1 << " to unneeded channels" << endl;
+                    logF.close();
+                }
+                unneededChannels << tempItem;
+            }
+
+        } //end of cycle l
+
+        if(foundFlag)
+        {
+
+            tempItem = channelsSetExclude[tempIndex];
+            cout << endl << "channel " << tempItem << " at index " << tempIndex << " to add" << endl << endl;
+            channelsSetExclude.removeOne(tempItem);
+            channelsSet.push_back(tempItem);
+
+            logF.open(logPath.toStdString().c_str(), ios_base::app);
+            if(!logF.is_open())
+            {
+                cout << "cannot open logFile: " << logPath.toStdString() << endl;
+            }
+            else
+            {
+                logF << globalEdf.getExpName() << "\tchannel " << tempItem+1 << " to add" << endl;
+                logF << "currentAccuracy = " << tempAccuracy << endl;
+                logF.close();
+            }
+
+        }
+        else
+        {
+
+            break;
+        }
+
+    } //end of while(1)
+    cout << globalEdf.getExpName() << " ended in " << myTime.elapsed()/1000. << " sec" << endl;
+
+
+    logF.open(logPath.toStdString().c_str(), ios_base::app);
+    if(!logF.is_open())
+    {
+        cout << "cannot open logFile: " << logPath.toStdString() << endl;
+    }
+    else
+    {
+        logF << "FINAL SET" << endl;
+        logF << globalEdf.getExpName() << endl;
         logF << "channelsSet:" << endl;
         for(int q = 0; q < channelsSet.length(); ++q)
         {

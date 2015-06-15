@@ -117,7 +117,6 @@ double * randomVector(int ns)
         tempVector2[i] /= sqrt(sum);
     }
     return tempVector2;
-
 }
 
 
@@ -289,14 +288,24 @@ void MainWindow::ICA() //fastICA
         dataICA[i] = new double [ndr*fr];
     }
 
+
     // count eigenvalue decomposition
     mat eigenVectors;
     vector <double> eigenValues;
+
+
+
+
 
     svd(globalEdf.getData(),
         eigenVectors,
         eigenValues,
         eigenValuesTreshold);
+
+
+
+
+
 
     numOfPc = ns;
 
@@ -601,42 +610,43 @@ void MainWindow::ICA() //fastICA
         }
     }
 
+#if 0
+    //test  data = matrixA * comps;
 
-    //test matrix A
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ndr*fr; ++j)
+        {
+            sum1 = 0.;
+            for(int k = 0; k < ns; ++k)
+            {
+                sum1 += matrixA[i][k] * components[k][j];
+            }
+            if(fabs((globalEdf.getData()[i][j] - sum1) / globalEdf.getData()[i][j]) > 0.05
+                    && fabs(globalEdf.getData()[i][j]) > 0.5)
+            {
+                cout << i << "\t" << j << "\t";
+                cout << fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) << "\t";
+                cout << globalEdf.getData()[i][j] << endl;
+            }
+        }
+    }
+#endif
 
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        for(int j = 0; j < ndr*fr; ++j)
-//        {
-//            sum1 = 0.;
-//            for(int k = 0; k < ns; ++k)
-//            {
-//                sum1 += matrixA[i][k] * components[k][j];
-//            }
-//            if(fabs((globalEdf.getData()[i][j] - sum1) / globalEdf.getData()[i][j]) > 0.05
-//                    && fabs(globalEdf.getData()[i][j]) > 0.5)
-//            {
-//                cout << i << "\t" << j << "\t";
-//                cout << fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) << "\t";
-//                cout << globalEdf.getData()[i][j] << endl;
-//            }
-//        }
-//    }
+#if 0
+    // norm components - by equal dispersion ????????????????????
+    // and then order by squared sum of maps coeffs
 
-
-    //norm components - by equal dispersion ????????????????????
     double coeff = 1.5;
     for(int i = 0; i < ns; ++i)
     {
         sum1 = 0.;
         sum2 = 0.;
 
-        sum1 = mean(components[i], ndr*fr);
         sum2 = variance(components[i], ndr*fr);
 
         for(int j = 0; j < ndr*fr; ++j)
         {
-            if(components[i][j] != 0.) components[i][j] -= sum1 / realSignalFrac;
             components[i][j] /= sqrt(sum2);
             components[i][j] *= coeff;
         }
@@ -646,6 +656,12 @@ void MainWindow::ICA() //fastICA
             matrixA[i][k] /= coeff;
         }
     }
+
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + ExpName + "_maps_before_var.txt");
+    writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
+
 
     //ordering components by sum of squares of the matrixA coloumn
     std::vector <std::pair <double, int>> colsNorms;
@@ -669,10 +685,11 @@ void MainWindow::ICA() //fastICA
 
     for(int i = 0; i < ns; ++i)
     {
-        cout << colsNorms[i].second << endl;
+        cout << colsNorms[i].first << "\t" << colsNorms[i].second << endl;
     }
 
     double * tempCol = new double [ns];
+    int tempIndex;
     std::vector <double> tempComp;
     for(int i = 0; i < ns - 1; ++i) // dont move the last
     {
@@ -684,11 +701,30 @@ void MainWindow::ICA() //fastICA
             matrixA[j][i] = matrixA[j][ colsNorms[i].second ];
             matrixA[j][ colsNorms[i].second ] = tempCol[j];
         }
+
         tempComp = components[i];
         components[i] = components[ colsNorms[i].second ];
         components[ colsNorms[i].second ] = tempComp;
+
+        // swap i and colsNorms[i].second values in colsNorms
+        auto it1 = std::find_if(colsNorms.begin(),
+                                colsNorms.end(),
+                                [i](std::pair <double, int> in)
+        {return in.second == i;});
+        auto it2 = std::find_if(colsNorms.begin(),
+                                colsNorms.end(),
+                                [colsNorms, i](std::pair <double, int> in)
+        {return in.second == colsNorms[i].second;});
+        tempIndex = (*it1).second;
+        (*it1).second = (*it2).second;
+        (*it2).second = tempIndex;
     }
     delete []tempCol;
+
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + ExpName + "_maps_after_var.txt");
+    writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
 
     for(int i = 0; i < ns; ++i)
     {
@@ -697,7 +733,106 @@ void MainWindow::ICA() //fastICA
         cout << "explVar = " << explainedVariance[i] << endl;
     }
     //end componets ordering
+#else
+    // norm components to 1-length of mapvector, order by dispersion
 
+    for(int i = 0; i < ns; ++i) // for each component
+    {
+        sum1 = 0.;
+        for(int k = 0; k < ns; ++k)
+        {
+            sum1 += pow(matrixA[k][i], 2);
+        }
+        sum1 = sqrt(sum1);
+
+        for(int k = 0; k < ns; ++k)
+        {
+            matrixA[k][i] /= sum1;
+        }
+        std::transform(components[i].begin(),
+                       components[i].end(),
+                       components[i].begin(),
+                       [sum1](double in) {return in * sum1;});
+    }
+
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + ExpName + "_maps_before_len.txt");
+    writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
+
+
+    // ordering components by dispersion
+    std::vector <std::pair <double, int>> colsNorms;
+    double sumSquares = 0.;
+    std::vector <double> explainedVariance;
+
+    for(int i = 0; i < ns; ++i) // w/o markers
+    {
+        sum1 = 0.;
+        std::for_each(components[i].begin(),
+                      components[i].end(),
+                      [&sum1](double in){sum1 += in * in;});
+        sumSquares += sum1;
+        colsNorms.push_back(std::make_pair(sum1, i));
+    }
+    std::sort(colsNorms.begin(),
+              colsNorms.end(),
+              [](std::pair <double, int> i, std::pair <double, int> j)
+    {return i.first > j.first;});
+
+    for(int i = 0; i < ns; ++i)
+    {
+        cout << colsNorms[i].first << "\t" << colsNorms[i].second << endl;
+    }
+
+    double * tempCol = new double [ns];
+    int tempIndex;
+    std::vector <double> tempComp;
+    for(int i = 0; i < ns - 1; ++i) // dont move the last
+    {
+
+        // swap matrixA cols
+        for(int j = 0; j < ns; ++j) // swap j'th elements in i'th and colsNorms[i].second'th cols
+        {
+            tempCol[j] = matrixA[j][i];
+            matrixA[j][i] = matrixA[j][ colsNorms[i].second ];
+            matrixA[j][ colsNorms[i].second ] = tempCol[j];
+        }
+
+        // swap components
+        tempComp = components[i];
+        components[i] = components[ colsNorms[i].second ];
+        components[ colsNorms[i].second ] = tempComp;
+
+        // swap i and colsNorms[i].second values in colsNorms
+        auto it1 = std::find_if(colsNorms.begin(),
+                                colsNorms.end(),
+                                [i](std::pair <double, int> in)
+        {return in.second == i;});
+        auto it2 = std::find_if(colsNorms.begin(),
+                                colsNorms.end(),
+                                [colsNorms, i](std::pair <double, int> in)
+        {return in.second == colsNorms[i].second;});
+
+        tempIndex = (*it1).second;
+        (*it1).second = (*it2).second;
+        (*it2).second = tempIndex;
+    }
+    delete []tempCol;
+
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + ExpName + "_maps_after_len.txt");
+    writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
+
+    for(int i = 0; i < ns; ++i)
+    {
+        explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
+        cout << "comp = " << i+1 << "\t";
+        cout << "explVar = " << explainedVariance[i] << endl;
+    }
+    //end componets ordering
+#endif
 
 
     for(int i = 0; i < ns; ++i)
@@ -745,10 +880,11 @@ void MainWindow::ICA() //fastICA
                                           + slash() + "Help"
                                           + slash() + ExpName + "_maps.txt");
     writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
-    drawMapsICA(helpString,
-                ns,
-                helpString.left(helpString.lastIndexOf(slash())),
-                ExpName.left(3));
+
+//    drawMapsICA(helpString,
+//                ns,
+//                helpString.left(helpString.lastIndexOf(slash())),
+//                ExpName.left(3));
 
 
     helpString = dir->absolutePath() + slash() + ExpName + "_ica.edf";
@@ -1197,7 +1333,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     cout << "ICsSequence ended. time = = " << myTime.elapsed()/1000. << " sec" << endl;
 #endif
 }
-void MainWindow::icaClassTest() //non-optimized
+void MainWindow::icaClassTest() /// CAREFUL sliceOneByOneNew()
 {
     QString helpString2;
     QString helpString;
@@ -1273,7 +1409,7 @@ void MainWindow::icaClassTest() //non-optimized
     }
 
     cleanDirs();
-    sliceOneByOneNew(numOfIC);
+    sliceOneByOneNew();
 
     spectr = new Spectre(dir, numOfIC, ExpName);
 
@@ -1310,7 +1446,7 @@ void MainWindow::icaClassTest() //non-optimized
             }
 
             cleanDirs();
-            sliceOneByOneNew(numOfIC);
+            sliceOneByOneNew();
 
             spectr->defaultState();
             spectr->countSpectra();
@@ -1361,7 +1497,7 @@ void MainWindow::icaClassTest() //non-optimized
     delete spectr;
 }
 
-void MainWindow::throwIC()
+void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
 {
     QStringList lst;
     QString helpString;
@@ -1444,7 +1580,7 @@ void MainWindow::throwIC()
 
     ui->cleanRealisationsCheckBox->setChecked(true);
     cleanDirs();
-    sliceOneByOneNew(ns);
+    sliceOneByOneNew();
     cout << "sliced" << endl;
 
     constructEDFSlot();
@@ -1538,7 +1674,7 @@ void MainWindow::transformReals() //move to library
 
 }
 
-void MainWindow::randomDecomposition()
+void MainWindow::randomDecomposition() // CAREFUL sliceOneByOneNew
 {
     QStringList lst;
     QString helpString;
@@ -1721,7 +1857,7 @@ void MainWindow::randomDecomposition()
         ui->cleanRealsSpectraCheckBox->setChecked(true);
         cleanDirs();
 
-        sliceOneByOneNew(19); //sliceAll()
+        sliceOneByOneNew(); //sliceAll()
         spectr->defaultState();
         spectr->countSpectra();
         ANN->autoClassificationSimple();

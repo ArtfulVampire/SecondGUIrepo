@@ -11,7 +11,7 @@ cfg::cfg(QDir *dir_, int ns_, int spLength_, double error_, double lrate_, QStri
     this->setWindowTitle("Make CFG");
     ui->nsBox->setMaximum(300);
     ui->nsBox->setMinimum(1);
-    ui->nsBox->setValue(ns_);
+    ui->nsBox->setValue(ns_ - 1 * def::withMarkersFlag); // affects NetLength
 
     ui->spLBox->setMaximum(1000);
     ui->spLBox->setMinimum(1);

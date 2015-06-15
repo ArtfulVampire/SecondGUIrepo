@@ -15,7 +15,7 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     ExpName = ExpName_;
 
     vect = vect_;
-    ns=ns_;
+    ns = ns_;
 
 
 
@@ -37,7 +37,7 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
 
     ui->lineEdit_1->setText("_241");
     ui->lineEdit_2->setText("_247");
-    ui->lineEdit_3->setText("_254");
+    ui->lineEdit_3->setText("_244");
 
     ui->rdcCoeffBox->setValue(20);
     ui->rdcCoeffBox->setDecimals(3);
@@ -1315,7 +1315,9 @@ void MakePa::makePaSlot()
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "1.pa");
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + QDir::separator() + "PA"
+                                          + QDir::separator() + "1.pa");
     makePaFile(dir_->absolutePath(), listToWrite, ns, spLength, NumOfClasses, coeff, helpString);
 
     listToWrite.clear();
@@ -1326,7 +1328,9 @@ void MakePa::makePaSlot()
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "2.pa");
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + QDir::separator() + "PA"
+                                          + QDir::separator() + "2.pa");
     makePaFile(dir_->absolutePath(), listToWrite, ns, spLength, NumOfClasses, coeff, helpString);
 
     listToWrite.clear();
@@ -1337,7 +1341,13 @@ void MakePa::makePaSlot()
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "all.pa");
+
+
+
+
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + QDir::separator() + "PA"
+                                          + QDir::separator() + "all.pa");
     makePaFile(dir_->absolutePath(), listToWrite, ns, spLength, NumOfClasses, coeff, helpString);
 
 

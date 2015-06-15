@@ -5,7 +5,7 @@
 /*after every function the QDir dir is set to the ExpName directory*/
 
 
-Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
+Cut::Cut(QDir * dir_, int ns_) :
     ui(new Ui::Cut)
 {
     ui->setupUi(this);
@@ -13,7 +13,6 @@ Cut::Cut(QDir * dir_, int ns_, bool withMarkersFlag_) :
 
     ui->nsBox->setValue(ns_);
     ns = ns_;
-    withMarkersFlag = withMarkersFlag_;
 
     dir = new QDir();
     dir->cd(dir_->absolutePath());
@@ -598,7 +597,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
             ++leftLimit;
             cout << "prev file leftLimit = " << leftLimit << endl;
             // zero() from tempLimit to rightLimit
-            zeroData(data3, ns, leftLimit, rightLimit, withMarkersFlag);
+            zeroData(data3, ns, leftLimit, rightLimit);
             rewrite();
             next();
         }
@@ -631,7 +630,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
             ++rightLimit;
             cout << "next file rightLimit = " << rightLimit << endl;
 
-            zeroData(data3, ns, leftLimit, rightLimit, withMarkersFlag);
+            zeroData(data3, ns, leftLimit, rightLimit);
             rewrite();
         }
         prev();
@@ -658,7 +657,7 @@ void Cut::zero()
 //        matiAdjustLimits();
     }
 
-    zeroData(data3, ns, leftLimit, rightLimit, withMarkersFlag); ///////// should TEST !!!!!!!1111
+    zeroData(data3, ns, leftLimit, rightLimit); ///////// should TEST !!!!!!!1111
     paint();
 }
 
@@ -695,7 +694,7 @@ void Cut::splitCut()
     {
         for(int k = 0; k < ns; ++k)
         {
-            if(k == ns-1 && withMarkersFlag && (i==0)) // first marker value
+            if(k == ns-1 && def::withMarkersFlag && (i==0)) // first marker value
             {
                 continue;
             }

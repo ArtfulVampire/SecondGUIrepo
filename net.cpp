@@ -19,7 +19,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ExpName = ExpName_;
 
     weight = 0;
-    dimensionality = 0;
+    dimensionality = nullptr;
 
 
     left = left_;
@@ -60,7 +60,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     classCount = new double [3]; //generality in cfg
 
 
-    matrixCreate(&tempRandomMatrix, 19, 19);
+    matrixCreate(&tempRandomMatrix, ns, ns);
 
     group1 = new QButtonGroup();
     group1->addButton(ui->leaveOneOutRadioButton);
@@ -100,12 +100,14 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(5.);
+    ui->rdcCoeffSpinBox->setValue(0.7); // 1. for MATI? usually 5.     0.7 for best comp set
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
+    ui->highLimitSpinBox->setValue(130);
     ui->lowLimitSpinBox->setMaximum(500);
     ui->lowLimitSpinBox->setMinimum(50);
+    ui->lowLimitSpinBox->setValue(80);
 
     ui->foldSpinBox->setMaximum(10);
     ui->foldSpinBox->setMinimum(1);
@@ -208,6 +210,7 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     loadCfgByName(helpString);
 
     this->ui->deltaRadioButton->setChecked(true);
+    this->ui->realsRadioButton->setChecked(true);
 
     NumberOfVectors = 200;
     matrix = new double * [NumberOfVectors];
@@ -235,7 +238,7 @@ Net::~Net()
     delete dirBC;
     delete []helpCharArr;
     delete []classCount;
-    matrixDelete(&tempRandomMatrix, 19);
+    matrixDelete(&tempRandomMatrix, ns);
     delete group1;
     delete group2;
     delete group3;
@@ -306,13 +309,12 @@ void Net::autoClassificationSimple()
 
 //    ui->deltaRadioButton->setChecked(true); //generality
     helpString.clear();
-    if(ui->realsRadioButton->isChecked())
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + slash() + "SpectraSmooth");
+
+    if(ui->windowsRadioButton->isChecked()) //generality
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth");
-    }
-    else if(ui->windowsRadioButton->isChecked()) //generality
-    {
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "windows");
+        helpString += slash() + "windows";
     }
     else if(ui->bayesRadioButton->isChecked())
     {
@@ -320,14 +322,13 @@ void Net::autoClassificationSimple()
         spLength = NetLength/19;
         left = 1;
         right = spLength;
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "Bayes");
+        helpString += slash() + "Bayes";
     }
     else if(ui->pcaRadioButton->isChecked())
     {
         autoPCAClassification();
         return;
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "PCA");
-
+        helpString += slash() + "PCA";
     }
     if(!helpString.isEmpty()) autoClassification(helpString);
 }
@@ -344,6 +345,10 @@ bool Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
     bool tmpAutoFlag = autoFlag;
     autoFlag = 1;
     double res;
+    const double threshold = 1e-1;
+
+//    cout << "adjustReduceCoeff: " << "lowLimit = " << lowLimit << " highLimit = " << highLimit << endl;
+
     MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
     mkPa->setNumOfClasses(NumOfClasses);
     mkPa->setRdcCoeff(this->ui->rdcCoeffSpinBox->value());
@@ -356,10 +361,10 @@ bool Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
         if(this->getEpoch() > highLimit || this->getEpoch() < lowLimit)
         {
             mkPa->setRdcCoeff(mkPa->getRdcCoeff() / sqrt(2. * this->getEpoch() /  double(lowLimit + highLimit) ));
-            if(mkPa->getRdcCoeff() == 1e-3) //possible minimum
+            if(mkPa->getRdcCoeff() == threshold) //possible minimum
             {
                 cout << "cant adjust rdc coefficient" << endl;
-                res = 1e-3;
+                res = threshold;
                 break;
             }
         }
@@ -371,11 +376,12 @@ bool Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
     }
     mkPa->close();
     delete mkPa;
+
     outMkPa->setRdcCoeff(res);
     outMkPa->setFold(ui->foldSpinBox->value()); //optional
     autoFlag = tmpAutoFlag;
     cout << "adjustReduceCoeff: reduceCoeff = " << res << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
-    if(res == 1e-3)
+    if(res == threshold)
     {
         return false;
     }
@@ -394,11 +400,15 @@ void Net::autoClassification(QString spectraDir)
 
     if(loadPAflag  != 1)
     {
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
+        QMessageBox::critical((QWidget * )this,
+                              tr("Warning"),
+                              tr("No CFG-file loaded yet"),
+                              QMessageBox::Ok);
         return;
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "log.txt");
-    log = fopen(helpString.toStdString().c_str(),"w");
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + slash() + "log.txt");
+    log = fopen(helpString, "w");
     if(log == NULL)
     {
         QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
@@ -406,6 +416,7 @@ void Net::autoClassification(QString spectraDir)
     }
     fclose(log);
 
+#if 0
     //set random matrix - add in PaIntoMatrixByName
     for(int i = 0; i < ns; ++i)
     {
@@ -417,10 +428,19 @@ void Net::autoClassification(QString spectraDir)
 //            tempRandomMatrix[i][j] = (i == j) * (1. + (rand()%8 == 0) * (5. + rand()%35) / 5.); //random diagonal
         }
     }
+#endif
+
+
+
+
+
 
     bool tempBool = autoFlag;
     autoFlag = 1;
     int numOfPairs = ui->numOfPairsBox->value();
+
+
+
 
     //adjust reduce coefficient
     MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
@@ -430,20 +450,21 @@ void Net::autoClassification(QString spectraDir)
         delete mkPa;
         autoFlag = tempBool;
         cout <<  "AutoClass: unsuccessful, time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+        averageAccuracy = 0.;
+        return;
     }
     mkPa->setFold(ui->foldSpinBox->value()); //double set
 
     if(ui->crossRadioButton->isChecked())
     {
-        cout << "Net: autoclass (max " << numOfPairs << ") ";
+        cout << "Net: autoclass (max " << numOfPairs << "):" << endl;
         for(int i = 0; i < numOfPairs; ++i)
         {
             cout << i+1;
             cout << " "; cout.flush();
-//            cout << " iteration in process" << endl;
+
             //make PA
             mkPa->makePaSlot();
-
 
             PaIntoMatrixByName("1");
 
@@ -470,7 +491,7 @@ void Net::autoClassification(QString spectraDir)
     }
     else if(ui->leaveOneOutRadioButton->isChecked())
     {
-        cout << "N-fold cross-validation done" << endl;
+//        cout << "N-fold cross-validation done" << endl;
         PaIntoMatrixByName("all");
         leaveOneOutSlot();
         numOfTall = 1;
@@ -2466,15 +2487,17 @@ void Net::memoryAndParamsAllocation()
         for(int j = 0; j < dimensionality[i] + 1; ++j) //
         {
             weight[i][j] = new double [dimensionality[i+1]];
-
         }
     }
+
+#if 0
     cout << "memparams:\n";
     cout << "numOfLayers = " << numOfLayers << endl;
     for(int i = 0; i < numOfLayers; ++i)
     {
         cout << "dim[" << i << "] = " << dimensionality[i] << endl;
     }
+#endif
 
     reset();
 
@@ -4027,7 +4050,7 @@ void Net::SVM()
     delete mkPa;
 }
 
-void Net::optimizeChannelsSet()
+void Net::optimizeChannelsSet() /// CAREFUL
 {
     int tempItem;
     int tempIndex;
@@ -4143,7 +4166,7 @@ void Net::optimizeChannelsSet()
         }
         else
         {
-            NetLength = spLength * (NetLength/spLength + 1);
+            NetLength = spLength * (NetLength/spLength + 1); //// CAREFUL
             dimensionality[0] = NetLength;
             break;
         }

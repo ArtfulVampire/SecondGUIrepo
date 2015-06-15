@@ -20,10 +20,12 @@ struct matrix
 {
     matrix();
     ~matrix();
+    matrix(int dim);
     matrix(int rows, int cols);
     matrix(int rows, int cols, double value);
     matrix(double ** inData, int rows, int cols);
     matrix(const matrix & other);
+    matrix(const dataType & other);
     matrix(vector <double> vec, bool orientH);
 
     matrix(vector <double> vec, char orient);
@@ -49,17 +51,11 @@ struct matrix
     {
         return data[i];
     }
-
+    matrix operator = (const matrix & other);
+    matrix operator = (const dataType & other);
 
 
     dataType data;
-
-
-
-
-    matrix operator = (const matrix & other);
-
-
 
     //"static"
     // auto type
@@ -68,6 +64,10 @@ struct matrix
     // "private"
     void transpose();
     void invert();
+    void swapCols(int i, int j);
+    void swapRows(int i, int j);
+    void zero();
+    void one();
 //    double det();
 //    void cofactor();
 //    void systemGaussSolve();

@@ -882,7 +882,7 @@ ostream & operator << (ostream &os, matrix toOut)
     {
         for(auto itt = (*it).begin(); itt < (*it).end(); ++itt)
         {
-            os << (*itt) << "  ";
+            os << doubleRound((*itt), 4) << "\t";
         }
         os << endl;
     }
@@ -1159,7 +1159,7 @@ int typeOfFileName(QString fileName)
 {
     if(fileName.contains("_241")) return 0;
     else if(fileName.contains("_247")) return 1;
-    else if(fileName.contains("_254")) return 2;
+    else if(fileName.contains("_254") || fileName.contains("_244")) return 2; /// FFFFFFUUUUUUUU
     else return -1;
 }
 
@@ -1187,7 +1187,7 @@ void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength,
         readSpectraFile(helpString, data4, ns, spLength);
         outStream << fileNames[i].toStdString() << endl;
 
-        for(int l = 0; l < ns; ++l)
+        for(int l = 0; l < ns - 1 * def::withMarkersFlag; ++l)
         {
             for(int k = 0; k < spLength; ++k)
             {
@@ -1964,10 +1964,10 @@ void svd(const mat & inData, mat & eigenVectors, vector <double> & eigenValues, 
         }
 
         cout << "numOfPC = " << k << "\t";
-        cout << "value = " << eigenValues[k] << "\t";
-        cout << "disp = " << 100. * eigenValues[k] / trace << "\t";
-        cout << "total = " << 100. * sum1 / trace << "\t";
-        cout << "iterations = " << counter << "\t";
+        cout << "val = " << doubleRound(eigenValues[k], 4) << "\t";
+        cout << "disp = " << doubleRound(100. * eigenValues[k] / trace, 2) << "\t";
+        cout << "total = " << doubleRound(100. * sum1 / trace, 2) << "\t";
+        cout << "iters = " << counter << "\t";
         cout << myTime.elapsed()/1000. << " sec" << endl;
 
         for(int i = 0; i < ns; ++i)
@@ -3285,7 +3285,7 @@ void readFileInLine(QString filePath, double **&outData, int len)
     file.close();
 }
 
-void zeroData(double **& inData, const int &ns, const int &leftLimit, const int &rightLimit, const bool &withMarkersFlag)
+void zeroData(double **& inData, const int &ns, const int &leftLimit, const int &rightLimit)
 {
     for(int i = leftLimit; i < rightLimit; ++i)
     {
@@ -3293,7 +3293,7 @@ void zeroData(double **& inData, const int &ns, const int &leftLimit, const int 
         {
             inData[k][i] = 0.;
         }
-        if(!withMarkersFlag) inData[ns - 1][i] = 0.; /// should deprecate
+        if(!def::withMarkersFlag) inData[ns - 1][i] = 0.;
     }
 }
 
@@ -3317,7 +3317,7 @@ void splitZeros(mat & dataIn,
 
     for(int i = 0; i < length; ++i)
     {
-        for(int j = 0; j < ns - 1; ++j) ////////dont consider markers
+        for(int j = 0; j < ns - 1 * def::withMarkersFlag; ++j) ////////dont consider markers
         {
             if(dataIn[j][i] != 0.)
             {
@@ -4013,7 +4013,7 @@ void writeICAMatrix(const QString & path, Typ &matrixA, const int & ns)
     {
         for(int j = 0; j < ns; ++j)
         {
-            fprintf(map, "%.3lf\t", matrixA[i][j]);
+            fprintf(map, "%.4lf\t", matrixA[i][j]);
             maxMagn = fmax(maxMagn, double(fabs(matrixA[i][j])));
         }
         fprintf(map, "\n");

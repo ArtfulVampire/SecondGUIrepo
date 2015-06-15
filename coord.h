@@ -17,7 +17,7 @@ namespace def
 {
     const bool matiFlag = true;
     const bool ntFlag = false;
-    const bool withMarkersFlag = true;
+    const bool withMarkersFlag = true; /// should check everywhere if changed to false
 
     const double freq = 250.;
     const double leftFreq = 5.;

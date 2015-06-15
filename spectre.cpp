@@ -378,19 +378,32 @@ void Spectre::psaSlot()
         return;
     }
 
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + ExpName + "_254");
     if(ui->fftComboBox->currentIndex()!=0)
     {
-        helpString = dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append("_254.psa");
+        helpString += ".psa";
     }
     else
     {
-        helpString = dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append("_254_wnd.psa");
+        helpString += "_wnd.psa";
     }
-    f[2] = fopen(helpString.toStdString().c_str(), "r");
+    f[2] = fopen(helpString, "r");
 
     if(f[2] == NULL)
     {
-        helpString = dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(ExpName).append("_244.psa");
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash() + "Help"
+                                              + slash() + ExpName + "_244");
+        if(ui->fftComboBox->currentIndex()!=0)
+        {
+            helpString += ".psa";
+        }
+        else
+        {
+            helpString += "_wnd.psa";
+        }
     }
     f[2] = fopen(helpString.toStdString().c_str(), "r");
 
@@ -398,13 +411,12 @@ void Spectre::psaSlot()
     {
         count = 3;
     }
-//    cout << "count = " << count << endl;
+
     spL = new int [count];
     sp = new double ** [count];
 
     for(int i = 0; i < count; ++i)
     {
-//        fscanf(f[i], "spLength %d", &spL[i]);
         spL[i] = spLength;
     }
 
@@ -423,13 +435,16 @@ void Spectre::psaSlot()
         }
     }
 
+
+    double maxVal = 0.;
     for(int k = 0; k < count; ++k)
     {
-        for(int i = 0; i < ns; ++i)
+        for(int i = 0; i < ns - 1; ++i)
         {
             for(int j = 0; j < spL[k]; ++j)
             {
                 fscanf(f[k], "%lf", &sp[k][i][j]);
+                maxVal = max(maxVal, sp[k][i][j]);
             }
         }
     }
@@ -454,31 +469,26 @@ void Spectre::psaSlot()
         paint->begin(&pic);
     }
 
-    double graphWidth = coords::scale * paint->device()->width();
-    double graphScale = spLength / graphWidth;
+
 
     //finding maximum magnitude
-    norm = 0.;
-    for(int j = 0; j < count; ++j)
+    maxVal = (coords::scale * paint->device()->height()) / maxVal;
+    maxVal *= ui->scalingDoubleSpinBox->value();
+
+
+    const int lineWidth = 3;
+
+    const double graphHeight = paint->device()->height() * coords::scale;
+    const double graphWidth = paint->device()->width() * coords::scale;
+    const double graphScale = spLength / graphWidth;
+
+    for(int c2 = 0; c2 < ns - 1 * def::withMarkersFlag; ++c2)  //exept markers channel
     {
-        for(int c2 = 0; c2 < ns - 1; ++c2) //w/o markers
-        {
-            for(int k = 0; k < spL[j]; ++k)
-            {
-                norm = max(norm, sp[j][c2][k]);
-            }
-        }
-    }
-    norm = (coords::scale * paint->device()->height()) / norm ; //250 - pixels per graph, generality
-    norm *= ui->scalingDoubleSpinBox->value();
+        const double Y = paint->device()->height() * coords::y[c2];
+        const double X = paint->device()->width() * coords::x[c2];
 
-
-    int lineWidth = 3;
-
-    for(int c2 = 0; c2 < ns - 1; ++c2)  //exept markers channel
-    {
         //draw spectra
-        for(int k = 0; k < int(coords::scale * paint->device()->width()) - 1; ++k)
+        for(int k = 0; k < graphWidth - 1; ++k)
         {
             for(int j = 0; j < count; ++j)
             {
@@ -494,29 +504,28 @@ void Spectre::psaSlot()
                     if(j == 1) paint->setPen(QPen(QBrush(QColor(90,90,90,255)), lineWidth)); // dark-gray
                     if(j == 2) paint->setPen(QPen(QBrush(QColor(180,180,180,255)), lineWidth)); // light-gray
                 }
-                paint->drawLine(QPointF(paint->device()->width() * coords::x[c2] + k,
-                                        paint->device()->height()* coords::y[c2] - sp[j][c2][int(  k  *spL[j]/(coords::scale * paint->device()->width()))]*norm),
-                                QPointF(paint->device()->width() * coords::x[c2] + k + 1,
-                                        paint->device()->height()* coords::y[c2] - sp[j][c2][int((k+1)*spL[j]/(coords::scale * paint->device()->width()))]*norm));
+                paint->drawLine(QPointF(X + k,
+                                        Y - sp[j][c2][int(  k  * graphScale)] * maxVal),
+                                QPointF(X + k + 1,
+                                        Y - sp[j][c2][int((k+1) * graphScale)] * maxVal));
             }
         }
 
         //draw axes
         paint->setPen("black");
-        paint->drawLine(QPointF(paint->device()->width() * coords::x[c2],
-                                paint->device()->height() * coords::y[c2]),
-                        QPointF(paint->device()->width() * coords::x[c2],
-                                paint->device()->height() * coords::y[c2] - coords::scale * paint->device()->height())); //250 - length of axes generality
+        paint->drawLine(QPointF(X,
+                                Y),
+                        QPointF(X,
+                                Y - graphHeight));
 
-        paint->drawLine(QPointF(paint->device()->width() * coords::x[c2],
-                                paint->device()->height() * coords::y[c2]),
-                        QPointF(paint->device()->width() * coords::x[c2] + coords::scale * paint->device()->width(),
-                                paint->device()->height() * coords::y[c2])); //250 - length of axes generality
+        paint->drawLine(QPointF(X,
+                                Y),
+                        QPointF(X + graphWidth,
+                                Y));
 
         //draw Herzes
         ////// REMAKE
-        paint->setFont(QFont("Helvitica", int(8*(paint->device()->height()/1600.))));
-
+        paint->setFont(QFont("Helvitica", int(8 * (paint->device()->height()/1600.))));
         for(int k = 0; k < graphWidth; ++k) //for every Hz generality
         {
             if( (left + k * graphScale) * spStep
@@ -527,17 +536,20 @@ void Spectre::psaSlot()
                     - (left + k * graphScale) * spStep
                     < graphScale * spStep / 2.)
             {
-                paint->drawLine(QPointF(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]), QPointF(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2] + 5 * (paint->device()->height()/1600.)));
+                paint->drawLine(QPointF(X + k,
+                                        Y),
+                                QPointF(X + k,
+                                        Y + 5));
 
-                helpInt = int((left + k*(spLength)/(coords::scale * paint->device()->width()))*spStep + 0.5);
-                helpString.setNum(helpInt);
-                if(helpInt<10)
+                helpInt = int((left + k * graphScale) * spStep + 0.5);
+                helpString = QString::number(helpInt);
+                if(helpInt < 10)
                 {
-                    paint->drawText(QPointF(paint->device()->width() * coords::x[c2] + k - 3 * (paint->device()->width()/1600.), paint->device()->height() * coords::y[c2] + 15 * (paint->device()->height()/1600.)), helpString);  //-3 getFont->size
+                    paint->drawText(X + k-3, Y + 15, helpString);
                 }
                 else
                 {
-                    paint->drawText(QPointF(paint->device()->width() * coords::x[c2] + k - 5 * (paint->device()->width()/1600.), paint->device()->height() * coords::y[c2] + 15 * (paint->device()->height()/1600.)), helpString);  //-5 getFont->size
+                    paint->drawText(X + k-5, Y + 15, helpString);
                 }
             }
         }
@@ -547,7 +559,7 @@ void Spectre::psaSlot()
 
     //write channels labels
     paint->setFont(QFont("Helvetica", int(24*paint->device()->height()/1600.), -1, false));
-    for(int c2 = 0; c2 < ns - 1; ++c2)  //exept markers channel
+    for(int c2 = 0; c2 < ns - 1 * def::withMarkersFlag; ++c2)  //exept markers channel
     {
         helpString = QString(coords::lbl[c2]);
         helpString += " (" + QString::number(c2+1) + ")";
@@ -555,18 +567,22 @@ void Spectre::psaSlot()
     }
 
     //draw coords::scale
-    paint->drawLine(QPointF(paint->device()->width() * coords::x[6], paint->device()->height() * coords::y[1]), QPointF(paint->device()->width() * coords::x[6], paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())));  //250 - graph height generality
+    paint->drawLine(QPointF(paint->device()->width() * coords::x[6],
+                    paint->device()->height() * coords::y[1]),
+            QPointF(paint->device()->width() * coords::x[6],
+            paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())));
 
     //returning norm = max magnitude
-    norm /= ui->scalingDoubleSpinBox->value();
-    norm = (coords::scale * paint->device()->height()) / norm;
-    norm /= ui->scalingDoubleSpinBox->value();  //scaling generality
-    norm = int(norm*10.)/10.;
+    maxVal /= ui->scalingDoubleSpinBox->value();
+    maxVal = (coords::scale * paint->device()->height()) / maxVal;
+    maxVal /= ui->scalingDoubleSpinBox->value();  //scaling generality
+    maxVal = int(maxVal*10.)/10.;
 
-    helpString.setNum(norm);
-    helpString.append(tr(" mcV^2/Hz"));
-    paint->drawText(QPointF(paint->device()->width() * coords::x[6]+5., paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())/2.), helpString);
-
+    helpString = QString::number(maxVal);
+    helpString += tr(" mcV^2/Hz");
+    paint->drawText(QPointF(paint->device()->width() * coords::x[6] + 5,
+                    paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())/2.),
+            helpString);
 
 
 
@@ -646,7 +662,7 @@ void Spectre::compare()
         helpString = QDir::toNativeSeparators(dir->absolutePath()
                                               + slash()
                                               + lst[j]);
-        file = fopen(helpString.toStdString().c_str(), "r");
+        file = fopen(helpString, "r");
 
         if(file!=NULL)
         {
@@ -673,18 +689,22 @@ void Spectre::compare()
                                               + slash()
                                               + ui->lineEdit_m2->text()
                                               + ".psa");
-        file = fopen(helpString.toStdString().c_str(), "w");
+        file = fopen(helpString, "w");
         if(file == NULL)
         {
             cout << "cannot open file" << endl;
             return;
         }
+
         double helpDouble = 0.;
-        for(int i = 0; i < ns; ++i)
+        double maxVal = 0.;
+        for(int i = 0; i < ns - 1; ++i) // write in psa w/o markers
         {
             for(int k = 0; k < spLength; ++k)
             {
-                helpDouble = dataFFT[i][k]/double(NumOfPatterns);
+                helpDouble = dataFFT[i][k] / double(NumOfPatterns);
+                maxVal = fmax(dataFFT[i][k], maxVal);
+
                 fprintf(file, "%lf\n", helpDouble);
             }
             fprintf(file, "\n");
@@ -693,50 +713,83 @@ void Spectre::compare()
 
 
 
-
         pic = QPixmap(1600, 1600);
         pic.fill();
         paint->begin(&pic);
-        double ext = spLength/def::freq;
-        for(int c2 = 0; c2 < ns; ++c2)
-        {
-            for(int k = 0; k < 250-1; ++k)
-            {
-                //spectre itslef
-                paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - dataFFT[c2][int(k*ext)]/double(NumOfPatterns)*norm, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - dataFFT[c2][int((k+1)*ext)]/double(NumOfPatterns)*norm);
-            }
 
-            paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2]-250);
-            paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250, paint->device()->height() * coords::y[c2]);
+        const double graphHeight = paint->device()->height() * coords::scale;
+        const double graphWidth = paint->device()->width() * coords::scale;
+        const double ext = spLength / graphWidth;
+        const int lineWidth = 2;
+
+        for(int c2 = 0; c2 < ns - 1; ++c2) // w/o markers draw
+        {
+            const double Y = paint->device()->height() * coords::y[c2];
+            const double X = paint->device()->width() * coords::x[c2];
+
+            //spectre itself
+            paint->setPen(QPen(QBrush("black"), lineWidth));
+            for(int k = 0; k < graphWidth - 1; ++k)
+            {
+                paint->drawLine(X + k,
+                                Y - dataFFT[c2][int(k * ext)] / maxVal * graphHeight,
+                        X + k + 1,
+                        Y - dataFFT[c2][int((k+1) * ext)] / maxVal * graphHeight);
+            }
+            paint->setPen(QPen(QBrush("black"), 1));
+
+            paint->drawLine(X, Y, X, Y - graphHeight);
+            paint->drawLine(X, Y, X + graphWidth, Y);
 
 
             paint->setFont(QFont("Helvitica", 8));
-            for(int k=0; k<250-1; ++k) //for every Hz generality
+            for(int k = 0; k < graphWidth - 1; ++k) //for every Hz generality
             {
-                //            paint->drawLine(paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2]+10);
-                if( (left + k*(spLength)/250.)*spStep - floor((left + k*(spLength)/250.)*spStep) < spLength/250.*spStep/2. || ceil((left + k*(spLength)/250.)*spStep) - (left + k*(spLength)/250.)*spStep < spLength/250.*spStep/2.)
-                {
-                    paint->drawLine(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]+5);
 
-                    helpInt = int((left + k*(spLength)/250.)*spStep + 0.5);
-                    helpString.setNum(helpInt);
-                    if(helpInt<10)
+                /////// REMAKE
+                if( (left + k * ext) * spStep - floor((left + k * ext) * spStep)
+                        < spLength / graphWidth * spStep / 2.
+                        || ceil((left + k * ext) * spStep) - (left + k * ext)*spStep
+                        < ext * spStep/2.)
+                {
+                    paint->drawLine(X + k, Y, X + k, Y + 5);
+
+                    helpInt = int((left + k * ext) * spStep + 0.5);
+                    helpString = QString::number(helpInt);
+                    if(helpInt < 10)
                     {
-                        paint->drawText(paint->device()->width() * coords::x[c2] + k-3, paint->device()->height() * coords::y[c2]+15, helpString);
+                        paint->drawText(X + k-3, Y + 15, helpString);
                     }
                     else
                     {
-                        paint->drawText(paint->device()->width() * coords::x[c2] + k-5, paint->device()->height() * coords::y[c2]+15, helpString);
+                        paint->drawText(X + k-5, Y + 15, helpString);
                     }
                 }
             }
 
+            // channels labels
+            paint->setFont(QFont("Helvetica", 24, -1, false));
+            paint->drawText(X - 20, Y - graphHeight - 2, QString(coords::lbl[c2]) + " (" + QString::number(c2) + ")");
         }
-        paint->setFont(QFont("Helvetica", 24, -1, false));
-        for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel
-        {
-            paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]) + " " + QString::number(c2));
-        }
+
+        //draw scale
+        paint->drawLine(QPointF(paint->device()->width() * coords::x[6],
+                        paint->device()->height() * coords::y[1]),
+                QPointF(paint->device()->width() * coords::x[6],
+                paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())));
+
+        //returning norm = max magnitude
+        maxVal /= ui->scalingDoubleSpinBox->value();
+        maxVal = (coords::scale * paint->device()->height()) / maxVal;
+        maxVal /= ui->scalingDoubleSpinBox->value();  //scaling generality
+        maxVal = int(maxVal*10.)/10.;
+
+        helpString = QString::number(maxVal);
+        helpString += tr(" mcV^2/Hz");
+        paint->drawText(QPointF(paint->device()->width() * coords::x[6] + 5,
+                        paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())/2.),
+                helpString);
+
 
         helpString = QDir::toNativeSeparators(dir->absolutePath()
                                               + slash()

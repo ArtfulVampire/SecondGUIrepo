@@ -207,6 +207,7 @@ public:
                        QList <int> eegNums = QList <int>(),
                        QList <int> eogNums = QList <int>());
     void writeOtherData(mat &newData, QString outPath, QList<int> chanList = QList<int>());
+    void writeOtherData(matrix &newData, QString outPath, QList<int> chanList = QList<int>());
     void writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList = QList<int>()) const;
     void fitData(int initSize);
     void cutZerosAtEnd();

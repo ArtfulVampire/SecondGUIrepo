@@ -21,15 +21,25 @@ matrix::~matrix()
 {
 }
 
+matrix::matrix(int dim)
+{
+    this->resize(dim, dim);
+    this->fill(0.);
+}
 
 matrix::matrix(int rows, int cols)
 {
     this->resize(rows, cols);
+    this->fill(0.);
 }
 
 matrix::matrix(const matrix & other)
 {
     this->data = other.data;
+}
+matrix::matrix(const dataType & other)
+{
+    this->data = other;
 }
 matrix::matrix(vector <double> vec, bool orientH)
 {
@@ -72,6 +82,14 @@ matrix::matrix(vector <double> vec, char orient)
 matrix matrix::operator = (const matrix & other)
 {
     this->data = other.data;
+
+    return *this;
+}
+matrix matrix::operator = (const dataType & other)
+{
+    this->data = other;
+
+    return *this;
 }
 
 
@@ -158,7 +176,7 @@ void matrix::transpose()
     {
         for(int j = 0; j < this->cols(); ++j)
         {
-            swap((*this)[j][i], (*this)[i][j]);
+            std::swap((*this)[j][i], (*this)[i][j]);
         }
     }
     this->resize(oldCols,
@@ -192,6 +210,7 @@ void matrix::invert()
         }
     }
     double coeff;
+
 
     //1) make higher-triangular
     for(int i = 0; i < size - 1; ++i) //which line to substract
@@ -252,14 +271,27 @@ void matrix::invert()
         );
     }
 
-    //4) outmat = tempMat
-    for(int i = 0; i < size; ++i) //which line to substract
+    (*this) = tempMat;
+
+//    //4) outmat = tempMat
+//    for(int i = 0; i < size; ++i) //which line to substract
+//    {
+//        for(int k = 0; k < size; ++k) //k = 0 because default
+//        {
+//        }
+//    }
+}
+
+void matrix::swapCols(int i, int j)
+{
+    for(int k = 0; k < this->rows(); ++k)
     {
-        for(int k = 0; k < size; ++k) //k = 0 because default
-        {
-            (*this) = tempMat;
-        }
+        std::swap(this->data[k][i], this->data[k][j]);
     }
+}
+void matrix::swapRows(int i, int j)
+{
+    std::swap(this->data[i], this->data[j]);
 }
 
 template <typename Typ1, typename Typ2, typename Typ3>
@@ -288,6 +320,10 @@ void matrixProduct(const Typ1 (&in1), const Typ2 (&in2), Typ3 (&result),
     {
         size = in1[0].size();
     }
+
+//    cout << "dim1 = " << dim1 << endl;
+//    cout << "dim2 = " << dim2 << endl;
+//    cout << "size = " << size << endl;
 
     double helpDouble = 0.;
     for(int i = 0; i < dim1; ++i)

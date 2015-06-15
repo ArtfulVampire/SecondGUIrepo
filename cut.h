@@ -33,7 +33,7 @@ class Cut : public QWidget
     Q_OBJECT
 
 public:
-    explicit Cut(QDir * dir_ = 0, int ns_ = 21, bool withMarkersFlag_ = false);
+    explicit Cut(QDir * dir_ = 0, int ns_ = 20);
     ~Cut();
     bool eventFilter(QObject *obj, QEvent *event);
     void setAutoProcessingFlag(bool);
@@ -87,7 +87,6 @@ private:
     int timeShift;   //in time-bins
     double wndLength;  //in seconds
     int flagWnd;
-    bool withMarkersFlag;
     int redCh, blueCh; // for drawing
 
     double zoomPrev, zoomCurr;

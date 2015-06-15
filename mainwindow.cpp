@@ -25,7 +25,7 @@ MainWindow::MainWindow() :
     spStep = def::freq/def::fftLength;
     spLength = right - left + 1;
 
-    withMarkersFlag = 1;
+//    withMarkersFlag = 1;
     ui->sliceWithMarkersCheckBox->setChecked(true);
 
     staSlice = 0;
@@ -238,7 +238,7 @@ MainWindow::MainWindow() :
     ui->vectwDoubleSpinBox->setDecimals(1);
     ui->vectwDoubleSpinBox->setMaximum(10.0);
     ui->vectwDoubleSpinBox->setMinimum(1.5);
-    ui->vectwDoubleSpinBox->setValue(9.0);
+    ui->vectwDoubleSpinBox->setValue(10.0);
     ui->vectwDoubleSpinBox->setSingleStep(0.5);
 
     ui->spocCoeffDoubleSpinBox->setMaximum(5);
@@ -281,7 +281,7 @@ MainWindow::MainWindow() :
 
     ui->matiPieceLengthSpinBox->setMaximum(32);
     ui->matiPieceLengthSpinBox->setMinimum(4);
-    ui->matiPieceLengthSpinBox->setValue(7);
+    ui->matiPieceLengthSpinBox->setValue(16);
     ui->matiCheckBox->setChecked(true);
     ui->markerBinTimeSpinBox->setMaximum(250*60*60*2);   //2 hours
     ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); //2 hours
@@ -436,7 +436,7 @@ void MainWindow::showNet()
 
 void MainWindow::showCut()
 {
-    Cut *cut_e = new Cut(dir, ns, withMarkersFlag);
+    Cut *cut_e = new Cut(dir, ns);
     cut_e->show();
 }
 
@@ -648,14 +648,14 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
         if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
 
-        if(ui->sliceWithMarkersCheckBox->isChecked())
-        {
-            numChanToWrite = ns;
-        }
-        else
-        {
-            numChanToWrite = ns - 1;
-        }
+//        if(ui->sliceWithMarkersCheckBox->isChecked())
+//        {
+//            numChanToWrite = ns;
+//        }
+//        else
+//        {
+//            numChanToWrite = ns - 1;
+//        }
 
         if(ui->sliceCheckBox->isChecked())
         {
@@ -726,7 +726,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                     }
                     else
                     {
-                        sliceOneByOneNew(numChanToWrite);
+                        sliceOneByOneNew();
                         //                        sliceFromTo(241, 231, "241_pre");
                         //                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
                         //                        sliceFromTo(247, 237, "247_pre");
@@ -738,9 +738,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
         }
 
 
-        --ns; //-markers channel generality
-        ns = numChanToWrite; //generality
-
+//        --ns; //-markers channel generality
         ui->progressBar->setValue(0);
 
         helpString="data has been sliced \n";
@@ -1724,7 +1722,7 @@ void MainWindow::setBoxMax(double a)
 
 void MainWindow::sliceWithMarkersSlot(int a)
 {
-    withMarkersFlag = a;
+//    withMarkersFlag = a;
 }
 
 void MainWindow::stop()
@@ -1762,88 +1760,480 @@ void MainWindow::customFunc()
 
 //    return;
 
+    sleep(5);
+
+#if 0
+    // test distances between matrixes A (EEG.icawinv)
+    const QString path1 = "/media/Files/Data/Mati/ICAstudy/Help/ADA_0_maps_after_len_2.txt"; // infomax
+    const QString path2 = "/media/Files/Data/Mati/ICAstudy/Help/ADA_0_maps_after.txt"; // fastica
+
+    int ns = 19;
+    matrix A1(ns);
+    matrix A2(ns);
+    matrix prod(ns);
+    readICAMatrix(path1, A1, ns);
+    readICAMatrix(path2, A2, ns);
+
+
+    for(int i = 0; i < ns; ++i)
+    {
+        for(int j = 0; j < ns; ++j)
+        {
+            for(int k = 0; k < ns; ++k)
+            {
+                prod[i][j] += A1[k][i] * A2[k][j];
+            }
+            prod[i][j] = abs(prod[i][j]);
+        }
+    }
+
+    double prodMax = 0.;
+    QVector <int> temp1;
+    QVector <int> temp2;
+    int tempI, tempJ;
+
+    temp1.resize(ns); temp1.fill(-1);
+    temp2.resize(ns); temp2.fill(-1);
+
+    for(int num = 0; num < ns; ++num)
+    {
+        prodMax = 0.;
+        tempI = -1;
+        tempJ = -1;
+        for(int i = 0; i < ns; ++i)
+        {
+            if(temp1.contains(i)) continue;
+
+            for(int j = 0; j < ns; ++j)
+            {
+                if(temp2.contains(j)) continue;
+
+                if(prod[i][j] > prodMax)
+                {
+                    prodMax = prod[i][j];
+                    tempI = i;
+                    tempJ = j;
+                }
+            }
+        }
+        temp1[num] = tempI;
+        temp2[num] = tempJ;
+        cout << temp1[num] << "\t" << temp2[num] << "\t" << doubleRound(prodMax, 4) << endl;
+    }
+
+    exit(0);
+#endif
+
+#if 0
+    // read ica data from matlab
+    const QString init = "/media/Files/Data/Mati/ICAstudy/";
+    const QString pth = "/media/Files/Data/Mati/ICAstudy/Help/";
+    QString helpString;
+    dir->cd(pth);
+    QStringList dataFiles = dir->entryList(QStringList("*_ica.txt"));
+
+    mat dataMat;
+    dataMat.resize(20);
+
+
+    int newDataLen = 0;
+
+    for(QString &oneFile : dataFiles)
+    {
+
+        for(int i = 0; i < 20; ++i)
+        {
+            dataMat[i].resize(60 * 60 * 250); // 1 hour
+        }
+
+        helpString = pth + oneFile;
+        readPlainData(helpString,
+                      dataMat,
+                      19,
+                      newDataLen);
+        cout << newDataLen << endl;
+
+        for(int i = 0; i < 20; ++i)
+        {
+            dataMat[i].resize(newDataLen); // 1 hour
+        }
+
+        // add markers
+        helpString = oneFile;
+        helpString.replace("_ica.txt", ".edf");
+        helpString = init + helpString;
+        cout << "initFile = " << helpString << endl;
+
+        globalEdf.readEdfFile(helpString);
+        dataMat[19] = globalEdf.getData()[globalEdf.getMarkChan()];
+
+        helpString = oneFile;
+        helpString.replace(".txt", ".edf");
+        helpString = init + helpString;
+        cout << "outFile = " << helpString << endl;
+        globalEdf.writeOtherData(dataMat, helpString);
+    }
+
+    exit(0);
+#endif
+
+#if 0
+    // components ordering, based on EDFs and maps
+    const QString init = "/media/Files/Data/Mati/ICAstudy/";
+    const QString pth = "/media/Files/Data/Mati/ICAstudy/Help/";
+    QString helpString;
+
+    dir->cd(init);
+    QStringList dataFiles = dir->entryList(QStringList("*_ica.edf"));
+
+    matrix dataMat;
+    matrix matrixA(19);
+
+    for(QString &oneFile : dataFiles)
+    {
+        helpString = init + oneFile;
+        setEdfFile(helpString);
+        readData();
+
+        dataMat = globalEdf.getData();
+
+        helpString = oneFile;
+        helpString.replace("_ica.edf", "_maps.txt");
+        helpString = pth + helpString;
+
+        readICAMatrix(helpString, matrixA, ns - 1);
+
+        // ordering itself
+        std::vector <std::pair <double, int>> colsNorms;
+
+        double sumSquares = 0.;
+        double sum1 = 0.;
+
+        for(int i = 0; i < ns - 1; ++i) // w/o markers
+        {
+            sum1 = 0.;
+            std::for_each(dataMat[i].begin(),
+                          dataMat[i].end(),
+                          [&sum1](double in){sum1 += in * in;});
+            sumSquares += sum1;
+            colsNorms.push_back(std::make_pair(sum1, i));
+        }
+        std::sort(colsNorms.begin(),
+                  colsNorms.end(),
+                  [](std::pair <double, int> i, std::pair <double, int> j)
+        {return i.first > j.first;});
+
+        for(int i = 0; i < ns - 1; ++i)
+        {
+//            cout << colsNorms[i].first << "\t" << colsNorms[i].second << endl;
+        }
+
+        int tempIndex;
+//        std::vector <double> tempComp;
+        for(int i = 0; i < ns - 2; ++i) // dont move the last
+        {
+
+            // swap matrixA cols
+            matrixA.swapCols(i, colsNorms[i].second);
+
+            // swap dataMat rows
+            dataMat.swapRows(i, colsNorms[i].second);
+
+            // swap i and colsNorms[i].second values in colsNorms
+            auto it1 = std::find_if(colsNorms.begin(),
+                                    colsNorms.end(),
+                                    [i](std::pair <double, int> in)
+            {return in.second == i;});
+
+            // auto it2 = colsNorms.begin() + i;
+            auto it2 = std::find_if(colsNorms.begin(),
+                                    colsNorms.end(),
+                                    [colsNorms, i](std::pair <double, int> in)
+            {return in.second == colsNorms[i].second;});
+
+            tempIndex = (*it1).second;
+            (*it1).second = (*it2).second;
+            (*it2).second = tempIndex;
+        }
+
+
+
+
+
+        helpString = oneFile;
+        helpString.replace("_ica.edf", "_maps_after.txt");
+        helpString = pth + helpString;
+        writeICAMatrix(helpString, matrixA, ns - 1);
+
+        helpString = oneFile;
+        helpString.replace(".edf", "_after.edf");
+        helpString = init + helpString;
+        globalEdf.writeOtherData(dataMat, helpString);
+//        break;
+    }
+
+    exit(0);
+
+#endif
+
+#if 0
+    // test components ordering
+    QStringList names;
+    names << "ADA" << "BSA" << "FEV" << "KMX" << "NVV" << "PYV" << "SDV" << "SIV";
+    QStringList exts;
+    exts << "_0" << "_1" << "_2" << "_full";
+    QStringList leest;
+    leest << "_maps_after_len" << "_maps_before_len" << "_eigenValues" << "_eigenMatrix";
+
+    const int numIter = 5;
+
+    dir->cd("/media/Files/Data/Mati/ICAstudy/");
+
+    QString helpString;
+
+
+
+    for(QString & guy : names)
+    {
+        break;
+        for(QString &ext : exts)
+        {
+            helpString = dir->absolutePath()
+                    + slash() + guy + ext + ".edf";
+            setEdfFile(helpString);
+            if(!helpString.endsWith("BSA_0.edf")) continue;
+
+            for(int i = 0; i < numIter; ++i)
+            {
+                ICA();
+                for(QString &typ : leest)
+                {
+                    const QString hlp = dir->absolutePath()
+                            + slash() + "Help"
+                            + slash() + guy + ext
+                            + typ;
+
+                    QFile::remove(hlp + "_" + QString::number(i) + ".txt");
+                    QFile::copy(hlp + ".txt",
+                            hlp + "_" + QString::number(i) + ".txt");
+                }
+            }
+        }
+    }
+
+
+
+    sleep(10);
+    for(QString & guy : names)
+    {
+        for(QString &ext : exts)
+        {
+            cout << endl << guy << ext << endl;
+            helpString = dir->absolutePath()
+                    + slash() + guy + ext + ".edf";
+
+            if(!helpString.endsWith("BSA_0.edf")) continue;
+            setEdfFile(helpString);
+
+            globalEdf.readEdfFile(helpString);
+
+            for(int i = 0; i < numIter; ++i)
+            {
+                const QString hlp = dir->absolutePath()
+                        + slash() + "Help"
+                        + slash() + guy + ext + "_maps_after_len_"
+                        + QString::number(i) + ".txt";
+                if(!QFile::exists(hlp))
+                {
+                    exit(0);
+                }
+
+
+                matrix matrixA(dim);
+                matrix comps(dim, globalEdf.getDataLen());
+                matrix EEG;
+                globalEdf.getDataCopy(EEG.data);
+                EEG.data.resize(dim);
+
+                readICAMatrix(hlp,
+                              matrixA.data,
+                              dim);
+
+                matrixA.invert();
+                matrixProduct(matrixA, EEG, comps);
+                vector <double> sum;
+                sum.resize(dim);
+                std::transform(comps.data.begin(),
+                               comps.data.end(),
+                               sum.begin(),
+                               [](vector <double> in)
+                {
+                    double s = 0.;
+                    std::for_each(in.begin(),
+                                  in.end(),
+                                  [&s](double inn)
+                    {
+                        s += inn * inn;
+                    }
+                    );
+                    return s;
+                }
+                );
+                double summ = 0.;
+                std::for_each(sum.begin(),
+                              sum.end(),
+                              [&summ](double in)
+                {
+                    summ += in;
+                }
+                );
+                for(int j = 0; j < dim; ++j)
+                {
+                    cout << doubleRound(sum[j] / summ, 3) << "\t";
+                }
+                cout << endl;
+            }
+        }
+    }
+    exit(0);
+    // best set of components
+
+    filesAddComponentsInner("/media/Files/Data/Mati/ICAstudy/",
+                            "ADA_full.edf",
+                            40);
+    exit(0);
+
+#endif
+
+#if 0
     // concat all mati sessions
-//    dir->cd("/media/Files/Data/Mati");
-//    QStringList dirLst = dir->entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
-//    for(QString & guy : dirLst)
-//    {
-//        dir->cd(guy);
-//        dir->cd("auxEdfs");
-
-//        QString helpString = dir->absolutePath() + slash() + guy + "_0.edf";
-//        if(!QFile::exists(helpString))
-//        {
-//            dir->cdUp();
-//            dir->cdUp();
-//            continue;
-//        }
-//        edfFile initFile;
-//        initFile.readEdfFile(helpString);
-//        helpString.replace("_0.edf", "_1.edf");
-//        initFile.concatFile(helpString);
-//        helpString.replace("_1.edf", "_2.edf");
-//        initFile.concatFile(helpString);
-
-//        dir->cdUp();
-//        QString helpString2 = dir->absolutePath() + slash() + guy + "_full.edf";
-//        initFile.writeEdfFile(helpString2);
-//        dir->cdUp();
-//    }
-//    exit(0);
-
-    // do the ICA
     dir->cd("/media/Files/Data/Mati");
     QStringList dirLst = dir->entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
     for(QString & guy : dirLst)
     {
-//        if(guy == "ADA") continue;
         dir->cd(guy);
+        dir->cd("auxEdfs");
 
-        QString helpString = dir->absolutePath() + slash() + guy + "_full.edf";
+        QString helpString = dir->absolutePath() + slash() + guy + "_0.edf";
         if(!QFile::exists(helpString))
         {
             dir->cdUp();
+            dir->cdUp();
             continue;
         }
-        setEdfFile(helpString);
-        ICA();
+        edfFile initFile;
+        initFile.readEdfFile(helpString);
+        helpString.replace("_0.edf", "_1.edf");
+        initFile.concatFile(helpString);
+        helpString.replace("_1.edf", "_2.edf");
+        initFile.concatFile(helpString);
 
-
-        setEdfFile(dir->absolutePath() + slash() + guy + "_full_ica.edf");
-        cleanDirs();
-        sliceAll();
-
-        Spectre * sp = new Spectre(dir, ns, ExpName);
-        sp->countSpectra();
-        for(int i = 0; i < 4; ++i)
-        {
-            sp->compare();
-        }
-        sp->psaSlot();
-        sp->close();
-
-
-//        drawMapsOnSpectra(dir->absolutePath()
-//                          + slash() + "Help"
-//                          + slash() + ExpName.left(3)
-//                          + "_full_ica.jpg",
-//                          dir->absolutePath()
-//                          + slash() + "Help"
-//                          + slash() + ExpName.left(3)
-//                          + "_full_ica_wm.jpg",
-//                          dir->absolutePath() + slash() + "Help",
-//                          ExpName.left(3));
         dir->cdUp();
-
-//        return;
-
+        QString helpString2 = dir->absolutePath() + slash() + guy + "_full.edf";
+        initFile.writeEdfFile(helpString2);
+        dir->cdUp();
     }
     exit(0);
+#endif
 
+#if 0
+    // drop some channels, test classification
+    QString currGuy = "SIV";
+    QString helpString;
+    dir->cd("/media/Files/Data/Mati/ICAstudy/");
+    helpString = "/media/Files/Data/Mati/ICAstudy/" + currGuy + "_full_ica.edf";
+    globalEdf.readEdfFile(helpString);
+    QList <int> chanList;
+//    chanList << 0;
+    chanList << 1;
+    chanList << 2;
+    chanList << 3;
+    chanList << 4;
+    chanList << 5;
+//    chanList << 6;
+    chanList << 7;
+    chanList << 8;
+    chanList << 9;
+    chanList << 10;
+    chanList << 11;
+    chanList << 12;
+    chanList << 13;
+    chanList << 14;
+//    chanList << 15;
+//    chanList << 16;
+    chanList << 17;
+    chanList << 18;
+    chanList << 19;
+    globalEdf.reduceChannels(chanList);
 
+    helpString = "/media/Files/Data/Mati/ICAstudy/" + currGuy + "_new_ica.edf";
+    globalEdf.writeEdfFile(helpString);
+    makeCfgStatic("/media/Files/Data/Mati/ICAstudy/",
+                  (chanList.length() - 1) * 247,
+                  "new");
 
-    GalyaProcessing();
+    ofstream outStr;
+
+    helpString = currGuy + "_new_ica.edf";
+    fileInnerClassification("/media/Files/Data/Mati/ICAstudy",
+                            helpString,
+                            "new",
+                            50);
+    outStr.open("/media/Files/Data/Mati/ICAstudy/results.txt", ios_base::app);
+    outStr << "\t" << currGuy << "_new_ica, " << chanList.length()-1 << " channnels" << endl;
+    outStr.close();
     exit(0);
+#endif
+
+#if 1
+    // process ICAs - draw maps & classify
+    dir->cd("/media/Files/Data/Mati/ICAstudy");
+    QStringList dirLst = dir->entryList(QStringList("*_full_ica_after.edf"), QDir::Files);
+    for(QString & guy : dirLst)
+    {
+        QString helpString = dir->absolutePath() + slash() + guy;
+        setEdfFile(helpString);
+
+        helpString = guy;
+        helpString.remove("_ica_after.edf");
+
+        drawMapsICA(QString("/media/Files/Data/Mati/ICAstudy/Help/" + helpString + "_maps_after.txt"),
+                    19,
+                    "/media/Files/Data/Mati/ICAstudy/Help/Maps",
+                    helpString);
+
+#if 0
+            drawMapsOnSpectra(dir->absolutePath()
+                              + slash() + "Help"
+                              + slash() + ExpName.left(3)
+                              + "_full_ica_all.jpg",
+                              dir->absolutePath()
+                              + slash() + "Help"
+                              + slash() + ExpName.left(3)
+                              + "_full_ica_wm.jpg",
+                              dir->absolutePath() + slash() + "Help",
+                              ExpName.left(3));
+
+#endif
+
+
+        fileInnerClassification("/media/Files/Data/Mati/ICAstudy",
+                                guy,
+                                "16sec19ch",
+                                50);
+
+        ofstream outStr;
+        outStr.open("/media/Files/Data/Mati/ICAstudy/results.txt", ios_base::app);
+        outStr << "\t" << guy.left(guy.indexOf("_after")) << endl;
+        outStr.close();
+    }
+    exit(0);
+#endif
+
+
+
+//    GalyaProcessing();
+//    exit(0);
 
 
 #if 0

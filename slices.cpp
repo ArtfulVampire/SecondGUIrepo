@@ -690,7 +690,7 @@ void MainWindow::sliceOneByOne() //generality, just for my current
 
 }
 
-void MainWindow::sliceOneByOneNew(int numChanWrite) // deprecated numChanWrite - always with markers
+void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with markers
 {
     QString helpString;
     int number = 0;
@@ -708,7 +708,7 @@ void MainWindow::sliceOneByOneNew(int numChanWrite) // deprecated numChanWrite -
     //200, 255, (241||247, num, 254, 255)
     for(int i = 0; i < ndr*nr[ns-1]; ++i)
     {
-        if(markChanArr[i] == 0)
+        if(markChanArr[i] == 0.)
         {
             continue;
         }
@@ -738,7 +738,10 @@ void MainWindow::sliceOneByOneNew(int numChanWrite) // deprecated numChanWrite -
                                                   + "." + rightNumber(number, 4)
                                                   + "_" + marker);
 //            myTime.restart();
-            fil.saveSubsection(j, i, helpString, true);
+            if(i > j)
+            {
+                fil.saveSubsection(j, i, helpString, true);
+            }
 //            wholeTime += myTime.elapsed();
 
             ui->progressBar->setValue(double(i)*100./ndr*nr[ns-1]);

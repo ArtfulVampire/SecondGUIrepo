@@ -338,11 +338,12 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
         if(QFile::exists(EDFpath))
         {
 //            cout << "writeEdfFile: destination file already exists, RETURN\n" << EDFpath << endl; return;
-            cout << "writeEdfFile: destination file already exists, REWRITE = \n" << EDFpath;
+//            cout << "writeEdfFile: destination file already exists, REWRITE = \n" << EDFpath << " ";
         }
         this->handleEdfFile(EDFpath, false);
-        cout << "write time = " << doubleRound( myTime.elapsed() / 1000., 2) << " sec";
-        cout << endl;
+//        cout << "write time = " << doubleRound( myTime.elapsed() / 1000., 2) << " sec";
+
+//        cout << endl;
 
     }
     else // if(asPLain)
@@ -1484,10 +1485,25 @@ void edfFile::reduceChannels(QString chanStr)
     cout << endl;
 }
 
-void edfFile::writeOtherData(dataType &newData, QString outPath, QList<int> chanList)
+
+//template
+void edfFile::writeOtherData(matrix &newData, QString outPath, QList<int> chanList)
+{
+    this->writeOtherData(newData.data, outPath, chanList);
+}
+void edfFile::writeOtherData(mat &newData, QString outPath, QList<int> chanList)
 {
     edfFile temp(*this, true); // copy-construct everything but data
     //adjust channels
+
+    if(chanList.isEmpty())
+    {
+        for(int i = 0; i < newData.size(); ++i)
+        {
+            chanList << i;
+        }
+    }
+
     temp.channels.clear();
     for(int i = 0; i < chanList.length(); ++i)
     {
