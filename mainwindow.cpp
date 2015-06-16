@@ -1761,6 +1761,114 @@ void MainWindow::customFunc()
 //    return;
 
     sleep(5);
+#if 0
+    // draw maps
+    const QString path = "/media/Files/Data/Mati/ICAstudy/";
+    const QString hlp = "/media/Files/Data/Mati/ICAstudy/Help/";
+    const QString out = "/media/Files/Data/Mati/ICAstudy/Help/Maps/";
+    QString helpString;
+    QString nam;
+    dir->cd(path);
+    QStringList dataFiles = dir->entryList(QStringList("*_ica_after.edf"));
+
+    for(QString & guy : dataFiles)
+    {
+        helpString = guy;
+        helpString.replace("_ica_after.edf", "_maps_after.txt");
+        helpString = hlp + helpString;
+
+        nam = guy;
+        nam.remove("_ica_after.edf");
+
+        drawMapsICA(helpString,
+                    19,
+                    out,
+                    nam);
+    }
+    exit(0);
+#endif
+
+#if 0
+    // test ICA spectre in concatenated files and split ones
+    const QString path = "/media/Files/Data/Mati/ICAstudy/";
+    QString helpString;
+    dir->cd(path);
+    QStringList dataFiles = dir->entryList(QStringList("*_ica_after.edf"));
+
+    for(QString & guy : dataFiles)
+    {
+        helpString = path + guy;
+        setEdfFile(helpString);
+        cleanDirs();
+        sliceAll();
+
+        Spectre * sp = new Spectre(dir, ns, ExpName);
+        sp->countSpectra();
+        for(int i = 0; i < 4; ++i)
+        {
+            sp->compare();
+        }
+        if(guy.contains("full"))
+        {
+            sp->psaSlot();
+        }
+        delete sp;
+    }
+    exit(0);
+
+#endif
+
+#if 1
+    // draw maps on spectre
+    const QString path = "/media/Files/Data/Mati/ICAstudy/";
+    const QString hlp = "/media/Files/Data/Mati/ICAstudy/Help/";
+    const QString mapsDir = "/media/Files/Data/Mati/ICAstudy/Help/Maps/";
+    QString helpString;
+    QString nam;
+    QString outPath;
+    dir->cd(path);
+    QStringList dataFiles = dir->entryList(QStringList("*_ica_after.edf"));
+
+    for(QString & guy : dataFiles)
+    {
+//        if(!guy.contains("ADA")) exit(0);
+
+        // helpString - init jpg path
+        helpString = guy;
+        if(helpString.contains("_0_"))
+        {
+            helpString.replace(".edf", "_241.jpg");
+        }
+        else if(helpString.contains("_1_"))
+        {
+            helpString.replace(".edf", "_247.jpg");
+        }
+        else if(helpString.contains("_2_"))
+        {
+            helpString.replace(".edf", "_244.jpg");
+        }
+        else if(helpString.contains("_full_"))
+        {
+            helpString.replace(".edf", "_all.jpg");
+        }
+        else continue;
+        outPath = helpString;
+        outPath.replace(".jpg", "_wm.jpg");
+        helpString = hlp + helpString;
+        outPath = hlp + outPath;
+
+
+        nam = guy;
+        nam.remove("_ica_after.edf");
+
+        drawMapsOnSpectra(helpString,
+                          outPath,
+                          mapsDir,
+                          nam);
+
+    }
+    exit(0);
+#endif
 
 #if 0
     // test distances between matrixes A (EEG.icawinv)
@@ -1969,7 +2077,6 @@ void MainWindow::customFunc()
         helpString.replace(".edf", "_after.edf");
         helpString = init + helpString;
         globalEdf.writeOtherData(dataMat, helpString);
-//        break;
     }
 
     exit(0);

@@ -67,20 +67,21 @@ QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, 
 
 void drawMapSpline(double ** &matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
 {
-
     QPixmap pic = QPixmap(size, size);
     QPainter painter;
     pic.fill();
     painter.begin(&pic);
-    QString savePath1 = outDir + QDir::separator() + outName + "_map_" + QString::number(num) + "+.png";
+    QString savePath1 = outDir
+            + slash() + outName + "_map_" + QString::number(num) + "+.png";
     double val;
 
     QPixmap pic1 = QPixmap(size, size);
     QPainter painter1;
     pic1.fill();
     painter1.begin(&pic1);
-    QString savePath2 = outDir + QDir::separator() + outName + "_map_" + QString::number(num) + "-.png";
-    double val1;
+    QString savePath2 = outDir
+            + slash() + outName + "_map_" + QString::number(num) + "-.png";
+
     double drawArg;
     int drawRange = 256;
 

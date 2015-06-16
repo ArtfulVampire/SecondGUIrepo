@@ -728,7 +728,20 @@ void Spectre::compare()
             const double X = paint->device()->width() * coords::x[c2];
 
             //spectre itself
-            paint->setPen(QPen(QBrush("black"), lineWidth));
+
+            if(ui->lineEdit_m1->text().contains("241"))
+            {
+                paint->setPen(QPen(QBrush("blue"), lineWidth));
+            }
+            else if (ui->lineEdit_m1->text().contains("247"))
+            {
+                paint->setPen(QPen(QBrush("red"), lineWidth));
+            }
+            else
+            {
+                paint->setPen(QPen(QBrush("green"), lineWidth));
+            }
+
             for(int k = 0; k < graphWidth - 1; ++k)
             {
                 paint->drawLine(X + k,

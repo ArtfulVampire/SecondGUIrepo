@@ -221,7 +221,7 @@ void calcSpectre(double ** &inData, int leng, const int &ns, double **& dataFFT,
 void calcRawFFT(double ** &inData, double **& dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
 template <typename T>
-double distance(const vector<T> &vec1, const vector<T> &vec2, const int &dim);
+double distance(const vector <T> &vec1, const vector <T> &vec2, const int &dim);
 
 double distance(double *vec1, double *vec2, const int &dim);
 double distance(double const x1, double const y1, double const x2, double const y2);
