@@ -135,7 +135,11 @@ double independence(double * const signal1, double * const signal2, int length);
 double countAngle(double initX, double initY);
 
 
-bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p);
+bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p = 0.05);
+bool MannWhitney(vector <double> arr1,
+                 vector <double> arr2,
+                 double p = 0.05);
+
 void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength, int NumOfClasses, double coeff, QString outFile);
 void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int spLength, double coeff, double *** outMatrix);
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
@@ -144,8 +148,14 @@ void drawRCP(double *values, int length);
 void countRCP(QString filename, QString picPath  = QString(), double *outMean = NULL, double *outSigma = NULL);
 //void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
 void svd(const mat & inData, mat & eigenVectors, vector <double> & eigenValues, double threshold = 1e-9);
-void makeCfgStatic(QString outFileDir, int NetLength = 19*247, QString FileName = "16sec19ch", int numOfOuts = 3, double lrate = 0.1, double error = 0.1, int temp = 10);
 
+void makeCfgStatic(QString outFileDir,
+                   int NetLength = 19 * 247,
+                   QString FileName = "16sec19ch",
+                   int numOfOuts = 3,
+                   double lrate = 0.1,
+                   double error = 0.1,
+                   int temp = 10);
 
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
 void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
@@ -184,6 +194,18 @@ QPixmap drawEeg( Typ dataD,
                  double norm = 1.,
                  int blueChan = -1,
                  int redChan = -1);
+
+
+
+// for 19 channels only
+//void drawTemplate(int width, int height, QString outPath,
+//                  double left, double right, double spStep);
+//template <typename Typ>
+//void drawGraph(QString inPath, Typ &values, double maxVal, int spLength, QColor color, int lineWidth = 2);
+//void drawMW(QString inPath, bool * values, int spLength, QColor colorTrue, QColor colorFalse, int numOfMw);
+//void drawGraph(QString inPath, double * values, double maxVal, int spLength, QColor color, int lineWidth = 2);
+
+
 
 
 void drawArray(double * array, int length, QString outPath);

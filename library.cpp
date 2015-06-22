@@ -1058,34 +1058,43 @@ double rankit(int i, int length, double k)
     return quantile( (i-k) / (length + 1. - 2. * k) );
 }
 
-bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p)
+bool MannWhitney(double * arr1, int len1,
+                 double * arr2, int len2,
+                 double p)
 {
 
     int * n = new int[2];
     n[0] = len1;
     n[1] = len2;
 
+//    cout << n[0] << "\t" << n[1] << endl;
+
     double ** array = new double * [2];
     array[0] = new double [n[0] + n[1]];
     array[1] = new double [n[0] + n[1]];
+
     for(int i = 0; i < n[0]; ++i)
     {
         array[0][i] = arr1[i];
-    }
-    for(int i = 0 + n[0]; i < n[1] + n[0]; ++i)
-    {
-        array[1][i] = arr2[i];
-    }
-
-
-    for(int i = 0; i < n[0]; ++i)
-    {
         array[1][i] = 0.;
     }
-    for(int i = n[0]; i < n[0] + n[1]; ++i)
+    for(int i = 0; i < n[1]; ++i)
     {
-        array[0][i] = 0.;
+        array[0][ i + n[0] ] = 0.;
+        array[1][ i + n[0] ] = arr2[i];
     }
+
+    // init
+//    for(int i = 0; i < n[1] + n[0]; ++i)
+//    {
+//        cout << array[0][i] << "\t";
+//    }
+//    cout << endl;
+//    for(int i = 0; i < n[1] + n[0]; ++i)
+//    {
+//        cout << array[1][i] << "\t";
+//    }
+//    cout << endl;
 
 
     double temp;
@@ -1094,9 +1103,10 @@ bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p)
     double average = n[0]*n[1]/2.;
     double dispersion = sqrt(n[0]*n[1]*(n[0]+n[1])/12.);
 
-
     double U = 0.;
 
+
+    // sort
     double tmp1, tmp2;
     for(int k = 0; k < n[0] + n[1]; ++k)
     {
@@ -1120,15 +1130,26 @@ bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p)
         }
     }
 
+//    cout << "arr: ";
+//    for(int i = 0; i < n[0] + n[1]; ++i)
+//    {
+//        if(array[0][i] != 0.) cout << array[0][i] << "\t";
+//        else cout << array[1][i] << "\t";
+//    }
+//    cout << endl;
+
     //count sums
 
     sum0 = 0;
-    for(int i = 0; i<n[0] + n[1]; ++i)
+    for(int i = 0; i < n[0] + n[1]; ++i)
     {
-        if(array[0][i]!=0) sum0 += (i+1);
+        if(array[0][i] != 0) sum0 += (i+1);
     }
 
     //if sum0 is bigger
+//    cout << "arr " << sum0 << endl;
+
+
 
     sumAll = (n[0]+n[1])*(n[0]+n[1]+1)/2;
     if(sum0 > sumAll/2 )
@@ -1140,18 +1161,102 @@ bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p)
         U = double(n[1]*n[0] + n[1]*(n[1]+1)/2. - (sumAll - sum0));
     }
 
+//    cout << "arr " << U << endl;
+
+
     delete []n;
     matrixDelete(&array, 2);
 
-    if(abs((U-average)/double(dispersion)) > quantile((1.00 + (1-p))/2.))
+    if(fabs(U-average) / dispersion > quantile( (1.00 + (1. - p) ) / 2.) )
     {
-//        cout<<"different"<<endl;
+//        cout<<"differecout nt"<<endl;
         return true;
 
     }
     else
     {
 //        cout<<"not different"<<endl;
+        return false;
+    }
+}
+
+
+bool MannWhitney(vector <double> arr1,
+                 vector <double> arr2,
+                 double p)
+{
+    vector <pair <double, int>> arr;
+
+    // fill first array
+    std::for_each(arr1.begin(),
+                  arr1.end(),
+                  [&arr](double in)
+    {arr.push_back(std::make_pair(in, 0));});
+
+    // fill second array
+    std::for_each(arr2.begin(),
+                  arr2.end(),
+                  [&arr](double in)
+    {arr.push_back(std::make_pair(in, 1));});
+
+    std::sort(arr.begin(),
+              arr.end(),
+              [](std::pair<double, int> i,
+              std::pair<double, int> j) {return i.first > j.first;});
+
+
+//    cout << "vec: ";
+//    std::for_each(arr.begin(),
+//                  arr.end(),
+//                  [](pair <double , int> in)
+//    {cout << in.first << "\t";});
+//    cout << endl;
+
+
+
+    int sum0 = 0;
+    int sumAll;
+    double average = arr1.size() * arr2.size() / 2.;
+    double dispersion = sqrt(arr1.size() * arr2.size() * ( arr1.size() + arr2.size() ) / 12.);
+
+    double U = 0.;
+
+
+    //count sums
+    for(int i = 0; i < arr.size(); ++i)
+    {
+        if(arr[i].second == 0)
+        {
+            sum0 += (i+1);
+        }
+    }
+
+//    cout << "vec " << sum0 << endl;
+
+    sumAll = ( arr1.size() + arr2.size())
+            * (arr1.size() + arr2.size() + 1) / 2;
+
+    if(sum0 > sumAll/2 )
+    {
+        U = double(arr1.size() * arr2.size()
+                   + arr1.size() * (arr1.size() + 1) /2. - sum0);
+    }
+    else
+    {
+
+        U = double(arr1.size() * arr2.size()
+                   + arr2.size() * (arr2.size() + 1) /2. - (sumAll - sum0));
+    }
+
+//    cout << "vec " << U << endl;
+
+    if(fabs(U - average) / dispersion > quantile( (1.00 + (1. - p) ) / 2.) )
+    {
+        return true;
+
+    }
+    else
+    {
         return false;
     }
 }
@@ -1592,6 +1697,7 @@ QString rightNumber(const unsigned int input, int N) // prepend zeros
     }
     return h.right(N);
 }
+
 
 void drawArray(double * array, int length, QString outPath)
 {

@@ -1757,10 +1757,41 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
+    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+    ns = 20;
+    MakePa * mk = new MakePa("/media/Files/Data/AAX/SpectraSmooth",
+                             "AAX_rr_f_new.edf");
+    mk->mwTest();
+    exit(1);
 
-//    return;
+
+    return;
 
     sleep(5);
+#if 1
+    // test mann-whitney funcs
+    vector <double> in1;
+    vector <double> in2;
+    srand(time(NULL));
+
+    for(int k = 0; k < 10; ++k)
+    {
+        in1.clear();
+        in2.clear();
+        for(int i = 0; i < 15; ++i)
+        {
+            in1.push_back(rand()%1500 / 100.);
+            in2.push_back(rand()%2500 / 100. + 5);
+        }
+
+        cout << MannWhitney(in1, in2, 0.05) << "\t" << MannWhitney(in1.data(),
+                                                                   in1.size(),
+                                                                   in2.data(),
+                                                                   in2.size(),
+                                                                   0.05) << endl;
+    }
+    exit(0);
+#endif
 #if 0
     // draw maps
     const QString path = "/media/Files/Data/Mati/ICAstudy/";

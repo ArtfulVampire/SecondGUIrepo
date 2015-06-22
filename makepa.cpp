@@ -37,7 +37,7 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
 
     ui->lineEdit_1->setText("_241");
     ui->lineEdit_2->setText("_247");
-    ui->lineEdit_3->setText("_244");
+    ui->lineEdit_3->setText("_254"); // MATI or NORMAL
 
     ui->rdcCoeffBox->setValue(20);
     ui->rdcCoeffBox->setDecimals(3);
@@ -143,11 +143,11 @@ void MakePa::mwTest()
 {
     ui->mwTestLine->clear();
 
-    QDir *dir_ = new QDir();
-    dir_->cd(ui->spectraDirLineEdit->text());          /////////which dir?
-    helpString=dir_->absolutePath();
+    QDir * dir_ = new QDir();
+    dir_->cd(ui->spectraDirLineEdit->text());
+    helpString = dir_->absolutePath();
 
-    QStringList nameFilters, list, lst[2]; //0 - Spatial, 1 - Verbal
+    QStringList nameFilters, list, lst[3]; //0 - Spatial, 1 - Verbal, 2 - Rest
     FILE * currFile;
 
     //make lists of files
@@ -155,264 +155,275 @@ void MakePa::mwTest()
     nameFilters.clear();
     list.clear();
     list = ui->lineEdit_1->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
+    for(int i = 0; i < list.length(); ++i)
     {
-        helpString.clear();
-        helpString.append("*");
-        helpString.append(list.at(i));
-        helpString.append("*");
-        nameFilters.append(helpString);
+        helpString = "*" + list[i] + "*";
+        nameFilters << helpString;
     }
-    lst[0]=dir_->entryList(nameFilters, QDir::Files);
+    lst[0] = dir_->entryList(nameFilters, QDir::Files);
 
     //Verbal
     nameFilters.clear();
     list.clear();
     list = ui->lineEdit_2->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
+    for(int i = 0; i < list.length(); ++i)
     {
-        helpString.clear();
-        helpString.append("*");
-        helpString.append(list.at(i));
-        helpString.append("*");
-        nameFilters.append(helpString);
+        helpString = "*" + list[i] + "*";
+        nameFilters << helpString;
     }
-    lst[1]=dir_->entryList(nameFilters, QDir::Files);
+    lst[1] = dir_->entryList(nameFilters, QDir::Files);
 
-
-    int * n = new int[2];
-    n[0] = lst[0].length();
-    n[1] = lst[1].length();
-
-    double *** spectre = new double ** [2]; ///////////////////////////////////////////////change i-j
-    for(int i=0; i<2; ++i)
+    //Rest
+    nameFilters.clear();
+    list.clear();
+    list = ui->lineEdit_3->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+    for(int i = 0; i < list.length(); ++i)
     {
-        spectre[i] = new double * [n[i]];
-        for(int j=0; j<n[i]; ++j)
+        helpString = "*" + list[i] + "*";
+        nameFilters << helpString;
+    }
+    lst[2] = dir_->entryList(nameFilters, QDir::Files);
+
+    const int num = 3;
+    const int NetLength = ns * spLength;
+
+    int * n = new int[num];
+    for(int i = 0; i < num; ++i)
+    {
+        n[i] = lst[i].length();
+    }
+    double *** spectre = new double ** [num]; /// type
+    for(int i = 0; i < num; ++i)
+    {
+        spectre[i] = new double * [NetLength]; /// spectral point
+        for(int j = 0; j < NetLength; ++j)
         {
-            spectre[i][j] = new double [ns*spLength];
+            spectre[i][j] = new double [ n[i] ]; /// realisation
         }
     }
 
     //read the spectra into matrixes
-    for(int j=0; j<2; ++j)
+    for(int i = 0; i < num; ++i)
     {
-        for(int i=0; i<n[j]; ++i)
+        for(int j = 0; j < n[i]; ++j)
         {
-            helpString=dir_->absolutePath().append(QDir::separator()).append(lst[j][i]);
-            currFile = fopen(helpString.toStdString().c_str(), "r");
-            for(int k=0; k<ns*spLength; ++k)
+            helpString = QDir::toNativeSeparators(dir_->absolutePath()
+                                                  + slash() + lst[i][j]);
+
+            currFile = fopen(helpString, "r");
+            for(int k = 0; k < NetLength; ++k)
             {
-                fscanf(currFile, "%lf", &spectre[j][i][k]);
+                fscanf(currFile, "%lf", &spectre[i][k][j]);
             }
             fclose(currFile);
         }
     }
 
-    double ** array = new double *[2];
-    for(int i=0; i<2; ++i)
+
+    int ** numOfDiff = new int * [num];
+    for(int i = 0; i < num; ++i)
     {
-        array[i] = new double [n[0]+n[1]];
+        numOfDiff[i] = new int [num - i - 1];
     }
 
-    double temp;
-    double sum0;
-    int sumAll;
-    double average = n[0]*n[1]/2.;
-    double dispersion = sqrt(n[0]*n[1]*(n[0]+n[1])/12.);
-    int numOfDiff = 0;
-
-    double *U = new double [ns*spLength];
-
-    int numOfZero = 0;
-
-    //for every spectra-bin
-    for(int j=0; j<ns*spLength; ++j)
+    bool *** MW = new bool ** [num];
+    for(int i = 0; i < num; ++i)
     {
-//        cout<<"Start"<<endl;
-
-        //fill the arrays for sort
-        for(int i=0; i<n[0]; ++i)
+        MW[i] = new bool * [num - i - 1];
+        for(int j = i + 1; j < num; ++j)
         {
-            array[0][i] = spectre[0][i][j];
-            array[1][i] = 0.;
+            MW[i][j - i] = new bool [NetLength];
         }
-        for(int i=n[0]; i<n[0] + n[1]; ++i)
-        {
-            array[0][i] = 0.;
-            array[1][i] = spectre[1][i - n[0]][j];
-        }
+    }
 
-        //for zeroed bins
-        sum0 = 0;
-        for(int i = 0; i < n[0] +n [1]; ++i)
+    // for every spectra-bin
+    for(int i = 0; i < num; ++i)
+    {
+        for(int j = i + 1; j < num; ++j)
         {
-            sum0 += max(array[0][i], array[1][i]);
-        }
-        if(sum0 == 0.)
-        {
-            U[j] = average;
-            numOfZero +=1;
-            cout<<j<<"'th zero"<<endl;
-            continue;
-        }
+            numOfDiff[i][j - i] = 0;
 
-
-        //sort all
-        for(int k=0; k<n[0] + n[1]; ++k)
-        {
-            for(int i=0; i<n[0] + n[1] - 1; ++i)
+            for(int k = 0; k < NetLength; ++k)
             {
-                if( max( array[0][i], array[1][i]) > max( array[0][i+1], array[1][i+1]))
+//                cout << i << "\t";
+//                cout << j << "\t";
+//                cout << k << endl;
+
+                MW[i][j - i][k] = MannWhitney(spectre[i][k],
+                                          n[i],
+                                          spectre[j][k],
+                                          n[j]);
+
+
+                if(MW[i][j - i][k])
                 {
-                    for(int j=0; j<2; ++j)
-                    {
-                        temp=array[j][i];
-                        array[j][i]=array[j][i+1];
-                        array[j][i+1]=temp;
-                    }
+                    ++numOfDiff[i][j - i];
                 }
             }
         }
-
-//        cout<<"second array sorted"<<endl;
-
-        //count sums
-
-        sum0 = 0;
-        for(int i=0; i<n[0] + n[1]; ++i)
-        {
-            if(array[0][i]!=0) sum0 += (i+1);
-        }
-
-        //if sum0 is bigger
-
-        sumAll = (n[0]+n[1])*(n[0]+n[1]+1)/2;
-        if(sum0 > sumAll/2 )
-        {
-            U[j] = double(n[0]*n[1] + n[0]*(n[0]+1)/2. - sum0);
-        }
-        else
-        {
-            U[j] = double(n[1]*n[0] + n[1]*(n[1]+1)/2. - double(sumAll - sum0));
-        }
-
-//        if(j%200==0) cout<<"j="<<j<<"  U="<<U[j]<<endl;
-
-        if(fabs((U[j]-average)/double(dispersion)) > quantile( (1. + ui->alphaSpinBox->value()) / 2.))
-        {
-            numOfDiff+=1;
-        }
     }
-    cout<<"num of different freq-bins "<<numOfDiff<<endl;
 
     //automatization
-    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
-    fprintf(res, "U-test\t%d\n", numOfDiff);
-    fprintf(res, "U-test part\t%lf\n", double(numOfDiff/double(ns*spLength)));
-    fprintf(res, "U-test part zeroed\t%lf\n", double(numOfDiff/double(ns*spLength - numOfZero)));
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + slash() + "results.txt");
+    FILE * res = fopen(helpString, "a+");
+    for(int i = 0; i < num; ++i)
+    {
+        for(int j = i + 1; j < num; ++j)
+        {
+            fprintf(res, "\ndist %d - %d\n", i, j);
+            fprintf(res, "U-test\t%d\n", numOfDiff[i][j - i]);
+            fprintf(res, "U-test part\t%lf\n", double(numOfDiff[i][j - i] / double(NetLength)));
+        }
+    }
     fclose(res);
 
+
+
+
+
+
+
     //paint
-    int * spL = new int [2];
-    for(int i=0; i<2; ++i)
+    int * spL = new int [num];
+    for(int i = 0; i < num; ++i)
     {
         spL[i] = spLength;
     }
 
-    double *** sp = new double **[2];
-    for(int i=0; i<2; ++i)
+    double *** sp = new double ** [num];
+    for(int i = 0; i < num; ++i)
     {
         sp[i] = new double * [ns];
-        for(int j=0; j<ns; ++j)
+        for(int j = 0; j < ns; ++j)
         {
             sp[i][j] = new double [spL[i]];
         }
     }
 
+    cout << "ololo1" << endl;
     //create sp1 & sp2 - average spectra
-    for(int i=0; i<ns; ++i)
+    for(int i = 0; i < ns; ++i)
     {
-        for(int j=0; j<spLength; ++j)
+        for(int j = 0; j < spLength; ++j)
         {
-            for(int h=0; h<2; ++h)
+            for(int h = 0; h < num; ++h)
             {
 
-                sp[h][i][j]=0.;
-                for(int k=0; k<n[h]; ++k)
+                sp[h][i][j] = 0.;
+                for(int k = 0; k < n[h]; ++k)
                 {
-                    sp[h][i][j]+=spectre[h][k][i*spL[h]+j];
+                    sp[h][i][j] += spectre[h][i * spL[h] + j][k];
                 }
-                sp[h][i][j]/=n[h];
+                sp[h][i][j] /= n[h];
             }
         }
     }
 
-
-//    cout<<"data read"<<endl;
-
+    cout << "ololo2" << endl;
 
     QPixmap pic(1600,1600);
-//    cout<<"before QPainter"<<endl;
     QPainter *paint = new QPainter;
-//    cout<<"after QPainter"<<endl;
     pic.fill();
     paint->begin(&pic);
 
-
     double norm = ui->mwNormSpinBox->value(); //10 pixels=1mV^2 / Hz
-    double barWidth=1/2.;
-    for(int c2=0; c2<ns; ++c2)  //exept markers channel
+    double barWidth = 1/2.;
+
+    const double graphHeight = paint->device()->height() * coords::scale;
+    const double graphWidth = paint->device()->width() * coords::scale;
+    const double ext = spLength / graphWidth;
+    const int lineWidth = 2;
+
+    QColor color1;
+    QColor color2;
+
+    for(int c2 = 0; c2 < ns - 1; ++c2)  //exept markers channel
     {
+        const double X = paint->device()->width() * coords::x[c2];
+        const double Y = paint->device()->height() * coords::y[c2];
+
 
         //average spectra drawing
-        for(int k=0; k<250-1; ++k)
+        for(int h = 0; h < num; ++h)
         {
-            for(int h=0; h<2; ++h)
+            if(h==0) paint->setPen(QPen(QBrush("blue"), lineWidth));
+            if(h==1) paint->setPen(QPen(QBrush("red"), lineWidth));
+            if(h==2) paint->setPen(QPen(QBrush("green"), lineWidth));
+
+            for(int k = 0; k < graphWidth - 1; ++k)
             {
-                if(h==0) paint->setPen(QPen(QBrush("blue"), 2));
-                if(h==1) paint->setPen(QPen(QBrush("red"), 2));
-                if(h==2) paint->setPen(QPen(QBrush("green"), 2));
-                paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - sp[h][c2][int(k*spL[h]/250.)]*norm, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - sp[h][c2][int((k+1)*spL[h]/250.)]*norm);
+
+                paint->drawLine(X + k,
+                                Y - sp[h][c2][int(k * spL[h] / graphWidth)] * norm,
+                        X + k + 1,
+                        Y - sp[h][c2][int((k + 1) * spL[h] / graphWidth)] * norm);
             }
         }
 
         paint->setPen("black");
         paint->setBrush(QBrush("black"));
 
+        cout << c2 << endl;
         //statistic difference bars
-        for(int j=c2*spLength; j<(c2+1)*spLength; ++j)
+        int barCounter = 0;
+        for(int h = 0; h < num; ++h)
         {
-            for(int h=0; h<2; ++h)
-            {
-                if(h==0)
-                {
-                    paint->setPen("blue");
-                    paint->setBrush(QBrush("blue"));
-                }
-                if(h==1)
-                {
-                    paint->setPen("red");
-                    paint->setBrush(QBrush("red"));
-                }
-                if((fabs((U[j]-average)/dispersion)>quantile((1.00+ui->alphaSpinBox->value())/2.)) && ((sp[h][c2][j%spLength] == max(sp[0][c2][j%spLength], sp[1][c2][j%spLength]))))
-                {
-                    paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*spLength))*(250./spLength), paint->device()->height() * coords::y[c2] + 15 + 7*h , 2*barWidth*(250./spLength), 5); //-15 graphical 1/3 graphical
-                }
-            }
 
+            for(int l = h + 1; l < num; ++l)
+            {
+                switch(h)
+                {
+                case 0: {color1 = QColor("blue"); break;}
+                case 1: {color1 = QColor("red"); break;}
+                case 2: {color1 = QColor("green"); break;}
+                default: {color1 = QColor("black"); break;}
+                }
+                switch(l)
+                {
+                case 1: {color2 = QColor("red"); break;}
+                case 2: {color2 = QColor("green"); break;}
+                default: {color2 = QColor("black"); break;}
+                }
+
+                for(int j = c2 * spLength; j < (c2 + 1) * spLength; ++j)
+                {
+                    if(!MW[h][l - h][j]) continue;
+
+                    if (sp[h][c2][j%spLength] > sp[l][c2][j%spLength])
+                    {
+                        paint->setPen(color1);
+                        paint->setBrush(QBrush(color1));
+                    }
+                    else
+                    {
+                        paint->setPen(color2);
+                        paint->setBrush(QBrush(color2));
+                    }
+                    paint->drawRect(X + (j % spLength - barWidth) * (graphWidth / spLength),
+                                    Y + 15 + 7 * barCounter,
+                                    2 * barWidth * (graphWidth/spLength),
+                                    5);
+                }
+                ++barCounter;
+            }
         }
+
+
         paint->setPen("black");
 
-        paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2]-250);
-        paint->drawLine(paint->device()->width() * coords::x[c2], paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250, paint->device()->height() * coords::y[c2]);
+        paint->drawLine(X, Y,
+                        X, Y - graphHeight);
+
+        paint->drawLine(X, Y,
+                        X + graphWidth, Y);
 
         paint->setFont(QFont("Helvitica", 8));
 
         //Hz markers
-        for(int k=0; k<250-1; ++k) //for every Hz generality
+        for(int k = 0; k < graphWidth - 1; ++k) //for every Hz generality
         {
-//            paint->drawLine(paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2]+10);
+            /// REMAKE
             if( (left + k*(spLength)/250.)*spStep - floor((left + k*(spLength)/250.)*spStep) < spLength/250.*spStep/2. || ceil((left + k*(spLength)/250.)*spStep) - (left + k*(spLength)/250.)*spStep < spLength/250.*spStep/2.)
             {
                 paint->drawLine(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]+5);
@@ -431,15 +442,17 @@ void MakePa::mwTest()
         }
 
     }
+
+
+
     paint->setFont(QFont("Helvetica", 24, -1, false));
 
     //channel labels
-    for(int c2=0; c2<ns; ++c2)  //exept markers channel
+    for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel
     {
         paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]));
     }
 
-    //draw scale
     //draw scale
     paint->drawLine(QPointF(paint->device()->width() * coords::x[6], paint->device()->height() * coords::y[1]), QPointF(paint->device()->width() * coords::x[6], paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())));  //250 - graph height generality
 
@@ -460,9 +473,9 @@ void MakePa::mwTest()
     paint->end();
 
 
-    for(int h=0; h<2; ++h)
+    for(int h = 0; h < num; ++h)
     {
-        for(int i=0; i<ns; ++i)
+        for(int i = 0; i < ns; ++i)
         {
             delete []sp[h][i];
         }
@@ -471,23 +484,33 @@ void MakePa::mwTest()
     delete []sp;
 
 
-    for(int i=0; i<2; ++i)
-    {
-        delete []array[i];
-    }
-    delete []array;
 
-
-    for(int h=0; h<2; ++h)
+    for(int h = 0; h < num; ++h)
     {
-        for(int i=0; i<n[h]; ++i)
+        for(int i = 0; i < NetLength; ++i)
         {
             delete []spectre[h][i];
         }
         delete []spectre[h];
     }
 
-    delete []U;
+
+    for(int i = 0; i < num; ++i)
+    {
+        delete []numOfDiff[i];
+    }
+    delete []numOfDiff;
+
+    for(int i = 0; i < num; ++i)
+    {
+        for(int j = i = 1; j < num; ++j)
+        {
+            delete []MW[i][j - 1];
+        }
+        delete []MW[i];
+    }
+    delete []MW;
+
     delete dir_;
     delete paint;
 
