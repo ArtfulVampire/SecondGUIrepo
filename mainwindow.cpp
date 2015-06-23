@@ -4,15 +4,16 @@
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow)
 {
-    QButtonGroup * group1, *group2, *group3, *group4;
-    autoProcessingFlag = false;
     ui->setupUi(this);
     setWindowTitle("Main");
+    setlocale(LC_NUMERIC, "C");
 
+
+    autoProcessingFlag = false;
     redirectCoutFlag = false;
     coutBuf = cout.rdbuf();
 
-    setlocale(LC_NUMERIC, "C");
+
 
 
     ns = -1;
@@ -26,7 +27,7 @@ MainWindow::MainWindow() :
     spLength = right - left + 1;
 
 //    withMarkersFlag = 1;
-    ui->sliceWithMarkersCheckBox->setChecked(true);
+    ui->sliceWithMarkersCheckBox->setChecked(def::withMarkersFlag);
 
     staSlice = 0;
     stopFlag = 0;
@@ -47,6 +48,7 @@ MainWindow::MainWindow() :
     }
     nr = new int [maxNs];
 
+    QButtonGroup * group1, *group2, *group3, *group4;
     group1 = new QButtonGroup();
     group1->addButton(ui->enRadio);
     group1->addButton(ui->ntRadio);
@@ -207,8 +209,8 @@ MainWindow::MainWindow() :
     var = QVariant(helpString);
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
-    ui->reduceChannelsComboBox->setCurrentText("20");
+    ui->reduceChannelsComboBox->setCurrentText("MyCurrent");
+//    ui->reduceChannelsComboBox->setCurrentText("20");
     ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(ui->reduceChannelsComboBox->currentIndex()).toString());
 
 
@@ -268,9 +270,9 @@ MainWindow::MainWindow() :
     ui->cleanWindSpectraCheckBox->setChecked(true);
     ui->cleanMarkersCheckBox->setChecked(true);
 
-    ui->highFreqFilterDoubleSpinBox->setValue(def::rightFreq);
+    ui->highFreqFilterDoubleSpinBox->setValue(50.);
     ui->highFreqFilterDoubleSpinBox->setSingleStep(1.0);
-    ui->lowFreqFilterDoubleSpinBox->setValue(def::leftFreq);
+    ui->lowFreqFilterDoubleSpinBox->setValue(1.0);
     ui->lowFreqFilterDoubleSpinBox->setSingleStep(0.1);
 
     ui->rereferenceDataComboBox->addItem("A1");
@@ -282,11 +284,11 @@ MainWindow::MainWindow() :
     ui->matiPieceLengthSpinBox->setMaximum(32);
     ui->matiPieceLengthSpinBox->setMinimum(4);
     ui->matiPieceLengthSpinBox->setValue(16);
-    ui->matiCheckBox->setChecked(true);
+    ui->matiCheckBox->setChecked(def::matiFlag);
     ui->markerBinTimeSpinBox->setMaximum(250*60*60*2);   //2 hours
     ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); //2 hours
 
-    ui->roundOffsetCheckBox->setChecked(true);
+    ui->roundOffsetCheckBox->setChecked(true); // for mati constructEDF
 
 
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(setEdfFileSlot()));
@@ -1398,6 +1400,10 @@ void MainWindow::drawRealisations()
 
     for(int i = 0; i < lst.length(); ++i)
     {
+//        if(i > 5) break;
+
+
+
         if(stopFlag) break;
         helpString = prePath + slash() + lst[i];
         readPlainData(helpString,
@@ -1757,15 +1763,71 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-    ns = 20;
-    MakePa * mk = new MakePa("/media/Files/Data/AAX/SpectraSmooth",
-                             "AAX_rr_f_new.edf");
-    mk->mwTest();
+//    dir->cd("/media/michael/Files/Data/CAA/Signals/other/1");
+//    QStringList gf = dir->entryList(QDir::Files);
+//    for(QString & gy : gf)
+//    {
+//        QString ko = gy;
+//        if(gy.length() == 25)
+//        {
+
+//            ko.replace("_0002", "0_0002");
+//        }
+//        else if(gy.length() == 23)
+//        {
+//            ko.replace("_0002", "_00_0002");
+//        }
+//        else continue;
+
+//        gy.prepend(dir->absolutePath() + slash());
+//        ko.prepend(dir->absolutePath() + slash());
+//        QFile::rename(gy, ko);
+//    }
+//    exit(0);
+
+//    return;
+#if 0
+    // different filtrations low frequency
+    ui->reduceChannelsCheckBox->setChecked(true);
+    ui->sliceWithMarkersCheckBox->setChecked(false);
+
+    setEdfFile("/media/Files/Data/CAA/CAA_rr.edf");
+    ui->reduceChannelsComboBox->setCurrentText("MyCurrent");
+    sliceAll();
+    drawRealisations();
+
+    QString pew1, pew2;
+
+    for(double j = 0.11; j <= 5.0; j += 0.03)
+    {
+        setEdfFile("/media/Files/Data/CAA/CAA_rr.edf");
+
+        ui->highFreqFilterDoubleSpinBox->setValue(50.);
+        ui->lowFreqFilterDoubleSpinBox->setValue(j);
+        readData();
+        refilterDataSlot();
+
+        pew1 = "/media/Files/Data/CAA/CAA_rr_f.edf";
+        pew2 = "/media/Files/Data/CAA/CAA_rr_f_" + QString::number(j) + ".edf";
+        QFile::copy(pew1, pew2);
+
+        setEdfFile(pew2);
+        ui->reduceChannelsComboBox->setCurrentText("MyCurrent");
+        cleanDirs();
+        sliceAll();
+        drawRealisations();
+    }
+#endif
+
+
+//    return;
+//    ns = 20;
+//    MakePa * mk = new MakePa("/media/Files/Data/AAX/SpectraSmooth",
+//                             "AAX_rr_f_new.edf");
+//    mk->mwTest();
     exit(1);
 
 
-    return;
 
     sleep(5);
 #if 1

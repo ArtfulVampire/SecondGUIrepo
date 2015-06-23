@@ -32,7 +32,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
 {
     //A1, A2, Ar, Cz, N
     //A1-A2, A1-N
-    // Ar means -0.5(A1+A2)
+    // Ar means 0.5*(A1+A2)
 
     QTime myTime;
     myTime.start();
@@ -42,13 +42,13 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     QString helpString2;
 
     readData();
+
     helpString.clear();
     for(int i = 0; i < ns; ++i)
     {
         helpString += QString::number(i+1) + " ";
     }
     ui->reduceChannelsLineEdit->setText(helpString);
-
 
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -221,9 +221,10 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     //change labels
     for(int i = 0; i < ns; ++i)
     {
-        helpString = QString(label[lst[i].toInt()-1]);
+        helpString = QString(label[lst[i].toInt() - 1]);
         if(helpString.contains('-') && (i != groundChan && i != earsChan))
         {
+            // helpString2 - oldRef
             helpString2 = helpString;
             helpString2.remove(0, helpString.indexOf('-') + 1);
             helpString2.remove(helpString2.indexOf(' '), helpString2.length());
@@ -231,6 +232,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
         }
         strcpy(label[i], helpString.toStdString().c_str());
     }
+    globalEdf.setLabels(label);
     reduceChannelsFast();
 
     //set all of channels to the lineedit
@@ -249,7 +251,8 @@ void MainWindow::refilterDataSlot()
 {
     double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
     double highFreq = ui->highFreqFilterDoubleSpinBox->value();
-    QString helpString = dir->absolutePath() + slash() + ExpName + ".edf"; //ui->filePathLineEdit->text()
+    QString helpString = dir->absolutePath()
+            + slash() + ExpName + ".edf"; //ui->filePathLineEdit->text()
     helpString.replace(".edf", "_f.edf");
     refilterData(lowFreq, highFreq, helpString);
     int tmp = ui->reduceChannelsComboBox->currentIndex();

@@ -68,7 +68,7 @@ ostream & operator << (ostream &os, vector<T> toOut); // template!
 //vector< vector<double> > operator=(const vector< vector<double> > & other);
 char * strToChar(const QString & input);
 FILE *fopen(QString filePath, const char *__modes);
-char * QStrToCharArr(const QString & input);
+char * QStrToCharArr(const QString & input, const int &len = -1);
 int typeOfFileName(QString fileName);
 
 //wavelets

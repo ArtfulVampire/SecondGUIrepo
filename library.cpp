@@ -828,11 +828,26 @@ char * strToChar(const QString & input)
     return array;
 }
 
-char * QStrToCharArr(const QString & input)
+char * QStrToCharArr(const QString & input, const int &len)
 {
-    char * array = new char [input.length() + 1];
+    // fixes problem with labels length
+
+    int leng = input.length();
+    if(len != -1)
+    {
+        leng = len;
+    }
+    char * array = new char [leng + 1];
     memcpy(array, input.toStdString().c_str(), input.length());
-    array[input.length()] = '\0';
+
+    if(len != -1)
+    {
+        for(int i = input.length(); i < leng; ++i)
+        {
+            array[i] = ' ';
+        }
+    }
+    array[leng] = '\0';
     return array;
 }
 

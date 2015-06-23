@@ -285,23 +285,16 @@ void MakePa::mwTest()
 
 
     //paint
-    int * spL = new int [num];
-    for(int i = 0; i < num; ++i)
-    {
-        spL[i] = spLength;
-    }
-
     double *** sp = new double ** [num];
     for(int i = 0; i < num; ++i)
     {
         sp[i] = new double * [ns];
         for(int j = 0; j < ns; ++j)
         {
-            sp[i][j] = new double [spL[i]];
+            sp[i][j] = new double [spLength];
         }
     }
 
-    cout << "ololo1" << endl;
     //create sp1 & sp2 - average spectra
     for(int i = 0; i < ns; ++i)
     {
@@ -313,14 +306,12 @@ void MakePa::mwTest()
                 sp[h][i][j] = 0.;
                 for(int k = 0; k < n[h]; ++k)
                 {
-                    sp[h][i][j] += spectre[h][i * spL[h] + j][k];
+                    sp[h][i][j] += spectre[h][i * spLength + j][k];
                 }
                 sp[h][i][j] /= n[h];
             }
         }
     }
-
-    cout << "ololo2" << endl;
 
     QPixmap pic(1600,1600);
     QPainter *paint = new QPainter;
@@ -355,16 +346,15 @@ void MakePa::mwTest()
             {
 
                 paint->drawLine(X + k,
-                                Y - sp[h][c2][int(k * spL[h] / graphWidth)] * norm,
+                                Y - sp[h][c2][int(k * ext)] * norm,
                         X + k + 1,
-                        Y - sp[h][c2][int((k + 1) * spL[h] / graphWidth)] * norm);
+                        Y - sp[h][c2][int((k + 1) * ext)] * norm);
             }
         }
 
         paint->setPen("black");
         paint->setBrush(QBrush("black"));
 
-        cout << c2 << endl;
         //statistic difference bars
         int barCounter = 0;
         for(int h = 0; h < num; ++h)
@@ -400,9 +390,9 @@ void MakePa::mwTest()
                         paint->setPen(color2);
                         paint->setBrush(QBrush(color2));
                     }
-                    paint->drawRect(X + (j % spLength - barWidth) * (graphWidth / spLength),
+                    paint->drawRect(X + (j % spLength - barWidth) / ext,
                                     Y + 15 + 7 * barCounter,
-                                    2 * barWidth * (graphWidth/spLength),
+                                    2 * barWidth / ext,
                                     5);
                 }
                 ++barCounter;
@@ -418,60 +408,70 @@ void MakePa::mwTest()
         paint->drawLine(X, Y,
                         X + graphWidth, Y);
 
-        paint->setFont(QFont("Helvitica", 8));
 
+        paint->setFont(QFont("Helvitica", 8));
         //Hz markers
         for(int k = 0; k < graphWidth - 1; ++k) //for every Hz generality
         {
             /// REMAKE
-            if( (left + k*(spLength)/250.)*spStep - floor((left + k*(spLength)/250.)*spStep) < spLength/250.*spStep/2. || ceil((left + k*(spLength)/250.)*spStep) - (left + k*(spLength)/250.)*spStep < spLength/250.*spStep/2.)
+            if( (left + k * ext)*spStep - floor((left + k * ext) * spStep) < ext * spStep / 2.
+            || ceil((left + k * ext) * spStep) - (left + k * ext) * spStep < ext * spStep/2.)
             {
-                paint->drawLine(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]+5);
+                paint->drawLine(X + k, Y,
+                                X + k, Y + 5);
 
-                helpInt = int((left + k*(spLength)/250.)*spStep + 0.5);
+                helpInt = int((left + k * ext) * spStep + 0.5);
                 helpString.setNum(helpInt);
-                if(helpInt<10)
+                if(helpInt < 10)
                 {
-                    paint->drawText(paint->device()->width() * coords::x[c2] + k-3, paint->device()->height() * coords::y[c2]+15, helpString);
+                    paint->drawText(X + k - 3,
+                                    Y + 15,
+                                    helpString);
                 }
                 else
                 {
-                    paint->drawText(paint->device()->width() * coords::x[c2] + k-5, paint->device()->height() * coords::y[c2]+15, helpString);
+                    paint->drawText(X + k - 5,
+                                    Y + 15,
+                                    helpString);
                 }
             }
         }
 
+        paint->setFont(QFont("Helvetica", 24));
+        paint->drawText(X - 20,
+                        Y - graphHeight - 2,
+                        QString(coords::lbl[c2]));
     }
 
 
 
-    paint->setFont(QFont("Helvetica", 24, -1, false));
 
-    //channel labels
-    for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel
-    {
-        paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]));
-    }
+
 
     //draw scale
-    paint->drawLine(QPointF(paint->device()->width() * coords::x[6], paint->device()->height() * coords::y[1]), QPointF(paint->device()->width() * coords::x[6], paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())));  //250 - graph height generality
+    paint->drawLine(QPointF(paint->device()->width() * coords::x[6],
+                    paint->device()->height() * coords::y[1]),
+            QPointF(paint->device()->width() * coords::x[6],
+            paint->device()->height() * coords::y[1] - graphHeight));
+
 
     //returning norm = max magnitude
-
-    norm = (coords::scale * paint->device()->height()) / norm;
+    norm = graphHeight / norm;
     norm = int(norm*10)/10.;
     helpString.setNum(norm);
     helpString.append(tr(" mcV^2/Hz"));
-    paint->drawText(QPointF(paint->device()->width() * coords::x[6]+5., paint->device()->height() * coords::y[1] - (coords::scale * paint->device()->height())/2.), helpString);
-
-
+    paint->drawText(QPointF(paint->device()->width() * coords::x[6] + 5,
+                    paint->device()->height() * coords::y[1] - graphHeight / 2.),
+            helpString);
 
     //save
-    helpString = dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("Mann-Whitney").append(ui->addNameLineEdit->text()).append(".jpg");
-    cout<<helpString.toStdString()<<endl;
+    helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + "Mann-Whitney"
+                                          + ui->addNameLineEdit->text() + ".jpg");
+//    cout << helpString << endl;
     pic.save(helpString, 0, 100);
     paint->end();
-
 
     for(int h = 0; h < num; ++h)
     {
@@ -484,7 +484,6 @@ void MakePa::mwTest()
     delete []sp;
 
 
-
     for(int h = 0; h < num; ++h)
     {
         for(int i = 0; i < NetLength; ++i)
@@ -494,7 +493,6 @@ void MakePa::mwTest()
         delete []spectre[h];
     }
 
-
     for(int i = 0; i < num; ++i)
     {
         delete []numOfDiff[i];
@@ -503,14 +501,13 @@ void MakePa::mwTest()
 
     for(int i = 0; i < num; ++i)
     {
-        for(int j = i = 1; j < num; ++j)
+        for(int j = i + 1; j < num; ++j)
         {
-            delete []MW[i][j - 1];
+            delete []MW[i][j - i];
         }
         delete []MW[i];
     }
     delete []MW;
-
     delete dir_;
     delete paint;
 

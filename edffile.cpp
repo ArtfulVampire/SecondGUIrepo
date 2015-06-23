@@ -510,9 +510,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     {
         this->cutZerosAtEnd();
     }
-
-
-
 }
 
 void edfFile::handleData(bool readFlag,
@@ -575,7 +572,6 @@ void edfFile::handleData(bool readFlag,
             }
         }
     }
-
 }
 
 void edfFile::handleDatum(const int & currNs,
@@ -1073,8 +1069,8 @@ void edfFile::refilter(const double &lowFreq, const double &highFreq, QString ne
 
     int fftLength = fftL(this->dataLength);
     double spStep = def::freq / double(fftLength);
-
-    /////////////////////////////////////////////////////////how many channels to filter????
+    double norm1 = fftLength / double(this->dataLength);
+    double * spectre = new double [fftLength * 2];
 
     QList <int> chanList;
     for(int i = 0; i < this->ns; ++i)
@@ -1084,14 +1080,12 @@ void edfFile::refilter(const double &lowFreq, const double &highFreq, QString ne
             chanList << i;
         }
     }
-    int numOfChan = chanList.length(); //NOT MARKERS
-
-    double norm1 = fftLength / double(this->dataLength);
-    double * spectre = new double [fftLength*2];
+    int numOfChan = chanList.length();
 
     for(int j = 0; j < numOfChan; ++j)
     {
-        std::fill(spectre, spectre + fftLength * 2, 0.);
+        std::fill(spectre, spectre + fftLength * 2, 0.); // fill all with zeros
+
 #if DATA_POINTER
         for(auto it = (*(this->dataPointer))[chanList[j]].begin();
             it < (*(this->dataPointer))[chanList[j]].end();
@@ -1103,11 +1097,13 @@ void edfFile::refilter(const double &lowFreq, const double &highFreq, QString ne
 #endif
         {
 #if DATA_POINTER
+            // set even elements to signal values
             spectre[2 * (it - (*(this->dataPointer))[chanList[j]].begin()) ] = (*it) * sqrt(norm1);
 #else
             spectre[2 * (it - this->data[chanList[j]].begin()) ] = (*it) * sqrt(norm1);
 #endif
         }
+
         four1(spectre - 1, fftLength, 1);       //Fourier transform
 
         //filtering
@@ -1118,11 +1114,13 @@ void edfFile::refilter(const double &lowFreq, const double &highFreq, QString ne
         }
         for(int i = fftLength; i < 2*fftLength; ++i)
         {
-            if(((2*fftLength - i) < 2. * lowFreq/spStep) || (2 * fftLength - i > 2. * highFreq/spStep))
+            if(((2*fftLength - i) < 2. * lowFreq/spStep)
+                    || (2 * fftLength - i > 2. * highFreq/spStep))
                 spectre[i] = 0.;
         }
+
         //end filtering
-        four1(spectre - 1, fftLength, 1);       // reverse transform
+        four1(spectre - 1, fftLength, -1);       // reverse transform
 #if DATA_POINTER
         for(auto it = (*(this->dataPointer))[chanList[j]].begin();
             it < (*(this->dataPointer))[chanList[j]].end();
@@ -1130,6 +1128,11 @@ void edfFile::refilter(const double &lowFreq, const double &highFreq, QString ne
         {
             (*it) = spectre[2 * (it - (*(this->dataPointer))[chanList[j]].begin()) ]
                     / (fftLength * sqrt(norm1));
+
+//            if (j == 0 && (it - (*(this->dataPointer))[chanList[j]].begin()) < 24000)
+//            {
+//                cout << *it << endl;
+//            }
         }
 #else
         for(auto it = this->data[chanList[j]].begin();
@@ -1362,6 +1365,7 @@ void edfFile::reduceChannels(QList <int> chanList) // much memory
 #else
         this->data.push_back( temp.getData()[ chanList[i] ] );
 #endif
+
 #endif
 
     }
@@ -1483,6 +1487,15 @@ void edfFile::reduceChannels(QString chanStr)
     cout << "reduceChannelsFast: ns = " << ns;
     cout << ", time = " << myTime.elapsed() / 1000. << " sec";
     cout << endl;
+}
+
+void edfFile::setLabels(char ** inLabels)
+{
+    for(int i = 0; i < this->ns; ++i)
+    {
+        this->channels[i].label = inLabels[i];
+        this->labels[i] = inLabels[i];
+    }
 }
 
 

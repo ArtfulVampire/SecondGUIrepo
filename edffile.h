@@ -163,9 +163,18 @@ public:
     void myTransform(double & output, char * input) {output = atoi(input);}
     void myTransform(QString & output, char * input) {output = QString(input);}
 
-    void myTransform(int & input, const int & len, char ** output){(*output) = QStrToCharArr(fitNumber(input, len));}
-    void myTransform(double & input, const int & len, char ** output) {(*output) = QStrToCharArr(fitNumber(input, len));}
-    void myTransform(QString & input, const int & len, char ** output) {(*output) = QStrToCharArr(input);}
+    void myTransform(int & input, const int & len, char ** output)
+    {
+        (*output) = QStrToCharArr(fitNumber(input, len));
+    }
+    void myTransform(double & input, const int & len, char ** output)
+    {
+        (*output) = QStrToCharArr(fitNumber(input, len));
+    }
+    void myTransform(QString & input, const int & len, char ** output)
+    {
+        (*output) = QStrToCharArr(input, len);
+    }
 
     template <typename Typ>
     void handleParamArray(vector <Typ> & qStr,
@@ -202,6 +211,7 @@ public:
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
     void reduceChannels(QList<int> chanList);
     void reduceChannels(QString chanStr);
+    void setLabels(char ** inLabels);
     void cleanFromEyes(QString eyesPath = QString(),
                        bool removeEogChannels = false,
                        QList <int> eegNums = QList <int>(),

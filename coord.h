@@ -15,7 +15,7 @@ namespace coords
 
 namespace def
 {
-    const bool matiFlag = true;
+    const bool matiFlag = false;
     const bool ntFlag = false;
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
 
@@ -26,8 +26,9 @@ namespace def
     const bool wirteStartEndLong = false; //for slice
 
 
+
 //    Atanov
-    const QString dataFolder = "/media/Files/Data/Mati";
+    const QString dataFolder = "/media/Files/Data";
     const int fftLength = 4096;
     const int numOfClasses = 3;
     const bool opencl = true;
