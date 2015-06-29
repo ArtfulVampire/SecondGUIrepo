@@ -1400,7 +1400,7 @@ void MainWindow::drawRealisations()
 
     for(int i = 0; i < lst.length(); ++i)
     {
-//        if(i > 5) break;
+//        if(i > 2) break;
 
 
 
@@ -1763,29 +1763,19 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-//    dir->cd("/media/michael/Files/Data/CAA/Signals/other/1");
-//    QStringList gf = dir->entryList(QDir::Files);
-//    for(QString & gy : gf)
-//    {
-//        QString ko = gy;
-//        if(gy.length() == 25)
-//        {
 
-//            ko.replace("_0002", "0_0002");
-//        }
-//        else if(gy.length() == 23)
-//        {
-//            ko.replace("_0002", "_00_0002");
-//        }
-//        else continue;
+    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
+    ns = 20;
+    MakePa * mk = new MakePa("/media/Files/Data/Feedback/CAA/SpectraSmooth",
+                             ExpName,
+                             ns,
+                             left,
+                             right,
+                             spStep);
+    mk->mwTest();
+    exit(0);
 
-//        gy.prepend(dir->absolutePath() + slash());
-//        ko.prepend(dir->absolutePath() + slash());
-//        QFile::rename(gy, ko);
-//    }
-//    exit(0);
-
-//    return;
+    return;
 #if 0
     // different filtrations low frequency
     ui->reduceChannelsCheckBox->setChecked(true);
@@ -1798,12 +1788,12 @@ void MainWindow::customFunc()
 
     QString pew1, pew2;
 
-    for(double j = 0.11; j <= 5.0; j += 0.03)
+    for(double j = 20; j <= 50; j += 0.5)
     {
         setEdfFile("/media/Files/Data/CAA/CAA_rr.edf");
 
-        ui->highFreqFilterDoubleSpinBox->setValue(50.);
-        ui->lowFreqFilterDoubleSpinBox->setValue(j);
+        ui->highFreqFilterDoubleSpinBox->setValue(j);
+        ui->lowFreqFilterDoubleSpinBox->setValue(0.);
         readData();
         refilterDataSlot();
 
@@ -1819,18 +1809,31 @@ void MainWindow::customFunc()
     }
 #endif
 
+#if 0
+    dir->cd("/media/michael/Files/Data/CAA/Signals/other/1");
+    QStringList gf = dir->entryList(QDir::Files);
+    for(QString & gy : gf)
+    {
+        QString ko = gy;
+//        cout << gy.length() << endl; continue;
+        if(gy.length() == 25)
+        {
+            ko.replace("0_000", "_0_000");
+        }
+        else if(gy.length() == 23)
+        {
+            ko.replace("_0002", "_00_0002");
+        }
+        else continue;
 
-//    return;
-//    ns = 20;
-//    MakePa * mk = new MakePa("/media/Files/Data/AAX/SpectraSmooth",
-//                             "AAX_rr_f_new.edf");
-//    mk->mwTest();
-    exit(1);
+        gy.prepend(dir->absolutePath() + slash());
+        ko.prepend(dir->absolutePath() + slash());
+        QFile::rename(gy, ko);
+    }
+    exit(0);
+#endif
 
-
-
-    sleep(5);
-#if 1
+#if 0
     // test mann-whitney funcs
     vector <double> in1;
     vector <double> in2;
@@ -1911,7 +1914,7 @@ void MainWindow::customFunc()
 
 #endif
 
-#if 1
+#if 0
     // draw maps on spectre
     const QString path = "/media/Files/Data/Mati/ICAstudy/";
     const QString hlp = "/media/Files/Data/Mati/ICAstudy/Help/";
@@ -2385,7 +2388,7 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 1
+#if 0
     // process ICAs - draw maps & classify
     dir->cd("/media/Files/Data/Mati/ICAstudy");
     QStringList dirLst = dir->entryList(QStringList("*_full_ica_after.edf"), QDir::Files);
@@ -2401,6 +2404,7 @@ void MainWindow::customFunc()
                     19,
                     "/media/Files/Data/Mati/ICAstudy/Help/Maps",
                     helpString);
+
 
 #if 0
             drawMapsOnSpectra(dir->absolutePath()
@@ -2429,12 +2433,6 @@ void MainWindow::customFunc()
     }
     exit(0);
 #endif
-
-
-
-//    GalyaProcessing();
-//    exit(0);
-
 
 #if 0
     double ** dataFFT = new double * [maxNs];
@@ -2474,32 +2472,12 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-//    cout << sizeof(globalEdf.getData()) << endl;
-
-//    exit(0);
-//    ui->eyesCleanCheckBox->setChecked(true);
-//    sliceAll();
-
-
-//    edfFile fil;
-//    fil.readEdfFile("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF");
-//    fil.concatFile("/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
-//                    "/media/Files/IHNA/Data/MATI/archive/NOS.EDF");
-//    edfFile fil;
-//    QList<int> leest;
-//    for(int i = 0; i < 18; ++i)
-//    {
-//        leest << i;
-//    }
-//    leest << 19;
-//    fil.readEdfFile("/media/Files/Data/Mati/FEV/auxEdfs/FEV_2.edf");
-//    fil.reduceChannels(leest);
-//    fil.writeEdfFile("/media/Files/Data/Mati/FEV/auxEdfs/FEV_18_2.edf");
-//    exit(0);
-
-//    setEdfFile("/media/Files/Data/Mati/ADA/ADA_w.edf");
-//    ui->reduceChannelsComboBox->setCurrentText("22NoEyes");
-//    constructEDFSlot();
+#if 0
+    edfFile fil;
+    fil.readEdfFile("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF");
+    fil.concatFile("/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
+                    "/media/Files/IHNA/Data/MATI/archive/NOS.EDF");
+#endif
 
 
 

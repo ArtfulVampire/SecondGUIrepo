@@ -26,9 +26,8 @@ namespace def
     const bool wirteStartEndLong = false; //for slice
 
 
-
 //    Atanov
-    const QString dataFolder = "/media/Files/Data";
+    const QString dataFolder = "/media/Files/Data/Feedback";
     const int fftLength = 4096;
     const int numOfClasses = 3;
     const bool opencl = true;

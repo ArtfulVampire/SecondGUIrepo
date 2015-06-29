@@ -66,8 +66,8 @@ MakePa::MakePa(QString spectraPath, QString ExpName_, int ns_, int left_, int ri
     ui->alphaSpinBox->setSingleStep(0.01);
     ui->alphaSpinBox->setMaximum(1.0);
     ui->alphaSpinBox->setValue(0.95); // p=0.05
-    ui->mwNormSpinBox->setValue(20.);
-    ui->mwNormSpinBox->setSingleStep(0.5);
+    ui->mwNormSpinBox->setValue(1.);
+    ui->mwNormSpinBox->setSingleStep(0.1);
 
 
     dir = new QDir();
@@ -282,8 +282,6 @@ void MakePa::mwTest()
 
 
 
-
-
     //paint
     double *** sp = new double ** [num];
     for(int i = 0; i < num; ++i)
@@ -295,8 +293,12 @@ void MakePa::mwTest()
         }
     }
 
-    //create sp1 & sp2 - average spectra
-    for(int i = 0; i < ns; ++i)
+
+
+    double norm = 1e10; // generality
+
+    //create sp - average spectra
+    for(int i = 0; i < ns - 1; ++i)
     {
         for(int j = 0; j < spLength; ++j)
         {
@@ -309,25 +311,29 @@ void MakePa::mwTest()
                     sp[h][i][j] += spectre[h][i * spLength + j][k];
                 }
                 sp[h][i][j] /= n[h];
+
+                norm = fmin(norm, 1. / sp[h][i][j]);
             }
         }
     }
+    norm *= ui->mwNormSpinBox->value();
 
     QPixmap pic(1600,1600);
     QPainter *paint = new QPainter;
     pic.fill();
     paint->begin(&pic);
 
-    double norm = ui->mwNormSpinBox->value(); //10 pixels=1mV^2 / Hz
     double barWidth = 1/2.;
 
     const double graphHeight = paint->device()->height() * coords::scale;
     const double graphWidth = paint->device()->width() * coords::scale;
     const double ext = spLength / graphWidth;
-    const int lineWidth = 2;
+    const int lineWidth = 3;
 
     QColor color1;
     QColor color2;
+
+    norm *= graphHeight;
 
     for(int c2 = 0; c2 < ns - 1; ++c2)  //exept markers channel
     {
@@ -446,8 +452,6 @@ void MakePa::mwTest()
 
 
 
-
-
     //draw scale
     paint->drawLine(QPointF(paint->device()->width() * coords::x[6],
                     paint->device()->height() * coords::y[1]),
@@ -458,8 +462,8 @@ void MakePa::mwTest()
     //returning norm = max magnitude
     norm = graphHeight / norm;
     norm = int(norm*10)/10.;
-    helpString.setNum(norm);
-    helpString.append(tr(" mcV^2/Hz"));
+    helpString = QString::number(norm);
+    helpString += tr(" mcV^2/Hz");
     paint->drawText(QPointF(paint->device()->width() * coords::x[6] + 5,
                     paint->device()->height() * coords::y[1] - graphHeight / 2.),
             helpString);
@@ -467,7 +471,8 @@ void MakePa::mwTest()
     //save
     helpString = QDir::toNativeSeparators(dir->absolutePath()
                                           + slash() + "Help"
-                                          + slash() + "Mann-Whitney"
+                                          + slash() + ExpName
+                                          + "_Mann-Whitney"
                                           + ui->addNameLineEdit->text() + ".jpg");
 //    cout << helpString << endl;
     pic.save(helpString, 0, 100);
@@ -513,6 +518,9 @@ void MakePa::mwTest()
 
     helpString = "MW test made";
     ui->mwTestLine->setText(helpString);
+
+
+    QTimer::singleShot(600, ui->mwTestLine, SLOT(clear()));
 }
 /*
 void MakePa::vdvTest()

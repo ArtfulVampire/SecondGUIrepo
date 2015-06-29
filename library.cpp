@@ -3207,7 +3207,7 @@ void writePlainData(QString outPath,
         for(int j = 0; j < ns; ++j)
         {
 //            outStr << fitNumber(doubleRound(data[j][i + start], 4), 7) << '\t';
-            outStr << data[j][i + start] << '\t';
+            outStr << doubleRound(data[j][i + start], 4) << '\t';
         }
         outStr << '\n';
     }
@@ -4918,7 +4918,8 @@ QPixmap drawEeg( Typ dataD,
 
         for(int c1 = 0; c1 < pic.width(); ++c1)
         {
-            paint->drawLine(c1, (c2+1)*pic.height()/(ns+2) + dataD[c2][c1] / norm, c1+1, (c2+1)*pic.height()/(ns+2) + dataD[c2][c1+1] / norm);
+            paint->drawLine(c1, (c2+1) * pic.height() / (ns+2) + dataD[c2][c1] * norm,
+                          c1+1, (c2+1) * pic.height() / (ns+2) + dataD[c2][c1+1] * norm);
         }
     }
     norm = 1.;
@@ -5029,9 +5030,9 @@ QPixmap drawEeg( Typ dataD,
         for(int c1 = 0; c1 < pic.width(); ++c1)
         {
             paint->drawLine(c1,
-                            (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice] / norm,
+                            (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice] * norm,
                             c1+1,
-                            (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice +1] / norm);
+                            (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice +1] * norm);
         }
     }
     norm = 1.;
@@ -5041,7 +5042,7 @@ QPixmap drawEeg( Typ dataD,
         if(c3%10 == 0) norm = 20.;
         else if(c3%5  == 0) norm = 15.;
 
-        paint->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
+        paint->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2 * norm);
         paint->drawText(c3 * freq, pic.height() - 35, QString::number(c3));
         norm = 10.;
     }
