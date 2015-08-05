@@ -36,6 +36,8 @@ struct matrix
     void print(int rows = 0, int cols = 0) const;
     int cols() const;
     int rows() const;
+    double maxVal() const;
+    double minVal() const;
 
     // for compability with vector < vector<Type> >
     int size() const {return data.size();}

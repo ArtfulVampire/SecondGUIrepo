@@ -1571,53 +1571,60 @@ int Spectre::readFilePhase(double ** data2, double ***dataPhase)
 
 void Spectre::drawWavelets()
 {
-    dir->cd(dirBC->absolutePath() + QDir::separator() + "visualisation" + QDir::separator() + "wavelets");
+    QString helpString;
+    QString filePath;
+    QString fileName;
+    helpString = QDir::toNativeSeparators(dirBC->absolutePath()
+                                          + slash() + "visualisation"
+                                          + slash() + "wavelets");
+    dir->cd(helpString);
+
     //make dirs
     for(int i = 0; i < ns; ++i)
     {
         dir->mkdir(QString::number(i));
-        dir->cd(QString::number(i));
-        for(int j = 0; j < ns; ++j)
+
+        if(ui->phaseWaveletButton->isChecked())
         {
-            dir->mkdir(QString::number(j));
+            //for phase
+            dir->cd(QString::number(i));
+            for(int j = 0; j < ns; ++j)
+            {
+                dir->mkdir(QString::number(j));
+            }
+            dir->cdUp();
         }
-        dir->cdUp();
     }
-
-
 
     dir->cd(ui->lineEdit_1->text());
     nameFilters.clear(); //generality
-    nameFilters.append("*_241*");
-    nameFilters.append("*_247*");
-    nameFilters.append("*_254*");
-    lst = dir->entryList(nameFilters, QDir::Files);
-
-    FILE * file1;
+    nameFilters << "*_241*";
+    nameFilters << "*_244*";
+    nameFilters << "*_247*";
+    nameFilters << "*_254*";
+    QStringList lst = dir->entryList(nameFilters, QDir::Files);
 
     for(int a = 0; a < lst.length(); ++a)
     {
-
-
-        helpString=QDir::toNativeSeparators(dir->absolutePath().append(QDir::separator()).append(lst[a]));
+        fileName = lst[a];
+        filePath = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash() + fileName);
         cout << helpString.toStdString() << endl;
-        file1 = fopen(helpString.toStdString().c_str(),"r");
-        if(file1 == NULL)
-        {
-            QMessageBox::warning((QWidget*)this, tr("Warning"), tr("wrong filename"), QMessageBox::Ok);
-            continue;
-        }
-
         if(ui->amplitudeWaveletButton->isChecked())
         {
             for(int channel = 0; channel < ns; ++channel)
             {
-                helpString = lst[a];
+                helpString = fileName;
                 helpString.replace('.', '_');
-                helpString = QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "visualisation" + QDir::separator() + "wavelets" + QDir::separator()
-                                                      + QString::number(channel) + QDir::separator() + helpString + "_wavelet_" + QString::number(channel) + ".jpg");
+                helpString = QDir::toNativeSeparators(dirBC->absolutePath()
+                                                      + slash() + "visualisation"
+                                                      + slash() + "wavelets"
+                                                      + slash() + QString::number(channel)
+                                                      + slash() + helpString
+                                                      + "_wavelet_" + QString::number(channel)
+                                                      + ".jpg");
                 cout << helpString.toStdString() << endl;
-                wavelet(helpString, file1, ns, channel, 20., 5., 0.99, 32);
+                wavelet(filePath, helpString, channel, ns);
             }
         }
         if(ui->phaseWaveletButton->isChecked())
@@ -1626,25 +1633,32 @@ void Spectre::drawWavelets()
             {
                 for(int channel2 = channel1+1; channel2 < ns; ++channel2)
                 {
-                    helpString = lst[a];
+                    helpString = fileName;
                     helpString.replace('.', '_');
-                    helpString = QDir::toNativeSeparators(dirBC->absolutePath().append(QDir::separator()).append("visualisation").append(QDir::separator()).append("wavelets").append(QDir::separator()).append(QString::number(channel1)).append(QDir::separator()).append(QString::number(channel2)).append(QDir::separator()).append(helpString).append("_wavelet_").append(QString::number(channel1)).append("_").append(QString::number(channel2)).append(".jpg"));
+                    helpString = QDir::toNativeSeparators(dirBC->absolutePath()
+                                                          + slash() + "visualisation"
+                                                          + slash() + "wavelets"
+                                                          + slash() + QString::number(channel1)
+                                                          + slash() + QString::number(channel2)
+                                                          + slash() + helpString
+                                                          + "_wavelet_" + QString::number(channel1)
+                                                          + "_" + QString::number(channel2)
+                                                          + ".jpg");
                     cout << helpString.toStdString() << endl;
-                    waveletPhase(helpString, file1, ns, channel1, channel2, 20., 5., 0.95, 32);
+                    /// remake waveletPhase
+//                    waveletPhase(helpString, file1, ns, channel1, channel2, 20., 5., 0.95, 32);
 //                    if(channel2 == 2) return;
                 }
             }
         }
-        fclose(file1);
 
-        if(100*(a+1)/lst.length() > ui->progressBar->value())
+        if(100 * (a+1)/lst.length() > ui->progressBar->value())
         {
             ui->progressBar->setValue(100*(a+1)/lst.length());
+            qApp->processEvents();
         }
     }
     ui->progressBar->setValue(0);
-
-
     dir->cd(dirBC->absolutePath());
 }
 

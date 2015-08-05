@@ -2669,7 +2669,7 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
         if(!autoFlag) cout << "epoch = " << epoch << "\terror = " << currentError << endl;
         this->ui->currentErrorDoubleSpinBox->setValue(currentError);
     }
-    cout << "learning ended " << epoch << " epoches" << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+    cout << "epoches = " << epoch << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
     matrixDelete(&output, numOfLayers);
     matrixDelete(&deltaWeights, numOfLayers);

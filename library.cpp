@@ -1,5 +1,27 @@
 #include "library.h"
 
+double const morletFall = 9.; // coef in matlab = mF^2 / (2 * pi^2);
+double morletCosNew(double const freq1, // Hz
+                    const double timeShift,
+                    const double time)
+{
+    double freq = freq1 * 2. * pi;
+    double res =  sqrt(2. / sqrt(pi))
+            * cos(freq * (time - timeShift) / def::freq)
+            * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
+    return res;
+}
+
+double morletSinNew(double const freq1,
+                    const double timeShift,
+                    const double time)
+{
+    double freq = freq1 * 2. * pi;
+    double res =  sqrt(2. / sqrt(pi))
+            * sin(freq * (time - timeShift) / def::freq)
+            * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
+    return res;
+}
 
 
 QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour)
@@ -1068,6 +1090,7 @@ double kurtosis(double *arr, int length)
     return sum;
 }
 
+
 double rankit(int i, int length, double k)
 {
     return quantile( (i-k) / (length + 1. - 2. * k) );
@@ -1853,6 +1876,23 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
     paint->end();
 }
 
+void kernelEst(QString filePath, QString picPath)
+{
+    double sigma = 0.;
+    ifstream inStr;
+    inStr.open(filePath.toStdString());
+    vector <double> arr;
+
+    while(!inStr.eof())
+    {
+        inStr >> sigma;
+        arr.push_back(sigma);
+    }
+    arr.pop_back();
+    int length = arr.size();
+    kernelEst(arr.data(), length, picPath);
+}
+
 void svd(const mat & inData, mat & eigenVectors, vector <double> & eigenValues, double threshold)
 {
     const int iterationsThreshold = 100;
@@ -2115,6 +2155,136 @@ void svd(const mat & inData, mat & eigenVectors, vector <double> & eigenValues, 
 
 }
 
+void wavelet(QString filePath,
+             QString picPath,
+             int channelNumber,
+             int ns,
+             double freqMax,
+             double freqMin,
+             double freqStep)
+{
+    // continious
+    int NumOfSlices;
+    double helpDouble;
+
+    matrix fileData;
+    fileData.resize(ns, 10000);
+    readPlainData(filePath, fileData, ns, NumOfSlices);
+
+    vector <double> input = fileData[channelNumber];
+
+    QPixmap pic(NumOfSlices, 1000);
+    pic.fill();
+    QPainter painter;
+    painter.begin(&pic);
+
+    double timeStep = 0.;
+
+    int numberOfFreqs = int(log(freqMin/freqMax) / log(freqStep)) + 1;
+    matrix temp;
+    temp.resize(numberOfFreqs, NumOfSlices);
+    temp.fill(0.);
+
+    double tempR = 0., tempI = 0.;
+    int kMin = 0, kMax = 0;
+
+    int range = 256;
+    double numb;
+
+    int currFreq = 0;
+    int currSlice = 0;
+
+    for(double freq = freqMax; freq > freqMin; freq *= freqStep)
+    {
+        timeStep = def::freq/freq / 2.5;  //in time-bins 250 Hz
+
+        for(currSlice = 0; currSlice < NumOfSlices; currSlice += timeStep)
+        {
+            temp[currFreq][currSlice] = 0.;
+            tempR = 0.;
+            tempI = 0.;
+
+            /////// TO LOOK
+            //set left & right limits of counting - should be 2.5 * morletFall... but works so
+            kMin = max(0, int(currSlice - morletFall * def::freq / freq));
+            kMax = min(NumOfSlices, int(currSlice + morletFall * def::freq / freq));
+
+            for(int k = kMin; k < kMax; ++k)
+            {
+                tempI += (morletSinNew(freq, currSlice, k) * input[k]);
+                tempR += (morletCosNew(freq, currSlice, k) * input[k]);
+            }
+            temp[currFreq][currSlice] = pow(tempI, 2) + pow(tempR, 2);
+        }
+        ++currFreq;
+    }
+
+    // maximal value from temp matrix
+    helpDouble = temp.maxVal();
+//    helpDouble = 1e5;
+
+//    /// test for maxVal
+//    ofstream str;
+//    str.open("/media/Files/Data/wav.txt", ios_base::app);
+//    str << helpDouble << endl;
+//    str.close();
+//    return;
+
+    currFreq = 0;
+    for(double freq = freqMax; freq > freqMin; freq *= freqStep)
+    {
+        timeStep = def::freq/freq / 2.5;  //in time-bins 250 Hz
+
+        for(currSlice = 0; currSlice < NumOfSlices; currSlice += timeStep)
+        {
+             numb = fmin(floor(temp[currFreq][currSlice] / helpDouble * range), range);
+
+             numb = pow(numb/range, 0.8) * range; // sligthly more than numb, may be dropped
+
+             painter.setBrush(QBrush(hueJet(range, numb)));
+             painter.setPen(hueJet(range, numb));
+
+             painter.drawRect( currSlice * pic.width() / NumOfSlices,
+                               pic.height() * (freqMax-freq  + 0.5 * freq * (1. - freqStep)/freqStep) / (freqMax-freqMin),
+                               timeStep * pic.width()/NumOfSlices,
+                               pic.height()*( - 0.5*freq*(1./freqStep - freqStep)) / (freqMax-freqMin) );
+
+        }
+        ++currFreq;
+
+    }
+    painter.setPen("black");
+
+
+    painter.setFont(QFont("Helvetica", 32, -1, -1));
+    for(int i = freqMax; i > freqMin; --i)
+    {
+        painter.drawLine(0,
+                         pic.height() * (freqMax - i) / (freqMax - freqMin),
+                         pic.width(),
+                         pic.height() * (freqMax - i) / (freqMax - freqMin));
+        painter.drawText(0,
+                         pic.height() * (freqMax - i) / (freqMax - freqMin) - 2,
+                         QString::number(i));
+
+    }
+    for(int i = 0; i < int(NumOfSlices / def::freq); ++i)
+    {
+        painter.drawLine(pic.width() * i * def::freq / NumOfSlices,
+                         pic.height(),
+                         pic.width() * i * def::freq / NumOfSlices,
+                         pic.height() - 20);
+        painter.drawText(pic.width() * i * def::freq / NumOfSlices - 8,
+                         pic.height() - 2,
+                         QString::number(i));
+
+    }
+    pic.save(picPath, 0, 100);
+    painter.end();
+}
+
+
+
 void hilbert( const double * arr,
               int inLength,
               double sampleFreq,
@@ -2242,6 +2412,7 @@ void hilbert( const double * arr,
     delete []filteredArr;
 
 }
+
 
 template <typename Typ>
 void hilbertPieces(const double * arr,
@@ -2462,6 +2633,7 @@ void hilbertPieces(const double * arr,
                    double * &outHilbert,
                    QString picPath);
 
+
 void bayesCount(double * dataIn, int length, int numOfIntervals, double *& out)
 {
     double maxAmpl = 80.; //generality
@@ -2540,16 +2712,23 @@ void histogram(double *arr, int length, int numSteps, QString picPath)
     delete []values;
 }
 
-void kernelEst(double * arr, int length, QString picPath)
+
+void kernelEst(double *arr, int length, QString picPath)
 {
     double sigma = 0.;
 
     sigma = variance(arr, length);
     sigma = sqrt(sigma);
-
-
     double h = 1.06 * sigma * pow(length, -0.2);
 
+                       /*
+                       vector<double> helpVec(length);
+                       std::copy(arr, arr+length, helpVec.begin());
+                       std::sort(helpVec.begin(),
+                       helpVec.end(),
+                       [](double a, double b){return a>b;});
+                       cout << helpVec[int(0.05*length)] << endl;
+                        */
 
 
     QPixmap pic(1000, 400);
@@ -2565,8 +2744,12 @@ void kernelEst(double * arr, int length, QString picPath)
     xMin = minValue(arr, length);
     xMax = maxValue(arr, length);
 
-    xMin = floor(xMin)-1;
-    xMax = ceil(xMax)+1;
+    xMin = floor(xMin);
+    xMax = ceil(xMax);
+
+//    sigma = (xMax - xMin);
+//    xMin -= 0.1 * sigma;
+//    xMax += 0.1 * sigma;
 
 //    //generality
 //    xMin = -20;
@@ -2575,12 +2758,13 @@ void kernelEst(double * arr, int length, QString picPath)
 //    xMin = 65;
 //    xMax = 100;
 
+
     for(int i = 0; i < pic.width(); ++i)
     {
         values[i] = 0.;
         for(int j = 0; j < length; ++j)
         {
-            values[i] += 1/(length*h) * gaussian((xMin + (xMax- xMin) / double(pic.width()) * i - arr[j])/h);
+            values[i] += 1 / (length*h) * gaussian((xMin + (xMax - xMin) / double(pic.width()) * i - arr[j])/h);
         }
     }
 
@@ -2590,19 +2774,22 @@ void kernelEst(double * arr, int length, QString picPath)
     for(int i = 0; i < pic.width() - 1; ++i)
     {
         pnt.drawLine(i, pic.height() * 0.9 * ( 1. - values[i] / valueMax), i+1, pic.height() * 0.9 * (1. - values[i+1] / valueMax));
-//        pnt.drawRect(i, pic.height() * 0.9, i+1, pic.height() * 0.9 * ( 1. - values[xMin + (xMax - Xmin)/pic.width() * (i+1)] / valueMax));
+
     }
     pnt.drawLine(0, pic.height()*0.9, pic.width(), pic.height()*0.9);
+
 
 //    int power = log10(xMin);
 //    int step = pow(10., floor(power));
 
     //+=step
-    for(int i = ceil(xMin); i <= floor(xMax); ++i)
+
+    for(int i = xMin; i <= xMax; i += (xMax - xMin) / 10)
     {
         pnt.drawLine( (i - xMin) / (xMax - xMin) * pic.width(), pic.height()*0.9+1, (i - xMin) / (xMax - xMin) * pic.width(), pic.height());
         pnt.drawText((i - xMin) / (xMax - xMin) * pic.width(), pic.height()*0.95, QString::number(i));
     }
+
     pic.save(picPath, 0, 100);
 
     delete []values;
@@ -2778,17 +2965,19 @@ QColor qcolor(int range, int j)
 //    return QColor(255*red(part),255* green(part), 255*blue(part));
 }
 
-double morletCos(double const freq1, double timeShift, double pot, double time)
+double morletCos(double const freq1, const double timeShift, const double pot, const double time)
 {
-    double freq = freq1 * 2.*pi/250.;
-    return cos(freq*(time-timeShift))*exp(-freq*freq*(time-timeShift)*(time-timeShift)/(pot*pot));
+    double freq = freq1 * 2. * pi / def::freq;
+    return cos(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
 }
 
-double morletSin(double const freq1, double timeShift, double pot, double time)
+double morletSin(double const freq1, const double timeShift, const double pot, const double time)
 {
-    double freq = freq1 * 2.*pi/250.;
-    return sin(freq*(time-timeShift))*exp(-freq*freq*(time-timeShift)*(time-timeShift)/(pot*pot));
+    double freq = freq1 * 2. * pi / def::freq;
+    return sin(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
 }
+
+
 
 void drawColorScale(QString filePath, int range, int type)
 {
@@ -2862,158 +3051,6 @@ void drawColorScale(QString filePath, int range, int type)
 
 }
 
-void wavelet(QString out, FILE * file, int ns, int channelNumber, double freqMax, double freqMin, double freqStep, double pot)
-{
-    int NumOfSlices;
-    double * input, helpDouble;
-    QString helpString;
-
-    if(file == NULL)
-    {
-        cout<<"file==NULL"<<endl;
-        return;
-    }
-    fscanf(file, "NumOfSlices %d", &NumOfSlices);
-    if(NumOfSlices < 200) return;
-
-    input = new double [NumOfSlices];
-
-
-    //read the appropriate channel
-    for(int i = 0; i < NumOfSlices; ++i)
-    {
-        for(int j = 0; j < ns; ++j)
-        {
-            if(j!=channelNumber)
-            {
-                fscanf(file, "%*lf");
-            }
-            else
-            {
-                fscanf(file, "%lf", &input[i]);
-//                cout << input[i] << endl;
-            }
-        }
-    }
-
-
-
-    QPixmap pic(NumOfSlices,800);
-    pic.fill();
-    QPainter painter;
-    painter.begin(&pic);
-
-
-    double timeStep = 0.;
-
-    int numberOfFreqs = int(log(freqMin/freqMax) / log(freqStep)) + 1;
-//    cout << "numberOfFreqs = " << numberOfFreqs << endl;
-    double ** temp = new double * [numberOfFreqs];
-    for(int i = 0; i < numberOfFreqs; ++i)
-    {
-        temp[i] = new double [NumOfSlices];
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            temp[i][j] = 0.;
-        }
-    }
-
-
-    double tempR = 0., tempI = 0.;
-    int i = 0;
-    int kMin = 0, kMax = 0;
-
-    int range = 256;
-    int numb;
-
-    int j = 0;
-
-    for(double freq = freqMax; freq > freqMin; freq *= freqStep)
-    {
-        timeStep = 1./freq * 250./1.5;  //in time-bins 250 Hz ////////////////////////////////////////////////////////////////////////////////////////////////
-        i = 0;
-        while(i < NumOfSlices)
-        {
-            temp[j][i] = 0.;
-            tempR = 0.;
-            tempI = 0.;
-            //set left & right limits of counting - 5 variances
-            kMin = max(0, int(i - sqrt(5 * pow(pot, 2) / pow((freq*2.*pi/250.), 2))));
-            kMax = min(NumOfSlices, int(i + sqrt(5 * pow(pot, 2) / pow((freq*2.*pi/250.), 2)))); //i - kMin ~= kMax - i = 5 variances of morlet
-
-            for(int k = kMin; k < kMax; ++k)
-            {
-                tempI += (morletSin(freq, i, pot, k) * input[k]);
-                tempR += (morletCos(freq, i, pot, k) * input[k]);
-            }
-            temp[j][i] = tempI*tempI + tempR*tempR;
-            i += timeStep;
-        }
-        ++j;
-    }
-
-    helpDouble = 0.;
-    j = 0;
-    for(double freq = freqMax; freq > freqMin; freq *= freqStep)
-    {
-        timeStep = 1./freq * 250./1.5;
-        for(int i = 0; i < NumOfSlices; i += timeStep)
-        {
-            helpDouble = fmax (helpDouble, temp[j][i]);
-//            cout << temp[j][i] << endl;
-        }
-        ++j;
-    }
-
-//    cout << "max = " << helpDouble << endl;
-
-
-    j = 0;
-    for(double freq = freqMax; freq > freqMin; freq *= freqStep)
-    {
-        timeStep = 1./freq * 250./1.5;  //in time-bins 250 Hz ////////////////////////////////////////////////////////////////////////////////////////////////
-        i = 0;
-        while(i < NumOfSlices)
-        {
-             numb = fmin( floor(temp[j][i]*range / double(helpDouble)), double(range));
-             numb = pow(numb/double(range), 0.8) * range;
-
-             painter.setBrush(QBrush(hueJet(range, numb)));
-             painter.setPen(hueJet(range, numb));
-
-             painter.drawRect( i*pic.width() / NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep) / (freqMax-freqMin) ), timeStep*pic.width()/NumOfSlices, int(pic.height()*( - 0.5*freq*(1./freqStep - freqStep)) / (freqMax-freqMin)));
-             i += timeStep;
-        }
-        ++j;
-
-    }
-    painter.setPen("black");
-
-
-    painter.setFont(QFont("Helvetica", 32, -1, -1));
-    for(int i = freqMax; i > freqMin; --i)
-    {
-        painter.drawLine(0, pic.height()*(freqMax-i)/(freqMax-freqMin), pic.width(), pic.height()*(freqMax-i)/(freqMax-freqMin));
-        painter.drawText(0, pic.height()*(freqMax-i)/(freqMax-freqMin)-2, helpString.setNum(i));
-
-    }
-    for(int i = 0; i < int(NumOfSlices/250); ++i)
-    {
-        painter.drawLine(pic.width()*i*250/NumOfSlices, pic.height(), pic.width()*i*250/NumOfSlices, pic.height()-20);
-        painter.drawText(pic.width()*i*250/NumOfSlices-8, pic.height()-2, helpString.setNum(i));
-
-    }
-
-    rewind(file);
-    delete []input;
-    for(int i = 0; i < numberOfFreqs; ++i)
-    {
-        delete[] temp[i];\
-    }
-    delete[] temp;
-    pic.save(out, 0, 100);
-    painter.end();
-}
 
 void matrixTranspose(double **&inMat, const int &numRowsCols)
 {
@@ -3207,7 +3244,7 @@ void writePlainData(QString outPath,
         for(int j = 0; j < ns; ++j)
         {
 //            outStr << fitNumber(doubleRound(data[j][i + start], 4), 7) << '\t';
-            outStr << doubleRound(data[j][i + start], 4) << '\t';
+            outStr << doubleRound(data[j][i + start], 3) << '\t';
         }
         outStr << '\n';
     }

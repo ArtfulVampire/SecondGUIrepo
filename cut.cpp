@@ -169,7 +169,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
         {
 
             QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
-            double coeff = -0.9;
+            double coeff = -1.2;
             ui->scrollArea->horizontalScrollBar()->setSliderPosition( ui->scrollArea->horizontalScrollBar()->sliderPosition() + coeff * scrollEvent->delta());
             return true;
 
@@ -183,7 +183,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
                 leftLimit=int(leftLimit*zoomCurr/zoomPrev);
                 rightLimit=int(rightLimit*zoomCurr/zoomPrev);
 
-
                 QPixmap *tmp = new QPixmap;
                 QPainter *pnt = new QPainter;
 
@@ -192,7 +191,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 
                 // picLabel varies
                 // Pixmap & scrollArea are constant
-
 
                 pnt->setPen(QPen(QBrush("blue"), 2));
                 pnt->drawLine(leftLimit*tmp->width()/(double(ui->picLabel->size().width())*zoomCurr/zoomPrev), 0, leftLimit*tmp->width()/(double(ui->picLabel->size().width())*zoomCurr/zoomPrev), tmp->height());

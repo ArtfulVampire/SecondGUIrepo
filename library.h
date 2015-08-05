@@ -30,6 +30,7 @@
 #include <vector>
 #include <typeinfo>
 
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -40,6 +41,8 @@ using namespace std;
 //using namespace mlpack;
 
 const double pi = 3.141592653589;
+const double pi_min_025 = pow(pi, -0.25);
+const double pi_sqrt = sqrt(pi);
 
 typedef vector<vector<double> > mat;
 
@@ -81,9 +84,23 @@ QColor hueJet(int range, double j, int numOfContours = 0, double V = 0.95, doubl
 QColor hueOld(int range, int j);
 QColor grayScale(int range, int j);
 
-double morletCos(double const freq1, double timeShift, double pot, double time);
-double morletSin(double const freq1, double timeShift, double pot, double time);
-void wavelet(QString out, FILE * file, int ns = 19, int channelNumber = 0, double freqMax = 20., double freqMin = 5., double freqStep = 0.99, double pot = 32.);
+double morletCos(double const freq1, double const timeShift, double const pot, double const time);
+double morletSin(double const freq1, double const timeShift, double const pot, double const time);
+double morletCosNew(double const freq1,
+                    const double timeShift,
+                    const double time);
+double morletSinNew(double const freq1,
+                    const double timeShift,
+                    const double time);
+
+//void wavelet(QString out, FILE * file, int ns = 19, int channelNumber = 0, double freqMax = 20., double freqMin = 5., double freqStep = 0.99, double pot = 32.);
+void wavelet(QString filePath,
+             QString picPath,
+             int channelNumber = 0,
+             int ns = 20,
+             double freqMax = 20.,
+             double freqMin = 5.,
+             double freqStep = 0.98);
 void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
 //signal processing
@@ -101,6 +118,7 @@ void hilbertPieces(const double *arr,
                    QString picPath = QString());
 void bayesCount(double * dataIn, int length, int numOfIntervals, double * &out);
 void kernelEst(double *arr, int length, QString picPath);
+void kernelEst(QString filePath, QString picPath);
 void histogram(double *arr, int length, int numSteps, QString picPath);
 bool gaussApproval(double * arr, int length); // not finished?
 bool gaussApproval(QString filePath); // not finished?

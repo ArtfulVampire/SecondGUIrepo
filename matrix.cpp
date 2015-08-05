@@ -2,6 +2,7 @@
 
 matrix::matrix()
 {
+
 }
 
 matrix::matrix(double **inData, int rows, int cols)
@@ -147,6 +148,33 @@ int matrix::rows() const
 }
 
 
+double matrix::maxVal() const
+{
+    double res = data[0][0];
+    for(auto it = data.begin(); it < data.end(); ++it)
+    {
+        for(auto itt = (*it).begin(); itt < (*it).end(); ++itt)
+        {
+            res = max(res, *itt);
+        }
+    }
+    return res;
+}
+double matrix::minVal() const
+{
+
+    double res = data[0][0];
+    for(auto it = data.begin(); it < data.end(); ++it)
+    {
+        for(auto itt = (*it).begin(); itt < (*it).end(); ++itt)
+        {
+            res = min(res, *itt);
+        }
+    }
+    return res;
+}
+
+
 int matrix::cols() const
 {
     return data[0].size();
@@ -183,6 +211,7 @@ void matrix::transpose()
                  oldRows
                  );
 }
+
 void matrix::invert()
 {
     if(this->rows() != this->cols())

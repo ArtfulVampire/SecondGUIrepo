@@ -18,7 +18,7 @@ MainWindow::MainWindow() :
 
     ns = -1;
     spLength = -1;
-    ns = def::ns;
+    ns = def::ns + 1;
 
     right = fftLimit(def::rightFreq, def::freq, def::fftLength);
     left  = fftLimit(def::leftFreq, def::freq, def::fftLength);
@@ -1763,19 +1763,86 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-
-    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
-    ns = 20;
-    MakePa * mk = new MakePa("/media/Files/Data/Feedback/CAA/SpectraSmooth",
-                             ExpName,
-                             ns,
-                             left,
-                             right,
-                             spStep);
-    mk->mwTest();
-    exit(0);
-
     return;
+
+//    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
+//    ns = 20;
+//    MakePa * mk = new MakePa("/media/Files/Data/Feedback/CAA/SpectraSmooth",
+//                             ExpName,
+//                             ns,
+//                             left,
+//                             right,
+//                             spStep);
+//    mk->mwTest();
+//    kernelEst("/media/Files/Data/wav.txt",
+//              "/media/Files/Data/wav.jpg");
+//    exit(0);
+
+//    setEdfFile("/media/Files/Data/Mati/ADA/ADA_full_ica.edf");
+//    wavelet("/media/Files/Data/Mati/ADA/wav.txt",
+//            "/media/Files/Data/Mati/ADA/me.jpg",
+//            5);
+//    readData();
+//    writePlainData("/media/Files/Data/Mati/ADA/wav.txt",
+//                   globalEdf.getData(),
+//                   globalEdf.getNs(),
+//                   pow(2, 11),
+//                   0);
+//    setEdfFile("/media/Files/Data/AAX/AAX_f.edf");
+//    Net * ann = new Net(dir, 19, left, right,spStep, ExpName);
+
+//    exit(0);
+#if 0
+    // draw wavelets for MATI icas
+
+    ui->matiCheckBox->setChecked(true);
+    ui->adjustPiecesCheckBox->setChecked(true);
+
+    QStringList names;
+    names << "ADA" << "BSA" << "FEV" << "KMX" << "NVV" << "PYV" << "SDV" << "SIV";
+    QString helpString;
+
+    for(QString &guy : names)
+    {
+        helpString = "/media/Files/Data/Mati/"
+                + slash() + guy
+                + slash() + guy + "_full_ica.edf";
+        setEdfFile(helpString);
+        cleanDirs();
+        sliceAll();
+        Spectre * sp = new Spectre(dir, ns, ExpName);
+        sp->drawWavelets();
+        sp->close();
+        delete sp;
+    }
+    exit(0);
+#endif
+
+#if 0
+    // test new Morle
+
+    QPixmap pic(600, 160); // 4 seconds
+    QPainter pnt;
+    pic.fill();
+    pnt.begin(&pic);
+
+    double pew = pic.height() / 2;
+    double inFreq = 5; // in Hz
+
+    double sum = 0.;
+    for(int i = 0; i < pic.width() - 1; ++i)
+    {
+        pnt.drawLine(i,
+                     pic.height()/2 - morletCosNew(inFreq, pic.width() / 2, i) * pew,
+                     i+1,
+                     pic.height()/2 - morletCosNew(inFreq, pic.width() / 2, i+1) * pew);
+        sum += pow(morletCosNew(inFreq, pic.width() / 2, i), 2);
+    }
+
+    pic.save("/media/Files/Data/MorleCos.jpg", 0, 100);
+    pnt.end();
+    exit(0);
+#endif
 #if 0
     // different filtrations low frequency
     ui->reduceChannelsCheckBox->setChecked(true);
