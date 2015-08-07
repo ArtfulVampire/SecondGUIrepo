@@ -75,13 +75,25 @@ char * QStrToCharArr(const QString & input, const int &len = -1);
 int typeOfFileName(QString fileName);
 
 //wavelets
-void drawColorScale(QString filename, int range, int type = 0);
+enum ColorScale {jet = 0,
+           htc = 1,
+           gray = 2,
+           pew = 3};
+void drawColorScale(QString filename, int range, ColorScale type = jet, bool full = false);
 
-double red(int range, double j, double V = 0.95, double S = 1.0);
-double green(int range, double j, double V = 0.95, double S = 1.0);
-double blue(int range, double j, double V = 0.95, double S = 1.0);
-QColor hueJet(int range, double j, int numOfContours = 0, double V = 0.95, double S = 1.0);
-QColor hueOld(int range, int j);
+const vector <double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
+// jet
+const double defV = 1.;
+double red(int range, double j, double V = defV, double S = 1.0);
+double green(int range, double j, double V = defV, double S = 1.0);
+double blue(int range, double j, double V = defV, double S = 1.0);
+// hot-to-cold
+double red1(int range, int j);
+double green1(int range, int j);
+double blue1(int range, int j);
+
+QColor hueOld(int range, double j, int numOfContours = 0, double V = 0.95, double S = 1.0);
+QColor hueJet(int range, int j);
 QColor grayScale(int range, int j);
 
 double morletCos(double const freq1, double const timeShift, double const pot, double const time);

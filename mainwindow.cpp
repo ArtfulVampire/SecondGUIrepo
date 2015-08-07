@@ -1778,20 +1778,73 @@ void MainWindow::customFunc()
 //              "/media/Files/Data/wav.jpg");
 //    exit(0);
 
+
+//    drawColorScale("/media/Files/Data/jet.jpg", 64, jet, 1);
+
 //    setEdfFile("/media/Files/Data/Mati/ADA/ADA_full_ica.edf");
-//    wavelet("/media/Files/Data/Mati/ADA/wav.txt",
-//            "/media/Files/Data/Mati/ADA/me.jpg",
-//            5);
+
 //    readData();
 //    writePlainData("/media/Files/Data/Mati/ADA/wav.txt",
 //                   globalEdf.getData(),
 //                   globalEdf.getNs(),
 //                   pow(2, 11),
 //                   0);
-//    setEdfFile("/media/Files/Data/AAX/AAX_f.edf");
-//    Net * ann = new Net(dir, 19, left, right,spStep, ExpName);
+
+//    wavelet("/media/Files/Data/Mati/ADA/wav.txt",
+//            "/media/Files/Data/Mati/ADA/me.jpg",
+//            5,
+//            20, 20., 5., 0.99);
 
 //    exit(0);
+
+#if 0
+    // uncode matlab color scale
+    QImage img;
+    img.load("/media/Files/Data/matlab.png");
+    QRgb color1 = img.pixel(img.width()/2, img.height() - 1);
+    QRgb color2;
+
+    QPixmap pic(img.height(), img.height() * 0.7);
+    pic.fill();
+    QPainter pnt;
+    pnt.begin(&pic);
+
+
+    for(int i = 2; i < img.height(); ++i)
+    {
+        color2 = img.pixel(img.width()/2, img.height() - i);
+
+        pnt.setPen("red");
+        pnt.drawLine(i - 1,
+                     pic.height() * (0.95 - 0.85 * qRed(color1) / 255.),
+                     i,
+                     pic.height() * (0.95 - 0.85 * qRed(color2) / 255.));
+
+        pnt.setPen("green");
+        pnt.drawLine(i - 1,
+                     pic.height() * (0.95 - 0.85 * qGreen(color1) / 255.),
+                     i,
+                     pic.height() * (0.95 - 0.85 * qGreen(color2) / 255.));
+
+        pnt.setPen("blue");
+        pnt.drawLine(i - 1,
+                     pic.height() * (0.95 - 0.85 * qBlue(color1) / 255.),
+                     i,
+                     pic.height() * (0.95 - 0.85 * qBlue(color2) / 255.));
+
+        pnt.setPen(QColor(color1));
+        pnt.setBrush(QBrush(QColor(color1)));
+        pnt.drawRect(i-1, 0,
+                     1, 0.07 * pic.height());
+        color1 = color2;
+    }
+    pnt.end();
+    pic.save("/media/Files/Data/matlabOut.jpg", 0, 100);
+
+    exit(0);
+#endif
+
+
 #if 0
     // draw wavelets for MATI icas
 

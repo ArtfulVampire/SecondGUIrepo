@@ -6,7 +6,7 @@ double morletCosNew(double const freq1, // Hz
                     const double time)
 {
     double freq = freq1 * 2. * pi;
-    double res =  sqrt(2. / sqrt(pi))
+    double res =  sqrt(2. * freq / sqrt(pi))
             * cos(freq * (time - timeShift) / def::freq)
             * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
     return res;
@@ -17,7 +17,7 @@ double morletSinNew(double const freq1,
                     const double time)
 {
     double freq = freq1 * 2. * pi;
-    double res =  sqrt(2. / sqrt(pi))
+    double res =  sqrt(2. * freq / sqrt(pi))
             * sin(freq * (time - timeShift) / def::freq)
             * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
     return res;
@@ -82,7 +82,7 @@ QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, 
     }
     else
     {
-        return hueJet(256, ((val - minMagn) / (maxMagn - minMagn))*256., 1., 1.);
+        return hueJet(256, ((val - minMagn) / (maxMagn - minMagn))*256.);
     }
 }
 
@@ -270,6 +270,8 @@ void drawMapSpline(double ** &matrixA, double maxAbs, QString outDir, QString ou
 
     matrixDelete(&helpMatrix, 5);
 }
+
+
 
 
 void drawMap(const double ** const &matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
@@ -1876,6 +1878,145 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
     paint->end();
 }
 
+
+void drawColorScale(QString filePath, int range, ColorScale type, bool full)
+{
+
+    //    double sigmaR = range*0.35;
+    //    double sigmaG = range*0.25;
+    //    double sigmaB = range*0.4;
+
+    //    double offR = range*(1.0 - 0.3);
+    //    double offG = range*(0.5 + 0.25);
+    //    double offB = range*(0.0 + 0.15);
+
+    //type == 0 - hueJet
+    //type == 1 - hueOld
+    //type == 2 - 3gauss
+    //type == 3 - grayScale
+    QPixmap pic;
+    if(full)
+    {
+        pic = QPixmap(744, 520);
+    }
+    else
+    {
+        pic = QPixmap(20, 300);
+    }
+    pic.fill();
+    QPainter painter;
+    painter.begin(&pic);
+
+
+    for(int i = 0; i < range; ++i)
+    {
+        switch(type)
+        {
+        case 0:
+        {
+            painter.setBrush(QBrush(hueJet(range, i)));
+            painter.setPen(hueJet(range, i));
+            break;
+
+        }
+        case 1:
+        {
+            painter.setBrush(QBrush(hueOld(range, i)));
+            painter.setPen(hueOld(range, i));
+            break;
+        }
+        case 2:
+        {
+            painter.setBrush(QBrush(grayScale(range, i)));
+            painter.setPen(grayScale(range, i));
+            break;
+        }
+        case 3:
+        {
+            painter.setBrush(QBrush(grayScale(range, i)));
+            painter.setPen(grayScale(range, i));
+            break;
+        }
+        }
+
+        if(full)
+        {
+            painter.drawRect(i*pic.width()/double(range),
+                             0,
+                             (i+1)*pic.width()/double(range),
+                             pic.height() * 0.07);
+        }
+        else
+        {
+            painter.drawRect(0,
+                             (1. - (i+1)/double(range)) * pic.height(),
+                             pic.width(),
+                             (1./double(range)) * pic.height()); // vertical
+        }
+
+    }
+    if(full)
+    {
+        for(int i = 0; i < range; ++i)
+        {
+            switch(type)
+            {
+            case 0:
+            {
+            painter.setPen(QPen(QBrush("red"), 2));
+            painter.drawLine(i*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * red(range, i),
+                             (i+1)*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * red(range, int(i+1)));
+
+            painter.setPen(QPen(QBrush("green"), 2));
+            painter.drawLine(i*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * green(range, i),
+                             (i+1)*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * green(range, int(i+1)));
+
+            painter.setPen(QPen(QBrush("blue"), 2));
+            painter.drawLine(i*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * blue(range, i),
+                             (i+1)*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * blue(range, int(i+1)));
+            break;
+            }
+            case 1:
+            {
+            painter.setPen(QPen(QBrush("red"), 2));
+            painter.drawLine(i*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * red1(range, i),
+                             (i+1)*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * red1(range, int(i+1)));
+
+            painter.setPen(QPen(QBrush("green"), 2));
+            painter.drawLine(i*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * green1(range, i),
+                             (i+1)*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * green1(range, int(i+1)));
+
+            painter.setPen(QPen(QBrush("blue"), 2));
+            painter.drawLine(i*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * blue1(range, i),
+                             (i+1)*pic.width()/double(range),
+                             pic.height()*0.95 - (pic.height() * 0.85) * blue1(range, int(i+1)));
+            break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+
+        }
+    }
+    painter.end();
+    pic.save(filePath, 0, 100);
+
+}
+
+
 void kernelEst(QString filePath, QString picPath)
 {
     double sigma = 0.;
@@ -2206,8 +2347,8 @@ void wavelet(QString filePath,
 
             /////// TO LOOK
             //set left & right limits of counting - should be 2.5 * morletFall... but works so
-            kMin = max(0, int(currSlice - morletFall * def::freq / freq));
-            kMax = min(NumOfSlices, int(currSlice + morletFall * def::freq / freq));
+            kMin = max(0, int(currSlice - 3 * morletFall * def::freq / freq));
+            kMax = min(NumOfSlices, int(currSlice + 3 * morletFall * def::freq / freq));
 
             for(int k = kMin; k < kMax; ++k)
             {
@@ -2239,7 +2380,7 @@ void wavelet(QString filePath,
         {
              numb = fmin(floor(temp[currFreq][currSlice] / helpDouble * range), range);
 
-             numb = pow(numb/range, 0.8) * range; // sligthly more than numb, may be dropped
+//             numb = pow(numb/range, 0.8) * range; // sligthly more than numb, may be dropped
 
              painter.setBrush(QBrush(hueJet(range, numb)));
              painter.setPen(hueJet(range, numb));
@@ -2256,9 +2397,11 @@ void wavelet(QString filePath,
     painter.setPen("black");
 
 
-    painter.setFont(QFont("Helvetica", 32, -1, -1));
+    painter.setFont(QFont("Helvetica", 28, -1, -1));
+    painter.setPen(Qt::DashLine);
     for(int i = freqMax; i > freqMin; --i)
     {
+
         painter.drawLine(0,
                          pic.height() * (freqMax - i) / (freqMax - freqMin),
                          pic.width(),
@@ -2268,6 +2411,7 @@ void wavelet(QString filePath,
                          QString::number(i));
 
     }
+    painter.setPen(Qt::SolidLine);
     for(int i = 0; i < int(NumOfSlices / def::freq); ++i)
     {
         painter.drawLine(pic.width() * i * def::freq / NumOfSlices,
@@ -2889,6 +3033,13 @@ double blue1(int range, int j)
 double red(int range, double j, double V, double S)
 {
     double part = j / double(range);
+    // matlab
+                    if    (0. <= part && part <= colDots[0]) return V*(1.-S);
+                    else if(colDots[0] < part && part <= colDots[1]) return V*(1.-S);
+                    else if(colDots[1] < part && part <= colDots[2]) return V*(1.-S) + V*S*(part-colDots[1])/(colDots[2] - colDots[1]);
+                    else if(colDots[2] < part && part <= colDots[3]) return V;
+                    else if(colDots[3] < part && part <= 1.) return V - V*S*(part-colDots[3])/(1 - colDots[3])/2.;
+    // old
     if    (0.000 <= part && part <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(part)*3.;
     else if(0.167 < part && part <= 0.400) return V*(1.-S);
     else if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
@@ -2900,7 +3051,14 @@ double red(int range, double j, double V, double S)
 double green(int range, double j, double V, double S)
 {
     double part = j / double(range);
-    double hlp = 0.95;
+    double hlp = 1.0;
+                    // matlab
+                    if    (0.0 <= part && part <= colDots[0]) return V*(1.-S);
+                    else if(colDots[0] < part && part <= colDots[1]) return V*(1.-S) + V*S*(part-colDots[0])/(colDots[1] - colDots[0]);
+                    else if(colDots[1] < part && part <= colDots[2]) return V;
+                    else if(colDots[2] < part && part <= colDots[3]) return V - V*S*(part-colDots[2])/(colDots[3] - colDots[2]);
+                    else if(colDots[3] < part && part <= 1.) return V*(1.-S);
+    // old
     if    (0.000 <= part && part <= 0.167) return V*(1.-S);
     else if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
     else if(0.400 < part && part <= 0.500) return V-V*S*(1.-hlp);
@@ -2912,16 +3070,27 @@ double green(int range, double j, double V, double S)
 double blue(int range, double j, double V, double S)
 {
     double part = j / double(range);
+
+                    if    (0.0 <= part && part <= colDots[0]) return V -V*S/2. + V*S*(part)/(colDots[0] - 0.0)/2.;
+                    else if(colDots[0] < part && part <= colDots[1]) return V;
+                    else if(colDots[1] < part && part <= colDots[2]) return V - V*S*(part-colDots[1])/(colDots[2] - colDots[1]);
+                    else if(colDots[2] < part && part <= colDots[3]) return V*(1.-S);
+                    else if(colDots[3] < part && part <= 1.) return V*(1.-S);
+
+                                   // old
     if    (0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
     else if(0.167 < part && part <= 0.400) return V;
     else if(0.400 < part && part <= 0.500) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
     else if(0.500 < part && part <= 0.600) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
     else if(0.600 < part && part <= 0.833) return V*(1.-S);
     else if(0.833 < part && part <= 1.000) return V*(1.-S);
+
+
     else return 0.0;
 }
 
-QColor hueJet(int range, double j, int numOfContours, double V, double S)
+// hot to cold
+QColor hueOld(int range, double j, int numOfContours, double V, double S)
 {
     if(j > range) j = range; //bicycle for no black colour
     if(j < 0) j = 0; //bicycle for no black colour
@@ -2933,15 +3102,15 @@ QColor hueJet(int range, double j, int numOfContours, double V, double S)
             return QColor("black");
         }
     }
-    return QColor(255.*red(range,j,V,S), 255.*green(range,j,V,S), 255.*blue(range,j,V,S));
+    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
 }
 
-QColor hueOld(int range, int j)
+QColor hueJet(int range, int j)
 {
     if(j > range) j = range; //bicycle for no black colour
     if(j < 0) j = 0; //bicycle for no black colour
-    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
-//    return QColor(255.*red(range,j,V,S), 255.*green(range,j,V,S), 255.*blue(range,j,V,S));
+//    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
+    return QColor(255.*red(range,j), 255.*green(range,j), 255.*blue(range,j));
 }
 
 QColor grayScale(int range, int j)
@@ -2975,80 +3144,6 @@ double morletSin(double const freq1, const double timeShift, const double pot, c
 {
     double freq = freq1 * 2. * pi / def::freq;
     return sin(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
-}
-
-
-
-void drawColorScale(QString filePath, int range, int type)
-{
-
-    //    double sigmaR = range*0.35;
-    //    double sigmaG = range*0.25;
-    //    double sigmaB = range*0.4;
-
-    //    double offR = range*(1.0 - 0.3);
-    //    double offG = range*(0.5 + 0.25);
-    //    double offB = range*(0.0 + 0.15);
-
-    //type == 0 - hueJet
-    //type == 1 - hueOld
-    //type == 2 - 3gauss
-    //type == 3 - grayScale
-    QPixmap pic(1800, 600);
-    pic.fill();
-    QPainter painter;
-    painter.begin(&pic);
-
-    for(int i = 0; i < range; ++i)
-    {
-        switch(type)
-        {
-        case 0:
-        {
-            painter.setBrush(QBrush(hueJet(range, i)));
-            painter.setPen(hueJet(range, i));
-            break;
-        }
-        case 1:
-        {
-            painter.setBrush(QBrush(hueOld(range, i)));
-            painter.setPen(hueOld(range, i));
-            break;
-        }
-        case 2:
-        {
-            painter.setBrush(QBrush(grayScale(range, i)));
-            painter.setPen(grayScale(range, i));
-            break;
-        }
-        case 3:
-        {
-            painter.setBrush(QBrush(grayScale(range, i)));
-            painter.setPen(grayScale(range, i));
-            break;
-        }
-        }
-        painter.drawRect(i*pic.width()/double(range), 0, (i+1)*pic.width()/double(range), 30);
-    }
-    for(int i = 0; i < range; ++i)
-    {
-        painter.setPen(QPen(QBrush("red"), 2));
-//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offR)*(i-offR)/(2*sigmaR*sigmaR)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offR)*((i+1)-offR)/(2*sigmaR*sigmaR)));
-//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red(range, int(i+1), 0.95, 1.0));
-        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * red1(range, int(i+1)));
-        painter.setPen(QPen(QBrush("green"), 2));
-//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offG)*(i-offG)/(2*sigmaG*sigmaG)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offG)*((i+1)-offG)/(2*sigmaG*sigmaG)));
-//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green(range, int(i+1), 0.95, 1.0));
-        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * green1(range, int(i+1)));
-        painter.setPen(QPen(QBrush("blue"), 2));
-//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-(i-offB)*(i-offB)/(2*sigmaB*sigmaB)), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * exp(-((i+1)-offB)*((i+1)-offB)/(2*sigmaB*sigmaB)));
-//        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue(range, i, 0.95,1.0), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue(range, int(i+1), 0.95, 1.0));
-        painter.drawLine(i*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue1(range, i), (i+1)*pic.width()/double(range), pic.height()-20 - (pic.height()-20 - 50) * blue1(range, int(i+1)));
-
-    }
-    painter.end();
-    pic.save(filePath, 0, 100);
-
 }
 
 
@@ -3168,8 +3263,8 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
         i=0;
          while(i<NumOfSlices)
         {
-             painter.setBrush(QBrush(hueJet(range, (temp[i] + pi)/2./pi * range, 0.95, 1.)));
-             painter.setPen(hueJet(range, (temp[i] + pi)/2./pi * range, 0.95, 1.));
+             painter.setBrush(QBrush(hueJet(range, (temp[i] + pi)/2./pi * range)));
+             painter.setPen(hueJet(range, (temp[i] + pi)/2./pi * range));
 
              painter.drawRect(i*pic.width()/NumOfSlices, int(pic.height()*(freqMax-freq  + 0.5*freq*(1. - freqStep)/freqStep)/(freqMax-freqMin)), timeStep*pic.width()/NumOfSlices,     int(pic.height()*(- 0.5*freq*(1./freqStep - freqStep))/(freqMax-freqMin)));
              i+=timeStep;
