@@ -2299,10 +2299,7 @@ void svd(const mat & inData, mat & eigenVectors, vector <double> & eigenValues, 
 void wavelet(QString filePath,
              QString picPath,
              int channelNumber,
-             int ns,
-             double freqMax,
-             double freqMin,
-             double freqStep)
+             int ns)
 {
     // continious
     int NumOfSlices;
@@ -2319,11 +2316,16 @@ void wavelet(QString filePath,
     QPainter painter;
     painter.begin(&pic);
 
-    double timeStep = 0.;
+    int numberOfFreqs;
 
-    int numberOfFreqs = int(log(freqMin/freqMax) / log(freqStep)) + 1;
+#if WAVELET_FREQ_STEP_TYPE==0
+    numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqStep)) + 1;
+#else
+    numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
+#endif
+
     matrix temp;
-    temp.resize(numberOfFreqs, NumOfSlices);
+    temp.resize(numberOfFreqs, ceil(NumOfSlices / wvlt::timeStep));
     temp.fill(0.);
 
     double tempR = 0., tempI = 0.;
@@ -2335,11 +2337,15 @@ void wavelet(QString filePath,
     int currFreq = 0;
     int currSlice = 0;
 
-    for(double freq = freqMax; freq > freqMin; freq *= freqStep)
+#if WAVELET_FREQ_STEP_TYPE==0
+    for(double freq = wvlt::freqMax; freq > wvlt::freqMin; freq *= wvlt::freqStep)
+#else
+    for(double freq = wvlt::freqMax; freq > wvlt::freqMin; freq -= wvlt::freqStep)
+#endif
     {
-        timeStep = def::freq/freq / 2.5;  //in time-bins 250 Hz
+//        timeStep = def::freq/freq / 2.5;  //in time-bins 250 Hz
 
-        for(currSlice = 0; currSlice < NumOfSlices; currSlice += timeStep)
+        for(currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
         {
             temp[currFreq][currSlice] = 0.;
             tempR = 0.;
@@ -2372,11 +2378,15 @@ void wavelet(QString filePath,
 //    return;
 
     currFreq = 0;
-    for(double freq = freqMax; freq > freqMin; freq *= freqStep)
+#if WAVELET_FREQ_STEP_TYPE==0
+    for(double freq = wvlt::freqMax; freq > wvlt::freqMin; freq *= wvlt::freqStep)
+#else
+    for(double freq = wvlt::freqMax; freq > wvlt::freqMin; freq -= wvlt::freqStep)
+#endif
     {
-        timeStep = def::freq/freq / 2.5;  //in time-bins 250 Hz
+//        timeStep = def::freq/freq / 2.5;  //in time-bins 250 Hz
 
-        for(currSlice = 0; currSlice < NumOfSlices; currSlice += timeStep)
+        for(currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
         {
              numb = fmin(floor(temp[currFreq][currSlice] / helpDouble * range), range);
 
@@ -2385,10 +2395,22 @@ void wavelet(QString filePath,
              painter.setBrush(QBrush(hueJet(range, numb)));
              painter.setPen(hueJet(range, numb));
 
+#if WAVELET_FREQ_STEP_TYPE==0
              painter.drawRect( currSlice * pic.width() / NumOfSlices,
-                               pic.height() * (freqMax-freq  + 0.5 * freq * (1. - freqStep)/freqStep) / (freqMax-freqMin),
-                               timeStep * pic.width()/NumOfSlices,
-                               pic.height()*( - 0.5*freq*(1./freqStep - freqStep)) / (freqMax-freqMin) );
+                               pic.height() * (wvlt::freqMax - freq
+                                               + 0.5 * freq *
+                                               (1. - wvlt::freqStep) / wvlt::freqStep)
+                               / (wvlt::freqMax-wvlt::freqMin),
+                               timeStep * pic.width() / NumOfSlices,
+                               pic.height() * ( - 0.5 * freq * (1. / wvlt::freqStep - wvlt::freqStep))
+                               / (wvlt::freqMax - wvlt::freqMin) );
+#else
+             painter.drawRect( currSlice * pic.width() / NumOfSlices,
+                               pic.height() * (wvlt::freqMax - freq  - 0.5 * wvlt::freqStep)
+                               / (wvlt::freqMax - wvlt::freqMin),
+                               wvlt::timeStep * pic.width() / NumOfSlices,
+                               pic.height() * wvlt::freqStep / (wvlt::freqMax - wvlt::freqMin));
+#endif
 
         }
         ++currFreq;
@@ -2399,15 +2421,15 @@ void wavelet(QString filePath,
 
     painter.setFont(QFont("Helvetica", 28, -1, -1));
     painter.setPen(Qt::DashLine);
-    for(int i = freqMax; i > freqMin; --i)
+    for(int i = wvlt::freqMax; i > wvlt::freqMin; --i)
     {
 
         painter.drawLine(0,
-                         pic.height() * (freqMax - i) / (freqMax - freqMin),
+                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin),
                          pic.width(),
-                         pic.height() * (freqMax - i) / (freqMax - freqMin));
+                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
         painter.drawText(0,
-                         pic.height() * (freqMax - i) / (freqMax - freqMin) - 2,
+                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
                          QString::number(i));
 
     }

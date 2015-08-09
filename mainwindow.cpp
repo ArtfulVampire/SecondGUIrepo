@@ -1763,7 +1763,7 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-    return;
+//    return;
 
 //    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
 //    ns = 20;
@@ -1781,21 +1781,54 @@ void MainWindow::customFunc()
 
 //    drawColorScale("/media/Files/Data/jet.jpg", 64, jet, 1);
 
-//    setEdfFile("/media/Files/Data/Mati/ADA/ADA_full_ica.edf");
+    setEdfFile("/media/Files/Data/Mati/ADA/ADA_full_ica.edf");
 
-//    readData();
-//    writePlainData("/media/Files/Data/Mati/ADA/wav.txt",
-//                   globalEdf.getData(),
-//                   globalEdf.getNs(),
-//                   pow(2, 11),
-//                   0);
+    readData();
+    writePlainData("/media/Files/Data/Mati/ADA/wav.txt",
+                   globalEdf.getData(),
+                   globalEdf.getNs(),
+                   pow(2, 11),
+                   0);
 
-//    wavelet("/media/Files/Data/Mati/ADA/wav.txt",
-//            "/media/Files/Data/Mati/ADA/me.jpg",
-//            5,
-//            20, 20., 5., 0.99);
+    wavelet("/media/Files/Data/Mati/ADA/wav.txt",
+            "/media/Files/Data/Mati/ADA/me2.jpg",
+            5);
 
-//    exit(0);
+    exit(0);
+
+
+#if 0
+    // set limits for channels/components
+
+    ui->matiCheckBox->setChecked(true);
+    ui->adjustPiecesCheckBox->setChecked(true);
+
+    QStringList names;
+    names << "ADA" << "BSA" << "FEV" << "KMX" << "NVV" << "PYV" << "SDV" << "SIV";
+    QString helpString;
+
+    for(QString &guy : names)
+    {
+        helpString = "/media/Files/Data/Mati/"
+                + slash() + guy
+                + slash() + guy + "_full_ica.edf";
+
+        setEdfFile(helpString);
+        cleanDirs();
+        sliceAll();
+
+        Spectre * sp = new Spectre(dir, ns, ExpName);
+
+/// TO DO
+        sp->drawWavelets();
+        /// TO DO
+
+        sp->close();
+        delete sp;
+    }
+    exit(0);
+#endif
+
 
 #if 0
     // uncode matlab color scale

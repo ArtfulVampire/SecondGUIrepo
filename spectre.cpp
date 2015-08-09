@@ -1604,6 +1604,33 @@ void Spectre::drawWavelets()
     nameFilters << "*_254*";
     QStringList lst = dir->entryList(nameFilters, QDir::Files);
 
+    for(int a = 0; a < int(pow(lst.length(), 0.5)); ++a)
+    {
+#if 0
+        fileName = lst[a];
+        filePath = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash() + fileName);
+        cout << helpString.toStdString() << endl;
+        if(ui->amplitudeWaveletButton->isChecked())
+        {
+            for(int channel = 0; channel < ns; ++channel)
+            {
+                helpString = fileName;
+                helpString.replace('.', '_');
+                helpString = QDir::toNativeSeparators(dirBC->absolutePath()
+                                                      + slash() + "visualisation"
+                                                      + slash() + "wavelets"
+                                                      + slash() + QString::number(channel)
+                                                      + slash() + helpString
+                                                      + "_wavelet_" + QString::number(channel)
+                                                      + ".jpg");
+                cout << helpString.toStdString() << endl;
+                wavelet(filePath, helpString, channel, ns);
+            }
+        }
+#endif
+    }
+
     for(int a = 0; a < lst.length(); ++a)
     {
         fileName = lst[a];

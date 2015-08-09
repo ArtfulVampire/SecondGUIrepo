@@ -106,13 +106,31 @@ double morletSinNew(double const freq1,
                     const double time);
 
 //void wavelet(QString out, FILE * file, int ns = 19, int channelNumber = 0, double freqMax = 20., double freqMin = 5., double freqStep = 0.99, double pot = 32.);
+
+
+#define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
+namespace wvlt
+{
+const double timeStep = 0.1;
+const double freqMax = 20.;
+const double freqMin = 5.;
+const double freqStep = 0.1;
+}
 void wavelet(QString filePath,
              QString picPath,
              int channelNumber = 0,
-             int ns = 20,
-             double freqMax = 20.,
-             double freqMin = 5.,
-             double freqStep = 0.98);
+             int ns = 20);
+
+
+vector<double> signalFromFile(QString filePath,
+                              int channelNumber,
+                              int ns = 20);
+matrix countWavelet(vector<double> inSignal);
+void drawWavelet(QString picPath,
+                 matrix inData);
+
+
+
 void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
 //signal processing
