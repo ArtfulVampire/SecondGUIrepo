@@ -44,7 +44,8 @@ const double pi = 3.141592653589;
 const double pi_min_025 = pow(pi, -0.25);
 const double pi_sqrt = sqrt(pi);
 
-typedef vector<vector<double> > mat;
+typedef vector<vector<double>> mat;
+typedef vector<double> vec;
 
 //void QDoubleSpinBox::mySlot(double val)
 int len(QString s); // string length for EDF+ annotations
@@ -84,16 +85,16 @@ void drawColorScale(QString filename, int range, ColorScale type = jet, bool ful
 const vector <double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
 // jet
 const double defV = 1.;
-double red(int range, double j, double V = defV, double S = 1.0);
-double green(int range, double j, double V = defV, double S = 1.0);
-double blue(int range, double j, double V = defV, double S = 1.0);
+double red(const int &range, double j, double V = defV, double S = 1.0);
+double green(const int &range, double j, double V = defV, double S = 1.0);
+double blue(const int &range, double j, double V = defV, double S = 1.0);
 // hot-to-cold
 double red1(int range, int j);
 double green1(int range, int j);
 double blue1(int range, int j);
 
 QColor hueOld(int range, double j, int numOfContours = 0, double V = 0.95, double S = 1.0);
-QColor hueJet(int range, int j);
+QColor hueJet(const int &range, double j);
 QColor grayScale(int range, int j);
 
 double morletCos(double const freq1, double const timeShift, double const pot, double const time);
@@ -111,10 +112,17 @@ double morletSinNew(double const freq1,
 #define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
 namespace wvlt
 {
-const double timeStep = 0.1;
+const int timeStep = ceil(0.1 * def::freq);
 const double freqMax = 20.;
 const double freqMin = 5.;
-const double freqStep = 0.1;
+const double freqStep = 0.2;
+const int range = 256;
+
+#if WAVELET_FREQ_STEP_TYPE==0
+const int numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqStep)) + 1;
+#else
+const int numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
+#endif
 }
 void wavelet(QString filePath,
              QString picPath,
@@ -122,22 +130,22 @@ void wavelet(QString filePath,
              int ns = 20);
 
 
-vector<double> signalFromFile(QString filePath,
+vec signalFromFile(QString filePath,
                               int channelNumber,
                               int ns = 20);
-matrix countWavelet(vector<double> inSignal);
+matrix countWavelet(vec inSignal);
 void drawWavelet(QString picPath,
-                 matrix inData);
+                 const matrix &inData);
 
 
 
 void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
 //signal processing
-double fractalDimension(const double *arr, int N, const QString &picPath = QString());
+double fractalDimension(const vec &arr, int N, const QString &picPath = QString());
 double enthropy(const double *arr, const int N, const int numOfRanges = 30); // not finished?
 void four1(double * dataF, int nn, int isign);
-void hilbert(const double *arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double * &out, QString picPath  = QString());
+void hilbert(const vec & arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double * &out, QString picPath  = QString());
 template <typename Typ>
 void hilbertPieces(const double *arr,
                    int inLength,
@@ -146,7 +154,7 @@ void hilbertPieces(const double *arr,
                    double highFreq,
                    Typ &out,
                    QString picPath = QString());
-void bayesCount(double * dataIn, int length, int numOfIntervals, double * &out);
+void bayesCount(const vec & dataIn, int length, int numOfIntervals, double * &out);
 void kernelEst(double *arr, int length, QString picPath);
 void kernelEst(QString filePath, QString picPath);
 void histogram(double *arr, int length, int numSteps, QString picPath);
@@ -175,9 +183,12 @@ double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 
 void splitZeros(mat & inData, const int &ns, const int &length, int * outLength, const QString &logFile  = QString(), const QString &dataName  = QString());
-void splitZerosEdges(double *** dataIn, int ns, int length, int * outLength);
+
+template <typename Typ>
+void splitZerosEdges(Typ & dataIn, const int & ns, const int & length, int * outLength);
+
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
-void zeroData(double **& inData, const int & ns, const int & leftLimit, const int & rightLimit);
+void zeroData(mat & inData, const int & ns, const int & leftLimit, const int & rightLimit);
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
 double independence(double * const signal1, double * const signal2, int length);
 double countAngle(double initX, double initY);
@@ -193,7 +204,7 @@ void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int 
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
 void drawRCP(double *values, int length);
-void countRCP(QString filename, QString picPath  = QString(), double *outMean = NULL, double *outSigma = NULL);
+void countRCP(QString filename, QString picPath  = QString(), double *outMean = nullptr, double *outSigma = nullptr);
 //void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
 void svd(const mat & inData, mat & eigenVectors, vector <double> & eigenValues, double threshold = 1e-9);
 
@@ -205,12 +216,12 @@ void makeCfgStatic(QString outFileDir,
                    double error = 0.1,
                    int temp = 10);
 
-void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
-void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
+//void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
+//void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
 
 template <typename Typ>
 void readPlainData(QString inPath,
-                   Typ &data,
+                   Typ & data,
                    int ns,
                    int & numOfSlices,
                    int start = 0);
@@ -261,7 +272,7 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
 
 void readSpectraFile(QString filePath, double **&outData, const int &ns, const int &spLength);
 void readSpectraFileLine(QString filePath, double *&outData, const int &ns, const int &spLength);
-void readFileInLine(QString filePath, double **& outData, int len);
+void readFileInLine(QString filePath, vec &outData, int len);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double **classCount);
 
 template <typename Typ>
@@ -278,17 +289,19 @@ void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool
 void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
 void drawSpectra(double ** drawData, int ns, int start, int end, const QString & picPath);
 
-template <typename inTyp, typename outTyp>
-void calcSpectre(const inTyp &inSignal, int length, outTyp &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 0, const double & powArg = 1.);
-
 void spectre(const double * data, const int &length, double *& spectr);
 
+template <typename inTyp, typename outTyp>
+void calcSpectre(const inTyp & inSignal, int length, outTyp &outSpectre, const int & Eyes = 0, int * fftLength = nullptr, const int & NumOfSmooth = 0, const double & powArg = 1.);
 void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &inDataLen, const int &NumOfSmooth = 15, const double &powArg = 1.);
-
 void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth = 15, const double &powArg = 1.);
-
 void calcSpectre(double ** &inData, int leng, const int &ns, double **& dataFFT, int * fftLength, const int &NumOfSmooth = 15, const double &powArg = 1.);
-void calcRawFFT(double ** &inData, double **& dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
+
+template <typename Typ>
+void calcSpectre(const Typ & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth, double const &powArg);
+
+template <typename Typ>
+void calcRawFFT(const Typ & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
 template <typename T>
 double distance(const vector <T> &vec1, const vector <T> &vec2, const int &dim);

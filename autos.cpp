@@ -511,11 +511,7 @@ void MainWindow::Bayes()
     dir->cdUp();
 
     FILE * file;
-    double ** dataBayes = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        dataBayes[i] = new double [250*60*5];
-    }
+    mat dataBayes;
     double maxAmpl = 10.; //generality from readData
 
     maxAmpl += 0.001; //bicycle
@@ -535,23 +531,18 @@ void MainWindow::Bayes()
     for(int i = 0; i < lst.length(); ++i)
     {
         if(lst[i].contains("num")) continue;
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "Realisations" + slash() + lst[i]);
-        file = fopen(helpString.toStdString().c_str(), "r");
-        fscanf(file, "NumOfSlices %d\n", &NumOfSlices);
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash() + "Realisations"
+                                              + slash() + lst[i]);
+        readPlainData(helpString,
+                      dataBayes,
+                      NumOfSlices,
+                      ns);
         if(NumOfSlices < 250)
         {
             fclose(file);
             continue;
         }
-
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int k = 0; k < ns; ++k)
-            {
-                fscanf(file, "%lf\n", &dataBayes[k][j]);
-            }
-        }
-        fclose(file);
 
         helpString = QDir::toNativeSeparators(dir->absolutePath()
                                               + slash() + "SpectraSmooth"
@@ -598,11 +589,7 @@ void MainWindow::Bayes()
         fclose(file);
     }
     delete [] count;
-    for(int i = 0; i < ns; ++i)
-    {
-        delete [] dataBayes[i];
-    }
-    delete [] dataBayes;
+
 }
 
 ///////////// FULL REMAKE
@@ -2172,7 +2159,7 @@ void MainWindow::GalyaProcessing()
                 {
                     helpString.clear();
                 }
-                helpDouble = fractalDimension(currEdf.getData()[i].data(),
+                helpDouble = fractalDimension(currEdf.getData()[i],
                                               currEdf.getDataLen());
                 outStr << doubleRound(helpDouble, 4) << endl;
             }

@@ -83,7 +83,7 @@ Cut::Cut(QDir * dir_, int ns_) :
 
 
     QFileDialog *browser = new QFileDialog();
-    browser->setDirectory(dir->absolutePath() + QDir::separator() + "Realisations");
+    browser->setDirectory(dir->absolutePath() + slash() + "Realisations");
     browser->setViewMode(QFileDialog::Detail);
 
     dir->cd("Realisations");
@@ -113,11 +113,11 @@ Cut::Cut(QDir * dir_, int ns_) :
     this->setAttribute(Qt::WA_DeleteOnClose);
 
 
-    data3 = new double* [ns];         // array for all data[numOfChan][numOfTimePin]
-    for(int i = 0; i < ns; ++i)
-    {
-        data3[i] = new double [250*250];         // generality for 250 seconds
-    }
+//    data3 = new double* [ns];         // array for all data[numOfChan][numOfTimePin]
+//    for(int i = 0; i < ns; ++i)
+//    {
+//        data3[i] = new double [250*250];         // generality for 250 seconds
+//    }
 }
 
 Cut::~Cut()
@@ -127,7 +127,7 @@ Cut::~Cut()
 
 void Cut::browse()
 {
-    QString helpString = QFileDialog::getOpenFileName((QWidget*)this, tr("Open realisation"), dir->absolutePath() + QDir::separator() + "Realisations");
+    QString helpString = QFileDialog::getOpenFileName((QWidget*)this, tr("Open realisation"), dir->absolutePath() + slash() + "Realisations");
     if(helpString.isEmpty())
     {
         QMessageBox::information((QWidget*)this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
@@ -234,7 +234,7 @@ void Cut::cutEyesAll()
         dir->cd("Realisations");
         helpString = dir->entryList(QDir::Files)[0];
         dir->cdUp();
-        helpString.prepend(dir->absolutePath() + QDir::separator() + "Realisations" + QDir::separator());
+        helpString.prepend(dir->absolutePath() + slash() + "Realisations" + slash());
         cout<<helpString.toStdString()<<endl;
         emit openFile(helpString);
     }
@@ -268,8 +268,8 @@ void Cut::cutEyesAll()
     for(int k = 0; k < int(lst.length()/4); ++k)
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath()
-                                              + QDir::separator() + ui->dirBox->currentText()
-                                              + QDir::separator() + lst[rand()%lst.length()]);
+                                              + slash() + ui->dirBox->currentText()
+                                              + slash() + lst[rand()%lst.length()]);
         emit openFile(helpString);
 
         for(int j = 0; j < NumOfSlices; ++j)
@@ -302,7 +302,7 @@ void Cut::cutEyesAll()
 
 //    cout<<"5"<<endl;
     FILE * eyes;
-    helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "eyesSlices");
+    helpString=QDir::toNativeSeparators(dir->absolutePath() + slash() + "eyesSlices");
     eyes = fopen(helpString.toStdString().c_str(), "w");
 
     int flag;
@@ -310,7 +310,7 @@ void Cut::cutEyesAll()
     int num=0;
     for(int i=0; i<lst.length(); ++i)
     {
-        helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + ui->dirBox->currentText() + QDir::separator() + lst[i]);
+        helpString=QDir::toNativeSeparators(dir->absolutePath() + slash() + ui->dirBox->currentText() + slash() + lst[i]);
 
         emit openFile(helpString);
         num += NumOfSlices;
@@ -335,7 +335,7 @@ void Cut::cutEyesAll()
 
     fclose(eyes);
 
-    QFile *file = new QFile(helpString=QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "eyesSlices"));
+    QFile *file = new QFile(helpString=QDir::toNativeSeparators(dir->absolutePath() + slash() + "eyesSlices"));
     file->open(QIODevice::ReadOnly);
     QByteArray contents = file->readAll();
     file->close();
@@ -467,7 +467,7 @@ void Cut::next()
     QString helpString;
     if(currentNumber+1 < lst.length())  // generality
     {
-        helpString = dir->absolutePath() + QDir::separator();
+        helpString = dir->absolutePath() + slash();
         if(currentFile.contains("Realisations"))
         {
              helpString += "Realisations";
@@ -480,7 +480,7 @@ void Cut::next()
         {
             helpString += "cut";
         }
-        helpString += QDir::separator();
+        helpString += slash();
 
         if(lst[currentNumber+1].contains("_num")) ++currentNumber; // generality crutch bicycle
 
@@ -499,7 +499,7 @@ void Cut::prev()
     QString helpString;
     if(currentNumber-1 >= 0)
     {
-        helpString = dir->absolutePath() + QDir::separator();
+        helpString = dir->absolutePath() + slash();
         if(currentFile.contains("Realisations"))
         {
              helpString += "Realisations";
@@ -512,7 +512,7 @@ void Cut::prev()
         {
             helpString += "cut";
         }
-        helpString += QDir::separator();
+        helpString += slash();
 
 
         if(lst[currentNumber-1].contains("_num")) --currentNumber; // generality crutch bicycle
@@ -664,9 +664,13 @@ void Cut::cut()
     QString helpString;
     dir->cd("windows");
     helpString = QDir::toNativeSeparators(dir->absolutePath()
-                                          + QDir::separator() + fileName
+                                          + slash() + fileName
                                           + "." + QString::number(addNum));
     ++addNum;
+    // new
+    writePlainData(helpString, data3, int(rightLimit-leftLimit), leftLimit);
+    // old
+    /*
     file = fopen(helpString.toStdString().c_str(),"w");
     fprintf(file, "NumOfSlices %d\n", int(rightLimit-leftLimit));
     for(int i = leftLimit; i < rightLimit; ++i)         // zoom
@@ -677,6 +681,7 @@ void Cut::cut()
         }
     }
     fclose(file);
+    */
     dir->cdUp();
     rightLimit = NumOfSlices;
     leftLimit = 0;
@@ -713,9 +718,13 @@ void Cut::save()
     dir->cdUp();
 
     helpString = QDir::toNativeSeparators(dir->absolutePath()
-                                          + QDir::separator() + "cut"
-                                          + QDir::separator() + fileName);
+                                          + slash() + "cut"
+                                          + slash() + fileName);
 
+    // new
+    writePlainData(helpString, data3, NumOfSlices, ns);
+    // old
+    /*
     file = fopen(helpString.toStdString().c_str(), "w");
     fprintf(file, "NumOfSlices %d \n", NumOfSlices);
     for(int i = 0; i < NumOfSlices; ++i)         // saved BY SLICES!!
@@ -726,11 +735,12 @@ void Cut::save()
         }
     }
     fclose(file);
+    */
 
     fileName.replace('.', '_');
     helpString=QDir::toNativeSeparators(dir->absolutePath()
-                                        + QDir::separator() + "SignalsCut"
-                                        + QDir::separator());
+                                        + slash() + "SignalsCut"
+                                        + slash());
     if(ns==19)
     {
          helpString += "after";
@@ -743,7 +753,7 @@ void Cut::save()
     {
         helpString += "other";
     }
-    helpString += QDir::separator() + fileName + ".jpg";
+    helpString += slash() + fileName + ".jpg";
 
     QPixmap pic;
     pic = *(ui->picLabel->pixmap());
@@ -764,7 +774,7 @@ void Cut::rewrite()
 void Cut::paint() // save to tmp.jpg and display
 {
     QString helpString;
-    helpString = dir->absolutePath() + QDir::separator() + "tmp.jpg";
+    helpString = dir->absolutePath() + slash() + "tmp.jpg";
 
     currentPic = drawEeg(data3,
                          ns,

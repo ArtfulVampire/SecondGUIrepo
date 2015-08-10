@@ -20,6 +20,10 @@ matrix::matrix(double **inData, int rows, int cols)
 
 matrix::~matrix()
 {
+//    std::for_each(this->data.begin(),
+//                  this->data.end(),
+//                  [](vector<double> & in){in.~vector();});
+//    this->data.~vector();
 }
 
 matrix::matrix(int dim)
@@ -90,6 +94,28 @@ matrix matrix::operator = (const dataType & other)
 {
     this->data = other;
 
+    return *this;
+}
+matrix matrix::operator /= (const double & other)
+{
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        for(int j = 0; j < this->cols(); ++j)
+        {
+            this->data[i][j] /= other;
+        }
+    }
+    return *this;
+}
+matrix matrix::operator *= (const double & other)
+{
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        for(int j = 0; j < this->cols(); ++j)
+        {
+            this->data[i][j] *= other;
+        }
+    }
     return *this;
 }
 
@@ -174,6 +200,53 @@ double matrix::minVal() const
     return res;
 }
 
+
+dataType::iterator matrix::begin()
+{
+    return this->data.begin();
+}
+
+dataType::iterator matrix::end()
+{
+    return this->data.end();
+}
+
+dataType::const_iterator matrix::begin() const
+{
+    return this->data.begin();
+}
+
+dataType::const_iterator matrix::end() const
+{
+    return this->data.end();
+}
+
+
+vector<double> matrix::toVectorByRows() const
+{
+    vector<double> res;
+    std::for_each(this->data.begin(),
+                  this->data.end(),
+                  [&res](vector<double> in)
+    {
+        std::for_each(in.begin(),
+                      in.end(),
+                      [&res](double inn){res.push_back(inn);});
+    });
+    return res;
+}
+vector<double> matrix::toVectorByCols() const
+{
+    vector<double> res;
+    for(int i = 0; i < this->cols(); ++i)
+    {
+        for(int j = 0; j < this->rows(); ++j)
+        {
+            res.push_back(this->data[j][i]);
+        }
+    }
+    return res;
+}
 
 int matrix::cols() const
 {

@@ -1111,12 +1111,15 @@ void Spectre::countSpectra()
     lst = dir->entryList(QDir::Files, QDir::Name);
     dir->cd(dirBC->absolutePath()); // go back
 
+    mat dataFFT;
+    /*
     double ** dataFFT;
     dataFFT = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
         dataFFT[i] = new double [fftLength];
     }
+    */
 
     double *** dataPhase = new double ** [ns];
     for(int i = 0; i < ns; ++i)
@@ -1132,7 +1135,9 @@ void Spectre::countSpectra()
     double sum2 = 0.;
     ofstream outStream;
 
-    double ** dataIn;
+    matrix dataIn;
+    dataIn.resizeCols(fftLength);
+    dataIn.fill(0);
     double * tempVec;
     int numOfIntervals = 20;
 
@@ -1142,37 +1147,29 @@ void Spectre::countSpectra()
 
         //read data file
         dir->cd(ui->lineEdit_1->text());
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + lst[a]);
-        readDataFile(helpString, &dataIn, ns, &NumOfSlices, fftLength);
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash() + lst[a]);
+
+        dataIn.fill(0.);
+        readPlainData(helpString, dataIn, ns, NumOfSlices);
+
         dir->cd(dirBC->absolutePath());
 
         dir->cd(ui->lineEdit_2->text());  //cd to output dir
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + lst[a]);
+        helpString = QDir::toNativeSeparators(dir->absolutePath()
+                                              + slash() + lst[a]);
         outStream.open(helpString.toStdString().c_str());
         if(!outStream.good())
         {
             cout << "bad outStream" << endl;
-            for(int i = 0; i < ns; ++i)
-            {
-                delete []dataIn[i];
-            }
-            delete []dataIn;
-
             continue;
         }
-
 
         if(ui->brainRateRadioButton->isChecked() || ui->spectraRadioButton->isChecked())
         {
             if(!countOneSpectre(dataIn, dataFFT))
             {
                 outStream.close();
-                for(int i = 0; i < ns; ++i)
-                {
-                    delete []dataIn[i];
-                }
-                delete []dataIn;
-
                 helpString = QDir::toNativeSeparators(dir->absolutePath()
                                                       + slash()
                                                       + lst[a]);
@@ -1250,7 +1247,11 @@ void Spectre::countSpectra()
             for(int i = 0; i < ns; ++i)
             {
 //                hilbert(dataIn[i], fftLength, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
+
+                /// REMAKE with matrix
                 hilbert(dataIn[i], NumOfSlices, def::freq, 8., 12., tempVec, "");
+                ///
+
 //                cout << lst[a].toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
 //                outStream << variance(tempVec, fftLength) << '\n';
                 outStream << mean(tempVec, NumOfSlices) << '\n';
@@ -1270,7 +1271,10 @@ void Spectre::countSpectra()
             for(int i = 0; i < ns; ++i)
             {
 
+                /// Reamke with matrix
                 bayesCount(dataIn[i], NumOfSlices, numOfIntervals, tempVec);
+                ///
+
                 for(int j = 0; j < numOfIntervals; ++j)
                 {
                     outStream << tempVec[j] << '\n';
@@ -1282,7 +1286,7 @@ void Spectre::countSpectra()
         }
         else if(ui->d2RadioButton->isChecked())
         {
-            splitZerosEdges(&dataIn, ns, fftLength, &NumOfSlices);
+            splitZerosEdges(dataIn, ns, fftLength, &NumOfSlices);
             for(int i = 0; i < ns; ++i)
             {
                 outStream << fractalDimension(dataIn[i], NumOfSlices) << '\n';
@@ -1330,14 +1334,7 @@ void Spectre::countSpectra()
 
         }
 
-
         outStream.close();
-        for(int i = 0; i < ns; ++i)
-        {
-            delete []dataIn[i];
-        }
-        delete []dataIn;
-
 
 
         if(100*(a+1)/lst.length() > ui->progressBar->value())
@@ -1366,13 +1363,6 @@ void Spectre::countSpectra()
     ui->progressBar->setValue(0);
 
     dir->cd(dirBC->absolutePath());
-
-
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []dataFFT[i];
-    }
-    delete []dataFFT;
 
     for(int i = 0; i < ns; ++i)
     {
@@ -1436,7 +1426,7 @@ void Spectre::countSpectra()
 
 }
 
-int Spectre::countOneSpectre(double ** &data2, double ** &dataFFT)  /////////EDIT
+int Spectre::countOneSpectre(const matrix & data2, mat & dataFFT)  /////////EDIT
 {
     //correct Eyes number
     Eyes = 0;
@@ -1469,7 +1459,13 @@ int Spectre::countOneSpectre(double ** &data2, double ** &dataFFT)  /////////EDI
         return 0;
     }
 
-    calcSpectre(data2, dataFFT, ns, fftLength, Eyes, ui->smoothBox->value(), ui->powDoubleSpinBox->value());
+    calcSpectre(data2,
+                dataFFT,
+                ns,
+                fftLength,
+                Eyes,
+                ui->smoothBox->value(),
+                ui->powDoubleSpinBox->value());
 
 
     dir->cd(dirBC->absolutePath());
@@ -1604,32 +1600,42 @@ void Spectre::drawWavelets()
     nameFilters << "*_254*";
     QStringList lst = dir->entryList(nameFilters, QDir::Files);
 
-    for(int a = 0; a < int(pow(lst.length(), 0.5)); ++a)
+    vec signal;
+    matrix coefs;
+    ofstream outStr;
+
+    for(int a = 0; a < lst.length(); ++a)
     {
-#if 0
         fileName = lst[a];
         filePath = QDir::toNativeSeparators(dir->absolutePath()
                                               + slash() + fileName);
-        cout << helpString.toStdString() << endl;
-        if(ui->amplitudeWaveletButton->isChecked())
+
+        for(int chanNum = 0; chanNum < 19; ++chanNum)
         {
-            for(int channel = 0; channel < ns; ++channel)
-            {
-                helpString = fileName;
-                helpString.replace('.', '_');
-                helpString = QDir::toNativeSeparators(dirBC->absolutePath()
-                                                      + slash() + "visualisation"
-                                                      + slash() + "wavelets"
-                                                      + slash() + QString::number(channel)
-                                                      + slash() + helpString
-                                                      + "_wavelet_" + QString::number(channel)
-                                                      + ".jpg");
-                cout << helpString.toStdString() << endl;
-                wavelet(filePath, helpString, channel, ns);
-            }
+            signal = signalFromFile(filePath,
+                                     chanNum,
+                                     20);
+            coefs = countWavelet(signal);
+
+            helpString = QDir::toNativeSeparators("/media/Files/Data/Mati/ADA/visualisation/wavelets"
+                                                  + slash() + QString::number(chanNum) + ".txt");
+            outStr.open(helpString.toStdString(), ios_base::app);
+            outStr << coefs.maxVal() << endl;
+            outStr.close();
         }
-#endif
     }
+
+    vec tempVec;
+    for(int chanNum = 0; chanNum < 19; ++chanNum)
+    {
+        helpString = QDir::toNativeSeparators("/media/Files/Data/Mati/ADA/visualisation/wavelets"
+                                              + slash() + QString::number(chanNum) + ".txt");
+        readFileInLine(helpString, tempVec, lst.length());
+        std::sort(tempVec.begin(), tempVec.end());
+        cout << tempVec.front() << "\t" << tempVec.back() << endl;
+    }
+    return;
+
 
     for(int a = 0; a < lst.length(); ++a)
     {

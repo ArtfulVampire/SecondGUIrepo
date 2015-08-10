@@ -377,11 +377,14 @@ void MainWindow::reduceChannelsSlot()
     int * num = new int [maxNs];
     FILE * file;
 
+    mat dataR;
+    /*
     double ** dataR = new double * [ns];
     for(int i = 0; i < ns; ++i)
     {
         dataR[i] = new double [250 * 60];   // generality for 1 minute realisations
     }
+    */
 
     helpString = ui->reduceChannelsLineEdit->text();
     QStringList list = helpString.split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -399,6 +402,7 @@ void MainWindow::reduceChannelsSlot()
         helpString = QDir::toNativeSeparators(dir->absolutePath()
                                               + slash() + lst[i]);
         readPlainData(helpString, dataR, ns, NumOfSlices);
+        ////////////////////// kashghasgjdgakjsdgakjsgdkjasgkdagkhscvawdc
         file = fopen(helpString, "w");
         if(file == NULL)
         {
@@ -417,11 +421,11 @@ void MainWindow::reduceChannelsSlot()
         fclose(file);
     }
 
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []dataR[i];
-    }
-    delete[]dataR;
+//    for(int i = 0; i < ns; ++i)
+//    {
+//        delete []dataR[i];
+//    }
+//    delete[]dataR;
     ns = list.length();
     delete []num;
     dir->cdUp();

@@ -38,6 +38,12 @@ struct matrix
     int rows() const;
     double maxVal() const;
     double minVal() const;
+    dataType::iterator begin();
+    dataType::iterator end();
+    dataType::const_iterator begin() const;
+    dataType::const_iterator end() const;
+    vector<double> toVectorByRows() const;
+    vector<double> toVectorByCols() const;
 
     // for compability with vector < vector<Type> >
     int size() const {return data.size();}
@@ -55,6 +61,8 @@ struct matrix
     }
     matrix operator = (const matrix & other);
     matrix operator = (const dataType & other);
+    matrix operator /= (const double & other);
+    matrix operator *= (const double & other);
 
 
     dataType data;

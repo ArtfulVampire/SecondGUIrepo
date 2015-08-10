@@ -33,11 +33,14 @@ void MainWindow::sliceWindFromReal()
 //    cout << "timeShift = " << timeShift << endl;
 //    cout << "wndLength = " << wndLength << endl;
 
+    mat dataReal;
+    /*
     double ** dataReal = new double *[ns];
     for(int i = 0; i < ns; ++i)
     {
         dataReal[i] = new double [250*60*1]; //generality 1 min
     }
+    */
 
     int eyes;
     int offset;
@@ -104,11 +107,11 @@ void MainWindow::sliceWindFromReal()
         }
         ui->progressBar->setValue(i * 100. / lst.length());
     }
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []dataReal[i];
-    }
-    delete []dataReal;
+//    for(int i = 0; i < ns; ++i)
+//    {
+//        delete []dataReal[i];
+//    }
+//    delete []dataReal;
 
     ui->progressBar->setValue(0);
 

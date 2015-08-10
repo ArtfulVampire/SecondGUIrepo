@@ -73,7 +73,7 @@ private:
     int addNum;
     QStringList lst;
     int currentNumber;
-    double ** data3;
+    vector<vector<double>> data3;
     int ns;
     int NumOfSlices, Eyes;
     int pointNumber;

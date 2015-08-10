@@ -24,7 +24,7 @@ class Spectre : public QWidget
 public:
     explicit Spectre(QDir *dir_ = new QDir("/"), int ns_ = 20, QString ExpName_ = "TSL");
     ~Spectre();
-    int countOneSpectre(double **&data2, double **&dataFFT);
+    int countOneSpectre(const matrix &data2, mat &dataFFT);
     void setSmooth(int);
     bool eventFilter(QObject *obj, QEvent *event);
     int readFilePhase(double **data2, double ***dataPhase);

@@ -77,11 +77,14 @@ void Eyes::eyesClean()
         coefficients[i] = new double [NumEog];
     }
 
+    mat dataF;
+    /*
     double **dataF = new double * [ns];
     for(int j = 0; j < ns; ++j)
     {
         dataF[j] = new double [250 * 60]; // generality for 1 minute realisations
     }
+    */
 
     for(int k = 0; k < NumEeg; ++k)
     {
@@ -93,7 +96,6 @@ void Eyes::eyesClean()
     }
     fclose(coef);
 
-    int a;
     for(int i = 0; i < list.length(); ++i)
     {
         helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + list[i]);
@@ -105,7 +107,8 @@ void Eyes::eyesClean()
             {
                 for(int z = 0; z < NumEog; ++z)
                 {
-                    dataF[k][j] -= coefficients[k][z] * dataF[ lst[z].toInt() - 1 ][j]; // generality
+                    dataF[k][j] -= coefficients[k][z]
+                            * dataF[ lst[z].toInt() - 1 ][j]; // generality
                 }
             }
         }
@@ -144,7 +147,7 @@ void Eyes::eyesClean()
     emit setNsMain(ns);
 
     //error here
-    delete []dataF;
+//    delete []dataF;
 
 
     for(int i = 0; i<NumEeg; ++i)
