@@ -29,6 +29,7 @@
 #include <QDoubleSpinBox>
 #include <vector>
 #include <typeinfo>
+#include <ctime>
 
 
 #ifdef _OPENMP
