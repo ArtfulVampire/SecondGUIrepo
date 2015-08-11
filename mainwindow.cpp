@@ -1400,7 +1400,7 @@ void MainWindow::drawRealisations()
 
     for(int i = 0; i < lst.length(); ++i)
     {
-//        if(i > 2) break;
+        if(i > 1) break;
 
 
 
@@ -1763,7 +1763,7 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-    return;
+//    return;
 
 //    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
 //    ns = 20;
@@ -1807,7 +1807,7 @@ void MainWindow::customFunc()
 
     for(QString &guy : names)
     {
-        helpString = "/media/Files/Data/Mati/"
+        helpString = "/media/Files/Data/Mati"
                 + slash() + guy
                 + slash() + guy + "_full_ica.edf";
 
@@ -1818,7 +1818,6 @@ void MainWindow::customFunc()
         Spectre * sp = new Spectre(dir, ns, ExpName);
 
         sp->drawWavelets();
-        exit(1);
 
         sp->close();
         delete sp;
@@ -1937,6 +1936,18 @@ void MainWindow::customFunc()
     drawRealisations();
 
     QString pew1, pew2;
+
+    for(double j = 5; j >= 0.1; j -= 0.03)
+    {
+        pew2 = "/media/Files/Data/CAA/CAA_rr_f_" + QString::number(j) + ".edf";
+
+        setEdfFile(pew2);
+        ui->reduceChannelsComboBox->setCurrentText("MyCurrent");
+        cleanDirs();
+        sliceAll();
+        drawRealisations();
+    }
+    exit(0);
 
     for(double j = 20; j <= 50; j += 0.5)
     {
