@@ -5,36 +5,30 @@
 
 
 
-Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString ExpName_) :
+Net::Net() :
     ui(new Ui::Net)
 {
     paFileBC = "";
     ui->setupUi(this);
-    dir = new QDir;
-    dir->cd(dir_->absolutePath());
+
     dirBC = new QDir;
-    dirBC->cd(dir_->absolutePath());
+    dirBC->cd(def::dir->absolutePath());
 
     this->setWindowTitle("Net");
-    ExpName = ExpName_;
 
-    weight = 0;
+    weight = nullptr;
     dimensionality = nullptr;
 
-
-    left = left_;
-    right = right_;
-    spLength = right_ - left_ + 1;
-
-    spStep = spStep_;
-    ns = ns_;
-
     //clean log file
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "log.txt");
-    log = fopen(helpString.toStdString().c_str(),"w");
+    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "log.txt");
+    FILE * log = fopen(helpString,"w");
     if(log == NULL)
     {
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
+        QMessageBox::critical((QWidget * )this,
+                              tr("Warning"),
+                              tr("Cannot open log file to write"),
+                              QMessageBox::Ok);
         return;
     }
     fclose(log);
@@ -60,7 +54,9 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     classCount = new double [3]; //generality in cfg
 
 
-    matrixCreate(&tempRandomMatrix, ns, ns);
+    matrixCreate(&tempRandomMatrix, def::ns, def::ns);
+
+
 
     group1 = new QButtonGroup();
     group1->addButton(ui->leaveOneOutRadioButton);
@@ -79,8 +75,8 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     ui->deltaRadioButton->setChecked(false);
     ui->backpropRadioButton->setChecked(false);
 
-    if(spStep == 250./1024) ui->windowsRadioButton->setChecked(true);
-    else if(spStep == 250./4096) ui->realsRadioButton->setChecked(true);
+    if(def::spStep == def::freq / pow(2, 10)) ui->windowsRadioButton->setChecked(true);
+    else if(def::spStep == def::freq / pow(2, 12)) ui->realsRadioButton->setChecked(true);
 
     ui->tempBox->setValue(10);
     ui->tempBox->setSingleStep(1);
@@ -196,18 +192,20 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
     this->setAttribute(Qt::WA_DeleteOnClose);
 
 
-    helpString = dir->absolutePath() + QDir::separator() + def::cfgFileName;
+    helpString = def::dir->absolutePath()
+            + slash() + def::cfgFileName;
     loadCfgByName(helpString);
 
-    if(spStep == 250./4096)
+    if(def::spStep == def::freq / pow(2, 12))
     {
-        helpString = dir->absolutePath() + QDir::separator() + "16sec19ch.net";
+        helpString = def::dir->absolutePath() + slash() + "16sec19ch.net";
     }
-    else if(spStep == 250./1024)
+    else if(def::spStep == def::freq / pow(2, 10))
     {
-        helpString = dir->absolutePath() + QDir::separator() + "4sec19ch.net";
+        helpString = def::dir->absolutePath() + slash() + "4sec19ch.net";
     }
     loadCfgByName(helpString);
+
 
     this->ui->deltaRadioButton->setChecked(true);
     this->ui->realsRadioButton->setChecked(true);
@@ -234,11 +232,10 @@ Net::Net(QDir  * dir_, int ns_, int left_, int right_, double spStep_, QString E
 Net::~Net()
 {
 
-    delete dir;
     delete dirBC;
     delete []helpCharArr;
     delete []classCount;
-    matrixDelete(&tempRandomMatrix, ns);
+    matrixDelete(&tempRandomMatrix, def::ns);
     delete group1;
     delete group2;
     delete group3;
@@ -308,8 +305,8 @@ void Net::autoClassificationSimple()
 {
 
 //    ui->deltaRadioButton->setChecked(true); //generality
-    helpString.clear();
-    helpString = QDir::toNativeSeparators(dir->absolutePath()
+    QString helpString;
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "SpectraSmooth");
 
     if(ui->windowsRadioButton->isChecked()) //generality
@@ -318,10 +315,10 @@ void Net::autoClassificationSimple()
     }
     else if(ui->bayesRadioButton->isChecked())
     {
-        //generality
-        spLength = NetLength/19;
-        left = 1;
-        right = spLength;
+        //////////////// CAREFUL
+        def::spLength = NetLength/19;
+        def::left = 1;
+        def::right = def::spLength;
         helpString += slash() + "Bayes";
     }
     else if(ui->pcaRadioButton->isChecked())
@@ -349,8 +346,7 @@ bool Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, Mak
 
 //    cout << "adjustReduceCoeff: " << "lowLimit = " << lowLimit << " highLimit = " << highLimit << endl;
 
-    MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
-    mkPa->setNumOfClasses(NumOfClasses);
+    MakePa  * mkPa = new MakePa(spectraDir, channelsSetExclude);
     mkPa->setRdcCoeff(this->ui->rdcCoeffSpinBox->value());
     mkPa->setFold(ui->foldSpinBox->value());
     while(1)
@@ -406,9 +402,9 @@ void Net::autoClassification(QString spectraDir)
                               QMessageBox::Ok);
         return;
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath()
-                                          + slash() + "log.txt");
-    log = fopen(helpString, "w");
+    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                                  + slash() + "log.txt");
+    FILE * log = fopen(helpString, "w");
     if(log == NULL)
     {
         QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
@@ -443,8 +439,11 @@ void Net::autoClassification(QString spectraDir)
 
 
     //adjust reduce coefficient
-    MakePa  * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep, channelsSetExclude);
-    if(!adjustReduceCoeff(spectraDir, ui->lowLimitSpinBox->value(), ui->highLimitSpinBox->value(), mkPa))
+    MakePa  * mkPa = new MakePa(spectraDir, channelsSetExclude);
+    if(!adjustReduceCoeff(spectraDir,
+                          ui->lowLimitSpinBox->value(),
+                          ui->highLimitSpinBox->value(),
+                          mkPa))
     {
         averageAccuracy = 0.;
         delete mkPa;
@@ -464,8 +463,8 @@ void Net::autoClassification(QString spectraDir)
             cout << " "; cout.flush();
 
             //make PA
+            // depends on NetLength, which is from cfg file
             mkPa->makePaSlot();
-
             PaIntoMatrixByName("1");
 
             LearnNet();
@@ -510,36 +509,42 @@ void Net::autoPCAClassification()
     autoFlag = 1;
     cfg * config;
 
-    int nsBC = ns;
-    int leftBC = left;
-    int rightBC = right;
-    double spStepBC = spStep;
+    int nsBC = def::ns;
+    int leftBC = def::left;
+    int rightBC = def::right;
+    double spStepBC = def::spStep;
+    QString helpString;
 
     for(int i = ui->autpPCAMaxSpinBox->value(); i >= ui->autoPCAMinSpinBox->value(); i-=ui->autoPCAStepSpinBox->value())
     {
         cout << "numOfPc = " << i  << " started" << endl;
-        config = new cfg(dirBC, 1, i, ui->critErrorDoubleSpinBox->value(), ui->learnRateBox->value(), "pca");
+        config = new cfg(ui->critErrorDoubleSpinBox->value(),
+                         ui->learnRateBox->value(),
+                         "pca");
         config->makeCfg();
         config->close();
         if(config != NULL) delete config;
 
-        helpString = QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "pca.net");
+        helpString = QDir::toNativeSeparators(dirBC->absolutePath()
+                                              + slash() + "pca.net");
         loadCfgByName(helpString);
 
-        ns = 1;
-        left = 1;
-        right = i;
-        spStep = 0.1;
+        def::ns = 1;
+        def::left = 1;
+        def::right = i;
+        def::spStep = 0.1;
 
-        helpString = QDir::toNativeSeparators(dirBC->absolutePath() + QDir::separator() + "SpectraSmooth" + QDir::separator() + "PCA");
+        helpString = QDir::toNativeSeparators(dirBC->absolutePath()
+                                              + slash() + "SpectraSmooth"
+                                              + slash() + "PCA");
         cout << "numOfPc = " << i  << " ended" << endl;
         autoClassification(helpString);
 
 
-        ns = nsBC;
-        left = leftBC;
-        right = rightBC;
-        spStep = spStepBC;
+        def::ns = nsBC;
+        def::left = leftBC;
+        def::right = rightBC;
+        def::spStep = spStepBC;
 
 
         qApp->processEvents();
@@ -577,18 +582,22 @@ void Net::setNumOfPairs(int num)
 void Net::averageClassification()
 {
     FILE * logFile;
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "log.txt");
+    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                                  + slash() + "log.txt");
     logFile = fopen(helpString.toStdString().c_str(),"r");
     if(logFile == NULL)
     {
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("cannot open logFile"), QMessageBox::Ok);
+        QMessageBox::critical((QWidget * )this,
+                              tr("Warning"),
+                              tr("cannot open logFile"),
+                              QMessageBox::Ok);
         cout << "logFile == NULL" << endl;
         return;
     }
-    double  * averagePercentage = new double [NumOfClasses+1];
-    double  * tempDouble = new double [NumOfClasses+1];
+    double  * averagePercentage = new double [def::numOfClasses+1];
+    double  * tempDouble = new double [def::numOfClasses+1];
 
-    for(int j = 0; j < NumOfClasses+1; ++j)
+    for(int j = 0; j < def::numOfClasses+1; ++j)
     {
         averagePercentage[j] = 0.;
         tempDouble[j] = 0.;
@@ -597,7 +606,7 @@ void Net::averageClassification()
     int num = 0;
     for(int i = 0; i < numOfTall; ++i)
     {
-        for(int j = 0; j < NumOfClasses+1; ++j)
+        for(int j = 0; j < def::numOfClasses+1; ++j)
         {
             fscanf(logFile, "%lf", &tempDouble[j]);
             averagePercentage[j] += tempDouble[j];
@@ -605,25 +614,28 @@ void Net::averageClassification()
         ++num;
     }
 
-    for(int j = 0; j < NumOfClasses+1; ++j)
+    for(int j = 0; j < def::numOfClasses+1; ++j)
     {
         averagePercentage[j] /= num;
     }
     fclose(logFile);
 
-    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "results.txt").toStdString().c_str(), "a+");
+    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "results.txt").toStdString().c_str(), "a+");
     //indents
-    if(spStep != 250./1024.) fprintf(res, "\nPRR \t(");
+    if(def::spStep != def::freq / pow(2, 10))
+    {
+        fprintf(res, "\nPRR \t(");
+    }
     else fprintf(res, "\nPRR wnd \t(");
 
-    for(int j = 0; j < NumOfClasses-1; ++j)
+    for(int j = 0; j < def::numOfClasses - 1; ++j)
     {
         fprintf(res, "%.2lf - ", averagePercentage[j]);
     }
-    fprintf(res, "%.2lf", averagePercentage[NumOfClasses-1]);
-    fprintf(res, ")  -  %.2lf ", averagePercentage[NumOfClasses]);
+    fprintf(res, "%.2lf", averagePercentage[def::numOfClasses-1]);
+    fprintf(res, ")  -  %.2lf ", averagePercentage[def::numOfClasses]);
     fclose(res);
-    averageAccuracy = averagePercentage[NumOfClasses];
+    averageAccuracy = averagePercentage[def::numOfClasses];
 //    cout << "average accuracy = " << averageAccuracy << endl;
     delete []averagePercentage;
     delete []tempDouble;
@@ -646,29 +658,38 @@ void Net::drawWts()  //generality
             weight[i][j] = new double [dimensionality[i+1]];
         }
     }
-
+    QString helpString;
     if(!autoFlag)
     {
-        helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )this, tr("wts to draw"), dirBC->absolutePath(), tr("wts files (*.wts)")));
+        helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )this,
+                                                                           tr("wts to draw"),
+                                                                           dirBC->absolutePath(),
+                                                                           tr("wts files (*.wts)")));
     }
     else
     {
-        helpString = dir->absolutePath();
-        helpString.append(QDir::separator() + ExpName + "_weights.wts");
+        helpString = def::dir->absolutePath()
+                + slash() + def::ExpName + "_weights.wts";
     }
     if(helpString == "")
     {
         cout << "no wts-file to draw was opened" << endl;
-        QMessageBox::information((QWidget * )this, tr("Information"), tr("No file was chosen"), QMessageBox::Ok);
+        QMessageBox::information((QWidget * )this,
+                                 tr("Information"),
+                                 tr("No file was chosen"),
+                                 QMessageBox::Ok);
         return;
     }
 
     out = helpString;
-    FILE * w = fopen(helpString.toStdString().c_str(),"r");
+    FILE * w = fopen(helpString,"r");
     if(w == NULL)
     {
         cout << "cannot open file" << endl;
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open wts-file"), QMessageBox::Ok);
+        QMessageBox::critical((QWidget * )this,
+                              tr("Warning"),
+                              tr("Cannot open wts-file"),
+                              QMessageBox::Ok);
         return;
     }
 
@@ -707,13 +728,13 @@ void Net::drawWts()  //generality
 
 
 
-
+#if 0
     pic = QPixmap(1600, 1600);
     pic.fill();
     paint->begin(&pic);
 
-    double ext = spLength/250.;   //extension - graphical parameter
-    for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel & Fp1,2
+    double ext = def::spLength / def::freq;   //extension - graphical parameter
+    for(int c2 = 0; c2 < def::ns; ++c2)  //exept markers channel & Fp1,2
     {
         for(int k = 0; k < 250-1; ++k)
         {
@@ -721,7 +742,7 @@ void Net::drawWts()  //generality
             paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+k * ext)][0] * 250/maxWeight, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+(k+1) * ext)][0] * 250/maxWeight);
             paint->setPen(QPen(QBrush("red"), 2));
             paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+k * ext)][1] * 250/maxWeight, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+(k+1) * ext)][1] * 250/maxWeight);
-            if(NumOfClasses == 3)
+            if(def::numOfClasses == 3)
             {
                 paint->setPen(QPen(QBrush("green"), 2));
                 paint->drawLine(paint->device()->width() * coords::x[c2]+k, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+k * ext)][2] * 250/maxWeight, paint->device()->width() * coords::x[c2]+k+1, paint->device()->height() * coords::y[c2] - weight[0][int((c2) * spLength+(k+1) * ext)][2] * 250/maxWeight);
@@ -774,6 +795,14 @@ void Net::drawWts()  //generality
     cout << out.toStdString() << endl;
     pic.save(out, 0, 100);
 
+
+
+    //automatization
+    if(!autoFlag)
+    {
+        QMessageBox::information((QWidget * )this, tr("Info"), tr("wts is drawn"), QMessageBox::Ok);
+    }
+#endif
     for(int i = 0; i < numOfLayers - 1; ++i)
     {
         for(int j = 0; j < dimensionality[i] + 1; ++j) //
@@ -783,12 +812,6 @@ void Net::drawWts()  //generality
         delete []weight[i];
     }
     delete []weight;
-
-    //automatization
-    if(!autoFlag)
-    {
-        QMessageBox::information((QWidget * )this, tr("Info"), tr("wts is drawn"), QMessageBox::Ok);
-    }
 }
 
 void Net::stopActivity()
@@ -827,19 +850,22 @@ void Net::saveWtsSlot()
 {
     //automatization
     int wtsCounter = 0;
+    QString helpString;
     if(!autoFlag)
     {
         helpString = QDir::toNativeSeparators(QFileDialog::getSaveFileName((QWidget * )this, tr("wts to save"), dirBC->absolutePath(), tr("wts files (*.wts)")));
         if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
         {
-            helpString.append(".wts");
+            helpString += ".wts";
         }
     }
     else /////////wtf?
     {
         do
         {
-            helpString = dir->absolutePath() + QDir::separator() + ExpName + "_weights_" + QString::number(wtsCounter) + ".wts";
+            helpString = def::dir->absolutePath()
+                    + slash() + def::ExpName
+                    + "_weights_" + QString::number(wtsCounter) + ".wts";
             ++wtsCounter;
         } while(QFile::exists(helpString));
     }
@@ -879,10 +905,10 @@ void Net::reset()
 void Net::testDistances()
 {
     PaIntoMatrixByName("1");
-    NumberOfErrors = new int[NumOfClasses];
-    double ** averageSpectra = new double *[NumOfClasses];
+    NumberOfErrors = new int[def::numOfClasses];
+    double ** averageSpectra = new double *[def::numOfClasses];
 //    FILE * toread;
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         NumberOfErrors[i] = 0;
         averageSpectra[i] = new double [NetLength];
@@ -893,8 +919,8 @@ void Net::testDistances()
 
     }
 
-    int * count = new int [NumOfClasses];
-    for(int i = 0; i < NumOfClasses; ++i)
+    int * count = new int [def::numOfClasses];
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         count[i] = 0;
     }
@@ -909,7 +935,7 @@ void Net::testDistances()
             averageSpectra[inType][j] += matrix[i][j];
         }
     }
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         for(int j = 0; j < NetLength; ++j)
         {
@@ -920,7 +946,7 @@ void Net::testDistances()
     PaIntoMatrixByName("2");
 
 
-    double *distances = new double [NumOfClasses];
+    double *distances = new double [def::numOfClasses];
     int outType;
     double helpDist = 0;
 
@@ -928,13 +954,13 @@ void Net::testDistances()
     {
 
         inType = int(matrix[i][NetLength+1]);
-        for(int j = 0; j < NumOfClasses; ++j)
+        for(int j = 0; j < def::numOfClasses; ++j)
         {
             distances[j] = distance(averageSpectra[j], matrix[i], NetLength);
         }
         outType = 0;
         helpDist = distances[0];
-        for(int j = 1; j < NumOfClasses; ++j)
+        for(int j = 1; j < def::numOfClasses; ++j)
         {
             if(distances[j] < helpDist)
             {
@@ -945,12 +971,12 @@ void Net::testDistances()
         if(outType != inType) ++NumberOfErrors[inType];
     }
     cout << "NumberOfVectors = " << NumberOfVectors << endl;
-    for(int j = 0; j < NumOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses; ++j)
     {
         cout << "NumberOfErrors = " << NumberOfErrors[j] << endl;
     }
     int sum = 0;
-    for(int j = 0; j < NumOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses; ++j)
     {
         sum += NumberOfErrors[j];
     }
@@ -958,7 +984,7 @@ void Net::testDistances()
     cout << "Percentage = " <<  100. * (1. - double(sum)/NumberOfVectors) << endl;
 
 
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         delete averageSpectra[i];
     }
@@ -972,9 +998,9 @@ void Net::testDistances()
 void Net::tall()
 {
     Error = 0.;
-    NumberOfErrors = new int[NumOfClasses];
+    NumberOfErrors = new int[def::numOfClasses];
     double * NumOfVectorsOfClass = new double [3]; // countClass
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         NumberOfErrors[i] = 0;
         NumOfVectorsOfClass[i] = 0;
@@ -985,16 +1011,16 @@ void Net::tall()
         //generality
         NumOfVectorsOfClass[int(matrix[i][NetLength+1])] += 1;
     }
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "log.txt");
-    log = fopen(helpString.toStdString().c_str(),"a+");
+    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "log.txt");
+    FILE * log = fopen(helpString,"a+");
     helpString.clear();
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         fprintf(log, "%.2lf\t", double((1. - double(NumberOfErrors[i]/double(NumOfVectorsOfClass[i]))) * 100.));
         helpString.append("Percentage[" + tmp.setNum(i) + "] = ");
         helpString.append(tmp.setNum((1. - double(NumberOfErrors[i]/double(NumOfVectorsOfClass[i]))) * 100.) + " % \n");
     }
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         Error += NumberOfErrors[i];
     }
@@ -1011,17 +1037,10 @@ void Net::tall()
     ++numOfTall;
 }
 
-void Net::closeLogFile()
-{
-    if(log != NULL)
-    {
-        fclose(log);
-    }
-}
-
 void Net::loadCfg()
 {
     //automatization
+    QString helpString;
     if(!autoFlag)
     {
         helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,tr("open cfg"), dirBC->absolutePath(), tr("cfg files (*.net)")));
@@ -1033,15 +1052,15 @@ void Net::loadCfg()
     }
     else
     {
-        if(spStep == 250./1024.)
+        if(def::spStep == def::freq / pow(2, 10))
         {
             helpString = "4sec19ch.net";     //for windows
         }
-        else if(spStep == 250./4096.)
+        else if(def::spStep == def::freq / pow(2, 12))
         {
             helpString = "16sec19ch.net";     //for realisations
         }
-        else if(spStep == 250./2048.)
+        else if(def::spStep == def::freq / pow(2, 11))
         {
             helpString = "8sec19ch.net";     //for realisations
         }
@@ -1049,7 +1068,7 @@ void Net::loadCfg()
         {
             helpString = "pca.net";     //for PCAs
         }
-        helpString.prepend(dirBC->absolutePath() + QDir::separator());
+        helpString.prepend(dirBC->absolutePath() + slash());
         cout << "cfg auto path = " << helpString.toStdString() << endl;
     }
 
@@ -1059,22 +1078,25 @@ void Net::loadCfg()
 
 void Net::loadCfgByName(QString FileName)
 {
-    helpString = FileName;
+    QString helpString = FileName;
     if(!helpString.endsWith(".net", Qt::CaseInsensitive))
     {
         helpString += ".net";
     }
 
-    if(!FileName.contains(QDir::separator())) helpString = dir->absolutePath() + QDir::separator() + helpString;
+    if(!FileName.contains(slash()))
+    {
+        helpString = def::dir->absolutePath() + slash() + helpString;
+    }
 
-    FILE * cfg = fopen(helpString.toStdString().c_str(),"r");
+    FILE * cfg = fopen(helpString, "r");
     if(cfg == NULL)
     {
         cout << "loadCfgByName: wrong cfg path = " << helpString.toStdString() << endl;
         return;
     }
     fscanf(cfg, "%*s%d\n", &NetLength);
-    fscanf(cfg, "%*s%d\n", &NumOfClasses);
+    fscanf(cfg, "%*s%*d\n"); // numOfClasses
     fscanf(cfg, "%*s%lf\n", &learnRate);
     fscanf(cfg, "%*s%lf\n", &critError);
     fscanf(cfg, "%*s%lf\n", &temperature);
@@ -1090,7 +1112,7 @@ void Net::loadCfgByName(QString FileName)
 
     channelsSet.clear();
     channelsSetExclude.clear();
-    for(int i = 0; i < ns; ++i)
+    for(int i = 0; i < def::ns; ++i) /// MARKERS ?
     {
         channelsSet << i;
     }
@@ -1099,12 +1121,13 @@ void Net::loadCfgByName(QString FileName)
 
 void Net::loadWtsByName(QString filename) //
 {
-    FILE * wts = fopen(filename.toStdString().c_str(),"r");
+    FILE * wts = fopen(filename, "r");
     if(wts == NULL)
     {
         cout << "wts-file == NULL" << endl;
         return;
     }
+    QString helpString;
 
         if(weight == NULL) //if hasn't been allocated
         {
@@ -1130,7 +1153,7 @@ void Net::loadWtsByName(QString filename) //
                 }
                 dimensionality[i] = lst[i].toInt();
             }
-            dimensionality[numOfLayers-1] = NumOfClasses;
+            dimensionality[numOfLayers-1] = def::numOfClasses;
 
             weight = new double ** [numOfLayers - 1]; // 0 - the lowest layer
             for(int i = 0; i < numOfLayers - 1; ++i)
@@ -1165,13 +1188,16 @@ void Net::loadWtsByName(QString filename) //
 
 void Net::loadWts()
 {
-    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,tr("load wts"), dir->absolutePath(), tr("wts files (*.wts)")));
+    QString helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,
+                                                                       tr("load wts"),
+                                                                       def::dir->absolutePath(),
+                                                                       tr("wts files (*.wts)")));
     if(helpString == "")
     {
         QMessageBox::information((QWidget * )this, tr("Warning"), tr("No wts-file was chosen"), QMessageBox::Ok);
         return;
     }
-    FILE * wts = fopen(helpString.toStdString().c_str(),"r");
+    FILE * wts = fopen(helpString,"r");
 
         if(weight == NULL) //if hasn't been allocated
         {
@@ -1197,7 +1223,7 @@ void Net::loadWts()
                 }
                 dimensionality[i] = lst[i].toInt();
             }
-            dimensionality[numOfLayers-1] = NumOfClasses;
+            dimensionality[numOfLayers-1] = def::numOfClasses;
 
             weight = new double ** [numOfLayers - 1]; // 0 - the lowest layer
             for(int i = 0; i < numOfLayers - 1; ++i)
@@ -1286,9 +1312,9 @@ void Net::leaveOneOutCL()
     QTime myTime;
     myTime.start();
     cout << "leaveOneOutCL started" << endl;
-    NumberOfErrors = new int[NumOfClasses];
+    NumberOfErrors = new int[def::numOfClasses];
     helpString = "";
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         NumberOfErrors[i] = 0;
     }
@@ -1443,7 +1469,7 @@ void Net::leaveOneOutCL()
 //    __global double temp,
 //    __global double matrix,
 //    __global int NumberOfVectors,
-//    __global int NumOfClasses,
+//    __global int def::numOfClasses,
 //    __global int NetLength,
 //    __private double ** weight,
 //    __private int * mixNum,
@@ -1459,7 +1485,7 @@ void Net::leaveOneOutCL()
     cl_mem tempBuf;
     cl_mem matrixBuf;
     cl_mem numOfVectsBuf;
-    cl_mem numOfClassesBuf;
+    cl_mem def::numOfClassesBuf;
     cl_mem netLengthBuf;
     cl_mem weightBuf;
     cl_mem mixNumBuf;
@@ -1578,10 +1604,10 @@ void Net::leaveOneOutCL()
         cout << "Memory buffer created" << endl;
     }
 
-    numOfClassesBuf = clCreateBuffer(context,
+    def::numOfClassesBuf = clCreateBuffer(context,
                               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
                               sizeof(cl_int),
-                              &NumOfClasses,
+                              &def::numOfClasses,
                               &clError);
     if (clError != CL_SUCCESS)
     {
@@ -1612,7 +1638,7 @@ void Net::leaveOneOutCL()
 
     weightBuf = clCreateBuffer(context,
                               CL_MEM_READ_WRITE,
-                              sizeof(cl_double) * NumOfClasses * (NetLength + 1),
+                              sizeof(cl_double) * def::numOfClasses * (NetLength + 1),
                               NULL,
                               &clError);
     if (clError != CL_SUCCESS)
@@ -1643,7 +1669,7 @@ void Net::leaveOneOutCL()
 
     outputBuf = clCreateBuffer(context,
                               CL_MEM_READ_WRITE,
-                              sizeof(cl_double) * NumOfClasses,
+                              sizeof(cl_double) * def::numOfClasses,
                               NULL,
                               &clError);
     if (clError != CL_SUCCESS)
@@ -1688,7 +1714,7 @@ void Net::leaveOneOutCL()
 
     outputClassBuf = clCreateBuffer(context,
                               CL_MEM_READ_WRITE,
-                              sizeof(cl_double) * NumOfClasses,
+                              sizeof(cl_double) * def::numOfClasses,
                               NULL,
                               &clError);
     if (clError != CL_SUCCESS)
@@ -1704,7 +1730,7 @@ void Net::leaveOneOutCL()
     //global:
     numOfErrorsBuf = clCreateBuffer(context,
                               CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_int) * NumOfClasses,
+                              sizeof(cl_int) * def::numOfClasses,
                               &NumberOfErrors,
                               &clError);
     if (clError != CL_SUCCESS)
@@ -1760,7 +1786,7 @@ void Net::leaveOneOutCL()
     clSetKernelArg(leaveOneOutKernel, 3, sizeof(tempBuf), (void * ) &tempBuf);
     clSetKernelArg(leaveOneOutKernel, 4, sizeof(matrixBuf), (void * ) &matrixBuf);
     clSetKernelArg(leaveOneOutKernel, 5, sizeof(numOfVectsBuf), (void * ) &numOfVectsBuf);
-    clSetKernelArg(leaveOneOutKernel, 6, sizeof(numOfClassesBuf), (void * ) &numOfClassesBuf);
+    clSetKernelArg(leaveOneOutKernel, 6, sizeof(def::numOfClassesBuf), (void * ) &def::numOfClassesBuf);
     clSetKernelArg(leaveOneOutKernel, 7, sizeof(netLengthBuf), (void * ) &netLengthBuf);
     clSetKernelArg(leaveOneOutKernel, 8, sizeof(weightBuf), (void * ) &weightBuf);
     clSetKernelArg(leaveOneOutKernel, 9, sizeof(mixNumBuf), (void * ) &mixNumBuf);
@@ -1897,20 +1923,20 @@ void Net::leaveOneOut()
 
     //part from tall();
     Error = 0.;
-    NumberOfErrors = new int[NumOfClasses];
-    helpString = "";
-    for(int i = 0; i < NumOfClasses; ++i)
+    NumberOfErrors = new int[def::numOfClasses];
+    QString helpString;
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         NumberOfErrors[i] = 0;
     }
 
-    double * normCoeff = new double [NumOfClasses];
+    double * normCoeff = new double [def::numOfClasses];
     double helpMin = classCount[0];
-    for(int i = 1; i < NumOfClasses; ++i)
+    for(int i = 1; i < def::numOfClasses; ++i)
     {
         helpMin = min(helpMin, classCount[i]);
     }
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         normCoeff[i] = helpMin/classCount[i];
     }
@@ -2025,8 +2051,8 @@ void Net::leaveOneOut()
     cout << "N-fold cross-validation: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "log.txt");
-    log = fopen(helpString.toStdString().c_str(),"a+");
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "log.txt");
+    FILE * log = fopen(helpString, "a+");
     if(log == NULL)
     {
         QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
@@ -2036,11 +2062,11 @@ void Net::leaveOneOut()
 
 
 
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
-        fprintf(log, "%.2lf\t", double((1. - double(NumberOfErrors[i] * NumOfClasses/double(NumberOfVectors))) * 100.));
+        fprintf(log, "%.2lf\t", double((1. - double(NumberOfErrors[i] * def::numOfClasses/double(NumberOfVectors))) * 100.));
     }
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         Error += NumberOfErrors[i];
     }
@@ -2075,7 +2101,7 @@ void Net::PaIntoMatrix()
         return;
     }
 
-    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL, tr("load PA"), dir->absolutePath(), tr("PA files (*.pa)")));
+    QString helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL, tr("load PA"), def::dir->absolutePath(), tr("PA files (*.pa)")));
     if(helpString == "")
     {
         QMessageBox::information((QWidget * )this, tr("Information"), tr("No file was chosen"), QMessageBox::Ok);
@@ -2084,8 +2110,8 @@ void Net::PaIntoMatrix()
 //    QTime myTime;
 //    myTime.start();
     cout << "PaIntoMatrix: NetLength = " << NetLength << endl;
-    cout << "PaIntoMatrix: ns = " << ns << endl;
-    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName, &classCount);
+    cout << "PaIntoMatrix: ns = " << def::ns << endl;
+    readPaFile(helpString, &matrix, NetLength, def::numOfClasses, &NumberOfVectors, &FileName, &classCount);
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 }
@@ -2098,13 +2124,13 @@ void Net::PaIntoMatrixByName(QString fileName)
         QMessageBox::critical((QWidget * )this, tr("net.cpp: PaIntoMatrixByName"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
         return;
     }
-    helpString = dirBC->absolutePath() + QDir::separator() + "PA" + QDir::separator() + fileName;
+    QString helpString = dirBC->absolutePath() + slash() + "PA" + slash() + fileName;
     if(!fileName.contains(".pa"))
     {
         helpString += ".pa";
     }
     paFileBC = helpString;
-    readPaFile(helpString, &matrix, NetLength, NumOfClasses, &NumberOfVectors, &FileName, &classCount);
+    readPaFile(helpString, &matrix, NetLength, def::numOfClasses, &NumberOfVectors, &FileName, &classCount);
     /*
     double * tempVector = new double [ns*spLength];
 
@@ -2143,7 +2169,7 @@ void Net::Hopfield()
     double maxH = 0.;
     double * output1 = new double [NetLength];
     double * output2 = new double [NetLength];
-    MakePa  * mkPa = new MakePa(dir->absolutePath() + QDir::separator() + "SpectraSmooth", ExpName, ns, left, right, spStep);
+    MakePa  * mkPa = new MakePa(def::dir->absolutePath() + slash() + "SpectraSmooth");
     mkPa->setRdcCoeff(10);
     mkPa->makePaSlot();
 
@@ -2192,7 +2218,7 @@ void Net::Hopfield()
 
     double sumH;
 
-    double * outputClass = new double [NumOfClasses];
+    double * outputClass = new double [def::numOfClasses];
 //    int type;
     bool answer;
     int NumberOfErrorsH = 0;
@@ -2340,7 +2366,7 @@ void Net::Hopfield()
 
 //        //classifying perceptron
 //        type = int(matrix[i][NetLength+1]);
-//        for(int j = 0; j < NumOfClasses; ++j) //calculate output //2 = numberOfTypes
+//        for(int j = 0; j < def::numOfClasses; ++j) //calculate output //2 = numberOfTypes
 //        {
 //            outputClass[j] = 0.;
 //            for(int h = 0; h < NetLength; ++h)
@@ -2351,7 +2377,7 @@ void Net::Hopfield()
 //            outputClass[j] = logistic(outputClass[j], temp); // unlinear conformation
 //        }
 //        answer = true;
-//        for(int k = 0; k<NumOfClasses; ++k)
+//        for(int k = 0; k<def::numOfClasses; ++k)
 //        {
 //            if(k  != type && outputClass[k] >= outputClass[type])
 //            {
@@ -2440,7 +2466,7 @@ void Net::methodSetParam(int a, bool ch)
 void Net::memoryAndParamsAllocation()
 {
     //NetLength should be set
-    //NumOfClasses should be set
+    //def::numOfClasses should be set
 
     if((weight != NULL) && (dimensionality != NULL) && loadPAflag)
     {
@@ -2457,7 +2483,7 @@ void Net::memoryAndParamsAllocation()
     }
 
     numOfLayers = ui->numOfLayersSpinBox->value();
-    helpString = ui->dimensionalityLineEdit->text();
+    QString helpString = ui->dimensionalityLineEdit->text();
     QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
     if(lst.length() != numOfLayers)
     {
@@ -2476,7 +2502,7 @@ void Net::memoryAndParamsAllocation()
         }
         dimensionality[i] = lst[i].toInt();
     }
-    dimensionality[numOfLayers-1] = NumOfClasses;
+    dimensionality[numOfLayers-1] = def::numOfClasses;
 
 
     weight = new double ** [numOfLayers - 1]; // weights from i'th layer to (i+1)'th
@@ -2545,14 +2571,14 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
     reset();
 
 
-//    double * normCoeff = new double [NumOfClasses];
+//    double * normCoeff = new double [def::numOfClasses];
     vector <double> normCoeff;
     double helpMin = classCount[0];
-    for(int i = 1; i < NumOfClasses; ++i)
+    for(int i = 1; i < def::numOfClasses; ++i)
     {
         helpMin = min(helpMin, classCount[i]);
     }
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         normCoeff.push_back(helpMin/classCount[i]);
     }
@@ -2666,10 +2692,10 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
         //count error
         currentError /= NumberOfVectors;
         currentError = sqrt(currentError);
-        if(!autoFlag) cout << "epoch = " << epoch << "\terror = " << currentError << endl;
+//        if(!autoFlag) cout << "epoch = " << epoch << "\terror = " << currentError << endl;
         this->ui->currentErrorDoubleSpinBox->setValue(currentError);
     }
-    cout << "epoches = " << epoch << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+    cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
     matrixDelete(&output, numOfLayers);
     matrixDelete(&deltaWeights, numOfLayers);
@@ -2706,14 +2732,14 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
         tempDeltaWeights[i] = new double [dimensionality[0] + 1];
     }
 
-//    double * normCoeff = new double [NumOfClasses];
+//    double * normCoeff = new double [def::numOfClasses];
     vector < double > normCoeff;
     double helpMin = classCount[0];
-    for(int i = 1; i < NumOfClasses; ++i)
+    for(int i = 1; i < def::numOfClasses; ++i)
     {
         helpMin = min(helpMin, classCount[i]);
     }
-    for(int i = 0; i < NumOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         normCoeff.push_back(helpMin/classCount[i]);
     }
@@ -2888,7 +2914,7 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
 
 bool Net::ClassificateVector(int &vecNum)
 {
-//    double * outputClass = new double [NumOfClasses]; //was
+//    double * outputClass = new double [def::numOfClasses]; //was
     double * outputClass = new double [dimensionality[numOfLayers - 1]]; //new
 
     int type = int(matrix[vecNum][NetLength+1]);
@@ -3314,7 +3340,7 @@ void Net::drawSammon() //uses coords array
 
     }
 
-    helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + "Sammon-" + ui->sammonLineEdit->text() + ".jpg";
+    QString helpString = def::dir->absolutePath() + slash() + "Help" + slash() + "Sammon-" + ui->sammonLineEdit->text() + ".jpg";
 
     cout << helpString.toStdString() << endl;
     pic.save(helpString, 0, 100);
@@ -3333,6 +3359,7 @@ void Net::drawSammon() //uses coords array
 //principal component analisys
 void Net::pca()
 {
+    QString helpString;
     QTime wholeTime;
     wholeTime.start();
 //    spLength - 1 channel
@@ -3400,7 +3427,7 @@ void Net::pca()
 
     QTime initTime;
     initTime.start();
-//    dir->mkdir("PCA");
+//    def::dir->mkdir("PCA");
 //    FILE * covMatrixFile;
 //    for(int i = 0; i < NetLength; ++i)
 //    {
@@ -3409,7 +3436,7 @@ void Net::pca()
 //            cout << "50 passed, time = " << initTime.elapsed() << " i = " << i  << endl;
 //            initTime.restart();
 //        }
-//        helpString = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "PCA" + QDir::separator() + "covMatrix_" + QString::number(i));
+//        helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "PCA" + slash() + "covMatrix_" + QString::number(i));
 //        covMatrixFile = fopen(helpString.toStdString().c_str(), "w");
 //        for(int k = 0; k < NetLength; ++k)
 //        {
@@ -3626,7 +3653,7 @@ void Net::pca()
     if(1) //eigenVectors output
     {
         ofstream eigenVectorsFile;
-        helpString = dir->absolutePath() + QDir::separator() + "Help" + QDir::separator() + ExpName + "_pcaEigenVectors.txt";
+        helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_pcaEigenVectors.txt";
         eigenVectorsFile.open(helpString.toStdString().c_str());
         for(int k = 0; k < numOfPc; ++k)
         {
@@ -3695,14 +3722,15 @@ void Net::pca()
 
 
     FILE * pcaFile;
+
     //count reduced Data - first some PC
     for(int j = 0; j < NumberOfVectors; ++j) //i->j
     {
         helpString = dirBC->absolutePath();
-        helpString += QString(QDir::separator()) + "SpectraSmooth";
-        helpString += QString(QDir::separator()) + "PCA";
-        helpString += QString(QDir::separator()) + FileName[j];
-        pcaFile = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
+        helpString += QString(slash()) + "SpectraSmooth";
+        helpString += QString(slash()) + "PCA";
+        helpString += QString(slash()) + FileName[j];
+        pcaFile = fopen(QDir::toNativeSeparators(helpString), "w");
         for(int k = 0; k < numOfPc; ++k) //j->k
         {
             fprintf(pcaFile, "%lf\n", double(10. * pcaMatrix[j][k])); //PC coefficients
@@ -3978,36 +4006,38 @@ void Net::neuronGas()
 
 void Net::SVM()
 {
-    helpString = dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "output1";
-    FILE * out = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
+    QString helpString = def::dir->absolutePath()
+            + slash() + "PA"
+            + slash() + "output1";
+    FILE * out = fopen(QDir::toNativeSeparators(helpString), "w");
     fclose(out);
-//    QString spectraDir = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth"));
-    QString spectraDir = QFileDialog::getExistingDirectory(this, tr("Choose spectra dir"), dir->absolutePath());
-    if(spectraDir.isEmpty()) spectraDir = QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "SpectraSmooth");
+//    QString spectraDir = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth"));
+    QString spectraDir = QFileDialog::getExistingDirectory(this, tr("Choose spectra dir"), def::dir->absolutePath());
+    if(spectraDir.isEmpty()) spectraDir = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth");
     if(spectraDir.isEmpty())
     {
         cout << "spectraDir for SVM is empty" << endl;
         return;
     }
-    MakePa * mkPa = new MakePa(spectraDir, ExpName, ns, left, right, spStep);
+    MakePa * mkPa = new MakePa(spectraDir);
 
     for(int i = 0; i < ui->numOfPairsBox->value(); ++i)
     {
         mkPa->makePaSlot();
 
-        helpString = dir->absolutePath() + QDir::separator() + "PA";
+        helpString = def::dir->absolutePath() + slash() + "PA";
         helpString.prepend("cd ");
         helpString.append(" && svm-train -t " + QString::number(ui->svmKernelSpinBox->value()) + " svm1 && svm-predict svm2 svm1.model output >> output1");
         system(helpString.toStdString().c_str());
 
-        helpString = dir->absolutePath() + QDir::separator() + "PA";
+        helpString = def::dir->absolutePath() + slash() + "PA";
         helpString.prepend("cd ");
         helpString += " && svm-train -t " + QString::number(ui->svmKernelSpinBox->value()) + " svm2 && svm-predict svm1 svm2.model output >> output1";
         system(helpString.toStdString().c_str());
     }
 
 
-    helpString = dir->absolutePath() + QDir::separator() + "PA" + QDir::separator() + "output1";
+    helpString = def::dir->absolutePath() + slash() + "PA" + slash() + "output1";
 
     double helpDouble, average = 0.;
 
@@ -4027,8 +4057,8 @@ void Net::SVM()
     cout << average << endl;
     file.close();
 
-//    helpString = dir->absolutePath();
-//    helpString.append(QDir::separator() + "PA" + QDir::separator() + "output1");
+//    helpString = def::dir->absolutePath();
+//    helpString.append(slash() + "PA" + slash() + "output1");
 //    fstream in;
 //    in.open(QDir::toNativeSeparators(helpString).toStdString().c_str(), fstream::in);
 
@@ -4042,7 +4072,7 @@ void Net::SVM()
 //    cout << average << endl;
 //    in.close();
 
-    FILE * res = fopen(QDir::toNativeSeparators(dir->absolutePath() + QDir::separator() + "results.txt").toStdString().c_str(), "a+");
+    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "results.txt").toStdString().c_str(), "a+");
     fprintf(res, "\nSVM\t");
     fprintf(res, "%.2lf %%\n", average);
     fclose(res);
@@ -4052,6 +4082,7 @@ void Net::SVM()
 
 void Net::optimizeChannelsSet() /// CAREFUL
 {
+#if 0
     int tempItem;
     int tempIndex;
 
@@ -4173,10 +4204,10 @@ void Net::optimizeChannelsSet() /// CAREFUL
     }
 
 
-    helpString = dir->absolutePath() + "/optimalChannels.txt";
+    helpString = def::dir->absolutePath() + "/optimalChannels.txt";
     outStream.open(helpString.toStdString().c_str(), ios_base::app);
 
-    helpString = ExpName;
+    helpString = def::ExpName;
     helpString += "\r\nNumOfChannels " + QString::number(channelsSet.length()) + "\n";
     for(int i = 0; i < channelsSet.length(); ++i)
     {
@@ -4194,6 +4225,7 @@ void Net::optimizeChannelsSet() /// CAREFUL
     outStream << helpString.toStdString() << endl;
     outStream.close();
 //    QMessageBox::information((QWidget * )this, tr("Optimization results"), helpString, QMessageBox::Ok);
+#endif
 }
 
 void Net::adjustParamsGroup2(QAbstractButton * but)

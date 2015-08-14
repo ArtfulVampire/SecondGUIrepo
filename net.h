@@ -39,7 +39,7 @@ class Net : public QWidget
 //    friend class MainWindow;
 
 public:
-    explicit Net(QDir *dir_ = new QDir("/"), int ns_ = 19., int left_ = 82, int right_ = 328, double spStep_=250./4096., QString ExpName_="nobody");
+    explicit Net();
     ~Net();
     bool ClassificateVector(int &vecNum);
     void closeLogFile();
@@ -104,16 +104,12 @@ private:
     Ui::Net *ui;
 
     QButtonGroup  * group1,  * group2,  * group3;
-    QString helpString;
-    QString ExpName;
-    QDir *dir, *dirBC;
+    QDir *dirBC;
     double **matrix;
     double *** weight;
     int * dimensionality; //for backprop
 //    double * output;
     char * helpCharArr;
-    ifstream inStream;
-    ofstream outStream;
     double * classCount;
 
 //    double * tempRandoms;
@@ -125,6 +121,7 @@ private:
 
     QPixmap pic;
     QPainter *paint;
+
     int numOfLayers; //for backprop
     int numTest;
     int epoch;
@@ -136,20 +133,18 @@ private:
     double currentError;
     double temperature;
     double learnRate;
+    double Error;
+
     int * NumberOfErrors;
     char **FileName;
-    int spLength;
-    int left, right;
-    int helpInt;
-    double spStep;
-    double Error;
+
     QPixmap columns;
-    FILE * log;
+
     int numOfTall;
     int loadPAflag;
     bool stopFlag;
     QString tmp, paFileBC;
-    int ns;
+
     double ** coords; //new coords for Sammon method
     double mouseShit;
 };

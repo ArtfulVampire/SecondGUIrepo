@@ -22,7 +22,7 @@ class Spectre : public QWidget
     Q_OBJECT
 
 public:
-    explicit Spectre(QDir *dir_ = new QDir("/"), int ns_ = 20, QString ExpName_ = "TSL");
+    explicit Spectre();
     ~Spectre();
     int countOneSpectre(const matrix &data2, mat &dataFFT);
     void setSmooth(int);
@@ -45,7 +45,6 @@ public slots:
     void compare();
     void psaSlot();
     void integrate();
-    void specifyRange();
     void center();
 
 signals:
@@ -53,39 +52,31 @@ signals:
 
 private:
     Ui::Spectre *ui;
-    QString ExpName;
-    int ns;
-    QDir *dir, *dirBC;
+    QDir *dirBC;
+
     int fftLength;
-    QString helpString;
-    QStringList lst, nameFilters;
-    int left;
-    int right;
-    double spStep;
-    int NumOfSlices;
+
+    QStringList nameFilters;
     int Eyes;
-    int helpInt;
     QFileDialog * browser1;
     QFileDialog * browser2;
-    int spLength;
-    QPixmap pic;
-    QPainter *paint;
+
     bool ** boolArrrPirate;
     int ** rangeLimits;
+
     double norm;
     QButtonGroup * group1;
+
     struct complex
     {
       double r;
       double i;
     }* spect;
-    time_t duration;
+
     int chanNum;
+    QPixmap pic;
+    QPainter * paint;
     QString rangePicPath;
-    FILE * file1;
-    ifstream inStream;
-
-
 };
 
 #endif // SPECTRE_H

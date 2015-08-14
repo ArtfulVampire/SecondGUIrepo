@@ -2,20 +2,19 @@
 #include "ui_cfg.h"
 
 
-cfg::cfg(QDir *dir_, int ns_, int spLength_, double error_, double lrate_, QString FileName_) :
+cfg::cfg(double error_, double lrate_, QString FileName_) :
     ui(new Ui::cfg)
 {
     ui->setupUi(this);
-    dir=dir_;
 
     this->setWindowTitle("Make CFG");
     ui->nsBox->setMaximum(300);
     ui->nsBox->setMinimum(1);
-    ui->nsBox->setValue(ns_ - 1 * def::withMarkersFlag); // affects NetLength
+    ui->nsBox->setValue(def::ns - 1 * def::withMarkersFlag); // affects NetLength, w/o markers
 
     ui->spLBox->setMaximum(1000);
     ui->spLBox->setMinimum(1);
-    ui->spLBox->setValue(spLength_);
+    ui->spLBox->setValue(def::spLength);
 
     ui->numOfOutsBox->setValue(def::numOfClasses);
     ui->epsilonSpinBox->setValue(lrate_);
@@ -25,7 +24,6 @@ cfg::cfg(QDir *dir_, int ns_, int spLength_, double error_, double lrate_, QStri
     QObject::connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(makeCfg()));
     QObject::connect(ui->nameEdit, SIGNAL(returnPressed()), this, SLOT(makeCfg()));
     this->setAttribute(Qt::WA_DeleteOnClose);
-
 }
 
 cfg::~cfg()
@@ -41,22 +39,22 @@ void cfg::makeCfg()
 //    ecrit       0.1
 //    temp       10
 //    srand      77
-    int helpInt=ui->spLBox->value() * ui->nsBox->value();
-//    cout<<"SpL = "<<ui->spLBox->value()<<" ns = "<<ui->nsBox->value()<<endl;
+    int helpInt = ui->spLBox->value() * ui->nsBox->value();
 
-    helpString=QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(ui->nameEdit->text()).append(".net");
+    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                                  + QDir::separator() + ui->nameEdit->text() + ".net");
     FILE * cfgFile = fopen(helpString.toStdString().c_str(), "w");
-    if(cfgFile==NULL) {return;}
-    /////////////generality//////////////
-
-
+    if(cfgFile == NULL)
+    {
+        return;
+    }
 
     fprintf(cfgFile, "inputs    %d\n", helpInt);
     fprintf(cfgFile, "outputs    %d\n", ui->numOfOutsBox->value());
     fprintf(cfgFile, "lrate    %.2lf\n", ui->epsilonSpinBox->value());
     fprintf(cfgFile, "ecrit    %.2lf\n", ui->errorSpinBox->value());
     fprintf(cfgFile, "temp    %d\n", ui->tempSpinBox->value());
-    fprintf(cfgFile, "srand    %d\n", int(time (NULL))%1234);
+    fprintf(cfgFile, "srand    %d\n", int(time (NULL))%12345);
     fclose(cfgFile);
     this->close();
 }

@@ -504,6 +504,169 @@ void drawSpectra(double ** drawData, int ns, int start, int end, const QString &
     pic.save(picPath, 0, 100);
 }
 
+void drawWts(QString inPath, QString outPath)
+{
+    int spLength = 247;
+    int NumOfClasses = 3;
+    int left = 63;
+    int ns = 20;
+    double spStep = def::freq / def::fftLength;
+
+
+    QString helpString;
+
+    QPixmap pic;
+    QPainter paint;
+
+    matrix weights;
+    weights.resize(ns * spLength + 1, NumOfClasses);
+
+    ifstream inFile;
+    inFile.open(inPath.toStdString());
+    if(!inFile.good())
+    {
+        cout << "cannot open file" << endl;
+        return;
+    }
+
+    double maxWeight = 0.;
+
+        for(int j = 0; j < weights.rows() + 1; ++j) //+1 for bias
+        {
+            for(int k = 0; k < weights.cols(); ++k)
+            {
+                if(inFile.eof())
+                {
+                    cout << "wts-file too small" << endl;
+                    return;
+                }
+
+                inFile >> weights[j][k];
+                maxWeight = fmax(weights[j][k], maxWeight);
+            }
+        }
+
+    if(!inFile.eof())
+    {
+        cout << "wts-file too big" << endl;
+        return;
+    }
+    inFile.close();
+
+
+    pic = QPixmap(1600, 1600);
+    pic.fill();
+    paint.begin(&pic);
+
+    const double graphHeight = paint.device()->height() * coords::scale;
+    const double graphWidth = paint.device()->width() * coords::scale;
+    const double graphScale = spLength / graphWidth;
+
+    for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel & Fp1,2
+    {
+        const double Y = paint.device()->height() * coords::y[c2];
+        const double X = paint.device()->width() * coords::x[c2];
+
+        for(int k = 0; k < 250-1; ++k)
+        {
+            paint.setPen(QPen(QBrush("blue"), 2));
+            paint.drawLine(X + k,
+                           Y
+                           - weights[int(c2 * spLength + k * graphScale)][0]
+                    * graphHeight/maxWeight,
+                    X + k + 1,
+                    Y
+                    - weights[int(c2 * spLength + (k + 1) * graphScale)][0]
+                    * graphHeight/maxWeight);
+
+            paint.setPen(QPen(QBrush("red"), 2));
+            paint.drawLine(X + k,
+                           Y
+                           - weights[int(c2 * spLength + k * graphScale)][1]
+                    * graphHeight/maxWeight,
+                    X + k + 1,
+                    Y
+                    - weights[int(c2 * spLength + (k + 1) * graphScale)][1]
+                    * graphHeight/maxWeight);
+
+            if(NumOfClasses == 3)
+            {
+                paint.setPen(QPen(QBrush("green"), 2));
+                paint.drawLine(X + k,
+                               Y
+                               - weights[int(c2 * spLength + k * graphScale)][2]
+                        * graphHeight/maxWeight,
+                        X + k + 1,
+                        Y
+                        - weights[int(c2 * spLength + (k + 1) * graphScale)][2]
+                        * graphHeight/maxWeight);
+            }
+        }
+
+        // axes
+        paint.setPen("black");
+        paint.drawLine(X,
+                       Y,
+                       X,
+                       Y - graphHeight);
+
+        paint.drawLine(X,
+                       Y,
+                       X + graphWidth,
+                       Y);
+
+        // Herzes
+        paint.setFont(QFont("Helvitica", 8));
+        for(int k = 0; k < graphWidth; ++k) //for every Hz generality
+        {
+            if( abs((left + k * graphScale) * spStep
+                    - floor((left + k * graphScale) * spStep + 0.5))
+                    < graphScale * spStep / 2. )
+            {
+                paint.drawLine(QPointF(X + k,
+                                        Y),
+                                QPointF(X + k,
+                                        Y + 5));
+
+                helpString = QString::number(int((left + k * graphScale) * spStep + 0.5));
+                if(helpString.toInt() < 10)
+                {
+                    paint.drawText(X + k-3, Y + 15, helpString);
+                }
+                else
+                {
+                    paint.drawText(X + k-5, Y + 15, helpString);
+                }
+            }
+        }
+
+        // labels
+        paint.setFont(QFont("Helvetica", 24, -1, false));
+        paint.drawText(X - 20,
+                       Y - graphHeight - 2,
+                       QString(coords::lbl[c2]));
+
+    }
+
+    paint.drawLine(QPointF(paint.device()->width() * coords::x[6],
+                   paint.device()->height() * coords::y[1]),
+            QPointF(paint.device()->width() * coords::x[6],
+            paint.device()->height() * (coords::y[1] - coords::scale)));  //250 - graph height generality
+
+    //returning norm = max magnitude
+    maxWeight = int(maxWeight * 100.)/100.;
+
+    helpString = QString::number(maxWeight);
+//    helpString.append(tr(" mcV^2/Hz"));
+    paint.drawText(QPointF(paint.device()->width() * coords::x[6] + 5,
+                   paint.device()->height() * (coords::y[1] - coords::scale/2.)),
+            helpString);
+
+    paint.end();
+    pic.save(outPath, 0, 100);
+
+}
+
 #define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 void four1(double * dataF, int nn, int isign)
 {
@@ -1335,7 +1498,7 @@ void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength,
         readSpectraFile(helpString, data4, ns, spLength);
         outStream << fileNames[i].toStdString() << endl;
 
-        for(int l = 0; l < ns - 1 * def::withMarkersFlag; ++l)
+        for(int l = 0; l < ns - 1 * def::withMarkersFlag; ++l) // write PA files without markers
         {
             for(int k = 0; k < spLength; ++k)
             {
@@ -1770,7 +1933,7 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
 {
     QSvgGenerator svgGen;
     QPixmap pic;
-    QPainter * paint;
+    QPainter paint;
     int ns = 19;
     QString helpString;
     int helpInt;
@@ -1779,18 +1942,20 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
     {
         svgGen.setSize(QSize(800, 800));
         svgGen.setViewBox(QRect(QPoint(0,0), svgGen.size()));
-        helpString = dirBC->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append(outName).append(".svg");
+        helpString = dirBC->absolutePath()
+                 + slash() + "Help"
+                 + slash() + outName +".svg";
         svgGen.setFileName(helpString);
-        paint->begin(&svgGen);
-        paint->setBrush(QBrush("white"));
-        paint->drawRect(QRect(QPoint(0,0), svgGen.size()));
+        paint.begin(&svgGen);
+        paint.setBrush(QBrush("white"));
+        paint.drawRect(QRect(QPoint(0,0), svgGen.size()));
     }
     else if(type == 0)
     {
 
-        pic=QPixmap(1600,1600);
+        pic = QPixmap(1600,1600);
         pic.fill();
-        paint->begin(&pic);
+        paint.begin(&pic);
     }
     double norm = 0.;
     for(int j = 0; j < count; ++j)
@@ -1817,47 +1982,53 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
         {
             for(int j = 0; j < count; ++j)
             {
-                paint->setPen(QPen(QBrush(QColor(colours[j])), 2));
-                paint->drawLine(QPointF(pic.width() * coords::x[c2]+k, pic.height() * coords::y[c2] - sp[j][c2][int(k*spL[j]/(coords::scale * pic.width()))]*norm), QPointF(pic.width() * coords::x[c2]+k+1, pic.height() * coords::y[c2] - sp[j][c2][int((k+1)*spL[j]/(coords::scale * pic.width()))]*norm));
+                paint.setPen(QPen(QBrush(QColor(colours[j])), 2));
+                paint.drawLine(QPointF(pic.width() * coords::x[c2]+k, pic.height() * coords::y[c2] - sp[j][c2][int(k*spL[j]/(coords::scale * pic.width()))]*norm), QPointF(pic.width() * coords::x[c2]+k+1, pic.height() * coords::y[c2] - sp[j][c2][int((k+1)*spL[j]/(coords::scale * pic.width()))]*norm));
             }
         }
 
         //draw axes
-        paint->setPen("black");
-        paint->drawLine(QPointF(pic.width() * coords::x[c2], pic.height() * coords::y[c2]), QPointF(pic.width() * coords::x[c2], pic.height() * coords::y[c2] - coords::scale * pic.height())); //250 - length of axes generality
-        paint->drawLine(QPointF(pic.width() * coords::x[c2], pic.height() * coords::y[c2]), QPointF(pic.width() * coords::x[c2] + coords::scale * pic.width(), pic.height() * coords::y[c2])); //250 - length of axes generality
+        paint.setPen("black");
+        paint.drawLine(QPointF(pic.width() * coords::x[c2],
+                               pic.height() * coords::y[c2]),
+                       QPointF(pic.width() * coords::x[c2],
+                               pic.height() * coords::y[c2] - coords::scale * pic.height())); //250 - length of axes generality
+        paint.drawLine(QPointF(pic.width() * coords::x[c2],
+                               pic.height() * coords::y[c2]),
+                       QPointF(pic.width() * coords::x[c2] + coords::scale * pic.width(),
+                               pic.height() * coords::y[c2])); //250 - length of axes generality
 
         //draw Herzes
-        paint->setFont(QFont("Helvitica", int(8*(pic.height()/1600.))));
-        for(int k=0; k<int(coords::scale * pic.width()); ++k) //for every Hz generality
+        paint.setFont(QFont("Helvitica", int(8*(pic.height()/1600.))));
+        for(int k = 0; k < int(coords::scale * pic.width()); ++k) //for every Hz generality
         {
             if( (left + k*(spL[0])/(coords::scale * pic.width()))*spStep - floor((left + k*(spL[0])/(coords::scale * pic.width()))*spStep) < spL[0]/(coords::scale * pic.width())*spStep/2. || ceil((left + k*(spL[0])/(coords::scale * pic.width()))*spStep) - (left + k*(spL[0])/(coords::scale * pic.width()))*spStep < spL[0]/(coords::scale * pic.width())*spStep/2.)  //why spLength - generality 250 - length of axes //generality spL[0] for these left and right
             {
-                paint->drawLine(QPointF(pic.width() * coords::x[c2] + k, pic.height() * coords::y[c2]), QPointF(pic.width() * coords::x[c2] + k, pic.height() * coords::y[c2] + 5 * (pic.height()/1600.)));
+                paint.drawLine(QPointF(pic.width() * coords::x[c2] + k, pic.height() * coords::y[c2]), QPointF(pic.width() * coords::x[c2] + k, pic.height() * coords::y[c2] + 5 * (pic.height()/1600.)));
 
                 helpInt = int((left + k*(spL[0])/(coords::scale * pic.width()))*spStep + 0.5); //generality spL[0] for these left and right
                 helpString.setNum(helpInt);
                 if(helpInt<10)
                 {
-                    paint->drawText(QPointF(pic.width() * coords::x[c2] + k - 3 * (pic.width()/1600.), pic.height() * coords::y[c2] + 15 * (pic.height()/1600.)), helpString);  //-3 getFont->size
+                    paint.drawText(QPointF(pic.width() * coords::x[c2] + k - 3 * (pic.width()/1600.), pic.height() * coords::y[c2] + 15 * (pic.height()/1600.)), helpString);  //-3 getFont->size
                 }
                 else
                 {
-                    paint->drawText(QPointF(pic.width() * coords::x[c2] + k - 5 * (pic.width()/1600.), pic.height() * coords::y[c2] + 15 * (pic.height()/1600.)), helpString);  //-5 getFont->size
+                    paint.drawText(QPointF(pic.width() * coords::x[c2] + k - 5 * (pic.width()/1600.), pic.height() * coords::y[c2] + 15 * (pic.height()/1600.)), helpString);  //-5 getFont->size
                 }
             }
         }
 
     }
     //write channels labels
-    paint->setFont(QFont("Helvetica", int(24*pic.height()/1600.), -1, false));
+    paint.setFont(QFont("Helvetica", int(24*pic.height()/1600.), -1, false));
     for(int c2=0; c2<ns; ++c2)  //exept markers channel
     {
-        paint->drawText(QPointF((pic.width() * coords::x[c2] - 20 * (pic.width()/1600.)), (pic.height() * coords::y[c2] - (coords::scale * pic.height()) - 2)), QString(coords::lbl[c2]));
+        paint.drawText(QPointF((pic.width() * coords::x[c2] - 20 * (pic.width()/1600.)), (pic.height() * coords::y[c2] - (coords::scale * pic.height()) - 2)), QString(coords::lbl[c2]));
     }
 
     //draw coords::scale
-    paint->drawLine(QPointF(pic.width() * coords::x[6], pic.height() * coords::y[1]), QPointF(pic.width() * coords::x[6], pic.height() * coords::y[1] - (coords::scale * pic.height())));  //250 - graph height generality
+    paint.drawLine(QPointF(pic.width() * coords::x[6], pic.height() * coords::y[1]), QPointF(pic.width() * coords::x[6], pic.height() * coords::y[1] - (coords::scale * pic.height())));  //250 - graph height generality
 
     //returning norm = max magnitude
     norm /= scaling;
@@ -1867,7 +2038,7 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
 
     helpString.setNum(norm);
     helpString.append(QObject::tr(" mcV^2/Hz"));
-    paint->drawText(QPointF(pic.width() * coords::x[6]+5., pic.height() * coords::y[1] - (coords::scale * pic.height())/2.), helpString);
+    paint.drawText(QPointF(pic.width() * coords::x[6]+5., pic.height() * coords::y[1] - (coords::scale * pic.height())/2.), helpString);
 
 
     if(type == 0)
@@ -1877,7 +2048,7 @@ void drawArray(double ***sp, int count, int *spL, QStringList colours, int type,
         pic.save(helpString, 0, 100);
         rangePicPath = helpString;
     }
-    paint->end();
+    paint.end();
 }
 
 
@@ -5230,8 +5401,8 @@ QPixmap drawEeg( Typ dataD,
     QPixmap pic = QPixmap(NumOfSlices, 600);
     pic.fill();
 
-    QPainter * paint = new QPainter();
-    paint->begin(&pic);
+    QPainter paint;
+    paint.begin(&pic);
 
     QString colour;
     int lineWidth = 2;
@@ -5252,23 +5423,23 @@ QPixmap drawEeg( Typ dataD,
             colour = "black";
         }
 
-        paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
+        paint.setPen(QPen(QBrush(QColor(colour)), lineWidth));
 
         for(int c1 = 0; c1 < pic.width(); ++c1)
         {
-            paint->drawLine(c1, (c2+1) * pic.height() / (ns+2) + dataD[c2][c1] * norm,
+            paint.drawLine(c1, (c2+1) * pic.height() / (ns+2) + dataD[c2][c1] * norm,
                           c1+1, (c2+1) * pic.height() / (ns+2) + dataD[c2][c1+1] * norm);
         }
     }
     norm = 1.;
-    paint->setPen(QPen(QBrush("black"), lineWidth));
+    paint.setPen(QPen(QBrush("black"), lineWidth));
     for(int c3 = 0; c3 < NumOfSlices * 10 / 250; ++c3)
     {
         if(c3%10 == 0) norm = 20.;
         else if(c3%5  == 0) norm = 15.;
 
-        paint->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
-        paint->drawText(c3 * freq, pic.height() - 35, QString::number(c3));
+        paint.drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
+        paint.drawText(c3 * freq, pic.height() - 35, QString::number(c3));
         norm = 10.;
     }
 
@@ -5276,10 +5447,11 @@ QPixmap drawEeg( Typ dataD,
     norm = 1;
     pic.save(picPath, 0, 100);
 
-    paint->end();
-    delete paint;
+    paint.end();
+
     return pic;
 }
+
 
 template
 QPixmap drawEeg(double ** dataD,
@@ -5327,8 +5499,8 @@ QPixmap drawEeg( Typ dataD,
     QPixmap pic = QPixmap(NumOfSlices, 600);
     pic.fill();
 
-    QPainter * paint = new QPainter();
-    paint->begin(&pic);
+    QPainter paint;
+    paint.begin(&pic);
 
     QString colour;
     int lineWidth = 2;
@@ -5363,25 +5535,25 @@ QPixmap drawEeg( Typ dataD,
             colour = "black";
         }
 
-        paint->setPen(QPen(QBrush(QColor(colour)), lineWidth));
+        paint.setPen(QPen(QBrush(QColor(colour)), lineWidth));
 
         for(int c1 = 0; c1 < pic.width(); ++c1)
         {
-            paint->drawLine(c1,
+            paint.drawLine(c1,
                             (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice] * norm,
                             c1+1,
                             (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice +1] * norm);
         }
     }
     norm = 1.;
-    paint->setPen(QPen(QBrush("black"), lineWidth));
+    paint.setPen(QPen(QBrush("black"), lineWidth));
     for(int c3 = 0; c3 < NumOfSlices * 10 / 250; ++c3)
     {
         if(c3%10 == 0) norm = 20.;
         else if(c3%5  == 0) norm = 15.;
 
-        paint->drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2 * norm);
-        paint->drawText(c3 * freq, pic.height() - 35, QString::number(c3));
+        paint.drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2 * norm);
+        paint.drawText(c3 * freq, pic.height() - 35, QString::number(c3));
         norm = 10.;
     }
 
@@ -5389,8 +5561,8 @@ QPixmap drawEeg( Typ dataD,
     norm = 1;
     pic.save(picPath, 0, 100);
 
-    paint->end();
-    delete paint;
+    paint.end();
+
     return pic;
 }
 template QPixmap drawEeg(double ** dataD,

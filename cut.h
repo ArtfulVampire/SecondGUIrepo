@@ -33,7 +33,7 @@ class Cut : public QWidget
     Q_OBJECT
 
 public:
-    explicit Cut(QDir * dir_ = 0, int ns_ = 20);
+    explicit Cut();
     ~Cut();
     bool eventFilter(QObject *obj, QEvent *event);
     void setAutoProcessingFlag(bool);
@@ -52,7 +52,6 @@ public slots:
     void cutEyesAll();
     void browse();
     void splitCut();
-    void setNs(int);
 
 
 protected:
@@ -64,24 +63,26 @@ signals:
 
 private:
     Ui::Cut *ui;
+
     int rightLimit;
     int leftLimit;
+
     QString currentPicPath, currentFile;
     QString fileNumber;
     QString fileName;
     QPixmap currentPic;
+
     int addNum;
+
     QStringList lst;
     int currentNumber;
+
     vector<vector<double>> data3;
-    int ns;
     int NumOfSlices, Eyes;
     int pointNumber;
-    int helpInt;
+
     bool autoFlag;
-    FILE * file;
-    FILE * weights;
-    QDir *dir;
+
     QStringList nameFilters;
     double coeff;      //for fft
     int timeShift;   //in time-bins

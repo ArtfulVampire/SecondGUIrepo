@@ -58,7 +58,6 @@ public slots:
 
     //parameters processing
     void setExpName();
-    void takeSpValues(int, int, double);
     void setNs();
     void changeNsLine(int);
     void setBoxMax(double);
@@ -197,20 +196,16 @@ private:
     edfFile globalEdf;
     ofstream generalLogStream;
     streambuf *coutBuf;
-    QDir *dir;
-    QString ExpName;
-    int ndr, ddr, ns, nsBackup;
+
+    int ndr, ddr, nsBackup;
     int * nr;
-    int NumOfSlices;
+
     double ** spocMixMatrix;
     double * spocWVector;
     char ** label;
-    QPixmap pic;
-    QPainter *paint;
-    int spLength, left, right;
-    double spStep;
     int staSlice;
     int NumOfEdf;
+
     bool autoProcessingFlag;
     bool stopFlag;
 //    bool withMarkersFlag;

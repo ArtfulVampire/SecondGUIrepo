@@ -128,7 +128,7 @@ void MainWindow::ICA() //fastICA
 
     //data = A * comps, comps = W * data
 
-    //count components = matrixW*data and write to ExpName_ICA.edf
+    //count components = matrixW*data and write to def::ExpName_ICA.edf
     //count inverse matrixA = matrixW^-1 and draw maps of components
     //write automatization for classification different sets of components, find best set, explain
     QTime wholeTime;
@@ -139,7 +139,7 @@ void MainWindow::ICA() //fastICA
     QStringList lst;
     QString helpString;
 
-    helpString = dir->absolutePath() + slash() + ExpName + ".edf";
+    helpString = def::dir->absolutePath() + slash() + def::ExpName + ".edf";
     cout << "Ica started: " << helpString.toStdString() << endl;
 
     readData();
@@ -159,7 +159,7 @@ void MainWindow::ICA() //fastICA
     }
 
     //ns = 19
-    ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
+    int ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
 
 
     double eigenValuesTreshold = pow(10., -ui->svdDoubleSpinBox->value());
@@ -311,7 +311,7 @@ void MainWindow::ICA() //fastICA
 
 
     ofstream outStream;
-    helpString = dir->absolutePath() + slash() + "Help" + slash() + ExpName + "_eigenMatrix.txt";
+    helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_eigenMatrix.txt";
     outStream.open(helpString.toStdString().c_str());
     for(int i = 0; i < ns; ++i)
     {
@@ -326,7 +326,7 @@ void MainWindow::ICA() //fastICA
 
 
 
-    helpString = dir->absolutePath() + slash() + "Help" + slash() + ExpName + "_eigenValues.txt";
+    helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_eigenValues.txt";
     outStream.open(helpString.toStdString().c_str());
     for(int i = 0; i < ns; ++i)
     {
@@ -657,9 +657,9 @@ void MainWindow::ICA() //fastICA
         }
     }
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath()
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
-                                          + slash() + ExpName + "_maps_before_var.txt");
+                                          + slash() + def::ExpName + "_maps_before_var.txt");
     writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
 
 
@@ -721,9 +721,9 @@ void MainWindow::ICA() //fastICA
     }
     delete []tempCol;
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath()
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
-                                          + slash() + ExpName + "_maps_after_var.txt");
+                                          + slash() + def::ExpName + "_maps_after_var.txt");
     writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
 
     for(int i = 0; i < ns; ++i)
@@ -755,9 +755,9 @@ void MainWindow::ICA() //fastICA
                        [sum1](double in) {return in * sum1;});
     }
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath()
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
-                                          + slash() + ExpName + "_maps_before_len.txt");
+                                          + slash() + def::ExpName + "_maps_before_len.txt");
     writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
 
 
@@ -820,9 +820,9 @@ void MainWindow::ICA() //fastICA
     }
     delete []tempCol;
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath()
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
-                                          + slash() + ExpName + "_maps_after_len.txt");
+                                          + slash() + def::ExpName + "_maps_after_len.txt");
     writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
 
     for(int i = 0; i < ns; ++i)
@@ -876,18 +876,18 @@ void MainWindow::ICA() //fastICA
 //    cout<<endl;
 
     //now should draw amplitude maps OR write to file
-    helpString = QDir::toNativeSeparators(dir->absolutePath()
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
-                                          + slash() + ExpName + "_maps.txt");
+                                          + slash() + def::ExpName + "_maps.txt");
     writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
 
 //    drawMapsICA(helpString,
 //                ns,
 //                helpString.left(helpString.lastIndexOf(slash())),
-//                ExpName.left(3));
+//                def::ExpName.left(3));
 
 
-    helpString = dir->absolutePath() + slash() + ExpName + "_ica.edf";
+    helpString = def::dir->absolutePath() + slash() + def::ExpName + "_ica.edf";
     QList <int> chanList;
     makeChanList(chanList);
     cout << chanList << endl;
@@ -957,7 +957,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     cleanDirs();
     readData();
     sliceAll();
-    sp = new Spectre(dir, ns_, ExpName);
+    sp = new Spectre(dir, ns_, def::ExpName);
     sp->countSpectra();
     sp->compare();
     sp->compare();
@@ -967,7 +967,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     delete sp;
     for(int i = 0; i < 3; ++i)
     {
-        helpString = dir->absolutePath() + slash() + "Help" + slash() + ExpName;
+        helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName;
         switch(i)
         {
         case 0: {helpString += "_241.psa"; break;}
@@ -983,7 +983,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     cleanDirs();
     readData();
     sliceAll();
-    sp = new Spectre(dir, ns_, ExpName);
+    sp = new Spectre(dir, ns_, def::ExpName);
     sp->countSpectra();
     sp->compare();
     sp->compare();
@@ -993,7 +993,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     delete sp;
     for(int i = 0; i < 3; ++i)
     {
-        helpString = dir->absolutePath() + slash() + "Help" + slash() + ExpName;
+        helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName;
         switch(i)
         {
         case 0: {helpString += "_241.psa"; break;}
@@ -1196,7 +1196,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         helpString2 = EDFica1;
         helpString2.replace(".edf", "_newSeq.edf");
         constructEDF(helpString2);
-        //    sp = new Spectre(dir, ns_, ExpName);
+        //    sp = new Spectre(dir, ns_, def::ExpName);
         //    sp->countSpectra();
         //    sp->compare();
         //    sp->compare();
@@ -1261,7 +1261,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     setEdfFile(helpString2);
     cleanDirs();
     sliceAll();
-    sp = new Spectre(dir, ns_, ExpName);
+    sp = new Spectre(dir, ns_, def::ExpName);
     sp->countSpectra();
     sp->compare();
     sp->compare();
@@ -1275,7 +1275,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     setEdfFile(helpString2);
     cleanDirs();
     sliceAll();
-    sp = new Spectre(dir, ns_, ExpName);
+    sp = new Spectre(dir, ns_, def::ExpName);
     sp->countSpectra();
     sp->compare();
     sp->compare();
@@ -1289,7 +1289,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     cout << endl;
     ofstream outStream;
     outStream.open("/media/Files/Data/AB/12", ios_base::out|ios_base::app);
-    outStream << ExpName.left(3).toStdString() << endl;
+    outStream << def::ExpName.left(3).toStdString() << endl;
     for(int k = 0; k < ns_; ++k)
     {
         cout << k+1 << "\t";
@@ -1333,8 +1333,11 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     cout << "ICsSequence ended. time = = " << myTime.elapsed()/1000. << " sec" << endl;
 #endif
 }
-void MainWindow::icaClassTest() /// CAREFUL sliceOneByOneNew()
+
+
+void MainWindow::icaClassTest() /// CAREFUL sliceOneByOneNew() numOfIC
 {
+#if 0
     QString helpString2;
     QString helpString;
 
@@ -1362,18 +1365,18 @@ void MainWindow::icaClassTest() /// CAREFUL sliceOneByOneNew()
         matrixA[i] = new double [numOfIC];
     }
 
-    helpString2 = ExpName;
+    helpString2 = def::ExpName;
     helpString2.replace("_ica", "");
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "Help" + slash() + helpString2 + "_maps.txt");
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "Help" + slash() + helpString2 + "_maps.txt");
     if(!readICAMatrix(helpString, matrixA, numOfIC))
     {
         return;
     }
 
-    Spectre * spectr;// = Spectre(dir, numOfIC, ExpName);
-    helpString = dir->absolutePath() + slash() + "SpectraSmooth";
-    Net * ANN = new Net(dir, numOfIC, left, right, spStep, ExpName);
-    helpString = dir->absolutePath() + slash() + "16sec19ch.net";
+    Spectre * spectr;// = Spectre(dir, numOfIC, def::ExpName);
+    helpString = def::dir->absolutePath() + slash() + "SpectraSmooth";
+    Net * ANN = new Net(dir, numOfIC, left, right, spStep, def::ExpName);
+    helpString = def::dir->absolutePath() + slash() + "16sec19ch.net";
     ANN->loadCfgByName(helpString);
     ANN->setReduceCoeff(10.);
     double tempAccuracy;
@@ -1411,7 +1414,7 @@ void MainWindow::icaClassTest() /// CAREFUL sliceOneByOneNew()
     cleanDirs();
     sliceOneByOneNew();
 
-    spectr = new Spectre(dir, numOfIC, ExpName);
+    spectr = new Spectre(dir, numOfIC, def::ExpName);
 
     spectr->countSpectra();
 
@@ -1495,8 +1498,10 @@ void MainWindow::icaClassTest() /// CAREFUL sliceOneByOneNew()
     }
     delete ANN;
     delete spectr;
+#endif
 }
 
+/// TEST
 void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
 {
     QStringList lst;
@@ -1513,7 +1518,7 @@ void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
     readData();
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    if(!QString(label[lst[ns-1].toInt()-1]).contains("Markers"))
+    if(!QString(label[lst[lst.length() - 1].toInt() - 1]).contains("Markers"))
     {
         QMessageBox::critical(this, tr("Error"), tr("bad channels list"), QMessageBox::Ok);
         return;
@@ -1532,6 +1537,7 @@ void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
 
 
     int fr = def::freq; // generality
+    int ns = def::ns;
 
 
     double ** dataICA = new double * [ns]; //with markers
@@ -1551,7 +1557,7 @@ void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
         matrixA[i] = new double [numOfIC];
     }
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "Help" + slash() + ExpName + "_maps.txt");
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_maps.txt");
     readICAMatrix(helpString, matrixA, numOfIC);
 
     QList<int> thrownComp;
@@ -1622,7 +1628,7 @@ void MainWindow::transformReals() //move to library
     QStringList lst;
     QString helpString;
 
-    helpString = QFileDialog::getOpenFileName(this, tr("choose maps file"), dir->absolutePath(), tr("*.txt"));
+    helpString = QFileDialog::getOpenFileName(this, tr("choose maps file"), def::dir->absolutePath(), tr("*.txt"));
     if(helpString.isEmpty())
     {
         QMessageBox::critical(this, tr("Error"), tr("No file chosen"), QMessageBox::Ok);
@@ -1643,9 +1649,9 @@ void MainWindow::transformReals() //move to library
     matrixCreate(&mat2, 19, 250*50);
 
     QString procDir = ui->drawDirBox->currentText();
-    dir->cd(procDir);
-    lst = dir->entryList(QDir::Files);
-    dir->cdUp();
+    def::dir->cd(procDir);
+    lst = def::dir->entryList(QDir::Files);
+    def::dir->cdUp();
 
     qApp->processEvents();
 
@@ -1654,12 +1660,12 @@ void MainWindow::transformReals() //move to library
     matrixCreate(&mat1, 19, 100500);
     for(int i = 0; i < lst.length(); ++i)
     {
-        helpString = dir->absolutePath() + slash() + procDir + slash() + lst[i];
+        helpString = def::dir->absolutePath() + slash() + procDir + slash() + lst[i];
         readPlainData(helpString, mat1, 19, NumOfSlices);
 
         matrixProduct(mat3, globalEdf.getData(), mat2, 19, NumOfSlices);
 
-        helpString = dir->absolutePath() + slash() + procDir + slash() + lst[i];
+        helpString = def::dir->absolutePath() + slash() + procDir + slash() + lst[i];
         writePlainData(helpString, mat2, 19, NumOfSlices);
 
         ui->progressBar->setValue(i*100./lst.length());
@@ -1676,10 +1682,14 @@ void MainWindow::transformReals() //move to library
 
 void MainWindow::randomDecomposition() // CAREFUL sliceOneByOneNew
 {
+
+// careful compNum
+
+#if 0
     QStringList lst;
     QString helpString;
 
-    QString initName = ExpName;
+    QString initName = def::ExpName;
     readData(); //should have opened initial data-file
 
     cout << "data read" << endl;
@@ -1715,9 +1725,9 @@ void MainWindow::randomDecomposition() // CAREFUL sliceOneByOneNew
     double sum1;
     double sum2;
 
-    Spectre * spectr = new Spectre(dir, compNum, ExpName);
-    Net * ANN = new Net(dir, compNum, left, right, spStep, ExpName); //generality parameters
-    helpString = dir->absolutePath() + slash() + "16sec19ch.net";
+    Spectre * spectr = new Spectre(dir, compNum, def::ExpName);
+    Net * ANN = new Net(dir, compNum, left, right, spStep, def::ExpName); //generality parameters
+    helpString = def::dir->absolutePath() + slash() + "16sec19ch.net";
     ANN->loadCfgByName(helpString);
 
     ANN->setReduceCoeff(15.); //generality
@@ -1728,7 +1738,7 @@ void MainWindow::randomDecomposition() // CAREFUL sliceOneByOneNew
     double ** eigenMatrix = matrixCreate(compNum, compNum);
 
     /*
-    helpString = dir->absolutePath() + slash() + "Help" + slash() + ExpName + "_eigenMatrix.txt";
+    helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_eigenMatrix.txt";
     inStream.open(helpString.toStdString().c_str());
     if(!inStream.good())
     {
@@ -1750,7 +1760,7 @@ void MainWindow::randomDecomposition() // CAREFUL sliceOneByOneNew
     double * eigenValues = new double [compNum];
 
     /*
-    helpString = dir->absolutePath() + slash() + "Help" + slash() + ExpName + "_eigenValues.txt";
+    helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_eigenValues.txt";
     inStream.open(helpString.toStdString().c_str());
     if(!inStream.good())
     {
@@ -1773,7 +1783,7 @@ void MainWindow::randomDecomposition() // CAREFUL sliceOneByOneNew
     for(int i = 0; i < 55; ++i) /////////////////////////////////////////////////////////////////////////////////
     {
         myTime.restart();
-        helpString = dir->absolutePath() + slash() + initName;
+        helpString = def::dir->absolutePath() + slash() + initName;
         setEdfFile(helpString);
         readData(); //should have opened initial data-file
 
@@ -1845,11 +1855,11 @@ void MainWindow::randomDecomposition() // CAREFUL sliceOneByOneNew
         }
 
         //write newData
-        helpString = dir->absolutePath() + slash() + ExpName + "_randIca.edf";
+        helpString = def::dir->absolutePath() + slash() + def::ExpName + "_randIca.edf";
         globalEdf.writeOtherData(newData.data, helpString, chanList);
 //        writeEdf(ui->filePathLineEdit->text(), newData, helpString, ndr*def::freq);
 
-        helpString = dir->absolutePath() + slash() + ExpName + "_randIca.edf";
+        helpString = def::dir->absolutePath() + slash() + def::ExpName + "_randIca.edf";
         setEdfFile(helpString);
         readData(); //read newData
 
@@ -1861,7 +1871,7 @@ void MainWindow::randomDecomposition() // CAREFUL sliceOneByOneNew
         spectr->defaultState();
         spectr->countSpectra();
         ANN->autoClassificationSimple();
-        helpString = dir->absolutePath() + slash() + initName + "_randIca.txt";
+        helpString = def::dir->absolutePath() + slash() + initName + "_randIca.txt";
         outFile = fopen(helpString.toStdString().c_str(), "a");
         fprintf(outFile, "%.2lf\n", ANN->getAverageAccuracy());
         fclose(outFile);
@@ -1877,8 +1887,7 @@ void MainWindow::randomDecomposition() // CAREFUL sliceOneByOneNew
     delete []eigenValues;
     delete ANN;
     delete spectr;
-
-
+#endif
 }
 //
 
@@ -1920,13 +1929,15 @@ double objFunc(double *W_, double ***Ce_, double **Cz_, double **Cav_, double ns
     return sum1/sum3;
 }
 
+
+// holy fck, how long it is
 void MainWindow::spoc()
 {
     QString helpString;
 
     readData();
-    nsBackup = ns;
-    ns = ui->numComponentsSpinBox->value(); //test
+    nsBackup = def::ns;
+    int ns = ui->numComponentsSpinBox->value(); //test
 
     double * W = new double  [ns];
     double * WOld = new double  [ns];
@@ -1962,7 +1973,7 @@ void MainWindow::spoc()
 
     double * Znew = new double [numOfEpoches];
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "spocVar.txt");
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "spocVar.txt");
     FILE * in = fopen(helpString.toStdString().c_str(), "r");
     int helpInt = 0;
     while(!feof(in) && helpInt < numOfEpoches)

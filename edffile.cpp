@@ -349,7 +349,10 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
     else // if(asPLain)
     {
 #if DATA_POINTER
-        writePlainData(EDFpath, *(this->dataPointer), this->ns, this->dataLength);
+        writePlainData(EDFpath,
+                       *(this->dataPointer),
+                       this->ns - 1 + def::withMarkersFlag,
+                       this->dataLength);
 #else
         writePlainData(EDFpath, this->data, this->ns, this->dataLength);
 #endif
@@ -1157,7 +1160,7 @@ void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPat
     {
         writePlainData(outPath,
                        *(this->dataPointer),
-                       this->ns,
+                       this->ns - 1 + def::withMarkersFlag,
                        finishBin-startBin,
                        startBin);
     }

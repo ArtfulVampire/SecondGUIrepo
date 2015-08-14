@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     ica.cpp \
     editedf.cpp \
     clustering.cpp \
-    visualisation.cpp
+    visualisation.cpp \
+    coord.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

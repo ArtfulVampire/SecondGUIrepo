@@ -29,7 +29,7 @@ class Eyes : public QWidget
     Q_OBJECT
 
 public:
-    explicit Eyes(QDir *dir_ = new QDir("/"), int ns_=19);
+    explicit Eyes();
     void setAutoProcessingFlag(bool);
     ~Eyes();
 
@@ -43,11 +43,9 @@ signals:
 
 private:
     Ui::Eyes *ui;
-    int ns;
     bool autoFlag;
-    QDir *dir, *dirBC;
-    QStringList lst;
-    double **dataE;
+    QDir *dirBC;
+    double ** dataE;
 };
 
 #endif // EYES_H

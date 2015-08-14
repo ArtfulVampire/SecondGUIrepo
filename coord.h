@@ -1,7 +1,7 @@
-#pragma once
 #ifndef COORD_H
 #define COORD_H
 #include <QString>
+#include <QDir>
 #define maxNs 50
 
 namespace coords
@@ -15,24 +15,33 @@ namespace coords
 
 namespace def
 {
-    const bool matiFlag = false;
+    const bool matiFlag = true;
     const bool ntFlag = false;
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
 
     const double freq = 250.;
     const double leftFreq = 5.;
     const double rightFreq = 20.;
-    const int ns = 19;
+
     const bool wirteStartEndLong = false; //for slice
+
+    extern int left;
+    extern int right;
+    extern double spStep;
+    extern int spLength;
+    extern QString ExpName;
+    extern QDir * dir;
+    extern int ns;
+    extern int fftLength;
+    extern QString cfgFileName;
 
 
 //    Atanov
-    const QString dataFolder = "/media/Files/Data/Feedback";
-    const int fftLength = 4096;
     const int numOfClasses = 3;
+    const QString dataFolder = "/media/Files/Data/Feedback";
     const bool opencl = true;
     const bool openmp = true;
-    const QString cfgFileName = "16sec19ch";
+
 
 //    MATI
 //    const int genNs = 20;
@@ -64,6 +73,7 @@ namespace def
 //    const QString cfgFileName = "16sec19ch";
 
 }
+
 
 
 #endif

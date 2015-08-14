@@ -13,18 +13,9 @@ MainWindow::MainWindow() :
     redirectCoutFlag = false;
     coutBuf = cout.rdbuf();
 
-
-
-
-    ns = -1;
-    spLength = -1;
-    ns = def::ns + 1;
-
-    right = fftLimit(def::rightFreq, def::freq, def::fftLength);
-    left  = fftLimit(def::leftFreq, def::freq, def::fftLength);
-
-    spStep = def::freq/def::fftLength;
-    spLength = right - left + 1;
+    def::right = fftLimit(def::rightFreq, def::freq, def::fftLength);
+    def::left  = fftLimit(def::leftFreq, def::freq, def::fftLength);
+    def::spLength = def::right - def::left + 1;
 
 //    withMarkersFlag = 1;
     ui->sliceWithMarkersCheckBox->setChecked(def::withMarkersFlag);
@@ -32,14 +23,9 @@ MainWindow::MainWindow() :
     staSlice = 0;
     stopFlag = 0;
 
-    dir = new QDir();
-    dir->cd(QDir::root().absolutePath());
+    def::dir->cd(QDir::root().absolutePath());
 
     NumOfEdf = 0; //for EDF cut
-
-
-    paint = new QPainter();
-
 
     label = new char* [maxNs];     //memory for channels' labels
     for(int i = 0; i < maxNs; ++i)
@@ -402,29 +388,26 @@ void QWidget::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::countSpectraSimple(int fftLen)
 {
-    Spectre *sp = new Spectre(dir, ns, ExpName);
-    QObject::connect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
+    Spectre *sp = new Spectre();
     sp->setFftLength(fftLen);
     sp->countSpectra();
     sp->compare();
     sp->compare();
     sp->compare();
     sp->psaSlot();
-    QObject::disconnect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
     sp->close();
     delete sp;
 }
 
 void MainWindow::showCountSpectra()
 {
-    Spectre *sp = new Spectre(dir, ns, ExpName);
-    QObject::connect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
+    Spectre *sp = new Spectre();
     sp->show();
 }
 
 void MainWindow::showEyes()
 {
-    Eyes *trololo = new Eyes(dir, ns);
+    Eyes *trololo = new Eyes();
     trololo->setAutoProcessingFlag(false);
     trololo->show();
     QObject::connect(trololo, SIGNAL(setNsMain(int)), this, SLOT(setNsSlot(int)));
@@ -432,45 +415,44 @@ void MainWindow::showEyes()
 
 void MainWindow::showNet()
 {
-    Net * ANN = new Net(dir, ns, left, right, spStep, ExpName);
+    Net * ANN = new Net();
     ANN->show();
 }
 
 void MainWindow::showCut()
 {
-    Cut *cut_e = new Cut(dir, ns);
+    Cut *cut_e = new Cut();
     cut_e->show();
 }
 
 void MainWindow::showMakePa() //250 - frequency generality
 {
     QString helpString;
-    if(spStep == def::freq/4096. || spStep == def::freq/2048.)
+    if(def::spStep == def::freq/4096. || def::spStep == def::freq/2048.)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "SpectraSmooth");
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth");
     }
-    else if(spStep == def::freq/1024.)
+    else if(def::spStep == def::freq/1024.)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "SpectraSmooth" + slash() + "windows");
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth" + slash() + "windows");
     }
     else
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath());
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath());
     }
 
-
-    MakePa *mkPa = new MakePa(helpString, ExpName, ns, left, right, spStep, QVector<int>());
+    MakePa *mkPa = new MakePa(helpString);
     mkPa->show();
 }
 
 void MainWindow::showMakeCfg()//250 - frequency generality
 {
     QString helpString;
-    if(spStep == def::freq/4096.) helpString = "16sec19ch";
-    else if(spStep == def::freq/1024.) helpString = "4sec19ch";
-    else if(spStep == def::freq/2048.) helpString = "8sec19ch";
+    if(def::spStep == def::freq/4096.) helpString = "16sec19ch";
+    else if(def::spStep == def::freq/1024.) helpString = "4sec19ch";
+    else if(def::spStep == def::freq/2048.) helpString = "8sec19ch";
     else helpString = "netFile";
-    cfg *config = new cfg(dir, ns, spLength, 0.10, 0.10, helpString);
+    cfg *config = new cfg(0.10, 0.10, helpString);
     config->show();
 }
 
@@ -511,11 +493,11 @@ void MainWindow::setEdfFile(QString const &filePath)
 
     //set ExpName
 
-    ExpName = getExpNameLib(filePath);
-    ui->Name->setText(ExpName);
+    def::ExpName = getExpNameLib(filePath);
+    ui->Name->setText(def::ExpName);
 
     helpString.resize(helpString.lastIndexOf(slash()));
-    dir->cd(helpString);
+    def::dir->cd(helpString);
 
     if(redirectCoutFlag)
     {
@@ -535,47 +517,47 @@ void MainWindow::setEdfFile(QString const &filePath)
     }
 
 
-    dir->mkdir("Help");
-    dir->mkdir("amod");
-    dir->mkdir("auxEdfs");
-    dir->mkdir("PA");
-    dir->mkdir("visualisation");
-    dir->mkdir("visualisation/video");
-    dir->mkdir("visualisation/wavelets");
+    def::dir->mkdir("Help");
+    def::dir->mkdir("amod");
+    def::dir->mkdir("auxEdfs");
+    def::dir->mkdir("PA");
+    def::dir->mkdir("visualisation");
+    def::dir->mkdir("visualisation/video");
+    def::dir->mkdir("visualisation/wavelets");
 
     for(int i = 0; i < 19; ++i)
     {
         helpString = "visualisation/wavelets/";
-        dir->mkdir(helpString.append(QString::number(i)));
+        def::dir->mkdir(helpString.append(QString::number(i)));
     }
-    dir->mkdir("Signals");
-    dir->mkdir("Signals/before");
-    dir->mkdir("Signals/after");
-    dir->mkdir("Signals/other");
-    dir->mkdir("Signals/windows");
-    dir->mkdir("Signals/windows/after");
-    dir->mkdir("Signals/windows/before");
-    dir->mkdir("Signals/windows/other");
-    dir->mkdir("SignalsCut");
-    dir->mkdir("SignalsCut/before");
-    dir->mkdir("SignalsCut/after");
-    dir->mkdir("SpectraImg");
-    dir->mkdir("SpectraSmooth");
-    dir->mkdir("SpectraSmooth/windows");
-    dir->mkdir("SpectraSmooth/Bayes");
-    dir->mkdir("SpectraSmooth/PCA");
-    dir->mkdir("windows");
-    dir->mkdir("windows/fromreal");
-    dir->mkdir("Realisations");
-    dir->mkdir("Realisations/BC");
-    dir->mkdir("cut");
+    def::dir->mkdir("Signals");
+    def::dir->mkdir("Signals/before");
+    def::dir->mkdir("Signals/after");
+    def::dir->mkdir("Signals/other");
+    def::dir->mkdir("Signals/windows");
+    def::dir->mkdir("Signals/windows/after");
+    def::dir->mkdir("Signals/windows/before");
+    def::dir->mkdir("Signals/windows/other");
+    def::dir->mkdir("SignalsCut");
+    def::dir->mkdir("SignalsCut/before");
+    def::dir->mkdir("SignalsCut/after");
+    def::dir->mkdir("SpectraImg");
+    def::dir->mkdir("SpectraSmooth");
+    def::dir->mkdir("SpectraSmooth/windows");
+    def::dir->mkdir("SpectraSmooth/Bayes");
+    def::dir->mkdir("SpectraSmooth/PCA");
+    def::dir->mkdir("windows");
+    def::dir->mkdir("windows/fromreal");
+    def::dir->mkdir("Realisations");
+    def::dir->mkdir("Realisations/BC");
+    def::dir->mkdir("cut");
 
 
     helpString = "EDF file read successfull";
     ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(QString::number(ns));
+    helpString.append(QString::number(def::ns));
     ui->textEdit->append(helpString);
 
 }
@@ -583,8 +565,8 @@ void MainWindow::setEdfFile(QString const &filePath)
 void MainWindow::setExpName()
 {
     QString helpString;
-    ExpName = ui->Name->text();
-    helpString = "Name approved: " + ExpName + "\n";
+    def::ExpName = ui->Name->text();
+    helpString = "Name approved: " + def::ExpName + "\n";
     ui->textEdit->append(helpString);
 }
 
@@ -607,7 +589,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
         if(ui->eyesCleanCheckBox->isChecked())
         {
             fil.cleanFromEyes();
-            ns = fil.getNs();
+            def::ns = fil.getNs();
         }
         if(ui->reduceChannelsCheckBox->isChecked())
         {
@@ -624,7 +606,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                 }
             }
             fil.reduceChannels(chanList);
-            ns = fil.getNs();
+            def::ns = fil.getNs();
         }
         // almost equal time, should use sessionEdges
         if(ui->sliceCheckBox->isChecked())
@@ -732,7 +714,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                         //                        sliceFromTo(241, 231, "241_pre");
                         //                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
                         //                        sliceFromTo(247, 237, "247_pre");
-                        //                        helpString = dir->absolutePath() + slash() + "Realisations";
+                        //                        helpString = def::dir->absolutePath() + slash() + "Realisations";
                         //                        cleanDir(helpString, "_pre", false);
                     }
                 }
@@ -754,7 +736,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(QString::number(ns));
+    helpString.append(QString::number(def::ns));
     ui->textEdit->append(helpString);
 
     cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << endl;
@@ -806,8 +788,8 @@ void MainWindow::readData()
 #if 1
 
     globalEdf.readEdfFile(helpString);
-    ns = globalEdf.getNs();
-    for(int i = 0; i < ns; ++i)
+    def::ns = globalEdf.getNs();
+    for(int i = 0; i < def::ns; ++i)
     {
         nr[i] = int(globalEdf.getNr()[i]);
     }
@@ -828,7 +810,7 @@ void MainWindow::readData()
     short int a;
     unsigned short markA;
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "header.txt");
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "header.txt");
     FILE * header = fopen(helpString, "w");
 
 
@@ -951,7 +933,7 @@ void MainWindow::readData()
         }
     }
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "labels.txt");
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "labels.txt");
     FILE * labels=fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
     for(int i = 0; i < ns; ++i)                         //label write in file
     {
@@ -1082,7 +1064,7 @@ void MainWindow::readData()
 
     ui->finishTimeBox->setMaximum(ddr*ndr);
 
-    helpString = dir->absolutePath() + slash() + ExpName + "_markers.txt";
+    helpString = def::dir->absolutePath() + slash() + def::ExpName + "_markers.txt";
     FILE * markers = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(), "w");
 
     QString * annotations = new QString [5000];
@@ -1308,13 +1290,13 @@ void MainWindow::readData()
     helpString="data have been read ";
     ui->textEdit->append(helpString);
 
-    helpString = "ns equals to " + QString::number(ns);
+    helpString = "ns equals to " + QString::number(def::ns);
     ui->textEdit->append(helpString);
 
 //    staSlice += 3; //generality LAWL
 
     ui->markerSecTimeDoubleSpinBox->setMaximum(ndr * ddr);
-    ui->markerBinTimeSpinBox->setMaximum(nr[ns-1] * ndr * ddr);
+    ui->markerBinTimeSpinBox->setMaximum(nr[def::ns - 1] * ndr * ddr);
 
 //    cout << "readData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
@@ -1363,7 +1345,7 @@ void MainWindow::drawRealisations()
     QTime myTime;
     myTime.start();
     ui->progressBar->setValue(0);
-    matrix dataD(ns, 50 * 60 * 250); // for 50 seconds
+    matrix dataD(def::ns, 50 * 60 * 250); // for 50 seconds
 
     lst.clear();
     nameFilters.clear();
@@ -1376,31 +1358,32 @@ void MainWindow::drawRealisations()
     nameFilters.append("*_2");
     nameFilters.append("*_1");
 
-    dir->cd(ui->drawDirBox->currentText());    //->windows or Realisations or cut
-    prePath = dir->absolutePath();
+    def::dir->cd(ui->drawDirBox->currentText());    //->windows or Realisations or cut
+    prePath = def::dir->absolutePath();
 
-    lst = dir->entryList(QDir::Files);
-//    lst = dir->entryList(nameFilters, QDir::Files);
+    lst = def::dir->entryList(QDir::Files);
+//    lst = def::dir->entryList(nameFilters, QDir::Files);
 
-    dir->cdUp();   //-> into EDF-file dir
-    if(ui->drawDirBox->currentText() == "windows/fromreal") dir->cdUp();
+    def::dir->cdUp();   //-> into EDF-file dir
+    if(ui->drawDirBox->currentText() == "windows/fromreal") def::dir->cdUp();
 
     int redCh = -1;
     int blueCh = -1;
-    if(ns == 41)
+    if(def::ns == 41)
     {
         redCh = 21;
         blueCh = 22;
     }
-    else if(ns == 22 || ns == 21)
+    else if(def::ns == 22 || def::ns == 21)
     {
         redCh = 19;
         blueCh = 20;
     }
 
+    int NumOfSlices;
     for(int i = 0; i < lst.length(); ++i)
     {
-        if(i > 1) break;
+//        if(i > 1) break;
 
 
 
@@ -1408,7 +1391,7 @@ void MainWindow::drawRealisations()
         helpString = prePath + slash() + lst[i];
         readPlainData(helpString,
                       dataD,
-                      ns,
+                      def::ns,
                       NumOfSlices);
 
         if(NumOfSlices > 15000)
@@ -1416,9 +1399,9 @@ void MainWindow::drawRealisations()
             continue;
         }
 
-        helpString = getPicPath(helpString, dir, ns);
+        helpString = getPicPath(helpString, def::dir, def::ns);
         drawEeg(dataD,
-                ns,
+                def::ns,
                 NumOfSlices,
                 def::freq,
                 helpString,
@@ -1437,7 +1420,7 @@ void MainWindow::drawRealisations()
     ui->textEdit->append(helpString);
 
     helpString = "ns equals to ";
-    helpString.append(QString::number(ns));
+    helpString.append(QString::number(def::ns));
     ui->textEdit->append(helpString);
 
     stopFlag = 0;
@@ -1448,7 +1431,7 @@ void MainWindow::cleanDirs()
 {
     QString helpString;
 
-    if(dir->isRoot())
+    if(def::dir->isRoot())
     {
         QMessageBox::critical((QWidget*)this, tr("Warning"), tr("No dir"), QMessageBox::Ok);
         return;
@@ -1457,7 +1440,7 @@ void MainWindow::cleanDirs()
     //windows
     if(ui->cleanWindowsCheckBox->isChecked())
     {
-        helpString = dir->absolutePath()
+        helpString = def::dir->absolutePath()
                 + slash() + "windows";
         cleanDir(helpString);
     }
@@ -1465,7 +1448,7 @@ void MainWindow::cleanDirs()
     //SpectraSmooth/windows
     if(ui->cleanWindSpectraCheckBox->isChecked())
     {
-        helpString = dir->absolutePath()
+        helpString = def::dir->absolutePath()
                 + slash() + "SpectraSmooth"
                 + slash() + "windows";
         cleanDir(helpString);
@@ -1475,7 +1458,7 @@ void MainWindow::cleanDirs()
     //SpectraSmooth
     if(ui->cleanRealsSpectraCheckBox->isChecked())
     {
-        helpString = dir->absolutePath()
+        helpString = def::dir->absolutePath()
                 + slash() + "SpectraSmooth";
         cleanDir(helpString);
     }
@@ -1483,7 +1466,7 @@ void MainWindow::cleanDirs()
     //windows/fromreal
     if(ui->cleanFromRealsCheckBox->isChecked())
     {
-        helpString = dir->absolutePath()
+        helpString = def::dir->absolutePath()
                 + slash() + "windows"
                 + slash() + "fromreal";
         cleanDir(helpString);
@@ -1492,7 +1475,7 @@ void MainWindow::cleanDirs()
     //Realisations
     if(ui->cleanRealisationsCheckBox->isChecked())
     {
-        helpString = dir->absolutePath()
+        helpString = def::dir->absolutePath()
                 + slash() + "Realisations";
         cleanDir(helpString);
     }
@@ -1500,7 +1483,7 @@ void MainWindow::cleanDirs()
     //Help
     if(ui->cleanHelpCheckBox->isChecked())
     {
-        helpString = dir->absolutePath()
+        helpString = def::dir->absolutePath()
                 + slash() + "Help";
         cleanDir(helpString);
     }
@@ -1508,7 +1491,7 @@ void MainWindow::cleanDirs()
     //markers
     if(ui->cleanMarkersCheckBox->isChecked())
     {
-        helpString = dir->absolutePath();
+        helpString = def::dir->absolutePath();
         cleanDir(helpString, "markers", 0);
     }
 
@@ -1516,7 +1499,7 @@ void MainWindow::cleanDirs()
     ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(QString::number(ns));
+    helpString.append(QString::number(def::ns));
     ui->textEdit->append(helpString);
 }
 
@@ -1524,7 +1507,7 @@ void MainWindow::cleanDirs()
 
 void MainWindow::markerSetSecTime(int a)
 {
-    ui->markerSecTimeDoubleSpinBox->setValue(double(a)/nr[ns-1]);
+    ui->markerSecTimeDoubleSpinBox->setValue(double(a)/nr[def::ns-1]);
 }
 
 void MainWindow::markerGetSlot()
@@ -1610,7 +1593,7 @@ void MainWindow::markerSetBinValueSlot()
 void MainWindow::markerSaveEdf()
 {
     QString helpString;
-    helpString = dir->absolutePath() + slash() + ExpName + ui->newEdfNameLineEdit->text();
+    helpString = def::dir->absolutePath() + slash() + def::ExpName + ui->newEdfNameLineEdit->text();
     if(!helpString.endsWith(".edf", Qt::CaseInsensitive))
     {
         helpString += ".edf";
@@ -1619,28 +1602,18 @@ void MainWindow::markerSaveEdf()
     globalEdf.writeEdfFile(helpString);
 }
 
-
-
-void MainWindow::takeSpValues(int b, int c, double d)
-{
-    QString helpString;
-    spLength = c-b+1;
-    left = b;
-    right = c;
-    spStep = d;
-    helpString="SpVal taken";
-    ui->textEdit->append(helpString);
-}
-
 void MainWindow::drawMapsSlot()
 {
     QString helpString;
-    helpString = QFileDialog::getOpenFileName(this, tr("Choose maps file"), dir->absolutePath(), tr("*.txt"));
+    helpString = QFileDialog::getOpenFileName(this,
+                                              tr("Choose maps file"),
+                                              def::dir->absolutePath(),
+                                              tr("*.txt"));
     if(!QFile::exists(helpString))
     {
         return;
     }
-    drawMapsICA(dir->absolutePath(), ns, helpString, ExpName);
+    drawMapsICA(def::dir->absolutePath(), def::ns, helpString, def::ExpName);
 }
 
 void MainWindow::avTime()
@@ -1666,11 +1639,11 @@ void MainWindow::avTime()
         if(j == 0) tmp = "241";
         else if(j == 1) tmp = "247";
 
-        dir->cd("Realisations");
-        lst = dir->entryList(QStringList(QString("*_" + tmp + "*")), QDir::Files);
+        def::dir->cd("Realisations");
+        lst = def::dir->entryList(QStringList(QString("*_" + tmp + "*")), QDir::Files);
         for(int i = 0; i <  lst.length(); ++i)
         {
-            helpString = dir->absolutePath() + slash() + lst[i];
+            helpString = def::dir->absolutePath() + slash() + lst[i];
             fil = fopen(helpString, "r");
             fscanf(fil, "NumOfSlices %d", &num);
             fclose(fil);
@@ -1680,13 +1653,13 @@ void MainWindow::avTime()
             if(fabs(maxLen/double(num) - 1.) < 0.01) ++numNotSolved;
             else cout << num/def::freq << endl;
         }
-        dir->cdUp();
+        def::dir->cdUp();
 
         solveTime = av / (def::freq*lst.length());
         cout << "solveTime " << tmp << " = " << solveTime << endl << endl;
         cout << "num not solved " << tmp << " = " << numNotSolved << endl << endl;
 
-        helpString = dir->absolutePath() + slash() + "results.txt";
+        helpString = def::dir->absolutePath() + slash() + "results.txt";
         FILE * res = fopen(helpString, "a+");
         fprintf(res, "solve time %d\t%.1lf\n", tmp.toInt(), solveTime);
         fprintf(res, "num not solved %d\t%d\n", tmp.toInt(), numNotSolved);
@@ -1703,7 +1676,7 @@ void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unus
     int fr = def::freq;
 
     //write components cross-correlation matrix
-    int size = ns - 1;
+    int size = def::ns - 1;
     matrix corrs(size, size);
     for(int i = 0; i < size; ++i)
     {
@@ -1744,35 +1717,32 @@ void MainWindow::changeNsLine(int a)
 void MainWindow::setNs()
 {
     QString helpString;
-    ns=ui->setNsLine->text().toInt();
-    helpString="ns equals to ";
-    helpString.append(QString::number(ns));
-    ui->textEdit->append(helpString);
+    def::ns = ui->setNsLine->text().toInt();
+
+    helpString = "ns equals to ";
+    helpString += QString::number(def::ns);
     ui->setNsLine->clear();
 }
 
 void MainWindow::setNsSlot(int a)
 {
     QString helpString;
-    ns=a;
-    helpString="ns equals to ";
-    helpString.append(QString::number(ns));
+    def::ns = a;
+
+    helpString = "ns equals to ";
+    helpString += QString::number(def::ns);
     ui->textEdit->append(helpString);
     ui->setNsLine->clear();
 }
 
 void MainWindow::customFunc()
 {
+
 //    return;
 
 //    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
 //    ns = 20;
-//    MakePa * mk = new MakePa("/media/Files/Data/Feedback/CAA/SpectraSmooth",
-//                             ExpName,
-//                             ns,
-//                             left,
-//                             right,
-//                             spStep);
+//    MakePa * mk = new MakePa("/media/Files/Data/Feedback/CAA/SpectraSmooth");
 //    mk->mwTest();
 //    kernelEst("/media/Files/Data/wav.txt",
 //              "/media/Files/Data/wav.jpg");
@@ -1790,10 +1760,59 @@ void MainWindow::customFunc()
 //                   pow(2, 11),
 //                   0);
 
-
+//    cout << def::left << endl;
+//    def::left = 7;
 
 //    exit(0);
 
+#if 0
+    // save and draw weights for mati EEG/components
+    QStringList names;
+    names << "ADA" << "BSA" << "FEV" << "KMX" << "NVV" << "PYV" << "SDV" << "SIV";
+    QString helpString;
+
+    for(QString &guy : names)
+    {
+
+        helpString = "/media/Files/Data/Mati"
+                + slash() + guy
+                + slash() + guy + "_full_ica.edf";
+
+        setEdfFile(helpString);
+        cleanDirs();
+        sliceAll();
+
+        Spectre * sp = new Spectre();
+        sp->countSpectra();
+        delete sp;
+
+        helpString = def::dir->absolutePath() + "SpectraSmooth";
+        MakePa * mkPa = new MakePa(helpString);
+        mkPa->makePaSlot();
+        delete mkPa;
+
+        Net * ann = new Net();
+        ann->loadCfgByName("16sec19ch.net");
+        for(double error = 0.15; error >= 0.05; error -= 0.05)
+        {
+            ann->setErrcrit(0.15);
+            for(int i = 0; i < 10; ++i)
+            {
+                ann->LearnNet();
+                helpString = def::dir->absolutePath()
+                        + slash() + "weights"
+                        + slash() + def::ExpName
+                        + "_" + QString::number(error)
+                        + "_" + QString::number(i)
+                        + ".wts";
+                ann->saveWts(helpString);
+                ann->drawWts();
+            }
+        }
+
+
+    }
+#endif
 
 #if 0
     // set limits for channels/components
@@ -1815,7 +1834,7 @@ void MainWindow::customFunc()
         cleanDirs();
         sliceAll();
 
-        Spectre * sp = new Spectre(dir, ns, ExpName);
+        Spectre * sp = new Spectre();
 
         sp->drawWavelets();
 
@@ -1892,7 +1911,7 @@ void MainWindow::customFunc()
         setEdfFile(helpString);
         cleanDirs();
         sliceAll();
-        Spectre * sp = new Spectre(dir, ns, ExpName);
+        Spectre * sp = new Spectre();
         sp->drawWavelets();
         sp->close();
         delete sp;
@@ -1971,30 +1990,6 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-    dir->cd("/media/michael/Files/Data/CAA/Signals/other/1");
-    QStringList gf = dir->entryList(QDir::Files);
-    for(QString & gy : gf)
-    {
-        QString ko = gy;
-//        cout << gy.length() << endl; continue;
-        if(gy.length() == 25)
-        {
-            ko.replace("0_000", "_0_000");
-        }
-        else if(gy.length() == 23)
-        {
-            ko.replace("_0002", "_00_0002");
-        }
-        else continue;
-
-        gy.prepend(dir->absolutePath() + slash());
-        ko.prepend(dir->absolutePath() + slash());
-        QFile::rename(gy, ko);
-    }
-    exit(0);
-#endif
-
-#if 0
     // test mann-whitney funcs
     vector <double> in1;
     vector <double> in2;
@@ -2025,8 +2020,8 @@ void MainWindow::customFunc()
     const QString out = "/media/Files/Data/Mati/ICAstudy/Help/Maps/";
     QString helpString;
     QString nam;
-    dir->cd(path);
-    QStringList dataFiles = dir->entryList(QStringList("*_ica_after.edf"));
+    def::dir->cd(path);
+    QStringList dataFiles = def::dir->entryList(QStringList("*_ica_after.edf"));
 
     for(QString & guy : dataFiles)
     {
@@ -2049,8 +2044,8 @@ void MainWindow::customFunc()
     // test ICA spectre in concatenated files and split ones
     const QString path = "/media/Files/Data/Mati/ICAstudy/";
     QString helpString;
-    dir->cd(path);
-    QStringList dataFiles = dir->entryList(QStringList("*_ica_after.edf"));
+    def::dir->cd(path);
+    QStringList dataFiles = def::dir->entryList(QStringList("*_ica_after.edf"));
 
     for(QString & guy : dataFiles)
     {
@@ -2059,7 +2054,7 @@ void MainWindow::customFunc()
         cleanDirs();
         sliceAll();
 
-        Spectre * sp = new Spectre(dir, ns, ExpName);
+        Spectre * sp = new Spectre();
         sp->countSpectra();
         for(int i = 0; i < 4; ++i)
         {
@@ -2083,8 +2078,8 @@ void MainWindow::customFunc()
     QString helpString;
     QString nam;
     QString outPath;
-    dir->cd(path);
-    QStringList dataFiles = dir->entryList(QStringList("*_ica_after.edf"));
+    def::dir->cd(path);
+    QStringList dataFiles = def::dir->entryList(QStringList("*_ica_after.edf"));
 
     for(QString & guy : dataFiles)
     {
@@ -2194,8 +2189,8 @@ void MainWindow::customFunc()
     const QString init = "/media/Files/Data/Mati/ICAstudy/";
     const QString pth = "/media/Files/Data/Mati/ICAstudy/Help/";
     QString helpString;
-    dir->cd(pth);
-    QStringList dataFiles = dir->entryList(QStringList("*_ica.txt"));
+    def::dir->cd(pth);
+    QStringList dataFiles = def::dir->entryList(QStringList("*_ica.txt"));
 
     mat dataMat;
     dataMat.resize(20);
@@ -2248,8 +2243,8 @@ void MainWindow::customFunc()
     const QString pth = "/media/Files/Data/Mati/ICAstudy/Help/";
     QString helpString;
 
-    dir->cd(init);
-    QStringList dataFiles = dir->entryList(QStringList("*_ica.edf"));
+    def::dir->cd(init);
+    QStringList dataFiles = def::dir->entryList(QStringList("*_ica.edf"));
 
     matrix dataMat;
     matrix matrixA(19);
@@ -2351,7 +2346,7 @@ void MainWindow::customFunc()
 
     const int numIter = 5;
 
-    dir->cd("/media/Files/Data/Mati/ICAstudy/");
+    def::dir->cd("/media/Files/Data/Mati/ICAstudy/");
 
     QString helpString;
 
@@ -2362,7 +2357,7 @@ void MainWindow::customFunc()
         break;
         for(QString &ext : exts)
         {
-            helpString = dir->absolutePath()
+            helpString = def::dir->absolutePath()
                     + slash() + guy + ext + ".edf";
             setEdfFile(helpString);
             if(!helpString.endsWith("BSA_0.edf")) continue;
@@ -2372,7 +2367,7 @@ void MainWindow::customFunc()
                 ICA();
                 for(QString &typ : leest)
                 {
-                    const QString hlp = dir->absolutePath()
+                    const QString hlp = def::dir->absolutePath()
                             + slash() + "Help"
                             + slash() + guy + ext
                             + typ;
@@ -2393,7 +2388,7 @@ void MainWindow::customFunc()
         for(QString &ext : exts)
         {
             cout << endl << guy << ext << endl;
-            helpString = dir->absolutePath()
+            helpString = def::dir->absolutePath()
                     + slash() + guy + ext + ".edf";
 
             if(!helpString.endsWith("BSA_0.edf")) continue;
@@ -2403,7 +2398,7 @@ void MainWindow::customFunc()
 
             for(int i = 0; i < numIter; ++i)
             {
-                const QString hlp = dir->absolutePath()
+                const QString hlp = def::dir->absolutePath()
                         + slash() + "Help"
                         + slash() + guy + ext + "_maps_after_len_"
                         + QString::number(i) + ".txt";
@@ -2471,18 +2466,18 @@ void MainWindow::customFunc()
 
 #if 0
     // concat all mati sessions
-    dir->cd("/media/Files/Data/Mati");
-    QStringList dirLst = dir->entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
+    def::dir->cd("/media/Files/Data/Mati");
+    QStringList dirLst = def::dir->entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
     for(QString & guy : dirLst)
     {
-        dir->cd(guy);
-        dir->cd("auxEdfs");
+        def::dir->cd(guy);
+        def::dir->cd("auxEdfs");
 
-        QString helpString = dir->absolutePath() + slash() + guy + "_0.edf";
+        QString helpString = def::dir->absolutePath() + slash() + guy + "_0.edf";
         if(!QFile::exists(helpString))
         {
-            dir->cdUp();
-            dir->cdUp();
+            def::dir->cdUp();
+            def::dir->cdUp();
             continue;
         }
         edfFile initFile;
@@ -2492,29 +2487,29 @@ void MainWindow::customFunc()
         helpString.replace("_1.edf", "_2.edf");
         initFile.concatFile(helpString);
 
-        dir->cdUp();
-        QString helpString2 = dir->absolutePath() + slash() + guy + "_full.edf";
+        def::dir->cdUp();
+        QString helpString2 = def::dir->absolutePath() + slash() + guy + "_full.edf";
         initFile.writeEdfFile(helpString2);
-        dir->cdUp();
+        def::dir->cdUp();
     }
     exit(0);
 #endif
 
-#if 0
+#if 1
     // drop some channels, test classification
-    QString currGuy = "SIV";
+    QString currGuy = "ADA";
     QString helpString;
-    dir->cd("/media/Files/Data/Mati/ICAstudy/");
-    helpString = "/media/Files/Data/Mati/ICAstudy/" + currGuy + "_full_ica.edf";
+    def::dir->cd("/media/Files/Data/Mati/ICAstudy/");
+    helpString = "/media/Files/Data/Mati/ICAstudy/" + currGuy + "_full.edf";
     globalEdf.readEdfFile(helpString);
     QList <int> chanList;
-//    chanList << 0;
+    chanList << 0;
     chanList << 1;
     chanList << 2;
     chanList << 3;
     chanList << 4;
     chanList << 5;
-//    chanList << 6;
+    chanList << 6;
     chanList << 7;
     chanList << 8;
     chanList << 9;
@@ -2523,8 +2518,8 @@ void MainWindow::customFunc()
     chanList << 12;
     chanList << 13;
     chanList << 14;
-//    chanList << 15;
-//    chanList << 16;
+    chanList << 15;
+    chanList << 16;
     chanList << 17;
     chanList << 18;
     chanList << 19;
@@ -2533,16 +2528,20 @@ void MainWindow::customFunc()
     helpString = "/media/Files/Data/Mati/ICAstudy/" + currGuy + "_new_ica.edf";
     globalEdf.writeEdfFile(helpString);
     makeCfgStatic("/media/Files/Data/Mati/ICAstudy/",
-                  (chanList.length() - 1) * 247,
+                  (globalEdf.getNs() - 1) * def::spLength,
                   "new");
 
     ofstream outStr;
+
+
+//    cout << "before innerClass" << endl;
 
     helpString = currGuy + "_new_ica.edf";
     fileInnerClassification("/media/Files/Data/Mati/ICAstudy",
                             helpString,
                             "new",
                             50);
+
     outStr.open("/media/Files/Data/Mati/ICAstudy/results.txt", ios_base::app);
     outStr << "\t" << currGuy << "_new_ica, " << chanList.length()-1 << " channnels" << endl;
     outStr.close();
@@ -2551,11 +2550,11 @@ void MainWindow::customFunc()
 
 #if 0
     // process ICAs - draw maps & classify
-    dir->cd("/media/Files/Data/Mati/ICAstudy");
-    QStringList dirLst = dir->entryList(QStringList("*_full_ica_after.edf"), QDir::Files);
+    def::dir->cd("/media/Files/Data/Mati/ICAstudy");
+    QStringList dirLst = def::dir->entryList(QStringList("*_full_ica_after.edf"), QDir::Files);
     for(QString & guy : dirLst)
     {
-        QString helpString = dir->absolutePath() + slash() + guy;
+        QString helpString = def::dir->absolutePath() + slash() + guy;
         setEdfFile(helpString);
 
         helpString = guy;
@@ -2568,16 +2567,16 @@ void MainWindow::customFunc()
 
 
 #if 0
-            drawMapsOnSpectra(dir->absolutePath()
+            drawMapsOnSpectra(def::dir->absolutePath()
                               + slash() + "Help"
-                              + slash() + ExpName.left(3)
+                              + slash() + ExpName.def::left(3)
                               + "_full_ica_all.jpg",
-                              dir->absolutePath()
+                              def::dir->absolutePath()
                               + slash() + "Help"
-                              + slash() + ExpName.left(3)
+                              + slash() + ExpName.def::left(3)
                               + "_full_ica_wm.jpg",
-                              dir->absolutePath() + slash() + "Help",
-                              ExpName.left(3));
+                              def::dir->absolutePath() + slash() + "Help",
+                              ExpName.def::left(3));
 
 #endif
 
@@ -2589,7 +2588,7 @@ void MainWindow::customFunc()
 
         ofstream outStr;
         outStr.open("/media/Files/Data/Mati/ICAstudy/results.txt", ios_base::app);
-        outStr << "\t" << guy.left(guy.indexOf("_after")) << endl;
+        outStr << "\t" << guy.def::left(guy.indexOf("_after")) << endl;
         outStr.close();
     }
     exit(0);
@@ -2644,15 +2643,15 @@ void MainWindow::customFunc()
 
 #if 0
     {
-        dir->cd("/media/Files/Data/Mati/SDA");
-        QStringList lst = dir->entryList(QStringList("*_a_c_*markers.txt"));
+        def::dir->cd("/media/Files/Data/Mati/SDA");
+        QStringList lst = def::dir->entryList(QStringList("*_a_c_*markers.txt"));
         QString str1, str2;
         for(int i = 0; i < lst.length(); ++i)
         {
-            str1 = dir->absolutePath() + slash() + lst[i];
+            str1 = def::dir->absolutePath() + slash() + lst[i];
             str2 = lst[i];
             str2.replace("_a_c_", "_a_");
-            str2 = dir->absolutePath() + slash() + str2;
+            str2 = def::dir->absolutePath() + slash() + str2;
             cout << str1 << '\n' << str2 << '\n' << areEqualFiles(str1, str2) << endl << endl;
         }
     }
@@ -2702,30 +2701,30 @@ void MainWindow::customFunc()
         return;
 
         QDir * tDir = new QDir();
-        tDir->cd("/media/Files/Data/Mati");
+        tdef::dir->cd("/media/Files/Data/Mati");
         QStringList nameFilters;
         nameFilters << "*.edf" << "*.EDF";
         QString fileName;
         QString helpString;
 
-        QStringList lst = tDir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+        QStringList lst = tdef::dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
         for(int i = 0; i < lst.length(); ++i)
         {
-            tDir->cd(lst[i]);
+            tdef::dir->cd(lst[i]);
 
-            helpString = tDir->absolutePath() + "/" + lst[i] + ".EDF";
+            helpString = tdef::dir->absolutePath() + "/" + lst[i] + ".EDF";
             setEdfFile(helpString);
             rereferenceDataSlot();
 
-            helpString = tDir->absolutePath() + "/" + lst[i] + "_rr.edf";
+            helpString = tdef::dir->absolutePath() + "/" + lst[i] + "_rr.edf";
             setEdfFile(helpString);
             refilterDataSlot();
 
-            helpString = tDir->absolutePath() + "/" + lst[i] + "_rr_f.edf";
+            helpString = tdef::dir->absolutePath() + "/" + lst[i] + "_rr_f.edf";
             setEdfFile(helpString);
             sliceAll();
             drawRealisations();
-            tDir->cdUp();
+            tdef::dir->cdUp();
 
         }
         exit(0);
@@ -2770,21 +2769,21 @@ void MainWindow::customFunc()
     if(0)
     {
         QDir * tDir = new QDir();
-        tDir->cd("/media/Files/Data/Mati");
+        tdef::dir->cd("/media/Files/Data/Mati");
         QStringList nameFilters;
         nameFilters << "*.edf" << "*.EDF";
         QString fileName;
 
-        QStringList lst = tDir->entryList(nameFilters);
+        QStringList lst = tdef::dir->entryList(nameFilters);
         for(int i = 0; i < lst.length(); ++i)
         {
             fileName = lst[i];
             fileName.resize(fileName.indexOf('.'));
             cout << fileName.toStdString() << endl;
 
-            tDir->mkdir(fileName);
-            QFile::copy(tDir->absolutePath() + "/" + lst[i], tDir->absolutePath() + "/" + fileName + "/" + lst[i]);
-//            QFile::remove(tDir->absolutePath() + "/" + lst[i]);
+            tdef::dir->mkdir(fileName);
+            QFile::copy(tdef::dir->absolutePath() + "/" + lst[i], tdef::dir->absolutePath() + "/" + fileName + "/" + lst[i]);
+//            QFile::remove(tdef::dir->absolutePath() + "/" + lst[i]);
         }
         exit(0);
     }
@@ -2802,7 +2801,7 @@ void MainWindow::customFunc()
         ui->sliceWithMarkersCheckBox->setChecked(false);
         ui->reduceChannelsCheckBox->setChecked(false);
         sliceAll();
-        Spectre * sp = new Spectre(dir, ns, ExpName);
+        Spectre * sp = new Spectre();
         sp->countSpectra();
         sp->compare();
         sp->compare();
@@ -2992,7 +2991,7 @@ void MainWindow::customFunc()
     //RCP
     if(0)
     {
-        dir->cd(def::dataFolder + "/AA");
+        def::dir->cd(def::dataFolder + "/AA");
 
 
         FILE * results = fopen(QString(def::dataFolder + "/AA/res.txt").toStdString().c_str(), "r");
@@ -3005,7 +3004,7 @@ void MainWindow::customFunc()
         outStream << "sigma" << endl;
 
         QString helpString;
-        QStringList lst = dir->entryList(QStringList("*randIca.txt"), QDir::NoFilter, QDir::Name);
+        QStringList lst = def::dir->entryList(QStringList("*randIca.txt"), QDir::NoFilter, QDir::Name);
         int num1 = lst.length()*2;
         double * sigm = new double [num1];
         double * men = new double [num1];
@@ -3013,9 +3012,9 @@ void MainWindow::customFunc()
         double * drawVars = new double [num1];
         for(int i = 0; i < lst.length(); ++i)
         {
-            helpString = dir->absolutePath() + slash() + lst[i];
+            helpString = def::dir->absolutePath() + slash() + lst[i];
             helpString.replace(".txt", ".png");
-            countRCP(QString(dir->absolutePath() + slash() + lst[i]), helpString, &men[i], &sigm[i]);
+            countRCP(QString(def::dir->absolutePath() + slash() + lst[i]), helpString, &men[i], &sigm[i]);
 
             outStream << lst[i].toStdString() << "\t" << doubleRound(men[i], 2) << "\t" << doubleRound(sigm[i], 2) << endl;
 
@@ -3041,13 +3040,13 @@ void MainWindow::customFunc()
     if(0)
     {
         //many edf to my format
-        dir->cd(def::dataFolder + "/GPP/edf/1");
+        def::dir->cd(def::dataFolder + "/GPP/edf/1");
         QString pth = "/media/michael/Files/Data/GPP/Realisations";
-        QStringList lst = dir->entryList(QStringList("*.edf"), QDir::Files);
+        QStringList lst = def::dir->entryList(QStringList("*.edf"), QDir::Files);
         QString helpString;
         for(int i = 0; i < lst.length(); ++i)
         {
-            helpString = dir->absolutePath() + slash() + lst[i];
+            helpString = def::dir->absolutePath() + slash() + lst[i];
             setEdfFile(helpString);
             readData();
             helpString = lst[i];
@@ -3068,11 +3067,11 @@ void MainWindow::customFunc()
         }
 
 
-        dir->cd(def::dataFolder + "/GPP/edf/2");
-        lst = dir->entryList(QStringList("*.edf"), QDir::Files);
+        def::dir->cd(def::dataFolder + "/GPP/edf/2");
+        lst = def::dir->entryList(QStringList("*.edf"), QDir::Files);
         for(int i = 0; i < lst.length(); ++i)
         {
-            helpString = dir->absolutePath() + slash() + lst[i];
+            helpString = def::dir->absolutePath() + slash() + lst[i];
             setEdfFile(helpString);
             readData();
             helpString = lst[i];
@@ -3111,12 +3110,12 @@ void MainWindow::customFunc()
     //    helpString2 = "/media/Files/Data/AB/AAX_2_ica.edf";/
     //    ICsSequence(helpString, helpString, map1, map1);
 
-    //    dir->cd("/media/Files/Data/AB/");
-    //    QStringList lst11 = dir->entryList(QStringList("*_sum_ica.edf"));
+    //    def::dir->cd("/media/Files/Data/AB/");
+    //    QStringList lst11 = def::dir->entryList(QStringList("*_sum_ica.edf"));
     //    for(int i = 0; i < lst11.length(); ++i)
     //    {
-    //        helpString = "/media/Files/Data/AB/" + lst11[i].left(3) + "_sum_ica.edf";
-    //        helpString2 = "/media/Files/Data/AB/Help/" + lst11[i].left(3) + "_sum_maps.txt";
+    //        helpString = "/media/Files/Data/AB/" + lst11[i].def::left(3) + "_sum_ica.edf";
+    //        helpString2 = "/media/Files/Data/AB/Help/" + lst11[i].def::left(3) + "_sum_maps.txt";
     //        ICsSequence(helpString, helpString, helpString2, helpString2);
 
     //    }
@@ -3136,7 +3135,7 @@ void MainWindow::customFunc()
     if(0)
     {
         setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
-        Net * ann = new Net(dir, ns, left, right, spStep, ExpName);
+        Net * ann = new Net();
         ann->setAutoProcessingFlag(1);
         for(int i = 0; i < 50; ++i)
         {
@@ -3150,7 +3149,7 @@ void MainWindow::customFunc()
     //mahalanobis LDA test
     if(0)
     {
-        dir->cd("/media/Files/Data/AB/SpectraSmooth/PCA");
+        def::dir->cd("/media/Files/Data/AB/SpectraSmooth/PCA");
         QString pcaPath = "/media/Files/Data/AB/SpectraSmooth/PCA";
         QStringList lst;
         QString helpString;
@@ -3160,10 +3159,10 @@ void MainWindow::customFunc()
         vars << "*_241" << "*_247" << "*_254";
         //    vars << "*_254" << "*_241";
 
-        for(spLength = 45; spLength < 50; spLength += 5)
+        for(def::spLength = 45; def::spLength < 50; def::spLength += 5)
         {
             ns = 1;
-            int dim = spLength * ns;
+            int dim = def::spLength * ns;
 
             double ** matrix;
             matrixCreate(&matrix, 200, dim+2); //matrix data, bias, type
@@ -3186,8 +3185,8 @@ void MainWindow::customFunc()
             for(int h = 0; h < vars.length(); ++h)
             {
                 //count covMatrices and meanVectors
-                lst = dir->entryList(QStringList(vars[h]), QDir::Files, QDir::Name);
-                makeMatrixFromFiles(pcaPath, lst, ns, spLength, 1., &matrix);
+                lst = def::dir->entryList(QStringList(vars[h]), QDir::Files, QDir::Name);
+                makeMatrixFromFiles(pcaPath, lst, ns, def::spLength, 1., &matrix);
                 matrixMahCount(matrix, lst.length(), dim, &(covMatrix[h]), &(meanVect[h]));
             }
 
@@ -3213,7 +3212,7 @@ void MainWindow::customFunc()
 
             for(int k = 0; k < vars.length(); ++k)
             {
-                lst = dir->entryList(QStringList(vars[k]), QDir::Files, QDir::Name);
+                lst = def::dir->entryList(QStringList(vars[k]), QDir::Files, QDir::Name);
                 for(int i = 0; i < lst.length(); ++i)
                 {
                     helpString = pcaPath + slash() + lst[i];
@@ -3251,8 +3250,8 @@ void MainWindow::customFunc()
             delete []currentVect;
 
 
-            lst = dir->entryList(vars, QDir::Files);
-            cout << "spL = " << spLength << "\tpercentage = " << errors * 100. / lst.length() << " %" << endl;
+            lst = def::dir->entryList(vars, QDir::Files);
+            cout << "spL = " << def::spLength << "\tpercentage = " << errors * 100. / lst.length() << " %" << endl;
         }
         exit(0);
 
@@ -3383,11 +3382,11 @@ void MainWindow::customFunc()
     {
         QString helpString;
         QString helpString2;
-        dir->cd("/media/Files/Data/AB/Help");
+        def::dir->cd("/media/Files/Data/AB/Help");
 
-        //        dir->cd("/media/Files/Data/AB");
-        QStringList list0 = dir->entryList(QStringList("???_1_maps.txt"), QDir::NoFilter, QDir::Name);
-        //        QStringList list0 = dir->entryList(QStringList("???_1_ica.edf"), QDir::NoFilter, QDir::Name);
+        //        def::dir->cd("/media/Files/Data/AB");
+        QStringList list0 = def::dir->entryList(QStringList("???_1_maps.txt"), QDir::NoFilter, QDir::Name);
+        //        QStringList list0 = def::dir->entryList(QStringList("???_1_ica.edf"), QDir::NoFilter, QDir::Name);
         ui->cleanRealsSpectraCheckBox->setChecked(true);
         ui->cleanRealisationsCheckBox->setChecked(true);
         for(int i = 0; i < list0.length(); ++i)
@@ -3395,14 +3394,14 @@ void MainWindow::customFunc()
             //draw separate maps only
             if(1)
             {
-                helpString = dir->absolutePath() + slash() + list0[i];
-                drawMapsICA(helpString, 19, dir->absolutePath(), QString(list0[i].left(3) + "-m"));
+                helpString = def::dir->absolutePath() + slash() + list0[i];
+                drawMapsICA(helpString, 19, def::dir->absolutePath(), QString(list0[i].def::left(3) + "-m"));
             }
 
             //draw average spectra
             if(0)
             {
-                helpString = dir->absolutePath() + slash() + list0[i];
+                helpString = def::dir->absolutePath() + slash() + list0[i];
                 setEdfFile(helpString);
                 cleanDirs();
                 sliceAll();
@@ -3411,10 +3410,10 @@ void MainWindow::customFunc()
             //draw maps on average spectra
             if(0)
             {
-                helpString = dir->absolutePath() + slash() + list0[i];
-                helpString = dir->absolutePath() + slash() + list0[i].left(3) + "_1_ica_all.png";
-                helpString2 = dir->absolutePath() + slash() + list0[i].left(3) + "_1_ica_all_withmaps.png";
-                drawMapsOnSpectra(helpString, helpString2, dir->absolutePath(), QString(list0[i].left(3) + "-m"));
+                helpString = def::dir->absolutePath() + slash() + list0[i];
+                helpString = def::dir->absolutePath() + slash() + list0[i].def::left(3) + "_1_ica_all.png";
+                helpString2 = def::dir->absolutePath() + slash() + list0[i].def::left(3) + "_1_ica_all_withmaps.png";
+                drawMapsOnSpectra(helpString, helpString2, def::dir->absolutePath(), QString(list0[i].def::left(3) + "-m"));
             }
         }
         exit(0);
@@ -3427,23 +3426,23 @@ void MainWindow::customFunc()
         QString helpString;
         QString helpString2;
 
-        dir->cd("/media/Files/Data/AB");
+        def::dir->cd("/media/Files/Data/AB");
         ui->sliceWithMarkersCheckBox->setChecked(true);
         ui->splitZerosCheckBox->setChecked(true);
         nameFilters.clear();
         nameFilters << "???_1.edf" << "???_2.edf" << "???_sum.edf";
 
 
-        QStringList lst11 = dir->entryList(nameFilters);
+        QStringList lst11 = def::dir->entryList(nameFilters);
         for(int i = 0; i < lst11.length(); ++i)
         {
             cout << endl << lst11[i].toStdString() << "\tstart" << endl;
-            helpString = dir->absolutePath() + slash() + lst11[i];
+            helpString = def::dir->absolutePath() + slash() + lst11[i];
             setEdfFile(helpString);
             cleanDirs();
             sliceAll();
             constructEDFSlot();
-            helpString = dir->absolutePath() + slash() + lst11[i];
+            helpString = def::dir->absolutePath() + slash() + lst11[i];
             helpString2 = helpString;
             helpString2.replace(".edf", "_new.edf");
             QFile::remove(helpString);
@@ -3456,15 +3455,15 @@ void MainWindow::customFunc()
     //count Ica for all files
     if(0)
     {
-        dir->cd("/media/Files/Data/AB");
-        QStringList list11 = dir->entryList(QStringList("???_1.edf"));
+        def::dir->cd("/media/Files/Data/AB");
+        QStringList list11 = def::dir->entryList(QStringList("???_1.edf"));
         QStringList list22;
         for(int i = 0; i < list11.length(); ++i)
         {
-            countICAs(dir->absolutePath(), list11[i], 1, 1, 0, 1);
+            countICAs(def::dir->absolutePath(), list11[i], 1, 1, 0, 1);
         }
-        list11 = dir->entryList(QStringList("???_1_ica.edf"));
-        list22 = dir->entryList(QStringList("???_2_ica.edf"));
+        list11 = def::dir->entryList(QStringList("???_1_ica.edf"));
+        list22 = def::dir->entryList(QStringList("???_2_ica.edf"));
         if(list11.length() != list22.length())
         {
             cout << "not equal lists" << endl;
@@ -3477,13 +3476,13 @@ void MainWindow::customFunc()
     //check memory leakage
     if(0)
     {
-        dir->cd("/media/Files/Data/AB");
-        QString helpString = dir->absolutePath() + "/AAX_sum.edf";
+        def::dir->cd("/media/Files/Data/AB");
+        QString helpString = def::dir->absolutePath() + "/AAX_sum.edf";
         setEdfFile(helpString);
         sliceAll();
         readData();
         Net * ANN;
-        ANN = new Net(dir, ns, left, right, spStep, ExpName);
+        ANN = new Net();
         for(int i = 0; i < 100000; ++i)
         {
             countSpectraSimple(4096);
@@ -3495,24 +3494,24 @@ void MainWindow::customFunc()
     {
         QString fileName1 = "AAX_1_ica_by1.edf";
         QString fileName2 = "AAX_2_ica_by1.edf";
-        dir->cd("/media/Files/Data/AB");
+        def::dir->cd("/media/Files/Data/AB");
         QString helpString;
-        makeCfgStatic(dir->absolutePath(), 3*247, "Reduced");
+        makeCfgStatic(def::dir->absolutePath(), 3*247, "Reduced");
         //drop some channels
         helpString = "3 7 16 20";
         ui->reduceChannelsLineEdit->setText(helpString);
 
         //exclude channels from 1st file
-        helpString = dir->absolutePath() + slash() + fileName1;
+        helpString = def::dir->absolutePath() + slash() + fileName1;
         setEdfFile(helpString);
-        helpString = dir->absolutePath() + slash() + fileName1;
+        helpString = def::dir->absolutePath() + slash() + fileName1;
         helpString.replace(".edf", "_rdc.edf");
         reduceChannelsEDF(helpString);
 
         //exclude channels from 2nd file
-        helpString = dir->absolutePath() + slash() + fileName2;
+        helpString = def::dir->absolutePath() + slash() + fileName2;
         setEdfFile(helpString);
-        helpString = dir->absolutePath() + slash() + fileName2;
+        helpString = def::dir->absolutePath() + slash() + fileName2;
         helpString.replace(".edf", "_rdc.edf");
         reduceChannelsEDF(helpString);
 
@@ -3527,7 +3526,7 @@ void MainWindow::customFunc()
         double tempAccuracy;
         for(int i = 0; i < 100; ++i)
         {
-            tempAccuracy = filesCrossClassification(dir->absolutePath(), helpString, helpString2, "Reduced", 50, 0.15); //0.5 generality
+            tempAccuracy = filesCrossClassification(def::dir->absolutePath(), helpString, helpString2, "Reduced", 50, 0.15); //0.5 generality
             outStream << doubleRound(tempAccuracy, 2) << endl;
         }
         outStream.close();
@@ -3538,9 +3537,9 @@ void MainWindow::customFunc()
     {
         QTime myTime;
         myTime.start();
-        dir->cd("/media/Files/Data/AB");
-        cleanDir(dir->absolutePath(), "markers", 0);
-        QStringList list1 = dir->entryList(QStringList("???_1.edf"));
+        def::dir->cd("/media/Files/Data/AB");
+        cleanDir(def::dir->absolutePath(), "markers", 0);
+        QStringList list1 = def::dir->entryList(QStringList("???_1.edf"));
         QString helpString;
         double res;
         ofstream outStream;
@@ -3548,64 +3547,64 @@ void MainWindow::customFunc()
         //cross classifications
         if(0)
         {
-            helpString = dir->absolutePath() + "/classLog.txt";
+            helpString = def::dir->absolutePath() + "/classLog.txt";
             outStream.open(helpString.toStdString().c_str(), ios_base::app);
             for(int i = 0; i < list1.length(); ++i)
             {
                 myTime.restart();
-                cout << list1[i].left(3).toStdString() << " start" << endl;
+                cout << list1[i].def::left(3).toStdString() << " start" << endl;
                 helpString = list1[i];
                 helpString.replace("_1", "_2");
-                res = filesCrossClassification(dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 01000, 125);
-                outStream << list1[i].left(3).toStdString() << " cross\t" << res << endl;
-                res = filesCrossClassification(dir->absolutePath(), list1[i], helpString, "4sec19ch", 50, 3, true, 1000, 125);
-                outStream << list1[i].left(3).toStdString() << " wnd cross\t" << res << endl;
+                res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 01000, 125);
+                outStream << list1[i].def::left(3).toStdString() << " cross\t" << res << endl;
+                res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "4sec19ch", 50, 3, true, 1000, 125);
+                outStream << list1[i].def::left(3).toStdString() << " wnd cross\t" << res << endl;
 
                 helpString = list1[i];
                 helpString.replace("_1", "_sum");
-                res = fileInnerClassification(dir->absolutePath(), helpString, "16sec19ch", 50, false, 1000, 125);
-                outStream << list1[i].left(3).toStdString() << " inner\t" << res << endl << endl;
-                res = fileInnerClassification(dir->absolutePath(), helpString, "4sec19ch", 50, true, 1000, 125);
-                outStream << list1[i].left(3).toStdString() << " wnd inner\t" << res << endl << endl;
-                cout << list1[i].left(3).toStdString() << " finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                res = fileInnerClassification(def::dir->absolutePath(), helpString, "16sec19ch", 50, false, 1000, 125);
+                outStream << list1[i].def::left(3).toStdString() << " inner\t" << res << endl << endl;
+                res = fileInnerClassification(def::dir->absolutePath(), helpString, "4sec19ch", 50, true, 1000, 125);
+                outStream << list1[i].def::left(3).toStdString() << " wnd inner\t" << res << endl << endl;
+                cout << list1[i].def::left(3).toStdString() << " finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
             }
             outStream.close();
-            list1 = dir->entryList(QStringList("???_1_ica_by1.edf"));
-            helpString = dir->absolutePath() + "/classLog.txt";
+            list1 = def::dir->entryList(QStringList("???_1_ica_by1.edf"));
+            helpString = def::dir->absolutePath() + "/classLog.txt";
             outStream.open(helpString.toStdString().c_str(), ios_base::app);
             for(int i = 0; i < list1.length(); ++i)
             {
                 myTime.restart();
-                cout << list1[i].left(3).toStdString() << " start" << endl;
+                cout << list1[i].def::left(3).toStdString() << " start" << endl;
                 helpString = list1[i];
                 helpString.replace("_1", "_2");
-                res = filesCrossClassification(dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 01000, 125);
-                outStream << list1[i].left(3).toStdString() << " ica cross\t" << res << endl;
-                res = filesCrossClassification(dir->absolutePath(), list1[i], helpString, "4sec19ch", 50, 3, true, 1000, 125);
-                outStream << list1[i].left(3).toStdString() << " ica wnd cross\t" << res << endl;
+                res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 01000, 125);
+                outStream << list1[i].def::left(3).toStdString() << " ica cross\t" << res << endl;
+                res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "4sec19ch", 50, 3, true, 1000, 125);
+                outStream << list1[i].def::left(3).toStdString() << " ica wnd cross\t" << res << endl;
 
                 helpString = list1[i];
                 helpString.replace("_1_ica_by1", "_sum_ica");
-                res = fileInnerClassification(dir->absolutePath(), helpString, "16sec19ch", 50, false, 1000, 125);
-                outStream << list1[i].left(3).toStdString() << " ica inner\t" << res << endl;
-                res = fileInnerClassification(dir->absolutePath(), helpString, "4sec19ch", 50, true, 1000, 125);
-                outStream << list1[i].left(3).toStdString() << " ica wnd inner\t" << res << endl;
-                cout << list1[i].left(3).toStdString() << " ica finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                res = fileInnerClassification(def::dir->absolutePath(), helpString, "16sec19ch", 50, false, 1000, 125);
+                outStream << list1[i].def::left(3).toStdString() << " ica inner\t" << res << endl;
+                res = fileInnerClassification(def::dir->absolutePath(), helpString, "4sec19ch", 50, true, 1000, 125);
+                outStream << list1[i].def::left(3).toStdString() << " ica wnd inner\t" << res << endl;
+                cout << list1[i].def::left(3).toStdString() << " ica finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
             }
             outStream.close();
         }
-        list1 = dir->entryList(QStringList("???_1_ica_by1.edf"));
+        list1 = def::dir->entryList(QStringList("???_1_ica_by1.edf"));
         //best 3 components
         if(1)
         {
             for(int i = 0; i < list1.length(); ++i)
             {
                 myTime.restart();
-                cout << list1[i].left(3).toStdString() << " addComps start from 3" << endl;
+                cout << list1[i].def::left(3).toStdString() << " addComps start from 3" << endl;
                 helpString = list1[i];
                 helpString.replace("_1", "_2");
-                res = filesAddComponents(dir->absolutePath(), list1[i], helpString, 30, false);
-                cout << list1[i].left(3).toStdString() << " addComps from 3 finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                res = filesAddComponents(def::dir->absolutePath(), list1[i], helpString, 30, false);
+                cout << list1[i].def::left(3).toStdString() << " addComps from 3 finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
             }
         }
 

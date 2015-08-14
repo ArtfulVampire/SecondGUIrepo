@@ -23,7 +23,7 @@ void MainWindow::makeChanList(QList<int> & chanList)
 
 void MainWindow::rereferenceDataSlot()
 {
-    QString helpString = dir->absolutePath() + slash() + ExpName + ".edf"; //ui->filePathLineEdit->text()
+    QString helpString = def::dir->absolutePath() + slash() + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
     helpString.replace(".edf", "_rr.edf");
     rereferenceData(ui->rereferenceDataComboBox->currentText(), helpString);
 }
@@ -44,7 +44,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     readData();
 
     helpString.clear();
-    for(int i = 0; i < ns; ++i)
+    for(int i = 0; i < def::ns; ++i)
     {
         helpString += QString::number(i+1) + " ";
     }
@@ -52,7 +52,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
 
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    if(!QString(label[lst[ns-1].toInt()-1]).contains("Markers"))
+    if(!QString(label[lst[lst.length() - 1].toInt()-1]).contains("Markers"))
     {
         cout << "refilterData: bad reduceChannelsLineEdit - no markers" << endl;
         return;
@@ -60,7 +60,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
 
     int groundChan = -1; //A1-N
     int earsChan = -1; //A1-A2
-    for(int i = 0; i < ns; ++i)
+    for(int i = 0; i < def::ns; ++i)
     {
         if(QString(label[i]).contains("A1-N"))
         {
@@ -81,7 +81,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     helpString.clear();
     if(newRef == "A1")
     {
-        for(int i = 0; i < ns; ++i) //ns -> 21
+        for(int i = 0; i < def::ns; ++i) //ns -> 21
         {
             if(i == groundChan || i == earsChan)
             {
@@ -115,7 +115,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     }
     else if(newRef == "A2")
     {
-        for(int i = 0; i < ns; ++i) //ns -> 21
+        for(int i = 0; i < def::ns; ++i) //ns -> 21
         {
             if(i == groundChan || i == earsChan)
             {
@@ -149,7 +149,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     }
     else if(newRef == "N")
     {
-        for(int i = 0; i < ns; ++i) //ns -> 21
+        for(int i = 0; i < def::ns; ++i) //ns -> 21
         {
             if(i == groundChan || i == earsChan)
             {
@@ -183,7 +183,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     }
     else if(newRef == "Ar")
     {
-        for(int i = 0; i < ns; ++i) //ns -> 21
+        for(int i = 0; i < def::ns; ++i) //ns -> 21
         {
             if(i == groundChan || i == earsChan)
             {
@@ -219,7 +219,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     ui->reduceChannelsLineEdit->setText(helpString);
 
     //change labels
-    for(int i = 0; i < ns; ++i)
+    for(int i = 0; i < def::ns; ++i)
     {
         helpString = QString(label[lst[i].toInt() - 1]);
         if(helpString.contains('-') && (i != groundChan && i != earsChan))
@@ -237,7 +237,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
 
     //set all of channels to the lineedit
     helpString.clear();
-    for(int i = 0; i < ns; ++i)
+    for(int i = 0; i < def::ns; ++i)
     {
         helpString += QString::number(i+1) + " ";
     }
@@ -251,8 +251,8 @@ void MainWindow::refilterDataSlot()
 {
     double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
     double highFreq = ui->highFreqFilterDoubleSpinBox->value();
-    QString helpString = dir->absolutePath()
-            + slash() + ExpName + ".edf"; //ui->filePathLineEdit->text()
+    QString helpString = def::dir->absolutePath()
+            + slash() + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
     helpString.replace(".edf", "_f.edf");
     refilterData(lowFreq, highFreq, helpString);
     int tmp = ui->reduceChannelsComboBox->currentIndex();
@@ -338,7 +338,7 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
 void MainWindow::reduceChannelsEDFSlot()
 {
     QString helpString;
-    helpString = dir->absolutePath() + slash() + ExpName + "_rdcChan.edf";
+    helpString = def::dir->absolutePath() + slash() + def::ExpName + "_rdcChan.edf";
     reduceChannelsEDF(helpString);
 }
 
@@ -371,6 +371,7 @@ void MainWindow::reduceChannelsEDF(QString newFilePath)
 
 void MainWindow::reduceChannelsSlot()
 {
+    /// generally unused function
     QStringList lst;
     QString helpString;
 
@@ -393,15 +394,15 @@ void MainWindow::reduceChannelsSlot()
         num[i] = list[i].toInt();
     }
 
-    dir->cd("Realisations");
-    lst = dir->entryList(QDir::Files, QDir::NoSort);
+    def::dir->cd("Realisations");
+    lst = def::dir->entryList(QDir::Files, QDir::NoSort);
 
-
+    int NumOfSlices;
     for(int i = 0; i < lst.length(); ++i)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath()
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + lst[i]);
-        readPlainData(helpString, dataR, ns, NumOfSlices);
+        readPlainData(helpString, dataR, def::ns, NumOfSlices);
         ////////////////////// kashghasgjdgakjsdgakjsgdkjasgkdagkhscvawdc
         file = fopen(helpString, "w");
         if(file == NULL)
@@ -426,15 +427,15 @@ void MainWindow::reduceChannelsSlot()
 //        delete []dataR[i];
 //    }
 //    delete[]dataR;
-    ns = list.length();
+    def::ns = list.length();
     delete []num;
-    dir->cdUp();
+    def::dir->cdUp();
 
     helpString = "channels reduced ";
     ui->textEdit->append(helpString);
 
     helpString = "ns equals to ";
-    helpString + QString::number(ns);
+    helpString += QString::number(def::ns);
     ui->textEdit->append(helpString);
 }
 
@@ -443,7 +444,7 @@ void MainWindow::reduceChannelsFast()
     QString helpString;
 #if 1
     globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
-    ns = globalEdf.getNs();
+    def::ns = globalEdf.getNs();
 #else
 
     // more general, but needs tons of additional memory
@@ -570,7 +571,7 @@ void MainWindow::reduceChannelsFast()
     helpString = "channels reduced fast ";
     ui->textEdit->append(helpString);
 
-    helpString = "ns equals to " + QString::number(ns);
+    helpString = "ns equals to " + QString::number(def::ns);
     ui->textEdit->append(helpString);
 
     ui->progressBar->setValue(0);
@@ -616,18 +617,18 @@ void MainWindow::constructEDFSlot()
     QStringList filters;
     if(!ui->matiCheckBox->isChecked())
     {
-        helpString = dir->absolutePath() + slash() + ExpName + "_new.edf";
+        helpString = def::dir->absolutePath() + slash() + def::ExpName + "_new.edf";
         constructEDF(helpString);
     }
     else //if(ui->matiCheckBox->isChecked())
     {
         const QString initEDF = ui->filePathLineEdit->text();
-        helpString = dir->absolutePath()
-                + slash() + ExpName.left(3)
+        helpString = def::dir->absolutePath()
+                + slash() + def::ExpName.left(3)
                 + "_splitZerosLog.txt";
         ofstream outStream;
         outStream.open(helpString.toStdString().c_str());
-        outStream << ExpName.left(3).toStdString() << "\t";
+        outStream << def::ExpName.left(3).toStdString() << "\t";
         outStream << "type" << "\t";
         outStream << "sessn" << "\t";
         outStream << "offset" << "\t";
@@ -642,18 +643,18 @@ void MainWindow::constructEDFSlot()
 
                 filters.clear();
                 // filter for realisations
-                helpString = ExpName
+                helpString = def::ExpName
                         + "_" + QString::number(i)
                         + "_" + QString::number(j)
                         + "*";
                 filters << helpString;
 
                 // outPath for session edfs
-                helpString = dir->absolutePath()
+                helpString = def::dir->absolutePath()
 
                         + slash() + "auxEdfs"
 
-                        + slash() + ExpName
+                        + slash() + def::ExpName
                         + "_c"
                         + "_" + QString::number(i)
                         + "_" + QString::number(j)
@@ -665,28 +666,28 @@ void MainWindow::constructEDFSlot()
                 qApp->processEvents();
             }
 
-            dir->cd("auxEdfs");
+            def::dir->cd("auxEdfs");
             // template for session edfs
-            helpString = ExpName
+            helpString = def::ExpName
                     + "_c"
                     + "_" + QString::number(i)
                     + "_*.edf";
-            QStringList lst = dir->entryList(QStringList(helpString));  //filter for edfs
+            QStringList lst = def::dir->entryList(QStringList(helpString));  //filter for edfs
 
             for(int k = 0; k < lst.length(); ++k)
             {
-                lst[k].prepend( dir->absolutePath() + slash() );
+                lst[k].prepend( def::dir->absolutePath() + slash() );
             }
 
-//            dir->cdUp(); // if save concatenated into ExpName dir
+//            def::dir->cdUp(); // if save concatenated into def::ExpName dir
 
             //outPath for concatenated
-            helpString = dir->absolutePath()
-                    + slash() + ExpName.left(3)
+            helpString = def::dir->absolutePath()
+                    + slash() + def::ExpName.left(3)
                     + "_" + QString::number(i)
                     + ".edf";
 
-//            dir->cdUp(); // if save concatenated into auxEdfs
+//            def::dir->cdUp(); // if save concatenated into auxEdfs
 
             concatenateEDFs(lst, helpString);
 
@@ -699,7 +700,7 @@ void MainWindow::constructEDFSlot()
 
     helpString = "constructEdf finished\n";
     helpString += "ns equals to ";
-    helpString += QString::number(ns);
+    helpString += QString::number(def::ns);
     ui->textEdit->append(helpString);
 }
 
@@ -714,8 +715,8 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    ns = lst.length();
-    if(!QString(label[lst[ns-1].toInt()-1]).contains("Markers"))
+    int ns = lst.length();
+    if(!QString(label[lst[lst.length() - 1].toInt() - 1]).contains("Markers"))
     {
         cout << "constructEDF: bad reduceChannelsLineEdit - no markers" << endl;
         return;
@@ -733,16 +734,16 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         return;
     }
 
-    dir->cd("Realisations");
+    def::dir->cd("Realisations");
     if(!nameFilters.isEmpty())
     {
-        lst = dir->entryList(nameFilters, QDir::Files, QDir::Name); //generality
+        lst = def::dir->entryList(nameFilters, QDir::Files, QDir::Name); //generality
     }
     else
     {
-        lst = dir->entryList(QDir::Files, QDir::Name); //generality
+        lst = def::dir->entryList(QDir::Files, QDir::Name); //generality
     }
-    dir->cdUp();
+    def::dir->cdUp();
 
 
 
@@ -767,11 +768,11 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     }
 #endif
 
-
+    int NumOfSlices;
     int currSlice = 0;
     for(int i = 0; i < lst.length(); ++i)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath()
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "Realisations"
                                               + slash() + lst[i]);
         readPlainData(helpString, newData, ns, NumOfSlices, currSlice);
@@ -783,8 +784,8 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     if(ui->matiCheckBox->isChecked()) // bicycle generality
     {
         QString fileName = getFileName(newPath, true);
-        helpString = dir->absolutePath()
-                + slash() + ExpName.left(3)
+        helpString = def::dir->absolutePath()
+                + slash() + def::ExpName.left(3)
                 + "_splitZerosLog.txt";
 
         splitZeros(newData, ns, helpInt, &currSlice, helpString, fileName); // helpString unchanged
@@ -851,6 +852,8 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 //    writeEdf(ui->filePathLineEdit->text(), newData, newPath, currSlice); // old
     globalEdf.writeOtherData(newData, newPath, chanList); // new to check
 
+    def::ns = globalEdf.getNs(); /// should test
+
     cout << "constructEDF: " << getFileName(newPath) << "\ttime = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
@@ -863,7 +866,7 @@ void MainWindow::eyesFast()  //generality
     myTime.start();
 
     QString helpString;
-    helpString = QDir::toNativeSeparators(dir->absolutePath()
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "eyes.txt");
 
     FILE * coef = fopen(helpString, "r");

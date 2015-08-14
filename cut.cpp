@@ -5,29 +5,25 @@
 /*after every function the QDir dir is set to the ExpName directory*/
 
 
-Cut::Cut(QDir * dir_, int ns_) :
+Cut::Cut() :
     ui(new Ui::Cut)
 {
     ui->setupUi(this);
     this->setWindowTitle("Cut-e");
 
-    ui->nsBox->setValue(ns_);
-    ns = ns_;
-
-    dir = new QDir();
-    dir->cd(dir_->absolutePath());
+    ui->nsBox->setValue(def::ns);
 
     autoFlag = false;
 
     redCh = -1;
     blueCh = -1;
 
-    if(ns == 41)
+    if(def::ns == 41)
     {
         redCh = 21;
         blueCh = 22;
     }
-    else if(ns == 22 || ns == 21)
+    else if(def::ns == 22 || def::ns == 21)
     {
         redCh = 19;
         blueCh = 20;
@@ -83,12 +79,12 @@ Cut::Cut(QDir * dir_, int ns_) :
 
 
     QFileDialog *browser = new QFileDialog();
-    browser->setDirectory(dir->absolutePath() + slash() + "Realisations");
+    browser->setDirectory(def::dir->absolutePath() + slash() + "Realisations");
     browser->setViewMode(QFileDialog::Detail);
 
-    dir->cd("Realisations");
-    lst = dir->entryList(QDir::Files);
-    dir->cdUp();
+    def::dir->cd("Realisations");
+    lst = def::dir->entryList(QDir::Files);
+    def::dir->cdUp();
     currentNumber=-1;
 
     QObject::connect(ui->browseButton, SIGNAL(clicked()), browser, SLOT(show()));
@@ -127,7 +123,10 @@ Cut::~Cut()
 
 void Cut::browse()
 {
-    QString helpString = QFileDialog::getOpenFileName((QWidget*)this, tr("Open realisation"), dir->absolutePath() + slash() + "Realisations");
+    QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
+                                                      tr("Open realisation"),
+                                                      def::dir->absolutePath()
+                                                      + slash() + "Realisations");
     if(helpString.isEmpty())
     {
         QMessageBox::information((QWidget*)this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
@@ -226,28 +225,29 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 
 void Cut::cutEyesAll()
 {
+#if 0
     QString helpString;
     // automatization
     if(autoFlag)
     {
         ui->checkBox->setChecked(false);
-        dir->cd("Realisations");
-        helpString = dir->entryList(QDir::Files)[0];
-        dir->cdUp();
-        helpString.prepend(dir->absolutePath() + slash() + "Realisations" + slash());
+        def::dir->cd("Realisations");
+        helpString = def::dir->entryList(QDir::Files)[0];
+        def::dir->cdUp();
+        helpString.prepend(def::dir->absolutePath() + slash() + "Realisations" + slash());
         cout<<helpString.toStdString()<<endl;
         emit openFile(helpString);
     }
 
 
-    dir->cd(ui->dirBox->currentText());  // generality
+    def::dir->cd(ui->dirBox->currentText());  // generality
     nameFilters.clear();
     nameFilters << "*_241*";
     nameFilters << "*_247*";
     nameFilters << "*_254*"; // no need?
 
-    lst = dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
-    dir->cdUp();
+    lst = def::dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
+    def::dir->cdUp();
 
     int NumEog = ui->eogSpinBox->value();
     double * thresholdEog = new double [NumEog];
@@ -258,7 +258,7 @@ void Cut::cutEyesAll()
 //    cout<<"2"<<endl;
 
     double ** eogArray = new double* [NumEog];
-    for(int i=0; i<NumEog; ++i)
+    for(int i = 0; i < NumEog; ++i)
     {
         eogArray[i] = new double [8192*50]; // 50, size generality
     }
@@ -267,14 +267,14 @@ void Cut::cutEyesAll()
 
     for(int k = 0; k < int(lst.length()/4); ++k)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath()
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + ui->dirBox->currentText()
                                               + slash() + lst[rand()%lst.length()]);
         emit openFile(helpString);
 
         for(int j = 0; j < NumOfSlices; ++j)
         {
-            for(int i = ns-NumEog; i < ns; ++i)
+            for(int i = def::ns - NumEog; i < def::ns; ++i)
             {
                 eogArray[i-(ns-NumEog)][currentSlice] = data3[i][j];
             }
@@ -302,29 +302,33 @@ void Cut::cutEyesAll()
 
 //    cout<<"5"<<endl;
     FILE * eyes;
-    helpString=QDir::toNativeSeparators(dir->absolutePath() + slash() + "eyesSlices");
-    eyes = fopen(helpString.toStdString().c_str(), "w");
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "eyesSlices");
+    eyes = fopen(helpString, "w");
 
     int flag;
     int NumOfEogSlices = 0;
-    int num=0;
-    for(int i=0; i<lst.length(); ++i)
+    int num = 0;
+    for(int i = 0; i<lst.length(); ++i)
     {
-        helpString=QDir::toNativeSeparators(dir->absolutePath() + slash() + ui->dirBox->currentText() + slash() + lst[i]);
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                              + slash() + ui->dirBox->currentText()
+                                              + slash() + lst[i]);
 
         emit openFile(helpString);
         num += NumOfSlices;
-        for(int i=0; i<NumOfSlices; ++i)
+        for(int i = 0; i < NumOfSlices; ++i)
         {
             flag = 1;
             for(int j = 0; j < NumEog; ++j)
             {
-                if(fabs(data3[ns - NumEog + j][i]) < ui->eogDoubleSpinBox->value()*thresholdEog[j] && !ui->markersCheckBox->isChecked()) flag = 0; // w/o markers
-                if(fabs(data3[ns-1 - NumEog + j][i]) < ui->eogDoubleSpinBox->value()*thresholdEog[j] && ui->markersCheckBox->isChecked()) flag = 0; // with markers
+                /// uncomment one of them
+//                if(fabs(data3[def::ns - NumEog + j][i]) < ui->eogDoubleSpinBox->value()*thresholdEog[j] && !ui->markersCheckBox->isChecked()) flag = 0; // w/o markers
+//                if(fabs(data3[def::ns - 1 - NumEog + j][i]) < ui->eogDoubleSpinBox->value()*thresholdEog[j] && ui->markersCheckBox->isChecked()) flag = 0; // with markers
             }
-            if(flag==1)
+            if(flag == 1)
             {
-                for(int k=0; k<ns; ++k)
+                for(int k = 0; k < ns; ++k)
                 {
                     fprintf(eyes, "%lf\n", data3[k][i]);
                 }
@@ -334,8 +338,9 @@ void Cut::cutEyesAll()
     }
 
     fclose(eyes);
-
-    QFile *file = new QFile(helpString=QDir::toNativeSeparators(dir->absolutePath() + slash() + "eyesSlices"));
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "eyesSlices");
+    QFile *file = new QFile(helpString);
     file->open(QIODevice::ReadOnly);
     QByteArray contents = file->readAll();
     file->close();
@@ -354,12 +359,11 @@ void Cut::cutEyesAll()
     helpString = "NumOfEyesSlices = " + QString::number(NumOfEogSlices);
 
     // automatization
-    if(!autoFlag) QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
-}
-
-void Cut::setNs(int a)
-{
-    ns = a;
+    if(!autoFlag)
+    {
+        QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
+    }
+#endif
 }
 
 void Cut::createImage(QString dataFileName) //
@@ -367,28 +371,28 @@ void Cut::createImage(QString dataFileName) //
     zoomPrev = 1.;
     zoomCurr = 1.;
     addNum = 1;
-    dir->setPath(dataFileName);
+    def::dir->setPath(dataFileName);
     currentFile = dataFileName;
-    fileName = dir->dirName(); // real file name after last separator
+    fileName = def::dir->dirName(); // real file name after last separator
 
     leftLimit = 0;
     Eyes = 0;
 
-    dir->cdUp(); // drop the file name
-    lst = dir->entryList(QDir::Files);
-    dir->cdUp(); // go into ExpName dir
+    def::dir->cdUp(); // drop the file name
+    lst = def::dir->entryList(QDir::Files);
+    def::dir->cdUp(); // go into ExpName dir
 
 
-    readPlainData(currentFile, data3, ns, NumOfSlices);
+    readPlainData(currentFile, data3, def::ns, NumOfSlices);
 
     currentNumber = lst.indexOf(fileName);
-    currentPicPath = getPicPath(dataFileName, dir, ns);
+    currentPicPath = getPicPath(dataFileName, def::dir, def::ns);
 
     if(ui->checkBox->isChecked())
     {
         QPainter * painter = new QPainter();
         currentPic = drawEeg(data3,
-                             ns,
+                             def::ns,
                              NumOfSlices,
                              def::freq,
                              currentPicPath,
@@ -465,9 +469,9 @@ void Cut::next()
 {
 //    rewrite();
     QString helpString;
-    if(currentNumber+1 < lst.length())  // generality
+    if(currentNumber + 1 < lst.length())  // generality
     {
-        helpString = dir->absolutePath() + slash();
+        helpString = def::dir->absolutePath() + slash();
         if(currentFile.contains("Realisations"))
         {
              helpString += "Realisations";
@@ -497,9 +501,9 @@ void Cut::prev()
 {
 //    rewrite();
     QString helpString;
-    if(currentNumber-1 >= 0)
+    if(currentNumber - 1 >= 0)
     {
-        helpString = dir->absolutePath() + slash();
+        helpString = def::dir->absolutePath() + slash();
         if(currentFile.contains("Realisations"))
         {
              helpString += "Realisations";
@@ -552,11 +556,11 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     int newLeftLimit = leftLimit;
     int newRightLimit = rightLimit;
 
-    while (!matiCountBit(data3[ns - 1][newLeftLimit], 14) && newLeftLimit > 0)
+    while (!matiCountBit(data3[def::ns - 1][newLeftLimit], 14) && newLeftLimit > 0)
     {
         --newLeftLimit;
     }
-    while (!matiCountBit(data3[ns - 1][newRightLimit], 14) && newRightLimit < NumOfSlices)
+    while (!matiCountBit(data3[def::ns - 1][newRightLimit], 14) && newRightLimit < NumOfSlices)
     {
         ++newRightLimit; // maximum of NumOfSlices
     }
@@ -576,7 +580,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 
 
     // adjust limits if slice by N seconds
-    if(newLeftLimit > 0 || matiCountBit(data3[ns - 1][0], 14))
+    if(newLeftLimit > 0 || matiCountBit(data3[def::ns - 1][0], 14))
     {
         ++newLeftLimit; // after the previous marker
     }
@@ -588,14 +592,14 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 //            cout << "zero prev file" << endl;
             prev();
             leftLimit = rightLimit;
-            while (!matiCountBit(data3[ns - 1][leftLimit], 14)) // there ARE count answers
+            while (!matiCountBit(data3[def::ns - 1][leftLimit], 14)) // there ARE count answers
             {
                 --leftLimit;
             }
             ++leftLimit;
             cout << "prev file leftLimit = " << leftLimit << endl;
             // zero() from tempLimit to rightLimit
-            zeroData(data3, ns, leftLimit, rightLimit);
+            zeroData(data3, def::ns, leftLimit, rightLimit);
             rewrite();
             next();
         }
@@ -606,7 +610,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     {
         ++newRightLimit; // after the previous marker
     }
-    else if (matiCountBit(data3[ns - 1][NumOfSlices - 1], 14))
+    else if (matiCountBit(data3[def::ns - 1][NumOfSlices - 1], 14))
     {
         //do nothing
     }
@@ -621,14 +625,14 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
                 && lst[tempNum + 2].toInt() == pieceNum + 1) // if next piece is ok
         {
             rightLimit = leftLimit;
-            while (!matiCountBit(data3[ns - 1][rightLimit], 14)) // there ARE count answers
+            while (!matiCountBit(data3[def::ns - 1][rightLimit], 14)) // there ARE count answers
             {
                 ++rightLimit;
             }
             ++rightLimit;
             cout << "next file rightLimit = " << rightLimit << endl;
 
-            zeroData(data3, ns, leftLimit, rightLimit);
+            zeroData(data3, def::ns, leftLimit, rightLimit);
             rewrite();
         }
         prev();
@@ -655,15 +659,15 @@ void Cut::zero()
 //        matiAdjustLimits();
     }
 
-    zeroData(data3, ns, leftLimit, rightLimit); ///////// should TEST !!!!!!!1111
+    zeroData(data3, def::ns, leftLimit, rightLimit); ///////// should TEST !!!!!!!1111
     paint();
 }
 
 void Cut::cut()
 {
     QString helpString;
-    dir->cd("windows");
-    helpString = QDir::toNativeSeparators(dir->absolutePath()
+    def::dir->cd("windows");
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + fileName
                                           + "." + QString::number(addNum));
     ++addNum;
@@ -682,12 +686,13 @@ void Cut::cut()
     }
     fclose(file);
     */
-    dir->cdUp();
+    def::dir->cdUp();
     rightLimit = NumOfSlices;
     leftLimit = 0;
     paint();
 }
 
+/// DANGER markers
 void Cut::splitCut()
 {
     int & leftEdge = leftLimit;
@@ -695,9 +700,9 @@ void Cut::splitCut()
 
     for(int i = leftEdge; i < NumOfSlices - (rightEdge - leftEdge); ++i)         // zoom
     {
-        for(int k = 0; k < ns; ++k)
+        for(int k = 0; k < def::ns; ++k)
         {
-            if(k == ns-1 && def::withMarkersFlag && (i==0)) // first marker value
+            if(k == def::ns - 1 && def::withMarkersFlag && (i==0)) // first marker value
             {
                 continue;
             }
@@ -712,17 +717,17 @@ void Cut::splitCut()
 void Cut::save()
 {
     QString helpString;
-    dir->setPath(currentFile);  // .../expName/Realisations/fileName;
-    fileName = dir->dirName();    // real fileName
-    dir->cdUp();
-    dir->cdUp();
+    def::dir->setPath(currentFile);  // .../expName/Realisations/fileName;
+    fileName = def::dir->dirName();    // real fileName
+    def::dir->cdUp();
+    def::dir->cdUp();
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath()
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "cut"
                                           + slash() + fileName);
 
     // new
-    writePlainData(helpString, data3, NumOfSlices, ns);
+    writePlainData(helpString, data3, NumOfSlices, def::ns);
     // old
     /*
     file = fopen(helpString.toStdString().c_str(), "w");
@@ -738,14 +743,14 @@ void Cut::save()
     */
 
     fileName.replace('.', '_');
-    helpString=QDir::toNativeSeparators(dir->absolutePath()
+    helpString=QDir::toNativeSeparators(def::dir->absolutePath()
                                         + slash() + "SignalsCut"
                                         + slash());
-    if(ns==19)
+    if(def::ns == 19)
     {
          helpString += "after";
     }
-    else if(ns==21)
+    else if(def::ns == 21)
     {
         helpString += "before";
     }
@@ -765,19 +770,19 @@ void Cut::rewrite()
 {
     writePlainData(currentFile,
                    data3,
-                   ns,
+                   def::ns,
                    NumOfSlices);
-    currentPicPath = getPicPath(currentFile, dir, ns);
+    currentPicPath = getPicPath(currentFile, def::dir, def::ns);
     currentPic.save(currentPicPath, 0, 100);
 }
 
 void Cut::paint() // save to tmp.jpg and display
 {
     QString helpString;
-    helpString = dir->absolutePath() + slash() + "tmp.jpg";
+    helpString = def::dir->absolutePath() + slash() + "tmp.jpg";
 
     currentPic = drawEeg(data3,
-                         ns,
+                         def::ns,
                          NumOfSlices,
                          def::freq,
                          helpString,
@@ -788,7 +793,8 @@ void Cut::paint() // save to tmp.jpg and display
 //    helpString = getPicPath(currentFile, dir, ns);
 //    currentPic.load(helpString);
 
-    ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->scrollArea->height() - 20)); // -20 generality
+    ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(),
+                                              ui->scrollArea->height() - 20)); // -20 generality
 
     rightLimit = NumOfSlices;
     leftLimit = 0;

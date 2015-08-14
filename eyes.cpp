@@ -1,27 +1,25 @@
 #include "eyes.h"
 #include "ui_eyes.h"
 
-Eyes::Eyes(QDir *dir_, int ns_) :
+Eyes::Eyes() :
     ui(new Ui::Eyes)
 {
     ui->setupUi(this);
-    ns = ns_;
-    dir = new QDir();
+
     dirBC = new QDir();
 
 
 
     ui->progressBar->setValue(0);
 
-    dir->cd(QDir::toNativeSeparators(dir_->absolutePath()));
-    dirBC->cd(QDir::toNativeSeparators(dir_->absolutePath()));
-    ui->lineEdit_3->setText(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()));
+    dirBC->cd(def::dir->absolutePath());
+    ui->lineEdit_3->setText(QDir::toNativeSeparators(def::dir->absolutePath() + slash()));
 
 
     ui->spinBox->setValue(19);  //for encephalan
     ui->lineEdit_2->setText("20 21");
 
-    if(ns == 41) //generality mati + amod
+    if(def::ns == 41) //generality mati + amod
     {
         ui->spinBox->setValue(21);
         ui->lineEdit_2->setText("22 23");
@@ -40,7 +38,8 @@ Eyes::Eyes(QDir *dir_, int ns_) :
 void Eyes::setDir(QAbstractButton* but)
 {
 //    cout << but->text().toStdString() << endl;
-    ui->lineEdit_3->setText(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append(but->text()));
+    ui->lineEdit_3->setText(QDir::toNativeSeparators(def::dir->absolutePath()
+                                                      + slash() + but->text()));
 }
 
 void Eyes::setAutoProcessingFlag(bool a)
@@ -51,7 +50,8 @@ void Eyes::setAutoProcessingFlag(bool a)
 void Eyes::eyesClean()
 {
 
-    QString helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + "eyes.txt");
+    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                                  + slash() + "eyes.txt");
     FILE * coef = fopen(helpString, "r");
     if(coef == NULL)
     {
@@ -59,12 +59,12 @@ void Eyes::eyesClean()
         return;
     }
 
-    dir->cd(ui->lineEdit_3->text()); //or you can write in manually
-    QStringList list = dir->entryList(QDir::Files); // files in the directory
+    def::dir->cd(ui->lineEdit_3->text()); //or you can write in manually
+    QStringList list = def::dir->entryList(QDir::Files); // files in the directory
     int NumEog, NumEeg;
     int NumOfSlices = 0;
 
-    lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    QStringList lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
 
     fscanf(coef, "NumOfEyesChannels %d\n", &NumEog);
     cout << "NumEog = " << NumEog << endl;
@@ -98,8 +98,9 @@ void Eyes::eyesClean()
 
     for(int i = 0; i < list.length(); ++i)
     {
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + list[i]);
-        readPlainData(helpString, dataF, ns, NumOfSlices);
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                              + slash() + list[i]);
+        readPlainData(helpString, dataF, def::ns, NumOfSlices);
 
         for(int k = 0; k < NumEeg; ++k)
         {
@@ -113,14 +114,14 @@ void Eyes::eyesClean()
             }
         }
 
-        helpString = QDir::toNativeSeparators(dir->absolutePath() + slash() + list[i]);
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + list[i]);
 
         ofstream outStr;
         outStr.open(helpString.toStdString().c_str());
         outStr << "NumOfSlices " << NumOfSlices << endl;
         for (int i = 0; i < NumOfSlices; ++i)
         {
-            for(int j = 0; j < ns; ++j)
+            for(int j = 0; j < def::ns; ++j)
             {
                 if(lst.contains(QString::number(j+1))) continue;
                 outStr << fitNumber(doubleRound(dataF[j][i], 3), 7) << '\t';
@@ -138,19 +139,18 @@ void Eyes::eyesClean()
     }
 
     ui->progressBar->setValue(0);
-    dir->cd(dirBC->absolutePath());
+    def::dir->cd(dirBC->absolutePath());
 
     cout << "eyes cleaned" << endl;
     if(!autoFlag) QMessageBox::information((QWidget*)this, tr("Info"), tr("Eyes cleaned"), QMessageBox::Ok);
 
-    ns -= lst.length();  // generality
-    emit setNsMain(ns);
+    def::ns -= lst.length();  // generality
 
     //error here
 //    delete []dataF;
 
 
-    for(int i = 0; i<NumEeg; ++i)
+    for(int i = 0; i < NumEeg; ++i)
     {
         if(coefficients[i] != NULL) delete []coefficients[i];
     }
@@ -163,7 +163,9 @@ void Eyes::eyesProcessing()
     QStringList list; // list of filepaths with eye-movements
     if(!autoFlag)
     {
-        list = QFileDialog::getOpenFileNames(NULL, tr("Files to build regression"), dir->absolutePath());
+        list = QFileDialog::getOpenFileNames(this,
+                                             tr("Files to build regression"),
+                                             def::dir->absolutePath());
         if(list.isEmpty())
         {
             QMessageBox::critical((QWidget*)this, tr("Warning"), tr("No files were chosen"), QMessageBox::Ok);
@@ -172,18 +174,19 @@ void Eyes::eyesProcessing()
     }
     else //automatization
     {
-        QString helpString = dir->absolutePath() + QDir::separator() + "eyesSlices";
+        QString helpString = def::dir->absolutePath()
+                + slash() + "eyesSlices";
         list = QStringList(helpString);
     }
 
-    lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);  //numbers of eog channels, counting from 1
+    QStringList lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);  //numbers of eog channels, counting from 1
 
     int NumOfSlices = 0, help = 0;
     FILE * file;
     int Size = lst.length() + 1;
-
-    dataE = new double * [ns]; //data for all eye-movements concatenated together
-    for(int i = 0; i<ns; ++i)
+    // data for all eye-movements concatenated together
+    dataE = new double * [def::ns];
+    for(int i = 0; i < def::ns; ++i)
     {
         dataE[i] = new double [250*60*5];           //for 5 minutes generality
     }
@@ -213,8 +216,8 @@ void Eyes::eyesProcessing()
         matrixTemp[i] = new double [Size];
     }
 
-    double **coefficients = new double * [ns]; //final output coefficients
-    for(int i = 0; i < ns; ++i)
+    double **coefficients = new double * [def::ns]; //final output coefficients
+    for(int i = 0; i < def::ns; ++i)
     {
         coefficients[i] = new double [lst.length()];
     }
@@ -227,7 +230,7 @@ void Eyes::eyesProcessing()
         fscanf(file, "NumOfSlices %d\n", &help);
         for(int j = 0; j < help; ++j)
         {
-            for(int k = 0; k < ns; ++k)
+            for(int k = 0; k < def::ns; ++k)
             {
                 fscanf(file, "%lf", &dataE[k][NumOfSlices + j]);
             }
@@ -280,7 +283,8 @@ void Eyes::eyesProcessing()
     } // end of cycle through the channels
 
     //print inv-matrix into file
-    FILE * coef = fopen(QDir::toNativeSeparators(dir->absolutePath()).append(QDir::separator()).append("eyes.txt").toStdString().c_str(), "w");
+    FILE * coef = fopen(QDir::toNativeSeparators(def::dir->absolutePath()
+                                                 + slash() + "eyes.txt"), "w");
     fprintf(coef, "NumOfEyesChannels %d\n", lst.length());
     fprintf(coef, "NumOfEegChannels %d\n", ui->spinBox->value());
     for(int k = 0; k < ui->spinBox->value(); ++k)
@@ -298,10 +302,10 @@ void Eyes::eyesProcessing()
     if(!autoFlag) QMessageBox::information((QWidget*)this, tr("Info"), tr("Coeffs ready"), QMessageBox::Ok);
 
 
-    dir->cd(dirBC->absolutePath());
+    def::dir->cd(dirBC->absolutePath());
 
     //clear memory
-    for(int i = 0; i<ns; ++i)
+    for(int i = 0; i < def::ns; ++i)
     {
         delete []coefficients[i];
         delete []dataE[i];
