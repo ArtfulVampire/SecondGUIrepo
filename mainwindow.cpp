@@ -1738,7 +1738,20 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
 
-//    return;
+    ui->matiCheckBox->setChecked(false);
+    ui->reduceChannelsCheckBox->setChecked(true);
+    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
+    setEdfFile("/media/Files/Data/AAX/AAX_rr.edf");
+    sliceAll();
+    Spectre * sp = new Spectre();
+    sp->countSpectra();
+    sp->compare();
+    sp->compare();
+    sp->compare();
+    sp->compare();
+    sp->psaSlot();
+    exit(0);
+    return;
 
 //    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
 //    ns = 20;
@@ -1760,10 +1773,28 @@ void MainWindow::customFunc()
 //                   pow(2, 11),
 //                   0);
 
-//    cout << def::left << endl;
-//    def::left = 7;
+    vector<double> vect1;
+    vector<double> vect2;
+    vector<double> vect3;
+    int siz = 19 * def::spLength;
+    vect2.resize(siz);
+    vect3.resize(siz);
 
-//    exit(0);
+    for(int i = 0; i < siz; ++i)
+    {
+        vect1.push_back(i/10.);
+        vect2[siz - 1 - i] = vect1[i];
+        vect3[i] = siz / 20.;
+    }
+    matrix inMatrix = matrix{vect1, vect2, vect3};
+
+    drawTemplate("/media/Files/Data/1.jpg",
+                 1600, 1600);
+    drawArrays("/media/Files/Data/1.jpg",
+               inMatrix,
+               def::colours);
+
+    exit(0);
 
 #if 0
     // save and draw weights for mati EEG/components

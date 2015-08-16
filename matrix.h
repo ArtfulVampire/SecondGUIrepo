@@ -23,10 +23,13 @@ struct matrix
     matrix(int dim);
     matrix(int rows, int cols);
     matrix(int rows, int cols, double value);
+
     matrix(double ** inData, int rows, int cols);
     matrix(const matrix & other);
     matrix(const dataType & other);
+
     matrix(vector <double> vec, bool orientH);
+    matrix(std::initializer_list<vector<double>> lst);
 
     matrix(vector <double> vec, char orient);
     void resize(int rows, int cols);

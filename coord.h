@@ -1,6 +1,7 @@
 #ifndef COORD_H
 #define COORD_H
 #include <QString>
+#include <QStringList>
 #include <QDir>
 #define maxNs 50
 
@@ -34,6 +35,7 @@ namespace def
     extern int ns;
     extern int fftLength;
     extern QString cfgFileName;
+    extern QStringList colours;
 
 
 //    Atanov

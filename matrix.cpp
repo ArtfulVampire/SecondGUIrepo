@@ -82,6 +82,17 @@ matrix::matrix(vector <double> vec, char orient)
         matrix();
     }
 }
+matrix::matrix(std::initializer_list<vector<double>> lst)
+{
+    this->resize(0, 0);
+    std::for_each(lst.begin(),
+                  lst.end(),
+                  [this](vector<double> in)
+    {
+        this->data.push_back(in);
+    });
+}
+
 
 
 matrix matrix::operator = (const matrix & other)
@@ -141,11 +152,14 @@ void matrix::fill(double value)
 
 void matrix::resize(int rows, int cols)
 {
-    data.resize(rows);
-    for(auto it = data.begin(); it < data.end(); ++it)
+    this->data.resize(rows);
+    std::for_each(data.begin(),
+                  data.end(),
+                  [cols](vector<double> & in)
     {
-        (*it).resize(cols);
-    }
+        in.resize(cols);
+    });
+
 }
 
 
@@ -153,19 +167,23 @@ void matrix::resizeRows(int rows)
 {
     int cols = data[0].size();
     data.resize(rows);
-    for(auto it = data.begin(); it < data.end(); ++it)
+    std::for_each(data.begin(),
+                  data.end(),
+                  [cols](vector<double> & in)
     {
-        (*it).resize(cols);
-    }
+        in.resize(cols);
+    });
 }
 
 
 void matrix::resizeCols(int cols)
 {
-    for(auto it = data.begin(); it < data.end(); ++it)
+    std::for_each(data.begin(),
+                  data.end(),
+                  [cols](vector<double> & in)
     {
-        (*it).resize(cols);
-    }
+        in.resize(cols);
+    });
 }
 
 int matrix::rows() const
@@ -221,7 +239,6 @@ dataType::const_iterator matrix::end() const
     return this->data.end();
 }
 
-
 vector<double> matrix::toVectorByRows() const
 {
     vector<double> res;
@@ -235,6 +252,7 @@ vector<double> matrix::toVectorByRows() const
     });
     return res;
 }
+
 vector<double> matrix::toVectorByCols() const
 {
     vector<double> res;

@@ -408,262 +408,44 @@ void Spectre::integrate()
 // remake
 void Spectre::psaSlot()
 {
-    def::dir->cd(dirBC->absolutePath());
-    //read 2 psa and draw in red and blue
-    int * spL;
-    int count = 2;
-    double ***sp;
+    matrix drawData;
+    mat tempMat;
+    vec tempVec;
+    QString helpString;
 
-    FILE **f = new FILE * [3];
-    f[0] = fopen(ui->lineEdit_1->text().toStdString().c_str(), "r");
-    f[1] = fopen(ui->lineEdit_2->text().toStdString().c_str(), "r");
-    if(f[0]==NULL)
-    {
-        QMessageBox::critical((QWidget*)this, tr("Critical"), tr("cannot open the first file"), QMessageBox::Ok);
-        return;
-    }
-    if(f[1]==NULL)
-    {
-        QMessageBox::critical((QWidget*)this, tr("Critical"), tr("cannot open the second file"), QMessageBox::Ok);
-        return;
-    }
+    helpString = ui->lineEdit_1->text();
+    readFileInLine(helpString, tempVec);
+    tempMat.push_back(tempVec);
 
-    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "Help"
-                                                  + slash() + def::ExpName + "_254");
-    if(ui->fftComboBox->currentIndex()!=0)
-    {
-        helpString += ".psa";
-    }
-    else
-    {
-        helpString += "_wnd.psa";
-    }
-    f[2] = fopen(helpString, "r");
+    helpString = ui->lineEdit_2->text();
+    readFileInLine(helpString, tempVec);
+    tempMat.push_back(tempVec);
 
-    if(f[2] == NULL)
+    // crutch 1
+    helpString.replace("_247", "_254");
+    if(QFile::exists(helpString))
     {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "Help"
-                                              + slash() + def::ExpName + "_244");
-        if(ui->fftComboBox->currentIndex()!=0)
-        {
-            helpString += ".psa";
-        }
-        else
-        {
-            helpString += "_wnd.psa";
-        }
-    }
-    f[2] = fopen(helpString, "r");
-
-    if(f[2] != NULL)
-    {
-        count = 3;
+        readFileInLine(helpString, tempVec);
+        tempMat.push_back(tempVec);
     }
 
-    spL = new int [count];
-    sp = new double ** [count];
-
-    for(int i = 0; i < count; ++i)
+    // crutch 2
+    helpString.replace("_254", "_244");
+    if(QFile::exists(helpString))
     {
-        spL[i] = def::spLength;
+        readFileInLine(helpString, tempVec);
+        tempMat.push_back(tempVec);
     }
 
+    drawData = matrix(tempMat);
 
-    for(int k = 0; k < count; ++k)
-    {
-        sp[k] = new double * [def::ns];
-    }
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + def::ExpName + "_all.jpg");
+    drawTemplate(helpString);
+    drawArrays(helpString,
+               drawData);
 
-//    cout << "1" << endl;
-    for(int k = 0; k < count; ++k)
-    {
-        for(int i = 0; i < def::ns; ++i)
-        {
-            sp[k][i] = new double [spL[k]];
-        }
-    }
-
-
-    double maxVal = 0.;
-    // read all psa files
-    for(int k = 0; k < count; ++k)
-    {
-        for(int i = 0; i < def::ns; ++i) // markers - look compare()
-        {
-            for(int j = 0; j < spL[k]; ++j)
-            {
-                fscanf(f[k], "%lf", &sp[k][i][j]);
-                maxVal = max(maxVal, sp[k][i][j]);
-            }
-        }
-    }
-
-
-    QSvgGenerator svgGen;
-    if(ui->svgButton->isChecked())
-    {
-        svgGen.setSize(QSize(800, 800));
-        svgGen.setViewBox(QRect(QPoint(0,0), svgGen.size()));
-        helpString = dirBC->absolutePath() + slash() + "Help" + slash() + ui->lineEdit_m2->text() + ".svg";
-        svgGen.setFileName(helpString);
-        paint->begin(&svgGen);
-        paint->setBrush(QBrush("white"));
-        paint->drawRect(QRect(QPoint(0,0), svgGen.size()));
-    }
-    else if(ui->jpgButton->isChecked())
-    {
-
-        pic=QPixmap(1600,1600);
-        pic.fill();
-        paint->begin(&pic);
-    }
-
-
-
-    //finding maximum magnitude
-    maxVal = (coords::scale * paint->device()->height()) / maxVal;
-    maxVal *= ui->scalingDoubleSpinBox->value();
-
-
-    const int lineWidth = 3;
-
-    const double graphHeight = paint->device()->height() * coords::scale;
-    const double graphWidth = paint->device()->width() * coords::scale;
-    const double graphScale = def::spLength / graphWidth;
-
-    int helpInt;
-
-    for(int c2 = 0; c2 < def::ns - 1 * def::withMarkersFlag; ++c2)  //exept markers channel
-    {
-        const double Y = paint->device()->height() * coords::y[c2];
-        const double X = paint->device()->width() * coords::x[c2];
-
-        //draw spectra
-        for(int k = 0; k < graphWidth - 1; ++k)
-        {
-            for(int j = 0; j < count; ++j)
-            {
-                if(ui->colourRadioButton->isChecked())
-                {
-                    if(j == 0) paint->setPen(QPen(QBrush("blue"), lineWidth));
-                    if(j == 1) paint->setPen(QPen(QBrush("red"), lineWidth));
-                    if(j == 2) paint->setPen(QPen(QBrush("green"), lineWidth));
-                }
-                if(ui->grayRadioButton->isChecked())
-                {
-                    if(j == 0) paint->setPen(QPen(QBrush(QColor(0,0,0,255)), lineWidth)); // black
-                    if(j == 1) paint->setPen(QPen(QBrush(QColor(90,90,90,255)), lineWidth)); // dark-gray
-                    if(j == 2) paint->setPen(QPen(QBrush(QColor(180,180,180,255)), lineWidth)); // light-gray
-                }
-                paint->drawLine(QPointF(X + k,
-                                        Y - sp[j][c2][int(  k  * graphScale)] * maxVal),
-                                QPointF(X + k + 1,
-                                        Y - sp[j][c2][int((k+1) * graphScale)] * maxVal));
-            }
-        }
-
-        //draw axes
-        paint->setPen("black");
-        paint->drawLine(QPointF(X,
-                                Y),
-                        QPointF(X,
-                                Y - graphHeight));
-
-        paint->drawLine(QPointF(X,
-                                Y),
-                        QPointF(X + graphWidth,
-                                Y));
-
-        //draw Herzes
-        ////// REMAKE
-        paint->setFont(QFont("Helvitica", int(8 * (paint->device()->height()/1600.))));
-        for(int k = 0; k < graphWidth; ++k) //for every Hz generality
-        {
-
-            if( abs((def::left + k * graphScale) * def::spStep
-                    - ceil((def::left + k * graphScale) * def::spStep - 0.5))
-                    < graphScale * def::spStep / 2. )
-            {
-                paint->drawLine(QPointF(X + k,
-                                        Y),
-                                QPointF(X + k,
-                                        Y + 5));
-
-                helpInt = int((def::left + k * graphScale) * def::spStep + 0.5);
-                helpString = QString::number(helpInt);
-                if(helpInt < 10)
-                {
-                    paint->drawText(X + k-3, Y + 15, helpString);
-                }
-                else
-                {
-                    paint->drawText(X + k-5, Y + 15, helpString);
-                }
-            }
-        }
-
-        //labels
-        paint->setFont(QFont("Helvetica", int(24*paint->device()->height()/1600.), -1, false));
-
-        helpString = QString(coords::lbl[c2]);
-        helpString += " (" + QString::number(c2+1) + ")";
-        paint->drawText(QPointF(X - 20 * (paint->device()->width()/1600.),
-                                Y - graphHeight - 2),
-                        helpString);
-
-    }
-
-    //draw coords::scale
-    paint->drawLine(QPointF(paint->device()->width() * coords::x[6],
-                    paint->device()->height() * coords::y[1]),
-            QPointF(paint->device()->width() * coords::x[6],
-            paint->device()->height() * coords::y[1] - graphHeight));
-
-    //returning norm = max magnitude
-    maxVal /= ui->scalingDoubleSpinBox->value();
-    maxVal = (coords::scale * paint->device()->height()) / maxVal;
-    maxVal /= ui->scalingDoubleSpinBox->value();  //scaling generality
-    maxVal = int(maxVal*10.)/10.;
-
-    helpString = QString::number(maxVal);
-    helpString += tr(" mcV^2/Hz");
-    paint->drawText(QPointF(paint->device()->width() * coords::x[6] + 5,
-                    paint->device()->height() * coords::y[1] - graphHeight/2.),
-            helpString);
-
-
-
-    if(ui->jpgButton->isChecked())
-    {
-        helpString = dirBC->absolutePath()
-                + slash() + "Help"
-                + slash() + ui->lineEdit_m2->text() + ".jpg";
-        pic.save(helpString, 0, 100);
-        helpString = dirBC->absolutePath()
-                + slash() + "Help"
-                + slash() + ui->lineEdit_m2->text() + ".png";
-        pic.save(helpString, 0, 100);
-        rangePicPath = helpString;
-        ui->specLabel->setPixmap(pic.scaled(ui->specLabel->size()));
-    }
-    paint->end();
-
-
-    for(int k = 0; k < count; ++k)
-    {
-        for(int i = 0; i < def::ns; ++i)
-        {
-            delete []sp[k][i];
-        }
-        delete []sp[k];
-    }
-    delete []sp;
-    for(int k = 0; k < count; ++k)
-    {
-        fclose(f[k]);
-    }
 
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()+1);
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()-1);
@@ -981,7 +763,7 @@ void Spectre::compare()
             ui->lineEdit_m2->setText(helpString);
         }
     }
-
+    def::dir->cd(dirBC->absolutePath());
 }
 
 void Spectre::setFftLengthSlot()
@@ -1716,7 +1498,7 @@ void Spectre::drawWavelets()
     {
         helpString = QDir::toNativeSeparators("/media/Files/Data/Mati/ADA/visualisation/wavelets"
                                               + slash() + QString::number(chanNum) + ".txt");
-        readFileInLine(helpString, tempVec, lst.length());
+        readFileInLine(helpString, tempVec);
         std::sort(tempVec.begin(), tempVec.end());
         cout << tempVec.front() << "\t" << tempVec.back() << endl;
     }

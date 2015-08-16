@@ -256,6 +256,24 @@ QPixmap drawEeg( Typ dataD,
                  int redChan = -1);
 
 
+void drawTemplate(const QString & outPath,
+                  int width = 1600,
+                  int height = 1600);
+
+template <typename Typ>
+void drawArray(const QString & templPath,
+               const Typ & inData,
+               QString color = "black",
+               double scaling = 1.,
+               int lineWidth = 2);
+template <typename Typ>
+void drawArrays(const QString & templPath,
+                const Typ & inMatrix,
+                QStringList colors = def::colours,
+                double scaling = 1.,
+                int lineWidth = 2);
+
+
 
 // for 19 channels only
 //void drawTemplate(int width, int height, QString outPath,
@@ -269,11 +287,11 @@ QPixmap drawEeg( Typ dataD,
 
 
 void drawArray(double * array, int length, QString outPath);
-void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
+//void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
 void readSpectraFile(QString filePath, double **&outData, const int &ns, const int &spLength);
 void readSpectraFileLine(QString filePath, double *&outData, const int &ns, const int &spLength);
-void readFileInLine(QString filePath, vec &outData, int len);
+void readFileInLine(QString filePath, vec & outData);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double **classCount);
 
 template <typename Typ>

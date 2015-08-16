@@ -17,4 +17,6 @@ QString cfgFileName = "16sec19ch.net";
 double spStep = def::freq / def::fftLength;
 QString ExpName;
 QDir * dir = new QDir();
+
+QStringList colours = QStringList{"blue", "red", "green", "black"};
 }
