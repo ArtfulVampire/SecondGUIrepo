@@ -1738,20 +1738,20 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
 
-    ui->matiCheckBox->setChecked(false);
-    ui->reduceChannelsCheckBox->setChecked(true);
-    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
-    setEdfFile("/media/Files/Data/AAX/AAX_rr.edf");
-    sliceAll();
-    Spectre * sp = new Spectre();
-    sp->countSpectra();
-    sp->compare();
-    sp->compare();
-    sp->compare();
-    sp->compare();
-    sp->psaSlot();
-    exit(0);
-    return;
+//    ui->matiCheckBox->setChecked(false);
+//    ui->reduceChannelsCheckBox->setChecked(true);
+//    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
+//    setEdfFile("/media/Files/Data/AAX/AAX_rr.edf");
+//    sliceAll();
+//    Spectre * sp = new Spectre();
+//    sp->countSpectra();
+//    sp->compare();
+//    sp->compare();
+//    sp->compare();
+//    sp->compare();
+//    sp->psaSlot();
+//    exit(0);
+//    return;
 
 //    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
 //    ns = 20;
