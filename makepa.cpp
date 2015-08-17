@@ -1,6 +1,8 @@
 #include "makepa.h"
 #include "ui_makepa.h"
 
+// comment
+
 MakePa::MakePa(QString spectraPath, QVector<int> vect_) :
     ui(new Ui::MakePa)
 {
