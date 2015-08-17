@@ -3,6 +3,7 @@
 
 
 /*after every function the QDir dir is set to the ExpName directory*/
+// nyash
 
 
 Cut::Cut() :
