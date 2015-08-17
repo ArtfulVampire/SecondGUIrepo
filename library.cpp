@@ -504,169 +504,6 @@ void drawSpectra(double ** drawData, int ns, int start, int end, const QString &
     pic.save(picPath, 0, 100);
 }
 
-void drawWts(QString inPath, QString outPath)
-{
-    int spLength = 247;
-    int NumOfClasses = 3;
-    int left = 63;
-    int ns = 20;
-    double spStep = def::freq / def::fftLength;
-
-
-    QString helpString;
-
-    QPixmap pic;
-    QPainter paint;
-
-    matrix weights;
-    weights.resize(ns * spLength + 1, NumOfClasses);
-
-    ifstream inFile;
-    inFile.open(inPath.toStdString());
-    if(!inFile.good())
-    {
-        cout << "cannot open file" << endl;
-        return;
-    }
-
-    double maxWeight = 0.;
-
-        for(int j = 0; j < weights.rows() + 1; ++j) //+1 for bias
-        {
-            for(int k = 0; k < weights.cols(); ++k)
-            {
-                if(inFile.eof())
-                {
-                    cout << "wts-file too small" << endl;
-                    return;
-                }
-
-                inFile >> weights[j][k];
-                maxWeight = fmax(weights[j][k], maxWeight);
-            }
-        }
-
-    if(!inFile.eof())
-    {
-        cout << "wts-file too big" << endl;
-        return;
-    }
-    inFile.close();
-
-
-    pic = QPixmap(1600, 1600);
-    pic.fill();
-    paint.begin(&pic);
-
-    const double graphHeight = paint.device()->height() * coords::scale;
-    const double graphWidth = paint.device()->width() * coords::scale;
-    const double graphScale = spLength / graphWidth;
-
-    for(int c2 = 0; c2 < ns; ++c2)  //exept markers channel & Fp1,2
-    {
-        const double Y = paint.device()->height() * coords::y[c2];
-        const double X = paint.device()->width() * coords::x[c2];
-
-        for(int k = 0; k < 250-1; ++k)
-        {
-            paint.setPen(QPen(QBrush("blue"), 2));
-            paint.drawLine(X + k,
-                           Y
-                           - weights[int(c2 * spLength + k * graphScale)][0]
-                    * graphHeight/maxWeight,
-                    X + k + 1,
-                    Y
-                    - weights[int(c2 * spLength + (k + 1) * graphScale)][0]
-                    * graphHeight/maxWeight);
-
-            paint.setPen(QPen(QBrush("red"), 2));
-            paint.drawLine(X + k,
-                           Y
-                           - weights[int(c2 * spLength + k * graphScale)][1]
-                    * graphHeight/maxWeight,
-                    X + k + 1,
-                    Y
-                    - weights[int(c2 * spLength + (k + 1) * graphScale)][1]
-                    * graphHeight/maxWeight);
-
-            if(NumOfClasses == 3)
-            {
-                paint.setPen(QPen(QBrush("green"), 2));
-                paint.drawLine(X + k,
-                               Y
-                               - weights[int(c2 * spLength + k * graphScale)][2]
-                        * graphHeight/maxWeight,
-                        X + k + 1,
-                        Y
-                        - weights[int(c2 * spLength + (k + 1) * graphScale)][2]
-                        * graphHeight/maxWeight);
-            }
-        }
-
-        // axes
-        paint.setPen("black");
-        paint.drawLine(X,
-                       Y,
-                       X,
-                       Y - graphHeight);
-
-        paint.drawLine(X,
-                       Y,
-                       X + graphWidth,
-                       Y);
-
-        // Herzes
-        paint.setFont(QFont("Helvitica", 8));
-        for(int k = 0; k < graphWidth; ++k) //for every Hz generality
-        {
-            if( abs((left + k * graphScale) * spStep
-                    - floor((left + k * graphScale) * spStep + 0.5))
-                    < graphScale * spStep / 2. )
-            {
-                paint.drawLine(QPointF(X + k,
-                                        Y),
-                                QPointF(X + k,
-                                        Y + 5));
-
-                helpString = QString::number(int((left + k * graphScale) * spStep + 0.5));
-                if(helpString.toInt() < 10)
-                {
-                    paint.drawText(X + k-3, Y + 15, helpString);
-                }
-                else
-                {
-                    paint.drawText(X + k-5, Y + 15, helpString);
-                }
-            }
-        }
-
-        // labels
-        paint.setFont(QFont("Helvetica", 24, -1, false));
-        paint.drawText(X - 20,
-                       Y - graphHeight - 2,
-                       QString(coords::lbl[c2]));
-
-    }
-
-    paint.drawLine(QPointF(paint.device()->width() * coords::x[6],
-                   paint.device()->height() * coords::y[1]),
-            QPointF(paint.device()->width() * coords::x[6],
-            paint.device()->height() * (coords::y[1] - coords::scale)));  //250 - graph height generality
-
-    //returning norm = max magnitude
-    maxWeight = int(maxWeight * 100.)/100.;
-
-    helpString = QString::number(maxWeight);
-//    helpString.append(tr(" mcV^2/Hz"));
-    paint.drawText(QPointF(paint.device()->width() * coords::x[6] + 5,
-                   paint.device()->height() * (coords::y[1] - coords::scale/2.)),
-            helpString);
-
-    paint.end();
-    pic.save(outPath, 0, 100);
-
-}
-
 #define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 void four1(double * dataF, int nn, int isign)
 {
@@ -1485,8 +1322,7 @@ void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength,
         cout << "bad out pa-file" << endl;
         return;
     }
-    double ** data4;
-    matrixCreate(&data4, ns, spLength);
+    matrix data4;
 
     int type;
     QString helpString;
@@ -1494,15 +1330,15 @@ void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength,
     for(int i = 0; i < fileNames.length(); ++i)
     {
         type = typeOfFileName(fileNames[i]);
-        helpString = spectraDir + QDir::separator() + fileNames[i];
-        readSpectraFile(helpString, data4, ns, spLength);
+        helpString = spectraDir + slash() + fileNames[i];
+        readSpectraFile(helpString, data4);
         outStream << fileNames[i].toStdString() << endl;
 
-        for(int l = 0; l < ns - 1 * def::withMarkersFlag; ++l) // write PA files without markers
+        for(int l = 0; l < def::nsWOM(); ++l) // write PA files without markers
         {
-            for(int k = 0; k < spLength; ++k)
+            for(int k = 0; k < def::spLength; ++k)
             {
-                outStream << doubleRound(data4[l][k]/coeff, 5) << '\t';
+                outStream << doubleRound(data4[l][k] / coeff, 5) << '\t';
                 if(k%10 == 9)
                 {
                     outStream << '\n';
@@ -1510,7 +1346,6 @@ void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength,
             }
             outStream << '\n';
         }
-
 
         for(int k = 0; k < NumOfClasses; ++k)
         {
@@ -1522,7 +1357,6 @@ void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength,
         outStream.flush();
     }
     outStream.close();
-    matrixDelete(&data4, ns);
 //    cout << "makePaFile: time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
 }
 
@@ -1531,8 +1365,7 @@ void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int 
 //    QTime myTime;
 //    myTime.start();
 
-    double ** data4;
-    matrixCreate(&data4, ns, spLength);
+    matrix data4;
 
     int type;
     QString helpString;
@@ -1541,20 +1374,19 @@ void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int 
     {
         type = typeOfFileName(fileNames[i]);
         helpString = spectraDir + QDir::separator() + fileNames[i];
-        readSpectraFile(helpString, data4, ns, spLength);
+        readSpectraFile(helpString, data4);
 
-        for(int l = 0; l < ns; ++l)
+        for(int l = 0; l < def::ns; ++l)
         {
-            for(int k = 0; k < spLength; ++k)
+            for(int k = 0; k < def::spLength; ++k)
             {
-                (*outMatrix)[i][l*spLength + k] = data4[l][k]/coeff;
+                (*outMatrix)[i][l*spLength + k] = data4[l][k] / coeff;
             }
         }
         (*outMatrix)[i][ns*spLength] = 1.;
         (*outMatrix)[i][ns*spLength + 1] = type;
 
     }
-    matrixDelete(&data4, ns);
 //    cout << "makeMatrixFromFiles: time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
 }
 
@@ -2033,9 +1865,8 @@ void drawTemplate(const QString & outPath,
     }
 }
 
-template <typename Typ>
 void drawArray(const QString & templPath,
-               const Typ & inData,
+               const vec & inData,
                QString color,
                double scaling,
                int lineWidth)
@@ -2132,12 +1963,40 @@ void drawArray(const QString & templPath,
 
     pic.save(templPath, 0, 100);
 }
-template
-void drawArray(const QString & templPath,
-               const vector<double> & inData,
-               QString color,
-               double scaling,
-               int lineWidth);
+
+void readFileInLine(QString filePath, vec & outData)
+{
+    ifstream file(filePath.toStdString());
+    if(!file.good())
+    {
+        cout << "bad file" << endl;
+        return;
+    }
+    outData.clear();
+    double tmp;
+    while(!file.eof())
+    {
+        file >> tmp;
+        outData.push_back(tmp);
+    }
+    outData.pop_back(); // prevent last item (eof)
+    file.close();
+}
+
+void writeFileInLine(QString filePath, const vec & outData)
+{
+    ofstream file(filePath.toStdString());
+    if(!file.good())
+    {
+        cout << "bad file" << endl;
+        return;
+    }
+    for(auto it = outData.begin(); it < outData.end(); ++it)
+    {
+         file << *it << '\n';
+    }
+    file.close();
+}
 
 
 template <typename Typ>
@@ -2202,7 +2061,7 @@ void drawArrays(const QString & templPath,
                       inData.end(),
                       [&norm](double in)
         {
-            norm = fmax(norm, in);
+            norm = fmax(norm, fabs(in));
         });
     });
 
@@ -2268,6 +2127,20 @@ void drawArrays(const QString & templPath,
                 double scaling,
                 int lineWidth);
 
+
+
+vec vectorFromMatrix(double ** inMat, int inNs, int spL)
+{
+    vec res;
+    for(int i = 0; i < inNs; ++i)
+    {
+        for(int j = 0; j < spL; ++j)
+        {
+            res.push_back(inMat[i][j]);
+        }
+    }
+    return res;
+}
 
 
 void drawColorScale(QString filePath, int range, ColorScale type, bool full)
@@ -4065,7 +3938,12 @@ void spectre(const double * data, const int &length, double *& spectr)
     }
 }
 
-void readSpectraFile(QString filePath, double ** &outData, const int &ns, const int &spLength)
+
+template <typename Typ>
+void readSpectraFile(QString filePath,
+                     Typ & outData,
+                     int inNs,
+                     int spL)
 {
     ifstream file(filePath.toStdString().c_str());
     if(!file.good())
@@ -4073,53 +3951,26 @@ void readSpectraFile(QString filePath, double ** &outData, const int &ns, const 
         cout << "bad input spectra file:\n" << filePath.toStdString() << endl;
         return;
     }
-    for(int i = 0; i < ns; ++i)
+    outData.resize(inNs);
+    std::for_each(outData.begin(),
+                  outData.end(),
+                  [spL](vec & in){in.resize(spL);});
+
+    for(int i = 0; i < inNs; ++i)
     {
-        for(int j = 0; j < spLength; ++j)
+        for(int j = 0; j < spL; ++j)
         {
             file >> outData[i][j];
         }
     }
     file.close();
 }
+template
+void readSpectraFile(QString filePath, matrix & outData, int inNs, int spL);
+template
+void readSpectraFile(QString filePath, mat & outData, int inNs, int spL);
 
-void readSpectraFileLine(QString filePath, double * &outData, const int &ns, const int &spLength)
-{
-    ifstream file(filePath.toStdString().c_str());
-    if(!file.good())
-    {
-        cout << "bad file" << endl;
-        return;
-    }
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < spLength; ++j)
-        {
-            file >> outData[i*spLength + j];
-        }
-    }
-    file.close();
-}
 
-void readFileInLine(QString filePath, vec & outData)
-{
-    ifstream file(filePath.toStdString());
-    if(!file.good())
-    {
-        cout << "bad file" << endl;
-        return;
-    }
-    outData.clear();
-    double tmp;
-//    for(int j = 0; j < len; ++j)
-    while(!file.eof())
-    {
-        file >> tmp;
-        outData.push_back(tmp);
-    }
-    outData.pop_back(); // prevent last item (eof)
-    file.close();
-}
 
 void zeroData(mat &inData, const int &ns, const int &leftLimit, const int &rightLimit)
 {

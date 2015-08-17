@@ -65,7 +65,6 @@ public:
     double getReduceCoeff();
     void setNumOfPairs(int num);
     void saveWts(QString wtsPath);
-    void loadWtsByName(QString);
     void PaIntoMatrixByName(QString fileName);
     void autoClassification(QString spectraDir);
     void averageClassification();
@@ -84,7 +83,8 @@ public slots:
     void reset();
     void saveWtsSlot();
     void stopActivity();
-    void drawWts();
+    void drawWts(QString wtsPath = QString(),
+                 QString picPath = QString());
     void PaIntoMatrix();
     void leaveOneOutSlot();
     void neuronGas();
@@ -105,7 +105,7 @@ private:
 
     QButtonGroup  * group1,  * group2,  * group3;
     QDir *dirBC;
-    double **matrix;
+    double ** dataMatrix;
     double *** weight;
     int * dimensionality; //for backprop
 //    double * output;
@@ -147,6 +147,11 @@ private:
 
     double ** coords; //new coords for Sammon method
     double mouseShit;
+
+public:
+
+    void loadWtsByName(QString,
+                       double * *** wtsMatrix = nullptr);
 };
 
 #endif // NET_H

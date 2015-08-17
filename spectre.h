@@ -52,7 +52,7 @@ signals:
 
 private:
     Ui::Spectre *ui;
-    QDir *dirBC;
+    QString backupDirPath;
 
     int fftLength;
 

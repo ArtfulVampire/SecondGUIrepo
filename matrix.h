@@ -47,6 +47,8 @@ struct matrix
     dataType::const_iterator end() const;
     vector<double> toVectorByRows() const;
     vector<double> toVectorByCols() const;
+    void pop_back();
+    void push_back(vector<double> &in);
 
     // for compability with vector < vector<Type> >
     int size() const {return data.size();}

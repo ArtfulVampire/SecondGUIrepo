@@ -266,6 +266,16 @@ vector<double> matrix::toVectorByCols() const
     return res;
 }
 
+void matrix::pop_back()
+{
+    this->data.pop_back();
+}
+
+void matrix::push_back(vector<double> & in)
+{
+    this->data.push_back(in);
+}
+
 int matrix::cols() const
 {
     return data[0].size();

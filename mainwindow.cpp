@@ -13,9 +13,10 @@ MainWindow::MainWindow() :
     redirectCoutFlag = false;
     coutBuf = cout.rdbuf();
 
-    def::right = fftLimit(def::rightFreq, def::freq, def::fftLength);
+    // [left right)
+    def::right = fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;
     def::left  = fftLimit(def::leftFreq, def::freq, def::fftLength);
-    def::spLength = def::right - def::left + 1;
+    def::spLength = def::right - def::left;
 
 //    withMarkersFlag = 1;
     ui->sliceWithMarkersCheckBox->setChecked(def::withMarkersFlag);
@@ -730,13 +731,11 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 
 
     }
-
-
     helpString = "data sliced ";
     ui->textEdit->append(helpString);
 
-    helpString="ns equals to ";
-    helpString.append(QString::number(def::ns));
+    helpString = "ns equals to ";
+    helpString += QString::number(def::ns);
     ui->textEdit->append(helpString);
 
     cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << endl;
@@ -1345,18 +1344,18 @@ void MainWindow::drawRealisations()
     QTime myTime;
     myTime.start();
     ui->progressBar->setValue(0);
-    matrix dataD(def::ns, 50 * 60 * 250); // for 50 seconds
+    matrix dataD;
 
     lst.clear();
     nameFilters.clear();
-    nameFilters.append("*_241*");
-    nameFilters.append("*_247*");
-    nameFilters.append("*_254*");
-    nameFilters.append("*_244*");
+    nameFilters << "*_241*";
+    nameFilters << "*_247*";
+    nameFilters << "*_244*";
+    nameFilters << "*_254*";
 
     //for Roma's files
-    nameFilters.append("*_2");
-    nameFilters.append("*_1");
+    nameFilters << "*_2";
+    nameFilters << "*_1";
 
     def::dir->cd(ui->drawDirBox->currentText());    //->windows or Realisations or cut
     prePath = def::dir->absolutePath();
@@ -1737,21 +1736,12 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-// pewpew aaaaaa
-//    ui->matiCheckBox->setChecked(false);
-//    ui->reduceChannelsCheckBox->setChecked(true);
-//    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
-//    setEdfFile("/media/Files/Data/AAX/AAX_rr.edf");
-//    sliceAll();
-//    Spectre * sp = new Spectre();
-//    sp->countSpectra();
-//    sp->compare();
-//    sp->compare();
-//    sp->compare();
-//    sp->compare();
-//    sp->psaSlot();
-//    exit(0);
-//    return;
+
+    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+    Net * ann = new Net();
+    ann->show();
+    ann->drawWts("/media/Files/Data/AAX/pew.wts");
+    return;
 
 //    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
 //    ns = 20;

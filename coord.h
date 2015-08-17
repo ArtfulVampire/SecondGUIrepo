@@ -37,6 +37,9 @@ namespace def
     extern QString cfgFileName;
     extern QStringList colours;
 
+//    extern int nsW;
+    inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
+
 
 //    Atanov
     const int numOfClasses = 3;

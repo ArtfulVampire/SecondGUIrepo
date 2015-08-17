@@ -76,6 +76,9 @@ FILE *fopen(QString filePath, const char *__modes);
 char * QStrToCharArr(const QString & input, const int &len = -1);
 int typeOfFileName(QString fileName);
 
+vec vectorFromMatrix(double ** inMat, int inNs = 19, int spL = def::spLength);
+
+
 //wavelets
 enum ColorScale {jet = 0,
            htc = 1,
@@ -223,8 +226,8 @@ void makeCfgStatic(QString outFileDir,
 template <typename Typ>
 void readPlainData(QString inPath,
                    Typ & data,
-                   int ns,
-                   int & numOfSlices,
+                   int ns = def::ns,
+                   int & numOfSlices = def::fftLength,
                    int start = 0);
 
 template <typename Typ>
@@ -249,7 +252,7 @@ QPixmap drawEeg( Typ dataD,
                  int ns,
                  int startSlice,
                  int endSlice,
-                 int freq,
+                 int freq = def::freq,
                  const QString & picPath = QString(),
                  double norm = 1.,
                  int blueChan = -1,
@@ -260,9 +263,8 @@ void drawTemplate(const QString & outPath,
                   int width = 1600,
                   int height = 1600);
 
-template <typename Typ>
 void drawArray(const QString & templPath,
-               const Typ & inData,
+               const vec & inData,
                QString color = "black",
                double scaling = 1.,
                int lineWidth = 2);
@@ -271,7 +273,9 @@ void drawArrays(const QString & templPath,
                 const Typ & inMatrix,
                 QStringList colors = def::colours,
                 double scaling = 1.,
-                int lineWidth = 2);
+                int lineWidth = 3);
+
+
 
 
 
@@ -289,9 +293,13 @@ void drawArrays(const QString & templPath,
 void drawArray(double * array, int length, QString outPath);
 //void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
-void readSpectraFile(QString filePath, double **&outData, const int &ns, const int &spLength);
-void readSpectraFileLine(QString filePath, double *&outData, const int &ns, const int &spLength);
+template <typename Typ>
+void readSpectraFile(QString filePath,
+                     Typ & outData,
+                     int inNs = def::nsWOM(),
+                     int spL = def::spLength);
 void readFileInLine(QString filePath, vec & outData);
+void writeFileInLine(QString filePath, const vec & outData);
 void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double **classCount);
 
 template <typename Typ>
