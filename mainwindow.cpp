@@ -1738,7 +1738,7 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
 
-//    ui->matiCheckBox->setChecked(false);
+    ui->matiCheckBox->setChecked(false);
 //    ui->reduceChannelsCheckBox->setChecked(true);
 //    ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr.edf");
