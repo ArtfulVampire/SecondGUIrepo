@@ -199,12 +199,8 @@ void MainWindow::ICA() //fastICA
     double * vectorOld = new double [ns];
 
     //for full A-matrix count
-    double ** matrixA = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        matrixA[i] = new double [ns];
-    }
-    double * tempVector = new double [ns];
+    matrix matrixA(ns, ns);
+    vec tempVector(ns);
 
     //components time-flow
     mat components;
@@ -311,28 +307,19 @@ void MainWindow::ICA() //fastICA
 
 
     ofstream outStream;
-    helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_eigenMatrix.txt";
-    outStream.open(helpString.toStdString().c_str());
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < ns; ++j)
-        {
-            outStream << doubleRound(eigenVectors[i][j], 4) << "\t";
-        }
-        outStream << endl;
-    }
-    outStream << endl;
-    outStream.close();
+    helpString = def::dir->absolutePath()
+                 + slash() + "Help"
+                 + slash() + def::ExpName + "_eigenMatrix.txt";
+    writeSpectraFile(helpString,
+                     eigenVectors,
+                     ns, ns);
 
 
 
-    helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_eigenValues.txt";
-    outStream.open(helpString.toStdString().c_str());
-    for(int i = 0; i < ns; ++i)
-    {
-        outStream << eigenValues[i] << '\n';
-    }
-    outStream.close();
+    helpString = def::dir->absolutePath()
+                 + slash() + "Help"
+                 + slash() + def::ExpName + "_eigenValues.txt";
+    writeFileInLine(helpString, eigenValues);
 
     cout << "time svd = " << wholeTime.elapsed()/1000. << " sec" << endl;
 
@@ -468,41 +455,6 @@ void MainWindow::ICA() //fastICA
             ++counter;
             if(sum2 < vectorWTreshold || 2 - sum2 < vectorWTreshold) break;
             if(counter == 100) break;
-
-            /*
-            qApp->processEvents();
-            if(stopFlag == 1)
-            {
-                cout << "ICA stopped by user" << endl;
-                stopFlag = 0;
-                if(1)
-                {
-                    //clear memory
-                    for(int i = 0; i < ns; ++i)
-                    {
-                        delete [] covMatrix[i];
-                        delete [] eigenVectors[i];
-                        delete [] matrixA[i];
-                        delete [] dataICA[i];
-                    }
-                    delete [] covMatrix;
-                    delete [] eigenVectors;
-                    delete [] averages;
-                    delete [] eigenValues;
-                    delete [] tempA;
-                    delete [] tempB;
-                    delete [] vector1;
-                    delete [] vector2;
-                    delete [] vector3;
-                    delete [] vectorOld;
-                    delete [] tempVector;
-                    delete [] matrixA;
-                    delete [] dataICA;
-
-                }
-                return;
-            }
-            */
         }
         cout << "NumOf vectorW component = " << i << "\t";
         cout << "iterations = " << counter << "\t";
@@ -758,7 +710,7 @@ void MainWindow::ICA() //fastICA
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
                                           + slash() + def::ExpName + "_maps_before_len.txt");
-    writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
+    writeICAMatrix(helpString, matrixA); //generality 19-ns
 
 
     // ordering components by dispersion
@@ -823,7 +775,7 @@ void MainWindow::ICA() //fastICA
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
                                           + slash() + def::ExpName + "_maps_after_len.txt");
-    writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
+    writeICAMatrix(helpString, matrixA); //generality 19-ns
 
     for(int i = 0; i < ns; ++i)
     {
@@ -879,7 +831,7 @@ void MainWindow::ICA() //fastICA
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
                                           + slash() + def::ExpName + "_maps.txt");
-    writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
+    writeICAMatrix(helpString, matrixA); //generality 19-ns
 
 //    drawMapsICA(helpString,
 //                ns,
@@ -900,15 +852,12 @@ void MainWindow::ICA() //fastICA
     {
         delete [] covMatrix[i];
         delete [] vectorW[i];
-        delete [] matrixA[i];
         delete [] dataICA[i];
     }
     delete [] covMatrix;
     delete [] averages;
     delete [] vectorOld;
-    delete [] tempVector;
     delete [] vectorW;
-    delete [] matrixA;
     delete [] dataICA;
 }
 
@@ -1551,14 +1500,12 @@ void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
 
     int numOfIC = ui->numOfIcSpinBox->value(); // = 19
 
-    double ** matrixA = new double * [numOfIC];
-    for(int i = 0; i < numOfIC; ++i)
-    {
-        matrixA[i] = new double [numOfIC];
-    }
+    matrix matrixA(numOfIC, numOfIC);
 
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_maps.txt");
-    readICAMatrix(helpString, matrixA, numOfIC);
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + def::ExpName + "_maps.txt");
+    readICAMatrix(helpString, matrixA);
 
     QList<int> thrownComp;
     thrownComp.clear();
@@ -1600,25 +1547,18 @@ void MainWindow::transformEDF(QString inEdfPath, QString mapsPath, QString newEd
     setEdfFile(inEdfPath);
     readData();
 
-    matrix mat1(19, 19);
-    readICAMatrix(mapsPath, mat1, 19); // data = mat1 * comps
+    matrix mat1(def::nsWOM(), def::nsWOM());
+    readICAMatrix(mapsPath, mat1); // data = mat1 * comps
     mat1.invert(); // mat1 * data = comps
 
-    matrix newData;
-    newData.resize(19, ndr*def::freq);
+    matrix newData(def::nsWOM(), ndr * def::freq);
 
     matrixProduct(mat1, globalEdf.getData(), newData);
 
-    newData.resizeRows(20); // for markers
-    newData[19] = globalEdf.getData()[19]; //copy markers
+    newData.resizeRows(def::ns); // for markers
+    newData[def::ns - 1] = globalEdf.getData()[def::ns - 1]; //copy markers
 
-    QList<int> chanList;
-    chanList.clear();
-    for(int i = 0; i < 20; ++i)
-    {
-        chanList << i;
-    }
-    globalEdf.writeOtherData(newData.data, newEdfPath, chanList);
+    globalEdf.writeOtherData(newData.data, newEdfPath);
 }
 
 void MainWindow::transformReals() //move to library

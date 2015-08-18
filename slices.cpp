@@ -823,8 +823,8 @@ void MainWindow::sliceMatiSimple()
                 for(int j = 0; j < number; ++j) // num of pieces
                 {
                     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                          + QDir::separator() + "Realisations"
-                                                          + QDir::separator() + def::ExpName
+                                                          + slash() + "Realisations"
+                                                          + slash() + def::ExpName
                                                           + "_" + QString::number(type)
                                                           + "_" + QString::number(session[type])
                                                           + "_" + rightNumber(j, 2)
