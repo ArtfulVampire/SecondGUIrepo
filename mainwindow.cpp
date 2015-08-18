@@ -1737,10 +1737,10 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
 
-    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-    Net * ann = new Net();
-    ann->show();
-    ann->drawWts("/media/Files/Data/AAX/pew.wts");
+//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+//    Net * ann = new Net();
+//    ann->show();
+//    ann->drawWts("/media/Files/Data/AAX/pew.wts");
     return;
 
 //    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
