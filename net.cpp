@@ -3,12 +3,9 @@
 //#include <CL/cl.h>
 
 
-
-
 Net::Net() :
     ui(new Ui::Net)
 {
-    paFileBC = "";
     ui->setupUi(this);
 
     dirBC = new QDir;
@@ -2010,7 +2007,14 @@ void Net::PaIntoMatrix()
 //    myTime.start();
     cout << "PaIntoMatrix: NetLength = " << NetLength << endl;
     cout << "PaIntoMatrix: ns = " << def::nsWOM() << endl;
-    readPaFile(helpString, &dataMatrix, NetLength, def::numOfClasses, &NumberOfVectors, &FileName, &classCount);
+
+    readPaFile(helpString,
+               &dataMatrix,
+               NetLength,
+               def::numOfClasses,
+               &NumberOfVectors,
+               &FileName,
+               &classCount);
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 
 }
@@ -2023,13 +2027,20 @@ void Net::PaIntoMatrixByName(QString fileName)
         QMessageBox::critical((QWidget * )this, tr("net.cpp: PaIntoMatrixByName"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
         return;
     }
-    QString helpString = dirBC->absolutePath() + slash() + "PA" + slash() + fileName;
+    QString helpString = def::dir->absolutePath()
+                         + slash() + "PA"
+                         + slash() + fileName;
     if(!fileName.contains(".pa"))
     {
         helpString += ".pa";
     }
-    paFileBC = helpString;
-    readPaFile(helpString, &dataMatrix, NetLength, def::numOfClasses, &NumberOfVectors, &FileName, &classCount);
+    readPaFile(helpString,
+               &dataMatrix,
+               NetLength,
+               def::numOfClasses,
+               &NumberOfVectors,
+               &FileName,
+               &classCount);
     /*
     double * tempVector = new double [ns*spLength];
 

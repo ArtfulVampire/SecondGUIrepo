@@ -76,7 +76,9 @@ FILE *fopen(QString filePath, const char *__modes);
 char * QStrToCharArr(const QString & input, const int &len = -1);
 int typeOfFileName(QString fileName);
 
-vec vectorFromMatrix(double ** inMat, int inNs = 19, int spL = def::spLength);
+vec vectorFromMatrix(double ** inMat,
+                     int inNs = def::nsWOM(),
+                     int spL = def::spLength);
 
 
 //wavelets
@@ -117,8 +119,8 @@ double morletSinNew(double const freq1,
 namespace wvlt
 {
 const int timeStep = ceil(0.1 * def::freq);
-const double freqMax = 20.;
-const double freqMin = 5.;
+const double freqMax = 20.; // def::rightFreq
+const double freqMin = 5.; // def::leftFreq
 const double freqStep = 0.2;
 const int range = 256;
 
@@ -127,6 +129,7 @@ const int numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqS
 #else
 const int numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
 #endif
+
 }
 void wavelet(QString filePath,
              QString picPath,
@@ -135,21 +138,25 @@ void wavelet(QString filePath,
 
 
 vec signalFromFile(QString filePath,
-                              int channelNumber,
-                              int ns = 20);
+                   int channelNumber,
+                   int ns = def::ns);
 matrix countWavelet(vec inSignal);
 void drawWavelet(QString picPath,
                  const matrix &inData);
 
-
-
-void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
+//void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
 
 //signal processing
-double fractalDimension(const vec &arr, int N, const QString &picPath = QString());
+double fractalDimension(const vec &arr, const QString &picPath = QString());
 double enthropy(const double *arr, const int N, const int numOfRanges = 30); // not finished?
 void four1(double * dataF, int nn, int isign);
-void hilbert(const vec & arr, int inLength, double sampleFreq, double lowFreq, double highFreq, double * &out, QString picPath  = QString());
+void four1(vec &dataF, int nn, int isign);
+
+vec hilbert(const vec & arr,
+            double lowFreq = def::leftFreq,
+            double highFreq = def::rightFreq,
+            QString picPath  = QString());
+
 template <typename Typ>
 void hilbertPieces(const double *arr,
                    int inLength,
@@ -158,10 +165,13 @@ void hilbertPieces(const double *arr,
                    double highFreq,
                    Typ &out,
                    QString picPath = QString());
-void bayesCount(const vec & dataIn, int length, int numOfIntervals, double * &out);
-void kernelEst(double *arr, int length, QString picPath);
+
+vec bayesCount(const vec & dataIn, int numOfIntervals);
+void kernelEst(const vec & arr, QString picPath);
 void kernelEst(QString filePath, QString picPath);
-void histogram(double *arr, int length, int numSteps, QString picPath);
+
+void histogram(const vec & arr, int numSteps, QString picPath);
+
 bool gaussApproval(double * arr, int length); // not finished?
 bool gaussApproval(QString filePath); // not finished?
 bool gaussApproval2(double * arr, int length); // not finished?
@@ -186,48 +196,56 @@ double rankit(int i, int length, double k = 0.375);
 double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 
-void splitZeros(mat & inData, const int &ns, const int &length, int * outLength, const QString &logFile  = QString(), const QString &dataName  = QString());
+void splitZeros(mat & inData,
+                const int &length,
+                int * outLength,
+                const QString & logFile = QString(),
+                const QString & dataName = def::ExpName);
 
 template <typename Typ>
 void splitZerosEdges(Typ & dataIn, const int & ns, const int & length, int * outLength);
+template <typename Typ>
+void zeroData(Typ & inData, const int & leftLimit, const int & rightLimit);
 
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
-void zeroData(mat & inData, const int & ns, const int & leftLimit, const int & rightLimit);
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
 double independence(double * const signal1, double * const signal2, int length);
 double countAngle(double initX, double initY);
 
-
 bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p = 0.05);
-bool MannWhitney(vector <double> arr1,
-                 vector <double> arr2,
+bool MannWhitney(vec arr1,
+                 vec arr2,
                  double p = 0.05);
 
-void makePaFile(QString spectraDir, QStringList fileNames, int ns, int spLength, int NumOfClasses, double coeff, QString outFile);
-void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, int ns, int spLength, double coeff, double *** outMatrix);
+void makePaFile(QString spectraDir, QStringList fileNames, double coeff, QString outFile);
+void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, double coeff, double *** outMatrix);
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
-void drawRCP(double *values, int length);
-void countRCP(QString filename, QString picPath  = QString(), double *outMean = nullptr, double *outSigma = nullptr);
-//void svd(double ** inData, int dim, int length, double *** eigenVects, double ** eigenValues);
-void svd(const mat & inData, mat & eigenVectors, vector <double> & eigenValues, double threshold = 1e-9);
+void drawRCP(const vec & values,
+             const QString & picPath = "/media/Files/Data/AA/rcp.png");
+void countRCP(QString filename,
+              QString picPath  = QString(),
+              double *outMean = nullptr,
+              double *outSigma = nullptr);
 
-void makeCfgStatic(QString outFileDir,
-                   int NetLength = 19 * 247,
+void svd(const mat & inData,
+         mat & eigenVectors,
+         vector <double> & eigenValues,
+         double threshold = 1e-9);
+
+void makeCfgStatic(QString outFileDir = def::dir->absolutePath(),
+                   int NetLength = def::nsWOM() * def::spLength,
                    QString FileName = "16sec19ch",
                    int numOfOuts = 3,
                    double lrate = 0.1,
                    double error = 0.1,
                    int temp = 10);
 
-//void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices, int fftLength);
-//void readDataFile(QString filePath, double *** outData, int ns, int * NumOfSlices);
-
 template <typename Typ>
 void readPlainData(QString inPath,
                    Typ & data,
-                   int ns = def::ns,
-                   int & numOfSlices = def::fftLength,
+                   int ns,
+                   int & numOfSlices,
                    int start = 0);
 
 template <typename Typ>
@@ -241,7 +259,7 @@ template <typename Typ>
 QPixmap drawEeg(Typ dataD,
                 int ns,
                 int NumOfSlices,
-                int freq,
+                int freq = def::freq,
                 const QString & picPath = QString(),
                 double norm = 1.,
                 int blueChan = -1,
@@ -275,48 +293,66 @@ void drawArrays(const QString & templPath,
                 double scaling = 1.,
                 int lineWidth = 3);
 
-
-
-
-
-// for 19 channels only
-//void drawTemplate(int width, int height, QString outPath,
-//                  double left, double right, double spStep);
-//template <typename Typ>
-//void drawGraph(QString inPath, Typ &values, double maxVal, int spLength, QColor color, int lineWidth = 2);
-//void drawMW(QString inPath, bool * values, int spLength, QColor colorTrue, QColor colorFalse, int numOfMw);
-//void drawGraph(QString inPath, double * values, double maxVal, int spLength, QColor color, int lineWidth = 2);
-
-
-
-
 void drawArray(double * array, int length, QString outPath);
-//void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC);
 
 template <typename Typ>
 void readSpectraFile(QString filePath,
                      Typ & outData,
                      int inNs = def::nsWOM(),
                      int spL = def::spLength);
-void readFileInLine(QString filePath, vec & outData);
-void writeFileInLine(QString filePath, const vec & outData);
-void readPaFile(QString paFile, double *** matrix, int NetLength, int NumOfClasses, int * NumberOfVectors, char *** FileName, double **classCount);
 
 template <typename Typ>
-bool readICAMatrix(const QString & path, Typ &matrixA, const int & ns);
+void writeSpectraFile(QString filePath,
+                      const Typ & outData,
+                      int inNs = def::nsWOM(),
+                      int spL = def::spLength);
+void readFileInLine(QString filePath,
+                    vec & outData);
+void writeFileInLine(QString filePath,
+                     const vec & outData);
+
+void readPaFile(QString paFile,
+                double *** matrix,
+                int NetLength,
+                int NumOfClasses,
+                int * NumberOfVectors,
+                char *** FileName,
+                double **classCount);
+
 template <typename Typ>
-void writeICAMatrix(const QString & path, Typ &matrixA, const int & ns);
+bool readICAMatrix(const QString & path, Typ &matrixA);
+template <typename Typ>
+void writeICAMatrix(const QString & path, Typ &matrixA);
 
 QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour = true);
 void drawMap      (double ** &matrixA, double maxAbs, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
-void drawMapSpline(double ** &matrixA, double maxAbs, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
-void drawMapsICA(QString mapsPath, int ns, QString outDir, QString outName, bool colourFlag = true,
-                 void (*draw1MapFunc)(double ** &matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
-                 = &drawMapSpline);
+void drawMapSpline(const matrix & matrixA,
+                   const double & maxAbs,
+                   const QString & outDir,
+                   const QString & outName,
+                   const int numOfCol,
+                   const int picSize = 240,
+                   const bool colourFlag = true);
+
+void drawMapsICA(const QString & mapsPath,
+                 const QString & outDir,
+                 const QString & outName,
+                 bool colourFlag = true,
+                 void (*draw1MapFunc)(const matrix &,
+                                      const double &,
+                                      const QString &,
+                                      const QString &,
+                                      const int,
+                                      const int,
+                                      const bool) = &drawMapSpline);
+
+
+
 void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
-void drawSpectra(double ** drawData, int ns, int start, int end, const QString & picPath);
+
 
 void spectre(const double * data, const int &length, double *& spectr);
+vec spectre(const vec & data);
 
 template <typename inTyp, typename outTyp>
 void calcSpectre(const inTyp & inSignal, int length, outTyp &outSpectre, const int & Eyes = 0, int * fftLength = nullptr, const int & NumOfSmooth = 0, const double & powArg = 1.);

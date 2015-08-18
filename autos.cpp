@@ -580,7 +580,7 @@ void MainWindow::Bayes()
                                                       + slash() + lst[i]
                                                       + "_" + QString::number(l)
                                                       + ".png");
-                helpDouble = fractalDimension(dataBayes[l], NumOfSlices);
+                helpDouble = fractalDimension(dataBayes[l]);
                 fprintf(file, "%.3lf\n", helpDouble);
             }
         }
@@ -2160,8 +2160,7 @@ void MainWindow::GalyaProcessing()
                 {
                     helpString.clear();
                 }
-                helpDouble = fractalDimension(currEdf.getData()[i],
-                                              currEdf.getDataLen());
+                helpDouble = fractalDimension(currEdf.getData()[i]);
                 outStr << doubleRound(helpDouble, 4) << endl;
             }
             outStr.close();

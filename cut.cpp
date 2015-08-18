@@ -597,7 +597,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
             ++leftLimit;
             cout << "prev file leftLimit = " << leftLimit << endl;
             // zero() from tempLimit to rightLimit
-            zeroData(data3, def::ns, leftLimit, rightLimit);
+            zeroData(data3, leftLimit, rightLimit);
             rewrite();
             next();
         }
@@ -630,7 +630,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
             ++rightLimit;
             cout << "next file rightLimit = " << rightLimit << endl;
 
-            zeroData(data3, def::ns, leftLimit, rightLimit);
+            zeroData(data3, leftLimit, rightLimit);
             rewrite();
         }
         prev();
@@ -657,7 +657,7 @@ void Cut::zero()
 //        matiAdjustLimits();
     }
 
-    zeroData(data3, def::ns, leftLimit, rightLimit); ///////// should TEST !!!!!!!1111
+    zeroData(data3, leftLimit, rightLimit); ///////// should TEST !!!!!!!1111
     paint();
 }
 

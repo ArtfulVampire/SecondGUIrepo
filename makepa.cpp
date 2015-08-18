@@ -553,7 +553,7 @@ void MakePa::vdvTest()
     //read the spectra into matrixes
     for(int i=0; i<n[0]; ++i)
     {
-        helpString=dir_->absolutePath().append(QDir::separator()).append(lst[0].at(i));
+        helpString=dir_->absolutePath().append(slash()).append(lst[0].at(i));
         currFile = fopen(helpString.toStdString().c_str(), "r");
         for(int j=0; j<def::nsWOM() * def::spLength; ++j)
         {
@@ -564,7 +564,7 @@ void MakePa::vdvTest()
 
     for(int i=0; i<n[1]; ++i)
     {
-        helpString=dir_->absolutePath().append(QDir::separator()).append(lst[1].at(i));
+        helpString=dir_->absolutePath().append(slash()).append(lst[1].at(i));
         currFile = fopen(helpString.toStdString().c_str(), "r");
         for(int j=0; j<def::nsWOM() * def::spLength; ++j)
         {
@@ -780,7 +780,7 @@ void MakePa::vdvTest()
     {
         paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]));
     }
-    helpString = def::dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("Van der Varden").append(ui->addNameLineEdit->text()).append(".jpg");
+    helpString = def::dir->absolutePath().append(slash()).append("Help").append(slash()).append("Van der Varden").append(ui->addNameLineEdit->text()).append(".jpg");
     cout<<helpString.toStdString()<<endl;
 
     pic.save(helpString, 0, 100);
@@ -892,7 +892,7 @@ void MakePa::kwTest()
     {
         for(int i=0; i<n[j]; ++i)
         {
-            helpString=dir_->absolutePath().append(QDir::separator()).append(lst[j][i]);
+            helpString=dir_->absolutePath().append(slash()).append(lst[j][i]);
             currFile = fopen(helpString.toStdString().c_str(), "r");
             for(int k=0; k<def::nsWOM() * def::spLength; ++k)
             {
@@ -1015,7 +1015,7 @@ void MakePa::kwTest()
     cout<<"num of different freq-bins "<<numOfDiff<<endl;
 
     //automatization
-    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath().append(QDir::separator()).append("results.txt")).toStdString().c_str(), "a+");
+    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath().append(slash()).append("results.txt")).toStdString().c_str(), "a+");
     fprintf(res, "U-test\t%d\n", numOfDiff);
     fclose(res);
 
@@ -1147,7 +1147,7 @@ void MakePa::kwTest()
 
 
     //save the picture
-    helpString = def::dir->absolutePath().append(QDir::separator()).append("Help").append(QDir::separator()).append("Kruscal-Wallis").append(ui->addNameLineEdit->text()).append(".jpg");
+    helpString = def::dir->absolutePath().append(slash()).append("Help").append(slash()).append("Kruscal-Wallis").append(ui->addNameLineEdit->text()).append(".jpg");
     cout<<helpString.toStdString()<<endl;
     pic.save(helpString, 0, 100);
     paint->end();
@@ -1309,9 +1309,9 @@ void MakePa::makePaSlot()
         }
     }
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + QDir::separator() + "PA"
-                                          + QDir::separator() + "1.pa");
-    makePaFile(dir_->absolutePath(), listToWrite, def::nsWOM(), def::spLength, def::numOfClasses, coeff, helpString);
+                                          + slash() + "PA"
+                                          + slash() + "1.pa");
+    makePaFile(dir_->absolutePath(), listToWrite, coeff, helpString);
 
     listToWrite.clear();
     for(int j = 0; j < def::numOfClasses; ++j)
@@ -1322,9 +1322,9 @@ void MakePa::makePaSlot()
         }
     }
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + QDir::separator() + "PA"
-                                          + QDir::separator() + "2.pa");
-    makePaFile(dir_->absolutePath(), listToWrite, def::nsWOM(), def::spLength, def::numOfClasses, coeff, helpString);
+                                          + slash() + "PA"
+                                          + slash() + "2.pa");
+    makePaFile(dir_->absolutePath(), listToWrite, coeff, helpString);
 
     listToWrite.clear();
     for(int j = 0; j < def::numOfClasses; ++j)
@@ -1339,9 +1339,9 @@ void MakePa::makePaSlot()
 
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + QDir::separator() + "PA"
-                                          + QDir::separator() + "all.pa");
-    makePaFile(dir_->absolutePath(), listToWrite, def::nsWOM(), def::spLength, def::numOfClasses, coeff, helpString);
+                                          + slash() + "PA"
+                                          + slash() + "all.pa");
+    makePaFile(dir_->absolutePath(), listToWrite, coeff, helpString);
 
 
 
@@ -2029,7 +2029,7 @@ void MakePa::correlationDifference()
     {
         for(int i=0; i<n[j]; ++i)
         {
-            helpString=dir_->absolutePath().append(QDir::separator()).append(lst[j][i]);
+            helpString=dir_->absolutePath().append(slash()).append(lst[j][i]);
             currFile = fopen(helpString.toStdString().c_str(), "r");
             for(int k = 0; k < def::nsWOM() * def::spLength; ++k)
             {

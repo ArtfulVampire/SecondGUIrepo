@@ -1603,8 +1603,7 @@ void MainWindow::markerSaveEdf()
 
 void MainWindow::drawMapsSlot()
 {
-    QString helpString;
-    helpString = QFileDialog::getOpenFileName(this,
+    QString helpString = QFileDialog::getOpenFileName(this,
                                               tr("Choose maps file"),
                                               def::dir->absolutePath(),
                                               tr("*.txt"));
@@ -1612,7 +1611,10 @@ void MainWindow::drawMapsSlot()
     {
         return;
     }
-    drawMapsICA(def::dir->absolutePath(), def::ns, helpString, def::ExpName);
+    QString outDir;
+    drawMapsICA(helpString,
+                def::dir->absolutePath() + slash() + "Help",
+                def::ExpName);
 }
 
 void MainWindow::avTime()
@@ -1688,7 +1690,7 @@ void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unus
         }
         corrs[i][i] = 0.;
     }
-    writeICAMatrix(outPath, corrs, size); //generality 19-ns
+    writeICAMatrix(outPath, corrs); //generality 19-ns
 
 }
 
@@ -1736,7 +1738,6 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
 //    Net * ann = new Net();
 //    ann->show();

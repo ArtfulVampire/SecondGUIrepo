@@ -826,7 +826,7 @@ void Spectre::countSpectra()
     matrix dataIn;
     dataIn.resize(def::ns, fftLength);
 
-    double * tempVec;
+    vec tempVec;
     int numOfIntervals = 20;
     QString helpString;
     int NumOfSlices;
@@ -943,7 +943,7 @@ void Spectre::countSpectra()
 //                hilbert(dataIn[i], fftLength, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
 
                 /// REMAKE with matrix
-                hilbert(dataIn[i], NumOfSlices, def::freq, 8., 12., tempVec, "");
+                tempVec = hilbert(dataIn[i], 8., 12., "");
                 ///
 
 //                cout << lst[a].toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
@@ -951,8 +951,6 @@ void Spectre::countSpectra()
                 outStream << mean(tempVec, NumOfSlices) << '\n';
 //                hilbertPieces(dataIn[i], NumOfSlices, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
 //                outStream << variance(dataIn[i], NumOfSlices) << '\n';
-
-                delete []tempVec;
             }
         }
         else if(ui->bayesRadioButton->isChecked())
@@ -966,7 +964,7 @@ void Spectre::countSpectra()
             {
 
                 /// Reamke with matrix
-                bayesCount(dataIn[i], NumOfSlices, numOfIntervals, tempVec);
+                tempVec = bayesCount(dataIn[i], numOfIntervals);
                 ///
 
                 for(int j = 0; j < numOfIntervals; ++j)
@@ -974,7 +972,6 @@ void Spectre::countSpectra()
                     outStream << tempVec[j] << '\n';
                 }
                 outStream << '\n';
-                delete []tempVec;
             }
 
         }
@@ -983,7 +980,7 @@ void Spectre::countSpectra()
             splitZerosEdges(dataIn, def::ns, fftLength, &NumOfSlices);
             for(int i = 0; i < def::ns; ++i)
             {
-                outStream << fractalDimension(dataIn[i], NumOfSlices) << '\n';
+                outStream << fractalDimension(dataIn[i]) << '\n';
             }
         }
         else if(ui->rawFourierRadioButton->isChecked())

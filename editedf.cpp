@@ -788,7 +788,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
                 + slash() + def::ExpName.left(3)
                 + "_splitZerosLog.txt";
 
-        splitZeros(newData, ns, helpInt, &currSlice, helpString, fileName); // helpString unchanged
+        splitZeros(newData, helpInt, &currSlice, helpString, fileName); // helpString unchanged
 
         ofstream outStream;
         outStream.open(helpString.toStdString().c_str(), ios_base::app);
@@ -845,7 +845,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     }
     else if(ui->splitZerosCheckBox->isChecked())
     {
-        splitZeros(newData, ns, helpInt, &currSlice);
+        splitZeros(newData, helpInt, &currSlice);
     }
 
     /// remake with dataType
