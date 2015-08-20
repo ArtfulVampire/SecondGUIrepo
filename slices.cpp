@@ -965,14 +965,24 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     QString helpString;
     int dataLen;
     QString fileMark;
+    QString folder;
     int pieceNum;
     int currStart;
     int currEnd;
-    double pieceLength = ui->matiPieceLengthSpinBox->value();
-    bool adjustPieces = ui->adjustPiecesCheckBox->isChecked();
+    const double pieceLength = ui->matiPieceLengthSpinBox->value();
+    const bool adjustPieces = ui->adjustPiecesCheckBox->isChecked();
 
     def::dir->cd(globalEdf.getDirPath());
     edfFile fil;
+
+    if(pieceLength <= 4.)
+    {
+        folder = "windows";
+    }
+    else
+    {
+        folder = "Realisations";
+    }
 
     for(int type = 0; type < 3; ++type)
     {
@@ -1029,12 +1039,15 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                             currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
                         }
 
-                        // type and session already in the def::ExpName
+                        // type and session already in the fil.ExpName
+
                         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                              + slash() + "Realisations"
+                                                              + slash() + folder
                                                               + slash() + fil.getExpName()
                                                               + "_" + rightNumber(pieceNum, 2)
                                                               + '_' + fileMark);
+
+
                         fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
                         ++pieceNum;
                         currStart = currEnd;
@@ -1047,7 +1060,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                     {
                         currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
                         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                              + slash() + "Realisations"
+                                                              + slash() + folder
                                                               + slash() + fil.getExpName()
                                                               + "_" + rightNumber(pieceNum, 2)
                                                               + '_' + fileMark);
@@ -1059,7 +1072,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
             }
         }
     }
-    cout << "sliceMatiPieces: time = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
 #endif

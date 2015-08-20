@@ -1738,54 +1738,105 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-//    Net * ann = new Net();
-//    ann->show();
-//    ann->drawWts("/media/Files/Data/AAX/pew.wts");
+    int timeLen = 10; // seconds
+    vector<double> sound(44100 * timeLen); // 1024 samples
+    for(int i = 0; i < sound.size(); ++i)
+    {
+        sound[i] = sin( 50 * (1. + 9. * i/(44100 * timeLen))  * 2 * pi * i / 44100); // 100 Hz
+    }
+    writeWavFile(sound, "/media/Files/Data/1.wav");
+    exit(0);
     return;
 
-//    setEdfFile("/media/Files/Data/Feedback/CAA/CAA_rr.edf");
-//    ns = 20;
-//    MakePa * mk = new MakePa("/media/Files/Data/Feedback/CAA/SpectraSmooth");
-//    mk->mwTest();
-//    kernelEst("/media/Files/Data/wav.txt",
-//              "/media/Files/Data/wav.jpg");
-//    exit(0);
+#if 0
+    // make a tuple of wts pics for windows and reals, MATI
+
+    QStringList names{"ADA", "BSA", "FEV", "KMX", "NVV", "PYV", "SDV", "SIV"};
+    QStringList suffix{"_full", "_full_ica"};
+    QString wtsPath;
+    QString helpString;
+
+    ui->cleanWindowsCheckBox->setChecked(true);
+    ui->cleanWindSpectraCheckBox->setChecked(true);
 
 
-//    drawColorScale("/media/Files/Data/jet.jpg", 64, jet, 1);
-
-//    setEdfFile("/media/Files/Data/Mati/ADA/ADA_full_ica.edf");
-
-//    readData();
-//    writePlainData("/media/Files/Data/Mati/ADA/wav.txt",
-//                   globalEdf.getData(),
-//                   globalEdf.getNs(),
-//                   pow(2, 11),
-//                   0);
-
-    vector<double> vect1;
-    vector<double> vect2;
-    vector<double> vect3;
-    int siz = 19 * def::spLength;
-    vect2.resize(siz);
-    vect3.resize(siz);
-
-    for(int i = 0; i < siz; ++i)
+    for(QString & guy : names)
     {
-        vect1.push_back(i/10.);
-        vect2[siz - 1 - i] = vect1[i];
-        vect3[i] = siz / 20.;
+        for(QString & suff : suffix)
+        {
+            for(bool wnds : {true, false})
+            {
+                if(wnds) ui->matiPieceLengthSpinBox->setValue(4);
+                else ui->matiPieceLengthSpinBox->setValue(16);
+                setEdfFile("/media/Files/Data/Mati/"
+                           + guy + slash() + guy + suff + ".edf");
+
+
+                if(wnds)
+                {
+                    makeCfgStatic(def::dir->absolutePath(),
+                                  63*19,
+                                  "4sec19ch");
+                }
+                if(!wnds)
+                {
+                    makeCfgStatic(def::dir->absolutePath(),
+                                  247*19,
+                                  "16sec19ch");
+                }
+
+                cleanDirs();
+                sliceAll();
+                Spectre * sp = new Spectre();
+                if(wnds) sp->setFftLength(1024);
+                else sp->setFftLength(4096);
+                sp->countSpectra();
+                sp->compare();
+                sp->compare();
+                sp->compare();
+                sp->compare();
+                sp->psaSlot();
+
+
+                helpString = def::dir->absolutePath() + slash() + "SpectraSmooth";
+                if(wnds) helpString += slash() + "windows";
+
+                Net * ann = new Net();
+                MakePa * mkPa = new MakePa(helpString);
+                ann->adjustReduceCoeff(helpString,
+                                       90,
+                                       150,
+                                       mkPa,
+                                       "all");
+
+                mkPa->makePaSlot();
+                ann->PaIntoMatrixByName("all");
+
+                ann->LearnNet();
+
+                wtsPath = def::dir->absolutePath()
+                        + slash() + def::ExpName;
+                if(wnds) wtsPath += "_wnd";
+                wtsPath += ".wts";
+
+
+                helpString = def::dir->absolutePath()
+                        + slash() + "Help"
+                        + slash() + def::ExpName + "_wts";
+                if(wnds) helpString += "_wnd";
+                helpString += ".jpg";
+
+                ann->writeWts(wtsPath);
+                ann->drawWts(wtsPath, helpString);
+
+                ann->close();
+                mkPa->close();
+                sp->close();
+            }
+        }
     }
-    matrix inMatrix = matrix{vect1, vect2, vect3};
-
-    drawTemplate("/media/Files/Data/1.jpg",
-                 1600, 1600);
-    drawArrays("/media/Files/Data/1.jpg",
-               inMatrix,
-               def::colours);
-
     exit(0);
+#endif
 
 #if 0
     // save and draw weights for mati EEG/components
@@ -1814,7 +1865,7 @@ void MainWindow::customFunc()
         delete mkPa;
 
         Net * ann = new Net();
-        ann->loadCfgByName("16sec19ch.net");
+        ann->readCfgByName("16sec19ch.net");
         for(double error = 0.15; error >= 0.05; error -= 0.05)
         {
             ann->setErrcrit(0.15);
@@ -1827,7 +1878,7 @@ void MainWindow::customFunc()
                         + "_" + QString::number(error)
                         + "_" + QString::number(i)
                         + ".wts";
-                ann->saveWts(helpString);
+                ann->writeWts(helpString);
                 ann->drawWts();
             }
         }
@@ -2517,7 +2568,7 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 1
+#if 0
     // drop some channels, test classification
     QString currGuy = "ADA";
     QString helpString;

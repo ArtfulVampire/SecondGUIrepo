@@ -135,16 +135,6 @@ void Spectre::defaultState()
     ui->spectraRadioButton->setChecked(true); // count FFT
 }
 
-//void Spectre::changePic(int num)
-//{
-//    QString helpString;
-//    if(group1->button(num)->text().contains("colo"))
-//    {
-//        helpString = def::dir->absolutePath() + slash() + "Help" +
-//        ui->specLabel->setPixmap();
-//    }
-//}
-
 void Spectre::setFftLength(int i)
 {
     ui->fftComboBox->setCurrentText(QString::number(i));
@@ -158,8 +148,8 @@ void Spectre::setPow(double a)
 int findChannel(int x, int y, QSize siz)
 {
     int a, b, num;
-    a = floor( x*16./double(siz.width())/3. );
-    b = floor( y*16./double(siz.height())/3. );
+    a = floor( x * 16./double(siz.width())/3. );
+    b = floor( y * 16./double(siz.height())/3. );
     num = 0;
     switch(b)
     {
@@ -343,9 +333,9 @@ void Spectre::integrate()
         nameFilters.clear();
         nameFilters = helpString.split('-', QString::SkipEmptyParts);
 
-        begins[i] = max(floor(nameFilters[0].toDouble() * fftLength / def::freq) - def::left + 1,
+        begins[i] = max(floor(nameFilters[0].toDouble() * def::fftLength / def::freq) - def::left + 1,
                 0.);  //generality 250
-        ends[i] = fmin(ceil(nameFilters[1].toDouble() * fftLength / def::freq) - def::left + 1,
+        ends[i] = fmin(ceil(nameFilters[1].toDouble() * def::fftLength / def::freq) - def::left + 1,
                 def::spLength);  //generality 250
     }
 
@@ -439,12 +429,10 @@ void Spectre::psaSlot()
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
-                                          + slash() + def::ExpName + "_all.jpg");
+                                          + slash() + ui->lineEdit_m2->text() + ".jpg");
     drawTemplate(helpString);
     drawArrays(helpString,
                drawData);
-
-
 
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()+1);
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()-1);
@@ -457,7 +445,7 @@ void Spectre::compare()
     QStringList list; //0 - Spatial, 1 - Verbal, 2 - Gaps
     QString helpString;
 
-    def::dir->cd(ui->lineEdit_1->text());   //input dir = /SpectraSmooth or
+    def::dir->cd(ui->lineEdit_1->text());   //input dir = /SpectraSmooth or windows
     nameFilters.clear();
     list.clear();
     list = ui->lineEdit_m1->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -512,7 +500,7 @@ void Spectre::compare()
                                               + slash()
                                               + ui->lineEdit_m2->text()
                                               + ".psa");
-        cout << helpString << endl;
+//        cout << helpString << endl;
         writeFileInLine(helpString, meanVec);
 
 
@@ -521,7 +509,7 @@ void Spectre::compare()
                                               + ui->lineEdit_m2->text()
                                               + ".jpg");
 
-        cout << helpString << endl;
+//        cout << helpString << endl;
         drawTemplate(helpString);
         drawArray(helpString, meanVec);
     }
@@ -577,8 +565,14 @@ void Spectre::compare()
             helpString.append("_247_wnd");
             ui->lineEdit_m2->setText(helpString);
         }
-
         else if(ui->lineEdit_m1->text().contains("247"))
+        {
+            ui->lineEdit_m1->setText("_244");
+            helpString = def::ExpName;
+            helpString.append("_244_wnd");
+            ui->lineEdit_m2->setText(helpString);
+        }
+        else if(ui->lineEdit_m1->text().contains("244"))
         {
             ui->lineEdit_m1->setText("_254");
             helpString = def::ExpName;
@@ -609,8 +603,7 @@ void Spectre::compare()
 
 void Spectre::setFftLengthSlot()
 {
-    fftLength = ui->fftComboBox->currentText().toInt();
-
+    def::fftLength = ui->fftComboBox->currentText().toInt();
 
     ui->leftSpinBox->setMinimum(0);
     ui->leftSpinBox->setMaximum(1000);
@@ -628,10 +621,11 @@ void Spectre::setFftLengthSlot()
 
     if(ui->fftComboBox->currentIndex() == 0) //1024
     {
-        ui->smoothBox->setValue(3);
+        ui->smoothBox->setValue(4);
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "windows"
                                               + slash() + "fromreal");
+
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "windows"); //for windows
         ui->lineEdit_1->setText(helpString);
@@ -654,9 +648,10 @@ void Spectre::setFftLengthSlot()
     }
 
     // [left right)
-    def::left = fftLimit(def::leftFreq, def::freq, fftLength);
-    def::right = fftLimit(def::rightFreq, def::freq, fftLength) + 1;
+    def::left = fftLimit(def::leftFreq, def::freq, def::fftLength);
+    def::right = fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;
     def::spLength = def::right - def::left;
+    def::spStep = def::freq / double(def::fftLength);
 
     ui->leftSpinBox->setValue(def::left);
     ui->rightSpinBox->setValue(def::right);
@@ -667,7 +662,6 @@ void Spectre::setFftLengthSlot()
         rangeLimits[i][1] = def::spLength;
     }
 
-    def::spStep = def::freq/double(fftLength); //generality 250 = frequency
 }
 
 void Spectre::center()
@@ -784,7 +778,7 @@ void Spectre::setSmooth(int a)
 void Spectre::setRight()
 {
     def::right = ui->rightSpinBox->value();
-    QString helpString = QString::number((def::right - 1) * def::freq / fftLength);
+    QString helpString = QString::number((def::right - 1) * def::freq / def::fftLength);
     ui->rightHzEdit->setText(helpString);
     def::spLength = def::right - def::left;
 }
@@ -792,7 +786,7 @@ void Spectre::setRight()
 void Spectre::setLeft()
 {
     def::left = ui->leftSpinBox->value();
-    QString helpString = QString::number(def::left * def::freq / fftLength);
+    QString helpString = QString::number(def::left * def::freq / def::fftLength);
     ui->leftHzEdit->setText(helpString);
     def::spLength = def::right - def::left;
 }
@@ -815,7 +809,7 @@ void Spectre::countSpectra()
         dataPhase[i] = new double * [def::ns];
         for(int j = 0; j < def::ns; ++j)
         {
-            dataPhase[i][j] = new double [fftLength/2];
+            dataPhase[i][j] = new double [def::fftLength / 2];
         }
     }
 
@@ -824,7 +818,7 @@ void Spectre::countSpectra()
     ofstream outStream;
 
     matrix dataIn;
-    dataIn.resize(def::ns, fftLength);
+    dataIn.resize(def::ns, def::fftLength);
 
     vec tempVec;
     int numOfIntervals = 20;
@@ -896,7 +890,7 @@ void Spectre::countSpectra()
                     for(int j = def::left; j < def::right; ++j)
                     {
                         sum1 += dataFFT[i][j];
-                        sum2 += dataFFT[i][j] * (j * def::freq / fftLength);
+                        sum2 += dataFFT[i][j] * (j * def::freq / def::fftLength);
                     }
                     sum2 /= sum1;
                     //                cout << sum2 << endl;
@@ -935,19 +929,19 @@ void Spectre::countSpectra()
         else if(ui->hilbertsVarRadioButton->isChecked())
         {
             QMessageBox::critical(this, tr("error"), tr("look at code, fix split zeros"), QMessageBox::Ok);
-//            splitZeros(&dataIn, ns, fftLength, &NumOfSlices);
+//            splitZeros(&dataIn, ns, def::fftLength, &NumOfSlices);
             return;
 
             for(int i = 0; i < def::ns; ++i)
             {
-//                hilbert(dataIn[i], fftLength, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
+//                hilbert(dataIn[i], def::fftLength, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
 
                 /// REMAKE with matrix
                 tempVec = hilbert(dataIn[i], 8., 12., "");
                 ///
 
 //                cout << lst[a].toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
-//                outStream << variance(tempVec, fftLength) << '\n';
+//                outStream << variance(tempVec, def::fftLength) << '\n';
                 outStream << mean(tempVec, NumOfSlices) << '\n';
 //                hilbertPieces(dataIn[i], NumOfSlices, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
 //                outStream << variance(dataIn[i], NumOfSlices) << '\n';
@@ -957,7 +951,7 @@ void Spectre::countSpectra()
         {
             //clean from zeros
             QMessageBox::critical(this, tr("error"), tr("look at code, fix split zeros"), QMessageBox::Ok);
-//            splitZeros(&dataIn, ns, fftLength, &NumOfSlices);
+//            splitZeros(&dataIn, ns, def::fftLength, &NumOfSlices);
             return;
 
             for(int i = 0; i < def::ns; ++i)
@@ -977,7 +971,7 @@ void Spectre::countSpectra()
         }
         else if(ui->d2RadioButton->isChecked())
         {
-            splitZerosEdges(dataIn, def::ns, fftLength, &NumOfSlices);
+            splitZerosEdges(dataIn, def::ns, def::fftLength, &NumOfSlices);
             for(int i = 0; i < def::ns; ++i)
             {
                 outStream << fractalDimension(dataIn[i]) << '\n';
@@ -986,9 +980,9 @@ void Spectre::countSpectra()
         else if(ui->rawFourierRadioButton->isChecked())
         {
             Eyes = 0;
-            NumOfSlices = fftLength;
+            NumOfSlices = def::fftLength;
             int h = 0;
-            for(int i = 0; i < fftLength; ++i)
+            for(int i = 0; i < def::fftLength; ++i)
             {
                 h = 0;
                 for(int j = 0; j < def::ns; ++j)
@@ -998,20 +992,20 @@ void Spectre::countSpectra()
                 if(h == def::ns) Eyes += 1;
             }
 
-            if(fftLength == 4096 && (NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
+            if(def::fftLength == 4096 && (NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
             {
                 cout << a << "'th file too short" << endl;
             }
-            else if(fftLength == 1024 && (NumOfSlices-Eyes) < 250*2.)
+            else if(def::fftLength == 1024 && (NumOfSlices-Eyes) < 250*2.)
             {
                 cout << a << "'th file too short" << endl;
             }
-            else if(fftLength == 2048 && (NumOfSlices-Eyes) < 250*3.)
+            else if(def::fftLength == 2048 && (NumOfSlices-Eyes) < 250*3.)
             {
                 cout << a << "'th file too short" << endl;
             }
 
-            calcRawFFT(dataIn, dataFFT, def::ns, fftLength, Eyes, ui->smoothBox->value());
+            calcRawFFT(dataIn, dataFFT, def::ns, def::fftLength, Eyes, ui->smoothBox->value());
             def::dir->cd(backupDirPath);
 
             for(int i = 0; i < def::ns; ++i)                               ///save BY CHANNELS!!!  except markers
@@ -1126,9 +1120,9 @@ int Spectre::countOneSpectre(const matrix & data2, mat & dataFFT)  /////////EDIT
 {
     //correct Eyes number
     Eyes = 0;
-    int NumOfSlices = fftLength;
+    int NumOfSlices = def::fftLength;
     int h = 0;
-    for(int i = 0; i < fftLength; ++i)
+    for(int i = 0; i < def::fftLength; ++i)
     {
         h = 0;
         for(int j = 0; j < def::nsWOM(); ++j) // write w/o markers
@@ -1139,17 +1133,17 @@ int Spectre::countOneSpectre(const matrix & data2, mat & dataFFT)  /////////EDIT
     }
 
     //generality
-    if(fftLength == 4096 && (NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
+    if(def::fftLength == 4096 && (NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
     {
 //        cout << num << "'th file too short" << endl;
         return 0;
     }
-    else if(fftLength == 1024 && (NumOfSlices-Eyes) < 250*2.)
+    else if(def::fftLength == 1024 && (NumOfSlices-Eyes) < 250*2.)
     {
 //        cout << num << "'th file too short" << endl;
         return 0;
     }
-    else if(fftLength == 2048 && (NumOfSlices-Eyes) < 250*3.)
+    else if(def::fftLength == 2048 && (NumOfSlices-Eyes) < 250*3.)
     {
 //        cout << num << "'th file too short" << endl;
         return 0;
@@ -1158,7 +1152,7 @@ int Spectre::countOneSpectre(const matrix & data2, mat & dataFFT)  /////////EDIT
     calcSpectre(data2,
                 dataFFT,
                 def::nsWOM(),
-                fftLength,
+                def::fftLength,
                 Eyes,
                 ui->smoothBox->value(),
                 ui->powDoubleSpinBox->value());
@@ -1177,7 +1171,7 @@ int Spectre::readFilePhase(double ** data2, double ***dataPhase)
 
         //correct Eyes number
         Eyes = 0;
-        int NumOfSlices = fftLength;
+        int NumOfSlices = def::fftLength;
         for(int i = 0; i<NumOfSlices; ++i)
         {
             h = 0;
@@ -1198,44 +1192,44 @@ int Spectre::readFilePhase(double ** data2, double ***dataPhase)
     //    cout << "!!" << endl;
 
 
-        double norm1 = fftLength / double(fftLength - Eyes);              //norm with eyes
+        double norm1 = def::fftLength / double(def::fftLength - Eyes);              //norm with eyes
 
 
         double ** spectre = new double *[2];
-        spectre[0] = new double [fftLength*2];
-        spectre[1] = new double [fftLength*2];
+        spectre[0] = new double [def::fftLength * 2];
+        spectre[1] = new double [def::fftLength * 2];
 
         double * help = new double [2];
 //        int leftSmoothLimit, rightSmoothLimit;
 
         for(int c1 = 0; c1 < def::ns; ++c1)
         {
-            for(int i = 0; i < fftLength; ++i)            //make appropriate array
+            for(int i = 0; i < def::fftLength; ++i)            //make appropriate array
             {
                 spectre[0][ i * 2 ] = (double)(data2[c1][ i ]*sqrt(norm1));
                 spectre[0][ i * 2 + 1 ] = 0.;
             }
-            four1(spectre[0] - 1, fftLength, 1);        //Fourier transform
+            four1(spectre[0] - 1, def::fftLength, 1);        //Fourier transform
 
             for(int c2 = c1+1; c2 < def::ns; ++c2)
             {
 
 
-                for(int i = 0; i < fftLength; ++i)            //make appropriate array
+                for(int i = 0; i < def::fftLength; ++i)            //make appropriate array
                 {
                     spectre[1][ i * 2 ] = (double)(data2[c2][ i ]*sqrt(norm1));
                     spectre[1][ i * 2 + 1 ] = 0.;
                 }
-                four1(spectre[1] - 1, fftLength, 1);        //Fourier transform
+                four1(spectre[1] - 1, def::fftLength, 1);        //Fourier transform
 
                 for(int i = def::left; i < def::right + 2; ++i )      //get the absolute value of FFT
                 {
                     dataPhase[c1][c2][ i ] = atan(spectre[0][ i * 2] / spectre[0][ i * 2 + 1])
                             - atan(spectre[1][ i * 2] / spectre[1][ i * 2 +1]); //!!!!!!!!!!atan(Im/Re)
                     help[0] = ( pow(spectre[0][ i * 2 + 1 ], 2)
-                            + pow(spectre[0][ i * 2 ], 2)) * 2 / def::freq / fftLength;
+                            + pow(spectre[0][ i * 2 ], 2)) * 2 / def::freq / def::fftLength;
                     help[1] = ( pow(spectre[1][ i * 2 + 1 ], 2)
-                            + pow(spectre[1][ i * 2 ], 2)) * 2 / def::freq / fftLength;
+                            + pow(spectre[1][ i * 2 ], 2)) * 2 / def::freq / def::fftLength;
 
                     dataPhase[c1][c2][ i ] *= sqrt(help[0] * help[1]) / (help[0] + help[1]); //normalisation
                     if(QString::number(dataPhase[c1][c2][i]).contains('n')) //why nan and inf???

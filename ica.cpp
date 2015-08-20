@@ -1326,7 +1326,7 @@ void MainWindow::icaClassTest() /// CAREFUL sliceOneByOneNew() numOfIC
     helpString = def::dir->absolutePath() + slash() + "SpectraSmooth";
     Net * ANN = new Net(dir, numOfIC, left, right, spStep, def::ExpName);
     helpString = def::dir->absolutePath() + slash() + "16sec19ch.net";
-    ANN->loadCfgByName(helpString);
+    ANN->readCfgByName(helpString);
     ANN->setReduceCoeff(10.);
     double tempAccuracy;
     double currentAccuracy;
@@ -1668,7 +1668,7 @@ void MainWindow::randomDecomposition() // CAREFUL sliceOneByOneNew
     Spectre * spectr = new Spectre(dir, compNum, def::ExpName);
     Net * ANN = new Net(dir, compNum, left, right, spStep, def::ExpName); //generality parameters
     helpString = def::dir->absolutePath() + slash() + "16sec19ch.net";
-    ANN->loadCfgByName(helpString);
+    ANN->readCfgByName(helpString);
 
     ANN->setReduceCoeff(15.); //generality
     ANN->setNumOfPairs(50);   ////////////////////////////////////////////////////////////////////////////////////////////

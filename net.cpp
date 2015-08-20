@@ -92,7 +92,7 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(0.7); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(5.); // 1. for MATI? usually 5.     0.7 for best comp set
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
@@ -148,9 +148,9 @@ Net::Net() :
     paint = new QPainter;
 //    QObject::connect(this, SIGNAL(destroyed()), &myThread, SLOT(quit()));
 
-    QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(loadCfg()));
+    QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(readCfg()));
 
-    QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(loadWts()));
+    QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWts()));
 
     QObject::connect(ui->loadPaButton, SIGNAL(clicked()), this, SLOT(PaIntoMatrix()));
 
@@ -160,9 +160,9 @@ Net::Net() :
 
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopActivity()));
 
-    QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(saveWtsSlot()));
+    QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(writeWtsSlot()));
 
-    QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWts()));
+    QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWtsSlot()));
 
     QObject::connect(ui->neuronGasPushButton, SIGNAL(clicked()), this, SLOT(neuronGas()));
 
@@ -190,17 +190,18 @@ Net::Net() :
 
     helpString = def::dir->absolutePath()
             + slash() + def::cfgFileName;
-    loadCfgByName(helpString);
+    readCfgByName(helpString);
 
-    if(def::spStep == def::freq / pow(2, 12))
+    if(def::fftLength == pow(2, 12))
     {
         helpString = def::dir->absolutePath() + slash() + "16sec19ch.net";
     }
-    else if(def::spStep == def::freq / pow(2, 10))
+    else if(def::fftLength == pow(2, 10))
     {
         helpString = def::dir->absolutePath() + slash() + "4sec19ch.net";
     }
-    loadCfgByName(helpString);
+//    cout << helpString << endl;
+    readCfgByName(helpString);
 
 
     this->ui->deltaRadioButton->setChecked(true);
@@ -220,7 +221,7 @@ Net::Net() :
 
 
 
-//    loadCfgByName("111");
+//    readCfgByName("111");
 //    ui->deepBeliefRadioButton->setChecked(true);
 //    PaIntoMatrixByName("1");
 }
@@ -331,7 +332,11 @@ void Net::setAutoProcessingFlag(bool a)
     autoFlag = a;
 }
 
-bool Net::adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa, QString paFileName)
+bool Net::adjustReduceCoeff(QString spectraDir,
+                            int lowLimit,
+                            int highLimit,
+                            MakePa * outMkPa,
+                            QString paFileName)
 {
     QTime myTime;
     myTime.start();
@@ -523,7 +528,7 @@ void Net::autoPCAClassification()
 
         helpString = QDir::toNativeSeparators(dirBC->absolutePath()
                                               + slash() + "pca.net");
-        loadCfgByName(helpString);
+        readCfgByName(helpString);
 
         def::ns = 1;
         def::left = 1;
@@ -637,11 +642,24 @@ void Net::averageClassification()
     delete []tempDouble;
 }
 
+
+void Net::drawWtsSlot()
+{
+    QString helpString = QFileDialog::getOpenFileName((QWidget * )this,
+                                                      tr("wts to draw"),
+                                                      dirBC->absolutePath(),
+                                                      tr("wts files (*.wts)"));
+    QString picPath = helpString;
+    picPath.replace(".wts", ".jpg");
+
+    drawWts(helpString, picPath);
+}
+
+
 void Net::drawWts(QString wtsPath, QString picPath)  //generality
 {
     if( numOfLayers != 2 ) return;
 
-    double *** tempWeights;
     QString helpString;
 
     if(!wtsPath.isEmpty())
@@ -670,8 +688,8 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
                                  QMessageBox::Ok);
         return;
     }
-    loadWtsByName(helpString, &tempWeights);
-
+    double *** tempWeights = nullptr;
+    readWtsByName(helpString, &tempWeights);
 
     matrix drawWts;
     vec tempVec;
@@ -687,11 +705,11 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
 
     if(picPath.isEmpty())
     {
-        picPath = wtsPath.replace(".wts", ".jpg");
+        picPath = wtsPath;
+        picPath.replace(".wts", ".jpg");
     }
     drawTemplate(picPath);
     drawArrays(picPath, drawWts);
-
 
     // func
     for(int i = 0; i < numOfLayers - 1; ++i)
@@ -711,7 +729,7 @@ void Net::stopActivity()
 }
 
 
-void Net::saveWts(QString wtsPath)
+void Net::writeWts(const QString & wtsPath)
 {
     ofstream weightsFile;
     weightsFile.open(wtsPath.toStdString().c_str());
@@ -737,7 +755,7 @@ void Net::saveWts(QString wtsPath)
     weightsFile.close();
 }
 
-void Net::saveWtsSlot()
+void Net::writeWtsSlot()
 {
     //automatization
     int wtsCounter = 0;
@@ -766,7 +784,7 @@ void Net::saveWtsSlot()
         cout << "saveWtsSlot: no file is chosen to save" << endl;
         return;
     }
-    saveWts(helpString);
+    writeWts(helpString);
 
 }
 
@@ -928,7 +946,7 @@ void Net::tall()
     ++numOfTall;
 }
 
-void Net::loadCfg()
+void Net::readCfg()
 {
     //automatization
     QString helpString;
@@ -963,11 +981,11 @@ void Net::loadCfg()
         cout << "cfg auto path = " << helpString.toStdString() << endl;
     }
 
-    loadCfgByName(helpString);
+    readCfgByName(helpString);
 
 }
 
-void Net::loadCfgByName(QString FileName)
+void Net::readCfgByName(QString FileName)
 {
     QString helpString = FileName;
     if(!helpString.endsWith(".net", Qt::CaseInsensitive))
@@ -1010,7 +1028,7 @@ void Net::loadCfgByName(QString FileName)
 
 }
 
-void Net::loadWtsByName(QString filename, double * *** wtsMatrix) //
+void Net::readWtsByName(const QString & filename, double * *** wtsMatrix) //
 {
     if(wtsMatrix == nullptr)
     {
@@ -1024,7 +1042,7 @@ void Net::loadWtsByName(QString filename, double * *** wtsMatrix) //
     }
     QString helpString;
 
-    if(*wtsMatrix == NULL) //if hasn't been allocated
+    if((*wtsMatrix) == nullptr) //if hasn't been allocated
     {
         numOfLayers = ui->numOfLayersSpinBox->value();
         helpString = ui->dimensionalityLineEdit->text();
@@ -1082,7 +1100,7 @@ void Net::loadWtsByName(QString filename, double * *** wtsMatrix) //
 }
 
 
-void Net::loadWts()
+void Net::readWts()
 {
     QString helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,
                                                                        tr("load wts"),

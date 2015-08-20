@@ -43,7 +43,7 @@ namespace def
 
 //    Atanov
     const int numOfClasses = 3;
-    const QString dataFolder = "/media/Files/Data/Feedback";
+    const QString dataFolder = "/media/Files/Data/Mati";
     const bool opencl = true;
     const bool openmp = true;
 

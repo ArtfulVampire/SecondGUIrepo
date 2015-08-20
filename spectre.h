@@ -54,8 +54,6 @@ private:
     Ui::Spectre *ui;
     QString backupDirPath;
 
-    int fftLength;
-
     QStringList nameFilters;
     int Eyes;
     QFileDialog * browser1;

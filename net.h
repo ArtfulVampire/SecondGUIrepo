@@ -56,7 +56,7 @@ public:
     void moveCoordsGradient(double ** coords, double ** distOld, double ** distNew, int size);
     double thetalpha(int bmu_, int j_, int step_, double ** arr, int length_);
 
-    void loadCfgByName(QString FileName);
+    void readCfgByName(QString FileName);
     double setPercentageForClean();
     double mouseClick(QLabel * label, QMouseEvent * ev);
     void leaveOneOut();
@@ -64,27 +64,28 @@ public:
     void setReduceCoeff(double coeff);
     double getReduceCoeff();
     void setNumOfPairs(int num);
-    void saveWts(QString wtsPath);
+    void writeWts(const QString &wtsPath);
     void PaIntoMatrixByName(QString fileName);
     void autoClassification(QString spectraDir);
     void averageClassification();
+
+    void drawWts(QString wtsPath = QString(),
+                 QString picPath = QString());
 
 protected:
     void mousePressEvent(QMouseEvent * event);
 
 public slots:
-    void loadCfg();
-    void loadWts();
-
+    void readCfg();
+    void readWts();
 
     void LearnNet();
 
     void tall();
     void reset();
-    void saveWtsSlot();
+    void writeWtsSlot();
     void stopActivity();
-    void drawWts(QString wtsPath = QString(),
-                 QString picPath = QString());
+    void drawWtsSlot();
     void PaIntoMatrix();
     void leaveOneOutSlot();
     void neuronGas();
@@ -150,7 +151,7 @@ private:
 
 public:
 
-    void loadWtsByName(QString,
+    void readWtsByName(const QString &,
                        double * *** wtsMatrix = nullptr);
 };
 

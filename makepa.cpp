@@ -31,7 +31,7 @@ MakePa::MakePa(QString spectraPath, QVector<int> vect_) :
     ui->lineEdit_2->setText("_247");
     ui->lineEdit_3->setText("_244 _254"); // MATI or NORMAL
 
-    ui->rdcCoeffBox->setValue(20);
+    ui->rdcCoeffBox->setValue(4);
     ui->rdcCoeffBox->setDecimals(3);
     ui->rdcCoeffBox->setMinimum(1e-3);
     ui->rdcCoeffBox->setMaximum(1e3);
@@ -1329,14 +1329,11 @@ void MakePa::makePaSlot()
     listToWrite.clear();
     for(int j = 0; j < def::numOfClasses; ++j)
     {
-        for(int i = 0; i < (len[j]/fold) * fold; ++i)
+        for(int i = 0; i < (len[j] / fold) * fold; ++i)
         {
             listToWrite << lst[j][arr[j][i]];
         }
     }
-
-
-
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "PA"

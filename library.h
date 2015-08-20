@@ -48,6 +48,8 @@ const double pi_sqrt = sqrt(pi);
 typedef vector<vector<double>> mat;
 typedef vector<double> vec;
 
+void writeWavFile(const vec & inData, const QString & outPath);
+
 //void QDoubleSpinBox::mySlot(double val)
 int len(QString s); // string length for EDF+ annotations
 QString rightNumber(const unsigned int input, int N); // prepend zeros

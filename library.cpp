@@ -1,5 +1,109 @@
 #include "library.h"
 
+void writeByte(FILE * fil, int num)
+{
+    char tempChar = num;
+    fwrite(&tempChar, sizeof(char), 1, fil);
+}
+
+void writeBytes(FILE * fil, int value, int numBytes)
+{
+    int tempInt;
+    for(int i = 0; i < numBytes; ++i)
+    {
+        tempInt = (value / int(pow(256, i)))%256;
+        writeByte(fil, tempInt);
+    }
+}
+
+void writeWavFile(const vec & inData, const QString & outPath)
+{
+    // http://soundfile.sapp.org/doc/WaveFormat/
+
+
+    FILE * outFile;
+    outFile = fopen(outPath, "wb");
+    if(outFile == NULL)
+    {
+        cout << "cant open file to write" << endl;
+        return;
+    }
+
+    const int numChannels = 1;
+    const int bitsPerSample = 16;
+    const int sampleFreq = 44100;
+    const int numSamples = inData.size();
+    const double maxAmpl = *(std::max_element(inData.begin(), inData.end())) + 1e-3;
+    const int subchunk2size = numSamples * numChannels * bitsPerSample / 8;
+    const int chunkSize = 4 + (8 + 16) + (8 + subchunk2size);
+    const int byteRate = sampleFreq * numChannels * bitsPerSample / 8;
+    const int blockAlign = numChannels * bitsPerSample / 8;
+
+    //RIFF
+    writeByte(outFile, 0x52);
+    writeByte(outFile, 0x49);
+    writeByte(outFile, 0x46);
+    writeByte(outFile, 0x46);
+
+    //chunksize = 44 + ns * numSamples * bytesPerSample
+    writeBytes(outFile, chunkSize, 4);
+
+    //WAVE
+    writeByte(outFile, 0x57);
+    writeByte(outFile, 0x41);
+    writeByte(outFile, 0x56);
+    writeByte(outFile, 0x45);
+
+    // fmt
+    writeByte(outFile, 0x66);
+    writeByte(outFile, 0x6d);
+    writeByte(outFile, 0x74);
+    writeByte(outFile, 0x20);
+
+    //Subchunk1Size = 16 for pcm
+    writeBytes(outFile, 16, 4);
+
+    //audioFormat = 1 PCM
+    writeBytes(outFile, 1, 2);
+
+    //numChannels
+    writeBytes(outFile, numChannels, 2);
+
+    //sampleRate
+    writeBytes(outFile, sampleFreq, 4);
+
+    //BYTErate
+    writeBytes(outFile, byteRate, 4);
+
+    //block align
+    writeBytes(outFile, blockAlign, 2);
+
+    //bitsPerSample
+    writeBytes(outFile, bitsPerSample, 2);
+
+    //data
+    writeByte(outFile, 0x64);
+    writeByte(outFile, 0x61);
+    writeByte(outFile, 0x74);
+    writeByte(outFile, 0x61);
+
+    //subchunk2size
+    writeBytes(outFile, subchunk2size, 4);
+
+    //the data itself
+    int currVal;
+    for(int i = 0; i < numSamples; ++i)
+    {
+        for(int j = 0; j < numChannels; ++j)
+        {
+            currVal = int(inData[i] * pow(256, bitsPerSample/8/numChannels) / maxAmpl);
+            writeBytes(outFile, currVal, int(bitsPerSample/8/numChannels));
+        }
+    }
+    fclose(outFile);
+}
+
+
 double const morletFall = 9.; // coef in matlab = mF^2 / (2 * pi^2);
 double morletCosNew(double const freq1, // Hz
                     const double timeShift,
@@ -5005,10 +5109,17 @@ void countRCP(QString filePath, QString picPath, double * outMean, double * outS
     }
 }
 
-void makeCfgStatic(QString outFileDir, int NetLength, QString FileName, int numOfOuts, double lrate, double error, int temp)
+void makeCfgStatic(QString outFileDir,
+                   int NetLength,
+                   QString FileName,
+                   int numOfOuts,
+                   double lrate,
+                   double error,
+                   int temp)
 {
-    QString helpString = QDir::toNativeSeparators(outFileDir + slash() + FileName + ".net");
-    FILE * cfgFile = fopen(helpString.toStdString().c_str(), "w");
+    QString helpString = QDir::toNativeSeparators(outFileDir
+                                                  + slash() + FileName + ".net");
+    FILE * cfgFile = fopen(helpString, "w");
     if(cfgFile == NULL)
     {
         cout << "static MakeCfg: cannot open file: " << helpString.toStdString() << endl;

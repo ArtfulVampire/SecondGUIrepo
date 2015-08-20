@@ -618,7 +618,7 @@ void MainWindow::diffSmooth()
 
         ANN = new Net();
         ANN->setAutoProcessingFlag(true);
-        ANN->loadCfg();
+        ANN->readCfg();
         ANN->autoClassification("SpectraSmooth");
         ANN->close();
         cout << "smooth = " << i << " done" << endl;
@@ -744,7 +744,7 @@ double MainWindow::fileInnerClassification(QString workPath,
 
     Net * ANN;
     ANN = new Net();
-    ANN->loadCfgByName(cfgFileName);
+    ANN->readCfgByName(cfgFileName);
     ANN->setAutoProcessingFlag(true);
     ANN->setNumOfPairs(NumOfPairs);
     ANN->autoClassificationSimple();
@@ -804,7 +804,7 @@ double MainWindow::filesCrossClassification(QString workPath, QString fileName1,
     ANN = new Net();
     ANN->setReduceCoeff(startCoeff);
     ANN->setAutoProcessingFlag(true);
-    ANN->loadCfgByName(cfgFileName);
+    ANN->readCfgByName(cfgFileName);
     helpString = tmpDir->absolutePath() + slash() + "SpectraSmooth";
     if(windows)
     {
@@ -823,7 +823,7 @@ double MainWindow::filesCrossClassification(QString workPath, QString fileName1,
         ANN->PaIntoMatrixByName("all");
         ANN->LearnNet();
         helpString = tmpDir->absolutePath() + slash() + "crossClass_" + QString::number(k) + ".wts";
-        ANN->saveWts(helpString);
+        ANN->writeWts(helpString);
     }
     cout << endl;
 
@@ -846,7 +846,7 @@ double MainWindow::filesCrossClassification(QString workPath, QString fileName1,
     {
 //        cout << k+1 << " "; cout.flush();
         helpString = tmpDir->absolutePath() + slash() + wtsFiles[k];
-        ANN->loadWtsByName(helpString);
+        ANN->readWtsByName(helpString);
         ANN->tall();
     }
 //    cout << endl;
