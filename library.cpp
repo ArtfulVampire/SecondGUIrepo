@@ -110,7 +110,7 @@ double morletCosNew(double const freq1, // Hz
                     const double time)
 {
     double freq = freq1 * 2. * pi;
-    double res =  sqrt(2. * freq / pi_sqrt)
+    double res =  sqrt(2. * freq / pi_sqrt / morletFall)
                   * cos(freq * (time - timeShift) / def::freq)
                   * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
     return res;
@@ -121,7 +121,7 @@ double morletSinNew(double const freq1,
                     const double time)
 {
     double freq = freq1 * 2. * pi;
-    double res =  sqrt(2. * freq / pi_sqrt)
+    double res =  sqrt(2. * freq / pi_sqrt / morletFall)
                   * sin(freq * (time - timeShift) / def::freq)
                   * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
     return res;
@@ -2696,6 +2696,24 @@ void wavelet(QString filePath,
     }
     pic.save(picPath, 0, 100);
     painter.end();
+}
+
+
+
+matrix waveletDiscrete(const vec & inData)
+{
+    const int numOfFreqs = log2(def::rightFreq / def::leftFreq) + 1;
+    matrix res(numOfFreqs, inData.size());
+
+    int numOfShifts;
+    for(int j = 0; j < numOfFreqs; ++j)
+    {
+        numOfShifts = 0;
+        for(int k = 0; k < numOfShifts; ++k)
+        {
+            res[j][k] = 0.;
+        }
+    }
 }
 
 vec signalFromFile(QString filePath,

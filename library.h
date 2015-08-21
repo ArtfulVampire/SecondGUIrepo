@@ -137,7 +137,7 @@ void wavelet(QString filePath,
              QString picPath,
              int channelNumber = 0,
              int ns = 20);
-
+matrix waveletDiscrete(const vec & inData);
 
 vec signalFromFile(QString filePath,
                    int channelNumber,

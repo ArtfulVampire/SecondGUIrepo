@@ -1738,13 +1738,32 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-    int timeLen = 10; // seconds
-    vector<double> sound(44100 * timeLen); // 1024 samples
-    for(int i = 0; i < sound.size(); ++i)
+//    def::freq = 1000.;
+    double freq0 = 2.;
+    int width = 5 * def::freq / freq0;
+    for(int shift = 0; shift < width / 9; ++shift)
     {
-        sound[i] = sin( 50 * (1. + 9. * i/(44100 * timeLen))  * 2 * pi * i / 44100); // 100 Hz
+        double sum = 0.;
+        for(int i = 0; i < 3 * width; ++i)
+        {
+            sum += morletSinNew(freq0, width + 10, i) *
+                   morletSinNew(freq0, width + 10 + shift, i);
+        }
+        cout << "shift = " << shift << "\tintegral = " << sum << endl;
     }
-    writeWavFile(sound, "/media/Files/Data/1.wav");
+
+    exit(9);
+    setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+    readData();
+    int timeLen = 20; // seconds
+    vector<double> sound = globalEdf.getData()[10];
+    sound.resize(def::freq * timeLen);
+
+//    for(int i = 0; i < sound.size(); ++i)
+//    {
+//        sound[i] = sin( 50 * (1. + 9. * i/(44100 * timeLen))  * 2 * pi * i / 44100); // 100 Hz
+//    }
+//    writeWavFile(newSound, "/media/Files/Data/1.wav");
     exit(0);
     return;
 
