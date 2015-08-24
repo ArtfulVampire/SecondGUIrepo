@@ -2078,16 +2078,17 @@ void MainWindow::makeTestData()
 
 void MainWindow::GalyaProcessing()
 {
-    const QString procDirPath = "/media/Files/Data/Galya/TBI/severe TBI";
+    const QString procDirPath = "/media/Files/Data/Galya/TBI/Test";
 
-
-    const QString enthropyFileName = "entrop.txt";
+//    const QString enthropyFileName = "entrop.txt";
     const QString d2dimFileName = "d2_dim.txt";
     const QString hilbertFileName = "med_freq.txt";
+    const QString spectraFileName = "spectre.txt";
 
     const double leftFreqLim = 4.;
     const double rightFreqLim = 20.;
     const double stepFreq = 2.;
+    const double spectreStepFreq = 1.;
     const double hilbertFreqLimit = 40.;
     const int numChan = 19;
 
@@ -2106,10 +2107,11 @@ void MainWindow::GalyaProcessing()
 
     ofstream outStr;
     double helpDouble;
-    vector<double> env;
-    vector<double> envSpec;
-    env.resize(525000);
-    envSpec.resize(525000); // ~2^19
+    int helpInt;
+    vec env;
+    vec envSpec;
+//    env.resize(525000);
+//    envSpec.resize(525000); // ~2^19
 
     double sumSpec = 0.;
 
@@ -2129,27 +2131,79 @@ void MainWindow::GalyaProcessing()
 
         dir.cd("out");
         // how to check all frequency ranges?
+
+        helpString = dir.absolutePath()
+                + slash() + ExpName;
+        QFile::remove(helpString + "_" + d2dimFileName);
+        QFile::remove(helpString + "_" + hilbertFileName);
+        QFile::remove(helpString + "_" + spectraFileName);
+
+        // write full spectre
+        vec fullSpectre;
+        helpString = dir.absolutePath()
+                + slash() + ExpName
+                + "_" + spectraFileName;
+        outStr.open(helpString.toStdString());
+        for(int i = 0; i < numChan; ++i)
+        {
+            fullSpectre.clear();
+            fullSpectre = spectre(initEdf.getData()[i]);
+
+//            helpString = dir.absolutePath()
+//                    + slash() + ExpName
+//                    + "_" + rightNumber(i, 2)
+//                    + ".jpg";
+//            drawArray(fullSpectre.data(),
+//                      fullSpectre.size(),
+//                      helpString);
+
+            helpDouble = 0.;
+            for(double j = leftFreqLim;
+                j < rightFreqLim;
+                j += spectreStepFreq)
+            {
+                helpInt = fftLimit(j, def::freq, fftL(initEdf.getDataLen()));
+                helpDouble += fullSpectre[helpInt];
+            }
+
+            helpDouble /= 50; // norm
+
+            for(double j = leftFreqLim;
+                j <= rightFreqLim;
+                j += spectreStepFreq)
+            {
+                helpInt = fftLimit(j, def::freq, fftL(initEdf.getDataLen()));
+               outStr << doubleRound(fullSpectre[helpInt] / helpDouble,
+                       4) << "\t";
+            }
+        }
+        outStr.close();
+
+
         for(double freqCounter = leftFreqLim;
             freqCounter <= rightFreqLim;
             freqCounter += stepFreq)
         {
-//            cout << "freq = " << freqCounter << endl;
             currEdf = initEdf;
             if(freqCounter != rightFreqLim)
             {
                 currEdf.refilter(freqCounter, freqCounter + stepFreq);
             }
 
+
             // write d2 dimension
             helpString = dir.absolutePath()
                     + slash() + ExpName;
+#if 0
             if(freqCounter != rightFreqLim)
             {
                 helpString += "_" + QString::number(freqCounter)
                         + "-" + QString::number(freqCounter + stepFreq);
             }
+#endif
+
             helpString += "_" + d2dimFileName;
-            outStr.open(helpString.toStdString().c_str());
+            outStr.open(helpString.toStdString().c_str(), ios_base::app);
             for(int i = 0; i < numChan; ++i)
             {
                 helpString = dir.absolutePath()
@@ -2161,7 +2215,7 @@ void MainWindow::GalyaProcessing()
                     helpString.clear();
                 }
                 helpDouble = fractalDimension(currEdf.getData()[i]);
-                outStr << doubleRound(helpDouble, 4) << endl;
+                outStr << doubleRound(helpDouble, 4) << "\t";
             }
             outStr.close();
 
@@ -2170,18 +2224,20 @@ void MainWindow::GalyaProcessing()
             // write enthropy
             helpString = dir.absolutePath()
                     + slash() + ExpName;
+#if 0
             if(freqCounter != rightFreqLim)
             {
                 helpString += "_" + QString::number(freqCounter)
                         + "-" + QString::number(freqCounter + stepFreq);
             }
+#endif
             helpString += "_" + enthropyFileName;
-            outStr.open(helpString.toStdString().c_str());
+            outStr.open(helpString.toStdString().c_str(), ios_base::app);
             for(int i = 0; i < numChan; ++i)
             {
                 helpDouble = enthropy(currEdf.getData()[i].data(),
                                       currEdf.getDataLen());
-                outStr << doubleRound(helpDouble, 4) << endl;
+                outStr << doubleRound(helpDouble, 4) << "\t";
             }
             outStr.close();
 #endif
@@ -2191,14 +2247,16 @@ void MainWindow::GalyaProcessing()
             // write envelope median spectre
             helpString = dir.absolutePath()
                     + slash() + ExpName;
+#if 0
             if(freqCounter != rightFreqLim)
             {
                 helpString += "_" + QString::number(freqCounter)
                         + "-" + QString::number(freqCounter + stepFreq);
             }
+#endif
             helpString += "_" + hilbertFileName;
 
-            outStr.open(helpString.toStdString().c_str());
+            outStr.open(helpString.toStdString().c_str(), ios_base::app);
             for(int i = 0; i < numChan; ++i)
             {
                 if(freqCounter == rightFreqLim)
@@ -2213,18 +2271,16 @@ void MainWindow::GalyaProcessing()
                     helpString.clear();
                 }
 
-                helpString.clear();
-                hilbertPieces(currEdf.getData()[i].data(),
-                              currEdf.getDataLen(),
-                              def::freq,
-                              1., // no difference
-                              40., // no difference
-                              env,
-                              helpString);
+                helpString.clear(); // no picture
 
-                calcSpectre(env,
-                            currEdf.getDataLen(),
-                            envSpec);
+                env = hilbertPieces(currEdf.getData()[i],
+                                    currEdf.getDataLen(),
+                                    def::freq,
+                                    1., // no difference
+                                    40., // no difference
+                                    helpString);
+
+                envSpec = spectre(env);
                 envSpec[0] = 0.;
 
                 if(freqCounter <= rightFreqLim + stepFreq)
@@ -2239,7 +2295,8 @@ void MainWindow::GalyaProcessing()
                 {
                     helpString.clear();
                 }
-                helpString.clear();
+                helpString.clear(); // no picture of spectre
+
                 drawArray(envSpec.data(),
                           currEdf.getDataLen(),
                           helpString);
@@ -2248,6 +2305,7 @@ void MainWindow::GalyaProcessing()
 
                 helpDouble = 0.;
                 sumSpec = 0.;
+
                 for(int j = 0;
                     j < fftLimit(hilbertFreqLimit, def::freq, fftL(currEdf.getDataLen()));
                     ++j)
@@ -2258,11 +2316,11 @@ void MainWindow::GalyaProcessing()
                 helpDouble /= sumSpec;
                 helpDouble /= fftLimit(1., def::freq, fftL(currEdf.getDataLen()));
 
-                outStr << doubleRound(helpDouble, 4) << endl;
+                outStr << doubleRound(helpDouble, 4) << "\t";
             }
             outStr.close();
         }
-        dir.cdUp();
+        dir.cdUp(); // go away from "out"
     }
 
 

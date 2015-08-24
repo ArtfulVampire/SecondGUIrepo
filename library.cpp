@@ -3008,30 +3008,32 @@ vec hilbert(const vec & arr,
 }
 
 
-template <typename Typ>
-void hilbertPieces(const double * arr,
+vec hilbertPieces(const vec & arr,
                    int inLength,
                    double sampleFreq,
                    double lowFreq,
                    double highFreq,
-                   Typ &outHilbert,
                    QString picPath)
 {
     /// do hilbert transform for the last fftLen bins ???
-
+    if( inLength <= 0)
+    {
+        inLength = arr.size();
+    }
+    vec outHilbert(inLength);
     int fftLen = fftL(inLength) / 2;
-    double * out = new double [2*fftLen]; // temp
-    double spStep = sampleFreq/fftLen;
 
-    double * tempArr = new double [inLength];
-    double * filteredArr = new double [inLength];
+    double spStep = sampleFreq/fftLen;
+    vec out(2*fftLen); // temp
+    vec tempArr(inLength);
+    vec filteredArr(inLength);
 
     for(int i = 0; i < fftLen; ++i)
     {
         out[ 2 * i + 0] = arr[i];
         out[ 2 * i + 1] = 0.;
     }
-    four1(out-1, fftLen, 1);
+    four1(out, fftLen, 1);
     //start filtering
     for(int i = 0; i < fftLen; ++i)
     {
@@ -3048,7 +3050,7 @@ void hilbertPieces(const double * arr,
     out[fftLen] = 0.;
     out[fftLen+1] = 0.;
 
-    four1(out-1, fftLen, -1);
+    four1(out, fftLen, -1);
     for(int i = 0; i < fftLen; ++i)
     {
         filteredArr[i] = out[2*i] / fftLen*2;
@@ -3063,14 +3065,14 @@ void hilbertPieces(const double * arr,
         out[ 2 * i + 0] = filteredArr[i];
         out[ 2 * i + 1] = 0.;
     }
-    four1(out-1, fftLen, 1);
+    four1(out, fftLen, 1);
 
     for(int i = 0; i < fftLen/2; ++i)
     {
         out[2*i + 0] = 0.;
         out[2*i + 1] = 0.;
     }
-    four1(out-1, fftLen, -1);
+    four1(out, fftLen, -1);
 
     for(int i = 0; i < fftLen; ++i)
     {
@@ -3093,7 +3095,7 @@ void hilbertPieces(const double * arr,
         out[ 2 * i + 0] = arr[i + inLength-fftLen];
         out[ 2 * i + 1] = 0.;
     }
-    four1(out-1, fftLen, 1);
+    four1(out, fftLen, 1);
     //start filtering
     for(int i = 0; i < fftLen; ++i)
     {
@@ -3110,7 +3112,7 @@ void hilbertPieces(const double * arr,
     out[fftLen] = 0.;
     out[fftLen+1] = 0.;
 
-    four1(out-1, fftLen, -1);
+    four1(out, fftLen, -1);
     for(int i = 0; i < fftLen; ++i)
     {
         filteredArr[i + inLength - fftLen] = out[2*i] / fftLen*2;
@@ -3124,13 +3126,13 @@ void hilbertPieces(const double * arr,
         out[ 2 * i + 0] = filteredArr[i + inLength - fftLen];
         out[ 2 * i + 1] = 0.;
     }
-    four1(out-1, fftLen, 1);
+    four1(out, fftLen, 1);
     for(int i = 0; i < fftLen/2; ++i)
     {
         out[2*i + 0] = 0.;
         out[2*i + 1] = 0.;
     }
-    four1(out-1, fftLen, -1);
+    four1(out, fftLen, -1);
 
     for(int i = 0; i < fftLen; ++i)
     {
@@ -3168,7 +3170,7 @@ void hilbertPieces(const double * arr,
         QPainter pnt;
         pic.fill();
         pnt.begin(&pic);
-        double maxVal = maxValue(filteredArr, inLength) * 1.1;
+        double maxVal = *std::max_element(filteredArr.begin(), filteredArr.end()) * 1.1;
 
         pnt.setPen("black");
         for(int i = 0; i < pic.width()-1; ++i)
@@ -3206,9 +3208,7 @@ void hilbertPieces(const double * arr,
         pic.save(picPath, 0, 100);
         //end check draw
     }
-    delete []out;
-    delete []tempArr;
-    delete []filteredArr;
+    return outHilbert;
 }
 
 vec bayesCount(const vec & dataIn,
@@ -5733,7 +5733,7 @@ double errorSammon(const mat & distOld,
 
 double errorSammonAdd(const mat & distOld,
                       const mat & distNew,
-                      const vector <int> placedDots) // square matrices
+                      const vector <int> & placedDots) // square matrices
 {
     double res = 0.;
     for(unsigned int i = 0; i < placedDots.size(); ++i)
@@ -6311,21 +6311,6 @@ const mat & inMatrix,
 QStringList colors,
 double scaling,
 int lineWidth);
-
-template void hilbertPieces(const double * arr,
-int inLength,
-double sampleFreq,
-double lowFreq,
-double highFreq,
-vector<double> &outHilbert,
-QString picPath);
-template void hilbertPieces(const double * arr,
-int inLength,
-double sampleFreq,
-double lowFreq,
-double highFreq,
-double * &outHilbert,
-QString picPath);
 
 template void readPlainData(QString inPath,
 mat & data,

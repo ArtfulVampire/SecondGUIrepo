@@ -159,13 +159,11 @@ vec hilbert(const vec & arr,
             double highFreq = def::rightFreq,
             QString picPath  = QString());
 
-template <typename Typ>
-void hilbertPieces(const double *arr,
+vec hilbertPieces(const vec & arr,
                    int inLength,
                    double sampleFreq,
                    double lowFreq,
                    double highFreq,
-                   Typ &out,
                    QString picPath = QString());
 
 vec bayesCount(const vec & dataIn, int numOfIntervals);
@@ -353,17 +351,32 @@ void drawMapsICA(const QString & mapsPath,
 void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
 
 
-void spectre(const double * data, const int &length, double *& spectr);
+void spectre(const double * data,
+             const int &length,
+             double *& spectr);
 vec spectre(const vec & data);
 
 template <typename inTyp, typename outTyp>
-void calcSpectre(const inTyp & inSignal, int length, outTyp &outSpectre, const int & Eyes = 0, int * fftLength = nullptr, const int & NumOfSmooth = 0, const double & powArg = 1.);
-void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &inDataLen, const int &NumOfSmooth = 15, const double &powArg = 1.);
-void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth = 15, const double &powArg = 1.);
-void calcSpectre(double ** &inData, int leng, const int &ns, double **& dataFFT, int * fftLength, const int &NumOfSmooth = 15, const double &powArg = 1.);
+void calcSpectre(const inTyp & inSignal,
+                 int length,
+                 outTyp & outSpectre,
+                 const int & Eyes = 0,
+                 int * fftLength = nullptr,
+                 const int & NumOfSmooth = 0,
+                 const double & powArg = 1.);
+
+//void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &inDataLen, const int &NumOfSmooth = 15, const double &powArg = 1.);
+//void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth = 15, const double &powArg = 1.);
+//void calcSpectre(double ** &inData, int leng, const int &ns, double **& dataFFT, int * fftLength, const int &NumOfSmooth = 15, const double &powArg = 1.);
 
 template <typename Typ>
-void calcSpectre(const Typ & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth, double const &powArg);
+void calcSpectre(const Typ & inData,
+                 mat & dataFFT,
+                 const int &ns,
+                 const int &fftLength,
+                 const int &Eyes,
+                 const int &NumOfSmooth,
+                 double const &powArg);
 
 template <typename Typ>
 void calcRawFFT(const Typ & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
@@ -478,37 +491,37 @@ void countInvHessianAddDot(const vector < vector <double> > & distOld,
 
 double errorSammonAdd(const vector < vector <double> > & distOld,
                       const vector < vector <double> > & distNew,
-                      const vector <int> placedDots);
+                      const vector <int> & placedDots);
 
 
 
 
-inline double doubleRound(const double & in, int numSigns)
+inline double doubleRound(const double & in, const int & numSigns)
 {
     return int(  ceil(in*pow(10., numSigns) - 0.5)  ) / pow(10., numSigns);
 }
 
-inline double doubleRoundFraq(const double & in, int denom)
+inline double doubleRoundFraq(const double & in, const int & denom)
 {
-    return ceil(in * denom - 0.5) / denom;
+    return floor(in * denom + 0.5) / denom;
 }
 
-inline double gaussian(double x, double sigma = 1.) //N(0,1)
+inline double gaussian(const double & x, const double & sigma = 1.) //N(0,1)
 {
     return 1./(sigma * sqrt(2. * pi)) * exp(-x * x / (2. * sigma * sigma) );
 }
 
-inline double logistic(double &x, double t)
+inline double logistic(const double & x, const double & t = 10.)
 {
     return 1. / ( 1. + exp(-x/t) );
 }
 
-inline int fftLimit(double inFreq, double freq, int fftL)
+inline int fftLimit(const double & inFreq, const double & sampleFreq, const int & fftL)
 {
-    return floor(0.5 + inFreq/freq*fftL);
+    return floor(0.5 + inFreq / sampleFreq * fftL);
 }
 
-inline int fftL(int in)
+inline int fftL(const int & in)
 {
     return pow(2., ceil(log2(in)));
 }
