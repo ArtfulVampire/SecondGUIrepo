@@ -15,6 +15,7 @@
 using namespace std;
 
 typedef vector<vector<double>> dataType;
+typedef vector<double> vec;
 
 struct matrix
 {
@@ -28,10 +29,12 @@ struct matrix
     matrix(const matrix & other);
     matrix(const dataType & other);
 
-    matrix(vector <double> vec, bool orientH);
-    matrix(std::initializer_list<vector<double>> lst);
+    matrix(vec vect, bool orientH);
+    matrix(vec vect, char orient);
 
-    matrix(vector <double> vec, char orient);
+    matrix(std::initializer_list<vector<double>> lst);
+    matrix(std::initializer_list<double> lst); // diagonal
+
     void resize(int rows, int cols);
     void resizeRows(int rows);
     void resizeCols(int cols);
@@ -68,13 +71,14 @@ struct matrix
     matrix operator = (const dataType & other);
     matrix operator /= (const double & other);
     matrix operator *= (const double & other);
+    matrix operator * (const matrix & other);
+    matrix operator *= (const matrix & other);
 
 
     dataType data;
 
     //"static"
-    // auto type
-    matrix transpose(const matrix & input);
+    static matrix transpose(const matrix & input);
 
     // "private"
     void transpose();
@@ -89,11 +93,26 @@ struct matrix
 
 };
 
-template <typename Typ1, typename Typ2, typename Typ3>
-void matrixProduct(const Typ1 (&in1), const Typ2 (&in2), Typ3 (&result),
-                   int dim = -1, int rows1 = -1, int cols2 = -1);
+void matrixProduct(const matrix &in1,
+                   const matrix &in2,
+                   matrix & result,
+                   int dim = -1,
+                   int rows1 = -1,
+                   int cols2 = -1);
 
+void matrixProduct(const vec &in1,
+                   const matrix &in2,
+                   matrix & result,
+                   int dim = -1,
+                   int rows1 = -1,
+                   int cols2 = -1);
 
+void matrixProduct(const matrix &in1,
+                   const vec &in2,
+                   matrix & result,
+                   int dim = -1,
+                   int rows1 = -1,
+                   int cols2 = -1);
 
 #if 0
     matrix invert(const matrix & input);

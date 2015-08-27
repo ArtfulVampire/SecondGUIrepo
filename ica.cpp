@@ -7,7 +7,8 @@
 
 
 //products for ICA
-void product1(double ** const arr, int length, int ns, double * vec, double ** outVector)
+//void product1(double ** const arr, int length, int ns, double * vec, double ** outVector)
+void product1(const matrix & arr, int length, int ns, const vec & vect, vec & outVector)
 {
     //<X*g(Wt*X)>
     //vec = Wt
@@ -16,7 +17,7 @@ void product1(double ** const arr, int length, int ns, double * vec, double ** o
 
     for(int i = 0; i < ns; ++i)
     {
-        (*outVector)[i] = 0.;
+        outVector[i] = 0.;
     }
 
     double sum = 0.;
@@ -28,22 +29,23 @@ void product1(double ** const arr, int length, int ns, double * vec, double ** o
 
         for(int i = 0; i < ns; ++i)
         {
-            sum += vec[i] * arr[i][j];
+            sum += vect[i] * arr[i][j];
         }
         for(int i = 0; i < ns; ++i)
         {
-            (*outVector)[i] += tanh(sum) * arr[i][j];
+            outVector[i] += tanh(sum) * arr[i][j];
         }
     }
     for(int i = 0; i < ns; ++i)
     {
-        (*outVector)[i] /= length;
+        outVector[i] /= length;
     }
 }
 
 
 
-void product2(double ** const arr, int length, int ns, double * vec, double ** outVector)
+//void product2(double ** const arr, int length, int ns, double * vec, double ** outVector)
+void product2(const matrix & arr, int length, int ns, const vec & vect, vec & outVector)
 {
     //g'(Wt*X)*1*W
     //vec = Wt
@@ -59,7 +61,7 @@ void product2(double ** const arr, int length, int ns, double * vec, double ** o
         sum = 0.;
         for(int i = 0; i < ns; ++i)
         {
-            sum += vec[i] * arr[i][j];
+            sum += vect[i] * arr[i][j];
         }
         sum1 += 1 - tanh(sum)*tanh(sum);
     }
@@ -67,20 +69,21 @@ void product2(double ** const arr, int length, int ns, double * vec, double ** o
 
     for(int i = 0; i < ns; ++i)
     {
-        (*outVector)[i] = sum1 * vec[i];
+        outVector[i] = sum1 * vect[i];
     }
 
 }
 
 
 
-void product3(double ** vec, int ns, int currNum, double ** outVector)
+//void product3(double ** vec, int ns, int currNum, double ** outVector)
+void product3(const matrix & inMat, int ns, int currNum, vec & outVector)
 {
     //sum(Wt*Wi*Wi)
 
     for(int k = 0; k < ns; ++k)
     {
-        (*outVector)[k] = 0.;
+        outVector[k] = 0.;
     }
     double sum = 0.;
 
@@ -89,28 +92,27 @@ void product3(double ** vec, int ns, int currNum, double ** outVector)
         sum = 0.;
         for(int k = 0; k < ns; ++k)
         {
-            sum += vec[currNum][k]*vec[j][k];
+            sum += inMat[currNum][k] * inMat[j][k];
         }
         for(int k = 0; k < ns; ++k)
         {
-            (*outVector)[k] += vec[j][k] * sum;
+            outVector[k] += inMat[j][k] * sum;
         }
 
     }
-
-
 }
 
-double * randomVector(int ns)
+vec randomVector(int ns)
 {
 
-    double * tempVector2 = new double [ns];
+    vec tempVector2(ns);
     srand(time(NULL));
     double sum = 0.;
     for(int i = 0; i < ns; ++i)
     {
         tempVector2[i] = rand()%30 - 15;
-        sum += tempVector2[i] * tempVector2[i];
+
+        sum += pow(tempVector2[i], 2);
     }
     for(int i = 0; i < ns; ++i)
     {
@@ -131,6 +133,7 @@ void MainWindow::ICA() //fastICA
     //count components = matrixW*data and write to def::ExpName_ICA.edf
     //count inverse matrixA = matrixW^-1 and draw maps of components
     //write automatization for classification different sets of components, find best set, explain
+
     QTime wholeTime;
     wholeTime.start();
     QTime myTime;
@@ -139,21 +142,17 @@ void MainWindow::ICA() //fastICA
     QStringList lst;
     QString helpString;
 
-    helpString = def::dir->absolutePath() + slash() + def::ExpName + ".edf";
-    cout << "Ica started: " << helpString.toStdString() << endl;
-
+    helpString = def::dir->absolutePath()
+            + slash() + def::ExpName + ".edf";
+    cout << "Ica started: " << helpString << endl;
     readData();
+    const int & dataLength = globalEdf.getDataLen();
     //check reduceChannelsLineEdit for write edf
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-//    for(int i = 0; i < lst.length(); ++i)
-//    {
-//        cout << label[lst[i].toInt()-1] << endl;
-//    }
 
-    if(!QString(label[lst[lst.length() - 1].toInt() - 1]).contains("Markers"))
+    if(!QString(label[lst.last().toInt() - 1]).contains("Markers"))
     {
-//        QMessageBox::critical(this, tr("Error"), tr("bad channels list"), QMessageBox::Ok);
         cout << "ICA: bad reduceChannelsLineEdit - no markers" << endl;
         return;
     }
@@ -162,12 +161,10 @@ void MainWindow::ICA() //fastICA
     int ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
 
 
-    double eigenValuesTreshold = pow(10., -ui->svdDoubleSpinBox->value());
-    double vectorWTreshold = pow(10., -ui->vectwDoubleSpinBox->value());
+    double eigenValuesTreshold = pow(10., - ui->svdDoubleSpinBox->value());
+    double vectorWTreshold = pow(10., - ui->vectwDoubleSpinBox->value());
 
     const int & fr = def::freq;
-
-
 
 
 //    dataICA - matrix of data
@@ -181,54 +178,58 @@ void MainWindow::ICA() //fastICA
 //    cout << "ns = " << ns << endl;
 //    cout << "ndr*fr = " << ndr*fr << endl;
 
-    double ** covMatrix = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        covMatrix[i] = new double [ns];
-    }
+    matrix covMatrix(ns, ns, 0.);
+//    double ** covMatrix = new double * [ns];
+//    for(int i = 0; i < ns; ++i)
+//    {
+//        covMatrix[i] = new double [ns];
+//    }
 
     //vectors for the las stage
-    double ** vectorW = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        vectorW[i] = new double [ns];
-    }
-    double * vector1 = new double [ns];
-    double * vector2 = new double [ns];
-    double * vector3 = new double [ns];
-    double * vectorOld = new double [ns];
+    matrix vectorW(ns, ns, 0.);
+//    double ** vectorW = new double * [ns];
+//    for(int i = 0; i < ns; ++i)
+//    {
+//        vectorW[i] = new double [ns];
+//    }
+    vec vector1(ns, 0.);
+    vec vector2(ns, 0.);
+    vec vector3(ns, 0.);
+    vec vectorOld(ns, 0.);
+//    double * vector1 = new double [ns];
+//    double * vector2 = new double [ns];
+//    double * vector3 = new double [ns];
+//    double * vectorOld = new double [ns];
 
     //for full A-matrix count
     matrix matrixA(ns, ns);
     vec tempVector(ns);
 
     //components time-flow
-    mat components;
-    components.resize(ns+1);
-    for(int i = 0; i < ns + 1; ++i)
-    {
-        components[i].resize(ndr*fr);
-    }
-
+    matrix components(ns + 1, globalEdf.getDataLen()); // needed readData();
+//    components.resize(ns+1);
+//    for(int i = 0; i < ns + 1; ++i)
+//    {
+//        components[i].resize(dataLength);
+//    }
 
     // save markers
     components[ns] = globalEdf.getData()[globalEdf.getMarkChan()];
 
-
-
-
     //count covariations
     //count averages
-    double * averages = new double [ns];
+
+//    double * averages = new double [ns];
+    vec averages(ns);
     for(int i = 0; i < ns; ++i)
     {
-        averages[i] = mean(globalEdf.getData()[i].data(), globalEdf.getDataLen());
+        averages[i] = mean(globalEdf.getData()[i].data(), dataLength);
     }
 
     //count zeros
     int h = 0;
     int Eyes = 0;
-    for(int i = 0; i < ndr*fr; ++i)
+    for(int i = 0; i < dataLength; ++i)
     {
         h = 0;
         for(int j = 0; j < ns; ++j)
@@ -238,22 +239,35 @@ void MainWindow::ICA() //fastICA
         if(h == ns) Eyes += 1;
     }
 
-    double realSignalFrac = (double(ndr*fr - Eyes)/(ndr*fr));
+    const double & realSignalFrac = (double(dataLength - Eyes) / dataLength);
 
     double helpDouble = 0.;
     //subtract averages
+    /*
+    std::for_each(globalEdf.getData().begin(),
+                  globalEdf.getData().end(),
+                  [realSignalFrac, averages](vec & dataVec)
+    {
+        std::for_each(dataVec.begin(),
+                      dataVec.end(),
+                      [realSignalFrac, averages](double & in)
+        {
+
+        });
+    });
+    */
+
     for(int i = 0; i < ns; ++i)
     {
-        for(int j = 0; j < ndr*fr; ++j)
+        for(int j = 0; j < dataLength; ++j)
         {
-            //////
-            /// remake with lambdas
+            if(globalEdf.getData()[i][j] == 0.) continue;
             helpDouble = globalEdf.getData()[i][j] - averages[i] / realSignalFrac;
-            globalEdf.setData(i,j, helpDouble);
+            globalEdf.setData(i, j, helpDouble);
         }
     }
 
-    //covariation between different spectra-bins
+    //covariation between different channels
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < ns; ++j)
@@ -261,8 +275,8 @@ void MainWindow::ICA() //fastICA
             covMatrix[i][j] = 0.;
             covMatrix[i][j] = covariance(globalEdf.getData()[i].data(),
                                          globalEdf.getData()[j].data(),
-                                         globalEdf.getDataLen());
-            covMatrix[i][j] /= (ndr*fr); //should be -1 ? needed for trace
+                                         dataLength);
+            covMatrix[i][j] /= dataLength; //should be -1 ? needed for trace
         }
     }
 
@@ -275,23 +289,19 @@ void MainWindow::ICA() //fastICA
         }
     }
 
-    int numOfPc = 0;
     double sum1, sum2; //temporary help values
     int counter = 0;
-    double ** dataICA = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        dataICA[i] = new double [ndr*fr];
-    }
+    matrix dataICA(ns, dataLength, 0);
+//    double ** dataICA = new double * [ns];
+//    for(int i = 0; i < ns; ++i)
+//    {
+//        dataICA[i] = new double [dataLength];
+//    }
 
 
     // count eigenvalue decomposition
-    mat eigenVectors;
+    matrix eigenVectors;
     vector <double> eigenValues;
-
-
-
-
 
     svd(globalEdf.getData(),
         eigenVectors,
@@ -299,14 +309,6 @@ void MainWindow::ICA() //fastICA
         eigenValuesTreshold);
 
 
-
-
-
-
-    numOfPc = ns;
-
-
-    ofstream outStream;
     helpString = def::dir->absolutePath()
                  + slash() + "Help"
                  + slash() + def::ExpName + "_eigenMatrix.txt";
@@ -321,10 +323,12 @@ void MainWindow::ICA() //fastICA
                  + slash() + def::ExpName + "_eigenValues.txt";
     writeFileInLine(helpString, eigenValues);
 
+
+
     cout << "time svd = " << wholeTime.elapsed()/1000. << " sec" << endl;
 
     //count linear decomposition on PCAs
-    for(int j = 0; j < ndr*fr; ++j) //columns initData
+    for(int j = 0; j < dataLength; ++j) //columns initData
     {
         for(int i = 0; i < ns; ++i) //rows tempMatrix
         {
@@ -337,9 +341,7 @@ void MainWindow::ICA() //fastICA
         }
     }
 
-
-
-    for(int j = 0; j < ndr*fr; ++j) //columns X
+    for(int j = 0; j < dataLength; ++j) //columns X
     {
         for(int i = 0; i < ns; ++i) //rows tempMatrix
         {
@@ -351,11 +353,11 @@ void MainWindow::ICA() //fastICA
             dataICA[i][j] = sum1;
         }
     }
-//    cout << "linear decomposition counted" << endl;
-
-
 
     //now dataICA are uncovariated signals with variance 1
+
+
+
     //test of covMatrix dataICA
 //    cout << "covMatrixICA = " << endl;
 //    for(int i = 0; i < ns; ++i)
@@ -363,11 +365,11 @@ void MainWindow::ICA() //fastICA
 //        for(int j = 0; j < ns; ++j)
 //        {
 //            covMatrix[i][j] = 0.;
-//            for(int k = 0; k < ndr*fr; ++k)
+//            for(int k = 0; k < dataLength; ++k)
 //            {
 //                covMatrix[i][j] += dataICA[i][k] * dataICA[j][k];
 //            }
-//            covMatrix[i][j] /= ( ndr*fr - 1 );
+//            covMatrix[i][j] /= ( dataLength - 1 );
 //            covMatrix[i][j] = int(covMatrix[i][j]*100)/100.;
 //            cout << covMatrix[i][j] << " ";
 //        }
@@ -375,14 +377,15 @@ void MainWindow::ICA() //fastICA
 //    }
 //    cout<<"covMatrixICA counted"<<endl<<endl;
 
-    //ICA itself!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //fastIca wiki - first function
+    // ICA itself!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // fastIca wiki - first function
     for(int i = 0; i < ns; ++i) //number of current vectorW
     {
         myTime.restart();
         counter = 0;
 
-        memcpy(vectorW[i], randomVector(ns), ns*sizeof(double));
+
+        vectorW[i] = randomVector(ns);
 
         while(1)
         {
@@ -390,15 +393,15 @@ void MainWindow::ICA() //fastICA
             {
                 vectorOld[j] = vectorW[i][j];
             }
-            product1(dataICA, ndr*fr, ns, vectorW[i], &vector1);
-            product2(dataICA, ndr*fr, ns, vectorW[i], &vector2);
+            product1(dataICA, dataLength, ns, vectorW[i], vector1);
+            product2(dataICA, dataLength, ns, vectorW[i], vector2);
             for(int j = 0; j < ns; ++j)
             {
                 vectorW[i][j] = vector1[j] - vector2[j];
             }
 
             //orthogonalization
-            product3(vectorW, ns, i, &vector3);
+            product3(vectorW, ns, i, vector3);
             for(int j = 0; j < ns; ++j)
             {
                 vectorW[i][j] -= vector3[j];
@@ -410,13 +413,14 @@ void MainWindow::ICA() //fastICA
                 sum1 = 0.;
                 for(int h = 0; h < ns; ++h)
                 {
-                    sum1 += vectorW[k][h]  *vectorW[k][h];
+                    sum1 += pow(vectorW[k][h], 2);
                 }
                 if(fabs(sum1 - 1.) > 0.01)
                 {
                     cout << i << "'th vector not 1-l" << endl;
                 }
             }
+
             //check ortho
             for(int k = 0; k < i; ++k)
             {
@@ -438,7 +442,7 @@ void MainWindow::ICA() //fastICA
             //normalization
             for(int j = 0; j < ns; ++j)
             {
-                sum1 += vectorW[i][j] * vectorW[i][j];
+                sum1 += pow(vectorW[i][j], 2);
             }
             for(int j = 0; j < ns; ++j)
             {
@@ -449,7 +453,7 @@ void MainWindow::ICA() //fastICA
             //check norma difference
             for(int j = 0; j < ns; ++j)
             {
-                sum2 += (vectorOld[j] - vectorW[i][j]) * (vectorOld[j] - vectorW[i][j]);
+                sum2 += pow(vectorOld[j] - vectorW[i][j], 2);
             }
             sum2 = sqrt(sum2);
             ++counter;
@@ -496,12 +500,14 @@ void MainWindow::ICA() //fastICA
 //    cout<<endl;
 
     //count components
-    matrixProduct(matrix(vectorW, ns, ns),
-                  matrix(dataICA, ns, ndr*fr),
-                  components, ns);
+    matrixProduct(vectorW,
+                  dataICA,
+                  components,
+                  ns);
+
 //    for(int i = 0; i < ns; ++i)
 //    {
-//        for(int j = 0; j < ndr*fr; ++j)
+//        for(int j = 0; j < dataLength; ++j)
 //        {
 //            sum1 = 0.;
 //            for(int k = 0; k < ns; ++k)
@@ -515,14 +521,26 @@ void MainWindow::ICA() //fastICA
 
     //count full mixing matrix A = E * D^0.5 * Et * Wt
     //X = AS (sensor data = A*components)
+#define MATRICES 0
+
+#if MATRICES
+    matrixA = matrix::transpose(vectorW); // A = Wt
+#else
     for(int i = 0; i < ns; ++i)
     {
-        for(int k = 0; k < ns; ++k)
+        for(int j = 0; j < ns; ++j)
         {
-            matrixA[i][k] = vectorW[k][i]; //A = Wt
+            matrixA[i][j] = eigenVectors[j][i];
         }
     }
+#endif
 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+#if MATRICES
+    matrixA = matrix::transpose(eigenVectors) * matrixA; //A = Et * Wt
+#else
     for(int i = 0; i < ns; ++i)
     {
         for(int k = 0; k < ns; ++k)
@@ -538,6 +556,17 @@ void MainWindow::ICA() //fastICA
             matrixA[k][i] = tempVector[k];
         }
     }
+#endif
+
+#if MATRICES
+    //A = D^0.5 * Et * Wt
+    matrix D_05(ns, ns, 0.);
+    for(int i = 0; i < ns; ++i)
+    {
+        D_05[i][i] = sqrt(eigenValues[i]);
+    }
+    matrixA = D_05 * matrixA;
+#else
     for(int i = 0; i < ns; ++i)
     {
         for(int k = 0; k < ns; ++k)
@@ -545,6 +574,11 @@ void MainWindow::ICA() //fastICA
             matrixA[i][k] *= sqrt(eigenValues[i]);//A = D^0.5 * Et * Wt
         }
     }
+#endif
+
+#if MATRICES
+    matrixA = eigenVectors * matrixA;
+#else
 
     for(int i = 0; i < ns; ++i)
     {
@@ -553,7 +587,7 @@ void MainWindow::ICA() //fastICA
             tempVector[k] = 0.; //new i-th coloumn for matrix A
             for(int s = 0; s < ns; ++s)
             {
-                tempVector[k] += eigenVectors[k][s] * matrixA[s][i]; //A = Et * Wt
+                tempVector[k] += eigenVectors[k][s] * matrixA[s][i]; //A = E * D^0.5 * Et * Wt
             }
         }
         for(int k = 0; k < ns; ++k)
@@ -561,13 +595,16 @@ void MainWindow::ICA() //fastICA
             matrixA[k][i] = tempVector[k];
         }
     }
+#endif
 
-#if 0
+
+
+#if 1
     //test  data = matrixA * comps;
 
     for(int i = 0; i < ns; ++i)
     {
-        for(int j = 0; j < ndr*fr; ++j)
+        for(int j = 0; j < dataLength; ++j)
         {
             sum1 = 0.;
             for(int k = 0; k < ns; ++k)
@@ -577,13 +614,16 @@ void MainWindow::ICA() //fastICA
             if(fabs((globalEdf.getData()[i][j] - sum1) / globalEdf.getData()[i][j]) > 0.05
                     && fabs(globalEdf.getData()[i][j]) > 0.5)
             {
+                cout << "before" << "\t";
                 cout << i << "\t" << j << "\t";
-                cout << fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) << "\t";
-                cout << globalEdf.getData()[i][j] << endl;
+                cout << "err = " <<fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) << "\t";
+                cout << "init value = " << globalEdf.getData()[i][j] << endl;
             }
         }
     }
 #endif
+
+
 
 #if 0
     // norm components - by equal dispersion ????????????????????
@@ -595,9 +635,9 @@ void MainWindow::ICA() //fastICA
         sum1 = 0.;
         sum2 = 0.;
 
-        sum2 = variance(components[i], ndr*fr);
+        sum2 = variance(components[i], dataLength);
 
-        for(int j = 0; j < ndr*fr; ++j)
+        for(int j = 0; j < dataLength; ++j)
         {
             components[i][j] /= sqrt(sum2);
             components[i][j] *= coeff;
@@ -687,7 +727,6 @@ void MainWindow::ICA() //fastICA
     //end componets ordering
 #else
     // norm components to 1-length of mapvector, order by dispersion
-
     for(int i = 0; i < ns; ++i) // for each component
     {
         sum1 = 0.;
@@ -709,24 +748,25 @@ void MainWindow::ICA() //fastICA
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
-                                          + slash() + def::ExpName + "_maps_before_len.txt");
-    writeICAMatrix(helpString, matrixA); //generality 19-ns
+                                          + slash() + def::ExpName + "_maps_1-len.txt");
+    writeICAMatrix(helpString, matrixA);
 
 
     // ordering components by dispersion
-    std::vector <std::pair <double, int>> colsNorms;
-    double sumSquares = 0.;
-    std::vector <double> explainedVariance;
+    std::vector <std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
+    double sumSquares = 0.; // sum of all dispersions
+    vec explainedVariance;
 
-    for(int i = 0; i < ns; ++i) // w/o markers
+    for(int i = 0; i < ns; ++i)
     {
         sum1 = 0.;
         std::for_each(components[i].begin(),
                       components[i].end(),
-                      [&sum1](double in){sum1 += in * in;});
+                      [&sum1](double in){sum1 += pow(in, 2);});
         sumSquares += sum1;
         colsNorms.push_back(std::make_pair(sum1, i));
     }
+
     std::sort(colsNorms.begin(),
               colsNorms.end(),
               [](std::pair <double, int> i, std::pair <double, int> j)
@@ -737,24 +777,31 @@ void MainWindow::ICA() //fastICA
         cout << colsNorms[i].first << "\t" << colsNorms[i].second << endl;
     }
 
-    double * tempCol = new double [ns];
     int tempIndex;
-    std::vector <double> tempComp;
+    vec tempComp;
     for(int i = 0; i < ns - 1; ++i) // dont move the last
     {
-
         // swap matrixA cols
+#if MATRICES
+        matrixA.swapCols(i, colsNorms[i].second);
+#else
+        vec tempCol(ns);
         for(int j = 0; j < ns; ++j) // swap j'th elements in i'th and colsNorms[i].second'th cols
         {
             tempCol[j] = matrixA[j][i];
             matrixA[j][i] = matrixA[j][ colsNorms[i].second ];
             matrixA[j][ colsNorms[i].second ] = tempCol[j];
         }
+#endif
 
         // swap components
+#if MATRICES
+        components.swapRows(i, colsNorms[i].second);
+#else
         tempComp = components[i];
         components[i] = components[ colsNorms[i].second ];
         components[ colsNorms[i].second ] = tempComp;
+#endif
 
         // swap i and colsNorms[i].second values in colsNorms
         auto it1 = std::find_if(colsNorms.begin(),
@@ -770,7 +817,6 @@ void MainWindow::ICA() //fastICA
         (*it1).second = (*it2).second;
         (*it2).second = tempIndex;
     }
-    delete []tempCol;
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
@@ -786,10 +832,11 @@ void MainWindow::ICA() //fastICA
     //end componets ordering
 #endif
 
-
+#if 1
+    // test data = matrixA * components
     for(int i = 0; i < ns; ++i)
     {
-        for(int j = 0; j < ndr*fr; ++j)
+        for(int j = 0; j < dataLength; ++j)
         {
             sum1 = 0.;
             for(int k = 0; k < ns; ++k)
@@ -800,32 +847,12 @@ void MainWindow::ICA() //fastICA
                     && fabs(globalEdf.getData()[i][j]) > 0.5)
             {
                 cout << "after norm\t" << i << "\t" << j << "\t";
-                cout << fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) << "\t";
-                cout << globalEdf.getData()[i][j] << endl;
+                cout << "err = " << fabs((globalEdf.getData()[i][j] - sum1) / globalEdf.getData()[i][j]) << "\t";
+                cout << "init value = " << globalEdf.getData()[i][j] << endl;
             }
         }
     }
-
-
-
-    //now matrixA is true Mixing matrix A*components = initialSignals
-//    //test - ok
-//    for(int i = 0; i < 30; ++i)
-//    {
-//        sum1 = 0.;
-//        for(int k = 0; k < ns; ++k)
-//        {
-//            sum1 += matrixA[0][k] * components[k][i];
-//        }
-//        cout<<sum1<<" ";
-//    }
-//    cout<<endl<<endl;
-
-//    for(int i = 0; i < 30; ++i)
-//    {
-//        cout<<data[0][i]<<" ";
-//    }
-//    cout<<endl;
+#endif
 
     //now should draw amplitude maps OR write to file
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
@@ -833,32 +860,22 @@ void MainWindow::ICA() //fastICA
                                           + slash() + def::ExpName + "_maps.txt");
     writeICAMatrix(helpString, matrixA); //generality 19-ns
 
-//    drawMapsICA(helpString,
-//                ns,
-//                helpString.left(helpString.lastIndexOf(slash())),
-//                def::ExpName.left(3));
+    drawMapsICA(helpString,
+                helpString.left(helpString.lastIndexOf(slash())), // same dir as mapsFile
+                def::ExpName);
 
 
-    helpString = def::dir->absolutePath() + slash() + def::ExpName + "_ica.edf";
+    helpString = def::dir->absolutePath()
+            + slash() + def::ExpName + "_ica.edf";
     QList <int> chanList;
     makeChanList(chanList);
     cout << chanList << endl;
+
     globalEdf.writeOtherData(components, helpString, chanList);
 
     cout << "ICA ended. time = " << wholeTime.elapsed()/1000. << " sec" << endl;
 
-    ns = ui->numOfIcSpinBox->value();
-    for(int i = 0; i < ns; ++i)
-    {
-        delete [] covMatrix[i];
-        delete [] vectorW[i];
-        delete [] dataICA[i];
-    }
-    delete [] covMatrix;
-    delete [] averages;
-    delete [] vectorOld;
-    delete [] vectorW;
-    delete [] dataICA;
+    def::ns = ns + 1; // numOfICs + markers
 }
 
 
@@ -1467,7 +1484,7 @@ void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
     readData();
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    if(!QString(label[lst[lst.length() - 1].toInt() - 1]).contains("Markers"))
+    if(!QString(label[lst.last().toInt() - 1]).contains("Markers"))
     {
         QMessageBox::critical(this, tr("Error"), tr("bad channels list"), QMessageBox::Ok);
         return;

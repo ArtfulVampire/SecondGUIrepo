@@ -208,6 +208,11 @@ template <typename Typ>
 void zeroData(Typ & inData, const int & leftLimit, const int & rightLimit);
 
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+void splineCoeffCount(const vec & inX,
+                      const vec & inY,
+                      int dim,
+                      vec & outA,
+                      vec & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
 double independence(double * const signal1, double * const signal2, int length);
 double countAngle(double initX, double initY);
@@ -229,9 +234,9 @@ void countRCP(QString filename,
               double *outSigma = nullptr);
 
 void svd(const mat & inData,
-         mat & eigenVectors,
-         vector <double> & eigenValues,
-         double threshold = 1e-9);
+         matrix &eigenVectors,
+         vec &eigenValues,
+         const double &threshold = 1e-9);
 
 void makeCfgStatic(QString outFileDir = def::dir->absolutePath(),
                    int NetLength = def::nsWOM() * def::spLength,
@@ -334,7 +339,7 @@ void drawMapSpline(const matrix & matrixA,
                    const int picSize = 240,
                    const bool colourFlag = true);
 
-void drawMapsICA(const QString & mapsPath,
+void drawMapsICA(const QString & mapsFilePath,
                  const QString & outDir,
                  const QString & outName,
                  bool colourFlag = true,

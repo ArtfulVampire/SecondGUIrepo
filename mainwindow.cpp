@@ -1738,6 +1738,14 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
+    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+    ui->matiCheckBox->setChecked(false);
+    ui->reduceChannelsComboBox->setCurrentText("20");
+    ui->svdDoubleSpinBox->setValue(6.);
+    ui->vectwDoubleSpinBox->setValue(6.);
+    ICA();
+    exit(0);
+    return;
 
 //    globalEdf.readEdfFile("/media/Files/Data/Galya/TBI/Test/cr_80_51.EDF");
 //    drawEeg(globalEdf.getData(),
@@ -1746,8 +1754,8 @@ void MainWindow::customFunc()
 //            globalEdf.getDataLen(),
 //            def::freq,
 //            "/media/Files/Data/Galya/TBI/Test/cr_80_51.jpg");
-    GalyaProcessing();
-    exit(0);
+//    GalyaProcessing();
+//    exit(0);
 //    def::freq = 1000.;
 //    double freq0 = 2.;
 //    int width = 5 * def::freq / freq0;
@@ -1784,7 +1792,50 @@ void MainWindow::customFunc()
 //    writeWavFile(newSound, "/media/Files/Data/1.wav");
 //    exit(0);
 
-    return;
+//    return;
+
+#if 0
+    // copy wts pics MATI
+
+    QStringList names{"ADA", "BSA", "FEV", "KMX", "NVV", "PYV", "SDV", "SIV"};
+    QStringList suffix{"_full", "_full_ica"};
+    QString wtsPath;
+    QString helpString;
+
+    ui->cleanWindowsCheckBox->setChecked(true);
+    ui->cleanWindSpectraCheckBox->setChecked(true);
+
+//    def::dir->cd("/media/Files/Data/Mati");
+
+    for(QString & guy : names)
+    {
+        for(QString & suff : suffix)
+        {
+            for(bool wnds : {true, false})
+            {
+                setEdfFile("/media/Files/Data/Mati/"
+                           + guy + slash() + guy + suff + ".edf");
+
+                helpString = def::dir->absolutePath()
+                        + slash() + "Help"
+                        + slash() + def::ExpName + "_wts";
+                if(wnds) helpString += "_wnd";
+                helpString += ".jpg";
+
+                wtsPath = helpString;
+                wtsPath.replace(QString(guy + slash() + "Help"), "Weights");
+
+
+                cout << helpString << endl;
+                cout << wtsPath << endl << endl;
+
+                QFile::copy(helpString,
+                            wtsPath);
+            }
+        }
+    }
+    exit(0);
+#endif
 
 #if 0
     // make a tuple of wts pics for windows and reals, MATI

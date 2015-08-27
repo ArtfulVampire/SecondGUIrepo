@@ -434,7 +434,7 @@ void drawMap(const double ** const &matrixA, double maxAbs, QString outDir, QStr
     matrixDelete(&helpMatrix, 5);
 }
 
-void drawMapsICA(const QString & mapsPath,
+void drawMapsICA(const QString & mapsFilePath,
                  const QString & outDir,
                  const QString & outName,
                  bool colourFlag,
@@ -447,7 +447,7 @@ void drawMapsICA(const QString & mapsPath,
                                   const bool))
 {
     matrix matrixA(def::nsWOM(), def::nsWOM());
-    readICAMatrix(mapsPath, matrixA);
+    readICAMatrix(mapsFilePath, matrixA);
     double maxAbs = matrixA[0][0];
     for(int i = 0; i < matrixA.rows(); ++i)
     {
@@ -2295,9 +2295,9 @@ void kernelEst(QString filePath, QString picPath)
 }
 
 void svd(const mat & inData,
-         mat & eigenVectors,
-         vector <double> & eigenValues,
-         double threshold)
+         matrix & eigenVectors,
+         vec & eigenValues,
+         const double & threshold)
 {
     const int iterationsThreshold = 100;
     const int ns = def::ns; // markers

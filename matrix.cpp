@@ -46,35 +46,35 @@ matrix::matrix(const dataType & other)
 {
     this->data = other;
 }
-matrix::matrix(vector <double> vec, bool orientH)
+matrix::matrix(vec vect, bool orientH)
 {
     if(orientH)
     {
-        this->resize(1, vec.size());
-        this->data[0] = vec;
+        this->resize(1, vect.size());
+        this->data[0] = vect;
     }
     else
     {
-        this->resize(vec.size(), 1);
-        for(int i = 0; i < vec.size(); ++i)
+        this->resize(vect.size(), 1);
+        for(int i = 0; i < vect.size(); ++i)
         {
-            this->data[i][0] = vec[i];
+            this->data[i][0] = vect[i];
         }
     }
 }
-matrix::matrix(vector <double> vec, char orient)
+matrix::matrix(vec vect, char orient)
 {
     if(orient == 'h' || orient == 'H')
     {
-        this->resize(1, vec.size());
-        this->data[0] = vec;
+        this->resize(1, vect.size());
+        this->data[0] = vect;
     }
     else if(orient == 'v' || orient == 'V')
     {
-        this->resize(vec.size(), 1);
-        for(int i = 0; i < vec.size(); ++i)
+        this->resize(vect.size(), 1);
+        for(int i = 0; i < vect.size(); ++i)
         {
-            this->data[i][0] = vec[i];
+            this->data[i][0] = vect[i];
         }
     }
     else
@@ -91,6 +91,26 @@ matrix::matrix(std::initializer_list<vector<double>> lst)
     {
         this->data.push_back(in);
     });
+}
+
+matrix::matrix(std::initializer_list<double> lst) // diagonal
+{
+    this->resize(lst.size(), lst.size());
+    vec tmp;
+    std::for_each(lst.begin(),
+                  lst.end(),
+                  [&tmp](double in)
+    {
+        tmp.push_back(in);
+    });
+
+    vec tempVec(lst.size(), 0.);
+    for(int i = 0; i < lst.size(); ++i)
+    {
+        tempVec[i] = tmp[i];
+        this->data.push_back(tempVec);
+        tempVec[i] = 0.;
+    }
 }
 
 
@@ -128,6 +148,67 @@ matrix matrix::operator *= (const double & other)
         }
     }
     return *this;
+}
+matrix matrix::operator * (const matrix & other)
+{
+    if(this->cols() != other.rows())
+    {
+        cout << "matrixProduct (operator *): input matrices are not productable" << endl;
+        return (*this);
+    }
+
+    const int size = this->cols();
+    const int dim1 = this->rows();
+    const int dim2 = other.cols();
+
+
+    matrix result(dim1, dim2, 0.);
+
+    double helpDouble = 0.;
+    for(int i = 0; i < dim1; ++i)
+    {
+        for(int j = 0; j < dim2; ++j)
+        {
+            helpDouble = 0.;
+            for(int k = 0; k < size; ++k)
+            {
+                helpDouble += (*this)[i][k] * other[k][j];
+            }
+            result[i][j] = helpDouble;
+        }
+    }
+    return result;
+}
+
+matrix matrix::operator *= (const matrix & other)
+{
+    if(this->cols() != other.rows())
+    {
+        cout << "matrixProduct (operator *): input matrices are not productable" << endl;
+        return (*this);
+    }
+
+    const int size = this->cols();
+    const int dim1 = this->rows();
+    const int dim2 = other.cols();
+
+
+    matrix result(dim1, dim2, 0.);
+
+    double helpDouble = 0.;
+    for(int i = 0; i < dim1; ++i)
+    {
+        for(int j = 0; j < dim2; ++j)
+        {
+            helpDouble = 0.;
+            for(int k = 0; k < size; ++k)
+            {
+                helpDouble += (*this)[i][k] * other[k][j];
+            }
+            result[i][j] = helpDouble;
+        }
+    }
+    return result;
 }
 
 
@@ -424,36 +505,45 @@ void matrix::swapRows(int i, int j)
     std::swap(this->data[i], this->data[j]);
 }
 
-template <typename Typ1, typename Typ2, typename Typ3>
-void matrixProduct(const Typ1 (&in1), const Typ2 (&in2), Typ3 (&result),
-                   int dim, int rows1, int cols2)
+void matrixProduct(const matrix & in1,
+                   const matrix & in2,
+                   matrix & result,
+                   int dim,
+                   int rows1,
+                   int cols2)
 {
     int dim1 = 0;
     int dim2 = 0;
     int size = 0;
 
-    dim1 = in1.size();
-    dim2 = in2[0].size();
+    dim1 = in1.rows();
+    dim2 = in2.cols();
 
-    if(rows1 != -1) {dim1 = rows1;}
-    if(cols2 != -1) {dim2 = cols2;}
+    if(rows1 != -1)
+    {
+        dim1 = rows1;
+    }
+    if(cols2 != -1)
+    {
+        dim2 = cols2;
+    }
 
-    // count size
-    if(dim != -1) {size = dim;}
-    else if(in1[0].size() != in2.size())
+    if(dim != -1)
+    {
+        size = dim;
+    }
+    else if(in1.cols() != in2.rows())
     {
         cout << "matrixProduct: input matrices are not productable" << endl;
-        result = Typ3();
+        result = matrix();
         return;
     }
     else
     {
-        size = in1[0].size();
+        size = in1.cols();
     }
 
-//    cout << "dim1 = " << dim1 << endl;
-//    cout << "dim2 = " << dim2 << endl;
-//    cout << "size = " << size << endl;
+    result.resize(dim1, dim2);
 
     double helpDouble = 0.;
     for(int i = 0; i < dim1; ++i)
@@ -470,11 +560,35 @@ void matrixProduct(const Typ1 (&in1), const Typ2 (&in2), Typ3 (&result),
     }
 }
 
-template void matrixProduct(const matrix &in1, const matrix &in2, matrix & result, int dim, int rows1, int cols2);
-template void matrixProduct(const matrix &in1, const matrix &in2, dataType & result, int dim, int rows1, int cols2);
-template void matrixProduct(const matrix &in1, const dataType & in2, matrix & result, int dim, int rows1, int cols2);
-template void matrixProduct(const dataType &in1, const dataType & in2, matrix & result, int dim, int rows1, int cols2);
-template void matrixProduct(const dataType &in1, const matrix & in2, matrix & result, int dim, int rows1, int cols2);
+void matrixProduct(const vec &in1,
+                   const matrix &in2,
+                   matrix & result,
+                   int dim,
+                   int rows1,
+                   int cols2)
+{
+    matrixProduct(matrix(in1, 'h'),
+                  in2,
+                  result,
+                  dim,
+                  rows1,
+                  cols2);
+}
+
+void matrixProduct(const matrix &in1,
+                   const vec &in2,
+                   matrix & result,
+                   int dim,
+                   int rows1,
+                   int cols2)
+{
+    matrixProduct(in1,
+                  matrix(in2, 'v'),
+                  result,
+                  dim,
+                  rows1,
+                  cols2);
+}
 
 
 

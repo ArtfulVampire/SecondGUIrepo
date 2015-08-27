@@ -52,7 +52,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
 
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    if(!QString(label[lst[lst.length() - 1].toInt()-1]).contains("Markers"))
+    if(!QString(label[lst.last().toInt() - 1]).contains("Markers"))
     {
         cout << "refilterData: bad reduceChannelsLineEdit - no markers" << endl;
         return;
@@ -716,7 +716,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
 
     lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     int ns = lst.length();
-    if(!QString(label[lst[lst.length() - 1].toInt() - 1]).contains("Markers"))
+    if(!QString(label[lst.last().toInt() - 1]).contains("Markers"))
     {
         cout << "constructEDF: bad reduceChannelsLineEdit - no markers" << endl;
         return;
