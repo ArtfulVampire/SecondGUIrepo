@@ -2015,7 +2015,7 @@ void writeFileInLine(QString filePath, const vec & outData)
     }
     for(auto it = outData.begin(); it < outData.end(); ++it)
     {
-        file << *it << '\n';
+        file << *it << '\t'; // \t or \n
     }
     file.close();
 }
@@ -2300,7 +2300,7 @@ void svd(const mat & inData,
          const double & threshold)
 {
     const int iterationsThreshold = 100;
-    const int ns = def::ns; // markers
+    const int ns = def::nsWOM();
     const int dataLen = inData[0].size();
     const int errorStep = 10;
 
@@ -2370,11 +2370,7 @@ void svd(const mat & inData,
     }
 
     eigenValues.resize(ns);
-    eigenVectors.resize(ns);
-    for(int i = 0; i < ns; ++i)
-    {
-        eigenVectors[i].resize(ns);
-    }
+    eigenVectors.resize(ns, ns);
 
     vec tempA(ns);
     vec tempB(dataLen);
@@ -2521,12 +2517,12 @@ void svd(const mat & inData,
             sum1 += eigenValues[i];
         }
 
-        cout << "numOfPC = " << k << "\t";
-        cout << "val = " << doubleRound(eigenValues[k], 4) << "\t";
+        cout << k << "\t";
+        cout << "val = " << doubleRound(eigenValues[k], 3) << "\t";
         cout << "disp = " << doubleRound(100. * eigenValues[k] / trace, 2) << "\t";
         cout << "total = " << doubleRound(100. * sum1 / trace, 2) << "\t";
         cout << "iters = " << counter << "\t";
-        cout << myTime.elapsed()/1000. << " sec" << endl;
+        cout << doubleRound(myTime.elapsed()/1000., 1) << " s" << endl;
 
         for(int i = 0; i < ns; ++i)
         {

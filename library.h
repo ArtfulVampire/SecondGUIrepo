@@ -233,7 +233,7 @@ void countRCP(QString filename,
               double *outMean = nullptr,
               double *outSigma = nullptr);
 
-void svd(const mat & inData,
+void svd(const mat &inData,
          matrix &eigenVectors,
          vec &eigenValues,
          const double &threshold = 1e-9);
@@ -503,7 +503,7 @@ double errorSammonAdd(const vector < vector <double> > & distOld,
 
 inline double doubleRound(const double & in, const int & numSigns)
 {
-    return int(  ceil(in*pow(10., numSigns) - 0.5)  ) / pow(10., numSigns);
+    return int(  ceil(in * pow(10., numSigns) - 0.5)  ) / pow(10., numSigns);
 }
 
 inline double doubleRoundFraq(const double & in, const int & denom)

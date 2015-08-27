@@ -1738,13 +1738,7 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-    ui->matiCheckBox->setChecked(false);
-    ui->reduceChannelsComboBox->setCurrentText("20");
-    ui->svdDoubleSpinBox->setValue(6.);
-    ui->vectwDoubleSpinBox->setValue(6.);
-    ICA();
-    exit(0);
+
     return;
 
 //    globalEdf.readEdfFile("/media/Files/Data/Galya/TBI/Test/cr_80_51.EDF");

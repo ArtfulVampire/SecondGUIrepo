@@ -516,16 +516,24 @@ void matrixProduct(const matrix & in1,
     int dim2 = 0;
     int size = 0;
 
-    dim1 = in1.rows();
-    dim2 = in2.cols();
+
 
     if(rows1 != -1)
     {
         dim1 = rows1;
     }
+    else
+    {
+        dim1 = in1.rows();
+    }
+
     if(cols2 != -1)
     {
         dim2 = cols2;
+    }
+    else
+    {
+        dim2 = in2.cols();
     }
 
     if(dim != -1)
@@ -543,7 +551,8 @@ void matrixProduct(const matrix & in1,
         size = in1.cols();
     }
 
-    result.resize(dim1, dim2);
+    result.resize(max(dim1, result.rows()),
+                  max(dim2, result.cols()));
 
     double helpDouble = 0.;
     for(int i = 0; i < dim1; ++i)
