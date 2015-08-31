@@ -2076,9 +2076,9 @@ void MainWindow::makeTestData()
 #endif
 }
 
-void MainWindow::GalyaProcessing()
+void MainWindow::GalyaProcessing(const QString & procDirPath)
 {
-    const QString procDirPath = "/media/Files/Data/Galya/TBI/Test";
+//    const QString procDirPath = "/media/Files/Data/Galya/TBI/Test";
 
 //    const QString enthropyFileName = "entrop.txt";
     const QString d2dimFileName = "d2_dim.txt";
@@ -2322,8 +2322,6 @@ void MainWindow::GalyaProcessing()
         }
         dir.cdUp(); // go away from "out"
     }
-
-
 }
 
 

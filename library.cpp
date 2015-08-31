@@ -192,20 +192,23 @@ QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, 
 
 
 void drawMapSpline(const matrix & matrixA,
-                   const double & maxAbs,
+                   const int numOfColoumn,
                    const QString & outDir,
                    const QString & outName,
-                   const int numOfCol,
+                   const double & maxAbs,
                    const int picSize,
-                   const bool colourFlag)
+                   const ColorScale colorTheme)
 {
+
+    // add +- maps decision
+
     QPixmap pic = QPixmap(picSize, picSize);
     QPainter painter;
     pic.fill();
     painter.begin(&pic);
     QString savePath1 = outDir
                         + slash() + outName + "_map_"
-                        + QString::number(numOfCol) + "+.png";
+                        + QString::number(numOfColoumn) + "+.png";
 
     QPixmap pic1 = QPixmap(picSize, picSize);
     QPainter painter1;
@@ -213,7 +216,7 @@ void drawMapSpline(const matrix & matrixA,
     painter1.begin(&pic1);
     QString savePath2 = outDir
                         + slash() + outName + "_map_"
-                        + QString::number(numOfCol) + "-.png";
+                        + QString::number(numOfColoumn) + "-.png";
 
     double val;
     double drawArg;
@@ -222,30 +225,33 @@ void drawMapSpline(const matrix & matrixA,
     int dim = 7;
     double scale1 = double(dim-1)/picSize;
 
-    matrix helpMatrix(dim, dim); //generality for ns = 19
+    matrix helpMatrix(dim, dim, 0.); //generality for ns = 19
 
     int currIndex = 0.;
     for(int i = 0; i < dim * dim; ++i)
     {
-        if((i/dim)%(dim-1) == 0 || (i%dim)%(dim-1) == 0)  //set 0 to all edge values
+        const int rest = i % dim;
+        const int quot = i / dim;
+
+        if(quot % (dim - 1) == 0|| rest % (dim-1) == 0)  //set 0 to all edge values
         {
-            helpMatrix[i/dim][i%dim] = 0.;
+            helpMatrix[quot][rest] = 0.;
         }
-        else if(i/dim == 1 && ((i%dim) - 1) * ((i%dim) - 3) * ((i%dim) - 5) == 0) //Fp3, Fpz, Fp4
+        else if(quot == 1
+                && (rest - 1) * (rest - 3) * (rest - 5) == 0) //Fp3, Fpz, Fp4
         {
-            helpMatrix[i/dim][i%dim] = 0.;
+            helpMatrix[quot][rest] = 0.;
         }
-        else if(i/dim == 5 && ((i%dim) - 1) * ((i%dim) - 3) * ((i%dim) - 5) == 0) //O3, Oz, O4
+        else if(quot == 5
+                && (rest - 1) * (rest - 3) * (rest - 5) == 0) //O3, Oz, O4
         {
-            helpMatrix[i/dim][i%dim] = 0.;
+            helpMatrix[quot][rest] = 0.;
         }
         else
         {
-            helpMatrix[i/dim][i%dim] = matrixA[currIndex++][numOfCol];
+            helpMatrix[quot][rest] = matrixA[currIndex++][numOfColoumn];
         }
     }
-
-
 
     //approximation for square - Fp3, Fpz, Fp, O3, Oz, O4
     helpMatrix[1][1] = (helpMatrix[1][2] + helpMatrix[2][1] + helpMatrix[2][2])/3.;
@@ -306,31 +312,45 @@ void drawMapSpline(const matrix & matrixA,
             if(maxAbs == 0) drawArg = (val - minMagn) / (maxMagn - minMagn) * drawRange; //if private maxAbs
             else drawArg = (val + maxAbs) / (2 * maxAbs) * drawRange; //if common maxAbs
 
-            if(!colourFlag)
+            switch(colorTheme)
             {
-                painter.setPen(grayScale(drawRange, drawArg));
-                painter1.setPen(grayScale(drawRange, drawRange - drawArg));
-            }
-            else
+            case 0:
             {
+                painter.setBrush(QBrush(hueJet(drawRange, drawArg)));
                 painter.setPen(hueJet(drawRange, drawArg));
+                painter1.setBrush(QBrush(hueJet(drawRange, drawRange - drawArg)));
                 painter1.setPen(hueJet(drawRange, drawRange - drawArg));
+                break;
+            }
+            case 1:
+            {
+                painter.setBrush(QBrush(hueOld(drawRange, drawArg)));
+                painter.setPen(hueOld(drawRange, drawArg));
+                painter1.setBrush(QBrush(hueOld(drawRange, drawRange - drawArg)));
+                painter1.setPen(hueOld(drawRange, drawRange - drawArg));
+                break;
+            }
+            case 2:
+            {
+                painter.setBrush(QBrush(grayScale(drawRange, drawArg)));
+                painter.setPen(grayScale(drawRange, drawArg));
+                painter1.setBrush(QBrush(grayScale(drawRange, drawRange - drawArg)));
+                painter1.setPen(grayScale(drawRange, drawRange - drawArg));
+                break;
+            }
+            case 3:
+            {
+                painter.setBrush(QBrush(grayScale(drawRange, drawArg)));
+                painter.setPen(grayScale(drawRange, drawArg));
+                painter1.setBrush(QBrush(grayScale(drawRange, drawRange - drawArg)));
+                painter1.setPen(grayScale(drawRange, drawRange - drawArg));
+                break;
+            }
             }
             painter.drawPoint(x,y);
             painter1.drawPoint(x,y);
         }
     }
-
-    //for transposed helpMatrix
-    //    painter.end();
-    //    QTransform transform1(0, 1, 1, 0, 0, 0);
-    //    pic = QPixmap(pic.transformed(transform1));
-    //    painter.begin(&pic);
-
-
-    //    painter1.end();
-    //    pic1 = QPixmap(pic1.transformed(transform1));
-    //    painter1.begin(&pic1);
 
     if(1) //draw channels locations
     {
@@ -360,8 +380,6 @@ void drawMapSpline(const matrix & matrixA,
     pic1.save(savePath2, 0, 100);
 
 
-
-
     matrixDelete(&Ah, 5);
     matrixDelete(&Bh, 5);
     delete []inX;
@@ -374,7 +392,13 @@ void drawMapSpline(const matrix & matrixA,
 
 
 
-void drawMap(const double ** const &matrixA, double maxAbs, QString outDir, QString outName, int num, int size, bool colourFlag)
+void drawMap(const double ** const &matrixA,
+             double maxAbs,
+             QString outDir,
+             QString outName,
+             int num,
+             int size,
+             bool colourFlag)
 {
     QPixmap pic = QPixmap(size, size);
     QPainter painter;
@@ -434,17 +458,17 @@ void drawMap(const double ** const &matrixA, double maxAbs, QString outDir, QStr
     matrixDelete(&helpMatrix, 5);
 }
 
-void drawMapsICA(const QString & mapsFilePath,
-                 const QString & outDir,
-                 const QString & outName,
-                 bool colourFlag,
-                 void (*draw1Map)(const matrix &,
-                                  const double &,
-                                  const QString &,
-                                  const QString &,
-                                  const int,
-                                  const int,
-                                  const bool))
+void drawMapsICA(const QString &mapsFilePath,
+                 const QString &outDir,
+                 const QString &outName,
+                 const ColorScale colourTheme,
+                 void (*draw1MapFunc)(const matrix &,
+                                      const int,
+                                      const QString &,
+                                      const QString &,
+                                      const double &,
+                                      const int,
+                                      const ColorScale))
 {
     matrix matrixA(def::nsWOM(), def::nsWOM());
     readICAMatrix(mapsFilePath, matrixA);
@@ -459,7 +483,7 @@ void drawMapsICA(const QString & mapsFilePath,
 
     for(int i = 0; i < def::nsWOM(); ++i)
     {
-        draw1Map(matrixA, maxAbs, outDir, outName, i, 240, colourFlag); //240 generality
+        draw1MapFunc(matrixA, i, outDir, outName, maxAbs, 240, colourTheme); //240 generality
     }
 }
 
@@ -476,12 +500,13 @@ void drawMapsOnSpectra(QString spectraFilePath,
 
     QPixmap pic1;
     QString helpString;
-    double offsetX = 0.7;
     QRect earRect;
-    int earSize = 14; //generality
-    double shitCoeff = 1.10; //smth about width of map on spectra pic
 
-    for(int i = 0; i < def::nsWOM(); ++i) /////////////////////////// generality 19
+    const double offsetX = 0.7;
+    const int earSize = 14; //generality
+    const double shitCoeff = 1.10; //smth about width of map on spectra pic
+
+    for(int i = 0; i < def::nsWOM(); ++i)
     {
         //+- maps handler
         helpString = mapsPath
@@ -2187,7 +2212,6 @@ void drawColorScale(QString filePath, int range, ColorScale type, bool full)
             painter.setBrush(QBrush(hueJet(range, i)));
             painter.setPen(hueJet(range, i));
             break;
-
         }
         case 1:
         {
@@ -3817,10 +3841,10 @@ vec spectre(const vec & data)
     int fftLen = fftL(length); // nearest exceeding power of 2
     double norm = sqrt(fftLen / double(length));
 
-    vec tempSpectre(2 * fftLen, 0);
+    vec tempSpectre(2 * fftLen, 0.);
     for(int i = 0; i < length; ++i)
     {
-        tempSpectre[ 2 * i + 0] = data[i] * norm;
+        tempSpectre[ 2 * i + 0 ] = data[i] * norm;
     }
     four1(tempSpectre.data() - 1, fftLen, 1);
 

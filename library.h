@@ -45,8 +45,8 @@ const double pi = 3.141592653589;
 const double pi_min_025 = pow(pi, -0.25);
 const double pi_sqrt = sqrt(pi);
 
-typedef vector<vector<double>> mat;
-typedef vector<double> vec;
+typedef std::vector<std::vector<double>> mat;
+typedef std::vector<double> vec;
 
 void writeWavFile(const vec & inData, const QString & outPath);
 
@@ -207,13 +207,7 @@ void splitZerosEdges(Typ & dataIn, const int & ns, const int & length, int * out
 template <typename Typ>
 void zeroData(Typ & inData, const int & leftLimit, const int & rightLimit);
 
-void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
-void splineCoeffCount(const vec & inX,
-                      const vec & inY,
-                      int dim,
-                      vec & outA,
-                      vec & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
-double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
+
 double independence(double * const signal1, double * const signal2, int length);
 double countAngle(double initX, double initY);
 
@@ -329,31 +323,52 @@ bool readICAMatrix(const QString & path, Typ &matrixA);
 template <typename Typ>
 void writeICAMatrix(const QString & path, Typ &matrixA);
 
+
+
+
+void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+void splineCoeffCount(const vec & inX,
+                      const vec & inY,
+                      int dim,
+                      vec & outA,
+                      vec & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
+
 QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour = true);
-void drawMap      (double ** &matrixA, double maxAbs, QString outDir, QString outName, int num, int size = 240, bool colourFlag = true);
+// old unused
+void drawMap      (double ** &matrixA,
+                   double maxAbs,
+                   QString outDir,
+                   QString outName,
+                   int num,
+                   int size = 240,
+                   bool colourFlag = true);
+
 void drawMapSpline(const matrix & matrixA,
-                   const double & maxAbs,
+                   const int numOfColoumn,
                    const QString & outDir,
                    const QString & outName,
-                   const int numOfCol,
+                   const double & maxAbs,
                    const int picSize = 240,
-                   const bool colourFlag = true);
+                   const ColorScale colorTheme = jet);
 
 void drawMapsICA(const QString & mapsFilePath,
                  const QString & outDir,
                  const QString & outName,
-                 bool colourFlag = true,
+                 const ColorScale colourTheme = jet,
                  void (*draw1MapFunc)(const matrix &,
+                                      const int,
+                                      const QString &,
+                                      const QString &,
                                       const double &,
-                                      const QString &,
-                                      const QString &,
                                       const int,
-                                      const int,
-                                      const bool) = &drawMapSpline);
+                                      const ColorScale) = &drawMapSpline);
 
+void drawMapsOnSpectra(QString spectraFilePath,
+                       QString outSpectraFilePath,
+                       QString mapsPath,
+                       QString mapsNames);
 
-
-void drawMapsOnSpectra(QString spectraFilePath, QString outSpectraFilePath, QString mapsPath, QString mapsNames);
 
 
 void spectre(const double * data,

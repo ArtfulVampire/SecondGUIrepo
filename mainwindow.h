@@ -128,7 +128,7 @@ public:
     void sliceMatiPieces(bool plainFlag = true);
     void sliceMatiSimple();
 
-    void GalyaProcessing();
+    void GalyaProcessing(const QString &procDirPath);
 
     void rereferenceData(QString newRef, QString newPath);
     void makeChanList(QList<int> & chanList);
