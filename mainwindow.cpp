@@ -368,6 +368,7 @@ MainWindow::MainWindow() :
     QObject::connect(ui->markerSaveEdfPushButton, SIGNAL(clicked()), this, SLOT(markerSaveEdf()));
     QObject::connect(ui->matiCheckBox, SIGNAL(stateChanged(int)), this, SLOT(matiCheckBoxSlot(int)));
 
+    globalEdf.setMatiFlag(ui->matiCheckBox->isChecked());
     customFunc();
 }
 
@@ -1738,7 +1739,8 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-
+    GalyaProcessing("/media/Files/Data/Galya/New");
+    exit(0);
     return;
 
 //    globalEdf.readEdfFile("/media/Files/Data/Galya/TBI/Test/cr_80_51.EDF");

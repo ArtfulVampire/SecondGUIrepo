@@ -375,6 +375,7 @@ void spectre(const double * data,
              const int &length,
              double *& spectr);
 vec spectre(const vec & data);
+vec smoothSpectre(const vec & inSpectre, const int numOfSmooth);
 
 template <typename inTyp, typename outTyp>
 void calcSpectre(const inTyp & inSignal,

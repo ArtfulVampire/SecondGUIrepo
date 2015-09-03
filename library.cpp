@@ -199,9 +199,6 @@ void drawMapSpline(const matrix & matrixA,
                    const int picSize,
                    const ColorScale colorTheme)
 {
-
-    // add +- maps decision
-
     QPixmap pic = QPixmap(picSize, picSize);
     QPainter painter;
     pic.fill();
@@ -253,6 +250,8 @@ void drawMapSpline(const matrix & matrixA,
         }
     }
 
+    //
+//    for(int)
     //approximation for square - Fp3, Fpz, Fp, O3, Oz, O4
     helpMatrix[1][1] = (helpMatrix[1][2] + helpMatrix[2][1] + helpMatrix[2][2])/3.;
     helpMatrix[1][3] = (helpMatrix[1][2] + helpMatrix[1][4] + helpMatrix[2][2] + helpMatrix[2][3] + helpMatrix[2][4])/5.;
@@ -271,8 +270,8 @@ void drawMapSpline(const matrix & matrixA,
     double * inX = new double [dim];
     double * inY = new double [dim];
     double * inYv = new double [dim];
-    double * Av = new double [dim-1];
-    double * Bv = new double [dim-1];
+    double * Av = new double [dim - 1];
+    double * Bv = new double [dim - 1];
 
     for(int k = 0; k < dim; ++k)
     {
@@ -286,7 +285,6 @@ void drawMapSpline(const matrix & matrixA,
             inY[k] = helpMatrix[i][k];
         }
         splineCoeffCount(inX, inY, dim, &(Ah[i-1]), &(Bh[i-1])); // horizontal splines coeffs
-
     }
 
     for(int x = 0; x < picSize; ++x)
@@ -3856,6 +3854,23 @@ vec spectre(const vec & data)
                       + pow(tempSpectre[ i * 2 + 1 ], 2.)) * norm;
     }
     return spectr;
+}
+
+vec smoothSpectre(const vec & inSpectre, const int numOfSmooth)
+{
+    vec result = inSpectre;
+    double help1, help2;
+    for(int num = 0; num < numOfSmooth; ++num)
+    {
+        help1 = result[0];
+        for(int i = 1; i < result.size() - 1; ++i)
+        {
+            help2 = result[i];
+            result[i] = (help1 + help2 + result[i+1]) / 3.;
+            help1 = help2;
+        }
+    }
+    return result;
 }
 
 template <typename Typ>

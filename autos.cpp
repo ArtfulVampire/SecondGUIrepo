@@ -2085,7 +2085,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     const QString hilbertFileName = "med_freq.txt";
     const QString spectraFileName = "spectre.txt";
 
-    const double leftFreqLim = 4.;
+    const double leftFreqLim = 2.;
     const double rightFreqLim = 20.;
     const double stepFreq = 2.;
     const double spectreStepFreq = 1.;
@@ -2098,7 +2098,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     dir.cd(procDirPath);
     dir.mkdir("out");
     QStringList filesList;
-    filesList = dir.entryList(QStringList("*.EDF"), QDir::NoFilter, QDir::Size|QDir::Reversed);
+    filesList = dir.entryList(QStringList{"*.EDF", "*.edf"}, QDir::NoFilter, QDir::Size|QDir::Reversed);
 
     edfFile initEdf;
     edfFile currEdf;
@@ -2110,8 +2110,6 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     int helpInt;
     vec env;
     vec envSpec;
-//    env.resize(525000);
-//    envSpec.resize(525000); // ~2^19
 
     double sumSpec = 0.;
 
@@ -2119,7 +2117,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     for(int i = 0; i < filesList.length(); ++i)
     {
         ExpName = filesList[i];
-        ExpName.remove(".EDF");
+        ExpName.remove(".EDF", Qt::CaseInsensitive);
         cout << ExpName << endl;
 
         helpString = dir.absolutePath()
@@ -2130,24 +2128,28 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
 
         dir.cd("out");
-        // how to check all frequency ranges?
+
+
+
+
 
         helpString = dir.absolutePath()
                 + slash() + ExpName;
-        QFile::remove(helpString + "_" + d2dimFileName);
-        QFile::remove(helpString + "_" + hilbertFileName);
         QFile::remove(helpString + "_" + spectraFileName);
 
         // write full spectre
         vec fullSpectre;
+        vec helpSpectre;
         helpString = dir.absolutePath()
                 + slash() + ExpName
                 + "_" + spectraFileName;
         outStr.open(helpString.toStdString());
         for(int i = 0; i < numChan; ++i)
         {
-            fullSpectre.clear();
-            fullSpectre = spectre(initEdf.getData()[i]);
+            helpSpectre.clear();
+            helpSpectre = spectre(initEdf.getData()[i]);
+            helpSpectre = smoothSpectre(helpSpectre,
+                                        ceil(10 * sqrt(initEdf.getDataLen() / 4096.)));
 
 //            helpString = dir.absolutePath()
 //                    + slash() + ExpName
@@ -2157,27 +2159,52 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 //                      fullSpectre.size(),
 //                      helpString);
 
-            helpDouble = 0.;
-            for(double j = leftFreqLim;
-                j < rightFreqLim;
-                j += spectreStepFreq)
-            {
-                helpInt = fftLimit(j, def::freq, fftL(initEdf.getDataLen()));
-                helpDouble += fullSpectre[helpInt];
-            }
-
-            helpDouble /= 50; // norm
-
+            // integrate spectre near the needed freqs
+            fullSpectre.clear();
             for(double j = leftFreqLim;
                 j <= rightFreqLim;
                 j += spectreStepFreq)
             {
-                helpInt = fftLimit(j, def::freq, fftL(initEdf.getDataLen()));
-               outStr << doubleRound(fullSpectre[helpInt] / helpDouble,
-                       4) << "\t";
+                helpDouble = 0.;
+                for(int k = fftLimit(j - spectreStepFreq / 2.,
+                                     def::freq,
+                                     fftL(initEdf.getDataLen()));
+                    k < fftLimit(j + spectreStepFreq / 2.,
+                                 def::freq,
+                                 fftL(initEdf.getDataLen()));
+                    ++k)
+                {
+                    helpDouble += helpSpectre[k];
+                }
+                fullSpectre.push_back(helpDouble);
+            }
+
+            // normalize
+            helpDouble = 0.;
+            for(auto it = fullSpectre.begin();
+                it < fullSpectre.end();
+                ++it)
+            {
+                helpDouble += (*it);
+            }
+            helpDouble = 1. / helpDouble;
+
+            for(auto it = fullSpectre.begin();
+                it < fullSpectre.end();
+                ++it)
+            {
+                (*it) *= helpDouble * 20.;
+                outStr << doubleRound((*it), 4) << "\t";
             }
         }
         outStr.close();
+
+//        dir.cdUp(); continue;
+
+        helpString = dir.absolutePath()
+                + slash() + ExpName;
+        QFile::remove(helpString + "_" + d2dimFileName);
+        QFile::remove(helpString + "_" + hilbertFileName);
 
 
         for(double freqCounter = leftFreqLim;
