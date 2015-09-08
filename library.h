@@ -353,8 +353,10 @@ void drawMapSpline(const matrix & matrixA,
                    const ColorScale colorTheme = jet);
 
 void drawMapsICA(const QString & mapsFilePath,
-                 const QString & outDir,
-                 const QString & outName,
+                 const QString & outDir = QString(def::dir->absolutePath()
+                                                  + slash() + "Help"
+                                                  + slash() + "Maps"),
+                 const QString & outName = def::ExpName,
                  const ColorScale colourTheme = jet,
                  void (*draw1MapFunc)(const matrix &,
                                       const int,
@@ -364,10 +366,10 @@ void drawMapsICA(const QString & mapsFilePath,
                                       const int,
                                       const ColorScale) = &drawMapSpline);
 
-void drawMapsOnSpectra(QString spectraFilePath,
-                       QString outSpectraFilePath,
-                       QString mapsPath,
-                       QString mapsNames);
+void drawMapsOnSpectra(const QString & spectraFilePath,
+                       const QString & outSpectraFilePath,
+                       const QString & mapsDirPath,
+                       const QString & mapsNames);
 
 
 
@@ -524,7 +526,7 @@ inline double doubleRound(const double & in, const int & numSigns)
 
 inline double doubleRoundFraq(const double & in, const int & denom)
 {
-    return floor(in * denom + 0.5) / denom;
+    return ceil(in * denom - 0.5) / denom;
 }
 
 inline double gaussian(const double & x, const double & sigma = 1.) //N(0,1)
@@ -539,7 +541,7 @@ inline double logistic(const double & x, const double & t = 10.)
 
 inline int fftLimit(const double & inFreq, const double & sampleFreq, const int & fftL)
 {
-    return floor(0.5 + inFreq / sampleFreq * fftL);
+    return ceil(inFreq / sampleFreq * fftL - 0.5);
 }
 
 inline int fftL(const int & in)

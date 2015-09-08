@@ -192,12 +192,12 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
 
             if(fmod(16 * double(mouseEvent->x())/ui->specLabel->width(), 3.) < 0.5)
             {
-                if(mouseEvent->button()==Qt::LeftButton)
+                if(mouseEvent->button() == Qt::LeftButton)
                 {
                     chanNum = findChannel(mouseEvent->x(), mouseEvent->y(), ui->specLabel->size());
                     rangeLimits[chanNum][0] = 0;
                 }
-                if(mouseEvent->button()==Qt::RightButton)
+                if(mouseEvent->button() == Qt::RightButton)
                 {
 
                     chanNum = findChannel(mouseEvent->x(), mouseEvent->y(), ui->specLabel->size()) - 1;

@@ -260,8 +260,8 @@ void drawMapSpline(const matrix & matrixA,
     helpMatrix[5][3] = (helpMatrix[5][2] + helpMatrix[4][2] + helpMatrix[4][3] + helpMatrix[4][4] + helpMatrix[4][5])/5.;
     helpMatrix[5][5] = (helpMatrix[5][4] + helpMatrix[4][4] + helpMatrix[4][5])/3.;
 
-    double minMagn = helpMatrix.minVal();
-    double maxMagn = helpMatrix.maxVal();
+    const double minMagn = helpMatrix.minVal();
+    const double maxMagn = helpMatrix.maxVal();
 
     double ** Ah;
     matrixCreate(&Ah, 5, 6);
@@ -307,8 +307,20 @@ void drawMapSpline(const matrix & matrixA,
             val = splineOutput(inX, inYv, dim, Av, Bv, y*scale1);
 
 
-            if(maxAbs == 0) drawArg = (val - minMagn) / (maxMagn - minMagn) * drawRange; //if private maxAbs
-            else drawArg = (val + maxAbs) / (2 * maxAbs) * drawRange; //if common maxAbs
+            if(maxAbs == 0)
+            {
+                // "private" limits
+                // each map frop deep blue to deep red
+                drawArg = (val - minMagn)
+                        / (maxMagn - minMagn) * drawRange;
+            }
+            else
+            {
+                // global limits
+                // current variant
+                drawArg = (val + maxAbs)
+                        / (2 * maxAbs) * drawRange; // if common maxAbs
+            }
 
             switch(colorTheme)
             {
@@ -376,6 +388,37 @@ void drawMapSpline(const matrix & matrixA,
     }
     pic.save(savePath1, 0, 100);
     pic1.save(savePath2, 0, 100);
+
+
+    double sum = 0.;
+    for(int i = 0; i < helpMatrix.rows(); ++i)
+    {
+        for(int j = 0; j < helpMatrix.cols(); ++j)
+        {
+            sum += helpMatrix[i][j];
+        }
+    }
+
+#if 1
+    //+- solver
+    if(fabs(maxMagn) > 1.5 * fabs(minMagn))
+    {
+        QFile::remove(savePath2);
+    }
+    else if(1.5 * fabs(maxMagn) < fabs(minMagn))
+    {
+        QFile::remove(savePath1);
+    }
+    else if(sum >= 0.)
+    {
+        QFile::remove(savePath2);
+    }
+    else if(sum < 0.)
+    {
+        QFile::remove(savePath1);
+    }
+#endif
+
 
 
     matrixDelete(&Ah, 5);
@@ -481,20 +524,20 @@ void drawMapsICA(const QString &mapsFilePath,
 
     for(int i = 0; i < def::nsWOM(); ++i)
     {
-        draw1MapFunc(matrixA, i, outDir, outName, maxAbs, 240, colourTheme); //240 generality
+        draw1MapFunc(matrixA, i, outDir, outName, maxAbs, 240, colourTheme);
     }
 }
 
 
-void drawMapsOnSpectra(QString spectraFilePath,
-                       QString outSpectraFilePath,
-                       QString mapsPath,
-                       QString mapsNames)
+void drawMapsOnSpectra(const QString &spectraFilePath,
+                       const QString &outSpectraFilePath,
+                       const QString &mapsDirPath,
+                       const QString &mapsNames)
 {
     QPixmap pic;
     pic = QPixmap(spectraFilePath);
-    QPainter pnt;
-    pnt.begin(&pic);
+    QPainter paint;
+    paint.begin(&pic);
 
     QPixmap pic1;
     QString helpString;
@@ -504,10 +547,12 @@ void drawMapsOnSpectra(QString spectraFilePath,
     const int earSize = 14; //generality
     const double shitCoeff = 1.10; //smth about width of map on spectra pic
 
+    const double graphHeight = paint.device()->height() * coords::scale;
+    const double graphWidth = paint.device()->width() * coords::scale;
+
     for(int i = 0; i < def::nsWOM(); ++i)
     {
-        //+- maps handler
-        helpString = mapsPath
+        helpString = mapsDirPath
                      + slash() + mapsNames
                      + "_map_" + QString::number(i) + "+.png";
         if(!QFile::exists(helpString))
@@ -521,38 +566,48 @@ void drawMapsOnSpectra(QString spectraFilePath,
         }
         pic1 = QPixmap(helpString);
 
-        pnt.drawPixmap(QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width(),
-                             coords::y[i] * pic.height() - coords::scale * pic.height(),
-                             (shitCoeff - offsetX) * coords::scale * pic.width(),
-                             (shitCoeff - offsetX) * coords::scale * pic.height()),
-                       pic1);
 
-        pnt.setPen(QPen(QBrush("black"), 2));
+
+        const double Y = paint.device()->height() * coords::y[i];
+        const double X = paint.device()->width() * coords::x[i];
+
+        paint.drawPixmap(QRect(X + offsetX * graphWidth,
+                               Y - graphHeight,
+                               (shitCoeff - offsetX) * graphWidth,
+                               (shitCoeff - offsetX) * graphHeight),
+                         pic1);
+
+        paint.setPen(QPen(QBrush("black"), 2));
 
         //draw the nose
-        pnt.drawLine(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2 - 8,
-                     coords::y[i] * pic.height() - coords::scale * pic.height(),
-                     coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2,
-                     coords::y[i] * pic.height() - coords::scale * pic.height() - 13);
+        paint.drawLine(X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2 - 8,
+                       Y - graphHeight,
+                       X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2,
+                       Y - graphHeight - 13);
 
-        pnt.drawLine(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2 + 8,
-                     coords::y[i] * pic.height() - coords::scale * pic.height(),
-                     coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width()/2,
-                     coords::y[i] * pic.height() - coords::scale * pic.height() - 13);
+        paint.drawLine(X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2 + 8,
+                       Y - graphHeight,
+                       X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2,
+                       Y - graphHeight - 13);
 
-        earRect = QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() - 0.75 * earSize,
-                        coords::y[i] * pic.height() - coords::scale * pic.height() + (shitCoeff - offsetX) * coords::scale * pic.height()/2 - earSize,
+        earRect = QRect(X + offsetX * graphWidth - 0.75 * earSize,
+                        Y - graphHeight + (shitCoeff - offsetX) * graphHeight/2 - earSize,
                         earSize, 2*earSize);
-        pnt.drawArc(earRect, 60*16, 240*16);
+        paint.drawArc(earRect, 60*16, 240*16);
 
 
-        earRect = QRect(coords::x[i] * pic.width() + offsetX * coords::scale * pic.width() + (shitCoeff - offsetX) * coords::scale * pic.width() - 0.25 * earSize,
-                        coords::y[i] * pic.height() - coords::scale * pic.height() + (shitCoeff - offsetX) * coords::scale * pic.height()/2 - earSize,
+        earRect = QRect(X + offsetX * graphWidth
+                        + (shitCoeff - offsetX) * graphWidth - 0.25 * earSize,
+                        Y - graphHeight + (shitCoeff - offsetX) * graphHeight/2 - earSize,
                         earSize, 2*earSize);
-        pnt.drawArc(earRect, 240*16, 240*16);
+        paint.drawArc(earRect, 240*16, 240*16);
 
     }
+    paint.end();
     pic.save(outSpectraFilePath, 0, 100);
+
+#if 0
+    // save both jpg and png
     helpString = outSpectraFilePath;
     if(helpString.contains(".png"))
     {
@@ -564,7 +619,7 @@ void drawMapsOnSpectra(QString spectraFilePath,
         helpString.replace(".jpg", ".png");
         pic.save(helpString, 0, 100);
     }
-    pnt.end();
+#endif
 }
 
 #define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
@@ -780,8 +835,8 @@ QString getExpNameLib(QString const filePath) // getFileName
 {
     QString hlp;
     hlp = QDir::toNativeSeparators(filePath);
-    hlp = hlp.right(hlp.length() - hlp.lastIndexOf(slash()) - 1);
-    hlp = hlp.left(hlp.lastIndexOf('.'));
+    hlp = hlp.right(hlp.length() - hlp.lastIndexOf(slash()) - 1); // ExpName.edf
+    hlp = hlp.left(hlp.lastIndexOf('.')); // ExpName
     return hlp;
 }
 
@@ -1839,7 +1894,7 @@ void drawTemplate(const QString & outPath,
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
     const double graphScale = def::spLength / graphWidth;
-    // initial fonts prepared for 1600*1600
+    // some empirical values prepared for defauls 1600*1600
     const double scaleY = paint.device()->height() / 1600.;
     const double scaleX = paint.device()->width() / 1600.;
 
@@ -1865,7 +1920,7 @@ void drawTemplate(const QString & outPath,
         for(int k = 0; k < graphWidth; ++k) //for every Hz generality
         {
             if( abs((def::left + k * graphScale) * def::spStep
-                    - floor((def::left + k * graphScale) * def::spStep + 0.5))
+                    - ceil((def::left + k * graphScale) * def::spStep - 0.5))
                 < graphScale * def::spStep / 2. )
             {
                 paint.drawLine(QPointF(X + k,
