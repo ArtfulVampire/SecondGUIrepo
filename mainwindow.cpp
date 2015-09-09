@@ -10,7 +10,7 @@ MainWindow::MainWindow() :
 
 
     autoProcessingFlag = false;
-    redirectCoutFlag = false;
+    redirectCoutFlag = false; // move to namespace def
     coutBuf = cout.rdbuf();
 
     // [left right)
@@ -28,6 +28,7 @@ MainWindow::MainWindow() :
 
     NumOfEdf = 0; //for EDF cut
 
+    // must reamake with std::string or QString
     label = new char* [maxNs];     //memory for channels' labels
     for(int i = 0; i < maxNs; ++i)
     {
@@ -35,6 +36,8 @@ MainWindow::MainWindow() :
     }
     nr = new int [maxNs];
 
+
+    // what with deletion?
     QButtonGroup * group1, *group2, *group3, *group4;
     group1 = new QButtonGroup();
     group1->addButton(ui->enRadio);
@@ -1606,16 +1609,25 @@ void MainWindow::markerSaveEdf()
 void MainWindow::drawMapsSlot()
 {
     QString helpString = QFileDialog::getOpenFileName(this,
-                                              tr("Choose maps file"),
-                                              def::dir->absolutePath(),
-                                              tr("*.txt"));
+                                                      tr("Choose maps file"),
+                                                      def::dir->absolutePath(),
+                                                      tr("*.txt"));
+    if(helpString.isEmpty())
+    {
+        helpString = def::dir->absolutePath()
+                     + slash() + "Help"
+                     + slash() + def::ExpName
+                     + "_maps.txt";
+        helpString.remove("_ica");
+    }
     if(!QFile::exists(helpString))
     {
         return;
     }
-    QString outDir;
     drawMapsICA(helpString,
-                def::dir->absolutePath() + slash() + "Help",
+                def::dir->absolutePath()
+                + slash() + "Help"
+                + slash() + "Maps",
                 def::ExpName);
 }
 
@@ -1633,14 +1645,11 @@ void MainWindow::avTime()
     QString helpString;
 
 
-    QString tmp;
-    for(int j = 0; j < 2; ++j)
+    for(QString tmp : {"241", "247"})
     {
         av = 0.;
         shortReals = 0;
         numNotSolved = 0;
-        if(j == 0) tmp = "241";
-        else if(j == 1) tmp = "247";
 
         def::dir->cd("Realisations");
         lst = def::dir->entryList(QStringList(QString("*_" + tmp + "*")), QDir::Files);
@@ -1740,20 +1749,20 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-    GalyaProcessing("/media/Files/Data/Galya");
-    exit(0);
+//    GalyaProcessing("/media/Files/Data/Galya");
+//    exit(0);
 //    GalyaProcessing("/media/Files/Data/Galya/autists_all");
-    setEdfFile("/media/Files/Data/Mati/ADA/ADA_full_ica.edf");
-    readData();
+//    setEdfFile("/media/Files/Data/Mati/ADA/ADA_full_ica.edf");
+//    readData();
 
-    drawMapsICA("/media/Files/Data/Mati/ADA/Help/ADA_full_maps.txt",
-                "/media/michael/Files/Data/Mati/ADA/Help/Maps/",
-                def::ExpName);
-    drawMapsOnSpectra("/media/Files/Data/Mati/ADA/Help/ADA_full_ica_all.jpg",
-                      "/media/Files/Data/Mati/ADA/Help/ADA_full_ica_all_wm.jpg",
-                      "/media/michael/Files/Data/Mati/ADA/Help/Maps/",
-                      def::ExpName);
-    exit(0);
+//    drawMapsICA("/media/Files/Data/Mati/ADA/Help/ADA_full_maps.txt",
+//                "/media/michael/Files/Data/Mati/ADA/Help/Maps/",
+//                def::ExpName);
+//    drawMapsOnSpectra("/media/Files/Data/Mati/ADA/Help/ADA_full_ica_all.jpg",
+//                      "/media/Files/Data/Mati/ADA/Help/ADA_full_ica_all_wm.jpg",
+//                      "/media/michael/Files/Data/Mati/ADA/Help/Maps/",
+//                      def::ExpName);
+//    exit(0);
 //    return;
 
 //    globalEdf.readEdfFile("/media/Files/Data/Galya/TBI/Test/cr_80_51.EDF");
@@ -1764,7 +1773,7 @@ void MainWindow::customFunc()
 //            def::freq,
 //            "/media/Files/Data/Galya/TBI/Test/cr_80_51.jpg");
 //    GalyaProcessing();
-    exit(0);
+//    exit(0);
 //    def::freq = 1000.;
 //    double freq0 = 2.;
 //    int width = 5 * def::freq / freq0;
