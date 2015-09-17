@@ -1749,68 +1749,89 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-//    GalyaProcessing("/media/Files/Data/Galya");
-//    exit(0);
-//    GalyaProcessing("/media/Files/Data/Galya/autists_all");
-//    setEdfFile("/media/Files/Data/Mati/ADA/ADA_full_ica.edf");
-//    readData();
+#if 1
+    // draw maps
+    const QStringList names{"ADA", "BSA", "FEV", "KMX", "NVV", "PYV", "SDV", "SIV"};
+    const QString path = "/media/Files/Data/Mati/ICAstudy/";
+    const QString hlp = "/media/Files/Data/Mati/ICAstudy/Help/";
+    const QString out = "/media/Files/Data/Mati/ICAstudy/Help/Maps/";
+    QString helpString;
+    QString nam;
+    def::dir->cd(path);
+    QStringList dataFiles = def::dir->entryList(QStringList("*_ica_after.edf"));
 
-//    drawMapsICA("/media/Files/Data/Mati/ADA/Help/ADA_full_maps.txt",
-//                "/media/michael/Files/Data/Mati/ADA/Help/Maps/",
-//                def::ExpName);
-//    drawMapsOnSpectra("/media/Files/Data/Mati/ADA/Help/ADA_full_ica_all.jpg",
-//                      "/media/Files/Data/Mati/ADA/Help/ADA_full_ica_all_wm.jpg",
-//                      "/media/michael/Files/Data/Mati/ADA/Help/Maps/",
-//                      def::ExpName);
-//    exit(0);
-//    return;
+    ui->matiCheckBox->setChecked(true);
 
-//    globalEdf.readEdfFile("/media/Files/Data/Galya/TBI/Test/cr_80_51.EDF");
-//    drawEeg(globalEdf.getData(),
-//            19,
-//            0,
-//            globalEdf.getDataLen(),
-//            def::freq,
-//            "/media/Files/Data/Galya/TBI/Test/cr_80_51.jpg");
-//    GalyaProcessing();
-//    exit(0);
-//    def::freq = 1000.;
-//    double freq0 = 2.;
-//    int width = 5 * def::freq / freq0;
-//    for(int shift = 0; shift < width / 9; ++shift)
-//    {
-//        double sum = 0.;
-//        for(int i = 0; i < 3 * width; ++i)
-//        {
-//            sum += morletSinNew(freq0, width + 10, i) *
-//                   morletSinNew(freq0, width + 10 + shift, i);
-//        }
-//        cout << "shift = " << shift << "\tintegral = " << sum << endl;
-//    }
-//    exit(9);
+    for(const QString & guy : names)
+    {
+        helpString = path + guy + "_full_ica_after.edf";
+        setEdfFile(helpString);
+
+        helpString = hlp + guy + "_full_maps_after.txt";
+        drawMapsICA(helpString,
+                    out,
+                    guy);
+
+        ui->cleanRealisationsCheckBox->setChecked(true);
+        ui->cleanRealsSpectraCheckBox->setChecked(true);
+        ui->cleanWindowsCheckBox->setChecked(false);
+        ui->cleanWindSpectraCheckBox->setChecked(false);
+        cleanDirs();
+
+        sliceAll();
+        Spectre * sp = new Spectre();
+        sp->countSpectra();
+        sp->compare();
+        sp->compare();
+        sp->compare();
+        sp->compare();
+        sp->psaSlot();
+        sp->close();
+        delete sp;
+
+        helpString = hlp + guy + "_full_ica_after_all.jpg";
+        drawMapsOnSpectra(helpString,
+                          QString(hlp + guy + "_full_ica_after_all_wm.jpg"),
+                          out,
+                          guy);
+//        break;
 
 
-//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-//    readData();
-//    vector<double> sound = globalEdf.getData()[10];
-//    sound.resize(def::freq * 20);
+    }
+    exit(0);
+#endif
 
-//    vec hlb;
-//    hlb = hilbertPieces(sound,
-//                        -1,
-//                        def::freq,
-//                        8,
-//                        12,
-//                        "/media/Files/Data/pew.jpg");
+#if 0
+    const int wndLen = 16; // seconds
+    def::dir->cd("/media/michael/Files/Data/Galya/ToSlice");
+    QStringList leest1 = def::dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+    for(const QString & dir1 : leest1)
+    {
+        def::dir->cd(dir1);
+        QStringList leest2 = def::dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+        for(const QString & dir2 : leest2)
+        {
+            def::dir->cd(dir2);
+            QStringList leest3 = def::dir->entryList(QStringList{"*.edf", "*.EDF"});
+            for(const QString guy : leest3)
+            {
+                globalEdf.readEdfFile(def::dir->absolutePath() + slash() + guy);
+                cout << def::dir->absolutePath() + slash() + guy << endl;
 
-//    for(int i = 0; i < sound.size(); ++i)
-//    {
-//        sound[i] = sin( 50 * (1. + 9. * i/(44100 * timeLen))  * 2 * pi * i / 44100); // 100 Hz
-//    }
-//    writeWavFile(newSound, "/media/Files/Data/1.wav");
-//    exit(0);
+                for(int i = 0; i < ceil(globalEdf.getDataLen() / def::freq / wndLen); ++i)
+                {
+                    globalEdf.saveSubsection(i * def::freq * wndLen,
+                                             fmin((i + 1) * def::freq * wndLen, globalEdf.getDataLen()),
+                                             QString(def::dir->absolutePath() + slash() + globalEdf.getExpName() + "_" + QString::number(i+1) + ".edf"));
+                }
+            }
+            def::dir->cdUp();
+        }
+        def::dir->cdUp();
 
-//    return;
+    }
+    exit(0);
+#endif
 
 #if 0
     // copy wts pics MATI
@@ -2193,6 +2214,7 @@ void MainWindow::customFunc()
     }
     exit(0);
 #endif
+
 #if 0
     // draw maps
     const QString path = "/media/Files/Data/Mati/ICAstudy/";
@@ -2261,9 +2283,8 @@ void MainWindow::customFunc()
     def::dir->cd(path);
     QStringList dataFiles = def::dir->entryList(QStringList("*_ica_after.edf"));
 
-    for(QString & guy : dataFiles)
+    for(const QString & guy : dataFiles)
     {
-//        if(!guy.contains("ADA")) exit(0);
 
         // helpString - init jpg path
         helpString = guy;

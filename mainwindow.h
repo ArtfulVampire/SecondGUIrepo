@@ -127,6 +127,7 @@ public:
     void sliceMati();
     void sliceMatiPieces(bool plainFlag = true);
     void sliceMatiSimple();
+    void sliceGalya();
 
     void GalyaProcessing(const QString &procDirPath);
 

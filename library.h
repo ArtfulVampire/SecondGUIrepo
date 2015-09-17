@@ -285,6 +285,8 @@ void drawArray(const QString & templPath,
                QString color = "black",
                double scaling = 1.,
                int lineWidth = 2);
+
+//inMatrix supposed to be def::spLength * 19 size
 template <typename Typ>
 void drawArrays(const QString & templPath,
                 const Typ & inMatrix,

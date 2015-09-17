@@ -4,6 +4,11 @@
 #include "ui_mainwindow.h"
 
 
+void MainWindow::sliceGalya()
+{
+
+}
+
 
 void MainWindow::sliceWindFromReal()
 {

@@ -2128,6 +2128,7 @@ void drawArrays(const QString & templPath,
 
     if(templPath.contains(".svg"))
     {
+        cout << "will do nothing, look into library.h" << endl;
         return;
         //// TO FIX ///
 
@@ -2173,7 +2174,7 @@ void drawArrays(const QString & templPath,
                       inData.end(),
                       [&norm](double in)
         {
-            norm = fmax(norm, fabs(in));
+            norm = fmax(norm, fabs(in)); // fabs for negative weights e.g.
         });
     });
 
@@ -2187,9 +2188,29 @@ void drawArrays(const QString & templPath,
     norm = graphHeight / norm ; //250 - pixels per graph, generality
     norm *= scaling;
 
+    const double normBC = norm;
+
 
     for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
     {
+        norm = normBC;
+#if 1
+        // norm each channel by max peak
+        norm = 0;
+        for(int i = 0; i < inMatrix.size(); ++i)
+        {
+            for(int j = 0; j < def::spLength; ++j)
+            {
+                norm = fmax(norm,
+                            fabs(inMatrix[i][def::spLength * c2 + j])
+                       * (1. + (j > 0.7 * def::spLength) * 0.7) );
+            }
+        }
+        norm = graphHeight / norm ; //250 - pixels per graph, generality
+        norm *= scaling;
+#endif
+
+
         const double Y = paint.device()->height() * coords::y[c2];
         const double X = paint.device()->width() * coords::x[c2];
         for(int numVec = 0; numVec < inMatrix.size(); ++numVec)
@@ -2215,7 +2236,7 @@ void drawArrays(const QString & templPath,
     norm = doubleRound(norm,
                        min(1., 2 - floor(log10(norm)) )
                        );
-
+#if 0
     helpString.setNum(norm);
     helpString += QObject::tr(" mcV^2/Hz");
     paint.setPen("black");
@@ -2223,8 +2244,11 @@ void drawArrays(const QString & templPath,
     paint.drawText(QPointF(pic.width() * coords::x[6] + 5 * scaleX,
                    pic.height() * coords::y[1] - graphHeight / 2),
             helpString);
+#endif
 
+    paint.end();
     pic.save(templPath, 0, 100);
+
 }
 
 void drawColorScale(QString filePath, int range, ColorScale type, bool full)

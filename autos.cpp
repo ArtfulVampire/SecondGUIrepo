@@ -2124,6 +2124,12 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
                 + slash() + filesList[i];
         initEdf.readEdfFile(helpString);
 
+        if(initEdf.getNs() < numChan)
+        {
+            cout << "too few channels" << endl;
+            continue;
+        }
+
 //        cout << def::ExpName << "\t" << initEdf.getDataLen() << endl;
 
 
