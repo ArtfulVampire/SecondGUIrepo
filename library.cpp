@@ -1404,7 +1404,7 @@ void makePaFile(QString spectraDir, QStringList fileNames, double coeff, QString
 {
     //    QTime myTime;
     //    myTime.start();
-    ofstream outStream(outFile.toStdString().c_str());
+    ofstream outStream(outFile.toStdString());
     if(!outStream.good())
     {
         cout << "bad out pa-file" << endl;
@@ -1951,13 +1951,6 @@ void drawTemplate(const QString & outPath,
     }
     //write channels labels
 
-    //draw coords::scale
-    paint.drawLine(QPointF(paint.device()->width() * coords::x[6],
-                   paint.device()->height() * coords::y[1]),
-            QPointF(paint.device()->width() * coords::x[6],
-            paint.device()->height() * coords::y[1] - graphHeight));
-
-
     paint.end();
     if(!outPath.contains(".svg"))
     {
@@ -2115,9 +2108,10 @@ vec vectorFromMatrix(double ** inMat,int inNs, int spL)
 template <typename Typ>
 void drawArrays(const QString & templPath,
                 const Typ & inMatrix,
-                QStringList colors,
-                double scaling = 1.,
-                int lineWidth = 2)
+                const spectraGraphsNormalization normType,
+                const QStringList & colors,
+                const double scaling,
+                const int lineWidth)
 {
     QSvgGenerator svgGen;
     QSvgRenderer svgRen;
@@ -2193,26 +2187,38 @@ void drawArrays(const QString & templPath,
 
     for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
     {
-        norm = normBC;
-#if 1
-        // norm each channel by max peak
-        norm = 0;
-        for(int i = 0; i < inMatrix.size(); ++i)
-        {
-            for(int j = 0; j < def::spLength; ++j)
-            {
-                norm = fmax(norm,
-                            fabs(inMatrix[i][def::spLength * c2 + j])
-                       * (1. + (j > 0.7 * def::spLength) * 0.7) );
-            }
-        }
-        norm = graphHeight / norm ; //250 - pixels per graph, generality
-        norm *= scaling;
-#endif
-
-
         const double Y = paint.device()->height() * coords::y[c2];
         const double X = paint.device()->width() * coords::x[c2];
+
+
+        norm = normBC;
+        if(normType == spectraGraphsNormalization::each)
+        {
+            // norm each channel by max peak
+            norm = 0;
+            for(int i = 0; i < inMatrix.size(); ++i)
+            {
+                for(int j = 0; j < def::spLength; ++j)
+                {
+                    norm = fmax(norm,
+                                fabs(inMatrix[i][def::spLength * c2 + j])
+                           * (1. + (j > 0.7 * def::spLength) * 0.7) );
+                }
+            }
+
+            paint.setPen("black");
+            paint.setFont(QFont("Helvetica", int(20 * scaleY)));
+
+            paint.drawText(QPointF(X + graphWidth * 0.4,
+                                   Y - graphHeight - 5 * scaleY),
+                           QString::number(doubleRound(norm)));
+
+            // make drawNorm
+            norm = graphHeight / norm ; //250 - pixels per graph, generality
+            norm *= scaling;
+        }
+
+
         for(int numVec = 0; numVec < inMatrix.size(); ++numVec)
         {
             vec inData = inMatrix[numVec];
@@ -2236,15 +2242,22 @@ void drawArrays(const QString & templPath,
     norm = doubleRound(norm,
                        min(1., 2 - floor(log10(norm)) )
                        );
-#if 0
-    helpString.setNum(norm);
-    helpString += QObject::tr(" mcV^2/Hz");
-    paint.setPen("black");
-    paint.setFont(QFont("Helvetica", int(24 * scaleY)));
-    paint.drawText(QPointF(pic.width() * coords::x[6] + 5 * scaleX,
-                   pic.height() * coords::y[1] - graphHeight / 2),
-            helpString);
-#endif
+    if(normType == spectraGraphsNormalization::all)
+    {
+        paint.drawLine(QPointF(paint.device()->width() * coords::x[6],
+                       paint.device()->height() * coords::y[1]),
+                QPointF(paint.device()->width() * coords::x[6],
+                paint.device()->height() * coords::y[1] - graphHeight));
+
+        helpString.setNum(norm);
+        helpString += QObject::tr(" mcV^2/Hz");
+        paint.setPen("black");
+        paint.setFont(QFont("Helvetica", int(24 * scaleY)));
+        paint.drawText(QPointF(pic.width() * coords::x[6] + 5 * scaleX,
+                       pic.height() * coords::y[1] - graphHeight / 2),
+                helpString);
+    }
+
 
     paint.end();
     pic.save(templPath, 0, 100);
@@ -3820,7 +3833,7 @@ void writePlainData(QString outPath,
                     int start)
 {
     ofstream outStr;
-    outStr.open(outPath.toStdString().c_str());
+    outStr.open(outPath.toStdString());
     outStr << "NumOfSlices " << numOfSlices << endl;
     for (int i = 0; i < numOfSlices; ++i)
     {
@@ -3860,7 +3873,7 @@ void readPlainData(QString inPath,
                    int start) // data may be allocated
 {
     ifstream inStr;
-    inStr.open(inPath.toStdString().c_str());
+    inStr.open(inPath.toStdString());
     if(!inStr.good())
     {
         cout << "readPlainData: cannot open file" << endl;
@@ -3958,7 +3971,7 @@ void readSpectraFile(QString filePath,
                      int inNs,
                      int spL)
 {
-    ifstream file(filePath.toStdString().c_str());
+    ifstream file(filePath.toStdString());
     if(!file.good())
     {
         cout << "bad input file:\n" << filePath.toStdString() << endl;
@@ -3994,7 +4007,7 @@ void writeSpectraFile(QString filePath,
         return;
     }
 
-    ofstream file(filePath.toStdString().c_str());
+    ofstream file(filePath.toStdString());
     if(!file.good())
     {
         cout << "bad output file:\n" << filePath.toStdString() << endl;
@@ -4028,8 +4041,9 @@ void zeroData(Typ & inData, const int & leftLimit, const int & rightLimit)
     }
 }
 
-void splitZeros(mat & dataIn,
-                const int & length,
+template <typename Typ>
+void splitZeros(Typ & dataIn,
+                const int &length,
                 int * outLength,
                 const QString & logFilePath,
                 const QString & dataName)
@@ -4062,7 +4076,7 @@ void splitZeros(mat & dataIn,
 
     if(!logFilePath.isEmpty())
     {
-        outStream.open(logFilePath.toStdString().c_str(), ios_base::app);
+        outStream.open(logFilePath.toStdString(), ios_base::app);
         if(!outStream.good())
         {
             cout << "splitZeros: outStream is not good" << endl;
@@ -4649,7 +4663,7 @@ void readPaFile(QString paFile,
                 double ** classCount)
 {
     ifstream paSrc;
-    paSrc.open(paFile.toStdString().c_str());
+    paSrc.open(paFile.toStdString());
     if(!paSrc.is_open())
     {
         cout << "bad Pa File:" << endl;
@@ -6417,12 +6431,14 @@ void drawShepard(const mat & distOld,
 
 template void drawArrays(const QString & templPath,
 const matrix & inMatrix,
-QStringList colors,
+const spectraGraphsNormalization normType,
+const QStringList & colors,
 double scaling,
 int lineWidth);
 template void drawArrays(const QString & templPath,
 const mat & inMatrix,
-QStringList colors,
+const spectraGraphsNormalization normType,
+const QStringList & colors,
 double scaling,
 int lineWidth);
 
@@ -6449,4 +6465,15 @@ template void zeroData(matrix & inData, const int & leftLimit, const int & right
 
 template void calcRawFFT(const mat & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 template void calcRawFFT(const matrix & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
+
+template void splitZeros(mat & inData,
+                const int &length,
+                int * outLength,
+                const QString & logFile,
+                const QString & dataName);
+template void splitZeros(matrix & inData,
+                const int &length,
+                int * outLength,
+                const QString & logFile,
+                const QString & dataName);
 

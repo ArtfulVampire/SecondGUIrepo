@@ -145,7 +145,7 @@ public:
     */
 
     edfFile(const edfFile & other, bool noData = false);
-    edfFile(QString matiLogPath);
+    edfFile(const QString & matiLogPath);
 
     void readEdfFile(QString EDFpath);
     void writeEdfFile(QString EDFpath, bool asPlain = false);

@@ -432,7 +432,8 @@ void Spectre::psaSlot()
                                           + slash() + ui->lineEdit_m2->text() + ".jpg");
     drawTemplate(helpString);
     drawArrays(helpString,
-               drawData);
+               drawData,
+               spectraGraphsNormalization::each);
 
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()+1);
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()-1);
@@ -640,7 +641,8 @@ void Spectre::setFftLengthSlot()
     }
     if(ui->fftComboBox->currentIndex() == 2) //4096
     {
-        ui->smoothBox->setValue(15);
+        ui->smoothBox->setValue(10);
+//        ui->smoothBox->setValue(15); //
     }
     if(ui->fftComboBox->currentIndex() == 3) //8192
     {

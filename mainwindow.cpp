@@ -1733,6 +1733,7 @@ void MainWindow::setNs()
 
     helpString = "ns equals to ";
     helpString += QString::number(def::ns);
+    ui->textEdit->append(helpString);
     ui->setNsLine->clear();
 }
 
@@ -1749,8 +1750,48 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
+//    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr.edf");
+//    readData();
+//    ui->reduceChannelsComboBox->setCurrentText("MatiNoEyes");
+//    constructEDFSlot();
+//    return;
 #if 1
-    // draw maps
+
+#endif
+
+#if 0
+    // Galya processing
+    QDir tempDir;
+    const QString initDir = "/media/Files/Data/Galya/";
+    const QStringList addDir = { "MoreFiles",
+                                 "ChaosKids",
+                                 "TBI/healthy adults",
+                                 "TBI/moderate TBI",
+                                 "TBI/severe TBI",
+                                 "FromXenon",
+                                 "Ischemia",
+                                 "part2",
+                                 "New",
+                                 "Norm_children_equalize",
+                                 "autists_all"};
+    for(const QString &guy : addDir)
+    {
+        GalyaProcessing(initDir + guy);
+        tempDir.cd(initDir + guy + "/out");
+        tempDir.mkdir("newResults");
+        const QStringList newFiles = tempDir.entryList(QStringList{"*spectre.txt", "*alpha.txt"});
+        for(const QString & fileName : newFiles)
+        {
+            QFile::copy(tempDir.absolutePath() + slash() + fileName,
+                        tempDir.absolutePath() + slash() + "newResults" + slash() + fileName);
+        }
+        break;
+    }
+    exit(0);
+#endif
+
+#if 1
+    // draw maps on spectra
     const QStringList names{"ADA", "BSA", "FEV", "KMX", "NVV", "PYV", "SDV", "SIV"};
     const QString path = "/media/Files/Data/Mati/ICAstudy/";
     const QString hlp = "/media/Files/Data/Mati/ICAstudy/Help/";
@@ -1802,6 +1843,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
+    // Galya slice by 16 seconds pieces - folders
     const int wndLen = 16; // seconds
     def::dir->cd("/media/michael/Files/Data/Galya/ToSlice");
     QStringList leest1 = def::dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
@@ -1832,6 +1874,26 @@ void MainWindow::customFunc()
     }
     exit(0);
 #endif
+
+
+#if 0
+    // slice by 16 seconds pieces - 1 file
+    const int wndLen = 16; // seconds
+    def::dir->cd("/media/michael/Files/Data/Galya/ToSlice");
+    const QString guy = "lomtev.edf";
+
+    globalEdf.readEdfFile(def::dir->absolutePath() + slash() + guy);
+
+    for(int i = 0; i < ceil(globalEdf.getDataLen() / def::freq / wndLen); ++i)
+    {
+        globalEdf.saveSubsection(i * def::freq * wndLen,
+                                 fmin((i + 1) * def::freq * wndLen, globalEdf.getDataLen()),
+                                 QString(def::dir->absolutePath() + slash() + globalEdf.getExpName() + "_" + QString::number(i+1) + ".edf"));
+    }
+
+    exit(0);
+#endif
+
 
 #if 0
     // copy wts pics MATI

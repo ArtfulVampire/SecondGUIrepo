@@ -72,7 +72,7 @@ private:
     QString fileName;
     QPixmap currentPic;
 
-    int addNum;
+    int addNum = 0;
 
     QStringList lst;
     int currentNumber;

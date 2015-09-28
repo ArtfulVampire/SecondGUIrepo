@@ -28,6 +28,7 @@ Cut::Cut() :
     }
 
     flagWnd = 0;
+    addNum = 0;
 
 
     ui->nsBox->setValue(21);
@@ -99,7 +100,6 @@ Cut::Cut() :
     QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
     QObject::connect(this, SIGNAL(openFile(QString)), ui->lineEdit, SLOT(setText(QString)));
     QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(QString)));
-    QObject::connect(ui->nsBox, SIGNAL(valueChanged(int)), this, SLOT(setNs(int)));
     QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
     QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitCut()));
 
@@ -649,11 +649,12 @@ void Cut::zero()
     // move rightLimit after the nearest marker
     // delete [leftLimit, rightLimit)
 
-    // ExpName.left(3)_rr_f_TYPE_SESSION_PIECE.MARKER
-    QString helpString = "_0_[0-9]_[0-9]{2,2}";
+    // ExpName.left(3)_fileSuffix_TYPE_SESSION_PIECE.MARKER
+
+    QString helpString = "_0_[0-9]_[0-9]{2,2}"; // counting problem only
     if(currentFile.contains(QRegExp(helpString)))
     {
-        cout << "zero: adjust limits   " << currentFile << endl;
+//        cout << "zero: adjust limits   " << currentFile << endl;
 //        matiAdjustLimits();
     }
 
@@ -670,20 +671,12 @@ void Cut::cut()
                                           + "." + QString::number(addNum));
     ++addNum;
     // new
-    writePlainData(helpString, data3, int(rightLimit-leftLimit), leftLimit);
-    // old
-    /*
-    file = fopen(helpString.toStdString().c_str(),"w");
-    fprintf(file, "NumOfSlices %d\n", int(rightLimit-leftLimit));
-    for(int i = leftLimit; i < rightLimit; ++i)         // zoom
-    {
-        for(int k = 0; k < ns; ++k)
-        {
-            fprintf(file, "%lf\n", data3[k][i]);
-        }
-    }
-    fclose(file);
-    */
+    writePlainData(helpString,
+                   data3,
+                   def::ns,
+                   rightLimit-leftLimit,
+                   leftLimit);
+
     def::dir->cdUp();
     rightLimit = NumOfSlices;
     leftLimit = 0;
@@ -696,11 +689,11 @@ void Cut::splitCut()
     int & leftEdge = leftLimit;
     int & rightEdge = rightLimit;
 
-    for(int i = leftEdge; i < NumOfSlices - (rightEdge - leftEdge); ++i)         // zoom
+    for(int i = leftEdge; i < NumOfSlices - (rightEdge - leftEdge); ++i)
     {
         for(int k = 0; k < def::ns; ++k)
         {
-            if(k == def::ns - 1 && def::withMarkersFlag && (i==0)) // first marker value
+            if(k == def::ns - 1 && def::withMarkersFlag && (i==0)) // dont touch first marker value
             {
                 continue;
             }
@@ -708,7 +701,6 @@ void Cut::splitCut()
         }
     }
     NumOfSlices -= (rightEdge - leftEdge);
-
     paint();
 }
 
@@ -725,7 +717,7 @@ void Cut::save()
                                           + slash() + fileName);
 
     // new
-    writePlainData(helpString, data3, NumOfSlices, def::ns);
+    writePlainData(helpString, data3, def::ns, NumOfSlices);
     // old
     /*
     file = fopen(helpString.toStdString().c_str(), "w");

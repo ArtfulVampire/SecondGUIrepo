@@ -87,7 +87,7 @@ edfFile edfFile::operator=(const edfFile & other)
     return (*this);
 }
 
-edfFile::edfFile(QString matiLogPath)
+edfFile::edfFile(const QString & matiLogPath)
 {
 
     //quant, time
@@ -351,7 +351,7 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
 #if DATA_POINTER
         writePlainData(EDFpath,
                        *(this->dataPointer),
-                       this->ns - 1 + def::withMarkersFlag,
+                       this->ns, // - 1 + def::withMarkersFlag,
                        this->dataLength);
 #else
         writePlainData(EDFpath, this->data, this->ns, this->dataLength);
@@ -366,6 +366,7 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
 void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
 {
     //    a = a0 + (a1-a0) * (d-d0) / (d1-d0).
+
     //    8 ascii : version of this data format (0)
     //    80 ascii : local patient identification (mind item 3 of the additional EDF+ specs)
     //    80 ascii : local recording identification (mind item 4 of the additional EDF+ specs)
@@ -1160,7 +1161,7 @@ void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPat
     {
         writePlainData(outPath,
                        *(this->dataPointer),
-                       this->ns - 1 + def::withMarkersFlag,
+                       this->ns,// - 1 + def::withMarkersFlag,
                        finishBin-startBin,
                        startBin);
     }
@@ -1507,10 +1508,10 @@ void edfFile::writeOtherData(matrix &newData, QString outPath, QList<int> chanLi
 {
     this->writeOtherData(newData.data, outPath, chanList);
 }
+
 void edfFile::writeOtherData(mat &newData, QString outPath, QList<int> chanList)
 {
     edfFile temp(*this, true); // copy-construct everything but data
-    //adjust channels
 
     if(chanList.isEmpty())
     {

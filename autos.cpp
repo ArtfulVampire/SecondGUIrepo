@@ -218,8 +218,12 @@ return;
 
 void MainWindow::matiPreprocessingSlot()
 {
+    // for eeg+amod composition
+
+
     def::dir->cd(def::dataFolder); // "/media/Files/Data/Mati/"
-    QStringList dirList = def::dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+    QStringList dirList = def::dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot); // list of folders
+//    dirList = {"ADA", "BSA", "FEV", "KMX", "NOS", "NVV", "PYV", "SDA", "SDV", "SIV"};
     bool flagCommaDot = false;
     bool flagAmodLogToEdf = false;
     bool flagSliceEdfBySessions = false;
@@ -233,16 +237,17 @@ void MainWindow::matiPreprocessingSlot()
 //    flagAppendAmodToEeg = true;
     flagMakeDiffMark = true;
 //    flagSliceSessionsToPieces = true;
-    QString fileSuffix;
-    fileSuffix = "_rr_f";
-    fileSuffix = "_w";
+
+
+    QString fileSuffix = "_w";
+//    fileSuffix = "_rr_f";
 
 
     for(int dirNum = 0; dirNum < dirList.length(); ++dirNum)
     {
         if(!dirList[dirNum].contains("SDA")) continue;
 
-        if(flagCommaDot) // change , to . in logFiles
+        if(flagCommaDot) // change , to . in amod logFiles
         {
             ui->progressBar->setValue(0.);
             QTime myTime;
@@ -283,6 +288,7 @@ void MainWindow::matiPreprocessingSlot()
             cout << "comma->dot replace finish: time = " << myTime.elapsed()/1000. << " sec" << endl;
             ui->progressBar->setValue(0.);
         }
+
         if(flagAmodLogToEdf) // corrected logFiles to amod edfs
         {
             ui->progressBar->setValue(0.);
@@ -291,7 +297,7 @@ void MainWindow::matiPreprocessingSlot()
             cout << "amod.txt -> amod.edf start" << endl;
             QString helpString = def::dataFolder + slash() + dirList[dirNum] + slash() + "amod";
             def::dir->cd(helpString);
-            QStringList lst = def::dir->entryList(QStringList("*.txt_"));
+            QStringList lst = def::dir->entryList(QStringList("*.txt_")); // _ for corrected logs
 
             edfFile tempEdf;
             for(int i = 0; i < lst.length(); ++i)
@@ -300,17 +306,13 @@ void MainWindow::matiPreprocessingSlot()
                         + slash() + dirList[dirNum]
                         + slash() + "amod"
                         + slash() + lst[i];
-//                cout << helpString << endl;
-                tempEdf = edfFile(helpString);
+                tempEdf = edfFile(helpString); // edfFile(QString) for MATI only
 
                 helpString = def::dataFolder
-
                         + slash() + "auxEdfs"
-
                         + slash() + dirList[dirNum]
                         + slash() + getExpNameLib(lst[i])
                         + "_amod.edf";
-//                cout << helpString << endl;
                 tempEdf.writeEdfFile(helpString);
 
                 ui->progressBar->setValue(i * 100. / lst.length());
@@ -318,7 +320,8 @@ void MainWindow::matiPreprocessingSlot()
             cout << "amod.txt -> amod.edf: time = " << myTime.elapsed()/1000. << " sec" << endl;
             ui->progressBar->setValue(0);
         }
-        if(flagSliceEdfBySessions) // slice edf by sessions
+
+        if(flagSliceEdfBySessions) // slice initial edf to edf sessions
         {
             QTime myTime;
             myTime.start();
@@ -329,11 +332,18 @@ void MainWindow::matiPreprocessingSlot()
                     + slash() + dirList[dirNum]
                     + slash() + dirList[dirNum] + fileSuffix
                     + ".edf";
+            if(!QFile(helpString).exists())
+            {
+                cout << "cant open ExpName_fileSuffix.edf (flagSliceEdfBySessions)" << endl;
+                break;
+            }
             setEdfFile(helpString);
             sliceMati();
 
             cout << "slice edf by sessions: time = " << myTime.elapsed()/1000. << " sec" << endl;
         }
+
+
         if(flagAppendAmodToEeg) // append amod data to EEG data
         {
             QTime myTime;
@@ -352,25 +362,24 @@ void MainWindow::matiPreprocessingSlot()
                     // session path
                     helpString = def::dataFolder
                             + slash() + dirList[dirNum]
-
                             + slash() + "auxEdfs"
-
                             + slash() + dirList[dirNum] + fileSuffix
                             + "_" + QString::number(type)
                             + "_" + QString::number(session)
-                            + ".edf"; // generality
+                            + ".edf";
 
-
-                    if(!QFile::exists(helpString)) continue;
+                    if(!QFile(helpString).exists())
+                    {
+                        cout << "cant open session.edf (flagAppendAmodToEeg)" << endl;
+                        continue;
+                    }
 
                     tempEdf.readEdfFile(helpString);
 
                     // amod file
                     addPath = def::dataFolder
                             + slash() + dirList[dirNum]
-
                             + slash() + "auxEdfs"
-
                             + slash() + dirList[dirNum]
                             + "_" + QString::number(type)
                             + "_" + QString::number(session)
@@ -379,36 +388,36 @@ void MainWindow::matiPreprocessingSlot()
                     // eeg+amod path
                     outPath = def::dataFolder
                             + slash() + dirList[dirNum]
-
                             + slash() + "auxEdfs"
-
                             + slash() + dirList[dirNum] + fileSuffix
                             + "_a"
                             + "_" + QString::number(type)
                             + "_" + QString::number(session)
                             + ".edf"; // generality
 
-
                     tempEdf.appendFile(addPath, outPath);
 
-                    if(0) // copy the same files into amod dir
-                    {
-                        helpString = def::dataFolder
-                                + slash() + dirList[dirNum]
-                                + slash() + "amod"
-                                + slash() + dirList[dirNum] + fileSuffix
-                                + "_a"
-                                + "_" + QString::number(type)
-                                + "_" + QString::number(session)
-                                + ".edf"; // generality
-                        if(QFile::exists(helpString)) QFile::remove(helpString);
-                        QFile::copy(outPath, helpString);
-                    }
+#if 0
+                    // copy the same files into amod dir
+
+                    helpString = def::dataFolder
+                                 + slash() + dirList[dirNum]
+                                 + slash() + "amod"
+                                 + slash() + dirList[dirNum] + fileSuffix
+                                 + "_a"
+                                 + "_" + QString::number(type)
+                                 + "_" + QString::number(session)
+                                 + ".edf"; // generality
+                    if(QFile::exists(helpString)) QFile::remove(helpString);
+                    QFile::copy(outPath, helpString);
+#endif
+
 
                 }
             }
             cout << "append amod.edf to eeg.edf: time = " << myTime.elapsed()/1000. << " sec" << endl;
         }
+
         if(flagMakeDiffMark) // make files of markers differences
         {
             QTime myTime;
@@ -464,8 +473,10 @@ void MainWindow::matiPreprocessingSlot()
 
             cout << "make diffMark files: time = " << myTime.elapsed()/1000. << " sec" << endl;
         }
-        if(flagSliceSessionsToPieces) // slice for pieces
+
+        if(flagSliceSessionsToPieces) // slice constructed eeg+amod files for small pieces
         {
+            // not finished
             QTime myTime;
             myTime.start();
             cout << "slice sessions to pieces start" << endl;
@@ -2084,9 +2095,12 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     const QString d2dimFileName = "d2_dim.txt";
     const QString hilbertFileName = "med_freq.txt";
     const QString spectraFileName = "spectre.txt";
+    const QString alphaFileName = "alpha.txt";
 
     const double leftFreqLim = 2.;
     const double rightFreqLim = 20.;
+    const double alphaMaxLimLeft = 8.;
+    const double alphaMaxLimRight = 13.;
     const double stepFreq = 2.;
     const double spectreStepFreq = 1.;
     const double hilbertFreqLimit = 40.;
@@ -2150,6 +2164,13 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
                 + slash() + ExpName
                 + "_" + spectraFileName;
         outStr.open(helpString.toStdString());
+
+        ofstream outAlphaStr;
+        helpString = dir.absolutePath()
+                + slash() + ExpName
+                + "_" + alphaFileName;
+        outAlphaStr.open(helpString.toStdString());
+
         for(int i = 0; i < numChan; ++i)
         {
             helpSpectre.clear();
@@ -2157,13 +2178,32 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
             helpSpectre = smoothSpectre(helpSpectre,
                                         ceil(10 * sqrt(initEdf.getDataLen() / 4096.)));
 
-//            helpString = dir.absolutePath()
-//                    + slash() + ExpName
-//                    + "_" + rightNumber(i, 2)
-//                    + ".jpg";
-//            drawArray(fullSpectre.data(),
-//                      fullSpectre.size(),
-//                      helpString);
+            // count individual alpha peak
+
+            helpDouble = 0.;
+            helpInt = 0;
+            for(int k = fftLimit(alphaMaxLimLeft,
+                                 def::freq,
+                                 fftL(initEdf.getDataLen()));
+                k < fftLimit(alphaMaxLimRight,
+                             def::freq,
+                             fftL(initEdf.getDataLen()));
+                ++k)
+            {
+                if(helpSpectre[k] > helpDouble)
+                {
+                    helpDouble = helpSpectre[k];
+                    helpInt = k;
+                }
+            }
+            // max alpha magnitude
+            outAlphaStr << helpDouble << "\t";
+
+            // max alpha freq
+            outAlphaStr << helpInt * def::freq / fftL(initEdf.getDataLen()) << "\t";
+
+
+
 
             // integrate spectre near the needed freqs
             fullSpectre.clear();
@@ -2172,6 +2212,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
                 j += spectreStepFreq)
             {
                 helpDouble = 0.;
+                helpInt = 0;
                 for(int k = fftLimit(j - spectreStepFreq / 2.,
                                      def::freq,
                                      fftL(initEdf.getDataLen()));
@@ -2181,31 +2222,48 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
                     ++k)
                 {
                     helpDouble += helpSpectre[k];
+                    ++helpInt;
                 }
-                fullSpectre.push_back(helpDouble);
+                fullSpectre.push_back(helpDouble/helpInt);
             }
 
-            // normalize
+
+
+
+#if 0
+            // normalize for 1 integral
             helpDouble = 0.;
             for(auto it = fullSpectre.begin();
-                it < fullSpectre.end();
+                it != fullSpectre.end();
                 ++it)
             {
                 helpDouble += (*it);
             }
             helpDouble = 1. / helpDouble;
-
             for(auto it = fullSpectre.begin();
                 it < fullSpectre.end();
                 ++it)
             {
                 (*it) *= helpDouble * 20.;
-                outStr << doubleRound((*it), 4) << "\t";
+            }
+#endif
+
+
+
+            for(auto it = fullSpectre.begin();
+                it < fullSpectre.end();
+                ++it)
+            {
+
+                outStr << doubleRound((*it), 4) << "\t";  // write
             }
         }
+        outAlphaStr.close();
         outStr.close();
 
-//        dir.cdUp(); continue;
+        dir.cdUp(); continue; // dont count D2 and hilbert for different filters
+
+
 
         helpString = dir.absolutePath()
                 + slash() + ExpName;

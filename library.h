@@ -196,7 +196,8 @@ double rankit(int i, int length, double k = 0.375);
 double maxValue(double * arr, int length);
 double minValue(double * arr, int length);
 
-void splitZeros(mat & inData,
+template <typename Typ>
+void splitZeros(Typ & inData,
                 const int &length,
                 int * outLength,
                 const QString & logFile = QString(),
@@ -276,12 +277,19 @@ QPixmap drawEeg( Typ dataD,
                  int redChan = -1);
 
 
+
+
+
+
+
+enum spectraGraphsNormalization {all = 0, each = 1};
 void drawTemplate(const QString & outPath,
                   int width = 1600,
                   int height = 1600);
 
 void drawArray(const QString & templPath,
                const vec & inData,
+//               const spectraGraphsNormalization normType = 0, ////// TODO
                QString color = "black",
                double scaling = 1.,
                int lineWidth = 2);
@@ -290,9 +298,11 @@ void drawArray(const QString & templPath,
 template <typename Typ>
 void drawArrays(const QString & templPath,
                 const Typ & inMatrix,
-                QStringList colors = def::colours,
-                double scaling = 1.,
-                int lineWidth = 3);
+                const spectraGraphsNormalization normType = all,
+                const QStringList & colors = def::colours,
+                const double scaling = 1.,
+                const int lineWidth = 3);
+
 
 void drawArray(double * array, int length, QString outPath);
 
@@ -524,6 +534,11 @@ double errorSammonAdd(const vector < vector <double> > & distOld,
 inline double doubleRound(const double & in, const int & numSigns)
 {
     return int(  ceil(in * pow(10., numSigns) - 0.5)  ) / pow(10., numSigns);
+}
+
+inline double doubleRound(const double & in)
+{
+    return doubleRound(in, 2 - floor(log10(in))); // 2 significant numbers
 }
 
 inline double doubleRoundFraq(const double & in, const int & denom)

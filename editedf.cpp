@@ -626,8 +626,9 @@ void MainWindow::constructEDFSlot()
         helpString = def::dir->absolutePath()
                 + slash() + def::ExpName.left(3)
                 + "_splitZerosLog.txt";
+
         ofstream outStream;
-        outStream.open(helpString.toStdString().c_str());
+        outStream.open(helpString.toStdString());
         outStream << def::ExpName.left(3).toStdString() << "\t";
         outStream << "type" << "\t";
         outStream << "sessn" << "\t";
@@ -660,7 +661,7 @@ void MainWindow::constructEDFSlot()
                         + "_" + QString::number(j)
                         + ".edf";
 
-                constructEDF(helpString, filters);
+                constructEDF(helpString, filters); // construct 1 session from realisations
                 ui->progressBar->setValue(100. *
                                           (1. / 3. * (i + 1. / 6. * j)));
                 qApp->processEvents();
@@ -693,7 +694,16 @@ void MainWindow::constructEDFSlot()
 
             setEdfFile(initEDF);
         }
-
+        // concatenate all session files
+        helpString = def::dir->absolutePath() + slash() + def::ExpName.left(3) + "_clean.edf";
+        def::dir->cd("auxEdfs");
+        QStringList lst;
+        for(auto i : {"_0.edf", "_1.edf", "_2.edf"})
+        {
+            lst << def::dir->absolutePath() + slash() + def::ExpName.left(3) + i;
+        }
+        concatenateEDFs(lst, helpString);
+        setEdfFile(initEDF);
     }
     ui->progressBar->setValue(0);
     cout << "constructEdf: FULL time = " << myTime.elapsed()/1000. << " sec" << endl;
@@ -704,35 +714,38 @@ void MainWindow::constructEDFSlot()
     ui->textEdit->append(helpString);
 }
 
-void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all the realisations, to newPath based on ui->filePathLineEdit
+void MainWindow::constructEDF(QString newPath, QStringList nameFilters)
 {
-    QStringList lst;
+    // all the realisations, to newPath based on ui->filePathLineEdit
     QString helpString;
 
     QTime myTime;
     myTime.start();
-    readData(); // read globalEdf
+    readData(); // read globalEdf based on ui->filePathEdit to renew the initial channels list
 
-
-    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    int ns = lst.length();
-    if(!QString(label[lst.last().toInt() - 1]).contains("Markers"))
+    QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    if(lst.last().toInt() - 1 != globalEdf.getMarkChan())
     {
-        cout << "constructEDF: bad reduceChannelsLineEdit - no markers" << endl;
+        cout << "No markers channel in reduceChannelsLineEdit" << endl;
         return;
     }
     QList<int> chanList;
-    for(int i = 0; i < lst.length(); ++i)
+    for(const QString & str : lst)
     {
-        chanList << lst[i].toInt() - 1;
+        chanList << str.toInt() - 1;
     }
 
+    ////////////////////// aaaaaaaaaaaaaaaaaaaaaaaaa
+    def::ns = lst.length();
+    const int ns = lst.length();
 
+#if 0
     if(!ui->sliceWithMarkersCheckBox->isChecked())
     {
         cout << "constructEDF: withMarkersCheckBox is not checked" << endl;
         return;
     }
+#endif
 
     def::dir->cd("Realisations");
     if(!nameFilters.isEmpty())
@@ -744,29 +757,14 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         lst = def::dir->entryList(QDir::Files, QDir::Name); //generality
     }
     def::dir->cdUp();
-
-
-
     if(lst.isEmpty())
     {
 //        cout << "constructEDF: list of realisations is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
         return;
     }
 
-#if 0
-    double ** newData = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        newData[i] = new double [250 * 60 * 120]; // for 2 hours
-    }
-#else
-    mat newData;
-    newData.resize(ns);
-    for(int i = 0; i < ns; ++i)
-    {
-        newData[i].resize(250 * 60 * 250);
-    }
-#endif
+    matrix newData;
+    newData.resize(def::ns, 250*60*250);
 
     int NumOfSlices;
     int currSlice = 0;
@@ -775,32 +773,33 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "Realisations"
                                               + slash() + lst[i]);
-        readPlainData(helpString, newData, ns, NumOfSlices, currSlice);
+        readPlainData(helpString, newData, def::ns, NumOfSlices, currSlice);
         currSlice += NumOfSlices;
     }
     int helpInt = currSlice;
 
     int offset = 0;
+//    if(globalEdf.getMatiFlag())
     if(ui->matiCheckBox->isChecked()) // bicycle generality
     {
-        QString fileName = getFileName(newPath, true);
+        QString fileName = getFileName(newPath);
         helpString = def::dir->absolutePath()
-                + slash() + def::ExpName.left(3)
-                + "_splitZerosLog.txt";
+                     + slash() + def::ExpName.left(3)
+                     + "_splitZerosLog.txt";
 
         splitZeros(newData, helpInt, &currSlice, helpString, fileName); // helpString unchanged
 
+
         ofstream outStream;
-        outStream.open(helpString.toStdString().c_str(), ios_base::app);
+        outStream.open(helpString.toStdString(), ios_base::app);
 
         if(ui->roundOffsetCheckBox->isChecked())
         {
-            double saveMarker = newData[ns - 1][0];
+            const double saveMarker = newData[ns - 1][0];
             offset = currSlice%(16*250) + 16*250; // Mati offset ~20 seconds in the beginning
 
             for (int i = 0; i < ns; ++i) //shift start pointers
             {
-//                newData[i] = newData[i] + offset; // for double **
                 newData[i].erase(newData[i].begin(),
                                  newData[i].begin() + offset);
             }
@@ -821,6 +820,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         }
 
 
+
         //set the last marker if it's not
         //fix the first resting file
         if(newData[ns - 1][0] == 0)
@@ -837,7 +837,8 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
         matiFixMarker(firstMarker); //fix the start marker for this small edf file
         matiFixMarker(lastMarker);  //fix the last  marker for this small edf file
 
-        if((matiCountBit(firstMarker, 10) == matiCountBit(lastMarker, 10)) || lastMarker == 0) //if not one of them is the end of some session
+        //if not one of them is the end of some session
+        if((matiCountBit(firstMarker, 10) == matiCountBit(lastMarker, 10)) || lastMarker == 0)
         {
             lastMarker = firstMarker
                     + pow(2, 10) * ((matiCountBit(firstMarker, 10))?-1:1); //adjust the last marker
@@ -849,10 +850,9 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters) // all t
     }
 
     /// remake with dataType
-//    writeEdf(ui->filePathLineEdit->text(), newData, newPath, currSlice); // old
     globalEdf.writeOtherData(newData, newPath, chanList); // new to check
 
-    def::ns = globalEdf.getNs(); /// should test
+//    def::ns = globalEdf.getNs(); /// should test
 
     cout << "constructEDF: " << getFileName(newPath) << "\ttime = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
