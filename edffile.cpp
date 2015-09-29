@@ -1504,7 +1504,7 @@ void edfFile::setLabels(char ** inLabels)
 
 
 //template
-void edfFile::writeOtherData(matrix &newData, QString outPath, QList<int> chanList)
+void edfFile::writeOtherData(matrix & newData, QString outPath, QList<int> chanList)
 {
     this->writeOtherData(newData.data, outPath, chanList);
 }

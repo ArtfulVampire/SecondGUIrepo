@@ -399,6 +399,7 @@ void MainWindow::countSpectraSimple(int fftLen)
     sp->compare();
     sp->compare();
     sp->compare();
+    sp->compare();
     sp->psaSlot();
     sp->close();
     delete sp;
@@ -1750,11 +1751,64 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-//    setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr.edf");
-//    readData();
-//    ui->reduceChannelsComboBox->setCurrentText("MatiNoEyes");
+    ui->reduceChannelsCheckBox->setChecked(true);
+    ui->reduceChannelsComboBox->setCurrentText("Mati");
+    ui->matiPieceLengthSpinBox->setValue(7);
+
+    QStringList filesTo = {"ADA/ADA_rr",
+                           "BSA/BSA_rr",
+                           "FEV/FEV_rr",
+                           "KMX/KMX_rr_f",
+                           "NVV/NVV_rr_f",
+                           "PYV/PYV_rr",
+                           "SDA/SDA_rr",
+                           "SIV/SIV_rr"
+                          };
+    ui->reduceChannelsComboBox->setCurrentText("MatiNoEyes");
+//    double tempDouble = 0;
+//    ofstream ofStr(def::dataFolder + slash() + "class.txt");
+    for(const QString & guy : filesTo)
+    {
+        setEdfFile(def::dataFolder + slash() + guy + ".edf");
+        ui->reduceChannelsComboBox->setCurrentText("MatiNoEyes");
+        def::ns = 20;
+        constructEDFSlot();
+
+        setEdfFile(def::dataFolder + slash() + guy.left(7) + "_cl.edf");
+        ui->reduceChannelsComboBox->setCurrentText("20");
+        ICA();
+
+//        tempDouble = fileInnerClassification(def::dataFolder + slash() + guy.left(3),
+//                                guy.left(3) + "_cl.edf");
+//        ofStr << tempDouble << '\t' << guy.left(3) + "_cl.edf" << endl;
+//        tempDouble = fileInnerClassification(def::dataFolder + slash() + guy.left(3),
+//                                guy.left(3) + "_cl_ica.edf");
+//        ofStr << tempDouble << '\t' << guy.left(3) + "_cl_ica.edf" << endl;
+    }
+//    ofStr.close();
+
+//setEdfFile("/media/Files/Data/Mati/BSA/BSA_rr.edf");
+#if 0
+    setEdfFile("/media/Files/Data/Mati/BSA/BSA_rr.edf");
+    ui->reduceChannelsComboBox->setCurrentText("MatiNoEyes");
+//    constructEDF("/media/Files/Data/Mati/BSA/auxEdfs/BSA_rr_c_1_3.edf", {"BSA_rr_1_3*"});
+
+//    def::ns = 20;
 //    constructEDFSlot();
-//    return;
+
+    ICA();
+    exit(0);
+#endif
+
+#if 0
+    fileInnerClassification("/media/Files/Data/Mati/SDA/",
+                            "SDA_cl_nz_ica.edf");
+    exit(0);
+#endif
+
+    return;
+
+
 #if 1
 
 #endif

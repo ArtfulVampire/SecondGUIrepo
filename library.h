@@ -198,7 +198,7 @@ double minValue(double * arr, int length);
 
 template <typename Typ>
 void splitZeros(Typ & inData,
-                const int &length,
+                const int & inLength,
                 int * outLength,
                 const QString & logFile = QString(),
                 const QString & dataName = def::ExpName);

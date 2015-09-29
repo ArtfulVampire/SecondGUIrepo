@@ -641,8 +641,8 @@ void Spectre::setFftLengthSlot()
     }
     if(ui->fftComboBox->currentIndex() == 2) //4096
     {
-        ui->smoothBox->setValue(10);
-//        ui->smoothBox->setValue(15); //
+//        ui->smoothBox->setValue(10);
+        ui->smoothBox->setValue(15);
     }
     if(ui->fftComboBox->currentIndex() == 3) //8192
     {

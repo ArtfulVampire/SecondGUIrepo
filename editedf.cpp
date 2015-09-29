@@ -253,6 +253,7 @@ void MainWindow::refilterDataSlot()
     double highFreq = ui->highFreqFilterDoubleSpinBox->value();
     QString helpString = def::dir->absolutePath()
             + slash() + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
+    readData();
     helpString.replace(".edf", "_f.edf");
     refilterData(lowFreq, highFreq, helpString);
     int tmp = ui->reduceChannelsComboBox->currentIndex();
@@ -694,8 +695,14 @@ void MainWindow::constructEDFSlot()
 
             setEdfFile(initEDF);
         }
+
         // concatenate all session files
-        helpString = def::dir->absolutePath() + slash() + def::ExpName.left(3) + "_clean.edf";
+        helpString = def::dir->absolutePath()
+                     + slash() + def::ExpName.left(3)
+                     + "_cl";
+        if(ui->splitZerosCheckBox->isChecked()) helpString += "_nz";
+        helpString += ".edf";
+
         def::dir->cd("auxEdfs");
         QStringList lst;
         for(auto i : {"_0.edf", "_1.edf", "_2.edf"})
@@ -722,6 +729,7 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters)
     QTime myTime;
     myTime.start();
     readData(); // read globalEdf based on ui->filePathEdit to renew the initial channels list
+
 
     QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     if(lst.last().toInt() - 1 != globalEdf.getMarkChan())
@@ -759,15 +767,16 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters)
     def::dir->cdUp();
     if(lst.isEmpty())
     {
-//        cout << "constructEDF: list of realisations is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
+        cout << "constructEDF: list of realisations is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
         return;
     }
 
     matrix newData;
-    newData.resize(def::ns, 250*60*250);
+//    newData.resize(def::ns, 60 * 60 * def::freq); // 60 minutes
 
     int NumOfSlices;
     int currSlice = 0;
+
     for(int i = 0; i < lst.length(); ++i)
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
@@ -777,6 +786,13 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters)
         currSlice += NumOfSlices;
     }
     int helpInt = currSlice;
+
+    if(currSlice < 16 * def::freq)
+    {
+        cout << "constructEDF: too little data 1 =  " << currSlice << endl;
+        return;
+    }
+
 
     int offset = 0;
 //    if(globalEdf.getMatiFlag())
@@ -789,14 +805,27 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters)
 
         splitZeros(newData, helpInt, &currSlice, helpString, fileName); // helpString unchanged
 
-
         ofstream outStream;
         outStream.open(helpString.toStdString(), ios_base::app);
 
         if(ui->roundOffsetCheckBox->isChecked())
         {
+            if(currSlice < 16 * def::freq)
+            {
+                cout << "too little data to construct edf" << endl;
+                return;
+            }
+
             const double saveMarker = newData[ns - 1][0];
-            offset = currSlice%(16*250) + 16*250; // Mati offset ~20 seconds in the beginning
+            // Mati offset ~20 seconds in the beginning
+            offset = currSlice % int(16 * def::freq) + 16 * def::freq;
+
+            if(currSlice <= offset)
+            {
+                cout << "constructEDF: too little data " << currSlice << endl;
+                return;
+            }
+
 
             for (int i = 0; i < ns; ++i) //shift start pointers
             {

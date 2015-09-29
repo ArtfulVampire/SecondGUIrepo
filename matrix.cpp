@@ -20,10 +20,6 @@ matrix::matrix(double **inData, int rows, int cols)
 
 matrix::~matrix()
 {
-//    std::for_each(this->data.begin(),
-//                  this->data.end(),
-//                  [](vector<double> & in){in.~vector();});
-//    this->data.~vector();
 }
 
 matrix::matrix(int dim)

@@ -451,7 +451,7 @@ void MainWindow::ICA() //fastICA
         cout << "NumOf vectorW component = " << i << "\t";
         cout << "iterations = " << counter << "\t";
         cout << "error = " << fabs(sum2 - int(sum2 + 0.5)) << "\t";
-        cout << "time = " << myTime.elapsed()/1000. << " sec" << endl;
+        cout << "time = " << doubleRound(myTime.elapsed()/1000., 1) << " sec" << endl;
 
     }
 //    cout << "VectorsW counted" << endl;

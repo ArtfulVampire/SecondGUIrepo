@@ -721,7 +721,7 @@ double MainWindow::fileInnerClassification(QString workPath,
     QString helpString;
 
     ui->sliceCheckBox->setChecked(true);
-    ui->sliceWithMarkersCheckBox->setChecked(false);
+    ui->sliceWithMarkersCheckBox->setChecked(true);
     ui->eyesCleanCheckBox->setChecked(false);
     ui->reduceChannelsCheckBox->setChecked(false);
 
@@ -740,6 +740,7 @@ double MainWindow::fileInnerClassification(QString workPath,
     else
     {
         ui->windButton->setChecked(true);
+
         ui->windowLengthSpinBox->setValue(wndLen);
         ui->timeShiftSpinBox->setValue(tShift);
     }
@@ -748,7 +749,6 @@ double MainWindow::fileInnerClassification(QString workPath,
     setEdfFile(helpString);
     cleanDirs();
     sliceAll();
-
 
     if(windows) countSpectraSimple(1024);
     else countSpectraSimple(4096);
@@ -761,14 +761,24 @@ double MainWindow::fileInnerClassification(QString workPath,
     ANN->autoClassificationSimple();
 
     double res = ANN->getAverageAccuracy();
+
     ANN->close();
     delete ANN;
+
     delete tmpDir;
     return res;
 }
 
 
-double MainWindow::filesCrossClassification(QString workPath, QString fileName1, QString fileName2, QString cfgFileName, int NumOfRepeats, double startCoeff, bool windows, int wndLen, int tShift)
+double MainWindow::filesCrossClassification(QString workPath,
+                                            QString fileName1,
+                                            QString fileName2,
+                                            QString cfgFileName,
+                                            int NumOfRepeats,
+                                            double startCoeff,
+                                            bool windows,
+                                            int wndLen,
+                                            int tShift)
 {
     QString helpString;
 
@@ -872,7 +882,12 @@ double MainWindow::filesCrossClassification(QString workPath, QString fileName1,
 }
 
 
-void MainWindow::countICAs(QString workPath, QString fileName, bool icaFlag, bool transformFlag, bool sequenceFlag, bool sumFlag) //to delete (listFileCrossClassification)
+void MainWindow::countICAs(QString workPath,
+                           QString fileName,
+                           bool icaFlag,
+                           bool transformFlag,
+                           bool sequenceFlag,
+                           bool sumFlag) //to delete (listFileCrossClassification)
 {
     QString helpString2;
     QString helpString;
@@ -990,7 +1005,13 @@ void MainWindow::countICAs(QString workPath, QString fileName, bool icaFlag, boo
 }
 
 
-double MainWindow::filesDropComponents(QString workPath, QString fileName1, QString fileName2, int NumOfRepeats, bool windows, int wndLen, int tShift)
+double MainWindow::filesDropComponents(QString workPath,
+                                       QString fileName1,
+                                       QString fileName2,
+                                       int NumOfRepeats,
+                                       bool windows,
+                                       int wndLen,
+                                       int tShift)
 {
     QString helpString2;
     QString helpString;
@@ -1240,12 +1261,12 @@ double MainWindow::filesDropComponents(QString workPath, QString fileName1, QStr
 }
 
 double MainWindow::filesAddComponentsCross(QString workPath,
-                                      QString fileName1,
-                                      QString fileName2,
-                                      int NumOfRepeats,
-                                      bool windows,
-                                      int wndLen,
-                                      int tShift)
+                                           QString fileName1,
+                                           QString fileName2,
+                                           int NumOfRepeats,
+                                           bool windows,
+                                           int wndLen,
+                                           int tShift)
 {
 
     QString helpString2;
@@ -1643,11 +1664,11 @@ double MainWindow::filesAddComponentsCross(QString workPath,
 
 
 double MainWindow::filesAddComponentsInner(const QString &workPath,
-                                      const QString &fileName,
-                                      int NumOfRepeats,
-                                      bool windows,
-                                      int wndLen,
-                                      int tShift)
+                                           const QString &fileName,
+                                           int NumOfRepeats,
+                                           bool windows,
+                                           int wndLen,
+                                           int tShift)
 {
     QString helpString;
 

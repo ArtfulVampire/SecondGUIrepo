@@ -163,7 +163,7 @@ public:
                                     QString fileName1,
                                     QString fileName2,
                                     QString cfgFileName = "16sec19ch",
-                                    int NumOfRepeats = 50,
+                                    int NumOfRepeats = 35,
                                     double startCoeff = 2.,
                                     bool windows = false,
                                     int wndLen = 1000,
@@ -189,7 +189,12 @@ public:
                                    int wndLen = 1000,
                                    int tShift = 125);
 
-    void countICAs(QString workPath, QString fileName, bool icaFlag = true, bool transformFlag = true, bool sequenceFlag = false, bool sumFlag = false); //to delete (listFileCrossClassification)
+    void countICAs(QString workPath,
+                   QString fileName,
+                   bool icaFlag = true,
+                   bool transformFlag = true,
+                   bool sequenceFlag = false,
+                   bool sumFlag = false); //to delete (listFileCrossClassification)
     void customFunc();
 
 private:

@@ -4043,36 +4043,43 @@ void zeroData(Typ & inData, const int & leftLimit, const int & rightLimit)
 
 template <typename Typ>
 void splitZeros(Typ & dataIn,
-                const int &length,
+                const int & inLength,
                 int * outLength,
                 const QString & logFilePath,
                 const QString & dataName)
 {
     //remake with std::list of slices
-    vector<bool> flag(length + 1, false); //1 if usual, 0 if eyes, 1 for additional one point
+    vector<bool> flags(inLength + 1, false); //1 if usual, 0 if eyes, 1 for additional one point
+
     bool startFlag = false;
     int start = -1;
     int finish = -1;
     int allEyes = 0;
-    ofstream outStream;
 
+    ofstream outStream;
     int markChan = def::ns - 1; // generality markers channel
 
     const double firstMarker = dataIn[markChan][0];
-    const double lastMarker =  dataIn[markChan][length - 1];
+    const double lastMarker =  dataIn[markChan][inLength - 1];
 
-    for(int i = 0; i < length; ++i)
+//    ofstream of("/media/Files/Data/Mati/BSA/flags.txt");
+    for(int i = 0; i < inLength; ++i)
     {
         for(int j = 0; j < def::nsWOM(); ++j) // dont consider markers
         {
             if(dataIn[j][i] != 0.)
             {
-                flag[i] = true;
+                flags[i] = true;
                 break;
             }
         }
+//        of << flag[i] << endl;
     }
-    flag.back() = true; // for terminate zero piece
+    flags[inLength] = true; // for terminate zero piece
+//    of.close();
+
+
+
 
     if(!logFilePath.isEmpty())
     {
@@ -4093,9 +4100,9 @@ void splitZeros(Typ & dataIn,
     int i = 0;
     do
     {
-        if(!startFlag) //if startFlag == false
+        if(startFlag == false) //if startFlag == false
         {
-            if(!flag[i]) //if eyes-slice - set start
+            if(flags[i] == false) // set start
             {
                 start = i; // first bin to exclude
                 startFlag = true;
@@ -4103,8 +4110,9 @@ void splitZeros(Typ & dataIn,
         }
         else //if startFlag is set
         {
-            if(flag[i]) // if we meet the end of eyes-interval OR reached end of a data
+            if(flags[i]) // if we meet the end of eyes-interval OR reached end of a data
             {
+
                 finish = i; // first bin NOT TO exclude
                 outStream << dataName.toStdString() << "\t";
                 outStream << start + allEyes << "\t";
@@ -4120,19 +4128,21 @@ void splitZeros(Typ & dataIn,
                 {
                     dataIn[j].erase(dataIn[j].begin() + start,
                                     dataIn[j].begin() + finish);
-                    flag.erase(flag.begin() + start,
-                               flag.begin() + finish);
                 }
+                flags.erase(flags.begin() + start,
+                            flags.begin() + finish);
 
                 allEyes += finish - start;
                 i -= (finish - start);
-                startFlag = 0;
+                startFlag = false;
             }
         }
         ++i;
-    } while (i <= length - allEyes); // = for the last zero piece
-    (*outLength) = length - allEyes;
+    } while (i <= inLength - allEyes); // = for the last zero piece
+    (*outLength) = inLength - allEyes;
     outStream.close();
+
+//    cout << "allEyes = " << allEyes << endl;
 
     dataIn[markChan][0] = firstMarker;
     dataIn[markChan][(*outLength) - 1] = lastMarker;
@@ -6467,12 +6477,12 @@ template void calcRawFFT(const mat & inData, mat & dataFFT, const int &ns, const
 template void calcRawFFT(const matrix & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
 template void splitZeros(mat & inData,
-                const int &length,
+                const int & length,
                 int * outLength,
                 const QString & logFile,
                 const QString & dataName);
 template void splitZeros(matrix & inData,
-                const int &length,
+                const int & length,
                 int * outLength,
                 const QString & logFile,
                 const QString & dataName);

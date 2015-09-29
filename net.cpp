@@ -18,7 +18,7 @@ Net::Net() :
 
     //clean log file
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "log.txt");
+                                                  + slash() + "log.txt");
     FILE * log = fopen(helpString,"w");
     if(log == NULL)
     {
@@ -30,15 +30,6 @@ Net::Net() :
     }
     fclose(log);
 
-
-/*
-    cout << "left = " << left << endl;
-    cout << "right = " << right << endl;
-    cout << "spStep = " << spStep << endl;
-    cout << "ns = " << ns << endl;
-    cout << "spLength = " << spLength << endl;
-*/
-
     stopFlag = 0;
     numTest = 0;
     numOfTall = 0;
@@ -49,7 +40,6 @@ Net::Net() :
     helpCharArr = new char [200];
 
     classCount = new double [3]; //generality in cfg
-
 
     matrixCreate(&tempRandomMatrix, def::nsWOM(), def::nsWOM());
 
@@ -92,11 +82,12 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(5.); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(3.); // 1. for MATI? usually 5.     0.7 for best comp set
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
     ui->highLimitSpinBox->setValue(130);
+
     ui->lowLimitSpinBox->setMaximum(500);
     ui->lowLimitSpinBox->setMinimum(50);
     ui->lowLimitSpinBox->setValue(80);
@@ -585,7 +576,7 @@ void Net::averageClassification()
     FILE * logFile;
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                                   + slash() + "log.txt");
-    logFile = fopen(helpString.toStdString().c_str(),"r");
+    logFile = fopen(helpString,"r");
     if(logFile == NULL)
     {
         QMessageBox::critical((QWidget * )this,
@@ -595,10 +586,10 @@ void Net::averageClassification()
         cout << "logFile == NULL" << endl;
         return;
     }
-    double  * averagePercentage = new double [def::numOfClasses+1];
-    double  * tempDouble = new double [def::numOfClasses+1];
+    double  * averagePercentage = new double [def::numOfClasses + 1];
+    double  * tempDouble = new double [def::numOfClasses + 1];
 
-    for(int j = 0; j < def::numOfClasses+1; ++j)
+    for(int j = 0; j < def::numOfClasses + 1; ++j)
     {
         averagePercentage[j] = 0.;
         tempDouble[j] = 0.;
@@ -607,7 +598,7 @@ void Net::averageClassification()
     int num = 0;
     for(int i = 0; i < numOfTall; ++i)
     {
-        for(int j = 0; j < def::numOfClasses+1; ++j)
+        for(int j = 0; j < def::numOfClasses + 1; ++j)
         {
             fscanf(logFile, "%lf", &tempDouble[j]);
             averagePercentage[j] += tempDouble[j];
@@ -615,13 +606,15 @@ void Net::averageClassification()
         ++num;
     }
 
-    for(int j = 0; j < def::numOfClasses+1; ++j)
+    for(int j = 0; j < def::numOfClasses + 1; ++j)
     {
         averagePercentage[j] /= num;
     }
     fclose(logFile);
 
-    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "results.txt").toStdString().c_str(), "a+");
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "results.txt");
+    FILE * res = fopen(helpString, "a+");
+
     //indents
     if(def::spStep != def::freq / pow(2, 10))
     {
@@ -635,9 +628,10 @@ void Net::averageClassification()
     }
     fprintf(res, "%.2lf", averagePercentage[def::numOfClasses-1]);
     fprintf(res, ")  -  %.2lf ", averagePercentage[def::numOfClasses]);
+    fprintf(res, " - %s", def::ExpName.toStdString().c_str());
     fclose(res);
     averageAccuracy = averagePercentage[def::numOfClasses];
-//    cout << "average accuracy = " << averageAccuracy << endl;
+    cout << "Average accuracy = " << averageAccuracy << endl;
     delete []averagePercentage;
     delete []tempDouble;
 }
