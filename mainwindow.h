@@ -149,16 +149,20 @@ public:
     void concatenateEDFs(QString inPath1, QString inPath2, QString outPath);
     void concatenateEDFs(QStringList inPath, QString outPath);
     void writeCorrelationMatrix(QString edfPath, QString outPath);
-    void ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path, int mode = 0);
+    void ICsSequence(const QString & EDFica1,
+                     const QString & EDFica2,
+                     QString maps1Path = QString(),
+                     QString maps2Path = QString(),
+                     int mode = 1);
 
     // autos
-    double fileInnerClassification(QString workPath,
-                                   QString fileName,
-                                   QString cfgFileName = "16sec19ch",
-                                   int NumOfPairs = 50,
-                                   bool windows = false,
-                                   int wndLen = 1000,
-                                   int tShift = 125);
+    double fileInnerClassification(const QString & workPath,
+                                   const QString & fileName,
+                                   const QString & cfgFileName = "16sec19ch",
+                                   const int & NumOfPairs = 50,
+                                   const bool & windows = false,
+                                   const int & wndLen = 1000,
+                                   const int & tShift = 125);
     double filesCrossClassification(QString workPath,
                                     QString fileName1,
                                     QString fileName2,

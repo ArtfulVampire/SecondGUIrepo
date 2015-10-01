@@ -1049,13 +1049,6 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="2">
-        <widget class="QCheckBox" name="cleanMarkersCheckBox">
-         <property name="text">
-          <string>markers</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="3">
         <spacer name="horizontalSpacer_3">
          <property name="orientation">
@@ -1090,13 +1083,6 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QCheckBox" name="cleanHelpCheckBox">
-         <property name="text">
-          <string>Help</string>
-         </property>
-        </widget>
-       </item>
        <item row="2" column="3">
         <spacer name="horizontalSpacer_5">
          <property name="orientation">
@@ -1123,6 +1109,13 @@
          </property>
         </spacer>
        </item>
+       <item row="2" column="1">
+        <widget class="QCheckBox" name="cleanMarkersCheckBox">
+         <property name="text">
+          <string>markers</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>
@@ -1139,8 +1132,6 @@
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>label_22</zorder>
-   <zorder>matiCheckBox</zorder>
-   <zorder>adjustPiecesCheckBox</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

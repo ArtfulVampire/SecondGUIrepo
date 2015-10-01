@@ -254,7 +254,7 @@ void MainWindow::refilterDataSlot()
     QString helpString = def::dir->absolutePath()
             + slash() + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
     readData();
-    helpString.replace(".edf", "_f.edf");
+    helpString.replace(".edf", "_f5-20.edf");
     refilterData(lowFreq, highFreq, helpString);
     int tmp = ui->reduceChannelsComboBox->currentIndex();
     ui->reduceChannelsComboBox->setCurrentIndex(0);

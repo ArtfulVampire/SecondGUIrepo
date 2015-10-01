@@ -59,11 +59,11 @@ QString fitString(const QString & input, int N); // append spaces
 int findChannel(char ** const labelsArr, QString chanName, int ns = 21); // const fail
 QString setFileName(const QString & initNameOrPath); //-> initName_i.ext
 QString getPicPath(const QString & dataPath, QDir *ExpNameDir, int ns);
-QString getFileName(QString filePath, bool withExtension = true);
+QString getFileName(const QString & filePath, bool withExtension = true);
 bool areEqualFiles(QString path1, QString path2);
 
-QString getExpNameLib(const QString filePath);
-QString getDirPathLib(const QString filePath);
+QString getExpNameLib(const QString & filePath);
+QString getDirPathLib(const QString & filePath);
 QString getExt(QString filePath);
 QString slash();
 ostream & operator << (ostream &os, QString toOut);
@@ -278,10 +278,6 @@ QPixmap drawEeg( Typ dataD,
 
 
 
-
-
-
-
 enum spectraGraphsNormalization {all = 0, each = 1};
 void drawTemplate(const QString & outPath,
                   int width = 1600,
@@ -307,7 +303,7 @@ void drawArrays(const QString & templPath,
 void drawArray(double * array, int length, QString outPath);
 
 template <typename Typ>
-void readSpectraFile(QString filePath,
+void readSpectraFile(const QString & filePath,
                      Typ & outData,
                      int inNs = def::nsWOM(),
                      int spL = def::spLength);
@@ -317,9 +313,9 @@ void writeSpectraFile(QString filePath,
                       const Typ & outData,
                       int inNs = def::nsWOM(),
                       int spL = def::spLength);
-void readFileInLine(QString filePath,
+void readFileInLine(const QString & filePath,
                     vec & outData);
-void writeFileInLine(QString filePath,
+void writeFileInLine(const QString & filePath,
                      const vec & outData);
 
 void readPaFile(QString paFile,
@@ -334,6 +330,10 @@ template <typename Typ>
 bool readICAMatrix(const QString & path, Typ &matrixA);
 template <typename Typ>
 void writeICAMatrix(const QString & path, Typ &matrixA);
+
+void icaOrdering(const QString & mainFile,
+                 const QString & ordFile,
+                 const QString & outFile);
 
 
 
@@ -378,10 +378,10 @@ void drawMapsICA(const QString & mapsFilePath,
                                       const int,
                                       const ColorScale) = &drawMapSpline);
 
-void drawMapsOnSpectra(const QString & spectraFilePath,
+void drawMapsOnSpectra(const QString & inSpectraFilePath,
                        const QString & outSpectraFilePath,
                        const QString & mapsDirPath,
-                       const QString & mapsNames);
+                       const QString & mapsNames = def::ExpName);
 
 
 

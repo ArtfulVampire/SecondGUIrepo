@@ -710,13 +710,13 @@ void MainWindow::diffPow()
 }
 
 
-double MainWindow::fileInnerClassification(QString workPath,
-                                           QString fileName,
-                                           QString cfgFileName,
-                                           int NumOfPairs,
-                                           bool windows,
-                                           int wndLen,
-                                           int tShift)
+double MainWindow::fileInnerClassification(const QString & workPath,
+                                           const QString & fileName,
+                                           const QString & cfgFileName,
+                                           const int & NumOfPairs,
+                                           const bool & windows,
+                                           const int & wndLen,
+                                           const int & tShift)
 {
     QString helpString;
 
@@ -751,10 +751,11 @@ double MainWindow::fileInnerClassification(QString workPath,
     sliceAll();
 
     if(windows) countSpectraSimple(1024);
-    else countSpectraSimple(4096);
+    else if (cfgFileName.contains("16sec")) countSpectraSimple(4096);
+    else if (cfgFileName.contains("8sec")) countSpectraSimple(2048);
+    else return 0.;
 
-    Net * ANN;
-    ANN = new Net();
+    Net * ANN = new Net();
     ANN->readCfgByName(cfgFileName);
     ANN->setAutoProcessingFlag(true);
     ANN->setNumOfPairs(NumOfPairs);

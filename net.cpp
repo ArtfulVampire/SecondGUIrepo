@@ -82,7 +82,7 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(3.); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(7.5); // 1. for MATI? usually 5.     0.7 for best comp set
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);

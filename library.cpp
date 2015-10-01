@@ -529,13 +529,13 @@ void drawMapsICA(const QString &mapsFilePath,
 }
 
 
-void drawMapsOnSpectra(const QString &spectraFilePath,
+void drawMapsOnSpectra(const QString &inSpectraFilePath,
                        const QString &outSpectraFilePath,
                        const QString &mapsDirPath,
                        const QString &mapsNames)
 {
     QPixmap pic;
-    pic = QPixmap(spectraFilePath);
+    pic = QPixmap(inSpectraFilePath);
     QPainter paint;
     paint.begin(&pic);
 
@@ -831,7 +831,7 @@ QString setFileName(const QString & initNameOrPath) // append _num before the do
     return helpString;
 }
 
-QString getExpNameLib(QString const filePath) // getFileName
+QString getExpNameLib(const QString & filePath) // getFileName
 {
     QString hlp;
     hlp = QDir::toNativeSeparators(filePath);
@@ -840,7 +840,7 @@ QString getExpNameLib(QString const filePath) // getFileName
     return hlp;
 }
 
-QString getDirPathLib(const QString filePath)
+QString getDirPathLib(const QString & filePath)
 {
     QString str = filePath;
     return str.left(str.lastIndexOf(slash()));
@@ -860,7 +860,7 @@ QString getExt(QString filePath)
     }
 }
 
-QString getFileName(QString filePath, bool withExtension)
+QString getFileName(const QString & filePath, bool withExtension)
 {
     QString helpString = QDir::toNativeSeparators(filePath);
     helpString = helpString.right(helpString.length() - helpString.lastIndexOf(slash()) - 1);
@@ -1398,6 +1398,7 @@ int typeOfFileName(QString fileName)
     else if(fileName.contains("_254") || fileName.contains("_244")) return 2; /// FFFFFFUUUUUUUU
     else return -1;
 }
+
 
 
 void makePaFile(QString spectraDir, QStringList fileNames, double coeff, QString outFile)
@@ -2057,12 +2058,12 @@ void drawArray(const QString & templPath,
     pic.save(templPath, 0, 100);
 }
 
-void readFileInLine(QString filePath, vec & outData)
+void readFileInLine(const QString & filePath, vec & outData)
 {
     ifstream file(filePath.toStdString());
     if(!file.good())
     {
-        cout << "bad file" << endl;
+        cout << "readFileInLine: bad file " << filePath << endl;
         return;
     }
     outData.clear();
@@ -2076,7 +2077,7 @@ void readFileInLine(QString filePath, vec & outData)
     file.close();
 }
 
-void writeFileInLine(QString filePath, const vec & outData)
+void writeFileInLine(const QString & filePath, const vec & outData)
 {
     ofstream file(filePath.toStdString());
     if(!file.good())
@@ -3966,7 +3967,7 @@ vec smoothSpectre(const vec & inSpectre, const int numOfSmooth)
 }
 
 template <typename Typ>
-void readSpectraFile(QString filePath,
+void readSpectraFile(const QString & filePath,
                      Typ & outData,
                      int inNs,
                      int spL)
@@ -3974,7 +3975,7 @@ void readSpectraFile(QString filePath,
     ifstream file(filePath.toStdString());
     if(!file.good())
     {
-        cout << "bad input file:\n" << filePath.toStdString() << endl;
+        cout << "readSpectreFile: bad input file " << filePath << endl;
         return;
     }
     outData.resize(inNs);
@@ -4783,7 +4784,6 @@ void writeICAMatrix(const QString & path, Typ &matrixA)
 }
 template void writeICAMatrix(const QString & path, matrix & matrixA);
 template void writeICAMatrix(const QString & path, mat & matrixA);
-
 
 void matrixCofactor(double ** &inMatrix, const int &size, const int &numRows, const int &numCols, double **& outMatrix)
 {
@@ -6463,8 +6463,8 @@ int ns,
 int & numOfSlices,
 int start);
 
-template void readSpectraFile(QString filePath, matrix & outData, int inNs, int spL);
-template void readSpectraFile(QString filePath, mat & outData, int inNs, int spL);
+template void readSpectraFile(const QString & filePath, matrix & outData, int inNs, int spL);
+template void readSpectraFile(const QString & filePath, mat & outData, int inNs, int spL);
 
 template void splitZerosEdges(mat & dataIn, const int & ns, const int & length, int * outLength);
 template void splitZerosEdges(matrix & dataIn, const int & ns, const int & length, int * outLength);

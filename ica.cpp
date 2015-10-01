@@ -734,10 +734,10 @@ void MainWindow::ICA() //fastICA
                        [sum1](double in) {return in * sum1;});
     }
 
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "Help"
-                                          + slash() + def::ExpName + "_maps_1-len.txt");
-    writeICAMatrix(helpString, matrixA);
+//    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+//                                          + slash() + "Help"
+//                                          + slash() + def::ExpName + "_maps_1-len.txt");
+//    writeICAMatrix(helpString, matrixA);
 
 
     // ordering components by dispersion
@@ -806,10 +806,10 @@ void MainWindow::ICA() //fastICA
         (*it2).second = tempIndex;
     }
 
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "Help"
-                                          + slash() + def::ExpName + "_maps_after_len.txt");
-    writeICAMatrix(helpString, matrixA);
+//    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+//                                          + slash() + "Help"
+//                                          + slash() + def::ExpName + "_maps_after_len.txt");
+//    writeICAMatrix(helpString, matrixA);
 
 
     for(int i = 0; i < ns; ++i)
@@ -853,9 +853,7 @@ void MainWindow::ICA() //fastICA
                                           + slash() + def::ExpName + "_maps.txt");
     writeICAMatrix(helpString, matrixA); //generality 19-ns
 
-    drawMapsICA(helpString,
-                helpString.left(helpString.lastIndexOf(slash())), // same dir as mapsFile
-                def::ExpName);
+    drawMapsICA(helpString);
 
 
     helpString = def::dir->absolutePath()
@@ -873,12 +871,41 @@ void MainWindow::ICA() //fastICA
 
 
 
-void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path, QString maps2Path, int mode)
+
+void MainWindow::ICsSequence(const QString & EDFica1,
+                             const QString & EDFica2,
+                             QString maps1Path,
+                             QString maps2Path,
+                             int mode)
 {
-#if 0
+    def::ns = 20;
+    QString helpString;
+
+    if(maps1Path.isEmpty())
+    {
+        helpString = getFileName(EDFica1, false);
+        helpString.remove("_ica");
+
+        maps1Path = EDFica1;
+        maps1Path.resize(maps1Path.lastIndexOf(slash()));
+        maps1Path += slash() + "Help" + slash() + helpString + "_maps.txt";
+        cout << maps1Path << endl;
+    }
+    if(maps2Path.isEmpty())
+    {
+        helpString = getFileName(EDFica2, false);
+        helpString.remove("_ica");
+
+        maps2Path = EDFica2;
+        maps2Path.resize(maps2Path.lastIndexOf(slash()));
+        maps2Path += slash() + "Help" + slash() + helpString + "_maps.txt";
+        cout << maps2Path << endl;
+    }
+#if 1
     /////////////////////// REWORK read spectra in line
-    //mode == 0 -> sequency by most stability
-    //mode == 1 -> sequency by first File & no overwrite
+    /////////////////////// make enum
+    // mode == 0 -> sequency by most stability
+    // mode == 1 -> sequency by first File & no overwrite
     if(mode != 0 && mode != 1)
     {
         cout << "bad mode" << endl;
@@ -888,19 +915,16 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     QTime myTime;
     myTime.start();
     //count cross-correlation by maps and spectra
-    int ns_ = 19;
+    const int ns_ = 19;
 
     double corrMap;
     double corrSpectr[3];
     int offset5hz;
     int offset20hz;
     QString helpString2;
-    QString helpString;
 
-    double ** dataFFT1;
-    matrixCreate(&dataFFT1, 3, 247*19);
-    double ** dataFFT2;
-    matrixCreate(&dataFFT2, 3, 247*19);
+    matrix dataFFT1 (def::numOfClasses, def::spLength * ns_);
+    matrix dataFFT2 (def::numOfClasses, def::spLength * ns_);
 
 
     ui->cleanRealisationsCheckBox->setChecked(true);
@@ -910,20 +934,12 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     ui->reduceChannelsCheckBox->setChecked(false);
     ui->sliceWithMarkersCheckBox->setChecked(false);
 
-    Spectre * sp;
-
     setEdfFile(EDFica1);
     cleanDirs();
     readData();
     sliceAll();
-    sp = new Spectre(dir, ns_, def::ExpName);
-    sp->countSpectra();
-    sp->compare();
-    sp->compare();
-    sp->compare();
-    sp->psaSlot();
-    sp->close();
-    delete sp;
+    countSpectraSimple(4096);
+
     for(int i = 0; i < 3; ++i)
     {
         helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName;
@@ -931,25 +947,17 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         {
         case 0: {helpString += "_241.psa"; break;}
         case 1: {helpString += "_247.psa"; break;}
-        case 2: {helpString += "_254.psa"; break;}
+        case 2: {helpString += "_244.psa"; break;}
         }
-        readSpectraFileLine(helpString, dataFFT1, 19, 247);
+        readFileInLine(helpString, dataFFT1[i]);
     }
-
-
 
     setEdfFile(EDFica2);
     cleanDirs();
     readData();
     sliceAll();
-    sp = new Spectre(dir, ns_, def::ExpName);
-    sp->countSpectra();
-    sp->compare();
-    sp->compare();
-    sp->compare();
-    sp->psaSlot();
-    sp->close();
-    delete sp;
+    countSpectraSimple(4096);
+
     for(int i = 0; i < 3; ++i)
     {
         helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName;
@@ -957,34 +965,29 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         {
         case 0: {helpString += "_241.psa"; break;}
         case 1: {helpString += "_247.psa"; break;}
-        case 2: {helpString += "_254.psa"; break;}
+        case 2: {helpString += "_244.psa"; break;}
         }
-        readSpectraFileLine(helpString, dataFFT2, 19, 247);
+        readFileInLine(helpString, dataFFT2[i]);
     }
 
 
     //sequence ICs
-    double ** mat1;
-    double ** mat2;
-    matrixCreate(&mat1, ns_, ns_);
-    matrixCreate(&mat2, ns_, ns_);
+    matrix mat1 (ns_, ns_);
+    matrix mat2 (ns_, ns_);
 
     //read matrices
-    readICAMatrix(maps1Path, mat1, ns_);
-    readICAMatrix(maps2Path, mat2, ns_);
+    readICAMatrix(maps1Path, mat1);
+    readICAMatrix(maps2Path, mat2);
 
     //transpose ICA maps
-    matrixTranspose(mat1, ns_);
-    matrixTranspose(mat2, ns_);
+    mat1.transpose();
+    mat2.transpose();
 
     QList<int> list1;
     QList<int> list2;
-    list1.clear();
-    list2.clear();
-
     int fftLength = 4096;
-    offset5hz = 5./ (def::freq/fftLength) - 1;
-    offset20hz = 20./ (def::freq/fftLength) + 1;
+    offset5hz = fftLimit(5., def::freq, fftLength) - 1;
+    offset20hz = fftLimit(20., def::freq, fftLength) + 1;
 
     struct ICAcoeff
     {
@@ -992,6 +995,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         double cSpectr[3];
         double sumCoef;
     };
+
     ICAcoeff coeffs[ns_][ns_];
 
     struct ICAcorr
@@ -1002,13 +1006,10 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     };
     ICAcorr ICAcorrArr[ns_];
 
-    double ** corrs;
-    matrixCreate(&corrs, ns_, ns_);
+    matrix corrs (ns_, ns_);
 
     double tempDouble;
-    int maxShift = 2; ////////////////////////////////////////////////////////////
-
-    cout << "1" << endl;
+    int maxShift = 2; ////// num of spectra bins to count spectra correlations
     double helpDouble;
 
     helpString.clear();
@@ -1016,10 +1017,10 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     {
         for(int j = 0; j < ns_; ++j)
         {
-            corrMap = (correlation(mat1[k], mat2[j], ns_, 0, true));
-            corrMap = corrMap * corrMap;
+            corrMap = correlation(mat1[k], mat2[j], ns_, 0, true);
+            corrMap = pow(corrMap, 2);
 
-            helpDouble = corrMap; /////////////////////////////////////////////////////////////////////////////////////
+            helpDouble = corrMap; ///////////////////
             coeffs[k][j].cMap = corrMap;
 
             for(int h = 0; h < 3; ++h)
@@ -1027,10 +1028,13 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
                 corrSpectr[h] = 0.;
                 for(int shift = -maxShift; shift <= maxShift; ++shift)
                 {
-                    corrSpectr[h] = fmax( fabs(correlation(dataFFT1[h] + k*247, dataFFT2[h] + j*247, 247, shift)), corrSpectr[h]);
+                    corrSpectr[h] = fmax( fabs(correlation(dataFFT1[h].data() + k*247,
+                                                           dataFFT2[h].data() + j*247,
+                                                           247,
+                                                           shift)), corrSpectr[h]);
                 }
-                corrSpectr[h] = corrSpectr[h] * corrSpectr[h];
-                helpDouble += corrSpectr[h]; /////////////////////////////////////////////////////////////////////////////////////
+                corrSpectr[h] = pow(corrSpectr[h], 2);
+                helpDouble += corrSpectr[h]; //////
 
                 coeffs[k][j].cSpectr[h] = corrSpectr[h];
             }
@@ -1040,7 +1044,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         }
     }
 
-    //find best correlations
+    //find best correlations - check corrs matrix
     int temp1;
     int temp2;
     for(int j = 0; j < ns_; ++j) //j pairs
@@ -1052,7 +1056,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
             for(int k = 0; k < ns_; ++k) //cols
             {
                 if(list2.contains(k)) continue;
-//                if(i == k) continue;  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                if(i == k) continue;  ////////////////////
                 if(corrs[i][k] > tempDouble)
                 {
                     tempDouble = corrs[i][k];
@@ -1064,7 +1068,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
 
 
 
-        if(j == ns_ - 1 && EDFica1 == EDFica2) ////////////////////////////////////////////////////////////////////////////////////////////////////////
+        if(j == ns_ - 1 && EDFica1 == EDFica2) /////////////////////
         {
             for(int i = 0; i < ns_; ++i) //rows
             {
@@ -1092,6 +1096,7 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
 
         list1 << temp1;
         list2 << temp2;
+
         ICAcorrArr[j].num1 = temp1;
         ICAcorrArr[j].num2 = temp2;
         ICAcorrArr[j].coeff.cMap = coeffs[temp1][temp2].cMap;
@@ -1112,58 +1117,55 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         ICAcorrArr[j].coeff.sumCoef = tempDouble;
     }
 
-
-
-
-
-
-
-    double ** newMaps;
-    matrixCreate(&newMaps, ns_, ns_);
+    matrix newMaps (ns_, ns_);
 
     ui->sliceWithMarkersCheckBox->setChecked(true);
     ui->reduceChannelsCheckBox->setChecked(true);
 
     //sequence
     //1st file
-    if(mode == 0)
+    // mode == 0) by most stable components (which have the best matching in second file)
+
+    helpString.clear();
+    for(int k = 0; k < ns_; ++k)
     {
-        helpString.clear();
-        for(int k = 0; k < ns_; ++k)
+        if(mode == 0)
         {
             helpString += QString::number( ICAcorrArr[k].num1 + 1) + " "; ///////////////////////////////by most stability
-//            helpString += QString::number( k + 1 ) + " "; /////////////////////////////by first file
-            for(int j = 0; j < ns_; ++j)
+        }
+        else if(mode == 1)
+        {
+            helpString += QString::number( k + 1 ) + " "; /////////////////////////////by first file
+        }
+
+        for(int j = 0; j < ns_; ++j)
+        {
+            if(mode == 0)
             {
                 newMaps[k][j] = mat1[ICAcorrArr[k].num1][j]; /////////////////////////////////////////by most stability
-//                newMaps[k][j] = mat1[k][j]; ////////////////////////////////////////////////////by first file
             }
-            //        memcpy(newMaps[k], mat1[ICAcorrArr[k].num1], ns_*sizeof(double));
+            else if (mode == 1)
+            {
+                newMaps[k][j] = mat1[k][j]; ////////////////////////////////////////////////////by first file
+            }
         }
-        matrixTranspose(newMaps, ns_);
-        helpString2 = maps1Path;
-        helpString2.replace("_maps.txt", "_newSeq_maps.txt");
-        writeICAMatrix(helpString2, newMaps, ns_);
-
-        helpString += "20";
-        ui->reduceChannelsLineEdit->setText(helpString);
-        cout << helpString.toStdString() << endl;
-
-        setEdfFile(EDFica1);
-        cleanDirs();
-        sliceAll();
-        helpString2 = EDFica1;
-        helpString2.replace(".edf", "_newSeq.edf");
-        constructEDF(helpString2);
-        //    sp = new Spectre(dir, ns_, def::ExpName);
-        //    sp->countSpectra();
-        //    sp->compare();
-        //    sp->compare();
-        //    sp->compare();
-        //    sp->psaSlot();
-        //    sp->close();
-        //    delete sp;
     }
+    newMaps.transpose();
+
+    helpString2 = maps1Path;
+    helpString2.replace("_maps.txt", "_ord_maps.txt");
+    writeICAMatrix(helpString2, newMaps);
+
+    helpString += "20";
+    ui->reduceChannelsLineEdit->setText(helpString);
+    //        cout << helpString.toStdString() << endl;
+
+
+    setEdfFile(EDFica1);
+    helpString2 = EDFica1;
+    helpString2.replace(".edf", "_ord.edf");
+    reduceChannelsEDF(helpString2);
+
 
     //second file
     helpString.clear();
@@ -1188,22 +1190,22 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
                 newMaps[k][j] = mat2[ list2[list1.indexOf(k)] ][j]; /////////////////////////////by first file
             }
         }
-//        memcpy(newMaps[k], mat1[ICAcorrArr[k].num2], ns_*sizeof(double));
     }
-    matrixTranspose(newMaps, ns_);
+    newMaps.transpose();
     helpString2 = maps2Path;
-    helpString2.replace("_maps.txt", "_newSeq_maps.txt");
-    writeICAMatrix(helpString2, newMaps, ns_);
+    helpString2.replace("_maps.txt", "_ord_maps.txt");
+    writeICAMatrix(helpString2, newMaps);
 
     helpString += "20";
     ui->reduceChannelsLineEdit->setText(helpString);
-    cout << helpString.toStdString() << endl;
+//    cout << helpString.toStdString() << endl;
+
+
     setEdfFile(EDFica2);
-    cleanDirs();
-    sliceAll();
     helpString2 = EDFica2;
-    helpString2.replace(".edf", "_newSeq.edf");
-    constructEDF(helpString2);
+    helpString2.replace(".edf", "_ord.edf");
+    reduceChannelsEDF(helpString2);
+
 
 
 
@@ -1215,37 +1217,22 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
     helpString2 = EDFica1;
     if(mode == 0)
     {
-        helpString2.replace(".edf", "_newSeq.edf");
+        helpString2.replace(".edf", "_ord.edf");
     }
     setEdfFile(helpString2);
     cleanDirs();
     sliceAll();
-    sp = new Spectre(dir, ns_, def::ExpName);
-    sp->countSpectra();
-    sp->compare();
-    sp->compare();
-    sp->compare();
-    sp->psaSlot();
-    sp->close();
-    delete sp;
+    countSpectraSimple(4096);
 
     helpString2 = EDFica2;
-    helpString2.replace(".edf", "_newSeq.edf");
+    helpString2.replace(".edf", "_ord.edf");
     setEdfFile(helpString2);
     cleanDirs();
     sliceAll();
-    sp = new Spectre(dir, ns_, def::ExpName);
-    sp->countSpectra();
-    sp->compare();
-    sp->compare();
-    sp->compare();
-    sp->psaSlot();
-    sp->close();
-    delete sp;
+    countSpectraSimple(4096);
 
 
-
-    cout << endl;
+#if 0
     ofstream outStream;
     outStream.open("/media/Files/Data/AB/12", ios_base::out|ios_base::app);
     outStream << def::ExpName.left(3).toStdString() << endl;
@@ -1274,20 +1261,9 @@ void MainWindow::ICsSequence(QString EDFica1, QString EDFica2, QString maps1Path
         }
         outStream << doubleRound(ICAcorrArr[k].coeff.sumCoef, 3) << endl;
     }
-
-
     outStream.close();
+#endif
 
-    //leave only 7 high-score components
-
-
-    matrixDelete(&mat1, ns_);
-    matrixDelete(&mat2, ns_);
-    matrixDelete(&newMaps, ns_);
-    matrixDelete(&corrs, ns_);
-
-    matrixDelete(&dataFFT1, 3);
-    matrixDelete(&dataFFT2, 3);
 
     cout << "ICsSequence ended. time = = " << myTime.elapsed()/1000. << " sec" << endl;
 #endif
