@@ -17,8 +17,9 @@ using namespace std;
 typedef vector<vector<double>> dataType;
 typedef vector<double> vec;
 
-struct matrix
+class matrix
 {
+public:
     matrix();
     ~matrix();
     matrix(int dim);
@@ -29,13 +30,19 @@ struct matrix
     matrix(const matrix & other);
     matrix(const dataType & other);
 
+    matrix(matrix && other)
+        :data{other.data}
+    {
+        other.data = dataType();
+    }
+
     matrix(vec vect, bool orientH);
     matrix(vec vect, char orient);
 
     matrix(std::initializer_list<vector<double>> lst);
+
     matrix(std::initializer_list<double> lst); // diagonal
 
-    void resize(int rows, int cols);
     void resizeRows(int rows);
     void resizeCols(int cols);
     void fill(double value);
@@ -56,6 +63,7 @@ struct matrix
     // for compability with vector < vector<Type> >
     int size() const {return data.size();}
     void resize(int i) {data.resize(i);}
+    void resize(int rows, int cols);
 
 
     vector <double> & operator [](int i)
@@ -75,7 +83,6 @@ struct matrix
     matrix operator *= (const matrix & other);
 
 
-    dataType data;
 
     //"static"
     static matrix transpose(const matrix & input);
@@ -90,6 +97,9 @@ struct matrix
 //    double det();
 //    void cofactor();
 //    void systemGaussSolve();
+
+public:
+    dataType data;
 
 };
 

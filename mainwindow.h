@@ -151,9 +151,9 @@ public:
     void writeCorrelationMatrix(QString edfPath, QString outPath);
     void ICsSequence(const QString & EDFica1,
                      const QString & EDFica2,
+                     const int mode = 1,
                      QString maps1Path = QString(),
-                     QString maps2Path = QString(),
-                     int mode = 1);
+                     QString maps2Path = QString());
 
     // autos
     double fileInnerClassification(const QString & workPath,

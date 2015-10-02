@@ -38,6 +38,8 @@ matrix::matrix(const matrix & other)
 {
     this->data = other.data;
 }
+
+
 matrix::matrix(const dataType & other)
 {
     this->data = other;
@@ -348,6 +350,22 @@ void matrix::pop_back()
     this->data.pop_back();
 }
 
+void matrix::print(int rows, int cols) const
+{
+    if(rows == 0) rows = this->rows();
+    if(cols == 0) cols = this->cols();
+
+    for(int i = 0; i < rows; ++i)
+    {
+        for(int j = 0; j < cols; ++j)
+        {
+            cout << data[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+
 void matrix::push_back(vector<double> & in)
 {
     this->data.push_back(in);
@@ -378,16 +396,16 @@ void matrix::transpose()
     this->resize(max(oldRows, oldCols),
                  max(oldRows, oldCols)
                  );
+
     for(int i = 0; i < this->rows(); ++i)
     {
-        for(int j = 0; j < this->cols(); ++j)
+        for(int j = i + 1; j < this->cols(); ++j)
         {
-            std::swap((*this)[j][i], (*this)[i][j]);
+            std::swap(this->data[j][i], this->data[i][j]);
         }
     }
     this->resize(oldCols,
-                 oldRows
-                 );
+                 oldRows);
 }
 
 void matrix::invert()

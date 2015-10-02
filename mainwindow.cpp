@@ -1742,9 +1742,6 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-    ICsSequence("/media/Files/Data/Mati/GoodData/ADA_cl_f2-35_ica.edf",
-                "/media/Files/Data/Mati/GoodData/ADA_cl_f3-30_ica.edf");
-    exit(0);
 
 #if 1
     ui->reduceChannelsCheckBox->setChecked(true);
@@ -1818,27 +1815,38 @@ void MainWindow::customFunc()
 
             for(const QString & guy : names)
             {
+#if 1
                 helpString = workDir + slash() + guy
-                                           + "_cl_f" + QString::number(low)
-                                           + "-" + QString::number(high)
-                                           + "_ica.edf";
+                             + "_cl_f" + QString::number(low)
+                             + "-" + QString::number(high)
+                             + "_ica.edf";
+
+                const QString initEdf = workDir + slash() + guy + "_cl_ica.edf";
+                ICsSequence(initEdf, helpString);
+//                exit(0);
+//                continue;
+#endif
+
+                helpString = workDir + slash() + guy
+                             + "_cl_f" + QString::number(low)
+                             + "-" + QString::number(high)
+                             + "_ica_ord.edf";
+
                 setEdfFile(helpString);
 
                 ui->reduceChannelsComboBox->setCurrentText("20");
-                tmp = def::ExpName;
-                tmp.remove("_ica");
 
                 const QString inSpectraPath = workDir + slash() + "Help"
                                               + slash() + guy
                                               + "_cl_f" + QString::number(low)
                                               + "-" + QString::number(high)
-                                              + "_ica_all.jpg";
+                                              + "_ica_ord_all.jpg";
                 const QString outSpectraPath = workDir + slash() + "Help"
-                                               + slash() + "WM"
+                                               + slash() + "Ordered"
                                                + slash() + guy
                                                + "_cl_f" + QString::number(low)
                                                + "-" + QString::number(high)
-                                               + "_ica_all_wm.jpg";
+                                               + "_ica_ord_all_wm.jpg";
 
                 ui->matiPieceLengthSpinBox->setValue(16);
                 cleanDirs();
@@ -1846,6 +1854,8 @@ void MainWindow::customFunc()
                 countSpectraSimple(pow(2, ceil(log2(ui->matiPieceLengthSpinBox->value()
                                                     * def::freq))));
 
+                tmp = def::ExpName;
+                tmp.remove("_ica");
                 drawMapsICA(workDir
                             + slash() + "Help"
                             + slash() + tmp + "_maps.txt",

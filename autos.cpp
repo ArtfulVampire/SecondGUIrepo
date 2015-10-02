@@ -992,7 +992,7 @@ void MainWindow::countICAs(QString workPath,
         helpString2.replace("_1.edf", "_1_ica.edf");
         mapsPath = tmpDir->absolutePath() + slash() + "Help" + slash() + addName + "_sum_maps.txt";
         mapsPath2 = tmpDir->absolutePath() + slash() + "Help" + slash() + addName + "_1_maps.txt";
-        ICsSequence(helpString, helpString2, mapsPath, mapsPath2);
+        ICsSequence(helpString, helpString2, 1, mapsPath, mapsPath2);
 
         helpString = tmpDir->absolutePath() + slash() + fileName;
         helpString.replace("_1.edf", "_1_ica.edf");
@@ -1000,7 +1000,7 @@ void MainWindow::countICAs(QString workPath,
         helpString2.replace("_1.edf", "_2_ica.edf");
         mapsPath = tmpDir->absolutePath() + slash() + "Help" + slash() + addName + "_1_maps.txt";
         mapsPath2 = tmpDir->absolutePath() + slash() + "Help" + slash() + addName + "_2_maps.txt";
-        ICsSequence(helpString, helpString2, mapsPath, mapsPath2);
+        ICsSequence(helpString, helpString2, 1, mapsPath, mapsPath2);
     }
     delete tmpDir;
 }

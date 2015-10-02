@@ -874,10 +874,14 @@ void MainWindow::ICA() //fastICA
 
 void MainWindow::ICsSequence(const QString & EDFica1,
                              const QString & EDFica2,
+                             const int mode,
                              QString maps1Path,
-                             QString maps2Path,
-                             int mode)
+                             QString maps2Path)
 {
+
+    QTime myTime;
+    myTime.start();
+
     def::ns = 20;
     QString helpString;
 
@@ -889,7 +893,6 @@ void MainWindow::ICsSequence(const QString & EDFica1,
         maps1Path = EDFica1;
         maps1Path.resize(maps1Path.lastIndexOf(slash()));
         maps1Path += slash() + "Help" + slash() + helpString + "_maps.txt";
-        cout << maps1Path << endl;
     }
     if(maps2Path.isEmpty())
     {
@@ -899,11 +902,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
         maps2Path = EDFica2;
         maps2Path.resize(maps2Path.lastIndexOf(slash()));
         maps2Path += slash() + "Help" + slash() + helpString + "_maps.txt";
-        cout << maps2Path << endl;
     }
-#if 1
-    /////////////////////// REWORK read spectra in line
-    /////////////////////// make enum
     // mode == 0 -> sequency by most stability
     // mode == 1 -> sequency by first File & no overwrite
     if(mode != 0 && mode != 1)
@@ -912,8 +911,6 @@ void MainWindow::ICsSequence(const QString & EDFica1,
         return;
     }
 
-    QTime myTime;
-    myTime.start();
     //count cross-correlation by maps and spectra
     const int ns_ = 19;
 
@@ -1068,7 +1065,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
 
 
 
-        if(j == ns_ - 1 && EDFica1 == EDFica2) /////////////////////
+        if(j == ns_ - 1 && EDFica1 == EDFica2) ///////////////////// whaaaaat?
         {
             for(int i = 0; i < ns_; ++i) //rows
             {
@@ -1078,8 +1075,6 @@ void MainWindow::ICsSequence(const QString & EDFica1,
 
                 ICAcorrArr[j].num1 = i;
                 ICAcorrArr[j].num2 = i;
-
-
             }
             ICAcorrArr[j].coeff.cMap = 1;
             for(int h = 0; h < 3; ++h)
@@ -1090,9 +1085,6 @@ void MainWindow::ICsSequence(const QString & EDFica1,
             break;
 
         }
-
-
-
 
         list1 << temp1;
         list2 << temp2;
@@ -1126,29 +1118,17 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     //1st file
     // mode == 0) by most stable components (which have the best matching in second file)
 
-    helpString.clear();
     for(int k = 0; k < ns_; ++k)
     {
         if(mode == 0)
         {
-            helpString += QString::number( ICAcorrArr[k].num1 + 1) + " "; ///////////////////////////////by most stability
+            newMaps[k] = mat1[ICAcorrArr[k].num1]; ///////////////////by most stability
         }
-        else if(mode == 1)
+        else if (mode == 1)
         {
-            helpString += QString::number( k + 1 ) + " "; /////////////////////////////by first file
+            newMaps[k] = mat1[k]; //////////////////////////by first file
         }
 
-        for(int j = 0; j < ns_; ++j)
-        {
-            if(mode == 0)
-            {
-                newMaps[k][j] = mat1[ICAcorrArr[k].num1][j]; /////////////////////////////////////////by most stability
-            }
-            else if (mode == 1)
-            {
-                newMaps[k][j] = mat1[k][j]; ////////////////////////////////////////////////////by first file
-            }
-        }
     }
     newMaps.transpose();
 
@@ -1156,18 +1136,50 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     helpString2.replace("_maps.txt", "_ord_maps.txt");
     writeICAMatrix(helpString2, newMaps);
 
-    helpString += "20";
-    ui->reduceChannelsLineEdit->setText(helpString);
-    //        cout << helpString.toStdString() << endl;
 
+    if(mode == 0)
+    {
+        helpString.clear();
+        for(int k = 0; k < ns_; ++k)
+        {
+            helpString += QString::number( ICAcorrArr[k].num1 + 1 ) + " "; /////////by most stability
+        }
+        helpString += "20";
+        ui->reduceChannelsLineEdit->setText(helpString);
 
-    setEdfFile(EDFica1);
-    helpString2 = EDFica1;
-    helpString2.replace(".edf", "_ord.edf");
-    reduceChannelsEDF(helpString2);
+        setEdfFile(EDFica1);
+        helpString2 = EDFica1;
+        helpString2.replace(".edf", "_ord.edf");
+        reduceChannelsEDF(helpString2);
+    }
+    else
+    {
+        helpString2 = EDFica1;
+        helpString2.replace(".edf", "_ord.edf");
+        QFile::remove(helpString2);
+        QFile::copy(EDFica1, helpString2);
+    }
 
 
     //second file
+    for(int k = 0; k < ns_; ++k)
+    {
+        if(mode == 0)
+        {
+            newMaps[k] = mat2[ICAcorrArr[k].num2]; /////////////////////////////by most stability
+        }
+        else if(mode == 1)
+        {
+            newMaps[k] = mat2[ list2[list1.indexOf(k)] ]; ////////////////by first file
+        }
+
+    }
+    newMaps.transpose();
+    helpString2 = maps2Path;
+    helpString2.replace("_maps.txt", "_ord_maps.txt");
+    writeICAMatrix(helpString2, newMaps);
+
+
     helpString.clear();
     for(int k = 0; k < ns_; ++k)
     {
@@ -1179,27 +1191,9 @@ void MainWindow::ICsSequence(const QString & EDFica1,
         {
             helpString += QString::number( list2[ list1.indexOf(k) ] + 1) + " "; /////////////////////////////by first file
         }
-
-        for(int j = 0; j < ns_; ++j)
-        {        if(mode == 0)
-            {
-                newMaps[k][j] = mat2[ICAcorrArr[k].num2][j]; ///////////////////////////////////////////////////////////by most stability
-            }
-            else if(mode == 1)
-            {
-                newMaps[k][j] = mat2[ list2[list1.indexOf(k)] ][j]; /////////////////////////////by first file
-            }
-        }
     }
-    newMaps.transpose();
-    helpString2 = maps2Path;
-    helpString2.replace("_maps.txt", "_ord_maps.txt");
-    writeICAMatrix(helpString2, newMaps);
-
     helpString += "20";
     ui->reduceChannelsLineEdit->setText(helpString);
-//    cout << helpString.toStdString() << endl;
-
 
     setEdfFile(EDFica2);
     helpString2 = EDFica2;
@@ -1214,15 +1208,18 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     ui->sliceWithMarkersCheckBox->setChecked(false);
     ui->reduceChannelsCheckBox->setChecked(false);
     ui->reduceChannelsComboBox->setCurrentText("20");
+
     helpString2 = EDFica1;
-    if(mode == 0)
+    helpString2.replace(getFileName(EDFica1), "Help/" + getFileName(EDFica1, false) + "_ord_all.jpg");
+    if(!QFile(helpString2).exists())
     {
+        helpString2 = EDFica1;
         helpString2.replace(".edf", "_ord.edf");
+        setEdfFile(helpString2);
+        cleanDirs();
+        sliceAll();
+        countSpectraSimple(4096);
     }
-    setEdfFile(helpString2);
-    cleanDirs();
-    sliceAll();
-    countSpectraSimple(4096);
 
     helpString2 = EDFica2;
     helpString2.replace(".edf", "_ord.edf");
@@ -1265,8 +1262,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
 #endif
 
 
-    cout << "ICsSequence ended. time = = " << myTime.elapsed()/1000. << " sec" << endl;
-#endif
+    cout << "ICsSequence ended. time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 
