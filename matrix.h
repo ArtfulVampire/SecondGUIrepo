@@ -58,7 +58,7 @@ public:
     vector<double> toVectorByRows() const;
     vector<double> toVectorByCols() const;
     void pop_back();
-    void push_back(vector<double> &in);
+    void push_back(const vector<double> &in);
 
     // for compability with vector < vector<Type> >
     int size() const {return data.size();}

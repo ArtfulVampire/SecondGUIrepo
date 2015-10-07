@@ -1066,7 +1066,7 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
     }
 }
 
-void edfFile::refilter(const double &lowFreq, const double &highFreq, QString newPath)
+void edfFile::refilter(const double &lowFreq, const double &highFreq, const QString & newPath)
 {
     QTime myTime;
     myTime.start();
@@ -1152,7 +1152,9 @@ void edfFile::refilter(const double &lowFreq, const double &highFreq, QString ne
         this->writeEdfFile(newPath);
     }
     delete []spectre;
-    cout << "refilter: time = " << myTime.elapsed()/1000. << " sec" << endl;
+
+
+//    cout << "refilter: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag) const // [start, finish)

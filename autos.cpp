@@ -753,13 +753,25 @@ double MainWindow::fileInnerClassification(const QString & workPath,
     if(windows) countSpectraSimple(1024);
     else if (cfgFileName.contains("16sec")) countSpectraSimple(4096);
     else if (cfgFileName.contains("8sec")) countSpectraSimple(2048);
-    else return 0.;
+    else countSpectraSimple(4096);
 
     Net * ANN = new Net();
     ANN->readCfgByName(cfgFileName);
     ANN->setAutoProcessingFlag(true);
     ANN->setNumOfPairs(NumOfPairs);
     ANN->autoClassificationSimple();
+
+#if 0
+    ANN->PaIntoMatrixByName("all");
+    ANN->LearnNet();
+    helpString = workPath + slash() + fileName;
+    helpString.replace(".edf", ".wts", Qt::CaseInsensitive);
+    QString tmp = helpString;
+    tmp.replace(".wts", ".jpg");
+    ANN->writeWts(helpString);
+    ANN->drawWts(helpString,
+                 tmp);
+#endif
 
     double res = ANN->getAverageAccuracy();
 
@@ -2109,6 +2121,62 @@ void MainWindow::makeTestData()
 #endif
 }
 
+void MainWindow::GalyaCut(const QString & path)
+{
+    // Galya slice by 16 seconds pieces - folders
+    const int wndLen = 16; // seconds
+    QDir tmpDir(path);
+    tmpDir.mkdir("windows");
+    tmpDir.mkdir("smalls");
+    const QStringList leest1 = tmpDir.entryList(QStringList{"*.edf", "*.EDF"});
+    for(const QString & guy : leest1)
+    {
+        edfFile & initEdf = globalEdf;
+        initEdf.readEdfFile(path + slash() + guy);
+        cout << guy << endl;
+
+        if(initEdf.getNdr() <= wndLen )
+        {
+            QFile::remove(path
+                          + slash() + "smalls"
+                          + slash() + initEdf.getExpName());
+            QFile::copy(initEdf.getFilePath(),
+                        path
+                        + slash() + "smalls"
+                        + slash() + initEdf.getExpName());
+
+            cout << "smallFile \t" << initEdf.getExpName() << endl;
+            continue;
+        }
+
+        const double bytesPerSecond = (QFile(initEdf.getFilePath()).size() - initEdf.getBytes())
+                                      / double(initEdf.getNs() * initEdf.getNdr() * initEdf.getDdr());
+
+        if(bytesPerSecond != 500)
+        {
+            cout << "bytesPerSecond = " << bytesPerSecond << "\t";
+            cout << initEdf.getExpName();
+            cout << endl;
+
+            // dont process this file
+            continue;
+        }
+
+        for(int i = 0; i < ceil(initEdf.getDataLen() / def::freq / wndLen); ++i)
+        {
+            initEdf.saveSubsection(i * def::freq * wndLen,
+                                   fmin((i + 1) * def::freq * wndLen, initEdf.getDataLen()),
+                                   QString(path
+                                           + slash() + "windows"
+                                           + slash() + initEdf.getExpName()
+                                           + "_wnd_" + QString::number(i+1) + ".edf"));
+        }
+
+
+    }
+    exit(0);
+}
+
 void MainWindow::GalyaProcessing(const QString & procDirPath)
 {
 //    const QString procDirPath = "/media/Files/Data/Galya/TBI/Test";
@@ -2154,11 +2222,32 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     {
         ExpName = filesList[i];
         ExpName.remove(".EDF", Qt::CaseInsensitive);
-        cout << ExpName << endl;
 
         helpString = dir.absolutePath()
                 + slash() + filesList[i];
         initEdf.readEdfFile(helpString);
+
+
+
+
+        if(initEdf.getNdr() == 0)
+        {
+            cout << "ndr = 0\t" << ExpName << endl;
+            continue;
+        }
+
+        const double bytesPerSecond = (QFile(helpString).size() - initEdf.getBytes())
+                                      / double(initEdf.getNs() * initEdf.getNdr() * initEdf.getDdr());
+
+        if(bytesPerSecond != 500)
+        {
+            cout << "bytesPerSecond = " << bytesPerSecond << "\t";
+            cout << ExpName;
+            cout << endl;
+
+            // dont process this file
+            continue;
+        }
 
         if(initEdf.getNs() < numChan)
         {
@@ -2166,14 +2255,11 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
             continue;
         }
 
-//        cout << def::ExpName << "\t" << initEdf.getDataLen() << endl;
+//        continue;
 
+        cout << ExpName << endl;
 
         dir.cd("out");
-
-
-
-
 
         helpString = dir.absolutePath()
                 + slash() + ExpName;
@@ -2283,7 +2369,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
         outAlphaStr.close();
         outStr.close();
 
-        dir.cdUp(); continue; // dont count D2 and hilbert for different filters
+//        dir.cdUp(); continue; // dont count D2 and hilbert for different filters
 
 
 

@@ -44,6 +44,7 @@ namespace def
 //    Atanov
     const int numOfClasses = 3;
     const QString dataFolder = "/media/Files/Data/Mati";
+    const QString GalyaFolder = "/media/Files/Data/Galya";
     const bool opencl = true;
     const bool openmp = true;
 

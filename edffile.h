@@ -206,7 +206,7 @@ public:
     void adjustArraysByChannels();
     void appendFile(QString addEdfPath, QString outPath) const;
     void concatFile(QString addEdfPath, QString outPath = QString());
-    void refilter(const double &lowFreq, const double &highFreq, QString newPath = QString());
+    void refilter(const double &lowFreq, const double &highFreq, const QString & newPath = QString());
     void saveSubsection(int startBin, int finishBin, const QString &outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
     void reduceChannels(QList<int> chanList);

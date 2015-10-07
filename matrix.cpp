@@ -366,7 +366,7 @@ void matrix::print(int rows, int cols) const
     cout << endl;
 }
 
-void matrix::push_back(vector<double> & in)
+void matrix::push_back(const vector<double> & in)
 {
     this->data.push_back(in);
 }

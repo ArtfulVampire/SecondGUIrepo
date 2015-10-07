@@ -82,7 +82,7 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(7.5); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(0.05); // 1. for MATI? usually 5.     0.7 for best comp set
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
@@ -685,14 +685,14 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
     double *** tempWeights = nullptr;
     readWtsByName(helpString, &tempWeights);
 
-    matrix drawWts;
+    matrix drawWts; // 3 arrays of weights
     vec tempVec;
     for(int i = 0; i < def::numOfClasses; ++i)
     {
         tempVec.clear();
         for(int j = 0; j < NetLength; ++j)
         {
-            tempVec.push_back(tempWeights[0][j][i]);
+            tempVec.push_back(tempWeights[0][j][i]); // 0 is for 2 layers
         }
         drawWts.push_back(tempVec);
     }
@@ -734,11 +734,11 @@ void Net::writeWts(const QString & wtsPath)
         return;
     }
 
-    for(int i = 0; i < numOfLayers-1; ++i)
+    for(int i = 0; i < numOfLayers - 1; ++i)
     {
-        for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
+        for(int j = 0; j < dimensionality[i] + 1; ++j) // NetLength+1 for bias
         {
-            for(int k = 0; k < dimensionality[i+1]; ++k)
+            for(int k = 0; k < dimensionality[i + 1]; ++k) // NumOfClasses
             {
                 weightsFile << weight[i][j][k] << endl;
             }
@@ -1028,6 +1028,7 @@ void Net::readWtsByName(const QString & filename, double * *** wtsMatrix) //
     {
         wtsMatrix = &(this->weight);
     }
+
     FILE * wts = fopen(filename, "r");
     if(wts == NULL)
     {
@@ -1036,7 +1037,7 @@ void Net::readWtsByName(const QString & filename, double * *** wtsMatrix) //
     }
     QString helpString;
 
-    if((*wtsMatrix) == nullptr) //if hasn't been allocated
+    if((*wtsMatrix) == nullptr) //if this->weight hasn't been allocated
     {
         numOfLayers = ui->numOfLayersSpinBox->value();
         helpString = ui->dimensionalityLineEdit->text();
@@ -1080,15 +1081,15 @@ void Net::readWtsByName(const QString & filename, double * *** wtsMatrix) //
 
     for(int i = 0; i < numOfLayers-1; ++i)
     {
-        for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
+        for(int j = 0; j < dimensionality[i] + 1; ++j) // NetLength + 1 for bias
         {
-            for(int k = 0; k < dimensionality[i + 1]; ++k)
+            for(int k = 0; k < dimensionality[i + 1]; ++k) // ~NumOfClasses
             {
-                fscanf(wts, "%lf\r\n", &(*wtsMatrix)[i][j][k]);
+                fscanf(wts, "%lf\r\n", &((*wtsMatrix)[i][j][k]));
             }
-            fscanf(wts, "\r\n");
+//            fscanf(wts, "\r\n");
         }
-        fscanf(wts, "\r\n");
+//        fscanf(wts, "\r\n");
     }
     fclose(wts);
 }

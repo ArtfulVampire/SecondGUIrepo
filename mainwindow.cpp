@@ -368,6 +368,7 @@ MainWindow::MainWindow() :
 //    QObject::connect(ui->markerBin1LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
     QObject::connect(ui->markerBin1LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
     QObject::connect(ui->markerSaveEdfPushButton, SIGNAL(clicked()), this, SLOT(markerSaveEdf()));
+
     QObject::connect(ui->matiCheckBox, SIGNAL(stateChanged(int)), this, SLOT(matiCheckBoxSlot(int)));
 
     globalEdf.setMatiFlag(ui->matiCheckBox->isChecked());
@@ -386,7 +387,10 @@ MainWindow::~MainWindow()
 
 void QWidget::keyPressEvent(QKeyEvent *event)
 {
-    if(event->key()==Qt::Key_Escape) close();
+    if(event->key() == Qt::Key_Escape)
+    {
+        this->close();
+    }
 }
 
 
@@ -1742,15 +1746,101 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-
-#if 1
+//    return;
+#if 0
     ui->reduceChannelsCheckBox->setChecked(true);
     ui->reduceChannelsComboBox->setCurrentText("Mati");
     ui->matiPieceLengthSpinBox->setValue(16);
     ui->lowFreqFilterDoubleSpinBox->setValue(5.);
     ui->highFreqFilterDoubleSpinBox->setValue(20.);
-    const QString fileEnding = "_cl_f.edf";
     const QStringList names{"ADA", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "SIV"};
+    const QStringList fileEndingList{"_cl_f4-25_ica_ord.edf"};
+    // "_cl_f2-35_ica_ord.edf",
+    // "_cl_f3-30_ica_ord.edf",
+    // "_cl_f4-25_ica_ord.edf",
+
+    ui->reduceChannelsComboBox->setCurrentText("20");
+
+    double tempDouble = 0;
+    const QString logPath = def::dataFolder + slash() + "GoodData/class_ord.txt";
+    ofstream ofStr;
+
+
+
+
+    ui->cleanRealisationsCheckBox->setChecked(true);
+    ui->cleanRealsSpectraCheckBox->setChecked(true);
+    ui->cleanWindowsCheckBox->setChecked(false);
+    ui->cleanWindSpectraCheckBox->setChecked(false);
+
+    const QString workDir = def::dataFolder + slash() + "GoodData";
+
+    QString helpString;
+
+    ui->reduceChannelsComboBox->setCurrentText("20");
+
+
+    for(const int wndLen : {16}) // what with 4-len windows?
+    {
+        ui->matiPieceLengthSpinBox->setValue(wndLen);
+        const QString tmp = QString::number(wndLen) + "sec19ch";
+        for(const QString & ending : fileEndingList)
+        {
+            for(const QString & guy : names)
+            {
+                helpString = workDir + slash() + guy + ending;
+
+                setEdfFile(helpString);
+                cleanDirs();
+                sliceAll();
+
+                ofStr.open(logPath.toStdString(), ios_base::app);
+
+                tempDouble = fileInnerClassification(workDir,
+                                                     guy + ending,
+                                                     tmp);
+
+                helpString = workDir + slash() + guy + ending;
+                helpString.replace(".edf", ".jpg", Qt::CaseInsensitive);
+
+//                cout << helpString << endl;
+
+                QString newWtsPath = workDir
+                                     + slash() + "Help"
+                                     + slash() + "weights"
+                                     + slash() + guy + ending;
+                newWtsPath.replace(".edf", "_wm.jpg", Qt::CaseInsensitive);
+
+//                cout << newWtsPath << endl;
+
+                drawMapsOnSpectra(helpString,
+                                  newWtsPath,
+                                  workDir + slash() + "Help" + slash() + "Maps");
+
+
+
+                ofStr << doubleRound(tempDouble, 1) << '\t'
+                      << guy + ending + " " + QString::number(wndLen) << endl;
+
+                ofStr.close();
+            }
+        }
+    }
+    exit(0);
+
+#endif
+
+#if 0
+    ui->reduceChannelsCheckBox->setChecked(true);
+    ui->reduceChannelsComboBox->setCurrentText("Mati");
+    ui->matiPieceLengthSpinBox->setValue(16);
+    ui->lowFreqFilterDoubleSpinBox->setValue(5.);
+    ui->highFreqFilterDoubleSpinBox->setValue(20.);
+    const QStringList names{"ADA", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "SIV"};
+    const QStringList fileEndingList{"_cl_f2-35_ica_ord.edf",
+                                     "_cl_f3-30_ica_ord.edf",
+                                     "_cl_f4-25_ica_ord.edf",
+                                     "_cl_f5-20_ica_ord.edf"};
 
     ui->reduceChannelsComboBox->setCurrentText("20");
 
@@ -1789,10 +1879,6 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 1
-    // make ica
-
-
     ui->cleanRealisationsCheckBox->setChecked(true);
     ui->cleanRealsSpectraCheckBox->setChecked(true);
     ui->cleanWindowsCheckBox->setChecked(false);
@@ -1807,15 +1893,15 @@ void MainWindow::customFunc()
     for(const int low : {2, 3, 4, 5})
     {
         const int high = 35 - 5 * (low - 2);
-//        for(const int wndLen : {16, 8})
-//        {
-//            ui->matiPieceLengthSpinBox->setValue(wndLen);
-//            tmp = QString::number(wndLen) + "sec19ch";
+        for(const int wndLen : {16, 8})
+        {
+            ui->matiPieceLengthSpinBox->setValue(wndLen);
+            tmp = QString::number(wndLen) + "sec19ch";
 
 
             for(const QString & guy : names)
             {
-#if 1
+#if 0
                 helpString = workDir + slash() + guy
                              + "_cl_f" + QString::number(low)
                              + "-" + QString::number(high)
@@ -1888,10 +1974,9 @@ void MainWindow::customFunc()
                 //            setEdfFile(helpString);
                 //            ICA();
             }
-//        }
+        }
     }
 #endif
-    exit(0);
 
 #if 0
 
@@ -1922,8 +2007,6 @@ void MainWindow::customFunc()
     ofStr.close();
 #endif
 
-    exit(0);
-#endif
 
 
 
@@ -2010,42 +2093,7 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 0
-    // Galya slice by 16 seconds pieces - folders
-    const int wndLen = 16; // seconds
-    def::dir->cd("/media/michael/Files/Data/Galya/ToSlice/MyAdults");
-    const QStringList leest1 = def::dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot); // bird, bow...
-    for(const QString & dir1 : leest1)
-    {
-        def::dir->cd(dir1);
-//        const QStringList leest2 = def::dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-//        for(const QString & dir2 : leest2)
-//        {
-//            def::dir->cd(dir2);
-            const QStringList leest3 = def::dir->entryList(QStringList{"*.edf", "*.EDF"});
-            for(const QString & guy : leest3)
-            {
-                globalEdf.readEdfFile(def::dir->absolutePath() + slash() + guy);
-                cout << def::dir->absolutePath() + slash() + guy << endl;
 
-                for(int i = 0; i < ceil(globalEdf.getDataLen() / def::freq / wndLen); ++i)
-                {
-                    globalEdf.saveSubsection(i * def::freq * wndLen,
-                                             fmin((i + 1) * def::freq * wndLen, globalEdf.getDataLen()),
-                                             QString(def::dir->absolutePath()
-                                                     + slash() + globalEdf.getExpName()
-                                                     + "_wnd_" + QString::number(i+1) + ".edf"));
-                }
-            }
-
-//            def::dir->cdUp();
-//        }
-
-        def::dir->cdUp();
-
-    }
-    exit(0);
-#endif
 
 
 #if 0
@@ -2930,55 +2978,66 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 0
+#if 1
     // drop some channels, test classification
-    QString currGuy = "ADA";
     QString helpString;
-    def::dir->cd("/media/Files/Data/Mati/ICAstudy/");
-    helpString = "/media/Files/Data/Mati/ICAstudy/" + currGuy + "_full.edf";
-    globalEdf.readEdfFile(helpString);
+    const QString currFile = "ADA_cl_f5-20_ica_ord.edf";
+    const QString workPath = "/media/Files/Data/Mati/GoodData";
+    const QString logPath = workPath + slash() + "results.txt";
+
+    helpString = workPath + slash() + currFile;
+    setEdfFile(helpString);
+    readData();
     QList <int> chanList;
     chanList << 0;
-    chanList << 1;
-    chanList << 2;
+//    chanList << 1;
+//    chanList << 2;
     chanList << 3;
-    chanList << 4;
+//    chanList << 4;
     chanList << 5;
-    chanList << 6;
-    chanList << 7;
-    chanList << 8;
+//    chanList << 6;
+//    chanList << 7;
+//    chanList << 8;
     chanList << 9;
-    chanList << 10;
-    chanList << 11;
-    chanList << 12;
-    chanList << 13;
-    chanList << 14;
-    chanList << 15;
-    chanList << 16;
-    chanList << 17;
-    chanList << 18;
-    chanList << 19;
-    globalEdf.reduceChannels(chanList);
+//    chanList << 10;
+//    chanList << 11;
+//    chanList << 12;
+//    chanList << 13;
+//    chanList << 14;
+//    chanList << 15;
+//    chanList << 16;
+//    chanList << 17;
+//    chanList << 18;
 
-    helpString = "/media/Files/Data/Mati/ICAstudy/" + currGuy + "_new_ica.edf";
-    globalEdf.writeEdfFile(helpString);
-    makeCfgStatic("/media/Files/Data/Mati/ICAstudy/",
-                  (globalEdf.getNs() - 1) * def::spLength,
+    chanList << 19; // markers
+
+    helpString.clear();
+    for(auto i : chanList)
+    {
+        helpString += QString::number(i + 1) + " ";
+    }
+    ui->reduceChannelsLineEdit->setText(helpString);
+    reduceChannelsEDFSlot();
+
+    helpString = workPath + slash() + currFile;
+    helpString.replace("_ord.edf", "_ord_rdcChan.edf");
+
+
+    makeCfgStatic(workPath,
+                  (chanList.length() - 1) * def::spLength,
                   "new");
 
     ofstream outStr;
+    helpString = getFileName(helpString);
 
+    double tempD = fileInnerClassification(workPath,
+                                           helpString,
+                                           "new",
+                                           50);
+    cout << tempD << endl;
 
-//    cout << "before innerClass" << endl;
-
-    helpString = currGuy + "_new_ica.edf";
-    fileInnerClassification("/media/Files/Data/Mati/ICAstudy",
-                            helpString,
-                            "new",
-                            50);
-
-    outStr.open("/media/Files/Data/Mati/ICAstudy/results.txt", ios_base::app);
-    outStr << "\t" << currGuy << "_new_ica, " << chanList.length()-1 << " channnels" << endl;
+    outStr.open(logPath.toStdString(), ios_base::app);
+    outStr << tempD << "\t" << helpString << endl;
     outStr.close();
     exit(0);
 #endif
