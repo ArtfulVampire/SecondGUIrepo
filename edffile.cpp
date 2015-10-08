@@ -441,6 +441,23 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     handleParam(ddr, 8, readFlag, edfDescriptor, header);
     handleParam(ns, 4, readFlag, edfDescriptor, header);
 
+    // real length handler
+    if(readFlag)
+    {
+        const double realNdr = (QFile(EDFpath).size() - bytes)
+                               / double(ns * def::freq * 2. * ddr);
+
+        if(int(realNdr) != realNdr)
+        {
+            cout << "handleEdfFile(read): realNdr is not integral = "
+                 << realNdr << "\t" << ndr << endl;
+        }
+
+        ndr = min(int(realNdr), ndr);
+    }
+
+
+
 
     //start channels read
     handleParamArray(labels, ns, 16, readFlag, edfDescriptor, header);
@@ -507,7 +524,10 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
         dataLength = ndr * nr[0]; // generality
     }
 
+
+
     handleData(readFlag, edfDescriptor);
+
     fclose(edfDescriptor);
 
     if(readFlag)

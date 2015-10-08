@@ -1746,7 +1746,6 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-//    return;
 #if 0
     ui->reduceChannelsCheckBox->setChecked(true);
     ui->reduceChannelsComboBox->setCurrentText("Mati");

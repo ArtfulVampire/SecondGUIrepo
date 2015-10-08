@@ -2121,12 +2121,18 @@ void MainWindow::makeTestData()
 #endif
 }
 
-void MainWindow::GalyaCut(const QString & path)
+void MainWindow::GalyaCut(const QString & path, QString outPath)
 {
     // Galya slice by 16 seconds pieces - folders
+    const QString logPath = "/media/Files/Data/Galya/log.txt";
+    ofstream logStream(logPath.toStdString(), ios_base::app);
     const int wndLen = 16; // seconds
     QDir tmpDir(path);
     tmpDir.mkdir("windows");
+    if(outPath.isEmpty())
+    {
+        outPath = tmpDir.absolutePath() + slash() + "windows";
+    }
     tmpDir.mkdir("smalls");
     const QStringList leest1 = tmpDir.entryList(QStringList{"*.edf", "*.EDF"});
     for(const QString & guy : leest1)
@@ -2146,35 +2152,41 @@ void MainWindow::GalyaCut(const QString & path)
                         + slash() + initEdf.getExpName());
 
             cout << "smallFile \t" << initEdf.getExpName() << endl;
+            logStream << initEdf.getFilePath() << "\t" << "too small" << "\n";
             continue;
         }
 
-        const double bytesPerSecond = (QFile(initEdf.getFilePath()).size() - initEdf.getBytes())
-                                      / double(initEdf.getNs() * initEdf.getNdr() * initEdf.getDdr());
+         // 2 bytes for value
+//        const int realNdr = int( (QFile(initEdf.getFilePath()).size() - initEdf.getBytes())
+//                            / double(initEdf.getNs() * def::freq * 2 * initEdf.getDdr()) );
 
-        if(bytesPerSecond != 500)
-        {
-            cout << "bytesPerSecond = " << bytesPerSecond << "\t";
-            cout << initEdf.getExpName();
-            cout << endl;
+//        const double bytesPerSecond = (QFile(initEdf.getFilePath()).size() - initEdf.getBytes())
+//                                      / double(initEdf.getNs() * initEdf.getNdr() * initEdf.getDdr());
 
-            // dont process this file
-            continue;
-        }
+//        if(bytesPerSecond != 500)
+//        {
+//            cout << "bytesPerSecond = " << bytesPerSecond << "\t";
+//            cout << initEdf.getExpName();
+//            cout << endl;
+//            logStream << initEdf.getFilePath() << "\t" << "wrong length" << "\n";
+
+//            // dont process this file
+//            continue;
+//        }
 
         for(int i = 0; i < ceil(initEdf.getDataLen() / def::freq / wndLen); ++i)
         {
             initEdf.saveSubsection(i * def::freq * wndLen,
                                    fmin((i + 1) * def::freq * wndLen, initEdf.getDataLen()),
-                                   QString(path
-                                           + slash() + "windows"
+                                   QString(outPath
                                            + slash() + initEdf.getExpName()
                                            + "_wnd_" + QString::number(i+1) + ".edf"));
         }
 
 
     }
-    exit(0);
+    logStream.close();
+
 }
 
 void MainWindow::GalyaProcessing(const QString & procDirPath)

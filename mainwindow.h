@@ -130,7 +130,7 @@ public:
     void sliceGalya();
 
     void GalyaProcessing(const QString &procDirPath);
-    void GalyaCut(const QString & path);
+    void GalyaCut(const QString & path, QString outPath = QString());
 
     void rereferenceData(QString newRef, QString newPath);
     void makeChanList(QList<int> & chanList);
