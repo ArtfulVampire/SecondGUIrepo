@@ -344,6 +344,15 @@ vector<double> matrix::toVectorByCols() const
     }
     return res;
 }
+vector<double> matrix::getCol(int i) const
+{
+    vector<double> res;
+    for(int j = 0; j < this->rows(); ++j)
+    {
+        res.push_back((*this)[j][i]);
+    }
+    return res;
+}
 
 void matrix::pop_back()
 {

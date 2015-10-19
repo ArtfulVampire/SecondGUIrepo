@@ -154,6 +154,7 @@ void MakePa::mwTest()
     lst[2] = dir_->entryList(nameFilters, QDir::Files);
 
     const int num = 3; // NumOfClasses
+
     const int NetLength = def::nsWOM() * def::spLength;
 
     int * n = new int[num];
@@ -161,6 +162,7 @@ void MakePa::mwTest()
     {
         n[i] = lst[i].length();
     }
+
     double *** spectre = new double ** [num]; /// type
     for(int i = 0; i < num; ++i)
     {
@@ -189,19 +191,20 @@ void MakePa::mwTest()
     }
 
 
-    int ** numOfDiff = new int * [num];
+    int ** numOfDiff = new int * [num]; // class1
     for(int i = 0; i < num; ++i)
     {
-        numOfDiff[i] = new int [num - i - 1];
+        numOfDiff[i] = new int [num - i - 1]; // class2
     }
 
-    bool *** MW = new bool ** [num];
+    vector<vector<vector<int>>> MW;
+    MW.resize(num);
     for(int i = 0; i < num; ++i)
     {
-        MW[i] = new bool * [num - i - 1];
+        MW[i].resize(num);
         for(int j = i + 1; j < num; ++j)
         {
-            MW[i][j - i] = new bool [NetLength];
+            MW[i][j - i].resize(NetLength);
         }
     }
 
@@ -219,9 +222,9 @@ void MakePa::mwTest()
 //                cout << k << endl;
 
                 MW[i][j - i][k] = MannWhitney(spectre[i][k],
-                                          n[i],
-                                          spectre[j][k],
-                                          n[j]);
+                                              n[i],
+                                              spectre[j][k],
+                                              n[j]);
 
                 if(MW[i][j - i][k])
                 {
@@ -245,6 +248,35 @@ void MakePa::mwTest()
         }
     }
     fclose(res);
+
+#if 0
+    // new paint
+    matrix inSpectraAv(def::numOfClasses, def::nsWOM() * def::spLength, 0);
+
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        for(int j = 0; j < n[i]; ++j)
+        {
+            const double nrm = 1. / n[i];
+            for(int k = 0; k < inSpectraAv.cols(); ++k)
+            {
+                inSpectraAv[i][k] += spectre[i][k][j] * nrm;
+            }
+        }
+    }
+
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + def::ExpName
+                                          + "_Mann-Whitney"
+                                          + ui->addNameLineEdit->text() + ".jpg");
+    drawTemplate(helpString);
+    drawArrays(helpString,
+               inSpectraAv);
+    drawMannWitney(helpString,
+                   MW);
+    return;
+#endif
 
 
 
@@ -291,7 +323,7 @@ void MakePa::mwTest()
     pic.fill();
     paint->begin(&pic);
 
-    double barWidth = 1/2.;
+    const double barWidth = 1/2.;
 
     const double graphHeight = paint->device()->height() * coords::scale;
     const double graphWidth = paint->device()->width() * coords::scale;
@@ -475,15 +507,7 @@ void MakePa::mwTest()
     }
     delete []numOfDiff;
 
-    for(int i = 0; i < num; ++i)
-    {
-        for(int j = i + 1; j < num; ++j)
-        {
-            delete []MW[i][j - i];
-        }
-        delete []MW[i];
-    }
-    delete []MW;
+
     delete dir_;
     delete paint;
 

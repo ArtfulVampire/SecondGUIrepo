@@ -1198,132 +1198,28 @@ double rankit(int i, int length, double k)
     return quantile( (i-k) / (length + 1. - 2. * k) );
 }
 
-bool MannWhitney(double * arr1, int len1,
+int MannWhitney(double * arr1, int len1,
                  double * arr2, int len2,
                  double p)
 {
-
-    int * n = new int[2];
-    n[0] = len1;
-    n[1] = len2;
-
-    //    cout << n[0] << "\t" << n[1] << endl;
-
-    double ** array = new double * [2];
-    array[0] = new double [n[0] + n[1]];
-    array[1] = new double [n[0] + n[1]];
-
-    for(int i = 0; i < n[0]; ++i)
+    vec vect1;
+    vec vect2;
+    for(int i = 0; i < len1; ++i)
     {
-        array[0][i] = arr1[i];
-        array[1][i] = 0.;
+        vect1.push_back(arr1[i]);
     }
-    for(int i = 0; i < n[1]; ++i)
+    for(int i = 0; i < len2; ++i)
     {
-        array[0][ i + n[0] ] = 0.;
-        array[1][ i + n[0] ] = arr2[i];
+        vect2.push_back(arr2[i]);
     }
+    return MannWhitney(vect1, vect2, p);
 
-    // init
-    //    for(int i = 0; i < n[1] + n[0]; ++i)
-    //    {
-    //        cout << array[0][i] << "\t";
-    //    }
-    //    cout << endl;
-    //    for(int i = 0; i < n[1] + n[0]; ++i)
-    //    {
-    //        cout << array[1][i] << "\t";
-    //    }
-    //    cout << endl;
-
-
-    double temp;
-    int sum0;
-    int sumAll;
-    double average = n[0]*n[1]/2.;
-    double dispersion = sqrt(n[0]*n[1]*(n[0]+n[1])/12.);
-
-    double U = 0.;
-
-
-    // sort
-    double tmp1, tmp2;
-    for(int k = 0; k < n[0] + n[1]; ++k)
-    {
-        for(int i = 0; i < n[0] + n[1] - 1; ++i)
-        {
-            if( array[0][i] != 0. ) tmp1 = array[0][i];
-            else tmp1 = array[1][i];
-
-            if( array[0][i+1] != 0. ) tmp2 = array[0][i+1];
-            else tmp2 = array[1][i+1];
-
-            if( tmp1 > tmp2 )
-            {
-                for(int j = 0; j < 2; ++j)
-                {
-                    temp = array[j][i];
-                    array[j][i] = array[j][i+1];
-                    array[j][i+1] = temp;
-                }
-            }
-        }
-    }
-
-    //    cout << "arr: ";
-    //    for(int i = 0; i < n[0] + n[1]; ++i)
-    //    {
-    //        if(array[0][i] != 0.) cout << array[0][i] << "\t";
-    //        else cout << array[1][i] << "\t";
-    //    }
-    //    cout << endl;
-
-    //count sums
-
-    sum0 = 0;
-    for(int i = 0; i < n[0] + n[1]; ++i)
-    {
-        if(array[0][i] != 0) sum0 += (i+1);
-    }
-
-    //if sum0 is bigger
-    //    cout << "arr " << sum0 << endl;
-
-
-
-    sumAll = (n[0]+n[1])*(n[0]+n[1]+1)/2;
-    if(sum0 > sumAll/2 )
-    {
-        U = double(n[0]*n[1] + n[0]*(n[0]+1)/2. - sum0);
-    }
-    else
-    {
-        U = double(n[1]*n[0] + n[1]*(n[1]+1)/2. - (sumAll - sum0));
-    }
-
-    //    cout << "arr " << U << endl;
-
-
-    delete []n;
-    matrixDelete(&array, 2);
-
-    if(fabs(U-average) / dispersion > quantile( (1.00 + (1. - p) ) / 2.) )
-    {
-        //        cout<<"differecout nt"<<endl;
-        return true;
-
-    }
-    else
-    {
-        //        cout<<"not different"<<endl;
-        return false;
-    }
 }
 
 
-bool MannWhitney(vec arr1,
-                 vec arr2,
-                 double p)
+int MannWhitney(vec arr1,
+                vec arr2,
+                double p)
 {
     vector <pair <double, int>> arr;
 
@@ -1378,16 +1274,41 @@ bool MannWhitney(vec arr1,
                    + arr2.size() * (arr2.size() + 1) /2. - (sumAll - sum0));
     }
 
-    //    cout << "vec " << U << endl;
+    const double beliefLimit = quantile( (1.00 + (1. - p) ) / 2.);
+    const double ourValue = (U - average) / dispersion;
 
-    if(fabs(U - average) / dispersion > quantile( (1.00 + (1. - p) ) / 2.) )
+    const double s1 = mean(arr1, arr1.size());
+    const double s2 = mean(arr2, arr2.size());
+
+    // old
+    if(fabs(ourValue) > beliefLimit)
     {
-        return true;
-
+        if(s1 > s2)
+        {
+            return 1;
+        }
+        else
+        {
+            return 2;
+        }
     }
     else
     {
-        return false;
+        return 0;
+    }
+
+    // new try DONT WORK??? to test
+    if(ourValue > beliefLimit)
+    {
+        return 1;
+    }
+    else if (ourValue < -beliefLimit)
+    {
+        return 2;
+    }
+    else
+    {
+        return 0;
     }
 }
 
@@ -1865,6 +1786,7 @@ void drawArray(double * array, int length, QString outPath)
 //void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC)
 
 void drawTemplate(const QString & outPath,
+                  const bool channelsFlag,
                   int width,
                   int height)
 {
@@ -1917,7 +1839,7 @@ void drawTemplate(const QString & outPath,
                                Y));
 
         //draw Herzes
-        paint.setFont(QFont("Helvitica", int(8 * scaleY)));
+        paint.setFont(QFont("Helvitica", int(10 * scaleY)));
         for(int k = 0; k < graphWidth; ++k) //for every Hz generality
         {
             if( abs((def::left + k * graphScale) * def::spStep
@@ -1930,6 +1852,9 @@ void drawTemplate(const QString & outPath,
                                        Y + 5 * scaleY));
 
                 helpString = QString::number(int((def::left + k * graphScale) * def::spStep + 0.5));
+
+                if(helpString.toInt() % 5 != 0) continue;
+
                 if(helpString.toInt() < 10)
                 {
                     paint.drawText(QPointF(X + k - 3 * scaleX,
@@ -1945,9 +1870,18 @@ void drawTemplate(const QString & outPath,
             }
         }
         paint.setFont(QFont("Helvetica", int(24 * scaleY), -1, false));
-        paint.drawText(QPointF(X - 20 * scaleX,
-                               Y - graphHeight - 4 * scaleY),
-                       QString(coords::lbl[c2]));
+        if(channelsFlag)
+        {
+            paint.drawText(QPointF(X - 20 * scaleX,
+                                   Y - graphHeight - 4 * scaleY),
+                           QString(coords::lbl[c2]));
+        }
+        else
+        {
+            paint.drawText(QPointF(X - 20 * scaleX,
+                                   Y - graphHeight - 4 * scaleY),
+                           QString::number(c2));
+        }
 
     }
     //write channels labels
@@ -2010,6 +1944,11 @@ void drawArray(const QString & templPath,
         norm = fmax(norm, inn);
     });
 
+#if 0
+    // for weights
+    norm /= 2;
+#endif
+
 
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
@@ -2027,14 +1966,35 @@ void drawArray(const QString & templPath,
         const double Y = paint.device()->height() * coords::y[c2];
         const double X = paint.device()->width() * coords::x[c2];
 
+#if 0
+        // for weigths
+        paint.setPen(QPen(QBrush("black"), 1))
+        paint.drawLine(QPointF(X,
+                               Y - graphHeight / 2),
+                QPointF(X + graphWidth,
+                        Y - graphHeight / 2));
+#endif
+
         //draw spectra
         for(int k = 0; k < graphWidth - 1; ++k)
         {
             paint.setPen(QPen(QBrush(QColor(color)), lineWidth));
+
+#if 1
+            // usual
             paint.drawLine(QPointF(X + k,
                                    Y - inData[c2 * def::spLength + k * graphScale] * norm),
                     QPointF(X + k + 1,
                             Y - inData[c2 * def::spLength + (k + 1) * graphScale] * norm));
+#else
+            // weights
+            paint.drawLine(QPointF(X + k,
+                                   Y - graphHeight / 2.
+                                   - inData[c2 * def::spLength + k * graphScale] * norm),
+                    QPointF(X + k + 1,
+                            Y - graphHeight / 2.
+                            - inData[c2 * def::spLength + (k + 1) * graphScale] * norm));
+#endif
 
         }
     }
@@ -2073,7 +2033,7 @@ void readFileInLine(const QString & filePath, vec & outData)
         file >> tmp;
         outData.push_back(tmp);
     }
-    outData.pop_back(); // prevent doubling last item (eof)
+    outData.pop_back(); ///// prevent doubling last item (eof) bicycle
     file.close();
 }
 
@@ -2108,7 +2068,8 @@ vec vectorFromMatrix(double ** inMat,int inNs, int spL)
 
 template <typename Typ>
 void drawArrays(const QString & templPath,
-                const Typ & inMatrix,
+                const Typ & inMatrix, // [] [] []
+                const bool weightsFlag,
                 const spectraGraphsNormalization normType,
                 const QStringList & colors,
                 const double scaling,
@@ -2147,6 +2108,7 @@ void drawArrays(const QString & templPath,
 
     // test size
     int shouldSize = numOfChan * def::spLength;
+
     std::for_each(inMatrix.begin(),
                   inMatrix.end(),
                   [shouldSize](vec inData)
@@ -2173,6 +2135,12 @@ void drawArrays(const QString & templPath,
         });
     });
 
+    if(weightsFlag)
+    {
+        // for weights
+        norm /= 2;
+    }
+
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
     const double graphScale = def::spLength / graphWidth;
@@ -2191,6 +2159,13 @@ void drawArrays(const QString & templPath,
         const double Y = paint.device()->height() * coords::y[c2];
         const double X = paint.device()->width() * coords::x[c2];
 
+        if(weightsFlag)
+        {
+            // for weigths
+            paint.setPen(QPen(QBrush("black"), 1));
+            paint.drawLine(QPointF(X, Y - graphHeight / 2),
+                           QPointF(X + graphWidth, Y - graphHeight / 2));
+        }
 
         norm = normBC;
         if(normType == spectraGraphsNormalization::each)
@@ -2227,10 +2202,27 @@ void drawArrays(const QString & templPath,
             for(int k = 0; k < graphWidth - 1; ++k)
             {
                 paint.setPen(QPen(QBrush(QColor(colors[numVec])), lineWidth));
-                paint.drawLine(QPointF(X + k,
-                                       Y - inData[c2 * def::spLength + k * graphScale] * norm),
-                        QPointF(X + k + 1,
-                                Y - inData[c2 * def::spLength + (k + 1) * graphScale] * norm));
+                if(weightsFlag)
+                {
+                    // weights
+                    paint.drawLine(QPointF(X + k,
+                                           Y - graphHeight / 2.
+                                           - inData[c2 * def::spLength + k * graphScale] * norm),
+                            QPointF(X + k + 1,
+                                    Y - graphHeight / 2.
+                                    - inData[c2 * def::spLength + (k + 1) * graphScale] * norm));
+
+                }
+                else
+                {
+                    // usual
+                    paint.drawLine(QPointF(X + k,
+                                           Y - inData[c2 * def::spLength + k * graphScale] * norm),
+                            QPointF(X + k + 1,
+                                    Y - inData[c2 * def::spLength + (k + 1) * graphScale] * norm));
+                }
+
+
 
             }
         }
@@ -2263,6 +2255,146 @@ void drawArrays(const QString & templPath,
     paint.end();
     pic.save(templPath, 0, 100);
 
+}
+
+
+void countMannWhitney(vector<vector<vector<int>>> & outMW,
+                      const QString & spectraPath,
+                      const QStringList & fileMarkers)
+{
+    const int numOfClasses = fileMarkers.length();
+
+    QString helpString;
+    const QDir dir_(spectraPath);
+    QStringList nameFilters, list, lst[numOfClasses]; //0 - Spatial, 1 - Verbal, 2 - Rest
+    matrix spectra[numOfClasses];
+
+    for(int i = 0; i < numOfClasses; ++i)
+    {
+        nameFilters.clear();
+        list.clear();
+        list = fileMarkers[i].split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(int j = 0; j < list.length(); ++j)
+        {
+            helpString = "*" + list[j] + "*";
+            nameFilters << helpString;
+        }
+        lst[i] = dir_.entryList(nameFilters, QDir::Files);
+
+        spectra[i].resize(lst[i].length());
+        for(int j = 0; j < lst[i].length(); ++j)
+        {
+            helpString = dir_.absolutePath() + slash() + lst[i][j];
+            readFileInLine(helpString, spectra[i][j]);
+        }
+        spectra[i].transpose();
+    }
+
+    const int NetLength = def::nsWOM() * def::spLength;
+
+
+//    cout << "MW start" << endl;
+    outMW.resize(numOfClasses);
+    for(int i = 0; i < numOfClasses; ++i)
+    {
+        outMW[i].resize(numOfClasses);
+        for(int j = i + 1; j < numOfClasses; ++j)
+        {
+            outMW[i][j - i].resize(NetLength);
+            for(int k = 0; k < NetLength; ++k)
+            {
+                outMW[i][j - i][k] = MannWhitney(spectra[i][k],
+                                                 spectra[j][k]);
+            }
+        }
+    }
+//    cout << "MW counted" << endl;
+}
+
+void drawMannWitney(const QString & templPath,
+                    const vector<vector<vector<int>>> & inMW,
+                    const QStringList & colors)
+{
+    QSvgGenerator svgGen;
+    QSvgRenderer svgRen;
+    QPixmap pic;
+    QPainter paint;
+
+    if(templPath.contains(".svg"))
+    {
+        cout << "will do nothing, look into library.h" << endl;
+        return;
+        //// TO FIX ///
+
+#if 0
+        svgRen = QSvgRenderer(templPath);
+        svgGen.setSize(QSize(width, height));
+        svgGen.setViewBox(QRect(QPoint(0,0), svgGen.size()));
+        svgGen.setFileName(outPath);
+        paint.begin(&svgGen);
+        paint.setBrush(QBrush("white"));
+        paint.drawRect(QRect(QPoint(0,0), svgGen.size()));
+#endif
+
+
+    }
+    else if(templPath.contains(".jpg") || templPath.contains(".png"))
+    {
+        pic.load(templPath);
+        paint.begin(&pic);
+    }
+
+    const double barWidth = 1/2.;
+    const int barHeight = 5; // pixels
+    const int barHeightStart = 18; // pixels
+    const int barHeightStep = 8; // pixels
+
+    const double graphWidth = paint.device()->width() * coords::scale;
+    const double ext = def::spLength / graphWidth;
+
+    for(int c2 = 0; c2 < def::nsWOM(); ++c2)  //exept markers channel
+    {
+        const double X = paint.device()->width() * coords::x[c2];
+        const double Y = paint.device()->height() * coords::y[c2];
+
+        //statistic difference bars
+        int barCounter = 0;
+        for(int h = 0; h < def::numOfClasses; ++h) // class1
+        {
+
+            for(int l = h + 1; l < def::numOfClasses; ++l) // class2
+            {
+                QColor color1 = QColor(colors[h]);
+                QColor color2 = QColor(colors[l]);
+
+
+                for(int j = c2 * def::spLength; j < (c2 + 1) * def::spLength; ++j)
+                {
+                    if(inMW[h][l - h][j] == 0) continue;
+
+                    if(inMW[h][l - h][j] == 1) // if class1 spectre is bigger
+                    {
+                        paint.setPen(color1);
+                        paint.setBrush(QBrush(color1));
+                    }
+                    else
+                    {
+                        paint.setPen(color2);
+                        paint.setBrush(QBrush(color2));
+                    }
+
+                    paint.drawRect(X + (j % def::spLength - barWidth) / ext,
+                                   Y + barHeightStart + barHeightStep * barCounter,
+                                   2 * barWidth / ext,
+                                   barHeight);
+                }
+                ++barCounter; // height shift of bars
+            }
+        }
+    }
+
+    paint.end();
+    pic.save(templPath, 0, 100);
 }
 
 void drawColorScale(QString filePath, int range, ColorScale type, bool full)
@@ -5265,29 +5397,36 @@ void countRCP(QString filePath, QString picPath, double * outMean, double * outS
     }
 }
 
-void makeCfgStatic(QString outFileDir,
-                   int NetLength,
-                   QString FileName,
-                   int numOfOuts,
-                   double lrate,
-                   double error,
-                   int temp)
+void makeCfgStatic(const QString & FileName,
+                   const int & NetLength,
+                   const QString & outFileDir,
+                   const int & numOfOuts,
+                   const double & lrate,
+                   const double & error,
+                   const int & temp)
 {
     QString helpString = QDir::toNativeSeparators(outFileDir
-                                                  + slash() + FileName + ".net");
-    FILE * cfgFile = fopen(helpString, "w");
-    if(cfgFile == NULL)
+                                                  + slash() + FileName);
+    if(!helpString.contains(".net"))
     {
-        cout << "static MakeCfg: cannot open file: " << helpString.toStdString() << endl;
+        helpString += ".net";
+
+    }
+    ofstream outStr;
+    outStr.open(helpString.toStdString());
+    if(!outStr.good())
+    {
+        cout << "static MakeCfg: cannot open file: " << helpString << endl;
         return;
     }
-    fprintf(cfgFile, "inputs    %d\n", NetLength);
-    fprintf(cfgFile, "outputs    %d\n", numOfOuts);
-    fprintf(cfgFile, "lrate    %.2lf\n", lrate);
-    fprintf(cfgFile, "ecrit    %.2lf\n", error);
-    fprintf(cfgFile, "temp    %d\n", temp);
-    fprintf(cfgFile, "srand    %d\n", int(time (NULL))%1234);
-    fclose(cfgFile);
+
+    outStr << "inputs\t" << NetLength << '\n';
+    outStr << "outputs\t" << numOfOuts << '\n';
+    outStr << "lrate\t" << lrate << '\n';
+    outStr << "ecrit\t" << error << '\n';
+    outStr << "temp\t" << temp << '\n';
+    outStr << "srand\t" << int(time (NULL))%12345 << '\n';
+    outStr.close();
 }
 
 /*
@@ -6441,12 +6580,14 @@ void drawShepard(const mat & distOld,
 
 template void drawArrays(const QString & templPath,
 const matrix & inMatrix,
+const bool weightsFlag,
 const spectraGraphsNormalization normType,
 const QStringList & colors,
 double scaling,
 int lineWidth);
 template void drawArrays(const QString & templPath,
 const mat & inMatrix,
+const bool weightsFlag,
 const spectraGraphsNormalization normType,
 const QStringList & colors,
 double scaling,

@@ -712,7 +712,7 @@ void MainWindow::diffPow()
 
 double MainWindow::fileInnerClassification(const QString & workPath,
                                            const QString & fileName,
-                                           const QString & cfgFileName,
+                                           const int & fftLen,
                                            const int & NumOfPairs,
                                            const bool & windows,
                                            const int & wndLen,
@@ -750,10 +750,9 @@ double MainWindow::fileInnerClassification(const QString & workPath,
     cleanDirs();
     sliceAll();
 
-    if(windows) countSpectraSimple(1024);
-    else if (cfgFileName.contains("16sec")) countSpectraSimple(4096);
-    else if (cfgFileName.contains("8sec")) countSpectraSimple(2048);
-    else countSpectraSimple(4096);
+    countSpectraSimple(fftLen);
+    makeCfgStatic("tmp");
+    const QString cfgFileName = def::dir->absolutePath() + slash() + "tmp.net";
 
     Net * ANN = new Net();
     ANN->readCfgByName(cfgFileName);
@@ -761,7 +760,7 @@ double MainWindow::fileInnerClassification(const QString & workPath,
     ANN->setNumOfPairs(NumOfPairs);
     ANN->autoClassificationSimple();
 
-#if 0
+#if 1
     ANN->PaIntoMatrixByName("all");
     ANN->LearnNet();
     helpString = workPath + slash() + fileName;
@@ -1683,6 +1682,7 @@ double MainWindow::filesAddComponentsInner(const QString &workPath,
                                            int wndLen,
                                            int tShift)
 {
+#if 0
     QString helpString;
 
     //check the percentage on all of 3 components
@@ -1728,7 +1728,7 @@ double MainWindow::filesAddComponentsInner(const QString &workPath,
 
     ofstream logF;
     logF.open(logPath.toStdString().c_str(), ios_base::app);
-    makeCfgStatic(workPath, 3 * 247, "Reduced");
+    makeCfgStatic("Reduced", 3 * 247); // shit
 
     helpString = tmpDir->absolutePath()
             + slash() + fileName;
@@ -1768,7 +1768,7 @@ double MainWindow::filesAddComponentsInner(const QString &workPath,
 
                 tempAccuracy = fileInnerClassification(workPath,
                                                        helpString,
-                                                       "Reduced",
+                                                       "Reduced", // shit
                                                        NumOfRepeats,
                                                        windows,
                                                        wndLen,
@@ -1963,6 +1963,7 @@ double MainWindow::filesAddComponentsInner(const QString &workPath,
     delete tmpDir;
     cout << initAccuracy << "->" << tempAccuracy << endl;
     return tempAccuracy;
+#endif
 }
 
 

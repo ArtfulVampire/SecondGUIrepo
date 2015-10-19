@@ -57,6 +57,7 @@ public:
     dataType::const_iterator end() const;
     vector<double> toVectorByRows() const;
     vector<double> toVectorByCols() const;
+    vector<double> getCol(int i) const;
     void pop_back();
     void push_back(const vector<double> &in);
 

@@ -270,7 +270,7 @@ MainWindow::MainWindow() :
     ui->rereferenceDataComboBox->addItem("N");
     ui->rereferenceDataComboBox->setCurrentText("Ar");
 
-    ui->matiPieceLengthSpinBox->setMaximum(32);
+    ui->matiPieceLengthSpinBox->setMaximum(64);
     ui->matiPieceLengthSpinBox->setMinimum(4);
     ui->matiPieceLengthSpinBox->setValue(16);
     ui->matiCheckBox->setChecked(def::matiFlag);
@@ -1746,26 +1746,130 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
+//    return;
+//    const QString outPath = "/media/Files/Data/Galya/Xenon2/Norm_TBI_windows";
+//    QDir tmpD("/media/Files/Data/Galya/Xenon2/Norm_TBI");
+//    auto leest = tmpD.entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+//    for(auto typ : leest)
+//    {
+//        tmpD.cd(typ);
+//        GalyaCut(tmpD.absolutePath(),
+//                 outPath);
+//        tmpD.cdUp();
+//    }
+//    exit(0);
+
+//return;
+#if 0
+
+    ui->reduceChannelsCheckBox->setChecked(true);
+    ui->reduceChannelsComboBox->setCurrentText("Mati");
+    ui->matiPieceLengthSpinBox->setValue(16);
+    ui->lowFreqFilterDoubleSpinBox->setValue(5.);
+    ui->highFreqFilterDoubleSpinBox->setValue(20.);
+    const QStringList names{"SIV", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "ADA"};
+
+    const QStringList fileEndingList{"_cl_f2-35_ica_ord.edf",
+                                     "_cl_f3-30_ica_ord.edf",
+                                     "_cl_f4-25_ica_ord.edf",
+                                     "_cl_f5-20_ica_ord.edf"};
+//    const QStringList fileEndingList{"_cl_f5-20_ica_ord.edf"};
+
+
+
+    double tempDouble = 0;
+    const QString logPath = def::dataFolder + slash() + "GoodData/class_ord.txt";
+    ofstream ofStr;
+
+    ui->cleanRealisationsCheckBox->setChecked(true);
+    ui->cleanRealsSpectraCheckBox->setChecked(true);
+    ui->cleanWindowsCheckBox->setChecked(false);
+    ui->cleanWindSpectraCheckBox->setChecked(false);
+
+    const QString workDir = def::dataFolder + slash() + "GoodData";
+
+    QString helpString;
+    QString helpString2;
+
+    ui->reduceChannelsComboBox->setCurrentText("20");
+
+    for(const QString & ending : fileEndingList)
+    {
+        for(const QString & guy : names)
+        {
+            helpString = workDir + slash() + guy + ending;
+
+            setEdfFile(helpString);
+
+            cleanDirs();
+            sliceAll();
+            countSpectraSimple(4096);
+
+            vector<vector<vector<int>>> MW;
+            countMannWhitney(MW);
+
+#if 0
+            // spectra
+            helpString = workDir + slash() + "Help"
+                         + slash() + "Ordered"
+                         + slash() + guy + ending;
+            helpString.replace(".edf", "_all_wm.jpg");
+            helpString2 = workDir + slash() + "Help"
+                          + slash() + "Ordered"
+                          + slash() + guy + ending;
+            helpString2.replace(".edf", "_all_wm_new.jpg");
+
+            QFile::remove(helpString2);
+            QFile::copy(helpString, helpString2);
+
+            drawMannWitney(helpString2,
+                           MW);
+#endif
+
+#if 1
+            // weights
+            helpString = workDir + slash() + "Help"
+                         + slash() + "weights"
+                         + slash() + guy + ending;
+            helpString.replace(".edf", "_wm.jpg");
+            helpString2 = workDir + slash() + "Help"
+                          + slash() + "weights"
+                          + slash() + guy + ending;
+            helpString2.replace(".edf", "_wm_new.jpg");
+
+            QFile::remove(helpString2);
+            QFile::copy(helpString, helpString2);
+
+            drawMannWitney(helpString2,
+                           MW);
+#endif
+        }
+    }
+
+    exit(0);
+#endif
+
+
 #if 0
     ui->reduceChannelsCheckBox->setChecked(true);
     ui->reduceChannelsComboBox->setCurrentText("Mati");
     ui->matiPieceLengthSpinBox->setValue(16);
     ui->lowFreqFilterDoubleSpinBox->setValue(5.);
     ui->highFreqFilterDoubleSpinBox->setValue(20.);
-    const QStringList names{"ADA", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "SIV"};
-    const QStringList fileEndingList{"_cl_f4-25_ica_ord.edf"};
-    // "_cl_f2-35_ica_ord.edf",
-    // "_cl_f3-30_ica_ord.edf",
-    // "_cl_f4-25_ica_ord.edf",
+    const QStringList names{"SIV", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "ADA"};
+
+//    const QStringList fileEndingList{"_cl_f2-35_ica_ord.edf",
+//                                     "_cl_f3-30_ica_ord.edf",
+//                                     "_cl_f4-25_ica_ord.edf",
+//                                     "_cl_f5-20_ica_ord.edf"};
+    const QStringList fileEndingList{"_cl_f5-20_ica_ord.edf"};
+
 
     ui->reduceChannelsComboBox->setCurrentText("20");
 
     double tempDouble = 0;
     const QString logPath = def::dataFolder + slash() + "GoodData/class_ord.txt";
     ofstream ofStr;
-
-
-
 
     ui->cleanRealisationsCheckBox->setChecked(true);
     ui->cleanRealsSpectraCheckBox->setChecked(true);
@@ -1779,42 +1883,89 @@ void MainWindow::customFunc()
     ui->reduceChannelsComboBox->setCurrentText("20");
 
 
+
     for(const int wndLen : {16}) // what with 4-len windows?
     {
         ui->matiPieceLengthSpinBox->setValue(wndLen);
-        const QString tmp = QString::number(wndLen) + "sec19ch";
         for(const QString & ending : fileEndingList)
         {
             for(const QString & guy : names)
+//            for(const QString & guy : {"FEV"})
             {
                 helpString = workDir + slash() + guy + ending;
 
                 setEdfFile(helpString);
-                cleanDirs();
-                sliceAll();
+
+
+//                cleanDirs();
+//                sliceAll();
+//                countSpectraSimple(fftL(wndLen * 250)); //continue;
+
+//                helpString = workDir + slash() + "Help"
+//                             + slash() + guy + ending;
+//                helpString.replace(".edf", "_all.jpg");
+
+//                QString wmPath = workDir + slash() + "Help"
+//                                 + slash() + "Ordered"
+//                                 + slash() + guy + ending;
+//                wmPath.replace(".edf", "_all_wm.jpg");
+
+//                drawMapsOnSpectra(helpString,
+//                                  wmPath,
+//                                  workDir + slash() + "Help" + slash() + "Maps");
+
+//                continue;
+
+
+//                countSpectraSimple(4096); continue;
+
+
+//                cleanDirs();
+//                sliceAll();
 
                 ofStr.open(logPath.toStdString(), ios_base::app);
 
                 tempDouble = fileInnerClassification(workDir,
                                                      guy + ending,
-                                                     tmp);
+                                                     fftL(wndLen * 250), 1);
 
+#if 0
+                // maps on spectra
+                helpString = workDir + slash() +  "Help"
+                             + slash() + guy + ending;
+                helpString.replace(".edf", "_all.jpg", Qt::CaseInsensitive);
+
+                QString newWtsPath = workDir
+                                     + slash() + "Help"
+                                     + slash() + "WM"
+                                     + slash() + guy + ending;
+                newWtsPath.replace(".edf", "_wm_1.jpg", Qt::CaseInsensitive);
+
+////                cout << newWtsPath << endl;
+
+                drawMapsOnSpectra(helpString,
+                                  newWtsPath,
+                                  workDir + slash() + "Help" + slash() + "Maps");
+#endif
+
+
+#if 0
+                // maps on weights
                 helpString = workDir + slash() + guy + ending;
                 helpString.replace(".edf", ".jpg", Qt::CaseInsensitive);
-
-//                cout << helpString << endl;
 
                 QString newWtsPath = workDir
                                      + slash() + "Help"
                                      + slash() + "weights"
                                      + slash() + guy + ending;
-                newWtsPath.replace(".edf", "_wm.jpg", Qt::CaseInsensitive);
+                newWtsPath.replace(".edf", "_wm_1.jpg", Qt::CaseInsensitive);
 
-//                cout << newWtsPath << endl;
+////                cout << newWtsPath << endl;
 
                 drawMapsOnSpectra(helpString,
                                   newWtsPath,
                                   workDir + slash() + "Help" + slash() + "Maps");
+#endif
 
 
 
@@ -1822,6 +1973,7 @@ void MainWindow::customFunc()
                       << guy + ending + " " + QString::number(wndLen) << endl;
 
                 ofStr.close();
+                break;
             }
         }
     }
@@ -2977,7 +3129,7 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 1
+#if 0
     // drop some channels, test classification
     QString helpString;
     const QString currFile = "ADA_cl_f5-20_ica_ord.edf";

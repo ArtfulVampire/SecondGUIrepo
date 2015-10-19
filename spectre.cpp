@@ -433,7 +433,7 @@ void Spectre::psaSlot()
     drawTemplate(helpString);
     drawArrays(helpString,
                drawData,
-               spectraGraphsNormalization::each);
+               spectraGraphsNormalization::all);
 
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()+1);
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()-1);
@@ -503,6 +503,8 @@ void Spectre::compare()
                                               + ".psa");
 //        cout << helpString << endl;
         writeFileInLine(helpString, meanVec);
+#if 0
+        // draw average for one type
 
 
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
@@ -513,6 +515,7 @@ void Spectre::compare()
 //        cout << helpString << endl;
         drawTemplate(helpString);
         drawArray(helpString, meanVec);
+#endif
     }
 
     if(ui->fftComboBox->currentIndex() != 0)
@@ -646,7 +649,7 @@ void Spectre::setFftLengthSlot()
     }
     if(ui->fftComboBox->currentIndex() == 3) //8192
     {
-        ui->smoothBox->setValue(6);
+        ui->smoothBox->setValue(15);
     }
 
     // [left right)
@@ -767,9 +770,6 @@ void Spectre::center()
 Spectre::~Spectre()
 {
     delete ui;
-//    delete dirBC;
-//    delete browser1;
-//    delete browser2;
 }
 
 void Spectre::setSmooth(int a)

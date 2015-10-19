@@ -212,8 +212,8 @@ void zeroData(Typ & inData, const int & leftLimit, const int & rightLimit);
 double independence(double * const signal1, double * const signal2, int length);
 double countAngle(double initX, double initY);
 
-bool MannWhitney(double * arr1, int len1, double * arr2, int len2, double p = 0.05);
-bool MannWhitney(vec arr1,
+int MannWhitney(double * arr1, int len1, double * arr2, int len2, double p = 0.05);
+int MannWhitney(vec arr1,
                  vec arr2,
                  double p = 0.05);
 
@@ -233,13 +233,13 @@ void svd(const mat &inData,
          vec &eigenValues,
          const double &threshold = 1e-9);
 
-void makeCfgStatic(QString outFileDir = def::dir->absolutePath(),
-                   int NetLength = def::nsWOM() * def::spLength,
-                   QString FileName = "16sec19ch",
-                   int numOfOuts = 3,
-                   double lrate = 0.1,
-                   double error = 0.1,
-                   int temp = 10);
+void makeCfgStatic(const QString & FileName = "16sec19ch",
+                   const int & NetLength = def::nsWOM() * def::spLength,
+                   const QString & outFileDir = def::dir->absolutePath(),
+                   const int & numOfOuts = 3,
+                   const double & lrate = 0.1,
+                   const double & error = 0.1,
+                   const int & temp = 10);
 
 template <typename Typ>
 void readPlainData(QString inPath,
@@ -280,6 +280,7 @@ QPixmap drawEeg( Typ dataD,
 
 enum spectraGraphsNormalization {all = 0, each = 1};
 void drawTemplate(const QString & outPath,
+                  const bool channelsFlag = true,
                   int width = 1600,
                   int height = 1600);
 
@@ -294,10 +295,20 @@ void drawArray(const QString & templPath,
 template <typename Typ>
 void drawArrays(const QString & templPath,
                 const Typ & inMatrix,
+                const bool weightsFlag = false,
                 const spectraGraphsNormalization normType = all,
                 const QStringList & colors = def::colours,
                 const double scaling = 1.,
-                const int lineWidth = 3);
+                const int lineWidth = 2);
+
+void countMannWhitney(vector<vector<vector<int> > > & outMW,
+                      const QString & spectraPath = def::dir->absolutePath()
+                                                    + slash() + "SpectraSmooth",
+                      const QStringList & fileMarkers = {"*_241", "*_247", "*_2?4"});
+
+void drawMannWitney(const QString & templPath,
+                    const vector<vector<vector<int>>> & inMW,
+                    const QStringList & colors = def::colours);
 
 
 void drawArray(double * array, int length, QString outPath);

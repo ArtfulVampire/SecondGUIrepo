@@ -76,13 +76,13 @@ Net::Net() :
     ui->epochSpinBox->setSingleStep(50);
     ui->epochSpinBox->setValue(300);
     ui->numOfPairsBox->setMaximum(100);
-
+    ui->numOfPairsBox->setMinimum(1);
     ui->numOfPairsBox->setValue(50); /////////////////////////////
 
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(0.05); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(7.0); // 1. for MATI? usually 5.     0.7 for best comp set
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);

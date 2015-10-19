@@ -159,7 +159,7 @@ public:
     // autos
     double fileInnerClassification(const QString & workPath,
                                    const QString & fileName,
-                                   const QString & cfgFileName = "16sec19ch",
+                                   const int & fftLen = pow(2, 12),
                                    const int & NumOfPairs = 50,
                                    const bool & windows = false,
                                    const int & wndLen = 1000,
