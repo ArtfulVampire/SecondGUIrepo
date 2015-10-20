@@ -387,13 +387,36 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QLabel" name="label_13">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>380</y>
-     <width>257</width>
-     <height>80</height>
+     <x>330</x>
+     <y>310</y>
+     <width>105</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>pow</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="powDoubleSpinBox">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>310</y>
+     <width>66</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>261</x>
+     <y>381</y>
+     <width>225</width>
+     <height>98</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -456,30 +479,14 @@
       </property>
      </widget>
     </item>
+    <item row="3" column="0" colspan="2">
+     <widget class="QCheckBox" name="MWcheckBox">
+      <property name="text">
+       <string>Mann-Whitney?</string>
+      </property>
+     </widget>
+    </item>
    </layout>
-  </widget>
-  <widget class="QLabel" name="label_13">
-   <property name="geometry">
-    <rect>
-     <x>330</x>
-     <y>310</y>
-     <width>105</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>pow</string>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="powDoubleSpinBox">
-   <property name="geometry">
-    <rect>
-     <x>270</x>
-     <y>310</y>
-     <width>66</width>
-     <height>24</height>
-    </rect>
-   </property>
   </widget>
  </widget>
  <resources/>

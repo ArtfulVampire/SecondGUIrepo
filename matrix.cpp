@@ -274,26 +274,23 @@ int matrix::rows() const
 double matrix::maxVal() const
 {
     double res = data[0][0];
-    for(auto it = data.begin(); it < data.end(); ++it)
+    std::for_each(this->data.begin(),
+                  this->data.end(),
+                  [&res](const vector<double> & in)
     {
-        for(auto itt = (*it).begin(); itt < (*it).end(); ++itt)
-        {
-            res = max(res, *itt);
-        }
-    }
+        res = fmax(res, *(std::max_element(in.begin(), in.end())));
+    });
     return res;
 }
 double matrix::minVal() const
 {
-
     double res = data[0][0];
-    for(auto it = data.begin(); it < data.end(); ++it)
+    std::for_each(this->data.begin(),
+                  this->data.end(),
+                  [&res](const vector<double> & in)
     {
-        for(auto itt = (*it).begin(); itt < (*it).end(); ++itt)
-        {
-            res = min(res, *itt);
-        }
-    }
+        res = fmin(res, *(std::min_element(in.begin(), in.end())));
+    });
     return res;
 }
 
@@ -344,6 +341,61 @@ vector<double> matrix::toVectorByCols() const
     }
     return res;
 }
+
+
+vector<double> matrix::averageRow() const
+{
+    vector<double> res(this->cols(), 0);
+    std::for_each(this->begin(),
+                  this->end(),
+                  [&res](const vector<double> & in)
+    {
+        std::transform(in.begin(),
+                       in.end(),
+                       res.begin(),
+                       res.begin(),
+                       [](const double & in1, const double & in2)
+        {
+            return in1 + in2;
+        });
+    });
+
+    std::for_each(res.begin(),
+                  res.end(),
+                  [this](double & in)
+    {
+        in /= this->rows();
+    });
+    return res;
+}
+
+vector<double> matrix::averageCol() const
+{
+
+    vector<double> res(this->rows(), 0);
+    for(int i = 0; i < this->cols(); ++i)
+    {
+        vector<double> col = this->getCol(i);
+        std::transform(col.begin(),
+                       col.end(),
+                       res.begin(),
+                       res.begin(),
+                       [](const double & in1, const double & in2)
+        {
+            return in1 + in2;
+        });
+
+    }
+    std::for_each(res.begin(),
+                  res.end(),
+                  [this](double & in)
+    {
+        in /= this->cols();
+    });
+
+    return res;
+}
+
 vector<double> matrix::getCol(int i) const
 {
     vector<double> res;

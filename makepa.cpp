@@ -112,408 +112,56 @@ void MakePa::mwTest()
 {
     ui->mwTestLine->clear();
 
-    QString helpString;
-    QDir * dir_ = new QDir();
-    dir_->cd(ui->spectraDirLineEdit->text());
-
-    QStringList nameFilters, list, lst[3]; //0 - Spatial, 1 - Verbal, 2 - Rest
-    FILE * currFile;
-
-    //make lists of files
-    //Spatial
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_1->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
-    {
-        helpString = "*" + list[i] + "*";
-        nameFilters << helpString;
-    }
-    lst[0] = dir_->entryList(nameFilters, QDir::Files);
-
-    //Verbal
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_2->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
-    {
-        helpString = "*" + list[i] + "*";
-        nameFilters << helpString;
-    }
-    lst[1] = dir_->entryList(nameFilters, QDir::Files);
-
-    //Rest
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_3->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
-    {
-        helpString = "*" + list[i] + "*";
-        nameFilters << helpString;
-    }
-    lst[2] = dir_->entryList(nameFilters, QDir::Files);
-
-    const int num = 3; // NumOfClasses
-
-    const int NetLength = def::nsWOM() * def::spLength;
-
-    int * n = new int[num];
-    for(int i = 0; i < num; ++i)
-    {
-        n[i] = lst[i].length();
-    }
-
-    double *** spectre = new double ** [num]; /// type
-    for(int i = 0; i < num; ++i)
-    {
-        spectre[i] = new double * [NetLength]; /// spectral point
-        for(int j = 0; j < NetLength; ++j)
-        {
-            spectre[i][j] = new double [ n[i] ]; /// realisation
-        }
-    }
-
-    //read the spectra into matrixes
-    for(int i = 0; i < num; ++i)
-    {
-        for(int j = 0; j < n[i]; ++j)
-        {
-            helpString = QDir::toNativeSeparators(dir_->absolutePath()
-                                                  + slash() + lst[i][j]);
-
-            currFile = fopen(helpString, "r");
-            for(int k = 0; k < NetLength; ++k)
-            {
-                fscanf(currFile, "%lf", &spectre[i][k][j]);
-            }
-            fclose(currFile);
-        }
-    }
-
-
-    int ** numOfDiff = new int * [num]; // class1
-    for(int i = 0; i < num; ++i)
-    {
-        numOfDiff[i] = new int [num - i - 1]; // class2
-    }
-
+    QStringList fileMarkers;
+    fileMarkers << ui->lineEdit_1->text();
+    fileMarkers << ui->lineEdit_2->text();
+    fileMarkers << ui->lineEdit_3->text();
+    const int num = fileMarkers.length();
+    matrix inSpectraAv;
+    matrix dists;
     vector<vector<vector<int>>> MW;
-    MW.resize(num);
-    for(int i = 0; i < num; ++i)
-    {
-        MW[i].resize(num);
-        for(int j = i + 1; j < num; ++j)
-        {
-            MW[i][j - i].resize(NetLength);
-        }
-    }
 
-    // for every spectra-bin
-    for(int i = 0; i < num; ++i)
-    {
-        for(int j = i + 1; j < num; ++j)
-        {
-            numOfDiff[i][j - i] = 0;
+    countMannWhitney(MW,
+                     ui->spectraDirLineEdit->text(),
+                     fileMarkers,
+                     &inSpectraAv,
+                     &dists);
 
-            for(int k = 0; k < NetLength; ++k)
-            {
-//                cout << i << "\t";
-//                cout << j << "\t";
-//                cout << k << endl;
 
-                MW[i][j - i][k] = MannWhitney(spectre[i][k],
-                                              n[i],
-                                              spectre[j][k],
-                                              n[j]);
 
-                if(MW[i][j - i][k])
-                {
-                    ++numOfDiff[i][j - i];
-                }
-            }
-        }
-    }
-
-    //automatization
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "results.txt");
-    FILE * res = fopen(helpString, "a+");
-    for(int i = 0; i < num; ++i)
-    {
-        for(int j = i + 1; j < num; ++j)
-        {
-            fprintf(res, "\ndist %d - %d\n", i, j);
-            fprintf(res, "U-test\t%d\n", numOfDiff[i][j - i]);
-            fprintf(res, "U-test part\t%lf\n", double(numOfDiff[i][j - i] / double(NetLength)));
-        }
-    }
-    fclose(res);
-
-#if 0
-    // new paint
-    matrix inSpectraAv(def::numOfClasses, def::nsWOM() * def::spLength, 0);
-
-    for(int i = 0; i < def::numOfClasses; ++i)
-    {
-        for(int j = 0; j < n[i]; ++j)
-        {
-            const double nrm = 1. / n[i];
-            for(int k = 0; k < inSpectraAv.cols(); ++k)
-            {
-                inSpectraAv[i][k] += spectre[i][k][j] * nrm;
-            }
-        }
-    }
-
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "Help"
-                                          + slash() + def::ExpName
-                                          + "_Mann-Whitney"
-                                          + ui->addNameLineEdit->text() + ".jpg");
+    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                                  + slash() + "Help"
+                                                  + slash() + def::ExpName
+                                                  + "_Mann-Whitney"
+                                                  + ui->addNameLineEdit->text() + ".jpg");
     drawTemplate(helpString);
     drawArrays(helpString,
                inSpectraAv);
     drawMannWitney(helpString,
                    MW);
-    return;
-#endif
 
-
-
-
-
-    //paint
-    double *** sp = new double ** [num];
-    for(int i = 0; i < num; ++i)
-    {
-        sp[i] = new double * [def::nsWOM()];
-        for(int j = 0; j < def::nsWOM(); ++j)
-        {
-            sp[i][j] = new double [def::spLength];
-        }
-    }
-
-
-
-    double norm = 1e10; // generality
-
-    //create sp - average spectra
-    for(int i = 0; i < def::nsWOM(); ++i)
-    {
-        for(int j = 0; j < def::spLength; ++j)
-        {
-            for(int h = 0; h < num; ++h)
-            {
-
-                sp[h][i][j] = 0.;
-                for(int k = 0; k < n[h]; ++k)
-                {
-                    sp[h][i][j] += spectre[h][i * def::spLength + j][k];
-                }
-                sp[h][i][j] /= n[h];
-
-                norm = fmin(norm, 1. / sp[h][i][j]);
-            }
-        }
-    }
-    norm *= ui->mwNormSpinBox->value();
-
-    QPixmap pic(1600,1600);
-    QPainter *paint = new QPainter;
-    pic.fill();
-    paint->begin(&pic);
-
-    const double barWidth = 1/2.;
-
-    const double graphHeight = paint->device()->height() * coords::scale;
-    const double graphWidth = paint->device()->width() * coords::scale;
-    const double ext = def::spLength / graphWidth;
-    const int lineWidth = 3;
-
-    QColor color1;
-    QColor color2;
-
-    norm *= graphHeight;
-
-    int helpInt;
-
-    for(int c2 = 0; c2 < def::nsWOM(); ++c2)  //exept markers channel
-    {
-        const double X = paint->device()->width() * coords::x[c2];
-        const double Y = paint->device()->height() * coords::y[c2];
-
-
-        //average spectra drawing
-        for(int h = 0; h < num; ++h)
-        {
-            if(h==0) paint->setPen(QPen(QBrush("blue"), lineWidth));
-            if(h==1) paint->setPen(QPen(QBrush("red"), lineWidth));
-            if(h==2) paint->setPen(QPen(QBrush("green"), lineWidth));
-
-            for(int k = 0; k < graphWidth - 1; ++k)
-            {
-
-                paint->drawLine(X + k,
-                                Y - sp[h][c2][int(k * ext)] * norm,
-                        X + k + 1,
-                        Y - sp[h][c2][int((k + 1) * ext)] * norm);
-            }
-        }
-
-        paint->setPen("black");
-        paint->setBrush(QBrush("black"));
-
-        //statistic difference bars
-        int barCounter = 0;
-        for(int h = 0; h < num; ++h)
-        {
-
-            for(int l = h + 1; l < num; ++l)
-            {
-                switch(h)
-                {
-                case 0: {color1 = QColor("blue"); break;}
-                case 1: {color1 = QColor("red"); break;}
-                case 2: {color1 = QColor("green"); break;}
-                default: {color1 = QColor("black"); break;}
-                }
-                switch(l)
-                {
-                case 1: {color2 = QColor("red"); break;}
-                case 2: {color2 = QColor("green"); break;}
-                default: {color2 = QColor("black"); break;}
-                }
-
-                for(int j = c2 * def::spLength; j < (c2 + 1) * def::spLength; ++j)
-                {
-                    if(!MW[h][l - h][j]) continue;
-
-                    if (sp[h][c2][j%def::spLength] > sp[l][c2][j%def::spLength])
-                    {
-                        paint->setPen(color1);
-                        paint->setBrush(QBrush(color1));
-                    }
-                    else
-                    {
-                        paint->setPen(color2);
-                        paint->setBrush(QBrush(color2));
-                    }
-                    paint->drawRect(X + (j % def::spLength - barWidth) / ext,
-                                    Y + 15 + 7 * barCounter,
-                                    2 * barWidth / ext,
-                                    5);
-                }
-                ++barCounter;
-            }
-        }
-
-
-        paint->setPen("black");
-
-        paint->drawLine(X, Y,
-                        X, Y - graphHeight);
-
-        paint->drawLine(X, Y,
-                        X + graphWidth, Y);
-
-
-        paint->setFont(QFont("Helvitica", 8));
-        //Hz markers
-        for(int k = 0; k < graphWidth - 1; ++k) //for every Hz generality
-        {
-            /// REMAKE
-            if( abs((def::left + k * ext) * def::spStep
-                    - floor((def::left + k * ext) * def::spStep + 0.5))
-                    < ext * def::spStep / 2. )
-            {
-                paint->drawLine(X + k, Y,
-                                X + k, Y + 5);
-
-                helpInt = int((def::left + k * ext) * def::spStep + 0.5);
-                helpString.setNum(helpInt);
-                if(helpInt < 10)
-                {
-                    paint->drawText(X + k - 3,
-                                    Y + 15,
-                                    helpString);
-                }
-                else
-                {
-                    paint->drawText(X + k - 5,
-                                    Y + 15,
-                                    helpString);
-                }
-            }
-        }
-
-        paint->setFont(QFont("Helvetica", 24));
-        paint->drawText(X - 20,
-                        Y - graphHeight - 2,
-                        QString(coords::lbl[c2]));
-    }
-
-
-
-
-    //draw scale
-    paint->drawLine(QPointF(paint->device()->width() * coords::x[6],
-                    paint->device()->height() * coords::y[1]),
-            QPointF(paint->device()->width() * coords::x[6],
-            paint->device()->height() * coords::y[1] - graphHeight));
-
-
-    //returning norm = max magnitude
-    norm = graphHeight / norm;
-    norm = int(norm*10)/10.;
-    helpString = QString::number(norm);
-    helpString += tr(" mcV^2/Hz");
-    paint->drawText(QPointF(paint->device()->width() * coords::x[6] + 5,
-                    paint->device()->height() * coords::y[1] - graphHeight / 2.),
-            helpString);
-
-    //save
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "Help"
-                                          + slash() + def::ExpName
-                                          + "_Mann-Whitney"
-                                          + ui->addNameLineEdit->text() + ".jpg");
-//    cout << helpString << endl;
-    pic.save(helpString, 0, 100);
-    paint->end();
-
-    for(int h = 0; h < num; ++h)
+                                          + slash() + "results.txt");
+    ofstream outStr;
+    outStr.open(helpString.toStdString(), ios_base::app);
+    if(!outStr.good())
     {
-        for(int i = 0; i < def::nsWOM(); ++i)
+        cout << "can't open log file: " << helpString << endl;
+    }
+    else
+    {
+        for(int i = 0; i < num; ++i)
         {
-            delete []sp[h][i];
+            for(int j = i + 1; j < num; ++j)
+            {
+                outStr << "dist " << i << " - " << j << '\t' << dists[i][j - i] << '\n';
+            }
         }
-        delete []sp[h];
     }
-    delete []sp;
+    outStr.flush();
+    outStr.close();
 
-
-    for(int h = 0; h < num; ++h)
-    {
-        for(int i = 0; i < NetLength; ++i)
-        {
-            delete []spectre[h][i];
-        }
-        delete []spectre[h];
-    }
-
-    for(int i = 0; i < num; ++i)
-    {
-        delete []numOfDiff[i];
-    }
-    delete []numOfDiff;
-
-
-    delete dir_;
-    delete paint;
-
-    helpString = "MW test made";
-    ui->mwTestLine->setText(helpString);
-
+    ui->mwTestLine->setText("MW test made");
 
     QTimer::singleShot(600, ui->mwTestLine, SLOT(clear()));
 }

@@ -25,7 +25,8 @@ class MakePa : public QWidget
     Q_OBJECT
 
 public:
-    explicit MakePa(QString spectraPath, QVector<int> vect_ = QVector<int> ());
+    explicit MakePa(QString spectraPath = def::dir->absolutePath() + slash() + "SpectraSmooth",
+                    QVector<int> vect_ = QVector<int> ());
     ~MakePa();
     void setRdcCoeff(double);
     double getRdcCoeff();

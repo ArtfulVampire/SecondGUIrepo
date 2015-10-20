@@ -280,7 +280,7 @@ QPixmap drawEeg( Typ dataD,
 
 enum spectraGraphsNormalization {all = 0, each = 1};
 void drawTemplate(const QString & outPath,
-                  const bool channelsFlag = true,
+                  bool channelsFlag = true,
                   int width = 1600,
                   int height = 1600);
 
@@ -289,7 +289,7 @@ void drawArray(const QString & templPath,
 //               const spectraGraphsNormalization normType = 0, ////// TODO
                QString color = "black",
                double scaling = 1.,
-               int lineWidth = 2);
+               int lineWidth = 3);
 
 //inMatrix supposed to be def::spLength * 19 size
 template <typename Typ>
@@ -299,16 +299,18 @@ void drawArrays(const QString & templPath,
                 const spectraGraphsNormalization normType = all,
                 const QStringList & colors = def::colours,
                 const double scaling = 1.,
-                const int lineWidth = 2);
+                const int lineWidth = 3);
 
-void countMannWhitney(vector<vector<vector<int> > > & outMW,
+void countMannWhitney(vector<vector<vector<int>>> & outMW,
                       const QString & spectraPath = def::dir->absolutePath()
                                                     + slash() + "SpectraSmooth",
-                      const QStringList & fileMarkers = {"*_241", "*_247", "*_2?4"});
+                      const QStringList & fileMarkers = {"_241", "_247", "_244 _254"},
+                      matrix * averageSpectraOut = nullptr,
+                      matrix * distancesOut = nullptr);
 
 void drawMannWitney(const QString & templPath,
                     const vector<vector<vector<int>>> & inMW,
-                    const QStringList & colors = def::colours);
+                    const QStringList & inColors = def::colours);
 
 
 void drawArray(double * array, int length, QString outPath);

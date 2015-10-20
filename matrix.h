@@ -58,6 +58,8 @@ public:
     vector<double> toVectorByRows() const;
     vector<double> toVectorByCols() const;
     vector<double> getCol(int i) const;
+    vector<double> averageRow() const;
+    vector<double> averageCol() const;
     void pop_back();
     void push_back(const vector<double> &in);
 

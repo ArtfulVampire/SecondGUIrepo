@@ -1786,7 +1786,7 @@ void drawArray(double * array, int length, QString outPath)
 //void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC)
 
 void drawTemplate(const QString & outPath,
-                  const bool channelsFlag,
+                  bool channelsFlag,
                   int width,
                   int height)
 {
@@ -1795,6 +1795,10 @@ void drawTemplate(const QString & outPath,
     QPainter paint;
     QString helpString;
     int numOfChan = 19;
+    if(outPath.contains("_ica"))
+    {
+        channelsFlag = false; // numbers for ICAs
+    }
 
     if(outPath.contains(".svg"))
     {
@@ -1872,16 +1876,16 @@ void drawTemplate(const QString & outPath,
         paint.setFont(QFont("Helvetica", int(24 * scaleY), -1, false));
         if(channelsFlag)
         {
-            paint.drawText(QPointF(X - 20 * scaleX,
-                                   Y - graphHeight - 4 * scaleY),
-                           QString(coords::lbl[c2]));
+            helpString = QString(coords::lbl[c2]);
         }
         else
         {
-            paint.drawText(QPointF(X - 20 * scaleX,
-                                   Y - graphHeight - 4 * scaleY),
-                           QString::number(c2));
+            helpString = QString::number(c2);
+
         }
+        paint.drawText(QPointF(X - 36 * scaleX,
+                               Y - graphHeight + 24 * scaleY),
+                       helpString);
 
     }
     //write channels labels
@@ -2260,26 +2264,33 @@ void drawArrays(const QString & templPath,
 
 void countMannWhitney(vector<vector<vector<int>>> & outMW,
                       const QString & spectraPath,
-                      const QStringList & fileMarkers)
+                      const QStringList & fileMarkers,
+                      matrix * averageSpectraOut,
+                      matrix * distancesOut)
 {
     const int numOfClasses = fileMarkers.length();
+    const int NetLength = def::nsWOM() * def::spLength;
 
     QString helpString;
     const QDir dir_(spectraPath);
-    QStringList nameFilters, list, lst[numOfClasses]; //0 - Spatial, 1 - Verbal, 2 - Rest
+    QStringList lst[numOfClasses]; //0 - Spatial, 1 - Verbal, 2 - Rest
     matrix spectra[numOfClasses];
+
+    matrix averageSpectra(numOfClasses, NetLength, 0);
+    matrix distances(numOfClasses, numOfClasses, 0);
 
     for(int i = 0; i < numOfClasses; ++i)
     {
-        nameFilters.clear();
-        list.clear();
-        list = fileMarkers[i].split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-        for(int j = 0; j < list.length(); ++j)
+        QStringList nameFilters;
+        QStringList leest;
+        leest = fileMarkers[i].split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(int j = 0; j < leest.length(); ++j)
         {
-            helpString = "*" + list[j] + "*";
+            helpString = "*" + leest[j] + "*";
             nameFilters << helpString;
         }
         lst[i] = dir_.entryList(nameFilters, QDir::Files);
+
 
         spectra[i].resize(lst[i].length());
         for(int j = 0; j < lst[i].length(); ++j)
@@ -2287,13 +2298,13 @@ void countMannWhitney(vector<vector<vector<int>>> & outMW,
             helpString = dir_.absolutePath() + slash() + lst[i][j];
             readFileInLine(helpString, spectra[i][j]);
         }
+        averageSpectra[i] = spectra[i].averageRow();
+
         spectra[i].transpose();
     }
 
-    const int NetLength = def::nsWOM() * def::spLength;
 
 
-//    cout << "MW start" << endl;
     outMW.resize(numOfClasses);
     for(int i = 0; i < numOfClasses; ++i)
     {
@@ -2301,19 +2312,33 @@ void countMannWhitney(vector<vector<vector<int>>> & outMW,
         for(int j = i + 1; j < numOfClasses; ++j)
         {
             outMW[i][j - i].resize(NetLength);
+            int dist1 = 0;
             for(int k = 0; k < NetLength; ++k)
             {
                 outMW[i][j - i][k] = MannWhitney(spectra[i][k],
                                                  spectra[j][k]);
+                if(outMW[i][j - i][k] != 0)
+                {
+                    ++dist1;
+                }
             }
+            distances[i][j - i] = dist1 / double(NetLength);
         }
     }
-//    cout << "MW counted" << endl;
+
+    if(averageSpectraOut != nullptr)
+    {
+        (*averageSpectraOut) = std::move(averageSpectra);
+    }
+    if(distancesOut != nullptr)
+    {
+        (*distancesOut) = std::move(distances);
+    }
 }
 
 void drawMannWitney(const QString & templPath,
                     const vector<vector<vector<int>>> & inMW,
-                    const QStringList & colors)
+                    const QStringList & inColors)
 {
     QSvgGenerator svgGen;
     QSvgRenderer svgRen;
@@ -2364,9 +2389,8 @@ void drawMannWitney(const QString & templPath,
 
             for(int l = h + 1; l < def::numOfClasses; ++l) // class2
             {
-                QColor color1 = QColor(colors[h]);
-                QColor color2 = QColor(colors[l]);
-
+                QColor color1 = QColor(inColors[h]);
+                QColor color2 = QColor(inColors[l]);
 
                 for(int j = c2 * def::spLength; j < (c2 + 1) * def::spLength; ++j)
                 {

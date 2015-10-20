@@ -69,6 +69,8 @@ Spectre::Spectre() :
     ui->powDoubleSpinBox->setValue(1.0);
     ui->powDoubleSpinBox->setMaximum(2.0);
 
+    ui->MWcheckBox->setChecked(true);
+
 
 
     rangeLimits = new int * [def::ns];
@@ -435,6 +437,14 @@ void Spectre::psaSlot()
                drawData,
                spectraGraphsNormalization::all);
 
+    if(ui->MWcheckBox->isChecked())
+    {
+        vector<vector<vector<int>>> MW;
+        countMannWhitney(MW);
+        drawMannWitney(helpString,
+                       MW);
+    }
+
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()+1);
     ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()-1);
 
@@ -478,7 +488,7 @@ void Spectre::compare()
                        meanVec.end(),
                        tempVec.begin(),
                        meanVec.begin(),
-                       [](double in1, double in2)
+                       [](const double & in1, const double & in2)
         {
             return in1 + in2;
         });
@@ -501,7 +511,6 @@ void Spectre::compare()
                                               + slash()
                                               + ui->lineEdit_m2->text()
                                               + ".psa");
-//        cout << helpString << endl;
         writeFileInLine(helpString, meanVec);
 #if 0
         // draw average for one type

@@ -1746,7 +1746,11 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-//    return;
+    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+    MakePa * mkpa = new MakePa();
+    mkpa->mwTest();
+    exit(0);
+    return;
 //    const QString outPath = "/media/Files/Data/Galya/Xenon2/Norm_TBI_windows";
 //    QDir tmpD("/media/Files/Data/Galya/Xenon2/Norm_TBI");
 //    auto leest = tmpD.entryList(QDir::Dirs|QDir::NoDotAndDotDot);
