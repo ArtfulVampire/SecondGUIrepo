@@ -435,6 +435,7 @@ void Spectre::psaSlot()
     drawTemplate(helpString);
     drawArrays(helpString,
                drawData,
+               false,
                spectraGraphsNormalization::all);
 
     if(ui->MWcheckBox->isChecked())
@@ -445,8 +446,11 @@ void Spectre::psaSlot()
                        MW);
     }
 
-    ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()+1);
-    ui->fftComboBox->setCurrentIndex(ui->fftComboBox->currentIndex()-1);
+    const int tmp = ui->fftComboBox->currentIndex();
+    const int toC = (tmp == 0) ? 1 : 0;
+
+    ui->fftComboBox->setCurrentIndex(toC);
+    ui->fftComboBox->setCurrentIndex(tmp);
 
     def::dir->cd(backupDirPath);
 }

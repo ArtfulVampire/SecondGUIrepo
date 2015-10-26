@@ -1744,12 +1744,87 @@ void MainWindow::setNsSlot(int a)
     ui->setNsLine->clear();
 }
 
+
+
+
 void MainWindow::customFunc()
 {
-    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-    MakePa * mkpa = new MakePa();
-    mkpa->mwTest();
+
+    GalyaCut("/media/Files/Data/Galya/SevereInjury");
     exit(0);
+
+    QPixmap pic;
+    QDir tmp("/media/michael/Files/IHNA/Pew");
+    QStringList lii = tmp.entryList(QDir::Files);
+    for(QString picPath : lii)
+    {
+        pic = QPixmap(tmp.absolutePath() + slash() + picPath);
+        QPixmap cut = pic.copy(QRect(330, 350, 900, 900));
+        QString out = tmp.absolutePath() + slash() + picPath;
+        out.replace(".jpg", "_cut.jpg");
+        cut.save(out, 0, 100);
+    }
+
+    exit(0);
+#if 0
+    QList<int> chanList {0, 17,
+                         3, 14, 2, 12, 10,
+                         9, 6, 4, 7, 8,
+                         18, 13, 16, 15, 5,
+                         1, 11,
+                         19};
+//    chanList = {1, 2, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+    reorderIcaFile(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord.edf",
+                   chanList);
+    exit(1);
+#endif
+
+
+
+#if 1
+    setEdfFile(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20.edf");
+    cleanDirs();
+    sliceAll();
+    countSpectraSimple(4096);
+
+//    fileInnerClassification(def::dataFolder + slash() + "GoodData",
+//                            "SIV_cl_f5-20.edf",
+//                            4096, 1);
+
+//    exit(0);
+#endif
+
+#if 1
+    setEdfFile(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord_ro.edf");
+    cleanDirs();
+    sliceAll();
+    countSpectraSimple(4096);
+
+//    fileInnerClassification(def::dataFolder + slash() + "GoodData",
+//                            "SIV_cl_f5-20_ica_ord_ro.edf",
+//                            4096, 1);
+
+//    exit(0);
+#endif
+
+#if 0
+
+    setEdfFile(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord_ro.edf");
+    drawMapsICA(def::dataFolder  + slash() + "GoodData/Help/SIV_cl_f5-20_ica_ord_ro_maps.txt");
+    drawMapsOnSpectra(def::dataFolder  + slash() + "GoodData/Help/SIV_cl_f5-20_ica_ord_ro_all.jpg",
+                      def::dataFolder  + slash() + "GoodData/Help/SIV_cl_f5-20_ica_ord_ro_all_wm.jpg",
+                      def::dataFolder  + slash() + "GoodData/Help/Maps");
+    drawMapsOnSpectra(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord_ro_wts.jpg",
+                      def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord_ro_wts_wm.jpg",
+                      def::dataFolder  + slash() + "GoodData/Help/Maps");
+
+    exit(0);
+#endif
+
+//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+//    MakePa * mkpa = new MakePa();
+//    mkpa->mwTest();
+//    exit(0);
     return;
 //    const QString outPath = "/media/Files/Data/Galya/Xenon2/Norm_TBI_windows";
 //    QDir tmpD("/media/Files/Data/Galya/Xenon2/Norm_TBI");

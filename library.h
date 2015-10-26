@@ -1,6 +1,9 @@
 #ifndef LIBRARY_H
 #define LIBRARY_H
 
+
+#define trackTime(arg) trackTim(arg, #arg)
+
 #include <QObject>
 #include <QString>
 #include <QtGui>
@@ -50,6 +53,7 @@ typedef std::vector<double> vec;
 
 void writeWavFile(const vec & inData, const QString & outPath);
 
+
 //void QDoubleSpinBox::mySlot(double val)
 int len(QString s); // string length for EDF+ annotations
 QString rightNumber(const unsigned int input, int N); // prepend zeros
@@ -61,6 +65,12 @@ QString setFileName(const QString & initNameOrPath); //-> initName_i.ext
 QString getPicPath(const QString & dataPath, QDir *ExpNameDir, int ns);
 QString getFileName(const QString & filePath, bool withExtension = true);
 bool areEqualFiles(QString path1, QString path2);
+
+void trackTim(void (*runFunc)(void), char * funcNam);
+
+template <typename... Args>
+void trackTim(void (*runFunc)(Args...),
+              char * funcNam);
 
 QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
@@ -278,7 +288,7 @@ QPixmap drawEeg( Typ dataD,
 
 
 
-enum spectraGraphsNormalization {all = 0, each = 1};
+enum spectraGraphsNormalization {all, each};
 void drawTemplate(const QString & outPath,
                   bool channelsFlag = true,
                   int width = 1600,

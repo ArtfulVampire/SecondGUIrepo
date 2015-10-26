@@ -1,5 +1,40 @@
 #include "library.h"
 
+//template <typename Typ>
+//Typ trackTime(Typ (*runFunc)())
+//{
+//    QTime myTime;
+//    myTime.start();
+//    Typ res = runFunc;
+//    cout << stringify(runFunc) << ": time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
+//    return res;
+//}
+//template void trackTime(void (*)());
+
+
+void trackTim(void (*runFunc)(void), char * funcNam)
+{
+    QTime myTime;
+    myTime.start();
+    runFunc();
+    cout << funcNam << ": time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
+}
+
+template <typename... Args>
+void trackTim(void (*runFunc)(Args...),
+              char * funcNam)
+{
+    QTime myTime;
+    myTime.start();
+    runFunc;
+    cout << funcNam << ": time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
+}
+template void trackTim(void (*runFunc)(int), char * funcNam);
+template void trackTim(void (*runFunc)(double), char * funcNam);
+
+
+
+
 void writeByte(FILE * fil, int num)
 {
     char tempChar = num;
@@ -1836,7 +1871,7 @@ void drawTemplate(const QString & outPath,
         paint.drawLine(QPointF(X,
                                Y),
                        QPointF(X,
-                               Y - graphHeight));
+                               Y - graphHeight + 28)); // 28 for font
         paint.drawLine(QPointF(X,
                                Y),
                        QPointF(X + graphWidth,
@@ -1883,7 +1918,7 @@ void drawTemplate(const QString & outPath,
             helpString = QString::number(c2);
 
         }
-        paint.drawText(QPointF(X - 36 * scaleX,
+        paint.drawText(QPointF(X - 16 * scaleX,
                                Y - graphHeight + 24 * scaleY),
                        helpString);
 
@@ -2142,7 +2177,7 @@ void drawArrays(const QString & templPath,
     if(weightsFlag)
     {
         // for weights
-        norm /= 2;
+        norm *= 2;
     }
 
     const double graphHeight = paint.device()->height() * coords::scale;
@@ -2189,9 +2224,11 @@ void drawArrays(const QString & templPath,
             paint.setPen("black");
             paint.setFont(QFont("Helvetica", int(20 * scaleY)));
 
+                               #if 0
             paint.drawText(QPointF(X + graphWidth * 0.4,
                                    Y - graphHeight - 5 * scaleY),
                            QString::number(doubleRound(norm)));
+                               #endif
 
             // make drawNorm
             norm = graphHeight / norm ; //250 - pixels per graph, generality

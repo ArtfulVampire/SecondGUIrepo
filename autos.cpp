@@ -766,7 +766,7 @@ double MainWindow::fileInnerClassification(const QString & workPath,
     helpString = workPath + slash() + fileName;
     helpString.replace(".edf", ".wts", Qt::CaseInsensitive);
     QString tmp = helpString;
-    tmp.replace(".wts", ".jpg");
+    tmp.replace(".wts", "_wts.jpg");
     ANN->writeWts(helpString);
     ANN->drawWts(helpString,
                  tmp);

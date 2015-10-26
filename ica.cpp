@@ -870,6 +870,69 @@ void MainWindow::ICA() //fastICA
 }
 
 
+void MainWindow::reorderIcaFile(const QString & icaPath,
+                                QList<int> chanList,
+                                QString icaOutPath,
+                                QString mapsPath,
+                                QString mapsOutPath)
+{
+    QString fileName = getFileName(icaPath, false);
+    fileName.remove("_ica");
+
+    if(mapsPath.isEmpty())
+    {
+        mapsPath = icaPath;
+        mapsPath.resize(mapsPath.lastIndexOf(slash()));
+        mapsPath += slash() + "Help"
+                    + slash() + fileName + "_maps.txt";
+        cout << mapsPath << endl;
+    }
+
+    if(icaOutPath.isEmpty())
+    {
+        icaOutPath = icaPath;
+        icaOutPath.replace(".edf", "_ro.edf");
+        cout << icaOutPath << endl;
+    }
+
+    if(mapsOutPath.isEmpty())
+    {
+        mapsOutPath = icaPath;
+        mapsOutPath.resize(mapsOutPath.lastIndexOf(slash()));
+        mapsOutPath += slash() + "Help"
+                    + slash() +  getFileName(icaOutPath, false) + "_maps.txt";
+        cout << mapsOutPath << endl;
+    }
+
+    edfFile localEdf;
+    localEdf.setMatiFlag(def::matiFlag);
+    localEdf.setNtFlag(def::ntFlag);
+
+    localEdf.readEdfFile(icaPath);
+    const int localNs = localEdf.getNs();
+    if(!chanList.contains(localNs - 1))
+    {
+        chanList << localNs - 1;
+    }
+
+    matrix maps;
+    readICAMatrix(mapsPath, maps);
+    maps.transpose();
+
+    localEdf.reduceChannels(chanList);
+
+    matrix newMaps(chanList.length() - 1, 0);
+    for(int i = 0; i < chanList.length() - 1; ++i) // -1 for markers
+    {
+        newMaps[i] = maps[chanList[i]];
+    }
+    newMaps.transpose();
+
+
+    localEdf.writeEdfFile(icaOutPath);
+    writeICAMatrix(mapsOutPath, newMaps);
+
+}
 
 
 void MainWindow::ICsSequence(const QString & EDFica1,

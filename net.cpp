@@ -700,10 +700,12 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
     if(picPath.isEmpty())
     {
         picPath = wtsPath;
-        picPath.replace(".wts", ".jpg");
+        picPath.replace(".wts", ".jpg"); /// make default suffixes
     }
     drawTemplate(picPath);
-    drawArrays(picPath, drawWts);
+    drawArrays(picPath,
+               drawWts,
+               true);
 
     // func
     for(int i = 0; i < numOfLayers - 1; ++i)

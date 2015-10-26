@@ -10,13 +10,13 @@
 #include <QDir>
 #include <QDialogButtonBox>
 
+#include "library.h"
 #include "cut.h"
 #include "cfg.h"
 #include "net.h"
 #include "spectre.h"
 #include "makepa.h"
 #include "eyes.h"
-#include "library.h"
 #include "matrix.h"
 #include "edffile.h"
 
@@ -155,6 +155,11 @@ public:
                      const int mode = 1,
                      QString maps1Path = QString(),
                      QString maps2Path = QString());
+    void reorderIcaFile(const QString & icaPath,
+                        QList<int> chanList,
+                        QString icaOutPath = QString(),
+                        QString mapsPath = QString(),
+                        QString mapsOutPath = QString());
 
     // autos
     double fileInnerClassification(const QString & workPath,
