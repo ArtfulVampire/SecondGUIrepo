@@ -394,10 +394,14 @@ void QWidget::keyPressEvent(QKeyEvent *event)
 }
 
 
-void MainWindow::countSpectraSimple(int fftLen)
+void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
 {
     Spectre *sp = new Spectre();
     sp->setFftLength(fftLen);
+    if(inSmooth >= 0)
+    {
+        sp->setSmooth(inSmooth);
+    }
     sp->countSpectra();
     sp->compare();
     sp->compare();
@@ -1749,9 +1753,101 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
+#if 1
+    const QStringList names{"SIV", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "ADA"};
+    for(const QString & guy : names)
+    {
+        const QString fileName = guy + "_cl_f5-20_ica_ord.edf";
+        setEdfFile(def::dataFolder + slash() + "GoodData" + slash() + fileName);
 
-    GalyaCut("/media/Files/Data/Galya/SevereInjury");
+        cleanDirs();
+        sliceAll();
+        countSpectraSimple(4096);
+
+        continue;
+
+        // mapsPath
+        QString helpString;
+        helpString = fileName;
+        helpString.remove("_ica");
+        helpString.replace(".edf", "_maps.txt");
+        helpString = def::dataFolder
+                     + slash() + "GoodData"
+                     + slash() + "Help"
+                     + slash() + helpString;
+        drawMapsICA(helpString);
+
+
+        // inPath & outPath
+        // inSpectre
+        helpString = fileName;
+        helpString.replace(".edf", "_all.jpg");
+        helpString = def::dataFolder
+                     + slash() + "GoodData"
+                     + slash() + "Help"
+                     + slash() + helpString;
+        // outSpectre
+        QString helpString2;
+        helpString2 = fileName;
+        helpString2.replace(".edf", "_all_wm.jpg");
+        helpString2 = def::dataFolder
+                     + slash() + "GoodData"
+                     + slash() + "Help"
+                      + slash() + "WM"
+                     + slash() + helpString2;
+        drawMapsOnSpectra(helpString,
+                          helpString2,
+                          def::dataFolder
+                          + slash() + "GoodData"
+                          + slash() + "Help"
+                          + slash() + "Maps");
+        for(int i = 0; i < 19; ++i)
+        {
+            drawCutOneChannel(helpString2, i);
+        }
+
+//        exit(9);
+
+
+        // wts
+        helpString = fileName;
+        helpString.replace(".edf", "_wts.jpg");
+        helpString = def::dataFolder
+                     + slash() + "GoodData"
+                     + slash() + helpString;
+        // outwts
+        helpString2 = fileName;
+        helpString2.replace(".edf", "_wts_wm.jpg");
+        helpString2 = def::dataFolder
+                     + slash() + "GoodData"
+                     + slash() + "Help"
+                      + slash() + "WM"
+                     + slash() + helpString2;
+        drawMapsOnSpectra(helpString,
+                          helpString2,
+                          def::dataFolder
+                          + slash() + "GoodData"
+                          + slash() + "Help"
+                          + slash() + "Maps");
+        for(int i = 0; i < 19; ++i)
+        {
+            drawCutOneChannel(helpString2, i);
+        }
+
+
+//        cleanDirs();
+//        sliceAll();
+//        countSpectraSimple(4096);
+//        fileInnerClassification(def::dataFolder + slash() + "GoodData",
+//                                fileName,
+//                                4096, 1);
+    }
     exit(0);
+#endif
+
+
+#if 0
+    // cut central 9 channels
 
     QPixmap pic;
     QDir tmp("/media/michael/Files/IHNA/Pew");
@@ -1765,23 +1861,13 @@ void MainWindow::customFunc()
         cut.save(out, 0, 100);
     }
 
+
     exit(0);
-#if 0
-    QList<int> chanList {0, 17,
-                         3, 14, 2, 12, 10,
-                         9, 6, 4, 7, 8,
-                         18, 13, 16, 15, 5,
-                         1, 11,
-                         19};
-//    chanList = {1, 2, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
-    reorderIcaFile(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord.edf",
-                   chanList);
-    exit(1);
+
 #endif
 
 
-
-#if 1
+#if 0
     setEdfFile(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20.edf");
     cleanDirs();
     sliceAll();
@@ -1794,7 +1880,7 @@ void MainWindow::customFunc()
 //    exit(0);
 #endif
 
-#if 1
+#if 0
     setEdfFile(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord_ro.edf");
     cleanDirs();
     sliceAll();

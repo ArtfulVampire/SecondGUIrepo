@@ -12,25 +12,25 @@
 //template void trackTime(void (*)());
 
 
-void trackTim(void (*runFunc)(void), char * funcNam)
-{
-    QTime myTime;
-    myTime.start();
-    runFunc();
-    cout << funcNam << ": time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
-}
+//void trackTim(void (*runFunc)(void), char * funcNam)
+//{
+//    QTime myTime;
+//    myTime.start();
+//    runFunc();
+//    cout << funcNam << ": time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
+//}
 
-template <typename... Args>
-void trackTim(void (*runFunc)(Args...),
-              char * funcNam)
-{
-    QTime myTime;
-    myTime.start();
-    runFunc;
-    cout << funcNam << ": time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
-}
-template void trackTim(void (*runFunc)(int), char * funcNam);
-template void trackTim(void (*runFunc)(double), char * funcNam);
+//template <typename... Args>
+//void trackTim(void (*runFunc)(Args...),
+//              char * funcNam)
+//{
+//    QTime myTime;
+//    myTime.start();
+//    runFunc;
+//    cout << funcNam << ": time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
+//}
+//template void trackTim(void (*runFunc)(int), char * funcNam);
+//template void trackTim(void (*runFunc)(double), char * funcNam);
 
 
 
@@ -579,8 +579,8 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
     QRect earRect;
 
     const double offsetX = 0.7;
-    const int earSize = 14; //generality
-    const double shitCoeff = 1.10; //smth about width of map on spectra pic
+    const int earSize = 8; //generality
+    const double shitCoeff = 1.05; //smth about width of map on spectra pic
 
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
@@ -615,24 +615,27 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
         paint.setPen(QPen(QBrush("black"), 2));
 
         //draw the nose
-        paint.drawLine(X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2 - 8,
-                       Y - graphHeight,
+                       // left side
+        paint.drawLine(X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2 - 4,
+                       Y - graphHeight + 2,
                        X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2,
-                       Y - graphHeight - 13);
-
-        paint.drawLine(X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2 + 8,
-                       Y - graphHeight,
+                       Y - graphHeight - 6);
+                       // right side
+        paint.drawLine(X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2 + 4,
+                       Y - graphHeight + 2,
                        X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2,
-                       Y - graphHeight - 13);
+                       Y - graphHeight - 6);
 
-        earRect = QRect(X + offsetX * graphWidth - 0.75 * earSize,
+
+                       // left ear
+        earRect = QRect(X + offsetX * graphWidth - 0.5 * earSize,
                         Y - graphHeight + (shitCoeff - offsetX) * graphHeight/2 - earSize,
                         earSize, 2*earSize);
         paint.drawArc(earRect, 60*16, 240*16);
 
 
         earRect = QRect(X + offsetX * graphWidth
-                        + (shitCoeff - offsetX) * graphWidth - 0.25 * earSize,
+                        + (shitCoeff - offsetX) * graphWidth - 0.5 * earSize,
                         Y - graphHeight + (shitCoeff - offsetX) * graphHeight/2 - earSize,
                         earSize, 2*earSize);
         paint.drawArc(earRect, 240*16, 240*16);
@@ -1252,9 +1255,9 @@ int MannWhitney(double * arr1, int len1,
 }
 
 
-int MannWhitney(vec arr1,
-                vec arr2,
-                double p)
+int MannWhitney(const vec & arr1,
+                const vec & arr2,
+                const double p)
 {
     vector <pair <double, int>> arr;
 
@@ -1277,8 +1280,11 @@ int MannWhitney(vec arr1,
 
     int sum0 = 0;
     int sumAll;
-    const double average = arr1.size() * arr2.size() / 2.;
-    const double dispersion = sqrt(arr1.size() * arr2.size() * ( arr1.size() + arr2.size() ) / 12.);
+    const int N1 = arr1.size();
+    const int N2 = arr2.size();
+
+    const double average = N1 * N2 / 2.;
+    const double dispersion = sqrt(N1 * N2 * ( N1 + N2 ) / 12.);
 
     double U = 0.;
 
@@ -1294,31 +1300,33 @@ int MannWhitney(vec arr1,
 
     //    cout << "vec " << sum0 << endl;
 
-    sumAll = ( arr1.size() + arr2.size())
-             * (arr1.size() + arr2.size() + 1) / 2;
+    sumAll = ( N1 + N2 )
+             * (N1 + N2 + 1) / 2;
 
     if(sum0 > sumAll/2 )
     {
-        U = double(arr1.size() * arr2.size()
-                   + arr1.size() * (arr1.size() + 1) /2. - sum0);
+        U = double(N1 * N2
+                   + N1 * (N1 + 1) /2. - sum0);
     }
     else
     {
 
-        U = double(arr1.size() * arr2.size()
-                   + arr2.size() * (arr2.size() + 1) /2. - (sumAll - sum0));
+        U = double(N1 * N2
+                   + N2 * (N2 + 1) /2. - (sumAll - sum0));
     }
 
     const double beliefLimit = quantile( (1.00 + (1. - p) ) / 2.);
     const double ourValue = (U - average) / dispersion;
 
-    const double s1 = mean(arr1, arr1.size());
-    const double s2 = mean(arr2, arr2.size());
+//    const double s1 = mean(arr1, N1);
+//    const double s2 = mean(arr2, N2);
 
     // old
     if(fabs(ourValue) > beliefLimit)
     {
-        if(s1 > s2)
+//        if(s1 > s2)
+        // new
+        if(sum0 < sumAll / 2 )
         {
             return 1;
         }
@@ -1830,7 +1838,7 @@ void drawTemplate(const QString & outPath,
     QPainter paint;
     QString helpString;
     int numOfChan = 19;
-    if(outPath.contains("_ica"))
+    if(outPath.contains("_ica") || def::ExpName.contains("_ica"))
     {
         channelsFlag = false; // numbers for ICAs
     }
@@ -2297,6 +2305,28 @@ void drawArrays(const QString & templPath,
     pic.save(templPath, 0, 100);
 
 }
+
+
+
+///////////////////////// scales and shit
+///
+///
+void drawCutOneChannel(const QString & inSpectraPath,
+                       const int numChan)
+{
+    QString outPath = inSpectraPath;
+    outPath.replace(".", QString("_" + QString::number(numChan) + "."));
+
+    QPixmap pic = QPixmap(inSpectraPath);
+    QPixmap cut = pic.copy(QRect(coords::x[numChan] * pic.width() - 20,
+                                 coords::y[numChan] * pic.height() - 250 - 10,
+                                 250 + 38,
+                                 250 + 53));
+
+    cut.save(outPath, 0, 100);
+
+}
+
 
 
 void countMannWhitney(vector<vector<vector<int>>> & outMW,

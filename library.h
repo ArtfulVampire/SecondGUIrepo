@@ -223,9 +223,9 @@ double independence(double * const signal1, double * const signal2, int length);
 double countAngle(double initX, double initY);
 
 int MannWhitney(double * arr1, int len1, double * arr2, int len2, double p = 0.05);
-int MannWhitney(vec arr1,
-                 vec arr2,
-                 double p = 0.05);
+int MannWhitney(const vec & arr1,
+                 const vec & arr2,
+                 const double p = 0.05);
 
 void makePaFile(QString spectraDir, QStringList fileNames, double coeff, QString outFile);
 void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, double coeff, double *** outMatrix);
@@ -310,6 +310,9 @@ void drawArrays(const QString & templPath,
                 const QStringList & colors = def::colours,
                 const double scaling = 1.,
                 const int lineWidth = 3);
+
+void drawCutOneChannel(const QString & inSpectraPath,
+                       const int numChan);
 
 void countMannWhitney(vector<vector<vector<int>>> & outMW,
                       const QString & spectraPath = def::dir->absolutePath()

@@ -436,7 +436,7 @@ void Spectre::psaSlot()
     drawArrays(helpString,
                drawData,
                false,
-               spectraGraphsNormalization::all);
+               spectraGraphsNormalization::each);
 
     if(ui->MWcheckBox->isChecked())
     {

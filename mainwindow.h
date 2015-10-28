@@ -136,7 +136,7 @@ public:
     void makeChanList(QList<int> & chanList);
 
     void refilterData(double lowFreq, double highFreq, QString newPath);
-    void countSpectraSimple(int fftLen);
+    void countSpectraSimple(int fftLen, int inSmooth = -1);
     void visualisation();
     void kernelest(const QString &str);
 //    void writeEdf(QString inFilePath, double ** components, QString outFilePath, int numSlices, QList<int> chanList = QList<int>());
