@@ -1355,12 +1355,24 @@ int MannWhitney(const vec & arr1,
     }
 }
 
-int typeOfFileName(QString fileName)
+int typeOfFileName(const QString & fileName)
 {
-    if(fileName.contains("_241")) return 0;
-    else if(fileName.contains("_247")) return 1;
-    else if(fileName.contains("_254") || fileName.contains("_244")) return 2; /// FFFFFFUUUUUUUU
-    else return -1;
+    QStringList leest;
+    int res = 0;
+    for(const QString & marker : def::fileMarkers)
+    {
+        leest.clear();
+        leest = marker.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(const QString & filter : leest)
+        {
+            if(fileName.contains(filter))
+            {
+                return res;
+            }
+        }
+        ++res;
+    }
+    return -1;
 }
 
 
@@ -4052,6 +4064,7 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
 template <typename Typ>
 void writePlainData(QString outPath,
                     const Typ &data,
+//                    const matrix &data,
                     int ns,
                     int numOfSlices,
                     int start)
@@ -4070,12 +4083,14 @@ void writePlainData(QString outPath,
     outStr.flush();
     outStr.close();
 }
+
 template
 void writePlainData(QString outPath,
 const mat & data,
 int ns,
 int numOfSlices,
 int start);
+
 template
 void writePlainData(QString outPath,
 const matrix & data,

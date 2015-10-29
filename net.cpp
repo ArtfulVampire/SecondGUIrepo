@@ -2605,8 +2605,14 @@ void Net::LearnNet() //(double ** data, int * numOfClass, int NumOfVectors, int 
                 {
                     for(int k = 0; k < dimensionality[i+1]; ++k)
                     {
-                        if(ui->deltaRadioButton->isChecked())   weight[i][j][k] += learnRate * normCoeff[type] * output[i][j] * ((type == k) - output[i+1][k]); // numOfLayers = 2 and i == 0 in this case
-                        else                                    weight[i][j][k] -= learnRate * normCoeff[type] * deltaWeights[i+1][k] * output[i][j];
+                        if(ui->deltaRadioButton->isChecked())
+                        {
+                            weight[i][j][k] += learnRate * normCoeff[type] * output[i][j] * ((type == k) - output[i+1][k]); // numOfLayers = 2 and i == 0 in this case
+                        }
+                        else
+                        {
+                            weight[i][j][k] -= learnRate * normCoeff[type] * deltaWeights[i+1][k] * output[i][j];
+                        }
 
                     }
                 }

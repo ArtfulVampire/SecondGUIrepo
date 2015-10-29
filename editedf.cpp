@@ -376,7 +376,7 @@ void MainWindow::reduceChannelsSlot()
     QStringList lst;
     QString helpString;
 
-    int * num = new int [maxNs];
+    int * num = new int [MAXNS];
     FILE * file;
 
     mat dataR;
@@ -423,11 +423,6 @@ void MainWindow::reduceChannelsSlot()
         fclose(file);
     }
 
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        delete []dataR[i];
-//    }
-//    delete[]dataR;
     def::ns = list.length();
     delete []num;
     def::dir->cdUp();

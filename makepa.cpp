@@ -26,11 +26,6 @@ MakePa::MakePa(QString spectraPath, QVector<int> vect_) :
     ui->foldSpinBox->setSingleStep(1);
     ui->foldSpinBox->setValue(2);
 
-
-    ui->lineEdit_1->setText("_241");
-    ui->lineEdit_2->setText("_247");
-    ui->lineEdit_3->setText("_244 _254"); // MATI or NORMAL
-
     ui->rdcCoeffBox->setValue(4);
     ui->rdcCoeffBox->setDecimals(3);
     ui->rdcCoeffBox->setMinimum(1e-3);
@@ -47,7 +42,7 @@ MakePa::MakePa(QString spectraPath, QVector<int> vect_) :
 
     ui->numOfClassesSpinBox->setMaximum(5);
     ui->numOfClassesSpinBox->setMinimum(1);
-    ui->numOfClassesSpinBox->setValue(1);
+    ui->numOfClassesSpinBox->setValue(def::numOfClasses);
 
 
 
@@ -70,7 +65,7 @@ MakePa::MakePa(QString spectraPath, QVector<int> vect_) :
     QObject::connect(ui->vdvTestButton, SIGNAL(clicked()), this, SLOT(correlationDifference()));
     QObject::connect(group1, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(changeSpectraDir(QAbstractButton*)));
 
-    ui->numOfClassesSpinBox->setValue(3);
+    ui->numOfClassesSpinBox->setValue(def::numOfClasses);
     this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
@@ -112,18 +107,14 @@ void MakePa::mwTest()
 {
     ui->mwTestLine->clear();
 
-    QStringList fileMarkers;
-    fileMarkers << ui->lineEdit_1->text();
-    fileMarkers << ui->lineEdit_2->text();
-    fileMarkers << ui->lineEdit_3->text();
-    const int num = fileMarkers.length();
+    const int num = def::fileMarkers.length();
     matrix inSpectraAv;
     matrix dists;
     vector<vector<vector<int>>> MW;
 
     countMannWhitney(MW,
                      ui->spectraDirLineEdit->text(),
-                     fileMarkers,
+                     def::fileMarkers,
                      &inSpectraAv,
                      &dists);
 
@@ -492,51 +483,24 @@ void MakePa::kwTest()
     dir_->cd(ui->spectraDirLineEdit->text());          /////////which dir?
     helpString=dir_->absolutePath();
 
-    QStringList nameFilters, list, lst[3]; //0 - Spatial, 1 - Verbal, 2- Idle
     FILE * currFile;
 
-    //make lists of files
-    //Spatial
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_1->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
-    {
-        helpString.clear();
-        helpString.append("*");
-        helpString.append(list.at(i));
-        helpString.append("*");
-        nameFilters.append(helpString);
-    }
-    lst[0]=dir_->entryList(nameFilters, QDir::Files);
+    QStringList nameFilters, leest;
+    QStringList lst[3];//0 - Spatial, 1 - Verbal, 2 - Gaps
 
-    //Verbal
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_2->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
+    int k = 0;
+    for(const QString & fileMark : def::fileMarkers)
     {
-        helpString.clear();
-        helpString.append("*");
-        helpString.append(list.at(i));
-        helpString.append("*");
-        nameFilters.append(helpString);
+        nameFilters.clear();
+        leest.clear();
+        leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(int i = 0; i < leest.length(); ++i)
+        {
+            helpString = "*" + leest[i] + "*";
+            nameFilters << helpString;
+        }
+        lst[k++] = dir_->entryList(nameFilters, QDir::Files, QDir::Name);
     }
-    lst[1]=dir_->entryList(nameFilters, QDir::Files);
-
-    //Idle
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_3->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
-    {
-        helpString.clear();
-        helpString.append("*");
-        helpString.append(list.at(i));
-        helpString.append("*");
-        nameFilters.append(helpString);
-    }
-    lst[2]=dir_->entryList(nameFilters, QDir::Files);
 
 
     //n - number of files every type
@@ -882,41 +846,25 @@ void MakePa::makePaSlot()
     dir_->setSorting(QDir::Name);
 
     //generality
-    QStringList nameFilters, list;
-    QStringList * lst = new QStringList [3];//0 - Spatial, 1 - Verbal, 2 - Gaps
+    QStringList nameFilters, leest;
+    QStringList lst[def::fileMarkers.length()]; // usually 0 - Spatial, 1 - Verbal, 2 - Gaps
 
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_1->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
+    int k = 0;
+    for(const QString & fileMark : def::fileMarkers)
     {
-        helpString = "*" + list[i] + "*";
-        nameFilters << helpString;
+        nameFilters.clear();
+        leest.clear();
+        leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(int i = 0; i < leest.length(); ++i)
+        {
+            helpString = "*" + leest[i] + "*";
+            nameFilters << helpString;
+        }
+        lst[k++] = dir_->entryList(nameFilters, QDir::Files, QDir::Name);
     }
-    lst[0] = dir_->entryList(nameFilters, QDir::Files, QDir::Name);
 
-    nameFilters.clear();
 
-    list.clear();
-    list = ui->lineEdit_2->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
-    {
-        helpString = "*" + list[i] + "*";
-        nameFilters << helpString;
-    }
-    lst[1]=dir_->entryList(nameFilters, QDir::Files, QDir::Name);
-
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_3->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
-    {
-        helpString = "*" + list[i] + "*";
-        nameFilters << helpString;
-    }
-    lst[2] = dir_->entryList(nameFilters, QDir::Files, QDir::Name);
-
-    int * len = new int [3];
+    int len[3];
     for(int i = 0; i < 3; ++i)
     {
         len[i] = lst[i].length();
@@ -927,7 +875,6 @@ void MakePa::makePaSlot()
         }
     }
 
-
     int Length;
     Length = len[0];
     for(int i = 0; i < def::numOfClasses; ++i)
@@ -935,10 +882,12 @@ void MakePa::makePaSlot()
         Length = min(Length, len[i]);
     }
 
-    int ** arr = new int * [def::numOfClasses];
+    vector<vector<int>> arr;
+    arr.resize(def::numOfClasses);
     for(int i = 0; i < def::numOfClasses; ++i)
     {
-        arr[i] = new int [len[i]];
+        arr[i].resize(len[i]);
+
         for(int j = 0; j < len[i]; ++j)
         {
             arr[i][j] = j;
@@ -949,33 +898,23 @@ void MakePa::makePaSlot()
     if(def::nsWOM() == -1) return;
     if(def::spLength == -1) return;
 
-    double ** data4;
-    matrixCreate(&data4, def::ns, def::spLength);
     srand(time(NULL));
 
-    int a1,a2, tmp;
-
     //mix list
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
-        for(int i = 0; i < 15 * len[j]; ++i)
-        {
-            a1 = rand() % len[j];
-            a2 = rand() % len[j];
-            tmp = arr[j][a1];
-            arr[j][a1] = arr[j][a2];
-            arr[j][a2] = tmp;
-        }
+        std::shuffle(arr[i].begin(),
+                     arr[i].end(),
+                     std::default_random_engine(time(NULL)));
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    //make svm????
+
 
     QStringList listToWrite;
     listToWrite.clear();
     for(int j = 0; j < def::numOfClasses; ++j)
     {
-        for(int i = 0; i < (len[j]/fold) * (fold-1); ++i)
+        for(int i = 0; i < (len[j] / fold) * (fold - 1); ++i)
         {
             listToWrite << lst[j][arr[j][i]];
         }
@@ -985,10 +924,12 @@ void MakePa::makePaSlot()
                                           + slash() + "1.pa");
     makePaFile(dir_->absolutePath(), listToWrite, coeff, helpString);
 
+
+
     listToWrite.clear();
     for(int j = 0; j < def::numOfClasses; ++j)
     {
-        for(int i = (len[j]/fold) * (fold-1); i < (len[j]/fold) * fold; ++i)
+        for(int i = (len[j] / fold) * (fold - 1); i < (len[j] / fold) * fold; ++i)
         {
             listToWrite << lst[j][arr[j][i]];
         }
@@ -997,6 +938,8 @@ void MakePa::makePaSlot()
                                           + slash() + "PA"
                                           + slash() + "2.pa");
     makePaFile(dir_->absolutePath(), listToWrite, coeff, helpString);
+
+
 
     listToWrite.clear();
     for(int j = 0; j < def::numOfClasses; ++j)
@@ -1013,12 +956,7 @@ void MakePa::makePaSlot()
     makePaFile(dir_->absolutePath(), listToWrite, coeff, helpString);
 
 
-
-    matrixDelete(&data4, def::ns);
-    matrixDelete(&arr, def::numOfClasses);
-
     delete dir_;
-    delete []lst;
 
     helpString="PA-files have been made \n";
     this->ui->lineEdit->setText(helpString);
@@ -1043,63 +981,48 @@ void MakePa::dispersionAnalysis()
 
     QDir *dir_ = new QDir();
     dir_->cd(ui->spectraDirLineEdit->text());
-    QStringList nameFilters, list, lst[3];
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_1->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
-    {
-        helpString = "*" + list[i] + "*";
-        nameFilters << helpString;
-    }
-    lst[0]=dir_->entryList(nameFilters, QDir::Files, QDir::Name);
+    QStringList leest, lst[3];
+    QStringList nameFilters;
 
-    nameFilters.clear();
-
-    list.clear();
-    list = ui->lineEdit_2->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
+    int k = 0;
+    for(const QString & fileMark : def::fileMarkers)
     {
-        helpString = "*" + list[i] + "*";
-        nameFilters << helpString;
+        nameFilters.clear();
+        leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(int i = 0; i < leest.length(); ++i)
+        {
+            helpString = "*" + leest[i] + "*";
+            nameFilters << helpString;
+        }
+        lst[k++] = dir_->entryList(nameFilters, QDir::Files, QDir::Name);
     }
-    lst[1]=dir_->entryList(nameFilters, QDir::Files, QDir::Name);
-
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_3->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
-    {
-        helpString = "*" + list[i] + "*";
-        nameFilters << helpString;
-    }
-    lst[2]=dir_->entryList(nameFilters, QDir::Files, QDir::Name);
 
     //all.pa
-    list.clear();
+    leest.clear();
     nameFilters.clear();
 
 
-    helpString = ui->lineEdit_1->text()
-            + " " + ui->lineEdit_2->text()
-            + " " + ui->lineEdit_3->text();
-
-    list = helpString.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
+    helpString.clear();
+    for(const QString & fileMark : def::fileMarkers)
     {
-        helpString = "*" + list[i] + "*";
+        helpString += fileMark + " ";
+    }
+    leest = helpString.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+    for(int i = 0; i < leest.length(); ++i)
+    {
+        helpString = "*" + leest[i] + "*";
         nameFilters << helpString;
     }
 
     cout << lst[0].length() << "\t" << lst[1].length() << "\t" << lst[2].length() << endl;
 
-    list = dir_->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
-    list.clear();
-    list += lst[0];
-    list += lst[1];
-    list += lst[2];
+    leest = dir_->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
+    leest.clear();
+    leest += lst[0];
+    leest += lst[1];
+    leest += lst[2];
 
-    if(list.empty())
+    if(leest.empty())
     {
         cout << "no spectra-files found" << endl;
         return;
@@ -1121,8 +1044,8 @@ void MakePa::dispersionAnalysis()
         meanVar[i] = new double [def::nsWOM() * def::spLength + 1];
     }
 
-    double ** matrix = new double * [list.length()];
-    for(int i = 0; i < list.length(); ++i)
+    double ** matrix = new double * [leest.length()];
+    for(int i = 0; i < leest.length(); ++i)
     {
         matrix[i] = new double [def::nsWOM() * def::spLength];
     }
@@ -1334,60 +1257,44 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
     dir_->cd(ui->spectraDirLineEdit->text());          /////////which dir?
     QString helpString = dir_->absolutePath();
 
-    QStringList nameFilters, list, lst[2]; //0 - Spatial, 1 - Verbal
+    QStringList nameFilters, leest, lst[3]; //0 - Spatial, 1 - Verbal
     FILE * currFile;
 
-    //make lists of files
-    //Spatial
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_1->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
+    int k = 0;
+    for(const QString & fileMark : def::fileMarkers)
     {
-        helpString.clear();
-        helpString.append("*");
-        helpString.append(list.at(i));
-        helpString.append("*");
-        nameFilters.append(helpString);
+        nameFilters.clear();
+        leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(int i = 0; i < leest.length(); ++i)
+        {
+            helpString = "*" + leest[i] + "*";
+            nameFilters << helpString;
+        }
+        lst[k++] = dir_->entryList(nameFilters, QDir::Files, QDir::Name);
     }
-    lst[0]=dir_->entryList(nameFilters, QDir::Files);
-
-    //Verbal
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_2->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
-    {
-        helpString.clear();
-        helpString.append("*");
-        helpString.append(list.at(i));
-        helpString.append("*");
-        nameFilters.append(helpString);
-    }
-    lst[1]=dir_->entryList(nameFilters, QDir::Files);
 
 
-    int * n = new int[2];
-    n[0]=lst[0].length();
-    n[1]=lst[1].length();
+    int n[2];
+    n[0] = lst[0].length();
+    n[1] = lst[1].length();
 
     double *** spectre = new double ** [2];
-    for(int i=0; i<2; ++i)
+    for(int i = 0; i < 2; ++i)
     {
         spectre[i] = new double * [n[i]];
-        for(int j=0; j<n[i]; ++j)
+        for(int j = 0; j < n[i]; ++j)
         {
             spectre[i][j] = new double [def::nsWOM() * def::spLength];
         }
     }
 
     //read the spectra into matrixes
-    for(int j=0; j<2; ++j)
+    for(int j = 0; j < 2; ++j)
     {
         for(int i=0; i<n[j]; ++i)
         {
             helpString = dir_->absolutePath() + slash() + lst[j][i];
-            currFile = fopen(helpString.toStdString().c_str(), "r");
+            currFile = fopen(helpString, "r");
             for(int k = 0; k < def::nsWOM() * def::spLength; ++k)
             {
                 fscanf(currFile, "%lf", &spectre[j][i][k]);
@@ -1646,37 +1553,24 @@ void MakePa::correlationDifference()
     dir_->cd(ui->spectraDirLineEdit->text());          /////////which dir?
     QString helpString = dir_->absolutePath();
 
-    QStringList nameFilters, list, lst[2]; //0 - Spatial, 1 - Verbal
     FILE * currFile;
 
-    //make lists of files
-    //Spatial
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_1->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
-    {
-        helpString.clear();
-        helpString.append("*");
-        helpString.append(list.at(i));
-        helpString.append("*");
-        nameFilters.append(helpString);
-    }
-    lst[0]=dir_->entryList(nameFilters, QDir::Files);
+    QStringList nameFilters, leest;
+    QStringList lst[3];//0 - Spatial, 1 - Verbal, 2 - Gaps
 
-    //Verbal
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_2->text().split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-    for(int i=0; i<list.length(); ++i)
+    int k = 0;
+    for(const QString & fileMark : def::fileMarkers)
     {
-        helpString.clear();
-        helpString.append("*");
-        helpString.append(list.at(i));
-        helpString.append("*");
-        nameFilters.append(helpString);
+        nameFilters.clear();
+        leest.clear();
+        leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(int i = 0; i < leest.length(); ++i)
+        {
+            helpString = "*" + leest[i] + "*";
+            nameFilters << helpString;
+        }
+        lst[k++] = dir_->entryList(nameFilters, QDir::Files, QDir::Name);
     }
-    lst[1]=dir_->entryList(nameFilters, QDir::Files);
 
 
     int * n = new int[2];

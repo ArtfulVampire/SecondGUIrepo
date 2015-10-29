@@ -85,8 +85,9 @@ ostream & operator << (ostream &os, vector<T> toOut); // template!
 //vector< vector<double> > operator=(const vector< vector<double> > & other);
 char * strToChar(const QString & input);
 FILE *fopen(QString filePath, const char *__modes);
-char * QStrToCharArr(const QString & input, const int &len = -1);
-int typeOfFileName(QString fileName);
+char * QStrToCharArr(const QString & input, const int & len = -1);
+
+int typeOfFileName(const QString & fileName);
 
 vec vectorFromMatrix(double ** inMat,
                      int inNs = def::nsWOM(),
@@ -264,6 +265,12 @@ void writePlainData(QString outPath,
                     int ns,
                     int numOfSlices,
                     int start = 0);
+
+//void writePlainData(QString outPath,
+//                    const matrix &data,
+//                    int ns,
+//                    int numOfSlices,
+//                    int start = 0);
 
 template <typename Typ>
 QPixmap drawEeg(Typ dataD,

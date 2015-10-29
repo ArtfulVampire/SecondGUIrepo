@@ -13,57 +13,41 @@ void MainWindow::sliceGalya()
 void MainWindow::sliceWindFromReal()
 {
 
-    QStringList lst;
-    QStringList nameFilters;
-    QString helpString;
-    int eyesCounter;
     QTime myTime;
     myTime.start();
-    FILE *real;
-    FILE *out;
+
+
+    QString helpString;
+    int eyesCounter;
+
     def::dir->cd("Realisations");
-    lst.clear();
-    nameFilters.clear();
-    nameFilters << "*_241*";
-    nameFilters << "*_247*";
-    nameFilters << "*_244*";
-    nameFilters << "*_254*";
-    lst = def::dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
+    QStringList nameFilters {"*_2??"};
+    QStringList lst = def::dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
     def::dir->cdUp();
 
 
-    int timeShift=ui->timeShiftSpinBox->value();
+    const int timeShift = ui->timeShiftSpinBox->value();
     int wndLength = ui->windowLengthSpinBox->value();
 
-//    cout << "timeShift = " << timeShift << endl;
-//    cout << "wndLength = " << wndLength << endl;
-
-    mat dataReal;
-    /*
-    double ** dataReal = new double *[ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        dataReal[i] = new double [250*60*1]; //generality 1 min
-    }
-    */
+    matrix dataReal;
 
     int eyes;
     int offset;
     int NumOfSlices;
+
     for(int i = 0; i < lst.length(); ++i)
     {
-        offset = 0;
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "Realisations"
                                               + slash() + lst[i]);
         readPlainData(helpString, dataReal, def::ns, NumOfSlices);
 
-        for(int h = 0; h < ceil((NumOfSlices - wndLength)/double(timeShift)); ++h)
+        offset = 0;
+        for(int h = 0; h < ceil(NumOfSlices / double(timeShift)); ++h)
         {
-
             //correct eyes number
             eyes = 0;
-            for(int l = offset; l < (offset + wndLength); ++l)
+            for(int l = offset; l < min(offset + wndLength, NumOfSlices); ++l)
             {
                 eyesCounter = 0.;
                 for(int m = 0; m < def::ns; ++m)
@@ -76,69 +60,34 @@ void MainWindow::sliceWindFromReal()
 
             if(eyes / double(wndLength) > 0.3)  //generality coefficient
             {
-                fclose(out);
-
-                if(remove(helpString.toStdString().c_str()) != 0)
-                {
-                    perror("cannot delete file");
-                }
-
                 continue;
             }
+
             //else
-
-
             helpString = def::dir->absolutePath()
-                    + slash() + "windows"
-                    + slash() + "fromreal"
-                    + slash() + def::ExpName
-                    + "_";
-            if(helpString.contains("241"))
-            {
-                helpString += "241";
-            }
-            if(helpString.contains("247"))
-            {
-                helpString += "247";
-            }
-            if(helpString.contains("254"))
-            {
-                helpString += "254";
-            }
-            helpString += QString::number(i)+ "." + rightNumber(h, 2);
+                         + slash() + "windows"
+                         + slash() + "fromreal"
+                         + slash() + lst[i]
+                         + "." + rightNumber(h, 2);
             helpString = QDir::toNativeSeparators(helpString);
 
             writePlainData(helpString, dataReal, def::ns, wndLength, offset);
             offset += timeShift;
         }
+
+
+
         ui->progressBar->setValue(i * 100. / lst.length());
     }
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        delete []dataReal[i];
-//    }
-//    delete []dataReal;
 
     ui->progressBar->setValue(0);
-
-    helpString="windows from realisations sliced ";
+    helpString = "windows from realisations sliced ";
     ui->textEdit->append(helpString);
 
-    helpString="ns equals to ";
-    helpString.append(QString::number(def::ns));
+    helpString = "ns equals to " + QString::number(def::ns);
     ui->textEdit->append(helpString);
 
-    cout << "WindFromReals: time = " << myTime.elapsed()/1000. << " sec" << endl;
-
-    helpString.setNum(myTime.elapsed()/1000.);
-    helpString.prepend("Data sliced \nTime = ");
-    helpString.append(" sec");
-    //automatization
-    if(autoProcessingFlag == false)
-    {
-        QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
-    }
-
+    cout << "sliceWindFromReal: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::sliceIlya(const QString &fileName, QString marker) //beginning - from mark1 to mark 2, end - from 251 to 255. Marker - included in filename

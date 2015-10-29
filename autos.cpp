@@ -12,11 +12,29 @@ bool mySort(vector<double> i,
 template <class InputIterator, class T>
 bool contains (InputIterator first, InputIterator last, const T & val)
 {
-  while (first!=last) {
-    if (*first==val) return true;
+  while (first != last) {
+    if (*first == val) return true;
     ++first;
   }
   return false;
+}
+
+void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
+{
+    Spectre *sp = new Spectre();
+    sp->setFftLength(fftLen);
+    if(inSmooth >= 0)
+    {
+        sp->setSmooth(inSmooth);
+    }
+    sp->countSpectra();
+    sp->compare();
+    sp->compare();
+    sp->compare();
+    sp->compare();
+    sp->psaSlot();
+    sp->close();
+    delete sp;
 }
 
 void MainWindow::clustering()

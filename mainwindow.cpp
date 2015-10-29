@@ -8,7 +8,6 @@ MainWindow::MainWindow() :
     setWindowTitle("Main");
     setlocale(LC_NUMERIC, "C");
 
-
     autoProcessingFlag = false;
     redirectCoutFlag = false; // move to namespace def
     coutBuf = cout.rdbuf();
@@ -29,13 +28,21 @@ MainWindow::MainWindow() :
     NumOfEdf = 0; //for EDF cut
 
     // must reamake with std::string or QString
-    label = new char* [maxNs];     //memory for channels' labels
-    for(int i = 0; i < maxNs; ++i)
+    label = new char* [MAXNS];     //memory for channels' labels
+    for(int i = 0; i < MAXNS; ++i)
     {
         label[i] = new char [17];
     }
-    nr = new int [maxNs];
+    nr = new int [MAXNS];
 
+
+
+
+
+
+
+
+    QString helpString;
 
     // what with deletion?
     QButtonGroup * group1, *group2, *group3, *group4;
@@ -81,6 +88,15 @@ MainWindow::MainWindow() :
     ui->drawDirBox->addItem("windows");
     ui->drawDirBox->addItem("windows/fromreal"); //generality
 
+    helpString.clear();
+    for(const QString & fileMark : def::fileMarkers)
+    {
+        helpString += fileMark + "; ";
+    }
+//    helpString.resize(helpString.size() - 2); // remove the last "; "
+
+    ui->fileMarkersLineEdit->setText(helpString);
+
     int helpInt = 0;
     QVariant var;
     /*
@@ -101,7 +117,6 @@ MainWindow::MainWindow() :
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 */
 
-    QString helpString;
     //0
     ui->reduceChannelsComboBox->addItem("MichaelBak");
     var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 23 24 31");
@@ -206,11 +221,12 @@ MainWindow::MainWindow() :
 
     ui->timeShiftSpinBox->setMinimum(25);
     ui->timeShiftSpinBox->setMaximum(1000);
-    ui->timeShiftSpinBox->setValue(250);
+    ui->timeShiftSpinBox->setValue(1000);
     ui->timeShiftSpinBox->setSingleStep(25);
     ui->windowLengthSpinBox->setMaximum(1000);
     ui->windowLengthSpinBox->setMinimum(250);
     ui->windowLengthSpinBox->setSingleStep(125);
+    ui->windowLengthSpinBox->setValue(1000);
     ui->realButton->setChecked(true);
 
     ui->numOfIcSpinBox->setMaximum(19); //generality
@@ -314,6 +330,8 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->setNsLine, SIGNAL(returnPressed()), this, SLOT(setNs()));
 
+    QObject::connect(ui->fileMarkersLineEdit, SIGNAL(returnPressed()), this, SLOT(setFileMarkers()));
+
     QObject::connect(ui->waveletButton, SIGNAL(clicked()), this, SLOT(waveletCount()));
 
     QObject::connect(ui->finishTimeBox, SIGNAL(valueChanged(double)), this, SLOT(setBoxMax(double)));
@@ -393,24 +411,6 @@ void QWidget::keyPressEvent(QKeyEvent *event)
     }
 }
 
-
-void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
-{
-    Spectre *sp = new Spectre();
-    sp->setFftLength(fftLen);
-    if(inSmooth >= 0)
-    {
-        sp->setSmooth(inSmooth);
-    }
-    sp->countSpectra();
-    sp->compare();
-    sp->compare();
-    sp->compare();
-    sp->compare();
-    sp->psaSlot();
-    sp->close();
-    delete sp;
-}
 
 void MainWindow::showCountSpectra()
 {
@@ -952,7 +952,7 @@ void MainWindow::readData()
         fprintf(labels, "%s \n", label[i]);
     }
     fclose(labels);
-    for(int i = ns; i < maxNs; ++i)
+    for(int i = ns; i < MAXNS; ++i)
     {
         label[i][0] = '\0';
     }
@@ -1685,7 +1685,6 @@ void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unus
 {
     setEdfFile(edfPath);
     readData();
-    int fr = def::freq;
 
     //write components cross-correlation matrix
     int size = def::ns - 1;
@@ -1707,8 +1706,8 @@ void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unus
 
 void MainWindow::setBoxMax(double a)
 {
-    ui->startTimeBox->setValue(min(a-1., ui->startTimeBox->value()));
-    ui->startTimeBox->setMaximum(a-1.);
+    ui->startTimeBox->setValue(min(a - 1., ui->startTimeBox->value()));
+    ui->startTimeBox->setMaximum(a - 1.);
 }
 
 void MainWindow::sliceWithMarkersSlot(int a)
@@ -1724,6 +1723,14 @@ void MainWindow::stop()
 void MainWindow::changeNsLine(int a)
 {
     ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
+}
+
+void MainWindow::setFileMarkers()
+{
+    def::fileMarkers = ui->fileMarkersLineEdit->text().split(QRegExp(R"([,;])"),
+                                                             QString::SkipEmptyParts);
+    ui->textEdit->append(R"(fileMarkers renewed
+                         )");
 }
 
 void MainWindow::setNs()
@@ -1753,7 +1760,9 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-#if 1
+    ui->matiCheckBox->setChecked(false);
+    return;
+#if 0
     const QStringList names{"SIV", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "ADA"};
     for(const QString & guy : names)
     {
@@ -3405,8 +3414,8 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-    double ** dataFFT = new double * [maxNs];
-    for(int i = 0; i < maxNs; ++i)
+    double ** dataFFT = new double * [MAXNS];
+    for(int i = 0; i < MAXNS; ++i)
     {
         dataFFT[i] = new double [65536];
     }

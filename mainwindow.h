@@ -55,6 +55,7 @@ public slots:
     void showMakeCfg();
     void showEyes();
     void showCut();
+    void setFileMarkers();
 
     //parameters processing
     void setExpName();

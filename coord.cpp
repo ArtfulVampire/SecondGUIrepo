@@ -19,5 +19,7 @@ double spStep = def::freq / def::fftLength;
 QString ExpName;
 QDir * dir = new QDir();
 
-QStringList colours = QStringList{"blue", "red", "green", "black", "gray"};
+QStringList colours{"blue", "red", "green", "black", "gray"};
+//QStringList fileMarkers{"_241", "_247", "_254 _ 244"};
+QStringList fileMarkers{"_241", "_242", "_254 _ 244"};
 }

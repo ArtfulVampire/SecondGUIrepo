@@ -3,15 +3,27 @@
 #include <QString>
 #include <QStringList>
 #include <QDir>
-#define maxNs 50
+#define MAXNS 50
 
 namespace coords
 {
 //relative coords
     const double scale = 250./1600.;
-    const double x[] = {0.21875, 0.59375, 0.03125, 0.21875, 0.40625, 0.59375, 0.78125, 0.03125, 0.21875, 0.40625, 0.59375, 0.78125, 0.03125, 0.21875, 0.40625, 0.59375, 0.78125, 0.21875, 0.59375}; //-0.5/16
-    const double y[] = {0.1875, 0.1875, 0.375, 0.375, 0.375, 0.375, 0.375, 0.5625, 0.5625, 0.5625, 0.5625, 0.5625, 0.75, 0.75, 0.75, 0.75, 0.75, 0.9375, 0.9375};
-    const char lbl[][19] = {"Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8", "T3", "C3", "Cz", "C4", "T4", "T5", "P3", "Pz", "P4", "T6", "O1", "O2"};
+    const double x[] = {0.21875, 0.59375,
+                        0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
+                        0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
+                        0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
+                        0.21875, 0.59375}; //-0.5/16
+    const double y[] = {0.1875, 0.1875,
+                        0.375, 0.375, 0.375, 0.375, 0.375,
+                        0.5625, 0.5625, 0.5625, 0.5625, 0.5625,
+                        0.75, 0.75, 0.75, 0.75, 0.75,
+                        0.9375, 0.9375};
+    const char lbl[][19] = {"Fp1", "Fp2",
+                            "F7", "F3", "Fz", "F4", "F8",
+                            "T3", "C3", "Cz", "C4", "T4",
+                            "T5", "P3", "Pz", "P4", "T6",
+                            "O1", "O2"};
 }
 
 namespace def
@@ -36,13 +48,14 @@ namespace def
     extern int fftLength;
     extern QString cfgFileName;
     extern QStringList colours;
+    extern QStringList fileMarkers;
 
 //    extern int nsW;
     inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
 
 
 //    Atanov
-    const int numOfClasses = 3;
+    const int numOfClasses = 2;
     const QString dataFolder = "/media/Files/Data/Mati";
     const QString GalyaFolder = "/media/Files/Data/Galya";
     const bool opencl = true;

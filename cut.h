@@ -77,7 +77,7 @@ private:
     QStringList lst;
     int currentNumber;
 
-    vector<vector<double>> data3;
+    matrix data3;
     int NumOfSlices, Eyes;
     int pointNumber;
 
