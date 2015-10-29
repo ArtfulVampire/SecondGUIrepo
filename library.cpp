@@ -1377,7 +1377,10 @@ int typeOfFileName(const QString & fileName)
 
 
 
-void makePaFile(QString spectraDir, QStringList fileNames, double coeff, QString outFile)
+void makePaFile(const QString & spectraDir,
+                const QStringList & fileNames,
+                double coeff, const
+                QString & outFile)
 {
     //    QTime myTime;
     //    myTime.start();
@@ -1392,14 +1395,14 @@ void makePaFile(QString spectraDir, QStringList fileNames, double coeff, QString
     int type;
     QString helpString;
 
-    for(int i = 0; i < fileNames.length(); ++i)
+    for(const QString & fileName: fileNames)
     {
-        type = typeOfFileName(fileNames[i]);
+        type = typeOfFileName(fileName);
         helpString = spectraDir
-                     + slash() + fileNames[i];
+                     + slash() + fileName;
         readSpectraFile(helpString, data4);
 
-        outStream << fileNames[i].toStdString() << endl;
+        outStream << fileName << endl;
 
         for(int l = 0; l < def::nsWOM(); ++l) // write PA files without markers
         {
@@ -1425,6 +1428,130 @@ void makePaFile(QString spectraDir, QStringList fileNames, double coeff, QString
     }
     outStream.close();
     //    cout << "makePaFile: time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
+}
+
+void makePaStatic(const QString & spectraDir,
+                  const int & fold,
+                  const double & coeff)
+{
+
+
+    QString helpString;
+    QDir dir_;
+    dir_.cd(spectraDir);
+    dir_.setSorting(QDir::Name);
+
+    //generality
+    QStringList nameFilters, leest;
+    QStringList lst[def::numOfClasses]; // usually 0 - Spatial, 1 - Verbal, 2 - Gaps
+
+    int k = 0;
+    for(const QString & fileMark : def::fileMarkers)
+    {
+        nameFilters.clear();
+        leest.clear();
+        leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(int i = 0; i < leest.length(); ++i)
+        {
+            helpString = "*" + leest[i] + "*";
+            nameFilters << helpString;
+        }
+        lst[k++] = dir_.entryList(nameFilters, QDir::Files, QDir::Name);
+    }
+
+
+    int len[def::numOfClasses];
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        len[i] = lst[i].length();
+        if(len[i] == 0)
+        {
+            cout << "no spectra files found of type " << i << " found" << endl;
+            return;
+        }
+    }
+
+    int Length;
+    Length = len[0];
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        Length = min(Length, len[i]);
+    }
+
+    vector<vector<int>> arr;
+    arr.resize(def::numOfClasses);
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        arr[i].resize(len[i]);
+
+        for(int j = 0; j < len[i]; ++j)
+        {
+            arr[i][j] = j;
+        }
+    }
+
+    //generality
+    if(def::nsWOM() == -1) return;
+    if(def::spLength == -1) return;
+
+    srand(time(NULL));
+
+    //mix list
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        std::shuffle(arr[i].begin(),
+                     arr[i].end(),
+                     std::default_random_engine(time(NULL)));
+    }
+
+
+
+    QStringList listToWrite;
+    listToWrite.clear();
+    for(int j = 0; j < def::numOfClasses; ++j)
+    {
+        for(int i = 0; i < (len[j] / fold) * (fold - 1); ++i)
+        {
+            listToWrite << lst[j][arr[j][i]];
+        }
+    }
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "PA"
+                                          + slash() + "1.pa");
+    makePaFile(dir_.absolutePath(), listToWrite, coeff, helpString);
+
+
+
+    listToWrite.clear();
+    for(int j = 0; j < def::numOfClasses; ++j)
+    {
+        for(int i = (len[j] / fold) * (fold - 1); i < (len[j] / fold) * fold; ++i)
+        {
+            listToWrite << lst[j][arr[j][i]];
+        }
+    }
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "PA"
+                                          + slash() + "2.pa");
+    makePaFile(dir_.absolutePath(), listToWrite, coeff, helpString);
+
+
+
+    listToWrite.clear();
+    for(int j = 0; j < def::numOfClasses; ++j)
+    {
+        for(int i = 0; i < (len[j] / fold) * fold; ++i)
+        {
+            listToWrite << lst[j][arr[j][i]];
+        }
+    }
+
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "PA"
+                                          + slash() + "all.pa");
+    makePaFile(dir_.absolutePath(), listToWrite, coeff, helpString);
+
+
 }
 
 void makeMatrixFromFiles(QString spectraDir,
@@ -2890,7 +3017,7 @@ void wavelet(QString filePath,
     int NumOfSlices;
     double helpDouble;
 
-    mat fileData;
+    matrix fileData;
     readPlainData(filePath, fileData, ns, NumOfSlices);
 
     vec input = fileData[channelNumber];
@@ -4061,16 +4188,20 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
 }
                    */
 
-template <typename Typ>
+//template <typename Typ>
 void writePlainData(QString outPath,
-                    const Typ &data,
-//                    const matrix &data,
+//                    const Typ & data,
+                    const matrix & data,
                     int ns,
                     int numOfSlices,
                     int start)
 {
     ofstream outStr;
     outStr.open(outPath.toStdString());
+
+    numOfSlices = min(numOfSlices,
+                      data.cols() - start);
+
     outStr << "NumOfSlices " << numOfSlices << endl;
     for (int i = 0; i < numOfSlices; ++i)
     {
@@ -4084,29 +4215,11 @@ void writePlainData(QString outPath,
     outStr.close();
 }
 
-template
-void writePlainData(QString outPath,
-const mat & data,
-int ns,
-int numOfSlices,
-int start);
 
-template
-void writePlainData(QString outPath,
-const matrix & data,
-int ns,
-int numOfSlices,
-int start);
-
-template void writePlainData(QString outPath,
-double ** const &data,
-int ns,
-int numOfSlices,
-int start);
-
-template <typename Typ>
+//template <typename Typ>
 void readPlainData(QString inPath,
-                   Typ & data,
+//                   Typ & data,
+                   matrix & data,
                    int ns,
                    int & numOfSlices,
                    int start) // data may be allocated
@@ -4904,18 +5017,18 @@ void calcRawFFT(const Typ & inData,
 }
 
 void readPaFile(QString paFile,
-                double *** matrix,
-                int NetLength,
-                int NumOfClasses,
-                int * NumberOfVectors,
-                char *** FileName,
-                double ** classCount)
+                matrix & dataMatrix,
+                int & NumberOfVectors,
+                vector<QString> & FileName,
+                vector<double> & classCount)
 {
+    const int NetLength = def::nsWOM() * def::spLength;
+
     ifstream paSrc;
     paSrc.open(paFile.toStdString());
-    if(!paSrc.is_open())
+    if(!paSrc.good())
     {
-        cout << "bad Pa File:" << endl;
+        cout << "readPaFile: bad file" << endl;
         cout << "is_open:\t" << paSrc.is_open() << endl;
         cout << "eof:\t" << paSrc.eof() << endl;
         cout << "good:\t" << paSrc.good() << endl;
@@ -4926,55 +5039,32 @@ void readPaFile(QString paFile,
         return;
     }
 
+    double tempClass[def::numOfClasses];  //generality
+    double tempVal;
+    classCount = vector<double>(def::numOfClasses, 0);
+    FileName.clear();
+    dataMatrix.clear();
 
-    for(int i = 0; i < (*NumberOfVectors); ++i)
-    {
-        if((*matrix)[i]  != NULL) delete [](*matrix)[i];
-        if((*FileName)[i]  != NULL) delete [](*FileName)[i];
-    }
-    if((*matrix) != NULL) delete [](*matrix);
-    if((*FileName) != NULL) delete [](*FileName);
+    std::string tempStr;
+    vector<double> tempVec(NetLength + 2); // bias and class
 
+    NumberOfVectors = 0;
 
-    (*NumberOfVectors) = 6000; //generality
-
-    (*matrix) = new double * [(*NumberOfVectors)];
-    for(int i = 0; i < (*NumberOfVectors); ++i)
-    {
-        (*matrix)[i] = new double [NetLength + 2]; //+bias +type
-    }
-    //    cout << "readPaFile: data allocated" << endl;
-    int num = 0;
-    double g[3];  //generality
-
-    (*FileName) = new char * [(*NumberOfVectors)];
-    for(int i = 0; i < (*NumberOfVectors); ++i)
-    {
-        (*FileName)[i] = new char [64];
-    }
-
-    //    cout << "readPaFile: mem ok" << endl;
-    for(int i = 0; i < NumOfClasses; ++i)
-    {
-        (*classCount)[i] = 0.;
-    }
     while(!paSrc.eof())
     {
-        paSrc.getline((*FileName)[num], 64);
+        paSrc >> tempStr;
+        FileName.push_back(QString(tempStr.c_str()));
 
         for(int i = 0; i < NetLength; ++i)
         {
-            paSrc >> (*matrix)[num][i];
+            paSrc >> tempVec[i];
         }
 
-        paSrc >> g[0] >> g[1];
-        if(NumOfClasses == 3)
+        tempVal = 0.;
+        for(int i = 0; i < def::numOfClasses; ++i)
         {
-            paSrc >> g[2];
-        }
-        else if(NumOfClasses == 2)
-        {
-            g[2] = 0.;
+            paSrc >> tempClass[i];
+            tempVal += tempClass[i] * i;
         }
 
         while(paSrc.peek() == int('\n') || paSrc.peek() == int(' '))
@@ -4982,25 +5072,21 @@ void readPaFile(QString paFile,
             paSrc.get();
         }
 
-        (*matrix)[num][NetLength] = 1.; //bias
-        (*matrix)[num][NetLength + 1] = 0. * g[0] + 1. * g[1] + 2. * g[2]; //type
-        (*classCount)[int((*matrix)[num][NetLength + 1])] += 1.; //set number of vectors of each class
+        tempVec[NetLength] = 1.; //bias
+        tempVec[NetLength + 1] = tempVal;
 
-        if((*matrix)[num][NetLength + 1]  != 0. && (*matrix)[num][NetLength + 1]  != 1. && (*matrix)[num][NetLength + 1]  != 2. && (*matrix)[num][NetLength + 1]  != 1.5)
+        if(int(tempVal) != tempVal)
         {
-            cout << "type is wrong " << (*matrix)[num][NetLength + 1] << endl;
+            cout << "type is wrong " << tempVal << endl;
             return;
         }
-        ++num;
-        //        cout << "readPaFile: " << num << " file is read" << endl;
-    }
-    for(int i = num; i < (*NumberOfVectors); ++i)
-    {
-        delete [] (*matrix)[i];
-        delete [] (*FileName)[i];
+
+        classCount[int(tempVal)] += 1.; // set number of vectors of each class
+        dataMatrix.push_back(tempVec);
+        ++NumberOfVectors;
+
     }
     paSrc.close();
-    (*NumberOfVectors) = num;
 }
 
 template <typename Typ>
@@ -6691,6 +6777,7 @@ const spectraGraphsNormalization normType,
 const QStringList & colors,
 double scaling,
 int lineWidth);
+
 template void drawArrays(const QString & templPath,
 const mat & inMatrix,
 const bool weightsFlag,
@@ -6699,16 +6786,37 @@ const QStringList & colors,
 double scaling,
 int lineWidth);
 
-template void readPlainData(QString inPath,
-mat & data,
-int ns,
-int & numOfSlices,
-int start);
-template void readPlainData(QString inPath,
-matrix & data,
-int ns,
-int & numOfSlices,
-int start);
+//template void readPlainData(QString inPath,
+//mat & data,
+//int ns,
+//int & numOfSlices,
+//int start);
+//template void readPlainData(QString inPath,
+//matrix & data,
+//int ns,
+//int & numOfSlices,
+//int start);
+
+
+//template
+//void writePlainData(QString outPath,
+//const mat & data,
+//int ns,
+//int numOfSlices,
+//int start);
+
+//template
+//void writePlainData(QString outPath,
+//const matrix & data,
+//int ns,
+//int numOfSlices,
+//int start);
+
+//template void writePlainData(QString outPath,
+//double ** const &data,
+//int ns,
+//int numOfSlices,
+//int start);
 
 template void readSpectraFile(const QString & filePath, matrix & outData, int inNs, int spL);
 template void readSpectraFile(const QString & filePath, mat & outData, int inNs, int spL);

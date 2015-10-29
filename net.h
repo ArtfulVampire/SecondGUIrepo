@@ -41,12 +41,15 @@ class Net : public QWidget
 public:
     explicit Net();
     ~Net();
-    bool ClassificateVector(int &vecNum);
+    bool ClassificateVector(const int & vecNum);
     void closeLogFile();
     void setAutoProcessingFlag(bool);
     void prelearnDeepBelief();
 
-    bool adjustReduceCoeff(QString spectraDir, int lowLimit, int highLimit, MakePa * outMkPa, QString paFileName = "1");
+    double adjustReduceCoeff(QString spectraDir,
+                             int lowLimit,
+                             int highLimit,
+                             QString paFileName = "1");
     int getEpoch();
     void setErrcrit(double);
     double getErrcrit();
@@ -56,7 +59,7 @@ public:
     void moveCoordsGradient(double ** coords, double ** distOld, double ** distNew, int size);
     double thetalpha(int bmu_, int j_, int step_, double ** arr, int length_);
 
-    void readCfgByName(QString FileName);
+    void readCfgByName(const QString & cfgFilePath);
     double setPercentageForClean();
     double mouseClick(QLabel * label, QMouseEvent * ev);
     void leaveOneOut();
@@ -65,8 +68,8 @@ public:
     double getReduceCoeff();
     void setNumOfPairs(int num);
     void writeWts(const QString &wtsPath);
-    void PaIntoMatrixByName(QString fileName);
-    void autoClassification(QString spectraDir);
+    void PaIntoMatrixByName(const QString & fileName);
+    void autoClassification(const QString & spectraDir);
     void averageClassification();
 
     void drawWts(QString wtsPath = QString(),
@@ -79,9 +82,13 @@ public slots:
     void readCfg();
     void readWts();
 
+    void LearNetIndices(vector<int> mixNum);
     void LearnNet();
 
     void tall();
+    void tallIndices(const vector<int> & indices);
+
+
     void reset();
     void writeWtsSlot();
     void stopActivity();
@@ -106,15 +113,15 @@ private:
 
     QButtonGroup  * group1,  * group2,  * group3;
     QDir *dirBC;
-    double ** dataMatrix;
+    matrix dataMatrix;
+
     double *** weight;
     int * dimensionality; //for backprop
 //    double * output;
     char * helpCharArr;
-    double * classCount;
+    vector<double> classCount;
 
-//    double * tempRandoms;
-    double ** tempRandomMatrix; //test linear transform
+    matrix tempRandomMatrix; //test linear transform
 
     QVector<int> channelsSet;
     QVector<int> channelsSetExclude;
@@ -137,7 +144,7 @@ private:
     double Error;
 
     int * NumberOfErrors;
-    char **FileName;
+    vector<QString> fileNames;
 
     QPixmap columns;
 
@@ -151,7 +158,7 @@ private:
 
 public:
 
-    void readWtsByName(const QString &,
+    void readWtsByName(const QString & fileName,
                        double * *** wtsMatrix = nullptr);
 };
 

@@ -228,8 +228,19 @@ int MannWhitney(const vec & arr1,
                  const vec & arr2,
                  const double p = 0.05);
 
-void makePaFile(QString spectraDir, QStringList fileNames, double coeff, QString outFile);
-void makeMatrixFromFiles(QString spectraDir, QStringList fileNames, double coeff, double *** outMatrix);
+void makePaFile(const QString & spectraDir,
+                const QStringList & fileNames,
+                double coeff,
+                const QString & outFile);
+
+void makePaStatic(const QString & spectraDir,
+                  const int & fold = 2,
+                  const double & coeff = 7);
+
+void makeMatrixFromFiles(QString spectraDir,
+                         QStringList fileNames,
+                         double coeff,
+                         double *** outMatrix);
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
 void drawRCP(const vec & values,
@@ -252,16 +263,15 @@ void makeCfgStatic(const QString & FileName = "16sec19ch",
                    const double & error = 0.1,
                    const int & temp = 10);
 
-template <typename Typ>
+
 void readPlainData(QString inPath,
-                   Typ & data,
+                   matrix & data,
                    int ns,
                    int & numOfSlices,
                    int start = 0);
 
-template <typename Typ>
 void writePlainData(QString outPath,
-                    const Typ &data,
+                    const matrix &data,
                     int ns,
                     int numOfSlices,
                     int start = 0);
@@ -352,12 +362,10 @@ void writeFileInLine(const QString & filePath,
                      const vec & outData);
 
 void readPaFile(QString paFile,
-                double *** matrix,
-                int NetLength,
-                int NumOfClasses,
-                int * NumberOfVectors,
-                char *** FileName,
-                double **classCount);
+                matrix & dataMatrix,
+                int & NumberOfVectors,
+                vector<QString> & FileName,
+                vector<double> & classCount);
 
 template <typename Typ>
 bool readICAMatrix(const QString & path, Typ &matrixA);

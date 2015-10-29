@@ -77,7 +77,7 @@ void Eyes::eyesClean()
         coefficients[i] = new double [NumEog];
     }
 
-    mat dataF;
+    matrix dataF;
     /*
     double **dataF = new double * [ns];
     for(int j = 0; j < ns; ++j)

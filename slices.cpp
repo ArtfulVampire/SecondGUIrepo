@@ -72,6 +72,7 @@ void MainWindow::sliceWindFromReal()
             helpString = QDir::toNativeSeparators(helpString);
 
             writePlainData(helpString, dataReal, def::ns, wndLength, offset);
+
             offset += timeShift;
         }
 

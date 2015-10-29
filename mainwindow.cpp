@@ -93,7 +93,7 @@ MainWindow::MainWindow() :
     {
         helpString += fileMark + "; ";
     }
-//    helpString.resize(helpString.size() - 2); // remove the last "; "
+    helpString.resize(helpString.size() - 2); // remove the last "; "
 
     ui->fileMarkersLineEdit->setText(helpString);
 
@@ -1729,6 +1729,7 @@ void MainWindow::setFileMarkers()
 {
     def::fileMarkers = ui->fileMarkersLineEdit->text().split(QRegExp(R"([,;])"),
                                                              QString::SkipEmptyParts);
+    def::numOfClasses = def::fileMarkers.length();
     ui->textEdit->append(R"(fileMarkers renewed
                          )");
 }
@@ -1761,6 +1762,7 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
+    setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
     return;
 #if 0
     const QStringList names{"SIV", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "ADA"};

@@ -540,7 +540,7 @@ void MainWindow::Bayes()
     def::dir->cdUp();
 
     FILE * file;
-    mat dataBayes;
+    matrix dataBayes;
     double maxAmpl = 10.; //generality from readData
 
     maxAmpl += 0.001; //bicycle
@@ -862,7 +862,9 @@ double MainWindow::filesCrossClassification(QString workPath,
         helpString += QString(slash()) + "windows";
     }
     mkPa = new MakePa(helpString);
-    ANN->adjustReduceCoeff(helpString, 90, 150, mkPa, "all");
+    double adjustedCoeff = ANN->adjustReduceCoeff(helpString, 90, 150, "all");
+    mkPa->setRdcCoeff(adjustedCoeff);
+
     cleanDir(tmpDir->absolutePath(), "wts");
 
     cout << "crossClass: learn (max " << NumOfRepeats << ") ";

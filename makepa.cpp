@@ -847,7 +847,7 @@ void MakePa::makePaSlot()
 
     //generality
     QStringList nameFilters, leest;
-    QStringList lst[def::fileMarkers.length()]; // usually 0 - Spatial, 1 - Verbal, 2 - Gaps
+    QStringList lst[def::numOfClasses]; // usually 0 - Spatial, 1 - Verbal, 2 - Gaps
 
     int k = 0;
     for(const QString & fileMark : def::fileMarkers)
@@ -864,8 +864,8 @@ void MakePa::makePaSlot()
     }
 
 
-    int len[3];
-    for(int i = 0; i < 3; ++i)
+    int len[def::numOfClasses];
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
         len[i] = lst[i].length();
         if(len[i] == 0)

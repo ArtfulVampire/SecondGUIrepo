@@ -17,7 +17,7 @@ using namespace std;
 typedef vector<vector<double>> dataType;
 typedef vector<double> vec;
 
-class matrix
+class matrix : public vector<vector<double>>
 {
 public:
     matrix();

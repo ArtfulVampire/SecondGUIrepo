@@ -209,6 +209,16 @@ matrix matrix::operator *= (const matrix & other)
     return result;
 }
 
+//dataType * matrix::operator &()
+//{
+//    return &data;
+//}
+
+//matrix * matrix::operator &()
+//{
+//    return this;
+//}
+
 
 matrix::matrix(int rows, int cols, double value)
 {

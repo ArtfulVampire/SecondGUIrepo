@@ -49,13 +49,14 @@ namespace def
     extern QString cfgFileName;
     extern QStringList colours;
     extern QStringList fileMarkers;
+    extern int numOfClasses;
 
 //    extern int nsW;
     inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
 
 
 //    Atanov
-    const int numOfClasses = 2;
+
     const QString dataFolder = "/media/Files/Data/Mati";
     const QString GalyaFolder = "/media/Files/Data/Galya";
     const bool opencl = true;

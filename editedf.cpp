@@ -372,6 +372,7 @@ void MainWindow::reduceChannelsEDF(QString newFilePath)
 
 void MainWindow::reduceChannelsSlot()
 {
+#if 0
     /// generally unused function
     QStringList lst;
     QString helpString;
@@ -379,14 +380,7 @@ void MainWindow::reduceChannelsSlot()
     int * num = new int [MAXNS];
     FILE * file;
 
-    mat dataR;
-    /*
-    double ** dataR = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        dataR[i] = new double [250 * 60];   // generality for 1 minute realisations
-    }
-    */
+    matrix dataR;
 
     helpString = ui->reduceChannelsLineEdit->text();
     QStringList list = helpString.split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -433,6 +427,7 @@ void MainWindow::reduceChannelsSlot()
     helpString = "ns equals to ";
     helpString += QString::number(def::ns);
     ui->textEdit->append(helpString);
+#endif
 }
 
 void MainWindow::reduceChannelsFast()
