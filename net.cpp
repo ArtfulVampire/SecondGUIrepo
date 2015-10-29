@@ -78,7 +78,7 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(7.0); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(3.0); // 1. for MATI? usually 5.     0.7 for best comp set
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
@@ -300,20 +300,24 @@ double Net::adjustReduceCoeff(QString spectraDir,
     autoFlag = 1;
 
     double res;
+    double currVal;
     const double threshold = 5e-2;
 
     cout << "adjustReduceCoeff: start" << endl;
 
     while(1)
     {
-        double currVal = ui->rdcCoeffSpinBox->value();
+        currVal = ui->rdcCoeffSpinBox->value();
+
         makePaStatic(spectraDir,
                      ui->foldSpinBox->value(),
                      currVal);
 
-        this->PaIntoMatrixByName(paFileName);
+        PaIntoMatrixByName(paFileName);
 
-        cout << "coeff = " << currVal << "\t";
+//        cout << dataMatrix[0][0] << "\t" << fileNames[0] << endl;
+
+//        cout << "coeff = " << currVal << "\t";
         LearnNet();
         if(this->getEpoch() > highLimit || this->getEpoch() < lowLimit)
         {
@@ -2023,6 +2027,12 @@ void Net::PaIntoMatrixByName(const QString & fileName)
     {
         helpString += ".pa";
     }
+
+    if(!QFile::exists(helpString))
+    {
+        cout << "PaIntoMatrixByName: cannot open file\n" << helpString << endl;
+    }
+
     readPaFile(helpString,
                dataMatrix,
                NumberOfVectors,
@@ -2456,11 +2466,11 @@ void Net::LearNetIndices(vector<int> mixNum)
     epoch = 0;
     while(currentError > critError && epoch < ui->epochSpinBox->value())
     {
-        srand(time(NULL));
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         currentError = 0.0;
         std::shuffle(mixNum.begin(),
                      mixNum.end(),
-                     std::default_random_engine(time(NULL)));
+                     std::default_random_engine(seed));
 
         for(int num = 0; num < NumberOfVectors; ++num)
         {
@@ -2528,7 +2538,7 @@ void Net::LearNetIndices(vector<int> mixNum)
                     for(int k = 0; k < dimensionality[i + 1]; ++k)
                     {
                         // dropout regularization
-//                        if(rand() % 1000 < 50) continue;
+                        if(rand() % 1000 < 50) continue;
 
                         if(ui->deltaRadioButton->isChecked())
                         {

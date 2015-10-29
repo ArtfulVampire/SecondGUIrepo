@@ -10,6 +10,7 @@
 #include <QtSvg>
 #include "coord.h"
 #include "matrix.h"
+#include <chrono>
 #include <fstream>
 #include <ios>
 #include <iostream>
@@ -230,12 +231,12 @@ int MannWhitney(const vec & arr1,
 
 void makePaFile(const QString & spectraDir,
                 const QStringList & fileNames,
-                double coeff,
+                const double & coeff,
                 const QString & outFile);
 
 void makePaStatic(const QString & spectraDir,
-                  const int & fold = 2,
-                  const double & coeff = 7);
+                  const int & fold,
+                  const double & coeff);
 
 void makeMatrixFromFiles(QString spectraDir,
                          QStringList fileNames,

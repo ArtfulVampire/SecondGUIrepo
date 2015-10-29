@@ -898,14 +898,12 @@ void MakePa::makePaSlot()
     if(def::nsWOM() == -1) return;
     if(def::spLength == -1) return;
 
-    srand(time(NULL));
-
-    //mix list
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     for(int i = 0; i < def::numOfClasses; ++i)
     {
         std::shuffle(arr[i].begin(),
                      arr[i].end(),
-                     std::default_random_engine(time(NULL)));
+                     std::default_random_engine(seed));
     }
 
 

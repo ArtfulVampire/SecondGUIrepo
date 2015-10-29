@@ -1379,11 +1379,12 @@ int typeOfFileName(const QString & fileName)
 
 void makePaFile(const QString & spectraDir,
                 const QStringList & fileNames,
-                double coeff, const
-                QString & outFile)
+                const double & coeff,
+                const QString & outFile)
 {
     //    QTime myTime;
     //    myTime.start();
+
     ofstream outStream(outFile.toStdString());
     if(!outStream.good())
     {
@@ -1434,7 +1435,6 @@ void makePaStatic(const QString & spectraDir,
                   const int & fold,
                   const double & coeff)
 {
-
 
     QString helpString;
     QDir dir_;
@@ -1493,15 +1493,14 @@ void makePaStatic(const QString & spectraDir,
     //generality
     if(def::nsWOM() == -1) return;
     if(def::spLength == -1) return;
-
-    srand(time(NULL));
-
     //mix list
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     for(int i = 0; i < def::numOfClasses; ++i)
     {
         std::shuffle(arr[i].begin(),
                      arr[i].end(),
-                     std::default_random_engine(time(NULL)));
+                     std::default_random_engine(seed));
     }
 
 
@@ -1518,6 +1517,7 @@ void makePaStatic(const QString & spectraDir,
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "PA"
                                           + slash() + "1.pa");
+//    cout << helpString << endl;
     makePaFile(dir_.absolutePath(), listToWrite, coeff, helpString);
 
 
@@ -1533,6 +1533,7 @@ void makePaStatic(const QString & spectraDir,
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "PA"
                                           + slash() + "2.pa");
+//    cout << helpString << endl;
     makePaFile(dir_.absolutePath(), listToWrite, coeff, helpString);
 
 
@@ -1549,6 +1550,7 @@ void makePaStatic(const QString & spectraDir,
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "PA"
                                           + slash() + "all.pa");
+//    cout << helpString << endl;
     makePaFile(dir_.absolutePath(), listToWrite, coeff, helpString);
 
 
@@ -5043,7 +5045,7 @@ void readPaFile(QString paFile,
     double tempVal;
     classCount = vector<double>(def::numOfClasses, 0);
     FileName.clear();
-    dataMatrix.clear();
+    dataMatrix = matrix();
 
     std::string tempStr;
     vector<double> tempVec(NetLength + 2); // bias and class
@@ -5084,7 +5086,6 @@ void readPaFile(QString paFile,
         classCount[int(tempVal)] += 1.; // set number of vectors of each class
         dataMatrix.push_back(tempVec);
         ++NumberOfVectors;
-
     }
     paSrc.close();
 }
