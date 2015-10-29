@@ -21,7 +21,7 @@ QString ExpName;
 QDir * dir = new QDir();
 
 QStringList colours{"blue", "red", "green", "black", "gray"};
-//QStringList fileMarkers{"_241", "_247", "_254 _ 244"};
-QStringList fileMarkers{"_241", "_247", "_254 _ 244"};
+//QStringList fileMarkers{"_241", "_247", "_254 _244"};
+QStringList fileMarkers{"_241", "_247", "_254 _244"};
 int numOfClasses = fileMarkers.length();
 }

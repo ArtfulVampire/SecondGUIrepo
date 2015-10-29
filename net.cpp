@@ -313,6 +313,7 @@ double Net::adjustReduceCoeff(QString spectraDir,
 
         this->PaIntoMatrixByName(paFileName);
 
+        cout << "coeff = " << currVal << "\t";
         LearnNet();
         if(this->getEpoch() > highLimit || this->getEpoch() < lowLimit)
         {
@@ -874,9 +875,9 @@ void Net::tall()
 
 void Net::tallIndices(const vector<int> & indices)
 {
-    Error = 0.;
-    vector<double> NumberOfErrors(def::numOfClasses, 0);
-    vector<double> NumOfVectorsOfClass(def::numOfClasses, 0); // countClass
+    double Error = 0.;
+    vector<double> NumberOfErrors(def::numOfClasses, 0.);
+    vector<double> NumOfVectorsOfClass(def::numOfClasses, 0.); // countClass
     bool res;
     int type;
 
@@ -884,9 +885,10 @@ void Net::tallIndices(const vector<int> & indices)
     {
         type = int(dataMatrix[indices[i]][NetLength + 1]);
 
-        NumOfVectorsOfClass[type] += 1;
+        NumOfVectorsOfClass[type] += 1.;
 
         res = ClassificateVector(indices[i]);
+//        cout << "\t" << res << endl;
         if(!res)
         {
             NumberOfErrors[type] += 1.;
@@ -2526,7 +2528,7 @@ void Net::LearNetIndices(vector<int> mixNum)
                     for(int k = 0; k < dimensionality[i + 1]; ++k)
                     {
                         // dropout regularization
-                        if(rand() % 1000 < 50) continue;
+//                        if(rand() % 1000 < 50) continue;
 
                         if(ui->deltaRadioButton->isChecked())
                         {
@@ -2799,6 +2801,15 @@ bool Net::ClassificateVector(const int & vecNum)
         }
         output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
     }
+
+
+    // test
+//    cout << vecNum << "\t" << fileNames[vecNum] << "\t" << type;
+//    for(int i = 0; i < def::numOfClasses; ++i)
+//    {
+//        cout << "\t" << doubleRound(output[numOfLayers - 1][i], 2);
+//    }
+
 
     for(int k = 0; k < dimensionality[numOfLayers - 1]; ++k)
     {

@@ -1763,7 +1763,12 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
-    return;
+
+    fileInnerClassification("/media/Files/Data/AAX/",
+                            "AAX_final.edf",
+                            4096,
+                            40);
+    exit(0);
 #if 0
     const QStringList names{"SIV", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "ADA"};
     for(const QString & guy : names)
