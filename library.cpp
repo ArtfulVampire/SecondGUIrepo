@@ -941,7 +941,9 @@ bool areEqualFiles(QString path1, QString path2)
     return true;
 }
 
-QString getPicPath(const QString & dataPath, QDir * ExpNameDir, int ns)
+QString getPicPath(const QString & dataPath,
+                   const QDir * ExpNameDir,
+                   const int & ns)
 {
     QString fileName = QDir::toNativeSeparators(dataPath);
     fileName = fileName.right(fileName.length() - fileName.lastIndexOf(slash()) - 1);
@@ -953,9 +955,16 @@ QString getPicPath(const QString & dataPath, QDir * ExpNameDir, int ns)
     {
         helpString += "Signals";
     }
-    else if(dataPath.contains("windows") && !dataPath.contains("fromreal"))
+    else if(dataPath.contains("windows"))
     {
-        helpString += "Signals" + QString(slash()) + "windows";
+        if(!dataPath.contains("fromreal"))
+        {
+            helpString += "Signals" + QString(slash()) + "windows";
+        }
+        else /// fromreals need other path?
+        {
+            helpString += "Signals" + QString(slash()) + "windows";
+        }
     }
     else if(dataPath.contains("cut"))
     {
@@ -4279,12 +4288,13 @@ void writePlainData(QString outPath,
                     int numOfSlices,
                     int start)
 {
-    ofstream outStr;
-    outStr.open(outPath.toStdString());
-
     numOfSlices = min(numOfSlices,
                       data.cols() - start);
 
+    if(numOfSlices < 250) return;
+
+    ofstream outStr;
+    outStr.open(outPath.toStdString());
     outStr << "NumOfSlices " << numOfSlices << endl;
     for (int i = 0; i < numOfSlices; ++i)
     {
@@ -6028,7 +6038,7 @@ QPixmap drawEeg( Typ dataD,
                  int redChan)
 {
     int NumOfSlices = endSlice - startSlice;
-    QPixmap pic = QPixmap(NumOfSlices, 600);
+    QPixmap pic = QPixmap(NumOfSlices, ns * 30); /// general size
     pic.fill();
 
     QPainter paint;
@@ -6040,20 +6050,6 @@ QPixmap drawEeg( Typ dataD,
 
     for(int c2 = 0; c2 < ns; ++c2)
     {
-        //        if(ns >= 21 && ns < 25)
-        //        {
-        //            if(c2 == 19)        colour = "red";
-        //            else if(c2 == 20)   colour = "blue";
-        //            else colour = "black";
-        //        }
-        //        else
-        //        {
-        //            colour = "black";
-        //        }
-        //        if(ns == 23 && c2 == 21)
-        //        {
-        //            colour = "green";
-        //        }
         if(c2 == blueChan)
         {
             colour = "blue";
@@ -6072,14 +6068,14 @@ QPixmap drawEeg( Typ dataD,
         for(int c1 = 0; c1 < pic.width(); ++c1)
         {
             paint.drawLine(c1,
-                           (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice] * norm,
-                    c1+1,
-                    (c2+1)*pic.height() / (ns+2) + dataD[c2][c1 + startSlice +1] * norm);
+                           (c2+1) * pic.height() / (ns + 2) + dataD[c2][c1 + startSlice] * norm,
+                    c1 + 1,
+                    (c2 + 1) * pic.height() / (ns + 2) + dataD[c2][c1 + startSlice + 1] * norm);
         }
     }
     norm = 1.;
     paint.setPen(QPen(QBrush("black"), lineWidth));
-    for(int c3 = 0; c3 < NumOfSlices * 10 / 250; ++c3)
+    for(int c3 = 0; c3 < NumOfSlices * 10 / freq; ++c3)
     {
         if(c3%10 == 0) norm = 20.;
         else if(c3%5  == 0) norm = 15.;
@@ -6088,13 +6084,8 @@ QPixmap drawEeg( Typ dataD,
         paint.drawText(c3 * freq, pic.height() - 35, QString::number(c3));
         norm = 10.;
     }
-
-
-    norm = 1;
     pic.save(picPath, 0, 100);
-
     paint.end();
-
     return pic;
 }
 template QPixmap drawEeg(double ** dataD,

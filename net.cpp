@@ -363,17 +363,6 @@ void Net::autoClassification(const QString & spectraDir)
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                                   + slash() + "log.txt");
     QFile::remove(helpString);
-
-//    ofstream logFile(helpString.toStdString());
-//    if(!logFile.good())
-//    {
-//        //        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
-//        cout << "autoClassification: Cannot open log file to write" << endl;
-//        return;
-//    }
-//    logFile.close();
-
-
 #if 0
     //set random matrix - add in PaIntoMatrixByName
     for(int i = 0; i < ns; ++i)
@@ -394,14 +383,15 @@ void Net::autoClassification(const QString & spectraDir)
     int numOfPairs = ui->numOfPairsBox->value();
 
     //adjust reduce coefficient
-    MakePa  * mkPa = new MakePa(spectraDir, channelsSetExclude);
+
+    channelsSetExclude << 14;
+
     double newReduceCoeff = adjustReduceCoeff(spectraDir,
                                               ui->lowLimitSpinBox->value(),
                                               ui->highLimitSpinBox->value());
     if(newReduceCoeff <= 0.1) // threshold
     {
         averageAccuracy = 0.;
-        delete mkPa;
         autoFlag = tempBool;
         cout <<  "AutoClass: unsuccessful, time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
         averageAccuracy = 0.;
@@ -439,7 +429,6 @@ void Net::autoClassification(const QString & spectraDir)
             qApp->processEvents();
             if(stopFlag)
             {
-                delete mkPa;
                 stopFlag = 0;
                 autoFlag = tempBool;
                 return;
@@ -456,7 +445,6 @@ void Net::autoClassification(const QString & spectraDir)
 
 
     averageClassification();
-    delete mkPa;
     autoFlag = tempBool;
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 

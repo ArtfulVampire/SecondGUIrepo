@@ -98,6 +98,7 @@ public:
     void swapRows(int i, int j);
     void zero();
     void one();
+    void eraseRow(int i);
 //    double det();
 //    void cofactor();
 //    void systemGaussSolve();

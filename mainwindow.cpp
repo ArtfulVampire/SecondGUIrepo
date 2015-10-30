@@ -1350,7 +1350,6 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 void MainWindow::drawRealisations()
 {
     QStringList lst;
-    QStringList nameFilters;
     QString helpString;
     QString prePath;
 
@@ -1359,25 +1358,12 @@ void MainWindow::drawRealisations()
     ui->progressBar->setValue(0);
     matrix dataD;
 
-    lst.clear();
-    nameFilters.clear();
-    nameFilters << "*_241*";
-    nameFilters << "*_247*";
-    nameFilters << "*_244*";
-    nameFilters << "*_254*";
+    QDir localDir(def::dir->absolutePath());
+    localDir.cd(ui->drawDirBox->currentText());    //->windows or Realisations or cut
 
-    //for Roma's files
-    nameFilters << "*_2";
-    nameFilters << "*_1";
+    prePath = localDir.absolutePath();
 
-    def::dir->cd(ui->drawDirBox->currentText());    //->windows or Realisations or cut
-    prePath = def::dir->absolutePath();
-
-    lst = def::dir->entryList(QDir::Files);
-//    lst = def::dir->entryList(nameFilters, QDir::Files);
-
-    def::dir->cdUp();   //-> into EDF-file dir
-    if(ui->drawDirBox->currentText() == "windows/fromreal") def::dir->cdUp();
+    lst = localDir.entryList(QDir::Files);
 
     int redCh = -1;
     int blueCh = -1;
@@ -1393,13 +1379,15 @@ void MainWindow::drawRealisations()
     }
 
     int NumOfSlices;
+//    redCh = 3;
+//    blueCh = 14;
     for(int i = 0; i < lst.length(); ++i)
     {
-//        if(i > 1) break;
-
-
-
-        if(stopFlag) break;
+//        if(i == 1) break;
+        if(stopFlag)
+        {
+            break;
+        }
         helpString = prePath + slash() + lst[i];
         readPlainData(helpString,
                       dataD,
@@ -1411,7 +1399,8 @@ void MainWindow::drawRealisations()
             continue;
         }
 
-        helpString = getPicPath(helpString, def::dir, def::ns);
+        helpString = getPicPath(helpString);
+
         drawEeg(dataD,
                 def::ns,
                 NumOfSlices,
@@ -1421,12 +1410,10 @@ void MainWindow::drawRealisations()
                 blueCh,
                 redCh); // generality freq
 
-        if(int(100*(i+1)/lst.length()) > ui->progressBar->value()) ui->progressBar->setValue(int(100*(i+1)/lst.length()));
+        ui->progressBar->setValue(100 * (i + 1) / lst.length());
         qApp->processEvents();
     }
-
     ui->progressBar->setValue(0);
-
 
     helpString = "signals are drawn ";
     ui->textEdit->append(helpString);
@@ -1768,35 +1755,32 @@ void MainWindow::customFunc()
     def::fftLength = 1024;
     def::spLength = 63; // pewpew
     def::cfgFileName = "4sec19ch";
-//    makeCfgStatic("4sec19ch");
 
-    drawTemplate("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg");
-    matrix avSpectra(4, def::nsWOM() * def::spLength);
-    for(int i = 0; i < 4; ++i)
-    {
-        readFileInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_class_"
-                       + QString::number(i + 1) + ".psa", avSpectra[i]);
-    }
-    drawArraysInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg",
-                     avSpectra);
-    trivector<int> MW;
-    countMannWhitney(MW,
-                     def::dir->absolutePath()
-                     + slash() + "SpectraSmooth"
-                     + slash() + "windows");
-    drawMannWitneyInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg",
-                         MW);
-
-    exit(0);
-
-//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+    sliceWindFromReal();
+    ui->drawDirBox->setCurrentIndex(3);
+    drawRealisations();
 
 
-//    fileInnerClassification("/media/Files/Data/AAX/",
-//                            "AAX_rr_f_new.edf",
-//                            4096,
-//                            0);
+
+//    matrix avSpectra(4, def::nsWOM() * def::spLength);
+//    for(int i = 0; i < 4; ++i)
+//    {
+//        readFileInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_class_"
+//                       + QString::number(i + 1) + ".psa", avSpectra[i]);
+//    }
+//    drawArraysInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg",
+//                     avSpectra);
+//    trivector<int> MW;
+//    countMannWhitney(MW,
+//                     def::dir->absolutePath()
+//                     + slash() + "SpectraSmooth"
+//                     + slash() + "windows");
+//    drawMannWitneyInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg",
+//                         MW);
 //    exit(0);
+
+
+    return;
 #if 0
     const QStringList names{"SIV", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "ADA"};
     for(const QString & guy : names)

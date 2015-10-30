@@ -34,6 +34,7 @@
 #include <vector>
 #include <typeinfo>
 #include <ctime>
+#include <set>
 
 
 #ifdef _OPENMP
@@ -67,7 +68,9 @@ QString fitString(const QString & input, int N); // append spaces
 
 int findChannel(char ** const labelsArr, QString chanName, int ns = 21); // const fail
 QString setFileName(const QString & initNameOrPath); //-> initName_i.ext
-QString getPicPath(const QString & dataPath, QDir *ExpNameDir, int ns);
+QString getPicPath(const QString & dataPath,
+                   const QDir * ExpNameDir = def::dir,
+                   const int & ns = def::ns);
 QString getFileName(const QString & filePath, bool withExtension = true);
 bool areEqualFiles(QString path1, QString path2);
 

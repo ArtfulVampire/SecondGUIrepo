@@ -20,11 +20,10 @@ void MainWindow::sliceWindFromReal()
     QString helpString;
     int eyesCounter;
 
-    def::dir->cd("Realisations");
+    QDir localDir(def::dir->absolutePath());
+    localDir.cd("Realisations");
     QStringList nameFilters {"*_2??"};
-    QStringList lst = def::dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
-    def::dir->cdUp();
-
+    QStringList lst = localDir.entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
 
     const int timeShift = ui->timeShiftSpinBox->value();
     int wndLength = ui->windowLengthSpinBox->value();
@@ -35,12 +34,26 @@ void MainWindow::sliceWindFromReal()
     int offset;
     int NumOfSlices;
 
+    const std::set<int, std::greater<int>> exclude {14};
+
+    int localNs = def::ns;
     for(int i = 0; i < lst.length(); ++i)
     {
+        localNs = def::ns;
+        cout << localNs << endl;
+
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "Realisations"
                                               + slash() + lst[i]);
-        readPlainData(helpString, dataReal, def::ns, NumOfSlices);
+        readPlainData(helpString, dataReal, localNs, NumOfSlices);
+
+        for(const int & num : exclude)
+        {
+            dataReal.eraseRow(num);
+            --localNs;
+        }
+
+        cout << localNs << endl << endl;
 
         offset = 0;
         for(int h = 0; h < ceil(NumOfSlices / double(timeShift)); ++h)
@@ -50,12 +63,12 @@ void MainWindow::sliceWindFromReal()
             for(int l = offset; l < min(offset + wndLength, NumOfSlices); ++l)
             {
                 eyesCounter = 0.;
-                for(int m = 0; m < def::ns; ++m)
+                for(int m = 0; m < localNs; ++m)
                 {
                     if(dataReal[m][l] == 0.)  //generality different nr
                     eyesCounter += 1;
                 }
-                if(eyesCounter >= (def::ns - 1)) eyes += 1;
+                if(eyesCounter >= (localNs - 1)) eyes += 1;
             }
 
             if(eyes / double(wndLength) > 0.3)  //generality coefficient
@@ -71,7 +84,8 @@ void MainWindow::sliceWindFromReal()
                          + "." + rightNumber(h, 2);
             helpString = QDir::toNativeSeparators(helpString);
 
-            writePlainData(helpString, dataReal, def::ns, wndLength, offset);
+            /// wowo wowoww wowowowo owowwowo
+            writePlainData(helpString, dataReal, localNs, wndLength, offset);
 
             offset += timeShift;
         }

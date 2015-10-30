@@ -609,6 +609,12 @@ void matrix::swapRows(int i, int j)
     std::swap(this->data[i], this->data[j]);
 }
 
+void matrix::eraseRow(int i)
+{
+    if(i > this->rows()) return;
+    this->data.erase(data.begin() + i);
+}
+
 void matrixProduct(const matrix & in1,
                    const matrix & in2,
                    matrix & result,
