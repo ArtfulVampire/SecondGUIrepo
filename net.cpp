@@ -78,7 +78,7 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(3.0); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(7.0); // 1. for MATI? usually 5.     0.7 for best comp set
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
@@ -636,8 +636,9 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
     else
     {
         helpString = def::dir->absolutePath()
-                + slash() + def::ExpName + "_weights.wts";
+                + slash() + def::ExpName + ".wts";
     }
+//    cout << "wtsPath = " << helpString << endl;
 
     if(helpString.isEmpty())
     {
@@ -665,9 +666,10 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
 
     if(picPath.isEmpty())
     {
-        picPath = wtsPath;
-        picPath.replace(".wts", ".jpg"); /// make default suffixes
+        picPath = helpString;
+        picPath.replace(".wts", "_wts.jpg"); /// make default suffixes
     }
+//    cout << "picPath = " << picPath << endl;
     drawTemplate(picPath);
     drawArrays(picPath,
                drawWts,
@@ -2538,7 +2540,7 @@ void Net::LearNetIndices(vector<int> mixNum)
                     for(int k = 0; k < dimensionality[i + 1]; ++k)
                     {
                         // dropout regularization
-                        if(rand() % 1000 < 50) continue;
+//                        if(rand() % 1000 < 200) continue;
 
                         if(ui->deltaRadioButton->isChecked())
                         {

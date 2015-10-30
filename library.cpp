@@ -2083,9 +2083,9 @@ void drawTemplate(const QString & outPath,
 
 void drawArray(const QString & templPath,
                const vec & inData,
-               QString color,
-               double scaling,
-               int lineWidth)
+               const QString & color,
+               const double & scaling,
+               const int & lineWidth)
 {
     QSvgGenerator svgGen;
     QSvgRenderer svgRen;
@@ -2206,6 +2206,8 @@ void drawArray(const QString & templPath,
     pic.save(templPath, 0, 100);
 }
 
+
+// make valarray
 void readFileInLine(const QString & filePath, vec & outData)
 {
     ifstream file(filePath.toStdString());
@@ -2235,7 +2237,7 @@ void writeFileInLine(const QString & filePath, const vec & outData)
     }
     for(auto it = outData.begin(); it < outData.end(); ++it)
     {
-        file << *it << '\t'; // \t or \n
+        file << doubleRound(*it, 4) << '\t'; // \t or \n
     }
     file.close();
 }
@@ -2447,6 +2449,35 @@ void drawArrays(const QString & templPath,
 
 }
 
+void drawArraysInLine(const QString & picPath,
+                      const matrix & inMatrix,
+                      const QStringList & colors,
+                      const double scaling,
+                      const int lineWidth)
+{
+    QPixmap pic(inMatrix.cols(), inMatrix.cols() / 3); // generality
+    pic.fill();
+    QPainter pnt;
+    pnt.begin(&pic);
+
+
+    const double offsetY = 1 - 0.1;
+    const double norm = inMatrix.maxVal() * scaling * offsetY; /// check scaling * or /
+
+    for(int k = 0; k < inMatrix.rows(); ++k)
+    {
+        pnt.setPen(QPen(QBrush(QColor(colors[k])), lineWidth));
+        for(int i = 0; i < pic.width() - 1; ++i)
+        {
+            pnt.drawLine(i, (offsetY - inMatrix[k][i] / norm) * pic.height(),
+                         i + 1, (offsetY - inMatrix[k][i + 1] / norm) * pic.height());
+        }
+    }
+    pic.save(picPath, 0, 100);
+    pnt.end();
+
+}
+
 
 
 ///////////////////////// scales and shit
@@ -2470,13 +2501,12 @@ void drawCutOneChannel(const QString & inSpectraPath,
 
 
 
-void countMannWhitney(vector<vector<vector<int>>> & outMW,
+void countMannWhitney(trivector<int> & outMW,
                       const QString & spectraPath,
-                      const QStringList & fileMarkers,
                       matrix * averageSpectraOut,
                       matrix * distancesOut)
 {
-    const int numOfClasses = fileMarkers.length();
+    const int numOfClasses = def::fileMarkers.length();
     const int NetLength = def::nsWOM() * def::spLength;
 
     QString helpString;
@@ -2491,7 +2521,7 @@ void countMannWhitney(vector<vector<vector<int>>> & outMW,
     {
         QStringList nameFilters;
         QStringList leest;
-        leest = fileMarkers[i].split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        leest = def::fileMarkers[i].split(QRegExp("[,; ]"), QString::SkipEmptyParts);
         for(int j = 0; j < leest.length(); ++j)
         {
             helpString = "*" + leest[j] + "*";
@@ -2545,7 +2575,7 @@ void countMannWhitney(vector<vector<vector<int>>> & outMW,
 }
 
 void drawMannWitney(const QString & templPath,
-                    const vector<vector<vector<int>>> & inMW,
+                    const trivector<int> & inMW,
                     const QStringList & inColors)
 {
     QSvgGenerator svgGen;
@@ -2627,6 +2657,57 @@ void drawMannWitney(const QString & templPath,
 
     paint.end();
     pic.save(templPath, 0, 100);
+}
+
+void drawMannWitneyInLine(const QString & picPath,
+                          const trivector<int> & inMW,
+                          const QStringList & inColors)
+{
+    QPixmap pic;
+    pic.load(picPath);
+    QPainter pnt;
+    pnt.begin(&pic);
+
+    /// same as drawArraysInLine
+    const double offsetY = 1 - 0.1;
+
+    int num = 0;
+    for(int k = 0; k < inMW.size(); ++k)
+    {
+        for(int j = k + 1; j < inMW.size(); ++j)
+        {
+            const int currTop = pic.height() * (offsetY + (1. - offsetY) * num);
+            const int currBot = pic.height() * (offsetY + (1. - offsetY) * (num + 1));
+            const int currHeight = currBot - currTop;
+
+
+            QColor color1 = QColor(inColors[k]);
+            QColor color2 = QColor(inColors[j]);
+
+            for(int i = 0; i < pic.width(); ++i)
+            {
+                if(inMW[k][j - k][i] == 1)
+                {
+                    pnt.setPen(color1);
+                    pnt.setBrush(QBrush(color1));
+                }
+                else
+                {
+                    pnt.setPen(color2);
+                    pnt.setBrush(QBrush(color2));
+                }
+                pnt.drawLine(i,
+                             currTop,
+                             i,
+                             currBot);
+            }
+
+            ++num;
+        }
+    }
+    pic.save(picPath, 0, 100);
+    pnt.end();
+
 }
 
 void drawColorScale(QString filePath, int range, ColorScale type, bool full)

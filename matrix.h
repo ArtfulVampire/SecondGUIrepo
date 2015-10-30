@@ -38,6 +38,7 @@ public:
 
     matrix(vec vect, bool orientH);
     matrix(vec vect, char orient);
+    matrix(vec vect, int rows);
 
     matrix(std::initializer_list<vector<double>> lst);
 

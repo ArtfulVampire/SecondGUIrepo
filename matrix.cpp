@@ -80,6 +80,25 @@ matrix::matrix(vec vect, char orient)
         matrix();
     }
 }
+
+matrix::matrix(vec vect, int inRows)
+{
+    if(vect.size() % inRows != 0)
+    {
+        cout << "not appropriate size" << endl;
+        return;
+    }
+    int newCols = vect.size() / inRows;
+
+    this->resize(inRows, newCols);
+    for(int i = 0; i < inRows; ++i)
+    {
+        std::copy(vect.begin() + i * newCols,
+                  vect.begin() + (i + 1) * newCols,
+                  data[i].begin());
+    }
+}
+
 matrix::matrix(std::initializer_list<vector<double>> lst)
 {
     this->resize(0, 0);

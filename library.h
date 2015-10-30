@@ -52,6 +52,10 @@ const double pi_sqrt = sqrt(pi);
 typedef std::vector<std::vector<double>> mat;
 typedef std::vector<double> vec;
 
+template <typename Typ>
+class trivector : public std::vector<std::vector<std::vector<Typ>>>
+{};
+
 void writeWavFile(const vec & inData, const QString & outPath);
 
 
@@ -259,7 +263,7 @@ void svd(const mat &inData,
 void makeCfgStatic(const QString & FileName = "16sec19ch",
                    const int & NetLength = def::nsWOM() * def::spLength,
                    const QString & outFileDir = def::dir->absolutePath(),
-                   const int & numOfOuts = 3,
+                   const int & numOfOuts = def::numOfClasses,
                    const double & lrate = 0.1,
                    const double & error = 0.1,
                    const int & temp = 10);
@@ -315,9 +319,9 @@ void drawTemplate(const QString & outPath,
 void drawArray(const QString & templPath,
                const vec & inData,
 //               const spectraGraphsNormalization normType = 0, ////// TODO
-               QString color = "black",
-               double scaling = 1.,
-               int lineWidth = 3);
+               const QString & color = "black",
+               const double & scaling = 1.,
+               const int & lineWidth = 3);
 
 //inMatrix supposed to be def::spLength * 19 size
 template <typename Typ>
@@ -329,19 +333,28 @@ void drawArrays(const QString & templPath,
                 const double scaling = 1.,
                 const int lineWidth = 3);
 
+void drawArraysInLine(const QString & picPath,
+                      const matrix & inMatrix,
+                      const QStringList & colors = def::colours,
+                      const double scaling = 1.,
+                      const int lineWidth = 3);
+
 void drawCutOneChannel(const QString & inSpectraPath,
                        const int numChan);
 
-void countMannWhitney(vector<vector<vector<int>>> & outMW,
+void countMannWhitney(trivector<int> & outMW,
                       const QString & spectraPath = def::dir->absolutePath()
                                                     + slash() + "SpectraSmooth",
-                      const QStringList & fileMarkers = {"_241", "_247", "_244 _254"},
                       matrix * averageSpectraOut = nullptr,
                       matrix * distancesOut = nullptr);
 
 void drawMannWitney(const QString & templPath,
-                    const vector<vector<vector<int>>> & inMW,
+                    const trivector<int> & inMW,
                     const QStringList & inColors = def::colours);
+
+void drawMannWitneyInLine(const QString & picPath,
+                          const trivector<int> & inMW,
+                          const QStringList & inColors = def::colours);
 
 
 void drawArray(double * array, int length, QString outPath);

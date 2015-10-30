@@ -67,7 +67,8 @@ public:
     void setReduceCoeff(double coeff);
     double getReduceCoeff();
     void setNumOfPairs(int num);
-    void writeWts(const QString &wtsPath);
+    void writeWts(const QString &wtsPath = def::dir->absolutePath()
+                                           + slash() + def::ExpName + ".wts");
     void PaIntoMatrixByName(const QString & fileName);
     void autoClassification(const QString & spectraDir);
     void averageClassification();

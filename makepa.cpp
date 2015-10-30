@@ -110,11 +110,10 @@ void MakePa::mwTest()
     const int num = def::fileMarkers.length();
     matrix inSpectraAv;
     matrix dists;
-    vector<vector<vector<int>>> MW;
+    trivector<int> MW;
 
     countMannWhitney(MW,
                      ui->spectraDirLineEdit->text(),
-                     def::fileMarkers,
                      &inSpectraAv,
                      &dists);
 

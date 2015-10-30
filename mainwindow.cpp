@@ -1762,19 +1762,41 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-    setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+    setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
 
-    Net * ANN = new Net();
-//    ANN->readCfgByName(cfgFileName);
-    ANN->setAutoProcessingFlag(true);
-    ANN->setNumOfPairs(40);
-    ANN->autoClassificationSimple();
+    def::ns = 32;
+    def::fftLength = 1024;
+    def::spLength = 63; // pewpew
+    def::cfgFileName = "4sec19ch";
+//    makeCfgStatic("4sec19ch");
+
+    drawTemplate("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg");
+    matrix avSpectra(4, def::nsWOM() * def::spLength);
+    for(int i = 0; i < 4; ++i)
+    {
+        readFileInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_class_"
+                       + QString::number(i + 1) + ".psa", avSpectra[i]);
+    }
+    drawArraysInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg",
+                     avSpectra);
+    trivector<int> MW;
+    countMannWhitney(MW,
+                     def::dir->absolutePath()
+                     + slash() + "SpectraSmooth"
+                     + slash() + "windows");
+    drawMannWitneyInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg",
+                         MW);
+
+    exit(0);
+
+//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+
 
 //    fileInnerClassification("/media/Files/Data/AAX/",
-//                            "AAX_final.edf",
+//                            "AAX_rr_f_new.edf",
 //                            4096,
-//                            40);
-    exit(0);
+//                            0);
+//    exit(0);
 #if 0
     const QStringList names{"SIV", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "ADA"};
     for(const QString & guy : names)
@@ -1992,7 +2014,7 @@ void MainWindow::customFunc()
             sliceAll();
             countSpectraSimple(4096);
 
-            vector<vector<vector<int>>> MW;
+            trivector<int> MW;
             countMannWhitney(MW);
 
 #if 0

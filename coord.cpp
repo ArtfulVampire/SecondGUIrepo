@@ -22,6 +22,6 @@ QDir * dir = new QDir();
 
 QStringList colours{"blue", "red", "green", "black", "gray"};
 //QStringList fileMarkers{"_241", "_247", "_254 _244"};
-QStringList fileMarkers{"_241", "_247", "_254 _244"};
+QStringList fileMarkers{"_241", "_242", "_245", "_246"}; // Ossadtchi
 int numOfClasses = fileMarkers.length();
 }

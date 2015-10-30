@@ -399,39 +399,25 @@ void Spectre::integrate()
 void Spectre::psaSlot()
 {
     matrix drawData;
-    mat tempMat;
     vec tempVec;
     QString helpString;
 
-    helpString = ui->lineEdit_1->text();
-    readFileInLine(helpString, tempVec);
-    tempMat.push_back(tempVec);
-
-    helpString = ui->lineEdit_2->text();
-    readFileInLine(helpString, tempVec);
-    tempMat.push_back(tempVec);
-
-    // crutch 1
-    helpString.replace("_247", "_254");
-    if(QFile::exists(helpString))
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                              + slash() + "Help"
+                                              + slash()
+                                              + def::ExpName
+                                              + "_class_" + QString::number(i + 1)
+                                              + ".psa");
         readFileInLine(helpString, tempVec);
-        tempMat.push_back(tempVec);
+        drawData.push_back(tempVec);
     }
-
-    // crutch 2
-    helpString.replace("_254", "_244");
-    if(QFile::exists(helpString))
-    {
-        readFileInLine(helpString, tempVec);
-        tempMat.push_back(tempVec);
-    }
-
-    drawData = matrix(tempMat);
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
-                                          + slash() + ui->lineEdit_m2->text() + ".jpg");
+                                          + slash()
+                                          + def::ExpName + "_all.jpg");
     drawTemplate(helpString);
     drawArrays(helpString,
                drawData,
@@ -440,7 +426,7 @@ void Spectre::psaSlot()
 
     if(ui->MWcheckBox->isChecked())
     {
-        vector<vector<vector<int>>> MW;
+        trivector<int> MW;
         countMannWhitney(MW);
         drawMannWitney(helpString,
                        MW);
@@ -452,170 +438,95 @@ void Spectre::psaSlot()
     ui->fftComboBox->setCurrentIndex(toC);
     ui->fftComboBox->setCurrentIndex(tmp);
 
-    def::dir->cd(backupDirPath);
+
 }
 
 void Spectre::compare()
 {
-    QStringList list; //0 - Spatial, 1 - Verbal, 2 - Gaps
     QString helpString;
+    QStringList leest;
 
-    def::dir->cd(ui->lineEdit_1->text());   //input dir = /SpectraSmooth or windows
-    nameFilters.clear();
-    list.clear();
-    list = ui->lineEdit_m1->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
-    {
-        helpString = "*" + list[i] + "*";
-        nameFilters << helpString;
-    }
+    QDir localDir;
+    QStringList nameFilters;
     QStringList lst;
-    lst = def::dir->entryList(nameFilters, QDir::Files, QDir::Size);
 
-    int NumOfPatterns = lst.length();
 
     vec tempVec;
     vec meanVec;
 
-    for(int j = 0; j < NumOfPatterns; ++j)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash()
-                                              + lst[j]);
-        readFileInLine(helpString, tempVec);
-        if(j == 0)
+        localDir.cd(ui->lineEdit_1->text());
+        nameFilters.clear();
+        leest.clear();
+        leest = def::fileMarkers[i].split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(const QString & filter : leest)
         {
-            meanVec.resize(tempVec.size(), 0.);
+            helpString = "*" + filter + "*";
+            nameFilters << helpString;
         }
+        lst = localDir.entryList(nameFilters, QDir::Files, QDir::Name);
 
-        std::transform(meanVec.begin(),
-                       meanVec.end(),
-                       tempVec.begin(),
-                       meanVec.begin(),
-                       [](const double & in1, const double & in2)
+
+        const int NumOfPatterns = lst.length();
+        for(int j = 0; j < NumOfPatterns; ++j)
         {
-            return in1 + in2;
-        });
-    }
+            helpString = QDir::toNativeSeparators(localDir.absolutePath()
+                                                  + slash()
+                                                  + lst[j]);
+            readFileInLine(helpString, tempVec);
+            if(j == 0)
+            {
+                meanVec.resize(tempVec.size(), 0.);
+            }
+
+            /// make valarray
+            std::transform(meanVec.begin(),
+                           meanVec.end(),
+                           tempVec.begin(),
+                           meanVec.begin(),
+                           [NumOfPatterns](const double & in1, const double & in2)
+            {
+                return in1 + in2 / NumOfPatterns;
+            });
+        }
+//        /// make valarray
+//        std::for_each(meanVec.begin(),
+//                      meanVec.end(),
+//                      [NumOfPatterns](double & in)
+//        {
+//            in /= NumOfPatterns;
+//        });
 
 
-    if(NumOfPatterns != 0)
-    {
-        std::for_each(meanVec.begin(),
-                      meanVec.end(),
-                      [NumOfPatterns](double & in)
-        {
-            in /= NumOfPatterns;
-        });
 
 
-        def::dir->cd(ui->lineEdit_2->text());  //output dir /Help
+        localDir.cd(ui->lineEdit_2->text());  //output dir /Help
 
+        // psa name
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                              + slash() + "Help"
                                               + slash()
-                                              + ui->lineEdit_m2->text()
+                                              + def::ExpName
+                                              + "_class_" + QString::number(i + 1)
                                               + ".psa");
+        /// maybe make as spectra?
         writeFileInLine(helpString, meanVec);
 #if 0
         // draw average for one type
-
-
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                              + slash() + "Help"
                                               + slash()
-                                              + ui->lineEdit_m2->text()
+                                              + def::ExpName
+                                              + "_class_" + QString::number(i + 1)
                                               + ".jpg");
 
-//        cout << helpString << endl;
+        //        cout << helpString << endl;
         drawTemplate(helpString);
         drawArray(helpString, meanVec);
 #endif
+
     }
-
-    if(ui->fftComboBox->currentIndex() != 0)
-    {
-        if(ui->lineEdit_m1->text().contains("241"))
-        {
-            ui->lineEdit_m1->setText("_247");
-            helpString = def::ExpName;
-            helpString.append("_247");
-            ui->lineEdit_m2->setText(helpString);
-        }
-        else if(ui->lineEdit_m1->text().contains("247"))
-        {
-            ui->lineEdit_m1->setText("_244");
-            helpString = def::ExpName;
-            helpString.append("_244");
-            ui->lineEdit_m2->setText(helpString);
-        }
-        else if(ui->lineEdit_m1->text().contains("244"))
-        {
-            ui->lineEdit_m1->setText("_254");
-            helpString = def::ExpName;
-            helpString.append("_254");
-            ui->lineEdit_m2->setText(helpString);
-        }
-        else if(ui->lineEdit_m1->text().contains("254"))
-        {
-            helpString = backupDirPath
-                    + slash() + "Help"
-                    + slash() + def::ExpName + "_241.psa";
-            ui->lineEdit_1->setText(QDir::toNativeSeparators(helpString));
-
-
-            helpString = backupDirPath
-                    + slash() + "Help"
-                    + slash() + def::ExpName + "_247.psa";
-            ui->lineEdit_2->setText(QDir::toNativeSeparators(helpString));
-
-            ui->lineEdit_m1->clear();
-            helpString = def::ExpName;
-            helpString.append("_all");
-            ui->lineEdit_m2->setText(helpString);
-        }
-    }
-    else
-    {
-        if(ui->lineEdit_m1->text().contains("241"))
-        {
-            ui->lineEdit_m1->setText("_247");
-            helpString = def::ExpName;
-            helpString.append("_247_wnd");
-            ui->lineEdit_m2->setText(helpString);
-        }
-        else if(ui->lineEdit_m1->text().contains("247"))
-        {
-            ui->lineEdit_m1->setText("_244");
-            helpString = def::ExpName;
-            helpString.append("_244_wnd");
-            ui->lineEdit_m2->setText(helpString);
-        }
-        else if(ui->lineEdit_m1->text().contains("244"))
-        {
-            ui->lineEdit_m1->setText("_254");
-            helpString = def::ExpName;
-            helpString.append("_254_wnd");
-            ui->lineEdit_m2->setText(helpString);
-        }
-
-        else if(ui->lineEdit_m1->text().contains("254"))
-        {
-            helpString = backupDirPath
-                    + slash() + "Help"
-                    + slash() + def::ExpName + "_241_wnd.psa";
-            ui->lineEdit_1->setText(QDir::toNativeSeparators(helpString));
-
-            helpString = backupDirPath
-                    + slash() + "Help"
-                    + slash() + def::ExpName + "_247_wnd.psa";
-            ui->lineEdit_2->setText(QDir::toNativeSeparators(helpString));
-
-            ui->lineEdit_m1->clear();
-            helpString = def::ExpName;
-            helpString.append("_all_wnd");
-            ui->lineEdit_m2->setText(helpString);
-        }
-    }
-    def::dir->cd(backupDirPath);
 }
 
 void Spectre::setFftLengthSlot()
