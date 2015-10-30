@@ -32,12 +32,13 @@ namespace def
     const bool ntFlag = false;
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
 
-    const double freq = 250.;
+
     const double leftFreq = 5.;
     const double rightFreq = 20.;
 
     const bool wirteStartEndLong = false; //for slice
 
+    extern double freq;
     extern int left;
     extern int right;
     extern double spStep;

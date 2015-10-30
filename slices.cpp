@@ -25,8 +25,9 @@ void MainWindow::sliceWindFromReal()
     QStringList nameFilters {"*_2??"};
     QStringList lst = localDir.entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
 
-    const int timeShift = ui->timeShiftSpinBox->value();
-    int wndLength = ui->windowLengthSpinBox->value();
+    const int timeShift = ui->timeShiftSpinBox->value() * def::freq;
+    const int wndLength = ui->windowLengthSpinBox->value() * def::freq;
+
 
     matrix dataReal;
 
@@ -34,13 +35,17 @@ void MainWindow::sliceWindFromReal()
     int offset;
     int NumOfSlices;
 
-    const std::set<int, std::greater<int>> exclude {14};
+    const std::set<int, std::greater<int>> exclude {
+                                           3,
+                                           4,
+                                           14,
+                                           };
 
     int localNs = def::ns;
     for(int i = 0; i < lst.length(); ++i)
     {
         localNs = def::ns;
-        cout << localNs << endl;
+//        cout << localNs << endl;
 
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "Realisations"
@@ -53,7 +58,7 @@ void MainWindow::sliceWindFromReal()
             --localNs;
         }
 
-        cout << localNs << endl << endl;
+//        cout << localNs << endl << endl;
 
         offset = 0;
         for(int h = 0; h < ceil(NumOfSlices / double(timeShift)); ++h)
@@ -489,7 +494,7 @@ void MainWindow::sliceWindow(int startSlice, int endSlice, int number, int marke
     QString helpString;
     if(endSlice - startSlice > 2500) return;
 
-    int wndLength = ui->windowLengthSpinBox->value();
+    int wndLength = ui->windowLengthSpinBox->value() * def::freq;
 
 
     double helpDouble = 0.;

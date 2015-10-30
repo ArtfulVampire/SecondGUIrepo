@@ -404,9 +404,6 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QSpinBox" name="timeShiftSpinBox"/>
-       </item>
        <item row="1" column="1">
         <widget class="QLabel" name="label_3">
          <property name="text">
@@ -415,7 +412,10 @@
         </widget>
        </item>
        <item row="0" column="0">
-        <widget class="QSpinBox" name="windowLengthSpinBox"/>
+        <widget class="QDoubleSpinBox" name="windowLengthSpinBox"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QDoubleSpinBox" name="timeShiftSpinBox"/>
        </item>
       </layout>
      </item>
@@ -1150,9 +1150,6 @@
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>label_22</zorder>
-   <zorder>rereferenceDataPushButton</zorder>
-   <zorder>rereferenceDataComboBox</zorder>
-   <zorder>horizontalSpacer_8</zorder>
    <zorder>fileMarkersLineEdit</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">

@@ -398,6 +398,10 @@ void Spectre::integrate()
 // remake
 void Spectre::psaSlot()
 {
+    QTime myTime;
+    myTime.start();
+
+
     matrix drawData;
     vec tempVec;
     QString helpString;
@@ -418,19 +422,39 @@ void Spectre::psaSlot()
                                           + slash() + "Help"
                                           + slash()
                                           + def::ExpName + "_all.jpg");
-    drawTemplate(helpString);
-    drawArrays(helpString,
-               drawData,
-               false,
-               spectraGraphsNormalization::each);
 
+    trivector<int> MW;
     if(ui->MWcheckBox->isChecked())
     {
-        trivector<int> MW;
-        countMannWhitney(MW);
-        drawMannWitney(helpString,
-                       MW);
+        countMannWhitney(MW,
+                         ui->lineEdit_1->text());
     }
+
+    if(drawData.cols() == 19 * def::spLength)
+    {
+        drawTemplate(helpString);
+        drawArrays(helpString,
+                   drawData,
+                   false,
+                   spectraGraphsNormalization::each);
+        if(ui->MWcheckBox->isChecked())
+        {
+            drawMannWitney(helpString,
+                           MW);
+        }
+    }
+    else
+    {
+        drawArraysInLine(helpString,
+                         drawData);
+        if(ui->MWcheckBox->isChecked())
+        {
+            drawMannWitneyInLine(helpString,
+                                 MW);
+        }
+    }
+
+
 
     const int tmp = ui->fftComboBox->currentIndex();
     const int toC = (tmp == 0) ? 1 : 0;
@@ -439,10 +463,14 @@ void Spectre::psaSlot()
     ui->fftComboBox->setCurrentIndex(tmp);
 
 
+    cout << "psaSlot: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
 void Spectre::compare()
 {
+    QTime myTime;
+    myTime.start();
+
     QString helpString;
     QStringList leest;
 
@@ -456,7 +484,7 @@ void Spectre::compare()
 
     for(int i = 0; i < def::numOfClasses; ++i)
     {
-        localDir.cd(ui->lineEdit_1->text());
+        localDir.cd(ui->lineEdit_1->text()); // spectra path
         nameFilters.clear();
         leest.clear();
         leest = def::fileMarkers[i].split(QRegExp("[,; ]"), QString::SkipEmptyParts);
@@ -465,10 +493,11 @@ void Spectre::compare()
             helpString = "*" + filter + "*";
             nameFilters << helpString;
         }
+        lst.clear();
         lst = localDir.entryList(nameFilters, QDir::Files, QDir::Name);
 
-
         const int NumOfPatterns = lst.length();
+        meanVec.clear();
         for(int j = 0; j < NumOfPatterns; ++j)
         {
             helpString = QDir::toNativeSeparators(localDir.absolutePath()
@@ -510,7 +539,7 @@ void Spectre::compare()
                                               + def::ExpName
                                               + "_class_" + QString::number(i + 1)
                                               + ".psa");
-        /// maybe make as spectra?
+        /// maybe make as spectraFile?
         writeFileInLine(helpString, meanVec);
 #if 0
         // draw average for one type
@@ -527,6 +556,8 @@ void Spectre::compare()
 #endif
 
     }
+
+    cout << "compare: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
 void Spectre::setFftLengthSlot()
@@ -551,11 +582,10 @@ void Spectre::setFftLengthSlot()
     {
         ui->smoothBox->setValue(4);
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "windows"
-                                              + slash() + "fromreal");
+                                              + slash() + "windows");
+        helpString += slash() + "fromreal";
 
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "windows"); //for windows
+
         ui->lineEdit_1->setText(helpString);
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "SpectraSmooth"
@@ -986,60 +1016,11 @@ void Spectre::countSpectra()
     }
     delete []dataPhase;
 
+    ui->lineEdit_1->setText(ui->lineEdit_2->text());
+    ui->lineEdit_2->setText(def::dir->absolutePath() + slash() + "Help");
 
     //generality
-    //part from smooth()
-    if(ui->fftComboBox->currentIndex()!=0) //if not windows
-    {
-//        helpString = ui->lineEdit_1->text();  // /media/Files/Data/ExpName/Realisations
-//        helpString.resize(helpString.lastIndexOf(slash())+1); // /media/Files/Data/ExpName/
-//        helpString.append("SpectraSmooth"); // /media/Files/Data/ExpName/SpectraSmooth
-        helpString = backupDirPath
-                + slash() + "SpectraSmooth";
-        ui->lineEdit_1->setText(QDir::toNativeSeparators(helpString));
-
-
-//        helpString = ui->lineEdit_2->text(); // /media/Files/Data/ExpName/SpectraSmooth
-//        helpString.resize(helpString.lastIndexOf(slash())+1); // /media/Files/Data/ExpName/
-//        helpString.append("Help"); // /media/Files/Data/ExpName/SpectraSmooth/Help
-        helpString = backupDirPath
-                + slash() + "Help";
-        ui->lineEdit_2->setText(QDir::toNativeSeparators(helpString));
-
-        ui->lineEdit_m1->setText("_241");
-        helpString = def::ExpName;
-        helpString.append("_241");
-        ui->lineEdit_m2->setText(helpString);
-    }
-    else
-    {
-//        helpString = ui->lineEdit_1->text(); // /media/Files/Data/ExpName/windows/fromreal
-//        helpString.resize(helpString.lastIndexOf(slash())); // /media/Files/Data/ExpName/windows
-//        helpString.resize(helpString.lastIndexOf(slash())+1); // /media/Files/Data/ExpName/
-//        helpString.append("SpectraSmooth"); // /media/Files/Data/ExpName/SpectraSmooth
-//        helpString.append(slash() + "windows"); // /media/Files/Data/ExpName/SpectraSmooth/windows
-        helpString = backupDirPath
-                + slash() + "SpectraSmooth"
-                + slash() + "windows";
-        ui->lineEdit_1->setText(QDir::toNativeSeparators(helpString));
-
-//        helpString = ui->lineEdit_2->text(); // /media/Files/Data/ExpName/SpectraSmooth/windows
-//        helpString.resize(helpString.lastIndexOf(slash())); // /media/Files/Data/ExpName/SpectraSmooth
-//        helpString.resize(helpString.lastIndexOf(slash())+1); // /media/Files/Data/ExpName/
-//        helpString.append("Help"); // /media/Files/Data/ExpName/SpectraSmooth/Help
-        helpString = backupDirPath
-                + slash() + "Help";
-        ui->lineEdit_2->setText(QDir::toNativeSeparators(helpString));
-
-
-        ui->lineEdit_m1->setText("_241");
-        helpString = def::ExpName;
-        helpString.append("_241_wnd");
-        ui->lineEdit_m2->setText(helpString);
-    }
-
     cout << "countSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
-
 }
 
 int Spectre::countOneSpectre(const matrix & data2, mat & dataFFT)  /////////EDIT
@@ -1059,19 +1040,11 @@ int Spectre::countOneSpectre(const matrix & data2, mat & dataFFT)  /////////EDIT
     }
 
     //generality
-    if(def::fftLength == 4096 && (NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
+
+    if((def::fftLength == 4096 && (NumOfSlices - Eyes) < def::freq * 3.) ||
+       (def::fftLength == 1024 && (NumOfSlices - Eyes) < def::freq * 2.) ||
+       (def::fftLength == 2048 && (NumOfSlices - Eyes) < def::freq * 3.) )
     {
-//        cout << num << "'th file too short" << endl;
-        return 0;
-    }
-    else if(def::fftLength == 1024 && (NumOfSlices-Eyes) < 250*2.)
-    {
-//        cout << num << "'th file too short" << endl;
-        return 0;
-    }
-    else if(def::fftLength == 2048 && (NumOfSlices-Eyes) < 250*3.)
-    {
-//        cout << num << "'th file too short" << endl;
         return 0;
     }
 

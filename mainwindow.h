@@ -168,8 +168,8 @@ public:
                                    const int & fftLen = pow(2, 12),
                                    const int & NumOfPairs = 50,
                                    const bool & windows = false,
-                                   const int & wndLen = 1000,
-                                   const int & tShift = 125);
+                                   const int & wndLen = 4,
+                                   const int & tShift = 0.5);
     double filesCrossClassification(QString workPath,
                                     QString fileName1,
                                     QString fileName2,
@@ -177,28 +177,28 @@ public:
                                     int NumOfRepeats = 35,
                                     double startCoeff = 2.,
                                     bool windows = false,
-                                    int wndLen = 1000,
-                                    int tShift = 125);
+                                    int wndLen = 4,
+                                    int tShift = 0.5);
     double filesDropComponents(QString workPath,
                                QString fileName1,
                                QString fileName2,
                                int NumOfRepeats = 30,
                                bool windows = false,
-                               int wndLen = 1000,
-                               int tShift = 125);
+                               int wndLen = 4,
+                               int tShift = 0.5);
     double filesAddComponentsCross(QString workPath,
                                    QString fileName1,
                                    QString fileName2,
                                    int NumOfRepeats,
                                    bool windows = false,
-                                   int wndLen = 1000,
-                                   int tShift = 125);
+                                   int wndLen = 4,
+                                   int tShift = 0.5);
     double filesAddComponentsInner(const QString &workPath,
                                    const QString &fileName,
                                    int NumOfRepeats,
                                    bool windows = false,
-                                   int wndLen = 1000,
-                                   int tShift = 125);
+                                   int wndLen = 4,
+                                   int tShift = 0.5);
 
     void countICAs(QString workPath,
                    QString fileName,

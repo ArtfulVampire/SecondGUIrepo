@@ -219,14 +219,15 @@ MainWindow::MainWindow() :
     ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(ui->reduceChannelsComboBox->currentIndex()).toString());
 
 
-    ui->timeShiftSpinBox->setMinimum(25);
-    ui->timeShiftSpinBox->setMaximum(1000);
-    ui->timeShiftSpinBox->setValue(1000);
-    ui->timeShiftSpinBox->setSingleStep(25);
-    ui->windowLengthSpinBox->setMaximum(1000);
-    ui->windowLengthSpinBox->setMinimum(250);
-    ui->windowLengthSpinBox->setSingleStep(125);
-    ui->windowLengthSpinBox->setValue(1000);
+    /// seconds !!!!!
+    ui->timeShiftSpinBox->setMinimum(0.1);
+    ui->timeShiftSpinBox->setMaximum(4);
+    ui->timeShiftSpinBox->setValue(4);
+    ui->timeShiftSpinBox->setSingleStep(0.1);
+    ui->windowLengthSpinBox->setMaximum(4);
+    ui->windowLengthSpinBox->setMinimum(1);
+    ui->windowLengthSpinBox->setSingleStep(0.1);
+    ui->windowLengthSpinBox->setValue(4);
     ui->realButton->setChecked(true);
 
     ui->numOfIcSpinBox->setMaximum(19); //generality
@@ -678,8 +679,8 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
             {
                 if(ui->windButton->isChecked()) //bad work
                 {
-                    int timeShift = ui->timeShiftSpinBox->value();
-                    int wndLength = ui->windowLengthSpinBox->value();
+                    double timeShift = ui->timeShiftSpinBox->value() * def::freq;
+                    double wndLength = ui->windowLengthSpinBox->value() * def::freq;
 #if 0
                     for(int i = 0; i < (ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift; ++i)
                     {
@@ -1748,17 +1749,30 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
+//    vec vec1, vec2;
+//    readFileInLine("/media/Files/Data/AAX/Help/AAX_rr_f_new_254.psa", vec1);
+//    readFileInLine("/media/Files/Data/AAX/Help/AAX_rr_f_new_class_3.psa", vec2);
+//    cout << correlation(vec1, vec2, vec1.size()) << endl;
+//    exit(0);
+
+
     ui->matiCheckBox->setChecked(false);
+//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+
+
+
     setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
 
+    def::freq = 100;
     def::ns = 32;
     def::fftLength = 1024;
     def::spLength = 63; // pewpew
     def::cfgFileName = "4sec19ch";
+//    sliceWindFromReal();
+    def::ns = 29;
+//    drawRealisations();
+//    countSpectraSimple(1024);
 
-    sliceWindFromReal();
-    ui->drawDirBox->setCurrentIndex(3);
-    drawRealisations();
 
 
 
@@ -1777,10 +1791,82 @@ void MainWindow::customFunc()
 //                     + slash() + "windows");
 //    drawMannWitneyInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg",
 //                         MW);
+
+
 //    exit(0);
 
 
     return;
+
+
+#if 0
+    // naive artmap
+
+    //norm
+    double maxV;
+    matrix pa[2];
+    int num[2];
+    vector<QString> names[2];
+    vector<double> count[2];
+
+    const int NetLength = def::spLength * def::nsWOM();
+    int errors = 0;
+
+    int matchNum = -1;
+    double matchScore = 0.;
+    double score = 0.;
+
+    for(int t = 0; t < 50; ++t)
+    {
+        makePaStatic("/media/michael/Files/Data/AAX/SpectraSmooth",
+                     4, 7.);
+        for(int i = 0; i < 2; ++i)
+        {
+            readPaFile("/media/Files/Data/AAX/PA/" + QString::number(i + 1) + ".pa",
+                       pa[i],
+                       num[i],
+                       names[i],
+                       count[i]);
+        }
+        maxV = fmax(pa[0].maxVal(), pa[1].maxVal());
+
+        pa[0] /= maxV;
+        pa[1] /= maxV;
+
+
+        for(int i = 0; i < num[1]; ++i)
+        {
+            matchNum = -1;
+            matchScore = 0.;
+            for(int j = 0; j < num[0]; ++j)
+            {
+                score = 0.;
+                for(int a = 0; a < NetLength; ++a)
+                {
+                    score += min(pa[0][j][a], pa[1][i][a]);
+                    score += min(1. - pa[0][j][a], 1. - pa[1][i][a]);
+                }
+                if(score > matchScore)
+                {
+                    matchNum = j;
+                    matchScore = score;
+                }
+            }
+            //        cout << names[1][i] << "\t" << pa[1][i][NetLength + 1] * maxV << endl;
+            //        cout << names[0][matchNum] << "\t" << pa[0][matchNum][NetLength + 1] * maxV << endl << endl;
+
+            if(pa[1][i][NetLength + 1] != pa[0][matchNum][NetLength + 1]) ++errors;
+        }
+        cout << "epoch = " << t << "\t";
+        cout << "num of errors = " << errors << endl;
+
+    }
+    cout << "errors rate = "
+         << doubleRound((errors / double(num[1] * 50.)) * 100., 2) << " %" << endl;
+    exit(0);
+#endif
+
+
 #if 0
     const QStringList names{"SIV", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "ADA"};
     for(const QString & guy : names)

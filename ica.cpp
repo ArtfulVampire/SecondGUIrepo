@@ -1926,8 +1926,11 @@ void MainWindow::spoc()
 
     double * W = new double  [ns];
     double * WOld = new double  [ns];
-    int epochLength = ui->windowLengthSpinBox->value();
-    int timeShift = ui->timeShiftSpinBox->value();
+
+    /// remade 30.10.15
+    double timeShift = ui->timeShiftSpinBox->value() * def::freq;
+    double epochLength = ui->windowLengthSpinBox->value() * def::freq;
+
     int numOfEpoches = (ndr*def::freq - epochLength)/timeShift;
 
     double * Z = new double [numOfEpoches];
@@ -2001,7 +2004,9 @@ void MainWindow::spoc()
 //            }
 //            averages[j] /= epochLength;
 
-            averages[j] = mean((globalEdf.getData()[j].data() + i*timeShift), epochLength);
+            averages[j] = mean(globalEdf.getData()[j].data()
+                                + i * int(timeShift),
+                               epochLength);
         }
 
         for(int j = 0; j < ns; ++j)
@@ -2016,7 +2021,9 @@ void MainWindow::spoc()
 //                helpDouble /= epochLength;
 //                Ce[i][j][k] = helpDouble;
 
-                Ce[i][j][k] = variance(globalEdf.getData()[j].data() + i*timeShift, epochLength);
+                Ce[i][j][k] = variance(globalEdf.getData()[j].data()
+                                       + i * int(timeShift),
+                                       epochLength);
             }
         }
     }

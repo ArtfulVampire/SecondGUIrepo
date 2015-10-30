@@ -13,78 +13,6 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QLabel" name="label_7">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>370</y>
-     <width>220</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>12</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>Dont forget I/O Dirs</string>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>400</y>
-     <width>221</width>
-     <height>95</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout_5">
-    <item row="0" column="0">
-     <widget class="QLineEdit" name="lineEdit_m1"/>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>file markers</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLineEdit" name="lineEdit_m2"/>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>output filename</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QPushButton" name="avButton">
-      <property name="text">
-       <string>AV compare</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-   </layout>
-  </widget>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
@@ -390,9 +318,9 @@
   <widget class="QLabel" name="label_13">
    <property name="geometry">
     <rect>
-     <x>330</x>
+     <x>350</x>
      <y>310</y>
-     <width>105</width>
+     <width>61</width>
      <height>17</height>
     </rect>
    </property>
@@ -410,7 +338,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>261</x>
@@ -420,73 +348,72 @@
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" colspan="4">
-     <widget class="QLabel" name="label_8">
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Dont forget output filename</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0" colspan="2">
-     <widget class="QPushButton" name="psaButton">
-      <property name="text">
-       <string>Compare PSA</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QRadioButton" name="svgButton">
-      <property name="text">
-       <string>svg</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <widget class="QRadioButton" name="grayRadioButton">
-      <property name="text">
-       <string>gray</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QDoubleSpinBox" name="scalingDoubleSpinBox"/>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLabel" name="label_11">
-      <property name="text">
-       <string>scaling</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QRadioButton" name="jpgButton">
-      <property name="text">
-       <string>jpg</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="3">
-     <widget class="QRadioButton" name="colourRadioButton">
-      <property name="text">
-       <string>colour</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0" colspan="2">
+    <item row="2" column="0" colspan="2">
      <widget class="QCheckBox" name="MWcheckBox">
       <property name="text">
        <string>Mann-Whitney?</string>
       </property>
      </widget>
     </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QPushButton" name="psaButton">
+      <property name="text">
+       <string>Compare PSA</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QRadioButton" name="svgButton">
+      <property name="text">
+       <string>svg</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QRadioButton" name="grayRadioButton">
+      <property name="text">
+       <string>gray</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QDoubleSpinBox" name="scalingDoubleSpinBox"/>
+    </item>
+    <item row="1" column="3">
+     <widget class="QRadioButton" name="colourRadioButton">
+      <property name="text">
+       <string>colour</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QRadioButton" name="jpgButton">
+      <property name="text">
+       <string>jpg</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLabel" name="label_11">
+      <property name="text">
+       <string>scaling</string>
+      </property>
+     </widget>
+    </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="avButton">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>350</y>
+     <width>140</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Compare</string>
+   </property>
   </widget>
  </widget>
  <resources/>

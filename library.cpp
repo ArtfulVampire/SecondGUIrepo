@@ -5146,7 +5146,14 @@ void readPaFile(QString paFile,
     while(!paSrc.eof())
     {
         paSrc >> tempStr;
-        FileName.push_back(QString(tempStr.c_str()));
+
+        /// no need
+        QString tempQStr = QString(tempStr.c_str());
+        if(!tempQStr.contains(def::ExpName))
+        {
+            break;
+        }
+        FileName.push_back(tempQStr);
 
         for(int i = 0; i < NetLength; ++i)
         {

@@ -29,9 +29,6 @@ void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
     }
     sp->countSpectra();
     sp->compare();
-    sp->compare();
-    sp->compare();
-    sp->compare();
     sp->psaSlot();
     sp->close();
     delete sp;

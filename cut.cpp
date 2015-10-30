@@ -45,11 +45,7 @@ Cut::Cut() :
 
     ui->nsBox->setMaximum(40);
     ui->checkBox->setChecked(true);
-//    ui->timeShiftSpinBox->setMaximum(1000.);
-//    ui->timeShiftSpinBox->setValue(125.);
-//    ui->timeShiftSpinBox->setSingleStep(25.);
 
-//    ui->wndLengthSpinBox->setValue(4.0);
 
     ui->dirBox->addItem("Realisations");
     ui->dirBox->addItem("cut");

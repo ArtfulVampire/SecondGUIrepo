@@ -60,6 +60,10 @@ Net::Net() :
     if(def::spStep == def::freq / pow(2, 10)) ui->windowsRadioButton->setChecked(true);
     else if(def::spStep == def::freq / pow(2, 12)) ui->realsRadioButton->setChecked(true);
 
+    ui->dropoutDoubleSpinBox->setMinimum(0.);
+    ui->dropoutDoubleSpinBox->setMaximum(1.);
+    ui->dropoutDoubleSpinBox->setValue(0.15);
+    ui->dropoutDoubleSpinBox->setSingleStep(0.05);
     ui->tempBox->setValue(10);
     ui->tempBox->setSingleStep(1);
     ui->critErrorDoubleSpinBox->setValue(0.10);
@@ -317,7 +321,7 @@ double Net::adjustReduceCoeff(QString spectraDir,
 
 //        cout << dataMatrix[0][0] << "\t" << fileNames[0] << endl;
 
-//        cout << "coeff = " << currVal << "\t";
+        cout << "coeff = " << currVal << "\t";
         LearnNet();
         if(this->getEpoch() > highLimit || this->getEpoch() < lowLimit)
         {
@@ -2528,7 +2532,7 @@ void Net::LearNetIndices(vector<int> mixNum)
                     for(int k = 0; k < dimensionality[i + 1]; ++k)
                     {
                         // dropout regularization
-//                        if(rand() % 1000 < 200) continue;
+                        if((rand() % 1000) / 1000. < ui->dropoutDoubleSpinBox->value()) continue;
 
                         if(ui->deltaRadioButton->isChecked())
                         {
