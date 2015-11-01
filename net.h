@@ -70,6 +70,10 @@ public:
     void writeWts(const QString &wtsPath = def::dir->absolutePath()
                                            + slash() + def::ExpName + ".wts");
     void PaIntoMatrixByName(const QString & fileName);
+    void makeIndicesVectors(vector<int> & learnInd,
+                            vector<int> & tallInd,
+                            vector<vector<int> > & arr,
+                            const int numOfFold);
     void autoClassification(const QString & spectraDir);
     void averageClassification();
 
@@ -87,7 +91,7 @@ public slots:
     void LearnNet();
 
     void tall();
-    void tallIndices(const vector<int> & indices);
+    void tallNetIndices(const vector<int> & indices);
 
 
     void reset();

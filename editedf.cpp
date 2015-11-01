@@ -372,54 +372,55 @@ void MainWindow::reduceChannelsEDF(QString newFilePath)
 
 void MainWindow::reduceChannelsSlot()
 {
-#if 0
-    /// generally unused function
+#if 1
+    // reduce channels in Realisations
     QStringList lst;
     QString helpString;
-
-    int * num = new int [MAXNS];
-    FILE * file;
-
     matrix dataR;
 
     helpString = ui->reduceChannelsLineEdit->text();
-    QStringList list = helpString.split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    for(int i = 0; i < list.length(); ++i)
+    std::set<int, std::greater<int>> excludeList;
+    for(int i = 0; i < def::ns; ++i)
     {
-        num[i] = list[i].toInt();
+        excludeList.emplace(i);
     }
 
-    def::dir->cd("Realisations");
-    lst = def::dir->entryList(QDir::Files, QDir::NoSort);
+
+    QStringList leest = helpString.split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    for(const QString & chanStr : leest)
+    {
+        excludeList.erase(std::find(excludeList.begin(),
+                                    excludeList.end(),
+                                    chanStr.toInt() - 1));
+    }
+    cout << "reduceChannelsSlot: excludeList = ";
+    for(const int & in : excludeList)
+    {
+        cout << in << "  ";
+    }
+    cout << endl;
+
+    QDir localDir(def::dir->absolutePath());
+    localDir.cd("Realisations");
+    lst = localDir.entryList(QDir::Files, QDir::NoSort);
 
     int NumOfSlices;
-    for(int i = 0; i < lst.length(); ++i)
+    int localNs;
+    for(const QString & fileName : lst)
     {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + lst[i]);
-        readPlainData(helpString, dataR, def::ns, NumOfSlices);
-        ////////////////////// kashghasgjdgakjsdgakjsgdkjasgkdagkhscvawdc
-        file = fopen(helpString, "w");
-        if(file == NULL)
+        localNs = def::ns;
+        helpString = QDir::toNativeSeparators(localDir.absolutePath()
+                                              + slash() + fileName);
+        readPlainData(helpString, dataR, localNs, NumOfSlices);
+        for(const int & exclChan : excludeList)
         {
-//            QMessageBox::critical((QWidget*)this, tr("Warning"), tr("Cannot open file to write"), QMessageBox::Ok);
-            cout << "reduceChannelsSLot: cannot open file to write, return" << endl;
-            return;
+            dataR.eraseRow(exclChan);
+            --localNs;
         }
-        fprintf(file, "NumOfSlices %d\n", NumOfSlices);
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int k = 0; k < list.length(); ++k)
-            {
-                fprintf(file, "%lf\n", dataR[ num[k] - 1 ][j]);
-            }
-        }
-        fclose(file);
+        writePlainData(helpString, dataR, localNs, NumOfSlices);
     }
 
-    def::ns = list.length();
-    delete []num;
-    def::dir->cdUp();
+    def::ns -= excludeList.size();
 
     helpString = "channels reduced ";
     ui->textEdit->append(helpString);
@@ -427,137 +428,16 @@ void MainWindow::reduceChannelsSlot()
     helpString = "ns equals to ";
     helpString += QString::number(def::ns);
     ui->textEdit->append(helpString);
+
+    cout << "reduceChannelsSlot: finished";
 #endif
 }
 
 void MainWindow::reduceChannelsFast()
 {
     QString helpString;
-#if 1
     globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
     def::ns = globalEdf.getNs();
-#else
-
-    // more general, but needs tons of additional memory
-
-    QStringList lst;
-    QStringList list;
-
-    list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
-    if(!QString(label[list[list.length() - 1].toInt() - 1]).contains("Markers"))
-    {
-        QMessageBox::critical(this, tr("Error"), tr("bad channels list"), QMessageBox::Ok);
-        return;
-    }
-
-
-    double sign;
-    int lengthCounter; //length of the expression in chars
-
-
-
-    double ** temp = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        temp[i] = new double [ndr * nr[i]];
-    }
-    for(int k = 0; k < list.length(); ++k)
-    {
-        if(QString::number(list[k].toInt()) == list[k]) // just copy
-        {
-            memcpy(temp[k],
-                   globalEdf.getData()[list[k].toInt() - 1].data(),
-                    ndr * nr[list[k].toInt() - 1] * sizeof(double));
-        }
-        else if(list[k].contains(QRegExp("[\\+\\-\\*\\/]")))
-        {
-            lengthCounter = 0;
-            lst = list[k].split(QRegExp("[\\+\\-\\*\\/]"), QString::SkipEmptyParts);
-            for(int h = 0; h < lst.length(); ++h)
-            {
-                if(QString::number(lst[h].toInt()) != lst[h]) // if not a number between operations
-                {
-                    cout << "bad rdc chan string" << endl;
-                    for(int i = 0; i < ns; ++i)
-                    {
-                        delete []temp[i];
-                    }
-                    delete []temp;
-                    return;
-                }
-            }
-            memcpy(temp[k],
-                   globalEdf.getData()[lst[0].toInt() - 1].data(),
-                    ndr*nr[k] * sizeof(double));
-
-            lengthCounter += lst[0].length();
-            for(int h = 1; h < lst.length(); ++h)
-            {
-                if(list[k][lengthCounter] == '+') sign = 1.;
-                else if(list[k][lengthCounter] == '-') sign = -1.;
-                else //this should never happen!
-                {
-                    cout << "bad rdc chan string" << endl;
-                    for(int i = 0; i < ns; ++i)
-                    {
-                        delete []temp[i];
-                    }
-                    delete []temp;
-                    return;
-                }
-                lengthCounter += 1; //sign length
-                lengthCounter += lst[h].length();
-
-                //check '/' and '*'
-                if(list[k][lengthCounter] == '/')
-                {
-                    sign /= lst[h+1].toDouble();
-                }
-                else if(list[k][lengthCounter] == '*')
-                {
-                    sign *= lst[h+1].toDouble();
-                }
-                for(int j = 0; j < ndr*nr[k]; ++j) //generality k
-                {
-                    temp[k][j] += sign * globalEdf.getData()[lst[h].toInt() - 1][j];
-                }
-
-                if(list[k][lengthCounter] == '/' || list[k][lengthCounter] == '*')
-                {
-                    lengthCounter += 1; // / or *
-                    lengthCounter += lst[h+1].length(); //what was divided onto
-                    ++h;
-                }
-            }
-        }
-        else
-        {
-            cout << "bad rdc chan string" << endl;
-            for(int i = 0; i < ns; ++i)
-            {
-                delete []temp[i];
-            }
-            delete []temp;
-            return;
-        }
-
-        ui->progressBar->setValue(k * 100. / list.length());
-    }
-    for(int k = 0; k < list.length(); ++k)
-    {
-        for(int j = 0; j < globalEdf.getDataLen(); ++j)
-        {
-            globalEdf.setData(k, j, temp[k][j]);
-        }
-    }
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []temp[i];
-    }
-    delete []temp;
-
-    ns = list.length();
-#endif
 
     helpString = "channels reduced fast ";
     ui->textEdit->append(helpString);
@@ -711,7 +591,8 @@ void MainWindow::constructEDFSlot()
     ui->textEdit->append(helpString);
 }
 
-void MainWindow::constructEDF(QString newPath, QStringList nameFilters)
+void MainWindow::constructEDF(const QString & newPath,
+                              const QStringList & nameFilters)
 {
     // all the realisations, to newPath based on ui->filePathLineEdit
     QString helpString;
@@ -725,8 +606,12 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters)
     if(lst.last().toInt() - 1 != globalEdf.getMarkChan())
     {
         cout << "No markers channel in reduceChannelsLineEdit" << endl;
-        return;
+        if(!def::OssadtchiFlag)
+        {
+            return;
+        }
     }
+
     QList<int> chanList;
     for(const QString & str : lst)
     {
@@ -762,7 +647,6 @@ void MainWindow::constructEDF(QString newPath, QStringList nameFilters)
     }
 
     matrix newData;
-//    newData.resize(def::ns, 60 * 60 * def::freq); // 60 minutes
 
     int NumOfSlices;
     int currSlice = 0;

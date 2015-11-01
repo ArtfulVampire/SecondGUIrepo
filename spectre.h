@@ -24,7 +24,8 @@ class Spectre : public QWidget
 public:
     explicit Spectre();
     ~Spectre();
-    int countOneSpectre(const matrix &data2, mat &dataFFT);
+    bool countOneSpectre(matrix & data2,
+                         matrix & dataFFT);
     void setSmooth(int);
     bool eventFilter(QObject *obj, QEvent *event);
     int readFilePhase(double **data2, double ***dataPhase);
@@ -54,7 +55,6 @@ private:
     Ui::Spectre *ui;
     QString backupDirPath;
 
-    QStringList nameFilters;
     int Eyes;
     QFileDialog * browser1;
     QFileDialog * browser2;

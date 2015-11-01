@@ -53,6 +53,7 @@ Net::Net() :
     group3->addButton(ui->backpropRadioButton);
     group3->addButton(ui->deepBeliefRadioButton);
     ui->crossRadioButton->setChecked(true);
+    ui->leaveOneOutRadioButton->setChecked(true); ///////////// N-fold
     ui->realsRadioButton->setChecked(true);
     ui->deltaRadioButton->setChecked(false);
     ui->backpropRadioButton->setChecked(false);
@@ -75,14 +76,19 @@ Net::Net() :
     ui->epochSpinBox->setMaximum(1000);
     ui->epochSpinBox->setSingleStep(50);
     ui->epochSpinBox->setValue(300);
+
     ui->numOfPairsBox->setMaximum(100);
     ui->numOfPairsBox->setMinimum(1);
-    ui->numOfPairsBox->setValue(50); /////////////////////////////
+    ui->numOfPairsBox->setValue(10); /////////////////////////////
+#define INDICES 1
+    ui->foldSpinBox->setMaximum(10);
+    ui->foldSpinBox->setMinimum(1);
+    ui->foldSpinBox->setValue(6);
 
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(7.0); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(15.0); // 1. for MATI? usually 5.     0.7 for best comp set
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
@@ -92,9 +98,6 @@ Net::Net() :
     ui->lowLimitSpinBox->setMinimum(50);
     ui->lowLimitSpinBox->setValue(80);
 
-    ui->foldSpinBox->setMaximum(10);
-    ui->foldSpinBox->setMinimum(1);
-    ui->foldSpinBox->setValue(2);
 
 
     ui->pcaNumberSpinBox->setMinimum(2);
@@ -309,10 +312,13 @@ double Net::adjustReduceCoeff(QString spectraDir,
 
     cout << "adjustReduceCoeff: start" << endl;
 
+    if(ui->leaveOneOutRadioButton->isChecked()) paFileName = "all"; // N-fold
+
     while(1)
     {
         currVal = ui->rdcCoeffSpinBox->value();
 
+        /// remake with indices
         makePaStatic(spectraDir,
                      ui->foldSpinBox->value(),
                      currVal);
@@ -346,6 +352,48 @@ double Net::adjustReduceCoeff(QString spectraDir,
     autoFlag = tmpAutoFlag;
     cout << "adjustReduceCoeff: reduceCoeff = " << res << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
     return res;
+}
+
+void Net::makeIndicesVectors(vector<int> & learnInd,
+                             vector<int> & tallInd,
+                             vector<vector<int>> & arr,
+                             const int numOfFold)
+{
+    learnInd.clear();
+    tallInd.clear();
+
+
+    const int fold = ui->foldSpinBox->value();
+
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::shuffle(arr[i].begin(),
+                     arr[i].end(),
+                     std::default_random_engine(seed));
+    }
+    int offset;
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        offset = 0;
+        for(int t = 0; t < i; ++t)
+        {
+            offset += classCount[t];
+        }
+
+        for(int j = 0; j < classCount[i]; ++j)
+        {
+            if(j < (classCount[i] / fold) * numOfFold ||
+               j > (classCount[i] / fold) * (numOfFold + 1))
+            {
+                learnInd.push_back(offset + arr[i][j]);
+            }
+            else
+            {
+                tallInd.push_back(offset + arr[i][j]);
+            }
+        }
+    }
 }
 
 void Net::autoClassification(const QString & spectraDir)
@@ -384,7 +432,7 @@ void Net::autoClassification(const QString & spectraDir)
 
     bool tempBool = autoFlag;
     autoFlag = 1;
-    int numOfPairs = ui->numOfPairsBox->value();
+    const int numOfPairs = ui->numOfPairsBox->value();
 
     //adjust reduce coefficient
 
@@ -401,12 +449,34 @@ void Net::autoClassification(const QString & spectraDir)
         averageAccuracy = 0.;
         return;
     }
+    ui->rdcCoeffSpinBox->setValue(newReduceCoeff);
 
     const int fold = ui->foldSpinBox->value();
     const double coeff = ui->rdcCoeffSpinBox->value();
 
+
+
+    makePaStatic(spectraDir,
+                 fold,
+                 coeff);
+    PaIntoMatrixByName("all");
+
     if(ui->crossRadioButton->isChecked())
     {
+        /// new with indices
+        vector<int> learnIndices;
+        vector<int> tallIndices;
+        vector<vector<int>> arr;
+        arr.resize(def::numOfClasses);
+        for(int i = 0; i < def::numOfClasses; ++i)
+        {
+            for(int j = 0; j < classCount[i]; ++j)
+            {
+                arr[i].push_back(j);
+            }
+        }
+
+
         cout << "Net: autoclass (max " << numOfPairs << "):" << endl;
 
         for(int i = 0; i < numOfPairs; ++i)
@@ -414,21 +484,13 @@ void Net::autoClassification(const QString & spectraDir)
             cout << i + 1;
             cout << " "; cout.flush();
 
-            //make PA
-            // depends on NetLength, which is from cfg file
-            makePaStatic(spectraDir,
-                         fold, coeff);
-            PaIntoMatrixByName("1");
-
-            LearnNet();
-            PaIntoMatrixByName("2");
-
-            tall();
-            //comment because of k-fold cross-validation
-            //            LearnNet();
-            //            helpString = "1";
-            //            PaIntoMatrixByName(helpString);
-            //            tall();
+            /// new with indices
+            for(int numFold = 0; numFold < ui->foldSpinBox->value(); ++numFold)
+            {
+                makeIndicesVectors(learnIndices, tallIndices, arr, numFold);
+                LearNetIndices(learnIndices);
+                tallNetIndices(tallIndices);
+            }
 
             qApp->processEvents();
             if(stopFlag)
@@ -439,16 +501,12 @@ void Net::autoClassification(const QString & spectraDir)
             }
         }
         cout << endl;
+        averageClassification();
     }
     else if(ui->leaveOneOutRadioButton->isChecked())
     {
-        PaIntoMatrixByName("all");
-        leaveOneOutSlot();
-        numOfTall = 1;
+        leaveOneOut();
     }
-
-
-    averageClassification();
     autoFlag = tempBool;
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 
@@ -544,29 +602,22 @@ void Net::averageClassification()
         cout << "logFile == NULL" << endl;
         return;
     }
-    double  * averagePercentage = new double [def::numOfClasses + 1];
-    double  * tempDouble = new double [def::numOfClasses + 1];
-
-    for(int j = 0; j < def::numOfClasses + 1; ++j)
-    {
-        averagePercentage[j] = 0.;
-        tempDouble[j] = 0.;
-    }
+    vector<double> averagePercentage(def::numOfClasses + 1, 0.); // +1 for average
+    double tempDouble;
 
     int num = 0;
-    for(int i = 0; i < numOfTall; ++i)
+    for(int i = 0; i < numOfTall; ++i) // while !eof
     {
         for(int j = 0; j < def::numOfClasses + 1; ++j)
         {
-            fscanf(logFile, "%lf", &tempDouble[j]);
-            averagePercentage[j] += tempDouble[j];
+            fscanf(logFile, "%lf", &tempDouble);
+            averagePercentage[j] += tempDouble;
         }
         ++num;
     }
-
     for(int j = 0; j < def::numOfClasses + 1; ++j)
     {
-        averagePercentage[j] /= num;
+        averagePercentage[j] = doubleRound(averagePercentage[j] / num, 1);
     }
     fclose(logFile);
 
@@ -589,9 +640,7 @@ void Net::averageClassification()
     fprintf(res, " - %s", def::ExpName.toStdString().c_str());
     fclose(res);
     averageAccuracy = averagePercentage[def::numOfClasses];
-    cout << "Average accuracy = " << averageAccuracy << endl;
-    delete []averagePercentage;
-    delete []tempDouble;
+    cout << "average accuracy = " << averageAccuracy << endl;
 }
 
 
@@ -868,14 +917,14 @@ void Net::tall()
     {
         indices.push_back(i);
     }
-    tallIndices(indices);
+    tallNetIndices(indices);
 }
 
-void Net::tallIndices(const vector<int> & indices)
+void Net::tallNetIndices(const vector<int> & indices)
 {
     double Error = 0.;
     vector<double> NumberOfErrors(def::numOfClasses, 0.);
-    vector<double> NumOfVectorsOfClass(def::numOfClasses, 0.); // countClass
+    vector<double> NumOfVectorsOfClass(def::numOfClasses, 0.); // local countClass
     bool res;
     int type;
 
@@ -1776,203 +1825,40 @@ void Net::leaveOneOutCL()
 
 void Net::leaveOneOut()
 {
-    QTime myTime;
-    myTime.start();
-
-    srand(time(NULL));
-
-    critError = ui->critErrorDoubleSpinBox->value();
-    temperature = ui->tempBox->value();
-    learnRate = ui->learnRateBox->value();
-    currentError = critError + 0.1;
-
-    double ** output = new double * [numOfLayers]; //data and global output together
-    for(int i = 0; i < numOfLayers; ++i)
-    {
-        output[i] = new double [dimensionality[i] + 1];
-    }
-    double ** deltaWeights = new double * [numOfLayers]; // 0 - unused for lowest layer
-    for(int i = 0; i < numOfLayers; ++i)
-    {
-        deltaWeights[i] = new double [dimensionality[i]];
-    }
-
-
-    int * mixNum = new int [NumberOfVectors];
+    vector<int> learnIndices;
+//    vector<int> errors(def::numOfClasses, 0);
     for(int i = 0; i < NumberOfVectors; ++i)
     {
-        mixNum[i] = i;
-    }
-
-    //part from tall();
-    Error = 0.;
-    NumberOfErrors = new int[def::numOfClasses];
-    QString helpString;
-    for(int i = 0; i < def::numOfClasses; ++i)
-    {
-        NumberOfErrors[i] = 0;
-    }
-
-    double * normCoeff = new double [def::numOfClasses];
-    double helpMin = classCount[0];
-    for(int i = 1; i < def::numOfClasses; ++i)
-    {
-        helpMin = min(helpMin, classCount[i]);
-    }
-    for(int i = 0; i < def::numOfClasses; ++i)
-    {
-        normCoeff[i] = helpMin/classCount[i];
-    }
-
-
-    int a1, a2, buffer;
-    int index;
-    int type;
-    for(int h = 0; h < NumberOfVectors; ++h) //learn & classify every vector
-    {
-        myTime.restart();
-
-        reset();
-        epoch = 0;
-        //start learning
-        while(currentError > critError && epoch < ui->epochSpinBox->value())
+        learnIndices.clear();
+//        int type = typeOfFileName(fileNames[i]);
+        for(int j = 0; j < NumberOfVectors; ++j)
         {
-            currentError = 0.0;
-            //mix vectors
-            for(int i = 0; i < 5 * NumberOfVectors; ++i)
-            {
-                a1 = rand()%(NumberOfVectors);
-                a2 = rand()%(NumberOfVectors);
-                buffer = mixNum[a2];
-                mixNum[a2] = mixNum[a1];
-                mixNum[a1] = buffer;
-            }
-            //        cout << "epoch = " << epoch << endl;
-
-            for(int vecNum = 0; vecNum <NumberOfVectors; ++vecNum)
-            {
-                index = mixNum[vecNum];
-                type = dataMatrix[index][NetLength + 1];
-                if(index == h) continue; //not to learn with h'th vector
-
-                for(int j = 0; j < dimensionality[0]; ++j)
-                {
-                    output[0][j] = dataMatrix[index][j];
-                }
-                output[0][dimensionality[0]] = 1.;
-
-                //obtain outputs
-                for(int i = 1; i < numOfLayers; ++i)
-                {
-                    for(int j = 0; j < dimensionality[i]; ++j)
-                    {
-                        output[i][j] = 0.;
-                        for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
-                        {
-                            output[i][j] += weight[i-1][k][j] * output[i-1][k];
-                        }
-                        output[i][j] = logistic(output[i][j], temperature);
-                    }
-                    output[i][dimensionality[i]] = 1.; //unused for the highest layer
-                }
-
-                //error in the last layer
-                for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
-                {
-                    currentError += (output[numOfLayers-1][j] - (type == j)) * (output[numOfLayers-1][j] - (type == j));
-                }
-
-                //count deltaweights
-                //for the last layer
-                for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
-                {
-                    deltaWeights[numOfLayers-1][j] = -1./temperature * output[numOfLayers-1][j] * (1. - output[numOfLayers-1][j]) * ((type == j) - output[numOfLayers-1][j]); //~0.1
-                }
-
-
-                //for the other layers, upside->down
-                for(int i = numOfLayers-2; i >= 1; --i)
-                {
-                    for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
-                    {
-                        deltaWeights[i][j] = 0.;
-                        for(int k = 0; k < dimensionality[i+1]; ++k) //connected to the higher-layer
-                        {
-                            deltaWeights[i][j] += deltaWeights[i+1][k] * weight[i][j][k];
-                        }
-                        deltaWeights[i][j]  *= 1./temperature * output[i][j] * (1. - output[i][j]);
-                    }
-                }
-
-                for(int i = 0; i < numOfLayers-1; ++i)
-                {
-                    for(int j = 0; j < dimensionality[i]; ++j)
-                    {
-                        for(int k = 0; k < dimensionality[i+1]; ++k)
-                        {
-                            if(ui->deltaRadioButton->isChecked())   weight[i][j][k] += learnRate * normCoeff[type] * output[i][j] * ((type == k) - output[i+1][k]);
-                            else                                    weight[i][j][k] -= learnRate * normCoeff[type] * deltaWeights[i+1][k] * output[i][j];
-                        }
-                    }
-                }
-            }
-
-            currentError/=NumberOfVectors;
-            currentError = sqrt(currentError);
-            ++epoch;
-            this->ui->currentErrorDoubleSpinBox->setValue(currentError);
-
-        }//endof all epoches, end of learning
-
-        ClassificateVector(h);
-        cout << h << " vector ended\t" << epoch << " epoches\t" << myTime.elapsed()/1000. << " sec" << endl;
-        currentError = critError + 0.1;
+            if(j == i) continue;
+            learnIndices.push_back(j);
+        }
+        LearNetIndices(learnIndices);
+//        if(!ClassificateVector(i)) ++errors[type];
+        tallNetIndices({i});
     }
-
-    cout << "leaveOneOut ended " << endl;
-
-    cout << "N-fold cross-validation: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
-
-
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "log.txt");
-    FILE * log = fopen(helpString, "a+");
-    if(log == NULL)
-    {
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("Cannot open log file to write"), QMessageBox::Ok);
-        return;
-    }
+    cout << "N-fold cross-validation - ";
+    averageClassification();
 
 
 
-
-    for(int i = 0; i < def::numOfClasses; ++i)
-    {
-        fprintf(log, "%.2lf\t", double((1. - double(NumberOfErrors[i] * def::numOfClasses/double(NumberOfVectors))) * 100.));
-    }
-    for(int i = 0; i < def::numOfClasses; ++i)
-    {
-        Error += NumberOfErrors[i];
-    }
-    fprintf(log, "%.2lf\n", double((1. - double(Error/double(NumberOfVectors))) * 100.));
-    fclose(log);
-
-    //time
-
-    delete []NumberOfErrors;
-    delete []mixNum;
-
-
-
-    for(int i = 0; i < numOfLayers; ++i)
-    {
-        delete []deltaWeights[i];
-        delete []output[i];
-    }
-    delete []deltaWeights;
-    delete []output;
-
-
-
+//    ofstream outStr;
+//    QString helpString = def::dir->absolutePath() + slash() + "results.txt";
+//    outStr.open(helpString.toStdString(), ios_base::app);
+//    outStr << "PRR ";
+//    double sumCount = 0.;
+//    double sumError = 0.;
+//    for(int i = 0; i < def::numOfClasses; ++i)
+//    {
+//        outStr << doubleRound((1. - errors[i] / classCount[i]) * 100., 1) << "\t";
+//        sumCount += countClass[i];
+//        sumError += errors[i];
+//    }
+//    outStr << " - " << doubleRound((1. - sumError / sumCount) * 100., 1) << endl;
+//    outStr.close();
 }
 
 
@@ -2420,7 +2306,12 @@ void Net::LearNetIndices(vector<int> mixNum)
 {
     QTime myTime;
     myTime.start();
-    srand(time(NULL));
+
+    for(int i = 0; i < mixNum.size(); ++i)
+    {
+        cout << mixNum[i] << ' ';
+    }
+    cout << endl;
 
     mat deltaWeights(numOfLayers);
     mat output(numOfLayers);
@@ -2429,7 +2320,6 @@ void Net::LearNetIndices(vector<int> mixNum)
         deltaWeights[i].resize(dimensionality[i]);
         output[i].resize(dimensionality[i] + 1);
     }
-
 
     const double critError = ui->critErrorDoubleSpinBox->value();
     double currentError = critError + 0.1;
@@ -2443,9 +2333,11 @@ void Net::LearNetIndices(vector<int> mixNum)
 
     reset();
 
+
+    /// edit due to Indices
     vector <double> normCoeff;
     const double helpMin = *std::min_element(classCount.begin(),
-                                       classCount.end());
+                                             classCount.end());
 
     for(int i = 0; i < def::numOfClasses; ++i)
     {
@@ -2462,11 +2354,12 @@ void Net::LearNetIndices(vector<int> mixNum)
     {
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         currentError = 0.0;
+        // mix the sequence of input vectors
         std::shuffle(mixNum.begin(),
                      mixNum.end(),
                      std::default_random_engine(seed));
 
-        for(int num = 0; num < NumberOfVectors; ++num)
+        for(int num = 0; num < mixNum.size(); ++num)
         {
             index = mixNum[num];
             type = dataMatrix[index][dimensionality[0] + 1]; // generality
@@ -2545,10 +2438,9 @@ void Net::LearNetIndices(vector<int> mixNum)
                         {
                             weight[i][j][k] -= learnRate
                                                * normCoeff[type]
-                                               * deltaWeights[i+1][k]
+                                               * deltaWeights[i + 1][k]
                                     * output[i][j];
                         }
-
                     }
                 }
             }
@@ -2556,7 +2448,7 @@ void Net::LearNetIndices(vector<int> mixNum)
 
         ++epoch;
         //count error
-        currentError /= NumberOfVectors;
+        currentError /= mixNum.size();
         currentError = sqrt(currentError);
         this->ui->currentErrorDoubleSpinBox->setValue(currentError);
 
@@ -3874,30 +3766,40 @@ void Net::SVM()
     FILE * out = fopen(QDir::toNativeSeparators(helpString), "w");
     fclose(out);
 //    QString spectraDir = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth"));
-    QString spectraDir = QFileDialog::getExistingDirectory(this, tr("Choose spectra dir"), def::dir->absolutePath());
-    if(spectraDir.isEmpty()) spectraDir = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth");
+    QString spectraDir = QFileDialog::getExistingDirectory(this,
+                                                           tr("Choose spectra dir"),
+                                                           def::dir->absolutePath());
+    if(spectraDir.isEmpty())
+    {
+        spectraDir = QDir::toNativeSeparators(def::dir->absolutePath()
+                                              + slash() + "SpectraSmooth");
+    }
     if(spectraDir.isEmpty())
     {
         cout << "spectraDir for SVM is empty" << endl;
         return;
     }
-    MakePa * mkPa = new MakePa(spectraDir);
 
     for(int i = 0; i < ui->numOfPairsBox->value(); ++i)
     {
-        mkPa->makePaSlot();
+        makePaStatic(spectraDir,
+                     ui->foldSpinBox->value(),
+                     ui->rdcCoeffSpinBox->value(), true);
 
         helpString = def::dir->absolutePath() + slash() + "PA";
         helpString.prepend("cd ");
-        helpString.append(" && svm-train -t " + QString::number(ui->svmKernelSpinBox->value()) + " svm1 && svm-predict svm2 svm1.model output >> output1");
+        helpString += " && svm-train -t "
+                      + QString::number(ui->svmKernelSpinBox->value())
+                      + " svm1 && svm-predict svm2 svm1.model output >> output1";
         system(helpString.toStdString().c_str());
 
         helpString = def::dir->absolutePath() + slash() + "PA";
         helpString.prepend("cd ");
-        helpString += " && svm-train -t " + QString::number(ui->svmKernelSpinBox->value()) + " svm2 && svm-predict svm1 svm2.model output >> output1";
+        helpString += " && svm-train -t "
+                      + QString::number(ui->svmKernelSpinBox->value())
+                      + " svm2 && svm-predict svm1 svm2.model output >> output1";
         system(helpString.toStdString().c_str());
     }
-
 
     helpString = def::dir->absolutePath() + slash() + "PA" + slash() + "output1";
 
@@ -3910,7 +3812,8 @@ void Net::SVM()
     {
         helpString = file.readLine();
         if(!helpString.contains(QRegExp("[% = ]"))) break;
-        helpString = helpString.split(QRegExp("[% = ]"), QString::SkipEmptyParts)[1]; //generality [1]
+        helpString = helpString.split(QRegExp("[% = ]"),
+                                      QString::SkipEmptyParts)[1]; //generality [1]
         helpDouble = helpString.toDouble();
         average += helpDouble;
         ++lines;
@@ -3919,12 +3822,13 @@ void Net::SVM()
     cout << average << endl;
     file.close();
 
-    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "results.txt").toStdString().c_str(), "a+");
-    fprintf(res, "\nSVM\t");
-    fprintf(res, "%.2lf %%\n", average);
-    fclose(res);
 
-    delete mkPa;
+    ofstream outStr;
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "results.txt");
+    outStr.open(helpString.toStdString(), ios_base::app);
+    outStr << "\nSVM\t";
+    outStr << doubleRound(average, 2) << " %" << endl;
+    outStr.close();
 }
 
 void Net::optimizeChannelsSet() /// CAREFUL

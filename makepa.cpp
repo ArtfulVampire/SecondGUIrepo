@@ -839,15 +839,13 @@ void MakePa::makePaSlot()
     double coeff = ui->rdcCoeffBox->value();
     int fold = ui->foldSpinBox->value();
 
-    QDir *dir_ = new QDir();
-    dir_->cd(ui->spectraDirLineEdit->text());
-
-    dir_->setSorting(QDir::Name);
+    const QString filePath = ui->spectraDirLineEdit->text();
 
     //generality
-    QStringList nameFilters, leest;
-    QStringList lst[def::numOfClasses]; // usually 0 - Spatial, 1 - Verbal, 2 - Gaps
+    vector<QStringList> lst; // usually 0 - Spatial, 1 - Verbal, 2 - Gaps
+    makeFileLists(filePath, lst);
 
+    /*
     int k = 0;
     for(const QString & fileMark : def::fileMarkers)
     {
@@ -861,6 +859,7 @@ void MakePa::makePaSlot()
         }
         lst[k++] = dir_->entryList(nameFilters, QDir::Files, QDir::Name);
     }
+    */
 
 
     int len[def::numOfClasses];
@@ -919,7 +918,7 @@ void MakePa::makePaSlot()
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "PA"
                                           + slash() + "1.pa");
-    makePaFile(dir_->absolutePath(), listToWrite, coeff, helpString);
+    makePaFile(filePath, listToWrite, coeff, helpString);
 
 
 
@@ -934,7 +933,7 @@ void MakePa::makePaSlot()
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "PA"
                                           + slash() + "2.pa");
-    makePaFile(dir_->absolutePath(), listToWrite, coeff, helpString);
+    makePaFile(filePath, listToWrite, coeff, helpString);
 
 
 
@@ -950,10 +949,7 @@ void MakePa::makePaSlot()
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "PA"
                                           + slash() + "all.pa");
-    makePaFile(dir_->absolutePath(), listToWrite, coeff, helpString);
-
-
-    delete dir_;
+    makePaFile(filePath, listToWrite, coeff, helpString);
 
     helpString="PA-files have been made \n";
     this->ui->lineEdit->setText(helpString);

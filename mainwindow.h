@@ -147,7 +147,8 @@ public:
     void setEdfFile(const QString &filePath);
     void transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath);
     void reduceChannelsEDF(QString newFilePath);
-    void constructEDF(QString newPath, QStringList nameFilters = QStringList());
+    void constructEDF(const QString & newPath,
+                      const QStringList & nameFilters = QStringList());
     void concatenateEDFs(QString inPath1, QString inPath2, QString outPath);
     void concatenateEDFs(QStringList inPath, QString outPath);
     void writeCorrelationMatrix(QString edfPath, QString outPath);

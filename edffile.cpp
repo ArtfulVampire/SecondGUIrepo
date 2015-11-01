@@ -1407,14 +1407,14 @@ void edfFile::reduceChannels(QList <int> chanList) // much memory
 
 }
 
-void edfFile::reduceChannels(QString chanStr)
+void edfFile::reduceChannels(const QString & chanStr)
 {
     QTime myTime;
     myTime.start();
 
     QStringList lst;
-    QStringList list = chanStr.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
-    if(list.last().toInt() - 1 != this->markerChannel)
+    QStringList leest = chanStr.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
+    if(leest.last().toInt() - 1 != this->markerChannel)
     {
         cout << "Reduce channels: bad channels list - no markers" << endl;
         return;
@@ -1425,21 +1425,21 @@ void edfFile::reduceChannels(QString chanStr)
     double sign = 0.;
     int lengthCounter = 0; //length of the expression in chars
 
-    for(int k = 0; k < list.length(); ++k)
+    for(int k = 0; k < leest.length(); ++k)
     {
-//        cout << list[k] << endl;
-        if(QString::number(list[k].toInt()) == list[k]) // just copy
+//        cout << leest[k] << endl;
+        if(QString::number(leest[k].toInt()) == leest[k]) // just copy
         {
 #if DATA_POINTER
-            (*(this->dataPointer))[k] = (*(this->dataPointer))[list[k].toInt() - 1];
+            (*(this->dataPointer))[k] = (*(this->dataPointer))[leest[k].toInt() - 1];
 #else
-            this->data[k] = this->data[list[k].toInt() - 1];
+            this->data[k] = this->data[leest[k].toInt() - 1];
 #endif
         }
-        else if(list[k].contains(QRegExp("[\\+\\-\\*\\/]")))
+        else if(leest[k].contains(QRegExp("[\\+\\-\\*\\/]")))
         {
             lengthCounter = 0;
-            lst = list[k].split(QRegExp("[\\+\\-\\*\\/]"), QString::SkipEmptyParts);
+            lst = leest[k].split(QRegExp("[\\+\\-\\*\\/]"), QString::SkipEmptyParts);
             for(int h = 0; h < lst.length(); ++h)
             {
                 if(QString::number(lst[h].toInt()) != lst[h]) // if not a number between operations
@@ -1455,8 +1455,8 @@ void edfFile::reduceChannels(QString chanStr)
             lengthCounter += lst[0].length();
             for(int h = 1; h < lst.length(); ++h)
             {
-                if(list[k][lengthCounter] == '+') sign = 1.;
-                else if(list[k][lengthCounter] == '-') sign = -1.;
+                if(leest[k][lengthCounter] == '+') sign = 1.;
+                else if(leest[k][lengthCounter] == '-') sign = -1.;
                 else //this should never happen!
                 {
                     cout << "first sign is not + or -" << endl;
@@ -1466,11 +1466,11 @@ void edfFile::reduceChannels(QString chanStr)
                 lengthCounter += lst[h].length();
 
                 //check '/' and '*'
-                if(list[k][lengthCounter] == '/')
+                if(leest[k][lengthCounter] == '/')
                 {
                     sign /= lst[h+1].toDouble();
                 }
-                else if(list[k][lengthCounter] == '*')
+                else if(leest[k][lengthCounter] == '*')
                 {
                     sign *= lst[h+1].toDouble();
                 }
@@ -1492,7 +1492,7 @@ void edfFile::reduceChannels(QString chanStr)
 
 #endif
 
-                if(list[k][lengthCounter] == '/' || list[k][lengthCounter] == '*')
+                if(leest[k][lengthCounter] == '/' || leest[k][lengthCounter] == '*')
                 {
                     lengthCounter += 1; // / or *
                     lengthCounter += lst[h+1].length(); //what was divided onto
@@ -1506,7 +1506,7 @@ void edfFile::reduceChannels(QString chanStr)
             return;
         }
     }
-    this->ns = list.length();
+    this->ns = leest.length();
     this->channels.resize(this->ns);
     this->adjustArraysByChannels();
 

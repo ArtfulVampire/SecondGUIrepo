@@ -667,7 +667,7 @@ void four1(double * dataF, int nn, int isign)
     double wtemp,wr,wpr,wpi,wi,theta;
     double tempr,tempi;
 
-    n = nn << 1; //n = nn * 2;
+    n = nn << 1; //n = 2 * fftLength
     j = 1;
     for (i = 1; i < n; i += 2)
     {
@@ -717,7 +717,18 @@ void four1(double * dataF, int nn, int isign)
 //should test
 void four1(vec & dataF, int fftLen, int isign)
 {
-    four1(dataF.data()-1, fftLen, isign);
+    double * pew = new double [2 * fftLen];
+    for(int i = 0; i < 2 * fftLen; ++i)
+    {
+        pew[i] = dataF[i];
+    }
+    four1(pew - 1, fftLen, isign);
+//    four1(dataF.data() - 1, fftLen, isign);
+    for(int i = 0; i < 2 * fftLen; ++i)
+    {
+        dataF[i] = pew[i];
+    }
+    delete []pew;
 }
 
 int len(QString s) //lentgh till double \0-byte for EDF+annotations
@@ -1384,12 +1395,28 @@ int typeOfFileName(const QString & fileName)
     return -1;
 }
 
+QString getFileMarker(const QString & fileName)
+{
+    for(const QString & fileMark : def::fileMarkers)
+    {
+        QStringList lst = fileMark.split(' ', QString::SkipEmptyParts);
+        for(const QString & filter : lst)
+        {
+            if(fileName.contains(filter))
+            {
+                return filter.right(3); // generality markers appearance
+            }
+        }
+    }
+}
+
 
 
 void makePaFile(const QString & spectraDir,
                 const QStringList & fileNames,
                 const double & coeff,
-                const QString & outFile)
+                const QString & outFile,
+                const bool svmFlag) /// make enum
 {
     //    QTime myTime;
     //    myTime.start();
@@ -1412,62 +1439,85 @@ void makePaFile(const QString & spectraDir,
                      + slash() + fileName;
         readSpectraFile(helpString, data4);
 
-        outStream << fileName << endl;
 
-        for(int l = 0; l < def::nsWOM(); ++l) // write PA files without markers
+
+        if(!svmFlag)
         {
-            for(int k = 0; k < def::spLength; ++k)
+            outStream << fileName << endl;
+            for(int l = 0; l < def::nsWOM(); ++l) // write PA files without markers
             {
-                outStream << doubleRound(data4[l][k] / coeff, 5) << '\t';
-                if(k%10 == 9)
+                for(int k = 0; k < def::spLength; ++k)
                 {
-                    outStream << '\n';
+                    outStream << doubleRound(data4[l][k] / coeff, 5) << '\t';
+                    if(k%10 == 9)
+                    {
+                        outStream << '\n';
+                    }
+                }
+                outStream << '\n';
+            }
+            for(int k = 0; k < def::numOfClasses; ++k)
+            {
+
+                outStream << (k==type) << ' ';
+            }
+            outStream << "\n\n";
+            outStream.flush();
+        }
+        else // svm
+        {
+            outStream << type << ' ';
+            for(int l = 0; l < def::nsWOM(); ++l) // write PA files without markers
+            {
+                for(int k = 0; k < def::spLength; ++k)
+                {
+                    outStream << l * def::spLength + k << ':' << doubleRound(data4[l][k] / coeff, 5) << ' ';
                 }
             }
-            outStream << '\n';
+            outStream << endl;
         }
 
-        for(int k = 0; k < def::numOfClasses; ++k)
-        {
 
-            outStream << (k==type) << ' ';
-        }
 
-        outStream << "\n\n";
-        outStream.flush();
+
+
     }
     outStream.close();
     //    cout << "makePaFile: time elapsed = " << myTime.elapsed()/1000. << " sec" <<endl;
 }
 
-void makePaStatic(const QString & spectraDir,
-                  const int & fold,
-                  const double & coeff)
+void makeFileLists(const QString & path,
+                   vector<QStringList> & lst)
 {
-
-    QString helpString;
-    QDir dir_;
-    dir_.cd(spectraDir);
-    dir_.setSorting(QDir::Name);
-
-    //generality
+    QDir localDir(path);
     QStringList nameFilters, leest;
-    QStringList lst[def::numOfClasses]; // usually 0 - Spatial, 1 - Verbal, 2 - Gaps
-
-    int k = 0;
+    QString helpString;
     for(const QString & fileMark : def::fileMarkers)
     {
         nameFilters.clear();
         leest.clear();
         leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-        for(int i = 0; i < leest.length(); ++i)
+        for(const QString & filter : leest)
         {
-            helpString = "*" + leest[i] + "*";
+            helpString = "*" + filter + "*";
             nameFilters << helpString;
         }
-        lst[k++] = dir_.entryList(nameFilters, QDir::Files, QDir::Name);
+        lst.push_back(localDir.entryList(nameFilters, QDir::Files, QDir::Name));
     }
 
+}
+
+void makePaStatic(const QString & spectraDir,
+                  const int & fold,
+                  const double & coeff,
+                  const bool svmFlag) /// make enum
+{
+
+    QString helpString;
+    const QString paPath = def::dir->absolutePath()
+                          + slash() + "PA";
+    vector<QStringList> lst;
+    makeFileLists(spectraDir, lst);
 
     int len[def::numOfClasses];
     for(int i = 0; i < def::numOfClasses; ++i)
@@ -1523,11 +1573,18 @@ void makePaStatic(const QString & spectraDir,
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "PA"
-                                          + slash() + "1.pa");
-//    cout << helpString << endl;
-    makePaFile(dir_.absolutePath(), listToWrite, coeff, helpString);
+    helpString = QDir::toNativeSeparators(paPath + slash());
+    if(!svmFlag)
+    {
+        helpString += "1.pa";
+        makePaFile(spectraDir, listToWrite, coeff, helpString);
+    }
+    else
+    {
+        helpString += "svm1";
+        makePaFile(spectraDir, listToWrite, coeff, helpString, true);
+    }
+
 
 
 
@@ -1539,30 +1596,34 @@ void makePaStatic(const QString & spectraDir,
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "PA"
-                                          + slash() + "2.pa");
-//    cout << helpString << endl;
-    makePaFile(dir_.absolutePath(), listToWrite, coeff, helpString);
-
-
-
-    listToWrite.clear();
-    for(int j = 0; j < def::numOfClasses; ++j)
+    helpString = QDir::toNativeSeparators(paPath + slash());
+    if(!svmFlag)
     {
-        for(int i = 0; i < (len[j] / fold) * fold; ++i)
-        {
-            listToWrite << lst[j][arr[j][i]];
-        }
+        helpString += "2.pa";
+        makePaFile(spectraDir, listToWrite, coeff, helpString);
+    }
+    else
+    {
+        helpString += "svm2";
+        makePaFile(spectraDir, listToWrite, coeff, helpString, true);
     }
 
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "PA"
-                                          + slash() + "all.pa");
-//    cout << helpString << endl;
-    makePaFile(dir_.absolutePath(), listToWrite, coeff, helpString);
 
-
+    if(!svmFlag)
+    {
+        /// sorting by classes !!!!!!!!!!!!!!!!!!!!!!!!!!
+        /// very important for auto cross-validation
+        listToWrite.clear();
+        for(int j = 0; j < def::numOfClasses; ++j)
+        {
+            for(int i = 0; i < (len[j] / fold) * fold; ++i)
+            {
+                listToWrite << lst[j][arr[j][i]];
+            }
+        }
+        helpString = QDir::toNativeSeparators(paPath + slash() + "all.pa");
+        makePaFile(spectraDir, listToWrite, coeff, helpString);
+    }
 }
 
 void makeMatrixFromFiles(QString spectraDir,
@@ -2227,10 +2288,19 @@ void readFileInLine(const QString & filePath, vec & outData)
     }
     outData.clear();
     double tmp;
+    int num = 0;
     while(!file.eof())
     {
         file >> tmp;
         outData.push_back(tmp);
+
+        // test
+        ++num;
+        if(num > def::fftLength * def::nsWOM())
+        {
+            cout << 23864 << endl;
+            exit(0);
+        }
     }
     outData.pop_back(); ///// prevent doubling last item (eof) bicycle
     file.close();
@@ -2244,26 +2314,12 @@ void writeFileInLine(const QString & filePath, const vec & outData)
         cout << "bad file" << endl;
         return;
     }
-    for(auto it = outData.begin(); it < outData.end(); ++it)
+    for(auto out : outData)
     {
-        file << doubleRound(*it, 4) << '\t'; // \t or \n
+        file << doubleRound(out, 4) << '\t'; // \t or \n
     }
     file.close();
 }
-
-vec vectorFromMatrix(double ** inMat,int inNs, int spL)
-{
-    vec res;
-    for(int i = 0; i < inNs; ++i)
-    {
-        for(int j = 0; j < spL; ++j)
-        {
-            res.push_back(inMat[i][j]);
-        }
-    }
-    return res;
-}
-
 
 template <typename Typ>
 void drawArrays(const QString & templPath,
@@ -2482,6 +2538,13 @@ void drawArraysInLine(const QString & picPath,
                          i + 1, (offsetY - inMatrix[k][i + 1] / norm) * pic.height());
         }
     }
+    pnt.setPen(QPen(QBrush(QColor("black")), 1));
+    for(int i = 0; i < def::nsWOM(); ++i)
+    {
+        pnt.drawLine(i * pic.width() / def::nsWOM(), offsetY * pic.height(),
+                     i * pic.width() / def::nsWOM(), 0);
+    }
+
     pic.save(picPath, 0, 100);
     pnt.end();
 
@@ -2515,7 +2578,9 @@ void countMannWhitney(trivector<int> & outMW,
                       matrix * averageSpectraOut,
                       matrix * distancesOut)
 {
-    const int numOfClasses = def::fileMarkers.length();
+//    const int numOfClasses = def::fileMarkers.length();
+    const int numOfClasses = def::numOfClasses;
+
     const int NetLength = def::nsWOM() * def::spLength;
 
     QString helpString;
@@ -2551,7 +2616,8 @@ void countMannWhitney(trivector<int> & outMW,
     }
 
 
-
+#if 1
+    // trivector
     outMW.resize(numOfClasses);
     for(int i = 0; i < numOfClasses; ++i)
     {
@@ -2572,6 +2638,26 @@ void countMannWhitney(trivector<int> & outMW,
             distances[i][j - i] = dist1 / double(NetLength);
         }
     }
+#else
+    /// twovector not ready
+    outMW.resize((numOfClasses * (numOfClasses - 1)) / 2 );
+    for(int i = 0; i < outMW.size(); ++i)
+    {
+        outMW[i].resize(NetLength);
+        int dist1 = 0;
+        for(int k = 0; k < NetLength; ++k)
+        {
+            outMW[i][k] = MannWhitney(spectra[i][k],
+                                      spectra[j][k]);
+            if(outMW[i][j - i][k] != 0)
+            {
+                ++dist1;
+            }
+        }
+        distances[i][j - i] = dist1 / double(NetLength);
+
+    }
+#endif
 
     if(averageSpectraOut != nullptr)
     {
@@ -4280,13 +4366,11 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
 }
                    */
 
-//template <typename Typ>
-void writePlainData(QString outPath,
-//                    const Typ & data,
-                    const matrix & data,
-                    int ns,
+void writePlainData(const QString outPath,
+                    const matrix &data,
+                    const int & ns,
                     int numOfSlices,
-                    int start)
+                    const int & start)
 {
     numOfSlices = min(numOfSlices,
                       data.cols() - start);
@@ -4295,7 +4379,9 @@ void writePlainData(QString outPath,
 
     ofstream outStr;
     outStr.open(outPath.toStdString());
-    outStr << "NumOfSlices " << numOfSlices << endl;
+    outStr << "NumOfSlices " << numOfSlices;
+    outStr << "\tNumOfChannels " << ns;
+    outStr << endl;
     for (int i = 0; i < numOfSlices; ++i)
     {
         for(int j = 0; j < ns; ++j)
@@ -4309,13 +4395,11 @@ void writePlainData(QString outPath,
 }
 
 
-//template <typename Typ>
-void readPlainData(QString inPath,
-//                   Typ & data,
+void readPlainData(const QString & inPath,
                    matrix & data,
-                   int ns,
+                   const int & ns,
                    int & numOfSlices,
-                   int start) // data may be allocated
+                   const int & start)
 {
     ifstream inStr;
     inStr.open(inPath.toStdString());
@@ -4326,31 +4410,39 @@ void readPlainData(QString inPath,
     }
     inStr.ignore(64, ' '); // "NumOfSlices "
     inStr >> numOfSlices;
+    inStr.ignore(64, '\n'); // "NumOfChannels N\n"
 
-    data.resize(ns);
-    std::for_each(data.begin(),
-                  data.end(),
-                  [numOfSlices, start](vec & in){in.resize(numOfSlices + start);});
+    data.resize(ns, numOfSlices + start);
 
     for (int i = 0; i < numOfSlices; ++i)
     {
         for(int j = 0; j < ns; ++j)
         {
+
             inStr >> data[j][i + start];
+
+            /// Ossadtchi
+//            if(j == ns - 1 && def::OssadtchiFlag)
+//            {
+//                if(i == 0) data[j][i + start] = inPath.right(3).toDouble();
+//                else if(i == numOfSlices-1) data[j][i + start] = 254;
+//                else data[j][i + start] = 0.;
+//            }
+
         }
     }
     inStr.close();
 }
 
-void spectre(const double * data, const int & length, double *& spectr)
+void spectre(const double * data, const int & length, double * & spectr)
 {
     int fftLen = fftL(length); // nearest exceeding power of 2
-    double norm = fftLen/double(length);
+    double norm = sqrt(fftLen / double(length));
 
     double * tempSpectre = new double [2*fftLen];
     for(int i = 0; i < length; ++i)
     {
-        tempSpectre[ 2 * i + 0] = data[i] * sqrt(norm);
+        tempSpectre[ 2 * i + 0] = data[i] * norm;
         tempSpectre[ 2 * i + 1] = 0.;
     }
     for(int i = length; i < fftLen; ++i)
@@ -4361,12 +4453,13 @@ void spectre(const double * data, const int & length, double *& spectr)
     four1(tempSpectre-1, fftLen, 1);
 
 
-    spectr = new double [fftLen/2];
+    spectr = new double [fftLen / 2];
+
+    norm = 2. / (def::freq * fftLen);
     for(int i = 0; i < fftLen/2; ++i )      //get the absolute value of FFT
     {
         spectr[ i ] = (pow(tempSpectre[ i * 2 ], 2.) +
-                      pow(tempSpectre[ i * 2 + 1 ], 2.)) *
-                2. / (def::freq * fftLen);
+                      pow(tempSpectre[ i * 2 + 1 ], 2.)) * norm;
     }
 }
 
@@ -4808,44 +4901,42 @@ double countAngle(double initX, double initY)
     }
 }
 
-template <typename inTyp, typename outTyp>
-void calcSpectre(const inTyp &inSignal,
-                 int length,
-                 outTyp &outSpectre,
-                 const int & Eyes,
-                 int * fftLength,
+void calcSpectre(const vector<double> & inSignal,
+                 vector<double> & outSpectre,
+                 const int & fftLength,
                  const int & NumOfSmooth,
+                 const int & Eyes,
                  const double & powArg)
 {
-    int fftLen = fftL(length);
-    if (fftLength != nullptr)
+    if(inSignal.size() != fftLength)
     {
-        *fftLength = fftLen;
+        cout << "calcSpectre: inappropriate signal length" << endl;
+        return;
     }
-    double norm1 = fftLen / double(fftLen - Eyes);
-    double * spectre = new double [fftLen*2];
+
+    const double norm1 = sqrt(fftLength / double(fftLength - Eyes));
+    vector<double> spectre (fftLength * 2, 0.);
 
     double help1, help2;
-    int leftSmoothLimit, rightSmoothLimit;
 
-    for(int i = 0; i < fftLen; ++i)            //make appropriate array
+    for(int i = 0; i < fftLength; ++i)
     {
-        spectre[ i * 2 + 0 ] = double(inSignal[ i ] * sqrt(norm1));
-        spectre[ i * 2 + 1 ] = 0.;
+        spectre[ i * 2 ] = inSignal[ i ] * norm1;
     }
-    four1(spectre-1, fftLen, 1);       //Fourier transform
+    four1(spectre, fftLength, 1);
 
-    for(int i = 0; i < fftLen/2; ++i )      //get the absolute value of FFT
+    const double norm2 = 2. / (def::freq * fftLength);
+    for(int i = 0; i < fftLength / 2; ++i )
     {
-        outSpectre[ i ] = (pow(spectre[ i * 2 ], 2) + pow(spectre[ i * 2 + 1 ], 2))
-                * 2 /250. / fftLen; //0.004 = 1/250 generality
-        outSpectre[ i ] = pow ( outSpectre[ i ], powArg );
+        outSpectre[ i ] = (pow(spectre[ i * 2 ], 2) + pow(spectre[ i * 2 + 1 ], 2)) * norm2;
+//        outSpectre[ i ] = pow ( outSpectre[ i ], powArg );
     }
 
-    leftSmoothLimit = 0;
-    rightSmoothLimit = fftLen / 2 - 1;
+    const int leftSmoothLimit = 0;
+    const int rightSmoothLimit = fftLength / 2. - 1;
+
     //smooth spectre
-    for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
+    for(int a = 0; a < (int)(NumOfSmooth / norm1); ++a)
     {
         help1 = outSpectre[leftSmoothLimit-1];
         for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
@@ -4855,205 +4946,9 @@ void calcSpectre(const inTyp &inSignal,
             help1 = help2;
         }
     }
-    delete []spectre;
-}
-template void calcSpectre(const double * const &inSignal, int length, double * &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 0, const double & powArg = 1.);
-template void calcSpectre(const double * const &inSignal, int length, vector <double> &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 0, const double & powArg = 1.);
-template void calcSpectre(const vector <double> &inSignal, int length, double * &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 0, const double & powArg = 1.);
-template void calcSpectre(const vector <double> &inSignal, int length, vector <double> &outSpectre, const int & Eyes = 0, int * fftLength = NULL, const int & NumOfSmooth = 0, const double & powArg = 1.);
-
-
-void calcSpectre(double ** &inData,
-                 int leng,
-                 const int &ns,
-                 double **& dataFFT,
-                 int * fftLength,
-                 const int &NumOfSmooth,
-                 const double &powArg)
-{
-    //allocates memory for dataFFT
-    //counts best-fit fftLength, Eyes and spectra
-
-    int Eyes;
-
-    if((*fftLength) <= 0)
-    {
-        if(log(leng)/log(2.) != int(log(leng)/log(2.)))
-        {
-            (*fftLength) = pow(2, int(log(leng)/log(2.))+1); //nearest exceeding power of 2
-        }
-        else
-        {
-            (*fftLength) = leng;
-        }
-    }
-    //    cout << (*fftLength) << endl;
-
-    matrixCreate(&dataFFT, ns, (*fftLength));
-
-    double ** newData;
-    matrixCreate(&newData, ns, (*fftLength));
-    for(int j = 0; j < ns; ++j)
-    {
-        for(int i = 0; i < leng; ++i)
-        {
-            newData[j][i] = inData[j][i];
-        }
-        //        memcpy(newData[j], inData[j], sizeof(double) * leng);
-        for(int i = leng; i < (*fftLength); ++i)
-        {
-            newData[j][i] = 0.;
-        }
-    }
-
-    Eyes = 0;
-    int h = 0;
-    for(int i = 0; i < (*fftLength); ++i)
-    {
-        h = 0;
-        for(int j = 0; j < ns; ++j)
-        {
-            if(fabs(newData[j][i]) <= 0.125) ++h;
-        }
-        if(h == ns) Eyes += 1;
-    }
-
-
-    double norm1 = (*fftLength) / double((*fftLength)-Eyes);
-    double * spectre = new double [(*fftLength)*2];
-
-    double help1, help2;
-    int leftSmoothLimit, rightSmoothLimit;
-
-    for(int j = 0; j < ns; ++j)
-    {
-        for(int i = 0; i < (*fftLength); ++i)            //make appropriate array
-        {
-            spectre[ i * 2 + 0 ] = (double)(newData[j][ i ] * sqrt(norm1));
-            spectre[ i * 2 + 1 ] = 0.;
-        }
-        four1(spectre-1, (*fftLength), 1);       //Fourier transform
-        for(int i = 0; i < (*fftLength)/2; ++i )      //get the absolute value of FFT
-        {
-            dataFFT[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /250. / (*fftLength); //0.004 = 1/250 generality
-            //            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ], powArg );
-
-        }
-
-        leftSmoothLimit = 0;
-        rightSmoothLimit = (*fftLength)/2-1;
-        //smooth spectre
-        for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
-        {
-            help1 = dataFFT[j][leftSmoothLimit-1];
-            for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
-            {
-                help2 = dataFFT[j][k];
-                dataFFT[j][k] = (help1 + help2 + dataFFT[j][k+1]) / 3.;
-                help1 = help2;
-            }
-        }
-    }
-    delete []spectre;
-    matrixDelete(&newData, ns);
-}
-
-void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &inDataLen, const int &NumOfSmooth, const double & powArg)
-{
-    int fftLength = fftL(inDataLen);
-    double norm1 = fftLength / double(inDataLen);
-
-    double * spectre = new double [fftLength * 2];
-
-    double help1, help2;
-    int leftSmoothLimit, rightSmoothLimit;
-
-    for(int j = 0; j < ns; ++j)
-    {
-        for(int i = 0; i < inDataLen; ++i)            //make appropriate array
-        {
-            spectre[ i * 2 + 0 ] = (double)(inData[j][ i ] * sqrt(norm1));
-            spectre[ i * 2 + 1 ] = 0.;
-        }
-        for(int i = inDataLen; i < fftLength; ++i)            //make appropriate array
-        {
-            spectre[ i * 2 + 0 ] = 0.;
-            spectre[ i * 2 + 1 ] = 0.;
-        }
-        four1(spectre-1, fftLength, 1);       //Fourier transform
-        for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
-        {
-            dataFFT[j][ i ] = ( spectre[ i * 2 ] * spectre[ i * 2 ] + spectre[ i * 2 + 1 ]  * spectre[ i * 2 + 1 ] ) * 2 /def::freq / fftLength; //0.004 = 1/250 generality
-            dataFFT[j][ i ] = pow ( dataFFT[j][ i ], powArg );
-
-        }
-        leftSmoothLimit = 0;
-        rightSmoothLimit = fftLength/2-1;
-
-        //smooth spectre
-        for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
-        {
-            help1 = dataFFT[j][leftSmoothLimit-1];
-            for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
-            {
-                help2 = dataFFT[j][k];
-                dataFFT[j][k] = (help1 + help2 + dataFFT[j][k+1]) / 3.;
-                help1 = help2;
-            }
-        }
-    }
-    delete []spectre;
 }
 
 
-template <typename Typ>
-void calcSpectre(const Typ & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth, double const &powArg)
-{
-    double norm1 = fftLength / double(fftLength-Eyes);
-    double * spectre = new double [fftLength*2];
-    dataFFT.resize(ns);
-    std::for_each(dataFFT.begin(),
-                  dataFFT.end(),
-                  [fftLength](vec & in){in.resize(fftLength/2);});
-
-    double help1, help2;
-    int leftSmoothLimit, rightSmoothLimit;
-
-    for(int j = 0; j < ns; ++j)
-    {
-        for(int i = 0; i < fftLength; ++i)            //make appropriate array
-        {
-            spectre[ i * 2 + 0 ] = (double)(inData[j][ i ] * sqrt(norm1));
-            spectre[ i * 2 + 1 ] = 0.;
-        }
-        four1(spectre-1, fftLength, 1);       //Fourier transform
-        for(int i = 0; i < fftLength/2; ++i )      //get the absolute value of FFT
-        {
-            dataFFT[j][ i ] = ( pow(spectre[ i * 2 ], 2) + pow(spectre[ i * 2 + 1 ], 2))
-                    * 2 / def::freq / fftLength;
-            //            (*dataFFT)[j][ i ] = pow ( (*dataFFT)[j][ i ], powArg );
-
-        }
-
-        leftSmoothLimit = 0;
-        rightSmoothLimit = fftLength/2 - 1;
-
-        //smooth spectre
-        for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
-        {
-            help1 = dataFFT[j][leftSmoothLimit-1];
-            for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
-            {
-                help2 = dataFFT[j][k];
-                dataFFT[j][k] = (help1 + help2 + dataFFT[j][k+1]) / 3.;
-                help1 = help2;
-            }
-        }
-    }
-    delete []spectre;
-}
-template void calcSpectre(const mat & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth, double const &powArg);
-template void calcSpectre(const matrix & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth, double const &powArg);
 
 
 template <typename Typ>

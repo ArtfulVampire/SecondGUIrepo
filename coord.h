@@ -31,10 +31,11 @@ namespace def
     const bool matiFlag = true;
     const bool ntFlag = false;
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
+    const bool OssadtchiFlag = true;
 
 
-    const double leftFreq = 5.;
-    const double rightFreq = 20.;
+    const double leftFreq = 6.;
+    const double rightFreq = 16.;
 
     const bool wirteStartEndLong = false; //for slice
 

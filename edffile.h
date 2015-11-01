@@ -210,7 +210,7 @@ public:
     void saveSubsection(int startBin, int finishBin, const QString &outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
     void reduceChannels(QList<int> chanList);
-    void reduceChannels(QString chanStr);
+    void reduceChannels(const QString & chanStr);
     void setLabels(char ** inLabels);
     void cleanFromEyes(QString eyesPath = QString(),
                        bool removeEogChannels = false,

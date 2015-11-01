@@ -235,7 +235,8 @@ void Cut::cutEyesAll()
 
 
     def::dir->cd(ui->dirBox->currentText());  // generality
-    nameFilters.clear();
+
+    QStringList nameFilters; /// generality
     nameFilters << "*_241*";
     nameFilters << "*_247*";
     nameFilters << "*_254*"; // no need?

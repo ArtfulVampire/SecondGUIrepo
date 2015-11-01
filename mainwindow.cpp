@@ -37,11 +37,6 @@ MainWindow::MainWindow() :
 
 
 
-
-
-
-
-
     QString helpString;
 
     // what with deletion?
@@ -221,13 +216,13 @@ MainWindow::MainWindow() :
 
     /// seconds !!!!!
     ui->timeShiftSpinBox->setMinimum(0.1);
-    ui->timeShiftSpinBox->setMaximum(4);
-    ui->timeShiftSpinBox->setValue(4);
+    ui->timeShiftSpinBox->setMaximum(15);
+    ui->timeShiftSpinBox->setValue(10);
     ui->timeShiftSpinBox->setSingleStep(0.1);
-    ui->windowLengthSpinBox->setMaximum(4);
+    ui->windowLengthSpinBox->setMaximum(15);
     ui->windowLengthSpinBox->setMinimum(1);
     ui->windowLengthSpinBox->setSingleStep(0.1);
-    ui->windowLengthSpinBox->setValue(4);
+    ui->windowLengthSpinBox->setValue(10);
     ui->realButton->setChecked(true);
 
     ui->numOfIcSpinBox->setMaximum(19); //generality
@@ -1749,27 +1744,65 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-//    vec vec1, vec2;
-//    readFileInLine("/media/Files/Data/AAX/Help/AAX_rr_f_new_254.psa", vec1);
-//    readFileInLine("/media/Files/Data/AAX/Help/AAX_rr_f_new_class_3.psa", vec2);
-//    cout << correlation(vec1, vec2, vec1.size()) << endl;
-//    exit(0);
-
-
     ui->matiCheckBox->setChecked(false);
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
 
 
 
     setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
-
-    def::freq = 100;
+#if 0
+    // reduce channels in realisations
     def::ns = 32;
-    def::fftLength = 1024;
-    def::spLength = 63; // pewpew
-    def::cfgFileName = "4sec19ch";
-//    sliceWindFromReal();
+    const vector<int> exclude{3, 4, 14};
+    QString helpString;
+    for(int i = 0; i < def::ns; ++i)
+    {
+        if(std::find(exclude.begin(), exclude.end(), i) != exclude.end()) continue;
+        helpString += QString::number(i + 1) + " ";
+    }
+    ui->reduceChannelsLineEdit->setText(helpString);
+    reduceChannelsSlot();
+#endif
+    def::freq = 100;
     def::ns = 29;
+
+//    sliceWindFromReal();
+
+
+//    countSpectraSimple(1024, 10);
+//    exit(0);
+
+//    Net * ann = new Net();
+//    ann->readCfgByName("tmp");
+//    ann->show();
+
+//    return;
+    vector<pair<int, double>> pew;
+    for(int i : {9})
+    {
+        countSpectraSimple(1024, i);
+        makeCfgStatic("tmp");
+
+        Net * ann = new Net();
+        ann->readCfgByName("tmp");
+//        ann->setNumOfPairs(20);
+        ann->autoClassification(def::dir->absolutePath()
+                                + slash() + "SpectraSmooth"
+                                + slash() + "windows");
+
+        pew.push_back(make_pair(i, ann->getAverageAccuracy()));
+        delete ann;
+    }
+    for(auto out : pew)
+    {
+        cout << out.first << "\t" << out.second << endl;
+    }
+    exit(0);
+
+
+
+//    sliceWindFromReal();
+//    def::ns = 32;
 //    drawRealisations();
 //    countSpectraSimple(1024);
 

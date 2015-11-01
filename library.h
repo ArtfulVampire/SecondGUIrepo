@@ -57,6 +57,10 @@ template <typename Typ>
 class trivector : public std::vector<std::vector<std::vector<Typ>>>
 {};
 
+template <typename Typ>
+class twovector : public std::vector<std::vector<Typ>>
+{};
+
 void writeWavFile(const vec & inData, const QString & outPath);
 
 
@@ -84,22 +88,22 @@ QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
 QString getExt(QString filePath);
 QString slash();
-ostream & operator << (ostream &os, QString toOut);
-ostream & operator << (ostream &os, vector < vector < double > > toOut);
-ostream & operator << (ostream &os, QList<int> toOut);
-ostream & operator << (ostream &os, matrix toOut);
+ostream & operator<< (ostream &os, QString toOut);
+ostream & operator<< (ostream &os, vector < vector < double > > toOut);
+ostream & operator<< (ostream &os, QList<int> toOut);
+ostream & operator<< (ostream &os, matrix toOut);
+
 template <typename T>
-ostream & operator << (ostream &os, vector<T> toOut); // template!
+ostream & operator<< (ostream &os, vector<T> toOut); // template!
+
 //vector< vector<double> > operator=(const vector< vector<double> > & other);
 char * strToChar(const QString & input);
 FILE *fopen(QString filePath, const char *__modes);
 char * QStrToCharArr(const QString & input, const int & len = -1);
 
 int typeOfFileName(const QString & fileName);
+QString getFileMarker(const QString & fileName);
 
-vec vectorFromMatrix(double ** inMat,
-                     int inNs = def::nsWOM(),
-                     int spL = def::spLength);
 
 
 //wavelets
@@ -109,7 +113,7 @@ enum ColorScale {jet = 0,
            pew = 3};
 void drawColorScale(QString filename, int range, ColorScale type = jet, bool full = false);
 
-const vector <double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
+const vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
 // jet
 const double defV = 1.;
 double red(const int &range, double j, double V = defV, double S = 1.0);
@@ -239,11 +243,18 @@ int MannWhitney(const vec & arr1,
 void makePaFile(const QString & spectraDir,
                 const QStringList & fileNames,
                 const double & coeff,
-                const QString & outFile);
+                const QString & outFile,
+                const bool svmFlag = false);
+
+
+
+void makeFileLists(const QString & path,
+                   vector<QStringList> & lst);
 
 void makePaStatic(const QString & spectraDir,
                   const int & fold,
-                  const double & coeff);
+                  const double & coeff,
+                  const bool svmFlag = false);
 
 void makeMatrixFromFiles(QString spectraDir,
                          QStringList fileNames,
@@ -272,17 +283,17 @@ void makeCfgStatic(const QString & FileName = "16sec19ch",
                    const int & temp = 10);
 
 
-void readPlainData(QString inPath,
+void readPlainData(const QString & inPath,
                    matrix & data,
-                   int ns,
+                   const int & ns,
                    int & numOfSlices,
-                   int start = 0);
+                   const int & start = 0);
 
-void writePlainData(QString outPath,
+void writePlainData(const QString outPath,
                     const matrix &data,
-                    int ns,
+                    const int & ns,
                     int numOfSlices,
-                    int start = 0);
+                    const int & start = 0);
 
 //void writePlainData(QString outPath,
 //                    const matrix &data,
@@ -449,27 +460,12 @@ void spectre(const double * data,
 vec spectre(const vec & data);
 vec smoothSpectre(const vec & inSpectre, const int numOfSmooth);
 
-template <typename inTyp, typename outTyp>
-void calcSpectre(const inTyp & inSignal,
-                 int length,
-                 outTyp & outSpectre,
-                 const int & Eyes = 0,
-                 int * fftLength = nullptr,
+void calcSpectre(const vector<double> & inSignal,
+                 vector<double> & outSpectre,
+                 const int & fftLength = def::fftLength,
                  const int & NumOfSmooth = 0,
+                 const int & Eyes = 0,
                  const double & powArg = 1.);
-
-//void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &inDataLen, const int &NumOfSmooth = 15, const double &powArg = 1.);
-//void calcSpectre(double ** &inData, double **& dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth = 15, const double &powArg = 1.);
-//void calcSpectre(double ** &inData, int leng, const int &ns, double **& dataFFT, int * fftLength, const int &NumOfSmooth = 15, const double &powArg = 1.);
-
-template <typename Typ>
-void calcSpectre(const Typ & inData,
-                 mat & dataFFT,
-                 const int &ns,
-                 const int &fftLength,
-                 const int &Eyes,
-                 const int &NumOfSmooth,
-                 double const &powArg);
 
 template <typename Typ>
 void calcRawFFT(const Typ & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);

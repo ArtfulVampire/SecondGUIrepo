@@ -22,7 +22,7 @@ void MainWindow::sliceWindFromReal()
 
     QDir localDir(def::dir->absolutePath());
     localDir.cd("Realisations");
-    QStringList nameFilters {"*_2??"};
+    QStringList nameFilters {"*_2??"}; // all of them
     QStringList lst = localDir.entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
 
     const int timeShift = ui->timeShiftSpinBox->value() * def::freq;
@@ -35,11 +35,13 @@ void MainWindow::sliceWindFromReal()
     int offset;
     int NumOfSlices;
 
-    const std::set<int, std::greater<int>> exclude {
-                                           3,
-                                           4,
-                                           14,
-                                           };
+
+    /// moved to reduceChannelsSlot
+//    const std::set<int, std::greater<int>> exclude {
+//                                           3,
+//                                           4,
+//                                           14
+//                                           };
 
     int localNs = def::ns;
     for(int i = 0; i < lst.length(); ++i)
@@ -52,13 +54,12 @@ void MainWindow::sliceWindFromReal()
                                               + slash() + lst[i]);
         readPlainData(helpString, dataReal, localNs, NumOfSlices);
 
-        for(const int & num : exclude)
-        {
-            dataReal.eraseRow(num);
-            --localNs;
-        }
-
-//        cout << localNs << endl << endl;
+        /// moved to reduceChannelsSlot
+//        for(const int & num : exclude)
+//        {
+//            dataReal.eraseRow(num);
+//            --localNs;
+//        }
 
         offset = 0;
         for(int h = 0; h < ceil(NumOfSlices / double(timeShift)); ++h)

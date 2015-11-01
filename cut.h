@@ -83,7 +83,6 @@ private:
 
     bool autoFlag;
 
-    QStringList nameFilters;
     double coeff;      //for fft
     int timeShift;   //in time-bins
     double wndLength;  //in seconds
