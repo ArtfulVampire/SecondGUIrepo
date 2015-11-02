@@ -1918,7 +1918,6 @@ double distance(double * vec1, double * vec2, const int &dim)
         dist += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
     }
     return dist;
-
 }
 
 double distance(double const x1, double const y1, double const x2, double const y2)
@@ -5006,7 +5005,6 @@ void calcRawFFT(const Typ & inData,
 
 void readPaFile(QString paFile,
                 matrix & dataMatrix,
-                int & NumberOfVectors,
                 vector<QString> & FileName,
                 vector<double> & classCount)
 {
@@ -5035,8 +5033,6 @@ void readPaFile(QString paFile,
 
     std::string tempStr;
     vector<double> tempVec(NetLength + 2); // bias and class
-
-    NumberOfVectors = 0;
 
     while(!paSrc.eof())
     {
@@ -5078,7 +5074,6 @@ void readPaFile(QString paFile,
 
         classCount[int(tempVal)] += 1.; // set number of vectors of each class
         dataMatrix.push_back(tempVec);
-        ++NumberOfVectors;
     }
     paSrc.close();
 }

@@ -391,7 +391,6 @@ void writeFileInLine(const QString & filePath,
 
 void readPaFile(QString paFile,
                 matrix & dataMatrix,
-                int & NumberOfVectors,
                 vector<QString> & FileName,
                 vector<double> & classCount);
 
@@ -472,7 +471,6 @@ void calcRawFFT(const Typ & inData, mat & dataFFT, const int &ns, const int &fft
 
 template <typename T>
 double distance(const vector <T> &vec1, const vector <T> &vec2, const int &dim);
-
 double distance(double *vec1, double *vec2, const int &dim);
 double distance(double const x1, double const y1, double const x2, double const y2);
 double distanceMah(double * &vect, double ** &covMatrixInv, double *&groupMean, int dimension);

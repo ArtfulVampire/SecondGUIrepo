@@ -13,28 +13,18 @@ Net::Net() :
 
     this->setWindowTitle("Net");
 
-    weight = nullptr;
-    dimensionality = nullptr;
+//    weight = nullptr;
+//    dimensionality = nullptr;
 
     //clean log file
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                                   + slash() + "log.txt");
-    FILE * log = fopen(helpString,"w");
-    if(log == NULL)
-    {
-        QMessageBox::critical((QWidget * )this,
-                              tr("Warning"),
-                              tr("Cannot open log file to write"),
-                              QMessageBox::Ok);
-        return;
-    }
-    fclose(log);
+    QFile::remove(helpString);
 
     stopFlag = 0;
-    numTest = 0;
     numOfTall = 0;
 
-    NumberOfVectors = -1;
+//    NumberOfVectors = -1;
     loadPAflag = 0;
 
     tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
@@ -139,7 +129,6 @@ Net::Net() :
     ui->dimensionalityLineEdit->setText("0 20 0");
 
     ui->sizeSpinBox->setValue(6);
-    paint = new QPainter;
 //    QObject::connect(this, SIGNAL(destroyed()), &myThread, SLOT(quit()));
 
     QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(readCfg()));
@@ -199,8 +188,6 @@ Net::Net() :
 
     this->ui->deltaRadioButton->setChecked(true);
     this->ui->realsRadioButton->setChecked(true);
-
-    NumberOfVectors = 0;
 }
 
 Net::~Net()
@@ -210,19 +197,18 @@ Net::~Net()
     delete group1;
     delete group2;
     delete group3;
-    delete paint;
     delete ui;
 
-    for(int i = 0; i < numOfLayers - 1; ++i)
-    {
-        for(int j = 0; j < dimensionality[i] + 1; ++j) //
-        {
-            delete []weight[i][j];
-        }
-        delete []weight[i];
-    }
-    delete []weight;
-    delete []dimensionality;
+//    for(int i = 0; i < numOfLayers - 1; ++i)
+//    {
+//        for(int j = 0; j < dimensionality[i] + 1; ++j) //
+//        {
+//            delete []weight[i][j];
+//        }
+//        delete []weight[i];
+//    }
+//    delete []weight;
+//    delete []dimensionality;
 }
 
 void Net::mousePressEvent(QMouseEvent  * event)
@@ -232,34 +218,21 @@ void Net::mousePressEvent(QMouseEvent  * event)
 //    cout << "pos(x,y) = (" << ui->clearSetsLabel->pos().x() << "," << ui->clearSetsLabel->pos().y() << ")" << endl;
 //    cout << "size(w,h) = (" << ui->clearSetsLabel->width() << "," << ui->clearSetsLabel->height() << ")" << endl;
 
-    if(event->x() > ui->clearSetsLabel->pos().x() && event->x() < ui->clearSetsLabel->pos().x() + ui->clearSetsLabel->width() && event->y() > ui->clearSetsLabel->pos().y() && event->y() < ui->clearSetsLabel->pos().y() + ui->clearSetsLabel->height() )
-    {
-//        cout << "aimed!" << endl;
-        this->mouseShit = double(event->x() - ui->clearSetsLabel->pos().x())/double(ui->clearSetsLabel->width());
-    }
-    else
-    {
+
+//    if(event->x() > ui->clearSetsLabel->pos().x()
+//       && event->x() < ui->clearSetsLabel->pos().x() + ui->clearSetsLabel->width()
+//       && event->y() > ui->clearSetsLabel->pos().y()
+//       && event->y() < ui->clearSetsLabel->pos().y() + ui->clearSetsLabel->height() )
+//    {
+//        this->mouseShit = double(event->x() - ui->clearSetsLabel->pos().x())
+//                          / double(ui->clearSetsLabel->width());
+//    }
+//    else
+//    {
 //        cout << "fail" << endl;
-    }
+//    }
 }
 
-double Net::setPercentageForClean()
-{
-    //what a bicycle is it???!!!! signal/slot & eventFilter needed
-
-    cout << "set for clean" << endl;
-    mouseShit = 0.;
-    int i = 0;
-    while(mouseShit == 0.)
-    {
-        ++i;
-        if(i%100 == 0) qApp->processEvents();
-
-        //donothing
-    }
-
-    return mouseShit;
-}
 
 void Net::autoClassificationSimple()
 {
@@ -276,7 +249,7 @@ void Net::autoClassificationSimple()
     else if(ui->bayesRadioButton->isChecked())
     {
         //////////////// CAREFUL
-        def::spLength = NetLength/19;
+//        def::spLength = NetLength / 19;
         def::left = 1;
         def::right = def::spLength + 1;
         helpString += slash() + "Bayes";
@@ -435,8 +408,6 @@ void Net::autoClassification(const QString & spectraDir)
     const int numOfPairs = ui->numOfPairsBox->value();
 
     //adjust reduce coefficient
-
-    channelsSetExclude << 14;
 
     double newReduceCoeff = adjustReduceCoeff(spectraDir,
                                               ui->lowLimitSpinBox->value(),
@@ -659,7 +630,7 @@ void Net::drawWtsSlot()
 
 void Net::drawWts(QString wtsPath, QString picPath)  //generality
 {
-    if( numOfLayers != 2 ) return;
+    if( dimensionality.size() != 2 ) return;
 
     QString helpString;
 
@@ -690,8 +661,8 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
                                  QMessageBox::Ok);
         return;
     }
-    double *** tempWeights = nullptr;
-    readWtsByName(helpString, &tempWeights);
+    trivector<double> tempWeights;
+    readWtsByName(helpString, tempWeights);
 
     matrix drawWts; // 3 arrays of weights
     vec tempVec;
@@ -715,17 +686,6 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
     drawArrays(picPath,
                drawWts,
                true);
-
-    // func
-    for(int i = 0; i < numOfLayers - 1; ++i)
-    {
-        for(int j = 0; j < dimensionality[i] + 1; ++j) //
-        {
-            delete []tempWeights[i][j];
-        }
-        delete []tempWeights[i];
-    }
-    delete []tempWeights;
 }
 
 void Net::stopActivity()
@@ -745,7 +705,7 @@ void Net::writeWts(const QString & wtsPath)
         return;
     }
 
-    for(int i = 0; i < numOfLayers - 1; ++i)
+    for(int i = 0; i < dimensionality.size() - 1; ++i) // numOfLayers
     {
         for(int j = 0; j < dimensionality[i] + 1; ++j) // NetLength+1 for bias
         {
@@ -796,7 +756,7 @@ void Net::writeWtsSlot()
 void Net::reset()
 {
     srand(time(NULL));
-    for(int i = 0; i < numOfLayers - 1; ++i)
+    for(int i = 0; i < dimensionality.size() - 1; ++i)
     {
         for(int j = 0; j < dimensionality[i] + 1; ++j) //
         {
@@ -808,7 +768,7 @@ void Net::reset()
                 }
                 else
                 {
-                    weight[i][j][k] = (-500 + rand()%1000)/50000.;
+                    weight[i][j][k] = (-500 + rand()%1000) / 50000.;
                 }
             }
         }
@@ -819,69 +779,47 @@ void Net::reset()
 void Net::testDistances()
 {
     PaIntoMatrixByName("1");
-    NumberOfErrors = new int[def::numOfClasses];
-    double ** averageSpectra = new double *[def::numOfClasses];
-//    FILE * toread;
-    for(int i = 0; i < def::numOfClasses; ++i)
-    {
-        NumberOfErrors[i] = 0;
-        averageSpectra[i] = new double [NetLength];
-        for(int j = 0; j < NetLength; ++j)
-        {
-            averageSpectra[i][j] = 0.;
-        }
-
-    }
-
-    int * count = new int [def::numOfClasses];
-    for(int i = 0; i < def::numOfClasses; ++i)
-    {
-        count[i] = 0;
-    }
+    vector<int> NumberOfErrors(def::numOfClasses, 0);
+    matrix averageSpectra(def::numOfClasses, NetLength, 0.);
+//    vector<int> count(def::numOfClasses, 0);
+    const int NumberOfVectors = dataMatrix.rows();
 
     int inType;
     for(int i = 0; i < NumberOfVectors; ++i)
     {
-        inType = int(dataMatrix[i][NetLength+1]);
-        ++count[inType];
+        inType = int(dataMatrix[i][NetLength + 1]);
         for(int j = 0; j < NetLength; ++j)
         {
             averageSpectra[inType][j] += dataMatrix[i][j];
         }
     }
+
     for(int i = 0; i < def::numOfClasses; ++i)
     {
         for(int j = 0; j < NetLength; ++j)
         {
-            averageSpectra[i][j] /= count[i];
+            averageSpectra[i][j] /= classCount[i];
         }
-
     }
     PaIntoMatrixByName("2");
 
 
-    double *distances = new double [def::numOfClasses];
+    vector<double> distances(def::numOfClasses);
     int outType;
     double helpDist = 0;
 
     for(int i = 0; i < NumberOfVectors; ++i)
     {
-
         inType = int(dataMatrix[i][NetLength+1]);
         for(int j = 0; j < def::numOfClasses; ++j)
         {
-            distances[j] = distance(averageSpectra[j], dataMatrix[i].data(), NetLength);
+            distances[j] = distance(averageSpectra[j].data(),
+                                    dataMatrix[i].data(),
+                                    NetLength);
         }
-        outType = 0;
-        helpDist = distances[0];
-        for(int j = 1; j < def::numOfClasses; ++j)
-        {
-            if(distances[j] < helpDist)
-            {
-                outType = j;
-                helpDist = distances[j];
-            }
-        }
+//        outType = 0;
+//        auto it = std::min_element(distances.begin(), distances.end()) - distances.begin();
+        outType = int(std::min_element(distances.begin(), distances.end()) - distances.begin());
         if(outType != inType) ++NumberOfErrors[inType];
     }
     cout << "NumberOfVectors = " << NumberOfVectors << endl;
@@ -894,26 +832,14 @@ void Net::testDistances()
     {
         sum += NumberOfErrors[j];
     }
-
     cout << "Percentage = " <<  100. * (1. - double(sum)/NumberOfVectors) << endl;
-
-
-    for(int i = 0; i < def::numOfClasses; ++i)
-    {
-        delete averageSpectra[i];
-    }
-    delete []averageSpectra;
-    delete []distances;
-    delete []NumberOfErrors;
-    delete []count;
-
 }
 
 
 void Net::tall()
 {
     vector<int> indices;
-    for(int i = 0; i < NumberOfVectors; ++i)
+    for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         indices.push_back(i);
     }
@@ -1017,104 +943,64 @@ void Net::readCfgByName(const QString & cfgFilePath)
         helpString = def::dir->absolutePath() + slash() + helpString;
     }
 
-    FILE * cfg = fopen(helpString, "r");
-    if(cfg == NULL)
+    ifstream cfgStream;
+    cfgStream.open(helpString.toStdString());
+    if(!cfgStream.good())
     {
-        cout << "loadCfgByName: wrong cfg path = " << helpString.toStdString() << endl;
+        cout << "loadCfgByName: can't open = " << helpString.toStdString() << endl;
         return;
     }
-    fscanf(cfg, "%*s%d\n", &NetLength);
-    fscanf(cfg, "%*s%*d\n"); // numOfClasses
-    fscanf(cfg, "%*s%lf\n", &learnRate);
-    fscanf(cfg, "%*s%lf\n", &critError);
-    fscanf(cfg, "%*s%lf\n", &temperature);
-    fclose(cfg);
+    double tmp;
+    cfgStream.ignore(20, '\t'); cfgStream >> NetLength;
+    cfgStream.ignore(20, '\t'); cfgStream >> tmp; // numOfClasses
+    cfgStream.ignore(20, '\t'); cfgStream >> tmp; // learnRate
+    ui->learnRateBox->setValue(tmp);
+    cfgStream.ignore(20, '\t'); cfgStream >> tmp; // errcrit
+    ui->critErrorDoubleSpinBox->setValue(tmp);
+    cfgStream.ignore(20, '\t'); cfgStream >> tmp; // temperature
+    ui->tempBox->setValue(tmp);
+    cfgStream.close();
 
     memoryAndParamsAllocation();
-
-    ui->critErrorDoubleSpinBox->setValue(critError);
-    ui->tempBox->setValue(temperature);
-    ui->learnRateBox->setValue(learnRate);
 
     loadPAflag = 1;
 
     channelsSet.clear();
     channelsSetExclude.clear();
-    for(int i = 0; i < def::nsWOM(); ++i) /// MARKERS ?
+    for(int i = 0; i < def::nsWOM(); ++i)
     {
-        channelsSet << i;
+        channelsSet.push_back(i);
     }
 
 }
 
-void Net::readWtsByName(const QString & fileName, double * *** wtsMatrix) //
+void Net::readWtsByName(const QString & fileName, trivector<double> * wtsMatrix) //
 {
+    ifstream wtsStr;
+    wtsStr.open(fileName.toStdString());
+    if(!wtsStr.good())
+    {
+        cout << "readWtsByName: wtsStr is not good() " << endl;
+        return;
+    }
     if(wtsMatrix == nullptr)
     {
         wtsMatrix = &(this->weight);
     }
 
-    FILE * wts = fopen(fileName, "r");
-    if(wts == NULL)
-    {
-        cout << "wts-file == NULL" << endl;
-        return;
-    }
-    QString helpString;
 
-    if((*wtsMatrix) == nullptr) //if this->weight hasn't been allocated
-    {
-        numOfLayers = ui->numOfLayersSpinBox->value();
-        helpString = ui->dimensionalityLineEdit->text();
-        QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
-        if(lst.length() != numOfLayers)
-        {
-            QMessageBox::critical(this, tr("Error"), tr("Dimensionality and numOfLayers dont correspond\nweightBP hasn't been read"), QMessageBox::Ok);
-            return;
-        }
-
-        int * dimensionality = new int [numOfLayers];
-
-        dimensionality[0] = NetLength;
-        for(int i = 1; i < numOfLayers-1; ++i)
-        {
-            if(QString::number(lst[i].toInt()) != lst[i])
-            {
-                helpString = QString::number(i) + "'th dimensionality has bad format";
-                QMessageBox::critical(this,
-                                      tr("Error"),
-                                      tr(helpString.toStdString().c_str()),
-                                      QMessageBox::Ok);
-                return;
-            }
-            dimensionality[i] = lst[i].toInt();
-        }
-        dimensionality[numOfLayers-1] = def::numOfClasses;
-
-        (*wtsMatrix) = new double ** [numOfLayers - 1]; // 0 - the lowest layer
-        for(int i = 0; i < numOfLayers - 1; ++i)
-        {
-            (*wtsMatrix)[i] = new double * [dimensionality[i] + 1]; //+1 for bias
-            for(int j = 0; j < dimensionality[i] + 1; ++j) //
-            {
-                (*wtsMatrix)[i][j] = new double [dimensionality[i+1]];
-            }
-        }
-        delete []dimensionality;
-    }
-
-
-    for(int i = 0; i < numOfLayers-1; ++i)
+    memoryAndParamsAllocation();
+    for(int i = 0; i < dimensionality.size() - 1; ++i)
     {
         for(int j = 0; j < dimensionality[i] + 1; ++j) // NetLength + 1 for bias
         {
             for(int k = 0; k < dimensionality[i + 1]; ++k) // ~NumOfClasses
             {
-                fscanf(wts, "%lf\r\n", &((*wtsMatrix)[i][j][k]));
+                wtsStr >> (*wtsMatrix)[i][j][k];
             }
         }
     }
-    fclose(wts);
+    wtsStr.close();
 }
 
 
@@ -1129,61 +1015,7 @@ void Net::readWts()
         QMessageBox::information((QWidget * )this, tr("Warning"), tr("No wts-file was chosen"), QMessageBox::Ok);
         return;
     }
-    FILE * wts = fopen(helpString,"r");
-
-        if(weight == NULL) //if hasn't been allocated
-        {
-            numOfLayers = ui->numOfLayersSpinBox->value();
-            helpString = ui->dimensionalityLineEdit->text();
-            QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
-            if(lst.length() != numOfLayers)
-            {
-                QMessageBox::critical(this, tr("Error"), tr("Dimensionality and numOfLayers dont correspond\nweightBP hasn't been read"), QMessageBox::Ok);
-                return;
-            }
-
-            int * dimensionality = new int [numOfLayers];
-
-            dimensionality[0] = NetLength;
-            for(int i = 1; i < numOfLayers-1; ++i)
-            {
-                if(QString::number(lst[i].toInt()) != lst[i])
-                {
-                    helpString = QString::number(i) + "'th dimensionality has bad format";
-                    QMessageBox::critical(this, tr("Error"), tr(helpString.toStdString().c_str()), QMessageBox::Ok);
-                    return;
-                }
-                dimensionality[i] = lst[i].toInt();
-            }
-            dimensionality[numOfLayers-1] = def::numOfClasses;
-
-            weight = new double ** [numOfLayers - 1]; // 0 - the lowest layer
-            for(int i = 0; i < numOfLayers - 1; ++i)
-            {
-                weight[i] = new double * [dimensionality[i] + 1]; //+1 for bias
-                for(int j = 0; j < dimensionality[i] + 1; ++j) //
-                {
-                    weight[i][j] = new double [dimensionality[i+1]];
-                }
-            }
-            delete []dimensionality;
-        }
-
-
-        for(int i = 0; i < numOfLayers-1; ++i)
-        {
-            for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
-            {
-                for(int k = 0; k < dimensionality[i+1]; ++k)
-                {
-                    fscanf(wts, "%lf\r\n", &weight[i][j][k]);
-                }
-                fscanf(wts, "\r\n");
-            }
-            fscanf(wts, "\r\n");
-        }
-
-    fclose(wts);
+    readWtsByName(helpString, this->weight);
 }
 
 
@@ -1191,12 +1023,10 @@ void Net::leaveOneOutSlot()
 {
     if(!ui->openclCheckBox->isChecked())
     {
-//        cout << "simple leaveOneOut"  << endl;
         leaveOneOut();
     }
     else
     {
-//        cout << "OpenCL leaveOneOut"  << endl;
 //        leaveOneOutCL();
     }
 }
@@ -1236,8 +1066,7 @@ const char *  errorMessage(int err_)
     return QString::number(err_).toStdString().c_str();
 }
 
-
-/*
+#if 0
 void Net::leaveOneOutCL()
 {
 
@@ -1820,45 +1649,25 @@ void Net::leaveOneOutCL()
     delete []NumberOfErrors;
     delete []matrixArray;
 }
-*/
+#endif
 
 
 void Net::leaveOneOut()
 {
     vector<int> learnIndices;
-//    vector<int> errors(def::numOfClasses, 0);
-    for(int i = 0; i < NumberOfVectors; ++i)
+    for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         learnIndices.clear();
-//        int type = typeOfFileName(fileNames[i]);
-        for(int j = 0; j < NumberOfVectors; ++j)
+        for(int j = 0; j < dataMatrix.rows(); ++j)
         {
             if(j == i) continue;
             learnIndices.push_back(j);
         }
         LearNetIndices(learnIndices);
-//        if(!ClassificateVector(i)) ++errors[type];
         tallNetIndices({i});
     }
     cout << "N-fold cross-validation - ";
     averageClassification();
-
-
-
-//    ofstream outStr;
-//    QString helpString = def::dir->absolutePath() + slash() + "results.txt";
-//    outStr.open(helpString.toStdString(), ios_base::app);
-//    outStr << "PRR ";
-//    double sumCount = 0.;
-//    double sumError = 0.;
-//    for(int i = 0; i < def::numOfClasses; ++i)
-//    {
-//        outStr << doubleRound((1. - errors[i] / classCount[i]) * 100., 1) << "\t";
-//        sumCount += countClass[i];
-//        sumError += errors[i];
-//    }
-//    outStr << " - " << doubleRound((1. - sumError / sumCount) * 100., 1) << endl;
-//    outStr.close();
 }
 
 
@@ -1876,16 +1685,8 @@ void Net::PaIntoMatrix()
         QMessageBox::information((QWidget * )this, tr("Information"), tr("No file was chosen"), QMessageBox::Ok);
         return;
     }
-//    QTime myTime;
-//    myTime.start();
-    cout << "PaIntoMatrix: NetLength = " << NetLength << endl;
-    cout << "PaIntoMatrix: ns = " << def::nsWOM() << endl;
-
-    ////////////////////////////
-
     readPaFile(helpString,
                dataMatrix,
-               NumberOfVectors,
                fileNames,
                classCount);
 //    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
@@ -1915,7 +1716,6 @@ void Net::PaIntoMatrixByName(const QString & fileName)
 
     readPaFile(helpString,
                dataMatrix,
-               NumberOfVectors,
                fileNames,
                classCount);
 }
@@ -1930,6 +1730,7 @@ void Net::Hopfield()
     double maxH = 0.;
     double * output1 = new double [NetLength];
     double * output2 = new double [NetLength];
+    const int NumberOfVectors = dataMatrix.rows();
     MakePa  * mkPa = new MakePa(def::dir->absolutePath() + slash() + "SpectraSmooth");
     mkPa->setRdcCoeff(10);
     mkPa->makePaSlot();
@@ -2229,31 +2030,35 @@ void Net::memoryAndParamsAllocation()
     //NetLength should be set
     //def::numOfClasses should be set
 
-    if((weight != NULL) && (dimensionality != NULL) && loadPAflag)
-    {
-        for(int i = 0; i < numOfLayers - 1; ++i)
-        {
-            for(int j = 0; j < dimensionality[i] + 1; ++j) //
-            {
-                delete []weight[i][j];
-            }
-            delete []weight[i];
-        }
-        delete []weight;
-        delete []dimensionality;
-    }
+//    if((weight != NULL) && (dimensionality != NULL) && loadPAflag)
+//    {
+//        for(int i = 0; i < numOfLayers - 1; ++i)
+//        {
+//            for(int j = 0; j < dimensionality[i] + 1; ++j) //
+//            {
+//                delete []weight[i][j];
+//            }
+//            delete []weight[i];
+//        }
+//        delete []weight;
+//        delete []dimensionality;
+//    }
 
-    numOfLayers = ui->numOfLayersSpinBox->value();
+//    const int numOfLayers = ui->numOfLayersSpinBox->value();
     QString helpString = ui->dimensionalityLineEdit->text();
     QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
-    if(lst.length() != numOfLayers)
-    {
-        QMessageBox::critical(this, tr("Error"), tr("Dimensionality and numOfLayers dont correspond"), QMessageBox::Ok);
-        return;
-    }
-    dimensionality = new int [numOfLayers];
+//    if(lst.length() != numOfLayers)
+//    {
+//        QMessageBox::critical(this, tr("Error"), tr("Dimensionality and numOfLayers dont correspond"), QMessageBox::Ok);
+//        return;
+//    }
+//    dimensionality = new int [numOfLayers];
+
+    const int numOfLayers = lst.length();
+
+    dimensionality.resize(numOfLayers);
     dimensionality[0] = NetLength;
-    for(int i = 1; i < numOfLayers-1; ++i)
+    for(int i = 1; i < numOfLayers - 1; ++i)
     {
         if(QString::number(lst[i].toInt()) != lst[i])
         {
@@ -2263,17 +2068,25 @@ void Net::memoryAndParamsAllocation()
         }
         dimensionality[i] = lst[i].toInt();
     }
-    dimensionality[numOfLayers-1] = def::numOfClasses;
+    dimensionality[numOfLayers - 1] = def::numOfClasses;
 
 
-    weight = new double ** [numOfLayers - 1]; // weights from i'th layer to (i+1)'th
-
+//    weight = new double ** [numOfLayers - 1]; // weights from i'th layer to (i+1)'th
+//    for(int i = 0; i < numOfLayers - 1; ++i)
+//    {
+//        weight[i] = new double * [dimensionality[i] + 1]; //+1 for bias
+//        for(int j = 0; j < dimensionality[i] + 1; ++j) //
+//        {
+//            weight[i][j] = new double [dimensionality[i+1]];
+//        }
+//    }
+    weight.resize(numOfLayers - 1);
     for(int i = 0; i < numOfLayers - 1; ++i)
     {
-        weight[i] = new double * [dimensionality[i] + 1]; //+1 for bias
-        for(int j = 0; j < dimensionality[i] + 1; ++j) //
+        weight[i].resize(dimensionality[i] + 1);
+        for(int j = 0; j < dimensionality[i] + 1; ++j)
         {
-            weight[i][j] = new double [dimensionality[i+1]];
+            weight[i][j].resize(dimensionality[i + 1]);
         }
     }
 
@@ -2295,7 +2108,7 @@ void Net::memoryAndParamsAllocation()
 void Net::LearnNet()
 {
     vector <int> mixNum;
-    for(int i = 0; i < NumberOfVectors; ++i)
+    for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         mixNum.push_back(i);
     }
@@ -2307,12 +2120,13 @@ void Net::LearNetIndices(vector<int> mixNum)
     QTime myTime;
     myTime.start();
 
-    for(int i = 0; i < mixNum.size(); ++i)
-    {
-        cout << mixNum[i] << ' ';
-    }
-    cout << endl;
+//    for(int i = 0; i < mixNum.size(); ++i)
+//    {
+//        cout << mixNum[i] << ' ';
+//    }
+//    cout << endl;
 
+    const int numOfLayers = dimensionality.size();
     mat deltaWeights(numOfLayers);
     mat output(numOfLayers);
     for(int i = 0; i < numOfLayers; ++i)
@@ -2461,7 +2275,9 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
 {
 //    int  * mixNum = new int [NumberOfVectors];
     vector<int> mixNum;
-    mixNum.clear();
+    const int NumberOfVectors = dataMatrix.rows();
+    const int numOfLayers = dimensionality.size();
+
     for(int i = 0; i < NumberOfVectors; ++i)
     {
         mixNum.push_back(i);
@@ -2503,7 +2319,9 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
 
 
 
-    currentError = 2*critError;
+    double currentError = 2 * ui->critErrorDoubleSpinBox->value();
+    const double temperature = ui->tempBox->value();
+    const double learnRate = ui->learnRateBox->value();
     for(int numLayer = 1; numLayer < numOfLayers - 1; ++numLayer) //for every hidden layer
     {
         cout << "layer " << numLayer << " starts to learn" << endl;
@@ -2516,7 +2334,8 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
                 tempWeight[i][j] = (-500 + rand()%1000)/50000.;
             }
         }
-        while(currentError > critError && epoch < ui->epochSpinBox->value()) //while not good approximation
+        while(currentError > ui->critErrorDoubleSpinBox->value()
+              && epoch < ui->epochSpinBox->value()) //while not good approximation
         {
             srand(time(NULL));
             currentError = 0.0;
@@ -2672,6 +2491,9 @@ bool Net::ClassificateVector(const int & vecNum)
 {
     int type = int(dataMatrix[vecNum][NetLength + 1]);
 
+    const int numOfLayers = dimensionality.size();
+    const double temp = ui->tempBox->value();
+
     mat output(numOfLayers);
     for(int i = 0; i < numOfLayers; ++i)
     {
@@ -2693,19 +2515,10 @@ bool Net::ClassificateVector(const int & vecNum)
             {
                 output[i][j] += weight[i-1][k][j] * output[i-1][k];
             }
-            output[i][j] = logistic(output[i][j], temperature);
+            output[i][j] = logistic(output[i][j], temp);
         }
         output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
     }
-
-
-    // test
-//    cout << vecNum << "\t" << fileNames[vecNum] << "\t" << type;
-//    for(int i = 0; i < def::numOfClasses; ++i)
-//    {
-//        cout << "\t" << doubleRound(output[numOfLayers - 1][i], 2);
-//    }
-
 
     for(int k = 0; k < dimensionality[numOfLayers - 1]; ++k)
     {
@@ -2720,16 +2533,6 @@ bool Net::ClassificateVector(const int & vecNum)
 int Net::getEpoch()
 {
     return epoch;
-}
-
-double Net::getErrcrit()
-{
-    return this->critError;
-}
-
-void Net::setErrcrit(double a)
-{
-    this->critError = a;
 }
 
 double errorSammon(double ** distOld, double ** distNew, int size)
@@ -2904,6 +2707,7 @@ void moveCoords(double ** coords, double ** distOld, double ** distNew, int size
 //Sammon's projection
 void Net::Sammon(double ** distArr, int size, int * types)
 {
+#if 0
     srand(time(NULL));
     double ** distNew = new double * [size];
     for(int i = 0; i < size; ++i)
@@ -2911,11 +2715,7 @@ void Net::Sammon(double ** distArr, int size, int * types)
         distNew[i] = new double [size];
     }
 
-    coords = new double * [size];
-    for(int i = 0; i < size; ++i)
-    {
-        coords[i] = new double [3]; //x and y - coords, type-color
-    }
+    coords.resize(size, 3);
 
     //set random coordinates
     for(int i = 0; i < size; ++i)
@@ -3009,10 +2809,12 @@ void Net::Sammon(double ** distArr, int size, int * types)
 
 
     QMessageBox::information((QWidget * )this, tr("info"), tr("Sammon projection counted"), QMessageBox::Ok);
+#endif
 }
 
 void Net::drawSammon() //uses coords array
 {
+#if 0
     if(coords == NULL)
     {
         cout << "coords array == NULL" << endl;
@@ -3094,6 +2896,7 @@ void Net::drawSammon() //uses coords array
     delete [] coords;
     cout << "Sammon projection done" << endl;
     QMessageBox::information((QWidget * )this, tr("info"), tr("Sammon projection drawn"), QMessageBox::Ok);
+#endif
 }
 
 //principal component analisys
@@ -3105,14 +2908,17 @@ void Net::pca()
 //    spLength - 1 channel
 //    spLength * ns = NetLength
 //    matrix - matrix of data
-//    centeredMatrix - matrix of centered data: matrix[i][j]-=average[j]
+//    centeredMatrix - matrix of centered data: matrix[i][j] -= average[j]
 //    random quantity is a spectre-vector of spLength dimension
 //    there are NumberOfVectors samples of this random quantity
 //        similarMatrix - matrix of similarity
 //        differenceMatrix - matrix of difference, according to some metric
     //projectedMatrix - vectors with just some PCs left
+    const int NumberOfVectors = dataMatrix.rows();
+
     cout << "NetLength = " << NetLength << endl;
     cout << "NumberOfVectors = " << NumberOfVectors << endl;
+
     double ** differenceMatrix = new double * [NumberOfVectors];
     double ** centeredMatrix = new double * [NumberOfVectors];
     double ** pcaMatrix = new double * [NumberOfVectors];

@@ -36,7 +36,37 @@ class Net : public QWidget
 {
     Q_OBJECT
 
-//    friend class MainWindow;
+private:
+    Ui::Net *ui;
+
+    QButtonGroup  * group1,  * group2,  * group3;
+    QDir *dirBC;
+
+    matrix dataMatrix;
+    vector<QString> fileNames;
+    vector<double> classCount;
+    int NetLength; //inputs
+
+    trivector<double> weight;
+    vector<int> dimensionality; //for backprop
+//    int numOfLayers; //for backprop
+
+    matrix tempRandomMatrix; //test linear transform
+
+    vector<int> channelsSet;
+    vector<int> channelsSetExclude;
+
+    double averageAccuracy;
+    int epoch;
+//    double Error;
+    int numOfTall;
+
+    int loadPAflag;
+    bool stopFlag;
+    bool autoFlag;
+
+    matrix coords; //new coords for Sammon method
+    double mouseShit;
 
 public:
     explicit Net();
@@ -51,8 +81,6 @@ public:
                              int highLimit,
                              QString paFileName = "1");
     int getEpoch();
-    void setErrcrit(double);
-    double getErrcrit();
 
     void Sammon(double ** distArr, int size, int * colors);
     void Kohonen(double ** input, double ** eigenVects, double * averageProjection, int size, int length);
@@ -60,7 +88,6 @@ public:
     double thetalpha(int bmu_, int j_, int step_, double ** arr, int length_);
 
     void readCfgByName(const QString & cfgFilePath);
-    double setPercentageForClean();
     double mouseClick(QLabel * label, QMouseEvent * ev);
     void leaveOneOut();
     double getAverageAccuracy();
@@ -77,6 +104,10 @@ public:
     void autoClassification(const QString & spectraDir);
     void averageClassification();
 
+
+
+    void readWtsByName(const QString & fileName,
+                       trivector<double> * wtsMatrix = nullptr);
     void drawWts(QString wtsPath = QString(),
                  QString picPath = QString());
 
@@ -113,58 +144,8 @@ public slots:
     void optimizeChannelsSet();
     void adjustParamsGroup2(QAbstractButton*);
 
-private:
-    Ui::Net *ui;
 
-    QButtonGroup  * group1,  * group2,  * group3;
-    QDir *dirBC;
-    matrix dataMatrix;
 
-    double *** weight;
-    int * dimensionality; //for backprop
-//    double * output;
-    char * helpCharArr;
-    vector<double> classCount;
-
-    matrix tempRandomMatrix; //test linear transform
-
-    QVector<int> channelsSet;
-    QVector<int> channelsSetExclude;
-    double averageAccuracy;
-
-    QPixmap pic;
-    QPainter *paint;
-
-    int numOfLayers; //for backprop
-    int numTest;
-    int epoch;
-    int  NetLength; //inputs
-    int NumOfClasses; //outputs
-    int NumberOfVectors;
-    bool autoFlag;
-    double critError;
-    double currentError;
-    double temperature;
-    double learnRate;
-    double Error;
-
-    int * NumberOfErrors;
-    vector<QString> fileNames;
-
-    QPixmap columns;
-
-    int numOfTall;
-    int loadPAflag;
-    bool stopFlag;
-    QString tmp, paFileBC;
-
-    double ** coords; //new coords for Sammon method
-    double mouseShit;
-
-public:
-
-    void readWtsByName(const QString & fileName,
-                       double * *** wtsMatrix = nullptr);
 };
 
 #endif // NET_H
