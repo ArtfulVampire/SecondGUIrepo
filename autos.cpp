@@ -2146,9 +2146,9 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
     ofstream logStream(logPath.toStdString(), ios_base::app);
     const int wndLen = 16; // seconds
     QDir tmpDir(path);
-    tmpDir.mkdir("windows");
     if(outPath.isEmpty())
     {
+        tmpDir.mkdir("windows");
         outPath = tmpDir.absolutePath() + slash() + "windows";
     }
     tmpDir.mkdir("smalls");
@@ -2159,7 +2159,7 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
         initEdf.readEdfFile(path + slash() + guy);
         cout << guy << endl;
 
-        if(initEdf.getNdr() <= wndLen )
+        if(initEdf.getNdr() <= wndLen * initEdf.getDdr() )
         {
             QFile::remove(path
                           + slash() + "smalls"
@@ -2200,8 +2200,6 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
                                            + slash() + initEdf.getExpName()
                                            + "_wnd_" + QString::number(i+1) + ".edf"));
         }
-
-
     }
     logStream.close();
 

@@ -584,18 +584,12 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
 {
     QTime myTime;
     myTime.start();
-    QStringList lst;
-    QString helpString;
-
-    int marker=254;
-    int markerFlag = 0;
-    int numChanToWrite = -1;
 
     readData();
+    edfFile & fil = globalEdf;
 
     if(ui->matiCheckBox->isChecked())
     {
-        edfFile & fil = globalEdf;
         if(ui->eyesCleanCheckBox->isChecked())
         {
             fil.cleanFromEyes();
@@ -604,17 +598,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
         if(ui->reduceChannelsCheckBox->isChecked())
         {
             QList <int> chanList;
-            QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[ ,;]"),
-                                                                       QString::SkipEmptyParts);
-            for(int i = 0; i < lst.length(); ++i)
-            {
-                chanList << lst[i].toInt() - 1;
-                if(chanList[i] > fil.getNs())
-                {
-                    cout << "sliceAll: mati bad channels list, return" << endl;
-                    return;
-                }
-            }
+            makeChanList(chanList);
             fil.reduceChannels(chanList);
             def::ns = fil.getNs();
         }
@@ -633,33 +617,16 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
     {
         if(ui->eyesCleanCheckBox->isChecked()) /////////////////////////////////
         {
-            eyesFast();
-            if(!ui->reduceChannelsComboBox->currentText().contains("NoEyes", Qt::CaseInsensitive))
-            {
-                ui->reduceChannelsComboBox->setCurrentIndex(ui->reduceChannelsComboBox->currentIndex()+1); //generality
-            }
+            fil.cleanFromEyes();
+            def::ns = fil.getNs();
         }
-
-        if(ui->reduceChannelsCheckBox->isChecked()) reduceChannelsFast();
-
-//        if(ui->sliceWithMarkersCheckBox->isChecked())
-//        {
-//            numChanToWrite = ns;
-//        }
-//        else
-//        {
-//            numChanToWrite = ns - 1;
-//        }
-
+        if(ui->reduceChannelsCheckBox->isChecked())
+        {
+            fil.reduceChannels(ui->reduceChannelsLineEdit->text());
+            def::ns = fil.getNs();
+        }
         if(ui->sliceCheckBox->isChecked())
         {
-            QStringList list = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-            if(!QString(label[list.last().toInt() - 1]).contains("Markers") && ui->reduceChannelsCheckBox->isChecked())
-            {
-                QMessageBox::critical(this, tr("Doge"), tr("Bad Markers channel in rdc channel lineEdit"), QMessageBox::Ok);
-                return;
-            }
-
             if(ui->ntRadio->isChecked()) // for Boris
             {
 #if 0
@@ -674,40 +641,8 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
             {
                 if(ui->windButton->isChecked()) //bad work
                 {
-                    double timeShift = ui->timeShiftSpinBox->value() * def::freq;
-                    double wndLength = ui->windowLengthSpinBox->value() * def::freq;
-#if 0
-                    for(int i = 0; i < (ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift; ++i)
-                    {
-                        for(int j = 0; j < wndLength; ++j)
-                        {
-                            if((data[ns-1][staSlice+i*timeShift + j] - 241) * (data[ns-1][staSlice+i*timeShift + j] - 247) * (data[ns-1][staSlice+i*timeShift + j] - 254) == 0 )
-                            {
-                                markerFlag = 0;
-                                marker=300;
-                            }
-                        }
-                        if(markerFlag == 1) marker=241;
-                        if(markerFlag == 2) marker=247;
-                        if(markerFlag == 3) marker=254;
-
-                        if(marker != 300) sliceWindow(staSlice+i*timeShift, staSlice+i*timeShift+wndLength, int(i+1), marker);
-
-                        for(int j = 0; j < wndLength; ++j)
-                        {
-                            //                            switch(int(data[ns-1][staSlice + i*timeShift + j]))
-                            //                            {
-                            //                            case 241:{markerFlag = 0; break;}
-                            //                            case 247:{markerFlag = 1; break;}
-                            //                            case 254:{markerFlag = 2; break;}
-                            //                            }
-                            if(data[ns-1][staSlice+i*timeShift + j]==241) {markerFlag=1;}
-                            if(data[ns-1][staSlice+i*timeShift + j]==247) {markerFlag=2;}
-                            if(data[ns-1][staSlice+i*timeShift + j]==254) {markerFlag=3;}
-                        }
-                        if(int(100*(i+1)/((ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift)) > ui->progressBar->value()) ui->progressBar->setValue(int(100*(i+1)/((ndr*nr[ns-1]-staSlice-10*nr[ns-1])/timeShift)));
-                    }
-#endif
+                    sliceOneByOneNew();
+                    sliceWindFromReal();
                 }
                 if(ui->realButton->isChecked())
                 {
@@ -730,17 +665,10 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                 }
             }
         }
-
-
-//        --ns; //-markers channel generality
         ui->progressBar->setValue(0);
-
-        helpString="data has been sliced \n";
-        ui->textEdit->append(helpString);
-
-
     }
-    helpString = "data sliced ";
+
+    QString helpString = "data sliced ";
     ui->textEdit->append(helpString);
 
     helpString = "ns equals to ";
@@ -1747,7 +1675,8 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
 
-
+    GalyaCut("/media/Files/Data/Galya/ksu");
+    exit(0);
 
     setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
 #if 0

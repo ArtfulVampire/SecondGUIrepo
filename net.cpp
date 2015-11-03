@@ -662,7 +662,7 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
         return;
     }
     trivector<double> tempWeights;
-    readWtsByName(helpString, tempWeights);
+    readWtsByName(helpString, &tempWeights);
 
     matrix drawWts; // 3 arrays of weights
     vec tempVec;
@@ -1015,7 +1015,7 @@ void Net::readWts()
         QMessageBox::information((QWidget * )this, tr("Warning"), tr("No wts-file was chosen"), QMessageBox::Ok);
         return;
     }
-    readWtsByName(helpString, this->weight);
+    readWtsByName(helpString, &(this->weight));
 }
 
 

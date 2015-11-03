@@ -12,22 +12,19 @@ void MainWindow::sliceGalya()
 
 void MainWindow::sliceWindFromReal()
 {
-
     QTime myTime;
     myTime.start();
-
 
     QString helpString;
     int eyesCounter;
 
-    QDir localDir(def::dir->absolutePath());
-    localDir.cd("Realisations");
-    QStringList nameFilters {"*_2??"}; // all of them
-    QStringList lst = localDir.entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot);
+
+    QStringList lst = QDir(def::dir->absolutePath()
+                           + slash() + "Realisations").entryList({"*_2??"},
+                                                                 QDir::Files|QDir::NoDotAndDotDot);
 
     const int timeShift = ui->timeShiftSpinBox->value() * def::freq;
     const int wndLength = ui->windowLengthSpinBox->value() * def::freq;
-
 
     matrix dataReal;
 
@@ -35,31 +32,14 @@ void MainWindow::sliceWindFromReal()
     int offset;
     int NumOfSlices;
 
-
-    /// moved to reduceChannelsSlot
-//    const std::set<int, std::greater<int>> exclude {
-//                                           3,
-//                                           4,
-//                                           14
-//                                           };
-
     int localNs = def::ns;
     for(int i = 0; i < lst.length(); ++i)
     {
         localNs = def::ns;
-//        cout << localNs << endl;
-
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "Realisations"
                                               + slash() + lst[i]);
         readPlainData(helpString, dataReal, localNs, NumOfSlices);
-
-        /// moved to reduceChannelsSlot
-//        for(const int & num : exclude)
-//        {
-//            dataReal.eraseRow(num);
-//            --localNs;
-//        }
 
         offset = 0;
         for(int h = 0; h < ceil(NumOfSlices / double(timeShift)); ++h)
@@ -452,28 +432,28 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning 
 {
     // for Baklushev
     QString helpString;
-    FILE * file;
+
     int number = 0;
     int k;
     int j = 0;                                     //flag of marker1 read
     int h = 0;                                     //flag of marker2 read
     const edfFile & fil = globalEdf;
 
-    for(int i = 0; i < ndr * def::freq; ++i)
+    for(int i = 0; i < fil.getDataLen(); ++i)
     {
         if((fil.getData()[fil.getMarkChan()][i] >= marker1)
                 && (fil.getData()[fil.getMarkChan()][i] <= marker2) && h== 0)
         {
-            j=i;
-            h=1;
+            j = i;
+            h = 1;
             continue;
         }
         if(fil.getData()[fil.getMarkChan()][i] == 250.)
         {
-            k=i;
-            if(h==1) ++h;
+            k = i;
+            if(h == 1) ++h;
         }
-        if(h==2)
+        if(h == 2)
         {
             ++number;
             helpString = def::dir->absolutePath()
@@ -493,25 +473,23 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning 
 void MainWindow::sliceWindow(int startSlice, int endSlice, int number, int marker)
 {
     QString helpString;
-    if(endSlice - startSlice > 2500) return;
 
-    int wndLength = ui->windowLengthSpinBox->value() * def::freq;
+//    const int wndLength = ui->windowLengthSpinBox->value() * def::freq;
 
+//    double helpDouble = 0.;
+//    int helpInt = 0;
 
-    double helpDouble = 0.;
-    int helpInt = 0;
-
-    //check real signal contained
-    for(int l = startSlice; l < endSlice; ++l)
-    {
-        helpInt = 0;
-        for(int m = 0; m < def::ns - 1; ++m) // no marker channel
-        {
-            if(globalEdf.getData()[m][l*nr[m]/nr[def::ns - 1]] == 0) ++helpInt;
-        }
-        if(helpInt == def::ns-1) helpDouble +=1.;
-    }
-    if(helpDouble > 0.1 * wndLength) return;
+//    //check real signal contained
+//    for(int l = startSlice; l < endSlice; ++l)
+//    {
+//        helpInt = 0;
+//        for(int m = 0; m < def::ns - 1; ++m) // no marker channel
+//        {
+//            if(globalEdf.getData()[m][l*nr[m]/nr[def::ns - 1]] == 0) ++helpInt;
+//        }
+//        if(helpInt == def::ns - 1) helpDouble +=1.;
+//    }
+//    if(helpDouble > 0.1 * wndLength) return;
 
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()

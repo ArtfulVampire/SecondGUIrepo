@@ -8,16 +8,15 @@
 void MainWindow::makeChanList(QList<int> & chanList)
 {
     chanList.clear();
-    QStringList lst;
-    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+    QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     if(lst.last().toInt() - 1 != globalEdf.getMarkChan())
     {
         cout << "makeChanList: no markers channel" << endl;
         return;
     }
-    for(int i = 0; i < lst.length(); ++i)
+    for(auto str : lst)
     {
-        chanList << lst[i].toInt() - 1;
+        chanList << str.toInt() - 1;
     }
 }
 
@@ -374,11 +373,10 @@ void MainWindow::reduceChannelsSlot()
 {
 #if 1
     // reduce channels in Realisations
+    /// not the same as edfFile::reduceChannels
     QStringList lst;
-    QString helpString;
     matrix dataR;
 
-    helpString = ui->reduceChannelsLineEdit->text();
     std::set<int, std::greater<int>> excludeList;
     for(int i = 0; i < def::ns; ++i)
     {
@@ -386,6 +384,7 @@ void MainWindow::reduceChannelsSlot()
     }
 
 
+    QString helpString = ui->reduceChannelsLineEdit->text();
     QStringList leest = helpString.split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     for(const QString & chanStr : leest)
     {
