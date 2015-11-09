@@ -1687,8 +1687,8 @@ void MainWindow::customFunc()
 //            def::GalyaFolder + "/Vlad/ic.jpg");
 //    exit(0);
 
-    setEdfFile("/media/Files/Data/Ossadtchi/lisa2/lisa2.edf");
-//    setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
+//    setEdfFile("/media/Files/Data/Ossadtchi/lisa2/lisa2.edf");
+    setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
     def::freq = 100;
     def::ns = 32;
 #if 0
@@ -1708,10 +1708,10 @@ void MainWindow::customFunc()
 
 
 
-//    def::ns = 29;
+    def::ns = 29;
 
     vector<pair<int, double>> pew;
-    for(int i : {8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20})
+    for(int i : {17, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20})
     {
         countSpectraSimple(1024, i);
 
@@ -1724,7 +1724,7 @@ void MainWindow::customFunc()
         pew.push_back(make_pair(i, ann->getAverageAccuracy()));
         delete ann;
 
-//        break;
+        break;
     }
     for(auto out : pew)
     {

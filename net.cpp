@@ -33,6 +33,7 @@ Net::Net() :
     group1 = new QButtonGroup();
     group1->addButton(ui->leaveOneOutRadioButton);
     group1->addButton(ui->crossRadioButton);
+    group1->addButton(ui->trainTestRadioButton);
     group2 = new QButtonGroup();
     group2->addButton(ui->realsRadioButton);
     group2->addButton(ui->windowsRadioButton);
@@ -44,10 +45,13 @@ Net::Net() :
     group3->addButton(ui->deepBeliefRadioButton);
     ui->crossRadioButton->setChecked(true);
     ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
+    ui->trainTestRadioButton->setChecked(true); /// train-test
+
     ui->realsRadioButton->setChecked(true);
     ui->windowsRadioButton->setChecked(true); /// windows
-    ui->deltaRadioButton->setChecked(false);
+
     ui->backpropRadioButton->setChecked(false);
+    ui->deltaRadioButton->setChecked(false);
 
     if(def::spStep == def::freq / pow(2, 10)) ui->windowsRadioButton->setChecked(true);
     else if(def::spStep == def::freq / pow(2, 12)) ui->realsRadioButton->setChecked(true);
@@ -83,7 +87,7 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(7.0); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(12.0); // 1. for MATI? usually 5.     0.7 for best comp set
     ui->rdcCoeffSpinBox->setSingleStep(0.5);
 
     ui->highLimitSpinBox->setMaximum(500);
@@ -180,19 +184,7 @@ Net::Net() :
     makeCfgStatic(def::cfgFileName);
     readCfgByName(def::cfgFileName);
 
-//    if(def::fftLength == pow(2, 12))
-//    {
-//        helpString = def::dir->absolutePath() + slash() + "16sec19ch.net";
-//    }
-//    else if(def::fftLength == pow(2, 10))
-//    {
-//        helpString = def::dir->absolutePath() + slash() + "4sec19ch.net";
-//    }
-//    readCfgByName(helpString);
-
-
     this->ui->deltaRadioButton->setChecked(true);
-    this->ui->realsRadioButton->setChecked(true);
 }
 
 Net::~Net()
@@ -489,6 +481,10 @@ void Net::autoClassification(const QString & spectraDir)
     {
         cout << "Net: autoclass (max " << dataMatrix.rows() << "):" << endl;
         leaveOneOut();
+    }
+    else if(ui->trainTestRadioButton->isChecked())
+    {
+        trainTestClassification();
     }
     autoFlag = tempBool;
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
@@ -1663,6 +1659,27 @@ void Net::leaveOneOutCL()
 }
 #endif
 
+
+void Net::trainTestClassification()
+{
+    vector<int> learnIndices;
+    vector<int> tallIndices;
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        if(fileNames[i].contains("train"))
+        {
+            learnIndices.push_back(i);
+        }
+        else if(fileNames[i].contains("test"))
+        {
+            tallIndices.push_back(i);
+        }
+    }
+    LearNetIndices(learnIndices);
+    tallNetIndices(tallIndices);
+    cout << "train-test classification - ";
+    averageClassification();
+}
 
 void Net::leaveOneOut()
 {

@@ -89,6 +89,7 @@ public:
 
     void readCfgByName(const QString & cfgFilePath);
     double mouseClick(QLabel * label, QMouseEvent * ev);
+    void trainTestClassification();
     void leaveOneOut();
     double getAverageAccuracy();
     void setReduceCoeff(double coeff);
