@@ -35,7 +35,7 @@ namespace def
 
 
     const double leftFreq = 6.;
-    const double rightFreq = 16.;
+    const double rightFreq = 17.;
 
     const bool wirteStartEndLong = false; //for slice
 

@@ -43,8 +43,9 @@ Net::Net() :
     group3->addButton(ui->backpropRadioButton);
     group3->addButton(ui->deepBeliefRadioButton);
     ui->crossRadioButton->setChecked(true);
-    ui->leaveOneOutRadioButton->setChecked(true); ///////////// N-fold
+    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
     ui->realsRadioButton->setChecked(true);
+    ui->windowsRadioButton->setChecked(true); /// windows
     ui->deltaRadioButton->setChecked(false);
     ui->backpropRadioButton->setChecked(false);
 
@@ -55,14 +56,18 @@ Net::Net() :
     ui->dropoutDoubleSpinBox->setMaximum(1.);
     ui->dropoutDoubleSpinBox->setValue(0.15);
     ui->dropoutDoubleSpinBox->setSingleStep(0.05);
+
     ui->tempBox->setValue(10);
     ui->tempBox->setSingleStep(1);
+
     ui->critErrorDoubleSpinBox->setValue(0.10);
     ui->critErrorDoubleSpinBox->setSingleStep(0.01);
     ui->critErrorDoubleSpinBox->setDecimals(4);
+
     ui->learnRateBox->setValue(0.1);
     ui->learnRateBox->setSingleStep(0.01);
     ui->learnRateBox->setDecimals(3);
+
     ui->epochSpinBox->setMaximum(1000);
     ui->epochSpinBox->setSingleStep(50);
     ui->epochSpinBox->setValue(300);
@@ -73,12 +78,13 @@ Net::Net() :
 #define INDICES 1
     ui->foldSpinBox->setMaximum(10);
     ui->foldSpinBox->setMinimum(1);
-    ui->foldSpinBox->setValue(6);
+    ui->foldSpinBox->setValue(2);
 
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(15.0); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(7.0); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setSingleStep(0.5);
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
@@ -170,20 +176,19 @@ Net::Net() :
     QObject::connect(group2, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(adjustParamsGroup2(QAbstractButton*)));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
+    // just for fun
+    makeCfgStatic(def::cfgFileName);
+    readCfgByName(def::cfgFileName);
 
-    helpString = def::dir->absolutePath()
-            + slash() + def::cfgFileName;
-    readCfgByName(helpString);
-
-    if(def::fftLength == pow(2, 12))
-    {
-        helpString = def::dir->absolutePath() + slash() + "16sec19ch.net";
-    }
-    else if(def::fftLength == pow(2, 10))
-    {
-        helpString = def::dir->absolutePath() + slash() + "4sec19ch.net";
-    }
-    readCfgByName(helpString);
+//    if(def::fftLength == pow(2, 12))
+//    {
+//        helpString = def::dir->absolutePath() + slash() + "16sec19ch.net";
+//    }
+//    else if(def::fftLength == pow(2, 10))
+//    {
+//        helpString = def::dir->absolutePath() + slash() + "4sec19ch.net";
+//    }
+//    readCfgByName(helpString);
 
 
     this->ui->deltaRadioButton->setChecked(true);
@@ -260,6 +265,9 @@ void Net::autoClassificationSimple()
         return;
         helpString += slash() + "PCA";
     }
+
+    cout << "autoClassification: " << helpString << endl;
+
     if(!helpString.isEmpty()) autoClassification(helpString);
 }
 
@@ -285,7 +293,10 @@ double Net::adjustReduceCoeff(QString spectraDir,
 
     cout << "adjustReduceCoeff: start" << endl;
 
-    if(ui->leaveOneOutRadioButton->isChecked()) paFileName = "all"; // N-fold
+    if(ui->leaveOneOutRadioButton->isChecked())
+    {
+        paFileName = "all"; // N-fold
+    }
 
     while(1)
     {
@@ -476,6 +487,7 @@ void Net::autoClassification(const QString & spectraDir)
     }
     else if(ui->leaveOneOutRadioButton->isChecked())
     {
+        cout << "Net: autoclass (max " << dataMatrix.rows() << "):" << endl;
         leaveOneOut();
     }
     autoFlag = tempBool;
@@ -1657,6 +1669,9 @@ void Net::leaveOneOut()
     vector<int> learnIndices;
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
+        cout << i + 1;
+        cout << " "; cout.flush();
+
         learnIndices.clear();
         for(int j = 0; j < dataMatrix.rows(); ++j)
         {
@@ -2120,12 +2135,6 @@ void Net::LearNetIndices(vector<int> mixNum)
     QTime myTime;
     myTime.start();
 
-//    for(int i = 0; i < mixNum.size(); ++i)
-//    {
-//        cout << mixNum[i] << ' ';
-//    }
-//    cout << endl;
-
     const int numOfLayers = dimensionality.size();
     mat deltaWeights(numOfLayers);
     mat output(numOfLayers);
@@ -2136,14 +2145,13 @@ void Net::LearNetIndices(vector<int> mixNum)
     }
 
     const double critError = ui->critErrorDoubleSpinBox->value();
-    double currentError = critError + 0.1;
     const double temperature = ui->tempBox->value();
     const double learnRate = ui->learnRateBox->value();
-//    double momentum = ui->momentumDoubleSpinBox->value(); //unused yet
+    const bool deltaFlag = ui->deltaRadioButton->isChecked();
+//    const double momentum = ui->momentumDoubleSpinBox->value(); //unused yet
+    double currentError = critError + 0.1;
 
     int type = 0;
-
-    int index;
 
     reset();
 
@@ -2163,6 +2171,7 @@ void Net::LearNetIndices(vector<int> mixNum)
 //        prelearnDeepBelief();
     }
 
+
     epoch = 0;
     while(currentError > critError && epoch < ui->epochSpinBox->value())
     {
@@ -2173,17 +2182,13 @@ void Net::LearNetIndices(vector<int> mixNum)
                      mixNum.end(),
                      std::default_random_engine(seed));
 
-        for(int num = 0; num < mixNum.size(); ++num)
+        for(const int & index : mixNum)
         {
-            index = mixNum[num];
-            type = dataMatrix[index][dimensionality[0] + 1]; // generality
-
-            for(int j = 0; j < dimensionality[0]; ++j)
-            {
-                output[0][j] = dataMatrix[index][j];
-            }
-            output[0][dimensionality[0]] = 1.; // bias
-
+            output[0] = dataMatrix[index];
+            type = output[0][dimensionality[0] + 1];
+            // do we need output[0][dimensionality[0] + 1] which is class ?
+//            output[0].pop_back();
+//            cout << 3 << endl;
             //obtain outputs
             for(int i = 1; i < numOfLayers; ++i)
             {
@@ -2195,71 +2200,83 @@ void Net::LearNetIndices(vector<int> mixNum)
                     {
                         output[i][j] += weight[i-1][k][j] * output[i-1][k];
                     }
-
                     output[i][j] = logistic(output[i][j], temperature);
                 }
                 output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
             }
 
-
             //error in the last layer
             for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
             {
-                currentError += pow((output[numOfLayers-1][j] - (type == j) ), 2.);
+                currentError += pow((output[numOfLayers - 1][j] - (type == j) ), 2.);
             }
 
-            //count deltaweights (used for backprop only)
-            //for the last layer
-            for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
+            if(!deltaFlag) /// enum !
             {
-                deltaWeights[numOfLayers-1][j] = -1. / temperature
-                                                 * output[numOfLayers-1][j]
-                                                 * (1. - output[numOfLayers-1][j])
-                        * ((type == j) - output[numOfLayers-1][j]); //~0.1
-            }
-            //for the other layers, besides the input one, upside->down
-            for(int i = numOfLayers - 2; i >= 1; --i)
-            {
-                for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
+                //count deltaweights (used for backprop only)
+                //for the last layer
+                for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
                 {
-                    deltaWeights[i][j] = 0.;
-                    for(int k = 0; k < dimensionality[i+1]; ++k) //connected to the higher-layer
+                    deltaWeights[numOfLayers-1][j] = -1. / temperature
+                                                     * output[numOfLayers-1][j]
+                                                     * (1. - output[numOfLayers-1][j])
+                            * ((type == j) - output[numOfLayers-1][j]); //~0.1
+                }
+
+                //for the other layers, besides the input one, upside->down
+                for(int i = numOfLayers - 2; i >= 1; --i)
+                {
+                    for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
                     {
-                        deltaWeights[i][j] += deltaWeights[i+1][k] * weight[i][j][k];
+                        deltaWeights[i][j] = 0.;
+                        for(int k = 0; k < dimensionality[i + 1]; ++k) //connected to the higher-layer
+                        {
+                            deltaWeights[i][j] += deltaWeights[i + 1][k] * weight[i][j][k];
+                        }
+                        deltaWeights[i][j] *= 1. / temperature * output[i][j] * (1. - output[i][j]);
                     }
-                    deltaWeights[i][j] *= 1./temperature * output[i][j] * (1. - output[i][j]);
                 }
             }
 
-            // count new weights using deltas
-            for(int i = 0; i < numOfLayers - 1; ++i)
-            {
-                for(int j = 0; j < dimensionality[i] + 1; ++j) // +1 for bias? 01.12.2014
-                {
-                    for(int k = 0; k < dimensionality[i + 1]; ++k)
-                    {
-                        // dropout regularization
-                        if((rand() % 1000) / 1000. < ui->dropoutDoubleSpinBox->value()) continue;
 
-                        if(ui->deltaRadioButton->isChecked())
+            if(deltaFlag)
+            {
+                for(int i = 0; i < numOfLayers - 1; ++i)
+                {
+                    for(int j = 0; j < dimensionality[i] + 1; ++j) // +1 for bias? 01.12.2014
+                    {
+                        for(int k = 0; k < dimensionality[i + 1]; ++k)
                         {
+                            // dropout regularization
+                            //                        if((rand() % 1000) / 1000. < ui->dropoutDoubleSpinBox->value()) continue;
+
                             weight[i][j][k] += learnRate
                                                * normCoeff[type]
                                                * output[i][j]
                                                * ((type == k) - output[i + 1][k]); // numOfLayers = 2 and i == 0 in this case
+
+
                         }
-                        else
+                    }
+                }
+            }
+            else /// backprop enum
+            {                // count new weights using deltas
+                for(int i = 0; i < numOfLayers - 1; ++i)
+                {
+                    for(int j = 0; j < dimensionality[i] + 1; ++j) // +1 for bias? 01.12.2014
+                    {
+                        for(int k = 0; k < dimensionality[i + 1]; ++k)
                         {
                             weight[i][j][k] -= learnRate
                                                * normCoeff[type]
-                                               * deltaWeights[i + 1][k]
-                                    * output[i][j];
+                                               * output[i][j]
+                                               * deltaWeights[i + 1][k];
                         }
                     }
                 }
             }
         }
-
         ++epoch;
         //count error
         currentError /= mixNum.size();
@@ -3799,6 +3816,7 @@ void Net::adjustParamsGroup2(QAbstractButton * but)
         ui->highLimitSpinBox->setValue(130);
         ui->lowLimitSpinBox->setValue(80);
         ui->epochSpinBox->setValue(250);
-        ui->rdcCoeffSpinBox->setValue(5.);
+        ui->rdcCoeffSpinBox->setValue(7.5);
+        ui->foldSpinBox->setValue(4.);
     }
 }

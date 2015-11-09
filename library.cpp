@@ -4531,7 +4531,7 @@ void readSpectraFile(const QString & filePath,
 
 
 template <typename Typ>
-void writeSpectraFile(QString filePath,
+void writeSpectraFile(const QString & filePath,
                       const Typ & outData,
                       int inNs,
                       int spL)
@@ -4561,8 +4561,8 @@ void writeSpectraFile(QString filePath,
     }
     file.close();
 }
-template void writeSpectraFile(QString filePath, const mat & outData, int inNs, int spL);
-template void writeSpectraFile(QString filePath, const matrix & outData, int inNs, int spL);
+template void writeSpectraFile(const QString & filePath, const mat & outData, int inNs, int spL);
+template void writeSpectraFile(const QString & filePath, const matrix & outData, int inNs, int spL);
 
 
 
@@ -5003,7 +5003,7 @@ void calcRawFFT(const Typ & inData,
     }
 }
 
-void readPaFile(QString paFile,
+void readPaFile(const QString & paFile,
                 matrix & dataMatrix,
                 vector<QString> & FileName,
                 vector<double> & classCount)
@@ -5600,7 +5600,6 @@ void makeCfgStatic(const QString & FileName,
         cout << "static MakeCfg: cannot open file: " << helpString << endl;
         return;
     }
-
     outStr << "inputs\t" << NetLength << '\n';
     outStr << "outputs\t" << numOfOuts << '\n';
     outStr << "lrate\t" << lrate << '\n';
@@ -5828,14 +5827,14 @@ int matiCountDecimal(QString byteMarker)
 
 
 template <typename Typ>
-QPixmap drawEeg( Typ dataD,
-                 int ns,
-                 int NumOfSlices,
-                 int freq,
-                 const QString & picPath,
-                 double norm,
-                 int blueChan,
-                 int redChan)
+QPixmap drawEeg(const Typ & dataD,
+                int ns,
+                int NumOfSlices,
+                int freq,
+                const QString & picPath,
+                double norm,
+                int blueChan,
+                int redChan)
 {
     QPixmap pic = QPixmap(NumOfSlices, 600);
     pic.fill();
@@ -5893,17 +5892,7 @@ QPixmap drawEeg( Typ dataD,
 
 
 template
-QPixmap drawEeg(double ** dataD,
-int ns,
-int NumOfSlices,
-int freq,
-const QString & picPath = QString(),
-double norm = 1.,
-int blueChan = -1,
-int redChan = -1);
-
-template
-QPixmap drawEeg( mat dataD,
+QPixmap drawEeg(const mat & dataD,
 int ns,
 int NumOfSlices,
 int freq,
@@ -5913,7 +5902,7 @@ int blueChan,
 int redChan);
 
 template
-QPixmap drawEeg( matrix dataD,
+QPixmap drawEeg(const matrix & dataD,
 int ns,
 int NumOfSlices,
 int freq,
@@ -5924,7 +5913,7 @@ int redChan);
 
 
 template <typename Typ>
-QPixmap drawEeg( Typ dataD,
+QPixmap drawEeg(const Typ & dataD,
                  int ns,
                  int startSlice,
                  int endSlice,
@@ -5985,17 +5974,17 @@ QPixmap drawEeg( Typ dataD,
     paint.end();
     return pic;
 }
-template QPixmap drawEeg(double ** dataD,
-int ns,
-int startSlice,
-int endSlice,
-int freq,
-const QString & picPath = QString(),
-double norm = 1.,
-int blueChan = -1,
-int redChan = -1);
+//template QPixmap drawEeg(double ** dataD,
+//int ns,
+//int startSlice,
+//int endSlice,
+//int freq,
+//const QString & picPath = QString(),
+//double norm = 1.,
+//int blueChan = -1,
+//int redChan = -1);
 template
-QPixmap drawEeg( mat dataD,
+QPixmap drawEeg(const mat & dataD,
 int ns,
 int startSlice,
 int endSlice,

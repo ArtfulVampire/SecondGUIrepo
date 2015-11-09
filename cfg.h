@@ -8,6 +8,7 @@
 #include <time.h>
 #include <iostream>
 #include "coord.h"
+#include "library.h"
 
 using namespace std;
 
@@ -25,9 +26,6 @@ public:
 
 public slots:
     void makeCfg();
-
-
-
 
 private:
     Ui::cfg *ui;

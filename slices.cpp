@@ -19,9 +19,10 @@ void MainWindow::sliceWindFromReal()
     int eyesCounter;
 
 
-    QStringList lst = QDir(def::dir->absolutePath()
-                           + slash() + "Realisations").entryList({"*_2??"},
-                                                                 QDir::Files|QDir::NoDotAndDotDot);
+    QStringList lst;
+    lst = QDir(def::dir->absolutePath()
+               + slash() + "Realisations").entryList({"*_2??"},
+                                                     QDir::Files|QDir::NoDotAndDotDot);
 
     const int timeShift = ui->timeShiftSpinBox->value() * def::freq;
     const int wndLength = ui->windowLengthSpinBox->value() * def::freq;

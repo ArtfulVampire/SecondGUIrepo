@@ -602,7 +602,7 @@ void Spectre::setFftLengthSlot()
     def::left = fftLimit(def::leftFreq, def::freq, def::fftLength);
     def::right = fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;
     def::spLength = def::right - def::left;
-    def::spStep = def::freq / double(def::fftLength);
+    def::spStep = def::freq / def::fftLength;
 
     ui->leftSpinBox->setValue(def::left);
     ui->rightSpinBox->setValue(def::right);
@@ -726,9 +726,13 @@ void Spectre::setSmooth(int a)
 void Spectre::setRight()
 {
     def::right = ui->rightSpinBox->value();
-    QString helpString = QString::number((def::right - 1) * def::freq / def::fftLength);
+    QString helpString = QString::number(def::right * def::freq / def::fftLength);
     ui->rightHzEdit->setText(helpString);
     def::spLength = def::right - def::left;
+    for(int i = 0; i < def::ns; ++i)
+    {
+        rangeLimits[i][1] = def::spLength;
+    }
 }
 
 void Spectre::setLeft()
@@ -737,6 +741,10 @@ void Spectre::setLeft()
     QString helpString = QString::number(def::left * def::freq / def::fftLength);
     ui->leftHzEdit->setText(helpString);
     def::spLength = def::right - def::left;
+    for(int i = 0; i < def::ns; ++i)
+    {
+        rangeLimits[i][1] = def::spLength;
+    }
 }
 
 void Spectre::countSpectra()

@@ -10,7 +10,7 @@ cfg::cfg(double error_, double lrate_, QString FileName_) :
     this->setWindowTitle("Make CFG");
     ui->nsBox->setMaximum(300);
     ui->nsBox->setMinimum(1);
-    ui->nsBox->setValue(def::ns - 1 * def::withMarkersFlag); // affects NetLength, w/o markers
+    ui->nsBox->setValue(def::nsWOM()); // affects NetLength, w/o markers
 
     ui->spLBox->setMaximum(1000);
     ui->spLBox->setMinimum(1);
@@ -33,29 +33,21 @@ cfg::~cfg()
 
 void cfg::makeCfg()
 {
+
 //    inputs    19*247
 //    outputs     3
 //    lrate       0.1
 //    ecrit       0.1
 //    temp       10
 //    srand      77
-    int helpInt = ui->spLBox->value() * ui->nsBox->value();
 
-    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + QDir::separator() + ui->nameEdit->text() + ".net");
-    FILE * cfgFile = fopen(helpString.toStdString().c_str(), "w");
-    if(cfgFile == NULL)
-    {
-        return;
-    }
-
-    fprintf(cfgFile, "inputs    %d\n", helpInt);
-    fprintf(cfgFile, "outputs    %d\n", ui->numOfOutsBox->value());
-    fprintf(cfgFile, "lrate    %.2lf\n", ui->epsilonSpinBox->value());
-    fprintf(cfgFile, "ecrit    %.2lf\n", ui->errorSpinBox->value());
-    fprintf(cfgFile, "temp    %d\n", ui->tempSpinBox->value());
-    fprintf(cfgFile, "srand    %d\n", int(time (NULL))%12345);
-    fclose(cfgFile);
+    makeCfgStatic(ui->nameEdit->text(),
+                  ui->nsBox->value() * ui->spLBox->value(),
+                  def::dir->absolutePath(),
+                  ui->numOfOutsBox->value(),
+                  ui->epsilonSpinBox->value(),
+                  ui->errorSpinBox->value(),
+                  ui->tempSpinBox->value());
     this->close();
 }
 

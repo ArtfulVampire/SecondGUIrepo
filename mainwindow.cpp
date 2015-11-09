@@ -1675,14 +1675,26 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
 
-    GalyaCut("/media/Files/Data/Galya/ksu");
-    exit(0);
 
-    setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
+//    GalyaCut("/media/Files/Data/Galya/Zh18");
+
+//    edfFile fil;
+//    fil.readEdfFile(def::GalyaFolder + "/Vlad/windows/vlad_512_wnd_1.edf");
+//    drawEeg(fil.getData(),
+//            fil.getNs() - 2,
+//            fil.getDataLen(),
+//            def::freq,
+//            def::GalyaFolder + "/Vlad/ic.jpg");
+//    exit(0);
+
+    setEdfFile("/media/Files/Data/Ossadtchi/lisa2/lisa2.edf");
+//    setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
+    def::freq = 100;
+    def::ns = 32;
 #if 0
     // reduce channels in realisations
     def::ns = 32;
-    const vector<int> exclude{3, 4, 14};
+    const set<int, std::less<int>> exclude{3, 4, 14};
     QString helpString;
     for(int i = 0; i < def::ns; ++i)
     {
@@ -1692,41 +1704,34 @@ void MainWindow::customFunc()
     ui->reduceChannelsLineEdit->setText(helpString);
     reduceChannelsSlot();
 #endif
-    def::freq = 100;
-    def::ns = 29;
-
-//    sliceWindFromReal();
-
-
-//    countSpectraSimple(1024, 10);
-//    exit(0);
-
-//    Net * ann = new Net();
-//    ann->readCfgByName("tmp");
-//    ann->show();
-
 //    return;
+
+
+
+//    def::ns = 29;
+
     vector<pair<int, double>> pew;
-    for(int i : {9})
+    for(int i : {8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20})
     {
         countSpectraSimple(1024, i);
-        makeCfgStatic("tmp");
 
         Net * ann = new Net();
-        ann->readCfgByName("tmp");
-//        ann->setNumOfPairs(20);
+
         ann->autoClassification(def::dir->absolutePath()
                                 + slash() + "SpectraSmooth"
                                 + slash() + "windows");
 
         pew.push_back(make_pair(i, ann->getAverageAccuracy()));
         delete ann;
+
+//        break;
     }
     for(auto out : pew)
     {
         cout << out.first << "\t" << out.second << endl;
     }
     exit(0);
+    return;
 
 
 

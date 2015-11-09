@@ -302,7 +302,7 @@ void writePlainData(const QString outPath,
 //                    int start = 0);
 
 template <typename Typ>
-QPixmap drawEeg(Typ dataD,
+QPixmap drawEeg(const Typ & dataD,
                 int ns,
                 int NumOfSlices,
                 int freq = def::freq,
@@ -312,7 +312,7 @@ QPixmap drawEeg(Typ dataD,
                 int redChan = -1);
 
 template <typename Typ>
-QPixmap drawEeg( Typ dataD,
+QPixmap drawEeg( const Typ & dataD,
                  int ns,
                  int startSlice,
                  int endSlice,
@@ -380,7 +380,7 @@ void readSpectraFile(const QString & filePath,
                      int spL = def::spLength);
 
 template <typename Typ>
-void writeSpectraFile(QString filePath,
+void writeSpectraFile(const QString & filePath,
                       const Typ & outData,
                       int inNs = def::nsWOM(),
                       int spL = def::spLength);
@@ -389,7 +389,7 @@ void readFileInLine(const QString & filePath,
 void writeFileInLine(const QString & filePath,
                      const vec & outData);
 
-void readPaFile(QString paFile,
+void readPaFile(const QString & paFile,
                 matrix & dataMatrix,
                 vector<QString> & FileName,
                 vector<double> & classCount);
