@@ -444,7 +444,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
 
     //start channels read
     handleParamArray(labels, ns, 16, readFlag, edfDescriptor, header);
-    //edit EOG channels generality for encephalan
+
+    /// edit EOG channels generality for encephalan
     for(int i = 0; i < ns; ++i)
     {
         if(labels[i].contains("EOG 1"))
@@ -1180,7 +1181,7 @@ void edfFile::refilter(const double &lowFreq, const double &highFreq, const QStr
     delete []spectre;
 
 
-//    cout << "refilter: time = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "refilter: time = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
 void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag) const // [start, finish)

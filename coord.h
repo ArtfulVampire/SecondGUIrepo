@@ -59,7 +59,7 @@ namespace def
 
 //    Atanov
 
-    const QString dataFolder = "/media/Files/Data/Mati";
+    const QString dataFolder = "/media/Files/Data/Feedback/SuccessClass";
     const QString GalyaFolder = "/media/Files/Data/Galya";
     const bool opencl = true;
     const bool openmp = true;

@@ -240,13 +240,12 @@ int MannWhitney(const vec & arr1,
                  const vec & arr2,
                  const double p = 0.05);
 
+
 void makePaFile(const QString & spectraDir,
                 const QStringList & fileNames,
                 const double & coeff,
                 const QString & outFile,
                 const bool svmFlag = false);
-
-
 
 void makeFileLists(const QString & path,
                    vector<QStringList> & lst);

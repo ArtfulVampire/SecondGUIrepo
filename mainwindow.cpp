@@ -219,6 +219,7 @@ MainWindow::MainWindow() :
     ui->timeShiftSpinBox->setMaximum(15);
     ui->timeShiftSpinBox->setValue(10);
     ui->timeShiftSpinBox->setSingleStep(0.1);
+
     ui->windowLengthSpinBox->setMaximum(15);
     ui->windowLengthSpinBox->setMinimum(1);
     ui->windowLengthSpinBox->setSingleStep(0.1);
@@ -270,10 +271,11 @@ MainWindow::MainWindow() :
     ui->cleanWindowsCheckBox->setChecked(false);
     ui->cleanWindSpectraCheckBox->setChecked(true);
     ui->cleanMarkersCheckBox->setChecked(true);
+    ui->cleanSignalsCheckBox->setChecked(true);
 
-    ui->highFreqFilterDoubleSpinBox->setValue(50.);
+    ui->highFreqFilterDoubleSpinBox->setValue(40.);
     ui->highFreqFilterDoubleSpinBox->setSingleStep(1.0);
-    ui->lowFreqFilterDoubleSpinBox->setValue(1.0);
+    ui->lowFreqFilterDoubleSpinBox->setValue(3.5);
     ui->lowFreqFilterDoubleSpinBox->setSingleStep(0.1);
 
     ui->rereferenceDataComboBox->addItem("A1");
@@ -417,9 +419,10 @@ void MainWindow::showCountSpectra()
 void MainWindow::showEyes()
 {
     Eyes *trololo = new Eyes();
-    trololo->setAutoProcessingFlag(false);
-    trololo->show();
-    QObject::connect(trololo, SIGNAL(setNsMain(int)), this, SLOT(setNsSlot(int)));
+//    trololo->setAutoProcessingFlag(false); trololo->show(); return;
+    trololo->setAutoProcessingFlag(true);
+    trololo->eyesProcessing();
+    delete trololo;
 }
 
 void MainWindow::showNet()
@@ -1291,6 +1294,8 @@ void MainWindow::drawRealisations()
 
     int redCh = -1;
     int blueCh = -1;
+    const edfFile & fil = globalEdf;
+
     if(def::ns == 41)
     {
         redCh = 21;
@@ -1301,10 +1306,21 @@ void MainWindow::drawRealisations()
         redCh = 19;
         blueCh = 20;
     }
+    else if(def::ns == 24)
+    {
+        redCh = 21;
+        blueCh = 22;
+    }
+    else // not the best solution
+    {
+        for(int i = 0; i < fil.getNs(); ++i)
+        {
+            if(fil.getLabels()[i].contains("EOG1")) redCh = i;
+            else if(fil.getLabels()[i].contains("EOG2")) blueCh = i;
+        }
+    }
 
     int NumOfSlices;
-//    redCh = 3;
-//    blueCh = 14;
     for(int i = 0; i < lst.length(); ++i)
     {
 //        if(i == 1) break;
@@ -1410,11 +1426,30 @@ void MainWindow::cleanDirs()
         cleanDir(helpString, "markers", 0);
     }
 
-    helpString="dirs cleaned ";
+    // signals
+    if(ui->cleanSignalsCheckBox->isChecked())
+    {
+        helpString = def::dir->absolutePath()
+                     + slash() + "Signals"
+                     + slash() + "other";
+        cleanDir(helpString);
+
+        helpString = def::dir->absolutePath()
+                     + slash() + "Signals"
+                     + slash() + "before";
+        cleanDir(helpString);
+
+        helpString = def::dir->absolutePath()
+                     + slash() + "Signals"
+                     + slash() + "after";
+        cleanDir(helpString);
+    }
+
+    helpString = "dirs cleaned ";
     ui->textEdit->append(helpString);
 
-    helpString="ns equals to ";
-    helpString.append(QString::number(def::ns));
+    helpString = "ns equals to ";
+    helpString += QString::number(def::ns);
     ui->textEdit->append(helpString);
 }
 
@@ -1673,20 +1708,11 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+    return;
 
 
-//    GalyaCut("/media/Files/Data/Galya/Zh18");
-
-//    edfFile fil;
-//    fil.readEdfFile(def::GalyaFolder + "/Vlad/windows/vlad_512_wnd_1.edf");
-//    drawEeg(fil.getData(),
-//            fil.getNs() - 2,
-//            fil.getDataLen(),
-//            def::freq,
-//            def::GalyaFolder + "/Vlad/ic.jpg");
-//    exit(0);
-
+#if 0
+    /// Ossadtchi
 //    setEdfFile("/media/Files/Data/Ossadtchi/lisa2/lisa2.edf");
     setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
     def::freq = 100;
@@ -1732,39 +1758,7 @@ void MainWindow::customFunc()
     }
     exit(0);
     return;
-
-
-
-//    sliceWindFromReal();
-//    def::ns = 32;
-//    drawRealisations();
-//    countSpectraSimple(1024);
-
-
-
-
-//    matrix avSpectra(4, def::nsWOM() * def::spLength);
-//    for(int i = 0; i < 4; ++i)
-//    {
-//        readFileInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_class_"
-//                       + QString::number(i + 1) + ".psa", avSpectra[i]);
-//    }
-//    drawArraysInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg",
-//                     avSpectra);
-//    trivector<int> MW;
-//    countMannWhitney(MW,
-//                     def::dir->absolutePath()
-//                     + slash() + "SpectraSmooth"
-//                     + slash() + "windows");
-//    drawMannWitneyInLine("/media/Files/Data/Ossadtchi/alex1/Help/alex1_all.jpg",
-//                         MW);
-
-
-//    exit(0);
-
-
-    return;
-
+#endif
 
 #if 0
     // naive artmap
@@ -2490,7 +2484,24 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-
+#if 0
+    // different filtering check
+    ui->highFreqFilterDoubleSpinBox->setValue(40.);
+    double highFreq = ui->highFreqFilterDoubleSpinBox->value();
+    for(double lowFreq = 2.0; lowFreq < 3.5; lowFreq += 0.05)
+    {
+        setEdfFile(def::dataFolder + "/AAU_train_rr.edf");
+        ui->lowFreqFilterDoubleSpinBox->setValue(lowFreq);
+        refilterDataSlot();
+        setEdfFile(def::dataFolder
+                   + "/AAU_train_rr_f"
+                   + QString::number(lowFreq) + '-' + QString::number(highFreq)
+                   + ".edf");
+        sliceAll();
+    }
+    drawRealisations();
+    exit(0);
+#endif
 
 
 #if 0

@@ -9,8 +9,6 @@ Cut::Cut() :
     ui->setupUi(this);
     this->setWindowTitle("Cut-e");
 
-    ui->nsBox->setValue(def::ns);
-
     autoFlag = false;
 
     redCh = -1;
@@ -26,12 +24,17 @@ Cut::Cut() :
         redCh = 19;
         blueCh = 20;
     }
+    else if(def::ns == 24)
+    {
+        redCh = 21;
+        blueCh = 22;
+    }
+
 
     flagWnd = 0;
     addNum = 0;
 
 
-    ui->nsBox->setValue(21);
     ui->eogSpinBox->setValue(2);
     ui->eogDoubleSpinBox->setValue(2.40);
     ui->eogDoubleSpinBox->setSingleStep(0.1);
@@ -43,7 +46,6 @@ Cut::Cut() :
     ui->drawNormDoubleSpinBox->setDecimals(2);
 
 
-    ui->nsBox->setMaximum(40);
     ui->checkBox->setChecked(true);
 
 
@@ -70,10 +72,9 @@ Cut::Cut() :
     ui->scrollArea->setWidget(ui->picLabel);
     ui->scrollArea->installEventFilter(this);
 
-    ui->markersCheckBox->setChecked(true);
 
 
-    QFileDialog *browser = new QFileDialog();
+    QFileDialog * browser = new QFileDialog();
     browser->setDirectory(def::dir->absolutePath() + slash() + "Realisations");
     browser->setViewMode(QFileDialog::Detail);
 
@@ -99,15 +100,8 @@ Cut::Cut() :
     QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
     QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitCut()));
 
-//    this->ui->tempSpinBox->setValue(10);
     this->setAttribute(Qt::WA_DeleteOnClose);
 
-
-//    data3 = new double* [ns];         // array for all data[numOfChan][numOfTimePin]
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        data3[i] = new double [250*250];         // generality for 250 seconds
-//    }
 }
 
 Cut::~Cut()
@@ -366,17 +360,16 @@ void Cut::createImage(QString dataFileName) //
     zoomPrev = 1.;
     zoomCurr = 1.;
     addNum = 1;
-    def::dir->setPath(dataFileName);
+    QDir tmpDir;
+    tmpDir.setPath(dataFileName);
     currentFile = dataFileName;
-    fileName = def::dir->dirName(); // real file name after last separator
+    fileName = tmpDir.dirName(); // real file name after last separator
 
     leftLimit = 0;
     Eyes = 0;
 
-    def::dir->cdUp(); // drop the file name
-    lst = def::dir->entryList(QDir::Files);
-    def::dir->cdUp(); // go into ExpName dir
-
+    tmpDir.cdUp(); // drop the file name
+    lst = tmpDir.entryList(QDir::Files);
 
     readPlainData(currentFile, data3, def::ns, NumOfSlices);
 
@@ -385,7 +378,6 @@ void Cut::createImage(QString dataFileName) //
 
     if(ui->checkBox->isChecked())
     {
-        QPainter * painter = new QPainter();
         currentPic = drawEeg(data3,
                              def::ns,
                              NumOfSlices,
@@ -395,17 +387,12 @@ void Cut::createImage(QString dataFileName) //
                              blueCh,
                              redCh);
 //        currentPic.load(currentPicPath, "JPG", Qt::ColorOnly);
-        painter->begin(&currentPic);
 
         // initial zoom
         zoomPrev = 1.;
         zoomCurr = NumOfSlices/double(ui->scrollArea->width()); // generality
         ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->scrollArea->height() - 20)); // -20 generality
         rightLimit = NumOfSlices;
-
-        painter->end();
-        delete painter;
-
 
         /*
         // picLabel varies
@@ -441,18 +428,17 @@ void Cut::mousePressSlot(char btn, int coord)
 
 
     QPixmap pic = currentPic;
-    QPainter * painter = new QPainter();
-    painter->begin(&pic);
+    QPainter paint;
+    paint.begin(&pic);
 
-    painter->setPen(QPen(QBrush("blue"), 2));
-    painter->drawLine(leftLimit, 0, leftLimit, currentPic.height());
-    painter->setPen(QPen(QBrush("red"), 2));
-    painter->drawLine(rightLimit, 0, rightLimit, currentPic.height());
+    paint.setPen(QPen(QBrush("blue"), 2));
+    paint.drawLine(leftLimit, 0, leftLimit, currentPic.height());
+    paint.setPen(QPen(QBrush("red"), 2));
+    paint.drawLine(rightLimit, 0, rightLimit, currentPic.height());
 
     ui->picLabel->setPixmap(pic.scaled(pic.width(), ui->scrollArea->height() - 20)); // -20 generality
 
-    painter->end();
-    delete painter;
+    paint.end();
 }
 
 void Cut::setAutoProcessingFlag(bool a)
@@ -481,9 +467,9 @@ void Cut::next()
         }
         helpString += slash();
 
-        if(lst[currentNumber+1].contains("_num")) ++currentNumber; // generality crutch bicycle
+        if(lst[currentNumber + 1].contains("_num")) ++currentNumber; // generality crutch bicycle
 
-        helpString += lst[currentNumber+1];
+        helpString += lst[currentNumber + 1];
         emit openFile(helpString);               // sets dir into ExpName directory
     }
     else
@@ -662,19 +648,17 @@ void Cut::zero()
 void Cut::cut()
 {
     QString helpString;
-    def::dir->cd("windows");
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + fileName
-                                          + "." + QString::number(addNum));
+                                          + slash() + "windows"
+                                          + slash() + fileName + "." + QString::number(addNum));
+
     ++addNum;
-    // new
     writePlainData(helpString,
                    data3,
                    def::ns,
                    rightLimit-leftLimit,
                    leftLimit);
 
-    def::dir->cdUp();
     rightLimit = NumOfSlices;
     leftLimit = 0;
     paint();

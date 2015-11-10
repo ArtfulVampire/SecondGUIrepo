@@ -638,17 +638,21 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
     int j = 0;
     int h = 0; //h == 0 - 241, h == 1 - 247
     QString marker = "000";
-//    QTime myTime;
-//    myTime.start();
-//    int wholeTime = 0;
 
     const edfFile & fil = globalEdf;
 
-    const double * markChanArr = fil.getData()[fil.getMarkChan()].data();
+    const vector<double> & markChanArr = fil.getData()[fil.getMarkChan()];
+//    const vector<int> edgeMarkers {241, 247, 254}; // from def::fileMarkers
+//    const vector<int> noInterestMarkers {231, 237, 234}; // from def::fileMarkers
 
-    //200, 255, (241||247, num, 254, 255)
-    for(int i = 0; i < ndr*nr[def::ns - 1]; ++i)
+    // 200, 255, (241||247, num, 254, 255)
+    // with feedback 200 (241||247, num, 231||237, (234), 254, 255)
+    for(int i = 0; i < fil.getDataLen(); ++i)
     {
+        if(stopFlag)
+        {
+            break;
+        }
         if(markChanArr[i] == 0.)
         {
             continue;
@@ -678,15 +682,14 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
                                                   + slash() + def::ExpName
                                                   + "." + rightNumber(number, 4)
                                                   + "_" + marker);
-//            myTime.restart();
             if(i > j)
             {
                 fil.saveSubsection(j, i, helpString, true);
             }
-//            wholeTime += myTime.elapsed();
 
-            ui->progressBar->setValue(double(i)*100./ndr*def::freq);
+            ui->progressBar->setValue(i * 100. / fil.getDataLen());
             qApp->processEvents();
+//            if(number == 5) break; /// test
 
             marker.clear();
             if(h == 0) marker = "241";
@@ -696,7 +699,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
             continue;
         }
     }
-//    cout << wholeTime/1000. << endl;
+    stopFlag = 0;
 }
 
 void MainWindow::sliceMatiSimple()

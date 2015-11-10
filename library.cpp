@@ -1661,11 +1661,11 @@ void makeMatrixFromFiles(QString spectraDir,
 
 void cleanDir(QString dirPath, QString nameFilter, bool ext)
 {
-    QDir * tmpDir = new QDir(dirPath);
+    QDir tmpDir(dirPath);
 
     QStringList lst;
 
-    if(nameFilter.isEmpty()) lst = tmpDir->entryList(QDir::Files);
+    if(nameFilter.isEmpty()) lst = tmpDir.entryList(QDir::Files);
     else
     {
         QStringList filter;
@@ -1680,14 +1680,13 @@ void cleanDir(QString dirPath, QString nameFilter, bool ext)
             hlp = "*" + nameFilter + "*";
         }
         filter << hlp;
-        lst = tmpDir->entryList(filter, QDir::Files);
+        lst = tmpDir.entryList(filter, QDir::Files);
     }
 
     for(int h = 0; h < lst.length(); ++h)
     {
-        QFile::remove(tmpDir->absolutePath() + slash() + lst[h]);
+        QFile::remove(tmpDir.absolutePath() + slash() + lst[h]);
     }
-    delete tmpDir;
 
 }
 
@@ -4374,7 +4373,7 @@ void writePlainData(const QString outPath,
     numOfSlices = min(numOfSlices,
                       data.cols() - start);
 
-    if(numOfSlices < 250) return;
+//    if(numOfSlices < 250) return; /// used for sliceWindFromReal() but Cut::cut() ...
 
     ofstream outStr;
     outStr.open(outPath.toStdString());

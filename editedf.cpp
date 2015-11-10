@@ -248,12 +248,17 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
 
 void MainWindow::refilterDataSlot()
 {
-    double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
-    double highFreq = ui->highFreqFilterDoubleSpinBox->value();
+
+    const double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
+    const double highFreq = ui->highFreqFilterDoubleSpinBox->value();
     QString helpString = def::dir->absolutePath()
             + slash() + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
     readData();
-    helpString.replace(".edf", "_f5-20.edf");
+    helpString.replace(".edf",
+                       "_f"
+                       + QString::number(lowFreq) + '-' + QString::number(highFreq)
+                       + ".edf");
+
     refilterData(lowFreq, highFreq, helpString);
     int tmp = ui->reduceChannelsComboBox->currentIndex();
     ui->reduceChannelsComboBox->setCurrentIndex(0);

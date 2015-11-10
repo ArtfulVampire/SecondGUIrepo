@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include "library.h"
 
+
 #include <cmath>
 #include <QMessageBox>
 
@@ -44,8 +45,6 @@ signals:
 private:
     Ui::Eyes *ui;
     bool autoFlag;
-    QDir *dirBC;
-    double ** dataE;
 };
 
 #endif // EYES_H
