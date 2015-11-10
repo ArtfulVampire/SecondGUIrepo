@@ -5,7 +5,7 @@
 
 
 
-void MainWindow::makeChanList(QList<int> & chanList)
+void MainWindow::makeChanList(vector<int> & chanList)
 {
     chanList.clear();
     QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -16,7 +16,7 @@ void MainWindow::makeChanList(QList<int> & chanList)
     }
     for(auto str : lst)
     {
-        chanList << str.toInt() - 1;
+        chanList.push_back(str.toInt() - 1);
     }
 }
 
@@ -347,7 +347,7 @@ void MainWindow::reduceChannelsEDFSlot()
     reduceChannelsEDF(helpString);
 }
 
-void MainWindow::reduceChannelsEDF(QString newFilePath)
+void MainWindow::reduceChannelsEDF(const QString & newFilePath)
 {
     QTime myTime;
     myTime.start();
@@ -363,10 +363,10 @@ void MainWindow::reduceChannelsEDF(QString newFilePath)
         return;
     }
 
-    QList <int> chanList;
-    for(int i = 0; i < lst.length(); ++i)
+    vector<int> chanList;
+    for(const QString & str : lst)
     {
-        chanList << lst[i].toInt() - 1;
+        chanList.push_back(str.toInt() - 1);
     }
     temp.reduceChannels(chanList);
     temp.writeEdfFile(newFilePath);
@@ -616,10 +616,10 @@ void MainWindow::constructEDF(const QString & newPath,
         }
     }
 
-    QList<int> chanList;
+    vector<int> chanList;
     for(const QString & str : lst)
     {
-        chanList << str.toInt() - 1;
+        chanList.push_back(str.toInt() - 1);
     }
 
     ////////////////////// aaaaaaaaaaaaaaaaaaaaaaaaa

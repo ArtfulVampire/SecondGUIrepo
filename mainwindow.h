@@ -134,7 +134,7 @@ public:
     void GalyaCut(const QString & path, QString outPath = QString());
 
     void rereferenceData(QString newRef, QString newPath);
-    void makeChanList(QList<int> & chanList);
+    void makeChanList(vector<int> & chanList);
 
     void refilterData(double lowFreq, double highFreq, QString newPath);
     void countSpectraSimple(int fftLen, int inSmooth = -1);
@@ -146,7 +146,7 @@ public:
     void drawMap(double ** matrixA, int num);
     void setEdfFile(const QString &filePath);
     void transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath);
-    void reduceChannelsEDF(QString newFilePath);
+    void reduceChannelsEDF(const QString & newFilePath);
     void constructEDF(const QString & newPath,
                       const QStringList & nameFilters = QStringList());
     void concatenateEDFs(QString inPath1, QString inPath2, QString outPath);
@@ -158,7 +158,7 @@ public:
                      QString maps1Path = QString(),
                      QString maps2Path = QString());
     void reorderIcaFile(const QString & icaPath,
-                        QList<int> chanList,
+                        vector<int> chanList,
                         QString icaOutPath = QString(),
                         QString mapsPath = QString(),
                         QString mapsOutPath = QString());

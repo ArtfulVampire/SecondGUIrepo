@@ -239,7 +239,13 @@ int MannWhitney(double * arr1, int len1, double * arr2, int len2, double p = 0.0
 int MannWhitney(const vec & arr1,
                  const vec & arr2,
                  const double p = 0.05);
-
+const vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+void eyesProcessingStatic(const vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
+                          const vector<int> eegChannels = leest19,
+                          const QString & windowsDir = def::dir->absolutePath()
+                                                       + slash() + "windows",
+                          const QString & outFilePath = def::dir->absolutePath()
+                                                        + slash() + "eyes.txt");
 
 void makePaFile(const QString & spectraDir,
                 const QStringList & fileNames,

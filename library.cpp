@@ -1170,13 +1170,17 @@ template <typename Typ>
 double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool fromZero)
 {
     double res = 0.;
-    double m1 = mean(arr1, length, shift);
-    double m2 = mean(arr2, length, shift);
-    double sign = (fromZero)?0.:1.;
+    double m1 = 0.;
+    double m2 = 0.;
+    if(!fromZero)
+    {
+        m1 = mean(arr1, length, shift);
+        m2 = mean(arr2, length, shift);
+    }
     for(int i = 0; i < length; ++i)
     {
-        res += (arr1[i + shift] - m1 * sign) *
-                (arr2[i + shift] - m2 * sign);
+        res += (arr1[i + shift] - m1) *
+                (arr2[i + shift] - m2);
     }
     return res;
 }
@@ -1408,6 +1412,92 @@ QString getFileMarker(const QString & fileName)
             }
         }
     }
+}
+
+void eyesProcessingStatic(const vector<int> eogChannels,
+                          const vector<int> eegChannels,
+                          const QString & windowsDir,
+                          const QString & outFilePath)
+{
+    QTime myTime;
+    myTime.start();
+
+
+    QStringList leest = QDir(windowsDir).entryList(QDir::Files|QDir::NoDotAndDotDot);
+    for(QString & item : leest)
+    {
+        item.prepend(windowsDir + slash());
+    }
+
+    const int Size = eogChannels.size() + 1; // usually 3
+
+    matrix dataE;
+
+    //make dataE array to count covariation matrix
+    int NumOfSlices = 0;
+    int help;
+    for(auto filePath : leest)
+    {
+        readPlainData(filePath,
+                      dataE,
+                      def::ns,
+                      help,
+                      NumOfSlices);
+        NumOfSlices += help;
+    }
+
+    vector<int> signalNums;
+    for(int eogNum : eogChannels)
+    {
+        signalNums.push_back(eogNum);
+    }
+
+    matrix matrixInit(Size, Size);
+    matrix coefficients(eegChannels.size(), eogChannels.size());
+
+    for(int k = 0; k < eegChannels.size(); ++k)
+    {
+        signalNums.push_back(eegChannels[k]);
+        for(int j = 0; j < Size; ++j)
+        {
+            for(int z = j; z < Size; ++z)
+            {
+                matrixInit[j][z] = covariance(  dataE[ signalNums[j] ],
+                                                dataE[ signalNums[z] ],
+                                                NumOfSlices,
+                                                0,
+                                                1) / NumOfSlices;
+                if(j != z)
+                {
+                    matrixInit[z][j] = matrixInit[j][z];
+                }
+                // maybe (NumOfSlices-1), but it's not important here
+            }
+        }
+        matrixInit.invert();
+        for(int i = 0; i < eogChannels.size(); ++i)
+        {
+            coefficients[k][i] = - matrixInit[i][eogChannels.size()]
+                                 / matrixInit[eogChannels.size()][eogChannels.size()];
+        }
+        signalNums.pop_back();
+    }
+
+    ofstream outStr;
+    outStr.open(outFilePath.toStdString());
+    outStr << "NumOfEyesChannels " << eogChannels.size() << endl;
+    outStr << "NumOfEegChannels " << eegChannels.size() << endl;
+    for(int k = 0; k < eegChannels.size(); ++k)
+    {
+        for(int i = 0; i < eogChannels.size(); ++i)
+        {
+            outStr << doubleRound(coefficients[k][i], 3) << "\t";
+        }
+        outStr << endl;
+    }
+    outStr.close();
+
+    cout << "eyesProcessing: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
 

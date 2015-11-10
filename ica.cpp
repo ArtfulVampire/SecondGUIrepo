@@ -858,9 +858,8 @@ void MainWindow::ICA() //fastICA
 
     helpString = def::dir->absolutePath()
             + slash() + def::ExpName + "_ica.edf";
-    QList <int> chanList;
+    vector<int> chanList;
     makeChanList(chanList);
-    cout << chanList << endl;
 
     globalEdf.writeOtherData(components, helpString, chanList);
 
@@ -871,7 +870,7 @@ void MainWindow::ICA() //fastICA
 
 
 void MainWindow::reorderIcaFile(const QString & icaPath,
-                                QList<int> chanList,
+                                vector<int> chanList,
                                 QString icaOutPath,
                                 QString mapsPath,
                                 QString mapsOutPath)
@@ -910,9 +909,12 @@ void MainWindow::reorderIcaFile(const QString & icaPath,
 
     localEdf.readEdfFile(icaPath);
     const int localNs = localEdf.getNs();
-    if(!chanList.contains(localNs - 1))
+    /// remake set
+    if(std::find(chanList.begin(),
+                  chanList.end(),
+                  int(localNs - 1)) != chanList.end())
     {
-        chanList << localNs - 1;
+        chanList.push_back(localNs - 1);
     }
 
     matrix maps;
@@ -921,8 +923,8 @@ void MainWindow::reorderIcaFile(const QString & icaPath,
 
     localEdf.reduceChannels(chanList);
 
-    matrix newMaps(chanList.length() - 1, 0);
-    for(int i = 0; i < chanList.length() - 1; ++i) // -1 for markers
+    matrix newMaps(chanList.size() - 1, 0);
+    for(int i = 0; i < chanList.size() - 1; ++i) // -1 for markers
     {
         newMaps[i] = maps[chanList[i]];
     }

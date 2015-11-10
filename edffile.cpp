@@ -1093,7 +1093,10 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
     }
 }
 
-void edfFile::refilter(const double &lowFreq, const double &highFreq, const QString & newPath)
+/// remake vector
+void edfFile::refilter(const double & lowFreq,
+                       const double & highFreq,
+                       const QString & newPath)
 {
     QTime myTime;
     myTime.start();
@@ -1103,15 +1106,15 @@ void edfFile::refilter(const double &lowFreq, const double &highFreq, const QStr
     double norm1 = fftLength / double(this->dataLength);
     double * spectre = new double [fftLength * 2];
 
-    QList <int> chanList;
+    vector<int> chanList;
     for(int i = 0; i < this->ns; ++i)
     {
         if(this->labels[i].contains(QRegExp("E[OE]G"))) // filter only EEG, EOG signals
         {
-            chanList << i;
+            chanList.push_back(i);
         }
     }
-    int numOfChan = chanList.length();
+    int numOfChan = chanList.size();
 
     for(int j = 0; j < numOfChan; ++j)
     {
@@ -1236,8 +1239,8 @@ void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
 
 void edfFile::cleanFromEyes(QString eyesPath,
                             bool removeEogChannels,
-                            QList <int> eegNums,
-                            QList <int> eogNums)
+                            vector<int> eegNums,
+                            vector<int> eogNums)
 {
     QTime myTime;
     myTime.start();
@@ -1259,29 +1262,29 @@ void edfFile::cleanFromEyes(QString eyesPath,
     inStr.ignore(64, ' '); // "NumOfEegChannels "
     inStr >> numEeg;
 
-    if(eegNums.isEmpty())
+    if(eegNums.empty())
     {
         for(int i = 0; i < this->ns; ++i)
         {
             if(this->channels[i].label.contains("EEG"))
             {
-                eegNums << i;
+                eegNums.push_back(i);
             }
-            if(eegNums.length() == numEeg) break; /// bicycle generality
+            if(eegNums.size() == numEeg) break; /// bicycle generality
         }
     }
-    if(eogNums.isEmpty())
+    if(eogNums.empty())
     {
         for(int i = 0; i < this->ns; ++i)
         {
             if(this->channels[i].label.contains("EOG"))
             {
-                eogNums << i;
+                eogNums.push_back(i);
             }
         }
     }
 
-    if(numEog != eogNums.length() || numEeg != eegNums.length())
+    if(numEog != eogNums.size() || numEeg != eegNums.size())
     {
         cout << "cleanFromEyes: bad input eyes file or labels list" << endl;
         inStr.close();
@@ -1296,7 +1299,9 @@ void edfFile::cleanFromEyes(QString eyesPath,
         for(int j = 0; j < numEog; ++j)
         {
             inStr >> coefs[i][j];
+//            cout << coefs[i][j] << '\t';
         }
+//        cout << endl;
     }
     inStr.close();
 
@@ -1361,7 +1366,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
     cout << "cleanFromEyes: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
-void edfFile::reduceChannels(const QList<int> & chanList) // much memory
+void edfFile::reduceChannels(const vector<int> & chanList) // much memory
 {
 #if 1 // more general, much memory
     edfFile temp(*this);
@@ -1376,16 +1381,16 @@ void edfFile::reduceChannels(const QList<int> & chanList) // much memory
 #endif
 #endif
 
-    for(int i = 0; i < chanList.length(); ++i)
+    for(int item : chanList)
     {
-        this->channels.push_back( temp.getChannels()[ chanList[i] ] );
+        this->channels.push_back( temp.getChannels()[ item ] );
 
 #if !DATA_IN_CHANS
 
 #if DATA_POINTER
-        (*(this->dataPointer)).push_back( temp.getData()[ chanList[i] ] );
+        (*(this->dataPointer)).push_back( temp.getData()[ item ] );
 #else
-        this->data.push_back( temp.getData()[ chanList[i] ] );
+        this->data.push_back( temp.getData()[ item ] );
 #endif
 
 #endif
@@ -1403,7 +1408,7 @@ void edfFile::reduceChannels(const QList<int> & chanList) // much memory
 }
 
 
-void edfFile::removeChannels(const QList<int> & chanList)
+void edfFile::removeChannels(const vector<int> & chanList)
 {
     std::set<int, std::greater<int>> excludeSet;
     for(int val : chanList)
@@ -1415,11 +1420,18 @@ void edfFile::removeChannels(const QList<int> & chanList)
     {
 
 #if DATA_POINTER
-        (*(this->dataPointer)).erase((*(this->dataPointer)).begin() + chanList[k]);
+
+        /// was 10-Nov-2015
+//        (*(this->dataPointer)).erase((*(this->dataPointer)).begin() + chanList[k]);
+        /// new 10-Nov-2015
+        (*(this->dataPointer)).erase((*(this->dataPointer)).begin() + k);
 #else
-        this->data.erase(this->data.begin() + chanList[k]);
+        this->data.erase(this->data.begin() + k);
 #endif
-        this->channels.erase(this->channels.begin() + chanList[k]);
+        /// was 10-Nov-2015
+//        this->channels.erase(this->channels.begin() + chanList[k]);
+        /// new 10-Nov-2015
+        this->channels.erase(this->channels.begin() + k);
     }
     this->adjustArraysByChannels();
 }
@@ -1547,29 +1559,29 @@ void edfFile::setLabels(char ** inLabels)
 //template
 void edfFile::writeOtherData(matrix & newData,
                              const QString & outPath,
-                             QList<int> chanList)
+                             vector<int> chanList)
 {
     this->writeOtherData(newData.data, outPath, chanList);
 }
 
 void edfFile::writeOtherData(mat &newData,
                              const QString & outPath,
-                             QList<int> chanList)
+                             vector<int> chanList)
 {
     edfFile temp(*this, true); // copy-construct everything but data
 
-    if(chanList.isEmpty())
+    if(chanList.empty())
     {
         for(int i = 0; i < newData.size(); ++i)
         {
-            chanList << i;
+            chanList.push_back(i);
         }
     }
 
     temp.channels.clear();
-    for(int i = 0; i < chanList.length(); ++i)
+    for(int item : chanList)
     {
-        temp.channels.push_back( this->channels[chanList[i]] );
+        temp.channels.push_back( this->channels[item] );
     }
     temp.dataPointer = &newData; // set a pointer to the data, which should write
     temp.adjustArraysByChannels(); // set in particular ns = chanList.length();
@@ -1577,9 +1589,12 @@ void edfFile::writeOtherData(mat &newData,
     temp.writeEdfFile(outPath);
 }
 
-void edfFile::writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList) const
+void edfFile::writeOtherData(double ** newData,
+                             int newDataLength,
+                             QString outPath,
+                             vector<int> chanList) const
 {
-    if(chanList.isEmpty())
+    if(chanList.empty())
     {
         cout << "edfFile::writeOtherData: chanList is empty, RETURN" << endl;
         return;
@@ -1600,7 +1615,7 @@ void edfFile::writeOtherData(double ** newData, int newDataLength, QString outPa
 #else
     //adjust channels
     temp.channels.clear();
-    for(int i = 0; i < chanList.length(); ++i)
+    for(int i = 0; i < chanList.size(); ++i)
     {
         temp.channels.push_back( this->channels[chanList[i]] );
         temp.data.resize(newDataLength);

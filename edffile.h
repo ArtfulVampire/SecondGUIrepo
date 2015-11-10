@@ -209,23 +209,26 @@ public:
     void refilter(const double &lowFreq, const double &highFreq, const QString & newPath = QString());
     void saveSubsection(int startBin, int finishBin, const QString &outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
-    void reduceChannels(const QList<int> & chanList);
+    void reduceChannels(const vector<int> & chanList);
     void reduceChannels(const QString & chanStr);
-    void removeChannels(const QList<int> & chanList);
+    void removeChannels(const vector<int> & chanList);
 //    void removeChannels(const QString & chanStr);
 
     void setLabels(char ** inLabels);
     void cleanFromEyes(QString eyesPath = QString(),
                        bool removeEogChannels = false,
-                       QList <int> eegNums = QList <int>(),
-                       QList <int> eogNums = QList <int>());
+                       vector<int> eegNums = {},
+                       vector<int> eogNums = {});
     void writeOtherData(mat & newData,
                         const QString & outPath,
-                        QList<int> chanList = QList<int>());
+                        vector<int> chanList = {});
     void writeOtherData(matrix & newData,
                         const QString & outPath,
-                        QList<int> chanList = QList<int>());
-    void writeOtherData(double ** newData, int newDataLength, QString outPath, QList<int> chanList = QList<int>()) const;
+                        vector<int> chanList = {});
+    void writeOtherData(double ** newData,
+                        int newDataLength,
+                        QString outPath,
+                        vector<int> chanList = {}) const;
     void fitData(int initSize);
     void cutZerosAtEnd();
     void adjustMarkerChannel();

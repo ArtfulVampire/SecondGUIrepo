@@ -418,6 +418,26 @@ void MainWindow::showCountSpectra()
 
 void MainWindow::showEyes()
 {
+    const edfFile & fil = globalEdf;
+    vector<int> eegs;
+    vector<int> eogs;
+    for(int i = 0; i < fil.getNs(); ++i)
+    {
+        if(fil.getLabels()[i].contains("EOG"))
+        {
+            eogs.push_back(i);
+        }
+        /// what with A1-A2 and A1-N ???
+//        else if(fil.getLabels()[i].contains("EEG"))
+//        {
+//            eegs.push_back(i);
+//        }
+    }
+    eyesProcessingStatic(eogs); // for first 19 eeg channels
+    return;
+
+
+
     Eyes *trololo = new Eyes();
 //    trololo->setAutoProcessingFlag(false); trololo->show(); return;
     trololo->setAutoProcessingFlag(true);
@@ -600,7 +620,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
         }
         if(ui->reduceChannelsCheckBox->isChecked())
         {
-            QList <int> chanList;
+            vector<int> chanList;
             makeChanList(chanList);
             fil.reduceChannels(chanList);
             def::ns = fil.getNs();

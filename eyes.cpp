@@ -11,6 +11,7 @@ Eyes::Eyes() :
 
     ui->spinBox->setValue(19);  //for encephalan
     ui->lineEdit_2->setText("20 21");
+    ui->lineEdit_2->setText("22 23");
 
     if(def::ns == 41) //generality mati + amod
     {
@@ -197,7 +198,6 @@ void Eyes::eyesProcessing()
     lst = ui->lineEdit_2->text().split(QRegExp("[,.; ]"),
                                        QString::SkipEmptyParts);  // 20 21
 
-
     int Size = lst.length() + 1; // usually 3
 
     matrix dataE;
@@ -217,25 +217,37 @@ void Eyes::eyesProcessing()
         NumOfSlices += help;
     }
     vector<int> signalNums;
-
-    for(auto eogNum : lst)
+    for(QString eogNum : lst)
     {
         signalNums.push_back(eogNum.toInt() - 1);
     }
     for(int k = 0; k < ui->spinBox->value(); ++k)
     {
         signalNums.push_back(k);
+        for(int meow : signalNums)
+        {
+            cout << meow << " ";
+        }
+        cout << endl;
         for(int j = 0; j < Size; ++j)
         {
-            for(int z = 0; z < Size; ++z)
+            for(int z = j; z < Size; ++z)
             {
-                matrixInit[j][z] = covariance(dataE[signalNums[j]],
-                                               dataE[signalNums[z]],
-                                               NumOfSlices);
+                matrixInit[j][z] = covariance(  dataE[ signalNums[j] ],
+                                                dataE[ signalNums[z] ],
+                                                NumOfSlices,
+                                                0,
+                                                1) / NumOfSlices;
+                if(j != z)
+                {
+                    matrixInit[z][j] = matrixInit[j][z];
+                }
                  // maybe (NumOfSlices-1), but it's not important here
             }
         }
+        if(k == 0) matrixInit.print();
         matrixInit.invert();
+        if(k == 0) matrixInit.print();
         //set coeffs
         for(int i = 0; i < lst.length(); ++i)
         {
