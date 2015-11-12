@@ -13,7 +13,7 @@ int right;
 int spLength;
 
 double freq = 250;
-int fftLength = 1024;
+int fftLength = 4096;
 QString cfgFileName = "tmp.net";
 
 

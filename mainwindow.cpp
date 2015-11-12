@@ -419,7 +419,7 @@ void MainWindow::showCountSpectra()
 void MainWindow::showEyes()
 {
     const edfFile & fil = globalEdf;
-    vector<int> eegs;
+//    vector<int> eegs;
     vector<int> eogs;
     for(int i = 0; i < fil.getNs(); ++i)
     {
@@ -1728,6 +1728,20 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
+    const QStringList names {"AAU", "BEA", "GAS", "SUA"};
+    for(auto guy : names)
+    {
+        setEdfFile(def::dataFolder + slash() + guy + "_train_rr_f3.5-40_new.edf");
+        cleanDirs();
+        sliceAll();
+        countSpectraSimple(4096);
+
+        setEdfFile(def::dataFolder + slash() + guy + "_test_rr_f3.5-40_new.edf");
+        cleanDirs();
+        sliceAll();
+        countSpectraSimple(4096);
+    }
+    exit(0);
     return;
 
 

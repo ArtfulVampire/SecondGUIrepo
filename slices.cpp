@@ -647,17 +647,21 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
 
     // 200, 255, (241||247, num, 254, 255)
     // with feedback 200 (241||247, num, 231||237, (234), 254, 255)
+//    for(auto it = markChanArr.begin(); it != markChanArr.end(); ++it)
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
-        if(stopFlag)
-        {
-            break;
-        }
+//        auto it1 = std::find(it, markChanArr.end(), 241.);
+//        auto it2 = std::find(it, markChanArr.end(), 247.);
+//        auto it3 = std::find(it, markChanArr.end(), 254.);
+
         if(markChanArr[i] == 0.)
         {
             continue;
         }
-        else if((markChanArr[i] > 200 && markChanArr[i] < 241) || markChanArr[i] == 255 || markChanArr[i] == 250 || markChanArr[i] == 251) //all not interesting markers
+        else if((markChanArr[i] > 200 && markChanArr[i] < 241)
+                || markChanArr[i] == 255
+                || markChanArr[i] == 250
+                || markChanArr[i] == 251) //all not interesting markers
         {
             continue;
         }
@@ -688,7 +692,12 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
             }
 
             ui->progressBar->setValue(i * 100. / fil.getDataLen());
+
             qApp->processEvents();
+            if(stopFlag)
+            {
+                break;
+            }
 //            if(number == 5) break; /// test
 
             marker.clear();

@@ -440,7 +440,7 @@ void Spectre::psaSlot()
         drawArrays(helpString,
                    drawData,
                    false,
-                   spectraGraphsNormalization::each);
+                   spectraGraphsNormalization::all);
         if(ui->MWcheckBox->isChecked())
         {
             drawMannWitney(helpString,
@@ -755,19 +755,7 @@ void Spectre::countSpectra()
 
     const QString inDirPath = ui->lineEdit_1->text();
     const QString outDirPath = ui->lineEdit_2->text();
-
-//    cout << "countSpectra: path = " << inDirPath << endl;
     QStringList lst = QDir(inDirPath).entryList(QDir::Files, QDir::Name);
-
-//    double *** dataPhase = new double ** [def::ns];
-//    for(int i = 0; i < def::ns; ++i)
-//    {
-//        dataPhase[i] = new double * [def::ns];
-//        for(int j = 0; j < def::ns; ++j)
-//        {
-//            dataPhase[i][j] = new double [def::fftLength / 2];
-//        }
-//    }
 
     double sum1 = 0.;
     double sum2 = 0.;
@@ -781,18 +769,14 @@ void Spectre::countSpectra()
     QString helpString;
     int NumOfSlices;
 
-//    cout << "1" << endl;
-
-//    cout  << "countSpectra: def::ns = " << def::ns << endl;
-//    cout  << "countSpectra: lst.length() = " << lst.length() << endl;
-
-    for(int a = 0; a < lst.length(); ++a)
+    for(auto it = lst.begin(); it != lst.end(); ++it)
     {
-        if(lst[a].contains("_num") || lst[a].contains("_300") || lst[a].contains("_sht")) continue;
+        const QString & fileName = (*it);
+        if(fileName.contains("_num") || fileName.contains("_300") || fileName.contains("_sht")) continue;
 
         //read data file
         helpString = QDir::toNativeSeparators(inDirPath
-                                              + slash() + lst[a]);
+                                              + slash() + fileName);
 //        cout << "dataFile: " << helpString << endl;
 
 
@@ -802,7 +786,7 @@ void Spectre::countSpectra()
                       NumOfSlices);
 
         helpString = QDir::toNativeSeparators(outDirPath
-                                              + slash() + lst[a]);
+                                              + slash() + fileName);
 //        cout << "outFile: " << helpString << endl;
         outStream.open(helpString.toStdString());
         if(!outStream.good())
@@ -813,22 +797,19 @@ void Spectre::countSpectra()
 
         if(ui->brainRateRadioButton->isChecked() || ui->spectraRadioButton->isChecked())
         {
-//            cout << "2" << endl;
             if(!countOneSpectre(dataIn, dataFFT))
             {
-                cout << "cant count spectra" << endl;
+                cout << "countOneSpectre: too many Eyes " << fileName << endl;
                 outStream.close();
                 helpString = QDir::toNativeSeparators(outDirPath
                                                       + slash()
-                                                      + lst[a]);
+                                                      + fileName);
                 QFile::remove(helpString);
                 continue;
             }
-//            cout << "3" << endl;
 
             if(ui->spectraRadioButton->isChecked())
             {
-//                cout  << "writingSpectre" << endl;
                 // write spectra
                 for(int i = 0; i < def::nsWOM(); ++i) //
                 {
@@ -865,7 +846,7 @@ void Spectre::countSpectra()
 //            if(!readFilePhase(dataIn, dataPhase))
 //            {
 //                outStream.close();
-//                helpString=QDir::toNativeSeparators(outDirPath + slash() + lst[a]);  /////separator
+//                helpString=QDir::toNativeSeparators(outDirPath + slash() + fileName);  /////separator
 //                remove(helpString.toStdString().c_str());
 //                continue;
 //            }
@@ -902,7 +883,7 @@ void Spectre::countSpectra()
                 tempVec = hilbert(dataIn[i], 8., 12., "");
                 ///
 
-//                cout << lst[a].toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
+//                cout << fileName.toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
 //                outStream << variance(tempVec, def::fftLength) << '\n';
                 outStream << mean(tempVec, NumOfSlices) << '\n';
 //                hilbertPieces(dataIn[i], NumOfSlices, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
@@ -956,15 +937,15 @@ void Spectre::countSpectra()
 
             if(def::fftLength == 4096 && (NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
             {
-                cout << a << "'th file too short" << endl;
+//                cout << a << "'th file too short" << endl;
             }
             else if(def::fftLength == 1024 && (NumOfSlices-Eyes) < 250*2.)
             {
-                cout << a << "'th file too short" << endl;
+//                cout << a << "'th file too short" << endl;
             }
             else if(def::fftLength == 2048 && (NumOfSlices-Eyes) < 250*3.)
             {
-                cout << a << "'th file too short" << endl;
+//                cout << a << "'th file too short" << endl;
             }
 
             /// mat vs matrix
@@ -984,11 +965,9 @@ void Spectre::countSpectra()
         outStream.close();
 
 
-        if(100*(a+1)/lst.length() > ui->progressBar->value())
-        {
-            ui->progressBar->setValue(100*(a+1)/lst.length());
-            qApp->processEvents();
-        }
+        ui->progressBar->setValue((std::distance(lst.begin(), it) + 1)
+                                  * 100. / lst.length());
+        qApp->processEvents();
     }
 
     if(ui->bayesRadioButton->isChecked())
@@ -1006,19 +985,7 @@ void Spectre::countSpectra()
         ui->leftSpinBox->setValue(def::left * 2);
         ui->rightSpinBox->setValue(def::right * 2);
     }
-
     ui->progressBar->setValue(0);
-
-//    for(int i = 0; i < def::ns; ++i)
-//    {
-//        for(int j = 0; j < def::ns; ++j)
-//        {
-//            delete []dataPhase[i][j];
-//        }
-
-//        delete []dataPhase[i];
-//    }
-//    delete []dataPhase;
 
     ui->lineEdit_1->setText(ui->lineEdit_2->text());
     ui->lineEdit_2->setText(def::dir->absolutePath() + slash() + "Help");
@@ -1061,7 +1028,6 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
     //generality
     if(def::fftLength - Eyes < def::freq * 2.5) // real signal less than 2.5 seconds
     {
-        cout << "countOneSpectre: too many Eyes" << endl;
         return false;
     }
 //    cout << "Eyes = " << Eyes << endl;
@@ -1181,7 +1147,6 @@ void Spectre::drawWavelets()
 {
     QString helpString;
     QString filePath;
-    QString fileName;
     helpString = QDir::toNativeSeparators(backupDirPath
                                           + slash() + "visualisation"
                                           + slash() + "wavelets");
@@ -1216,9 +1181,8 @@ void Spectre::drawWavelets()
     matrix coefs;
     ofstream outStr;
 
-    for(int a = 0; a < lst.length(); ++a)
+    for(const QString & fileName : lst)
     {
-        fileName = lst[a];
         filePath = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + fileName);
 
@@ -1249,9 +1213,9 @@ void Spectre::drawWavelets()
     return;
 
 
-    for(int a = 0; a < lst.length(); ++a)
+    for(auto it = lst.begin(); it != lst.end(); ++it)
     {
-        fileName = lst[a];
+        const QString & fileName =(*it);
         filePath = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + fileName);
         cout << helpString.toStdString() << endl;
@@ -1296,12 +1260,9 @@ void Spectre::drawWavelets()
                 }
             }
         }
-
-        if(100 * (a+1)/lst.length() > ui->progressBar->value())
-        {
-            ui->progressBar->setValue(100*(a+1)/lst.length());
-            qApp->processEvents();
-        }
+        ui->progressBar->setValue((std::distance(lst.begin(), it) + 1)
+                                  * 100. / lst.length());
+        qApp->processEvents();
     }
     ui->progressBar->setValue(0);
     def::dir->cd(backupDirPath);
