@@ -285,10 +285,13 @@ double Net::adjustReduceCoeff(QString spectraDir,
 
     cout << "adjustReduceCoeff: start" << endl;
 
-    if(ui->leaveOneOutRadioButton->isChecked())
-    {
-        paFileName = "all"; // N-fold
-    }
+//    if(ui->leaveOneOutRadioButton->isChecked())
+//    {
+//        paFileName = "all"; // N-fold
+//    }
+
+
+    cout << ui->trainTestRadioButton->isChecked() << endl;
 
     while(1)
     {
@@ -298,14 +301,42 @@ double Net::adjustReduceCoeff(QString spectraDir,
         makePaStatic(spectraDir,
                      ui->foldSpinBox->value(),
                      currVal);
-
-        PaIntoMatrixByName(paFileName);
-
-//        cout << dataMatrix[0][0] << "\t" << fileNames[0] << endl;
-
         cout << "coeff = " << currVal << "\t";
-        LearnNet();
-        if(this->getEpoch() > highLimit || this->getEpoch() < lowLimit)
+
+        if(!ui->trainTestRadioButton->isChecked())
+        {
+            PaIntoMatrixByName(paFileName);
+            LearnNet();
+        }
+        else
+        {
+            PaIntoMatrixByName("all");
+
+//            cout << dataMatrix.rows() << endl;
+//            for(int i = 0; i < def::numOfClasses; ++i)
+//            {
+//                cout << classCount[i] << "\t";
+//            }
+//            cout << endl;
+
+            vector<int> learnIndices;
+            for(int i = 0; i < dataMatrix.rows(); ++i)
+            {
+//                cout << i << "\t" << fileNames[i] << endl;
+                if(fileNames[i].contains("train"))
+                {
+                    learnIndices.push_back(i);
+                }
+            }
+//            for(int item : learnIndices)
+//            {
+//                cout << item << "\t" << fileNames[item] << endl;
+//            }
+            LearNetIndices(learnIndices);
+        }
+
+        if(this->getEpoch() > highLimit
+           || this->getEpoch() < lowLimit)
         {
             ui->rdcCoeffSpinBox->setValue(currVal
                                           / sqrt(this->getEpoch()
@@ -411,6 +442,11 @@ void Net::autoClassification(const QString & spectraDir)
     const int numOfPairs = ui->numOfPairsBox->value();
 
     //adjust reduce coefficient
+    const int fold = ui->foldSpinBox->value();
+    makePaStatic(spectraDir,
+                 fold,
+                 ui->rdcCoeffSpinBox->value());
+    PaIntoMatrixByName("all");
 
     double newReduceCoeff = adjustReduceCoeff(spectraDir,
                                               ui->lowLimitSpinBox->value(),
@@ -425,10 +461,9 @@ void Net::autoClassification(const QString & spectraDir)
     }
     ui->rdcCoeffSpinBox->setValue(newReduceCoeff);
 
-    const int fold = ui->foldSpinBox->value();
+
+
     const double coeff = ui->rdcCoeffSpinBox->value();
-
-
 
     makePaStatic(spectraDir,
                  fold,
@@ -1660,21 +1695,31 @@ void Net::leaveOneOutCL()
 #endif
 
 
-void Net::trainTestClassification()
+void Net::trainTestClassification(const QString & trainTemplate,
+                                  const QString & testTemplate)
 {
     vector<int> learnIndices;
     vector<int> tallIndices;
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
-        if(fileNames[i].contains("train"))
+        if(fileNames[i].contains(trainTemplate))
         {
             learnIndices.push_back(i);
         }
-        else if(fileNames[i].contains("test"))
+        else if(fileNames[i].contains(testTemplate))
         {
             tallIndices.push_back(i);
         }
     }
+//    for(int i = 0; i < learnIndices.size(); ++i)
+//    {
+//        cout << fileNames[learnIndices[i]] << endl;
+//    }
+//    cout << endl;
+//    for(int i = 0; i < tallIndices.size(); ++i)
+//    {
+//        cout << fileNames[tallIndices[i]] << endl;
+//    }
     LearNetIndices(learnIndices);
     tallNetIndices(tallIndices);
     cout << "train-test classification - ";
@@ -1751,6 +1796,11 @@ void Net::PaIntoMatrixByName(const QString & fileName)
                fileNames,
                classCount);
 }
+
+//void Net::loadDataFromFolder(const QString & spectraPath)
+//{
+//    makePaFile(spectraDir, listToWrite, coeff, helpString);
+//}
 
 double HopfieldActivation(double x, double temp)
 {
@@ -3834,6 +3884,6 @@ void Net::adjustParamsGroup2(QAbstractButton * but)
         ui->lowLimitSpinBox->setValue(80);
         ui->epochSpinBox->setValue(250);
         ui->rdcCoeffSpinBox->setValue(7.5);
-        ui->foldSpinBox->setValue(4.);
+        ui->foldSpinBox->setValue(2.);
     }
 }

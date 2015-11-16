@@ -257,8 +257,8 @@ void makeFileLists(const QString & path,
                    vector<QStringList> & lst);
 
 void makePaStatic(const QString & spectraDir,
-                  const int & fold,
-                  const double & coeff,
+                  const int & fold = 2,
+                  const double & coeff = 7.,
                   const bool svmFlag = false);
 
 void makeMatrixFromFiles(QString spectraDir,
@@ -344,10 +344,11 @@ void drawArray(const QString & templPath,
 
 //inMatrix supposed to be def::spLength * 19 size
 template <typename Typ>
-void drawArrays(const QString & templPath,
+double drawArrays(const QString & templPath,
                 const Typ & inMatrix,
                 const bool weightsFlag = false,
                 const spectraGraphsNormalization normType = all,
+                double norm = 0.,
                 const QStringList & colors = def::colours,
                 const double scaling = 1.,
                 const int lineWidth = 3);

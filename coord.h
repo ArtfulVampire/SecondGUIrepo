@@ -52,6 +52,7 @@ namespace def
     extern QStringList colours;
     extern QStringList fileMarkers;
     extern int numOfClasses;
+    extern double drawNorm;
 
 //    extern int nsW;
     inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}

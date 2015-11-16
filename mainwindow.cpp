@@ -624,6 +624,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
             makeChanList(chanList);
             fil.reduceChannels(chanList);
             def::ns = fil.getNs();
+
         }
         // almost equal time, should use sessionEdges
         if(ui->sliceCheckBox->isChecked())
@@ -645,7 +646,10 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
         }
         if(ui->reduceChannelsCheckBox->isChecked())
         {
-            fil.reduceChannels(ui->reduceChannelsLineEdit->text());
+            // more general reduce channels
+            vector<int> chanList;
+            makeChanList(chanList);
+            fil.reduceChannels(chanList);
             def::ns = fil.getNs();
         }
         if(ui->sliceCheckBox->isChecked())
@@ -1728,18 +1732,52 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-    const QStringList names {"AAU", "BEA", "GAS", "SUA"};
+
+//    setEdfFile(def::dataFolder + slash() + "AAU_train_rr_f3.5-40_new.edf");
+//    Net * ann = new Net();
+//    ann->show();
+//    ann->autoClassificationSimple();
+
+//    return;
+
+    ui->reduceChannelsComboBox->setCurrentText("20");
+    const QStringList names {"AAU", "BEA", "CAA", "GAS", "SUA"};
     for(auto guy : names)
     {
         setEdfFile(def::dataFolder + slash() + guy + "_train_rr_f3.5-40_new.edf");
-        cleanDirs();
-        sliceAll();
-        countSpectraSimple(4096);
+        ICA();
+        QFile::copy(def::dataFolder + slash() + guy + "_train_rr_f3.5-40_new_ica.edf",
+                    def::dataFolder + slash() + guy + "_train_ica.edf");
+        QFile::remove(def::dataFolder + slash() + guy + "_train_rr_f3.5-40_new_ica.edf");
 
         setEdfFile(def::dataFolder + slash() + guy + "_test_rr_f3.5-40_new.edf");
+        ICA();
+        QFile::copy(def::dataFolder + slash() + guy + "_test_rr_f3.5-40_new_ica.edf",
+                    def::dataFolder + slash() + guy + "_test_ica.edf");
+        QFile::remove(def::dataFolder + slash() + guy + "_test_rr_f3.5-40_new_ica.edf");
+    }
+    for(auto guy : names)
+    {
+        const int smooth = 6;
+
+        setEdfFile(def::dataFolder + slash() + guy + "_train_ica.edf");
         cleanDirs();
         sliceAll();
-        countSpectraSimple(4096);
+        setEdfFile(def::dataFolder + slash() + guy + "_test_ica.edf");
+        sliceAll();
+        sliceWindFromReal();
+        countSpectraSimple(1024, smooth);
+
+        makeCfgStatic("tmp");
+        makePaStatic(def::dataFolder
+                     + slash() + "SpectraSmooth"
+                     + slash() + "windows");
+
+        Net * ann = new Net();
+        ann->readCfgByName("tmp");
+        ann->autoClassificationSimple();
+        ann->close();
+        delete ann;
     }
     exit(0);
     return;

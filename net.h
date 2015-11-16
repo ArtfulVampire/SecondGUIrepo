@@ -79,7 +79,7 @@ public:
     double adjustReduceCoeff(QString spectraDir,
                              int lowLimit,
                              int highLimit,
-                             QString paFileName = "1");
+                             QString paFileName = "all");
     int getEpoch();
 
     void Sammon(double ** distArr, int size, int * colors);
@@ -89,7 +89,8 @@ public:
 
     void readCfgByName(const QString & cfgFilePath);
     double mouseClick(QLabel * label, QMouseEvent * ev);
-    void trainTestClassification();
+    void trainTestClassification(const QString & trainTemplate = "train",
+                                 const QString & testTemplate = "test");
     void leaveOneOut();
     double getAverageAccuracy();
     void setReduceCoeff(double coeff);

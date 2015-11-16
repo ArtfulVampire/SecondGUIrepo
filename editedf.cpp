@@ -603,28 +603,15 @@ void MainWindow::constructEDF(const QString & newPath,
 
     QTime myTime;
     myTime.start();
+
     readData(); // read globalEdf based on ui->filePathEdit to renew the initial channels list
 
-
-    QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    if(lst.last().toInt() - 1 != globalEdf.getMarkChan())
-    {
-        cout << "No markers channel in reduceChannelsLineEdit" << endl;
-        if(!def::OssadtchiFlag)
-        {
-            return;
-        }
-    }
-
     vector<int> chanList;
-    for(const QString & str : lst)
-    {
-        chanList.push_back(str.toInt() - 1);
-    }
+    makeChanList(chanList);
 
     ////////////////////// aaaaaaaaaaaaaaaaaaaaaaaaa
-    def::ns = lst.length();
-    const int ns = lst.length();
+    def::ns = chanList.size();
+    const int ns = chanList.size();
 
 #if 0
     if(!ui->sliceWithMarkersCheckBox->isChecked())
@@ -635,6 +622,7 @@ void MainWindow::constructEDF(const QString & newPath,
 #endif
 
     def::dir->cd("Realisations");
+    QStringList lst;
     if(!nameFilters.isEmpty())
     {
         lst = def::dir->entryList(nameFilters, QDir::Files, QDir::Name); //generality

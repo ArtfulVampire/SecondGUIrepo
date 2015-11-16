@@ -846,10 +846,10 @@ void edfFile::adjustArraysByChannels()
     for(int i = 0; i < this->ns; ++i)
     {
         this->labels.push_back(this->channels[i].label);
-        if(labels[i].contains("Markers"))
+        if(this->channels[i].label.contains("Markers"))
         {
             this->markerChannel = i; // set markersChannel
-            break;
+            break; // Markers channel - the last
         }
     }
 
@@ -1437,8 +1437,10 @@ void edfFile::removeChannels(const vector<int> & chanList)
 }
 //void removeChannels(const QString & chanStr);
 
+
 void edfFile::reduceChannels(const QString & chanStr)
 {
+    /// need fix, doesn't work properly
     QTime myTime;
     myTime.start();
 

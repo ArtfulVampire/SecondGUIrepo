@@ -302,14 +302,16 @@ int matrix::rows() const
 
 double matrix::maxVal() const
 {
-    double res = data[0][0];
+    vector<double> res; // = data[0][0];
     std::for_each(this->data.begin(),
                   this->data.end(),
                   [&res](const vector<double> & in)
     {
-        res = fmax(res, *(std::max_element(in.begin(), in.end())));
+//        res = fmax(res, *(std::max_element(in.begin(), in.end())));
+        res.push_back( *(std::max_element(in.begin(), in.end())) );
     });
-    return res;
+//    return res;
+    return *(std::max_element(res.begin(), res.end()));
 }
 double matrix::minVal() const
 {

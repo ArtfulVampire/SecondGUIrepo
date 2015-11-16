@@ -437,10 +437,11 @@ void Spectre::psaSlot()
     if(drawData.cols() == 19 * def::spLength)
     {
         drawTemplate(helpString);
-        drawArrays(helpString,
-                   drawData,
-                   false,
-                   spectraGraphsNormalization::all);
+        def::drawNorm = drawArrays(helpString,
+                                   drawData,
+                                   false,
+                                   spectraGraphsNormalization::all,
+                                   def::drawNorm);
         if(ui->MWcheckBox->isChecked())
         {
             drawMannWitney(helpString,
@@ -457,6 +458,7 @@ void Spectre::psaSlot()
                                  MW);
         }
     }
+//    def::drawNorm = -1.; // skip to default
 
     const int tmp = ui->fftComboBox->currentIndex();
     const int toC = (tmp == 0) ? 1 : 0;

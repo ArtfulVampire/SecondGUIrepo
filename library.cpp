@@ -2410,13 +2410,14 @@ void writeFileInLine(const QString & filePath, const vec & outData)
 }
 
 template <typename Typ>
-void drawArrays(const QString & templPath,
-                const Typ & inMatrix, // [] [] []
-                const bool weightsFlag,
-                const spectraGraphsNormalization normType,
-                const QStringList & colors,
-                const double scaling,
-                const int lineWidth)
+double drawArrays(const QString & templPath,
+                  const Typ & inMatrix,
+                  const bool weightsFlag,
+                  const spectraGraphsNormalization normType,
+                  double norm,
+                  const QStringList & colors,
+                  const double scaling,
+                  const int lineWidth)
 {
     QSvgGenerator svgGen;
     QSvgRenderer svgRen;
@@ -2428,7 +2429,7 @@ void drawArrays(const QString & templPath,
     if(templPath.contains(".svg"))
     {
         cout << "will do nothing, look into library.h" << endl;
-        return;
+        return -1;
         //// TO FIX ///
 
 #if 0
@@ -2464,25 +2465,29 @@ void drawArrays(const QString & templPath,
     });
 
     // norm <- maxValue;
-    // norm = inMatrix.maxVal();
-    double norm = 0.;
-    std::for_each(inMatrix.begin(),
-                  inMatrix.end(),
-                  [&norm](vec inData)
+//     norm = inMatrix.maxAbs();
+//    double norm = 0.;
+    if(norm <= 0.)
     {
-        std::for_each(inData.begin(),
-                      inData.end(),
-                      [&norm](double in)
+        std::for_each(inMatrix.begin(),
+                      inMatrix.end(),
+                      [&norm](vec inData)
         {
-            norm = fmax(norm, fabs(in)); // fabs for negative weights e.g.
+            std::for_each(inData.begin(),
+                          inData.end(),
+                          [&norm](double in)
+            {
+                norm = fmax(norm, fabs(in)); // fabs for negative weights e.g.
+            });
         });
-    });
 
-    if(weightsFlag)
-    {
-        // for weights
-        norm *= 2;
+        if(weightsFlag)
+        {
+            // for weights
+            norm *= 2;
+        }
     }
+    const double res = norm;
 
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
@@ -2495,7 +2500,6 @@ void drawArrays(const QString & templPath,
     norm *= scaling;
 
     const double normBC = norm;
-
 
     for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
     {
@@ -2511,7 +2515,7 @@ void drawArrays(const QString & templPath,
         }
 
         norm = normBC;
-        if(normType == spectraGraphsNormalization::each)
+        if(normType == spectraGraphsNormalization::each && norm <= 0.)
         {
             // norm each channel by max peak
             norm = 0;
@@ -2600,6 +2604,7 @@ void drawArrays(const QString & templPath,
     paint.end();
     pic.save(templPath, 0, 100);
 
+    return res;
 }
 
 void drawArraysInLine(const QString & picPath,
@@ -5129,7 +5134,7 @@ void readPaFile(const QString & paFile,
 
         /// no need
         QString tempQStr = QString(tempStr.c_str());
-        if(!tempQStr.contains(def::ExpName))
+        if(!tempQStr.contains(def::ExpName.left(3))) ///////////// generality
         {
             break;
         }
@@ -5164,6 +5169,13 @@ void readPaFile(const QString & paFile,
         classCount[int(tempVal)] += 1.; // set number of vectors of each class
         dataMatrix.push_back(tempVec);
     }
+//    cout << "readPaFile: dataMatrix.rows() = " << dataMatrix.rows() << endl;
+//    cout << "readPaFile: classCount() = ";
+//    for(int item : classCount)
+//    {
+//        cout << item << "\t";
+//    }
+//    cout << endl;
     paSrc.close();
 }
 
@@ -6818,18 +6830,20 @@ void drawShepard(const mat & distOld,
 
 }
 
-template void drawArrays(const QString & templPath,
+template double drawArrays(const QString & templPath,
 const matrix & inMatrix,
 const bool weightsFlag,
 const spectraGraphsNormalization normType,
+double norm,
 const QStringList & colors,
 double scaling,
 int lineWidth);
 
-template void drawArrays(const QString & templPath,
+template double drawArrays(const QString & templPath,
 const mat & inMatrix,
 const bool weightsFlag,
 const spectraGraphsNormalization normType,
+double norm,
 const QStringList & colors,
 double scaling,
 int lineWidth);
