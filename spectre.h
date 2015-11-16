@@ -69,7 +69,8 @@ private:
     {
       double r;
       double i;
-    }* spect;
+    };
+    complex * spect;
 
     int chanNum;
     QPixmap pic;

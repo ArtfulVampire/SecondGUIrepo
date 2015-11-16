@@ -130,7 +130,77 @@ matrix::matrix(std::initializer_list<double> lst) // diagonal
     }
 }
 
+matrix matrix::operator - (const matrix & other)
+{
+    if(this->rows() != other.rows()
+       || this->cols() != other.cols())
+    {
+        cout << "matrix sum failed" << endl;
+        return *this;
+    }
+    matrix result(this->rows(), this->cols());
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        for(int j = 0; j < this->cols(); ++j)
+        {
+            result[i][j] = (*this)[i][j] - other[i][j];
+        }
+    }
+    return result;
+}
+matrix operator -= (const matrix & other)
+{
+    if(this->rows() != other.rows()
+       || this->cols() != other.cols())
+    {
+        cout << "matrix sum failed" << endl;
+        return *this;
+    }
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        for(int j = 0; j < this->cols(); ++j)
+        {
+            (*this)[i][j] -= other[i][j];
+        }
+    }
+    return *this;
+}
 
+matrix matrix::operator + (const matrix & other)
+{
+    if(this->rows() != other.rows()
+       || this->cols() != other.cols())
+    {
+        cout << "matrix sum failed" << endl;
+        return *this;
+    }
+    matrix result(this->rows(), this->cols());
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        for(int j = 0; j < this->cols(); ++j)
+        {
+            result[i][j] = (*this)[i][j] + other[i][j];
+        }
+    }
+    return result;
+}
+matrix operator += (const matrix & other)
+{
+    if(this->rows() != other.rows()
+       || this->cols() != other.cols())
+    {
+        cout << "matrix sum failed" << endl;
+        return *this;
+    }
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        for(int j = 0; j < this->cols(); ++j)
+        {
+            (*this)[i][j] += other[i][j];
+        }
+    }
+    return *this;
+}
 
 matrix matrix::operator = (const matrix & other)
 {

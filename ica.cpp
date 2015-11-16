@@ -1589,7 +1589,9 @@ void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
 
 
 ////////////////////////// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA need test
-void MainWindow::transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath) // for 19 channels generality
+void MainWindow::transformEdfMaps(const QString & inEdfPath,
+                                  const QString & mapsPath,
+                                  const QString & newEdfPath)
 {
     setEdfFile(inEdfPath);
     readData();
@@ -1598,14 +1600,14 @@ void MainWindow::transformEDF(QString inEdfPath, QString mapsPath, QString newEd
     readICAMatrix(mapsPath, mat1); // data = mat1 * comps
     mat1.invert(); // mat1 * data = comps
 
-    matrix newData(def::nsWOM(), ndr * def::freq);
+    matrix newData(def::nsWOM(), globalEdf.getDataLen());
 
-    matrixProduct(mat1, globalEdf.getData(), newData);
+    newData = mat1 * globalEdf.getData();
+//    matrixProduct(mat1, globalEdf.getData(), newData);
 
-    newData.resizeRows(def::ns); // for markers
-    newData[def::ns - 1] = globalEdf.getData()[def::ns - 1]; //copy markers
+    newData.push_back(globalEdf.getData()[globalEdf.getMarkChan()]); //copy markers
 
-    globalEdf.writeOtherData(newData.data, newEdfPath);
+    globalEdf.writeOtherData(newData, newEdfPath);
 }
 
 void MainWindow::transformReals() //move to library
@@ -1917,9 +1919,11 @@ double objFunc(double *W_, double ***Ce_, double **Cz_, double **Cav_, double ns
 }
 
 
-// holy fck, how long it is
+// holy fck, how long and bad it is
 void MainWindow::spoc()
 {
+
+#if 0
     QString helpString;
 
     readData();
@@ -2486,6 +2490,7 @@ void MainWindow::spoc()
     delete []Znew;
     delete []averages;
     delete []gradientW;
+#endif
 
 }
 

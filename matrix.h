@@ -79,12 +79,20 @@ public:
     {
         return data[i];
     }
+    matrix operator + (const matrix & other);
+    matrix operator += (const matrix & other);
+
+    matrix operator - (const matrix & other);
+    matrix operator -= (const matrix & other);
+
     matrix operator = (const matrix & other);
     matrix operator = (const dataType & other);
     matrix operator /= (const double & other);
+
     matrix operator *= (const double & other);
     matrix operator * (const matrix & other);
     matrix operator *= (const matrix & other);
+
 
 
 

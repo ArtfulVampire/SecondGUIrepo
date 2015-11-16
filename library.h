@@ -390,6 +390,7 @@ void writeSpectraFile(const QString & filePath,
                       const Typ & outData,
                       int inNs = def::nsWOM(),
                       int spL = def::spLength);
+
 void readFileInLine(const QString & filePath,
                     vec & outData);
 void writeFileInLine(const QString & filePath,
@@ -614,7 +615,9 @@ inline double logistic(const double & x, const double & t = 10.)
     return 1. / ( 1. + exp(-x/t) );
 }
 
-inline int fftLimit(const double & inFreq, const double & sampleFreq, const int & fftL)
+inline int fftLimit(const double & inFreq,
+                    const double & sampleFreq = def::freq,
+                    const int & fftL = def::fftLength)
 {
     return ceil(inFreq / sampleFreq * fftL - 0.5);
 }
