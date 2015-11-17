@@ -87,12 +87,12 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(12.0); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(1.5); // 1. for MATI? usually 5.     0.7 for best comp set
     ui->rdcCoeffSpinBox->setSingleStep(0.5);
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
-    ui->highLimitSpinBox->setValue(130);
+    ui->highLimitSpinBox->setValue(180);
 
     ui->lowLimitSpinBox->setMaximum(500);
     ui->lowLimitSpinBox->setMinimum(50);
@@ -289,9 +289,6 @@ double Net::adjustReduceCoeff(QString spectraDir,
 //    {
 //        paFileName = "all"; // N-fold
 //    }
-
-
-    cout << ui->trainTestRadioButton->isChecked() << endl;
 
     while(1)
     {

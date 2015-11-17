@@ -667,14 +667,35 @@ void Cut::cut()
 /// DANGER markers
 void Cut::splitCut()
 {
-    int & leftEdge = leftLimit;
-    int & rightEdge = rightLimit;
+    const int & leftEdge = leftLimit;
+    const int & rightEdge = rightLimit;
+
+//    vector<list<double>> dataList;
+//    dataList.resize(def::ns);
+//    for(int k = 0; k < def::ns; ++k)
+//    {
+//        std::copy(data3[i].begin(),
+//                  data3[i].end(),
+//                  dataList[i]);
+//    }
+
+//    for(auto it = dataList.back().begin() + rightEdge - 1;
+//        it >= dataList.back().begin() + leftEdge;
+//        --it)
+//    {
+//        if(*it == 0)
+//        {
+//            for(int k = 0; k < def::nsWOM(); ++k)
+//            {
+//                dataList[k].erase
+//            }
+//        }
 
     for(int i = leftEdge; i < NumOfSlices - (rightEdge - leftEdge); ++i)
     {
-        for(int k = 0; k < def::ns; ++k)
+        for(int k = 0; k < def::nsWOM(); ++k)
         {
-            if(k == def::ns - 1 && def::withMarkersFlag && (i==0)) // dont touch first marker value
+            if(i == 0) // dont touch first marker value
             {
                 continue;
             }

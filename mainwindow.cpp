@@ -217,14 +217,20 @@ MainWindow::MainWindow() :
     /// seconds !!!!!
     ui->timeShiftSpinBox->setMinimum(0.1);
     ui->timeShiftSpinBox->setMaximum(15);
-    ui->timeShiftSpinBox->setValue(10);
+    ui->timeShiftSpinBox->setValue(4);
     ui->timeShiftSpinBox->setSingleStep(0.1);
 
     ui->windowLengthSpinBox->setMaximum(15);
     ui->windowLengthSpinBox->setMinimum(1);
     ui->windowLengthSpinBox->setSingleStep(0.1);
-    ui->windowLengthSpinBox->setValue(10);
+    ui->windowLengthSpinBox->setValue(4);
     ui->realButton->setChecked(true);
+
+    if(def::OssadtchiFlag)
+    {
+        ui->timeShiftSpinBox->setValue(10);
+        ui->windowLengthSpinBox->setValue(10);
+    }
 
     ui->numOfIcSpinBox->setMaximum(19); //generality
     ui->numOfIcSpinBox->setMinimum(2);
@@ -553,7 +559,7 @@ void MainWindow::setEdfFile(QString const &filePath)
     def::dir->mkdir("Help/maps");
     def::dir->mkdir("Help/psa");
     def::dir->mkdir("Help/ica");
-    def::dir->mkdir("Help/pi");
+    def::dir->mkdir("Help/wm");
     def::dir->mkdir("amod");
     def::dir->mkdir("auxEdfs");
     def::dir->mkdir("PA");
@@ -1745,36 +1751,97 @@ void MainWindow::customFunc()
 
     ui->reduceChannelsComboBox->setCurrentText("20");
     const QStringList names {"AAU", "BEA", "CAA", "GAS", "SUA"};
-    for(auto guy : names)
-    {
-        if(guy == "AAU" || guy == "BEA" ) continue;
-        setEdfFile(def::dataFolder + slash() + guy + "_train_rr_f3.5-40_new.edf");
-        ICA();
-        QFile::copy(def::dataFolder + slash() + guy + "_train_rr_f3.5-40_new_ica.edf",
-                    def::dataFolder + slash() + guy + "_train_ica.edf");
-        QFile::remove(def::dataFolder + slash() + guy + "_train_rr_f3.5-40_new_ica.edf");
-    }
+//    for(auto guy : names)
+//    {
+//        for(QString type : {"_test", "_train"})
+//        {
+//            // files
+//            QFile::rename(def::dataFolder + slash() + guy + type + "_rr_f3.5-40" + "_new.edf",
+//                          def::dataFolder + slash() + guy + type + "_new.edf");
+//            // ica
+//            for(QString suffix : {"_maps", "_eigenMatrix", "_eigenValues", "_explainedVariance"})
+//            {
+//                QFile::rename(def::dataFolder + "/Help/ica"
+//                              + slash() + guy + type + "_rr_f3.5-40_new" + suffix + ".txt",
+//                              def::dataFolder + "/Help/ica"
+//                              + slash() + guy + type + suffix + ".txt");
+//            }
+//        }
+//    }
+//    exit(0);
 
+
+//    transformEdfMaps(def::dataFolder + slash() + guy + "_test_new.edf",
+//                     def::dataFolder
+//                     + slash() + "Help"
+//                     + slash() + "ica"
+//                     + slash() + guy + "_train_maps.txt",
+//                     def::dataFolder
+//                     + slash() + guy + "_test_ica.edf");
+
+    def::ns = 20;
+    def::dir->cd(def::dataFolder);
+    const QString helpPath = def::dataFolder + slash() + "Help";
+
+#if 0
     for(auto guy : names)
     {
-        if(guy == "AAU") continue;
-        setEdfFile(def::dataFolder + slash() + guy + "_test_rr_f3.5-40_new.edf");
-        ICA();
-        QFile::copy(def::dataFolder + slash() + guy + "_test_rr_f3.5-40_new_ica.edf",
-                    def::dataFolder + slash() + guy + "_test_ica.edf");
-        QFile::remove(def::dataFolder + slash() + guy + "_test_rr_f3.5-40_new_ica.edf");
+        def::drawNorm = -1.;
+#if 0
+        ICsSequence(def::dataFolder + slash() + guy + "_train_ica.edf",
+                    def::dataFolder + slash() + guy + "_test_ica.edf",
+                    1);
+//        continue;
+#endif
+#if 0
+        transformEdfMaps(def::dataFolder + slash() + guy + "_test_new.edf",
+                         helpPath
+                         + slash() + "ica"
+                         + slash() + guy + "_train_ord_maps.txt",
+                         def::dataFolder
+                         + slash() + guy + "_test_ica.edf");
+//        continue;
+#endif
+#if 0
+        for(QString type : {"_train", "_test"})
+        {
+
+            const int smooth = 15;
+
+            setEdfFile(def::dataFolder + slash() + guy + type + "_ica_ord.edf");
+            drawMapsICA(helpPath + slash() + "ica" + slash() + guy + type + "_ord_maps.txt");
+            cleanDirs();
+            sliceAll();
+            countSpectraSimple(4096, smooth);
+            drawMapsOnSpectra(helpPath + slash() + guy + type + "_ica_ord_all.jpg",
+                              helpPath + slash() + "wm" + slash() + guy + type + "_ica_ord_all_wm.jpg",
+                              helpPath + slash() + "maps",
+                              def::ExpName);
+
+        }
+#endif
+//        break; // AAU only
     }
+    exit(0);
+#endif
+
+//    return;
+
+
+    def::dir->cd(def::dataFolder);
     for(auto guy : names)
     {
+        if(guy != "BEA") continue;
+//        cleanDirs();
+        def::drawNorm = -1.;
         const int smooth = 6;
-
-        setEdfFile(def::dataFolder + slash() + guy + "_train_ica.edf");
-        cleanDirs();
-        sliceAll();
-        setEdfFile(def::dataFolder + slash() + guy + "_test_ica.edf");
-        sliceAll();
-        sliceWindFromReal();
-        countSpectraSimple(1024, smooth);
+        for(QString type : {"_train", "_test"})
+        {
+            setEdfFile(def::dataFolder + slash() + guy + type + "_ica_ord.edf");
+//            sliceAll();
+        }
+//        sliceWindFromReal();
+//        countSpectraSimple(1024, smooth);
 
         makeCfgStatic("tmp");
         makePaStatic(def::dataFolder

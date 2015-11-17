@@ -2185,7 +2185,7 @@ void drawTemplate(const QString & outPath,
                                Y));
 
         //draw Herzes
-        paint.setFont(QFont("Helvitica", int(10 * scaleY)));
+        paint.setFont(QFont("Helvitica", int(12 * scaleY)));
         for(int k = 0; k < graphWidth; ++k) //for every Hz generality
         {
             if( abs((def::left + k * graphScale) * def::spStep
@@ -2203,14 +2203,14 @@ void drawTemplate(const QString & outPath,
 
                 if(helpString.toInt() < 10)
                 {
-                    paint.drawText(QPointF(X + k - 3 * scaleX,
-                                           Y + 15 * scaleY),
+                    paint.drawText(QPointF(X + k - 4 * scaleX,
+                                           Y + 18 * scaleY),
                                    helpString);
                 }
                 else
                 {
-                    paint.drawText(QPointF(X + k - 5 * scaleX,
-                                           Y + 15 * scaleY),
+                    paint.drawText(QPointF(X + k - 6 * scaleX,
+                                           Y + 18 * scaleY),
                                    helpString);
                 }
             }

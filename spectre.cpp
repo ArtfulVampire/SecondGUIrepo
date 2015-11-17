@@ -712,7 +712,7 @@ void Spectre::countSpectra()
         {
             if(!countOneSpectre(dataIn, dataFFT))
             {
-                cout << "countOneSpectre: too many Eyes " << fileName << endl;
+//                cout << "countOneSpectre: too many eyes " << fileName << endl;
                 outStream.close();
                 helpString = QDir::toNativeSeparators(outDirPath
                                                       + slash()
@@ -940,7 +940,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
     }
 
     //generality
-    if(def::fftLength - Eyes < def::freq * 2.5) // real signal less than 2.5 seconds
+    if(def::fftLength - Eyes < def::freq * 3.2) // real signal less than 3.2 seconds
     {
         return false;
     }

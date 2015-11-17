@@ -928,9 +928,9 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     QTime myTime;
     myTime.start();
 
-    def::ns = 20;
-    QString helpString;
 
+    QString helpString;
+    /// make good mapsPathes
     if(maps1Path.isEmpty())
     {
         helpString = getFileName(EDFica1, false);
@@ -938,7 +938,10 @@ void MainWindow::ICsSequence(const QString & EDFica1,
 
         maps1Path = EDFica1;
         maps1Path.resize(maps1Path.lastIndexOf(slash()));
-        maps1Path += slash() + "Help" + slash() + helpString + "_maps.txt";
+        maps1Path += slash() + "Help"
+                     + slash() + "ica"
+                     + slash() + helpString + "_maps.txt";
+        cout << "maps1Path = " << maps1Path << endl;
     }
     if(maps2Path.isEmpty())
     {
@@ -947,51 +950,50 @@ void MainWindow::ICsSequence(const QString & EDFica1,
 
         maps2Path = EDFica2;
         maps2Path.resize(maps2Path.lastIndexOf(slash()));
-        maps2Path += slash() + "Help" + slash() + helpString + "_maps.txt";
+        maps2Path += slash() + "Help"
+                     + slash() + "ica"
+                     + slash() + helpString + "_maps.txt";
+        cout << "maps2Path = " << maps2Path << endl;
     }
     // mode == 0 -> sequency by most stability
     // mode == 1 -> sequency by first File & no overwrite
+
+    /// make enum
     if(mode != 0 && mode != 1)
     {
         cout << "bad mode" << endl;
         return;
     }
 
-    //count cross-correlation by maps and spectra
-    const int ns_ = 19;
 
-    double corrMap;
-    double corrSpectr[3];
-    int offset5hz;
-    int offset20hz;
+    def::ns = 20;
+    const int ns_ = 19;
+    const double corrMapCoeff = 2.;
+
     QString helpString2;
 
-    matrix dataFFT1 (def::numOfClasses, def::spLength * ns_);
-    matrix dataFFT2 (def::numOfClasses, def::spLength * ns_);
-
+    matrix dataFFT1 (def::numOfClasses, 0);
+    matrix dataFFT2 (def::numOfClasses, 0);
 
     ui->cleanRealisationsCheckBox->setChecked(true);
     ui->cleanRealsSpectraCheckBox->setChecked(true);
-
     ui->reduceChannelsComboBox->setCurrentText("20");
     ui->reduceChannelsCheckBox->setChecked(false);
     ui->sliceWithMarkersCheckBox->setChecked(false);
 
+    /// count and remember averagge spectra
     setEdfFile(EDFica1);
     cleanDirs();
     readData();
     sliceAll();
     countSpectraSimple(4096);
 
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
-        helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName;
-        switch(i)
-        {
-        case 0: {helpString += "_241.psa"; break;}
-        case 1: {helpString += "_247.psa"; break;}
-        case 2: {helpString += "_244.psa"; break;}
-        }
+        helpString = def::dir->absolutePath()
+                     + slash() + "Help"
+                     + slash() + "psa"
+                     + slash() + def::ExpName + "_class_" + QString::number(i + 1) + ".psa";
         readFileInLine(helpString, dataFFT1[i]);
     }
 
@@ -1001,18 +1003,14 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     sliceAll();
     countSpectraSimple(4096);
 
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
-        helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName;
-        switch(i)
-        {
-        case 0: {helpString += "_241.psa"; break;}
-        case 1: {helpString += "_247.psa"; break;}
-        case 2: {helpString += "_244.psa"; break;}
-        }
+        helpString = def::dir->absolutePath()
+                     + slash() + "Help"
+                     + slash() + "psa"
+                     + slash() + def::ExpName + "_class_" + QString::number(i + 1) + ".psa";
         readFileInLine(helpString, dataFFT2[i]);
     }
-
 
     //sequence ICs
     matrix mat1 (ns_, ns_);
@@ -1026,16 +1024,13 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     mat1.transpose();
     mat2.transpose();
 
-    QList<int> list1;
-    QList<int> list2;
-    int fftLength = 4096;
-    offset5hz = fftLimit(5., def::freq, fftLength) - 1;
-    offset20hz = fftLimit(20., def::freq, fftLength) + 1;
+    QVector<int> list1;
+    QVector<int> list2;
 
     struct ICAcoeff
     {
         double cMap;
-        double cSpectr[3];
+        double cSpectr[5];
         double sumCoef;
     };
 
@@ -1050,12 +1045,15 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     ICAcorr ICAcorrArr[ns_];
 
     matrix corrs (ns_, ns_);
+    double corrSpectr[def::numOfClasses];
+    double corrMap;
+
+    int maxShift = 2; ////// num of spectra bins to count spectra correlations
 
     double tempDouble;
-    int maxShift = 2; ////// num of spectra bins to count spectra correlations
     double helpDouble;
 
-    helpString.clear();
+    /// count matrix of correlation coefficients
     for(int k = 0; k < ns_; ++k)
     {
         for(int j = 0; j < ns_; ++j)
@@ -1063,29 +1061,36 @@ void MainWindow::ICsSequence(const QString & EDFica1,
             corrMap = correlation(mat1[k], mat2[j], ns_, 0, true);
             corrMap = pow(corrMap, 2);
 
-            helpDouble = corrMap; ///////////////////
             coeffs[k][j].cMap = corrMap;
-
-            for(int h = 0; h < 3; ++h)
+            coeffs[k][j].cSpectr[def::numOfClasses] = 0.; // summary
+            for(int h = 0; h < def::numOfClasses; ++h)
             {
                 corrSpectr[h] = 0.;
                 for(int shift = -maxShift; shift <= maxShift; ++shift)
                 {
-                    corrSpectr[h] = fmax( fabs(correlation(dataFFT1[h].data() + k*247,
-                                                           dataFFT2[h].data() + j*247,
-                                                           247,
-                                                           shift)), corrSpectr[h]);
+                    corrSpectr[h] = fmax( fabs(correlation(dataFFT1[h].data() + k * def::spLength,
+                                                           dataFFT2[h].data() + j * def::spLength,
+                                                           def::spLength,
+                                                           shift)),
+                                          corrSpectr[h]);
                 }
                 corrSpectr[h] = pow(corrSpectr[h], 2);
                 helpDouble += corrSpectr[h]; //////
 
                 coeffs[k][j].cSpectr[h] = corrSpectr[h];
+                coeffs[k][j].cSpectr[def::numOfClasses] += corrSpectr[h];
             }
-            helpDouble = sqrt(helpDouble);
+            helpDouble = sqrt(coeffs[k][j].cMap * corrMapCoeff)
+                         + sqrt(coeffs[k][j].cSpectr[def::numOfClasses]);
             corrs[k][j] = helpDouble;
             coeffs[k][j].sumCoef = helpDouble;
         }
     }
+//    cout << "wanted:" << endl;
+//    cout << coeffs[1][3].cMap << "\t" << coeffs[1][3].cSpectr[def::numOfClasses] << endl;
+//    cout << "real:" << endl;
+//    cout << coeffs[1][11].cMap << "\t" << coeffs[1][11].cSpectr[def::numOfClasses] << endl;
+
 
     //find best correlations - check corrs matrix
     int temp1;
@@ -1123,7 +1128,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
                 ICAcorrArr[j].num2 = i;
             }
             ICAcorrArr[j].coeff.cMap = 1;
-            for(int h = 0; h < 3; ++h)
+            for(int h = 0; h < def::numOfClasses; ++h)
             {
                 ICAcorrArr[j].coeff.cSpectr[h] = 1;
             }
@@ -1138,14 +1143,14 @@ void MainWindow::ICsSequence(const QString & EDFica1,
         ICAcorrArr[j].num1 = temp1;
         ICAcorrArr[j].num2 = temp2;
         ICAcorrArr[j].coeff.cMap = coeffs[temp1][temp2].cMap;
-        for(int h = 0; h < 3; ++h)
+        for(int h = 0; h < def::numOfClasses; ++h)
         {
             ICAcorrArr[j].coeff.cSpectr[h] = coeffs[temp1][temp2].cSpectr[h];
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
         tempDouble = ICAcorrArr[j].coeff.cMap;
-        for(int h = 0; h < 3; ++h)
+        for(int h = 0; h < def::numOfClasses; ++h)
         {
             tempDouble += ICAcorrArr[j].coeff.cSpectr[h];
         }
@@ -1286,7 +1291,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
         cout << ICAcorrArr[k].num2 + 1 <<  "\t";
         cout << doubleRound(sqrt(ICAcorrArr[k].coeff.cMap), 3) <<  "\t";
 
-        for(int h = 0; h < 3; ++h)
+        for(int h = 0; h < def::numOfClasses; ++h)
         {
             cout << doubleRound(sqrt(ICAcorrArr[k].coeff.cSpectr[h]), 3) <<  "\t";
         }
@@ -1298,7 +1303,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
         outStream << ICAcorrArr[k].num2 + 1 <<  "\t";
         outStream << doubleRound(sqrt(ICAcorrArr[k].coeff.cMap), 3) <<  "\t";
 
-        for(int h = 0; h < 3; ++h)
+        for(int h = 0; h < def::numOfClasses; ++h)
         {
             outStream << doubleRound(sqrt(ICAcorrArr[k].coeff.cSpectr[h]), 3) <<  "\t";
         }
@@ -1574,6 +1579,9 @@ void MainWindow::transformEdfMaps(const QString & inEdfPath,
                                   const QString & mapsPath,
                                   const QString & newEdfPath)
 {
+    QTime myTime;
+    myTime.start();
+
     setEdfFile(inEdfPath);
     readData();
 
@@ -1583,12 +1591,15 @@ void MainWindow::transformEdfMaps(const QString & inEdfPath,
 
     matrix newData(def::nsWOM(), globalEdf.getDataLen());
 
-    newData = mat1 * globalEdf.getData();
-//    matrixProduct(mat1, globalEdf.getData(), newData);
+    matrixProduct(mat1,
+                  globalEdf.getData(),
+                  newData,
+                  def::nsWOM());
 
     newData.push_back(globalEdf.getData()[globalEdf.getMarkChan()]); //copy markers
 
     globalEdf.writeOtherData(newData, newEdfPath);
+    cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
 void MainWindow::transformReals() //move to library

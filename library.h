@@ -455,7 +455,9 @@ void drawMapsICA(const QString & mapsFilePath,
 
 void drawMapsOnSpectra(const QString & inSpectraFilePath,
                        const QString & outSpectraFilePath,
-                       const QString & mapsDirPath,
+                       const QString & mapsDirPath = def::dir->absolutePath()
+                                                     + slash() + "Help"
+                                                     + slash() + "maps",
                        const QString & mapsNames = def::ExpName);
 
 
