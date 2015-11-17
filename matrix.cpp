@@ -197,6 +197,38 @@ matrix matrix::operator * (const matrix & other)
     return result;
 }
 
+
+matrix matrix::operator * (const dataType & other)
+{
+    if(this->cols() != other.size())
+    {
+        cout << "matrixProduct (operator *): input matrices are not productable" << endl;
+        return (*this);
+    }
+
+    const int size = this->cols();
+    const int dim1 = this->rows();
+    const int dim2 = other[0].size();
+
+
+    matrix result(dim1, dim2, 0.);
+
+    double helpDouble = 0.;
+    for(int i = 0; i < dim1; ++i)
+    {
+        for(int j = 0; j < dim2; ++j)
+        {
+            helpDouble = 0.;
+            for(int k = 0; k < size; ++k)
+            {
+                helpDouble += (*this)[i][k] * other[k][j];
+            }
+            result[i][j] = helpDouble;
+        }
+    }
+    return result;
+}
+
 matrix matrix::operator *= (const matrix & other)
 {
     if(this->cols() != other.rows())
@@ -617,8 +649,9 @@ void matrix::eraseRow(int i)
     this->data.erase(data.begin() + i);
 }
 
-void matrixProduct(const matrix & in1,
-                   const matrix & in2,
+template <typename matType1, typename matType2>
+void matrixProduct(const matType1 & in1,
+                   const matType2 & in2,
                    matrix & result,
                    int dim,
                    int rows1,
@@ -626,9 +659,7 @@ void matrixProduct(const matrix & in1,
 {
     int dim1 = 0;
     int dim2 = 0;
-    int size = 0;
-
-
+    int Size = 0;
 
     if(rows1 != -1)
     {
@@ -636,7 +667,7 @@ void matrixProduct(const matrix & in1,
     }
     else
     {
-        dim1 = in1.rows();
+        dim1 = in1.size();
     }
 
     if(cols2 != -1)
@@ -645,14 +676,14 @@ void matrixProduct(const matrix & in1,
     }
     else
     {
-        dim2 = in2.cols();
+        dim2 = in2[0].size();
     }
 
     if(dim != -1)
     {
-        size = dim;
+        Size = dim;
     }
-    else if(in1.cols() != in2.rows())
+    else if(in1[0].size() != in2.size())
     {
         cout << "matrixProduct: input matrices are not productable" << endl;
         result = matrix();
@@ -660,7 +691,7 @@ void matrixProduct(const matrix & in1,
     }
     else
     {
-        size = in1.cols();
+        Size = in1[0].size();
     }
 
     result.resize(max(dim1, result.rows()),
@@ -672,7 +703,7 @@ void matrixProduct(const matrix & in1,
         for(int j = 0; j < dim2; ++j)
         {
             helpDouble = 0.;
-            for(int k = 0; k < size; ++k)
+            for(int k = 0; k < Size; ++k)
             {
                 helpDouble += in1[i][k] * in2[k][j];
             }
@@ -680,8 +711,36 @@ void matrixProduct(const matrix & in1,
         }
     }
 }
+template
+void matrixProduct(const matrix & in1,
+                   const matrix & in2,
+                   matrix & result,
+                   int dim,
+                   int rows1,
+                   int cols2);
+template
+void matrixProduct(const matrix & in1,
+                   const dataType & in2,
+                   matrix & result,
+                   int dim,
+                   int rows1,
+                   int cols2);
+template
+void matrixProduct(const dataType & in1,
+                   const matrix & in2,
+                   matrix & result,
+                   int dim,
+                   int rows1,
+                   int cols2);
+template
+void matrixProduct(const dataType & in1,
+                   const dataType & in2,
+                   matrix & result,
+                   int dim,
+                   int rows1,
+                   int cols2);
 
-void matrixProduct(const vec &in1,
+void matrixProduct(const vec & in1,
                    const matrix &in2,
                    matrix & result,
                    int dim,

@@ -8,19 +8,6 @@
 #include <QString>
 #include <QtGui>
 #include <QtSvg>
-#include "coord.h"
-#include "matrix.h"
-#include <chrono>
-#include <fstream>
-#include <ios>
-#include <iostream>
-#include <cmath>
-#include <stdio.h>
-#include <sstream>
-#include <cstdlib>
-#include <cstdio>
-#include <string>
-#include <cmath>
 #include <QFile>
 #include <QString>
 #include <QDir>
@@ -28,19 +15,32 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QMessageBox>
-#include <cerrno>
-#include <ios>
 #include <QDoubleSpinBox>
-#include <vector>
-#include <typeinfo>
+#include "coord.h"
+#include "matrix.h"
+#include <chrono>
+#include <ios>
+#include <iostream>
+#include <fstream>
+#include <cmath>
+#include <stdio.h>
 #include <ctime>
+#include <sstream>
+#include <cstdlib>
+#include <cstdio>
+#include <string>
+#include <cmath>
+#include <cerrno>
+#include <vector>
+#include <valarray>
 #include <set>
+#include <algorithm>
+#include <typeinfo>
 
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-/////// *** -> **&
 
 using namespace std;
 //using namespace itpp;
@@ -108,9 +108,9 @@ QString getFileMarker(const QString & fileName);
 
 //wavelets
 enum ColorScale {jet = 0,
-           htc = 1,
-           gray = 2,
-           pew = 3};
+                 htc = 1,
+                 gray = 2,
+                 pew = 3};
 void drawColorScale(QString filename, int range, ColorScale type = jet, bool full = false);
 
 const vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
@@ -441,7 +441,7 @@ void drawMapSpline(const matrix & matrixA,
 void drawMapsICA(const QString & mapsFilePath,
                  const QString & outDir = QString(def::dir->absolutePath()
                                                   + slash() + "Help"
-                                                  + slash() + "Maps"),
+                                                  + slash() + "maps"),
                  const QString & outName = def::ExpName,
                  const ColorScale colourTheme = jet,
                  void (*draw1MapFunc)(const matrix &,
@@ -614,7 +614,9 @@ inline double logistic(const double & x, const double & t = 10.)
     return 1. / ( 1. + exp(-x/t) );
 }
 
-inline int fftLimit(const double & inFreq, const double & sampleFreq, const int & fftL)
+inline int fftLimit(const double & inFreq,
+                    const double & sampleFreq = def::freq,
+                    const int & fftL = def::fftLength)
 {
     return ceil(inFreq / sampleFreq * fftL - 0.5);
 }

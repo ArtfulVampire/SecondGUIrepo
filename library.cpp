@@ -359,7 +359,7 @@ void drawMapSpline(const matrix & matrixA,
 
             switch(colorTheme)
             {
-            case 0:
+            case jet:
             {
                 painter.setBrush(QBrush(hueJet(drawRange, drawArg)));
                 painter.setPen(hueJet(drawRange, drawArg));
@@ -367,7 +367,7 @@ void drawMapSpline(const matrix & matrixA,
                 painter1.setPen(hueJet(drawRange, drawRange - drawArg));
                 break;
             }
-            case 1:
+            case htc:
             {
                 painter.setBrush(QBrush(hueOld(drawRange, drawArg)));
                 painter.setPen(hueOld(drawRange, drawArg));
@@ -375,7 +375,7 @@ void drawMapSpline(const matrix & matrixA,
                 painter1.setPen(hueOld(drawRange, drawRange - drawArg));
                 break;
             }
-            case 2:
+            case gray:
             {
                 painter.setBrush(QBrush(grayScale(drawRange, drawArg)));
                 painter.setPen(grayScale(drawRange, drawArg));
@@ -383,7 +383,7 @@ void drawMapSpline(const matrix & matrixA,
                 painter1.setPen(grayScale(drawRange, drawRange - drawArg));
                 break;
             }
-            case 3:
+            case pew:
             {
                 painter.setBrush(QBrush(grayScale(drawRange, drawArg)));
                 painter.setPen(grayScale(drawRange, drawArg));

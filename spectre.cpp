@@ -406,14 +406,15 @@ void Spectre::psaSlot()
     matrix drawData;
     vec tempVec(def::fftLength * def::nsWOM());
     QString helpString;
+    const QString psaPath = def::dir->absolutePath()
+                            + slash() + "Help"
+                            + slash() + "psa";
 
     for(int i = 0; i < def::numOfClasses; ++i)
     {
         tempVec.clear();
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "Help"
-                                              + slash()
-                                              + def::ExpName
+        helpString = QDir::toNativeSeparators(psaPath
+                                              + slash() + def::ExpName
                                               + "_class_" + QString::number(i + 1)
                                               + ".psa");
         readFileInLine(helpString, tempVec);
@@ -424,8 +425,7 @@ void Spectre::psaSlot()
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
-                                          + slash()
-                                          + def::ExpName + "_all.jpg");
+                                          + slash() + def::ExpName + "_all.jpg");
 
     trivector<int> MW;
     if(ui->MWcheckBox->isChecked())
@@ -458,8 +458,6 @@ void Spectre::psaSlot()
                                  MW);
         }
     }
-//    def::drawNorm = -1.; // skip to default
-
     const int tmp = ui->fftComboBox->currentIndex();
     const int toC = (tmp == 0) ? 1 : 0;
 
@@ -483,6 +481,9 @@ void Spectre::compare()
 //    vec meanVec;
 
     const QString filesPath = ui->lineEdit_1->text();
+    const QString savePath = def::dir->absolutePath()
+                             + slash() + "Help"
+                             + slash() + "psa";
 
     makeFileLists(filesPath,
                   leest);
@@ -528,10 +529,8 @@ void Spectre::compare()
 
 
         // psa name
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "Help"
-                                              + slash()
-                                              + def::ExpName
+        helpString = QDir::toNativeSeparators(savePath
+                                              + slash() + def::ExpName
                                               + "_class_" + QString::number(i + 1)
                                               + ".psa");
         /// maybe make as spectraFile?
@@ -540,8 +539,7 @@ void Spectre::compare()
         // draw average for one type
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "Help"
-                                              + slash()
-                                              + def::ExpName
+                                              + slash() + def::ExpName
                                               + "_class_" + QString::number(i + 1)
                                               + ".jpg");
 

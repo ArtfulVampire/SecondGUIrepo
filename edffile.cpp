@@ -1566,7 +1566,7 @@ void edfFile::writeOtherData(matrix & newData,
     this->writeOtherData(newData.data, outPath, chanList);
 }
 
-void edfFile::writeOtherData(mat &newData,
+void edfFile::writeOtherData(mat & newData,
                              const QString & outPath,
                              vector<int> chanList)
 {

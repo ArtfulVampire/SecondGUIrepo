@@ -10,6 +10,7 @@
 #include <QDir>
 #include <ios>
 #include <vector>
+#include <valarray>
 #include <iostream>
 
 using namespace std;
@@ -17,7 +18,7 @@ using namespace std;
 typedef vector<vector<double>> dataType;
 typedef vector<double> vec;
 
-class matrix : public vector<vector<double>>
+class matrix : public vector<valarray<double>>
 {
 public:
     matrix();
@@ -84,6 +85,7 @@ public:
     matrix operator /= (const double & other);
     matrix operator *= (const double & other);
     matrix operator * (const matrix & other);
+    matrix operator * (const dataType & other);
     matrix operator *= (const matrix & other);
 
 
@@ -108,8 +110,9 @@ public:
 
 };
 
-void matrixProduct(const matrix &in1,
-                   const matrix &in2,
+template <typename matType1, typename matType2>
+void matrixProduct(const matType1 & in1,
+                   const matType2 & in2,
                    matrix & result,
                    int dim = -1,
                    int rows1 = -1,

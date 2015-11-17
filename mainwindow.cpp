@@ -550,7 +550,10 @@ void MainWindow::setEdfFile(QString const &filePath)
 
 
     def::dir->mkdir("Help");
-    def::dir->mkdir("Help/Maps");
+    def::dir->mkdir("Help/maps");
+    def::dir->mkdir("Help/psa");
+    def::dir->mkdir("Help/ica");
+    def::dir->mkdir("Help/pi");
     def::dir->mkdir("amod");
     def::dir->mkdir("auxEdfs");
     def::dir->mkdir("PA");
@@ -1744,12 +1747,17 @@ void MainWindow::customFunc()
     const QStringList names {"AAU", "BEA", "CAA", "GAS", "SUA"};
     for(auto guy : names)
     {
+        if(guy == "AAU" || guy == "BEA" ) continue;
         setEdfFile(def::dataFolder + slash() + guy + "_train_rr_f3.5-40_new.edf");
         ICA();
         QFile::copy(def::dataFolder + slash() + guy + "_train_rr_f3.5-40_new_ica.edf",
                     def::dataFolder + slash() + guy + "_train_ica.edf");
         QFile::remove(def::dataFolder + slash() + guy + "_train_rr_f3.5-40_new_ica.edf");
+    }
 
+    for(auto guy : names)
+    {
+        if(guy == "AAU") continue;
         setEdfFile(def::dataFolder + slash() + guy + "_test_rr_f3.5-40_new.edf");
         ICA();
         QFile::copy(def::dataFolder + slash() + guy + "_test_rr_f3.5-40_new_ica.edf",

@@ -8,7 +8,11 @@
 
 //products for ICA
 //void product1(double ** const arr, int length, int ns, double * vec, double ** outVector)
-void product1(const matrix & arr, int length, int ns, const vec & vect, vec & outVector)
+void product1(const matrix & arr,
+              int length,
+              int ns,
+              const vec & vect,
+              vec & outVector)
 {
     //<X*g(Wt*X)>
     //vec = Wt
@@ -145,44 +149,28 @@ void MainWindow::ICA() //fastICA
 
     QTime wholeTime;
     wholeTime.start();
+
     QTime myTime;
     myTime.start();
 
-    QStringList lst;
+    // check markers channel and use chanList in the very end
+    vector<int> chanList;
+    makeChanList(chanList);
+
+
     QString helpString;
 
     helpString = def::dir->absolutePath()
-            + slash() + def::ExpName + ".edf";
+                 + slash() + def::ExpName + ".edf";
     cout << "Ica started: " << helpString << endl;
     readData();
     const int & dataLength = globalEdf.getDataLen();
-    //check reduceChannelsLineEdit for write edf
-
-    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-
-    if(!QString(label[lst.last().toInt() - 1]).contains("Markers"))
-    {
-        cout << "ICA: bad reduceChannelsLineEdit - no markers" << endl;
-        return;
-    }
-
-    //ns = 19
-    int ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
-
-
-    double eigenValuesTreshold = pow(10., - ui->svdDoubleSpinBox->value());
-    double vectorWTreshold = pow(10., - ui->vectwDoubleSpinBox->value());
-
-    const int & fr = def::freq;
-
-
-//    dataICA - matrix of data
-//    random quantity is a amplitude-vector of ns dimension
-//    there are ndr*nr samples of this random quantity
-//        covMatrix - matrix of covariations of different components of the random quantity. Its size is ns*ns
-//        sampleCovMatrix - matrix of sample covariations - UNUSED
-//        similarMatrix - matrix of similarity
-//        differenceMatrix - matrix of difference, according to some metric
+    const int ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
+    const double eigenValuesTreshold = pow(10., - ui->svdDoubleSpinBox->value());
+    const double vectorWTreshold = pow(10., - ui->vectwDoubleSpinBox->value());
+    const QString pathForAuxFiles = def::dir->absolutePath()
+                                    + slash() + "Help"
+                                    + slash() + "ica";
 
     matrix covMatrix(ns, ns, 0.);
     //vectors for the las stage
@@ -200,9 +188,6 @@ void MainWindow::ICA() //fastICA
 
     // save markers
     components[ns] = globalEdf.getData()[globalEdf.getMarkChan()];
-
-    //count covariations
-    //count averages
 
     vec averages(ns);
     for(int i = 0; i < ns; ++i)
@@ -277,16 +262,14 @@ void MainWindow::ICA() //fastICA
 
 
     // write eigenVectors
-    helpString = def::dir->absolutePath()
-                 + slash() + "Help"
+    helpString = pathForAuxFiles
                  + slash() + def::ExpName + "_eigenMatrix.txt";
     writeSpectraFile(helpString,
                      eigenVectors,
                      ns, ns);
 
     // write eigenValues
-    helpString = def::dir->absolutePath()
-                 + slash() + "Help"
+    helpString = pathForAuxFiles
                  + slash() + def::ExpName + "_eigenValues.txt";
     writeFileInLine(helpString, eigenValues);
 
@@ -301,8 +284,9 @@ void MainWindow::ICA() //fastICA
         D_minus_05[i][i] = 1. / sqrt(eigenValues[i]);
     }
     matrix tmpMat = D_minus_05 * matrix::transpose(eigenVectors);
+
     matrixProduct(tmpMat,
-                  matrix(globalEdf.getData()),
+                  globalEdf.getData(),
                   components,
                   ns);
 #else
@@ -323,6 +307,7 @@ void MainWindow::ICA() //fastICA
 #endif
 
 #if 1
+//    dataICA = eigenVectors * components;
     matrixProduct(eigenVectors,
                   components,
                   dataICA,
@@ -818,8 +803,7 @@ void MainWindow::ICA() //fastICA
         cout << "comp = " << i+1 << "\t";
         cout << "explVar = " << explainedVariance[i] << endl;
     }
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "Help"
+    helpString = QDir::toNativeSeparators(pathForAuxFiles
                                           + slash() + def::ExpName + "_explainedVariance.txt");
     writeFileInLine(helpString, explainedVariance);
     //end componets ordering
@@ -848,18 +832,15 @@ void MainWindow::ICA() //fastICA
 #endif
 
     //now should draw amplitude maps OR write to file
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "Help"
+    helpString = QDir::toNativeSeparators(pathForAuxFiles
                                           + slash() + def::ExpName + "_maps.txt");
-    writeICAMatrix(helpString, matrixA); //generality 19-ns
 
+    writeICAMatrix(helpString, matrixA); //generality 19-ns
     drawMapsICA(helpString);
 
-
     helpString = def::dir->absolutePath()
-            + slash() + def::ExpName + "_ica.edf";
-    vector<int> chanList;
-    makeChanList(chanList);
+                 + slash() + def::ExpName + "_ica.edf";
+    ///
 
     globalEdf.writeOtherData(components, helpString, chanList);
 
@@ -1589,7 +1570,9 @@ void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
 
 
 ////////////////////////// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA need test
-void MainWindow::transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath) // for 19 channels generality
+void MainWindow::transformEdfMaps(const QString & inEdfPath,
+                                  const QString & mapsPath,
+                                  const QString & newEdfPath)
 {
     setEdfFile(inEdfPath);
     readData();
@@ -1598,14 +1581,14 @@ void MainWindow::transformEDF(QString inEdfPath, QString mapsPath, QString newEd
     readICAMatrix(mapsPath, mat1); // data = mat1 * comps
     mat1.invert(); // mat1 * data = comps
 
-    matrix newData(def::nsWOM(), ndr * def::freq);
+    matrix newData(def::nsWOM(), globalEdf.getDataLen());
 
-    matrixProduct(mat1, globalEdf.getData(), newData);
+    newData = mat1 * globalEdf.getData();
+//    matrixProduct(mat1, globalEdf.getData(), newData);
 
-    newData.resizeRows(def::ns); // for markers
-    newData[def::ns - 1] = globalEdf.getData()[def::ns - 1]; //copy markers
+    newData.push_back(globalEdf.getData()[globalEdf.getMarkChan()]); //copy markers
 
-    globalEdf.writeOtherData(newData.data, newEdfPath);
+    globalEdf.writeOtherData(newData, newEdfPath);
 }
 
 void MainWindow::transformReals() //move to library
