@@ -95,8 +95,8 @@ Spectre::Spectre() :
 //    QObject::connect(browser2, SIGNAL(fileSelected(QString)), ui->lineEdit_2, SLOT(setText(QString)));
 
 
-        QObject::connect(ui->inputBroswe, SIGNAL(clicked()), this, SLOT(inputDirSlot()));
-        QObject::connect(ui->outputBroswe, SIGNAL(clicked()), this, SLOT(outputDirSlot()));
+    QObject::connect(ui->inputBroswe, SIGNAL(clicked()), this, SLOT(inputDirSlot()));
+    QObject::connect(ui->outputBroswe, SIGNAL(clicked()), this, SLOT(outputDirSlot()));
 
     QObject::connect(ui->countButton, SIGNAL(clicked()), this, SLOT(countSpectra()));
 
@@ -321,83 +321,54 @@ void Spectre::outputDirSlot()
 
 void Spectre::integrate()
 {
-    QStringList lst = ui->integrateLineEdit->text().split(QRegExp("[; ]"), QString::SkipEmptyParts);
-    int numOfInt = lst.length();
-    double tmp;
-    int *begins = new int[lst.length()];
-    int *ends = new int[lst.length()];
+    QStringList lst = ui->integrateLineEdit->text().split(QRegExp("[; ]"),
+                                                          QString::SkipEmptyParts);
+    const int numOfInt = lst.length();
+    vector<int> begins(numOfInt);
+    vector<int> ends(numOfInt);
     QString helpString;
-
-
     QStringList nameFilters;
-    for(int i = 0; i < lst.length(); ++i)
+    for(const QString & item : lst)
     {
-        helpString = lst[i];
+        nameFilters = item.split('-', QString::SkipEmptyParts);
 
-        nameFilters.clear();
-        nameFilters = helpString.split('-', QString::SkipEmptyParts);
-
-        begins[i] = max(floor(nameFilters[0].toDouble() * def::fftLength / def::freq) - def::left + 1,
-                0.);  //generality 250
-        ends[i] = fmin(ceil(nameFilters[1].toDouble() * def::fftLength / def::freq) - def::left + 1,
-                def::spLength);  //generality 250
+        begins.push_back(max(fftLimit(nameFilters[0].toDouble()) - def::left + 1,
+                         0));
+        ends.push_back(min(fftLimit(nameFilters[1].toDouble()) - def::left + 1,
+                         def::spLength));
     }
 
-    FILE * file;
-    double ** dataInt = new double * [def::ns];
-    for(int i = 0; i < def::ns; ++i)
-    {
-        dataInt[i] = new double [def::ns * def::spLength];
-    }
-    def::dir->cd(ui->lineEdit_1->text());
-    lst.clear();
+    matrix dataInt(def::nsWOM(), def::spLength);
+    lst = QDir(ui->lineEdit_1->text()).entryList(QDir::Files);
+    matrix dataOut(def::nsWOM(), numOfInt, 0.);
 
-    lst = def::dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
-    for(int i = 0; i < lst.length(); ++i)
+    for(const QString & fileName : lst)
     {
 
-        def::dir->cd(ui->lineEdit_1->text());
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + lst[i]);
-        file = fopen(helpString, "r");
-        for(int j = 0; j < def::ns; ++j)
-        {
-            for(int k = 0; k < def::spLength; ++k)
-            {
-                fscanf(file, "%lf", &dataInt[j][k]);
-            }
-        }
-        fclose(file);
+        helpString = QDir::toNativeSeparators(ui->lineEdit_1->text()
+                                              + slash() + fileName);
+        readSpectraFile(helpString,
+                        dataInt);
 
-
-        def::dir->cd(ui->lineEdit_2->text());
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + lst[i]);
-        file = fopen(helpString, "w");
-        for(int h = 0; h < def::ns; ++h)
+        for(int h = 0; h < dataOut.rows(); ++h)
         {
-            for(int j = 0; j < numOfInt; ++j)
+            for(int j = 0; j < dataOut.cols(); ++j)
             {
-                tmp = 0.;
-                for(int k = begins[j]; k < ends[j]; ++k)
+                for(int k = begins[j]; k <= ends[j]; ++k) // < or <= not really important
                 {
-                    tmp += dataInt[h][k];
+                    dataOut[h][k] += dataInt[h][k];
                 }
-                fprintf(file, "%lf\n", tmp);     // tmp/double(ends[j]-begins[j]+1)
+                dataOut /= 10.; // just for fun?
             }
-            fprintf(file, "\n");
         }
-        fclose(file);
+        helpString = QDir::toNativeSeparators(ui->lineEdit_2->text()
+                                              + slash() + fileName);
+        writeSpectraFile(helpString,
+                         dataOut);
     }
-    for(int i = 0; i < def::ns; ++i)
-    {
-        delete []dataInt[i];
-    }
-    delete []dataInt;
 
 }
 
-// remake
 void Spectre::psaSlot()
 {
     QTime myTime;
@@ -627,90 +598,32 @@ void Spectre::center()
     def::dir->setPath(helpString);
 
     QStringList lst = def::dir->entryList(QDir::Files|QDir::NoDotAndDotDot);
-    FILE * fil;
-    double helpDouble;
-    double ** averages = new double * [def::ns];
-    for(int j = 0; j < def::ns; ++j)
-    {
-        averages[j] = new double [def::spLength];
-        for(int k = 0; k < def::spLength; ++k)
-        {
-            averages[j][k] = 0.;
-        }
-    }
+    matrix averages(def::nsWOM(), def::spLength, 0.);
+    matrix tempData(def::nsWOM(), def::spLength);
 
-    double ** tempData = new double * [def::ns];
-    for(int j = 0; j < def::ns; ++j)
-    {
-        tempData[j] = new double [def::spLength];
-    }
-
-    for(int i = 0; i < lst.length(); ++i)
+    for(const QString & fileName : lst)
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + lst[i]);
-        fil = fopen(helpString, "r");
-
-        for(int j = 0; j < def::ns; ++j)
-        {
-            for(int k = 0; k < def::spLength; ++k)
-            {
-                fscanf(fil, "%lf\n", &helpDouble);
-                averages[j][k] += helpDouble / lst.length();
-            }
-        }
-        fclose(fil);
+                                              + slash() + fileName);
+        readSpectraFile(helpString,
+                        tempData);
+        averages += tempData;
     }
-    for(int j = 0; j < def::ns; ++j)
-    {
-        for(int k = 0; k < def::spLength; ++k)
-        {
-            cout << averages[j][k] << "\t";
-        }
-        cout << endl;
-    }
+    averages /= lst.length();
 
-    for(int i = 0; i < lst.length(); ++i)
+    /// divide by sigma in each sample. valarray
+
+    for(const QString & fileName : lst)
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + lst[i]);
-        fil = fopen(helpString, "r");
-
-        for(int j = 0; j < def::ns; ++j)
-        {
-            for(int k = 0; k < def::spLength; ++k)
-            {
-                fscanf(fil, "%lf\n", &tempData[j][k]);
-            }
-        }
-        fclose(fil);
-
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + lst[i]);
-        fil = fopen(helpString, "w");
-
-        for(int j = 0; j < def::ns; ++j)
-        {
-            for(int k = 0; k < def::spLength; ++k)
-            {
-                helpDouble = tempData[j][k] - averages[j][k];
-                helpDouble *= 10.; // bycicle fix
-                fprintf(fil, "%lf\n", helpDouble);
-            }
-            fprintf(fil, "\n");
-        }
-        fclose(fil);
+                                              + slash() + fileName);
+        readSpectraFile(helpString,
+                        tempData);
+        tempData -= averages;
+        tempData *= 10.;
+        writeSpectraFile(helpString,
+                         tempData);
     }
-
-
-    for(int j = 0; j < def::ns; ++j)
-    {
-        delete []averages[j];
-        delete []tempData[j];
-    }
-    delete []averages;
-    delete []tempData;
-
 }
 
 Spectre::~Spectre()
@@ -1000,10 +913,11 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
     int Eyes = 0;
     if(data2.cols() < def::fftLength)
     {
-        data2.resizeCols(def::fftLength);
+        data2.resizeCols(def::fftLength); // hope, it will fill with zeros
     }
     else
     {
+        // take the last def::fftLength samples
         const int a = def::fftLength;
         std::for_each(data2.begin(),
                       data2.end(),
@@ -1020,7 +934,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
         h = 0;
         for(int j = 0; j < def::nsWOM(); ++j)
         {
-            if(fabs(data2[j][i]) <= 0.125) ++h;
+            if(fabs(data2[j][i]) <= 0.125) ++h; // generality 1/8.
         }
         if(h == def::nsWOM()) Eyes += 1;
     }
@@ -1030,7 +944,6 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
     {
         return false;
     }
-//    cout << "Eyes = " << Eyes << endl;
 
     for(int i = 0; i < data2.rows(); ++i)
     {
@@ -1040,9 +953,6 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
                     ui->smoothBox->value(),
                     Eyes);
     }
-
-
-
     return true;
 }
 
@@ -1147,81 +1057,91 @@ void Spectre::drawWavelets()
 {
     QString helpString;
     QString filePath;
-    helpString = QDir::toNativeSeparators(backupDirPath
+    QDir localDir(def::dir->absolutePath());
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "visualisation"
                                           + slash() + "wavelets");
-    def::dir->cd(helpString);
+    localDir.cd(helpString);
 
     //make dirs
     for(int i = 0; i < def::ns; ++i)
     {
-        def::dir->mkdir(QString::number(i));
+        localDir.mkdir(QString::number(i));
 
         if(ui->phaseWaveletButton->isChecked())
         {
             //for phase
-            def::dir->cd(QString::number(i));
+            localDir.cd(QString::number(i));
             for(int j = 0; j < def::ns; ++j)
             {
-                def::dir->mkdir(QString::number(j));
+                localDir.mkdir(QString::number(j));
             }
-            def::dir->cdUp();
+            localDir.cdUp();
         }
     }
 
-    def::dir->cd(ui->lineEdit_1->text());
-    QStringList nameFilters; /// generality pewpew fileMarkers
-    nameFilters << "*_241*";
-    nameFilters << "*_244*";
-    nameFilters << "*_247*";
-    nameFilters << "*_254*";
-    QStringList lst = def::dir->entryList(nameFilters, QDir::Files);
+    QStringList nameFilters; // generality pewpew fileMarkers
+    for(const QString & oneMarker : def::fileMarkers)
+    {
+        nameFilters << "*" + oneMarker + "*";
+    }
+    QStringList lst = QDir(ui->lineEdit_1->text()).entryList(nameFilters, QDir::Files);
 
-    vec signal;
+    matrix signal;
     matrix coefs;
     ofstream outStr;
 
+    set<double, std::greater<double>> tempVec;
+
+    // count maxValue
+    int NumOfSlices = 0;
     for(const QString & fileName : lst)
     {
-        filePath = QDir::toNativeSeparators(def::dir->absolutePath()
+        filePath = QDir::toNativeSeparators(ui->lineEdit_1->text()
                                               + slash() + fileName);
+        readPlainData(filePath,
+                      signal,
+                      def::ns,
+                      NumOfSlices);
 
-        for(int chanNum = 0; chanNum < 19; ++chanNum)
+        for(int chanNum = 0; chanNum < def::nsWOM(); ++chanNum)
         {
-            signal = signalFromFile(filePath,
-                                     chanNum,
-                                     20);
-            coefs = countWavelet(signal);
+            coefs = countWavelet(signal[chanNum]);
+            tempVec.emplace(coefs.maxVal());
+            continue;
 
-            helpString = QDir::toNativeSeparators("/media/Files/Data/Mati/ADA/visualisation/wavelets"
+            helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                                  + slash() + "visualisation"
+                                                  + slash() + "wavelets"
                                                   + slash() + QString::number(chanNum) + ".txt");
+
             outStr.open(helpString.toStdString(), ios_base::app);
             outStr << coefs.maxVal() << endl;
             outStr.close();
         }
     }
 
-    vec tempVec;
-    for(int chanNum = 0; chanNum < 19; ++chanNum)
-    {
-        helpString = QDir::toNativeSeparators("/media/Files/Data/Mati/ADA/visualisation/wavelets"
-                                              + slash() + QString::number(chanNum) + ".txt");
-        readFileInLine(helpString, tempVec);
-        std::sort(tempVec.begin(), tempVec.end());
-        cout << tempVec.front() << "\t" << tempVec.back() << endl;
-    }
+//    for(int chanNum = 0; chanNum < def::nsWOM(); ++chanNum)
+//    {
+//        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+//                                              + slash() + "visualisation"
+//                                              + slash() + "wavelets"
+//                                              + slash() + QString::number(chanNum) + ".txt");
+//        readFileInLine(helpString, tempVec);
+//        std::sort(tempVec.begin(), tempVec.end());
+//        cout << tempVec.front() << "\t" << tempVec.back() << endl;
+//    }
     return;
 
 
     for(auto it = lst.begin(); it != lst.end(); ++it)
     {
-        const QString & fileName =(*it);
+        const QString & fileName = (*it);
         filePath = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + fileName);
-        cout << helpString.toStdString() << endl;
         if(ui->amplitudeWaveletButton->isChecked())
         {
-            for(int channel = 0; channel < def::ns; ++channel)
+            for(int channel = 0; channel < def::nsWOM(); ++channel)
             {
                 helpString = fileName;
                 helpString.replace('.', '_');
@@ -1238,9 +1158,9 @@ void Spectre::drawWavelets()
         }
         if(ui->phaseWaveletButton->isChecked())
         {
-            for(int channel1 = 0; channel1 < def::ns; ++channel1)
+            for(int channel1 = 0; channel1 < def::nsWOM(); ++channel1)
             {
-                for(int channel2 = channel1+1; channel2 < def::ns; ++channel2)
+                for(int channel2 = channel1+1; channel2 < def::nsWOM(); ++channel2)
                 {
                     helpString = fileName;
                     helpString.replace('.', '_');
@@ -1265,6 +1185,5 @@ void Spectre::drawWavelets()
         qApp->processEvents();
     }
     ui->progressBar->setValue(0);
-    def::dir->cd(backupDirPath);
 }
 

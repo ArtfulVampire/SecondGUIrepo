@@ -390,6 +390,7 @@ void writeSpectraFile(const QString & filePath,
                       const Typ & outData,
                       int inNs = def::nsWOM(),
                       int spL = def::spLength);
+
 void readFileInLine(const QString & filePath,
                     vec & outData);
 void writeFileInLine(const QString & filePath,

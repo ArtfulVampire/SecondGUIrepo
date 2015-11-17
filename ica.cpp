@@ -1900,9 +1900,11 @@ double objFunc(double *W_, double ***Ce_, double **Cz_, double **Cav_, double ns
 }
 
 
-// holy fck, how long it is
+// holy fck, how long and bad it is
 void MainWindow::spoc()
 {
+
+#if 0
     QString helpString;
 
     readData();
@@ -2469,6 +2471,7 @@ void MainWindow::spoc()
     delete []Znew;
     delete []averages;
     delete []gradientW;
+#endif
 
 }
 

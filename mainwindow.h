@@ -145,7 +145,6 @@ public:
     void sliceOneByOneNew();
     void drawMap(double ** matrixA, int num);
     void setEdfFile(const QString &filePath);
-    void transformEDF(QString inEdfPath, QString mapsPath, QString newEdfPath);
     void transformEdfMaps(const QString & inEdfPath,
                           const QString & mapsPath,
                           const QString & newEdfPath);

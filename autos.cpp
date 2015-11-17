@@ -984,7 +984,7 @@ void MainWindow::countICAs(QString workPath,
 
         helpString2 = tmpDir->absolutePath() + slash() + fileName;
         helpString2.replace("_1.edf", "_2_ica_by1.edf"); //write to def::ExpName_2_ica_by1.edf
-        transformEDF(helpString, mapsPath, helpString2);
+        transformEdfMaps(helpString, mapsPath, helpString2);
 
         if(sumFlag)
         {
@@ -993,14 +993,14 @@ void MainWindow::countICAs(QString workPath,
             mapsPath = tmpDir->absolutePath() + slash() + "Help" + slash() + addName + "_sum_maps.txt";
             helpString2 = tmpDir->absolutePath() + slash() + fileName;
             helpString2.replace("_1.edf", "_1_ica_sum.edf"); //write to def::ExpName_1_ica_sum.edf
-            transformEDF(helpString, mapsPath, helpString2);
+            transformEdfMaps(helpString, mapsPath, helpString2);
 
             helpString = def::dir->absolutePath() + slash() + fileName;
             helpString.replace("_1.edf", "_2.edf"); //open def::ExpName_2.edf
             mapsPath = def::dir->absolutePath() + slash() + "Help" + slash() + addName + "_sum_maps.txt";
             helpString2 = def::dir->absolutePath() + slash() + fileName;
             helpString2.replace("_1.edf", "_2_ica_sum.edf"); //write to def::ExpName_2_ica_sum.edf
-            transformEDF(helpString, mapsPath, helpString2);
+            transformEdfMaps(helpString, mapsPath, helpString2);
         }
 
         //_1_ica.edf -> _1_ica_by1.edf
