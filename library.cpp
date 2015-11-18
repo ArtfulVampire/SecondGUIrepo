@@ -714,8 +714,8 @@ void four1(double * dataF, int nn, int isign)
 }
 #undef SWAP
 
-//should test
-void four1(vec & dataF, int fftLen, int isign)
+template <typename signalType>
+void four1(signalType & dataF, int fftLen, int isign)
 {
     double * pew = new double [2 * fftLen];
     for(int i = 0; i < 2 * fftLen; ++i)
@@ -751,8 +751,9 @@ int len(QString s) //lentgh till double \0-byte for EDF+annotations
 }
 
 
-// what is N? signalLength ?
-double fractalDimension(const vec & arr, const QString &picPath)
+template <typename signalType>
+double fractalDimension(const signalType &arr,
+                        const QString &picPath = QString())
 {
     int timeShift; //timeShift
     long double L = 0.; //average length
@@ -1078,7 +1079,7 @@ ostream & operator << (ostream &os, matrix toOut)
 {
     for(auto it = toOut.data.begin(); it < toOut.data.end(); ++it)
     {
-        for(auto itt = (*it).begin(); itt < (*it).end(); ++itt)
+        for(auto itt = begin(*it); itt < end(*it); ++itt)
         {
             os << doubleRound((*itt), 4) << "\t";
         }
@@ -1087,30 +1088,6 @@ ostream & operator << (ostream &os, matrix toOut)
     return os;
 }
 
-//mat operator=(const mat & other)
-//{
-//    mat temp;
-//    temp.resize(other.size());
-//    for(int i = 0; i < other.size(); ++i)
-//    {
-//        temp[i].resize(other[i].size());
-//        for(int j = 0; j < other[i].size(); ++j)
-//        {
-//            temp[i][j] = other[i][j];
-//        }
-//    }
-//    return temp;
-//}
-
-double vectorLength(double * arr, int len)
-{
-    double a = 0.;
-    for(int i = 0; i < len; ++i)
-    {
-        a += arr[i]*arr[i];
-    }
-    return sqrt(a);
-}
 
 double quantile(double arg)
 {
@@ -1220,39 +1197,7 @@ double correlation(const Typ &arr1, const Typ &arr2, int length, int shift, bool
     res /= double(length - T);
     return res;
 }
-template double correlation(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
-template double correlation(const int * const  &arr1, const int * const &arr2, int length, int shift, bool fromZero);
-template double correlation(const vector<int> &arr1, const vector<int> &arr2, int length, int shift, bool fromZero);
-template double correlation(const vector<double> &arr1, const vector<double> &arr2, int length, int shift, bool fromZero);
 
-double skewness(double *arr, int length)
-{
-    double sum = 0.;
-    double av = mean(arr, length);
-    double disp = variance(arr, length);
-    for(int i = 0; i < length; ++i)
-    {
-        sum += pow((arr[i] - av), 3);
-    }
-    sum /= double(length);
-    sum /= pow(disp, 1.5);
-    return sum;
-}
-
-double kurtosis(double *arr, int length)
-{
-    double sum = 0.;
-    double av = mean(arr, length);
-    double disp = variance(arr, length);
-    for(int i = 0; i < length; ++i)
-    {
-        sum += pow((arr[i] - av), 4);
-    }
-    sum /= double(length);
-    sum /= pow(disp, 2.);
-    sum -= 3.;
-    return sum;
-}
 
 
 double rankit(int i, int length, double k)
@@ -1278,22 +1223,22 @@ int MannWhitney(double * arr1, int len1,
 
 }
 
-
-int MannWhitney(const vec & arr1,
-                const vec & arr2,
+template <typename signalType>
+int MannWhitney(const signalType & arr1,
+                const signalType & arr2,
                 const double p)
 {
     vector <pair <double, int>> arr;
 
     // fill first array
-    std::for_each(arr1.begin(),
-                  arr1.end(),
+    std::for_each(begin(arr1),
+                  end(arr1),
                   [&arr](double in)
     {arr.push_back(std::make_pair(in, 0));});
 
     // fill second array
-    std::for_each(arr2.begin(),
-                  arr2.end(),
+    std::for_each(begin(arr2),
+                  end(arr2),
                   [&arr](double in)
     {arr.push_back(std::make_pair(in, 1));});
 
@@ -1342,9 +1287,6 @@ int MannWhitney(const vec & arr1,
     const double beliefLimit = quantile( (1.00 + (1. - p) ) / 2.);
     const double ourValue = (U - average) / dispersion;
 
-//    const double s1 = mean(arr1, N1);
-//    const double s2 = mean(arr2, N2);
-
     // old
     if(fabs(ourValue) > beliefLimit)
     {
@@ -1364,7 +1306,7 @@ int MannWhitney(const vec & arr1,
         return 0;
     }
 
-    // new try DONT WORK??? to test
+    /// new try DONT WORK??? to test
     if(ourValue > beliefLimit)
     {
         return 1;
@@ -1780,7 +1722,7 @@ void cleanDir(QString dirPath, QString nameFilter, bool ext)
 
 }
 
-void drawRCP(const vec & values, const QString & picPath)
+void drawRCP(const lineType & values, const QString & picPath)
 {
     QPixmap pic(1000, 400);
     QPainter pnt;
@@ -1797,22 +1739,21 @@ void drawRCP(const vec & values, const QString & picPath)
     xMin = -numOfDisp;
     xMax = numOfDisp;
 
-    double * line = new double [pic.width()];
+    lineType line(pic.width());
 
     for(int i = 0; i < pic.width(); ++i)
     {
         line[i] = gaussian( (i - pic.width()/2) / (pic.width()/2.) * numOfDisp );
     }
 
-    double valueMax;
-    valueMax = maxValue(line, pic.width());
+    line /= line.max();
 
     for(int i = 0; i < pic.width() - 1; ++i)
     {
         pnt.drawLine(i,
-                     pic.height() * 0.9 * (1. - line[i] / valueMax),
+                     pic.height() * 0.9 * (1. - line[i]),
                      i+1,
-                     pic.height() * 0.9 * (1. - line[i+1] / valueMax));
+                     pic.height() * 0.9 * (1. - line[i+1]));
     }
     pnt.drawLine(0,
                  pic.height() * 0.9,
@@ -1834,9 +1775,9 @@ void drawRCP(const vec & values, const QString & picPath)
             pnt.setPen("red");
         }
         pnt.drawLine(coordinate,
-                     pic.height() * 0.9 * ( 1. - line[coordinate] / valueMax),
+                     pic.height() * 0.9 * ( 1. - line[coordinate]),
                      coordinate,
-                     pic.height() * 0.9 * ( 1. - line[coordinate] / valueMax) - 50);
+                     pic.height() * 0.9 * ( 1. - line[coordinate]) - 50);
     }
     pic.save(picPath, 0, 100);
 }
@@ -1923,10 +1864,7 @@ void matrixProduct(const Typ1 & inMat1, const Typ2 & inMat2, Typ3 &outMat, int d
         }
     }
 }
-template void matrixProduct(const double ** const &inMat1, const double ** const &inMat2, double **& outMat, int dimH, int dimL);
-template void matrixProduct(const double ** const &inMat1, const double ** const &inMat2, mat & outMat, int dimH, int dimL);
-template void matrixProduct(const mat & inMat1, const mat & inMat2, double **& outMat, int dimH, int dimL);
-template void matrixProduct(const mat & inMat1, const mat & inMat2, mat & outMat, int dimH, int dimL);
+
 
 template <typename Typ1, typename Typ2, typename Typ3>
 void matrixProduct(const Typ1 & inMat1, const Typ2 & inMat2, Typ3 &outMat, int numRows1, int numCols2, int numCols1Rows2)
@@ -1946,11 +1884,6 @@ void matrixProduct(const Typ1 & inMat1, const Typ2 & inMat2, Typ3 &outMat, int n
         }
     }
 }
-template void matrixProduct(const double ** const & inMat1, const double ** const & inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);
-template void matrixProduct(const double ** const & inMat1, const double ** const & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
-template void matrixProduct(const double ** const & inMat1, const mat & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
-template void matrixProduct(const mat & inMat1, const mat & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
-template void matrixProduct(const mat & inMat1, const mat & inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);
 
 template <typename T>
 double distance(const vector<T> &vec1, const vector<T> &vec2, const int &dim)
@@ -1995,6 +1928,18 @@ void matrixProduct(double * &vect1, double * &vect2, int dim, double & out)
     {
         out += vect1[j] * vect2[j];
     }
+
+}
+
+double distance(const lineType & in1,
+                const lineType & in2)
+{
+    if(in1.size() != in2.size())
+    {
+        cout << "distance: lineTypes of different size" << endl;
+        return 0.; /// exception
+    }
+    return sqrt(pow((in1 - in2), 2.).sum());
 
 }
 
@@ -2100,19 +2045,19 @@ QString rightNumber(const unsigned int input, int N) // prepend zeros
 }
 
 
-void drawArray(double * array, int length, QString outPath)
+void drawOneArray(const lineType & array, QString outPath)
 {
     if(outPath.isEmpty()) return;
 
     const double picH = 600;
     const int penWidth = 2;
 
-    QPixmap pic(length, picH);
+    QPixmap pic(array.size(), picH);
     pic.fill();
     QPainter pnt;
     pnt.begin(&pic);
 
-    double maxVal = maxValue(array, length);
+    const double maxVal = array.max();
     pnt.setPen(QPen(QBrush("black"), penWidth));
     for(int i = 0; i < pic.width() - 1; ++i)
     {
@@ -2124,8 +2069,6 @@ void drawArray(double * array, int length, QString outPath)
     pnt.end();
     pic.save(outPath, 0, 100);
 }
-
-//void drawArray(double ***sp, int count, int *spL, QStringList colours, int type, double scaling, int left, int right, double spStep, QString outName, QString rangePicPath, QDir * dirBC)
 
 void drawTemplate(const QString & outPath,
                   bool channelsFlag,
@@ -2366,7 +2309,9 @@ void drawArray(const QString & templPath,
 
 
 // make valarray
-void readFileInLine(const QString & filePath, vec & outData)
+template <typename signalType>
+void readFileInLine(const QString & filePath,
+                    signalType & result)
 {
     ifstream file(filePath.toStdString());
     if(!file.good())
@@ -2374,7 +2319,7 @@ void readFileInLine(const QString & filePath, vec & outData)
         cout << "readFileInLine: bad file " << filePath << endl;
         return;
     }
-    outData.clear();
+    vec outData;
     double tmp;
     int num = 0;
     while(!file.eof())
@@ -2392,9 +2337,14 @@ void readFileInLine(const QString & filePath, vec & outData)
     }
     outData.pop_back(); ///// prevent doubling last item (eof) bicycle
     file.close();
+    std::copy(outData.begin(),
+              outData.end(),
+              begin(result));
 }
 
-void writeFileInLine(const QString & filePath, const vec & outData)
+template <typename signalType>
+void writeFileInLine(const QString & filePath,
+                     const signalType & outData)
 {
     ofstream file(filePath.toStdString());
     if(!file.good())
@@ -2409,9 +2359,8 @@ void writeFileInLine(const QString & filePath, const vec & outData)
     file.close();
 }
 
-template <typename Typ>
 double drawArrays(const QString & templPath,
-                  const Typ & inMatrix,
+                  const matrix & inMatrix,
                   const bool weightsFlag,
                   const spectraGraphsNormalization normType,
                   double norm,
@@ -2455,7 +2404,7 @@ double drawArrays(const QString & templPath,
 
     std::for_each(inMatrix.begin(),
                   inMatrix.end(),
-                  [shouldSize](vec inData)
+                  [shouldSize](lineType inData)
     {
         if(inData.size() != shouldSize)
         {
@@ -2464,21 +2413,13 @@ double drawArrays(const QString & templPath,
         }
     });
 
-    // norm <- maxValue;
-//     norm = inMatrix.maxAbs();
-//    double norm = 0.;
     if(norm <= 0.)
     {
         std::for_each(inMatrix.begin(),
                       inMatrix.end(),
-                      [&norm](vec inData)
+                      [&norm](lineType inData)
         {
-            std::for_each(inData.begin(),
-                          inData.end(),
-                          [&norm](double in)
-            {
-                norm = fmax(norm, fabs(in)); // fabs for negative weights e.g.
-            });
+            norm = max(norm, abs(inData).max()); // fabs for negative weights e.g.
         });
 
         if(weightsFlag)
@@ -2546,7 +2487,7 @@ double drawArrays(const QString & templPath,
 
         for(int numVec = 0; numVec < inMatrix.size(); ++numVec)
         {
-            vec inData = inMatrix[numVec];
+            lineType inData = inMatrix[numVec];
             //draw spectra
             for(int k = 0; k < graphWidth - 1; ++k)
             {
@@ -3042,7 +2983,7 @@ void kernelEst(QString filePath, QString picPath)
     kernelEst(arr, picPath);
 }
 
-void svd(const mat & inData,
+void svd(const matrix & inData,
          matrix & eigenVectors,
          vec & eigenValues,
          const double & threshold)
@@ -3056,23 +2997,13 @@ void svd(const mat & inData,
     matrix tempData = matrix(inData);
     matrix covMatrix(ns, ns, 0.);
 
-//    double ** tempData = new double * [ns];
-//    double ** covMatrix = new double * [ns];
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        covMatrix[i] = new double [ns];
-//        tempData[i] = new double [dataLen];
-//        memcpy(tempData[i], inData[i].data(), sizeof(double) * dataLen);
-//    }
-
     vec averages;
-//    double * averages = new double [ns];
     for(int i = 0; i < ns; ++i)
     {
-        averages.push_back(mean(inData[i].data(), dataLen));
-//        averages[i] = mean(inData[i].data(), dataLen);
+        averages.push_back( inData[i].sum() / inData.size() );
     }
     //count zeros
+
     int h = 0;
     int Eyes = 0;
     for(int i = 0; i < dataLen; ++i)
@@ -3291,7 +3222,7 @@ void wavelet(QString filePath,
     matrix fileData;
     readPlainData(filePath, fileData, ns, NumOfSlices);
 
-    vec input = fileData[channelNumber];
+    lineType input = fileData[channelNumber];
 
     QPixmap pic(NumOfSlices, 1000);
     pic.fill();
@@ -3460,7 +3391,7 @@ matrix waveletDiscrete(const vec & inData)
     }
 }
 
-vec signalFromFile(QString filePath,
+lineType signalFromFile(QString filePath,
                    int channelNumber,
                    int ns)
 {
@@ -3470,10 +3401,11 @@ vec signalFromFile(QString filePath,
                   tempMat,
                   ns,
                   tempInt);
-    vec res = tempMat[channelNumber];
-    return res;
+    return tempMat[channelNumber];
 }
-matrix countWavelet(vec inSignal)
+
+template <typename signalType>
+matrix countWavelet(const signalType & inSignal)
 {
     // continious
     int NumOfSlices = inSignal.size();
@@ -3612,20 +3544,20 @@ void drawWavelet(QString picPath,
 }
 
 
-
-vec hilbert(const vec & arr,
-            double lowFreq,
-            double highFreq,
-            QString picPath)
+template <typename signalType, typename retType>
+retType hilbert(const signalType & arr,
+                double lowFreq,
+                double highFreq,
+                QString picPath)
 {
 
-    int inLength = arr.size();
-    int fftLen = fftL(inLength); // int(pow(2., ceil(log(inLength)/log(2.))));
-    double spStep = def::freq / fftLen;
-    double normCoef = sqrt(fftLen / double(inLength));
+    const int inLength = arr.size();
+    const int fftLen = fftL(inLength); // int(pow(2., ceil(log(inLength)/log(2.))));
+    const double spStep = def::freq / fftLen;
+    const double normCoef = sqrt(fftLen / double(inLength));
 
-    vec out; // result
-    out.resize(2*fftLen);
+    retType out; // result
+    out.resize(2 * fftLen);
 
     vec tempArr;
     tempArr.resize(fftLen, 0.);
@@ -3752,19 +3684,20 @@ vec hilbert(const vec & arr,
 }
 
 
-vec hilbertPieces(const vec & arr,
-                   int inLength,
-                   double sampleFreq,
-                   double lowFreq,
-                   double highFreq,
-                   QString picPath)
+template <typename signalType, typename retType>
+retType hilbertPieces(const signalType & arr,
+                      int inLength,
+                      double sampleFreq,
+                      double lowFreq,
+                      double highFreq,
+                      QString picPath)
 {
     /// do hilbert transform for the last fftLen bins ???
     if( inLength <= 0)
     {
         inLength = arr.size();
     }
-    vec outHilbert(inLength);
+    retType outHilbert(inLength);
     int fftLen = fftL(inLength) / 2;
 
     double spStep = sampleFreq/fftLen;
@@ -3955,12 +3888,13 @@ vec hilbertPieces(const vec & arr,
     return outHilbert;
 }
 
-vec bayesCount(const vec & dataIn,
+template <typename signalType, typename retType>
+retType bayesCount(const signalType & dataIn,
                int numOfIntervals)
 {
     double maxAmpl = 80.; //generality
     int helpInt;
-    vec out(numOfIntervals, 0.);
+    retType out(0., numOfIntervals);
 
     for(int j = 0; j < dataIn.size(); ++j)
     {
@@ -3970,17 +3904,14 @@ vec bayesCount(const vec & dataIn,
         {
             continue; //if helpInt not in range
         }
-
         out[helpInt] += 1;
     }
-    for(int k = 0; k < numOfIntervals; ++k)
-    {
-        out[k] /= double(dataIn.size()) * 10.; // 10 is norm coef for perceptron
-    }
+    out /= double(dataIn.size()) * 10.; // 10 is norm coef for perceptron
+
     return out;
 }
-
-void histogram(const vec & arr, int numSteps, QString picPath)
+template <typename signalType>
+void histogram(const signalType & arr, int numSteps, QString picPath)
 {
     vec values(numSteps, 0.);
     int length = arr.size();
@@ -4025,7 +3956,8 @@ void histogram(const vec & arr, int numSteps, QString picPath)
 }
 
 
-void kernelEst(const vec &arr, QString picPath)
+template <typename signalType>
+void kernelEst(const signalType & arr, QString picPath)
 {
     double sigma = 0.;
     int length = arr.size();
@@ -4460,7 +4392,7 @@ void waveletPhase(QString out, FILE * file, int ns=19, int channelNumber1=0, int
                    */
 
 void writePlainData(const QString outPath,
-                    const matrix &data,
+                    const matrix & data,
                     const int & ns,
                     int numOfSlices,
                     const int & start)
@@ -4556,7 +4488,8 @@ void spectre(const double * data, const int & length, double * & spectr)
     }
 }
 
-vec spectre(const vec & data)
+template <typename signalType, typename retType>
+retType spectre(const signalType & data)
 {
     int length = data.size();
     int fftLen = fftL(length); // nearest exceeding power of 2
@@ -4569,7 +4502,7 @@ vec spectre(const vec & data)
     }
     four1(tempSpectre.data() - 1, fftLen, 1);
 
-    vec spectr(fftLen / 2);
+    retType spectr(fftLen / 2);
     norm = 2. / (def::freq * fftLen);
     for(int i = 0; i < fftLen / 2; ++i )      //get the absolute value of FFT
     {
@@ -4579,9 +4512,10 @@ vec spectre(const vec & data)
     return spectr;
 }
 
-vec smoothSpectre(const vec & inSpectre, const int numOfSmooth)
+template <typename signalType, typename retType>
+retType smoothSpectre(const signalType & inSpectre, const int numOfSmooth)
 {
-    vec result = inSpectre;
+    retType result = inSpectre;
     double help1, help2;
     for(int num = 0; num < numOfSmooth; ++num)
     {
@@ -4596,9 +4530,8 @@ vec smoothSpectre(const vec & inSpectre, const int numOfSmooth)
     return result;
 }
 
-template <typename Typ>
 void readSpectraFile(const QString & filePath,
-                     Typ & outData,
+                     matrix & outData,
                      int inNs,
                      int spL)
 {
@@ -4608,10 +4541,7 @@ void readSpectraFile(const QString & filePath,
         cout << "readSpectreFile: bad input file " << filePath << endl;
         return;
     }
-    outData.resize(inNs);
-    std::for_each(outData.begin(),
-                  outData.end(),
-                  [spL](vec & in){in.resize(spL);});
+    outData.resize(inNs, spL);
 
     for(int i = 0; i < inNs; ++i)
     {
@@ -4624,15 +4554,14 @@ void readSpectraFile(const QString & filePath,
 }
 
 
-template <typename Typ>
 void writeSpectraFile(const QString & filePath,
-                      const Typ & outData,
+                      const matrix & outData,
                       int inNs,
                       int spL)
 
 {
-    if(inNs > outData.size() ||
-       spL > outData[0].size())
+    if(inNs > outData.rows() ||
+       spL > outData.cols())
     {
         cout << "bad inputs while writing matrix" << endl;
         return;
@@ -4655,25 +4584,20 @@ void writeSpectraFile(const QString & filePath,
     }
     file.close();
 }
-template void writeSpectraFile(const QString & filePath, const mat & outData, int inNs, int spL);
-template void writeSpectraFile(const QString & filePath, const matrix & outData, int inNs, int spL);
 
 
 
-template <typename Typ>
-void zeroData(Typ & inData, const int & leftLimit, const int & rightLimit)
+void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit)
 {
-    for(int i = leftLimit; i < rightLimit; ++i)
+    for(int k = 0; k < def::nsWOM(); ++k)
     {
-        for(int k = 0; k < def::nsWOM(); ++k)
-        {
-            inData[k][i] = 0.;
-        }
+        std::for_each(begin(inData[k]) + leftLimit,
+                      end(inData[k]) + rightLimit,
+                      [](double & in){in = 0.;});
     }
 }
 
-template <typename Typ>
-void splitZeros(Typ & dataIn,
+void splitZeros(matrix & dataIn,
                 const int & inLength,
                 int * outLength,
                 const QString & logFilePath,
@@ -4757,8 +4681,13 @@ void splitZeros(Typ & dataIn,
                 //split. vector.erase();
                 for(int j = 0; j < def::ns; ++j) //shift with markers and flags
                 {
-                    dataIn[j].erase(dataIn[j].begin() + start,
-                                    dataIn[j].begin() + finish);
+                    // vector
+//                    dataIn[j].erase(dataIn[j].begin() + start,
+//                                    dataIn[j].begin() + finish);
+                    // valarray
+                    std::remove_if(begin(dataIn[j]) + start,
+                                   begin(dataIn[j]) + finish,
+                                   [](double){return true;});
                 }
                 flags.erase(flags.begin() + start,
                             flags.begin() + finish);
@@ -4780,8 +4709,7 @@ void splitZeros(Typ & dataIn,
 }
 
 
-template <typename Typ>
-void splitZerosEdges(Typ & dataIn, const int & ns, const int & length, int * outLength)
+void splitZerosEdges(matrix & dataIn, const int & ns, const int & length, int * outLength)
 {
     bool flag[length];
     (*outLength) = length;
@@ -4994,8 +4922,9 @@ double countAngle(double initX, double initY)
     }
 }
 
-void calcSpectre(const vector<double> & inSignal,
-                 vector<double> & outSpectre,
+template <typename signalType>
+void calcSpectre(const signalType & inSignal,
+                 signalType & outSpectre,
                  const int & fftLength,
                  const int & NumOfSmooth,
                  const int & Eyes,
@@ -5008,7 +4937,7 @@ void calcSpectre(const vector<double> & inSignal,
     }
 
     const double norm1 = sqrt(fftLength / double(fftLength - Eyes));
-    vector<double> spectre (fftLength * 2, 0.);
+    vector<double> spectre (fftLength * 2, 0.); // can be valarray, but not important
 
     double help1, help2;
 
@@ -5099,6 +5028,7 @@ void calcRawFFT(const Typ & inData,
 
 void readPaFile(const QString & paFile,
                 matrix & dataMatrix,
+                vector<int> types,
                 vector<QString> & FileName,
                 vector<double> & classCount)
 {
@@ -5119,11 +5049,13 @@ void readPaFile(const QString & paFile,
         return;
     }
 
-    double tempClass[def::numOfClasses];  //generality
+    vector<double> tempClass(def::numOfClasses);
     double tempVal;
+
     classCount = vector<double>(def::numOfClasses, 0);
     FileName.clear();
-    dataMatrix = matrix();
+    types.clear();
+    dataMatrix = matrix(); /// not dataMatrix.clear
 
     std::string tempStr;
     vector<double> tempVec(NetLength + 2); // bias and class
@@ -5134,7 +5066,7 @@ void readPaFile(const QString & paFile,
 
         /// no need
         QString tempQStr = QString(tempStr.c_str());
-        if(!tempQStr.contains(def::ExpName.left(3))) ///////////// generality
+        if(!tempQStr.contains(def::ExpName.left(3))) /// generality
         {
             break;
         }
@@ -5157,8 +5089,8 @@ void readPaFile(const QString & paFile,
             paSrc.get();
         }
 
-        tempVec[NetLength] = 1.; //bias
-        tempVec[NetLength + 1] = tempVal;
+//        tempVec[NetLength] = 1.; //bias
+//        tempVec[NetLength + 1] = tempVal;
 
         if(int(tempVal) != tempVal)
         {
@@ -5166,38 +5098,26 @@ void readPaFile(const QString & paFile,
             return;
         }
 
-        classCount[int(tempVal)] += 1.; // set number of vectors of each class
         dataMatrix.push_back(tempVec);
+        types.push_back(tempVal);
+        classCount[int(tempVal)] += 1.; // set number of vectors of each class
     }
-//    cout << "readPaFile: dataMatrix.rows() = " << dataMatrix.rows() << endl;
-//    cout << "readPaFile: classCount() = ";
-//    for(int item : classCount)
-//    {
-//        cout << item << "\t";
-//    }
-//    cout << endl;
     paSrc.close();
 }
 
-template <typename Typ>
-bool readICAMatrix(const QString & path, Typ &matrixA)
+bool readICAMatrix(const QString & path, matrix & matrixA)
 {
     readSpectraFile(path, matrixA, def::nsWOM(), def::nsWOM());
     return 1;
 }
-template bool readICAMatrix(const QString & path, matrix & matrixA);
-template bool readICAMatrix(const QString & path, mat & matrixA);
 
-template <typename Typ>
-void writeICAMatrix(const QString & path, Typ &matrixA)
+void writeICAMatrix(const QString & path, const matrix & matrixA)
 {
     writeSpectraFile(path,
                      matrixA,
-                     matrixA.size(),
-                     matrixA[0].size());
+                     matrixA.rows(),
+                     matrixA.cols());
 }
-template void writeICAMatrix(const QString & path, matrix & matrixA);
-template void writeICAMatrix(const QString & path, mat & matrixA);
 
 void matrixCofactor(double ** &inMatrix, const int &size, const int &numRows, const int &numCols, double **& outMatrix)
 {
@@ -5927,8 +5847,7 @@ int matiCountDecimal(QString byteMarker)
 
 
 
-template <typename Typ>
-QPixmap drawEeg(const Typ & dataD,
+QPixmap drawEeg(const matrix & dataD,
                 int ns,
                 int NumOfSlices,
                 int freq,
@@ -5991,30 +5910,7 @@ QPixmap drawEeg(const Typ & dataD,
     return pic;
 }
 
-
-template
-QPixmap drawEeg(const mat & dataD,
-int ns,
-int NumOfSlices,
-int freq,
-const QString & picPath,
-double norm,
-int blueChan,
-int redChan);
-
-template
 QPixmap drawEeg(const matrix & dataD,
-int ns,
-int NumOfSlices,
-int freq,
-const QString & picPath,
-double norm,
-int blueChan,
-int redChan);
-
-
-template <typename Typ>
-QPixmap drawEeg(const Typ & dataD,
                  int ns,
                  int startSlice,
                  int endSlice,
@@ -6075,37 +5971,10 @@ QPixmap drawEeg(const Typ & dataD,
     paint.end();
     return pic;
 }
-//template QPixmap drawEeg(double ** dataD,
-//int ns,
-//int startSlice,
-//int endSlice,
-//int freq,
-//const QString & picPath = QString(),
-//double norm = 1.,
-//int blueChan = -1,
-//int redChan = -1);
-template
-QPixmap drawEeg(const mat & dataD,
-int ns,
-int startSlice,
-int endSlice,
-int freq,
-const QString & picPath,
-double norm,
-int blueChan,
-int redChan);
-
-
-
-
-
-
-
 
 
 
 #if 0
-
 
 
 void refreshDist(mat & dist,
@@ -6830,77 +6699,57 @@ void drawShepard(const mat & distOld,
 
 }
 
-template double drawArrays(const QString & templPath,
-const matrix & inMatrix,
-const bool weightsFlag,
-const spectraGraphsNormalization normType,
-double norm,
-const QStringList & colors,
-double scaling,
-int lineWidth);
+template void writeFileInLine(const QString & filePath, const lineType & outData);
+template void writeFileInLine(const QString & filePath, const vectType & outData);
 
-template double drawArrays(const QString & templPath,
-const mat & inMatrix,
-const bool weightsFlag,
-const spectraGraphsNormalization normType,
-double norm,
-const QStringList & colors,
-double scaling,
-int lineWidth);
+template void readFileInLine(const QString & filePath, lineType & outData);
+template void readFileInLine(const QString & filePath, vectType & outData);
 
-//template void readPlainData(QString inPath,
-//mat & data,
-//int ns,
-//int & numOfSlices,
-//int start);
-//template void readPlainData(QString inPath,
-//matrix & data,
-//int ns,
-//int & numOfSlices,
-//int start);
+template lineType hilbert(const lineType & arr, double lowFreq, double highFreq, QString picPath);
+template lineType hilbert(const vectType & arr, double lowFreq, double highFreq, QString picPath);
+
+template lineType hilbertPieces(const lineType & arr, int inLength, double sampleFreq, double lowFreq, double highFreq, QString picPath);
+template lineType hilbertPieces(const vectType & arr, int inLength, double sampleFreq, double lowFreq, double highFreq, QString picPath);
 
 
-//template
-//void writePlainData(QString outPath,
-//const mat & data,
-//int ns,
-//int numOfSlices,
-//int start);
+template lineType bayesCount(const vectType & dataIn, int numOfIntervals);
+template lineType bayesCount(const lineType & dataIn, int numOfIntervals);
 
-//template
-//void writePlainData(QString outPath,
-//const matrix & data,
-//int ns,
-//int numOfSlices,
-//int start);
-
-//template void writePlainData(QString outPath,
-//double ** const &data,
-//int ns,
-//int numOfSlices,
-//int start);
-
-template void readSpectraFile(const QString & filePath, matrix & outData, int inNs, int spL);
-template void readSpectraFile(const QString & filePath, mat & outData, int inNs, int spL);
-
-template void splitZerosEdges(mat & dataIn, const int & ns, const int & length, int * outLength);
-template void splitZerosEdges(matrix & dataIn, const int & ns, const int & length, int * outLength);
-
-template void zeroData(mat & inData, const int & leftLimit, const int & rightLimit);
-template void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit);
-
+template double fractalDimension(const lineType &arr, const QString &picPath = QString());
+template double fractalDimension(const vectType &arr, const QString &picPath = QString());
 
 template void calcRawFFT(const mat & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 template void calcRawFFT(const matrix & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
-template void splitZeros(mat & inData,
-                const int & length,
-                int * outLength,
-                const QString & logFile,
-                const QString & dataName);
-template void splitZeros(matrix & inData,
-                const int & length,
-                int * outLength,
-                const QString & logFile,
-                const QString & dataName);
+template void calcSpectre(const lineType & inSignal, lineType & outSpectre, const int & fftLength, const int & NumOfSmooth, const int & Eyes, const double & powArg);
+template void calcSpectre(const vectType & inSignal, vectType & outSpectre, const int & fftLength, const int & NumOfSmooth, const int & Eyes, const double & powArg);
 
+template void four1(lineType & dataF, int nn, int isign);
+template void four1(vectType & dataF, int nn, int isign);
+
+template lineType spectre(const vectType & data);
+template lineType spectre(const lineType & data);
+
+template lineType smoothSpectre(const lineType & inSpectre, const int numOfSmooth);
+
+template matrix countWavelet(const lineType & inSignal);
+template matrix countWavelet(const vectType & inSignal);
+
+
+template double correlation(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
+template double correlation(const int * const  &arr1, const int * const &arr2, int length, int shift, bool fromZero);
+template double correlation(const vector<int> &arr1, const vector<int> &arr2, int length, int shift, bool fromZero);
+template double correlation(const vector<double> &arr1, const vector<double> &arr2, int length, int shift, bool fromZero);
+template double correlation(const lineType &arr1, const lineType &arr2, int length, int shift, bool fromZero);
+
+template void matrixProduct(const double ** const &inMat1, const double ** const &inMat2, double **& outMat, int dimH, int dimL);
+template void matrixProduct(const double ** const &inMat1, const double ** const &inMat2, mat & outMat, int dimH, int dimL);
+template void matrixProduct(const mat & inMat1, const mat & inMat2, double **& outMat, int dimH, int dimL);
+template void matrixProduct(const mat & inMat1, const mat & inMat2, mat & outMat, int dimH, int dimL);
+
+
+template void matrixProduct(const double ** const & inMat1, const double ** const & inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(const double ** const & inMat1, const double ** const & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(const double ** const & inMat1, const mat & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(const mat & inMat1, const mat & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
+template void matrixProduct(const mat & inMat1, const mat & inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);

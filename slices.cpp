@@ -556,6 +556,8 @@ void MainWindow::sliceGaps()
 
 void MainWindow::sliceOneByOne() //generality, just for my current
 {
+#if 0
+    // unused and old
     QString helpString;
     FILE * file;
     int number = 0;
@@ -628,7 +630,7 @@ void MainWindow::sliceOneByOne() //generality, just for my current
     delete []markChanArr;
 
 
-
+#endif
 }
 
 void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with markers
@@ -641,18 +643,18 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
 
     const edfFile & fil = globalEdf;
 
-    const vector<double> & markChanArr = fil.getData()[fil.getMarkChan()];
-//    const vector<int> edgeMarkers {241, 247, 254}; // from def::fileMarkers
-//    const vector<int> noInterestMarkers {231, 237, 234}; // from def::fileMarkers
+    const lineType & markChanArr = fil.getData()[fil.getMarkChan()];
 
     // 200, 255, (241||247, num, 254, 255)
     // with feedback 200 (241||247, num, 231||237, (234), 254, 255)
-//    for(auto it = markChanArr.begin(); it != markChanArr.end(); ++it)
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
 //        auto it1 = std::find(it, markChanArr.end(), 241.);
 //        auto it2 = std::find(it, markChanArr.end(), 247.);
 //        auto it3 = std::find(it, markChanArr.end(), 254.);
+
+//        cout << i << "\t" << markChanArr[i] << endl;
+
 
         if(markChanArr[i] == 0.)
         {
@@ -686,6 +688,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
                                                   + slash() + def::ExpName
                                                   + "." + rightNumber(number, 4)
                                                   + "_" + marker);
+            cout << helpString << endl;
             if(i > j)
             {
                 fil.saveSubsection(j, i, helpString, true);

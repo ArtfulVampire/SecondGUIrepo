@@ -37,7 +37,10 @@ SOURCES += main.cpp\
     editedf.cpp \
     clustering.cpp \
     visualisation.cpp \
-    coord.cpp
+    coord.cpp \
+    draws.cpp \
+    dataHandler.cpp \
+    signalProcessing.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

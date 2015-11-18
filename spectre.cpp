@@ -447,9 +447,8 @@ void Spectre::compare()
     QString helpString;
     vector<QStringList> leest;
 
-    vec tempVec(def::fftLength * def::nsWOM());
-    vec meanVec(def::fftLength * def::nsWOM());
-//    vec meanVec;
+    lineType tempVec(def::fftLength * def::nsWOM());
+    lineType meanVec(0., def::fftLength * def::nsWOM());
 
     const QString filesPath = ui->lineEdit_1->text();
     const QString savePath = def::dir->absolutePath()
@@ -464,40 +463,20 @@ void Spectre::compare()
     {
         const QStringList & lst = leest[i];
         const int NumOfPatterns = lst.length();
-        meanVec.clear();
+        meanVec = lineType(0., def::fftLength * def::nsWOM());
 
 
         for(int j = 0; j < NumOfPatterns; ++j)
         {
-            tempVec.clear();
             helpString = QDir::toNativeSeparators(filesPath
                                                   + slash()
                                                   + lst[j]);
-//            cout << helpString << endl;
             readFileInLine(helpString, tempVec);
-            if(j == 0)
-            {
-                meanVec.resize(tempVec.size(), 0.);
-            }
 
             /// make valarray
-            std::transform(meanVec.begin(),
-                           meanVec.end(),
-                           tempVec.begin(),
-                           meanVec.begin(),
-                           [NumOfPatterns](const double & in1, const double & in2)
-            {
-                return in1 + in2 / NumOfPatterns;
-            });
+            meanVec += tempVec;
         }
-//        /// make valarray
-//        std::for_each(meanVec.begin(),
-//                      meanVec.end(),
-//                      [NumOfPatterns](double & in)
-//        {
-//            in /= NumOfPatterns;
-//        });
-
+        meanVec /= NumOfPatterns;
 
         // psa name
         helpString = QDir::toNativeSeparators(savePath
@@ -677,7 +656,7 @@ void Spectre::countSpectra()
     matrix dataFFT(def::ns, def::fftLength / 2, 0.);
     matrix dataIn;
 
-    vec tempVec;
+    lineType tempVec;
     int numOfIntervals = 20;
     QString helpString;
     int NumOfSlices;
@@ -919,12 +898,14 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
     {
         // take the last def::fftLength samples
         const int a = def::fftLength;
+
         std::for_each(data2.begin(),
                       data2.end(),
-                      [a](vector<double> & in)
+                      [a](lineType & in)
         {
-            in.erase(in.begin(),
-                     in.end() - a);
+            std::remove_if(begin(in),
+                           end(in) - a,
+                           [](double een){return true;});
         });
     }
 

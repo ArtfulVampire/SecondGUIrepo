@@ -229,7 +229,8 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
             helpString2.remove(helpString2.indexOf(' '), helpString2.length());
             helpString.replace(helpString2, newRef);
         }
-        strcpy(label[i], helpString.toStdString().c_str());
+//        strcpy(label[i], helpString.toStdString().c_str());
+        label[i] = helpString;
     }
     globalEdf.setLabels(label);
     reduceChannelsFast();
@@ -695,8 +696,13 @@ void MainWindow::constructEDF(const QString & newPath,
 
             for (int i = 0; i < ns; ++i) //shift start pointers
             {
-                newData[i].erase(newData[i].begin(),
-                                 newData[i].begin() + offset);
+                // vector
+//                newData[i].erase(newData[i].begin(),
+//                                 newData[i].begin() + offset);
+                // valarray
+                std::remove_if(begin(newData[i]),
+                               begin(newData[i]) + offset,
+                               [](double){return true;});
             }
 
             newData[ns - 1][0] = saveMarker;

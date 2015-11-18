@@ -8,8 +8,6 @@ Net::Net() :
 {
     ui->setupUi(this);
 
-    dirBC = new QDir;
-    dirBC->cd(def::dir->absolutePath());
 
     this->setWindowTitle("Net");
 
@@ -27,7 +25,7 @@ Net::Net() :
 //    NumberOfVectors = -1;
     loadPAflag = 0;
 
-    tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
+//    tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
 
 
     group1 = new QButtonGroup();
@@ -171,7 +169,7 @@ Net::Net() :
 
     QObject::connect(group3, SIGNAL(buttonToggled(int,bool)), this, SLOT(methodSetParam(int,bool)));
 
-    QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(memoryAndParamsAllocation()));
+    QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(reset()));
 
     QObject::connect(ui->distancesPushButton, SIGNAL(clicked()), this, SLOT(testDistances()));
 
@@ -181,92 +179,49 @@ Net::Net() :
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     // just for fun
-    makeCfgStatic(def::cfgFileName);
-    readCfgByName(def::cfgFileName);
+//    makeCfgStatic(def::cfgFileName);
+//    readCfgByName(def::cfgFileName);
 
     this->ui->deltaRadioButton->setChecked(true);
 }
 
 Net::~Net()
 {
-
-    delete dirBC;
     delete group1;
     delete group2;
     delete group3;
     delete ui;
-
-//    for(int i = 0; i < numOfLayers - 1; ++i)
-//    {
-//        for(int j = 0; j < dimensionality[i] + 1; ++j) //
-//        {
-//            delete []weight[i][j];
-//        }
-//        delete []weight[i];
-//    }
-//    delete []weight;
-//    delete []dimensionality;
-}
-
-void Net::mousePressEvent(QMouseEvent  * event)
-{
-//    cout << "global(X,Y) = (" << event->globalX() << "," << event->globalY() << ")" << endl;
-//    cout << "(X,Y) = (" << event->x() << "," << event->y() << ")" << endl;
-//    cout << "pos(x,y) = (" << ui->clearSetsLabel->pos().x() << "," << ui->clearSetsLabel->pos().y() << ")" << endl;
-//    cout << "size(w,h) = (" << ui->clearSetsLabel->width() << "," << ui->clearSetsLabel->height() << ")" << endl;
-
-
-//    if(event->x() > ui->clearSetsLabel->pos().x()
-//       && event->x() < ui->clearSetsLabel->pos().x() + ui->clearSetsLabel->width()
-//       && event->y() > ui->clearSetsLabel->pos().y()
-//       && event->y() < ui->clearSetsLabel->pos().y() + ui->clearSetsLabel->height() )
-//    {
-//        this->mouseShit = double(event->x() - ui->clearSetsLabel->pos().x())
-//                          / double(ui->clearSetsLabel->width());
-//    }
-//    else
-//    {
-//        cout << "fail" << endl;
-//    }
-}
-
-
-void Net::autoClassificationSimple()
-{
-
-//    ui->deltaRadioButton->setChecked(true); //generality
-    QString helpString;
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "SpectraSmooth");
-
-    if(ui->windowsRadioButton->isChecked()) //generality
-    {
-        helpString += slash() + "windows";
-    }
-    else if(ui->bayesRadioButton->isChecked())
-    {
-        //////////////// CAREFUL
-//        def::spLength = NetLength / 19;
-        def::left = 1;
-        def::right = def::spLength + 1;
-        helpString += slash() + "Bayes";
-    }
-    else if(ui->pcaRadioButton->isChecked())
-    {
-        autoPCAClassification();
-        return;
-        helpString += slash() + "PCA";
-    }
-
-    cout << "autoClassification: " << helpString << endl;
-
-    if(!helpString.isEmpty()) autoClassification(helpString);
 }
 
 void Net::setAutoProcessingFlag(bool a)
 {
     autoFlag = a;
 }
+
+int Net::getEpoch()
+{
+    return epoch;
+}
+
+void Net::adjustParamsGroup2(QAbstractButton * but)
+{
+    if(but->text().contains("Bayes", Qt::CaseInsensitive))
+    {
+        ui->highLimitSpinBox->setValue(400);
+        ui->lowLimitSpinBox->setValue(300);
+        ui->epochSpinBox->setValue(500);
+        ui->rdcCoeffSpinBox->setValue(0.05);
+    }
+    else
+    {
+        ui->highLimitSpinBox->setValue(130);
+        ui->lowLimitSpinBox->setValue(80);
+        ui->epochSpinBox->setValue(250);
+        ui->rdcCoeffSpinBox->setValue(7.5);
+        ui->foldSpinBox->setValue(2.);
+    }
+}
+
 
 double Net::adjustReduceCoeff(QString spectraDir,
                               int lowLimit,
@@ -357,6 +312,40 @@ double Net::adjustReduceCoeff(QString spectraDir,
     cout << "adjustReduceCoeff: reduceCoeff = " << res << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
     return res;
 }
+
+
+void Net::autoClassificationSimple()
+{
+
+//    ui->deltaRadioButton->setChecked(true); //generality
+    QString helpString;
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "SpectraSmooth");
+
+    if(ui->windowsRadioButton->isChecked()) //generality
+    {
+        helpString += slash() + "windows";
+    }
+    else if(ui->bayesRadioButton->isChecked())
+    {
+        //////////////// CAREFUL
+//        def::spLength = NetLength / 19;
+//        def::left = 1;
+//        def::right = def::spLength + 1;
+        helpString += slash() + "Bayes";
+    }
+    else if(ui->pcaRadioButton->isChecked())
+    {
+        autoPCAClassification();
+        return;
+        helpString += slash() + "PCA";
+    }
+
+    cout << "autoClassification: " << helpString << endl;
+
+    if(!helpString.isEmpty()) autoClassification(helpString);
+}
+
 
 void Net::makeIndicesVectors(vector<int> & learnInd,
                              vector<int> & tallInd,
@@ -528,10 +517,10 @@ void Net::autoPCAClassification()
     autoFlag = 1;
     cfg * config;
 
-    int nsBC = def::nsWOM();
-    int leftBC = def::left;
-    int rightBC = def::right;
-    double spStepBC = def::spStep;
+    const int nsBC = def::nsWOM();
+    const int leftBC = def::left;
+    const int rightBC = def::right;
+    const double spStepBC = def::spStep;
     QString helpString;
 
     for(int i = ui->autpPCAMaxSpinBox->value(); i >= ui->autoPCAMinSpinBox->value(); i-=ui->autoPCAStepSpinBox->value())
@@ -544,16 +533,16 @@ void Net::autoPCAClassification()
         config->close();
         if(config != NULL) delete config;
 
-        helpString = QDir::toNativeSeparators(dirBC->absolutePath()
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "pca.net");
-        readCfgByName(helpString);
+//        readCfgByName(helpString);
 
         def::ns = 1;
         def::left = 1;
         def::right = i + 1;
         def::spStep = 0.1;
 
-        helpString = QDir::toNativeSeparators(dirBC->absolutePath()
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "SpectraSmooth"
                                               + slash() + "PCA");
         cout << "numOfPc = " << i  << " ended" << endl;
@@ -659,7 +648,7 @@ void Net::drawWtsSlot()
 {
     QString helpString = QFileDialog::getOpenFileName((QWidget * )this,
                                                       tr("wts to draw"),
-                                                      dirBC->absolutePath(),
+                                                      def::dir->absolutePath(),
                                                       tr("wts files (*.wts)"));
     QString picPath = helpString;
     picPath.replace(".wts", ".jpg");
@@ -668,7 +657,8 @@ void Net::drawWtsSlot()
 }
 
 
-void Net::drawWts(QString wtsPath, QString picPath)  //generality
+void Net::drawWts(const QString & wtsPath,
+                  QString picPath)  //generality
 {
     if( dimensionality.size() != 2 ) return;
 
@@ -682,7 +672,7 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
     {
         helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )this,
                                                                            tr("wts to draw"),
-                                                                           dirBC->absolutePath(),
+                                                                           def::dir->absolutePath(),
                                                                            tr("wts files (*.wts)")));
     }
     else
@@ -690,7 +680,6 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
         helpString = def::dir->absolutePath()
                 + slash() + def::ExpName + ".wts";
     }
-//    cout << "wtsPath = " << helpString << endl;
 
     if(helpString.isEmpty())
     {
@@ -701,27 +690,30 @@ void Net::drawWts(QString wtsPath, QString picPath)  //generality
                                  QMessageBox::Ok);
         return;
     }
-    trivector<double> tempWeights;
+    twovector<lineType> tempWeights;
     readWtsByName(helpString, &tempWeights);
 
     matrix drawWts; // 3 arrays of weights
+#if 0
     vec tempVec;
     for(int i = 0; i < def::numOfClasses; ++i)
     {
         tempVec.clear();
-        for(int j = 0; j < NetLength; ++j)
+        for(int j = 0; j < dataMatrix.cols(); ++j)
         {
             tempVec.push_back(tempWeights[0][j][i]); // 0 is for 2 layers
         }
         drawWts.push_back(tempVec);
     }
+#else
+    drawWts = tempWeights[0];
+#endif
 
     if(picPath.isEmpty())
     {
         picPath = helpString;
         picPath.replace(".wts", "_wts.jpg"); /// make default suffixes
     }
-//    cout << "picPath = " << picPath << endl;
     drawTemplate(picPath);
     drawArrays(picPath,
                drawWts,
@@ -732,7 +724,6 @@ void Net::stopActivity()
 {
     stopFlag = 1;
 }
-
 
 void Net::writeWts(const QString & wtsPath)
 {
@@ -747,9 +738,9 @@ void Net::writeWts(const QString & wtsPath)
 
     for(int i = 0; i < dimensionality.size() - 1; ++i) // numOfLayers
     {
-        for(int j = 0; j < dimensionality[i] + 1; ++j) // NetLength+1 for bias
+        for(int j = 0; j < dimensionality[i + 1]; ++j) // NetLength+1 for bias
         {
-            for(int k = 0; k < dimensionality[i + 1]; ++k) // NumOfClasses
+            for(int k = 0; k < dimensionality[i] + 1; ++k) // NumOfClasses
             {
                 weightsFile << weight[i][j][k] << endl;
             }
@@ -767,7 +758,10 @@ void Net::writeWtsSlot()
     QString helpString;
     if(!autoFlag)
     {
-        helpString = QDir::toNativeSeparators(QFileDialog::getSaveFileName((QWidget * )this, tr("wts to save"), dirBC->absolutePath(), tr("wts files (*.wts)")));
+        helpString = QFileDialog::getSaveFileName((QWidget * )this,
+                                                  tr("wts to save"),
+                                                  def::dir->absolutePath(),
+                                                  tr("wts files (*.wts)"));
         if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
         {
             helpString += ".wts";
@@ -778,8 +772,8 @@ void Net::writeWtsSlot()
         do
         {
             helpString = def::dir->absolutePath()
-                    + slash() + def::ExpName
-                    + "_weights_" + QString::number(wtsCounter) + ".wts";
+                         + slash() + def::ExpName
+                         + "_weights_" + QString::number(wtsCounter) + ".wts";
             ++wtsCounter;
         } while(QFile::exists(helpString));
     }
@@ -795,20 +789,42 @@ void Net::writeWtsSlot()
 
 void Net::reset()
 {
-    srand(time(NULL));
-    for(int i = 0; i < dimensionality.size() - 1; ++i)
+    QString helpString = ui->dimensionalityLineEdit->text();
+    QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
+
+    const int numOfLayers = lst.length();
+
+    dimensionality.resize(numOfLayers);
+    dimensionality[0] = dataMatrix.cols();
+    for(int i = 1; i < numOfLayers - 1; ++i)
     {
-        for(int j = 0; j < dimensionality[i] + 1; ++j) //
+        dimensionality[i] = lst[i].toInt();
+    }
+    dimensionality[numOfLayers - 1] = def::numOfClasses;
+
+    weight.resize(numOfLayers - 1);
+    for(int i = 0; i < numOfLayers - 1; ++i) // weights from layer i to i+1
+    {
+        weight[i].resize(dimensionality[i + 1]);
+        for(int j = 0; j < dimensionality[i + 1]; ++j) // to j'th in i+1 layer
         {
-            for(int k = 0; k < dimensionality[i+1]; ++k)
+            // resizing lineType -> fill zeros
+            weight[i][j].resize(dimensionality[i] + 1); // from k'th in i layer
+        }
+    }
+
+    // for delta there are already zeros
+    if(ui->backpropRadioButton->isChecked())
+    {
+        default_random_engine engine;
+        std::uniform_int_distribution<int> dist(0, 1000 - 1);
+        for(int i = 0; i < dimensionality.size() - 1; ++i) // numOfLayers - 1
+        {
+            for(int j = 0; j < dimensionality[i + 1]; ++j) // +bias
             {
-                if(ui->deltaRadioButton->isChecked())
+                for(int k = 0; k < dimensionality[i] + 1; ++k)
                 {
-                    weight[i][j][k] = 0.;
-                }
-                else
-                {
-                    weight[i][j][k] = (-500 + rand()%1000) / 50000.;
+                    weight[i][j][k] = (-500 + dist(engine)) / 50000.;  // backprop ~0
                 }
             }
         }
@@ -819,48 +835,40 @@ void Net::reset()
 void Net::testDistances()
 {
     PaIntoMatrixByName("1");
+
+    const int NumberOfVectors = dataMatrix.rows();
+    const int NetLength = dataMatrix.cols();
+
     vector<int> NumberOfErrors(def::numOfClasses, 0);
     matrix averageSpectra(def::numOfClasses, NetLength, 0.);
-//    vector<int> count(def::numOfClasses, 0);
-    const int NumberOfVectors = dataMatrix.rows();
 
-    int inType;
     for(int i = 0; i < NumberOfVectors; ++i)
     {
-        inType = int(dataMatrix[i][NetLength + 1]);
         for(int j = 0; j < NetLength; ++j)
         {
-            averageSpectra[inType][j] += dataMatrix[i][j];
+            averageSpectra[ types[i] ] += dataMatrix[i];
         }
     }
 
     for(int i = 0; i < def::numOfClasses; ++i)
     {
-        for(int j = 0; j < NetLength; ++j)
-        {
-            averageSpectra[i][j] /= classCount[i];
-        }
+        averageSpectra[i] /= classCount[i];
     }
     PaIntoMatrixByName("2");
 
 
     vector<double> distances(def::numOfClasses);
     int outType;
-    double helpDist = 0;
-
     for(int i = 0; i < NumberOfVectors; ++i)
     {
-        inType = int(dataMatrix[i][NetLength+1]);
         for(int j = 0; j < def::numOfClasses; ++j)
         {
-            distances[j] = distance(averageSpectra[j].data(),
-                                    dataMatrix[i].data(),
-                                    NetLength);
+            distances[j] = distance(dataMatrix[i],
+                                    averageSpectra[j]);
         }
-//        outType = 0;
-//        auto it = std::min_element(distances.begin(), distances.end()) - distances.begin();
-        outType = int(std::min_element(distances.begin(), distances.end()) - distances.begin());
-        if(outType != inType) ++NumberOfErrors[inType];
+        outType = std::distance(std::min_element(distances.begin(), distances.end()),
+                                distances.begin());
+        if(outType != types[i]) ++NumberOfErrors[ types[i] ];
     }
     cout << "NumberOfVectors = " << NumberOfVectors << endl;
     for(int j = 0; j < def::numOfClasses; ++j)
@@ -892,19 +900,15 @@ void Net::tallNetIndices(const vector<int> & indices)
     vector<double> NumberOfErrors(def::numOfClasses, 0.);
     vector<double> NumOfVectorsOfClass(def::numOfClasses, 0.); // local countClass
     bool res;
-    int type;
 
     for(int i = 0; i < indices.size(); ++i)
     {
-        type = int(dataMatrix[indices[i]][NetLength + 1]);
-
-        NumOfVectorsOfClass[type] += 1.;
+        NumOfVectorsOfClass[ types[ indices[i] ] ] += 1.;
 
         res = ClassificateVector(indices[i]);
-//        cout << "\t" << res << endl;
         if(!res)
         {
-            NumberOfErrors[type] += 1.;
+            NumberOfErrors[ types[ indices[i] ] ] += 1.;
         }
     }
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
@@ -931,90 +935,8 @@ void Net::tallNetIndices(const vector<int> & indices)
     ++numOfTall;
 }
 
-void Net::readCfg()
-{
-    //automatization
-    QString helpString;
-    if(!autoFlag)
-    {
-        helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,tr("open cfg"), dirBC->absolutePath(), tr("cfg files (*.net)")));
-        if(helpString == "")
-        {
-            QMessageBox::information((QWidget * )this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
-            return;
-        }
-    }
-    else
-    {
-        if(def::spStep == def::freq / pow(2, 10))
-        {
-            helpString = "4sec19ch.net";     //for windows
-        }
-        else if(def::spStep == def::freq / pow(2, 12))
-        {
-            helpString = "16sec19ch.net";     //for realisations
-        }
-        else if(def::spStep == def::freq / pow(2, 11))
-        {
-            helpString = "8sec19ch.net";     //for realisations
-        }
-        else
-        {
-            helpString = "pca.net";     //for PCAs
-        }
-        helpString.prepend(dirBC->absolutePath() + slash());
-        cout << "cfg auto path = " << helpString.toStdString() << endl;
-    }
-
-    readCfgByName(helpString);
-
-}
-
-void Net::readCfgByName(const QString & cfgFilePath)
-{
-    QString helpString = cfgFilePath;
-    if(!helpString.endsWith(".net", Qt::CaseInsensitive))
-    {
-        helpString += ".net";
-    }
-
-    if(!cfgFilePath.contains(slash()))
-    {
-        helpString = def::dir->absolutePath() + slash() + helpString;
-    }
-
-    ifstream cfgStream;
-    cfgStream.open(helpString.toStdString());
-    if(!cfgStream.good())
-    {
-        cout << "loadCfgByName: can't open = " << helpString.toStdString() << endl;
-        return;
-    }
-    double tmp;
-    cfgStream.ignore(20, '\t'); cfgStream >> NetLength;
-    cfgStream.ignore(20, '\t'); cfgStream >> tmp; // numOfClasses
-    cfgStream.ignore(20, '\t'); cfgStream >> tmp; // learnRate
-    ui->learnRateBox->setValue(tmp);
-    cfgStream.ignore(20, '\t'); cfgStream >> tmp; // errcrit
-    ui->critErrorDoubleSpinBox->setValue(tmp);
-    cfgStream.ignore(20, '\t'); cfgStream >> tmp; // temperature
-    ui->tempBox->setValue(tmp);
-    cfgStream.close();
-
-    memoryAndParamsAllocation();
-
-    loadPAflag = 1;
-
-    channelsSet.clear();
-    channelsSetExclude.clear();
-    for(int i = 0; i < def::nsWOM(); ++i)
-    {
-        channelsSet.push_back(i);
-    }
-
-}
-
-void Net::readWtsByName(const QString & fileName, trivector<double> * wtsMatrix) //
+void Net::readWtsByName(const QString & fileName,
+                        twovector<lineType> * wtsMatrix) //
 {
     ifstream wtsStr;
     wtsStr.open(fileName.toStdString());
@@ -1029,12 +951,12 @@ void Net::readWtsByName(const QString & fileName, trivector<double> * wtsMatrix)
     }
 
 
-    memoryAndParamsAllocation();
+    reset();
     for(int i = 0; i < dimensionality.size() - 1; ++i)
     {
-        for(int j = 0; j < dimensionality[i] + 1; ++j) // NetLength + 1 for bias
+        for(int j = 0; j < dimensionality[i + 1]; ++j)
         {
-            for(int k = 0; k < dimensionality[i + 1]; ++k) // ~NumOfClasses
+            for(int k = 0; k < dimensionality[i] + 1; ++k)
             {
                 wtsStr >> (*wtsMatrix)[i][j][k];
             }
@@ -1105,6 +1027,1548 @@ const char *  errorMessage(int err_)
 {
     return QString::number(err_).toStdString().c_str();
 }
+
+
+void Net::trainTestClassification(const QString & trainTemplate,
+                                  const QString & testTemplate)
+{
+    vector<int> learnIndices;
+    vector<int> tallIndices;
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        if(fileNames[i].contains(trainTemplate))
+        {
+            learnIndices.push_back(i);
+        }
+        else if(fileNames[i].contains(testTemplate))
+        {
+            tallIndices.push_back(i);
+        }
+    }
+//    for(int i = 0; i < learnIndices.size(); ++i)
+//    {
+//        cout << fileNames[learnIndices[i]] << endl;
+//    }
+//    cout << endl;
+//    for(int i = 0; i < tallIndices.size(); ++i)
+//    {
+//        cout << fileNames[tallIndices[i]] << endl;
+//    }
+    LearNetIndices(learnIndices);
+    tallNetIndices(tallIndices);
+    cout << "train-test classification - ";
+    averageClassification();
+}
+
+void Net::leaveOneOut()
+{
+    vector<int> learnIndices;
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        cout << i + 1;
+        cout << " "; cout.flush();
+
+        learnIndices.clear();
+        for(int j = 0; j < dataMatrix.rows(); ++j)
+        {
+            if(j == i) continue;
+            learnIndices.push_back(j);
+        }
+        LearNetIndices(learnIndices);
+        tallNetIndices({i});
+    }
+    cout << "N-fold cross-validation - ";
+    averageClassification();
+}
+
+
+void Net::PaIntoMatrix()
+{
+    QString helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL, tr("load PA"), def::dir->absolutePath(), tr("PA files (*.pa)")));
+    if(helpString == "")
+    {
+        QMessageBox::information((QWidget * )this, tr("Information"), tr("No file was chosen"), QMessageBox::Ok);
+        return;
+    }
+    readPaFile(helpString,
+               dataMatrix,
+               types,
+               fileNames,
+               classCount);
+}
+
+
+void Net::PaIntoMatrixByName(const QString & fileName)
+{
+
+    QString helpString = def::dir->absolutePath()
+                         + slash() + "PA"
+                         + slash() + fileName;
+    if(!fileName.contains(".pa"))
+    {
+        helpString += ".pa";
+    }
+
+    if(!QFile::exists(helpString))
+    {
+        cout << "PaIntoMatrixByName: cannot open file\n" << helpString << endl;
+    }
+
+    readPaFile(helpString,
+               dataMatrix,
+               types,
+               fileNames,
+               classCount);
+}
+
+//void Net::loadDataFromFolder(const QString & spectraPath)
+//{
+//    makePaFile(spectraDir, listToWrite, coeff, helpString);
+//}
+
+double HopfieldActivation(double x, double temp)
+{
+    return ((1./(1. + exp(-x/temp/300.)) * 2.) - 1.) * temp;
+}
+
+void Net::methodSetParam(int a, bool ch)
+{
+    if(!ch) return;
+    if(group3->button(a)->text().contains("delta")) ///generality
+    {
+        ui->epochSpinBox->setValue(250);
+        ui->tempBox->setValue(10);
+        ui->learnRateBox->setValue(0.1);
+        ui->critErrorDoubleSpinBox->setValue(0.1);
+
+        ui->dimensionalityLineEdit->setText("0 0");
+        ui->dimensionalityLineEdit->setReadOnly(true);
+
+        ui->numOfLayersSpinBox->setValue(2);
+        ui->numOfLayersSpinBox->setReadOnly(true);
+
+    }
+    else if(group3->button(a)->text().contains("backprop"))  ///generality
+    {
+//        cout << "backprop button pressed" << endl;
+        ui->epochSpinBox->setValue(300);
+        ui->tempBox->setValue(2);
+        ui->learnRateBox->setValue(1.0);
+        ui->critErrorDoubleSpinBox->setValue(0.05);
+
+        ui->numOfLayersSpinBox->setValue(3);
+        ui->numOfLayersSpinBox->setReadOnly(false);
+
+        ui->dimensionalityLineEdit->setText("0 20 0");
+        ui->dimensionalityLineEdit->setReadOnly(false);
+    }
+    else if(group3->button(a)->text().contains("deepBelief"))  ///generality
+    {
+        ui->epochSpinBox->setValue(300);
+        ui->tempBox->setValue(2);
+        ui->learnRateBox->setValue(1.0);
+        ui->critErrorDoubleSpinBox->setValue(0.05);
+
+        ui->numOfLayersSpinBox->setValue(3);
+        ui->numOfLayersSpinBox->setReadOnly(false);
+
+        ui->dimensionalityLineEdit->setText("0 22 0");
+        ui->dimensionalityLineEdit->setReadOnly(false);
+    }
+    reset();
+}
+
+void Net::LearnNet()
+{
+    vector <int> mixNum;
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        mixNum.push_back(i);
+    }
+    LearNetIndices(mixNum);
+}
+
+void Net::LearNetIndices(vector<int> mixNum)
+{
+    QTime myTime;
+    myTime.start();
+
+    const int numOfLayers = dimensionality.size();
+    matrix deltaWeights(numOfLayers);
+    matrix output(numOfLayers);
+    for(int i = 0; i < numOfLayers; ++i)
+    {
+        deltaWeights[i].resize(dimensionality[i]); // fill zeros
+        output[i].resize(dimensionality[i] + 1); // for biases
+    }
+
+    const double critError = ui->critErrorDoubleSpinBox->value();
+    const double temperature = ui->tempBox->value();
+    const double learnRate = ui->learnRateBox->value();
+    const bool deltaFlag = ui->deltaRadioButton->isChecked();
+//    const double momentum = ui->momentumDoubleSpinBox->value(); //unused yet
+    double currentError = critError + 0.1;
+
+    int type = 0;
+
+    reset();
+
+
+    /// edit due to Indices
+    vector <double> normCoeff;
+    const double helpMin = *std::min_element(classCount.begin(),
+                                             classCount.end());
+
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        normCoeff.push_back(helpMin / classCount[i]);
+    }
+
+    if(ui->deepBeliefRadioButton->isChecked())
+    {
+//        prelearnDeepBelief();
+    }
+
+
+    epoch = 0;
+    while(currentError > critError && epoch < ui->epochSpinBox->value())
+    {
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        currentError = 0.0;
+        // mix the sequence of input vectors
+        std::shuffle(mixNum.begin(),
+                     mixNum.end(),
+                     std::default_random_engine(seed));
+
+        for(const int & index : mixNum)
+        {
+            // add data
+            std::copy(begin(dataMatrix[index]),
+                      end(dataMatrix[index]),
+                      begin(output[0]));
+            // add bias
+            output[0][output[0].size() - 1] = 1.;
+            type = types[index];
+
+            //obtain outputs
+            for(int i = 1; i < numOfLayers; ++i)
+            {
+                output[i].resize(dimensionality[i] + 1);
+                for(int j = 0; j < dimensionality[i]; ++j)
+                {
+                    output[i][j] = (weight[i-1][j] * output[i-1]).sum();
+                    output[i][j] += weight[i-1][dimensionality[i - 1]][j]; // bias
+
+                    output[i][j] = logistic(output[i][j], temperature);
+                }
+                output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
+            }
+
+            //error in the last layer
+            for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
+            {
+                currentError += pow(( output[numOfLayers - 1][j] - (type == j) ), 2.);
+            }
+#if 0
+            /// check weight
+            if(!deltaFlag) /// enum !
+            {
+                //count deltaweights (used for backprop only)
+                //for the last layer
+                for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
+                {
+                    deltaWeights[numOfLayers-1][j] = -1. / temperature
+                                                     * output[numOfLayers-1][j]
+                                                     * (1. - output[numOfLayers-1][j])
+                            * ((type == j) - output[numOfLayers-1][j]); //~0.1
+                }
+
+                //for the other layers, besides the input one, upside->down
+                for(int i = numOfLayers - 2; i >= 1; --i)
+                {
+                    for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
+                    {
+                        deltaWeights[i][j] = 0.;
+                        for(int k = 0; k < dimensionality[i + 1]; ++k) //connected to the higher-layer
+                        {
+                            deltaWeights[i][j] += deltaWeights[i + 1][k] * weight[i][j][k];
+                        }
+                        deltaWeights[i][j] *= 1. / temperature
+                                              * output[i][j]
+                                              * (1. - output[i][j]);
+                    }
+                }
+            }
+#endif
+
+
+
+            if(deltaFlag)
+            {
+                // numOfLayers = 2 and i == 0 in this case
+                // simplified
+                for(int i = 0; i < dataMatrix.rows() + 1; ++i)
+                {
+                    for(int j = 0; j < def::numOfClasses; ++j)
+                    {
+                        weight[0][j][i] += learnRate
+                                           * normCoeff[type]
+                                           * output[0][i]
+                                           * ((type == j) - output[1][j]);
+                    }
+                }
+
+            }
+#if 0
+            else /// backprop check weight
+            {
+
+                // count new weights using deltas
+                for(int i = 0; i < numOfLayers - 1; ++i)
+                {
+                    for(int j = 0; j < dimensionality[i] + 1; ++j) // +1 for bias? 01.12.2014
+                    {
+                        for(int k = 0; k < dimensionality[i + 1]; ++k)
+                        {
+                            weight[i][j][k] -= learnRate
+                                               * normCoeff[type]
+                                               * output[i][j]
+                                               * deltaWeights[i + 1][k];
+                        }
+                    }
+                }
+            }
+#endif
+        }
+        ++epoch;
+        //count error
+        currentError /= mixNum.size();
+        currentError = sqrt(currentError);
+        this->ui->currentErrorDoubleSpinBox->setValue(currentError);
+
+//        cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 3) << endl;
+    }
+    cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+}
+
+
+
+bool Net::ClassificateVector(const int & vecNum)
+{
+    const int type = types[vecNum];
+    const int numOfLayers = dimensionality.size();
+    const double temp = ui->tempBox->value();
+
+    matrix output(numOfLayers);
+    output[0].resize(dimensionality[0] + 1); // for biases
+
+    std::copy(begin(dataMatrix[vecNum]),
+              end(dataMatrix[vecNum]),
+              begin(output[0]));
+    output[0][output[0].size() - 1] = 1.; //bias
+
+    for(int i = 1; i < numOfLayers; ++i)
+    {
+        output[i].resize(dimensionality[i] + 1);
+        for(int j = 0; j < dimensionality[i]; ++j) //higher level, w/o bias
+        {
+            output[i][j] = (weight[i-1][j] * output[i-1]).sum();
+            output[i][j] += weight[i-1][dimensionality[i - 1]][j]; // bias
+
+            output[i][j] = logistic(output[i][j], temp);
+        }
+        output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
+    }
+
+    /// deal with confusion matrix
+
+    for(int k = 0; k < dimensionality[numOfLayers - 1]; ++k)
+    {
+        if(k != type && output[numOfLayers - 1] [k] >= output[numOfLayers - 1] [type])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+void Net::SVM()
+{
+    QString helpString = def::dir->absolutePath()
+            + slash() + "PA"
+            + slash() + "output1";
+    FILE * out = fopen(QDir::toNativeSeparators(helpString), "w");
+    fclose(out);
+//    QString spectraDir = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth"));
+    QString spectraDir = QFileDialog::getExistingDirectory(this,
+                                                           tr("Choose spectra dir"),
+                                                           def::dir->absolutePath());
+    if(spectraDir.isEmpty())
+    {
+        spectraDir = QDir::toNativeSeparators(def::dir->absolutePath()
+                                              + slash() + "SpectraSmooth");
+    }
+    if(spectraDir.isEmpty())
+    {
+        cout << "spectraDir for SVM is empty" << endl;
+        return;
+    }
+
+    for(int i = 0; i < ui->numOfPairsBox->value(); ++i)
+    {
+        makePaStatic(spectraDir,
+                     ui->foldSpinBox->value(),
+                     ui->rdcCoeffSpinBox->value(), true);
+
+        helpString = def::dir->absolutePath() + slash() + "PA";
+        helpString.prepend("cd ");
+        helpString += " && svm-train -t "
+                      + QString::number(ui->svmKernelSpinBox->value())
+                      + " svm1 && svm-predict svm2 svm1.model output >> output1";
+        system(helpString.toStdString().c_str());
+
+        helpString = def::dir->absolutePath() + slash() + "PA";
+        helpString.prepend("cd ");
+        helpString += " && svm-train -t "
+                      + QString::number(ui->svmKernelSpinBox->value())
+                      + " svm2 && svm-predict svm1 svm2.model output >> output1";
+        system(helpString.toStdString().c_str());
+    }
+
+    helpString = def::dir->absolutePath() + slash() + "PA" + slash() + "output1";
+
+    double helpDouble, average = 0.;
+
+    QFile file(helpString);
+    if(!file.open(QIODevice::ReadOnly)) return;
+    int lines = 0;
+    while(!file.atEnd())
+    {
+        helpString = file.readLine();
+        if(!helpString.contains(QRegExp("[% = ]"))) break;
+        helpString = helpString.split(QRegExp("[% = ]"),
+                                      QString::SkipEmptyParts)[1]; //generality [1]
+        helpDouble = helpString.toDouble();
+        average += helpDouble;
+        ++lines;
+    }
+    average /= lines;
+    cout << average << endl;
+    file.close();
+
+
+    ofstream outStr;
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "results.txt");
+    outStr.open(helpString.toStdString(), ios_base::app);
+    outStr << "\nSVM\t";
+    outStr << doubleRound(average, 2) << " %" << endl;
+    outStr.close();
+}
+
+
+/// principal component analisys
+/// remake
+void Net::pca()
+{
+#if 0
+    QString helpString;
+    QTime wholeTime;
+    wholeTime.start();
+
+    const int NumberOfVectors = dataMatrix.rows();
+
+    cout << "NetLength = " << NetLength << endl;
+    cout << "NumberOfVectors = " << NumberOfVectors << endl;
+
+    matrix differenceMatrix (NumberOfVectors, NumberOfVectors);
+    matrix centeredMatrix;
+    centeredMatrix = transpose(dataMatrix); // rows = spectral points, cols - numOfPattern
+
+    //count covariations
+    //count averages
+    vector<double> averages(NetLength, 0.);
+    for(int i = 0; i < NetLength; ++i)
+    {
+//        averages[i] = mean(centeredMatrix[i])
+        for(int j = 0; j < NumberOfVectors; ++j)
+        {
+            averages[i] += centeredMatrix[j][i];
+        }
+        averages[i] /= NumberOfVectors;
+    }
+
+    //centered matrix
+    for(int i = 0; i < NetLength; ++i)
+    {
+        for(int j = 0; j < NumberOfVectors; ++j)
+        {
+            centeredMatrix[j][i] -= averages[i];
+        }
+    }
+
+    cout << "centeredMatrix counted" << endl;
+
+    //NetLength ~ = 45000
+    //NumberOfVectors ~ = 100
+    //covariation between different spectra-bins
+    double tempDouble;
+
+    QTime initTime;
+    initTime.start();
+
+    double trace = 0.;
+    for(int i = 0; i < NetLength; ++i)
+    {
+        tempDouble = 0.;
+        for(int j = 0; j < NumberOfVectors; ++j)
+        {
+            tempDouble += centeredMatrix[j][i] * centeredMatrix[j][i];
+        }
+        tempDouble /= (NumberOfVectors - 1);
+        trace += tempDouble;
+    }
+    cout << "trace covMatrix = " << trace << endl;
+
+    // count eigenvalue decomposition
+    matrix eigenVectors;
+    vec eigenValues;
+    const double eigenValuesTreshold = pow(10., -8.);
+
+    svd(centeredMatrix,
+        eigenVectors,
+        eigenValues,
+        eigenValuesTreshold);
+
+//    return;
+
+    //count eigenvalues & eigenvectors of covMatrix
+    double * eigenValues = new double [NetLength];
+    double ** eigenVectors = new double * [NetLength]; //vector is a coloumn
+    for(int i = 0; i < NetLength; ++i)
+    {
+        eigenVectors[i] = new double [ui->pcaNumberSpinBox->value()];
+    }
+    double * tempA = new double [NetLength]; //i
+    double * tempB = new double [NumberOfVectors];//j
+    double sum1, sum2; //temporary help values
+    double dF, F;
+    int counter;
+
+
+
+
+    int numOfPc;
+
+    cout << "start eigenValues processing" << endl;
+    //count eigenValues & eigenVectors
+    //matrix
+    for(int k = 0; k < NetLength; ++k)
+    {
+        initTime.restart();
+        dF = 1.0;
+        F = 1.0;
+
+        //set 1-normalized vector tempA
+        for(int i = 0; i < NetLength; ++i)
+        {
+            tempA[i] = 1./sqrt(NetLength);
+        }
+        for(int j = 0; j < NumberOfVectors; ++j)
+        {
+            tempB[j] = 1./sqrt(NumberOfVectors);
+        }
+
+
+        //approximate P[i] = tempA x tempB;
+        counter = 0.;
+        while(1) //when stop approximate?
+        {
+            //countF
+            F = 0.;
+            for(int i = 0; i < NetLength; ++i)
+            {
+                for(int j = 0; j < NumberOfVectors; ++j)
+                {
+                    F += 0.5 * (centeredMatrix[j][i] - tempB[j] * tempA[i]) * (centeredMatrix[j][i] - tempB[j] * tempA[i]);
+                }
+//                cout << F << " ";
+            }
+            //count vector tempB
+            for(int j = 0; j < NumberOfVectors; ++j)
+            {
+                sum1 = 0.;
+                sum2 = 0.;
+                for(int i = 0; i < NetLength; ++i)
+                {
+                    sum1 += centeredMatrix[j][i] * tempA[i];
+                    sum2 += tempA[i] * tempA[i];
+                }
+                tempB[j] = sum1 / sum2;
+            }
+//            if(k == 0) cout << endl;
+
+            //count vector tempA
+            for(int i = 0; i < NetLength; ++i)
+            {
+                sum1 = 0.;
+                sum2 = 0.;
+                for(int j = 0; j < NumberOfVectors; ++j)
+                {
+                    sum1 += tempB[j] * centeredMatrix[j][i];
+                    sum2 += tempB[j] * tempB[j];
+                }
+                tempA[i] = sum1 / sum2;
+            }
+
+            dF = 0.;
+            for(int i = 0; i < NetLength; ++i)
+            {
+                for(int j = 0; j < NumberOfVectors; ++j)
+                {
+                    dF += 0.5 * (centeredMatrix[j][i] - tempB[j] * tempA[i]) * (centeredMatrix[j][i] - tempB[j] * tempA[i]);
+                }
+            }
+            dF = (F-dF)/F;
+            ++counter;
+            if(fabs(dF) < 1e-8 || counter == 300)
+            {
+                break;
+            }
+        }
+//        cout << k << "   " << counter << endl;
+
+        //edit covMatrix
+        for(int i = 0; i < NetLength; ++i)
+        {
+            for(int j = 0; j < NumberOfVectors; ++j)
+            {
+                centeredMatrix[j][i] -= tempB[j] * tempA[i];
+            }
+        }
+
+        //count eigenVectors && eigenValues
+        sum1 = 0.;
+        sum2 = 0.;
+        for(int i = 0; i < NetLength; ++i)
+        {
+            sum1 += tempA[i] * tempA[i];
+        }
+        for(int j = 0; j < NumberOfVectors; ++j)
+        {
+            sum2 += tempB[j] * tempB[j];
+        }
+        for(int i = 0; i < NetLength; ++i)
+        {
+            tempA[i] /= sqrt(sum1);
+            //test equality of left and right singular vectors
+//            if(((tempB[i]-tempA[i])/tempB[i])<-0.05 || ((tempB[i]-tempA[i])/tempB[i])>0.05) cout << k << " " << i  << " warning" << endl;  //till k == 19 - OK
+        }
+
+        eigenValues[k] = sum1 * sum2 / double(NumberOfVectors-1.);
+
+
+        sum1 = 0.;
+        for(int j = 0; j <= k; ++j)
+        {
+            sum1 += eigenValues[j];
+        }
+//        cout << "Part of dispersion explained = " << sum1 * 100./double(trace) << " %" << endl;
+
+        cout << k+1;
+        cout << "\t" << eigenValues[k];
+        cout << "\tDisp = " << eigenValues[k]*100./trace;
+        cout << "\tTotal = " << sum1 * 100./trace;
+        cout << "\ttimeElapsed = " << initTime.elapsed()/1000. << " seconds";
+        cout << "\tSVD-iterations = " << counter;
+        cout << endl;
+        for(int i = 0; i < NetLength; ++i)
+        {
+            eigenVectors[i][k] = tempA[i]; //1-normalized
+        }
+
+        //need a rule
+        if(k+1 == ui->pcaNumberSpinBox->value() || sum1/trace >= ui->traceDoubleSpinBox->value())
+        {
+            cout << "numOfEigenValues = " << k+1 << endl;
+            numOfPc = k+1;
+            break;
+        }
+
+    }
+    ui->autpPCAMaxSpinBox->setValue(numOfPc);
+
+    double helpDouble;
+    if(0) //eigenVectors length - OK
+    {
+        for(int i = 0; i < numOfPc; ++i)
+        {
+            helpDouble = 0.;
+            for(int j = 0; j < NetLength; ++j)
+            {
+                helpDouble += eigenVectors[j][i] * eigenVectors[j][i];
+            }
+            helpDouble = sqrt(helpDouble);
+            cout << i << "'th eigenVector norm\t" << helpDouble << endl;
+        }
+    }
+
+
+    if(1) //eigenVectors output
+    {
+        ofstream eigenVectorsFile;
+        helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_pcaEigenVectors.txt";
+        eigenVectorsFile.open(helpString.toStdString().c_str());
+        for(int k = 0; k < numOfPc; ++k)
+        {
+            for(int i = 0; i < NetLength; ++i)
+            {
+                eigenVectorsFile << eigenVectors[i][k] << "\t";
+            }
+            eigenVectorsFile << "\n";
+        }
+        eigenVectorsFile.close();
+    }
+
+
+    sum1 = 0.;
+    for(int k = 0; k < numOfPc; ++k)
+    {
+        sum1 += eigenValues[k];
+    }
+    cout << "Part of dispersion explained = " << sum1 * 100./double(trace) << " %" << endl;
+    cout << "Number of Components = " << numOfPc << endl;
+
+    //memory for pcaProjections
+    matrix pcaMatrix(NumberOfVectors, numOfPc);
+
+    //return centeredMatrix
+    for(int j = 0; j < NumberOfVectors; ++j)
+    {
+        for(int i = 0; i < NetLength; ++i)
+        {
+            centeredMatrix[j][i] = dataMatrix[j][i] - averages[i];
+        }
+    }
+
+    for(int j = 0; j < NumberOfVectors; ++j)
+    {
+        for(int k = 0; k < numOfPc; ++k)
+        {
+            pcaMatrix[j][k] = 0.;
+            for(int i = 0; i < NetLength; ++i)
+            {
+                pcaMatrix[j][k] += centeredMatrix[j][i] * eigenVectors[i][k];
+            }
+        }
+    }
+
+    if(0)
+    {
+        double ** pcaMatrixTrans;
+        matrixCreate(&pcaMatrixTrans, numOfPc, NumberOfVectors);
+        matrixTranspose(pcaMatrix, NumberOfVectors, numOfPc, pcaMatrixTrans);
+
+        for(int k = 0; k < numOfPc; ++k)
+        {
+            for(int j = 0; j < numOfPc; ++j)
+            {
+//                if(k!=j && covariance(pcaMatrixTrans[k], pcaMatrixTrans[j], NumberOfVectors) > 100.) cout << k << j << endl;
+            }
+            cout << "cov " << k << " = " << covariance(pcaMatrixTrans[k], pcaMatrixTrans[k], NumberOfVectors) << endl;
+        }
+    }
+
+
+
+
+    FILE * pcaFile;
+
+    //count reduced Data - first some PC
+    for(int j = 0; j < NumberOfVectors; ++j) //i->j
+    {
+        helpString = def::dir->absolutePath()
+                     + slash() + "SpectraSmooth"
+                     + slash() + "PCA"
+                     + slash() + fileNames[j];
+        pcaFile = fopen(QDir::toNativeSeparators(helpString), "w");
+        for(int k = 0; k < numOfPc; ++k) //j->k
+        {
+            fprintf(pcaFile, "%lf\n", double(10. * pcaMatrix[j][k])); //PC coefficients
+        }
+        fclose(pcaFile);
+    }
+
+
+    //count distances between different spectre-vectors (projections on first numOfPc PCs)
+    for(int h = 0; h < NumberOfVectors; ++h)
+    {
+        for(int j = 0; j < NumberOfVectors; ++j)
+        {
+            if(ui->sammonComboBox->currentIndex() == 0)
+            {
+                differenceMatrix[h][j] = distance(dataMatrix[h].data(),
+                                                  dataMatrix[j].data(),
+                                                  NetLength);  //wet data
+            }
+            else if(ui->sammonComboBox->currentIndex() == 1)
+            {
+                differenceMatrix[h][j] = distance(pcaMatrix[h],
+                                                  pcaMatrix[j],
+                                                  numOfPc); //by some PC
+            }
+        }
+    }
+
+
+    if(ui->pcaCheckBox->isChecked())
+    {
+        int * vecTypes = new int [NumberOfVectors];
+        for(int i = 0; i < NumberOfVectors; ++i)
+        {
+            vecTypes[i] = dataMatrix[i][NetLength+1];
+        }
+
+        ui->sammonLineEdit->setText("pca");
+
+        Sammon(differenceMatrix, NumberOfVectors, vecTypes);
+
+        delete [] vecTypes;
+        ui->sammonLineEdit->clear();;
+    }
+
+    if(ui->kohonenCheckBox->isChecked())
+    {
+
+        //count average projection on 2 main principal components
+//        numOfPc = 5; //maybe was test
+        double * avProj = new double [numOfPc];
+        for(int j = 0; j < numOfPc; ++j)
+        {
+            avProj[j] = 0.;
+            for(int i = 0; i < NumberOfVectors; ++i)
+            {
+                avProj[j] += centeredMatrix[j][i];
+
+            }
+            avProj[j]/=NumberOfVectors;
+            cout << "averageProjection[" << j  << "] = " << avProj[j] << endl;
+        }
+        ui->sammonLineEdit->setText("kohonen");
+
+        ////////////////// matrix vs double **
+
+        // Kohonen(dataMatrix, eigenVectors, avProj, NumberOfVectors, NetLength);
+
+        delete [] avProj;
+        ui->sammonLineEdit->clear();
+    }
+
+
+    cout << "end" << endl;
+    cout << "whole time elapsed " << wholeTime.elapsed()/1000. << " sec" << endl;
+#endif
+}
+
+
+double errorSammon(double ** distOld, double ** distNew, int size)
+{
+    double sum1_ = 0., sum2_ = 0., ret;
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = 0; j < i; ++j)
+        {
+            if(distOld[i][j]  != 0.)
+            {
+                sum1_ += distOld[i][j];
+                sum2_ += (distOld[i][j] - distNew[i][j]) * (distOld[i][j] - distNew[i][j])/distOld[i][j];
+            }
+        }
+    }
+    ret = sum2_/double(sum1_);
+
+    return ret;
+}
+
+void refreshDistAll( double ** dist, double ** coordsNew, int size)
+{
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = 0; j < i; ++j)
+        {
+            dist[i][j] = distance(coordsNew[i], coordsNew[j], 2);
+            dist[j][i] = dist[i][j]; //distance(coordsNew[i], coordsNew[j], 2);
+        }
+    }
+
+
+}
+
+void refreshDist( double ** dist, double ** coordsNew, int size, int i)
+{
+    for(int j = 0; j < size; ++j)
+    {
+        dist[i][j] = distance(coordsNew[i], coordsNew[j], 2);
+        dist[j][i] = dist[i][j];
+    }
+}
+
+void countGradient(double ** coords, double ** distOld, double ** distNew, int size, double * gradient)
+{
+    double delta = 0.05;
+    double tmp1;
+
+    for(int i = 0; i < size; ++i)
+    {
+        tmp1 = coords[i][0];
+        coords[i][0] = tmp1 + delta/2.;
+        refreshDist(distNew, coords, size, i);
+        gradient[2 * i] = errorSammon(distOld, distNew, size);
+
+        coords[i][0] = tmp1 - delta/2.;
+        refreshDist(distNew, coords, size, i);
+        gradient[2 * i] -= errorSammon(distOld, distNew, size);
+        gradient[2 * i] /= delta;
+        coords[i][0] = tmp1;
+
+
+        tmp1 = coords[i][1];
+        coords[i][1] = tmp1 + delta/2.;
+        refreshDist(distNew, coords, size, i);
+        gradient[2 * i+1] = errorSammon(distOld, distNew, size);
+
+        coords[i][1] = tmp1 - delta/2.;
+        refreshDist(distNew, coords, size, i);
+        gradient[2 * i+1] -= errorSammon(distOld, distNew, size);
+        gradient[2 * i+1] /= delta;
+        coords[i][1] = tmp1;
+        refreshDist(distNew, coords, size, i);
+    }
+}
+
+void Net::moveCoordsGradient(double ** coords, double ** distOld, double ** distNew, int size)
+{
+
+    //gradient method
+    double * gradient = new double [size * 2];
+    double lambda = ui->lambdaDoubleSpinBox->value(); // how to estimate - add into UI
+    double num = 0;
+
+    double errorBackup;
+
+    countGradient(coords, distOld, distNew, size, gradient);
+    int j = 0;
+    while(1)
+    {
+        errorBackup = errorSammon(distOld, distNew, size);
+
+        for(int i = 0; i < size; ++i)
+        {
+            coords[i][0] -= gradient[2 * i] * lambda;
+            coords[i][1] -= gradient[2 * i+1] * lambda;
+        }
+        refreshDistAll(distNew, coords, size);
+
+
+        if(errorBackup > errorSammon(distOld, distNew, size))
+        {
+            num = j;
+        }
+        else
+        {
+            for(int i = 0; i < size; ++i)
+            {
+                coords[i][0] += gradient[2 * i] * lambda;
+                coords[i][1] += gradient[2 * i+1] * lambda;
+            }
+            refreshDistAll(distNew, coords, size);
+            break;
+        }
+        ++j;
+        if(j%5 == 4) lambda *= 2;
+    }
+    cout << j  << endl;
+}
+
+void moveCoords(double ** coords, double ** distOld, double ** distNew, int size, int i, int iterationsCount)
+{
+    int num = 10. * (iterationsCount/5. + 1.);
+    double coordTemp1, coordTemp2;
+
+    coordTemp1 = coords[i][0];
+    coordTemp2 = coords[i][1];
+
+    double tmp1,tmp2;
+
+
+    tmp1 = errorSammon(distOld, distNew, size);
+
+    for(int j = 0; j < num; ++j)
+    {
+        tmp2 = coords[i][0];
+        coords[i][0] = 0. + j * coordTemp1 * 2./(num-1) ; //from 0 to 1.5 * coords
+
+        refreshDist(distNew, coords, size, i);
+        if(errorSammon(distOld, distNew, size) > tmp1)
+        {
+            coords[i][0] = tmp2;
+        }
+        else
+        {
+            tmp1 = errorSammon(distOld, distNew, size);
+        }
+        refreshDist(distNew, coords, size, i);
+    }
+
+    tmp1 = errorSammon(distOld, distNew, size);
+    for(int j = 0; j < num; ++j)
+    {
+        tmp2 = coords[i][1];
+        coords[i][1] = 0. + j * coordTemp2 * 2./(num-1);
+
+        refreshDist(distNew, coords, size, i);
+        if(errorSammon(distOld, distNew, size) > tmp1)
+        {
+            coords[i][1] = tmp2;
+        }
+        else
+        {
+            tmp1 = errorSammon(distOld, distNew, size);
+        }
+        refreshDist(distNew, coords, size, i);
+    }
+
+}
+
+//Sammon's projection
+void Net::Sammon(double ** distArr, int size, int * types)
+{
+#if 0
+    srand(time(NULL));
+    double ** distNew = new double * [size];
+    for(int i = 0; i < size; ++i)
+    {
+        distNew[i] = new double [size];
+    }
+
+    coords.resize(size, 3);
+
+    //set random coordinates
+    for(int i = 0; i < size; ++i)
+    {
+        coords[i][0] = (rand()%20 + 10.);
+        coords[i][1] = (rand()%20 + 10.);
+        coords[i][2] = types[i];
+    }
+
+//    double maxDist = 0.;
+    for(int i = 0; i < size; ++i)
+    {
+        for(int j = 0; j < size; ++j)
+        {
+            distNew[i][j] = distance(coords[i], coords[j], 2); //plane euclid distance
+//            maxDist = fmax(distNew[i][j], maxDist);
+        }
+    }
+//    cout << "maxDistanceRandomSet = " << maxDist << endl;
+
+
+
+
+    //coordinate method
+    double tmpError1 = 0.;
+    double tmpError2 = errorSammon(distArr, distNew, size);
+    int iterationsCount = 0;
+
+    int * mixNum = new int [size];
+    for(int i = 0; i < size; ++i)
+    {
+        mixNum[i] = i;
+    }
+    int a1, a2, temp;
+    for(int i = 0; i < size * 5; ++i)
+    {
+        a1 = rand()%size;
+        a2 = rand()%size;
+        temp = mixNum[a1];
+        mixNum[a1] = mixNum[a2];
+        mixNum[a2] = temp;
+    }
+
+
+
+    if(ui->optimizationMethodComboBox->currentIndex() == 0)
+    {
+        cout << "start coordinate method, error = " << tmpError2 << endl;
+        while(1)
+        {
+            tmpError1 = tmpError2; //error before
+            for(int i = 0; i < size; ++i)
+            {
+                //            cout << iterationsCount << "   " << i  << endl;
+                moveCoords(coords, distArr, distNew, size, mixNum[i], iterationsCount);
+                refreshDist(distNew, coords, size, mixNum[i]);
+            }
+            tmpError2 = errorSammon(distArr, distNew, size);
+
+            cout << iterationsCount << " error = " << tmpError2 << endl;
+            ++iterationsCount;
+            if(tmpError2 < 0.05 || (fabs(tmpError1-tmpError2)/tmpError1)<0.002) break;
+        }
+        cout << "NumOfIterations = " << iterationsCount << " error = " << tmpError2 << endl;
+    }
+
+    if(ui->optimizationMethodComboBox->currentIndex() == 1)
+    {
+
+        cout << "start gradient method, error = " << tmpError2 << endl;
+        while(1)
+        {
+            tmpError1 = tmpError2; //error before
+            moveCoordsGradient(coords, distArr, distNew, size);
+            tmpError2 = errorSammon(distArr, distNew, size);
+
+            cout << iterationsCount << " error = " << tmpError2 << endl;
+            ++iterationsCount;
+            if(tmpError2 < 0.05 || (fabs(tmpError1-tmpError2)/tmpError1)<0.002) break;
+        }
+        cout << "NumOfIterations = " << iterationsCount << " error = " << tmpError2 << endl;
+    }
+
+    delete [] mixNum;
+
+    for(int i = 0; i < size; ++i)
+    {
+        delete [] distNew[i];
+    }
+    delete [] distNew;
+
+
+    QMessageBox::information((QWidget * )this, tr("info"), tr("Sammon projection counted"), QMessageBox::Ok);
+#endif
+}
+
+void Net::drawSammon() //uses coords array
+{
+#if 0
+    if(coords == NULL)
+    {
+        cout << "coords array == NULL" << endl;
+        QMessageBox::information((QWidget * )this, tr("warning"), tr("Coords array == NULL"), QMessageBox::Ok);
+        return;
+    }
+
+
+    //draw the points
+    QPixmap pic(1800,1200);
+    pic.fill();
+    QPainter * painter = new QPainter();
+    painter->begin(&pic);
+
+    //axes
+    painter->drawLine(QPointF(0, pic.height()/2.), QPointF(pic.width(), pic.height()/2.));
+    painter->drawLine(QPointF(pic.width()/2., 0), QPointF(pic.width()/2, pic.height()));
+
+    double minX = 0., minY = 0., maxX = 0., maxY = 0., avX,avY, rangeX, rangeY;
+    int rectSize = ui->sizeSpinBox->value();
+
+    double sum1 = 0., sum2 = 0.;
+    minX = coords[0][0];
+    minY = coords[0][1];
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        maxX = fmax(maxX, coords[i][0]);
+        maxY = fmax(maxY, coords[i][1]);
+        minX = fmin(minX, coords[i][0]);
+        minY = fmin(minY, coords[i][1]);
+    }
+    avX = (minX + maxX)/2.;
+    avY = (minY + maxY)/2.;
+
+    rangeX = (maxX - minX)/2.;
+    rangeY = (maxY - minY)/2.;
+
+
+    for(int i = 0; i < NumberOfVectors; ++i)
+    {
+        sum1 = coords[i][0];
+        sum2 = coords[i][1];
+
+//        cout << sum1 << "  " << sum2 << endl;
+
+        painter->setBrush(QBrush("black"));
+        painter->setPen("black");
+
+        if(coords[i][2] == 0)
+        {
+            painter->setBrush(QBrush("blue"));
+            painter->setPen("blue");
+        }
+        if(coords[i][2] == 1)
+        {
+            painter->setBrush(QBrush("red"));
+            painter->setPen("red");
+        }
+        if(coords[i][2] == 2)
+        {
+            painter->setBrush(QBrush("green"));
+            painter->setPen("green");
+        }
+        painter->drawRect(QRectF(QPointF(pic.width()/2. + (sum1-avX)/rangeX * pic.width()/2. - rectSize - avX, pic.height()/2. + (sum2-avY)/rangeY * pic.height()/2. - rectSize - avY), QPointF(pic.width()/2. + (sum1-avX)/rangeX * pic.width()/2. + rectSize  - avX, pic.height()/2. + (sum2-avY)/rangeY * pic.height()/2. + rectSize - avY)));
+
+    }
+
+    QString helpString = def::dir->absolutePath() + slash() + "Help" + slash() + "Sammon-" + ui->sammonLineEdit->text() + ".jpg";
+
+    cout << helpString.toStdString() << endl;
+    pic.save(helpString, 0, 100);
+
+    painter->end();
+//    delete [] painter;
+    for(int i = 0; i < 3; ++i)
+    {
+        delete [] coords[i];
+    }
+    delete [] coords;
+    cout << "Sammon projection done" << endl;
+    QMessageBox::information((QWidget * )this, tr("info"), tr("Sammon projection drawn"), QMessageBox::Ok);
+#endif
+}
+
+
+double Net::thetalpha(int bmu_, int j_, int step_, double ** arr, int length_)
+{
+    //approximately 20-30 steps
+    double neighbour = 0., alpha = 0., temp = 0., sigma = 0.;
+    alpha = 5./(step_+5.);
+    sigma = 10./(step_+10.);
+    neighbour = exp(- distance(arr[bmu_], arr[j_], length_) * distance(arr[bmu_], arr[j_], length_) / (2. * sigma * sigma));
+    temp = neighbour * alpha;
+//    if(bmu_ == j_) temp = 1.;
+    return temp;
+}
+
+//length - dimension of input vectors
+void Net::Kohonen(double ** input, double ** eigenVects, double * averageProjection, int size, int length)
+{
+#if 0
+    srand(time(NULL));
+//    int numOfComponents = SizeOfArray(averageProjection); //=2
+//    cout << "size = " << size << " SizeOfArray(input) = " << SizeOfArray(input) << endl;
+
+//    int sqrLen = floor(sqrt(size)) + 1;
+    int sqrLen = 10;
+    int numOfNodes = sqrLen * sqrLen;
+
+    //set the coords
+    double ** coordsKohonen = new double * [numOfNodes];
+    for(int i = 0; i < numOfNodes; ++i)
+    {
+        coordsKohonen[i] = new double [2];
+
+        coordsKohonen[i][0] = (i%sqrLen);
+        coordsKohonen[i][1] = floor(i/sqrLen);
+    }
+
+    //set the weights
+    double a1,a2;
+    double ** weightsKohonen = new double * [numOfNodes];
+    for(int i = 0; i < numOfNodes; ++i)
+    {
+        weightsKohonen[i] = new double [length+1]; //+ type
+
+        //+- 10%
+        a1 = (0.9 + 0.05 * (rand()%41)/10.);
+        a2 = (0.9 + 0.05 * (rand()%41)/10.);
+        for(int j = 0; j < length; ++j)
+        {
+            weightsKohonen[i][j] = averageProjection[0] * a1 * eigenVects[j][0]  + averageProjection[1] * a2 * eigenVects[j][1];
+//            cout << weightsKohonen[i][j] << endl; //OK
+        }
+    }
+
+    int * mixNum = new int [size];
+    int tmp1, tmp2, buf;
+    double minDist;
+    int * bmu = new int [size]; //num of bet match neuron
+
+    double * distances = new double [numOfNodes];
+    for(int i = 0; i < numOfNodes; ++i)
+    {
+        distances[i] = 0.;
+    }
+
+    double error = 0., tempError = 0.;
+
+    int step = 0;
+    while(1)
+    {
+
+        //mix the order
+        for(int i = 0; i < size; ++i)
+        {
+            mixNum[i] = i;
+        }
+
+
+        for(int i = 0; i < 5 * size; ++i)
+        {
+            tmp1 = rand()%(size);
+            tmp2 = rand()%(size);
+            buf = mixNum[tmp2];
+            mixNum[tmp2] = mixNum[tmp1];
+            mixNum[tmp1] = buf;
+        }
+
+        //for every inputVector
+        for(int i = 0; i < size; ++i)
+        {
+
+            //find BMU
+            for(int j = 0; j < numOfNodes; ++j)
+            {
+                distances[j] = distance(input[mixNum[i]], weightsKohonen[j], length);
+                if(j == 0)
+                {
+                    minDist = distances[j]; bmu[mixNum[i]] = j;
+                }
+                else
+                {
+                    if(distances[j] < minDist)
+                    {
+                        minDist = distances[j];
+                        bmu[mixNum[i]] = j;
+                        weightsKohonen[j][length] = input[mixNum[i]][NetLength+1];
+                    }
+                }
+            }
+
+
+            for(int j = 0; j < numOfNodes; ++j)
+            {
+                //adjust the weights
+                for(int k = 0; k<length; ++k)
+                {
+                     weightsKohonen[j][k] += thetalpha(bmu[mixNum[i]], j, step, coordsKohonen, 2) * (input[mixNum[i]][k] - weightsKohonen[j][k]);
+                }
+
+                //adjust the coords???
+                coordsKohonen[j][0]  += 0;// theta(bmu[mixNum[i]], j, step) * alpha(step) * (input[mixNum[i]][k] - weightsKohonen[j][k]);
+                coordsKohonen[j][1]  += 0;// theta(bmu[mixNum[i]], j, step) * alpha(step) * (input[mixNum[i]][k] - weightsKohonen[j][k]);
+            }
+        }
+        tempError = error;
+        error = 0.;
+        //count error
+        for(int i = 0; i < size; ++i)
+        {
+            error += distance(input[i], weightsKohonen[bmu[i]], length);
+        }
+        error/=size;
+        cout << step << " " << "error = " << error << endl;
+
+
+
+        ++step;
+        if(step == 100 || error<0.01 || fabs(tempError-error)/error <0.002) break;
+    }
+
+
+
+    double ** distKohonen = new double * [numOfNodes];
+    for(int i = 0; i < numOfNodes; ++i)
+    {
+        distKohonen[i] = new double [numOfNodes];
+        for(int j = 0; j < numOfNodes; ++j)
+        {
+            distKohonen[i][j] = distance(weightsKohonen[i], weightsKohonen[j], length);
+//            cout << distKohonen[i][j] << endl; //OK
+        }
+    }
+
+    int * typesKohonen = new int [numOfNodes];
+    for(int i = 0; i < numOfNodes; ++i)
+    {
+        typesKohonen[i] = weightsKohonen[i][length];
+        if(typesKohonen[i]  != 0 && typesKohonen[i]  != 1 && typesKohonen[i]  != 2)
+        {
+            cout << "typeKohonen = " << typesKohonen[i] << endl;
+        }
+    }
+    Sammon(distKohonen, numOfNodes, typesKohonen);
+
+
+    delete [] mixNum;
+    delete [] distances;
+    delete [] bmu;
+    for(int i = 0; i < numOfNodes; ++i)
+    {
+        delete [] distKohonen[i];
+        delete [] weightsKohonen[i];
+        delete [] coordsKohonen[i];
+    }
+    delete [] distKohonen;
+    delete [] coordsKohonen;
+    delete [] weightsKohonen;
+    delete [] typesKohonen;
+
+#endif
+
+}
+
+void Net::neuronGas()
+{
+}
+
+
+void Net::optimizeChannelsSet() /// CAREFUL
+{
+#if 0
+    int tempItem;
+    int tempIndex;
+
+    //test
+//    tempItem = channelsSet[0];
+//    channelsSet.remove(0);
+//    channelsSetExclude.push_back(tempItem);
+//    cout << "current set:" << "\n";
+//    for(int i = 0; i < channelsSet.length(); ++i)
+//    {
+//        cout << channelsSet[i] << "  ";
+//    }
+//    cout << endl;
+//    cout << "exclude set:" << "\n";
+//    for(int i = 0; i < channelsSetExclude.length(); ++i)
+//    {
+//        cout << channelsSetExclude[i] << "  ";
+//    }
+//    cout << endl;
+
+
+
+
+//    NetLength = spLength * (NetLength/spLength - 1);
+//    dimensionality[0] = NetLength;
+//    autoClassificationSimple();
+//    cout << "classified\t" << averageAccuracy << endl << endl;
+
+
+
+    spLength = NetLength/ns;
+    channelsSetExclude.clear();
+    autoClassificationSimple();
+    double tempAccuracy = averageAccuracy;
+
+
+    cout << "Init Accuracy = " << averageAccuracy << endl;
+    bool foundFlag = false;
+
+    channelsSet.clear();
+    for(int i = 0; i < 19; ++i)
+    {
+        channelsSet << i;
+    }
+    QList <int> neededChannels;
+    neededChannels.clear();
+
+
+    while(1)
+    {
+
+        cout << endl << "optimization iteration" << endl;
+        foundFlag = false;
+        NetLength = spLength * (NetLength/spLength - 1);
+        dimensionality[0] = NetLength;
+        cout << "Optimizing: NetLength = " << NetLength << endl;
+        cout << "channelsSet.length() = " << channelsSet.length() << endl;
+
+
+
+        tempIndex = -1;
+        for(int i = tempIndex+1; i < channelsSet.length(); ++i)
+        {
+
+            tempItem = channelsSet[i];
+            if(neededChannels.contains(tempItem))
+            {
+                cout << "needed channel[" << i << "] = " << tempItem << endl;
+                continue;
+            }
+
+            channelsSet.removeAt(i);
+            channelsSetExclude.push_back(tempItem);
+
+            //try classify w/o tempitem
+            autoClassificationSimple();
+            channelsSet.insert(i, tempItem);
+            channelsSetExclude.removeLast();
+
+            cout << "classified ch[" << i << "] = " << tempItem << "  accuracy = " << averageAccuracy << endl << endl;
+
+
+            if(averageAccuracy > tempAccuracy + 0.6)
+            {
+                tempAccuracy = averageAccuracy;
+                tempIndex = i;
+                foundFlag = true;
+                break;
+            }
+            else if(averageAccuracy > tempAccuracy)
+            {
+                tempAccuracy = averageAccuracy;
+                tempIndex = i;
+                foundFlag = true;
+            }
+            else if(averageAccuracy < tempAccuracy - 1.5)
+            {
+                neededChannels << tempItem;
+                cout << "new needed channel[" << i << "] = " << tempItem << endl;
+            }
+
+        }
+
+        if(foundFlag)
+        {
+            cout << "removed channel " << channelsSet[tempIndex] << endl;
+            cout << "current accuracy " << tempAccuracy << endl;
+
+            channelsSetExclude.push_back(channelsSet[tempIndex]);
+            channelsSet.removeAt(tempIndex);
+
+        }
+        else
+        {
+            NetLength = spLength * (NetLength/spLength + 1); //// CAREFUL
+            dimensionality[0] = NetLength;
+            break;
+        }
+    }
+
+
+    helpString = def::dir->absolutePath() + "/optimalChannels.txt";
+    outStream.open(helpString.toStdString().c_str(), ios_base::app);
+
+    helpString = def::ExpName;
+    helpString += "\r\nNumOfChannels " + QString::number(channelsSet.length()) + "\n";
+    for(int i = 0; i < channelsSet.length(); ++i)
+    {
+        helpString += QString::number(channelsSet[i] + 1) + "\t"; //count from 1
+    }
+    helpString += "\n";
+    for(int i = 0; i < channelsSet.length(); ++i)
+    {
+        helpString += QString(coords::lbl[channelsSet[i]]) + "\t";
+    }
+    helpString += "\n";
+
+    autoFlag = 0;
+
+    outStream << helpString.toStdString() << endl;
+    outStream.close();
+//    QMessageBox::information((QWidget * )this, tr("Optimization results"), helpString, QMessageBox::Ok);
+#endif
+}
+
 
 #if 0
 void Net::leaveOneOutCL()
@@ -1692,120 +3156,9 @@ void Net::leaveOneOutCL()
 #endif
 
 
-void Net::trainTestClassification(const QString & trainTemplate,
-                                  const QString & testTemplate)
-{
-    vector<int> learnIndices;
-    vector<int> tallIndices;
-    for(int i = 0; i < dataMatrix.rows(); ++i)
-    {
-        if(fileNames[i].contains(trainTemplate))
-        {
-            learnIndices.push_back(i);
-        }
-        else if(fileNames[i].contains(testTemplate))
-        {
-            tallIndices.push_back(i);
-        }
-    }
-//    for(int i = 0; i < learnIndices.size(); ++i)
-//    {
-//        cout << fileNames[learnIndices[i]] << endl;
-//    }
-//    cout << endl;
-//    for(int i = 0; i < tallIndices.size(); ++i)
-//    {
-//        cout << fileNames[tallIndices[i]] << endl;
-//    }
-    LearNetIndices(learnIndices);
-    tallNetIndices(tallIndices);
-    cout << "train-test classification - ";
-    averageClassification();
-}
-
-void Net::leaveOneOut()
-{
-    vector<int> learnIndices;
-    for(int i = 0; i < dataMatrix.rows(); ++i)
-    {
-        cout << i + 1;
-        cout << " "; cout.flush();
-
-        learnIndices.clear();
-        for(int j = 0; j < dataMatrix.rows(); ++j)
-        {
-            if(j == i) continue;
-            learnIndices.push_back(j);
-        }
-        LearNetIndices(learnIndices);
-        tallNetIndices({i});
-    }
-    cout << "N-fold cross-validation - ";
-    averageClassification();
-}
-
-
-void Net::PaIntoMatrix()
-{
-    if(loadPAflag != 1)
-    {
-        QMessageBox::critical((QWidget * )this, tr("Warning"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
-        return;
-    }
-
-    QString helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL, tr("load PA"), def::dir->absolutePath(), tr("PA files (*.pa)")));
-    if(helpString == "")
-    {
-        QMessageBox::information((QWidget * )this, tr("Information"), tr("No file was chosen"), QMessageBox::Ok);
-        return;
-    }
-    readPaFile(helpString,
-               dataMatrix,
-               fileNames,
-               classCount);
-//    cout << "PaRead: time elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
-
-}
-
-
-void Net::PaIntoMatrixByName(const QString & fileName)
-{
-    if(loadPAflag != 1)
-    {
-        QMessageBox::critical((QWidget * )this, tr("net.cpp: PaIntoMatrixByName"), tr("No CFG-file loaded yet"), QMessageBox::Ok);
-        return;
-    }
-    QString helpString = def::dir->absolutePath()
-                         + slash() + "PA"
-                         + slash() + fileName;
-    if(!fileName.contains(".pa"))
-    {
-        helpString += ".pa";
-    }
-
-    if(!QFile::exists(helpString))
-    {
-        cout << "PaIntoMatrixByName: cannot open file\n" << helpString << endl;
-    }
-
-    readPaFile(helpString,
-               dataMatrix,
-               fileNames,
-               classCount);
-}
-
-//void Net::loadDataFromFolder(const QString & spectraPath)
-//{
-//    makePaFile(spectraDir, listToWrite, coeff, helpString);
-//}
-
-double HopfieldActivation(double x, double temp)
-{
-    return ((1./(1. + exp(-x/temp/300.)) * 2.) - 1.) * temp;
-}
-
 void Net::Hopfield()
 {
+#if 0
     double maxH = 0.;
     double * output1 = new double [NetLength];
     double * output2 = new double [NetLength];
@@ -2050,310 +3403,15 @@ void Net::Hopfield()
     delete [] output2;
     delete [] outputClass;
     delete mkPa;
-
-
-}
-
-void Net::methodSetParam(int a, bool ch)
-{
-    if(!loadPAflag) return;
-    if(!ch) return;
-    if(group3->button(a)->text().contains("delta")) ///generality
-    {
-//        cout << "delta button pressed" << endl;
-        ui->epochSpinBox->setValue(250);
-        ui->tempBox->setValue(10);
-        ui->learnRateBox->setValue(0.1);
-        ui->critErrorDoubleSpinBox->setValue(0.1);
-
-        ui->dimensionalityLineEdit->setText("0 0");
-        ui->dimensionalityLineEdit->setReadOnly(true);
-
-        ui->numOfLayersSpinBox->setValue(2);
-        ui->numOfLayersSpinBox->setReadOnly(true);
-
-    }
-    else if(group3->button(a)->text().contains("backprop"))  ///generality
-    {
-//        cout << "backprop button pressed" << endl;
-        ui->epochSpinBox->setValue(300);
-        ui->tempBox->setValue(2);
-        ui->learnRateBox->setValue(1.0);
-        ui->critErrorDoubleSpinBox->setValue(0.05);
-
-        ui->numOfLayersSpinBox->setValue(3);
-        ui->numOfLayersSpinBox->setReadOnly(false);
-
-        ui->dimensionalityLineEdit->setText("0 20 0");
-        ui->dimensionalityLineEdit->setReadOnly(false);
-    }
-    else if(group3->button(a)->text().contains("deepBelief"))  ///generality
-    {
-        ui->epochSpinBox->setValue(300);
-        ui->tempBox->setValue(2);
-        ui->learnRateBox->setValue(1.0);
-        ui->critErrorDoubleSpinBox->setValue(0.05);
-
-        ui->numOfLayersSpinBox->setValue(3);
-        ui->numOfLayersSpinBox->setReadOnly(false);
-
-        ui->dimensionalityLineEdit->setText("0 22 0");
-        ui->dimensionalityLineEdit->setReadOnly(false);
-    }
-    memoryAndParamsAllocation();
-}
-
-
-void Net::memoryAndParamsAllocation()
-{
-    //NetLength should be set
-    //def::numOfClasses should be set
-
-//    if((weight != NULL) && (dimensionality != NULL) && loadPAflag)
-//    {
-//        for(int i = 0; i < numOfLayers - 1; ++i)
-//        {
-//            for(int j = 0; j < dimensionality[i] + 1; ++j) //
-//            {
-//                delete []weight[i][j];
-//            }
-//            delete []weight[i];
-//        }
-//        delete []weight;
-//        delete []dimensionality;
-//    }
-
-//    const int numOfLayers = ui->numOfLayersSpinBox->value();
-    QString helpString = ui->dimensionalityLineEdit->text();
-    QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
-//    if(lst.length() != numOfLayers)
-//    {
-//        QMessageBox::critical(this, tr("Error"), tr("Dimensionality and numOfLayers dont correspond"), QMessageBox::Ok);
-//        return;
-//    }
-//    dimensionality = new int [numOfLayers];
-
-    const int numOfLayers = lst.length();
-
-    dimensionality.resize(numOfLayers);
-    dimensionality[0] = NetLength;
-    for(int i = 1; i < numOfLayers - 1; ++i)
-    {
-        if(QString::number(lst[i].toInt()) != lst[i])
-        {
-            helpString = QString::number(i) + "'th dimensionality has bad format";
-            QMessageBox::critical(this, tr("Error"), tr(helpString.toStdString().c_str()), QMessageBox::Ok);
-            return;
-        }
-        dimensionality[i] = lst[i].toInt();
-    }
-    dimensionality[numOfLayers - 1] = def::numOfClasses;
-
-
-//    weight = new double ** [numOfLayers - 1]; // weights from i'th layer to (i+1)'th
-//    for(int i = 0; i < numOfLayers - 1; ++i)
-//    {
-//        weight[i] = new double * [dimensionality[i] + 1]; //+1 for bias
-//        for(int j = 0; j < dimensionality[i] + 1; ++j) //
-//        {
-//            weight[i][j] = new double [dimensionality[i+1]];
-//        }
-//    }
-    weight.resize(numOfLayers - 1);
-    for(int i = 0; i < numOfLayers - 1; ++i)
-    {
-        weight[i].resize(dimensionality[i] + 1);
-        for(int j = 0; j < dimensionality[i] + 1; ++j)
-        {
-            weight[i][j].resize(dimensionality[i + 1]);
-        }
-    }
-
-#if 0
-    cout << "memparams:\n";
-    cout << "numOfLayers = " << numOfLayers << endl;
-    for(int i = 0; i < numOfLayers; ++i)
-    {
-        cout << "dim[" << i << "] = " << dimensionality[i] << endl;
-    }
 #endif
 
-    reset();
-
 }
 
-
-
-void Net::LearnNet()
-{
-    vector <int> mixNum;
-    for(int i = 0; i < dataMatrix.rows(); ++i)
-    {
-        mixNum.push_back(i);
-    }
-    LearNetIndices(mixNum);
-}
-
-void Net::LearNetIndices(vector<int> mixNum)
-{
-    QTime myTime;
-    myTime.start();
-
-    const int numOfLayers = dimensionality.size();
-    mat deltaWeights(numOfLayers);
-    mat output(numOfLayers);
-    for(int i = 0; i < numOfLayers; ++i)
-    {
-        deltaWeights[i].resize(dimensionality[i]);
-        output[i].resize(dimensionality[i] + 1);
-    }
-
-    const double critError = ui->critErrorDoubleSpinBox->value();
-    const double temperature = ui->tempBox->value();
-    const double learnRate = ui->learnRateBox->value();
-    const bool deltaFlag = ui->deltaRadioButton->isChecked();
-//    const double momentum = ui->momentumDoubleSpinBox->value(); //unused yet
-    double currentError = critError + 0.1;
-
-    int type = 0;
-
-    reset();
-
-
-    /// edit due to Indices
-    vector <double> normCoeff;
-    const double helpMin = *std::min_element(classCount.begin(),
-                                             classCount.end());
-
-    for(int i = 0; i < def::numOfClasses; ++i)
-    {
-        normCoeff.push_back(helpMin / classCount[i]);
-    }
-
-    if(ui->deepBeliefRadioButton->isChecked())
-    {
-//        prelearnDeepBelief();
-    }
-
-
-    epoch = 0;
-    while(currentError > critError && epoch < ui->epochSpinBox->value())
-    {
-        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-        currentError = 0.0;
-        // mix the sequence of input vectors
-        std::shuffle(mixNum.begin(),
-                     mixNum.end(),
-                     std::default_random_engine(seed));
-
-        for(const int & index : mixNum)
-        {
-            output[0] = dataMatrix[index];
-            type = output[0][dimensionality[0] + 1];
-            // do we need output[0][dimensionality[0] + 1] which is class ?
-//            output[0].pop_back();
-//            cout << 3 << endl;
-            //obtain outputs
-            for(int i = 1; i < numOfLayers; ++i)
-            {
-                for(int j = 0; j < dimensionality[i]; ++j)
-                {
-                    output[i][j] = 0.;
-
-                    for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
-                    {
-                        output[i][j] += weight[i-1][k][j] * output[i-1][k];
-                    }
-                    output[i][j] = logistic(output[i][j], temperature);
-                }
-                output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
-            }
-
-            //error in the last layer
-            for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
-            {
-                currentError += pow((output[numOfLayers - 1][j] - (type == j) ), 2.);
-            }
-
-            if(!deltaFlag) /// enum !
-            {
-                //count deltaweights (used for backprop only)
-                //for the last layer
-                for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
-                {
-                    deltaWeights[numOfLayers-1][j] = -1. / temperature
-                                                     * output[numOfLayers-1][j]
-                                                     * (1. - output[numOfLayers-1][j])
-                            * ((type == j) - output[numOfLayers-1][j]); //~0.1
-                }
-
-                //for the other layers, besides the input one, upside->down
-                for(int i = numOfLayers - 2; i >= 1; --i)
-                {
-                    for(int j = 0; j < dimensionality[i] + 1; ++j) //+1 for bias
-                    {
-                        deltaWeights[i][j] = 0.;
-                        for(int k = 0; k < dimensionality[i + 1]; ++k) //connected to the higher-layer
-                        {
-                            deltaWeights[i][j] += deltaWeights[i + 1][k] * weight[i][j][k];
-                        }
-                        deltaWeights[i][j] *= 1. / temperature * output[i][j] * (1. - output[i][j]);
-                    }
-                }
-            }
-
-
-            if(deltaFlag)
-            {
-                for(int i = 0; i < numOfLayers - 1; ++i)
-                {
-                    for(int j = 0; j < dimensionality[i] + 1; ++j) // +1 for bias? 01.12.2014
-                    {
-                        for(int k = 0; k < dimensionality[i + 1]; ++k)
-                        {
-                            // dropout regularization
-                            //                        if((rand() % 1000) / 1000. < ui->dropoutDoubleSpinBox->value()) continue;
-
-                            weight[i][j][k] += learnRate
-                                               * normCoeff[type]
-                                               * output[i][j]
-                                               * ((type == k) - output[i + 1][k]); // numOfLayers = 2 and i == 0 in this case
-
-
-                        }
-                    }
-                }
-            }
-            else /// backprop enum
-            {                // count new weights using deltas
-                for(int i = 0; i < numOfLayers - 1; ++i)
-                {
-                    for(int j = 0; j < dimensionality[i] + 1; ++j) // +1 for bias? 01.12.2014
-                    {
-                        for(int k = 0; k < dimensionality[i + 1]; ++k)
-                        {
-                            weight[i][j][k] -= learnRate
-                                               * normCoeff[type]
-                                               * output[i][j]
-                                               * deltaWeights[i + 1][k];
-                        }
-                    }
-                }
-            }
-        }
-        ++epoch;
-        //count error
-        currentError /= mixNum.size();
-        currentError = sqrt(currentError);
-        this->ui->currentErrorDoubleSpinBox->setValue(currentError);
-
-//        cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 3) << endl;
-    }
-    cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
-}
 
 void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLayers
 {
+#if 0
+    /// I dont use this, NEED CHECK weight
 //    int  * mixNum = new int [NumberOfVectors];
     vector<int> mixNum;
     const int NumberOfVectors = dataMatrix.rows();
@@ -2563,1324 +3621,5 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
     matrixDelete(&tempDeltaWeights, 3);
     matrixDelete(&tempOutput, 3);
     matrixDelete(&tempWeight, dimensionality[0] + 1);
-
-}
-
-
-
-bool Net::ClassificateVector(const int & vecNum)
-{
-    int type = int(dataMatrix[vecNum][NetLength + 1]);
-
-    const int numOfLayers = dimensionality.size();
-    const double temp = ui->tempBox->value();
-
-    mat output(numOfLayers);
-    for(int i = 0; i < numOfLayers; ++i)
-    {
-        output[i].resize(dimensionality[i] + 1);
-    }
-
-    for(int j = 0; j < dimensionality[0]; ++j)
-    {
-        output[0][j] = dataMatrix[vecNum][j];
-    }
-    output[0][dimensionality[0]] = 1.; //bias
-
-    for(int i = 1; i < numOfLayers; ++i)
-    {
-        for(int j = 0; j < dimensionality[i]; ++j) //higher level, w/o bias
-        {
-            output[i][j] = 0.;
-            for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
-            {
-                output[i][j] += weight[i-1][k][j] * output[i-1][k];
-            }
-            output[i][j] = logistic(output[i][j], temp);
-        }
-        output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
-    }
-
-    for(int k = 0; k < dimensionality[numOfLayers - 1]; ++k)
-    {
-        if(k != type && output[numOfLayers - 1] [k] >= output[numOfLayers - 1] [type])
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-int Net::getEpoch()
-{
-    return epoch;
-}
-
-double errorSammon(double ** distOld, double ** distNew, int size)
-{
-    double sum1_ = 0., sum2_ = 0., ret;
-    for(int i = 0; i < size; ++i)
-    {
-        for(int j = 0; j < i; ++j)
-        {
-            if(distOld[i][j]  != 0.)
-            {
-                sum1_ += distOld[i][j];
-                sum2_ += (distOld[i][j] - distNew[i][j]) * (distOld[i][j] - distNew[i][j])/distOld[i][j];
-            }
-        }
-    }
-    ret = sum2_/double(sum1_);
-
-    return ret;
-}
-
-void refreshDistAll( double ** dist, double ** coordsNew, int size)
-{
-    for(int i = 0; i < size; ++i)
-    {
-        for(int j = 0; j < i; ++j)
-        {
-            dist[i][j] = distance(coordsNew[i], coordsNew[j], 2);
-            dist[j][i] = dist[i][j]; //distance(coordsNew[i], coordsNew[j], 2);
-        }
-    }
-
-
-}
-
-void refreshDist( double ** dist, double ** coordsNew, int size, int i)
-{
-    for(int j = 0; j < size; ++j)
-    {
-        dist[i][j] = distance(coordsNew[i], coordsNew[j], 2);
-        dist[j][i] = dist[i][j];
-    }
-}
-
-void countGradient(double ** coords, double ** distOld, double ** distNew, int size, double * gradient)
-{
-    double delta = 0.05;
-    double tmp1;
-
-    for(int i = 0; i < size; ++i)
-    {
-        tmp1 = coords[i][0];
-        coords[i][0] = tmp1 + delta/2.;
-        refreshDist(distNew, coords, size, i);
-        gradient[2 * i] = errorSammon(distOld, distNew, size);
-
-        coords[i][0] = tmp1 - delta/2.;
-        refreshDist(distNew, coords, size, i);
-        gradient[2 * i] -= errorSammon(distOld, distNew, size);
-        gradient[2 * i] /= delta;
-        coords[i][0] = tmp1;
-
-
-        tmp1 = coords[i][1];
-        coords[i][1] = tmp1 + delta/2.;
-        refreshDist(distNew, coords, size, i);
-        gradient[2 * i+1] = errorSammon(distOld, distNew, size);
-
-        coords[i][1] = tmp1 - delta/2.;
-        refreshDist(distNew, coords, size, i);
-        gradient[2 * i+1] -= errorSammon(distOld, distNew, size);
-        gradient[2 * i+1] /= delta;
-        coords[i][1] = tmp1;
-        refreshDist(distNew, coords, size, i);
-    }
-}
-
-void Net::moveCoordsGradient(double ** coords, double ** distOld, double ** distNew, int size)
-{
-
-    //gradient method
-    double * gradient = new double [size * 2];
-    double lambda = ui->lambdaDoubleSpinBox->value(); // how to estimate - add into UI
-    double num = 0;
-
-    double errorBackup;
-
-    countGradient(coords, distOld, distNew, size, gradient);
-    int j = 0;
-    while(1)
-    {
-        errorBackup = errorSammon(distOld, distNew, size);
-
-        for(int i = 0; i < size; ++i)
-        {
-            coords[i][0] -= gradient[2 * i] * lambda;
-            coords[i][1] -= gradient[2 * i+1] * lambda;
-        }
-        refreshDistAll(distNew, coords, size);
-
-
-        if(errorBackup > errorSammon(distOld, distNew, size))
-        {
-            num = j;
-        }
-        else
-        {
-            for(int i = 0; i < size; ++i)
-            {
-                coords[i][0] += gradient[2 * i] * lambda;
-                coords[i][1] += gradient[2 * i+1] * lambda;
-            }
-            refreshDistAll(distNew, coords, size);
-            break;
-        }
-        ++j;
-        if(j%5 == 4) lambda *= 2;
-    }
-    cout << j  << endl;
-}
-
-void moveCoords(double ** coords, double ** distOld, double ** distNew, int size, int i, int iterationsCount)
-{
-    int num = 10. * (iterationsCount/5. + 1.);
-    double coordTemp1, coordTemp2;
-
-    coordTemp1 = coords[i][0];
-    coordTemp2 = coords[i][1];
-
-    double tmp1,tmp2;
-
-
-    tmp1 = errorSammon(distOld, distNew, size);
-
-    for(int j = 0; j < num; ++j)
-    {
-        tmp2 = coords[i][0];
-        coords[i][0] = 0. + j * coordTemp1 * 2./(num-1) ; //from 0 to 1.5 * coords
-
-        refreshDist(distNew, coords, size, i);
-        if(errorSammon(distOld, distNew, size) > tmp1)
-        {
-            coords[i][0] = tmp2;
-        }
-        else
-        {
-            tmp1 = errorSammon(distOld, distNew, size);
-        }
-        refreshDist(distNew, coords, size, i);
-    }
-
-    tmp1 = errorSammon(distOld, distNew, size);
-    for(int j = 0; j < num; ++j)
-    {
-        tmp2 = coords[i][1];
-        coords[i][1] = 0. + j * coordTemp2 * 2./(num-1);
-
-        refreshDist(distNew, coords, size, i);
-        if(errorSammon(distOld, distNew, size) > tmp1)
-        {
-            coords[i][1] = tmp2;
-        }
-        else
-        {
-            tmp1 = errorSammon(distOld, distNew, size);
-        }
-        refreshDist(distNew, coords, size, i);
-    }
-
-}
-
-//Sammon's projection
-void Net::Sammon(double ** distArr, int size, int * types)
-{
-#if 0
-    srand(time(NULL));
-    double ** distNew = new double * [size];
-    for(int i = 0; i < size; ++i)
-    {
-        distNew[i] = new double [size];
-    }
-
-    coords.resize(size, 3);
-
-    //set random coordinates
-    for(int i = 0; i < size; ++i)
-    {
-        coords[i][0] = (rand()%20 + 10.);
-        coords[i][1] = (rand()%20 + 10.);
-        coords[i][2] = types[i];
-    }
-
-//    double maxDist = 0.;
-    for(int i = 0; i < size; ++i)
-    {
-        for(int j = 0; j < size; ++j)
-        {
-            distNew[i][j] = distance(coords[i], coords[j], 2); //plane euclid distance
-//            maxDist = fmax(distNew[i][j], maxDist);
-        }
-    }
-//    cout << "maxDistanceRandomSet = " << maxDist << endl;
-
-
-
-
-    //coordinate method
-    double tmpError1 = 0.;
-    double tmpError2 = errorSammon(distArr, distNew, size);
-    int iterationsCount = 0;
-
-    int * mixNum = new int [size];
-    for(int i = 0; i < size; ++i)
-    {
-        mixNum[i] = i;
-    }
-    int a1, a2, temp;
-    for(int i = 0; i < size * 5; ++i)
-    {
-        a1 = rand()%size;
-        a2 = rand()%size;
-        temp = mixNum[a1];
-        mixNum[a1] = mixNum[a2];
-        mixNum[a2] = temp;
-    }
-
-
-
-    if(ui->optimizationMethodComboBox->currentIndex() == 0)
-    {
-        cout << "start coordinate method, error = " << tmpError2 << endl;
-        while(1)
-        {
-            tmpError1 = tmpError2; //error before
-            for(int i = 0; i < size; ++i)
-            {
-                //            cout << iterationsCount << "   " << i  << endl;
-                moveCoords(coords, distArr, distNew, size, mixNum[i], iterationsCount);
-                refreshDist(distNew, coords, size, mixNum[i]);
-            }
-            tmpError2 = errorSammon(distArr, distNew, size);
-
-            cout << iterationsCount << " error = " << tmpError2 << endl;
-            ++iterationsCount;
-            if(tmpError2 < 0.05 || (fabs(tmpError1-tmpError2)/tmpError1)<0.002) break;
-        }
-        cout << "NumOfIterations = " << iterationsCount << " error = " << tmpError2 << endl;
-    }
-
-    if(ui->optimizationMethodComboBox->currentIndex() == 1)
-    {
-
-        cout << "start gradient method, error = " << tmpError2 << endl;
-        while(1)
-        {
-            tmpError1 = tmpError2; //error before
-            moveCoordsGradient(coords, distArr, distNew, size);
-            tmpError2 = errorSammon(distArr, distNew, size);
-
-            cout << iterationsCount << " error = " << tmpError2 << endl;
-            ++iterationsCount;
-            if(tmpError2 < 0.05 || (fabs(tmpError1-tmpError2)/tmpError1)<0.002) break;
-        }
-        cout << "NumOfIterations = " << iterationsCount << " error = " << tmpError2 << endl;
-    }
-
-    delete [] mixNum;
-
-    for(int i = 0; i < size; ++i)
-    {
-        delete [] distNew[i];
-    }
-    delete [] distNew;
-
-
-    QMessageBox::information((QWidget * )this, tr("info"), tr("Sammon projection counted"), QMessageBox::Ok);
 #endif
-}
-
-void Net::drawSammon() //uses coords array
-{
-#if 0
-    if(coords == NULL)
-    {
-        cout << "coords array == NULL" << endl;
-        QMessageBox::information((QWidget * )this, tr("warning"), tr("Coords array == NULL"), QMessageBox::Ok);
-        return;
-    }
-
-
-    //draw the points
-    QPixmap pic(1800,1200);
-    pic.fill();
-    QPainter * painter = new QPainter();
-    painter->begin(&pic);
-
-    //axes
-    painter->drawLine(QPointF(0, pic.height()/2.), QPointF(pic.width(), pic.height()/2.));
-    painter->drawLine(QPointF(pic.width()/2., 0), QPointF(pic.width()/2, pic.height()));
-
-    double minX = 0., minY = 0., maxX = 0., maxY = 0., avX,avY, rangeX, rangeY;
-    int rectSize = ui->sizeSpinBox->value();
-
-    double sum1 = 0., sum2 = 0.;
-    minX = coords[0][0];
-    minY = coords[0][1];
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        maxX = fmax(maxX, coords[i][0]);
-        maxY = fmax(maxY, coords[i][1]);
-        minX = fmin(minX, coords[i][0]);
-        minY = fmin(minY, coords[i][1]);
-    }
-    avX = (minX + maxX)/2.;
-    avY = (minY + maxY)/2.;
-
-    rangeX = (maxX - minX)/2.;
-    rangeY = (maxY - minY)/2.;
-
-
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        sum1 = coords[i][0];
-        sum2 = coords[i][1];
-
-//        cout << sum1 << "  " << sum2 << endl;
-
-        painter->setBrush(QBrush("black"));
-        painter->setPen("black");
-
-        if(coords[i][2] == 0)
-        {
-            painter->setBrush(QBrush("blue"));
-            painter->setPen("blue");
-        }
-        if(coords[i][2] == 1)
-        {
-            painter->setBrush(QBrush("red"));
-            painter->setPen("red");
-        }
-        if(coords[i][2] == 2)
-        {
-            painter->setBrush(QBrush("green"));
-            painter->setPen("green");
-        }
-        painter->drawRect(QRectF(QPointF(pic.width()/2. + (sum1-avX)/rangeX * pic.width()/2. - rectSize - avX, pic.height()/2. + (sum2-avY)/rangeY * pic.height()/2. - rectSize - avY), QPointF(pic.width()/2. + (sum1-avX)/rangeX * pic.width()/2. + rectSize  - avX, pic.height()/2. + (sum2-avY)/rangeY * pic.height()/2. + rectSize - avY)));
-
-    }
-
-    QString helpString = def::dir->absolutePath() + slash() + "Help" + slash() + "Sammon-" + ui->sammonLineEdit->text() + ".jpg";
-
-    cout << helpString.toStdString() << endl;
-    pic.save(helpString, 0, 100);
-
-    painter->end();
-//    delete [] painter;
-    for(int i = 0; i < 3; ++i)
-    {
-        delete [] coords[i];
-    }
-    delete [] coords;
-    cout << "Sammon projection done" << endl;
-    QMessageBox::information((QWidget * )this, tr("info"), tr("Sammon projection drawn"), QMessageBox::Ok);
-#endif
-}
-
-//principal component analisys
-void Net::pca()
-{
-    QString helpString;
-    QTime wholeTime;
-    wholeTime.start();
-//    spLength - 1 channel
-//    spLength * ns = NetLength
-//    matrix - matrix of data
-//    centeredMatrix - matrix of centered data: matrix[i][j] -= average[j]
-//    random quantity is a spectre-vector of spLength dimension
-//    there are NumberOfVectors samples of this random quantity
-//        similarMatrix - matrix of similarity
-//        differenceMatrix - matrix of difference, according to some metric
-    //projectedMatrix - vectors with just some PCs left
-    const int NumberOfVectors = dataMatrix.rows();
-
-    cout << "NetLength = " << NetLength << endl;
-    cout << "NumberOfVectors = " << NumberOfVectors << endl;
-
-    double ** differenceMatrix = new double * [NumberOfVectors];
-    double ** centeredMatrix = new double * [NumberOfVectors];
-    double ** pcaMatrix = new double * [NumberOfVectors];
-
-
-    //i - spectral point
-    //j - number of current vector
-
-
-    for(int j = 0; j < NumberOfVectors; ++j)
-    {
-        differenceMatrix[j] = new double [NumberOfVectors];
-        centeredMatrix[j] = new double [NetLength];
-    }
-    for(int i = 0; i < NetLength; ++i)
-    {
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            centeredMatrix[j][i] = dataMatrix[j][i];
-        }
-    }
-
-    //count covariations
-    //count averages
-    double * averages = new double [NetLength];
-    for(int i = 0; i < NetLength; ++i)
-    {
-        averages[i] = 0.;
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            averages[i] += centeredMatrix[j][i];
-        }
-        averages[i] /= NumberOfVectors;
-//        cout << i  << "   " << averages[i] << endl; //test - OK
-    }
-
-    //centered matrix
-    for(int i = 0; i < NetLength; ++i)
-    {
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            centeredMatrix[j][i] -= averages[i];
-        }
-    }
-
-    cout << "centeredMatrix counted" << endl;
-
-    //NetLength ~ = 45000
-    //NumberOfVectors ~ = 100
-    //covariation between different spectra-bins
-    double tempDouble;
-
-    QTime initTime;
-    initTime.start();
-//    def::dir->mkdir("PCA");
-//    FILE * covMatrixFile;
-//    for(int i = 0; i < NetLength; ++i)
-//    {
-//        if((i+1)%50 == 0)
-//        {
-//            cout << "50 passed, time = " << initTime.elapsed() << " i = " << i  << endl;
-//            initTime.restart();
-//        }
-//        helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "PCA" + slash() + "covMatrix_" + QString::number(i));
-//        covMatrixFile = fopen(helpString.toStdString().c_str(), "w");
-//        for(int k = 0; k < NetLength; ++k)
-//        {
-//            tempDouble = 0.;
-//            for(int j = 0; j < NumberOfVectors; ++j)
-//            {
-//                tempDouble += centeredMatrix[j][i] * centeredMatrix[j][k];
-//            }
-//            tempDouble /= (NumberOfVectors - 1);
-//            fprintf(covMatrixFile, "%lf\n", tempDouble); //covariation between i'th and k'th components of vectors
-////            covMatrix[i][k] = tempDouble;
-//        }
-//        fclose(covMatrixFile);
-//    }
-
-
-//    //test covMatrix symmetric - OK
-//    for(int i = 0; i < NetLength; ++i)
-//    {
-//        for(int k = 0; k < NetLength; ++k)
-//        {
-//            if(covMatrix[i][k] != covMatrix[k][i]) cout << i  << " " << k << " warning" << endl;
-//        }
-//    }
-
-
-    double trace = 0.;
-    for(int i = 0; i < NetLength; ++i)
-    {
-        tempDouble = 0.;
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            tempDouble += centeredMatrix[j][i] * centeredMatrix[j][i];
-        }
-        tempDouble /= (NumberOfVectors - 1);
-        trace += tempDouble;
-    }
-    cout << "trace covMatrix = " << trace << endl;
-
-//    return;
-
-    //count eigenvalues & eigenvectors of covMatrix
-    double * eigenValues = new double [NetLength];
-    double ** eigenVectors = new double * [NetLength]; //vector is a coloumn
-    for(int i = 0; i < NetLength; ++i)
-    {
-        eigenVectors[i] = new double [ui->pcaNumberSpinBox->value()];
-    }
-    double * tempA = new double [NetLength]; //i
-    double * tempB = new double [NumberOfVectors];//j
-    double sum1, sum2; //temporary help values
-    double dF, F;
-    int counter;
-
-
-
-
-    int numOfPc;
-
-    cout << "start eigenValues processing" << endl;
-    //count eigenValues & eigenVectors
-    //matrix
-    for(int k = 0; k < NetLength; ++k)
-    {
-        initTime.restart();
-        dF = 1.0;
-        F = 1.0;
-
-        //set 1-normalized vector tempA        
-        for(int i = 0; i < NetLength; ++i)
-        {
-            tempA[i] = 1./sqrt(NetLength);
-        }
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            tempB[j] = 1./sqrt(NumberOfVectors);
-        }
-
-
-        //approximate P[i] = tempA x tempB;
-        counter = 0.;
-        while(1) //when stop approximate?
-        {
-            //countF
-            F = 0.;
-            for(int i = 0; i < NetLength; ++i)
-            {
-                for(int j = 0; j < NumberOfVectors; ++j)
-                {
-                    F += 0.5 * (centeredMatrix[j][i] - tempB[j] * tempA[i]) * (centeredMatrix[j][i] - tempB[j] * tempA[i]);
-                }
-//                cout << F << " ";
-            }
-            //count vector tempB
-            for(int j = 0; j < NumberOfVectors; ++j)
-            {
-                sum1 = 0.;
-                sum2 = 0.;
-                for(int i = 0; i < NetLength; ++i)
-                {
-                    sum1 += centeredMatrix[j][i] * tempA[i];
-                    sum2 += tempA[i] * tempA[i];
-                }
-                tempB[j] = sum1 / sum2;
-            }
-//            if(k == 0) cout << endl;
-
-            //count vector tempA
-            for(int i = 0; i < NetLength; ++i)
-            {
-                sum1 = 0.;
-                sum2 = 0.;
-                for(int j = 0; j < NumberOfVectors; ++j)
-                {
-                    sum1 += tempB[j] * centeredMatrix[j][i];
-                    sum2 += tempB[j] * tempB[j];
-                }
-                tempA[i] = sum1 / sum2;
-            }
-
-            dF = 0.;
-            for(int i = 0; i < NetLength; ++i)
-            {
-                for(int j = 0; j < NumberOfVectors; ++j)
-                {
-                    dF += 0.5 * (centeredMatrix[j][i] - tempB[j] * tempA[i]) * (centeredMatrix[j][i] - tempB[j] * tempA[i]);
-                }
-            }
-            dF = (F-dF)/F;
-            ++counter;
-            if(fabs(dF) < 1e-8 || counter == 300)
-            {
-                break;
-            }
-        }
-//        cout << k << "   " << counter << endl;
-
-        //edit covMatrix
-        for(int i = 0; i < NetLength; ++i)
-        {
-            for(int j = 0; j < NumberOfVectors; ++j)
-            {
-                centeredMatrix[j][i] -= tempB[j] * tempA[i];
-            }
-        }
-
-        //count eigenVectors && eigenValues
-        sum1 = 0.;
-        sum2 = 0.;
-        for(int i = 0; i < NetLength; ++i)
-        {
-            sum1 += tempA[i] * tempA[i];
-        }
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            sum2 += tempB[j] * tempB[j];
-        }
-        for(int i = 0; i < NetLength; ++i)
-        {
-            tempA[i] /= sqrt(sum1);
-            //test equality of left and right singular vectors
-//            if(((tempB[i]-tempA[i])/tempB[i])<-0.05 || ((tempB[i]-tempA[i])/tempB[i])>0.05) cout << k << " " << i  << " warning" << endl;  //till k == 19 - OK
-        }
-
-        eigenValues[k] = sum1 * sum2 / double(NumberOfVectors-1.);
-
-
-        sum1 = 0.;
-        for(int j = 0; j <= k; ++j)
-        {
-            sum1 += eigenValues[j];
-        }
-//        cout << "Part of dispersion explained = " << sum1 * 100./double(trace) << " %" << endl;
-
-        cout << k+1;
-        cout << "\t" << eigenValues[k];
-        cout << "\tDisp = " << eigenValues[k]*100./trace;
-        cout << "\tTotal = " << sum1 * 100./trace;
-        cout << "\ttimeElapsed = " << initTime.elapsed()/1000. << " seconds";
-        cout << "\tSVD-iterations = " << counter;
-        cout << endl;
-        for(int i = 0; i < NetLength; ++i)
-        {
-            eigenVectors[i][k] = tempA[i]; //1-normalized
-        }
-
-        //need a rule
-        if(k+1 == ui->pcaNumberSpinBox->value() || sum1/trace >= ui->traceDoubleSpinBox->value())
-        {
-            cout << "numOfEigenValues = " << k+1 << endl;
-            numOfPc = k+1;
-            break;
-        }
-
-    }
-    ui->autpPCAMaxSpinBox->setValue(numOfPc);
-
-    double helpDouble;
-    if(0) //eigenVectors length - OK
-    {
-        for(int i = 0; i < numOfPc; ++i)
-        {
-            helpDouble = 0.;
-            for(int j = 0; j < NetLength; ++j)
-            {
-                helpDouble += eigenVectors[j][i] * eigenVectors[j][i];
-            }
-            helpDouble = sqrt(helpDouble);
-            cout << i << "'th eigenVector norm\t" << helpDouble << endl;
-        }
-    }
-
-
-    if(1) //eigenVectors output
-    {
-        ofstream eigenVectorsFile;
-        helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_pcaEigenVectors.txt";
-        eigenVectorsFile.open(helpString.toStdString().c_str());
-        for(int k = 0; k < numOfPc; ++k)
-        {
-            for(int i = 0; i < NetLength; ++i)
-            {
-                eigenVectorsFile << eigenVectors[i][k] << "\t";
-            }
-            eigenVectorsFile << "\n";
-        }
-        eigenVectorsFile.close();
-    }
-
-
-    sum1 = 0.;
-    for(int k = 0; k < numOfPc; ++k)
-    {
-        sum1 += eigenValues[k];
-    }
-    cout << "Part of dispersion explained = " << sum1 * 100./double(trace) << " %" << endl;
-    cout << "Number of Components = " << numOfPc << endl;
-
-    //memory for pcaProjections
-    for(int j = 0; j < NumberOfVectors; ++j)
-    {
-        pcaMatrix[j] = new double [numOfPc];
-    }
-
-    //return centeredMatrix
-    for(int j = 0; j < NumberOfVectors; ++j)
-    {
-        for(int i = 0; i < NetLength; ++i)
-        {
-            centeredMatrix[j][i] = dataMatrix[j][i] - averages[i];
-        }
-    }
-
-    for(int j = 0; j < NumberOfVectors; ++j)
-    {
-        for(int k = 0; k < numOfPc; ++k)
-        {
-            pcaMatrix[j][k] = 0.;
-            for(int i = 0; i < NetLength; ++i)
-            {
-                pcaMatrix[j][k] += centeredMatrix[j][i] * eigenVectors[i][k];
-            }
-        }
-    }
-
-    if(0)
-    {
-        double ** pcaMatrixTrans;
-        matrixCreate(&pcaMatrixTrans, numOfPc, NumberOfVectors);
-        matrixTranspose(pcaMatrix, NumberOfVectors, numOfPc, pcaMatrixTrans);
-
-        for(int k = 0; k < numOfPc; ++k)
-        {
-            for(int j = 0; j < numOfPc; ++j)
-            {
-//                if(k!=j && covariance(pcaMatrixTrans[k], pcaMatrixTrans[j], NumberOfVectors) > 100.) cout << k << j << endl;
-            }
-            cout << "cov " << k << " = " << covariance(pcaMatrixTrans[k], pcaMatrixTrans[k], NumberOfVectors) << endl;
-        }
-    }
-
-
-
-
-    FILE * pcaFile;
-
-    //count reduced Data - first some PC
-    for(int j = 0; j < NumberOfVectors; ++j) //i->j
-    {
-        helpString = dirBC->absolutePath()
-                     + slash() + "SpectraSmooth"
-                     + slash() + "PCA"
-                     + slash() + fileNames[j];
-        pcaFile = fopen(QDir::toNativeSeparators(helpString), "w");
-        for(int k = 0; k < numOfPc; ++k) //j->k
-        {
-            fprintf(pcaFile, "%lf\n", double(10. * pcaMatrix[j][k])); //PC coefficients
-        }
-        fclose(pcaFile);
-    }
-
-
-    //count distances between different spectre-vectors (projections on first numOfPc PCs)
-    for(int h = 0; h < NumberOfVectors; ++h)
-    {
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            if(ui->sammonComboBox->currentIndex() == 0)
-            {
-                differenceMatrix[h][j] = distance(dataMatrix[h].data(),
-                                                  dataMatrix[j].data(),
-                                                  NetLength);  //wet data
-            }
-            else if(ui->sammonComboBox->currentIndex() == 1)
-            {
-                differenceMatrix[h][j] = distance(pcaMatrix[h],
-                                                  pcaMatrix[j],
-                                                  numOfPc); //by some PC
-            }
-        }
-    }
-
-
-    if(ui->pcaCheckBox->isChecked())
-    {
-        int * vecTypes = new int [NumberOfVectors];
-        for(int i = 0; i < NumberOfVectors; ++i)
-        {
-            vecTypes[i] = dataMatrix[i][NetLength+1];
-        }
-
-        ui->sammonLineEdit->setText("pca");
-
-        Sammon(differenceMatrix, NumberOfVectors, vecTypes);
-
-        delete [] vecTypes;
-        ui->sammonLineEdit->clear();;
-    }
-
-    if(ui->kohonenCheckBox->isChecked())
-    {
-
-        //count average projection on 2 main principal components
-//        numOfPc = 5; //maybe was test
-        double * avProj = new double [numOfPc];
-        for(int j = 0; j < numOfPc; ++j)
-        {
-            avProj[j] = 0.;
-            for(int i = 0; i < NumberOfVectors; ++i)
-            {
-                avProj[j] += centeredMatrix[j][i];
-
-            }
-            avProj[j]/=NumberOfVectors;
-            cout << "averageProjection[" << j  << "] = " << avProj[j] << endl;
-        }
-        ui->sammonLineEdit->setText("kohonen");
-
-        ////////////////// matrix vs double **
-
-        // Kohonen(dataMatrix, eigenVectors, avProj, NumberOfVectors, NetLength);
-
-        delete [] avProj;
-        ui->sammonLineEdit->clear();
-    }
-
-
-
-    cout << "end" << endl;
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        delete [] differenceMatrix[i];
-        delete [] pcaMatrix[i];
-        delete [] centeredMatrix[i];
-    }
-
-
-    delete [] centeredMatrix;
-    delete [] pcaMatrix;
-    delete [] differenceMatrix;
-
-    delete [] averages;
-    delete [] eigenValues;
-    for(int i = 0; i < ui->pcaNumberSpinBox->value(); ++i)
-    {
-        delete eigenVectors[i];
-    }
-    delete [] eigenVectors;
-    delete [] tempA;
-    delete [] tempB;
-
-    cout << "whole time elapsed " << wholeTime.elapsed()/1000. << " sec" << endl;
-
-//    delete painter;
-
-//    if(!this->autoFlag) QMessageBox::information((QWidget * )this, tr("info"), tr("PCA drawn"), QMessageBox::Ok);
-}
-
-double Net::thetalpha(int bmu_, int j_, int step_, double ** arr, int length_)
-{
-    //approximately 20-30 steps
-    double neighbour = 0., alpha = 0., temp = 0., sigma = 0.;
-    alpha = 5./(step_+5.);
-    sigma = 10./(step_+10.);
-    neighbour = exp(- distance(arr[bmu_], arr[j_], length_) * distance(arr[bmu_], arr[j_], length_) / (2. * sigma * sigma));
-    temp = neighbour * alpha;
-//    if(bmu_ == j_) temp = 1.;
-    return temp;
-}
-
-//length - dimension of input vectors
-void Net::Kohonen(double ** input, double ** eigenVects, double * averageProjection, int size, int length)
-{
-    srand(time(NULL));
-//    int numOfComponents = SizeOfArray(averageProjection); //=2
-//    cout << "size = " << size << " SizeOfArray(input) = " << SizeOfArray(input) << endl;
-
-//    int sqrLen = floor(sqrt(size)) + 1;
-    int sqrLen = 10;
-    int numOfNodes = sqrLen * sqrLen;
-
-    //set the coords
-    double ** coordsKohonen = new double * [numOfNodes];
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        coordsKohonen[i] = new double [2];
-
-        coordsKohonen[i][0] = (i%sqrLen);
-        coordsKohonen[i][1] = floor(i/sqrLen);
-    }
-
-    //set the weights
-    double a1,a2;
-    double ** weightsKohonen = new double * [numOfNodes];
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        weightsKohonen[i] = new double [length+1]; //+ type
-
-        //+- 10%
-        a1 = (0.9 + 0.05 * (rand()%41)/10.);
-        a2 = (0.9 + 0.05 * (rand()%41)/10.);
-        for(int j = 0; j < length; ++j)
-        {
-            weightsKohonen[i][j] = averageProjection[0] * a1 * eigenVects[j][0]  + averageProjection[1] * a2 * eigenVects[j][1];
-//            cout << weightsKohonen[i][j] << endl; //OK
-        }
-    }
-
-    int * mixNum = new int [size];
-    int tmp1, tmp2, buf;
-    double minDist;
-    int * bmu = new int [size]; //num of bet match neuron
-
-    double * distances = new double [numOfNodes];
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        distances[i] = 0.;
-    }
-
-    double error = 0., tempError = 0.;
-
-    int step = 0;
-    while(1)
-    {
-
-        //mix the order
-        for(int i = 0; i < size; ++i)
-        {
-            mixNum[i] = i;
-        }
-
-
-        for(int i = 0; i < 5 * size; ++i)
-        {
-            tmp1 = rand()%(size);
-            tmp2 = rand()%(size);
-            buf = mixNum[tmp2];
-            mixNum[tmp2] = mixNum[tmp1];
-            mixNum[tmp1] = buf;
-        }
-
-        //for every inputVector
-        for(int i = 0; i < size; ++i)
-        {
-
-            //find BMU
-            for(int j = 0; j < numOfNodes; ++j)
-            {
-                distances[j] = distance(input[mixNum[i]], weightsKohonen[j], length);
-                if(j == 0)
-                {
-                    minDist = distances[j]; bmu[mixNum[i]] = j;
-                }
-                else
-                {
-                    if(distances[j] < minDist)
-                    {
-                        minDist = distances[j];
-                        bmu[mixNum[i]] = j;
-                        weightsKohonen[j][length] = input[mixNum[i]][NetLength+1];
-                    }
-                }
-            }
-
-
-            for(int j = 0; j < numOfNodes; ++j)
-            {
-                //adjust the weights
-                for(int k = 0; k<length; ++k)
-                {
-                     weightsKohonen[j][k] += thetalpha(bmu[mixNum[i]], j, step, coordsKohonen, 2) * (input[mixNum[i]][k] - weightsKohonen[j][k]);
-                }
-
-                //adjust the coords???
-                coordsKohonen[j][0]  += 0;// theta(bmu[mixNum[i]], j, step) * alpha(step) * (input[mixNum[i]][k] - weightsKohonen[j][k]);
-                coordsKohonen[j][1]  += 0;// theta(bmu[mixNum[i]], j, step) * alpha(step) * (input[mixNum[i]][k] - weightsKohonen[j][k]);
-            }
-        }
-        tempError = error;
-        error = 0.;
-        //count error
-        for(int i = 0; i < size; ++i)
-        {
-            error += distance(input[i], weightsKohonen[bmu[i]], length);
-        }
-        error/=size;
-        cout << step << " " << "error = " << error << endl;
-
-
-
-        ++step;
-        if(step == 100 || error<0.01 || fabs(tempError-error)/error <0.002) break;
-    }
-
-
-
-    double ** distKohonen = new double * [numOfNodes];
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        distKohonen[i] = new double [numOfNodes];
-        for(int j = 0; j < numOfNodes; ++j)
-        {
-            distKohonen[i][j] = distance(weightsKohonen[i], weightsKohonen[j], length);
-//            cout << distKohonen[i][j] << endl; //OK
-        }
-    }
-
-    int * typesKohonen = new int [numOfNodes];
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        typesKohonen[i] = weightsKohonen[i][length];
-        if(typesKohonen[i]  != 0 && typesKohonen[i]  != 1 && typesKohonen[i]  != 2)
-        {
-            cout << "typeKohonen = " << typesKohonen[i] << endl;
-        }
-    }
-    Sammon(distKohonen, numOfNodes, typesKohonen);
-
-
-    delete [] mixNum;
-    delete [] distances;
-    delete [] bmu;
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        delete [] distKohonen[i];
-        delete [] weightsKohonen[i];
-        delete [] coordsKohonen[i];
-    }
-    delete [] distKohonen;
-    delete [] coordsKohonen;
-    delete [] weightsKohonen;
-    delete [] typesKohonen;
-
-
-
-}
-
-void Net::neuronGas()
-{
-}
-
-void Net::SVM()
-{
-    QString helpString = def::dir->absolutePath()
-            + slash() + "PA"
-            + slash() + "output1";
-    FILE * out = fopen(QDir::toNativeSeparators(helpString), "w");
-    fclose(out);
-//    QString spectraDir = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth"));
-    QString spectraDir = QFileDialog::getExistingDirectory(this,
-                                                           tr("Choose spectra dir"),
-                                                           def::dir->absolutePath());
-    if(spectraDir.isEmpty())
-    {
-        spectraDir = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "SpectraSmooth");
-    }
-    if(spectraDir.isEmpty())
-    {
-        cout << "spectraDir for SVM is empty" << endl;
-        return;
-    }
-
-    for(int i = 0; i < ui->numOfPairsBox->value(); ++i)
-    {
-        makePaStatic(spectraDir,
-                     ui->foldSpinBox->value(),
-                     ui->rdcCoeffSpinBox->value(), true);
-
-        helpString = def::dir->absolutePath() + slash() + "PA";
-        helpString.prepend("cd ");
-        helpString += " && svm-train -t "
-                      + QString::number(ui->svmKernelSpinBox->value())
-                      + " svm1 && svm-predict svm2 svm1.model output >> output1";
-        system(helpString.toStdString().c_str());
-
-        helpString = def::dir->absolutePath() + slash() + "PA";
-        helpString.prepend("cd ");
-        helpString += " && svm-train -t "
-                      + QString::number(ui->svmKernelSpinBox->value())
-                      + " svm2 && svm-predict svm1 svm2.model output >> output1";
-        system(helpString.toStdString().c_str());
-    }
-
-    helpString = def::dir->absolutePath() + slash() + "PA" + slash() + "output1";
-
-    double helpDouble, average = 0.;
-
-    QFile file(helpString);
-    if(!file.open(QIODevice::ReadOnly)) return;
-    int lines = 0;
-    while(!file.atEnd())
-    {
-        helpString = file.readLine();
-        if(!helpString.contains(QRegExp("[% = ]"))) break;
-        helpString = helpString.split(QRegExp("[% = ]"),
-                                      QString::SkipEmptyParts)[1]; //generality [1]
-        helpDouble = helpString.toDouble();
-        average += helpDouble;
-        ++lines;
-    }
-    average /= lines;
-    cout << average << endl;
-    file.close();
-
-
-    ofstream outStr;
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "results.txt");
-    outStr.open(helpString.toStdString(), ios_base::app);
-    outStr << "\nSVM\t";
-    outStr << doubleRound(average, 2) << " %" << endl;
-    outStr.close();
-}
-
-void Net::optimizeChannelsSet() /// CAREFUL
-{
-#if 0
-    int tempItem;
-    int tempIndex;
-
-    //test
-//    tempItem = channelsSet[0];
-//    channelsSet.remove(0);
-//    channelsSetExclude.push_back(tempItem);
-//    cout << "current set:" << "\n";
-//    for(int i = 0; i < channelsSet.length(); ++i)
-//    {
-//        cout << channelsSet[i] << "  ";
-//    }
-//    cout << endl;
-//    cout << "exclude set:" << "\n";
-//    for(int i = 0; i < channelsSetExclude.length(); ++i)
-//    {
-//        cout << channelsSetExclude[i] << "  ";
-//    }
-//    cout << endl;
-
-
-
-
-//    NetLength = spLength * (NetLength/spLength - 1);
-//    dimensionality[0] = NetLength;
-//    autoClassificationSimple();
-//    cout << "classified\t" << averageAccuracy << endl << endl;
-
-
-
-    spLength = NetLength/ns;
-    channelsSetExclude.clear();
-    autoClassificationSimple();
-    double tempAccuracy = averageAccuracy;
-
-
-    cout << "Init Accuracy = " << averageAccuracy << endl;
-    bool foundFlag = false;
-
-    channelsSet.clear();
-    for(int i = 0; i < 19; ++i)
-    {
-        channelsSet << i;
-    }
-    QList <int> neededChannels;
-    neededChannels.clear();
-
-
-    while(1)
-    {
-
-        cout << endl << "optimization iteration" << endl;
-        foundFlag = false;
-        NetLength = spLength * (NetLength/spLength - 1);
-        dimensionality[0] = NetLength;
-        cout << "Optimizing: NetLength = " << NetLength << endl;
-        cout << "channelsSet.length() = " << channelsSet.length() << endl;
-
-
-
-        tempIndex = -1;
-        for(int i = tempIndex+1; i < channelsSet.length(); ++i)
-        {
-
-            tempItem = channelsSet[i];
-            if(neededChannels.contains(tempItem))
-            {
-                cout << "needed channel[" << i << "] = " << tempItem << endl;
-                continue;
-            }
-
-            channelsSet.removeAt(i);
-            channelsSetExclude.push_back(tempItem);
-
-            //try classify w/o tempitem
-            autoClassificationSimple();
-            channelsSet.insert(i, tempItem);
-            channelsSetExclude.removeLast();
-
-            cout << "classified ch[" << i << "] = " << tempItem << "  accuracy = " << averageAccuracy << endl << endl;
-
-
-            if(averageAccuracy > tempAccuracy + 0.6)
-            {
-                tempAccuracy = averageAccuracy;
-                tempIndex = i;
-                foundFlag = true;
-                break;
-            }
-            else if(averageAccuracy > tempAccuracy)
-            {
-                tempAccuracy = averageAccuracy;
-                tempIndex = i;
-                foundFlag = true;
-            }
-            else if(averageAccuracy < tempAccuracy - 1.5)
-            {
-                neededChannels << tempItem;
-                cout << "new needed channel[" << i << "] = " << tempItem << endl;
-            }
-
-        }
-
-        if(foundFlag)
-        {
-            cout << "removed channel " << channelsSet[tempIndex] << endl;
-            cout << "current accuracy " << tempAccuracy << endl;
-
-            channelsSetExclude.push_back(channelsSet[tempIndex]);
-            channelsSet.removeAt(tempIndex);
-
-        }
-        else
-        {
-            NetLength = spLength * (NetLength/spLength + 1); //// CAREFUL
-            dimensionality[0] = NetLength;
-            break;
-        }
-    }
-
-
-    helpString = def::dir->absolutePath() + "/optimalChannels.txt";
-    outStream.open(helpString.toStdString().c_str(), ios_base::app);
-
-    helpString = def::ExpName;
-    helpString += "\r\nNumOfChannels " + QString::number(channelsSet.length()) + "\n";
-    for(int i = 0; i < channelsSet.length(); ++i)
-    {
-        helpString += QString::number(channelsSet[i] + 1) + "\t"; //count from 1
-    }
-    helpString += "\n";
-    for(int i = 0; i < channelsSet.length(); ++i)
-    {
-        helpString += QString(coords::lbl[channelsSet[i]]) + "\t";
-    }
-    helpString += "\n";
-
-    autoFlag = 0;
-
-    outStream << helpString.toStdString() << endl;
-    outStream.close();
-//    QMessageBox::information((QWidget * )this, tr("Optimization results"), helpString, QMessageBox::Ok);
-#endif
-}
-
-void Net::adjustParamsGroup2(QAbstractButton * but)
-{
-    if(but->text().contains("Bayes", Qt::CaseInsensitive))
-    {
-        ui->highLimitSpinBox->setValue(400);
-        ui->lowLimitSpinBox->setValue(300);
-        ui->epochSpinBox->setValue(500);
-        ui->rdcCoeffSpinBox->setValue(0.05);
-    }
-    else
-    {
-        ui->highLimitSpinBox->setValue(130);
-        ui->lowLimitSpinBox->setValue(80);
-        ui->epochSpinBox->setValue(250);
-        ui->rdcCoeffSpinBox->setValue(7.5);
-        ui->foldSpinBox->setValue(2.);
-    }
 }

@@ -11,8 +11,8 @@
 void product1(const matrix & arr,
               int length,
               int ns,
-              const vec & vect,
-              vec & outVector)
+              const lineType & vect,
+              lineType & outVector)
 {
     //<X*g(Wt*X)>
     //vec = Wt
@@ -49,7 +49,7 @@ void product1(const matrix & arr,
 
 
 //void product2(double ** const arr, int length, int ns, double * vec, double ** outVector)
-void product2(const matrix & arr, int length, int ns, const vec & vect, vec & outVector)
+void product2(const matrix & arr, int length, int ns, const lineType & vect, lineType & outVector)
 {
     //g'(Wt*X)*1*W
     //vec = Wt
@@ -81,7 +81,7 @@ void product2(const matrix & arr, int length, int ns, const vec & vect, vec & ou
 
 
 //void product3(double ** vec, int ns, int currNum, double ** outVector)
-void product3(const matrix & inMat, int ns, int currNum, vec & outVector)
+void product3(const matrix & inMat, int ns, int currNum, lineType & outVector)
 {
     //sum(Wt*Wi*Wi)
 
@@ -106,25 +106,19 @@ void product3(const matrix & inMat, int ns, int currNum, vec & outVector)
     }
 }
 
-vec randomVector(int ns)
+lineType randomVector(int ns)
 {
-    vec tempVector2(ns);
+    lineType tempVector2(ns);
     srand(time(NULL));
-    double sum = 0.;
     for(int i = 0; i < ns; ++i)
     {
-        tempVector2[i] = rand()%30 - 15;
-
-        sum += pow(tempVector2[i], 2);
+        tempVector2[i] = rand()%50 - 25;
     }
-    for(int i = 0; i < ns; ++i)
-    {
-        tempVector2[i] /= sqrt(sum);
-    }
+    tempVector2 /= sqrt(pow(tempVector2, 2.).sum());
     return tempVector2;
 }
 
-
+/// remake with data copy
 void MainWindow::ICA() //fastICA
 {
 
@@ -175,10 +169,10 @@ void MainWindow::ICA() //fastICA
     matrix covMatrix(ns, ns, 0.);
     //vectors for the las stage
     matrix vectorW(ns, ns, 0.);
-    vec vector1(ns, 0.);
-    vec vector2(ns, 0.);
-    vec vector3(ns, 0.);
-    vec vectorOld(ns, 0.);
+    lineType vector1(ns, 0.);
+    lineType vector2(ns, 0.);
+    lineType vector3(ns, 0.);
+    lineType vectorOld(ns, 0.);
 
     //for full A-matrix count
     matrix matrixA(ns, ns);
@@ -192,8 +186,7 @@ void MainWindow::ICA() //fastICA
     vec averages(ns);
     for(int i = 0; i < ns; ++i)
     {
-        averages[i] = mean(globalEdf.getData()[i].data(),
-                           dataLength);
+        averages[i] = mean(globalEdf.getData()[i]);
     }
 
     //count zeros
@@ -209,7 +202,7 @@ void MainWindow::ICA() //fastICA
         if(h == ns) Eyes += 1;
     }
 
-    const double & realSignalFrac = (double(dataLength - Eyes) / dataLength);
+    const double realSignalFrac = (double(dataLength - Eyes) / dataLength);
 
     double helpDouble = 0.;
     double helpDouble1 = 0.;
@@ -230,9 +223,8 @@ void MainWindow::ICA() //fastICA
         for(int j = 0; j < ns; ++j)
         {
             covMatrix[i][j] = 0.;
-            covMatrix[i][j] = covariance(globalEdf.getData()[i].data(),
-                                         globalEdf.getData()[j].data(),
-                                         dataLength);
+            covMatrix[i][j] = covariance(globalEdf.getData()[i],
+                                         globalEdf.getData()[j]);
             covMatrix[i][j] /= dataLength; //should be -1 ? needed for trace
         }
     }
@@ -255,10 +247,14 @@ void MainWindow::ICA() //fastICA
     vec eigenValues;
 
 
+
+
     svd(globalEdf.getData(),
         eigenVectors,
         eigenValues,
         eigenValuesTreshold);
+
+
 
 
     // write eigenVectors
@@ -363,6 +359,7 @@ void MainWindow::ICA() //fastICA
 //                vectorOld[j] = vectorW[i][j];
 //            }
             vectorOld = vectorW[i];
+            /// edit products valarray
             product1(dataICA, dataLength, ns, vectorW[i], vector1);
             product2(dataICA, dataLength, ns, vectorW[i], vector2);
             for(int j = 0; j < ns; ++j)
@@ -713,10 +710,11 @@ void MainWindow::ICA() //fastICA
         {
             matrixA[k][i] /= sum1;
         }
-        std::transform(components[i].begin(),
-                       components[i].end(),
-                       components[i].begin(),
-                       [sum1](double in) {return in * sum1;});
+        components[i] *= sum1;
+//        std::transform(components[i].begin(),
+//                       components[i].end(),
+//                       components[i].begin(),
+//                       [sum1](double in) {return in * sum1;});
     }
 
 //    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
@@ -732,11 +730,11 @@ void MainWindow::ICA() //fastICA
 
     for(int i = 0; i < ns; ++i)
     {
-        sum1 = 0.;
-        std::for_each(components[i].begin(),
-                      components[i].end(),
-                      [&sum1](double in){sum1 += pow(in, 2);});
-        sumSquares += sum1;
+//        sum1 = 0;
+//        std::for_each(components[i].begin(),
+//                      components[i].end(),
+//                      [&sum1](double in){sum1 += pow(in, 2);});
+        sumSquares += pow(components[i], 2.).sum();
         colsNorms.push_back(std::make_pair(sum1, i));
     }
 
@@ -1068,8 +1066,17 @@ void MainWindow::ICsSequence(const QString & EDFica1,
                 corrSpectr[h] = 0.;
                 for(int shift = -maxShift; shift <= maxShift; ++shift)
                 {
-                    corrSpectr[h] = fmax( fabs(correlation(dataFFT1[h].data() + k * def::spLength,
-                                                           dataFFT2[h].data() + j * def::spLength,
+                    vec tempVec1(def::spLength);
+                    vec tempVec2(def::spLength);
+                    std::copy(begin(dataFFT1[h]) + k * def::spLength,
+                              begin(dataFFT1[h]) + (k + 1) * def::spLength,
+                              begin(tempVec1));
+                    std::copy(begin(dataFFT2[h]) + j * def::spLength,
+                              begin(dataFFT2[h]) + (j + 1) * def::spLength,
+                              begin(tempVec2));
+
+                    corrSpectr[h] = fmax( fabs(correlation(tempVec1,
+                                                           tempVec2,
                                                            def::spLength,
                                                            shift)),
                                           corrSpectr[h]);
@@ -1486,6 +1493,8 @@ void MainWindow::icaClassTest() /// CAREFUL sliceOneByOneNew() numOfIC
 /// TEST
 void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
 {
+#if 0
+    /// unused
     QStringList lst;
     QString helpString;
 
@@ -1570,6 +1579,7 @@ void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
     cout << "sliced" << endl;
 
     constructEDFSlot();
+#endif
 
 }
 

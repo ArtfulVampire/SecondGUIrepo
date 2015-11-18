@@ -2,7 +2,9 @@
 
 edfFile::edfFile()
 {
+#if DATA_POINTER
     this->dataPointer = &(this->data);
+#endif
 }
 
 edfFile::~edfFile()
@@ -45,6 +47,10 @@ edfFile::edfFile(const edfFile &other, bool noData)
 #if DATA_POINTER
         this->dataPointer = &(this->data);
 #endif
+    }
+    else
+    {
+        this->data = edfDataType();
     }
 }
 
@@ -120,7 +126,7 @@ edfFile::edfFile(const QString & matiLogPath)
     this->ns = numOfParams;
     this->ddr = 1.;
 
-    this->nr = vector <double> (this->ns, def::freq);
+    this->nr = vector<double> (this->ns, def::freq);
     // ndr definedlater
     this->bytes = 256 * (this->ns + 1);
 
@@ -184,21 +190,20 @@ edfFile::edfFile(const QString & matiLogPath)
         ++currTimeIndex;
     }
     --currTimeIndex; // to loose the last read string;
-    for(int i = 0; i < currTimeIndex; ++i)
-    {
-//        cout << data[numOfDoubleParams - 2][i] << endl;
-    }
-    this->ndr = ceil(currTimeIndex/250.);
-    this->dataLength = this->ndr * def::freq;
+    //// CHECK
+    /// old
+//    this->ndr = ceil(currTimeIndex/250.);
+//    this->dataLength = this->ndr * def::freq;
 
-    for(int j = 0; j < numOfParams; ++j)
-    {
-        for(int i = currTimeIndex; i < this->dataLength; ++i)
-        {
-            data[j][i] = 0.;
-        }
-        data[j].resize(dataLength);
-    }
+//    for(int j = 0; j < numOfParams; ++j)
+//    {
+//        for(int i = currTimeIndex; i < this->dataLength; ++i)
+//        {
+//            data[j][i] = 0.;
+//        }
+//        data[j].resize(dataLength);
+//    }
+    this->fitData(currTimeIndex);
 
     for(int i = 0; i < this->ns; ++i)
     {
@@ -395,7 +400,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
         //    Digital minimum: -32768  d0
         //    Digital maximum: 32767   d1
 
-    QTime myTime;
     QString helpString;
     if(readFlag && !QFile::exists(EDFpath))
     {
@@ -536,6 +540,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
 
     handleData(readFlag, edfDescriptor);
 
+
     fclose(edfDescriptor);
 
     if(readFlag)
@@ -553,12 +558,19 @@ void edfFile::handleData(bool readFlag,
     if(readFlag)
     {
         // allocate memory for data array
+#if DATA_POINTER
         (*(this->dataPointer)).resize(ns);
-//        data.resize(ns);
+#else
+        this->data = matrix(ns, dataLength, 0.);
+        cout << this->data.cols() << "\t" << this->data.rows() << endl;
+#endif
         for(int i = 0; i < ns; ++i)
         {
+#if DATA_POINTER
             (*(this->dataPointer))[i].resize(dataLength);
+#else
 //            data[i].resize(dataLength);
+#endif
         }
 
         this->channels.clear();
@@ -619,8 +631,10 @@ void edfFile::handleDatum(const int & currNs,
 
 #if DATA_POINTER_IN_CHANS
     double & currDatum = (*(this->channels[currNs].dataP))[currTimeIndex];
-#else
+#elif DATA_POINTER
     double & currDatum = (*(this->dataPointer))[currNs][currTimeIndex];
+#else
+    double & currDatum = this->data[currNs][currTimeIndex];
 #endif
 
     if(readFlag)
@@ -951,15 +965,17 @@ void edfFile::adjustMarkerChannel()
 #else
         edfChannel tempMarkChan = this->channels[this->markerChannel];
 #if DATA_POINTER
-        vector <double> tempMarkData = (*(this->dataPointer))[this->markerChannel];
+        lineType tempMarkData = (*(this->dataPointer))[this->markerChannel];
 #else
-        vector <double> tempMarkData = this->data[this->markerChannel];
+        lineType tempMarkData = this->data[this->markerChannel];
 #endif
 
         this->channels.erase(this->channels.begin() + this->markerChannel); // remove markerChannel
 #if DATA_POINTER
+        // valarray
         (*(this->dataPointer)).erase((*(this->dataPointer)).begin()
                                    + this->markerChannel); // remove markerChannel
+
 #else
         this->data.erase(this->data.begin() + this->markerChannel); // remove markerChannel
 #endif
@@ -1000,17 +1016,15 @@ void edfFile::appendFile(QString addEdfPath, QString outPath) const
     }
 #else
     edfChannel tempChan;
-    vector <double> tempData;
+    lineType tempData;
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
         tempChan = addEdf.getChannels()[i];
-        tempData = addEdf.getData()[i];
-
-        for(int i = tempData.size(); i < this->dataLength; ++i)
-        {
-            tempData.push_back(0.);
-        }
+        /// valarray strange handling
         tempData.resize(this->dataLength);
+        std::copy(begin(addEdf.getData()[i]),
+                  begin(addEdf.getData()[i]) + min(addEdf.getDataLen(), this->getDataLen()),
+                  begin(tempData));
 
         temp.channels.push_back(tempChan);
         temp.data.push_back(tempData);
@@ -1025,72 +1039,36 @@ void edfFile::appendFile(QString addEdfPath, QString outPath) const
 
 void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only data concat
 {
-    // remake
+    edfFile temp(*this);
+    edfFile addEdf;
+    addEdf.readEdfFile(addEdfPath);
 
+    addEdf.cutZerosAtEnd();
+    temp.cutZerosAtEnd();
+
+    const int dataLen1 = temp.getDataLen();
+    const int dataLen2 = addEdf.getDataLen();
+    for(int i = 0; i < this->ns; ++i)
+    {
+        this->data[i].resize( dataLen1 + dataLen2 );
+        // copy 1
+        std::copy(begin(temp.data[i]),
+                  end(temp.data[i]),
+                  begin(this->data[i]));
+        // copy 2
+        std::copy(begin(addEdf.data[i]),
+                  end(addEdf.data[i]),
+                  begin(this->data[i]) + dataLen1);
+    }
+    temp.adjustArraysByChannels();
+
+    /// remake
 
     if(!outPath.isEmpty())
     {
-        edfFile temp(*this);
-        edfFile addEdf;
-        addEdf.readEdfFile(addEdfPath);
-
-        temp.cutZerosAtEnd();
-        addEdf.cutZerosAtEnd();
-#if DATA_IN_CHANS
-        for(int i = 0; i < this->ns; ++i)
-        {
-            temp.channels[i].data.resize( this->dataLength + addEdf.getDataLen() );
-            memcpy(temp.channels[i].data.data() + this->dataLength,
-                   addEdf.getChannels()[i].data.data(),
-                   sizeof(double) * addEdf.getDataLen() );
-        }
-#else
-        for(int i = 0; i < this->ns; ++i)
-        {
-            temp.data[i].resize( this->dataLength + addEdf.getDataLen() );
-            memcpy(temp.data[i].data() + this->dataLength,
-                   addEdf.getData()[i].data(),
-                   sizeof(double) * addEdf.getDataLen() );
-        }
-#endif
-        temp.adjustArraysByChannels();
-        temp.writeEdfFile(outPath);
+        this->writeEdfFile(outPath);
     }
-    else // if(outPath.isEmpty())
-    {
-        edfFile addEdf;
-        addEdf.readEdfFile(addEdfPath);
 
-        this->cutZerosAtEnd();
-        addEdf.cutZerosAtEnd();
-#if DATA_IN_CHANS
-        for(int i = 0; i < this->ns; ++i)
-        {
-            this->channels[i].data.resize( this->dataLength + addEdf.getDataLen() );
-            memcpy(this->channels[i].data.data() + this->dataLength,
-                   addEdf.getChannels()[i].data.data(),
-                   sizeof(double) * addEdf.getDataLen() );
-        }
-#else
-        for(int i = 0; i < this->ns; ++i)
-        {
-            // cocncat data form addEdf
-#if DATA_POINTER
-            (*(this->dataPointer))[i].resize( this->dataLength + addEdf.getDataLen() );
-            memcpy((*(this->dataPointer))[i].data() + this->dataLength,
-                   addEdf.getData()[i].data(),
-                   sizeof(double) * addEdf.getDataLen() );
-#else
-            this->data[i].resize( this->dataLength + addEdf.getDataLen() );
-            memcpy(this->data[i].data() + this->dataLength,
-                   addEdf.getData()[i].data(),
-                   sizeof(double) * addEdf.getDataLen() );
-#endif
-            // no need to touch edfChannels
-        }
-#endif
-        this->adjustArraysByChannels();
-    }
 }
 
 /// remake vector
@@ -1121,20 +1099,20 @@ void edfFile::refilter(const double & lowFreq,
         std::fill(spectre, spectre + fftLength * 2, 0.); // fill all with zeros
 
 #if DATA_POINTER
-        for(auto it = (*(this->dataPointer))[chanList[j]].begin();
-            it < (*(this->dataPointer))[chanList[j]].end();
+        for(auto it = begin((*(this->dataPointer))[chanList[j]]);
+            it < end((*(this->dataPointer))[chanList[j]];
             ++it)
 #else
-        for(auto it = this->data[chanList[j]].begin();
-            it < this->data[chanList[j]].end();
+        for(auto it = begin(this->data[chanList[j]]);
+            it < end(this->data[chanList[j]]);
             ++it)
 #endif
         {
 #if DATA_POINTER
             // set even elements to signal values
-            spectre[2 * (it - (*(this->dataPointer))[chanList[j]].begin()) ] = (*it) * sqrt(norm1);
+            spectre[2 * (it - begin((*(this->dataPointer))[chanList[j]])) ] = (*it) * sqrt(norm1);
 #else
-            spectre[2 * (it - this->data[chanList[j]].begin()) ] = (*it) * sqrt(norm1);
+            spectre[2 * (it - begin(this->data[chanList[j]])) ] = (*it) * sqrt(norm1);
 #endif
         }
 
@@ -1169,11 +1147,11 @@ void edfFile::refilter(const double & lowFreq,
 //            }
         }
 #else
-        for(auto it = this->data[chanList[j]].begin();
-            it < this->data[chanList[j]].end();
+        for(auto it = begin(this->data[chanList[j]]);
+            it < end(this->data[chanList[j]]);
             ++it)
         {
-            (*it) = spectre[2 * (it - this->data[chanList[j]].begin()) ] / (fftLength * sqrt(norm1));
+            (*it) = spectre[2 * (it - begin(this->data[chanList[j]])) ] / (fftLength * sqrt(norm1));
         }
 #endif
     }
@@ -1191,11 +1169,21 @@ void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPat
 {
     if(plainFlag)
     {
+#if DATA_POINTER
+
         writePlainData(outPath,
                        *(this->dataPointer),
                        this->ns,// - 1 + def::withMarkersFlag,
                        finishBin-startBin,
                        startBin);
+#else
+        writePlainData(outPath,
+                       this->data,
+                       this->ns,
+                       finishBin - startBin,
+                       startBin);
+#endif
+
     }
     else
     {
@@ -1213,9 +1201,9 @@ void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPat
         for(int i = 0; i < this->ns; ++i)
         {
             temp.data[i].resize(finishBin - startBin);
-            std::copy(this->getData()[i].begin() + startBin,
-                      this->getData()[i].begin() + finishBin,
-                      temp.data[i].begin());
+            std::copy(begin(this->getData()[i]) + startBin,
+                      begin(this->getData()[i]) + finishBin,
+                      begin(temp.data[i]));
         }
         temp.dataLength = finishBin - startBin;
         temp.writeEdfFile(outPath, plainFlag);
@@ -1299,9 +1287,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
         for(int j = 0; j < numEog; ++j)
         {
             inStr >> coefs[i][j];
-//            cout << coefs[i][j] << '\t';
         }
-//        cout << endl;
     }
     inStr.close();
 
@@ -1342,19 +1328,11 @@ void edfFile::cleanFromEyes(QString eyesPath,
         {
 #if DATA_POINTER
             /// make valarray ?
-            std::transform((*(this->dataPointer))[ eegNums[i] ].begin(),
-                    (*(this->dataPointer))[ eegNums[i] ].end(),
-                    (*(this->dataPointer))[ eogNums[k] ].begin(),
-                    (*(this->dataPointer))[ eegNums[i] ].begin(),
-                    [=](double a, double b) {return a - b * coefs[i][k];}
+            (*(this->dataPointer))[ eegNums[i] ] -= (*(this->dataPointer)) [eogNums[k] ]
+                    * coefs[i][k];
 #else
-            std::transform(this->data[ eegNums[i] ].begin(),
-                    this->data[ eegNums[i] ].end(),
-                    this->data[ eogNums[k] ].begin(),
-                    this->data[ eegNums[i] ].begin(),
-                    [=](double a, double b) {return a - b * coefs[i][k];}
+            this->data[ eegNums[i] ] -= this->data [ eogNums[k] ] * coefs[i][k];
 #endif
-            );
         }
     }
     if(removeEogChannels)
@@ -1508,20 +1486,26 @@ void edfFile::reduceChannels(const QString & chanStr)
 #if DATA_POINTER
 
                 /// make valarray
-                std::transform((*(this->dataPointer))[lst[0].toInt() - 1].begin(),
-                               (*(this->dataPointer))[lst[0].toInt() - 1].end(),
-                               (*(this->dataPointer))[lst[h].toInt() - 1].begin(),
-                        (*(this->dataPointer))[k].begin(),
-                        [&](double i, double j){return i + sign * j;}
-                );
+                (*(this->dataPointer))[k] = (*(this->dataPointer))[lst[0].toInt() - 1]
+                + sign * (*(this->dataPointer))[lst[h].toInt() - 1];
+
+//                std::transform((*(this->dataPointer))[lst[0].toInt() - 1].begin(),
+//                        (*(this->dataPointer))[lst[0].toInt() - 1].end(),
+//                        (*(this->dataPointer))[lst[h].toInt() - 1].begin(),
+//                        (*(this->dataPointer))[k].begin(),
+//                        [&](double i, double j){return i + sign * j;}
+//                );
 
 #else
-                std::transform(this->data[lst[0].toInt() - 1].begin(),
-                               this->data[lst[0].toInt() - 1].end(),
-                               this->data[lst[h].toInt() - 1].begin(),
-                        this->data[k].begin(),
-                        [&](double i, double j){return i + sign * j;}
-                );
+                this->data[k] = this->data[lst[0].toInt() - 1]
+                        + sign * this->data[lst[h].toInt() - 1];
+
+//                std::transform(this->data[lst[0].toInt() - 1].begin(),
+//                               this->data[lst[0].toInt() - 1].end(),
+//                               this->data[lst[h].toInt() - 1].begin(),
+//                        this->data[k].begin(),
+//                        [&](double i, double j){return i + sign * j;}
+//                );
 
 #endif
 
@@ -1557,16 +1541,24 @@ void edfFile::setLabels(char ** inLabels)
     }
 }
 
-
-//template
-void edfFile::writeOtherData(matrix & newData,
-                             const QString & outPath,
-                             vector<int> chanList)
+void edfFile::setLabels(const vector<QString> & inLabels)
 {
-    this->writeOtherData(newData.data, outPath, chanList);
+    if(this->ns != inLabels.size())
+    {
+        cout << "edfFile::setLabels: inappropriate vector size" << endl;
+        return;
+    }
+    for(int i = 0; i < this->ns; ++i)
+    {
+        this->channels[i].label = inLabels[i];
+        this->labels[i] = inLabels[i];
+    }
 }
 
-void edfFile::writeOtherData(mat & newData,
+
+//template
+
+void edfFile::writeOtherData(matrix & newData,
                              const QString & outPath,
                              vector<int> chanList)
 {
@@ -1584,49 +1576,9 @@ void edfFile::writeOtherData(mat & newData,
     for(int item : chanList)
     {
         temp.channels.push_back( this->channels[item] );
+        temp.data.push_back( newData[item] );
     }
-    temp.dataPointer = &newData; // set a pointer to the data, which should write
     temp.adjustArraysByChannels(); // set in particular ns = chanList.length();
-//    temp.dataLength = newData[0].size(); // YAY!
-    temp.writeEdfFile(outPath);
-}
-
-void edfFile::writeOtherData(double ** newData,
-                             int newDataLength,
-                             QString outPath,
-                             vector<int> chanList) const
-{
-    if(chanList.empty())
-    {
-        cout << "edfFile::writeOtherData: chanList is empty, RETURN" << endl;
-        return;
-    }
-
-    edfFile temp(*this);
-
-#if DATA_IN_CHANS
-
-    //adjust channels
-    this->channels.clear();
-    for(int i = 0; i < chanList.length(); ++i)
-    {
-        this->channels.push_back( temp.getChannels()[chanList[i]] );
-        this->channels[i].data.resize(newDataLength);
-        memcpy(this->channels[i].data.data(), newData[i], sizeof(double) * newDataLength);
-    }
-#else
-    //adjust channels
-    temp.channels.clear();
-    for(int i = 0; i < chanList.size(); ++i)
-    {
-        temp.channels.push_back( this->channels[chanList[i]] );
-        temp.data.resize(newDataLength);
-        memcpy(temp.data[i].data(), newData[i], sizeof(double) * newDataLength);
-    }
-#endif
-    temp.adjustArraysByChannels();
-    temp.dataLength = newDataLength;
-
     temp.writeEdfFile(outPath);
 }
 
@@ -1639,14 +1591,16 @@ void edfFile::fitData(int initSize) // append zeros to whole ndr's
     {
 #if DATA_POINTER
         (*(this->dataPointer))[i].resize(this->dataLength);
-        std::fill((*(this->dataPointer))[i].begin() + initSize,
-                  (*(this->dataPointer))[i].end(),
-                  0.); // optional ?
+        std::fill(begin((*(this->dataPointer))[i]) + initSize,
+                  end((*(this->dataPointer))[i]),
+                  0.)
 #else
-        data[i].resize(this->dataLength);
-        std::fill(this->data[i].begin() + initSize,
-                  this->data[i].end(),
-                  0.); // optional ?
+        /// valarray strange handling
+        lineType tempData = data[i];
+        this->data[i].resize(this->dataLength);
+        std::copy(begin(tempData),
+                  end(tempData),
+                  begin(this->data[i]));
 #endif
 
 #if DATA_IN_CHANS
@@ -1679,6 +1633,10 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
                 doFlag = false;
                 break;
             }
+            else
+            {
+                cout << this->data[j][currEnd - 1] << "\t" << currEnd << endl;
+            }
 #endif
         }
         if(doFlag)
@@ -1691,7 +1649,6 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
         }
         doFlag = true;
     }
-//    cout << "cutZerosAtEnd: slices cut = " << this->dataLength - currEnd << endl;
     this->dataLength = currEnd;
     for(int j = 0; j < this->ns; ++j)
     {
@@ -1699,12 +1656,16 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
         (*(this->dataPointer))[j].resize(this->dataLength);
 
 #else
-        this->data[j].resize(this->dataLength);
+        // good removing
+        std::remove_if(begin(this->data[j]) + currEnd,
+                       end(this->data[j]),
+                       [](double){return true;});
 
 #endif
 #if DATA_IN_CHANS
         this->channels[j].data.resize(this->dataLength);
 #endif
     }
+    cout << this->data.maxVal() << endl;
     this->ndr = ceil(this->dataLength / def::freq); // should be unchanged
 }

@@ -213,24 +213,25 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    edfFile globalEdf;
+
     ofstream generalLogStream;
     streambuf *coutBuf;
+    bool redirectCoutFlag;
 
-    int ndr, ddr, nsBackup;
-    int * nr;
+    edfFile globalEdf;
+//    int ndr, ddr, nsBackup;
+//    int * nr;
+    vector<QString> label;
+
 
     double ** spocMixMatrix;
     double * spocWVector;
-    char ** label;
     int staSlice;
     int NumOfEdf;
 
     bool autoProcessingFlag;
     bool stopFlag;
-//    bool withMarkersFlag;
-    bool redirectCoutFlag;
-    double reduceCoefficient;
+//    double reduceCoefficient;
 };
 
 #endif // MAINWINDOW_H

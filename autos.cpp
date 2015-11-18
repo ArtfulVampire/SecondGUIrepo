@@ -644,7 +644,7 @@ void MainWindow::diffSmooth()
 
         ANN = new Net();
         ANN->setAutoProcessingFlag(true);
-        ANN->readCfg();
+//        ANN->readCfg();
         ANN->autoClassification("SpectraSmooth");
         ANN->close();
         cout << "smooth = " << i << " done" << endl;
@@ -659,6 +659,8 @@ void MainWindow::diffSmooth()
 
 void MainWindow::diffPow()
 {
+#if 0
+    /// some mistakes, remake, unused
     QString helpString;
     Spectre *sp;
     Net * ANN;
@@ -721,7 +723,7 @@ void MainWindow::diffPow()
 
     }
     cout << "diffPow: time = " << myTime.elapsed()/1000. << " sec" << endl;
-
+#endif
 }
 
 
@@ -766,11 +768,11 @@ double MainWindow::fileInnerClassification(const QString & workPath,
     sliceAll();
 
     countSpectraSimple(fftLen);
-    makeCfgStatic("tmp");
-    const QString cfgFileName = def::dir->absolutePath() + slash() + "tmp.net";
+//    makeCfgStatic("tmp");
+//    const QString cfgFileName = def::dir->absolutePath() + slash() + "tmp.net";
 
     Net * ANN = new Net();
-    ANN->readCfgByName(cfgFileName);
+//    ANN->readCfgByName(cfgFileName);
     ANN->setAutoProcessingFlag(true);
     ANN->setNumOfPairs(NumOfPairs);
     ANN->autoClassificationSimple();
@@ -852,7 +854,7 @@ double MainWindow::filesCrossClassification(QString workPath,
     ANN = new Net();
     ANN->setReduceCoeff(startCoeff);
     ANN->setAutoProcessingFlag(true);
-    ANN->readCfgByName(cfgFileName);
+//    ANN->readCfgByName(cfgFileName);
     helpString = tmpDir->absolutePath() + slash() + "SpectraSmooth";
     if(windows)
     {
@@ -2240,8 +2242,8 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     ofstream outStr;
     double helpDouble;
     int helpInt;
-    vec env;
-    vec envSpec;
+    lineType env;
+    lineType envSpec;
 
     double sumSpec = 0.;
 
@@ -2295,7 +2297,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
         // write full spectre
         vec fullSpectre;
-        vec helpSpectre;
+        lineType helpSpectre;
         helpString = dir.absolutePath()
                 + slash() + ExpName
                 + "_" + spectraFileName;
@@ -2309,7 +2311,6 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
         for(int i = 0; i < numChan; ++i)
         {
-            helpSpectre.clear();
             helpSpectre = spectre(initEdf.getData()[i]);
             helpSpectre = smoothSpectre(helpSpectre,
                                         ceil(10 * sqrt(initEdf.getDataLen() / 4096.)));
@@ -2524,9 +2525,8 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
                 }
                 helpString.clear(); // no picture of spectre
 
-                drawArray(envSpec.data(),
-                          currEdf.getDataLen(),
-                          helpString);
+                drawOneArray(envSpec,
+                             helpString);
 
 
 

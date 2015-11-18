@@ -15,10 +15,11 @@
 
 using namespace std;
 
-typedef vector<vector<double>> dataType;
-typedef vector<double> vec;
+typedef vector<double> vectType;
+typedef valarray<double> lineType;
+typedef vector<lineType> dataType;
 
-class matrix : public vector<valarray<double>>
+class matrix : public dataType
 {
 public:
     matrix();
@@ -37,11 +38,11 @@ public:
         other.data = dataType();
     }
 
-    matrix(vec vect, bool orientH);
-    matrix(vec vect, char orient);
-    matrix(vec vect, int rows);
+    matrix(lineType vect, bool orientH);
+    matrix(lineType vect, char orient);
+    matrix(lineType vect, int rows);
 
-    matrix(std::initializer_list<vector<double>> lst);
+    matrix(std::initializer_list<lineType> lst);
 
     matrix(std::initializer_list<double> lst); // diagonal
 
@@ -57,26 +58,27 @@ public:
     dataType::iterator end();
     dataType::const_iterator begin() const;
     dataType::const_iterator end() const;
-    vector<double> toVectorByRows() const;
-    vector<double> toVectorByCols() const;
-    vector<double> getCol(int i) const;
-    vector<double> averageRow() const;
-    vector<double> averageCol() const;
+    lineType toVectorByRows() const;
+    lineType toVectorByCols() const;
+    lineType getCol(int i) const;
+    lineType averageRow() const;
+    lineType averageCol() const;
     void pop_back();
-    void push_back(const vector<double> &in);
+    void push_back(const lineType &in);
+    void push_back(const vectType &in);
 
     // for compability with vector < vector<Type> >
     int size() const {return data.size();}
-    void resize(int i) {data.resize(i);}
     void resize(int rows, int cols);
+    void resize(int i) {data.resize(i);}
 
 
-    vector <double> & operator [](int i)
+    lineType & operator [](int i)
     {
         return data[i];
 
     }
-    const vector <double> & operator [](int i) const
+    const lineType & operator [](int i) const
     {
         return data[i];
     }
@@ -126,7 +128,7 @@ void matrixProduct(const matType1 & in1,
                    int rows1 = -1,
                    int cols2 = -1);
 
-void matrixProduct(const vec &in1,
+void matrixProduct(const lineType &in1,
                    const matrix &in2,
                    matrix & result,
                    int dim = -1,
@@ -134,7 +136,7 @@ void matrixProduct(const vec &in1,
                    int cols2 = -1);
 
 void matrixProduct(const matrix &in1,
-                   const vec &in2,
+                   const lineType &in2,
                    matrix & result,
                    int dim = -1,
                    int rows1 = -1,

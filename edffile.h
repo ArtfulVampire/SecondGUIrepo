@@ -3,13 +3,13 @@
 
 #define DATA_IN_CHANS 0
 #define DATA_POINTER_IN_CHANS 0
-#define DATA_POINTER 1
+#define DATA_POINTER 0
 
 #include "library.h"
 
 using namespace std;
 
-typedef vector < vector <double> > mat;
+typedef matrix edfDataType;
 
 struct edfChannel
 {
@@ -214,21 +214,23 @@ public:
     void removeChannels(const vector<int> & chanList);
 //    void removeChannels(const QString & chanStr);
 
+
+    void setLabels(const vector<QString> & inLabels);
     void setLabels(char ** inLabels);
     void cleanFromEyes(QString eyesPath = QString(),
                        bool removeEogChannels = false,
                        vector<int> eegNums = {},
                        vector<int> eogNums = {});
-    void writeOtherData(mat & newData,
-                        const QString & outPath,
-                        vector<int> chanList = {});
+//    void writeOtherData(mat & newData,
+//                        const QString & outPath,
+//                        vector<int> chanList = {});
     void writeOtherData(matrix & newData,
                         const QString & outPath,
                         vector<int> chanList = {});
-    void writeOtherData(double ** newData,
-                        int newDataLength,
-                        QString outPath,
-                        vector<int> chanList = {}) const;
+//    void writeOtherData(double ** newData,
+//                        int newDataLength,
+//                        QString outPath,
+//                        vector<int> chanList = {}) const;
     void fitData(int initSize);
     void cutZerosAtEnd();
     void adjustMarkerChannel();
@@ -262,10 +264,10 @@ private:
     QString headerRest = QString();
 
     vector <edfChannel> channels;
-    mat data; // matrix.cpp
+    edfDataType data; // matrix.cpp
 
 #if DATA_POINTER
-    mat (*dataPointer) = &data;
+    edfDataType (*dataPointer) = &data;
 #endif
 
 
@@ -325,32 +327,15 @@ public:
 
     // operations with data
 #if DATA_POINTER
-    const mat & getData() const {return (*dataPointer);}
+    const edfDataType & getData() const {return (*dataPointer);}
     void setData(int chanNum, int timeBin, double val) {(*dataPointer)[chanNum][timeBin] = val;}
-    void getDataCopy(mat & destination) const {destination = (*dataPointer);}
-
-    void getDataCopy(double ** & dest) const
-    {
-        for(int i = 0; i < this->ns; ++i)
-        {
-            memcpy(dest[i],
-                   (*this->dataPointer)[i].data(),
-                   this->dataLength * sizeof(double));
-        }
-    }
+    void getDataCopy(edfDataType & destination) const {destination = (*dataPointer);}
 #else
 
-    const mat & getData() const {return data;}
+    const edfDataType & getData() const {return data;}
     void setData(int chanNum, int timeBin, double val) {data[chanNum][timeBin] = val;}
-    void getDataCopy(mat & destination) const {destination = data;}
+    void getDataCopy(edfDataType & destination) const {destination = data;}
 
-    void getDataCopy(double ** & dest) const
-    {
-        for(int i = 0; i < this->ns; ++i)
-        {
-            memcpy(dest[i], this->data[i].data(), this->dataLength * sizeof(double));
-        }
-    }
 #endif
 
 };

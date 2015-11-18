@@ -18,7 +18,6 @@
 #include <QDoubleSpinBox>
 #include "coord.h"
 #include "matrix.h"
-#include <chrono>
 #include <ios>
 #include <iostream>
 #include <fstream>
@@ -36,35 +35,34 @@
 #include <set>
 #include <algorithm>
 #include <typeinfo>
-
+#include <chrono>
+#include <random>
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
 using namespace std;
-//using namespace itpp;
-//using namespace mlpack;
 
+// consts
 const double pi = 3.141592653589;
 const double pi_min_025 = pow(pi, -0.25);
 const double pi_sqrt = sqrt(pi);
 
+
+
 typedef std::vector<std::vector<double>> mat;
 typedef std::vector<double> vec;
-
 template <typename Typ>
 class trivector : public std::vector<std::vector<std::vector<Typ>>>
 {};
-
 template <typename Typ>
 class twovector : public std::vector<std::vector<Typ>>
 {};
 
+
+// small shit
 void writeWavFile(const vec & inData, const QString & outPath);
-
-
-//void QDoubleSpinBox::mySlot(double val)
 int len(QString s); // string length for EDF+ annotations
 QString rightNumber(const unsigned int input, int N); // prepend zeros
 QString fitNumber(const double & input, int N); // append spaces
@@ -78,12 +76,6 @@ QString getPicPath(const QString & dataPath,
 QString getFileName(const QString & filePath, bool withExtension = true);
 bool areEqualFiles(QString path1, QString path2);
 
-void trackTim(void (*runFunc)(void), char * funcNam);
-
-template <typename... Args>
-void trackTim(void (*runFunc)(Args...),
-              char * funcNam);
-
 QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
 QString getExt(QString filePath);
@@ -96,9 +88,8 @@ ostream & operator<< (ostream &os, matrix toOut);
 template <typename T>
 ostream & operator<< (ostream &os, vector<T> toOut); // template!
 
-//vector< vector<double> > operator=(const vector< vector<double> > & other);
 char * strToChar(const QString & input);
-FILE *fopen(QString filePath, const char *__modes);
+FILE * fopen(QString filePath, const char *__modes);
 char * QStrToCharArr(const QString & input, const int & len = -1);
 
 int typeOfFileName(const QString & fileName);
@@ -106,13 +97,14 @@ QString getFileMarker(const QString & fileName);
 
 
 
-//wavelets
+
+
+//colorscales
 enum ColorScale {jet = 0,
                  htc = 1,
                  gray = 2,
                  pew = 3};
 void drawColorScale(QString filename, int range, ColorScale type = jet, bool full = false);
-
 const vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
 // jet
 const double defV = 1.;
@@ -128,6 +120,13 @@ QColor hueOld(int range, double j, int numOfContours = 0, double V = 0.95, doubl
 QColor hueJet(const int &range, double j);
 QColor grayScale(int range, int j);
 
+
+
+
+
+
+//wavelets
+
 double morletCos(double const freq1, double const timeShift, double const pot, double const time);
 double morletSin(double const freq1, double const timeShift, double const pot, double const time);
 double morletCosNew(double const freq1,
@@ -136,9 +135,6 @@ double morletCosNew(double const freq1,
 double morletSinNew(double const freq1,
                     const double timeShift,
                     const double time);
-
-//void wavelet(QString out, FILE * file, int ns = 19, int channelNumber = 0, double freqMax = 20., double freqMin = 5., double freqStep = 0.99, double pot = 32.);
-
 
 #define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
 namespace wvlt
@@ -149,7 +145,7 @@ const double freqMin = 5.; // def::leftFreq
 const double freqStep = 0.2;
 const int range = 256;
 
-#if WAVELET_FREQ_STEP_TYPE==0
+#if !WAVELET_FREQ_STEP_TYPE
 const int numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqStep)) + 1;
 #else
 const int numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
@@ -162,83 +158,15 @@ void wavelet(QString filePath,
              int ns = 20);
 matrix waveletDiscrete(const vec & inData);
 
-vec signalFromFile(QString filePath,
-                   int channelNumber,
-                   int ns = def::ns);
-matrix countWavelet(vec inSignal);
 void drawWavelet(QString picPath,
                  const matrix &inData);
 
-//void waveletPhase(QString out, FILE * file, int ns, int channelNumber1, int channelNumber2, double freqMax, double freqMin, double freqStep, double pot);
-
-//signal processing
-double fractalDimension(const vec &arr, const QString &picPath = QString());
-double enthropy(const double *arr, const int N, const int numOfRanges = 30); // not finished?
-void four1(double * dataF, int nn, int isign);
-void four1(vec &dataF, int nn, int isign);
-
-vec hilbert(const vec & arr,
-            double lowFreq = def::leftFreq,
-            double highFreq = def::rightFreq,
-            QString picPath  = QString());
-
-vec hilbertPieces(const vec & arr,
-                   int inLength,
-                   double sampleFreq,
-                   double lowFreq,
-                   double highFreq,
-                   QString picPath = QString());
-
-vec bayesCount(const vec & dataIn, int numOfIntervals);
-void kernelEst(const vec & arr, QString picPath);
-void kernelEst(QString filePath, QString picPath);
-
-void histogram(const vec & arr, int numSteps, QString picPath);
-
-bool gaussApproval(double * arr, int length); // not finished?
-bool gaussApproval(QString filePath); // not finished?
-bool gaussApproval2(double * arr, int length); // not finished?
-double vectorLength(double * arr, int len);
-double quantile(double arg);
-
-template <typename Typ>
-double mean(const Typ &arr, int length, int shift = 0);
-template <typename Typ>
-double variance(const Typ &arr, int length, int shift = 0, bool fromZero = false);
-template <typename Typ>
-double sigma(const Typ &arr, int length, int shift = 0, bool fromZero = false);
-
-template <typename Typ>
-double correlation(const Typ &arr1, const Typ &arr2, int length, int shift = 0, bool fromZero = false);
-template <typename Typ>
-double covariance (const Typ &arr1, const Typ &arr2, int length, int shift = 0, bool fromZero = false);
-
-double skewness(double *arr, int length);
-double kurtosis(double *arr, int length);
-double rankit(int i, int length, double k = 0.375);
-double maxValue(double * arr, int length);
-double minValue(double * arr, int length);
-
-template <typename Typ>
-void splitZeros(Typ & inData,
-                const int & inLength,
-                int * outLength,
-                const QString & logFile = QString(),
-                const QString & dataName = def::ExpName);
-
-template <typename Typ>
-void splitZerosEdges(Typ & dataIn, const int & ns, const int & length, int * outLength);
-template <typename Typ>
-void zeroData(Typ & inData, const int & leftLimit, const int & rightLimit);
 
 
-double independence(double * const signal1, double * const signal2, int length);
-double countAngle(double initX, double initY);
 
-int MannWhitney(double * arr1, int len1, double * arr2, int len2, double p = 0.05);
-int MannWhitney(const vec & arr1,
-                 const vec & arr2,
-                 const double p = 0.05);
+// static functions
+
+
 const vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
 void eyesProcessingStatic(const vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
                           const vector<int> eegChannels = leest19,
@@ -246,38 +174,6 @@ void eyesProcessingStatic(const vector<int> eogChannels = {21, 22}, // 19 eeg, 2
                                                        + slash() + "windows",
                           const QString & outFilePath = def::dir->absolutePath()
                                                         + slash() + "eyes.txt");
-
-void makePaFile(const QString & spectraDir,
-                const QStringList & fileNames,
-                const double & coeff,
-                const QString & outFile,
-                const bool svmFlag = false);
-
-void makeFileLists(const QString & path,
-                   vector<QStringList> & lst);
-
-void makePaStatic(const QString & spectraDir,
-                  const int & fold = 2,
-                  const double & coeff = 7.,
-                  const bool svmFlag = false);
-
-void makeMatrixFromFiles(QString spectraDir,
-                         QStringList fileNames,
-                         double coeff,
-                         double *** outMatrix);
-void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
-
-void drawRCP(const vec & values,
-             const QString & picPath = "/media/Files/Data/AA/rcp.png");
-void countRCP(QString filename,
-              QString picPath  = QString(),
-              double *outMean = nullptr,
-              double *outSigma = nullptr);
-
-void svd(const mat &inData,
-         matrix &eigenVectors,
-         vec &eigenValues,
-         const double &threshold = 1e-9);
 
 void makeCfgStatic(const QString & FileName = "16sec19ch",
                    const int & NetLength = def::nsWOM() * def::spLength,
@@ -287,6 +183,35 @@ void makeCfgStatic(const QString & FileName = "16sec19ch",
                    const double & error = 0.1,
                    const int & temp = 10);
 
+void makePaStatic(const QString & spectraDir,
+                  const int & fold = 2,
+                  const double & coeff = 7.,
+                  const bool svmFlag = false);
+
+
+
+
+
+
+
+
+
+// dataHandlers
+void makePaFile(const QString & spectraDir,
+                const QStringList & fileNames,
+                const double & coeff,
+                const QString & outFile,
+                const bool svmFlag = false);
+
+void makeFileLists(const QString & path,
+                   vector<QStringList> & lst);
+
+
+void makeMatrixFromFiles(QString spectraDir,
+                         QStringList fileNames,
+                         double coeff,
+                         double *** outMatrix);
+void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
 void readPlainData(const QString & inPath,
                    matrix & data,
@@ -294,20 +219,55 @@ void readPlainData(const QString & inPath,
                    int & numOfSlices,
                    const int & start = 0);
 
+lineType signalFromFile(QString filePath,
+                   int channelNumber,
+                   int ns = def::ns); // unused
+
 void writePlainData(const QString outPath,
                     const matrix &data,
                     const int & ns,
                     int numOfSlices,
                     const int & start = 0);
 
-//void writePlainData(QString outPath,
-//                    const matrix &data,
-//                    int ns,
-//                    int numOfSlices,
-//                    int start = 0);
 
-template <typename Typ>
-QPixmap drawEeg(const Typ & dataD,
+bool readICAMatrix(const QString & path, matrix & matrixA);
+void writeICAMatrix(const QString & path, const matrix & matrixA);
+
+void readSpectraFile(const QString & filePath,
+                     matrix & outData,
+                     int inNs = def::nsWOM(),
+                     int spL = def::spLength);
+
+void writeSpectraFile(const QString & filePath,
+                      const matrix & outData,
+                      int inNs = def::nsWOM(),
+                      int spL = def::spLength);
+
+
+template <typename signalType>
+void readFileInLine(const QString & filePath,
+                    signalType & result);
+
+
+template <typename signalType>
+void writeFileInLine(const QString & filePath,
+                     const signalType & outData);
+
+void readPaFile(const QString & paFile,
+                matrix & dataMatrix,
+                vector<int> types,
+                vector<QString> & FileName,
+                vector<double> & classCount);
+
+
+
+
+
+
+
+// drawings
+
+QPixmap drawEeg(const matrix & dataD,
                 int ns,
                 int NumOfSlices,
                 int freq = def::freq,
@@ -316,8 +276,7 @@ QPixmap drawEeg(const Typ & dataD,
                 int blueChan = -1,
                 int redChan = -1);
 
-template <typename Typ>
-QPixmap drawEeg( const Typ & dataD,
+QPixmap drawEeg( const matrix & dataD,
                  int ns,
                  int startSlice,
                  int endSlice,
@@ -327,13 +286,14 @@ QPixmap drawEeg( const Typ & dataD,
                  int blueChan = -1,
                  int redChan = -1);
 
-
+void drawOneArray(const lineType & array, QString outPath);
 
 enum spectraGraphsNormalization {all, each};
 void drawTemplate(const QString & outPath,
                   bool channelsFlag = true,
                   int width = 1600,
                   int height = 1600);
+
 
 void drawArray(const QString & templPath,
                const vec & inData,
@@ -343,9 +303,8 @@ void drawArray(const QString & templPath,
                const int & lineWidth = 3);
 
 //inMatrix supposed to be def::spLength * 19 size
-template <typename Typ>
 double drawArrays(const QString & templPath,
-                const Typ & inMatrix,
+                const matrix & inMatrix,
                 const bool weightsFlag = false,
                 const spectraGraphsNormalization normType = all,
                 double norm = 0.,
@@ -362,6 +321,11 @@ void drawArraysInLine(const QString & picPath,
 void drawCutOneChannel(const QString & inSpectraPath,
                        const int numChan);
 
+int MannWhitney(double * arr1, int len1, double * arr2, int len2, double p = 0.05);
+template <typename signalType = lineType>
+int MannWhitney(const signalType & arr1,
+                 const signalType & arr2,
+                 const double p = 0.05);
 void countMannWhitney(trivector<int> & outMW,
                       const QString & spectraPath = def::dir->absolutePath()
                                                     + slash() + "SpectraSmooth",
@@ -377,42 +341,18 @@ void drawMannWitneyInLine(const QString & picPath,
                           const QStringList & inColors = def::colours);
 
 
-void drawArray(double * array, int length, QString outPath);
-
-template <typename Typ>
-void readSpectraFile(const QString & filePath,
-                     Typ & outData,
-                     int inNs = def::nsWOM(),
-                     int spL = def::spLength);
-
-template <typename Typ>
-void writeSpectraFile(const QString & filePath,
-                      const Typ & outData,
-                      int inNs = def::nsWOM(),
-                      int spL = def::spLength);
-
-void readFileInLine(const QString & filePath,
-                    vec & outData);
-void writeFileInLine(const QString & filePath,
-                     const vec & outData);
-
-void readPaFile(const QString & paFile,
-                matrix & dataMatrix,
-                vector<QString> & FileName,
-                vector<double> & classCount);
-
-template <typename Typ>
-bool readICAMatrix(const QString & path, Typ &matrixA);
-template <typename Typ>
-void writeICAMatrix(const QString & path, Typ &matrixA);
-
-void icaOrdering(const QString & mainFile,
-                 const QString & ordFile,
-                 const QString & outFile);
 
 
 
 
+
+
+
+
+
+
+
+// maps drawings
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
 void splineCoeffCount(const vec & inX,
                       const vec & inY,
@@ -462,31 +402,170 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath,
 
 
 
+
+
+
+// signal processing
+double enthropy(const double *arr, const int N, const int numOfRanges = 30); // not finished?
+void four1(double * dataF, int nn, int isign);
+
+
+template <typename signalType = lineType>
+matrix countWavelet(const signalType & inSignal);
+
+template <typename signalType = lineType>
+double fractalDimension(const signalType &arr,
+                        const QString &picPath = QString());
+
+
+template <typename signalType = lineType, typename retType = lineType>
+retType hilbert(const signalType & arr,
+                double lowFreq = def::leftFreq,
+                double highFreq = def::rightFreq,
+                QString picPath  = QString());
+
+template <typename signalType = lineType, typename retType = lineType>
+retType hilbertPieces(const signalType & arr,
+                   int inLength,
+                   double sampleFreq,
+                   double lowFreq,
+                   double highFreq,
+                   QString picPath = QString());
+
+template <typename signalType = lineType, typename retType = lineType>
+retType bayesCount(const signalType & dataIn, int numOfIntervals);
+
+template <typename signalType = lineType>
+void kernelEst(const signalType & arr, QString picPath);
+
+template <typename signalType = lineType>
+void histogram(const signalType & arr, int numSteps, QString picPath);
+
+
+template <typename signalType = lineType>
+void four1(signalType & dataF, int nn, int isign);
+
+template <typename signalType = lineType, typename retType = lineType>
+retType spectre(const signalType & data);
+
 void spectre(const double * data,
              const int &length,
              double *& spectr);
-vec spectre(const vec & data);
-vec smoothSpectre(const vec & inSpectre, const int numOfSmooth);
 
-void calcSpectre(const vector<double> & inSignal,
-                 vector<double> & outSpectre,
+template <typename signalType = lineType, typename retType = lineType>
+retType smoothSpectre(const signalType & inSpectre, const int numOfSmooth);
+
+
+template <typename signalType = lineType>
+void calcSpectre(const signalType & inSignal,
+                 signalType & outSpectre,
                  const int & fftLength = def::fftLength,
                  const int & NumOfSmooth = 0,
                  const int & Eyes = 0,
                  const double & powArg = 1.);
+
+
+
+
+
+double quantile(double arg);
+void kernelEst(QString filePath, QString picPath);
+
+double rankit(int i, int length, double k = 0.375);
+bool gaussApproval(double * arr, int length); // not finished?
+bool gaussApproval(QString filePath); // not finished?
+bool gaussApproval2(double * arr, int length); // not finished?
+
+
+template <typename Typ>
+double mean(const Typ &arr, int length, int shift = 0);
+inline double mean(const lineType & arr)
+{
+    return arr.sum() / arr.size();
+}
+
+template <typename Typ>
+double variance(const Typ &arr, int length, int shift = 0, bool fromZero = false);
+inline double variance(const lineType & arr)
+{
+    return pow(arr - mean(arr), 2).sum() / arr.size();
+}
+
+template <typename Typ>
+double sigma(const Typ &arr, int length, int shift = 0, bool fromZero = false);
+inline double sigma(const lineType & arr)
+{
+    return sqrt(variance(arr));
+}
+
+template <typename Typ>
+double covariance (const Typ &arr1, const Typ &arr2, int length, int shift = 0, bool fromZero = false);
+inline double covariance(const lineType & arr1, const lineType & arr2)
+{
+    return (arr1 * arr2).sum();
+}
+
+template <typename Typ>
+double correlation(const Typ &arr1, const Typ &arr2, int length, int shift = 0, bool fromZero = false);
+inline double correlation(const lineType & arr1, const lineType & arr2)
+{
+    return (arr1 * arr2).sum() / (sigma(arr1) * sigma(arr2));
+}
+
+double independence(double * const signal1, double * const signal2, int length);
+double countAngle(double initX, double initY);
+
+
+/// what is RCP ???
+void drawRCP(const lineType & values,
+             const QString & picPath);
+void countRCP(QString filename,
+              QString picPath  = QString(),
+              double * outMean = nullptr,
+              double * outSigma = nullptr);
+
+
+void splitZeros(matrix & inData,
+                const int & inLength,
+                int * outLength,
+                const QString & logFile = QString(),
+                const QString & dataName = def::ExpName);
+
+void splitZerosEdges(matrix & dataIn, const int & ns, const int & length, int * outLength);
+void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit);
+
+
+void svd(const matrix & inData,
+         matrix & eigenVectors,
+         vec & eigenValues,
+         const double & threshold = 1e-9);
+
+
+
 
 template <typename Typ>
 void calcRawFFT(const Typ & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
 template <typename T>
 double distance(const vector <T> &vec1, const vector <T> &vec2, const int &dim);
+
 double distance(double *vec1, double *vec2, const int &dim);
 double distance(double const x1, double const y1, double const x2, double const y2);
-double distanceMah(double * &vect, double ** &covMatrixInv, double *&groupMean, int dimension);
-double distanceMah(double * &vect, double ** &group, int dimension, int number);
+double distance(const lineType & in1, const lineType & in2);
+
+double distanceMah(double * & vect, double ** & covMatrixInv, double *&groupMean, int dimension);
+double distanceMah(double * & vect, double ** & group, int dimension, int number);
 double distanceMah(double ** &group1, double ** &group2, int dimension, int number1, int number2);
 void matrixMahCount(double ** &matrix, int number, int dimension, double **&outMat, double *&meanVect);
 
+
+
+
+
+
+
+
+/// old matrices
 template <typename Typ1, typename Typ2, typename Typ3>
 void matrixProduct(const Typ1 & inMat1, const Typ2 & inMat2, Typ3 & outMat, int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
 
@@ -523,12 +602,21 @@ void matrixDelete(int *** matrix, const int &i);
 void matrixPrint(double ** &mat, const int &i, const int &j);
 
 
+
+
+
+// mati
+/// use bitset
 vector<bool> matiCountByte(const double & marker);
 QString matiCountByteStr(const double & marker);
 void matiPrintMarker(double const & marker, QString pre  = QString());
 void matiFixMarker(double & marker);
 int matiCountDecimal(vector<bool> byteMarker);
 int matiCountDecimal(QString byteMarker);
+inline bool matiCountBit(double const & marker, int num)
+{
+    return (int(marker) / int(pow(2, num))) % 2;
+}
 
 
 
@@ -591,7 +679,7 @@ double errorSammonAdd(const vector < vector <double> > & distOld,
 
 
 
-
+// other small shit
 inline double doubleRound(const double & in, const int & numSigns)
 {
     return int(  ceil(in * pow(10., numSigns) - 0.5)  ) / pow(10., numSigns);
@@ -630,10 +718,5 @@ inline int fftL(const int & in)
 }
 
 
-inline bool matiCountBit(double const & marker, int num)
-{
-//    return (int(marker) >> num) % 2;
-    return (int(marker) / int(pow(2, num))) % 2;
-}
 
 #endif // LIBRARY_H

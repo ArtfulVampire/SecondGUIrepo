@@ -44,7 +44,7 @@ matrix::matrix(const dataType & other)
 {
     this->data = other;
 }
-matrix::matrix(vec vect, bool orientH)
+matrix::matrix(lineType vect, bool orientH)
 {
     if(orientH)
     {
@@ -60,7 +60,7 @@ matrix::matrix(vec vect, bool orientH)
         }
     }
 }
-matrix::matrix(vec vect, char orient)
+matrix::matrix(lineType vect, char orient)
 {
     if(orient == 'h' || orient == 'H')
     {
@@ -81,7 +81,7 @@ matrix::matrix(vec vect, char orient)
     }
 }
 
-matrix::matrix(vec vect, int inRows)
+matrix::matrix(lineType vect, int inRows)
 {
     if(vect.size() % inRows != 0)
     {
@@ -93,18 +93,18 @@ matrix::matrix(vec vect, int inRows)
     this->resize(inRows, newCols);
     for(int i = 0; i < inRows; ++i)
     {
-        std::copy(vect.begin() + i * newCols,
-                  vect.begin() + (i + 1) * newCols,
-                  data[i].begin());
+        std::copy(std::begin(vect) + i * newCols,
+                  std::begin(vect) + (i + 1) * newCols,
+                  std::begin(this->data[i]));
     }
 }
 
-matrix::matrix(std::initializer_list<vector<double>> lst)
+matrix::matrix(std::initializer_list<lineType> lst)
 {
     this->resize(0, 0);
     std::for_each(lst.begin(),
                   lst.end(),
-                  [this](vector<double> in)
+                  [this](lineType in)
     {
         this->data.push_back(in);
     });
@@ -113,20 +113,12 @@ matrix::matrix(std::initializer_list<vector<double>> lst)
 matrix::matrix(std::initializer_list<double> lst) // diagonal
 {
     this->resize(lst.size(), lst.size());
-    vec tmp;
-    std::for_each(lst.begin(),
-                  lst.end(),
-                  [&tmp](double in)
+    this->fill(0.);
+    int count = 0;
+    for(int item : lst)
     {
-        tmp.push_back(in);
-    });
-
-    vec tempVec(lst.size(), 0.);
-    for(int i = 0; i < lst.size(); ++i)
-    {
-        tempVec[i] = tmp[i];
-        this->data.push_back(tempVec);
-        tempVec[i] = 0.;
+        this->data[count][count] = item;
+        ++count;
     }
 }
 
@@ -352,7 +344,7 @@ void matrix::fill(double value)
 {
     for(auto it = data.begin(); it < data.end(); ++it)
     {
-        for(auto itt = (*it).begin(); itt < (*it).end(); ++itt)
+        for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
         {
             (*itt) = value;
         }
@@ -365,7 +357,7 @@ void matrix::resize(int rows, int cols)
     this->data.resize(rows);
     std::for_each(data.begin(),
                   data.end(),
-                  [cols](vector<double> & in)
+                  [cols](lineType & in)
     {
         in.resize(cols);
     });
@@ -379,7 +371,7 @@ void matrix::resizeRows(int rows)
     data.resize(rows);
     std::for_each(data.begin(),
                   data.end(),
-                  [cols](vector<double> & in)
+                  [cols](lineType & in)
     {
         in.resize(cols);
     });
@@ -390,7 +382,7 @@ void matrix::resizeCols(int cols)
 {
     std::for_each(data.begin(),
                   data.end(),
-                  [cols](vector<double> & in)
+                  [cols](lineType & in)
     {
         in.resize(cols);
     });
@@ -404,25 +396,23 @@ int matrix::rows() const
 
 double matrix::maxVal() const
 {
-    vector<double> res; // = data[0][0];
+    double res = 0.;
     std::for_each(this->data.begin(),
                   this->data.end(),
-                  [&res](const vector<double> & in)
+                  [&res](const lineType & in)
     {
-//        res = fmax(res, *(std::max_element(in.begin(), in.end())));
-        res.push_back( *(std::max_element(in.begin(), in.end())) );
+        res = fmax(res, in.max());
     });
-//    return res;
-    return *(std::max_element(res.begin(), res.end()));
+    return res;
 }
 double matrix::minVal() const
 {
     double res = data[0][0];
     std::for_each(this->data.begin(),
                   this->data.end(),
-                  [&res](const vector<double> & in)
+                  [&res](const lineType & in)
     {
-        res = fmin(res, *(std::min_element(in.begin(), in.end())));
+        res = fmin(res, in.min());
     });
     return res;
 }
@@ -448,93 +438,61 @@ dataType::const_iterator matrix::end() const
     return this->data.end();
 }
 
-vector<double> matrix::toVectorByRows() const
+lineType matrix::toVectorByRows() const
 {
-    vector<double> res;
-    std::for_each(this->data.begin(),
-                  this->data.end(),
-                  [&res](vector<double> in)
+    lineType res(this->rows() * this->cols());
+    for(int i = 0; i < this->rows(); ++i)
     {
-        std::for_each(in.begin(),
-                      in.end(),
-                      [&res](double inn){res.push_back(inn);});
-    });
+        std::copy(std::begin(this->data[i]),
+                  std::end(this->data[i]),
+                  std::begin(res) + this->cols() * i);
+    }
     return res;
 }
 
-vector<double> matrix::toVectorByCols() const
+lineType matrix::toVectorByCols() const
 {
-    vector<double> res;
+    lineType res(this->rows() * this->cols());
+    int count = 0;
     for(int i = 0; i < this->cols(); ++i)
     {
         for(int j = 0; j < this->rows(); ++j)
         {
-            res.push_back(this->data[j][i]);
+            res[count++] = this->data[j][i];
         }
     }
     return res;
 }
 
 
-vector<double> matrix::averageRow() const
+lineType matrix::averageRow() const
 {
-    vector<double> res(this->cols(), 0);
-    std::for_each(this->begin(),
-                  this->end(),
-                  [&res](const vector<double> & in)
+    lineType res(0., this->cols());
+    for(int i = 0; i < this->rows(); ++i)
     {
-        std::transform(in.begin(),
-                       in.end(),
-                       res.begin(),
-                       res.begin(),
-                       [](const double & in1, const double & in2)
-        {
-            return in1 + in2;
-        });
-    });
-
-    std::for_each(res.begin(),
-                  res.end(),
-                  [this](double & in)
-    {
-        in /= this->rows();
-    });
+        res += this->data[i];
+    }
+    res /= this->rows();
     return res;
 }
 
-vector<double> matrix::averageCol() const
+lineType matrix::averageCol() const
 {
-
-    vector<double> res(this->rows(), 0);
+    lineType res(0., this->rows());
     for(int i = 0; i < this->cols(); ++i)
     {
-        vector<double> col = this->getCol(i);
-        std::transform(col.begin(),
-                       col.end(),
-                       res.begin(),
-                       res.begin(),
-                       [](const double & in1, const double & in2)
-        {
-            return in1 + in2;
-        });
-
+        res += this->getCol(i);
     }
-    std::for_each(res.begin(),
-                  res.end(),
-                  [this](double & in)
-    {
-        in /= this->cols();
-    });
-
+    res /= this->cols();
     return res;
 }
 
-vector<double> matrix::getCol(int i) const
+lineType matrix::getCol(int i) const
 {
-    vector<double> res;
+    lineType res(this->rows());
     for(int j = 0; j < this->rows(); ++j)
     {
-        res.push_back((*this)[j][i]);
+        res[j] = this->data[j][i];
     }
     return res;
 }
@@ -560,9 +518,15 @@ void matrix::print(int rows, int cols) const
     cout << endl;
 }
 
-void matrix::push_back(const vector<double> & in)
+void matrix::push_back(const lineType & in)
 {
     this->data.push_back(in);
+}
+
+void matrix::push_back(const vectType & in)
+{
+    lineType temp{in.data(), in.size()};
+    this->data.push_back(temp);
 }
 
 int matrix::cols() const
@@ -639,19 +603,20 @@ void matrix::invert()
             coeff = initMat[j][i] / initMat[i][i]; // coefficient
 
             //row[j] -= coeff * row[i] for both (temp & init) matrices
-            std::transform(initMat[j].begin() + i,
-                           initMat[j].end(),
-                           initMat[i].begin() + i,
-                           initMat[j].begin() + i,
-                           [&](double A, double B){return A - B * coeff;}
-            );
-
-            std::transform(tempMat[j].begin(),
-                           tempMat[j].end(),
-                           tempMat[i].begin(),
-                           tempMat[j].begin(),
-                           [&](double A, double B){return A - B * coeff;}
-            );
+            initMat[j] -= initMat[i] * coeff;
+//            std::transform(initMat[j].begin() + i,
+//                           initMat[j].end(),
+//                           initMat[i].begin() + i,
+//                           initMat[j].begin() + i,
+//                           [&](double A, double B){return A - B * coeff;}
+//            );
+            tempMat[j] -= tempMat[i] * coeff;
+//            std::transform(tempMat[j].begin(),
+//                           tempMat[j].end(),
+//                           tempMat[i].begin(),
+//                           tempMat[j].begin(),
+//                           [&](double A, double B){return A - B * coeff;}
+//            );
         }
     }
 
@@ -664,30 +629,34 @@ void matrix::invert()
 
 
             //row[j] -= coeff * row[i] for both matrices
-            std::transform(initMat[j].begin() + i,
-                           initMat[j].end(),
-                           initMat[i].begin() + i,
-                           initMat[j].begin() + i,
-                           [&](double A, double B){return A - B * coeff;}
-            );
+            initMat[j] -= initMat[i] * coeff;
+//            std::transform(initMat[j].begin() + i,
+//                           initMat[j].end(),
+//                           initMat[i].begin() + i,
+//                           initMat[j].begin() + i,
+//                           [&](double A, double B){return A - B * coeff;}
+//            );
 
-            std::transform(tempMat[j].begin(),
-                           tempMat[j].end(),
-                           tempMat[i].begin(),
-                           tempMat[j].begin(),
-                           [&](double A, double B){return A - B * coeff;}
-            );
+            tempMat[j] -= tempMat[i] * coeff;
+//            std::transform(tempMat[j].begin(),
+//                           tempMat[j].end(),
+//                           tempMat[i].begin(),
+//                           tempMat[j].begin(),
+//                           [&](double A, double B){return A - B * coeff;}
+//            );
         }
     }
 
     //3) divide on diagonal elements
     for(int i = 0; i < size; ++i) //which line to substract
     {
-        std::transform(tempMat[i].begin(),
-                       tempMat[i].end(),
-                       tempMat[i].begin(),
-                       [&](double A){return A / initMat[i][i];}
-        );
+        tempMat[i] /= initMat[i][i];
+
+//        std::transform(tempMat[i].begin(),
+//                       tempMat[i].end(),
+//                       tempMat[i].begin(),
+//                       [&](double A){return A / initMat[i][i];}
+//        );
     }
 
     (*this) = tempMat;
@@ -810,7 +779,7 @@ void matrixProduct(const dataType & in1,
                    int rows1,
                    int cols2);
 
-void matrixProduct(const vec & in1,
+void matrixProduct(const lineType & in1,
                    const matrix &in2,
                    matrix & result,
                    int dim,
@@ -826,7 +795,7 @@ void matrixProduct(const vec & in1,
 }
 
 void matrixProduct(const matrix &in1,
-                   const vec &in2,
+                   const lineType &in2,
                    matrix & result,
                    int dim,
                    int rows1,

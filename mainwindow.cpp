@@ -27,13 +27,14 @@ MainWindow::MainWindow() :
 
     NumOfEdf = 0; //for EDF cut
 
+
     // must reamake with std::string or QString
-    label = new char* [MAXNS];     //memory for channels' labels
-    for(int i = 0; i < MAXNS; ++i)
-    {
-        label[i] = new char [17];
-    }
-    nr = new int [MAXNS];
+//    label = new char* [MAXNS];     //memory for channels' labels
+//    for(int i = 0; i < MAXNS; ++i)
+//    {
+//        label[i] = new char [17];
+//    }
+//    nr = new int [MAXNS];
 
 
 
@@ -761,13 +762,13 @@ void MainWindow::readData()
 
     globalEdf.readEdfFile(helpString);
     def::ns = globalEdf.getNs();
-    for(int i = 0; i < def::ns; ++i)
-    {
-        nr[i] = int(globalEdf.getNr()[i]);
-    }
-    ndr = globalEdf.getNdr();
-    ddr = globalEdf.getDdr();
-    globalEdf.getLabelsCopy(label);
+//    for(int i = 0; i < def::ns; ++i)
+//    {
+//        nr[i] = int(globalEdf.getNr()[i]);
+//    }
+//    ndr = globalEdf.getNdr();
+//    ddr = globalEdf.getDdr();
+    label = globalEdf.getLabels();
 #else
     FILE * edf = fopen(helpString, "r"); //generality
     if(edf == NULL)
@@ -1267,8 +1268,8 @@ void MainWindow::readData()
 
 //    staSlice += 3; //generality LAWL
 
-    ui->markerSecTimeDoubleSpinBox->setMaximum(ndr * ddr);
-    ui->markerBinTimeSpinBox->setMaximum(nr[def::ns - 1] * ndr * ddr);
+    ui->markerSecTimeDoubleSpinBox->setMaximum(globalEdf.getDataLen() / def::freq);
+    ui->markerBinTimeSpinBox->setMaximum(globalEdf.getDataLen());
 
 //    cout << "readData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
@@ -1490,7 +1491,7 @@ void MainWindow::cleanDirs()
 
 void MainWindow::markerSetSecTime(int a)
 {
-    ui->markerSecTimeDoubleSpinBox->setValue(double(a)/nr[def::ns-1]);
+    ui->markerSecTimeDoubleSpinBox->setValue(double(a) / def::freq);
 }
 
 void MainWindow::markerGetSlot()
@@ -1672,8 +1673,8 @@ void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unus
     {
         for(int j = i+1; j < size; ++j)
         {
-            corrs[i][j] = correlation(globalEdf.getData()[i].data(),
-                                      globalEdf.getData()[j].data(),
+            corrs[i][j] = correlation(globalEdf.getData()[i],
+                                      globalEdf.getData()[j],
                                       globalEdf.getDataLen());
             corrs[j][i] = corrs[i][j];
         }
@@ -1741,6 +1742,9 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
+    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+    sliceAll();
+    exit(0);
 
 //    setEdfFile(def::dataFolder + slash() + "AAU_train_rr_f3.5-40_new.edf");
 //    Net * ann = new Net();
@@ -1849,7 +1853,7 @@ void MainWindow::customFunc()
                      + slash() + "windows");
 
         Net * ann = new Net();
-        ann->readCfgByName("tmp");
+//        ann->readCfgByName("tmp");
         ann->autoClassificationSimple();
         ann->close();
         delete ann;

@@ -40,25 +40,22 @@ private:
     Ui::Net *ui;
 
     QButtonGroup  * group1,  * group2,  * group3;
-    QDir *dirBC;
 
-    matrix dataMatrix;
+    matrix dataMatrix; // biases and types separately
+    vector<int> types;
     vector<QString> fileNames;
-    vector<double> classCount;
-    int NetLength; //inputs
+    vector<double> classCount; // really int but...
 
-    trivector<double> weight;
+    twovector<lineType> weight;
     vector<int> dimensionality; //for backprop
-//    int numOfLayers; //for backprop
 
-    matrix tempRandomMatrix; //test linear transform
+//    matrix tempRandomMatrix; //test linear transform
 
     vector<int> channelsSet;
     vector<int> channelsSetExclude;
 
     double averageAccuracy;
     int epoch;
-//    double Error;
     int numOfTall;
 
     int loadPAflag;
@@ -66,7 +63,6 @@ private:
     bool autoFlag;
 
     matrix coords; //new coords for Sammon method
-    double mouseShit;
 
 public:
     explicit Net();
@@ -87,7 +83,7 @@ public:
     void moveCoordsGradient(double ** coords, double ** distOld, double ** distNew, int size);
     double thetalpha(int bmu_, int j_, int step_, double ** arr, int length_);
 
-    void readCfgByName(const QString & cfgFilePath);
+//    void readCfgByName(const QString & cfgFilePath);
     double mouseClick(QLabel * label, QMouseEvent * ev);
     void trainTestClassification(const QString & trainTemplate = "train",
                                  const QString & testTemplate = "test");
@@ -109,15 +105,13 @@ public:
 
 
     void readWtsByName(const QString & fileName,
-                       trivector<double> * wtsMatrix = nullptr);
-    void drawWts(QString wtsPath = QString(),
+                       twovector<lineType> * wtsMatrix = nullptr);
+    void drawWts(const QString & wtsPath = QString(),
                  QString picPath = QString());
 
-protected:
-    void mousePressEvent(QMouseEvent * event);
 
 public slots:
-    void readCfg();
+//    void readCfg();
     void readWts();
 
     void LearNetIndices(vector<int> mixNum);
@@ -141,7 +135,7 @@ public slots:
     void SVM();
     void Hopfield();
     void methodSetParam(int, bool);
-    void memoryAndParamsAllocation();
+//    void memoryAndParamsAllocation();
     void testDistances();
     void optimizeChannelsSet();
     void adjustParamsGroup2(QAbstractButton*);
