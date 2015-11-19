@@ -185,7 +185,7 @@ edfFile::edfFile(const QString & matiLogPath)
         fscanf(inStr, "%*d %*f"); // quantLength & currTime
         for(int i = 0; i < numOfParams; ++i)
         {
-            fscanf(inStr, "%lf", &data[i][currTimeIndex]);
+            fscanf(inStr, "%lf", &(this->data[i][currTimeIndex]));
         }
         ++currTimeIndex;
     }
@@ -197,12 +197,11 @@ edfFile::edfFile(const QString & matiLogPath)
 
 //    for(int j = 0; j < numOfParams; ++j)
 //    {
-//        for(int i = currTimeIndex; i < this->dataLength; ++i)
-//        {
-//            data[j][i] = 0.;
-//        }
-//        data[j].resize(dataLength);
+//        std::remove_if(begin(this->data[j]) + dataLength,
+//                       end(this->data[j]),
+//                       [](double){return true;});
 //    }
+    /// new
     this->fitData(currTimeIndex);
 
     for(int i = 0; i < this->ns; ++i)
@@ -562,7 +561,7 @@ void edfFile::handleData(bool readFlag,
         (*(this->dataPointer)).resize(ns);
 #else
         this->data = matrix(ns, dataLength, 0.);
-        cout << this->data.cols() << "\t" << this->data.rows() << endl;
+//        cout << this->data.cols() << "\t" << this->data.rows() << endl;
 #endif
         for(int i = 0; i < ns; ++i)
         {
@@ -1633,10 +1632,10 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
                 doFlag = false;
                 break;
             }
-            else
-            {
-                cout << this->data[j][currEnd - 1] << "\t" << currEnd << endl;
-            }
+//            else
+//            {
+//                cout << this->data[j][currEnd - 1] << "\t" << currEnd << endl;
+//            }
 #endif
         }
         if(doFlag)
@@ -1656,16 +1655,18 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
         (*(this->dataPointer))[j].resize(this->dataLength);
 
 #else
-        // good removing
-        std::remove_if(begin(this->data[j]) + currEnd,
-                       end(this->data[j]),
-                       [](double){return true;});
+        /// good removing
+        lineType newArr = this->data[j][slice(0, currEnd, 1)];
+        this->data[j] = newArr;
+//        std::remove_if(begin(this->data[j]) + currEnd,
+//                       end(this->data[j]),
+//                       [](double){return true;});
 
 #endif
 #if DATA_IN_CHANS
         this->channels[j].data.resize(this->dataLength);
 #endif
     }
-    cout << this->data.maxVal() << endl;
+//    cout << this->data.maxVal() << endl;
     this->ndr = ceil(this->dataLength / def::freq); // should be unchanged
 }

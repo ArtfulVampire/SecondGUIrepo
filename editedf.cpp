@@ -700,9 +700,13 @@ void MainWindow::constructEDF(const QString & newPath,
 //                newData[i].erase(newData[i].begin(),
 //                                 newData[i].begin() + offset);
                 // valarray
-                std::remove_if(begin(newData[i]),
-                               begin(newData[i]) + offset,
-                               [](double){return true;});
+                lineType newArr = newData[i][std::slice(offset,
+                                                        newData[i].size() - offset,
+                                                        1)];
+                newData[i] = newArr;
+//                std::remove_if(begin(newData[i]),
+//                               begin(newData[i]) + offset,
+//                               [](double){return true;});
             }
 
             newData[ns - 1][0] = saveMarker;

@@ -95,6 +95,7 @@ public:
     void writeWts(const QString &wtsPath = def::dir->absolutePath()
                                            + slash() + def::ExpName + ".wts");
     void PaIntoMatrixByName(const QString & fileName);
+    void loadData(const QString & spectraPath);
     void makeIndicesVectors(vector<int> & learnInd,
                             vector<int> & tallInd,
                             vector<vector<int> > & arr,

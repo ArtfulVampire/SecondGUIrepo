@@ -47,7 +47,7 @@ public:
     matrix(std::initializer_list<double> lst); // diagonal
 
     void resizeRows(int rows);
-    void resizeCols(int cols);
+    void resizeCols(int newCols);
     void fill(double value);
     void print(int rows = 0, int cols = 0) const;
     int cols() const;
@@ -60,7 +60,7 @@ public:
     dataType::const_iterator end() const;
     lineType toVectorByRows() const;
     lineType toVectorByCols() const;
-    lineType getCol(int i) const;
+    lineType getCol(int i, int numCols = -1) const;
     lineType averageRow() const;
     lineType averageCol() const;
     void pop_back();

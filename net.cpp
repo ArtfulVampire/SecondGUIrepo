@@ -7,12 +7,7 @@ Net::Net() :
     ui(new Ui::Net)
 {
     ui->setupUi(this);
-
-
     this->setWindowTitle("Net");
-
-//    weight = nullptr;
-//    dimensionality = nullptr;
 
     //clean log file
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
@@ -22,11 +17,7 @@ Net::Net() :
     stopFlag = 0;
     numOfTall = 0;
 
-//    NumberOfVectors = -1;
-    loadPAflag = 0;
-
 //    tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
-
 
     group1 = new QButtonGroup();
     group1->addButton(ui->leaveOneOutRadioButton);
@@ -51,9 +42,6 @@ Net::Net() :
     ui->backpropRadioButton->setChecked(false);
     ui->deltaRadioButton->setChecked(false);
 
-    if(def::spStep == def::freq / pow(2, 10)) ui->windowsRadioButton->setChecked(true);
-    else if(def::spStep == def::freq / pow(2, 12)) ui->realsRadioButton->setChecked(true);
-
     ui->dropoutDoubleSpinBox->setMinimum(0.);
     ui->dropoutDoubleSpinBox->setMaximum(1.);
     ui->dropoutDoubleSpinBox->setValue(0.15);
@@ -76,7 +64,8 @@ Net::Net() :
 
     ui->numOfPairsBox->setMaximum(100);
     ui->numOfPairsBox->setMinimum(1);
-    ui->numOfPairsBox->setValue(10); /////////////////////////////
+    ui->numOfPairsBox->setValue(5); /////////////////////////////
+
 #define INDICES 1
     ui->foldSpinBox->setMaximum(10);
     ui->foldSpinBox->setMinimum(1);
@@ -85,7 +74,7 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(1.5); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(7.); // 1. for MATI? usually 5.     0.7 for best comp set
     ui->rdcCoeffSpinBox->setSingleStep(0.5);
 
     ui->highLimitSpinBox->setMaximum(500);
@@ -137,9 +126,7 @@ Net::Net() :
     ui->dimensionalityLineEdit->setText("0 20 0");
 
     ui->sizeSpinBox->setValue(6);
-//    QObject::connect(this, SIGNAL(destroyed()), &myThread, SLOT(quit()));
-
-    QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(readCfg()));
+//    QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(readCfg()));
 
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWts()));
 
@@ -178,9 +165,21 @@ Net::Net() :
     QObject::connect(group2, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(adjustParamsGroup2(QAbstractButton*)));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
-    // just for fun
-//    makeCfgStatic(def::cfgFileName);
-//    readCfgByName(def::cfgFileName);
+
+    /// generality
+    if(def::spStep == def::freq / pow(2, 10))
+    {
+        ui->windowsRadioButton->setChecked(true);
+        loadData(def::dir->absolutePath()
+                 + slash() + "SpectraSmooth"
+                 + slash() + "windows");
+    }
+    else // if(def::spStep == def::freq / pow(2, 12))
+    {
+        ui->realsRadioButton->setChecked(true);
+        loadData(def::dir->absolutePath()
+                 + slash() + "SpectraSmooth");
+    }
 
     this->ui->deltaRadioButton->setChecked(true);
 }
@@ -1095,6 +1094,7 @@ void Net::PaIntoMatrix()
                types,
                fileNames,
                classCount);
+
 }
 
 
@@ -1119,6 +1119,31 @@ void Net::PaIntoMatrixByName(const QString & fileName)
                types,
                fileNames,
                classCount);
+}
+
+// like readPaFile from library.cpp
+void Net::loadData(const QString & spectraPath)
+{
+    vector<QStringList> leest;
+    makeFileLists(spectraPath, leest);
+
+    dataMatrix = matrix();
+    classCount.resize(def::numOfClasses, 0.);
+    types.clear();
+    fileNames.clear();
+
+    for(int i = 0; i < leest.size(); ++i)
+    {
+        for(const QString & fileName : leest[i])
+        {
+            dataMatrix.push_back(lineType());
+            readFileInLine(spectraPath + slash() + fileName,
+                           dataMatrix.back());
+            ++classCount[i];
+            types.push_back(i);
+            fileNames.push_back(fileName);
+        }
+    }
 }
 
 //void Net::loadDataFromFolder(const QString & spectraPath)

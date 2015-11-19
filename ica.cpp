@@ -1,4 +1,3 @@
-
 #ifndef ICA_CPP
 #define ICA_CPP
 #include "mainwindow.h"
@@ -7,10 +6,9 @@
 
 
 //products for ICA
-//void product1(double ** const arr, int length, int ns, double * vec, double ** outVector)
 void product1(const matrix & arr,
-              int length,
-              int ns,
+              const int length,
+              const int ns,
               const lineType & vect,
               lineType & outVector)
 {
@@ -19,37 +17,41 @@ void product1(const matrix & arr,
     //X[j] = arr[][j] dimension = ns
     //average over j
 
-    for(int i = 0; i < ns; ++i)
-    {
-        outVector[i] = 0.;
-    }
+    outVector.resize(ns); // and fill zeros
 
     double sum = 0.;
 
-
     for(int j = 0; j < length; ++j)
     {
-        sum = 0.;
+        lineType currCol = arr.getCol(j, ns);
 
-        for(int i = 0; i < ns; ++i)
-        {
-            sum += vect[i] * arr[i][j];
-        }
-        for(int i = 0; i < ns; ++i)
-        {
-            outVector[i] += tanh(sum) * arr[i][j];
-        }
+        ///old
+//        sum = 0.;
+//        for(int i = 0; i < ns; ++i)
+//        {
+//            sum += vect[i] * arr[i][j];
+//        }
+        /// new
+        sum = (vect * currCol).sum();
+
+        ///old
+//        for(int i = 0; i < ns; ++i)
+//        {
+//            outVector[i] += tanh(sum) * arr[i][j];
+//        }
+        /// new
+        outVector += currCol * tanh(sum);
     }
-    for(int i = 0; i < ns; ++i)
-    {
-        outVector[i] /= length;
-    }
+    outVector /= length;
 }
 
 
 
-//void product2(double ** const arr, int length, int ns, double * vec, double ** outVector)
-void product2(const matrix & arr, int length, int ns, const lineType & vect, lineType & outVector)
+void product2(const matrix & arr,
+              const int length,
+              const int ns,
+              const lineType & vect,
+              lineType & outVector)
 {
     //g'(Wt*X)*1*W
     //vec = Wt
@@ -59,50 +61,67 @@ void product2(const matrix & arr, int length, int ns, const lineType & vect, lin
     double sum = 0.;
     double sum1 = 0.;
 
+    outVector.resize(ns);
 
     for(int j = 0; j < length; ++j)
     {
-        sum = 0.;
-        for(int i = 0; i < ns; ++i)
-        {
-            sum += vect[i] * arr[i][j];
-        }
-        sum1 += 1 - tanh(sum)*tanh(sum);
+        lineType currCol = arr.getCol(j, ns);
+        /// old
+//        sum = 0.;
+//        for(int i = 0; i < ns; ++i)
+//        {
+//            sum += vect[i] * arr[i][j];
+//        }
+        /// new
+        sum = (vect * currCol).sum();
+
+        sum1 += 1 - pow(tanh(sum), 2.);
     }
     sum1 /= length;
 
-    for(int i = 0; i < ns; ++i)
-    {
-        outVector[i] = sum1 * vect[i];
-    }
+    outVector = vect * sum1;
+
 
 }
 
 
 
 //void product3(double ** vec, int ns, int currNum, double ** outVector)
-void product3(const matrix & inMat, int ns, int currNum, lineType & outVector)
+void product3(const matrix & inMat,
+              const int ns,
+              const int currNum,
+              lineType & outVector)
 {
     //sum(Wt*Wi*Wi)
+    /// old
+//    for(int k = 0; k < ns; ++k)
+//    {
+//        outVector[k] = 0.;
+//    }
+    /// new
+    outVector.resize(ns);
 
-    for(int k = 0; k < ns; ++k)
-    {
-        outVector[k] = 0.;
-    }
+
     double sum = 0.;
 
     for(int j = 0; j < currNum; ++j)
     {
-        sum = 0.;
-        for(int k = 0; k < ns; ++k)
-        {
-            sum += inMat[currNum][k] * inMat[j][k];
-        }
-        for(int k = 0; k < ns; ++k)
-        {
-            outVector[k] += inMat[j][k] * sum;
-        }
+        /// old
+//        sum = 0.;
+//        for(int k = 0; k < ns; ++k)
+//        {
+//            sum += inMat[currNum][k] * inMat[j][k];
+//        }
+        /// new
+        sum = (inMat[currNum] * inMat[j]).sum();
 
+        /// old
+//        for(int k = 0; k < ns; ++k)
+//        {
+//            outVector[k] += inMat[j][k] * sum;
+//        }
+        /// new
+        outVector = inMat[j] * sum;
     }
 }
 
@@ -114,7 +133,8 @@ lineType randomVector(int ns)
     {
         tempVector2[i] = rand()%50 - 25;
     }
-    tempVector2 /= sqrt(pow(tempVector2, 2.).sum());
+//    tempVector2 /= sqrt(pow(tempVector2, 2.).sum());
+    normalize(tempVector2);
     return tempVector2;
 }
 
@@ -148,8 +168,6 @@ void MainWindow::ICA() //fastICA
     myTime.start();
 
     // check markers channel and use chanList in the very end
-    vector<int> chanList;
-    makeChanList(chanList);
 
 
     QString helpString;
@@ -158,13 +176,24 @@ void MainWindow::ICA() //fastICA
                  + slash() + def::ExpName + ".edf";
     cout << "Ica started: " << helpString << endl;
     readData();
+
+
+
     const int & dataLength = globalEdf.getDataLen();
-    const int ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
+
     const double eigenValuesTreshold = pow(10., - ui->svdDoubleSpinBox->value());
     const double vectorWTreshold = pow(10., - ui->vectwDoubleSpinBox->value());
     const QString pathForAuxFiles = def::dir->absolutePath()
                                     + slash() + "Help"
                                     + slash() + "ica";
+
+    const int ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
+    vector<int> chanList;
+    for(int i = 0; i < ns; ++i)
+    {
+        chanList.push_back(i);
+    }
+    chanList.push_back(globalEdf.getMarkChan());
 
     matrix covMatrix(ns, ns, 0.);
     //vectors for the las stage
@@ -183,11 +212,7 @@ void MainWindow::ICA() //fastICA
     // save markers
     components[ns] = globalEdf.getData()[globalEdf.getMarkChan()];
 
-    vec averages(ns);
-    for(int i = 0; i < ns; ++i)
-    {
-        averages[i] = mean(globalEdf.getData()[i]);
-    }
+
 
     //count zeros
     int h = 0;
@@ -201,18 +226,21 @@ void MainWindow::ICA() //fastICA
         }
         if(h == ns) Eyes += 1;
     }
-
     const double realSignalFrac = (double(dataLength - Eyes) / dataLength);
 
-    double helpDouble = 0.;
-    double helpDouble1 = 0.;
+    lineType averages(ns);
     for(int i = 0; i < ns; ++i)
     {
-        helpDouble1 = averages[i] / realSignalFrac;
+        averages[i] = mean(globalEdf.getData()[i]) / realSignalFrac;
+    }
+
+    double helpDouble = 0.;
+    for(int i = 0; i < ns; ++i)
+    {
         for(int j = 0; j < dataLength; ++j)
         {
             if(globalEdf.getData()[i][j] == 0.) continue;
-            helpDouble = globalEdf.getData()[i][j] - helpDouble1;
+            helpDouble = globalEdf.getData()[i][j] - averages[i];
             globalEdf.setData(i, j, helpDouble);
         }
     }
@@ -222,7 +250,6 @@ void MainWindow::ICA() //fastICA
     {
         for(int j = 0; j < ns; ++j)
         {
-            covMatrix[i][j] = 0.;
             covMatrix[i][j] = covariance(globalEdf.getData()[i],
                                          globalEdf.getData()[j]);
             covMatrix[i][j] /= dataLength; //should be -1 ? needed for trace
@@ -244,7 +271,8 @@ void MainWindow::ICA() //fastICA
 
     // count eigenvalue decomposition
     matrix eigenVectors;
-    vec eigenValues;
+    lineType eigenValues;
+
 
 
 
@@ -253,6 +281,7 @@ void MainWindow::ICA() //fastICA
         eigenVectors,
         eigenValues,
         eigenValuesTreshold);
+
 
 
 
@@ -273,7 +302,6 @@ void MainWindow::ICA() //fastICA
 
 #if 1
     // components = EigenValues^-0.5 * Et * data
-
     matrix D_minus_05(ns, ns, 0.);
     for(int i = 0; i < ns; ++i)
     {
@@ -362,16 +390,22 @@ void MainWindow::ICA() //fastICA
             /// edit products valarray
             product1(dataICA, dataLength, ns, vectorW[i], vector1);
             product2(dataICA, dataLength, ns, vectorW[i], vector2);
-            for(int j = 0; j < ns; ++j)
-            {
-                vectorW[i][j] = vector1[j] - vector2[j];
-            }
+            /// old
+//            for(int j = 0; j < ns; ++j)
+//            {
+//                vectorW[i][j] = vector1[j] - vector2[j];
+//            }
+            /// new
+            vectorW[i] = vector1 - vector2;
+
             //orthogonalization
             product3(vectorW, ns, i, vector3);
-            for(int j = 0; j < ns; ++j)
-            {
-                vectorW[i][j] -= vector3[j];
-            }
+            /// old
+//            for(int j = 0; j < ns; ++j)
+//            {
+//                vectorW[i][j] -= vector3[j];
+//            }
+            vectorW[i] -= vector3;
 
 #if 0
             //check norma
@@ -406,26 +440,34 @@ void MainWindow::ICA() //fastICA
 
 #endif
 
-            sum2 = 0.;
-            sum1 = 0.;
-
             //normalization
-            for(int j = 0; j < ns; ++j)
-            {
-                sum1 += pow(vectorW[i][j], 2);
-            }
-            for(int j = 0; j < ns; ++j)
-            {
-                vectorW[i][j] /= sqrt(sum1);
-            }
+            /// old
+//            sum1 = 0.;
+//            for(int j = 0; j < ns; ++j)
+//            {
+//                sum1 += pow(vectorW[i][j], 2);
+//            }
+//            for(int j = 0; j < ns; ++j)
+//            {
+//                vectorW[i][j] /= sqrt(sum1);
+//            }
+
+//            vectorW[i] /= sqrt(pow(vectorW[i], 2.).sum());
+            /// new
+            normalize(vectorW[i]);
 
 
             //check norma difference
-            for(int j = 0; j < ns; ++j)
-            {
-                sum2 += pow(vectorOld[j] - vectorW[i][j], 2);
-            }
-            sum2 = sqrt(sum2);
+            /// old
+//            sum2 = 0.;
+//            for(int j = 0; j < ns; ++j)
+//            {
+//                sum2 += pow(vectorOld[j] - vectorW[i][j], 2.);
+//            }
+//            sum2 = sqrt(sum2);
+            /// new
+            sum2 = norma(vectorOld - vectorW[i]);
+
             ++counter;
             if(sum2 < vectorWTreshold || 2 - sum2 < vectorWTreshold) break;
             if(counter == 100) break;
@@ -586,8 +628,9 @@ void MainWindow::ICA() //fastICA
             {
                 cout << "before norm" << "\t";
                 cout << i << "\t" << j << "\t";
-                cout << "err = " <<fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) << "\t";
-                cout << "init value = " << globalEdf.getData()[i][j] << endl;
+                cout << "err = " << doubleRound(abs((globalEdf.getData()[i][j] - sum1)
+                                                    / globalEdf.getData()[i][j]), 3) << "\t";
+                cout << "init value = " << doubleRound(globalEdf.getData()[i][j], 4) << endl;
             }
         }
     }
@@ -807,8 +850,11 @@ void MainWindow::ICA() //fastICA
     //end componets ordering
 #endif
 
+
 #if 1
-    // test data = matrixA * components
+    // test  data = matrixA * comps;
+    // again to check reordering and normalizations
+
     for(int i = 0; i < ns; ++i)
     {
         for(int j = 0; j < dataLength; ++j)
@@ -818,33 +864,34 @@ void MainWindow::ICA() //fastICA
             {
                 sum1 += matrixA[i][k] * components[k][j];
             }
-            if(fabs((globalEdf.getData()[i][j] - sum1)/globalEdf.getData()[i][j]) > 0.05
+            if(fabs((globalEdf.getData()[i][j] - sum1) / globalEdf.getData()[i][j]) > 0.05
                     && fabs(globalEdf.getData()[i][j]) > 0.5)
             {
-                cout << "after norm\t" << i << "\t" << j << "\t";
-                cout << "err = " << fabs((globalEdf.getData()[i][j] - sum1) / globalEdf.getData()[i][j]) << "\t";
-                cout << "init value = " << globalEdf.getData()[i][j] << endl;
+                cout << "before norm" << "\t";
+                cout << i << "\t" << j << "\t";
+                cout << "err = " << doubleRound(abs((globalEdf.getData()[i][j] - sum1)
+                                                    / globalEdf.getData()[i][j]), 3) << "\t";
+                cout << "init value = " << doubleRound(globalEdf.getData()[i][j], 4) << endl;
             }
         }
     }
 #endif
 
     //now should draw amplitude maps OR write to file
-    helpString = QDir::toNativeSeparators(pathForAuxFiles
-                                          + slash() + def::ExpName + "_maps.txt");
+    helpString = pathForAuxFiles
+                 + slash() + def::ExpName + "_maps.txt";
 
     writeICAMatrix(helpString, matrixA); //generality 19-ns
     drawMapsICA(helpString);
 
+    // save components
     helpString = def::dir->absolutePath()
                  + slash() + def::ExpName + "_ica.edf";
-    ///
-
     globalEdf.writeOtherData(components, helpString, chanList);
+    def::ns = ns + 1; // numOfICs + markers
+
 
     cout << "ICA ended. time = " << wholeTime.elapsed()/1000. << " sec" << endl;
-
-    def::ns = ns + 1; // numOfICs + markers
 }
 
 

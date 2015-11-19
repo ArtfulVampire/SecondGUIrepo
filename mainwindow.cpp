@@ -17,7 +17,6 @@ MainWindow::MainWindow() :
     def::left  = fftLimit(def::leftFreq, def::freq, def::fftLength);
     def::spLength = def::right - def::left;
 
-//    withMarkersFlag = 1;
     ui->sliceWithMarkersCheckBox->setChecked(def::withMarkersFlag);
 
     staSlice = 0;
@@ -1743,14 +1742,18 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-    sliceAll();
-    exit(0);
+//    matrix dat;
+//    int num;
+//    readPlainData("/media/Files/Data/AAX/Realisations/AAX_rr_f_new.0002_254",
+//                  dat,
+//                  20, num);
+
+    return;
 
 //    setEdfFile(def::dataFolder + slash() + "AAU_train_rr_f3.5-40_new.edf");
 //    Net * ann = new Net();
 //    ann->show();
 //    ann->autoClassificationSimple();
-
 //    return;
 
     ui->reduceChannelsComboBox->setCurrentText("20");

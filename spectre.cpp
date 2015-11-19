@@ -892,7 +892,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
     int Eyes = 0;
     if(data2.cols() < def::fftLength)
     {
-        data2.resizeCols(def::fftLength); // hope, it will fill with zeros
+        data2.resizeCols(def::fftLength); /// clever resizing in matrix.cpp
     }
     else
     {
@@ -903,9 +903,10 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
                       data2.end(),
                       [a](lineType & in)
         {
-            std::remove_if(begin(in),
-                           end(in) - a,
-                           [](double een){return true;});
+            lineType newArr = in[std::slice(in.size() - a,
+                                            a,
+                                            1)];
+            in = newArr;
         });
     }
 

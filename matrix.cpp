@@ -378,13 +378,17 @@ void matrix::resizeRows(int rows)
 }
 
 
-void matrix::resizeCols(int cols)
+void matrix::resizeCols(int newCols)
 {
     std::for_each(data.begin(),
                   data.end(),
-                  [cols](lineType & in)
+                  [newCols](lineType & in)
     {
-        in.resize(cols);
+        lineType temp = in;
+        in.resize(newCols);
+        std::copy(std::begin(temp),
+                  std::begin(temp) + min(newCols, int(temp.size())),
+                  std::begin(in));
     });
 }
 
@@ -487,10 +491,11 @@ lineType matrix::averageCol() const
     return res;
 }
 
-lineType matrix::getCol(int i) const
+lineType matrix::getCol(int i, int numCols) const
 {
-    lineType res(this->rows());
-    for(int j = 0; j < this->rows(); ++j)
+    if(numCols < 0) numCols = this->rows();
+    lineType res(numCols);
+    for(int j = 0; j < numCols; ++j)
     {
         res[j] = this->data[j][i];
     }

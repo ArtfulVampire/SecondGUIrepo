@@ -688,7 +688,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
                                                   + slash() + def::ExpName
                                                   + "." + rightNumber(number, 4)
                                                   + "_" + marker);
-            cout << helpString << endl;
+//            cout << helpString << endl;
             if(i > j)
             {
                 fil.saveSubsection(j, i, helpString, true);

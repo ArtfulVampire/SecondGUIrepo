@@ -512,6 +512,15 @@ inline double correlation(const lineType & arr1, const lineType & arr2)
     return (arr1 * arr2).sum() / (sigma(arr1) * sigma(arr2));
 }
 
+inline double norma(const lineType & in)
+{
+    return sqrt(pow(in, 2.).sum());
+}
+inline void normalize(lineType & in)
+{
+    in /= norma(in);
+}
+
 double independence(double * const signal1, double * const signal2, int length);
 double countAngle(double initX, double initY);
 
@@ -537,7 +546,7 @@ void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit);
 
 void svd(const matrix & inData,
          matrix & eigenVectors,
-         vec & eigenValues,
+         lineType & eigenValues,
          const double & threshold = 1e-9);
 
 

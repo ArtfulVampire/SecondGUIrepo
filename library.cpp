@@ -1732,12 +1732,11 @@ void drawRCP(const lineType & values, const QString & picPath)
     int length = values.size();
 
 
-    double xMin, xMax;
-    //    //generality
 
     int numOfDisp = 4;
-    xMin = -numOfDisp;
-    xMax = numOfDisp;
+//    double xMin, xMax;
+//    xMin = -numOfDisp;
+//    xMax = numOfDisp;
 
     lineType line(pic.width());
 
@@ -2985,7 +2984,7 @@ void kernelEst(QString filePath, QString picPath)
 
 void svd(const matrix & inData,
          matrix & eigenVectors,
-         vec & eigenValues,
+         lineType & eigenValues,
          const double & threshold)
 {
     const int iterationsThreshold = 100;
@@ -2996,13 +2995,6 @@ void svd(const matrix & inData,
 
     matrix tempData = matrix(inData);
     matrix covMatrix(ns, ns, 0.);
-
-    vec averages;
-    for(int i = 0; i < ns; ++i)
-    {
-        averages.push_back( inData[i].sum() / inData.size() );
-    }
-    //count zeros
 
     int h = 0;
     int Eyes = 0;
@@ -3016,6 +3008,12 @@ void svd(const matrix & inData,
         if(h == ns) Eyes += 1;
     }
     double realSignalFrac = dataLen / double(dataLen - Eyes); ///deprecate!!!!!!
+
+    lineType averages(ns);
+    for(int i = 0; i < ns; ++i)
+    {
+        averages[i] = mean(inData[i]) / realSignalFrac;
+    }
 
     //subtract averages
     for(int i = 0; i < ns; ++i)
@@ -3051,10 +3049,8 @@ void svd(const matrix & inData,
     eigenValues.resize(ns);
     eigenVectors.resize(ns, ns);
 
-    vec tempA(ns);
-    vec tempB(dataLen);
-//    double * tempA = new double [ns];
-//    double * tempB = new double [dataLen];
+    lineType tempA(ns);
+    lineType tempB(dataLen);
 
     double sum1, sum2; //temporary help values
     double dF, F;
@@ -3070,24 +3066,13 @@ void svd(const matrix & inData,
         F = 1.0;
 
         //set 1-normalized vector tempA
-        sum1 = 1. / sqrt(ns);
-        for(int i = 0; i < ns; ++i)
-        {
-            tempA[i] = sum1;
-        }
-        sum2 = 1. / sqrt(dataLen);
-        for(int j = 0; j < dataLen; ++j)
-        {
-            tempB[j] = sum2;
-        }
-
+        tempA = lineType(1. / sqrt(ns), ns);
+        tempB = lineType(1. / sqrt(dataLen), dataLen);
 
         //approximate P[i] = tempA x tempB;
         counter = 0;
-
         while(1) //when stop approximate?
         {
-
             if((counter + 1) % errorStep == 0)
             {
                 //countF - error
@@ -3102,39 +3087,19 @@ void svd(const matrix & inData,
             }
 
             //count vector tempB
-            sum2 = 0.;
-            for(int i = 0; i < ns; ++i)
-            {
-                sum2 += pow(tempA[i], 2);
-            }
-            sum2 = 1. / sum2; // to save time, multiplication faster than division
-
+            sum2 = 1. / pow(tempA, 2.).sum();
             for(int j = 0; j < dataLen; ++j)
             {
-                sum1 = 0.;
-                for(int i = 0; i < ns; ++i)
-                {
-                    sum1 += tempData[i][j] * tempA[i];
-                }
+                sum1 = (tempData.getCol(j, ns) * tempA).sum();
                 tempB[j] = sum1 * sum2;
             }
 
             //count vector tempA
-
-            sum2 = 0.;
-            for(int j = 0; j < dataLen; ++j)
-            {
-                sum2 += tempB[j] * tempB[j];
-            }
-            sum2 = 1. / sum2; // to save time, multiplication faster than division
+            sum2 = 1. / pow(tempB, 2.).sum();
 
             for(int i = 0; i < ns; ++i)
             {
-                sum1 = 0.;
-                for(int j = 0; j < dataLen; ++j)
-                {
-                    sum1 += tempB[j] * tempData[i][j];
-                }
+                sum1 = (tempB * tempData[i]).sum();
                 tempA[i] = sum1 * sum2;
             }
 
@@ -3152,14 +3117,12 @@ void svd(const matrix & inData,
                 dF = (F-dF)/F;
             }
 
-
             if(counter == iterationsThreshold)
             {
                 break;
             }
             ++counter;
             if(fabs(dF) < threshold) break; //crucial cap
-
         }
 
         //edit covMatrix
@@ -3172,23 +3135,10 @@ void svd(const matrix & inData,
         }
 
         //count eigenVectors && eigenValues
-        sum1 = 0.;
-        sum2 = 0.;
-        for(int i = 0; i < ns; ++i)
-        {
-            sum1 += pow(tempA[i], 2.);
-        }
-        for(int j = 0; j < dataLen; ++j)
-        {
-            sum2 += pow(tempB[j], 2.);
-        }
+        sum1 = pow(tempA, 2.).sum();
+        sum1 = pow(tempA, 2.).sum();
         eigenValues[k] = sum1 * sum2 / double(dataLen - 1.);
-
-        sum1 = 1. / sqrt(sum1);
-        for(int i = 0; i < ns; ++i)
-        {
-            tempA[i] *= sum1;
-        }
+        tempA /= sqrt(sum1);
 
         sum1 = 0.;
         for(int i = 0; i <= k; ++i)
@@ -3205,7 +3155,7 @@ void svd(const matrix & inData,
 
         for(int i = 0; i < ns; ++i)
         {
-            eigenVectors[i][k] = tempA[i]; //1-normalized coloumns
+            eigenVectors[i][k] = tempA[i]; // 1-normalized coloumns
         }
     }
 }
@@ -3389,6 +3339,7 @@ matrix waveletDiscrete(const vec & inData)
             res[j][k] = 0.;
         }
     }
+    return res;
 }
 
 lineType signalFromFile(QString filePath,
@@ -4443,9 +4394,7 @@ void readPlainData(const QString & inPath,
     {
         for(int j = 0; j < ns; ++j)
         {
-
             inStr >> data[j][i + start];
-
             /// Ossadtchi
 //            if(j == ns - 1 && def::OssadtchiFlag)
 //            {
@@ -4684,7 +4633,7 @@ void splitZeros(matrix & dataIn,
                     // vector
 //                    dataIn[j].erase(dataIn[j].begin() + start,
 //                                    dataIn[j].begin() + finish);
-                    // valarray
+                    // valarray, resizing further
                     std::remove_if(begin(dataIn[j]) + start,
                                    begin(dataIn[j]) + finish,
                                    [](double){return true;});
@@ -4700,6 +4649,10 @@ void splitZeros(matrix & dataIn,
         ++i;
     } while (i <= inLength - allEyes); // = for the last zero piece
     (*outLength) = inLength - allEyes;
+
+    // valarray
+    dataIn.resizeCols(*outLength);
+
     outStream.close();
 
 //    cout << "allEyes = " << allEyes << endl;
@@ -4990,8 +4943,8 @@ void calcRawFFT(const Typ & inData,
                   dataFFT.end(),
                   [fftLength](vec & in){in.resize(fftLength/2);});
 
-    double help1, help2;
-    int leftSmoothLimit, rightSmoothLimit;
+//    double help1, help2;
+//    int leftSmoothLimit, rightSmoothLimit;
 
     for(int j = 0; j < ns; ++j)
     {
@@ -5007,11 +4960,11 @@ void calcRawFFT(const Typ & inData,
             dataFFT[j][ i ] = spectre[ i ] * norm2; //0.004 = 1/250 generality
         }
 
-        leftSmoothLimit = 0;
-        rightSmoothLimit = fftLength / 2 - 1;
 
         //smooth spectre - odd and even split
         /*
+        leftSmoothLimit = 0;
+        rightSmoothLimit = fftLength / 2 - 1;
         for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
         {
             help1 = (*dataFFT)[j][leftSmoothLimit-1];

@@ -219,19 +219,15 @@ private:
     bool redirectCoutFlag;
 
     edfFile globalEdf;
-//    int ndr, ddr, nsBackup;
-//    int * nr;
     vector<QString> label;
-
-
-    double ** spocMixMatrix;
-    double * spocWVector;
     int staSlice;
     int NumOfEdf;
 
+    double ** spocMixMatrix;
+    double * spocWVector;
+
     bool autoProcessingFlag;
     bool stopFlag;
-//    double reduceCoefficient;
 };
 
 #endif // MAINWINDOW_H
