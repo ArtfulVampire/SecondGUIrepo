@@ -1741,7 +1741,13 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+    setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+
+    Net * ann = new Net();
+    ann->show();
+//    ann->LearnNet();
+
+//    countSpectraSimple(4096, 15);
 //    matrix dat;
 //    int num;
 //    readPlainData("/media/Files/Data/AAX/Realisations/AAX_rr_f_new.0002_254",

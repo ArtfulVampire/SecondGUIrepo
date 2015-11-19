@@ -178,9 +178,9 @@ Net::Net() :
     {
         ui->realsRadioButton->setChecked(true);
         loadData(def::dir->absolutePath()
-                 + slash() + "SpectraSmooth");
+                 + slash() + "SpectraSmooth",
+                 5.);
     }
-
     this->ui->deltaRadioButton->setChecked(true);
 }
 
@@ -222,6 +222,45 @@ void Net::adjustParamsGroup2(QAbstractButton * but)
 }
 
 
+
+double Net::adjustLearnRate(int lowLimit,
+                            int highLimit)
+{
+
+    QTime myTime;
+    myTime.start();
+
+    double res;
+    double currVal;
+
+    cout << "adjustLearnRate: start" << endl;
+    while(1)
+    {
+        /// remake with indices
+        currVal = ui->learnRateBox->value();
+
+        LearnNet();
+
+        if(this->getEpoch() > highLimit
+           || this->getEpoch() < lowLimit)
+        {
+            ui->learnRateBox->setValue(currVal
+                                       * sqrt(this->getEpoch()
+                                              /  ((lowLimit + highLimit) / 2.)
+                                              )
+                                       );
+        }
+        else
+        {
+            res = currVal;
+            break;
+        }
+    }
+    cout << "adjustLearnRate: lrate = " << res << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    return res;
+}
+
+
 double Net::adjustReduceCoeff(QString spectraDir,
                               int lowLimit,
                               int highLimit,
@@ -230,8 +269,6 @@ double Net::adjustReduceCoeff(QString spectraDir,
     QTime myTime;
     myTime.start();
 
-    bool tmpAutoFlag = autoFlag;
-    autoFlag = 1;
 
     double res;
     double currVal;
@@ -307,7 +344,6 @@ double Net::adjustReduceCoeff(QString spectraDir,
             break;
         }
     }
-    autoFlag = tmpAutoFlag;
     cout << "adjustReduceCoeff: reduceCoeff = " << res << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
     return res;
 }
@@ -395,15 +431,6 @@ void Net::autoClassification(const QString & spectraDir)
 
     numOfTall = 0;
 
-    if(loadPAflag  != 1)
-    {
-        QMessageBox::critical((QWidget * )this,
-                              tr("Warning"),
-                              tr("No CFG-file loaded yet"),
-                              QMessageBox::Ok);
-        return;
-    }
-
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                                   + slash() + "log.txt");
     QFile::remove(helpString);
@@ -421,39 +448,29 @@ void Net::autoClassification(const QString & spectraDir)
     }
 #endif
 
-
-    bool tempBool = autoFlag;
-    autoFlag = 1;
     const int numOfPairs = ui->numOfPairsBox->value();
-
-    //adjust reduce coefficient
     const int fold = ui->foldSpinBox->value();
-    makePaStatic(spectraDir,
-                 fold,
-                 ui->rdcCoeffSpinBox->value());
-    PaIntoMatrixByName("all");
 
-    double newReduceCoeff = adjustReduceCoeff(spectraDir,
-                                              ui->lowLimitSpinBox->value(),
-                                              ui->highLimitSpinBox->value());
-    if(newReduceCoeff <= 0.1) // threshold
-    {
-        averageAccuracy = 0.;
-        autoFlag = tempBool;
-        cout <<  "AutoClass: unsuccessful, time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
-        averageAccuracy = 0.;
-        return;
-    }
-    ui->rdcCoeffSpinBox->setValue(newReduceCoeff);
+    adjustLearnRate(ui->lowLimitSpinBox->value(),
+                    ui->highLimitSpinBox->value());
 
+//    double newReduceCoeff = adjustReduceCoeff(spectraDir,
+//                                              ui->lowLimitSpinBox->value(),
+//                                              ui->highLimitSpinBox->value());
+//    if(newReduceCoeff <= 0.1) // threshold
+//    {
+//        averageAccuracy = 0.;
+//        cout <<  "AutoClass: unsuccessful, time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+//        averageAccuracy = 0.;
+//        return;
+//    }
+//    ui->rdcCoeffSpinBox->setValue(newReduceCoeff);
+//    const double coeff = ui->rdcCoeffSpinBox->value();
 
-
-    const double coeff = ui->rdcCoeffSpinBox->value();
-
-    makePaStatic(spectraDir,
-                 fold,
-                 coeff);
-    PaIntoMatrixByName("all");
+//    makePaStatic(spectraDir,
+//                 fold,
+//                 coeff);
+//    PaIntoMatrixByName("all");
 
     if(ui->crossRadioButton->isChecked())
     {
@@ -469,8 +486,6 @@ void Net::autoClassification(const QString & spectraDir)
                 arr[i].push_back(j);
             }
         }
-
-
         cout << "Net: autoclass (max " << numOfPairs << "):" << endl;
 
         for(int i = 0; i < numOfPairs; ++i)
@@ -479,9 +494,10 @@ void Net::autoClassification(const QString & spectraDir)
             cout << " "; cout.flush();
 
             /// new with indices
-            for(int numFold = 0; numFold < ui->foldSpinBox->value(); ++numFold)
+            for(int numFold = 0; numFold < fold; ++numFold)
             {
                 makeIndicesVectors(learnIndices, tallIndices, arr, numFold);
+
                 LearNetIndices(learnIndices);
                 tallNetIndices(tallIndices);
             }
@@ -490,7 +506,6 @@ void Net::autoClassification(const QString & spectraDir)
             if(stopFlag)
             {
                 stopFlag = 0;
-                autoFlag = tempBool;
                 return;
             }
         }
@@ -506,14 +521,11 @@ void Net::autoClassification(const QString & spectraDir)
     {
         trainTestClassification();
     }
-    autoFlag = tempBool;
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
-
 }
 
 void Net::autoPCAClassification()
 {
-    autoFlag = 1;
     cfg * config;
 
     const int nsBC = def::nsWOM();
@@ -649,10 +661,12 @@ void Net::drawWtsSlot()
                                                       tr("wts to draw"),
                                                       def::dir->absolutePath(),
                                                       tr("wts files (*.wts)"));
-    QString picPath = helpString;
-    picPath.replace(".wts", ".jpg");
+    if(helpString.isEmpty())
+    {
+        return;
+    }
 
-    drawWts(helpString, picPath);
+    drawWts(helpString);
 }
 
 
@@ -661,36 +675,13 @@ void Net::drawWts(const QString & wtsPath,
 {
     if( dimensionality.size() != 2 ) return;
 
-    QString helpString;
-
-    if(!wtsPath.isEmpty())
+    if(!QFile::exists(wtsPath))
     {
-        helpString = wtsPath;
-    }
-    else if(!autoFlag)
-    {
-        helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )this,
-                                                                           tr("wts to draw"),
-                                                                           def::dir->absolutePath(),
-                                                                           tr("wts files (*.wts)")));
-    }
-    else
-    {
-        helpString = def::dir->absolutePath()
-                + slash() + def::ExpName + ".wts";
-    }
-
-    if(helpString.isEmpty())
-    {
-        cout << "no wts-file to draw was opened" << endl;
-        QMessageBox::information((QWidget * )this,
-                                 tr("Information"),
-                                 tr("No file was chosen"),
-                                 QMessageBox::Ok);
+        cout << "drawWts: bad filePath" << endl;
         return;
     }
     twovector<lineType> tempWeights;
-    readWtsByName(helpString, &tempWeights);
+    readWtsByName(wtsPath, &tempWeights);
 
     matrix drawWts; // 3 arrays of weights
 #if 0
@@ -706,11 +697,12 @@ void Net::drawWts(const QString & wtsPath,
     }
 #else
     drawWts = tempWeights[0];
+    drawWts.resizeCols(drawWts.cols() - 1); // fck the bias?
 #endif
 
     if(picPath.isEmpty())
     {
-        picPath = helpString;
+        picPath = wtsPath;
         picPath.replace(".wts", "_wts.jpg"); /// make default suffixes
     }
     drawTemplate(picPath);
@@ -794,7 +786,7 @@ void Net::reset()
     const int numOfLayers = lst.length();
 
     dimensionality.resize(numOfLayers);
-    dimensionality[0] = dataMatrix.cols();
+    dimensionality[0] = dataMatrix.cols(); ///////////// need to be read before!
     for(int i = 1; i < numOfLayers - 1; ++i)
     {
         dimensionality[i] = lst[i].toInt();
@@ -948,9 +940,19 @@ void Net::readWtsByName(const QString & fileName,
     {
         wtsMatrix = &(this->weight);
     }
+    else
+    {
+        (*wtsMatrix).resize(dimensionality.size() - 1);
+        for(int i = 0; i < dimensionality.size() - 1; ++i)
+        {
+            (*wtsMatrix)[i].resize(dimensionality[i + 1]);
+            for(int j = 0; j < dimensionality[i + 1]; ++j)
+            {
+                (*wtsMatrix)[i][j].resize(dimensionality[i] + 1);
+            }
+        }
+    }
 
-
-    reset();
     for(int i = 0; i < dimensionality.size() - 1; ++i)
     {
         for(int j = 0; j < dimensionality[i + 1]; ++j)
@@ -1044,15 +1046,11 @@ void Net::trainTestClassification(const QString & trainTemplate,
             tallIndices.push_back(i);
         }
     }
-//    for(int i = 0; i < learnIndices.size(); ++i)
-//    {
-//        cout << fileNames[learnIndices[i]] << endl;
-//    }
-//    cout << endl;
-//    for(int i = 0; i < tallIndices.size(); ++i)
-//    {
-//        cout << fileNames[tallIndices[i]] << endl;
-//    }
+    if(learnIndices.empty() || tallIndices.empty())
+    {
+        cout << "teainTest: indicesArray empty, return" << endl;
+        return;
+    }
     LearNetIndices(learnIndices);
     tallNetIndices(tallIndices);
     cout << "train-test classification - ";
@@ -1122,7 +1120,8 @@ void Net::PaIntoMatrixByName(const QString & fileName)
 }
 
 // like readPaFile from library.cpp
-void Net::loadData(const QString & spectraPath)
+void Net::loadData(const QString & spectraPath,
+                   double rdcCoeff)
 {
     vector<QStringList> leest;
     makeFileLists(spectraPath, leest);
@@ -1132,13 +1131,14 @@ void Net::loadData(const QString & spectraPath)
     types.clear();
     fileNames.clear();
 
+    lineType tempArr;
     for(int i = 0; i < leest.size(); ++i)
     {
         for(const QString & fileName : leest[i])
         {
-            dataMatrix.push_back(lineType());
             readFileInLine(spectraPath + slash() + fileName,
-                           dataMatrix.back());
+                           tempArr);
+            dataMatrix.push_back(tempArr / rdcCoeff);
             ++classCount[i];
             types.push_back(i);
             fileNames.push_back(fileName);
@@ -1219,8 +1219,8 @@ void Net::LearNetIndices(vector<int> mixNum)
     myTime.start();
 
     const int numOfLayers = dimensionality.size();
-    matrix deltaWeights(numOfLayers);
-    matrix output(numOfLayers);
+    vector<valarray<double>> deltaWeights(numOfLayers);
+    vector<valarray<double>> output(numOfLayers);
     for(int i = 0; i < numOfLayers; ++i)
     {
         deltaWeights[i].resize(dimensionality[i]); // fill zeros
@@ -1264,6 +1264,7 @@ void Net::LearNetIndices(vector<int> mixNum)
         std::shuffle(mixNum.begin(),
                      mixNum.end(),
                      std::default_random_engine(seed));
+//        cout << epoch << endl;
 
         for(const int & index : mixNum)
         {
@@ -1278,11 +1279,9 @@ void Net::LearNetIndices(vector<int> mixNum)
             //obtain outputs
             for(int i = 1; i < numOfLayers; ++i)
             {
-                output[i].resize(dimensionality[i] + 1);
                 for(int j = 0; j < dimensionality[i]; ++j)
                 {
-                    output[i][j] = (weight[i-1][j] * output[i-1]).sum();
-                    output[i][j] += weight[i-1][dimensionality[i - 1]][j]; // bias
+                    output[i][j] = (weight[i - 1][j] * output[i-1]).sum(); // bias included
 
                     output[i][j] = logistic(output[i][j], temperature);
                 }
@@ -1290,10 +1289,12 @@ void Net::LearNetIndices(vector<int> mixNum)
             }
 
             //error in the last layer
-            for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
+            for(int j = 0; j < dimensionality.back(); ++j)
             {
-                currentError += pow(( output[numOfLayers - 1][j] - (type == j) ), 2.);
+//                cout << j << endl;
+                currentError += pow((output.back()[j] - int(type == j) ), 2.);
             }
+//            cout << index << endl;
 #if 0
             /// check weight
             if(!deltaFlag) /// enum !
@@ -1332,15 +1333,13 @@ void Net::LearNetIndices(vector<int> mixNum)
             {
                 // numOfLayers = 2 and i == 0 in this case
                 // simplified
-                for(int i = 0; i < dataMatrix.rows() + 1; ++i)
+
+                for(int j = 0; j < def::numOfClasses; ++j)
                 {
-                    for(int j = 0; j < def::numOfClasses; ++j)
-                    {
-                        weight[0][j][i] += learnRate
-                                           * normCoeff[type]
-                                           * output[0][i]
-                                           * ((type == j) - output[1][j]);
-                    }
+                    weight[0][j] += output[0]
+                            * (learnRate
+                               * normCoeff[type]
+                               * ((type == j) - output[1][j]));
                 }
 
             }
@@ -1371,9 +1370,9 @@ void Net::LearNetIndices(vector<int> mixNum)
         currentError = sqrt(currentError);
         this->ui->currentErrorDoubleSpinBox->setValue(currentError);
 
-//        cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 3) << endl;
+//        cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << endl;
     }
-    cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 3) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+    cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 }
 
 
@@ -2586,7 +2585,6 @@ void Net::optimizeChannelsSet() /// CAREFUL
     }
     helpString += "\n";
 
-    autoFlag = 0;
 
     outStream << helpString.toStdString() << endl;
     outStream.close();

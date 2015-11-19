@@ -2141,18 +2141,20 @@ void drawTemplate(const QString & outPath,
 
                 helpString = QString::number(int((def::left + k * graphScale) * def::spStep + 0.5));
 
+                /// Hz to draw
                 if(helpString.toInt() % 5 != 0) continue;
+
 
                 if(helpString.toInt() < 10)
                 {
                     paint.drawText(QPointF(X + k - 4 * scaleX,
-                                           Y + 18 * scaleY),
+                                           Y + 20 * scaleY),
                                    helpString);
                 }
                 else
                 {
-                    paint.drawText(QPointF(X + k - 6 * scaleX,
-                                           Y + 18 * scaleY),
+                    paint.drawText(QPointF(X + k - 9 * scaleX,
+                                           Y + 20 * scaleY),
                                    helpString);
                 }
             }
@@ -2327,15 +2329,17 @@ void readFileInLine(const QString & filePath,
         outData.push_back(tmp);
 
         // test
-        ++num;
-        if(num > def::fftLength * def::nsWOM())
+        if(num > def::spLength * def::nsWOM())
         {
-            cout << 23864 << endl;
-            exit(0);
+            cout << "readFileInLine: too long file" << endl;
         }
+
+        ++num;
     }
     outData.pop_back(); ///// prevent doubling last item (eof) bicycle
     file.close();
+
+    result.resize(outData.size());
     std::copy(outData.begin(),
               outData.end(),
               begin(result));
@@ -2353,7 +2357,7 @@ void writeFileInLine(const QString & filePath,
     }
     for(auto out : outData)
     {
-        file << doubleRound(out, 4) << '\t'; // \t or \n
+        file << doubleRound(out, 4) << '\n'; // \t or \n
     }
     file.close();
 }
@@ -2407,7 +2411,7 @@ double drawArrays(const QString & templPath,
     {
         if(inData.size() != shouldSize)
         {
-            cout << "inappropriate array size" << endl;
+            cout << "drawArrays: inappropriate array size" << endl;
             return;
         }
     });

@@ -71,7 +71,8 @@ public:
     void closeLogFile();
     void setAutoProcessingFlag(bool);
     void prelearnDeepBelief();
-
+    double adjustLearnRate(int lowLimit,
+                           int highLimit);
     double adjustReduceCoeff(QString spectraDir,
                              int lowLimit,
                              int highLimit,
@@ -95,7 +96,8 @@ public:
     void writeWts(const QString &wtsPath = def::dir->absolutePath()
                                            + slash() + def::ExpName + ".wts");
     void PaIntoMatrixByName(const QString & fileName);
-    void loadData(const QString & spectraPath);
+    void loadData(const QString & spectraPath,
+                  double rdcCoeff = 1.);
     void makeIndicesVectors(vector<int> & learnInd,
                             vector<int> & tallInd,
                             vector<vector<int> > & arr,

@@ -375,7 +375,7 @@ void Spectre::psaSlot()
     myTime.start();
 
     matrix drawData;
-    vec tempVec(def::fftLength * def::nsWOM());
+    lineType tempVec(def::spLength * def::nsWOM());
     QString helpString;
     const QString psaPath = def::dir->absolutePath()
                             + slash() + "Help"
@@ -383,7 +383,6 @@ void Spectre::psaSlot()
 
     for(int i = 0; i < def::numOfClasses; ++i)
     {
-        tempVec.clear();
         helpString = QDir::toNativeSeparators(psaPath
                                               + slash() + def::ExpName
                                               + "_class_" + QString::number(i + 1)
@@ -447,8 +446,8 @@ void Spectre::compare()
     QString helpString;
     vector<QStringList> leest;
 
-    lineType tempVec(def::fftLength * def::nsWOM());
-    lineType meanVec(0., def::fftLength * def::nsWOM());
+    lineType tempVec(def::spLength * def::nsWOM());
+    lineType meanVec(0., def::spLength * def::nsWOM());
 
     const QString filesPath = ui->lineEdit_1->text();
     const QString savePath = def::dir->absolutePath()
@@ -463,7 +462,7 @@ void Spectre::compare()
     {
         const QStringList & lst = leest[i];
         const int NumOfPatterns = lst.length();
-        meanVec = lineType(0., def::fftLength * def::nsWOM());
+        meanVec = lineType(0., def::spLength * def::nsWOM());
 
 
         for(int j = 0; j < NumOfPatterns; ++j)
