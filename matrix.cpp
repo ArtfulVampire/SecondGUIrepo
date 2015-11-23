@@ -255,10 +255,15 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
 
 
     matrix result(dim1, dim2);
-#if 0
-    for(int i = 0; i < dim1; ++i)
+#if 1
+
+    for(int j = 0; j < dim2; ++j)
     {
-        result[i] = lhs[i] * rhs.getCol(j);
+        lineType currCol = rhs.getCol(j);
+        for(int i = 0; i < dim1; ++i)
+        {
+            result[i][j] = (lhs[i] * currCol).sum();
+        }
     }
 #else
     const matrix temp = matrix::transpose(rhs);
@@ -542,7 +547,7 @@ int matrix::cols() const
 
 matrix matrix::transpose(const matrix &input)
 {
-#if 0
+#if 1
     matrix res;
     res.resize(input.cols(), input.rows());
     for(int i = 0; i < input.rows(); ++i)
@@ -564,6 +569,9 @@ matrix matrix::transpose(const matrix &input)
 }
 void matrix::transpose()
 {
+#if 1
+    (*this) = matrix::transpose(*this);
+#else
     int oldCols = this->cols();
     int oldRows = this->rows();
     this->resize(max(oldRows, oldCols),
@@ -578,6 +586,7 @@ void matrix::transpose()
     }
     this->resize(oldCols,
                  oldRows);
+#endif
 }
 
 void matrix::invert()

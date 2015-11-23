@@ -1745,6 +1745,7 @@ void MainWindow::customFunc()
 //    ui->matiCheckBox->setChecked(true);
 //    setEdfFile("/media/Files/Data/Mati/GoodData/PYV_cl.edf");
     ICA();
+    exit(1);
 
 
 //    Net * ann = new Net();

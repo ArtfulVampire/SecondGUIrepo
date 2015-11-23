@@ -396,16 +396,6 @@ void MainWindow::ICA() //fastICA
                  ns,
                  dataLength);
 
-    helpString = pathForAuxFiles
-                 + slash() + def::ExpName + "_vectorW.txt";
-    writeSpectraFile(helpString,
-                     vectorW,
-                     ns, ns);
-
-    exit(0);
-
-
-
 
 
 
@@ -418,28 +408,26 @@ void MainWindow::ICA() //fastICA
 
 
     //count full mixing matrix A = E * D^0.5 * Et * Wt
-    //X = AS (sensor data = A*components)
-
     matrix matrixA(ns, ns, 0.);
-
-    matrixA = matrix::transpose(vectorW); // A = Wt
-
-
-
-    matrixA = matrix::transpose(eigenVectors) * matrixA; //A = Et * Wt
-
-
-    //A = D^0.5 * Et * Wt
     matrix D_05(ns, ns, 0.);
     for(int i = 0; i < ns; ++i)
     {
         D_05[i][i] = sqrt(eigenValues[i]);
     }
+#if 1
+    /// test
+    matrixA = eigenVectors * D_05 * matrix::transpose(eigenVectors) * matrix::transpose(vectorW);
+#else
+
+    matrixA = matrix::transpose(vectorW); // A = Wt
+
+    matrixA = matrix::transpose(eigenVectors) * matrixA; //A = Et * Wt
+
+    //A = D^0.5 * Et * Wt
     matrixA = D_05 * matrixA;
 
-
     matrixA = eigenVectors * matrixA;
-
+#endif
 
 
 #if 1
@@ -470,6 +458,7 @@ void MainWindow::ICA() //fastICA
 
 
 #if 0
+    /// remake
     // norm components - by equal dispersion ????????????????????
     // and then order by squared sum of maps coeffs
 
@@ -492,11 +481,6 @@ void MainWindow::ICA() //fastICA
             matrixA[i][k] /= coeff;
         }
     }
-
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "Help"
-                                          + slash() + def::ExpName + "_maps_before_var.txt");
-    writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
 
 
     //ordering components by sum of squares of the matrixA coloumn
@@ -573,29 +557,14 @@ void MainWindow::ICA() //fastICA
     // norm components to 1-length of mapvector, order by dispersion
     for(int i = 0; i < ns; ++i) // for each component
     {
-        sum1 = 0.;
-        for(int k = 0; k < ns; ++k)
-        {
-            sum1 += pow(matrixA[k][i], 2);
-        }
-        sum1 = sqrt(sum1);
+        sum1 = norma(matrixA.getCol(i));
 
         for(int k = 0; k < ns; ++k)
         {
             matrixA[k][i] /= sum1;
         }
         components[i] *= sum1;
-//        std::transform(components[i].begin(),
-//                       components[i].end(),
-//                       components[i].begin(),
-//                       [sum1](double in) {return in * sum1;});
     }
-
-//    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-//                                          + slash() + "Help"
-//                                          + slash() + def::ExpName + "_maps_1-len.txt");
-//    writeICAMatrix(helpString, matrixA);
-
 
     // ordering components by dispersion
     std::vector <std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
@@ -604,11 +573,8 @@ void MainWindow::ICA() //fastICA
 
     for(int i = 0; i < ns; ++i)
     {
-//        sum1 = 0;
-//        std::for_each(components[i].begin(),
-//                      components[i].end(),
-//                      [&sum1](double in){sum1 += pow(in, 2);});
-        sumSquares += pow(components[i], 2.).sum();
+        sum1 = variance(components[i]);
+        sumSquares += sum1;
         colsNorms.push_back(std::make_pair(sum1, i));
     }
 
@@ -621,7 +587,6 @@ void MainWindow::ICA() //fastICA
     {
         cout << colsNorms[i].first << "\t" << colsNorms[i].second << endl;
     }
-
     int tempIndex;
     for(int i = 0; i < ns - 1; ++i) // dont move the last
     {
@@ -692,7 +657,7 @@ void MainWindow::ICA() //fastICA
             if(fabs((centeredMatrix[i][j] - sum1) / centeredMatrix[i][j]) > 0.05
                     && fabs(centeredMatrix[i][j]) > 0.5)
             {
-                cout << "before norm" << "\t";
+                cout << "after norm" << "\t";
                 cout << i << "\t" << j << "\t";
                 cout << "err = " << doubleRound(abs((centeredMatrix[i][j] - sum1)
                                                     / centeredMatrix[i][j]), 3) << "\t";
@@ -704,8 +669,13 @@ void MainWindow::ICA() //fastICA
 
 
     //now should draw amplitude maps OR write to file
-    helpString = pathForAuxFiles
-                 + slash() + def::ExpName + "_maps.txt";
+    int numMap = 0;
+    do
+    {
+        helpString = pathForAuxFiles
+                     + slash() + def::ExpName + "_maps_" + QString::number(numMap++) + ".txt";
+    } while(!QFile::exists(helpString));
+
 
     writeICAMatrix(helpString, matrixA); //generality 19-ns
     drawMapsICA(helpString);

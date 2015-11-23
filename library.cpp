@@ -3060,21 +3060,21 @@ void svd(matrix & inData,
 
     /// ICA test short
 
-    const QString pathForAuxFiles = def::dir->absolutePath()
-                                    + slash() + "Help"
-                                    + slash() + "ica";
-    QString helpString = pathForAuxFiles
-                         + slash() + def::ExpName + "_eigenMatrix.txt";
-    readSpectraFile(helpString,
-                    eigenVectors,
-                    dimension, dimension);
+//    const QString pathForAuxFiles = def::dir->absolutePath()
+//                                    + slash() + "Help"
+//                                    + slash() + "ica";
+//    QString helpString = pathForAuxFiles
+//                         + slash() + def::ExpName + "_eigenMatrix.txt";
+//    readSpectraFile(helpString,
+//                    eigenVectors,
+//                    dimension, dimension);
 
 
-    // write eigenValues
-    helpString = pathForAuxFiles
-                 + slash() + def::ExpName + "_eigenValues.txt";
-    readFileInLine(helpString, eigenValues);
-    return;
+//    // write eigenValues
+//    helpString = pathForAuxFiles
+//                 + slash() + def::ExpName + "_eigenValues.txt";
+//    readFileInLine(helpString, eigenValues);
+//    return;
 
 
 
