@@ -3014,13 +3014,14 @@ void svd(matrix & inData,
     int eyes = 0;
     for(int i = 0; i < dataLen; ++i)
     {
-        const lineType temp = inData.getCol(i);
+        const lineType temp = inData.getCol(i, dimension);
         if(abs(temp).max() == 0.)
         {
             ++eyes;
         }
     }
     const double realSignalFrac = dataLen / double(dataLen - eyes); /// deprecate?!! splitZeros
+
 
     //subtract averages
     for(int i = 0; i < inData.rows(); ++i)
@@ -3032,6 +3033,8 @@ void svd(matrix & inData,
                      temp,
                      0.); // retain zeros
     }
+
+
 
     double trace = 0.;
     for(int i = 0; i < dimension; ++i)
@@ -3102,7 +3105,11 @@ void svd(matrix & inData,
                 F = 0.;
                 for(int i = 0; i < dimension; ++i)
                 {
-                    F += 0.5 * pow(inData[i] - tempB * tempA[i], 2.).sum();
+//                    F += 0.5 * pow(inData[i] - tempB * tempA[i], 2.).sum();
+                    for(int j = 0; j < dataLen; ++j)
+                    {
+                        F += 0.5 * pow(inData[i][j] - tempB[j] * tempA[i], 2.);
+                    }
                 }
             }
 
@@ -3128,7 +3135,11 @@ void svd(matrix & inData,
                 dF = 0.;
                 for(int i = 0; i < dimension; ++i)
                 {
-                    dF += 0.5 * pow((inData[i] - tempB * tempA[i]), 2.).sum();
+//                    dF += 0.5 * pow((inData[i] - tempB * tempA[i]), 2.).sum();
+                    for(int j = 0; j < dataLen; ++j)
+                    {
+                        dF += 0.5 * pow(inData[i][j] - tempB[j] * tempA[i], 2.);
+                    }
                 }
                 dF = (F - dF) / F;
             }

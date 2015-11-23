@@ -1736,8 +1736,8 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
     setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
 
-    ui->matiCheckBox->setChecked(true);
-    setEdfFile("/media/Files/Data/Mati/GoodData/PYV_cl.edf");
+//    ui->matiCheckBox->setChecked(true);
+//    setEdfFile("/media/Files/Data/Mati/GoodData/PYV_cl.edf");
     ICA();
 
 //    Net * ann = new Net();

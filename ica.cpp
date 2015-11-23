@@ -42,7 +42,10 @@ void product1(const matrix & arr,
         /// new
 //        outVector += currCol * tanh(sum);
     }
-    outVector /= length;
+    for(int i = 0; i < ns; ++i)
+    {
+        outVector[i] /= length;
+    }
 }
 
 
@@ -78,8 +81,11 @@ void product2(const matrix & arr,
         sum1 += 1 - pow(tanh(sum), 2.);
     }
     sum1 /= length;
-
-    outVector = vect * sum1;
+    for(int i = 0; i < ns; ++i)
+    {
+        outVector[i] = sum1 * vect[i];
+    }
+//    outVector = vect * sum1;
 }
 
 
@@ -238,7 +244,7 @@ void countVectorW(matrix & vectorW,
             sum1 = 0.;
             for(int j = 0; j < ns; ++j)
             {
-                sum1 += pow(vectorW[i][j], 2);
+                sum1 += pow(vectorW[i][j], 2.);
             }
             for(int j = 0; j < ns; ++j)
             {
@@ -262,7 +268,7 @@ void countVectorW(matrix & vectorW,
 //            sum2 = norma(vectorOld - vectorW[i]);
 
             ++counter;
-            if(sum2 < vectorWTreshold || 2 - sum2 < vectorWTreshold) break;
+            if(sum2 < vectorWTreshold || 2. - sum2 < vectorWTreshold) break;
             if(counter == 100) break;
         }
         cout << "NumOf vectorW component = " << i << "\t";
@@ -309,9 +315,9 @@ void MainWindow::ICA() //fastICA
     cout << "Ica started: " << helpString << endl;
     readData();
 
+    const int ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
+    const int dataLength = globalEdf.getDataLen();
 
-
-    const int & dataLength = globalEdf.getDataLen();
 
     const double eigenValuesTreshold = pow(10., - ui->svdDoubleSpinBox->value());
     const double vectorWTreshold = pow(10., - ui->vectwDoubleSpinBox->value());
@@ -319,25 +325,13 @@ void MainWindow::ICA() //fastICA
                                     + slash() + "Help"
                                     + slash() + "ica";
 
-    const int ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
 
 
     matrix centeredMatrix = globalEdf.getData();
-
-    //vectors for the las stage
-
-    //for full A-matrix count
-    matrix matrixA(ns, ns);
-
-    //components time-flow
     matrix components(ns + 1, globalEdf.getDataLen()); // needed readData();
-
     // save markers
     components[ns] = globalEdf.getData()[globalEdf.getMarkChan()];
 
-
-
-    matrix dataICA(ns, dataLength, 0);
 
     // count eigenvalue decomposition
     matrix eigenVectors;
@@ -350,6 +344,10 @@ void MainWindow::ICA() //fastICA
         def::nsWOM(),
         eigenValuesTreshold);
 
+
+//    globalEdf.writeOtherData(centeredMatrix,
+//                             "/media/Files/Data/AAX/AAX_sum_centered.edf");
+//    exit(1);
 
 
     // write eigenVectors
@@ -396,6 +394,8 @@ void MainWindow::ICA() //fastICA
     }
 #endif
 
+
+    matrix dataICA(ns, dataLength, 0.);
 #if 1
 //    dataICA = eigenVectors * components;
     matrixProduct(eigenVectors,
@@ -426,12 +426,20 @@ void MainWindow::ICA() //fastICA
     matrix vectorW(ns, ns, 0.);
 
 
+
+
     double sum1;
 
     countVectorW(vectorW,
                  dataICA,
                  ns,
                  dataLength);
+
+
+
+
+
+
 
     //count components
     matrixProduct(vectorW,
@@ -442,6 +450,8 @@ void MainWindow::ICA() //fastICA
 
     //count full mixing matrix A = E * D^0.5 * Et * Wt
     //X = AS (sensor data = A*components)
+
+    matrix matrixA(ns, ns, 0.);
 
 #if MATRICES_ICA_0
     matrixA = matrix::transpose(vectorW); // A = Wt
