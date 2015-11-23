@@ -3024,7 +3024,7 @@ void svd(matrix & inData,
 
 
     //subtract averages
-    for(int i = 0; i < inData.rows(); ++i)
+    for(int i = 0; i < dimension; ++i)
     {
         const double temp = -mean(inData[i]) / realSignalFrac;
         inData[i] += temp;

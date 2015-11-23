@@ -328,9 +328,8 @@ void MainWindow::ICA() //fastICA
 
 
     matrix centeredMatrix = globalEdf.getData();
-    matrix components(ns + 1, globalEdf.getDataLen()); // needed readData();
-    // save markers
-    components[ns] = globalEdf.getData()[globalEdf.getMarkChan()];
+    matrix components;
+
 
 
     // count eigenvalue decomposition
@@ -345,9 +344,11 @@ void MainWindow::ICA() //fastICA
         eigenValuesTreshold);
 
 
+
 //    globalEdf.writeOtherData(centeredMatrix,
 //                             "/media/Files/Data/AAX/AAX_sum_centered.edf");
 //    exit(1);
+    centeredMatrix.data.pop_back(); // erase last channel
 
 
     // write eigenVectors
@@ -372,6 +373,8 @@ void MainWindow::ICA() //fastICA
         D_minus_05[i][i] = 1. / sqrt(eigenValues[i]);
     }
     matrix tmpMat = D_minus_05 * matrix::transpose(eigenVectors);
+
+//    components = tmpMat * centeredMatrix;
 
     matrixProduct(tmpMat,
                   centeredMatrix,
@@ -430,6 +433,11 @@ void MainWindow::ICA() //fastICA
 
     double sum1;
 
+    dataICA.push_back(globalEdf.getData()[globalEdf.getMarkChan()]);
+    globalEdf.writeOtherData(dataICA,
+                             "/media/Files/Data/AAX/AAX_datic.edf");
+    exit(13);
+
     countVectorW(vectorW,
                  dataICA,
                  ns,
@@ -442,10 +450,11 @@ void MainWindow::ICA() //fastICA
 
 
     //count components
-    matrixProduct(vectorW,
-                  dataICA,
-                  components,
-                  ns);
+    components = vectorW * dataICA;
+//    matrixProduct(vectorW,
+//                  dataICA,
+//                  components,
+//                  ns);
 
 
     //count full mixing matrix A = E * D^0.5 * Et * Wt
@@ -808,6 +817,7 @@ void MainWindow::ICA() //fastICA
     std::iota(chanList.begin(), chanList.end(), 0);
     chanList.push_back(globalEdf.getMarkChan());
 
+    components.push_back(globalEdf.getData()[globalEdf.getMarkChan()]);
     globalEdf.writeOtherData(components, helpString, chanList);
     def::ns = ns + 1; // numOfICs + markers
 

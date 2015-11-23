@@ -1733,6 +1733,8 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
+
+
     ui->matiCheckBox->setChecked(false);
     setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
 
