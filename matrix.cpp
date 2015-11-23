@@ -262,9 +262,13 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
     }
 #else
     const matrix temp = matrix::transpose(rhs);
+
     for(int i = 0; i < dim1; ++i)
     {
-        result[i] = lhs[i] * temp[i];
+        for(int j = 0; j < dim2; ++j)
+        {
+            result[i][j] = (lhs[i] * temp[j]).sum();
+        }
     }
 #endif
     return result;

@@ -365,20 +365,9 @@ void MainWindow::ICA() //fastICA
     }
 
 
-//    helpString = pathForAuxFiles
-//                 + slash() + def::ExpName + "_D_minus_05.txt";
-//    writeSpectraFile(helpString,
-//                     D_minus_05,
-//                     ns, ns);
 
-
-    matrix tmpMat = D_minus_05 * matrix::transpose(eigenVectors);
-
-//    helpString = pathForAuxFiles
-//                 + slash() + def::ExpName + "_tmpMat.txt";
-//    writeSpectraFile(helpString,
-//                     tmpMat,
-//                     ns, ns);
+    matrix tmpMat = matrix();
+    tmpMat = D_minus_05 * matrix::transpose(eigenVectors);
 
 //    components = tmpMat * centeredMatrix;
     matrixProduct(tmpMat,
@@ -387,10 +376,6 @@ void MainWindow::ICA() //fastICA
                   ns);
 
 
-//    globalEdf.writeOtherData(components,
-//                             "/media/Files/Data/AAX/AAX_comps_new.edf");
-//    exit(13);
-
     matrix dataICA(ns, dataLength, 0.);
 //    dataICA = eigenVectors * components;
     matrixProduct(eigenVectors,
@@ -398,34 +383,8 @@ void MainWindow::ICA() //fastICA
                   dataICA,
                   ns);
 
-//    cout << dataICA.cols() << "\t" << dataICA.rows() << endl; exit(0);
-
-
-
-
-//    dataICA.push_back(globalEdf.getData()[globalEdf.getMarkChan()]);
-
-
-//    for(int i = 0; i < 30; ++i)
-//    {
-//        cout << dataICA[5][1000+i] << endl;
-//    }
-//    exit(7);
-
-    globalEdf.writeOtherData(dataICA,
-                             "/media/Files/Data/AAX/AAX_datic.edf");
-    exit(13);
-
-
-
-
-
-
 
     //now dataICA are uncovariated signals with variance 1
-
-
-
     // ICA itself!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // fastIca wiki - first function
 
@@ -437,17 +396,25 @@ void MainWindow::ICA() //fastICA
                  ns,
                  dataLength);
 
+    helpString = pathForAuxFiles
+                 + slash() + def::ExpName + "_vectorW.txt";
+    writeSpectraFile(helpString,
+                     vectorW,
+                     ns, ns);
+
+    exit(0);
+
 
 
 
 
 
     //count components
-    components = vectorW * dataICA;
-//    matrixProduct(vectorW,
-//                  dataICA,
-//                  components,
-//                  ns);
+//    components = vectorW * dataICA;
+    matrixProduct(vectorW,
+                  dataICA,
+                  components,
+                  ns);
 
 
     //count full mixing matrix A = E * D^0.5 * Et * Wt
