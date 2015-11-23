@@ -1573,6 +1573,7 @@ void edfFile::writeOtherData(matrix & newData,
         }
     }
 
+    temp.data = edfDataType();
     temp.channels.clear();
     for(int item : chanList)
     {

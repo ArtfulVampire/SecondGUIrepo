@@ -328,7 +328,8 @@ void MainWindow::ICA() //fastICA
 
 
     matrix centeredMatrix = globalEdf.getData();
-    matrix components;
+    matrix components(ns + 1, dataLength, 0.);
+    components[ns] = globalEdf.getData()[globalEdf.getMarkChan()];
 
 
 
@@ -340,16 +341,8 @@ void MainWindow::ICA() //fastICA
     svd(centeredMatrix,
         eigenVectors,
         eigenValues,
-        def::nsWOM(),
+        ns,
         eigenValuesTreshold);
-
-
-
-//    globalEdf.writeOtherData(centeredMatrix,
-//                             "/media/Files/Data/AAX/AAX_sum_centered.edf");
-//    exit(1);
-    centeredMatrix.data.pop_back(); // erase last channel
-
 
     // write eigenVectors
     helpString = pathForAuxFiles
@@ -358,91 +351,91 @@ void MainWindow::ICA() //fastICA
                      eigenVectors,
                      ns, ns);
 
-
     // write eigenValues
     helpString = pathForAuxFiles
                  + slash() + def::ExpName + "_eigenValues.txt";
     writeFileInLine(helpString, eigenValues);
 
 
-#if 1
     // components = EigenValues^-0.5 * Et * data
     matrix D_minus_05(ns, ns, 0.);
     for(int i = 0; i < ns; ++i)
     {
         D_minus_05[i][i] = 1. / sqrt(eigenValues[i]);
     }
+
+
+//    helpString = pathForAuxFiles
+//                 + slash() + def::ExpName + "_D_minus_05.txt";
+//    writeSpectraFile(helpString,
+//                     D_minus_05,
+//                     ns, ns);
+
+
     matrix tmpMat = D_minus_05 * matrix::transpose(eigenVectors);
 
-//    components = tmpMat * centeredMatrix;
+//    helpString = pathForAuxFiles
+//                 + slash() + def::ExpName + "_tmpMat.txt";
+//    writeSpectraFile(helpString,
+//                     tmpMat,
+//                     ns, ns);
 
+//    components = tmpMat * centeredMatrix;
     matrixProduct(tmpMat,
                   centeredMatrix,
                   components,
                   ns);
-#else
-    //count linear decomposition on PCAs
-    //// ???????????? ////// components = D^-0.5 * Et * initData
-    for(int j = 0; j < dataLength; ++j) //columns initData
-    {
-        for(int i = 0; i < ns; ++i) //rows tempMatrix
-        {
-            sum1 = 0.;
-            for(int k = 0; k < ns; ++k) //rows initData = coloumns tempMatrix
-            {
-                sum1 += eigenVectors[k][i] * centeredMatrix[k][j] / sqrt(eigenValues[i]);
-            }
-            components[i][j] = sum1;
-        }
-    }
-#endif
 
+
+//    globalEdf.writeOtherData(components,
+//                             "/media/Files/Data/AAX/AAX_comps_new.edf");
+//    exit(13);
 
     matrix dataICA(ns, dataLength, 0.);
-#if 1
 //    dataICA = eigenVectors * components;
     matrixProduct(eigenVectors,
                   components,
                   dataICA,
                   ns);
-#else
-    for(int j = 0; j < dataLength; ++j) //columns X
-    {
-        for(int i = 0; i < ns; ++i) //rows tempMatrix
-        {
-            sum1 = 0.;
-            for(int k = 0; k < ns; ++k)
-            {
-                sum1 += eigenVectors[i][k] * components[k][j];
-            }
-            dataICA[i][j] = sum1;
-        }
-    }
-#endif
+
+//    cout << dataICA.cols() << "\t" << dataICA.rows() << endl; exit(0);
+
+
+
+
+//    dataICA.push_back(globalEdf.getData()[globalEdf.getMarkChan()]);
+
+
+//    for(int i = 0; i < 30; ++i)
+//    {
+//        cout << dataICA[5][1000+i] << endl;
+//    }
+//    exit(7);
+
+    globalEdf.writeOtherData(dataICA,
+                             "/media/Files/Data/AAX/AAX_datic.edf");
+    exit(13);
+
+
+
+
+
+
 
     //now dataICA are uncovariated signals with variance 1
 
 
 
     // ICA itself!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // fastIca wiki - first function    
-    matrix vectorW(ns, ns, 0.);
-
-
-
+    // fastIca wiki - first function
 
     double sum1;
 
-    dataICA.push_back(globalEdf.getData()[globalEdf.getMarkChan()]);
-    globalEdf.writeOtherData(dataICA,
-                             "/media/Files/Data/AAX/AAX_datic.edf");
-    exit(13);
-
+    matrix vectorW(ns, ns, 0.);
     countVectorW(vectorW,
                  dataICA,
                  ns,
                  dataLength);
-
 
 
 
@@ -462,43 +455,13 @@ void MainWindow::ICA() //fastICA
 
     matrix matrixA(ns, ns, 0.);
 
-#if MATRICES_ICA_0
     matrixA = matrix::transpose(vectorW); // A = Wt
-#else
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < ns; ++j)
-        {
-            matrixA[i][j] = vectorW[j][i];
-        }
-    }
-#endif
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////
-#if MATRICES_ICA_1
     matrixA = matrix::transpose(eigenVectors) * matrixA; //A = Et * Wt
-#else
-    vec tempVector(ns);
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int k = 0; k < ns; ++k)
-        {
-            tempVector[k] = 0.; //new i-th coloumn for matrix A
-            for(int s = 0; s < ns; ++s)
-            {
-                tempVector[k] += eigenVectors[s][k] * matrixA[s][i]; //A = Et * Wt
-            }
-        }
-        for(int k = 0; k < ns; ++k)
-        {
-            matrixA[k][i] = tempVector[k];
-        }
-    }
-#endif
 
-#if MATRICES_ICA_2
+
     //A = D^0.5 * Et * Wt
     matrix D_05(ns, ns, 0.);
     for(int i = 0; i < ns; ++i)
@@ -506,36 +469,9 @@ void MainWindow::ICA() //fastICA
         D_05[i][i] = sqrt(eigenValues[i]);
     }
     matrixA = D_05 * matrixA;
-#else
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int k = 0; k < ns; ++k)
-        {
-            matrixA[i][k] *= sqrt(eigenValues[i]);//A = D^0.5 * Et * Wt
-        }
-    }
-#endif
 
-#if MATRICES_ICA_3
+
     matrixA = eigenVectors * matrixA;
-#else
-
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int k = 0; k < ns; ++k)
-        {
-            tempVector[k] = 0.; //new i-th coloumn for matrix A
-            for(int s = 0; s < ns; ++s)
-            {
-                tempVector[k] += eigenVectors[k][s] * matrixA[s][i]; //A = E * D^0.5 * Et * Wt
-            }
-        }
-        for(int k = 0; k < ns; ++k)
-        {
-            matrixA[k][i] = tempVector[k];
-        }
-    }
-#endif
 
 
 

@@ -1737,10 +1737,15 @@ void MainWindow::customFunc()
 
     ui->matiCheckBox->setChecked(false);
     setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
+//    return;
+//    cout << areEqualFiles("/media/Files/Data/AAX/AAX_datic.edf",
+//                  "/media/Files/Data/AAX/AAX_datic_0.edf") << endl;
+//    exit(8);
 
 //    ui->matiCheckBox->setChecked(true);
 //    setEdfFile("/media/Files/Data/Mati/GoodData/PYV_cl.edf");
     ICA();
+
 
 //    Net * ann = new Net();
 //    ann->show();
