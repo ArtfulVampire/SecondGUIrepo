@@ -625,7 +625,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 
 void Cut::zero()
 {
-    int h = 0;
+//    int h = 0;
 
     // if MATI with counts - adjust limits to problem edges
     // move leftLimit after the nearest marker
@@ -634,7 +634,7 @@ void Cut::zero()
 
     // ExpName.left(3)_fileSuffix_TYPE_SESSION_PIECE.MARKER
 
-    QString helpString = "_0_[0-9]_[0-9]{2,2}"; // counting problem only
+    QString helpString = "_0_[0-9]_[0-9]{2,2}"; // MATI counting problem only
     if(currentFile.contains(QRegExp(helpString)))
     {
 //        cout << "zero: adjust limits   " << currentFile << endl;

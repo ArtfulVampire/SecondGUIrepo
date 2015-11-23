@@ -738,7 +738,6 @@ double MainWindow::fileInnerClassification(const QString & workPath,
     QString helpString;
 
     ui->sliceCheckBox->setChecked(true);
-    ui->sliceWithMarkersCheckBox->setChecked(true);
     ui->eyesCleanCheckBox->setChecked(false);
     ui->reduceChannelsCheckBox->setChecked(false);
 
@@ -816,7 +815,6 @@ double MainWindow::filesCrossClassification(QString workPath,
     //yet for 19 channels only
 
     ui->sliceCheckBox->setChecked(true);
-    ui->sliceWithMarkersCheckBox->setChecked(false);
     ui->eyesCleanCheckBox->setChecked(false);
     ui->reduceChannelsCheckBox->setChecked(false);
 
@@ -931,7 +929,6 @@ void MainWindow::countICAs(QString workPath,
     ui->vectwDoubleSpinBox->setValue(9.5);
 
     ui->sliceCheckBox->setChecked(true);
-    ui->sliceWithMarkersCheckBox->setChecked(false);
     ui->eyesCleanCheckBox->setChecked(false);
 
     ui->cleanRealisationsCheckBox->setChecked(true);
@@ -1055,7 +1052,6 @@ double MainWindow::filesDropComponents(QString workPath,
     myTime.start();
 
     ui->sliceCheckBox->setChecked(true);
-    ui->sliceWithMarkersCheckBox->setChecked(false);
     ui->eyesCleanCheckBox->setChecked(false);
     ui->reduceChannelsCheckBox->setChecked(false);
 
@@ -1109,7 +1105,7 @@ double MainWindow::filesDropComponents(QString workPath,
     }
     else
     {
-        logF << def::ExpName.left(3) << " initialAccuracy = " << tempAccuracy << endl << endl;
+        logF << def::ExpName.left(3) << " initialAccuracy = " << initAccuracy << endl << endl;
         logF.close();
     }
     ////////////////////////////////////////////////////////////////////////////////////////initial accuracy count end
@@ -1117,7 +1113,7 @@ double MainWindow::filesDropComponents(QString workPath,
     while(1)
     {
         ns = channelsSet.length() - 1;
-        makeCfgStatic(tmpDir->absolutePath(), ns*247, "Reduced");
+        makeCfgStatic(tmpDir->absolutePath(), ns * 247, "Reduced");
         foundFlag = false;
 
         for(int l = 0; l < channelsSet.length(); ++l)
@@ -1311,7 +1307,6 @@ double MainWindow::filesAddComponentsCross(QString workPath,
     int ns;
 
     ui->sliceCheckBox->setChecked(true);
-    ui->sliceWithMarkersCheckBox->setChecked(false);
     ui->eyesCleanCheckBox->setChecked(false);
     ui->reduceChannelsCheckBox->setChecked(false);
 

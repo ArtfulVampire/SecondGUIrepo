@@ -450,6 +450,7 @@ void Net::autoClassification(const QString & spectraDir)
 
     const int numOfPairs = ui->numOfPairsBox->value();
     const int fold = ui->foldSpinBox->value();
+    loadData(spectraDir);
 
     adjustLearnRate(ui->lowLimitSpinBox->value(),
                     ui->highLimitSpinBox->value());
@@ -1495,267 +1496,50 @@ void Net::SVM()
 /// remake
 void Net::pca()
 {
-#if 0
-    QString helpString;
-    QTime wholeTime;
-    wholeTime.start();
+    QTime myTime;
+    myTime.start();
+
 
     const int NumberOfVectors = dataMatrix.rows();
+    const int NetLength = dataMatrix.cols();
 
-    cout << "NetLength = " << NetLength << endl;
-    cout << "NumberOfVectors = " << NumberOfVectors << endl;
-
-    matrix differenceMatrix (NumberOfVectors, NumberOfVectors);
     matrix centeredMatrix;
-    centeredMatrix = transpose(dataMatrix); // rows = spectral points, cols - numOfPattern
+    centeredMatrix = matrix::transpose(dataMatrix); // rows = spectral points, cols - numOfPattern
+
+    QString helpString;
 
     //count covariations
-    //count averages
-    vector<double> averages(NetLength, 0.);
-    for(int i = 0; i < NetLength; ++i)
-    {
-//        averages[i] = mean(centeredMatrix[i])
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            averages[i] += centeredMatrix[j][i];
-        }
-        averages[i] /= NumberOfVectors;
-    }
-
     //centered matrix
     for(int i = 0; i < NetLength; ++i)
     {
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            centeredMatrix[j][i] -= averages[i];
-        }
+        centeredMatrix[i] -= mean(centeredMatrix[i]);
     }
 
-    cout << "centeredMatrix counted" << endl;
 
-    //NetLength ~ = 45000
-    //NumberOfVectors ~ = 100
     //covariation between different spectra-bins
-    double tempDouble;
-
-    QTime initTime;
-    initTime.start();
-
     double trace = 0.;
     for(int i = 0; i < NetLength; ++i)
     {
-        tempDouble = 0.;
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            tempDouble += centeredMatrix[j][i] * centeredMatrix[j][i];
-        }
-        tempDouble /= (NumberOfVectors - 1);
-        trace += tempDouble;
+        trace += variance(centeredMatrix[i]);
     }
     cout << "trace covMatrix = " << trace << endl;
 
     // count eigenvalue decomposition
     matrix eigenVectors;
-    vec eigenValues;
+    lineType eigenValues;
     const double eigenValuesTreshold = pow(10., -8.);
+    const int numOfPc = ui->pcaNumberSpinBox->value();
+
 
     svd(centeredMatrix,
         eigenVectors,
         eigenValues,
-        eigenValuesTreshold);
-
-//    return;
-
-    //count eigenvalues & eigenvectors of covMatrix
-    double * eigenValues = new double [NetLength];
-    double ** eigenVectors = new double * [NetLength]; //vector is a coloumn
-    for(int i = 0; i < NetLength; ++i)
-    {
-        eigenVectors[i] = new double [ui->pcaNumberSpinBox->value()];
-    }
-    double * tempA = new double [NetLength]; //i
-    double * tempB = new double [NumberOfVectors];//j
-    double sum1, sum2; //temporary help values
-    double dF, F;
-    int counter;
+        centeredMatrix.rows(),
+        eigenValuesTreshold,
+        numOfPc);
 
 
-
-
-    int numOfPc;
-
-    cout << "start eigenValues processing" << endl;
-    //count eigenValues & eigenVectors
-    //matrix
-    for(int k = 0; k < NetLength; ++k)
-    {
-        initTime.restart();
-        dF = 1.0;
-        F = 1.0;
-
-        //set 1-normalized vector tempA
-        for(int i = 0; i < NetLength; ++i)
-        {
-            tempA[i] = 1./sqrt(NetLength);
-        }
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            tempB[j] = 1./sqrt(NumberOfVectors);
-        }
-
-
-        //approximate P[i] = tempA x tempB;
-        counter = 0.;
-        while(1) //when stop approximate?
-        {
-            //countF
-            F = 0.;
-            for(int i = 0; i < NetLength; ++i)
-            {
-                for(int j = 0; j < NumberOfVectors; ++j)
-                {
-                    F += 0.5 * (centeredMatrix[j][i] - tempB[j] * tempA[i]) * (centeredMatrix[j][i] - tempB[j] * tempA[i]);
-                }
-//                cout << F << " ";
-            }
-            //count vector tempB
-            for(int j = 0; j < NumberOfVectors; ++j)
-            {
-                sum1 = 0.;
-                sum2 = 0.;
-                for(int i = 0; i < NetLength; ++i)
-                {
-                    sum1 += centeredMatrix[j][i] * tempA[i];
-                    sum2 += tempA[i] * tempA[i];
-                }
-                tempB[j] = sum1 / sum2;
-            }
-//            if(k == 0) cout << endl;
-
-            //count vector tempA
-            for(int i = 0; i < NetLength; ++i)
-            {
-                sum1 = 0.;
-                sum2 = 0.;
-                for(int j = 0; j < NumberOfVectors; ++j)
-                {
-                    sum1 += tempB[j] * centeredMatrix[j][i];
-                    sum2 += tempB[j] * tempB[j];
-                }
-                tempA[i] = sum1 / sum2;
-            }
-
-            dF = 0.;
-            for(int i = 0; i < NetLength; ++i)
-            {
-                for(int j = 0; j < NumberOfVectors; ++j)
-                {
-                    dF += 0.5 * (centeredMatrix[j][i] - tempB[j] * tempA[i]) * (centeredMatrix[j][i] - tempB[j] * tempA[i]);
-                }
-            }
-            dF = (F-dF)/F;
-            ++counter;
-            if(fabs(dF) < 1e-8 || counter == 300)
-            {
-                break;
-            }
-        }
-//        cout << k << "   " << counter << endl;
-
-        //edit covMatrix
-        for(int i = 0; i < NetLength; ++i)
-        {
-            for(int j = 0; j < NumberOfVectors; ++j)
-            {
-                centeredMatrix[j][i] -= tempB[j] * tempA[i];
-            }
-        }
-
-        //count eigenVectors && eigenValues
-        sum1 = 0.;
-        sum2 = 0.;
-        for(int i = 0; i < NetLength; ++i)
-        {
-            sum1 += tempA[i] * tempA[i];
-        }
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            sum2 += tempB[j] * tempB[j];
-        }
-        for(int i = 0; i < NetLength; ++i)
-        {
-            tempA[i] /= sqrt(sum1);
-            //test equality of left and right singular vectors
-//            if(((tempB[i]-tempA[i])/tempB[i])<-0.05 || ((tempB[i]-tempA[i])/tempB[i])>0.05) cout << k << " " << i  << " warning" << endl;  //till k == 19 - OK
-        }
-
-        eigenValues[k] = sum1 * sum2 / double(NumberOfVectors-1.);
-
-
-        sum1 = 0.;
-        for(int j = 0; j <= k; ++j)
-        {
-            sum1 += eigenValues[j];
-        }
-//        cout << "Part of dispersion explained = " << sum1 * 100./double(trace) << " %" << endl;
-
-        cout << k+1;
-        cout << "\t" << eigenValues[k];
-        cout << "\tDisp = " << eigenValues[k]*100./trace;
-        cout << "\tTotal = " << sum1 * 100./trace;
-        cout << "\ttimeElapsed = " << initTime.elapsed()/1000. << " seconds";
-        cout << "\tSVD-iterations = " << counter;
-        cout << endl;
-        for(int i = 0; i < NetLength; ++i)
-        {
-            eigenVectors[i][k] = tempA[i]; //1-normalized
-        }
-
-        //need a rule
-        if(k+1 == ui->pcaNumberSpinBox->value() || sum1/trace >= ui->traceDoubleSpinBox->value())
-        {
-            cout << "numOfEigenValues = " << k+1 << endl;
-            numOfPc = k+1;
-            break;
-        }
-
-    }
-    ui->autpPCAMaxSpinBox->setValue(numOfPc);
-
-    double helpDouble;
-    if(0) //eigenVectors length - OK
-    {
-        for(int i = 0; i < numOfPc; ++i)
-        {
-            helpDouble = 0.;
-            for(int j = 0; j < NetLength; ++j)
-            {
-                helpDouble += eigenVectors[j][i] * eigenVectors[j][i];
-            }
-            helpDouble = sqrt(helpDouble);
-            cout << i << "'th eigenVector norm\t" << helpDouble << endl;
-        }
-    }
-
-
-    if(1) //eigenVectors output
-    {
-        ofstream eigenVectorsFile;
-        helpString = def::dir->absolutePath() + slash() + "Help" + slash() + def::ExpName + "_pcaEigenVectors.txt";
-        eigenVectorsFile.open(helpString.toStdString().c_str());
-        for(int k = 0; k < numOfPc; ++k)
-        {
-            for(int i = 0; i < NetLength; ++i)
-            {
-                eigenVectorsFile << eigenVectors[i][k] << "\t";
-            }
-            eigenVectorsFile << "\n";
-        }
-        eigenVectorsFile.close();
-    }
-
-
-    sum1 = 0.;
+    double sum1 = 0.;
     for(int k = 0; k < numOfPc; ++k)
     {
         sum1 += eigenValues[k];
@@ -1764,66 +1548,25 @@ void Net::pca()
     cout << "Number of Components = " << numOfPc << endl;
 
     //memory for pcaProjections
+    centeredMatrix.transpose();
     matrix pcaMatrix(NumberOfVectors, numOfPc);
 
-    //return centeredMatrix
-    for(int j = 0; j < NumberOfVectors; ++j)
-    {
-        for(int i = 0; i < NetLength; ++i)
-        {
-            centeredMatrix[j][i] = dataMatrix[j][i] - averages[i];
-        }
-    }
+    pcaMatrix = centeredMatrix * eigenVectors;
 
-    for(int j = 0; j < NumberOfVectors; ++j)
-    {
-        for(int k = 0; k < numOfPc; ++k)
-        {
-            pcaMatrix[j][k] = 0.;
-            for(int i = 0; i < NetLength; ++i)
-            {
-                pcaMatrix[j][k] += centeredMatrix[j][i] * eigenVectors[i][k];
-            }
-        }
-    }
-
-    if(0)
-    {
-        double ** pcaMatrixTrans;
-        matrixCreate(&pcaMatrixTrans, numOfPc, NumberOfVectors);
-        matrixTranspose(pcaMatrix, NumberOfVectors, numOfPc, pcaMatrixTrans);
-
-        for(int k = 0; k < numOfPc; ++k)
-        {
-            for(int j = 0; j < numOfPc; ++j)
-            {
-//                if(k!=j && covariance(pcaMatrixTrans[k], pcaMatrixTrans[j], NumberOfVectors) > 100.) cout << k << j << endl;
-            }
-            cout << "cov " << k << " = " << covariance(pcaMatrixTrans[k], pcaMatrixTrans[k], NumberOfVectors) << endl;
-        }
-    }
-
-
-
-
-    FILE * pcaFile;
-
-    //count reduced Data - first some PC
     for(int j = 0; j < NumberOfVectors; ++j) //i->j
     {
         helpString = def::dir->absolutePath()
                      + slash() + "SpectraSmooth"
                      + slash() + "PCA"
                      + slash() + fileNames[j];
-        pcaFile = fopen(QDir::toNativeSeparators(helpString), "w");
-        for(int k = 0; k < numOfPc; ++k) //j->k
-        {
-            fprintf(pcaFile, "%lf\n", double(10. * pcaMatrix[j][k])); //PC coefficients
-        }
-        fclose(pcaFile);
+        writeFileInLine(helpString,
+                        pcaMatrix[j]);
+
     }
+    cout << "pca: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
+#if 0
 
-
+    matrix differenceMatrix (NumberOfVectors, NumberOfVectors);
     //count distances between different spectre-vectors (projections on first numOfPc PCs)
     for(int h = 0; h < NumberOfVectors; ++h)
     {
@@ -1887,11 +1630,9 @@ void Net::pca()
         delete [] avProj;
         ui->sammonLineEdit->clear();
     }
-
-
-    cout << "end" << endl;
-    cout << "whole time elapsed " << wholeTime.elapsed()/1000. << " sec" << endl;
 #endif
+
+
 }
 
 

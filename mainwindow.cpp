@@ -17,7 +17,6 @@ MainWindow::MainWindow() :
     def::left  = fftLimit(def::leftFreq, def::freq, def::fftLength);
     def::spLength = def::right - def::left;
 
-    ui->sliceWithMarkersCheckBox->setChecked(def::withMarkersFlag);
 
     staSlice = 0;
     stopFlag = 0;
@@ -373,8 +372,6 @@ MainWindow::MainWindow() :
     QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
 
     QObject::connect(ui->transformRealsPushButton, SIGNAL(clicked()), this, SLOT(transformReals()));
-
-    QObject::connect(ui->sliceWithMarkersCheckBox, SIGNAL(stateChanged(int)), this, SLOT(sliceWithMarkersSlot(int)));
 
     QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
 
@@ -1689,10 +1686,6 @@ void MainWindow::setBoxMax(double a)
     ui->startTimeBox->setMaximum(a - 1.);
 }
 
-void MainWindow::sliceWithMarkersSlot(int a)
-{
-//    withMarkersFlag = a;
-}
 
 void MainWindow::stop()
 {
@@ -1741,10 +1734,14 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-    setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+    setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
 
-    Net * ann = new Net();
-    ann->show();
+    ui->matiCheckBox->setChecked(true);
+    setEdfFile("/media/Files/Data/Mati/GoodData/PYV_cl.edf");
+    ICA();
+
+//    Net * ann = new Net();
+//    ann->show();
 //    ann->LearnNet();
 
 //    countSpectraSimple(4096, 15);

@@ -95,6 +95,7 @@ char * QStrToCharArr(const QString & input, const int & len = -1);
 int typeOfFileName(const QString & fileName);
 QString getFileMarker(const QString & fileName);
 
+void resizeValar(lineType & in, int num);
 
 
 
@@ -544,10 +545,12 @@ void splitZerosEdges(matrix & dataIn, const int & ns, const int & length, int * 
 void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit);
 
 
-void svd(const matrix & inData,
+void svd(matrix & inData,
          matrix & eigenVectors,
          lineType & eigenValues,
-         const double & threshold = 1e-9);
+         const int dimension,
+         const double & threshold = 1e-9,
+         int eigenVecNum = -1);
 
 
 

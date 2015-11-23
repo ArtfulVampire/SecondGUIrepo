@@ -28,7 +28,6 @@ public:
     matrix(int rows, int cols);
     matrix(int rows, int cols, double value);
 
-    matrix(double ** inData, int rows, int cols);
     matrix(const matrix & other);
     matrix(const dataType & other);
 
@@ -38,9 +37,11 @@ public:
         other.data = dataType();
     }
 
-    matrix(lineType vect, bool orientH);
-    matrix(lineType vect, char orient);
-    matrix(lineType vect, int rows);
+
+    matrix(const lineType & vect1, const lineType & vect2);
+    matrix(const lineType & vect, bool orientH);
+    matrix(const lineType & vect, char orient);
+    matrix(const lineType & vect, int rows);
 
     matrix(std::initializer_list<lineType> lst);
 
@@ -82,20 +83,25 @@ public:
     {
         return data[i];
     }
-    matrix operator + (const matrix & other);
-    matrix operator += (const matrix & other);
-
-    matrix operator - (const matrix & other);
-    matrix operator -= (const matrix & other);
 
     matrix operator = (const matrix & other);
     matrix operator = (const dataType & other);
+
+    matrix operator += (const matrix & other);
+    matrix operator += (const double & val);
+
+    matrix operator -= (const matrix & other);
+    matrix operator -= (const double & val);
+
+    matrix operator *= (const matrix & other);
+    matrix operator *= (const double & val);
+
     matrix operator /= (const double & other);
 
-    matrix operator *= (const double & other);
-    matrix operator * (const matrix & other);
-    matrix operator * (const dataType & other);
-    matrix operator *= (const matrix & other);
+
+
+
+//    matrix operator * (const dataType & other);
 
 
 
@@ -119,6 +125,14 @@ public:
     dataType data;
 
 };
+
+matrix operator + (const matrix & lhs, const matrix & rhs);
+matrix operator + (const matrix & lhs, const double & val);
+matrix operator / (const matrix & lhs, const double & val);
+matrix operator * (const matrix & lhs, const matrix & rhs);
+matrix operator * (const matrix & lhs, const double & val);
+matrix operator - (const matrix & lhs, const matrix & rhs);
+matrix operator - (const matrix & lhs, const double & val);
 
 template <typename matType1, typename matType2>
 void matrixProduct(const matType1 & in1,

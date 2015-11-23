@@ -5,7 +5,6 @@ namespace def
 {
 // assigned in readData, reduce channels, etc
 int ns = 20;
-//int nsW = def::ns - 1 * def::withMarkersFlag; // ns without markers
 
 // assigned in mainwindow.cpp
 int left;

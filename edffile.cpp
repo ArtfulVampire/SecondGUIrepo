@@ -355,7 +355,7 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
 #if DATA_POINTER
         writePlainData(EDFpath,
                        *(this->dataPointer),
-                       this->ns, // - 1 + def::withMarkersFlag,
+                       this->ns,
                        this->dataLength);
 #else
         writePlainData(EDFpath, this->data, this->ns, this->dataLength);
@@ -1018,8 +1018,10 @@ void edfFile::appendFile(QString addEdfPath, QString outPath) const
     lineType tempData;
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
+
         tempChan = addEdf.getChannels()[i];
         /// valarray strange handling
+        /// resizeValar(addEdf.data[i], this->dataLength);
         tempData.resize(this->dataLength);
         std::copy(begin(addEdf.getData()[i]),
                   begin(addEdf.getData()[i]) + min(addEdf.getDataLen(), this->getDataLen()),
@@ -1172,7 +1174,7 @@ void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPat
 
         writePlainData(outPath,
                        *(this->dataPointer),
-                       this->ns,// - 1 + def::withMarkersFlag,
+                       this->ns,
                        finishBin-startBin,
                        startBin);
 #else

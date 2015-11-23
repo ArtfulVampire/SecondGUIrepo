@@ -614,14 +614,6 @@ void MainWindow::constructEDF(const QString & newPath,
     def::ns = chanList.size();
     const int ns = chanList.size();
 
-#if 0
-    if(!ui->sliceWithMarkersCheckBox->isChecked())
-    {
-        cout << "constructEDF: withMarkersCheckBox is not checked" << endl;
-        return;
-    }
-#endif
-
     def::dir->cd("Realisations");
     QStringList lst;
     if(!nameFilters.isEmpty())

@@ -1356,6 +1356,15 @@ QString getFileMarker(const QString & fileName)
     }
 }
 
+void resizeValar(lineType & in, int num)
+{
+    lineType temp = in;
+    in.resize(num);
+    std::copy(begin(temp),
+              begin(temp) + min(in.size(), temp.size()),
+              begin(in));
+}
+
 void eyesProcessingStatic(const vector<int> eogChannels,
                           const vector<int> eegChannels,
                           const QString & windowsDir,
@@ -2810,7 +2819,7 @@ void drawMannWitneyInLine(const QString & picPath,
         {
             const int currTop = pic.height() * (offsetY + (1. - offsetY) * num);
             const int currBot = pic.height() * (offsetY + (1. - offsetY) * (num + 1));
-            const int currHeight = currBot - currTop;
+//            const int currHeight = currBot - currTop;
 
 
             QColor color1 = QColor(inColors[k]);
@@ -2986,92 +2995,102 @@ void kernelEst(QString filePath, QString picPath)
     kernelEst(arr, picPath);
 }
 
-void svd(const matrix & inData,
+void svd(matrix & inData,
          matrix & eigenVectors,
          lineType & eigenValues,
-         const double & threshold)
+         const int dimension,
+         const double & threshold,
+         int eigenVecNum)
 {
+    if(eigenVecNum <= 0)
+    {
+        eigenVecNum = dimension;
+    }
+    const int dataLen = inData.cols();
+
     const int iterationsThreshold = 100;
-    const int ns = def::nsWOM();
-    const int dataLen = inData[0].size();
     const int errorStep = 10;
 
-
-    matrix tempData = matrix(inData);
-    matrix covMatrix(ns, ns, 0.);
-
-    int h = 0;
-    int Eyes = 0;
+    int eyes = 0;
     for(int i = 0; i < dataLen; ++i)
     {
-        h = 0;
-        for(int j = 0; j < ns; ++j)
+        const lineType temp = inData.getCol(i);
+        if(abs(temp).max() == 0.)
         {
-            if(fabs(inData[j][i]) == 0.) ++h;
+            ++eyes;
         }
-        if(h == ns) Eyes += 1;
     }
-    double realSignalFrac = dataLen / double(dataLen - Eyes); ///deprecate!!!!!!
-
-    lineType averages(ns);
-    for(int i = 0; i < ns; ++i)
-    {
-        averages[i] = mean(inData[i]) / realSignalFrac;
-    }
+    const double realSignalFrac = dataLen / double(dataLen - eyes); /// deprecate?!! splitZeros
 
     //subtract averages
-    for(int i = 0; i < ns; ++i)
+    for(int i = 0; i < inData.rows(); ++i)
     {
-        for(int j = 0; j < dataLen; ++j)
-        {
-            if(tempData[i][j] != 0.)
-            {
-                tempData[i][j] = (tempData[i][j] - averages[i]) * realSignalFrac;
-            }
-        }
-    }
-
-    //count covMatrix
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < ns; ++j)
-        {
-            covMatrix[i][j] = 0.;
-            covMatrix[i][j] = covariance(tempData[i],
-                                         tempData[j],
-                                         dataLen);
-            covMatrix[i][j] /= dataLen; //should be -1 ? needed for trace
-        }
+        const double temp = -mean(inData[i]) / realSignalFrac;
+        inData[i] += temp;
+        std::replace(begin(inData[i]),
+                     end(inData[i]),
+                     temp,
+                     0.); // retain zeros
     }
 
     double trace = 0.;
-    for(int i = 0; i < ns; ++i)
+    for(int i = 0; i < dimension; ++i)
     {
-        trace += covMatrix[i][i];
+        trace += variance(inData[i]);
     }
 
-    eigenValues.resize(ns);
-    eigenVectors.resize(ns, ns);
+    eigenValues.resize(eigenVecNum);
+    eigenVectors.resize(dimension, eigenVecNum);
 
-    lineType tempA(ns);
+    lineType tempA(dimension);
     lineType tempB(dataLen);
 
     double sum1, sum2; //temporary help values
     double dF, F;
     int counter;
 
+
+
+
+
+
+
+    /// ICA test short
+
+    const QString pathForAuxFiles = def::dir->absolutePath()
+                                    + slash() + "Help"
+                                    + slash() + "ica";
+    QString helpString = pathForAuxFiles
+                         + slash() + def::ExpName + "_eigenMatrix.txt";
+    readSpectraFile(helpString,
+                    eigenVectors,
+                    dimension, dimension);
+
+
+    // write eigenValues
+    helpString = pathForAuxFiles
+                 + slash() + def::ExpName + "_eigenValues.txt";
+    readFileInLine(helpString, eigenValues);
+    return;
+
+
+
+
+
+
+
     QTime myTime;
     myTime.start();
     //counter j - for B, i - for A
-    for(int k = 0; k < ns; ++k)
+    for(int k = 0; k < eigenVecNum; ++k)
     {
         myTime.restart();
         dF = 0.5;
         F = 1.0;
 
         //set 1-normalized vector tempA
-        tempA = lineType(1. / sqrt(ns), ns);
-        tempB = lineType(1. / sqrt(dataLen), dataLen);
+        tempA = 1. / sqrt(dimension);
+        tempB = 1. / sqrt(dataLen);
 
         //approximate P[i] = tempA x tempB;
         counter = 0;
@@ -3081,12 +3100,9 @@ void svd(const matrix & inData,
             {
                 //countF - error
                 F = 0.;
-                for(int i = 0; i < ns; ++i)
+                for(int i = 0; i < dimension; ++i)
                 {
-                    for(int j = 0; j < dataLen; ++j)
-                    {
-                        F += 0.5 * pow(tempData[i][j] - tempB[j] * tempA[i], 2.);
-                    }
+                    F += 0.5 * pow(inData[i] - tempB * tempA[i], 2.).sum();
                 }
             }
 
@@ -3094,31 +3110,27 @@ void svd(const matrix & inData,
             sum2 = 1. / pow(tempA, 2.).sum();
             for(int j = 0; j < dataLen; ++j)
             {
-                sum1 = (tempData.getCol(j, ns) * tempA).sum();
+                sum1 = (inData.getCol(j, dimension) * tempA).sum();
                 tempB[j] = sum1 * sum2;
             }
 
             //count vector tempA
             sum2 = 1. / pow(tempB, 2.).sum();
 
-            for(int i = 0; i < ns; ++i)
+            for(int i = 0; i < dimension; ++i)
             {
-                sum1 = (tempB * tempData[i]).sum();
+                sum1 = (tempB * inData[i]).sum();
                 tempA[i] = sum1 * sum2;
             }
 
             if((counter + 1) % errorStep == 0)
             {
                 dF = 0.;
-                for(int i = 0; i < ns; ++i)
+                for(int i = 0; i < dimension; ++i)
                 {
-                    for(int j = 0; j < dataLen; ++j)
-                    {
-                        dF += 0.5 * pow((tempData[i][j] - tempB[j] * tempA[i]), 2.);
-                    }
+                    dF += 0.5 * pow((inData[i] - tempB * tempA[i]), 2.).sum();
                 }
-
-                dF = (F-dF)/F;
+                dF = (F - dF) / F;
             }
 
             if(counter == iterationsThreshold)
@@ -3129,18 +3141,16 @@ void svd(const matrix & inData,
             if(fabs(dF) < threshold) break; //crucial cap
         }
 
-        //edit covMatrix
-        for(int i = 0; i < ns; ++i)
+        //edit currMatrix
+        /// test!
+        for(int i = 0; i < dimension; ++i)
         {
-            for(int j = 0; j < dataLen; ++j)
-            {
-                tempData[i][j] -= tempB[j] * tempA[i];
-            }
+            inData[i] -= tempA[i] * tempB;
         }
 
         //count eigenVectors && eigenValues
         sum1 = pow(tempA, 2.).sum();
-        sum1 = pow(tempA, 2.).sum();
+        sum2 = pow(tempB, 2.).sum();
         eigenValues[k] = sum1 * sum2 / double(dataLen - 1.);
         tempA /= sqrt(sum1);
 
@@ -3157,7 +3167,7 @@ void svd(const matrix & inData,
         cout << "iters = " << counter << "\t";
         cout << doubleRound(myTime.elapsed()/1000., 1) << " s" << endl;
 
-        for(int i = 0; i < ns; ++i)
+        for(int i = 0; i < dimension; ++i)
         {
             eigenVectors[i][k] = tempA[i]; // 1-normalized coloumns
         }
@@ -5586,136 +5596,6 @@ void makeCfgStatic(const QString & FileName,
     outStr << "srand\t" << int(time (NULL))%12345 << '\n';
     outStr.close();
 }
-
-/*
-void svd(double ** inData, int size, int length, double *** eigenVects, double ** eigenValues) // not finished
-{
-    double dF, F;
-
-    double eigenValuesTreshold = pow(10., -9.);
-    double * tempA = new double [size];
-    double * tempB = new double [length];
-
-    double sum1, sum2;
-
-    //counter j - for B, i - for A
-    for(int k = 0; k < size; ++k)
-    {
-        dF = 1.0;
-        F = 1.0;
-
-        //set 1-normalized vector tempA
-        for(int i = 0; i < size; ++i)
-        {
-            tempA[i] = 1./sqrt(size);
-        }
-        for(int j = 0; j < length; ++j)
-        {
-            tempB[j] = 1./sqrt(length);
-        }
-
-
-
-        //approximate P[i] = tempA x tempB;
-        int counter = 0;
-//        cout<<"curr val = "<<k<<endl;
-        while(1) //when stop approximate?
-        {
-            //countF - error
-            F = 0.;
-            for(int i = 0; i < size; ++i)
-            {
-                for(int j = 0; j < length; ++j)
-                {
-                    F += 0.5*(inData[i][j]-tempB[j]*tempA[i])*(inData[i][j]-tempB[j]*tempA[i]);
-                }
-            }
-            //count vector tempB
-            for(int j = 0; j < length; ++j)
-            {
-                sum1 = 0.;
-                sum2 = 0.;
-                for(int i = 0; i < size; ++i)
-                {
-                    sum1 += inData[i][j]*tempA[i];
-                    sum2 += tempA[i]*tempA[i];
-                }
-                tempB[j] = sum1/sum2;
-            }
-
-            //count vector tempA
-            for(int i = 0; i < size; ++i)
-            {
-                sum1 = 0.;
-                sum2 = 0.;
-                for(int j = 0; j < length; ++j)
-                {
-                    sum1 += tempB[j]*inData[i][j];
-                    sum2 += tempB[j]*tempB[j];
-                }
-                tempA[i] = sum1/sum2;
-            }
-
-            dF = 0.;
-            for(int i = 0; i < size; ++i)
-            {
-                for(int j = 0; j < length; ++j)
-                {
-                    dF += 0.5*(inData[i][j]-tempB[j]*tempA[i])*(inData[i][j]-tempB[j]*tempA[i]);
-
-                }
-//                cout << dF << " ";
-            }
-            dF = (F-dF)/F;
-            ++counter;
-            if(counter==150)
-            {
-//                cout<<"dF = "<<abs(dF)<<endl;
-                break;
-            }
-            if(fabs(dF) < eigenValuesTreshold) break; //crucial cap
-        }
-
-        //edit covMatrix
-        for(int i = 0; i < size; ++i)
-        {
-            for(int j = 0; j < length; ++j)
-            {
-                inData[i][j] -= tempB[j]*tempA[i];
-            }
-        }
-
-        //count eigenVectors && eigenValues
-        sum1 = 0.;
-        sum2 = 0.;
-        for(int i = 0; i < size; ++i)
-        {
-            sum1 += tempA[i] * tempA[i];
-        }
-        for(int j = 0; j < length; ++j)
-        {
-            sum2 += tempB[j] * tempB[j];
-        }
-        for(int i = 0; i < size; ++i)
-        {
-            tempA[i] /= sqrt(sum1);
-        }
-        for(int j = 0; j < length; ++j)
-        {
-            tempB[j] /= sqrt(sum2);
-        }
-
-        (*eigenValues)[k] = sum1 * sum2 / double(length - 1.);
-        cout << "numOfPC = " << k << "\tvalue = " << (*eigenValues)[k] << "\t iterations = " << counter << endl;
-        for(int i = 0; i < size; ++i)
-        {
-            (*eigenVects)[i][k] = tempA[i]; //1-normalized
-        }
-    }
-
-}
-
-                       */
 
 QString matiCountByteStr(const double & marker)
 {

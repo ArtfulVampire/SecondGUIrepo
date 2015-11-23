@@ -5,19 +5,6 @@ matrix::matrix()
 
 }
 
-matrix::matrix(double **inData, int rows, int cols)
-{
-    this->resize(rows, cols);
-    for(int i = 0; i < rows; ++i)
-    {
-        for(int j = 0; j < cols; ++j)
-        {
-            this->data[i][j] = inData[i][j];
-        }
-    }
-}
-
-
 matrix::~matrix()
 {
 }
@@ -44,7 +31,7 @@ matrix::matrix(const dataType & other)
 {
     this->data = other;
 }
-matrix::matrix(lineType vect, bool orientH)
+matrix::matrix(const lineType & vect, bool orientH)
 {
     if(orientH)
     {
@@ -60,7 +47,7 @@ matrix::matrix(lineType vect, bool orientH)
         }
     }
 }
-matrix::matrix(lineType vect, char orient)
+matrix::matrix(const lineType & vect, char orient)
 {
     if(orient == 'h' || orient == 'H')
     {
@@ -81,7 +68,7 @@ matrix::matrix(lineType vect, char orient)
     }
 }
 
-matrix::matrix(lineType vect, int inRows)
+matrix::matrix(const lineType & vect, int inRows)
 {
     if(vect.size() % inRows != 0)
     {
@@ -96,6 +83,15 @@ matrix::matrix(lineType vect, int inRows)
         std::copy(std::begin(vect) + i * newCols,
                   std::begin(vect) + (i + 1) * newCols,
                   std::begin(this->data[i]));
+    }
+}
+
+matrix::matrix(const lineType & vect1, const lineType & vect2)
+{
+    this->data.clear();
+    for(int i = 0; i < vect1.size(); ++i)
+    {
+        this->data.push_back(vect1[i] * vect2);
     }
 }
 
@@ -122,77 +118,9 @@ matrix::matrix(std::initializer_list<double> lst) // diagonal
     }
 }
 
-matrix matrix::operator - (const matrix & other)
-{
-    if(this->rows() != other.rows()
-       || this->cols() != other.cols())
-    {
-        cout << "matrix sum failed" << endl;
-        return *this;
-    }
-    matrix result(this->rows(), this->cols());
-    for(int i = 0; i < this->rows(); ++i)
-    {
-        for(int j = 0; j < this->cols(); ++j)
-        {
-            result[i][j] = (*this)[i][j] - other[i][j];
-        }
-    }
-    return result;
-}
-matrix matrix::operator -= (const matrix & other)
-{
-    if(this->rows() != other.rows()
-       || this->cols() != other.cols())
-    {
-        cout << "matrix sum failed" << endl;
-        return *this;
-    }
-    for(int i = 0; i < this->rows(); ++i)
-    {
-        for(int j = 0; j < this->cols(); ++j)
-        {
-            (*this)[i][j] -= other[i][j];
-        }
-    }
-    return *this;
-}
 
-matrix matrix::operator + (const matrix & other)
-{
-    if(this->rows() != other.rows()
-       || this->cols() != other.cols())
-    {
-        cout << "matrix sum failed" << endl;
-        return *this;
-    }
-    matrix result(this->rows(), this->cols());
-    for(int i = 0; i < this->rows(); ++i)
-    {
-        for(int j = 0; j < this->cols(); ++j)
-        {
-            result[i][j] = (*this)[i][j] + other[i][j];
-        }
-    }
-    return result;
-}
-matrix matrix::operator += (const matrix & other)
-{
-    if(this->rows() != other.rows()
-       || this->cols() != other.cols())
-    {
-        cout << "matrix sum failed" << endl;
-        return *this;
-    }
-    for(int i = 0; i < this->rows(); ++i)
-    {
-        for(int j = 0; j < this->cols(); ++j)
-        {
-            (*this)[i][j] += other[i][j];
-        }
-    }
-    return *this;
-}
+
+
 
 matrix matrix::operator = (const matrix & other)
 {
@@ -206,131 +134,195 @@ matrix matrix::operator = (const dataType & other)
 
     return *this;
 }
-matrix matrix::operator /= (const double & other)
+
+
+
+
+matrix operator + (const matrix & lhs, const matrix & rhs)
 {
+    if(lhs.rows() != rhs.rows()
+       || lhs.cols() != rhs.cols())
+    {
+        cout << "matrix sum failed, dimensions" << endl;
+        return lhs;
+    }
+    matrix result(lhs.rows(), lhs.cols());
+    for(int i = 0; i < lhs.rows(); ++i)
+    {
+        result[i] = lhs[i] + rhs[i];
+    }
+    return result;
+}
+
+matrix operator + (const matrix & lhs, const double & val)
+{
+    matrix result;
+    for(int i = 0; i < lhs.rows(); ++i)
+    {
+        result.push_back(lhs[i] + val);
+    }
+    return result;
+}
+
+matrix matrix::operator += (const matrix & other)
+{
+    if(this->rows() != other.rows()
+       || this->cols() != other.cols())
+    {
+        cout << "matrix sum failed" << endl;
+        return *this;
+    }
     for(int i = 0; i < this->rows(); ++i)
     {
-        for(int j = 0; j < this->cols(); ++j)
-        {
-            this->data[i][j] /= other;
-        }
+        (*this)[i] += other[i];
     }
     return *this;
 }
+
+matrix matrix::operator += (const double & val)
+{
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        (*this)[i] += val;
+    }
+    return *this;
+}
+
+
+
+matrix operator - (const matrix & lhs, const matrix & rhs)
+{
+    if(lhs.rows() != rhs.rows()
+       || lhs.cols() != rhs.cols())
+    {
+        cout << "matrix sum failed, dimensions" << endl;
+        return lhs;
+    }
+    matrix result(lhs.rows(), lhs.cols());
+    for(int i = 0; i < lhs.rows(); ++i)
+    {
+        result[i] = lhs[i] - rhs[i];
+    }
+    return result;
+}
+
+matrix operator - (const matrix & lhs, const double & val)
+{
+    matrix result;
+    for(int i = 0; i < lhs.rows(); ++i)
+    {
+        result.push_back(lhs[i] - val);
+    }
+    return result;
+}
+
+matrix matrix::operator -= (const matrix & other)
+{
+    if(this->rows() != other.rows()
+       || this->cols() != other.cols())
+    {
+        cout << "matrix sum failed" << endl;
+        return *this;
+    }
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        (*this)[i] -= other[i];
+    }
+    return *this;
+}
+
+matrix matrix::operator -= (const double & val)
+{
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        (*this)[i] -= val;
+    }
+    return *this;
+}
+
+
+
+matrix operator * (const matrix & lhs, const matrix & rhs)
+{
+    if(lhs.cols() != rhs.rows())
+    {
+        cout << "matrixProduct (operator *): input matrices are not productable" << endl;
+        return lhs;
+    }
+
+    const int dim1 = lhs.rows();
+    const int dim2 = rhs.cols();
+
+
+    matrix result(dim1, dim2);
+#if 0
+    for(int i = 0; i < dim1; ++i)
+    {
+        result[i] = lhs[i] * rhs.getCol(j);
+    }
+#else
+    const matrix temp = matrix::transpose(rhs);
+    for(int i = 0; i < dim1; ++i)
+    {
+        result[i] = lhs[i] * temp[i];
+    }
+#endif
+    return result;
+}
+
+matrix operator * (const matrix & lhs, const double & val)
+{
+    matrix result;
+    for(int i = 0; i < lhs.rows(); ++i)
+    {
+        result.push_back(lhs[i] * val);
+    }
+    return result;
+}
+
 matrix matrix::operator *= (const double & other)
 {
     for(int i = 0; i < this->rows(); ++i)
     {
-        for(int j = 0; j < this->cols(); ++j)
-        {
-            this->data[i][j] *= other;
-        }
+        this->data[i] *= other;
     }
     return *this;
-}
-matrix matrix::operator * (const matrix & other)
-{
-    if(this->cols() != other.rows())
-    {
-        cout << "matrixProduct (operator *): input matrices are not productable" << endl;
-        return (*this);
-    }
-
-    const int size = this->cols();
-    const int dim1 = this->rows();
-    const int dim2 = other.cols();
-
-
-    matrix result(dim1, dim2, 0.);
-
-    double helpDouble = 0.;
-    for(int i = 0; i < dim1; ++i)
-    {
-        for(int j = 0; j < dim2; ++j)
-        {
-            helpDouble = 0.;
-            for(int k = 0; k < size; ++k)
-            {
-                helpDouble += (*this)[i][k] * other[k][j];
-            }
-            result[i][j] = helpDouble;
-        }
-    }
-    return result;
-}
-
-
-matrix matrix::operator * (const dataType & other)
-{
-    if(this->cols() != other.size())
-    {
-        cout << "matrixProduct (operator *): input matrices are not productable" << endl;
-        return (*this);
-    }
-
-    const int size = this->cols();
-    const int dim1 = this->rows();
-    const int dim2 = other[0].size();
-
-
-    matrix result(dim1, dim2, 0.);
-
-    double helpDouble = 0.;
-    for(int i = 0; i < dim1; ++i)
-    {
-        for(int j = 0; j < dim2; ++j)
-        {
-            helpDouble = 0.;
-            for(int k = 0; k < size; ++k)
-            {
-                helpDouble += (*this)[i][k] * other[k][j];
-            }
-            result[i][j] = helpDouble;
-        }
-    }
-    return result;
 }
 
 matrix matrix::operator *= (const matrix & other)
 {
-    if(this->cols() != other.rows())
+    /// OMG
+    (*this) = (*this) * other;
+    return (*this);
+}
+
+
+
+matrix operator / (const matrix & lhs, const double & val)
+{
+    matrix result(lhs.rows(), lhs.cols());
+    for(int i = 0; i < lhs.rows(); ++i)
     {
-        cout << "matrixProduct (operator *): input matrices are not productable" << endl;
-        return (*this);
-    }
-
-    const int size = this->cols();
-    const int dim1 = this->rows();
-    const int dim2 = other.cols();
-
-
-    matrix result(dim1, dim2, 0.);
-
-    double helpDouble = 0.;
-    for(int i = 0; i < dim1; ++i)
-    {
-        for(int j = 0; j < dim2; ++j)
-        {
-            helpDouble = 0.;
-            for(int k = 0; k < size; ++k)
-            {
-                helpDouble += (*this)[i][k] * other[k][j];
-            }
-            result[i][j] = helpDouble;
-        }
+        result[i] = lhs[i] / val;
     }
     return result;
 }
 
-//dataType * matrix::operator &()
-//{
-//    return &data;
-//}
 
-//matrix * matrix::operator &()
-//{
-//    return this;
-//}
+matrix matrix::operator /= (const double & other)
+{
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        this->data[i] /= other;
+
+    }
+    return *this;
+}
+
+
+
+
+
 
 
 matrix::matrix(int rows, int cols, double value)
@@ -359,7 +351,11 @@ void matrix::resize(int rows, int cols)
                   data.end(),
                   [cols](lineType & in)
     {
+        lineType temp = in;
         in.resize(cols);
+        std::copy(std::begin(temp),
+                  std::begin(temp) + min(cols, int(temp.size())),
+                  std::begin(in));
     });
 
 }
@@ -384,6 +380,7 @@ void matrix::resizeCols(int newCols)
                   data.end(),
                   [newCols](lineType & in)
     {
+        /// not resizeValar from library
         lineType temp = in;
         in.resize(newCols);
         std::copy(std::begin(temp),
@@ -541,6 +538,7 @@ int matrix::cols() const
 
 matrix matrix::transpose(const matrix &input)
 {
+#if 0
     matrix res;
     res.resize(input.cols(), input.rows());
     for(int i = 0; i < input.rows(); ++i)
@@ -551,14 +549,21 @@ matrix matrix::transpose(const matrix &input)
         }
     }
     return res;
+#else
+    matrix res;
+    for(int i = 0; i < input.cols(); ++i)
+    {
+        res.push_back(input.getCol(i));
+    }
+    return res;
+#endif
 }
 void matrix::transpose()
 {
     int oldCols = this->cols();
     int oldRows = this->rows();
     this->resize(max(oldRows, oldCols),
-                 max(oldRows, oldCols)
-                 );
+                 max(oldRows, oldCols)); // make square
 
     for(int i = 0; i < this->rows(); ++i)
     {

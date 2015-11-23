@@ -47,7 +47,7 @@ private:
     vector<double> classCount; // really int but...
 
     twovector<lineType> weight;
-    vector<int> dimensionality; //for backprop
+    vector<uint> dimensionality; // for backprop
 
 //    matrix tempRandomMatrix; //test linear transform
 
