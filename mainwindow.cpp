@@ -1609,6 +1609,7 @@ void MainWindow::drawMapsSlot()
 
 void MainWindow::avTime()
 {
+#if 0
     int maxLen = 10000;
     int numNotSolved = 0;
     int shortReals = 0;
@@ -1655,6 +1656,7 @@ void MainWindow::avTime()
         fclose(res);
     }
 
+#endif
 }
 
 void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unused
@@ -1737,6 +1739,9 @@ void MainWindow::customFunc()
 
     ui->matiCheckBox->setChecked(false);
     setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
+    ICA();
+    exit(0);
+
 //    return;
 //    cout << areEqualFiles("/media/Files/Data/AAX/AAX_datic.edf",
 //                  "/media/Files/Data/AAX/AAX_datic_0.edf") << endl;
@@ -1744,8 +1749,7 @@ void MainWindow::customFunc()
 
 //    ui->matiCheckBox->setChecked(true);
 //    setEdfFile("/media/Files/Data/Mati/GoodData/PYV_cl.edf");
-    ICA();
-    exit(1);
+
 
 
 //    Net * ann = new Net();

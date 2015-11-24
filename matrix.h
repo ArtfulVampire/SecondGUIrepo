@@ -122,7 +122,7 @@ public:
 //    void systemGaussSolve();
 
 public:
-    dataType data;
+    dataType data = dataType();
 
 };
 
@@ -134,27 +134,27 @@ matrix operator * (const matrix & lhs, const double & val);
 matrix operator - (const matrix & lhs, const matrix & rhs);
 matrix operator - (const matrix & lhs, const double & val);
 
-template <typename matType1, typename matType2>
-void matrixProduct(const matType1 & in1,
-                   const matType2 & in2,
+//template <typename matType1, typename matType2>
+void matrixProduct(const matrix & in1,
+                   const matrix & in2,
                    matrix & result,
                    int dim = -1,
                    int rows1 = -1,
                    int cols2 = -1);
 
-void matrixProduct(const lineType &in1,
-                   const matrix &in2,
-                   matrix & result,
-                   int dim = -1,
-                   int rows1 = -1,
-                   int cols2 = -1);
+//void matrixProduct(const lineType &in1,
+//                   const matrix &in2,
+//                   matrix & result,
+//                   int dim = -1,
+//                   int rows1 = -1,
+//                   int cols2 = -1);
 
-void matrixProduct(const matrix &in1,
-                   const lineType &in2,
-                   matrix & result,
-                   int dim = -1,
-                   int rows1 = -1,
-                   int cols2 = -1);
+//void matrixProduct(const matrix &in1,
+//                   const lineType &in2,
+//                   matrix & result,
+//                   int dim = -1,
+//                   int rows1 = -1,
+//                   int cols2 = -1);
 
 #if 0
     matrix invert(const matrix & input);

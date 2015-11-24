@@ -1282,8 +1282,7 @@ void Net::LearNetIndices(vector<int> mixNum)
             {
                 for(int j = 0; j < dimensionality[i]; ++j)
                 {
-                    output[i][j] = (weight[i - 1][j] * output[i-1]).sum(); // bias included
-
+                    output[i][j] = prod(weight[i - 1][j], output[i-1]); // bias included
                     output[i][j] = logistic(output[i][j], temperature);
                 }
                 output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
@@ -1397,9 +1396,7 @@ bool Net::ClassificateVector(const int & vecNum)
         output[i].resize(dimensionality[i] + 1);
         for(int j = 0; j < dimensionality[i]; ++j) //higher level, w/o bias
         {
-            output[i][j] = (weight[i-1][j] * output[i-1]).sum();
-            output[i][j] += weight[i-1][dimensionality[i - 1]][j]; // bias
-
+            output[i][j] = prod(weight[i-1][j], output[i-1]); // bias included
             output[i][j] = logistic(output[i][j], temp);
         }
         output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer

@@ -1161,10 +1161,6 @@ double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool 
     }
     return res;
 }
-template double covariance(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
-template double covariance(const int * const &arr1, const int * const &arr2, int length, int shift, bool fromZero);
-template double covariance(const vector<int> &arr1, const vector<int> &arr2, int length, int shift, bool fromZero);
-template double covariance(const vector<double> &arr1, const vector<double> &arr2, int length, int shift, bool fromZero);
 
 template <typename Typ>
 double correlation(const Typ &arr1, const Typ &arr2, int length, int shift, bool fromZero)
@@ -1947,7 +1943,7 @@ double distance(const lineType & in1,
         cout << "distance: lineTypes of different size" << endl;
         return 0.; /// exception
     }
-    return sqrt(pow((in1 - in2), 2.).sum());
+    return norma(in1 - in2);
 
 }
 
@@ -1964,7 +1960,7 @@ double distance(double * vec1, double * vec2, const int &dim)
 
 double distance(double const x1, double const y1, double const x2, double const y2)
 {
-    return pow(pow(x1 - x2, 2.) + pow(y1 - y2, 2.), 0.5);
+    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
 void matrixMahCount(double ** &matrix, int number, int dimension, double ** &outMat, double *& meanVect) //matrix(number * dimension)
@@ -2995,13 +2991,14 @@ void kernelEst(QString filePath, QString picPath)
     kernelEst(arr, picPath);
 }
 
-void svd(matrix & inData,
+void svd(const matrix & initialData,
          matrix & eigenVectors,
          lineType & eigenValues,
          const int dimension,
          const double & threshold,
          int eigenVecNum)
 {
+    matrix inData = initialData;
     if(eigenVecNum <= 0)
     {
         eigenVecNum = dimension;
@@ -3009,7 +3006,7 @@ void svd(matrix & inData,
     const int dataLen = inData.cols();
 
     const int iterationsThreshold = 100;
-    const int errorStep = 10;
+    const int errorStep = 5;
 
     int eyes = 0;
     for(int i = 0; i < dataLen; ++i)
@@ -3020,18 +3017,30 @@ void svd(matrix & inData,
             ++eyes;
         }
     }
-    const double realSignalFrac = dataLen / double(dataLen - eyes); /// deprecate?!! splitZeros
+    const double realSignalFrac =  double(dataLen - eyes) / dataLen; /// deprecate?!! splitZeros
 
 
-    //subtract averages
+    // subtract averages
     for(int i = 0; i < dimension; ++i)
     {
-        const double temp = -mean(inData[i]) / realSignalFrac;
+        const double temp = - mean(inData[i]) * realSignalFrac;
         inData[i] += temp;
+
         std::replace(begin(inData[i]),
                      end(inData[i]),
                      temp,
                      0.); // retain zeros
+
+
+//        std::for_each(begin(inData[i]),
+//                      end(inData[i]),
+//                      [temp](double & in)
+//        {
+//            if(in != 0.)
+//            {
+//                in += temp;
+//            }
+//        }); // retain zeros
     }
 
 
@@ -3052,46 +3061,41 @@ void svd(matrix & inData,
     double dF, F;
     int counter;
 
-
-
-
-
-
-
+#if 0
     /// ICA test short
 
-//    const QString pathForAuxFiles = def::dir->absolutePath()
-//                                    + slash() + "Help"
-//                                    + slash() + "ica";
-//    QString helpString = pathForAuxFiles
-//                         + slash() + def::ExpName + "_eigenMatrix.txt";
-//    readSpectraFile(helpString,
-//                    eigenVectors,
-//                    dimension, dimension);
+    const QString pathForAuxFiles = def::dir->absolutePath()
+                                    + slash() + "Help"
+                                    + slash() + "ica";
+    QString helpString = pathForAuxFiles
+                         + slash() + def::ExpName + "_eigenMatrix.txt";
+    readSpectraFile(helpString,
+                    eigenVectors,
+                    dimension, dimension);
 
 
-//    // write eigenValues
-//    helpString = pathForAuxFiles
-//                 + slash() + def::ExpName + "_eigenValues.txt";
-//    readFileInLine(helpString, eigenValues);
-//    return;
+    // write eigenValues
+    helpString = pathForAuxFiles
+                 + slash() + def::ExpName + "_eigenValues.txt";
+    readFileInLine(helpString, eigenValues);
+    return;
+#endif
 
+    // maybe lines longer than dimension but OK
 
+    // lineType tempLine(dataLen); // for debug acceleration
 
-
-
-
-
+    const matrix inDataTrans = matrix::transpose(inData);
     QTime myTime;
     myTime.start();
     //counter j - for B, i - for A
     for(int k = 0; k < eigenVecNum; ++k)
     {
         myTime.restart();
+
         dF = 0.5;
         F = 1.0;
 
-        //set 1-normalized vector tempA
         tempA = 1. / sqrt(dimension);
         tempB = 1. / sqrt(dataLen);
 
@@ -3099,49 +3103,95 @@ void svd(matrix & inData,
         counter = 0;
         while(1) //when stop approximate?
         {
-            if((counter + 1) % errorStep == 0)
+            if((counter) % errorStep == 0)
             {
                 //countF - error
                 F = 0.;
                 for(int i = 0; i < dimension; ++i)
                 {
-//                    F += 0.5 * pow(inData[i] - tempB * tempA[i], 2.).sum();
+#if 0
+                    F += 0.5 * pow(inData[i] - tempB * tempA[i], 2.).sum();
+#elif 1
+                    F += 0.5 * normaSq(inData[i] - tempB * tempA[i]);
+#elif 1
+                    // debug/release difference
+                    const double coef = tempA[i];
+                    std::transform(begin(inData[i]),
+                                   end(inData[i]),
+                                   begin(tempB),
+                                   begin(tempLine),
+                                   [coef](const double & in1, const double & in2)
+                    {
+                        return in1 - in2 * coef;
+                    });
+                    F += 0.5 * normaSq(tempLine);
+#else
                     for(int j = 0; j < dataLen; ++j)
                     {
                         F += 0.5 * pow(inData[i][j] - tempB[j] * tempA[i], 2.);
                     }
+
+
+#endif
                 }
             }
 
             //count vector tempB
-            sum2 = 1. / pow(tempA, 2.).sum();
+            sum2 = 1. / normaSq(tempA);
             for(int j = 0; j < dataLen; ++j)
             {
-                sum1 = (inData.getCol(j, dimension) * tempA).sum();
-                tempB[j] = sum1 * sum2;
+//                tempB[j] = sum2 * (inDataTrans[j] * tempA).sum();
+                // slightly faster
+//                tempB[j] = sum2 * std::inner_product(begin(tempA),
+//                                                     end(tempA), // begin + dimension
+//                                                     begin(inDataTrans[j]),
+//                                                     0.);
+                tempB[j] = sum2 * prod(tempA, inDataTrans[j]);
             }
 
             //count vector tempA
-            sum2 = 1. / pow(tempB, 2.).sum();
-
+            sum2 = 1. / normaSq(tempB);
             for(int i = 0; i < dimension; ++i)
             {
-                sum1 = (tempB * inData[i]).sum();
-                tempA[i] = sum1 * sum2;
+//                tempA[i] = sum2 * (tempB * inData[i]).sum();
+                // slightly faster
+//                tempA[i] = sum2 * std::inner_product(begin(tempB),
+//                                                     end(tempB),
+//                                                     begin(inData[i]),
+//                                                     0.);
+                tempA[i] = sum2 * prod(tempB, inData[i]);
             }
 
-            if((counter + 1) % errorStep == 0)
+            if((counter) % errorStep == 0)
             {
                 dF = 0.;
                 for(int i = 0; i < dimension; ++i)
                 {
-//                    dF += 0.5 * pow((inData[i] - tempB * tempA[i]), 2.).sum();
+#if 0
+                    dF += 0.5 * pow((inData[i] - tempB * tempA[i]), 2.).sum();
+#elif 1
+                    dF += 0.5 * normaSq(inData[i] - tempB * tempA[i]);
+#elif 1
+                    // better in debug
+                    const double coef = tempA[i];
+                    std::transform(begin(inData[i]),
+                                   end(inData[i]),
+                                   begin(tempB),
+                                   begin(tempLine),
+                                   [coef](const double & in1, const double & in2)
+                    {
+                        return in1 - in2 * coef;
+                    });
+                    dF += 0.5 * normaSq(tempLine);
+#else
                     for(int j = 0; j < dataLen; ++j)
                     {
                         dF += 0.5 * pow(inData[i][j] - tempB[j] * tempA[i], 2.);
                     }
+#endif
                 }
-                dF = (F - dF) / F;
+                dF = 1. - dF / F;
+
             }
 
             if(counter == iterationsThreshold)
@@ -3156,20 +3206,33 @@ void svd(matrix & inData,
         /// test!
         for(int i = 0; i < dimension; ++i)
         {
+#if 1
+            // better in release
             inData[i] -= tempA[i] * tempB;
+#else
+            // better in debug
+            const double coef = tempA[i];
+            std::transform(begin(inData[i]),
+                           end(inData[i]),
+                           begin(tempB),
+                           begin(tempLine),
+                           [coef](const double & in1, const double & in2)
+            {
+                return in1 - in2 * coef;
+            });
+#endif
         }
 
+
         //count eigenVectors && eigenValues
-        sum1 = pow(tempA, 2.).sum();
-        sum2 = pow(tempB, 2.).sum();
+        sum1 = normaSq(tempA);
+        sum2 = normaSq(tempB);
         eigenValues[k] = sum1 * sum2 / double(dataLen - 1.);
         tempA /= sqrt(sum1);
 
-        sum1 = 0.;
-        for(int i = 0; i <= k; ++i)
-        {
-            sum1 += eigenValues[i];
-        }
+        sum1 = std::accumulate(begin(eigenValues),
+                               begin(eigenValues) + k + 1,
+                               0.);
 
         cout << k << "\t";
         cout << "val = " << doubleRound(eigenValues[k], 3) << "\t";
@@ -6583,6 +6646,12 @@ template lineType smoothSpectre(const lineType & inSpectre, const int numOfSmoot
 template matrix countWavelet(const lineType & inSignal);
 template matrix countWavelet(const vectType & inSignal);
 
+
+template double covariance(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
+template double covariance(const int * const &arr1, const int * const &arr2, int length, int shift, bool fromZero);
+template double covariance(const vector<int> &arr1, const vector<int> &arr2, int length, int shift, bool fromZero);
+template double covariance(const vector<double> &arr1, const vector<double> &arr2, int length, int shift, bool fromZero);
+template double covariance(const lineType &arr1, const lineType &arr2, int length, int shift, bool fromZero);
 
 template double correlation(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
 template double correlation(const int * const  &arr1, const int * const &arr2, int length, int shift, bool fromZero);

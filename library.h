@@ -43,6 +43,7 @@
 #endif
 
 using namespace std;
+using namespace std::chrono;
 
 // consts
 const double pi = 3.141592653589;
@@ -478,6 +479,23 @@ bool gaussApproval(QString filePath); // not finished?
 bool gaussApproval2(double * arr, int length); // not finished?
 
 
+
+inline double prod(const lineType & in1, const lineType & in2)
+{
+    return std::inner_product(begin(in1),
+                              end(in1),
+                              begin(in2),
+                              0.);
+}
+
+inline double normaSq(const lineType & in)
+{
+    return std::inner_product(begin(in),
+                              end(in),
+                              begin(in),
+                              0.);
+}
+
 template <typename Typ>
 double mean(const Typ &arr, int length, int shift = 0);
 inline double mean(const lineType & arr)
@@ -489,7 +507,7 @@ template <typename Typ>
 double variance(const Typ &arr, int length, int shift = 0, bool fromZero = false);
 inline double variance(const lineType & arr)
 {
-    return pow(arr - mean(arr), 2).sum() / arr.size();
+    return normaSq(arr - mean(arr)) / arr.size();
 }
 
 template <typename Typ>
@@ -499,28 +517,30 @@ inline double sigma(const lineType & arr)
     return sqrt(variance(arr));
 }
 
+/// remake with
 template <typename Typ>
 double covariance (const Typ &arr1, const Typ &arr2, int length, int shift = 0, bool fromZero = false);
 inline double covariance(const lineType & arr1, const lineType & arr2)
 {
-    return (arr1 * arr2).sum();
+    return prod(arr1, arr2);
 }
 
 template <typename Typ>
 double correlation(const Typ &arr1, const Typ &arr2, int length, int shift = 0, bool fromZero = false);
 inline double correlation(const lineType & arr1, const lineType & arr2)
 {
-    return (arr1 * arr2).sum() / (sigma(arr1) * sigma(arr2));
+    return covariance(arr1, arr2) / (sigma(arr1) * sigma(arr2));
 }
-
 inline double norma(const lineType & in)
 {
-    return sqrt(pow(in, 2.).sum());
+    return sqrt(normaSq(in));
 }
+
 inline void normalize(lineType & in)
 {
     in /= norma(in);
 }
+
 
 double independence(double * const signal1, double * const signal2, int length);
 double countAngle(double initX, double initY);
@@ -545,7 +565,7 @@ void splitZerosEdges(matrix & dataIn, const int & ns, const int & length, int * 
 void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit);
 
 
-void svd(matrix & inData,
+void svd(const matrix & initialData,
          matrix & eigenVectors,
          lineType & eigenValues,
          const int dimension,

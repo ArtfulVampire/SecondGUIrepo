@@ -262,7 +262,10 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
         lineType currCol = rhs.getCol(j);
         for(int i = 0; i < dim1; ++i)
         {
-            result[i][j] = (lhs[i] * currCol).sum();
+            result[i][j] = std::inner_product(begin(lhs[i]),
+                                              end(lhs[i]),
+                                              begin(currCol),
+                                              0.);
         }
     }
 #else
@@ -272,7 +275,7 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
     {
         for(int j = 0; j < dim2; ++j)
         {
-            result[i][j] = (lhs[i] * temp[j]).sum();
+            result[i][j] = prod(lhs[i], temp[j]);
         }
     }
 #endif
@@ -327,11 +330,6 @@ matrix matrix::operator /= (const double & other)
     }
     return *this;
 }
-
-
-
-
-
 
 
 matrix::matrix(int rows, int cols, double value)
@@ -599,15 +597,9 @@ void matrix::invert()
 
     int size = this->rows();
     matrix initMat(size, size);
-    for(int i = 0; i < size; ++i)
-    {
-        for(int j = 0; j < size; ++j)
-        {
-            initMat = (*this);
-        }
-    }
+    initMat = (*this);
 
-    matrix tempMat(size, size);
+    matrix tempMat(size, size, 0.);
     for(int i = 0; i < size; ++i)
     {
         for(int j = 0; j < size; ++j)
@@ -617,29 +609,16 @@ void matrix::invert()
     }
     double coeff;
 
-
     //1) make higher-triangular
     for(int i = 0; i < size - 1; ++i) //which line to substract
     {
-        for(int j = i+1; j < size; ++j) //FROM which line to substract
+        for(int j = i + 1; j < size; ++j) //FROM which line to substract
         {
             coeff = initMat[j][i] / initMat[i][i]; // coefficient
 
             //row[j] -= coeff * row[i] for both (temp & init) matrices
             initMat[j] -= initMat[i] * coeff;
-//            std::transform(initMat[j].begin() + i,
-//                           initMat[j].end(),
-//                           initMat[i].begin() + i,
-//                           initMat[j].begin() + i,
-//                           [&](double A, double B){return A - B * coeff;}
-//            );
             tempMat[j] -= tempMat[i] * coeff;
-//            std::transform(tempMat[j].begin(),
-//                           tempMat[j].end(),
-//                           tempMat[i].begin(),
-//                           tempMat[j].begin(),
-//                           [&](double A, double B){return A - B * coeff;}
-//            );
         }
     }
 
@@ -650,47 +629,19 @@ void matrix::invert()
         {
             coeff = initMat[j][i] / initMat[i][i];
 
-
             //row[j] -= coeff * row[i] for both matrices
             initMat[j] -= initMat[i] * coeff;
-//            std::transform(initMat[j].begin() + i,
-//                           initMat[j].end(),
-//                           initMat[i].begin() + i,
-//                           initMat[j].begin() + i,
-//                           [&](double A, double B){return A - B * coeff;}
-//            );
-
             tempMat[j] -= tempMat[i] * coeff;
-//            std::transform(tempMat[j].begin(),
-//                           tempMat[j].end(),
-//                           tempMat[i].begin(),
-//                           tempMat[j].begin(),
-//                           [&](double A, double B){return A - B * coeff;}
-//            );
         }
     }
 
     //3) divide on diagonal elements
-    for(int i = 0; i < size; ++i) //which line to substract
+    for(int i = 0; i < size; ++i) //which line to divide
     {
         tempMat[i] /= initMat[i][i];
-
-//        std::transform(tempMat[i].begin(),
-//                       tempMat[i].end(),
-//                       tempMat[i].begin(),
-//                       [&](double A){return A / initMat[i][i];}
-//        );
     }
 
     (*this) = tempMat;
-
-//    //4) outmat = tempMat
-//    for(int i = 0; i < size; ++i) //which line to substract
-//    {
-//        for(int k = 0; k < size; ++k) //k = 0 because default
-//        {
-//        }
-//    }
 }
 
 void matrix::swapCols(int i, int j)
@@ -711,9 +662,9 @@ void matrix::eraseRow(int i)
     this->data.erase(data.begin() + i);
 }
 
-template <typename matType1, typename matType2>
-void matrixProduct(const matType1 & in1,
-                   const matType2 & in2,
+//template <typename matType1, typename matType2>
+void matrixProduct(const matrix & in1,
+                   const matrix & in2,
                    matrix & result,
                    int dim,
                    int rows1,
@@ -729,7 +680,7 @@ void matrixProduct(const matType1 & in1,
     }
     else
     {
-        dim1 = in1.size();
+        dim1 = in1.rows();
     }
 
     if(cols2 != -1)
@@ -738,14 +689,14 @@ void matrixProduct(const matType1 & in1,
     }
     else
     {
-        dim2 = in2[0].size();
+        dim2 = in2.cols();
     }
 
     if(dim != -1)
     {
         Size = dim;
     }
-    else if(in1[0].size() != in2.size())
+    else if(in1.cols() != in2.rows())
     {
         cout << "matrixProduct: input matrices are not productable" << endl;
         result = matrix();
@@ -753,84 +704,85 @@ void matrixProduct(const matType1 & in1,
     }
     else
     {
-        Size = in1[0].size();
+        Size = in1.cols();
     }
 
-    result.resize(max(dim1, result.rows()),
-                  max(dim2, result.cols()));
+//    result.resize(max(dim1, result.rows()),
+//                  max(dim2, result.cols()));
+    result.resize(dim1, dim2);
 
-    double helpDouble = 0.;
-    for(int i = 0; i < dim1; ++i)
+
+    lineType temp{};
+    for(int j = 0; j < dim2; ++j)
     {
-        for(int j = 0; j < dim2; ++j)
+        temp = in2.getCol(j, Size); // size for prod()
+        for(int i = 0; i < dim1; ++i)
         {
-            helpDouble = 0.;
-            for(int k = 0; k < Size; ++k)
-            {
-                helpDouble += in1[i][k] * in2[k][j];
-            }
-            result[i][j] = helpDouble;
+            result[i][j] = std::inner_product(begin(temp),
+                                              end(temp),
+                                              begin(in1[i]),
+                                              0.);
         }
     }
 }
-template
-void matrixProduct(const matrix & in1,
-                   const matrix & in2,
-                   matrix & result,
-                   int dim,
-                   int rows1,
-                   int cols2);
-template
-void matrixProduct(const matrix & in1,
-                   const dataType & in2,
-                   matrix & result,
-                   int dim,
-                   int rows1,
-                   int cols2);
-template
-void matrixProduct(const dataType & in1,
-                   const matrix & in2,
-                   matrix & result,
-                   int dim,
-                   int rows1,
-                   int cols2);
-template
-void matrixProduct(const dataType & in1,
-                   const dataType & in2,
-                   matrix & result,
-                   int dim,
-                   int rows1,
-                   int cols2);
+//template
+//void matrixProduct(const matrix & in1,
+//                   const matrix & in2,
+//                   matrix & result,
+//                   int dim,
+//                   int rows1,
+//                   int cols2);
+//template
+//void matrixProduct(const matrix & in1,
+//                   const dataType & in2,
+//                   matrix & result,
+//                   int dim,
+//                   int rows1,
+//                   int cols2);
+//template
+//void matrixProduct(const dataType & in1,
+//                   const matrix & in2,
+//                   matrix & result,
+//                   int dim,
+//                   int rows1,
+//                   int cols2);
+//template
+//void matrixProduct(const dataType & in1,
+//                   const dataType & in2,
+//                   matrix & result,
+//                   int dim,
+//                   int rows1,
+//                   int cols2);
 
-void matrixProduct(const lineType & in1,
-                   const matrix &in2,
-                   matrix & result,
-                   int dim,
-                   int rows1,
-                   int cols2)
-{
-    matrixProduct(matrix(in1, 'h'),
-                  in2,
-                  result,
-                  dim,
-                  rows1,
-                  cols2);
-}
+//void matrixProduct(const lineType & in1,
+//                   const matrix &in2,
+//                   matrix & result,
+//                   int dim,
+//                   int rows1,
+//                   int cols2)
+//{
+//    matrixProduct(matrix(in1, 'h'),
+//                  in2,
+//                  result,
+//                  dim,
+//                  rows1,
+//                  cols2);
+//}
 
-void matrixProduct(const matrix &in1,
-                   const lineType &in2,
-                   matrix & result,
-                   int dim,
-                   int rows1,
-                   int cols2)
-{
-    matrixProduct(in1,
-                  matrix(in2, 'v'),
-                  result,
-                  dim,
-                  rows1,
-                  cols2);
-}
+//void matrixProduct(const matrix &in1,
+//                   const lineType &in2,
+//                   matrix & result,
+//                   int dim,
+//                   int rows1,
+//                   int cols2)
+//{
+//    matrixProduct(in1,
+//                  matrix(in2, 'v'),
+//                  result,
+//                  dim,
+//                  rows1,
+//                  cols2);
+//}
 
 
 

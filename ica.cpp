@@ -23,29 +23,10 @@ void product1(const matrix & arr,
 
     for(int j = 0; j < length; ++j)
     {
-//        lineType currCol = arr.getCol(j, ns);
-
-        ///old
-        sum = 0.;
-        for(int i = 0; i < ns; ++i)
-        {
-            sum += vect[i] * arr[i][j];
-        }
-        /// new
-//        sum = (vect * currCol).sum();
-
-        ///old
-        for(int i = 0; i < ns; ++i)
-        {
-            outVector[i] += tanh(sum) * arr[i][j];
-        }
-        /// new
-//        outVector += currCol * tanh(sum);
+        sum = prod(vect, arr[j]);
+        outVector +=  tanh(sum) * arr[j];
     }
-    for(int i = 0; i < ns; ++i)
-    {
-        outVector[i] /= length;
-    }
+    outVector /= length;
 }
 
 
@@ -64,28 +45,13 @@ void product2(const matrix & arr,
     double sum = 0.;
     double sum1 = 0.;
 
-    outVector.resize(ns);
-
     for(int j = 0; j < length; ++j)
     {
-//        lineType currCol = arr.getCol(j, ns);
-        /// old
-        sum = 0.;
-        for(int i = 0; i < ns; ++i)
-        {
-            sum += vect[i] * arr[i][j];
-        }
-        /// new
-//        sum = (vect * currCol).sum();
-
-        sum1 += 1 - pow(tanh(sum), 2.);
+        sum = prod(vect, arr[j]);
+        sum1 += 1 - tanh(sum) * tanh(sum);
     }
     sum1 /= length;
-    for(int i = 0; i < ns; ++i)
-    {
-        outVector[i] = sum1 * vect[i];
-    }
-//    outVector = vect * sum1;
+    outVector = vect * sum1;
 }
 
 
@@ -97,35 +63,13 @@ void product3(const matrix & inMat,
               lineType & outVector)
 {
     //sum(Wt*Wi*Wi)
-    /// old
-//    for(int k = 0; k < ns; ++k)
-//    {
-//        outVector[k] = 0.;
-//    }
-    /// new
     outVector.resize(ns);
 
-
     double sum = 0.;
-
     for(int j = 0; j < currNum; ++j)
     {
-        /// old
-        sum = 0.;
-        for(int k = 0; k < ns; ++k)
-        {
-            sum += inMat[currNum][k] * inMat[j][k];
-        }
-        /// new
-//        sum = (inMat[currNum] * inMat[j]).sum();
-
-        /// old
-        for(int k = 0; k < ns; ++k)
-        {
-            outVector[k] += inMat[j][k] * sum;
-        }
-        /// new
-//        outVector += inMat[j] * sum;
+        sum = prod(inMat[currNum], inMat[j]); // short valarray, no difference
+        outVector += inMat[j] * sum;
     }
 }
 
@@ -144,12 +88,11 @@ void randomizeValar(lineType & valar)
 void countVectorW(matrix & vectorW,
                   const matrix & dataICA,
                   const int ns,
-                  const int dataLen)
+                  const int dataLen,
+                  const double vectorWTreshold)
 {
     QTime myTime;
     myTime.restart();
-
-    const double vectorWTreshold = pow(10., -9.);
 
     double sum1;
     double sum2;
@@ -160,6 +103,8 @@ void countVectorW(matrix & vectorW,
 
     int counter;
 
+    const matrix tempMatrix = matrix::transpose(dataICA);
+
     for(int i = 0; i < ns; ++i) //number of current vectorW
     {
         myTime.restart();
@@ -168,114 +113,40 @@ void countVectorW(matrix & vectorW,
 
         while(1)
         {
-            vectorOld = vectorW[i];
+            vectorOld = vectorW[i]; // save previous vect
 
-            /// edit products valarray
-            product1(dataICA, dataLen, ns, vectorW[i], vector1);
-            product2(dataICA, dataLen, ns, vectorW[i], vector2);
-
-            /// local, dataICA transposed
-//            vector1 = 0.;
-//            sum1 = 0.;
-//            for(int j = 0; j < dataLen; ++j)
-//            {
-//                double temp = tanh( (vectorW[i] * tempMatrix[j]).sum() );
-//                vector1 += tempMatrix[j] * temp;
-//                sum1 += (1. - pow(temp, 2.));
-//            }
-//            vector1 /= dataLen;
-//            vector2 = vectorW[i] * sum1;
-
-
-
-
-            /// old
-            for(int j = 0; j < ns; ++j)
+            /// local, dataICA transposed to tempMatrix
+            vector1 = 0.;
+            sum1 = 0.;
+            for(int j = 0; j < dataLen; ++j)
             {
-                vectorW[i][j] = vector1[j] - vector2[j];
-            }
-            /// new
-//            vectorW[i] = vector1 - vector2;
+                const double temp = tanh(prod(vectorW[i], tempMatrix[j]));
 
+                vector1 += tempMatrix[j] * temp;
+                sum1 += (1. - temp * temp);
+            }
+            vector1 /= dataLen;
+
+            sum1 /= dataLen;
+            vector2 = vectorW[i] * sum1;
+
+
+            vectorW[i] = vector1 - vector2;
             //orthogonalization
             product3(vectorW, ns, i, vector3);
-            /// old
-            for(int j = 0; j < ns; ++j)
-            {
-                vectorW[i][j] -= vector3[j];
-            }
-//            vectorW[i] -= vector3;
+            vectorW[i] -= vector3;
+            normalize(vectorW[i]);
 
-#if 0
-            //check norma
-            for(int k = 0; k < i; ++k)
-            {
-                sum1 = 0.;
-                for(int h = 0; h < ns; ++h)
-                {
-                    sum1 += pow(vectorW[k][h], 2);
-                }
-                if(fabs(sum1 - 1.) > 0.01)
-                {
-                    cout << i << "'th vector not 1-l" << endl;
-                }
-            }
-
-
-            //check ortho
-            for(int k = 0; k < i; ++k)
-            {
-                sum1 = 0.;
-                for(int h = 0; h < ns; ++h)
-                {
-                    sum1 += vectorW[k][h] * vectorW[i][h];
-                }
-                if(sum1 > 0.01)
-                {
-                    cout << i << "'th and " << k << "'th  vectors not ortho" << endl;
-                }
-
-            }
-
-#endif
-
-            //normalization
-            /// old
-            sum1 = 0.;
-            for(int j = 0; j < ns; ++j)
-            {
-                sum1 += pow(vectorW[i][j], 2.);
-            }
-            for(int j = 0; j < ns; ++j)
-            {
-                vectorW[i][j] /= sqrt(sum1);
-            }
-
-            vectorW[i] /= sqrt(pow(vectorW[i], 2.).sum());
-            /// new
-//            normalize(vectorW[i]);
-
-
-            //check norma difference
-            /// old
-            sum2 = 0.;
-            for(int j = 0; j < ns; ++j)
-            {
-                sum2 += pow(vectorOld[j] - vectorW[i][j], 2.);
-            }
-            sum2 = sqrt(sum2);
-            /// new
-//            sum2 = norma(vectorOld - vectorW[i]);
+            sum2 = norma(vectorOld - vectorW[i]);
 
             ++counter;
             if(sum2 < vectorWTreshold || 2. - sum2 < vectorWTreshold) break;
             if(counter == 100) break;
         }
-        cout << "NumOf vectorW component = " << i << "\t";
-        cout << "iterations = " << counter << "\t";
+        cout << "vectW num = " << i << "\t";
+        cout << "iters = " << counter << "\t";
         cout << "error = " << fabs(sum2 - int(sum2 + 0.5)) << "\t";
-        cout << "time = " << doubleRound(myTime.elapsed()/1000., 1) << " sec" << endl;
-
+        cout << "time = " << doubleRound(myTime.elapsed() / 1000., 1) << " sec" << endl;
     }
 }
 
@@ -333,16 +204,22 @@ void MainWindow::ICA() //fastICA
 
 
 
+
     // count eigenvalue decomposition
     matrix eigenVectors;
     lineType eigenValues;
-
 
     svd(centeredMatrix,
         eigenVectors,
         eigenValues,
         ns,
         eigenValuesTreshold);
+
+
+
+    cout << "ICA: svd read = " << myTime.elapsed() / 1000. << " sec" << endl;
+
+    myTime.restart();
 
     // write eigenVectors
     helpString = pathForAuxFiles
@@ -356,6 +233,7 @@ void MainWindow::ICA() //fastICA
                  + slash() + def::ExpName + "_eigenValues.txt";
     writeFileInLine(helpString, eigenValues);
 
+//exit(0);
 
     // components = EigenValues^-0.5 * Et * data
     matrix D_minus_05(ns, ns, 0.);
@@ -364,9 +242,7 @@ void MainWindow::ICA() //fastICA
         D_minus_05[i][i] = 1. / sqrt(eigenValues[i]);
     }
 
-
-
-    matrix tmpMat = matrix();
+    matrix tmpMat{};
     tmpMat = D_minus_05 * matrix::transpose(eigenVectors);
 
 //    components = tmpMat * centeredMatrix;
@@ -376,7 +252,7 @@ void MainWindow::ICA() //fastICA
                   ns);
 
 
-    matrix dataICA(ns, dataLength, 0.);
+    matrix dataICA{};
 //    dataICA = eigenVectors * components;
     matrixProduct(eigenVectors,
                   components,
@@ -390,11 +266,20 @@ void MainWindow::ICA() //fastICA
 
     double sum1;
 
-    matrix vectorW(ns, ns, 0.);
+    matrix vectorW(ns, ns);
     countVectorW(vectorW,
                  dataICA,
                  ns,
-                 dataLength);
+                 dataLength,
+                 vectorWTreshold);
+    cout << "ICA: vectorW ready = " << myTime.elapsed() / 1000. << " sec" << endl;
+    myTime.restart();
+
+//    helpString = pathForAuxFiles
+//                 + slash() + def::ExpName + "_vectorW.txt";
+//    writeSpectraFile(helpString,
+//                     vectorW,
+//                     ns, ns);
 
 
 
@@ -414,7 +299,7 @@ void MainWindow::ICA() //fastICA
     {
         D_05[i][i] = sqrt(eigenValues[i]);
     }
-#if 1
+#if 0
     /// test
     matrixA = eigenVectors * D_05 * matrix::transpose(eigenVectors) * matrix::transpose(vectorW);
 #else
@@ -429,20 +314,23 @@ void MainWindow::ICA() //fastICA
     matrixA = eigenVectors * matrixA;
 #endif
 
+//    helpString = pathForAuxFiles
+//                 + slash() + def::ExpName + "_matrixA.txt";
+//    writeSpectraFile(helpString,
+//                     matrixA,
+//                     ns, ns);
+
 
 #if 1
     //test  data = matrixA * comps;
 
-    for(int i = 0; i < ns; ++i)
+    for(int j = 0; j < dataLength; ++j)
     {
-        for(int j = 0; j < dataLength; ++j)
+        lineType currCol = components.getCol(j, ns);
+        for(int i = 0; i < ns; ++i)
         {
-            sum1 = 0.;
-            for(int k = 0; k < ns; ++k)
-            {
-                sum1 += matrixA[i][k] * components[k][j];
-            }
-            if(fabs((centeredMatrix[i][j] - sum1) / centeredMatrix[i][j]) > 0.05
+            if(fabs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
+                    / centeredMatrix[i][j]) > 0.05
                     && fabs(centeredMatrix[i][j]) > 0.5)
             {
                 cout << "before norm" << "\t";
@@ -569,7 +457,7 @@ void MainWindow::ICA() //fastICA
     // ordering components by dispersion
     std::vector <std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
     double sumSquares = 0.; // sum of all dispersions
-    vec explainedVariance;
+    vectType explainedVariance;
 
     for(int i = 0; i < ns; ++i)
     {
@@ -583,10 +471,10 @@ void MainWindow::ICA() //fastICA
               [](std::pair <double, int> i, std::pair <double, int> j)
     {return i.first > j.first;});
 
-    for(int i = 0; i < ns; ++i)
-    {
-        cout << colsNorms[i].first << "\t" << colsNorms[i].second << endl;
-    }
+//    for(int i = 0; i < ns; ++i)
+//    {
+//        cout << colsNorms[i].first << "\t" << colsNorms[i].second << endl;
+//    }
     int tempIndex;
     for(int i = 0; i < ns - 1; ++i) // dont move the last
     {
@@ -623,6 +511,7 @@ void MainWindow::ICA() //fastICA
                                 [colsNorms, i](std::pair <double, int> in)
         {return in.second == colsNorms[i].second;});
 
+//        std::swap((*it1).second, (*it2).second);
         tempIndex = (*it1).second;
         (*it1).second = (*it2).second;
         (*it2).second = tempIndex;
@@ -645,16 +534,13 @@ void MainWindow::ICA() //fastICA
     // test  data = matrixA * comps;
     // again to check reordering and normalizations
 
-    for(int i = 0; i < ns; ++i)
+    for(int j = 0; j < dataLength; ++j)
     {
-        for(int j = 0; j < dataLength; ++j)
+        lineType currCol = components.getCol(j, ns);
+        for(int i = 0; i < ns; ++i)
         {
-            sum1 = 0.;
-            for(int k = 0; k < ns; ++k)
-            {
-                sum1 += matrixA[i][k] * components[k][j];
-            }
-            if(fabs((centeredMatrix[i][j] - sum1) / centeredMatrix[i][j]) > 0.05
+            if(fabs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
+                    / centeredMatrix[i][j]) > 0.05
                     && fabs(centeredMatrix[i][j]) > 0.5)
             {
                 cout << "after norm" << "\t";
@@ -669,15 +555,10 @@ void MainWindow::ICA() //fastICA
 
 
     //now should draw amplitude maps OR write to file
-    int numMap = 0;
-    do
-    {
         helpString = pathForAuxFiles
-                     + slash() + def::ExpName + "_maps_" + QString::number(numMap++) + ".txt";
-    } while(!QFile::exists(helpString));
-
-
+                     + slash() + def::ExpName + "_maps.txt";
     writeICAMatrix(helpString, matrixA); //generality 19-ns
+
     drawMapsICA(helpString);
 
 
@@ -693,7 +574,6 @@ void MainWindow::ICA() //fastICA
     components.push_back(globalEdf.getData()[globalEdf.getMarkChan()]);
     globalEdf.writeOtherData(components, helpString, chanList);
     def::ns = ns + 1; // numOfICs + markers
-
 
     cout << "ICA ended. time = " << wholeTime.elapsed()/1000. << " sec" << endl;
 }
