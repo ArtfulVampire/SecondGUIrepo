@@ -2998,57 +2998,19 @@ void svd(const matrix & initialData,
          const double & threshold,
          int eigenVecNum)
 {
-    matrix inData = initialData;
     if(eigenVecNum <= 0)
     {
         eigenVecNum = dimension;
     }
-    const int dataLen = inData.cols();
+    const int dataLen = initialData.cols();
 
     const int iterationsThreshold = 100;
     const int errorStep = 5;
 
-    int eyes = 0;
-    for(int i = 0; i < dataLen; ++i)
-    {
-        const lineType temp = inData.getCol(i, dimension);
-        if(abs(temp).max() == 0.)
-        {
-            ++eyes;
-        }
-    }
-    const double realSignalFrac =  double(dataLen - eyes) / dataLen; /// deprecate?!! splitZeros
-
-
-    // subtract averages
-    for(int i = 0; i < dimension; ++i)
-    {
-        const double temp = - mean(inData[i]) * realSignalFrac;
-        inData[i] += temp;
-
-        std::replace(begin(inData[i]),
-                     end(inData[i]),
-                     temp,
-                     0.); // retain zeros
-
-
-//        std::for_each(begin(inData[i]),
-//                      end(inData[i]),
-//                      [temp](double & in)
-//        {
-//            if(in != 0.)
-//            {
-//                in += temp;
-//            }
-//        }); // retain zeros
-    }
-
-
-
     double trace = 0.;
     for(int i = 0; i < dimension; ++i)
     {
-        trace += variance(inData[i]);
+        trace += variance(initialData[i]);
     }
 
     eigenValues.resize(eigenVecNum);
@@ -3085,7 +3047,8 @@ void svd(const matrix & initialData,
 
     // lineType tempLine(dataLen); // for debug acceleration
 
-    const matrix inDataTrans = matrix::transpose(inData);
+    matrix inData = initialData;
+    const matrix inDataTrans = matrix::transpose(initialData);
     QTime myTime;
     myTime.start();
     //counter j - for B, i - for A
@@ -3114,7 +3077,7 @@ void svd(const matrix & initialData,
 #elif 1
                     F += 0.5 * normaSq(inData[i] - tempB * tempA[i]);
 #elif 1
-                    // debug/release difference
+                    // much faster in debug
                     const double coef = tempA[i];
                     std::transform(begin(inData[i]),
                                    end(inData[i]),
@@ -3172,7 +3135,7 @@ void svd(const matrix & initialData,
 #elif 1
                     dF += 0.5 * normaSq(inData[i] - tempB * tempA[i]);
 #elif 1
-                    // better in debug
+                    // much faster in debug
                     const double coef = tempA[i];
                     std::transform(begin(inData[i]),
                                    end(inData[i]),

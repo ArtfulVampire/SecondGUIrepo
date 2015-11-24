@@ -150,6 +150,47 @@ void countVectorW(matrix & vectorW,
     }
 }
 
+void dealWithEyes(matrix & inData,
+                  const int dimension)
+{
+
+    const int dataLen = inData.cols();
+    int eyes = 0;
+    for(int i = 0; i < dataLen; ++i)
+    {
+        const lineType temp = inData.getCol(i, dimension);
+        if(abs(temp).max() == 0.)
+        {
+            ++eyes;
+        }
+    }
+    const double realSignalFrac =  double(dataLen - eyes) / dataLen; /// deprecate?!! splitZeros
+
+
+    // subtract averages
+    for(int i = 0; i < dimension; ++i)
+    {
+        const double temp = - mean(inData[i]) * realSignalFrac;
+        inData[i] += temp;
+
+        std::replace(begin(inData[i]),
+                     end(inData[i]),
+                     temp,
+                     0.); // retain zeros
+
+
+//        std::for_each(begin(inData[i]),
+//                      end(inData[i]),
+//                      [temp](double & in)
+//        {
+//            if(in != 0.)
+//            {
+//                in += temp;
+//            }
+//        }); // retain zeros
+    }
+}
+
 /// remake with data copy
 void MainWindow::ICA() //fastICA
 {
@@ -180,6 +221,7 @@ void MainWindow::ICA() //fastICA
     myTime.start();
 
     QString helpString;
+    int counter;
 
     helpString = def::dir->absolutePath()
                  + slash() + def::ExpName + ".edf";
@@ -199,8 +241,10 @@ void MainWindow::ICA() //fastICA
 
 
     matrix centeredMatrix = globalEdf.getData();
+
     matrix components(ns + 1, dataLength, 0.);
     components[ns] = globalEdf.getData()[globalEdf.getMarkChan()];
+
 
 
 
@@ -208,6 +252,9 @@ void MainWindow::ICA() //fastICA
     // count eigenvalue decomposition
     matrix eigenVectors;
     lineType eigenValues;
+
+    dealWithEyes(centeredMatrix,
+                 ns);
 
     svd(centeredMatrix,
         eigenVectors,
@@ -299,7 +346,7 @@ void MainWindow::ICA() //fastICA
     {
         D_05[i][i] = sqrt(eigenValues[i]);
     }
-#if 0
+#if 1
     /// test
     matrixA = eigenVectors * D_05 * matrix::transpose(eigenVectors) * matrix::transpose(vectorW);
 #else
@@ -314,33 +361,31 @@ void MainWindow::ICA() //fastICA
     matrixA = eigenVectors * matrixA;
 #endif
 
-//    helpString = pathForAuxFiles
-//                 + slash() + def::ExpName + "_matrixA.txt";
-//    writeSpectraFile(helpString,
-//                     matrixA,
-//                     ns, ns);
-
-
-#if 1
+#if 0
     //test  data = matrixA * comps;
 
+    counter = 0;
     for(int j = 0; j < dataLength; ++j)
     {
         lineType currCol = components.getCol(j, ns);
         for(int i = 0; i < ns; ++i)
         {
-            if(fabs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
-                    / centeredMatrix[i][j]) > 0.05
-                    && fabs(centeredMatrix[i][j]) > 0.5)
+            sum1 = abs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
+                       / centeredMatrix[i][j]);
+            if(sum1 > 0.05
+               && abs(centeredMatrix[i][j]) > 0.5)
             {
+                ++counter;
+#if 0
                 cout << "before norm" << "\t";
                 cout << i << "\t" << j << "\t";
-                cout << "err = " << doubleRound(abs((centeredMatrix[i][j] - sum1)
-                                                    / centeredMatrix[i][j]), 3) << "\t";
+                cout << "err = " << doubleRound(sum1, 3) << "\t";
                 cout << "init value = " << doubleRound(centeredMatrix[i][j], 4) << endl;
+#endif
             }
         }
     }
+    cout << "num of errors = " << counter << endl;
 #endif
 
 
@@ -438,7 +483,7 @@ void MainWindow::ICA() //fastICA
     {
         explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
         cout << "comp = " << i+1 << "\t";
-        cout << "explVar = " << explainedVariance[i] << endl;
+        cout << "explVar = " << doubleRound(explainedVariance[i], 2) << endl;
     }
     //end componets ordering
 #else
@@ -469,12 +514,10 @@ void MainWindow::ICA() //fastICA
     std::sort(colsNorms.begin(),
               colsNorms.end(),
               [](std::pair <double, int> i, std::pair <double, int> j)
-    {return i.first > j.first;});
+    {
+        return i.first > j.first;
+    });
 
-//    for(int i = 0; i < ns; ++i)
-//    {
-//        cout << colsNorms[i].first << "\t" << colsNorms[i].second << endl;
-//    }
     int tempIndex;
     for(int i = 0; i < ns - 1; ++i) // dont move the last
     {
@@ -521,7 +564,7 @@ void MainWindow::ICA() //fastICA
     {
         explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
         cout << "comp = " << i+1 << "\t";
-        cout << "explVar = " << explainedVariance[i] << endl;
+        cout << "explVar = " << doubleRound(explainedVariance[i], 2) << endl;
     }
     helpString = QDir::toNativeSeparators(pathForAuxFiles
                                           + slash() + def::ExpName + "_explainedVariance.txt");
@@ -534,23 +577,28 @@ void MainWindow::ICA() //fastICA
     // test  data = matrixA * comps;
     // again to check reordering and normalizations
 
+    counter = 0;
     for(int j = 0; j < dataLength; ++j)
     {
         lineType currCol = components.getCol(j, ns);
         for(int i = 0; i < ns; ++i)
         {
-            if(fabs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
-                    / centeredMatrix[i][j]) > 0.05
-                    && fabs(centeredMatrix[i][j]) > 0.5)
+            sum1 = abs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
+                       / centeredMatrix[i][j]);
+            if(sum1 > 0.05
+               && abs(centeredMatrix[i][j]) > 0.5)
             {
+                ++counter;
+#if 0
                 cout << "after norm" << "\t";
                 cout << i << "\t" << j << "\t";
-                cout << "err = " << doubleRound(abs((centeredMatrix[i][j] - sum1)
-                                                    / centeredMatrix[i][j]), 3) << "\t";
+                cout << "err = " << doubleRound(sum1, 3) << "\t";
                 cout << "init value = " << doubleRound(centeredMatrix[i][j], 4) << endl;
+#endif
             }
         }
     }
+    cout << "num of errors = " << counter << endl;
 #endif
 
 
@@ -558,9 +606,7 @@ void MainWindow::ICA() //fastICA
         helpString = pathForAuxFiles
                      + slash() + def::ExpName + "_maps.txt";
     writeICAMatrix(helpString, matrixA); //generality 19-ns
-
     drawMapsICA(helpString);
-
 
 
     // save components
