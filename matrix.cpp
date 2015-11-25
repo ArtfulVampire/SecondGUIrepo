@@ -351,33 +351,41 @@ void matrix::fill(double value)
 }
 
 
-void matrix::resize(int rows, int cols)
+void matrix::resize(int newRows, int newCols)
 {
-    this->data.resize(rows);
+    this->data.resize(newRows);
     std::for_each(data.begin(),
                   data.end(),
-                  [cols](lineType & in)
+                  [newCols](lineType & in)
     {
         lineType temp = in;
-        in.resize(cols);
+        in.resize(newCols);
         std::copy(std::begin(temp),
-                  std::begin(temp) + min(cols, int(temp.size())),
+                  std::begin(temp) + min(newCols, int(temp.size())),
                   std::begin(in));
     });
 
 }
 
 
-void matrix::resizeRows(int rows)
+void matrix::resizeRows(int newRows)
 {
-    int cols = data[0].size();
-    data.resize(rows);
-    std::for_each(data.begin(),
-                  data.end(),
-                  [cols](lineType & in)
+    int cols = this->cols();
+    int oldRows = this->rows();
+    data.resize(newRows);
+    if(oldRows < newRows)
     {
-        in.resize(cols);
-    });
+        std::for_each(data.begin() + oldRows,
+                      data.end(),
+                      [cols](lineType & in)
+        {
+            lineType temp = in;
+            in.resize(cols);
+            std::copy(std::begin(temp),
+                      std::begin(temp) + min(cols, int(temp.size())),
+                      std::begin(in));
+        });
+    }
 }
 
 
@@ -486,12 +494,11 @@ lineType matrix::averageRow() const
 
 lineType matrix::averageCol() const
 {
-    lineType res(0., this->rows());
-    for(int i = 0; i < this->cols(); ++i)
+    lineType res(this->rows());
+    for(int i = 0; i < this->rows(); ++i)
     {
-        res += this->getCol(i);
+        res[i] = this->data[i].sum() / this->data[i].size();
     }
-    res /= this->cols();
     return res;
 }
 

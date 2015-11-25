@@ -34,8 +34,8 @@ namespace def
     const bool OssadtchiFlag = false;
 
 
-    const double leftFreq = 5.;
-    const double rightFreq = 20.;
+//    const double leftFreq = 5.;
+//    const double rightFreq = 20.;
 
     const bool wirteStartEndLong = false; //for slice
 
@@ -53,6 +53,8 @@ namespace def
     extern QStringList fileMarkers;
     extern int numOfClasses;
     extern double drawNorm;
+    extern double leftFreq;
+    extern double rightFreq;
 
 //    extern int nsW;
     inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}

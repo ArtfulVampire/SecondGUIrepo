@@ -167,31 +167,26 @@ void dealWithEyes(matrix & inData,
     const double realSignalFrac =  double(dataLen - eyes) / dataLen; /// deprecate?!! splitZeros
 
 
+//    auto t0 = high_resolution_clock::now();
     // subtract averages
     for(int i = 0; i < dimension; ++i)
     {
         const double temp = - mean(inData[i]) * realSignalFrac;
-        inData[i] += temp;
 
-        std::replace(begin(inData[i]),
-                     end(inData[i]),
-                     temp,
-                     0.); // retain zeros
-
-
-//        std::for_each(begin(inData[i]),
-//                      end(inData[i]),
-//                      [temp](double & in)
-//        {
-//            if(in != 0.)
-//            {
-//                in += temp;
-//            }
-//        }); // retain zeros
+        std::for_each(begin(inData[i]),
+                      end(inData[i]),
+                      [temp](double & in)
+        {
+            if(in != 0.)
+            {
+                in += temp;
+            }
+        }); // retain zeros
     }
+//    auto t1 = high_resolution_clock::now();
+//    cout << duration_cast<microseconds>(t1-t0).count() << endl;
 }
 
-/// remake with data copy
 void MainWindow::ICA() //fastICA
 {
 
@@ -255,7 +250,6 @@ void MainWindow::ICA() //fastICA
 
     dealWithEyes(centeredMatrix,
                  ns);
-
     svd(centeredMatrix,
         eigenVectors,
         eigenValues,

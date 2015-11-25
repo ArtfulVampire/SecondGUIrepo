@@ -11,6 +11,9 @@ int left;
 int right;
 int spLength;
 
+double leftFreq = 5.;
+double rightFreq = 20.;
+
 double freq = 250;
 int fftLength = 4096;
 //int fftLength = 1024;

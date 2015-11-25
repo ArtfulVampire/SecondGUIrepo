@@ -98,14 +98,6 @@ public:
 
     matrix operator /= (const double & other);
 
-
-
-
-//    matrix operator * (const dataType & other);
-
-
-
-
     //"static"
     static matrix transpose(const matrix & input);
 

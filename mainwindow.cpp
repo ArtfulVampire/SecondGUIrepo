@@ -1735,11 +1735,56 @@ void MainWindow::setNsSlot(int a)
 
 void MainWindow::customFunc()
 {
-
-
     ui->matiCheckBox->setChecked(false);
     setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
-    ICA();
+
+    ofstream outStr;
+    outStr.open((def::dir->absolutePath()
+                + slash() + "diffFreq.txt").toStdString(), ios_base::app);
+
+//    countSpectraSimple(4096, 15);
+
+    Net * ann = new Net();
+
+    for(int i = 0; i < 10; ++i)
+    {
+        ann->autoClassificationSimple();
+    }
+    exit(0);
+
+//    for(double it : {1., 1.5, 3., 4., 5., 7., 10.})
+//    {
+
+//        ann->setReduceCoeff(it);
+//        for(int i = 0; i < 10; ++i)
+//        {
+
+//            outStr << it << "\t" << ann->getAverageAccuracy() << endl;
+//        }
+//    }
+//    outStr.close();
+//    ann->show();
+    return;
+
+//    def::leftFreq = 5.;
+//    def::rightFreq = 20.;
+
+//    const double freqStep = 0.25;
+
+//    for(def::leftFreq = 5.; def::leftFreq <= 8.5; def::leftFreq += freqStep)
+//    {
+//        for(def::rightFreq = 20.; def::rightFreq >= 12.5; def::rightFreq -= freqStep)
+//        {
+//            countSpectraSimple(4096, 15);
+
+//            ann->loadData();
+//            ann->autoClassificationSimple();
+//            outStr << def::leftFreq << "\t"
+//                   << def::rightFreq << "\t"
+//                   << ann->getAverageAccuracy() << endl;
+//        }
+//    }
+
     exit(0);
 
 //    return;

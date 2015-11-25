@@ -46,6 +46,8 @@ private:
     vector<QString> fileNames;
     vector<double> classCount; // really int but...
 
+    matrix confusionMatrix; // rows - realClass, cols - outClass
+
     twovector<lineType> weight;
     vector<uint> dimensionality; // for backprop
 
@@ -67,7 +69,7 @@ private:
 public:
     explicit Net();
     ~Net();
-    bool ClassificateVector(const int & vecNum);
+    int ClassificateVector(const int & vecNum);
     void closeLogFile();
     void setAutoProcessingFlag(bool);
     void prelearnDeepBelief();
@@ -96,7 +98,8 @@ public:
     void writeWts(const QString &wtsPath = def::dir->absolutePath()
                                            + slash() + def::ExpName + ".wts");
     void PaIntoMatrixByName(const QString & fileName);
-    void loadData(const QString & spectraPath,
+    void loadData(const QString & spectraPath = def::dir->absolutePath()
+                                                + slash() + "SpectraSmooth",
                   double rdcCoeff = 1.);
     void makeIndicesVectors(vector<int> & learnInd,
                             vector<int> & tallInd,
@@ -128,7 +131,10 @@ public slots:
     void writeWtsSlot();
     void stopActivity();
     void drawWtsSlot();
+
     void PaIntoMatrix();
+    void loadDataSlot();
+
     void leaveOneOutSlot();
     void neuronGas();
     void pca();

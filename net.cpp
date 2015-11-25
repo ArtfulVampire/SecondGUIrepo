@@ -14,8 +14,11 @@ Net::Net() :
                                                   + slash() + "log.txt");
     QFile::remove(helpString);
 
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "badFiles.txt");
+    QFile::remove(helpString);
+
     stopFlag = 0;
-    numOfTall = 0;
 
 //    tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
 
@@ -32,12 +35,17 @@ Net::Net() :
     group3->addButton(ui->deltaRadioButton);
     group3->addButton(ui->backpropRadioButton);
     group3->addButton(ui->deepBeliefRadioButton);
-    ui->crossRadioButton->setChecked(true);
+
+    ui->crossRadioButton->setChecked(true); /// cross
     ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
-    ui->trainTestRadioButton->setChecked(true); /// train-test
+    if(def::OssadtchiFlag)
+    {
+        ui->trainTestRadioButton->setChecked(true); /// train-test
+    }
 
     ui->realsRadioButton->setChecked(true);
-    ui->windowsRadioButton->setChecked(true); /// windows
+//    ui->windowsRadioButton->setChecked(true); /// windows
+//    ui->pcaRadioButton->setChecked(true); /// PCA
 
     ui->backpropRadioButton->setChecked(false);
     ui->deltaRadioButton->setChecked(false);
@@ -64,7 +72,7 @@ Net::Net() :
 
     ui->numOfPairsBox->setMaximum(100);
     ui->numOfPairsBox->setMinimum(1);
-    ui->numOfPairsBox->setValue(5); /////////////////////////////
+    ui->numOfPairsBox->setValue(30); /////////////////////////////
 
 #define INDICES 1
     ui->foldSpinBox->setMaximum(10);
@@ -83,7 +91,7 @@ Net::Net() :
 
     ui->lowLimitSpinBox->setMaximum(500);
     ui->lowLimitSpinBox->setMinimum(50);
-    ui->lowLimitSpinBox->setValue(80);
+    ui->lowLimitSpinBox->setValue(50);
 
 
 
@@ -109,7 +117,7 @@ Net::Net() :
     ui->optimizationMethodComboBox->addItem("coords");
     ui->optimizationMethodComboBox->addItem("gradient");
 
-    ui->autpPCAMaxSpinBox->setMinimum(1);
+    ui->autoPCAMaxSpinBox->setMinimum(1);
     ui->autoPCAMinSpinBox->setMinimum(1);
     ui->autoPCAStepSpinBox->setMinimum(0);
     ui->autoPCAStepSpinBox->setMaximum(5);
@@ -130,7 +138,8 @@ Net::Net() :
 
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWts()));
 
-    QObject::connect(ui->loadPaButton, SIGNAL(clicked()), this, SLOT(PaIntoMatrix()));
+//    QObject::connect(ui->loadPaButton, SIGNAL(clicked()), this, SLOT(PaIntoMatrix()));
+    QObject::connect(ui->loadPaButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
 
     QObject::connect(ui->learnButton, SIGNAL(clicked()), this, SLOT(LearnNet()));
 
@@ -167,20 +176,20 @@ Net::Net() :
 
 
     /// generality
-    if(def::spStep == def::freq / pow(2, 10))
-    {
-        ui->windowsRadioButton->setChecked(true);
-        loadData(def::dir->absolutePath()
-                 + slash() + "SpectraSmooth"
-                 + slash() + "windows");
-    }
-    else // if(def::spStep == def::freq / pow(2, 12))
-    {
-        ui->realsRadioButton->setChecked(true);
-        loadData(def::dir->absolutePath()
-                 + slash() + "SpectraSmooth",
-                 5.);
-    }
+//    if(def::spStep == def::freq / pow(2, 10))
+//    {
+//        ui->windowsRadioButton->setChecked(true);
+//        loadData(def::dir->absolutePath()
+//                 + slash() + "SpectraSmooth"
+//                 + slash() + "windows");
+//    }
+//    else // if(def::spStep == def::freq / pow(2, 12))
+//    {
+//        ui->realsRadioButton->setChecked(true);
+//        loadData(def::dir->absolutePath()
+//                 + slash() + "SpectraSmooth",
+//                 5.);
+//    }
     this->ui->deltaRadioButton->setChecked(true);
 }
 
@@ -363,19 +372,12 @@ void Net::autoClassificationSimple()
     }
     else if(ui->bayesRadioButton->isChecked())
     {
-        //////////////// CAREFUL
-//        def::spLength = NetLength / 19;
-//        def::left = 1;
-//        def::right = def::spLength + 1;
         helpString += slash() + "Bayes";
     }
     else if(ui->pcaRadioButton->isChecked())
     {
-        autoPCAClassification();
-        return;
         helpString += slash() + "PCA";
     }
-
     cout << "autoClassification: " << helpString << endl;
 
     if(!helpString.isEmpty()) autoClassification(helpString);
@@ -389,7 +391,6 @@ void Net::makeIndicesVectors(vector<int> & learnInd,
 {
     learnInd.clear();
     tallInd.clear();
-
 
     const int fold = ui->foldSpinBox->value();
 
@@ -429,8 +430,6 @@ void Net::autoClassification(const QString & spectraDir)
     QTime myTime;
     myTime.start();
 
-    numOfTall = 0;
-
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                                   + slash() + "log.txt");
     QFile::remove(helpString);
@@ -450,10 +449,14 @@ void Net::autoClassification(const QString & spectraDir)
 
     const int numOfPairs = ui->numOfPairsBox->value();
     const int fold = ui->foldSpinBox->value();
-    loadData(spectraDir);
+
+    confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
+    confusionMatrix.fill(0.);
+
+    loadData(spectraDir, ui->rdcCoeffSpinBox->value());
 
     adjustLearnRate(ui->lowLimitSpinBox->value(),
-                    ui->highLimitSpinBox->value());
+                    ui->highLimitSpinBox->value()); // or reduce coeff ?
 
 //    double newReduceCoeff = adjustReduceCoeff(spectraDir,
 //                                              ui->lowLimitSpinBox->value(),
@@ -485,7 +488,9 @@ void Net::autoClassification(const QString & spectraDir)
             for(int j = 0; j < classCount[i]; ++j)
             {
                 arr[i].push_back(j);
+//                cout << arr[i][j] << "  ";
             }
+//            cout << endl;
         }
         cout << "Net: autoclass (max " << numOfPairs << "):" << endl;
 
@@ -498,7 +503,6 @@ void Net::autoClassification(const QString & spectraDir)
             for(int numFold = 0; numFold < fold; ++numFold)
             {
                 makeIndicesVectors(learnIndices, tallIndices, arr, numFold);
-
                 LearNetIndices(learnIndices);
                 tallNetIndices(tallIndices);
             }
@@ -515,8 +519,32 @@ void Net::autoClassification(const QString & spectraDir)
     }
     else if(ui->leaveOneOutRadioButton->isChecked())
     {
-        cout << "Net: autoclass (max " << dataMatrix.rows() << "):" << endl;
-        leaveOneOut();
+        if(ui->pcaRadioButton->isChecked())
+        {
+            ofstream outStr;
+            outStr.open((def::dir->absolutePath()
+                        + slash() + "pcaRes.txt").toStdString());
+            // auto pca classification
+            for(int i = ui->autoPCAMaxSpinBox->value();
+                i >= ui->autoPCAMinSpinBox->value();
+                i -= ui->autoPCAStepSpinBox->value())
+            {
+                cout << "numOfPc = " << i  << " \t";
+                dataMatrix.resizeCols(i);
+
+                adjustLearnRate(ui->lowLimitSpinBox->value(),
+                                ui->highLimitSpinBox->value());
+
+                leaveOneOut();
+                outStr << i << "\t" << averageAccuracy << endl;
+            }
+            outStr.close();
+        }
+        else
+        {
+            cout << "Net: autoclass (max " << dataMatrix.rows() << "):" << endl;
+            leaveOneOut();
+        }
     }
     else if(ui->trainTestRadioButton->isChecked())
     {
@@ -527,55 +555,6 @@ void Net::autoClassification(const QString & spectraDir)
 
 void Net::autoPCAClassification()
 {
-    cfg * config;
-
-    const int nsBC = def::nsWOM();
-    const int leftBC = def::left;
-    const int rightBC = def::right;
-    const double spStepBC = def::spStep;
-    QString helpString;
-
-    for(int i = ui->autpPCAMaxSpinBox->value(); i >= ui->autoPCAMinSpinBox->value(); i-=ui->autoPCAStepSpinBox->value())
-    {
-        cout << "numOfPc = " << i  << " started" << endl;
-        config = new cfg(ui->critErrorDoubleSpinBox->value(),
-                         ui->learnRateBox->value(),
-                         "pca");
-        config->makeCfg();
-        config->close();
-        if(config != NULL) delete config;
-
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "pca.net");
-//        readCfgByName(helpString);
-
-        def::ns = 1;
-        def::left = 1;
-        def::right = i + 1;
-        def::spStep = 0.1;
-
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "SpectraSmooth"
-                                              + slash() + "PCA");
-        cout << "numOfPc = " << i  << " ended" << endl;
-        autoClassification(helpString);
-
-
-        def::ns = nsBC;
-        def::left = leftBC;
-        def::right = rightBC;
-        def::spStep = spStepBC;
-
-
-        qApp->processEvents();
-        if(stopFlag == 1)
-        {
-            stopFlag = 0;
-            break;
-        }
-
-    }
-
 
 }
 
@@ -601,57 +580,44 @@ void Net::setNumOfPairs(int num)
 
 void Net::averageClassification()
 {
-    FILE * logFile;
+    /// deal with confusionMatrix
+
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "log.txt");
-    logFile = fopen(helpString, "r");
-    if(logFile == NULL)
-    {
-        QMessageBox::critical((QWidget * )this,
-                              tr("Warning"),
-                              tr("cannot open logFile"),
-                              QMessageBox::Ok);
-        cout << "logFile == NULL" << endl;
-        return;
-    }
-    vector<double> averagePercentage(def::numOfClasses + 1, 0.); // +1 for average
-    double tempDouble;
+                                                  + slash() + "results.txt");
+    ofstream res;
+    res.open(helpString.toStdString(), ios_base::app);
 
-    int num = 0;
-    for(int i = 0; i < numOfTall; ++i) // while !eof
+    for(int i = 0; i < def::numOfClasses; ++i)
     {
-        for(int j = 0; j < def::numOfClasses + 1; ++j)
+        for(int j = 0; j < def::numOfClasses; ++j)
         {
-            fscanf(logFile, "%lf", &tempDouble);
-            averagePercentage[j] += tempDouble;
+            cout << confusionMatrix[i][j] << '\t';
         }
-        ++num;
-    }
-    for(int j = 0; j < def::numOfClasses + 1; ++j)
-    {
-        averagePercentage[j] = doubleRound(averagePercentage[j] / num, 1);
-    }
-    fclose(logFile);
+        cout << endl;
 
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "results.txt");
-    FILE * res = fopen(helpString, "a+");
 
-    //indents
-    if(def::spStep != def::freq / pow(2, 10))
-    {
-        fprintf(res, "\nPRR \t(");
+        const double num = confusionMatrix[i].sum();
+        if(num != 0.)
+        {
+            res << doubleRound(confusionMatrix[i][i] * 100. / num, 2) << '\t';
+        }
+        else
+        {
+            res << "pew" << '\t';
+        }
     }
-    else fprintf(res, "\nPRR wnd \t(");
+    double corrSum = 0.;
+    double wholeNum = 0.;
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        corrSum += confusionMatrix[i][i];
+        wholeNum += confusionMatrix[i].sum();
+    }
+    averageAccuracy = corrSum * 100. / wholeNum;
+    res << doubleRound(averageAccuracy, 2) << '\t';
+    res << def::ExpName << endl;
+    res.close();
 
-    for(int j = 0; j < def::numOfClasses - 1; ++j)
-    {
-        fprintf(res, "%.2lf - ", averagePercentage[j]);
-    }
-    fprintf(res, "%.2lf", averagePercentage[def::numOfClasses-1]);
-    fprintf(res, ")  -  %.2lf ", averagePercentage[def::numOfClasses]);
-    fprintf(res, " - %s", def::ExpName.toStdString().c_str());
-    fclose(res);
-    averageAccuracy = averagePercentage[def::numOfClasses];
     cout << "average accuracy = " << averageAccuracy << endl;
 }
 
@@ -666,7 +632,6 @@ void Net::drawWtsSlot()
     {
         return;
     }
-
     drawWts(helpString);
 }
 
@@ -888,43 +853,51 @@ void Net::tall()
 
 void Net::tallNetIndices(const vector<int> & indices)
 {
-    double Error = 0.;
-    vector<double> NumberOfErrors(def::numOfClasses, 0.);
-    vector<double> NumOfVectorsOfClass(def::numOfClasses, 0.); // local countClass
-    bool res;
+    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                                  + slash() + "badFiles.txt");
+    ofstream badFilesStr;
+    badFilesStr.open(helpString.toStdString(), ios_base::app);
 
+    matrix localConfusionMatrix(def::numOfClasses, def::numOfClasses);
     for(int i = 0; i < indices.size(); ++i)
     {
-        NumOfVectorsOfClass[ types[ indices[i] ] ] += 1.;
-
-        res = ClassificateVector(indices[i]);
-        if(!res)
+        const int outClass = ClassificateVector(indices[i]);
+        if(types[ indices[i] ] != outClass )
         {
-            NumberOfErrors[ types[ indices[i] ] ] += 1.;
+            badFilesStr << fileNames[ indices[i] ] << endl;
         }
+        localConfusionMatrix[ types[ indices[i] ] ][ outClass ] += 1.;
+        confusionMatrix[ types[ indices[i] ] ][ outClass ] += 1.;
     }
-    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "log.txt");
+    badFilesStr.close();
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                          + slash() + "log.txt");
     ofstream logStream;
     logStream.open(helpString.toStdString(), ios_base::app);
-    helpString.clear();
+
     for(int i = 0; i < def::numOfClasses; ++i)
     {
-        logStream << doubleRound( (1. - NumberOfErrors[i] / NumOfVectorsOfClass[i]) * 100., 2) << '\t';
-        helpString += "Percentage[" + QString::number(i) + "] = ";
-        helpString += QString::number( (1. - NumberOfErrors[i] / NumOfVectorsOfClass[i]) * 100.) + " % \n";
+        const double num = localConfusionMatrix[i].sum();
+        if(num != 0.)
+        {
+            logStream << doubleRound( localConfusionMatrix[i][i] * 100. / num, 2) << '\t';
+        }
+        else
+        {
+            // no errors if there werent such files - N-fold only
+            logStream << "pew" << '\t';
+        }
     }
+
+    double corrSum = 0.;
     for(int i = 0; i < def::numOfClasses; ++i)
     {
-        Error += NumberOfErrors[i];
+        corrSum += localConfusionMatrix[i][i];
     }
-    averageAccuracy = (1. - Error / indices.size()) * 100.;
-    helpString += "Percentage[all] = " + QString::number(averageAccuracy) + " % \n";
+    averageAccuracy = corrSum / indices.size() * 100.;
 
     logStream << doubleRound(averageAccuracy, 2) << endl;
     logStream.close();
-    //automatization
-    ++numOfTall;
 }
 
 void Net::readWtsByName(const QString & fileName,
@@ -1075,7 +1048,8 @@ void Net::leaveOneOut()
         LearNetIndices(learnIndices);
         tallNetIndices({i});
     }
-    cout << "N-fold cross-validation - ";
+    cout << endl;
+    cout << "N-fold cross-validation:" << endl;
     averageClassification();
 }
 
@@ -1120,6 +1094,22 @@ void Net::PaIntoMatrixByName(const QString & fileName)
                classCount);
 }
 
+void Net::loadDataSlot()
+{
+    QString helpString = QFileDialog::getExistingDirectory((QWidget * )NULL,
+                                                           tr("load data"),
+                                                           def::dir->absolutePath());
+    if(helpString.isEmpty())
+    {
+        QMessageBox::information((QWidget * )this,
+                                 tr("Information"),
+                                 tr("No directory was chosen"),
+                                 QMessageBox::Ok);
+        return;
+    }
+    loadData(helpString);
+}
+
 // like readPaFile from library.cpp
 void Net::loadData(const QString & spectraPath,
                    double rdcCoeff)
@@ -1128,23 +1118,25 @@ void Net::loadData(const QString & spectraPath,
     makeFileLists(spectraPath, leest);
 
     dataMatrix = matrix();
-    classCount.resize(def::numOfClasses, 0.);
+    classCount.resize(def::numOfClasses);
     types.clear();
     fileNames.clear();
 
     lineType tempArr;
     for(int i = 0; i < leest.size(); ++i)
     {
+        classCount[i] = 0.;
         for(const QString & fileName : leest[i])
         {
             readFileInLine(spectraPath + slash() + fileName,
                            tempArr);
             dataMatrix.push_back(tempArr / rdcCoeff);
-            ++classCount[i];
+            classCount[i] += 1.;
             types.push_back(i);
             fileNames.push_back(fileName);
         }
     }
+
 }
 
 //void Net::loadDataFromFolder(const QString & spectraPath)
@@ -1201,12 +1193,12 @@ void Net::methodSetParam(int a, bool ch)
         ui->dimensionalityLineEdit->setText("0 22 0");
         ui->dimensionalityLineEdit->setReadOnly(false);
     }
-    reset();
+//    reset();
 }
 
 void Net::LearnNet()
 {
-    vector <int> mixNum;
+    vector<int> mixNum;
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         mixNum.push_back(i);
@@ -1218,6 +1210,8 @@ void Net::LearNetIndices(vector<int> mixNum)
 {
     QTime myTime;
     myTime.start();
+
+    reset();
 
     const int numOfLayers = dimensionality.size();
     vector<valarray<double>> deltaWeights(numOfLayers);
@@ -1237,7 +1231,6 @@ void Net::LearNetIndices(vector<int> mixNum)
 
     int type = 0;
 
-    reset();
 
 
     /// edit due to Indices
@@ -1265,7 +1258,6 @@ void Net::LearNetIndices(vector<int> mixNum)
         std::shuffle(mixNum.begin(),
                      mixNum.end(),
                      std::default_random_engine(seed));
-//        cout << epoch << endl;
 
         for(const int & index : mixNum)
         {
@@ -1273,6 +1265,8 @@ void Net::LearNetIndices(vector<int> mixNum)
             std::copy(begin(dataMatrix[index]),
                       end(dataMatrix[index]),
                       begin(output[0]));
+
+
             // add bias
             output[0][output[0].size() - 1] = 1.;
             type = types[index];
@@ -1291,10 +1285,8 @@ void Net::LearNetIndices(vector<int> mixNum)
             //error in the last layer
             for(int j = 0; j < dimensionality.back(); ++j)
             {
-//                cout << j << endl;
                 currentError += pow((output.back()[j] - int(type == j) ), 2.);
             }
-//            cout << index << endl;
 #if 0
             /// check weight
             if(!deltaFlag) /// enum !
@@ -1372,18 +1364,18 @@ void Net::LearNetIndices(vector<int> mixNum)
 
 //        cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << endl;
     }
-    cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+//    cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 }
 
 
 
-bool Net::ClassificateVector(const int & vecNum)
+int Net::ClassificateVector(const int & vecNum)
 {
     const int type = types[vecNum];
     const int numOfLayers = dimensionality.size();
     const double temp = ui->tempBox->value();
 
-    matrix output(numOfLayers);
+    vector<valarray<double>> output(numOfLayers);
     output[0].resize(dimensionality[0] + 1); // for biases
 
     std::copy(begin(dataMatrix[vecNum]),
@@ -1402,7 +1394,15 @@ bool Net::ClassificateVector(const int & vecNum)
         output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
     }
 
-    /// deal with confusion matrix
+    return std::max_element(begin(output.back()),
+                            end(output.back()) - 1)  // -bias
+            - begin(output.back());
+
+
+    // more general
+//    return std::distance(output.back().begin(),
+//                         std::max_element(output.back().begin(),
+//                                          output.back().end()));
 
     for(int k = 0; k < dimensionality[numOfLayers - 1]; ++k)
     {
@@ -1496,7 +1496,6 @@ void Net::pca()
     QTime myTime;
     myTime.start();
 
-
     const int NumberOfVectors = dataMatrix.rows();
     const int NetLength = dataMatrix.cols();
 
@@ -1526,7 +1525,6 @@ void Net::pca()
     lineType eigenValues;
     const double eigenValuesTreshold = pow(10., -8.);
     const int numOfPc = ui->pcaNumberSpinBox->value();
-
 
     svd(centeredMatrix,
         eigenVectors,
@@ -1560,6 +1558,21 @@ void Net::pca()
                         pcaMatrix[j]);
 
     }
+
+//    pcaMatrix.resizeRows(def::colours.size());
+    eigenVectors = matrix::transpose(eigenVectors);
+    eigenVectors.resizeRows(3);
+
+
+    drawTemplate(def::dir->absolutePath()
+                 + slash() + "Help"
+                 + slash() + def::ExpName + "_pcas.jpg");
+    drawArrays(def::dir->absolutePath()
+               + slash() + "Help"
+               + slash() + def::ExpName + "_pcas.jpg",
+               eigenVectors,
+               true);
+
     cout << "pca: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
 #if 0
 
@@ -1628,8 +1641,6 @@ void Net::pca()
         ui->sammonLineEdit->clear();
     }
 #endif
-
-
 }
 
 
