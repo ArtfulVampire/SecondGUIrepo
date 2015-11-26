@@ -57,10 +57,9 @@ private:
     vector<int> channelsSetExclude;
 
     double averageAccuracy;
+    double kappa; // Cohen's
     int epoch;
-    int numOfTall;
 
-    int loadPAflag;
     bool stopFlag;
     bool autoFlag;
 
@@ -92,6 +91,7 @@ public:
                                  const QString & testTemplate = "test");
     void leaveOneOut();
     double getAverageAccuracy();
+    double getKappa();
     void setReduceCoeff(double coeff);
     double getReduceCoeff();
     void setNumOfPairs(int num);

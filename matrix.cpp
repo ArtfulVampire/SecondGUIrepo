@@ -417,7 +417,7 @@ double matrix::maxVal() const
                   this->data.end(),
                   [&res](const lineType & in)
     {
-        res = fmax(res, in.max());
+        res = max(res, in.max());
     });
     return res;
 }
@@ -428,7 +428,18 @@ double matrix::minVal() const
                   this->data.end(),
                   [&res](const lineType & in)
     {
-        res = fmin(res, in.min());
+        res = min(res, in.min());
+    });
+    return res;
+}
+double matrix::sum() const
+{
+    double res = 0.;
+    std::for_each(this->data.begin(),
+                  this->data.end(),
+                  [&res](const lineType & in)
+    {
+       res += in.sum();
     });
     return res;
 }

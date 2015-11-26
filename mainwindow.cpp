@@ -1746,7 +1746,7 @@ void MainWindow::customFunc()
 
     Net * ann = new Net();
 
-    for(int i = 0; i < 10; ++i)
+    for(int i = 0; i < 1; ++i)
     {
         ann->autoClassificationSimple();
     }

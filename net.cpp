@@ -82,16 +82,16 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(7.); // 1. for MATI? usually 5.     0.7 for best comp set
+    ui->rdcCoeffSpinBox->setValue(5.); // 1. for MATI? usually 5.     0.7 for best comp set
     ui->rdcCoeffSpinBox->setSingleStep(0.5);
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
-    ui->highLimitSpinBox->setValue(180);
+    ui->highLimitSpinBox->setValue(150);
 
     ui->lowLimitSpinBox->setMaximum(500);
     ui->lowLimitSpinBox->setMinimum(50);
-    ui->lowLimitSpinBox->setValue(50);
+    ui->lowLimitSpinBox->setValue(80);
 
 
 
@@ -222,10 +222,10 @@ void Net::adjustParamsGroup2(QAbstractButton * but)
     }
     else
     {
-        ui->highLimitSpinBox->setValue(130);
+        ui->highLimitSpinBox->setValue(150);
         ui->lowLimitSpinBox->setValue(80);
-        ui->epochSpinBox->setValue(250);
-        ui->rdcCoeffSpinBox->setValue(7.5);
+        ui->epochSpinBox->setValue(300);
+        ui->rdcCoeffSpinBox->setValue(5.);
         ui->foldSpinBox->setValue(2.);
     }
 }
@@ -453,7 +453,8 @@ void Net::autoClassification(const QString & spectraDir)
     confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
     confusionMatrix.fill(0.);
 
-    loadData(spectraDir, ui->rdcCoeffSpinBox->value());
+    loadData(spectraDir,
+             ui->rdcCoeffSpinBox->value());
 
     adjustLearnRate(ui->lowLimitSpinBox->value(),
                     ui->highLimitSpinBox->value()); // or reduce coeff ?
@@ -461,20 +462,7 @@ void Net::autoClassification(const QString & spectraDir)
 //    double newReduceCoeff = adjustReduceCoeff(spectraDir,
 //                                              ui->lowLimitSpinBox->value(),
 //                                              ui->highLimitSpinBox->value());
-//    if(newReduceCoeff <= 0.1) // threshold
-//    {
-//        averageAccuracy = 0.;
-//        cout <<  "AutoClass: unsuccessful, time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
-//        averageAccuracy = 0.;
-//        return;
-//    }
-//    ui->rdcCoeffSpinBox->setValue(newReduceCoeff);
-//    const double coeff = ui->rdcCoeffSpinBox->value();
 
-//    makePaStatic(spectraDir,
-//                 fold,
-//                 coeff);
-//    PaIntoMatrixByName("all");
 
     if(ui->crossRadioButton->isChecked())
     {
@@ -563,6 +551,12 @@ double Net::getAverageAccuracy()
     return this->averageAccuracy;
 }
 
+double Net::getKappa()
+{
+    return this->kappa;
+}
+
+
 void Net::setReduceCoeff(double coeff)
 {
     this->ui->rdcCoeffSpinBox->setValue(coeff);
@@ -589,11 +583,11 @@ void Net::averageClassification()
 
     for(int i = 0; i < def::numOfClasses; ++i)
     {
-        for(int j = 0; j < def::numOfClasses; ++j)
-        {
-            cout << confusionMatrix[i][j] << '\t';
-        }
-        cout << endl;
+//        for(int j = 0; j < def::numOfClasses; ++j)
+//        {
+//            cout << confusionMatrix[i][j] << '\t';
+//        }
+//        cout << endl;
 
 
         const double num = confusionMatrix[i].sum();
@@ -606,19 +600,35 @@ void Net::averageClassification()
             res << "pew" << '\t';
         }
     }
+
+    // count averages, kappas
     double corrSum = 0.;
     double wholeNum = 0.;
+
     for(int i = 0; i < def::numOfClasses; ++i)
     {
         corrSum += confusionMatrix[i][i];
         wholeNum += confusionMatrix[i].sum();
     }
     averageAccuracy = corrSum * 100. / wholeNum;
+
+    // kappa
+    double pE = 0.; // for Cohen's kappa
+    const double S = confusionMatrix.sum();
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        pE += (confusionMatrix[i].sum() * confusionMatrix.getCol(i).sum()) /
+              (S * S);
+    }
+    kappa = 1. - (1. - corrSum / wholeNum) / (1. - pE);
+
     res << doubleRound(averageAccuracy, 2) << '\t';
+    res << doubleRound(kappa, 3) << '\t';
     res << def::ExpName << endl;
     res.close();
 
-    cout << "average accuracy = " << averageAccuracy << endl;
+    cout << "average accuracy = " << doubleRound(averageAccuracy, 2) << endl;
+    cout << "kappa = " << kappa << endl;
 }
 
 
