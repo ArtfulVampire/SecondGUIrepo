@@ -1737,84 +1737,32 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
-
-    ofstream outStr;
-    outStr.open((def::dir->absolutePath()
-                + slash() + "diffFreq.txt").toStdString(), ios_base::app);
-
-//    countSpectraSimple(4096, 15);
-
     Net * ann = new Net();
+    ann->setReduceCoeff(1.);
 
-    for(int i = 0; i < 1; ++i)
+    ann->autoClassificationSimple();
+    exit(0);
+
+    QString helpString = def::dir->absolutePath()
+                         + slash() + "diffNorm.txt";
+    ofstream outStr;
+    outStr.open(helpString.toStdString(), ios_base::app);
+
+
+
+
+    for(double tmp : {7., 5., 4., 3., 2.})
     {
+        def::drawNorm = tmp;
         ann->autoClassificationSimple();
+        outStr << def::drawNorm << '\t'
+               << ann ->getAverageAccuracy() << '\t'
+               << ann->getKappa() << endl;
     }
+    outStr.close();
     exit(0);
 
-//    for(double it : {1., 1.5, 3., 4., 5., 7., 10.})
-//    {
-
-//        ann->setReduceCoeff(it);
-//        for(int i = 0; i < 10; ++i)
-//        {
-
-//            outStr << it << "\t" << ann->getAverageAccuracy() << endl;
-//        }
-//    }
-//    outStr.close();
-//    ann->show();
     return;
-
-//    def::leftFreq = 5.;
-//    def::rightFreq = 20.;
-
-//    const double freqStep = 0.25;
-
-//    for(def::leftFreq = 5.; def::leftFreq <= 8.5; def::leftFreq += freqStep)
-//    {
-//        for(def::rightFreq = 20.; def::rightFreq >= 12.5; def::rightFreq -= freqStep)
-//        {
-//            countSpectraSimple(4096, 15);
-
-//            ann->loadData();
-//            ann->autoClassificationSimple();
-//            outStr << def::leftFreq << "\t"
-//                   << def::rightFreq << "\t"
-//                   << ann->getAverageAccuracy() << endl;
-//        }
-//    }
-
-    exit(0);
-
-//    return;
-//    cout << areEqualFiles("/media/Files/Data/AAX/AAX_datic.edf",
-//                  "/media/Files/Data/AAX/AAX_datic_0.edf") << endl;
-//    exit(8);
-
-//    ui->matiCheckBox->setChecked(true);
-//    setEdfFile("/media/Files/Data/Mati/GoodData/PYV_cl.edf");
-
-
-
-//    Net * ann = new Net();
-//    ann->show();
-//    ann->LearnNet();
-
-//    countSpectraSimple(4096, 15);
-//    matrix dat;
-//    int num;
-//    readPlainData("/media/Files/Data/AAX/Realisations/AAX_rr_f_new.0002_254",
-//                  dat,
-//                  20, num);
-
-    return;
-
-//    setEdfFile(def::dataFolder + slash() + "AAU_train_rr_f3.5-40_new.edf");
-//    Net * ann = new Net();
-//    ann->show();
-//    ann->autoClassificationSimple();
-//    return;
 
     ui->reduceChannelsComboBox->setCurrentText("20");
     const QStringList names {"AAU", "BEA", "CAA", "GAS", "SUA"};

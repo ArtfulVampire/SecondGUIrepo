@@ -36,15 +36,15 @@ Net::Net() :
     group3->addButton(ui->backpropRadioButton);
     group3->addButton(ui->deepBeliefRadioButton);
 
-    ui->crossRadioButton->setChecked(true); /// cross
-    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
+    ui->crossRadioButton->setChecked(true); /// k-fold
+//    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
     if(def::OssadtchiFlag)
     {
         ui->trainTestRadioButton->setChecked(true); /// train-test
     }
 
     ui->realsRadioButton->setChecked(true);
-//    ui->windowsRadioButton->setChecked(true); /// windows
+    ui->windowsRadioButton->setChecked(true); /// windows
 //    ui->pcaRadioButton->setChecked(true); /// PCA
 
     ui->backpropRadioButton->setChecked(false);
@@ -62,6 +62,8 @@ Net::Net() :
     ui->critErrorDoubleSpinBox->setSingleStep(0.01);
     ui->critErrorDoubleSpinBox->setDecimals(4);
 
+    ui->learnRateBox->setMinimum(0.001);
+    ui->learnRateBox->setMaximum(1.0);
     ui->learnRateBox->setValue(0.1);
     ui->learnRateBox->setSingleStep(0.01);
     ui->learnRateBox->setDecimals(3);
@@ -72,12 +74,12 @@ Net::Net() :
 
     ui->numOfPairsBox->setMaximum(100);
     ui->numOfPairsBox->setMinimum(1);
-    ui->numOfPairsBox->setValue(30); /////////////////////////////
+    ui->numOfPairsBox->setValue(30); //// pairs
 
 #define INDICES 1
     ui->foldSpinBox->setMaximum(10);
     ui->foldSpinBox->setMinimum(1);
-    ui->foldSpinBox->setValue(2);
+    ui->foldSpinBox->setValue(4); /////// fold
 
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
@@ -1117,8 +1119,10 @@ void Net::loadDataSlot()
                                  QMessageBox::Ok);
         return;
     }
-    loadData(helpString);
+    loadData(helpString,
+             ui->rdcCoeffSpinBox->value());
 }
+
 
 // like readPaFile from library.cpp
 void Net::loadData(const QString & spectraPath,
@@ -1146,7 +1150,30 @@ void Net::loadData(const QString & spectraPath,
             fileNames.push_back(fileName);
         }
     }
-
+#if 1
+    lineType avRow = dataMatrix.averageRow();
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        dataMatrix[i] -= avRow;
+    }
+#endif
+#if 1
+    dataMatrix.transpose();
+    double norm = 1.;
+    if(ui->realsRadioButton->isChecked())
+    {
+        norm = 10.;
+    }
+    else if(ui->windowsRadioButton->isChecked())
+    {
+        norm = 5.;
+    }
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        dataMatrix[i] /= sigma(dataMatrix[i]) * norm; // to equal variance, 10 for reals, 5 winds
+    }
+    dataMatrix.transpose();
+#endif
 }
 
 //void Net::loadDataFromFolder(const QString & spectraPath)
@@ -1374,7 +1401,7 @@ void Net::LearNetIndices(vector<int> mixNum)
 
 //        cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << endl;
     }
-//    cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+    cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
 }
 
 
