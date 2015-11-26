@@ -112,7 +112,7 @@ public:
 
     void readWtsByName(const QString & fileName,
                        twovector<lineType> * wtsMatrix = nullptr);
-    void drawWts(const QString & wtsPath = QString(),
+    void drawWts(QString wtsPath = QString(),
                  QString picPath = QString());
 
 

@@ -344,7 +344,8 @@ void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
 void MainWindow::reduceChannelsEDFSlot()
 {
     QString helpString;
-    helpString = def::dir->absolutePath() + slash() + def::ExpName + "_rdcChan.edf";
+    helpString = def::dir->absolutePath()
+                 + slash() + def::ExpName + "_rdcChan.edf";
     reduceChannelsEDF(helpString);
 }
 
@@ -355,21 +356,21 @@ void MainWindow::reduceChannelsEDF(const QString & newFilePath)
     edfFile temp;
     temp.readEdfFile(ui->filePathLineEdit->text());
 
-    QStringList lst;
-    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-//    if(!QString(temp.getLabels()[lst.last().toInt() - 1]).contains("Markers"))
-    if(lst.last().toInt() - 1 != temp.getMarkChan())
-    {
-        cout << "reduceChannelsEDF: no markers channel" << endl;
-        return;
-    }
-
     vector<int> chanList;
-    for(const QString & str : lst)
-    {
-        chanList.push_back(str.toInt() - 1);
-    }
+    makeChanList(chanList);
+
     temp.reduceChannels(chanList);
+
+    for(int i = 0; i < chanList.size(); ++i)
+    {
+        for(int j = 0; j < 5; ++j)
+        {
+            cout << temp.getData()[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << endl;
+
     temp.writeEdfFile(newFilePath);
 
     cout << "reduceChannelsEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;

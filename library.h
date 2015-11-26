@@ -381,10 +381,13 @@ void drawMapSpline(const matrix & matrixA,
                    const int picSize = 240,
                    const ColorScale colorTheme = jet);
 
-void drawMapsICA(const QString & mapsFilePath,
-                 const QString & outDir = QString(def::dir->absolutePath()
-                                                  + slash() + "Help"
-                                                  + slash() + "maps"),
+void drawMapsICA(const QString & mapsFilePath = def::dir->absolutePath()
+                                                + slash() + "Help"
+                                                + slash() + "ica"
+                                                + slash() + def::ExpName + "_maps.txt",
+                 const QString & outDir = def::dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + "maps",
                  const QString & outName = def::ExpName,
                  const ColorScale colourTheme = jet,
                  void (*draw1MapFunc)(const matrix &,
@@ -395,12 +398,16 @@ void drawMapsICA(const QString & mapsFilePath,
                                       const int,
                                       const ColorScale) = &drawMapSpline);
 
-void drawMapsOnSpectra(const QString & inSpectraFilePath,
-                       const QString & outSpectraFilePath,
+void drawMapsOnSpectra(const QString & inSpectraFilePath = def::dir->absolutePath()
+                                                           + slash() + "Help"
+                                                           + slash() + def::ExpName + "_all.jpg",
+                       const QString & outSpectraFilePath = def::dir->absolutePath()
+                                                            + slash() + "Help"
+                                                            + slash() + def::ExpName + "_all_wm.jpg",
                        const QString & mapsDirPath = def::dir->absolutePath()
                                                      + slash() + "Help"
                                                      + slash() + "maps",
-                       const QString & mapsNames = def::ExpName);
+                       const QString & mapsNames = def::ExpName.left(def::ExpName.lastIndexOf("_ica")));
 
 
 

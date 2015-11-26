@@ -569,6 +569,12 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
                        const QString &mapsDirPath,
                        const QString &mapsNames)
 {
+//    cout << def::ExpName << endl;
+//    cout << inSpectraFilePath << endl;
+//    cout << outSpectraFilePath << endl;
+//    cout << mapsDirPath << endl;
+//    cout << mapsNames << endl;
+
     QPixmap pic;
     pic = QPixmap(inSpectraFilePath);
     QPainter paint;
@@ -599,7 +605,9 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
                 return;
             }
         }
+//        cout << 1 << endl;
         pic1 = QPixmap(helpString);
+//        cout << 2 << endl;
 
 
 

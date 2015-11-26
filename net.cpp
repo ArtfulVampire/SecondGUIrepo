@@ -43,8 +43,8 @@ Net::Net() :
         ui->trainTestRadioButton->setChecked(true); /// train-test
     }
 
-    ui->realsRadioButton->setChecked(true);
-    ui->windowsRadioButton->setChecked(true); /// windows
+    ui->realsRadioButton->setChecked(true); /// reals
+//    ui->windowsRadioButton->setChecked(true); /// windows
 //    ui->pcaRadioButton->setChecked(true); /// PCA
 
     ui->backpropRadioButton->setChecked(false);
@@ -74,7 +74,7 @@ Net::Net() :
 
     ui->numOfPairsBox->setMaximum(100);
     ui->numOfPairsBox->setMinimum(1);
-    ui->numOfPairsBox->setValue(30); //// pairs
+    ui->numOfPairsBox->setValue(15); //// pairs
 
 #define INDICES 1
     ui->foldSpinBox->setMaximum(10);
@@ -540,6 +540,9 @@ void Net::autoClassification(const QString & spectraDir)
     {
         trainTestClassification();
     }
+    LearnNet();
+    writeWts();
+    drawWts();
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
@@ -648,15 +651,20 @@ void Net::drawWtsSlot()
 }
 
 
-void Net::drawWts(const QString & wtsPath,
+void Net::drawWts(QString wtsPath,
                   QString picPath)  //generality
 {
     if( dimensionality.size() != 2 ) return;
 
     if(!QFile::exists(wtsPath))
     {
-        cout << "drawWts: bad filePath" << endl;
-        return;
+        wtsPath = def::dir->absolutePath()
+                  + slash() + def::ExpName + ".wts";
+        if(!QFile::exists(wtsPath))
+        {
+            cout << "drawWts: bad filePath" << endl;
+            return;
+        }
     }
     twovector<lineType> tempWeights;
     readWtsByName(wtsPath, &tempWeights);
@@ -1168,6 +1176,7 @@ void Net::loadData(const QString & spectraPath,
     {
         norm = 5.;
     }
+    norm = def::drawNorm;
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         dataMatrix[i] /= sigma(dataMatrix[i]) * norm; // to equal variance, 10 for reals, 5 winds

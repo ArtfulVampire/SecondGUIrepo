@@ -853,6 +853,7 @@ void edfFile::handleAnnotations(const int & currNs,
 void edfFile::adjustArraysByChannels()
 {
     this->ns = this->channels.size();
+
     this->bytes = 256 * (this->ns + 1);
 
     this->labels.clear();
@@ -1356,7 +1357,7 @@ void edfFile::reduceChannels(const vector<int> & chanList) // much memory
 #if DATA_POINTER
     (*(this->dataPointer)).clear();
 #else
-    this->data.clear();
+    this->data = edfDataType();
 #endif
 #endif
 

@@ -1730,37 +1730,82 @@ void MainWindow::setNsSlot(int a)
     ui->setNsLine->clear();
 }
 
-
-
-
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-    setEdfFile("/media/Files/Data/AAX/AAX_sum.edf");
-    Net * ann = new Net();
-    ann->setReduceCoeff(1.);
+//    return;
 
-    ann->autoClassificationSimple();
-    exit(0);
-
-    QString helpString = def::dir->absolutePath()
-                         + slash() + "diffNorm.txt";
-    ofstream outStr;
-    outStr.open(helpString.toStdString(), ios_base::app);
-
-
-
-
-    for(double tmp : {7., 5., 4., 3., 2.})
+    const QString path = "/media/Files/Data/Feedback/SuccessClass/";
+    QStringList leest = QDir(path).entryList({"*_ica.edf"}, QDir::Files);
+    for(QString name : leest)
     {
-        def::drawNorm = tmp;
-        ann->autoClassificationSimple();
-        outStr << def::drawNorm << '\t'
-               << ann ->getAverageAccuracy() << '\t'
-               << ann->getKappa() << endl;
+
+////        QString newName = name;
+////        newName.remove("_new");
+////        QFile::rename(path + name,
+////                      path + newName);
+
+
+//        setEdfFile(path + name);
+//        ICA();
+//        QString newName = name;
+//        newName.replace(".edf", "_ica.edf");
+//        if(name != "AAU_test_ica.edf") continue;
+        def::drawNorm = -1;
+        setEdfFile(path + name);
+        cleanDirs();
+        sliceAll();
+        countSpectraSimple(4096, 15);
+        drawMapsOnSpectra();
     }
-    outStr.close();
     exit(0);
+
+    drawMapsICA(def::dir->absolutePath()
+                + slash() + "Help"
+                + slash() + "ica"
+                + slash() + "AAU_test_maps.txt");
+    setEdfFile("/media/Files/Data/Feedback/SuccessClass/AAU_test_ica.edf");
+    drawMapsOnSpectra();
+    exit(0);
+//    setEdfFile("/media/Files/Data/AAX/AAX_sum_ica.edf");
+//    readData();
+//    ui->reduceChannelsLineEdit->setText("1 3 4 5 6 8 9 10 13 20");
+//    reduceChannelsEDFSlot();
+
+
+    setEdfFile("/media/Files/Data/AAX/AAX_sum_ica_rdcChan.edf");
+//    readData();
+//    for(int i = 0; i < 50; ++i)
+//    {
+//        cout << globalEdf.getData()[globalEdf.getMarkChan()][i] << "\t";
+//    }
+//    cout << endl;
+
+//    exit(1);
+
+
+//    return;
+//    Net * ann = new Net();
+
+//    ann->setReduceCoeff(7.);
+//    ann->autoClassificationSimple();
+//    exit(0);
+
+//    QString helpString = def::dir->absolutePath()
+//                         + slash() + "diffNorm.txt";
+//    ofstream outStr;
+//    outStr.open(helpString.toStdString(), ios_base::app);
+
+//    for(double tmp : {7., 7.5, 8., 8.5, 9., 9.5})
+//    {
+//        def::drawNorm = tmp;
+//        ann->autoClassificationSimple();
+//        outStr << def::drawNorm << '\t'
+//               << ann ->getAverageAccuracy() << '\t'
+//               << ann->getKappa() << endl;
+//    }
+//    outStr.close();
+//    exit(0);
 
     return;
 
