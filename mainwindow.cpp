@@ -1736,27 +1736,41 @@ void MainWindow::customFunc()
 //    return;
 
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
-    QStringList leest = QDir(path).entryList({"*_ica.edf"}, QDir::Files);
-    for(QString name : leest)
+    ui->reduceChannelsComboBox->setCurrentText("20");
+    const QStringList names {"AAU", "BEA", "CAA", "GAS", "SUA"};
+    for(QString name : names)
     {
 
-////        QString newName = name;
-////        newName.remove("_new");
-////        QFile::rename(path + name,
-////                      path + newName);
+#if 0
+        QString newName = name;
+        newName.remove("_new");
+        QFile::rename(path + name,
+                      path + newName);
+#endif
 
-
+#if 0
 //        setEdfFile(path + name);
 //        ICA();
 //        QString newName = name;
 //        newName.replace(".edf", "_ica.edf");
 //        if(name != "AAU_test_ica.edf") continue;
+#endif
+#if 1
         def::drawNorm = -1;
-        setEdfFile(path + name);
-        cleanDirs();
-        sliceAll();
-        countSpectraSimple(4096, 15);
-        drawMapsOnSpectra();
+        for(QString suffix : {"_train", "_test"})
+        {
+            setEdfFile(path + name + suffix + "_ica_ord.edf");
+            drawMapsICA();
+            cleanDirs();
+            sliceAll();
+            countSpectraSimple(4096, 15);
+            drawMapsOnSpectra();
+        }
+#endif
+#if 0
+        ICsSequence(path + name + "_train_ica.edf",
+                    path + name + "_test_ica.edf");
+#endif
     }
     exit(0);
 
@@ -1809,8 +1823,6 @@ void MainWindow::customFunc()
 
     return;
 
-    ui->reduceChannelsComboBox->setCurrentText("20");
-    const QStringList names {"AAU", "BEA", "CAA", "GAS", "SUA"};
 //    for(auto guy : names)
 //    {
 //        for(QString type : {"_test", "_train"})

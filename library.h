@@ -407,7 +407,7 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath = def::dir->absolutePat
                        const QString & mapsDirPath = def::dir->absolutePath()
                                                      + slash() + "Help"
                                                      + slash() + "maps",
-                       const QString & mapsNames = def::ExpName.left(def::ExpName.lastIndexOf("_ica")));
+                       const QString & mapsNames = def::ExpName);
 
 
 

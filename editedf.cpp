@@ -361,15 +361,15 @@ void MainWindow::reduceChannelsEDF(const QString & newFilePath)
 
     temp.reduceChannels(chanList);
 
-    for(int i = 0; i < chanList.size(); ++i)
-    {
-        for(int j = 0; j < 5; ++j)
-        {
-            cout << temp.getData()[i][j] << "\t";
-        }
-        cout << endl;
-    }
-    cout << endl;
+//    for(int i = 0; i < chanList.size(); ++i)
+//    {
+//        for(int j = 0; j < 5; ++j)
+//        {
+//            cout << temp.getData()[i][j] << "\t";
+//        }
+//        cout << endl;
+//    }
+//    cout << endl;
 
     temp.writeEdfFile(newFilePath);
 

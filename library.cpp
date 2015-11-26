@@ -547,7 +547,7 @@ void drawMapsICA(const QString &mapsFilePath,
                                       const ColorScale))
 {
     matrix matrixA(def::nsWOM(), def::nsWOM());
-    readICAMatrix(mapsFilePath, matrixA);
+    readICAMatrix(QString(mapsFilePath).remove("_ica"), matrixA);
     double maxAbs = matrixA[0][0];
     for(int i = 0; i < matrixA.rows(); ++i)
     {
@@ -559,7 +559,7 @@ void drawMapsICA(const QString &mapsFilePath,
 
     for(int i = 0; i < def::nsWOM(); ++i)
     {
-        draw1MapFunc(matrixA, i, outDir, outName, maxAbs, 240, colourTheme);
+        draw1MapFunc(matrixA, i, outDir, QString(outName).remove("_ica"), maxAbs, 240, colourTheme);
     }
 }
 
@@ -591,10 +591,12 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
 
+    const QString mapNam = QString(mapsNames).remove("_ica");
+
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         helpString = mapsDirPath
-                     + slash() + mapsNames
+                     + slash() + mapNam
                      + "_map_" + QString::number(i) + "+.png";
         if(!QFile::exists(helpString))
         {
