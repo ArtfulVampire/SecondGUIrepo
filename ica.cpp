@@ -1380,6 +1380,7 @@ void MainWindow::transformEdfMaps(const QString & inEdfPath,
     cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
+
 void MainWindow::transformReals() //move to library
 {
     // I dont care, I dont need this shit anymore

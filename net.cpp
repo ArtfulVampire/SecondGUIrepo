@@ -19,6 +19,7 @@ Net::Net() :
     QFile::remove(helpString);
 
     stopFlag = 0;
+    confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
 
 //    tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
 
@@ -37,14 +38,15 @@ Net::Net() :
     group3->addButton(ui->deepBeliefRadioButton);
 
     ui->crossRadioButton->setChecked(true); /// k-fold
-//    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
+    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
+//    ui->trainTestRadioButton->setChecked(true); /// train-test
     if(def::OssadtchiFlag)
     {
         ui->trainTestRadioButton->setChecked(true); /// train-test
     }
 
-    ui->realsRadioButton->setChecked(true); /// reals
-//    ui->windowsRadioButton->setChecked(true); /// windows
+//    ui->realsRadioButton->setChecked(true); /// reals
+    ui->windowsRadioButton->setChecked(true); /// windows
 //    ui->pcaRadioButton->setChecked(true); /// PCA
 
     ui->backpropRadioButton->setChecked(false);
@@ -61,6 +63,7 @@ Net::Net() :
     ui->critErrorDoubleSpinBox->setValue(0.10);
     ui->critErrorDoubleSpinBox->setSingleStep(0.01);
     ui->critErrorDoubleSpinBox->setDecimals(4);
+    ui->critErrorDoubleSpinBox->setValue(0.033); /// errcrit PEWPEW
 
     ui->learnRateBox->setMinimum(0.001);
     ui->learnRateBox->setMaximum(1.0);
@@ -74,7 +77,7 @@ Net::Net() :
 
     ui->numOfPairsBox->setMaximum(100);
     ui->numOfPairsBox->setMinimum(1);
-    ui->numOfPairsBox->setValue(15); //// pairs
+    ui->numOfPairsBox->setValue(10); //// pairs
 
 #define INDICES 1
     ui->foldSpinBox->setMaximum(10);
@@ -84,16 +87,17 @@ Net::Net() :
     ui->rdcCoeffSpinBox->setMaximum(100);
     ui->rdcCoeffSpinBox->setDecimals(3);
     ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setValue(5.); // 1. for MATI? usually 5.     0.7 for best comp set
     ui->rdcCoeffSpinBox->setSingleStep(0.5);
+
+    ui->rdcCoeffSpinBox->setValue(4.5); ///  rdc coeff
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
-    ui->highLimitSpinBox->setValue(150);
+    ui->highLimitSpinBox->setValue(120); /// highLimit
 
     ui->lowLimitSpinBox->setMaximum(500);
     ui->lowLimitSpinBox->setMinimum(50);
-    ui->lowLimitSpinBox->setValue(80);
+    ui->lowLimitSpinBox->setValue(70);  /// lowLimit
 
 
 
@@ -143,7 +147,7 @@ Net::Net() :
 //    QObject::connect(ui->loadPaButton, SIGNAL(clicked()), this, SLOT(PaIntoMatrix()));
     QObject::connect(ui->loadPaButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
 
-    QObject::connect(ui->learnButton, SIGNAL(clicked()), this, SLOT(LearnNet()));
+    QObject::connect(ui->learnButton, SIGNAL(clicked()), this, SLOT(learnNet()));
 
     QObject::connect(ui->testAllButton, SIGNAL(clicked()), this, SLOT(tall()));
 
@@ -213,6 +217,44 @@ int Net::getEpoch()
     return epoch;
 }
 
+double Net::getLrate()
+{
+    return ui->learnRateBox->value();
+}
+
+
+void Net::setMode(const QString & in)
+{
+    if(in.contains("k-fold", Qt::CaseInsensitive)
+       || in.startsWith('k', Qt::CaseInsensitive))
+    {
+        ui->crossRadioButton->setChecked(true);
+    }
+    else if(in.contains("N-fold", Qt::CaseInsensitive)
+            || in.startsWith('N', Qt::CaseInsensitive))
+    {
+        ui->leaveOneOutRadioButton->setChecked(true);
+    }
+    else if(in.contains("train", Qt::CaseInsensitive)
+            || in.contains("tets", Qt::CaseInsensitive)
+            || in.startsWith('t', Qt::CaseInsensitive))
+    {
+        ui->trainTestRadioButton->setChecked(true);
+    }
+}
+
+void Net::setSource(const QString & in)
+{
+    if(in.contains("real", Qt::CaseInsensitive) || in.startsWith('r'))
+    {
+        ui->realsRadioButton->setChecked(true);
+    }
+    else if(in.contains("wind", Qt::CaseInsensitive) || in.startsWith('w'))
+    {
+        ui->windowsRadioButton->setChecked(true);
+    }
+}
+
 void Net::adjustParamsGroup2(QAbstractButton * but)
 {
     if(but->text().contains("Bayes", Qt::CaseInsensitive))
@@ -241,16 +283,45 @@ double Net::adjustLearnRate(int lowLimit,
     QTime myTime;
     myTime.start();
 
-    double res;
+    double res = 1.;
     double currVal;
 
     cout << "adjustLearnRate: start" << endl;
-    while(1)
+    vector<int> mixNum;
+    if(ui->trainTestRadioButton->isChecked())
+    {
+        for(int i = 0; i < fileNames.size(); ++i)
+        {
+            if(fileNames[i].contains("_train"))
+            {
+                mixNum.push_back(i);
+            }
+        }
+    }
+    else if(ui->leaveOneOutRadioButton->isChecked())
+    {
+        for(int i = 0; i < dataMatrix.rows(); ++i)
+        {
+            mixNum.push_back(i);
+        }
+    }
+    else if(ui->crossRadioButton->isChecked())
+    {
+        /// remake
+        for(int i = 0; i < dataMatrix.rows() / 2; ++i)
+        {
+            mixNum.push_back(i * 2);
+        }
+    }
+
+    int counter = 0;
+    do
     {
         /// remake with indices
         currVal = ui->learnRateBox->value();
+        cout << "lrate = " << currVal << '\t';
 
-        LearnNet();
+        learnNetIndices(mixNum);
 
         if(this->getEpoch() > highLimit
            || this->getEpoch() < lowLimit)
@@ -266,7 +337,8 @@ double Net::adjustLearnRate(int lowLimit,
             res = currVal;
             break;
         }
-    }
+        ++counter;
+    } while (counter < 15);
     cout << "adjustLearnRate: lrate = " << res << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
     return res;
 }
@@ -305,7 +377,7 @@ double Net::adjustReduceCoeff(QString spectraDir,
         if(!ui->trainTestRadioButton->isChecked())
         {
             PaIntoMatrixByName(paFileName);
-            LearnNet();
+            learnNet();
         }
         else
         {
@@ -331,7 +403,7 @@ double Net::adjustReduceCoeff(QString spectraDir,
 //            {
 //                cout << item << "\t" << fileNames[item] << endl;
 //            }
-            LearNetIndices(learnIndices);
+            learnNetIndices(learnIndices);
         }
 
         if(this->getEpoch() > highLimit
@@ -452,7 +524,6 @@ void Net::autoClassification(const QString & spectraDir)
     const int numOfPairs = ui->numOfPairsBox->value();
     const int fold = ui->foldSpinBox->value();
 
-    confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
     confusionMatrix.fill(0.);
 
     loadData(spectraDir,
@@ -493,7 +564,7 @@ void Net::autoClassification(const QString & spectraDir)
             for(int numFold = 0; numFold < fold; ++numFold)
             {
                 makeIndicesVectors(learnIndices, tallIndices, arr, numFold);
-                LearNetIndices(learnIndices);
+                learnNetIndices(learnIndices);
                 tallNetIndices(tallIndices);
             }
 
@@ -540,7 +611,7 @@ void Net::autoClassification(const QString & spectraDir)
     {
         trainTestClassification();
     }
-    LearnNet();
+    learnNet();
     writeWts();
     drawWts();
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
@@ -565,6 +636,11 @@ double Net::getKappa()
 void Net::setReduceCoeff(double coeff)
 {
     this->ui->rdcCoeffSpinBox->setValue(coeff);
+}
+
+void Net::setErrCrit(double in)
+{
+    ui->critErrorDoubleSpinBox->setValue(in);
 }
 
 double Net::getReduceCoeff()
@@ -884,12 +960,21 @@ void Net::tallNetIndices(const vector<int> & indices)
         const int outClass = ClassificateVector(indices[i]);
         if(types[ indices[i] ] != outClass )
         {
+//            QFile::remove(def::dir->absolutePath()
+//                          + slash() + "SpectraSmooth"
+//                          + slash() + fileNames[ indices[i] ]);
+//            QFile::remove(def::dir->absolutePath()
+//                          + slash() + "SpectraSmooth"
+//                          + slash() + "windows"
+//                          + slash() + fileNames[ indices[i] ]);
             badFilesStr << fileNames[ indices[i] ] << endl;
         }
         localConfusionMatrix[ types[ indices[i] ] ][ outClass ] += 1.;
         confusionMatrix[ types[ indices[i] ] ][ outClass ] += 1.;
     }
     badFilesStr.close();
+
+
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "log.txt");
     ofstream logStream;
@@ -1045,7 +1130,7 @@ void Net::trainTestClassification(const QString & trainTemplate,
         cout << "teainTest: indicesArray empty, return" << endl;
         return;
     }
-    LearNetIndices(learnIndices);
+    learnNetIndices(learnIndices);
     tallNetIndices(tallIndices);
     cout << "train-test classification - ";
     averageClassification();
@@ -1059,13 +1144,14 @@ void Net::leaveOneOut()
         cout << i + 1;
         cout << " "; cout.flush();
 
+        /// iota ?
         learnIndices.clear();
         for(int j = 0; j < dataMatrix.rows(); ++j)
         {
             if(j == i) continue;
             learnIndices.push_back(j);
         }
-        LearNetIndices(learnIndices);
+        learnNetIndices(learnIndices);
         tallNetIndices({i});
     }
     cout << endl;
@@ -1176,7 +1262,7 @@ void Net::loadData(const QString & spectraPath,
     {
         norm = 5.;
     }
-    norm = def::drawNorm;
+//    norm = def::drawNorm;
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         dataMatrix[i] /= sigma(dataMatrix[i]) * norm; // to equal variance, 10 for reals, 5 winds
@@ -1203,7 +1289,7 @@ void Net::methodSetParam(int a, bool ch)
         ui->epochSpinBox->setValue(250);
         ui->tempBox->setValue(10);
         ui->learnRateBox->setValue(0.1);
-        ui->critErrorDoubleSpinBox->setValue(0.1);
+//        ui->critErrorDoubleSpinBox->setValue(0.1);
 
         ui->dimensionalityLineEdit->setText("0 0");
         ui->dimensionalityLineEdit->setReadOnly(true);
@@ -1242,17 +1328,17 @@ void Net::methodSetParam(int a, bool ch)
 //    reset();
 }
 
-void Net::LearnNet()
+void Net::learnNet()
 {
     vector<int> mixNum;
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         mixNum.push_back(i);
     }
-    LearNetIndices(mixNum);
+    learnNetIndices(mixNum);
 }
 
-void Net::LearNetIndices(vector<int> mixNum)
+void Net::learnNetIndices(vector<int> mixNum)
 {
     QTime myTime;
     myTime.start();
@@ -1329,10 +1415,13 @@ void Net::LearNetIndices(vector<int> mixNum)
             }
 
             //error in the last layer
+            double err1 = 0.;
             for(int j = 0; j < dimensionality.back(); ++j)
             {
-                currentError += pow((output.back()[j] - int(type == j) ), 2.);
+                err1 += pow((output.back()[j] - int(type == j) ), 2.);
             }
+            err1 = sqrt(err1);
+            currentError += err1;
 #if 0
             /// check weight
             if(!deltaFlag) /// enum !
@@ -1405,7 +1494,6 @@ void Net::LearNetIndices(vector<int> mixNum)
         ++epoch;
         //count error
         currentError /= mixNum.size();
-        currentError = sqrt(currentError);
         this->ui->currentErrorDoubleSpinBox->setValue(currentError);
 
 //        cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << endl;
@@ -2994,7 +3082,7 @@ void Net::Hopfield()
         }
     }
     cout << "maxH = " << maxH << endl;
-//    LearnNet();
+//    learnNet();
 
     double ** weightH = new double * [NetLength];
     for(int i = 0; i < NetLength; ++i)
@@ -3106,7 +3194,7 @@ void Net::Hopfield()
         cout << dataMatrix[i][NetLength+1] << endl;
     }
 //    return;
-//    LearnNet();
+//    learnNet();
 
 
     PaIntoMatrixByName("2");

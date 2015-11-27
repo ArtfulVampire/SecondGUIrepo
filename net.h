@@ -68,9 +68,11 @@ private:
 public:
     explicit Net();
     ~Net();
-    int ClassificateVector(const int & vecNum);
+
     void closeLogFile();
     void setAutoProcessingFlag(bool);
+
+
     void prelearnDeepBelief();
     double adjustLearnRate(int lowLimit,
                            int highLimit);
@@ -78,29 +80,8 @@ public:
                              int lowLimit,
                              int highLimit,
                              QString paFileName = "all");
-    int getEpoch();
-
-    void Sammon(double ** distArr, int size, int * colors);
-    void Kohonen(double ** input, double ** eigenVects, double * averageProjection, int size, int length);
-    void moveCoordsGradient(double ** coords, double ** distOld, double ** distNew, int size);
-    double thetalpha(int bmu_, int j_, int step_, double ** arr, int length_);
-
-//    void readCfgByName(const QString & cfgFilePath);
-    double mouseClick(QLabel * label, QMouseEvent * ev);
-    void trainTestClassification(const QString & trainTemplate = "train",
-                                 const QString & testTemplate = "test");
+    int ClassificateVector(const int & vecNum);
     void leaveOneOut();
-    double getAverageAccuracy();
-    double getKappa();
-    void setReduceCoeff(double coeff);
-    double getReduceCoeff();
-    void setNumOfPairs(int num);
-    void writeWts(const QString &wtsPath = def::dir->absolutePath()
-                                           + slash() + def::ExpName + ".wts");
-    void PaIntoMatrixByName(const QString & fileName);
-    void loadData(const QString & spectraPath = def::dir->absolutePath()
-                                                + slash() + "SpectraSmooth",
-                  double rdcCoeff = 1.);
     void makeIndicesVectors(vector<int> & learnInd,
                             vector<int> & tallInd,
                             vector<vector<int> > & arr,
@@ -109,19 +90,56 @@ public:
     void averageClassification();
 
 
+    double getAverageAccuracy();
+    double getKappa();
+    void setReduceCoeff(double coeff);
+    void setErrCrit(double in);
+    double getReduceCoeff();
+    void setNumOfPairs(int num);
+    int getEpoch();
+    double getLrate();
+    void setMode(const QString & in);
+    void setSource(const QString & in);
+
+
+    void Sammon(double ** distArr, int size, int * colors);
+    void Kohonen(double ** input, double ** eigenVects, double * averageProjection, int size, int length);
+    void moveCoordsGradient(double ** coords, double ** distOld, double ** distNew, int size);
+    double thetalpha(int bmu_, int j_, int step_, double ** arr, int length_);
+
+
+    double mouseClick(QLabel * label, QMouseEvent * ev);
+
+
+    void trainTestClassification(const QString & trainTemplate = "_train",
+                                 const QString & testTemplate = "_test");
+
+
+    void writeWts(const QString &wtsPath = def::dir->absolutePath()
+                                           + slash() + def::ExpName + ".wts");
+    void PaIntoMatrixByName(const QString & fileName);
+    void loadData(const QString & spectraPath = def::dir->absolutePath()
+                                                + slash() + "SpectraSmooth",
+                  double rdcCoeff = 1.);
+
+
+    void drawWts(QString wtsPath = QString(),
+                 QString picPath = QString());
+
+
+
+
 
     void readWtsByName(const QString & fileName,
                        twovector<lineType> * wtsMatrix = nullptr);
-    void drawWts(QString wtsPath = QString(),
-                 QString picPath = QString());
 
 
 public slots:
 //    void readCfg();
     void readWts();
 
-    void LearNetIndices(vector<int> mixNum);
-    void LearnNet();
+    void learnNetIndices(vector<int> mixNum);
+    void learnNet();
 
     void tall();
     void tallNetIndices(const vector<int> & indices);

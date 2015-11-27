@@ -21,6 +21,7 @@ QString cfgFileName = "tmp.net";
 
 // for pewpew
 double drawNorm = -1.;
+spectraGraphsNormalization drawNormTyp = spectraGraphsNormalization::all;
 
 double spStep = def::freq / def::fftLength;
 QString ExpName;

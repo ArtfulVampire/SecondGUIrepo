@@ -1388,6 +1388,8 @@ void edfFile::reduceChannels(const vector<int> & chanList) // much memory
 }
 
 
+
+
 void edfFile::removeChannels(const vector<int> & chanList)
 {
     std::set<int, std::greater<int>> excludeSet;
@@ -1557,6 +1559,15 @@ void edfFile::setLabels(const vector<QString> & inLabels)
     }
 }
 
+/// exceptions
+void edfFile::setChannels(const vector<edfChannel> & inChannels)
+{
+    for(int i = 0; i < inChannels.size(); ++i)
+    {
+        this->channels[i] = inChannels[i];
+    }
+}
+
 
 //template
 
@@ -1673,4 +1684,27 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
     }
 //    cout << this->data.maxVal() << endl;
     this->ndr = ceil(this->dataLength / def::freq); // should be unchanged
+}
+
+
+
+void edfFile::transformEdfMatrix(const QString & inEdfPath,
+                                 const matrix & matrixW,
+                                 const QString & newEdfPath)
+{
+    QTime myTime;
+    myTime.start();
+
+    edfFile fil;
+    fil.readEdfFile(inEdfPath);
+    matrix newData;
+
+    matrixProduct(matrixW,
+                  fil.getData(),
+                  newData,
+                  def::nsWOM()); // w/o markers from globalEdf data
+
+    newData.push_back(fil.getData()[fil.getMarkChan()]); //copy markers
+    fil.writeOtherData(newData, newEdfPath);
+    cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
 }

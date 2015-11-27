@@ -778,7 +778,7 @@ double MainWindow::fileInnerClassification(const QString & workPath,
 
 #if 1
     ANN->PaIntoMatrixByName("all");
-    ANN->LearnNet();
+    ANN->learnNet();
     helpString = workPath + slash() + fileName;
     helpString.replace(".edf", ".wts", Qt::CaseInsensitive);
     QString tmp = helpString;
@@ -871,7 +871,7 @@ double MainWindow::filesCrossClassification(QString workPath,
         flush(cout);
         mkPa->makePaSlot();
         ANN->PaIntoMatrixByName("all");
-        ANN->LearnNet();
+        ANN->learnNet();
         helpString = tmpDir->absolutePath() + slash() + "crossClass_" + QString::number(k) + ".wts";
         ANN->writeWts(helpString);
     }

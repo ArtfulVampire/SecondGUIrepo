@@ -26,6 +26,9 @@ namespace coords
                             "O1", "O2"};
 }
 
+
+
+enum spectraGraphsNormalization {all = 0, each = 1};
 namespace def
 {
     const bool matiFlag = false;
@@ -38,6 +41,7 @@ namespace def
 //    const double rightFreq = 20.;
 
     const bool wirteStartEndLong = false; //for slice
+
 
     extern double freq;
     extern int left;
@@ -53,6 +57,7 @@ namespace def
     extern QStringList fileMarkers;
     extern int numOfClasses;
     extern double drawNorm;
+    extern spectraGraphsNormalization drawNormTyp;
     extern double leftFreq;
     extern double rightFreq;
 

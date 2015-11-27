@@ -216,6 +216,7 @@ public:
 
 
     void setLabels(const vector<QString> & inLabels);
+    void setChannels(const vector<edfChannel> & inChannels);
     void setLabels(char ** inLabels);
     void cleanFromEyes(QString eyesPath = QString(),
                        bool removeEogChannels = false,
@@ -278,8 +279,8 @@ private:
     QString ExpName = QString();
     QString dirPath = QString();
 
-    bool matiFlag = 1;
-    bool ntFlag = 0;
+    bool matiFlag = def::matiFlag;
+    bool ntFlag = def::ntFlag;
 public:
     const QString & getHeaderInit() const {return headerInitialInfo;}
     const int & getBytes() const {return bytes;}
@@ -337,6 +338,12 @@ public:
     void getDataCopy(edfDataType & destination) const {destination = data;}
 
 #endif
+
+
+public:
+    static void transformEdfMatrix(const QString & inEdfPath,
+                                   const matrix & matrixW,
+                                   const QString & newEdfPath);
 
 };
 

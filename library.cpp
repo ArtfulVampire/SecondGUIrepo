@@ -2181,7 +2181,7 @@ void drawTemplate(const QString & outPath,
         }
         else
         {
-            helpString = QString::number(c2);
+            helpString = QString::number(c2 + 1);
 
         }
         paint.drawText(QPointF(X - 16 * scaleX,
@@ -2391,7 +2391,7 @@ double drawArrays(const QString & templPath,
     QPixmap pic;
     QPainter paint;
     QString helpString;
-    int numOfChan = 19;
+    int numOfChan = inMatrix.cols() / def::spLength;
 
     if(templPath.contains(".svg"))
     {
@@ -2424,7 +2424,7 @@ double drawArrays(const QString & templPath,
                   inMatrix.end(),
                   [shouldSize](lineType inData)
     {
-        if(inData.size() != shouldSize)
+        if(inData.size() > shouldSize)
         {
             cout << "drawArrays: inappropriate array size" << endl;
             return;
@@ -2474,7 +2474,7 @@ double drawArrays(const QString & templPath,
         }
 
         norm = normBC;
-        if(normType == spectraGraphsNormalization::each && norm <= 0.)
+        if(normType == spectraGraphsNormalization::each)
         {
             // norm each channel by max peak
             norm = 0;

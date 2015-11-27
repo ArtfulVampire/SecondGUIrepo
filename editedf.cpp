@@ -345,7 +345,7 @@ void MainWindow::reduceChannelsEDFSlot()
 {
     QString helpString;
     helpString = def::dir->absolutePath()
-                 + slash() + def::ExpName + "_rdcChan.edf";
+                 + slash() + def::ExpName + "_rdc.edf";
     reduceChannelsEDF(helpString);
 }
 

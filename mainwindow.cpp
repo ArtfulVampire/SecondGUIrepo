@@ -542,8 +542,10 @@ void MainWindow::setEdfFile(QString const &filePath)
             generalLogStream.close();
         }
         helpString += QString(slash()) + "generalLog.txt";
+
         generalLogStream.open(helpString.toStdString().c_str(), ios_base::app);
         generalLogStream << endl << endl << endl;
+
         cout.rdbuf(generalLogStream.rdbuf());
     }
     else
@@ -1733,11 +1735,34 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-//    return;
+    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+
+    const QString path1 = "/media/Files/Data/AAX/";
+    Net * ann1 = new Net();
+
+    ann1->setMode("n");
+    ann1->setSource("real");
+
+    ofstream logF;
+    logF.open((path1 + "logF.txt").toStdString());
+
+    for(double tmp = 0.01; tmp < 0.5; tmp += 0.005)
+    {
+        ann1->setErrCrit(tmp);
+        ann1->autoClassificationSimple();
+        logF << tmp << '\t' << ann1->getLrate() << '\t' << ann1->getAverageAccuracy() << endl;
+    }
+    logF.close();
+    exit(0);
+    return;
+//    this_thread::sleep_for(seconds{5});
+
 
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
+    setEdfFile(path + "AAU_train.edf");
+    readData();
     ui->reduceChannelsComboBox->setCurrentText("20");
-    const QStringList names {"AAU", "BEA", "CAA", "GAS", "SUA"};
+    const QStringList names {"BEA", "CAA", "SUA", "GAS", "AAU"};
     for(QString name : names)
     {
 
@@ -1755,21 +1780,172 @@ void MainWindow::customFunc()
 //        newName.replace(".edf", "_ica.edf");
 //        if(name != "AAU_test_ica.edf") continue;
 #endif
-#if 1
-        def::drawNorm = -1;
-        for(QString suffix : {"_train", "_test"})
-        {
-            setEdfFile(path + name + suffix + "_ica_ord.edf");
-            drawMapsICA();
-            cleanDirs();
-            sliceAll();
-            countSpectraSimple(4096, 15);
-            drawMapsOnSpectra();
-        }
-#endif
+
 #if 0
         ICsSequence(path + name + "_train_ica.edf",
                     path + name + "_test_ica.edf");
+#endif
+
+#if 0
+
+        /// deal with matrixA
+        matrix matA;
+        readICAMatrix(path + "Help"
+                      + slash() + "ica"
+                      + slash() + name + "_train_maps.txt",
+                      matA);
+        matA.invert();
+
+        /// convert test file with that matrix
+        edfFile fil2;
+        fil2.readEdfFile(path + name + "_test.edf");
+        matrix newData;
+
+        matrixProduct(matA,
+                      fil2.getData(),
+                      newData,
+                      def::nsWOM()); // w/o markers from globalEdf data
+
+        newData.push_back(fil2.getData()[fil2.getMarkChan()]); //copy markers
+
+        fil2.writeOtherData(newData,
+                            path + name + "_test_ica.edf");
+#endif
+
+#if 0
+        QString chanString;
+        if(name == "AAU")
+        {
+            chanString = "1 2 3 5 6 9 10 12 14 15 16 18 19 20";
+        }
+        else if(name == "BEA")
+        {
+            chanString = "6 15 16 17 18 20";
+        }
+        else if(name == "CAA")
+        {
+            chanString = "2 8 11 18 20";
+        }
+        else if(name == "GAS")
+        {
+            chanString = "2 5 7 10 11 12 20";
+        }
+        else if(name == "SUA")
+        {
+            chanString = "2 3 14 15 16 20";
+        }
+
+        ui->reduceChannelsLineEdit->setText(chanString);
+        vector<int> chanList;
+        makeChanList(chanList);
+
+        edfFile fil;
+        fil.readEdfFile(path + name + "_train_ica.edf");
+        fil.reduceChannels(chanList);
+        fil.writeEdfFile(path + name + "_train_ica_rdc.edf");
+
+        /// deal with matrixA
+        matrix matA;
+        readICAMatrix(path + "Help"
+                      + slash() + "ica"
+                      + slash() + name + "_train_maps.txt",
+                      matA);
+        matA.invert();
+//        matA.print();
+        matrix matNew;
+        for(int i = 0; i < chanList.size() - 1; ++i)
+        {
+            matNew.push_back(matA[ chanList[i] ]);
+        }
+
+        /// convert test file with that matrix
+        edfFile fil2;
+        fil2.readEdfFile(path + name + "_test.edf");
+        matrix newData;
+
+        matrixProduct(matNew,
+                      fil2.getData(),
+                      newData,
+                      def::nsWOM()); // w/o markers from globalEdf data
+
+        newData.push_back(fil2.getData()[fil2.getMarkChan()]); //copy markers
+
+        fil2.setChannels(fil.getChannels());
+
+        fil2.writeOtherData(newData,
+                            path + name + "_test_ica_rdc.edf");
+
+
+//        exit(0);
+#endif
+
+#if 0
+        def::drawNorm = -1.;
+        def::drawNormTyp = all;
+        for(QString suffix : {"_train", "_test"})
+        {
+            setEdfFile(path + name + suffix + "_ica_rdc.edf");
+//            drawMapsICA();
+            cleanDirs();
+            sliceAll();
+            countSpectraSimple(4096, 15);
+//            drawMapsOnSpectra();
+        }
+//        exit(0);
+#endif
+
+#if 1
+        ui->windButton->setChecked(true);
+//        return;
+
+        Net * ann = new Net();
+
+        const QString suffix = "_ica_rdc";
+
+        setEdfFile(path + name + "_train" + suffix + ".edf");
+//        cleanDirs();
+//        sliceAll();
+//        countSpectraSimple(1024, 8);
+
+        ann->loadData(def::dir->absolutePath()
+                      + slash() + "SpectraSmooth"
+                      + slash() + "windows");
+//        ann->adjustLearnRate(80, 220);
+//        QFile::remove(def::dir->absolutePath() + slash() + "badFiles.txt");
+//        ann->leaveOneOut();
+        ann->autoClassificationSimple();
+        continue;
+        exit(0);
+
+        ifstream badFiles((def::dir->absolutePath() + slash() + "badFiles.txt").toStdString());
+        string nam;
+        while(!badFiles.eof())
+        {
+            badFiles >> nam;
+            QFile::remove(def::dir->absolutePath()
+                          + slash() + "SpectraSmooth"
+                          + slash() + "windows"
+                          + slash() + QString(nam.c_str()));
+        }
+
+        cleanDir("Realisations");
+        cleanDir("windows/fromreal");
+        setEdfFile(path + name + "_test" + suffix + ".edf");
+        sliceAll();
+        countSpectraSimple(1024, 8);
+
+//        ofstream logF;
+//        logF.open((path + "logF.txt").toStdString());
+
+//        for(double tmp : {8., 7.5, 7., 6.5, 6., 5.5, 5., 4.5, 4., 3.5, 3., 2.5, 2., 1.5, 1.})
+//        {
+//            def::drawNorm = tmp;
+            ann->autoClassificationSimple();
+//            logF << tmp << '\t' << ann->getLrate() << '\t' << ann->getAverageAccuracy() << endl;
+//        }
+//        logF.close();
+        delete ann;
+        exit(1);
 #endif
     }
     exit(0);

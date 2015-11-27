@@ -404,13 +404,14 @@ void Spectre::psaSlot()
                          ui->lineEdit_1->text());
     }
 
-    if(drawData.cols() == 19 * def::spLength)
+    if(drawData.cols() <= 19 * def::spLength)
     {
         drawTemplate(helpString);
+
         def::drawNorm = drawArrays(helpString,
                                    drawData,
                                    false,
-                                   spectraGraphsNormalization::all,
+                                   def::drawNormTyp,
                                    def::drawNorm);
         if(ui->MWcheckBox->isChecked())
         {

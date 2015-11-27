@@ -538,7 +538,7 @@ void matrix::print(int rows, int cols) const
     {
         for(int j = 0; j < cols; ++j)
         {
-            cout << data[i][j] << "\t";
+            cout << doubleRound(data[i][j], 3) << "\t";
         }
         cout << endl;
     }
