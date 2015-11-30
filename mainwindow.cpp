@@ -1735,34 +1735,34 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-
-    const QString path1 = "/media/Files/Data/AAX/";
-    Net * ann1 = new Net();
-
-    ann1->setMode("n");
-    ann1->setSource("real");
-
-    ofstream logF;
-    logF.open((path1 + "logF.txt").toStdString());
-
-    for(double tmp = 0.01; tmp < 0.5; tmp += 0.005)
-    {
-        ann1->setErrCrit(tmp);
-        ann1->autoClassificationSimple();
-        logF << tmp << '\t' << ann1->getLrate() << '\t' << ann1->getAverageAccuracy() << endl;
-    }
-    logF.close();
-    exit(0);
     return;
-//    this_thread::sleep_for(seconds{5});
+//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+
+//    const QString path1 = "/media/Files/Data/AAX/";
+//    Net * ann1 = new Net();
+
+//    ann1->setMode("n");
+//    ann1->setSource("real");
+
+//    ofstream logF;
+//    logF.open((path1 + "logF.txt").toStdString());
+
+//    for(double tmp = 0.01; tmp < 0.5; tmp += 0.005)
+//    {
+//        ann1->setErrCrit(tmp);
+//        ann1->autoClassificationSimple();
+//        logF << tmp << '\t' << ann1->getLrate() << '\t' << ann1->getAverageAccuracy() << endl;
+//    }
+//    logF.close();
+//    exit(0);
+//    return;
 
 
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");
     readData();
     ui->reduceChannelsComboBox->setCurrentText("20");
-    const QStringList names {"BEA", "CAA", "SUA", "GAS", "AAU"};
+    const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
     for(QString name : names)
     {
 
@@ -1903,49 +1903,41 @@ void MainWindow::customFunc()
         const QString suffix = "_ica_rdc";
 
         setEdfFile(path + name + "_train" + suffix + ".edf");
-//        cleanDirs();
-//        sliceAll();
-//        countSpectraSimple(1024, 8);
+        cleanDirs();
+        sliceAll();
+        countSpectraSimple(1024, 8);
 
-        ann->loadData(def::dir->absolutePath()
-                      + slash() + "SpectraSmooth"
-                      + slash() + "windows");
-//        ann->adjustLearnRate(80, 220);
-//        QFile::remove(def::dir->absolutePath() + slash() + "badFiles.txt");
-//        ann->leaveOneOut();
+        ann->setSource("w");
+        ann->setMode("N");
+        QFile::remove(def::dir->absolutePath() + slash() + "badFiles.txt");
         ann->autoClassificationSimple();
-        continue;
-        exit(0);
 
         ifstream badFiles((def::dir->absolutePath() + slash() + "badFiles.txt").toStdString());
         string nam;
         while(!badFiles.eof())
         {
             badFiles >> nam;
-            QFile::remove(def::dir->absolutePath()
-                          + slash() + "SpectraSmooth"
-                          + slash() + "windows"
-                          + slash() + QString(nam.c_str()));
+            const QString toRem = def::dir->absolutePath()
+                                  + slash() + "SpectraSmooth"
+                                  + slash() + "windows"
+                                  + slash() + QString(nam.c_str());
+            cout  << toRem << endl;
+            QFile::remove(toRem);
         }
+        badFiles.close();
 
-        cleanDir("Realisations");
-        cleanDir("windows/fromreal");
+        cleanDir(def::dir->absolutePath()
+                 + slash() + "Realisations");
+        cleanDir(def::dir->absolutePath()
+                 + slash() + "windows/fromreal");
         setEdfFile(path + name + "_test" + suffix + ".edf");
         sliceAll();
         countSpectraSimple(1024, 8);
 
-//        ofstream logF;
-//        logF.open((path + "logF.txt").toStdString());
+        ann->setMode("t");
+        ann->autoClassificationSimple();
 
-//        for(double tmp : {8., 7.5, 7., 6.5, 6., 5.5, 5., 4.5, 4., 3.5, 3., 2.5, 2., 1.5, 1.})
-//        {
-//            def::drawNorm = tmp;
-            ann->autoClassificationSimple();
-//            logF << tmp << '\t' << ann->getLrate() << '\t' << ann->getAverageAccuracy() << endl;
-//        }
-//        logF.close();
         delete ann;
-        exit(1);
 #endif
     }
     exit(0);
