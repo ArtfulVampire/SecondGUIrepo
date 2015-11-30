@@ -647,7 +647,8 @@ void Spectre::countSpectra()
 
     const QString inDirPath = ui->lineEdit_1->text();
     const QString outDirPath = ui->lineEdit_2->text();
-    QStringList lst = QDir(inDirPath).entryList(QDir::Files, QDir::Name);
+    QStringList lst = QDir(inDirPath).entryList(QDir::Files,
+                                                QDir::Name); /// Name ~ order
 
     double sum1 = 0.;
     double sum2 = 0.;

@@ -46,10 +46,14 @@ private:
     vector<QString> fileNames;
     vector<double> classCount; // really int but...
 
+    double loadDataNorm = 10.;
+    lineType averageDatum;
+    lineType sigmaVector;
+
     matrix confusionMatrix; // rows - realClass, cols - outClass
 
     twovector<lineType> weight;
-    vector<uint> dimensionality; // for backprop
+    vector<int> dimensionality; // for backprop
 
 //    matrix tempRandomMatrix; //test linear transform
 
@@ -72,7 +76,6 @@ public:
     void closeLogFile();
     void setAutoProcessingFlag(bool);
 
-
     void prelearnDeepBelief();
     double adjustLearnRate(int lowLimit,
                            int highLimit);
@@ -80,7 +83,7 @@ public:
                              int lowLimit,
                              int highLimit,
                              QString paFileName = "all");
-    int ClassificateVector(const int & vecNum);
+    int classifyDatum(const int & vecNum);
     void leaveOneOut();
     void makeIndicesVectors(vector<int> & learnInd,
                             vector<int> & tallInd,
@@ -121,28 +124,34 @@ public:
     void loadData(const QString & spectraPath = def::dir->absolutePath()
                                                 + slash() + "SpectraSmooth",
                   double rdcCoeff = 1.);
-
+    void popBackDatum(const int & inType);
+    void emplaceDatum(const lineType & inDatum,
+                     const int & inType,
+                     const QString & inFileName);
 
     void drawWts(QString wtsPath = QString(),
                  QString picPath = QString());
-
-
-
-
-
     void readWtsByName(const QString & fileName,
                        twovector<lineType> * wtsMatrix = nullptr);
+
+    void learnNetIndices(vector<int> mixNum,
+                         const bool resetFlag = true);
+    void tallNetIndices(const vector<int> & indices);
+
+
+
+    void successiveLearning(const lineType & newSpectre,
+                           const int newType,
+                           const QString & newFileName);
+    void successiveRelearn();
 
 
 public slots:
 //    void readCfg();
     void readWts();
 
-    void learnNetIndices(vector<int> mixNum);
-    void learnNet();
-
-    void tall();
-    void tallNetIndices(const vector<int> & indices);
+    void learnNet(const bool resetFlag = true);
+    void tallNet();
 
 
     void reset();

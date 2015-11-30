@@ -13,6 +13,7 @@
 #include <vector>
 #include <valarray>
 #include <iostream>
+#include <set>
 
 using namespace std;
 
@@ -112,6 +113,7 @@ public:
     void zero();
     void one();
     void eraseRow(int i);
+    void eraseRows(const vector<int> & indices);
 //    double det();
 //    void cofactor();
 //    void systemGaussSolve();

@@ -676,8 +676,35 @@ void matrix::swapRows(int i, int j)
 
 void matrix::eraseRow(int i)
 {
-    if(i > this->rows()) return;
+    if(i >= this->rows()) return;
     this->data.erase(data.begin() + i);
+}
+
+/// looks like okay
+void matrix::eraseRows(const vector<int> & indices)
+{
+    std::set<int, std::less<int>> excludeSet;
+    for(auto item : indices)
+    {
+        excludeSet.emplace(item);
+    }
+    vector<int> excludeVector;
+    for(auto a : excludeSet)
+    {
+        excludeVector.push_back(a);
+    }
+    excludeVector.push_back(this->data.size());
+    for(int i = 0; i < excludeVector.size() - 1; ++i)
+    {
+        for(int j = excludeVector[i] - i; j < excludeVector[i + 1] - i - 1; ++j)
+        {
+            this->data[j] = this->data[j + 1 + i];
+//            cout << j + 1 + i << " -> " << j << endl;
+        }
+
+//        this->print(); cout << endl;
+    }
+    this->data.resize(this->data.size() - excludeSet.size());
 }
 
 //template <typename matType1, typename matType2>

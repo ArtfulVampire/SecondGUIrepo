@@ -1735,6 +1735,17 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
+//    matrix tst(20, 5, 0);
+//    for(int i = 0; i < tst.rows(); ++i)
+//    {
+//        std::iota(begin(tst[i]), end(tst[i]), 10 * i);
+//    }
+//    tst.print();
+//    cout << endl;
+//    tst.eraseRows({11, 3, 1, 6, 19, 1, 2, 2, 2, 2});
+//    tst.print();
+//    cout << endl;
+    exit(0);
 //    return;
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
 //    cleanDirs();

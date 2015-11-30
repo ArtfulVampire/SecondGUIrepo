@@ -321,7 +321,9 @@ void makeFileLists(const QString & path,
             helpString = "*" + filter + "*";
             nameFilters << helpString;
         }
-        lst.push_back(localDir.entryList(nameFilters, QDir::Files, QDir::Name));
+        lst.push_back(localDir.entryList(nameFilters,
+                                         QDir::Files,
+                                         QDir::Name)); /// Name ~ order
     }
 
 }

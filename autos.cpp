@@ -897,7 +897,7 @@ double MainWindow::filesCrossClassification(QString workPath,
 //        cout << k+1 << " "; cout.flush();
         helpString = tmpDir->absolutePath() + slash() + wtsFiles[k];
         ANN->readWtsByName(helpString);
-        ANN->tall();
+        ANN->tallNet();
     }
 //    cout << endl;
     cleanDir(tmpDir->absolutePath(), "wts");

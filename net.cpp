@@ -149,7 +149,7 @@ Net::Net() :
 
     QObject::connect(ui->learnButton, SIGNAL(clicked()), this, SLOT(learnNet()));
 
-    QObject::connect(ui->testAllButton, SIGNAL(clicked()), this, SLOT(tall()));
+    QObject::connect(ui->testAllButton, SIGNAL(clicked()), this, SLOT(tallNet()));
 
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopActivity()));
 
@@ -268,9 +268,18 @@ void Net::adjustParamsGroup2(QAbstractButton * but)
     {
         ui->highLimitSpinBox->setValue(150);
         ui->lowLimitSpinBox->setValue(80);
+
         ui->epochSpinBox->setValue(300);
         ui->rdcCoeffSpinBox->setValue(5.);
         ui->foldSpinBox->setValue(2.);
+        if(ui->windowsRadioButton->isChecked())
+        {
+            loadDataNorm = 5.;
+        }
+        else if(ui->realsRadioButton->isChecked())
+        {
+            loadDataNorm = 10.;
+        }
     }
 }
 
@@ -475,27 +484,22 @@ void Net::makeIndicesVectors(vector<int> & learnInd,
                      arr[i].end(),
                      std::default_random_engine(seed));
     }
-    int offset;
     for(int i = 0; i < def::numOfClasses; ++i)
     {
-        offset = 0;
-        for(int t = 0; t < i; ++t)
-        {
-            offset += classCount[t];
-        }
 
         for(int j = 0; j < classCount[i]; ++j)
         {
-            if(j < (classCount[i] / fold) * numOfFold ||
-               j > (classCount[i] / fold) * (numOfFold + 1))
+            if(j >= (classCount[i] * numOfFold / fold) &&
+               j <= (classCount[i] * (numOfFold + 1) / fold))
             {
-                learnInd.push_back(offset + arr[i][j]);
+                tallInd.push_back(arr[i][j]);
             }
             else
             {
-                tallInd.push_back(offset + arr[i][j]);
+                learnInd.push_back(arr[i][j]);
             }
         }
+
     }
 }
 
@@ -544,14 +548,9 @@ void Net::autoClassification(const QString & spectraDir)
         vector<int> tallIndices;
         vector<vector<int>> arr;
         arr.resize(def::numOfClasses);
-        for(int i = 0; i < def::numOfClasses; ++i)
+        for(int i = 0; i < dataMatrix.rows(); ++i)
         {
-            for(int j = 0; j < classCount[i]; ++j)
-            {
-                arr[i].push_back(j);
-//                cout << arr[i][j] << "  ";
-            }
-//            cout << endl;
+            arr[ types[i] ].push_back(i);
         }
         cout << "Net: autoclass (max " << numOfPairs << "):" << endl;
 
@@ -937,7 +936,7 @@ void Net::testDistances()
 }
 
 
-void Net::tall()
+void Net::tallNet()
 {
     vector<int> indices;
     for(int i = 0; i < dataMatrix.rows(); ++i)
@@ -957,7 +956,7 @@ void Net::tallNetIndices(const vector<int> & indices)
     matrix localConfusionMatrix(def::numOfClasses, def::numOfClasses);
     for(int i = 0; i < indices.size(); ++i)
     {
-        const int outClass = ClassificateVector(indices[i]);
+        const int outClass = classifyDatum(indices[i]);
         if(types[ indices[i] ] != outClass )
         {
 //            QFile::remove(def::dir->absolutePath()
@@ -1003,6 +1002,56 @@ void Net::tallNetIndices(const vector<int> & indices)
 
     logStream << doubleRound(averageAccuracy, 2) << endl;
     logStream.close();
+}
+
+
+int numGoodNew = 0;
+int numGoodNewLimit = 20;
+double decayRate = 0.05;
+vector<int> exIndices{};
+void Net::successiveLearning(const lineType & newSpectre,
+                            const int newType,
+                            const QString & newFileName)
+{
+    /// consider loaded wts
+    /// dataMatrix is learning matrix
+
+    lineType newData = (newSpectre - averageDatum) / (sigmaVector * loadDataNorm);
+
+    emplaceDatum(newData, newType, newFileName);
+
+    const int outType = classifyDatum(dataMatrix.rows() - 1); // take the last
+    if(outType == newType && 1) /// if good coincidence
+    {
+        const int num = std::find(types.begin(), types.end(), newType) - types.begin();
+        exIndices.push_back(num);
+        ++numGoodNew;
+    }
+    else
+    {
+        popBackDatum(newType);
+    }
+    confusionMatrix[newType][outType] += 1.;
+
+    if(numGoodNew == numGoodNewLimit)
+    {
+        successiveRelearn();
+    }
+
+}
+
+void Net::successiveRelearn()
+{
+    dataMatrix.eraseRows(exIndices);
+    // decay weights
+    for(int i = 0; i < dimensionality.size() - 1; ++i)
+    {
+        std::for_each(weight[i].begin(),
+                      weight[i].end(),
+                      [decayRate](lineType & in){ in *= 1. - decayRate;});
+    }
+    // relearn w/o reset
+    learnNet(false);
 }
 
 void Net::readWtsByName(const QString & fileName,
@@ -1217,6 +1266,23 @@ void Net::loadDataSlot()
              ui->rdcCoeffSpinBox->value());
 }
 
+void Net::emplaceDatum(const lineType & inDatum,
+                      const int & inType,
+                      const QString & inFileName)
+{
+        dataMatrix.push_back(inDatum);
+        classCount[inType] += 1.;
+        types.push_back(inType);
+        fileNames.push_back(inFileName);
+}
+
+void Net::popBackDatum(const int & inType)
+{
+    dataMatrix.pop_back();
+    classCount[inType] -= 1.;
+    types.pop_back();
+    fileNames.pop_back();
+}
 
 // like readPaFile from library.cpp
 void Net::loadData(const QString & spectraPath,
@@ -1238,32 +1304,22 @@ void Net::loadData(const QString & spectraPath,
         {
             readFileInLine(spectraPath + slash() + fileName,
                            tempArr);
-            dataMatrix.push_back(tempArr / rdcCoeff);
-            classCount[i] += 1.;
-            types.push_back(i);
-            fileNames.push_back(fileName);
+            tempArr /= rdcCoeff;
+            emplaceDatum(tempArr, i, fileName);
         }
     }
 #if 1
-    lineType avRow = dataMatrix.averageRow();
+    averageDatum = dataMatrix.averageRow();
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
-        dataMatrix[i] -= avRow;
+        dataMatrix[i] -= averageDatum;
     }
     dataMatrix.transpose();
-    double norm = 1.;
-    if(ui->realsRadioButton->isChecked())
-    {
-        norm = 10.;
-    }
-    else if(ui->windowsRadioButton->isChecked())
-    {
-        norm = 5.;
-    }
-//    norm = def::drawNorm;
+    sigmaVector.resize(dataMatrix.rows());
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
-        dataMatrix[i] /= sigma(dataMatrix[i]) * norm; // to equal variance, 10 for reals, 5 winds
+        sigmaVector[i] = sigma(dataMatrix[i]);
+        dataMatrix[i] /= sigmaVector[i] * loadDataNorm; // to equal variance, 10 for reals, 5 winds
     }
     dataMatrix.transpose();
 #endif
@@ -1326,22 +1382,24 @@ void Net::methodSetParam(int a, bool ch)
 //    reset();
 }
 
-void Net::learnNet()
+void Net::learnNet(const bool resetFlag)
 {
-    vector<int> mixNum;
-    for(int i = 0; i < dataMatrix.rows(); ++i)
-    {
-        mixNum.push_back(i);
-    }
-    learnNetIndices(mixNum);
+    vector<int> mixNum(dataMatrix.rows());
+    std::iota(mixNum.begin(), mixNum.end(), 0);
+    learnNetIndices(mixNum, resetFlag);
 }
 
-void Net::learnNetIndices(vector<int> mixNum)
+void Net::learnNetIndices(vector<int> mixNum,
+                          const bool resetFlag)
 {
     QTime myTime;
     myTime.start();
 
-    reset();
+    if(resetFlag)
+    {
+        reset();
+    }
+
 
     const int numOfLayers = dimensionality.size();
     vector<valarray<double>> deltaWeights(numOfLayers);
@@ -1501,7 +1559,7 @@ void Net::learnNetIndices(vector<int> mixNum)
 
 
 
-int Net::ClassificateVector(const int & vecNum)
+int Net::classifyDatum(const int & vecNum)
 {
     const int type = types[vecNum];
     const int numOfLayers = dimensionality.size();

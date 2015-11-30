@@ -619,11 +619,11 @@ void MainWindow::constructEDF(const QString & newPath,
     QStringList lst;
     if(!nameFilters.isEmpty())
     {
-        lst = def::dir->entryList(nameFilters, QDir::Files, QDir::Name); //generality
+        lst = def::dir->entryList(nameFilters, QDir::Files, QDir::Name); /// Name ~ order
     }
     else
     {
-        lst = def::dir->entryList(QDir::Files, QDir::Name); //generality
+        lst = def::dir->entryList(QDir::Files, QDir::Name); /// Name ~ order
     }
     def::dir->cdUp();
     if(lst.isEmpty())
