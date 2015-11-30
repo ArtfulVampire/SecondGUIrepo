@@ -1250,8 +1250,6 @@ void Net::loadData(const QString & spectraPath,
     {
         dataMatrix[i] -= avRow;
     }
-#endif
-#if 1
     dataMatrix.transpose();
     double norm = 1.;
     if(ui->realsRadioButton->isChecked())

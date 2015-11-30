@@ -18,7 +18,7 @@
 #include <QDoubleSpinBox>
 #include "coord.h"
 #include "matrix.h"
-#include "smallLib.h"
+#include "smallFuncs.h"
 #include <ios>
 #include <iostream>
 #include <fstream>

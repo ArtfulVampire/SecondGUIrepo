@@ -40,7 +40,9 @@ SOURCES += main.cpp\
     coord.cpp \
     draws.cpp \
     dataHandler.cpp \
-    signalProcessing.cpp
+    signalProcessing.cpp \
+    smallLib.cpp \
+    deprecate.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -55,7 +57,7 @@ HEADERS  += mainwindow.h \
     edffile.h \
     matrix.h \
     coord.h \
-    clustering.h
+    smallFuncs.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

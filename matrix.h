@@ -1,7 +1,7 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#include "smallLib.h"
+#include "smallFuncs.h"
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>

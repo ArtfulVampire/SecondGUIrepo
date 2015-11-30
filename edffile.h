@@ -6,6 +6,7 @@
 #define DATA_POINTER 0
 
 #include "library.h"
+#include "smallFuncs.h"
 
 using namespace std;
 

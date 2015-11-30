@@ -1,5 +1,5 @@
-#ifndef SMALLLIB_H
-#define SMALLLIB_H
+#ifndef SMALLFUNCS_H
+#define SMALLFUNCS_H
 
 #include "coord.h"
 #include <cmath>
@@ -45,4 +45,4 @@ inline int fftL(const int & in)
 }
 
 
-#endif // SMALLLIB_H
+#endif // SMALLFUNCS_H

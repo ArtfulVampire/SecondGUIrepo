@@ -165,13 +165,14 @@ public:
                         QString mapsOutPath = QString());
 
     // autos
-    double fileInnerClassification(const QString & workPath,
-                                   const QString & fileName,
-                                   const int & fftLen = pow(2, 12),
-                                   const int & NumOfPairs = 50,
-                                   const bool & windows = false,
-                                   const int & wndLen = 4,
-                                   const int & tShift = 0.5);
+    double innerClass(const QString & workPath,
+                      const QString & fileName,
+                      const int & fftLen = pow(2, 12),
+                      const QString & mode = "N",
+                      const int & NumOfPairs = 50,
+                      const bool & windows = false,
+                      const int & wndLen = 4,
+                      const int & tShift = 0.5);
     double filesCrossClassification(QString workPath,
                                     QString fileName1,
                                     QString fileName2,

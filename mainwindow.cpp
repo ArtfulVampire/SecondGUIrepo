@@ -1735,28 +1735,13 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-    return;
-//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-
-//    const QString path1 = "/media/Files/Data/AAX/";
-//    Net * ann1 = new Net();
-
-//    ann1->setMode("n");
-//    ann1->setSource("real");
-
-//    ofstream logF;
-//    logF.open((path1 + "logF.txt").toStdString());
-
-//    for(double tmp = 0.01; tmp < 0.5; tmp += 0.005)
-//    {
-//        ann1->setErrCrit(tmp);
-//        ann1->autoClassificationSimple();
-//        logF << tmp << '\t' << ann1->getLrate() << '\t' << ann1->getAverageAccuracy() << endl;
-//    }
-//    logF.close();
-//    exit(0);
 //    return;
-
+//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+//    cleanDirs();
+//    ui->realButton->setChecked(true);
+//    sliceAll();
+//    countSpectraSimple(4096, 15);
+//    return;
 
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");
@@ -1765,6 +1750,25 @@ void MainWindow::customFunc()
     const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
     for(QString name : names)
     {
+#if 0
+        // inner
+        for(QString suffix : {"_train", "_test", "_train_ica", "_test_ica"})
+        {
+            setEdfFile(path + name + suffix + ".edf");
+            cleanDirs();
+            ui->windButton->setChecked(true);
+            sliceAll();
+            countSpectraSimple(1024, 8);
+            Net * ann = new Net();
+            ann->setMode("N");
+
+            ann->setSource("wind");
+            ann->setReduceCoeff(2.);
+            ann->autoClassificationSimple();
+            delete ann;
+        }
+#endif
+
 
 #if 0
         QString newName = name;
@@ -1774,20 +1778,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-//        setEdfFile(path + name);
-//        ICA();
-//        QString newName = name;
-//        newName.replace(".edf", "_ica.edf");
-//        if(name != "AAU_test_ica.edf") continue;
-#endif
-
-#if 0
-        ICsSequence(path + name + "_train_ica.edf",
-                    path + name + "_test_ica.edf");
-#endif
-
-#if 0
-
+        // make test by train maps
         /// deal with matrixA
         matrix matA;
         readICAMatrix(path + "Help"
@@ -1895,12 +1886,13 @@ void MainWindow::customFunc()
 #endif
 
 #if 1
+        // cross with clean
         ui->windButton->setChecked(true);
-//        return;
+//        ui->realButton->setChecked(true);
 
         Net * ann = new Net();
 
-        const QString suffix = "_ica_rdc";
+        const QString suffix = "";
 
         setEdfFile(path + name + "_train" + suffix + ".edf");
         cleanDirs();
@@ -1909,6 +1901,7 @@ void MainWindow::customFunc()
 
         ann->setSource("w");
         ann->setMode("N");
+        ann->setReduceCoeff(2.);
         QFile::remove(def::dir->absolutePath() + slash() + "badFiles.txt");
         ann->autoClassificationSimple();
 
@@ -1921,7 +1914,7 @@ void MainWindow::customFunc()
                                   + slash() + "SpectraSmooth"
                                   + slash() + "windows"
                                   + slash() + QString(nam.c_str());
-            cout  << toRem << endl;
+//            cout  << toRem << endl;
             QFile::remove(toRem);
         }
         badFiles.close();
@@ -1935,6 +1928,7 @@ void MainWindow::customFunc()
         countSpectraSimple(1024, 8);
 
         ann->setMode("t");
+        ann->setReduceCoeff(2.);
         ann->autoClassificationSimple();
 
         delete ann;

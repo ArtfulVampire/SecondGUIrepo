@@ -727,13 +727,14 @@ void MainWindow::diffPow()
 }
 
 
-double MainWindow::fileInnerClassification(const QString & workPath,
-                                           const QString & fileName,
-                                           const int & fftLen,
-                                           const int & NumOfPairs,
-                                           const bool & windows,
-                                           const int & wndLen,
-                                           const int & tShift)
+double MainWindow::innerClass(const QString & workPath,
+                              const QString & fileName,
+                              const int & fftLen,
+                              const QString & mode,
+                              const int & NumOfPairs,
+                              const bool & windows,
+                              const int & wndLen,
+                              const int & tShift)
 {
     QString helpString;
 
@@ -744,10 +745,11 @@ double MainWindow::fileInnerClassification(const QString & workPath,
     ui->cleanRealisationsCheckBox->setChecked(true);
     ui->cleanRealsSpectraCheckBox->setChecked(true);
 
+    ui->cleanWindowsCheckBox->setChecked(true);
+    ui->cleanWindSpectraCheckBox->setChecked(true);
+
     ui->reduceChannelsComboBox->setCurrentText("20");
 
-    QDir * tmpDir = new QDir();
-    tmpDir->cd(workPath);
 
     if(!windows)
     {
@@ -761,39 +763,37 @@ double MainWindow::fileInnerClassification(const QString & workPath,
         ui->timeShiftSpinBox->setValue(tShift);
     }
 
-    helpString = tmpDir->absolutePath() + slash() + fileName;
+    helpString = workPath;
+    if(!workPath.endsWith(slash()))
+    {
+        helpString += slash();
+    }
+    helpString += fileName;
     setEdfFile(helpString);
     cleanDirs();
     sliceAll();
 
     countSpectraSimple(fftLen);
-//    makeCfgStatic("tmp");
-//    const QString cfgFileName = def::dir->absolutePath() + slash() + "tmp.net";
 
     Net * ANN = new Net();
-//    ANN->readCfgByName(cfgFileName);
+    ANN->setMode(mode);
+    if(!windows)
+    {
+        ANN->setSource("real");
+    }
+    else
+    {
+        ANN->setSource("wind");
+    }
+
     ANN->setAutoProcessingFlag(true);
     ANN->setNumOfPairs(NumOfPairs);
     ANN->autoClassificationSimple();
 
-#if 1
-    ANN->PaIntoMatrixByName("all");
-    ANN->learnNet();
-    helpString = workPath + slash() + fileName;
-    helpString.replace(".edf", ".wts", Qt::CaseInsensitive);
-    QString tmp = helpString;
-    tmp.replace(".wts", "_wts.jpg");
-    ANN->writeWts(helpString);
-    ANN->drawWts(helpString,
-                 tmp);
-#endif
-
     double res = ANN->getAverageAccuracy();
 
-    ANN->close();
     delete ANN;
 
-    delete tmpDir;
     return res;
 }
 
