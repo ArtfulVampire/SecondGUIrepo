@@ -1745,7 +1745,7 @@ void MainWindow::customFunc()
 //    tst.eraseRows({11, 3, 1, 6, 19, 1, 2, 2, 2, 2});
 //    tst.print();
 //    cout << endl;
-    exit(0);
+//    exit(0);
 //    return;
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
 //    cleanDirs();
@@ -1906,16 +1906,23 @@ void MainWindow::customFunc()
         const QString suffix = "";
 
         setEdfFile(path + name + "_train" + suffix + ".edf");
-        cleanDirs();
-        sliceAll();
-        countSpectraSimple(1024, 8);
+//        cleanDirs();
+//        sliceAll();
+//        countSpectraSimple(1024, 8);
 
         ann->setSource("w");
         ann->setMode("N");
-        ann->setReduceCoeff(2.);
-        QFile::remove(def::dir->absolutePath() + slash() + "badFiles.txt");
-        ann->autoClassificationSimple();
 
+        ann->setTallCleanFlag(true);
+//        ann->setReduceCoeff(2.);
+        for(int i = 0; i < 2; ++i) // while (ann->getAverageAccuracy() != 100.)
+        {
+            QFile::remove(def::dir->absolutePath() + slash() + "badFiles.txt");
+//            ann->autoClassificationSimple();
+        }
+        ann->setTallCleanFlag(false);
+#if 0
+        // delete badFiles
         ifstream badFiles((def::dir->absolutePath() + slash() + "badFiles.txt").toStdString());
         string nam;
         while(!badFiles.eof())
@@ -1925,22 +1932,25 @@ void MainWindow::customFunc()
                                   + slash() + "SpectraSmooth"
                                   + slash() + "windows"
                                   + slash() + QString(nam.c_str());
-//            cout  << toRem << endl;
+            cout  << toRem << endl;
             QFile::remove(toRem);
         }
         badFiles.close();
+#endif
 
         cleanDir(def::dir->absolutePath()
                  + slash() + "Realisations");
         cleanDir(def::dir->absolutePath()
                  + slash() + "windows/fromreal");
-        setEdfFile(path + name + "_test" + suffix + ".edf");
-        sliceAll();
-        countSpectraSimple(1024, 8);
 
-        ann->setMode("t");
-        ann->setReduceCoeff(2.);
-        ann->autoClassificationSimple();
+        setEdfFile(path + name + "_test" + suffix + ".edf");
+//        sliceAll();
+//        countSpectraSimple(1024, 8);
+
+//        ann->setMode("t");
+//        ann->setReduceCoeff(2.);
+//        ann->autoClassificationSimple();
+        ann->successiveProcessing();
 
         delete ann;
 #endif

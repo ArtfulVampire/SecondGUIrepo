@@ -180,23 +180,30 @@ Net::Net() :
     QObject::connect(group2, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(adjustParamsGroup2(QAbstractButton*)));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
+    aaDefaultSettings();
+}
 
-    /// generality
-//    if(def::spStep == def::freq / pow(2, 10))
-//    {
-//        ui->windowsRadioButton->setChecked(true);
-//        loadData(def::dir->absolutePath()
-//                 + slash() + "SpectraSmooth"
-//                 + slash() + "windows");
-//    }
-//    else // if(def::spStep == def::freq / pow(2, 12))
-//    {
-//        ui->realsRadioButton->setChecked(true);
-//        loadData(def::dir->absolutePath()
-//                 + slash() + "SpectraSmooth",
-//                 5.);
-//    }
-    this->ui->deltaRadioButton->setChecked(true);
+void Net::aaDefaultSettings()
+{
+    ui->deltaRadioButton->setChecked(true);
+
+    /// mode
+//    ui->crossRadioButton->setChecked(true); /// k-fold
+    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
+//    ui->trainTestRadioButton->setChecked(true); /// train-test
+
+    /// source
+    //    ui->realsRadioButton->setChecked(true); /// reals
+        ui->windowsRadioButton->setChecked(true); /// windows
+    //    ui->pcaRadioButton->setChecked(true); /// PCA
+
+    ui->highLimitSpinBox->setValue(150); /// highLimit
+    ui->lowLimitSpinBox->setValue(80);  /// lowLimit
+
+    ui->rdcCoeffSpinBox->setValue(4.5); ///  rdc coeff
+    ui->foldSpinBox->setValue(4); /////// fold
+    ui->numOfPairsBox->setValue(10); //// pairs
+    ui->critErrorDoubleSpinBox->setValue(0.035); /// errcrit PEWPEW
 }
 
 Net::~Net()
@@ -243,15 +250,22 @@ void Net::setMode(const QString & in)
     }
 }
 
+void Net::setTallCleanFlag(bool in)
+{
+    this->tallCleanFlag = in;
+}
+
 void Net::setSource(const QString & in)
 {
     if(in.contains("real", Qt::CaseInsensitive) || in.startsWith('r'))
     {
         ui->realsRadioButton->setChecked(true);
+        loadDataNorm = 10;
     }
     else if(in.contains("wind", Qt::CaseInsensitive) || in.startsWith('w'))
     {
         ui->windowsRadioButton->setChecked(true);
+        loadDataNorm = 5.;
     }
 }
 
@@ -272,11 +286,11 @@ void Net::adjustParamsGroup2(QAbstractButton * but)
         ui->epochSpinBox->setValue(300);
         ui->rdcCoeffSpinBox->setValue(5.);
         ui->foldSpinBox->setValue(2.);
-        if(ui->windowsRadioButton->isChecked())
+        if(but->text().contains("wind", Qt::CaseInsensitive))
         {
             loadDataNorm = 5.;
         }
-        else if(ui->realsRadioButton->isChecked())
+        else if(but->text().contains("real", Qt::CaseInsensitive))
         {
             loadDataNorm = 10.;
         }
@@ -959,14 +973,26 @@ void Net::tallNetIndices(const vector<int> & indices)
         const int outClass = classifyDatum(indices[i]);
         if(types[ indices[i] ] != outClass )
         {
-//            QFile::remove(def::dir->absolutePath()
-//                          + slash() + "SpectraSmooth"
-//                          + slash() + fileNames[ indices[i] ]);
-//            QFile::remove(def::dir->absolutePath()
-//                          + slash() + "SpectraSmooth"
-//                          + slash() + "windows"
-//                          + slash() + fileNames[ indices[i] ]);
             badFilesStr << fileNames[ indices[i] ] << endl;
+            if(tallCleanFlag)
+            {
+                if(ui->realsRadioButton->isChecked())
+                {
+                    QFile::remove(def::dir->absolutePath()
+                                  + slash() + "SpectraSmooth"
+                                  + slash() + fileNames[ indices[i] ]);
+                }
+                else if(ui->windowsRadioButton->isChecked())
+                {
+                    QFile::remove(def::dir->absolutePath()
+                                  + slash() + "SpectraSmooth"
+                                  + slash() + "windows"
+                                  + slash() + fileNames[ indices[i] ]);
+                }
+
+                eraseDatum(indices[i]);
+            }
+
         }
         localConfusionMatrix[ types[ indices[i] ] ][ outClass ] += 1.;
         confusionMatrix[ types[ indices[i] ] ][ outClass ] += 1.;
@@ -1005,14 +1031,68 @@ void Net::tallNetIndices(const vector<int> & indices)
 }
 
 
+
 int numGoodNew = 0;
 int numGoodNewLimit = 20;
+int learnSetStay = 80;
 double decayRate = 0.05;
 vector<int> exIndices{};
-void Net::successiveLearning(const lineType & newSpectre,
-                            const int newType,
-                            const QString & newFileName)
+
+
+void Net::successiveProcessing()
 {
+    QString helpString = def::dir->absolutePath()
+                         + slash() + "SpectraSmooth"
+                         + slash() + "windows";
+    /// check for no test items
+    loadData(helpString);
+
+    QStringList leest = QDir(helpString).entryList({"*_test*"});
+
+    confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
+    exIndices.clear();
+
+    /// reduce learning set
+    vector<vector<int>> arr;
+    arr.resize(def::numOfClasses);
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+
+        arr[ types[i] ].push_back(i); //// error
+    }
+
+    cout << dataMatrix.rows() << "\t" << dataMatrix.cols() << endl;
+
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        const int maxNum = classCount[i] - learnSetStay;
+        cout << maxNum << endl;
+        for(int j = 0; j < maxNum; ++j)
+        {
+            eraseDatum(arr[i][j]); //// error
+        }
+    }
+    cout << "successiveProcessing: dataMatrix.rows() after reduction " << dataMatrix.rows() << endl;
+
+
+    lineType tempArr;
+    int type = -1;
+
+    for(const QString & fileNam : leest)
+    {
+        readFileInLine(helpString + slash() + fileNam,
+                       tempArr);
+        type = typeOfFileName(fileNam);
+        successiveLearning(tempArr, type, fileNam);
+    }
+    averageClassification();
+}
+
+void Net::successiveLearning(const lineType & newSpectre,
+                             const int newType,
+                             const QString & newFileName)
+{
+    cout << "successiveLearning start" << endl;
     /// consider loaded wts
     /// dataMatrix is learning matrix
 
@@ -1021,15 +1101,17 @@ void Net::successiveLearning(const lineType & newSpectre,
     emplaceDatum(newData, newType, newFileName);
 
     const int outType = classifyDatum(dataMatrix.rows() - 1); // take the last
-    if(outType == newType && 1) /// if good coincidence
+
+    if(outType == newType) /// if good coincidence
     {
         const int num = std::find(types.begin(), types.end(), newType) - types.begin();
         exIndices.push_back(num);
+        eraseDatum(num);
         ++numGoodNew;
     }
     else
     {
-        popBackDatum(newType);
+        popBackDatum();
     }
     confusionMatrix[newType][outType] += 1.;
 
@@ -1038,11 +1120,13 @@ void Net::successiveLearning(const lineType & newSpectre,
         successiveRelearn();
     }
 
+    cout << "successiveLearning end" << endl;
+
 }
 
 void Net::successiveRelearn()
 {
-    dataMatrix.eraseRows(exIndices);
+    cout << "successiveRelearn start" << endl;
     // decay weights
     for(int i = 0; i < dimensionality.size() - 1; ++i)
     {
@@ -1050,8 +1134,11 @@ void Net::successiveRelearn()
                       weight[i].end(),
                       [decayRate](lineType & in){ in *= 1. - decayRate;});
     }
+
     // relearn w/o reset
     learnNet(false);
+    numGoodNew = 0;
+    cout << "successiveRelearn end" << endl;
 }
 
 void Net::readWtsByName(const QString & fileName,
@@ -1188,7 +1275,8 @@ void Net::trainTestClassification(const QString & trainTemplate,
 void Net::leaveOneOut()
 {
     vector<int> learnIndices;
-    for(int i = 0; i < dataMatrix.rows(); ++i)
+    int i = 0;
+    while(i < dataMatrix.rows())
     {
         cout << i + 1;
         cout << " "; cout.flush();
@@ -1202,6 +1290,15 @@ void Net::leaveOneOut()
         }
         learnNetIndices(learnIndices);
         tallNetIndices({i});
+
+        /// not so fast
+        if(tallCleanFlag && epoch < ui->lowLimitSpinBox->value())
+        {
+            adjustLearnRate(ui->lowLimitSpinBox->value(),
+                            ui->highLimitSpinBox->value());
+        }
+        ++i;
+
     }
     cout << endl;
     cout << "N-fold cross-validation:" << endl;
@@ -1270,19 +1367,28 @@ void Net::emplaceDatum(const lineType & inDatum,
                       const int & inType,
                       const QString & inFileName)
 {
-        dataMatrix.push_back(inDatum);
-        classCount[inType] += 1.;
-        types.push_back(inType);
-        fileNames.push_back(inFileName);
+    dataMatrix.push_back(inDatum);
+    classCount[inType] += 1.;
+    types.push_back(inType);
+    fileNames.push_back(inFileName);
 }
 
-void Net::popBackDatum(const int & inType)
+void Net::popBackDatum()
 {
     dataMatrix.pop_back();
-    classCount[inType] -= 1.;
+    classCount[types.back()] -= 1.;
     types.pop_back();
     fileNames.pop_back();
 }
+
+void Net::eraseDatum(const int & index)
+{
+    dataMatrix.eraseRow(index);
+    classCount[ types[index] ] -= 1.;
+    types.erase(types.begin() + index);
+    fileNames.erase(fileNames.begin() + index);
+}
+
 
 // like readPaFile from library.cpp
 void Net::loadData(const QString & spectraPath,
@@ -1308,6 +1414,7 @@ void Net::loadData(const QString & spectraPath,
             emplaceDatum(tempArr, i, fileName);
         }
     }
+    cout << "loadDataNorm = " << loadDataNorm << endl;
 #if 1
     averageDatum = dataMatrix.averageRow();
     for(int i = 0; i < dataMatrix.rows(); ++i)

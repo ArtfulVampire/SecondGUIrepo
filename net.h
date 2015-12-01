@@ -46,7 +46,7 @@ private:
     vector<QString> fileNames;
     vector<double> classCount; // really int but...
 
-    double loadDataNorm = 10.;
+    double loadDataNorm = 7.;
     lineType averageDatum;
     lineType sigmaVector;
 
@@ -64,8 +64,9 @@ private:
     double kappa; // Cohen's
     int epoch;
 
-    bool stopFlag;
-    bool autoFlag;
+    bool stopFlag = false;
+    bool autoFlag = false;
+    bool tallCleanFlag  = false;
 
     matrix coords; //new coords for Sammon method
 
@@ -103,6 +104,8 @@ public:
     double getLrate();
     void setMode(const QString & in);
     void setSource(const QString & in);
+    void setTallCleanFlag(bool in);
+    void aaDefaultSettings();
 
 
     void Sammon(double ** distArr, int size, int * colors);
@@ -124,10 +127,11 @@ public:
     void loadData(const QString & spectraPath = def::dir->absolutePath()
                                                 + slash() + "SpectraSmooth",
                   double rdcCoeff = 1.);
-    void popBackDatum(const int & inType);
+    void popBackDatum();
     void emplaceDatum(const lineType & inDatum,
                      const int & inType,
                      const QString & inFileName);
+    void eraseDatum(const int & index);
 
     void drawWts(QString wtsPath = QString(),
                  QString picPath = QString());
@@ -139,6 +143,7 @@ public:
     void tallNetIndices(const vector<int> & indices);
 
 
+    void successiveProcessing();
 
     void successiveLearning(const lineType & newSpectre,
                            const int newType,
