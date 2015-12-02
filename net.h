@@ -132,6 +132,7 @@ public:
                      const int & inType,
                      const QString & inFileName);
     void eraseDatum(const int & index);
+    void eraseData(const vector<int> & indices);
 
     void drawWts(QString wtsPath = QString(),
                  QString picPath = QString());

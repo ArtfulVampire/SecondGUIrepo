@@ -258,6 +258,8 @@ void resizeValar(lineType & in, int num)
 }
 
 
+
+
 void cleanDir(QString dirPath, QString nameFilter, bool ext)
 {
     QDir tmpDir(dirPath);

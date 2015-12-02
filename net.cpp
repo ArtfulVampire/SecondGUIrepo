@@ -203,7 +203,7 @@ void Net::aaDefaultSettings()
     ui->rdcCoeffSpinBox->setValue(4.5); ///  rdc coeff
     ui->foldSpinBox->setValue(4); /////// fold
     ui->numOfPairsBox->setValue(10); //// pairs
-    ui->critErrorDoubleSpinBox->setValue(0.035); /// errcrit PEWPEW
+    ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
 }
 
 Net::~Net()
@@ -1033,9 +1033,9 @@ void Net::tallNetIndices(const vector<int> & indices)
 
 
 int numGoodNew = 0;
-int numGoodNewLimit = 20;
-int learnSetStay = 80;
-double decayRate = 0.05;
+int numGoodNewLimit = 10;
+int learnSetStay = 60;
+double decayRate = 0.01;
 vector<int> exIndices{};
 
 
@@ -1044,40 +1044,50 @@ void Net::successiveProcessing()
     QString helpString = def::dir->absolutePath()
                          + slash() + "SpectraSmooth"
                          + slash() + "windows";
+
+    vector<int> eraseIndices{};
     /// check for no test items
     loadData(helpString);
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        if(fileNames[i].contains("test"))
+        {
+            eraseIndices.push_back(i);
+        }
+    }
+    eraseData(eraseIndices);
+    eraseIndices.clear();
 
-    QStringList leest = QDir(helpString).entryList({"*_test*"});
+    /// reduce learning set
+    vector<double> count = classCount;
+
+//    cout << count[0] << '\t' << count[1] << '\t' << count[2] << endl;
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        if(count[ types[i] ] > learnSetStay)
+        {
+            eraseIndices.push_back(i);
+            count[ types[i] ] -= 1.;
+        }
+    }
+//    cout << count[0] << '\t' << count[1] << '\t' << count[2] << endl;
+    eraseData(eraseIndices);
+//    for(int i = 0; i < dataMatrix.rows(); ++i)
+//    {
+//        cout << fileNames[i] << "\t" << types[i] << endl;
+//    }
+//    cout << "successiveProcessing: dataMatrix.rows() after reduction " << dataMatrix.rows() << endl;
+
+//    exit(0);
+    learnNet();
 
     confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
     exIndices.clear();
 
-    /// reduce learning set
-    vector<vector<int>> arr;
-    arr.resize(def::numOfClasses);
-    for(int i = 0; i < dataMatrix.rows(); ++i)
-    {
-
-        arr[ types[i] ].push_back(i); //// error
-    }
-
-    cout << dataMatrix.rows() << "\t" << dataMatrix.cols() << endl;
-
-    for(int i = 0; i < def::numOfClasses; ++i)
-    {
-        const int maxNum = classCount[i] - learnSetStay;
-        cout << maxNum << endl;
-        for(int j = 0; j < maxNum; ++j)
-        {
-            eraseDatum(arr[i][j]); //// error
-        }
-    }
-    cout << "successiveProcessing: dataMatrix.rows() after reduction " << dataMatrix.rows() << endl;
-
-
     lineType tempArr;
     int type = -1;
 
+    QStringList leest = QDir(helpString).entryList({"*_test*"});
     for(const QString & fileNam : leest)
     {
         readFileInLine(helpString + slash() + fileNam,
@@ -1092,7 +1102,6 @@ void Net::successiveLearning(const lineType & newSpectre,
                              const int newType,
                              const QString & newFileName)
 {
-    cout << "successiveLearning start" << endl;
     /// consider loaded wts
     /// dataMatrix is learning matrix
 
@@ -1101,6 +1110,7 @@ void Net::successiveLearning(const lineType & newSpectre,
     emplaceDatum(newData, newType, newFileName);
 
     const int outType = classifyDatum(dataMatrix.rows() - 1); // take the last
+//    cout << newType << '\t' << outType << endl;
 
     if(outType == newType) /// if good coincidence
     {
@@ -1119,26 +1129,24 @@ void Net::successiveLearning(const lineType & newSpectre,
     {
         successiveRelearn();
     }
-
-    cout << "successiveLearning end" << endl;
-
 }
 
 void Net::successiveRelearn()
 {
-    cout << "successiveRelearn start" << endl;
     // decay weights
     for(int i = 0; i < dimensionality.size() - 1; ++i)
     {
         std::for_each(weight[i].begin(),
                       weight[i].end(),
-                      [decayRate](lineType & in){ in *= 1. - decayRate;});
+                      [decayRate](lineType & in)
+        {
+            in *= 1. - decayRate;
+        });
     }
-
     // relearn w/o reset
+//    cout << "lerearn data.rows() = " << dataMatrix.rows() << endl;
     learnNet(false);
     numGoodNew = 0;
-    cout << "successiveRelearn end" << endl;
 }
 
 void Net::readWtsByName(const QString & fileName,
@@ -1387,6 +1395,17 @@ void Net::eraseDatum(const int & index)
     classCount[ types[index] ] -= 1.;
     types.erase(types.begin() + index);
     fileNames.erase(fileNames.begin() + index);
+}
+
+void Net::eraseData(const vector<int> & indices)
+{
+    dataMatrix.eraseRows(indices);
+    eraseItems(fileNames, indices);
+    for(int index : indices)
+    {
+        classCount[ types[index] ] -= 1.;
+    }
+    eraseItems(types, indices);
 }
 
 

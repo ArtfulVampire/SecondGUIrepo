@@ -1745,7 +1745,26 @@ void MainWindow::customFunc()
 //    tst.eraseRows({11, 3, 1, 6, 19, 1, 2, 2, 2, 2});
 //    tst.print();
 //    cout << endl;
+
+
+//    vector<int> arr2(10);
+//    iota(arr2.begin(), arr2.end(), 0);
+//    for(int i = 0; i < arr2.size(); ++i)
+//    {
+//        cout << arr2[i] << "\t";
+//    }
+//    cout << endl;
+
+//    eraseItems(arr2, {1, 5, 3, 1, 3, 3, 7});
+
+//    for(int i = 0; i < arr2.size(); ++i)
+//    {
+//        cout << arr2[i] << "\t";
+//    }
+//    cout << endl;
+
 //    exit(0);
+
 //    return;
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
 //    cleanDirs();
@@ -1951,7 +1970,7 @@ void MainWindow::customFunc()
 //        ann->setReduceCoeff(2.);
 //        ann->autoClassificationSimple();
         ann->successiveProcessing();
-
+    exit(0);
         delete ann;
 #endif
     }

@@ -28,8 +28,8 @@ QString ExpName;
 QDir * dir = new QDir();
 
 QStringList colours{"blue", "red", "green", "black", "gray"};
-//QStringList fileMarkers{"_241", "_247", "_254 _244"};
-QStringList fileMarkers{"train*_241", "train*_247", "train*_254 train*_244"};
+QStringList fileMarkers{"_241", "_247", "_254 _244"};
+//QStringList fileMarkers{"train*_241", "train*_247", "train*_254 train*_244"};
 //QStringList fileMarkers{"_241", "_247"};
 
 //QStringList fileMarkers{"_241", "_242", "_245", "_246"}; // Ossadtchi

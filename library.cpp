@@ -462,17 +462,7 @@ double distance(const vector<T> &vec1, const vector<T> &vec2, const int &dim)
 }
 
 
-double distance(const lineType & in1,
-                const lineType & in2)
-{
-    if(in1.size() != in2.size())
-    {
-        cout << "distance: lineTypes of different size" << endl;
-        return 0.; /// exception
-    }
-    return norma(in1 - in2);
 
-}
 
 
 

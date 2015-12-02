@@ -680,9 +680,14 @@ void matrix::eraseRow(int i)
     this->data.erase(data.begin() + i);
 }
 
+
 /// looks like okay
 void matrix::eraseRows(const vector<int> & indices)
 {
+    eraseItems(this->data, indices);
+    return;
+
+
     std::set<int, std::less<int>> excludeSet;
     for(auto item : indices)
     {
@@ -699,10 +704,7 @@ void matrix::eraseRows(const vector<int> & indices)
         for(int j = excludeVector[i] - i; j < excludeVector[i + 1] - i - 1; ++j)
         {
             this->data[j] = this->data[j + 1 + i];
-//            cout << j + 1 + i << " -> " << j << endl;
         }
-
-//        this->print(); cout << endl;
     }
     this->data.resize(this->data.size() - excludeSet.size());
 }

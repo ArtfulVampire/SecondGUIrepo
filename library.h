@@ -15,29 +15,31 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QMessageBox>
-#include <QDoubleSpinBox>
 #include "coord.h"
 #include "matrix.h"
 #include "smallFuncs.h"
 #include <ios>
 #include <iostream>
 #include <fstream>
-#include <cmath>
-#include <stdio.h>
+
 #include <ctime>
-#include <sstream>
 #include <cstdlib>
+#include <stdio.h>
 #include <cstdio>
-#include <string>
+
+
 #include <cmath>
-#include <cerrno>
+#include <string>
+#include <sstream>
 #include <vector>
 #include <valarray>
 #include <set>
 #include <algorithm>
+
 #include <typeinfo>
 #include <chrono>
 #include <random>
+#include <cerrno>
 #include <thread>
 
 #ifdef _OPENMP
@@ -98,6 +100,9 @@ int typeOfFileName(const QString & fileName);
 QString getFileMarker(const QString & fileName);
 
 void resizeValar(lineType & in, int num);
+
+template <typename T>
+void eraseItems(vector<T> & init, const vector<int> & indices);
 
 
 
@@ -478,9 +483,6 @@ void calcSpectre(const signalType & inSignal,
                  const double & powArg = 1.);
 
 
-
-
-
 double quantile(double arg);
 void kernelEst(QString filePath, QString picPath);
 
@@ -491,66 +493,30 @@ bool gaussApproval2(double * arr, int length); // not finished?
 
 
 
-inline double prod(const lineType & in1, const lineType & in2)
-{
-    return std::inner_product(begin(in1),
-                              end(in1),
-                              begin(in2),
-                              0.);
-}
-
-inline double normaSq(const lineType & in)
-{
-    return std::inner_product(begin(in),
-                              end(in),
-                              begin(in),
-                              0.);
-}
 
 template <typename Typ>
 double mean(const Typ &arr, int length, int shift = 0);
-inline double mean(const lineType & arr)
-{
-    return arr.sum() / arr.size();
-}
 
 template <typename Typ>
 double variance(const Typ &arr, int length, int shift = 0, bool fromZero = false);
-inline double variance(const lineType & arr)
-{
-    return normaSq(arr - mean(arr)) / arr.size();
-}
 
 template <typename Typ>
 double sigma(const Typ &arr, int length, int shift = 0, bool fromZero = false);
-inline double sigma(const lineType & arr)
-{
-    return sqrt(variance(arr));
-}
 
 /// remake with
 template <typename Typ>
-double covariance (const Typ &arr1, const Typ &arr2, int length, int shift = 0, bool fromZero = false);
-inline double covariance(const lineType & arr1, const lineType & arr2)
-{
-    return prod(arr1, arr2);
-}
+double covariance (const Typ & arr1,
+                   const Typ & arr2,
+                   int length,
+                   int shift = 0,
+                   bool fromZero = false);
 
 template <typename Typ>
-double correlation(const Typ &arr1, const Typ &arr2, int length, int shift = 0, bool fromZero = false);
-inline double correlation(const lineType & arr1, const lineType & arr2)
-{
-    return covariance(arr1, arr2) / (sigma(arr1) * sigma(arr2));
-}
-inline double norma(const lineType & in)
-{
-    return sqrt(normaSq(in));
-}
-
-inline void normalize(lineType & in)
-{
-    in /= norma(in);
-}
+double correlation(const Typ &arr1,
+                   const Typ &arr2,
+                   int length,
+                   int shift = 0,
+                   bool fromZero = false);
 
 
 double independence(double * const signal1, double * const signal2, int length);
@@ -592,9 +558,8 @@ void calcRawFFT(const Typ & inData, mat & dataFFT, const int &ns, const int &fft
 template <typename T>
 double distance(const vector <T> &vec1, const vector <T> &vec2, const int &dim);
 
-double distance(double *vec1, double *vec2, const int &dim);
+double distance(double * vec1, double * vec2, const int & dim);
 double distance(double const x1, double const y1, double const x2, double const y2);
-double distance(const lineType & in1, const lineType & in2);
 
 double distanceMah(double * & vect, double ** & covMatrixInv, double *&groupMean, int dimension);
 double distanceMah(double * & vect, double ** & group, int dimension, int number);
