@@ -198,12 +198,12 @@ void Net::aaDefaultSettings()
         ui->windowsRadioButton->setChecked(true); /// windows
     //    ui->pcaRadioButton->setChecked(true); /// PCA
 
-    ui->highLimitSpinBox->setValue(150); /// highLimit
+    ui->highLimitSpinBox->setValue(180); /// highLimit
     ui->lowLimitSpinBox->setValue(80);  /// lowLimit
 
-    ui->rdcCoeffSpinBox->setValue(4.5); ///  rdc coeff
+    ui->rdcCoeffSpinBox->setValue(7.); ///  rdc coeff
     ui->foldSpinBox->setValue(4); /////// fold
-    ui->numOfPairsBox->setValue(10); //// pairs
+    ui->numOfPairsBox->setValue(1); //// pairs
     ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
 }
 
@@ -1479,7 +1479,7 @@ void Net::loadData(const QString & spectraPath,
         }
     }
     cout << "loadDataNorm = " << loadDataNorm << endl;
-#if 1
+#if 0
     averageDatum = dataMatrix.averageRow();
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
@@ -1596,11 +1596,16 @@ void Net::learnNetIndices(vector<int> mixNum,
     vector <double> normCoeff;
     const double helpMin = *std::min_element(classCount.begin(),
                                              classCount.end());
+//    const double helpMin = std::accumulate(classCount.begin(),
+//                                           classCount.end(),
+//                                           0.);
+
 
     for(int i = 0; i < def::numOfClasses; ++i)
     {
         normCoeff.push_back(helpMin / classCount[i]);
     }
+
 
     if(ui->deepBeliefRadioButton->isChecked())
     {
@@ -1693,7 +1698,7 @@ void Net::learnNetIndices(vector<int> mixNum,
                     weight[0][j] += output[0]
                             * (learnRate * normCoeff[type]
                                * ((type == j) - output[1][j])
-//                            * (output[1][j] * (1. - output[1][j])) * 4. // derivative
+//                            * (output[1][j] * (1. - output[1][j])) * 6. // derivative
                             );
                 }
 

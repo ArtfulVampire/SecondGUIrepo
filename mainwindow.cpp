@@ -1735,6 +1735,24 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
+
+    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+    Net * an3 = new Net();
+    an3->loadData("/media/Files/Data/AAX/SpectraSmooth",
+                  7.);
+    an3->setMode("n");
+    an3->setSource("r");
+    an3->learnNet();
+    an3->autoClassificationSimple();
+
+//    an3->reset();
+//    an3->learnNet();
+//    an3->writeWts();
+//    an3->drawWts("/media/Files/Data/w1_new.wts");
+//    an3->tallNet();
+//    an3->averageClassification();
+    exit(0);
+
 //    matrix tst(20, 5, 0);
 //    for(int i = 0; i < tst.rows(); ++i)
 //    {
