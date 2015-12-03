@@ -18,7 +18,7 @@
     <rect>
      <x>600</x>
      <y>0</y>
-     <width>342</width>
+     <width>349</width>
      <height>206</height>
     </rect>
    </property>
@@ -169,10 +169,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>290</x>
-     <y>335</y>
+     <x>300</x>
+     <y>390</y>
      <width>221</width>
-     <height>115</height>
+     <height>141</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_4">
@@ -237,7 +237,7 @@
      <x>7</x>
      <y>0</y>
      <width>541</width>
-     <height>311</height>
+     <height>341</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_6">
@@ -366,6 +366,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QRadioButton" name="halfHalfRadioButton">
+        <property name="text">
+         <string>half - half</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item row="3" column="2">
@@ -447,6 +454,13 @@
        <widget class="QRadioButton" name="backpropRadioButton">
         <property name="text">
          <string>backprop</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="bayesRadioButton_2">
+        <property name="text">
+         <string>Bayes</string>
         </property>
        </widget>
       </item>
@@ -538,9 +552,9 @@
    <property name="geometry">
     <rect>
      <x>12</x>
-     <y>342</y>
+     <y>380</y>
      <width>171</width>
-     <height>171</height>
+     <height>194</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">

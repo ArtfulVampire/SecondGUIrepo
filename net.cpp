@@ -27,6 +27,7 @@ Net::Net() :
     group1->addButton(ui->leaveOneOutRadioButton);
     group1->addButton(ui->crossRadioButton);
     group1->addButton(ui->trainTestRadioButton);
+    group1->addButton(ui->halfHalfRadioButton);
     group2 = new QButtonGroup();
     group2->addButton(ui->realsRadioButton);
     group2->addButton(ui->windowsRadioButton);
@@ -206,6 +207,42 @@ void Net::aaDefaultSettings()
     ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
 }
 
+
+
+const char * kernelFromFile(char *  path)
+{
+    char * tempString = new char [300];
+    char * shaderString = new char [30000];
+    int currentIndex = 0;
+    FILE * shad = fopen(path, "r");
+    if(shad == NULL)
+    {
+        cout << "Cannot open file\n" << endl;
+        return (const char * )NULL;
+    }
+    while(1)
+    {
+
+        fgets(tempString, 50, shad);
+        if(feof(shad)) break;
+        for(unsigned int i = 0; i < strlen(tempString); ++i)
+        {
+            shaderString[currentIndex++] = tempString[i];
+        }
+    }
+    shaderString[currentIndex] = '\0';
+    fclose(shad);
+
+    delete []tempString;
+    return shaderString;
+}
+
+
+const char *  errorMessage(int err_)
+{
+    return QString::number(err_).toStdString().c_str();
+}
+
 Net::~Net()
 {
     delete group1;
@@ -233,7 +270,9 @@ double Net::getLrate()
 void Net::setMode(const QString & in)
 {
     if(in.contains("k-fold", Qt::CaseInsensitive)
-       || in.startsWith('k', Qt::CaseInsensitive))
+       || in.contains("cross", Qt::CaseInsensitive)
+       || in.startsWith('k', Qt::CaseInsensitive)
+       || in.startsWith('c', Qt::CaseInsensitive))
     {
         ui->crossRadioButton->setChecked(true);
     }
@@ -243,10 +282,15 @@ void Net::setMode(const QString & in)
         ui->leaveOneOutRadioButton->setChecked(true);
     }
     else if(in.contains("train", Qt::CaseInsensitive)
-            || in.contains("tets", Qt::CaseInsensitive)
+            || in.contains("test", Qt::CaseInsensitive)
             || in.startsWith('t', Qt::CaseInsensitive))
     {
         ui->trainTestRadioButton->setChecked(true);
+    }
+    else if(in.contains("half", Qt::CaseInsensitive)
+            || in.startsWith('h', Qt::CaseInsensitive))
+    {
+        ui->halfHalfRadioButton->setChecked(true);
     }
 }
 
@@ -260,7 +304,7 @@ void Net::setSource(const QString & in)
     if(in.contains("real", Qt::CaseInsensitive) || in.startsWith('r'))
     {
         ui->realsRadioButton->setChecked(true);
-        loadDataNorm = 10;
+        loadDataNorm = 10.;
     }
     else if(in.contains("wind", Qt::CaseInsensitive) || in.startsWith('w'))
     {
@@ -539,8 +583,7 @@ void Net::autoClassification(const QString & spectraDir)
     }
 #endif
 
-    const int numOfPairs = ui->numOfPairsBox->value();
-    const int fold = ui->foldSpinBox->value();
+
 
     confusionMatrix.fill(0.);
 
@@ -557,73 +600,21 @@ void Net::autoClassification(const QString & spectraDir)
 
     if(ui->crossRadioButton->isChecked())
     {
-        /// new with indices
-        vector<int> learnIndices;
-        vector<int> tallIndices;
-        vector<vector<int>> arr;
-        arr.resize(def::numOfClasses);
-        for(int i = 0; i < dataMatrix.rows(); ++i)
-        {
-            arr[ types[i] ].push_back(i);
-        }
-        cout << "Net: autoclass (max " << numOfPairs << "):" << endl;
-
-        for(int i = 0; i < numOfPairs; ++i)
-        {
-            cout << i + 1;
-            cout << " "; cout.flush();
-
-            /// new with indices
-            for(int numFold = 0; numFold < fold; ++numFold)
-            {
-                makeIndicesVectors(learnIndices, tallIndices, arr, numFold);
-                learnNetIndices(learnIndices);
-                tallNetIndices(tallIndices);
-            }
-
-            qApp->processEvents();
-            if(stopFlag)
-            {
-                stopFlag = 0;
-                return;
-            }
-        }
-        cout << endl;
-        averageClassification();
+        crossClassification();
     }
     else if(ui->leaveOneOutRadioButton->isChecked())
     {
-        if(ui->pcaRadioButton->isChecked())
-        {
-            ofstream outStr;
-            outStr.open((def::dir->absolutePath()
-                        + slash() + "pcaRes.txt").toStdString());
-            // auto pca classification
-            for(int i = ui->autoPCAMaxSpinBox->value();
-                i >= ui->autoPCAMinSpinBox->value();
-                i -= ui->autoPCAStepSpinBox->value())
-            {
-                cout << "numOfPc = " << i  << " \t";
-                dataMatrix.resizeCols(i);
-
-                adjustLearnRate(ui->lowLimitSpinBox->value(),
-                                ui->highLimitSpinBox->value());
-
-                leaveOneOut();
-                outStr << i << "\t" << averageAccuracy << endl;
-            }
-            outStr.close();
-        }
-        else
-        {
-            cout << "Net: autoclass (max " << dataMatrix.rows() << "):" << endl;
-            leaveOneOut();
-        }
+        leaveOneOutClassification();
     }
     else if(ui->trainTestRadioButton->isChecked())
     {
         trainTestClassification();
     }
+    else if(ui->trainTestRadioButton->isChecked())
+    {
+        halfHalfClassification();
+    }
+
     learnNet();
     writeWts();
     drawWts();
@@ -1205,8 +1196,36 @@ void Net::readWts()
 }
 
 
-void Net::leaveOneOutSlot()
+void Net::leaveOneOutClassification()
 {
+    if(ui->pcaRadioButton->isChecked())
+    {
+        ofstream outStr;
+        outStr.open((def::dir->absolutePath()
+                    + slash() + "pcaRes.txt").toStdString());
+        // auto pca classification
+        for(int i = ui->autoPCAMaxSpinBox->value();
+            i >= ui->autoPCAMinSpinBox->value();
+            i -= ui->autoPCAStepSpinBox->value())
+        {
+            cout << "numOfPc = " << i  << " \t";
+            dataMatrix.resizeCols(i);
+
+            adjustLearnRate(ui->lowLimitSpinBox->value(),
+                            ui->highLimitSpinBox->value());
+
+            leaveOneOut();
+            outStr << i << "\t" << averageAccuracy << endl;
+        }
+        outStr.close();
+    }
+    else
+    {
+        cout << "Net: autoclass (max " << dataMatrix.rows() << "):" << endl;
+        leaveOneOut();
+    }
+
+    return;
     if(!ui->openclCheckBox->isChecked())
     {
         leaveOneOut();
@@ -1217,41 +1236,67 @@ void Net::leaveOneOutSlot()
     }
 }
 
-
-const char * kernelFromFile(char *  path)
+void Net::crossClassification()
 {
-    char * tempString = new char [300];
-    char * shaderString = new char [30000];
-    int currentIndex = 0;
-    FILE * shad = fopen(path, "r");
-    if(shad == NULL)
-    {
-        cout << "Cannot open file\n" << endl;
-        return (const char * )NULL;
-    }
-    while(1)
-    {
+    const int numOfPairs = ui->numOfPairsBox->value();
+    const int fold = ui->foldSpinBox->value();
 
-        fgets(tempString, 50, shad);
-        if(feof(shad)) break;
-        for(unsigned int i = 0; i < strlen(tempString); ++i)
+
+    vector<int> learnIndices;
+    vector<int> tallIndices;
+    vector<vector<int>> arr;
+    arr.resize(def::numOfClasses);
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        arr[ types[i] ].push_back(i);
+    }
+    cout << "Net: autoclass (max " << numOfPairs << "):" << endl;
+
+    for(int i = 0; i < numOfPairs; ++i)
+    {
+        cout << i + 1;
+        cout << " "; cout.flush();
+
+        /// new with indices
+        for(int numFold = 0; numFold < fold; ++numFold)
         {
-            shaderString[currentIndex++] = tempString[i];
+            makeIndicesVectors(learnIndices, tallIndices, arr, numFold);
+            learnNetIndices(learnIndices);
+            tallNetIndices(tallIndices);
+        }
+
+        qApp->processEvents();
+        if(stopFlag)
+        {
+            stopFlag = 0;
+            return;
         }
     }
-    shaderString[currentIndex] = '\0';
-    fclose(shad);
-
-    delete []tempString;
-    return shaderString;
+    cout << endl;
+    cout << "cross classification - ";
+    averageClassification();
 }
 
-
-const char *  errorMessage(int err_)
+void Net::halfHalfClassification()
 {
-    return QString::number(err_).toStdString().c_str();
-}
+    vector<int> learnIndices;
+    vector<int> tallIndices;
 
+    for(int i = 0; i < dataMatrix.rows() / 2; ++i)
+    {
+        learnIndices.push_back(i);
+        tallIndices.push_back(i + dataMatrix.rows() / 2);
+    }
+    if(learnIndices.empty() || tallIndices.empty())
+    {
+        cout << "teainTest: indicesArray empty, return" << endl;
+        return;
+    }
+    learnNetIndices(learnIndices);
+    tallNetIndices(tallIndices);
+    cout << "half-half classification - ";
+    averageClassification();
+}
 
 void Net::trainTestClassification(const QString & trainTemplate,
                                   const QString & testTemplate)
@@ -1646,9 +1691,10 @@ void Net::learnNetIndices(vector<int> mixNum,
                 for(int j = 0; j < def::numOfClasses; ++j)
                 {
                     weight[0][j] += output[0]
-                            * (learnRate
-                               * normCoeff[type]
-                               * ((type == j) - output[1][j]));
+                            * (learnRate * normCoeff[type]
+                               * ((type == j) - output[1][j])
+//                            * (output[1][j] * (1. - output[1][j])) * 4. // derivative
+                            );
                 }
 
             }
@@ -1959,7 +2005,36 @@ void Net::pca()
 #endif
 }
 
+/// naive Bayes classifier
+void Net::learnBayesIndices(vector<int> mixNum)
+{
+    QTime myTime;
+    myTime.start();
 
+    int type = 0;
+
+    // apriori probability of classes
+    vector <double> aprioriClass;
+    const double helpMax = *std::max_element(classCount.begin(),
+                                             classCount.end());
+
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        aprioriClass.push_back(classCount[i] / helpMax);
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+/// Sammon and sheet
 double errorSammon(double ** distOld, double ** distNew, int size)
 {
     double sum1_ = 0., sum2_ = 0., ret;

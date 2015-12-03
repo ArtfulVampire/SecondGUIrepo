@@ -37,7 +37,7 @@ class Net : public QWidget
     Q_OBJECT
 
 private:
-    Ui::Net *ui;
+    Ui::Net * ui;
 
     QButtonGroup  * group1,  * group2,  * group3;
 
@@ -117,6 +117,9 @@ public:
     double mouseClick(QLabel * label, QMouseEvent * ev);
 
 
+    void crossClassification();
+    void leaveOneOutClassification();
+    void halfHalfClassification();
     void trainTestClassification(const QString & trainTemplate = "_train",
                                  const QString & testTemplate = "_test");
 
@@ -143,6 +146,9 @@ public:
                          const bool resetFlag = true);
     void tallNetIndices(const vector<int> & indices);
 
+    void learnBayesIndices(vector<int> mixNum);
+    void tallBayesIndices(vector<int> mixNum);
+
 
     void successiveProcessing();
 
@@ -168,7 +174,6 @@ public slots:
     void PaIntoMatrix();
     void loadDataSlot();
 
-    void leaveOneOutSlot();
     void neuronGas();
     void pca();
     void drawSammon();

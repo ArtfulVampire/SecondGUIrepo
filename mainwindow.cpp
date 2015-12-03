@@ -1780,20 +1780,24 @@ void MainWindow::customFunc()
     const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
     for(QString name : names)
     {
-#if 0
+#if 1
         // inner
         for(QString suffix : {"_train", "_test", "_train_ica", "_test_ica"})
         {
             setEdfFile(path + name + suffix + ".edf");
             cleanDirs();
-            ui->windButton->setChecked(true);
+//            ui->windButton->setChecked(true);
+            ui->realButton->setChecked(true);
             sliceAll();
-            countSpectraSimple(1024, 8);
+//            countSpectraSimple(1024, 8);
+            countSpectraSimple(4096, 15);
+
             Net * ann = new Net();
             ann->setMode("N");
 
-            ann->setSource("wind");
-            ann->setReduceCoeff(2.);
+//            ann->setSource("wind");
+            ann->setSource("real");
+//            ann->setReduceCoeff(2.);
             ann->autoClassificationSimple();
             delete ann;
         }
@@ -1915,7 +1919,7 @@ void MainWindow::customFunc()
 //        exit(0);
 #endif
 
-#if 1
+#if 0
         // cross with clean
         ui->windButton->setChecked(true);
 //        ui->realButton->setChecked(true);
