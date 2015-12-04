@@ -1965,7 +1965,7 @@ void MainWindow::customFunc()
 
         // leave last 400 (some will fall out due to zeros)
         windowsList = QDir(path + "windows/fromreal").entryList(QDir::Files);
-        for(int i = 0; i < windowsList.length() - 500; ++i) /// constant
+        for(int i = 0; i < windowsList.length() - 600; ++i) /// constant
         {
             QFile::remove(path + "windows/fromreal/" + windowsList[i]);
         }
@@ -2010,15 +2010,20 @@ void MainWindow::customFunc()
         suc::learnSetStay = 50;
         suc::decayRate = 0.05;
 
+
+        ann->successiveProcessing();
+
+        delete ann; exit(0);
+
         ann->setTallCleanFlag(false);
         ofstream outFil;
         outFil.open((path + "successiveResults.txt").toStdString(), ios_base::app);
         outFil << def::ExpName << endl;
-        for(int lss : {90, 85, 80, 75, 70, 65, 50, 30})
+        for(int lss : {100, 95, 90, 85, 80, 70, 50, 40, 30})
         {
-            for(int numG : {5, 10, 20, 25, 30, 35, 40, 45, 50})
+            for(int numG : {10, 20, 30, 40, 50})
             {
-                for(double dR : {0.01, 0.025, 0.05, 0.075, 0.10, 0.125, 0.15, 0.20})
+                for(double dR : {0.05, 0.10, 0.15, 0.20})
                 {
                     suc::numGoodNewLimit = numG;
                     suc::learnSetStay = lss;

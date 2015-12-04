@@ -1075,6 +1075,12 @@ void Net::successiveProcessing()
         successiveLearning(tempArr, type, fileNam);
     }
     averageClassification();
+
+    cout << endl;
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        cout << fileNames[i] << endl;
+    }
 }
 
 void Net::successiveLearning(const lineType & newSpectre,
