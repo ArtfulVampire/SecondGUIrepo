@@ -1736,14 +1736,14 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 
-    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-    Net * an3 = new Net();
-    an3->loadData("/media/Files/Data/AAX/SpectraSmooth",
-                  7.);
-    an3->setMode("n");
-    an3->setSource("r");
-    an3->learnNet();
-    an3->autoClassificationSimple();
+//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+//    Net * an3 = new Net();
+//    an3->loadData("/media/Files/Data/AAX/SpectraSmooth",
+//                  7.);
+//    an3->setMode("n");
+//    an3->setSource("r");
+//    an3->learnNet();
+//    an3->autoClassificationSimple();
 
 //    an3->reset();
 //    an3->learnNet();
@@ -1751,7 +1751,7 @@ void MainWindow::customFunc()
 //    an3->drawWts("/media/Files/Data/w1_new.wts");
 //    an3->tallNet();
 //    an3->averageClassification();
-    exit(0);
+//    exit(0);
 
 //    matrix tst(20, 5, 0);
 //    for(int i = 0; i < tst.rows(); ++i)
@@ -1798,7 +1798,7 @@ void MainWindow::customFunc()
     const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
     for(QString name : names)
     {
-#if 1
+#if 0
         // inner
         for(QString suffix : {"_train", "_test", "_train_ica", "_test_ica"})
         {
@@ -1937,63 +1937,106 @@ void MainWindow::customFunc()
 //        exit(0);
 #endif
 
-#if 0
+#if 1
         // cross with clean
         ui->windButton->setChecked(true);
 //        ui->realButton->setChecked(true);
 
         Net * ann = new Net();
+        ann->setSource("w");
 
         const QString suffix = "";
 
         setEdfFile(path + name + "_train" + suffix + ".edf");
-//        cleanDirs();
-//        sliceAll();
-//        countSpectraSimple(1024, 8);
+        ui->timeShiftSpinBox->setValue(2.);
+        cleanDirs();
+        sliceAll();
 
-        ann->setSource("w");
-        ann->setMode("N");
+#if 1
+        // initially reduce number of windows
+        QStringList windowsList;
 
-        ann->setTallCleanFlag(true);
-//        ann->setReduceCoeff(2.);
-        for(int i = 0; i < 2; ++i) // while (ann->getAverageAccuracy() != 100.)
+        // delete first two windows from each realisation
+        windowsList = QDir(path + "windows/fromreal").entryList({"*.00", "*.01"}, QDir::Files);
+        for(QString name : windowsList)
         {
-            QFile::remove(def::dir->absolutePath() + slash() + "badFiles.txt");
-//            ann->autoClassificationSimple();
+            QFile::remove(path + "windows/fromreal/" + name);
         }
-        ann->setTallCleanFlag(false);
-#if 0
-        // delete badFiles
-        ifstream badFiles((def::dir->absolutePath() + slash() + "badFiles.txt").toStdString());
+
+        // leave last 400 (some will fall out due to zeros)
+        windowsList = QDir(path + "windows/fromreal").entryList(QDir::Files);
+        for(int i = 0; i < windowsList.length() - 500; ++i) /// constant
+        {
+            QFile::remove(path + "windows/fromreal/" + windowsList[i]);
+        }
+#endif
+
+#if 1
+        // delete badFiles from saved file
+        ifstream badFiles((path + "badFiles-12_400_3.txt").toStdString());
         string nam;
         while(!badFiles.eof())
         {
             badFiles >> nam;
-            const QString toRem = def::dir->absolutePath()
-                                  + slash() + "SpectraSmooth"
-                                  + slash() + "windows"
-                                  + slash() + QString(nam.c_str());
-            cout  << toRem << endl;
+            const QString toRem = path + "windows/fromreal/" + QString(nam.c_str());
+//            cout  << toRem << endl;
             QFile::remove(toRem);
         }
         badFiles.close();
 #endif
 
-        cleanDir(def::dir->absolutePath()
-                 + slash() + "Realisations");
-        cleanDir(def::dir->absolutePath()
-                 + slash() + "windows/fromreal");
+        countSpectraSimple(1024, 8);
+//        ann->loadData(path + "SpectraSmooth/windows");
 
-        setEdfFile(path + name + "_test" + suffix + ".edf");
-//        sliceAll();
-//        countSpectraSimple(1024, 8);
+//        ann->setMode("N");
+//        ann->setTallCleanFlag(true);
+//        for(int i = 0; i < 3; ++i) // while (ann->getAverageAccuracy() != 100.)
+//        {
+//            ann->autoClassificationSimple();
+//        }
+//        ann->setTallCleanFlag(false);
 
-//        ann->setMode("t");
-//        ann->setReduceCoeff(2.);
-//        ann->autoClassificationSimple();
-        ann->successiveProcessing();
-    exit(0);
+        cleanDir(path + "Realisations");
+        cleanDir(path + "windows/fromreal");
+
+        setEdfFile(path + name + "_test" + suffix + ".edf");        
+        ui->timeShiftSpinBox->setValue(0.5);
+        sliceAll();
+        countSpectraSimple(1024, 8);
+
+        ann->setMode("t");
+
+        suc::numGoodNewLimit = 5;
+        suc::learnSetStay = 50;
+        suc::decayRate = 0.05;
+
+        ann->setTallCleanFlag(false);
+        ofstream outFil;
+        outFil.open((path + "successiveResults.txt").toStdString(), ios_base::app);
+        outFil << def::ExpName << endl;
+        for(int lss : {90, 85, 80, 75, 70, 65, 50, 30})
+        {
+            for(int numG : {5, 10, 20, 25, 30, 35, 40, 45, 50})
+            {
+                for(double dR : {0.01, 0.025, 0.05, 0.075, 0.10, 0.125, 0.15, 0.20})
+                {
+                    suc::numGoodNewLimit = numG;
+                    suc::learnSetStay = lss;
+                    suc::decayRate = dR;
+
+                    ann->successiveProcessing();
+                    outFil << "learnSet = " << lss << '\t';
+                    outFil << "numGood = " << numG << '\t';
+                    outFil << "decay = " << dR << '\t';
+                    outFil << ann->getAverageAccuracy() << '\t';
+                    outFil << ann->getKappa() << endl;
+                }
+            }
+        }
+        outFil.close();
+
         delete ann;
+
 #endif
     }
     exit(0);

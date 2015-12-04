@@ -131,7 +131,7 @@ public:
                                                 + slash() + "SpectraSmooth",
                   double rdcCoeff = 1.);
     void popBackDatum();
-    void emplaceDatum(const lineType & inDatum,
+    void pushBackDatum(const lineType & inDatum,
                      const int & inType,
                      const QString & inFileName);
     void eraseDatum(const int & index);

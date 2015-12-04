@@ -14,9 +14,9 @@ Net::Net() :
                                                   + slash() + "log.txt");
     QFile::remove(helpString);
 
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "badFiles.txt");
-    QFile::remove(helpString);
+//    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+//                                          + slash() + "badFiles.txt");
+//    QFile::remove(helpString);
 
     stopFlag = 0;
     confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
@@ -198,7 +198,7 @@ void Net::aaDefaultSettings()
         ui->windowsRadioButton->setChecked(true); /// windows
     //    ui->pcaRadioButton->setChecked(true); /// PCA
 
-    ui->highLimitSpinBox->setValue(180); /// highLimit
+    ui->highLimitSpinBox->setValue(150); /// highLimit
     ui->lowLimitSpinBox->setValue(80);  /// lowLimit
 
     ui->rdcCoeffSpinBox->setValue(7.); ///  rdc coeff
@@ -980,7 +980,6 @@ void Net::tallNetIndices(const vector<int> & indices)
                                   + slash() + "windows"
                                   + slash() + fileNames[ indices[i] ]);
                 }
-
                 eraseDatum(indices[i]);
             }
 
@@ -1023,12 +1022,9 @@ void Net::tallNetIndices(const vector<int> & indices)
 
 
 
-int numGoodNew = 0;
-int numGoodNewLimit = 10;
-int learnSetStay = 60;
-double decayRate = 0.01;
-vector<int> exIndices{};
 
+vector<int> exIndices{};
+int numGoodNew = 0;
 
 void Net::successiveProcessing()
 {
@@ -1039,38 +1035,30 @@ void Net::successiveProcessing()
     vector<int> eraseIndices{};
     /// check for no test items
     loadData(helpString);
+
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
-        if(fileNames[i].contains("test"))
+        if(fileNames[i].contains("_test"))
         {
             eraseIndices.push_back(i);
         }
     }
     eraseData(eraseIndices);
-    eraseIndices.clear();
 
     /// reduce learning set
     vector<double> count = classCount;
-
-//    cout << count[0] << '\t' << count[1] << '\t' << count[2] << endl;
+    eraseIndices.clear();
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
-        if(count[ types[i] ] > learnSetStay)
+        if(count[ types[i] ] > suc::learnSetStay)
         {
             eraseIndices.push_back(i);
             count[ types[i] ] -= 1.;
         }
     }
-//    cout << count[0] << '\t' << count[1] << '\t' << count[2] << endl;
     eraseData(eraseIndices);
-//    for(int i = 0; i < dataMatrix.rows(); ++i)
-//    {
-//        cout << fileNames[i] << "\t" << types[i] << endl;
-//    }
-//    cout << "successiveProcessing: dataMatrix.rows() after reduction " << dataMatrix.rows() << endl;
 
-//    exit(0);
-    learnNet();
+    learnNet(); /// what for?
 
     confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
     exIndices.clear();
@@ -1098,7 +1086,7 @@ void Net::successiveLearning(const lineType & newSpectre,
 
     lineType newData = (newSpectre - averageDatum) / (sigmaVector * loadDataNorm);
 
-    emplaceDatum(newData, newType, newFileName);
+    pushBackDatum(newData, newType, newFileName);
 
     const int outType = classifyDatum(dataMatrix.rows() - 1); // take the last
 //    cout << newType << '\t' << outType << endl;
@@ -1107,7 +1095,6 @@ void Net::successiveLearning(const lineType & newSpectre,
     {
         const int num = std::find(types.begin(), types.end(), newType) - types.begin();
         exIndices.push_back(num);
-        eraseDatum(num);
         ++numGoodNew;
     }
     else
@@ -1116,8 +1103,10 @@ void Net::successiveLearning(const lineType & newSpectre,
     }
     confusionMatrix[newType][outType] += 1.;
 
-    if(numGoodNew == numGoodNewLimit)
+    if(numGoodNew == suc::numGoodNewLimit)
     {
+        eraseData(exIndices);
+        exIndices.clear();
         successiveRelearn();
     }
 }
@@ -1125,17 +1114,17 @@ void Net::successiveLearning(const lineType & newSpectre,
 void Net::successiveRelearn()
 {
     // decay weights
+    const double rat = suc::decayRate;
     for(int i = 0; i < dimensionality.size() - 1; ++i)
     {
         std::for_each(weight[i].begin(),
                       weight[i].end(),
-                      [decayRate](lineType & in)
+                      [rat](lineType & in)
         {
-            in *= 1. - decayRate;
+            in *= 1. - rat;
         });
     }
     // relearn w/o reset
-//    cout << "lerearn data.rows() = " << dataMatrix.rows() << endl;
     learnNet(false);
     numGoodNew = 0;
 }
@@ -1416,7 +1405,7 @@ void Net::loadDataSlot()
              ui->rdcCoeffSpinBox->value());
 }
 
-void Net::emplaceDatum(const lineType & inDatum,
+void Net::pushBackDatum(const lineType & inDatum,
                       const int & inType,
                       const QString & inFileName)
 {
@@ -1475,11 +1464,11 @@ void Net::loadData(const QString & spectraPath,
             readFileInLine(spectraPath + slash() + fileName,
                            tempArr);
             tempArr /= rdcCoeff;
-            emplaceDatum(tempArr, i, fileName);
+            pushBackDatum(tempArr, i, fileName);
         }
     }
     cout << "loadDataNorm = " << loadDataNorm << endl;
-#if 0
+#if 1
     averageDatum = dataMatrix.averageRow();
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {

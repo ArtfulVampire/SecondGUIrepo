@@ -38,3 +38,10 @@ QStringList fileMarkers{"_241", "_247", "_254 _244"};
 
 int numOfClasses = fileMarkers.length();
 }
+
+namespace suc
+{
+int numGoodNewLimit = 200;
+int learnSetStay = 60;
+double decayRate = 0.01;
+}

@@ -26,6 +26,13 @@ namespace coords
                             "O1", "O2"};
 }
 
+namespace suc
+{
+extern int numGoodNewLimit;
+extern int learnSetStay;
+extern double decayRate;
+}
+
 
 
 enum spectraGraphsNormalization {all = 0, each = 1};
