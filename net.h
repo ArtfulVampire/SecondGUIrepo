@@ -84,7 +84,7 @@ public:
                              int lowLimit,
                              int highLimit,
                              QString paFileName = "all");
-    int classifyDatum(const int & vecNum);
+    std::pair<int, double> classifyDatum(const int & vecNum);
     void leaveOneOut();
     void makeIndicesVectors(vector<int> & learnInd,
                             vector<int> & tallInd,

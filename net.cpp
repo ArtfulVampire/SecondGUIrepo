@@ -966,7 +966,7 @@ void Net::tallNetIndices(const vector<int> & indices)
     matrix localConfusionMatrix(def::numOfClasses, def::numOfClasses);
     for(int i = 0; i < indices.size(); ++i)
     {
-        const int outClass = classifyDatum(indices[i]);
+        const int outClass = classifyDatum(indices[i]).first;
         if(types[ indices[i] ] != outClass )
         {
             badFilesStr << fileNames[ indices[i] ] << endl;
@@ -1092,19 +1092,18 @@ void Net::successiveLearning(const lineType & newSpectre,
 {
     /// consider loaded wts
     /// dataMatrix is learning matrix
+    const double errorThreshold = 0.8;
 
     lineType newData = (newSpectre - averageDatum) / (sigmaVector * loadDataNorm);
 
     pushBackDatum(newData, newType, newFileName);
 
-    const int outType = classifyDatum(dataMatrix.rows() - 1); // take the last
-    confusionMatrix[newType][outType] += 1.;
-    if(outType == newType) /// if good coincidence
+    const std::pair<int, double> outType = classifyDatum(dataMatrix.rows() - 1); // take the last
+    confusionMatrix[newType][outType.first] += 1.;
+    if(outType.first == newType && outType.second < errorThreshold) /// if good coincidence
     {
         const int num = std::find(types.begin(), types.end(), newType) - types.begin();
         eraseDatum(num);
-//        cout << "to erase = " << num << endl;
-//        exIndices.push_back(num);
         ++numGoodNew;
     }
     else
@@ -1114,9 +1113,6 @@ void Net::successiveLearning(const lineType & newSpectre,
 
     if(numGoodNew == suc::numGoodNewLimit)
     {
-//        eraseData(exIndices);
-//        exIndices.clear();
-
         successiveRelearn();
         numGoodNew = 0;
     }
@@ -1495,6 +1491,18 @@ void Net::loadData(const QString & spectraPath,
     }
     dataMatrix.transpose();
 #endif
+#if 0
+    dataMatrix.transpose();
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        const double a = dataMatrix[i].max();
+        const double b = dataMatrix[i].min();
+        dataMatrix[i] -= (a + b) / 2.;
+        dataMatrix[i] /= (a - b);
+    }
+    dataMatrix.transpose();
+
+#endif
 }
 
 //void Net::loadDataFromFolder(const QString & spectraPath)
@@ -1737,7 +1745,7 @@ void Net::learnNetIndices(vector<int> mixNum,
 
 
 
-int Net::classifyDatum(const int & vecNum)
+std::pair<int, double> Net::classifyDatum(const int & vecNum)
 {
     const int type = types[vecNum];
     const int numOfLayers = dimensionality.size();
@@ -1762,9 +1770,17 @@ int Net::classifyDatum(const int & vecNum)
         output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
     }
 
-    return std::max_element(begin(output.back()),
-                            end(output.back()) - 1)  // -bias
-            - begin(output.back());
+    double res = 0.;
+    for(int i = 0; i < def::numOfClasses; ++i)
+    {
+        res += pow((output.back()[i] - (i == type)), 2);
+    }
+    res = sqrt(res / def::numOfClasses);
+
+    return std::make_pair(std::max_element(begin(output.back()),
+                                           end(output.back()) - 1)  // -bias
+                          - begin(output.back()),
+                          res);
 
 
     // more general
@@ -1772,14 +1788,14 @@ int Net::classifyDatum(const int & vecNum)
 //                         std::max_element(output.back().begin(),
 //                                          output.back().end()));
 
-    for(int k = 0; k < dimensionality[numOfLayers - 1]; ++k)
-    {
-        if(k != type && output[numOfLayers - 1] [k] >= output[numOfLayers - 1] [type])
-        {
-            return false;
-        }
-    }
-    return true;
+//    for(int k = 0; k < dimensionality[numOfLayers - 1]; ++k)
+//    {
+//        if(k != type && output[numOfLayers - 1] [k] >= output[numOfLayers - 1] [type])
+//        {
+//            return false;
+//        }
+//    }
+//    return true;
 }
 
 

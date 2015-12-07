@@ -1808,7 +1808,8 @@ void MainWindow::customFunc()
     {
 #if 0
         // inner
-        for(QString suffix : {"_train", "_test", "_train_ica", "_test_ica"})
+//        for(QString suffix : {"_train", "_test", "_train_ica", "_test_ica"})
+        for(QString suffix : {"_train"})
         {
             setEdfFile(path + name + suffix + ".edf");
             cleanDirs();
@@ -1818,15 +1819,13 @@ void MainWindow::customFunc()
 //            countSpectraSimple(1024, 8);
             countSpectraSimple(4096, 15);
 
-            Net * ann = new Net();
-            ann->setMode("N");
-
-//            ann->setSource("wind");
-            ann->setSource("real");
-//            ann->setReduceCoeff(2.);
-            ann->autoClassificationSimple();
-            delete ann;
+            Net * annA = new Net();
+            annA->setMode("N");
+            annA->setSource("real");
+            annA->autoClassificationSimple();
+            delete annA;
         }
+        continue;
 #endif
 
 
@@ -1945,9 +1944,19 @@ void MainWindow::customFunc()
 //        exit(0);
 #endif
 
+
+
+
+
+
+
+
+
 #if 1
         // cross with clean
         ui->windButton->setChecked(true);
+
+        if(name != "GAS") continue;
 
         Net * ann = new Net();
         ann->setSource("w");
@@ -1956,10 +1965,10 @@ void MainWindow::customFunc()
 
         setEdfFile(path + name + "_train" + suffix + ".edf");
         ui->timeShiftSpinBox->setValue(2.);
-        cleanDirs();
-        sliceAll();
+//        cleanDirs();
+//        sliceAll();
 
-#if 1
+#if 0
         // initially reduce number of windows
         QStringList windowsList;
 
@@ -1979,7 +1988,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 1
+#if 0
         // delete badFiles from saved file
 //        ifstream badFiles((path + "badFiles-12_400_3.txt").toStdString());
         ifstream badFiles((path + "badFiles_new.txt").toStdString());
@@ -1994,7 +2003,7 @@ void MainWindow::customFunc()
         badFiles.close();
 #endif
 
-        countSpectraSimple(1024, 8);
+//        countSpectraSimple(1024, 8);
 
 #if 0
         // N-fold cleaning
@@ -2016,33 +2025,34 @@ void MainWindow::customFunc()
 
         setEdfFile(path + name + "_test" + suffix + ".edf");        
         ui->timeShiftSpinBox->setValue(0.5);
-        sliceAll();
-        countSpectraSimple(1024, 8);
+//        sliceAll();
+//        countSpectraSimple(1024, 8);
+
 
         ann->setMode("t");
 
 
-        suc::numGoodNewLimit = 20;
+        suc::numGoodNewLimit = 5;
         suc::learnSetStay = 100;
-        suc::decayRate = 0.1;
+        suc::decayRate = 0.0;
 
-//        for(int i = 0; i < 3; ++i)
-//        {
-//            ann->successiveProcessing();
-//        }
+        for(int i = 0; i < 1; ++i)
+        {
+            ann->successiveProcessing();
+        }
 
-//        delete ann; exit(0);
+        delete ann; exit(0);
 
         ann->setTallCleanFlag(false);
 
         ofstream outFil;
         outFil.open((path + "successiveResults.txt").toStdString(), ios_base::app);
         outFil << def::ExpName << endl;
-        for(int lss : {120, 110, 100, 80, 50, 30})
+        for(int lss : {100})
         {
-            for(int numG : {5, 10, 15, 20, 35, 50, 70})
+            for(int numG : {5})
             {
-                for(double dR : {0.01, 0.02, 0.03, 0.04, 0.05})
+                for(double dR : {0.0})
                 {
                     suc::numGoodNewLimit = numG;
                     suc::decayRate = dR;
