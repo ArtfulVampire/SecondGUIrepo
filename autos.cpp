@@ -2152,9 +2152,10 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
     const QStringList leest1 = tmpDir.entryList(QStringList{"*.edf", "*.EDF"});
     for(const QString & guy : leest1)
     {
+
+        cout << guy << "\tstart" << endl;
         edfFile & initEdf = globalEdf;
         initEdf.readEdfFile(path + slash() + guy);
-        cout << guy << endl;
 
         if(initEdf.getNdr() <= wndLen * initEdf.getDdr() )
         {
@@ -2197,6 +2198,7 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
                                            + slash() + initEdf.getExpName()
                                            + "_wnd_" + QString::number(i+1) + ".edf"));
         }
+        cout << guy << "\tfinish" << endl;
     }
     logStream.close();
 

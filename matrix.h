@@ -75,6 +75,8 @@ public:
     // for compability with vector < vector<Type> >
     void clear() {this->data.clear();}
     int size() const {return data.size();}
+
+    void resize(int rows, int cols, double val);
     void resize(int rows, int cols);
     void resize(int i) {data.resize(i);}
 

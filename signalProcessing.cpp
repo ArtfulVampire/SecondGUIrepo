@@ -96,8 +96,8 @@ void four1(signalType & dataF, int fftLen, int isign)
 
 
 template <typename signalType>
-double fractalDimension(const signalType &arr,
-                        const QString &picPath = QString())
+double fractalDimension(const signalType & arr,
+                        const QString & picPath = QString())
 {
     int timeShift; //timeShift
     long double L = 0.; //average length

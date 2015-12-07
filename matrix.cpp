@@ -350,6 +350,11 @@ void matrix::fill(double value)
     }
 }
 
+void matrix::resize(int rows, int cols, double val)
+{
+    this->resize(rows, cols);
+    this->fill(val);
+}
 
 void matrix::resize(int newRows, int newCols)
 {
@@ -564,8 +569,7 @@ int matrix::cols() const
 matrix matrix::transpose(const matrix &input)
 {
 #if 1
-    matrix res;
-    res.resize(input.cols(), input.rows());
+    matrix res(input.cols(), input.rows());
     for(int i = 0; i < input.rows(); ++i)
     {
         for(int j = 0; j < input.cols(); ++j)

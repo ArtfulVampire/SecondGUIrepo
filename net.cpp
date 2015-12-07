@@ -19,7 +19,7 @@ Net::Net() :
 //    QFile::remove(helpString);
 
     stopFlag = 0;
-    confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
+    confusionMatrix.resize(def::numOfClasses, def::numOfClasses, 0.);
 
 //    tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
 
@@ -292,6 +292,11 @@ void Net::setMode(const QString & in)
     {
         ui->halfHalfRadioButton->setChecked(true);
     }
+    else
+    {
+        cout << "setMode: wrong mode" << endl;
+        exit(0);
+    }
 }
 
 void Net::setTallCleanFlag(bool in)
@@ -327,9 +332,9 @@ void Net::adjustParamsGroup2(QAbstractButton * but)
         ui->highLimitSpinBox->setValue(150);
         ui->lowLimitSpinBox->setValue(80);
 
-        ui->epochSpinBox->setValue(300);
-        ui->rdcCoeffSpinBox->setValue(5.);
-        ui->foldSpinBox->setValue(2.);
+        ui->epochSpinBox->setValue(250);
+        ui->rdcCoeffSpinBox->setValue(7.);
+        ui->foldSpinBox->setValue(5.);
         if(but->text().contains("wind", Qt::CaseInsensitive))
         {
             loadDataNorm = 5.;
@@ -1024,7 +1029,7 @@ void Net::tallNetIndices(const vector<int> & indices)
 
 
 vector<int> exIndices{};
-int numGoodNew = 0;
+int numGoodNew;
 
 void Net::successiveProcessing()
 {
@@ -1033,9 +1038,13 @@ void Net::successiveProcessing()
                          + slash() + "windows";
 
     vector<int> eraseIndices{};
+
+    numGoodNew = 0;
+    confusionMatrix.fill(0.);
+    exIndices.clear();
+
     /// check for no test items
     loadData(helpString);
-
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         if(fileNames[i].contains("_test"))
@@ -1044,10 +1053,10 @@ void Net::successiveProcessing()
         }
     }
     eraseData(eraseIndices);
+    eraseIndices.clear();
 
     /// reduce learning set
     vector<double> count = classCount;
-    eraseIndices.clear();
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         if(count[ types[i] ] > suc::learnSetStay)
@@ -1057,11 +1066,11 @@ void Net::successiveProcessing()
         }
     }
     eraseData(eraseIndices);
+    eraseIndices.clear();
 
-    learnNet(); /// what for?
+    learnNet(); /// get initial weights
 
-    confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
-    exIndices.clear();
+//    confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
 
     lineType tempArr;
     int type = -1;
@@ -1075,12 +1084,6 @@ void Net::successiveProcessing()
         successiveLearning(tempArr, type, fileNam);
     }
     averageClassification();
-
-    cout << endl;
-    for(int i = 0; i < dataMatrix.rows(); ++i)
-    {
-        cout << fileNames[i] << endl;
-    }
 }
 
 void Net::successiveLearning(const lineType & newSpectre,
@@ -1095,25 +1098,27 @@ void Net::successiveLearning(const lineType & newSpectre,
     pushBackDatum(newData, newType, newFileName);
 
     const int outType = classifyDatum(dataMatrix.rows() - 1); // take the last
-//    cout << newType << '\t' << outType << endl;
-
+    confusionMatrix[newType][outType] += 1.;
     if(outType == newType) /// if good coincidence
     {
         const int num = std::find(types.begin(), types.end(), newType) - types.begin();
-        exIndices.push_back(num);
+        eraseDatum(num);
+//        cout << "to erase = " << num << endl;
+//        exIndices.push_back(num);
         ++numGoodNew;
     }
     else
     {
         popBackDatum();
     }
-    confusionMatrix[newType][outType] += 1.;
 
     if(numGoodNew == suc::numGoodNewLimit)
     {
-        eraseData(exIndices);
-        exIndices.clear();
+//        eraseData(exIndices);
+//        exIndices.clear();
+
         successiveRelearn();
+        numGoodNew = 0;
     }
 }
 
@@ -1130,9 +1135,10 @@ void Net::successiveRelearn()
             in *= 1. - rat;
         });
     }
+
+//    cout << "relearn: matrixRows = " << dataMatrix.rows() << endl;
     // relearn w/o reset
     learnNet(false);
-    numGoodNew = 0;
 }
 
 void Net::readWtsByName(const QString & fileName,
@@ -1457,7 +1463,7 @@ void Net::loadData(const QString & spectraPath,
     makeFileLists(spectraPath, leest);
 
     dataMatrix = matrix();
-    classCount.resize(def::numOfClasses);
+    classCount.resize(def::numOfClasses, 0.);
     types.clear();
     fileNames.clear();
 

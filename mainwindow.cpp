@@ -1735,11 +1735,19 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
+//    GalyaCut(def::GalyaFolder + "/7dec");
+//    exit(0);
 
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
 //    Net * an3 = new Net();
-//    an3->loadData("/media/Files/Data/AAX/SpectraSmooth",
-//                  7.);
+//    an3->setReduceCoeff(7.);
+//    an3->setSource("r");
+//    an3->setMode("cros");
+
+//    an3->autoClassificationSimple();
+
+//    an3->drawWts("/media/Files/Data/w2_new.wts");
+//    exit(0);
 //    an3->setMode("n");
 //    an3->setSource("r");
 //    an3->learnNet();
@@ -1940,7 +1948,6 @@ void MainWindow::customFunc()
 #if 1
         // cross with clean
         ui->windButton->setChecked(true);
-//        ui->realButton->setChecked(true);
 
         Net * ann = new Net();
         ann->setSource("w");
@@ -1963,7 +1970,7 @@ void MainWindow::customFunc()
             QFile::remove(path + "windows/fromreal/" + name);
         }
 
-        // leave last 400 (some will fall out due to zeros)
+        // leave last 600 (some will fall out due to zeros)
         windowsList = QDir(path + "windows/fromreal").entryList(QDir::Files);
         for(int i = 0; i < windowsList.length() - 600; ++i) /// constant
         {
@@ -1971,9 +1978,11 @@ void MainWindow::customFunc()
         }
 #endif
 
+
 #if 1
         // delete badFiles from saved file
-        ifstream badFiles((path + "badFiles-12_400_3.txt").toStdString());
+//        ifstream badFiles((path + "badFiles-12_400_3.txt").toStdString());
+        ifstream badFiles((path + "badFiles_new.txt").toStdString());
         string nam;
         while(!badFiles.eof())
         {
@@ -1986,15 +1995,21 @@ void MainWindow::customFunc()
 #endif
 
         countSpectraSimple(1024, 8);
-//        ann->loadData(path + "SpectraSmooth/windows");
 
-//        ann->setMode("N");
-//        ann->setTallCleanFlag(true);
-//        for(int i = 0; i < 3; ++i) // while (ann->getAverageAccuracy() != 100.)
-//        {
-//            ann->autoClassificationSimple();
-//        }
-//        ann->setTallCleanFlag(false);
+#if 0
+        // N-fold cleaning
+        ann->loadData(path + "SpectraSmooth/windows");
+        ann->setMode("N");
+        ann->setTallCleanFlag(true);
+        for(int i = 0; i < 4; ++i) // while (ann->getAverageAccuracy() != 100.)
+        {
+            ann->autoClassificationSimple();
+        }
+        ann->setTallCleanFlag(false);
+
+        delete ann;
+        continue;
+#endif
 
         cleanDir(path + "Realisations");
         cleanDir(path + "windows/fromreal");
@@ -2006,28 +2021,33 @@ void MainWindow::customFunc()
 
         ann->setMode("t");
 
-        suc::numGoodNewLimit = 5;
-        suc::learnSetStay = 50;
-        suc::decayRate = 0.05;
 
+        suc::numGoodNewLimit = 20;
+        suc::learnSetStay = 100;
+        suc::decayRate = 0.1;
 
-        ann->successiveProcessing();
+//        for(int i = 0; i < 3; ++i)
+//        {
+//            ann->successiveProcessing();
+//        }
 
-        delete ann; exit(0);
+//        delete ann; exit(0);
 
         ann->setTallCleanFlag(false);
+
         ofstream outFil;
         outFil.open((path + "successiveResults.txt").toStdString(), ios_base::app);
         outFil << def::ExpName << endl;
-        for(int lss : {100, 95, 90, 85, 80, 70, 50, 40, 30})
+        for(int lss : {120, 110, 100, 80, 50, 30})
         {
-            for(int numG : {10, 20, 30, 40, 50})
+            for(int numG : {5, 10, 15, 20, 35, 50, 70})
             {
-                for(double dR : {0.05, 0.10, 0.15, 0.20})
+                for(double dR : {0.01, 0.02, 0.03, 0.04, 0.05})
                 {
                     suc::numGoodNewLimit = numG;
-                    suc::learnSetStay = lss;
                     suc::decayRate = dR;
+
+                    suc::learnSetStay = lss;
 
                     ann->successiveProcessing();
                     outFil << "learnSet = " << lss << '\t';
@@ -2041,6 +2061,7 @@ void MainWindow::customFunc()
         outFil.close();
 
         delete ann;
+//        exit(0);
 
 #endif
     }
