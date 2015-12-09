@@ -11,7 +11,7 @@
 
 using namespace std;
 
-typedef valarray<double> lineType;
+typedef std::valarray<double> lineType;
 
 const long double pi = 3.14159265358979323846L;
 

@@ -186,7 +186,7 @@ void Eyes::eyesProcessing()
         // windows
         QString helpString = def::dir->absolutePath()
                              + slash() + "windows";
-        leest = QDir(helpString).entryList(QDir::Files|QDir::NoDotAndDotDot);
+        makeFullFileList(helpString, leest);
         for(QString & item : leest)
         {
             item.prepend(helpString + slash());

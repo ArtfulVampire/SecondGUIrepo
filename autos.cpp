@@ -2147,7 +2147,7 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
         outPath = tmpDir.absolutePath() + slash() + "windows";
     }
     tmpDir.mkdir("smalls");
-    const QStringList leest1 = tmpDir.entryList(QStringList{"*.edf", "*.EDF"});
+    const QStringList leest1 = tmpDir.entryList({"*.edf", "*.EDF"});
     for(const QString & guy : leest1)
     {
 
@@ -2227,7 +2227,9 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     dir.cd(procDirPath);
     dir.mkdir("out");
     QStringList filesList;
-    filesList = dir.entryList(QStringList{"*.EDF", "*.edf"}, QDir::NoFilter, QDir::Size|QDir::Reversed);
+    filesList = dir.entryList({"*.EDF", "*.edf"},
+                              QDir::NoFilter,
+                              QDir::Size|QDir::Reversed);
 
     edfFile initEdf;
     edfFile currEdf;

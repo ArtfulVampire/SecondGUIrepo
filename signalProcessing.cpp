@@ -520,14 +520,13 @@ void countMannWhitney(trivector<int> & outMW,
                       matrix * averageSpectraOut,
                       matrix * distancesOut)
 {
-//    const int numOfClasses = def::fileMarkers.length();
-    const int numOfClasses = def::numOfClasses();
 
     const int NetLength = def::nsWOM() * def::spLength();
+    const int numOfClasses = def::numOfClasses();
 
     QString helpString;
     const QDir dir_(spectraPath);
-    QStringList lst[numOfClasses]; //0 - Spatial, 1 - Verbal, 2 - Rest
+    vector<QStringList> lst; //0 - Spatial, 1 - Verbal, 2 - Rest
     matrix spectra[numOfClasses];
 
     matrix averageSpectra(numOfClasses, NetLength, 0);
@@ -535,16 +534,7 @@ void countMannWhitney(trivector<int> & outMW,
 
     for(int i = 0; i < numOfClasses; ++i)
     {
-        QStringList nameFilters;
-        QStringList leest;
-        leest = def::fileMarkers[i].split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-        for(int j = 0; j < leest.length(); ++j)
-        {
-            helpString = "*" + leest[j] + "*";
-            nameFilters << helpString;
-        }
-        lst[i] = dir_.entryList(nameFilters, QDir::Files);
-
+        makeFileLists(spectraPath, lst);
 
         spectra[i].resize(lst[i].length());
         for(int j = 0; j < lst[i].length(); ++j)
@@ -1969,6 +1959,8 @@ template matrix countWavelet(const vectType & inSignal);
 
 template void four1(lineType & dataF, int nn, int isign);
 template void four1(vectType & dataF, int nn, int isign);
+
+template lineType four2(const lineType & inRealData, int fftLen, int isign);
 
 template lineType spectre(const vectType & data);
 template lineType spectre(const lineType & data);

@@ -369,7 +369,7 @@ void Cut::createImage(QString dataFileName) //
     Eyes = 0;
 
     tmpDir.cdUp(); // drop the file name
-    lst = tmpDir.entryList(QDir::Files);
+    makeFullFileList(tmpDir.absolutePath(), lst);
 
     readPlainData(currentFile, data3, def::ns, NumOfSlices);
 

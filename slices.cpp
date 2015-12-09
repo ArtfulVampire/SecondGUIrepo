@@ -20,10 +20,9 @@ void MainWindow::sliceWindFromReal()
 
 
     QStringList lst;
-    lst = QDir(def::dir->absolutePath()
-               + slash() + "Realisations").entryList({"*_2??"},
-                                                     QDir::Files,
-                                                     QDir::Name); /// Name ~ order
+    makeFullFileList(def::dir->absolutePath()
+                     + slash() + "Realisations",
+                     lst);
 
     const int timeShift = ui->timeShiftSpinBox->value() * def::freq;
     const int wndLength = ui->windowLengthSpinBox->value() * def::freq;
@@ -650,13 +649,6 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
     // with feedback 200 (241||247, num, 231||237, (234), 254, 255)
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
-//        auto it1 = std::find(it, markChanArr.end(), 241.);
-//        auto it2 = std::find(it, markChanArr.end(), 247.);
-//        auto it3 = std::find(it, markChanArr.end(), 254.);
-
-//        cout << i << "\t" << markChanArr[i] << endl;
-
-
         if(markChanArr[i] == 0.)
         {
             continue;

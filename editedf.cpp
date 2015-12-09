@@ -376,6 +376,7 @@ void MainWindow::reduceChannelsEDF(const QString & newFilePath)
     cout << "reduceChannelsEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
+/// Ossadtchi only ?
 void MainWindow::reduceChannelsSlot()
 {
 #if 1
@@ -409,6 +410,7 @@ void MainWindow::reduceChannelsSlot()
     QDir localDir(def::dir->absolutePath());
     localDir.cd("Realisations");
     lst = localDir.entryList(QDir::Files, QDir::NoSort);
+
 
     int NumOfSlices;
     int localNs;

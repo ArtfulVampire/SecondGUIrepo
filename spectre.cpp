@@ -339,8 +339,9 @@ void Spectre::integrate()
     }
 
     matrix dataInt(def::nsWOM(), def::spLength());
-    lst = QDir(ui->lineEdit_1->text()).entryList(QDir::Files);
     matrix dataOut(def::nsWOM(), numOfInt, 0.);
+
+    makeFullFileList(ui->lineEdit_1->text(), lst);
 
     for(const QString & fileName : lst)
     {
@@ -354,6 +355,7 @@ void Spectre::integrate()
         {
             for(int j = 0; j < dataOut.cols(); ++j)
             {
+                /// accumulate
                 for(int k = begins[j]; k <= ends[j]; ++k) // < or <= not really important
                 {
                     dataOut[h][k] += dataInt[h][k];
@@ -643,8 +645,9 @@ void Spectre::countSpectra()
 
     const QString inDirPath = ui->lineEdit_1->text();
     const QString outDirPath = ui->lineEdit_2->text();
-    QStringList lst = QDir(inDirPath).entryList(QDir::Files,
-                                                QDir::Name); /// Name ~ order
+    QStringList lst;
+    makeFullFileList(inDirPath, lst, {"_test"});
+//    makeFullFileList(inDirPath, lst);
 
     double sum1 = 0.;
     double sum2 = 0.;
@@ -856,8 +859,6 @@ void Spectre::countSpectra()
         ui->progressBar->setValue((std::distance(lst.begin(), it) + 1)
                                   * 100. / lst.length());
         qApp->processEvents();
-
-        exit(0);
     }
 
     if(ui->bayesRadioButton->isChecked())
@@ -920,7 +921,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
     }
 
     //generality
-    if(def::fftLength - Eyes < def::freq * 3.2) // real signal less than 3.2 seconds
+    if(def::fftLength - Eyes < def::freq * 2.5) // real signal less than 2.5 seconds
     {
         return false;
     }
@@ -1060,12 +1061,8 @@ void Spectre::drawWavelets()
         }
     }
 
-    QStringList nameFilters; // generality pewpew fileMarkers
-    for(const QString & oneMarker : def::fileMarkers)
-    {
-        nameFilters << "*" + oneMarker + "*";
-    }
-    QStringList lst = QDir(ui->lineEdit_1->text()).entryList(nameFilters, QDir::Files);
+    QStringList lst;
+    makeFullFileList(ui->lineEdit_1->text(), lst);
 
     matrix signal;
     matrix coefs;
@@ -1078,7 +1075,7 @@ void Spectre::drawWavelets()
     for(const QString & fileName : lst)
     {
         filePath = QDir::toNativeSeparators(ui->lineEdit_1->text()
-                                              + slash() + fileName);
+                                            + slash() + fileName);
         readPlainData(filePath,
                       signal,
                       def::ns,

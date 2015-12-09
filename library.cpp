@@ -126,20 +126,6 @@ int typeOfFileName(const QString & fileName)
     return -1;
 }
 
-QString getFileMarker(const QString & fileName)
-{
-    for(const QString & fileMark : def::fileMarkers)
-    {
-        QStringList lst = fileMark.split(' ', QString::SkipEmptyParts);
-        for(const QString & filter : lst)
-        {
-            if(fileName.contains(filter))
-            {
-                return filter.right(3); // generality markers appearance
-            }
-        }
-    }
-}
 
 
 
@@ -152,7 +138,8 @@ void eyesProcessingStatic(const vector<int> eogChannels,
     myTime.start();
 
 
-    QStringList leest = QDir(windowsDir).entryList(QDir::Files|QDir::NoDotAndDotDot);
+    QStringList leest;
+    makeFullFileList(windowsDir, leest);
     for(QString & item : leest)
     {
         item.prepend(windowsDir + slash());
@@ -306,7 +293,8 @@ void makePaFile(const QString & spectraDir,
 }
 
 void makeFileLists(const QString & path,
-                   vector<QStringList> & lst)
+                   vector<QStringList> & lst,
+                   const QStringList & auxFilters)
 {
     QDir localDir(path);
     QStringList nameFilters, leest;
@@ -319,13 +307,56 @@ void makeFileLists(const QString & path,
         for(const QString & filter : leest)
         {
             helpString = "*" + filter + "*";
-            nameFilters << helpString;
+            if(!auxFilters.isEmpty())
+            {
+                for(const QString & aux : auxFilters)
+                {
+                    nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
+                }
+            }
+            else
+            {
+//                nameFilters << helpString;
+                nameFilters << QString(def::ExpName.left(3) + helpString);
+            }
         }
         lst.push_back(localDir.entryList(nameFilters,
                                          QDir::Files,
                                          QDir::Name)); /// Name ~ order
     }
+}
 
+void makeFullFileList(const QString & path,
+                      QStringList & lst,
+                      const QStringList & auxFilters)
+{
+    QDir localDir(path);
+    QStringList nameFilters, leest;
+    QString helpString;
+    for(const QString & fileMark : def::fileMarkers)
+    {
+        leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(const QString & filter : leest)
+        {
+            helpString = "*" + filter + "*";
+            if(!auxFilters.isEmpty())
+            {
+                for(const QString & aux : auxFilters)
+                {
+                    nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
+                }
+            }
+            else
+            {
+//                nameFilters << helpString;
+                nameFilters << QString(def::ExpName.left(3) + helpString);
+            }
+
+        }
+    }
+    lst = localDir.entryList(nameFilters,
+                             QDir::Files,
+                             QDir::Name); /// Name ~ order
 }
 
 void makePaStatic(const QString & spectraDir,

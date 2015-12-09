@@ -80,14 +80,15 @@ MainWindow::MainWindow() :
     ui->drawDirBox->addItem("windows");
     ui->drawDirBox->addItem("windows/fromreal"); //generality
 
+    /// set fileMarks lineEdit
     helpString.clear();
     for(const QString & fileMark : def::fileMarkers)
     {
         helpString += fileMark + "; ";
     }
     helpString.resize(helpString.size() - 2); // remove the last "; "
-
     ui->fileMarkersLineEdit->setText(helpString);
+
 
     int helpInt = 0;
     QVariant var;
@@ -1320,8 +1321,7 @@ void MainWindow::drawRealisations()
     localDir.cd(ui->drawDirBox->currentText());    //->windows or Realisations or cut
 
     prePath = localDir.absolutePath();
-
-    lst = localDir.entryList(QDir::Files);
+    makeFullFileList(prePath, lst);
 
     int redCh = -1;
     int blueCh = -1;
@@ -1733,114 +1733,12 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-    countSpectraSimple(4096, 15);
-    return;
-
-    const int N = 1024;
-    std::valarray<std::complex<double>> arr(N);
-    std::valarray<double> arrD(N);
-    std::valarray<double> arrS(N);
-    for(int i = 0; i < N; ++i)
-    {
-        arrD[i] = sin(10. * (i / 250.) * 2 * pi);
-        arr[i] = std::complex<double>(arrD[2 * i]);
-//        arrS[i] = arrD[2 * i];
-    }
-
-    auto t1 = high_resolution_clock::now();
-#if 0
-    four3(arrD);
-#else
-    std::valarray<double> arrD2(2 * N);
-    for(int i = 0; i < N; ++i)
-    {
-        arrD2[2 * i] = arrD[i];
-        arrD2[2 * i + 1] = 0.;
-    }
-
-    four1(arrD2, N, 1);
-
-
-#endif
-    auto t2 = high_resolution_clock::now();
-//    this_thread::sleep_for(seconds{5});
-//    for(int i = 0; i < 10; ++i)
-//    {
-//        cout << doubleRound(std::real(arr[i]), 3) << '\t';
-//    }
-//    cout << endl;
-
-//    for(int i = 0; i < 10; ++i)
-//    {
-//        cout << doubleRound(arrD[2 * i], 3) << '\t';
-//    }
-//    cout << endl;
-
-    cout << duration_cast<nanoseconds>(t2-t1).count() << " nsec" << endl;
-
-    exit(0);
-
+//    GalyaCut(def::GalyaFolder + "/8dec");
+//    exit(0);
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-//    Net * an3 = new Net();
-//    an3->setReduceCoeff(7.);
-//    an3->setSource("r");
-//    an3->setMode("cros");
-
-//    an3->autoClassificationSimple();
-
-//    an3->drawWts("/media/Files/Data/w2_new.wts");
-//    exit(0);
-//    an3->setMode("n");
-//    an3->setSource("r");
-//    an3->learnNet();
-//    an3->autoClassificationSimple();
-
-//    an3->reset();
-//    an3->learnNet();
-//    an3->writeWts();
-//    an3->drawWts("/media/Files/Data/w1_new.wts");
-//    an3->tallNet();
-//    an3->averageClassification();
-//    exit(0);
-
-//    matrix tst(20, 5, 0);
-//    for(int i = 0; i < tst.rows(); ++i)
-//    {
-//        std::iota(begin(tst[i]), end(tst[i]), 10 * i);
-//    }
-//    tst.print();
-//    cout << endl;
-//    tst.eraseRows({11, 3, 1, 6, 19, 1, 2, 2, 2, 2});
-//    tst.print();
-//    cout << endl;
-
-
-//    vector<int> arr2(10);
-//    iota(arr2.begin(), arr2.end(), 0);
-//    for(int i = 0; i < arr2.size(); ++i)
-//    {
-//        cout << arr2[i] << "\t";
-//    }
-//    cout << endl;
-
-//    eraseItems(arr2, {1, 5, 3, 1, 3, 3, 7});
-
-//    for(int i = 0; i < arr2.size(); ++i)
-//    {
-//        cout << arr2[i] << "\t";
-//    }
-//    cout << endl;
-
-//    exit(0);
-
-//    return;
-//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-//    cleanDirs();
-//    ui->realButton->setChecked(true);
-//    sliceAll();
 //    countSpectraSimple(4096, 15);
 //    return;
+//    exit(0);
 
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");
@@ -1997,42 +1895,46 @@ void MainWindow::customFunc()
 
 #if 1
         // cross with clean
-        ui->windButton->setChecked(true);
 
-        if(name != "AAU") continue;
+//        if(name != "AAU") continue;
 
-        Net * ann = new Net();
-        ann->setSource("w");
+        const QString suffix = ""; /// empty, _ica, _ica_ord
 
-        const QString suffix = "";
 
+
+
+#if 0
         setEdfFile(path + name + "_train" + suffix + ".edf");
         ui->timeShiftSpinBox->setValue(2.);
-#define RECOUNT 0
-
-#if RECOUNT
-        cleanDirs();
+        ui->windowLengthSpinBox->setValue(3.);
+        ui->windButton->setChecked(true);
         sliceAll();
 
         // initially reduce number of windows
         QStringList windowsList;
 
-        // delete first two windows from each realisation
-        windowsList = QDir(path + "windows/fromreal").entryList({"*.00", "*.01"}, QDir::Files);
-        for(QString name : windowsList)
+        // delete first three windows from each realisation
+        windowsList = QDir(path + "windows/fromreal").entryList({"*_train*.00",
+                                                                 "*_train*.01",
+                                                                 "*_train*.02"},
+                                                                QDir::Files);
+        for(const QString & name : windowsList)
         {
             QFile::remove(path + "windows/fromreal/" + name);
         }
 
         // leave last 600 (some will fall out due to zeros)
-        windowsList = QDir(path + "windows/fromreal").entryList(QDir::Files);
+        makeFullFileList(path + "windows/fromreal", windowsList, {"_train"});
         for(int i = 0; i < windowsList.length() - 600; ++i) /// constant
         {
             QFile::remove(path + "windows/fromreal/" + windowsList[i]);
         }
+#endif
+
+#if 0
         // delete badFiles from saved file
 //        ifstream badFiles((path + "badFiles-12_400_3.txt").toStdString());
-        ifstream badFiles((path + "badFiles_new.txt").toStdString());
+        ifstream badFiles((path + "badFiles_3sec.txt").toStdString());
         string nam;
         while(!badFiles.eof())
         {
@@ -2042,18 +1944,24 @@ void MainWindow::customFunc()
             QFile::remove(toRem);
         }
         badFiles.close();
-        countSpectraSimple(1024, 8);
+        exit(0);
 #endif
 
+//        countSpectraSimple(1024, 8);
+
+
+        Net * ann = new Net();
+        ann->setSource("w");
 
 #if 0
         // N-fold cleaning
         ann->loadData(path + "SpectraSmooth/windows");
         ann->setMode("N");
-        ann->setTallCleanFlag(true);
-        for(int i = 0; i < 4; ++i) // while (ann->getAverageAccuracy() != 100.)
+
+        ann->setTallCleanFlag(true); /// with deleting the bad-classified
+        for(int i = 0; i < 4; ++i)
         {
-            ann->autoClassificationSimple();
+            ann->autoClassificationSimple(); /// assume only train files in the spectraDir
         }
         ann->setTallCleanFlag(false);
 
@@ -2061,42 +1969,29 @@ void MainWindow::customFunc()
         continue;
 #endif
 
-        cleanDir(path + "Realisations");
-        cleanDir(path + "windows/fromreal");
-
         setEdfFile(path + name + "_test" + suffix + ".edf");        
+        ui->windowLengthSpinBox->setValue(3.);
         ui->timeShiftSpinBox->setValue(0.5);
-#if RECOUNT
+        ui->windButton->setChecked(true);
         sliceAll();
+
         countSpectraSimple(1024, 8);
-#endif
-
-
         ann->setMode("t");
-
 
         suc::numGoodNewLimit = 5;
         suc::learnSetStay = 100;
         suc::decayRate = 0.0;
 
-
-        ann->successiveProcessing();
-
-        delete ann; exit(0);
-
-
-
-
         ann->setTallCleanFlag(false);
 
         ofstream outFil;
-        outFil.open((path + "successiveResults.txt").toStdString(), ios_base::app);
+        outFil.open((path + "successiveResults_3sec.txt").toStdString(), ios_base::app);
         outFil << def::ExpName << endl;
-        for(int lss : {100})
+        for(int lss : {110, 100, 90})
         {
-            for(int numG : {5})
+            for(int numG : {5, 10, 15})
             {
-                for(double dR : {0.0})
+                for(double dR : {0.00, 0.005, 0.01})
                 {
                     suc::numGoodNewLimit = numG;
                     suc::decayRate = dR;
@@ -2115,7 +2010,6 @@ void MainWindow::customFunc()
         outFil.close();
 
         delete ann;
-//        exit(0);
 
 #endif
     }
@@ -2548,24 +2442,6 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-//    MakePa * mkpa = new MakePa();
-//    mkpa->mwTest();
-//    exit(0);
-    return;
-//    const QString outPath = "/media/Files/Data/Galya/Xenon2/Norm_TBI_windows";
-//    QDir tmpD("/media/Files/Data/Galya/Xenon2/Norm_TBI");
-//    auto leest = tmpD.entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-//    for(auto typ : leest)
-//    {
-//        tmpD.cd(typ);
-//        GalyaCut(tmpD.absolutePath(),
-//                 outPath);
-//        tmpD.cdUp();
-//    }
-//    exit(0);
-
-//return;
 #if 0
 
     ui->reduceChannelsCheckBox->setChecked(true);

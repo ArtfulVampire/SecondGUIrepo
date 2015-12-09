@@ -106,8 +106,6 @@ void MakePa::changeSpectraDir(QAbstractButton * button)
 void MakePa::mwTest()
 {
     ui->mwTestLine->clear();
-
-    const int num = def::fileMarkers.length();
     matrix inSpectraAv;
     matrix dists;
     trivector<int> MW;
@@ -140,9 +138,9 @@ void MakePa::mwTest()
     }
     else
     {
-        for(int i = 0; i < num; ++i)
+        for(int i = 0; i < def::numOfClasses(); ++i)
         {
-            for(int j = i + 1; j < num; ++j)
+            for(int j = i + 1; j < def::numOfClasses(); ++j)
             {
                 outStr << "dist " << i << " - " << j << '\t' << dists[i][j - i] << '\n';
             }

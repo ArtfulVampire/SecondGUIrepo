@@ -216,8 +216,13 @@ void makePaFile(const QString & spectraDir,
                 const QString & outFile,
                 const bool svmFlag = false);
 
+void makeFullFileList(const QString & path,
+                      QStringList & lst,
+                      const QStringList & auxFilters = QStringList());
+
 void makeFileLists(const QString & path,
-                   vector<QStringList> & lst);
+                   vector<QStringList> & lst,
+                   const QStringList & auxFilters = QStringList());
 
 
 void makeMatrixFromFiles(QString spectraDir,
@@ -432,7 +437,7 @@ template <typename signalType = lineType>
 void four1(signalType & inComplexData, int nn = def::fftLength, int isign = 1);
 
 template <typename signalType = lineType>
-void four2(signalType & inRealData, int nn = def::fftLength, int isign = 1);
+signalType four2(const signalType & inRealData, int nn = def::fftLength, int isign = 1);
 
 void four3(std::valarray<std::complex<double>> & inputArray);
 void four3(std::valarray<double> & inputRealArray);

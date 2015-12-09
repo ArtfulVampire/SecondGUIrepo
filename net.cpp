@@ -1075,7 +1075,8 @@ void Net::successiveProcessing()
     lineType tempArr;
     int type = -1;
 
-    QStringList leest = QDir(helpString).entryList({"*_test*"});
+    QStringList leest = QDir(helpString).entryList({"*_test*"}); /// special
+
     for(const QString & fileNam : leest)
     {
         readFileInLine(helpString + slash() + fileNam,

@@ -991,6 +991,21 @@ double distance(double const x1, double const y1, double const x2, double const 
     return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
+QString getFileMarker(const QString & fileName)
+{
+    for(const QString & fileMark : def::fileMarkers)
+    {
+        QStringList lst = fileMark.split(' ', QString::SkipEmptyParts);
+        for(const QString & filter : lst)
+        {
+            if(fileName.contains(filter))
+            {
+                return filter.right(3); // generality markers appearance
+            }
+        }
+    }
+}
+
 
 
 template void matrixProduct(const double ** const &inMat1, const double ** const &inMat2, double **& outMat, int dimH, int dimL);
