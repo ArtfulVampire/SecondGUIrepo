@@ -173,6 +173,7 @@ public:
                       const bool & windows = false,
                       const int & wndLen = 4,
                       const int & tShift = 0.5);
+
     double filesCrossClassification(QString workPath,
                                     QString fileName1,
                                     QString fileName2,

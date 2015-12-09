@@ -5,6 +5,8 @@
 #include <QDir>
 #define MAXNS 50
 
+
+
 namespace coords
 {
 //relative coords
@@ -44,33 +46,32 @@ namespace def
     const bool OssadtchiFlag = false;
 
 
-//    const double leftFreq = 5.;
-//    const double rightFreq = 20.;
-
     const bool wirteStartEndLong = false; //for slice
 
-
-    extern double freq;
-    extern int left;
-    extern int right;
-    extern double spStep;
-    extern int spLength;
     extern QString ExpName;
     extern QDir * dir;
     extern int ns;
+
+    extern double freq;
     extern int fftLength;
-    extern QString cfgFileName;
-    extern QStringList colours;
-    extern QStringList fileMarkers;
-    extern int numOfClasses;
-    extern double drawNorm;
-    extern spectraGraphsNormalization drawNormTyp;
+
     extern double leftFreq;
     extern double rightFreq;
 
-//    extern int nsW;
-    inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
+    extern QString cfgFileName;
+    extern QStringList colours;
+    extern QStringList fileMarkers;
 
+    extern double drawNorm;
+    extern spectraGraphsNormalization drawNormTyp;
+
+    inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
+    inline int numOfClasses() {return def::fileMarkers.length();}
+
+    extern int right(); // {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}
+    extern int left();  // {return fftLimit(def::leftFreq, def::freq, def::fftLength);}
+    inline int spLength() {return def::right() - def::left();}
+    inline double spStep() {return def::freq / def::fftLength;}
 
 //    Atanov
 
@@ -109,6 +110,13 @@ namespace def
 //    const bool openmp = 0;
 //    const QString cfgFileName = "16sec19ch";
 
+}
+
+inline int fftLimit(const double & inFreq,
+                    const double & sampleFreq = def::freq,
+                    const int & fftL = def::fftLength)
+{
+    return ceil(inFreq / sampleFreq * fftL - 0.5);
 }
 
 

@@ -941,8 +941,6 @@ void MainWindow::countICAs(QString workPath,
     QDir * tmpDir = new QDir();
     tmpDir->cd(workPath);
 
-
-
     QString addName = fileName.left(3);
     QString ExpName2;
     QString mapsPath;

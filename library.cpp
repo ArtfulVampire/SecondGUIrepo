@@ -265,7 +265,7 @@ void makePaFile(const QString & spectraDir,
             outStream << fileName << endl;
             for(int l = 0; l < def::nsWOM(); ++l) // write PA files without markers
             {
-                for(int k = 0; k < def::spLength; ++k)
+                for(int k = 0; k < def::spLength(); ++k)
                 {
                     outStream << doubleRound(data4[l][k] / coeff, 5) << '\t';
                     if(k%10 == 9)
@@ -275,7 +275,7 @@ void makePaFile(const QString & spectraDir,
                 }
                 outStream << '\n';
             }
-            for(int k = 0; k < def::numOfClasses; ++k)
+            for(int k = 0; k < def::numOfClasses(); ++k)
             {
 
                 outStream << (k==type) << ' ';
@@ -288,9 +288,9 @@ void makePaFile(const QString & spectraDir,
             outStream << type << ' ';
             for(int l = 0; l < def::nsWOM(); ++l) // write PA files without markers
             {
-                for(int k = 0; k < def::spLength; ++k)
+                for(int k = 0; k < def::spLength(); ++k)
                 {
-                    outStream << l * def::spLength + k << ':' << doubleRound(data4[l][k] / coeff, 5) << ' ';
+                    outStream << l * def::spLength() + k << ':' << doubleRound(data4[l][k] / coeff, 5) << ' ';
                 }
             }
             outStream << endl;
@@ -340,8 +340,8 @@ void makePaStatic(const QString & spectraDir,
     vector<QStringList> lst;
     makeFileLists(spectraDir, lst);
 
-    int len[def::numOfClasses];
-    for(int i = 0; i < def::numOfClasses; ++i)
+    int len[def::numOfClasses()];
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         len[i] = lst[i].length();
         if(len[i] == 0)
@@ -353,14 +353,14 @@ void makePaStatic(const QString & spectraDir,
 
     int Length;
     Length = len[0];
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         Length = min(Length, len[i]);
     }
 
     vector<vector<int>> arr;
-    arr.resize(def::numOfClasses);
-    for(int i = 0; i < def::numOfClasses; ++i)
+    arr.resize(def::numOfClasses());
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         arr[i].resize(len[i]);
 
@@ -372,11 +372,11 @@ void makePaStatic(const QString & spectraDir,
 
     //generality
     if(def::nsWOM() == -1) return;
-    if(def::spLength == -1) return;
+    if(def::spLength() == -1) return;
     //mix list
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         std::shuffle(arr[i].begin(),
                      arr[i].end(),
@@ -387,7 +387,7 @@ void makePaStatic(const QString & spectraDir,
 
     QStringList listToWrite;
     listToWrite.clear();
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
         for(int i = 0; i < (len[j] / fold) * (fold - 1); ++i)
         {
@@ -410,7 +410,7 @@ void makePaStatic(const QString & spectraDir,
 
 
     listToWrite.clear();
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
         for(int i = (len[j] / fold) * (fold - 1); i < (len[j] / fold) * fold; ++i)
         {
@@ -435,7 +435,7 @@ void makePaStatic(const QString & spectraDir,
         /// sorting by classes !!!!!!!!!!!!!!!!!!!!!!!!!!
         /// very important for auto cross-validation
         listToWrite.clear();
-        for(int j = 0; j < def::numOfClasses; ++j)
+        for(int j = 0; j < def::numOfClasses(); ++j)
         {
             for(int i = 0; i < (len[j] / fold) * fold; ++i)
             {
@@ -490,7 +490,7 @@ void readPaFile(const QString & paFile,
                 vector<QString> & FileName,
                 vector<double> & classCount)
 {
-    const int NetLength = def::nsWOM() * def::spLength;
+    const int NetLength = def::nsWOM() * def::spLength();
 
     ifstream paSrc;
     paSrc.open(paFile.toStdString());
@@ -507,10 +507,10 @@ void readPaFile(const QString & paFile,
         return;
     }
 
-    vector<double> tempClass(def::numOfClasses);
+    vector<double> tempClass(def::numOfClasses());
     double tempVal;
 
-    classCount = vector<double>(def::numOfClasses, 0);
+    classCount = vector<double>(def::numOfClasses(), 0);
     FileName.clear();
     types.clear();
     dataMatrix = matrix(); /// not dataMatrix.clear
@@ -536,7 +536,7 @@ void readPaFile(const QString & paFile,
         }
 
         tempVal = 0.;
-        for(int i = 0; i < def::numOfClasses; ++i)
+        for(int i = 0; i < def::numOfClasses(); ++i)
         {
             paSrc >> tempClass[i];
             tempVal += tempClass[i] * i;

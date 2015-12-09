@@ -14,9 +14,9 @@ cfg::cfg(double error_, double lrate_, QString FileName_) :
 
     ui->spLBox->setMaximum(1000);
     ui->spLBox->setMinimum(1);
-    ui->spLBox->setValue(def::spLength);
+    ui->spLBox->setValue(def::spLength());
 
-    ui->numOfOutsBox->setValue(def::numOfClasses);
+    ui->numOfOutsBox->setValue(def::numOfClasses());
     ui->epsilonSpinBox->setValue(lrate_);
     ui->errorSpinBox->setValue(error_);
     ui->tempSpinBox->setValue(10);

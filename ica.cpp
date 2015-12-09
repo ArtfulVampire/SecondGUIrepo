@@ -741,8 +741,8 @@ void MainWindow::ICsSequence(const QString & EDFica1,
 
     QString helpString2;
 
-    matrix dataFFT1 (def::numOfClasses, 0);
-    matrix dataFFT2 (def::numOfClasses, 0);
+    matrix dataFFT1 (def::numOfClasses(), 0);
+    matrix dataFFT2 (def::numOfClasses(), 0);
 
     ui->cleanRealisationsCheckBox->setChecked(true);
     ui->cleanRealsSpectraCheckBox->setChecked(true);
@@ -756,7 +756,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     sliceAll();
     countSpectraSimple(4096);
 
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         helpString = def::dir->absolutePath()
                      + slash() + "Help"
@@ -771,7 +771,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     sliceAll();
     countSpectraSimple(4096);
 
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         helpString = def::dir->absolutePath()
                      + slash() + "Help"
@@ -813,7 +813,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     ICAcorr ICAcorrArr[ns_];
 
     matrix corrs (ns_, ns_);
-    double corrSpectr[def::numOfClasses];
+    double corrSpectr[def::numOfClasses()];
     double corrMap;
 
     int maxShift = 2; ////// num of spectra bins to count spectra correlations
@@ -830,24 +830,24 @@ void MainWindow::ICsSequence(const QString & EDFica1,
             corrMap = pow(corrMap, 2);
 
             coeffs[k][j].cMap = corrMap;
-            coeffs[k][j].cSpectr[def::numOfClasses] = 0.; // summary
-            for(int h = 0; h < def::numOfClasses; ++h)
+            coeffs[k][j].cSpectr[def::numOfClasses()] = 0.; // summary
+            for(int h = 0; h < def::numOfClasses(); ++h)
             {
                 corrSpectr[h] = 0.;
                 for(int shift = -maxShift; shift <= maxShift; ++shift)
                 {
-                    vec tempVec1(def::spLength);
-                    vec tempVec2(def::spLength);
-                    std::copy(begin(dataFFT1[h]) + k * def::spLength,
-                              begin(dataFFT1[h]) + (k + 1) * def::spLength,
+                    vec tempVec1(def::spLength());
+                    vec tempVec2(def::spLength());
+                    std::copy(begin(dataFFT1[h]) + k * def::spLength(),
+                              begin(dataFFT1[h]) + (k + 1) * def::spLength(),
                               begin(tempVec1));
-                    std::copy(begin(dataFFT2[h]) + j * def::spLength,
-                              begin(dataFFT2[h]) + (j + 1) * def::spLength,
+                    std::copy(begin(dataFFT2[h]) + j * def::spLength(),
+                              begin(dataFFT2[h]) + (j + 1) * def::spLength(),
                               begin(tempVec2));
 
                     corrSpectr[h] = fmax( fabs(correlation(tempVec1,
                                                            tempVec2,
-                                                           def::spLength,
+                                                           def::spLength(),
                                                            shift)),
                                           corrSpectr[h]);
                 }
@@ -855,18 +855,18 @@ void MainWindow::ICsSequence(const QString & EDFica1,
                 helpDouble += corrSpectr[h]; //////
 
                 coeffs[k][j].cSpectr[h] = corrSpectr[h];
-                coeffs[k][j].cSpectr[def::numOfClasses] += corrSpectr[h];
+                coeffs[k][j].cSpectr[def::numOfClasses()] += corrSpectr[h];
             }
             helpDouble = sqrt(coeffs[k][j].cMap * corrMapCoeff)
-                         + sqrt(coeffs[k][j].cSpectr[def::numOfClasses]);
+                         + sqrt(coeffs[k][j].cSpectr[def::numOfClasses()]);
             corrs[k][j] = helpDouble;
             coeffs[k][j].sumCoef = helpDouble;
         }
     }
 //    cout << "wanted:" << endl;
-//    cout << coeffs[1][3].cMap << "\t" << coeffs[1][3].cSpectr[def::numOfClasses] << endl;
+//    cout << coeffs[1][3].cMap << "\t" << coeffs[1][3].cSpectr[def::numOfClasses()] << endl;
 //    cout << "real:" << endl;
-//    cout << coeffs[1][11].cMap << "\t" << coeffs[1][11].cSpectr[def::numOfClasses] << endl;
+//    cout << coeffs[1][11].cMap << "\t" << coeffs[1][11].cSpectr[def::numOfClasses()] << endl;
 
 
     //find best correlations - check corrs matrix
@@ -905,7 +905,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
                 ICAcorrArr[j].num2 = i;
             }
             ICAcorrArr[j].coeff.cMap = 1;
-            for(int h = 0; h < def::numOfClasses; ++h)
+            for(int h = 0; h < def::numOfClasses(); ++h)
             {
                 ICAcorrArr[j].coeff.cSpectr[h] = 1;
             }
@@ -920,14 +920,14 @@ void MainWindow::ICsSequence(const QString & EDFica1,
         ICAcorrArr[j].num1 = temp1;
         ICAcorrArr[j].num2 = temp2;
         ICAcorrArr[j].coeff.cMap = coeffs[temp1][temp2].cMap;
-        for(int h = 0; h < def::numOfClasses; ++h)
+        for(int h = 0; h < def::numOfClasses(); ++h)
         {
             ICAcorrArr[j].coeff.cSpectr[h] = coeffs[temp1][temp2].cSpectr[h];
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
         tempDouble = ICAcorrArr[j].coeff.cMap;
-        for(int h = 0; h < def::numOfClasses; ++h)
+        for(int h = 0; h < def::numOfClasses(); ++h)
         {
             tempDouble += ICAcorrArr[j].coeff.cSpectr[h];
         }
@@ -1066,7 +1066,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
         cout << ICAcorrArr[k].num2 + 1 <<  "\t";
         cout << doubleRound(sqrt(ICAcorrArr[k].coeff.cMap), 3) <<  "\t";
 
-        for(int h = 0; h < def::numOfClasses; ++h)
+        for(int h = 0; h < def::numOfClasses(); ++h)
         {
             cout << doubleRound(sqrt(ICAcorrArr[k].coeff.cSpectr[h]), 3) <<  "\t";
         }
@@ -1078,7 +1078,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
         outStream << ICAcorrArr[k].num2 + 1 <<  "\t";
         outStream << doubleRound(sqrt(ICAcorrArr[k].coeff.cMap), 3) <<  "\t";
 
-        for(int h = 0; h < def::numOfClasses; ++h)
+        for(int h = 0; h < def::numOfClasses(); ++h)
         {
             outStream << doubleRound(sqrt(ICAcorrArr[k].coeff.cSpectr[h]), 3) <<  "\t";
         }

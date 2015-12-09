@@ -13,7 +13,7 @@ using namespace std;
 
 typedef valarray<double> lineType;
 
-const double pi = 3.141592653589;
+const long double pi = 3.14159265358979323846L;
 
 inline double doubleRound(const double & in, const int & numSigns)
 {
@@ -40,12 +40,7 @@ inline double logistic(const double & x, const double & t = 10.)
     return 1. / ( 1. + exp(-x/t) );
 }
 
-inline int fftLimit(const double & inFreq,
-                    const double & sampleFreq = def::freq,
-                    const int & fftL = def::fftLength)
-{
-    return ceil(inFreq / sampleFreq * fftL - 0.5);
-}
+
 
 inline int fftL(const int & in)
 {

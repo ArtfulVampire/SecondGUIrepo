@@ -13,9 +13,7 @@ MainWindow::MainWindow() :
     coutBuf = cout.rdbuf();
 
     // [left right)
-    def::right = fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;
-    def::left  = fftLimit(def::leftFreq, def::freq, def::fftLength);
-    def::spLength = def::right - def::left;
+
 
 
     staSlice = 0;
@@ -463,11 +461,12 @@ void MainWindow::showCut()
 void MainWindow::showMakePa() //250 - frequency generality
 {
     QString helpString;
-    if(def::spStep == def::freq/4096. || def::spStep == def::freq/2048.)
+    if(def::spStep() == def::freq / pow(2, 12) ||
+       def::spStep() == def::freq / pow(2, 11) )
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth");
     }
-    else if(def::spStep == def::freq/1024.)
+    else if(def::spStep() == def::freq / pow(2, 10))
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth" + slash() + "windows");
     }
@@ -483,9 +482,9 @@ void MainWindow::showMakePa() //250 - frequency generality
 void MainWindow::showMakeCfg()//250 - frequency generality
 {
     QString helpString;
-    if(def::spStep == def::freq/4096.) helpString = "16sec19ch";
-    else if(def::spStep == def::freq/1024.) helpString = "4sec19ch";
-    else if(def::spStep == def::freq/2048.) helpString = "8sec19ch";
+    if(def::spStep() == def::freq / pow(2, 12) ) helpString = "16sec19ch";
+    else if(def::spStep() == def::freq / pow(2, 10)) helpString = "4sec19ch";
+    else if(def::spStep() == def::freq / pow(2, 11) ) helpString = "8sec19ch";
     else helpString = "netFile";
     cfg *config = new cfg(0.10, 0.10, helpString);
     config->show();
@@ -1705,7 +1704,6 @@ void MainWindow::setFileMarkers()
 {
     def::fileMarkers = ui->fileMarkersLineEdit->text().split(QRegExp(R"([,;])"),
                                                              QString::SkipEmptyParts);
-    def::numOfClasses = def::fileMarkers.length();
     ui->textEdit->append(R"(fileMarkers renewed
                          )");
 }
@@ -1735,8 +1733,53 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-//    GalyaCut(def::GalyaFolder + "/7dec");
-//    exit(0);
+    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+    countSpectraSimple(4096, 15);
+    return;
+
+    const int N = 1024;
+    std::valarray<std::complex<double>> arr(N);
+    std::valarray<double> arrD(N);
+    std::valarray<double> arrS(N);
+    for(int i = 0; i < N; ++i)
+    {
+        arrD[i] = sin(10. * (i / 250.) * 2 * pi);
+        arr[i] = std::complex<double>(arrD[2 * i]);
+//        arrS[i] = arrD[2 * i];
+    }
+
+    auto t1 = high_resolution_clock::now();
+#if 0
+    four3(arrD);
+#else
+    std::valarray<double> arrD2(2 * N);
+    for(int i = 0; i < N; ++i)
+    {
+        arrD2[2 * i] = arrD[i];
+        arrD2[2 * i + 1] = 0.;
+    }
+
+    four1(arrD2, N, 1);
+
+
+#endif
+    auto t2 = high_resolution_clock::now();
+//    this_thread::sleep_for(seconds{5});
+//    for(int i = 0; i < 10; ++i)
+//    {
+//        cout << doubleRound(std::real(arr[i]), 3) << '\t';
+//    }
+//    cout << endl;
+
+//    for(int i = 0; i < 10; ++i)
+//    {
+//        cout << doubleRound(arrD[2 * i], 3) << '\t';
+//    }
+//    cout << endl;
+
+    cout << duration_cast<nanoseconds>(t2-t1).count() << " nsec" << endl;
+
+    exit(0);
 
 //    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
 //    Net * an3 = new Net();
@@ -1956,7 +1999,7 @@ void MainWindow::customFunc()
         // cross with clean
         ui->windButton->setChecked(true);
 
-        if(name != "GAS") continue;
+        if(name != "AAU") continue;
 
         Net * ann = new Net();
         ann->setSource("w");
@@ -1965,10 +2008,12 @@ void MainWindow::customFunc()
 
         setEdfFile(path + name + "_train" + suffix + ".edf");
         ui->timeShiftSpinBox->setValue(2.);
-//        cleanDirs();
-//        sliceAll();
+#define RECOUNT 0
 
-#if 0
+#if RECOUNT
+        cleanDirs();
+        sliceAll();
+
         // initially reduce number of windows
         QStringList windowsList;
 
@@ -1985,10 +2030,6 @@ void MainWindow::customFunc()
         {
             QFile::remove(path + "windows/fromreal/" + windowsList[i]);
         }
-#endif
-
-
-#if 0
         // delete badFiles from saved file
 //        ifstream badFiles((path + "badFiles-12_400_3.txt").toStdString());
         ifstream badFiles((path + "badFiles_new.txt").toStdString());
@@ -2001,9 +2042,9 @@ void MainWindow::customFunc()
             QFile::remove(toRem);
         }
         badFiles.close();
+        countSpectraSimple(1024, 8);
 #endif
 
-//        countSpectraSimple(1024, 8);
 
 #if 0
         // N-fold cleaning
@@ -2025,8 +2066,10 @@ void MainWindow::customFunc()
 
         setEdfFile(path + name + "_test" + suffix + ".edf");        
         ui->timeShiftSpinBox->setValue(0.5);
-//        sliceAll();
-//        countSpectraSimple(1024, 8);
+#if RECOUNT
+        sliceAll();
+        countSpectraSimple(1024, 8);
+#endif
 
 
         ann->setMode("t");
@@ -2036,12 +2079,13 @@ void MainWindow::customFunc()
         suc::learnSetStay = 100;
         suc::decayRate = 0.0;
 
-        for(int i = 0; i < 1; ++i)
-        {
-            ann->successiveProcessing();
-        }
+
+        ann->successiveProcessing();
 
         delete ann; exit(0);
+
+
+
 
         ann->setTallCleanFlag(false);
 
@@ -2292,7 +2336,7 @@ void MainWindow::customFunc()
     vector<QString> names[2];
     vector<double> count[2];
 
-    const int NetLength = def::spLength * def::nsWOM();
+    const int NetLength = def::spLength() * def::nsWOM();
     int errors = 0;
 
     int matchNum = -1;
@@ -3954,7 +3998,7 @@ void MainWindow::customFunc()
 
 
     makeCfgStatic(workPath,
-                  (chanList.length() - 1) * def::spLength,
+                  (chanList.length() - 1) * def::spLength(),
                   "new");
 
     ofstream outStr;
@@ -3993,14 +4037,14 @@ void MainWindow::customFunc()
 #if 0
             drawMapsOnSpectra(def::dir->absolutePath()
                               + slash() + "Help"
-                              + slash() + ExpName.def::left(3)
+                              + slash() + ExpName.left(3)
                               + "_full_ica_all.jpg",
                               def::dir->absolutePath()
                               + slash() + "Help"
-                              + slash() + ExpName.def::left(3)
+                              + slash() + ExpName.left(3)
                               + "_full_ica_wm.jpg",
                               def::dir->absolutePath() + slash() + "Help",
-                              ExpName.def::left(3));
+                              ExpName.left(3));
 
 #endif
 
@@ -4012,7 +4056,7 @@ void MainWindow::customFunc()
 
         ofstream outStr;
         outStr.open("/media/Files/Data/Mati/ICAstudy/results.txt", ios_base::app);
-        outStr << "\t" << guy.def::left(guy.indexOf("_after")) << endl;
+        outStr << "\t" << guy.left(guy.indexOf("_after")) << endl;
         outStr.close();
     }
     exit(0);
@@ -4538,8 +4582,8 @@ void MainWindow::customFunc()
     //    QStringList lst11 = def::dir->entryList(QStringList("*_sum_ica.edf"));
     //    for(int i = 0; i < lst11.length(); ++i)
     //    {
-    //        helpString = "/media/Files/Data/AB/" + lst11[i].def::left(3) + "_sum_ica.edf";
-    //        helpString2 = "/media/Files/Data/AB/Help/" + lst11[i].def::left(3) + "_sum_maps.txt";
+    //        helpString = "/media/Files/Data/AB/" + lst11[i].left(3) + "_sum_ica.edf";
+    //        helpString2 = "/media/Files/Data/AB/Help/" + lst11[i].left(3) + "_sum_maps.txt";
     //        ICsSequence(helpString, helpString, helpString2, helpString2);
 
     //    }
@@ -4583,10 +4627,10 @@ void MainWindow::customFunc()
         vars << "*_241" << "*_247" << "*_254";
         //    vars << "*_254" << "*_241";
 
-        for(def::spLength = 45; def::spLength < 50; def::spLength += 5)
+        for(def::spLength() = 45; def::spLength() < 50; def::spLength() += 5)
         {
             ns = 1;
-            int dim = def::spLength * ns;
+            int dim = def::spLength() * ns;
 
             double ** matrix;
             matrixCreate(&matrix, 200, dim+2); //matrix data, bias, type
@@ -4610,7 +4654,7 @@ void MainWindow::customFunc()
             {
                 //count covMatrices and meanVectors
                 lst = def::dir->entryList(QStringList(vars[h]), QDir::Files, QDir::Name);
-                makeMatrixFromFiles(pcaPath, lst, ns, def::spLength, 1., &matrix);
+                makeMatrixFromFiles(pcaPath, lst, ns, def::spLength(), 1., &matrix);
                 matrixMahCount(matrix, lst.length(), dim, &(covMatrix[h]), &(meanVect[h]));
             }
 
@@ -4675,7 +4719,7 @@ void MainWindow::customFunc()
 
 
             lst = def::dir->entryList(vars, QDir::Files);
-            cout << "spL = " << def::spLength << "\tpercentage = " << errors * 100. / lst.length() << " %" << endl;
+            cout << "spL = " << def::spLength() << "\tpercentage = " << errors * 100. / lst.length() << " %" << endl;
         }
         exit(0);
 
@@ -4819,7 +4863,7 @@ void MainWindow::customFunc()
             if(1)
             {
                 helpString = def::dir->absolutePath() + slash() + list0[i];
-                drawMapsICA(helpString, 19, def::dir->absolutePath(), QString(list0[i].def::left(3) + "-m"));
+                drawMapsICA(helpString, 19, def::dir->absolutePath(), QString(list0[i].left(3) + "-m"));
             }
 
             //draw average spectra
@@ -4835,9 +4879,9 @@ void MainWindow::customFunc()
             if(0)
             {
                 helpString = def::dir->absolutePath() + slash() + list0[i];
-                helpString = def::dir->absolutePath() + slash() + list0[i].def::left(3) + "_1_ica_all.png";
-                helpString2 = def::dir->absolutePath() + slash() + list0[i].def::left(3) + "_1_ica_all_withmaps.png";
-                drawMapsOnSpectra(helpString, helpString2, def::dir->absolutePath(), QString(list0[i].def::left(3) + "-m"));
+                helpString = def::dir->absolutePath() + slash() + list0[i].left(3) + "_1_ica_all.png";
+                helpString2 = def::dir->absolutePath() + slash() + list0[i].left(3) + "_1_ica_all_withmaps.png";
+                drawMapsOnSpectra(helpString, helpString2, def::dir->absolutePath(), QString(list0[i].left(3) + "-m"));
             }
         }
         exit(0);
@@ -4976,21 +5020,21 @@ void MainWindow::customFunc()
             for(int i = 0; i < list1.length(); ++i)
             {
                 myTime.restart();
-                cout << list1[i].def::left(3).toStdString() << " start" << endl;
+                cout << list1[i].left(3).toStdString() << " start" << endl;
                 helpString = list1[i];
                 helpString.replace("_1", "_2");
                 res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 01000, 125);
-                outStream << list1[i].def::left(3).toStdString() << " cross\t" << res << endl;
+                outStream << list1[i].left(3).toStdString() << " cross\t" << res << endl;
                 res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "4sec19ch", 50, 3, true, 1000, 125);
-                outStream << list1[i].def::left(3).toStdString() << " wnd cross\t" << res << endl;
+                outStream << list1[i].left(3).toStdString() << " wnd cross\t" << res << endl;
 
                 helpString = list1[i];
                 helpString.replace("_1", "_sum");
                 res = fileInnerClassification(def::dir->absolutePath(), helpString, "16sec19ch", 50, false, 1000, 125);
-                outStream << list1[i].def::left(3).toStdString() << " inner\t" << res << endl << endl;
+                outStream << list1[i].left(3).toStdString() << " inner\t" << res << endl << endl;
                 res = fileInnerClassification(def::dir->absolutePath(), helpString, "4sec19ch", 50, true, 1000, 125);
-                outStream << list1[i].def::left(3).toStdString() << " wnd inner\t" << res << endl << endl;
-                cout << list1[i].def::left(3).toStdString() << " finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                outStream << list1[i].left(3).toStdString() << " wnd inner\t" << res << endl << endl;
+                cout << list1[i].left(3).toStdString() << " finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
             }
             outStream.close();
             list1 = def::dir->entryList(QStringList("???_1_ica_by1.edf"));
@@ -4999,21 +5043,21 @@ void MainWindow::customFunc()
             for(int i = 0; i < list1.length(); ++i)
             {
                 myTime.restart();
-                cout << list1[i].def::left(3).toStdString() << " start" << endl;
+                cout << list1[i].left(3).toStdString() << " start" << endl;
                 helpString = list1[i];
                 helpString.replace("_1", "_2");
                 res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 01000, 125);
-                outStream << list1[i].def::left(3).toStdString() << " ica cross\t" << res << endl;
+                outStream << list1[i].left(3).toStdString() << " ica cross\t" << res << endl;
                 res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "4sec19ch", 50, 3, true, 1000, 125);
-                outStream << list1[i].def::left(3).toStdString() << " ica wnd cross\t" << res << endl;
+                outStream << list1[i].left(3).toStdString() << " ica wnd cross\t" << res << endl;
 
                 helpString = list1[i];
                 helpString.replace("_1_ica_by1", "_sum_ica");
                 res = fileInnerClassification(def::dir->absolutePath(), helpString, "16sec19ch", 50, false, 1000, 125);
-                outStream << list1[i].def::left(3).toStdString() << " ica inner\t" << res << endl;
+                outStream << list1[i].left(3).toStdString() << " ica inner\t" << res << endl;
                 res = fileInnerClassification(def::dir->absolutePath(), helpString, "4sec19ch", 50, true, 1000, 125);
-                outStream << list1[i].def::left(3).toStdString() << " ica wnd inner\t" << res << endl;
-                cout << list1[i].def::left(3).toStdString() << " ica finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                outStream << list1[i].left(3).toStdString() << " ica wnd inner\t" << res << endl;
+                cout << list1[i].left(3).toStdString() << " ica finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
             }
             outStream.close();
         }
@@ -5024,11 +5068,11 @@ void MainWindow::customFunc()
             for(int i = 0; i < list1.length(); ++i)
             {
                 myTime.restart();
-                cout << list1[i].def::left(3).toStdString() << " addComps start from 3" << endl;
+                cout << list1[i].left(3).toStdString() << " addComps start from 3" << endl;
                 helpString = list1[i];
                 helpString.replace("_1", "_2");
                 res = filesAddComponents(def::dir->absolutePath(), list1[i], helpString, 30, false);
-                cout << list1[i].def::left(3).toStdString() << " addComps from 3 finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
+                cout << list1[i].left(3).toStdString() << " addComps from 3 finished\ttime = = " << myTime.elapsed()/1000. << " sec" << endl << endl;
             }
         }
 

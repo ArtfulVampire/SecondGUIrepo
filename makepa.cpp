@@ -15,7 +15,7 @@ MakePa::MakePa(QString spectraPath, QVector<int> vect_) :
 
     ui->spLBox->setMaximum(1000);
     ui->spLBox->setMinimum(1);
-    ui->spLBox->setValue(def::spLength);
+    ui->spLBox->setValue(def::spLength());
 
     ui->nsBox->setMaximum(300);
     ui->nsBox->setMinimum(1);
@@ -42,7 +42,7 @@ MakePa::MakePa(QString spectraPath, QVector<int> vect_) :
 
     ui->numOfClassesSpinBox->setMaximum(5);
     ui->numOfClassesSpinBox->setMinimum(1);
-    ui->numOfClassesSpinBox->setValue(def::numOfClasses);
+    ui->numOfClassesSpinBox->setValue(def::numOfClasses());
 
 
 
@@ -65,7 +65,7 @@ MakePa::MakePa(QString spectraPath, QVector<int> vect_) :
     QObject::connect(ui->vdvTestButton, SIGNAL(clicked()), this, SLOT(correlationDifference()));
     QObject::connect(group1, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(changeSpectraDir(QAbstractButton*)));
 
-    ui->numOfClassesSpinBox->setValue(def::numOfClasses);
+    ui->numOfClassesSpinBox->setValue(def::numOfClasses());
     this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
@@ -204,12 +204,12 @@ void MakePa::vdvTest()
     double ** spectre[0] = new double *[n[0]];
     for(int i=0; i<n[0]; ++i)
     {
-        spectre[0][i] = new double [def::nsWOM() * def::spLength];
+        spectre[0][i] = new double [def::nsWOM() * def::spLength()];
     }
     double ** spectre[1] = new double *[n[1]];
     for(int i=0; i<n[1]; ++i)
     {
-        spectre[1][i] = new double [def::nsWOM() * def::spLength];
+        spectre[1][i] = new double [def::nsWOM() * def::spLength()];
     }
 
     //read the spectra into matrixes
@@ -217,7 +217,7 @@ void MakePa::vdvTest()
     {
         helpString=dir_->absolutePath().append(slash()).append(lst[0].at(i));
         currFile = fopen(helpString.toStdString().c_str(), "r");
-        for(int j=0; j<def::nsWOM() * def::spLength; ++j)
+        for(int j=0; j<def::nsWOM() * def::spLength(); ++j)
         {
             fscanf(currFile, "%lf", &spectre[0][i][j]);
         }
@@ -228,7 +228,7 @@ void MakePa::vdvTest()
     {
         helpString=dir_->absolutePath().append(slash()).append(lst[1].at(i));
         currFile = fopen(helpString.toStdString().c_str(), "r");
-        for(int j=0; j<def::nsWOM() * def::spLength; ++j)
+        for(int j=0; j<def::nsWOM() * def::spLength(); ++j)
         {
             fscanf(currFile, "%lf", &spectre[1][i][j]);
         }
@@ -245,12 +245,12 @@ void MakePa::vdvTest()
     double dispersion = 0.;
     int numOfDiff=0;
 
-    double *X = new double[def::nsWOM() * def::spLength];
+    double *X = new double[def::nsWOM() * def::spLength()];
 
 
     //set & sort the arrays
 
-    for(int j=0; j<def::nsWOM() * def::spLength; ++j)
+    for(int j=0; j<def::nsWOM() * def::spLength(); ++j)
     {
         for(int i=0; i<n[0]; ++i)
         {
@@ -322,7 +322,7 @@ void MakePa::vdvTest()
 
 
     //paint
-    int spL1=def::spLength, spL2=def::spLength;
+    int spL1=def::spLength(), spL2=def::spLength();
 
 
     double **sp1 = new double* [ns];
@@ -339,19 +339,19 @@ void MakePa::vdvTest()
     //create sp1 & sp2
     for(int i=0; i<ns; ++i)
     {
-        for(int j=0; j<def::spLength; ++j)
+        for(int j=0; j<def::spLength(); ++j)
         {
             sp1[i][j]=0.;
             for(int k=0; k<n[0]; ++k)
             {
-                sp1[i][j]+=spectre[0][k][i*def::spLength+j];
+                sp1[i][j]+=spectre[0][k][i*def::spLength()+j];
             }
             sp1[i][j]/=n[0];
 
             sp2[i][j]=0.;
             for(int k=0; k<n[1]; ++k)
             {
-                sp2[i][j]+=spectre[1][k][i*def::spLength+j];
+                sp2[i][j]+=spectre[1][k][i*def::spLength()+j];
             }
             sp2[i][j]/=n[1];
         }
@@ -390,23 +390,23 @@ void MakePa::vdvTest()
 
         paint->setPen("black");
         paint->setBrush(QBrush("black"));
-        for(int j=c2*def::spLength; j<(c2+1)*def::spLength; ++j)
+        for(int j=c2*def::spLength(); j<(c2+1)*def::spLength(); ++j)
         {
-            if((abs(X[j]/dispersion)>quantile((1.00+ui->alphaSpinBox->value())/2.)) && (sp1[c2][j%def::spLength] < sp2[c2][j%def::spLength]))
+            if((abs(X[j]/dispersion)>quantile((1.00+ui->alphaSpinBox->value())/2.)) && (sp1[c2][j%def::spLength()] < sp2[c2][j%def::spLength()]))
             {
 
                 paint->setPen("red");
                 paint->setBrush(QBrush("red"));
-//                paint->drawLine(paint->device()->width() * coords::x[c2]+ (j-c2*def::spLength)-barWidth*(250/def::spLength), paint->device()->height() * coords::y[c2] -15 , paint->device()->width() * coords::x[c2] + (j-c2*def::spLength) + barWidth*(250/def::spLength), paint->device()->height() * coords::y[c2]+10); //-15 graphical 1/3 graphical
-                paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*def::spLength))*(250./def::spLength), paint->device()->height() * coords::y[c2] + 15 , 2*barWidth*(250./def::spLength), 5); //-15 graphical 1/3 graphical
+//                paint->drawLine(paint->device()->width() * coords::x[c2]+ (j-c2*def::spLength())-barWidth*(250/def::spLength()), paint->device()->height() * coords::y[c2] -15 , paint->device()->width() * coords::x[c2] + (j-c2*def::spLength()) + barWidth*(250/def::spLength()), paint->device()->height() * coords::y[c2]+10); //-15 graphical 1/3 graphical
+                paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*def::spLength()))*(250./def::spLength()), paint->device()->height() * coords::y[c2] + 15 , 2*barWidth*(250./def::spLength()), 5); //-15 graphical 1/3 graphical
             }
-            if((abs(X[j]/dispersion)>quantile((1.00+ui->alphaSpinBox->value())/2.)) && (sp1[c2][j%def::spLength] > sp2[c2][j%def::spLength]))
+            if((abs(X[j]/dispersion)>quantile((1.00+ui->alphaSpinBox->value())/2.)) && (sp1[c2][j%def::spLength()] > sp2[c2][j%def::spLength()]))
             {
 
                 paint->setPen("blue");
                 paint->setBrush(QBrush("blue"));
-//                paint->drawLine(paint->device()->width() * coords::x[c2]+ (j-c2*def::spLength)-barWidth*(250/def::spLength), paint->device()->height() * coords::y[c2] -15 , paint->device()->width() * coords::x[c2] + (j-c2*def::spLength) + barWidth*(250/def::spLength), paint->device()->height() * coords::y[c2]+10); //-15 graphical 1/3 graphical
-                paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*def::spLength))*(250./def::spLength), paint->device()->height() * coords::y[c2] + 15 + 7 , 2*barWidth*(250./def::spLength), 5); //-15 graphical 1/3 graphical
+//                paint->drawLine(paint->device()->width() * coords::x[c2]+ (j-c2*def::spLength())-barWidth*(250/def::spLength()), paint->device()->height() * coords::y[c2] -15 , paint->device()->width() * coords::x[c2] + (j-c2*def::spLength()) + barWidth*(250/def::spLength()), paint->device()->height() * coords::y[c2]+10); //-15 graphical 1/3 graphical
+                paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*def::spLength()))*(250./def::spLength()), paint->device()->height() * coords::y[c2] + 15 + 7 , 2*barWidth*(250./def::spLength()), 5); //-15 graphical 1/3 graphical
             }
 
         }
@@ -419,11 +419,11 @@ void MakePa::vdvTest()
         for(int k=0; k<250-1; ++k) //for every Hz generality
         {
 //            paint->drawLine(paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2]+10);
-            if( (left + k*(def::spLength)/250.)*spStep - floor((left + k*(def::spLength)/250.)*spStep) < def::spLength/250.*spStep/2. || ceil((left + k*(def::spLength)/250.)*spStep) - (left + k*(def::spLength)/250.)*spStep < def::spLength/250.*spStep/2.)
+            if( (left + k*(def::spLength())/250.)*spStep - floor((left + k*(def::spLength())/250.)*spStep) < def::spLength()/250.*spStep/2. || ceil((left + k*(def::spLength())/250.)*spStep) - (left + k*(def::spLength())/250.)*spStep < def::spLength()/250.*spStep/2.)
             {
                 paint->drawLine(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]+5);
 
-                helpInt = int((left + k*(def::spLength)/250.)*spStep + 0.5);
+                helpInt = int((left + k*(def::spLength())/250.)*spStep + 0.5);
                 helpString.setNum(helpInt);
                 if(helpInt<10)
                 {
@@ -517,7 +517,7 @@ void MakePa::kwTest()
         spectre[i] = new double * [n[i]]; //n[i] files
         for(int j=0; j<n[i]; ++j)
         {
-            spectre[i][j] = new double [def::nsWOM() * def::spLength]; // "NetLength"
+            spectre[i][j] = new double [def::nsWOM() * def::spLength()]; // "NetLength"
         }
     }
 
@@ -529,7 +529,7 @@ void MakePa::kwTest()
         {
             helpString=dir_->absolutePath().append(slash()).append(lst[j][i]);
             currFile = fopen(helpString.toStdString().c_str(), "r");
-            for(int k=0; k<def::nsWOM() * def::spLength; ++k)
+            for(int k=0; k<def::nsWOM() * def::spLength(); ++k)
             {
                 fscanf(currFile, "%lf", &spectre[j][i][k]);
             }
@@ -550,13 +550,13 @@ void MakePa::kwTest()
     double * R = new double [3]; //sum of all ranks
 //    double Rall;
 
-    double *H = new double [def::nsWOM() * def::spLength];
+    double *H = new double [def::nsWOM() * def::spLength()];
 
     cout<<"N="<<N<<endl;
 
 
     //for every spectra-bin
-    for(int j=0; j<def::nsWOM() * def::spLength; ++j)
+    for(int j=0; j<def::nsWOM() * def::spLength(); ++j)
     {
 //        Rall=0.;
         H[j]=0.;
@@ -660,7 +660,7 @@ void MakePa::kwTest()
     int * spL = new int [3];
     for(int i=0; i<3; ++i)
     {
-        spL[i] = def::spLength;
+        spL[i] = def::spLength();
     }
 
     double *** sp = new double **[3];
@@ -676,7 +676,7 @@ void MakePa::kwTest()
     //create sp1 & sp2 - average spectra
     for(int i=0; i<ns; ++i)
     {
-        for(int j=0; j<def::spLength; ++j)
+        for(int j=0; j<def::spLength(); ++j)
         {
             for(int h=0; h<3; ++h)
             {
@@ -725,20 +725,20 @@ void MakePa::kwTest()
         paint->setBrush(QBrush("black"));
 
         //statistic difference
-        for(int j=c2*def::spLength; j<(c2+1)*def::spLength; ++j)
+        for(int j=c2*def::spLength(); j<(c2+1)*def::spLength(); ++j)
         {
             if(H[j] >= 5.9915)
             {
                 paint->setPen("black");
                 paint->setBrush(QBrush("black"));
-                paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*def::spLength))*(250./def::spLength), paint->device()->height() * coords::y[c2] + 15 , 2*barWidth*(250./def::spLength), 5); //-15 graphical 1/3 graphical
+                paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*def::spLength()))*(250./def::spLength()), paint->device()->height() * coords::y[c2] + 15 , 2*barWidth*(250./def::spLength()), 5); //-15 graphical 1/3 graphical
             }
-//            if((abs((U[j]-average)/dispersion)>quantile((1.00+ui->alphaSpinBox->value())/2.)) && ((sp1[c2][j%def::spLength] > sp2[c2][j%def::spLength])))
+//            if((abs((U[j]-average)/dispersion)>quantile((1.00+ui->alphaSpinBox->value())/2.)) && ((sp1[c2][j%def::spLength()] > sp2[c2][j%def::spLength()])))
 //            {
 
 //                paint->setPen("blue");
 //                paint->setBrush(QBrush("blue"));
-//                paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*def::spLength))*(250./def::spLength), paint->device()->height() * coords::y[c2] + 15 + 7 , 2*barWidth*(250./def::spLength), 5); //-15 graphical 1/3 graphical
+//                paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*def::spLength()))*(250./def::spLength()), paint->device()->height() * coords::y[c2] + 15 + 7 , 2*barWidth*(250./def::spLength()), 5); //-15 graphical 1/3 graphical
 //            }
 
         }
@@ -753,11 +753,11 @@ void MakePa::kwTest()
         //Hz markers
         for(int k=0; k<250-1; ++k)
         {
-            if( (left + k*(def::spLength)/250.)*spStep - floor((left + k*(def::spLength)/250.)*spStep) < def::spLength/250.*spStep/2. || ceil((left + k*(def::spLength)/250.)*spStep) - (left + k*(def::spLength)/250.)*spStep < def::spLength/250.*spStep/2.)
+            if( (left + k*(def::spLength())/250.)*spStep - floor((left + k*(def::spLength())/250.)*spStep) < def::spLength()/250.*spStep/2. || ceil((left + k*(def::spLength())/250.)*spStep) - (left + k*(def::spLength())/250.)*spStep < def::spLength()/250.*spStep/2.)
             {
                 paint->drawLine(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]+5);
 
-                helpInt = int((left + k*(def::spLength)/250.)*spStep + 0.5);
+                helpInt = int((left + k*(def::spLength())/250.)*spStep + 0.5);
                 helpString.setNum(helpInt);
                 if(helpInt<10)
                 {
@@ -862,8 +862,8 @@ void MakePa::makePaSlot()
     */
 
 
-    int len[def::numOfClasses];
-    for(int i = 0; i < def::numOfClasses; ++i)
+    int len[def::numOfClasses()];
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         len[i] = lst[i].length();
         if(len[i] == 0)
@@ -875,14 +875,14 @@ void MakePa::makePaSlot()
 
     int Length;
     Length = len[0];
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         Length = min(Length, len[i]);
     }
 
     vector<vector<int>> arr;
-    arr.resize(def::numOfClasses);
-    for(int i = 0; i < def::numOfClasses; ++i)
+    arr.resize(def::numOfClasses());
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         arr[i].resize(len[i]);
 
@@ -894,10 +894,10 @@ void MakePa::makePaSlot()
 
     //generality
     if(def::nsWOM() == -1) return;
-    if(def::spLength == -1) return;
+    if(def::spLength() == -1) return;
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         std::shuffle(arr[i].begin(),
                      arr[i].end(),
@@ -908,7 +908,7 @@ void MakePa::makePaSlot()
 
     QStringList listToWrite;
     listToWrite.clear();
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
         for(int i = 0; i < (len[j] / fold) * (fold - 1); ++i)
         {
@@ -923,7 +923,7 @@ void MakePa::makePaSlot()
 
 
     listToWrite.clear();
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
         for(int i = (len[j] / fold) * (fold - 1); i < (len[j] / fold) * fold; ++i)
         {
@@ -938,7 +938,7 @@ void MakePa::makePaSlot()
 
 
     listToWrite.clear();
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
         for(int i = 0; i < (len[j] / fold) * fold; ++i)
         {
@@ -1021,45 +1021,45 @@ void MakePa::dispersionAnalysis()
         return;
     }
 
-    double ** average = new double * [def::numOfClasses];
-    for(int i = 0; i < def::numOfClasses; ++i)
+    double ** average = new double * [def::numOfClasses()];
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
-        average[i] = new double [def::nsWOM() * def::spLength + 1];
+        average[i] = new double [def::nsWOM() * def::spLength() + 1];
     }
-    double ** dispersion = new double * [def::numOfClasses];
-    for(int i = 0; i < def::numOfClasses; ++i)
+    double ** dispersion = new double * [def::numOfClasses()];
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
-        dispersion[i] = new double [def::nsWOM() * def::spLength + 1];
+        dispersion[i] = new double [def::nsWOM() * def::spLength() + 1];
     }
-    double ** meanVar = new double * [def::numOfClasses];
-    for(int i = 0; i < def::numOfClasses; ++i)
+    double ** meanVar = new double * [def::numOfClasses()];
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
-        meanVar[i] = new double [def::nsWOM() * def::spLength + 1];
+        meanVar[i] = new double [def::nsWOM() * def::spLength() + 1];
     }
 
     double ** matrix = new double * [leest.length()];
     for(int i = 0; i < leest.length(); ++i)
     {
-        matrix[i] = new double [def::nsWOM() * def::spLength];
+        matrix[i] = new double [def::nsWOM() * def::spLength()];
     }
 //    cout<<"memory end"<<endl;
 
 //    for(int k = 0; k < list.length(); ++k)
 //    {
-//        if(list[k].contains(ui->lineEdit_1->text())) average[k][def::nsWOM() * def::spLength] = 0;
-//        else if(list[k].contains(ui->lineEdit_2->text())) average[k][def::nsWOM() * def::spLength] = 1;
-//        else average[k][def::nsWOM() * def::spLength] = 2;
+//        if(list[k].contains(ui->lineEdit_1->text())) average[k][def::nsWOM() * def::spLength()] = 0;
+//        else if(list[k].contains(ui->lineEdit_2->text())) average[k][def::nsWOM() * def::spLength()] = 1;
+//        else average[k][def::nsWOM() * def::spLength()] = 2;
 //    }
 //    for(int k = 0; k < list.length(); ++k)
 //    {
-//        cout<<average[k][def::nsWOM() * def::spLength]<<endl;
+//        cout<<average[k][def::nsWOM() * def::spLength()]<<endl;
 //    }
 
 //    cout<<"ready"<<endl;
 
     QFile curr;
 //    int num;
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
         for(int k = 0; k < lst[j].length(); ++k)
         {
@@ -1069,7 +1069,7 @@ void MakePa::dispersionAnalysis()
             curr.open(QIODevice::ReadOnly);
             for(int i = 0; i < def::nsWOM(); ++i)
             {
-                for(int l = 0; l < def::spLength; ++l)
+                for(int l = 0; l < def::spLength(); ++l)
                 {
                     helpString = curr.readLine();
 //                    num = 0;
@@ -1079,14 +1079,14 @@ void MakePa::dispersionAnalysis()
 //                    }
 //                    num+=k;
 
-                    matrix[k][i * def::spLength + l] = helpString.toDouble();
+                    matrix[k][i * def::spLength() + l] = helpString.toDouble();
                 }
                 helpString = curr.readLine(); //fscanf("\n");
             }
             curr.close();
         }
 
-        for(int i = 0; i < def::nsWOM() * def::spLength; ++i)
+        for(int i = 0; i < def::nsWOM() * def::spLength(); ++i)
         {
             average[j][i] = 0.;
             dispersion[j][i] = 0.;
@@ -1109,7 +1109,7 @@ void MakePa::dispersionAnalysis()
     }
 
     cout << "meanVar counted" << endl;
-    for(int i = 0; i < def::nsWOM() * def::spLength; ++i)
+    for(int i = 0; i < def::nsWOM() * def::spLength(); ++i)
     {
 //        cout<<meanVar[0][i]<<endl;
     }
@@ -1125,9 +1125,9 @@ void MakePa::dispersionAnalysis()
     minMean = 0.;
     minVar = 0.;
     minMeanVar = 0.;
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
-        for(int i = 0; i < def::nsWOM() * def::spLength; ++i)
+        for(int i = 0; i < def::nsWOM() * def::spLength(); ++i)
         {
             maxMean = max(maxMean, average[j][i]);
 //            minMean = min(minMean, average[j][i]);
@@ -1140,11 +1140,11 @@ void MakePa::dispersionAnalysis()
 
 
     //3 histogramms of stability of each class
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
 //        maxVar = 0.;
 //        minVar = 100500.;
-//        for(int i = 0; i < def::nsWOM() * def::spLength; ++i)
+//        for(int i = 0; i < def::nsWOM() * def::spLength(); ++i)
 //        {
 //            maxVar = max(maxVar, dispersion[j][i]);
 //            minVar = min(minVar, dispersion[j][i]);
@@ -1159,14 +1159,14 @@ void MakePa::dispersionAnalysis()
             helpString += "-" + ui->addNameLineEdit->text();
         }
         helpString += ".jpg";
-        kernelest(dispersion[j], def::nsWOM() * def::spLength, helpString, minVar, maxVar, 800);
+        kernelest(dispersion[j], def::nsWOM() * def::spLength(), helpString, minVar, maxVar, 800);
     }
 
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
 //        maxMean = 0.;
 //        minMean = 100500.;
-//        for(int i = 0; i < def::nsWOM() * def::spLength; ++i)
+//        for(int i = 0; i < def::nsWOM() * def::spLength(); ++i)
 //        {
 //            maxMean = max(maxMean, average[j][i]);
 //            minMean = min(minMean, average[j][i]);
@@ -1181,14 +1181,14 @@ void MakePa::dispersionAnalysis()
             helpString += "-" + ui->addNameLineEdit->text();
         }
         helpString += ".jpg";
-        kernelest(average[j], def::nsWOM() * def::spLength, helpString, minMean, maxMean, 800);
+        kernelest(average[j], def::nsWOM() * def::spLength(), helpString, minMean, maxMean, 800);
     }
 
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
 //        maxMeanVar = 0.;
 //        minMeanVar = 100500.;
-//        for(int i = 0; i < def::nsWOM() * def::spLength; ++i)
+//        for(int i = 0; i < def::nsWOM() * def::spLength(); ++i)
 //        {
 //            maxMeanVar = max(maxMeanVar, average[j][i]);
 //            minMeanVar = min(minMeanVar, average[j][i]);
@@ -1203,12 +1203,12 @@ void MakePa::dispersionAnalysis()
             helpString += "-" + ui->addNameLineEdit->text();
         }
         helpString += ".jpg";
-        kernelest(meanVar[j], def::nsWOM() * def::spLength, helpString, minMeanVar, maxMeanVar, 800);
+        kernelest(meanVar[j], def::nsWOM() * def::spLength(), helpString, minMeanVar, maxMeanVar, 800);
     }
 
     //cross stability
     maxMeanVar = 0.;
-    for(int i = 0; i < def::nsWOM() * def::spLength; ++i)
+    for(int i = 0; i < def::nsWOM() * def::spLength(); ++i)
     {
         meanVar[0][i] = fabs(average[0][i] - average[1][i])
                 / (dispersion[0][i] + dispersion[1][i]);
@@ -1223,11 +1223,11 @@ void MakePa::dispersionAnalysis()
         helpString += "-" + ui->addNameLineEdit->text();
     }
     helpString += ".jpg";
-    kernelest(meanVar[0], def::nsWOM() * def::spLength, helpString, 0, maxMeanVar, 800);
+    kernelest(meanVar[0], def::nsWOM() * def::spLength(), helpString, 0, maxMeanVar, 800);
 
     drawSamples(meanVar[0], 0.65, 1.5);
 
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         delete [] average[i];
         delete [] dispersion[i];
@@ -1241,6 +1241,7 @@ void MakePa::dispersionAnalysis()
     cout << "dispersion analysis made" << endl;
 }
 
+/// deprecate!
 double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
 {
 
@@ -1277,7 +1278,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
         spectre[i] = new double * [n[i]];
         for(int j = 0; j < n[i]; ++j)
         {
-            spectre[i][j] = new double [def::nsWOM() * def::spLength];
+            spectre[i][j] = new double [def::nsWOM() * def::spLength()];
         }
     }
 
@@ -1288,7 +1289,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
         {
             helpString = dir_->absolutePath() + slash() + lst[j][i];
             currFile = fopen(helpString, "r");
-            for(int k = 0; k < def::nsWOM() * def::spLength; ++k)
+            for(int k = 0; k < def::nsWOM() * def::spLength(); ++k)
             {
                 fscanf(currFile, "%lf", &spectre[j][i][k]);
             }
@@ -1300,7 +1301,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
     int * spL = new int [2];
     for(int i = 0; i < 2; ++i)
     {
-        spL[i] = def::spLength;
+        spL[i] = def::spLength();
     }
 
     double *** sp = new double **[2];
@@ -1316,7 +1317,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
     //create sp1 & sp2 - average spectra
     for(int i=0; i<def::nsWOM(); ++i)
     {
-        for(int j=0; j<def::spLength; ++j)
+        for(int j=0; j<def::spLength(); ++j)
         {
             for(int h=0; h<2; ++h)
             {
@@ -1347,7 +1348,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
 
     const double graphHeight = paint->device()->height() * coords::scale;
     const double graphWidth = paint->device()->width() * coords::scale;
-    const double graphScale = def::spLength / graphWidth;
+    const double graphScale = def::spLength() / graphWidth;
 
     int helpInt;
 
@@ -1373,7 +1374,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
         paint->setBrush(QBrush("black"));
 
         //statistic difference bars
-        for(int j=c2*def::spLength; j<(c2+1)*def::spLength; ++j)
+        for(int j=c2*def::spLength(); j<(c2+1)*def::spLength(); ++j)
         {
             for(int h=0; h<2; ++h)
             {
@@ -1389,7 +1390,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
                 }
                 if(leftLim < drawArray[j] && drawArray[j] < rightLim)
                 {
-                    paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*def::spLength))*(250./def::spLength), paint->device()->height() * coords::y[c2] + 15 + 7*h , 2*barWidth*(250./def::spLength), 5); //-15 graphical 1/3 graphical
+                    paint->drawRect(paint->device()->width() * coords::x[c2] + ((j-c2*def::spLength()))*(250./def::spLength()), paint->device()->height() * coords::y[c2] + 15 + 7*h , 2*barWidth*(250./def::spLength()), 5); //-15 graphical 1/3 graphical
                 }
             }
 
@@ -1405,13 +1406,13 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
         for(int k=0; k<250-1; ++k) //for every Hz generality
         {
 //            paint->drawLine(paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2]+250*k/15, paint->device()->height() * coords::y[c2]+10);
-            if( abs((def::left + k * graphScale) * def::spStep
-                    - floor((def::left + k * graphScale) * def::spStep + 0.5))
-                    < graphScale * def::spStep / 2. )
+            if( abs((def::left() + k * graphScale) * def::spStep()
+                    - floor((def::left() + k * graphScale) * def::spStep() + 0.5))
+                    < graphScale * def::spStep() / 2. )
             {
                 paint->drawLine(paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2], paint->device()->width() * coords::x[c2] + k, paint->device()->height() * coords::y[c2]+5);
 
-                helpInt = int((def::left + k*(def::spLength)/250.)*def::spStep + 0.5);
+                helpInt = int((def::left() + k*(def::spLength())/250.)*def::spStep() + 0.5);
                 helpString.setNum(helpInt);
                 if(helpInt<10)
                 {
@@ -1576,7 +1577,7 @@ void MakePa::correlationDifference()
         spectre[i] = new double * [n[i]];
         for(int j=0; j<n[i]; ++j)
         {
-            spectre[i][j] = new double [def::nsWOM() * def::spLength];
+            spectre[i][j] = new double [def::nsWOM() * def::spLength()];
         }
     }
 
@@ -1587,7 +1588,7 @@ void MakePa::correlationDifference()
         {
             helpString=dir_->absolutePath().append(slash()).append(lst[j][i]);
             currFile = fopen(helpString.toStdString().c_str(), "r");
-            for(int k = 0; k < def::nsWOM() * def::spLength; ++k)
+            for(int k = 0; k < def::nsWOM() * def::spLength(); ++k)
             {
                 fscanf(currFile, "%lf", &spectre[j][i][k]);
             }
@@ -1597,8 +1598,8 @@ void MakePa::correlationDifference()
 
     double mean[2];
     double ** pointMean = new double *[2];
-    pointMean[0] = new double [def::nsWOM() * def::spLength];
-    pointMean[1] = new double [def::nsWOM() * def::spLength];
+    pointMean[0] = new double [def::nsWOM() * def::spLength()];
+    pointMean[1] = new double [def::nsWOM() * def::spLength()];
 
     double variance[2];
     double covariance = 0.;
@@ -1606,7 +1607,7 @@ void MakePa::correlationDifference()
     double distance = 0.;
 
 
-    for(int h = 0; h < def::nsWOM() * def::spLength; ++h)
+    for(int h = 0; h < def::nsWOM() * def::spLength(); ++h)
     {
         pointMean[0][h] = 0.;
         pointMean[1][h] = 0.;
@@ -1616,7 +1617,7 @@ void MakePa::correlationDifference()
     {
         mean[j] = 0.;
         variance[j] = 0.;
-        for(int h = 0; h < def::nsWOM() * def::spLength; ++h)
+        for(int h = 0; h < def::nsWOM() * def::spLength(); ++h)
         {
             for(int i = 0; i < n[j]; ++i)
             {
@@ -1626,12 +1627,12 @@ void MakePa::correlationDifference()
             pointMean[j][h] /= n[j];
         }
         mean[j] /= n[j];
-        mean[j] /= def::nsWOM() * def::spLength;
+        mean[j] /= def::nsWOM() * def::spLength();
 
 
         for(int i = 0; i < n[j]; ++i)
         {
-            for(int h = 0; h < def::nsWOM() * def::spLength; ++h)
+            for(int h = 0; h < def::nsWOM() * def::spLength(); ++h)
             {
                 variance[j] += (pointMean[j][h]- mean[j]) * (pointMean[j][h] - mean[j]);
             }
@@ -1639,7 +1640,7 @@ void MakePa::correlationDifference()
         variance[j] /=n[j];
         variance[j] = sqrt(variance[j]);
     }
-    for(int h = 0; h < def::nsWOM() * def::spLength; ++h)
+    for(int h = 0; h < def::nsWOM() * def::spLength(); ++h)
     {
         covariance += (pointMean[0][h]- mean[0]) * (pointMean[1][h] - mean[1]);
     }

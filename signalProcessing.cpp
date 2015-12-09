@@ -62,10 +62,13 @@ void four1(double * dataF, int nn, int isign)
             for(i = m; i <= n; i += istep)
             {
                 j = i + mmax;
+
                 tempr = wr * dataF[j] - wi * dataF[j + 1];
                 tempi = wr * dataF[j + 1] + wi * dataF[j];
+
                 dataF[j] = dataF[i] - tempr;
                 dataF[j + 1] = dataF[i + 1] - tempi;
+
                 dataF[i] += tempr;
                 dataF[i + 1] += tempi;
             }
@@ -78,21 +81,124 @@ void four1(double * dataF, int nn, int isign)
 #undef SWAP
 
 template <typename signalType>
-void four1(signalType & dataF, int fftLen, int isign)
+void four1(signalType & inComplexData, int fftLen, int isign)
 {
     double * pew = new double [2 * fftLen];
     for(int i = 0; i < 2 * fftLen; ++i)
     {
-        pew[i] = dataF[i];
+        pew[i] = inComplexData[i];
     }
     four1(pew - 1, fftLen, isign);
 //    four1(dataF.data() - 1, fftLen, isign);
     for(int i = 0; i < 2 * fftLen; ++i)
     {
-        dataF[i] = pew[i];
+        inComplexData[i] = pew[i];
     }
     delete []pew;
 }
+
+template <typename signalType>
+signalType four2(const signalType & inRealData, int fftLen, int isign)
+{
+    double * pew = new double [2 * fftLen];
+    for(int i = 0; i < fftLen; ++i)
+    {
+        pew[2 * i] = inRealData[i];
+        pew[2 * i + 1] = 0.;
+    }
+//    for(int i = inRealData.size(); i < 2 * fftLen; ++i)
+//    {
+//        pew[i] = 0.;
+//    }
+
+    four1(pew - 1, fftLen, isign);
+
+    signalType res(fftLen);
+    for(int i = 0; i < fftLen; ++i)
+    {
+        res[i] = (pew[2 * i] * pew[2 * i] + pew[2 * i + 1] * pew[2 * i + 1]);
+    }
+    delete []pew;
+    return res;
+}
+
+void four3(std::valarray<std::complex<double>> & inputArray)
+{
+    // DFT
+    unsigned int N = inputArray.size();
+    unsigned int k = N;
+    unsigned int n;
+    const double thetaT = pi / N;
+    std::complex<double> phiT = std::polar<double>(1., thetaT);
+    std::complex<double> T;
+    while (k > 1)
+    {
+        n = k;
+        k >>= 1;
+        phiT = phiT * phiT; /// remake ???
+        T = 1.0L;
+        for (unsigned int l = 0; l < k; ++l)
+        {
+            for (unsigned int a = l; a < N; a += n)
+            {
+                unsigned int b = a + k;
+                std::complex<double> t = inputArray[a] - inputArray[b];
+                inputArray[a] += inputArray[b];
+                inputArray[b] = t * T;
+            }
+            T *= phiT;
+        }
+    }
+
+    // Decimate
+    unsigned int m = (unsigned int)log2(N);
+    for (unsigned int a = 0; a < N; ++a)
+    {
+        unsigned int b = a;
+        // Reverse bits
+        b = (((b & 0xaaaaaaaa) >> 1) | ((b & 0x55555555) << 1));
+        b = (((b & 0xcccccccc) >> 2) | ((b & 0x33333333) << 2));
+        b = (((b & 0xf0f0f0f0) >> 4) | ((b & 0x0f0f0f0f) << 4));
+        b = (((b & 0xff00ff00) >> 8) | ((b & 0x00ff00ff) << 8));
+        b = ((b >> 16) | (b << 16)) >> (32 - m);
+        if (b > a)
+        {
+#if 1
+            std::swap(inputArray[a], inputArray[b]);
+#else
+            std::complex<double> t = inputArray[a];
+            inputArray[a] = inputArray[b];
+            inputArray[b] = t;
+#endif
+        }
+    }
+}
+
+void four3(std::valarray<double> & inputRealArray)
+{
+    std::valarray<std::complex<double>> inputComplexArray(inputRealArray.size());
+    std::transform(begin(inputRealArray),
+                   end(inputRealArray),
+                   begin(inputComplexArray),
+                   [](const double & in)
+    { return std::complex<double>(in);});
+//    for(int i = 0; i < inputRealArray.size(); ++i)
+//    {
+//        inputComplexArray[i] = std::complex<double>(inputRealArray[i]);
+//    }
+    four3(inputComplexArray);
+//    inputRealArray = inputComplexArray.apply(std::real<double>());
+    std::transform(begin(inputComplexArray),
+                   end(inputComplexArray),
+                   begin(inputRealArray),
+                   [](const complex<double> & in)
+    { return std::real<double>(in);});
+//    for(int i = 0; i < inputRealArray.size(); ++i)
+//    {
+//        inputRealArray[i] = std::real<double>(inputComplexArray[i]);
+//    }
+}
+
 
 
 template <typename signalType>
@@ -415,9 +521,9 @@ void countMannWhitney(trivector<int> & outMW,
                       matrix * distancesOut)
 {
 //    const int numOfClasses = def::fileMarkers.length();
-    const int numOfClasses = def::numOfClasses;
+    const int numOfClasses = def::numOfClasses();
 
-    const int NetLength = def::nsWOM() * def::spLength;
+    const int NetLength = def::nsWOM() * def::spLength();
 
     QString helpString;
     const QDir dir_(spectraPath);
@@ -1787,7 +1893,7 @@ void calcRawFFT(const Typ & inData,
 }
 
 
-template <typename signalType>
+template <typename signalType = lineType>
 void calcSpectre(const signalType & inSignal,
                  signalType & outSpectre,
                  const int & fftLength,
@@ -1801,28 +1907,38 @@ void calcSpectre(const signalType & inSignal,
         return;
     }
 
+
     const double norm1 = sqrt(fftLength / double(fftLength - Eyes));
+
+//    auto t1 = high_resolution_clock::now();
+#if 0
+    const double norm2 = 2. / (def::freq * fftLength);
+
     vector<double> spectre (fftLength * 2, 0.); // can be valarray, but not important
-
-    double help1, help2;
-
     for(int i = 0; i < fftLength; ++i)
     {
         spectre[ i * 2 ] = inSignal[ i ] * norm1;
     }
     four1(spectre, fftLength, 1);
 
-    const double norm2 = 2. / (def::freq * fftLength);
+
     for(int i = 0; i < fftLength / 2; ++i )
     {
         outSpectre[ i ] = (pow(spectre[ i * 2 ], 2) + pow(spectre[ i * 2 + 1 ], 2)) * norm2;
 //        outSpectre[ i ] = pow ( outSpectre[ i ], powArg );
     }
+#else
+    const double nrm = 2. / (double(fftLength - Eyes) * def::freq);
+    outSpectre = four2(inSignal, fftLength, 1) * nrm;
+#endif
+//    auto t2 = high_resolution_clock::now();
+//    cout << duration_cast<microseconds>(t2-t1).count() << " mcsec" << endl;
 
     const int leftSmoothLimit = 0;
-    const int rightSmoothLimit = fftLength / 2. - 1;
+    const int rightSmoothLimit = fftLength / 2 - 1;
 
     //smooth spectre
+    double help1, help2;
     for(int a = 0; a < (int)(NumOfSmooth / norm1); ++a)
     {
         help1 = outSpectre[leftSmoothLimit-1];
@@ -1875,8 +1991,7 @@ template void calcRawFFT(const mat & inData, mat & dataFFT, const int &ns, const
 template void calcRawFFT(const matrix & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
 template void calcSpectre(const lineType & inSignal, lineType & outSpectre, const int & fftLength, const int & NumOfSmooth, const int & Eyes, const double & powArg);
-template void calcSpectre(const vectType & inSignal, vectType & outSpectre, const int & fftLength, const int & NumOfSmooth, const int & Eyes, const double & powArg);
-
+//template void calcSpectre(const vectType & inSignal, vectType & outSpectre, const int & fftLength, const int & NumOfSmooth, const int & Eyes, const double & powArg);
 
 template void kernelEst(const vectType & arr, QString picPath);
 template void kernelEst(const lineType & arr, QString picPath);

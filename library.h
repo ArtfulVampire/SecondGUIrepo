@@ -35,6 +35,7 @@
 #include <valarray>
 #include <set>
 #include <algorithm>
+#include <complex>
 
 #include <typeinfo>
 #include <chrono>
@@ -187,9 +188,9 @@ void eyesProcessingStatic(const vector<int> eogChannels = {21, 22}, // 19 eeg, 2
                                                         + slash() + "eyes.txt");
 
 void makeCfgStatic(const QString & FileName = "16sec19ch",
-                   const int & NetLength = def::nsWOM() * def::spLength,
+                   const int & NetLength = def::nsWOM() * def::spLength(),
                    const QString & outFileDir = def::dir->absolutePath(),
-                   const int & numOfOuts = def::numOfClasses,
+                   const int & numOfOuts = def::numOfClasses(),
                    const double & lrate = 0.1,
                    const double & error = 0.1,
                    const int & temp = 10);
@@ -248,12 +249,12 @@ void writeICAMatrix(const QString & path, const matrix & matrixA);
 void readSpectraFile(const QString & filePath,
                      matrix & outData,
                      int inNs = def::nsWOM(),
-                     int spL = def::spLength);
+                     int spL = def::spLength());
 
 void writeSpectraFile(const QString & filePath,
                       const matrix & outData,
                       int inNs = def::nsWOM(),
-                      int spL = def::spLength);
+                      int spL = def::spLength());
 
 
 template <typename signalType>
@@ -313,7 +314,7 @@ void drawArray(const QString & templPath,
                const double & scaling = 1.,
                const int & lineWidth = 3);
 
-//inMatrix supposed to be def::spLength * 19 size
+//inMatrix supposed to be def::spLength() * 19 size
 double drawArrays(const QString & templPath,
                 const matrix & inMatrix,
                 const bool weightsFlag = false,
@@ -427,6 +428,15 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath = def::dir->absolutePat
 double enthropy(const double *arr, const int N, const int numOfRanges = 30); // not finished?
 void four1(double * dataF, int nn, int isign);
 
+template <typename signalType = lineType>
+void four1(signalType & inComplexData, int nn = def::fftLength, int isign = 1);
+
+template <typename signalType = lineType>
+void four2(signalType & inRealData, int nn = def::fftLength, int isign = 1);
+
+void four3(std::valarray<std::complex<double>> & inputArray);
+void four3(std::valarray<double> & inputRealArray);
+
 
 template <typename signalType = lineType>
 matrix countWavelet(const signalType & inSignal);
@@ -460,8 +470,6 @@ template <typename signalType = lineType>
 void histogram(const signalType & arr, int numSteps, QString picPath);
 
 
-template <typename signalType = lineType>
-void four1(signalType & dataF, int nn, int isign);
 
 template <typename signalType = lineType, typename retType = lineType>
 retType spectre(const signalType & data);

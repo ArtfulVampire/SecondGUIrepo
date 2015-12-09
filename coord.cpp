@@ -7,9 +7,8 @@ namespace def
 int ns = 20;
 
 // assigned in mainwindow.cpp
-int left;
-int right;
-int spLength;
+int right() {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}
+int left()  {return fftLimit(def::leftFreq, def::freq, def::fftLength);}
 
 double leftFreq = 5.;
 double rightFreq = 20.;
@@ -23,7 +22,7 @@ QString cfgFileName = "tmp.net";
 double drawNorm = -1.;
 spectraGraphsNormalization drawNormTyp = spectraGraphsNormalization::all;
 
-double spStep = def::freq / def::fftLength;
+
 QString ExpName;
 QDir * dir = new QDir();
 
@@ -36,12 +35,11 @@ QStringList fileMarkers{"_241", "_247", "_254 _244"};
 //QStringList fileMarkers{"_241 _242", "_245 _246"}; // Ossadtchi
 //QStringList fileMarkers{"_242", "_245"}; // Ossadtchi
 
-int numOfClasses = fileMarkers.length();
 }
 
 namespace suc
 {
-int numGoodNewLimit = 200;
-int learnSetStay = 60;
-double decayRate = 0.01;
+int numGoodNewLimit = 5;
+int learnSetStay = 100;
+double decayRate = 0.00;
 }

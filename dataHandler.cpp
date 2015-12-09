@@ -20,7 +20,7 @@ void readFileInLine(const QString & filePath,
         outData.push_back(tmp);
 
         // test
-        if(num > def::spLength * def::nsWOM())
+        if(num > def::spLength() * def::nsWOM())
         {
             cout << "readFileInLine: too long file" << endl;
         }

@@ -19,7 +19,7 @@ Net::Net() :
 //    QFile::remove(helpString);
 
     stopFlag = 0;
-    confusionMatrix.resize(def::numOfClasses, def::numOfClasses, 0.);
+    confusionMatrix.resize(def::numOfClasses(), def::numOfClasses(), 0.);
 
 //    tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
 
@@ -456,7 +456,7 @@ double Net::adjustReduceCoeff(QString spectraDir,
             PaIntoMatrixByName("all");
 
 //            cout << dataMatrix.rows() << endl;
-//            for(int i = 0; i < def::numOfClasses; ++i)
+//            for(int i = 0; i < def::numOfClasses(); ++i)
 //            {
 //                cout << classCount[i] << "\t";
 //            }
@@ -540,14 +540,14 @@ void Net::makeIndicesVectors(vector<int> & learnInd,
 
     const int fold = ui->foldSpinBox->value();
 
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         std::shuffle(arr[i].begin(),
                      arr[i].end(),
                      std::default_random_engine(seed));
     }
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
 
         for(int j = 0; j < classCount[i]; ++j)
@@ -671,9 +671,9 @@ void Net::averageClassification()
     ofstream res;
     res.open(helpString.toStdString(), ios_base::app);
 
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
-//        for(int j = 0; j < def::numOfClasses; ++j)
+//        for(int j = 0; j < def::numOfClasses(); ++j)
 //        {
 //            cout << confusionMatrix[i][j] << '\t';
 //        }
@@ -695,7 +695,7 @@ void Net::averageClassification()
     double corrSum = 0.;
     double wholeNum = 0.;
 
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         corrSum += confusionMatrix[i][i];
         wholeNum += confusionMatrix[i].sum();
@@ -705,7 +705,7 @@ void Net::averageClassification()
     // kappa
     double pE = 0.; // for Cohen's kappa
     const double S = confusionMatrix.sum();
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         pE += (confusionMatrix[i].sum() * confusionMatrix.getCol(i).sum()) /
               (S * S);
@@ -757,7 +757,7 @@ void Net::drawWts(QString wtsPath,
     matrix drawWts; // 3 arrays of weights
 #if 0
     vec tempVec;
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         tempVec.clear();
         for(int j = 0; j < dataMatrix.cols(); ++j)
@@ -862,7 +862,7 @@ void Net::reset()
     {
         dimensionality[i] = lst[i].toInt();
     }
-    dimensionality[numOfLayers - 1] = def::numOfClasses;
+    dimensionality[numOfLayers - 1] = def::numOfClasses();
 
     weight.resize(numOfLayers - 1);
     for(int i = 0; i < numOfLayers - 1; ++i) // weights from layer i to i+1
@@ -901,8 +901,8 @@ void Net::testDistances()
     const int NumberOfVectors = dataMatrix.rows();
     const int NetLength = dataMatrix.cols();
 
-    vector<int> NumberOfErrors(def::numOfClasses, 0);
-    matrix averageSpectra(def::numOfClasses, NetLength, 0.);
+    vector<int> NumberOfErrors(def::numOfClasses(), 0);
+    matrix averageSpectra(def::numOfClasses(), NetLength, 0.);
 
     for(int i = 0; i < NumberOfVectors; ++i)
     {
@@ -912,18 +912,18 @@ void Net::testDistances()
         }
     }
 
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         averageSpectra[i] /= classCount[i];
     }
     PaIntoMatrixByName("2");
 
 
-    vector<double> distances(def::numOfClasses);
+    vector<double> distances(def::numOfClasses());
     int outType;
     for(int i = 0; i < NumberOfVectors; ++i)
     {
-        for(int j = 0; j < def::numOfClasses; ++j)
+        for(int j = 0; j < def::numOfClasses(); ++j)
         {
             distances[j] = distance(dataMatrix[i],
                                     averageSpectra[j]);
@@ -933,12 +933,12 @@ void Net::testDistances()
         if(outType != types[i]) ++NumberOfErrors[ types[i] ];
     }
     cout << "NumberOfVectors = " << NumberOfVectors << endl;
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
         cout << "NumberOfErrors = " << NumberOfErrors[j] << endl;
     }
     int sum = 0;
-    for(int j = 0; j < def::numOfClasses; ++j)
+    for(int j = 0; j < def::numOfClasses(); ++j)
     {
         sum += NumberOfErrors[j];
     }
@@ -963,7 +963,7 @@ void Net::tallNetIndices(const vector<int> & indices)
     ofstream badFilesStr;
     badFilesStr.open(helpString.toStdString(), ios_base::app);
 
-    matrix localConfusionMatrix(def::numOfClasses, def::numOfClasses);
+    matrix localConfusionMatrix(def::numOfClasses(), def::numOfClasses());
     for(int i = 0; i < indices.size(); ++i)
     {
         const int outClass = classifyDatum(indices[i]).first;
@@ -1000,7 +1000,7 @@ void Net::tallNetIndices(const vector<int> & indices)
     ofstream logStream;
     logStream.open(helpString.toStdString(), ios_base::app);
 
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         const double num = localConfusionMatrix[i].sum();
         if(num != 0.)
@@ -1015,7 +1015,7 @@ void Net::tallNetIndices(const vector<int> & indices)
     }
 
     double corrSum = 0.;
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         corrSum += localConfusionMatrix[i][i];
     }
@@ -1070,7 +1070,7 @@ void Net::successiveProcessing()
 
     learnNet(); /// get initial weights
 
-//    confusionMatrix.resize(def::numOfClasses, def::numOfClasses);
+//    confusionMatrix.resize(def::numOfClasses(), def::numOfClasses());
 
     lineType tempArr;
     int type = -1;
@@ -1242,7 +1242,7 @@ void Net::crossClassification()
     vector<int> learnIndices;
     vector<int> tallIndices;
     vector<vector<int>> arr;
-    arr.resize(def::numOfClasses);
+    arr.resize(def::numOfClasses());
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         arr[ types[i] ].push_back(i);
@@ -1459,7 +1459,7 @@ void Net::loadData(const QString & spectraPath,
     makeFileLists(spectraPath, leest);
 
     dataMatrix = matrix();
-    classCount.resize(def::numOfClasses, 0.);
+    classCount.resize(def::numOfClasses(), 0.);
     types.clear();
     fileNames.clear();
 
@@ -1610,7 +1610,7 @@ void Net::learnNetIndices(vector<int> mixNum,
 //                                           0.);
 
 
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         normCoeff.push_back(helpMin / classCount[i]);
     }
@@ -1702,7 +1702,7 @@ void Net::learnNetIndices(vector<int> mixNum,
                 // numOfLayers = 2 and i == 0 in this case
                 // simplified
 
-                for(int j = 0; j < def::numOfClasses; ++j)
+                for(int j = 0; j < def::numOfClasses(); ++j)
                 {
                     weight[0][j] += output[0]
                             * (learnRate * normCoeff[type]
@@ -1771,11 +1771,11 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
     }
 
     double res = 0.;
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         res += pow((output.back()[i] - (i == type)), 2);
     }
-    res = sqrt(res / def::numOfClasses);
+    res = sqrt(res / def::numOfClasses());
 
     return std::make_pair(std::max_element(begin(output.back()),
                                            end(output.back()) - 1)  // -bias
@@ -2040,7 +2040,7 @@ void Net::learnBayesIndices(vector<int> mixNum)
     const double helpMax = *std::max_element(classCount.begin(),
                                              classCount.end());
 
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         aprioriClass.push_back(classCount[i] / helpMax);
     }
@@ -2762,9 +2762,9 @@ void Net::leaveOneOutCL()
     QTime myTime;
     myTime.start();
     cout << "leaveOneOutCL started" << endl;
-    NumberOfErrors = new int[def::numOfClasses];
+    NumberOfErrors = new int[def::numOfClasses()];
     helpString = "";
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         NumberOfErrors[i] = 0;
     }
@@ -2919,7 +2919,7 @@ void Net::leaveOneOutCL()
 //    __global double temp,
 //    __global double matrix,
 //    __global int NumberOfVectors,
-//    __global int def::numOfClasses,
+//    __global int numOfClasses,
 //    __global int NetLength,
 //    __private double ** weight,
 //    __private int * mixNum,
@@ -2935,7 +2935,7 @@ void Net::leaveOneOutCL()
     cl_mem tempBuf;
     cl_mem matrixBuf;
     cl_mem numOfVectsBuf;
-    cl_mem def::numOfClassesBuf;
+    cl_mem numOfClassesBuf;
     cl_mem netLengthBuf;
     cl_mem weightBuf;
     cl_mem mixNumBuf;
@@ -3054,10 +3054,10 @@ void Net::leaveOneOutCL()
         cout << "Memory buffer created" << endl;
     }
 
-    def::numOfClassesBuf = clCreateBuffer(context,
+    numOfClassesBuf = clCreateBuffer(context,
                               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
                               sizeof(cl_int),
-                              &def::numOfClasses,
+                              &def::numOfClasses(),
                               &clError);
     if (clError != CL_SUCCESS)
     {
@@ -3088,7 +3088,7 @@ void Net::leaveOneOutCL()
 
     weightBuf = clCreateBuffer(context,
                               CL_MEM_READ_WRITE,
-                              sizeof(cl_double) * def::numOfClasses * (NetLength + 1),
+                              sizeof(cl_double) * def::numOfClasses() * (NetLength + 1),
                               NULL,
                               &clError);
     if (clError != CL_SUCCESS)
@@ -3119,7 +3119,7 @@ void Net::leaveOneOutCL()
 
     outputBuf = clCreateBuffer(context,
                               CL_MEM_READ_WRITE,
-                              sizeof(cl_double) * def::numOfClasses,
+                              sizeof(cl_double) * def::numOfClasses(),
                               NULL,
                               &clError);
     if (clError != CL_SUCCESS)
@@ -3164,7 +3164,7 @@ void Net::leaveOneOutCL()
 
     outputClassBuf = clCreateBuffer(context,
                               CL_MEM_READ_WRITE,
-                              sizeof(cl_double) * def::numOfClasses,
+                              sizeof(cl_double) * def::numOfClasses(),
                               NULL,
                               &clError);
     if (clError != CL_SUCCESS)
@@ -3180,7 +3180,7 @@ void Net::leaveOneOutCL()
     //global:
     numOfErrorsBuf = clCreateBuffer(context,
                               CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_int) * def::numOfClasses,
+                              sizeof(cl_int) * def::numOfClasses(),
                               &NumberOfErrors,
                               &clError);
     if (clError != CL_SUCCESS)
@@ -3236,7 +3236,7 @@ void Net::leaveOneOutCL()
     clSetKernelArg(leaveOneOutKernel, 3, sizeof(tempBuf), (void * ) &tempBuf);
     clSetKernelArg(leaveOneOutKernel, 4, sizeof(matrixBuf), (void * ) &matrixBuf);
     clSetKernelArg(leaveOneOutKernel, 5, sizeof(numOfVectsBuf), (void * ) &numOfVectsBuf);
-    clSetKernelArg(leaveOneOutKernel, 6, sizeof(def::numOfClassesBuf), (void * ) &def::numOfClassesBuf);
+    clSetKernelArg(leaveOneOutKernel, 6, sizeof(numOfClassesBuf), (void * ) &numOfClassesBuf);
     clSetKernelArg(leaveOneOutKernel, 7, sizeof(netLengthBuf), (void * ) &netLengthBuf);
     clSetKernelArg(leaveOneOutKernel, 8, sizeof(weightBuf), (void * ) &weightBuf);
     clSetKernelArg(leaveOneOutKernel, 9, sizeof(mixNumBuf), (void * ) &mixNumBuf);
@@ -3397,7 +3397,7 @@ void Net::Hopfield()
 
     double sumH;
 
-    double * outputClass = new double [def::numOfClasses];
+    double * outputClass = new double [def::numOfClasses()];
 //    int type;
     bool answer;
     int NumberOfErrorsH = 0;
@@ -3545,7 +3545,7 @@ void Net::Hopfield()
 
 //        //classifying perceptron
 //        type = int(dataMatrix[i][NetLength+1]);
-//        for(int j = 0; j < def::numOfClasses; ++j) //calculate output //2 = numberOfTypes
+//        for(int j = 0; j < def::numOfClasses(); ++j) //calculate output //2 = numberOfTypes
 //        {
 //            outputClass[j] = 0.;
 //            for(int h = 0; h < NetLength; ++h)
@@ -3556,7 +3556,7 @@ void Net::Hopfield()
 //            outputClass[j] = logistic(outputClass[j], temp); // unlinear conformation
 //        }
 //        answer = true;
-//        for(int k = 0; k<def::numOfClasses; ++k)
+//        for(int k = 0; k<def::numOfClasses(); ++k)
 //        {
 //            if(k  != type && outputClass[k] >= outputClass[type])
 //            {
@@ -3628,14 +3628,14 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
         tempDeltaWeights[i] = new double [dimensionality[0] + 1];
     }
 
-//    double * normCoeff = new double [def::numOfClasses];
+//    double * normCoeff = new double [def::numOfClasses()];
     vector < double > normCoeff;
     double helpMin = classCount[0];
-    for(int i = 1; i < def::numOfClasses; ++i)
+    for(int i = 1; i < def::numOfClasses(); ++i)
     {
         helpMin = min(helpMin, classCount[i]);
     }
-    for(int i = 0; i < def::numOfClasses; ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         normCoeff.push_back(helpMin/classCount[i]);
     }

@@ -702,7 +702,7 @@ void drawTemplate(const QString & outPath,
 
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
-    const double graphScale = def::spLength / graphWidth;
+    const double graphScale = def::spLength() / graphWidth;
     // some empirical values prepared for defauls 1600*1600
     const double scaleY = paint.device()->height() / 1600.;
     const double scaleX = paint.device()->width() / 1600.;
@@ -728,16 +728,16 @@ void drawTemplate(const QString & outPath,
         paint.setFont(QFont("Helvitica", int(12 * scaleY)));
         for(int k = 0; k < graphWidth; ++k) //for every Hz generality
         {
-            if( abs((def::left + k * graphScale) * def::spStep
-                    - ceil((def::left + k * graphScale) * def::spStep - 0.5))
-                < graphScale * def::spStep / 2. )
+            if( abs((def::left() + k * graphScale) * def::spStep()
+                    - ceil((def::left() + k * graphScale) * def::spStep() - 0.5))
+                < graphScale * def::spStep() / 2. )
             {
                 paint.drawLine(QPointF(X + k,
                                        Y),
                                QPointF(X + k,
                                        Y + 5 * scaleY));
 
-                helpString = QString::number(int((def::left + k * graphScale) * def::spStep + 0.5));
+                helpString = QString::number(int((def::left() + k * graphScale) * def::spStep() + 0.5));
 
                 /// Hz to draw
                 if(helpString.toInt() % 5 != 0) continue;
@@ -818,7 +818,7 @@ void drawArray(const QString & templPath,
         paint.begin(&pic);
     }
 
-    if(inData.size() != numOfChan * def::spLength)
+    if(inData.size() != numOfChan * def::spLength())
     {
         cout << "inappropriate array size" << endl;
         return;
@@ -840,7 +840,7 @@ void drawArray(const QString & templPath,
 
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
-    const double graphScale = def::spLength / graphWidth;
+    const double graphScale = def::spLength() / graphWidth;
     // initial fonts prepared for 1600*1600
     const double scaleY = paint.device()->height() / 1600.;
     const double scaleX = paint.device()->width() / 1600.;
@@ -871,17 +871,17 @@ void drawArray(const QString & templPath,
 #if 1
             // usual
             paint.drawLine(QPointF(X + k,
-                                   Y - inData[c2 * def::spLength + k * graphScale] * norm),
+                                   Y - inData[c2 * def::spLength() + k * graphScale] * norm),
                     QPointF(X + k + 1,
-                            Y - inData[c2 * def::spLength + (k + 1) * graphScale] * norm));
+                            Y - inData[c2 * def::spLength() + (k + 1) * graphScale] * norm));
 #else
             // weights
             paint.drawLine(QPointF(X + k,
                                    Y - graphHeight / 2.
-                                   - inData[c2 * def::spLength + k * graphScale] * norm),
+                                   - inData[c2 * def::spLength() + k * graphScale] * norm),
                     QPointF(X + k + 1,
                             Y - graphHeight / 2.
-                            - inData[c2 * def::spLength + (k + 1) * graphScale] * norm));
+                            - inData[c2 * def::spLength() + (k + 1) * graphScale] * norm));
 #endif
 
         }
@@ -921,7 +921,7 @@ double drawArrays(const QString & templPath,
     QPixmap pic;
     QPainter paint;
     QString helpString;
-    int numOfChan = inMatrix.cols() / def::spLength;
+    int numOfChan = inMatrix.cols() / def::spLength();
 
     if(templPath.contains(".svg"))
     {
@@ -948,7 +948,7 @@ double drawArrays(const QString & templPath,
     }
 
     // test size
-    int shouldSize = numOfChan * def::spLength;
+    int shouldSize = numOfChan * def::spLength();
 
     std::for_each(inMatrix.begin(),
                   inMatrix.end(),
@@ -980,7 +980,7 @@ double drawArrays(const QString & templPath,
 
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
-    const double graphScale = def::spLength / graphWidth;
+    const double graphScale = def::spLength() / graphWidth;
     // initial fonts prepared for 1600*1600
     const double scaleY = paint.device()->height() / 1600.;
     const double scaleX = paint.device()->width() / 1600.;
@@ -1010,11 +1010,11 @@ double drawArrays(const QString & templPath,
             norm = 0;
             for(int i = 0; i < inMatrix.size(); ++i)
             {
-                for(int j = 0; j < def::spLength; ++j)
+                for(int j = 0; j < def::spLength(); ++j)
                 {
                     norm = fmax(norm,
-                                fabs(inMatrix[i][def::spLength * c2 + j])
-                           * (1. + (j > 0.7 * def::spLength) * 0.7) );
+                                fabs(inMatrix[i][def::spLength() * c2 + j])
+                           * (1. + (j > 0.7 * def::spLength()) * 0.7) );
                 }
             }
 
@@ -1045,19 +1045,19 @@ double drawArrays(const QString & templPath,
                     // weights
                     paint.drawLine(QPointF(X + k,
                                            Y - graphHeight / 2.
-                                           - inData[c2 * def::spLength + k * graphScale] * norm),
+                                           - inData[c2 * def::spLength() + k * graphScale] * norm),
                             QPointF(X + k + 1,
                                     Y - graphHeight / 2.
-                                    - inData[c2 * def::spLength + (k + 1) * graphScale] * norm));
+                                    - inData[c2 * def::spLength() + (k + 1) * graphScale] * norm));
 
                 }
                 else
                 {
                     // usual
                     paint.drawLine(QPointF(X + k,
-                                           Y - inData[c2 * def::spLength + k * graphScale] * norm),
+                                           Y - inData[c2 * def::spLength() + k * graphScale] * norm),
                             QPointF(X + k + 1,
-                                    Y - inData[c2 * def::spLength + (k + 1) * graphScale] * norm));
+                                    Y - inData[c2 * def::spLength() + (k + 1) * graphScale] * norm));
                 }
 
 
@@ -1193,7 +1193,7 @@ void drawMannWitney(const QString & templPath,
     const int barHeightStep = 8; // pixels
 
     const double graphWidth = paint.device()->width() * coords::scale;
-    const double ext = def::spLength / graphWidth;
+    const double ext = def::spLength() / graphWidth;
 
     for(int c2 = 0; c2 < def::nsWOM(); ++c2)  //exept markers channel
     {
@@ -1202,15 +1202,15 @@ void drawMannWitney(const QString & templPath,
 
         //statistic difference bars
         int barCounter = 0;
-        for(int h = 0; h < def::numOfClasses; ++h) // class1
+        for(int h = 0; h < def::numOfClasses(); ++h) // class1
         {
 
-            for(int l = h + 1; l < def::numOfClasses; ++l) // class2
+            for(int l = h + 1; l < def::numOfClasses(); ++l) // class2
             {
                 QColor color1 = QColor(inColors[h]);
                 QColor color2 = QColor(inColors[l]);
 
-                for(int j = c2 * def::spLength; j < (c2 + 1) * def::spLength; ++j)
+                for(int j = c2 * def::spLength(); j < (c2 + 1) * def::spLength(); ++j)
                 {
                     if(inMW[h][l - h][j] == 0) continue;
 
@@ -1225,7 +1225,7 @@ void drawMannWitney(const QString & templPath,
                         paint.setBrush(QBrush(color2));
                     }
 
-                    paint.drawRect(X + (j % def::spLength - barWidth) / ext,
+                    paint.drawRect(X + (j % def::spLength() - barWidth) / ext,
                                    Y + barHeightStart + barHeightStep * barCounter,
                                    2 * barWidth / ext,
                                    barHeight);
