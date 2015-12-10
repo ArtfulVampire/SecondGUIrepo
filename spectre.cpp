@@ -635,10 +635,12 @@ void Spectre::setLeft()
 }
 
 
-void Spectre::writeSpectra(const int leftFreq,
-                           const int rightFreq,
+void Spectre::writeSpectra(const double leftFreq,
+                           const double rightFreq,
                            const bool rangeLimitCheck)
 {
+    cout << "spLength = " << def::spLength() << endl;
+
     QTime myTime;
     myTime.start();
 
@@ -656,7 +658,7 @@ void Spectre::writeSpectra(const int leftFreq,
 //        cout << rangeLimits[i][0] << '\t' << rangeLimits[i][1] << endl;
 //    }
 
-
+cout << "spLength = " << def::spLength() << endl;
     for(int i = 0; i < fileNames.size(); ++i)
     {
         helpString = outDirPath + slash() + fileNames[i];
@@ -814,8 +816,8 @@ void Spectre::countSpectraSlot()
     cout << "countSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
     writeSpectra();
 
-    ui->lineEdit_1->setText(ui->lineEdit_2->text());
-    ui->lineEdit_2->setText(def::dir->absolutePath() + slash() + "Help");
+//    ui->lineEdit_1->setText(ui->lineEdit_2->text());
+//    ui->lineEdit_2->setText(def::dir->absolutePath() + slash() + "Help");
 }
 
 bool Spectre::countOneSpectre(matrix & data2, matrix & outData)

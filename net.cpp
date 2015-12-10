@@ -304,6 +304,11 @@ void Net::setTallCleanFlag(bool in)
     this->tallCleanFlag = in;
 }
 
+void Net::setFold(int in)
+{
+    ui->foldSpinBox->setValue(in);
+}
+
 void Net::setSource(const QString & in)
 {
     if(in.contains("real", Qt::CaseInsensitive) || in.startsWith('r'))

@@ -96,14 +96,16 @@ public:
 
     double getAverageAccuracy();
     double getKappa();
-    void setReduceCoeff(double coeff);
-    void setErrCrit(double in);
     double getReduceCoeff();
-    void setNumOfPairs(int num);
     int getEpoch();
     double getLrate();
+
+    void setReduceCoeff(double coeff);
+    void setErrCrit(double in);
+    void setNumOfPairs(int num);
     void setMode(const QString & in);
     void setSource(const QString & in);
+    void setFold(int in);
     void setTallCleanFlag(bool in);
     void aaDefaultSettings();
 

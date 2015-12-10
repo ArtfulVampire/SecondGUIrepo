@@ -32,8 +32,8 @@ public:
     void defaultState();
     void setPow(double);
     void setFftLength(int);
-    void writeSpectra(const int leftFreq = def::leftFreq,
-                      const int rightFreq = def::rightFreq,
+    void writeSpectra(const double leftFreq = def::leftFreq,
+                      const double rightFreq = def::rightFreq,
                       const bool rangeLimitCheck = true);
 
 

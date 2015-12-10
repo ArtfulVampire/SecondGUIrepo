@@ -1727,14 +1727,16 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
+    ui->realButton->setChecked(true);
 
-    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+
+//    exit(1);
 //    sliceAll();
 //    GalyaCut(def::GalyaFolder + "/8dec");
 //    exit(0);
-    countSpectraSimple(4096, 15);
+//    countSpectraSimple(4096, 15);
 //    return;
-    exit(0);
+//    exit(0);
 
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");
@@ -1743,6 +1745,48 @@ void MainWindow::customFunc()
     const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
     for(QString name : names)
     {
+#if 1
+        for(QString suffix : {"_train", "_test"})
+        {
+            setEdfFile(path + name + suffix + ".edf");
+            cleanDirs();
+            sliceAll();
+
+            Spectre *sp = new Spectre();
+            sp->setFftLength(4096);
+            sp->setSmooth(15);
+            sp->countSpectraSlot();
+
+            Net * amn = new Net();
+            amn->setSource("r");
+
+                amn->setMode("N");
+//            amn->setMode("cros");
+//            amn->setFold(4);
+//            amn->setNumOfPairs(15);
+
+            ofstream of;
+            of.open((def::dir->absolutePath() + slash() + "freq.txt").toStdString(),
+                    ios_base::app);
+            for(double lf : {5., 5.5, 6., 6.5, 7., 7.5, 8.})
+            {
+                for(double rf : {25., 24., 23., 22., 21., 20., 19., 18., 17., 16., 15.})
+                {
+                    sp->writeSpectra(lf, rf, false);
+                    amn->autoClassificationSimple();
+                    of << lf << '\t'
+                       << rf << '\t'
+                       << amn->getAverageAccuracy() << '\t'
+                       << amn->getKappa() << endl;
+                }
+
+            }
+            of.close();
+            delete sp;
+            delete amn;
+        }
+        continue;
+#endif
 #if 0
         // inner
 //        for(QString suffix : {"_train", "_test", "_train_ica", "_test_ica"})
