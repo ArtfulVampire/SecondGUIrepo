@@ -32,14 +32,17 @@ public:
     void defaultState();
     void setPow(double);
     void setFftLength(int);
-
+    void writeSpectra(const int leftFreq = def::leftFreq,
+                      const int rightFreq = def::rightFreq,
+                      const bool rangeLimitCheck = true);
 
 
 public slots:
-    void countSpectra();
+    void countSpectraSlot();
     void inputDirSlot();
     void outputDirSlot();
     void setFftLengthSlot();
+
     void setLeft();
     void setRight();
     void drawWavelets();
@@ -48,34 +51,15 @@ public slots:
     void integrate();
     void center();
 
-signals:
-    void spValues(int, int, double);
-
 private:
     Ui::Spectre *ui;
     QString backupDirPath;
 
-    int Eyes;
-    QFileDialog * browser1;
-    QFileDialog * browser2;
-
-    bool ** boolArrrPirate;
-    int ** rangeLimits;
-
-    double norm;
-    QButtonGroup * group1;
-
-    struct complex
-    {
-      double r;
-      double i;
-    };
-    complex * spect;
-
-    int chanNum;
-    QPixmap pic;
-    QPainter * paint;
+    vector<vector<int>> rangeLimits;
     QString rangePicPath;
+
+    vector<matrix> dataFFT;
+    vector<QString> fileNames;
 };
 
 #endif // SPECTRE_H

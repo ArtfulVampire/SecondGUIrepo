@@ -348,12 +348,15 @@ void makeFullFileList(const QString & path,
             }
             else
             {
-//                nameFilters << helpString;
                 nameFilters << QString(def::ExpName.left(3) + helpString);
             }
 
         }
     }
+//    for(QString str : nameFilters)
+//    {
+//        cout << str << endl;
+//    }
     lst = localDir.entryList(nameFilters,
                              QDir::Files,
                              QDir::Name); /// Name ~ order

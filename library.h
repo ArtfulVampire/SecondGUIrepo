@@ -325,13 +325,13 @@ double drawArrays(const QString & templPath,
                 const bool weightsFlag = false,
                 const spectraGraphsNormalization normType = all,
                 double norm = 0.,
-                const QStringList & colors = def::colours,
+                const vector<QColor> & colors = def::colours,
                 const double scaling = 1.,
                 const int lineWidth = 3);
 
 void drawArraysInLine(const QString & picPath,
                       const matrix & inMatrix,
-                      const QStringList & colors = def::colours,
+                      const vector<QColor> & colors = def::colours,
                       const double scaling = 1.,
                       const int lineWidth = 3);
 
@@ -351,11 +351,11 @@ void countMannWhitney(trivector<int> & outMW,
 
 void drawMannWitney(const QString & templPath,
                     const trivector<int> & inMW,
-                    const QStringList & inColors = def::colours);
+                    const vector<QColor> & inColors = def::colours);
 
 void drawMannWitneyInLine(const QString & picPath,
                           const trivector<int> & inMW,
-                          const QStringList & inColors = def::colours);
+                          const vector<QColor> & inColors = def::colours);
 
 
 

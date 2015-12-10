@@ -3,6 +3,7 @@
 #include <QString>
 #include <QStringList>
 #include <QDir>
+#include <QColor>
 #define MAXNS 50
 
 
@@ -59,8 +60,8 @@ namespace def
     extern double rightFreq;
 
     extern QString cfgFileName;
-    extern QStringList colours;
     extern QStringList fileMarkers;
+    extern std::vector<QColor> colours;
 
     extern double drawNorm;
     extern spectraGraphsNormalization drawNormTyp;
@@ -68,8 +69,8 @@ namespace def
     inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
     inline int numOfClasses() {return def::fileMarkers.length();}
 
-    extern int right(); // {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}
-    extern int left();  // {return fftLimit(def::leftFreq, def::freq, def::fftLength);}
+    extern int right();
+    extern int left();
     inline int spLength() {return def::right() - def::left();}
     inline double spStep() {return def::freq / def::fftLength;}
 

@@ -109,28 +109,33 @@ QColor hueJet(const int & range, double j)
     if(j > range) j = range; //bicycle for no black colour
     if(j < 0) j = 0; //bicycle for no black colour
     //    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
-    return QColor(255.*red(range,j), 255.*green(range,j), 255.*blue(range,j));
+    return QColor(255. * red(range, j),
+                  255. * green(range, j),
+                  255. * blue(range, j));
 }
 
 QColor grayScale(int range, int j)
 {
     if(j > range) j = range;
     if(j < 0) j = 0;
-    return QColor(255. * (1. - double(j)/range), 255. * (1. - double(j)/range), 255. * (1. -  double(j)/range));
+    return QColor(255. * (1. - double(j) / range),
+                  255. * (1. - double(j) / range),
+                  255. * (1. - double(j) / range));
 }
 
 QColor qcolor(int range, int j)
 {
-    double sigmaR = range*0.35;
-    double sigmaG = range*0.25;
-    double sigmaB = range*0.4;
+    double sigmaR = range * 0.35;
+    double sigmaG = range * 0.25;
+    double sigmaB = range * 0.4;
 
-    double offR = range*(1.0 - 0.3);
-    double offG = range*(0.5 + 0.25);
-    double offB = range*(0.0 + 0.15);
+    double offR = range * (1.0 - 0.3);
+    double offG = range * (0.5 + 0.25);
+    double offB = range * (0.0 + 0.15);
 
-    return QColor(255*exp(-(j-offR)*(j-offR)/(2*sigmaR*sigmaR)), 255*exp(-(j-offG)*(j-offG)/(2*sigmaG*sigmaG)), 255*exp((-(j-offB)*(j-offB)/(2*sigmaB*sigmaB))));
-    //    return QColor(255*red(part),255* green(part), 255*blue(part));
+    return QColor(255. * exp(- (j - offR) * (j - offR) / (2 * sigmaR * sigmaR)),
+                  255. * exp(- (j - offG) * (j - offG) / (2 * sigmaG * sigmaG)),
+                  255. * exp(- (j - offB) * (j - offB) / (2 * sigmaB * sigmaB)));
 }
 
 QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour)
@@ -912,7 +917,7 @@ double drawArrays(const QString & templPath,
                   const bool weightsFlag,
                   const spectraGraphsNormalization normType,
                   double norm,
-                  const QStringList & colors,
+                  const vector<QColor> & colors,
                   const double scaling,
                   const int lineWidth)
 {
@@ -1098,7 +1103,7 @@ double drawArrays(const QString & templPath,
 
 void drawArraysInLine(const QString & picPath,
                       const matrix & inMatrix,
-                      const QStringList & colors,
+                      const vector<QColor> & colors,
                       const double scaling,
                       const int lineWidth)
 {
@@ -1156,7 +1161,7 @@ void drawCutOneChannel(const QString & inSpectraPath,
 
 void drawMannWitney(const QString & templPath,
                     const trivector<int> & inMW,
-                    const QStringList & inColors)
+                    const vector<QColor> & inColors)
 {
     QSvgGenerator svgGen;
     QSvgRenderer svgRen;
@@ -1241,7 +1246,7 @@ void drawMannWitney(const QString & templPath,
 
 void drawMannWitneyInLine(const QString & picPath,
                           const trivector<int> & inMW,
-                          const QStringList & inColors)
+                          const vector<QColor> & inColors)
 {
     QPixmap pic;
     pic.load(picPath);

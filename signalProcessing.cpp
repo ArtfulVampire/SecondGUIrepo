@@ -1897,21 +1897,15 @@ void calcSpectre(const signalType & inSignal,
         return;
     }
 
-
     const double norm1 = sqrt(fftLength / double(fftLength - Eyes));
-
-//    auto t1 = high_resolution_clock::now();
 #if 0
     const double norm2 = 2. / (def::freq * fftLength);
-
     vector<double> spectre (fftLength * 2, 0.); // can be valarray, but not important
     for(int i = 0; i < fftLength; ++i)
     {
         spectre[ i * 2 ] = inSignal[ i ] * norm1;
     }
     four1(spectre, fftLength, 1);
-
-
     for(int i = 0; i < fftLength / 2; ++i )
     {
         outSpectre[ i ] = (pow(spectre[ i * 2 ], 2) + pow(spectre[ i * 2 + 1 ], 2)) * norm2;
@@ -1921,17 +1915,17 @@ void calcSpectre(const signalType & inSignal,
     const double nrm = 2. / (double(fftLength - Eyes) * def::freq);
     outSpectre = four2(inSignal, fftLength, 1) * nrm;
 #endif
-//    auto t2 = high_resolution_clock::now();
-//    cout << duration_cast<microseconds>(t2-t1).count() << " mcsec" << endl;
+//    outSpectre = pow(four2(inSignal, fftLength, 1) * nrm, powArg);
 
-    const int leftSmoothLimit = 0;
-    const int rightSmoothLimit = fftLength / 2 - 1;
+
 
     //smooth spectre
+    const int leftSmoothLimit = 1;
+    const int rightSmoothLimit = fftLength / 2 - 1;
     double help1, help2;
     for(int a = 0; a < (int)(NumOfSmooth / norm1); ++a)
     {
-        help1 = outSpectre[leftSmoothLimit-1];
+        help1 = outSpectre[leftSmoothLimit - 1];
         for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
         {
             help2 = outSpectre[k];

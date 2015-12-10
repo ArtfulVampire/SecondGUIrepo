@@ -27,7 +27,7 @@ void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
     {
         sp->setSmooth(inSmooth);
     }
-    sp->countSpectra();
+    sp->countSpectraSlot();
     sp->compare();
     sp->psaSlot();
     sp->close();
@@ -636,9 +636,8 @@ void MainWindow::diffSmooth()
     for(int i = 10; i <= 100; i += 10)
     {
         sp = new Spectre();
-        QObject::connect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
         sp->setSmooth(i);
-        sp->countSpectra();
+        sp->countSpectraSlot();
         sp->close();
         delete sp;
 
@@ -675,9 +674,8 @@ void MainWindow::diffPow()
     {
         double i = 0.45;
         sp = new Spectre();
-        QObject::connect(sp, SIGNAL(spValues(int,int, double)), this, SLOT(takeSpValues(int, int, double)));
         sp->setPow(i);
-        sp->countSpectra();
+        sp->countSpectraSlot();
         sp->close();
         delete sp;
 

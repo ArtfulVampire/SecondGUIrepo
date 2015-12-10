@@ -1944,7 +1944,6 @@ void Net::pca()
 
     }
 
-//    pcaMatrix.resizeRows(def::colours.size());
     eigenVectors = matrix::transpose(eigenVectors);
     eigenVectors.resizeRows(3);
 

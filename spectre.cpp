@@ -10,42 +10,31 @@ Spectre::Spectre() :
 
     backupDirPath = def::dir->absolutePath();
 
-    norm = 20.;
-    Eyes = 0;
-
-    QButtonGroup *group2, *group3, *group4;
-
-    group1 = new QButtonGroup;
+    QButtonGroup * group1 = new QButtonGroup;
     group1->addButton(ui->jpgButton);
     group1->addButton(ui->svgButton);
     ui->jpgButton->setChecked(true);
 
-    group2 = new QButtonGroup;
+    QButtonGroup * group2 = new QButtonGroup;
     group2->addButton(ui->spectraRadioButton);
     group2->addButton(ui->brainRateRadioButton);
-//    group2->addButton(ui->phaseDifferenceRadioButton);
     group2->addButton(ui->bayesRadioButton);
     group2->addButton(ui->hilbertsVarRadioButton);
     group2->addButton(ui->d2RadioButton);
-    group2->addButton(ui->rawFourierRadioButton);
     ui->spectraRadioButton->setChecked(true);
 
-    group3 = new QButtonGroup;
+    QButtonGroup * group3 = new QButtonGroup;
     group3->addButton(ui->amplitudeWaveletButton);
     group3->addButton(ui->phaseWaveletButton);
     ui->amplitudeWaveletButton->setChecked(true);
 
-    group4 = new QButtonGroup;
+    QButtonGroup * group4 = new QButtonGroup;
     group4->addButton(ui->grayRadioButton);
     group4->addButton(ui->colourRadioButton);
     ui->colourRadioButton->setChecked(true);
-//    ui->grayRadioButton->setChecked(true);
 
 
     ui->amplitudeWaveletButton->setChecked(true);
-
-
-    paint = new QPainter();
 
     ui->smoothBox->setValue(5);
     ui->smoothBox->setMaximum(500);
@@ -54,8 +43,6 @@ Spectre::Spectre() :
     ui->fftComboBox->addItem("2048");
     ui->fftComboBox->addItem("4096");
     ui->fftComboBox->addItem("8192");
-
-    ui->fftComboBox->setCurrentIndex(3);
 
     ui->progressBar->setValue(0);
 
@@ -69,36 +56,24 @@ Spectre::Spectre() :
     ui->powDoubleSpinBox->setValue(1.0);
     ui->powDoubleSpinBox->setMaximum(2.0);
 
+    ui->leftSpinBox->setMinimum(0);
+    ui->leftSpinBox->setMaximum(1000);
+
+    ui->rightSpinBox->setMinimum(0);
+    ui->rightSpinBox->setMaximum(1000);
+
     ui->MWcheckBox->setChecked(false);
 
-
-
-    rangeLimits = new int * [def::ns];
-    for(int i = 0; i < def::ns; ++i)
+    rangeLimits.resize(def::nsWOM());
+    for(int i = 0; i < def::nsWOM(); ++i)
     {
-        rangeLimits[i] = new int [2];
-        rangeLimits[i][0] = 0;
-        rangeLimits[i][1] = def::spLength(); //generality
+        rangeLimits[i].resize(2);
     }
-
-
-//    browser1 = new QFileDialog(this, tr("Browser1"), def::dir->absolutePath(), "");
-//    browser2 = new QFileDialog(this, tr("Browser2"), def::dir->absolutePath(), "");
-//    browser1->setFilter(QDir::NoDotAndDotDot);
-//    browser2->setFilter(QDir::NoDotAndDotDot);
-//    QObject::connect(ui->inputBroswe, SIGNAL(clicked()), browser1, SLOT(show()));
-//    QObject::connect(browser1, SIGNAL(directoryEntered(QString)), ui->lineEdit_1, SLOT(setText(QString)));
-//    QObject::connect(browser1, SIGNAL(fileSelected(QString)), ui->lineEdit_1, SLOT(setText(QString)));
-
-//    QObject::connect(ui->outputBroswe, SIGNAL(clicked()), browser2, SLOT(show()));
-//    QObject::connect(browser2, SIGNAL(directoryEntered(QString)), ui->lineEdit_2, SLOT(setText(QString)));
-//    QObject::connect(browser2, SIGNAL(fileSelected(QString)), ui->lineEdit_2, SLOT(setText(QString)));
-
 
     QObject::connect(ui->inputBroswe, SIGNAL(clicked()), this, SLOT(inputDirSlot()));
     QObject::connect(ui->outputBroswe, SIGNAL(clicked()), this, SLOT(outputDirSlot()));
 
-    QObject::connect(ui->countButton, SIGNAL(clicked()), this, SLOT(countSpectra()));
+    QObject::connect(ui->countButton, SIGNAL(clicked()), this, SLOT(countSpectraSlot()));
 
     QObject::connect(ui->fftComboBox, SIGNAL(activated(int)), this, SLOT(setFftLengthSlot()));
     QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFftLengthSlot()));
@@ -117,12 +92,20 @@ Spectre::Spectre() :
     QObject::connect(ui->integrateButton, SIGNAL(clicked()), this, SLOT(integrate()));
 
     QObject::connect(ui->waveletsPushButton, SIGNAL(clicked()), this, SLOT(drawWavelets()));
-//    QObject::connect(group1, SIGNAL(buttonClicked(int)), this, SLOT(changePic(int)));
 
     ui->specLabel->installEventFilter(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     ui->fftComboBox->setCurrentText(QString::number(def::fftLength));
+
+
+
+    for(int i = 0; i < def::nsWOM(); ++i)
+    {
+        rangeLimits[i][0] = 0;
+        rangeLimits[i][1] = def::spLength();
+    }
+
 }
 
 void Spectre::defaultState()
@@ -186,13 +169,14 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
     {
         if (event->type() == QEvent::MouseButtonPress)
         {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-            if(fmod(16 * double(mouseEvent->y())/ui->specLabel->height(), 3.) < 0.5)
+            int chanNum;
+            QMouseEvent * mouseEvent = static_cast<QMouseEvent*>(event);
+            if(fmod(16 * double(mouseEvent->y()) / ui->specLabel->height(), 3.) < 0.5)
             {
                 return false;
             }
 
-            if(fmod(16 * double(mouseEvent->x())/ui->specLabel->width(), 3.) < 0.5)
+            if(fmod(16 * double(mouseEvent->x()) / ui->specLabel->width(), 3.) < 0.5)
             {
                 if(mouseEvent->button() == Qt::LeftButton)
                 {
@@ -208,9 +192,10 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
                 return true;
             }
 
-            paint->end();
+            QPixmap pic;
+            QPainter paint;
             pic.load(rangePicPath, 0, Qt::ColorOnly);
-            paint->begin(&pic);
+            paint.begin(&pic);
 
 
             chanNum = findChannel(mouseEvent->x(), mouseEvent->y(), ui->specLabel->size());
@@ -219,71 +204,71 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
             {
 
                 rangeLimits[chanNum][0] = floor((mouseEvent->x()
-                                                 * paint->device()->width()
+                                                 * paint.device()->width()
                                                  / ui->specLabel->width()
                                                  - coords::x[chanNum]
-                                                 * paint->device()->width())
-                                                / (coords::scale * paint->device()->width() )
+                                                 * paint.device()->width())
+                                                / (coords::scale * paint.device()->width() )
                                                 * def::spLength());
 
             }
             if(mouseEvent->button()==Qt::RightButton)
             {
                 rangeLimits[chanNum][1] = ceil((mouseEvent->x()
-                                                * paint->device()->width()
+                                                * paint.device()->width()
                                                 / ui->specLabel->width()
                                                 - coords::x[chanNum]
-                                                * paint->device()->width())
-                                               / (coords::scale * paint->device()->width())
+                                                * paint.device()->width())
+                                               / (coords::scale * paint.device()->width())
                                                * def::spLength());
             }
             for(int i = 0; i < def::ns; ++i)
             {
-                paint->setPen(QPen(QBrush("blue"), 2));
-                paint->drawLine(QPointF(coords::x[i]
-                                        * paint->device()->width()
+                paint.setPen(QPen(QBrush("blue"), 2));
+                paint.drawLine(QPointF(coords::x[i]
+                                        * paint.device()->width()
                                         + rangeLimits[i][0]
                                 * coords::scale
-                                * paint->device()->width()
+                                * paint.device()->width()
                                 / def::spLength(),
 
                                 coords::y[i]
-                                * paint->device()->height()),
+                                * paint.device()->height()),
 
                         QPointF(coords::x[i]
-                                * paint->device()->width()
+                                * paint.device()->width()
                                 + rangeLimits[i][0]
                         * coords::scale
-                        * paint->device()->width()
+                        * paint.device()->width()
                         / def::spLength(),
 
                         coords::y[i]
-                        * paint->device()->height()
+                        * paint.device()->height()
                         - coords::scale
-                        * paint->device()->height()));
+                        * paint.device()->height()));
 
-                paint->setPen(QPen(QBrush("red"), 2));
-                paint->drawLine(QPointF(coords::x[i]
-                                        * paint->device()->width()
+                paint.setPen(QPen(QBrush("red"), 2));
+                paint.drawLine(QPointF(coords::x[i]
+                                        * paint.device()->width()
                                         + rangeLimits[i][1]
                                 * coords::scale
-                                * paint->device()->width()
+                                * paint.device()->width()
                                 / def::spLength(),
 
                                 coords::y[i]
-                                * paint->device()->height()),
+                                * paint.device()->height()),
 
                         QPointF(coords::x[i]
-                                * paint->device()->width()
+                                * paint.device()->width()
                                 + rangeLimits[i][1]
                         * coords::scale
-                        * paint->device()->width()
+                        * paint.device()->width()
                         / def::spLength(),
 
                         coords::y[i]
-                        * paint->device()->height()
+                        * paint.device()->height()
                         - coords::scale
-                        * paint->device()->height()));
+                        * paint.device()->height()));
             }
             ui->specLabel->setPixmap(pic.scaled(ui->specLabel->size()));
 
@@ -394,7 +379,6 @@ void Spectre::psaSlot()
         drawData.push_back(tempVec);
     }
 
-
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
                                           + slash() + def::ExpName + "_all.jpg");
@@ -410,15 +394,35 @@ void Spectre::psaSlot()
     {
         drawTemplate(helpString);
 
+        vector<QColor> colors;
+        if(ui->colourRadioButton->isChecked())
+        {
+            colors = def::colours;
+        }
+        else if(ui->grayRadioButton->isChecked())
+        {
+            for(int i = 0; i < def::numOfClasses(); ++i)
+            {
+//                colors.push_back(QColor(255. * i / def::numOfClasses(),
+//                                        255. * i / def::numOfClasses(),
+//                                        255. * i / def::numOfClasses()));
+                colors.push_back(QColor(255. * (def::numOfClasses() - i) / def::numOfClasses(),
+                                        255. * (def::numOfClasses() - i) / def::numOfClasses(),
+                                        255. * (def::numOfClasses() - i) / def::numOfClasses()));
+            }
+        }
+
         def::drawNorm = drawArrays(helpString,
                                    drawData,
                                    false,
                                    def::drawNormTyp,
-                                   def::drawNorm);
+                                   def::drawNorm,
+                                   colors);
         if(ui->MWcheckBox->isChecked())
         {
             drawMannWitney(helpString,
-                           MW);
+                           MW,
+                           colors);
         }
     }
     else if(def::OssadtchiFlag)
@@ -434,8 +438,10 @@ void Spectre::psaSlot()
     const int tmp = ui->fftComboBox->currentIndex();
     const int toC = (tmp == 0) ? 1 : 0;
 
+    cout << 1 << endl;
     ui->fftComboBox->setCurrentIndex(toC);
     ui->fftComboBox->setCurrentIndex(tmp);
+    cout << 2 << endl;
 
 
     cout << "psaSlot: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
@@ -508,12 +514,6 @@ void Spectre::setFftLengthSlot()
 {
     def::fftLength = ui->fftComboBox->currentText().toInt();
 
-    ui->leftSpinBox->setMinimum(0);
-    ui->leftSpinBox->setMaximum(1000);
-
-    ui->rightSpinBox->setMinimum(0);
-    ui->rightSpinBox->setMaximum(1000);
-
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                                   + slash() +"Realisations");
     ui->lineEdit_1->setText(helpString);
@@ -536,34 +536,30 @@ void Spectre::setFftLengthSlot()
                                               + slash() + "windows");
         ui->lineEdit_2->setText(helpString);
     }
-    if(ui->fftComboBox->currentIndex() == 1) //2048
+    else if(ui->fftComboBox->currentIndex() == 1) //2048
     {
         ui->smoothBox->setValue(10);
     }
-    if(ui->fftComboBox->currentIndex() == 2) //4096
+    else if(ui->fftComboBox->currentIndex() == 2) //4096
     {
 //        ui->smoothBox->setValue(10);
         ui->smoothBox->setValue(15);
     }
-    if(ui->fftComboBox->currentIndex() == 3) //8192
+    else if(ui->fftComboBox->currentIndex() == 3) //8192
     {
         ui->smoothBox->setValue(15);
     }
 
-    // [left right)
-//    def::left = fftLimit(def::leftFreq, def::freq, def::fftLength);
-//    def::right = fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;
-//    def::spLength() = def::right - def::left;
-//    def::spStep = def::freq / def::fftLength;
-
     ui->leftSpinBox->setValue(def::left());
     ui->rightSpinBox->setValue(def::right());
 
-    for(int i = 0; i < def::ns; ++i)
+
+    for(int i = 0; i < def::nsWOM(); ++i)
     {
         rangeLimits[i][0] = 0;
         rangeLimits[i][1] = def::spLength();
     }
+//    cout << def::spLength() << endl;
 
 }
 
@@ -619,8 +615,9 @@ void Spectre::setSmooth(int a)
 
 void Spectre::setRight()
 {
-    QString helpString = QString::number(ui->rightSpinBox->value() * def::spStep());
-    ui->rightHzEdit->setText(helpString);
+    /// -1 to compensate +1 in def::right()
+    def::rightFreq = (ui->rightSpinBox->value() - 1) * def::spStep();
+    ui->rightHzEdit->setText(QString::number(def::rightFreq));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         rangeLimits[i][1] = def::spLength();
@@ -629,57 +626,41 @@ void Spectre::setRight()
 
 void Spectre::setLeft()
 {
-    QString helpString = QString::number(ui->leftSpinBox->value() * def::spStep());
-    ui->leftHzEdit->setText(helpString);
+    def::leftFreq = ui->leftSpinBox->value() * def::spStep();
+    ui->leftHzEdit->setText(QString::number(def::leftFreq));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         rangeLimits[i][1] = def::spLength();
     }
 }
 
-void Spectre::countSpectra()
+
+void Spectre::writeSpectra(const int leftFreq,
+                           const int rightFreq,
+                           const bool rangeLimitCheck)
 {
     QTime myTime;
     myTime.start();
 
-
-    const QString inDirPath = ui->lineEdit_1->text();
-    const QString outDirPath = ui->lineEdit_2->text();
-    QStringList lst;
-    makeFullFileList(inDirPath, lst, {"_test"});
-//    makeFullFileList(inDirPath, lst);
-
-    double sum1 = 0.;
-    double sum2 = 0.;
     ofstream outStream;
-
-    matrix dataFFT(def::ns, def::fftLength / 2, 0.);
-    matrix dataIn;
-
-    lineType tempVec;
-    int numOfIntervals = 20;
     QString helpString;
-    int NumOfSlices;
+    const QString outDirPath = ui->lineEdit_2->text();
 
-    for(auto it = lst.begin(); it != lst.end(); ++it)
+    const int left = fftLimit(leftFreq);
+    const int right = fftLimit(rightFreq) + 1;
+
+//    cout << leftFreq << '\t' << rightFreq << endl;
+//    cout << left << '\t' << right << endl;
+//    for(int i = 0; i < def::nsWOM(); ++i)
+//    {
+//        cout << rangeLimits[i][0] << '\t' << rangeLimits[i][1] << endl;
+//    }
+
+
+    for(int i = 0; i < fileNames.size(); ++i)
     {
-        const QString & fileName = (*it);
-        if(fileName.contains("_num") || fileName.contains("_300") || fileName.contains("_sht")) continue;
+        helpString = outDirPath + slash() + fileNames[i];
 
-        //read data file
-        helpString = QDir::toNativeSeparators(inDirPath
-                                              + slash() + fileName);
-//        cout << "dataFile: " << helpString << endl;
-
-
-        readPlainData(helpString,
-                      dataIn,
-                      def::ns,
-                      NumOfSlices);
-
-        helpString = QDir::toNativeSeparators(outDirPath
-                                              + slash() + fileName);
-//        cout << "outFile: " << helpString << endl;
         outStream.open(helpString.toStdString());
         if(!outStream.good())
         {
@@ -687,205 +668,157 @@ void Spectre::countSpectra()
             continue;
         }
 
-        if(ui->brainRateRadioButton->isChecked() || ui->spectraRadioButton->isChecked())
+        if(ui->spectraRadioButton->isChecked())
         {
-            if(!countOneSpectre(dataIn, dataFFT))
+            if(rangeLimitCheck)
             {
-//                cout << "countOneSpectre: too many eyes " << fileName << endl;
-                outStream.close();
-                helpString = QDir::toNativeSeparators(outDirPath
-                                                      + slash()
-                                                      + fileName);
-                QFile::remove(helpString);
-                continue;
-            }
-
-            if(ui->spectraRadioButton->isChecked())
-            {
-                // write spectra
-                for(int i = 0; i < def::nsWOM(); ++i) //
+                for(int j = 0; j < def::nsWOM(); ++j) //
                 {
-                    for(int k = def::left(); k < def::right(); ++k) // [left, right)
+                    for(int k = left; k < right; ++k) // [left, right)
                     {
-                        if((k - def::left()) >= rangeLimits[i][0] && (k - def::left()) <= rangeLimits[i][1])
-                            outStream << dataFFT[i][k] << '\n';
+                        if((k - def::left()) >= rangeLimits[j][0] &&
+                           (k - def::left()) <= rangeLimits[j][1])
+                            outStream << dataFFT[i][j][k] << '\n';
                         else
                             outStream << "0.000" << '\n';
                     }
                     outStream << '\n';
                 }
             }
-            else if(ui->brainRateRadioButton->isChecked())
+            else
             {
-                // write brainRate
-                for(int i = 0; i < def::nsWOM(); ++i)
+                for(int j = 0; j < def::nsWOM(); ++j) //
                 {
-                    sum1 = 0.;
-                    sum2 = 0.;
-                    for(int j = def::left(); j < def::right(); ++j)
+                    for(int k = left; k < right; ++k) // [left, right)
                     {
-                        sum1 += dataFFT[i][j];
-                        sum2 += dataFFT[i][j] * (j * def::spStep());
+                        outStream << dataFFT[i][j][k] << '\n';
                     }
-                    sum2 /= sum1;
-                    outStream << sum2 << '\n';
+                    outStream << '\n';
                 }
             }
         }
-//        else if(ui->phaseDifferenceRadioButton->isChecked())
-//        {
-//            if(!readFilePhase(dataIn, dataPhase))
-//            {
-//                outStream.close();
-//                helpString=QDir::toNativeSeparators(outDirPath + slash() + fileName);  /////separator
-//                remove(helpString.toStdString().c_str());
-//                continue;
-//            }
+        outStream.close();
+    }
 
-//            // write spectra
-//            for(int i = 0; i < ns; ++i)                               ///save BY CHANNELS!!!  except markers
-//            {
-//                for(int j = i+1; j < ns; ++j)
-//                {
-//                    for(int k=left; k<right+1; ++k)
-//                    {
-//                        if((k-left)>=rangeLimits[i][0] && (k-left)<=rangeLimits[i][1])
-//                        {
-//                            outStream << dataPhase[i][j][k] << '\n';
-//                        }
-//                        else
-//                            outStream << "0.000\n";
-//                    }
-//                    outStream << '\n';
-//                }
-//            }
-//        }
+    cout << "writeSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+}
+
+void Spectre::countSpectraSlot()
+{
+    QTime myTime;
+    myTime.start();
+
+
+    const QString inDirPath = ui->lineEdit_1->text();
+    QStringList lst;
+//    makeFullFileList(inDirPath, lst, {"_test"});
+    makeFullFileList(inDirPath, lst);
+    const int numFiles = lst.length();
+
+    matrix dataIn;
+    QString helpString;
+    int NumOfSlices;
+
+    dataFFT.resize(numFiles);
+    for(matrix & datum : dataFFT)
+    {
+        datum.resize(def::ns, def::fftLength / 2, 0.);
+    }
+
+    fileNames.resize(numFiles);
+    std::copy(begin(lst), end(lst), fileNames.begin());
+
+//    matrix tempMat(def::nsWOM(), def::fftLength / 2);
+
+    int cnt = 0;
+    vector<int> exIndices;
+    for(int i = 0; i < numFiles; ++i)
+    {
+        const QString & fileName = fileNames[i];
+        if(fileName.contains("_num") || fileName.contains("_300") || fileName.contains("_sht")) continue;
+
+        //read data file
+        helpString = QDir::toNativeSeparators(inDirPath
+                                              + slash() + fileName);
+        readPlainData(helpString,
+                      dataIn,
+                      def::ns,
+                      NumOfSlices);
+
+
+
+        if(ui->brainRateRadioButton->isChecked() || ui->spectraRadioButton->isChecked())
+        {
+            if(countOneSpectre(dataIn, dataFFT[cnt]))
+            {
+                ++cnt;
+            }
+            else
+            {
+                exIndices.push_back(i);
+            }
+
+
+#if 0
+            else if(ui->brainRateRadioButton->isChecked())
+            {
+                // write brainRate
+                for(int j = 0; j < def::nsWOM(); ++j)
+                {
+                    double sum1 = 0.;
+                    double sum2 = 0.;
+                    for(int k = def::left(); k < def::right(); ++k)
+                    {
+                        sum1 += dataFFT[i][j][k];
+                        sum2 += dataFFT[i][j][k] * (k * def::spStep());
+                    }
+                    sum2 /= sum1; /// sum2 is the result
+                }
+            }
+#endif
+        }
         else if(ui->hilbertsVarRadioButton->isChecked())
         {
-            QMessageBox::critical(this, tr("error"), tr("look at code, fix split zeros"), QMessageBox::Ok);
-//            splitZeros(&dataIn, ns, def::fftLength, &NumOfSlices);
+            QMessageBox::critical(this,
+                                  tr("error"),
+                                  tr("look at code, fix split zeros"),
+                                  QMessageBox::Ok);
             return;
-
-            for(int i = 0; i < def::ns; ++i)
-            {
-//                hilbert(dataIn[i], def::fftLength, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, helpString);
-
-                /// REMAKE with matrix
-                tempVec = hilbert(dataIn[i], 8., 12., "");
-                ///
-
-//                cout << fileName.toStdString() << "\tNumSlice = " << NumOfSlices << "\t" << mean(tempVec, NumOfSlices) << endl;
-//                outStream << variance(tempVec, def::fftLength) << '\n';
-                outStream << mean(tempVec, NumOfSlices) << '\n';
-//                hilbertPieces(dataIn[i], NumOfSlices, def::freq, ui->leftHzEdit->text().toDouble(), ui->rightHzEdit->text().toDouble(), &tempVec, "");
-//                outStream << variance(dataIn[i], NumOfSlices) << '\n';
-            }
         }
         else if(ui->bayesRadioButton->isChecked())
         {
             //clean from zeros
-            QMessageBox::critical(this, tr("error"), tr("look at code, fix split zeros"), QMessageBox::Ok);
-//            splitZeros(&dataIn, ns, def::fftLength, &NumOfSlices);
+            QMessageBox::critical(this,
+                                  tr("error"),
+                                  tr("look at code, fix split zeros"),
+                                  QMessageBox::Ok);
             return;
-
-            for(int i = 0; i < def::ns; ++i)
-            {
-
-                /// Reamke with matrix
-                tempVec = bayesCount(dataIn[i], numOfIntervals);
-                ///
-
-                for(int j = 0; j < numOfIntervals; ++j)
-                {
-                    outStream << tempVec[j] << '\n';
-                }
-                outStream << '\n';
-            }
-
         }
         else if(ui->d2RadioButton->isChecked())
         {
-            splitZerosEdges(dataIn, def::ns, def::fftLength, &NumOfSlices);
-            for(int i = 0; i < def::ns; ++i)
-            {
-                outStream << fractalDimension(dataIn[i]) << '\n';
-            }
+//            splitZerosEdges(dataIn, def::ns, def::fftLength, &NumOfSlices);
+//            for(int i = 0; i < def::ns; ++i)
+//            {
+//                outStream << fractalDimension(dataIn[i]) << '\n';
+//            }
         }
-        else if(ui->rawFourierRadioButton->isChecked())
-        {
-            Eyes = 0;
-            NumOfSlices = def::fftLength;
-            int h = 0;
-            for(int i = 0; i < def::fftLength; ++i)
-            {
-                h = 0;
-                for(int j = 0; j < def::ns; ++j)
-                {
-                    if(fabs(dataIn[j][i]) <= 0.125) ++h;
-                }
-                if(h == def::ns) Eyes += 1;
-            }
-
-            if(def::fftLength == 4096 && (NumOfSlices-Eyes) < 250*3.) // 0.2*4096/250 = 3.1 sec
-            {
-//                cout << a << "'th file too short" << endl;
-            }
-            else if(def::fftLength == 1024 && (NumOfSlices-Eyes) < 250*2.)
-            {
-//                cout << a << "'th file too short" << endl;
-            }
-            else if(def::fftLength == 2048 && (NumOfSlices-Eyes) < 250*3.)
-            {
-//                cout << a << "'th file too short" << endl;
-            }
-
-            /// mat vs matrix
-//            calcRawFFT(dataIn, dataFFT, def::ns, def::fftLength, Eyes, ui->smoothBox->value());
-
-            for(int i = 0; i < def::ns; ++i)                               ///save BY CHANNELS!!!  except markers
-            {
-                for(int k = 2 * def::left(); k <= 2 * def::right(); ++k)
-                {
-                    outStream << dataFFT[i][k] << '\n';
-                }
-                outStream << '\n';
-            }
-
-        }
-
-        outStream.close();
-
-
-        ui->progressBar->setValue((std::distance(lst.begin(), it) + 1)
-                                  * 100. / lst.length());
+        ui->progressBar->setValue(i * 100. / numFiles);
         qApp->processEvents();
     }
+    eraseItems(fileNames, exIndices);
 
-    if(ui->bayesRadioButton->isChecked())
-    {
-        ui->leftSpinBox->setValue(1);
-        ui->rightSpinBox->setValue(numOfIntervals);
-    }
-    else if(ui->d2RadioButton->isChecked() || ui->brainRateRadioButton->isChecked() || ui->hilbertsVarRadioButton->isChecked())
-    {
-        ui->leftSpinBox->setValue(1);
-        ui->rightSpinBox->setValue(1);
-    }
-    else if(ui->rawFourierRadioButton->isChecked())
-    {
-        ui->leftSpinBox->setValue(def::left() * 2);
-        ui->rightSpinBox->setValue(def::right() * 2);
-    }
     ui->progressBar->setValue(0);
 
-    ui->lineEdit_1->setText(ui->lineEdit_2->text());
-    ui->lineEdit_2->setText(def::dir->absolutePath() + slash() + "Help");
 
     //generality
     cout << "countSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    writeSpectra();
+
+    ui->lineEdit_1->setText(ui->lineEdit_2->text());
+    ui->lineEdit_2->setText(def::dir->absolutePath() + slash() + "Help");
 }
 
-bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
+bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
 {
     //correct Eyes number and dataLen
     int Eyes = 0;
@@ -921,7 +854,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
     }
 
     //generality
-    if(def::fftLength - Eyes < def::freq * 2.5) // real signal less than 2.5 seconds
+    if(def::fftLength - Eyes < def::freq * 2.8) // real signal less than 2.5 seconds
     {
         return false;
     }
@@ -929,7 +862,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
     for(int i = 0; i < data2.rows(); ++i)
     {
         calcSpectre(data2[i],
-                    dataFFT[i],
+                    outData[i],
                     def::fftLength,
                     ui->smoothBox->value(),
                     Eyes);
@@ -940,6 +873,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & dataFFT)
 
 int Spectre::readFilePhase(double ** data2, double ***dataPhase)
 {
+#if 0
         int h = 0;
 
         def::dir->cd(ui->lineEdit_1->text());
@@ -1032,6 +966,7 @@ int Spectre::readFilePhase(double ** data2, double ***dataPhase)
         delete []help;
         def::dir->cd(backupDirPath);
         return 1;
+#endif
 }
 
 void Spectre::drawWavelets()

@@ -12,18 +12,12 @@ MainWindow::MainWindow() :
     redirectCoutFlag = false; // move to namespace def
     coutBuf = cout.rdbuf();
 
-    // [left right)
-
-
-
     staSlice = 0;
     stopFlag = 0;
 
     def::dir->cd(QDir::root().absolutePath());
 
     NumOfEdf = 0; //for EDF cut
-
-
     // must reamake with std::string or QString
 //    label = new char* [MAXNS];     //memory for channels' labels
 //    for(int i = 0; i < MAXNS; ++i)
@@ -1733,12 +1727,14 @@ void MainWindow::setNsSlot(int a)
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
+
+    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+//    sliceAll();
 //    GalyaCut(def::GalyaFolder + "/8dec");
 //    exit(0);
-//    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-//    countSpectraSimple(4096, 15);
+    countSpectraSimple(4096, 15);
 //    return;
-//    exit(0);
+    exit(0);
 
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");

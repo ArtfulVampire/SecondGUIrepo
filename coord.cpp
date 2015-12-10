@@ -1,12 +1,10 @@
 #include "coord.h"
-#include "library.h"
 
 namespace def
 {
 // assigned in readData, reduce channels, etc
 int ns = 20;
 
-// assigned in mainwindow.cpp
 int right() {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}
 int left()  {return fftLimit(def::leftFreq, def::freq, def::fftLength);}
 
@@ -26,7 +24,11 @@ spectraGraphsNormalization drawNormTyp = spectraGraphsNormalization::all;
 QString ExpName;
 QDir * dir = new QDir();
 
-QStringList colours{"blue", "red", "green", "black", "gray"};
+std::vector<QColor> colours {QColor("blue"),
+            QColor("red"),
+            QColor("green"),
+            QColor("black"),
+            QColor("gray")};
 QStringList fileMarkers{"_241", "_247", "_254 _244"};
 //QStringList fileMarkers{"train*_241", "train*_247", "train*_254 train*_244"};
 //QStringList fileMarkers{"_241", "_247"};
