@@ -704,8 +704,62 @@ cout << "spLength = " << def::spLength() << endl;
 
     cout << "writeSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
 }
-
 void Spectre::countSpectraSlot()
+{
+    countSpectra();
+    writeSpectra();
+
+    /// if clean
+    cleanSpectra(); // using mann-whitney
+
+    ui->lineEdit_1->setText(ui->lineEdit_2->text());
+    ui->lineEdit_2->setText(def::dir->absolutePath() + slash() + "Help");
+}
+
+void Spectre::cleanSpectra()
+{
+    QTime myTime;
+    myTime.start();
+
+
+    cout << ui->lineEdit_2->text() << endl;
+    trivector<int> MW;
+    countMannWhitney(MW,
+                     ui->lineEdit_2->text()); // SpectraSmooth
+    int num;
+    int cnt = 0;
+    for(int k = 0; k < def::spLength() * def::nsWOM(); ++k)
+    {
+//        cout << "spPoint = " << k << endl;
+        num = 0;
+        for(int i = 0; i < def::numOfClasses(); ++i)
+        {
+            for(int j = i + 1; j < def::numOfClasses(); ++j)
+            {
+                if(MW[i][j - i][k] != 0)
+                {
+                    ++num;
+                }
+            }
+        }
+        if(num < 2)
+        {
+            for(matrix & sp : dataFFT)
+            {
+                sp[k / def::spLength()][k % def::spLength()] = 0.;
+            }
+            ++cnt;
+        }
+        num = 0;
+    }
+    cout << "cleanSpectra: num of zeroed points = " << cnt << endl;
+    ui->lineEdit_2->setText(ui->lineEdit_2->text() + slash() + "Clean");
+    writeSpectra();
+    cout << "cleanSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+
+}
+
+void Spectre::countSpectra()
 {
     QTime myTime;
     myTime.start();
@@ -729,8 +783,6 @@ void Spectre::countSpectraSlot()
 
     fileNames.resize(numFiles);
     std::copy(begin(lst), end(lst), fileNames.begin());
-
-//    matrix tempMat(def::nsWOM(), def::fftLength / 2);
 
     int cnt = 0;
     vector<int> exIndices;
@@ -807,17 +859,16 @@ void Spectre::countSpectraSlot()
         ui->progressBar->setValue(i * 100. / numFiles);
         qApp->processEvents();
     }
+
     eraseItems(fileNames, exIndices);
+    dataFFT.resize(cnt);
 
     ui->progressBar->setValue(0);
 
 
     //generality
     cout << "countSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
-    writeSpectra();
 
-//    ui->lineEdit_1->setText(ui->lineEdit_2->text());
-//    ui->lineEdit_2->setText(def::dir->absolutePath() + slash() + "Help");
 }
 
 bool Spectre::countOneSpectre(matrix & data2, matrix & outData)

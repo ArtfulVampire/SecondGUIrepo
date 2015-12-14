@@ -1493,7 +1493,11 @@ void Net::loadData(const QString & spectraPath,
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         sigmaVector[i] = sigma(dataMatrix[i]);
-        dataMatrix[i] /= sigmaVector[i] * loadDataNorm; // to equal variance, 10 for reals, 5 winds
+        if(sigmaVector[i] != 0.)
+        {
+            // to equal variance, 10 for reals, 5 winds
+            dataMatrix[i] /= sigmaVector[i] * loadDataNorm;
+        }
     }
     dataMatrix.transpose();
 #endif

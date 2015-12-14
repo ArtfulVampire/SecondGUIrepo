@@ -24,17 +24,21 @@ class Spectre : public QWidget
 public:
     explicit Spectre();
     ~Spectre();
-    bool countOneSpectre(matrix & data2,
-                         matrix & dataFFT);
     void setSmooth(int);
     bool eventFilter(QObject *obj, QEvent *event);
     int readFilePhase(double **data2, double ***dataPhase);
     void defaultState();
     void setPow(double);
     void setFftLength(int);
+
     void writeSpectra(const double leftFreq = def::leftFreq,
                       const double rightFreq = def::rightFreq,
                       const bool rangeLimitCheck = true);
+
+    void countSpectra();
+    bool countOneSpectre(matrix & data2,
+                         matrix & dataFFT);
+    void cleanSpectra();
 
 
 public slots:

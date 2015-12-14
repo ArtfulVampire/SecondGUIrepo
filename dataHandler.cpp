@@ -22,9 +22,8 @@ void readFileInLine(const QString & filePath,
         // test
         if(num > def::spLength() * def::nsWOM())
         {
-            cout << "readFileInLine: too long file" << endl;
+            cout << "readFileInLine: too long file, but proceed" << endl;
         }
-
         ++num;
     }
     outData.pop_back(); ///// prevent doubling last item (eof) bicycle

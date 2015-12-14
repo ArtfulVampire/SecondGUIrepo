@@ -53,8 +53,10 @@ void four1(double * dataF, int nn, int isign)
         istep = mmax << 1; //istep = mmax * 2;
         theta = isign * (2 * pi / mmax);
         wtemp = sin(0.5 * theta);
+
         wpr = - 2.0 * wtemp * wtemp;
         wpi = sin(theta);
+
         wr = 1.0;
         wi = 0.0;
         for(m = 1; m < mmax; m += 2)
@@ -63,12 +65,15 @@ void four1(double * dataF, int nn, int isign)
             {
                 j = i + mmax;
 
+                // tempCompl = wCompl * dataFCompl[j/2]
                 tempr = wr * dataF[j] - wi * dataF[j + 1];
                 tempi = wr * dataF[j + 1] + wi * dataF[j];
 
+                // dataFCompl[j/2] = dataFCompl[i/2] - tempCompl
                 dataF[j] = dataF[i] - tempr;
                 dataF[j + 1] = dataF[i + 1] - tempi;
 
+                // dataFCompl[i/2] += tempCompl
                 dataF[i] += tempr;
                 dataF[i + 1] += tempi;
             }
@@ -527,17 +532,17 @@ void countMannWhitney(trivector<int> & outMW,
     QString helpString;
     const QDir dir_(spectraPath);
     vector<QStringList> lst; //0 - Spatial, 1 - Verbal, 2 - Rest
-    matrix spectra[numOfClasses];
+    vector<matrix> spectra(numOfClasses);
 
     matrix averageSpectra(numOfClasses, NetLength, 0);
     matrix distances(numOfClasses, numOfClasses, 0);
 
+    makeFileLists(spectraPath, lst);
+
     for(int i = 0; i < numOfClasses; ++i)
     {
-        makeFileLists(spectraPath, lst);
-
         spectra[i].resize(lst[i].length());
-        for(int j = 0; j < lst[i].length(); ++j)
+        for(int j = 0; j < lst[i].length(); ++j) /// remake : lst[i]
         {
             helpString = dir_.absolutePath() + slash() + lst[i][j];
             readFileInLine(helpString, spectra[i][j]);

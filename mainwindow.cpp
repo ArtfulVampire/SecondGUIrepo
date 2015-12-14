@@ -581,6 +581,7 @@ void MainWindow::setEdfFile(QString const &filePath)
     def::dir->mkdir("SpectraSmooth/windows");
     def::dir->mkdir("SpectraSmooth/Bayes");
     def::dir->mkdir("SpectraSmooth/PCA");
+    def::dir->mkdir("SpectraSmooth/Clean");
     def::dir->mkdir("windows");
     def::dir->mkdir("windows/fromreal");
     def::dir->mkdir("Realisations");
@@ -1729,13 +1730,7 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
 
-
-//    exit(1);
-//    sliceAll();
-//    GalyaCut(def::GalyaFolder + "/8dec");
-//    exit(0);
-//    countSpectraSimple(4096, 15);
-//    return;
+//    GalyaCut(def::GalyaFolder + "/12dec1new");
 //    exit(0);
 
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
@@ -1749,6 +1744,7 @@ void MainWindow::customFunc()
         for(QString suffix : {"_train", "_test"})
         {
             setEdfFile(path + name + suffix + ".edf");
+            readData();
             cleanDirs();
             sliceAll();
 
@@ -1761,6 +1757,17 @@ void MainWindow::customFunc()
             amn->setSource("r");
 
                 amn->setMode("N");
+
+                amn->autoClassification(def::dir->absolutePath()
+                                        + slash() + "SpectraSmooth"
+                                        + slash() + "Clean");
+                cleanDir(def::dir->absolutePath()
+                         + slash() + "SpectraSmooth"
+                         + slash() + "Clean");
+
+                delete sp;
+                delete amn;
+                continue;
 //            amn->setMode("cros");
 //            amn->setFold(4);
 //            amn->setNumOfPairs(15);
@@ -1785,6 +1792,7 @@ void MainWindow::customFunc()
             delete sp;
             delete amn;
         }
+//        exit(0);
         continue;
 #endif
 #if 0
