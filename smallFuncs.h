@@ -40,12 +40,17 @@ inline double logistic(const double & x, const double & t = 10.)
     return 1. / ( 1. + exp(-x/t) );
 }
 
-std::valarray<double> softmax(const std::valarray<double> & in)
+inline std::valarray<double> logistic(const std::valarray<double> & in, double temp)
+{
+    return 1. / (1. + exp(-in / temp));
+}
+
+inline std::valarray<double> softmax(const std::valarray<double> & in, double temp = 0)
 {
     // -1 for bias
     double sum = std::accumulate(begin(in), end(in) - 1, 0.,
                                  [](double init, double val){return init + exp(val);});
-    return exp(in) / sum;
+    return exp(in) / sum; // dont care about the last
 
 }
 

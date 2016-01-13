@@ -709,8 +709,11 @@ void Spectre::countSpectraSlot()
     countSpectra();
     writeSpectra();
 
+
+#if 0
     /// if clean
     cleanSpectra(); // using mann-whitney
+#endif
 
     ui->lineEdit_1->setText(ui->lineEdit_2->text());
     ui->lineEdit_2->setText(def::dir->absolutePath() + slash() + "Help");

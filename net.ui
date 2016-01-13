@@ -276,10 +276,10 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="testAllButton">
+    <item row="2" column="0">
+     <widget class="QPushButton" name="learnButton">
       <property name="text">
-       <string>Test All</string>
+       <string>Learn</string>
       </property>
      </widget>
     </item>
@@ -290,10 +290,10 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QPushButton" name="learnButton">
+    <item row="1" column="2">
+     <widget class="QPushButton" name="testAllButton">
       <property name="text">
-       <string>Learn</string>
+       <string>Test All</string>
       </property>
      </widget>
     </item>
@@ -543,6 +543,24 @@
          </widget>
         </item>
        </layout>
+      </item>
+     </layout>
+    </item>
+    <item row="4" column="1">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <widget class="QRadioButton" name="logisticRadioButton">
+        <property name="text">
+         <string>logistic</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="softmaxRadioButton">
+        <property name="text">
+         <string>softmax</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

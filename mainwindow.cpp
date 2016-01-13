@@ -1730,7 +1730,56 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
 
-//    GalyaCut(def::GalyaFolder + "/12dec1new");
+    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
+
+
+
+
+
+    const QString workPath = "/media/Files/Data/AAX";
+    const QString fileName = "AAX_rr_f_new.edf";
+    const int fftLen = 4096;
+    const QString mode = "N";
+    const int NumOfPairs = 1;
+
+    QString helpString = workPath;
+    if(!workPath.endsWith(slash()))
+    {
+        helpString += slash();
+    }
+    helpString += fileName;
+    setEdfFile(helpString);
+    cleanDirs();
+    sliceAll();
+
+    countSpectraSimple(fftLen);
+
+    Net * ANN = new Net();
+    ANN->setMode(mode);
+    ANN->setSource("real");
+
+    ANN->setAutoProcessingFlag(true);
+    ANN->setNumOfPairs(NumOfPairs);
+
+    ofstream ou;
+    ou.open((workPath + "/softmaxErrCrit.txt").toStdString());
+
+//    for(QString act : {"soft", "log"})
+//    {
+        ANN->setActFunc("soft");
+        for(double err : {0.005, 0.004, 0.003, 0.002, 0.001})
+        {
+            ANN->setErrCrit(err);
+            ANN->autoClassificationSimple();
+            ou << err << "\t" << ANN->getAverageAccuracy() << "\t" << ANN->getKappa() << endl;
+        }
+//    }
+    delete ANN;
+    ou.close();
+    exit(1);
+
+
+//    GalyaProcessing(def::GalyaFolder + "/TestKid");
 //    exit(0);
 
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";

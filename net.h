@@ -39,7 +39,10 @@ class Net : public QWidget
 private:
     Ui::Net * ui;
 
-    QButtonGroup  * group1,  * group2,  * group3;
+    QButtonGroup  * group1;
+    QButtonGroup  * group2;
+    QButtonGroup  * group3;
+    QButtonGroup  * group4;
 
     matrix dataMatrix; // biases and types separately
     vector<int> types;
@@ -90,6 +93,7 @@ public:
                             vector<int> & tallInd,
                             vector<vector<int> > & arr,
                             const int numOfFold);
+    std::valarray<double> (*activation)(const std::valarray<double> & in, double temp) = softmax;
     void autoClassification(const QString & spectraDir);
     void averageClassification();
 
@@ -104,6 +108,7 @@ public:
     void setErrCrit(double in);
     void setNumOfPairs(int num);
     void setMode(const QString & in);
+    void setActFunc(const QString & in);
     void setSource(const QString & in);
     void setFold(int in);
     void setTallCleanFlag(bool in);
@@ -188,6 +193,7 @@ public slots:
     void testDistances();
     void optimizeChannelsSet();
     void adjustParamsGroup2(QAbstractButton*);
+    void setActFuncSlot(QAbstractButton*);
 
 
 

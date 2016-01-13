@@ -37,6 +37,11 @@ Net::Net() :
     group3->addButton(ui->deltaRadioButton);
     group3->addButton(ui->backpropRadioButton);
     group3->addButton(ui->deepBeliefRadioButton);
+    group4 = new QButtonGroup();
+    group4->addButton(ui->logisticRadioButton);
+    group4->addButton(ui->softmaxRadioButton);
+
+    ui->softmaxRadioButton->setChecked(true); /// activation
 
     ui->crossRadioButton->setChecked(true); /// k-fold
     ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
@@ -179,6 +184,7 @@ Net::Net() :
     QObject::connect(ui->optimizeChannelsPushButton, SIGNAL(clicked()), this, SLOT(optimizeChannelsSet()));
 
     QObject::connect(group2, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(adjustParamsGroup2(QAbstractButton*)));
+    QObject::connect(group4, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setActFuncSlot(QAbstractButton*)));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     aaDefaultSettings();
@@ -189,27 +195,33 @@ void Net::aaDefaultSettings()
     ui->deltaRadioButton->setChecked(true);
 
     /// mode
-//    ui->crossRadioButton->setChecked(true); /// k-fold
-    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
+    ui->crossRadioButton->setChecked(true); /// k-fold
+//    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
 //    ui->trainTestRadioButton->setChecked(true); /// train-test
 
     /// source
-    //    ui->realsRadioButton->setChecked(true); /// reals
-        ui->windowsRadioButton->setChecked(true); /// windows
+        ui->realsRadioButton->setChecked(true); /// reals
+//        ui->windowsRadioButton->setChecked(true); /// windows
     //    ui->pcaRadioButton->setChecked(true); /// PCA
 
-    ui->highLimitSpinBox->setValue(150); /// highLimit
-    ui->lowLimitSpinBox->setValue(80);  /// lowLimit
+    /// activation
+//    ui->logisticRadioButton->setChecked(true);
+//    ui->softmaxRadioButton->setChecked(true);
+//    activation = softmax;
+//    activation = logistic;
+
+    ui->highLimitSpinBox->setValue(120); /// highLimit
+    ui->lowLimitSpinBox->setValue(60);  /// lowLimit
 
     ui->rdcCoeffSpinBox->setValue(7.); ///  rdc coeff
     ui->foldSpinBox->setValue(4); /////// fold
-    ui->numOfPairsBox->setValue(1); //// pairs
+    ui->numOfPairsBox->setValue(10); //// pairs
     ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
 }
 
 
 
-const char * kernelFromFile(char *  path)
+const char * kernelFromFile(char * path)
 {
     char * tempString = new char [300];
     char * shaderString = new char [30000];
@@ -234,7 +246,7 @@ const char * kernelFromFile(char *  path)
     fclose(shad);
 
     delete []tempString;
-    return shaderString;
+    return shaderString; // static pewpew ololo
 }
 
 
@@ -248,6 +260,7 @@ Net::~Net()
     delete group1;
     delete group2;
     delete group3;
+    delete group4;
     delete ui;
 }
 
@@ -266,6 +279,26 @@ double Net::getLrate()
     return ui->learnRateBox->value();
 }
 
+void Net::setActFunc(const QString & in)
+{
+    if(in.contains("log", Qt::CaseInsensitive) ||
+       in.startsWith('l', Qt::CaseInsensitive))
+    {
+        ui->logisticRadioButton->setChecked(true);
+        activation = logistic;
+    }
+    else if(in.contains("soft", Qt::CaseInsensitive) ||
+            in.startsWith('s', Qt::CaseInsensitive))
+    {
+        ui->softmaxRadioButton->setChecked(true);
+        activation = softmax;
+    }
+    else
+    {
+        cout << "setActFunc: wrong input" << endl;
+        exit(0);
+    }
+}
 
 void Net::setMode(const QString & in)
 {
@@ -320,6 +353,18 @@ void Net::setSource(const QString & in)
     {
         ui->windowsRadioButton->setChecked(true);
         loadDataNorm = 5.;
+    }
+}
+
+void Net::setActFuncSlot(QAbstractButton * but)
+{
+    if(but->text().contains("logistic", Qt::CaseInsensitive))
+    {
+        activation = logistic;
+    }
+    else if(but->text().contains("softmax", Qt::CaseInsensitive))
+    {
+        activation = softmax;
     }
 }
 
@@ -400,6 +445,7 @@ double Net::adjustLearnRate(int lowLimit,
 
         learnNetIndices(mixNum);
 
+        /// check limits
         if(this->getEpoch() > highLimit
            || this->getEpoch() < lowLimit)
         {
@@ -413,6 +459,16 @@ double Net::adjustLearnRate(int lowLimit,
         {
             res = currVal;
             break;
+        }
+
+        /// check lrate values
+        if(ui->learnRateBox->value() < 0.005)
+        {
+            ui->learnRateBox->setValue(0.005); break;
+        }
+        else if(ui->learnRateBox->value() >= 1.)
+        {
+            ui->learnRateBox->setValue(1.); break;
         }
         ++counter;
     } while (counter < 15);
@@ -606,7 +662,6 @@ void Net::autoClassification(const QString & spectraDir)
 //    double newReduceCoeff = adjustReduceCoeff(spectraDir,
 //                                              ui->lowLimitSpinBox->value(),
 //                                              ui->highLimitSpinBox->value());
-
 
     if(ui->crossRadioButton->isChecked())
     {
@@ -1601,7 +1656,7 @@ void Net::learnNetIndices(vector<int> mixNum,
     }
 
     const double critError = ui->critErrorDoubleSpinBox->value();
-    const double temperature = ui->tempBox->value();
+    const double temp = ui->tempBox->value();
     const double learnRate = ui->learnRateBox->value();
     const bool deltaFlag = ui->deltaRadioButton->isChecked();
 //    const double momentum = ui->momentumDoubleSpinBox->value(); //unused yet
@@ -1660,9 +1715,9 @@ void Net::learnNetIndices(vector<int> mixNum,
                 for(int j = 0; j < dimensionality[i]; ++j)
                 {
                     output[i][j] = prod(weight[i - 1][j], output[i-1]); // bias included
-//                    output[i][j] = logistic(output[i][j], temperature);
                 }
-                output[i] = softmax(output[i]);
+                output[i] = activation(output[i], temp);
+
                 output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
             }
 
@@ -1682,7 +1737,7 @@ void Net::learnNetIndices(vector<int> mixNum,
                 //for the last layer
                 for(int j = 0; j < dimensionality[numOfLayers-1]; ++j)
                 {
-                    deltaWeights[numOfLayers-1][j] = -1. / temperature
+                    deltaWeights[numOfLayers-1][j] = -1. / temp
                                                      * output[numOfLayers-1][j]
                                                      * (1. - output[numOfLayers-1][j])
                             * ((type == j) - output[numOfLayers-1][j]); //~0.1
@@ -1698,7 +1753,7 @@ void Net::learnNetIndices(vector<int> mixNum,
                         {
                             deltaWeights[i][j] += deltaWeights[i + 1][k] * weight[i][j][k];
                         }
-                        deltaWeights[i][j] *= 1. / temperature
+                        deltaWeights[i][j] *= 1. / temp
                                               * output[i][j]
                                               * (1. - output[i][j]);
                     }
@@ -1763,7 +1818,7 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
     const double temp = ui->tempBox->value();
 
     vector<valarray<double>> output(numOfLayers);
-    output[0].resize(dimensionality[0] + 1); // for biases
+    output[0].resize(dimensionality[0] + 1); // +1 for biases
 
     std::copy(begin(dataMatrix[vecNum]),
               end(dataMatrix[vecNum]),
@@ -1776,9 +1831,8 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
         for(int j = 0; j < dimensionality[i]; ++j) //higher level, w/o bias
         {
             output[i][j] = prod(weight[i-1][j], output[i-1]); // bias included
-//            output[i][j] = logistic(output[i][j], temp);
         }
-        output[i] = softmax(output[i]);
+        output[i] = activation(output[i], temp);
         output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
     }
 
@@ -3014,7 +3068,7 @@ void Net::leaveOneOutCL()
     tempBuf = clCreateBuffer(context,
                               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
                               sizeof(cl_double),
-                              &temperature,
+                              &temp,
                               &clError);
     if (clError != CL_SUCCESS)
     {
@@ -3655,7 +3709,7 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
 
 
     double currentError = 2 * ui->critErrorDoubleSpinBox->value();
-    const double temperature = ui->tempBox->value();
+    const double temp = ui->tempBox->value();
     const double learnRate = ui->learnRateBox->value();
     for(int numLayer = 1; numLayer < numOfLayers - 1; ++numLayer) //for every hidden layer
     {
@@ -3708,7 +3762,7 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
                             output[i][j] += weight[i-1][k][j] * output[i-1][k];
                         }
 
-                        output[i][j] = softmax(output[i][j], temperature);
+                        output[i][j] = softmax(output[i][j], temp);
                     }
                     output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
                 }
@@ -3724,7 +3778,7 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
                         tempOutput[1][j] += weight[numLayer - 1][k][j] * tempOutput[0][k];
                     }
 
-                    tempOutput[1][j] = softmax(tempOutput[1][j], temperature);
+                    tempOutput[1][j] = softmax(tempOutput[1][j], temp);
                 }
                 tempOutput[1][dimensionality[numLayer]] = 1.; //bias in hidden layer
 
@@ -3738,7 +3792,7 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
                         tempOutput[2][j] += tempWeight[k][j] * tempOutput[1][k]; //tempWeight is important
                     }
 
-                    tempOutput[2][j] = softmax(tempOutput[2][j], temperature);
+                    tempOutput[2][j] = softmax(tempOutput[2][j], temp);
                 }
 //                matrixPrint(tempOutput, 3, 10);
 
@@ -3756,7 +3810,7 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
                 //count deltaweights
                 for(int j = 0; j < dimensionality[numLayer - 1]; ++j)//for the last virtual/temp layer
                 {
-                    tempDeltaWeights[2][j] = -1./temperature * tempOutput[2][j] * (1. - tempOutput[2][j]) * (tempOutput[0][j] - tempOutput[2][j]);
+                    tempDeltaWeights[2][j] = -1./temp * tempOutput[2][j] * (1. - tempOutput[2][j]) * (tempOutput[0][j] - tempOutput[2][j]);
                 }
 
                 //for the only hidden layer
@@ -3767,7 +3821,7 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
                     {
                         tempDeltaWeights[1][j] += tempDeltaWeights[2][k] * tempWeight[j][k]; //tempWeigth
                     }
-                    tempDeltaWeights[1][j]  *= 1./temperature * tempOutput[1][j] * (1. - tempOutput[1][j]);
+                    tempDeltaWeights[1][j]  *= 1./temp * tempOutput[1][j] * (1. - tempOutput[1][j]);
                 }
 //                cout << "deltaweights ready" << endl;
 

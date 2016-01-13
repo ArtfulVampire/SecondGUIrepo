@@ -2212,9 +2212,11 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
     const double leftFreqLim = 2.;
     const double rightFreqLim = 20.;
+    const double stepFreq = 2.;
+
     const double alphaMaxLimLeft = 8.;
     const double alphaMaxLimRight = 13.;
-    const double stepFreq = 2.;
+
     const double spectreStepFreq = 1.;
     const double hilbertFreqLimit = 40.;
     const int numChan = 19;
