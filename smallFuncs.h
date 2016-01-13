@@ -40,6 +40,15 @@ inline double logistic(const double & x, const double & t = 10.)
     return 1. / ( 1. + exp(-x/t) );
 }
 
+std::valarray<double> softmax(const std::valarray<double> & in)
+{
+    // -1 for bias
+    double sum = std::accumulate(begin(in), end(in) - 1, 0.,
+                                 [](double init, double val){return init + exp(val);});
+    return exp(in) / sum;
+
+}
+
 
 
 inline int fftL(const int & in)

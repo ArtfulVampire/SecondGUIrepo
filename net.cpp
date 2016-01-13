@@ -1660,8 +1660,9 @@ void Net::learnNetIndices(vector<int> mixNum,
                 for(int j = 0; j < dimensionality[i]; ++j)
                 {
                     output[i][j] = prod(weight[i - 1][j], output[i-1]); // bias included
-                    output[i][j] = logistic(output[i][j], temperature);
+//                    output[i][j] = logistic(output[i][j], temperature);
                 }
+                output[i] = softmax(output[i]);
                 output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
             }
 
@@ -1775,8 +1776,9 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
         for(int j = 0; j < dimensionality[i]; ++j) //higher level, w/o bias
         {
             output[i][j] = prod(weight[i-1][j], output[i-1]); // bias included
-            output[i][j] = logistic(output[i][j], temp);
+//            output[i][j] = logistic(output[i][j], temp);
         }
+        output[i] = softmax(output[i]);
         output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
     }
 
@@ -3562,7 +3564,7 @@ void Net::Hopfield()
 //                outputClass[j] += weight[j][h] * output1[h];
 //            }
 //            outputClass[j] += weight[j][NetLength] * dataMatrix[i][NetLength];
-//            outputClass[j] = logistic(outputClass[j], temp); // unlinear conformation
+//            outputClass[j] = softmax(outputClass[j], temp); // unlinear conformation
 //        }
 //        answer = true;
 //        for(int k = 0; k<def::numOfClasses(); ++k)
@@ -3706,7 +3708,7 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
                             output[i][j] += weight[i-1][k][j] * output[i-1][k];
                         }
 
-                        output[i][j] = logistic(output[i][j], temperature);
+                        output[i][j] = softmax(output[i][j], temperature);
                     }
                     output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
                 }
@@ -3722,7 +3724,7 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
                         tempOutput[1][j] += weight[numLayer - 1][k][j] * tempOutput[0][k];
                     }
 
-                    tempOutput[1][j] = logistic(tempOutput[1][j], temperature);
+                    tempOutput[1][j] = softmax(tempOutput[1][j], temperature);
                 }
                 tempOutput[1][dimensionality[numLayer]] = 1.; //bias in hidden layer
 
@@ -3736,7 +3738,7 @@ void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLaye
                         tempOutput[2][j] += tempWeight[k][j] * tempOutput[1][k]; //tempWeight is important
                     }
 
-                    tempOutput[2][j] = logistic(tempOutput[2][j], temperature);
+                    tempOutput[2][j] = softmax(tempOutput[2][j], temperature);
                 }
 //                matrixPrint(tempOutput, 3, 10);
 
