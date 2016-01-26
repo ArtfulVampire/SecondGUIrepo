@@ -40,7 +40,7 @@ void MainWindow::clustering()
 
     int numRow = 300;
     int numCol = 18;
-    vector < vector <double> > cData;
+    vector<vector<double>> cData;
     cData.resize(numRow);
     for(int i = 0; i < numRow; ++i)
     {
@@ -2284,7 +2284,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
 //        continue;
 
-        cout << ExpName << endl;
+        cout << ExpName << '\t' << doubleRound(QFile(helpString).size() / pow(2, 10), 1) << "kB" << endl;
 
         dir.cd("out");
 

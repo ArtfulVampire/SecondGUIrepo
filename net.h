@@ -49,7 +49,7 @@ private:
     vector<QString> fileNames;
     vector<double> classCount; // really int but...
 
-    double loadDataNorm = 7.;
+    double loadDataNorm = 10.;
     lineType averageDatum;
     lineType sigmaVector;
 
@@ -81,6 +81,7 @@ public:
     void setAutoProcessingFlag(bool);
 
     void prelearnDeepBelief();
+    vector<int> learnIndicesSet();
     double adjustLearnRate(int lowLimit,
                            int highLimit);
     double adjustReduceCoeff(QString spectraDir,
@@ -88,10 +89,11 @@ public:
                              int highLimit,
                              QString paFileName = "all");
     std::pair<int, double> classifyDatum(const int & vecNum);
+
     void leaveOneOut();
-    void makeIndicesVectors(vector<int> & learnInd,
-                            vector<int> & tallInd,
-                            vector<vector<int> > & arr,
+
+    vector<int> makeLearnIndexSet();
+    pair<vector<int>, vector<int> > makeIndicesSetsCross(const vector<vector<int> > & arr,
                             const int numOfFold);
     std::valarray<double> (*activation)(const std::valarray<double> & in, double temp) = softmax;
     void autoClassification(const QString & spectraDir);
@@ -106,10 +108,11 @@ public:
 
     void setReduceCoeff(double coeff);
     void setErrCrit(double in);
+    void setLrate(double in);
     void setNumOfPairs(int num);
-    void setMode(const QString & in);
-    void setActFunc(const QString & in);
-    void setSource(const QString & in);
+    void setMode(const QString & in = "N-fold");
+    void setActFunc(const QString & in = "softmax");
+    void setSource(const QString & in = "reals");
     void setFold(int in);
     void setTallCleanFlag(bool in);
     void aaDefaultSettings();

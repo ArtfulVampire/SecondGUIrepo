@@ -1729,13 +1729,37 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
-
-    setEdfFile("/media/Files/Data/AAX/AAX_rr_f_new.edf");
-
-
+    //    GalyaCut(def::GalyaFolder + "/TestKids");
+    //    exit(0);
 
 
 
+//    for(const QString suff : {"s", "l"})
+//    {
+//        ann->setActFunc(suff);
+//        ann->autoClassificationSimple();
+//        exit(0);
+//        for(int i = 0; i < 5; ++i)
+//        {
+////            ann->learnNetIndices(ann->makeLearnIndexSet());
+//            ann->learnNet();
+//            ann->writeWts(globalEdf.getDirPath() + slash()
+//                          + QString::number(i) + "_" + suff + ".wts");
+//            ann->drawWts(globalEdf.getDirPath() + slash()
+//                          + QString::number(i) + "_" + suff + ".wts");
+//        }
+//    }
+//    exit(1);
+
+//    return;
+
+
+
+
+
+
+#if 0
+    /// test on AAX
     const QString workPath = "/media/Files/Data/AAX";
     const QString fileName = "AAX_rr_f_new.edf";
     const int fftLen = 4096;
@@ -1777,10 +1801,8 @@ void MainWindow::customFunc()
     delete ANN;
     ou.close();
     exit(1);
+#endif
 
-
-//    GalyaProcessing(def::GalyaFolder + "/TestKid");
-//    exit(0);
 
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");
@@ -1789,63 +1811,55 @@ void MainWindow::customFunc()
     const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
     for(QString name : names)
     {
-#if 1
+#if 0
+        /// test classification parameters
         for(QString suffix : {"_train", "_test"})
         {
+
             setEdfFile(path + name + suffix + ".edf");
+            ui->windButton->setChecked(true);
+            ui->windowLengthSpinBox->setValue(4.);
+            ui->timeShiftSpinBox->setValue(4.);
             readData();
             cleanDirs();
             sliceAll();
 
-            Spectre *sp = new Spectre();
-            sp->setFftLength(4096);
-            sp->setSmooth(15);
-            sp->countSpectraSlot();
+            countSpectraSimple(1024, 8);
 
             Net * amn = new Net();
-            amn->setSource("r");
+            amn->setSource("w");
+            amn->setMode("k");
+            amn->setNumOfPairs(15);
+            amn->setFold(5);
+            amn->setActFunc("s");
 
-                amn->setMode("N");
-
-                amn->autoClassification(def::dir->absolutePath()
-                                        + slash() + "SpectraSmooth"
-                                        + slash() + "Clean");
-                cleanDir(def::dir->absolutePath()
-                         + slash() + "SpectraSmooth"
-                         + slash() + "Clean");
-
-                delete sp;
-                delete amn;
-                continue;
-//            amn->setMode("cros");
-//            amn->setFold(4);
-//            amn->setNumOfPairs(15);
 
             ofstream of;
-            of.open((def::dir->absolutePath() + slash() + "freq.txt").toStdString(),
+            of.open((path + "softMaxTest.txt").toStdString(),
                     ios_base::app);
-            for(double lf : {5., 5.5, 6., 6.5, 7., 7.5, 8.})
+            of << (name + suffix).toStdString() << '\n';
+            for(double errcrit : {0.1, 0.075, 0.05, 0.025})//, 0.01, 0.005})
             {
-                for(double rf : {25., 24., 23., 22., 21., 20., 19., 18., 17., 16., 15.})
+                for(double lrate : {0.1, 0.075, 0.05, 0.025})//, 0.01, 0.005})
                 {
-                    sp->writeSpectra(lf, rf, false);
+                    amn->setErrCrit(errcrit);
+                    amn->setLrate(lrate);
                     amn->autoClassificationSimple();
-                    of << lf << '\t'
-                       << rf << '\t'
+                    of << errcrit << '\t'
+                       << lrate << '\t'
                        << amn->getAverageAccuracy() << '\t'
                        << amn->getKappa() << endl;
                 }
-
             }
             of.close();
-            delete sp;
             delete amn;
         }
-//        exit(0);
         continue;
+
 #endif
+
 #if 0
-        // inner
+        /// inner
 //        for(QString suffix : {"_train", "_test", "_train_ica", "_test_ica"})
         for(QString suffix : {"_train"})
         {
@@ -1866,16 +1880,9 @@ void MainWindow::customFunc()
         continue;
 #endif
 
-
 #if 0
-        QString newName = name;
-        newName.remove("_new");
-        QFile::rename(path + name,
-                      path + newName);
-#endif
-
-#if 0
-        // make test by train maps
+        /// ICA
+        /// make test by train maps
         /// deal with matrixA
         matrix matA;
         readICAMatrix(path + "Help"
@@ -1901,6 +1908,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
+        /// reduce ICA
         QString chanString;
         if(name == "AAU")
         {
@@ -1968,6 +1976,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
+        /// draw spectra
         def::drawNorm = -1.;
         def::drawNormTyp = all;
         for(QString suffix : {"_train", "_test"})
@@ -1984,37 +1993,28 @@ void MainWindow::customFunc()
 
 
 
-
-
-
-
-
-
 #if 1
-        // cross with clean
+        /// successive
 
 //        if(name != "AAU") continue;
 
         const QString suffix = ""; /// empty, _ica, _ica_ord
 
-
-
-
-#if 0
+#if 1
         setEdfFile(path + name + "_train" + suffix + ".edf");
         ui->timeShiftSpinBox->setValue(2.);
-        ui->windowLengthSpinBox->setValue(3.);
-        ui->windButton->setChecked(true);
-        sliceAll();
+        ui->windowLengthSpinBox->setValue(4.);
+        ui->windButton->setChecked(true); // sliceWindFromReal
+        cleanDirs(); sliceAll();
 
         // initially reduce number of windows
         QStringList windowsList;
-
         // delete first three windows from each realisation
         windowsList = QDir(path + "windows/fromreal").entryList({"*_train*.00",
                                                                  "*_train*.01",
                                                                  "*_train*.02"},
                                                                 QDir::Files);
+
         for(const QString & name : windowsList)
         {
             QFile::remove(path + "windows/fromreal/" + name);
@@ -2043,56 +2043,81 @@ void MainWindow::customFunc()
         badFiles.close();
         exit(0);
 #endif
-
-//        countSpectraSimple(1024, 8);
-
+        countSpectraSimple(1024, 8);
 
         Net * ann = new Net();
         ann->setSource("w");
-
-#if 0
-        // N-fold cleaning
-        ann->loadData(path + "SpectraSmooth/windows");
+        ann->setActFunc("s");
         ann->setMode("N");
 
+#if 1
+        // N-fold cleaning
+        cout << "cleaning" << endl;
+        ann->loadData(path + "SpectraSmooth/windows");
+
         ann->setTallCleanFlag(true); /// with deleting the bad-classified
-        for(int i = 0; i < 4; ++i)
+
+//        // k-fold
+//        ann->setMode("k");
+//        ann->setNumOfPairs(1);
+//        ann->setFold(20);
+//        ann->autoClassificationSimple(); /// assume only train files in the spectraDir
+        // N-fold
+        for(int i = 0; i < 3; ++i)
         {
             ann->autoClassificationSimple(); /// assume only train files in the spectraDir
         }
-        ann->setTallCleanFlag(false);
 
-        delete ann;
-        continue;
+        ann->setTallCleanFlag(false);
 #endif
 
         setEdfFile(path + name + "_test" + suffix + ".edf");        
-        ui->windowLengthSpinBox->setValue(3.);
-        ui->timeShiftSpinBox->setValue(0.5);
+        ui->windowLengthSpinBox->setValue(4.);
+        ui->timeShiftSpinBox->setValue(2.); /// really should be 0.5
         ui->windButton->setChecked(true);
-        sliceAll();
+        /// DON'T CLEAR, TRAIN WINDOWS TAKEN BY SUCCESSIVE
+        sliceAll(); countSpectraSimple(1024, 8);
 
-        countSpectraSimple(1024, 8);
-        ann->setMode("t");
+        ann->setMode("t"); // train-test
 
-        suc::numGoodNewLimit = 5;
+        /// current best set (logistic)
+        suc::numGoodNewLimit = 6;
         suc::learnSetStay = 100;
-        suc::decayRate = 0.0;
+        suc::decayRate = 0.01;
 
         ann->setTallCleanFlag(false);
 
+        cout << "successive" << endl;
+
+//        ann->setErrCrit(0.05);
+//        ann->setLrate(0.05);
+
+        ann->successiveProcessing();
+
         ofstream outFil;
-        outFil.open((path + "successiveResults_3sec.txt").toStdString(), ios_base::app);
+        outFil.open((path + "successiveResults_4sec_fin.txt").toStdString(), ios_base::app);
         outFil << def::ExpName << endl;
-        for(int lss : {110, 100, 90})
+        outFil << "learnSet = " << suc::learnSetStay << '\t';
+        outFil << "numGood = " << suc::numGoodNewLimit << '\t';
+        outFil << "decay = " << suc::decayRate << '\t';
+        outFil << ann->getAverageAccuracy() << '\t';
+        outFil << ann->getKappa() << endl;
+        outFil.close();
+
+        delete ann;
+
+#if 0
+        ofstream outFil;
+        outFil.open((path + "successiveResults_4sec.txt").toStdString(), ios_base::app);
+        outFil << def::ExpName << endl;
+        for(int lss : {100})
         {
-            for(int numG : {5, 10, 15})
+            for(int numG : {4, 6, 8, 10, 12})
             {
-                for(double dR : {0.00, 0.005, 0.01})
+                for(double dR : {0.03, 0.02, 0.01, 0.005, 0.00}) // 1.00, 0.5
                 {
                     suc::numGoodNewLimit = numG;
                     suc::decayRate = dR;
-
                     suc::learnSetStay = lss;
 
                     ann->successiveProcessing();
@@ -2107,165 +2132,13 @@ void MainWindow::customFunc()
         outFil.close();
 
         delete ann;
+#endif
 
 #endif
     }
     exit(0);
 
-    drawMapsICA(def::dir->absolutePath()
-                + slash() + "Help"
-                + slash() + "ica"
-                + slash() + "AAU_test_maps.txt");
-    setEdfFile("/media/Files/Data/Feedback/SuccessClass/AAU_test_ica.edf");
-    drawMapsOnSpectra();
-    exit(0);
-//    setEdfFile("/media/Files/Data/AAX/AAX_sum_ica.edf");
-//    readData();
-//    ui->reduceChannelsLineEdit->setText("1 3 4 5 6 8 9 10 13 20");
-//    reduceChannelsEDFSlot();
 
-
-    setEdfFile("/media/Files/Data/AAX/AAX_sum_ica_rdcChan.edf");
-//    readData();
-//    for(int i = 0; i < 50; ++i)
-//    {
-//        cout << globalEdf.getData()[globalEdf.getMarkChan()][i] << "\t";
-//    }
-//    cout << endl;
-
-//    exit(1);
-
-
-//    return;
-//    Net * ann = new Net();
-
-//    ann->setReduceCoeff(7.);
-//    ann->autoClassificationSimple();
-//    exit(0);
-
-//    QString helpString = def::dir->absolutePath()
-//                         + slash() + "diffNorm.txt";
-//    ofstream outStr;
-//    outStr.open(helpString.toStdString(), ios_base::app);
-
-//    for(double tmp : {7., 7.5, 8., 8.5, 9., 9.5})
-//    {
-//        def::drawNorm = tmp;
-//        ann->autoClassificationSimple();
-//        outStr << def::drawNorm << '\t'
-//               << ann ->getAverageAccuracy() << '\t'
-//               << ann->getKappa() << endl;
-//    }
-//    outStr.close();
-//    exit(0);
-
-    return;
-
-//    for(auto guy : names)
-//    {
-//        for(QString type : {"_test", "_train"})
-//        {
-//            // files
-//            QFile::rename(def::dataFolder + slash() + guy + type + "_rr_f3.5-40" + "_new.edf",
-//                          def::dataFolder + slash() + guy + type + "_new.edf");
-//            // ica
-//            for(QString suffix : {"_maps", "_eigenMatrix", "_eigenValues", "_explainedVariance"})
-//            {
-//                QFile::rename(def::dataFolder + "/Help/ica"
-//                              + slash() + guy + type + "_rr_f3.5-40_new" + suffix + ".txt",
-//                              def::dataFolder + "/Help/ica"
-//                              + slash() + guy + type + suffix + ".txt");
-//            }
-//        }
-//    }
-//    exit(0);
-
-
-//    transformEdfMaps(def::dataFolder + slash() + guy + "_test_new.edf",
-//                     def::dataFolder
-//                     + slash() + "Help"
-//                     + slash() + "ica"
-//                     + slash() + guy + "_train_maps.txt",
-//                     def::dataFolder
-//                     + slash() + guy + "_test_ica.edf");
-
-    def::ns = 20;
-    def::dir->cd(def::dataFolder);
-    const QString helpPath = def::dataFolder + slash() + "Help";
-
-#if 0
-    for(auto guy : names)
-    {
-        def::drawNorm = -1.;
-#if 0
-        ICsSequence(def::dataFolder + slash() + guy + "_train_ica.edf",
-                    def::dataFolder + slash() + guy + "_test_ica.edf",
-                    1);
-//        continue;
-#endif
-#if 0
-        transformEdfMaps(def::dataFolder + slash() + guy + "_test_new.edf",
-                         helpPath
-                         + slash() + "ica"
-                         + slash() + guy + "_train_ord_maps.txt",
-                         def::dataFolder
-                         + slash() + guy + "_test_ica.edf");
-//        continue;
-#endif
-#if 0
-        for(QString type : {"_train", "_test"})
-        {
-
-            const int smooth = 15;
-
-            setEdfFile(def::dataFolder + slash() + guy + type + "_ica_ord.edf");
-            drawMapsICA(helpPath + slash() + "ica" + slash() + guy + type + "_ord_maps.txt");
-            cleanDirs();
-            sliceAll();
-            countSpectraSimple(4096, smooth);
-            drawMapsOnSpectra(helpPath + slash() + guy + type + "_ica_ord_all.jpg",
-                              helpPath + slash() + "wm" + slash() + guy + type + "_ica_ord_all_wm.jpg",
-                              helpPath + slash() + "maps",
-                              def::ExpName);
-
-        }
-#endif
-//        break; // AAU only
-    }
-    exit(0);
-#endif
-
-//    return;
-
-
-    def::dir->cd(def::dataFolder);
-    for(auto guy : names)
-    {
-        if(guy != "BEA") continue;
-//        cleanDirs();
-        def::drawNorm = -1.;
-        const int smooth = 6;
-        for(QString type : {"_train", "_test"})
-        {
-            setEdfFile(def::dataFolder + slash() + guy + type + "_ica_ord.edf");
-//            sliceAll();
-        }
-//        sliceWindFromReal();
-//        countSpectraSimple(1024, smooth);
-
-        makeCfgStatic("tmp");
-        makePaStatic(def::dataFolder
-                     + slash() + "SpectraSmooth"
-                     + slash() + "windows");
-
-        Net * ann = new Net();
-//        ann->readCfgByName("tmp");
-        ann->autoClassificationSimple();
-        ann->close();
-        delete ann;
-    }
-    exit(0);
-    return;
 
 
 #if 0

@@ -75,10 +75,7 @@ Spectre::Spectre() :
 
     QObject::connect(ui->countButton, SIGNAL(clicked()), this, SLOT(countSpectraSlot()));
 
-    QObject::connect(ui->fftComboBox, SIGNAL(activated(int)), this, SLOT(setFftLengthSlot()));
     QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFftLengthSlot()));
-    QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFftLengthSlot()));
-    QObject::connect(ui->fftComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(setFftLengthSlot()));
 
     QObject::connect(ui->leftSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLeft()));
     QObject::connect(ui->rightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setRight()));
@@ -384,6 +381,9 @@ void Spectre::psaSlot()
                                           + slash() + def::ExpName + "_all.jpg");
 
     trivector<int> MW;
+
+
+
     if(ui->MWcheckBox->isChecked())
     {
         countMannWhitney(MW,
@@ -435,15 +435,8 @@ void Spectre::psaSlot()
                                  MW);
         }
     }
-    const int tmp = ui->fftComboBox->currentIndex();
-    const int toC = (tmp == 0) ? 1 : 0;
-
-    cout << 1 << endl;
-    ui->fftComboBox->setCurrentIndex(toC);
-    ui->fftComboBox->setCurrentIndex(tmp);
-    cout << 2 << endl;
-
-
+    setFftLengthSlot();
+    ui->specLabel->setPixmap(QPixmap(helpString));
     cout << "psaSlot: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
@@ -553,13 +546,19 @@ void Spectre::setFftLengthSlot()
     ui->leftSpinBox->setValue(def::left());
     ui->rightSpinBox->setValue(def::right());
 
+//    cout << endl << def::fftLength << endl;
+//    cout << def::left() << endl;
+//    cout << def::right() << endl;
+//    cout << def::spLength() << endl;
+//    cout << ui->lineEdit_1->text() << endl;
+//    cout << ui->lineEdit_2->text() << endl << endl;
 
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         rangeLimits[i][0] = 0;
         rangeLimits[i][1] = def::spLength();
     }
-//    cout << def::spLength() << endl;
+//    cout << "setFftLengthSlot: spLength = " << def::spLength() << endl;
 
 }
 
@@ -615,9 +614,9 @@ void Spectre::setSmooth(int a)
 
 void Spectre::setRight()
 {
+    /// changed
     /// -1 to compensate +1 in def::right()
-    def::rightFreq = (ui->rightSpinBox->value() - 1) * def::spStep();
-    ui->rightHzEdit->setText(QString::number(def::rightFreq));
+    ui->rightHzEdit->setText(QString::number((def::right() - 1) * def::spStep()));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         rangeLimits[i][1] = def::spLength();
@@ -626,8 +625,8 @@ void Spectre::setRight()
 
 void Spectre::setLeft()
 {
-    def::leftFreq = ui->leftSpinBox->value() * def::spStep();
-    ui->leftHzEdit->setText(QString::number(def::leftFreq));
+    /// changed
+    ui->leftHzEdit->setText(QString::number(def::left() * def::spStep()));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         rangeLimits[i][1] = def::spLength();
@@ -639,7 +638,6 @@ void Spectre::writeSpectra(const double leftFreq,
                            const double rightFreq,
                            const bool rangeLimitCheck)
 {
-    cout << "spLength = " << def::spLength() << endl;
 
     QTime myTime;
     myTime.start();
@@ -658,7 +656,6 @@ void Spectre::writeSpectra(const double leftFreq,
 //        cout << rangeLimits[i][0] << '\t' << rangeLimits[i][1] << endl;
 //    }
 
-cout << "spLength = " << def::spLength() << endl;
     for(int i = 0; i < fileNames.size(); ++i)
     {
         helpString = outDirPath + slash() + fileNames[i];
@@ -706,6 +703,7 @@ cout << "spLength = " << def::spLength() << endl;
 }
 void Spectre::countSpectraSlot()
 {
+    setFftLengthSlot();
     countSpectra();
     writeSpectra();
 
@@ -773,6 +771,9 @@ void Spectre::countSpectra()
 //    makeFullFileList(inDirPath, lst, {"_test"});
     makeFullFileList(inDirPath, lst);
     const int numFiles = lst.length();
+
+//    cout << inDirPath << endl;
+//    cout << numFiles << endl;
 
     matrix dataIn;
     QString helpString;

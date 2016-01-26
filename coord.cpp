@@ -5,15 +5,16 @@ namespace def
 // assigned in readData, reduce channels, etc
 int ns = 20;
 
-int right() {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}
+
 int left()  {return fftLimit(def::leftFreq, def::freq, def::fftLength);}
+int right() {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}
 
 double leftFreq = 5.;
 double rightFreq = 20.;
 
 double freq = 250;
-//int fftLength = 4096;
-int fftLength = 1024;
+int fftLength = 4096;
+//int fftLength = 1024;
 QString cfgFileName = "tmp.net";
 
 // for pewpew

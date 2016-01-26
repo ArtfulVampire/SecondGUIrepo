@@ -35,7 +35,7 @@ inline double gaussian(const double & x, const double & sigma = 1.) //N(0,1)
     return 1./(sigma * sqrt(2. * pi)) * exp(-x * x / (2. * sigma * sigma) );
 }
 
-inline double logistic(const double & x, const double & t = 10.)
+inline double sigmoid(const double & x, const double & t = 10.)
 {
     return 1. / ( 1. + exp(-x/t) );
 }

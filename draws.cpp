@@ -961,7 +961,7 @@ double drawArrays(const QString & templPath,
     {
         if(inData.size() > shouldSize)
         {
-            cout << "drawArrays: inappropriate array size" << endl;
+            cout << "drawArrays: inappropriate array size = " << inData.size() << endl;
             return;
         }
     });

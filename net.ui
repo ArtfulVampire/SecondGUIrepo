@@ -241,103 +241,53 @@
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_6">
-    <item row="0" column="0">
-     <widget class="QPushButton" name="loadWtsButton">
-      <property name="text">
-       <string>Load wts</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QPushButton" name="saveWtsButton">
-      <property name="text">
-       <string>Save Wts</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="2">
-     <widget class="QPushButton" name="loadNetButton">
-      <property name="text">
-       <string>Load CFG</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="loadPaButton">
-      <property name="text">
-       <string>Load pa</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QPushButton" name="svmPushButton">
-      <property name="text">
-       <string>SVM</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QPushButton" name="learnButton">
-      <property name="text">
-       <string>Learn</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <widget class="QPushButton" name="distancesPushButton">
-      <property name="text">
-       <string>Test Distances</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="testAllButton">
-      <property name="text">
-       <string>Test All</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QPushButton" name="stopButton">
-      <property name="text">
-       <string>STOP</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QPushButton" name="drawWtsButton">
-      <property name="text">
-       <string>drawWts</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="3">
-     <widget class="QPushButton" name="hopfieldPushButton">
-      <property name="text">
-       <string>Hopfield</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout_7">
-      <item>
-       <widget class="QPushButton" name="optimizeChannelsPushButton">
+    <item row="4" column="2">
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="0" column="0">
+       <widget class="QSpinBox" name="autoPCAMaxSpinBox"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_15">
         <property name="text">
-         <string>Optimize channels</string>
+         <string>Max</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QSpinBox" name="autoPCAMinSpinBox"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_16">
+        <property name="text">
+         <string>Min</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QSpinBox" name="autoPCAStepSpinBox"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="label_17">
+        <property name="text">
+         <string>Step</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="4" column="1">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <widget class="QRadioButton" name="logisticRadioButton">
+        <property name="text">
+         <string>logistic</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="autoClassButton">
+       <widget class="QRadioButton" name="softmaxRadioButton">
         <property name="text">
-         <string>AutoClass</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="openclCheckBox">
-        <property name="text">
-         <string>use OpenCL</string>
+         <string>softmax</string>
         </property>
        </widget>
       </item>
@@ -473,35 +423,103 @@
       </item>
      </layout>
     </item>
-    <item row="4" column="2">
-     <layout class="QGridLayout" name="gridLayout_5">
-      <item row="0" column="0">
-       <widget class="QSpinBox" name="autoPCAMaxSpinBox"/>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="label_15">
+    <item row="0" column="0">
+     <widget class="QPushButton" name="loadWtsButton">
+      <property name="text">
+       <string>Load wts</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QPushButton" name="saveWtsButton">
+      <property name="text">
+       <string>Save Wts</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QPushButton" name="loadNetButton">
+      <property name="text">
+       <string>Load CFG</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="loadPaButton">
+      <property name="text">
+       <string>Load pa</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QPushButton" name="svmPushButton">
+      <property name="text">
+       <string>SVM</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QPushButton" name="testAllButton">
+      <property name="text">
+       <string>Test All</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QPushButton" name="distancesPushButton">
+      <property name="text">
+       <string>Test Distances</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QPushButton" name="learnButton">
+      <property name="text">
+       <string>Learn</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QPushButton" name="stopButton">
+      <property name="text">
+       <string>STOP</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QPushButton" name="drawWtsButton">
+      <property name="text">
+       <string>drawWts</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QPushButton" name="hopfieldPushButton">
+      <property name="text">
+       <string>Hopfield</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout_7">
+      <item>
+       <widget class="QPushButton" name="optimizeChannelsPushButton">
         <property name="text">
-         <string>Max</string>
+         <string>Optimize channels</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QSpinBox" name="autoPCAMinSpinBox"/>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="label_16">
+      <item>
+       <widget class="QPushButton" name="autoClassButton">
         <property name="text">
-         <string>Min</string>
+         <string>AutoClass</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QSpinBox" name="autoPCAStepSpinBox"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLabel" name="label_17">
+      <item>
+       <widget class="QCheckBox" name="openclCheckBox">
         <property name="text">
-         <string>Step</string>
+         <string>use OpenCL</string>
         </property>
        </widget>
       </item>
@@ -510,9 +528,9 @@
     <item row="4" column="3">
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QLabel" name="label_23">
+       <widget class="QCheckBox" name="adjustLeanrRateCheckBox">
         <property name="text">
-         <string>Reduce coeff adjust</string>
+         <string>adjust learn rate</string>
         </property>
        </widget>
       </item>
@@ -543,24 +561,6 @@
          </widget>
         </item>
        </layout>
-      </item>
-     </layout>
-    </item>
-    <item row="4" column="1">
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <item>
-       <widget class="QRadioButton" name="logisticRadioButton">
-        <property name="text">
-         <string>logistic</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="softmaxRadioButton">
-        <property name="text">
-         <string>softmax</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </item>

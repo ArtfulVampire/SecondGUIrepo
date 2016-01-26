@@ -216,7 +216,7 @@ private:
     Ui::MainWindow *ui;
 
     ofstream generalLogStream;
-    streambuf *coutBuf;
+    streambuf * coutBuf;
     bool redirectCoutFlag;
 
     edfFile globalEdf;
