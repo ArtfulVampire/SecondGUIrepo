@@ -1729,8 +1729,10 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
-    //    GalyaCut(def::GalyaFolder + "/TestKids");
-    //    exit(0);
+
+//    return;
+    GalyaCut(def::GalyaFolder + "/Autists_new");
+    exit(0);
 
 
 

@@ -57,7 +57,8 @@ HEADERS  += mainwindow.h \
     edffile.h \
     matrix.h \
     coord.h \
-    smallFuncs.h
+    smallFuncs.h \
+    library.h
 
 FORMS    += mainwindow.ui \
     cut.ui \
