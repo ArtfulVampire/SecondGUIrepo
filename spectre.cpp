@@ -76,6 +76,9 @@ Spectre::Spectre() :
     QObject::connect(ui->countButton, SIGNAL(clicked()), this, SLOT(countSpectraSlot()));
 
     QObject::connect(ui->fftComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setFftLengthSlot()));
+    QObject::connect(ui->fftComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(setFftLengthSlot()));
+    QObject::connect(ui->fftComboBox, SIGNAL(highlighted(int)), this, SLOT(setFftLengthSlot()));
+    QObject::connect(ui->fftComboBox, SIGNAL(activated(int)), this, SLOT(setFftLengthSlot()));
 
     QObject::connect(ui->leftSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLeft()));
     QObject::connect(ui->rightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setRight()));
@@ -92,6 +95,9 @@ Spectre::Spectre() :
 
     ui->specLabel->installEventFilter(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
+
+    ui->fftComboBox->setCurrentIndex(0);
+    ui->fftComboBox->setCurrentIndex(1);
 
     ui->fftComboBox->setCurrentText(QString::number(def::fftLength));
 
@@ -330,7 +336,7 @@ void Spectre::integrate()
 
         helpString = QDir::toNativeSeparators(ui->lineEdit_1->text()
                                               + slash() + fileName);
-        readSpectraFile(helpString,
+        readMatrixFile(helpString,
                         dataInt);
 
         for(int h = 0; h < dataOut.rows(); ++h)
@@ -347,7 +353,7 @@ void Spectre::integrate()
         }
         helpString = QDir::toNativeSeparators(ui->lineEdit_2->text()
                                               + slash() + fileName);
-        writeSpectraFile(helpString,
+        writeMatrixFile(helpString,
                          dataOut);
     }
 
@@ -436,7 +442,7 @@ void Spectre::psaSlot()
         }
     }
     setFftLengthSlot();
-    ui->specLabel->setPixmap(QPixmap(helpString));
+    ui->specLabel->setPixmap(QPixmap(helpString).scaled(ui->specLabel->size()));
     cout << "psaSlot: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
@@ -581,7 +587,7 @@ void Spectre::center()
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + fileName);
-        readSpectraFile(helpString,
+        readMatrixFile(helpString,
                         tempData);
         averages += tempData;
     }
@@ -593,11 +599,11 @@ void Spectre::center()
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + fileName);
-        readSpectraFile(helpString,
+        readMatrixFile(helpString,
                         tempData);
         tempData -= averages;
         tempData *= 10.;
-        writeSpectraFile(helpString,
+        writeMatrixFile(helpString,
                          tempData);
     }
 }

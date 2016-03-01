@@ -1,5 +1,19 @@
 #include "library.h"
 
+std::string funcName(std::string in)
+{
+    in.resize(in.find('('));
+    for(char a : {' ', '='})
+    {
+        auto b = in.rfind(a);
+        if(b >= 0)
+        {
+            in = in.substr(b + 1);
+        }
+    }
+    return in;
+}
+
 void writeByte(FILE * fil, int num)
 {
     char tempChar = num;
@@ -266,7 +280,10 @@ void cleanDir(QString dirPath, QString nameFilter, bool ext)
 
     QStringList lst;
 
-    if(nameFilter.isEmpty()) lst = tmpDir.entryList(QDir::Files);
+    if(nameFilter.isEmpty())
+    {
+        lst = tmpDir.entryList(QDir::Files);
+    }
     else
     {
         QStringList filter;

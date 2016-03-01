@@ -39,13 +39,13 @@ extern double decayRate;
 
 
 enum spectraGraphsNormalization {all = 0, each = 1};
+enum class errorNetType {SME, maxDist};
 namespace def
 {
     const bool matiFlag = false;
     const bool ntFlag = false;
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
     const bool OssadtchiFlag = false;
-
 
     const bool wirteStartEndLong = false; //for slice
 

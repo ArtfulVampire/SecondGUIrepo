@@ -498,6 +498,7 @@ void MainWindow::sliceWindow(int startSlice, int endSlice, int number, int marke
                                           + slash() + def::ExpName
                                           + "-" + rightNumber(number, 4)
                                           + "_" + QString::number(marker)); //number.marker
+
     globalEdf.saveSubsection(startSlice, endSlice, helpString, true);
 }
 

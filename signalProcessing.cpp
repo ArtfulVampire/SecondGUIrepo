@@ -647,7 +647,7 @@ void svd(const matrix & initialData,
                                     + slash() + "ica";
     QString helpString = pathForAuxFiles
                          + slash() + def::ExpName + "_eigenMatrix.txt";
-    readSpectraFile(helpString,
+    readMatrixFile(helpString,
                     eigenVectors,
                     dimension, dimension);
 

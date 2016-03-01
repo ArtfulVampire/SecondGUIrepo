@@ -17,7 +17,8 @@ MainWindow::MainWindow() :
 
     def::dir->cd(QDir::root().absolutePath());
 
-    NumOfEdf = 0; //for EDF cut
+    NumOfEdf = 0;
+    //for EDF cut
     // must reamake with std::string or QString
 //    label = new char* [MAXNS];     //memory for channels' labels
 //    for(int i = 0; i < MAXNS; ++i)
@@ -38,6 +39,7 @@ MainWindow::MainWindow() :
     group2 = new QButtonGroup();
     group2->addButton(ui->windButton);
     group2->addButton(ui->realButton);
+    group2->addButton(ui->justSliceButton);
     group3 = new QButtonGroup();
     group3->addButton(ui->BayesRadioButton);
     group3->addButton(ui->HiguchiRadioButton);
@@ -674,7 +676,31 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                     sliceOneByOneNew();
                     sliceWindFromReal();
                 }
-                if(ui->realButton->isChecked())
+                else if(ui->justSliceButton->isChecked())
+                {
+                    QString helpString;
+                    const double wndLen = ui->windowLengthSpinBox->value() * def::freq;
+
+                    for(int i = 0;
+                        i < ceil(fil.getData().cols() /
+                                 wndLen);
+                        ++i)
+                    {
+                        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                                              + slash() + "windows"
+                                                              + slash() + def::ExpName
+                                                              + "-" + rightNumber(i, 4)
+                                                              + "_" + QString::number(254));
+
+                        fil.saveSubsection(i * wndLen,
+                                           min((i + 1) * wndLen,
+                                               double(fil.getData().cols())),
+                                           helpString,
+                                           true);
+
+                    }
+                }
+                else if(ui->realButton->isChecked())
                 {
                     if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) //generality
                     {
@@ -1731,8 +1757,64 @@ void MainWindow::customFunc()
     ui->realButton->setChecked(true);
 
 //    return;
-    GalyaCut(def::GalyaFolder + "/Autists_new");
+//    GalyaCut(def::GalyaFolder + "/autists_all2");
+
+
+    const QString path12 = "/media/michael/Files/Data/RealTime/";
+
+    QStringList leest = QDir(path12 + "windows").entryList(
+                            QDir::Files);
+    setEdfFile("/media/michael/Files/Data/RealTime/SUA_test.edf");
+
+//    return;
+//    cleanDir("/media/michael/Files/Data/RealTime/windows/SpectraSmooth");
+//    ui->windButton->setChecked(true);
+//    ui->timeShiftSpinBox->setValue(0.5);
+//    sliceAll();
+
+//    countSpectraSimple(1024);
+//    exit(0);
+
+//    return;
+//    matrix dt{};
+//    int ns_ = 24;
+//    int NS_;
+//    for(auto str : leest)
+//    {
+//        readPlainData(path12 + "windows/" + str, dt, ns_, NS_);
+//        cout << NS_ << " " << path12 + "/Signals/" + str << endl;
+//        drawEeg(dt, ns_, NS_, def::freq,
+//                path12 + "/Signals/" + str + ".jpg");
+//    }
+//    exit(0);
+
+//    this_thread::sleep_for(seconds{3});
+    def::ns = 20;
+    Net * ann = new Net();
+//    ann->successiveProcessing();
+//    exit(9);
+//    ann->setMode("N");
+//    ann->setSource("wind");
+//    ann->autoClassificationSimple();
+//    exit(0);
+
+    ann->successivePreclean("/media/michael/Files/Data/RealTime/SpectraSmooth/windows");
     exit(0);
+
+
+    leest = QDir(path12).entryList({"*.wts"},
+                            QDir::Files);
+
+    ann->loadData("/media/michael/Files/Data/RealTime/SpectraSmooth/windows");
+    ann->learnNet();
+
+    for(auto str : leest)
+    {
+        ann->drawWts(path12 + str);
+    }
+
+    exit(0);
+
 
 
 

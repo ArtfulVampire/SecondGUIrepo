@@ -54,6 +54,20 @@ using namespace std::chrono;
 const double pi_min_025 = pow(pi, -0.25);
 const double pi_sqrt = sqrt(pi);
 
+std::string funcName(std::string in);
+
+#define TIME(arg)\
+    do{\
+        auto t0 = std::chrono::high_resolution_clock::now();\
+        arg;\
+        auto t1 = std::chrono::high_resolution_clock::now();\
+        std::cout << funcName(#arg) \
+        << ": time elapsed = "\
+        << std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count()/1000.\
+        << " msec" << std::endl;\
+    }while(false)
+
+
 
 
 typedef std::vector<std::vector<double>> mat;
@@ -251,12 +265,12 @@ void writePlainData(const QString outPath,
 bool readICAMatrix(const QString & path, matrix & matrixA);
 void writeICAMatrix(const QString & path, const matrix & matrixA);
 
-void readSpectraFile(const QString & filePath,
+void readMatrixFile(const QString & filePath,
                      matrix & outData,
                      int inNs = def::nsWOM(),
                      int spL = def::spLength());
 
-void writeSpectraFile(const QString & filePath,
+void writeMatrixFile(const QString & filePath,
                       const matrix & outData,
                       int inNs = def::nsWOM(),
                       int spL = def::spLength());

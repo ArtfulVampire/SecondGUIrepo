@@ -23,7 +23,6 @@
 #include <unistd.h>
 #include <QTime>
 
-using namespace std;
 
 #include <QMessageBox>
 
@@ -44,10 +43,10 @@ private:
     QButtonGroup  * group3;
     QButtonGroup  * group4;
 
-    matrix dataMatrix; // biases and types separately
-    vector<int> types;
-    vector<QString> fileNames;
-    vector<double> classCount; // really int but...
+    matrix dataMatrix{}; // biases and types separately
+    std::vector<int> types;
+    std::vector<QString> fileNames;
+    std::vector<double> classCount; // really int but...
 
     double loadDataNorm = 10.;
     lineType averageDatum;
@@ -56,12 +55,12 @@ private:
     matrix confusionMatrix; // rows - realClass, cols - outClass
 
     twovector<lineType> weight;
-    vector<int> dimensionality; // for backprop
+    std::vector<int> dimensionality; // for backprop
 
 //    matrix tempRandomMatrix; //test linear transform
 
-    vector<int> channelsSet;
-    vector<int> channelsSetExclude;
+    std::vector<int> channelsSet;
+    std::vector<int> channelsSetExclude;
 
     double averageAccuracy;
     double kappa; // Cohen's
@@ -81,7 +80,7 @@ public:
     void setAutoProcessingFlag(bool);
 
     void prelearnDeepBelief();
-    vector<int> learnIndicesSet();
+    std::vector<int> learnIndicesSet();
     double adjustLearnRate(int lowLimit,
                            int highLimit);
     double adjustReduceCoeff(QString spectraDir,
@@ -92,9 +91,10 @@ public:
 
     void leaveOneOut();
 
-    vector<int> makeLearnIndexSet();
-    pair<vector<int>, vector<int> > makeIndicesSetsCross(const vector<vector<int> > & arr,
-                            const int numOfFold);
+    std::vector<int> makeLearnIndexSet();
+    std::pair<std::vector<int>, std::vector<int>> makeIndicesSetsCross(
+            const std::vector<std::vector<int> > & arr,
+            const int numOfFold);
     std::valarray<double> (*activation)(const std::valarray<double> & in, double temp) = softmax;
     void autoClassification(const QString & spectraDir);
     void averageClassification();
@@ -134,8 +134,7 @@ public:
                                  const QString & testTemplate = "_test");
 
 
-    void writeWts(const QString &wtsPath = def::dir->absolutePath()
-                                           + slash() + def::ExpName + ".wts");
+    void writeWts(const QString & wtsPath = QString());
     void PaIntoMatrixByName(const QString & fileName);
     void loadData(const QString & spectraPath = def::dir->absolutePath()
                                                 + slash() + "SpectraSmooth",
@@ -145,20 +144,26 @@ public:
                      const int & inType,
                      const QString & inFileName);
     void eraseDatum(const int & index);
-    void eraseData(const vector<int> & indices);
+    void eraseData(const std::vector<int> & indices);
 
     void drawWts(QString wtsPath = QString(),
                  QString picPath = QString());
     void readWtsByName(const QString & fileName,
                        twovector<lineType> * wtsMatrix = nullptr);
 
-    void learnNetIndices(vector<int> mixNum,
+    void learnNetIndices(std::vector<int> mixNum,
                          const bool resetFlag = true);
-    void tallNetIndices(const vector<int> & indices);
+    void tallNetIndices(const std::vector<int> & indices);
 
-    void learnBayesIndices(vector<int> mixNum);
-    void tallBayesIndices(vector<int> mixNum);
+    void learnBayesIndices(std::vector<int> mixNum);
+    void tallBayesIndices(std::vector<int> mixNum);
 
+    /// change everywhere
+    enum class myMode {N_fold, k_fold, train_test,  half_half};
+    enum class source {winds, reals, pca, bayes};
+
+    myMode Mode = myMode::N_fold;
+    source Source = source::winds;
 
     void successiveProcessing();
 
@@ -166,6 +171,7 @@ public:
                            const int newType,
                            const QString & newFileName);
     void successiveRelearn();
+    void successivePreclean(const QString & spectraPath);
 
 
 public slots:
@@ -195,7 +201,8 @@ public slots:
 //    void memoryAndParamsAllocation();
     void testDistances();
     void optimizeChannelsSet();
-    void adjustParamsGroup2(QAbstractButton*);
+    void setSourceSlot(QAbstractButton*);
+    void setModeSlot(QAbstractButton*, bool i);
     void setActFuncSlot(QAbstractButton*);
 
 

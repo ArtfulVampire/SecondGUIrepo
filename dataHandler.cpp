@@ -22,7 +22,7 @@ void readFileInLine(const QString & filePath,
         // test
         if(num > def::spLength() * def::nsWOM())
         {
-            cout << "readFileInLine: too long file, but proceed" << endl;
+            cout << "readFileInLine: too long file, but proceed " << endl;
         }
         ++num;
     }
@@ -119,7 +119,7 @@ void readPlainData(const QString & inPath,
     inStr.close();
 }
 
-void readSpectraFile(const QString & filePath,
+void readMatrixFile(const QString & filePath,
                      matrix & outData,
                      int inNs,
                      int spL)
@@ -143,7 +143,7 @@ void readSpectraFile(const QString & filePath,
 }
 
 
-void writeSpectraFile(const QString & filePath,
+void writeMatrixFile(const QString & filePath,
                       const matrix & outData,
                       int inNs,
                       int spL)
@@ -177,13 +177,13 @@ void writeSpectraFile(const QString & filePath,
 
 bool readICAMatrix(const QString & path, matrix & matrixA)
 {
-    readSpectraFile(path, matrixA, def::nsWOM(), def::nsWOM());
+    readMatrixFile(path, matrixA, def::nsWOM(), def::nsWOM());
     return 1;
 }
 
 void writeICAMatrix(const QString & path, const matrix & matrixA)
 {
-    writeSpectraFile(path,
+    writeMatrixFile(path,
                      matrixA,
                      matrixA.rows(),
                      matrixA.cols());

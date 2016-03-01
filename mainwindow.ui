@@ -380,6 +380,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QRadioButton" name="justSliceButton">
+         <property name="text">
+          <string>just</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="windFromRealButton">
          <property name="text">
           <string>wind from real</string>

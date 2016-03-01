@@ -243,7 +243,7 @@ void makePaFile(const QString & spectraDir,
         type = typeOfFileName(fileName);
         helpString = spectraDir
                      + slash() + fileName;
-        readSpectraFile(helpString, data4);
+        readMatrixFile(helpString, data4);
 
 
 
@@ -311,13 +311,15 @@ void makeFileLists(const QString & path,
             {
                 for(const QString & aux : auxFilters)
                 {
-                    nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
+//                    nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
+                    nameFilters << QString("*" + aux + helpString);
                 }
             }
             else
             {
-//                nameFilters << helpString;
-                nameFilters << QString(def::ExpName.left(3) + helpString);
+//                nameFilters << QString(def::ExpName.left(3) + helpString);
+                nameFilters << helpString;
+
             }
         }
         lst.push_back(localDir.entryList(nameFilters,
@@ -343,12 +345,14 @@ void makeFullFileList(const QString & path,
             {
                 for(const QString & aux : auxFilters)
                 {
-                    nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
+//                    nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
+                    nameFilters << QString("*" + aux + helpString);
                 }
             }
             else
             {
-                nameFilters << QString(def::ExpName.left(3) + helpString);
+//                nameFilters << QString(def::ExpName.left(3) + helpString);
+                nameFilters << helpString;
             }
 
         }

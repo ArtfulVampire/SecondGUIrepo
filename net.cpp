@@ -1,7 +1,7 @@
 #include "net.h"
 #include "ui_net.h"
 //#include <CL/cl.h>
-
+using namespace std;
 
 Net::Net() :
     ui(new Ui::Net)
@@ -73,7 +73,7 @@ Net::Net() :
 
     ui->learnRateBox->setMinimum(0.001);
     ui->learnRateBox->setMaximum(1.0);
-    ui->learnRateBox->setValue(0.05);
+    ui->learnRateBox->setValue(0.05); /// lrate
     ui->learnRateBox->setSingleStep(0.01);
     ui->learnRateBox->setDecimals(3);
 
@@ -175,7 +175,7 @@ Net::Net() :
 
 //    QObject::connect(ui->hopfieldPushButton, SIGNAL(clicked()), this, SLOT(Hopfield()));
 
-    QObject::connect(group3, SIGNAL(buttonToggled(int,bool)), this, SLOT(methodSetParam(int,bool)));
+
 
     QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(reset()));
 
@@ -183,7 +183,9 @@ Net::Net() :
 
     QObject::connect(ui->optimizeChannelsPushButton, SIGNAL(clicked()), this, SLOT(optimizeChannelsSet()));
 
-    QObject::connect(group2, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(adjustParamsGroup2(QAbstractButton*)));
+    QObject::connect(group1, SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setModeSlot(QAbstractButton*, bool)));
+    QObject::connect(group2, SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setSourceSlot(QAbstractButton*)));
+    QObject::connect(group3, SIGNAL(buttonToggled(int,bool)), this, SLOT(methodSetParam(int,bool)));
     QObject::connect(group4, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setActFuncSlot(QAbstractButton*)));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -208,10 +210,12 @@ void Net::aaDefaultSettings()
 //    ui->logisticRadioButton->setChecked(true);
 //    ui->softmaxRadioButton->setChecked(true);
     activation = softmax;
-//    activation = logistic;
+    ui->highLimitSpinBox->setValue(60); /// highLimit
+    ui->lowLimitSpinBox->setValue(40);  /// lowLimit
 
-    ui->highLimitSpinBox->setValue(120); /// highLimit
-    ui->lowLimitSpinBox->setValue(60);  /// lowLimit
+//    activation = logistic;
+//    ui->highLimitSpinBox->setValue(120); /// highLimit
+//    ui->lowLimitSpinBox->setValue(60);  /// lowLimit
 
     ui->rdcCoeffSpinBox->setValue(7.); ///  rdc coeff
     ui->foldSpinBox->setValue(4); /////// fold
@@ -375,7 +379,7 @@ void Net::setActFuncSlot(QAbstractButton * but)
     }
 }
 
-void Net::adjustParamsGroup2(QAbstractButton * but)
+void Net::setSourceSlot(QAbstractButton * but)
 {
     if(but->text().contains("Bayes", Qt::CaseInsensitive))
     {
@@ -383,9 +387,21 @@ void Net::adjustParamsGroup2(QAbstractButton * but)
         ui->lowLimitSpinBox->setValue(300);
         ui->epochSpinBox->setValue(500);
         ui->rdcCoeffSpinBox->setValue(0.05);
+        Source = source::bayes;
     }
     else
     {
+        if(activation == softmax)
+        {
+            ui->highLimitSpinBox->setValue(60); /// highLimit
+            ui->lowLimitSpinBox->setValue(40);  /// lowLimit
+        }
+        else if(activation == logistic)
+        {
+            ui->highLimitSpinBox->setValue(120); /// highLimit
+            ui->lowLimitSpinBox->setValue(60);  /// lowLimit
+        }
+
         ui->highLimitSpinBox->setValue(150);
         ui->lowLimitSpinBox->setValue(80);
 
@@ -395,18 +411,52 @@ void Net::adjustParamsGroup2(QAbstractButton * but)
         if(but->text().contains("wind", Qt::CaseInsensitive))
         {
             loadDataNorm = 5.;
+            Source = source::winds;
         }
         else if(but->text().contains("real", Qt::CaseInsensitive))
         {
             loadDataNorm = 10.;
+            Source = source::reals;
         }
+        else if(but->text().contains("pca", Qt::CaseInsensitive))
+        {
+            Source = source::pca;
+        }
+    }
+}
+
+
+/// ids from group1->addButton()
+void Net::setModeSlot(QAbstractButton * but, bool i)
+{
+    if(i == false) return;
+    int a = group1->checkedId();
+    switch(a)
+    {
+    case -2:
+    {
+        Mode = myMode::N_fold; break;
+    }
+    case -3:
+    {
+        Mode = myMode::k_fold; break;
+    }
+    case -4:
+    {
+        Mode = myMode::train_test; break;
+    }
+    case -5:
+    {
+        Mode = myMode::half_half; break;
+    }
+    default: {break;}
     }
 }
 
 vector<int> Net::makeLearnIndexSet()
 {
     vector<int> mixNum;
-    if(ui->trainTestRadioButton->isChecked())
+    if(Mode == myMode::train_test)
     {
         for(int i = 0; i < fileNames.size(); ++i)
         {
@@ -416,14 +466,14 @@ vector<int> Net::makeLearnIndexSet()
             }
         }
     }
-    else if(ui->leaveOneOutRadioButton->isChecked())
+    else if(Mode == myMode::N_fold)
     {
         for(int i = 0; i < dataMatrix.rows(); ++i)
         {
             mixNum.push_back(i);
         }
     }
-    else if(ui->crossRadioButton->isChecked())
+    else if(Mode == myMode::k_fold)
     {
         mixNum.resize(dataMatrix.rows());
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -433,7 +483,7 @@ vector<int> Net::makeLearnIndexSet()
         const int folds = ui->foldSpinBox->value();
         mixNum.resize(mixNum.size() * (folds - 1) / folds);
     }
-    else if(ui->halfHalfRadioButton->isChecked())
+    else if(Mode == myMode::half_half)
     {
         mixNum.resize(dataMatrix.rows() / 2);
         std::iota(mixNum.begin(), mixNum.end(), 0);
@@ -510,11 +560,6 @@ double Net::adjustReduceCoeff(QString spectraDir,
 
     cout << "adjustReduceCoeff: start" << endl;
 
-//    if(ui->leaveOneOutRadioButton->isChecked())
-//    {
-//        paFileName = "all"; // N-fold
-//    }
-
     while(1)
     {
         currVal = ui->rdcCoeffSpinBox->value();
@@ -525,7 +570,7 @@ double Net::adjustReduceCoeff(QString spectraDir,
                      currVal);
         cout << "coeff = " << currVal << "\t";
 
-        if(!ui->trainTestRadioButton->isChecked())
+        if(Mode == myMode::train_test)
         {
             PaIntoMatrixByName(paFileName);
             learnNet();
@@ -591,21 +636,23 @@ void Net::autoClassificationSimple()
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "SpectraSmooth");
 
-    if(ui->windowsRadioButton->isChecked()) //generality
+    if(Source == source::winds) //generality
     {
         helpString += slash() + "windows";
     }
-    else if(ui->bayesRadioButton->isChecked())
+    else if(Source == source::bayes)
     {
         helpString += slash() + "Bayes";
     }
-    else if(ui->pcaRadioButton->isChecked())
+    else if(Source == source::pca)
     {
         helpString += slash() + "PCA";
     }
-//    cout << "autoClassification: " << helpString << endl;
 
-    if(!helpString.isEmpty()) autoClassification(helpString);
+    if(!helpString.isEmpty())
+    {
+        autoClassification(helpString);
+    }
 }
 
 
@@ -661,6 +708,7 @@ void Net::autoClassification(const QString & spectraDir)
 
 
 
+//    cout << spectraDir << endl;
     loadData(spectraDir);
 
     if(ui->adjustLeanrRateCheckBox->isChecked())
@@ -669,21 +717,31 @@ void Net::autoClassification(const QString & spectraDir)
                         ui->highLimitSpinBox->value()); // or reduce coeff ?
     }
 
-    if(ui->crossRadioButton->isChecked())
+    confusionMatrix.fill(0.);
+    switch(Mode)
+    {
+    case myMode::k_fold:
     {
         crossClassification();
+        break;
     }
-    else if(ui->leaveOneOutRadioButton->isChecked())
+    case myMode::N_fold:
     {
+
         leaveOneOutClassification();
+        break;
     }
-    else if(ui->trainTestRadioButton->isChecked())
+    case myMode::train_test:
     {
         trainTestClassification();
+        break;
     }
-    else if(ui->halfHalfRadioButton->isChecked())
+    case myMode::half_half:
     {
         halfHalfClassification();
+        break;
+    }
+    default: {break;}
     }
 
     learnNet();
@@ -788,6 +846,7 @@ void Net::averageClassification()
     res << def::ExpName << endl;
     res.close();
 
+    confusionMatrix.print();
     cout << "average accuracy = " << doubleRound(averageAccuracy, 2) << endl;
     cout << "kappa = " << kappa << endl;
 }
@@ -860,8 +919,20 @@ void Net::stopActivity()
 
 void Net::writeWts(const QString & wtsPath)
 {
-    ofstream weightsFile;
-    weightsFile.open(wtsPath.toStdString());
+    static int wtsCounter = 0;
+    std::ofstream weightsFile;
+    if(wtsPath.isEmpty())
+    {
+        weightsFile.open((def::dir->absolutePath() + slash() +
+                         def::ExpName + "_" +
+                         QString::number(wtsCounter++) + ".wts").toStdString());
+
+
+    }
+    else
+    {
+        weightsFile.open(wtsPath.toStdString());
+    }
 
     if(!weightsFile.good())
     {
@@ -1030,10 +1101,11 @@ void Net::tallNetIndices(const vector<int> & indices)
 {
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                                   + slash() + "badFiles.txt");
+    matrix localConfusionMatrix(def::numOfClasses(), def::numOfClasses());
+
+
     ofstream badFilesStr;
     badFilesStr.open(helpString.toStdString(), ios_base::app);
-
-    matrix localConfusionMatrix(def::numOfClasses(), def::numOfClasses());
     for(int i = 0; i < indices.size(); ++i)
     {
         const int outClass = classifyDatum(indices[i]).first;
@@ -1042,13 +1114,13 @@ void Net::tallNetIndices(const vector<int> & indices)
             badFilesStr << fileNames[ indices[i] ] << endl;
             if(tallCleanFlag)
             {
-                if(ui->realsRadioButton->isChecked())
+                if(Source == source::reals)
                 {
                     QFile::remove(def::dir->absolutePath()
                                   + slash() + "SpectraSmooth"
                                   + slash() + fileNames[ indices[i] ]);
                 }
-                else if(ui->windowsRadioButton->isChecked())
+                else if(Source == source::winds)
                 {
                     QFile::remove(def::dir->absolutePath()
                                   + slash() + "SpectraSmooth"
@@ -1148,12 +1220,16 @@ void Net::successiveProcessing()
 //    setLrate(ui->learnRateBox->value() / 5.);
 
     cout << "successive: initial learn done" << endl;
+//    return;
 
 
     lineType tempArr;
     int type = -1;
 
     QStringList leest = QDir(helpString).entryList({"*_test*"}); /// special generality
+
+//    helpString = "/media/michael/Files/Data/RealTime/windows/SpectraSmooth";
+//    QStringList leest = QDir(helpString).entryList(QDir::Files); /// special generality
 
     for(const QString & fileNam : leest)
     {
@@ -1163,6 +1239,48 @@ void Net::successiveProcessing()
         successiveLearning(tempArr, type, fileNam);
     }
     averageClassification();
+}
+
+void Net::successivePreclean(const QString & spectraPath)
+{
+    QStringList leest;
+    makeFullFileList(spectraPath, leest, {"*train*"});
+    // clean from first 2 winds
+    cout << "clean first 2 winds" << endl;
+    for(auto str : leest)
+    {
+        if(str.endsWith(".00") || str.endsWith(".01"))
+        {
+            QFile::remove(spectraPath + slash() + str);
+        }
+    }
+
+    // clean by learnSetStay
+    cout << "clean by learnSetStay" << endl;
+    vector<QStringList> leest2;
+    makeFileLists(spectraPath, leest2);
+
+    for(int j = 0; j < def::numOfClasses(); ++j)
+    {
+        auto it = leest2[j].begin();
+        for(int i = 0;
+            i < leest2[j].size() - suc::learnSetStay * 1.3; /// consts generality
+            ++i, ++it)
+        {
+            QFile::remove(spectraPath + slash() + (*it));
+        }
+    }
+    Source = source::winds;
+    Mode = myMode::N_fold;
+
+    // N-fold cleaning
+    cout << "N-fold cleaning" << endl;
+    tallCleanFlag = true;
+    for(int i = 0; i < 3; ++i)
+    {
+        this->autoClassification(spectraPath);
+    }
+    tallCleanFlag = false;
 }
 
 void Net::successiveLearning(const lineType & newSpectre,
@@ -1181,6 +1299,18 @@ void Net::successiveLearning(const lineType & newSpectre,
     pushBackDatum(newData, newType, newFileName);
 
     const std::pair<int, double> outType = classifyDatum(dataMatrix.rows() - 1); // take the last
+
+//    for(int i = 0; i < 5; ++i)
+//    {
+//        cout << doubleRound(newSpectre[i], 2) << "\t";
+//    }
+//    cout << endl;
+//    for(int i = 0; i < 5; ++i)
+//    {
+//        cout << doubleRound(newData[i], 2) << "\t";
+//    }
+//    cout << endl;
+
     confusionMatrix[newType][outType.first] += 1.;
     if(outType.first == newType && outType.second < errorThreshold) /// if good coincidence
     {
@@ -1275,7 +1405,7 @@ void Net::readWts()
 
 void Net::leaveOneOutClassification()
 {
-    if(ui->pcaRadioButton->isChecked())
+    if(Source == source::pca)
     {
         ofstream outStr;
         outStr.open((def::dir->absolutePath()
@@ -1429,6 +1559,8 @@ void Net::leaveOneOut()
 {
     vector<int> learnIndices;
     int i = 0;
+    adjustLearnRate(ui->lowLimitSpinBox->value(),
+                    ui->highLimitSpinBox->value()); /// ~40-60
     while(i < dataMatrix.rows())
     {
         cout << i + 1;
@@ -1568,6 +1700,7 @@ void Net::loadData(const QString & spectraPath,
     fileNames.clear();
 
     lineType tempArr;
+    cout << spectraPath << endl;
     for(int i = 0; i < leest.size(); ++i)
     {
         classCount[i] = 0.;
@@ -1633,7 +1766,7 @@ void Net::methodSetParam(int a, bool ch)
     {
         ui->epochSpinBox->setValue(250);
         ui->tempBox->setValue(10);
-        ui->learnRateBox->setValue(0.1);
+        ui->learnRateBox->setValue(0.05);
 //        ui->critErrorDoubleSpinBox->setValue(0.1);
 
         ui->dimensionalityLineEdit->setText("0 0");
@@ -1688,6 +1821,7 @@ void Net::learnNetIndices(vector<int> mixNum,
 
     if(resetFlag)
     {
+//        cout << "reset" << endl;
         reset();
     }
 
@@ -1768,13 +1902,22 @@ void Net::learnNetIndices(vector<int> mixNum,
             }
 
             //error in the last layer
-            double err1 = 0.;
-            for(int j = 0; j < dimensionality.back(); ++j)
             {
-                err1 += pow((output.back()[j] - int(type == j) ), 2.);
+                double err = 0.;
+                for(int j = 0; j < dimensionality.back(); ++j)
+                {
+                    err += pow((output.back()[j] - int(type == j) ), 2.);
+                }
+                err = sqrt(err);
+                if(def::errType == errorNetType::SME)
+                {
+                    currentError += err;
+                }
+                else if(def::errType == errorNetType::maxDist)
+                {
+                    currentError = max(err, currentError);
+                }
             }
-            err1 = sqrt(err1);
-            currentError += err1;
 #if 0
             /// check weight
             if(!deltaFlag) /// enum !
@@ -1847,12 +1990,17 @@ void Net::learnNetIndices(vector<int> mixNum,
         }
         ++epoch;
         //count error
-        currentError /= mixNum.size();
+        if(def::errType == errorNetType::SME)
+        {
+            currentError /= mixNum.size();
+        }
         this->ui->currentErrorDoubleSpinBox->setValue(currentError);
 
 //        cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << endl;
     }
     cout << "epoch = " << epoch << "\terror = " << doubleRound(currentError, 4) << "\ttime elapsed = " << myTime.elapsed()/1000. << " sec"  << endl;
+
+//    writeWts();
 }
 
 
@@ -1882,20 +2030,28 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
         output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
     }
 
+#if 0
+    /// cout results
+    cout << "type = " << type << '\t' << "(";
+    for(int i = 0; i < def::numOfClasses(); ++i)
+    {
+        cout << doubleRound(output[numOfLayers - 1][i], 3) << '\t';
+    }
+    cout << ") " << fileNames[vecNum] << "   ";
+    for(int i = 0; i < 5; ++i)
+    {
+        cout << doubleRound(dataMatrix[vecNum][i], 2) << "\t";
+    }
+    cout << endl;
+#endif
+
     /// effect on successive procedure
     double res = 0.;
-    if(activation == logistic)
+    for(int j = 0; j < dimensionality.back(); ++j)
     {
-        for(int i = 0; i < def::numOfClasses(); ++i)
-        {
-            res += pow((output.back()[i] - (i == type)), 2);
-        }
-        res = sqrt(res / def::numOfClasses());
+        res += pow((output.back()[j] - int(type == j) ), 2.);
     }
-    else if(activation == softmax)
-    {
-        res = 1. - output[numOfLayers - 1][type];
-    }
+    res = sqrt(res);
 
     return std::make_pair(std::max_element(begin(output.back()),
                                            end(output.back()) - 1)  // -bias
@@ -2996,7 +3152,7 @@ void Net::leaveOneOutCL()
     }
 
     // Perform runtime source compilation, and obtain kernel entry point.
-    const char  * kernel_source = (const char * )kernelFromFile("/home/michael/Qt/Projects/SecondGUI/kernels.cl"); //generality
+    const char  * kernel_Source == (const char * )kernelFromFile("/home/michael/Qt/Projects/SecondGUI/kernels.cl"); //generality
     cl_int ret = 0;
     program = clCreateProgramWithSource( context,
                                          1,

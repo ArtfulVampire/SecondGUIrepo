@@ -265,7 +265,7 @@ void MainWindow::ICA() //fastICA
     // write eigenVectors
     helpString = pathForAuxFiles
                  + slash() + def::ExpName + "_eigenMatrix.txt";
-    writeSpectraFile(helpString,
+    writeMatrixFile(helpString,
                      eigenVectors,
                      ns, ns);
 
@@ -318,7 +318,7 @@ void MainWindow::ICA() //fastICA
 
 //    helpString = pathForAuxFiles
 //                 + slash() + def::ExpName + "_vectorW.txt";
-//    writeSpectraFile(helpString,
+//    writeMatrixFile(helpString,
 //                     vectorW,
 //                     ns, ns);
 
