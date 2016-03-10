@@ -15,8 +15,8 @@ double leftFreq = 5.;
 double rightFreq = 20.;
 
 double freq = 250;
-//int fftLength = 4096;
-int fftLength = 1024;
+int fftLength = 4096;
+//int fftLength = 1024;
 QString cfgFileName = "tmp.net";
 
 // for pewpew
@@ -47,4 +47,5 @@ namespace suc
 int numGoodNewLimit = 5;
 int learnSetStay = 100;
 double decayRate = 0.00;
+
 }

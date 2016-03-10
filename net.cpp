@@ -283,6 +283,11 @@ double Net::getLrate()
     return ui->learnRateBox->value();
 }
 
+matrix Net::getConfusionMatrix()
+{
+    return confusionMatrix;
+}
+
 void Net::setActFunc(const QString & in)
 {
     if(in.contains("log", Qt::CaseInsensitive) ||
@@ -802,13 +807,6 @@ void Net::averageClassification()
 
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
-//        for(int j = 0; j < def::numOfClasses(); ++j)
-//        {
-//            cout << confusionMatrix[i][j] << '\t';
-//        }
-//        cout << endl;
-
-
         const double num = confusionMatrix[i].sum();
         if(num != 0.)
         {
@@ -1179,6 +1177,9 @@ void Net::successiveProcessing()
                          + slash() + "SpectraSmooth"
                          + slash() + "windows";
 
+    const QString testMarker = "_test";
+//    const QString testMarker = "_3.";
+
     vector<int> eraseIndices{};
 
     numGoodNew = 0;
@@ -1189,7 +1190,7 @@ void Net::successiveProcessing()
     loadData(helpString);
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
-        if(fileNames[i].contains("_test"))
+        if(fileNames[i].contains(testMarker))
         {
             eraseIndices.push_back(i);
         }
@@ -1210,23 +1211,22 @@ void Net::successiveProcessing()
     eraseData(eraseIndices);
     eraseIndices.clear();
 
+
+
     /// consts
     setErrCrit(0.05);
     setLrate(0.05);
-    learnNet(); /// get initial weights on train set
-    setErrCrit(0.01);
-    setLrate(0.01);
-//    setErrCrit(ui->critErrorDoubleSpinBox->value() / 5.);
-//    setLrate(ui->learnRateBox->value() / 5.);
 
-    cout << "successive: initial learn done" << endl;
-//    return;
+    learnNet(); /// get initial weights on train set
+
+    setErrCrit(0.02);
+    setLrate(0.02);
 
 
     lineType tempArr;
     int type = -1;
 
-    QStringList leest = QDir(helpString).entryList({"*_test*"}); /// special generality
+    QStringList leest = QDir(helpString).entryList({'*' + testMarker + '*'}); /// special generality
 
 //    helpString = "/media/michael/Files/Data/RealTime/windows/SpectraSmooth";
 //    QStringList leest = QDir(helpString).entryList(QDir::Files); /// special generality
@@ -1273,12 +1273,14 @@ void Net::successivePreclean(const QString & spectraPath)
     Source = source::winds;
     Mode = myMode::N_fold;
 
+    setErrCrit(0.05);
+
     // N-fold cleaning
     cout << "N-fold cleaning" << endl;
     tallCleanFlag = true;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 0; ++i)
     {
-        this->autoClassification(spectraPath);
+        autoClassification(spectraPath);
     }
     tallCleanFlag = false;
 }
@@ -1290,33 +1292,30 @@ void Net::successiveLearning(const lineType & newSpectre,
     /// consider loaded wts
     /// dataMatrix is learning matrix
 
-
-//    const double errorThreshold = 0.8; /// add to learning set or not - logistic
-    const double errorThreshold = 0.5; /// add to learning set or not - softmax
-
     lineType newData = (newSpectre - averageDatum) / (sigmaVector * loadDataNorm);
 
     pushBackDatum(newData, newType, newFileName);
 
     const std::pair<int, double> outType = classifyDatum(dataMatrix.rows() - 1); // take the last
-
-//    for(int i = 0; i < 5; ++i)
-//    {
-//        cout << doubleRound(newSpectre[i], 2) << "\t";
-//    }
-//    cout << endl;
-//    for(int i = 0; i < 5; ++i)
-//    {
-//        cout << doubleRound(newData[i], 2) << "\t";
-//    }
-//    cout << endl;
-
     confusionMatrix[newType][outType.first] += 1.;
-    if(outType.first == newType && outType.second < errorThreshold) /// if good coincidence
+
+    if(outType.first == newType)
     {
-        const int num = std::find(types.begin(), types.end(), newType) - types.begin();
-        eraseDatum(num);
-        ++numGoodNew;
+        /// if accurate classification
+        if(outType.second < errorThreshold)
+        {
+            const int num = std::find(types.begin(),
+                                      types.end(),
+                                      newType)
+                            - types.begin();
+            eraseDatum(num);
+            ++numGoodNew;
+        }
+        else
+        {
+            popBackDatum();
+        }
+
     }
     else
     {
@@ -1700,7 +1699,7 @@ void Net::loadData(const QString & spectraPath,
     fileNames.clear();
 
     lineType tempArr;
-    cout << spectraPath << endl;
+//    cout << spectraPath << endl;
     for(int i = 0; i < leest.size(); ++i)
     {
         classCount[i] = 0.;
@@ -1715,7 +1714,7 @@ void Net::loadData(const QString & spectraPath,
             pushBackDatum(tempArr, i, fileName);
         }
     }
-    cout << "loadDataNorm = " << loadDataNorm << endl;
+//    cout << "loadDataNorm = " << loadDataNorm << endl;
 #if 1
     averageDatum = dataMatrix.averageRow();
     for(int i = 0; i < dataMatrix.rows(); ++i)
@@ -1909,11 +1908,11 @@ void Net::learnNetIndices(vector<int> mixNum,
                     err += pow((output.back()[j] - int(type == j) ), 2.);
                 }
                 err = sqrt(err);
-                if(def::errType == errorNetType::SME)
+                if(errType == errorNetType::SME)
                 {
                     currentError += err;
                 }
-                else if(def::errType == errorNetType::maxDist)
+                else if(errType == errorNetType::maxDist)
                 {
                     currentError = max(err, currentError);
                 }
@@ -1990,7 +1989,7 @@ void Net::learnNetIndices(vector<int> mixNum,
         }
         ++epoch;
         //count error
-        if(def::errType == errorNetType::SME)
+        if(errType == errorNetType::SME)
         {
             currentError /= mixNum.size();
         }
@@ -2030,6 +2029,18 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
         output[i][ dimensionality[i] ] = 1.; //bias, unused for the highest layer
     }
 
+    resizeValar(output.back(), def::numOfClasses());
+    int outClass = indexOfMax(output.back());
+
+
+    /// effect on successive procedure
+    double res = 0.;
+    for(int j = 0; j < dimensionality.back(); ++j)
+    {
+        res += pow((output.back()[j] - int(type == j) ), 2.);
+    }
+    res = sqrt(res);
+
 #if 0
     /// cout results
     cout << "type = " << type << '\t' << "(";
@@ -2045,17 +2056,7 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
     cout << endl;
 #endif
 
-    /// effect on successive procedure
-    double res = 0.;
-    for(int j = 0; j < dimensionality.back(); ++j)
-    {
-        res += pow((output.back()[j] - int(type == j) ), 2.);
-    }
-    res = sqrt(res);
-
-    return std::make_pair(std::max_element(begin(output.back()),
-                                           end(output.back()) - 1)  // -bias
-                          - begin(output.back()),
+    return std::make_pair(outClass,
                           res);
 
 

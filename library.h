@@ -119,7 +119,8 @@ void resizeValar(lineType & in, int num);
 template <typename T>
 void eraseItems(vector<T> & init, const vector<int> & indices);
 
-
+template <typename Container>
+int indexOfMax(const Container & cont);
 
 
 
@@ -266,9 +267,12 @@ bool readICAMatrix(const QString & path, matrix & matrixA);
 void writeICAMatrix(const QString & path, const matrix & matrixA);
 
 void readMatrixFile(const QString & filePath,
-                     matrix & outData,
-                     int inNs = def::nsWOM(),
-                     int spL = def::spLength());
+                    matrix & outData,
+                    int rows,
+                    int cols);
+
+void readMatrixFile(const QString & filePath,
+                    matrix & outData);
 
 void writeMatrixFile(const QString & filePath,
                       const matrix & outData,

@@ -1756,8 +1756,7 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
 
-//    return;
-//    GalyaCut(def::GalyaFolder + "/autists_all2");
+    return;
 
 
     const QString path12 = "/media/michael/Files/Data/RealTime/";
@@ -1765,9 +1764,20 @@ void MainWindow::customFunc()
     QStringList leest = QDir(path12 + "windows").entryList(
                             QDir::Files);
     setEdfFile("/media/michael/Files/Data/RealTime/SUA_test.edf");
+    def::ns = 20;
+
+    cleanDir("/media/michael/Files/Data/RealTime/Realisations");
+
+    cleanDir("/media/michael/Files/Data/RealTime/SpectraSmooth/windows", "_3.", 0);
+    cleanDir("/media/michael/Files/Data/RealTime/SpectraSmooth/windows", "_test.", 0);
+
+    cleanDir("/media/michael/Files/Data/RealTime/windows/fromreal", "_3.", 0);
+    cleanDir("/media/michael/Files/Data/RealTime/windows/fromreal", "_train.", 0);
+    cleanDir("/media/michael/Files/Data/RealTime/windows/fromreal", "_test.", 0);
+    exit(0);
 
 //    return;
-//    cleanDir("/media/michael/Files/Data/RealTime/windows/SpectraSmooth");
+
 //    ui->windButton->setChecked(true);
 //    ui->timeShiftSpinBox->setValue(0.5);
 //    sliceAll();
@@ -1775,72 +1785,12 @@ void MainWindow::customFunc()
 //    countSpectraSimple(1024);
 //    exit(0);
 
-//    return;
-//    matrix dt{};
-//    int ns_ = 24;
-//    int NS_;
-//    for(auto str : leest)
-//    {
-//        readPlainData(path12 + "windows/" + str, dt, ns_, NS_);
-//        cout << NS_ << " " << path12 + "/Signals/" + str << endl;
-//        drawEeg(dt, ns_, NS_, def::freq,
-//                path12 + "/Signals/" + str + ".jpg");
-//    }
-//    exit(0);
 
-//    this_thread::sleep_for(seconds{3});
-    def::ns = 20;
     Net * ann = new Net();
-//    ann->successiveProcessing();
-//    exit(9);
-//    ann->setMode("N");
-//    ann->setSource("wind");
-//    ann->autoClassificationSimple();
-//    exit(0);
+    ann->successiveProcessing();
+    delete ann;
 
-    ann->successivePreclean("/media/michael/Files/Data/RealTime/SpectraSmooth/windows");
-    exit(0);
-
-
-    leest = QDir(path12).entryList({"*.wts"},
-                            QDir::Files);
-
-    ann->loadData("/media/michael/Files/Data/RealTime/SpectraSmooth/windows");
-    ann->learnNet();
-
-    for(auto str : leest)
-    {
-        ann->drawWts(path12 + str);
-    }
-
-    exit(0);
-
-
-
-
-//    for(const QString suff : {"s", "l"})
-//    {
-//        ann->setActFunc(suff);
-//        ann->autoClassificationSimple();
-//        exit(0);
-//        for(int i = 0; i < 5; ++i)
-//        {
-////            ann->learnNetIndices(ann->makeLearnIndexSet());
-//            ann->learnNet();
-//            ann->writeWts(globalEdf.getDirPath() + slash()
-//                          + QString::number(i) + "_" + suff + ".wts");
-//            ann->drawWts(globalEdf.getDirPath() + slash()
-//                          + QString::number(i) + "_" + suff + ".wts");
-//        }
-//    }
-//    exit(1);
-
-//    return;
-
-
-
-
-
+    exit(9);
 
 #if 0
     /// test on AAX

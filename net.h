@@ -62,6 +62,10 @@ private:
     std::vector<int> channelsSet;
     std::vector<int> channelsSetExclude;
 
+    enum class errorNetType {SME, maxDist};
+    const errorNetType errType = errorNetType::SME;
+    const double errorThreshold = 1.0;
+
     double averageAccuracy;
     double kappa; // Cohen's
     int epoch;
@@ -105,6 +109,7 @@ public:
     double getReduceCoeff();
     int getEpoch();
     double getLrate();
+    matrix getConfusionMatrix();
 
     void setReduceCoeff(double coeff);
     void setErrCrit(double in);

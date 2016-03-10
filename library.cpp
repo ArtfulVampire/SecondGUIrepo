@@ -201,8 +201,8 @@ void eyesProcessingStatic(const vector<int> eogChannels,
 
     ofstream outStr;
     outStr.open(outFilePath.toStdString());
+    outStr << "NumOfEegChannels " << eegChannels.size() << '\t';
     outStr << "NumOfEyesChannels " << eogChannels.size() << endl;
-    outStr << "NumOfEegChannels " << eegChannels.size() << endl;
     for(int k = 0; k < eegChannels.size(); ++k)
     {
         for(int i = 0; i < eogChannels.size(); ++i)

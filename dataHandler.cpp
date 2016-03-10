@@ -11,28 +11,20 @@ void readFileInLine(const QString & filePath,
         cout << "readFileInLine: bad file " << filePath << endl;
         return;
     }
-    vec outData;
-    double tmp;
-    int num = 0;
-    while(!file.eof())
+    int rows;
+    int cols;
+    file.ignore(64, ' ');
+    file >> rows;
+    file.ignore(64, ' ');
+    file >> cols;
+
+    int len = rows * cols;
+    result.resize(len);
+    for(int i = 0; i < len; ++i)
     {
-        file >> tmp;
-        outData.push_back(tmp);
-
-        // test
-        if(num > def::spLength() * def::nsWOM())
-        {
-            cout << "readFileInLine: too long file, but proceed " << endl;
-        }
-        ++num;
+        file >> result[i];
     }
-    outData.pop_back(); ///// prevent doubling last item (eof) bicycle
     file.close();
-
-    result.resize(outData.size());
-    std::copy(outData.begin(),
-              outData.end(),
-              begin(result));
 }
 
 template <typename signalType>
@@ -45,10 +37,13 @@ void writeFileInLine(const QString & filePath,
         cout << "bad file" << endl;
         return;
     }
+    file << "FileLen " << outData.size() << '\t';
+    file << "Pewpew " << 1 << endl;
     for(auto out : outData)
     {
-        file << doubleRound(out, 4) << '\n'; // \t or \n
+        file << doubleRound(out, 4) << '\n';
     }
+    file << endl;
     file.close();
 }
 
@@ -121,20 +116,48 @@ void readPlainData(const QString & inPath,
 
 void readMatrixFile(const QString & filePath,
                      matrix & outData,
-                     int inNs,
-                     int spL)
+                    int rows,
+                    int cols)
 {
     ifstream file(filePath.toStdString());
     if(!file.good())
     {
-        cout << "readSpectreFile: bad input file " << filePath << endl;
+        cout << "readMatrixFile: bad input file " << filePath << endl;
         return;
     }
-    outData.resize(inNs, spL);
+    outData.resize(rows, cols);
 
-    for(int i = 0; i < inNs; ++i)
+    for(int i = 0; i < rows; ++i)
     {
-        for(int j = 0; j < spL; ++j)
+        for(int j = 0; j < cols; ++j)
+        {
+            file >> outData[i][j];
+        }
+    }
+    file.close();
+}
+
+void readMatrixFile(const QString & filePath,
+                    matrix & outData)
+{
+    ifstream file(filePath.toStdString());
+    if(!file.good())
+    {
+        cout << "readMatrixFile: bad input file " << filePath << endl;
+        return;
+    }
+    int rows;
+    int cols;
+    file.ignore(64, ' ');
+    file >> rows;
+    file.ignore(64, ' ');
+    file >> cols;
+
+    outData.resize(rows, cols);
+
+    for(int i = 0; i < rows; ++i)
+    {
+        for(int j = 0; j < cols; ++j)
         {
             file >> outData[i][j];
         }

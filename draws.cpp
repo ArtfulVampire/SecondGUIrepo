@@ -681,7 +681,9 @@ void drawTemplate(const QString & outPath,
     QPixmap pic;
     QPainter paint;
     QString helpString;
-    int numOfChan = 19;
+
+    int numOfChan = coords::numOfChan;
+
     if(outPath.contains("_ica") || def::ExpName.contains("_ica"))
     {
         channelsFlag = false; // numbers for ICAs

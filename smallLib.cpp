@@ -1,5 +1,25 @@
 #include "library.h"
 
+template <typename Container>
+int indexOfMax(const Container & cont)
+{
+    int res = 0;
+    int ans = 0;
+    auto val = *(std::begin(cont));
+
+    for(auto it = std::begin(cont);
+        it != std::end(cont);
+        ++it, ++res)
+    {
+        if(*it > val)
+        {
+            ans = res;
+            val = *it;
+        }
+    }
+    return ans;
+}
+
 std::string funcName(std::string in)
 {
     in.resize(in.find('('));
@@ -512,3 +532,7 @@ int matiCountDecimal(QString byteMarker)
     return res;
 }
 
+
+template int indexOfMax(const std::vector<double> & cont);
+template int indexOfMax(const std::valarray<double> & cont);
+template int indexOfMax(const std::list<double> & cont);

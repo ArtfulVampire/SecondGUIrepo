@@ -12,21 +12,23 @@ namespace coords
 {
 //relative coords
     const double scale = 250./1600.;
-    const double x[] = {0.21875, 0.59375,
-                        0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
-                        0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
-                        0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
-                        0.21875, 0.59375}; //-0.5/16
-    const double y[] = {0.1875, 0.1875,
-                        0.375, 0.375, 0.375, 0.375, 0.375,
-                        0.5625, 0.5625, 0.5625, 0.5625, 0.5625,
-                        0.75, 0.75, 0.75, 0.75, 0.75,
-                        0.9375, 0.9375};
-    const char lbl[][19] = {"Fp1", "Fp2",
-                            "F7", "F3", "Fz", "F4", "F8",
-                            "T3", "C3", "Cz", "C4", "T4",
-                            "T5", "P3", "Pz", "P4", "T6",
-                            "O1", "O2"};
+    /// + 2 EOG
+    const int numOfChan = 21; // for drawTemplate
+    const std::vector<double> x {0.21875, 0.59375,
+                                 0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
+                                 0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
+                                 0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
+                                 0.21875, 0.59375, 0.03125, 0.78125}; //-0.5/16
+    const std::vector<double> y {0.1875, 0.1875,
+                                 0.375, 0.375, 0.375, 0.375, 0.375,
+                                 0.5625, 0.5625, 0.5625, 0.5625, 0.5625,
+                                 0.75, 0.75, 0.75, 0.75, 0.75,
+                                 0.9375, 0.9375, 0.9375, 0.9375};
+    const std::vector<const char *> lbl {"Fp1", "Fp2",
+                                         "F7", "F3", "Fz", "F4", "F8",
+                                         "T3", "C3", "Cz", "C4", "T4",
+                                         "T5", "P3", "Pz", "P4", "T6",
+                                         "O1", "O2", "EOG1, EOG2"};
 }
 
 namespace suc
@@ -39,7 +41,7 @@ extern double decayRate;
 
 
 enum spectraGraphsNormalization {all = 0, each = 1};
-enum class errorNetType {SME, maxDist};
+
 namespace def
 {
     const bool matiFlag = false;
@@ -48,6 +50,9 @@ namespace def
     const bool OssadtchiFlag = false;
 
     const bool wirteStartEndLong = false; //for slice
+
+
+
 
     extern QString ExpName;
     extern QDir * dir;

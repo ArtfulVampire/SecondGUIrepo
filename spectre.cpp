@@ -96,11 +96,12 @@ Spectre::Spectre() :
     ui->specLabel->installEventFilter(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
 
-    ui->fftComboBox->setCurrentIndex(0);
-    ui->fftComboBox->setCurrentIndex(1);
-
-    ui->fftComboBox->setCurrentText(QString::number(def::fftLength));
-
+    {
+        int tmp = log2(def::fftLength) - 10;
+        ui->fftComboBox->setCurrentIndex(0);
+        ui->fftComboBox->setCurrentIndex(1);
+        ui->fftComboBox->setCurrentIndex(tmp);
+    }
 
 
     for(int i = 0; i < def::nsWOM(); ++i)
@@ -396,7 +397,8 @@ void Spectre::psaSlot()
                          ui->lineEdit_1->text());
     }
 
-    if(drawData.cols() <= 19 * def::spLength())
+    if(drawData.cols() == 19 * def::spLength() ||
+       drawData.cols() == 21 * def::spLength())
     {
         drawTemplate(helpString);
 
@@ -409,15 +411,13 @@ void Spectre::psaSlot()
         {
             for(int i = 0; i < def::numOfClasses(); ++i)
             {
-//                colors.push_back(QColor(255. * i / def::numOfClasses(),
-//                                        255. * i / def::numOfClasses(),
-//                                        255. * i / def::numOfClasses()));
                 colors.push_back(QColor(255. * (def::numOfClasses() - i) / def::numOfClasses(),
                                         255. * (def::numOfClasses() - i) / def::numOfClasses(),
                                         255. * (def::numOfClasses() - i) / def::numOfClasses()));
             }
         }
 
+        def::drawNorm = -1;
         def::drawNorm = drawArrays(helpString,
                                    drawData,
                                    false,
@@ -622,7 +622,8 @@ void Spectre::setRight()
 {
     /// changed
     /// -1 to compensate +1 in def::right()
-    ui->rightHzEdit->setText(QString::number((def::right() - 1) * def::spStep()));
+    def::rightFreq = (ui->rightSpinBox->value() - 1) * def::spStep();
+    ui->rightHzEdit->setText(QString::number(def::rightFreq));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         rangeLimits[i][1] = def::spLength();
@@ -632,7 +633,8 @@ void Spectre::setRight()
 void Spectre::setLeft()
 {
     /// changed
-    ui->leftHzEdit->setText(QString::number(def::left() * def::spStep()));
+    def::leftFreq = ui->leftSpinBox->value() * def::spStep();
+    ui->leftHzEdit->setText(QString::number(def::leftFreq));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         rangeLimits[i][1] = def::spLength();
@@ -672,6 +674,8 @@ void Spectre::writeSpectra(const double leftFreq,
             cout << "bad outStream" << endl;
             continue;
         }
+        outStream << "NumOfChannels " << def::nsWOM() << '\t';
+        outStream << "spLength " << right - left << endl;
 
         if(ui->spectraRadioButton->isChecked())
         {
@@ -683,9 +687,9 @@ void Spectre::writeSpectra(const double leftFreq,
                     {
                         if((k - def::left()) >= rangeLimits[j][0] &&
                            (k - def::left()) <= rangeLimits[j][1])
-                            outStream << dataFFT[i][j][k] << '\n';
+                            outStream << dataFFT[i][j][k] << '\t';
                         else
-                            outStream << "0.000" << '\n';
+                            outStream << "0.000" << '\t';
                     }
                     outStream << '\n';
                 }
@@ -696,7 +700,7 @@ void Spectre::writeSpectra(const double leftFreq,
                 {
                     for(int k = left; k < right; ++k) // [left, right)
                     {
-                        outStream << dataFFT[i][j][k] << '\n';
+                        outStream << dataFFT[i][j][k] << '\t';
                     }
                     outStream << '\n';
                 }

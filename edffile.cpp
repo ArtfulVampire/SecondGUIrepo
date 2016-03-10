@@ -1235,22 +1235,13 @@ void edfFile::cleanFromEyes(QString eyesPath,
     QTime myTime;
     myTime.start();
 
-    int numEeg, numEog;
     if(eyesPath.isEmpty())
     {
         eyesPath = this->dirPath + slash() + "eyes.txt";
     }
-    ifstream inStr;
-    inStr.open(eyesPath.toStdString().c_str());
-    if(!inStr.good())
-    {
-        cout << "cleanFromEyes: bad eyes file" << endl;
-        return;
-    }
-    inStr.ignore(64, ' '); // "NumOfEyesChannels "
-    inStr >> numEog;
-    inStr.ignore(64, ' '); // "NumOfEegChannels "
-    inStr >> numEeg;
+
+    matrix coefs;
+    readMatrixFile(eyesPath, coefs);
 
     if(eegNums.empty())
     {
@@ -1260,7 +1251,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
             {
                 eegNums.push_back(i);
             }
-            if(eegNums.size() == numEeg) break; /// bicycle generality
+            if(eegNums.size() == coefs.rows()) break; /// bicycle generality
         }
     }
     if(eogNums.empty())
@@ -1273,25 +1264,6 @@ void edfFile::cleanFromEyes(QString eyesPath,
             }
         }
     }
-
-    if(numEog != eogNums.size() || numEeg != eegNums.size())
-    {
-        cout << "cleanFromEyes: bad input eyes file or labels list" << endl;
-        inStr.close();
-        return;
-    }
-
-    vector<vector<double>> coefs;
-    coefs.resize(numEeg);
-    for(int i = 0; i < numEeg; ++i)
-    {
-        coefs[i].resize(numEog);
-        for(int j = 0; j < numEog; ++j)
-        {
-            inStr >> coefs[i][j];
-        }
-    }
-    inStr.close();
 
 #if DATA_IN_CHANS
     for(int i = 0; i < numEeg; ++i)
@@ -1324,9 +1296,9 @@ void edfFile::cleanFromEyes(QString eyesPath,
         }
     }
 #else
-    for(int i = 0; i < numEeg; ++i)
+    for(int i = 0; i < coefs.rows(); ++i)
     {
-        for(int k = 0; k < numEog; ++k)
+        for(int k = 0; k < coefs.cols(); ++k)
         {
 #if DATA_POINTER
             /// make valarray ?

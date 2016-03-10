@@ -1429,7 +1429,9 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
     //channel labels
     for(int c2=0; c2<def::nsWOM(); ++c2)  //exept markers channel
     {
-        paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), QString(coords::lbl[c2]));
+        paint->drawText((paint->device()->width() * coords::x[c2]-20),
+                        (paint->device()->height() * coords::y[c2]-252),
+                        QString(coords::lbl[c2]));
     }
 
     //draw scale
