@@ -624,8 +624,8 @@ void edfFile::handleDatum(const int & currNs,
                           FILE * edfForDatum)
 {
     char helpChar = '0';
-    int16_t a = 0;
-    u_int16_t markA = 0;
+    qint16 a = 0;
+    quint16 markA = 0;
 
 
 #if DATA_POINTER_IN_CHANS
@@ -640,7 +640,7 @@ void edfFile::handleDatum(const int & currNs,
     {
         if(currNs != markerChannel) // usual data read
         {
-            fread(&a, sizeof(int16_t), 1, edfForDatum);
+            fread(&a, sizeof(qint16), 1, edfForDatum);
             currDatum = physMin[currNs]
                     + (physMax[currNs] - physMin[currNs])
                     * (double(a) - digMin[currNs])
@@ -663,7 +663,7 @@ void edfFile::handleDatum(const int & currNs,
             }
             else if(this->matiFlag)
             {
-                fread(&markA, sizeof(u_int16_t), 1, edfForDatum);
+                fread(&markA, sizeof(quint16), 1, edfForDatum);
                 currDatum = physMin[currNs]
                         + (physMax[currNs] - physMin[currNs])
                         * (double(markA) - digMin[currNs])
@@ -677,7 +677,7 @@ void edfFile::handleDatum(const int & currNs,
             }
             else // simple encephalan
             {
-                fread(&a, sizeof(int16_t), 1, edfForDatum);
+                fread(&a, sizeof(qint16), 1, edfForDatum);
                 currDatum = physMin[currNs]
                         + (physMax[currNs] - physMin[currNs])
                         * (double(a) - digMin[currNs])
@@ -708,15 +708,15 @@ void edfFile::handleDatum(const int & currNs,
                                             ); // need for eyes cleaned EEG only
             }
 
-            a = (int16_t)((currDatum - physMin[currNs])
+            a = (qint16)((currDatum - physMin[currNs])
                         * (digMax[currNs] - digMin[currNs] + 1)
                         / (physMax[currNs] - physMin[currNs])
                         + digMin[currNs]);
 
 
-//            a  = (int16_t)(currDatum * 8.); // generality encephalan
+//            a  = (qint16)(currDatum * 8.); // generality encephalan
 
-            fwrite(&a, sizeof(int16_t), 1, edfForDatum);
+            fwrite(&a, sizeof(qint16), 1, edfForDatum);
         }
         else //if markers channel
         {
@@ -727,21 +727,21 @@ void edfFile::handleDatum(const int & currNs,
             }
             else if(this->matiFlag)
             {
-//                markA = (u_int16_t) (currDatum);
-                markA = (u_int16_t)( (currDatum - physMin[currNs])
+//                markA = (quint16) (currDatum);
+                markA = (quint16)( (currDatum - physMin[currNs])
                                           * (digMax[currNs] - digMin[currNs])
                                           / (physMax[currNs] - physMin[currNs])
                                           + digMin[currNs]);
-                fwrite(&markA, sizeof(u_int16_t), 1, edfForDatum);
+                fwrite(&markA, sizeof(quint16), 1, edfForDatum);
             }
             else // simple encephalan
             {
-//                a = (int16_t) (currDatum);
-                a = (int16_t)( (currDatum - physMin[currNs])
+//                a = (qint16) (currDatum);
+                a = (qint16)( (currDatum - physMin[currNs])
                             * (digMax[currNs] - digMin[currNs])
                             / (physMax[currNs] - physMin[currNs])
                             + digMin[currNs]);
-                fwrite(&a, sizeof(int16_t), 1, edfForDatum);
+                fwrite(&a, sizeof(qint16), 1, edfForDatum);
             }
         }
     }
