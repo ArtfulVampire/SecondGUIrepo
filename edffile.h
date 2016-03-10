@@ -226,7 +226,7 @@ public:
 //    void writeOtherData(mat & newData,
 //                        const QString & outPath,
 //                        vector<int> chanList = {});
-    void writeOtherData(matrix & newData,
+    void writeOtherData(const matrix & newData,
                         const QString & outPath,
                         vector<int> chanList = {});
 //    void writeOtherData(double ** newData,

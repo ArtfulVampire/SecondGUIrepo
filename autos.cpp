@@ -560,8 +560,7 @@ void MainWindow::Bayes()
                                               + slash() + lst[i]);
         readPlainData(helpString,
                       dataBayes,
-                      NumOfSlices,
-                      def::ns);
+                      NumOfSlices);
         if(NumOfSlices < 250)
         {
             fclose(file);

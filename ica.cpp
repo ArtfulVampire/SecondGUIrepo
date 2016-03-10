@@ -266,8 +266,7 @@ void MainWindow::ICA() //fastICA
     helpString = pathForAuxFiles
                  + slash() + def::ExpName + "_eigenMatrix.txt";
     writeMatrixFile(helpString,
-                     eigenVectors,
-                     ns, ns);
+                     eigenVectors);
 
     // write eigenValues
     helpString = pathForAuxFiles
@@ -319,8 +318,7 @@ void MainWindow::ICA() //fastICA
 //    helpString = pathForAuxFiles
 //                 + slash() + def::ExpName + "_vectorW.txt";
 //    writeMatrixFile(helpString,
-//                     vectorW,
-//                     ns, ns);
+//                     vectorW);
 
 
 
@@ -471,7 +469,7 @@ void MainWindow::ICA() //fastICA
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
                                           + slash() + def::ExpName + "_maps_after_var.txt");
-    writeICAMatrix(helpString, matrixA, ns); //generality 19-ns
+    writeMatrixFile(helpString, matrixA, ns); //generality 19-ns
 
     for(int i = 0; i < ns; ++i)
     {
@@ -599,7 +597,7 @@ void MainWindow::ICA() //fastICA
     //now should draw amplitude maps OR write to file
         helpString = pathForAuxFiles
                      + slash() + def::ExpName + "_maps.txt";
-    writeICAMatrix(helpString, matrixA); //generality 19-ns
+    writeMatrixFile(helpString, matrixA); //generality 19-ns
     drawMapsICA(helpString);
 
 
@@ -668,7 +666,7 @@ void MainWindow::reorderIcaFile(const QString & icaPath,
     }
 
     matrix maps;
-    readICAMatrix(mapsPath, maps);
+    readMatrixFile(mapsPath, maps);
     maps.transpose();
 
     localEdf.reduceChannels(chanList);
@@ -682,7 +680,7 @@ void MainWindow::reorderIcaFile(const QString & icaPath,
 
 
     localEdf.writeEdfFile(icaOutPath);
-    writeICAMatrix(mapsOutPath, newMaps);
+    writeMatrixFile(mapsOutPath, newMaps);
 
 }
 
@@ -785,8 +783,8 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     matrix mat2 (ns_, ns_);
 
     //read matrices
-    readICAMatrix(maps1Path, mat1);
-    readICAMatrix(maps2Path, mat2);
+    readMatrixFile(maps1Path, mat1);
+    readMatrixFile(maps2Path, mat2);
 
     //transpose ICA maps
     mat1.transpose();
@@ -961,7 +959,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
 
     helpString2 = maps1Path;
     helpString2.replace("_maps.txt", "_ord_maps.txt");
-    writeICAMatrix(helpString2, newMaps);
+    writeMatrixFile(helpString2, newMaps);
 
 
     if(mode == 0)
@@ -1004,7 +1002,7 @@ void MainWindow::ICsSequence(const QString & EDFica1,
     newMaps.transpose();
     helpString2 = maps2Path;
     helpString2.replace("_maps.txt", "_ord_maps.txt");
-    writeICAMatrix(helpString2, newMaps);
+    writeMatrixFile(helpString2, newMaps);
 
 
     helpString.clear();
@@ -1125,7 +1123,7 @@ void MainWindow::icaClassTest() /// CAREFUL sliceOneByOneNew() numOfIC
     helpString2 = def::ExpName;
     helpString2.replace("_ica", "");
     helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "Help" + slash() + helpString2 + "_maps.txt");
-    if(!readICAMatrix(helpString, matrixA, numOfIC))
+    if(!readMatrixFile(helpString, matrixA, numOfIC))
     {
         return;
     }
@@ -1315,7 +1313,7 @@ void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "Help"
                                           + slash() + def::ExpName + "_maps.txt");
-    readICAMatrix(helpString, matrixA);
+    readMatrixFile(helpString, matrixA);
 
     QList<int> thrownComp;
     thrownComp.clear();
@@ -1364,7 +1362,7 @@ void MainWindow::transformEdfMaps(const QString & inEdfPath,
     readData();
 
     matrix mat1(def::nsWOM(), def::nsWOM());
-    readICAMatrix(mapsPath, mat1); // data = mat1 * comps
+    readMatrixFile(mapsPath, mat1); // data = mat1 * comps
     mat1.invert(); // mat1 * data = comps
 
     matrix newData(def::nsWOM(), globalEdf.getDataLen());
@@ -1401,7 +1399,7 @@ void MainWindow::transformReals() //move to library
     double ** mat3;
     matrixCreate(&mat3, 19, 19);
 
-    readICAMatrix(helpString, mat1, 19);
+    readMatrixFile(helpString, mat1, 19);
     matrixInvert(mat1, 19, &mat3);
     matrixDelete(&mat1, 19);
 
@@ -1421,7 +1419,7 @@ void MainWindow::transformReals() //move to library
     for(int i = 0; i < lst.length(); ++i)
     {
         helpString = def::dir->absolutePath() + slash() + procDir + slash() + lst[i];
-        readPlainData(helpString, mat1, 19, NumOfSlices);
+        readPlainData(helpString, mat1, NumOfSlices);
 
         matrixProduct(mat3, globalEdf.getData(), mat2, 19, NumOfSlices);
 

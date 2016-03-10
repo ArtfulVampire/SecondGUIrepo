@@ -18,6 +18,7 @@
 #include "coord.h"
 #include "matrix.h"
 #include "smallFuncs.h"
+
 #include <ios>
 #include <iostream>
 #include <fstream>
@@ -27,7 +28,6 @@
 #include <stdio.h>
 #include <cstdio>
 
-
 #include <cmath>
 #include <string>
 #include <sstream>
@@ -36,6 +36,7 @@
 #include <set>
 #include <algorithm>
 #include <complex>
+#include <utility>
 
 #include <typeinfo>
 #include <chrono>
@@ -246,38 +247,27 @@ void makeMatrixFromFiles(QString spectraDir,
                          double *** outMatrix);
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
-void readPlainData(const QString & inPath,
-                   matrix & data,
-                   const int & ns,
-                   int & numOfSlices,
-                   const int & start = 0);
-
 lineType signalFromFile(QString filePath,
                    int channelNumber,
                    int ns = def::ns); // unused
 
+void readPlainData(const QString & inPath,
+                   matrix & data,
+                   int & numOfSlices,
+                   const int & start = 0);
+
 void writePlainData(const QString outPath,
-                    const matrix &data,
-                    const int & ns,
+                    const matrix & data,
                     int numOfSlices,
                     const int & start = 0);
-
-
-bool readICAMatrix(const QString & path, matrix & matrixA);
-void writeICAMatrix(const QString & path, const matrix & matrixA);
-
-void readMatrixFile(const QString & filePath,
-                    matrix & outData,
-                    int rows,
-                    int cols);
 
 void readMatrixFile(const QString & filePath,
                     matrix & outData);
 
 void writeMatrixFile(const QString & filePath,
-                      const matrix & outData,
-                      int inNs = def::nsWOM(),
-                      int spL = def::spLength());
+                     const matrix & outData,
+                     const QString & rowsString = "NumOfRows",
+                     const QString & colsString = "NumOfCols");
 
 
 template <typename signalType>

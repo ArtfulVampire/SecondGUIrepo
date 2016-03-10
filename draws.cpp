@@ -282,15 +282,8 @@ void drawMapsICA(const QString &mapsFilePath,
                                       const ColorScale))
 {
     matrix matrixA(def::nsWOM(), def::nsWOM());
-    readICAMatrix(QString(mapsFilePath).remove("_ica"), matrixA);
-    double maxAbs = matrixA[0][0];
-    for(int i = 0; i < matrixA.rows(); ++i)
-    {
-        for(int j = 0; j < matrixA.cols(); ++j)
-        {
-            maxAbs = fmax(maxAbs, fabs(matrixA[i][j]));
-        }
-    }
+    readMatrixFile(QString(mapsFilePath).remove("_ica"), matrixA);
+    double maxAbs = matrixA.maxAbsVal();
 
     for(int i = 0; i < def::nsWOM(); ++i)
     {

@@ -47,10 +47,9 @@ void writeFileInLine(const QString & filePath,
     file.close();
 }
 
-
+/// in file and in matrix - transposed
 void writePlainData(const QString outPath,
                     const matrix & data,
-                    const int & ns,
                     int numOfSlices,
                     const int & start)
 {
@@ -61,16 +60,15 @@ void writePlainData(const QString outPath,
 
     ofstream outStr;
     outStr.open(outPath.toStdString());
-    outStr << "NumOfSlices " << numOfSlices;
-    outStr << "\tNumOfChannels " << ns;
-    outStr << endl;
+    outStr << "NumOfSlices " << numOfSlices << '\t';
+    outStr << "NumOfChannels " << data.rows() << endl;
     for (int i = 0; i < numOfSlices; ++i)
     {
-        for(int j = 0; j < ns; ++j)
+        for(int j = 0; j < data.rows(); ++j)
         {
-            outStr << doubleRound(data[j][i + start], 3) << '\t';
+            outStr << doubleRound(data[j][i + start], 4) << '\t';
         }
-        outStr << '\n';
+        outStr << endl;
     }
     outStr.flush();
     outStr.close();
@@ -79,7 +77,6 @@ void writePlainData(const QString outPath,
 
 void readPlainData(const QString & inPath,
                    matrix & data,
-                   const int & ns,
                    int & numOfSlices,
                    const int & start)
 {
@@ -87,18 +84,20 @@ void readPlainData(const QString & inPath,
     inStr.open(inPath.toStdString());
     if(!inStr.good())
     {
-        cout << "readPlainData: cannot open file" << endl;
+        cout << "readPlainData: cannot open file\n" << inPath << endl;
         return;
     }
+    int localNs;
     inStr.ignore(64, ' '); // "NumOfSlices "
     inStr >> numOfSlices;
-    inStr.ignore(64, '\n'); // "NumOfChannels N\n"
+    inStr.ignore(64, ' '); // "NumOfChannels "
+    inStr >> localNs;
 
-    data.resize(ns, numOfSlices + start);
+    data.resize(localNs, numOfSlices + start);
 
     for (int i = 0; i < numOfSlices; ++i)
     {
-        for(int j = 0; j < ns; ++j)
+        for(int j = 0; j < localNs; ++j)
         {
             inStr >> data[j][i + start];
             /// Ossadtchi
@@ -112,29 +111,6 @@ void readPlainData(const QString & inPath,
         }
     }
     inStr.close();
-}
-
-void readMatrixFile(const QString & filePath,
-                     matrix & outData,
-                    int rows,
-                    int cols)
-{
-    ifstream file(filePath.toStdString());
-    if(!file.good())
-    {
-        cout << "readMatrixFile: bad input file " << filePath << endl;
-        return;
-    }
-    outData.resize(rows, cols);
-
-    for(int i = 0; i < rows; ++i)
-    {
-        for(int j = 0; j < cols; ++j)
-        {
-            file >> outData[i][j];
-        }
-    }
-    file.close();
 }
 
 void readMatrixFile(const QString & filePath,
@@ -168,27 +144,22 @@ void readMatrixFile(const QString & filePath,
 
 void writeMatrixFile(const QString & filePath,
                       const matrix & outData,
-                      int inNs,
-                      int spL)
-
+                     const QString & rowsString,
+                     const QString & colsString)
 {
-    if(inNs > outData.rows() ||
-       spL > outData.cols())
-    {
-        cout << "bad inputs while writing matrix" << endl;
-        return;
-    }
-
     ofstream file(filePath.toStdString());
     if(!file.good())
     {
-        cout << "bad output file:\n" << filePath.toStdString() << endl;
+        cout << "writeMatrixFile: bad output file\n" << filePath.toStdString() << endl;
         return;
     }
 
-    for(int i = 0; i < inNs; ++i)
+    file << rowsString << " " << outData.rows() << '\t';
+    file << colsString << " " << outData.cols() << endl;
+
+    for(int i = 0; i < outData.rows(); ++i)
     {
-        for(int j = 0; j < spL; ++j)
+        for(int j = 0; j < outData.cols(); ++j)
         {
             file << doubleRound(outData[i][j], 4) << '\t';
         }
@@ -197,20 +168,6 @@ void writeMatrixFile(const QString & filePath,
     file.close();
 }
 
-
-bool readICAMatrix(const QString & path, matrix & matrixA)
-{
-    readMatrixFile(path, matrixA, def::nsWOM(), def::nsWOM());
-    return 1;
-}
-
-void writeICAMatrix(const QString & path, const matrix & matrixA)
-{
-    writeMatrixFile(path,
-                     matrixA,
-                     matrixA.rows(),
-                     matrixA.cols());
-}
 
 
 template void writeFileInLine(const QString & filePath, const lineType & outData);

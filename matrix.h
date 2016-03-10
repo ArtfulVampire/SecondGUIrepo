@@ -58,6 +58,9 @@ public:
     int rows() const;
     double maxVal() const;
     double minVal() const;
+    double maxAbsVal() const;
+    double minAbsVal() const;
+
     double sum() const;
     dataType::iterator begin();
     dataType::iterator end();

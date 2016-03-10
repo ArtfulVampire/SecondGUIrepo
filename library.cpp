@@ -156,7 +156,6 @@ void eyesProcessingStatic(const vector<int> eogChannels,
     {
         readPlainData(filePath,
                       dataE,
-                      def::ns,
                       help,
                       NumOfSlices);
         NumOfSlices += help;
@@ -199,19 +198,25 @@ void eyesProcessingStatic(const vector<int> eogChannels,
         signalNums.pop_back();
     }
 
-    ofstream outStr;
-    outStr.open(outFilePath.toStdString());
-    outStr << "NumOfEegChannels " << eegChannels.size() << '\t';
-    outStr << "NumOfEyesChannels " << eogChannels.size() << endl;
-    for(int k = 0; k < eegChannels.size(); ++k)
-    {
-        for(int i = 0; i < eogChannels.size(); ++i)
-        {
-            outStr << doubleRound(coefficients[k][i], 3) << "\t";
-        }
-        outStr << endl;
-    }
-    outStr.close();
+    writeMatrixFile(outFilePath,
+                    coefficients,
+                    "NumOfEegChannels",
+                    "NumOfEogChannels");
+//    {
+//        ofstream outStr;
+//        outStr.open(outFilePath.toStdString());
+//        outStr << "NumOfEegChannels " << eegChannels.size() << '\t';
+//        outStr << "NumOfEyesChannels " << eogChannels.size() << endl;
+//        for(int k = 0; k < eegChannels.size(); ++k)
+//        {
+//            for(int i = 0; i < eogChannels.size(); ++i)
+//            {
+//                outStr << doubleRound(coefficients[k][i], 3) << "\t";
+//            }
+//            outStr << endl;
+//        }
+//        outStr.close();
+//    }
 
     cout << "eyesProcessing: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
@@ -515,7 +520,6 @@ lineType signalFromFile(QString filePath,
     int tempInt;
     readPlainData(filePath,
                   tempMat,
-                  ns,
                   tempInt);
     return tempMat[channelNumber];
 }

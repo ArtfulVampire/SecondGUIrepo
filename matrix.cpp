@@ -363,6 +363,7 @@ void matrix::resize(int newRows, int newCols)
                   data.end(),
                   [newCols](lineType & in)
     {
+        /// resizeValar
         lineType temp = in;
         in.resize(newCols);
         std::copy(std::begin(temp),
@@ -417,7 +418,7 @@ int matrix::rows() const
 
 double matrix::maxVal() const
 {
-    double res = 0.;
+    double res = data[0][0];
     std::for_each(this->data.begin(),
                   this->data.end(),
                   [&res](const lineType & in)
@@ -437,6 +438,30 @@ double matrix::minVal() const
     });
     return res;
 }
+
+double matrix::maxAbsVal() const
+{
+    double res = data[0][0];
+    std::for_each(this->data.begin(),
+                  this->data.end(),
+                  [&res](const lineType & in)
+    {
+        res = max(res, abs(in).max());
+    });
+    return res;
+}
+double matrix::minAbsVal() const
+{
+    double res = data[0][0];
+    std::for_each(this->data.begin(),
+                  this->data.end(),
+                  [&res](const lineType & in)
+    {
+        res = min(res, abs(in).min());
+    });
+    return res;
+}
+
 double matrix::sum() const
 {
     double res = 0.;

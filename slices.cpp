@@ -40,7 +40,7 @@ void MainWindow::sliceWindFromReal()
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "Realisations"
                                               + slash() + lst[i]);
-        readPlainData(helpString, dataReal, localNs, NumOfSlices);
+        readPlainData(helpString, dataReal, NumOfSlices);
 
         offset = 0;
         for(int h = 0; h < ceil(NumOfSlices / double(timeShift)); ++h)
@@ -72,7 +72,7 @@ void MainWindow::sliceWindFromReal()
             helpString = QDir::toNativeSeparators(helpString);
 
             /// wowo wowoww wowowowo owowwowo
-            writePlainData(helpString, dataReal, localNs, wndLength, offset);
+            writePlainData(helpString, dataReal, wndLength, offset);
 
             offset += timeShift;
         }
@@ -109,7 +109,7 @@ void MainWindow::sliceIlya(const QString &fileName, QString marker) //beginning 
             + slash() + fileName;
 
     matrix dataI;
-    readPlainData(helpString, dataI, def::ns, NumOfSlices);
+    readPlainData(helpString, dataI, NumOfSlices);
 
 
 
@@ -793,8 +793,8 @@ void MainWindow::sliceMatiSimple()
                                                           + "_" + rightNumber(j, 2)
                                                           + '.' + fileMark);
 
-                    int NumOfSlices = min(end - start - j*piece, piece);
-                    writePlainData(helpString, fil.getData(), def::ns, NumOfSlices, start + j*piece);
+                    int NumOfSlices = min(end - start - j * piece, piece);
+                    writePlainData(helpString, fil.getData(), NumOfSlices, start + j * piece);
                 }
                 fileMark.clear();
                 ++session[type];

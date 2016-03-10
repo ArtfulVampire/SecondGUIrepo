@@ -682,8 +682,7 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                     const double wndLen = ui->windowLengthSpinBox->value() * def::freq;
 
                     for(int i = 0;
-                        i < ceil(fil.getData().cols() /
-                                 wndLen);
+                        i < ceil(fil.getData().cols() / wndLen);
                         ++i)
                     {
                         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
@@ -1383,7 +1382,6 @@ void MainWindow::drawRealisations()
         helpString = prePath + slash() + lst[i];
         readPlainData(helpString,
                       dataD,
-                      def::ns,
                       NumOfSlices);
 
         if(NumOfSlices > 15000)
@@ -1700,8 +1698,7 @@ void MainWindow::writeCorrelationMatrix(QString edfPath, QString outPath) //unus
         }
         corrs[i][i] = 0.;
     }
-    writeICAMatrix(outPath, corrs); //generality 19-ns
-
+    writeMatrixFile(outPath, corrs); //generality 19-ns
 }
 
 void MainWindow::setBoxMax(double a)
@@ -1755,6 +1752,9 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
+    globalEdf.readEdfFile("/media/michael/Files/Data/Feedback/AAU/AAU.edf");
+    cout << globalEdf.getData()[19].max() << endl;
+    exit(0);
 
     return;
 
@@ -3546,7 +3546,6 @@ void MainWindow::customFunc()
         helpString = pth + oneFile;
         readPlainData(helpString,
                       dataMat,
-                      19,
                       newDataLen);
         cout << newDataLen << endl;
 

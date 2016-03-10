@@ -355,7 +355,7 @@ void Spectre::integrate()
         helpString = QDir::toNativeSeparators(ui->lineEdit_2->text()
                                               + slash() + fileName);
         writeMatrixFile(helpString,
-                         dataOut);
+                        dataOut);
     }
 
 }
@@ -810,7 +810,6 @@ void Spectre::countSpectra()
                                               + slash() + fileName);
         readPlainData(helpString,
                       dataIn,
-                      def::ns,
                       NumOfSlices);
 
 
@@ -1080,7 +1079,6 @@ void Spectre::drawWavelets()
                                             + slash() + fileName);
         readPlainData(filePath,
                       signal,
-                      def::ns,
                       NumOfSlices);
 
         for(int chanNum = 0; chanNum < def::nsWOM(); ++chanNum)

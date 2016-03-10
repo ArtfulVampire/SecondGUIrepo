@@ -507,8 +507,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
         }
         ndr = min(int(realNdr), ndr);
     }
-
-
     handleParamArray(reserved, ns, 32, readFlag, edfDescriptor, header);
     //end channels read
 
@@ -534,11 +532,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     {
         dataLength = ndr * nr[0]; // generality
     }
-
-
-
     handleData(readFlag, edfDescriptor);
-
 
     fclose(edfDescriptor);
 
@@ -1175,13 +1169,11 @@ void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPat
 
         writePlainData(outPath,
                        *(this->dataPointer),
-                       this->ns,
                        finishBin-startBin,
                        startBin);
 #else
         writePlainData(outPath,
                        this->data,
-                       this->ns,
                        finishBin - startBin,
                        startBin);
 #endif
@@ -1543,7 +1535,7 @@ void edfFile::setChannels(const vector<edfChannel> & inChannels)
 
 //template
 
-void edfFile::writeOtherData(matrix & newData,
+void edfFile::writeOtherData(const matrix & newData,
                              const QString & outPath,
                              vector<int> chanList)
 {
@@ -1551,18 +1543,21 @@ void edfFile::writeOtherData(matrix & newData,
 
     if(chanList.empty())
     {
-        for(int i = 0; i < newData.size(); ++i)
-        {
-            chanList.push_back(i);
-        }
+        chanList.resize(newData.size());
+        std::iota(std::begin(chanList),
+                  std::end(chanList),
+                  0);
     }
 
     temp.data = edfDataType();
     temp.channels.clear();
+//    int num = 0;
     for(int item : chanList)
     {
         temp.channels.push_back( this->channels[item] );
+        /// pewpwepwwpepwpewpepwepwpep
         temp.data.push_back( newData[item] );
+//        temp.data.push_back( newData[num++] );
     }
     temp.adjustArraysByChannels(); // set in particular ns = chanList.length();
     temp.writeEdfFile(outPath);

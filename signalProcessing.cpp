@@ -648,8 +648,7 @@ void svd(const matrix & initialData,
     QString helpString = pathForAuxFiles
                          + slash() + def::ExpName + "_eigenMatrix.txt";
     readMatrixFile(helpString,
-                    eigenVectors,
-                    dimension, dimension);
+                    eigenVectors);
 
 
     // write eigenValues
@@ -928,7 +927,7 @@ void wavelet(QString filePath,
     double helpDouble;
 
     matrix fileData;
-    readPlainData(filePath, fileData, ns, NumOfSlices);
+    readPlainData(filePath, fileData, NumOfSlices);
 
     lineType input = fileData[channelNumber];
 
@@ -1660,7 +1659,7 @@ void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit)
     for(int k = 0; k < def::nsWOM(); ++k)
     {
         std::for_each(begin(inData[k]) + leftLimit,
-                      end(inData[k]) + rightLimit,
+                      begin(inData[k]) + rightLimit,
                       [](double & in){in = 0.;});
     }
 }

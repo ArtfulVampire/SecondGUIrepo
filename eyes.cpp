@@ -95,7 +95,7 @@ void Eyes::eyesClean()
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + list[i]);
-        readPlainData(helpString, dataF, def::ns, NumOfSlices);
+        readPlainData(helpString, dataF, NumOfSlices);
 
         for(int k = 0; k < NumEeg; ++k)
         {
@@ -120,7 +120,7 @@ void Eyes::eyesClean()
             for(int j = 0; j < def::ns; ++j)
             {
                 if(lst.contains(QString::number(j+1))) continue;
-                outStr << fitNumber(doubleRound(dataF[j][i], 3), 7) << '\t';
+                outStr << fitNumber(doubleRound(dataF[j][i], 4), 7) << '\t';
             }
             outStr << '\n';
         }
@@ -211,7 +211,6 @@ void Eyes::eyesProcessing()
     {
         readPlainData(filePath,
                       dataE,
-                      def::ns,
                       help,
                       NumOfSlices);
         NumOfSlices += help;
@@ -257,20 +256,10 @@ void Eyes::eyesProcessing()
         signalNums.pop_back();
     }
 
-    ofstream outStr;
-    outStr.open((def::dir->absolutePath()
-                + slash() + "eyes.txt").toStdString());
-    outStr << "NumOfEyesChannels " << lst.length() << endl;
-    outStr << "NumOfEegChannels " << ui->spinBox->value() << endl;
-    for(int k = 0; k < ui->spinBox->value(); ++k)
-    {
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            outStr << doubleRound(coefficients[k][i], 3) << "\t";
-        }
-        outStr << endl;
-    }
-    outStr.close();
+    writeMatrixFile(def::dir->absolutePath() + slash() + "eyes.txt",
+                    coefficients,
+                    "NumOfEegChannels",
+                    "NumOfEogChannels");
 
     //automatization
     if(!autoFlag) QMessageBox::information((QWidget*)this,

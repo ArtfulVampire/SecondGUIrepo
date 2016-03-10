@@ -831,7 +831,7 @@ void matrixPrint(const double ** const &mat, const int &i, const int &j)
         for(int b = 0; b < j; ++b)
         {
             //            cout << mat[a][b] << "\t";
-            cout << doubleRound(mat[a][b], 3) << "\t";
+            cout << doubleRound(mat[a][b], 4) << "\t";
         }
         cout << endl;
     }

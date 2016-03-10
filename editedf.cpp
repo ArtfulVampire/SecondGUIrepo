@@ -419,7 +419,7 @@ void MainWindow::reduceChannelsSlot()
         localNs = def::ns;
         helpString = QDir::toNativeSeparators(localDir.absolutePath()
                                               + slash() + fileName);
-        readPlainData(helpString, dataR, localNs, NumOfSlices);
+        readPlainData(helpString, dataR, NumOfSlices);
         for(const int & exclChan : excludeList)
         {
             dataR.eraseRow(exclChan);
@@ -617,17 +617,20 @@ void MainWindow::constructEDF(const QString & newPath,
     def::ns = chanList.size();
     const int ns = chanList.size();
 
-    def::dir->cd("Realisations");
+
     QStringList lst;
     if(!nameFilters.isEmpty())
     {
-        lst = def::dir->entryList(nameFilters, QDir::Files, QDir::Name); /// Name ~ order
+        lst = QDir(def::dir->absolutePath() + slash() + "Realisations").entryList(
+                  nameFilters, QDir::Files, QDir::Name); /// Name ~ order
     }
     else
     {
-        lst = def::dir->entryList(QDir::Files, QDir::Name); /// Name ~ order
+        lst = QDir(def::dir->absolutePath() + slash() + "Realisations").entryList(
+                  QDir::Files, QDir::Name); /// Name ~ order
+//        lst = def::dir->entryList(QDir::Files, QDir::Name); /// Name ~ order
     }
-    def::dir->cdUp();
+
     if(lst.isEmpty())
     {
         cout << "constructEDF: list of realisations is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
@@ -639,14 +642,16 @@ void MainWindow::constructEDF(const QString & newPath,
     int NumOfSlices;
     int currSlice = 0;
 
-    for(int i = 0; i < lst.length(); ++i)
+    for(const QString & fileName : lst)
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "Realisations"
-                                              + slash() + lst[i]);
-        readPlainData(helpString, newData, def::ns, NumOfSlices, currSlice);
+                                              + slash() + fileName);
+        readPlainData(helpString, newData, NumOfSlices, currSlice);
         currSlice += NumOfSlices;
     }
+
+
     int helpInt = currSlice;
 
     if(currSlice < 16 * def::freq)

@@ -371,7 +371,7 @@ void Cut::createImage(QString dataFileName) //
     tmpDir.cdUp(); // drop the file name
     makeFullFileList(tmpDir.absolutePath(), lst);
 
-    readPlainData(currentFile, data3, def::ns, NumOfSlices);
+    readPlainData(currentFile, data3, NumOfSlices);
 
     currentNumber = lst.indexOf(fileName);
     currentPicPath = getPicPath(dataFileName, def::dir, def::ns);
@@ -655,8 +655,7 @@ void Cut::cut()
     ++addNum;
     writePlainData(helpString,
                    data3,
-                   def::ns,
-                   rightLimit-leftLimit,
+                   rightLimit - leftLimit,
                    leftLimit);
 
     rightLimit = NumOfSlices;
