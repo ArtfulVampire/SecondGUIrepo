@@ -76,11 +76,11 @@ QString getPicPath(const QString & dataPath,
     {
         if(!dataPath.contains("fromreal"))
         {
-            helpString += "Signals" + QString(slash()) + "windows";
+            helpString += "Signals" + slash() + "windows";
         }
         else /// fromreals need other path?
         {
-            helpString += "Signals" + QString(slash()) + "windows";
+            helpString += "Signals" + slash() + "windows";
         }
     }
     else if(dataPath.contains("cut"))

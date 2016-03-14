@@ -35,6 +35,12 @@ Cut::Cut() :
     addNum = 0;
 
 
+    ui->subdirComboBox->addItem("Realisations");
+    ui->subdirComboBox->addItem("windows");
+    ui->subdirComboBox->addItem("windows/fromreal"); //generality
+    ui->subdirComboBox->setCurrentText("windows/fromreal");
+
+
     ui->eogSpinBox->setValue(2);
     ui->eogDoubleSpinBox->setValue(2.40);
     ui->eogDoubleSpinBox->setSingleStep(0.1);
@@ -74,19 +80,27 @@ Cut::Cut() :
 
 
 
+
+
+
+    ///////////////
+    currentNumber =- 1;
+
+#if 0
     QFileDialog * browser = new QFileDialog();
-    browser->setDirectory(def::dir->absolutePath() + slash() + "Realisations");
+    browser->setDirectory(def::dir->absolutePath());
     browser->setViewMode(QFileDialog::Detail);
-
-    def::dir->cd("Realisations");
-    lst = def::dir->entryList(QDir::Files);
-    def::dir->cdUp();
-    currentNumber=-1;
-
     QObject::connect(ui->browseButton, SIGNAL(clicked()), browser, SLOT(show()));
-    QObject::connect(browser, SIGNAL(fileSelected(QString)), ui->lineEdit, SLOT(setText(QString)));
-    QObject::connect(browser, SIGNAL(fileSelected(QString)), this, SLOT(createImage(QString)));
-//    QObject::connect(browser, SIGNAL(fileSelected(QString)), browser, SLOT(hide()));
+    QObject::connect(ui->subdirComboBox, SIGNAL(currentTextChanged(QString)),
+                     this, SLOT(setBrowserDir()));
+    QObject::connect(browser, SIGNAL(fileSelected(QString)),
+                     ui->lineEdit, SLOT(setText(QString)));
+    QObject::connect(browser, SIGNAL(fileSelected(QString)),
+                     this, SLOT(createImage(QString)));
+    //    QObject::connect(browser, SIGNAL(fileSelected(QString)), browser, SLOT(hide()));
+#else
+    QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
+#endif
 
     QObject::connect(this, SIGNAL(buttonPressed(char,int)), this, SLOT(mousePressSlot(char,int)));
     QObject::connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(next()));
@@ -109,12 +123,17 @@ Cut::~Cut()
     delete ui;
 }
 
+//void Cut::setBrowserDir()
+//{
+//}
+
 void Cut::browse()
 {
     QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
                                                       tr("Open realisation"),
-                                                      def::dir->absolutePath()
-                                                      + slash() + "Realisations");
+                                                      def::dir->absolutePath() +
+                                                      slash() +
+                                                      ui->subdirComboBox->currentText());
     if(helpString.isEmpty())
     {
         QMessageBox::information((QWidget*)this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
@@ -386,33 +405,12 @@ void Cut::createImage(QString dataFileName) //
                              ui->drawNormDoubleSpinBox->value(),
                              blueCh,
                              redCh);
-//        currentPic.load(currentPicPath, "JPG", Qt::ColorOnly);
-
         // initial zoom
         zoomPrev = 1.;
-        zoomCurr = NumOfSlices/double(ui->scrollArea->width()); // generality
-        ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(), ui->scrollArea->height() - 20)); // -20 generality
+        zoomCurr = NumOfSlices / double(ui->scrollArea->width()); // generality
+        ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(),
+                                                  ui->scrollArea->height() - 20)); // -20 generality
         rightLimit = NumOfSlices;
-
-        /*
-        // picLabel varies
-        // Pixmap & scrollArea are constant.
-        if(zoomCurr > 1.)
-        {
-            ui->picLabel->setPixmap(currentPic.scaled(ui->scrollArea->size().width()*zoomCurr, ui->scrollArea->size().height()-20));  // -20 generality
-            zoomPrev = zoomCurr;
-            rightLimit = NumOfSlices;
-        }
-        else
-        {
-            zoomCurr = 1.;
-//            ui->picLabel->setPixmap(currentPic.scaled(ui->scrollArea->size().width(), ui->scrollArea->size().height()-20));  // -20 generality
-            ui->picLabel->setPixmap(currentPic.scaled(currentPic.size().width(), ui->scrollArea->size().height()-20));  // -20 generality
-            rightLimit = ui->scrollArea->size().width();
-        }
-
-        */
-        // endof initial zoom
     }
     else
     {
@@ -448,7 +446,6 @@ void Cut::setAutoProcessingFlag(bool a)
 
 void Cut::next()
 {
-//    rewrite();
     QString helpString;
     if(currentNumber + 1 < lst.length())  // generality
     {
@@ -457,9 +454,16 @@ void Cut::next()
         {
              helpString += "Realisations";
         }
-        else if(currentFile.contains("windows") && !currentFile.contains("fromreal"))
+        else if(currentFile.contains("windows"))
         {
-            helpString += "windows";
+            if(currentFile.contains("fromreal"))
+            {
+                helpString += "windows" + slash() + "fromreal";
+            }
+            else
+            {
+                helpString += "windows";
+            }
         }
         else if(currentFile.contains("cut"))
         {
@@ -468,6 +472,8 @@ void Cut::next()
         helpString += slash();
 
         if(lst[currentNumber + 1].contains("_num")) ++currentNumber; // generality crutch bicycle
+
+//        cout << "next: " << helpString << endl;
 
         helpString += lst[currentNumber + 1];
         emit openFile(helpString);               // sets dir into ExpName directory
@@ -489,9 +495,16 @@ void Cut::prev()
         {
              helpString += "Realisations";
         }
-        else if(currentFile.contains("windows") && !currentFile.contains("fromreal"))
+        else if(currentFile.contains("windows"))
         {
-            helpString += "windows";
+            if(currentFile.contains("fromreal"))
+            {
+                helpString += "windows" + slash() + "fromreal";
+            }
+            else
+            {
+                helpString += "windows";
+            }
         }
         else if(currentFile.contains("cut"))
         {
@@ -501,6 +514,8 @@ void Cut::prev()
 
 
         if(lst[currentNumber-1].contains("_num")) --currentNumber; // generality crutch bicycle
+
+//        cout << "prev: " << helpString << endl;
 
         helpString += lst[currentNumber-1];
         emit openFile(helpString);          // sets dir into ExpName directory

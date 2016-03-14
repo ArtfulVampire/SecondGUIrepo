@@ -316,6 +316,9 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(showEyes()));
 
+    QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
+                     this, SLOT(cleanEdfFromEyesSlot()));
+
     QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
 
     QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawRealisations()));
@@ -434,14 +437,13 @@ void MainWindow::showEyes()
     eyesProcessingStatic(eogs); // for first 19 eeg channels
     return;
 
-
-
     Eyes *trololo = new Eyes();
 //    trololo->setAutoProcessingFlag(false); trololo->show(); return;
     trololo->setAutoProcessingFlag(true);
     trololo->eyesProcessing();
     delete trololo;
 }
+
 
 void MainWindow::showNet()
 {
@@ -493,7 +495,22 @@ void MainWindow::setEdfFileSlot()
 {
     QString helpString;
     NumOfEdf = 0;
-    helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget*)this, tr("EDF to open"), def::dataFolder, tr("EDF files (*.EDF *.edf)")));
+
+    if(def::dir->absolutePath() == QDir::root().absolutePath())
+    {
+        helpString = QFileDialog::getOpenFileName((QWidget*)this,
+                                                  tr("EDF to open"),
+                                                  def::dataFolder,
+                                                  tr("EDF files (*.EDF *.edf)"));
+    }
+    else
+    {
+        helpString = QFileDialog::getOpenFileName((QWidget*)this,
+                                                  tr("EDF to open"),
+                                                  def::dir->absolutePath(),
+                                                  tr("EDF files (*.EDF *.edf)"));
+    }
+
     if(helpString.isEmpty())
     {
         QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
@@ -608,7 +625,7 @@ void MainWindow::setExpName()
     ui->textEdit->append(helpString);
 }
 
-void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
+void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 {
     QTime myTime;
     myTime.start();
@@ -629,7 +646,6 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
             makeChanList(chanList);
             fil.reduceChannels(chanList);
             def::ns = fil.getNs();
-
         }
         // almost equal time, should use sessionEdges
         if(ui->sliceCheckBox->isChecked())
@@ -682,11 +698,12 @@ void MainWindow::sliceAll() ////////////////////////aaaaaaaaaaaaaaaaaaaaaaaaaa//
                     const double wndLen = ui->windowLengthSpinBox->value() * def::freq;
 
                     for(int i = 0;
-                        i < ceil(fil.getData().cols() / wndLen);
+                        i < min(ceil(fil.getData().cols() / wndLen), 60.); /// const generality
                         ++i)
                     {
                         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                                               + slash() + "windows"
+                                                              + slash() + "fromreal"
                                                               + slash() + def::ExpName
                                                               + "-" + rightNumber(i, 4)
                                                               + "_" + QString::number(254));
@@ -780,12 +797,6 @@ void MainWindow::readData()
 
     globalEdf.readEdfFile(helpString);
     def::ns = globalEdf.getNs();
-//    for(int i = 0; i < def::ns; ++i)
-//    {
-//        nr[i] = int(globalEdf.getNr()[i]);
-//    }
-//    ndr = globalEdf.getNdr();
-//    ddr = globalEdf.getDdr();
     label = globalEdf.getLabels();
 #else
     FILE * edf = fopen(helpString, "r"); //generality
@@ -1752,9 +1763,11 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
-    globalEdf.readEdfFile("/media/michael/Files/Data/Feedback/AAU/AAU.edf");
-    cout << globalEdf.getData()[19].max() << endl;
-    exit(0);
+    ui->windowLengthSpinBox->setValue(7);
+    ui->justSliceButton->setChecked(true);
+//    globalEdf.readEdfFile("/media/michael/Files/Data/Feedback/AAU/AAU.edf");
+//    cout << globalEdf.getData()[19].max() << endl;
+//    exit(0);
 
     return;
 

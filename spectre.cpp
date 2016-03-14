@@ -687,7 +687,7 @@ void Spectre::writeSpectra(const double leftFreq,
                     {
                         if((k - def::left()) >= rangeLimits[j][0] &&
                            (k - def::left()) <= rangeLimits[j][1])
-                            outStream << dataFFT[i][j][k] << '\t';
+                            outStream << doubleRound(dataFFT[i][j][k], 4) << '\t';
                         else
                             outStream << "0.000" << '\t';
                     }
@@ -700,7 +700,7 @@ void Spectre::writeSpectra(const double leftFreq,
                 {
                     for(int k = left; k < right; ++k) // [left, right)
                     {
-                        outStream << dataFFT[i][j][k] << '\t';
+                        outStream << doubleRound(dataFFT[i][j][k], 4) << '\t';
                     }
                     outStream << '\n';
                 }

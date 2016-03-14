@@ -319,9 +319,10 @@ void edfFile::handleParamArray(vector <Typ> & qStr,
                                FILE *ioFile,
                                FILE * headerFile)
 {
+    if(readFlag) qStr = std::vector<Typ>(number, Typ()); // clean param vector
+
     for(int i = 0; i < number; ++i)
     {
-        if(readFlag) qStr.push_back(Typ());
         handleParam <Typ> (qStr[i], length, readFlag, ioFile, headerFile);
     }
 }
@@ -1243,7 +1244,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
             {
                 eegNums.push_back(i);
             }
-            if(eegNums.size() == coefs.rows()) break; /// bicycle generality
+            if(eegNums.size() == coefs.rows()) break; /// bicycle generality - only first 19
         }
     }
     if(eogNums.empty())
@@ -1395,7 +1396,7 @@ void edfFile::reduceChannels(const QString & chanStr)
     if(leest.last().toInt() - 1 != this->markerChannel)
     {
         cout << "Reduce channels: bad channels list - no markers" << endl;
-        return;
+//        return;
     }
 
     /// need write a check of channel sequence
@@ -1513,7 +1514,8 @@ void edfFile::setLabels(const vector<QString> & inLabels)
 {
     if(this->ns != inLabels.size())
     {
-        cout << "edfFile::setLabels: inappropriate vector size" << endl;
+        cout << "edfFile::setLabels: inappropriate vector size "
+             << this->ns << " != " << inLabels.size() << endl;
         return;
     }
     for(int i = 0; i < this->ns; ++i)

@@ -568,7 +568,7 @@
       <x>292</x>
       <y>235</y>
       <width>711</width>
-      <height>461</height>
+      <height>476</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_7">
@@ -771,13 +771,6 @@
       <widget class="QPushButton" name="cut_e">
        <property name="text">
         <string>Look &amp;through</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QPushButton" name="eyesButton">
-       <property name="text">
-        <string>&amp;Eyes</string>
        </property>
       </widget>
      </item>
@@ -1133,6 +1126,24 @@
        </item>
       </layout>
      </item>
+     <item row="5" column="1">
+      <layout class="QVBoxLayout" name="verticalLayout_17">
+       <item>
+        <widget class="QPushButton" name="eyesButton">
+         <property name="text">
+          <string>&amp;Eyes</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="cleanEdfFromEyesButton">
+         <property name="text">
+          <string>Clean EDF</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
    </widget>
    <widget class="QLineEdit" name="fileMarkersLineEdit">
@@ -1158,6 +1169,8 @@
    <zorder>layoutWidget</zorder>
    <zorder>label_22</zorder>
    <zorder>fileMarkersLineEdit</zorder>
+   <zorder>eyesButton</zorder>
+   <zorder>cleanEdfFromEyesButton</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

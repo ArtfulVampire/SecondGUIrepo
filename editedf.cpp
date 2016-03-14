@@ -12,12 +12,23 @@ void MainWindow::makeChanList(vector<int> & chanList)
     if(lst.last().toInt() - 1 != globalEdf.getMarkChan())
     {
         cout << "makeChanList: no markers channel" << endl;
-        return;
+        ///
+//        return;
     }
     for(auto str : lst)
     {
         chanList.push_back(str.toInt() - 1);
     }
+}
+
+
+void MainWindow::cleanEdfFromEyesSlot()
+{
+    readData();
+    globalEdf.cleanFromEyes();
+    QString helpString = def::dir->absolutePath()
+                         + slash() + def::ExpName + "_eyesClean.edf";
+    globalEdf.writeEdfFile(helpString);
 }
 
 void MainWindow::rereferenceDataSlot()
@@ -36,7 +47,6 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     QTime myTime;
     myTime.start();
 
-    QStringList lst;
     QString helpString;
     QString helpString2;
 
@@ -45,20 +55,18 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     helpString.clear();
     for(int i = 0; i < def::ns; ++i)
     {
-        helpString += QString::number(i+1) + " ";
+        helpString += QString::number(i + 1) + " ";
     }
     ui->reduceChannelsLineEdit->setText(helpString);
 
-
-    lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    if(!QString(label[lst.last().toInt() - 1]).contains("Markers"))
-    {
-        cout << "refilterData: bad reduceChannelsLineEdit - no markers" << endl;
-        return;
-    }
+    std::vector<int> chanList(def::ns);
+    std::iota(chanList.begin(),
+              chanList.end(),
+              0);
 
     int groundChan = -1; //A1-N
-    int earsChan = -1; //A1-A2
+    int earsChan1 = -1; //A1-A2
+    int earsChan2 = -1; //A2-A1
     for(int i = 0; i < def::ns; ++i)
     {
         if(QString(label[i]).contains("A1-N"))
@@ -67,16 +75,30 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
         }
         else if(QString(label[i]).contains("A1-A2"))
         {
-            earsChan = i;
+            earsChan1 = i;
+        }
+        else if(QString(label[i]).contains("A2-A1"))
+        {
+            earsChan2 = i;
         }
     }
-    if((groundChan+1) * (earsChan+1) == 0)
+    if(groundChan == -1 || (earsChan1 == -1 && earsChan2 == -1))
     {
-        cout << "some of reref channels is absent" << endl;
+        cout << "some of reref channels are absent" << endl;
         return;
     }
 
+    int earsChan = (earsChan1 != -1) ? earsChan1 : earsChan2;
 
+    vector<QString> sign;
+    if(earsChan1 != -1)
+    {
+        sign = {"-", "+"};
+    }
+    else
+    {
+        sign = {"+", "-"};
+    }
     helpString.clear();
     if(newRef == "A1")
     {
@@ -90,15 +112,15 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
             {
                 if(QString(label[i]).contains("-A2"))
                 {
-                    helpString += QString::number(i+1) + "-" + QString::number(earsChan+1);
+                    helpString += QString::number(i+1) + sign[0] + QString::number(earsChan + 1);
                 }
                 else if(QString(label[i]).contains("-N"))
                 {
-                    helpString += QString::number(i+1) + "-" + QString::number(groundChan+1);
+                    helpString += QString::number(i+1) + "-" + QString::number(groundChan + 1);
                 }
                 else if(QString(label[i]).contains("-Ar"))
                 {
-                    helpString += QString::number(i+1) + "-" + QString::number(earsChan+1) + "/2";
+                    helpString += QString::number(i+1) + sign[0] + QString::number(earsChan + 1) + "/2";
                 }
                 else
                 {
@@ -124,15 +146,15 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
             {
                 if(QString(label[i]).contains("-A1"))
                 {
-                    helpString += QString::number(i+1) + "+" + QString::number(earsChan+1);
+                    helpString += QString::number(i+1) + sign[1] + QString::number(earsChan+1);
                 }
                 else if(QString(label[i]).contains("-N"))
                 {
-                    helpString += QString::number(i+1) + "-" + QString::number(groundChan+1) + "+" + QString::number(earsChan+1);
+                    helpString += QString::number(i+1) + "-" + QString::number(groundChan+1) + "+" + QString::number(earsChan1+1);
                 }
                 else if(QString(label[i]).contains("-Ar"))
                 {
-                    helpString += QString::number(i+1) + "+" + QString::number(earsChan+1) + "/2";
+                    helpString += QString::number(i+1) + sign[1] + QString::number(earsChan+1) + "/2";
                 }
                 else
                 {
@@ -162,11 +184,15 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
                 }
                 else if(QString(label[i]).contains("-A2"))
                 {
-                    helpString += QString::number(i+1) + "-" + QString::number(earsChan+1) + "+" + QString::number(groundChan+1);
+                    helpString += QString::number(i+1) +
+                                  sign[0] + QString::number(earsChan+1) +
+                            "+" + QString::number(groundChan+1);
                 }
                 else if(QString(label[i]).contains("-Ar"))
                 {
-                    helpString += QString::number(i+1) + "-" + QString::number(earsChan+1) + "/2" + "+" + QString::number(groundChan+1);
+                    helpString += QString::number(i+1) +
+                                  sign[0] + QString::number(earsChan+1) + "/2" +
+                            "+" + QString::number(groundChan+1);
                 }
                 else
                 {
@@ -192,15 +218,17 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
             {
                 if(QString(label[i]).contains("-A1"))
                 {
-                    helpString += QString::number(i+1) + "+" + QString::number(earsChan+1) + "/2";
+                    helpString += QString::number(i+1) +
+                                  sign[1] + QString::number(earsChan + 1) + "/2";
                 }
                 else if(QString(label[i]).contains("-A2"))
                 {
-                    helpString += QString::number(i+1) + "-" + QString::number(earsChan+1) + "/2";
+                    helpString += QString::number(i+1) +
+                                  sign[0] + QString::number(earsChan + 1) + "/2";
                 }
                 else if(QString(label[i]).contains("-N"))
                 {
-                    helpString += QString::number(i+1) + "-" + QString::number(groundChan+1) + "+" + QString::number(earsChan+1) + "/2";
+                    helpString += QString::number(i+1) + "-" + QString::number(groundChan+1) + "+" + QString::number(earsChan1+1) + "/2";
                 }
                 else
                 {
@@ -217,10 +245,11 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     cout << "rereferenceData:\n" << helpString.toStdString() << endl;
     ui->reduceChannelsLineEdit->setText(helpString);
 
+
     //change labels
     for(int i = 0; i < def::ns; ++i)
     {
-        helpString = QString(label[lst[i].toInt() - 1]);
+        helpString = QString(label[i]);
         if(helpString.contains('-') && (i != groundChan && i != earsChan))
         {
             // helpString2 - oldRef
@@ -229,7 +258,6 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
             helpString2.remove(helpString2.indexOf(' '), helpString2.length());
             helpString.replace(helpString2, newRef);
         }
-//        strcpy(label[i], helpString.toStdString().c_str());
         label[i] = helpString;
     }
     globalEdf.setLabels(label);

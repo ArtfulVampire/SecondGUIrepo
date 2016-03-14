@@ -85,6 +85,7 @@ public slots:
     void markerSetDecValueSlot();
     void markerSetBinValueSlot();
     void matiPreprocessingSlot();
+    void cleanEdfFromEyesSlot();
 
     //signals
     void ICA();
