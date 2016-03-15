@@ -44,8 +44,8 @@ QStringList fileMarkers{"_241", "_247", "_254 _244"};
 
 namespace suc
 {
-int numGoodNewLimit = 5;
-int learnSetStay = 100;
-double decayRate = 0.00;
+int numGoodNewLimit = 8;
+int learnSetStay = 60;
+double decayRate = 0.01;
 
 }

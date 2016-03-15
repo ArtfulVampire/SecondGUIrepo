@@ -69,15 +69,15 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     int earsChan2 = -1; //A2-A1
     for(int i = 0; i < def::ns; ++i)
     {
-        if(QString(label[i]).contains("A1-N"))
+        if(label[i].contains("A1-N"))
         {
             groundChan = i;
         }
-        else if(QString(label[i]).contains("A1-A2"))
+        else if(label[i].contains("A1-A2"))
         {
             earsChan1 = i;
         }
-        else if(QString(label[i]).contains("A2-A1"))
+        else if(label[i].contains("A2-A1"))
         {
             earsChan2 = i;
         }
@@ -104,21 +104,27 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     {
         for(int i = 0; i < def::ns; ++i) //ns -> 21
         {
+
+            if(ui->eogAsIsCheckBox->isChecked() && label[i].contains("EOG"))
+            {
+                helpString += QString::number(i+1) + " "; continue;
+            }
+
             if(i == groundChan || i == earsChan)
             {
                 helpString += QString::number(i+1);
             }
-            else if(!QString(label[i]).contains("-A1")) //generality
+            else if(!label[i].contains("-A1")) //generality
             {
-                if(QString(label[i]).contains("-A2"))
+                if(label[i].contains("-A2"))
                 {
                     helpString += QString::number(i+1) + sign[0] + QString::number(earsChan + 1);
                 }
-                else if(QString(label[i]).contains("-N"))
+                else if(label[i].contains("-N"))
                 {
                     helpString += QString::number(i+1) + "-" + QString::number(groundChan + 1);
                 }
-                else if(QString(label[i]).contains("-Ar"))
+                else if(label[i].contains("-Ar"))
                 {
                     helpString += QString::number(i+1) + sign[0] + QString::number(earsChan + 1) + "/2";
                 }
@@ -127,7 +133,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
                     helpString += QString::number(i+1);
                 }
             }
-            else //EOG and a shet
+            else // EOG and a shet
             {
                 helpString += QString::number(i+1);
             }
@@ -138,21 +144,25 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     {
         for(int i = 0; i < def::ns; ++i) //ns -> 21
         {
+            if(ui->eogAsIsCheckBox->isChecked() && label[i].contains("EOG"))
+            {
+                helpString += QString::number(i+1) + " "; continue;
+            }
             if(i == groundChan || i == earsChan)
             {
                 helpString += QString::number(i+1);
             }
-            else if(!QString(label[i]).contains("-A2")) //generality
+            else if(!label[i].contains("-A2")) //generality
             {
-                if(QString(label[i]).contains("-A1"))
+                if(label[i].contains("-A1"))
                 {
                     helpString += QString::number(i+1) + sign[1] + QString::number(earsChan+1);
                 }
-                else if(QString(label[i]).contains("-N"))
+                else if(label[i].contains("-N"))
                 {
                     helpString += QString::number(i+1) + "-" + QString::number(groundChan+1) + "+" + QString::number(earsChan1+1);
                 }
-                else if(QString(label[i]).contains("-Ar"))
+                else if(label[i].contains("-Ar"))
                 {
                     helpString += QString::number(i+1) + sign[1] + QString::number(earsChan+1) + "/2";
                 }
@@ -172,23 +182,27 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     {
         for(int i = 0; i < def::ns; ++i) //ns -> 21
         {
+            if(ui->eogAsIsCheckBox->isChecked() && label[i].contains("EOG"))
+            {
+                helpString += QString::number(i+1) + " "; continue;
+            }
             if(i == groundChan || i == earsChan)
             {
                 helpString += QString::number(i+1);
             }
-            else if(!QString(label[i]).contains("-N")) //generality
+            else if(!label[i].contains("-N")) //generality
             {
-                if(QString(label[i]).contains("-A1"))
+                if(label[i].contains("-A1"))
                 {
                     helpString += QString::number(i+1) + "+" + QString::number(groundChan+1);
                 }
-                else if(QString(label[i]).contains("-A2"))
+                else if(label[i].contains("-A2"))
                 {
                     helpString += QString::number(i+1) +
                                   sign[0] + QString::number(earsChan+1) +
                             "+" + QString::number(groundChan+1);
                 }
-                else if(QString(label[i]).contains("-Ar"))
+                else if(label[i].contains("-Ar"))
                 {
                     helpString += QString::number(i+1) +
                                   sign[0] + QString::number(earsChan+1) + "/2" +
@@ -210,23 +224,27 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     {
         for(int i = 0; i < def::ns; ++i) //ns -> 21
         {
+            if(ui->eogAsIsCheckBox->isChecked() && label[i].contains("EOG"))
+            {
+                helpString += QString::number(i+1) + " "; continue;
+            }
             if(i == groundChan || i == earsChan)
             {
                 helpString += QString::number(i+1);
             }
-            else if(!QString(label[i]).contains("-Ar")) //generality
+            else if(!label[i].contains("-Ar")) //generality
             {
-                if(QString(label[i]).contains("-A1"))
+                if(label[i].contains("-A1"))
                 {
                     helpString += QString::number(i+1) +
                                   sign[1] + QString::number(earsChan + 1) + "/2";
                 }
-                else if(QString(label[i]).contains("-A2"))
+                else if(label[i].contains("-A2"))
                 {
                     helpString += QString::number(i+1) +
                                   sign[0] + QString::number(earsChan + 1) + "/2";
                 }
-                else if(QString(label[i]).contains("-N"))
+                else if(label[i].contains("-N"))
                 {
                     helpString += QString::number(i+1) + "-" + QString::number(groundChan+1) + "+" + QString::number(earsChan1+1) + "/2";
                 }
@@ -249,7 +267,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     //change labels
     for(int i = 0; i < def::ns; ++i)
     {
-        helpString = QString(label[i]);
+        helpString = label[i];
         if(helpString.contains('-') && (i != groundChan && i != earsChan))
         {
             // helpString2 - oldRef
@@ -837,11 +855,11 @@ void MainWindow::eyesFast()  //generality
     {
         for(int i = 0; i < ns; ++i)
         {
-            if(QString(label[i]).contains("EOG1", Qt::CaseInsensitive)) //generality eog channels names
+            if(label[i].contains("EOG1", Qt::CaseInsensitive)) //generality eog channels names
             {
                 a[0] = i;
             }
-            else if(QString(label[i]).contains("EOG2", Qt::CaseInsensitive)) //generality eog channels names
+            else if(label[i].contains("EOG2", Qt::CaseInsensitive)) //generality eog channels names
             {
                 a[1] = i;
             }

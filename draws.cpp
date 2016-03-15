@@ -638,7 +638,8 @@ void drawMapSpline(const matrix & matrixA,
 }
 
 
-void drawOneArray(const lineType & array, QString outPath)
+void drawOneArray(const lineType & array,
+                  QString outPath)
 {
     if(outPath.isEmpty()) return;
 

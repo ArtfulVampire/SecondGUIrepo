@@ -38,7 +38,9 @@ Cut::Cut() :
     ui->subdirComboBox->addItem("Realisations");
     ui->subdirComboBox->addItem("windows");
     ui->subdirComboBox->addItem("windows/fromreal"); //generality
-    ui->subdirComboBox->setCurrentText("windows/fromreal");
+
+//    ui->subdirComboBox->setCurrentText("windows/fromreal"); /// eyes
+    ui->subdirComboBox->setCurrentText("Realisations"); /// me
 
 
     ui->eogSpinBox->setValue(2);
@@ -65,6 +67,7 @@ Cut::Cut() :
 //    this->ui->lineEdit_3->setText("4.0");
 //    this->ui->extYbox->setValue(7);
 //    this->ui->tempSpinBox->setMaximum(1500);
+
     ui->nextButton->setShortcut(tr("d"));
     ui->prevButton->setShortcut(tr("a"));
     ui->cutButton->setShortcut(tr("c"));

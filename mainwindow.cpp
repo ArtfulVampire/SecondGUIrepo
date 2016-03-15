@@ -211,7 +211,7 @@ MainWindow::MainWindow() :
     /// seconds !!!!!
     ui->timeShiftSpinBox->setMinimum(0.1);
     ui->timeShiftSpinBox->setMaximum(15);
-    ui->timeShiftSpinBox->setValue(4);
+    ui->timeShiftSpinBox->setValue(0.5);
     ui->timeShiftSpinBox->setSingleStep(0.1);
 
     ui->windowLengthSpinBox->setMaximum(15);
@@ -1763,11 +1763,38 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
-    ui->windowLengthSpinBox->setValue(7);
-    ui->justSliceButton->setChecked(true);
-//    globalEdf.readEdfFile("/media/michael/Files/Data/Feedback/AAU/AAU.edf");
-//    cout << globalEdf.getData()[19].max() << endl;
+
+//    cout << areEqualFiles("/media/Files/Data/Feedback/AAU_3/AAU_3.EDF",
+//                  "/media/Files/Data/Feedback/AAU_3/AAU_3_rr.edf") << endl;
+//exit(7);
+
+//    GalyaCut(def::GalyaFolder + "/Some_aut");
 //    exit(0);
+
+//    ui->windowLengthSpinBox->setValue(7);
+//    ui->justSliceButton->setChecked(true);
+
+    lineType tmp;
+    readFileInLine("/media/Files/Data/Feedback/AAU_3/SpectraSmooth/windows/AAU_3_rr_eyesClean.0002_254.00",
+                   tmp);
+    drawOneArray(tmp, "/media/Files/Data/offline.jpg");
+
+    readFileInLine("/media/Files/Data/RealTime/windows/SpectraSmooth/AAU_test.0002_254.00.txt",
+                   tmp);
+    drawOneArray(tmp, "/media/Files/Data/online.jpg");
+    exit(0);
+
+
+
+    return;
+
+//    setEdfFile("/media/michael/Files/Data/Feedback/AAU/AAU_train.edf");
+    setEdfFile("/media/michael/Files/Data/RealTime/AAU_test.edf");
+    Net * ann = new Net();
+    ann->successiveProcessing();
+    // "/media/michael/Files/Data/Feedback/AAU/SpectraSmooth/windows");
+    delete ann;
+    exit(0);
 
     return;
 
@@ -1799,11 +1826,11 @@ void MainWindow::customFunc()
 //    exit(0);
 
 
-    Net * ann = new Net();
-    ann->successiveProcessing();
-    delete ann;
+//    Net * ann = new Net();
+//    ann->successiveProcessing();
+//    delete ann;
 
-    exit(9);
+//    exit(9);
 
 #if 0
     /// test on AAX

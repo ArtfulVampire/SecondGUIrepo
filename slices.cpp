@@ -43,7 +43,7 @@ void MainWindow::sliceWindFromReal()
         readPlainData(helpString, dataReal, NumOfSlices);
 
         offset = 0;
-        for(int h = 0; h < ceil(NumOfSlices / double(timeShift)); ++h)
+        for(int h = 0; h < ceil((NumOfSlices - wndLength) / double(timeShift)); ++h)
         {
             //correct eyes number
             eyes = 0;
@@ -76,8 +76,12 @@ void MainWindow::sliceWindFromReal()
 
             offset += timeShift;
         }
-
-
+        qApp->processEvents();
+        if(stopFlag)
+        {
+            stopFlag = false;
+            break;
+        }
 
         ui->progressBar->setValue(i * 100. / lst.length());
     }
@@ -654,10 +658,10 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
         {
             continue;
         }
-        else if((markChanArr[i] > 200 && markChanArr[i] < 241)
-                || markChanArr[i] == 255
-                || markChanArr[i] == 250
-                || markChanArr[i] == 251) //all not interesting markers
+        else if((markChanArr[i] > 200 && markChanArr[i] < 241) ||
+                markChanArr[i] == 255 ||
+                markChanArr[i] == 250 ||
+                markChanArr[i] == 251) //all not interesting markers
         {
             continue;
         }
@@ -685,9 +689,17 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
 //            cout << helpString << endl;
             if(i > j)
             {
-                fil.saveSubsection(j, i, helpString, true);
+                if(i - j <= def::freq * 60) /// const generality limit
+                {
+                    fil.saveSubsection(j, i, helpString, true);
+                }
+                else /// pause rest
+                {
+                    writePlainData(helpString,
+                                   matrix(fil.getNs(), def::freq, 0.),
+                                   def::freq);
+                }
             }
-
             ui->progressBar->setValue(i * 100. / fil.getDataLen());
 
             qApp->processEvents();

@@ -1281,6 +1281,7 @@ void Net::successivePreclean(const QString & spectraPath)
     for(int i = 0; i < 0; ++i)
     {
         autoClassification(spectraPath);
+        if(averageAccuracy == 100.) break;
     }
     tallCleanFlag = false;
 }
@@ -2041,19 +2042,25 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
     }
     res = sqrt(res);
 
-#if 0
+#if 1
     /// cout results
+    std::ofstream resFile;
+    resFile.open((def::dir->absolutePath() +
+                  slash() + "class.txt").toStdString(),
+                 ios_base::app);
+
+    auto tmp = std::cout.rdbuf();
+    cout.rdbuf(resFile.rdbuf());
+
     cout << "type = " << type << '\t' << "(";
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
         cout << doubleRound(output[numOfLayers - 1][i], 3) << '\t';
     }
-    cout << ") " << fileNames[vecNum] << "   ";
-    for(int i = 0; i < 5; ++i)
-    {
-        cout << doubleRound(dataMatrix[vecNum][i], 2) << "\t";
-    }
-    cout << endl;
+    cout << ") " << ((type == outClass) ? "+ " : "- ") << fileNames[vecNum] << endl;
+    cout.rdbuf(tmp);
+
+    resFile.close();
 #endif
 
     return std::make_pair(outClass,

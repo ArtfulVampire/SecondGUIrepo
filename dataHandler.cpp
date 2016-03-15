@@ -38,12 +38,11 @@ void writeFileInLine(const QString & filePath,
         return;
     }
     file << "FileLen " << outData.size() << '\t';
-    file << "Pewpew " << 1 << endl;
+    file << "Pewpew " << 1 << "\r\n";
     for(auto out : outData)
     {
-        file << doubleRound(out, 4) << '\n';
+        file << doubleRound(out, 4) << "\r\n";
     }
-    file << endl;
     file.close();
 }
 
@@ -61,14 +60,14 @@ void writePlainData(const QString outPath,
     ofstream outStr;
     outStr.open(outPath.toStdString());
     outStr << "NumOfSlices " << numOfSlices << '\t';
-    outStr << "NumOfChannels " << data.rows() << endl;
+    outStr << "NumOfChannels " << data.rows() << "\r\n";
     for (int i = 0; i < numOfSlices; ++i)
     {
         for(int j = 0; j < data.rows(); ++j)
         {
             outStr << doubleRound(data[j][i + start], 4) << '\t';
         }
-        outStr << endl;
+        outStr << "\r\n";
     }
     outStr.flush();
     outStr.close();
@@ -155,7 +154,7 @@ void writeMatrixFile(const QString & filePath,
     }
 
     file << rowsString << " " << outData.rows() << '\t';
-    file << colsString << " " << outData.cols() << endl;
+    file << colsString << " " << outData.cols() << "\r\n";
 
     for(int i = 0; i < outData.rows(); ++i)
     {
@@ -163,7 +162,7 @@ void writeMatrixFile(const QString & filePath,
         {
             file << doubleRound(outData[i][j], 4) << '\t';
         }
-        file << endl;
+        file << "\r\n";
     }
     file.close();
 }

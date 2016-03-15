@@ -1553,13 +1553,13 @@ void edfFile::writeOtherData(const matrix & newData,
 
     temp.data = edfDataType();
     temp.channels.clear();
-//    int num = 0;
+    int num = 0;
     for(int item : chanList)
     {
         temp.channels.push_back( this->channels[item] );
         /// pewpwepwwpepwpewpepwepwpep
-        temp.data.push_back( newData[item] );
-//        temp.data.push_back( newData[num++] );
+//        temp.data.push_back( newData[item] );
+        temp.data.push_back( newData[num++] );
     }
     temp.adjustArraysByChannels(); // set in particular ns = chanList.length();
     temp.writeEdfFile(outPath);

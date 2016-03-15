@@ -608,15 +608,22 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_17">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_16">
-           <item>
+          <layout class="QGridLayout" name="gridLayout_9">
+           <item row="0" column="0">
             <widget class="QPushButton" name="rereferenceDataPushButton">
              <property name="text">
               <string>Reref Data</string>
              </property>
             </widget>
            </item>
-           <item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="eogAsIsCheckBox">
+             <property name="text">
+              <string>EOG as is</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
             <widget class="QComboBox" name="rereferenceDataComboBox"/>
            </item>
           </layout>
@@ -1169,8 +1176,8 @@
    <zorder>layoutWidget</zorder>
    <zorder>label_22</zorder>
    <zorder>fileMarkersLineEdit</zorder>
-   <zorder>eyesButton</zorder>
-   <zorder>cleanEdfFromEyesButton</zorder>
+   <zorder></zorder>
+   <zorder>eogAsIsCheckBox</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

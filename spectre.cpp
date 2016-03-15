@@ -675,7 +675,7 @@ void Spectre::writeSpectra(const double leftFreq,
             continue;
         }
         outStream << "NumOfChannels " << def::nsWOM() << '\t';
-        outStream << "spLength " << right - left << endl;
+        outStream << "spLength " << right - left << "\r\n";
 
         if(ui->spectraRadioButton->isChecked())
         {
@@ -683,6 +683,7 @@ void Spectre::writeSpectra(const double leftFreq,
             {
                 for(int j = 0; j < def::nsWOM(); ++j) //
                 {
+                    /// rewrite, add dropChannels?
                     for(int k = left; k < right; ++k) // [left, right)
                     {
                         if((k - def::left()) >= rangeLimits[j][0] &&
@@ -691,7 +692,7 @@ void Spectre::writeSpectra(const double leftFreq,
                         else
                             outStream << "0.000" << '\t';
                     }
-                    outStream << '\n';
+                    outStream << "\r\n";
                 }
             }
             else
@@ -702,7 +703,7 @@ void Spectre::writeSpectra(const double leftFreq,
                     {
                         outStream << doubleRound(dataFFT[i][j][k], 4) << '\t';
                     }
-                    outStream << '\n';
+                    outStream << "\r\n";
                 }
             }
         }
