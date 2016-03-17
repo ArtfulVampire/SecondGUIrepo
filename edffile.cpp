@@ -445,7 +445,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     handleParam(ddr, 8, readFlag, edfDescriptor, header);
     handleParam(ns, 4, readFlag, edfDescriptor, header);
 
-
     //start channels read
     handleParamArray(labels, ns, 16, readFlag, edfDescriptor, header);
 
@@ -604,7 +603,7 @@ void edfFile::handleData(bool readFlag,
             }
 
             /// bad if
-            if(currNs == markerChannel && this->ntFlag)
+            if(currNs == markerChannel && this->edfPlusFlag)
             {
                 handleAnnotations(currNs, currTimeIndex, helpString, annotations);
             }
@@ -639,14 +638,16 @@ void edfFile::handleDatum(const int & currNs,
             currDatum = physMin[currNs]
                     + (physMax[currNs] - physMin[currNs])
                     * (double(a) - digMin[currNs])
-                    / (digMax[currNs] - digMin[currNs]  + 1);
+                    / (digMax[currNs] - digMin[currNs]
+                       + (def::ntFlag ? 0 : 1));
+            /// encephalan + 1
 
 //            currDatum = a * 1./8.; // generality encephalan
 
         }
         else //if markers channel
         {
-            if(this->ntFlag)
+            if(this->edfPlusFlag)
             {
                 //edf+
                 //            fscanf(edf, "%c", &helpChar);
@@ -670,7 +671,7 @@ void edfFile::handleDatum(const int & currNs,
                     matiFixMarker(currDatum);
                 }
             }
-            else // simple encephalan
+            else // simple edf
             {
                 fread(&a, sizeof(qint16), 1, edfForDatum);
                 currDatum = physMin[currNs]
@@ -680,7 +681,7 @@ void edfFile::handleDatum(const int & currNs,
 
 //                currDatum = a; //generality encephalan
             }
-            if(!this->ntFlag && currDatum != 0) // make markers file when read only
+            if(!this->edfPlusFlag && currDatum != 0) // make markers file when read only
             {
                 writeMarker(currDatum, currTimeIndex);
             }
@@ -704,7 +705,8 @@ void edfFile::handleDatum(const int & currNs,
             }
 
             a = (qint16)((currDatum - physMin[currNs])
-                        * (digMax[currNs] - digMin[currNs] + 1)
+                        * (digMax[currNs] - digMin[currNs]
+                           + (def::ntFlag ? 0 : 1))
                         / (physMax[currNs] - physMin[currNs])
                         + digMin[currNs]);
 
@@ -715,7 +717,7 @@ void edfFile::handleDatum(const int & currNs,
         }
         else //if markers channel
         {
-            if(this->ntFlag) ////////////////////////// to do???
+            if(this->edfPlusFlag) ////////////////////////// to do???
             {
                 //edf+
 //                fwrite(&helpChar, sizeof(char), 1, edfDescriptor);
@@ -729,7 +731,7 @@ void edfFile::handleDatum(const int & currNs,
                                           + digMin[currNs]);
                 fwrite(&markA, sizeof(quint16), 1, edfForDatum);
             }
-            else // simple encephalan
+            else // simple edf
             {
 //                a = (qint16) (currDatum);
                 a = (qint16)( (currDatum - physMin[currNs])
@@ -1567,8 +1569,8 @@ void edfFile::writeOtherData(const matrix & newData,
 
 void edfFile::fitData(int initSize) // append zeros to whole ndr's
 {
-    this->ndr = ceil(double(initSize) / def::freq); // generality
-    this->dataLength = this->ndr * def::freq;
+    this->ndr = ceil(double(initSize) / (def::freq * this->ddr)); // generality
+    this->dataLength = this->ndr * (def::freq * this->ddr);
 
     for(int i = 0; i < this->ns; ++i)
     {
@@ -1579,11 +1581,12 @@ void edfFile::fitData(int initSize) // append zeros to whole ndr's
                   0.)
 #else
         /// valarray strange handling
-        lineType tempData = data[i];
-        this->data[i].resize(this->dataLength);
-        std::copy(begin(tempData),
-                  end(tempData),
-                  begin(this->data[i]));
+        resizeValar(data[i], this->dataLength);
+//        lineType tempData = data[i];
+//        this->data[i].resize(this->dataLength);
+//        std::copy(begin(tempData),
+//                  end(tempData),
+//                  begin(this->data[i]));
 #endif
 
 #if DATA_IN_CHANS
@@ -1611,6 +1614,9 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
                 break;
             }
 #else
+            /// for neurotravel cleaning
+            if(abs(this->data[j][currEnd - 1]) >= 30000) break;
+
             if(this->data[j][currEnd - 1] != 0.)
             {
                 doFlag = false;
@@ -1640,8 +1646,11 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
 
 #else
         /// good removing
-        lineType newArr = this->data[j][slice(0, currEnd, 1)];
-        this->data[j] = newArr;
+        resizeValar(data[j], currEnd);
+
+//        lineType newArr = this->data[j][slice(0, currEnd, 1)];
+//        this->data[j] = newArr;
+
 //        std::remove_if(begin(this->data[j]) + currEnd,
 //                       end(this->data[j]),
 //                       [](double){return true;});
@@ -1652,7 +1661,7 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
 #endif
     }
 //    cout << this->data.maxVal() << endl;
-    this->ndr = ceil(this->dataLength / def::freq); // should be unchanged
+    this->ndr = ceil(this->dataLength / (def::freq * this->ddr)); // should be unchanged
 }
 
 

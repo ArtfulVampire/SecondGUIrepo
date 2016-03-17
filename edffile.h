@@ -25,11 +25,11 @@ struct edfChannel
     double nr;
     QString reserved;
 #if DATA_IN_CHANS
-    vector <double> * dataP;
+    std::vector <double> * dataP;
 #endif
 
 #if DATA_IN_CHANS
-    vector <double> data;
+    std::vector <double> data;
 #endif
 
     edfChannel operator = (const edfChannel & other)
@@ -73,10 +73,10 @@ struct edfChannel
                QString in_reserved
 
            #if DATA_POINTER_IN_CHANS
-               , vector<double> * in_dataP
+               , std::vector<double> * in_dataP
            #endif
            #if DATA_IN_CHANS
-               ,vector <double> in_data
+               ,std::vector <double> in_data
            #endif
                )
 //
@@ -115,7 +115,7 @@ struct edfChannel
     this->dataP = nullptr;
 #endif
 #if DATA_IN_CHANS
-        this->data = vector <double> ();
+        this->data = std::vector <double> ();
 #endif
     }
     ~edfChannel()
@@ -136,13 +136,13 @@ public:
     edfFile(int in_ndr,
             int in_ns,
             int in_ddr,
-            vector <QString> in_labels,
-            vector <double> in_physMin,
-            vector <double> in_physMax,
-            vector <double> in_digMin,
-            vector <double> in_digMax,
-            vector <double> in_nr,
-            vector < vector <double> > in_data);
+            std::vector <QString> in_labels,
+            std::vector <double> in_physMin,
+            std::vector <double> in_physMax,
+            std::vector <double> in_digMin,
+            std::vector <double> in_digMax,
+            std::vector <double> in_nr,
+            std::vector < std::vector <double> > in_data);
     */
 
     edfFile(const edfFile & other, bool noData = false);
@@ -161,24 +161,24 @@ public:
                      FILE * headerFile);
 
     void myTransform(int & output, char * input) {output = atoi(input);}
-    void myTransform(double & output, char * input) {output = atoi(input);}
+    void myTransform(double & output, char * input) {output = atof(input);}
     void myTransform(QString & output, char * input) {output = QString(input);}
 
-    void myTransform(int & input, const int & len, char ** output)
+    void myTransform(const int & input, const int & len, char ** output)
     {
         (*output) = QStrToCharArr(fitNumber(input, len));
     }
-    void myTransform(double & input, const int & len, char ** output)
+    void myTransform(const double & input, const int & len, char ** output)
     {
         (*output) = QStrToCharArr(fitNumber(input, len));
     }
-    void myTransform(QString & input, const int & len, char ** output)
+    void myTransform(const QString & input, const int & len, char ** output)
     {
         (*output) = QStrToCharArr(input, len);
     }
 
     template <typename Typ>
-    void handleParamArray(vector <Typ> & qStr,
+    void handleParamArray(std::vector <Typ> & qStr,
                           int number,
                           int length,
                           bool readFlag,
@@ -200,7 +200,7 @@ public:
     void handleAnnotations(const int & currNs,
                            const int & currentTimeIndex,
                            QString helpString,
-                           vector <QString> annotations);
+                           std::vector <QString> annotations);
 
     edfFile operator=(const edfFile & other);
 
@@ -210,29 +210,29 @@ public:
     void refilter(const double &lowFreq, const double &highFreq, const QString & newPath = QString());
     void saveSubsection(int startBin, int finishBin, const QString &outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
-    void reduceChannels(const vector<int> & chanList);
+    void reduceChannels(const std::vector<int> & chanList);
     void reduceChannels(const QString & chanStr);
-    void removeChannels(const vector<int> & chanList);
+    void removeChannels(const std::vector<int> & chanList);
 //    void removeChannels(const QString & chanStr);
 
 
-    void setLabels(const vector<QString> & inLabels);
-    void setChannels(const vector<edfChannel> & inChannels);
+    void setLabels(const std::vector<QString> & inLabels);
+    void setChannels(const std::vector<edfChannel> & inChannels);
     void setLabels(char ** inLabels);
     void cleanFromEyes(QString eyesPath = QString(),
                        bool removeEogChannels = false,
-                       vector<int> eegNums = {},
-                       vector<int> eogNums = {});
+                       std::vector<int> eegNums = {},
+                       std::vector<int> eogNums = {});
 //    void writeOtherData(mat & newData,
 //                        const QString & outPath,
-//                        vector<int> chanList = {});
+//                        std::vector<int> chanList = {});
     void writeOtherData(const matrix & newData,
                         const QString & outPath,
-                        vector<int> chanList = {});
+                        std::vector<int> chanList = {});
 //    void writeOtherData(double ** newData,
 //                        int newDataLength,
 //                        QString outPath,
-//                        vector<int> chanList = {}) const;
+//                        std::vector<int> chanList = {}) const;
     void fitData(int initSize);
     void cutZerosAtEnd();
     void adjustMarkerChannel();
@@ -247,25 +247,25 @@ private:
     double ddr = 1.;
     int ns = 0;
 
-    vector < pair <int, double> > sessionEdges = vector < pair <int, double> >(0); // fast access
+    std::vector < pair <int, double> > sessionEdges = std::vector < pair <int, double> >(0); // fast access
 
     //channels arrays start
-    vector <QString> labels;
-    vector <QString> transducerType;
-    vector <QString> physDim;
-    vector <double> physMax;
-    vector <double> physMin;
-    vector <double> digMax;
-    vector <double> digMin;
-    vector <QString> prefiltering;
-    vector <double> nr; // it is int really
-    vector <QString> reserved;
+    std::vector <QString> labels;
+    std::vector <QString> transducerType;
+    std::vector <QString> physDim;
+    std::vector <double> physMax;
+    std::vector <double> physMin;
+    std::vector <double> digMax;
+    std::vector <double> digMin;
+    std::vector <QString> prefiltering;
+    std::vector <double> nr; // it is int really
+    std::vector <QString> reserved;
 
     //channels arrays end
 
     QString headerRest = QString();
 
-    vector <edfChannel> channels;
+    std::vector <edfChannel> channels;
     edfDataType data; // matrix.cpp
 
 #if DATA_POINTER
@@ -282,6 +282,7 @@ private:
 
     bool matiFlag = def::matiFlag;
     bool ntFlag = def::ntFlag;
+    bool edfPlusFlag = def::edfPlusFlag;
 public:
     const QString & getHeaderInit() const {return headerInitialInfo;}
     const int & getBytes() const {return bytes;}
@@ -290,18 +291,18 @@ public:
     const int & getNdr() const {return ndr;}
     const double & getDdr() const {return ddr;}
     const int & getNs() const {return ns;}
-    const vector <QString> & getLabels() const {return labels;}
-    const vector <QString> & getTransducer() const {return transducerType;}
-    const vector <QString> & getPhysDim() const {return physDim;}
-    const vector <double> & getPhysMax() const {return physMax;}
-    const vector <double> & getPhysMin() const {return physMin;}
-    const vector <double> & getDigMax() const {return digMax;}
-    const vector <double> & getDigMin() const {return digMin;}
-    const vector <QString> & getPrefiltering() const {return prefiltering;}
-    const vector <double> & getNr() const {return nr;}
-    const vector <QString> & getReserved() const {return reserved;}
+    const std::vector <QString> & getLabels() const {return labels;}
+    const std::vector <QString> & getTransducer() const {return transducerType;}
+    const std::vector <QString> & getPhysDim() const {return physDim;}
+    const std::vector <double> & getPhysMax() const {return physMax;}
+    const std::vector <double> & getPhysMin() const {return physMin;}
+    const std::vector <double> & getDigMax() const {return digMax;}
+    const std::vector <double> & getDigMin() const {return digMin;}
+    const std::vector <QString> & getPrefiltering() const {return prefiltering;}
+    const std::vector <double> & getNr() const {return nr;}
+    const std::vector <QString> & getReserved() const {return reserved;}
     const QString & getHeaderRest() const {return headerRest;}
-    const vector <edfChannel> & getChannels() const {return channels;}
+    const std::vector <edfChannel> & getChannels() const {return channels;}
 
     const int & getDataLen() const {return dataLength;}
     const int & getMarkChan() const {return markerChannel;}

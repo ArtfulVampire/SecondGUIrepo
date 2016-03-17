@@ -41,7 +41,7 @@ void writeFileInLine(const QString & filePath,
     file << "Pewpew " << 1 << "\r\n";
     for(auto out : outData)
     {
-        file << doubleRound(out, 4) << "\r\n";
+        file << doubleRound(out, 3) << "\r\n";
     }
     file.close();
 }
@@ -65,7 +65,7 @@ void writePlainData(const QString outPath,
     {
         for(int j = 0; j < data.rows(); ++j)
         {
-            outStr << doubleRound(data[j][i + start], 4) << '\t';
+            outStr << doubleRound(data[j][i + start], 3) << '\t';
         }
         outStr << "\r\n";
     }

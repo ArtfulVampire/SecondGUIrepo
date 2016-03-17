@@ -59,11 +59,12 @@ private:
     Ui::Spectre *ui;
     QString backupDirPath;
 
-    vector<vector<int>> rangeLimits;
+    std::vector<std::pair<int, int>> rangeLimits;
+
     QString rangePicPath;
 
-    vector<matrix> dataFFT;
-    vector<QString> fileNames;
+    std::vector<matrix> dataFFT;
+    std::vector<QString> fileNames;
 };
 
 #endif // SPECTRE_H

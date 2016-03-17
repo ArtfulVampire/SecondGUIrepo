@@ -783,7 +783,7 @@ void drawTemplate(const QString & outPath,
 }
 
 void drawArray(const QString & templPath,
-               const vec & inData,
+               const matrix & inData,
                const QString & color,
                const double & scaling,
                const int & lineWidth)
@@ -793,7 +793,11 @@ void drawArray(const QString & templPath,
     QPixmap pic;
     QPainter paint;
     QString helpString;
-    int numOfChan = 19;
+    int numOfChan = inData.rows();
+    if(numOfChan > 21)
+    {
+        return;
+    }
 
     if(templPath.contains(".svg"))
     {
@@ -819,19 +823,13 @@ void drawArray(const QString & templPath,
         paint.begin(&pic);
     }
 
-    if(inData.size() != numOfChan * def::spLength())
-    {
-        cout << "inappropriate array size" << endl;
-        return;
-    }
+//    if(inData.size() != numOfChan * def::spLength())
+//    {
+//        cout << "drawArray: inappropriate array size" << endl;
+//        return;
+//    }
 
-    double norm = 0.;
-    std::for_each(inData.begin(),
-                  inData.end(),
-                  [&norm](double inn)
-    {
-        norm = fmax(norm, inn);
-    });
+    double norm = inData.maxVal();
 
 #if 0
     // for weights
@@ -841,7 +839,10 @@ void drawArray(const QString & templPath,
 
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
-    const double graphScale = def::spLength() / graphWidth;
+
+//    const double graphScale = def::spLength() / graphWidth;
+    const double graphScale = inData.cols() / graphWidth;
+
     // initial fonts prepared for 1600*1600
     const double scaleY = paint.device()->height() / 1600.;
     const double scaleX = paint.device()->width() / 1600.;
@@ -872,17 +873,17 @@ void drawArray(const QString & templPath,
 #if 1
             // usual
             paint.drawLine(QPointF(X + k,
-                                   Y - inData[c2 * def::spLength() + k * graphScale] * norm),
+                                   Y - inData[c2][k * graphScale] * norm),
                     QPointF(X + k + 1,
-                            Y - inData[c2 * def::spLength() + (k + 1) * graphScale] * norm));
+                            Y - inData[c2][(k + 1) * graphScale] * norm));
 #else
             // weights
             paint.drawLine(QPointF(X + k,
                                    Y - graphHeight / 2.
-                                   - inData[c2 * def::spLength() + k * graphScale] * norm),
+                                   - inData[c2][k * graphScale] * norm),
                     QPointF(X + k + 1,
                             Y - graphHeight / 2.
-                            - inData[c2 * def::spLength() + (k + 1) * graphScale] * norm));
+                            - inData[c2][(k + 1) * graphScale] * norm));
 #endif
 
         }
@@ -905,6 +906,41 @@ void drawArray(const QString & templPath,
             helpString);
 
     pic.save(templPath, 0, 100);
+}
+
+void drawArray(const QString & templPath,
+               const lineType & inData,
+               const QString & color,
+               const double & scaling,
+               const int & lineWidth)
+{
+    matrix dataS;
+    const int len = inData.size();
+    for(const int nch : {19, 20, 21}) /// order important as 63 % 21 == 0
+    {
+        if(len % nch == 0)
+        {
+            dataS.resize(nch, len / nch, 0.);
+            for(int i = 0; i < nch; ++i)
+            {
+                std::copy(std::begin(inData) + len / nch * i,
+                          std::begin(inData) + len / nch * (i + 1),
+                          std::begin(dataS[i]));
+            }
+            break;
+        }
+    }
+
+    if(dataS.size() <= 0)
+    {
+        return;
+    }
+
+    drawArray(templPath,
+              dataS,
+              color,
+              scaling,
+              lineWidth);
 }
 
 
@@ -995,6 +1031,7 @@ double drawArrays(const QString & templPath,
     {
         const double Y = paint.device()->height() * coords::y[c2];
         const double X = paint.device()->width() * coords::x[c2];
+        const int offset = c2 * def::spLength();
 
         if(weightsFlag)
         {
@@ -1046,19 +1083,19 @@ double drawArrays(const QString & templPath,
                     // weights
                     paint.drawLine(QPointF(X + k,
                                            Y - graphHeight / 2.
-                                           - inData[c2 * def::spLength() + k * graphScale] * norm),
+                                           - inData[offset + k * graphScale] * norm),
                             QPointF(X + k + 1,
                                     Y - graphHeight / 2.
-                                    - inData[c2 * def::spLength() + (k + 1) * graphScale] * norm));
+                                    - inData[offset + (k + 1) * graphScale] * norm));
 
                 }
                 else
                 {
                     // usual
                     paint.drawLine(QPointF(X + k,
-                                           Y - inData[c2 * def::spLength() + k * graphScale] * norm),
+                                           Y - inData[offset + k * graphScale] * norm),
                             QPointF(X + k + 1,
-                                    Y - inData[c2 * def::spLength() + (k + 1) * graphScale] * norm));
+                                    Y - inData[offset + (k + 1) * graphScale] * norm));
                 }
 
 
@@ -1200,6 +1237,7 @@ void drawMannWitney(const QString & templPath,
     {
         const double X = paint.device()->width() * coords::x[c2];
         const double Y = paint.device()->height() * coords::y[c2];
+        const int offset = c2 * def::spLength();
 
         //statistic difference bars
         int barCounter = 0;
@@ -1211,7 +1249,7 @@ void drawMannWitney(const QString & templPath,
                 QColor color1 = QColor(inColors[h]);
                 QColor color2 = QColor(inColors[l]);
 
-                for(int j = c2 * def::spLength(); j < (c2 + 1) * def::spLength(); ++j)
+                for(int j = offset; j < offset + def::spLength(); ++j)
                 {
                     if(inMW[h][l - h][j] == 0) continue;
 
@@ -1242,7 +1280,7 @@ void drawMannWitney(const QString & templPath,
 
 void drawMannWitneyInLine(const QString & picPath,
                           const trivector<int> & inMW,
-                          const vector<QColor> & inColors)
+                          const std::vector<QColor> & inColors)
 {
     QPixmap pic;
     pic.load(picPath);

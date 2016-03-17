@@ -1073,7 +1073,7 @@
        <item row="1" column="0">
         <widget class="QCheckBox" name="cleanWindowsCheckBox">
          <property name="text">
-          <string>winds</string>
+          <string>Winds</string>
          </property>
         </widget>
        </item>
@@ -1127,7 +1127,21 @@
        <item row="0" column="2">
         <widget class="QCheckBox" name="cleanSignalsCheckBox">
          <property name="text">
-          <string>Signals</string>
+          <string>RealsSignals</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QCheckBox" name="cleanSpectraImgCheckBox">
+         <property name="text">
+          <string>SpectraImg</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QCheckBox" name="cleanWindowsSignalsCheckBox">
+         <property name="text">
+          <string>WindSignals</string>
          </property>
         </widget>
        </item>
@@ -1163,7 +1177,6 @@
      </rect>
     </property>
    </widget>
-   <zorder>layoutWidget</zorder>
    <zorder>browseButton</zorder>
    <zorder>filePathLineEdit</zorder>
    <zorder>setNsLine</zorder>
@@ -1176,8 +1189,7 @@
    <zorder>layoutWidget</zorder>
    <zorder>label_22</zorder>
    <zorder>fileMarkersLineEdit</zorder>
-   <zorder></zorder>
-   <zorder>eogAsIsCheckBox</zorder>
+   <zorder>layoutWidget</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

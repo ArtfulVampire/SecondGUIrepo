@@ -70,6 +70,8 @@ public slots:
     void sliceAll();
     void reduceChannelsSlot();
     void drawRealisations();
+    void drawSpectra();
+    void drawDirSlot();
     void setEdfFileSlot();
     void cleanDirs();
     void sliceWindFromReal();
@@ -216,12 +218,12 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    ofstream generalLogStream;
-    streambuf * coutBuf;
+    std::ofstream generalLogStream;
+    std::streambuf * coutBuf;
     bool redirectCoutFlag;
 
     edfFile globalEdf;
-    vector<QString> label;
+    std::vector<QString> label;
     int staSlice;
     int NumOfEdf;
 

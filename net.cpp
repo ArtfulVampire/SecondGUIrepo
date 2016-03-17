@@ -1177,6 +1177,7 @@ void Net::successiveProcessing()
                          + slash() + "SpectraSmooth"
                          + slash() + "windows";
 
+    const QString trainMarker = "_train";
     const QString testMarker = "_test";
 //    const QString testMarker = "_3.";
 
@@ -1187,16 +1188,16 @@ void Net::successiveProcessing()
     exIndices.clear();
 
     /// check for no test items
-    loadData(helpString);
-    for(int i = 0; i < dataMatrix.rows(); ++i)
-    {
-        if(fileNames[i].contains(testMarker))
-        {
-            eraseIndices.push_back(i);
-        }
-    }
-    eraseData(eraseIndices);
-    eraseIndices.clear();
+    loadData(helpString, {"*" + trainMarker + "*"});
+//    for(int i = 0; i < dataMatrix.rows(); ++i)
+//    {
+//        if(fileNames[i].contains(testMarker))
+//        {
+//            eraseIndices.push_back(i);
+//        }
+//    }
+//    eraseData(eraseIndices);
+//    eraseIndices.clear();
 
     /// reduce learning set to (NumClasses * suc::learnSetStay)
     vector<double> count = classCount;
@@ -1645,7 +1646,7 @@ void Net::loadDataSlot()
                                  QMessageBox::Ok);
         return;
     }
-    loadData(helpString,
+    loadData(helpString, {},
              ui->rdcCoeffSpinBox->value());
 }
 
@@ -1689,10 +1690,11 @@ void Net::eraseData(const vector<int> & indices)
 
 // like readPaFile from library.cpp
 void Net::loadData(const QString & spectraPath,
+                   const QStringList & filters,
                    double rdcCoeff)
 {
     vector<QStringList> leest;
-    makeFileLists(spectraPath, leest);
+    makeFileLists(spectraPath, leest, filters);
 
     dataMatrix = matrix();
     classCount.resize(def::numOfClasses(), 0.);

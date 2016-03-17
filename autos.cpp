@@ -2152,7 +2152,7 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
         edfFile & initEdf = globalEdf;
         initEdf.readEdfFile(path + slash() + guy);
 
-        if(initEdf.getNdr() <= wndLen * initEdf.getDdr() )
+        if(initEdf.getNdr() * initEdf.getDdr() <= wndLen )
         {
             QFile::remove(path
                           + slash() + "smalls"
@@ -2254,8 +2254,6 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
         initEdf.readEdfFile(helpString);
 
 
-
-
         if(initEdf.getNdr() == 0)
         {
             cout << "ndr = 0\t" << ExpName << endl;
@@ -2265,14 +2263,14 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
         const double bytesPerSecond = (QFile(helpString).size() - initEdf.getBytes())
                                       / double(initEdf.getNs() * initEdf.getNdr() * initEdf.getDdr());
 
-        if(bytesPerSecond != 500)
+        if(bytesPerSecond != 2 * def::freq)
         {
             cout << "bytesPerSecond = " << bytesPerSecond << "\t";
             cout << ExpName;
             cout << endl;
 
             // dont process this file
-            continue;
+//            continue;
         }
 
         if(initEdf.getNs() < numChan)

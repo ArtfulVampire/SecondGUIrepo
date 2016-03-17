@@ -65,10 +65,6 @@ Spectre::Spectre() :
     ui->MWcheckBox->setChecked(false);
 
     rangeLimits.resize(def::nsWOM());
-    for(int i = 0; i < def::nsWOM(); ++i)
-    {
-        rangeLimits[i].resize(2);
-    }
 
     QObject::connect(ui->inputBroswe, SIGNAL(clicked()), this, SLOT(inputDirSlot()));
     QObject::connect(ui->outputBroswe, SIGNAL(clicked()), this, SLOT(outputDirSlot()));
@@ -106,8 +102,8 @@ Spectre::Spectre() :
 
     for(int i = 0; i < def::nsWOM(); ++i)
     {
-        rangeLimits[i][0] = 0;
-        rangeLimits[i][1] = def::spLength();
+        rangeLimits[i].first = 0;
+        rangeLimits[i].second = def::spLength();
     }
 
 }
@@ -185,13 +181,13 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
                 if(mouseEvent->button() == Qt::LeftButton)
                 {
                     chanNum = findChannel(mouseEvent->x(), mouseEvent->y(), ui->specLabel->size());
-                    rangeLimits[chanNum][0] = 0;
+                    rangeLimits[chanNum].first = 0;
                 }
                 if(mouseEvent->button() == Qt::RightButton)
                 {
 
                     chanNum = findChannel(mouseEvent->x(), mouseEvent->y(), ui->specLabel->size()) - 1;
-                    rangeLimits[chanNum][1] = def::spLength();
+                    rangeLimits[chanNum].second = def::spLength();
                 }
                 return true;
             }
@@ -207,7 +203,7 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
             if(mouseEvent->button()==Qt::LeftButton)
             {
 
-                rangeLimits[chanNum][0] = floor((mouseEvent->x()
+                rangeLimits[chanNum].first = floor((mouseEvent->x()
                                                  * paint.device()->width()
                                                  / ui->specLabel->width()
                                                  - coords::x[chanNum]
@@ -218,7 +214,7 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
             }
             if(mouseEvent->button()==Qt::RightButton)
             {
-                rangeLimits[chanNum][1] = ceil((mouseEvent->x()
+                rangeLimits[chanNum].second = ceil((mouseEvent->x()
                                                 * paint.device()->width()
                                                 / ui->specLabel->width()
                                                 - coords::x[chanNum]
@@ -231,7 +227,7 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
                 paint.setPen(QPen(QBrush("blue"), 2));
                 paint.drawLine(QPointF(coords::x[i]
                                         * paint.device()->width()
-                                        + rangeLimits[i][0]
+                                        + rangeLimits[i].first
                                 * coords::scale
                                 * paint.device()->width()
                                 / def::spLength(),
@@ -241,7 +237,7 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
 
                         QPointF(coords::x[i]
                                 * paint.device()->width()
-                                + rangeLimits[i][0]
+                                + rangeLimits[i].first
                         * coords::scale
                         * paint.device()->width()
                         / def::spLength(),
@@ -254,7 +250,7 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
                 paint.setPen(QPen(QBrush("red"), 2));
                 paint.drawLine(QPointF(coords::x[i]
                                         * paint.device()->width()
-                                        + rangeLimits[i][1]
+                                        + rangeLimits[i].second
                                 * coords::scale
                                 * paint.device()->width()
                                 / def::spLength(),
@@ -264,7 +260,7 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
 
                         QPointF(coords::x[i]
                                 * paint.device()->width()
-                                + rangeLimits[i][1]
+                                + rangeLimits[i].second
                         * coords::scale
                         * paint.device()->width()
                         / def::spLength(),
@@ -523,7 +519,7 @@ void Spectre::setFftLengthSlot()
 
     if(ui->fftComboBox->currentIndex() == 0) //1024
     {
-        ui->smoothBox->setValue(4);
+        ui->smoothBox->setValue(5);
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                               + slash() + "windows");
         helpString += slash() + "fromreal";
@@ -546,7 +542,7 @@ void Spectre::setFftLengthSlot()
     }
     else if(ui->fftComboBox->currentIndex() == 3) //8192
     {
-        ui->smoothBox->setValue(15);
+        ui->smoothBox->setValue(20);
     }
 
     ui->leftSpinBox->setValue(def::left());
@@ -561,8 +557,8 @@ void Spectre::setFftLengthSlot()
 
     for(int i = 0; i < def::nsWOM(); ++i)
     {
-        rangeLimits[i][0] = 0;
-        rangeLimits[i][1] = def::spLength();
+        rangeLimits[i].first = 0;
+        rangeLimits[i].second = def::spLength();
     }
 //    cout << "setFftLengthSlot: spLength = " << def::spLength() << endl;
 
@@ -626,7 +622,7 @@ void Spectre::setRight()
     ui->rightHzEdit->setText(QString::number(def::rightFreq));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
-        rangeLimits[i][1] = def::spLength();
+        rangeLimits[i].second = def::spLength();
     }
 }
 
@@ -637,7 +633,7 @@ void Spectre::setLeft()
     ui->leftHzEdit->setText(QString::number(def::leftFreq));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
-        rangeLimits[i][1] = def::spLength();
+        rangeLimits[i].second = def::spLength();
     }
 }
 
@@ -654,15 +650,22 @@ void Spectre::writeSpectra(const double leftFreq,
     QString helpString;
     const QString outDirPath = ui->lineEdit_2->text();
 
-    const int left = fftLimit(leftFreq);
-    const int right = fftLimit(rightFreq) + 1;
+    const int left = fftLimit(leftFreq); /// = def::left()
+    const int right = fftLimit(rightFreq) + 1; /// = def::right()
 
 //    cout << leftFreq << '\t' << rightFreq << endl;
 //    cout << left << '\t' << right << endl;
 //    for(int i = 0; i < def::nsWOM(); ++i)
 //    {
-//        cout << rangeLimits[i][0] << '\t' << rangeLimits[i][1] << endl;
+//        cout << rangeLimits[i].first << '\t' << rangeLimits[i].second << endl;
 //    }
+
+    QStringList lst = ui->dropChannelsLineEdit->text().split(
+                          QRegExp("[,;\\s]"), QString::SkipEmptyParts);
+    for(QString str : lst)
+    {
+        rangeLimits[str.toInt() - 1] = {0, 0};
+    }
 
     for(int i = 0; i < fileNames.size(); ++i)
     {
@@ -684,14 +687,32 @@ void Spectre::writeSpectra(const double leftFreq,
                 for(int j = 0; j < def::nsWOM(); ++j) //
                 {
                     /// rewrite, add dropChannels?
+
+#if 1
+                    for(int k = left; k < left + rangeLimits[j].first; ++k)
+                    {
+                        outStream << "0.000" << '\t';
+                    }
+                    for(int k = max(left, left + rangeLimits[j].first);
+                        k < min(right, left + rangeLimits[j].second); ++k)
+                    {
+                        outStream << doubleRound(dataFFT[i][j][k], 4) << '\t';
+                    }
+                    for(int k = min(right, left + rangeLimits[j].second);
+                        k < right; ++k)
+                    {
+                        outStream << "0.000" << '\t';
+                    }
+#else
                     for(int k = left; k < right; ++k) // [left, right)
                     {
-                        if((k - def::left()) >= rangeLimits[j][0] &&
-                           (k - def::left()) <= rangeLimits[j][1])
+                        if((k - left) >= rangeLimits[j].first &&
+                           (k - left) < rangeLimits[j].second)
                             outStream << doubleRound(dataFFT[i][j][k], 4) << '\t';
                         else
                             outStream << "0.000" << '\t';
                     }
+#endif
                     outStream << "\r\n";
                 }
             }
@@ -710,7 +731,7 @@ void Spectre::writeSpectra(const double leftFreq,
         outStream.close();
     }
 
-    cout << "writeSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "writeSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 void Spectre::countSpectraSlot()
 {

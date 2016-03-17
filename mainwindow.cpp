@@ -74,6 +74,10 @@ MainWindow::MainWindow() :
     ui->drawDirBox->addItem("Realisations");
     ui->drawDirBox->addItem("cut");
     ui->drawDirBox->addItem("windows");
+
+    ui->drawDirBox->addItem("SpectraSmooth");
+    ui->drawDirBox->addItem("SpectraSmooth/windows");
+    ui->drawDirBox->addItem("windows/SpectraSmooth"); /// tcpClient test
     ui->drawDirBox->addItem("windows/fromreal"); //generality
 
     /// set fileMarks lineEdit
@@ -272,6 +276,7 @@ MainWindow::MainWindow() :
     ui->cleanWindSpectraCheckBox->setChecked(true);
     ui->cleanMarkersCheckBox->setChecked(true);
     ui->cleanSignalsCheckBox->setChecked(true);
+    ui->cleanSpectraImgCheckBox->setChecked(true);
 
     ui->highFreqFilterDoubleSpinBox->setValue(40.);
     ui->highFreqFilterDoubleSpinBox->setSingleStep(1.0);
@@ -321,7 +326,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
 
-    QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawRealisations()));
+    QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawDirSlot()));
 
     QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
 
@@ -1337,21 +1342,68 @@ void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFileP
 }
 
 #endif
+
+
+void MainWindow::drawDirSlot()
+{
+    const QString deer = ui->drawDirBox->currentText();
+    if(deer.contains("spectr", Qt::CaseInsensitive))
+    {
+        drawSpectra();
+    }
+    else
+    {
+        drawRealisations();
+    }
+}
+
+void MainWindow::drawSpectra()
+{
+    QTime myTime;
+    myTime.start();
+
+    const QString prePath = def::dir->absolutePath() + slash() + ui->drawDirBox->currentText();
+    const QString outPath = def::dir->absolutePath() + slash() + "SpectraImg";
+    QStringList lst;
+    makeFullFileList(prePath, lst);
+    lineType dataS;
+    int i = 0;
+    QString helpString;
+    for(const QString & str : lst)
+    {
+        helpString = prePath + slash() + str;
+        readFileInLine(helpString,
+                       dataS);
+
+
+        helpString = outPath + slash() + str + ".jpg";
+        drawTemplate(helpString);
+        drawArray(helpString, dataS);
+
+
+        ui->progressBar->setValue(100 * (++i) / lst.length());
+        qApp->processEvents();
+        if(stopFlag)
+        {
+            stopFlag = false;
+            break;
+        }
+    }
+    ui->progressBar->setValue(0);
+
+    cout << "drawSpectra: time = " << myTime.elapsed() / 1000. << " sec" << endl;
+}
 void MainWindow::drawRealisations()
 {
     QStringList lst;
     QString helpString;
-    QString prePath;
 
     QTime myTime;
     myTime.start();
     ui->progressBar->setValue(0);
     matrix dataD;
 
-    QDir localDir(def::dir->absolutePath());
-    localDir.cd(ui->drawDirBox->currentText());    //->windows or Realisations or cut
-
-    prePath = localDir.absolutePath();
+    QString prePath = def::dir->absolutePath() + slash() + ui->drawDirBox->currentText();
     makeFullFileList(prePath, lst);
 
     int redCh = -1;
@@ -1437,7 +1489,7 @@ void MainWindow::cleanDirs()
         return;
     }
 
-    //windows
+    // windows
     if(ui->cleanWindowsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
@@ -1445,7 +1497,7 @@ void MainWindow::cleanDirs()
         cleanDir(helpString);
     }
 
-    //SpectraSmooth/windows
+    // SpectraSmooth/windows
     if(ui->cleanWindSpectraCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
@@ -1455,7 +1507,7 @@ void MainWindow::cleanDirs()
     }
 
 
-    //SpectraSmooth
+    // SpectraSmooth
     if(ui->cleanRealsSpectraCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
@@ -1463,7 +1515,7 @@ void MainWindow::cleanDirs()
         cleanDir(helpString);
     }
 
-    //windows/fromreal
+    // windows/fromreal
     if(ui->cleanFromRealsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
@@ -1472,7 +1524,7 @@ void MainWindow::cleanDirs()
         cleanDir(helpString);
     }
 
-    //Realisations
+    // Realisations
     if(ui->cleanRealisationsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
@@ -1480,30 +1532,42 @@ void MainWindow::cleanDirs()
         cleanDir(helpString);
     }
 
-    //markers
+    // markers
     if(ui->cleanMarkersCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath();
         cleanDir(helpString, "markers", 0);
     }
 
+    // SpectraImg
+    if(ui->cleanSpectraImgCheckBox->isChecked())
+    {
+        helpString = def::dir->absolutePath() + slash() + "SpectraImg";
+        cleanDir(helpString);
+    }
+
     // signals
     if(ui->cleanSignalsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                     + slash() + "Signals"
-                     + slash() + "other";
-        cleanDir(helpString);
+                     + slash() + "Signals" + slash();
 
-        helpString = def::dir->absolutePath()
-                     + slash() + "Signals"
-                     + slash() + "before";
-        cleanDir(helpString);
+        for(auto str2 : {"before", "after", "other"})
+        {
+            cleanDir(helpString + str2);
+        }
+    }
 
+    // signals windows
+    if(ui->cleanWindowsSignalsCheckBox->isChecked())
+    {
         helpString = def::dir->absolutePath()
-                     + slash() + "Signals"
-                     + slash() + "after";
-        cleanDir(helpString);
+                     + slash() + "Signals" + slash() + "windows" + slash();
+
+        for(auto str2 : {"before", "after", "other"})
+        {
+            cleanDir(helpString + str2);
+        }
     }
 
     helpString = "dirs cleaned ";
@@ -1764,73 +1828,17 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
 
-//    cout << areEqualFiles("/media/Files/Data/Feedback/AAU_3/AAU_3.EDF",
-//                  "/media/Files/Data/Feedback/AAU_3/AAU_3_rr.edf") << endl;
-//exit(7);
-
-//    GalyaCut(def::GalyaFolder + "/Some_aut");
-//    exit(0);
-
+    /// for standalone eyesClean
 //    ui->windowLengthSpinBox->setValue(7);
 //    ui->justSliceButton->setChecked(true);
 
-    lineType tmp;
-    readFileInLine("/media/Files/Data/Feedback/AAU_3/SpectraSmooth/windows/AAU_3_rr_eyesClean.0002_254.00",
-                   tmp);
-    drawOneArray(tmp, "/media/Files/Data/offline.jpg");
-
-    readFileInLine("/media/Files/Data/RealTime/windows/SpectraSmooth/AAU_test.0002_254.00.txt",
-                   tmp);
-    drawOneArray(tmp, "/media/Files/Data/online.jpg");
-    exit(0);
-
-
-
-    return;
-
-//    setEdfFile("/media/michael/Files/Data/Feedback/AAU/AAU_train.edf");
-    setEdfFile("/media/michael/Files/Data/RealTime/AAU_test.edf");
-    Net * ann = new Net();
-    ann->successiveProcessing();
-    // "/media/michael/Files/Data/Feedback/AAU/SpectraSmooth/windows");
-    delete ann;
-    exit(0);
-
-    return;
-
-
-    const QString path12 = "/media/michael/Files/Data/RealTime/";
-
-    QStringList leest = QDir(path12 + "windows").entryList(
-                            QDir::Files);
-    setEdfFile("/media/michael/Files/Data/RealTime/SUA_test.edf");
-    def::ns = 20;
-
-    cleanDir("/media/michael/Files/Data/RealTime/Realisations");
-
-    cleanDir("/media/michael/Files/Data/RealTime/SpectraSmooth/windows", "_3.", 0);
-    cleanDir("/media/michael/Files/Data/RealTime/SpectraSmooth/windows", "_test.", 0);
-
-    cleanDir("/media/michael/Files/Data/RealTime/windows/fromreal", "_3.", 0);
-    cleanDir("/media/michael/Files/Data/RealTime/windows/fromreal", "_train.", 0);
-    cleanDir("/media/michael/Files/Data/RealTime/windows/fromreal", "_test.", 0);
-    exit(0);
-
 //    return;
 
-//    ui->windButton->setChecked(true);
-//    ui->timeShiftSpinBox->setValue(0.5);
-//    sliceAll();
-
-//    countSpectraSimple(1024);
-//    exit(0);
-
-
-//    Net * ann = new Net();
-//    ann->successiveProcessing();
-//    delete ann;
-
-//    exit(9);
+#if 1
+    GalyaCut(def::GalyaFolder + "/Neurotravel");
+    GalyaProcessing(def::GalyaFolder + "/Neurotravel");
+    exit(0);
+#endif
 
 #if 0
     /// test on AAX

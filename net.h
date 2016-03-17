@@ -143,6 +143,7 @@ public:
     void PaIntoMatrixByName(const QString & fileName);
     void loadData(const QString & spectraPath = def::dir->absolutePath()
                                                 + slash() + "SpectraSmooth",
+                  const QStringList & filters = {},
                   double rdcCoeff = 1.);
     void popBackDatum();
     void pushBackDatum(const lineType & inDatum,

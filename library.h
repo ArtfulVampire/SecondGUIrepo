@@ -321,7 +321,13 @@ void drawTemplate(const QString & outPath,
 
 
 void drawArray(const QString & templPath,
-               const vec & inData,
+               const matrix & inData,
+//               const spectraGraphsNormalization normType = 0, ////// TODO
+               const QString & color = "black",
+               const double & scaling = 1.,
+               const int & lineWidth = 3);
+void drawArray(const QString & templPath,
+               const lineType & inData,
 //               const spectraGraphsNormalization normType = 0, ////// TODO
                const QString & color = "black",
                const double & scaling = 1.,
@@ -336,6 +342,7 @@ double drawArrays(const QString & templPath,
                 const vector<QColor> & colors = def::colours,
                 const double scaling = 1.,
                 const int lineWidth = 3);
+
 
 void drawArraysInLine(const QString & picPath,
                       const matrix & inMatrix,
