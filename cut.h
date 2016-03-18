@@ -40,7 +40,7 @@ public:
     void matiAdjustLimits();
 
 public slots:
-    void createImage(QString dataFileName);
+    void createImage(const QString & dataFileName);
     void mousePressSlot(char btn__, int coord__);
     void next();
     void prev();
@@ -64,32 +64,22 @@ signals:
 private:
     Ui::Cut *ui;
 
+    QStringList lst;
+    QString currentFile;
+    int currentNumber; /// in lst
+    int addNum = 0; // for cut() windows
+
+    QPixmap currentPic;
+    int redCh, blueCh; // for drawing
     int rightLimit;
     int leftLimit;
 
-    QString currentPicPath;
-    QString currentFile;
-    QString fileNumber;
-    QString fileName;
-    QPixmap currentPic;
-
-    int addNum = 0; // for cut()
-
-    QStringList lst;
-    int currentNumber;
-
     matrix data3;
-    int NumOfSlices, Eyes;
-    int pointNumber;
+    int NumOfSlices;
+
 
     bool autoFlag;
 
-    double coeff;      //for fft
-    int timeShift;   //in time-bins
-    double wndLength;  //in seconds
-    int redCh, blueCh; // for drawing
-
-    double zoomPrev, zoomCurr;
 };
 
 #endif // CUT_H

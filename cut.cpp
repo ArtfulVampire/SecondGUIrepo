@@ -109,7 +109,8 @@ Cut::Cut() :
     QObject::connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(save()));
     QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
     QObject::connect(this, SIGNAL(openFile(QString)), ui->lineEdit, SLOT(setText(QString)));
-    QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(QString)));
+//    QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(QString)));
+    QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(const QString &)));
     QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
     QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitCut()));
 
@@ -139,6 +140,10 @@ void Cut::browse()
         return;
     }
     ui->lineEdit->setText(helpString);
+
+    makeFullFileList(getDirPathLib(helpString), lst);
+    currentNumber = lst.indexOf(getFileName(helpString));
+
     createImage(helpString);
 }
 
@@ -175,50 +180,10 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 
             QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
             double coeff = -1.2;
-            ui->scrollArea->horizontalScrollBar()->setSliderPosition( ui->scrollArea->horizontalScrollBar()->sliderPosition() + coeff * scrollEvent->delta());
+            ui->scrollArea->horizontalScrollBar()->setSliderPosition(
+                        ui->scrollArea->horizontalScrollBar()->sliderPosition() +
+                        coeff * scrollEvent->delta());
             return true;
-
-
-            // zoom
-            /*
-            if(zoomPrev*(1.+scrollEvent->delta()/720.)>1.)
-            {
-                zoomCurr=zoomPrev*(1.+scrollEvent->delta()/720.);
-
-                leftLimit=int(leftLimit*zoomCurr/zoomPrev);
-                rightLimit=int(rightLimit*zoomCurr/zoomPrev);
-
-                QPixmap *tmp = new QPixmap;
-                QPainter *pnt = new QPainter;
-
-                tmp->load(currentPicPath);
-                pnt->begin(tmp);
-
-                // picLabel varies
-                // Pixmap & scrollArea are constant
-
-                pnt->setPen(QPen(QBrush("blue"), 2));
-                pnt->drawLine(leftLimit*tmp->width()/(double(ui->picLabel->size().width())*zoomCurr/zoomPrev), 0, leftLimit*tmp->width()/(double(ui->picLabel->size().width())*zoomCurr/zoomPrev), tmp->height());
-
-                pnt->setPen(QPen(QBrush("red"), 2));
-                pnt->drawLine(rightLimit*tmp->width()/(double(ui->picLabel->size().width())*zoomCurr/zoomPrev), 0, rightLimit*tmp->width()/(double(ui->picLabel->size().width())*zoomCurr/zoomPrev), tmp->height());
-                pnt->end();
-
-
-                ui->picLabel->setPixmap(tmp->scaled(ui->scrollArea->size().width()*zoomCurr, ui->scrollArea->size().height()-20));  // -20 generality
-                zoomPrev=zoomCurr;
-
-                delete tmp;
-                delete pnt;
-                return true;
-            }
-
-
-            else
-            {
-                return false;
-            }
-*/
         }
         else
         {
@@ -373,46 +338,22 @@ void Cut::cutEyesAll()
 #endif
 }
 
-void Cut::createImage(QString dataFileName) //
+//void Cut::createImage(QString dataFileName)
+void Cut::createImage(const QString & dataFileName)
 {
-    zoomPrev = 1.;
-    zoomCurr = 1.;
     addNum = 1;
-    QDir tmpDir;
-    tmpDir.setPath(dataFileName);
     currentFile = dataFileName;
-    fileName = tmpDir.dirName(); // real file name after last separator
 
-    leftLimit = 0;
-    Eyes = 0;
+    readPlainData(dataFileName, data3, NumOfSlices);
 
-    tmpDir.cdUp(); // drop the file name
-    makeFullFileList(tmpDir.absolutePath(), lst);
-
-    readPlainData(currentFile, data3, NumOfSlices);
-
-    currentNumber = lst.indexOf(fileName);
-    currentPicPath = getPicPath(dataFileName, def::dir, def::ns);
 
     if(ui->checkBox->isChecked())
     {
-        currentPic = drawEeg(data3,
-                             def::ns,
-                             NumOfSlices,
-                             def::freq,
-                             currentPicPath,
-                             ui->drawNormDoubleSpinBox->value(),
-                             blueCh,
-                             redCh);
-        // initial zoom
-        zoomPrev = 1.;
-        zoomCurr = NumOfSlices / double(ui->scrollArea->width()); // generality
-        ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(),
-                                                  ui->scrollArea->height() - 20)); // -20 generality
-        rightLimit = NumOfSlices;
+        paint();
     }
     else
     {
+        leftLimit = 0;
         rightLimit = 0;
     }
     ui->scrollArea->horizontalScrollBar()->setSliderPosition(0);
@@ -422,7 +363,6 @@ void Cut::mousePressSlot(char btn, int coord)
 {
     if(btn == 'l' && coord < rightLimit) leftLimit = coord;
     if(btn == 'r' && coord > leftLimit && coord < NumOfSlices) rightLimit = coord;
-
 
     QPixmap pic = currentPic;
     QPainter paint;
@@ -446,83 +386,43 @@ void Cut::setAutoProcessingFlag(bool a)
 void Cut::next()
 {
     QString helpString;
-    if(currentNumber + 1 < lst.length())  // generality
+    int tmp = currentNumber;
+    for(; currentNumber < lst.length() - 1; ++currentNumber)  // generality
     {
-        helpString = def::dir->absolutePath() + slash();
-        if(currentFile.contains("Realisations"))
+        /// remake regexps or not?
+        if(lst[currentNumber + 1].contains("_num") ||
+           lst[currentNumber + 1].contains("_000") || /// number starts with .000
+           lst[currentNumber + 1].contains("_sht"))
         {
-             helpString += "Realisations";
+            continue;
         }
-        else if(currentFile.contains("windows"))
-        {
-            if(currentFile.contains("fromreal"))
-            {
-                helpString += "windows" + slash() + "fromreal";
-            }
-            else
-            {
-                helpString += "windows";
-            }
-        }
-        else if(currentFile.contains("cut"))
-        {
-            helpString += "cut";
-        }
-        helpString += slash();
-
-        if(lst[currentNumber + 1].contains("_num")) ++currentNumber; // generality crutch bicycle
-
-//        cout << "next: " << helpString << endl;
-
-        helpString += lst[currentNumber + 1];
-        emit openFile(helpString);               // sets dir into ExpName directory
+        helpString = getDirPathLib(currentFile) + slash() + lst[++currentNumber];
+        emit openFile(helpString);
+        return;
     }
-    else
-    {
-        cout << "bad number, too big" << endl; // QMessageBox
-    }
+    currentNumber = tmp;
+    cout << "next: bad number, too big" << endl;
 }
 
 void Cut::prev()
 {
-//    rewrite();
     QString helpString;
-    if(currentNumber - 1 >= 0)
+    int tmp = currentNumber;
+    for(; currentNumber > 0 + 1; --currentNumber)  // generality
     {
-        helpString = def::dir->absolutePath() + slash();
-        if(currentFile.contains("Realisations"))
+        /// remake regexps or not?
+        if(lst[currentNumber - 1].contains("_num") ||
+           lst[currentNumber - 1].contains("_000") || /// number starts with .000
+           lst[currentNumber - 1].contains("_sht"))
         {
-             helpString += "Realisations";
+            continue;
         }
-        else if(currentFile.contains("windows"))
-        {
-            if(currentFile.contains("fromreal"))
-            {
-                helpString += "windows" + slash() + "fromreal";
-            }
-            else
-            {
-                helpString += "windows";
-            }
-        }
-        else if(currentFile.contains("cut"))
-        {
-            helpString += "cut";
-        }
-        helpString += slash();
-
-
-        if(lst[currentNumber-1].contains("_num")) --currentNumber; // generality crutch bicycle
-
-//        cout << "prev: " << helpString << endl;
-
-        helpString += lst[currentNumber-1];
-        emit openFile(helpString);          // sets dir into ExpName directory
+        helpString = getDirPathLib(currentFile) + slash() + lst[--currentNumber];
+        emit openFile(helpString);
+        return;
     }
-    else
-    {
-        cout << "bad number, too little" << endl; // QMessageBox
-    }
+    currentNumber = tmp;
+    cout << "prev: bad number, too little" << endl;
 }
 
 void Cut::matiAdjustLimits() /////// should TEST !!!!!
@@ -647,7 +547,6 @@ void Cut::zero()
     // delete [leftLimit, rightLimit)
 
     // ExpName.left(3)_fileSuffix_TYPE_SESSION_PIECE.MARKER
-
     QString helpString = "_0_[0-9]_[0-9]{2,2}"; // MATI counting problem only
     if(currentFile.contains(QRegExp(helpString)))
     {
@@ -662,9 +561,10 @@ void Cut::zero()
 void Cut::cut()
 {
     QString helpString;
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "windows"
-                                          + slash() + fileName + "." + QString::number(addNum++));
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() +
+                                          slash() + "windows" +
+                                          slash() + getFileName(currentFile) +
+                                          "." + QString::number(addNum++));
     writePlainData(helpString,
                    data3,
                    rightLimit - leftLimit,
@@ -714,6 +614,7 @@ void Cut::splitCut()
     paint();
 }
 
+/// unused
 void Cut::save()
 {
     QString helpString = def::dir->absolutePath()
@@ -729,8 +630,7 @@ void Cut::rewrite()
 {
     writePlainData(currentFile,
                    data3);
-    currentPicPath = getPicPath(currentFile, def::dir, def::ns);
-    currentPic.save(currentPicPath, 0, 100);
+    currentPic.save(getPicPath(currentFile), 0, 100);
 }
 
 void Cut::paint() // save to tmp.jpg and display
@@ -747,11 +647,9 @@ void Cut::paint() // save to tmp.jpg and display
                          blueCh,
                          redCh); // generality freq
 
-//    helpString = getPicPath(currentFile, dir, ns);
-//    currentPic.load(helpString);
-
+    /// -20 for scroll bar generality
     ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(),
-                                              ui->scrollArea->height() - 20)); // -20 generality
+                                              ui->scrollArea->height() - 20));
 
     rightLimit = NumOfSlices;
     leftLimit = 0;

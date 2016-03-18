@@ -761,7 +761,9 @@ void drawTemplate(const QString & outPath,
         paint.setFont(QFont("Helvetica", int(24 * scaleY), -1, false));
         if(channelsFlag)
         {
-            helpString = QString(coords::lbl[c2]);
+            helpString = QString(coords::lbl[c2])
+                         + "(" + QString::number(c2 + 1) + ")" // can be commented
+                         ;
         }
         else
         {
@@ -1872,12 +1874,22 @@ QPixmap drawEeg(const matrix & dataD,
         }
 
         paint.setPen(QPen(QBrush(QColor(colour)), lineWidth));
-
-        for(int c1 = 0; c1 < pic.width(); ++c1)
+#if 1
+        for(int c1 = 0; c1 < pic.width() - 1; ++c1)
         {
             paint.drawLine(c1, (c2+1) * pic.height() / (ns+2) + dataD[c2][c1] * norm,
                            c1+1, (c2+1) * pic.height() / (ns+2) + dataD[c2][c1+1] * norm);
         }
+#else
+        // same speed
+        int c1 = 0;
+        auto it = std::begin(dataD[c2]) + 1;
+        for(auto itt = std::begin(dataD[c2]); itt < std::end(dataD[c2]) - 1; ++itt, ++it, ++c1)
+        {
+            paint.drawLine(c1    , (c2 + 1) * pic.height() / (ns + 2) + *itt * norm,
+                           c1 + 1, (c2 + 1) * pic.height() / (ns + 2) + *it  * norm);
+        }
+#endif
     }
     norm = 1.;
     paint.setPen(QPen(QBrush("black"), lineWidth));

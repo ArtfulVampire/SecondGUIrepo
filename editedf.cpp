@@ -659,7 +659,6 @@ void MainWindow::constructEDF(const QString & newPath,
     vector<int> chanList;
     makeChanList(chanList);
 
-
     def::ns = chanList.size();
     const int ns = chanList.size();
 
