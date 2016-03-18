@@ -6,7 +6,7 @@ namespace def
 int ns = 20;
 
 
-
+bool ntFlag = false;
 
 int left()  {return fftLimit(def::leftFreq, def::freq, def::fftLength);}
 int right() {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}

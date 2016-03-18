@@ -164,7 +164,7 @@ bool areEqualFiles(QString path1, QString path2)
     QTime myTime;
     myTime.start();
 
-    typedef size_t byte;
+    typedef qint8 byte;
     FILE * fil1 = fopen(path1, "rb");
     FILE * fil2 = fopen(path2, "rb");
     if(fil1 == NULL || fil2 == NULL)
@@ -172,6 +172,7 @@ bool areEqualFiles(QString path1, QString path2)
         cout << "areEqualFiles: some of the files == NULL" << endl;
     }
     byte byt1, byt2;
+    int pos = 0;
     while(!feof(fil1) && !feof(fil2))
     {
         fread(&byt1, sizeof(byte), 1, fil1);
@@ -180,9 +181,11 @@ bool areEqualFiles(QString path1, QString path2)
         {
             fclose(fil1);
             fclose(fil2);
-            cout << "equalFiles: time = " << myTime.elapsed() / 1000. << " sec" << endl;
+            cout << "equalFiles: time = " << myTime.elapsed() / 1000. << " sec"
+                 << "\t" << "pos = " << pos << endl;
             return false;
         }
+        ++pos;
 
     }
     fclose(fil1);
@@ -280,15 +283,6 @@ ostream & operator << (ostream &os, matrix toOut)
         os << endl;
     }
     return os;
-}
-
-void resizeValar(lineType & in, int num)
-{
-    lineType temp = in;
-    in.resize(num);
-    std::copy(begin(temp),
-              begin(temp) + min(in.size(), temp.size()),
-              begin(in));
 }
 
 

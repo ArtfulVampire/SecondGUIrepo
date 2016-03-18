@@ -672,32 +672,39 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
             else if (markChanArr[i] == 247) h = 1;
             continue; // wait for num marker
         }
-        else if(1) //marker can be <=200, ==254, smth else
+        else if(true) //marker can be num <= 200, ==254, smth else
         {
             if(marker.isEmpty())
             {
                 marker = "sht";
             }
 
-            ++number;
-
-            helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "Realisations"
-                                                  + slash() + def::ExpName
-                                                  + "." + rightNumber(number, 4)
-                                                  + "_" + marker);
+            helpString = def::dir->absolutePath()
+                         + slash() + "Realisations"
+                         + slash() + def::ExpName
+                         + "." + rightNumber(number++, 4);
 //            cout << helpString << endl;
             if(i > j)
             {
                 if(i - j <= def::freq * 60) /// const generality limit
                 {
+                    helpString += "_" + marker;
                     fil.saveSubsection(j, i, helpString, true);
                 }
                 else /// pause rest
                 {
-                    writePlainData(helpString,
-                                   matrix(fil.getNs(), def::freq, 0.),
-                                   def::freq);
+                    if(def::wirteStartEndLong)
+                    {
+                        helpString += "_000";
+                        fil.saveSubsection(j, i, helpString, true);
+                    }
+                    else
+                    {
+                        helpString += "_" + marker;
+                        matrix tempData(fil.getNs(), 100, 0.);
+                        tempData[fil.getMarkChan()][0] = markChanArr[j];
+                        writePlainData(helpString, tempData);
+                    }
                 }
             }
             ui->progressBar->setValue(i * 100. / fil.getDataLen());
@@ -707,7 +714,6 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
             {
                 break;
             }
-//            if(number == 5) break; /// test
 
             marker.clear();
             if(h == 0) marker = "241";
@@ -717,6 +723,34 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
             continue;
         }
     }
+    /// write final
+    {
+        helpString = def::dir->absolutePath()
+                     + slash() + "Realisations"
+                     + slash() + def::ExpName
+                     + "." + rightNumber(number++, 4);
+        if(fil.getDataLen() - j < 40 * def::freq) /// if last realisation or interstimulus
+        {
+            helpString += "_" + marker;
+            fil.saveSubsection(j, fil.getDataLen(), helpString, true);
+        }
+        else /// just last big rest with eyes closed/open
+        {
+            if(def::wirteStartEndLong)
+            {
+                helpString += "_000";
+                fil.saveSubsection(j, fil.getDataLen(), helpString, true);
+            }
+            else /// not to loose the last marker
+            {
+                helpString += "_" + marker;
+                matrix tempData(fil.getNs(), 100, 0.);
+                tempData[fil.getMarkChan()][0] = markChanArr[j];
+                writePlainData(helpString, tempData);
+            }
+        }
+    }
+
     stopFlag = 0;
 }
 

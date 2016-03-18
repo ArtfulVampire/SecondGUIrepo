@@ -50,10 +50,17 @@ void writeFileInLine(const QString & filePath,
 void writePlainData(const QString outPath,
                     const matrix & data,
                     int numOfSlices,
-                    const int & start)
+                    int start)
 {
-    numOfSlices = min(numOfSlices,
-                      data.cols() - start);
+    if(numOfSlices <= 0)
+    {
+        numOfSlices = data.cols();
+    }
+    else
+    {
+        numOfSlices = min(numOfSlices,
+                          data.cols() - start);
+    }
 
 //    if(numOfSlices < 250) return; /// used for sliceWindFromReal() but Cut::cut() ...
 
@@ -72,6 +79,8 @@ void writePlainData(const QString outPath,
     outStr.flush();
     outStr.close();
 }
+
+
 
 
 void readPlainData(const QString & inPath,

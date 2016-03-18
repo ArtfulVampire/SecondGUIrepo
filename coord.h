@@ -49,16 +49,17 @@ enum spectraGraphsNormalization {all = 0, each = 1};
 namespace def
 {
     const bool matiFlag = false;
-    const bool ntFlag = true;
     const bool edfPlusFlag = false;
 
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
     const bool OssadtchiFlag = false;
 
-    const bool wirteStartEndLong = false; //for slice
+    const bool wirteStartEndLong = true; //for slice
 
 
 
+
+    extern bool ntFlag;
 
     extern QString ExpName;
     extern QDir * dir;

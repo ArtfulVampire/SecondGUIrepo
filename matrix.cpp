@@ -363,12 +363,7 @@ void matrix::resize(int newRows, int newCols)
                   data.end(),
                   [newCols](lineType & in)
     {
-        /// resizeValar
-        lineType temp = in;
-        in.resize(newCols);
-        std::copy(std::begin(temp),
-                  std::begin(temp) + min(newCols, int(temp.size())),
-                  std::begin(in));
+        resizeValar(in, newCols);
     });
 
 }
@@ -385,11 +380,7 @@ void matrix::resizeRows(int newRows)
                       data.end(),
                       [cols](lineType & in)
         {
-            lineType temp = in;
-            in.resize(cols);
-            std::copy(std::begin(temp),
-                      std::begin(temp) + min(cols, int(temp.size())),
-                      std::begin(in));
+            resizeValar(in, cols);
         });
     }
 }
@@ -401,12 +392,7 @@ void matrix::resizeCols(int newCols)
                   data.end(),
                   [newCols](lineType & in)
     {
-        /// not resizeValar from library
-        lineType temp = in;
-        in.resize(newCols);
-        std::copy(std::begin(temp),
-                  std::begin(temp) + min(newCols, int(temp.size())),
-                  std::begin(in));
+        resizeValar(in, newCols);
     });
 }
 

@@ -659,10 +659,9 @@ void MainWindow::constructEDF(const QString & newPath,
     vector<int> chanList;
     makeChanList(chanList);
 
-    ////////////////////// aaaaaaaaaaaaaaaaaaaaaaaaa
+
     def::ns = chanList.size();
     const int ns = chanList.size();
-
 
     QStringList lst;
     if(!nameFilters.isEmpty())
@@ -674,9 +673,7 @@ void MainWindow::constructEDF(const QString & newPath,
     {
         lst = QDir(def::dir->absolutePath() + slash() + "Realisations").entryList(
                   QDir::Files, QDir::Name); /// Name ~ order
-//        lst = def::dir->entryList(QDir::Files, QDir::Name); /// Name ~ order
     }
-
     if(lst.isEmpty())
     {
         cout << "constructEDF: list of realisations is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
@@ -696,10 +693,11 @@ void MainWindow::constructEDF(const QString & newPath,
         readPlainData(helpString, newData, NumOfSlices, currSlice);
         currSlice += NumOfSlices;
     }
-
+//    cout << "constructEDF: slices read from Realisations = " << currSlice << endl;
 
     int helpInt = currSlice;
 
+    /// why do I need this?
     if(currSlice < 16 * def::freq)
     {
         cout << "constructEDF: too little data 1 =  " << currSlice << endl;
@@ -801,6 +799,11 @@ void MainWindow::constructEDF(const QString & newPath,
     }
 
     /// remake with dataType
+
+//    cout << "constructEDF: before writeData\n"
+//         << "rows = " << newData.rows() << "   "
+//         << "cols = " << newData.cols() << "   "
+//         << endl;
     globalEdf.writeOtherData(newData, newPath, chanList); // new to check
 
 //    def::ns = globalEdf.getNs(); /// should test

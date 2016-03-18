@@ -115,8 +115,6 @@ char * QStrToCharArr(const QString & input, const int & len = -1);
 int typeOfFileName(const QString & fileName);
 QString getFileMarker(const QString & fileName);
 
-void resizeValar(lineType & in, int num);
-
 template <typename T>
 void eraseItems(vector<T> & init, const vector<int> & indices);
 
@@ -258,8 +256,8 @@ void readPlainData(const QString & inPath,
 
 void writePlainData(const QString outPath,
                     const matrix & data,
-                    int numOfSlices,
-                    const int & start = 0);
+                    int numOfSlices = 0,
+                    int start = 0);
 
 void readMatrixFile(const QString & filePath,
                     matrix & outData);

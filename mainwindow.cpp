@@ -1832,9 +1832,11 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(7);
 //    ui->justSliceButton->setChecked(true);
 
-//    return;
+//    cout << areEqualFiles("/media/michael/Files/Data/AAX/AAX_rr_f3.5-40.edf",
+//                          "/media/michael/Files/Data/AAX/AAX_rr_f3.5-40_new.edf") << endl; exit(0);
+    return;
 
-#if 1
+#if 0
     GalyaCut(def::GalyaFolder + "/Neurotravel");
     GalyaProcessing(def::GalyaFolder + "/Neurotravel");
     exit(0);

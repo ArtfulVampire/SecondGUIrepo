@@ -1164,7 +1164,10 @@ void edfFile::refilter(const double & lowFreq,
     cout << "refilter: time = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
-void edfFile::saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag) const // [start, finish)
+void edfFile::saveSubsection(int startBin,
+                             int finishBin,
+                             const QString & outPath,
+                             bool plainFlag) const // [start, finish)
 {
     if(plainFlag)
     {

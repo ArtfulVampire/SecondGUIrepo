@@ -67,12 +67,13 @@ private:
     int rightLimit;
     int leftLimit;
 
-    QString currentPicPath, currentFile;
+    QString currentPicPath;
+    QString currentFile;
     QString fileNumber;
     QString fileName;
     QPixmap currentPic;
 
-    int addNum = 0;
+    int addNum = 0; // for cut()
 
     QStringList lst;
     int currentNumber;
@@ -86,7 +87,6 @@ private:
     double coeff;      //for fft
     int timeShift;   //in time-bins
     double wndLength;  //in seconds
-    int flagWnd;
     int redCh, blueCh; // for drawing
 
     double zoomPrev, zoomCurr;

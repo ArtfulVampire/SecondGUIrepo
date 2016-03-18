@@ -62,6 +62,15 @@ inline int fftL(const int & in)
 }
 
 
+inline void resizeValar(lineType & in, int num)
+{
+    lineType temp = in;
+    in.resize(num);
+    std::copy(begin(temp),
+              begin(temp) + min(in.size(), temp.size()),
+              begin(in));
+}
+
 
 inline double prod(const lineType & in1, const lineType & in2)
 {

@@ -31,10 +31,6 @@ Cut::Cut() :
     }
 
 
-    flagWnd = 0;
-    addNum = 0;
-
-
     ui->subdirComboBox->addItem("Realisations");
     ui->subdirComboBox->addItem("windows");
     ui->subdirComboBox->addItem("windows/fromreal"); //generality
@@ -668,9 +664,7 @@ void Cut::cut()
     QString helpString;
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                           + slash() + "windows"
-                                          + slash() + fileName + "." + QString::number(addNum));
-
-    ++addNum;
+                                          + slash() + fileName + "." + QString::number(addNum++));
     writePlainData(helpString,
                    data3,
                    rightLimit - leftLimit,
@@ -684,9 +678,6 @@ void Cut::cut()
 /// DANGER markers
 void Cut::splitCut()
 {
-    const int & leftEdge = leftLimit;
-    const int & rightEdge = rightLimit;
-
 //    vector<list<double>> dataList;
 //    dataList.resize(def::ns);
 //    for(int k = 0; k < def::ns; ++k)
@@ -708,7 +699,7 @@ void Cut::splitCut()
 //            }
 //        }
 
-    for(int i = leftEdge; i < NumOfSlices - (rightEdge - leftEdge); ++i)
+    for(int i = leftLimit; i < NumOfSlices - (rightLimit - leftLimit); ++i)
     {
         for(int k = 0; k < def::nsWOM(); ++k)
         {
@@ -716,71 +707,28 @@ void Cut::splitCut()
             {
                 continue;
             }
-            data3[k][i] = data3[k][i + (rightEdge - leftEdge)];
+            data3[k][i] = data3[k][i + (rightLimit - leftLimit)];
         }
     }
-    NumOfSlices -= (rightEdge - leftEdge);
+    NumOfSlices -= (rightLimit - leftLimit);
     paint();
 }
 
 void Cut::save()
 {
-    QString helpString;
-    def::dir->setPath(currentFile);  // .../expName/Realisations/fileName;
-    fileName = def::dir->dirName();    // real fileName
-    def::dir->cdUp();
-    def::dir->cdUp();
-
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "cut"
-                                          + slash() + fileName);
+    QString helpString = def::dir->absolutePath()
+                         + slash() + "cut"
+                         + slash() + getFileName(currentFile);
 
     // new
-    writePlainData(helpString, data3, def::ns, NumOfSlices);
-    // old
-    /*
-    file = fopen(helpString.toStdString().c_str(), "w");
-    fprintf(file, "NumOfSlices %d \n", NumOfSlices);
-    for(int i = 0; i < NumOfSlices; ++i)         // saved BY SLICES!!
-    {
-        for(int k = 0; k < ns; ++k)
-        {
-            fprintf(file, "%lf\n", data3[k][i]);
-        }
-    }
-    fclose(file);
-    */
-
-    fileName.replace('.', '_');
-    helpString=QDir::toNativeSeparators(def::dir->absolutePath()
-                                        + slash() + "SignalsCut"
-                                        + slash());
-    if(def::ns == 19)
-    {
-         helpString += "after";
-    }
-    else if(def::ns == 21)
-    {
-        helpString += "before";
-    }
-    else
-    {
-        helpString += "other";
-    }
-    helpString += slash() + fileName + ".jpg";
-
-    QPixmap pic;
-    pic = *(ui->picLabel->pixmap());
-    pic.save(helpString, 0, 100);
+    writePlainData(helpString, data3);
 }
 
 
 void Cut::rewrite()
 {
     writePlainData(currentFile,
-                   data3,
-                   def::ns,
-                   NumOfSlices);
+                   data3);
     currentPicPath = getPicPath(currentFile, def::dir, def::ns);
     currentPic.save(currentPicPath, 0, 100);
 }

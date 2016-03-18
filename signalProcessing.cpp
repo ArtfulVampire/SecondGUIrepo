@@ -1656,7 +1656,7 @@ retType smoothSpectre(const signalType & inSpectre, const int numOfSmooth)
 
 void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit)
 {
-    for(int k = 0; k < def::nsWOM(); ++k)
+    for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
     {
         std::for_each(begin(inData[k]) + leftLimit,
                       begin(inData[k]) + rightLimit,
