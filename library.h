@@ -190,8 +190,9 @@ void drawWavelet(QString picPath,
 
 
 
-// static functions
 
+
+// "static" functions
 
 const vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
 void eyesProcessingStatic(const vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
@@ -290,6 +291,8 @@ void readPaFile(const QString & paFile,
 
 
 // drawings
+
+void drawRealisation(const QString & inPath);
 
 QPixmap drawEeg(const matrix & dataD,
                 int ns,
@@ -549,6 +552,8 @@ double independence(double * const signal1, double * const signal2, int length);
 double countAngle(double initX, double initY);
 
 
+
+
 /// what is RCP ???
 void drawRCP(const lineType & values,
              const QString & picPath);
@@ -556,7 +561,6 @@ void countRCP(QString filename,
               QString picPath  = QString(),
               double * outMean = nullptr,
               double * outSigma = nullptr);
-
 
 void splitZeros(matrix & inData,
                 const int & inLength,
@@ -567,6 +571,40 @@ void splitZeros(matrix & inData,
 void splitZerosEdges(matrix & dataIn, const int & ns, const int & length, int * outLength);
 void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit);
 
+
+
+
+
+//products for ICA
+void product1(const matrix & arr,
+              const int length,
+              const int ns,
+              const lineType & vect,
+              lineType & outVector);
+
+void product2(const matrix & arr,
+              const int length,
+              const int ns,
+              const lineType & vect,
+              lineType & outVector);
+
+void product3(const matrix & inMat,
+              const int ns,
+              const int currNum,
+              lineType & outVector);
+
+void randomizeValar(lineType & valar);
+
+void countVectorW(matrix & vectorW,
+                  const matrix & dataICA,
+                  const int ns,
+                  const int dataLen,
+                  const double vectorWTreshold);
+
+void dealWithEyes(matrix & inData,
+                  const int dimension);
+void ica(const matrix & initialData,
+         matrix & matrixA, double eigenValuesTreshold, const double vectorWTreshold);
 
 void svd(const matrix & initialData,
          matrix & eigenVectors,

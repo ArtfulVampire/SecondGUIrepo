@@ -245,9 +245,9 @@ MainWindow::MainWindow() :
     ui->svdDoubleSpinBox->setSingleStep(0.5);
 
     ui->vectwDoubleSpinBox->setDecimals(1);
-    ui->vectwDoubleSpinBox->setMaximum(10.0);
+    ui->vectwDoubleSpinBox->setMaximum(15.0);
     ui->vectwDoubleSpinBox->setMinimum(1.5);
-    ui->vectwDoubleSpinBox->setValue(10.0);
+    ui->vectwDoubleSpinBox->setValue(12.0);
     ui->vectwDoubleSpinBox->setSingleStep(0.5);
 
     ui->spocCoeffDoubleSpinBox->setMaximum(5);
@@ -262,7 +262,7 @@ MainWindow::MainWindow() :
     ui->spocTresholdDoubleSpinBox->setDecimals(3);
     ui->spocTresholdDoubleSpinBox->setValue(0.95);
 
-    ui->finishTimeBox->setMaximum(60*30.);
+    ui->finishTimeBox->setMaximum(60 * 30.);
     ui->startTimeBox->setMaximum(ui->finishTimeBox->maximum());
 
     ui->BayesSpinBox->setMaximum(50);
@@ -359,8 +359,6 @@ MainWindow::MainWindow() :
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
 
     QObject::connect(ui->BayesPushButton, SIGNAL(clicked()), this, SLOT(Bayes()));
-
-    QObject::connect(ui->makeTestDataPushButton, SIGNAL(clicked()), this, SLOT(makeTestData()));
 
     QObject::connect(ui->icaTestClassPushButton, SIGNAL(clicked()), this, SLOT(icaClassTest()));
 
@@ -1393,6 +1391,7 @@ void MainWindow::drawSpectra()
 
     cout << "drawSpectra: time = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
+
 void MainWindow::drawRealisations()
 {
     QStringList lst;
@@ -1834,11 +1833,67 @@ void MainWindow::customFunc()
 
 //    cout << areEqualFiles("/media/michael/Files/Data/AAX/AAX_rr_f3.5-40.edf",
 //                          "/media/michael/Files/Data/AAX/AAX_rr_f3.5-40_new.edf") << endl; exit(0);
-    return;
+
+//    ui->reduceChannelsComboBox->setCurrentText("20");
+//    setEdfFile("/media/michael/Files/Data/AAX/AAX_rr_f3.5-40_new.edf");
+//    readData();
+
+//    matrix dat;
+////    dat = globalEdf.getData();
+//    readPlainData();
+//    dat.resize(19);
+
+//    matrix matA;
+//    ica(dat, matA, pow(10., -9), pow(10., -12));
+//    matrix comps = matA * dat;
+
+//    exit(0);
+//    return;
+
+#if 1
+    const QString pth = "/media/Files/Data/test";
+
+    matrix pe = makeTestData(pth + ".txt");
+    drawRealisation(pth + ".txt_");
+
+    int num;
+    matrix dat;
+    readPlainData(pth + ".txt", dat, num);
+
+    matrix eigenVects;
+    lineType eigenVals;
+
+    matrix matA;
+
+    dat.transpose();
+    vector<int> ex;
+    for(int i = 0; i < dat.rows(); ++i)
+    {
+        if(rand() % 1000 > 40)
+        {
+            ex.push_back(i);
+        }
+    }
+    dat.eraseRows(ex);
+    dat.transpose();
+
+    ica(dat, matA, pow(10., -9), pow(10., -12));
+    matA.invert();
+    readPlainData(pth + ".txt", dat, num);
+    matrix comps = matA * dat;
+
+    writePlainData(pth + "_new.txt", comps, 2000);
+    drawRealisation(pth + "_new.txt");
+
+    (matA * pe).print();
+
+    exit(0);
+#endif
+
 
 #if 0
-    GalyaCut(def::GalyaFolder + "/Neurotravel");
-    GalyaProcessing(def::GalyaFolder + "/Neurotravel");
+    GalyaCut(def::GalyaFolder + "/Gramotko");
+    GalyaProcessing(def::GalyaFolder + "/Gramotko");
     exit(0);
 #endif
 
@@ -2077,11 +2132,8 @@ void MainWindow::customFunc()
 
 
 
-#if 1
+#if 0
         /// successive
-
-//        if(name != "AAU") continue;
-
         const QString suffix = ""; /// empty, _ica, _ica_ord
 
 #if 1
@@ -2275,7 +2327,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-    // naive artmap
+    /// naive artmap
 
     //norm
     double maxV;
@@ -2436,7 +2488,7 @@ void MainWindow::customFunc()
 
 
 #if 0
-    // cut central 9 channels
+    /// cut central 9 channels
 
     QPixmap pic;
     QDir tmp("/media/michael/Files/IHNA/Pew");
@@ -2457,46 +2509,6 @@ void MainWindow::customFunc()
 
 
 #if 0
-    setEdfFile(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20.edf");
-    cleanDirs();
-    sliceAll();
-    countSpectraSimple(4096);
-
-//    fileInnerClassification(def::dataFolder + slash() + "GoodData",
-//                            "SIV_cl_f5-20.edf",
-//                            4096, 1);
-
-//    exit(0);
-#endif
-
-#if 0
-    setEdfFile(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord_ro.edf");
-    cleanDirs();
-    sliceAll();
-    countSpectraSimple(4096);
-
-//    fileInnerClassification(def::dataFolder + slash() + "GoodData",
-//                            "SIV_cl_f5-20_ica_ord_ro.edf",
-//                            4096, 1);
-
-//    exit(0);
-#endif
-
-#if 0
-
-    setEdfFile(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord_ro.edf");
-    drawMapsICA(def::dataFolder  + slash() + "GoodData/Help/SIV_cl_f5-20_ica_ord_ro_maps.txt");
-    drawMapsOnSpectra(def::dataFolder  + slash() + "GoodData/Help/SIV_cl_f5-20_ica_ord_ro_all.jpg",
-                      def::dataFolder  + slash() + "GoodData/Help/SIV_cl_f5-20_ica_ord_ro_all_wm.jpg",
-                      def::dataFolder  + slash() + "GoodData/Help/Maps");
-    drawMapsOnSpectra(def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord_ro_wts.jpg",
-                      def::dataFolder  + slash() + "GoodData/SIV_cl_f5-20_ica_ord_ro_wts_wm.jpg",
-                      def::dataFolder  + slash() + "GoodData/Help/Maps");
-
-    exit(0);
-#endif
-
-#if 0
 
     ui->reduceChannelsCheckBox->setChecked(true);
     ui->reduceChannelsComboBox->setCurrentText("Mati");
@@ -2509,7 +2521,6 @@ void MainWindow::customFunc()
                                      "_cl_f3-30_ica_ord.edf",
                                      "_cl_f4-25_ica_ord.edf",
                                      "_cl_f5-20_ica_ord.edf"};
-//    const QStringList fileEndingList{"_cl_f5-20_ica_ord.edf"};
 
 
 
@@ -2865,40 +2876,12 @@ void MainWindow::customFunc()
     }
 #endif
 
-#if 0
-
-    // classify 16 sec - ica
-    ui->matiPieceLengthSpinBox->setValue(16);
-    ofStr.open(logPath.toStdString(), ios_base::app);
-    for(const QString & guy : names)
-    {
-
-        tempDouble = fileInnerClassification(def::dataFolder + slash() + "GoodData",
-                                             guy + "_cl_ica.edf",
-                                             "16sec19ch");
-        ofStr << tempDouble << '\t' << guy + "_cl.edf 16sec ica" << endl;
-    }
-    ofStr.close();
-
-    // classify 8 sec - ica
-    ui->matiPieceLengthSpinBox->setValue(8);
-    ofStr.open(logPath.toStdString(), ios_base::app);
-    for(const QString & guy : names)
-    {
-
-        tempDouble = fileInnerClassification(def::dataFolder + slash() + "GoodData",
-                                             guy + "_cl_ica.edf",
-                                             "8sec19ch");
-        ofStr << tempDouble << '\t' << guy + "_cl.edf 8sec ica" << endl;
-    }
-    ofStr.close();
-#endif
 
 
 
 
 #if 0
-    // Galya processing
+    /// Galya processing
     QDir tempDir;
     const QString initDir = "/media/Files/Data/Galya/";
     const QStringList addDir = { "MoreFiles",
@@ -2929,7 +2912,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-    // draw maps on spectra
+    /// draw maps on spectra
     const QStringList names{"ADA", "BSA", "FEV", "KMX", "NVV", "PYV", "SDA", "SIV"};
     const QString path = "/media/Files/Data/Mati/GoodData";
     const QString hlp = "/media/Files/Data/Mati/GoodData/Help";
@@ -2981,7 +2964,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-    // different filtering check
+    /// different filtering check
     ui->highFreqFilterDoubleSpinBox->setValue(40.);
     double highFreq = ui->highFreqFilterDoubleSpinBox->value();
     for(double lowFreq = 2.0; lowFreq < 3.5; lowFreq += 0.05)
@@ -3000,240 +2983,12 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
-    // slice by 16 seconds pieces - 1 file
-    const int wndLen = 16; // seconds
-    def::dir->cd("/media/michael/Files/Data/Galya/ToSlice");
-    const QString guy = "lomtev.edf";
 
-    globalEdf.readEdfFile(def::dir->absolutePath() + slash() + guy);
 
-    for(int i = 0; i < ceil(globalEdf.getDataLen() / def::freq / wndLen); ++i)
-    {
-        globalEdf.saveSubsection(i * def::freq * wndLen,
-                                 fmin((i + 1) * def::freq * wndLen, globalEdf.getDataLen()),
-                                 QString(def::dir->absolutePath() + slash() + globalEdf.getExpName() + "_" + QString::number(i+1) + ".edf"));
-    }
-
-    exit(0);
-#endif
 
 
 #if 0
-    // copy wts pics MATI
-
-    QStringList names{"ADA", "BSA", "FEV", "KMX", "NVV", "PYV", "SDV", "SIV"};
-    QStringList suffix{"_full", "_full_ica"};
-    QString wtsPath;
-    QString helpString;
-
-    ui->cleanWindowsCheckBox->setChecked(true);
-    ui->cleanWindSpectraCheckBox->setChecked(true);
-
-//    def::dir->cd("/media/Files/Data/Mati");
-
-    for(QString & guy : names)
-    {
-        for(QString & suff : suffix)
-        {
-            for(bool wnds : {true, false})
-            {
-                setEdfFile("/media/Files/Data/Mati/"
-                           + guy + slash() + guy + suff + ".edf");
-
-                helpString = def::dir->absolutePath()
-                        + slash() + "Help"
-                        + slash() + def::ExpName + "_wts";
-                if(wnds) helpString += "_wnd";
-                helpString += ".jpg";
-
-                wtsPath = helpString;
-                wtsPath.replace(QString(guy + slash() + "Help"), "Weights");
-
-
-                cout << helpString << endl;
-                cout << wtsPath << endl << endl;
-
-                QFile::copy(helpString,
-                            wtsPath);
-            }
-        }
-    }
-    exit(0);
-#endif
-
-#if 0
-    // make a tuple of wts pics for windows and reals, MATI
-
-    QStringList names{"ADA", "BSA", "FEV", "KMX", "NVV", "PYV", "SDV", "SIV"};
-    QStringList suffix{"_full", "_full_ica"};
-    QString wtsPath;
-    QString helpString;
-
-    ui->cleanWindowsCheckBox->setChecked(true);
-    ui->cleanWindSpectraCheckBox->setChecked(true);
-
-
-    for(QString & guy : names)
-    {
-        for(QString & suff : suffix)
-        {
-            for(bool wnds : {true, false})
-            {
-                if(wnds) ui->matiPieceLengthSpinBox->setValue(4);
-                else ui->matiPieceLengthSpinBox->setValue(16);
-                setEdfFile("/media/Files/Data/Mati/"
-                           + guy + slash() + guy + suff + ".edf");
-
-
-                if(wnds)
-                {
-                    makeCfgStatic(def::dir->absolutePath(),
-                                  63*19,
-                                  "4sec19ch");
-                }
-                if(!wnds)
-                {
-                    makeCfgStatic(def::dir->absolutePath(),
-                                  247*19,
-                                  "16sec19ch");
-                }
-
-                cleanDirs();
-                sliceAll();
-                Spectre * sp = new Spectre();
-                if(wnds) sp->setFftLength(1024);
-                else sp->setFftLength(4096);
-                sp->countSpectra();
-                sp->compare();
-                sp->compare();
-                sp->compare();
-                sp->compare();
-                sp->psaSlot();
-
-
-                helpString = def::dir->absolutePath() + slash() + "SpectraSmooth";
-                if(wnds) helpString += slash() + "windows";
-
-                Net * ann = new Net();
-                MakePa * mkPa = new MakePa(helpString);
-                ann->adjustReduceCoeff(helpString,
-                                       90,
-                                       150,
-                                       mkPa,
-                                       "all");
-
-                mkPa->makePaSlot();
-                ann->PaIntoMatrixByName("all");
-
-                ann->LearnNet();
-
-                wtsPath = def::dir->absolutePath()
-                        + slash() + def::ExpName;
-                if(wnds) wtsPath += "_wnd";
-                wtsPath += ".wts";
-
-
-                helpString = def::dir->absolutePath()
-                        + slash() + "Help"
-                        + slash() + def::ExpName + "_wts";
-                if(wnds) helpString += "_wnd";
-                helpString += ".jpg";
-
-                ann->writeWts(wtsPath);
-                ann->drawWts(wtsPath, helpString);
-
-                ann->close();
-                mkPa->close();
-                sp->close();
-            }
-        }
-    }
-    exit(0);
-#endif
-
-#if 0
-    // save and draw weights for mati EEG/components
-    QStringList names;
-    names << "ADA" << "BSA" << "FEV" << "KMX" << "NVV" << "PYV" << "SDV" << "SIV";
-    QString helpString;
-
-    for(QString &guy : names)
-    {
-
-        helpString = "/media/Files/Data/Mati"
-                + slash() + guy
-                + slash() + guy + "_full_ica.edf";
-
-        setEdfFile(helpString);
-        cleanDirs();
-        sliceAll();
-
-        Spectre * sp = new Spectre();
-        sp->countSpectra();
-        delete sp;
-
-        helpString = def::dir->absolutePath() + "SpectraSmooth";
-        MakePa * mkPa = new MakePa(helpString);
-        mkPa->makePaSlot();
-        delete mkPa;
-
-        Net * ann = new Net();
-        ann->readCfgByName("16sec19ch.net");
-        for(double error = 0.15; error >= 0.05; error -= 0.05)
-        {
-            ann->setErrcrit(0.15);
-            for(int i = 0; i < 10; ++i)
-            {
-                ann->LearnNet();
-                helpString = def::dir->absolutePath()
-                        + slash() + "weights"
-                        + slash() + def::ExpName
-                        + "_" + QString::number(error)
-                        + "_" + QString::number(i)
-                        + ".wts";
-                ann->writeWts(helpString);
-                ann->drawWts();
-            }
-        }
-
-
-    }
-#endif
-
-#if 0
-    // set limits for channels/components
-
-    ui->matiCheckBox->setChecked(true);
-    ui->adjustPiecesCheckBox->setChecked(true);
-
-    QStringList names;
-    names << "ADA" << "BSA" << "FEV" << "KMX" << "NVV" << "PYV" << "SDV" << "SIV";
-    QString helpString;
-
-    for(QString &guy : names)
-    {
-        helpString = "/media/Files/Data/Mati"
-                + slash() + guy
-                + slash() + guy + "_full_ica.edf";
-
-        setEdfFile(helpString);
-        cleanDirs();
-        sliceAll();
-
-        Spectre * sp = new Spectre();
-
-        sp->drawWavelets();
-
-        sp->close();
-        delete sp;
-    }
-    exit(0);
-#endif
-
-
-#if 0
-    // uncode matlab color scale
+    /// uncode matlab color scale
     QImage img;
     img.load("/media/Files/Data/matlab.png");
     QRgb color1 = img.pixel(img.width()/2, img.height() - 1);
@@ -3281,32 +3036,6 @@ void MainWindow::customFunc()
 
 
 #if 0
-    // draw wavelets for MATI icas
-
-    ui->matiCheckBox->setChecked(true);
-    ui->adjustPiecesCheckBox->setChecked(true);
-
-    QStringList names;
-    names << "ADA" << "BSA" << "FEV" << "KMX" << "NVV" << "PYV" << "SDV" << "SIV";
-    QString helpString;
-
-    for(QString &guy : names)
-    {
-        helpString = "/media/Files/Data/Mati/"
-                + slash() + guy
-                + slash() + guy + "_full_ica.edf";
-        setEdfFile(helpString);
-        cleanDirs();
-        sliceAll();
-        Spectre * sp = new Spectre();
-        sp->drawWavelets();
-        sp->close();
-        delete sp;
-    }
-    exit(0);
-#endif
-
-#if 0
     // test new Morle
 
     QPixmap pic(600, 160); // 4 seconds
@@ -3331,6 +3060,7 @@ void MainWindow::customFunc()
     pnt.end();
     exit(0);
 #endif
+
 #if 0
     // different filtrations low frequency
     ui->reduceChannelsCheckBox->setChecked(true);
@@ -3376,203 +3106,9 @@ void MainWindow::customFunc()
     }
 #endif
 
-#if 0
-    // test mann-whitney funcs
-    vector <double> in1;
-    vector <double> in2;
-    srand(time(NULL));
-
-    for(int k = 0; k < 10; ++k)
-    {
-        in1.clear();
-        in2.clear();
-        for(int i = 0; i < 15; ++i)
-        {
-            in1.push_back(rand()%1500 / 100.);
-            in2.push_back(rand()%2500 / 100. + 5);
-        }
-
-        cout << MannWhitney(in1, in2, 0.05) << "\t" << MannWhitney(in1.data(),
-                                                                   in1.size(),
-                                                                   in2.data(),
-                                                                   in2.size(),
-                                                                   0.05) << endl;
-    }
-    exit(0);
-#endif
 
 #if 0
-    // draw maps
-    const QString path = "/media/Files/Data/Mati/ICAstudy/";
-    const QString hlp = "/media/Files/Data/Mati/ICAstudy/Help/";
-    const QString out = "/media/Files/Data/Mati/ICAstudy/Help/Maps/";
-    QString helpString;
-    QString nam;
-    def::dir->cd(path);
-    QStringList dataFiles = def::dir->entryList(QStringList("*_ica_after.edf"));
-
-    for(QString & guy : dataFiles)
-    {
-        helpString = guy;
-        helpString.replace("_ica_after.edf", "_maps_after.txt");
-        helpString = hlp + helpString;
-
-        nam = guy;
-        nam.remove("_ica_after.edf");
-
-        drawMapsICA(helpString,
-                    19,
-                    out,
-                    nam);
-    }
-    exit(0);
-#endif
-
-#if 0
-    // test ICA spectre in concatenated files and split ones
-    const QString path = "/media/Files/Data/Mati/ICAstudy/";
-    QString helpString;
-    def::dir->cd(path);
-    QStringList dataFiles = def::dir->entryList(QStringList("*_ica_after.edf"));
-
-    for(QString & guy : dataFiles)
-    {
-        helpString = path + guy;
-        setEdfFile(helpString);
-        cleanDirs();
-        sliceAll();
-
-        Spectre * sp = new Spectre();
-        sp->countSpectra();
-        for(int i = 0; i < 4; ++i)
-        {
-            sp->compare();
-        }
-        if(guy.contains("full"))
-        {
-            sp->psaSlot();
-        }
-        delete sp;
-    }
-    exit(0);
-
-#endif
-
-#if 0
-    // draw maps on spectre
-    const QString path = "/media/Files/Data/Mati/ICAstudy/";
-    const QString hlp = "/media/Files/Data/Mati/ICAstudy/Help/";
-    const QString mapsDir = "/media/Files/Data/Mati/ICAstudy/Help/Maps/";
-    QString helpString;
-    QString nam;
-    QString outPath;
-    def::dir->cd(path);
-    QStringList dataFiles = def::dir->entryList(QStringList("*_ica_after.edf"));
-
-    for(const QString & guy : dataFiles)
-    {
-
-        // helpString - init jpg path
-        helpString = guy;
-        if(helpString.contains("_0_"))
-        {
-            helpString.replace(".edf", "_241.jpg");
-        }
-        else if(helpString.contains("_1_"))
-        {
-            helpString.replace(".edf", "_247.jpg");
-        }
-        else if(helpString.contains("_2_"))
-        {
-            helpString.replace(".edf", "_244.jpg");
-        }
-        else if(helpString.contains("_full_"))
-        {
-            helpString.replace(".edf", "_all.jpg");
-        }
-        else continue;
-        outPath = helpString;
-        outPath.replace(".jpg", "_wm.jpg");
-        helpString = hlp + helpString;
-        outPath = hlp + outPath;
-
-
-        nam = guy;
-        nam.remove("_ica_after.edf");
-
-        drawMapsOnSpectra(helpString,
-                          outPath,
-                          mapsDir,
-                          nam);
-
-    }
-    exit(0);
-#endif
-
-#if 0
-    // test distances between matrixes A (EEG.icawinv)
-    const QString path1 = "/media/Files/Data/Mati/ICAstudy/Help/ADA_0_maps_after_len_2.txt"; // infomax
-    const QString path2 = "/media/Files/Data/Mati/ICAstudy/Help/ADA_0_maps_after.txt"; // fastica
-
-    int ns = 19;
-    matrix A1(ns);
-    matrix A2(ns);
-    matrix prod(ns);
-    readICAMatrix(path1, A1, ns);
-    readICAMatrix(path2, A2, ns);
-
-
-    for(int i = 0; i < ns; ++i)
-    {
-        for(int j = 0; j < ns; ++j)
-        {
-            for(int k = 0; k < ns; ++k)
-            {
-                prod[i][j] += A1[k][i] * A2[k][j];
-            }
-            prod[i][j] = abs(prod[i][j]);
-        }
-    }
-
-    double prodMax = 0.;
-    QVector <int> temp1;
-    QVector <int> temp2;
-    int tempI, tempJ;
-
-    temp1.resize(ns); temp1.fill(-1);
-    temp2.resize(ns); temp2.fill(-1);
-
-    for(int num = 0; num < ns; ++num)
-    {
-        prodMax = 0.;
-        tempI = -1;
-        tempJ = -1;
-        for(int i = 0; i < ns; ++i)
-        {
-            if(temp1.contains(i)) continue;
-
-            for(int j = 0; j < ns; ++j)
-            {
-                if(temp2.contains(j)) continue;
-
-                if(prod[i][j] > prodMax)
-                {
-                    prodMax = prod[i][j];
-                    tempI = i;
-                    tempJ = j;
-                }
-            }
-        }
-        temp1[num] = tempI;
-        temp2[num] = tempJ;
-        cout << temp1[num] << "\t" << temp2[num] << "\t" << doubleRound(prodMax, 4) << endl;
-    }
-
-    exit(0);
-#endif
-
-#if 0
-    // read ica data from matlab
+    /// read ica data from matlab
     const QString init = "/media/Files/Data/Mati/ICAstudy/";
     const QString pth = "/media/Files/Data/Mati/ICAstudy/Help/";
     QString helpString;
@@ -3624,7 +3160,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-    // components ordering, based on EDFs and maps
+    /// components ordering, based on EDFs and maps
     const QString init = "/media/Files/Data/Mati/ICAstudy/";
     const QString pth = "/media/Files/Data/Mati/ICAstudy/Help/";
     QString helpString;
@@ -3881,192 +3417,6 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 0
-    // drop some channels, test classification
-    QString helpString;
-    const QString currFile = "ADA_cl_f5-20_ica_ord.edf";
-    const QString workPath = "/media/Files/Data/Mati/GoodData";
-    const QString logPath = workPath + slash() + "results.txt";
-
-    helpString = workPath + slash() + currFile;
-    setEdfFile(helpString);
-    readData();
-    QList <int> chanList;
-    chanList << 0;
-//    chanList << 1;
-//    chanList << 2;
-    chanList << 3;
-//    chanList << 4;
-    chanList << 5;
-//    chanList << 6;
-//    chanList << 7;
-//    chanList << 8;
-    chanList << 9;
-//    chanList << 10;
-//    chanList << 11;
-//    chanList << 12;
-//    chanList << 13;
-//    chanList << 14;
-//    chanList << 15;
-//    chanList << 16;
-//    chanList << 17;
-//    chanList << 18;
-
-    chanList << 19; // markers
-
-    helpString.clear();
-    for(auto i : chanList)
-    {
-        helpString += QString::number(i + 1) + " ";
-    }
-    ui->reduceChannelsLineEdit->setText(helpString);
-    reduceChannelsEDFSlot();
-
-    helpString = workPath + slash() + currFile;
-    helpString.replace("_ord.edf", "_ord_rdcChan.edf");
-
-
-    makeCfgStatic(workPath,
-                  (chanList.length() - 1) * def::spLength(),
-                  "new");
-
-    ofstream outStr;
-    helpString = getFileName(helpString);
-
-    double tempD = fileInnerClassification(workPath,
-                                           helpString,
-                                           "new",
-                                           50);
-    cout << tempD << endl;
-
-    outStr.open(logPath.toStdString(), ios_base::app);
-    outStr << tempD << "\t" << helpString << endl;
-    outStr.close();
-    exit(0);
-#endif
-
-#if 0
-    // process ICAs - draw maps & classify
-    def::dir->cd("/media/Files/Data/Mati/ICAstudy");
-    QStringList dirLst = def::dir->entryList(QStringList("*_full_ica_after.edf"), QDir::Files);
-    for(QString & guy : dirLst)
-    {
-        QString helpString = def::dir->absolutePath() + slash() + guy;
-        setEdfFile(helpString);
-
-        helpString = guy;
-        helpString.remove("_ica_after.edf");
-
-        drawMapsICA(QString("/media/Files/Data/Mati/ICAstudy/Help/" + helpString + "_maps_after.txt"),
-                    19,
-                    "/media/Files/Data/Mati/ICAstudy/Help/Maps",
-                    helpString);
-
-
-#if 0
-            drawMapsOnSpectra(def::dir->absolutePath()
-                              + slash() + "Help"
-                              + slash() + ExpName.left(3)
-                              + "_full_ica_all.jpg",
-                              def::dir->absolutePath()
-                              + slash() + "Help"
-                              + slash() + ExpName.left(3)
-                              + "_full_ica_wm.jpg",
-                              def::dir->absolutePath() + slash() + "Help",
-                              ExpName.left(3));
-
-#endif
-
-
-        fileInnerClassification("/media/Files/Data/Mati/ICAstudy",
-                                guy,
-                                "16sec19ch",
-                                50);
-
-        ofstream outStr;
-        outStr.open("/media/Files/Data/Mati/ICAstudy/results.txt", ios_base::app);
-        outStr << "\t" << guy.left(guy.indexOf("_after")) << endl;
-        outStr.close();
-    }
-    exit(0);
-#endif
-
-#if 0
-    double ** dataFFT = new double * [MAXNS];
-    for(int i = 0; i < MAXNS; ++i)
-    {
-        dataFFT[i] = new double [65536];
-    }
-    setEdfFile("/media/Files/Data/Mati/PYV/PYV_rr.edf");
-    readData();
-    globalEdf.saveSubsection(100000, 106000,
-                             "/media/Files/Data/Mati/PYV/test.edf");
-
-    setEdfFile("/media/Files/Data/Mati/PYV/test.edf");
-    readData();
-    calcSpectre(data, dataFFT, ns-1, 6000, 50);
-    drawSpectra(dataFFT, ns-1,
-                fftLimit(5., def::freq, fftL(6000)),
-                fftLimit(20., def::freq, fftL(6000)),
-                "/media/Files/Data/Mati/PYV/test0.jpg");
-
-
-    for(int i = 0; i < ns-1; ++i)
-    {
-        for(int j = 0; j < globalEdf.getDataLen(); ++j)
-        {
-            data[i][j] *= 0.5 * (1 - cos(2 * pi * j / (globalEdf.getDataLen() - 1)));
-        }
-    }
-    calcSpectre(data, dataFFT, ns-1, 6000, 50);
-
-    drawSpectra(dataFFT, ns-1,
-                fftLimit(5., def::freq, fftL(6000)),
-                fftLimit(20., def::freq, fftL(6000)),
-                "/media/Files/Data/Mati/PYV/test1.jpg");
-
-
-    exit(0);
-#endif
-
-#if 0
-    edfFile fil;
-    fil.readEdfFile("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF");
-    fil.concatFile("/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
-                    "/media/Files/IHNA/Data/MATI/archive/NOS.EDF");
-#endif
-
-
-
-#if 0
-    {
-        def::dir->cd("/media/Files/Data/Mati/SDA");
-        QStringList lst = def::dir->entryList(QStringList("*_a_c_*markers.txt"));
-        QString str1, str2;
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            str1 = def::dir->absolutePath() + slash() + lst[i];
-            str2 = lst[i];
-            str2.replace("_a_c_", "_a_");
-            str2 = def::dir->absolutePath() + slash() + str2;
-            cout << str1 << '\n' << str2 << '\n' << areEqualFiles(str1, str2) << endl << endl;
-        }
-    }
-#endif
-#if 0
-    {
-        edfFile fil;
-        fil.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_0_2.edf");
-        fil.writeEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_0_2.txt", true);
-//        edfFile fil2;
-//        fil2.readEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f_a_c_0_0.edf");
-//        for(int i = 0; i < 41; ++i)
-//        {
-//            cout << correlation(fil.getData()[i].data(), fil2.getData()[i].data(), fil.getDataLen()) << endl;
-//        }
-        exit(1);
-    }
-#endif
 #if 0
     //MATI
     if(1)

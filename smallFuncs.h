@@ -45,7 +45,7 @@ inline std::valarray<double> logistic(const std::valarray<double> & in, double t
     return 1. / (1. + exp(-in / temp));
 }
 
-inline std::valarray<double> softmax(const std::valarray<double> & in, double temp = 0)
+inline std::valarray<double> softmax(const std::valarray<double> & in, double temp = 0.)
 {
     // -1 for bias
     double sum = std::accumulate(begin(in), end(in) - 1, 0.,

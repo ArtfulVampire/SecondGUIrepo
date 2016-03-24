@@ -5,187 +5,8 @@
 
 
 
-//products for ICA
-void product1(const matrix & arr,
-              const int length,
-              const int ns,
-              const lineType & vect,
-              lineType & outVector)
-{
-    //<X*g(Wt*X)>
-    //vec = Wt
-    //X[j] = arr[][j] dimension = ns
-    //average over j
-
-    outVector.resize(ns); // and fill zeros
-
-    double sum = 0.;
-
-    for(int j = 0; j < length; ++j)
-    {
-        sum = prod(vect, arr[j]);
-        outVector +=  tanh(sum) * arr[j];
-    }
-    outVector /= length;
-}
 
 
-
-void product2(const matrix & arr,
-              const int length,
-              const int ns,
-              const lineType & vect,
-              lineType & outVector)
-{
-    //g'(Wt*X)*1*W
-    //vec = Wt
-    //X = arr[][j]
-    //average over j
-
-    double sum = 0.;
-    double sum1 = 0.;
-
-    for(int j = 0; j < length; ++j)
-    {
-        sum = prod(vect, arr[j]);
-        sum1 += 1 - tanh(sum) * tanh(sum);
-    }
-    sum1 /= length;
-    outVector = vect * sum1;
-}
-
-
-
-//void product3(double ** vec, int ns, int currNum, double ** outVector)
-void product3(const matrix & inMat,
-              const int ns,
-              const int currNum,
-              lineType & outVector)
-{
-    //sum(Wt*Wi*Wi)
-    outVector.resize(ns);
-
-    double sum = 0.;
-    for(int j = 0; j < currNum; ++j)
-    {
-        sum = prod(inMat[currNum], inMat[j]); // short valarray, no difference
-        outVector += inMat[j] * sum;
-    }
-}
-
-void randomizeValar(lineType & valar)
-{
-    srand(time(NULL));
-    for(int i = 0; i < valar.size(); ++i)
-    {
-        valar[i] = rand() % 50 - 25;
-    }
-    normalize(valar);
-}
-
-
-
-void countVectorW(matrix & vectorW,
-                  const matrix & dataICA,
-                  const int ns,
-                  const int dataLen,
-                  const double vectorWTreshold)
-{
-    QTime myTime;
-    myTime.restart();
-
-    double sum1;
-    double sum2;
-    lineType vector1(ns);
-    lineType vector2(ns);
-    lineType vector3(ns);
-    lineType vectorOld(ns);
-
-    int counter;
-
-    const matrix tempMatrix = matrix::transpose(dataICA);
-
-    for(int i = 0; i < ns; ++i) //number of current vectorW
-    {
-        myTime.restart();
-        counter = 0;
-        randomizeValar(vectorW[i]);
-
-        while(1)
-        {
-            vectorOld = vectorW[i]; // save previous vect
-
-            /// local, dataICA transposed to tempMatrix
-            vector1 = 0.;
-            sum1 = 0.;
-            for(int j = 0; j < dataLen; ++j)
-            {
-                const double temp = tanh(prod(vectorW[i], tempMatrix[j]));
-
-                vector1 += tempMatrix[j] * temp;
-                sum1 += (1. - temp * temp);
-            }
-            vector1 /= dataLen;
-
-            sum1 /= dataLen;
-            vector2 = vectorW[i] * sum1;
-
-
-            vectorW[i] = vector1 - vector2;
-            //orthogonalization
-            product3(vectorW, ns, i, vector3);
-            vectorW[i] -= vector3;
-            normalize(vectorW[i]);
-
-            sum2 = norma(vectorOld - vectorW[i]);
-
-            ++counter;
-            if(sum2 < vectorWTreshold || 2. - sum2 < vectorWTreshold) break;
-            if(counter == 100) break;
-        }
-        cout << "vectW num = " << i << "\t";
-        cout << "iters = " << counter << "\t";
-        cout << "error = " << fabs(sum2 - int(sum2 + 0.5)) << "\t";
-        cout << "time = " << doubleRound(myTime.elapsed() / 1000., 1) << " sec" << endl;
-    }
-}
-
-void dealWithEyes(matrix & inData,
-                  const int dimension)
-{
-
-    const int dataLen = inData.cols();
-    int eyes = 0;
-    for(int i = 0; i < dataLen; ++i)
-    {
-        const lineType temp = inData.getCol(i, dimension);
-        if(abs(temp).max() == 0.)
-        {
-            ++eyes;
-        }
-    }
-    const double realSignalFrac =  double(dataLen - eyes) / dataLen; /// deprecate?!! splitZeros
-
-
-//    auto t0 = high_resolution_clock::now();
-    // subtract averages
-    for(int i = 0; i < dimension; ++i)
-    {
-        const double temp = - mean(inData[i]) * realSignalFrac;
-
-        std::for_each(begin(inData[i]),
-                      end(inData[i]),
-                      [temp](double & in)
-        {
-            if(in != 0.)
-            {
-                in += temp;
-            }
-        }); // retain zeros
-    }
-//    auto t1 = high_resolution_clock::now();
-//    cout << duration_cast<microseconds>(t1-t0).count() << endl;
-}
 
 void MainWindow::ICA() //fastICA
 {
@@ -233,15 +54,10 @@ void MainWindow::ICA() //fastICA
                                     + slash() + "Help"
                                     + slash() + "ica";
 
-
-
     matrix centeredMatrix = globalEdf.getData();
 
     matrix components(ns + 1, dataLength, 0.);
     components[ns] = globalEdf.getData()[globalEdf.getMarkChan()];
-
-
-
 
 
     // count eigenvalue decomposition
@@ -250,30 +66,40 @@ void MainWindow::ICA() //fastICA
 
     dealWithEyes(centeredMatrix,
                  ns);
-    svd(centeredMatrix,
-        eigenVectors,
-        eigenValues,
-        ns,
-        eigenValuesTreshold);
 
+    const QString eigMatPath = pathForAuxFiles
+                               + slash() + def::ExpName + "_eigenMatrix.txt";
+    const QString eigValPath = pathForAuxFiles
+                               + slash() + def::ExpName + "_eigenValues.txt";
+    /// careful !
+    if(!QFile::exists(eigMatPath) &&
+       !QFile::exists(eigValPath))
+    {
 
+        svd(centeredMatrix,
+            eigenVectors,
+            eigenValues,
+            ns,
+            eigenValuesTreshold);
+
+        // write eigenVectors
+        writeMatrixFile(eigMatPath, eigenVectors);
+
+        // write eigenValues
+        writeFileInLine(eigValPath, eigenValues);
+    }
+    else /// read
+    {
+        // write eigenVectors
+        readMatrixFile(eigMatPath, eigenVectors);
+
+        // write eigenValues
+        readFileInLine(eigValPath, eigenValues);
+    }
 
     cout << "ICA: svd read = " << myTime.elapsed() / 1000. << " sec" << endl;
-
     myTime.restart();
 
-    // write eigenVectors
-    helpString = pathForAuxFiles
-                 + slash() + def::ExpName + "_eigenMatrix.txt";
-    writeMatrixFile(helpString,
-                     eigenVectors);
-
-    // write eigenValues
-    helpString = pathForAuxFiles
-                 + slash() + def::ExpName + "_eigenValues.txt";
-    writeFileInLine(helpString, eigenValues);
-
-//exit(0);
 
     // components = EigenValues^-0.5 * Et * data
     matrix D_minus_05(ns, ns, 0.);
@@ -319,8 +145,6 @@ void MainWindow::ICA() //fastICA
 //                 + slash() + def::ExpName + "_vectorW.txt";
 //    writeMatrixFile(helpString,
 //                     vectorW);
-
-
 
 
     //count components

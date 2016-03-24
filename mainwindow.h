@@ -100,7 +100,6 @@ public slots:
     void transformReals(); //reads ICA map file and transforms all the realisations in the chosen folder (windows e.g.)
 
     //different automatizations
-    void makeTestData();
     void diffSmooth();
     void diffPow();
     void icaClassTest();
@@ -131,6 +130,8 @@ public:
     void sliceMatiPieces(bool plainFlag = true);
     void sliceMatiSimple();
     void sliceGalya();
+
+    matrix makeTestData(const QString & outPath);
 
     void GalyaProcessing(const QString &procDirPath);
     void GalyaCut(const QString & path, QString outPath = QString());

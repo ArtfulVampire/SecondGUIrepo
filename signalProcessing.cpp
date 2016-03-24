@@ -607,12 +607,301 @@ void countMannWhitney(trivector<int> & outMW,
 }
 
 
+
+
+
+
+
+//products for ICA
+void product1(const matrix & arr,
+              const int length,
+              const int ns,
+              const lineType & vect,
+              lineType & outVector)
+{
+    //<X*g(Wt*X)>
+    //vec = Wt
+    //X[j] = arr[][j] dimension = ns
+    //average over j
+
+    outVector.resize(ns); // and fill zeros
+
+    double sum = 0.;
+
+    for(int j = 0; j < length; ++j)
+    {
+        sum = prod(vect, arr[j]);
+        outVector +=  tanh(sum) * arr[j];
+    }
+    outVector /= length;
+}
+
+
+
+void product2(const matrix & arr,
+              const int length,
+              const int ns,
+              const lineType & vect,
+              lineType & outVector)
+{
+    //g'(Wt*X)*1*W
+    //vec = Wt
+    //X = arr[][j]
+    //average over j
+
+    double sum = 0.;
+    double sum1 = 0.;
+
+    for(int j = 0; j < length; ++j)
+    {
+        sum = prod(vect, arr[j]);
+        sum1 += 1 - tanh(sum) * tanh(sum);
+    }
+    sum1 /= length;
+    outVector = vect * sum1;
+}
+
+
+
+//void product3(double ** vec, int ns, int currNum, double ** outVector)
+void product3(const matrix & inMat,
+              const int ns,
+              const int currNum,
+              lineType & outVector)
+{
+    //sum(Wt*Wi*Wi)
+    outVector.resize(ns);
+
+    double sum = 0.;
+    for(int j = 0; j < currNum; ++j)
+    {
+        sum = prod(inMat[currNum], inMat[j]); // short valarray, no difference
+        outVector += inMat[j] * sum;
+    }
+}
+
+void randomizeValar(lineType & valar)
+{
+
+    srand(time(NULL));
+    for(int i = 0; i < valar.size(); ++i)
+    {
+        valar[i] = rand() % 50 - 25;
+    }
+    normalize(valar);
+}
+
+void countVectorW(matrix & vectorW,
+                  const matrix & dataICA,
+                  const int ns,
+                  const int dataLen,
+                  const double vectorWTreshold)
+{
+    QTime myTime;
+    myTime.restart();
+
+    double sum1;
+    double sum2;
+    lineType vector1(ns);
+    lineType vector2(ns);
+    lineType vector3(ns);
+    lineType vectorOld(ns);
+
+    int counter;
+
+    const matrix tempMatrix = matrix::transpose(dataICA);
+
+    for(int i = 0; i < ns; ++i) //number of current vectorW
+    {
+        myTime.restart();
+        counter = 0;
+        randomizeValar(vectorW[i]);
+
+        while(1)
+        {
+            vectorOld = vectorW[i]; // save previous vect
+
+            /// local, dataICA transposed to tempMatrix
+            vector1 = 0.;
+            sum1 = 0.;
+            for(int j = 0; j < dataLen; ++j)
+            {
+                const double temp = tanh(prod(vectorW[i], tempMatrix[j]));
+
+                vector1 += tempMatrix[j] * temp;
+                sum1 += (1. - temp * temp);
+            }
+            vector1 /= dataLen;
+
+            sum1 /= dataLen;
+            vector2 = vectorW[i] * sum1;
+
+
+            vectorW[i] = vector1 - vector2;
+            //orthogonalization
+            product3(vectorW, ns, i, vector3);
+            vectorW[i] -= vector3;
+            normalize(vectorW[i]);
+
+            sum2 = norma(vectorOld - vectorW[i]);
+
+            ++counter;
+            if(sum2 < vectorWTreshold || 2. - sum2 < vectorWTreshold) break;
+            if(counter == 100) break;
+        }
+        cout << "vectW num = " << i << "\t";
+        cout << "iters = " << counter << "\t";
+        cout << "error = " << fabs(sum2 - int(sum2 + 0.5)) << "\t";
+        cout << "time = " << doubleRound(myTime.elapsed() / 1000., 1) << " sec" << endl;
+    }
+}
+
+void dealWithEyes(matrix & inData,
+                  const int dimension)
+{
+
+    const int dataLen = inData.cols();
+    int eyes = 0;
+    for(int i = 0; i < dataLen; ++i)
+    {
+        const lineType temp = inData.getCol(i, dimension);
+        if(abs(temp).max() == 0.)
+        {
+            ++eyes;
+        }
+    }
+    const double realSignalFrac =  double(dataLen - eyes) / dataLen; /// deprecate?!! splitZeros
+
+
+//    auto t0 = high_resolution_clock::now();
+    // subtract averages
+    for(int i = 0; i < dimension; ++i)
+    {
+        const double temp = - mean(inData[i]) * realSignalFrac;
+
+        std::for_each(begin(inData[i]),
+                      end(inData[i]),
+                      [temp](double & in)
+        {
+            if(in != 0.)
+            {
+                in += temp;
+            }
+        }); // retain zeros
+    }
+//    auto t1 = high_resolution_clock::now();
+//    cout << duration_cast<microseconds>(t1-t0).count() << endl;
+}
+
+void ica(const matrix & initialData,
+         matrix & matrixA,
+         double eigenValuesTreshold,
+         const double vectorWTreshold)
+{
+    const int ns = initialData.rows();
+
+    matrix centeredMatrix = initialData;
+    dealWithEyes(centeredMatrix,
+                 ns);
+
+    matrix eigenVectors;
+    lineType eigenValues;
+
+    svd(centeredMatrix,
+        eigenVectors,
+        eigenValues,
+        ns,
+        eigenValuesTreshold);
+
+    matrix D_minus_05(ns, ns, 0.);
+    for(int i = 0; i < ns; ++i)
+    {
+        D_minus_05[i][i] = 1. / sqrt(eigenValues[i]);
+    }
+
+    matrix dataICA = (eigenVectors * (D_minus_05 * matrix::transpose(eigenVectors))) *
+                     centeredMatrix;
+
+    matrix vectorW(ns, ns);
+    countVectorW(vectorW,
+                 dataICA,
+                 ns,
+                 initialData.cols(),
+                 vectorWTreshold);
+    dataICA = vectorW * dataICA;
+
+    matrix D_05(ns, ns, 0.);
+    for(int i = 0; i < ns; ++i)
+    {
+        D_05[i][i] = sqrt(eigenValues[i]);
+    }
+    matrixA = eigenVectors * D_05 * matrix::transpose(eigenVectors) * matrix::transpose(vectorW);
+
+
+    // norm components to 1-length of mapvector, order by dispersion
+    double sum1{};
+    for(int i = 0; i < ns; ++i)
+    {
+        sum1 = norma(matrixA.getCol(i)) / 2.;
+
+        for(int k = 0; k < ns; ++k)
+        {
+            matrixA[k][i] /= sum1;
+        }
+        dataICA[i] *= sum1;
+    }
+
+
+#if 0
+    // ordering components by dispersion
+    std::vector <std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
+    double sumSquares = 0.; // sum of all dispersions
+
+    for(int i = 0; i < ns; ++i)
+    {
+        sum1 = variance(dataICA[i]);
+        sumSquares += sum1;
+        colsNorms.push_back(std::make_pair(sum1, i));
+    }
+
+    std::sort(colsNorms.begin(),
+              colsNorms.end(),
+              [](std::pair <double, int> i, std::pair <double, int> j)
+    {
+        return i.first > j.first;
+    });
+
+    for(int i = 0; i < ns - 1; ++i) // dont move the last
+    {
+        matrixA.swapCols(i, colsNorms[i].second);
+
+        // swap i and colsNorms[i].second values in colsNorms
+        auto it1 = std::find_if(colsNorms.begin(),
+                                colsNorms.end(),
+                                [i](std::pair <double, int> in)
+        {
+                   return in.second == i;
+    });
+        auto it2 = std::find_if(colsNorms.begin(),
+                                colsNorms.end(),
+                                [colsNorms, i](std::pair <double, int> in)
+        {return in.second == colsNorms[i].second;});
+
+//        std::swap((*it1).second, (*it2).second);
+
+        int tempIndex = (*it1).second;
+        (*it1).second = (*it2).second;
+        (*it2).second = tempIndex;
+    }
+#endif
+}
+
 void svd(const matrix & initialData,
          matrix & eigenVectors,
          lineType & eigenValues,
-         const int dimension,
+         const int dimension, // length of the vectors
          const double & threshold,
-         int eigenVecNum)
+         int eigenVecNum) // num of eigenVectors to count
 {
     if(eigenVecNum <= 0)
     {

@@ -1976,159 +1976,93 @@ double MainWindow::filesAddComponentsInner(const QString &workPath,
 }
 
 
-void MainWindow::makeTestData()
+matrix MainWindow::makeTestData(const QString & outPath)
 {
-#if 0
-    QString helpString;
-    readData();
+    matrix testSignals(8, 250 * 60 * 3); /// 3 min
 
-    nsBackup = ns;
-    int indepNum = ui->numComponentsSpinBox->value();
-    double ** testSignals = new double * [indepNum];
-    for(int i = 0; i < indepNum; ++i)
-    {
-        testSignals[i] = new double [ndr*nr[i]];
-    }
-
-    double ** testSignals2 = new double * [ns];
-    for(int i = 0; i < ns; ++i)
-    {
-        testSignals2[i] = new double [ndr*nr[i]];
-    }
-
-
-    double x,y;
-    srand(time(NULL));
     //signals
-
     double helpDouble;
+    double x, y;
 
-    for(int j = 0; j < ui->numComponentsSpinBox->value(); ++j)
+    std::default_random_engine gen(std::chrono::system_clock::now().time_since_epoch().count());
+
+    std::uniform_real_distribution<double> distr(0, 1);
+
+    for(int i = 0; i < testSignals.cols(); ++i)
     {
-        x = (rand()%30)/40.;
-        y = (-0.3 + (rand()%600)/100.);
-        for(int i = 0; i < ndr*def::freq; ++i)
-        {
-            helpDouble = 2.*3.1415926*double(i)/def::freq * (10.1 + x) + y;
-            testSignals[j][i] = sin(helpDouble);
-        }
+        helpDouble = 2. * pi * i / def::freq * 12.5; // 12.5 Hz = 20 bins
+        testSignals[0][i] = sin(helpDouble);
+
+//        x = (1 + rand() % 10000) / 10001.;
+//        y = (1 + rand() % 10000) / 10001.;
+//        testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * pi * y);
+
+        testSignals[1][i] = (i + 2) % 29;      // saw
+
+//        x = (1 + rand() % 10000) / 10001.;
+//        y = (1 + rand() % 10000) / 10001.;
+//        testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * pi * y);
+
+        testSignals[2][i] = (i % 26 >= 13); //rectangle
+
+
+//        x = (1 + rand() % 10000) / 10001.;
+//        y = (1 + rand() % 10000) / 10001.;
+        x = distr(gen);
+        y = distr(gen);
+        testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * pi * y);
+
+        testSignals[4][i] = fabs(i%22 - 11); //triangle
+
+        testSignals[5][i] = rand() % 27;
+
+//        x = (1 + rand() % 10000) / 10001.;
+//        y = (1 + rand() % 10000) / 10001.;
+        x = distr(gen);
+        y = distr(gen);
+        testSignals[6][i] = sqrt(-2. * log(x)) * cos(2. * pi * y);
+
+
+//        x = (1 + rand() % 10000) / 10001.;
+//        y = (1 + rand() % 10000) / 10001.;
+        testSignals[7][i] = pow(rand() % 13, 3);
+
+
+//        x = (1 + rand() % 10000) / 10001.;
+//        y = (1 + rand() % 10000) / 10001.;
+//        testSignals[7][i] = sqrt(-2. * log(x)) * cos(2. * pi * y);
+
+
     }
-//        helpDouble = 2.*3.1415926*double(i)/def::freq * 10.3;
-//        testSignals[1][i] = sin(helpDouble);//+ 0.17); //10.5 Hz
-//        helpDouble = 2.*3.1415926*double(i)/def::freq * 10.25;
-//        testSignals[2][i] = sin(helpDouble);//- 0.17); //10.5 Hz
-//        helpDouble = 2.*3.1415926*double(i)/def::freq * 10.0;
-//        testSignals[3][i] = sin(helpDouble);//- 0.06); //10.5 Hz
-//        testSignals[1][i] = i%41 - 20.;      //a saw 40 period
-//        testSignals[2][i] = sin(2*3.1415926*(double(i)/23.) + 0.175);//
-
-//        x = (1 + rand()%10000)/10001.;
-//        y = (1 + rand()%10000)/10001.;
-//        testSignals[2][i] = sqrt(-2. * log(x)) * sin(2. * M_PI * y);
-
-//        x = (1 + rand()%10000)/10001.;
-//        y = (1 + rand()%10000)/10001.;
-//        testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * M_PI * y);
-//        testSignals[3][i] = ((i%34 >13) - 0.5); //rectangle
 
 
-//        testSignals[2][i] = fabs(i%55 - 27) - 27./2.; //triangle
 
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "spocVar.txt");
-    FILE * in = fopen(helpString.toStdString().c_str(), "w");
-    //modulation
-
-    for(int j = 0; j < ui->numComponentsSpinBox->value()-1; ++j)
-    {
-        helpDouble = 0.05 + (rand()%100)/500.;
-        x = (rand()%100)/100.;
-        y = 1.5 + (rand()%20)/10.;
-        for(int i = 0; i < ndr*def::freq; ++i)
-        {
-//            testSignals[j][i] *= sin(2*3.1415926*i/def::freq * helpDouble + x) + y;
-        }
-    }
-    //object signal
-    for(int i = 0; i < ndr*def::freq; ++i)
-    {
-        helpDouble = sin(2.*3.1415926*int(i/250) * 0.02 - 0.138) + 1.8;
-        testSignals[ui->numComponentsSpinBox->value() - 1][i] *= helpDouble;
-        if(i%250 == 0)
-        {
-            fprintf(in, "%lf\n", helpDouble);
-        }
-    }
-    fclose(in);
 
     double sum1, sum2;
     //normalize by dispersion = 10
     double coeff = 10.;
-    for(int i = 0; i < indepNum; ++i)
+    for(int i = 0; i < testSignals.rows(); ++i)
     {
-        sum1 = mean(testSignals[i], ndr*def::freq);
-        sum2 = variance(testSignals[i], ndr*def::freq);
+        sum1 = mean(testSignals[i]);
+        sum2 = variance(testSignals[i]);
 
-        for(int j = 0; j < ndr*def::freq; ++j)
-        {
-            testSignals[i][j] -= sum1;
-            testSignals[i][j] /= sqrt(sum2);
-            testSignals[i][j] *= coeff;
-        }
+        testSignals[i] -= sum1;
+        testSignals[i] /= sqrt(sum2);
+        testSignals[i] *= coeff;
+
     }
+    matrix pewM(testSignals.rows(),
+                testSignals.rows());
+    pewM.random(-1., 1.);
 
 
+    testSignals = pewM * testSignals;
 
-
-    spocMixMatrix = new double * [ui->numComponentsSpinBox->value()];
-    for(int k = 0; k < ui->numComponentsSpinBox->value(); ++k)
-    {
-        spocMixMatrix[k] = new double [ui->numComponentsSpinBox->value()];
-    }
-    for(int j = 0; j < 19; ++j)
-    {
-        for(int i = 0; i < ndr*def::freq; ++i)
-        {
-            testSignals2[j][i] = 0.;
-        }
-        for(int k = 0; k < ui->numComponentsSpinBox->value(); ++k)
-        {
-            helpDouble = (-0.5 + (rand()%21)/20.);
-
-            for(int i = 0; i < ndr*def::freq; ++i)
-            {
-                testSignals2[j][i] += helpDouble * testSignals[k][i];
-//                testSignals2[j][i] += (j==k) * testSignals[k][i];
-            }
-            if(j < ui->numComponentsSpinBox->value())
-            {
-                cout << helpDouble << "\t";
-                spocMixMatrix[j][k] = helpDouble;
-            }
-        }
-        if(j < ui->numComponentsSpinBox->value()) cout << endl;
-    }
-    cout << endl;
-
-
-    cout << "1" << endl;
-//    helpString = def::ExpName; helpString.append("_test.edf");
-    helpString = "SDA_test.edf";
-//    writeEdf(ui->filePathLineEdit->text(), testSignals2, helpString, ndr*def::freq);
-
-
-
-    for(int i = 0; i < indepNum; ++i)
-    {
-        delete []testSignals[i];
-    }
-    for(int i = 0; i < ns; ++i)
-    {
-        delete []testSignals2[i];
-    }
-    delete []testSignals2;
-    delete []testSignals;
-
-#endif
+    writePlainData(outPath,
+                   testSignals);
+    writePlainData(outPath + "_",
+                   testSignals, 2000);
+    return pewM;
 }
 
 void MainWindow::GalyaCut(const QString & path, QString outPath)

@@ -2170,12 +2170,11 @@ void Net::pca()
     const int NetLength = dataMatrix.cols();
 
     matrix centeredMatrix;
-    centeredMatrix = matrix::transpose(dataMatrix); // rows = spectral points, cols - numOfPattern
+    centeredMatrix = matrix::transpose(dataMatrix); // rows = spectral points, cols - vectors
 
-    QString helpString;
 
-    //count covariations
-    //centered matrix
+    // count covariations
+    // centered matrix
     for(int i = 0; i < NetLength; ++i)
     {
         centeredMatrix[i] -= mean(centeredMatrix[i]);
@@ -2215,10 +2214,11 @@ void Net::pca()
     //memory for pcaProjections
     centeredMatrix.transpose();
     matrix pcaMatrix(NumberOfVectors, numOfPc);
-
     pcaMatrix = centeredMatrix * eigenVectors;
 
-    for(int j = 0; j < NumberOfVectors; ++j) //i->j
+
+    QString helpString;
+    for(int j = 0; j < NumberOfVectors; ++j)
     {
         helpString = def::dir->absolutePath()
                      + slash() + "SpectraSmooth"
@@ -2226,19 +2226,16 @@ void Net::pca()
                      + slash() + fileNames[j];
         writeFileInLine(helpString,
                         pcaMatrix[j]);
-
     }
 
-    eigenVectors = matrix::transpose(eigenVectors);
-    eigenVectors.resizeRows(3);
-
-
-    drawTemplate(def::dir->absolutePath()
+    eigenVectors.transpose();
+    eigenVectors.resizeRows(3); /// ???
+    helpString = def::dir->absolutePath()
                  + slash() + "Help"
-                 + slash() + def::ExpName + "_pcas.jpg");
-    drawArrays(def::dir->absolutePath()
-               + slash() + "Help"
-               + slash() + def::ExpName + "_pcas.jpg",
+                 + slash() + "ica"
+                 + slash() + def::ExpName + "_pcas.jpg";
+    drawTemplate(helpString);
+    drawArrays(helpString,
                eigenVectors,
                true);
 
@@ -2255,13 +2252,13 @@ void Net::pca()
             {
                 differenceMatrix[h][j] = distance(dataMatrix[h].data(),
                                                   dataMatrix[j].data(),
-                                                  NetLength);  //wet data
+                                                  NetLength);  // raw data
             }
             else if(ui->sammonComboBox->currentIndex() == 1)
             {
                 differenceMatrix[h][j] = distance(pcaMatrix[h],
                                                   pcaMatrix[j],
-                                                  numOfPc); //by some PC
+                                                  numOfPc); // by some PC
             }
         }
     }

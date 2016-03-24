@@ -254,9 +254,8 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
     const int dim2 = rhs.cols();
 
 
-    matrix result(dim1, dim2);
-#if 1
-
+    matrix result(dim1, dim2, 0.);
+#if 0
     for(int j = 0; j < dim2; ++j)
     {
         lineType currCol = rhs.getCol(j);
@@ -266,6 +265,15 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
                                               end(lhs[i]),
                                               begin(currCol),
                                               0.);
+        }
+    }
+#elif 1
+    // 15-20% faster
+    for(int i = 0; i < dim1; ++i)
+    {
+        for(int j = 0; j < lhs.cols(); ++j)
+        {
+            result[i] += lhs[i][j] * rhs[j];
         }
     }
 #else
@@ -346,6 +354,21 @@ void matrix::fill(double value)
         for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
         {
             (*itt) = value;
+        }
+    }
+}
+
+
+void matrix::random(double low, double high)
+{
+    std::default_random_engine gen(std::chrono::system_clock::now().time_since_epoch().count());
+//    std::default_random_engine gen;
+    std::uniform_real_distribution<double> distr(low, high);
+    for(auto it = data.begin(); it < data.end(); ++it)
+    {
+        for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
+        {
+            (*itt) = distr(gen);
         }
     }
 }

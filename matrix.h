@@ -2,17 +2,20 @@
 #define MATRIX_H
 
 #include "smallFuncs.h"
+
+#include <QString>
+#include <QDir>
+
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
-#include <string>
-#include <cmath>
-#include <QString>
-#include <QDir>
+#include <chrono>
 #include <ios>
+#include <iostream>
+
+#include <string>
 #include <vector>
 #include <valarray>
-#include <iostream>
 #include <set>
 
 using namespace std;
@@ -120,6 +123,7 @@ public:
     void one();
     void eraseRow(int i);
     void eraseRows(const vector<int> & indices);
+    void random(double low, double high);
 //    double det();
 //    void cofactor();
 //    void systemGaussSolve();
