@@ -141,10 +141,13 @@ public:
 
     void writeWts(const QString & wtsPath = QString());
     void PaIntoMatrixByName(const QString & fileName);
+    void normalizeDataMatrix();
     void loadData(const QString & spectraPath = def::dir->absolutePath()
                                                 + slash() + "SpectraSmooth",
                   const QStringList & filters = {},
                   double rdcCoeff = 1.);
+    void loadData(const matrix & inMat,
+                  const std::vector<int> inTypes);
     void popBackDatum();
     void pushBackDatum(const lineType & inDatum,
                      const int & inType,

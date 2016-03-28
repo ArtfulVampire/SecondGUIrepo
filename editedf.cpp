@@ -296,6 +296,9 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
 void MainWindow::refilterDataSlot()
 {
 
+    QTime myTime;
+    myTime.start();
+
     const double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
     const double highFreq = ui->highFreqFilterDoubleSpinBox->value();
     QString helpString = def::dir->absolutePath()
@@ -310,6 +313,8 @@ void MainWindow::refilterDataSlot()
     int tmp = ui->reduceChannelsComboBox->currentIndex();
     ui->reduceChannelsComboBox->setCurrentIndex(0);
     ui->reduceChannelsComboBox->setCurrentIndex(tmp);
+
+    cout << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
 void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)

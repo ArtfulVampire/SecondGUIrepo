@@ -640,6 +640,7 @@ void edfFile::handleDatum(const int & currNs,
                     * (double(a) - digMin[currNs])
                     / (digMax[currNs] - digMin[currNs]
                        + (def::ntFlag ? 0 : 1));
+            /// neurotravel + 0
             /// encephalan + 1
 
 //            currDatum = a * 1./8.; // generality encephalan
@@ -1075,8 +1076,6 @@ void edfFile::refilter(const double & lowFreq,
                        const double & highFreq,
                        const QString & newPath)
 {
-    QTime myTime;
-    myTime.start();
 
     int fftLength = fftL(this->dataLength);
     double spStep = def::freq / double(fftLength);
@@ -1161,7 +1160,6 @@ void edfFile::refilter(const double & lowFreq,
     delete []spectre;
 
 
-    cout << "refilter: time = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
 void edfFile::saveSubsection(int startBin,

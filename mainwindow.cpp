@@ -1831,26 +1831,11 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(7);
 //    ui->justSliceButton->setChecked(true);
 
-//    cout << areEqualFiles("/media/michael/Files/Data/AAX/AAX_rr_f3.5-40.edf",
-//                          "/media/michael/Files/Data/AAX/AAX_rr_f3.5-40_new.edf") << endl; exit(0);
-
-//    ui->reduceChannelsComboBox->setCurrentText("20");
-//    setEdfFile("/media/michael/Files/Data/AAX/AAX_rr_f3.5-40_new.edf");
-//    readData();
-
-//    matrix dat;
-////    dat = globalEdf.getData();
-//    readPlainData();
-//    dat.resize(19);
-
-//    matrix matA;
-//    ica(dat, matA, pow(10., -9), pow(10., -12));
-//    matrix comps = matA * dat;
 
 //    exit(0);
-//    return;
+    return;
 
-#if 1
+#if 0
     const QString pth = "/media/Files/Data/test";
 
     matrix pe = makeTestData(pth + ".txt");
@@ -1892,6 +1877,7 @@ void MainWindow::customFunc()
 
 
 #if 0
+    def::ntFlag = true; /// for Dasha's
     GalyaCut(def::GalyaFolder + "/Gramotko");
     GalyaProcessing(def::GalyaFolder + "/Gramotko");
     exit(0);
@@ -2273,6 +2259,11 @@ void MainWindow::customFunc()
 #endif
     }
     exit(0);
+
+
+
+
+
 
 
 

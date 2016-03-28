@@ -26,14 +26,12 @@ public:
     ~Spectre();
     void setSmooth(int);
     bool eventFilter(QObject *obj, QEvent *event);
-    int readFilePhase(double **data2, double ***dataPhase);
     void defaultState();
     void setPow(double);
     void setFftLength(int);
 
     void writeSpectra(const double leftFreq = def::leftFreq,
-                      const double rightFreq = def::rightFreq,
-                      const bool rangeLimitCheck = true);
+                      const double rightFreq = def::rightFreq);
 
     void countSpectra();
     bool countOneSpectre(matrix & data2,
@@ -56,12 +54,10 @@ public slots:
     void center();
 
 private:
-    Ui::Spectre *ui;
+    Ui::Spectre * ui;
     QString backupDirPath;
 
     std::vector<std::pair<int, int>> rangeLimits;
-
-    QString rangePicPath;
 
     std::vector<matrix> dataFFT;
     std::vector<QString> fileNames;

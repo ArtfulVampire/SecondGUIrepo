@@ -532,87 +532,86 @@ void MainWindow::Bayes()
     QStringList lst;
     QString helpString;
 
-    def::dir->cd("Realisations");
-    lst = def::dir->entryList(QDir::Files);
-    def::dir->cdUp();
+    makeFullFileList(def::dir->absolutePath()
+                     + slash() + "Realisations",
+                     lst);
 
-    FILE * file;
     matrix dataBayes;
-    double maxAmpl = 10.; //generality from readData
-
-    maxAmpl += 0.001; //bicycle
+    const double maxAmpl = 15. + 0.001; //generality from readData + bicycle
 
     int numOfIntervals = ui->BayesSpinBox->value();
     numOfIntervals *= 2; //odd or even?
 
     int NumOfSlices;
 
-    int * count = new int [numOfIntervals];
+    matrix count(def::nsWOM(), numOfIntervals);
+    lineType hig(def::nsWOM());
 
-    double helpDouble = 0.;
     int helpInt = 0;
 
-    for(int i = 0; i < lst.length(); ++i)
+    for(const QString & fileNam : lst)
     {
-        if(lst[i].contains("num")) continue;
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "Realisations"
-                                              + slash() + lst[i]);
+        helpString = def::dir->absolutePath()
+                     + slash() + "Realisations"
+                     + slash() + fileNam;
+
         readPlainData(helpString,
                       dataBayes,
                       NumOfSlices);
         if(NumOfSlices < 250)
         {
-            fclose(file);
             continue;
         }
 
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "SpectraSmooth"
-                                              + slash() + "Bayes"
-                                              + slash() + lst[i]);
-        file = fopen(helpString.toStdString().c_str(), "w");
-        for(int l = 0; l < def::ns; ++l)
+        helpString = def::dir->absolutePath()
+                     + slash() + "SpectraSmooth"
+                     + slash() + "Bayes"
+                     + slash() + fileNam;
+
+        if(ui->BayesRadioButton->isChecked())
         {
-            if(ui->BayesRadioButton->isChecked())
+            for(int i = 0; i < def::nsWOM(); ++i)
             {
                 //bayes itself;
-                for(int k = 0; k < numOfIntervals; ++k)
-                {
-                    count[k] = 0;
-                }
+                count[i] = 0.;
                 for(int j = 0; j < NumOfSlices; ++j)
                 {
-                    helpInt = int(floor((dataBayes[l][j] + maxAmpl) / (2.*maxAmpl/double(numOfIntervals))));
+                    helpInt = int(floor((dataBayes[i][j] + maxAmpl)
+                                        / (2. * maxAmpl / numOfIntervals)));
 
-                    if(helpInt != min(max(0, helpInt), numOfIntervals-1)) continue; // out of range
-
-                    count[helpInt] += 1;
+                    if(helpInt != min(max(0, helpInt), numOfIntervals - 1))
+                    {
+                        continue; // out of range
+                    }
+                    count[i][helpInt] += 1.;
                 }
-                for(int k = 0; k < numOfIntervals; ++k)
-                {
-                    helpDouble = count[k]/double(NumOfSlices); // norm coeff
-                    fprintf(file, "%lf\n", helpDouble);
-                }
+                count[i] /= NumOfSlices;
             }
 
-            if(ui->HiguchiRadioButton->isChecked())
+            writeMatrixFile(helpString, count);
+        }
+
+        if(ui->HiguchiRadioButton->isChecked())
+        {
+            for(int i = 0; i < def::nsWOM(); ++i)
             {
                 //fractal dimension
-                helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                      + slash() + "Help"
-                                                      + slash() + "Fractals"
-                                                      + slash() + lst[i]
-                                                      + "_" + QString::number(l)
-                                                      + ".png");
-                helpDouble = fractalDimension(dataBayes[l]);
-                fprintf(file, "%.3lf\n", helpDouble);
-            }
-        }
-        fclose(file);
-    }
-    delete [] count;
+                hig[i] = fractalDimension(dataBayes[i]
+                          #if 0
+                                          ,
+                                          def::dir->absolutePath()
+                                          + slash() + "Help"
+                                          + slash() + "Fractals"
+                                          + slash() + fileNam
+                                          + "_" + QString::number(i)
+                                          + ".png"
+                          #endif
 
+                                          );
+            }
+            writeFileInLine(helpString, hig);
+        }
+    }
 }
 
 ///////////// FULL REMAKE
@@ -2135,7 +2134,6 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
 
 void MainWindow::GalyaProcessing(const QString & procDirPath)
 {
-//    const QString procDirPath = "/media/Files/Data/Galya/TBI/Test";
 
 //    const QString enthropyFileName = "entrop.txt";
     const QString d2dimFileName = "d2_dim.txt";
@@ -2203,7 +2201,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
             cout << ExpName;
             cout << endl;
 
-            // dont process this file
+            // dont process this file?
 //            continue;
         }
 

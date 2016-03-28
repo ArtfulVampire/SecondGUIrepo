@@ -1688,36 +1688,8 @@ void Net::eraseData(const vector<int> & indices)
 }
 
 
-// like readPaFile from library.cpp
-void Net::loadData(const QString & spectraPath,
-                   const QStringList & filters,
-                   double rdcCoeff)
+void Net::normalizeDataMatrix()
 {
-    vector<QStringList> leest;
-    makeFileLists(spectraPath, leest, filters);
-
-    dataMatrix = matrix();
-    classCount.resize(def::numOfClasses(), 0.);
-    types.clear();
-    fileNames.clear();
-
-    lineType tempArr;
-//    cout << spectraPath << endl;
-    for(int i = 0; i < leest.size(); ++i)
-    {
-        classCount[i] = 0.;
-        for(const QString & fileName : leest[i])
-        {
-            readFileInLine(spectraPath + slash() + fileName,
-                           tempArr);
-            if(rdcCoeff != 1.)
-            {
-                tempArr /= rdcCoeff;
-            }
-            pushBackDatum(tempArr, i, fileName);
-        }
-    }
-//    cout << "loadDataNorm = " << loadDataNorm << endl;
 #if 1
     averageDatum = dataMatrix.averageRow();
     for(int i = 0; i < dataMatrix.rows(); ++i)
@@ -1749,6 +1721,55 @@ void Net::loadData(const QString & spectraPath,
     dataMatrix.transpose();
 
 #endif
+}
+
+void Net::loadData(const matrix & inMat,
+                   const std::vector<int> inTypes)
+{
+    dataMatrix = inMat;
+    types = inTypes;
+    classCount.resize(def::numOfClasses(), 0.);
+    std::for_each(std::begin(types),
+                  std::end(types),
+                  [this](int typ)
+    {
+        this->classCount[typ] += 1;
+    });
+    normalizeDataMatrix();
+}
+
+// like readPaFile from library.cpp
+void Net::loadData(const QString & spectraPath,
+                   const QStringList & filters,
+                   double rdcCoeff)
+{
+    vector<QStringList> leest;
+    makeFileLists(spectraPath, leest, filters);
+
+    dataMatrix = matrix();
+    classCount.resize(def::numOfClasses(), 0.);
+    types.clear();
+    fileNames.clear();
+
+    lineType tempArr;
+//    cout << spectraPath << endl;
+    for(int i = 0; i < leest.size(); ++i)
+    {
+        classCount[i] = 0.;
+        for(const QString & fileName : leest[i])
+        {
+            readFileInLine(spectraPath + slash() + fileName,
+                           tempArr);
+            if(rdcCoeff != 1.)
+            {
+                tempArr /= rdcCoeff;
+            }
+            pushBackDatum(tempArr, i, fileName);
+        }
+    }
+//    cout << "loadDataNorm = " << loadDataNorm << endl;
+
+    normalizeDataMatrix();
 }
 
 //void Net::loadDataFromFolder(const QString & spectraPath)
@@ -1815,7 +1836,7 @@ void Net::learnNet(const bool resetFlag)
     learnNetIndices(mixNum, resetFlag);
 }
 
-void Net::learnNetIndices(vector<int> mixNum,
+void Net::learnNetIndices(std::vector<int> mixNum,
                           const bool resetFlag)
 {
     QTime myTime;
@@ -1829,8 +1850,8 @@ void Net::learnNetIndices(vector<int> mixNum,
 
 
     const int numOfLayers = dimensionality.size();
-    vector<valarray<double>> deltaWeights(numOfLayers);
-    vector<valarray<double>> output(numOfLayers);
+    std::vector<std::valarray<double>> deltaWeights(numOfLayers);
+    std::vector<std::valarray<double>> output(numOfLayers);
     for(int i = 0; i < numOfLayers; ++i)
     {
         deltaWeights[i].resize(dimensionality[i]); // fill zeros
