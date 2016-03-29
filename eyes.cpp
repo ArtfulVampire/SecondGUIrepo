@@ -1,6 +1,8 @@
 #include "eyes.h"
 #include "ui_eyes.h"
 
+using namespace std;
+
 Eyes::Eyes() :
     ui(new Ui::Eyes)
 {

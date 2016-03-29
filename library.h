@@ -48,8 +48,6 @@
 #include <omp.h>
 #endif
 
-using namespace std;
-using namespace std::chrono;
 
 // consts
 const double pi_min_025 = pow(pi, -0.25);
@@ -69,20 +67,8 @@ std::string funcName(std::string in);
     }while(false)
 
 
-
-
-typedef std::vector<std::vector<double>> mat;
-typedef std::vector<double> vec;
-template <typename Typ>
-class trivector : public std::vector<std::vector<std::vector<Typ>>>
-{};
-template <typename Typ>
-class twovector : public std::vector<std::vector<Typ>>
-{};
-
-
 // small shit
-void writeWavFile(const vec & inData, const QString & outPath);
+void writeWavFile(const vectType & inData, const QString & outPath);
 int len(QString s); // string length for EDF+ annotations
 QString rightNumber(const unsigned int input, int N); // prepend zeros
 QString fitNumber(const double & input, int N); // append spaces
@@ -100,13 +86,13 @@ QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
 QString getExt(QString filePath);
 QString slash();
-ostream & operator<< (ostream &os, QString toOut);
-ostream & operator<< (ostream &os, vector < vector < double > > toOut);
-ostream & operator<< (ostream &os, QList<int> toOut);
-ostream & operator<< (ostream &os, matrix toOut);
+std::ostream & operator<< (std::ostream &os, QString toOut);
+std::ostream & operator<< (std::ostream &os, mat toOut);
+std::ostream & operator<< (std::ostream &os, QList<int> toOut);
+std::ostream & operator<< (std::ostream &os, matrix toOut);
 
 template <typename T>
-ostream & operator<< (ostream &os, vector<T> toOut); // template!
+std::ostream & operator<< (std::ostream &os, std::vector<T> toOut); // template!
 
 char * strToChar(const QString & input);
 FILE * fopen(QString filePath, const char *__modes);
@@ -116,7 +102,7 @@ int typeOfFileName(const QString & fileName);
 QString getFileMarker(const QString & fileName);
 
 template <typename T>
-void eraseItems(vector<T> & init, const vector<int> & indices);
+void eraseItems(std::vector<T> & init, const std::vector<int> & indices);
 
 template <typename Container>
 int indexOfMax(const Container & cont);
@@ -131,7 +117,7 @@ enum ColorScale {jet = 0,
                  gray = 2,
                  pew = 3};
 void drawColorScale(QString filename, int range, ColorScale type = jet, bool full = false);
-const vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
+const std::vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
 // jet
 const double defV = 1.;
 double red(const int &range, double j, double V = defV, double S = 1.0);
@@ -182,7 +168,7 @@ void wavelet(QString filePath,
              QString picPath,
              int channelNumber = 0,
              int ns = 20);
-matrix waveletDiscrete(const vec & inData);
+matrix waveletDiscrete(const vectType & inData);
 
 void drawWavelet(QString picPath,
                  const matrix &inData);
@@ -194,9 +180,9 @@ void drawWavelet(QString picPath,
 
 // "static" functions
 
-const vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
-void eyesProcessingStatic(const vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
-                          const vector<int> eegChannels = leest19,
+const std::vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
+                          const std::vector<int> eegChannels = leest19,
                           const QString & windowsDir = def::dir->absolutePath()
                                                        + slash() + "windows",
                           const QString & outFilePath = def::dir->absolutePath()
@@ -236,7 +222,7 @@ void makeFullFileList(const QString & path,
                       const QStringList & auxFilters = QStringList());
 
 void makeFileLists(const QString & path,
-                   vector<QStringList> & lst,
+                   std::vector<QStringList> & lst,
                    const QStringList & auxFilters = QStringList());
 
 
@@ -280,9 +266,9 @@ void writeFileInLine(const QString & filePath,
 
 void readPaFile(const QString & paFile,
                 matrix & dataMatrix,
-                vector<int> types,
-                vector<QString> & FileName,
-                vector<double> & classCount);
+                std::vector<int> types,
+                std::vector<QString> & FileName,
+                std::vector<double> & classCount);
 
 
 
@@ -340,14 +326,14 @@ double drawArrays(const QString & templPath,
                 const bool weightsFlag = false,
                 const spectraGraphsNormalization normType = all,
                 double norm = 0.,
-                const vector<QColor> & colors = def::colours,
+                const std::vector<QColor> & colors = def::colours,
                 const double scaling = 1.,
                 const int lineWidth = 3);
 
 
 void drawArraysInLine(const QString & picPath,
                       const matrix & inMatrix,
-                      const vector<QColor> & colors = def::colours,
+                      const std::vector<QColor> & colors = def::colours,
                       const double scaling = 1.,
                       const int lineWidth = 3);
 
@@ -367,11 +353,11 @@ void countMannWhitney(trivector<int> & outMW,
 
 void drawMannWitney(const QString & templPath,
                     const trivector<int> & inMW,
-                    const vector<QColor> & inColors = def::colours);
+                    const std::vector<QColor> & inColors = def::colours);
 
 void drawMannWitneyInLine(const QString & picPath,
                           const trivector<int> & inMW,
-                          const vector<QColor> & inColors = def::colours);
+                          const std::vector<QColor> & inColors = def::colours);
 
 
 
@@ -387,11 +373,11 @@ void drawMannWitneyInLine(const QString & picPath,
 
 // maps drawings
 void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
-void splineCoeffCount(const vec & inX,
-                      const vec & inY,
+void splineCoeffCount(const vectType & inX,
+                      const vectType & inY,
                       int dim,
-                      vec & outA,
-                      vec & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+                      vectType & outA,
+                      vectType & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
 double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
 
 QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour = true);
@@ -620,7 +606,7 @@ template <typename Typ>
 void calcRawFFT(const Typ & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
 template <typename T>
-double distance(const vector <T> &vec1, const vector <T> &vec2, const int &dim);
+double distance(const std::vector<T> &vec1, const std::vector<T> &vec2, const int &dim);
 
 double distance(double * vec1, double * vec2, const int & dim);
 double distance(double const x1, double const y1, double const x2, double const y2);
@@ -679,11 +665,11 @@ void matrixPrint(double ** &mat, const int &i, const int &j);
 
 // mati
 /// use bitset
-vector<bool> matiCountByte(const double & marker);
+std::vector<bool> matiCountByte(const double & marker);
 QString matiCountByteStr(const double & marker);
 void matiPrintMarker(double const & marker, QString pre  = QString());
 void matiFixMarker(double & marker);
-int matiCountDecimal(vector<bool> byteMarker);
+int matiCountDecimal(std::vector<bool> byteMarker);
 int matiCountDecimal(QString byteMarker);
 inline bool matiCountBit(double const & marker, int num)
 {
@@ -695,59 +681,59 @@ inline bool matiCountBit(double const & marker, int num)
 
 // do sammon class
 //sammon
-void drawSammon(const vector < pair <double, double> > & plainCoords,
-                const vector <int> & types,
+void drawSammon(const coordType & plainCoords,
+                const std::vector<int> & types,
                 const QString & picPath);
 
-void drawShepard(const vector < vector <double> > & distOld,
-                 const vector < vector <double> > & distNew,
+void drawShepard(const mat & distOld,
+                 const mat & distNew,
                  const QString & picPath);
 
-void sammonProj(const vector < vector <double> > & distOld,
-                const vector <int> & types,
+void sammonProj(const mat & distOld,
+                const std::vector<int> & types,
                 const QString & picPath);
-double errorSammon(const vector < vector <double> > & distOld,
-                   const vector < vector <double> > & distNew);
+double errorSammon(const mat & distOld,
+                   const mat & distNew);
 
-void moveCoordsGradient(vector < pair<double, double> > & plainCoords,
-                        const vector < vector <double> > & distOld,
-                        vector<vector<double> > & distNew);
-void refreshDistAll(vector < vector <double> > & distNew,
-                    const vector <pair <double, double> > & plainCoords);
+void moveCoordsGradient(coordType & plainCoords,
+                        const mat & distOld,
+                        mat & distNew);
+void refreshDistAll(mat & distNew,
+                    const coordType & plainCoords);
 
-void refreshDist(vector < vector<double> > & dist,
-                 const vector <pair <double, double> > & testCoords,
+void refreshDist(mat & dist,
+                 const coordType & testCoords,
                  const int input);
 
-void countGradient(const vector <pair <double, double> > & plainCoords,
-                   const vector<vector<double> > &distOld,
-                   vector<vector<double> > &distNew,
-                   vector<double> &gradient);
+void countGradient(const coordType & plainCoords,
+                   const mat &distOld,
+                   mat &distNew,
+                   std::vector<double> &gradient);
 
-void sammonAddDot(const vector < vector <double> > & distOld,
-                  vector < vector <double> > & distNew, // change only last coloumn
-                  vector < pair <double, double> > & plainCoords,
-                  const vector<int> & placedDots);
+void sammonAddDot(const mat & distOld,
+                  mat & distNew, // change only last coloumn
+                  coordType & plainCoords,
+                  const std::vector<int> & placedDots);
 
-void countDistNewAdd(vector < vector <double> > & distNew, // change only last coloumn
-                     const vector<pair<double, double> > &crds,
-                     const vector <int> & placedDots);
+void countDistNewAdd(mat & distNew, // change only last coloumn
+                     const coordType &crds,
+                     const std::vector<int> & placedDots);
 
-void countGradientAddDot(const vector < vector <double> > & distOld,
-                         const vector < vector <double> > & distNew,
-                         const vector <pair <double, double> > & crds,
-                         const vector <int> & placedDots,
-                         vector <double>  & gradient);
+void countGradientAddDot(const mat & distOld,
+                         const mat & distNew,
+                         const coordType & crds,
+                         const std::vector<int> & placedDots,
+                         std::vector<double>  & gradient);
 
-void countInvHessianAddDot(const vector < vector <double> > & distOld,
-                           const vector < vector <double> > & distNew,
-                           const vector <pair <double, double> > & crds,
-                           const vector <int> & placedDots,
-                           vector < vector <double> > & invHessian);
+void countInvHessianAddDot(const mat & distOld,
+                           const mat & distNew,
+                           const coordType & crds,
+                           const std::vector<int> & placedDots,
+                           mat & invHessian);
 
-double errorSammonAdd(const vector < vector <double> > & distOld,
-                      const vector < vector <double> > & distNew,
-                      const vector <int> & placedDots);
+double errorSammonAdd(const mat & distOld,
+                      const mat & distNew,
+                      const std::vector<int> & placedDots);
 
 
 

@@ -1,5 +1,9 @@
 #include "library.h"
 
+
+using namespace std;
+using namespace std::chrono;
+
 double const morletFall = 9.; // coef in matlab = mF^2 / (2 * pi^2);
 double morletCosNew(double const freq1, // Hz
                     const double timeShift,
@@ -408,8 +412,8 @@ int MannWhitney(double * arr1, int len1,
                  double * arr2, int len2,
                  double p)
 {
-    vec vect1;
-    vec vect2;
+    vectType vect1;
+    vectType vect2;
     for(int i = 0; i < len1; ++i)
     {
         vect1.push_back(arr1[i]);
@@ -1371,7 +1375,7 @@ void wavelet(QString filePath,
 
 
 
-matrix waveletDiscrete(const vec & inData)
+matrix waveletDiscrete(const vectType & inData)
 {
     const int numOfFreqs = log2(def::rightFreq / def::leftFreq) + 1;
     matrix res(numOfFreqs, inData.size());
@@ -1458,10 +1462,10 @@ retType hilbert(const signalType & arr,
     retType out; // result
     out.resize(2 * fftLen);
 
-    vec tempArr;
+    vectType tempArr;
     tempArr.resize(fftLen, 0.);
 
-    vec filteredArr;
+    vectType filteredArr;
     filteredArr.resize(fftLen, 0.);
 
 
@@ -1600,9 +1604,9 @@ retType hilbertPieces(const signalType & arr,
     int fftLen = fftL(inLength) / 2;
 
     double spStep = sampleFreq/fftLen;
-    vec out(2*fftLen); // temp
-    vec tempArr(inLength);
-    vec filteredArr(inLength);
+    vectType out(2*fftLen); // temp
+    vectType tempArr(inLength);
+    vectType filteredArr(inLength);
 
     for(int i = 0; i < fftLen; ++i)
     {
@@ -1814,7 +1818,7 @@ retType bayesCount(const signalType & dataIn,
 
 void kernelEst(QString filePath, QString picPath)
 {
-    vec arr;
+    vectType arr;
     readFileInLine(filePath, arr);
     kernelEst(arr, picPath);
 }
@@ -1835,7 +1839,7 @@ void kernelEst(const signalType & arr, QString picPath)
     pnt.begin(&pic);
     pnt.setPen("black");
 
-    vec values(pic.width(), 0.);
+    vectType values(pic.width(), 0.);
 
     double xMin, xMax;
 
@@ -1907,7 +1911,7 @@ retType spectre(const signalType & data)
     int fftLen = fftL(length); // nearest exceeding power of 2
     double norm = sqrt(fftLen / double(length));
 
-    vec tempSpectre(2 * fftLen, 0.);
+    vectType tempSpectre(2 * fftLen, 0.);
     for(int i = 0; i < length; ++i)
     {
         tempSpectre[ 2 * i + 0 ] = data[i] * norm;
@@ -2137,7 +2141,7 @@ void calcRawFFT(const Typ & inData,
     dataFFT.resize(ns);
     std::for_each(dataFFT.begin(),
                   dataFFT.end(),
-                  [fftLength](vec & in){in.resize(fftLength/2);});
+                  [fftLength](vectType & in){in.resize(fftLength/2);});
 
 //    double help1, help2;
 //    int leftSmoothLimit, rightSmoothLimit;

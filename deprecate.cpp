@@ -1,6 +1,8 @@
 #include "library.h"
 
 
+using namespace std;
+using namespace std::chrono;
 
 double maxValue(double * arr, int length)
 {

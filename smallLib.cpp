@@ -1,5 +1,9 @@
 #include "library.h"
 
+
+using namespace std;
+using namespace std::chrono;
+
 template <typename Container>
 int indexOfMax(const Container & cont)
 {
@@ -51,7 +55,7 @@ void writeBytes(FILE * fil, int value, int numBytes)
 }
 
 
-void writeWavFile(const vec & inData, const QString & outPath)
+void writeWavFile(const vectType & inData, const QString & outPath)
 {
     // http://soundfile.sapp.org/doc/WaveFormat/
 
@@ -367,7 +371,7 @@ bool gaussApproval(double * arr, int length) //kobzar page 239
 
 bool gaussApproval(QString filePath)
 {
-    vec arr;
+    vectType arr;
     readFileInLine(filePath, arr);
     return gaussApproval(arr.data(), arr.size());
 }

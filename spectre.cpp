@@ -1,6 +1,8 @@
 #include "spectre.h"
 #include "ui_spectre.h"
 
+using namespace std;
+
 Spectre::Spectre() :
     ui(new Ui::Spectre)
 {
@@ -333,8 +335,8 @@ void Spectre::integrate()
     QStringList lst = ui->integrateLineEdit->text().split(QRegExp("[; ]"),
                                                           QString::SkipEmptyParts);
     const int numOfInt = lst.length();
-    vector<int> begins(numOfInt);
-    vector<int> ends(numOfInt);
+    std::vector<int> begins(numOfInt);
+    std::vector<int> ends(numOfInt);
     QString helpString;
     QStringList nameFilters;
     for(const QString & item : lst)

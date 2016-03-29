@@ -8,8 +8,6 @@
 #include "library.h"
 #include "smallFuncs.h"
 
-using namespace std;
-
 typedef matrix edfDataType;
 
 struct edfChannel
@@ -247,7 +245,8 @@ private:
     double ddr = 1.;
     int ns = 0;
 
-    std::vector < pair <int, double> > sessionEdges = std::vector < pair <int, double> >(0); // fast access
+    // fast access for slicing (time-bin, marker)
+    std::vector<std::pair<int, double>> sessionEdges = std::vector<std::pair<int, double>>();
 
     //channels arrays start
     std::vector <QString> labels;

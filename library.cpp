@@ -1,5 +1,9 @@
 #include "library.h"
 
+
+using namespace std;
+using namespace std::chrono;
+
 QString setFileName(const QString & initNameOrPath) // append _num before the dot
 {
     QString beforeDot = initNameOrPath;

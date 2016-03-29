@@ -1,6 +1,7 @@
 #include "net.h"
 #include "ui_net.h"
 //#include <CL/cl.h>
+
 using namespace std;
 
 Net::Net() :
@@ -884,7 +885,7 @@ void Net::drawWts(QString wtsPath,
 
     matrix drawWts; // 3 arrays of weights
 #if 0
-    vec tempVec;
+    vectType tempVec;
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
         tempVec.clear();

@@ -18,11 +18,7 @@
 #include <valarray>
 #include <set>
 
-using namespace std;
 
-typedef vector<double> vectType;
-typedef valarray<double> lineType;
-//typedef vector<lineType> dataType;
 using dataType = std::vector<std::valarray<double>>;
 
 class matrix : public dataType

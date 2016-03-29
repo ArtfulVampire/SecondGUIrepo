@@ -9,7 +9,6 @@
 #include <QStringList>
 #include <QString>
 #include <iostream>
-using namespace std;
 
 class TempThread : public QThread
 {
@@ -62,13 +61,13 @@ public slots:
 
         if(temp>=85.)
         {
-            cout<<"CRITICAL temp = "<<temp<<endl;
+            std::cout<<"CRITICAL temp = "<<temp<<std::endl;
             sleep(3);
             checkTemp();
         }
         else
         {
-            cout<<"current temp = "<<temp<<endl;
+            std::cout<<"current temp = "<<temp<<std::endl;
         }
     }
 

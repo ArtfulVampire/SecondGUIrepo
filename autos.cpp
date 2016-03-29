@@ -3,6 +3,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+using namespace std;
+
 bool mySort(vector<double> i,
             vector<double>  j)
 {
@@ -2222,7 +2224,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
         QFile::remove(helpString + "_" + spectraFileName);
 
         // write full spectre
-        vec fullSpectre;
+        vectType fullSpectre;
         lineType helpSpectre;
         helpString = dir.absolutePath()
                 + slash() + ExpName

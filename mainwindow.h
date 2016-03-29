@@ -33,8 +33,6 @@
 
 //#include <libxml2/libxml/parser.h>
 
-using namespace std;
-
 namespace Ui {
     class MainWindow;
 }
@@ -137,13 +135,12 @@ public:
     void GalyaCut(const QString & path, QString outPath = QString());
 
     void rereferenceData(QString newRef, QString newPath);
-    void makeChanList(vector<int> & chanList);
+    void makeChanList(std::vector<int> & chanList);
 
     void refilterData(double lowFreq, double highFreq, QString newPath);
     void countSpectraSimple(int fftLen, int inSmooth = -1);
     void visualisation();
     void kernelest(const QString &str);
-//    void writeEdf(QString inFilePath, double ** components, QString outFilePath, int numSlices, QList<int> chanList = QList<int>());
     void sliceOneByOne();
     void sliceOneByOneNew();
     void drawMap(double ** matrixA, int num);
@@ -156,14 +153,13 @@ public:
                       const QStringList & nameFilters = QStringList());
     void concatenateEDFs(QString inPath1, QString inPath2, QString outPath);
     void concatenateEDFs(QStringList inPath, QString outPath);
-    void writeCorrelationMatrix(QString edfPath, QString outPath);
     void ICsSequence(const QString & EDFica1,
                      const QString & EDFica2,
                      const int mode = 1,
                      QString maps1Path = QString(),
                      QString maps2Path = QString());
     void reorderIcaFile(const QString & icaPath,
-                        vector<int> chanList,
+                        std::vector<int> chanList,
                         QString icaOutPath = QString(),
                         QString mapsPath = QString(),
                         QString mapsOutPath = QString());
@@ -224,12 +220,10 @@ private:
     bool redirectCoutFlag;
 
     edfFile globalEdf;
-    std::vector<QString> label;
     int staSlice;
-    int NumOfEdf;
 
-    double ** spocMixMatrix;
-    double * spocWVector;
+    matrix spocMixMatrix;
+    lineType spocWVector;
 
     bool autoProcessingFlag;
     bool stopFlag;

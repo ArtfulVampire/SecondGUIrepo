@@ -1,8 +1,7 @@
-#ifndef VISUAL_CPP
-#define VISUAL_CPP
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+using namespace std;
 
 void MainWindow::visualisation()   //just video
 {
@@ -733,7 +732,3 @@ void MainWindow::makeDatFile()
     fclose(datFile);
 #endif
 }
-
-
-
-#endif

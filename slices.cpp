@@ -1,8 +1,7 @@
-#ifndef SLICES_CPP
-#define SLICES_CPP
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+using namespace std;
 
 void MainWindow::sliceGalya()
 {
@@ -1083,5 +1082,3 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     }
     cout << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
-
-#endif

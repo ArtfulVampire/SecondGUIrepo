@@ -10,8 +10,6 @@
 #include "coord.h"
 #include "library.h"
 
-using namespace std;
-
 namespace Ui {
     class cfg;
 }

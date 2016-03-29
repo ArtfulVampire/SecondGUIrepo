@@ -1,6 +1,9 @@
 #include "library.h"
 
 
+using namespace std;
+using namespace std::chrono;
+
 //hot-to-cold, http://stackoverflow.com/questions/7706339/grayscale-to-red-green-blue-matlab-jet-color-scale
 double red1(int range, int j)
 {
@@ -1559,7 +1562,7 @@ void drawWavelet(QString picPath,
 template <typename signalType>
 void histogram(const signalType & arr, int numSteps, QString picPath)
 {
-    vec values(numSteps, 0.);
+    vectType values(numSteps, 0.);
     int length = arr.size();
 
     QPixmap pic(1000, 400);

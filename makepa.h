@@ -14,8 +14,6 @@
 #include <QTime>
 #include "library.h"
 
-using namespace std;
-
 namespace Ui {
     class MakePa;
 }

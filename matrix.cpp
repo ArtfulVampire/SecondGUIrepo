@@ -1,5 +1,8 @@
 #include "matrix.h"
 
+
+using namespace std;
+
 matrix::matrix()
 {
 

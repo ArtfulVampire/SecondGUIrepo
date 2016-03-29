@@ -42,7 +42,8 @@ SOURCES += main.cpp\
     dataHandler.cpp \
     signalProcessing.cpp \
     smallLib.cpp \
-    deprecate.cpp
+    deprecate.cpp \
+    customF.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

@@ -1,11 +1,9 @@
-#ifndef EDITEDF_CPP
-#define EDITEDF_CPP
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+using namespace std;
 
-
-void MainWindow::makeChanList(vector<int> & chanList)
+void MainWindow::makeChanList(std::vector<int> & chanList)
 {
     chanList.clear();
     QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
@@ -51,6 +49,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     QString helpString2;
 
     readData();
+    auto label = globalEdf.getLabels();
 
     helpString.clear();
     for(int i = 0; i < def::ns; ++i)
@@ -319,77 +318,7 @@ void MainWindow::refilterDataSlot()
 
 void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
 {
-#if 1
     globalEdf.refilter(lowFreq, highFreq, newPath);
-#else
-    QTime myTime;
-    myTime.start();
-
-    readData();
-    edfFile & fil = globalEdf;
-
-    int fftLength = fftL(fil.getDataLen());
-
-    double spStep = def::freq / double(fftLength);
-
-    /////////////////////////////////////////////////////////how many channels to filter????
-
-    QList <int> chanList;
-    for(int i = 0; i < fil.getNs(); ++i)
-    {
-        if(fil.getLabels()[i].contains(QRegExp("E[OE]G"))) // filter only EEG, EOG signals
-        {
-            chanList << i;
-        }
-    }
-//    cout << chanList << endl;
-    int numOfChan = chanList.length(); //NOT MARKERS
-
-    double norm1 = fftLength / double(fil.getDataLen());
-    double * spectre = new double [fftLength*2];
-
-    for(int j = 0; j < numOfChan; ++j)
-    {
-        for(int i = 0; i < fil.getDataLen(); ++i)            //make appropriate array
-        {
-            spectre[ i * 2 + 0 ] = (double)(fil.getData()[ chanList[j] ][ i ] * sqrt(norm1));
-            spectre[ i * 2 + 1 ] = 0.;
-        }
-        for(int i = fil.getDataLen(); i < fftLength; ++i)            //make appropriate array
-        {
-            spectre[ i * 2 + 0 ] = 0.;
-            spectre[ i * 2 + 1 ] = 0.;
-        }
-        four1(spectre - 1, fftLength, 1);       //Fourier transform
-
-        //filtering
-        for(int i = 0; i < fftLength; ++i)
-        {
-            if(i < 2. * lowFreq/spStep || i > 2. * highFreq/spStep)
-                spectre[i] = 0.;
-        }
-        for(int i = fftLength; i < 2*fftLength; ++i)
-        {
-            if(((2*fftLength - i) < 2. * lowFreq/spStep) || (2 * fftLength - i > 2. * highFreq/spStep))
-                spectre[i] = 0.;
-        }
-        //end filtering
-
-        four1(spectre-1, fftLength, -1);
-        for(int i = 0; i < fil.getDataLen(); ++i)
-        {
-            fil.setData(chanList[j],
-                        i,
-                        spectre[2*i] / (fftLength * sqrt(norm1)) );
-        }
-        ui->progressBar->setValue(j * 100. / numOfChan);
-    }
-    ui->progressBar->setValue(0);
-
-    fil.writeEdfFile(newPath);
-
-    cout << "refilterData: time = " << myTime.elapsed()/1000. << " sec" << endl;
-#endif
 }
 
 void MainWindow::reduceChannelsEDFSlot()
@@ -411,17 +340,6 @@ void MainWindow::reduceChannelsEDF(const QString & newFilePath)
     makeChanList(chanList);
 
     temp.reduceChannels(chanList);
-
-//    for(int i = 0; i < chanList.size(); ++i)
-//    {
-//        for(int j = 0; j < 5; ++j)
-//        {
-//            cout << temp.getData()[i][j] << "\t";
-//        }
-//        cout << endl;
-//    }
-//    cout << endl;
-
     temp.writeEdfFile(newFilePath);
 
     cout << "reduceChannelsEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
@@ -817,104 +735,6 @@ void MainWindow::constructEDF(const QString & newPath,
 
 void MainWindow::eyesFast()  //generality
 {
-#if 1
     globalEdf.cleanFromEyes();
-#else
-    QTime myTime;
-    myTime.start();
-
-    QString helpString;
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "eyes.txt");
-
-    FILE * coef = fopen(helpString, "r");
-    if(coef == NULL)
-    {
-        QMessageBox::critical((QWidget*)this, tr("Warning"), tr("No eyes coefficients found"), QMessageBox::Ok);
-        return;
-    }
-
-    int NumEog, NumEeg;
-
-    fscanf(coef, "NumOfEyesChannels %d\n", &NumEog);
-    fscanf(coef, "NumOfEegChannels %d\n", &NumEeg);
-
-    double ** coefficients = new double * [NumEeg];
-    for(int i = 0; i < NumEeg; ++i)
-    {
-        coefficients[i] = new double [NumEog];
-    }
-
-    for(int k = 0; k < NumEeg; ++k)
-    {
-        for(int i = 0; i < NumEog; ++i)
-        {
-            fscanf(coef, "%lf", &coefficients[k][i]);
-        }
-    }
-    fclose(coef);
-
-    int a[2]; //generality 2
-    a[0] = -1;
-    a[1] = -1;
-
-    if(ui->enRadio->isChecked())
-    {
-        for(int i = 0; i < ns; ++i)
-        {
-            if(label[i].contains("EOG1", Qt::CaseInsensitive)) //generality eog channels names
-            {
-                a[0] = i;
-            }
-            else if(label[i].contains("EOG2", Qt::CaseInsensitive)) //generality eog channels names
-            {
-                a[1] = i;
-            }
-        }
-    }
-    if(a[0] == -1 && a[1] == -1)
-    {
-        cout << "eyesFast: EOG channels not found" << endl;
-        for(int i = 0; i < NumEeg; ++i)
-        {
-            delete []coefficients[i];
-        }
-        delete []coefficients;
-        return;
-    }
-
-    double helpDouble;
-    for(int k = 0; k < NumEeg; ++k)
-    {
-        for(int j = 0; j < ndr * nr[k]; ++j) //generality nr
-        {
-            for(int z = 0; z < NumEog; ++z)
-            {
-                helpDouble = globalEdf.getData()[k][j]
-                        - coefficients[k][z] * globalEdf.getData()[ a[z] ][j];
-                globalEdf.setData(k, j, helpDouble);
-            }
-        }
-    }
-
-//    cout << "eyesFast: eyes cleaned, ns = " << ns << endl;
-
-    for(int i = 0; i < NumEeg; ++i)
-    {
-        delete []coefficients[i];
-    }
-    delete []coefficients;
-
-    helpString = "eyes cleaned fast ";
-    ui->textEdit->append(helpString);
-
-    helpString="ns equals to ";
-    helpString.append(QString::number(ns));
-    ui->textEdit->append(helpString);
-
-    cout << "eyesFast: time = " << myTime.elapsed()/1000. << " sec" << endl;
-#endif
 }
 
-
-#endif

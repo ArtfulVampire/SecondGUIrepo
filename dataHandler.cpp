@@ -1,5 +1,9 @@
 #include "library.h"
 
+
+using namespace std;
+using namespace std::chrono;
+
 // make valarray
 template <typename signalType>
 void readFileInLine(const QString & filePath,

@@ -1,5 +1,7 @@
 #include "edffile.h"
 
+using namespace std;
+
 edfFile::edfFile()
 {
 #if DATA_POINTER
@@ -498,7 +500,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
         {
             cout << "handleEdfFile(read): realNdr is not integral = "
                  << realNdr << endl;
-            cout << "dataSize = " << QFile(EDFpath).size() - bytes << endl;
+            cout << "dataSize = " << fileSize - bytes << endl;
             cout << "ns = " << ns << endl;
             cout << "freq = " << def::freq << endl;
             cout << "ddr = " << ddr << endl;

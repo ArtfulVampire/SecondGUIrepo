@@ -19,8 +19,6 @@
 #include <cmath>
 #include <QMessageBox>
 
-using namespace std;
-
 namespace Ui {
     class Eyes;
 }

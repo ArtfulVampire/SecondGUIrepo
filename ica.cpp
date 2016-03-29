@@ -1,9 +1,8 @@
-#ifndef ICA_CPP
-#define ICA_CPP
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
 
+using namespace std;
 
 
 
@@ -341,7 +340,7 @@ void MainWindow::ICA() //fastICA
 #if MATRICES_ICA_4
         matrixA.swapCols(i, colsNorms[i].second);
 #else
-        vec tempCol(ns);
+        vectType tempCol(ns);
         for(int j = 0; j < ns; ++j) // swap j'th elements in i'th and colsNorms[i].second'th cols
         {
             tempCol[j] = matrixA[j][i];
@@ -354,7 +353,7 @@ void MainWindow::ICA() //fastICA
 #if MATRICES_ICA_5
         components.swapRows(i, colsNorms[i].second);
 #else
-        vec tempComp;
+        vectType tempComp;
         tempComp = components[i];
         components[i] = components[ colsNorms[i].second ];
         components[ colsNorms[i].second ] = tempComp;
@@ -658,8 +657,8 @@ void MainWindow::ICsSequence(const QString & EDFica1,
                 corrSpectr[h] = 0.;
                 for(int shift = -maxShift; shift <= maxShift; ++shift)
                 {
-                    vec tempVec1(def::spLength());
-                    vec tempVec2(def::spLength());
+                    vectType tempVec1(def::spLength());
+                    vectType tempVec2(def::spLength());
                     std::copy(begin(dataFFT1[h]) + k * def::spLength(),
                               begin(dataFFT1[h]) + (k + 1) * def::spLength(),
                               begin(tempVec1));
@@ -2086,7 +2085,3 @@ void MainWindow::spoc()
 #endif
 
 }
-
-
-
-#endif

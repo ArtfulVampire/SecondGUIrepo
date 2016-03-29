@@ -9,9 +9,19 @@
 #include <algorithm>
 #include <numeric>
 
-using namespace std;
-
 typedef std::valarray<double> lineType;
+typedef std::vector<double> vectType;
+typedef std::vector<std::vector<double>> mat;
+typedef std::vector<std::pair<double, double>> coordType;
+
+template <typename Typ>
+class trivector : public std::vector<std::vector<std::vector<Typ>>>
+{};
+template <typename Typ>
+class twovector : public std::vector<std::vector<Typ>>
+{};
+
+
 
 const long double pi = 3.14159265358979323846L;
 
@@ -66,9 +76,9 @@ inline void resizeValar(lineType & in, int num)
 {
     lineType temp = in;
     in.resize(num);
-    std::copy(begin(temp),
-              begin(temp) + min(in.size(), temp.size()),
-              begin(in));
+    std::copy(std::begin(temp),
+              std::begin(temp) + std::min(in.size(), temp.size()),
+              std::begin(in));
 }
 
 
@@ -127,15 +137,15 @@ inline double distance(const lineType & in1,
 {
     if(in1.size() != in2.size())
     {
-        cout << "distance: lineTypes of different size" << endl;
+        std::cout << "distance: lineTypes of different size" << std::endl;
         return 0.; /// exception
     }
     return norma(in1 - in2);
 }
 
 template <typename T>
-void eraseItems(vector<T> & inVect,
-                const vector<int> & indices)
+void eraseItems(std::vector<T> & inVect,
+                const std::vector<int> & indices)
 {
     const int initSize = inVect.size();
     std::set<int, std::less<int>> excludeSet; // less first
@@ -143,7 +153,7 @@ void eraseItems(vector<T> & inVect,
     {
         excludeSet.emplace(item);
     }
-    vector<int> excludeVector;
+    std::vector<int> excludeVector;
     for(auto a : excludeSet)
     {
         excludeVector.push_back(a);
@@ -159,9 +169,9 @@ void eraseItems(vector<T> & inVect,
     }
     inVect.resize(initSize - excludeSet.size());
 }
-template void eraseItems(vector<lineType> & inVect, const vector<int> & indices);
-template void eraseItems(vector<int> & inVect, const vector<int> & indices);
-template void eraseItems(vector<double> & inVect, const vector<int> & indices);
+template void eraseItems(std::vector<lineType> & inVect, const std::vector<int> & indices);
+template void eraseItems(std::vector<int> & inVect, const std::vector<int> & indices);
+template void eraseItems(std::vector<double> & inVect, const std::vector<int> & indices);
 
 
 

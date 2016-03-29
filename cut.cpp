@@ -1,7 +1,7 @@
 #include "cut.h"
 #include "ui_cut.h"
 
-/*after every function the QDir dir is set to the ExpName directory*/
+using namespace std;
 
 Cut::Cut() :
     ui(new Ui::Cut)

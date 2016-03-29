@@ -21,9 +21,6 @@
 #include <QScrollBar>
 #include "mainwindow.h"
 
-using namespace std;
-
-
 namespace Ui {
     class Cut;
 }
