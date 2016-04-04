@@ -2152,7 +2152,17 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
     const double spectreStepFreq = 1.;
     const double hilbertFreqLimit = 40.;
-    const int numChan = 19;
+
+    int numChan_;
+    if(!def::ntFlag)
+    {
+        numChan_ = 19; /// encephalan
+    }
+    else
+    {
+        numChan_ = 31; /// neurotravel
+    }
+    const int numChan = numChan_;
 
     QString helpString;
     QString ExpName;

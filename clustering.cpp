@@ -29,7 +29,7 @@ struct clustering
     int dimDots = -1;
     vector <cluster> clusts;
     vector <clustDot> dots;
-    vector < vector<double> > dists;
+    mat dists;
     vector <bool> boundDots;
     vector <bool> isolDots;
 

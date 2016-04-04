@@ -282,6 +282,7 @@ private:
     bool matiFlag = def::matiFlag;
     bool ntFlag = def::ntFlag;
     bool edfPlusFlag = def::edfPlusFlag;
+
 public:
     const QString & getHeaderInit() const {return headerInitialInfo;}
     const int & getBytes() const {return bytes;}
@@ -312,9 +313,11 @@ public:
 
     const bool & getMatiFlag() const {return matiFlag;}
     const bool & getNtFlag() const {return ntFlag;}
+    const bool & getEdfPlusFlag() const {return edfPlusFlag;}
 
     void setMatiFlag(bool newFlag) {matiFlag = newFlag;}
     void setNtFlag(bool newFlag) {ntFlag = newFlag;}
+    void setEdfPlusFlag(bool newFlag) {edfPlusFlag = newFlag;}
 
     void getLabelsCopy(char ** & dest) const
     {

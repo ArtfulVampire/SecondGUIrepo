@@ -50,7 +50,7 @@ enum spectraGraphsNormalization {all = 0, each = 1};
 namespace def
 {
     const bool matiFlag = false;
-    const bool edfPlusFlag = false;
+    const bool edfPlusFlag = false; /// annotations
 
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
     const bool OssadtchiFlag = false;

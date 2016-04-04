@@ -198,6 +198,28 @@ bool areEqualFiles(QString path1, QString path2)
     return true;
 }
 
+void deleteSpaces(const QString & dirPath, const QStringList & filters)
+{
+    QDir tmp(dirPath);
+    QStringList lst;
+    if(filters.isEmpty())
+    {
+        lst = tmp.entryList(QDir::Files);
+    }
+    else
+    {
+        lst = tmp.entryList(filters, QDir::Files);
+    }
+    QString newName;
+    for(const QString & fileName : lst)
+    {
+        newName = fileName;
+        newName.remove(' ');
+        QFile::rename(tmp.absolutePath() + slash() + fileName,
+                      tmp.absolutePath() + slash() + newName);
+    }
+}
+
 QString slash()
 {
     return QString(QDir::separator());

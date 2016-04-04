@@ -602,12 +602,7 @@ void edfFile::handleData(bool readFlag,
             {
                 currTimeIndex = i * nr[currNs] + k;
                 handleDatum(currNs, currTimeIndex, readFlag, helpString, edfForData);
-            }
-
-            /// bad if
-            if(currNs == markerChannel && this->edfPlusFlag)
-            {
-                handleAnnotations(currNs, currTimeIndex, helpString, annotations);
+                /// use annotations
             }
         }
     }
@@ -653,10 +648,8 @@ void edfFile::handleDatum(const int & currNs,
             if(this->edfPlusFlag)
             {
                 //edf+
-                //            fscanf(edf, "%c", &helpChar);
                 fread(&helpChar, sizeof(char), 1, edfForDatum);
                 ntAnnot += helpChar;
-                //            fscanf(edf, "%c", &helpChar);
                 fread(&helpChar, sizeof(char), 1, edfForDatum);
                 ntAnnot += helpChar;
             }
@@ -860,7 +853,8 @@ void edfFile::adjustArraysByChannels()
     for(int i = 0; i < this->ns; ++i)
     {
         this->labels.push_back(this->channels[i].label);
-        if(this->channels[i].label.contains("Markers"))
+        if(this->channels[i].label.contains("Markers") ||
+           this->channels[i].label.contains("Annotations"))
         {
             this->markerChannel = i; // set markersChannel
             break; // Markers channel - the last

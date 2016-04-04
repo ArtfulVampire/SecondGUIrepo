@@ -81,6 +81,7 @@ QString getPicPath(const QString & dataPath,
                    const int & ns = def::ns);
 QString getFileName(const QString & filePath, bool withExtension = true);
 bool areEqualFiles(QString path1, QString path2);
+void deleteSpaces(const QString & dirPath, const QStringList & filters = QStringList());
 
 QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
