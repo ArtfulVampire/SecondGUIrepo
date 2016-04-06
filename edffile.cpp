@@ -464,6 +464,12 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
         else if(labels[i].contains("Marker"))
         {
             markerChannel = i;
+            edfPlusFlag = false;
+        }
+        else if(labels[i].contains("Annotations"))
+        {
+            markerChannel = i;
+            edfPlusFlag = true;
         }
     }
 
@@ -603,6 +609,10 @@ void edfFile::handleData(bool readFlag,
                 currTimeIndex = i * nr[currNs] + k;
                 handleDatum(currNs, currTimeIndex, readFlag, helpString, edfForData);
                 /// use annotations
+            }
+            if(currNs == ns - 1 && this->edfPlusFlag)
+            {
+                annotations.push_back(helpString);
             }
         }
     }

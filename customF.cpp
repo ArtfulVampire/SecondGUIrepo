@@ -28,9 +28,9 @@ void MainWindow::customFunc()
 #if 1
     def::ntFlag = true; /// for Dasha's
 //    def::ntFlag = false; /// encephalan
-    deleteSpaces(def::GalyaFolder + "/BerlinHenis");
-    GalyaCut(def::GalyaFolder + "/BerlinHenis");
-    GalyaProcessing(def::GalyaFolder + "/BerlinHenis");
+//    deleteSpaces(def::GalyaFolder + "/BerlinHenis");
+    GalyaCut(def::GalyaFolder + "/hanenya");
+    GalyaProcessing(def::GalyaFolder + "/hanenya");
     exit(0);
 #endif
 

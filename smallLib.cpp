@@ -441,10 +441,7 @@ QString rightNumber(const unsigned int input, int N) // prepend zeros
 {
     QString h;
     h.setNum(input);
-    for(int i = 0; i < N; ++i)
-    {
-        h.prepend("0");
-    }
+    h.prepend(QString(N, '0'));
     return h.right(N);
 }
 

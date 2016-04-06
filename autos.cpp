@@ -2142,6 +2142,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     const QString hilbertFileName = "med_freq.txt";
     const QString spectraFileName = "spectre.txt";
     const QString alphaFileName = "alpha.txt";
+    const QString outDir = getFileName(procDirPath) + "_out";
 
     const double leftFreqLim = 2.;
     const double rightFreqLim = 20.;
@@ -2168,7 +2169,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     QString ExpName;
     QDir dir;
     dir.cd(procDirPath);
-    dir.mkdir("out");
+    dir.mkdir(outDir);
     QStringList filesList;
     filesList = dir.entryList({"*.EDF", "*.edf"},
                               QDir::NoFilter,
@@ -2227,7 +2228,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
         cout << ExpName << '\t' << doubleRound(QFile(helpString).size() / pow(2, 10), 1) << "kB" << endl;
 
-        dir.cd("out");
+        dir.cd(outDir);
 
         helpString = dir.absolutePath()
                 + slash() + ExpName;
