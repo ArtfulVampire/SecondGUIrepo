@@ -314,7 +314,7 @@ void edfFile::handleParam(Typ & qStr,
 }
 
 template <typename Typ>
-void edfFile::handleParamArray(vector <Typ> & qStr,
+void edfFile::handleParamArray(std::vector<Typ> & qStr,
                                int number,
                                int length,
                                bool readFlag,
@@ -495,13 +495,16 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     handleParamArray(nr, ns, 8, readFlag, edfDescriptor, header);
 
     // real length handler
-    if(readFlag)
+    if(readFlag && !def::ntFlag)
     {
         /// olololololololololololololololo
-        def::freq = nr[0] / ddr;
+        def::freq = std::round(nr[0] / ddr); // frequency of the first channnel
         const long long fileSize = QFile(EDFpath).size();
+        const int sumNr = std::accumulate(std::begin(nr),
+                                          std::end(nr),
+                                          0.);
         const double realNdr = (fileSize - bytes)
-                               / double(ns * def::freq * 2. * ddr);
+                               / (sumNr * 2.); // 2 bytes for a point
         if(int(realNdr) != realNdr)
         {
             cout << "handleEdfFile(read): realNdr is not integral = "
@@ -610,7 +613,7 @@ void edfFile::handleData(bool readFlag,
                 handleDatum(currNs, currTimeIndex, readFlag, helpString, edfForData);
                 /// use annotations
             }
-            if(currNs == ns - 1 && this->edfPlusFlag)
+            if(currNs == markerChannel && this->edfPlusFlag)
             {
                 annotations.push_back(helpString);
             }

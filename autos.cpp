@@ -2101,24 +2101,12 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
             logStream << initEdf.getFilePath() << "\t" << "too small" << "\n";
             continue;
         }
+        /// generality
+        if(initEdf.getEdfPlusFlag()) // if annotations
+        {
+            initEdf.removeChannels({initEdf.getMarkChan()}); // remove Annotations
+        }
 
-         // 2 bytes for value
-//        const int realNdr = int( (QFile(initEdf.getFilePath()).size() - initEdf.getBytes())
-//                            / double(initEdf.getNs() * def::freq * 2 * initEdf.getDdr()) );
-
-//        const double bytesPerSecond = (QFile(initEdf.getFilePath()).size() - initEdf.getBytes())
-//                                      / double(initEdf.getNs() * initEdf.getNdr() * initEdf.getDdr());
-
-//        if(bytesPerSecond != 500)
-//        {
-//            cout << "bytesPerSecond = " << bytesPerSecond << "\t";
-//            cout << initEdf.getExpName();
-//            cout << endl;
-//            logStream << initEdf.getFilePath() << "\t" << "wrong length" << "\n";
-
-//            // dont process this file
-//            continue;
-//        }
 
         for(int i = 0; i < ceil(initEdf.getDataLen() / def::freq / wndLen); ++i)
         {

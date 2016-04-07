@@ -185,16 +185,15 @@ bool areEqualFiles(QString path1, QString path2)
         {
             fclose(fil1);
             fclose(fil2);
-            cout << "equalFiles: time = " << myTime.elapsed() / 1000. << " sec"
-                 << "\t" << "pos = " << pos << endl;
+            cout << "equalFiles(false): time = " << myTime.elapsed() / 1000. << " sec"
+                 << "\t" << "pos(bytes) = " << pos << endl;
             return false;
         }
         ++pos;
-
     }
     fclose(fil1);
     fclose(fil2);
-    cout << "equalFiles: time = " << myTime.elapsed() / 1000. << " sec" << endl;
+    cout << "equalFiles(true): time = " << myTime.elapsed() / 1000. << " sec" << endl;
     return true;
 }
 

@@ -26,11 +26,13 @@ void MainWindow::customFunc()
 
 
 #if 1
+//    areEqualFiles("/media/michael/Files/Data/Galya/Krasnobaev2/Krasnobaev_Pavel_Exam_16.edf",
+//                  "/media/michael/Files/Data/Galya/Krasnobaev/Krasnobaev_Pavel_Exam_16.edf"); exit(0);
     def::ntFlag = true; /// for Dasha's
 //    def::ntFlag = false; /// encephalan
 //    deleteSpaces(def::GalyaFolder + "/BerlinHenis");
-    GalyaCut(def::GalyaFolder + "/hanenya");
-    GalyaProcessing(def::GalyaFolder + "/hanenya");
+    GalyaCut(def::GalyaFolder + "/BerlinHenis/smalls");
+//    GalyaProcessing(def::GalyaFolder + "/BerlinHenis/smalls");
     exit(0);
 #endif
 
