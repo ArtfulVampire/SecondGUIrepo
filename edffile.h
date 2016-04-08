@@ -259,6 +259,7 @@ private:
     std::vector <QString> prefiltering;
     std::vector <double> nr; // it is int really
     std::vector <QString> reserved;
+    std::vector <QString> annotations;
 
     //channels arrays end
 

@@ -470,6 +470,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
         {
             markerChannel = i;
             edfPlusFlag = true;
+            cout << "handleEdfFile: Annotations! " << EDFpath << endl;
         }
     }
 
@@ -514,7 +515,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
             cout << "freq = " << def::freq << endl;
             cout << "ddr = " << ddr << endl;
             cout << "rest size = "
-                 << (fileSize - bytes) - ndr * ns * def::freq * 2. * ddr << endl;
+                 << (fileSize - bytes) - ndr * sumNr * 2.<< endl;
         }
         ndr = min(int(realNdr), ndr);
     }
@@ -522,7 +523,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     //end channels read
 
 
-    handleParam(headerRest, int(bytes-(ns+1)*256), readFlag, edfDescriptor, header);
+    handleParam(headerRest, int(bytes - (ns + 1) * 256), readFlag, edfDescriptor, header);
 
     if(readFlag)
     {
@@ -543,6 +544,10 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     {
         dataLength = ndr * nr[0]; // generality
     }
+    if(readFlag)
+    {
+        annotations.clear();
+    }
     handleData(readFlag, edfDescriptor);
 
     fclose(edfDescriptor);
@@ -558,7 +563,6 @@ void edfFile::handleData(bool readFlag,
 {
     int currTimeIndex;
     QString helpString;
-    vector < QString > annotations;
     if(readFlag)
     {
         // allocate memory for data array
@@ -866,11 +870,17 @@ void edfFile::adjustArraysByChannels()
     for(int i = 0; i < this->ns; ++i)
     {
         this->labels.push_back(this->channels[i].label);
-        if(this->channels[i].label.contains("Markers") ||
-           this->channels[i].label.contains("Annotations"))
+        if(this->channels[i].label.contains("Markers"))
         {
             this->markerChannel = i; // set markersChannel
-            break; // Markers channel - the last
+            this->edfPlusFlag = false;
+//            break; // Markers channel - the last
+        }
+        else if(this->channels[i].label.contains("Annotations"))
+        {
+            this->markerChannel = i; // set markersChannel
+            this->edfPlusFlag = true;
+            //            break; // Markers channel - the last
         }
     }
 
@@ -1367,7 +1377,7 @@ void edfFile::reduceChannels(const vector<int> & chanList) // much memory
 
 
 
-void edfFile::removeChannels(const vector<int> & chanList)
+void edfFile::removeChannels(const std::vector<int> & chanList)
 {
     std::set<int, std::greater<int>> excludeSet;
     for(int val : chanList)
@@ -1377,7 +1387,6 @@ void edfFile::removeChannels(const vector<int> & chanList)
 
     for(int k : excludeSet)
     {
-
 #if DATA_POINTER
 
         /// was 10-Nov-2015
@@ -1385,12 +1394,12 @@ void edfFile::removeChannels(const vector<int> & chanList)
         /// new 10-Nov-2015
         (*(this->dataPointer)).erase((*(this->dataPointer)).begin() + k);
 #else
-        this->data.erase(this->data.begin() + k);
+        this->data.eraseRow(k);
 #endif
         /// was 10-Nov-2015
 //        this->channels.erase(this->channels.begin() + chanList[k]);
         /// new 10-Nov-2015
-        this->channels.erase(this->channels.begin() + k);
+        this->channels.erase(std::begin(this->channels) + k);
     }
     this->adjustArraysByChannels();
 }

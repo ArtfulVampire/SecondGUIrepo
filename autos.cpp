@@ -2101,12 +2101,12 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
             logStream << initEdf.getFilePath() << "\t" << "too small" << "\n";
             continue;
         }
+
         /// generality
         if(initEdf.getEdfPlusFlag()) // if annotations
         {
             initEdf.removeChannels({initEdf.getMarkChan()}); // remove Annotations
         }
-
 
         for(int i = 0; i < ceil(initEdf.getDataLen() / def::freq / wndLen); ++i)
         {

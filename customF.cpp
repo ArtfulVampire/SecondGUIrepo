@@ -30,9 +30,9 @@ void MainWindow::customFunc()
 //                  "/media/michael/Files/Data/Galya/Krasnobaev/Krasnobaev_Pavel_Exam_16.edf"); exit(0);
     def::ntFlag = true; /// for Dasha's
 //    def::ntFlag = false; /// encephalan
-//    deleteSpaces(def::GalyaFolder + "/BerlinHenis");
-    GalyaCut(def::GalyaFolder + "/BerlinHenis/smalls");
-//    GalyaProcessing(def::GalyaFolder + "/BerlinHenis/smalls");
+//    deleteSpaces(def::GalyaFolder + "/BerlinHenis_old/smalls");
+    GalyaCut(def::GalyaFolder + "/BerlinHenis");
+//    GalyaProcessing(def::GalyaFolder + "/Kalinichenko2");
     exit(0);
 #endif
 
