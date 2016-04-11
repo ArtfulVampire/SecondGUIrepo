@@ -197,10 +197,10 @@ void four3(std::valarray<double> & inputRealArray)
 //    }
     four3(inputComplexArray);
 //    inputRealArray = inputComplexArray.apply(std::real<double>());
-    std::transform(begin(inputComplexArray),
-                   end(inputComplexArray),
-                   begin(inputRealArray),
-                   [](const complex<double> & in)
+    std::transform(std::begin(inputComplexArray),
+                   std::end(inputComplexArray),
+                   std::begin(inputRealArray),
+                   [](const std::complex<double> & in)
     { return std::real<double>(in);});
 //    for(int i = 0; i < inputRealArray.size(); ++i)
 //    {
@@ -212,7 +212,7 @@ void four3(std::valarray<double> & inputRealArray)
 
 template <typename signalType>
 double fractalDimension(const signalType & arr,
-                        const QString & picPath = QString())
+                        const QString & picPath)
 {
     int timeShift; //timeShift
     long double L = 0.; //average length

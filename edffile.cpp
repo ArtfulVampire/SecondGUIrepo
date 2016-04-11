@@ -361,7 +361,7 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
                        this->ns,
                        this->dataLength);
 #else
-        writePlainData(EDFpath, this->data, this->ns, this->dataLength);
+        writePlainData(EDFpath, this->data);
 #endif
     }
 
@@ -496,7 +496,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     handleParamArray(nr, ns, 8, readFlag, edfDescriptor, header);
 
     // real length handler
-    if(readFlag && !def::ntFlag)
+    if(readFlag)
     {
         /// olololololololololololololololo
         def::freq = std::round(nr[0] / ddr); // frequency of the first channnel
@@ -518,6 +518,15 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
                  << (fileSize - bytes) - ndr * sumNr * 2.<< endl;
         }
         ndr = min(int(realNdr), ndr);
+
+        /// experimental
+        const double oldDdr = this->getDdr();
+        ddr = 1.;
+        for(double & nri : nr)
+        {
+            nri /= oldDdr;
+        }
+        ndr = ceil(ndr * oldDdr); /// ceil or round?
     }
     handleParamArray(reserved, ns, 32, readFlag, edfDescriptor, header);
     //end channels read
@@ -1214,6 +1223,8 @@ void edfFile::saveSubsection(int startBin,
         this->writeEdfFile(outPath, plainFlag);
         (*this) = temp;
 #else
+
+
         temp.data.resize(this->ns);
         for(int i = 0; i < this->ns; ++i)
         {
