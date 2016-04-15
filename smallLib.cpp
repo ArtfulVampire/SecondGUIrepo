@@ -214,6 +214,7 @@ void deleteSpaces(const QString & dirPath, const QStringList & filters)
     {
         newName = fileName;
         newName.remove(' ');
+        newName.remove(R"(')");
         QFile::rename(tmp.absolutePath() + slash() + fileName,
                       tmp.absolutePath() + slash() + newName);
     }

@@ -31,8 +31,13 @@ void MainWindow::customFunc()
 
 
 //    deleteSpaces(def::GalyaFolder + "/BerlinHenis_old/smalls");
-    GalyaCut(def::GalyaFolder + "/Grishina");
-    GalyaProcessing(def::GalyaFolder + "/Grishina");
+    QStringList leest {"Melnik", "Shkarina", "Vasina", "Didkovskaya"};
+    for(auto str : leest)
+    {
+        deleteSpaces(def::GalyaFolder +  slash() + str);
+        GalyaCut(def::GalyaFolder + slash() + str);
+        GalyaProcessing(def::GalyaFolder + slash() + str);
+    }
     exit(0);
 #endif
 
