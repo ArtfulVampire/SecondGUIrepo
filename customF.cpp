@@ -13,33 +13,105 @@ void MainWindow::customFunc()
 //    ui->justSliceButton->setChecked(true);
 
 
-//    edfFile fil;
-//    fil.readEdfFile("/media/michael/Files/Data/Galya/Ivanova/Ivanova_Anna_Exam_1.edf");
-//    matrix dat;
-//    dat = fil.getData();
-//    dat.resizeCols(2000);
-//    drawEeg(dat, dat.rows(), dat.cols(), def::freq, "/media/michael/Files/Data/Galya/Ivanova/Ivanova_Anna_Exam_1.jpg");
 
+#if 0
+    /// remake markers in edf file
+    setEdfFile("/media/michael/Files/Data/BVX/BVX_rr_f3.5-40.edf");
+    readData();
+    edfFile & fil = globalEdf;
+    bool flag = 0;
+    int
+    for(int i = 0; i < fil.getDataLen(); ++i)
+    {
+        if(fil[fil.getMarkChan()][i] == 254 && !flag)
+        {
+            flag = 1;
+            continue;
+        }
+        if(fil[fil.getMarkChan()][i] == 254 && flag)
+        {
+            fil.setData(fil.getMarkChan(), i, 255);
+            flag = 0;
+        }
+    }
+    fil.writeEdfFile("/media/michael/Files/Data/BVX/BVX_new.edf");
+    exit(0);
+#endif
 
-//    exit(0);
 //    return;
+
+#if 0
+    /// drawEdf
+    edfFile fil;
+    matrix dat;
+    const QString path = def::GalyaFolder + "/NEW_RESULTS/windows/BerlinHenis";
+    QStringList leest = QDir(path).entryList({"*.edf"}, QDir::Files);
+    int num = 0;
+    for(QString fileNam : leest)
+    {
+//        if(num != 2)
+//        {
+//            ++num;
+//            continue;
+//        }
+        fil.readEdfFile(path + slash() + fileNam);
+        dat = fil.getData();
+//        dat.resizeCols(2000);
+        drawEeg(dat,
+                dat.rows(),
+                dat.cols(),
+                def::freq,
+                path + slash() + fileNam.replace(".edf", ".jpg"));
+        ++num;
+
+    }
+    exit(0);
+#endif
 
 
 #if 1
     def::ntFlag = true; /// for Dasha's
-    //    def::ntFlag = false; /// encephalan
+//        def::ntFlag = false; /// encephalan (+1)
+    GalyaProcessing(def::GalyaFolder + slash() + "temp"); exit(0);
 
 
-//    deleteSpaces(def::GalyaFolder + "/BerlinHenis_old/smalls");
-    QStringList leest {"Melnik", "Shkarina", "Vasina", "Didkovskaya"};
+
+    QStringList leest {"EDF_Dasha_more",
+                      "Melnik",
+                      "tactile",
+                      "Didkovskaya",
+                      "Vasina",
+                      "Kalichenko",
+                      "BerlinHenis",
+                      "zelenkov",
+                      "Krasnobaev",
+                      "hanenya",
+                      "bushenkov",
+                      "Tinyanova",
+                      "Sarvardinova",
+                      "Ryibalko",
+                      "Paramonova",
+                      "Chemerisova",
+                      "Ivanova",
+                      "Gramotko"};
     for(auto str : leest)
     {
         deleteSpaces(def::GalyaFolder +  slash() + str);
-        GalyaCut(def::GalyaFolder + slash() + str);
-        GalyaProcessing(def::GalyaFolder + slash() + str);
+        GalyaCut(def::GalyaFolder + slash() + str,
+                 def::GalyaFolder
+                 + slash() + "NEW_RESULTS"
+                 + slash() + "windows"
+                 + slash() + str);
+        GalyaProcessing(def::GalyaFolder + slash() + str,
+                        31,
+                        def::GalyaFolder
+                        + slash() + "NEW_RESULTS"
+                        + slash() + "out"
+                        + slash() + str);
     }
     exit(0);
 #endif
+
 
 #if 0
     const QString pth = "/media/Files/Data/test";
@@ -130,12 +202,12 @@ void MainWindow::customFunc()
 #endif
 
 
-    const QString path = "/media/Files/Data/Feedback/SuccessClass/";
-    setEdfFile(path + "AAU_train.edf");
-    readData();
-    ui->reduceChannelsComboBox->setCurrentText("20");
-    const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
-    for(QString name : names)
+//    const QString path = "/media/Files/Data/Feedback/SuccessClass/";
+//    setEdfFile(path + "AAU_train.edf");
+//    readData();
+//    ui->reduceChannelsComboBox->setCurrentText("20");
+//    const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
+//    for(QString name : names)
     {
 #if 0
         /// test classification parameters

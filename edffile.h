@@ -8,6 +8,33 @@
 #include "library.h"
 #include "smallFuncs.h"
 
+
+
+template <typename Typ>
+void handleParam(Typ & qStr,
+                 int length,
+                 bool readFlag,
+                 FILE * ioFile,
+                 FILE * headerFile);
+template <typename Typ>
+void handleParamArray(std::vector <Typ> & qStr,
+                      int number,
+                      int length,
+                      bool readFlag,
+                      FILE *ioFile,
+                      FILE * headerFile);
+
+
+void myTransform(int & output, char * input);
+void myTransform(double & output, char * input);
+void myTransform(QString & output, char * input);
+
+void myTransform(const int & input, const int & len, char ** output);
+void myTransform(const double & input, const int & len, char ** output);
+void myTransform(const QString & input, const int & len, char ** output);
+
+
+
 typedef matrix edfDataType;
 
 struct edfChannel
@@ -151,38 +178,6 @@ public:
     void handleEdfFile(QString EDFpath,
                        bool readFlag);
 
-    template <typename Typ>
-    void handleParam(Typ & qStr,
-                     int length,
-                     bool readFlag,
-                     FILE * ioFile,
-                     FILE * headerFile);
-
-    void myTransform(int & output, char * input) {output = atoi(input);}
-    void myTransform(double & output, char * input) {output = atof(input);}
-    void myTransform(QString & output, char * input) {output = QString(input);}
-
-    void myTransform(const int & input, const int & len, char ** output)
-    {
-        (*output) = QStrToCharArr(fitNumber(input, len));
-    }
-    void myTransform(const double & input, const int & len, char ** output)
-    {
-        (*output) = QStrToCharArr(fitNumber(input, len));
-    }
-    void myTransform(const QString & input, const int & len, char ** output)
-    {
-        (*output) = QStrToCharArr(input, len);
-    }
-
-    template <typename Typ>
-    void handleParamArray(std::vector <Typ> & qStr,
-                          int number,
-                          int length,
-                          bool readFlag,
-                          FILE *ioFile,
-                          FILE * headerFile);
-
     void handleData(bool readFlag,
                     FILE * edfForData);
 
@@ -205,7 +200,10 @@ public:
     void adjustArraysByChannels();
     void appendFile(QString addEdfPath, QString outPath) const;
     void concatFile(QString addEdfPath, QString outPath = QString());
-    void refilter(const double &lowFreq, const double &highFreq, const QString & newPath = QString());
+    void countFft();
+    void refilter(const double &lowFreq,
+                  const double &highFreq,
+                  const QString & newPath = QString());
     void saveSubsection(int startBin, int finishBin, const QString &outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
     void reduceChannels(const std::vector<int> & chanList);
@@ -267,6 +265,7 @@ private:
 
     std::vector <edfChannel> channels;
     edfDataType data; // matrix.cpp
+    std::vector<double *> fftData{};
 
 #if DATA_POINTER
     edfDataType (*dataPointer) = &data;
@@ -282,7 +281,7 @@ private:
 
     bool matiFlag = def::matiFlag;
     bool ntFlag = def::ntFlag;
-    bool edfPlusFlag = def::edfPlusFlag;
+    bool edfPlusFlag; // to detect
 
 public:
     const QString & getHeaderInit() const {return headerInitialInfo;}
@@ -342,6 +341,11 @@ public:
     void setData(int chanNum, int timeBin, double val) {data[chanNum][timeBin] = val;}
     void getDataCopy(edfDataType & destination) const {destination = data;}
 
+    const lineType & operator [](int i) const
+    {
+        return data[i];
+    }
+
 #endif
 
 
@@ -349,6 +353,7 @@ public:
     static void transformEdfMatrix(const QString & inEdfPath,
                                    const matrix & matrixW,
                                    const QString & newEdfPath);
+    static double checkDdr(const QString & inPath);
 
 };
 

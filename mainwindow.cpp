@@ -11,14 +11,13 @@ MainWindow::MainWindow() :
     setlocale(LC_NUMERIC, "C");
 
     autoProcessingFlag = false;
-    redirectCoutFlag = false; // move to namespace def
+
     coutBuf = cout.rdbuf();
 
     staSlice = 0;
     stopFlag = 0;
 
     def::dir->cd(QDir::root().absolutePath());
-
 
     QString helpString;
 
@@ -404,7 +403,6 @@ void QWidget::keyPressEvent(QKeyEvent *event)
     }
 }
 
-
 void MainWindow::showCountSpectra()
 {
     Spectre *sp = new Spectre();
@@ -431,13 +429,13 @@ void MainWindow::showEyes()
     eyesProcessingStatic(eogs); // for first 19 eeg channels
     return;
 
+/// deprecate
     Eyes *trololo = new Eyes();
 //    trololo->setAutoProcessingFlag(false); trololo->show(); return;
     trololo->setAutoProcessingFlag(true);
     trololo->eyesProcessing();
     delete trololo;
 }
-
 
 void MainWindow::showNet()
 {
@@ -451,17 +449,21 @@ void MainWindow::showCut()
     cut_e->show();
 }
 
+/// deprecate
 void MainWindow::showMakePa() //250 - frequency generality
 {
     QString helpString;
     if(def::spStep() == def::freq / pow(2, 12) ||
        def::spStep() == def::freq / pow(2, 11) )
     {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth");
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                              + slash() + "SpectraSmooth");
     }
     else if(def::spStep() == def::freq / pow(2, 10))
     {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth" + slash() + "windows");
+        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                                              + slash() + "SpectraSmooth"
+                                              + slash() + "windows");
     }
     else
     {
@@ -471,8 +473,8 @@ void MainWindow::showMakePa() //250 - frequency generality
     MakePa *mkPa = new MakePa(helpString);
     mkPa->show();
 }
-
-void MainWindow::showMakeCfg()//250 - frequency generality
+/// deprecate
+void MainWindow::showMakeCfg()
 {
     QString helpString;
     if(def::spStep() == def::freq / pow(2, 12) ) helpString = "16sec19ch";
@@ -539,7 +541,7 @@ void MainWindow::setEdfFile(QString const &filePath)
     helpString.resize(helpString.lastIndexOf(slash()));
     def::dir->cd(helpString);
 
-    if(redirectCoutFlag)
+    if(def::redirectCoutFlag)
     {
         //redirect cout to logfile
         if(generalLogStream.is_open())
@@ -567,15 +569,7 @@ void MainWindow::setEdfFile(QString const &filePath)
     def::dir->mkdir("amod");
     def::dir->mkdir("auxEdfs");
     def::dir->mkdir("PA");
-    def::dir->mkdir("visualisation");
-    def::dir->mkdir("visualisation/video");
-    def::dir->mkdir("visualisation/wavelets");
 
-    for(int i = 0; i < 19; ++i)
-    {
-        helpString = "visualisation/wavelets/";
-        def::dir->mkdir(helpString.append(QString::number(i)));
-    }
     def::dir->mkdir("Signals");
     def::dir->mkdir("Signals/before");
     def::dir->mkdir("Signals/after");
@@ -598,6 +592,15 @@ void MainWindow::setEdfFile(QString const &filePath)
     def::dir->mkdir("Realisations");
     def::dir->mkdir("Realisations/BC");
     def::dir->mkdir("cut");
+    def::dir->mkdir("visualisation");
+    def::dir->mkdir("visualisation/video");
+    def::dir->mkdir("visualisation/wavelets");
+
+    for(int i = 0; i < 19; ++i)
+    {
+        helpString = "visualisation/wavelets/";
+        def::dir->mkdir(helpString.append(QString::number(i)));
+    }
 
 
     helpString = "EDF file read successfull";
@@ -719,12 +722,13 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
                     }
                     else
                     {
-                        sliceOneByOneNew();
-                        //                        sliceFromTo(241, 231, "241_pre");
-                        //                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
-                        //                        sliceFromTo(247, 237, "247_pre");
-                        //                        helpString = def::dir->absolutePath() + slash() + "Realisations";
-                        //                        cleanDir(helpString, "_pre", false);
+//                        sliceOneByOneNew(); /// by number after 241/247
+                        sliceOneByOne();
+//                        sliceFromTo(241, 231, "241_pre");
+//                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
+//                        sliceFromTo(247, 237, "247_pre");
+//                        helpString = def::dir->absolutePath() + slash() + "Realisations";
+//                        cleanDir(helpString, "_pre", false);
                     }
                 }
             }
@@ -759,55 +763,14 @@ void MainWindow::readData()
     globalEdf.readEdfFile(helpString);
     def::ns = globalEdf.getNs();
 
-    helpString="data have been read ";
+    helpString = "data have been read ";
     ui->textEdit->append(helpString);
 
     helpString = "ns equals to " + QString::number(def::ns);
     ui->textEdit->append(helpString);
-
-//    staSlice += 3; //generality LAWL
-
     ui->markerSecTimeDoubleSpinBox->setMaximum(globalEdf.getDataLen() / def::freq);
     ui->markerBinTimeSpinBox->setMaximum(globalEdf.getDataLen());
-
-//    cout << "readData: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
-
-#if 0
-void MainWindow::writeEdf(QString inFilePath, double ** inData, QString outFilePath, int numSlices, QList<int> chanList)
-{
-    if(!QFile::exists(inFilePath))
-    {
-        cout << "writeEDF: bad inFilePath\n" << inFilePath.toStdString() << endl;
-        return;
-    }
-
-    QTime myTime;
-    myTime.start();
-
-
-    if(chanList.isEmpty()) //use ui->reduceChannelsLineEdit
-    {
-        QStringList lst;
-        lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-        chanList.clear();
-        for(int i = 0; i < lst.length(); ++i)
-        {
-            chanList << lst[i].toInt() - 1;
-        }
-    }
-
-    edfFile fil;
-    fil.readEdfFile(inFilePath);
-    fil.writeOtherData(inData, numSlices, outFilePath, chanList);
-
-//    globalEdf.writeOtherData(inData, numSlices, outFilePath, chanList); // should test
-
-//    cout << "writeEDF: output path = " << outFilePath.toStdString() << "\ttime = = " << myTime.elapsed()/1000. << " sec" << endl;
-}
-
-#endif
-
 
 void MainWindow::drawDirSlot()
 {
@@ -971,7 +934,6 @@ void MainWindow::cleanDirs()
         cleanDir(helpString);
     }
 
-
     // SpectraSmooth
     if(ui->cleanRealsSpectraCheckBox->isChecked())
     {
@@ -997,17 +959,11 @@ void MainWindow::cleanDirs()
         cleanDir(helpString);
     }
 
-    // markers
-    if(ui->cleanMarkersCheckBox->isChecked())
-    {
-        helpString = def::dir->absolutePath();
-        cleanDir(helpString, "markers", 0);
-    }
-
     // SpectraImg
     if(ui->cleanSpectraImgCheckBox->isChecked())
     {
-        helpString = def::dir->absolutePath() + slash() + "SpectraImg";
+        helpString = def::dir->absolutePath()
+                     + slash() + "SpectraImg";
         cleanDir(helpString);
     }
 
@@ -1023,6 +979,8 @@ void MainWindow::cleanDirs()
         }
     }
 
+
+
     // signals windows
     if(ui->cleanWindowsSignalsCheckBox->isChecked())
     {
@@ -1033,6 +991,13 @@ void MainWindow::cleanDirs()
         {
             cleanDir(helpString + str2);
         }
+    }
+
+    // markers
+    if(ui->cleanMarkersCheckBox->isChecked())
+    {
+        helpString = def::dir->absolutePath();
+        cleanDir(helpString, "markers", 0);
     }
 
     helpString = "dirs cleaned ";
@@ -1060,7 +1025,7 @@ void MainWindow::markerGetSlot()
 
     for(int h = 0; h < 16; ++h)
     {
-        byteMarker[16-1 - h] = (marker%(int(pow(2,h+1)))) / (int(pow(2,h)));
+        byteMarker[16-1 - h] = (marker%(int(pow(2, h+1)))) / (int(pow(2,h)));
     }
 
     helpString.clear();
@@ -1169,54 +1134,65 @@ void MainWindow::drawMapsSlot()
 
 void MainWindow::avTime()
 {
-#if 0
-    int maxLen = 10000;
+    const int maxLen = 40 * 250;
     int numNotSolved = 0;
     int shortReals = 0;
-    double av = 0.;
-    double solveTime = 0.;
+
+    std::valarray<double> means;
+    means.resize(4); /// 4 types of mean - with o w/o shorts and longs
+
     int num = 0;
-    FILE * fil;
+    ifstream inStr;
 
     QStringList lst;
     QString helpString;
 
+    QDir localDir;
+    localDir.cd(def::dir->absolutePath() + slash() + "Realisations");
 
-    for(QString tmp : {"241", "247"})
+    for(const QString & tmp : {"241", "247"})
     {
-        av = 0.;
+        means = 0.;
         shortReals = 0;
         numNotSolved = 0;
 
-        def::dir->cd("Realisations");
-        lst = def::dir->entryList(QStringList(QString("*_" + tmp + "*")), QDir::Files);
-        for(int i = 0; i <  lst.length(); ++i)
+        lst = localDir.entryList({"*_" + tmp + "*"}, QDir::Files);
+        for(const QString & fileName : lst)
         {
-            helpString = def::dir->absolutePath() + slash() + lst[i];
-            fil = fopen(helpString, "r");
-            fscanf(fil, "NumOfSlices %d", &num);
-            fclose(fil);
-            av += num;
+            helpString = localDir.absolutePath() + slash() + fileName;
 
-            if(num < 750) ++shortReals;
-            if(fabs(maxLen/double(num) - 1.) < 0.01) ++numNotSolved;
-            else cout << num/def::freq << endl;
+            inStr.open(helpString.toStdString());
+            inStr.ignore(64, ' ');
+            inStr >> num;
+            inStr.close();
+
+            means += num;
+
+            if(num < 750)
+            {
+                means[1] -= num;
+                means[3] -= num;
+                ++shortReals;
+            }
+            else if(fabs(maxLen / double(num) - 1.) < 0.01)
+            {
+                means[2] -= num;
+                means[3] -= num;
+                ++numNotSolved;
+            }
         }
-        def::dir->cdUp();
-
-        solveTime = av / (def::freq*lst.length());
-        cout << "solveTime " << tmp << " = " << solveTime << endl << endl;
-        cout << "num not solved " << tmp << " = " << numNotSolved << endl << endl;
+        means /= def::freq;
 
         helpString = def::dir->absolutePath() + slash() + "results.txt";
-        FILE * res = fopen(helpString, "a+");
-        fprintf(res, "solve time %d\t%.1lf\n", tmp.toInt(), solveTime);
-        fprintf(res, "num not solved %d\t%d\n", tmp.toInt(), numNotSolved);
-        fprintf(res, "short realisations %d\t%d\n", tmp.toInt(), shortReals);
-        fclose(res);
+        ofstream res;
+        res.open(helpString.toStdString(), ios_base::app);
+        res << "Reals type\t" << tmp << ":\r\n";
+        res << "mean\t" << means[0] << "\r\n";
+        res << "w/o shorts\t" << means[1] << "\r\n";
+        res << "w/o longs\t" << means[2] << "\r\n";
+        res << "w/o both\t" << means[3] << "\r\n";
+        res.close();
     }
-
-#endif
 }
 
 
@@ -1241,8 +1217,7 @@ void MainWindow::setFileMarkers()
 {
     def::fileMarkers = ui->fileMarkersLineEdit->text().split(QRegExp(R"([,;])"),
                                                              QString::SkipEmptyParts);
-    ui->textEdit->append(R"(fileMarkers renewed
-                         )");
+    ui->textEdit->append(R"(fileMarkers renewed)");
 }
 
 void MainWindow::setNs()

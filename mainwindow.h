@@ -131,8 +131,11 @@ public:
 
     matrix makeTestData(const QString & outPath);
 
-    void GalyaProcessing(const QString &procDirPath);
-    void GalyaCut(const QString & path, QString outPath = QString());
+    void GalyaProcessing(const QString &procDirPath,
+                         const int numChan = 31,
+                         QString outPath = QString());
+    void GalyaCut(const QString & path,
+                  QString outPath = QString());
 
     void rereferenceData(QString newRef, QString newPath);
     void makeChanList(std::vector<int> & chanList);
@@ -217,7 +220,6 @@ private:
 
     std::ofstream generalLogStream;
     std::streambuf * coutBuf;
-    bool redirectCoutFlag;
 
     edfFile globalEdf;
     int staSlice;

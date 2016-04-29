@@ -2069,32 +2069,42 @@ matrix MainWindow::makeTestData(const QString & outPath)
 void MainWindow::GalyaCut(const QString & path, QString outPath)
 {
     // Galya slice by 16 seconds pieces - folders
-    const QString logPath = "/media/Files/Data/Galya/log.txt";
-    ofstream logStream(logPath.toStdString(), ios_base::app);
     const int wndLen = 16; // seconds
+
     QDir tmpDir(path);
     if(outPath.isEmpty())
     {
         tmpDir.mkdir("windows");
         outPath = tmpDir.absolutePath() + slash() + "windows";
     }
-    tmpDir.mkdir("smalls");
+    else
+    {
+        tmpDir.mkpath(outPath);
+    }
+    QString smallsPath = outPath;
+    smallsPath.resize(smallsPath.lastIndexOf(QDir::separator()));
+    smallsPath += slash() + "smalls";
+
+    const QString logPath = "/media/Files/Data/Galya/log.txt";
+    ofstream logStream(logPath.toStdString(), ios_base::app);
+
     const QStringList leest1 = tmpDir.entryList({"*.edf", "*.EDF"});
     for(const QString & guy : leest1)
     {
-
+//        if(edfFile::checkDdr(path + slash() + guy) == 1.)
+//        {
+//            continue;
+//        }
         cout << guy << "\tstart" << endl;
         edfFile & initEdf = globalEdf;
         initEdf.readEdfFile(path + slash() + guy);
 
         if(initEdf.getNdr() * initEdf.getDdr() <= wndLen )
         {
-            QFile::remove(path
-                          + slash() + "smalls"
+            QFile::remove(smallsPath
                           + slash() + initEdf.getExpName());
             QFile::copy(initEdf.getFilePath(),
-                        path
-                        + slash() + "smalls"
+                        smallsPath
                         + slash() + initEdf.getExpName());
 
             cout << "smallFile \t" << initEdf.getExpName() << endl;
@@ -2122,7 +2132,9 @@ void MainWindow::GalyaCut(const QString & path, QString outPath)
 
 }
 
-void MainWindow::GalyaProcessing(const QString & procDirPath)
+void MainWindow::GalyaProcessing(const QString & procDirPath,
+                                 const int numChan,
+                                 QString outPath)
 {
 
 //    const QString enthropyFileName = "entrop.txt";
@@ -2142,22 +2154,31 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
     const double spectreStepFreq = 1.;
     const double hilbertFreqLimit = 40.;
 
-    int numChan_;
-    if(!def::ntFlag)
-    {
-        numChan_ = 19; /// encephalan
-    }
-    else
-    {
-        numChan_ = 31; /// neurotravel
-    }
-    const int numChan = numChan_;
+    //// aaaaaaaa
+//    int numChan_;
+//    if(!def::ntFlag)
+//    {
+//        numChan_ = 19; /// encephalan
+//    }
+//    else
+//    {
+//        numChan_ = 31; /// neurotravel
+//    }
+//    const int numChan = numChan_;
 
     QString helpString;
     QString ExpName;
     QDir dir;
     dir.cd(procDirPath);
-    dir.mkdir(outDir);
+    if(outPath.isEmpty())
+    {
+        dir.mkdir(outDir);
+        outPath = dir.absolutePath() + slash() + outDir;
+    }
+    else
+    {
+        dir.mkpath(outPath);
+    }
     QStringList filesList;
     filesList = dir.entryList({"*.EDF", "*.edf"},
                               QDir::NoFilter,
@@ -2179,11 +2200,16 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
     for(int i = 0; i < filesList.length(); ++i)
     {
+
         ExpName = filesList[i];
         ExpName.remove(".EDF", Qt::CaseInsensitive);
 
-        helpString = dir.absolutePath()
+        helpString = procDirPath
                 + slash() + filesList[i];
+//        if(edfFile::checkDdr(helpString) == 1.)
+//        {
+//            continue;
+//        }
         initEdf.readEdfFile(helpString);
 
 
@@ -2216,22 +2242,20 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
         cout << ExpName << '\t' << doubleRound(QFile(helpString).size() / pow(2, 10), 1) << "kB" << endl;
 
-        dir.cd(outDir);
 
-        helpString = dir.absolutePath()
-                + slash() + ExpName;
+        helpString = outPath + slash() + ExpName;
         QFile::remove(helpString + "_" + spectraFileName);
 
         // write full spectre
         vectType fullSpectre;
         lineType helpSpectre;
-        helpString = dir.absolutePath()
+        helpString = outPath
                 + slash() + ExpName
                 + "_" + spectraFileName;
         outStr.open(helpString.toStdString());
 
         ofstream outAlphaStr;
-        helpString = dir.absolutePath()
+        helpString = outPath
                 + slash() + ExpName
                 + "_" + alphaFileName;
         outAlphaStr.open(helpString.toStdString());
@@ -2325,11 +2349,11 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
         outAlphaStr.close();
         outStr.close();
 
-//        dir.cdUp(); continue; // dont count D2 and hilbert for different filters
+//        continue; // dont count D2 and hilbert for different filters
 
 
 
-        helpString = dir.absolutePath()
+        helpString = outPath
                 + slash() + ExpName;
         QFile::remove(helpString + "_" + d2dimFileName);
         QFile::remove(helpString + "_" + hilbertFileName);
@@ -2347,7 +2371,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
 
             // write d2 dimension
-            helpString = dir.absolutePath()
+            helpString = outPath
                     + slash() + ExpName;
 #if 0
             if(freqCounter != rightFreqLim)
@@ -2361,7 +2385,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
             outStr.open(helpString.toStdString().c_str(), ios_base::app);
             for(int i = 0; i < numChan; ++i)
             {
-                helpString = dir.absolutePath()
+                helpString = outPath
                         + slash() + ExpName
                         + "_" + QString::number(i)
                         + "_h.jpg";
@@ -2377,7 +2401,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
 #if 0
             // write enthropy
-            helpString = dir.absolutePath()
+            helpString = outPath
                     + slash() + ExpName;
 #if 0
             if(freqCounter != rightFreqLim)
@@ -2400,7 +2424,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
 
             // write envelope median spectre
-            helpString = dir.absolutePath()
+            helpString = outPath
                     + slash() + ExpName;
 #if 0
             if(freqCounter != rightFreqLim)
@@ -2416,7 +2440,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
             {
                 if(freqCounter == rightFreqLim)
                 {
-                    helpString = dir.absolutePath()
+                    helpString = outPath
                             + slash() + ExpName
                             + "_" + QString::number(numChan)
                             + "_hilbert.jpg";
@@ -2440,7 +2464,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
 
                 if(freqCounter <= rightFreqLim + stepFreq)
                 {
-                    helpString = dir.absolutePath()
+                    helpString = outPath
                             + slash() + ExpName
                             + "_" + QString::number(freqCounter)
                             + "_" + QString::number(numChan)
@@ -2474,7 +2498,6 @@ void MainWindow::GalyaProcessing(const QString & procDirPath)
             }
             outStr.close();
         }
-        dir.cdUp(); // go away from "out"
     }
 }
 

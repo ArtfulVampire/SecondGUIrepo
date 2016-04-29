@@ -558,83 +558,107 @@ void MainWindow::sliceGaps()
 #endif
 }
 
-void MainWindow::sliceOneByOne() //generality, just for my current
+void MainWindow::sliceOneByOne()
 {
-#if 0
-    // unused and old
     QString helpString;
-    FILE * file;
     int number = 0;
-    int k;
-    int j = 0;
-    int h = 1;
     QString marker = "000";
-    const edfFile & fil = globalEdf;
-    double * markChanArr = new double [fil.getDataLen()];
-    memcpy(markChanArr,
-           fil.getData()[fil.getMarkChan()].data(),
-            fil.getDataLen() * sizeof(double));
+    int start = 0;
 
+    const edfFile & fil = globalEdf;
+    const lineType & markChanArr = fil.getData()[fil.getMarkChan()];
+
+    // 200, (241||247, (1), 254, 255)
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
-        if(markChanArr[i] == 0)
+        if(markChanArr[i] == 0 ||
+           !(markChanArr[i] == 241 ||
+             markChanArr[i] == 247 ||
+             markChanArr[i] == 254))
         {
             continue;
         }
-        if((markChanArr[i] > 200 && markChanArr[i] < 241) || markChanArr[i] == 255 || markChanArr[i] == 250 || markChanArr[i] == 251) //order inportant! - not interesting markers
+        else
         {
-            continue;
-        }
-        if((markChanArr[i] == 254 || markChanArr[i] == 200) && h == 0) //start gap
-        {
-            j = i;
-            h = 1;
-            marker.setNum(markChanArr[i]);
-            continue;
-        }
-//        if((markChanArr[i] == 241 || markChanArr[i] == 247) && h != 1) //start task
-        if((markChanArr[i] == 241 || markChanArr[i] == 247) && h == 0) //start task
-        {
-            j = i;
-            h = 2;
-            marker.setNum(markChanArr[i]);
-            continue;
-        }
-        if(markChanArr[i] != 0 && h == 2) //write between unknown marker and 241 || 247
-        {
-            ++number;
-            helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "Realisations"
-                                                  + slash() + def::ExpName
-                                                  + "." + rightNumber(number, 4)
-                                                  + "_" + "num");
+            const int & finish = i;
 
-            fil.saveSubsection(j, i, helpString, true);
+            helpString = def::dir->absolutePath()
+                         + slash() + "Realisations"
+                         + slash() + def::ExpName
+                         + "." + rightNumber(number++, 4);
 
-            h = 1;
-            j = i;
-            continue;
+
+            if(finish > start)
+            {
+                if(finish - start <= def::freq * 42) /// const generality limit
+                {
+                    helpString += "_" + marker;
+                    fil.saveSubsection(start,
+                                       finish,
+                                       helpString, true);
+                }
+                else /// pause rest
+                {
+                    if(def::wirteStartEndLong)
+                    {
+                        helpString += "_000";
+                        fil.saveSubsection(start,
+                                           finish,
+                                           helpString, true);
+                    }
+                    else
+                    {
+                        helpString += "_" + marker;
+                        matrix tempData(fil.getNs(), 100, 0.);
+                        tempData[fil.getMarkChan()][0] = markChanArr[start];
+                        writePlainData(helpString, tempData);
+                    }
+                }
+            }
+            ui->progressBar->setValue(i * 100. / fil.getDataLen());
+
+            qApp->processEvents();
+            if(stopFlag)
+            {
+                stopFlag = 0;
+                return;
+            }
+
+            marker = QString::number(markChanArr[finish]);
+            start = finish;
         }
-
-        if(markChanArr[i] != 0 && h == 1) //generality first nonzero marker after start - write
-        {
-            k = i;
-            h = 0;
-            ++number;
-            helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "Realisations"
-                                                  + slash() + def::ExpName
-                                                  + "." + rightNumber(number, 4)
-                                                  + "_" + marker);
-            fil.saveSubsection(j, i, helpString, true);
-            --i; //for checking the last marker once more
-        }
-
     }
-    delete []markChanArr;
-
-
-#endif
+    /// write final
+    {
+        helpString = def::dir->absolutePath()
+                     + slash() + "Realisations"
+                     + slash() + def::ExpName
+                     + "." + rightNumber(number++, 4);
+        if(fil.getDataLen() - start < 40 * def::freq) /// if last realisation or interstimulus
+        {
+            helpString += "_" + marker;
+            fil.saveSubsection(start,
+                               fil.getDataLen(),
+                               helpString, true);
+        }
+        else /// just last big rest with eyes closed/open
+        {
+            if(def::wirteStartEndLong)
+            {
+                helpString += "_000";
+                fil.saveSubsection(start,
+                                   fil.getDataLen(),
+                                   helpString, true);
+            }
+            else /// not to loose the last marker
+            {
+                helpString += "_" + marker;
+                matrix tempData(fil.getNs(), 100, 0.);
+                tempData[fil.getMarkChan()][0] = markChanArr[start];
+                writePlainData(helpString, tempData);
+            }
+        }
+    }
 }
 
 void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with markers
@@ -711,6 +735,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
             qApp->processEvents();
             if(stopFlag)
             {
+                stopFlag = 0;
                 break;
             }
 
@@ -750,7 +775,6 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
         }
     }
 
-    stopFlag = 0;
 }
 
 void MainWindow::sliceMatiSimple()

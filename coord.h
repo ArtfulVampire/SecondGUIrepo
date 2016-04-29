@@ -55,7 +55,8 @@ namespace def
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
     const bool OssadtchiFlag = false;
 
-    const bool wirteStartEndLong = true; //for slice
+    const bool wirteStartEndLong = true; // for slice
+    const bool redirectCoutFlag = false; // redirect to generalLog.txt
 
 
 

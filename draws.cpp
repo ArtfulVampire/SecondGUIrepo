@@ -1839,20 +1839,22 @@ void drawShepard(const mat & distOld,
 
 }
 
-
 void drawRealisation(const QString & inPath)
 {
-    matrix inData;
-    int num = 0;
-    readPlainData(inPath, inData, num);
-    QString outPath = inPath;
-    outPath.resize(outPath.lastIndexOf('.'));
-    outPath += ".jpg";
-    drawEeg(inData,
-            inData.rows(),
-            inData.cols(),
-            def::freq,
-            outPath);
+        matrix inData;
+        int num = 0;
+        readPlainData(inPath, inData, num);
+
+        QString outPath = inPath;
+        outPath.resize(outPath.lastIndexOf('.'));
+        outPath += ".jpg";
+
+        drawEeg(inData,
+                inData.rows(),
+                inData.cols(),
+                def::freq,
+                outPath);
+
 }
 
 QPixmap drawEeg(const matrix & dataD,

@@ -286,48 +286,6 @@ edfFile::edfFile(int in_ndr, int in_ns,
 }
 */
 
-template <typename Typ>
-void edfFile::handleParam(Typ & qStr,
-                          int length,
-                          bool readFlag,
-                          FILE * ioFile,
-                          FILE * headerFile)
-{
-    char * array;
-    if(readFlag)
-    {
-        array = new char [length + 1];
-        fread (array, sizeof(char), length, ioFile); array[length] = '\0';
-        myTransform(qStr, array);
-        if(headerFile != NULL)
-        {
-            fwrite(array, sizeof(char), length, headerFile);
-        }
-        delete []array;
-    }
-    else
-    {
-        myTransform(qStr, length, &array);
-        fprintf(ioFile, "%s", array);
-        delete []array;
-    }
-}
-
-template <typename Typ>
-void edfFile::handleParamArray(std::vector<Typ> & qStr,
-                               int number,
-                               int length,
-                               bool readFlag,
-                               FILE *ioFile,
-                               FILE * headerFile)
-{
-    if(readFlag) qStr = std::vector<Typ>(number, Typ()); // clean param vector
-
-    for(int i = 0; i < number; ++i)
-    {
-        handleParam <Typ> (qStr[i], length, readFlag, ioFile, headerFile);
-    }
-}
 
 void edfFile::readEdfFile(QString EDFpath)
 {
@@ -518,15 +476,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
                  << (fileSize - bytes) - ndr * sumNr * 2.<< endl;
         }
         ndr = min(int(realNdr), ndr);
-
-        /// experimental
-        const double oldDdr = this->getDdr();
-        ddr = 1.;
-        for(double & nri : nr)
-        {
-            nri /= oldDdr;
-        }
-        ndr = ceil(ndr * oldDdr); /// ceil or round?
     }
     handleParamArray(reserved, ns, 32, readFlag, edfDescriptor, header);
     //end channels read
@@ -558,6 +507,17 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
         annotations.clear();
     }
     handleData(readFlag, edfDescriptor);
+
+    /// experimental
+    {
+        const double oldDdr = this->getDdr();
+        ddr = 1.;
+        for(double & nri : nr)
+        {
+            nri /= oldDdr;
+        }
+        ndr = ceil(ndr * oldDdr); /// ceil or round?
+    }
 
     fclose(edfDescriptor);
 
@@ -1099,6 +1059,48 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
 
 }
 
+
+void edfFile::countFft()
+{
+    int fftLength = fftL(this->dataLength);
+    double norm1 = fftLength / double(this->dataLength);
+
+    std::vector<int> chanList;
+    for(int i = 0; i < this->ns; ++i)
+    {
+        if(this->labels[i].contains(QRegExp("E[OE]G"))) // filter only EEG, EOG signals
+        {
+            chanList.push_back(i);
+        }
+    }
+    this->fftData.resize(chanList.size());
+    int i = 0;
+    for(auto j : chanList)
+    {
+        double *& spectre = fftData[i++];
+        spectre = new double [2 * fftLength];
+        std::fill(spectre, spectre + fftLength * 2, 0.); // fill all with zeros
+#if DATA_POINTER
+        for(auto it = begin((*(this->dataPointer))[chanList[j]]);
+            it < end((*(this->dataPointer))[chanList[j]];
+            ++it)
+#else
+        for(auto it = begin(this->data[j]);
+            it < end(this->data[j]);
+            ++it)
+#endif
+        {
+#if DATA_POINTER
+            // set even elements to signal values
+            spectre[2 * (it - begin((*(this->dataPointer))[j])) ] = (*it) * sqrt(norm1);
+#else
+            spectre[2 * (it - begin(this->data[j])) ] = (*it) * sqrt(norm1);
+#endif
+        }
+        four1(spectre - 1, fftLength, 1);       //Fourier transform
+    }
+}
+
 /// remake vector
 void edfFile::refilter(const double & lowFreq,
                        const double & highFreq,
@@ -1110,7 +1112,7 @@ void edfFile::refilter(const double & lowFreq,
     double norm1 = fftLength / double(this->dataLength);
     double * spectre = new double [fftLength * 2];
 
-    vector<int> chanList;
+    std::vector<int> chanList;
     for(int i = 0; i < this->ns; ++i)
     {
         if(this->labels[i].contains(QRegExp("E[OE]G"))) // filter only EEG, EOG signals
@@ -1118,53 +1120,62 @@ void edfFile::refilter(const double & lowFreq,
             chanList.push_back(i);
         }
     }
-    int numOfChan = chanList.size();
 
-    for(int j = 0; j < numOfChan; ++j)
+    if(this->fftData.empty())
     {
-        std::fill(spectre, spectre + fftLength * 2, 0.); // fill all with zeros
+        this->countFft();
+    }
 
-#if DATA_POINTER
-        for(auto it = begin((*(this->dataPointer))[chanList[j]]);
-            it < end((*(this->dataPointer))[chanList[j]];
-            ++it)
-#else
-        for(auto it = begin(this->data[chanList[j]]);
-            it < end(this->data[chanList[j]]);
-            ++it)
-#endif
-        {
-#if DATA_POINTER
-            // set even elements to signal values
-            spectre[2 * (it - begin((*(this->dataPointer))[chanList[j]])) ] = (*it) * sqrt(norm1);
-#else
-            spectre[2 * (it - begin(this->data[chanList[j]])) ] = (*it) * sqrt(norm1);
-#endif
-        }
+    const int lowLim = ceil(2. * lowFreq / spStep);
+    const int highLim = floor(2. * highFreq / spStep);
 
-        four1(spectre - 1, fftLength, 1);       //Fourier transform
-
+    int i = 0;
+    for(int j : chanList)
+    {
+        std::copy(fftData[i],
+                fftData[i] + 2 * fftLength,
+                spectre);
+        ++i;
         //filtering
+#if 0
+        /// old
         for(int i = 0; i < fftLength; ++i)
         {
-            if(i < 2. * lowFreq/spStep || i > 2. * highFreq/spStep)
+            if(i < 2. * lowFreq / spStep ||
+               i > 2. * highFreq / spStep)
                 spectre[i] = 0.;
         }
-        for(int i = fftLength; i < 2*fftLength; ++i)
+        for(int i = fftLength; i < 2 * fftLength; ++i)
         {
-            if(((2*fftLength - i) < 2. * lowFreq/spStep)
-                    || (2 * fftLength - i > 2. * highFreq/spStep))
+            if(2 * fftLength - i < 2. * lowFreq / spStep ||
+               2 * fftLength - i > 2. * highFreq / spStep)
                 spectre[i] = 0.;
         }
+#else
+        ///new
+        std::fill(spectre,
+                  spectre + lowLim,
+                  0.);
+        std::fill(spectre + highLim,
+                  spectre + fftLength,
+                  0.);
+        std::fill(spectre + fftLength,
+                  spectre + 2 * fftLength - highLim - 1,
+                  0.);
+        std::fill(spectre + 2 * fftLength - lowLim + 1,
+                  spectre + 2 * fftLength,
+                  0.);
+
+#endif
 
         //end filtering
-        four1(spectre - 1, fftLength, -1);       // reverse transform
+        four1(spectre - 1, fftLength, -1);       // inverse transform
 #if DATA_POINTER
-        for(auto it = (*(this->dataPointer))[chanList[j]].begin();
-            it < (*(this->dataPointer))[chanList[j]].end();
+        for(auto it = (*(this->dataPointer))[j].begin();
+            it < (*(this->dataPointer))[j].end();
             ++it)
         {
-            (*it) = spectre[2 * (it - (*(this->dataPointer))[chanList[j]].begin()) ]
+            (*it) = spectre[2 * (it - (*(this->dataPointer))[j].begin()) ]
                     / (fftLength * sqrt(norm1));
 
 //            if (j == 0 && (it - (*(this->dataPointer))[chanList[j]].begin()) < 24000)
@@ -1173,11 +1184,12 @@ void edfFile::refilter(const double & lowFreq,
 //            }
         }
 #else
-        for(auto it = begin(this->data[chanList[j]]);
-            it < end(this->data[chanList[j]]);
+        for(auto it = std::begin(this->data[j]);
+            it < std::end(this->data[j]);
             ++it)
         {
-            (*it) = spectre[2 * (it - begin(this->data[chanList[j]])) ] / (fftLength * sqrt(norm1));
+            (*it) = spectre[2 * (it - begin(this->data[j])) ]
+                    / (fftLength * sqrt(norm1));
         }
 #endif
     }
@@ -1694,7 +1706,24 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
     this->ndr = ceil(this->dataLength / (def::freq * this->ddr)); // should be unchanged
 }
 
+double edfFile::checkDdr(const QString & inPath)
+{
+    if(!QFile::exists(inPath))
+    {
+        cout << "edfFile::checkDdr: file doesn't exist" << endl;
+        return -1;
+    }
+    FILE * tmp = fopen(inPath, "r");
+    QString tempStr;
+    double localDdr = 0.;
 
+    handleParam(tempStr, 244, true, tmp, (FILE*)NULL);
+    handleParam(localDdr, 8, true, tmp, (FILE*)NULL);
+    fclose(tmp);
+
+    return localDdr;
+
+}
 
 void edfFile::transformEdfMatrix(const QString & inEdfPath,
                                  const matrix & matrixW,
@@ -1716,3 +1745,106 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
     fil.writeOtherData(newData, newEdfPath);
     cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
+
+
+/// non-members for static operation
+void myTransform(int & output, char * input) {output = atoi(input);}
+void myTransform(double & output, char * input) {output = atof(input);}
+void myTransform(QString & output, char * input) {output = QString(input);}
+
+void myTransform(const int & input, const int & len, char ** output)
+{
+    (*output) = QStrToCharArr(fitNumber(input, len));
+}
+void myTransform(const double & input, const int & len, char ** output)
+{
+    (*output) = QStrToCharArr(fitNumber(input, len));
+}
+void myTransform(const QString & input, const int & len, char ** output)
+{
+    (*output) = QStrToCharArr(input, len);
+}
+
+template <typename Typ>
+void handleParam(Typ & qStr,
+                 int length,
+                 bool readFlag,
+                 FILE * ioFile,
+                 FILE * headerFile)
+{
+    char * array;
+    if(readFlag)
+    {
+        array = new char [length + 1];
+        fread (array, sizeof(char), length, ioFile); array[length] = '\0';
+        myTransform(qStr, array);
+        if(headerFile != NULL)
+        {
+            fwrite(array, sizeof(char), length, headerFile);
+        }
+        delete []array;
+    }
+    else
+    {
+        myTransform(qStr, length, &array);
+        fprintf(ioFile, "%s", array);
+        delete []array;
+    }
+}
+
+template <typename Typ>
+void handleParamArray(std::vector<Typ> & qStr,
+                      int number,
+                      int length,
+                      bool readFlag,
+                      FILE * ioFile,
+                      FILE * headerFile)
+{
+    if(readFlag) qStr = std::vector<Typ>(number, Typ()); // clean param vector
+
+    for(int i = 0; i < number; ++i)
+    {
+        handleParam <Typ> (qStr[i], length, readFlag, ioFile, headerFile);
+    }
+}
+
+template
+void handleParamArray(std::vector<int> & qStr,
+                      int number,
+                      int length,
+                      bool readFlag,
+                      FILE * ioFile,
+                      FILE * headerFile);
+template
+void handleParamArray(std::vector<double> & qStr,
+                      int number,
+                      int length,
+                      bool readFlag,
+                      FILE * ioFile,
+                      FILE * headerFile);
+template
+void handleParamArray(std::vector<QString> & qStr,
+                      int number,
+                      int length,
+                      bool readFlag,
+                      FILE * ioFile,
+                      FILE * headerFile);
+
+template
+void handleParam(int & qStr,
+                 int length,
+                 bool readFlag,
+                 FILE * ioFile,
+                 FILE * headerFile);
+template
+void handleParam(double & qStr,
+                 int length,
+                 bool readFlag,
+                 FILE * ioFile,
+                 FILE * headerFile);
+template
+void handleParam(QString & qStr,
+                 int length,
+                 bool readFlag,
+                 FILE * ioFile,
+                 FILE * headerFile);
