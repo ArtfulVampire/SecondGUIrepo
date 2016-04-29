@@ -1134,12 +1134,12 @@ void MainWindow::drawMapsSlot()
 
 void MainWindow::avTime()
 {
-    const int maxLen = 40 * 250;
+    const int maxLen = 32 * def::freq;
     int numNotSolved = 0;
     int shortReals = 0;
 
-    std::valarray<double> means;
-    means.resize(4); /// 4 types of mean - with o w/o shorts and longs
+    std::valarray<double> means{};
+    means.resize(4); /// 4 types of mean - with or w/o shorts and longs
 
     int num = 0;
     ifstream inStr;
@@ -1168,31 +1168,38 @@ void MainWindow::avTime()
 
             means += num;
 
-            if(num < 750)
+            if(num < 500)
             {
                 means[1] -= num;
                 means[3] -= num;
                 ++shortReals;
             }
-            else if(fabs(maxLen / double(num) - 1.) < 0.01)
+            else if(num > maxLen - 100)
             {
                 means[2] -= num;
                 means[3] -= num;
                 ++numNotSolved;
             }
         }
+        means[0] /= lst.length();
+        means[1] /= (lst.length() - shortReals);
+        means[2] /= (lst.length() - numNotSolved);
+        means[3] /= (lst.length() - shortReals - numNotSolved);
         means /= def::freq;
 
         helpString = def::dir->absolutePath() + slash() + "results.txt";
         ofstream res;
         res.open(helpString.toStdString(), ios_base::app);
         res << "Reals type\t" << tmp << ":\r\n";
-        res << "mean\t" << means[0] << "\r\n";
+        res << "shortReals\t" << shortReals << "\r\n";
+        res << "longReals\t" << numNotSolved << "\r\n";
+        res << "All together\t" << means[0] << "\r\n";
         res << "w/o shorts\t" << means[1] << "\r\n";
         res << "w/o longs\t" << means[2] << "\r\n";
-        res << "w/o both\t" << means[3] << "\r\n";
+        res << "w/o both\t" << means[3] << "\r\n\r\n";
         res.close();
     }
+    cout << "avTime finished" << endl;
 }
 
 

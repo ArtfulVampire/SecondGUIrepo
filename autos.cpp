@@ -2219,18 +2219,18 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
             continue;
         }
 
-        const double bytesPerSecond = (QFile(helpString).size() - initEdf.getBytes())
-                                      / double(initEdf.getNs() * initEdf.getNdr() * initEdf.getDdr());
+//        const double bytesPerSecond = (QFile(helpString).size() - initEdf.getBytes())
+//                                      / double(initEdf.getNs() * initEdf.getNdr() * initEdf.getDdr());
 
-        if(bytesPerSecond != 2 * def::freq)
-        {
-            cout << "bytesPerSecond = " << bytesPerSecond << "\t";
-            cout << ExpName;
-            cout << endl;
+//        if(bytesPerSecond != 2 * def::freq)
+//        {
+//            cout << "bytesPerSecond = " << bytesPerSecond << "\t";
+//            cout << ExpName;
+//            cout << endl;
 
-            // dont process this file?
-//            continue;
-        }
+//            // dont process this file?
+////            continue;
+//        }
 
         if(initEdf.getNs() < numChan)
         {

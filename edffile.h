@@ -154,7 +154,13 @@ class edfFile
 public:
 
     edfFile();
-    ~edfFile();
+    ~edfFile()
+    {
+        for(auto sp : fftData)
+        {
+            delete[] sp;
+        }
+    }
 
     /*
     //yet unused

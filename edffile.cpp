@@ -9,10 +9,6 @@ edfFile::edfFile()
 #endif
 }
 
-edfFile::~edfFile()
-{
-}
-
 edfFile::edfFile(const edfFile &other, bool noData)
 {
     this->filePath = other.getFilePath();
@@ -1198,8 +1194,6 @@ void edfFile::refilter(const double & lowFreq,
         this->writeEdfFile(newPath);
     }
     delete []spectre;
-
-
 }
 
 void edfFile::saveSubsection(int startBin,

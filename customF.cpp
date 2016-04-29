@@ -12,6 +12,8 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(7);
 //    ui->justSliceButton->setChecked(true);
 
+    return;
+
 
 
 #if 0
@@ -69,12 +71,10 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 1
+#if 0
     def::ntFlag = true; /// for Dasha's
 //        def::ntFlag = false; /// encephalan (+1)
-    GalyaProcessing(def::GalyaFolder + slash() + "temp"); exit(0);
-
-
+//    GalyaProcessing(def::GalyaFolder + slash() + "temp"); exit(0);
 
     QStringList leest {"EDF_Dasha_more",
                       "Melnik",
