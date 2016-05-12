@@ -2066,10 +2066,11 @@ matrix MainWindow::makeTestData(const QString & outPath)
     return pewM;
 }
 
-void MainWindow::GalyaCut(const QString & path, QString outPath)
+void MainWindow::GalyaCut(const QString & path,
+                          QString outPath)
 {
     // Galya slice by 16 seconds pieces - folders
-    const int wndLen = 16; // seconds
+    const int wndLen = 2; // seconds
 
     QDir tmpDir(path);
     if(outPath.isEmpty())

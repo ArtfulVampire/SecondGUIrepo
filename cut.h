@@ -25,6 +25,8 @@ namespace Ui {
     class Cut;
 }
 
+enum class fileType {edf, real};
+
 class Cut : public QWidget
 {
     Q_OBJECT
@@ -35,6 +37,7 @@ public:
     bool eventFilter(QObject *obj, QEvent *event);
     void setAutoProcessingFlag(bool);
     void matiAdjustLimits();
+    void setFileType(const QString & dataFileName);
 
 public slots:
     void createImage(const QString & dataFileName);
@@ -43,12 +46,17 @@ public slots:
     void prev();
     void cut();
     void zero();
+    void undoZero();
     void paint();
     void save();
     void rewrite();
     void cutEyesAll();
     void browse();
     void splitCut();
+    void forwardStepSlot();
+    void backwardStepSlot();
+    void forwardFrameSlot();
+    void backwardFrameSlot();
 
 
 protected:
@@ -61,6 +69,10 @@ signals:
 private:
     Ui::Cut *ui;
 
+    fileType myFileType{fileType::real};
+    int leftDrawLimit; /// in slices
+    int rightDrawLimit; /// in slices
+
     QStringList lst;
     QString currentFile;
     int currentNumber; /// in lst
@@ -68,10 +80,12 @@ private:
 
     QPixmap currentPic;
     int redCh, blueCh; // for drawing
-    int rightLimit;
-    int leftLimit;
+    int rightLimit; /// in slices
+    int leftLimit; /// in slices
 
     matrix data3;
+    matrix undoData;
+    int undoBegin;
     int NumOfSlices;
 
 

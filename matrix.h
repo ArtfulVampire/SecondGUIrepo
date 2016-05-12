@@ -120,6 +120,7 @@ public:
     void eraseRow(int i);
     void eraseRows(const vector<int> & indices);
     void random(double low, double high);
+    matrix subCols(int beginCol, int endCol) const; /// submatrix
 //    double det();
 //    void cofactor();
 //    void systemGaussSolve();

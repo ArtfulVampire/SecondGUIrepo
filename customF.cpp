@@ -71,11 +71,12 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
-    def::ntFlag = true; /// for Dasha's
-//        def::ntFlag = false; /// encephalan (+1)
+#if 1
+    def::ntFlag = true; /// for Dasha's and EEGMRI
+//    def::ntFlag = false; /// encephalan (+1)
 //    GalyaProcessing(def::GalyaFolder + slash() + "temp"); exit(0);
 
+#if 0
     QStringList leest {"EDF_Dasha_more",
                       "Melnik",
                       "tactile",
@@ -94,20 +95,19 @@ void MainWindow::customFunc()
                       "Chemerisova",
                       "Ivanova",
                       "Gramotko"};
+#else
+    QStringList leest{"EEGFMRI2"};
+#endif
     for(auto str : leest)
     {
         deleteSpaces(def::GalyaFolder +  slash() + str);
-        GalyaCut(def::GalyaFolder + slash() + str,
-                 def::GalyaFolder
-                 + slash() + "NEW_RESULTS"
-                 + slash() + "windows"
-                 + slash() + str);
-        GalyaProcessing(def::GalyaFolder + slash() + str,
-                        31,
-                        def::GalyaFolder
-                        + slash() + "NEW_RESULTS"
-                        + slash() + "out"
-                        + slash() + str);
+        GalyaCut(def::GalyaFolder + slash() + str);
+//        GalyaProcessing(def::GalyaFolder + slash() + str,
+//                        31,
+//                        def::GalyaFolder
+//                        + slash() + "NEW_RESULTS"
+//                        + slash() + "out"
+//                        + slash() + str);
     }
     exit(0);
 #endif

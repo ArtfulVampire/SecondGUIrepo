@@ -376,6 +376,21 @@ void matrix::random(double low, double high)
     }
 }
 
+matrix matrix::subCols(int beginCol, int endCol) const /// submatrix
+{
+    matrix res(this->rows(), endCol - beginCol);
+    int row = 0;
+    for(auto it = std::begin(this->data);
+        it != std::end(this->data);
+        ++it)
+    {
+        std::copy(std::begin(*it) + beginCol,
+                  std::begin(*it) + endCol,
+                  std::begin(res[row++]));
+    }
+    return res;
+}
+
 void matrix::resize(int rows, int cols, double val)
 {
     this->resize(rows, cols);

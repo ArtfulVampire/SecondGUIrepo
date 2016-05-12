@@ -71,6 +71,8 @@ Cut::Cut() :
     ui->saveButton->setShortcut(tr("s"));
     ui->splitButton->setShortcut(tr("x"));
     ui->rewriteButton->setShortcut(tr("r"));
+    QShortcut * undo = new QShortcut(QKeySequence(tr("Ctrl+z")), this);
+
 
     ui->picLabel->installEventFilter(this);
 
@@ -100,7 +102,7 @@ Cut::Cut() :
 #else
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
 #endif
-
+    QObject::connect(undo, SIGNAL(activated()), this, SLOT(undoZero()));
     QObject::connect(this, SIGNAL(buttonPressed(char,int)), this, SLOT(mousePressSlot(char,int)));
     QObject::connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(next()));
     QObject::connect(ui->prevButton, SIGNAL(clicked()), this, SLOT(prev()));
@@ -113,6 +115,10 @@ Cut::Cut() :
     QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(const QString &)));
     QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
     QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitCut()));
+    QObject::connect(ui->forwardStepButton, SIGNAL(clicked()), this, SLOT(forwardStepSlot()));
+    QObject::connect(ui->backwardStepButton, SIGNAL(clicked()), this, SLOT(backwardStepSlot()));
+    QObject::connect(ui->forwardFrameButton, SIGNAL(clicked()), this, SLOT(forwardFrameSlot()));
+    QObject::connect(ui->backwardFrameButton, SIGNAL(clicked()), this, SLOT(backwardFrameSlot()));
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -177,14 +183,37 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
     {
         if(event->type() == QEvent::Wheel)
         {
-
             QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
-            double coeff = -1.2;
-            ui->scrollArea->horizontalScrollBar()->setSliderPosition(
-                        ui->scrollArea->horizontalScrollBar()->sliderPosition() +
-                        coeff * scrollEvent->delta());
-            return true;
+            int offset = -1.2 * scrollEvent->delta();
+
+            if(myFileType == fileType::real)
+            {
+//                cout << "real" << endl;
+                ui->scrollArea->horizontalScrollBar()->setSliderPosition(
+                            ui->scrollArea->horizontalScrollBar()->sliderPosition() +
+                            offset);
+                return true;
+            }
+            else if(myFileType == fileType::edf)
+            {
+//                cout << "edf" << endl;
+                if((leftDrawLimit + ui->scrollArea->width() > NumOfSlices && offset > 0) ||
+                   (leftDrawLimit == 0 && offset < 0))
+                {
+                    return false;
+                }
+                leftDrawLimit = std::min(leftDrawLimit + offset, NumOfSlices);
+                rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
+                paint();
+                return true;
+            }
+            else
+            {
+//                cout << "none" << endl;
+                return false;
+            }
         }
+
         else
         {
             return false;
@@ -338,15 +367,45 @@ void Cut::cutEyesAll()
 #endif
 }
 
+void Cut::setFileType(const QString & dataFileName)
+{
+    if(dataFileName.endsWith(".edf", Qt::CaseInsensitive))
+    {
+        this->myFileType = fileType::edf;
+    }
+    else
+    {
+        this->myFileType = fileType::real;
+    }
+}
+
 //void Cut::createImage(QString dataFileName)
 void Cut::createImage(const QString & dataFileName)
 {
     addNum = 1;
     currentFile = dataFileName;
 
-    readPlainData(dataFileName, data3, NumOfSlices);
 
+    setFileType(dataFileName);
+    if(this->myFileType == fileType::real)
+    {
+        readPlainData(dataFileName, data3, NumOfSlices);
+        leftDrawLimit = 0;
+        rightDrawLimit = NumOfSlices;
+    }
+    else
+    {
+        edfFile tmpFil;
+        tmpFil.readEdfFile(dataFileName);
+        data3 = tmpFil.getData();
+        NumOfSlices = data3.cols();
+        leftDrawLimit = 0;
+        rightDrawLimit = ui->scrollArea->width();
+        cout << rightDrawLimit << endl;
+    }
 
+    /// if too long?
+    /// draw only needed part?
     if(ui->checkBox->isChecked())
     {
         paint();
@@ -423,6 +482,58 @@ void Cut::prev()
     }
     currentNumber = tmp;
     cout << "prev: bad number, too little" << endl;
+}
+
+
+void Cut::forwardStepSlot()
+{
+    if(leftDrawLimit + ui->scrollArea->width() > NumOfSlices)
+    {
+        cout << "end of file" << endl;
+        return;
+    }
+
+    leftDrawLimit = std::min(leftDrawLimit + def::freq, double(NumOfSlices));
+    rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
+
+    paint();
+
+}
+void Cut::backwardStepSlot()
+{
+    if(leftDrawLimit == 0)
+    {
+        cout << "begin of file" << endl;
+        return;
+    }
+    leftDrawLimit = std::max(leftDrawLimit - def::freq, 0.);
+    rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
+    paint();
+}
+void Cut::forwardFrameSlot()
+{
+    if(leftDrawLimit + ui->scrollArea->width() > NumOfSlices)
+    {
+        cout << "end of file" << endl;
+        return;
+    }
+
+    int numSec = floor(ui->scrollArea->width() / def::freq); /// or make always 250 dps?
+    leftDrawLimit = std::min(leftDrawLimit + numSec * def::freq, double(NumOfSlices));
+    rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
+    paint();
+}
+void Cut::backwardFrameSlot()
+{
+    if(leftDrawLimit == 0)
+    {
+        cout << "begin of file" << endl;
+        return;
+    }
+    int numSec = floor(ui->scrollArea->width() / def::freq); /// or make always 250 dps?
+    leftDrawLimit = std::max(leftDrawLimit - numSec * def::freq, 0.);
+    rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
+    paint();
 }
 
 void Cut::matiAdjustLimits() /////// should TEST !!!!!
@@ -553,8 +664,24 @@ void Cut::zero()
 //        cout << "zero: adjust limits   " << currentFile << endl;
 //        matiAdjustLimits();
     }
+    undoBegin = leftDrawLimit + leftLimit;
+    undoData = data3.subCols(undoBegin,
+                             undoBegin + rightLimit - leftLimit);
 
-    zeroData(data3, leftLimit, rightLimit); ///////// should TEST !!!!!!!1111
+    zeroData(data3,
+             leftDrawLimit + leftLimit,
+             leftDrawLimit + rightLimit); ///////// should TEST !!!!!!!1111
+    paint();
+}
+
+void Cut::undoZero()
+{
+    for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
+    {
+        std::copy(std::begin(undoData[k]),
+                  std::end(undoData[k]),
+                  std::begin(data3[k]) + undoBegin);
+    }
     paint();
 }
 
@@ -568,9 +695,9 @@ void Cut::cut()
     writePlainData(helpString,
                    data3,
                    rightLimit - leftLimit,
-                   leftLimit);
+                   leftDrawLimit + leftLimit);
 
-    rightLimit = NumOfSlices;
+    rightLimit = rightDrawLimit - leftDrawLimit;
     leftLimit = 0;
     paint();
 }
@@ -638,9 +765,11 @@ void Cut::paint() // save to tmp.jpg and display
     QString helpString;
     helpString = def::dir->absolutePath() + slash() + "tmp.jpg";
 
-    currentPic = drawEeg(data3,
+    cout << "paint: left = " << leftDrawLimit << "\tright = " << rightDrawLimit << endl;
+
+    currentPic = drawEeg(data3.subCols(leftDrawLimit, rightDrawLimit),
                          def::ns,
-                         NumOfSlices,
+                         rightDrawLimit - leftDrawLimit,
                          def::freq,
                          helpString,
                          ui->drawNormDoubleSpinBox->value(),
@@ -651,7 +780,7 @@ void Cut::paint() // save to tmp.jpg and display
     ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(),
                                               ui->scrollArea->height() - 20));
 
-    rightLimit = NumOfSlices;
+    rightLimit = rightDrawLimit - leftDrawLimit;
     leftLimit = 0;
 }
 

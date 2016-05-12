@@ -269,7 +269,7 @@ private:
 
     QString headerRest = QString();
 
-    std::vector <edfChannel> channels;
+    std::vector<edfChannel> channels;
     edfDataType data; // matrix.cpp
     std::vector<double *> fftData{};
 
@@ -287,7 +287,7 @@ private:
 
     bool matiFlag = def::matiFlag;
     bool ntFlag = def::ntFlag;
-    bool edfPlusFlag; // to detect
+    bool edfPlusFlag = false; // to detect
 
 public:
     const QString & getHeaderInit() const {return headerInitialInfo;}
