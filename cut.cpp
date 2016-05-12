@@ -49,6 +49,14 @@ Cut::Cut() :
     ui->drawNormDoubleSpinBox->setSingleStep(0.1);
     ui->drawNormDoubleSpinBox->setDecimals(2);
 
+    ui->paintStartDoubleSpinBox->setValue(0);
+    ui->paintStartDoubleSpinBox->setDecimals(1);
+    ui->paintStartDoubleSpinBox->setSingleStep(0.1);
+
+    ui->paintLengthDoubleSpinBox->setValue(4);
+    ui->paintLengthDoubleSpinBox->setDecimals(1);
+    ui->paintLengthDoubleSpinBox->setSingleStep(0.5);
+
 
     ui->checkBox->setChecked(true);
 
@@ -102,7 +110,14 @@ Cut::Cut() :
 #else
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
 #endif
+
     QObject::connect(undo, SIGNAL(activated()), this, SLOT(undoZero()));
+    QObject::connect(ui->drawNormDoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paint()));
+    QObject::connect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
+                     this, SLOT(resizeWidget(double)));
+    QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
+                     this, SLOT(paint()));
+
     QObject::connect(this, SIGNAL(buttonPressed(char,int)), this, SLOT(mousePressSlot(char,int)));
     QObject::connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(next()));
     QObject::connect(ui->prevButton, SIGNAL(clicked()), this, SLOT(prev()));
@@ -155,11 +170,16 @@ void Cut::browse()
 
 void Cut::resizeEvent(QResizeEvent * event)
 {
+    cout << 1 << endl;
     // adjust scrollArea size
+    double newLen = doubleRound((event->size().width() - 10 * 2) / def::freq,
+                             ui->paintLengthDoubleSpinBox->decimals());
     ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
                                 ui->scrollArea->geometry().y(),
-                                event->size().width() - 10 * 2,
+                                newLen * def::freq,
                                 ui->scrollArea->geometry().height());
+    ui->paintLengthDoubleSpinBox->setValue(newLen);
+    paint();
 }
 
 bool Cut::eventFilter(QObject *obj, QEvent *event)
@@ -168,7 +188,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
     {
         if (event->type() == QEvent::MouseButtonPress)
         {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+            QMouseEvent * mouseEvent = static_cast<QMouseEvent*>(event);
             if(mouseEvent->button() == Qt::LeftButton) emit buttonPressed('l', mouseEvent->x());
             if(mouseEvent->button() == Qt::RightButton) emit buttonPressed('r', mouseEvent->x());
             return true;
@@ -184,7 +204,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
         if(event->type() == QEvent::Wheel)
         {
             QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
-            int offset = -1.2 * scrollEvent->delta();
+            int offset = -0.8 * scrollEvent->delta();
 
             if(myFileType == fileType::real)
             {
@@ -203,8 +223,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
                     return false;
                 }
                 leftDrawLimit = std::min(leftDrawLimit + offset, NumOfSlices);
-                rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
-                paint();
+                ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / def::freq);
                 return true;
             }
             else
@@ -395,13 +414,12 @@ void Cut::createImage(const QString & dataFileName)
     }
     else
     {
-        edfFile tmpFil;
-        tmpFil.readEdfFile(dataFileName);
-        data3 = tmpFil.getData();
+        edfFil.readEdfFile(dataFileName);
+        data3 = edfFil.getData();
         NumOfSlices = data3.cols();
         leftDrawLimit = 0;
-        rightDrawLimit = ui->scrollArea->width();
-        cout << rightDrawLimit << endl;
+        ui->paintStartDoubleSpinBox->setMaximum(floor(NumOfSlices / def::freq));
+        cout << "freq = " << def::freq << endl;
     }
 
     /// if too long?
@@ -465,23 +483,26 @@ void Cut::next()
 
 void Cut::prev()
 {
-    QString helpString;
-    int tmp = currentNumber;
-    for(; currentNumber > 0 + 1; --currentNumber)  // generality
+    if(myFileType == fileType::real)
     {
-        /// remake regexps or not?
-        if(lst[currentNumber - 1].contains("_num") ||
-           lst[currentNumber - 1].contains("_000") || /// number starts with .000
-           lst[currentNumber - 1].contains("_sht"))
+        QString helpString;
+        int tmp = currentNumber;
+        for(; currentNumber > 0 + 1; --currentNumber)  // generality
         {
-            continue;
+            /// remake regexps or not?
+            if(lst[currentNumber - 1].contains("_num") ||
+               lst[currentNumber - 1].contains("_000") || /// number starts with .000
+               lst[currentNumber - 1].contains("_sht"))
+            {
+                continue;
+            }
+            helpString = getDirPathLib(currentFile) + slash() + lst[--currentNumber];
+            emit openFile(helpString);
+            return;
         }
-        helpString = getDirPathLib(currentFile) + slash() + lst[--currentNumber];
-        emit openFile(helpString);
-        return;
+        currentNumber = tmp;
+        cout << "prev: bad number, too little" << endl;
     }
-    currentNumber = tmp;
-    cout << "prev: bad number, too little" << endl;
 }
 
 
@@ -494,10 +515,7 @@ void Cut::forwardStepSlot()
     }
 
     leftDrawLimit = std::min(leftDrawLimit + def::freq, double(NumOfSlices));
-    rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
-
-    paint();
-
+    ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / def::freq);
 }
 void Cut::backwardStepSlot()
 {
@@ -507,8 +525,7 @@ void Cut::backwardStepSlot()
         return;
     }
     leftDrawLimit = std::max(leftDrawLimit - def::freq, 0.);
-    rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
-    paint();
+    ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / def::freq);
 }
 void Cut::forwardFrameSlot()
 {
@@ -517,11 +534,10 @@ void Cut::forwardFrameSlot()
         cout << "end of file" << endl;
         return;
     }
-
-    int numSec = floor(ui->scrollArea->width() / def::freq); /// or make always 250 dps?
-    leftDrawLimit = std::min(leftDrawLimit + numSec * def::freq, double(NumOfSlices));
-    rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
-    paint();
+    leftDrawLimit = std::min(leftDrawLimit +
+                             ui->paintLengthDoubleSpinBox->value() * def::freq,
+                             double(NumOfSlices));
+    ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / def::freq);
 }
 void Cut::backwardFrameSlot()
 {
@@ -530,11 +546,18 @@ void Cut::backwardFrameSlot()
         cout << "begin of file" << endl;
         return;
     }
-    int numSec = floor(ui->scrollArea->width() / def::freq); /// or make always 250 dps?
-    leftDrawLimit = std::max(leftDrawLimit - numSec * def::freq, 0.);
-    rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
-    paint();
+    leftDrawLimit = std::max(leftDrawLimit -
+                             ui->paintLengthDoubleSpinBox->value() * def::freq, 0.);
+    ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / def::freq);
 }
+
+
+void Cut::resizeWidget(double a)
+{
+    if(this->size().width() == a * def::freq + 20) return;
+    this->resize(a * def::freq + 20, this->height());
+}
+
 
 void Cut::matiAdjustLimits() /////// should TEST !!!!!
 {
@@ -744,26 +767,54 @@ void Cut::splitCut()
 /// unused
 void Cut::save()
 {
-    QString helpString = def::dir->absolutePath()
-                         + slash() + "cut"
-                         + slash() + getFileName(currentFile);
+    if(myFileType == fileType::real)
+    {
+        QString helpString = def::dir->absolutePath()
+                             + slash() + "cut"
+                             + slash() + getFileName(currentFile);
 
-    // new
-    writePlainData(helpString, data3);
+        // new
+        writePlainData(helpString, data3);
+    }
+    else if(myFileType == fileType::edf)
+    {
+        QString newPath = currentFile;
+        newPath.insert(newPath.lastIndexOf('.') - 1, "_new");
+        edfFil.writeOtherData(data3, newPath);
+    }
 }
 
 
 void Cut::rewrite()
 {
-    writePlainData(currentFile,
-                   data3);
-    currentPic.save(getPicPath(currentFile), 0, 100);
+    if(myFileType == fileType::real)
+    {
+        writePlainData(currentFile,
+                       data3);
+        currentPic.save(getPicPath(currentFile), 0, 100);
+    }
+    else if(myFileType == fileType::edf)
+    {
+        /// WHAT TO DO???
+//        edfFil.writeOtherData(data3, currentFile);
+    }
 }
 
 void Cut::paint() // save to tmp.jpg and display
 {
     QString helpString;
     helpString = def::dir->absolutePath() + slash() + "tmp.jpg";
+
+    if(myFileType == fileType::edf)
+    {
+        leftDrawLimit = ui->paintStartDoubleSpinBox->value() * def::freq;
+        rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
+    }
+    else if(myFileType == fileType::real)
+    {
+        leftDrawLimit = 0;
+        rightDrawLimit = NumOfSlices;
+    }
 
     cout << "paint: left = " << leftDrawLimit << "\tright = " << rightDrawLimit << endl;
 

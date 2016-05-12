@@ -20,6 +20,7 @@
 #include <QMessageBox>
 #include <QScrollBar>
 #include "mainwindow.h"
+#include "edffile.h"
 
 namespace Ui {
     class Cut;
@@ -57,6 +58,7 @@ public slots:
     void backwardStepSlot();
     void forwardFrameSlot();
     void backwardFrameSlot();
+    void resizeWidget(double);
 
 
 protected:
@@ -72,6 +74,7 @@ private:
     fileType myFileType{fileType::real};
     int leftDrawLimit; /// in slices
     int rightDrawLimit; /// in slices
+    edfFile edfFil;
 
     QStringList lst;
     QString currentFile;

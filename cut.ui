@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1900</width>
+    <width>1700</width>
     <height>750</height>
    </rect>
   </property>
@@ -36,7 +36,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>240</y>
+     <y>270</y>
      <width>1250</width>
      <height>470</height>
     </rect>
@@ -111,10 +111,10 @@
   <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>12</x>
-     <y>41</y>
-     <width>561</width>
-     <height>194</height>
+     <x>10</x>
+     <y>40</y>
+     <width>541</width>
+     <height>227</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -235,6 +235,26 @@
      <widget class="QPushButton" name="forwardFrameButton">
       <property name="text">
        <string>&gt;&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QDoubleSpinBox" name="paintStartDoubleSpinBox"/>
+    </item>
+    <item row="6" column="1">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>paint start</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="2">
+     <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox"/>
+    </item>
+    <item row="6" column="3">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>paint length</string>
       </property>
      </widget>
     </item>
