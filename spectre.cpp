@@ -104,29 +104,15 @@ Spectre::Spectre() :
 
 void Spectre::defaultState()
 {
-
-    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() +"Realisations");
-    ui->lineEdit_1->setText(helpString);
-
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "SpectraSmooth");
-    ui->lineEdit_2->setText(helpString);
-
+    ui->lineEdit_1->setText(defaultInPath);
+    ui->lineEdit_2->setText(defaultOutPath);
 
     if(ui->fftComboBox->currentIndex() == 0) // 1024
     {
+        /// shit with external spectra counting
+        ui->lineEdit_1->setText(defaultInPathW);
+        ui->lineEdit_2->setText(defaultOutPathW);
         ui->smoothBox->setValue(5);
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "windows");
-        helpString += slash() + "fromreal";
-
-
-        ui->lineEdit_1->setText(helpString);
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "SpectraSmooth"
-                                              + slash() + "windows");
-        ui->lineEdit_2->setText(helpString);
     }
     else if(ui->fftComboBox->currentIndex() == 1) // 2048
     {
@@ -367,11 +353,11 @@ void Spectre::integrate()
             for(int j = 0; j < dataOut.cols(); ++j)
             {
                 /// accumulate
-                for(int k = begins[j]; k <= ends[j]; ++k) // < or <= not really important
+                for(int k = begins[j]; k < ends[j]; ++k) // < or <= not really important
                 {
                     dataOut[h][k] += dataInt[h][k];
                 }
-                dataOut /= 10.; // just for fun?
+//                dataOut /= 10.; // just for fun?
             }
         }
         helpString = QDir::toNativeSeparators(ui->lineEdit_2->text()
@@ -379,7 +365,6 @@ void Spectre::integrate()
         writeMatrixFile(helpString,
                         dataOut);
     }
-
 }
 
 void Spectre::psaSlot()
@@ -411,8 +396,6 @@ void Spectre::psaSlot()
 
     trivector<int> MW;
 
-
-
     if(ui->MWcheckBox->isChecked())
     {
         countMannWhitney(MW,
@@ -424,7 +407,7 @@ void Spectre::psaSlot()
     {
         drawTemplate(helpString);
 
-        vector<QColor> colors;
+        std::vector<QColor> colors;
         if(ui->colourRadioButton->isChecked())
         {
             colors = def::colours;
@@ -485,7 +468,9 @@ void Spectre::compare()
                              + slash() + "psa";
 
     makeFileLists(filesPath,
-                  leest);
+                  leest
+//                  ,{def::spectraDataExtension}
+                  );
 
 
     for(int i = 0; i < def::numOfClasses(); ++i)
@@ -627,6 +612,11 @@ void Spectre::writeSpectra(const double leftFreq,
     ofstream outStream;
     QString helpString;
     const QString outDirPath = ui->lineEdit_2->text();
+    if(!QDir(outDirPath).exists())
+    {
+        cout << "writeSpectra: outDir doesn't exist" << endl;
+        return;
+    }
 
     const int left = fftLimit(leftFreq); /// = def::left()
     const int right = fftLimit(rightFreq) + 1; /// = def::right()
@@ -640,14 +630,22 @@ void Spectre::writeSpectra(const double leftFreq,
 
     QStringList lst = ui->dropChannelsLineEdit->text().split(
                           QRegExp("[,;\\s]"), QString::SkipEmptyParts);
+    cout << "writeSpectra: num of dropped channels = " << lst.length() << endl;
     for(QString str : lst)
     {
         rangeLimits[str.toInt() - 1] = {0, 0}; // to fill with zeros
     }
 
+//    cout << "left = " << left << endl;
+//    cout << "right = " << right << endl;
+//    cout << "nsWOM = " << def::nsWOM() << endl;
+
     for(quint32 i = 0; i < fileNames.size(); ++i)
     {
         helpString = outDirPath + slash() + fileNames[i];
+        helpString.remove("." + def::plainDataExtension);
+        helpString += "." + def::spectraDataExtension;
+//        cout << helpString << endl;
 
         outStream.open(helpString.toStdString());
         if(!outStream.good())
@@ -655,13 +653,21 @@ void Spectre::writeSpectra(const double leftFreq,
             cout << "bad outStream" << endl;
             continue;
         }
+
+
         outStream << "NumOfChannels " << def::nsWOM() << '\t';
         outStream << "spLength " << right - left << "\r\n";
+//        outStream.flush();
 
         if(ui->spectraRadioButton->isChecked())
         {
+            /// which channels to write ???
             for(int j = 0; j < def::nsWOM(); ++j) //
             {
+
+//                cout << "RL[left] = " << rangeLimits[j].first << endl;
+//                cout << "RL[right] = " << rangeLimits[j].second << endl;
+
                 for(int k = left; k < left + rangeLimits[j].first; ++k)
                 {
                     outStream << "0.000" << '\t';
@@ -740,8 +746,17 @@ void Spectre::cleanSpectra()
     cout << "cleanSpectra: num of zeroed points = " << cnt << endl;
     ui->lineEdit_2->setText(ui->lineEdit_2->text() + slash() + "Clean");
     writeSpectra();
-    cout << "cleanSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+    cout << "cleanSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
 
+}
+
+void Spectre::setInPath(const QString & in)
+{
+    defaultInPath = in;
+}
+void Spectre::setOutPath(const QString & out)
+{
+    defaultOutPath = out;
 }
 
 void Spectre::countSpectra()
@@ -749,15 +764,14 @@ void Spectre::countSpectra()
     QTime myTime;
     myTime.start();
 
-
     const QString inDirPath = ui->lineEdit_1->text();
     QStringList lst;
 //    makeFullFileList(inDirPath, lst, {"_test"});
-    makeFullFileList(inDirPath, lst);
+    makeFullFileList(inDirPath,
+                     lst
+//                     ,{def::plainDataExtension}
+                     );
     const int numFiles = lst.length();
-
-//    cout << inDirPath << endl;
-//    cout << numFiles << endl;
 
     matrix dataIn;
     QString helpString;
@@ -770,14 +784,16 @@ void Spectre::countSpectra()
     }
 
     fileNames.resize(numFiles);
-    std::copy(begin(lst), end(lst), fileNames.begin());
+    std::copy(std::begin(lst), std::end(lst), fileNames.begin());
 
     int cnt = 0;
-    vector<int> exIndices;
-    for(int i = 0; i < numFiles; ++i)
+    std::vector<int> exIndices;
+    int progressCounter = 0;
+    for(const QString & fileName : fileNames)
     {
-        const QString & fileName = fileNames[i];
-        if(fileName.contains("_num") || fileName.contains("_300") || fileName.contains("_sht")) continue;
+        if(fileName.contains("_num") ||
+//           fileName.contains("_300") ||
+           fileName.contains("_sht")) continue;
 
         //read data file
         helpString = QDir::toNativeSeparators(inDirPath
@@ -796,7 +812,7 @@ void Spectre::countSpectra()
             }
             else
             {
-                exIndices.push_back(i);
+                exIndices.push_back(progressCounter);
             }
 
 
@@ -843,7 +859,7 @@ void Spectre::countSpectra()
 //                outStream << fractalDimension(dataIn[i]) << '\n';
 //            }
         }
-        ui->progressBar->setValue(i * 100. / numFiles);
+        ui->progressBar->setValue(++progressCounter * 100. / numFiles);
         qApp->processEvents();
     }
 
@@ -852,10 +868,8 @@ void Spectre::countSpectra()
 
     ui->progressBar->setValue(0);
 
-
     //generality
     cout << "countSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
-
 }
 
 bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
@@ -864,11 +878,12 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
     int Eyes = 0;
     if(data2.cols() < def::fftLength)
     {
+        /// fit with zeros to def::fftLength
         data2.resizeCols(def::fftLength); /// clever resizing in matrix.cpp
     }
     else
     {
-        // take the last def::fftLength samples
+        /// take the last def::fftLength samples
         const int a = def::fftLength;
 
         std::for_each(data2.begin(),
@@ -894,11 +909,12 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
     }
 
     //generality
-    if(def::fftLength - Eyes < def::freq * 2.8) // real signal less than 2.5 seconds
+    if(def::fftLength - Eyes < def::freq * 0.8) // real signal less than 2.5 seconds
     {
         return false;
     }
 
+    /// calculate spectra for all channels, but write not all ???
     for(int i = 0; i < data2.rows(); ++i)
     {
         calcSpectre(data2[i],

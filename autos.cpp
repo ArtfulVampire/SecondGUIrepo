@@ -21,9 +21,71 @@ bool contains (InputIterator first, InputIterator last, const T & val)
   return false;
 }
 
+void MainWindow::countEdfSpectra(const QString & inPath,
+                                 const QString & outPath,
+                                 int numChan,
+                                 int fftLength)
+{
+    const QString tmp = "tempDirForPlainData";
+    const QString pics = "SpectraImg";
+
+    QDir locDir(inPath);
+    QStringList leest = locDir.entryList({"*.edf", "*.EDF"}, QDir::Files);
+    locDir.mkdir(tmp);
+    edfFile fil;
+    for(const QString & fileName : leest)
+    {
+        fil.readEdfFile(inPath + slash() + fileName);
+        writePlainData(QString(inPath
+                        + slash() + tmp
+                        + slash() + fileName).remove(".edf", Qt::CaseInsensitive),
+
+               #if 1
+                       /// for EEGMRI
+                       matrix(fil.getData()).resizeRows(
+                           numChan + 1 * def::withMarkersFlag).eraseRows(
+        {11,12,13,14,15,16,25,26,27,28,29,30,31})
+               #else
+                       /// just first 20 channels
+                       matrix(fil.getData()).resizeRows(20)
+               #endif
+
+                       );
+        /// Spectre::writeSpectra() will write def::nsWOM() spectra
+    }
+    def::ns = 20;
+
+    Spectre * sp = new Spectre();
+    sp->setFftLength(fftLength);
+
+    sp->setInPath(inPath + slash() + tmp);
+    sp->setOutPath(outPath);
+
+    /// clear def::fileMarkers for makeFullFileList in Spectre::countSpectra()
+    auto mem = def::fileMarkers;
+    def::fileMarkers.clear();
+    sp->countSpectraSlot();
+
+    locDir.cd(tmp);
+    locDir.removeRecursively();
+
+    locDir.cd(inPath);
+    locDir.mkdir(pics);
+    drawSpectra(outPath, inPath + slash() + pics);
+
+
+    def::fileMarkers = {"_wnd_"};
+    sp->compare();
+    sp->psaSlot();
+    delete sp;
+
+    def::fileMarkers = mem;
+
+}
+
 void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
 {
-    Spectre *sp = new Spectre();
+    Spectre * sp = new Spectre();
     sp->setFftLength(fftLen);
     if(inSmooth >= 0)
     {
@@ -2072,11 +2134,13 @@ void MainWindow::GalyaCut(const QString & path,
     // Galya slice by 16 seconds pieces - folders
     const int wndLen = 2; // seconds
 
+    const QString outDir = getFileName(path) + "_windows";
+
     QDir tmpDir(path);
     if(outPath.isEmpty())
     {
-        tmpDir.mkdir("windows");
-        outPath = tmpDir.absolutePath() + slash() + "windows";
+        tmpDir.mkdir(outDir);
+        outPath = tmpDir.absolutePath() + slash() + outDir;
     }
     else
     {
@@ -2186,9 +2250,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
                               QDir::Size|QDir::Reversed);
 
     edfFile initEdf;
-    edfFile currEdf;
     initEdf.setMatiFlag(false);
-    currEdf.setMatiFlag(false);
 
     ofstream outStr;
     double helpDouble;
@@ -2364,10 +2426,14 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
             freqCounter <= rightFreqLim;
             freqCounter += stepFreq)
         {
-            currEdf = initEdf;
             if(freqCounter != rightFreqLim)
             {
-                currEdf.refilter(freqCounter, freqCounter + stepFreq);
+                initEdf.refilter(freqCounter, freqCounter + stepFreq);
+            }
+            else
+            {
+                initEdf.readEdfFile(initEdf.getFilePath());
+                /// or refilter 0. 70.
             }
 
 
@@ -2394,7 +2460,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
                 {
                     helpString.clear();
                 }
-                helpDouble = fractalDimension(currEdf.getData()[i]);
+                helpDouble = fractalDimension(initEdf.getData()[i]);
                 outStr << doubleRound(helpDouble, 4) << "\t";
             }
             outStr.close();
@@ -2415,8 +2481,8 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
             outStr.open(helpString.toStdString().c_str(), ios_base::app);
             for(int i = 0; i < numChan; ++i)
             {
-                helpDouble = enthropy(currEdf.getData()[i].data(),
-                                      currEdf.getDataLen());
+                helpDouble = enthropy(initEdf.getData()[i].data(),
+                                      initEdf.getDataLen());
                 outStr << doubleRound(helpDouble, 4) << "\t";
             }
             outStr.close();
@@ -2453,8 +2519,8 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
 
                 helpString.clear(); // no picture
 
-                env = hilbertPieces(currEdf.getData()[i],
-                                    currEdf.getDataLen(),
+                env = hilbertPieces(initEdf.getData()[i],
+                                    initEdf.getDataLen(),
                                     def::freq,
                                     1., // no difference
                                     40., // no difference
@@ -2486,14 +2552,14 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
                 sumSpec = 0.;
 
                 for(int j = 0;
-                    j < fftLimit(hilbertFreqLimit, def::freq, fftL(currEdf.getDataLen()));
+                    j < fftLimit(hilbertFreqLimit, def::freq, fftL(initEdf.getDataLen()));
                     ++j)
                 {
                     sumSpec += envSpec[j];
                     helpDouble += envSpec[j] * j;
                 }
                 helpDouble /= sumSpec;
-                helpDouble /= fftLimit(1., def::freq, fftL(currEdf.getDataLen()));
+                helpDouble /= fftLimit(1., def::freq, fftL(initEdf.getDataLen()));
 
                 outStr << doubleRound(helpDouble, 4) << "\t";
             }

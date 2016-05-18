@@ -57,7 +57,8 @@ namespace def
     const bool wirteStartEndLong = true; // for slice
     const bool redirectCoutFlag = false; // redirect to generalLog.txt
 
-
+    const QString plainDataExtension = "scg";
+    const QString spectraDataExtension = "psd";
 
 
     extern bool ntFlag;

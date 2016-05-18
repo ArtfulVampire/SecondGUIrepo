@@ -350,7 +350,7 @@ matrix::matrix(int rows, int cols, double value)
 }
 
 
-void matrix::fill(double value)
+matrix & matrix::fill(double value)
 {
     for(auto it = data.begin(); it < data.end(); ++it)
     {
@@ -359,10 +359,11 @@ void matrix::fill(double value)
             (*itt) = value;
         }
     }
+    return *this;
 }
 
 
-void matrix::random(double low, double high)
+matrix & matrix::random(double low, double high)
 {
     std::default_random_engine gen(std::chrono::system_clock::now().time_since_epoch().count());
 //    std::default_random_engine gen;
@@ -374,6 +375,7 @@ void matrix::random(double low, double high)
             (*itt) = distr(gen);
         }
     }
+    return *this;
 }
 
 matrix matrix::subCols(int beginCol, int endCol) const /// submatrix
@@ -410,7 +412,7 @@ void matrix::resize(int newRows, int newCols)
 }
 
 
-void matrix::resizeRows(int newRows)
+matrix & matrix::resizeRows(int newRows)
 {
     int cols = this->cols();
     int oldRows = this->rows();
@@ -424,10 +426,11 @@ void matrix::resizeRows(int newRows)
             resizeValar(in, cols);
         });
     }
+    return *this;
 }
 
 
-void matrix::resizeCols(int newCols)
+matrix & matrix::resizeCols(int newCols)
 {
     std::for_each(data.begin(),
                   data.end(),
@@ -435,6 +438,7 @@ void matrix::resizeCols(int newCols)
     {
         resizeValar(in, newCols);
     });
+    return *this;
 }
 
 int matrix::rows() const
@@ -639,7 +643,7 @@ matrix matrix::transpose(const matrix &input)
     return res;
 #endif
 }
-void matrix::transpose()
+matrix & matrix::transpose()
 {
 #if 1
     (*this) = matrix::transpose(*this);
@@ -659,14 +663,16 @@ void matrix::transpose()
     this->resize(oldCols,
                  oldRows);
 #endif
+    return *this;
 }
 
-void matrix::invert()
+matrix & matrix::invert()
 {
     if(this->rows() != this->cols())
     {
         cout << "matrix::invert: matrix is not square" << endl;
-        return;
+//        exit(1);
+        return *this;
     }
 
     int size = this->rows();
@@ -716,40 +722,46 @@ void matrix::invert()
     }
 
     (*this) = tempMat;
+    return *this;
 }
 
-void matrix::swapCols(int i, int j)
+matrix & matrix::swapCols(int i, int j)
 {
     for(int k = 0; k < this->rows(); ++k)
     {
         std::swap(this->data[k][i], this->data[k][j]);
     }
 }
-void matrix::swapRows(int i, int j)
+matrix & matrix::swapRows(int i, int j)
 {
     std::swap(this->data[i], this->data[j]);
+    return *this;
 }
 
-void matrix::eraseRow(int i)
+matrix & matrix::eraseRow(int i)
 {
-    if(i >= this->rows()) return;
-    this->data.erase(data.begin() + i);
+    if(i < this->rows())
+    {
+        this->data.erase(data.begin() + i);
+    }
+    return *this;
 }
 
 
 /// looks like okay
-void matrix::eraseRows(const vector<int> & indices)
+matrix & matrix::eraseRows(const std::vector<int> & indices)
 {
     eraseItems(this->data, indices);
-    return;
+    return *this;
 
+    /// old version, the ~same as eraseItems()
 
     std::set<int, std::less<int>> excludeSet;
     for(auto item : indices)
     {
         excludeSet.emplace(item);
     }
-    vector<int> excludeVector;
+    std::vector<int> excludeVector;
     for(auto a : excludeSet)
     {
         excludeVector.push_back(a);
@@ -763,6 +775,7 @@ void matrix::eraseRows(const vector<int> & indices)
         }
     }
     this->data.resize(this->data.size() - excludeSet.size());
+    return *this;
 }
 
 //template <typename matType1, typename matType2>
@@ -821,9 +834,9 @@ void matrixProduct(const matrix & in1,
         temp = in2.getCol(j, Size); // size for prod()
         for(int i = 0; i < dim1; ++i)
         {
-            result[i][j] = std::inner_product(begin(temp),
-                                              end(temp),
-                                              begin(in1[i]),
+            result[i][j] = std::inner_product(std::begin(temp),
+                                              std::end(temp),
+                                              std::begin(in1[i]),
                                               0.);
         }
     }

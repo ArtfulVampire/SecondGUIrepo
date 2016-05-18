@@ -63,7 +63,7 @@ std::string funcName(std::string in);
         std::cout << funcName(#arg) \
         << ": time elapsed = "\
         << std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count()/1000.\
-        << " msec" << std::endl;\
+        << " sec" << std::endl;\
     }while(false)
 
 

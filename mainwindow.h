@@ -68,7 +68,7 @@ public slots:
     void sliceAll();
     void reduceChannelsSlot();
     void drawRealisations();
-    void drawSpectra();
+    void drawSpectraSlot();
     void drawDirSlot();
     void setEdfFileSlot();
     void cleanDirs();
@@ -136,6 +136,12 @@ public:
                          QString outPath = QString());
     void GalyaCut(const QString & path,
                   QString outPath = QString());
+    void countEdfSpectra(const QString & inPath,
+                         const QString & outPath,
+                         int numChan,
+                         int fftLength);
+    void drawSpectra(const QString & inPath,
+                     const QString & outPath);
 
     void rereferenceData(QString newRef, QString newPath);
     void makeChanList(std::vector<int> & chanList);

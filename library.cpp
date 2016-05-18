@@ -341,38 +341,47 @@ void makeFullFileList(const QString & path,
                       QStringList & lst,
                       const QStringList & auxFilters)
 {
-    QDir localDir(path);
-    QStringList nameFilters, leest;
-    QString helpString;
-    for(const QString & fileMark : def::fileMarkers)
+    if(def::fileMarkers.isEmpty())
     {
-        leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-        for(const QString & filter : leest)
-        {
-            helpString = "*" + filter + "*";
-            if(!auxFilters.isEmpty())
-            {
-                for(const QString & aux : auxFilters)
-                {
-//                    nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
-                    nameFilters << QString("*" + aux + helpString);
-                }
-            }
-            else
-            {
-//                nameFilters << QString(def::ExpName.left(3) + helpString);
-                nameFilters << helpString;
-            }
-
-        }
+        lst = QDir(path).entryList({"*.edf", "*.EDF", QString("*." + def::plainDataExtension)},
+                                   QDir::Files,
+                                   QDir::Name); /// Name ~ order
     }
-//    for(QString str : nameFilters)
-//    {
-//        cout << str << endl;
-//    }
-    lst = localDir.entryList(nameFilters,
-                             QDir::Files,
-                             QDir::Name); /// Name ~ order
+    else
+    {
+        QDir localDir(path);
+        QStringList nameFilters, leest;
+        QString helpString;
+        for(const QString & fileMark : def::fileMarkers)
+        {
+            leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+            for(const QString & filter : leest)
+            {
+                helpString = "*" + filter + "*";
+                if(!auxFilters.isEmpty())
+                {
+                    for(const QString & aux : auxFilters)
+                    {
+//                        nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
+                        nameFilters << QString("*" + aux + helpString);
+                    }
+                }
+                else
+                {
+//                    nameFilters << QString(def::ExpName.left(3) + helpString);
+                    nameFilters << helpString;
+                }
+
+            }
+        }
+//        for(QString str : nameFilters)
+//        {
+//            cout << str << endl;
+//        }
+        lst = localDir.entryList(nameFilters,
+                                 QDir::Files,
+                                 QDir::Name); /// Name ~ order
+    }
 }
 
 void makePaStatic(const QString & spectraDir,

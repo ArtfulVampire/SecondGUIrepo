@@ -777,7 +777,7 @@ void MainWindow::drawDirSlot()
     const QString deer = ui->drawDirBox->currentText();
     if(deer.contains("spectr", Qt::CaseInsensitive))
     {
-        drawSpectra();
+        drawSpectraSlot();
     }
     else
     {
@@ -785,13 +785,21 @@ void MainWindow::drawDirSlot()
     }
 }
 
-void MainWindow::drawSpectra()
+
+void MainWindow::drawSpectraSlot()
+{
+    const QString prePath = def::dir->absolutePath() + slash() + ui->drawDirBox->currentText();
+    const QString outPath = def::dir->absolutePath() + slash() + "SpectraImg";
+    drawSpectra(prePath, outPath);
+}
+
+
+void MainWindow::drawSpectra(const QString & prePath,
+                             const QString & outPath)
 {
     QTime myTime;
     myTime.start();
 
-    const QString prePath = def::dir->absolutePath() + slash() + ui->drawDirBox->currentText();
-    const QString outPath = def::dir->absolutePath() + slash() + "SpectraImg";
     QStringList lst;
     makeFullFileList(prePath, lst);
     lineType dataS;
@@ -803,11 +811,9 @@ void MainWindow::drawSpectra()
         readFileInLine(helpString,
                        dataS);
 
-
         helpString = outPath + slash() + str + ".jpg";
         drawTemplate(helpString);
         drawArray(helpString, dataS);
-
 
         ui->progressBar->setValue(100 * (++i) / lst.length());
         qApp->processEvents();
@@ -818,7 +824,6 @@ void MainWindow::drawSpectra()
         }
     }
     ui->progressBar->setValue(0);
-
     cout << "drawSpectra: time = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 

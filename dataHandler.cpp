@@ -69,7 +69,14 @@ void writePlainData(const QString outPath,
 //    if(numOfSlices < 250) return; /// used for sliceWindFromReal() but Cut::cut() ...
 
     ofstream outStr;
-    outStr.open(outPath.toStdString());
+    if(outPath.endsWith(def::plainDataExtension))
+    {
+        outStr.open(outPath.toStdString());
+    }
+    else
+    {
+        outStr.open((outPath + '.' + def::plainDataExtension).toStdString());
+    }
     outStr << "NumOfSlices " << numOfSlices << '\t';
     outStr << "NumOfChannels " << data.rows() << "\r\n";
     for (int i = 0; i < numOfSlices; ++i)

@@ -77,6 +77,7 @@ edfFile edfFile::operator=(const edfFile & other)
     this->headerRest = other.getHeaderRest();
 
     this->data = other.getData();
+    this->fftData = other.fftData;
 
 #if DATA_POINTER
     this->dataPointer = &(this->data);

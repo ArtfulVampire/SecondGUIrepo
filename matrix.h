@@ -49,9 +49,9 @@ public:
 
     matrix(std::initializer_list<double> lst); // diagonal
 
-    void resizeRows(int rows);
-    void resizeCols(int newCols);
-    void fill(double value);
+    matrix & resizeRows(int rows);
+    matrix & resizeCols(int newCols);
+    matrix & fill(double value);
     void print(int rows = 0, int cols = 0) const;
     int cols() const;
     int rows() const;
@@ -111,15 +111,15 @@ public:
     static matrix transpose(const matrix & input);
 
     // "private"
-    void transpose();
-    void invert();
-    void swapCols(int i, int j);
-    void swapRows(int i, int j);
-    void zero();
-    void one();
-    void eraseRow(int i);
-    void eraseRows(const vector<int> & indices);
-    void random(double low, double high);
+    matrix & transpose();
+    matrix & invert();
+    matrix & swapCols(int i, int j);
+    matrix & swapRows(int i, int j);
+    matrix & zero();
+    matrix & one();
+    matrix & eraseRow(int i);
+    matrix & eraseRows(const std::vector<int> & indices);
+    matrix & random(double low, double high);
     matrix subCols(int beginCol, int endCol) const; /// submatrix
 //    double det();
 //    void cofactor();

@@ -33,6 +33,8 @@ public:
     void writeSpectra(const double leftFreq = def::leftFreq,
                       const double rightFreq = def::rightFreq);
 
+    void setInPath(const QString &);
+    void setOutPath(const QString &);
     void countSpectra();
     bool countOneSpectre(matrix & data2,
                          matrix & dataFFT);
@@ -56,6 +58,17 @@ public slots:
 private:
     Ui::Spectre * ui;
     QString backupDirPath;
+    QString defaultInPath = def::dir->absolutePath()
+                            + slash() +"Realisations";
+    QString defaultOutPath = def::dir->absolutePath()
+                             + slash() +"SpectraSmooth";
+
+    QString defaultInPathW = def::dir->absolutePath()
+                             + slash() + "windows"
+                             + slash() + "fromreal";
+    QString defaultOutPathW = def::dir->absolutePath()
+                             + slash() + "SpectraSmooth"
+                             + slash() + "windows";
 
     std::vector<std::pair<int, int>> rangeLimits;
 

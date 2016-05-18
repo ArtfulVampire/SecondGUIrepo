@@ -12,7 +12,12 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(7);
 //    ui->justSliceButton->setChecked(true);
 
-    return;
+//    countEdfSpectra("/media/michael/Files/Data/Galya/Ali-Zade",
+//                    "/media/michael/Files/Data/Galya/Ali-Zade/SpectraSmooth",
+//                    32, 2048);
+//    exit(0);
+
+//    return;
 
 
 
@@ -96,18 +101,19 @@ void MainWindow::customFunc()
                       "Ivanova",
                       "Gramotko"};
 #else
-    QStringList leest{"EEGFMRI2"};
+//    QStringList leest{"temp"};
+    QStringList leest{"Mezhenova",
+                     "Sushinsky"};
 #endif
+
+    /// 32 channels for EEGMRI
     for(auto str : leest)
     {
         deleteSpaces(def::GalyaFolder +  slash() + str);
         GalyaCut(def::GalyaFolder + slash() + str);
-//        GalyaProcessing(def::GalyaFolder + slash() + str,
-//                        31,
-//                        def::GalyaFolder
-//                        + slash() + "NEW_RESULTS"
-//                        + slash() + "out"
-//                        + slash() + str);
+
+//        TIME(GalyaProcessing(def::GalyaFolder + slash() + str,
+//                        32));
     }
     exit(0);
 #endif
@@ -2566,7 +2572,7 @@ void MainWindow::customFunc()
                 cout << list1[i].left(3).toStdString() << " start" << endl;
                 helpString = list1[i];
                 helpString.replace("_1", "_2");
-                res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 01000, 125);
+                res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 1000, 125);
                 outStream << list1[i].left(3).toStdString() << " cross\t" << res << endl;
                 res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "4sec19ch", 50, 3, true, 1000, 125);
                 outStream << list1[i].left(3).toStdString() << " wnd cross\t" << res << endl;
@@ -2589,7 +2595,7 @@ void MainWindow::customFunc()
                 cout << list1[i].left(3).toStdString() << " start" << endl;
                 helpString = list1[i];
                 helpString.replace("_1", "_2");
-                res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 01000, 125);
+                res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "16sec19ch", 50, 5, false, 1000, 125);
                 outStream << list1[i].left(3).toStdString() << " ica cross\t" << res << endl;
                 res = filesCrossClassification(def::dir->absolutePath(), list1[i], helpString, "4sec19ch", 50, 3, true, 1000, 125);
                 outStream << list1[i].left(3).toStdString() << " ica wnd cross\t" << res << endl;
