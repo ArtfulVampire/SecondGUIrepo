@@ -61,13 +61,13 @@ public slots:
 
         if(temp>=85.)
         {
-            std::cout<<"CRITICAL temp = "<<temp<<std::endl;
+            std::cout << "CRITICAL temp = " << temp << std::endl;
             sleep(3);
             checkTemp();
         }
         else
         {
-            std::cout<<"current temp = "<<temp<<std::endl;
+            std::cout << "current temp = " << temp << std::endl;
         }
     }
 

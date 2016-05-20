@@ -764,7 +764,7 @@ void drawTemplate(const QString & outPath,
         paint.setFont(QFont("Helvetica", int(24 * scaleY), -1, false));
         if(channelsFlag)
         {
-            helpString = QString(coords::lbl[c2])
+            helpString = coords::lbl[c2]
                          + "(" + QString::number(c2 + 1) + ")" // can be commented
                          ;
         }

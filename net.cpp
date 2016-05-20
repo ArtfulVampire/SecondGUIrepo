@@ -3047,7 +3047,7 @@ void Net::optimizeChannelsSet() /// CAREFUL
     helpString += "\n";
     for(int i = 0; i < channelsSet.length(); ++i)
     {
-        helpString += QString(coords::lbl[channelsSet[i]]) + "\t";
+        helpString += coords::lbl[channelsSet[i]] + "\t";
     }
     helpString += "\n";
 

@@ -1351,7 +1351,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
     cout << "cleanFromEyes: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
-void edfFile::reduceChannels(const vector<int> & chanList) // much memory
+void edfFile::reduceChannels(const std::vector<int> & chanList) // much memory
 {
 #if 1 // more general, much memory
     edfFile temp(*this);

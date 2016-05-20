@@ -263,54 +263,6 @@ FILE * fopen(QString filePath, const char *__modes)
     return fopen(filePath.toStdString().c_str(), __modes);
 }
 
-ostream & operator << (ostream &os, QString toOut)
-{
-    os << toOut.toStdString();
-    return os;
-}
-
-
-template <typename T>
-ostream & operator << (ostream &os, vector<T> toOut) // template!
-{
-    for(int i = 0; i < toOut.size(); ++i)
-    {
-        os << toOut[i] << '\t';
-    }
-    return os;
-}
-
-ostream & operator << (ostream &os, vector < vector < double > > toOut)
-{
-    for(unsigned int i = 0; i < toOut.size(); ++i)
-    {
-        os << toOut[i] << endl;
-    }
-    return os;
-
-}
-
-ostream & operator << (ostream &os, QList<int> toOut)
-{
-    for(int i = 0; i < toOut.length(); ++i)
-    {
-        os << toOut[i] << " ";
-    }
-    return os;
-}
-
-ostream & operator << (ostream &os, matrix toOut)
-{
-    for(auto it = toOut.data.begin(); it < toOut.data.end(); ++it)
-    {
-        for(auto itt = begin(*it); itt < end(*it); ++itt)
-        {
-            os << doubleRound((*itt), 4) << "\t";
-        }
-        os << endl;
-    }
-    return os;
-}
 
 
 
@@ -550,6 +502,64 @@ int matiCountDecimal(QString byteMarker)
     return res;
 }
 
+
+
+ostream & operator << (ostream &os, QString toOut)
+{
+    os << toOut.toStdString();
+    return os;
+}
+ostream & operator << (ostream &os, matrix toOut)
+{
+    for(auto it = toOut.data.begin(); it < toOut.data.end(); ++it)
+    {
+        for(auto itt = begin(*it); itt < end(*it); ++itt)
+        {
+            os << doubleRound((*itt), 4) << "\t";
+        }
+        os << endl;
+    }
+    return os;
+}
+
+template <typename Typ, template <typename> class Cont>
+std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut)
+{
+    std::string separ = " ";
+    //if(is_container<Typ>) separ = std::endl;
+    for(auto in : toOut)
+    {
+        os << in << separ;
+
+    }
+    return os;
+}
+
+template <typename Typ, template <typename, typename> class Cont>
+std::ostream & operator<< (std::ostream &os, Cont <Typ, std::allocator<Typ>> toOut)
+{
+    std::string separ = " ";
+    //if(is_container<Typ>) separ = std::endl;
+    for(auto in : toOut)
+    {
+        os << in << separ;
+
+    }
+    return os;
+}
+
+
+// with allocators
+template ostream & operator << (std::ostream & os, std::vector<std::vector<double>> toOut);
+template ostream & operator << (std::ostream & os, std::vector<int> toOut);
+template ostream & operator << (std::ostream & os, std::vector<double> toOut);
+template ostream & operator << (std::ostream & os, std::list<int> toOut);
+template ostream & operator << (std::ostream & os, std::list<double> toOut);
+
+// w/o allocators
+template ostream & operator << (std::ostream & os, std::valarray<double> toOut);
+template ostream & operator << (std::ostream & os, QList<int> toOut);
+template ostream & operator << (std::ostream & os, QList<double> toOut);
 
 template int indexOfMax(const std::vector<double> & cont);
 template int indexOfMax(const std::valarray<double> & cont);

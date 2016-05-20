@@ -134,6 +134,8 @@ public:
     void GalyaProcessing(const QString &procDirPath,
                          const int numChan = 31,
                          QString outPath = QString());
+    void repair31ChannelsOrder(const QString & inPath,
+                               QString outPath = QString());
     void GalyaCut(const QString & path,
                   QString outPath = QString());
     void countEdfSpectra(const QString & inPath,

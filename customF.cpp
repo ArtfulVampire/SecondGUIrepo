@@ -17,6 +17,10 @@ void MainWindow::customFunc()
 //                    32, 2048);
 //    exit(0);
 
+    repair31ChannelsOrder("/media/michael/Files/Data/Galya/Sarvardinova/Sarvardinova_Natalya_Exam_8.edf");
+    repair31ChannelsOrder("/media/michael/Files/Data/Galya/hanenya/Hanenya_Aleksey_Exam_56.edf");
+    exit(0);
+
 //    return;
 
 

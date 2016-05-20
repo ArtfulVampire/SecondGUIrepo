@@ -2197,6 +2197,56 @@ void MainWindow::GalyaCut(const QString & path,
 
 }
 
+void MainWindow::repair31ChannelsOrder(const QString & inPath,
+                                       QString outPath)
+{
+    if(outPath.isEmpty())
+    {
+        outPath = inPath;
+        outPath.replace(".edf", "_goodChan.edf");
+    }
+
+    std::vector<int> reorderChanList{};
+    edfFile initFile;
+    initFile.readEdfFile(inPath);
+    for(int i = 0; i < 31; ++i) /// only for 31 channels
+    {
+        for(int j = 0; j < initFile.getNs(); ++j)
+        {
+            if(initFile.getLabels()[j].contains(coords::lbl31[i]))
+            {
+                reorderChanList.push_back(j);
+                break;
+            }
+        }
+    }
+    // fill the rest of channels
+    for(int j = 0; j < initFile.getNs(); ++j)
+    {
+        if(std::find(std::begin(reorderChanList),
+                     std::end(reorderChanList),
+                     j)
+           == std::end(reorderChanList))
+        {
+            reorderChanList.push_back(j);
+        }
+    }
+
+    std::vector<int> ident(initFile.getNs());
+    std::iota(std::begin(ident), std::end(ident), 0);
+    if(reorderChanList != ident)
+    {
+//        std::cout << reorderChanList << endl;
+        initFile.reduceChannels(reorderChanList);
+        initFile.writeEdfFile(outPath);
+    }
+    else
+    {
+//        cout << "repair31Chans: order is OK" << endl;
+//        cout << initFile.getFilePath() << endl;
+    }
+}
+
 void MainWindow::GalyaProcessing(const QString & procDirPath,
                                  const int numChan,
                                  QString outPath)

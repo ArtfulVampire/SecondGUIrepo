@@ -87,13 +87,17 @@ QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
 QString getExt(QString filePath);
 QString slash();
+
+//, typename = std::allocator<Typ>
+template <typename Typ, template <typename> class Cont>
+std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut); // template!
+
+template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont>
+std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut); // template!
+
 std::ostream & operator<< (std::ostream &os, QString toOut);
-std::ostream & operator<< (std::ostream &os, mat toOut);
-std::ostream & operator<< (std::ostream &os, QList<int> toOut);
 std::ostream & operator<< (std::ostream &os, matrix toOut);
 
-template <typename T>
-std::ostream & operator<< (std::ostream &os, std::vector<T> toOut); // template!
 
 char * strToChar(const QString & input);
 FILE * fopen(QString filePath, const char *__modes);
