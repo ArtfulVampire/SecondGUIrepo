@@ -17,9 +17,9 @@ void MainWindow::customFunc()
 //                    32, 2048);
 //    exit(0);
 
-    repair31ChannelsOrder("/media/michael/Files/Data/Galya/Sarvardinova/Sarvardinova_Natalya_Exam_8.edf");
-    repair31ChannelsOrder("/media/michael/Files/Data/Galya/hanenya/Hanenya_Aleksey_Exam_56.edf");
-    exit(0);
+//    repair31ChannelsOrder("/media/michael/Files/Data/Galya/Sarvardinova/Sarvardinova_Natalya_Exam_8.edf");
+//    repair31ChannelsOrder("/media/michael/Files/Data/Galya/hanenya/Hanenya_Aleksey_Exam_56.edf");
+//    exit(0);
 
 //    return;
 
@@ -79,46 +79,39 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
+//    repair31ChannelsOrder("/media/michael/Files/Data/Dasha/Burmistrova/Burmistrova_Olga_24.edf",
+//                          "/media/michael/Files/Data/Dasha/GOODCHANS/Burmistrova_Olga_24.edf");
+//    exit(0);
+
+
 
 #if 1
     def::ntFlag = true; /// for Dasha's and EEGMRI
 //    def::ntFlag = false; /// encephalan (+1)
-//    GalyaProcessing(def::GalyaFolder + slash() + "temp"); exit(0);
 
-#if 0
-    QStringList leest {"EDF_Dasha_more",
-                      "Melnik",
-                      "tactile",
-                      "Didkovskaya",
-                      "Vasina",
-                      "Kalichenko",
-                      "BerlinHenis",
-                      "zelenkov",
-                      "Krasnobaev",
-                      "hanenya",
-                      "bushenkov",
-                      "Tinyanova",
-                      "Sarvardinova",
-                      "Ryibalko",
-                      "Paramonova",
-                      "Chemerisova",
-                      "Ivanova",
-                      "Gramotko"};
-#else
-//    QStringList leest{"temp"};
-    QStringList leest{"Mezhenova",
-                     "Sushinsky"};
-#endif
+    const QString workDir = "/media/michael/Files/Data/Dasha";
+    GalyaCut(workDir + slash() + "GOODCHANS");
+    GalyaProcessing(workDir + slash() + "GOODCHANS");
+    exit(0);
+
+
+    QStringList leest = QDir(workDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 
     /// 32 channels for EEGMRI
     for(auto str : leest)
     {
-        deleteSpaces(def::GalyaFolder +  slash() + str);
-        GalyaCut(def::GalyaFolder + slash() + str);
 
-//        TIME(GalyaProcessing(def::GalyaFolder + slash() + str,
-//                        32));
+        if(str == "GOODCHANS") continue;
+//        cout << str << endl;
+
+        deleteSpaces(workDir + slash() + str);
+        repairChannels(workDir + slash() + str,
+                       workDir + slash() + "GOODCHANS");
     }
+
+//    GalyaCut(workDir + slash() + "GOODCHANS");
+//    GalyaProcessing(workDir + slash() + "GOODCHANS");
+
     exit(0);
 #endif
 

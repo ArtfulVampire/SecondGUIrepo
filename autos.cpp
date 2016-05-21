@@ -2132,7 +2132,7 @@ void MainWindow::GalyaCut(const QString & path,
                           QString outPath)
 {
     // Galya slice by 16 seconds pieces - folders
-    const int wndLen = 2; // seconds
+    const int wndLen = 16; // seconds
 
     const QString outDir = getFileName(path) + "_windows";
 
@@ -2244,6 +2244,19 @@ void MainWindow::repair31ChannelsOrder(const QString & inPath,
     {
 //        cout << "repair31Chans: order is OK" << endl;
 //        cout << initFile.getFilePath() << endl;
+    }
+}
+
+void MainWindow::repairChannels(const QString & inPath,
+                                const QString & outPath)
+{
+    for(const QString & fileName : QDir(inPath).entryList({"*.edf", "*.EDF"}, QDir::Files))
+    {
+        QString outName = fileName;
+//        outName.replace(".edf", "_goodChan.edf", Qt::CaseInsensitive);
+        cout << fileName << endl;
+        repair31ChannelsOrder(inPath + slash() + fileName,
+                              outPath + slash() + outName);
     }
 }
 

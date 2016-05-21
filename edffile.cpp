@@ -505,6 +505,16 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     }
     handleData(readFlag, edfDescriptor);
 
+//    cout << "ns = " << ns << endl;
+    /// experimental annotations
+    if(this->edfPlusFlag)
+    {
+
+        this->removeChannels({this->markerChannel}); /// it should be zero
+        this->edfPlusFlag = false;
+        this->markerChannel = -1;
+    }
+
     /// experimental
     {
         const double oldDdr = this->getDdr();
@@ -513,6 +523,11 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
         {
             nri /= oldDdr;
         }
+        for(edfChannel & ch : this->channels)
+        {
+            ch.nr /= oldDdr;
+        }
+
         ndr = ceil(ndr * oldDdr); /// ceil or round?
     }
 
@@ -926,14 +941,6 @@ void edfFile::adjustArraysByChannels()
     this->dataLength = this->data[0].size(); // dunno
 #endif
 }
-
-// was not used
-//void edfFile::appendChannel(edfChannel addChan, QString outPath)
-//{
-//    this->channels.push_back(addChan);
-//    this->adjustArraysByChannels();
-//    this->writeEdfFile(outPath);
-//}
 
 void edfFile::adjustMarkerChannel()
 {
