@@ -8,20 +8,23 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
 
+//    for(int a : {1000, 10000, 100000})
+//    {
+//        ofstream outStr;
+//        QString fileN = def::dataFolder + slash() + "test_" + QString::number(a) + ".txt";
+//        outStr.open(fileN.toStdString());
+//        for(int b = 1; b <= a; ++b)
+//        {
+//            outStr << b << '\t';
+//        }
+//        outStr.close();
+//    }
+//    exit(9);
+
     /// for standalone eyesClean
 //    ui->windowLengthSpinBox->setValue(7);
 //    ui->justSliceButton->setChecked(true);
 
-//    countEdfSpectra("/media/michael/Files/Data/Galya/Ali-Zade",
-//                    "/media/michael/Files/Data/Galya/Ali-Zade/SpectraSmooth",
-//                    32, 2048);
-//    exit(0);
-
-//    repair31ChannelsOrder("/media/michael/Files/Data/Galya/Sarvardinova/Sarvardinova_Natalya_Exam_8.edf");
-//    repair31ChannelsOrder("/media/michael/Files/Data/Galya/hanenya/Hanenya_Aleksey_Exam_56.edf");
-//    exit(0);
-
-//    return;
 
 
 
@@ -48,8 +51,6 @@ void MainWindow::customFunc()
     fil.writeEdfFile("/media/michael/Files/Data/BVX/BVX_new.edf");
     exit(0);
 #endif
-
-//    return;
 
 #if 0
     /// drawEdf
@@ -79,9 +80,15 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-//    repair31ChannelsOrder("/media/michael/Files/Data/Dasha/Burmistrova/Burmistrova_Olga_24.edf",
-//                          "/media/michael/Files/Data/Dasha/GOODCHANS/Burmistrova_Olga_24.edf");
-//    exit(0);
+
+//    for(auto str : QDir(def::DashaFolder + "/BerlinHenis").entryList({"*.edf"}))
+//    {
+//        cout << str << "\t" << areEqualFiles(def::DashaFolder + "/BerlinHenis/" + str,
+//                              def::DashaFolder + "/BerlinHenis_old/" + str) << endl;
+//    }
+//    exit(7);
+
+    return;
 
 
 
@@ -89,28 +96,25 @@ void MainWindow::customFunc()
     def::ntFlag = true; /// for Dasha's and EEGMRI
 //    def::ntFlag = false; /// encephalan (+1)
 
-    const QString workDir = "/media/michael/Files/Data/Dasha";
-    GalyaCut(workDir + slash() + "GOODCHANS");
-    GalyaProcessing(workDir + slash() + "GOODCHANS");
-    exit(0);
+//    GalyaCut(def::DashaFolder + slash() + "GOODCHANS");
+//    GalyaProcessing(def::DashaFolder + slash() + "GOODCHANS");
+//    exit(0);
 
-
-    QStringList leest = QDir(workDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+    QStringList leest = QDir(def::DashaFolder).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 
     /// 32 channels for EEGMRI
     for(auto str : leest)
     {
+//        cout << str << "\t" << testChannelsOrderConsistency(def::DashaFolder
+//                                                            + slash() + str) << endl;
 
-        if(str == "GOODCHANS") continue;
-//        cout << str << endl;
-
-        deleteSpaces(workDir + slash() + str);
-        repairChannels(workDir + slash() + str,
-                       workDir + slash() + "GOODCHANS");
+//        deleteSpaces(def::DashaFolder + slash() + str);
+//        repairChannels(def::DashaFolder + slash() + str,
+//                       def::DashaFolder + slash() + "GOODCHANS_to_often");
     }
 
-//    GalyaCut(workDir + slash() + "GOODCHANS");
-//    GalyaProcessing(workDir + slash() + "GOODCHANS");
+    GalyaCut(def::DashaFolder + slash() + "GOODCHANS_to_often");
+    GalyaProcessing(def::DashaFolder + slash() + "GOODCHANS_to_often");
 
     exit(0);
 #endif

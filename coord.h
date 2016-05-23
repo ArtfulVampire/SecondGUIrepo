@@ -42,6 +42,15 @@ const std::vector<QString> lbl31 {"Fp1", "27", "Fp2",
                                   "37", "P3", "Pz", "P4", "34",
                                   "33", "T3", "T4", "T5", "T6",
                                   "O1", "Oz", "O2"};
+const std::vector<QString> lbl31_2 {"Fp1", "Fp2",
+                                    "F3", "F4", "C3", "C4", "P3", "P4",
+                                    "O1", "O2", "Pg1", "Pg2",
+                                    "F7", "F8", "T3", "T4", "T5", "T6",
+                                    "Cb1", "Cb2",
+                                    "Fz", "Cz", "Pz", "33", "Oz",
+                                    "A2", "A1",
+                                    "27", "28", "29",
+                                    "34", "35", "36", "37", "38", "39", "40"};
 
 }
 
@@ -104,6 +113,7 @@ namespace def
 //    const QString dataFolder = "D:/MichaelAtanov/Data";
 //    const QString dataFolder = "D:/";
     const QString GalyaFolder = "/media/Files/Data/Galya";
+    const QString DashaFolder = "/media/Files/Data/Dasha";
     const bool opencl = true;
     const bool openmp = true;
 

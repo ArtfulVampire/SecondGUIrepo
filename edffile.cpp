@@ -284,11 +284,11 @@ edfFile::edfFile(int in_ndr, int in_ns,
 */
 
 
-void edfFile::readEdfFile(QString EDFpath)
+void edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 {
     QTime myTime;
     myTime.start();
-    handleEdfFile(EDFpath, true);
+    handleEdfFile(EDFpath, true, headerOnly);
 }
 
 void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
@@ -325,7 +325,7 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
 }
 
 // readFlag: 1 - read, 0 - write
-void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
+void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 {
     //    a = a0 + (a1-a0) * (d-d0) / (d1-d0).
 
@@ -484,6 +484,25 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag)
     {
         fclose(header);
     }
+
+    /// experimental
+    if(headerOnly)
+    {
+        fclose(edfDescriptor);
+
+//        if(this->edfPlusFlag)
+//        {
+
+//            this->channels.erase(std::begin(this->channels) + this->markerChannel);
+//            this->adjustArraysByChannels();
+
+//            this->edfPlusFlag = false;
+//            this->markerChannel = -1;
+//        }
+
+        return;
+    }
+
 
     fpos_t *position = new fpos_t;
     fgetpos(edfDescriptor, position);

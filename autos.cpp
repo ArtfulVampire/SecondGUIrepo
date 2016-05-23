@@ -21,6 +21,8 @@ bool contains (InputIterator first, InputIterator last, const T & val)
   return false;
 }
 
+
+
 void MainWindow::countEdfSpectra(const QString & inPath,
                                  const QString & outPath,
                                  int numChan,
@@ -2197,6 +2199,63 @@ void MainWindow::GalyaCut(const QString & path,
 
 }
 
+bool MainWindow::testChannelsOrderConsistency(const QString & path)
+{
+    std::vector<QString> labelsBC;
+    std::vector<QString> labels;
+    edfFile fil;
+    QStringList leest = QDir(path).entryList({"*.edf", "*.EDF"});
+//    cout << "main: " << leest[0] << endl;
+
+    fil.readEdfFile(path + slash() + leest[0], true);
+    labelsBC = fil.getLabels();
+    for(int i = 0; i < 5; ++i)
+    {
+        auto bad = std::find_if(std::begin(labelsBC),
+                                std::end(labelsBC),
+                                [&labelsBC](const QString & in)
+        {
+            return !in.contains("EEG", Qt::CaseInsensitive);
+        });
+        if(bad != std::end(labelsBC))
+        {
+            labelsBC.erase(bad);
+        }
+    }
+
+    bool res = true;
+
+
+    for(const QString & guy : leest)
+    {
+        fil.readEdfFile(path + slash() + guy, true);
+        labels = fil.getLabels();
+
+        for(int i = 0; i < 5; ++i)
+        {
+            auto bad = std::find_if(std::begin(labels),
+                                    std::end(labels),
+                                    [&labels](const QString & in)
+            {
+                return !in.contains("EEG", Qt::CaseInsensitive);
+            });
+            if(bad != std::end(labels))
+            {
+                labels.erase(bad);
+            }
+        }
+
+        if(labels != labelsBC)
+        {
+            cout << guy << endl;
+            res = false;
+        }
+
+
+    }
+    return res;
+}
+
 void MainWindow::repair31ChannelsOrder(const QString & inPath,
                                        QString outPath)
 {
@@ -2205,15 +2264,16 @@ void MainWindow::repair31ChannelsOrder(const QString & inPath,
         outPath = inPath;
         outPath.replace(".edf", "_goodChan.edf");
     }
+    const std::vector<QString> & labelsExample = coords::lbl31_2;
 
     std::vector<int> reorderChanList{};
     edfFile initFile;
-    initFile.readEdfFile(inPath);
-    for(int i = 0; i < 31; ++i) /// only for 31 channels
+    initFile.readEdfFile(inPath, true);
+    for(int i = 0; i < labelsExample.size(); ++i) /// only for 31 channels
     {
         for(int j = 0; j < initFile.getNs(); ++j)
         {
-            if(initFile.getLabels()[j].contains(coords::lbl31[i]))
+            if(initFile.getLabels()[j].contains(labelsExample[i]))
             {
                 reorderChanList.push_back(j);
                 break;
@@ -2236,7 +2296,7 @@ void MainWindow::repair31ChannelsOrder(const QString & inPath,
     std::iota(std::begin(ident), std::end(ident), 0);
     if(reorderChanList != ident)
     {
-//        std::cout << reorderChanList << endl;
+        initFile.readEdfFile(inPath);
         initFile.reduceChannels(reorderChanList);
         initFile.writeEdfFile(outPath);
     }

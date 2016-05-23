@@ -179,10 +179,11 @@ public:
     edfFile(const edfFile & other, bool noData = false);
     edfFile(const QString & matiLogPath);
 
-    void readEdfFile(QString EDFpath);
+    void readEdfFile(QString EDFpath, bool headerOnly = false);
     void writeEdfFile(QString EDFpath, bool asPlain = false);
     void handleEdfFile(QString EDFpath,
-                       bool readFlag);
+                       bool readFlag,
+                       bool headerOnly = false);
 
     void handleData(bool readFlag,
                     FILE * edfForData);

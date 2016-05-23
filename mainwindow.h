@@ -139,6 +139,8 @@ public:
 
     void repairChannels(const QString & inPath,
                         const QString & outPath);
+
+    bool testChannelsOrderConsistency(const QString & path);
     void GalyaCut(const QString & path,
                   QString outPath = QString());
     void countEdfSpectra(const QString & inPath,
