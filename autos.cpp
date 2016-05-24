@@ -2130,15 +2130,47 @@ matrix MainWindow::makeTestData(const QString & outPath)
     return pewM;
 }
 
+void MainWindow::cutOneFile(const QString & filePath,
+                            const int wndLen,
+                            const QString & outPath)
+{
+    edfFile initEdf;
+    initEdf.readEdfFile(filePath);
+
+    QString addDir = initEdf.getExpName();
+    addDir.resize(addDir.indexOf("_"));
+    QDir(outPath).mkdir(addDir);
+
+    /// generality experimental
+    if(initEdf.getEdfPlusFlag()) // if annotations
+    {
+        initEdf.removeChannels({initEdf.getMarkChan()}); // remove Annotations
+    }
+
+    for(int i = 0; i < ceil(initEdf.getDataLen() / def::freq / wndLen); ++i)
+    {
+        initEdf.saveSubsection(i * def::freq * wndLen,
+                               fmin((i + 1) * def::freq * wndLen, initEdf.getDataLen()),
+                               QString(outPath
+                                       + slash() + addDir
+                                       + slash()
+                                       + initEdf.getExpName()
+                                       + "_wnd_" + QString::number(i+1) + ".edf"));
+    }
+}
+
 void MainWindow::GalyaCut(const QString & path,
+                          const int wndLen,
                           QString outPath)
 {
-    // Galya slice by 16 seconds pieces - folders
-    const int wndLen = 16; // seconds
 
     const QString outDir = getFileName(path) + "_windows";
+    const QString smallsDir = getFileName(path) + "_smalls";
 
     QDir tmpDir(path);
+    tmpDir.mkdir(smallsDir);
+    const QString smallsPath = tmpDir.absolutePath() + slash() + smallsDir;
+
     if(outPath.isEmpty())
     {
         tmpDir.mkdir(outDir);
@@ -2148,52 +2180,41 @@ void MainWindow::GalyaCut(const QString & path,
     {
         tmpDir.mkpath(outPath);
     }
-    QString smallsPath = outPath;
-    smallsPath.resize(smallsPath.lastIndexOf(QDir::separator()));
-    smallsPath += slash() + "smalls";
 
+    /// to change
     const QString logPath = "/media/Files/Data/Galya/log.txt";
     ofstream logStream(logPath.toStdString(), ios_base::app);
 
     const QStringList leest1 = tmpDir.entryList({"*.edf", "*.EDF"});
-    for(const QString & guy : leest1)
-    {
-//        if(edfFile::checkDdr(path + slash() + guy) == 1.)
-//        {
-//            continue;
-//        }
-        cout << guy << "\tstart" << endl;
-        edfFile & initEdf = globalEdf;
-        initEdf.readEdfFile(path + slash() + guy);
+    const auto filesVec = leest1.toVector();
 
+
+    omp_set_dynamic(0);
+    omp_set_num_threads(3);
+#pragma omp parallel
+#pragma omp for nowait schedule(dynamic,2)
+    for(int i = 0; i < filesVec.size(); ++i)
+    {
+        cout << filesVec[i] << endl;
+        QString helpString = tmpDir.absolutePath() + slash() + filesVec[i];
+        edfFile initEdf;
+        initEdf.readEdfFile(helpString, true);
+
+        /// some check for small
         if(initEdf.getNdr() * initEdf.getDdr() <= wndLen )
         {
-            QFile::remove(smallsPath
-                          + slash() + initEdf.getExpName());
+            QFile::remove(smallsPath + slash() + initEdf.getFileNam());
             QFile::copy(initEdf.getFilePath(),
-                        smallsPath
-                        + slash() + initEdf.getExpName());
+                        smallsPath + slash() + initEdf.getFileNam());
 
-            cout << "smallFile \t" << initEdf.getExpName() << endl;
+            cout << "smallFile \t" << initEdf.getFileNam() << endl;
             logStream << initEdf.getFilePath() << "\t" << "too small" << "\n";
             continue;
         }
 
-        /// generality
-        if(initEdf.getEdfPlusFlag()) // if annotations
-        {
-            initEdf.removeChannels({initEdf.getMarkChan()}); // remove Annotations
-        }
-
-        for(int i = 0; i < ceil(initEdf.getDataLen() / def::freq / wndLen); ++i)
-        {
-            initEdf.saveSubsection(i * def::freq * wndLen,
-                                   fmin((i + 1) * def::freq * wndLen, initEdf.getDataLen()),
-                                   QString(outPath
-                                           + slash() + initEdf.getExpName()
-                                           + "_wnd_" + QString::number(i+1) + ".edf"));
-        }
-        cout << guy << "\tfinish" << endl;
+        cutOneFile(helpString,
+                   wndLen,
+                   outPath);
     }
     logStream.close();
 
@@ -2250,30 +2271,29 @@ bool MainWindow::testChannelsOrderConsistency(const QString & path)
             cout << guy << endl;
             res = false;
         }
-
-
     }
+    cout << "testChannelsOrderConsistency:\n" << path << "\t" << res << endl;
     return res;
 }
 
-void MainWindow::repair31ChannelsOrder(const QString & inPath,
-                                       QString outPath)
+void MainWindow::repairChannelsOrder(const QString & inPath,
+                                     QString outPath,
+                                     const std::vector<QString> & standard)
 {
     if(outPath.isEmpty())
     {
         outPath = inPath;
         outPath.replace(".edf", "_goodChan.edf");
     }
-    const std::vector<QString> & labelsExample = coords::lbl31_2;
 
     std::vector<int> reorderChanList{};
     edfFile initFile;
     initFile.readEdfFile(inPath, true);
-    for(int i = 0; i < labelsExample.size(); ++i) /// only for 31 channels
+    for(int i = 0; i < standard.size(); ++i) /// only for 31 channels
     {
         for(int j = 0; j < initFile.getNs(); ++j)
         {
-            if(initFile.getLabels()[j].contains(labelsExample[i]))
+            if(initFile.getLabels()[j].contains(standard[i]))
             {
                 reorderChanList.push_back(j);
                 break;
@@ -2302,60 +2322,289 @@ void MainWindow::repair31ChannelsOrder(const QString & inPath,
     }
     else
     {
+        QFile::copy(inPath, outPath);
 //        cout << "repair31Chans: order is OK" << endl;
 //        cout << initFile.getFilePath() << endl;
     }
 }
 
 void MainWindow::repairChannels(const QString & inPath,
-                                const QString & outPath)
+                                const QString & outPath,
+                                const std::vector<QString> & standard)
 {
-    for(const QString & fileName : QDir(inPath).entryList({"*.edf", "*.EDF"}, QDir::Files))
+    const auto leest = QDir(inPath).entryList({"*.edf", "*.EDF"}, QDir::Files);
+    const auto vec = leest.toVector();
+
+//#pragma omp parallel
+//#pragma omp for nowait schedule(dynamic,3)
+    for(int i = 0; i < vec.size(); ++i)
     {
-        QString outName = fileName;
+        QString outName = vec[i];
 //        outName.replace(".edf", "_goodChan.edf", Qt::CaseInsensitive);
-        cout << fileName << endl;
-        repair31ChannelsOrder(inPath + slash() + fileName,
-                              outPath + slash() + outName);
+        cout << outName << endl;
+        repairChannelsOrder(inPath + slash() + vec[i],
+                            outPath + slash() + outName,
+                            standard);
     }
+}
+
+void MainWindow::countSpectraFeatures(const QString & filePath,
+                                      const int numChan,
+                                      const QString & outPath)
+{
+    const double leftFreqLim = 2.;
+    const double rightFreqLim = 20.;
+    const double spectreStepFreq = 1.;
+
+    const double alphaMaxLimLeft = 8.;
+    const double alphaMaxLimRight = 13.;
+
+    const QString ExpName = getFileName(filePath, false);
+    const QString spectraFilePath = outPath + slash() + ExpName + "_spectre.txt";
+    const QString alphaFilePath = outPath + slash() + ExpName + "_alpha.txt";
+
+    // remove previous
+    QFile::remove(spectraFilePath);
+    QFile::remove(alphaFilePath);
+
+    ofstream outSpectraStr;
+    ofstream outAlphaStr;
+    outSpectraStr.open(spectraFilePath.toStdString());
+    outAlphaStr.open(alphaFilePath.toStdString());
+
+    int helpInt;
+    double helpDouble;
+    vectType fullSpectre;
+    lineType helpSpectre;
+
+    edfFile initEdf;
+    initEdf.setMatiFlag(false);
+    initEdf.readEdfFile(filePath);
+
+
+    for(int i = 0; i < numChan; ++i)
+    {
+        helpSpectre = spectre(initEdf.getData()[i]);
+        helpSpectre = smoothSpectre(helpSpectre,
+                                    ceil(10 * sqrt(initEdf.getDataLen() / 4096.)));
+
+        // count individual alpha peak
+        helpDouble = 0.;
+        helpInt = 0;
+        for(int k = fftLimit(alphaMaxLimLeft,
+                             def::freq,
+                             fftL(initEdf.getDataLen()));
+            k < fftLimit(alphaMaxLimRight,
+                         def::freq,
+                         fftL(initEdf.getDataLen()));
+            ++k)
+        {
+            if(helpSpectre[k] > helpDouble)
+            {
+                helpDouble = helpSpectre[k];
+                helpInt = k;
+            }
+        }
+        // max alpha magnitude
+        outAlphaStr << helpDouble << "\t";
+        // max alpha freq
+        outAlphaStr << helpInt * def::freq / fftL(initEdf.getDataLen()) << "\t";
+
+
+        // integrate spectre near the needed freqs
+        fullSpectre.clear();
+        for(double j = leftFreqLim;
+            j <= rightFreqLim;
+            j += spectreStepFreq)
+        {
+            helpDouble = 0.;
+            helpInt = 0;
+            for(int k = fftLimit(j - spectreStepFreq / 2.,
+                                 def::freq,
+                                 fftL(initEdf.getDataLen()));
+                k < fftLimit(j + spectreStepFreq / 2.,
+                             def::freq,
+                             fftL(initEdf.getDataLen()));
+                ++k)
+            {
+                helpDouble += helpSpectre[k];
+                ++helpInt;
+            }
+            fullSpectre.push_back(helpDouble/helpInt);
+        }
+
+#if 0
+        // normalize spectre for 1 integral
+        // rewrite lib::normalize()
+        helpDouble = 0.;
+        for(auto it = fullSpectre.begin();
+            it != fullSpectre.end();
+            ++it)
+        {
+            helpDouble += (*it);
+        }
+        helpDouble = 1. / helpDouble;
+        for(auto it = fullSpectre.begin();
+            it < fullSpectre.end();
+            ++it)
+        {
+            (*it) *= helpDouble * 20.;
+        }
+#endif
+
+        for(auto it = std::begin(fullSpectre);
+            it < std::end(fullSpectre);
+            ++it)
+        {
+
+            outSpectraStr << doubleRound((*it), 4) << "\t";  // write
+        }
+    }
+    outAlphaStr.close();
+    outSpectraStr.close();
+}
+
+void MainWindow::countChaosFeatures(const QString & filePath,
+                                      const int numChan,
+                                      const QString & outPath)
+{
+    const double leftFreqLim = 2.;
+    const double rightFreqLim = 20.;
+    const double stepFreq = 2.;
+    const double hilbertFreqLimit = 40.;
+
+    const QString ExpName = getFileName(filePath, false);
+    const QString d2dimFilePath = outPath + slash() + ExpName + "_d2_dim.txt";
+    const QString hilbertFilePath = outPath + slash() + ExpName + "_med_freq.txt";
+
+    // remove previous
+    QFile::remove(d2dimFilePath);
+    QFile::remove(hilbertFilePath);
+
+    ofstream outDimStr;
+    ofstream outHilbertStr;
+    outDimStr.open(d2dimFilePath.toStdString());
+    outHilbertStr.open(hilbertFilePath.toStdString());
+
+    double helpDouble;
+    double sumSpec = 0.;
+    lineType env;
+    lineType envSpec;
+
+    edfFile initEdf;
+    initEdf.setMatiFlag(false);
+    initEdf.readEdfFile(filePath);
+
+    for(double freqCounter = leftFreqLim;
+        freqCounter <= rightFreqLim;
+        freqCounter += stepFreq)
+    {
+        /// remake further, non-filtered first
+        if(freqCounter != rightFreqLim)
+        {
+            initEdf.refilter(freqCounter, freqCounter + stepFreq);
+        }
+        else
+        {
+            /// reread file
+            initEdf.readEdfFile(initEdf.getFilePath());
+            /// or refilter 0. 70.
+        }
+
+        // write d2 dimension
+
+        for(int i = 0; i < numChan; ++i)
+        {
+            helpDouble = fractalDimension(initEdf.getData()[i]);
+            outDimStr << doubleRound(helpDouble, 4) << "\t";
+        }
+
+#if 0
+        // write enthropy
+        helpString = outPath
+                + slash() + ExpName;
+#if 0
+        if(freqCounter != rightFreqLim)
+        {
+            helpString += "_" + QString::number(freqCounter)
+                    + "-" + QString::number(freqCounter + stepFreq);
+        }
+#endif
+        helpString += "_" + enthropyFileName;
+        outStr.open(helpString.toStdString().c_str(), ios_base::app);
+        for(int i = 0; i < numChan; ++i)
+        {
+            helpDouble = enthropy(initEdf.getData()[i].data(),
+                                  initEdf.getDataLen());
+            outStr << doubleRound(helpDouble, 4) << "\t";
+        }
+        outStr.close();
+#endif
+
+
+
+        // write envelope median spectre
+        for(int i = 0; i < numChan; ++i)
+        {
+//                helpString.clear(); // no pictures
+            env = hilbertPieces(initEdf.getData()[i],
+                                initEdf.getDataLen(),
+                                def::freq,
+                                1., // no difference
+                                40. // no difference
+//                                    ,helpString
+                                );
+
+            envSpec = spectre(env);
+            envSpec[0] = 0.;
+#if 0
+            if(freqCounter <= rightFreqLim + stepFreq)
+            {
+                helpString = outPath
+                        + slash() + ExpName
+                        + "_" + QString::number(freqCounter)
+                        + "_" + QString::number(numChan)
+                        + "_fSpec.jpg";
+            }
+            else
+            {
+                helpString.clear();
+            }
+            helpString.clear(); // no picture of spectre
+
+            drawOneArray(envSpec,
+                         helpString);
+#endif
+
+            helpDouble = 0.;
+            sumSpec = 0.;
+
+            for(int j = 0;
+                j < fftLimit(hilbertFreqLimit, def::freq, fftL(initEdf.getDataLen()));
+                ++j)
+            {
+                sumSpec += envSpec[j];
+                helpDouble += envSpec[j] * j;
+            }
+            helpDouble /= sumSpec;
+            helpDouble /= fftLimit(1., def::freq, fftL(initEdf.getDataLen())); // convert to Hz
+
+            outHilbertStr << doubleRound(helpDouble, 4) << "\t";
+
+            /// experimental add
+//                outHilbertStr << doubleRound(sigma(env) / mean(env), 4) << "\t";
+        }
+    }
+    outDimStr.close();
+    outHilbertStr.close();
 }
 
 void MainWindow::GalyaProcessing(const QString & procDirPath,
                                  const int numChan,
                                  QString outPath)
 {
-
-//    const QString enthropyFileName = "entrop.txt";
-    const QString d2dimFileName = "d2_dim.txt";
-    const QString hilbertFileName = "med_freq.txt";
-    const QString spectraFileName = "spectre.txt";
-    const QString alphaFileName = "alpha.txt";
     const QString outDir = getFileName(procDirPath) + "_out";
 
-    const double leftFreqLim = 2.;
-    const double rightFreqLim = 20.;
-    const double stepFreq = 2.;
-
-    const double alphaMaxLimLeft = 8.;
-    const double alphaMaxLimRight = 13.;
-
-    const double spectreStepFreq = 1.;
-    const double hilbertFreqLimit = 40.;
-
-    //// aaaaaaaa
-//    int numChan_;
-//    if(!def::ntFlag)
-//    {
-//        numChan_ = 19; /// encephalan
-//    }
-//    else
-//    {
-//        numChan_ = 31; /// neurotravel
-//    }
-//    const int numChan = numChan_;
-
-    QString helpString;
-    QString ExpName;
     QDir dir;
     dir.cd(procDirPath);
     if(outPath.isEmpty())
@@ -2367,56 +2616,26 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
     {
         dir.mkpath(outPath);
     }
-    QStringList filesList;
-    filesList = dir.entryList({"*.EDF", "*.edf"},
-                              QDir::NoFilter,
-                              QDir::Size|QDir::Reversed);
 
-    edfFile initEdf;
-    initEdf.setMatiFlag(false);
+    const QStringList filesList = dir.entryList({"*.EDF", "*.edf"},
+                                                QDir::NoFilter,
+                                                QDir::Size|QDir::Reversed);
+    const auto filesVec = filesList.toVector();
 
-    ofstream outStr;
-    double helpDouble;
-    int helpInt;
-    lineType env;
-    lineType envSpec;
-
-    double sumSpec = 0.;
-
-
-    for(int i = 0; i < filesList.length(); ++i)
+#pragma omp parallel
+#pragma omp for nowait schedule(dynamic,3)
+    for(int i = 0; i < filesVec.length(); ++i)
     {
+        QString helpString = dir.absolutePath() + slash() + filesVec[i];
+        edfFile initEdf;
+        initEdf.readEdfFile(helpString, true);
 
-        ExpName = filesList[i];
-        ExpName.remove(".EDF", Qt::CaseInsensitive);
-
-        helpString = procDirPath
-                + slash() + filesList[i];
-//        if(edfFile::checkDdr(helpString) == 1.)
-//        {
-//            continue;
-//        }
-        initEdf.readEdfFile(helpString);
-
-
+        /// different checks
         if(initEdf.getNdr() == 0)
         {
-            cout << "ndr = 0\t" << ExpName << endl;
+            cout << "ndr = 0\t" << filesVec[i] << endl;
             continue;
         }
-
-//        const double bytesPerSecond = (QFile(helpString).size() - initEdf.getBytes())
-//                                      / double(initEdf.getNs() * initEdf.getNdr() * initEdf.getDdr());
-
-//        if(bytesPerSecond != 2 * def::freq)
-//        {
-//            cout << "bytesPerSecond = " << bytesPerSecond << "\t";
-//            cout << ExpName;
-//            cout << endl;
-
-//            // dont process this file?
-////            continue;
-//        }
 
         if(initEdf.getNs() < numChan)
         {
@@ -2424,272 +2643,11 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
             continue;
         }
 
-//        continue;
-
-        cout << ExpName << '\t' << doubleRound(QFile(helpString).size() / pow(2, 10), 1) << "kB" << endl;
-
-
-        helpString = outPath + slash() + ExpName;
-        QFile::remove(helpString + "_" + spectraFileName);
-
-        // write full spectre
-        vectType fullSpectre;
-        lineType helpSpectre;
-        helpString = outPath
-                + slash() + ExpName
-                + "_" + spectraFileName;
-        outStr.open(helpString.toStdString());
-
-        ofstream outAlphaStr;
-        helpString = outPath
-                + slash() + ExpName
-                + "_" + alphaFileName;
-        outAlphaStr.open(helpString.toStdString());
-
-        for(int i = 0; i < numChan; ++i)
-        {
-            helpSpectre = spectre(initEdf.getData()[i]);
-            helpSpectre = smoothSpectre(helpSpectre,
-                                        ceil(10 * sqrt(initEdf.getDataLen() / 4096.)));
-
-            // count individual alpha peak
-
-            helpDouble = 0.;
-            helpInt = 0;
-            for(int k = fftLimit(alphaMaxLimLeft,
-                                 def::freq,
-                                 fftL(initEdf.getDataLen()));
-                k < fftLimit(alphaMaxLimRight,
-                             def::freq,
-                             fftL(initEdf.getDataLen()));
-                ++k)
-            {
-                if(helpSpectre[k] > helpDouble)
-                {
-                    helpDouble = helpSpectre[k];
-                    helpInt = k;
-                }
-            }
-            // max alpha magnitude
-            outAlphaStr << helpDouble << "\t";
-
-            // max alpha freq
-            outAlphaStr << helpInt * def::freq / fftL(initEdf.getDataLen()) << "\t";
-
-
-
-
-            // integrate spectre near the needed freqs
-            fullSpectre.clear();
-            for(double j = leftFreqLim;
-                j <= rightFreqLim;
-                j += spectreStepFreq)
-            {
-                helpDouble = 0.;
-                helpInt = 0;
-                for(int k = fftLimit(j - spectreStepFreq / 2.,
-                                     def::freq,
-                                     fftL(initEdf.getDataLen()));
-                    k < fftLimit(j + spectreStepFreq / 2.,
-                                 def::freq,
-                                 fftL(initEdf.getDataLen()));
-                    ++k)
-                {
-                    helpDouble += helpSpectre[k];
-                    ++helpInt;
-                }
-                fullSpectre.push_back(helpDouble/helpInt);
-            }
-
-
-
-
-#if 0
-            // normalize for 1 integral
-            helpDouble = 0.;
-            for(auto it = fullSpectre.begin();
-                it != fullSpectre.end();
-                ++it)
-            {
-                helpDouble += (*it);
-            }
-            helpDouble = 1. / helpDouble;
-            for(auto it = fullSpectre.begin();
-                it < fullSpectre.end();
-                ++it)
-            {
-                (*it) *= helpDouble * 20.;
-            }
-#endif
-
-
-
-            for(auto it = fullSpectre.begin();
-                it < fullSpectre.end();
-                ++it)
-            {
-
-                outStr << doubleRound((*it), 4) << "\t";  // write
-            }
-        }
-        outAlphaStr.close();
-        outStr.close();
-
-//        continue; // dont count D2 and hilbert for different filters
-
-
-
-        helpString = outPath
-                + slash() + ExpName;
-        QFile::remove(helpString + "_" + d2dimFileName);
-        QFile::remove(helpString + "_" + hilbertFileName);
-
-
-        for(double freqCounter = leftFreqLim;
-            freqCounter <= rightFreqLim;
-            freqCounter += stepFreq)
-        {
-            if(freqCounter != rightFreqLim)
-            {
-                initEdf.refilter(freqCounter, freqCounter + stepFreq);
-            }
-            else
-            {
-                initEdf.readEdfFile(initEdf.getFilePath());
-                /// or refilter 0. 70.
-            }
-
-
-            // write d2 dimension
-            helpString = outPath
-                    + slash() + ExpName;
-#if 0
-            if(freqCounter != rightFreqLim)
-            {
-                helpString += "_" + QString::number(freqCounter)
-                        + "-" + QString::number(freqCounter + stepFreq);
-            }
-#endif
-
-            helpString += "_" + d2dimFileName;
-            outStr.open(helpString.toStdString().c_str(), ios_base::app);
-            for(int i = 0; i < numChan; ++i)
-            {
-                helpString = outPath
-                        + slash() + ExpName
-                        + "_" + QString::number(i)
-                        + "_h.jpg";
-                if(freqCounter != rightFreqLim)
-                {
-                    helpString.clear();
-                }
-                helpDouble = fractalDimension(initEdf.getData()[i]);
-                outStr << doubleRound(helpDouble, 4) << "\t";
-            }
-            outStr.close();
-
-
-#if 0
-            // write enthropy
-            helpString = outPath
-                    + slash() + ExpName;
-#if 0
-            if(freqCounter != rightFreqLim)
-            {
-                helpString += "_" + QString::number(freqCounter)
-                        + "-" + QString::number(freqCounter + stepFreq);
-            }
-#endif
-            helpString += "_" + enthropyFileName;
-            outStr.open(helpString.toStdString().c_str(), ios_base::app);
-            for(int i = 0; i < numChan; ++i)
-            {
-                helpDouble = enthropy(initEdf.getData()[i].data(),
-                                      initEdf.getDataLen());
-                outStr << doubleRound(helpDouble, 4) << "\t";
-            }
-            outStr.close();
-#endif
-
-
-
-            // write envelope median spectre
-            helpString = outPath
-                    + slash() + ExpName;
-#if 0
-            if(freqCounter != rightFreqLim)
-            {
-                helpString += "_" + QString::number(freqCounter)
-                        + "-" + QString::number(freqCounter + stepFreq);
-            }
-#endif
-            helpString += "_" + hilbertFileName;
-
-            outStr.open(helpString.toStdString().c_str(), ios_base::app);
-            for(int i = 0; i < numChan; ++i)
-            {
-                if(freqCounter == rightFreqLim)
-                {
-                    helpString = outPath
-                            + slash() + ExpName
-                            + "_" + QString::number(numChan)
-                            + "_hilbert.jpg";
-                }
-                else
-                {
-                    helpString.clear();
-                }
-
-                helpString.clear(); // no picture
-
-                env = hilbertPieces(initEdf.getData()[i],
-                                    initEdf.getDataLen(),
-                                    def::freq,
-                                    1., // no difference
-                                    40., // no difference
-                                    helpString);
-
-                envSpec = spectre(env);
-                envSpec[0] = 0.;
-
-                if(freqCounter <= rightFreqLim + stepFreq)
-                {
-                    helpString = outPath
-                            + slash() + ExpName
-                            + "_" + QString::number(freqCounter)
-                            + "_" + QString::number(numChan)
-                            + "_fSpec.jpg";
-                }
-                else
-                {
-                    helpString.clear();
-                }
-                helpString.clear(); // no picture of spectre
-
-                drawOneArray(envSpec,
-                             helpString);
-
-
-
-                helpDouble = 0.;
-                sumSpec = 0.;
-
-                for(int j = 0;
-                    j < fftLimit(hilbertFreqLimit, def::freq, fftL(initEdf.getDataLen()));
-                    ++j)
-                {
-                    sumSpec += envSpec[j];
-                    helpDouble += envSpec[j] * j;
-                }
-                helpDouble /= sumSpec;
-                helpDouble /= fftLimit(1., def::freq, fftL(initEdf.getDataLen()));
-
-                outStr << doubleRound(helpDouble, 4) << "\t";
-            }
-            outStr.close();
-        }
+        cout << filesList[i] << '\t'
+             << doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << endl;
+        countSpectraFeatures(helpString, numChan, outPath);
+        countChaosFeatures(helpString, numChan, outPath);
     }
 }
-
 
 #endif // AUTOS_CPP

@@ -10,14 +10,13 @@ TARGET = SecondGUI
 TEMPLATE = app
 CONFIG += console #for better display of processes with cout.flush()
 QMAKE_CXXFLAGS += -std=c++11 #for C++11 standard
+QMAKE_CXXFLAGS += -fopenmp
+LIBS += -fopenmp
 
 #INCLUDEPATH += /usr/include/libxml2
 #LIBS += -L/usr/lib/x86_64-linux-gnu -lOpenCL
 #LIBS += -L/usr/lib/x86_64-linux-gnu/mesa
 #LIBS += -lxml2 -lmlpack
-
-#QMAKE_LFLAGS += -fopenmp
-#QMAKE_CXXFLAGS += -fopenmp
 
 SOURCES += main.cpp\
         mainwindow.cpp \

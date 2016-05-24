@@ -131,17 +131,30 @@ public:
 
     matrix makeTestData(const QString & outPath);
 
+    void countSpectraFeatures(const QString & filePath,
+                              const int numChan,
+                              const QString & outPath);
+    void countChaosFeatures(const QString & filePath,
+                              const int numChan,
+                              const QString & outPath);
     void GalyaProcessing(const QString &procDirPath,
                          const int numChan = 31,
                          QString outPath = QString());
-    void repair31ChannelsOrder(const QString & inPath,
-                               QString outPath = QString());
+    void repairChannelsOrder(const QString & inPath,
+                             QString outPath = QString(),
+                             const std::vector<QString> & standard = coords::lbl31_more);
 
     void repairChannels(const QString & inPath,
-                        const QString & outPath);
+                        const QString & outPath,
+                        const std::vector<QString> & standard = coords::lbl31_more);
 
     bool testChannelsOrderConsistency(const QString & path);
+
+    void cutOneFile(const QString & filePath,
+                    const int wndLen,
+                    const QString & outPath);
     void GalyaCut(const QString & path,
+                  const int wndLen = 16,
                   QString outPath = QString());
     void countEdfSpectra(const QString & inPath,
                          const QString & outPath,

@@ -107,6 +107,8 @@ public:
 
     matrix operator /= (const double & other);
 
+    bool operator == (const matrix & other);
+
     //"static"
     static matrix transpose(const matrix & input);
 

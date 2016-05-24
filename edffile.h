@@ -154,13 +154,7 @@ class edfFile
 public:
 
     edfFile();
-    ~edfFile()
-    {
-        for(auto sp : fftData)
-        {
-            delete[] sp;
-        }
-    }
+    ~edfFile();
 
     /*
     //yet unused
@@ -272,7 +266,7 @@ private:
 
     std::vector<edfChannel> channels;
     edfDataType data; // matrix.cpp
-    std::vector<double *> fftData{};
+    std::vector<std::vector<double>> fftData{};
 
 #if DATA_POINTER
     edfDataType (*dataPointer) = &data;
@@ -317,6 +311,7 @@ public:
     const QString & getFilePath() const {return filePath;}
     const QString & getDirPath() const  {return dirPath;}
     const QString & getExpName() const {return ExpName;}
+    QString getFileNam() const {return getFileName(filePath);}
 
     const bool & getMatiFlag() const {return matiFlag;}
     const bool & getNtFlag() const {return ntFlag;}

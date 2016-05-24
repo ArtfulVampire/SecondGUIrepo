@@ -331,6 +331,24 @@ matrix operator / (const matrix & lhs, const double & val)
     return result;
 }
 
+bool matrix::operator == (const matrix & other)
+{
+    if((this->rows() != other.rows()) ||
+       (this->cols() != other.cols()))
+    {
+        return false;
+    }
+
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        for(int j = 0; j < this->cols(); ++j)
+        {
+            if((*this)[i][j] != other[i][j])
+                return false;
+        }
+    }
+    return true;
+}
 
 matrix matrix::operator /= (const double & other)
 {

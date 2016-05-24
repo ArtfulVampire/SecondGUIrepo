@@ -9,6 +9,10 @@ edfFile::edfFile()
 #endif
 }
 
+edfFile::~edfFile()
+{
+}
+
 edfFile::edfFile(const edfFile &other, bool noData)
 {
     this->filePath = other.getFilePath();
@@ -288,6 +292,7 @@ void edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 {
     QTime myTime;
     myTime.start();
+    this->fftData.clear(); /// crucial
     handleEdfFile(EDFpath, true, headerOnly);
 }
 
@@ -391,7 +396,9 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
     if(!readFlag)
     {
+//        cout << this->data.cols() << endl;
         this->fitData(this->dataLength);
+//        cout << this->data.cols() << endl << endl;
     }
 
 
@@ -528,7 +535,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     /// experimental annotations
     if(this->edfPlusFlag)
     {
-
         this->removeChannels({this->markerChannel}); /// it should be zero
         this->edfPlusFlag = false;
         this->markerChannel = -1;
@@ -540,14 +546,13 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         ddr = 1.;
         for(double & nri : nr)
         {
-            nri /= oldDdr;
+            nri = std::round(nri / oldDdr);
         }
         for(edfChannel & ch : this->channels)
         {
-            ch.nr /= oldDdr;
+            ch.nr = std::round(ch.nr / oldDdr);
         }
-
-        ndr = ceil(ndr * oldDdr); /// ceil or round?
+        ndr = std::ceil(ndr * oldDdr); /// ceil or round?
     }
 
     fclose(edfDescriptor);
@@ -606,6 +611,18 @@ void edfFile::handleData(bool readFlag,
                                      );
         }
     }
+//    cout << endl;
+//    cout << this->ExpName << "\t" << "flags = ";
+//    cout << this->ntFlag << this->edfPlusFlag << this->matiFlag << endl;
+//    cout << this->ExpName << "\t" << "markChan = " << markerChannel << endl;
+//    cout << this->ExpName << "\t" << "ndr = " << ndr << endl;
+//    cout << this->ExpName << "\t" << "ns = " << ns << endl;
+//    for(int h = 0; h < ns; ++h)
+//    {
+//        cout << nr[h] << endl;
+//    }
+//    cout << this->ExpName << "\t" << "dataLen = " << ndr * nr[0] << endl;
+//    cout << endl;
     for(int i = 0; i < ndr; ++i)
     {
         for(int currNs = 0; currNs < ns; ++currNs)
@@ -706,7 +723,7 @@ void edfFile::handleDatum(const int & currNs,
     }
     else //if write
     {
-        if(currNs != markerChannel) // usual data read
+        if(currNs != markerChannel) // usual data write
         {
             // round better to N * 1/8.
             if(currNs < 21) // generality bicycle
@@ -722,7 +739,6 @@ void edfFile::handleDatum(const int & currNs,
                            + (def::ntFlag ? 0 : 1))
                         / (physMax[currNs] - physMin[currNs])
                         + digMin[currNs]);
-
 
 //            a  = (qint16)(currDatum * 8.); // generality encephalan
 
@@ -1098,18 +1114,18 @@ void edfFile::countFft()
     }
     this->fftData.resize(chanList.size());
     int i = 0;
+    double * spectre = new double [2 * fftLength];
     for(auto j : chanList)
     {
-        double *& spectre = fftData[i++];
-        spectre = new double [2 * fftLength];
+
         std::fill(spectre, spectre + fftLength * 2, 0.); // fill all with zeros
 #if DATA_POINTER
         for(auto it = begin((*(this->dataPointer))[chanList[j]]);
             it < end((*(this->dataPointer))[chanList[j]];
             ++it)
 #else
-        for(auto it = begin(this->data[j]);
-            it < end(this->data[j]);
+        for(auto it = std::begin(this->data[j]);
+            it < std::end(this->data[j]);
             ++it)
 #endif
         {
@@ -1121,7 +1137,14 @@ void edfFile::countFft()
 #endif
         }
         four1(spectre - 1, fftLength, 1);       //Fourier transform
+
+        fftData[i].resize(2 * fftLength);
+        std::copy(spectre,
+                  spectre + 2 * fftLength,
+                  std::begin(fftData[i]));
+        ++i;
     }
+    delete[] spectre;
 }
 
 /// remake vector
@@ -1138,7 +1161,8 @@ void edfFile::refilter(const double & lowFreq,
     std::vector<int> chanList;
     for(int i = 0; i < this->ns; ++i)
     {
-        if(this->labels[i].contains(QRegExp("E[OE]G"))) // filter only EEG, EOG signals
+        /// filter only EEG, EOG signals - look labels!!!!
+        if(this->labels[i].contains(QRegExp("E[OE]G")))
         {
             chanList.push_back(i);
         }
@@ -1146,6 +1170,7 @@ void edfFile::refilter(const double & lowFreq,
 
     if(this->fftData.empty())
     {
+//        cout << "edfFile::refilter: countFFT()" << endl;
         this->countFft();
     }
 
@@ -1155,9 +1180,9 @@ void edfFile::refilter(const double & lowFreq,
     int i = 0;
     for(int j : chanList)
     {
-        std::copy(fftData[i],
-                fftData[i] + 2 * fftLength,
-                spectre);
+        std::copy(std::begin(fftData[i]),
+                  std::begin(fftData[i]) + 2 * fftLength,
+                  spectre);
         ++i;
         //filtering
 #if 0
@@ -1678,17 +1703,13 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
             }
 #else
             /// for neurotravel cleaning
-            if(abs(this->data[j][currEnd - 1]) >= 30000) break;
+            if(abs(this->data[j][currEnd - 1]) >= 30000) break; // do clean
 
             if(this->data[j][currEnd - 1] != 0.)
             {
                 doFlag = false;
                 break;
             }
-//            else
-//            {
-//                cout << this->data[j][currEnd - 1] << "\t" << currEnd << endl;
-//            }
 #endif
         }
         if(doFlag)
