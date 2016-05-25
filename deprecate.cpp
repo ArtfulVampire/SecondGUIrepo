@@ -3,6 +3,9 @@
 
 using namespace std;
 using namespace std::chrono;
+using namespace smallLib;
+namespace myLib
+{
 
 double maxValue(double * arr, int length)
 {
@@ -372,7 +375,7 @@ void makeCfgStatic(const QString & FileName,
                    const int & temp)
 {
     QString helpString = QDir::toNativeSeparators(outFileDir
-                                                  + slash() + FileName);
+                                                  + slash + FileName);
     if(!helpString.contains(".net"))
     {
         helpString += ".net";
@@ -1021,3 +1024,4 @@ template void matrixProduct(const double ** const & inMat1, const double ** cons
 template void matrixProduct(const double ** const & inMat1, const mat & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
 template void matrixProduct(const mat & inMat1, const mat & inMat2, double **& outMat, int numRows1, int numCols2, int numCols1Rows2);
 template void matrixProduct(const mat & inMat1, const mat & inMat2, mat & outMat, int numRows1, int numCols2, int numCols1Rows2);
+}

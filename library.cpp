@@ -3,6 +3,10 @@
 
 using namespace std;
 using namespace std::chrono;
+using namespace smallLib;
+
+namespace myLib
+{
 
 QString setFileName(const QString & initNameOrPath) // append _num before the dot
 {
@@ -26,7 +30,7 @@ QString getExpNameLib(const QString & filePath) // getFileName
 {
     QString hlp;
     hlp = QDir::toNativeSeparators(filePath);
-    hlp = hlp.right(hlp.length() - hlp.lastIndexOf(slash()) - 1); // ExpName.edf
+    hlp = hlp.right(hlp.length() - hlp.lastIndexOf(slash) - 1); // ExpName.edf
     hlp = hlp.left(hlp.lastIndexOf('.')); // ExpName
     return hlp;
 }
@@ -34,7 +38,7 @@ QString getExpNameLib(const QString & filePath) // getFileName
 QString getDirPathLib(const QString & filePath)
 {
     QString str = filePath;
-    return str.left(str.lastIndexOf(slash()));
+    return str.left(str.lastIndexOf(slash));
 }
 
 QString getExt(QString filePath)
@@ -54,7 +58,7 @@ QString getExt(QString filePath)
 QString getFileName(const QString & filePath, bool withExtension)
 {
     QString helpString = QDir::toNativeSeparators(filePath);
-    helpString = helpString.right(helpString.length() - helpString.lastIndexOf(slash()) - 1);
+    helpString = helpString.right(helpString.length() - helpString.lastIndexOf(slash) - 1);
     if(!withExtension)
     {
         helpString = helpString.left(helpString.lastIndexOf("."));
@@ -67,10 +71,10 @@ QString getPicPath(const QString & dataPath,
                    const int & ns)
 {
     QString fileName = QDir::toNativeSeparators(dataPath);
-    fileName = fileName.right(fileName.length() - fileName.lastIndexOf(slash()) - 1);
+    fileName = fileName.right(fileName.length() - fileName.lastIndexOf(slash) - 1);
     fileName.replace('.', '_');
 
-    QString helpString = QDir::toNativeSeparators(ExpNameDir->absolutePath() + slash());
+    QString helpString = QDir::toNativeSeparators(ExpNameDir->absolutePath() + slash);
 
     if(dataPath.contains("Realisations"))
     {
@@ -80,18 +84,18 @@ QString getPicPath(const QString & dataPath,
     {
         if(!dataPath.contains("fromreal"))
         {
-            helpString += "Signals" + slash() + "windows";
+            helpString += "Signals" + slash + "windows";
         }
         else /// fromreals need other path?
         {
-            helpString += "Signals" + slash() + "windows";
+            helpString += "Signals" + slash + "windows";
         }
     }
     else if(dataPath.contains("cut"))
     {
         helpString += "SignalsCut";
     }
-    helpString += slash();
+    helpString += slash;
     if(ns == 19)
     {
         helpString += "after";
@@ -104,7 +108,7 @@ QString getPicPath(const QString & dataPath,
     {
         helpString += "other";
     }
-    helpString += slash() + fileName + ".jpg";
+    helpString += slash + fileName + ".jpg";
     return helpString;
 }
 
@@ -146,7 +150,7 @@ void eyesProcessingStatic(const vector<int> eogChannels,
     makeFullFileList(windowsDir, leest);
     for(QString & item : leest)
     {
-        item.prepend(windowsDir + slash());
+        item.prepend(windowsDir + slash);
     }
 
     const int Size = eogChannels.size() + 1; // usually 3
@@ -249,9 +253,9 @@ void makePaFile(const QString & spectraDir,
 
     for(const QString & fileName: fileNames)
     {
-        type = typeOfFileName(fileName);
+        type = myLib::typeOfFileName(fileName);
         helpString = spectraDir
-                     + slash() + fileName;
+                     + slash + fileName;
         readMatrixFile(helpString, data4);
 
 
@@ -392,7 +396,7 @@ void makePaStatic(const QString & spectraDir,
 
     QString helpString;
     const QString paPath = def::dir->absolutePath()
-                          + slash() + "PA";
+                          + slash + "PA";
     vector<QStringList> lst;
     makeFileLists(spectraDir, lst);
 
@@ -450,16 +454,16 @@ void makePaStatic(const QString & spectraDir,
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(paPath + slash());
+    helpString = QDir::toNativeSeparators(paPath + slash);
     if(!svmFlag)
     {
         helpString += "1.pa";
-        makePaFile(spectraDir, listToWrite, coeff, helpString);
+        myLib::makePaFile(spectraDir, listToWrite, coeff, helpString);
     }
     else
     {
         helpString += "svm1";
-        makePaFile(spectraDir, listToWrite, coeff, helpString, true);
+        myLib::makePaFile(spectraDir, listToWrite, coeff, helpString, true);
     }
 
 
@@ -473,16 +477,16 @@ void makePaStatic(const QString & spectraDir,
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(paPath + slash());
+    helpString = QDir::toNativeSeparators(paPath + slash);
     if(!svmFlag)
     {
         helpString += "2.pa";
-        makePaFile(spectraDir, listToWrite, coeff, helpString);
+        myLib::makePaFile(spectraDir, listToWrite, coeff, helpString);
     }
     else
     {
         helpString += "svm2";
-        makePaFile(spectraDir, listToWrite, coeff, helpString, true);
+        myLib::makePaFile(spectraDir, listToWrite, coeff, helpString, true);
     }
 
 
@@ -498,7 +502,7 @@ void makePaStatic(const QString & spectraDir,
                 listToWrite << lst[j][arr[j][i]];
             }
         }
-        helpString = QDir::toNativeSeparators(paPath + slash() + "all.pa");
+        helpString = QDir::toNativeSeparators(paPath + slash + "all.pa");
         makePaFile(spectraDir, listToWrite, coeff, helpString);
     }
 }
@@ -624,8 +628,8 @@ void countRCP(QString filePath, QString picPath, double * outMean, double * outS
     lineType arr;
     readFileInLine(filePath, arr);
 
-    (*outMean) = mean(arr);
-    (*outSigma) = sigma(arr);
+    (*outMean) = smallLib::mean(arr);
+    (*outSigma) = smallLib::sigma(arr);
 
     if(!picPath.isEmpty())
     {
@@ -633,6 +637,7 @@ void countRCP(QString filePath, QString picPath, double * outMean, double * outS
     }
 }
 
+} // namespace myLib
 
 
 

@@ -2,6 +2,8 @@
 #include "ui_spectre.h"
 
 using namespace std;
+using namespace myLib;
+using namespace smallLib;
 
 Spectre::Spectre() :
     ui(new Ui::Spectre)
@@ -201,8 +203,8 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
 
 
             QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                          + slash() + "Help"
-                                                          + slash() + def::ExpName + "_all.jpg");
+                                                          + slash + "Help"
+                                                          + slash + def::ExpName + "_all.jpg");
             QPixmap pic;
             pic.load(helpString);
             QPainter paint;
@@ -344,7 +346,7 @@ void Spectre::integrate()
     {
 
         helpString = QDir::toNativeSeparators(ui->lineEdit_1->text()
-                                              + slash() + fileName);
+                                              + slash + fileName);
         readMatrixFile(helpString,
                         dataInt);
 
@@ -361,7 +363,7 @@ void Spectre::integrate()
             }
         }
         helpString = QDir::toNativeSeparators(ui->lineEdit_2->text()
-                                              + slash() + fileName);
+                                              + slash + fileName);
         writeMatrixFile(helpString,
                         dataOut);
     }
@@ -376,13 +378,13 @@ void Spectre::psaSlot()
     lineType tempVec(def::spLength() * def::nsWOM());
     QString helpString;
     const QString psaPath = def::dir->absolutePath()
-                            + slash() + "Help"
-                            + slash() + "psa";
+                            + slash + "Help"
+                            + slash + "psa";
 
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
         helpString = QDir::toNativeSeparators(psaPath
-                                              + slash() + def::ExpName
+                                              + slash + def::ExpName
                                               + "_class_" + QString::number(i + 1)
                                               + ".psa");
         readFileInLine(helpString, tempVec);
@@ -391,8 +393,8 @@ void Spectre::psaSlot()
     }
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "Help"
-                                          + slash() + def::ExpName + "_all.jpg");
+                                          + slash + "Help"
+                                          + slash + def::ExpName + "_all.jpg");
 
     trivector<int> MW;
 
@@ -464,8 +466,8 @@ void Spectre::compare()
 
     const QString filesPath = ui->lineEdit_1->text();
     const QString savePath = def::dir->absolutePath()
-                             + slash() + "Help"
-                             + slash() + "psa";
+                             + slash + "Help"
+                             + slash + "psa";
 
     makeFileLists(filesPath,
                   leest
@@ -483,7 +485,7 @@ void Spectre::compare()
         for(int j = 0; j < NumOfPatterns; ++j)
         {
             helpString = QDir::toNativeSeparators(filesPath
-                                                  + slash()
+                                                  + slash
                                                   + lst[j]);
             readFileInLine(helpString, tempVec);
 
@@ -493,7 +495,7 @@ void Spectre::compare()
 
         // psa name
         helpString = QDir::toNativeSeparators(savePath
-                                              + slash() + def::ExpName
+                                              + slash + def::ExpName
                                               + "_class_" + QString::number(i + 1)
                                               + ".psa");
         /// maybe make as spectraFile?
@@ -501,8 +503,8 @@ void Spectre::compare()
 #if 0
         // draw average for one type
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "Help"
-                                              + slash() + def::ExpName
+                                              + slash + "Help"
+                                              + slash + def::ExpName
                                               + "_class_" + QString::number(i + 1)
                                               + ".jpg");
 
@@ -546,7 +548,7 @@ void Spectre::center()
     for(const QString & fileName : lst)
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + fileName);
+                                              + slash + fileName);
         readMatrixFile(helpString,
                         tempData);
         averages += tempData;
@@ -558,7 +560,7 @@ void Spectre::center()
     for(const QString & fileName : lst)
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + fileName);
+                                              + slash + fileName);
         readMatrixFile(helpString,
                         tempData);
         tempData -= averages;
@@ -642,7 +644,7 @@ void Spectre::writeSpectra(const double leftFreq,
 
     for(quint32 i = 0; i < fileNames.size(); ++i)
     {
-        helpString = outDirPath + slash() + fileNames[i];
+        helpString = outDirPath + slash + fileNames[i];
         helpString.remove("." + def::plainDataExtension);
         helpString += "." + def::spectraDataExtension;
 //        cout << helpString << endl;
@@ -704,7 +706,7 @@ void Spectre::countSpectraSlot()
 #endif
 
     ui->lineEdit_1->setText(ui->lineEdit_2->text());
-    ui->lineEdit_2->setText(def::dir->absolutePath() + slash() + "Help");
+    ui->lineEdit_2->setText(def::dir->absolutePath() + slash + "Help");
 }
 
 void Spectre::cleanSpectra()
@@ -744,7 +746,7 @@ void Spectre::cleanSpectra()
         num = 0;
     }
     cout << "cleanSpectra: num of zeroed points = " << cnt << endl;
-    ui->lineEdit_2->setText(ui->lineEdit_2->text() + slash() + "Clean");
+    ui->lineEdit_2->setText(ui->lineEdit_2->text() + slash + "Clean");
     writeSpectra();
     cout << "cleanSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
 
@@ -797,7 +799,7 @@ void Spectre::countSpectra()
 
         //read data file
         helpString = QDir::toNativeSeparators(inDirPath
-                                              + slash() + fileName);
+                                              + slash + fileName);
         readPlainData(helpString,
                       dataIn,
                       NumOfSlices);
@@ -932,8 +934,8 @@ void Spectre::drawWavelets()
     QString filePath;
     QDir localDir(def::dir->absolutePath());
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "visualisation"
-                                          + slash() + "wavelets");
+                                          + slash + "visualisation"
+                                          + slash + "wavelets");
     localDir.cd(helpString);
 
     //make dirs
@@ -967,7 +969,7 @@ void Spectre::drawWavelets()
     for(const QString & fileName : lst)
     {
         filePath = QDir::toNativeSeparators(ui->lineEdit_1->text()
-                                            + slash() + fileName);
+                                            + slash + fileName);
         readPlainData(filePath,
                       signal,
                       NumOfSlices);
@@ -979,9 +981,9 @@ void Spectre::drawWavelets()
             continue;
 
             helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "visualisation"
-                                                  + slash() + "wavelets"
-                                                  + slash() + QString::number(chanNum) + ".txt");
+                                                  + slash + "visualisation"
+                                                  + slash + "wavelets"
+                                                  + slash + QString::number(chanNum) + ".txt");
 
             outStr.open(helpString.toStdString(), ios_base::app);
             outStr << coefs.maxVal() << endl;
@@ -992,9 +994,9 @@ void Spectre::drawWavelets()
 //    for(int chanNum = 0; chanNum < def::nsWOM(); ++chanNum)
 //    {
 //        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-//                                              + slash() + "visualisation"
-//                                              + slash() + "wavelets"
-//                                              + slash() + QString::number(chanNum) + ".txt");
+//                                              + slash + "visualisation"
+//                                              + slash + "wavelets"
+//                                              + slash + QString::number(chanNum) + ".txt");
 //        readFileInLine(helpString, tempVec);
 //        std::sort(tempVec.begin(), tempVec.end());
 //        cout << tempVec.front() << "\t" << tempVec.back() << endl;
@@ -1006,7 +1008,7 @@ void Spectre::drawWavelets()
     {
         const QString & fileName = (*it);
         filePath = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + fileName);
+                                              + slash + fileName);
         if(ui->amplitudeWaveletButton->isChecked())
         {
             for(int channel = 0; channel < def::nsWOM(); ++channel)
@@ -1014,10 +1016,10 @@ void Spectre::drawWavelets()
                 helpString = fileName;
                 helpString.replace('.', '_');
                 helpString = QDir::toNativeSeparators(backupDirPath
-                                                      + slash() + "visualisation"
-                                                      + slash() + "wavelets"
-                                                      + slash() + QString::number(channel)
-                                                      + slash() + helpString
+                                                      + slash + "visualisation"
+                                                      + slash + "wavelets"
+                                                      + slash + QString::number(channel)
+                                                      + slash + helpString
                                                       + "_wavelet_" + QString::number(channel)
                                                       + ".jpg");
                 cout << helpString.toStdString() << endl;
@@ -1033,11 +1035,11 @@ void Spectre::drawWavelets()
                     helpString = fileName;
                     helpString.replace('.', '_');
                     helpString = QDir::toNativeSeparators(backupDirPath
-                                                          + slash() + "visualisation"
-                                                          + slash() + "wavelets"
-                                                          + slash() + QString::number(channel1)
-                                                          + slash() + QString::number(channel2)
-                                                          + slash() + helpString
+                                                          + slash + "visualisation"
+                                                          + slash + "wavelets"
+                                                          + slash + QString::number(channel1)
+                                                          + slash + QString::number(channel2)
+                                                          + slash + helpString
                                                           + "_wavelet_" + QString::number(channel1)
                                                           + "_" + QString::number(channel2)
                                                           + ".jpg");

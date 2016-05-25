@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 using namespace std;
+using namespace myLib;
 
 void MainWindow::makeChanList(std::vector<int> & chanList)
 {
@@ -25,13 +26,13 @@ void MainWindow::cleanEdfFromEyesSlot()
     readData();
     globalEdf.cleanFromEyes();
     QString helpString = def::dir->absolutePath()
-                         + slash() + def::ExpName + "_eyesClean.edf";
+                         + slash + def::ExpName + "_eyesClean.edf";
     globalEdf.writeEdfFile(helpString);
 }
 
 void MainWindow::rereferenceDataSlot()
 {
-    QString helpString = def::dir->absolutePath() + slash() + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
+    QString helpString = def::dir->absolutePath() + slash + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
     helpString.replace(".edf", "_rr.edf");
     rereferenceData(ui->rereferenceDataComboBox->currentText(), helpString);
 }
@@ -301,7 +302,7 @@ void MainWindow::refilterDataSlot()
     const double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
     const double highFreq = ui->highFreqFilterDoubleSpinBox->value();
     QString helpString = def::dir->absolutePath()
-            + slash() + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
+            + slash + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
     readData();
     helpString.replace(".edf",
                        "_f"
@@ -325,7 +326,7 @@ void MainWindow::reduceChannelsEDFSlot()
 {
     QString helpString;
     helpString = def::dir->absolutePath()
-                 + slash() + def::ExpName + "_rdc.edf";
+                 + slash + def::ExpName + "_rdc.edf";
     reduceChannelsEDF(helpString);
 }
 
@@ -387,7 +388,7 @@ void MainWindow::reduceChannelsSlot()
     {
         localNs = def::ns;
         helpString = QDir::toNativeSeparators(localDir.absolutePath()
-                                              + slash() + fileName);
+                                              + slash + fileName);
         readPlainData(helpString, dataR, NumOfSlices);
         for(const int & exclChan : excludeList)
         {
@@ -465,14 +466,14 @@ void MainWindow::constructEDFSlot()
     QStringList filters;
     if(!ui->matiCheckBox->isChecked())
     {
-        helpString = def::dir->absolutePath() + slash() + def::ExpName + "_new.edf";
+        helpString = def::dir->absolutePath() + slash + def::ExpName + "_new.edf";
         constructEDF(helpString);
     }
     else //if(ui->matiCheckBox->isChecked())
     {
         const QString initEDF = ui->filePathLineEdit->text();
         helpString = def::dir->absolutePath()
-                + slash() + def::ExpName.left(3)
+                + slash + def::ExpName.left(3)
                 + "_splitZerosLog.txt";
 
         ofstream outStream;
@@ -501,9 +502,9 @@ void MainWindow::constructEDFSlot()
                 // outPath for session edfs
                 helpString = def::dir->absolutePath()
 
-                        + slash() + "auxEdfs"
+                        + slash + "auxEdfs"
 
-                        + slash() + def::ExpName
+                        + slash + def::ExpName
                         + "_c"
                         + "_" + QString::number(i)
                         + "_" + QString::number(j)
@@ -525,14 +526,14 @@ void MainWindow::constructEDFSlot()
 
             for(int k = 0; k < lst.length(); ++k)
             {
-                lst[k].prepend( def::dir->absolutePath() + slash() );
+                lst[k].prepend( def::dir->absolutePath() + slash );
             }
 
 //            def::dir->cdUp(); // if save concatenated into def::ExpName dir
 
             //outPath for concatenated
             helpString = def::dir->absolutePath()
-                    + slash() + def::ExpName.left(3)
+                    + slash + def::ExpName.left(3)
                     + "_" + QString::number(i)
                     + ".edf";
 
@@ -545,7 +546,7 @@ void MainWindow::constructEDFSlot()
 
         // concatenate all session files
         helpString = def::dir->absolutePath()
-                     + slash() + def::ExpName.left(3)
+                     + slash + def::ExpName.left(3)
                      + "_cl";
         if(ui->splitZerosCheckBox->isChecked()) helpString += "_nz";
         helpString += ".edf";
@@ -554,7 +555,7 @@ void MainWindow::constructEDFSlot()
         QStringList lst;
         for(auto i : {"_0.edf", "_1.edf", "_2.edf"})
         {
-            lst << def::dir->absolutePath() + slash() + def::ExpName.left(3) + i;
+            lst << def::dir->absolutePath() + slash + def::ExpName.left(3) + i;
         }
         concatenateEDFs(lst, helpString);
         setEdfFile(initEDF);
@@ -588,12 +589,12 @@ void MainWindow::constructEDF(const QString & newPath,
     QStringList lst;
     if(!nameFilters.isEmpty())
     {
-        lst = QDir(def::dir->absolutePath() + slash() + "Realisations").entryList(
+        lst = QDir(def::dir->absolutePath() + slash + "Realisations").entryList(
                   nameFilters, QDir::Files, QDir::Name); /// Name ~ order
     }
     else
     {
-        lst = QDir(def::dir->absolutePath() + slash() + "Realisations").entryList(
+        lst = QDir(def::dir->absolutePath() + slash + "Realisations").entryList(
                   QDir::Files, QDir::Name); /// Name ~ order
     }
     if(lst.isEmpty())
@@ -610,8 +611,8 @@ void MainWindow::constructEDF(const QString & newPath,
     for(const QString & fileName : lst)
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "Realisations"
-                                              + slash() + fileName);
+                                              + slash + "Realisations"
+                                              + slash + fileName);
         readPlainData(helpString, newData, NumOfSlices, currSlice);
         currSlice += NumOfSlices;
     }
@@ -633,7 +634,7 @@ void MainWindow::constructEDF(const QString & newPath,
     {
         QString fileName = getFileName(newPath);
         helpString = def::dir->absolutePath()
-                     + slash() + def::ExpName.left(3)
+                     + slash + def::ExpName.left(3)
                      + "_splitZerosLog.txt";
 
         splitZeros(newData, helpInt, &currSlice, helpString, fileName); // helpString unchanged

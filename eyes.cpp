@@ -2,6 +2,7 @@
 #include "ui_eyes.h"
 
 using namespace std;
+using namespace myLib;
 
 Eyes::Eyes() :
     ui(new Ui::Eyes)
@@ -35,7 +36,7 @@ Eyes::Eyes() :
 void Eyes::setDir(QAbstractButton* but)
 {
     ui->lineEdit_3->setText(QDir::toNativeSeparators(def::dir->absolutePath()
-                                                      + slash() + but->text()));
+                                                      + slash + but->text()));
 }
 
 void Eyes::setAutoProcessingFlag(bool a)
@@ -48,7 +49,7 @@ void Eyes::eyesClean()
 #if 0
 
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "eyes.txt");
+                                                  + slash + "eyes.txt");
     FILE * coef = fopen(helpString, "r");
     if(coef == NULL)
     {
@@ -96,7 +97,7 @@ void Eyes::eyesClean()
     for(int i = 0; i < list.length(); ++i)
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + list[i]);
+                                              + slash + list[i]);
         readPlainData(helpString, dataF, NumOfSlices);
 
         for(int k = 0; k < NumEeg; ++k)
@@ -112,7 +113,7 @@ void Eyes::eyesClean()
         }
 
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + list[i]);
+                                              + slash + list[i]);
 
         ofstream outStr;
         outStr.open(helpString.toStdString().c_str());
@@ -181,17 +182,17 @@ void Eyes::eyesProcessing()
 #if 0
         // eyesSlices
         QString helpString = def::dir->absolutePath()
-                             + slash() + "eyesSlices";
+                             + slash + "eyesSlices";
         leest = QStringList(helpString);
 #else
 
         // windows
         QString helpString = def::dir->absolutePath()
-                             + slash() + "windows";
+                             + slash + "windows";
         makeFullFileList(helpString, leest);
         for(QString & item : leest)
         {
-            item.prepend(helpString + slash());
+            item.prepend(helpString + slash);
         }
 #endif
     }
@@ -258,7 +259,7 @@ void Eyes::eyesProcessing()
         signalNums.pop_back();
     }
 
-    writeMatrixFile(def::dir->absolutePath() + slash() + "eyes.txt",
+    writeMatrixFile(def::dir->absolutePath() + slash + "eyes.txt",
                     coefficients,
                     "NumOfEegChannels",
                     "NumOfEogChannels");

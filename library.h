@@ -1,9 +1,6 @@
 #ifndef LIBRARY_H
 #define LIBRARY_H
 
-
-#define trackTime(arg) trackTim(arg, #arg)
-
 #include <QObject>
 #include <QString>
 #include <QtGui>
@@ -48,12 +45,8 @@
 #include <omp.h>
 #endif
 
-
-// consts
-const double pi_min_025 = pow(pi, -0.25);
-const double pi_sqrt = sqrt(pi);
-
-std::string funcName(std::string in);
+namespace myLib
+{
 
 #define TIME(arg)\
     do{\
@@ -65,6 +58,18 @@ std::string funcName(std::string in);
         << std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count()/1000.\
         << " sec" << std::endl;\
     }while(false)
+
+std::string funcName(std::string in);
+
+
+// consts
+const double pi_min_025 = pow(pi, -0.25);
+const double pi_sqrt = sqrt(pi);
+const QString slash = QString(QDir::separator());
+
+
+
+
 
 
 // small shit
@@ -86,9 +91,8 @@ void deleteSpaces(const QString & dirPath, const QStringList & filters = QString
 QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
 QString getExt(QString filePath);
-QString slash();
 
-//, typename = std::allocator<Typ>
+
 template <typename Typ, template <typename> class Cont>
 std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut); // template!
 
@@ -105,9 +109,6 @@ char * QStrToCharArr(const QString & input, const int & len = -1);
 
 int typeOfFileName(const QString & fileName);
 QString getFileMarker(const QString & fileName);
-
-template <typename T>
-void eraseItems(std::vector<T> & init, const std::vector<int> & indices);
 
 template <typename Container>
 int indexOfMax(const Container & cont);
@@ -189,9 +190,9 @@ const std::vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
 void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
                           const std::vector<int> eegChannels = leest19,
                           const QString & windowsDir = def::dir->absolutePath()
-                                                       + slash() + "windows",
+                                                       + slash + "windows",
                           const QString & outFilePath = def::dir->absolutePath()
-                                                        + slash() + "eyes.txt");
+                                                        + slash + "eyes.txt");
 
 void makeCfgStatic(const QString & FileName = "16sec19ch",
                    const int & NetLength = def::nsWOM() * def::spLength(),
@@ -352,7 +353,7 @@ int MannWhitney(const signalType & arr1,
                  const double p = 0.05);
 void countMannWhitney(trivector<int> & outMW,
                       const QString & spectraPath = def::dir->absolutePath()
-                                                    + slash() + "SpectraSmooth",
+                                                    + slash + "SpectraSmooth",
                       matrix * averageSpectraOut = nullptr,
                       matrix * distancesOut = nullptr);
 
@@ -404,12 +405,12 @@ void drawMapSpline(const matrix & matrixA,
                    const ColorScale colorTheme = jet);
 
 void drawMapsICA(const QString & mapsFilePath = def::dir->absolutePath()
-                                                + slash() + "Help"
-                                                + slash() + "ica"
-                                                + slash() + def::ExpName + "_maps.txt",
+                                                + slash + "Help"
+                                                + slash + "ica"
+                                                + slash + def::ExpName + "_maps.txt",
                  const QString & outDir = def::dir->absolutePath()
-                                          + slash() + "Help"
-                                          + slash() + "maps",
+                                          + slash + "Help"
+                                          + slash + "maps",
                  const QString & outName = def::ExpName,
                  const ColorScale colourTheme = jet,
                  void (*draw1MapFunc)(const matrix &,
@@ -421,14 +422,14 @@ void drawMapsICA(const QString & mapsFilePath = def::dir->absolutePath()
                                       const ColorScale) = &drawMapSpline);
 
 void drawMapsOnSpectra(const QString & inSpectraFilePath = def::dir->absolutePath()
-                                                           + slash() + "Help"
-                                                           + slash() + def::ExpName + "_all.jpg",
+                                                           + slash + "Help"
+                                                           + slash + def::ExpName + "_all.jpg",
                        const QString & outSpectraFilePath = def::dir->absolutePath()
-                                                            + slash() + "Help"
-                                                            + slash() + def::ExpName + "_all_wm.jpg",
+                                                            + slash + "Help"
+                                                            + slash + def::ExpName + "_all_wm.jpg",
                        const QString & mapsDirPath = def::dir->absolutePath()
-                                                     + slash() + "Help"
-                                                     + slash() + "maps",
+                                                     + slash + "Help"
+                                                     + slash + "maps",
                        const QString & mapsNames = def::ExpName);
 
 
@@ -742,6 +743,6 @@ double errorSammonAdd(const mat & distOld,
 
 
 
-
+} // myLib namespace
 
 #endif // LIBRARY_H

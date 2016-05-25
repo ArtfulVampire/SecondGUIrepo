@@ -2,6 +2,8 @@
 #include "ui_cfg.h"
 
 
+using namespace myLib;
+
 cfg::cfg(double error_, double lrate_, QString FileName_) :
     ui(new Ui::cfg)
 {

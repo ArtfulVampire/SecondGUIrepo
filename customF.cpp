@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 using namespace std;
+using namespace myLib;
 
 void MainWindow::customFunc()
 {
@@ -12,39 +13,11 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(7);
 //    ui->justSliceButton->setChecked(true);
 
-//    testChannelsOrderConsistency(def::DashaFolder + "/AUDIO/Grishina");
-//    exit(0);
-
-//    repairChannels(def::DashaFolder + "/AUDIO/Burmistrova",
-//                   def::DashaFolder + "/AUDIO/CHANS/To_less",
-//                   coords::lbl31_less);
-
-    GalyaCut(def::DashaFolder + "/AUDIO/Grishina",
-             16);
-
-//    QString hgf = "/media/michael/Files/Data/Dasha/AUDIO/CHANS/Audio_to_less/Audio_to_less_windows/";
-//    QString q = "/media/michael/KINGSTON/GOODCHANS_to_less_windows/";
-//    QStringList leeest = QDir(q).entryList(QDir::Files);
-//    for(QString name : leeest)
-//    {
-//        areEqualFiles(q + name,
-//                      hgf + name);
-//    }
-//    GalyaCut(def::DashaFolder + "/NONAUDIO/CHANS/Nonaudio_to_less",
-//             16);
-    exit(0);
-
-
-#if 1
-    def::ntFlag = true; /// for Dasha's and EEGMRI
-//    def::ntFlag = false; /// encephalan (+1)
-
-//    QStringList leest = QDir(def::DashaFolder + "/AUDIO").entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-    QStringList leest2 = {
+    QStringList leest_less = {
         /// less
-        "BerlinHenis",
+        "Berlin-Henis",
         "Bushenkov",
-        "Chemerisova",
+        "CHemerisova",
         "Didkovskaya",
         "Grishina",
         "Ivanova",
@@ -53,32 +26,49 @@ void MainWindow::customFunc()
         "Paramonova",
         "Ryibalko",
         "Sarvardinova",
-        "Shkarina",
+        "SHkarina",
         "Vasina",
-        "Zelenkov",
+//        "Zelenkov"
+    };
+    QStringList leest_more = {
         ///more
-        //        "Burmistrova",
-        //        "Gramotko",
-        //        "Hanenya",
-        //        "Kalinichenko",
-        //        "Tinyanova",
+        "Burmistrova",
+        "Garmotko",
+        "Hanenya",
+        "Kalinichenko",
+        "Tinyanova"
+    };
+    QStringList leest_audio = leest_more + leest_less;
+    leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
-//        "tactile",
-//        "Dasha_GO",
-//        "Dasha_GZ",
-//        "Dasha_smell",
-//        "Dasha_smell_2"
+    QStringList leest_non = {
+        "tactile",
+        "Dasha_GO",
+        "Dasha_GZ",
+        "Dasha_smell",
+        "Dasha_smell_2"
     };
 
-    /// 32 channels for EEGMRI
-    for(auto str : leest2)
-    {
-//        cout << str << "\t" << testChannelsOrderConsistency(def::DashaFolder
-//                                                            + slash() + str) << endl;
+    cutOneFile("/media/michael/Files/Data/MRI/Nikolaenko/Nikolaenko.edf",
+               2,
+               "/media/michael/Files/Data/MRI/Nikolaenko/Nikolaenko_windows");
+    exit(0);
 
-//        deleteSpaces(def::DashaFolder + slash() + str);
-//        repairChannels(def::DashaFolder + slash() + str,
-//                       def::DashaFolder + slash() + "Nonaudio_to_less",
+
+
+#if 0
+    def::ntFlag = true; /// for Dasha's and EEGMRI
+//    def::ntFlag = false; /// encephalan (+1)
+
+
+
+    /// 32 channels for EEGMRI
+    for(auto str : leest_more)
+    {
+        testChannelsOrderConsistency(def::DashaFolder + slash + str);
+        deleteSpaces(def::DashaFolder + slash + str);
+//        repairChannels(def::DashaFolder + slash + str,
+//                       def::DashaFolder + slash + "Nonaudio_to_less",
 //                       coords::lbl31_less);
 
 //        GalyaProcessing(def::DashaFolder + "/AUDIO/" + str,
@@ -90,12 +80,112 @@ void MainWindow::customFunc()
 
     }
 
-//    GalyaCut(def::DashaFolder + "/NONAUDIO/CHANS/Nonaudio_to_more");
-//    GalyaProcessing(def::DashaFolder + "/NONAUDIO/CHANS/Nonaudio_to_more");
-
     exit(0);
 #endif
 
+#if 0
+    /// compare data
+    edfFile fil;
+    fil.readEdfFile(def::DashaFolder + "/Tinyanova/Tinyanova_Varya_Exam_3.edf");
+    matrix dat1 = fil.getData(); dat1.resize(31);
+    fil.readEdfFile(def::DashaFolder + "/Tinyanova/Tinyanova_Varya_Exam_3_new.edf");
+    matrix dat2 = fil.getData(); dat2.resize(31);
+    cout << (dat1 == dat2) << endl;
+#endif
+
+#if 0
+    /// compare files in folders
+    QString hgf = "/media/michael/Files/Data/Dasha/AUDIO/CHANS/Audio_to_less/Audio_to_less_windows/";
+    QString q = "/media/michael/KINGSTON/GOODCHANS_to_less_windows/";
+    QStringList leeest = QDir(q).entryList(QDir::Files);
+    for(QString name : leeest)
+    {
+        areEqualFiles(q + name,
+                      hgf + name);
+    }
+#endif
+
+#if 1
+    /// clean "new" files
+    const QString work = def::DashaFolder + "/CHANS/Audio_to_less_out_ALL";
+    QDir deer(work);
+
+    QStringList subdirs = deer.entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+    for(auto subdir : subdirs)
+    {
+        deer.cd(subdir);
+        QString tablePath = deer.absolutePath() + slash + "Audio_" + subdir + ".txt";
+
+        QFile outStr(tablePath);
+        outStr.open(QIODevice::WriteOnly);
+
+//        QStringList news = deer.entryList({"*_new_*"});
+//        for(const QString & oneNew : news)
+//        {
+//            QString oldName = oneNew; oldName.replace("_new_", "_");
+
+//            QFile::remove(deer.absolutePath() + slash + oldName);
+//            QFile::copy(deer.absolutePath() + slash + oneNew,
+//                        deer.absolutePath() + slash + oldName);
+//            QFile::remove(deer.absolutePath() + slash + oneNew);
+//        }
+        for(const QString & guy : leest_audio)
+        {
+            /// should be "alpha", "d2_dim", "med_freq", "spectre"
+            QStringList tryam = deer.entryList({guy + "*"});
+            if(tryam[1].contains("med_freq"))
+            {
+                std::swap(tryam[1], tryam[2]);
+            }
+            for(const QString & fileName : tryam)
+            {
+                QFile fil(deer.absolutePath() + slash + fileName);
+                fil.open(QIODevice::ReadOnly);
+                auto contents = fil.readAll();
+
+                outStr.write(contents);
+//                ifstream inStr;
+//                inStr.open(deer.absolutePath() + slash + fileName);
+
+
+            }
+            outStr.write("\r\n");
+
+
+        }
+        outStr.close();
+        deer.cdUp();
+//        exit(0);
+    }
+    exit(3);
+#endif
+
+#if 0
+    /// put files into subfolders
+    const int noom = 60;
+    std::vector<QString> filts;
+    for(int i = 0; i < noom; ++i)
+    {
+        filts.push_back("*_" + QString::number(i) + "_*");
+    }
+    for(int i = 0; i < noom; ++i)
+    {
+        QStringList files = deer.entryList({filts[i]});
+        if(!files.isEmpty())
+        {
+            deer.mkdir(QString::number(i));
+            for(QString oneFile : files)
+            {
+                QFile::copy(deer.absolutePath()
+                            + slash + oneFile,
+                            deer.absolutePath()
+                            + slash + QString::number(i)
+                            + slash + oneFile);
+            }
+        }
+    }
+    exit(0);
+#endif
 
 
 #if 0
@@ -136,14 +226,14 @@ void MainWindow::customFunc()
 //            ++num;
 //            continue;
 //        }
-        fil.readEdfFile(path + slash() + fileNam);
+        fil.readEdfFile(path + slash + fileNam);
         dat = fil.getData();
 //        dat.resizeCols(2000);
         drawEeg(dat,
                 dat.rows(),
                 dat.cols(),
                 def::freq,
-                path + slash() + fileNam.replace(".edf", ".jpg"));
+                path + slash + fileNam.replace(".edf", ".jpg"));
         ++num;
 
     }
@@ -203,9 +293,9 @@ void MainWindow::customFunc()
     const int NumOfPairs = 1;
 
     QString helpString = workPath;
-    if(!workPath.endsWith(slash()))
+    if(!workPath.endsWith(slash))
     {
-        helpString += slash();
+        helpString += slash;
     }
     helpString += fileName;
     setEdfFile(helpString);
@@ -322,8 +412,8 @@ void MainWindow::customFunc()
         /// deal with matrixA
         matrix matA;
         readICAMatrix(path + "Help"
-                      + slash() + "ica"
-                      + slash() + name + "_train_maps.txt",
+                      + slash + "ica"
+                      + slash + name + "_train_maps.txt",
                       matA);
         matA.invert();
 
@@ -379,8 +469,8 @@ void MainWindow::customFunc()
         /// deal with matrixA
         matrix matA;
         readICAMatrix(path + "Help"
-                      + slash() + "ica"
-                      + slash() + name + "_train_maps.txt",
+                      + slash + "ica"
+                      + slash + name + "_train_maps.txt",
                       matA);
         matA.invert();
 //        matA.print();
@@ -612,8 +702,8 @@ void MainWindow::customFunc()
         Net * ann = new Net();
 
         ann->autoClassification(def::dir->absolutePath()
-                                + slash() + "SpectraSmooth"
-                                + slash() + "windows");
+                                + slash + "SpectraSmooth"
+                                + slash + "windows");
 
         pew.push_back(make_pair(i, ann->getAverageAccuracy()));
         delete ann;
@@ -701,7 +791,7 @@ void MainWindow::customFunc()
     for(const QString & guy : names)
     {
         const QString fileName = guy + "_cl_f5-20_ica_ord.edf";
-        setEdfFile(def::dataFolder + slash() + "GoodData" + slash() + fileName);
+        setEdfFile(def::dataFolder + slash + "GoodData" + slash + fileName);
 
         cleanDirs();
         sliceAll();
@@ -715,9 +805,9 @@ void MainWindow::customFunc()
         helpString.remove("_ica");
         helpString.replace(".edf", "_maps.txt");
         helpString = def::dataFolder
-                     + slash() + "GoodData"
-                     + slash() + "Help"
-                     + slash() + helpString;
+                     + slash + "GoodData"
+                     + slash + "Help"
+                     + slash + helpString;
         drawMapsICA(helpString);
 
 
@@ -726,24 +816,24 @@ void MainWindow::customFunc()
         helpString = fileName;
         helpString.replace(".edf", "_all.jpg");
         helpString = def::dataFolder
-                     + slash() + "GoodData"
-                     + slash() + "Help"
-                     + slash() + helpString;
+                     + slash + "GoodData"
+                     + slash + "Help"
+                     + slash + helpString;
         // outSpectre
         QString helpString2;
         helpString2 = fileName;
         helpString2.replace(".edf", "_all_wm.jpg");
         helpString2 = def::dataFolder
-                     + slash() + "GoodData"
-                     + slash() + "Help"
-                      + slash() + "WM"
-                     + slash() + helpString2;
+                     + slash + "GoodData"
+                     + slash + "Help"
+                      + slash + "WM"
+                     + slash + helpString2;
         drawMapsOnSpectra(helpString,
                           helpString2,
                           def::dataFolder
-                          + slash() + "GoodData"
-                          + slash() + "Help"
-                          + slash() + "Maps");
+                          + slash + "GoodData"
+                          + slash + "Help"
+                          + slash + "Maps");
         for(int i = 0; i < 19; ++i)
         {
             drawCutOneChannel(helpString2, i);
@@ -756,22 +846,22 @@ void MainWindow::customFunc()
         helpString = fileName;
         helpString.replace(".edf", "_wts.jpg");
         helpString = def::dataFolder
-                     + slash() + "GoodData"
-                     + slash() + helpString;
+                     + slash + "GoodData"
+                     + slash + helpString;
         // outwts
         helpString2 = fileName;
         helpString2.replace(".edf", "_wts_wm.jpg");
         helpString2 = def::dataFolder
-                     + slash() + "GoodData"
-                     + slash() + "Help"
-                      + slash() + "WM"
-                     + slash() + helpString2;
+                     + slash + "GoodData"
+                     + slash + "Help"
+                      + slash + "WM"
+                     + slash + helpString2;
         drawMapsOnSpectra(helpString,
                           helpString2,
                           def::dataFolder
-                          + slash() + "GoodData"
-                          + slash() + "Help"
-                          + slash() + "Maps");
+                          + slash + "GoodData"
+                          + slash + "Help"
+                          + slash + "Maps");
         for(int i = 0; i < 19; ++i)
         {
             drawCutOneChannel(helpString2, i);
@@ -781,7 +871,7 @@ void MainWindow::customFunc()
 //        cleanDirs();
 //        sliceAll();
 //        countSpectraSimple(4096);
-//        fileInnerClassification(def::dataFolder + slash() + "GoodData",
+//        fileInnerClassification(def::dataFolder + slash + "GoodData",
 //                                fileName,
 //                                4096, 1);
     }
@@ -797,9 +887,9 @@ void MainWindow::customFunc()
     QStringList lii = tmp.entryList(QDir::Files);
     for(QString picPath : lii)
     {
-        pic = QPixmap(tmp.absolutePath() + slash() + picPath);
+        pic = QPixmap(tmp.absolutePath() + slash + picPath);
         QPixmap cut = pic.copy(QRect(330, 350, 900, 900));
-        QString out = tmp.absolutePath() + slash() + picPath;
+        QString out = tmp.absolutePath() + slash + picPath;
         out.replace(".jpg", "_cut.jpg");
         cut.save(out, 0, 100);
     }
@@ -827,7 +917,7 @@ void MainWindow::customFunc()
 
 
     double tempDouble = 0;
-    const QString logPath = def::dataFolder + slash() + "GoodData/class_ord.txt";
+    const QString logPath = def::dataFolder + slash + "GoodData/class_ord.txt";
     ofstream ofStr;
 
     ui->cleanRealisationsCheckBox->setChecked(true);
@@ -835,7 +925,7 @@ void MainWindow::customFunc()
     ui->cleanWindowsCheckBox->setChecked(false);
     ui->cleanWindSpectraCheckBox->setChecked(false);
 
-    const QString workDir = def::dataFolder + slash() + "GoodData";
+    const QString workDir = def::dataFolder + slash + "GoodData";
 
     QString helpString;
     QString helpString2;
@@ -846,7 +936,7 @@ void MainWindow::customFunc()
     {
         for(const QString & guy : names)
         {
-            helpString = workDir + slash() + guy + ending;
+            helpString = workDir + slash + guy + ending;
 
             setEdfFile(helpString);
 
@@ -859,13 +949,13 @@ void MainWindow::customFunc()
 
 #if 0
             // spectra
-            helpString = workDir + slash() + "Help"
-                         + slash() + "Ordered"
-                         + slash() + guy + ending;
+            helpString = workDir + slash + "Help"
+                         + slash + "Ordered"
+                         + slash + guy + ending;
             helpString.replace(".edf", "_all_wm.jpg");
-            helpString2 = workDir + slash() + "Help"
-                          + slash() + "Ordered"
-                          + slash() + guy + ending;
+            helpString2 = workDir + slash + "Help"
+                          + slash + "Ordered"
+                          + slash + guy + ending;
             helpString2.replace(".edf", "_all_wm_new.jpg");
 
             QFile::remove(helpString2);
@@ -877,13 +967,13 @@ void MainWindow::customFunc()
 
 #if 1
             // weights
-            helpString = workDir + slash() + "Help"
-                         + slash() + "weights"
-                         + slash() + guy + ending;
+            helpString = workDir + slash + "Help"
+                         + slash + "weights"
+                         + slash + guy + ending;
             helpString.replace(".edf", "_wm.jpg");
-            helpString2 = workDir + slash() + "Help"
-                          + slash() + "weights"
-                          + slash() + guy + ending;
+            helpString2 = workDir + slash + "Help"
+                          + slash + "weights"
+                          + slash + guy + ending;
             helpString2.replace(".edf", "_wm_new.jpg");
 
             QFile::remove(helpString2);
@@ -917,7 +1007,7 @@ void MainWindow::customFunc()
     ui->reduceChannelsComboBox->setCurrentText("20");
 
     double tempDouble = 0;
-    const QString logPath = def::dataFolder + slash() + "GoodData/class_ord.txt";
+    const QString logPath = def::dataFolder + slash + "GoodData/class_ord.txt";
     ofstream ofStr;
 
     ui->cleanRealisationsCheckBox->setChecked(true);
@@ -925,7 +1015,7 @@ void MainWindow::customFunc()
     ui->cleanWindowsCheckBox->setChecked(false);
     ui->cleanWindSpectraCheckBox->setChecked(false);
 
-    const QString workDir = def::dataFolder + slash() + "GoodData";
+    const QString workDir = def::dataFolder + slash + "GoodData";
 
     QString helpString;
 
@@ -941,7 +1031,7 @@ void MainWindow::customFunc()
             for(const QString & guy : names)
 //            for(const QString & guy : {"FEV"})
             {
-                helpString = workDir + slash() + guy + ending;
+                helpString = workDir + slash + guy + ending;
 
                 setEdfFile(helpString);
 
@@ -950,18 +1040,18 @@ void MainWindow::customFunc()
 //                sliceAll();
 //                countSpectraSimple(fftL(wndLen * 250)); //continue;
 
-//                helpString = workDir + slash() + "Help"
-//                             + slash() + guy + ending;
+//                helpString = workDir + slash + "Help"
+//                             + slash + guy + ending;
 //                helpString.replace(".edf", "_all.jpg");
 
-//                QString wmPath = workDir + slash() + "Help"
-//                                 + slash() + "Ordered"
-//                                 + slash() + guy + ending;
+//                QString wmPath = workDir + slash + "Help"
+//                                 + slash + "Ordered"
+//                                 + slash + guy + ending;
 //                wmPath.replace(".edf", "_all_wm.jpg");
 
 //                drawMapsOnSpectra(helpString,
 //                                  wmPath,
-//                                  workDir + slash() + "Help" + slash() + "Maps");
+//                                  workDir + slash + "Help" + slash + "Maps");
 
 //                continue;
 
@@ -980,40 +1070,40 @@ void MainWindow::customFunc()
 
 #if 0
                 // maps on spectra
-                helpString = workDir + slash() +  "Help"
-                             + slash() + guy + ending;
+                helpString = workDir + slash +  "Help"
+                             + slash + guy + ending;
                 helpString.replace(".edf", "_all.jpg", Qt::CaseInsensitive);
 
                 QString newWtsPath = workDir
-                                     + slash() + "Help"
-                                     + slash() + "WM"
-                                     + slash() + guy + ending;
+                                     + slash + "Help"
+                                     + slash + "WM"
+                                     + slash + guy + ending;
                 newWtsPath.replace(".edf", "_wm_1.jpg", Qt::CaseInsensitive);
 
 ////                cout << newWtsPath << endl;
 
                 drawMapsOnSpectra(helpString,
                                   newWtsPath,
-                                  workDir + slash() + "Help" + slash() + "Maps");
+                                  workDir + slash + "Help" + slash + "Maps");
 #endif
 
 
 #if 0
                 // maps on weights
-                helpString = workDir + slash() + guy + ending;
+                helpString = workDir + slash + guy + ending;
                 helpString.replace(".edf", ".jpg", Qt::CaseInsensitive);
 
                 QString newWtsPath = workDir
-                                     + slash() + "Help"
-                                     + slash() + "weights"
-                                     + slash() + guy + ending;
+                                     + slash + "Help"
+                                     + slash + "weights"
+                                     + slash + guy + ending;
                 newWtsPath.replace(".edf", "_wm_1.jpg", Qt::CaseInsensitive);
 
 ////                cout << newWtsPath << endl;
 
                 drawMapsOnSpectra(helpString,
                                   newWtsPath,
-                                  workDir + slash() + "Help" + slash() + "Maps");
+                                  workDir + slash + "Help" + slash + "Maps");
 #endif
 
 
@@ -1045,7 +1135,7 @@ void MainWindow::customFunc()
     ui->reduceChannelsComboBox->setCurrentText("20");
 
     double tempDouble = 0;
-    const QString logPath = def::dataFolder + slash() + "GoodData/class.txt";
+    const QString logPath = def::dataFolder + slash + "GoodData/class.txt";
     ofstream ofStr;
 
 #if 0
@@ -1055,7 +1145,7 @@ void MainWindow::customFunc()
     for(const QString & guy : names)
     {
 
-        tempDouble = fileInnerClassification(def::dataFolder + slash() + "GoodData",
+        tempDouble = fileInnerClassification(def::dataFolder + slash + "GoodData",
                                              guy + fileEnding,
                                              "16sec19ch");
         ofStr << tempDouble << '\t' << guy + fileEnding +  " 16 sec" << endl;
@@ -1070,7 +1160,7 @@ void MainWindow::customFunc()
     for(const QString & guy : names)
     {
 
-        tempDouble = fileInnerClassification(def::dataFolder + slash() + "GoodData",
+        tempDouble = fileInnerClassification(def::dataFolder + slash + "GoodData",
                                              guy + fileEnding,
                                              "8sec19ch");
         ofStr << tempDouble << '\t' << guy + fileEnding +  " 8 sec" << endl;
@@ -1084,7 +1174,7 @@ void MainWindow::customFunc()
     ui->cleanWindowsCheckBox->setChecked(false);
     ui->cleanWindSpectraCheckBox->setChecked(false);
 
-    const QString workDir = def::dataFolder + slash() + "GoodData";
+    const QString workDir = def::dataFolder + slash + "GoodData";
 
     QString helpString;
     QString tmp;
@@ -1102,18 +1192,18 @@ void MainWindow::customFunc()
             for(const QString & guy : names)
             {
 #if 0
-                helpString = workDir + slash() + guy
+                helpString = workDir + slash + guy
                              + "_cl_f" + QString::number(low)
                              + "-" + QString::number(high)
                              + "_ica.edf";
 
-                const QString initEdf = workDir + slash() + guy + "_cl_ica.edf";
+                const QString initEdf = workDir + slash + guy + "_cl_ica.edf";
                 ICsSequence(initEdf, helpString);
 //                exit(0);
 //                continue;
 #endif
 
-                helpString = workDir + slash() + guy
+                helpString = workDir + slash + guy
                              + "_cl_f" + QString::number(low)
                              + "-" + QString::number(high)
                              + "_ica_ord.edf";
@@ -1122,14 +1212,14 @@ void MainWindow::customFunc()
 
                 ui->reduceChannelsComboBox->setCurrentText("20");
 
-                const QString inSpectraPath = workDir + slash() + "Help"
-                                              + slash() + guy
+                const QString inSpectraPath = workDir + slash + "Help"
+                                              + slash + guy
                                               + "_cl_f" + QString::number(low)
                                               + "-" + QString::number(high)
                                               + "_ica_ord_all.jpg";
-                const QString outSpectraPath = workDir + slash() + "Help"
-                                               + slash() + "Ordered"
-                                               + slash() + guy
+                const QString outSpectraPath = workDir + slash + "Help"
+                                               + slash + "Ordered"
+                                               + slash + guy
                                                + "_cl_f" + QString::number(low)
                                                + "-" + QString::number(high)
                                                + "_ica_ord_all_wm.jpg";
@@ -1143,17 +1233,17 @@ void MainWindow::customFunc()
                 tmp = def::ExpName;
                 tmp.remove("_ica");
                 drawMapsICA(workDir
-                            + slash() + "Help"
-                            + slash() + tmp + "_maps.txt",
+                            + slash + "Help"
+                            + slash + tmp + "_maps.txt",
                             workDir
-                            + slash() + "Help"
-                            + slash() + "Maps");
+                            + slash + "Help"
+                            + slash + "Maps");
 
                 drawMapsOnSpectra(inSpectraPath,
                                   outSpectraPath,
                                   workDir
-                                  + slash() + "Help"
-                                  + slash() + "Maps");
+                                  + slash + "Help"
+                                  + slash + "Maps");
 
 
 
@@ -1162,7 +1252,7 @@ void MainWindow::customFunc()
 //                ofStr.open(logPath.toStdString(),
 //                           ios_base::app);
 
-//                tempDouble = fileInnerClassification(def::dataFolder + slash() + "GoodData",
+//                tempDouble = fileInnerClassification(def::dataFolder + slash + "GoodData",
 //                                                     helpString,
 //                                                     tmp);
 //                ofStr << tempDouble << '\t'
@@ -1205,8 +1295,8 @@ void MainWindow::customFunc()
         const QStringList newFiles = tempDir.entryList(QStringList{"*spectre.txt", "*alpha.txt"});
         for(const QString & fileName : newFiles)
         {
-            QFile::copy(tempDir.absolutePath() + slash() + fileName,
-                        tempDir.absolutePath() + slash() + "newResults" + slash() + fileName);
+            QFile::copy(tempDir.absolutePath() + slash + fileName,
+                        tempDir.absolutePath() + slash + "newResults" + slash + fileName);
         }
         break;
     }
@@ -1228,10 +1318,10 @@ void MainWindow::customFunc()
 
     for(const QString & guy : names)
     {
-        helpString = path + slash() + guy + "_cl_ica.edf";
+        helpString = path + slash + guy + "_cl_ica.edf";
         setEdfFile(helpString);
 
-//        helpString = hlp + slash() + guy + "_cl_maps.txt";
+//        helpString = hlp + slash + guy + "_cl_maps.txt";
 //        drawMapsICA(helpString,
 //                    out,
 //                    guy);
@@ -1253,9 +1343,9 @@ void MainWindow::customFunc()
         sp->close();
         delete sp;
 
-        helpString = hlp + slash() + guy + "_cl_ica_all.jpg";
+        helpString = hlp + slash + guy + "_cl_ica_all.jpg";
         drawMapsOnSpectra(helpString,
-                          QString(hlp + slash() + guy + "_cl_ica_all_wm.jpg"),
+                          QString(hlp + slash + guy + "_cl_ica_all_wm.jpg"),
                           hlp,
                           guy + "_cl");
 //        break;
@@ -1582,7 +1672,7 @@ void MainWindow::customFunc()
         for(QString &ext : exts)
         {
             helpString = def::dir->absolutePath()
-                    + slash() + guy + ext + ".edf";
+                    + slash + guy + ext + ".edf";
             setEdfFile(helpString);
             if(!helpString.endsWith("BSA_0.edf")) continue;
 
@@ -1592,8 +1682,8 @@ void MainWindow::customFunc()
                 for(QString &typ : leest)
                 {
                     const QString hlp = def::dir->absolutePath()
-                            + slash() + "Help"
-                            + slash() + guy + ext
+                            + slash + "Help"
+                            + slash + guy + ext
                             + typ;
 
                     QFile::remove(hlp + "_" + QString::number(i) + ".txt");
@@ -1613,7 +1703,7 @@ void MainWindow::customFunc()
         {
             cout << endl << guy << ext << endl;
             helpString = def::dir->absolutePath()
-                    + slash() + guy + ext + ".edf";
+                    + slash + guy + ext + ".edf";
 
             if(!helpString.endsWith("BSA_0.edf")) continue;
             setEdfFile(helpString);
@@ -1623,8 +1713,8 @@ void MainWindow::customFunc()
             for(int i = 0; i < numIter; ++i)
             {
                 const QString hlp = def::dir->absolutePath()
-                        + slash() + "Help"
-                        + slash() + guy + ext + "_maps_after_len_"
+                        + slash + "Help"
+                        + slash + guy + ext + "_maps_after_len_"
                         + QString::number(i) + ".txt";
                 if(!QFile::exists(hlp))
                 {
@@ -1635,7 +1725,7 @@ void MainWindow::customFunc()
                 matrix matrixA(dim);
                 matrix comps(dim, globalEdf.getDataLen());
                 matrix EEG;
-                globalEdf.getDataCopy(EEG.data);
+                EEG = globalEdf.getData();
                 EEG.data.resize(dim);
 
                 readICAMatrix(hlp,
@@ -1697,7 +1787,7 @@ void MainWindow::customFunc()
         def::dir->cd(guy);
         def::dir->cd("auxEdfs");
 
-        QString helpString = def::dir->absolutePath() + slash() + guy + "_0.edf";
+        QString helpString = def::dir->absolutePath() + slash + guy + "_0.edf";
         if(!QFile::exists(helpString))
         {
             def::dir->cdUp();
@@ -1712,7 +1802,7 @@ void MainWindow::customFunc()
         initFile.concatFile(helpString);
 
         def::dir->cdUp();
-        QString helpString2 = def::dir->absolutePath() + slash() + guy + "_full.edf";
+        QString helpString2 = def::dir->absolutePath() + slash + guy + "_full.edf";
         initFile.writeEdfFile(helpString2);
         def::dir->cdUp();
     }
@@ -2061,9 +2151,9 @@ void MainWindow::customFunc()
         double * drawVars = new double [num1];
         for(int i = 0; i < lst.length(); ++i)
         {
-            helpString = def::dir->absolutePath() + slash() + lst[i];
+            helpString = def::dir->absolutePath() + slash + lst[i];
             helpString.replace(".txt", ".png");
-            countRCP(QString(def::dir->absolutePath() + slash() + lst[i]), helpString, &men[i], &sigm[i]);
+            countRCP(QString(def::dir->absolutePath() + slash + lst[i]), helpString, &men[i], &sigm[i]);
 
             outStream << lst[i].toStdString() << "\t" << doubleRound(men[i], 2) << "\t" << doubleRound(sigm[i], 2) << endl;
 
@@ -2095,7 +2185,7 @@ void MainWindow::customFunc()
         QString helpString;
         for(int i = 0; i < lst.length(); ++i)
         {
-            helpString = def::dir->absolutePath() + slash() + lst[i];
+            helpString = def::dir->absolutePath() + slash + lst[i];
             setEdfFile(helpString);
             readData();
             helpString = lst[i];
@@ -2120,7 +2210,7 @@ void MainWindow::customFunc()
         lst = def::dir->entryList(QStringList("*.edf"), QDir::Files);
         for(int i = 0; i < lst.length(); ++i)
         {
-            helpString = def::dir->absolutePath() + slash() + lst[i];
+            helpString = def::dir->absolutePath() + slash + lst[i];
             setEdfFile(helpString);
             readData();
             helpString = lst[i];
@@ -2264,7 +2354,7 @@ void MainWindow::customFunc()
                 lst = def::dir->entryList(QStringList(vars[k]), QDir::Files, QDir::Name);
                 for(int i = 0; i < lst.length(); ++i)
                 {
-                    helpString = pcaPath + slash() + lst[i];
+                    helpString = pcaPath + slash + lst[i];
                     readFileInLine(helpString, &currentVect, dim);
 
                     //count distances
@@ -2443,14 +2533,14 @@ void MainWindow::customFunc()
             //draw separate maps only
             if(1)
             {
-                helpString = def::dir->absolutePath() + slash() + list0[i];
+                helpString = def::dir->absolutePath() + slash + list0[i];
                 drawMapsICA(helpString, 19, def::dir->absolutePath(), QString(list0[i].left(3) + "-m"));
             }
 
             //draw average spectra
             if(0)
             {
-                helpString = def::dir->absolutePath() + slash() + list0[i];
+                helpString = def::dir->absolutePath() + slash + list0[i];
                 setEdfFile(helpString);
                 cleanDirs();
                 sliceAll();
@@ -2459,9 +2549,9 @@ void MainWindow::customFunc()
             //draw maps on average spectra
             if(0)
             {
-                helpString = def::dir->absolutePath() + slash() + list0[i];
-                helpString = def::dir->absolutePath() + slash() + list0[i].left(3) + "_1_ica_all.png";
-                helpString2 = def::dir->absolutePath() + slash() + list0[i].left(3) + "_1_ica_all_withmaps.png";
+                helpString = def::dir->absolutePath() + slash + list0[i];
+                helpString = def::dir->absolutePath() + slash + list0[i].left(3) + "_1_ica_all.png";
+                helpString2 = def::dir->absolutePath() + slash + list0[i].left(3) + "_1_ica_all_withmaps.png";
                 drawMapsOnSpectra(helpString, helpString2, def::dir->absolutePath(), QString(list0[i].left(3) + "-m"));
             }
         }
@@ -2486,12 +2576,12 @@ void MainWindow::customFunc()
         for(int i = 0; i < lst11.length(); ++i)
         {
             cout << endl << lst11[i].toStdString() << "\tstart" << endl;
-            helpString = def::dir->absolutePath() + slash() + lst11[i];
+            helpString = def::dir->absolutePath() + slash + lst11[i];
             setEdfFile(helpString);
             cleanDirs();
             sliceAll();
             constructEDFSlot();
-            helpString = def::dir->absolutePath() + slash() + lst11[i];
+            helpString = def::dir->absolutePath() + slash + lst11[i];
             helpString2 = helpString;
             helpString2.replace(".edf", "_new.edf");
             QFile::remove(helpString);
@@ -2551,16 +2641,16 @@ void MainWindow::customFunc()
         ui->reduceChannelsLineEdit->setText(helpString);
 
         //exclude channels from 1st file
-        helpString = def::dir->absolutePath() + slash() + fileName1;
+        helpString = def::dir->absolutePath() + slash + fileName1;
         setEdfFile(helpString);
-        helpString = def::dir->absolutePath() + slash() + fileName1;
+        helpString = def::dir->absolutePath() + slash + fileName1;
         helpString.replace(".edf", "_rdc.edf");
         reduceChannelsEDF(helpString);
 
         //exclude channels from 2nd file
-        helpString = def::dir->absolutePath() + slash() + fileName2;
+        helpString = def::dir->absolutePath() + slash + fileName2;
         setEdfFile(helpString);
-        helpString = def::dir->absolutePath() + slash() + fileName2;
+        helpString = def::dir->absolutePath() + slash + fileName2;
         helpString.replace(".edf", "_rdc.edf");
         reduceChannelsEDF(helpString);
 

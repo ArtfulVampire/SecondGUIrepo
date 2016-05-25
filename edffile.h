@@ -154,21 +154,7 @@ class edfFile
 public:
 
     edfFile();
-    ~edfFile();
-
-    /*
-    //yet unused
-    edfFile(int in_ndr,
-            int in_ns,
-            int in_ddr,
-            std::vector <QString> in_labels,
-            std::vector <double> in_physMin,
-            std::vector <double> in_physMax,
-            std::vector <double> in_digMin,
-            std::vector <double> in_digMax,
-            std::vector <double> in_nr,
-            std::vector < std::vector <double> > in_data);
-    */
+    ~edfFile() {}
 
     edfFile(const edfFile & other, bool noData = false);
     edfFile(const QString & matiLogPath);
@@ -205,7 +191,7 @@ public:
     void refilter(const double &lowFreq,
                   const double &highFreq,
                   const QString & newPath = QString());
-    void saveSubsection(int startBin, int finishBin, const QString &outPath, bool plainFlag = false) const;
+    void saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
     void reduceChannels(const std::vector<int> & chanList);
     void reduceChannels(const QString & chanStr);
@@ -243,6 +229,7 @@ private:
     int ndr = 0;
     double ddr = 1.;
     int ns = 0;
+    int srate = 250; // the same as freq
 
     // fast access for slicing (time-bin, marker)
     std::vector<std::pair<int, double>> sessionEdges = std::vector<std::pair<int, double>>();
@@ -292,6 +279,7 @@ public:
     const int & getNdr() const {return ndr;}
     const double & getDdr() const {return ddr;}
     const int & getNs() const {return ns;}
+    const int & freq() const {return srate;}
     const std::vector <QString> & getLabels() const {return labels;}
     const std::vector <QString> & getTransducer() const {return transducerType;}
     const std::vector <QString> & getPhysDim() const {return physDim;}
@@ -303,7 +291,8 @@ public:
     const std::vector <double> & getNr() const {return nr;}
     const std::vector <QString> & getReserved() const {return reserved;}
     const QString & getHeaderRest() const {return headerRest;}
-    const std::vector <edfChannel> & getChannels() const {return channels;}
+
+    const std::vector<edfChannel> & getChannels() const {return channels;}
 
     const int & getDataLen() const {return dataLength;}
     const int & getMarkChan() const {return markerChannel;}
@@ -311,7 +300,7 @@ public:
     const QString & getFilePath() const {return filePath;}
     const QString & getDirPath() const  {return dirPath;}
     const QString & getExpName() const {return ExpName;}
-    QString getFileNam() const {return getFileName(filePath);}
+    QString getFileNam() const {return myLib::getFileName(filePath);}
 
     const bool & getMatiFlag() const {return matiFlag;}
     const bool & getNtFlag() const {return ntFlag;}
@@ -320,17 +309,6 @@ public:
     void setMatiFlag(bool newFlag) {matiFlag = newFlag;}
     void setNtFlag(bool newFlag) {ntFlag = newFlag;}
     void setEdfPlusFlag(bool newFlag) {edfPlusFlag = newFlag;}
-
-    void getLabelsCopy(char ** & dest) const
-    {
-        for(int i = 0; i < this->ns; ++i)
-        {
-            memcpy(dest[i],
-                   this->labels[i].toStdString().c_str(),
-                   this->labels[i].length() * sizeof(char));
-            dest[i][this->labels[i].length()] = '\0';
-        }
-    }
 
     // operations with data
 #if DATA_POINTER
@@ -341,7 +319,7 @@ public:
 
     const edfDataType & getData() const {return data;}
     void setData(int chanNum, int timeBin, double val) {data[chanNum][timeBin] = val;}
-    void getDataCopy(edfDataType & destination) const {destination = data;}
+//    void getDataCopy(edfDataType & destination) const {destination = data;}
 
     const lineType & operator [](int i) const
     {

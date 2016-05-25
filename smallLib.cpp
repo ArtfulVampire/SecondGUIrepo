@@ -3,6 +3,10 @@
 
 using namespace std;
 using namespace std::chrono;
+using namespace smallLib;
+
+namespace myLib
+{
 
 template <typename Container>
 int indexOfMax(const Container & cont)
@@ -216,15 +220,15 @@ void deleteSpaces(const QString & dirPath, const QStringList & filters)
 //        newName.remove(' ');
         newName.replace(' ', '_');
         newName.remove(R"(')");
-        QFile::rename(tmp.absolutePath() + slash() + fileName,
-                      tmp.absolutePath() + slash() + newName);
+        QFile::rename(tmp.absolutePath() + slash + fileName,
+                      tmp.absolutePath() + slash + newName);
     }
 }
 
-QString slash()
-{
-    return QString(QDir::separator());
-}
+//const QString slash
+//{
+//    return QString(QDir::separator());
+//}
 
 char * strToChar(const QString & input)
 {
@@ -296,7 +300,7 @@ void cleanDir(QString dirPath, QString nameFilter, bool ext)
 
     for(int h = 0; h < lst.length(); ++h)
     {
-        QFile::remove(tmpDir.absolutePath() + slash() + lst[h]);
+        QFile::remove(tmpDir.absolutePath() + slash + lst[h]);
     }
 
 }
@@ -564,3 +568,5 @@ template ostream & operator << (std::ostream & os, QList<double> toOut);
 template int indexOfMax(const std::vector<double> & cont);
 template int indexOfMax(const std::valarray<double> & cont);
 template int indexOfMax(const std::list<double> & cont);
+
+}// namespace myLib

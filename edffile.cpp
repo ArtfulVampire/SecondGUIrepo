@@ -1,6 +1,8 @@
 #include "edffile.h"
 
 using namespace std;
+using namespace myLib;
+using namespace smallLib;
 
 edfFile::edfFile()
 {
@@ -9,9 +11,6 @@ edfFile::edfFile()
 #endif
 }
 
-edfFile::~edfFile()
-{
-}
 
 edfFile::edfFile(const edfFile &other, bool noData)
 {
@@ -26,6 +25,7 @@ edfFile::edfFile(const edfFile &other, bool noData)
     this->ndr = other.getNdr();
     this->ddr = other.getDdr();
     this->ns = other.getNs();
+    this->srate = other.freq();
 
     this->labels = other.getLabels();
     this->transducerType = other.getTransducer();
@@ -46,6 +46,7 @@ edfFile::edfFile(const edfFile &other, bool noData)
     if(!noData)
     {
         this->data = other.getData();
+        this->fftData = other.fftData;
 #if DATA_POINTER
         this->dataPointer = &(this->data);
 #endif
@@ -67,6 +68,7 @@ edfFile edfFile::operator=(const edfFile & other)
     this->ndr = other.getNdr();
     this->ddr = other.getDdr();
     this->ns = other.getNs();
+    this->srate = other.freq();
 
     this->labels = other.getLabels();
     this->transducerType = other.getTransducer();
@@ -124,12 +126,12 @@ edfFile::edfFile(const QString & matiLogPath)
 
     this->filePath = matiLogPath;
     this->ExpName = getExpNameLib(matiLogPath);
-    this->dirPath = matiLogPath.left(matiLogPath.lastIndexOf( slash() ) );
+    this->dirPath = matiLogPath.left(matiLogPath.lastIndexOf( slash ) );
 
     this->ns = numOfParams;
     this->ddr = 1.;
 
-    this->nr = vector<double> (this->ns, def::freq);
+    this->nr = std::vector<double> (this->ns, def::freq);
     // ndr definedlater
     this->bytes = 256 * (this->ns + 1);
 
@@ -231,62 +233,6 @@ edfFile::edfFile(const QString & matiLogPath)
                                  );
     }
 }
-/*
-edfFile::edfFile(int in_ndr, int in_ns,
-                 int in_ddr,
-                 vector <QString> in_labels,
-                 vector <double> in_physMin,
-                 vector <double> in_physMax,
-                 vector <double> in_digMin,
-                 vector <double> in_digMax,
-                 vector <double> in_nr,
-                 vector < vector <double> > in_data)
-{
-    this->ns = in_ns;
-    this->ndr = in_ndr;
-    this->ddr = in_ddr;
-    this->nr = in_nr;
-    this->data = in_data;
-    this->labels = in_labels;
-
-    this->physMax = in_physMax;
-    this->physMin = in_physMin;
-    this->digMax = in_digMax;
-    this->digMin = in_digMin;
-    this->dataLength = this->ndr * this->nr[0];
-
-    this->filePath = QString();
-    this->ExpName = QString();
-    this->dirPath = QString();
-
-    this->headerInitialInfo = fitString("headerInitialInfo", 184);
-    this->bytes = 256 * (this->ns + 1);
-    this->headerReservedField = fitString("headerReservedField", 44);
-    this->headerRest = QString();
-
-    this->transducerType = vector <QString> (this->ns, QString(fitString("transducerType", 80)));
-    this->physDim = vector <QString> (this->ns, QString(fitString("physDim", 8)));
-    this->prefiltering = vector <QString> (this->ns, QString(fitString("prefiltering", 80)));
-    this->reserved = vector <QString> (this->ns, QString(fitString("reserved", 32)));
-
-    for(int i = 0; i < this->ns; ++i)
-    {
-        this->channels.push_back(edfChannel(labels[i],
-                                               transducerType[i],
-                                               physDim[i],
-                                               physMax[i],
-                                               physMin[i],
-                                               digMax[i],
-                                               digMin[i],
-                                               prefiltering[i],
-                                               nr[i],
-                                               reserved[i],
-                                               data[i])
-                                    );
-    }
-}
-*/
-
 
 void edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 {
@@ -308,10 +254,6 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
 //            cout << "writeEdfFile: destination file already exists, REWRITE = \n" << EDFpath << " ";
         }
         this->handleEdfFile(EDFpath, false);
-//        cout << "write time = " << doubleRound( myTime.elapsed() / 1000., 2) << " sec";
-
-//        cout << endl;
-
     }
     else // if(asPLain)
     {
@@ -324,9 +266,6 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
         writePlainData(EDFpath, this->data);
 #endif
     }
-
-//    cout << "write time = " << doubleRound( myTime.elapsed() / 1000., 1) << " sec";
-//    cout << endl;
 }
 
 // readFlag: 1 - read, 0 - write
@@ -368,22 +307,23 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         cout << "handleFile: file to read doesn't exist\n" << EDFpath << endl;
         return;
     }
+
     FILE * edfDescriptor;
     edfDescriptor = fopen(EDFpath, (readFlag)?"r":"w"); //generality
     if(edfDescriptor == NULL)
     {
-        cout << "handleFile: cannot open edf file" << endl;
+        cout << "handleFile: cannot open edf file " << EDFpath << endl;
         return;
     }
 
 
 
     filePath = EDFpath;
-    dirPath = EDFpath.left(EDFpath.lastIndexOf(slash()));
+    dirPath = EDFpath.left(EDFpath.lastIndexOf(slash));
     ExpName = getExpNameLib(filePath);
 
     FILE * header;
-    helpString = dirPath + slash() + "header.txt";
+    helpString = dirPath + slash + "header.txt";
     if(readFlag)
     {
         header = fopen(helpString, "w");
@@ -396,9 +336,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
     if(!readFlag)
     {
-//        cout << this->data.cols() << endl;
         this->fitData(this->dataLength);
-//        cout << this->data.cols() << endl << endl;
     }
 
 
@@ -438,7 +376,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
     if(readFlag)
     {
-        helpString = QDir::toNativeSeparators( dirPath + slash() + "labels.txt" );
+        helpString = QDir::toNativeSeparators( dirPath + slash + "labels.txt" );
         FILE * labelsFile;
         labelsFile = fopen(helpString, "w");
         for(int i = 0; i < ns; ++i)                         //labels write in file
@@ -461,7 +399,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     if(readFlag)
     {
         /// olololololololololololololololo
-        def::freq = std::round(nr[0] / ddr); // frequency of the first channnel
+//        def::freq = std::round(nr[0] / ddr); // frequency of the first channnel
+        this->srate = std::round(nr[0] / ddr);
         const long long fileSize = QFile(EDFpath).size();
         const int sumNr = std::accumulate(std::begin(nr),
                                           std::end(nr),
@@ -474,7 +413,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                  << realNdr << endl;
             cout << "dataSize = " << fileSize - bytes << endl;
             cout << "ns = " << ns << endl;
-            cout << "freq = " << def::freq << endl;
+            cout << "freq = " << this->srate << endl;
             cout << "ddr = " << ddr << endl;
             cout << "rest size = "
                  << (fileSize - bytes) - ndr * sumNr * 2.<< endl;
@@ -518,7 +457,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     fsetpos(edfDescriptor, position);
     delete position;
 
-    QFile::remove(helpString = dirPath + slash() + this->ExpName + "_markers.txt");
+    QFile::remove(helpString = dirPath + slash + this->ExpName + "_markers.txt");
 
 
     if(readFlag)
@@ -784,7 +723,7 @@ void edfFile::writeMarker(const double & currDatum,
     FILE * markers;
 
 
-    helpString = dirPath + slash() + this->ExpName + "_markers.txt";
+    helpString = dirPath + slash + this->ExpName + "_markers.txt";
     markers = fopen(helpString, "a+");
     fprintf(markers, "%d %d", currTimeIndex, int(currDatum));
     if(this->matiFlag)
@@ -870,7 +809,7 @@ void edfFile::handleAnnotations(const int & currNs,
             sscanf(annotations[j].toStdString().c_str(), "+%lf\24%s", &markTime, markNum);
             data[ns-1][int(markTime*nr[ns-1]/ddr)] = atoi(markNum);
         }
-//        nr[ns-1] = def::freq; // generality freq change
+//        nr[ns-1] = this->srate; // generality freq change
     }
     */
 
@@ -1154,7 +1093,7 @@ void edfFile::refilter(const double & lowFreq,
 {
 
     int fftLength = fftL(this->dataLength);
-    double spStep = def::freq / double(fftLength);
+    double spStep = this->srate / double(fftLength);
     double norm1 = fftLength / double(this->dataLength);
     double * spectre = new double [fftLength * 2];
 
@@ -1281,15 +1220,13 @@ void edfFile::saveSubsection(int startBin,
         this->writeEdfFile(outPath, plainFlag);
         (*this) = temp;
 #else
-
-
         temp.data.resize(this->ns);
         for(int i = 0; i < this->ns; ++i)
         {
             temp.data[i].resize(finishBin - startBin);
-            std::copy(begin(this->getData()[i]) + startBin,
-                      begin(this->getData()[i]) + finishBin,
-                      begin(temp.data[i]));
+            std::copy(std::begin(this->data[i]) + startBin,
+                      std::begin(this->data[i]) + finishBin,
+                      std::begin(temp.data[i]));
         }
         temp.dataLength = finishBin - startBin;
         temp.writeEdfFile(outPath, plainFlag);
@@ -1307,21 +1244,21 @@ void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
             this->ns,
             startBin,
             finishBin,
-            def::freq,
+            this->srate,
             outPath);
 }
 
 void edfFile::cleanFromEyes(QString eyesPath,
                             bool removeEogChannels,
-                            vector<int> eegNums,
-                            vector<int> eogNums)
+                            std::vector<int> eegNums,
+                            std::vector<int> eogNums)
 {
     QTime myTime;
     myTime.start();
 
     if(eyesPath.isEmpty())
     {
-        eyesPath = this->dirPath + slash() + "eyes.txt";
+        eyesPath = this->dirPath + slash + "eyes.txt";
     }
 
     matrix coefs;
@@ -1657,8 +1594,8 @@ void edfFile::writeOtherData(const matrix & newData,
 
 void edfFile::fitData(int initSize) // append zeros to whole ndr's
 {
-    this->ndr = ceil(double(initSize) / (def::freq * this->ddr)); // generality
-    this->dataLength = this->ndr * (def::freq * this->ddr);
+    this->ndr = ceil(double(initSize) / (this->srate * this->ddr)); // generality
+    this->dataLength = this->ndr * (this->srate * this->ddr);
 
     for(int i = 0; i < this->ns; ++i)
     {
@@ -1745,7 +1682,7 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
 #endif
     }
 //    cout << this->data.maxVal() << endl;
-    this->ndr = ceil(this->dataLength / (def::freq * this->ddr)); // should be unchanged
+    this->ndr = ceil(this->dataLength / (this->srate * this->ddr)); // should be unchanged
 }
 
 double edfFile::checkDdr(const QString & inPath)

@@ -3,6 +3,9 @@
 
 using namespace std;
 using namespace std::chrono;
+using namespace smallLib;
+namespace myLib
+{
 
 double const morletFall = 9.; // coef in matlab = mF^2 / (2 * pi^2);
 double morletCosNew(double const freq1, // Hz
@@ -548,7 +551,7 @@ void countMannWhitney(trivector<int> & outMW,
         spectra[i].resize(lst[i].length());
         for(int j = 0; j < lst[i].length(); ++j) /// remake : lst[i]
         {
-            helpString = dir_.absolutePath() + slash() + lst[i][j];
+            helpString = dir_.absolutePath() + slash + lst[i][j];
             readFileInLine(helpString, spectra[i][j]);
         }
         averageSpectra[i] = spectra[i].averageRow();
@@ -781,7 +784,7 @@ void dealWithEyes(matrix & inData,
     // subtract averages
     for(int i = 0; i < dimension; ++i)
     {
-        const double temp = - mean(inData[i]) * realSignalFrac;
+        const double temp = - smallLib::mean(inData[i]) * realSignalFrac;
 
         std::for_each(begin(inData[i]),
                       end(inData[i]),
@@ -919,7 +922,7 @@ void svd(const matrix & initialData,
     double trace = 0.;
     for(int i = 0; i < dimension; ++i)
     {
-        trace += variance(initialData[i]);
+        trace += smallLib::variance(initialData[i]);
     }
 
     eigenValues.resize(eigenVecNum);
@@ -936,17 +939,17 @@ void svd(const matrix & initialData,
     /// ICA test short
 
     const QString pathForAuxFiles = def::dir->absolutePath()
-                                    + slash() + "Help"
-                                    + slash() + "ica";
+                                    + slash + "Help"
+                                    + slash + "ica";
     QString helpString = pathForAuxFiles
-                         + slash() + def::ExpName + "_eigenMatrix.txt";
+                         + slash + def::ExpName + "_eigenMatrix.txt";
     readMatrixFile(helpString,
                     eigenVectors);
 
 
     // write eigenValues
     helpString = pathForAuxFiles
-                 + slash() + def::ExpName + "_eigenValues.txt";
+                 + slash + def::ExpName + "_eigenValues.txt";
     readFileInLine(helpString, eigenValues);
     return;
 #endif
@@ -2278,3 +2281,5 @@ template void calcSpectre(const lineType & inSignal, lineType & outSpectre, cons
 
 template void kernelEst(const vectType & arr, QString picPath);
 template void kernelEst(const lineType & arr, QString picPath);
+
+}// namespace myLib

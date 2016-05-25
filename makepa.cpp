@@ -2,6 +2,7 @@
 #include "ui_makepa.h"
 
 using namespace std;
+using namespace myLib;
 
 MakePa::MakePa(QString spectraPath, QVector<int> vect_) :
     ui(new Ui::MakePa)
@@ -97,10 +98,10 @@ void MakePa::changeSpectraDir(QAbstractButton * button)
 //    hlp.resize(hlp.lastIndexOf("SpectraSmooth") + QString("SpectraSmooth").length());
     // new
     hlp = def::dir->absolutePath()
-            + slash() + "SpectraSmooth";
+            + slash + "SpectraSmooth";
     if(!str.isEmpty())
     {
-        hlp += slash() + str;
+        hlp += slash + str;
     }
     ui->spectraDirLineEdit->setText(hlp);
 }
@@ -120,8 +121,8 @@ void MakePa::mwTest()
 
 
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "Help"
-                                                  + slash() + def::ExpName
+                                                  + slash + "Help"
+                                                  + slash + def::ExpName
                                                   + "_Mann-Whitney"
                                                   + ui->addNameLineEdit->text() + ".jpg");
     drawTemplate(helpString);
@@ -131,7 +132,7 @@ void MakePa::mwTest()
                    MW);
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "results.txt");
+                                          + slash + "results.txt");
     ofstream outStr;
     outStr.open(helpString.toStdString(), ios_base::app);
     if(!outStr.good())
@@ -215,7 +216,7 @@ void MakePa::vdvTest()
     //read the spectra into matrixes
     for(int i=0; i<n[0]; ++i)
     {
-        helpString=dir_->absolutePath().append(slash()).append(lst[0].at(i));
+        helpString=dir_->absolutePath().append(slash).append(lst[0].at(i));
         currFile = fopen(helpString.toStdString().c_str(), "r");
         for(int j=0; j<def::nsWOM() * def::spLength(); ++j)
         {
@@ -226,7 +227,7 @@ void MakePa::vdvTest()
 
     for(int i=0; i<n[1]; ++i)
     {
-        helpString=dir_->absolutePath().append(slash()).append(lst[1].at(i));
+        helpString=dir_->absolutePath().append(slash).append(lst[1].at(i));
         currFile = fopen(helpString.toStdString().c_str(), "r");
         for(int j=0; j<def::nsWOM() * def::spLength(); ++j)
         {
@@ -442,7 +443,7 @@ void MakePa::vdvTest()
     {
         paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), coords::lbl[c2]);
     }
-    helpString = def::dir->absolutePath().append(slash()).append("Help").append(slash()).append("Van der Varden").append(ui->addNameLineEdit->text()).append(".jpg");
+    helpString = def::dir->absolutePath().append(slash).append("Help").append(slash).append("Van der Varden").append(ui->addNameLineEdit->text()).append(".jpg");
     cout<<helpString.toStdString()<<endl;
 
     pic.save(helpString, 0, 100);
@@ -527,7 +528,7 @@ void MakePa::kwTest()
     {
         for(int i=0; i<n[j]; ++i)
         {
-            helpString=dir_->absolutePath().append(slash()).append(lst[j][i]);
+            helpString=dir_->absolutePath().append(slash).append(lst[j][i]);
             currFile = fopen(helpString.toStdString().c_str(), "r");
             for(int k=0; k<def::nsWOM() * def::spLength(); ++k)
             {
@@ -650,7 +651,7 @@ void MakePa::kwTest()
     cout<<"num of different freq-bins "<<numOfDiff<<endl;
 
     //automatization
-    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath().append(slash()).append("results.txt")).toStdString().c_str(), "a+");
+    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath().append(slash).append("results.txt")).toStdString().c_str(), "a+");
     fprintf(res, "U-test\t%d\n", numOfDiff);
     fclose(res);
 
@@ -782,7 +783,7 @@ void MakePa::kwTest()
 
 
     //save the picture
-    helpString = def::dir->absolutePath().append(slash()).append("Help").append(slash()).append("Kruscal-Wallis").append(ui->addNameLineEdit->text()).append(".jpg");
+    helpString = def::dir->absolutePath().append(slash).append("Help").append(slash).append("Kruscal-Wallis").append(ui->addNameLineEdit->text()).append(".jpg");
     cout<<helpString.toStdString()<<endl;
     pic.save(helpString, 0, 100);
     paint->end();
@@ -916,8 +917,8 @@ void MakePa::makePaSlot()
         }
     }
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "PA"
-                                          + slash() + "1.pa");
+                                          + slash + "PA"
+                                          + slash + "1.pa");
     makePaFile(filePath, listToWrite, coeff, helpString);
 
 
@@ -931,8 +932,8 @@ void MakePa::makePaSlot()
         }
     }
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "PA"
-                                          + slash() + "2.pa");
+                                          + slash + "PA"
+                                          + slash + "2.pa");
     makePaFile(filePath, listToWrite, coeff, helpString);
 
 
@@ -947,8 +948,8 @@ void MakePa::makePaSlot()
     }
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "PA"
-                                          + slash() + "all.pa");
+                                          + slash + "PA"
+                                          + slash + "all.pa");
     makePaFile(filePath, listToWrite, coeff, helpString);
 
     helpString="PA-files have been made \n";
@@ -1064,7 +1065,7 @@ void MakePa::dispersionAnalysis()
         for(int k = 0; k < lst[j].length(); ++k)
         {
             helpString = QDir::toNativeSeparators(dir_->absolutePath()
-                                                  + slash() + lst[j][k]);
+                                                  + slash + lst[j][k]);
             curr.setFileName(helpString);
             curr.open(QIODevice::ReadOnly);
             for(int i = 0; i < def::nsWOM(); ++i)
@@ -1151,8 +1152,8 @@ void MakePa::dispersionAnalysis()
 //        }
 
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "Help"
-                                              + slash() + def::ExpName
+                                              + slash + "Help"
+                                              + slash + def::ExpName
                                               + "_Variance_" + QString::number(j));
         if(!ui->addNameLineEdit->text().isEmpty())
         {
@@ -1173,8 +1174,8 @@ void MakePa::dispersionAnalysis()
 //        }
 
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "Help"
-                                              + slash() + def::ExpName
+                                              + slash + "Help"
+                                              + slash + def::ExpName
                                               + "_Mean_"+QString::number(j));
         if(!ui->addNameLineEdit->text().isEmpty())
         {
@@ -1195,8 +1196,8 @@ void MakePa::dispersionAnalysis()
 //        }
 
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "Help"
-                                              + slash() + def::ExpName
+                                              + slash + "Help"
+                                              + slash + def::ExpName
                                               + "_meanVar_" + QString::number(j));
         if(!ui->addNameLineEdit->text().isEmpty())
         {
@@ -1215,8 +1216,8 @@ void MakePa::dispersionAnalysis()
         maxMeanVar = fmax(maxMeanVar, meanVar[0][i]);
     }
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "Help"
-                                          + slash() + def::ExpName
+                                          + slash + "Help"
+                                          + slash + def::ExpName
                                           + "_meanVar_diff");
     if(!ui->addNameLineEdit->text().isEmpty())
     {
@@ -1287,7 +1288,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
     {
         for(int i=0; i<n[j]; ++i)
         {
-            helpString = dir_->absolutePath() + slash() + lst[j][i];
+            helpString = dir_->absolutePath() + slash + lst[j][i];
             currFile = fopen(helpString, "r");
             for(int k = 0; k < def::nsWOM() * def::spLength(); ++k)
             {
@@ -1452,8 +1453,8 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
 
     //save
     helpString = def::dir->absolutePath()
-            + slash() + "Help"
-            + slash() + "meanVar_samples"
+            + slash + "Help"
+            + slash + "meanVar_samples"
             + ui->addNameLineEdit->text() + ".jpg";
     cout<<helpString.toStdString()<<endl;
     pic.save(helpString, 0, 100);
@@ -1588,7 +1589,7 @@ void MakePa::correlationDifference()
     {
         for(int i=0; i<n[j]; ++i)
         {
-            helpString=dir_->absolutePath().append(slash()).append(lst[j][i]);
+            helpString=dir_->absolutePath().append(slash).append(lst[j][i]);
             currFile = fopen(helpString.toStdString().c_str(), "r");
             for(int k = 0; k < def::nsWOM() * def::spLength(); ++k)
             {
@@ -1650,7 +1651,7 @@ void MakePa::correlationDifference()
 
     //automatization
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "results.txt");
+                                          + slash + "results.txt");
     FILE * res = fopen(helpString, "a+");
     fprintf(res, "Correlation difference\t%lf\n", distance);
     fclose(res);

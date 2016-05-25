@@ -113,7 +113,7 @@ namespace def
 //    const QString dataFolder = "D:/MichaelAtanov/Data";
 //    const QString dataFolder = "D:/";
     const QString GalyaFolder = "/media/Files/Data/Galya";
-    const QString DashaFolder = "/media/Files/Data/Dasha";
+    const QString DashaFolder = "/media/Files/Data/Dasha/AUDIO";
     const bool opencl = true;
     const bool openmp = true;
 

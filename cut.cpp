@@ -2,6 +2,8 @@
 #include "ui_cut.h"
 
 using namespace std;
+using namespace myLib;
+using namespace smallLib;
 
 Cut::Cut() :
     ui(new Ui::Cut)
@@ -153,7 +155,7 @@ void Cut::browse()
     QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
                                                       tr("Open realisation"),
                                                       def::dir->absolutePath() +
-                                                      slash() +
+                                                      slash +
                                                       ui->subdirComboBox->currentText());
     if(helpString.isEmpty())
     {
@@ -253,7 +255,7 @@ void Cut::cutEyesAll()
         def::dir->cd("Realisations");
         helpString = def::dir->entryList(QDir::Files)[0];
         def::dir->cdUp();
-        helpString.prepend(def::dir->absolutePath() + slash() + "Realisations" + slash());
+        helpString.prepend(def::dir->absolutePath() + slash + "Realisations" + slash);
         cout<<helpString.toStdString()<<endl;
         emit openFile(helpString);
     }
@@ -288,8 +290,8 @@ void Cut::cutEyesAll()
     for(int k = 0; k < int(lst.length()/4); ++k)
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + ui->dirBox->currentText()
-                                              + slash() + lst[rand()%lst.length()]);
+                                              + slash + ui->dirBox->currentText()
+                                              + slash + lst[rand()%lst.length()]);
         emit openFile(helpString);
 
         for(int j = 0; j < NumOfSlices; ++j)
@@ -323,7 +325,7 @@ void Cut::cutEyesAll()
 //    cout<<"5"<<endl;
     FILE * eyes;
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "eyesSlices");
+                                          + slash + "eyesSlices");
     eyes = fopen(helpString, "w");
 
     int flag;
@@ -332,8 +334,8 @@ void Cut::cutEyesAll()
     for(int i = 0; i<lst.length(); ++i)
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + ui->dirBox->currentText()
-                                              + slash() + lst[i]);
+                                              + slash + ui->dirBox->currentText()
+                                              + slash + lst[i]);
 
         emit openFile(helpString);
         num += NumOfSlices;
@@ -359,7 +361,7 @@ void Cut::cutEyesAll()
 
     fclose(eyes);
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "eyesSlices");
+                                          + slash + "eyesSlices");
     QFile *file = new QFile(helpString);
     file->open(QIODevice::ReadOnly);
     QByteArray contents = file->readAll();
@@ -473,7 +475,7 @@ void Cut::next()
         {
             continue;
         }
-        helpString = getDirPathLib(currentFile) + slash() + lst[++currentNumber];
+        helpString = getDirPathLib(currentFile) + slash + lst[++currentNumber];
         emit openFile(helpString);
         return;
     }
@@ -496,7 +498,7 @@ void Cut::prev()
             {
                 continue;
             }
-            helpString = getDirPathLib(currentFile) + slash() + lst[--currentNumber];
+            helpString = getDirPathLib(currentFile) + slash + lst[--currentNumber];
             emit openFile(helpString);
             return;
         }
@@ -712,8 +714,8 @@ void Cut::cut()
 {
     QString helpString;
     helpString = QDir::toNativeSeparators(def::dir->absolutePath() +
-                                          slash() + "windows" +
-                                          slash() + getFileName(currentFile) +
+                                          slash + "windows" +
+                                          slash + getFileName(currentFile) +
                                           "." + QString::number(addNum++));
     writePlainData(helpString,
                    data3,
@@ -770,8 +772,8 @@ void Cut::save()
     if(myFileType == fileType::real)
     {
         QString helpString = def::dir->absolutePath()
-                             + slash() + "cut"
-                             + slash() + getFileName(currentFile);
+                             + slash + "cut"
+                             + slash + getFileName(currentFile);
 
         // new
         writePlainData(helpString, data3);
@@ -803,7 +805,7 @@ void Cut::rewrite()
 void Cut::paint() // save to tmp.jpg and display
 {
     QString helpString;
-    helpString = def::dir->absolutePath() + slash() + "tmp.jpg";
+    helpString = def::dir->absolutePath() + slash + "tmp.jpg";
 
     if(myFileType == fileType::edf)
     {

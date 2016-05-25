@@ -3,6 +3,9 @@
 
 using namespace std;
 using namespace std::chrono;
+using namespace smallLib;
+namespace myLib
+{
 
 // make valarray
 template <typename signalType>
@@ -194,4 +197,4 @@ template void writeFileInLine(const QString & filePath, const vectType & outData
 
 template void readFileInLine(const QString & filePath, lineType & outData);
 template void readFileInLine(const QString & filePath, vectType & outData);
-
+}

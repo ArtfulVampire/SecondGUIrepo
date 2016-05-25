@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <numeric>
 
+
+
 typedef std::valarray<double> lineType;
 typedef std::vector<double> vectType;
 typedef std::vector<std::vector<double>> mat;
@@ -21,9 +23,11 @@ template <typename Typ>
 class twovector : public std::vector<std::vector<Typ>>
 {};
 
-
-
 const long double pi = 3.14159265358979323846L;
+
+namespace smallLib
+{
+
 
 inline double doubleRound(const double & in, const int & numSigns)
 {
@@ -40,7 +44,7 @@ inline double doubleRoundFraq(const double & in, const int & denom)
     return ceil(in * denom - 0.5) / denom;
 }
 
-inline double gaussian(const double & x, const double & sigma = 1.) //N(0,1)
+inline double gaussian(const double & x, const double & sigma = 1.) // N(0,1)
 {
     return 1./(sigma * sqrt(2. * pi)) * exp(-x * x / (2. * sigma * sigma) );
 }
@@ -173,6 +177,7 @@ template void eraseItems(std::vector<lineType> & inVect, const std::vector<int> 
 template void eraseItems(std::vector<int> & inVect, const std::vector<int> & indices);
 template void eraseItems(std::vector<double> & inVect, const std::vector<int> & indices);
 
+} // namespace smallLib
 
 
 #endif // SMALLFUNCS_H

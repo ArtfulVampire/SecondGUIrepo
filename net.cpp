@@ -3,6 +3,8 @@
 //#include <CL/cl.h>
 
 using namespace std;
+using namespace myLib;
+using namespace smallLib;
 
 Net::Net() :
     ui(new Ui::Net)
@@ -12,11 +14,11 @@ Net::Net() :
 
     //clean log file
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "log.txt");
+                                                  + slash + "log.txt");
     QFile::remove(helpString);
 
 //    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-//                                          + slash() + "badFiles.txt");
+//                                          + slash + "badFiles.txt");
 //    QFile::remove(helpString);
 
     stopFlag = 0;
@@ -640,19 +642,19 @@ void Net::autoClassificationSimple()
 //    ui->deltaRadioButton->setChecked(true); //generality
     QString helpString;
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "SpectraSmooth");
+                                          + slash + "SpectraSmooth");
 
     if(Source == source::winds) //generality
     {
-        helpString += slash() + "windows";
+        helpString += slash + "windows";
     }
     else if(Source == source::bayes)
     {
-        helpString += slash() + "Bayes";
+        helpString += slash + "Bayes";
     }
     else if(Source == source::pca)
     {
-        helpString += slash() + "PCA";
+        helpString += slash + "PCA";
     }
 
     if(!helpString.isEmpty())
@@ -695,7 +697,7 @@ void Net::autoClassification(const QString & spectraDir)
     myTime.start();
 
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "log.txt");
+                                                  + slash + "log.txt");
     QFile::remove(helpString);
 #if 0
     //set random matrix - add in PaIntoMatrixByName
@@ -802,7 +804,7 @@ void Net::averageClassification()
     /// deal with confusionMatrix
 
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "results.txt");
+                                                  + slash + "results.txt");
     ofstream res;
     res.open(helpString.toStdString(), ios_base::app);
 
@@ -873,7 +875,7 @@ void Net::drawWts(QString wtsPath,
     if(!QFile::exists(wtsPath))
     {
         wtsPath = def::dir->absolutePath()
-                  + slash() + def::ExpName + ".wts";
+                  + slash + def::ExpName + ".wts";
         if(!QFile::exists(wtsPath))
         {
             cout << "drawWts: bad filePath" << endl;
@@ -922,7 +924,7 @@ void Net::writeWts(const QString & wtsPath)
     std::ofstream weightsFile;
     if(wtsPath.isEmpty())
     {
-        weightsFile.open((def::dir->absolutePath() + slash() +
+        weightsFile.open((def::dir->absolutePath() + slash +
                          def::ExpName + "_" +
                          QString::number(wtsCounter++) + ".wts").toStdString());
 
@@ -975,7 +977,7 @@ void Net::writeWtsSlot()
         do
         {
             helpString = def::dir->absolutePath()
-                         + slash() + def::ExpName + QString::number(wtsCounter) + ".wts";
+                         + slash + def::ExpName + QString::number(wtsCounter) + ".wts";
             ++wtsCounter;
         } while(QFile::exists(helpString));
     }
@@ -1099,7 +1101,7 @@ void Net::tallNet()
 void Net::tallNetIndices(const vector<int> & indices)
 {
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash() + "badFiles.txt");
+                                                  + slash + "badFiles.txt");
     matrix localConfusionMatrix(def::numOfClasses(), def::numOfClasses());
 
 
@@ -1116,15 +1118,15 @@ void Net::tallNetIndices(const vector<int> & indices)
                 if(Source == source::reals)
                 {
                     QFile::remove(def::dir->absolutePath()
-                                  + slash() + "SpectraSmooth"
-                                  + slash() + fileNames[ indices[i] ]);
+                                  + slash + "SpectraSmooth"
+                                  + slash + fileNames[ indices[i] ]);
                 }
                 else if(Source == source::winds)
                 {
                     QFile::remove(def::dir->absolutePath()
-                                  + slash() + "SpectraSmooth"
-                                  + slash() + "windows"
-                                  + slash() + fileNames[ indices[i] ]);
+                                  + slash + "SpectraSmooth"
+                                  + slash + "windows"
+                                  + slash + fileNames[ indices[i] ]);
                 }
                 eraseDatum(indices[i]);
             }
@@ -1137,7 +1139,7 @@ void Net::tallNetIndices(const vector<int> & indices)
 
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "log.txt");
+                                          + slash + "log.txt");
     ofstream logStream;
     logStream.open(helpString.toStdString(), ios_base::app);
 
@@ -1175,8 +1177,8 @@ int numGoodNew;
 void Net::successiveProcessing()
 {
     QString helpString = def::dir->absolutePath()
-                         + slash() + "SpectraSmooth"
-                         + slash() + "windows";
+                         + slash + "SpectraSmooth"
+                         + slash + "windows";
 
     const QString trainMarker = "_train";
     const QString testMarker = "_test";
@@ -1235,7 +1237,7 @@ void Net::successiveProcessing()
 
     for(const QString & fileNam : leest)
     {
-        readFileInLine(helpString + slash() + fileNam,
+        readFileInLine(helpString + slash + fileNam,
                        tempArr);
         type = typeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
@@ -1253,7 +1255,7 @@ void Net::successivePreclean(const QString & spectraPath)
     {
         if(str.endsWith(".00") || str.endsWith(".01"))
         {
-            QFile::remove(spectraPath + slash() + str);
+            QFile::remove(spectraPath + slash + str);
         }
     }
 
@@ -1269,7 +1271,7 @@ void Net::successivePreclean(const QString & spectraPath)
             i < leest2[j].size() - suc::learnSetStay * 1.3; /// consts generality
             ++i, ++it)
         {
-            QFile::remove(spectraPath + slash() + (*it));
+            QFile::remove(spectraPath + slash + (*it));
         }
     }
     Source = source::winds;
@@ -1411,7 +1413,7 @@ void Net::leaveOneOutClassification()
     {
         ofstream outStr;
         outStr.open((def::dir->absolutePath()
-                    + slash() + "pcaRes.txt").toStdString());
+                    + slash + "pcaRes.txt").toStdString());
         // auto pca classification
         for(int i = ui->autoPCAMaxSpinBox->value();
             i >= ui->autoPCAMinSpinBox->value();
@@ -1615,8 +1617,8 @@ void Net::PaIntoMatrixByName(const QString & fileName)
 {
 
     QString helpString = def::dir->absolutePath()
-                         + slash() + "PA"
-                         + slash() + fileName;
+                         + slash + "PA"
+                         + slash + fileName;
     if(!fileName.contains(".pa"))
     {
         helpString += ".pa";
@@ -1759,7 +1761,7 @@ void Net::loadData(const QString & spectraPath,
         classCount[i] = 0.;
         for(const QString & fileName : leest[i])
         {
-            readFileInLine(spectraPath + slash() + fileName,
+            readFileInLine(spectraPath + slash + fileName,
                            tempArr);
             if(rdcCoeff != 1.)
             {
@@ -2070,7 +2072,7 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
     /// cout results
     std::ofstream resFile;
     resFile.open((def::dir->absolutePath() +
-                  slash() + "class.txt").toStdString(),
+                  slash + "class.txt").toStdString(),
                  ios_base::app);
 
     auto tmp = std::cout.rdbuf();
@@ -2110,18 +2112,18 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
 void Net::SVM()
 {
     QString helpString = def::dir->absolutePath()
-            + slash() + "PA"
-            + slash() + "output1";
+            + slash + "PA"
+            + slash + "output1";
     FILE * out = fopen(QDir::toNativeSeparators(helpString), "w");
     fclose(out);
-//    QString spectraDir = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "SpectraSmooth"));
+//    QString spectraDir = QDir::toNativeSeparators(def::dir->absolutePath() + slash + "SpectraSmooth"));
     QString spectraDir = QFileDialog::getExistingDirectory(this,
                                                            tr("Choose spectra dir"),
                                                            def::dir->absolutePath());
     if(spectraDir.isEmpty())
     {
         spectraDir = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "SpectraSmooth");
+                                              + slash + "SpectraSmooth");
     }
     if(spectraDir.isEmpty())
     {
@@ -2135,14 +2137,14 @@ void Net::SVM()
                      ui->foldSpinBox->value(),
                      ui->rdcCoeffSpinBox->value(), true);
 
-        helpString = def::dir->absolutePath() + slash() + "PA";
+        helpString = def::dir->absolutePath() + slash + "PA";
         helpString.prepend("cd ");
         helpString += " && svm-train -t "
                       + QString::number(ui->svmKernelSpinBox->value())
                       + " svm1 && svm-predict svm2 svm1.model output >> output1";
         system(helpString.toStdString().c_str());
 
-        helpString = def::dir->absolutePath() + slash() + "PA";
+        helpString = def::dir->absolutePath() + slash + "PA";
         helpString.prepend("cd ");
         helpString += " && svm-train -t "
                       + QString::number(ui->svmKernelSpinBox->value())
@@ -2150,7 +2152,7 @@ void Net::SVM()
         system(helpString.toStdString().c_str());
     }
 
-    helpString = def::dir->absolutePath() + slash() + "PA" + slash() + "output1";
+    helpString = def::dir->absolutePath() + slash + "PA" + slash + "output1";
 
     double helpDouble, average = 0.;
 
@@ -2173,7 +2175,7 @@ void Net::SVM()
 
 
     ofstream outStr;
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash() + "results.txt");
+    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash + "results.txt");
     outStr.open(helpString.toStdString(), ios_base::app);
     outStr << "\nSVM\t";
     outStr << doubleRound(average, 2) << " %" << endl;
@@ -2243,9 +2245,9 @@ void Net::pca()
     for(int j = 0; j < NumberOfVectors; ++j)
     {
         helpString = def::dir->absolutePath()
-                     + slash() + "SpectraSmooth"
-                     + slash() + "PCA"
-                     + slash() + fileNames[j];
+                     + slash + "SpectraSmooth"
+                     + slash + "PCA"
+                     + slash + fileNames[j];
         writeFileInLine(helpString,
                         pcaMatrix[j]);
     }
@@ -2253,9 +2255,9 @@ void Net::pca()
     eigenVectors.transpose();
     eigenVectors.resizeRows(3); /// ???
     helpString = def::dir->absolutePath()
-                 + slash() + "Help"
-                 + slash() + "ica"
-                 + slash() + def::ExpName + "_pcas.jpg";
+                 + slash + "Help"
+                 + slash + "ica"
+                 + slash + def::ExpName + "_pcas.jpg";
     drawTemplate(helpString);
     drawArrays(helpString,
                eigenVectors,
@@ -2708,7 +2710,7 @@ void Net::drawSammon() //uses coords array
 
     }
 
-    QString helpString = def::dir->absolutePath() + slash() + "Help" + slash() + "Sammon-" + ui->sammonLineEdit->text() + ".jpg";
+    QString helpString = def::dir->absolutePath() + slash + "Help" + slash + "Sammon-" + ui->sammonLineEdit->text() + ".jpg";
 
     cout << helpString.toStdString() << endl;
     pic.save(helpString, 0, 100);
@@ -3652,7 +3654,7 @@ void Net::Hopfield()
     double * output1 = new double [NetLength];
     double * output2 = new double [NetLength];
     const int NumberOfVectors = dataMatrix.rows();
-    MakePa  * mkPa = new MakePa(def::dir->absolutePath() + slash() + "SpectraSmooth");
+    MakePa  * mkPa = new MakePa(def::dir->absolutePath() + slash + "SpectraSmooth");
     mkPa->setRdcCoeff(10);
     mkPa->makePaSlot();
 

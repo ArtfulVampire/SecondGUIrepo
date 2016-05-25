@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 using namespace std;
+using namespace myLib;
 
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow)
@@ -457,13 +458,13 @@ void MainWindow::showMakePa() //250 - frequency generality
        def::spStep() == def::freq / pow(2, 11) )
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "SpectraSmooth");
+                                              + slash + "SpectraSmooth");
     }
     else if(def::spStep() == def::freq / pow(2, 10))
     {
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "SpectraSmooth"
-                                              + slash() + "windows");
+                                              + slash + "SpectraSmooth"
+                                              + slash + "windows");
     }
     else
     {
@@ -538,7 +539,7 @@ void MainWindow::setEdfFile(QString const &filePath)
     def::ExpName = getExpNameLib(filePath);
     ui->Name->setText(def::ExpName);
 
-    helpString.resize(helpString.lastIndexOf(slash()));
+    helpString.resize(helpString.lastIndexOf(slash));
     def::dir->cd(helpString);
 
     if(def::redirectCoutFlag)
@@ -548,7 +549,7 @@ void MainWindow::setEdfFile(QString const &filePath)
         {
             generalLogStream.close();
         }
-        helpString += QString(slash()) + "generalLog.txt";
+        helpString += QString(slash) + "generalLog.txt";
 
         generalLogStream.open(helpString.toStdString().c_str(), ios_base::app);
         generalLogStream << endl << endl << endl;
@@ -697,9 +698,9 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
                         ++i)
                     {
                         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                              + slash() + "windows"
-                                                              + slash() + "fromreal"
-                                                              + slash() + def::ExpName
+                                                              + slash + "windows"
+                                                              + slash + "fromreal"
+                                                              + slash + def::ExpName
                                                               + "-" + rightNumber(i, 4)
                                                               + "_" + QString::number(254));
 
@@ -727,7 +728,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 //                        sliceFromTo(241, 231, "241_pre");
 //                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
 //                        sliceFromTo(247, 237, "247_pre");
-//                        helpString = def::dir->absolutePath() + slash() + "Realisations";
+//                        helpString = def::dir->absolutePath() + slash + "Realisations";
 //                        cleanDir(helpString, "_pre", false);
                     }
                 }
@@ -788,8 +789,8 @@ void MainWindow::drawDirSlot()
 
 void MainWindow::drawSpectraSlot()
 {
-    const QString prePath = def::dir->absolutePath() + slash() + ui->drawDirBox->currentText();
-    const QString outPath = def::dir->absolutePath() + slash() + "SpectraImg";
+    const QString prePath = def::dir->absolutePath() + slash + ui->drawDirBox->currentText();
+    const QString outPath = def::dir->absolutePath() + slash + "SpectraImg";
     drawSpectra(prePath, outPath);
 }
 
@@ -807,11 +808,11 @@ void MainWindow::drawSpectra(const QString & prePath,
     QString helpString;
     for(const QString & str : lst)
     {
-        helpString = prePath + slash() + str;
+        helpString = prePath + slash + str;
         readFileInLine(helpString,
                        dataS);
 
-        helpString = outPath + slash() + str + ".jpg";
+        helpString = outPath + slash + str + ".jpg";
         drawTemplate(helpString);
         drawArray(helpString, dataS);
 
@@ -837,7 +838,7 @@ void MainWindow::drawRealisations()
     ui->progressBar->setValue(0);
     matrix dataD;
 
-    QString prePath = def::dir->absolutePath() + slash() + ui->drawDirBox->currentText();
+    QString prePath = def::dir->absolutePath() + slash + ui->drawDirBox->currentText();
     makeFullFileList(prePath, lst);
 
     int redCh = -1;
@@ -875,7 +876,7 @@ void MainWindow::drawRealisations()
         {
             break;
         }
-        helpString = prePath + slash() + lst[i];
+        helpString = prePath + slash + lst[i];
         readPlainData(helpString,
                       dataD,
                       NumOfSlices);
@@ -926,7 +927,7 @@ void MainWindow::cleanDirs()
     if(ui->cleanWindowsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                + slash() + "windows";
+                + slash + "windows";
         cleanDir(helpString);
     }
 
@@ -934,8 +935,8 @@ void MainWindow::cleanDirs()
     if(ui->cleanWindSpectraCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                + slash() + "SpectraSmooth"
-                + slash() + "windows";
+                + slash + "SpectraSmooth"
+                + slash + "windows";
         cleanDir(helpString);
     }
 
@@ -943,7 +944,7 @@ void MainWindow::cleanDirs()
     if(ui->cleanRealsSpectraCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                + slash() + "SpectraSmooth";
+                + slash + "SpectraSmooth";
         cleanDir(helpString);
     }
 
@@ -951,8 +952,8 @@ void MainWindow::cleanDirs()
     if(ui->cleanFromRealsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                + slash() + "windows"
-                + slash() + "fromreal";
+                + slash + "windows"
+                + slash + "fromreal";
         cleanDir(helpString);
     }
 
@@ -960,7 +961,7 @@ void MainWindow::cleanDirs()
     if(ui->cleanRealisationsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                + slash() + "Realisations";
+                + slash + "Realisations";
         cleanDir(helpString);
     }
 
@@ -968,7 +969,7 @@ void MainWindow::cleanDirs()
     if(ui->cleanSpectraImgCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                     + slash() + "SpectraImg";
+                     + slash + "SpectraImg";
         cleanDir(helpString);
     }
 
@@ -976,7 +977,7 @@ void MainWindow::cleanDirs()
     if(ui->cleanSignalsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                     + slash() + "Signals" + slash();
+                     + slash + "Signals" + slash;
 
         for(auto str2 : {"before", "after", "other"})
         {
@@ -990,7 +991,7 @@ void MainWindow::cleanDirs()
     if(ui->cleanWindowsSignalsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                     + slash() + "Signals" + slash() + "windows" + slash();
+                     + slash + "Signals" + slash + "windows" + slash;
 
         for(auto str2 : {"before", "after", "other"})
         {
@@ -1103,7 +1104,7 @@ void MainWindow::markerSetBinValueSlot()
 void MainWindow::markerSaveEdf()
 {
     QString helpString;
-    helpString = def::dir->absolutePath() + slash() + def::ExpName + ui->newEdfNameLineEdit->text();
+    helpString = def::dir->absolutePath() + slash + def::ExpName + ui->newEdfNameLineEdit->text();
     if(!helpString.endsWith(".edf", Qt::CaseInsensitive))
     {
         helpString += ".edf";
@@ -1121,8 +1122,8 @@ void MainWindow::drawMapsSlot()
     if(helpString.isEmpty())
     {
         helpString = def::dir->absolutePath()
-                     + slash() + "Help"
-                     + slash() + def::ExpName
+                     + slash + "Help"
+                     + slash + def::ExpName
                      + "_maps.txt";
         helpString.remove("_ica");
     }
@@ -1132,8 +1133,8 @@ void MainWindow::drawMapsSlot()
     }
     drawMapsICA(helpString,
                 def::dir->absolutePath()
-                + slash() + "Help"
-                + slash() + "Maps",
+                + slash + "Help"
+                + slash + "Maps",
                 def::ExpName);
 }
 
@@ -1153,7 +1154,7 @@ void MainWindow::avTime()
     QString helpString;
 
     QDir localDir;
-    localDir.cd(def::dir->absolutePath() + slash() + "Realisations");
+    localDir.cd(def::dir->absolutePath() + slash + "Realisations");
 
     for(const QString & tmp : {"241", "247"})
     {
@@ -1164,7 +1165,7 @@ void MainWindow::avTime()
         lst = localDir.entryList({"*_" + tmp + "*"}, QDir::Files);
         for(const QString & fileName : lst)
         {
-            helpString = localDir.absolutePath() + slash() + fileName;
+            helpString = localDir.absolutePath() + slash + fileName;
 
             inStr.open(helpString.toStdString());
             inStr.ignore(64, ' ');
@@ -1192,7 +1193,7 @@ void MainWindow::avTime()
         means[3] /= (lst.length() - shortReals - numNotSolved);
         means /= def::freq;
 
-        helpString = def::dir->absolutePath() + slash() + "results.txt";
+        helpString = def::dir->absolutePath() + slash + "results.txt";
         ofstream res;
         res.open(helpString.toStdString(), ios_base::app);
         res << "Reals type\t" << tmp << ":\r\n";

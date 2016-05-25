@@ -99,7 +99,8 @@ public:
     std::pair<std::vector<int>, std::vector<int>> makeIndicesSetsCross(
             const std::vector<std::vector<int> > & arr,
             const int numOfFold);
-    std::valarray<double> (*activation)(const std::valarray<double> & in, double temp) = softmax;
+    std::valarray<double> (*activation)(const std::valarray<double> & in,
+                                        double temp) = smallLib::softmax;
     void autoClassification(const QString & spectraDir);
     void averageClassification();
 
@@ -143,7 +144,7 @@ public:
     void PaIntoMatrixByName(const QString & fileName);
     void normalizeDataMatrix();
     void loadData(const QString & spectraPath = def::dir->absolutePath()
-                                                + slash() + "SpectraSmooth",
+                                                + myLib::slash + "SpectraSmooth",
                   const QStringList & filters = {},
                   double rdcCoeff = 1.);
     void loadData(const matrix & inMat,

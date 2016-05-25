@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 using namespace std;
+using namespace myLib;
 
 void MainWindow::sliceGalya()
 {
@@ -20,7 +21,7 @@ void MainWindow::sliceWindFromReal()
 
     QStringList lst;
     makeFullFileList(def::dir->absolutePath()
-                     + slash() + "Realisations",
+                     + slash + "Realisations",
                      lst);
 
     const int timeShift = ui->timeShiftSpinBox->value() * def::freq;
@@ -37,8 +38,8 @@ void MainWindow::sliceWindFromReal()
     {
         localNs = def::ns;
         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash() + "Realisations"
-                                              + slash() + lst[i]);
+                                              + slash + "Realisations"
+                                              + slash + lst[i]);
         readPlainData(helpString, dataReal, NumOfSlices);
 
         offset = 0;
@@ -64,9 +65,9 @@ void MainWindow::sliceWindFromReal()
 
             //else
             helpString = def::dir->absolutePath()
-                         + slash() + "windows"
-                         + slash() + "fromreal"
-                         + slash() + lst[i]
+                         + slash + "windows"
+                         + slash + "fromreal"
+                         + slash + lst[i]
                          + "." + rightNumber(h, 2);
             helpString = QDir::toNativeSeparators(helpString);
 
@@ -109,7 +110,7 @@ void MainWindow::sliceIlya(const QString &fileName, QString marker) //beginning 
     int NumOfSlices;
 
     helpString = def::dir->absolutePath()
-            + slash() + fileName;
+            + slash + fileName;
 
     matrix dataI;
     readPlainData(helpString, dataI, NumOfSlices);
@@ -147,7 +148,7 @@ void MainWindow::sliceIlya(const QString &fileName, QString marker) //beginning 
         if(h==2)
         {
             ++number;
-            helpString=QDir::toNativeSeparators(def::dir->absolutePath()).append(slash()).append(marker).append(slash()).append(fileName).append("_").append(marker);
+            helpString=QDir::toNativeSeparators(def::dir->absolutePath()).append(slash).append(marker).append(slash).append(fileName).append("_").append(marker);
             file=fopen(helpString.toStdString().c_str(), "w");
 
             fprintf(file, "NumOfSlices %d \r\n", k-j);
@@ -194,7 +195,7 @@ void MainWindow::sliceIlya(int marker1, int marker2, QString marker) //beginning
         if(h==2)
         {
             ++number;
-            helpString=QDir::toNativeSeparators(def::dir->absolutePath()).append(slash()).append("Realisations").append(slash()).append(def::ExpName).append("_").append(marker);
+            helpString=QDir::toNativeSeparators(def::dir->absolutePath()).append(slash).append("Realisations").append(slash).append(def::ExpName).append("_").append(marker);
             file=fopen(helpString.toStdString().c_str(), "w");
 
             fprintf(file, "NumOfSlices %d \r\n", k-j);
@@ -245,7 +246,7 @@ void MainWindow::slice(int marker1, int marker2, QString marker) //beginning - f
                 h = 0;
                 if(k-j < 500) continue;
                 ++number;
-                helpString=QDir::toNativeSeparators(def::dir->absolutePath()).append(slash()).append("Realisations").append(slash()).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
+                helpString=QDir::toNativeSeparators(def::dir->absolutePath()).append(slash).append("Realisations").append(slash).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
                 file=fopen(helpString.toStdString().c_str(), "w");
 
                 fprintf(file, "NumOfSlices %d \n", k-j);
@@ -282,7 +283,7 @@ void MainWindow::slice(int marker1, int marker2, QString marker) //beginning - f
     solveTime/=(def::freq*number);
     cout << "solveTime " << marker.toStdString() << " =" << solveTime << endl << endl;
 
-    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath().append(slash()).append("results.txt")).toStdString().c_str(), "a+");
+    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath().append(slash).append("results.txt")).toStdString().c_str(), "a+");
     if(ui->eyesCleanCheckBox->isChecked()) fprintf(res, "solve time %s \t %lf \n", marker.toStdString().c_str(), solveTime);
     fclose(res);
 #endif
@@ -301,7 +302,7 @@ void MainWindow::sliceFromTo(int marker1, int marker2, QString marker) //beginni
     int h = 0;                                     //flag of marker2 read
     double solveTime = 0.;
 
-    helpString=QDir::toNativeSeparators(def::dir->absolutePath().append(slash()).append("Help").append(slash()).append(marker));
+    helpString=QDir::toNativeSeparators(def::dir->absolutePath().append(slash).append("Help").append(slash).append(marker));
     out = fopen(helpString.toStdString().c_str(), "w");
     for(int i = 0; i < ndr*def::freq; ++i)
     {
@@ -329,7 +330,7 @@ void MainWindow::sliceFromTo(int marker1, int marker2, QString marker) //beginni
                     h = 0;
                     if(k-j < 1000) continue;
                     ++number;
-                    helpString=QDir::toNativeSeparators(def::dir->absolutePath().append(slash()).append("Realisations").append(slash()).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4)));
+                    helpString=QDir::toNativeSeparators(def::dir->absolutePath().append(slash).append("Realisations").append(slash).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4)));
                     file=fopen(helpString.toStdString().c_str(), "w");
                     fprintf(file, "NumOfSlices %d \n", k-j);
 
@@ -350,7 +351,7 @@ void MainWindow::sliceFromTo(int marker1, int marker2, QString marker) //beginni
         }
     }
     fclose(out);
-    helpString=QDir::toNativeSeparators(def::dir->absolutePath().append(slash()).append("Help").append(slash()).append(marker));
+    helpString=QDir::toNativeSeparators(def::dir->absolutePath().append(slash).append("Help").append(slash).append(marker));
     QFile *file2 = new QFile(helpString);
     file2->open(QIODevice::ReadOnly);
     QByteArray contents = file2->readAll();
@@ -368,7 +369,7 @@ void MainWindow::sliceFromTo(int marker1, int marker2, QString marker) //beginni
     solveTime/=(def::freq*number);
 //    cout << "average time before feedback " << marker.toStdString() << " =" << solveTime << endl;
 
-    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath().append(slash()).append("results.txt")).toStdString().c_str(), "a+");
+    FILE * res = fopen(QDir::toNativeSeparators(def::dir->absolutePath().append(slash).append("results.txt")).toStdString().c_str(), "a+");
     if(def::ExpName.contains("FB")) fprintf(res, "time before feedback %s\t%lf\n", marker.toStdString().c_str(), solveTime);
     fclose(res);
 #endif
@@ -409,7 +410,7 @@ void MainWindow::sliceByNumberAfter(int marker1, int marker2, QString marker)
             {
                 ++number;
                 h = 0;
-                helpString=QDir::toNativeSeparators(def::dir->absolutePath()).append(slash()).append("Realisations").append(slash()).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
+                helpString=QDir::toNativeSeparators(def::dir->absolutePath()).append(slash).append("Realisations").append(slash).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
                 file=fopen(helpString.toStdString().c_str(), "w");
 
                 fprintf(file, "NumOfSlices %d \n", k-j);
@@ -461,8 +462,8 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning 
         {
             ++number;
             helpString = def::dir->absolutePath()
-                    + slash() + "Realisations"
-                    + slash() + def::ExpName
+                    + slash + "Realisations"
+                    + slash + def::ExpName
                     + "_" + marker
                     + "." + rightNumber(number, 4);
             // to test?
@@ -497,8 +498,8 @@ void MainWindow::sliceWindow(int startSlice, int endSlice, int number, int marke
 
 
     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                          + slash() + "windows"
-                                          + slash() + def::ExpName
+                                          + slash + "windows"
+                                          + slash + def::ExpName
                                           + "-" + rightNumber(number, 4)
                                           + "_" + QString::number(marker)); //number.marker
 
@@ -540,7 +541,7 @@ void MainWindow::sliceGaps()
                 h = 0;
                 if(k-j < 500 || (k-j)>10000) continue;
                 ++number;
-                helpString=QDir::toNativeSeparators(def::dir->absolutePath()).append(slash()).append("Realisations").append(slash()).append(def::ExpName).append("_254.").append(rightNumber(number, 4));
+                helpString=QDir::toNativeSeparators(def::dir->absolutePath()).append(slash).append("Realisations").append(slash).append(def::ExpName).append("_254.").append(rightNumber(number, 4));
                 file=fopen(helpString.toStdString().c_str(), "w");
                 fprintf(file, "NumOfSlices %d \n", k-j);
                 for(int l=j; l < k; ++l)
@@ -583,8 +584,8 @@ void MainWindow::sliceOneByOne()
             const int & finish = i;
 
             helpString = def::dir->absolutePath()
-                         + slash() + "Realisations"
-                         + slash() + def::ExpName
+                         + slash + "Realisations"
+                         + slash + def::ExpName
                          + "." + rightNumber(number++, 4);
 
 
@@ -631,8 +632,8 @@ void MainWindow::sliceOneByOne()
     /// write final
     {
         helpString = def::dir->absolutePath()
-                     + slash() + "Realisations"
-                     + slash() + def::ExpName
+                     + slash + "Realisations"
+                     + slash + def::ExpName
                      + "." + rightNumber(number++, 4);
         if(fil.getDataLen() - start < 40 * def::freq) /// if last realisation or interstimulus
         {
@@ -703,8 +704,8 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
             }
 
             helpString = def::dir->absolutePath()
-                         + slash() + "Realisations"
-                         + slash() + def::ExpName
+                         + slash + "Realisations"
+                         + slash + def::ExpName
                          + "." + rightNumber(number++, 4);
 //            cout << helpString << endl;
             if(i > j)
@@ -750,8 +751,8 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
     /// write final
     {
         helpString = def::dir->absolutePath()
-                     + slash() + "Realisations"
-                     + slash() + def::ExpName
+                     + slash + "Realisations"
+                     + slash + def::ExpName
                      + "." + rightNumber(number++, 4);
         if(fil.getDataLen() - j < 40 * def::freq) /// if last realisation or interstimulus
         {
@@ -855,8 +856,8 @@ void MainWindow::sliceMatiSimple()
                 for(int j = 0; j < number; ++j) // num of pieces
                 {
                     helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                          + slash() + "Realisations"
-                                                          + slash() + def::ExpName
+                                                          + slash + "Realisations"
+                                                          + slash + def::ExpName
                                                           + "_" + QString::number(type)
                                                           + "_" + QString::number(session[type])
                                                           + "_" + rightNumber(j, 2)
@@ -960,9 +961,9 @@ void MainWindow::sliceMati()
             {
                 helpString = QDir::toNativeSeparators(def::dir->absolutePath()
 
-                                                      + slash() + "auxEdfs"
+                                                      + slash + "auxEdfs"
 
-                                                      + slash() + def::ExpName
+                                                      + slash + def::ExpName
                                                       + "_" + QString::number(type)
                                                       + "_" + QString::number(session[type])
                                                       + ".edf");
@@ -1023,9 +1024,9 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
             // edf session path
             helpString = QDir::toNativeSeparators(def::dir->absolutePath()
 
-                                                  + slash() + "auxEdfs"
+                                                  + slash + "auxEdfs"
 
-                                                  + slash() + globalEdf.getExpName()
+                                                  + slash + globalEdf.getExpName()
                                                   + "_" + QString::number(type)
                                                   + "_" + QString::number(session)
                                                   + ".edf");
@@ -1074,8 +1075,8 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                         // type and session already in the fil.ExpName
 
                         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                              + slash() + folder
-                                                              + slash() + fil.getExpName()
+                                                              + slash + folder
+                                                              + slash + fil.getExpName()
                                                               + "_" + rightNumber(pieceNum, 2)
                                                               + '_' + fileMark);
 
@@ -1092,8 +1093,8 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                     {
                         currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
                         helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                              + slash() + folder
-                                                              + slash() + fil.getExpName()
+                                                              + slash + folder
+                                                              + slash + fil.getExpName()
                                                               + "_" + rightNumber(pieceNum, 2)
                                                               + '_' + fileMark);
                         fil.saveSubsection(currStart, currEnd, helpString, plainFlag);

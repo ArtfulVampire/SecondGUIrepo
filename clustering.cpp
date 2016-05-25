@@ -3,14 +3,16 @@
 
 using namespace std;
 using namespace std::chrono;
+namespace myLib
+{
 
 struct clustDot
 {
     int number = -1;
-    vector < double > initCoords;
-    vector < double > initDists;
-    vector < double > newCoords;
-    vector < double > newDists;
+    std::vector<double> initCoords;
+    std::vector<double> initDists;
+    std::vector<double> newCoords;
+    std::vector<double> newDists;
     int clustNum = -1;
 };
 
@@ -18,9 +20,9 @@ struct cluster
 {
     int number = -1;
 //    vector <clustDot> dots;
-    vector <int> dotNums;
-    vector <double> centroid;
-    vector <double> sigma;
+    std::vector<int> dotNums;
+    std::vector<double> centroid;
+    std::vector<double> sigma;
 };
 
 struct clustering
@@ -41,7 +43,7 @@ struct clustering
 void clustering::readFile(QString filePath)
 {
 
-    vector < vector <double> > cData;
+    vector < std::vector<double> > cData;
 
     ifstream inStr;
     inStr.open(filePath.toStdString().c_str());
@@ -64,7 +66,7 @@ void clustering::readFile(QString filePath)
             inStr >> cData[i][j];
         }
     }
-    vector <double> temp;
+    std::vector<double> temp;
     temp.resize(4);
 
     boundDots.resize(numDots);
@@ -152,7 +154,7 @@ void clustering::readFile(QString filePath)
         cout << endl;
     }
     std::sort(newDists.begin(), newDists.end(), mySort);
-    vector <double> newD;
+    std::vector<double> newD;
     for(int i = 0; i < newDists.size(); ++i)
     {
         newD.push_back(newDists[i][0]);
@@ -216,9 +218,9 @@ void refreshDistAll(mat & distNew,
 }
 
 void countGradient(const vector <pair <double, double> > & plainCoords,
-                   const vector <vector <double> >  & distOld,
-                   vector <vector <double> > & distNew,
-                   vector <double> & gradient)
+                   const vector <std::vector<double> >  & distOld,
+                   vector <std::vector<double> > & distNew,
+                   std::vector<double> & gradient)
 {
     const int size = plainCoords.size();
     const double delta = 0.1;
@@ -266,7 +268,7 @@ void moveCoordsGradient(vector <pair <double, double> > & plainCoords,
 {
     int size = plainCoords.size();
 
-    vector <double> gradient;
+    std::vector<double> gradient;
     gradient.resize(size * 2);
     double lambda = 0.1;
 
@@ -323,7 +325,7 @@ double errorSammon(const mat & distOld,
 
 double errorSammonAdd(const mat & distOld,
                       const mat & distNew,
-                      const vector <int> & placedDots) // square matrices
+                      const std::vector<int> & placedDots) // square matrices
 {
     double res = 0.;
     for(unsigned int i = 0; i < placedDots.size(); ++i)
@@ -339,7 +341,7 @@ double errorSammonAdd(const mat & distOld,
 void countInvHessianAddDot(const mat & distOld,
                            const mat & distNew,
                            const vector <pair <double, double> > & crds,
-                           const vector <int> & placedDots,
+                           const std::vector<int> & placedDots,
                            mat & invHessian)
 {
     invHessian[0][0] = 0.;
@@ -392,8 +394,8 @@ void countInvHessianAddDot(const mat & distOld,
 void countGradientAddDot(const mat & distOld,
                          const mat & distNew,
                          const vector <pair <double, double> > & crds,
-                         const vector <int> & placedDots,
-                         vector <double>  & gradient) // gradient for one dot
+                         const std::vector<int> & placedDots,
+                         std::vector<double>  & gradient) // gradient for one dot
 {
     const int & b = placedDots.back();
     gradient[0] = 0.;
@@ -417,8 +419,8 @@ void countGradientAddDot(const mat & distOld,
 }
 
 void countDistNewAdd(mat & distNew, // change only last coloumn
-                     const vector < pair <double, double> > & crds,
-                     const vector <int> & placedDots)
+                     const std::vector < std::pair <double, double> > & crds,
+                     const std::vector<int> & placedDots)
 {
     const int & b = placedDots.back(); // placedDots[placedDots.size() - 1];
     for(unsigned int i = 0; i < placedDots.size() - 1; ++i)
@@ -434,8 +436,8 @@ void countDistNewAdd(mat & distNew, // change only last coloumn
 
 void sammonAddDot(const mat & distOld,
                   mat & distNew, // change only last coloumn
-                  vector < pair <double, double> > & plainCoords,
-                  const vector <int> & placedDots)
+                  std::vector<std::pair<double, double>> & plainCoords,
+                  const std::vector<int> & placedDots)
 {
     const int addNum = placedDots.size() - 1;
     // set initial place
@@ -460,7 +462,7 @@ void sammonAddDot(const mat & distOld,
 
 
     // gradien descent
-    vector <double> gradient;
+    std::vector<double> gradient;
     gradient.resize(2);
     mat invHessian; // matrix 2x2
     invHessian.resize(2);
@@ -530,7 +532,7 @@ void sammonAddDot(const mat & distOld,
 }
 
 void sammonProj(const mat & distOld,
-                const vector <int> & types,
+                const std::vector<int> & types,
                 const QString & picPath)
 {
     srand(time(NULL));
@@ -551,7 +553,7 @@ void sammonProj(const mat & distOld,
     int num1 = -1;
     int num2 = -1;
     int num3 = -1;
-    vector <int> placedDots;
+    std::vector<int> placedDots;
     double maxDist = 0.;
 
     for(int i = 0; i < size; ++i)
@@ -653,4 +655,5 @@ void sammonProj(const mat & distOld,
     QString helpString = picPath;
     helpString.replace(".jpg", "_.jpg");
     drawShepard(distOld, distNew, helpString);
+}
 }

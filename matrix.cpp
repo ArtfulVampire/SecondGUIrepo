@@ -2,6 +2,7 @@
 
 
 using namespace std;
+using namespace smallLib;
 
 matrix::matrix()
 {
@@ -333,9 +334,14 @@ matrix operator / (const matrix & lhs, const double & val)
 
 bool matrix::operator == (const matrix & other)
 {
-    if((this->rows() != other.rows()) ||
-       (this->cols() != other.cols()))
+    if(this->rows() != other.rows())
     {
+        cout << "diff rows: " << this->rows() << " " << other.rows() << endl;
+        return false;
+    }
+    if(this->cols() != other.cols())
+    {
+        cout << "diff cols: " << this->cols() << " " << other.cols() << endl;
         return false;
     }
 
@@ -344,7 +350,10 @@ bool matrix::operator == (const matrix & other)
         for(int j = 0; j < this->cols(); ++j)
         {
             if((*this)[i][j] != other[i][j])
+            {
+                cout << "diff val, (row, col) = (" << i << "," << j << ")" << endl;
                 return false;
+            }
         }
     }
     return true;
