@@ -272,7 +272,13 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
         }
     }
 #elif 1
-    // 15-20% faster
+
+
+
+
+
+#if MATRIX_OMP
+#pragma omp parallel for
     for(int i = 0; i < dim1; ++i)
     {
         for(int j = 0; j < lhs.cols(); ++j)
@@ -281,6 +287,21 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
         }
     }
 #else
+    /// 15-20% faster than with currCol
+    for(int i = 0; i < dim1; ++i)
+    {
+        for(int j = 0; j < lhs.cols(); ++j)
+        {
+            result[i] += lhs[i][j] * rhs[j];
+        }
+    }
+#endif //omp
+
+
+
+
+#else
+    /// very slow
     const matrix temp = matrix::transpose(rhs);
 
     for(int i = 0; i < dim1; ++i)
@@ -306,6 +327,9 @@ matrix operator * (const matrix & lhs, const double & val)
 
 matrix matrix::operator *= (const double & other)
 {
+#if MATRIX_OMP
+#pragma omp parallel for
+#endif
     for(int i = 0; i < this->rows(); ++i)
     {
         this->data[i] *= other;
@@ -316,7 +340,7 @@ matrix matrix::operator *= (const double & other)
 matrix matrix::operator *= (const matrix & other)
 {
     /// OMG
-    (*this) = (*this) * other;
+    (*this) = std::move((*this) * other);
     return (*this);
 }
 
@@ -397,6 +421,9 @@ matrix & matrix::random(double low, double high)
     std::uniform_real_distribution<double> distr(low, high);
     for(auto it = data.begin(); it < data.end(); ++it)
     {
+#if MATRIX_OMP
+#pragma omp parallel for
+#endif
         for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
         {
             (*itt) = distr(gen);

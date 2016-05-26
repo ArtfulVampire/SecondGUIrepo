@@ -49,9 +49,24 @@ void MainWindow::customFunc()
         "Dasha_smell_2"
     };
 
-    cutOneFile("/media/michael/Files/Data/MRI/Nikolaenko/Nikolaenko.edf",
-               2,
-               "/media/michael/Files/Data/MRI/Nikolaenko/Nikolaenko_windows");
+//    cutOneFile("/media/michael/Files/Data/MRI/Nikolaenko/Nikolaenko.edf",
+//               2,
+//               "/media/michael/Files/Data/MRI/Nikolaenko/Nikolaenko_windows");
+
+    matrix mat1(20, 20);
+    matrix mat2(20, 250*60*30); /// 30 minutes
+
+    mat1.random(2, 17);
+    mat2.random(-1., 1.);
+    matrix mat3;
+
+    for(int i = 0; i < 10; ++i)
+    {
+        TIME(mat3 = operator*(mat1, mat2););
+    }
+
+
+
     exit(0);
 
 

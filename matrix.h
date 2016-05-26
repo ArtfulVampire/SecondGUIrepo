@@ -18,6 +18,10 @@
 #include <valarray>
 #include <set>
 
+#if _OPENMP
+#include <omp.h>
+#endif
+#define MATRIX_OMP _OPENMP&&1
 
 using dataType = std::vector<std::valarray<double>>;
 
