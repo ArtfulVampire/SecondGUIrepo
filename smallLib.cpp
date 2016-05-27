@@ -264,7 +264,7 @@ char * QStrToCharArr(const QString & input, const int &len)
 
 FILE * fopen(QString filePath, const char *__modes)
 {
-    return fopen(filePath.toStdString().c_str(), __modes);
+    return std::fopen(filePath.toStdString().c_str(), __modes);
 }
 
 

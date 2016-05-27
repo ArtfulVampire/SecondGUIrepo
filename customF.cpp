@@ -53,21 +53,38 @@ void MainWindow::customFunc()
 //               2,
 //               "/media/michael/Files/Data/MRI/Nikolaenko/Nikolaenko_windows");
 
-    matrix mat1(20, 20);
-    matrix mat2(20, 250*60*30); /// 30 minutes
+#if 1
+    /// EEG fMRI
+    def::ntFlag = true;
 
-    mat1.random(2, 17);
-    mat2.random(-1., 1.);
-    matrix mat3;
+    QStringList leest_mri = {
+        "Ali-Zade",
+        "Atanov",
+        "Khasanov",
+        "Mezhenova"
+        "Sushinsky",
+    };
 
-    for(int i = 0; i < 10; ++i)
+
+//    FILE * edfDescriptor;
+//    edfDescriptor = fopen("/media/Files/Data/MRI/Ali-Zade/Ali-Zade_windows_cleaned/Ali-zade_wnd_121.edf",
+//                          "r"); //generality
+//    cout << 2 << endl;
+//    exit(0);
+
+    for(QString guy : leest_mri)
     {
-        TIME(mat3 = operator*(mat1, mat2););
+
+        GalyaProcessing(def::mriFolder
+                        + slash + guy
+                        + slash + guy + "_windows_cleaned",
+                        32,
+                        def::mriFolder
+                        + slash + guy + "_windows_cleaned_out");
     }
 
-
-
     exit(0);
+#endif
 
 
 

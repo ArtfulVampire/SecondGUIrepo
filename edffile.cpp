@@ -239,6 +239,7 @@ void edfFile::readEdfFile(QString EDFpath, bool headerOnly)
     QTime myTime;
     myTime.start();
     this->fftData.clear(); /// crucial
+
     handleEdfFile(EDFpath, true, headerOnly);
 }
 
@@ -301,6 +302,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         //    Digital minimum: -32768  d0
         //    Digital maximum: 32767   d1
 
+
+
     QString helpString;
     if(readFlag && !QFile::exists(EDFpath))
     {
@@ -315,8 +318,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         cout << "handleFile: cannot open edf file " << EDFpath << endl;
         return;
     }
-
-
 
     filePath = EDFpath;
     dirPath = EDFpath.left(EDFpath.lastIndexOf(slash));
@@ -338,6 +339,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     {
         this->fitData(this->dataLength);
     }
+
 
 
     handleParam(headerInitialInfo, 184, readFlag, edfDescriptor, header);
@@ -431,6 +433,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         fclose(header);
     }
 
+
+
     /// experimental
     if(headerOnly)
     {
@@ -448,6 +452,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
         return;
     }
+
 
 
     fpos_t *position = new fpos_t;

@@ -2421,7 +2421,6 @@ void MainWindow::countSpectraFeatures(const QString & filePath,
         // max alpha freq
         outAlphaStr << helpInt * fr / fftL(initEdf.getDataLen()) << "\t";
 
-
         // integrate spectre near the needed freqs
         fullSpectre.clear();
         for(double j = leftFreqLim;
@@ -2635,9 +2634,13 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
                                                 QDir::Size|QDir::Reversed);
     const auto filesVec = filesList.toVector();
 
-#pragma omp parallel
-#pragma omp for nowait schedule(dynamic,3)
-    for(int i = 0; i < filesVec.length(); ++i)
+
+
+
+
+//#pragma omp parallel
+//#pragma omp for nowait schedule(guided, 20)
+    for(int i = 0; i < filesVec.size(); ++i)
     {
         QString helpString = dir.absolutePath() + slash + filesVec[i];
         edfFile initEdf;
@@ -2658,6 +2661,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
 
         cout << filesList[i] << '\t'
              << doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << endl;
+
         countSpectraFeatures(helpString, numChan, outPath);
         countChaosFeatures(helpString, numChan, outPath);
     }

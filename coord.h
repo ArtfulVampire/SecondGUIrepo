@@ -109,6 +109,7 @@ namespace def
 //    Atanov
 
     const QString dataFolder = "/media/Files/Data/";
+    const QString mriFolder = "/media/Files/Data/MRI";
 //    const QString dataFolder = "/media/Files/Data/Feedback/SuccessClass";
 //    const QString dataFolder = "D:/MichaelAtanov/Data";
 //    const QString dataFolder = "D:/";
