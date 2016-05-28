@@ -269,8 +269,6 @@ FILE * fopen(QString filePath, const char *__modes)
 
 
 
-
-
 void cleanDir(QString dirPath, QString nameFilter, bool ext)
 {
     QDir tmpDir(dirPath);
@@ -515,9 +513,9 @@ ostream & operator << (ostream &os, QString toOut)
 }
 ostream & operator << (ostream &os, matrix toOut)
 {
-    for(auto it = toOut.data.begin(); it < toOut.data.end(); ++it)
+    for(auto it = std::begin(toOut.data); it < std::end(toOut.data); ++it)
     {
-        for(auto itt = begin(*it); itt < end(*it); ++itt)
+        for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
         {
             os << doubleRound((*itt), 4) << "\t";
         }

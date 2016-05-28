@@ -148,6 +148,11 @@ public:
                         const QString & outPath,
                         const std::vector<QString> & standard = coords::lbl31_more);
 
+    void makeRightNumbers(const QString & dirPath,
+                          int length = 3);
+    void makeTableFromRows(const QString & work,
+                           const QString & tableName = "table.txt");
+
     bool testChannelsOrderConsistency(const QString & path);
 
     void cutOneFile(const QString & filePath,

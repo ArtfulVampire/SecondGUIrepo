@@ -2154,17 +2154,23 @@ void MainWindow::cutOneFile(const QString & filePath,
     }
 
     const int & fr = initEdf.freq();
+    const int numOfWindows = ceil(initEdf.getDataLen() / fr / wndLen);
 
-    for(int i = 0; i < ceil(initEdf.getDataLen() / fr / wndLen); ++i)
+
+    for(int i = 0; i < numOfWindows; ++i)
     {
-        initEdf.saveSubsection(i * fr * wndLen,
-                               fmin((i + 1) * fr * wndLen, initEdf.getDataLen()),
-                               QString(outPath
-                               #if ADD_DIR
-                                       + slash + addDir
-                               #endif
-                                       + slash + initEdf.getExpName()
-                                       + "_wnd_" + QString::number(i+1) + ".edf"));
+        initEdf.saveSubsection(
+                    i * fr * wndLen,
+                    fmin((i + 1) * fr * wndLen, initEdf.getDataLen()),
+                    QString(outPath
+                    #if ADD_DIR
+                            + slash + addDir
+                    #endif
+                            + slash + initEdf.getExpName()
+                            + "_wnd_" + myLib::rightNumber(
+                                i + 1,
+                                floor(log10(numOfWindows)) + 1)
+                            + ".edf"));
     }
 }
 
@@ -2283,6 +2289,60 @@ bool MainWindow::testChannelsOrderConsistency(const QString & path)
     }
     cout << "testChannelsOrderConsistency:\n" << path << "\t" << res << endl;
     return res;
+}
+
+void MainWindow::makeRightNumbers(const QString & dirPath,
+                                  int length)
+{
+    QDir deer(dirPath);
+    QStringList leest = deer.entryList(QDir::Files);
+    for(const QString & oldName : leest)
+    {
+        QString newName = oldName;
+        QStringList parts = newName.split('_');
+        newName.clear();
+        for(QString & part : parts)
+        {
+            bool ok = false;
+            int a = part.toInt(&ok);
+            if(ok)
+            {
+                part = myLib::rightNumber(a, length);
+            }
+            newName += part + "_";
+        }
+        newName.remove(newName.length() - 1, 1); // remove last
+
+        QFile::rename(deer.absolutePath() + slash + oldName,
+                      deer.absolutePath() + slash + newName);
+    }
+}
+
+void MainWindow::makeTableFromRows(const QString & work,
+                                   const QString & tableName)
+{
+    QDir deer(work);
+
+    const QString tablePath = deer.absolutePath()
+                              + slash + tableName
+                              + ((tableName.contains(".txt")) ? "" : ".txt");
+
+    QFile outStr(tablePath);
+    outStr.open(QIODevice::WriteOnly);
+
+    for(const QString & fileName : deer.entryList({"*.txt"}, QDir::Files, QDir::Name))
+    {
+        if(tablePath.contains(fileName)) continue;
+
+//        cout << fileName << endl;
+        QFile fil(deer.absolutePath() + slash + fileName);
+        fil.open(QIODevice::ReadOnly);
+        auto contents = fil.readAll();
+        fil.close();
+        outStr.write(contents);
+        outStr.write("\r\n");
+    }
+    outStr.close();
 }
 
 void MainWindow::repairChannelsOrder(const QString & inPath,
@@ -2604,7 +2664,7 @@ void MainWindow::countChaosFeatures(const QString & filePath,
             outHilbertStr << doubleRound(helpDouble, 4) << "\t";
 
             /// experimental add
-//                outHilbertStr << doubleRound(sigma(env) / mean(env), 4) << "\t";
+            outHilbertStr << doubleRound(sigma(env) / mean(env), 4) << "\t";
         }
     }
     outDimStr.close();
@@ -2638,8 +2698,8 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
 
 
 
-//#pragma omp parallel
-//#pragma omp for nowait schedule(guided, 20)
+#pragma omp parallel
+#pragma omp for nowait schedule(guided, 20)
     for(int i = 0; i < filesVec.size(); ++i)
     {
         QString helpString = dir.absolutePath() + slash + filesVec[i];

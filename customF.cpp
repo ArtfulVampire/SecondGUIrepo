@@ -53,6 +53,14 @@ void MainWindow::customFunc()
 //               2,
 //               "/media/michael/Files/Data/MRI/Nikolaenko/Nikolaenko_windows");
 
+
+    makeRightNumbers("/media/michael/Files/Data/MRI/OUT");
+    makeTableFromRows("/media/michael/Files/Data/MRI/OUT");
+    exit(0);
+
+
+
+
 #if 1
     /// EEG fMRI
     def::ntFlag = true;
@@ -61,16 +69,9 @@ void MainWindow::customFunc()
         "Ali-Zade",
         "Atanov",
         "Khasanov",
-        "Mezhenova"
+        "Mezhenova",
         "Sushinsky",
     };
-
-
-//    FILE * edfDescriptor;
-//    edfDescriptor = fopen("/media/Files/Data/MRI/Ali-Zade/Ali-Zade_windows_cleaned/Ali-zade_wnd_121.edf",
-//                          "r"); //generality
-//    cout << 2 << endl;
-//    exit(0);
 
     for(QString guy : leest_mri)
     {
