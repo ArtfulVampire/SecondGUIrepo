@@ -151,7 +151,8 @@ public:
     void makeRightNumbers(const QString & dirPath,
                           int length = 3);
     void makeTableFromRows(const QString & work,
-                           const QString & tableName = "table.txt");
+                           const QString & tableName = "table.txt",
+                           const QString & auxFilter = QString());
 
     bool testChannelsOrderConsistency(const QString & path);
 

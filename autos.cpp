@@ -2319,7 +2319,8 @@ void MainWindow::makeRightNumbers(const QString & dirPath,
 }
 
 void MainWindow::makeTableFromRows(const QString & work,
-                                   const QString & tableName)
+                                   const QString & tableName,
+                                   const QString & auxFilter)
 {
     QDir deer(work);
 
@@ -2330,7 +2331,7 @@ void MainWindow::makeTableFromRows(const QString & work,
     QFile outStr(tablePath);
     outStr.open(QIODevice::WriteOnly);
 
-    for(const QString & fileName : deer.entryList({"*.txt"}, QDir::Files, QDir::Name))
+    for(const QString & fileName : deer.entryList({"*" + auxFilter +".txt"}, QDir::Files, QDir::Name))
     {
         if(tablePath.contains(fileName)) continue;
 

@@ -4,6 +4,50 @@
 using namespace std;
 using namespace myLib;
 
+
+QStringList leest_less = {
+    /// less
+    "Berlin-Henis",
+    "Bushenkov",
+    "CHemerisova",
+    "Didkovskaya",
+    "Grishina",
+    "Ivanova",
+    "Krasnobaev",
+    "Melnik",
+    "Paramonova",
+    "Ryibalko",
+    "Sarvardinova",
+    "SHkarina",
+    "Vasina",
+//        "Zelenkov"
+};
+QStringList leest_more = {
+    ///more
+    "Burmistrova",
+    "Garmotko",
+    "Hanenya",
+    "Kalinichenko",
+    "Tinyanova"
+};
+
+QStringList leest_non = {
+    "tactile",
+    "Dasha_GO",
+    "Dasha_GZ",
+    "Dasha_smell",
+    "Dasha_smell_2"
+};
+
+QStringList leest_mri = {
+    "Ali-Zade",
+    "Atanov",
+    "Khasanov",
+    "Nikolaenko",
+    "Mezhenova",
+    "Sushinsky",
+
+};
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
@@ -13,50 +57,8 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(7);
 //    ui->justSliceButton->setChecked(true);
 
-    QStringList leest_less = {
-        /// less
-        "Berlin-Henis",
-        "Bushenkov",
-        "CHemerisova",
-        "Didkovskaya",
-        "Grishina",
-        "Ivanova",
-        "Krasnobaev",
-        "Melnik",
-        "Paramonova",
-        "Ryibalko",
-        "Sarvardinova",
-        "SHkarina",
-        "Vasina",
-//        "Zelenkov"
-    };
-    QStringList leest_more = {
-        ///more
-        "Burmistrova",
-        "Garmotko",
-        "Hanenya",
-        "Kalinichenko",
-        "Tinyanova"
-    };
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
-
-    QStringList leest_non = {
-        "tactile",
-        "Dasha_GO",
-        "Dasha_GZ",
-        "Dasha_smell",
-        "Dasha_smell_2"
-    };
-
-//    cutOneFile("/media/michael/Files/Data/MRI/Nikolaenko/Nikolaenko.edf",
-//               2,
-//               "/media/michael/Files/Data/MRI/Nikolaenko/Nikolaenko_windows");
-
-
-    makeRightNumbers("/media/michael/Files/Data/MRI/OUT");
-    makeTableFromRows("/media/michael/Files/Data/MRI/OUT");
-    exit(0);
 
 
 
@@ -65,23 +67,31 @@ void MainWindow::customFunc()
     /// EEG fMRI
     def::ntFlag = true;
 
-    QStringList leest_mri = {
-        "Ali-Zade",
-        "Atanov",
-        "Khasanov",
-        "Mezhenova",
-        "Sushinsky",
-    };
 
-    for(QString guy : leest_mri)
+    QString guy = "Khokhlov";
+//    for(QString guy : leest_mri)
     {
+//        GalyaProcessing(def::mriFolder
+//                        + slash + guy
+//                        + slash + guy + "_windows_cleaned",
+//                        32,
+//                        def::mriFolder
+//                        + slash + guy + "_windows_cleaned_out");
 
-        GalyaProcessing(def::mriFolder
-                        + slash + guy
-                        + slash + guy + "_windows_cleaned",
-                        32,
-                        def::mriFolder
-                        + slash + guy + "_windows_cleaned_out");
+//        makeRightNumbers(def::mriFolder + slash + guy + "_windows_cleaned_out");
+//        for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
+//        {
+//            makeTableFromRows(def::mriFolder + slash + guy + "_windows_cleaned_out",
+//                              guy + type + ".txt",
+//                              type);
+//        }
+
+        // execute matlab & wavelet_new
+        makeRightNumbers(def::mriFolder + slash + "OUT"
+                         + slash + guy);
+        makeTableFromRows(def::mriFolder + slash + "OUT" + slash + guy,
+                          guy + "_wavelet.txt");
+
     }
 
     exit(0);
