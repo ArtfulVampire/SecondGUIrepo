@@ -60,6 +60,10 @@ void MainWindow::customFunc()
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
+//    GalyaCut("/media/michael/Files/Data/Xenia/Bichkov",
+//             20,
+//             "/media/michael/Files/Data/Xenia/Bichkov/windows");
+//    exit(0);
     return;
 
 #if 0

@@ -205,11 +205,11 @@ MainWindow::MainWindow() :
 
     /// seconds !!!!!
     ui->timeShiftSpinBox->setMinimum(0.1);
-    ui->timeShiftSpinBox->setMaximum(15);
+    ui->timeShiftSpinBox->setMaximum(32);
     ui->timeShiftSpinBox->setValue(0.5);
     ui->timeShiftSpinBox->setSingleStep(0.1);
 
-    ui->windowLengthSpinBox->setMaximum(15);
+    ui->windowLengthSpinBox->setMaximum(32);
     ui->windowLengthSpinBox->setMinimum(1);
     ui->windowLengthSpinBox->setSingleStep(0.1);
     ui->windowLengthSpinBox->setValue(4);

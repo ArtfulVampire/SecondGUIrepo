@@ -167,7 +167,7 @@ void MainWindow::rereferenceData(const QString newRef,
     cout << "rereferenceData: " << newRef << "\n" << helpString.toStdString() << endl;
     ui->reduceChannelsLineEdit->setText(helpString);
 
-    return;
+//    return;
 
     //change labels
     globalEdf.setLabels(label);
