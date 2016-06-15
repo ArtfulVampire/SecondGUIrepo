@@ -29,6 +29,20 @@ const std::vector<double> y {0.1875, 0.1875,
                              0.75, 0.75, 0.75, 0.75, 0.75,
                              0.9375, 0.9375,
                              0.9375, 0.9375};
+/// for BaseMonopolar rereference
+const std::vector<QString> lbl_A1 {"Fp1",
+                                "F7", "F3", "Fz",
+                                "T3", "C3",
+                                "T5", "P3", "Pz",
+                                "O1",
+                                "EOG2"};
+const std::vector<QString> lbl_A2 {"Fp2",
+                                "F4", "F8",
+                                "Cz", "C4", "T4",
+                                "P4", "T6",
+                                "O2",
+                                "EOG1"};
+
 const std::vector<QString> lbl {"Fp1", "Fp2",
                                 "F7", "F3", "Fz", "F4", "F8",
                                 "T3", "C3", "Cz", "C4", "T4",

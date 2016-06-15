@@ -8,6 +8,81 @@ using namespace smallLib;
 namespace myLib
 {
 
+QString rerefChannel(const QString & initialRef,
+                     const QString & targetRef,
+                     const QString & currentNum,
+                     const QString & earsChan,
+                     const QString & groundChan,
+                     const std::vector<QString> & sign)
+{
+    /// assume there is only one '-' char in channel name
+    /// assume the name to be: * Name-Ref *
+    /// length of channel and ref are less than 4
+
+    if(targetRef == "A1")
+    {
+        if(initialRef == "A2")
+        {
+            return currentNum + sign[0] + earsChan;
+        }
+        else if(initialRef == "N")
+        {
+            return currentNum + "-" + groundChan;
+        }
+        else if(initialRef == "Ar")
+        {
+            return currentNum + sign[0] + earsChan + "/2";
+        }
+    }
+    else if(targetRef == "A2")
+    {
+        if(initialRef == "A1")
+        {
+            return currentNum + sign[1] + earsChan;
+        }
+        else if(initialRef == "N")
+        {
+            return currentNum + "-" + groundChan + sign[1] + earsChan;
+        }
+        else if(initialRef == "Ar")
+        {
+            return currentNum + sign[1] + earsChan + "/2";
+        }
+    }
+    else if(targetRef == "N")
+    {
+        if(initialRef == "A1")
+        {
+            return currentNum + "+" + groundChan;
+        }
+        else if(initialRef == "A2")
+        {
+            return currentNum + sign[0] + earsChan + "+" + groundChan;
+        }
+        else if(initialRef == "Ar")
+        {
+            return currentNum + sign[0] + earsChan + "/2"  + "+" + groundChan;
+        }
+    }
+    else if(targetRef == "Ar")
+    {
+        if(initialRef == "A1")
+        {
+            return currentNum + sign[1] + earsChan + "/2";
+        }
+        else if(initialRef == "A2")
+        {
+            return currentNum + sign[0] + earsChan + "/2";
+        }
+        else if(initialRef == "N")
+        {
+            return currentNum + "-" + groundChan + sign[1] + earsChan + "/2";
+        }
+    }
+    return currentNum;
+
+}
+
 QString setFileName(const QString & initNameOrPath) // append _num before the dot
 {
     QString beforeDot = initNameOrPath;

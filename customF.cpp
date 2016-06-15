@@ -60,7 +60,21 @@ void MainWindow::customFunc()
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
+    return;
 
+#if 0
+    /// rename files in a dir
+    const QString renamePath = "/media/michael/Files/Data/MRI/Rest/Rest_windows_cleaned";
+
+    for(const QString & oldName : QDir(renamePath).entryList({"*.edf"}))
+    {
+        QString newName = oldName;
+        newName.remove("_18_17"); ///
+        QFile::rename(renamePath + slash + oldName,
+                      renamePath + slash + newName);
+    }
+    exit(0);
+#endif
 
 
 #if 1
@@ -68,29 +82,42 @@ void MainWindow::customFunc()
     def::ntFlag = true;
 
 
-    QString guy = "Khokhlov";
+    QString guy = "Rest";
 //    for(QString guy : leest_mri)
     {
-//        GalyaProcessing(def::mriFolder
-//                        + slash + guy
-//                        + slash + guy + "_windows_cleaned",
-//                        32,
-//                        def::mriFolder
-//                        + slash + guy + "_windows_cleaned_out");
+        GalyaProcessing(def::mriFolder
+                        + slash + guy
+                        + slash + guy + "_windows_cleaned",
+                        32,
+                        def::mriFolder
+                        + slash + guy
+                        + slash + guy + "_windows_cleaned_out");
 
-//        makeRightNumbers(def::mriFolder + slash + guy + "_windows_cleaned_out");
-//        for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
-//        {
-//            makeTableFromRows(def::mriFolder + slash + guy + "_windows_cleaned_out",
-//                              guy + type + ".txt",
-//                              type);
-//        }
+        makeRightNumbers(def::mriFolder + slash + guy + "_windows_cleaned_out");
+        for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
+        {
+            makeTableFromRows(def::mriFolder
+                              + slash + guy
+                              + slash + guy + "_windows_cleaned_out",
+                              def::mriFolder
+                              + slash + "OUT"
+                              + slash + guy
+                              + slash + guy + type + ".txt",
+                              type);
+        }
 
         // execute matlab & wavelet_new
-        makeRightNumbers(def::mriFolder + slash + "OUT"
+        /// rename the folder in OUT to guy
+        makeRightNumbers(def::mriFolder
+                         + slash + "wavelet"
                          + slash + guy);
-        makeTableFromRows(def::mriFolder + slash + "OUT" + slash + guy,
-                          guy + "_wavelet.txt");
+        makeTableFromRows(def::mriFolder
+                          + slash + "wavelet"
+                          + slash + guy,
+                          def::mriFolder
+                          + slash + "OUT"
+                          + slash + guy
+                          + slash + guy + "_wavelet.txt");
 
     }
 

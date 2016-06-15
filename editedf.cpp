@@ -37,9 +37,12 @@ void MainWindow::rereferenceDataSlot()
     rereferenceData(ui->rereferenceDataComboBox->currentText(), helpString);
 }
 
-void MainWindow::rereferenceData(QString newRef, QString newPath)
+
+
+void MainWindow::rereferenceData(const QString newRef,
+                                 const QString newPath)
 {
-    //A1, A2, Ar, Cz, N
+    //A1, A2, Ar, N
     //A1-A2, A1-N
     // Ar means 0.5*(A1+A2)
 
@@ -52,12 +55,13 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     readData();
     auto label = globalEdf.getLabels();
 
-    helpString.clear();
-    for(int i = 0; i < def::ns; ++i)
-    {
-        helpString += QString::number(i + 1) + " ";
-    }
-    ui->reduceChannelsLineEdit->setText(helpString);
+//    helpString.clear();
+//    for(int i = 0; i < def::ns; ++i)
+//    {
+//        helpString += QString::number(i + 1) + " ";
+//    }
+//    ui->reduceChannelsLineEdit->setText(helpString);
+//    helpString.clear();
 
     std::vector<int> chanList(def::ns);
     std::iota(chanList.begin(),
@@ -88,196 +92,84 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
         return;
     }
 
-    int earsChan = (earsChan1 != -1) ? earsChan1 : earsChan2;
-
-    vector<QString> sign;
+    int earsChan;
+    std::vector<QString> sign;
     if(earsChan1 != -1)
     {
+        earsChan = earsChan1;
         sign = {"-", "+"};
     }
     else
     {
+        earsChan = earsChan2;
         sign = {"+", "-"};
     }
-    helpString.clear();
-    if(newRef == "A1")
-    {
-        for(int i = 0; i < def::ns; ++i) //ns -> 21
-        {
 
-            if(ui->eogAsIsCheckBox->isChecked() && label[i].contains("EOG"))
-            {
-                helpString += QString::number(i+1) + " "; continue;
-            }
+    const QString earsChanStr = QString::number(earsChan + 1);
+    const QString groundChanStr = QString::number(groundChan + 1);
 
-            if(i == groundChan || i == earsChan)
-            {
-                helpString += QString::number(i+1);
-            }
-            else if(!label[i].contains("-A1")) //generality
-            {
-                if(label[i].contains("-A2"))
-                {
-                    helpString += QString::number(i+1) + sign[0] + QString::number(earsChan + 1);
-                }
-                else if(label[i].contains("-N"))
-                {
-                    helpString += QString::number(i+1) + "-" + QString::number(groundChan + 1);
-                }
-                else if(label[i].contains("-Ar"))
-                {
-                    helpString += QString::number(i+1) + sign[0] + QString::number(earsChan + 1) + "/2";
-                }
-                else
-                {
-                    helpString += QString::number(i+1);
-                }
-            }
-            else // EOG and a shet
-            {
-                helpString += QString::number(i+1);
-            }
-            helpString += " "; // space after each channel
-        }
-    }
-    else if(newRef == "A2")
+    for(int i = 0; i < def::ns; ++i) //ns -> 21
     {
-        for(int i = 0; i < def::ns; ++i) //ns -> 21
+        const QString currNumStr = QString::number(i + 1);
+
+        if((label[i].contains("EOG") && ui->eogAsIsCheckBox->isChecked()) ||
+           (i == groundChan || i == earsChan))
         {
-            if(ui->eogAsIsCheckBox->isChecked() && label[i].contains("EOG"))
+            helpString += currNumStr + " "; continue;
+        }
+
+        if(!label[i].contains(QRegExp("E[EO]G"))) /// generality
+        {
+            helpString += currNumStr + " ";
+        }
+        else
+        {
+            // define current ref
+            QRegExp forRef(R"([\-].{1,4}[ ])");
+            forRef.indexIn(label[i]);
+            QString refName = forRef.cap();
+            refName.remove(QRegExp(R"([\-\s])"));
+
+            QRegExp forChan(R"([ ].{1,4}[\-])");
+            forChan.indexIn(label[i]);
+            QString chanName = forChan.cap();
+            chanName.remove(QRegExp(R"([\-\s])"));
+
+            QString targetRef = newRef;
+            if(!(newRef == "A1" ||
+                 newRef == "A2" ||
+                 newRef == "Ar" ||
+                 newRef == "N"))
             {
-                helpString += QString::number(i+1) + " "; continue;
-            }
-            if(i == groundChan || i == earsChan)
-            {
-                helpString += QString::number(i+1);
-            }
-            else if(!label[i].contains("-A2")) //generality
-            {
-                if(label[i].contains("-A1"))
+                if(std::find(std::begin(coords::lbl_A1),
+                             std::end(coords::lbl_A1),
+                             chanName) != std::end(coords::lbl_A1))
                 {
-                    helpString += QString::number(i+1) + sign[1] + QString::number(earsChan+1);
-                }
-                else if(label[i].contains("-N"))
-                {
-                    helpString += QString::number(i+1) + "-" + QString::number(groundChan+1) + "+" + QString::number(earsChan1+1);
-                }
-                else if(label[i].contains("-Ar"))
-                {
-                    helpString += QString::number(i+1) + sign[1] + QString::number(earsChan+1) + "/2";
+                    targetRef = "A1";
                 }
                 else
                 {
-                    helpString += QString::number(i+1);
+                    targetRef = "A2";
                 }
             }
-            else
-            {
-                helpString += QString::number(i+1);
-            }
-            helpString += " "; // space after each channel
+            helpString += rerefChannel(refName,
+                                       targetRef,
+                                       currNumStr,
+                                       earsChanStr,
+                                       groundChanStr,
+                                       sign) + " ";
+
+            helpString2 = label[i];
+            helpString2.replace(refName, targetRef);
+            label[i] = helpString2;
         }
     }
-    else if(newRef == "N")
-    {
-        for(int i = 0; i < def::ns; ++i) //ns -> 21
-        {
-            if(ui->eogAsIsCheckBox->isChecked() && label[i].contains("EOG"))
-            {
-                helpString += QString::number(i+1) + " "; continue;
-            }
-            if(i == groundChan || i == earsChan)
-            {
-                helpString += QString::number(i+1);
-            }
-            else if(!label[i].contains("-N")) //generality
-            {
-                if(label[i].contains("-A1"))
-                {
-                    helpString += QString::number(i+1) + "+" + QString::number(groundChan+1);
-                }
-                else if(label[i].contains("-A2"))
-                {
-                    helpString += QString::number(i+1) +
-                                  sign[0] + QString::number(earsChan+1) +
-                            "+" + QString::number(groundChan+1);
-                }
-                else if(label[i].contains("-Ar"))
-                {
-                    helpString += QString::number(i+1) +
-                                  sign[0] + QString::number(earsChan+1) + "/2" +
-                            "+" + QString::number(groundChan+1);
-                }
-                else
-                {
-                    helpString += QString::number(i+1);
-                }
-            }
-            else
-            {
-                helpString += QString::number(i+1);
-            }
-            helpString += " "; // space after each channel
-        }
-    }
-    else if(newRef == "Ar")
-    {
-        for(int i = 0; i < def::ns; ++i) //ns -> 21
-        {
-            if(ui->eogAsIsCheckBox->isChecked() && label[i].contains("EOG"))
-            {
-                helpString += QString::number(i+1) + " "; continue;
-            }
-            if(i == groundChan || i == earsChan)
-            {
-                helpString += QString::number(i+1);
-            }
-            else if(!label[i].contains("-Ar")) //generality
-            {
-                if(label[i].contains("-A1"))
-                {
-                    helpString += QString::number(i+1) +
-                                  sign[1] + QString::number(earsChan + 1) + "/2";
-                }
-                else if(label[i].contains("-A2"))
-                {
-                    helpString += QString::number(i+1) +
-                                  sign[0] + QString::number(earsChan + 1) + "/2";
-                }
-                else if(label[i].contains("-N"))
-                {
-                    helpString += QString::number(i+1) + "-" + QString::number(groundChan+1) + "+" + QString::number(earsChan1+1) + "/2";
-                }
-                else
-                {
-                    helpString += QString::number(i+1);
-                }
-            }
-            else
-            {
-                helpString += QString::number(i+1);
-            }
-            helpString += " "; // space after each channel
-        }
-    }
-    cout << "rereferenceData:\n" << helpString.toStdString() << endl;
+    cout << "rereferenceData: " << newRef << "\n" << helpString.toStdString() << endl;
     ui->reduceChannelsLineEdit->setText(helpString);
 
+    return;
 
     //change labels
-    for(int i = 0; i < def::ns; ++i)
-    {
-        helpString = label[i];
-        if(helpString.contains('-') && (i != groundChan && i != earsChan))
-        {
-            // helpString2 - oldRef
-            helpString2 = helpString;
-            helpString2.remove(0, helpString.indexOf('-') + 1);
-            helpString2.remove(helpString2.indexOf(' '), helpString2.length());
-            helpString.replace(helpString2, newRef);
-        }
-        label[i] = helpString;
-    }
     globalEdf.setLabels(label);
     reduceChannelsFast();
 
@@ -285,7 +177,7 @@ void MainWindow::rereferenceData(QString newRef, QString newPath)
     helpString.clear();
     for(int i = 0; i < def::ns; ++i)
     {
-        helpString += QString::number(i+1) + " ";
+        helpString += QString::number(i + 1) + " ";
     }
     ui->reduceChannelsLineEdit->setText(helpString);
 

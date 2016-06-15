@@ -2319,23 +2319,27 @@ void MainWindow::makeRightNumbers(const QString & dirPath,
 }
 
 void MainWindow::makeTableFromRows(const QString & work,
-                                   const QString & tableName,
+                                   QString tablePath,
                                    const QString & auxFilter)
 {
     QDir deer(work);
 
-    const QString tablePath = deer.absolutePath()
-                              + slash + tableName
-                              + ((tableName.contains(".txt")) ? "" : ".txt");
+    if(tablePath.isEmpty())
+    {
+        deer.cdUp();
+        tablePath = deer.absolutePath()
+                    + slash + "table.txt";
+        deer.cd(work);
+    }
+    const QString tableName = getFileName(tablePath);
 
     QFile outStr(tablePath);
     outStr.open(QIODevice::WriteOnly);
 
     for(const QString & fileName : deer.entryList({"*" + auxFilter +".txt"}, QDir::Files, QDir::Name))
     {
-        if(tablePath.contains(fileName)) continue;
+        if(fileName.contains(tableName)) continue;
 
-//        cout << fileName << endl;
         QFile fil(deer.absolutePath() + slash + fileName);
         fil.open(QIODevice::ReadOnly);
         auto contents = fil.readAll();

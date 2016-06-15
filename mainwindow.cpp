@@ -278,6 +278,7 @@ MainWindow::MainWindow() :
     ui->rereferenceDataComboBox->addItem("A2");
     ui->rereferenceDataComboBox->addItem("Ar");
     ui->rereferenceDataComboBox->addItem("N");
+    ui->rereferenceDataComboBox->addItem("Base");
     ui->rereferenceDataComboBox->setCurrentText("Ar");
 
     ui->matiPieceLengthSpinBox->setMaximum(64);

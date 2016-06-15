@@ -91,7 +91,12 @@ void deleteSpaces(const QString & dirPath, const QStringList & filters = QString
 QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
 QString getExt(QString filePath);
-
+QString rerefChannel(const QString & initialName,
+                     const QString & targetRef = "Ar",
+                     const QString & currentNum = "1",
+                     const QString & earsChan = "20",
+                     const QString & groundChan = "21",
+                     const std::vector<QString> & sign = {"-", "+"});
 
 template <typename Typ, template <typename> class Cont>
 std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut); // template!

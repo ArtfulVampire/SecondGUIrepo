@@ -151,7 +151,7 @@ public:
     void makeRightNumbers(const QString & dirPath,
                           int length = 3);
     void makeTableFromRows(const QString & work,
-                           const QString & tableName = "table.txt",
+                           QString tablePath = QString(),
                            const QString & auxFilter = QString());
 
     bool testChannelsOrderConsistency(const QString & path);
@@ -169,7 +169,7 @@ public:
     void drawSpectra(const QString & inPath,
                      const QString & outPath);
 
-    void rereferenceData(QString newRef, QString newPath);
+    void rereferenceData(const QString newRef, const QString newPath);
     void makeChanList(std::vector<int> & chanList);
 
     void refilterData(double lowFreq, double highFreq, QString newPath);
