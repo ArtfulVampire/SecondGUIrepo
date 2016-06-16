@@ -116,7 +116,7 @@ QString getDirPathLib(const QString & filePath)
     return str.left(str.lastIndexOf(slash));
 }
 
-QString getExt(QString filePath)
+QString getExt(const QString & filePath)
 {
     QString helpString = QDir::toNativeSeparators(filePath);
     if(helpString.contains('.'))
@@ -443,6 +443,8 @@ void makeFullFileList(const QString & path,
                     {
 //                        nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
                         nameFilters << QString("*" + aux + helpString);
+                        nameFilters << QString(helpString + aux + "*");
+
                     }
                 }
                 else

@@ -78,7 +78,7 @@ void MainWindow::countEdfSpectra(const QString & inPath,
     drawSpectra(outPath, inPath + slash + pics);
 
 
-    def::fileMarkers = {"_wnd_"};
+    def::fileMarkers = QStringList{"_wnd_"};
     sp->compare();
     sp->psaSlot();
     delete sp;

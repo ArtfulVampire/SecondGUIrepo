@@ -64,6 +64,7 @@ void MainWindow::customFunc()
 //             20,
 //             "/media/michael/Files/Data/Xenia/Bichkov/windows");
 //    exit(0);
+    setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
     return;
 
 #if 0

@@ -58,6 +58,7 @@ Cut::Cut() :
     ui->paintLengthDoubleSpinBox->setValue(4);
     ui->paintLengthDoubleSpinBox->setDecimals(1);
     ui->paintLengthDoubleSpinBox->setSingleStep(0.5);
+    ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / def::freq);
 
 
     ui->checkBox->setChecked(true);
@@ -146,9 +147,6 @@ Cut::~Cut()
     delete ui;
 }
 
-//void Cut::setBrowserDir()
-//{
-//}
 
 void Cut::browse()
 {
@@ -164,7 +162,9 @@ void Cut::browse()
     }
     ui->lineEdit->setText(helpString);
 
-    makeFullFileList(getDirPathLib(helpString), lst);
+
+    setFileType(helpString);
+    makeFullFileList(getDirPathLib(helpString), lst, {"*." + getExt(helpString)});
     currentNumber = lst.indexOf(getFileName(helpString));
 
     createImage(helpString);
@@ -172,7 +172,6 @@ void Cut::browse()
 
 void Cut::resizeEvent(QResizeEvent * event)
 {
-    cout << 1 << endl;
     // adjust scrollArea size
     double newLen = doubleRound((event->size().width() - 10 * 2) / def::freq,
                              ui->paintLengthDoubleSpinBox->decimals());
@@ -400,14 +399,11 @@ void Cut::setFileType(const QString & dataFileName)
     }
 }
 
-//void Cut::createImage(QString dataFileName)
 void Cut::createImage(const QString & dataFileName)
 {
     addNum = 1;
     currentFile = dataFileName;
 
-
-    setFileType(dataFileName);
     if(this->myFileType == fileType::real)
     {
         readPlainData(dataFileName, data3, NumOfSlices);
@@ -464,29 +460,30 @@ void Cut::setAutoProcessingFlag(bool a)
 
 void Cut::next()
 {
-    QString helpString;
-    int tmp = currentNumber;
-    for(; currentNumber < lst.length() - 1; ++currentNumber)  // generality
-    {
-        /// remake regexps or not?
-        if(lst[currentNumber + 1].contains("_num") ||
-           lst[currentNumber + 1].contains("_000") || /// number starts with .000
-           lst[currentNumber + 1].contains("_sht"))
+
+        QString helpString;
+        int tmp = currentNumber;
+        for(; currentNumber < lst.length() - 1; ++currentNumber)  // generality
         {
-            continue;
+            /// remake regexps or not?
+            if(lst[currentNumber + 1].contains("_num") ||
+               lst[currentNumber + 1].contains("_000") || /// number starts with .000
+               lst[currentNumber + 1].contains("_sht"))
+            {
+                continue;
+            }
+            helpString = getDirPathLib(currentFile) + slash + lst[++currentNumber];
+            emit openFile(helpString);
+            return;
         }
-        helpString = getDirPathLib(currentFile) + slash + lst[++currentNumber];
-        emit openFile(helpString);
-        return;
-    }
-    currentNumber = tmp;
-    cout << "next: bad number, too big" << endl;
+        currentNumber = tmp;
+        cout << "next: bad number, too big" << endl;
+
 }
 
 void Cut::prev()
 {
-    if(myFileType == fileType::real)
-    {
+
         QString helpString;
         int tmp = currentNumber;
         for(; currentNumber > 0 + 1; --currentNumber)  // generality
@@ -504,7 +501,7 @@ void Cut::prev()
         }
         currentNumber = tmp;
         cout << "prev: bad number, too little" << endl;
-    }
+
 }
 
 
@@ -716,7 +713,7 @@ void Cut::cut()
     helpString = QDir::toNativeSeparators(def::dir->absolutePath() +
                                           slash + "windows" +
                                           slash + getFileName(currentFile) +
-                                          "." + QString::number(addNum++));
+                                          "." + rightNumber(addNum++, 3));
     writePlainData(helpString,
                    data3,
                    rightLimit - leftLimit,

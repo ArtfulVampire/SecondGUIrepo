@@ -89,8 +89,8 @@ namespace def
     const bool wirteStartEndLong = true; // for slice
     const bool redirectCoutFlag = false; // redirect to generalLog.txt
 
-    const QString plainDataExtension = "scg";
-    const QString spectraDataExtension = "psd";
+    const QString plainDataExtension = "scg";   // slice common gradient
+    const QString spectraDataExtension = "psd"; // power spectral density
 
 
     extern bool ntFlag;
