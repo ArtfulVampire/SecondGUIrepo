@@ -51,18 +51,16 @@ Cut::Cut() :
     ui->drawNormDoubleSpinBox->setSingleStep(0.1);
     ui->drawNormDoubleSpinBox->setDecimals(2);
 
-    ui->paintStartDoubleSpinBox->setValue(0);
+//    ui->paintStartDoubleSpinBox->setValue(0);
     ui->paintStartDoubleSpinBox->setDecimals(1);
     ui->paintStartDoubleSpinBox->setSingleStep(0.1);
 
-    ui->paintLengthDoubleSpinBox->setValue(4);
+//    ui->paintLengthDoubleSpinBox->setValue(4);
     ui->paintLengthDoubleSpinBox->setDecimals(1);
     ui->paintLengthDoubleSpinBox->setSingleStep(0.5);
     ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / def::freq);
 
-
     ui->checkBox->setChecked(true);
-
 
     ui->dirBox->addItem("Realisations");
     ui->dirBox->addItem("cut");
@@ -164,7 +162,13 @@ void Cut::browse()
 
 
     setFileType(helpString);
-    makeFullFileList(getDirPathLib(helpString), lst, {"*." + getExt(helpString)});
+//    def::fileMarkers = QStringList{"_BD", "_BW", "_CR", "_Fon", "_kh", "_sm", "_NO"};
+    makeFullFileList(getDirPathLib(helpString), lst, {"." + getExt(helpString)});
+
+    for(auto str : lst)
+    {
+        cout << str << endl;
+    }
     currentNumber = lst.indexOf(getFileName(helpString));
 
     createImage(helpString);
@@ -461,46 +465,46 @@ void Cut::setAutoProcessingFlag(bool a)
 void Cut::next()
 {
 
-        QString helpString;
-        int tmp = currentNumber;
-        for(; currentNumber < lst.length() - 1; ++currentNumber)  // generality
+    QString helpString;
+    int tmp = currentNumber;
+    for(; currentNumber < lst.length() - 1; ++currentNumber)  // generality
+    {
+        /// remake regexps or not?
+        if(lst[currentNumber + 1].contains("_num") ||
+           lst[currentNumber + 1].contains("_000") || /// number starts with .000
+           lst[currentNumber + 1].contains("_sht"))
         {
-            /// remake regexps or not?
-            if(lst[currentNumber + 1].contains("_num") ||
-               lst[currentNumber + 1].contains("_000") || /// number starts with .000
-               lst[currentNumber + 1].contains("_sht"))
-            {
-                continue;
-            }
-            helpString = getDirPathLib(currentFile) + slash + lst[++currentNumber];
-            emit openFile(helpString);
-            return;
+            continue;
         }
-        currentNumber = tmp;
-        cout << "next: bad number, too big" << endl;
+        helpString = getDirPathLib(currentFile) + slash + lst[++currentNumber];
+        emit openFile(helpString);
+        return;
+    }
+    currentNumber = tmp;
+    cout << "next: bad number, too big" << endl;
 
 }
 
 void Cut::prev()
 {
 
-        QString helpString;
-        int tmp = currentNumber;
-        for(; currentNumber > 0 + 1; --currentNumber)  // generality
+    QString helpString;
+    int tmp = currentNumber;
+    for(; currentNumber > 0 + 1; --currentNumber)  // generality
+    {
+        /// remake regexps or not?
+        if(lst[currentNumber - 1].contains("_num") ||
+           lst[currentNumber - 1].contains("_000") || /// number starts with .000
+           lst[currentNumber - 1].contains("_sht"))
         {
-            /// remake regexps or not?
-            if(lst[currentNumber - 1].contains("_num") ||
-               lst[currentNumber - 1].contains("_000") || /// number starts with .000
-               lst[currentNumber - 1].contains("_sht"))
-            {
-                continue;
-            }
-            helpString = getDirPathLib(currentFile) + slash + lst[--currentNumber];
-            emit openFile(helpString);
-            return;
+            continue;
         }
-        currentNumber = tmp;
-        cout << "prev: bad number, too little" << endl;
+        helpString = getDirPathLib(currentFile) + slash + lst[--currentNumber];
+        emit openFile(helpString);
+        return;
+    }
+    currentNumber = tmp;
+    cout << "prev: bad number, too little" << endl;
 
 }
 

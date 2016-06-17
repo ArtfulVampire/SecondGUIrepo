@@ -8,6 +8,15 @@ using namespace smallLib;
 namespace myLib
 {
 
+QString getLabelName(const QString & label)
+{
+    QRegExp forChan(R"([ ].{1,4}[\-])");
+    forChan.indexIn(label);
+    QString chanName = forChan.cap();
+    chanName.remove(QRegExp(R"([\-\s])"));
+    return chanName;
+}
+
 QString rerefChannel(const QString & initialRef,
                      const QString & targetRef,
                      const QString & currentNum,
@@ -455,10 +464,6 @@ void makeFullFileList(const QString & path,
 
             }
         }
-//        for(QString str : nameFilters)
-//        {
-//            cout << str << endl;
-//        }
         lst = localDir.entryList(nameFilters,
                                  QDir::Files,
                                  QDir::Name); /// Name ~ order

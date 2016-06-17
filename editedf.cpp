@@ -130,12 +130,10 @@ void MainWindow::rereferenceData(const QString newRef,
             QString refName = forRef.cap();
             refName.remove(QRegExp(R"([\-\s])"));
 
-            QRegExp forChan(R"([ ].{1,4}[\-])");
-            forChan.indexIn(label[i]);
-            QString chanName = forChan.cap();
-            chanName.remove(QRegExp(R"([\-\s])"));
+            QString chanName = getLabelName(label[i]);
 
             QString targetRef = newRef;
+            /// if newRef == "Base"
             if(!(newRef == "A1" ||
                  newRef == "A2" ||
                  newRef == "Ar" ||

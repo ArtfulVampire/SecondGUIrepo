@@ -73,7 +73,7 @@ private:
 
     fileType myFileType{fileType::real};
     int leftDrawLimit; /// in slices
-    int rightDrawLimit; /// in slices
+    int rightDrawLimit{0}; /// in slices
     edfFile edfFil;
 
     QStringList lst;
@@ -88,8 +88,8 @@ private:
 
     matrix data3;
     matrix undoData;
-    int undoBegin;
-    int NumOfSlices;
+    int undoBegin{0};
+    int NumOfSlices{0};
 
 
     bool autoFlag;

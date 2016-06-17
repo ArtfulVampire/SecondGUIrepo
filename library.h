@@ -91,6 +91,8 @@ void deleteSpaces(const QString & dirPath, const QStringList & filters = QString
 QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
 QString getExt(const QString & filePath);
+QString getLabelName(const QString & label);
+
 QString rerefChannel(const QString & initialName,
                      const QString & targetRef = "Ar",
                      const QString & currentNum = "1",

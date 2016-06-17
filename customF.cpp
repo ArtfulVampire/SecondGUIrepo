@@ -3,6 +3,7 @@
 
 using namespace std;
 using namespace myLib;
+using namespace smallLib;
 
 
 QStringList leest_less = {
@@ -60,12 +61,59 @@ void MainWindow::customFunc()
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
-//    GalyaCut("/media/michael/Files/Data/Xenia/Bichkov",
-//             20,
-//             "/media/michael/Files/Data/Xenia/Bichkov/windows");
-//    exit(0);
-    setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
-    return;
+//    return;
+#if 1
+    std::vector<int> rightChans{1, 5, 6, 9, 10, 11, 15, 16, 18};
+    std::vector<int> leftChans{0, 2, 3, 4, 7, 8, 12, 13, 14, 17};
+//    setEdfFile("/media/michael/Files/Data/Xenia/Mihalkova/Mihalkova_Maria_BD_rr.edf");
+    setEdfFile("/media/michael/Files/Data/Xenia/Bichkov/BICHKOV_NO_free.edf");
+//    return;
+    this_thread::sleep_for(std::chrono::seconds{3});
+    edfFile feel;
+    feel.readEdfFile("/media/michael/Files/Data/Xenia/Mihalkova/Mihalkova_Maria_BD_rr.edf");
+//    feel.readEdfFile("/media/michael/Files/Data/Xenia/Bichkov/BICHKOV_NO_free_rr.edf");
+//    feel.readEdfFile("/media/michael/Files/Data/AAX/AAX_rr.edf");
+    matrix dt = feel.getData();
+    cout << "\t";
+    for(int i = 0; i < 21; ++i)
+    {
+        cout << getLabelName(feel.getLabels()[i]) << "\t";
+    }
+    cout << endl;
+    for(int i = 0; i < 21; ++i)
+    {
+        cout << getLabelName(feel.getLabels()[i]) << "\t";
+        for(int j = 0; j < 21; ++j)
+        {
+            double a = doubleRound(smallLib::correlation(dt[i], dt[j]), 3);
+            cout << a;
+            if(abs(a) > 0.9) cout << " !";
+            cout << "\t";
+        }
+        cout << endl;
+    }
+    exit(0);
+
+//    for(int chan : {1, 5, 6, 9, 10, 11, 15, 16, 18})
+//    {
+//        dt[chan] -= dt[19];
+//    }
+//    feel.writeOtherData(dt, "/media/michael/Files/Data/Xenia/Mihalkova/Mihalkova_Maria_BD_1.edf");
+#endif
+#if 0
+    /// Xenia rereference + cut
+
+    const QString pew = "/media/michael/Files/Data/Xenia/Mihalkova";
+    GalyaCut(pew, 18); exit(0); /// comment to reref
+
+    ui->rereferenceDataComboBox->setCurrentText("Base");
+    for(QString fil : QDir(pew).entryList({"*.edf"}))
+    {
+        setEdfFile(pew + slash + fil);
+        rereferenceDataSlot();
+    }
+    exit(0);
+#endif
 
 #if 0
     /// rename files in a dir
@@ -87,7 +135,7 @@ void MainWindow::customFunc()
     def::ntFlag = true;
 
 
-    QString guy = "Rest";
+    QString guy = "Moskovtsev";
 //    for(QString guy : leest_mri)
     {
         GalyaProcessing(def::mriFolder
@@ -97,6 +145,8 @@ void MainWindow::customFunc()
                         def::mriFolder
                         + slash + guy
                         + slash + guy + "_windows_cleaned_out");
+        QDir tmp(def::mriFolder + slash + "OUT");
+        tmp.mkdir(guy);
 
         makeRightNumbers(def::mriFolder + slash + guy + "_windows_cleaned_out");
         for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})

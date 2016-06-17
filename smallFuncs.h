@@ -123,7 +123,7 @@ inline double covariance(const lineType & arr1, const lineType & arr2)
 
 inline double correlation(const lineType & arr1, const lineType & arr2)
 {
-    return covariance(arr1, arr2) / (sigma(arr1) * sigma(arr2));
+    return covariance(arr1, arr2) / (sigma(arr1) * sigma(arr2) * arr1.size());
 }
 
 inline double norma(const lineType & in)

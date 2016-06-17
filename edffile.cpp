@@ -363,7 +363,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         {
             labels[i] = "EOG EOG2-A1     ";
         }
-        else if(labels[i].contains("Marker"))
+        else if(labels[i].contains("Marker") ||
+                labels[i].contains("Status"))
         {
             markerChannel = i;
             edfPlusFlag = false;
@@ -555,18 +556,6 @@ void edfFile::handleData(bool readFlag,
                                      );
         }
     }
-//    cout << endl;
-//    cout << this->ExpName << "\t" << "flags = ";
-//    cout << this->ntFlag << this->edfPlusFlag << this->matiFlag << endl;
-//    cout << this->ExpName << "\t" << "markChan = " << markerChannel << endl;
-//    cout << this->ExpName << "\t" << "ndr = " << ndr << endl;
-//    cout << this->ExpName << "\t" << "ns = " << ns << endl;
-//    for(int h = 0; h < ns; ++h)
-//    {
-//        cout << nr[h] << endl;
-//    }
-//    cout << this->ExpName << "\t" << "dataLen = " << ndr * nr[0] << endl;
-//    cout << endl;
     for(int i = 0; i < ndr; ++i)
     {
         for(int currNs = 0; currNs < ns; ++currNs)
@@ -830,7 +819,8 @@ void edfFile::adjustArraysByChannels()
     for(int i = 0; i < this->ns; ++i)
     {
         this->labels.push_back(this->channels[i].label);
-        if(this->channels[i].label.contains("Markers"))
+        if(this->channels[i].label.contains("Marker") ||
+           this->channels[i].label.contains("Status"))
         {
             this->markerChannel = i; // set markersChannel
             this->edfPlusFlag = false;
@@ -923,7 +913,8 @@ void edfFile::adjustArraysByChannels()
 
 void edfFile::adjustMarkerChannel()
 {
-    if(!this->channels.back().label.contains("Marker"))
+    if(!(this->channels.back().label.contains("Marker") ||
+         this->channels.back().label.contains("Status")))
     {
 #if DATA_IN_CHANS
         edfChannel tempMarkChan = this->channels[this->markerChannel]; // save markerChannel
@@ -1446,20 +1437,18 @@ void edfFile::reduceChannels(const QString & chanStr)
             this->data[k] = this->data[leest[k].toInt() - 1];
 #endif
         }
-        else if(leest[k].contains(QRegExp("[\\+\\-\\*\\/]")))
+        else if(leest[k].contains(QRegExp(R"([\+\-\*\/])")))
         {
             lengthCounter = 0;
-            lst = leest[k].split(QRegExp("[\\+\\-\\*\\/]"), QString::SkipEmptyParts);
+            lst = leest[k].split(QRegExp(R"([\+\-\*\/])"), QString::SkipEmptyParts);
             for(int h = 0; h < lst.length(); ++h)
             {
                 if(QString::number(lst[h].toInt()) != lst[h]) // if not a number between operations
                 {
-                    cout << "nan between operators" << endl;
+                    cout << "NAN between operators" << endl;
                     return;
                 }
             }
-
-//            cout << "k = " << k << "\tlst[0].toInt() - 1 = " << lst[0].toInt() - 1 << endl;
             this->channels[k] = this->channels[lst[0].toInt() - 1];
 
             lengthCounter += lst[0].length();
@@ -1516,6 +1505,7 @@ void edfFile::reduceChannels(const QString & chanStr)
                     lengthCounter += lst[h+1].length(); //what was divided onto
                     ++h;
                 }
+                /// here should stop, no following h-iteration
             }
         }
         else
