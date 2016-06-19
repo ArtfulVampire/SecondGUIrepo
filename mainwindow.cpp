@@ -704,14 +704,16 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
                                                               + slash + def::ExpName
                                                               + "-" + rightNumber(i, 4)
                                                               + "_" + QString::number(254)
-                                                              + ".edf"
+//                                                              + ".edf"
                                                               );
 
                         fil.saveSubsection(i * wndLen,
                                            min((i + 1) * wndLen,
                                                double(fil.getData().cols())),
                                            helpString,
-                                           false);
+                                           true
+//                                           false
+                                           );
 
                     }
                 }

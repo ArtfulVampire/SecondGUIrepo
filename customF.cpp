@@ -61,19 +61,24 @@ void MainWindow::customFunc()
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
-//    return;
+
+
+    return;
 #if 1
+    /// manual rereference
     std::vector<int> rightChans{1, 5, 6, 9, 10, 11, 15, 16, 18};
     std::vector<int> leftChans{0, 2, 3, 4, 7, 8, 12, 13, 14, 17};
-//    setEdfFile("/media/michael/Files/Data/Xenia/Mihalkova/Mihalkova_Maria_BD_rr.edf");
-    setEdfFile("/media/michael/Files/Data/Xenia/Bichkov/BICHKOV_NO_free.edf");
+    QString filpath = "/media/michael/Files/Data/Xenia/Shapovalova/SHAPOVALOVA_OLESY_BD_.edf";
+    setEdfFile(filpath);
 //    return;
     this_thread::sleep_for(std::chrono::seconds{3});
     edfFile feel;
-    feel.readEdfFile("/media/michael/Files/Data/Xenia/Mihalkova/Mihalkova_Maria_BD_rr.edf");
-//    feel.readEdfFile("/media/michael/Files/Data/Xenia/Bichkov/BICHKOV_NO_free_rr.edf");
-//    feel.readEdfFile("/media/michael/Files/Data/AAX/AAX_rr.edf");
+    feel.readEdfFile(filpath);
     matrix dt = feel.getData();
+
+
+#if 0
+    // cout corrMatrix
     cout << "\t";
     for(int i = 0; i < 21; ++i)
     {
@@ -92,18 +97,46 @@ void MainWindow::customFunc()
         }
         cout << endl;
     }
-    exit(0);
-
-//    for(int chan : {1, 5, 6, 9, 10, 11, 15, 16, 18})
-//    {
-//        dt[chan] -= dt[19];
-//    }
-//    feel.writeOtherData(dt, "/media/michael/Files/Data/Xenia/Mihalkova/Mihalkova_Maria_BD_1.edf");
+//    exit(0);
 #endif
+
+    for(int i = 200; i < 210; ++i)
+    {
+        cout << dt[15][i] << "\t";
+    }
+    cout << endl;
+    for(int i = 200; i < 210; ++i)
+    {
+        cout << dt[19][i] << "\t";
+    }
+    cout << endl << endl;
+
+    for(int chan : rightChans)
+    {
+        dt[chan] -= dt[19];
+    }
+
+    for(int i = 200; i < 210; ++i)
+    {
+        cout << dt[15][i] << "\t";
+    }
+    cout << endl;
+    for(int i = 200; i < 210; ++i)
+    {
+        cout << dt[19][i] << "\t";
+    }
+    cout << endl << endl;
+
+//    dt.resizeCols(250 * 2);
+    writePlainData(filpath.replace(".edf", "_RRR.scg"), dt);
+//    feel.writeOtherData(dt, filpath.replace(".edf", "_RRR.edf"));
+    exit(0);
+#endif
+
 #if 0
     /// Xenia rereference + cut
 
-    const QString pew = "/media/michael/Files/Data/Xenia/Mihalkova";
+    const QString pew = "/media/michael/Files/Data/Xenia/Shapovalova";
     GalyaCut(pew, 18); exit(0); /// comment to reref
 
     ui->rereferenceDataComboBox->setCurrentText("Base");
