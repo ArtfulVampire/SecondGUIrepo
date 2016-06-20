@@ -63,8 +63,8 @@ void MainWindow::customFunc()
 
 
 
-    return;
-#if 1
+//    return;
+#if 0
     /// manual rereference
     std::vector<int> rightChans{1, 5, 6, 9, 10, 11, 15, 16, 18};
     std::vector<int> leftChans{0, 2, 3, 4, 7, 8, 12, 13, 14, 17};
@@ -133,10 +133,11 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 0
+#if 1
     /// Xenia rereference + cut
 
-    const QString pew = "/media/michael/Files/Data/Xenia/Shapovalova";
+    const QString pew = "/media/michael/Files/Data/Xenia/Mihalkova_rr";
+
     GalyaCut(pew, 18); exit(0); /// comment to reref
 
     ui->rereferenceDataComboBox->setCurrentText("Base");
@@ -166,6 +167,10 @@ void MainWindow::customFunc()
 #if 1
     /// EEG fMRI
     def::ntFlag = true;
+
+//    GalyaCut(def::mriFolder + slash + "LevandoA",
+//             2);
+//    exit(0);
 
 
     QString guy = "Moskovtsev";

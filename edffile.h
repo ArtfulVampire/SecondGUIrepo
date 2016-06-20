@@ -16,12 +16,20 @@ void handleParam(Typ & qStr,
                  bool readFlag,
                  FILE * ioFile,
                  FILE * headerFile);
+
 template <typename Typ>
 void handleParamArray(std::vector <Typ> & qStr,
                       int number,
                       int length,
                       bool readFlag,
-                      FILE *ioFile,
+                      FILE * ioFile,
+                      FILE * headerFile);
+template <typename Typ>
+void handleParamArray(std::valarray <Typ> & qStr,
+                      int number,
+                      int length,
+                      bool readFlag,
+                      FILE * ioFile,
                       FILE * headerFile);
 
 
@@ -238,12 +246,12 @@ private:
     std::vector <QString> labels;
     std::vector <QString> transducerType;
     std::vector <QString> physDim;
-    std::vector <double> physMax;
-    std::vector <double> physMin;
-    std::vector <double> digMax;
-    std::vector <double> digMin;
+    std::valarray <double> physMax;
+    std::valarray <double> physMin;
+    std::valarray <double> digMax;
+    std::valarray <double> digMin;
     std::vector <QString> prefiltering;
-    std::vector <double> nr; // it is int really
+    std::valarray <double> nr; // it is int really
     std::vector <QString> reserved;
     std::vector <QString> annotations;
 
@@ -283,12 +291,12 @@ public:
     const std::vector <QString> & getLabels() const {return labels;}
     const std::vector <QString> & getTransducer() const {return transducerType;}
     const std::vector <QString> & getPhysDim() const {return physDim;}
-    const std::vector <double> & getPhysMax() const {return physMax;}
-    const std::vector <double> & getPhysMin() const {return physMin;}
-    const std::vector <double> & getDigMax() const {return digMax;}
-    const std::vector <double> & getDigMin() const {return digMin;}
+    const std::valarray <double> & getPhysMax() const {return physMax;}
+    const std::valarray <double> & getPhysMin() const {return physMin;}
+    const std::valarray <double> & getDigMax() const {return digMax;}
+    const std::valarray <double> & getDigMin() const {return digMin;}
     const std::vector <QString> & getPrefiltering() const {return prefiltering;}
-    const std::vector <double> & getNr() const {return nr;}
+    const std::valarray <double> & getNr() const {return nr;}
     const std::vector <QString> & getReserved() const {return reserved;}
     const QString & getHeaderRest() const {return headerRest;}
 

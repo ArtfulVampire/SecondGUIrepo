@@ -131,7 +131,7 @@ edfFile::edfFile(const QString & matiLogPath)
     this->ns = numOfParams;
     this->ddr = 1.;
 
-    this->nr = std::vector<double> (this->ns, def::freq);
+    this->nr = std::valarray <double> (def::freq, this->ns);
     // ndr definedlater
     this->bytes = 256 * (this->ns + 1);
 
@@ -391,8 +391,21 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
     handleParamArray(transducerType, ns, 80, readFlag, edfDescriptor, header);
     handleParamArray(physDim, ns, 8, readFlag, edfDescriptor, header);
+    if(!readFlag)
+    {
+        for(int i = 0; i < ns; ++i)
+        {
+            if(labels[i].contains("EEG", Qt::CaseInsensitive))
+            {
+                /// encephalan only !!!!!1111
+                physMax[i] = 4096;
+                physMin[i] = -4096;
+            }
+        }
+    }
     handleParamArray(physMin, ns, 8, readFlag, edfDescriptor, header);
     handleParamArray(physMax, ns, 8, readFlag, edfDescriptor, header);
+
     handleParamArray(digMin, ns, 8, readFlag, edfDescriptor, header);
     handleParamArray(digMax, ns, 8, readFlag, edfDescriptor, header);
     handleParamArray(prefiltering, ns, 80, readFlag, edfDescriptor, header);
@@ -846,28 +859,28 @@ void edfFile::adjustArraysByChannels()
         this->physDim.push_back(this->channels[i].physDim);
     }
 
-    this->physMax.clear();
+    this->physMax.resize(this->ns);
     for(int i = 0; i < this->ns; ++i)
     {
-        this->physMax.push_back(this->channels[i].physMax);
+        this->physMax[i] = this->channels[i].physMax;
     }
 
-    this->physMin.clear();
+    this->physMin.resize(this->ns);
     for(int i = 0; i < this->ns; ++i)
     {
-        this->physMin.push_back(this->channels[i].physMin);
+        this->physMin[i] = this->channels[i].physMin;
     }
 
-    this->digMax.clear();
+    this->digMax.resize(this->ns);
     for(int i = 0; i < this->ns; ++i)
     {
-        this->digMax.push_back(this->channels[i].digMax);
+        this->digMax[i] = this->channels[i].digMax;
     }
 
-    this->digMin.clear();
+    this->digMin.resize(this->ns);
     for(int i = 0; i < this->ns; ++i)
     {
-        this->digMin.push_back(this->channels[i].digMin);
+        this->digMin[i] = this->channels[i].digMin;
     }
 
     this->prefiltering.clear();
@@ -876,10 +889,10 @@ void edfFile::adjustArraysByChannels()
         this->prefiltering.push_back(this->channels[i].prefiltering);
     }
 
-    this->nr.clear();
+    this->nr.resize(this->ns);
     for(int i = 0; i < this->ns; ++i)
     {
-        this->nr.push_back(this->channels[i].nr);
+        this->nr[i] = this->channels[i].nr;
     }
 
     this->reserved.clear();
@@ -1767,6 +1780,22 @@ void handleParam(Typ & qStr,
 }
 
 template <typename Typ>
+void handleParamArray(std::valarray<Typ> & qStr,
+                      int number,
+                      int length,
+                      bool readFlag,
+                      FILE * ioFile,
+                      FILE * headerFile)
+{
+    if(readFlag) qStr = std::valarray<Typ>(Typ(), number); // clean param vector
+
+    for(int i = 0; i < number; ++i)
+    {
+        handleParam <Typ> (qStr[i], length, readFlag, ioFile, headerFile);
+    }
+}
+
+template <typename Typ>
 void handleParamArray(std::vector<Typ> & qStr,
                       int number,
                       int length,
@@ -1798,6 +1827,28 @@ void handleParamArray(std::vector<double> & qStr,
                       FILE * headerFile);
 template
 void handleParamArray(std::vector<QString> & qStr,
+                      int number,
+                      int length,
+                      bool readFlag,
+                      FILE * ioFile,
+                      FILE * headerFile);
+
+template
+void handleParamArray(std::valarray<int> & qStr,
+                      int number,
+                      int length,
+                      bool readFlag,
+                      FILE * ioFile,
+                      FILE * headerFile);
+template
+void handleParamArray(std::valarray<double> & qStr,
+                      int number,
+                      int length,
+                      bool readFlag,
+                      FILE * ioFile,
+                      FILE * headerFile);
+template
+void handleParamArray(std::valarray<QString> & qStr,
                       int number,
                       int length,
                       bool readFlag,
