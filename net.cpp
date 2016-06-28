@@ -3049,7 +3049,7 @@ void Net::optimizeChannelsSet() /// CAREFUL
     helpString += "\n";
     for(int i = 0; i < channelsSet.length(); ++i)
     {
-        helpString += coords::lbl[channelsSet[i]] + "\t";
+        helpString += coords::lbl21[channelsSet[i]] + "\t";
     }
     helpString += "\n";
 

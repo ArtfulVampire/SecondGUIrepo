@@ -63,7 +63,7 @@ void MainWindow::customFunc()
 
 
 
-//    return;
+    return;
 #if 0
     /// manual rereference
     std::vector<int> rightChans{1, 5, 6, 9, 10, 11, 15, 16, 18};

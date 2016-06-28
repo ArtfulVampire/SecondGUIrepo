@@ -42,13 +42,23 @@ const std::vector<QString> lbl_A2 {"Fp2",
                                 "P4", "T6",
                                 "O2",
                                 "EOG1"};
-
-const std::vector<QString> lbl {"Fp1", "Fp2",
+const std::vector<QString> lbl19 {"Fp1", "Fp2",
                                 "F7", "F3", "Fz", "F4", "F8",
                                 "T3", "C3", "Cz", "C4", "T4",
                                 "T5", "P3", "Pz", "P4", "T6",
                                 "O1", "O2",
                                 "EOG1", "EOG2"};
+const std::vector<QString> lbl21 {"Fp1", "Fp2",
+                                "F7", "F3", "Fz", "F4", "F8",
+                                "T3", "C3", "Cz", "C4", "T4",
+                                "T5", "P3", "Pz", "P4", "T6",
+                                "O1", "O2",
+                                "EOG1", "EOG2"};
+
+
+
+
+/// Dasha/Neurotravel
 const std::vector<QString> lbl31_less {"Fp1", "27", "Fp2",
                                        "F3", "Fz", "F4", "F7", "F8",
                                        "36", "39", "35", "29", "28",

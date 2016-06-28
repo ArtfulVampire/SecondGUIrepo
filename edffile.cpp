@@ -352,9 +352,10 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     //start channels read
     handleParamArray(labels, ns, 16, readFlag, edfDescriptor, header);
 
-    /// edit EOG channels generality for encephalan
+    /// generality for encephalan
     for(int i = 0; i < ns; ++i)
     {
+        /// edit EOG channels to encephalan
         if(labels[i].contains("EOG 1"))
         {
             labels[i] = "EOG EOG1-A2     ";
@@ -363,6 +364,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         {
             labels[i] = "EOG EOG2-A1     ";
         }
+        /// set marker channel
         else if(labels[i].contains("Marker") ||
                 labels[i].contains("Status"))
         {
@@ -375,6 +377,19 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
             edfPlusFlag = true;
             cout << "handleEdfFile: Annotations! " << EDFpath << endl;
         }
+        /// Mitsar and other sheet
+        else
+        {
+            for(int j = 0; j < 19; ++j)
+            {
+                if(labels[i].contains(coords::lbl19[j]) &&
+                   !labels[i].contains("EEG"))
+                {
+                    labels[i].prepend("EEG ");
+                }
+            }
+        }
+
     }
 
     if(readFlag)

@@ -441,7 +441,7 @@ void MakePa::vdvTest()
     paint->setFont(QFont("Helvetica", 24, -1, false));
     for(int c2=0; c2<ns; ++c2)  //exept markers channel
     {
-        paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), coords::lbl[c2]);
+        paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), coords::lbl21[c2]);
     }
     helpString = def::dir->absolutePath().append(slash).append("Help").append(slash).append("Van der Varden").append(ui->addNameLineEdit->text()).append(".jpg");
     cout<<helpString.toStdString()<<endl;
@@ -777,7 +777,7 @@ void MakePa::kwTest()
     //print channel labels
     for(int c2=0; c2<ns; ++c2)  //exept markers channel
     {
-        paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), coords::lbl[c2]);
+        paint->drawText((paint->device()->width() * coords::x[c2]-20), (paint->device()->height() * coords::y[c2]-252), coords::lbl21[c2]);
     }
 
 
@@ -1434,7 +1434,7 @@ double MakePa::drawSamples(double * drawArray, double leftLim, double rightLim)
     {
         paint->drawText((paint->device()->width() * coords::x[c2]-20),
                         (paint->device()->height() * coords::y[c2]-252),
-                        coords::lbl[c2]);
+                        coords::lbl21[c2]);
     }
 
     //draw scale
