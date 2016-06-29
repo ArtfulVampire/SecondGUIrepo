@@ -198,7 +198,8 @@ public:
     void countFft();
     void refilter(const double &lowFreq,
                   const double &highFreq,
-                  const QString & newPath = QString());
+                  const QString & newPath = QString(),
+                  bool isNotch = false);
     void saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
     void reduceChannels(const std::vector<int> & chanList);
@@ -230,7 +231,8 @@ public:
 
 
 private:
-    QString headerInitialInfo = QString();
+//    QString headerInitialInfo = QString();
+    std::string headerInitialInfo = std::string();
     int bytes = 256;
     QString headerReservedField = QString();
 
@@ -280,7 +282,9 @@ private:
     bool edfPlusFlag = false; // to detect
 
 public:
-    const QString & getHeaderInit() const {return headerInitialInfo;}
+//    const QString & getHeaderInit() const {return headerInitialInfo;}
+    const std::string & getHeaderInit() const {return headerInitialInfo;}
+
     const int & getBytes() const {return bytes;}
     const QString & getHeaderReserved() const {return headerReservedField;}
 

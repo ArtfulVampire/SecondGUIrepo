@@ -191,15 +191,26 @@ void MainWindow::refilterDataSlot()
 
     const double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
     const double highFreq = ui->highFreqFilterDoubleSpinBox->value();
+    const bool notch = ui->notchCheckBox->isChecked();
     QString helpString = def::dir->absolutePath()
             + slash + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
     readData();
-    helpString.replace(".edf",
-                       "_f"
-                       + QString::number(lowFreq) + '-' + QString::number(highFreq)
-                       + ".edf");
+    if(!notch)
+    {
+        helpString.replace(".edf",
+                           "_f"
+                           + QString::number(lowFreq) + '-' + QString::number(highFreq)
+                           + ".edf");
+    }
+    else
+    {
+        helpString.replace(".edf",
+                           "_notch"
+                           + QString::number(lowFreq) + '-' + QString::number(highFreq)
+                           + ".edf");
+    }
 
-    refilterData(lowFreq, highFreq, helpString);
+    refilterData(lowFreq, highFreq, helpString, notch);
     int tmp = ui->reduceChannelsComboBox->currentIndex();
     ui->reduceChannelsComboBox->setCurrentIndex(0);
     ui->reduceChannelsComboBox->setCurrentIndex(tmp);
@@ -207,9 +218,12 @@ void MainWindow::refilterDataSlot()
     cout << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
-void MainWindow::refilterData(double lowFreq, double highFreq, QString newPath)
+void MainWindow::refilterData(const double & lowFreq,
+                              const double & highFreq,
+                              const QString & newPath,
+                              bool notch)
 {
-    globalEdf.refilter(lowFreq, highFreq, newPath);
+    globalEdf.refilter(lowFreq, highFreq, newPath, notch);
 }
 
 void MainWindow::reduceChannelsEDFSlot()

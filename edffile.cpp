@@ -119,7 +119,8 @@ edfFile::edfFile(const QString & matiLogPath)
     int numOfParams = 15 - 2; // -currTime & quantLength generality
     int currTimeIndex;
 
-    this->headerInitialInfo = fitString("Edf for AMOD Data", 184);
+//    this->headerInitialInfo = fitString("Edf for AMOD Data", 184);
+    this->headerInitialInfo = fitString("Edf for AMOD Data", 184).toStdString();
     this->headerReservedField = fitString("headerReservedField", 44);
     this->headerRest = QString();
 
@@ -380,7 +381,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         /// Mitsar and other sheet
         else
         {
-            for(int j = 0; j < 19; ++j)
+            for(int j = 0; j < coords::lbl19.size(); ++j)
             {
                 if(labels[i].contains(coords::lbl19[j]) &&
                    !labels[i].contains("EEG"))
@@ -1113,7 +1114,8 @@ void edfFile::countFft()
 /// remake vector
 void edfFile::refilter(const double & lowFreq,
                        const double & highFreq,
-                       const QString & newPath)
+                       const QString & newPath,
+                       bool isNotch)
 {
 
     int fftLength = fftL(this->dataLength);
@@ -1148,6 +1150,7 @@ void edfFile::refilter(const double & lowFreq,
                   spectre);
         ++i;
         //filtering
+
 #if 0
         /// old
         for(int i = 0; i < fftLength; ++i)
@@ -1163,19 +1166,31 @@ void edfFile::refilter(const double & lowFreq,
                 spectre[i] = 0.;
         }
 #else
-        ///new
-        std::fill(spectre,
-                  spectre + lowLim,
-                  0.);
-        std::fill(spectre + highLim,
-                  spectre + fftLength,
-                  0.);
-        std::fill(spectre + fftLength,
-                  spectre + 2 * fftLength - highLim - 1,
-                  0.);
-        std::fill(spectre + 2 * fftLength - lowLim + 1,
-                  spectre + 2 * fftLength,
-                  0.);
+        if(!isNotch)
+        {
+            ///new
+            std::fill(spectre,
+                      spectre + lowLim,
+                      0.);
+            std::fill(spectre + highLim,
+                      spectre + fftLength,
+                      0.);
+            std::fill(spectre + fftLength,
+                      spectre + 2 * fftLength - highLim - 1,
+                      0.);
+            std::fill(spectre + 2 * fftLength - lowLim + 1,
+                      spectre + 2 * fftLength,
+                      0.);
+        }
+        else
+        {
+            std::fill(spectre + lowLim,
+                      spectre + highLim,
+                      0.);
+            std::fill(spectre + 2 * fftLength - highLim,
+                      spectre + 2 * fftLength - lowLim,
+                      0.);
+        }
 
 #endif
 
@@ -1753,6 +1768,7 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
 void myTransform(int & output, char * input) {output = atoi(input);}
 void myTransform(double & output, char * input) {output = atof(input);}
 void myTransform(QString & output, char * input) {output = QString(input);}
+void myTransform(std::string & output, char * input) {output = std::string(input);}
 
 void myTransform(const int & input, const int & len, char ** output)
 {
@@ -1765,6 +1781,20 @@ void myTransform(const double & input, const int & len, char ** output)
 void myTransform(const QString & input, const int & len, char ** output)
 {
     (*output) = QStrToCharArr(input, len);
+}
+void myTransform(const std::string & input, const int & len, char ** output)
+{
+    (*output) = new char [len + 1];
+    std::string tmp = input;
+    for(int i = input.length(); i < len; ++i)
+    {
+        tmp.push_back(' ');
+    }
+
+    std::copy(std::begin(tmp),
+              std::end(tmp),
+              (*output));
+    (*output)[len] = '\0';
 }
 
 template <typename Typ>
@@ -1789,7 +1819,8 @@ void handleParam(Typ & qStr,
     else
     {
         myTransform(qStr, length, &array);
-        fprintf(ioFile, "%s", array);
+        fwrite(array, sizeof(char), strlen(array), ioFile); /// not strlen but size???
+//        fprintf(ioFile, "%s", array);
         delete []array;
     }
 }
@@ -1884,6 +1915,13 @@ void handleParam(double & qStr,
                  FILE * headerFile);
 template
 void handleParam(QString & qStr,
+                 int length,
+                 bool readFlag,
+                 FILE * ioFile,
+                 FILE * headerFile);
+
+template
+void handleParam(std::string & qStr,
                  int length,
                  bool readFlag,
                  FILE * ioFile,

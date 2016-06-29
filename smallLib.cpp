@@ -511,6 +511,11 @@ ostream & operator << (ostream &os, QString toOut)
     os << toOut.toStdString();
     return os;
 }
+ostream & operator << (ostream &os, QChar toOut)
+{
+    os << QString(toOut);
+    return os;
+}
 ostream & operator << (ostream &os, matrix toOut)
 {
     for(auto it = std::begin(toOut.data); it < std::end(toOut.data); ++it)

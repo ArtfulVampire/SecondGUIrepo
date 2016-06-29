@@ -99,16 +99,18 @@ QString rerefChannel(const QString & initialName,
                      const QString & earsChan = "20",
                      const QString & groundChan = "21",
                      const std::vector<QString> & sign = {"-", "+"});
+
+
+std::ostream & operator<< (std::ostream &os, QString toOut);
+std::ostream & operator<< (std::ostream &os, QChar toOut);
+std::ostream & operator<< (std::ostream &os, matrix toOut);
+
 // containers with no allocators
 template <typename Typ, template <typename> class Cont>
 std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut); // template!
 
 template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont>
 std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut); // template!
-
-std::ostream & operator<< (std::ostream &os, QString toOut);
-std::ostream & operator<< (std::ostream &os, matrix toOut);
-
 
 char * strToChar(const QString & input);
 FILE * fopen(QString filePath, const char *__modes);

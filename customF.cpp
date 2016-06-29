@@ -62,6 +62,28 @@ void MainWindow::customFunc()
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
 
+//    char * arr = new char [8 + 1];
+//    arr[0] = 0xc6;
+//    arr[1] = 0xe2;
+//    arr[2] = 0xe0;
+//    arr[3] = 0xed;
+//    arr[4] = 0xf1;
+//    arr[5] = 0xea;
+//    arr[6] = 0xe8;
+//    arr[7] = 0xe9;
+//    arr[8] = '\0';
+
+//    FILE * out = fopen("/media/michael/Files/Data/iitp/ZEX/PEW.EDF", "w");
+//    fwrite(arr, sizeof(char), strlen(arr), out);
+//    fclose(out);
+//    cout << arr << endl;
+//    delete[] arr;
+
+    setEdfFile("/media/michael/Files/Data/iitp/ZEX/Zhvansky.EDF");
+    readData();
+    globalEdf.writeEdfFile("/media/michael/Files/Data/iitp/ZEX/Zhvansky.edf");
+    exit(0);
+
 
     return;
 #if 0

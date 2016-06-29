@@ -172,7 +172,10 @@ public:
     void rereferenceData(const QString newRef, const QString newPath);
     void makeChanList(std::vector<int> & chanList);
 
-    void refilterData(double lowFreq, double highFreq, QString newPath);
+    void refilterData(const double & lowFreq,
+                      const double & highFreq,
+                      const QString & newPath,
+                      bool notch);
     void countSpectraSimple(int fftLen, int inSmooth = -1);
     void visualisation();
     void kernelest(const QString &str);
