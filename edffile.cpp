@@ -1819,8 +1819,8 @@ void handleParam(Typ & qStr,
     else
     {
         myTransform(qStr, length, &array);
-        fwrite(array, sizeof(char), strlen(array), ioFile); /// not strlen but size???
-//        fprintf(ioFile, "%s", array);
+//        fwrite(array, sizeof(char), strlen(array), ioFile); /// not strlen but size???
+        fprintf(ioFile, "%s", array);
         delete []array;
     }
 }
