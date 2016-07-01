@@ -45,7 +45,7 @@ matrix::matrix(const lineType & vect, bool orientH)
     else
     {
         this->resize(vect.size(), 1);
-        for(int i = 0; i < vect.size(); ++i)
+        for(uint i = 0; i < vect.size(); ++i)
         {
             this->data[i][0] = vect[i];
         }
@@ -61,7 +61,7 @@ matrix::matrix(const lineType & vect, char orient)
     else if(orient == 'v' || orient == 'V')
     {
         this->resize(vect.size(), 1);
-        for(int i = 0; i < vect.size(); ++i)
+        for(uint i = 0; i < vect.size(); ++i)
         {
             this->data[i][0] = vect[i];
         }
@@ -72,7 +72,7 @@ matrix::matrix(const lineType & vect, char orient)
     }
 }
 
-matrix::matrix(const lineType & vect, int inRows)
+matrix::matrix(const lineType & vect, uint inRows)
 {
     if(vect.size() % inRows != 0)
     {
@@ -82,7 +82,7 @@ matrix::matrix(const lineType & vect, int inRows)
     int newCols = vect.size() / inRows;
 
     this->resize(inRows, newCols);
-    for(int i = 0; i < inRows; ++i)
+    for(uint i = 0; i < inRows; ++i)
     {
         std::copy(std::begin(vect) + i * newCols,
                   std::begin(vect) + (i + 1) * newCols,
@@ -93,7 +93,7 @@ matrix::matrix(const lineType & vect, int inRows)
 matrix::matrix(const lineType & vect1, const lineType & vect2)
 {
     this->data.clear();
-    for(int i = 0; i < vect1.size(); ++i)
+    for(uint i = 0; i < vect1.size(); ++i)
     {
         this->data.push_back(vect1[i] * vect2);
     }
@@ -110,8 +110,24 @@ matrix::matrix(std::initializer_list<lineType> lst)
     });
 }
 
+/// these two are the same
+
+matrix::matrix(const lineType & vect) // diagonal
+{
+    this->resize(vect.size(), vect.size());
+    this->fill(0.);
+    int count = 0;
+    for(int item : vect)
+    {
+        this->data[count][count] = item;
+        ++count;
+    }
+}
+
 matrix::matrix(std::initializer_list<double> lst) // diagonal
 {
+    (*this) = matrix(lineType{lst});
+    return;
     this->resize(lst.size(), lst.size());
     this->fill(0.);
     int count = 0;
@@ -121,6 +137,7 @@ matrix::matrix(std::initializer_list<double> lst) // diagonal
         ++count;
     }
 }
+
 
 
 
@@ -151,7 +168,7 @@ matrix operator + (const matrix & lhs, const matrix & rhs)
         return lhs;
     }
     matrix result(lhs.rows(), lhs.cols());
-    for(int i = 0; i < lhs.rows(); ++i)
+    for(uint i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] + rhs[i];
     }
@@ -161,7 +178,7 @@ matrix operator + (const matrix & lhs, const matrix & rhs)
 matrix operator + (const matrix & lhs, const double & val)
 {
     matrix result;
-    for(int i = 0; i < lhs.rows(); ++i)
+    for(uint i = 0; i < lhs.rows(); ++i)
     {
         result.push_back(lhs[i] + val);
     }
@@ -176,7 +193,7 @@ matrix matrix::operator += (const matrix & other)
         cout << "matrix sum failed" << endl;
         return *this;
     }
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         (*this)[i] += other[i];
     }
@@ -185,7 +202,7 @@ matrix matrix::operator += (const matrix & other)
 
 matrix matrix::operator += (const double & val)
 {
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         (*this)[i] += val;
     }
@@ -203,7 +220,7 @@ matrix operator - (const matrix & lhs, const matrix & rhs)
         return lhs;
     }
     matrix result(lhs.rows(), lhs.cols());
-    for(int i = 0; i < lhs.rows(); ++i)
+    for(uint i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] - rhs[i];
     }
@@ -213,7 +230,7 @@ matrix operator - (const matrix & lhs, const matrix & rhs)
 matrix operator - (const matrix & lhs, const double & val)
 {
     matrix result;
-    for(int i = 0; i < lhs.rows(); ++i)
+    for(uint i = 0; i < lhs.rows(); ++i)
     {
         result.push_back(lhs[i] - val);
     }
@@ -228,7 +245,7 @@ matrix matrix::operator -= (const matrix & other)
         cout << "matrix sum failed" << endl;
         return *this;
     }
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         (*this)[i] -= other[i];
     }
@@ -237,7 +254,7 @@ matrix matrix::operator -= (const matrix & other)
 
 matrix matrix::operator -= (const double & val)
 {
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         (*this)[i] -= val;
     }
@@ -254,16 +271,16 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
         return lhs;
     }
 
-    const int dim1 = lhs.rows();
-    const int dim2 = rhs.cols();
+    const uint dim1 = lhs.rows();
+    const uint dim2 = rhs.cols();
 
 
     matrix result(dim1, dim2, 0.);
 #if 0
-    for(int j = 0; j < dim2; ++j)
+    for(uint j = 0; j < dim2; ++j)
     {
         lineType currCol = rhs.getCol(j);
-        for(int i = 0; i < dim1; ++i)
+        for(uint i = 0; i < dim1; ++i)
         {
             result[i][j] = std::inner_product(begin(lhs[i]),
                                               end(lhs[i]),
@@ -279,18 +296,18 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
 
 #if MATRIX_OMP
 #pragma omp parallel for
-    for(int i = 0; i < dim1; ++i)
+    for(uint i = 0; i < dim1; ++i)
     {
-        for(int j = 0; j < lhs.cols(); ++j)
+        for(uint j = 0; j < lhs.cols(); ++j)
         {
             result[i] += lhs[i][j] * rhs[j];
         }
     }
 #else
     /// 15-20% faster than with currCol
-    for(int i = 0; i < dim1; ++i)
+    for(uint i = 0; i < dim1; ++i)
     {
-        for(int j = 0; j < lhs.cols(); ++j)
+        foru(int j = 0; j < lhs.cols(); ++j)
         {
             result[i] += lhs[i][j] * rhs[j];
         }
@@ -304,9 +321,9 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
     /// very slow
     const matrix temp = matrix::transpose(rhs);
 
-    for(int i = 0; i < dim1; ++i)
+    for(uint i = 0; i < dim1; ++i)
     {
-        for(int j = 0; j < dim2; ++j)
+        for(uint j = 0; j < dim2; ++j)
         {
             result[i][j] = prod(lhs[i], temp[j]);
         }
@@ -318,7 +335,7 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
 matrix operator * (const matrix & lhs, const double & val)
 {
     matrix result;
-    for(int i = 0; i < lhs.rows(); ++i)
+    for(uint i = 0; i < lhs.rows(); ++i)
     {
         result.push_back(lhs[i] * val);
     }
@@ -327,10 +344,7 @@ matrix operator * (const matrix & lhs, const double & val)
 
 matrix matrix::operator *= (const double & other)
 {
-#if MATRIX_OMP
-#pragma omp parallel for
-#endif
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         this->data[i] *= other;
     }
@@ -344,12 +358,23 @@ matrix matrix::operator *= (const matrix & other)
     return (*this);
 }
 
+lineType operator * (const matrix & lhs, const lineType & rhs)
+{
+    if(rhs.size() != lhs.cols()) return {};
+    lineType res(lhs.rows());
+    for(uint i = 0; i < res.size(); ++i)
+    {
+        res[i] = prod(lhs[i], rhs);
+    }
+    return res;
+}
+
 
 
 matrix operator / (const matrix & lhs, const double & val)
 {
     matrix result(lhs.rows(), lhs.cols());
-    for(int i = 0; i < lhs.rows(); ++i)
+    for(uint i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] / val;
     }
@@ -369,9 +394,9 @@ bool matrix::operator == (const matrix & other)
         return false;
     }
 
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
-        for(int j = 0; j < this->cols(); ++j)
+        for(uint j = 0; j < this->cols(); ++j)
         {
             if((*this)[i][j] != other[i][j])
             {
@@ -385,7 +410,7 @@ bool matrix::operator == (const matrix & other)
 
 matrix matrix::operator /= (const double & other)
 {
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         this->data[i] /= other;
 
@@ -495,7 +520,7 @@ matrix & matrix::resizeCols(int newCols)
     return *this;
 }
 
-int matrix::rows() const
+uint matrix::rows() const
 {
    return data.size();
 }
@@ -583,7 +608,7 @@ dataType::const_iterator matrix::end() const
 lineType matrix::toVectorByRows() const
 {
     lineType res(this->rows() * this->cols());
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         std::copy(std::begin(this->data[i]),
                   std::end(this->data[i]),
@@ -596,9 +621,9 @@ lineType matrix::toVectorByCols() const
 {
     lineType res(this->rows() * this->cols());
     int count = 0;
-    for(int i = 0; i < this->cols(); ++i)
+    for(uint i = 0; i < this->cols(); ++i)
     {
-        for(int j = 0; j < this->rows(); ++j)
+        for(uint j = 0; j < this->rows(); ++j)
         {
             res[count++] = this->data[j][i];
         }
@@ -610,7 +635,7 @@ lineType matrix::toVectorByCols() const
 lineType matrix::averageRow() const
 {
     lineType res(0., this->cols());
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         res += this->data[i];
     }
@@ -621,18 +646,18 @@ lineType matrix::averageRow() const
 lineType matrix::averageCol() const
 {
     lineType res(this->rows());
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         res[i] = this->data[i].sum() / this->data[i].size();
     }
     return res;
 }
 
-lineType matrix::getCol(int i, int numCols) const
+lineType matrix::getCol(uint i, uint numCols) const
 {
-    if(numCols < 0) numCols = this->rows();
+    if(numCols == 0) numCols = this->rows();
     lineType res(numCols);
-    for(int j = 0; j < numCols; ++j)
+    for(uint j = 0; j < numCols; ++j)
     {
         res[j] = this->data[j][i];
     }
@@ -644,14 +669,14 @@ void matrix::pop_back()
     this->data.pop_back();
 }
 
-void matrix::print(int rows, int cols) const
+void matrix::print(uint rows, uint cols) const
 {
     if(rows == 0) rows = this->rows();
     if(cols == 0) cols = this->cols();
 
-    for(int i = 0; i < rows; ++i)
+    for(uint i = 0; i < rows; ++i)
     {
-        for(int j = 0; j < cols; ++j)
+        for(uint j = 0; j < cols; ++j)
         {
             cout << doubleRound(data[i][j], 3) << "\t";
         }
@@ -671,7 +696,7 @@ void matrix::push_back(const vectType & in)
     this->data.push_back(temp);
 }
 
-int matrix::cols() const
+uint matrix::cols() const
 {
     return data[0].size();
 }
@@ -680,9 +705,9 @@ matrix matrix::transpose(const matrix &input)
 {
 #if 1
     matrix res(input.cols(), input.rows());
-    for(int i = 0; i < input.rows(); ++i)
+    for(uint i = 0; i < input.rows(); ++i)
     {
-        for(int j = 0; j < input.cols(); ++j)
+        for(uint j = 0; j < input.cols(); ++j)
         {
             res[j][i] = input[i][j];
         }
@@ -690,7 +715,7 @@ matrix matrix::transpose(const matrix &input)
     return res;
 #else
     matrix res;
-    for(int i = 0; i < input.cols(); ++i)
+    for(uint i = 0; i < input.cols(); ++i)
     {
         res.push_back(input.getCol(i));
     }
@@ -707,7 +732,7 @@ matrix & matrix::transpose()
     this->resize(max(oldRows, oldCols),
                  max(oldRows, oldCols)); // make square
 
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         for(int j = i + 1; j < this->cols(); ++j)
         {
@@ -729,14 +754,14 @@ matrix & matrix::invert()
         return *this;
     }
 
-    int size = this->rows();
+    const uint size = this->rows();
     matrix initMat(size, size);
     initMat = (*this);
 
     matrix tempMat(size, size, 0.);
-    for(int i = 0; i < size; ++i)
+    for(uint i = 0; i < size; ++i)
     {
-        for(int j = 0; j < size; ++j)
+        for(uint j = 0; j < size; ++j)
         {
             tempMat[i][j] = (j==i);
         }
@@ -744,9 +769,9 @@ matrix & matrix::invert()
     double coeff;
 
     //1) make higher-triangular
-    for(int i = 0; i < size - 1; ++i) //which line to substract
+    for(uint i = 0; i < size - 1; ++i) //which line to substract
     {
-        for(int j = i + 1; j < size; ++j) //FROM which line to substract
+        for(uint j = i + 1; j < size; ++j) //FROM which line to substract
         {
             coeff = initMat[j][i] / initMat[i][i]; // coefficient
 
@@ -770,7 +795,7 @@ matrix & matrix::invert()
     }
 
     //3) divide on diagonal elements
-    for(int i = 0; i < size; ++i) //which line to divide
+    for(uint i = 0; i < size; ++i) //which line to divide
     {
         tempMat[i] /= initMat[i][i];
     }
@@ -779,20 +804,21 @@ matrix & matrix::invert()
     return *this;
 }
 
-matrix & matrix::swapCols(int i, int j)
+matrix & matrix::swapCols(uint i, uint j)
 {
-    for(int k = 0; k < this->rows(); ++k)
+    for(uint k = 0; k < this->rows(); ++k)
     {
         std::swap(this->data[k][i], this->data[k][j]);
     }
+    return *this;
 }
-matrix & matrix::swapRows(int i, int j)
+matrix & matrix::swapRows(uint i, uint j)
 {
     std::swap(this->data[i], this->data[j]);
     return *this;
 }
 
-matrix & matrix::eraseRow(int i)
+matrix & matrix::eraseRow(uint i)
 {
     if(i < this->rows())
     {
@@ -821,7 +847,7 @@ matrix & matrix::eraseRows(const std::vector<int> & indices)
         excludeVector.push_back(a);
     }
     excludeVector.push_back(this->data.size());
-    for(int i = 0; i < excludeVector.size() - 1; ++i)
+    for(int i = 0; i < int(excludeVector.size()) - 1; ++i)
     {
         for(int j = excludeVector[i] - i; j < excludeVector[i + 1] - i - 1; ++j)
         {
@@ -836,15 +862,15 @@ matrix & matrix::eraseRows(const std::vector<int> & indices)
 void matrixProduct(const matrix & in1,
                    const matrix & in2,
                    matrix & result,
-                   int dim,
-                   int rows1,
-                   int cols2)
+                   uint dim,
+                   uint rows1,
+                   uint cols2)
 {
-    int dim1 = 0;
-    int dim2 = 0;
-    int Size = 0;
+    uint dim1 = 0;
+    uint dim2 = 0;
+    uint Size = 0;
 
-    if(rows1 != -1)
+    if(rows1 != 0)
     {
         dim1 = rows1;
     }
@@ -853,7 +879,7 @@ void matrixProduct(const matrix & in1,
         dim1 = in1.rows();
     }
 
-    if(cols2 != -1)
+    if(cols2 != 0)
     {
         dim2 = cols2;
     }
@@ -862,7 +888,7 @@ void matrixProduct(const matrix & in1,
         dim2 = in2.cols();
     }
 
-    if(dim != -1)
+    if(dim != 0)
     {
         Size = dim;
     }
@@ -883,10 +909,10 @@ void matrixProduct(const matrix & in1,
 
 
     lineType temp{};
-    for(int j = 0; j < dim2; ++j)
+    for(uint j = 0; j < dim2; ++j)
     {
         temp = in2.getCol(j, Size); // size for prod()
-        for(int i = 0; i < dim1; ++i)
+        for(uint i = 0; i < dim1; ++i)
         {
             result[i][j] = std::inner_product(std::begin(temp),
                                               std::end(temp),
@@ -894,6 +920,19 @@ void matrixProduct(const matrix & in1,
                                               0.);
         }
     }
+}
+
+lineType matrix::matrixSystemSolveGauss(const lineType & inVec) const
+{
+    const matrix & inMat = (*this);
+    const uint size = inMat.rows();
+
+    matrix initMat(inMat);
+    initMat.invert();
+
+    lineType res(size);
+    res = initMat * inVec;
+    return res;
 }
 //template
 //void matrixProduct(const matrix & in1,

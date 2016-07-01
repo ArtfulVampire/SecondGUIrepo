@@ -1,7 +1,7 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#include "smallFuncs.h"
+#include "smallLib.h"
 
 #include <QString>
 #include <QDir>
@@ -47,18 +47,20 @@ public:
     matrix(const lineType & vect1, const lineType & vect2);
     matrix(const lineType & vect, bool orientH);
     matrix(const lineType & vect, char orient);
-    matrix(const lineType & vect, int rows);
+    matrix(const lineType & vect, uint rows);
+
+    matrix(const lineType & vect); // diagonal
+    matrix(std::initializer_list<double> lst); // diagonal
 
     matrix(std::initializer_list<lineType> lst);
 
-    matrix(std::initializer_list<double> lst); // diagonal
 
     matrix & resizeRows(int rows);
     matrix & resizeCols(int newCols);
     matrix & fill(double value);
-    void print(int rows = 0, int cols = 0) const;
-    int cols() const;
-    int rows() const;
+    void print(uint rows = 0, uint cols = 0) const;
+    uint cols() const;
+    uint rows() const;
     double maxVal() const;
     double minVal() const;
     double maxAbsVal() const;
@@ -71,7 +73,7 @@ public:
     dataType::const_iterator end() const;
     lineType toVectorByRows() const;
     lineType toVectorByCols() const;
-    lineType getCol(int i, int numCols = -1) const;
+    lineType getCol(uint i, uint numCols = 0) const;
     lineType averageRow() const;
     lineType averageCol() const;
     void pop_back();
@@ -119,14 +121,16 @@ public:
     // "private"
     matrix & transpose();
     matrix & invert();
-    matrix & swapCols(int i, int j);
-    matrix & swapRows(int i, int j);
+    matrix & swapCols(uint i, uint j);
+    matrix & swapRows(uint i, uint j);
     matrix & zero();
     matrix & one();
-    matrix & eraseRow(int i);
+    matrix & eraseRow(uint i);
     matrix & eraseRows(const std::vector<int> & indices);
     matrix & random(double low, double high);
     matrix subCols(int beginCol, int endCol) const; /// submatrix
+    lineType matrixSystemSolveGauss(const lineType & inVec) const;
+
 //    double det();
 //    void cofactor();
 //    void systemGaussSolve();
@@ -141,6 +145,7 @@ matrix operator + (const matrix & lhs, const double & val);
 matrix operator / (const matrix & lhs, const double & val);
 matrix operator * (const matrix & lhs, const matrix & rhs);
 matrix operator * (const matrix & lhs, const double & val);
+lineType operator * (const matrix & lhs, const lineType & rhs);
 matrix operator - (const matrix & lhs, const matrix & rhs);
 matrix operator - (const matrix & lhs, const double & val);
 
@@ -148,9 +153,9 @@ matrix operator - (const matrix & lhs, const double & val);
 void matrixProduct(const matrix & in1,
                    const matrix & in2,
                    matrix & result,
-                   int dim = -1,
-                   int rows1 = -1,
-                   int cols2 = -1);
+                   uint dim = 0,
+                   uint rows1 = 0,
+                   uint cols2 = 0);
 
 //void matrixProduct(const lineType &in1,
 //                   const matrix &in2,

@@ -620,7 +620,7 @@ void sammonProj(const mat & distOld,
                          i) != placedDots.end()) {continue;}
 
             helpDist = distOld[placedDots[0]][placedDots[1]];
-            for(int j = 0; j > placedDots.size(); ++j)
+            for(uint j = 0; j > placedDots.size(); ++j)
             {
                 helpDist = fmin(helpDist, distOld[i][placedDots[j]]);
             }

@@ -7,8 +7,8 @@ using namespace std;
 using namespace myLib;
 using namespace smallLib;
 
-bool mySort(vector<double> i,
-            vector<double>  j)
+bool mySort(std::vector<double> i,
+            std::vector<double> j)
 {
     return (i[0] < j[0]);
 }
@@ -108,16 +108,11 @@ void MainWindow::clustering()
 
     int numRow = 300;
     int numCol = 18;
-    vector<vector<double>> cData;
-    cData.resize(numRow);
-    for(int i = 0; i < numRow; ++i)
-    {
-        cData[i].resize(numCol);
-    }
+    matrix cData(numRow, numCol);
 
     ifstream inStr;
     QString helpString = "/media/Files/Data/Mati/clust.txt";
-    inStr.open(helpString.toStdString().c_str());
+    inStr.open(helpString.toStdString());
     for(int i = 0; i < numRow; ++i)
     {
         for(int j = 0; j < numCol; ++j)
@@ -127,24 +122,23 @@ void MainWindow::clustering()
     }
 
 
-
-    vector < vector <double> > distOld;
+    std::vector<std::vector<double>> distOld;
     distOld.resize(numRow);
     for(int i = 0; i < numRow; ++i)
     {
         distOld[i].resize(numRow);
     }
 
-    vector <int> types;
+    std::vector<int> types;
     types.resize(numRow);
 
-    vector < vector <double> > dists; // distance, i, j,
+    std::vector<std::vector<double>> dists; // distance, i, j,
 
-    vector <double> temp;
-    temp.resize(4);
+    std::vector<double> temp(4);
 
-    vector <bool> boundDots;
-    vector <bool> isolDots;
+    std::vector<bool> boundDots;
+    std::vector<bool> isolDots;
+
     boundDots.resize(numRow);
     std::fill(boundDots.begin(), boundDots.end(), false);
     isolDots.resize(numRow);
@@ -155,9 +149,7 @@ void MainWindow::clustering()
         types[i] = i % 3;
         for(int j = i+1; j < numRow; ++j)
         {
-            temp[0] = distance(cData[i].data(),
-                               cData[j].data(),
-                               numCol);
+            temp[0] = distance(cData[i], cData[j]);
             temp[1] = i;
             temp[2] = j;
             temp[3] = 0;
@@ -597,6 +589,7 @@ void MainWindow::matiPreprocessingSlot()
 
 void MainWindow::Bayes()
 {
+#if 0
     QStringList lst;
     QString helpString;
 
@@ -680,6 +673,7 @@ void MainWindow::Bayes()
             writeFileInLine(helpString, hig);
         }
     }
+#endif
 }
 
 ///////////// FULL REMAKE
@@ -690,11 +684,11 @@ void MainWindow::hilbertCount() // not finished
 
     /// remake with vector < vector <double> >
 
-
 }
 
 void MainWindow::diffSmooth()
 {
+#if 0
     Spectre *sp;
     Net * ANN;
     QTime myTime;
@@ -718,6 +712,7 @@ void MainWindow::diffSmooth()
 
     }
     cout << "diffSmooth: time = " << myTime.elapsed()/1000. << " sec" << endl;
+#endif
 
 }
 
@@ -800,6 +795,7 @@ double MainWindow::innerClass(const QString & workPath,
                               const int & wndLen,
                               const int & tShift)
 {
+#if 0
     QString helpString;
 
     ui->sliceCheckBox->setChecked(true);
@@ -859,6 +855,7 @@ double MainWindow::innerClass(const QString & workPath,
     delete ANN;
 
     return res;
+#endif
 }
 
 
@@ -872,6 +869,7 @@ double MainWindow::filesCrossClassification(QString workPath,
                                             int wndLen,
                                             int tShift)
 {
+  #if 0
     QString helpString;
 
     //learn by 1 file
@@ -891,7 +889,7 @@ double MainWindow::filesCrossClassification(QString workPath,
     tmpDir->cd(workPath);
 
     Net * ANN;
-    MakePa * mkPa;
+//    MakePa * mkPa;
 
     if(windows)
     {
@@ -922,9 +920,9 @@ double MainWindow::filesCrossClassification(QString workPath,
     {
         helpString += QString(slash) + "windows";
     }
-    mkPa = new MakePa(helpString);
+//    mkPa = new MakePa(helpString);
     double adjustedCoeff = ANN->adjustReduceCoeff(helpString, 90, 150, "all");
-    mkPa->setRdcCoeff(adjustedCoeff);
+//    mkPa->setRdcCoeff(adjustedCoeff);
 
     cleanDir(tmpDir->absolutePath(), "wts");
 
@@ -972,6 +970,7 @@ double MainWindow::filesCrossClassification(QString workPath,
     ANN->close();
     delete ANN;
     return res;
+#endif
 }
 
 
@@ -982,6 +981,7 @@ void MainWindow::countICAs(QString workPath,
                            bool sequenceFlag,
                            bool sumFlag) //to delete (listFileCrossClassification)
 {
+#if 0
     QString helpString2;
     QString helpString;
 
@@ -1092,6 +1092,7 @@ void MainWindow::countICAs(QString workPath,
         ICsSequence(helpString, helpString2, 1, mapsPath, mapsPath2);
     }
     delete tmpDir;
+#endif
 }
 
 
@@ -1103,6 +1104,7 @@ double MainWindow::filesDropComponents(QString workPath,
                                        int wndLen,
                                        int tShift)
 {
+#if 0
     QString helpString2;
     QString helpString;
 
@@ -1347,6 +1349,7 @@ double MainWindow::filesDropComponents(QString workPath,
     delete tmpDir;
     cout << initAccuracy << "->" << tempAccuracy << endl;
     return tempAccuracy;
+#endif
 }
 
 double MainWindow::filesAddComponentsCross(QString workPath,
@@ -1357,7 +1360,7 @@ double MainWindow::filesAddComponentsCross(QString workPath,
                                            int wndLen,
                                            int tShift)
 {
-
+#if 0
     QString helpString2;
     QString helpString;
 
@@ -1748,6 +1751,7 @@ double MainWindow::filesAddComponentsCross(QString workPath,
     delete tmpDir;
     cout << initAccuracy << "->" << tempAccuracy << endl;
     return tempAccuracy;
+#endif
 }
 
 
@@ -2055,7 +2059,7 @@ matrix MainWindow::makeTestData(const QString & outPath)
 
     std::uniform_real_distribution<double> distr(0, 1);
 
-    for(int i = 0; i < testSignals.cols(); ++i)
+    for(uint i = 0; i < testSignals.cols(); ++i)
     {
         helpDouble = 2. * pi * i / def::freq * 12.5; // 12.5 Hz = 20 bins
         testSignals[0][i] = sin(helpDouble);
@@ -2108,7 +2112,7 @@ matrix MainWindow::makeTestData(const QString & outPath)
     double sum1, sum2;
     //normalize by dispersion = 10
     double coeff = 10.;
-    for(int i = 0; i < testSignals.rows(); ++i)
+    for(uint i = 0; i < testSignals.rows(); ++i)
     {
         sum1 = mean(testSignals[i]);
         sum2 = variance(testSignals[i]);
@@ -2131,6 +2135,9 @@ matrix MainWindow::makeTestData(const QString & outPath)
                    testSignals, 2000);
     return pewM;
 }
+
+
+
 
 void MainWindow::cutOneFile(const QString & filePath,
                             const int wndLen,
@@ -2363,7 +2370,7 @@ void MainWindow::repairChannelsOrder(const QString & inPath,
     std::vector<int> reorderChanList{};
     edfFile initFile;
     initFile.readEdfFile(inPath, true);
-    for(int i = 0; i < standard.size(); ++i) /// only for 31 channels
+    for(uint i = 0; i < standard.size(); ++i) /// only for 31 channels
     {
         for(int j = 0; j < initFile.getNs(); ++j)
         {

@@ -14,7 +14,8 @@ class TempThread : public QThread
 {
     Q_OBJECT
 public:
-    explicit TempThread(QObject *parent = 0);
+    explicit TempThread(QObject *parent = 0) : QThread(parent)
+    {}
     void run()
     {
         QTimer timer;

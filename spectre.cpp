@@ -350,9 +350,9 @@ void Spectre::integrate()
         readMatrixFile(helpString,
                         dataInt);
 
-        for(int h = 0; h < dataOut.rows(); ++h)
+        for(uint h = 0; h < dataOut.rows(); ++h)
         {
-            for(int j = 0; j < dataOut.cols(); ++j)
+            for(uint j = 0; j < dataOut.cols(); ++j)
             {
                 /// accumulate
                 for(int k = begins[j]; k < ends[j]; ++k) // < or <= not really important
@@ -917,7 +917,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
     }
 
     /// calculate spectra for all channels, but write not all ???
-    for(int i = 0; i < data2.rows(); ++i)
+    for(uint i = 0; i < data2.rows(); ++i)
     {
         calcSpectre(data2[i],
                     outData[i],
@@ -976,7 +976,7 @@ void Spectre::drawWavelets()
 
         for(int chanNum = 0; chanNum < def::nsWOM(); ++chanNum)
         {
-            coefs = countWavelet(signal[chanNum]);
+            coefs = wvlt::countWavelet(signal[chanNum]);
             tempVec.emplace(coefs.maxVal());
             continue;
 
@@ -1023,7 +1023,7 @@ void Spectre::drawWavelets()
                                                       + "_wavelet_" + QString::number(channel)
                                                       + ".jpg");
                 cout << helpString.toStdString() << endl;
-                wavelet(filePath, helpString, channel, def::ns);
+                wvlt::wavelet(filePath, helpString, channel, def::ns);
             }
         }
         if(ui->phaseWaveletButton->isChecked())

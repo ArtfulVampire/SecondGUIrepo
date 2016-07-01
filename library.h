@@ -14,7 +14,7 @@
 #include <QMessageBox>
 #include "coord.h"
 #include "matrix.h"
-#include "smallFuncs.h"
+#include "smallLib.h"
 
 #include <ios>
 #include <iostream>
@@ -45,21 +45,65 @@
 #include <omp.h>
 #endif
 
+
+
+
+namespace wvlt
+{
+#define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
+const int timeStep = ceil(0.1 * def::freq);
+const double freqMax = 20.; // def::rightFreq
+const double freqMin = 5.; // def::leftFreq
+const double freqStep = 0.2;
+const int range = 256;
+
+#if !WAVELET_FREQ_STEP_TYPE
+const int numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqStep)) + 1;
+#else
+const int numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
+#endif
+//wavelets
+
+double morletCos(double const freq1, double const timeShift, double const pot, double const time);
+double morletSin(double const freq1, double const timeShift, double const pot, double const time);
+double morletCosNew(double const freq1,
+                    const double timeShift,
+                    const double time);
+double morletSinNew(double const freq1,
+                    const double timeShift,
+                    const double time);
+
+void wavelet(QString filePath,
+             QString picPath,
+             int channelNumber = 0,
+             int ns = 20);
+
+template <typename signalType = lineType>
+matrix countWavelet(const signalType & inSignal);
+
+void drawWavelet(QString picPath,
+                 const matrix &inData);
+}
+
+
+
+
+
 namespace myLib
 {
 
+
+std::string funcName(std::string in);
 #define TIME(arg)\
     do{\
         auto t0 = std::chrono::high_resolution_clock::now();\
         arg;\
         auto t1 = std::chrono::high_resolution_clock::now();\
-        std::cout << funcName(#arg) \
+        std::cout << myLib::funcName(#arg) \
         << ": time elapsed = "\
         << std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count()/1000.\
         << " sec" << std::endl;\
     }while(false)
-
-std::string funcName(std::string in);
 
 
 // consts
@@ -74,12 +118,12 @@ const QString slash = QString(QDir::separator());
 
 // small shit
 void writeWavFile(const vectType & inData, const QString & outPath);
-int len(QString s); // string length for EDF+ annotations
+int len(const QString & s); // string length for EDF+ annotations
+
 QString rightNumber(const unsigned int input, int N); // prepend zeros
 QString fitNumber(const double & input, int N); // append spaces
 QString fitString(const QString & input, int N); // append spaces
 
-int findChannel(char ** const labelsArr, QString chanName, int ns = 21); // const fail
 QString setFileName(const QString & initNameOrPath); //-> initName_i.ext
 QString getPicPath(const QString & dataPath,
                    const QDir * ExpNameDir = def::dir,
@@ -107,10 +151,10 @@ std::ostream & operator<< (std::ostream &os, matrix toOut);
 
 // containers with no allocators
 template <typename Typ, template <typename> class Cont>
-std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut); // template!
+std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut);
 
 template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont>
-std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut); // template!
+std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut);
 
 char * strToChar(const QString & input);
 FILE * fopen(QString filePath, const char *__modes);
@@ -152,44 +196,6 @@ QColor grayScale(int range, int j);
 
 
 
-//wavelets
-
-double morletCos(double const freq1, double const timeShift, double const pot, double const time);
-double morletSin(double const freq1, double const timeShift, double const pot, double const time);
-double morletCosNew(double const freq1,
-                    const double timeShift,
-                    const double time);
-double morletSinNew(double const freq1,
-                    const double timeShift,
-                    const double time);
-
-#define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
-namespace wvlt
-{
-const int timeStep = ceil(0.1 * def::freq);
-const double freqMax = 20.; // def::rightFreq
-const double freqMin = 5.; // def::leftFreq
-const double freqStep = 0.2;
-const int range = 256;
-
-#if !WAVELET_FREQ_STEP_TYPE
-const int numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqStep)) + 1;
-#else
-const int numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
-#endif
-
-}
-void wavelet(QString filePath,
-             QString picPath,
-             int channelNumber = 0,
-             int ns = 20);
-matrix waveletDiscrete(const vectType & inData);
-
-void drawWavelet(QString picPath,
-                 const matrix &inData);
-
-
-
 
 
 
@@ -203,14 +209,6 @@ void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 e
                           const QString & outFilePath = def::dir->absolutePath()
                                                         + slash + "eyes.txt");
 
-void makeCfgStatic(const QString & FileName = "16sec19ch",
-                   const int & NetLength = def::nsWOM() * def::spLength(),
-                   const QString & outFileDir = def::dir->absolutePath(),
-                   const int & numOfOuts = def::numOfClasses(),
-                   const double & lrate = 0.1,
-                   const double & error = 0.1,
-                   const int & temp = 10);
-
 void makePaStatic(const QString & spectraDir,
                   const int & fold = 2,
                   const double & coeff = 7.,
@@ -219,18 +217,7 @@ void makePaStatic(const QString & spectraDir,
 
 
 
-
-
-
-
-
-
 // dataHandlers
-void makePaFile(const QString & spectraDir,
-                const QStringList & fileNames,
-                const double & coeff,
-                const QString & outFile,
-                const bool svmFlag = false);
 
 void makeFullFileList(const QString & path,
                       QStringList & lst,
@@ -240,16 +227,20 @@ void makeFileLists(const QString & path,
                    std::vector<QStringList> & lst,
                    const QStringList & auxFilters = QStringList());
 
-
-void makeMatrixFromFiles(QString spectraDir,
-                         QStringList fileNames,
-                         double coeff,
-                         double *** outMatrix);
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
-lineType signalFromFile(QString filePath,
-                   int channelNumber,
-                   int ns = def::ns); // unused
+
+void readPaFile(const QString & paFile,
+                matrix & dataMatrix,
+                std::vector<int> types,
+                std::vector<QString> & FileName,
+                std::vector<double> & classCount);
+
+void makePaFile(const QString & spectraDir,
+                const QStringList & fileNames,
+                const double & coeff,
+                const QString & outFile,
+                const bool svmFlag = false);
 
 void readPlainData(const QString & inPath,
                    matrix & data,
@@ -279,12 +270,9 @@ template <typename signalType>
 void writeFileInLine(const QString & filePath,
                      const signalType & outData);
 
-void readPaFile(const QString & paFile,
-                matrix & dataMatrix,
-                std::vector<int> types,
-                std::vector<QString> & FileName,
-                std::vector<double> & classCount);
 
+lineType signalFromFile(const QString & filePath,
+                   int channelNumber); // unused
 
 
 
@@ -292,7 +280,6 @@ void readPaFile(const QString & paFile,
 
 
 // drawings
-
 void drawRealisation(const QString & inPath);
 
 QPixmap drawEeg(const matrix & dataD,
@@ -304,23 +291,23 @@ QPixmap drawEeg(const matrix & dataD,
                 int blueChan = -1,
                 int redChan = -1);
 
-QPixmap drawEeg( const matrix & dataD,
-                 int ns,
-                 int startSlice,
-                 int endSlice,
-                 int freq = def::freq,
-                 const QString & picPath = QString(),
-                 double norm = 1.,
-                 int blueChan = -1,
-                 int redChan = -1);
+QPixmap drawEeg(const matrix & dataD,
+                int ns,
+                int startSlice,
+                int endSlice,
+                int freq = def::freq,
+                const QString & picPath = QString(),
+                double norm = 1.,
+                int blueChan = -1,
+                int redChan = -1);
 
 void drawOneArray(const lineType & array, QString outPath);
+
 
 void drawTemplate(const QString & outPath,
                   bool channelsFlag = true,
                   int width = 1600,
                   int height = 1600);
-
 
 void drawArray(const QString & templPath,
                const matrix & inData,
@@ -355,6 +342,9 @@ void drawArraysInLine(const QString & picPath,
 void drawCutOneChannel(const QString & inSpectraPath,
                        const int numChan);
 
+
+
+/// Mann-Whitney
 int MannWhitney(double * arr1, int len1, double * arr2, int len2, double p = 0.05);
 template <typename signalType = lineType>
 int MannWhitney(const signalType & arr1,
@@ -365,6 +355,8 @@ void countMannWhitney(trivector<int> & outMW,
                                                     + slash + "SpectraSmooth",
                       matrix * averageSpectraOut = nullptr,
                       matrix * distancesOut = nullptr);
+void MannWhitneyFromMakepa(const QString & spectraDir);
+
 
 void drawMannWitney(const QString & templPath,
                     const trivector<int> & inMW,
@@ -380,24 +372,26 @@ void drawMannWitneyInLine(const QString & picPath,
 
 
 
-
-
-
-
-
-
-// maps drawings
-void splineCoeffCount(double * const inX, double * const inY, int dim, double ** outA, double ** outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
-void splineCoeffCount(const vectType & inX,
-                      const vectType & inY,
+/// maps + drawings
+void splineCoeffCount(const lineType & inX,
+                      const lineType & inY,
                       int dim,
-                      vectType & outA,
-                      vectType & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
-double splineOutput(double * const inX, double * const inY, int dim, double * A, double *B, double probeX);
+                      lineType & outA,
+                      lineType & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+double splineOutput(const lineType & inX,
+                    const lineType & inY,
+                    int dim,
+                    const lineType & A,
+                    const lineType & B,
+                    double probeX);
 
-QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour = true);
+QColor mapColor(double minMagn, double maxMagn,
+                const matrix & helpMatrix,
+                int numX, int numY,
+                double partX, double partY,
+                bool colour = true);
 // old unused
-void drawMap      (double ** &matrixA,
+void drawMap      (const matrix & matrixA,
                    double maxAbs,
                    QString outDir,
                    QString outName,
@@ -459,14 +453,9 @@ signalType four2(const signalType & inRealData, int nn = def::fftLength, int isi
 void four3(std::valarray<std::complex<double>> & inputArray);
 void four3(std::valarray<double> & inputRealArray);
 
-
-template <typename signalType = lineType>
-matrix countWavelet(const signalType & inSignal);
-
 template <typename signalType = lineType>
 double fractalDimension(const signalType &arr,
-                        const QString &picPath = QString());
-
+                        const QString & picPath = QString());
 
 template <typename signalType = lineType, typename retType = lineType>
 retType hilbert(const signalType & arr,
@@ -491,8 +480,6 @@ void kernelEst(const signalType & arr, QString picPath);
 template <typename signalType = lineType>
 void histogram(const signalType & arr, int numSteps, QString picPath);
 
-
-
 template <typename signalType = lineType, typename retType = lineType>
 retType spectre(const signalType & data);
 
@@ -503,7 +490,6 @@ void spectre(const double * data,
 template <typename signalType = lineType, typename retType = lineType>
 retType smoothSpectre(const signalType & inSpectre, const int numOfSmooth);
 
-
 template <typename signalType = lineType>
 void calcSpectre(const signalType & inSignal,
                  signalType & outSpectre,
@@ -512,7 +498,6 @@ void calcSpectre(const signalType & inSignal,
                  const int & Eyes = 0,
                  const double & powArg = 1.);
 
-
 double quantile(double arg);
 void kernelEst(QString filePath, QString picPath);
 
@@ -520,7 +505,6 @@ double rankit(int i, int length, double k = 0.375);
 bool gaussApproval(double * arr, int length); // not finished?
 bool gaussApproval(QString filePath); // not finished?
 bool gaussApproval2(double * arr, int length); // not finished?
-
 
 
 
@@ -549,7 +533,15 @@ double correlation(const Typ &arr1,
                    bool fromZero = false);
 
 
-double independence(double * const signal1, double * const signal2, int length);
+template <typename T>
+double distance(const std::vector<T> & vec1,
+                const std::vector<T> & vec2,
+                const int &dim);
+
+double distance(double const x1, double const y1,
+                double const x2, double const y2);
+
+
 double countAngle(double initX, double initY);
 
 
@@ -604,8 +596,10 @@ void countVectorW(matrix & vectorW,
 
 void dealWithEyes(matrix & inData,
                   const int dimension);
+
 void ica(const matrix & initialData,
-         matrix & matrixA, double eigenValuesTreshold, const double vectorWTreshold);
+         matrix & matrixA,
+         double eigenValuesTreshold, double vectorWTreshold);
 
 void svd(const matrix & initialData,
          matrix & eigenVectors,
@@ -619,60 +613,6 @@ void svd(const matrix & initialData,
 
 template <typename Typ>
 void calcRawFFT(const Typ & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
-
-template <typename T>
-double distance(const std::vector<T> &vec1, const std::vector<T> &vec2, const int &dim);
-
-double distance(double * vec1, double * vec2, const int & dim);
-double distance(double const x1, double const y1, double const x2, double const y2);
-
-double distanceMah(double * & vect, double ** & covMatrixInv, double *&groupMean, int dimension);
-double distanceMah(double * & vect, double ** & group, int dimension, int number);
-double distanceMah(double ** &group1, double ** &group2, int dimension, int number1, int number2);
-void matrixMahCount(double ** &matrix, int number, int dimension, double **&outMat, double *&meanVect);
-
-
-
-
-
-
-
-
-/// old matrices
-template <typename Typ1, typename Typ2, typename Typ3>
-void matrixProduct(const Typ1 & inMat1, const Typ2 & inMat2, Typ3 & outMat, int dimH, int dimL);  //matrix product: out = A(H*H) * B(H*L)
-
-template <typename Typ1, typename Typ2, typename Typ3>
-void matrixProduct(const Typ1 &inMat1, const Typ2 &inMat2, Typ3 & outMat, const int &numRows1, const int &numCols2, const int &numCols1Rows2);  //matrix product: out = A(K*H) * B(H*L)
-
-void matrixProduct(double * &vect, double ** &mat, double * &outVect, int dimVect, int dimMat); //outVect = vect * mat
-void matrixProduct(double ** &mat, double * &vect, double * &outVect, int dimVect, int dimMat); //outVect = mat * vect
-void matrixProduct(double * &vect1, double * &vect2, int dim, double &out);
-void matrixTranspose(double ** &inMat, const int &numRows, const int &numCols, double ** &outMat);
-void matrixTranspose(double ** &inMat, const int &numRowsCols);
-void matrixCopy(double ** &inMat, double ** &outMat, const int &dimH, const int &dimL);
-void matrixInvert(double ** &inMat, const int &size, double **&outMat);
-void matrixInvert(double ** &mat, const int &size);
-void matrixInvertGauss(double ** &mat, const int &size);
-void matrixInvertGauss(double ** &mat, const int &size, double ** &outMat);
-double matrixDet(double ** &matrix, const int &dim);
-double matrixDetB(double ** &matrix, const int &dim);
-void matrixCofactor(double ** &inMatrix, const int &size, const int &numRows, const int &numCols, double ** &outMatrix);
-void matrixSystemSolveGauss(double ** &inMat, double * &inVec, int size, double * &outVec);
-
-double matrixInnerMaxCorrelation(double ** &inMatrix, const int numRows, const int numCols,
-                                 double (*corrFunc)(const double * const &arr1, const double * const &arr2, int length, int t, bool fromZero)
-                                 = &correlation
-        );
-
-double matrixMaxCorrelation(double ** &inMat1, double ** &inMat2, const int &numRows, const int &numCols);
-void matrixCorrelations(double ** &inMat1, double ** &inMat2, const int &numRows, const int &numCols, double *&resCorr);
-
-double ** matrixCreate( const int &i, const int &j);
-void matrixCreate(double *** matrix, const int &i, const int &j);
-void matrixDelete(double *** matrix, const int &i);
-void matrixDelete(int *** matrix, const int &i);
-void matrixPrint(double ** &mat, const int &i, const int &j);
 
 
 
@@ -753,5 +693,10 @@ double errorSammonAdd(const mat & distOld,
 
 
 } // myLib namespace
+
+namespace deprecate
+{
+
+}
 
 #endif // LIBRARY_H

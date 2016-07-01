@@ -21,44 +21,40 @@ LIBS += -fopenmp
 SOURCES += main.cpp\
         mainwindow.cpp \
     cut.cpp \
-    cfg.cpp \
-    net.cpp \
     spectre.cpp \
-    makepa.cpp \
-    eyes.cpp \
-    tempthread.cpp \
-    library.cpp \
     edffile.cpp \
     matrix.cpp \
-    slices.cpp \
-    autos.cpp \
-    ica.cpp \
-    editedf.cpp \
-    clustering.cpp \
-    visualisation.cpp \
     coord.cpp \
-    draws.cpp \
-    dataHandler.cpp \
-    signalProcessing.cpp \
-    smallLib.cpp \
-    deprecate.cpp \
-    customF.cpp
+    mainwindow_autos.cpp \
+    myLib_clustering.cpp \
+    myLib_general.cpp \
+    net_classification.cpp \
+    net_setsgets.cpp \
+    net_successive.cpp \
+    myLib_signalProcessing.cpp \
+    mainwindow_slices.cpp \
+    mainwindow_visualisation.cpp \
+    mainwindow_ica.cpp \
+    mainwindow_editedf.cpp \
+    myLib_draws.cpp \
+    myLib_deprecate.cpp \
+    myLib_dataHandler.cpp \
+    mainwindow_customF.cpp \
+    myLib_smallFuncs.cpp \
+    net.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
-    cfg.h \
     net.h \
     spectre.h \
-    makepa.h \
-    eyes.h \
     qtempevent.h \
     tempthread.h \
     library.h \
     edffile.h \
     matrix.h \
     coord.h \
-    smallFuncs.h \
-    library.h
+    library.h \
+    smallLib.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

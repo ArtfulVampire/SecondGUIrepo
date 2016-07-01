@@ -13,8 +13,6 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QMouseEvent>
-#include "makepa.h"
-#include "cfg.h"
 #include "qtempevent.h"
 #include "tempthread.h"
 #include "library.h"
@@ -47,6 +45,7 @@ private:
     std::vector<int> types;
     std::vector<QString> fileNames;
     std::vector<double> classCount; // really int but...
+    matrix confusionMatrix; // rows - realClass, cols - outClass
 
     double loadDataNorm = 10.;
     lineType averageDatum;
@@ -54,12 +53,10 @@ private:
     std::vector<int> channelsSet;
     std::vector<int> channelsSetExclude;
 
-    matrix confusionMatrix; // rows - realClass, cols - outClass
-
     twovector<lineType> weight;
     std::vector<int> dimensionality; // for backprop - to deprecate
-    std::valarray<double> (*activation)(const std::valarray<double> & in,
-                                        double temp) = smallLib::softmax;
+    std::valarray<double> (*activation)(const std::valarray<double> & in) = smallLib::softmax;
+
 
 //    matrix tempRandomMatrix; //test linear transform
 
@@ -124,7 +121,7 @@ public:
     double getReduceCoeff();
     int getEpoch();
     double getLrate();
-    matrix getConfusionMatrix();
+    const matrix & getConfusionMatrix();
 
     /// change everywhere
     enum class myMode {N_fold, k_fold, train_test,  half_half};
@@ -152,7 +149,6 @@ public:
                   double rdcCoeff = 1.);
     void loadData(const matrix & inMat,
                   const std::vector<int> inTypes);
-    void makeSvmFiles();
     void popBackDatum();
     void pushBackDatum(const lineType & inDatum,
                      const int & inType,
@@ -202,7 +198,6 @@ public slots:
 
     void pca();
     void autoClassificationSimple();
-    void autoPCAClassification();
     void SVM();
     void methodSetParam(int, bool);
     void testDistances();

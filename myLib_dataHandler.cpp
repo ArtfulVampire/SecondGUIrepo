@@ -65,7 +65,7 @@ void writePlainData(const QString outPath,
     }
     else
     {
-        numOfSlices = min(numOfSlices,
+        numOfSlices = min(uint(numOfSlices),
                           data.cols() - start);
     }
 

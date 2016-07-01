@@ -42,7 +42,7 @@ void MainWindow::ICA() //fastICA
     cout << "Ica started: " << helpString << endl;
     readData();
 
-    const int ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
+    const uint ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
     const int dataLength = globalEdf.getDataLen();
 
 
@@ -128,7 +128,6 @@ void MainWindow::ICA() //fastICA
     // ICA itself!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // fastIca wiki - first function
 
-    double sum1;
 
     matrix vectorW(ns, ns);
     countVectorW(vectorW,
@@ -302,7 +301,9 @@ void MainWindow::ICA() //fastICA
     //end componets ordering
 #else
     // norm components to 1-length of mapvector, order by dispersion
-    for(int i = 0; i < ns; ++i) // for each component
+
+    double sum1;
+    for(uint i = 0; i < ns; ++i) // for each component
     {
         sum1 = norma(matrixA.getCol(i));
 
@@ -318,7 +319,7 @@ void MainWindow::ICA() //fastICA
     double sumSquares = 0.; // sum of all dispersions
     vectType explainedVariance;
 
-    for(int i = 0; i < ns; ++i)
+    for(uint i = 0; i < ns; ++i)
     {
         sum1 = variance(components[i]);
         sumSquares += sum1;
@@ -333,7 +334,7 @@ void MainWindow::ICA() //fastICA
     });
 
     int tempIndex;
-    for(int i = 0; i < ns - 1; ++i) // dont move the last
+    for(uint i = 0; i < ns - 1; ++i) // dont move the last
     {
         // swap matrixA cols
 #if MATRICES_ICA_4
@@ -374,7 +375,7 @@ void MainWindow::ICA() //fastICA
         (*it2).second = tempIndex;
     }
 
-    for(int i = 0; i < ns; ++i)
+    for(uint i = 0; i < ns; ++i)
     {
         explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
         cout << "comp = " << i+1 << "\t";
@@ -395,7 +396,7 @@ void MainWindow::ICA() //fastICA
     for(int j = 0; j < dataLength; ++j)
     {
         lineType currCol = components.getCol(j, ns);
-        for(int i = 0; i < ns; ++i)
+        for(uint i = 0; i < ns; ++i)
         {
             sum1 = abs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
                        / centeredMatrix[i][j]);

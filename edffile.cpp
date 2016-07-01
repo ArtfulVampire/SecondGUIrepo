@@ -381,7 +381,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         /// Mitsar and other sheet
         else
         {
-            for(int j = 0; j < coords::lbl19.size(); ++j)
+            for(uint j = 0; j < coords::lbl19.size(); ++j)
             {
                 if(labels[i].contains(coords::lbl19[j]) &&
                    !labels[i].contains("EEG"))
@@ -787,7 +787,7 @@ void edfFile::writeMarker(const double & currDatum,
 void edfFile::handleAnnotations(const int & currNs,
                                 const int & currentTimeIndex,
                                 QString helpString,
-                                vector <QString> annotations)
+                                std::vector <QString> annotations)
 {
 
 //    return; // I dont care
@@ -1356,9 +1356,9 @@ void edfFile::cleanFromEyes(QString eyesPath,
         }
     }
 #else
-    for(int i = 0; i < coefs.rows(); ++i)
+    for(uint i = 0; i < coefs.rows(); ++i)
     {
-        for(int k = 0; k < coefs.cols(); ++k)
+        for(uint k = 0; k < coefs.cols(); ++k)
         {
 #if DATA_POINTER
             /// make valarray ?
@@ -1575,7 +1575,7 @@ void edfFile::setLabels(char ** inLabels)
     }
 }
 
-void edfFile::setLabels(const vector<QString> & inLabels)
+void edfFile::setLabels(const std::vector<QString> & inLabels)
 {
     if(this->ns != inLabels.size())
     {
@@ -1593,7 +1593,7 @@ void edfFile::setLabels(const vector<QString> & inLabels)
 /// exceptions
 void edfFile::setChannels(const vector<edfChannel> & inChannels)
 {
-    for(int i = 0; i < inChannels.size(); ++i)
+    for(uint i = 0; i < inChannels.size(); ++i)
     {
         this->channels[i] = inChannels[i];
     }
@@ -1756,7 +1756,7 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
     matrixProduct(matrixW,
                   fil.getData(),
                   newData,
-                  def::nsWOM()); // w/o markers from globalEdf data
+                  uint(def::nsWOM())); // w/o markers from globalEdf data
 
     newData.push_back(fil.getData()[fil.getMarkChan()]); //copy markers
     fil.writeOtherData(newData, newEdfPath);

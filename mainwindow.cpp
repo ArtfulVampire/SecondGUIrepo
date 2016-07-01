@@ -311,7 +311,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(showCountSpectra()));
 
-    QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(showEyes()));
+    QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(processEyes()));
 
     QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
                      this, SLOT(cleanEdfFromEyesSlot()));
@@ -411,32 +411,32 @@ void MainWindow::showCountSpectra()
     sp->show();
 }
 
-void MainWindow::showEyes()
+void MainWindow::processEyes()
 {
     const edfFile & fil = globalEdf;
-//    vector<int> eegs;
-    vector<int> eogs;
+    std::vector<int> eegs;
+    std::vector<int> eogs;
     for(int i = 0; i < fil.getNs(); ++i)
     {
-        if(fil.getLabels()[i].contains("EOG"))
+        const auto & labl = fil.getLabels()[i];
+        if(labl.contains("EOG"))
         {
             eogs.push_back(i);
         }
         /// what with A1-A2 and A1-N ???
-//        else if(fil.getLabels()[i].contains("EEG"))
-//        {
-//            eegs.push_back(i);
-//        }
+        else if(labl.contains("EEG"))
+        {
+            if(!labl.contains("A1-A2") &&
+               !labl.contains("A2-A1") &&
+               !labl.contains("A1-N" ) &&
+               !labl.contains("A2-N"))
+            {
+                eegs.push_back(i);
+            }
+        }
     }
+    /// or (eogs, eegs)
     eyesProcessingStatic(eogs); // for first 19 eeg channels
-    return;
-
-/// deprecate
-    Eyes *trololo = new Eyes();
-//    trololo->setAutoProcessingFlag(false); trololo->show(); return;
-    trololo->setAutoProcessingFlag(true);
-    trololo->eyesProcessing();
-    delete trololo;
 }
 
 void MainWindow::showNet()
@@ -450,44 +450,6 @@ void MainWindow::showCut()
     Cut *cut_e = new Cut();
     cut_e->show();
 }
-
-/// deprecate
-void MainWindow::showMakePa() //250 - frequency generality
-{
-    QString helpString;
-    if(def::spStep() == def::freq / pow(2, 12) ||
-       def::spStep() == def::freq / pow(2, 11) )
-    {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash + "SpectraSmooth");
-    }
-    else if(def::spStep() == def::freq / pow(2, 10))
-    {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash + "SpectraSmooth"
-                                              + slash + "windows");
-    }
-    else
-    {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath());
-    }
-
-    MakePa *mkPa = new MakePa(helpString);
-    mkPa->show();
-}
-/// deprecate
-void MainWindow::showMakeCfg()
-{
-    QString helpString;
-    if(def::spStep() == def::freq / pow(2, 12) ) helpString = "16sec19ch";
-    else if(def::spStep() == def::freq / pow(2, 10)) helpString = "4sec19ch";
-    else if(def::spStep() == def::freq / pow(2, 11) ) helpString = "8sec19ch";
-    else helpString = "netFile";
-    cfg *config = new cfg(0.10, 0.10, helpString);
-    config->show();
-}
-
-
 
 void MainWindow::setEdfFileSlot()
 {

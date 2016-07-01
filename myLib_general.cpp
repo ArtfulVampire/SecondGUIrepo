@@ -125,6 +125,22 @@ QString getDirPathLib(const QString & filePath)
     return str.left(str.lastIndexOf(slash));
 }
 
+
+QString getFileMarker(const QString & fileName)
+{
+    for(const QString & fileMark : def::fileMarkers)
+    {
+        QStringList lst = fileMark.split(' ', QString::SkipEmptyParts);
+        for(const QString & filter : lst)
+        {
+            if(fileName.contains(filter))
+            {
+                return filter.right(3); // generality markers appearance
+            }
+        }
+    }
+}
+
 QString getExt(const QString & filePath)
 {
     QString helpString = QDir::toNativeSeparators(filePath);
@@ -237,7 +253,7 @@ void eyesProcessingStatic(const vector<int> eogChannels,
         item.prepend(windowsDir + slash);
     }
 
-    const int Size = eogChannels.size() + 1; // usually 3
+    const uint Size = eogChannels.size() + 1; // usually 3
 
     matrix dataE;
 
@@ -253,7 +269,7 @@ void eyesProcessingStatic(const vector<int> eogChannels,
         NumOfSlices += help;
     }
 
-    vector<int> signalNums;
+    std::vector<int> signalNums;
     for(int eogNum : eogChannels)
     {
         signalNums.push_back(eogNum);
@@ -265,24 +281,22 @@ void eyesProcessingStatic(const vector<int> eogChannels,
     for(int k = 0; k < eegChannels.size(); ++k)
     {
         signalNums.push_back(eegChannels[k]);
-        for(int j = 0; j < Size; ++j)
+        for(uint j = 0; j < Size; ++j)
         {
-            for(int z = j; z < Size; ++z)
+            for(uint z = j; z < Size; ++z)
             {
-                matrixInit[j][z] = covariance(  dataE[ signalNums[j] ],
-                                                dataE[ signalNums[z] ],
-                                                NumOfSlices,
-                                                0,
-                                                1) / NumOfSlices;
+                matrixInit[j][z] = prod(dataE[signalNums[j]],
+                        dataE[ signalNums[z]])
+                        / NumOfSlices;
+                // maybe (NumOfSlices-1), but it's not important here
                 if(j != z)
                 {
                     matrixInit[z][j] = matrixInit[j][z];
                 }
-                // maybe (NumOfSlices-1), but it's not important here
             }
         }
         matrixInit.invert();
-        for(int i = 0; i < eogChannels.size(); ++i)
+        for(uint i = 0; i < eogChannels.size(); ++i)
         {
             coefficients[k][i] = - matrixInit[i][eogChannels.size()]
                                  / matrixInit[eogChannels.size()][eogChannels.size()];
@@ -294,21 +308,6 @@ void eyesProcessingStatic(const vector<int> eogChannels,
                     coefficients,
                     "NumOfEegChannels",
                     "NumOfEogChannels");
-//    {
-//        ofstream outStr;
-//        outStr.open(outFilePath.toStdString());
-//        outStr << "NumOfEegChannels " << eegChannels.size() << '\t';
-//        outStr << "NumOfEyesChannels " << eogChannels.size() << endl;
-//        for(int k = 0; k < eegChannels.size(); ++k)
-//        {
-//            for(int i = 0; i < eogChannels.size(); ++i)
-//            {
-//                outStr << doubleRound(coefficients[k][i], 3) << "\t";
-//            }
-//            outStr << endl;
-//        }
-//        outStr.close();
-//    }
 
     cout << "eyesProcessing: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
@@ -611,9 +610,8 @@ double distance(const vector<T> &vec1, const vector<T> &vec2, const int &dim)
 
 
 
-lineType signalFromFile(QString filePath,
-                   int channelNumber,
-                   int ns)
+lineType signalFromFile(const QString & filePath,
+                   int channelNumber)
 {
     matrix tempMat;
     int tempInt;

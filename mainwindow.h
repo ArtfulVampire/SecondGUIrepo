@@ -2,21 +2,19 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-//#include <QtWidgets>
 #include <QWidget>
 #include <QFileDialog>
 #include <QString>
 #include <QStringList>
 #include <QDir>
 #include <QDialogButtonBox>
+#include <QMessageBox>
 
 #include "library.h"
 #include "cut.h"
-#include "cfg.h"
 #include "net.h"
 #include "spectre.h"
-#include "makepa.h"
-#include "eyes.h"
+//#include "eyes.h"
 #include "matrix.h"
 #include "edffile.h"
 
@@ -27,11 +25,7 @@
 #include <stdio.h>
 #include <cmath>
 #include <cstddef>
-
 #include <unistd.h>
-#include <QMessageBox>
-
-//#include <libxml2/libxml/parser.h>
 
 namespace Ui {
     class MainWindow;
@@ -49,14 +43,11 @@ public slots:
     //other widgets
     void showNet();
     void showCountSpectra();
-    void showMakePa();
-    void showMakeCfg();
-    void showEyes();
     void showCut();
-    void setFileMarkers();
 
     //parameters processing
     void setExpName();
+    void setFileMarkers();
     void setNs();
     void changeNsLine(int);
     void setBoxMax(double);
@@ -88,6 +79,7 @@ public slots:
     void cleanEdfFromEyesSlot();
 
     //signals
+    void processEyes();
     void ICA();
     void waveletCount();
     void Bayes();

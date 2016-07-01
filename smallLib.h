@@ -1,5 +1,6 @@
-#ifndef SMALLFUNCS_H
-#define SMALLFUNCS_H
+#pragma once
+#ifndef SMALLLIB_H
+#define SMALLLIB_H
 
 #include "coord.h"
 #include <cmath>
@@ -8,8 +9,6 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
-
-
 
 typedef std::valarray<double> lineType;
 typedef std::vector<double> vectType;
@@ -54,17 +53,21 @@ inline double sigmoid(const double & x, const double & t = 10.)
     return 1. / ( 1. + exp(-x/t) );
 }
 
-inline std::valarray<double> logistic(const std::valarray<double> & in, double temp)
+inline std::valarray<double> logistic(const std::valarray<double> & in)
 {
+    const double temp = 10.;
     return 1. / (1. + exp(-in / temp));
 }
 
-inline std::valarray<double> softmax(const std::valarray<double> & in, double temp = 0.)
+inline std::valarray<double> softmax(const std::valarray<double> & in)
 {
     // -1 for bias
-    double sum = std::accumulate(begin(in), end(in) - 1, 0.,
-                                 [](double init, double val){return init + exp(val);});
-    return exp(in) / sum; // dont care about the last
+    std::valarray<double> tmp = exp(in);
+    double sum = std::accumulate(std::begin(tmp),
+                                 std::end(tmp) - 1,
+                                 0.,
+                                 [](double init, double val){return init + val;});
+    return tmp / sum; // dont care about the last
 
 }
 
@@ -164,7 +167,7 @@ void eraseItems(std::vector<T> & inVect,
     }
     excludeVector.push_back(initSize);
 
-    for(int i = 0; i < excludeVector.size() - 1; ++i)
+    for(int i = 0; i < int(excludeVector.size()) - 1; ++i)
     {
         for(int j = excludeVector[i] - i; j < excludeVector[i + 1] - i - 1; ++j)
         {
@@ -180,4 +183,4 @@ template void eraseItems(std::vector<double> & inVect, const std::vector<int> & 
 } // namespace smallLib
 
 
-#endif // SMALLFUNCS_H
+#endif // SMALLLIB_H

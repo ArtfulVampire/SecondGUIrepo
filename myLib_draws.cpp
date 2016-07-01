@@ -4,6 +4,97 @@
 using namespace std;
 using namespace std::chrono;
 using namespace smallLib;
+
+namespace wvlt
+{
+void drawWavelet(QString picPath,
+                 const matrix & inData)
+{
+    int NumOfSlices = ceil(inData.cols() * wvlt::timeStep);
+    QPixmap pic(NumOfSlices, 1000);
+    pic.fill();
+    QPainter painter;
+    painter.begin(&pic);
+
+    double numb;
+
+    int currFreqNum = 0;
+    int currSliceNum = 0;
+
+    for(double freq = wvlt::freqMax;
+        freq > wvlt::freqMin;
+    #if WAVELET_FREQ_STEP_TYPE==0
+        freq *= wvlt::freqStep
+    #else
+
+        freq -= wvlt::freqStep)
+#endif
+    {
+        currSliceNum = 0;
+        for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
+        {
+            numb = fmin(floor(inData[currFreqNum][currSliceNum] * wvlt::range), wvlt::range);
+
+            //             numb = pow(numb/wvlt::range, 0.8) * wvlt::range; // sligthly more than numb, may be dropped
+
+            painter.setBrush(QBrush(myLib::hueJet(wvlt::range, numb)));
+            painter.setPen(myLib::hueJet(wvlt::range, numb));
+
+#if WAVELET_FREQ_STEP_TYPE==0
+            painter.drawRect( currSlice * pic.width() / NumOfSlices,
+                              pic.height() * (wvlt::freqMax - freq
+                                              + 0.5 * freq *
+                                              (1. - wvlt::freqStep) / wvlt::freqStep)
+                              / (wvlt::freqMax-wvlt::freqMin),
+                              pic.width() * wvlt::timeStep / NumOfSlices,
+                              pic.height() * -0.5 * freq * (1. / wvlt::freqStep - wvlt::freqStep)
+                              / (wvlt::freqMax - wvlt::freqMin) );
+#else
+            painter.drawRect( currSlice * pic.width() / NumOfSlices,
+                              pic.height() * (wvlt::freqMax - freq  - 0.5 * wvlt::freqStep)
+                              / (wvlt::freqMax - wvlt::freqMin),
+                              pic.width() * wvlt::timeStep / NumOfSlices,
+                              pic.height() * wvlt::freqStep / (wvlt::freqMax - wvlt::freqMin));
+#endif
+            ++currSliceNum;
+        }
+        ++currFreqNum;
+
+    }
+    painter.setPen("black");
+
+
+    painter.setFont(QFont("Helvetica", 28, -1, -1));
+    painter.setPen(Qt::DashLine);
+    for(int i = wvlt::freqMax; i > wvlt::freqMin; --i)
+    {
+
+        painter.drawLine(0,
+                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin),
+                         pic.width(),
+                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
+        painter.drawText(0,
+                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
+                         QString::number(i));
+
+    }
+    painter.setPen(Qt::SolidLine);
+    for(int i = 0; i < int(NumOfSlices / def::freq); ++i)
+    {
+        painter.drawLine(pic.width() * i * def::freq / NumOfSlices,
+                         pic.height(),
+                         pic.width() * i * def::freq / NumOfSlices,
+                         pic.height() - 20);
+        painter.drawText(pic.width() * i * def::freq / NumOfSlices - 8,
+                         pic.height() - 2,
+                         QString::number(i));
+
+    }
+    pic.save(picPath, 0, 100);
+    painter.end();
+}
+}
+
 namespace myLib
 {
 
@@ -144,7 +235,12 @@ QColor qcolor(int range, int j)
                   255. * exp(- (j - offB) * (j - offB) / (2 * sigmaB * sigmaB)));
 }
 
-QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, int numY, double partX, double partY, bool colour)
+QColor mapColor(double minMagn,
+                double maxMagn,
+                const matrix & helpMatrix,
+                int numX, int numY,
+                double partX, double partY,
+                bool colour)
 {
     double a[4];
     a[0] = helpMatrix[numY][numX];
@@ -209,7 +305,7 @@ QColor mapColor(double minMagn, double maxMagn, double ** helpMatrix, int numX, 
 
 
 
-void drawMap(const double ** const &matrixA,
+void drawMap(const matrix & matrixA,
              double maxAbs,
              QString outDir,
              QString outName,
@@ -222,8 +318,7 @@ void drawMap(const double ** const &matrixA,
     pic.fill();
     painter.begin(&pic);
 
-    double ** helpMatrix;
-    matrixCreate(&helpMatrix, 5, 5); //generality for ns = 19
+    matrix helpMatrix(5, 5);
 
     int currIndex = 0.;
     for(int i = 0; i < 25; ++i) //generality for ns = 19
@@ -253,11 +348,11 @@ void drawMap(const double ** const &matrixA,
 
     //generality 5 -> ns=19
     //usual approximations
-    for(int x = floor(scale1)*leftCoeff; x < floor(scale1)*rightCoeff; ++x)
+    for(int x = floor(scale1) * leftCoeff; x < floor(scale1) * rightCoeff; ++x)
     {
-        for(int y = floor(scale1)*leftCoeff; y < floor(scale1)*rightCoeff; ++y)
+        for(int y = floor(scale1) * leftCoeff; y < floor(scale1) * rightCoeff; ++y)
         {
-            if(distance(x, y, size/2, size/2) > size/2 ) continue; // make it round
+            if(myLib::distance(x, y, size/2, size/2) > size/2 ) continue; // make it round
 
             numX = floor(x/int(scale1)) ; //1 2
             numY = floor(y/int(scale1)) ; //3 4
@@ -270,9 +365,6 @@ void drawMap(const double ** const &matrixA,
 
     QString helpString = outDir + slash + outName + "_map_" + QString::number(num) + ".png";
     pic.save(helpString, 0, 100);
-
-
-    matrixDelete(&helpMatrix, 5);
 }
 
 void drawMapsICA(const QString &mapsFilePath,
@@ -476,50 +568,39 @@ void drawMapSpline(const matrix & matrixA,
     const double minMagn = helpMatrix.minVal();
     const double maxMagn = helpMatrix.maxVal();
 
-    double ** Ah;
-    matrixCreate(&Ah, 5, 6);
-    double ** Bh;
-    matrixCreate(&Bh, 5, 6);
-    double * inX = new double [dim];
-    double * inY = new double [dim];
-    double * inYv = new double [dim];
-    double * Av = new double [dim - 1];
-    double * Bv = new double [dim - 1];
+    matrix Ah(5, 6);
+    matrix Bh(5, 6);
+    lineType inX(dim);
+    lineType inY(dim);
+    lineType inYv(dim);
+    lineType Av(dim - 1);
+    lineType Bv(dim - 1);
 
-    for(int k = 0; k < dim; ++k)
-    {
-        inX[k] = k; //hope, it's constant
-    }
+    std::iota(std::begin(inX), std::end(inX), 0); //hope, it's constant
+
     for(int i = 1; i < dim - 1; ++i) // number of helpMatrix row
     {
-        for(int k = 0; k < dim; ++k)
-        {
-            inX[k] = k; //not necessary
-            inY[k] = helpMatrix[i][k];
-        }
-        splineCoeffCount(inX, inY, dim, &(Ah[i-1]), &(Bh[i-1])); // horizontal splines coeffs
+        inY = helpMatrix[i];
+        splineCoeffCount(inX, inY, dim, Ah[i - 1], Bh[i - 1]); // horizontal splines coeffs
     }
 
     for(int x = 0; x < picSize; ++x)
     {
-        for(int k = 1; k < dim-1; ++k)
+        for(int k = 1; k < dim - 1; ++k)
         {
-            for(int h = 0; h < dim; ++h) //set inX and inY for k'th row of helpMatrix
-            {
-                inX[h] = h; // not necessary
-                inY[h] = helpMatrix[k][h];
-            }
-            inYv[k] = splineOutput(inX, inY, dim, Ah[k-1], Bh[k-1], x*scale1);
+            inY = helpMatrix[k]; //set inX and inY for k'th row of helpMatrix
+            inYv[k] = splineOutput(inX, inY, dim, Ah[k - 1], Bh[k - 1], x * scale1);
         }
         inYv[0] = 0.;
-        inYv[dim-1] = 0.;
-        splineCoeffCount(inX, inYv, dim, &Av, &Bv);
+        inYv[dim - 1] = 0.;
+        splineCoeffCount(inX, inYv, dim, Av, Bv);
         for(int y = 0; y < picSize; ++y)
         {
-            if(distance(x, y, picSize/2, picSize/2) > picSize * 2. * sqrt(2.)/(dim-1) ) continue;
+            /// round shape
+            if(myLib::distance(x, y, picSize/2, picSize/2) >
+               picSize * 2. * sqrt(2.) / (dim - 1) ) continue;
+
             val = splineOutput(inX, inYv, dim, Av, Bv, y*scale1);
-
-
             if(maxAbs == 0)
             {
                 // "private" limits
@@ -534,6 +615,7 @@ void drawMapSpline(const matrix & matrixA,
                 drawArg = (val + maxAbs)
                         / (2 * maxAbs) * drawRange; // if common maxAbs
             }
+
 
             switch(colorTheme)
             {
@@ -577,12 +659,14 @@ void drawMapSpline(const matrix & matrixA,
 
     if(1) //draw channels locations
     {
+        // zero for absent electrodes
         helpMatrix[1][1] = 0.;
         helpMatrix[1][3] = 0.;
         helpMatrix[1][5] = 0.;
         helpMatrix[5][1] = 0.;
         helpMatrix[5][3] = 0.;
         helpMatrix[5][5] = 0.;
+
         painter.setBrush(QBrush("black"));
         painter1.setBrush(QBrush("black"));
         painter.setPen("black");
@@ -631,16 +715,6 @@ void drawMapSpline(const matrix & matrixA,
         QFile::remove(savePath1);
     }
 #endif
-
-
-
-    matrixDelete(&Ah, 5);
-    matrixDelete(&Bh, 5);
-    delete []inX;
-    delete []inY;
-    delete []inYv;
-    delete []Av;
-    delete []Bv;
 }
 
 
@@ -1474,92 +1548,7 @@ void drawColorScale(QString filePath, int range, ColorScale type, bool full)
 }
 
 
-void drawWavelet(QString picPath,
-                 const matrix & inData)
-{
-    int NumOfSlices = ceil(inData.cols() * wvlt::timeStep);
-    QPixmap pic(NumOfSlices, 1000);
-    pic.fill();
-    QPainter painter;
-    painter.begin(&pic);
 
-    double numb;
-
-    int currFreqNum = 0;
-    int currSliceNum = 0;
-
-    for(double freq = wvlt::freqMax;
-        freq > wvlt::freqMin;
-    #if WAVELET_FREQ_STEP_TYPE==0
-        freq *= wvlt::freqStep
-    #else
-
-        freq -= wvlt::freqStep)
-#endif
-    {
-        currSliceNum = 0;
-        for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
-        {
-            numb = fmin(floor(inData[currFreqNum][currSliceNum] * wvlt::range), wvlt::range);
-
-            //             numb = pow(numb/wvlt::range, 0.8) * wvlt::range; // sligthly more than numb, may be dropped
-
-            painter.setBrush(QBrush(hueJet(wvlt::range, numb)));
-            painter.setPen(hueJet(wvlt::range, numb));
-
-#if WAVELET_FREQ_STEP_TYPE==0
-            painter.drawRect( currSlice * pic.width() / NumOfSlices,
-                              pic.height() * (wvlt::freqMax - freq
-                                              + 0.5 * freq *
-                                              (1. - wvlt::freqStep) / wvlt::freqStep)
-                              / (wvlt::freqMax-wvlt::freqMin),
-                              pic.width() * wvlt::timeStep / NumOfSlices,
-                              pic.height() * -0.5 * freq * (1. / wvlt::freqStep - wvlt::freqStep)
-                              / (wvlt::freqMax - wvlt::freqMin) );
-#else
-            painter.drawRect( currSlice * pic.width() / NumOfSlices,
-                              pic.height() * (wvlt::freqMax - freq  - 0.5 * wvlt::freqStep)
-                              / (wvlt::freqMax - wvlt::freqMin),
-                              pic.width() * wvlt::timeStep / NumOfSlices,
-                              pic.height() * wvlt::freqStep / (wvlt::freqMax - wvlt::freqMin));
-#endif
-            ++currSliceNum;
-        }
-        ++currFreqNum;
-
-    }
-    painter.setPen("black");
-
-
-    painter.setFont(QFont("Helvetica", 28, -1, -1));
-    painter.setPen(Qt::DashLine);
-    for(int i = wvlt::freqMax; i > wvlt::freqMin; --i)
-    {
-
-        painter.drawLine(0,
-                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin),
-                         pic.width(),
-                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
-        painter.drawText(0,
-                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
-                         QString::number(i));
-
-    }
-    painter.setPen(Qt::SolidLine);
-    for(int i = 0; i < int(NumOfSlices / def::freq); ++i)
-    {
-        painter.drawLine(pic.width() * i * def::freq / NumOfSlices,
-                         pic.height(),
-                         pic.width() * i * def::freq / NumOfSlices,
-                         pic.height() - 20);
-        painter.drawText(pic.width() * i * def::freq / NumOfSlices - 8,
-                         pic.height() - 2,
-                         QString::number(i));
-
-    }
-    pic.save(picPath, 0, 100);
-    painter.end();
-}
 
 
 template <typename signalType>

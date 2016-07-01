@@ -8,6 +8,13 @@ using namespace smallLib;
 namespace myLib
 {
 
+double distance(double const x1, double const y1, double const x2, double const y2)
+{
+    return sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
+}
+
+
+
 template <typename Container>
 int indexOfMax(const Container & cont)
 {
@@ -147,7 +154,7 @@ void writeWavFile(const vectType & inData, const QString & outPath)
 }
 
 
-int len(QString s) //lentgh till double \0-byte for EDF+annotations
+int len(const QString & s) //lentgh till double \0-byte for EDF+annotations
 {
     int l = 0;
     for(int i = 0; i < 100500; ++i)
