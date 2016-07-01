@@ -149,11 +149,8 @@ Net::Net() :
     ui->dimensionalityLineEdit->setText("0 20 0");
 
     ui->sizeSpinBox->setValue(6);
-//    QObject::connect(ui->loadNetButton, SIGNAL(clicked()), this, SLOT(readCfg()));
-
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWts()));
 
-//    QObject::connect(ui->loadPaButton, SIGNAL(clicked()), this, SLOT(PaIntoMatrix()));
     QObject::connect(ui->loadPaButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
 
     QObject::connect(ui->learnButton, SIGNAL(clicked()), this, SLOT(learnNet()));
@@ -166,25 +163,15 @@ Net::Net() :
 
     QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWtsSlot()));
 
-    QObject::connect(ui->neuronGasPushButton, SIGNAL(clicked()), this, SLOT(neuronGas()));
-
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
-
-    QObject::connect(ui->drawSammonPushButton, SIGNAL(clicked()), this, SLOT(drawSammon()));
 
     QObject::connect(ui->autoClassButton, SIGNAL(clicked()), this, SLOT(autoClassificationSimple()));
 
     QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(SVM()));
 
-//    QObject::connect(ui->hopfieldPushButton, SIGNAL(clicked()), this, SLOT(Hopfield()));
-
-
-
     QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(reset()));
 
     QObject::connect(ui->distancesPushButton, SIGNAL(clicked()), this, SLOT(testDistances()));
-
-    QObject::connect(ui->optimizeChannelsPushButton, SIGNAL(clicked()), this, SLOT(optimizeChannelsSet()));
 
     QObject::connect(group1, SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setModeSlot(QAbstractButton*, bool)));
     QObject::connect(group2, SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setSourceSlot(QAbstractButton*)));
@@ -461,9 +448,9 @@ void Net::setModeSlot(QAbstractButton * but, bool i)
     }
 }
 
-vector<int> Net::makeLearnIndexSet()
+std::vector<int> Net::makeLearnIndexSet()
 {
-    vector<int> mixNum;
+    std::vector<int> mixNum;
     if(Mode == myMode::train_test)
     {
         for(int i = 0; i < fileNames.size(); ++i)
@@ -664,17 +651,17 @@ void Net::autoClassificationSimple()
 }
 
 
-pair<vector<int>, vector<int>> Net::makeIndicesSetsCross(const vector<vector<int>> & arr,
-                                                         const int numOfFold)
+std::pair<std::vector<int>, std::vector<int>> Net::makeIndicesSetsCross(
+        const std::vector<std::vector<int>> & arr,
+        const int numOfFold)
 {
-    vector<int> learnInd;
-    vector<int> tallInd;
+    std::vector<int> learnInd;
+    std::vector<int> tallInd;
 
     const int fold = ui->foldSpinBox->value();
 
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
-
         for(int j = 0; j < classCount[i]; ++j)
         {
             if(j >= (classCount[i] * numOfFold / fold) &&
@@ -1452,7 +1439,7 @@ void Net::crossClassification()
     const int numOfPairs = ui->numOfPairsBox->value();
     const int fold = ui->foldSpinBox->value();
 
-    vector<vector<int>> arr;
+    std::vector<std::vector<int>> arr;
     arr.resize(def::numOfClasses(), {});
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
@@ -1513,8 +1500,8 @@ void Net::crossClassification()
 
 void Net::halfHalfClassification()
 {
-    vector<int> learnIndices;
-    vector<int> tallIndices;
+    std::vector<int> learnIndices;
+    std::vector<int> tallIndices;
 
     for(int i = 0; i < dataMatrix.rows() / 2; ++i)
     {
@@ -1535,8 +1522,8 @@ void Net::halfHalfClassification()
 void Net::trainTestClassification(const QString & trainTemplate,
                                   const QString & testTemplate)
 {
-    vector<int> learnIndices;
-    vector<int> tallIndices;
+    std::vector<int> learnIndices;
+    std::vector<int> tallIndices;
     for(int i = 0; i < dataMatrix.rows(); ++i)
     {
         if(fileNames[i].contains(trainTemplate))
@@ -1561,7 +1548,7 @@ void Net::trainTestClassification(const QString & trainTemplate,
 
 void Net::leaveOneOut()
 {
-    vector<int> learnIndices;
+    std::vector<int> learnIndices;
     int i = 0;
     adjustLearnRate(ui->lowLimitSpinBox->value(),
                     ui->highLimitSpinBox->value()); /// ~40-60
@@ -1572,11 +1559,21 @@ void Net::leaveOneOut()
 
         /// iota ?
         learnIndices.clear();
+#if 0
+        learnIndices.resize(dataMatrix.rows() - 1);
+        std::iota(std::begin(learnIndices),
+                  std::begin(learnIndices) + i,
+                  0);
+        std::iota(std::begin(learnIndices) + i,
+                  std::end(learnIndices),
+                  i + 1);
+#else
         for(int j = 0; j < dataMatrix.rows(); ++j)
         {
             if(j == i) continue;
             learnIndices.push_back(j);
         }
+#endif
         learnNetIndices(learnIndices);
         tallNetIndices({i});
 
@@ -1588,7 +1585,6 @@ void Net::leaveOneOut()
                             ui->highLimitSpinBox->value());
         }
         ++i;
-
     }
     cout << endl;
     cout << "N-fold cross-validation:" << endl;
@@ -2109,55 +2105,125 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
 }
 
 
+void Net::crossSVM(std::pair<std::vector<int>, std::vector<int>> sets)
+{
+    QString helpString;
+    helpString = def::dir->absolutePath()
+                 + slash + "PA"
+                 + slash + "svmAll";
+    ofstream outStream(helpString.toStdString());
+    for(int j = 0; j < 2; ++j)
+    {
+//        helpString = def::dir->absolutePath()
+//                     + slash + "PA"
+//                     + slash + "svm" + QString::number(j+1);
+//        ofstream outStream(helpString.toStdString());
+
+        std::vector<int> & currentSet = (j == 0) ? sets.first : sets.second;
+        for(int i = 0; i < currentSet.size(); ++i)
+        {
+            outStream << myLib::typeOfFileName(fileNames[currentSet[i]]) << ' ';
+            for(int l = 0; l < dataMatrix.cols(); ++l)
+            {
+                outStream << l << ':' << doubleRound(dataMatrix[currentSet[i]][l], 4) << ' ';
+            }
+            outStream << endl;
+        }
+//        outStream.close();
+    }
+    outStream.close();
+
+
+    helpString = "cd "
+                 + def::dir->absolutePath() + slash + "PA"
+                 + " && svm-train -q "
+                 + " -v " + QString::number(ui->foldSpinBox->value())
+                 + " -t " + QString::number(ui->svmKernelSpinBox->value())
+                 + " svmAll >> output1";
+    system(helpString.toStdString().c_str());
+return;
+
+
+
+
+    helpString = def::dir->absolutePath()
+                 + slash + "PA"
+                 + slash + "svmCommands";
+//    ofstream outStr(helpString.toStdString());
+    helpString = "cd "
+                 + def::dir->absolutePath() + slash + "PA"
+                 + " && svm-train -q -t " + QString::number(ui->svmKernelSpinBox->value())
+                 + " svm1"
+                 + " && svm-predict svm2 svm1.model output >> output1";
+//    outStr << helpString << endl << endl;
+    system(helpString.toStdString().c_str());
+
+    helpString = "cd "
+                 + def::dir->absolutePath() + slash + "PA"
+                 + " && svm-train -q -t " + QString::number(ui->svmKernelSpinBox->value())
+                 + " svm2"
+                 + " && svm-predict svm1 svm2.model output >> output1";
+//    outStr << helpString << endl << endl;
+    system(helpString.toStdString().c_str());
+//    outStr.close();
+}
+
 void Net::SVM()
 {
+    /// create/clear PA/output1
     QString helpString = def::dir->absolutePath()
-            + slash + "PA"
-            + slash + "output1";
+                         + slash + "PA"
+                         + slash + "output1";
     FILE * out = fopen(QDir::toNativeSeparators(helpString), "w");
     fclose(out);
-//    QString spectraDir = QDir::toNativeSeparators(def::dir->absolutePath() + slash + "SpectraSmooth"));
-    QString spectraDir = QFileDialog::getExistingDirectory(this,
-                                                           tr("Choose spectra dir"),
-                                                           def::dir->absolutePath());
-    if(spectraDir.isEmpty())
+
+
+
+    const int numOfPairs = ui->numOfPairsBox->value();
+    const int fold = ui->foldSpinBox->value();
+
+    std::vector<std::vector<int>> arr;
+    arr.resize(def::numOfClasses(), {});
+    for(int i = 0; i < dataMatrix.rows(); ++i)
     {
-        spectraDir = QDir::toNativeSeparators(def::dir->absolutePath()
-                                              + slash + "SpectraSmooth");
+        arr[ types[i] ].push_back(i);
     }
-    if(spectraDir.isEmpty())
+    cout << "SVM: cross (max " << numOfPairs << "):" << endl;
+
+    for(int i = 0; i < numOfPairs; ++i)
     {
-        cout << "spectraDir for SVM is empty" << endl;
-        return;
+        cout << i + 1;
+        cout << " "; cout.flush();
+
+        // mix arr for one "pair"-iteration
+        for(int i = 0; i < def::numOfClasses(); ++i)
+        {
+            unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+            std::shuffle(arr[i].begin(),
+                         arr[i].end(),
+                         std::default_random_engine(seed));
+        }
+
+        /// new with indices
+        for(int numFold = 0; numFold < fold; ++numFold)
+        {
+            auto sets = makeIndicesSetsCross(arr, numFold);
+            crossSVM(sets);
+        }
+
+        qApp->processEvents();
+        if(stopFlag)
+        {
+            stopFlag = 0;
+            return;
+        }
     }
-
-    for(int i = 0; i < ui->numOfPairsBox->value(); ++i)
-    {
-        makePaStatic(spectraDir,
-                     ui->foldSpinBox->value(),
-                     ui->rdcCoeffSpinBox->value(), true);
-
-        helpString = def::dir->absolutePath() + slash + "PA";
-        helpString.prepend("cd ");
-        helpString += " && svm-train -t "
-                      + QString::number(ui->svmKernelSpinBox->value())
-                      + " svm1 && svm-predict svm2 svm1.model output >> output1";
-        system(helpString.toStdString().c_str());
-
-        helpString = def::dir->absolutePath() + slash + "PA";
-        helpString.prepend("cd ");
-        helpString += " && svm-train -t "
-                      + QString::number(ui->svmKernelSpinBox->value())
-                      + " svm2 && svm-predict svm1 svm2.model output >> output1";
-        system(helpString.toStdString().c_str());
-    }
-
-    helpString = def::dir->absolutePath() + slash + "PA" + slash + "output1";
 
     double helpDouble, average = 0.;
-
+    helpString = def::dir->absolutePath() + slash + "PA" + slash + "output1";
     QFile file(helpString);
     if(!file.open(QIODevice::ReadOnly)) return;
+
     int lines = 0;
     while(!file.atEnd())
     {
@@ -2173,12 +2239,11 @@ void Net::SVM()
     cout << average << endl;
     file.close();
 
-
     ofstream outStr;
     helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash + "results.txt");
     outStr.open(helpString.toStdString(), ios_base::app);
     outStr << "\nSVM\t";
-    outStr << doubleRound(average, 2) << " %" << endl;
+    outStr << doubleRound(average, 1) << " %" << endl;
     outStr.close();
 }
 
@@ -2264,1853 +2329,4 @@ void Net::pca()
                true);
 
     cout << "pca: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
-#if 0
-
-    matrix differenceMatrix (NumberOfVectors, NumberOfVectors);
-    //count distances between different spectre-vectors (projections on first numOfPc PCs)
-    for(int h = 0; h < NumberOfVectors; ++h)
-    {
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            if(ui->sammonComboBox->currentIndex() == 0)
-            {
-                differenceMatrix[h][j] = distance(dataMatrix[h].data(),
-                                                  dataMatrix[j].data(),
-                                                  NetLength);  // raw data
-            }
-            else if(ui->sammonComboBox->currentIndex() == 1)
-            {
-                differenceMatrix[h][j] = distance(pcaMatrix[h],
-                                                  pcaMatrix[j],
-                                                  numOfPc); // by some PC
-            }
-        }
-    }
-
-
-    if(ui->pcaCheckBox->isChecked())
-    {
-        int * vecTypes = new int [NumberOfVectors];
-        for(int i = 0; i < NumberOfVectors; ++i)
-        {
-            vecTypes[i] = dataMatrix[i][NetLength+1];
-        }
-
-        ui->sammonLineEdit->setText("pca");
-
-        Sammon(differenceMatrix, NumberOfVectors, vecTypes);
-
-        delete [] vecTypes;
-        ui->sammonLineEdit->clear();;
-    }
-
-    if(ui->kohonenCheckBox->isChecked())
-    {
-
-        //count average projection on 2 main principal components
-//        numOfPc = 5; //maybe was test
-        double * avProj = new double [numOfPc];
-        for(int j = 0; j < numOfPc; ++j)
-        {
-            avProj[j] = 0.;
-            for(int i = 0; i < NumberOfVectors; ++i)
-            {
-                avProj[j] += centeredMatrix[j][i];
-
-            }
-            avProj[j]/=NumberOfVectors;
-            cout << "averageProjection[" << j  << "] = " << avProj[j] << endl;
-        }
-        ui->sammonLineEdit->setText("kohonen");
-
-        ////////////////// matrix vs double **
-
-        // Kohonen(dataMatrix, eigenVectors, avProj, NumberOfVectors, NetLength);
-
-        delete [] avProj;
-        ui->sammonLineEdit->clear();
-    }
-#endif
-}
-
-/// naive Bayes classifier
-void Net::learnBayesIndices(vector<int> mixNum)
-{
-    QTime myTime;
-    myTime.start();
-
-    int type = 0;
-
-    // apriori probability of classes
-    vector <double> aprioriClass;
-    const double helpMax = *std::max_element(classCount.begin(),
-                                             classCount.end());
-
-    for(int i = 0; i < def::numOfClasses(); ++i)
-    {
-        aprioriClass.push_back(classCount[i] / helpMax);
-    }
-
-}
-
-
-
-
-
-
-
-
-
-
-/// Sammon and sheet
-double errorSammon(double ** distOld, double ** distNew, int size)
-{
-    double sum1_ = 0., sum2_ = 0., ret;
-    for(int i = 0; i < size; ++i)
-    {
-        for(int j = 0; j < i; ++j)
-        {
-            if(distOld[i][j]  != 0.)
-            {
-                sum1_ += distOld[i][j];
-                sum2_ += (distOld[i][j] - distNew[i][j]) * (distOld[i][j] - distNew[i][j])/distOld[i][j];
-            }
-        }
-    }
-    ret = sum2_/double(sum1_);
-
-    return ret;
-}
-
-void refreshDistAll( double ** dist, double ** coordsNew, int size)
-{
-    for(int i = 0; i < size; ++i)
-    {
-        for(int j = 0; j < i; ++j)
-        {
-            dist[i][j] = distance(coordsNew[i], coordsNew[j], 2);
-            dist[j][i] = dist[i][j]; //distance(coordsNew[i], coordsNew[j], 2);
-        }
-    }
-
-
-}
-
-void refreshDist( double ** dist, double ** coordsNew, int size, int i)
-{
-    for(int j = 0; j < size; ++j)
-    {
-        dist[i][j] = distance(coordsNew[i], coordsNew[j], 2);
-        dist[j][i] = dist[i][j];
-    }
-}
-
-void countGradient(double ** coords, double ** distOld, double ** distNew, int size, double * gradient)
-{
-    double delta = 0.05;
-    double tmp1;
-
-    for(int i = 0; i < size; ++i)
-    {
-        tmp1 = coords[i][0];
-        coords[i][0] = tmp1 + delta/2.;
-        refreshDist(distNew, coords, size, i);
-        gradient[2 * i] = errorSammon(distOld, distNew, size);
-
-        coords[i][0] = tmp1 - delta/2.;
-        refreshDist(distNew, coords, size, i);
-        gradient[2 * i] -= errorSammon(distOld, distNew, size);
-        gradient[2 * i] /= delta;
-        coords[i][0] = tmp1;
-
-
-        tmp1 = coords[i][1];
-        coords[i][1] = tmp1 + delta/2.;
-        refreshDist(distNew, coords, size, i);
-        gradient[2 * i+1] = errorSammon(distOld, distNew, size);
-
-        coords[i][1] = tmp1 - delta/2.;
-        refreshDist(distNew, coords, size, i);
-        gradient[2 * i+1] -= errorSammon(distOld, distNew, size);
-        gradient[2 * i+1] /= delta;
-        coords[i][1] = tmp1;
-        refreshDist(distNew, coords, size, i);
-    }
-}
-
-void Net::moveCoordsGradient(double ** coords, double ** distOld, double ** distNew, int size)
-{
-
-    //gradient method
-    double * gradient = new double [size * 2];
-    double lambda = ui->lambdaDoubleSpinBox->value(); // how to estimate - add into UI
-    double num = 0;
-
-    double errorBackup;
-
-    countGradient(coords, distOld, distNew, size, gradient);
-    int j = 0;
-    while(1)
-    {
-        errorBackup = errorSammon(distOld, distNew, size);
-
-        for(int i = 0; i < size; ++i)
-        {
-            coords[i][0] -= gradient[2 * i] * lambda;
-            coords[i][1] -= gradient[2 * i+1] * lambda;
-        }
-        refreshDistAll(distNew, coords, size);
-
-
-        if(errorBackup > errorSammon(distOld, distNew, size))
-        {
-            num = j;
-        }
-        else
-        {
-            for(int i = 0; i < size; ++i)
-            {
-                coords[i][0] += gradient[2 * i] * lambda;
-                coords[i][1] += gradient[2 * i+1] * lambda;
-            }
-            refreshDistAll(distNew, coords, size);
-            break;
-        }
-        ++j;
-        if(j%5 == 4) lambda *= 2;
-    }
-    cout << j  << endl;
-}
-
-void moveCoords(double ** coords, double ** distOld, double ** distNew, int size, int i, int iterationsCount)
-{
-    int num = 10. * (iterationsCount/5. + 1.);
-    double coordTemp1, coordTemp2;
-
-    coordTemp1 = coords[i][0];
-    coordTemp2 = coords[i][1];
-
-    double tmp1,tmp2;
-
-
-    tmp1 = errorSammon(distOld, distNew, size);
-
-    for(int j = 0; j < num; ++j)
-    {
-        tmp2 = coords[i][0];
-        coords[i][0] = 0. + j * coordTemp1 * 2./(num-1) ; //from 0 to 1.5 * coords
-
-        refreshDist(distNew, coords, size, i);
-        if(errorSammon(distOld, distNew, size) > tmp1)
-        {
-            coords[i][0] = tmp2;
-        }
-        else
-        {
-            tmp1 = errorSammon(distOld, distNew, size);
-        }
-        refreshDist(distNew, coords, size, i);
-    }
-
-    tmp1 = errorSammon(distOld, distNew, size);
-    for(int j = 0; j < num; ++j)
-    {
-        tmp2 = coords[i][1];
-        coords[i][1] = 0. + j * coordTemp2 * 2./(num-1);
-
-        refreshDist(distNew, coords, size, i);
-        if(errorSammon(distOld, distNew, size) > tmp1)
-        {
-            coords[i][1] = tmp2;
-        }
-        else
-        {
-            tmp1 = errorSammon(distOld, distNew, size);
-        }
-        refreshDist(distNew, coords, size, i);
-    }
-
-}
-
-//Sammon's projection
-void Net::Sammon(double ** distArr, int size, int * types)
-{
-#if 0
-    srand(time(NULL));
-    double ** distNew = new double * [size];
-    for(int i = 0; i < size; ++i)
-    {
-        distNew[i] = new double [size];
-    }
-
-    coords.resize(size, 3);
-
-    //set random coordinates
-    for(int i = 0; i < size; ++i)
-    {
-        coords[i][0] = (rand()%20 + 10.);
-        coords[i][1] = (rand()%20 + 10.);
-        coords[i][2] = types[i];
-    }
-
-//    double maxDist = 0.;
-    for(int i = 0; i < size; ++i)
-    {
-        for(int j = 0; j < size; ++j)
-        {
-            distNew[i][j] = distance(coords[i], coords[j], 2); //plane euclid distance
-//            maxDist = fmax(distNew[i][j], maxDist);
-        }
-    }
-//    cout << "maxDistanceRandomSet = " << maxDist << endl;
-
-
-
-
-    //coordinate method
-    double tmpError1 = 0.;
-    double tmpError2 = errorSammon(distArr, distNew, size);
-    int iterationsCount = 0;
-
-    int * mixNum = new int [size];
-    for(int i = 0; i < size; ++i)
-    {
-        mixNum[i] = i;
-    }
-    int a1, a2, temp;
-    for(int i = 0; i < size * 5; ++i)
-    {
-        a1 = rand()%size;
-        a2 = rand()%size;
-        temp = mixNum[a1];
-        mixNum[a1] = mixNum[a2];
-        mixNum[a2] = temp;
-    }
-
-
-
-    if(ui->optimizationMethodComboBox->currentIndex() == 0)
-    {
-        cout << "start coordinate method, error = " << tmpError2 << endl;
-        while(1)
-        {
-            tmpError1 = tmpError2; //error before
-            for(int i = 0; i < size; ++i)
-            {
-                //            cout << iterationsCount << "   " << i  << endl;
-                moveCoords(coords, distArr, distNew, size, mixNum[i], iterationsCount);
-                refreshDist(distNew, coords, size, mixNum[i]);
-            }
-            tmpError2 = errorSammon(distArr, distNew, size);
-
-            cout << iterationsCount << " error = " << tmpError2 << endl;
-            ++iterationsCount;
-            if(tmpError2 < 0.05 || (fabs(tmpError1-tmpError2)/tmpError1)<0.002) break;
-        }
-        cout << "NumOfIterations = " << iterationsCount << " error = " << tmpError2 << endl;
-    }
-
-    if(ui->optimizationMethodComboBox->currentIndex() == 1)
-    {
-
-        cout << "start gradient method, error = " << tmpError2 << endl;
-        while(1)
-        {
-            tmpError1 = tmpError2; //error before
-            moveCoordsGradient(coords, distArr, distNew, size);
-            tmpError2 = errorSammon(distArr, distNew, size);
-
-            cout << iterationsCount << " error = " << tmpError2 << endl;
-            ++iterationsCount;
-            if(tmpError2 < 0.05 || (fabs(tmpError1-tmpError2)/tmpError1)<0.002) break;
-        }
-        cout << "NumOfIterations = " << iterationsCount << " error = " << tmpError2 << endl;
-    }
-
-    delete [] mixNum;
-
-    for(int i = 0; i < size; ++i)
-    {
-        delete [] distNew[i];
-    }
-    delete [] distNew;
-
-
-    QMessageBox::information((QWidget * )this, tr("info"), tr("Sammon projection counted"), QMessageBox::Ok);
-#endif
-}
-
-void Net::drawSammon() //uses coords array
-{
-#if 0
-    if(coords == NULL)
-    {
-        cout << "coords array == NULL" << endl;
-        QMessageBox::information((QWidget * )this, tr("warning"), tr("Coords array == NULL"), QMessageBox::Ok);
-        return;
-    }
-
-
-    //draw the points
-    QPixmap pic(1800,1200);
-    pic.fill();
-    QPainter * painter = new QPainter();
-    painter->begin(&pic);
-
-    //axes
-    painter->drawLine(QPointF(0, pic.height()/2.), QPointF(pic.width(), pic.height()/2.));
-    painter->drawLine(QPointF(pic.width()/2., 0), QPointF(pic.width()/2, pic.height()));
-
-    double minX = 0., minY = 0., maxX = 0., maxY = 0., avX,avY, rangeX, rangeY;
-    int rectSize = ui->sizeSpinBox->value();
-
-    double sum1 = 0., sum2 = 0.;
-    minX = coords[0][0];
-    minY = coords[0][1];
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        maxX = fmax(maxX, coords[i][0]);
-        maxY = fmax(maxY, coords[i][1]);
-        minX = fmin(minX, coords[i][0]);
-        minY = fmin(minY, coords[i][1]);
-    }
-    avX = (minX + maxX)/2.;
-    avY = (minY + maxY)/2.;
-
-    rangeX = (maxX - minX)/2.;
-    rangeY = (maxY - minY)/2.;
-
-
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        sum1 = coords[i][0];
-        sum2 = coords[i][1];
-
-//        cout << sum1 << "  " << sum2 << endl;
-
-        painter->setBrush(QBrush("black"));
-        painter->setPen("black");
-
-        if(coords[i][2] == 0)
-        {
-            painter->setBrush(QBrush("blue"));
-            painter->setPen("blue");
-        }
-        if(coords[i][2] == 1)
-        {
-            painter->setBrush(QBrush("red"));
-            painter->setPen("red");
-        }
-        if(coords[i][2] == 2)
-        {
-            painter->setBrush(QBrush("green"));
-            painter->setPen("green");
-        }
-        painter->drawRect(QRectF(QPointF(pic.width()/2. + (sum1-avX)/rangeX * pic.width()/2. - rectSize - avX, pic.height()/2. + (sum2-avY)/rangeY * pic.height()/2. - rectSize - avY), QPointF(pic.width()/2. + (sum1-avX)/rangeX * pic.width()/2. + rectSize  - avX, pic.height()/2. + (sum2-avY)/rangeY * pic.height()/2. + rectSize - avY)));
-
-    }
-
-    QString helpString = def::dir->absolutePath() + slash + "Help" + slash + "Sammon-" + ui->sammonLineEdit->text() + ".jpg";
-
-    cout << helpString.toStdString() << endl;
-    pic.save(helpString, 0, 100);
-
-    painter->end();
-//    delete [] painter;
-    for(int i = 0; i < 3; ++i)
-    {
-        delete [] coords[i];
-    }
-    delete [] coords;
-    cout << "Sammon projection done" << endl;
-    QMessageBox::information((QWidget * )this, tr("info"), tr("Sammon projection drawn"), QMessageBox::Ok);
-#endif
-}
-
-
-double Net::thetalpha(int bmu_, int j_, int step_, double ** arr, int length_)
-{
-    //approximately 20-30 steps
-    double neighbour = 0., alpha = 0., temp = 0., sigma = 0.;
-    alpha = 5./(step_+5.);
-    sigma = 10./(step_+10.);
-    neighbour = exp(- distance(arr[bmu_], arr[j_], length_) * distance(arr[bmu_], arr[j_], length_) / (2. * sigma * sigma));
-    temp = neighbour * alpha;
-//    if(bmu_ == j_) temp = 1.;
-    return temp;
-}
-
-//length - dimension of input vectors
-void Net::Kohonen(double ** input, double ** eigenVects, double * averageProjection, int size, int length)
-{
-#if 0
-    srand(time(NULL));
-//    int numOfComponents = SizeOfArray(averageProjection); //=2
-//    cout << "size = " << size << " SizeOfArray(input) = " << SizeOfArray(input) << endl;
-
-//    int sqrLen = floor(sqrt(size)) + 1;
-    int sqrLen = 10;
-    int numOfNodes = sqrLen * sqrLen;
-
-    //set the coords
-    double ** coordsKohonen = new double * [numOfNodes];
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        coordsKohonen[i] = new double [2];
-
-        coordsKohonen[i][0] = (i%sqrLen);
-        coordsKohonen[i][1] = floor(i/sqrLen);
-    }
-
-    //set the weights
-    double a1,a2;
-    double ** weightsKohonen = new double * [numOfNodes];
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        weightsKohonen[i] = new double [length+1]; //+ type
-
-        //+- 10%
-        a1 = (0.9 + 0.05 * (rand()%41)/10.);
-        a2 = (0.9 + 0.05 * (rand()%41)/10.);
-        for(int j = 0; j < length; ++j)
-        {
-            weightsKohonen[i][j] = averageProjection[0] * a1 * eigenVects[j][0]  + averageProjection[1] * a2 * eigenVects[j][1];
-//            cout << weightsKohonen[i][j] << endl; //OK
-        }
-    }
-
-    int * mixNum = new int [size];
-    int tmp1, tmp2, buf;
-    double minDist;
-    int * bmu = new int [size]; //num of bet match neuron
-
-    double * distances = new double [numOfNodes];
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        distances[i] = 0.;
-    }
-
-    double error = 0., tempError = 0.;
-
-    int step = 0;
-    while(1)
-    {
-
-        //mix the order
-        for(int i = 0; i < size; ++i)
-        {
-            mixNum[i] = i;
-        }
-
-
-        for(int i = 0; i < 5 * size; ++i)
-        {
-            tmp1 = rand()%(size);
-            tmp2 = rand()%(size);
-            buf = mixNum[tmp2];
-            mixNum[tmp2] = mixNum[tmp1];
-            mixNum[tmp1] = buf;
-        }
-
-        //for every inputVector
-        for(int i = 0; i < size; ++i)
-        {
-
-            //find BMU
-            for(int j = 0; j < numOfNodes; ++j)
-            {
-                distances[j] = distance(input[mixNum[i]], weightsKohonen[j], length);
-                if(j == 0)
-                {
-                    minDist = distances[j]; bmu[mixNum[i]] = j;
-                }
-                else
-                {
-                    if(distances[j] < minDist)
-                    {
-                        minDist = distances[j];
-                        bmu[mixNum[i]] = j;
-                        weightsKohonen[j][length] = input[mixNum[i]][NetLength+1];
-                    }
-                }
-            }
-
-
-            for(int j = 0; j < numOfNodes; ++j)
-            {
-                //adjust the weights
-                for(int k = 0; k<length; ++k)
-                {
-                     weightsKohonen[j][k] += thetalpha(bmu[mixNum[i]], j, step, coordsKohonen, 2) * (input[mixNum[i]][k] - weightsKohonen[j][k]);
-                }
-
-                //adjust the coords???
-                coordsKohonen[j][0]  += 0;// theta(bmu[mixNum[i]], j, step) * alpha(step) * (input[mixNum[i]][k] - weightsKohonen[j][k]);
-                coordsKohonen[j][1]  += 0;// theta(bmu[mixNum[i]], j, step) * alpha(step) * (input[mixNum[i]][k] - weightsKohonen[j][k]);
-            }
-        }
-        tempError = error;
-        error = 0.;
-        //count error
-        for(int i = 0; i < size; ++i)
-        {
-            error += distance(input[i], weightsKohonen[bmu[i]], length);
-        }
-        error/=size;
-        cout << step << " " << "error = " << error << endl;
-
-
-
-        ++step;
-        if(step == 100 || error<0.01 || fabs(tempError-error)/error <0.002) break;
-    }
-
-
-
-    double ** distKohonen = new double * [numOfNodes];
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        distKohonen[i] = new double [numOfNodes];
-        for(int j = 0; j < numOfNodes; ++j)
-        {
-            distKohonen[i][j] = distance(weightsKohonen[i], weightsKohonen[j], length);
-//            cout << distKohonen[i][j] << endl; //OK
-        }
-    }
-
-    int * typesKohonen = new int [numOfNodes];
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        typesKohonen[i] = weightsKohonen[i][length];
-        if(typesKohonen[i]  != 0 && typesKohonen[i]  != 1 && typesKohonen[i]  != 2)
-        {
-            cout << "typeKohonen = " << typesKohonen[i] << endl;
-        }
-    }
-    Sammon(distKohonen, numOfNodes, typesKohonen);
-
-
-    delete [] mixNum;
-    delete [] distances;
-    delete [] bmu;
-    for(int i = 0; i < numOfNodes; ++i)
-    {
-        delete [] distKohonen[i];
-        delete [] weightsKohonen[i];
-        delete [] coordsKohonen[i];
-    }
-    delete [] distKohonen;
-    delete [] coordsKohonen;
-    delete [] weightsKohonen;
-    delete [] typesKohonen;
-
-#endif
-
-}
-
-void Net::neuronGas()
-{
-}
-
-
-void Net::optimizeChannelsSet() /// CAREFUL
-{
-#if 0
-    int tempItem;
-    int tempIndex;
-
-    //test
-//    tempItem = channelsSet[0];
-//    channelsSet.remove(0);
-//    channelsSetExclude.push_back(tempItem);
-//    cout << "current set:" << "\n";
-//    for(int i = 0; i < channelsSet.length(); ++i)
-//    {
-//        cout << channelsSet[i] << "  ";
-//    }
-//    cout << endl;
-//    cout << "exclude set:" << "\n";
-//    for(int i = 0; i < channelsSetExclude.length(); ++i)
-//    {
-//        cout << channelsSetExclude[i] << "  ";
-//    }
-//    cout << endl;
-
-
-
-
-//    NetLength = spLength * (NetLength/spLength - 1);
-//    dimensionality[0] = NetLength;
-//    autoClassificationSimple();
-//    cout << "classified\t" << averageAccuracy << endl << endl;
-
-
-
-    spLength = NetLength/ns;
-    channelsSetExclude.clear();
-    autoClassificationSimple();
-    double tempAccuracy = averageAccuracy;
-
-
-    cout << "Init Accuracy = " << averageAccuracy << endl;
-    bool foundFlag = false;
-
-    channelsSet.clear();
-    for(int i = 0; i < 19; ++i)
-    {
-        channelsSet << i;
-    }
-    QList <int> neededChannels;
-    neededChannels.clear();
-
-
-    while(1)
-    {
-
-        cout << endl << "optimization iteration" << endl;
-        foundFlag = false;
-        NetLength = spLength * (NetLength/spLength - 1);
-        dimensionality[0] = NetLength;
-        cout << "Optimizing: NetLength = " << NetLength << endl;
-        cout << "channelsSet.length() = " << channelsSet.length() << endl;
-
-
-
-        tempIndex = -1;
-        for(int i = tempIndex+1; i < channelsSet.length(); ++i)
-        {
-
-            tempItem = channelsSet[i];
-            if(neededChannels.contains(tempItem))
-            {
-                cout << "needed channel[" << i << "] = " << tempItem << endl;
-                continue;
-            }
-
-            channelsSet.removeAt(i);
-            channelsSetExclude.push_back(tempItem);
-
-            //try classify w/o tempitem
-            autoClassificationSimple();
-            channelsSet.insert(i, tempItem);
-            channelsSetExclude.removeLast();
-
-            cout << "classified ch[" << i << "] = " << tempItem << "  accuracy = " << averageAccuracy << endl << endl;
-
-
-            if(averageAccuracy > tempAccuracy + 0.6)
-            {
-                tempAccuracy = averageAccuracy;
-                tempIndex = i;
-                foundFlag = true;
-                break;
-            }
-            else if(averageAccuracy > tempAccuracy)
-            {
-                tempAccuracy = averageAccuracy;
-                tempIndex = i;
-                foundFlag = true;
-            }
-            else if(averageAccuracy < tempAccuracy - 1.5)
-            {
-                neededChannels << tempItem;
-                cout << "new needed channel[" << i << "] = " << tempItem << endl;
-            }
-
-        }
-
-        if(foundFlag)
-        {
-            cout << "removed channel " << channelsSet[tempIndex] << endl;
-            cout << "current accuracy " << tempAccuracy << endl;
-
-            channelsSetExclude.push_back(channelsSet[tempIndex]);
-            channelsSet.removeAt(tempIndex);
-
-        }
-        else
-        {
-            NetLength = spLength * (NetLength/spLength + 1); //// CAREFUL
-            dimensionality[0] = NetLength;
-            break;
-        }
-    }
-
-
-    helpString = def::dir->absolutePath() + "/optimalChannels.txt";
-    outStream.open(helpString.toStdString().c_str(), ios_base::app);
-
-    helpString = def::ExpName;
-    helpString += "\r\nNumOfChannels " + QString::number(channelsSet.length()) + "\n";
-    for(int i = 0; i < channelsSet.length(); ++i)
-    {
-        helpString += QString::number(channelsSet[i] + 1) + "\t"; //count from 1
-    }
-    helpString += "\n";
-    for(int i = 0; i < channelsSet.length(); ++i)
-    {
-        helpString += coords::lbl21[channelsSet[i]] + "\t";
-    }
-    helpString += "\n";
-
-
-    outStream << helpString.toStdString() << endl;
-    outStream.close();
-//    QMessageBox::information((QWidget * )this, tr("Optimization results"), helpString, QMessageBox::Ok);
-#endif
-}
-
-
-#if 0
-void Net::leaveOneOutCL()
-{
-
-    QTime myTime;
-    myTime.start();
-    cout << "leaveOneOutCL started" << endl;
-    NumberOfErrors = new int[def::numOfClasses()];
-    helpString = "";
-    for(int i = 0; i < def::numOfClasses(); ++i)
-    {
-        NumberOfErrors[i] = 0;
-    }
-
-    cl_int clError;
-    cl_device_id device;
-    cl_context context;
-    cl_command_queue queue;
-    cl_program program;
-    cl_kernel leaveOneOutKernel;
-    cl_device_type devType;
-    cl_platform_id platform;
-
-
-    devType = CL_DEVICE_TYPE_CPU;
-
-    clError = clGetPlatformIDs(1,
-                               &platform,
-                               NULL);
-    if(clError != CL_SUCCESS)
-    {
-        cout << "Cannot get platform Id: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-
-
-    // Find the device.
-    clError = clGetDeviceIDs( platform,
-                    devType,
-                    1,
-                    &device,
-                    NULL);
-    if(clError != CL_SUCCESS)
-    {
-        cout << "Error getting device ids: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-
-//    cl_device_fp_config doubleSupport;
-//    cl_int doubleWork = clGetDeviceInfo(device, CL_DEVICE_DOUBLE_FP_CONFIG, sizeof(cl_device_fp_config), &doubleSupport, NULL);
-//    cout << doubleWork << "\tDoubleSupport = " << doubleSupport << endl;
-//    return -2;
-
-//    CL_INVALID_DEVICE;// if device is not valid.
-//    CL_INVALID_VALUE;// if param_name is not one of the supported values or if size in bytes specified by param_value_size is less than size of return type as shown in the table above and param_value is not a NULL value or if param_name is a value that is available as an extension and the corresponding extension is not supported by the device.
-//    CL_OUT_OF_RESOURCES;// if there is a failure to allocate resources required by the OpenCL implementation on the device.
-//    CL_OUT_OF_HOST_MEMORY;// if there is a failure to allocate resources required by the OpenCL implementation on the host.
-
-    // 4. Compute work sizes.
-    cl_uint compute_units;
-    size_t global_work_size;
-    clError = clGetDeviceInfo(device,
-                     CL_DEVICE_MAX_COMPUTE_UNITS,
-                     sizeof(cl_uint),
-                     &compute_units,
-                     NULL);
-    if(clError != CL_SUCCESS)
-    {
-        cout << "Error getting device info: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    cout << "Max compute units = " << compute_units << endl;
-
-    cl_ulong maxConstBufSize;
-    clError = clGetDeviceInfo(device,
-                     CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,
-                     sizeof(cl_ulong),
-                     &maxConstBufSize,
-                     NULL);
-    if(clError != CL_SUCCESS)
-    {
-        cout << "Error getting device info: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    cout << "Max const buffer size = " << maxConstBufSize << " bytes" <<  endl;
-    cout << "it is = " << maxConstBufSize/sizeof(double) << " doubles" <<  endl;
-
-
-
-//    if(compute_units > NumberOfVectors)
-//    {
-//        global_work_size = NumberOfVectors;
-//        local_work_size = 1;
-//    }
-//    else
-//    {
-//        local_work_size = ceil(double(NumberOfVectors)/compute_units);
-//        global_work_size = NumberOfVectors;
-//    }
-
-
-    global_work_size = NumberOfVectors;
-
-
-
-    // Create a context and command queue on that device.
-    context = clCreateContext( NULL,
-                               1,
-                               &device,
-                               NULL, NULL, NULL);
-
-    queue = clCreateCommandQueue(context,
-                                 device,
-                                 0, NULL);
-    // Minimal error check.
-    if( queue == NULL )
-    {
-        cout << "Compute device setup failed" << endl; ;
-        return;
-    }
-
-    // Perform runtime source compilation, and obtain kernel entry point.
-    const char  * kernel_Source == (const char * )kernelFromFile("/home/michael/Qt/Projects/SecondGUI/kernels.cl"); //generality
-    cl_int ret = 0;
-    program = clCreateProgramWithSource( context,
-                                         1,
-                                         &kernel_source,
-                                         NULL, &ret );
-
-
-    cout << "start build program" << endl;
-    clError = clBuildProgram( program, 1, &device, NULL, NULL, NULL);
-    cout << "end build program" << endl;
-    //Tell compiler to dump intermediate .il and .isa GPU files.
-    // 5. Print compiler error messages
-    if(clError != CL_SUCCESS)
-    {
-        cout << "clBuildProgram failed: " << errorMessage(clError) << endl;
-        char buf[0x10000];
-        clGetProgramBuildInfo( program,
-                               device,
-                               CL_PROGRAM_BUILD_LOG,
-                               0x10000,
-                               buf,
-                               NULL);
-        cout << buf << endl;
-        exit(clError);
-    }
-
-    leaveOneOutKernel = clCreateKernel( program, "leaveOneOut", &clError );
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create kernel leaveOneOut: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    cout << "all the preparations done, memory allocation start, elapsed " << myTime.elapsed()/1000. << " sec" << endl;
-    myTime.restart();
-    // Create input, output and debug buffers.
-//    __global double ecrit,
-//    __global double lrate,
-//    __global double error,
-//    __global double temp,
-//    __global double matrix,
-//    __global int NumberOfVectors,
-//    __global int numOfClasses,
-//    __global int NetLength,
-//    __private double ** weight,
-//    __private int * mixNum,
-//    __private double * output,
-//    __private bool answer,
-//    __private double outError,
-//    __private double * outputClass,
-//    __global double * NumberOfErrors,
-//    __private int NumOfThread
-    cl_mem ecritBuf;
-    cl_mem lrateBuf;
-    cl_mem errorBuf;
-    cl_mem tempBuf;
-    cl_mem matrixBuf;
-    cl_mem numOfVectsBuf;
-    cl_mem numOfClassesBuf;
-    cl_mem netLengthBuf;
-    cl_mem weightBuf;
-    cl_mem mixNumBuf;
-    cl_mem outputBuf;
-    cl_mem answerBuf;
-    cl_mem outErrorBuf;
-    cl_mem outputClassBuf;
-    cl_mem numOfErrorsBuf;
-    cl_mem NumOfThreadBuf;
-    cl_mem NumOfVectorToSkipBuf;
-
-
-//    CL_INVALID_CONTEXT;
-//    CL_INVALID_VALUE;
-//    CL_INVALID_BUFFER_SIZE;
-//    CL_INVALID_HOST_PTR;
-//    CL_MEM_OBJECT_ALLOCATION_FAILURE;
-//    CL_OUT_OF_RESOURCES;
-//    CL_OUT_OF_HOST_MEMORY;
-    ecritBuf = clCreateBuffer(context,
-                              CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_double),
-                              &critError,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 0: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    lrateBuf = clCreateBuffer(context,
-                              CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_double),
-                              &learnRate,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 1: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    errorBuf = clCreateBuffer(context,
-                              CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_double),
-                              &Error,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 2: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    tempBuf = clCreateBuffer(context,
-                              CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_double),
-                              &temp,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 2.5: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    double  * matrixArray = new double [NumberOfVectors * (NetLength + 2)];
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        for(int j = 0; j < (NetLength + 2); ++j)
-        {
-            matrixArray[i * (NetLength + 2) + j] = matrix[i][j];
-        }
-    }
-
-    matrixBuf = clCreateBuffer(context,
-                              CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_double) * NumberOfVectors * (NetLength + 2),
-                              matrixArray,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 3: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    numOfVectsBuf = clCreateBuffer(context,
-                              CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_int),
-                              &NumberOfVectors,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 4: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    numOfClassesBuf = clCreateBuffer(context,
-                              CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_int),
-                              &def::numOfClasses(),
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 5: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    netLengthBuf = clCreateBuffer(context,
-                              CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_int),
-                              &NetLength,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 6: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    //privates:
-
-    weightBuf = clCreateBuffer(context,
-                              CL_MEM_READ_WRITE,
-                              sizeof(cl_double) * def::numOfClasses() * (NetLength + 1),
-                              NULL,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 7: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-
-    mixNumBuf = clCreateBuffer(context,
-                              CL_MEM_READ_WRITE,
-                              sizeof(cl_int) * global_work_size,
-                              NULL,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 8: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    outputBuf = clCreateBuffer(context,
-                              CL_MEM_READ_WRITE,
-                              sizeof(cl_double) * def::numOfClasses(),
-                              NULL,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 9: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    answerBuf = clCreateBuffer(context,
-                              CL_MEM_READ_WRITE,
-                              sizeof(cl_bool) * global_work_size,
-                              NULL,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 10: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    outErrorBuf = clCreateBuffer(context,
-                              CL_MEM_READ_WRITE,
-                              sizeof(cl_double) * global_work_size,
-                              NULL,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 11: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    outputClassBuf = clCreateBuffer(context,
-                              CL_MEM_READ_WRITE,
-                              sizeof(cl_double) * def::numOfClasses(),
-                              NULL,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 12: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    //global:
-    numOfErrorsBuf = clCreateBuffer(context,
-                              CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
-                              sizeof(cl_int) * def::numOfClasses(),
-                              &NumberOfErrors,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 13: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    //private:
-    NumOfThreadBuf = clCreateBuffer(context,
-                              CL_MEM_READ_WRITE,
-                              sizeof(cl_int) * global_work_size,
-                              NULL,
-                              &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 14: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    NumOfVectorToSkipBuf = clCreateBuffer(context,
-                                          CL_MEM_READ_WRITE,
-                                          sizeof(cl_int) * global_work_size,
-                                          NULL,
-                                          &clError);
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer 15: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-    else
-    {
-        cout << "Memory buffer created" << endl;
-    }
-
-    cout << "buffers ready, elapsed " << myTime.elapsed()/1000. << " sec" << endl;
-    myTime.restart();
-
-
-
-
-    clSetKernelArg(leaveOneOutKernel, 0, sizeof(ecritBuf), (void * ) &ecritBuf);
-    clSetKernelArg(leaveOneOutKernel, 1, sizeof(lrateBuf), (void * ) &lrateBuf);
-    clSetKernelArg(leaveOneOutKernel, 2, sizeof(errorBuf), (void * ) &errorBuf);
-    clSetKernelArg(leaveOneOutKernel, 3, sizeof(tempBuf), (void * ) &tempBuf);
-    clSetKernelArg(leaveOneOutKernel, 4, sizeof(matrixBuf), (void * ) &matrixBuf);
-    clSetKernelArg(leaveOneOutKernel, 5, sizeof(numOfVectsBuf), (void * ) &numOfVectsBuf);
-    clSetKernelArg(leaveOneOutKernel, 6, sizeof(numOfClassesBuf), (void * ) &numOfClassesBuf);
-    clSetKernelArg(leaveOneOutKernel, 7, sizeof(netLengthBuf), (void * ) &netLengthBuf);
-    clSetKernelArg(leaveOneOutKernel, 8, sizeof(weightBuf), (void * ) &weightBuf);
-    clSetKernelArg(leaveOneOutKernel, 9, sizeof(mixNumBuf), (void * ) &mixNumBuf);
-    clSetKernelArg(leaveOneOutKernel, 10, sizeof(outputBuf), (void * ) &outputBuf);
-    clSetKernelArg(leaveOneOutKernel, 11, sizeof(answerBuf), (void * ) &answerBuf);
-    clSetKernelArg(leaveOneOutKernel, 12, sizeof(outErrorBuf), (void * ) &outErrorBuf);
-    clSetKernelArg(leaveOneOutKernel, 13, sizeof(outputClassBuf), (void * ) &outputClassBuf);
-    clSetKernelArg(leaveOneOutKernel, 14, sizeof(numOfErrorsBuf), (void * ) &numOfErrorsBuf);
-    clSetKernelArg(leaveOneOutKernel, 15, sizeof(NumOfThreadBuf), (void * ) &NumOfThreadBuf);
-    clSetKernelArg(leaveOneOutKernel, 16, sizeof(NumOfVectorToSkipBuf), (void * ) &NumOfVectorToSkipBuf);
-
-
-    cout << "kernelArgs are set, elapsed " << myTime.elapsed()/1000. << " sec" << endl;
-    myTime.restart();
-
-    clEnqueueNDRangeKernel( queue,
-                            leaveOneOutKernel,
-                            1,
-                            NULL,
-                            &global_work_size,
-                            NULL,
-                            0, NULL, NULL);
-
-    clFinish( queue );
-
-
-
-    //    values to look at the results
-//    cl_bool  * returnedAnswer;
-//    cl_double  * returnedError;
-    cl_int  * returnedNumofthread;
-//    cl_int  * returnedNumOfSkipped;
-
-
-//    returnedAnswer = (cl_bool  * ) clEnqueueMapBuffer( queue,
-//                                                  answerBuf,
-//                                                  CL_TRUE,
-//                                                  CL_MAP_READ,
-//                                                  0,
-//                                                  sizeof(cl_bool) * global_work_size,
-//                                                  0, NULL, NULL, &clError );
-//    if (clError != CL_SUCCESS)
-//    {
-//        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
-//        exit(clError);
-//    }
-
-//    returnedError = (cl_double  * ) clEnqueueMapBuffer( queue,
-//                                                  outErrorBuf,
-//                                                  CL_TRUE,
-//                                                  CL_MAP_READ,
-//                                                  0,
-//                                                  sizeof(cl_double) * global_work_size,
-//                                                  0, NULL, NULL, &clError );
-//    if (clError != CL_SUCCESS)
-//    {
-//        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
-//        exit(clError);
-//    }
-
-    returnedNumofthread = (cl_int  * ) clEnqueueMapBuffer( queue,
-                                                  NumOfThreadBuf,
-                                                  CL_TRUE,
-                                                  CL_MAP_READ,
-                                                  0,
-                                                  sizeof(cl_int) * global_work_size,
-                                                  0, NULL, NULL, &clError );
-    if (clError != CL_SUCCESS)
-    {
-        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
-        exit(clError);
-    }
-
-//    returnedNumOfSkipped = (cl_int  * ) clEnqueueMapBuffer( queue,
-//                                                         NumOfVectorToSkipBuf,
-//                                                         CL_TRUE,
-//                                                         CL_MAP_READ,
-//                                                         0,
-//                                                         sizeof(cl_int) * global_work_size,
-//                                                         0, NULL, NULL, &clError );
-//    if (clError != CL_SUCCESS)
-//    {
-//        cout << "Cannot create memory buffer: " << errorMessage(clError) << endl;
-//        exit(clError);
-//    }
-
-    for(int i = 0; i < global_work_size; ++i)
-    {
-//        cout << "NumOfThread = " << returnedNumofthread[i] << " NumOfSkipped = " << returnedNumOfSkipped[i] << "\tError = " << returnedError[i] << "\tAnswer = " << returnedAnswer[i]  << endl;
-        cout << "NumOfThread = " << returnedNumofthread[i]  << endl;
-    }
-
-
-
-    cout << "leaveOneOut ended " << endl;
-
-    cout << "N-fold cross-validation: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
-
-    delete []NumberOfErrors;
-    delete []matrixArray;
-}
-#endif
-
-
-void Net::Hopfield()
-{
-#if 0
-    double maxH = 0.;
-    double * output1 = new double [NetLength];
-    double * output2 = new double [NetLength];
-    const int NumberOfVectors = dataMatrix.rows();
-    MakePa  * mkPa = new MakePa(def::dir->absolutePath() + slash + "SpectraSmooth");
-    mkPa->setRdcCoeff(10);
-    mkPa->makePaSlot();
-
-    PaIntoMatrixByName("all");
-    for(int i = 0; i < NetLength; ++i)
-    {
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            maxH = fmax(fabs(dataMatrix[j][i]), maxH);
-        }
-    }
-    cout << "maxH = " << maxH << endl;
-//    learnNet();
-
-    double ** weightH = new double * [NetLength];
-    for(int i = 0; i < NetLength; ++i)
-    {
-        weightH[i] = new double [NetLength];
-    }
-
-
-    PaIntoMatrixByName("1");
-    for(int i = 0; i < NetLength; ++i)
-    {
-        for(int j = 0; j < NetLength; ++j)
-        {
-            weightH[i][j] = 0.;
-            for(int k = 0; k < NumberOfVectors; ++k)
-            {
-                weightH[i][j] += dataMatrix[k][i] * dataMatrix[k][j];
-            }
-            weightH[i][j] /= NumberOfVectors;
-        }
-    }
-
-
-    int * mixNumH = new int [NetLength];
-    for(int i = 0; i < NetLength; ++i)
-    {
-        mixNumH[i] = i;
-    }
-    int a1,a2,buff;
-    srand(time(NULL));
-
-
-
-    double sumH;
-
-    double * outputClass = new double [def::numOfClasses()];
-//    int type;
-    bool answer;
-    int NumberOfErrorsH = 0;
-    double ** attractorsH = new double * [NumberOfVectors];
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        attractorsH[i] = new double [NetLength+1];
-    }
-
-    for(int i = 0; i < NumberOfVectors; ++i) //number of vector to classify
-    {
-        for(int j = 0; j < NetLength; ++j)
-        {
-            output1[j] = dataMatrix[i][j];
-            output2[j] = dataMatrix[i][j] + 1;
-        }
-
-        for(int j = 0; j < NetLength * 10; ++j)
-        {
-            a1 = rand()%NetLength;
-            a2 = rand()%NetLength;
-            buff = mixNumH[a1];
-            mixNumH[a1] = mixNumH[a2];
-            mixNumH[a2] = buff;
-        }
-        cout << i << " vector Hopfield start" << endl;
-
-        //Hopfield convergence
-        while(distance(output1, output2, NetLength) > 1e-4)
-        {
-            for(int j = 0; j < NetLength; ++j)
-            {
-                output2[j] = output1[j];
-            }
-
-            for(int j = 0; j < NetLength * 5; ++j)
-            {
-                a1 = rand()%NetLength;
-                a2 = rand()%NetLength;
-                buff = mixNumH[a1];
-                mixNumH[a1] = mixNumH[a2];
-                mixNumH[a2] = buff;
-            }
-
-            for(int j = 0; j < NetLength; ++j) //mixNum[j] - number of neuron to recalculate
-            {
-                //asynchronous
-                sumH = 0.;
-                for(int k = 0; k < NetLength; ++k)
-                {
-                    sumH += weightH[mixNumH[j]][k] * output1[k];
-                }
-                output1[mixNumH[j]] = HopfieldActivation(sumH, maxH);
-
-            }
-//            cout << "diff = " << distance(output1, output2, NetLength)  << endl;
-        }
-        for(int j = 0; j < NetLength; ++j)
-        {
-            attractorsH[i][j] = output1[j];
-        }
-        attractorsH[i][NetLength] = dataMatrix[i][NetLength+1];
-
-    }
-
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            if( distance(attractorsH[i], attractorsH[j], NetLength) > 1.) cout << " x  ";
-            else cout << "000 ";
-        }
-        cout << dataMatrix[i][NetLength+1] << endl;
-    }
-//    return;
-//    learnNet();
-
-
-    PaIntoMatrixByName("2");
-
-    for(int i = 0; i < NumberOfVectors; ++i) //number of vector to classify
-    {
-        for(int j = 0; j < NetLength; ++j)
-        {
-            output1[j] = dataMatrix[i][j];
-            output2[j] = dataMatrix[i][j] + 1;
-        }
-
-        for(int j = 0; j < NetLength * 10; ++j)
-        {
-            a1 = rand()%NetLength;
-            a2 = rand()%NetLength;
-            buff = mixNumH[a1];
-            mixNumH[a1] = mixNumH[a2];
-            mixNumH[a2] = buff;
-        }
-        cout << i << " vector Hopfield start" << endl;
-
-        //Hopfield convergence
-        while(distance(output1, output2, NetLength) > 1e-4)
-        {
-            for(int j = 0; j < NetLength; ++j)
-            {
-                output2[j] = output1[j];
-            }
-
-            for(int j = 0; j < NetLength * 5; ++j)
-            {
-                a1 = rand()%NetLength;
-                a2 = rand()%NetLength;
-                buff = mixNumH[a1];
-                mixNumH[a1] = mixNumH[a2];
-                mixNumH[a2] = buff;
-            }
-
-            for(int j = 0; j < NetLength; ++j) //number of neuron
-            {
-                //asynchronous
-                sumH = 0.;
-                for(int k = 0; k < NetLength; ++k)
-                {
-                    sumH += weightH[mixNumH[j]][k] * output1[k];
-                }
-                output1[mixNumH[j]] = HopfieldActivation(sumH, maxH);
-            }
-//            cout << "diff = " << distance(output1, output2, NetLength)  << endl;
-        }
-
-        buff = 0;
-        sumH = distance(output1, attractorsH[0], NetLength);
-
-        for(int j = 0; j < NumberOfVectors; ++j)
-        {
-            if(sumH > distance(output1, attractorsH[j], NetLength))
-            {
-                buff = j;
-                sumH = distance(output1, attractorsH[j], NetLength);
-            }
-//            cout << distance(output1, attractorsH[j], NetLength) << " ";
-        }
-        cout << endl;
-        if(dataMatrix[i][NetLength+1] == attractorsH[buff][NetLength]) answer = true;
-        else answer = false;
-        cout << "classification: dist = " << sumH << " attrNum = " << buff << " class coincidence = " << answer  << endl;
-
-//        //classifying perceptron
-//        type = int(dataMatrix[i][NetLength+1]);
-//        for(int j = 0; j < def::numOfClasses(); ++j) //calculate output //2 = numberOfTypes
-//        {
-//            outputClass[j] = 0.;
-//            for(int h = 0; h < NetLength; ++h)
-//            {
-//                outputClass[j] += weight[j][h] * output1[h];
-//            }
-//            outputClass[j] += weight[j][NetLength] * dataMatrix[i][NetLength];
-//            outputClass[j] = softmax(outputClass[j], temp); // unlinear conformation
-//        }
-//        answer = true;
-//        for(int k = 0; k<def::numOfClasses(); ++k)
-//        {
-//            if(k  != type && outputClass[k] >= outputClass[type])
-//            {
-//                answer = false;
-//            }
-//        }
-//        cout << int(answer) << endl;
-        if(!answer) ++NumberOfErrorsH;
-    }
-    cout << "Percentage right = " << (1. - double(NumberOfErrorsH)/NumberOfVectors) * 100. << " %" << endl;
-
-
-
-
-
-    for(int i = 0; i < NetLength; ++i)
-    {
-        delete [] weightH[i];
-    }
-    delete [] weightH;
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        delete [] attractorsH[i];
-    }
-    delete [] attractorsH;
-
-    delete [] mixNumH;
-    delete [] output1;
-    delete [] output2;
-    delete [] outputClass;
-    delete mkPa;
-#endif
-
-}
-
-
-void Net::prelearnDeepBelief() //uses weights, matrix, dimensionality, numOfLayers
-{
-#if 0
-    /// I dont use this, NEED CHECK weight
-//    int  * mixNum = new int [NumberOfVectors];
-    vector<int> mixNum;
-    const int NumberOfVectors = dataMatrix.rows();
-    const int numOfLayers = dimensionality.size();
-
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        mixNum.push_back(i);
-    }
-    int a1, a2, buffer; //for mixNum mixing
-    int index;
-
-    //weights between current hidden layer and virtual/temp layer
-    double ** tempWeight;
-    matrixCreate(&tempWeight, dimensionality[0] + 1, dimensionality[0] + 1); // +1 for bias
-
-    double ** output = new double * [numOfLayers]; //data and global output together
-    for(int i = 0; i < numOfLayers; ++i)
-    {
-        output[i] = new double [dimensionality[i] + 1];
-    }
-    double ** tempOutput;
-    matrixCreate(&tempOutput, 3, dimensionality[0] + 1);
-
-
-    double ** tempDeltaWeights = new double * [3];
-    for(int i = 0; i < 3; ++i)
-    {
-        tempDeltaWeights[i] = new double [dimensionality[0] + 1];
-    }
-
-//    double * normCoeff = new double [def::numOfClasses()];
-    vector < double > normCoeff;
-    double helpMin = classCount[0];
-    for(int i = 1; i < def::numOfClasses(); ++i)
-    {
-        helpMin = min(helpMin, classCount[i]);
-    }
-    for(int i = 0; i < def::numOfClasses(); ++i)
-    {
-        normCoeff.push_back(helpMin/classCount[i]);
-    }
-
-
-
-
-    double currentError = 2 * ui->critErrorDoubleSpinBox->value();
-    const double temp = ui->tempBox->value();
-    const double learnRate = ui->learnRateBox->value();
-    for(int numLayer = 1; numLayer < numOfLayers - 1; ++numLayer) //for every hidden layer
-    {
-        cout << "layer " << numLayer << " starts to learn" << endl;
-        epoch = 0;
-        //reset tempWeight
-        for(int i = 0; i < dimensionality[0] + 1; ++i)
-        {
-            for(int j = 0; j < dimensionality[0]; ++j)
-            {
-                tempWeight[i][j] = (-500 + rand()%1000)/50000.;
-            }
-        }
-        while(currentError > ui->critErrorDoubleSpinBox->value()
-              && epoch < ui->epochSpinBox->value()) //while not good approximation
-        {
-            srand(time(NULL));
-            currentError = 0.0;
-            for(int i = 0; i < 5 * NumberOfVectors; ++i)
-            {
-                a1 = rand()%(NumberOfVectors);
-                a2 = rand()%(NumberOfVectors);
-                buffer = mixNum[a2];
-                mixNum[a2] = mixNum[a1];
-                mixNum[a1] = buffer;
-            }
-            for(int num = 0; num < NumberOfVectors; ++num)
-            {
-//                cout << num << " "; cout.flush();
-                index = mixNum[num];
-
-                //count input using all previously learned hidden layers
-                //1) set initial Layer
-                for(int j = 0; j < dimensionality[0]; ++j)
-                {
-                    output[0][j] = dataMatrix[index][j];
-                }
-                output[0][dimensionality[0]] = 1.; //bias
-
-                //2) count ascend only on precomputed hidden layers
-                for(int i = 1; i < numLayer; ++i)
-                {
-    //#pragma omp parallel for schedule(dynamic) num_threads(dimensionality[i]) shared(output)
-                    for(int j = 0; j < dimensionality[i]; ++j)
-                    {
-                        output[i][j] = 0.;
-
-                        for(int k = 0; k < dimensionality[i-1] + 1; ++k) //-1 for prev.layer, +1 for bias
-                        {
-                            output[i][j] += weight[i-1][k][j] * output[i-1][k];
-                        }
-
-                        output[i][j] = softmax(output[i][j], temp);
-                    }
-                    output[i][dimensionality[i]] = 1.; //bias, unused for the highest layer
-                }
-
-                memcpy(tempOutput[0], output[numLayer-1], (dimensionality[numLayer-1] + 1) * sizeof(double)); //+1 for bias
-
-                //count outputs in current hidden layer
-                for(int j = 0; j < dimensionality[numLayer]; ++j) //for hidden layer dim[numLayer]
-                {
-                    tempOutput[1][j] = 0.;
-                    for(int k = 0; k < dimensionality[numLayer - 1] + 1; ++k) //for input layer dim[numLayer-1] + bias
-                    {
-                        tempOutput[1][j] += weight[numLayer - 1][k][j] * tempOutput[0][k];
-                    }
-
-                    tempOutput[1][j] = softmax(tempOutput[1][j], temp);
-                }
-                tempOutput[1][dimensionality[numLayer]] = 1.; //bias in hidden layer
-
-
-                //count outputs in virtual/temp layer
-                for(int j = 0; j < dimensionality[numLayer - 1]; ++j) //for virtual/temp output dim[numLayer - 1]
-                {
-                    tempOutput[2][j] = 0.;
-                    for(int k = 0; k < dimensionality[numLayer] + 1; ++k) //for hidden learning layer dim[numLayer] + bias
-                    {
-                        tempOutput[2][j] += tempWeight[k][j] * tempOutput[1][k]; //tempWeight is important
-                    }
-
-                    tempOutput[2][j] = softmax(tempOutput[2][j], temp);
-                }
-//                matrixPrint(tempOutput, 3, 10);
-
-//                cout << "outputs ready" << endl;
-
-
-
-                //error in the last layer
-                for(int j = 0; j < dimensionality[numLayer-1]; ++j) //virtual/temp output layer
-                {
-                    currentError += distance(tempOutput[2], tempOutput[0], dimensionality[numLayer - 1]);
-                }
-
-
-                //count deltaweights
-                for(int j = 0; j < dimensionality[numLayer - 1]; ++j)//for the last virtual/temp layer
-                {
-                    tempDeltaWeights[2][j] = -1./temp * tempOutput[2][j] * (1. - tempOutput[2][j]) * (tempOutput[0][j] - tempOutput[2][j]);
-                }
-
-                //for the only hidden layer
-                for(int j = 0; j < dimensionality[numLayer] + 1; ++j) // + bias weight
-                {
-                    tempDeltaWeights[1][j] = 0.;
-                    for(int k = 0; k < dimensionality[numLayer - 1]; ++k) //connected to the higher-layer
-                    {
-                        tempDeltaWeights[1][j] += tempDeltaWeights[2][k] * tempWeight[j][k]; //tempWeigth
-                    }
-                    tempDeltaWeights[1][j]  *= 1./temp * tempOutput[1][j] * (1. - tempOutput[1][j]);
-                }
-//                cout << "deltaweights ready" << endl;
-
-                //adjust tempWeight
-                for(int j = 0; j < dimensionality[numLayer] + 1; ++j) //hidden
-                {
-                    for(int k = 0; k < dimensionality[numLayer - 1]; ++k) //virtual/temp
-                    {
-                        tempWeight[j][k] -= learnRate * tempDeltaWeights[2][k] * tempOutput[1][j];// * normCoeff[type]; //normCoeff or not?
-                    }
-                }
-                //adjust weight
-                for(int j = 0; j < dimensionality[numLayer - 1] + 1; ++j) //input
-                {
-                    for(int k = 0; k < dimensionality[numLayer]; ++k) //hidden
-                    {
-                        weight[numLayer-1][j][k] -= learnRate  * tempDeltaWeights[1][k] * tempOutput[0][j];// * normCoeff[type]; //normCoeff or not?
-                    }
-                }
-//                cout << "weights ready" << endl;
-                qApp->processEvents();
-                if(stopFlag)
-                {
-                    matrixDelete(&output, numOfLayers);
-                    matrixDelete(&tempDeltaWeights, 3);
-                    matrixDelete(&tempOutput, 3);
-                    matrixDelete(&tempWeight, dimensionality[0] + 1);
-
-                    stopFlag = 0;
-                    return;
-                }
-            }
-
-            ++epoch;
-            currentError /= NumberOfVectors;
-            currentError = sqrt(currentError);
-            cout << endl;
-            cout << "epoch = " << epoch << "\terror = " << currentError << endl;
-            this->ui->currentErrorDoubleSpinBox->setValue(currentError);
-        }
-
-        cout << "layer " << numLayer << " finished to learn" << endl;
-        cout << "epoches = " << epoch << " error = " << currentError << endl;
-    }
-
-    matrixDelete(&output, numOfLayers);
-    matrixDelete(&tempDeltaWeights, 3);
-    matrixDelete(&tempOutput, 3);
-    matrixDelete(&tempWeight, dimensionality[0] + 1);
-#endif
 }

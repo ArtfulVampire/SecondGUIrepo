@@ -11,7 +11,7 @@ bool ntFlag = false;
 int left()  {return fftLimit(def::leftFreq, def::freq, def::fftLength);}
 int right() {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}
 
-double leftFreq = 8.;
+double leftFreq = 5.;
 double rightFreq = 20.;
 
 double freq = 250;

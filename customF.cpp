@@ -61,6 +61,13 @@ void MainWindow::customFunc()
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
+    setEdfFile("/media/michael/Files/Data/AAX/AAX_final.edf");
+//    makePaStatic("/media/michael/Files/Data/AAX/SpectraSmooth",
+//                 2,
+//                 5,
+//                 true);
+//    exit(0);
+
     return;
 #if 0
     /// manual rereference

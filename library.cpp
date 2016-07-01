@@ -479,7 +479,7 @@ void makePaStatic(const QString & spectraDir,
     QString helpString;
     const QString paPath = def::dir->absolutePath()
                           + slash + "PA";
-    vector<QStringList> lst;
+    std::vector<QStringList> lst;
     makeFileLists(spectraDir, lst);
 
     int len[def::numOfClasses()];
@@ -500,7 +500,7 @@ void makePaStatic(const QString & spectraDir,
         Length = min(Length, len[i]);
     }
 
-    vector<vector<int>> arr;
+    std::vector<std::vector<int>> arr;
     arr.resize(def::numOfClasses());
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
@@ -585,7 +585,7 @@ void makePaStatic(const QString & spectraDir,
             }
         }
         helpString = QDir::toNativeSeparators(paPath + slash + "all.pa");
-        makePaFile(spectraDir, listToWrite, coeff, helpString);
+        myLib::makePaFile(spectraDir, listToWrite, coeff, helpString);
     }
 }
 

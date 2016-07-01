@@ -911,7 +911,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
     }
 
     //generality
-    if(def::fftLength - Eyes < def::freq * 0.8) // real signal less than 2.5 seconds
+    if(def::fftLength - Eyes < def::freq * 3.5) // real signal less than 3.5 seconds
     {
         return false;
     }
