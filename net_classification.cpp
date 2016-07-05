@@ -294,8 +294,12 @@ void Net::autoClassification(const QString & spectraDir)
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
-void Net::averageClassification()
+void Net::averageClassification(matrix * inMat)
 {
+    if(inMat == nullptr)
+    {
+        inMat = &confusionMatrix;
+    }
     /// deal with confusionMatrix
 
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
@@ -305,10 +309,10 @@ void Net::averageClassification()
 
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
-        const double num = confusionMatrix[i].sum();
+        const double num = (*inMat)[i].sum();
         if(num != 0.)
         {
-            res << doubleRound(confusionMatrix[i][i] * 100. / num, 2) << '\t';
+            res << doubleRound((*inMat)[i][i] * 100. / num, 2) << '\t';
         }
         else
         {
@@ -322,18 +326,17 @@ void Net::averageClassification()
 
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
-        corrSum += confusionMatrix[i][i];
-        wholeNum += confusionMatrix[i].sum();
+        corrSum += (*inMat)[i][i];
+        wholeNum += (*inMat)[i].sum();
     }
     averageAccuracy = corrSum * 100. / wholeNum;
 
     // kappa
     double pE = 0.; // for Cohen's kappa
-    const double S = confusionMatrix.sum();
+    const double S = (*inMat).sum();
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
-        pE += (confusionMatrix[i].sum() * confusionMatrix.getCol(i).sum()) /
-              (S * S);
+        pE += ((*inMat)[i].sum() * (*inMat).getCol(i).sum()) / pow(S, 2);
     }
     kappa = 1. - (1. - corrSum / wholeNum) / (1. - pE);
 
@@ -342,7 +345,7 @@ void Net::averageClassification()
     res << def::ExpName << endl;
     res.close();
 
-    confusionMatrix.print();
+    (*inMat).print();
     cout << "average accuracy = " << doubleRound(averageAccuracy, 2) << endl;
     cout << "kappa = " << kappa << endl;
 }
@@ -823,6 +826,49 @@ void Net::tallNetIndices(const vector<int> & indices)
     logStream.close();
 }
 
+void Net::learnLDAIndices(const std::vector<int> & indices)
+{
+    const int numCl = def::numOfClasses();
+
+
+    for(int i = 0; i < numCl; ++i)
+    {
+        /// fill learning submatrix
+        matrix oneClass{};
+        for(int ind : indices)
+        {
+            if(types[ind] == i)
+            {
+                oneClass.push_back(dataMatrix[ind]);
+            }
+        }
+        centers[i] = oneClass.averageRow();
+        covMat[i] = matrix::transpose(oneClass) * oneClass;
+        covMat[i].invert(&(dets[i]));
+    }
+}
+void Net::tallLDAIndices(const std::vector<int> & indices)
+{
+    const int numCl = def::numOfClasses();
+
+    matrix localConfusionMatrix(numCl, numCl);
+    lineType output(numCl);
+    int res;
+    for(int ind : indices)
+    {
+        for(int i = 0; i < numCl; ++i)
+        {
+            lineType a = (dataMatrix[ind] - centers[i]);
+            matrix m1(a, 'r');
+            matrix m2(a, 'c');
+            output[i] = - (m1 * covMat[i] * m2)[0][0] - log(dets[i]);
+        }
+        res = indexOfMax(output);
+
+        localConfusionMatrix[types[ind]][res] += 1.;
+    }
+    averageClassification(&localConfusionMatrix);
+}
 
 
 
@@ -832,7 +878,7 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
     const int numOfLayers = dimensionality.size();
     const double temp = ui->tempBox->value();
 
-    vector<valarray<double>> output(numOfLayers);
+    std::vector<std::valarray<double>> output(numOfLayers);
     output[0].resize(dimensionality[0] + 1); // +1 for biases
 
     std::copy(begin(dataMatrix[vecNum]),

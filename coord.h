@@ -4,7 +4,7 @@
 #include <QStringList>
 #include <QDir>
 #include <QColor>
-#define MAXNS 50
+#include <map>
 
 
 
@@ -76,6 +76,7 @@ const std::vector<QString> lbl31_more {"Fp1", "Fp2",
                                        "27", "28", "29",
                                        "34", "35", "36", "37", "38", "39", "40"};
 
+
 }
 
 namespace suc
@@ -133,10 +134,8 @@ namespace def
 //    Atanov
 
     const QString dataFolder = "/media/Files/Data/";
+    const QString XeniaFolder = "/media/Files/Data/Xenia";
     const QString mriFolder = "/media/Files/Data/MRI";
-//    const QString dataFolder = "/media/Files/Data/Feedback/SuccessClass";
-//    const QString dataFolder = "D:/MichaelAtanov/Data";
-//    const QString dataFolder = "D:/";
     const QString GalyaFolder = "/media/Files/Data/Galya";
     const QString DashaFolder = "/media/Files/Data/Dasha/AUDIO";
     const bool opencl = true;
@@ -179,6 +178,80 @@ inline int fftLimit(const double & inFreq,
                     const int & fftL = def::fftLength)
 {
     return ceil(inFreq / sampleFreq * fftL - 0.5);
+}
+
+
+namespace coords
+{
+
+const std::map<int, QString> kyrToLatin{
+    {1072, "a"},
+    {1073, "b"},
+    {1074, "v"},
+    {1075, "g"},
+    {1076, "d"},
+    {1077, "e"},
+    {1078, "zh"},
+    {1079, "z"},
+    {1080, "i"},
+    {1081, "j"},
+    {1082, "k"},
+    {1083, "l"},
+    {1084, "m"},
+    {1085, "n"},
+    {1086, "o"},
+    {1087, "p"},
+    {1088, "r"},
+    {1089, "s"},
+    {1090, "t"},
+    {1091, "u"},
+    {1092, "f"},
+    {1093, "kh"},
+    {1094, "tz"},
+    {1095, "ch"},
+    {1096, "sh"},
+    {1097, "sch"},
+    {1098, ""},
+    {1099, "yi"},
+    {1100, ""},
+    {1101, "e"},
+    {1102, "yu"},
+    {1103, "ya"},
+    {1040, "A"},
+    {1041, "B"},
+    {1042, "V"},
+    {1043, "G"},
+    {1044, "D"},
+    {1045, "E"},
+    {1046, "ZH"},
+    {1047, "Z"},
+    {1048, "I"},
+    {1049, "J"},
+    {1050, "K"},
+    {1051, "L"},
+    {1052, "M"},
+    {1053, "N"},
+    {1054, "O"},
+    {1055, "P"},
+    {1056, "R"},
+    {1057, "S"},
+    {1058, "T"},
+    {1059, "U"},
+    {1060, "F"},
+    {1061, "KH"},
+    {1062, "TZ"},
+    {1063, "CH"},
+    {1064, "SH"},
+    {1065, "SCH"},
+    {1066, ""},
+    {1067, "YI"},
+    {1068, ""},
+    {1069, "E"},
+    {1070, "YU"},
+    {1071, "YA"},
+    {1105, "yo"},
+    {1025, "YO"}
+};
 }
 
 

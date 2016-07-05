@@ -58,11 +58,8 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui \
     cut.ui \
-    cfg.ui \
     net.ui \
-    spectre.ui \
-    makepa.ui \
-    eyes.ui
+    spectre.ui
 
 OTHER_FILES += \
     kernels.cl

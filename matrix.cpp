@@ -53,12 +53,12 @@ matrix::matrix(const lineType & vect, bool orientH)
 }
 matrix::matrix(const lineType & vect, char orient)
 {
-    if(orient == 'h' || orient == 'H')
+    if(orient == 'h' || orient == 'H' || orient == 'r' || orient == 'R')
     {
         this->resize(1, vect.size());
         this->data[0] = vect;
     }
-    else if(orient == 'v' || orient == 'V')
+    else if(orient == 'v' || orient == 'V' || orient == 'c' || orient == 'C')
     {
         this->resize(vect.size(), 1);
         for(uint i = 0; i < vect.size(); ++i)
@@ -260,6 +260,16 @@ matrix matrix::operator -= (const double & val)
     }
     return *this;
 }
+matrix matrix::operator -()
+{
+    matrix res(this->rows(), this->cols());
+
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        res[i] = -this->data[i];
+    }
+    return res;
+}
 
 
 
@@ -307,7 +317,7 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
     /// 15-20% faster than with currCol
     for(uint i = 0; i < dim1; ++i)
     {
-        foru(int j = 0; j < lhs.cols(); ++j)
+        for(uint j = 0; j < lhs.cols(); ++j)
         {
             result[i] += lhs[i][j] * rhs[j];
         }
@@ -315,19 +325,6 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
 #endif //omp
 
 
-
-
-#else
-    /// very slow
-    const matrix temp = matrix::transpose(rhs);
-
-    for(uint i = 0; i < dim1; ++i)
-    {
-        for(uint j = 0; j < dim2; ++j)
-        {
-            result[i][j] = prod(lhs[i], temp[j]);
-        }
-    }
 #endif
     return result;
 }
@@ -369,7 +366,18 @@ lineType operator * (const matrix & lhs, const lineType & rhs)
     return res;
 }
 
+lineType operator * (const lineType & lhs, const matrix & rhs)
+{
+    if(lhs.size() != rhs.rows()) return {};
+    lineType res(rhs.cols());
+    for(uint i = 0; i < lhs.size(); ++i)
+    {
+        res += lhs[i] * rhs[i];
+    }
+    return res;
 
+
+}
 
 matrix operator / (const matrix & lhs, const double & val)
 {
@@ -745,7 +753,7 @@ matrix & matrix::transpose()
     return *this;
 }
 
-matrix & matrix::invert()
+matrix & matrix::invert(double * det)
 {
     if(this->rows() != this->cols())
     {
@@ -763,7 +771,7 @@ matrix & matrix::invert()
     {
         for(uint j = 0; j < size; ++j)
         {
-            tempMat[i][j] = (j==i);
+            tempMat[i][j] = (j == i);
         }
     }
     double coeff;
@@ -791,6 +799,15 @@ matrix & matrix::invert()
             //row[j] -= coeff * row[i] for both matrices
             initMat[j] -= initMat[i] * coeff;
             tempMat[j] -= tempMat[i] * coeff;
+        }
+    }
+
+    if(det != nullptr)
+    {
+        (*det) = 1;
+        for(uint i = 0; i < size; ++i)
+        {
+            (*det) *= initMat[i][i];
         }
     }
 

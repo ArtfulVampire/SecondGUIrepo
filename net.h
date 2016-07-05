@@ -53,6 +53,11 @@ private:
     std::vector<int> channelsSet;
     std::vector<int> channelsSetExclude;
 
+    /// pewpewpewpewpewpewpewpewpewpewpew
+    matrix covMat[3];
+    lineType centers[3];
+    double dets[3];
+
     twovector<lineType> weight;
     std::vector<int> dimensionality; // for backprop - to deprecate
     std::valarray<double> (*activation)(const std::valarray<double> & in) = smallLib::softmax;
@@ -95,16 +100,19 @@ public:
 
     std::pair<int, double> classifyDatum(const int & vecNum);
     void autoClassification(const QString & spectraDir);
-    void averageClassification();
-    void learnNetIndices(std::vector<int> mixNum,
-                         const bool resetFlag = true);
-    void tallNetIndices(const std::vector<int> & indices);
+    void averageClassification(matrix * inMat = nullptr);
     void crossClassification();
     void leaveOneOutClassification();
     void leaveOneOut();
     void halfHalfClassification();
     void trainTestClassification(const QString & trainTemplate = "_train",
                                  const QString & testTemplate = "_test");
+
+    void learnNetIndices(std::vector<int> mixNum,
+                         const bool resetFlag = true);
+    void tallNetIndices(const std::vector<int> & indices);
+    void learnLDAIndices(const std::vector<int> & indices);
+    void tallLDAIndices(const std::vector<int> & indices);
 
 
     void successiveProcessing();

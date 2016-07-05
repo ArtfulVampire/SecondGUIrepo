@@ -437,20 +437,6 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="2">
-     <widget class="QPushButton" name="loadNetButton">
-      <property name="text">
-       <string>Load CFG</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="loadPaButton">
-      <property name="text">
-       <string>Load pa</string>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="1">
      <widget class="QPushButton" name="svmPushButton">
       <property name="text">
@@ -458,38 +444,10 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="testAllButton">
-      <property name="text">
-       <string>Test All</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <widget class="QPushButton" name="distancesPushButton">
-      <property name="text">
-       <string>Test Distances</string>
-      </property>
-     </widget>
-    </item>
     <item row="2" column="0">
      <widget class="QPushButton" name="learnButton">
       <property name="text">
        <string>Learn</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QPushButton" name="stopButton">
-      <property name="text">
-       <string>STOP</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QPushButton" name="drawWtsButton">
-      <property name="text">
-       <string>drawWts</string>
       </property>
      </widget>
     </item>
@@ -561,6 +519,59 @@
          </widget>
         </item>
        </layout>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="2">
+     <widget class="QPushButton" name="loadDataButton">
+      <property name="text">
+       <string>LoadData</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QPushButton" name="distancesPushButton">
+      <property name="text">
+       <string>Test Distances</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QPushButton" name="drawWtsButton">
+      <property name="text">
+       <string>drawWts</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QPushButton" name="stopButton">
+      <property name="text">
+       <string>STOP</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QPushButton" name="testAllButton">
+      <property name="text">
+       <string>Test All</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QCheckBox" name="centerCheckBox">
+        <property name="text">
+         <string>center</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="varianceCheckBox">
+        <property name="text">
+         <string>variance</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

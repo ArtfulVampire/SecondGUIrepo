@@ -151,7 +151,7 @@ Net::Net() :
     ui->sizeSpinBox->setValue(6);
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWts()));
 
-    QObject::connect(ui->loadPaButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
+    QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
 
     QObject::connect(ui->learnButton, SIGNAL(clicked()), this, SLOT(learnNet()));
 
@@ -513,22 +513,6 @@ void Net::PaIntoMatrixByName(const QString & fileName)
                classCount);
 }
 
-void Net::loadDataSlot()
-{
-    QString helpString = QFileDialog::getExistingDirectory((QWidget * )NULL,
-                                                           tr("load data"),
-                                                           def::dir->absolutePath());
-    if(helpString.isEmpty())
-    {
-        QMessageBox::information((QWidget * )this,
-                                 tr("Information"),
-                                 tr("No directory was chosen"),
-                                 QMessageBox::Ok);
-        return;
-    }
-    loadData(helpString, {},
-             ui->rdcCoeffSpinBox->value());
-}
 
 void Net::pushBackDatum(const lineType & inDatum,
                       const int & inType,
@@ -571,23 +555,30 @@ void Net::eraseData(const vector<int> & indices)
 void Net::normalizeDataMatrix()
 {
 #if 1
-    averageDatum = dataMatrix.averageRow();
-    for(int i = 0; i < dataMatrix.rows(); ++i)
+    if(ui->centerCheckBox->isChecked())
     {
-        dataMatrix[i] -= averageDatum;
-    }
-    dataMatrix.transpose();
-    sigmaVector.resize(dataMatrix.rows());
-    for(int i = 0; i < dataMatrix.rows(); ++i)
-    {
-        sigmaVector[i] = sigma(dataMatrix[i]);
-        if(sigmaVector[i] != 0.)
+        averageDatum = dataMatrix.averageRow();
+        for(int i = 0; i < dataMatrix.rows(); ++i)
         {
-            // to equal variance, 10 for reals, 5 winds
-            dataMatrix[i] /= sigmaVector[i] * loadDataNorm;
+            dataMatrix[i] -= averageDatum;
         }
     }
-    dataMatrix.transpose();
+    if(ui->varianceCheckBox->isChecked())
+    {
+
+        dataMatrix.transpose();
+        sigmaVector.resize(dataMatrix.rows());
+        for(int i = 0; i < dataMatrix.rows(); ++i)
+        {
+            sigmaVector[i] = sigma(dataMatrix[i]);
+            if(sigmaVector[i] != 0.)
+            {
+                // to equal variance, 10 for reals, 5 winds
+                dataMatrix[i] /= sigmaVector[i] * loadDataNorm;
+            }
+        }
+        dataMatrix.transpose();
+    }
 #endif
 #if 0
     dataMatrix.transpose();
@@ -652,6 +643,23 @@ void Net::loadData(const QString & spectraPath,
     normalizeDataMatrix();
 }
 
+void Net::loadDataSlot()
+{
+    QString helpString = QFileDialog::getExistingDirectory((QWidget * )NULL,
+                                                           tr("load data"),
+                                                           def::dir->absolutePath());
+    if(helpString.isEmpty())
+    {
+        QMessageBox::information((QWidget * )this,
+                                 tr("Information"),
+                                 tr("No directory was chosen"),
+                                 QMessageBox::Ok);
+        return;
+    }
+    loadData(helpString, {},
+             ui->rdcCoeffSpinBox->value());
+}
+
 
 /// principal component analisys
 /// remake
@@ -666,14 +674,13 @@ void Net::pca()
     matrix centeredMatrix;
     centeredMatrix = matrix::transpose(dataMatrix); // rows = spectral points, cols - vectors
 
-
     // count covariations
     // centered matrix
     for(int i = 0; i < NetLength; ++i)
     {
+        // should be already zero because of loadData - ok
         centeredMatrix[i] -= mean(centeredMatrix[i]);
     }
-
 
     //covariation between different spectra-bins
     double trace = 0.;
@@ -709,6 +716,10 @@ void Net::pca()
     centeredMatrix.transpose();
     matrix pcaMatrix(NumberOfVectors, numOfPc);
     pcaMatrix = centeredMatrix * eigenVectors;
+
+
+    /// pewpewpewpewpewpewpewpewpewpewpewpewpewpewpewpew
+    dataMatrix = pcaMatrix;
 
 
     QString helpString;

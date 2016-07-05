@@ -303,10 +303,6 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->cut_e, SIGNAL(clicked()), this, SLOT(showCut()));
 
-    QObject::connect(ui->makeCFG, SIGNAL(clicked()), this, SLOT(showMakeCfg()));
-
-    QObject::connect(ui->makePA, SIGNAL(clicked()), this, SLOT(showMakePa()));
-
     QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(showNet()));
 
     QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(showCountSpectra()));

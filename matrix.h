@@ -112,6 +112,7 @@ public:
     matrix operator *= (const double & val);
 
     matrix operator /= (const double & other);
+    matrix operator - ();
 
     bool operator == (const matrix & other);
 
@@ -120,7 +121,7 @@ public:
 
     // "private"
     matrix & transpose();
-    matrix & invert();
+    matrix & invert(double * det = nullptr);
     matrix & swapCols(uint i, uint j);
     matrix & swapRows(uint i, uint j);
     matrix & zero();
@@ -146,6 +147,7 @@ matrix operator / (const matrix & lhs, const double & val);
 matrix operator * (const matrix & lhs, const matrix & rhs);
 matrix operator * (const matrix & lhs, const double & val);
 lineType operator * (const matrix & lhs, const lineType & rhs);
+lineType operator * (const lineType & lhs, const matrix & rhs);
 matrix operator - (const matrix & lhs, const matrix & rhs);
 matrix operator - (const matrix & lhs, const double & val);
 

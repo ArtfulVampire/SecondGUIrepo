@@ -782,7 +782,7 @@ void Cut::save()
     else if(myFileType == fileType::edf)
     {
         QString newPath = currentFile;
-        newPath.insert(newPath.lastIndexOf('.') - 1, "_new");
+        newPath.insert(newPath.lastIndexOf('.'), "_new");
         edfFil.writeOtherData(data3, newPath);
     }
 }

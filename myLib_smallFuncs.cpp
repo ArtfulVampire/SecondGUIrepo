@@ -208,6 +208,27 @@ bool areEqualFiles(QString path1, QString path2)
     return true;
 }
 
+void renameFileToLatin(const QString & filePath)
+{
+    QString dirName = getDirPathLib(filePath);
+    QString fileName = getFileName(filePath);
+    QString newFileName;
+    for(const QChar & ch : fileName)
+    {
+        int num = ch.unicode();
+        if(coords::kyrToLatin.find(num) != coords::kyrToLatin.end())
+        {
+            newFileName += coords::kyrToLatin.at(num);
+        }
+        else
+        {
+            newFileName += ch;
+        }
+    }
+    cout << newFileName << endl;
+    QFile::rename(filePath, dirName + slash + newFileName);
+}
+
 void deleteSpaces(const QString & dirPath, const QStringList & filters)
 {
     QDir tmp(dirPath);
@@ -544,7 +565,6 @@ std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut)
     for(auto in : toOut)
     {
         os << in << separ;
-
     }
     return os;
 }

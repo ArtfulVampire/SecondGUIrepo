@@ -61,12 +61,6 @@ void MainWindow::customFunc()
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
-    setEdfFile("/media/michael/Files/Data/AAX/AAX_final.edf");
-//    makePaStatic("/media/michael/Files/Data/AAX/SpectraSmooth",
-//                 2,
-//                 5,
-//                 true);
-//    exit(0);
 
     return;
 #if 0
@@ -138,7 +132,7 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 1
+#if 0
     /// Xenia rereference + cut
 
     const QString pew = "/media/michael/Files/Data/Xenia/Mihalkova_rr";
@@ -153,6 +147,8 @@ void MainWindow::customFunc()
     }
     exit(0);
 #endif
+
+
 
 #if 0
     /// rename files in a dir
@@ -169,7 +165,8 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 1
+
+#if 0
     /// EEG fMRI
     def::ntFlag = true;
 
@@ -225,6 +222,7 @@ void MainWindow::customFunc()
 
 
 #if 0
+    /// Dasha processing
     def::ntFlag = true; /// for Dasha's and EEGMRI
 //    def::ntFlag = false; /// encephalan (+1)
 
@@ -252,6 +250,33 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
+    /// kyrillic to latin
+    ofstream alphabet;
+    QString tmpStr = def::XeniaFolder + slash + "alpha4.txt";
+    alphabet.open(tmpStr.toStdString());
+
+    std::string latin;
+    ifstream alph;
+    tmpStr = def::XeniaFolder + slash + "alpha.txt";
+    alph.open(tmpStr.toStdString());
+
+    for(int offset : {1072, 1040})
+    {
+        for(int i = 0; i < 32; ++i)
+        {
+            alph >> latin;
+            alphabet << "{" << i + offset << ", \"";
+            alph >> latin;
+            alphabet << latin << "\"}," << endl;
+        }
+    }
+    alphabet.close();
+    alph.close();
+    exit(0);
+
+#endif
+
+#if 0
     /// compare data
     edfFile fil;
     fil.readEdfFile(def::DashaFolder + "/Tinyanova/Tinyanova_Varya_Exam_3.edf");
@@ -273,8 +298,8 @@ void MainWindow::customFunc()
     }
 #endif
 
-#if 1
-    /// clean "new" files
+#if 0
+    /// clean "new" Dasha files
     const QString work = def::DashaFolder + "/CHANS/Audio_to_less_out_ALL";
     QDir deer(work);
 

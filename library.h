@@ -131,6 +131,7 @@ QString getPicPath(const QString & dataPath,
 QString getFileName(const QString & filePath, bool withExtension = true);
 bool areEqualFiles(QString path1, QString path2);
 void deleteSpaces(const QString & dirPath, const QStringList & filters = QStringList());
+void renameFileToLatin(const QString & filePath);
 
 QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
