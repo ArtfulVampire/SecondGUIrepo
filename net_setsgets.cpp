@@ -161,6 +161,51 @@ void Net::setActFuncSlot(QAbstractButton * but)
     }
 }
 
+void Net::setClassifier(QAbstractButton * but)
+{
+    if(myClassifier != nullptr)
+    {
+        delete myClassifier;
+    }
+
+    if(but->text() == "ANN")
+    {
+        myClassifier = new ANN();
+        ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+        /// make dim
+        QString helpString = ui->dimensionalityLineEdit->text();
+        QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
+        std::vector<int> dim;
+        for(int i = 1; i < lst.length() - 1; ++i)
+        {
+            dim.push_back(lst[i].toInt());
+        }
+
+        myANN->setDim(dim);
+        myANN->setLrate(ui->learnRateBox->value());
+    }
+    else if(but->text() == "QDA")
+    {
+        myClassifier = new QDA();
+        QDA * myQDA = reinterpret_cast<QDA *>(myClassifier);
+    }
+    else if(but->text() == "SVM")
+    {
+        myClassifier = new SVM();
+        SVM * mySVM = reinterpret_cast<SVM *>(myClassifier);
+        mySVM->setFold(ui->foldSpinBox->value());
+        mySVM->setKernelNum(ui->svmKernelSpinBox->value());
+        mySVM->setNumPairs(ui->numOfPairsBox->value());
+    }
+    else if(but->text() == "LDA")
+    {
+    }
+    myClassifier->setClassCount(classCount);
+    myClassifier->setData(dataMatrix);
+    myClassifier->setFileNames(fileNames);
+    myClassifier->setTypes(types);
+}
+
 void Net::setSourceSlot(QAbstractButton * but)
 {
     if(but->text().contains("Bayes", Qt::CaseInsensitive))

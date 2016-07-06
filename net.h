@@ -20,7 +20,7 @@
 #include <ios>
 #include <unistd.h>
 #include <QTime>
-
+#include "classifier.h"
 
 #include <QMessageBox>
 
@@ -40,6 +40,9 @@ private:
     QButtonGroup  * group2;
     QButtonGroup  * group3;
     QButtonGroup  * group4;
+    QButtonGroup  * group5;
+
+    Classifier * myClassifier;
 
     matrix dataMatrix{}; // biases and types separately
     std::vector<int> types;
@@ -215,12 +218,13 @@ public slots:
 
     void pca();
     void autoClassificationSimple();
-    void SVM();
+    void doSVM();
     void methodSetParam(int, bool);
     void testDistances();
     void setSourceSlot(QAbstractButton*);
     void setModeSlot(QAbstractButton*, bool i);
     void setActFuncSlot(QAbstractButton*);
+    void setClassifier(QAbstractButton*);
 
 
 

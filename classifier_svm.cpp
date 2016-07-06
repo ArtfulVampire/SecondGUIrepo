@@ -34,7 +34,7 @@ void SVM::test(const std::vector<int> & indices)
 
 std::pair<int, double> SVM::classifyDatum(const int & vecNum)
 {
-
+    /// to write!
 }
 
 

@@ -87,6 +87,137 @@ void ANN::setLrate(double inRate)
     learnRate = inRate;
 }
 
+
+
+void ANN::loadVector(const int vecNum, std::valarray<double> & out, int & type)
+{
+    /// out.size() == (*dataMatrix).cols() + 1
+    std::copy(std::begin((*dataMatrix)[vecNum]),
+              std::end((*dataMatrix)[vecNum]),
+              std::begin(out));
+    out[out.size() - 1] = 1.; //bias
+    type = (*types)[vecNum]; // true class
+}
+
+void ANN::countOutput(std::vector<std::valarray<double>> & output)
+{
+    /// switch case
+    if(learnStyl == learnStyle::delta)
+    {
+        countOutputDelta(output);
+    }
+    else if(learnStyl == learnStyle::backprop)
+    {
+        countOutputBackprop(output);
+    }
+}
+
+void ANN::countOutputDelta(std::vector<std::valarray<double>> & output)
+{
+    for(int i = 1; i < dim.size(); ++i)
+    {
+        for(int j = 0; j < dim[i]; ++j) //higher level, w/o bias
+        {
+            output[i][j] = smallLib::prod(weight[i - 1][j], output[i - 1]); // bias included
+        }
+        output[i] = activation(output[i]);
+        output[i][ dim[i] ] = 1.; //bias, unused for the highest layer
+    }
+}
+
+void ANN::countOutputBackprop(std::vector<std::valarray<double>> & output)
+{
+#if 0
+    /// count deltaWeights
+    /// CHECK
+    //count deltaweights (used for backprop only)
+    //for the last layer
+    for(uint j = 0; j < dim[numOfLayers - 1]; ++j)
+    {
+        deltaWeights[numOfLayers-1][j] = -1. / temp
+                                         * output[numOfLayers-1][j]
+                                         * (1. - output[numOfLayers-1][j])
+                * ((type == j) - output[numOfLayers-1][j]); //~0.1
+    }
+
+    //for the other layers, besides the input one, upside->down
+    for(int i = numOfLayers - 2; i >= 1; --i)
+    {
+        for(int j = 0; j < dim[i] + 1; ++j) //+1 for bias
+        {
+            deltaWeights[i][j] = 0.;
+            for(int k = 0; k < dim[i + 1]; ++k) //connected to the higher-layer
+            {
+                deltaWeights[i][j] += deltaWeights[i + 1][k] * weight[i][j][k];
+            }
+            deltaWeights[i][j] *= 1. / temp
+                                  * output[i][j]
+                                  * (1. - output[i][j]);
+        }
+    }
+
+#endif
+
+}
+
+void ANN::moveWeights(const std::vector<std::valarray<double>> & output,
+                      const std::vector<double> & normCoeff,
+                      const int type)
+{
+    if(learnStyl == learnStyle::delta)
+    {
+        for(uint j = 0; j < numCl; ++j)
+        {
+            weight[0][j] += output[0]
+                    * (learnRate * normCoeff[type]
+                       * ((type == j) - output[1][j])
+//                    * (output[1][j] * (1. - output[1][j])) * 6. // derivative
+                    );
+        }
+
+    }
+#if 0
+    else if(learnStyl == learnStyle::backprop)
+    {
+        /// check this sheet
+        // count new weights using deltas
+        for(int i = 0; i < numOfLayers - 1; ++i)
+        {
+            for(int j = 0; j < dim[i] + 1; ++j) // +1 for bias? 01.12.2014
+            {
+                for(int k = 0; k < dim[i + 1]; ++k)
+                {
+                    weight[i][j][k] -= learnRate
+                                       * normCoeff[type]
+                                       * output[i][j]
+                                       * deltaWeights[i + 1][k];
+                }
+            }
+        }
+    }
+#endif
+}
+
+void ANN::countError(std::vector<std::valarray<double>> & output,
+                     int type,
+                     double & currentError)
+{
+    double err = 0.;
+    for(int j = 0; j < dim.back(); ++j)
+    {
+        err += pow((output.back()[j] - int(type == j) ), 2.);
+    }
+    err = sqrt(err);
+    if(errType == errorNetType::SME)
+    {
+        currentError += err;
+    }
+    else if(errType == errorNetType::maxDist)
+    {
+        currentError = std::max(err, currentError);
+    }
+}
+
 void ANN::learn(std::vector<int> & indices)
 {
     QTime myTime;
@@ -98,16 +229,23 @@ void ANN::learn(std::vector<int> & indices)
     }
 
     const uint numOfLayers = dim.size();
-    std::vector<std::valarray<double>> deltaWeights(numOfLayers);
     std::vector<std::valarray<double>> output(numOfLayers);
     for(uint i = 0; i < numOfLayers; ++i)
     {
-        deltaWeights[i].resize(dim[i]); // fill zeros
-        output[i].resize(dim[i] + 1); // for biases
+        output[i].resize(dim[i] + 1); // +1 for biases
+    }
+
+    if(learnStyl == learnStyle::backprop)
+    {
+        deltaWeights.resize(numOfLayers);
+        for(uint i = 0; i < numOfLayers; ++i)
+        {
+            deltaWeights[i].resize(dim[i]); // fill zeros
+        }
     }
 
     double currentError = critError + 0.1;
-    uint type = 0;
+    int type = -1;
 
     /// edit due to Indices
     std::vector<double> normCoeff;
@@ -128,108 +266,12 @@ void ANN::learn(std::vector<int> & indices)
                      std::end(indices),
                      std::default_random_engine(seed));
 
-        for(const int & index : indices)
+        for(const int index : indices)
         {
-            // add data and bias
-            std::copy(std::begin((*dataMatrix)[index]),
-                      std::end((*dataMatrix)[index]),
-                      std::begin(output[0]));
-            output[0][output[0].size() - 1] = 1.;
-            type = (*types)[index];
-
-            //obtain outputs
-            for(uint i = 1; i < numOfLayers; ++i)
-            {
-                for(int j = 0; j < dim[i]; ++j)
-                {
-                    output[i][j] = smallLib::prod(weight[i - 1][j], output[i-1]); // bias included
-                }
-                output[i] = activation(output[i]);
-                output[i][ dim[i] ] = 1.; // bias, unused for the highest layer
-            }
-
-            // error in the last layer
-            {
-                double err = 0.;
-                for(int j = 0; j < dim.back(); ++j)
-                {
-                    err += pow((output.back()[j] - int(type == j) ), 2.);
-                }
-                err = sqrt(err);
-                if(errType == errorNetType::SME)
-                {
-                    currentError += err;
-                }
-                else if(errType == errorNetType::maxDist)
-                {
-                    currentError = std::max(err, currentError);
-                }
-            }
-#if 0
-            /// count deltaWeights
-            /// check weight
-            if(learnStyl == learnStyle::backprop)
-            {
-                //count deltaweights (used for backprop only)
-                //for the last layer
-                for(uint j = 0; j < dim[numOfLayers - 1]; ++j)
-                {
-                    deltaWeights[numOfLayers-1][j] = -1. / temp
-                                                     * output[numOfLayers-1][j]
-                                                     * (1. - output[numOfLayers-1][j])
-                            * ((type == j) - output[numOfLayers-1][j]); //~0.1
-                }
-
-                //for the other layers, besides the input one, upside->down
-                for(int i = numOfLayers - 2; i >= 1; --i)
-                {
-                    for(int j = 0; j < dim[i] + 1; ++j) //+1 for bias
-                    {
-                        deltaWeights[i][j] = 0.;
-                        for(int k = 0; k < dim[i + 1]; ++k) //connected to the higher-layer
-                        {
-                            deltaWeights[i][j] += deltaWeights[i + 1][k] * weight[i][j][k];
-                        }
-                        deltaWeights[i][j] *= 1. / temp
-                                              * output[i][j]
-                                              * (1. - output[i][j]);
-                    }
-                }
-            }
-#endif
-
-            if(learnStyl == learnStyle::delta)
-            {
-                for(uint j = 0; j < numCl; ++j)
-                {
-                    weight[0][j] += output[0]
-                            * (learnRate * normCoeff[type]
-                               * ((type == j) - output[1][j])
-//                            * (output[1][j] * (1. - output[1][j])) * 6. // derivative
-                            );
-                }
-
-            }
-#if 0
-            else if(learnStyl == learnStyle::backprop)
-            {
-
-                // count new weights using deltas
-                for(int i = 0; i < numOfLayers - 1; ++i)
-                {
-                    for(int j = 0; j < dim[i] + 1; ++j) // +1 for bias? 01.12.2014
-                    {
-                        for(int k = 0; k < dim[i + 1]; ++k)
-                        {
-                            weight[i][j][k] -= learnRate
-                                               * normCoeff[type]
-                                               * output[i][j]
-                                               * deltaWeights[i + 1][k];
-                        }
-                    }
-                }
-            }
-#endif
+            loadVector(index, output[0], type);
+            countOutput(output);
+            countError(output, type, currentError);
+            moveWeights(output, normCoeff, type);
         }
         ++epoch;
         //count error
@@ -241,7 +283,6 @@ void ANN::learn(std::vector<int> & indices)
     std::cout << "epoch = " << epoch << "\t"
               << "error = " << smallLib::doubleRound(currentError, 4) << "\t"
               << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << std::endl;
-
 }
 
 int ANN::getEpoch()
@@ -258,43 +299,30 @@ void ANN::test(const std::vector<int> & indices)
         auto res = classifyDatum(ind);
         confusionMatrix[(*types)[ind]][res.first] += 1.;
     }
-    averageClassification();
+//    averageClassification();
 }
 
 std::pair<int, double> ANN::classifyDatum(const int & vecNum)
 {
-    const int type = (*types)[vecNum]; // true class
     const int numOfLayers = dim.size();
+    int type = -1;
 
     std::vector<std::valarray<double>> output(numOfLayers);
-    output[0].resize(dim[0] + 1); // +1 for biases
-
-    std::copy(std::begin((*dataMatrix)[vecNum]),
-              std::end((*dataMatrix)[vecNum]),
-              std::begin(output[0]));
-    output[0][output[0].size() - 1] = 1.; //bias
-
-    for(int i = 1; i < numOfLayers; ++i)
+    for(int i = 0; i < numOfLayers; ++i)
     {
-        output[i].resize(dim[i] + 1);
-        for(int j = 0; j < dim[i]; ++j) //higher level, w/o bias
-        {
-            output[i][j] = smallLib::prod(weight[i-1][j], output[i-1]); // bias included
-        }
-        output[i] = activation(output[i]);
-        output[i][ dim[i] ] = 1.; //bias, unused for the highest layer
+        output[i].resize(dim[i] + 1); // +1 for biases
     }
+
+    loadVector(vecNum, output[0], type);
+    countOutput(output);
+
+    /// effect on successive procedure
+    double res = 0.;
+    countError(output, type, res);
 
     smallLib::resizeValar(output.back(), numCl);
     int outClass = indexOfMax(output.back());
 
-    /// effect on successive procedure
-    double res = 0.;
-    for(int j = 0; j < dim.back(); ++j)
-    {
-        res += pow((output.back()[j] - int(type == j) ), 2.);
-    }
-    res = sqrt(res);
 
 #if 0
     /// cout results

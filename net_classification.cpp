@@ -438,8 +438,12 @@ void Net::crossClassification()
 //            }
 
             auto sets = makeIndicesSetsCross(arr, numFold);
-            learnIndicesFunc(sets.first);
-            tallIndicesFunc(sets.second);
+            /// old
+//            learnIndicesFunc(sets.first);
+//            tallIndicesFunc(sets.second);
+            /// new
+            myClassifier->learn(sets.first);
+            myClassifier->test(sets.second);
         }
 
         qApp->processEvents();
@@ -451,7 +455,8 @@ void Net::crossClassification()
     }
     cout << endl;
     cout << "cross classification - ";
-    averageClassification();
+    myClassifier->averageClassification();
+//    averageClassification();
 }
 
 void Net::halfHalfClassification()
@@ -470,11 +475,15 @@ void Net::halfHalfClassification()
         return;
     }
 
-    learnIndicesFunc(learnIndices);
-    tallIndicesFunc(tallIndices);
-
-    cout << "half-half classification - ";
-    averageClassification();
+    /// old
+//    learnIndicesFunc(learnIndices);
+//    tallIndicesFunc(tallIndices);
+//    cout << "half-half classification - ";
+//    averageClassification();
+    /// new
+    myClassifier->learn(learnIndices);
+    myClassifier->test(tallIndices);
+    myClassifier->averageClassification();
 }
 
 void Net::trainTestClassification(const QString & trainTemplate,
@@ -499,11 +508,17 @@ void Net::trainTestClassification(const QString & trainTemplate,
         return;
     }
 
-    learnIndicesFunc(learnIndices);
-    tallIndicesFunc(tallIndices);
 
-    cout << "train-test classification - ";
-    averageClassification();
+    /// old
+//    learnIndicesFunc(learnIndices);
+//    tallIndicesFunc(tallIndices);
+//    cout << "train-test classification - ";
+//    averageClassification();
+    /// new
+    myClassifier->learn(learnIndices);
+    myClassifier->test(tallIndices);
+    myClassifier->averageClassification();
+
 }
 
 void Net::leaveOneOut()
@@ -534,8 +549,13 @@ void Net::leaveOneOut()
             learnIndices.push_back(j);
         }
 #endif
-        learnIndicesFunc(learnIndices);
-        tallIndicesFunc({i});
+
+        /// old
+//        learnIndicesFunc(learnIndices);
+//        tallIndicesFunc({i});
+        /// new
+        myClassifier->learn(learnIndices);
+        myClassifier->test({i});
 
         /// not so fast
         /// what with softmax/logistic ?
@@ -548,7 +568,8 @@ void Net::leaveOneOut()
     }
     cout << endl;
     cout << "N-fold cross-validation:" << endl;
-    averageClassification();
+//    averageClassification();
+    myClassifier->averageClassification();
 }
 
 void Net::learnClassifierSlot(const bool resFlag)
@@ -1032,7 +1053,7 @@ return;
 //    outStr.close();
 }
 
-void Net::SVM()
+void Net::doSVM()
 {
     /// create/clear PA/output1
     QString helpString = def::dir->absolutePath()

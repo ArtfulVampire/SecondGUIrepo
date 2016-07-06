@@ -34,7 +34,7 @@ void QDA::test(const std::vector<int> & indices)
         auto res = classifyDatum(ind);
         confusionMatrix[(*types)[ind]][res.first] += 1.;
     }
-    averageClassification();
+//    averageClassification();
 }
 
 std::pair<int, double> QDA::classifyDatum(const int & vecNum)

@@ -42,6 +42,11 @@ Net::Net() :
     group4 = new QButtonGroup();
     group4->addButton(ui->logisticRadioButton);
     group4->addButton(ui->softmaxRadioButton);
+    group5 = new QButtonGroup();
+    group5->addButton(ui->classANNRadioButton);
+    group5->addButton(ui->classQDARadioButton);
+    group5->addButton(ui->classSVMRadioButton);
+    group5->addButton(ui->classLDARadioButton);
 
     ui->softmaxRadioButton->setChecked(true); /// activation
 
@@ -166,7 +171,7 @@ Net::Net() :
 
     QObject::connect(ui->autoClassButton, SIGNAL(clicked()), this, SLOT(autoClassificationSimple()));
 
-    QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(SVM()));
+    QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(doSVM()));
 
     QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(resetSlot()));
 
@@ -176,6 +181,7 @@ Net::Net() :
     QObject::connect(group2, SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setSourceSlot(QAbstractButton*)));
     QObject::connect(group3, SIGNAL(buttonToggled(int,bool)), this, SLOT(methodSetParam(int,bool)));
     QObject::connect(group4, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setActFuncSlot(QAbstractButton*)));
+    QObject::connect(group4, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setClassifier(QAbstractButton*)));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     aaDefaultSettings();
