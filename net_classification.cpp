@@ -53,7 +53,7 @@ double Net::adjustLearnRate(int lowLimit,
 
     cout << "adjustLearnRate: start" << endl;
 
-    const std::vector<int> mixNum = makeLearnIndexSet();
+    std::vector<int> mixNum = makeLearnIndexSet();
 
     double res = 1.;
     int counter = 0;
@@ -63,7 +63,7 @@ double Net::adjustLearnRate(int lowLimit,
         const double currVal = ui->learnRateBox->value();
         cout << "lrate = " << currVal << '\t';
 
-        learnNetIndices(mixNum);
+        learnIndicesFunc(mixNum);
 
         /// check limits
         if(this->getEpoch() > highLimit ||
@@ -125,7 +125,7 @@ double Net::adjustReduceCoeff(QString spectraDir,
         if(Mode == myMode::train_test)
         {
             PaIntoMatrixByName(paFileName);
-            learnNet();
+            learnClassifierSlot();
         }
         else
         {
@@ -138,7 +138,7 @@ double Net::adjustReduceCoeff(QString spectraDir,
 //            }
 //            cout << endl;
 
-            vector<int> learnIndices;
+            std::vector<int> learnIndices;
             for(uint i = 0; i < dataMatrix.rows(); ++i)
             {
 //                cout << i << "\t" << fileNames[i] << endl;
@@ -151,7 +151,7 @@ double Net::adjustReduceCoeff(QString spectraDir,
 //            {
 //                cout << item << "\t" << fileNames[item] << endl;
 //            }
-            learnNetIndices(learnIndices);
+            learnIndicesNet(learnIndices);
         }
 
         if(this->getEpoch() > highLimit
@@ -288,7 +288,7 @@ void Net::autoClassification(const QString & spectraDir)
     default: {break;}
     }
 
-    learnNet();
+    learnClassifierSlot();
     writeWts();
     drawWts();
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
@@ -438,8 +438,8 @@ void Net::crossClassification()
 //            }
 
             auto sets = makeIndicesSetsCross(arr, numFold);
-            learnNetIndices(sets.first);
-            tallNetIndices(sets.second);
+            learnIndicesFunc(sets.first);
+            tallIndicesFunc(sets.second);
         }
 
         qApp->processEvents();
@@ -469,8 +469,10 @@ void Net::halfHalfClassification()
         cout << "teainTest: indicesArray empty, return" << endl;
         return;
     }
-    learnNetIndices(learnIndices);
-    tallNetIndices(tallIndices);
+
+    learnIndicesFunc(learnIndices);
+    tallIndicesFunc(tallIndices);
+
     cout << "half-half classification - ";
     averageClassification();
 }
@@ -496,8 +498,10 @@ void Net::trainTestClassification(const QString & trainTemplate,
         cout << "teainTest: indicesArray empty, return" << endl;
         return;
     }
-    learnNetIndices(learnIndices);
-    tallNetIndices(tallIndices);
+
+    learnIndicesFunc(learnIndices);
+    tallIndicesFunc(tallIndices);
+
     cout << "train-test classification - ";
     averageClassification();
 }
@@ -530,8 +534,8 @@ void Net::leaveOneOut()
             learnIndices.push_back(j);
         }
 #endif
-        learnNetIndices(learnIndices);
-        tallNetIndices({i});
+        learnIndicesFunc(learnIndices);
+        tallIndicesFunc({i});
 
         /// not so fast
         /// what with softmax/logistic ?
@@ -547,25 +551,28 @@ void Net::leaveOneOut()
     averageClassification();
 }
 
-void Net::learnNet(const bool resetFlag)
+void Net::learnClassifierSlot(const bool resFlag)
 {
     std::vector<int> mixNum(dataMatrix.rows());
     std::iota(mixNum.begin(), mixNum.end(), 0);
-    learnNetIndices(mixNum, resetFlag);
+
+    resetFlag = resFlag;
+    learnIndicesFunc(mixNum);
+    resetFlag = true; // i.e. default
+
 }
 
-void Net::tallNet()
+void Net::tallClassifierSlot()
 {
     std::vector<int> indices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
         indices.push_back(i);
     }
-    tallNetIndices(indices);
+    tallIndicesFunc(indices);
 }
 
-void Net::learnNetIndices(std::vector<int> mixNum,
-                          const bool resetFlag)
+void Net::learnIndicesNet(std::vector<int> & indices)
 {
     QTime myTime;
     myTime.start();
@@ -573,7 +580,7 @@ void Net::learnNetIndices(std::vector<int> mixNum,
     if(resetFlag)
     {
 //        cout << "reset" << endl;
-        reset();
+        resetSlot();
     }
 
 
@@ -587,7 +594,6 @@ void Net::learnNetIndices(std::vector<int> mixNum,
     }
 
     const double critError = ui->critErrorDoubleSpinBox->value();
-    const double temp = ui->tempBox->value();
     const double learnRate = ui->learnRateBox->value();
     const bool deltaFlag = ui->deltaRadioButton->isChecked();
 //    const double momentum = ui->momentumDoubleSpinBox->value(); //unused yet
@@ -595,10 +601,8 @@ void Net::learnNetIndices(std::vector<int> mixNum,
 
     int type = 0;
 
-
-
     /// edit due to Indices
-    vector <double> normCoeff;
+    std::vector <double> normCoeff;
     const double helpMin = *std::min_element(classCount.begin(),
                                              classCount.end());
 //    const double helpMin = std::accumulate(classCount.begin(),
@@ -612,11 +616,6 @@ void Net::learnNetIndices(std::vector<int> mixNum,
     }
 
 
-    if(ui->deepBeliefRadioButton->isChecked())
-    {
-//        prelearnDeepBelief();
-    }
-
 
     epoch = 0;
     while(currentError > critError && epoch < ui->epochSpinBox->value())
@@ -624,11 +623,11 @@ void Net::learnNetIndices(std::vector<int> mixNum,
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         currentError = 0.0;
         // mix the sequence of input vectors
-        std::shuffle(mixNum.begin(),
-                     mixNum.end(),
+        std::shuffle(indices.begin(),
+                     indices.end(),
                      std::default_random_engine(seed));
 
-        for(const int & index : mixNum)
+        for(const int & index : indices)
         {
             // add data
             std::copy(begin(dataMatrix[index]),
@@ -744,7 +743,7 @@ void Net::learnNetIndices(std::vector<int> mixNum,
         //count error
         if(errType == errorNetType::SME)
         {
-            currentError /= mixNum.size();
+            currentError /= indices.size();
         }
         this->ui->currentErrorDoubleSpinBox->setValue(currentError);
 
@@ -756,7 +755,7 @@ void Net::learnNetIndices(std::vector<int> mixNum,
 }
 
 
-void Net::tallNetIndices(const vector<int> & indices)
+void Net::tallIndicesNet(const vector<int> & indices)
 {
     QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
                                                   + slash + "badFiles.txt");
@@ -767,7 +766,7 @@ void Net::tallNetIndices(const vector<int> & indices)
     badFilesStr.open(helpString.toStdString(), ios_base::app);
     for(uint i = 0; i < indices.size(); ++i)
     {
-        const int outClass = classifyDatum(indices[i]).first;
+        const int outClass = classifyDatumNet(indices[i]).first;
         if(types[ indices[i] ] != outClass )
         {
             badFilesStr << fileNames[ indices[i] ] << endl;
@@ -826,53 +825,9 @@ void Net::tallNetIndices(const vector<int> & indices)
     logStream.close();
 }
 
-void Net::learnLDAIndices(const std::vector<int> & indices)
-{
-    const int numCl = def::numOfClasses();
 
 
-    for(int i = 0; i < numCl; ++i)
-    {
-        /// fill learning submatrix
-        matrix oneClass{};
-        for(int ind : indices)
-        {
-            if(types[ind] == i)
-            {
-                oneClass.push_back(dataMatrix[ind]);
-            }
-        }
-        centers[i] = oneClass.averageRow();
-        covMat[i] = matrix::transpose(oneClass) * oneClass;
-        covMat[i].invert(&(dets[i]));
-    }
-}
-void Net::tallLDAIndices(const std::vector<int> & indices)
-{
-    const int numCl = def::numOfClasses();
-
-    matrix localConfusionMatrix(numCl, numCl);
-    lineType output(numCl);
-    int res;
-    for(int ind : indices)
-    {
-        for(int i = 0; i < numCl; ++i)
-        {
-            lineType a = (dataMatrix[ind] - centers[i]);
-            matrix m1(a, 'r');
-            matrix m2(a, 'c');
-            output[i] = - (m1 * covMat[i] * m2)[0][0] - log(dets[i]);
-        }
-        res = indexOfMax(output);
-
-        localConfusionMatrix[types[ind]][res] += 1.;
-    }
-    averageClassification(&localConfusionMatrix);
-}
-
-
-
-std::pair<int, double> Net::classifyDatum(const int & vecNum)
+std::pair<int, double> Net::classifyDatumNet(const int & vecNum)
 {
     const int type = types[vecNum]; // true class
     const int numOfLayers = dimensionality.size();
@@ -948,6 +903,69 @@ std::pair<int, double> Net::classifyDatum(const int & vecNum)
 //        }
 //    }
 //    return true;
+}
+
+
+void Net::learnIndicesQDA(std::vector<int> & indices)
+{
+    const int numCl = def::numOfClasses();
+
+
+    for(int i = 0; i < numCl; ++i)
+    {
+        /// fill learning submatrix
+        matrix oneClass{};
+        for(int ind : indices)
+        {
+            if(types[ind] == i)
+            {
+                oneClass.push_back(dataMatrix[ind]);
+            }
+        }
+        centers[i] = oneClass.averageRow();
+        covMat[i] = matrix::transpose(oneClass) * oneClass;
+        covMat[i].invert(&(dets[i]));
+    }
+}
+void Net::tallIndicesQDA(const std::vector<int> & indices)
+{
+    const int numCl = def::numOfClasses();
+
+    matrix localConfusionMatrix(numCl, numCl);
+    lineType output(numCl);
+    int res;
+    for(int ind : indices)
+    {
+        for(int i = 0; i < numCl; ++i)
+        {
+            lineType a = (dataMatrix[ind] - centers[i]);
+            matrix m1(a, 'r');
+            matrix m2(a, 'c');
+            output[i] = - (m1 * covMat[i] * m2)[0][0] - log(dets[i]);
+        }
+        res = indexOfMax(output);
+
+        localConfusionMatrix[types[ind]][res] += 1.;
+    }
+    averageClassification(&localConfusionMatrix);
+}
+
+std::pair<int, double> Net::classifyDatumQDA(const int & vecNum)
+{
+    const int numCl = def::numOfClasses();
+    lineType output(numCl);
+
+    for(int i = 0; i < numCl; ++i)
+    {
+        lineType a = (dataMatrix[vecNum] - centers[i]);
+        matrix m1(a, 'r'); // row
+        matrix m2(a, 'c'); // col
+        output[i] = - (m1 * covMat[i] * m2)[0][0] - log(dets[i]);
+    }
+    int outClass = indexOfMax(output);
+
+    return std::make_pair(outClass,
+                          double(outClass != types[vecNum]));
 }
 
 

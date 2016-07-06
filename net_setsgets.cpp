@@ -280,3 +280,35 @@ void Net::methodSetParam(int a, bool ch)
     }
 //    reset();
 }
+
+
+void Net::aaDefaultSettings()
+{
+    ui->deltaRadioButton->setChecked(true);
+
+    /// mode
+    ui->crossRadioButton->setChecked(true); /// k-fold
+//    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
+//    ui->trainTestRadioButton->setChecked(true); /// train-test
+
+    /// source
+        ui->realsRadioButton->setChecked(true); /// reals
+//        ui->windowsRadioButton->setChecked(true); /// windows
+    //    ui->pcaRadioButton->setChecked(true); /// PCA
+
+    /// activation
+//    ui->logisticRadioButton->setChecked(true);
+//    ui->softmaxRadioButton->setChecked(true);
+    activation = smallLib::softmax;
+    ui->highLimitSpinBox->setValue(60); /// highLimit
+    ui->lowLimitSpinBox->setValue(40);  /// lowLimit
+
+//    activation = smallLib::logistic;
+//    ui->highLimitSpinBox->setValue(120); /// highLimit
+//    ui->lowLimitSpinBox->setValue(60);  /// lowLimit
+
+    ui->rdcCoeffSpinBox->setValue(7.); ///  rdc coeff
+    ui->foldSpinBox->setValue(4); /////// fold
+    ui->numOfPairsBox->setValue(10); //// pairs
+    ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
+}

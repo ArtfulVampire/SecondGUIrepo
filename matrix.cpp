@@ -11,6 +11,7 @@ matrix::matrix()
 
 matrix::~matrix()
 {
+
 }
 
 matrix::matrix(int dim)

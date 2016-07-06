@@ -84,6 +84,7 @@ namespace suc
 extern int numGoodNewLimit;
 extern int learnSetStay;
 extern double decayRate;
+extern double errorThreshold;
 }
 
 

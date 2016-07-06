@@ -50,6 +50,7 @@ private:
     double loadDataNorm = 10.;
     lineType averageDatum;
     lineType sigmaVector;
+
     std::vector<int> channelsSet;
     std::vector<int> channelsSetExclude;
 
@@ -73,6 +74,7 @@ private:
     double kappa; // Cohen's
     int epoch;
 
+    bool resetFlag = true;
     bool stopFlag = false;
     bool autoFlag = false;
     bool tallCleanFlag  = false;
@@ -83,38 +85,38 @@ public:
     explicit Net();
     ~Net();
 
-    void setAutoProcessingFlag(bool);
-
-    void prelearnDeepBelief();
-    double adjustLearnRate(int lowLimit,
-                           int highLimit);
-    double adjustReduceCoeff(QString spectraDir,
-                             int lowLimit,
-                             int highLimit,
-                             QString paFileName = "all");
-
-    std::vector<int> makeLearnIndexSet();
-    std::pair<std::vector<int>, std::vector<int>> makeIndicesSetsCross(
-            const std::vector<std::vector<int> > & arr,
-            const int numOfFold);
-
-    std::pair<int, double> classifyDatum(const int & vecNum);
+    /// classification
     void autoClassification(const QString & spectraDir);
-    void averageClassification(matrix * inMat = nullptr);
+    void averageClassification(matrix * inMat = nullptr); /// on confusionMatrix
     void crossClassification();
     void leaveOneOutClassification();
     void leaveOneOut();
     void halfHalfClassification();
     void trainTestClassification(const QString & trainTemplate = "_train",
                                  const QString & testTemplate = "_test");
+    /// change everywhere
+    enum class myMode {N_fold, k_fold, train_test,  half_half};
+    enum class source {winds, reals, pca, bayes};
 
-    void learnNetIndices(std::vector<int> mixNum,
-                         const bool resetFlag = true);
-    void tallNetIndices(const std::vector<int> & indices);
-    void learnLDAIndices(const std::vector<int> & indices);
-    void tallLDAIndices(const std::vector<int> & indices);
+    myMode Mode = myMode::N_fold;
+    source Source = source::winds;
+
+    /// make a class
+    void learnIndicesNet(std::vector<int> & indices);
+    std::pair<int, double> classifyDatumNet(const int & vecNum);
+    void tallIndicesNet(const std::vector<int> & indices);
+
+    void learnIndicesQDA(std::vector<int> & indices); // really const vec &, but for *func
+    std::pair<int, double> classifyDatumQDA(const int & vecNum);
+    void tallIndicesQDA(const std::vector<int> & indices);
+
+    void (*learnIndicesFunc)(std::vector<int> indices);
+    std::pair<int, double> (*classifyDatumFunc)(const int & vecNum);
+    void (*tallIndicesFunc)(const std::vector<int> & indices);
 
 
+
+    /// successive
     void successiveProcessing();
 
     void successiveLearning(const lineType & newSpectre,
@@ -124,31 +126,29 @@ public:
     void successivePreclean(const QString & spectraPath);
 
 
-    double getAverageAccuracy();
-    double getKappa();
-    double getReduceCoeff();
-    int getEpoch();
-    double getLrate();
-    const matrix & getConfusionMatrix();
 
-    /// change everywhere
-    enum class myMode {N_fold, k_fold, train_test,  half_half};
-    enum class source {winds, reals, pca, bayes};
 
-    myMode Mode = myMode::N_fold;
-    source Source = source::winds;
 
+    /// setsgets
     void setReduceCoeff(double coeff);
+    double getReduceCoeff();
     void setErrCrit(double in);
     void setLrate(double in);
+    double getLrate();
     void setNumOfPairs(int num);
+    void setFold(int in);
+    void setTallCleanFlag(bool in);
+    int getEpoch();
+    double getAverageAccuracy();
+    double getKappa();
+    void setAutoProcessingFlag(bool);
+    const matrix & getConfusionMatrix();
     void setMode(const QString & in = "N-fold");
     void setActFunc(const QString & in = "softmax");
     void setSource(const QString & in = "reals");
-    void setFold(int in);
-    void setTallCleanFlag(bool in);
     void aaDefaultSettings();
 
+    /// data
     void PaIntoMatrixByName(const QString & fileName);
     void normalizeDataMatrix();
     void loadData(const QString & spectraPath = def::dir->absolutePath()
@@ -163,7 +163,19 @@ public:
                      const QString & inFileName);
     void eraseDatum(const int & index);
     void eraseData(const std::vector<int> & indices);
+    std::pair<std::vector<int>, std::vector<int>> makeIndicesSetsCross(
+            const std::vector<std::vector<int> > & arr,
+            const int numOfFold);
 
+    std::vector<int> makeLearnIndexSet(); /// for adjust learn rate only
+    double adjustLearnRate(int lowLimit,
+                           int highLimit);
+    double adjustReduceCoeff(QString spectraDir,
+                             int lowLimit,
+                             int highLimit,
+                             QString paFileName = "all");
+
+    ///wts
     void readWtsByName(const QString & fileName,
                        twovector<lineType> * wtsMatrix = nullptr);
     void writeWts(const QString & wtsPath = QString());
@@ -186,17 +198,14 @@ public:
     /// not finished
     void crossSVM(std::pair<std::vector<int>, std::vector<int>> sets);
 
-
-
-
 public slots:
     void readWts();
 
-    void learnNet(const bool resetFlag = true);
-    void tallNet();
+    void learnClassifierSlot(const bool resFlag = true);
+    void tallClassifierSlot();
 
 
-    void reset();
+    void resetSlot();
     void writeWtsSlot();
     void stopActivity();
     void drawWtsSlot();

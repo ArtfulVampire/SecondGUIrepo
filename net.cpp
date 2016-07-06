@@ -39,7 +39,6 @@ Net::Net() :
     group3 = new QButtonGroup();
     group3->addButton(ui->deltaRadioButton);
     group3->addButton(ui->backpropRadioButton);
-    group3->addButton(ui->deepBeliefRadioButton);
     group4 = new QButtonGroup();
     group4->addButton(ui->logisticRadioButton);
     group4->addButton(ui->softmaxRadioButton);
@@ -153,9 +152,9 @@ Net::Net() :
 
     QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
 
-    QObject::connect(ui->learnButton, SIGNAL(clicked()), this, SLOT(learnNet()));
+    QObject::connect(ui->learnButton, SIGNAL(clicked()), this, SLOT(learnClassifierSlot()));
 
-    QObject::connect(ui->testAllButton, SIGNAL(clicked()), this, SLOT(tallNet()));
+    QObject::connect(ui->testAllButton, SIGNAL(clicked()), this, SLOT(tallClassifierSlot()));
 
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopActivity()));
 
@@ -169,7 +168,7 @@ Net::Net() :
 
     QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(SVM()));
 
-    QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(reset()));
+    QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(resetSlot()));
 
     QObject::connect(ui->distancesPushButton, SIGNAL(clicked()), this, SLOT(testDistances()));
 
@@ -182,36 +181,6 @@ Net::Net() :
     aaDefaultSettings();
 }
 
-void Net::aaDefaultSettings()
-{
-    ui->deltaRadioButton->setChecked(true);
-
-    /// mode
-    ui->crossRadioButton->setChecked(true); /// k-fold
-//    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
-//    ui->trainTestRadioButton->setChecked(true); /// train-test
-
-    /// source
-        ui->realsRadioButton->setChecked(true); /// reals
-//        ui->windowsRadioButton->setChecked(true); /// windows
-    //    ui->pcaRadioButton->setChecked(true); /// PCA
-
-    /// activation
-//    ui->logisticRadioButton->setChecked(true);
-//    ui->softmaxRadioButton->setChecked(true);
-    activation = smallLib::softmax;
-    ui->highLimitSpinBox->setValue(60); /// highLimit
-    ui->lowLimitSpinBox->setValue(40);  /// lowLimit
-
-//    activation = smallLib::logistic;
-//    ui->highLimitSpinBox->setValue(120); /// highLimit
-//    ui->lowLimitSpinBox->setValue(60);  /// lowLimit
-
-    ui->rdcCoeffSpinBox->setValue(7.); ///  rdc coeff
-    ui->foldSpinBox->setValue(4); /////// fold
-    ui->numOfPairsBox->setValue(10); //// pairs
-    ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
-}
 
 Net::~Net()
 {
@@ -354,7 +323,7 @@ void Net::writeWtsSlot()
 
 }
 
-void Net::reset()
+void Net::resetSlot()
 {
     QString helpString = ui->dimensionalityLineEdit->text();
     QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
@@ -405,7 +374,7 @@ void Net::testDistances()
     const int NumberOfVectors = dataMatrix.rows();
     const int NetLength = dataMatrix.cols();
 
-    vector<int> NumberOfErrors(def::numOfClasses(), 0);
+    std::vector<int> NumberOfErrors(def::numOfClasses(), 0);
     matrix averageSpectra(def::numOfClasses(), NetLength, 0.);
 
     for(int i = 0; i < NumberOfVectors; ++i)

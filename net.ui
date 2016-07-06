@@ -414,13 +414,6 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QRadioButton" name="deepBeliefRadioButton">
-        <property name="text">
-         <string>deepBelief</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </item>
     <item row="0" column="0">

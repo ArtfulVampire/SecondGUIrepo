@@ -3,9 +3,7 @@
 using namespace std;
 using namespace myLib;
 using namespace smallLib;
-
-///successive part
-
+using namespace suc;
 
 std::vector<int> exIndices{};
 int numGoodNew;
@@ -28,15 +26,17 @@ void Net::successiveProcessing()
 
     /// check for no test items
     loadData(helpString, {"*" + trainMarker + "*"});
-//    for(int i = 0; i < dataMatrix.rows(); ++i)
-//    {
-//        if(fileNames[i].contains(testMarker))
-//        {
-//            eraseIndices.push_back(i);
-//        }
-//    }
-//    eraseData(eraseIndices);
-//    eraseIndices.clear();
+#if 0
+    for(int i = 0; i < dataMatrix.rows(); ++i)
+    {
+        if(fileNames[i].contains(testMarker))
+        {
+            eraseIndices.push_back(i);
+        }
+    }
+    eraseData(eraseIndices);
+    eraseIndices.clear();
+#endif
 
     /// reduce learning set to (NumClasses * suc::learnSetStay)
     std::vector<double> count = classCount;
@@ -57,7 +57,7 @@ void Net::successiveProcessing()
     setErrCrit(0.05);
     setLrate(0.05);
 
-    learnNet(); /// get initial weights on train set
+    learnClassifierSlot(); /// get initial weights on train set
 
     setErrCrit(0.02);
     setLrate(0.02);
@@ -126,7 +126,7 @@ void Net::successivePreclean(const QString & spectraPath)
     tallCleanFlag = false;
 }
 
-void Net::successiveLearning(const lineType & newSpectre,
+void Net::successiveLearning(const std::valarray<double> & newSpectre,
                              const int newType,
                              const QString & newFileName)
 {
@@ -137,13 +137,13 @@ void Net::successiveLearning(const lineType & newSpectre,
 
     pushBackDatum(newData, newType, newFileName);
 
-    const std::pair<int, double> outType = classifyDatum(dataMatrix.rows() - 1); // take the last
+    const std::pair<int, double> outType = classifyDatumNet(dataMatrix.rows() - 1); // take the last
     confusionMatrix[newType][outType.first] += 1.;
 
     if(outType.first == newType)
     {
         /// if accurate classification
-        if(outType.second < errorThreshold)
+        if(outType.second < suc::errorThreshold)
         {
             const int num = std::find(types.begin(),
                                       types.end(),
@@ -184,7 +184,7 @@ void Net::successiveRelearn()
         });
     }
 
-    learnNet(false); // relearn w/o weights reset
+    learnClassifierSlot(false); // relearn w/o weights reset
 }
 
 void Net::readWtsByName(const QString & fileName,

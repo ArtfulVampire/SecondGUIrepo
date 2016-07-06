@@ -41,7 +41,11 @@ SOURCES += main.cpp\
     myLib_dataHandler.cpp \
     mainwindow_customF.cpp \
     myLib_smallFuncs.cpp \
-    net.cpp
+    net.cpp \
+    classifier.cpp \
+    classifier_ann.cpp \
+    classifier_qda.cpp \
+    classifier_svm.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -54,7 +58,8 @@ HEADERS  += mainwindow.h \
     matrix.h \
     coord.h \
     library.h \
-    smallLib.h
+    smallLib.h \
+    classifier.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

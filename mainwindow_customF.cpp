@@ -2478,7 +2478,7 @@ void MainWindow::customFunc()
         }
     }
 
-    //mahalanobis LDA test
+    //mahalanobis QDA test
     if(0)
     {
         def::dir->cd("/media/Files/Data/AB/SpectraSmooth/PCA");
