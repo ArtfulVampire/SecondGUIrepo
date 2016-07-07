@@ -85,6 +85,8 @@ double Classifier::averageClassification()
     confusionMatrix.print();
     std::cout << "average accuracy = " << smallLib::doubleRound(averageAccuracy, 2) << std::endl;
     std::cout << "kappa = " << kappa << std::endl;
+
+    confusionMatrix.fill(0.);
     return averageAccuracy;
 }
 

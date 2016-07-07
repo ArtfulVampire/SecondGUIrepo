@@ -172,6 +172,7 @@ void Net::setClassifier(QAbstractButton * but)
     {
         myClassifier = new ANN();
         ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+
         /// make dim
         QString helpString = ui->dimensionalityLineEdit->text();
         QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
@@ -181,6 +182,7 @@ void Net::setClassifier(QAbstractButton * but)
             dim.push_back(lst[i].toInt());
         }
 
+        myANN->setData(dataMatrix);
         myANN->setDim(dim);
         myANN->setLrate(ui->learnRateBox->value());
     }
@@ -348,12 +350,15 @@ void Net::aaDefaultSettings()
     ui->highLimitSpinBox->setValue(60); /// highLimit
     ui->lowLimitSpinBox->setValue(40);  /// lowLimit
 
+    /// classifier
+    ui->classANNRadioButton->setChecked(true);
+
 //    activation = smallLib::logistic;
 //    ui->highLimitSpinBox->setValue(120); /// highLimit
 //    ui->lowLimitSpinBox->setValue(60);  /// lowLimit
 
     ui->rdcCoeffSpinBox->setValue(7.); ///  rdc coeff
-    ui->foldSpinBox->setValue(4); /////// fold
-    ui->numOfPairsBox->setValue(10); //// pairs
+    ui->foldSpinBox->setValue(2); /////// fold
+    ui->numOfPairsBox->setValue(1); //// pairs
     ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
 }

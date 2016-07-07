@@ -560,7 +560,7 @@ ostream & operator << (ostream &os, matrix toOut)
 template <typename Typ, template <typename> class Cont>
 std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut)
 {
-    std::string separ = " ";
+    std::string separ = "\t";
     //if(is_container<Typ>) separ = std::endl;
     for(auto in : toOut)
     {

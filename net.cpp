@@ -152,7 +152,11 @@ Net::Net() :
     ui->numOfLayersSpinBox->setMaximum(10);
     ui->dimensionalityLineEdit->setText("0 20 0");
 
+    ui->centerCheckBox->setChecked(true);
+    ui->varianceCheckBox->setChecked(true);
+
     ui->sizeSpinBox->setValue(6);
+
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWts()));
 
     QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
@@ -181,7 +185,7 @@ Net::Net() :
     QObject::connect(group2, SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setSourceSlot(QAbstractButton*)));
     QObject::connect(group3, SIGNAL(buttonToggled(int,bool)), this, SLOT(methodSetParam(int,bool)));
     QObject::connect(group4, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setActFuncSlot(QAbstractButton*)));
-    QObject::connect(group4, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setClassifier(QAbstractButton*)));
+    QObject::connect(group5, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setClassifier(QAbstractButton*)));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     aaDefaultSettings();

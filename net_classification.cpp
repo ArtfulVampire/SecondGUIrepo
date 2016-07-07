@@ -287,10 +287,10 @@ void Net::autoClassification(const QString & spectraDir)
     }
     default: {break;}
     }
-
-    learnClassifierSlot();
-    writeWts();
-    drawWts();
+    /// old for ANN only
+//    learnClassifierSlot();
+//    writeWts();
+//    drawWts();
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
@@ -395,7 +395,7 @@ void Net::crossClassification()
     const int numOfPairs = ui->numOfPairsBox->value();
     const int fold = ui->foldSpinBox->value();
 
-    std::vector<std::vector<int>> arr;
+    std::vector<std::vector<int>> arr; // [class][index]
     arr.resize(def::numOfClasses(), {});
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
@@ -454,7 +454,7 @@ void Net::crossClassification()
         }
     }
     cout << endl;
-    cout << "cross classification - ";
+    cout << "cross classification - " << endl;
     myClassifier->averageClassification();
 //    averageClassification();
 }
@@ -525,8 +525,6 @@ void Net::leaveOneOut()
 {
     std::vector<int> learnIndices;
     uint i = 0;
-    adjustLearnRate(ui->lowLimitSpinBox->value(),
-                    ui->highLimitSpinBox->value()); /// ~40-60
     while(i < dataMatrix.rows())
     {
         cout << i + 1;
@@ -534,7 +532,6 @@ void Net::leaveOneOut()
 
         /// iota ?
         learnIndices.clear();
-#if 0
         learnIndices.resize(dataMatrix.rows() - 1);
         std::iota(std::begin(learnIndices),
                   std::begin(learnIndices) + i,
@@ -542,13 +539,6 @@ void Net::leaveOneOut()
         std::iota(std::begin(learnIndices) + i,
                   std::end(learnIndices),
                   i + 1);
-#else
-        for(uint j = 0; j < dataMatrix.rows(); ++j)
-        {
-            if(j == i) continue;
-            learnIndices.push_back(j);
-        }
-#endif
 
         /// old
 //        learnIndicesFunc(learnIndices);
@@ -556,19 +546,10 @@ void Net::leaveOneOut()
         /// new
         myClassifier->learn(learnIndices);
         myClassifier->test({i});
-
-        /// not so fast
-        /// what with softmax/logistic ?
-//        if(tallCleanFlag && epoch < ui->lowLimitSpinBox->value() && activation == logistic)
-//        {
-//            adjustLearnRate(ui->lowLimitSpinBox->value(),
-//                            ui->highLimitSpinBox->value());
-//        }
         ++i;
     }
     cout << endl;
     cout << "N-fold cross-validation:" << endl;
-//    averageClassification();
     myClassifier->averageClassification();
 }
 

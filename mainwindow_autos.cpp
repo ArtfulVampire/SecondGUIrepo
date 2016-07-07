@@ -2706,16 +2706,13 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
                                                 QDir::Size|QDir::Reversed);
     const auto filesVec = filesList.toVector();
 
-
-
-
-
 #pragma omp parallel
 #pragma omp for nowait schedule(guided, 20)
     for(int i = 0; i < filesVec.size(); ++i)
     {
         QString helpString = dir.absolutePath() + slash + filesVec[i];
         edfFile initEdf;
+
         initEdf.readEdfFile(helpString, true);
 
         /// different checks
@@ -2725,6 +2722,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
             continue;
         }
 
+
         if(initEdf.getNs() < numChan)
         {
             cout << "too few channels" << endl;
@@ -2733,6 +2731,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
 
         cout << filesList[i] << '\t'
              << doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << endl;
+
 
         countSpectraFeatures(helpString, numChan, outPath);
         countChaosFeatures(helpString, numChan, outPath);

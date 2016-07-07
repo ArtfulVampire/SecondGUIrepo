@@ -3,7 +3,7 @@ using namespace myLib;
 
 ANN::ANN()
 {
-    allocWeight(weight); /// dim == {} here
+
 }
 
 void ANN::setResetFlag(bool inFlag)
@@ -99,7 +99,7 @@ void ANN::loadVector(const int vecNum, std::valarray<double> & out, int & type)
     type = (*types)[vecNum]; // true class
 }
 
-void ANN::countOutput(std::vector<std::valarray<double>> & output)
+void ANN::countOutput(outputType & output)
 {
     /// switch case
     if(learnStyl == learnStyle::delta)
@@ -112,7 +112,7 @@ void ANN::countOutput(std::vector<std::valarray<double>> & output)
     }
 }
 
-void ANN::countOutputDelta(std::vector<std::valarray<double>> & output)
+void ANN::countOutputDelta(outputType & output)
 {
     for(int i = 1; i < dim.size(); ++i)
     {
@@ -125,7 +125,7 @@ void ANN::countOutputDelta(std::vector<std::valarray<double>> & output)
     }
 }
 
-void ANN::countOutputBackprop(std::vector<std::valarray<double>> & output)
+void ANN::countOutputBackprop(outputType & output)
 {
 #if 0
     /// count deltaWeights
@@ -160,7 +160,7 @@ void ANN::countOutputBackprop(std::vector<std::valarray<double>> & output)
 
 }
 
-void ANN::moveWeights(const std::vector<std::valarray<double>> & output,
+void ANN::moveWeights(const outputType & output,
                       const std::vector<double> & normCoeff,
                       const int type)
 {
@@ -198,7 +198,7 @@ void ANN::moveWeights(const std::vector<std::valarray<double>> & output,
 #endif
 }
 
-void ANN::countError(std::vector<std::valarray<double>> & output,
+void ANN::countError(const outputType & output,
                      int type,
                      double & currentError)
 {
@@ -228,10 +228,11 @@ void ANN::learn(std::vector<int> & indices)
         allocWeight(weight);
     }
 
-    const uint numOfLayers = dim.size();
-    std::vector<std::valarray<double>> output(numOfLayers);
+    const uint numOfLayers = dim.size(); /// usually 2
+    outputType output(numOfLayers);
     for(uint i = 0; i < numOfLayers; ++i)
     {
+        /// 0 - input, 1 - output
         output[i].resize(dim[i] + 1); // +1 for biases
     }
 
@@ -251,6 +252,7 @@ void ANN::learn(std::vector<int> & indices)
     std::vector<double> normCoeff;
     const double helpMin = *std::min_element(std::begin(*classCount),
                                              std::end(*classCount));
+
     for(uint i = 0; i < numCl; ++i)
     {
         normCoeff.push_back(helpMin / (*classCount)[i]);
@@ -293,13 +295,11 @@ int ANN::getEpoch()
 
 void ANN::test(const std::vector<int> & indices)
 {
-    confusionMatrix.fill(0.);
     for(int ind : indices)
     {
         auto res = classifyDatum(ind);
         confusionMatrix[(*types)[ind]][res.first] += 1.;
     }
-//    averageClassification();
 }
 
 std::pair<int, double> ANN::classifyDatum(const int & vecNum)
@@ -307,7 +307,7 @@ std::pair<int, double> ANN::classifyDatum(const int & vecNum)
     const int numOfLayers = dim.size();
     int type = -1;
 
-    std::vector<std::valarray<double>> output(numOfLayers);
+    outputType output(numOfLayers);
     for(int i = 0; i < numOfLayers; ++i)
     {
         output[i].resize(dim[i] + 1); // +1 for biases

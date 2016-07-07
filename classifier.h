@@ -49,6 +49,7 @@ public:
 class ANN : public Classifier
 {
     typedef std::vector<std::vector<std::valarray<double>>> weightType;
+    typedef std::vector<std::valarray<double>> outputType;
 
 private:
     bool resetFlag = true;
@@ -73,11 +74,13 @@ private:
     void allocWeight(weightType & inMat);
     std::valarray<double> (*activation)(const std::valarray<double> & in) = smallLib::softmax;
     void loadVector(const int vecNum, std::valarray<double> & out, int & type);
-    void countOutput(std::vector<std::valarray<double>> & output);
-    void countOutputDelta(std::vector<std::valarray<double>> & output);
-    void countOutputBackprop(std::vector<std::valarray<double>> & output);
-    void countError(std::vector<std::valarray<double>> & output, int type, double & currentError);
-    void moveWeights(const std::vector<std::valarray<double>> & output,
+    void countOutput(outputType & output);
+    void countOutputDelta(outputType & output);
+    void countOutputBackprop(outputType & output);
+    void countError(const outputType & output,
+                    int type,
+                    double & currentError);
+    void moveWeights(const outputType & output,
                      const std::vector<double> & normCoeff,
                      const int type);
 

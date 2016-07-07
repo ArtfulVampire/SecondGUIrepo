@@ -47,6 +47,8 @@ QStringList leest_mri = {
     "Nikolaenko",
     "Mezhenova",
     "Sushinsky",
+    "LevandoA",
+    "Umanskaya"
 
 };
 void MainWindow::customFunc()
@@ -60,6 +62,12 @@ void MainWindow::customFunc()
 
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
+
+    setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+    readData();
+    Net * net = new Net();
+    net->show();
+    net->loadData();
 
 
     return;
@@ -132,6 +140,8 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
+
+
 #if 0
     /// Xenia rereference + cut
 
@@ -175,7 +185,7 @@ void MainWindow::customFunc()
 //    exit(0);
 
 
-    QString guy = "Moskovtsev";
+    QString guy = "Umanskaya";
 //    for(QString guy : leest_mri)
     {
         GalyaProcessing(def::mriFolder
@@ -185,10 +195,15 @@ void MainWindow::customFunc()
                         def::mriFolder
                         + slash + guy
                         + slash + guy + "_windows_cleaned_out");
+
         QDir tmp(def::mriFolder + slash + "OUT");
         tmp.mkdir(guy);
 
-        makeRightNumbers(def::mriFolder + slash + guy + "_windows_cleaned_out");
+        /// check rightNumbers in all subjects
+        makeRightNumbers(def::mriFolder
+                         + slash + guy
+                         + slash + guy + "_windows_cleaned_out");
+
         for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
         {
             makeTableFromRows(def::mriFolder

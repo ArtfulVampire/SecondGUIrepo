@@ -65,9 +65,10 @@ inline std::valarray<double> softmax(const std::valarray<double> & in)
     std::valarray<double> tmp = exp(in);
     double sum = std::accumulate(std::begin(tmp),
                                  std::end(tmp) - 1,
-                                 0.,
-                                 [](double init, double val){return init + val;});
-    return tmp / sum; // dont care about the last
+                                 0.
+//                                 ,[](double init, double val){return init + val;}
+    );
+    return tmp / sum; // dont care about the last(bias)
 
 }
 
@@ -91,6 +92,11 @@ inline void resizeValar(lineType & in, int num)
 
 inline double prod(const lineType & in1, const lineType & in2)
 {
+    if(in1.size() != in2.size())
+    {
+        std::cout << "smallLib::prod: sizes" << std::endl;
+        exit(1);
+    }
     return std::inner_product(begin(in1),
                               end(in1),
                               begin(in2),

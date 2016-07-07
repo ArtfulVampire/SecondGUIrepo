@@ -102,7 +102,7 @@ public:
     enum class source {winds, reals, pca, bayes};
 
     myMode Mode = myMode::N_fold;
-    source Source = source::winds;
+    source Source = source::reals;
 
     /// make a class
     void learnIndicesNet(std::vector<int> & indices);
