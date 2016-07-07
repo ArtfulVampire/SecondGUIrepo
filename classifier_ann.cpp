@@ -33,17 +33,60 @@ void ANN::forEachWeight(weightType & inWeight,
 }
 #endif
 
-void ANN::allocWeight(weightType & inMat)
+
+/// not always for this->weight for drawWts
+void ANN::allocParams(weightType & inMat)
 {
     inMat.resize(dim.size() - 1);
     for(uint i = 0; i < inMat.size(); ++i) // weights to layer i+1 from i
     {
         inMat[i].resize(dim[i + 1]);
-        for(uint j = 0; j < inMat[i].size(); ++j) // to j'th in i+1 layer
+        for(auto & b : inMat[i]) // to j'th in i+1 layer
         {
             // resizing lineType -> fill zeros
-            inMat[i][j].resize(dim[i] + 1); // from k'th in i layer + bias
+            b.resize(dim[i] + 1); // from k'th in i layer + bias
         }
+    }
+    if(&inMat != &(this->weight)) /// happens only in drawings
+    {
+        return;
+    }
+
+    output.resize(dim.size());
+    int i = 0;
+    for(auto & b : output)
+    {
+        b.resize(dim[i] + 1); // +1 for biases
+        ++i;
+    }
+
+    if(learnStyl == learnStyle::backprop)
+    {
+        deltaWeights.resize(numOfLayers);
+        for(uint i = 0; i < numOfLayers; ++i)
+        {
+            deltaWeights[i].resize(dim[i]); // fill zeros
+        }
+    }
+}
+
+void ANN::zeroParams()
+{
+    for(auto & a : weight)
+    {
+        for(auto & b : a)
+        {
+            std::fill(std::begin(b),
+                      std::end(b),
+                      0.);
+        }
+    }
+
+    for(auto & b : output)
+    {
+        std::fill(std::begin(b),
+                  std::end(b),
+                  0.);
     }
 }
 
@@ -57,7 +100,7 @@ void ANN::setDim(const std::vector<int> & inDim)
     }
     dim.push_back(numCl);
 
-    allocWeight(weight);
+    allocParams(weight);
 
 #if 0
     if(0) // if backprop
@@ -89,30 +132,30 @@ void ANN::setLrate(double inRate)
 
 
 
-void ANN::loadVector(const int vecNum, std::valarray<double> & out, int & type)
+void ANN::loadVector(int vecNum, int & type)
 {
     /// out.size() == (*dataMatrix).cols() + 1
     std::copy(std::begin((*dataMatrix)[vecNum]),
               std::end((*dataMatrix)[vecNum]),
-              std::begin(out));
-    out[out.size() - 1] = 1.; //bias
+              std::begin(output[0]));
+    output[0][output[0].size() - 1] = 1.; //bias
     type = (*types)[vecNum]; // true class
 }
 
-void ANN::countOutput(outputType & output)
+void ANN::countOutput()
 {
     /// switch case
     if(learnStyl == learnStyle::delta)
     {
-        countOutputDelta(output);
+        countOutputDelta();
     }
     else if(learnStyl == learnStyle::backprop)
     {
-        countOutputBackprop(output);
+        countOutputBackprop();
     }
 }
 
-void ANN::countOutputDelta(outputType & output)
+void ANN::countOutputDelta()
 {
     for(int i = 1; i < dim.size(); ++i)
     {
@@ -125,7 +168,7 @@ void ANN::countOutputDelta(outputType & output)
     }
 }
 
-void ANN::countOutputBackprop(outputType & output)
+void ANN::countOutputBackprop()
 {
 #if 0
     /// count deltaWeights
@@ -160,8 +203,7 @@ void ANN::countOutputBackprop(outputType & output)
 
 }
 
-void ANN::moveWeights(const outputType & output,
-                      const std::vector<double> & normCoeff,
+void ANN::moveWeights(const std::vector<double> & normCoeff,
                       const int type)
 {
     if(learnStyl == learnStyle::delta)
@@ -198,8 +240,7 @@ void ANN::moveWeights(const outputType & output,
 #endif
 }
 
-void ANN::countError(const outputType & output,
-                     int type,
+void ANN::countError(int type,
                      double & currentError)
 {
     double err = 0.;
@@ -223,27 +264,18 @@ void ANN::learn(std::vector<int> & indices)
     QTime myTime;
     myTime.start();
 
+    if(this->weight.empty() || this->output.empty())
+    {
+        allocParams(weight);
+    }
+
     if(this->resetFlag)
     {
-        allocWeight(weight);
+        zeroParams();
     }
 
     const uint numOfLayers = dim.size(); /// usually 2
-    outputType output(numOfLayers);
-    for(uint i = 0; i < numOfLayers; ++i)
-    {
-        /// 0 - input, 1 - output
-        output[i].resize(dim[i] + 1); // +1 for biases
-    }
 
-    if(learnStyl == learnStyle::backprop)
-    {
-        deltaWeights.resize(numOfLayers);
-        for(uint i = 0; i < numOfLayers; ++i)
-        {
-            deltaWeights[i].resize(dim[i]); // fill zeros
-        }
-    }
 
     double currentError = critError + 0.1;
     int type = -1;
@@ -268,12 +300,12 @@ void ANN::learn(std::vector<int> & indices)
                      std::end(indices),
                      std::default_random_engine(seed));
 
-        for(const int index : indices)
+        for(int index : indices)
         {
-            loadVector(index, output[0], type);
-            countOutput(output);
-            countError(output, type, currentError);
-            moveWeights(output, normCoeff, type);
+            loadVector(index, type);
+            countOutput();
+            countError(type, currentError);
+            moveWeights(normCoeff, type);
         }
         ++epoch;
         //count error
@@ -307,18 +339,12 @@ std::pair<int, double> ANN::classifyDatum(const int & vecNum)
     const int numOfLayers = dim.size();
     int type = -1;
 
-    outputType output(numOfLayers);
-    for(int i = 0; i < numOfLayers; ++i)
-    {
-        output[i].resize(dim[i] + 1); // +1 for biases
-    }
-
-    loadVector(vecNum, output[0], type);
-    countOutput(output);
+    loadVector(vecNum, type);
+    countOutput();
 
     /// effect on successive procedure
     double res = 0.;
-    countError(output, type, res);
+    countError(type, res);
 
     smallLib::resizeValar(output.back(), numCl);
     int outClass = indexOfMax(output.back());
@@ -406,7 +432,7 @@ void ANN::readWeight(const QString & fileName,
     {
         wtsMatrix = &(this->weight);
     }
-    allocWeight((*wtsMatrix));
+    allocParams((*wtsMatrix));
 
     for(uint i = 0; i < weight.size(); ++i) // numOfLayers
     {

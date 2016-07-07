@@ -67,21 +67,21 @@ private:
 
     double learnRate = 0.05;
     weightType weight{};
+    outputType output{};
     std::vector<int> dim{}; /// only intermediate layers
     std::vector<std::valarray<double>> deltaWeights{};
 
     /// deleberately private functions
     void allocWeight(weightType & inMat);
+    void zeroParams();
     std::valarray<double> (*activation)(const std::valarray<double> & in) = smallLib::softmax;
-    void loadVector(const int vecNum, std::valarray<double> & out, int & type);
-    void countOutput(outputType & output);
-    void countOutputDelta(outputType & output);
-    void countOutputBackprop(outputType & output);
-    void countError(const outputType & output,
-                    int type,
+    void loadVector(const int vecNum, int & type);
+    void countOutput();
+    void countOutputDelta();
+    void countOutputBackprop();
+    void countError(int type,
                     double & currentError);
-    void moveWeights(const outputType & output,
-                     const std::vector<double> & normCoeff,
+    void moveWeights(const std::vector<double> & normCoeff,
                      const int type);
 
 public:

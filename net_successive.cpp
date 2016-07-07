@@ -187,8 +187,9 @@ void Net::successiveRelearn()
     learnClassifierSlot(false); // relearn w/o weights reset
 }
 
+/// not always to this->weight for drawWts
 void Net::readWtsByName(const QString & fileName,
-                        twovector<lineType> * wtsMatrix) //
+                        twovector<lineType> * wtsMatrix)
 {
     ifstream wtsStr;
     wtsStr.open(fileName.toStdString());

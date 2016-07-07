@@ -94,20 +94,20 @@ inline double prod(const lineType & in1, const lineType & in2)
 {
     if(in1.size() != in2.size())
     {
-        std::cout << "smallLib::prod: sizes" << std::endl;
+        std::cout << "smallLib::prod: sizes = " << in1.size() << "   " << in2.size() << std::endl;
         exit(1);
     }
-    return std::inner_product(begin(in1),
-                              end(in1),
-                              begin(in2),
+    return std::inner_product(std::begin(in1),
+                              std::end(in1),
+                              std::begin(in2),
                               0.);
 }
 
 inline double normaSq(const lineType & in)
 {
-    return std::inner_product(begin(in),
-                              end(in),
-                              begin(in),
+    return std::inner_product(std::begin(in),
+                              std::end(in),
+                              std::begin(in),
                               0.);
 }
 inline double mean(const lineType & arr)

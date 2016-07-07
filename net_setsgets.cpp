@@ -351,11 +351,7 @@ void Net::aaDefaultSettings()
     ui->lowLimitSpinBox->setValue(40);  /// lowLimit
 
     /// classifier
-    ui->classANNRadioButton->setChecked(true);
-
-//    activation = smallLib::logistic;
-//    ui->highLimitSpinBox->setValue(120); /// highLimit
-//    ui->lowLimitSpinBox->setValue(60);  /// lowLimit
+    ///
 
     ui->rdcCoeffSpinBox->setValue(7.); ///  rdc coeff
     ui->foldSpinBox->setValue(2); /////// fold
