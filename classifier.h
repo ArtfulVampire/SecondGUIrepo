@@ -45,10 +45,15 @@ public:
     virtual std::pair<int, double> classifyDatum(const int & vecNum) = 0;
 };
 
+#define WEIGHT_MATRIX 0
 
 class ANN : public Classifier
 {
+#if WEIGHT_MATRIX
+    typedef std::vector<matrix> weightType;
+#else
     typedef std::vector<std::vector<std::valarray<double>>> weightType;
+#endif
     typedef std::vector<std::valarray<double>> outputType;
 
 private:
@@ -72,7 +77,7 @@ private:
     std::vector<std::valarray<double>> deltaWeights{};
 
     /// deleberately private functions
-    void allocWeight(weightType & inMat);
+    void allocParams(weightType & inMat);
     void zeroParams();
     std::valarray<double> (*activation)(const std::valarray<double> & in) = smallLib::softmax;
     void loadVector(const int vecNum, int & type);

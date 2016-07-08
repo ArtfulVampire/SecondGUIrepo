@@ -174,6 +174,7 @@ Net::Net() :
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
 
     QObject::connect(ui->autoClassButton, SIGNAL(clicked()), this, SLOT(autoClassificationSimple()));
+    QObject::connect(ui->autoClassDataPushButton, SIGNAL(clicked()), this, SLOT(autoClassification()));
 
     QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(doSVM()));
 
@@ -574,17 +575,16 @@ void Net::normalizeDataMatrix()
 }
 
 void Net::loadData(const matrix & inMat,
-                   const std::vector<int> inTypes)
+                   const std::vector<int> & inTypes)
 {
+    dataMatrix = matrix();
     dataMatrix = inMat;
     types = inTypes;
     classCount.resize(def::numOfClasses(), 0.);
-    std::for_each(std::begin(types),
-                  std::end(types),
-                  [this](int typ)
+    for(int typ : types)
     {
-        this->classCount[typ] += 1;
-    });
+        classCount[typ] += 1.;
+    }
     normalizeDataMatrix();
 }
 
@@ -620,6 +620,8 @@ void Net::loadData(const QString & spectraPath,
 //    cout << "loadDataNorm = " << loadDataNorm << endl;
 
     normalizeDataMatrix();
+
+//    std::cout << dataMatrix.rows() << "\t" << dataMatrix.cols() << std::endl;
 }
 
 void Net::loadDataSlot()

@@ -43,13 +43,14 @@ QStringList leest_non = {
 QStringList leest_mri = {
     "Ali-Zade",
     "Atanov",
+    "Balaev",
     "Khasanov",
     "Nikolaenko",
     "Mezhenova",
     "Sushinsky",
     "LevandoA",
-    "Umanskaya"
-
+    "Umanskaya",
+    "Muchanova"
 };
 void MainWindow::customFunc()
 {
@@ -67,7 +68,20 @@ void MainWindow::customFunc()
     readData();
     Net * net = new Net();
     net->show();
-    net->loadData();
+
+
+    /// loading IRIS dataset
+    matrix iris(150, 4);
+    readMatrixFile(def::dataFolder + slash + "IRIS_data.txt", iris);
+    std::vector<int> irisTypes(150);
+    for(int i = 0; i < 3; ++i)
+    {
+        std::fill(std::begin(irisTypes) + i * 50,
+                  std::begin(irisTypes) + (i + 1) * 50,
+                  i);
+    }
+    net->loadData(iris, irisTypes);
+
 
 
     return;
@@ -185,7 +199,7 @@ void MainWindow::customFunc()
 //    exit(0);
 
 
-    QString guy = "Umanskaya";
+    QString guy = "Moskovtsev";
 //    for(QString guy : leest_mri)
     {
         GalyaProcessing(def::mriFolder
@@ -232,6 +246,22 @@ void MainWindow::customFunc()
     }
 
     exit(0);
+#endif
+
+
+
+#if 0
+    /// loading IRIS dataset
+    matrix iris(150, 4);
+    readMatrixFile(def::dataFolder + slash + "IRIS_data.txt", iris);
+    std::vector<int> irisTypes(150);
+    for(int i = 0; i < 3; ++i)
+    {
+        std::fill(std::begin(irisTypes) + i * 50,
+                  std::begin(irisTypes) + (i + 1) * 50,
+                  i);
+    }
+    net->loadData(iris, irisTypes);
 #endif
 
 

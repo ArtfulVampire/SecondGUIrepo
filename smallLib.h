@@ -92,11 +92,11 @@ inline void resizeValar(lineType & in, int num)
 
 inline double prod(const lineType & in1, const lineType & in2)
 {
-    if(in1.size() != in2.size())
-    {
-        std::cout << "smallLib::prod: sizes = " << in1.size() << "   " << in2.size() << std::endl;
-        exit(1);
-    }
+//    if(in1.size() != in2.size())
+//    {
+//        std::cout << "smallLib::prod: sizes = " << in1.size() << "   " << in2.size() << std::endl;
+//        exit(1);
+//    }
     return std::inner_product(std::begin(in1),
                               std::end(in1),
                               std::begin(in2),

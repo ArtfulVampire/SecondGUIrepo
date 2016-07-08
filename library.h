@@ -164,6 +164,7 @@ char * QStrToCharArr(const QString & input, const int & len = -1);
 int typeOfFileName(const QString & fileName);
 QString getFileMarker(const QString & fileName);
 
+
 template <typename Container>
 int indexOfMax(const Container & cont);
 

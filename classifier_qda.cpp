@@ -1,8 +1,10 @@
 #include "classifier.h"
 
+using namespace myLib;
+
 QDA::QDA()
 {
-    covMat.resize(numCl);
+    covMat.resize(numCl, matrix());
     centers.resize(numCl);
     dets.resize(numCl);
 }
@@ -21,20 +23,30 @@ void QDA::learn(std::vector<int> & indices)
             }
         }
         centers[i] = oneClass.averageRow();
+
+        for(int j = 0; j < oneClass.rows(); ++j)
+        {
+            oneClass[j] -= centers[i];
+        }
+
         covMat[i] = matrix::transpose(oneClass) * oneClass;
+        covMat[i] /= oneClass.rows();
+
+//        std::cout << "covMat = " << std::endl;
+//        covMat[i].print();
         covMat[i].invert(&(dets[i]));
+//        std::cout << "invMat = " << std::endl;
+//        covMat[i].print();
     }
 }
 
 void QDA::test(const std::vector<int> & indices)
 {
-    confusionMatrix.fill(0.);
     for(int ind : indices)
     {
         auto res = classifyDatum(ind);
         confusionMatrix[(*types)[ind]][res.first] += 1.;
     }
-//    averageClassification();
 }
 
 std::pair<int, double> QDA::classifyDatum(const int & vecNum)
@@ -46,8 +58,11 @@ std::pair<int, double> QDA::classifyDatum(const int & vecNum)
         lineType a = ((*dataMatrix)[vecNum] - centers[i]);
         matrix m1(a, 'r'); // row
         matrix m2(a, 'c'); // col
-        output[i] = - (m1 * covMat[i] * m2)[0][0] - log(dets[i]);
+        double tmp = (m1 * covMat[i] * m2)[0][0];
+//        std::cout << tmp << std::endl;
+        output[i] = - tmp - log(dets[i]);
     }
+//    std::cout << (*types)[vecNum] << ":\t" << output << std::endl;
     int outClass = myLib::indexOfMax(output);
 
     return std::make_pair(outClass,

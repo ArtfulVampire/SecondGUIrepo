@@ -294,6 +294,36 @@ void Net::autoClassification(const QString & spectraDir)
     cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
+
+void Net::autoClassification()
+{
+    QTime myTime;
+    myTime.start();
+
+    confusionMatrix.fill(0.);
+    switch(Mode)
+    {
+    case myMode::k_fold:
+    {
+        crossClassification(); break;
+    }
+    case myMode::N_fold:
+    {
+        leaveOneOutClassification(); break;
+    }
+    case myMode::train_test:
+    {
+        trainTestClassification(); break;
+    }
+    case myMode::half_half:
+    {
+        halfHalfClassification(); break;
+    }
+    default: {break;}
+    }
+    cout <<  "AutoClassOnData: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+}
+
 void Net::averageClassification(matrix * inMat)
 {
     if(inMat == nullptr)
@@ -352,6 +382,9 @@ void Net::averageClassification(matrix * inMat)
 
 void Net::leaveOneOutClassification()
 {
+    leaveOneOut();
+    return;
+
     if(Source == source::pca)
     {
         ofstream outStr;
@@ -378,16 +411,6 @@ void Net::leaveOneOutClassification()
         cout << "Net: autoclass (max " << dataMatrix.rows() << "):" << endl;
         leaveOneOut();
     }
-
-    return;
-    if(!ui->openclCheckBox->isChecked())
-    {
-        leaveOneOut();
-    }
-    else
-    {
-//        leaveOneOutCL();
-    }
 }
 
 void Net::crossClassification()
@@ -396,7 +419,7 @@ void Net::crossClassification()
     const int fold = ui->foldSpinBox->value();
 
     std::vector<std::vector<int>> arr; // [class][index]
-    arr.resize(def::numOfClasses(), {});
+    arr.resize(def::numOfClasses());
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
         arr[ types[i] ].push_back(i);

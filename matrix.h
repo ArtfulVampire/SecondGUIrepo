@@ -21,7 +21,8 @@
 #if _OPENMP
 #include <omp.h>
 #endif
-#define MATRIX_OMP _OPENMP&&1
+// omp not effective
+#define MATRIX_OMP _OPENMP&&0
 
 using dataType = std::vector<std::valarray<double>>;
 

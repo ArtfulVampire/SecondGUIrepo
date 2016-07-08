@@ -165,6 +165,7 @@ void Net::setClassifier(QAbstractButton * but)
 {
     if(myClassifier != nullptr)
     {
+        cout << "delete classifier" << endl;
         delete myClassifier;
     }
 
@@ -339,9 +340,9 @@ void Net::aaDefaultSettings()
 //    ui->trainTestRadioButton->setChecked(true); /// train-test
 
     /// source
-        ui->realsRadioButton->setChecked(true); /// reals
+//        ui->realsRadioButton->setChecked(true); /// reals
 //        ui->windowsRadioButton->setChecked(true); /// windows
-    //    ui->pcaRadioButton->setChecked(true); /// PCA
+        ui->pcaRadioButton->setChecked(true); /// PCA
 
     /// activation
 //    ui->logisticRadioButton->setChecked(true);
@@ -352,9 +353,11 @@ void Net::aaDefaultSettings()
 
     /// classifier
     ///
+//    ui->classANNRadioButton->setChecked(true);
 
     ui->rdcCoeffSpinBox->setValue(7.); ///  rdc coeff
     ui->foldSpinBox->setValue(2); /////// fold
     ui->numOfPairsBox->setValue(1); //// pairs
     ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
+    ui->learnRateBox->setValue(0.01); /// errcrit PEWPEW
 }

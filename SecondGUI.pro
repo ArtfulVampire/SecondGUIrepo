@@ -66,7 +66,6 @@ FORMS    += mainwindow.ui \
     net.ui \
     spectre.ui
 
-OTHER_FILES += \
-    kernels.cl
+OTHER_FILES +=
 
 RESOURCES +=

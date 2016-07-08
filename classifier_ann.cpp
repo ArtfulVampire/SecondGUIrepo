@@ -40,13 +40,18 @@ void ANN::allocParams(weightType & inMat)
     inMat.resize(dim.size() - 1);
     for(uint i = 0; i < inMat.size(); ++i) // weights to layer i+1 from i
     {
+#if WEIGHT_MATRIX
+        inMat[i] = matrix(dim[i + 1], dim[i] + 1, 0.);
+#else
         inMat[i].resize(dim[i + 1]);
         for(auto & b : inMat[i]) // to j'th in i+1 layer
         {
             // resizing lineType -> fill zeros
             b.resize(dim[i] + 1); // from k'th in i layer + bias
-        }
+        }        
+#endif
     }
+
     if(&inMat != &(this->weight)) /// happens only in drawings
     {
         return;
@@ -62,8 +67,8 @@ void ANN::allocParams(weightType & inMat)
 
     if(learnStyl == learnStyle::backprop)
     {
-        deltaWeights.resize(numOfLayers);
-        for(uint i = 0; i < numOfLayers; ++i)
+        deltaWeights.resize(dim.size());
+        for(uint i = 0; i < dim.size(); ++i)
         {
             deltaWeights[i].resize(dim[i]); // fill zeros
         }
@@ -72,6 +77,12 @@ void ANN::allocParams(weightType & inMat)
 
 void ANN::zeroParams()
 {
+#if WEIGHT_MATRIX
+    for(auto & a : weight)
+    {
+        a.fill(0.);
+    }
+#else
     for(auto & a : weight)
     {
         for(auto & b : a)
@@ -81,6 +92,7 @@ void ANN::zeroParams()
                       0.);
         }
     }
+#endif
 
     for(auto & b : output)
     {
@@ -159,10 +171,18 @@ void ANN::countOutputDelta()
 {
     for(int i = 1; i < dim.size(); ++i)
     {
+//        std::cout << "pew" << std::endl;
+#if WEIGHT_MATRIX
+        output[i] = weight[i - 1] * output[i - 1];
+        smallLib::resizeValar(output[i], output[i].size() + 1);
+        output[i][output[i].size() - 1] = 1;
+#else
         for(int j = 0; j < dim[i]; ++j) //higher level, w/o bias
         {
             output[i][j] = smallLib::prod(weight[i - 1][j], output[i - 1]); // bias included
         }
+#endif
+//        std::cout << "pewpew" << std::endl;
         output[i] = activation(output[i]);
         output[i][ dim[i] ] = 1.; //bias, unused for the highest layer
     }
@@ -274,8 +294,7 @@ void ANN::learn(std::vector<int> & indices)
         zeroParams();
     }
 
-    const uint numOfLayers = dim.size(); /// usually 2
-
+//    std::cout << "asdkjfjkrgwegb" << std::endl;
 
     double currentError = critError + 0.1;
     int type = -1;
@@ -291,6 +310,8 @@ void ANN::learn(std::vector<int> & indices)
     }
 
     epoch = 0;
+
+//    std::cout << "asdkjfjkrgwegb" << std::endl;
     while(currentError > critError && epoch < epochLimit)
     {
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -300,13 +321,23 @@ void ANN::learn(std::vector<int> & indices)
                      std::end(indices),
                      std::default_random_engine(seed));
 
+
+//        std::cout << "asdkjfjkrgwegb" << std::endl;
         for(int index : indices)
         {
+
+//            std::cout << 123 << std::endl;
             loadVector(index, type);
+//            std::cout << 124 << std::endl;
             countOutput();
+//            std::cout << 125 << std::endl;
             countError(type, currentError);
+//            std::cout << 126 << std::endl;
             moveWeights(normCoeff, type);
+//            std::cout << 127 << std::endl;
         }
+
+//        std::cout << "asdkjfjkrgwegb" << std::endl;
         ++epoch;
         //count error
         if(errType == errorNetType::SME)
@@ -336,7 +367,6 @@ void ANN::test(const std::vector<int> & indices)
 
 std::pair<int, double> ANN::classifyDatum(const int & vecNum)
 {
-    const int numOfLayers = dim.size();
     int type = -1;
 
     loadVector(vecNum, type);
@@ -346,12 +376,13 @@ std::pair<int, double> ANN::classifyDatum(const int & vecNum)
     double res = 0.;
     countError(type, res);
 
-    smallLib::resizeValar(output.back(), numCl);
-    int outClass = indexOfMax(output.back());
-
+    std::valarray<double> forRes = output.back();
+    smallLib::resizeValar(forRes, numCl);
+    int outClass = myLib::indexOfMax(forRes);
 
 #if 0
     /// cout results
+    const int numOfLayers = dim.size();
     std::ofstream resFile;
     resFile.open((def::dir->absolutePath() +
                   slash + "class.txt").toStdString(),

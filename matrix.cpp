@@ -358,8 +358,15 @@ matrix matrix::operator *= (const matrix & other)
 
 lineType operator * (const matrix & lhs, const lineType & rhs)
 {
-    if(rhs.size() != lhs.cols()) return {};
+    if(rhs.size() != lhs.cols())
+    {
+        cout << "operator * (matrix, valar) invalid sizes" << endl;
+        return {};
+    }
     lineType res(lhs.rows());
+#if MATRIX_OMP
+#pragma omp parallel for
+#endif
     for(uint i = 0; i < res.size(); ++i)
     {
         res[i] = prod(lhs[i], rhs);
@@ -770,12 +777,11 @@ matrix & matrix::invert(double * det)
     matrix tempMat(size, size, 0.);
     for(uint i = 0; i < size; ++i)
     {
-        for(uint j = 0; j < size; ++j)
-        {
-            tempMat[i][j] = (j == i);
-        }
+        tempMat[i][i] = 1.;
     }
     double coeff;
+
+//    cout << "start first cycle" << endl;
 
     //1) make higher-triangular
     for(uint i = 0; i < size - 1; ++i) //which line to substract
@@ -790,6 +796,7 @@ matrix & matrix::invert(double * det)
         }
     }
 
+//    cout << "start second cycle" << endl;
     //2) make diagonal
     for(int i = size - 1; i > 0; --i) //which line to substract (bottom -> up)
     {
@@ -802,10 +809,11 @@ matrix & matrix::invert(double * det)
             tempMat[j] -= tempMat[i] * coeff;
         }
     }
+//    cout << "do the rest" << endl;
 
     if(det != nullptr)
     {
-        (*det) = 1;
+        (*det) = 1.;
         for(uint i = 0; i < size; ++i)
         {
             (*det) *= initMat[i][i];

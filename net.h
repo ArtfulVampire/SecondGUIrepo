@@ -42,13 +42,13 @@ private:
     QButtonGroup  * group4;
     QButtonGroup  * group5;
 
-    Classifier * myClassifier;
+    Classifier * myClassifier = nullptr;
 
     matrix dataMatrix{}; // biases and types separately
-    std::vector<int> types;
-    std::vector<QString> fileNames;
-    std::vector<double> classCount; // really int but...
-    matrix confusionMatrix; // rows - realClass, cols - outClass
+    std::vector<int> types{};
+    std::vector<QString> fileNames{};
+    std::vector<double> classCount{}; // really int but...
+    matrix confusionMatrix{}; // rows - realClass, cols - outClass
 
     double loadDataNorm = 10.;
     lineType averageDatum;
@@ -159,7 +159,7 @@ public:
                   const QStringList & filters = {},
                   double rdcCoeff = 1.);
     void loadData(const matrix & inMat,
-                  const std::vector<int> inTypes);
+                  const std::vector<int> & inTypes);
     void popBackDatum();
     void pushBackDatum(const lineType & inDatum,
                      const int & inType,
@@ -218,6 +218,7 @@ public slots:
 
     void pca();
     void autoClassificationSimple();
+    void autoClassification(); /// on dataMatrix = types
     void doSVM();
     void methodSetParam(int, bool);
     void testDistances();

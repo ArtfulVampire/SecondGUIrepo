@@ -673,7 +673,9 @@ void edfFile::handleDatum(const int & currNs,
 
 //                currDatum = a; //generality encephalan
             }
-            if(!this->edfPlusFlag && currDatum != 0) // make markers file when read only
+            if(this->writeMarkersFlag &&
+               !this->edfPlusFlag &&
+               currDatum != 0) // make markers file when read only
             {
                 writeMarker(currDatum, currTimeIndex);
             }
@@ -781,7 +783,6 @@ void edfFile::writeMarker(const double & currDatum,
     }
     fprintf(markers, "\n");
     fclose(markers);
-
 }
 
 void edfFile::handleAnnotations(const int & currNs,
