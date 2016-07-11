@@ -454,6 +454,19 @@ matrix & matrix::fill(double value)
     return *this;
 }
 
+matrix & matrix::vertCat(matrix && other)
+{
+    if(this->cols() != other.cols())
+    {
+        std::cout << "matrix::vertCat(): wrong dimensionality" << std::endl;
+        return *this;
+    }
+    for(int i = 0; i < other.rows(); ++i)
+    {
+        this->push_back(std::move(other[i]));
+    }
+    return *this;
+}
 
 matrix & matrix::random(double low, double high)
 {

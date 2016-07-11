@@ -222,7 +222,7 @@ std::pair<std::vector<int>, std::vector<int>> Net::makeIndicesSetsCross(
         for(int j = 0; j < classCount[i]; ++j)
         {
             if(j >= (classCount[i] * numOfFold / fold) &&
-               j <= (classCount[i] * (numOfFold + 1) / fold))
+               j < (classCount[i] * (numOfFold + 1) / fold))
             {
                 tallInd.push_back(arr[i][j]);
             }

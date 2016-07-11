@@ -93,7 +93,7 @@ Net::Net() :
     ui->numOfPairsBox->setValue(10); //// pairs
 
 #define INDICES 1
-    ui->foldSpinBox->setMaximum(10);
+    ui->foldSpinBox->setMaximum(50);
     ui->foldSpinBox->setMinimum(1);
     ui->foldSpinBox->setValue(4); /////// fold
 

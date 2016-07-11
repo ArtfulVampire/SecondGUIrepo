@@ -45,7 +45,8 @@ SOURCES += main.cpp\
     classifier.cpp \
     classifier_ann.cpp \
     classifier_qda.cpp \
-    classifier_svm.cpp
+    classifier_svm.cpp \
+    classifier_lda.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

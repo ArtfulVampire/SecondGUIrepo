@@ -215,6 +215,9 @@ void Net::setClassifier(QAbstractButton * but)
     }
     else if(but->text() == "LDA")
     {
+        myClassifier = new LDA();
+        setClassifierParams();
+        LDA * myLDA = reinterpret_cast<LDA *>(myClassifier);
     }
 
 }

@@ -124,6 +124,23 @@ protected:
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
 
+
+class LDA : public Classifier
+{
+private:
+    matrix covMat;
+    std::vector<std::valarray<double>> centers;
+
+public:
+    LDA();
+    ~LDA();
+
+protected:
+    void learn(std::vector<int> & indices);
+    void test(const std::vector<int> & indices);
+    std::pair<int, double> classifyDatum(const int & vecNum);
+};
+
 class QDA : public Classifier
 {
 private:

@@ -130,6 +130,7 @@ public:
     matrix & eraseRow(uint i);
     matrix & eraseRows(const std::vector<int> & indices);
     matrix & random(double low, double high);
+    matrix & vertCat(matrix && other);
     matrix subCols(int beginCol, int endCol) const; /// submatrix
     lineType matrixSystemSolveGauss(const lineType & inVec) const;
 
