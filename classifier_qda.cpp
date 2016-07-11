@@ -2,7 +2,7 @@
 
 using namespace myLib;
 
-QDA::QDA()
+QDA::QDA() : Classifier()
 {
     covMat.resize(numCl, matrix());
     centers.resize(numCl);
@@ -64,6 +64,8 @@ std::pair<int, double> QDA::classifyDatum(const int & vecNum)
     }
 //    std::cout << (*types)[vecNum] << ":\t" << output << std::endl;
     int outClass = myLib::indexOfMax(output);
+
+    printResult("QDA.txt", outClass, vecNum);
 
     return std::make_pair(outClass,
                           double(outClass != (*types)[vecNum]));

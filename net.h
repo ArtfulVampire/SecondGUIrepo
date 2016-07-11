@@ -84,6 +84,9 @@ private:
 
     matrix coords; //new coords for Sammon method
 
+
+    void setClassifierParams();
+
 public:
     explicit Net();
     ~Net();

@@ -1,7 +1,7 @@
 #include "classifier.h"
 using namespace myLib;
 
-ANN::ANN()
+ANN::ANN() : Classifier()
 {
 
 }
@@ -402,6 +402,7 @@ std::pair<int, double> ANN::classifyDatum(const int & vecNum)
     resFile.close();
 #endif
 
+    printResult("ANN.txt", outClass, vecNum);
     return std::make_pair(outClass,
                           res);
 }

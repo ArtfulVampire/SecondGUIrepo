@@ -6,10 +6,32 @@ Classifier::Classifier()
     numCl = def::numOfClasses();
     confusionMatrix = matrix(numCl, numCl, 0.);
     resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
+    workDir = def::dir->absolutePath() + myLib::slash + "PA";
 }
 
 Classifier::~Classifier()
 {
+}
+
+
+void Classifier::printResult(const QString & fileName, int typ, int vecNum)
+{
+    std::ofstream outStr;
+    outStr.open((workDir + myLib::slash + fileName).toStdString(), std::ios_base::app);
+
+    QString pew;
+    if(typ == (*types)[vecNum])
+    {
+        pew = "";
+    }
+    else
+    {
+        pew = QString::number(vecNum) + "\n";
+    }
+
+    outStr << pew.toStdString();
+
+    outStr.close();
 }
 
 void Classifier::setData(matrix & inMat)

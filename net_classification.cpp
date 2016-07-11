@@ -413,6 +413,38 @@ void Net::leaveOneOutClassification()
     }
 }
 
+void Net::leaveOneOut()
+{
+    std::vector<int> learnIndices;
+    uint i = 0;
+    while(i < dataMatrix.rows())
+    {
+        cout << i + 1;
+        cout << " "; cout.flush();
+
+        /// iota ?
+        learnIndices.clear();
+        learnIndices.resize(dataMatrix.rows() - 1);
+        std::iota(std::begin(learnIndices),
+                  std::begin(learnIndices) + i,
+                  0);
+        std::iota(std::begin(learnIndices) + i,
+                  std::end(learnIndices),
+                  i + 1);
+
+        /// old
+//        learnIndicesFunc(learnIndices);
+//        tallIndicesFunc({i});
+        /// new
+        myClassifier->learn(learnIndices);
+        myClassifier->test({i});
+        ++i;
+    }
+    cout << endl;
+    cout << "N-fold cross-validation:" << endl;
+    myClassifier->averageClassification();
+}
+
 void Net::crossClassification()
 {
     const int numOfPairs = ui->numOfPairsBox->value();
@@ -544,37 +576,6 @@ void Net::trainTestClassification(const QString & trainTemplate,
 
 }
 
-void Net::leaveOneOut()
-{
-    std::vector<int> learnIndices;
-    uint i = 0;
-    while(i < dataMatrix.rows())
-    {
-        cout << i + 1;
-        cout << " "; cout.flush();
-
-        /// iota ?
-        learnIndices.clear();
-        learnIndices.resize(dataMatrix.rows() - 1);
-        std::iota(std::begin(learnIndices),
-                  std::begin(learnIndices) + i,
-                  0);
-        std::iota(std::begin(learnIndices) + i,
-                  std::end(learnIndices),
-                  i + 1);
-
-        /// old
-//        learnIndicesFunc(learnIndices);
-//        tallIndicesFunc({i});
-        /// new
-        myClassifier->learn(learnIndices);
-        myClassifier->test({i});
-        ++i;
-    }
-    cout << endl;
-    cout << "N-fold cross-validation:" << endl;
-    myClassifier->averageClassification();
-}
 
 void Net::learnClassifierSlot(const bool resFlag)
 {

@@ -25,15 +25,18 @@ protected:
     std::vector<double> * classCount = nullptr; // really int but...
 
     matrix confusionMatrix{}; // rows - realClass, cols - outClass
-    QString resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
     double averageAccuracy = 0;
     double kappa = 0;
     uint numCl = 0;
+
+    QString resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
+    QString workDir = def::dir->absolutePath() + myLib::slash + "PA";
 
 public:
     Classifier();
     ~Classifier();
 
+    void printResult(const QString & fileName, int typ, int vecNum);
     void setData(matrix & inMat);
     void setTypes(std::vector<int> & inTypes);
     void setClassCount(std::vector<double> & inClassCount);
@@ -144,8 +147,7 @@ private:
     /// these two are really static
     const QString learnFileName = "svmLearn";
     const QString testFileName = "svmTest";
-
-    QString workDir = def::dir->absolutePath() + myLib::slash + "PA";
+    const QString outputFileName = "output";
     int kernelNum = 0;
     int numOfPairs = 15;
     int fold = 4;

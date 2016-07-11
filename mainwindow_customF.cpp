@@ -64,95 +64,30 @@ void MainWindow::customFunc()
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
-    setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
-    readData();
-    Net * net = new Net();
-    net->show();
-
-
-    /// loading IRIS dataset
-    matrix iris(150, 4);
-    readMatrixFile(def::dataFolder + slash + "IRIS_data.txt", iris);
-    std::vector<int> irisTypes(150);
-    for(int i = 0; i < 3; ++i)
+    if(1)
     {
-        std::fill(std::begin(irisTypes) + i * 50,
-                  std::begin(irisTypes) + (i + 1) * 50,
-                  i);
-    }
-    net->loadData(iris, irisTypes);
+        setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+        readData();
+        Net * net = new Net();
+        net->show();
 
-
-
-    return;
-#if 0
-    /// manual rereference
-    std::vector<int> rightChans{1, 5, 6, 9, 10, 11, 15, 16, 18};
-    std::vector<int> leftChans{0, 2, 3, 4, 7, 8, 12, 13, 14, 17};
-    QString filpath = "/media/michael/Files/Data/Xenia/Shapovalova/SHAPOVALOVA_OLESY_BD_.edf";
-    setEdfFile(filpath);
-//    return;
-    this_thread::sleep_for(std::chrono::seconds{3});
-    edfFile feel;
-    feel.readEdfFile(filpath);
-    matrix dt = feel.getData();
-
-
-#if 0
-    // cout corrMatrix
-    cout << "\t";
-    for(int i = 0; i < 21; ++i)
-    {
-        cout << getLabelName(feel.getLabels()[i]) << "\t";
-    }
-    cout << endl;
-    for(int i = 0; i < 21; ++i)
-    {
-        cout << getLabelName(feel.getLabels()[i]) << "\t";
-        for(int j = 0; j < 21; ++j)
+        /// loading IRIS dataset
+        matrix iris(150, 4);
+        readMatrixFile(def::dataFolder + slash + "IRIS_data.txt", iris);
+        std::vector<int> irisTypes(150);
+        for(int i = 0; i < 3; ++i)
         {
-            double a = doubleRound(smallLib::correlation(dt[i], dt[j]), 3);
-            cout << a;
-            if(abs(a) > 0.9) cout << " !";
-            cout << "\t";
+            std::fill(std::begin(irisTypes) + i * 50,
+                      std::begin(irisTypes) + (i + 1) * 50,
+                      i);
         }
-        cout << endl;
-    }
-//    exit(0);
-#endif
-
-    for(int i = 200; i < 210; ++i)
-    {
-        cout << dt[15][i] << "\t";
-    }
-    cout << endl;
-    for(int i = 200; i < 210; ++i)
-    {
-        cout << dt[19][i] << "\t";
-    }
-    cout << endl << endl;
-
-    for(int chan : rightChans)
-    {
-        dt[chan] -= dt[19];
+        net->loadData(iris, irisTypes);
+        return;
     }
 
-    for(int i = 200; i < 210; ++i)
-    {
-        cout << dt[15][i] << "\t";
-    }
-    cout << endl;
-    for(int i = 200; i < 210; ++i)
-    {
-        cout << dt[19][i] << "\t";
-    }
-    cout << endl << endl;
 
-//    dt.resizeCols(250 * 2);
-    writePlainData(filpath.replace(".edf", "_RRR.scg"), dt);
-//    feel.writeOtherData(dt, filpath.replace(".edf", "_RRR.edf"));
-    exit(0);
-#endif
+//    return;
+
 
 
 
@@ -194,7 +129,7 @@ void MainWindow::customFunc()
     /// EEG fMRI
     def::ntFlag = true;
 
-//    GalyaCut(def::mriFolder + slash + "LevandoA",
+//    GalyaCut(def::mriFolder + slash + "Kabanov",
 //             2);
 //    exit(0);
 
@@ -264,6 +199,75 @@ void MainWindow::customFunc()
     net->loadData(iris, irisTypes);
 #endif
 
+
+#if 0
+    /// manual rereference
+    std::vector<int> rightChans{1, 5, 6, 9, 10, 11, 15, 16, 18};
+    std::vector<int> leftChans{0, 2, 3, 4, 7, 8, 12, 13, 14, 17};
+    QString filpath = "/media/michael/Files/Data/Xenia/Shapovalova/SHAPOVALOVA_OLESY_BD_.edf";
+    setEdfFile(filpath);
+//    return;
+    this_thread::sleep_for(std::chrono::seconds{3});
+    edfFile feel;
+    feel.readEdfFile(filpath);
+    matrix dt = feel.getData();
+
+
+#if 0
+    // cout corrMatrix
+    cout << "\t";
+    for(int i = 0; i < 21; ++i)
+    {
+        cout << getLabelName(feel.getLabels()[i]) << "\t";
+    }
+    cout << endl;
+    for(int i = 0; i < 21; ++i)
+    {
+        cout << getLabelName(feel.getLabels()[i]) << "\t";
+        for(int j = 0; j < 21; ++j)
+        {
+            double a = doubleRound(smallLib::correlation(dt[i], dt[j]), 3);
+            cout << a;
+            if(abs(a) > 0.9) cout << " !";
+            cout << "\t";
+        }
+        cout << endl;
+    }
+//    exit(0);
+#endif
+
+    for(int i = 200; i < 210; ++i)
+    {
+        cout << dt[15][i] << "\t";
+    }
+    cout << endl;
+    for(int i = 200; i < 210; ++i)
+    {
+        cout << dt[19][i] << "\t";
+    }
+    cout << endl << endl;
+
+    for(int chan : rightChans)
+    {
+        dt[chan] -= dt[19];
+    }
+
+    for(int i = 200; i < 210; ++i)
+    {
+        cout << dt[15][i] << "\t";
+    }
+    cout << endl;
+    for(int i = 200; i < 210; ++i)
+    {
+        cout << dt[19][i] << "\t";
+    }
+    cout << endl << endl;
+
+//    dt.resizeCols(250 * 2);
+    writePlainData(filpath.replace(".edf", "_RRR.scg"), dt);
+//    feel.writeOtherData(dt, filpath.replace(".edf", "_RRR.edf"));
+    exit(0);
+#endif
 
 
 #if 0

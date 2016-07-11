@@ -161,6 +161,14 @@ void Net::setActFuncSlot(QAbstractButton * but)
     }
 }
 
+void Net::setClassifierParams()
+{
+    myClassifier->setClassCount(classCount);
+    myClassifier->setData(dataMatrix);
+    myClassifier->setFileNames(fileNames);
+    myClassifier->setTypes(types);
+}
+
 void Net::setClassifier(QAbstractButton * but)
 {
     if(myClassifier != nullptr)
@@ -169,9 +177,11 @@ void Net::setClassifier(QAbstractButton * but)
         delete myClassifier;
     }
 
+
     if(but->text() == "ANN")
     {
         myClassifier = new ANN();
+        setClassifierParams();
         ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
 
         /// make dim
@@ -190,23 +200,23 @@ void Net::setClassifier(QAbstractButton * but)
     else if(but->text() == "QDA")
     {
         myClassifier = new QDA();
+        setClassifierParams();
         QDA * myQDA = reinterpret_cast<QDA *>(myClassifier);
     }
     else if(but->text() == "SVM")
     {
         myClassifier = new SVM();
+        setClassifierParams();
         SVM * mySVM = reinterpret_cast<SVM *>(myClassifier);
         mySVM->setFold(ui->foldSpinBox->value());
         mySVM->setKernelNum(ui->svmKernelSpinBox->value());
         mySVM->setNumPairs(ui->numOfPairsBox->value());
+//        mySVM->makeFile({1, 52, 103}, "pew.txt");
     }
     else if(but->text() == "LDA")
     {
     }
-    myClassifier->setClassCount(classCount);
-    myClassifier->setData(dataMatrix);
-    myClassifier->setFileNames(fileNames);
-    myClassifier->setTypes(types);
+
 }
 
 void Net::setSourceSlot(QAbstractButton * but)
