@@ -134,16 +134,16 @@ void MainWindow::customFunc()
 //    exit(0);
 
 
-    QString guy = "Moskovtsev";
+    QString guy = "ZavylovaV";
 //    for(QString guy : leest_mri)
     {
-        GalyaProcessing(def::mriFolder
-                        + slash + guy
-                        + slash + guy + "_windows_cleaned",
-                        32,
-                        def::mriFolder
-                        + slash + guy
-                        + slash + guy + "_windows_cleaned_out");
+//        GalyaProcessing(def::mriFolder
+//                        + slash + guy
+//                        + slash + guy + "_windows_cleaned",
+//                        32,
+//                        def::mriFolder
+//                        + slash + guy
+//                        + slash + guy + "_windows_cleaned_out");
 
         QDir tmp(def::mriFolder + slash + "OUT");
         tmp.mkdir(guy);
@@ -164,6 +164,7 @@ void MainWindow::customFunc()
                               + slash + guy + type + ".txt",
                               type);
         }
+
 
         // execute matlab & wavelet_new
         /// rename the folder in OUT to guy

@@ -30,7 +30,6 @@ SOURCES += main.cpp\
     myLib_general.cpp \
     net_classification.cpp \
     net_setsgets.cpp \
-    net_successive.cpp \
     myLib_signalProcessing.cpp \
     mainwindow_slices.cpp \
     mainwindow_visualisation.cpp \
@@ -46,7 +45,9 @@ SOURCES += main.cpp\
     classifier_ann.cpp \
     classifier_qda.cpp \
     classifier_svm.cpp \
-    classifier_lda.cpp
+    classifier_lda.cpp \
+    classifier_ann_suc.cpp \
+    classifier_dist.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

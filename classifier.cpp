@@ -54,6 +54,17 @@ void Classifier::setFileNames(std::vector<QString> & inFileNames)
     this->fileNames = &inFileNames;
 }
 
+#if !CLASS_TEST_VIRTUAL
+void Classifier::test(const std::vector<int> & indices)
+{
+    for(int ind : indices)
+    {
+        auto res = classifyDatum(ind);
+        confusionMatrix[(*types)[ind]][res.first] += 1.;
+    }
+}
+#endif
+
 double Classifier::averageClassification()
 {
     std::ofstream res;

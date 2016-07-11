@@ -5,6 +5,7 @@ SVM::SVM() : Classifier()
     workDir = def::dir->absolutePath() + myLib::slash + "PA";
     kernelNum = 0;
     fold = 5;
+    myType = ClassifierType::SVM;
 }
 
 void SVM::learn(std::vector<int> & indices)
@@ -14,6 +15,7 @@ void SVM::learn(std::vector<int> & indices)
     QString helpString = "cd "
                          + workDir
                          + " && svm-train "
+                         + " -s 1 "
 //                         + " -v " + fold
                          + " -t " + QString::number(kernelNum) + " -q "
                          + learnFileName;
@@ -21,23 +23,16 @@ void SVM::learn(std::vector<int> & indices)
 //    std::cout << std::endl << "LEARN finish" << std::endl << std::endl;
 }
 
+#if CLASS_TEST_VIRTUAL
 void SVM::test(const std::vector<int> & indices)
 {
-//    makeFile(indices, testFileName);
-//    QString helpString = "cd "
-//                         + workDir
-//                         + " && svm-predict "
-//                         + testFileName + " "
-//                         + learnFileName + ".model "
-//                         + outputFileName + " >> " + resultsPath;
-//    system(helpString.toStdString().c_str());
-
     for(int ind : indices)
     {
         auto res = classifyDatum(ind);
         confusionMatrix[(*types)[ind]][res.first] += 1.;
     }
 }
+#endif
 
 std::pair<int, double> SVM::classifyDatum(const int & vecNum)
 {
@@ -92,7 +87,7 @@ void SVM::makeFile(const std::vector<int> & indices,
     for(int ind : indices)
     {
         outStream << (*types)[ind] << ' ';
-        for(uint l = 0; l < (*dataMatrix).cols(); ++l)
+        for(uint l = 0; l < dataMatrix->cols(); ++l)
         {
             outStream << l + 1 << ':'
                       << smallLib::doubleRound((*dataMatrix)[ind][l], 4) << ' ';

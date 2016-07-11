@@ -9,36 +9,10 @@ void Net::setAutoProcessingFlag(bool a)
     autoFlag = a;
 }
 
-int Net::getEpoch()
-{
-    return epoch;
-}
-
 double Net::getLrate()
 {
     return ui->learnRateBox->value();
 }
-
-const matrix & Net::getConfusionMatrix()
-{
-    return confusionMatrix;
-}
-
-double Net::getAverageAccuracy()
-{
-    return this->averageAccuracy;
-}
-
-double Net::getKappa()
-{
-    return this->kappa;
-}
-
-void Net::setReduceCoeff(double coeff)
-{
-    this->ui->rdcCoeffSpinBox->setValue(coeff);
-}
-
 void Net::setErrCrit(double in)
 {
     ui->critErrorDoubleSpinBox->setValue(in);
@@ -48,20 +22,9 @@ void Net::setLrate(double in)
 {
     ui->learnRateBox->setValue(in);
 }
-
-double Net::getReduceCoeff()
-{
-    return this->ui->rdcCoeffSpinBox->value();
-}
-
 void Net::setNumOfPairs(int num)
 {
     this->ui->numOfPairsBox->setValue(num);
-}
-
-void Net::setTallCleanFlag(bool in)
-{
-    this->tallCleanFlag = in;
 }
 
 void Net::setFold(int in)
@@ -72,35 +35,6 @@ void Net::setFold(int in)
 void Net::stopActivity()
 {
     stopFlag = 1;
-}
-
-
-void Net::setActFunc(const QString & in)
-{
-    if(in.contains("log", Qt::CaseInsensitive) ||
-       in.startsWith('l', Qt::CaseInsensitive))
-    {
-        ui->logisticRadioButton->setChecked(true);
-        activation = smallLib::logistic;
-        ui->learnRateBox->setValue(0.05);
-//        ui->critErrorDoubleSpinBox->setValue(0.1);
-        ui->adjustLeanrRateCheckBox->setChecked(true);
-//        ui->adjustLeanrRateCheckBox->setChecked(false);
-    }
-    else if(in.contains("soft", Qt::CaseInsensitive) ||
-            in.startsWith('s', Qt::CaseInsensitive))
-    {
-        ui->softmaxRadioButton->setChecked(true);
-        activation = softmax;
-        ui->learnRateBox->setValue(0.05);
-        ui->critErrorDoubleSpinBox->setValue(0.05);
-        ui->adjustLeanrRateCheckBox->setChecked(false);
-    }
-    else
-    {
-        cout << "setActFunc: wrong input" << endl;
-        exit(0);
-    }
 }
 
 void Net::setMode(const QString & in)
@@ -146,18 +80,6 @@ void Net::setSource(const QString & in)
     {
         ui->windowsRadioButton->setChecked(true);
         loadDataNorm = 5.;
-    }
-}
-
-void Net::setActFuncSlot(QAbstractButton * but)
-{
-    if(but->text().contains("logistic", Qt::CaseInsensitive))
-    {
-        setActFunc("logistic");
-    }
-    else if(but->text().contains("softmax", Qt::CaseInsensitive))
-    {
-        setActFunc("softmax");
     }
 }
 
@@ -211,7 +133,6 @@ void Net::setClassifier(QAbstractButton * but)
         mySVM->setFold(ui->foldSpinBox->value());
         mySVM->setKernelNum(ui->svmKernelSpinBox->value());
         mySVM->setNumPairs(ui->numOfPairsBox->value());
-//        mySVM->makeFile({1, 52, 103}, "pew.txt");
     }
     else if(but->text() == "LDA")
     {
@@ -219,6 +140,13 @@ void Net::setClassifier(QAbstractButton * but)
         setClassifierParams();
         LDA * myLDA = reinterpret_cast<LDA *>(myClassifier);
     }
+    else if(but->text() == "DIST")
+    {
+        myClassifier = new DIST();
+        setClassifierParams();
+        DIST * myDIST = reinterpret_cast<DIST *>(myClassifier);
+    }
+
 
 }
 
@@ -228,29 +156,16 @@ void Net::setSourceSlot(QAbstractButton * but)
     {
         ui->highLimitSpinBox->setValue(400);
         ui->lowLimitSpinBox->setValue(300);
-        ui->epochSpinBox->setValue(500);
-        ui->rdcCoeffSpinBox->setValue(0.05);
+        ui->reduceCoeffSpinBox->setValue(0.05);
         Source = source::bayes;
     }
     else
     {
-        if(activation == smallLib::softmax)
-        {
-            ui->highLimitSpinBox->setValue(60); /// highLimit
-            ui->lowLimitSpinBox->setValue(40);  /// lowLimit
-        }
-        else if(activation == smallLib::logistic)
-        {
-            ui->highLimitSpinBox->setValue(120); /// highLimit
-            ui->lowLimitSpinBox->setValue(60);  /// lowLimit
-        }
+        ui->highLimitSpinBox->setValue(160); /// highLimit
+        ui->lowLimitSpinBox->setValue(80);  /// lowLimit
 
-        ui->highLimitSpinBox->setValue(150);
-        ui->lowLimitSpinBox->setValue(80);
-
-        ui->epochSpinBox->setValue(250);
-        ui->rdcCoeffSpinBox->setValue(7.);
-        ui->foldSpinBox->setValue(5.);
+        ui->reduceCoeffSpinBox->setValue(7.);
+        ui->foldSpinBox->setValue(2);
         if(but->text().contains("wind", Qt::CaseInsensitive))
         {
             loadDataNorm = 5.;
@@ -263,16 +178,17 @@ void Net::setSourceSlot(QAbstractButton * but)
         }
         else if(but->text().contains("pca", Qt::CaseInsensitive))
         {
+            loadDataNorm = 5.;
             Source = source::pca;
         }
     }
 }
 
-/// ids from group1->addButton()
+/// ids from myButtonGroup[0]
 void Net::setModeSlot(QAbstractButton * but, bool i)
 {
     if(i == false) return;
-    int a = group1->checkedId();
+    int a = myButtonGroup[0]->checkedId();
     switch(a)
     {
     case -2:
@@ -295,58 +211,8 @@ void Net::setModeSlot(QAbstractButton * but, bool i)
     }
 }
 
-void Net::methodSetParam(int a, bool ch)
-{
-    if(!ch) return;
-    if(group3->button(a)->text().contains("delta")) ///generality
-    {
-        ui->epochSpinBox->setValue(250);
-        ui->tempBox->setValue(10);
-        ui->learnRateBox->setValue(0.05);
-//        ui->critErrorDoubleSpinBox->setValue(0.1);
-
-        ui->dimensionalityLineEdit->setText("0 0");
-        ui->dimensionalityLineEdit->setReadOnly(true);
-
-        ui->numOfLayersSpinBox->setValue(2);
-        ui->numOfLayersSpinBox->setReadOnly(true);
-
-    }
-    else if(group3->button(a)->text().contains("backprop"))  ///generality
-    {
-//        cout << "backprop button pressed" << endl;
-        ui->epochSpinBox->setValue(300);
-        ui->tempBox->setValue(2);
-        ui->learnRateBox->setValue(1.0);
-        ui->critErrorDoubleSpinBox->setValue(0.05);
-
-        ui->numOfLayersSpinBox->setValue(3);
-        ui->numOfLayersSpinBox->setReadOnly(false);
-
-        ui->dimensionalityLineEdit->setText("0 20 0");
-        ui->dimensionalityLineEdit->setReadOnly(false);
-    }
-    else if(group3->button(a)->text().contains("deepBelief"))  ///generality
-    {
-        ui->epochSpinBox->setValue(300);
-        ui->tempBox->setValue(2);
-        ui->learnRateBox->setValue(1.0);
-        ui->critErrorDoubleSpinBox->setValue(0.05);
-
-        ui->numOfLayersSpinBox->setValue(3);
-        ui->numOfLayersSpinBox->setReadOnly(false);
-
-        ui->dimensionalityLineEdit->setText("0 22 0");
-        ui->dimensionalityLineEdit->setReadOnly(false);
-    }
-//    reset();
-}
-
-
 void Net::aaDefaultSettings()
 {
-    ui->deltaRadioButton->setChecked(true);
-
     /// mode
     ui->crossRadioButton->setChecked(true); /// k-fold
 //    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
@@ -358,19 +224,16 @@ void Net::aaDefaultSettings()
         ui->pcaRadioButton->setChecked(true); /// PCA
 
     /// activation
-//    ui->logisticRadioButton->setChecked(true);
-//    ui->softmaxRadioButton->setChecked(true);
-    activation = smallLib::softmax;
-    ui->highLimitSpinBox->setValue(60); /// highLimit
-    ui->lowLimitSpinBox->setValue(40);  /// lowLimit
+    ui->highLimitSpinBox->setValue(160); /// highLimit
+    ui->lowLimitSpinBox->setValue(80);  /// lowLimit
 
     /// classifier
     ///
 //    ui->classANNRadioButton->setChecked(true);
 
-    ui->rdcCoeffSpinBox->setValue(7.); ///  rdc coeff
+    ui->reduceCoeffSpinBox->setValue(7.); ///  rdc coeff
     ui->foldSpinBox->setValue(2); /////// fold
     ui->numOfPairsBox->setValue(1); //// pairs
     ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
-    ui->learnRateBox->setValue(0.01); /// errcrit PEWPEW
+    ui->learnRateBox->setValue(0.05); /// errcrit PEWPEW
 }

@@ -7,6 +7,7 @@ LDA::LDA() : Classifier()
 {
     covMat = matrix();
     centers.resize(numCl);
+    myType = ClassifierType::LDA;
 }
 
 void LDA::learn(std::vector<int> & indices)
@@ -38,6 +39,7 @@ void LDA::learn(std::vector<int> & indices)
     covMat.invert();
 }
 
+#if CLASS_TEST_VIRTUAL
 void LDA::test(const std::vector<int> & indices)
 {
     for(int ind : indices)
@@ -46,6 +48,7 @@ void LDA::test(const std::vector<int> & indices)
         confusionMatrix[(*types)[ind]][res.first] += 1.;
     }
 }
+#endif
 
 std::pair<int, double> LDA::classifyDatum(const int & vecNum)
 {

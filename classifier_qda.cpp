@@ -7,6 +7,7 @@ QDA::QDA() : Classifier()
     covMat.resize(numCl, matrix());
     centers.resize(numCl);
     dets.resize(numCl);
+    myType = ClassifierType::QDA;
 }
 
 void QDA::learn(std::vector<int> & indices)
@@ -40,6 +41,7 @@ void QDA::learn(std::vector<int> & indices)
     }
 }
 
+#if CLASS_TEST_VIRTUAL
 void QDA::test(const std::vector<int> & indices)
 {
     for(int ind : indices)
@@ -48,6 +50,7 @@ void QDA::test(const std::vector<int> & indices)
         confusionMatrix[(*types)[ind]][res.first] += 1.;
     }
 }
+#endif
 
 std::pair<int, double> QDA::classifyDatum(const int & vecNum)
 {

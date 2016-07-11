@@ -3,7 +3,7 @@ using namespace myLib;
 
 ANN::ANN() : Classifier()
 {
-
+    myType = ClassifierType::ANN;
 }
 
 void ANN::setResetFlag(bool inFlag)
@@ -105,7 +105,7 @@ void ANN::zeroParams()
 void ANN::setDim(const std::vector<int> & inDim)
 {
     dim.clear();
-    dim.push_back((*dataMatrix).cols());
+    dim.push_back(dataMatrix->cols());
     for(uint i = 0; i < inDim.size(); ++i)
     {
         dim.push_back(inDim[i]);
@@ -146,7 +146,7 @@ void ANN::setLrate(double inRate)
 
 void ANN::loadVector(int vecNum, int & type)
 {
-    /// out.size() == (*dataMatrix).cols() + 1
+    /// out.size() == dataMatrix->cols() + 1
     std::copy(std::begin((*dataMatrix)[vecNum]),
               std::end((*dataMatrix)[vecNum]),
               std::begin(output[0]));
@@ -356,6 +356,7 @@ int ANN::getEpoch()
 }
 
 
+#if CLASS_TEST_VIRTUAL
 void ANN::test(const std::vector<int> & indices)
 {
     for(int ind : indices)
@@ -364,6 +365,7 @@ void ANN::test(const std::vector<int> & indices)
         confusionMatrix[(*types)[ind]][res.first] += 1.;
     }
 }
+#endif
 
 std::pair<int, double> ANN::classifyDatum(const int & vecNum)
 {
@@ -478,3 +480,91 @@ void ANN::readWeight(const QString & fileName,
     }
     wtsStr.close();
 }
+
+
+void ANN::drawWeight(QString wtsPath,
+                     QString picPath)
+{
+    if( dim.size() != 2 ) return;
+
+    if(!QFile::exists(wtsPath))
+    {
+        wtsPath = def::dir->absolutePath()
+                  + slash + def::ExpName + ".wts";
+        if(!QFile::exists(wtsPath))
+        {
+            std::cout << "ANN::drawWeight: cant find wtsFile" << std::endl;
+            return;
+        }
+    }
+    twovector<lineType> tempWeights;
+    readWeight(wtsPath, &tempWeights);
+    matrix drawWts; // 3 arrays of weights
+
+    drawWts = tempWeights[0];
+    drawWts.resizeCols(drawWts.cols() - 1); // fck the bias?
+
+    if(picPath.isEmpty())
+    {
+        picPath = wtsPath;
+        picPath.replace(".wts", "_wts.jpg"); /// make default suffixes
+    }
+    drawTemplate(picPath);
+    drawArrays(picPath,
+               drawWts,
+               true);
+}
+
+
+double ANN::adjustLearnRate()
+{
+    std::vector<int> mixNum;
+    mixNum.resize(dataMatrix->rows());
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::iota(mixNum.begin(), mixNum.end(), 0);
+    std::shuffle(mixNum.begin(),
+                 mixNum.end(),
+                 std::default_random_engine(seed));
+    /// const
+    const int folds = 3;
+    mixNum.resize(mixNum.size() * (folds - 1) / folds);
+
+
+    double res = 1.;
+    int counter = 0;
+    do
+    {
+        /// remake with indices
+        const double currVal = learnRate;
+
+        this->learn(mixNum);
+
+        /// check limits
+        if(epoch > ANN::epochHighLimit ||
+           epoch < ANN::epochLowLimit)
+        {
+            learnRate = (currVal * sqrt(epoch /
+                                        ((ANN::epochLowLimit + ANN::epochHighLimit) / 2.)));
+        }
+        else
+        {
+            res = currVal;
+            break;
+        }
+
+        /// check lrate values
+        if(learnRate < 0.005)
+        {
+            learnRate = 0.005; break;
+        }
+        else if(learnRate >= 1.)
+        {
+            learnRate = 1.; break;
+        }
+        ++counter;
+    } while (counter < 15);
+    std::cout << "ANN::adjustLearnRate: lrate = " << res << std::endl;
+    return res;
+}
+
+

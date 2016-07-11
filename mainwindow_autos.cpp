@@ -2343,7 +2343,9 @@ void MainWindow::makeTableFromRows(const QString & work,
     QFile outStr(tablePath);
     outStr.open(QIODevice::WriteOnly);
 
-    for(const QString & fileName : deer.entryList({"*" + auxFilter +".txt"}, QDir::Files, QDir::Name))
+    for(const QString & fileName : deer.entryList({"*" + auxFilter +".txt"},
+                                                  QDir::Files,
+                                                  QDir::Name))
     {
         if(fileName.contains(tableName)) continue;
 

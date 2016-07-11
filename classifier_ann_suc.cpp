@@ -1,14 +1,9 @@
-#include "net.h"
-#include "ui_net.h"
+#include "classifier.h"
 using namespace std;
 using namespace myLib;
-using namespace smallLib;
-using namespace suc;
 
-std::vector<int> exIndices{};
-int numGoodNew;
-
-void Net::successiveProcessing()
+#if 0
+void ANN::successiveProcessing()
 {
     QString helpString = def::dir->absolutePath()
                          + slash + "SpectraSmooth"
@@ -81,7 +76,7 @@ void Net::successiveProcessing()
     averageClassification();
 }
 
-void Net::successivePreclean(const QString & spectraPath)
+void ANN::successivePreclean(const QString & spectraPath)
 {
     QStringList leest;
     makeFullFileList(spectraPath, leest, {"*train*"});
@@ -126,7 +121,7 @@ void Net::successivePreclean(const QString & spectraPath)
     tallCleanFlag = false;
 }
 
-void Net::successiveLearning(const std::valarray<double> & newSpectre,
+void ANN::successiveLearning(const std::valarray<double> & newSpectre,
                              const int newType,
                              const QString & newFileName)
 {
@@ -170,7 +165,7 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
     }
 }
 
-void Net::successiveRelearn()
+void ANN::successiveRelearn()
 {
     // decay weights
     const double rat = suc::decayRate;
@@ -184,46 +179,6 @@ void Net::successiveRelearn()
         });
     }
 
-    learnClassifierSlot(false); // relearn w/o weights reset
+    this->learn(false); // relearn w/o weights reset
 }
-
-/// not always to this->weight for drawWts
-void Net::readWtsByName(const QString & fileName,
-                        twovector<lineType> * wtsMatrix)
-{
-    ifstream wtsStr;
-    wtsStr.open(fileName.toStdString());
-    if(!wtsStr.good())
-    {
-        cout << "readWtsByName: wtsStr is not good() " << endl;
-        return;
-    }
-    if(wtsMatrix == nullptr)
-    {
-        wtsMatrix = &(this->weight);
-    }
-    else
-    {
-        (*wtsMatrix).resize(dimensionality.size() - 1);
-        for(int i = 0; i < dimensionality.size() - 1; ++i)
-        {
-            (*wtsMatrix)[i].resize(dimensionality[i + 1]);
-            for(int j = 0; j < dimensionality[i + 1]; ++j)
-            {
-                (*wtsMatrix)[i][j].resize(dimensionality[i] + 1);
-            }
-        }
-    }
-
-    for(int i = 0; i < dimensionality.size() - 1; ++i)
-    {
-        for(int j = 0; j < dimensionality[i + 1]; ++j)
-        {
-            for(int k = 0; k < dimensionality[i] + 1; ++k)
-            {
-                wtsStr >> (*wtsMatrix)[i][j][k];
-            }
-        }
-    }
-    wtsStr.close();
-}
+#endif

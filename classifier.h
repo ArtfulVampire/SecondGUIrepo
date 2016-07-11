@@ -16,13 +16,18 @@
 #include <QTime>
 #include <chrono>
 
+enum class ClassifierType {ANN, LDA, QDA, SVM, DIST};
+
+#define CLASS_TEST_VIRTUAL 0
+
 class Classifier
 {
 protected:
-    matrix * dataMatrix = nullptr; // biases for Net are imaginary
-    std::vector<int> * types = nullptr;
-    std::vector<QString> * fileNames = nullptr;
-    std::vector<double> * classCount = nullptr; // really int but...
+    ClassifierType myType;
+    const matrix * dataMatrix = nullptr; // biases for Net are imaginary
+    const std::vector<int> * types = nullptr;
+    const std::vector<QString> * fileNames = nullptr;
+    const std::vector<double> * classCount = nullptr; // really int but...
 
     matrix confusionMatrix{}; // rows - realClass, cols - outClass
     double averageAccuracy = 0;
@@ -36,6 +41,7 @@ public:
     Classifier();
     ~Classifier();
 
+    const ClassifierType & getType() {return myType;}
     void printResult(const QString & fileName, int typ, int vecNum);
     void setData(matrix & inMat);
     void setTypes(std::vector<int> & inTypes);
@@ -44,7 +50,11 @@ public:
     double averageClassification(); /// on confusionMatrix
 
     virtual void learn(std::vector<int> & indices) = 0;
+#if CLASS_TEST_VIRTUAL
     virtual void test(const std::vector<int> & indices) = 0;
+#else
+    void test(const std::vector<int> & indices);
+#endif
     virtual std::pair<int, double> classifyDatum(const int & vecNum) = 0;
 };
 
@@ -64,6 +74,8 @@ private:
     bool testCleanFlag  = false;
     int epoch = 0;
     const int epochLimit = 250;
+    static const int epochHighLimit = 160;
+    static const int epochLowLimit = 80;
 
     enum class learnStyle {backprop, delta};
     const learnStyle learnStyl = learnStyle::delta;
@@ -78,6 +90,11 @@ private:
     outputType output{};
     std::vector<int> dim{}; /// only intermediate layers
     std::vector<std::valarray<double>> deltaWeights{};
+
+    /// successive fields
+    std::vector<int> exIndices{};
+    int numGoodNew;
+
 
     /// deleberately private functions
     void allocParams(weightType & inMat);
@@ -110,7 +127,9 @@ public:
     void drawWeight(QString wtsPath = QString(),
                     QString picPath = QString());
 
+    double adjustLearnRate();
 
+    /// successive
     void successiveProcessing();
     void successiveLearning(const std::valarray<double> & newSpectre,
                            const int newType,
@@ -120,7 +139,9 @@ public:
 
 protected:
     void learn(std::vector<int> & indices);
+#if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
+#endif
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
 
@@ -137,7 +158,9 @@ public:
 
 protected:
     void learn(std::vector<int> & indices);
+#if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
+#endif
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
 
@@ -154,7 +177,9 @@ public:
 
 protected:
     void learn(std::vector<int> & indices);
+#if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
+#endif
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
 
@@ -180,7 +205,46 @@ public:
 
 protected:
     void learn(std::vector<int> & indices);
+#if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
+#endif
+    std::pair<int, double> classifyDatum(const int & vecNum);
+};
+
+class DIST : public Classifier
+{
+private:
+    std::vector<std::valarray<double>> centers;
+
+public:
+    DIST();
+    ~DIST();
+
+protected:
+    void learn(std::vector<int> & indices);
+#if CLASS_TEST_VIRTUAL
+    void test(const std::vector<int> & indices);
+#endif
+    std::pair<int, double> classifyDatum(const int & vecNum);
+};
+
+
+////////////////////////
+class NBC : public Classifier
+{
+private:
+    std::vector<std::valarray<double>> centers;
+    std::vector<std::vector<std::pair<double, double>>> params; //[class][feature][mean, variance]
+
+public:
+    NBC();
+    ~NBC();
+
+protected:
+    void learn(std::vector<int> & indices);
+#if CLASS_TEST_VIRTUAL
+    void test(const std::vector<int> & indices);
+#endif
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
 

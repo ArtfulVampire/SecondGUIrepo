@@ -12,41 +12,34 @@ Net::Net() :
     ui->setupUi(this);
     this->setWindowTitle("Net");
 
-    //clean log file
-    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-                                                  + slash + "log.txt");
-    QFile::remove(helpString);
-
-//    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
-//                                          + slash + "badFiles.txt");
-//    QFile::remove(helpString);
-
     stopFlag = 0;
-    confusionMatrix.resize(def::numOfClasses(), def::numOfClasses(), 0.);
 
 //    tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
-
-    group1 = new QButtonGroup();
-    group1->addButton(ui->leaveOneOutRadioButton);
-    group1->addButton(ui->crossRadioButton);
-    group1->addButton(ui->trainTestRadioButton);
-    group1->addButton(ui->halfHalfRadioButton);
-    group2 = new QButtonGroup();
-    group2->addButton(ui->realsRadioButton);
-    group2->addButton(ui->windowsRadioButton);
-    group2->addButton(ui->pcaRadioButton);
-    group2->addButton(ui->bayesRadioButton);
-    group3 = new QButtonGroup();
-    group3->addButton(ui->deltaRadioButton);
-    group3->addButton(ui->backpropRadioButton);
-    group4 = new QButtonGroup();
-    group4->addButton(ui->logisticRadioButton);
-    group4->addButton(ui->softmaxRadioButton);
-    group5 = new QButtonGroup();
-    group5->addButton(ui->classANNRadioButton);
-    group5->addButton(ui->classQDARadioButton);
-    group5->addButton(ui->classSVMRadioButton);
-    group5->addButton(ui->classLDARadioButton);
+    /// 0
+    myButtonGroup.push_back(new QButtonGroup());
+    myButtonGroup.back()->addButton(ui->leaveOneOutRadioButton);
+    myButtonGroup.back()->addButton(ui->crossRadioButton);
+    myButtonGroup.back()->addButton(ui->trainTestRadioButton);
+    myButtonGroup.back()->addButton(ui->halfHalfRadioButton);
+    /// 1
+    myButtonGroup.push_back(new QButtonGroup());
+    myButtonGroup.back()->addButton(ui->realsRadioButton);
+    myButtonGroup.back()->addButton(ui->windowsRadioButton);
+    myButtonGroup.back()->addButton(ui->pcaRadioButton);
+    myButtonGroup.back()->addButton(ui->bayesRadioButton);
+    /// 2
+    myButtonGroup.push_back(new QButtonGroup());
+    myButtonGroup.back()->addButton(ui->deltaRadioButton);
+    myButtonGroup.back()->addButton(ui->backpropRadioButton);
+//    myButtonGroup.push_back(new QButtonGroup());
+//    myButtonGroup.back()->addButton(ui->logisticRadioButton);
+//    myButtonGroup.back()->addButton(ui->softmaxRadioButton);
+    /// 3
+    myButtonGroup.push_back(new QButtonGroup());
+    myButtonGroup.back()->addButton(ui->classANNRadioButton);
+    myButtonGroup.back()->addButton(ui->classQDARadioButton);
+    myButtonGroup.back()->addButton(ui->classSVMRadioButton);
+    myButtonGroup.back()->addButton(ui->classLDARadioButton);
 
     ui->softmaxRadioButton->setChecked(true); /// activation
 
@@ -70,9 +63,6 @@ Net::Net() :
     ui->dropoutDoubleSpinBox->setValue(0.15);
     ui->dropoutDoubleSpinBox->setSingleStep(0.05);
 
-    ui->tempBox->setValue(10);
-    ui->tempBox->setSingleStep(1);
-
     ui->critErrorDoubleSpinBox->setValue(0.10);
     ui->critErrorDoubleSpinBox->setSingleStep(0.01);
     ui->critErrorDoubleSpinBox->setDecimals(4);
@@ -84,10 +74,6 @@ Net::Net() :
     ui->learnRateBox->setSingleStep(0.01);
     ui->learnRateBox->setDecimals(3);
 
-    ui->epochSpinBox->setMaximum(1000);
-    ui->epochSpinBox->setSingleStep(50);
-    ui->epochSpinBox->setValue(300);
-
     ui->numOfPairsBox->setMaximum(100);
     ui->numOfPairsBox->setMinimum(1);
     ui->numOfPairsBox->setValue(10); //// pairs
@@ -97,12 +83,12 @@ Net::Net() :
     ui->foldSpinBox->setMinimum(1);
     ui->foldSpinBox->setValue(4); /////// fold
 
-    ui->rdcCoeffSpinBox->setMaximum(100);
-    ui->rdcCoeffSpinBox->setDecimals(3);
-    ui->rdcCoeffSpinBox->setMinimum(0.001);
-    ui->rdcCoeffSpinBox->setSingleStep(0.5);
+    ui->reduceCoeffSpinBox->setMaximum(100);
+    ui->reduceCoeffSpinBox->setDecimals(3);
+    ui->reduceCoeffSpinBox->setMinimum(0.001);
+    ui->reduceCoeffSpinBox->setSingleStep(0.5);
 
-    ui->rdcCoeffSpinBox->setValue(4.5); ///  rdc coeff
+    ui->reduceCoeffSpinBox->setValue(4.5); ///  rdc coeff
 
     ui->highLimitSpinBox->setMaximum(500);
     ui->highLimitSpinBox->setMinimum(100);
@@ -147,9 +133,9 @@ Net::Net() :
     ui->momentumDoubleSpinBox->setSingleStep(0.05);
     ui->momentumDoubleSpinBox->setValue(0.5);
 
-    ui->numOfLayersSpinBox->setMinimum(2);
-    ui->numOfLayersSpinBox->setValue(3);
-    ui->numOfLayersSpinBox->setMaximum(10);
+//    ui->numOfLayersSpinBox->setMinimum(2);
+//    ui->numOfLayersSpinBox->setValue(3);
+//    ui->numOfLayersSpinBox->setMaximum(10);
     ui->dimensionalityLineEdit->setText("0 20 0");
 
     ui->centerCheckBox->setChecked(true);
@@ -157,18 +143,13 @@ Net::Net() :
 
     ui->sizeSpinBox->setValue(6);
 
-    QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWts()));
 
     QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
 
-    QObject::connect(ui->learnButton, SIGNAL(clicked()), this, SLOT(learnClassifierSlot()));
-
-    QObject::connect(ui->testAllButton, SIGNAL(clicked()), this, SLOT(tallClassifierSlot()));
-
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopActivity()));
 
+    QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWtsSlot()));
     QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(writeWtsSlot()));
-
     QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWtsSlot()));
 
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
@@ -176,17 +157,10 @@ Net::Net() :
     QObject::connect(ui->autoClassButton, SIGNAL(clicked()), this, SLOT(autoClassificationSimple()));
     QObject::connect(ui->autoClassDataPushButton, SIGNAL(clicked()), this, SLOT(autoClassification()));
 
-    QObject::connect(ui->svmPushButton, SIGNAL(clicked()), this, SLOT(doSVM()));
-
-    QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()), this, SLOT(resetSlot()));
-
-    QObject::connect(ui->distancesPushButton, SIGNAL(clicked()), this, SLOT(testDistances()));
-
-    QObject::connect(group1, SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setModeSlot(QAbstractButton*, bool)));
-    QObject::connect(group2, SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setSourceSlot(QAbstractButton*)));
-    QObject::connect(group3, SIGNAL(buttonToggled(int,bool)), this, SLOT(methodSetParam(int,bool)));
-    QObject::connect(group4, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setActFuncSlot(QAbstractButton*)));
-    QObject::connect(group5, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setClassifier(QAbstractButton*)));
+    QObject::connect(myButtonGroup[0], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setModeSlot(QAbstractButton*, bool)));
+    QObject::connect(myButtonGroup[1], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setSourceSlot(QAbstractButton*)));
+    QObject::connect(myButtonGroup[2], SIGNAL(buttonToggled(int,bool)), this, SLOT(methodSetParam(int,bool)));
+    QObject::connect(myButtonGroup[3], SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setClassifier(QAbstractButton*)));
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     aaDefaultSettings();
@@ -195,16 +169,19 @@ Net::Net() :
 
 Net::~Net()
 {
-    delete group1;
-    delete group2;
-    delete group3;
-    delete group4;
+    for(auto item : myButtonGroup)
+    {
+        delete item;
+    }
     delete ui;
 }
 
-
 void Net::drawWtsSlot()
 {
+    if(myClassifier->getType() != ClassifierType::ANN)
+    {
+        return;
+    }
     QString helpString = QFileDialog::getOpenFileName((QWidget * )this,
                                                       tr("wts to draw"),
                                                       def::dir->absolutePath(),
@@ -213,95 +190,17 @@ void Net::drawWtsSlot()
     {
         return;
     }
-    drawWts(helpString);
+    ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+    myANN->drawWeight(helpString);
 }
 
-void Net::drawWts(QString wtsPath,
-                  QString picPath)  //generality
-{
-    if( dimensionality.size() != 2 ) return;
-
-    if(!QFile::exists(wtsPath))
-    {
-        wtsPath = def::dir->absolutePath()
-                  + slash + def::ExpName + ".wts";
-        if(!QFile::exists(wtsPath))
-        {
-            cout << "drawWts: bad filePath" << endl;
-            return;
-        }
-    }
-    twovector<lineType> tempWeights;
-    readWtsByName(wtsPath, &tempWeights);
-
-    matrix drawWts; // 3 arrays of weights
-#if 0
-    vectType tempVec;
-    for(int i = 0; i < def::numOfClasses(); ++i)
-    {
-        tempVec.clear();
-        for(int j = 0; j < dataMatrix.cols(); ++j)
-        {
-            tempVec.push_back(tempWeights[0][j][i]); // 0 is for 2 layers
-        }
-        drawWts.push_back(tempVec);
-    }
-#else
-    drawWts = tempWeights[0];
-    drawWts.resizeCols(drawWts.cols() - 1); // fck the bias?
-#endif
-
-    if(picPath.isEmpty())
-    {
-        picPath = wtsPath;
-        picPath.replace(".wts", "_wts.jpg"); /// make default suffixes
-    }
-    drawTemplate(picPath);
-    drawArrays(picPath,
-               drawWts,
-               true);
-}
-
-
-void Net::writeWts(const QString & wtsPath)
-{
-    static int wtsCounter = 0;
-    std::ofstream weightsFile;
-    if(wtsPath.isEmpty())
-    {
-        weightsFile.open((def::dir->absolutePath() + slash +
-                         def::ExpName + "_" +
-                         QString::number(wtsCounter++) + ".wts").toStdString());
-    }
-    else
-    {
-        weightsFile.open(wtsPath.toStdString());
-    }
-
-    if(!weightsFile.good())
-    {
-        cout << "saveWts: cannot open file = " << wtsPath.toStdString() << endl;
-        return;
-    }
-
-    for(int i = 0; i < dimensionality.size() - 1; ++i) // numOfLayers
-    {
-        for(int j = 0; j < dimensionality[i + 1]; ++j) // NetLength+1 for bias
-        {
-            for(int k = 0; k < dimensionality[i] + 1; ++k) // NumOfClasses
-            {
-                weightsFile << weight[i][j][k] << '\n';
-            }
-            weightsFile << '\n';
-        }
-        weightsFile << '\n';
-    }
-    weightsFile.close();
-}
 
 void Net::writeWtsSlot()
 {
-    //automatization
+    if(myClassifier->getType() != ClassifierType::ANN)
+    {
+        return;
+    }
     int wtsCounter = 0;
     QString helpString;
     if(!autoFlag)
@@ -330,169 +229,29 @@ void Net::writeWtsSlot()
         cout << "saveWtsSlot: no file is chosen to save" << endl;
         return;
     }
-    writeWts(helpString);
 
+    ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+    myANN->writeWeight(helpString);
 }
 
-void Net::resetSlot()
+void Net::readWtsSlot()
 {
-    QString helpString = ui->dimensionalityLineEdit->text();
-    QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
-
-    const int numOfLayers = lst.length();
-
-    dimensionality.resize(numOfLayers);
-    dimensionality[0] = dataMatrix.cols(); ///////////// need to be read before!
-    for(int i = 1; i < numOfLayers - 1; ++i)
+    if(myClassifier->getType() != ClassifierType::ANN)
     {
-        dimensionality[i] = lst[i].toInt();
-    }
-    dimensionality[numOfLayers - 1] = def::numOfClasses();
-
-    weight.resize(numOfLayers - 1);
-    for(int i = 0; i < numOfLayers - 1; ++i) // weights from layer i to i+1
-    {
-        weight[i].resize(dimensionality[i + 1]);
-        for(int j = 0; j < dimensionality[i + 1]; ++j) // to j'th in i+1 layer
-        {
-            // resizing lineType -> fill zeros
-            weight[i][j].resize(dimensionality[i] + 1); // from k'th in i layer
-        }
-    }
-
-    // for delta there are already zeros
-    if(ui->backpropRadioButton->isChecked())
-    {
-        default_random_engine engine;
-        std::uniform_int_distribution<int> dist(0, 1000 - 1);
-        for(int i = 0; i < dimensionality.size() - 1; ++i) // numOfLayers - 1
-        {
-            for(int j = 0; j < dimensionality[i + 1]; ++j) // +bias
-            {
-                for(int k = 0; k < dimensionality[i] + 1; ++k)
-                {
-                    weight[i][j][k] = (-500 + dist(engine)) / 50000.;  // backprop ~0
-                }
-            }
-        }
-    }
-}
-
-void Net::testDistances()
-{
-    PaIntoMatrixByName("1");
-
-    const int NumberOfVectors = dataMatrix.rows();
-    const int NetLength = dataMatrix.cols();
-
-    std::vector<int> NumberOfErrors(def::numOfClasses(), 0);
-    matrix averageSpectra(def::numOfClasses(), NetLength, 0.);
-
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        for(int j = 0; j < NetLength; ++j)
-        {
-            averageSpectra[ types[i] ] += dataMatrix[i];
-        }
-    }
-
-    for(int i = 0; i < def::numOfClasses(); ++i)
-    {
-        averageSpectra[i] /= classCount[i];
-    }
-    PaIntoMatrixByName("2");
-
-
-    vector<double> distances(def::numOfClasses());
-    int outType;
-    for(int i = 0; i < NumberOfVectors; ++i)
-    {
-        for(int j = 0; j < def::numOfClasses(); ++j)
-        {
-            distances[j] = distance(dataMatrix[i],
-                                    averageSpectra[j]);
-        }
-        outType = std::distance(std::min_element(distances.begin(), distances.end()),
-                                distances.begin());
-        if(outType != types[i]) ++NumberOfErrors[ types[i] ];
-    }
-    cout << "NumberOfVectors = " << NumberOfVectors << endl;
-    for(int j = 0; j < def::numOfClasses(); ++j)
-    {
-        cout << "NumberOfErrors = " << NumberOfErrors[j] << endl;
-    }
-    int sum = 0;
-    for(int j = 0; j < def::numOfClasses(); ++j)
-    {
-        sum += NumberOfErrors[j];
-    }
-    cout << "Percentage = " <<  100. * (1. - double(sum)/NumberOfVectors) << endl;
-}
-
-
-
-
-void Net::readWts()
-{
-    QString helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL,
-                                                                       tr("load wts"),
-                                                                       def::dir->absolutePath(),
-                                                                       tr("wts files (*.wts)")));
-    if(helpString == "")
-    {
-        QMessageBox::information((QWidget * )this, tr("Warning"), tr("No wts-file was chosen"), QMessageBox::Ok);
         return;
     }
-    readWtsByName(helpString, &(this->weight));
-}
-
-
-
-
-
-
-
-/// data part
-void Net::PaIntoMatrix()
-{
-    QString helpString = QDir::toNativeSeparators(QFileDialog::getOpenFileName((QWidget * )NULL, tr("load PA"), def::dir->absolutePath(), tr("PA files (*.pa)")));
-    if(helpString == "")
+    QString helpString = QFileDialog::getOpenFileName((QWidget * )NULL,
+                                                      tr("load wts"),
+                                                      def::dir->absolutePath(),
+                                                      tr("wts files (*.wts)"));
+    if(helpString.isEmpty())
     {
-        QMessageBox::information((QWidget * )this, tr("Information"), tr("No file was chosen"), QMessageBox::Ok);
+//        QMessageBox::information((QWidget * )this, tr("Warning"), tr("No wts-file was chosen"), QMessageBox::Ok);
         return;
     }
-    readPaFile(helpString,
-               dataMatrix,
-               types,
-               fileNames,
-               classCount);
-
+    ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+    myANN->readWeight(helpString);
 }
-
-
-void Net::PaIntoMatrixByName(const QString & fileName)
-{
-
-    QString helpString = def::dir->absolutePath()
-                         + slash + "PA"
-                         + slash + fileName;
-    if(!fileName.contains(".pa"))
-    {
-        helpString += ".pa";
-    }
-
-    if(!QFile::exists(helpString))
-    {
-        cout << "PaIntoMatrixByName: cannot open file\n" << helpString << endl;
-    }
-
-    readPaFile(helpString,
-               dataMatrix,
-               types,
-               fileNames,
-               classCount);
-}
-
 
 void Net::pushBackDatum(const lineType & inDatum,
                       const int & inType,
@@ -593,7 +352,7 @@ void Net::loadData(const QString & spectraPath,
                    const QStringList & filters,
                    double rdcCoeff)
 {
-    vector<QStringList> leest;
+    std::vector<QStringList> leest;
     makeFileLists(spectraPath, leest, filters);
 
     dataMatrix = matrix();
@@ -610,18 +369,14 @@ void Net::loadData(const QString & spectraPath,
         {
             readFileInLine(spectraPath + slash + fileName,
                            tempArr);
-            if(rdcCoeff != 1.)
-            {
-                tempArr /= rdcCoeff;
-            }
             pushBackDatum(tempArr, i, fileName);
         }
     }
-//    cout << "loadDataNorm = " << loadDataNorm << endl;
-
+    if(rdcCoeff != 1.)
+    {
+        dataMatrix /= rdcCoeff;
+    }
     normalizeDataMatrix();
-
-//    std::cout << dataMatrix.rows() << "\t" << dataMatrix.cols() << std::endl;
 }
 
 void Net::loadDataSlot()
@@ -637,8 +392,9 @@ void Net::loadDataSlot()
                                  QMessageBox::Ok);
         return;
     }
-    loadData(helpString, {},
-             ui->rdcCoeffSpinBox->value());
+    loadData(helpString, {}
+//             , ui->reduceCoeffSpinBox->value()
+             );
 }
 
 
