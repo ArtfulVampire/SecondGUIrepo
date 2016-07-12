@@ -2210,7 +2210,7 @@ void MainWindow::GalyaCut(const QString & path,
     const QStringList leest1 = tmpDir.entryList({"*.edf", "*.EDF"});
     const auto filesVec = leest1.toVector();
 
-
+    /// ??????????????????????
     omp_set_dynamic(0);
     omp_set_num_threads(3);
 #pragma omp parallel

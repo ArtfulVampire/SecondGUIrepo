@@ -55,7 +55,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>21</x>
@@ -267,7 +267,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>190</x>
@@ -357,7 +357,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>470</x>
@@ -409,20 +409,20 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>31</x>
      <y>230</y>
      <width>133</width>
-     <height>80</height>
+     <height>108</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_6">
-    <item row="0" column="0">
-     <widget class="QRadioButton" name="classANNRadioButton">
+    <item row="1" column="0">
+     <widget class="QRadioButton" name="classSVMRadioButton">
       <property name="text">
-       <string>ANN</string>
+       <string>SVM</string>
       </property>
      </widget>
     </item>
@@ -430,13 +430,6 @@
      <widget class="QRadioButton" name="classQDARadioButton">
       <property name="text">
        <string>QDA</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QRadioButton" name="classSVMRadioButton">
-      <property name="text">
-       <string>SVM</string>
       </property>
      </widget>
     </item>
@@ -461,7 +454,44 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="0">
+     <widget class="QRadioButton" name="classANNRadioButton">
+      <property name="text">
+       <string>ANN</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QRadioButton" name="classKNNRadioButton">
+      <property name="text">
+       <string>KNN</string>
+      </property>
+     </widget>
+    </item>
    </layout>
+  </widget>
+  <widget class="QSpinBox" name="knnNumOfNearSpinBox">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>370</y>
+     <width>48</width>
+     <height>27</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_7">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>370</y>
+     <width>61</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>knn num</string>
+   </property>
   </widget>
  </widget>
  <resources/>

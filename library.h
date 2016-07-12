@@ -101,8 +101,8 @@ std::string funcName(std::string in);
         auto t1 = std::chrono::high_resolution_clock::now();\
         std::cout << myLib::funcName(#arg) \
         << ": time elapsed = "\
-        << std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count()/1000.\
-        << " sec" << std::endl;\
+        << std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0).count()/1000.\
+        << " nsec" << std::endl;\
     }while(false)
 
 

@@ -45,9 +45,10 @@ std::pair<int, double> NBC::classifyDatum(const int & vecNum)
     {
         vec[i] = (*dataMatrix)[vecNum] - centers[i];
         res[i] = apriori[i];
-
         std::valarray<double> pewpew = 1. / sigmas[i]
-                                       * exp( -vec[i]*vec[i] / (2 * sigmas[i] * sigmas[i]));
+                                       * exp( - pow(vec[i], 2.) / (2. * pow(sigmas[i], 2.)));
+
+
         for(double item : pewpew)
         {
             res[i] *= item;

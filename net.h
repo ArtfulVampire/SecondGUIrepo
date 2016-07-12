@@ -126,6 +126,7 @@ public slots:
     void setModeSlot(QAbstractButton*, bool i);
     void setClassifier(QAbstractButton*);
 
+
     /// ANN
     void setLrateSlot(double in);
     void setErrCritSlot(double in);
@@ -138,6 +139,9 @@ public slots:
     /// SVM
     void setSvmTypeSlot(int);
     void setKernelNumSlot(int);
+
+    /// KNN
+    void setKnnNumSlot(int);
 
 
 

@@ -72,6 +72,15 @@ void Net::setSvmTypeSlot(int in)
     }
 }
 
+void Net::setKnnNumSlot(int in)
+{
+    if(myClassifier->getType() == ClassifierType::KNN)
+    {
+        KNN * myKNN = reinterpret_cast<KNN *>(myClassifier);
+        myKNN->setNumOfNear(in);
+    }
+}
+
 void Net::setKernelNumSlot(int in)
 {
     if(myClassifier->getType() == ClassifierType::SVM)
@@ -199,6 +208,13 @@ void Net::setClassifier(QAbstractButton * but)
         myClassifier = new NBC();
 //        setClassifierParams();
         NBC * myNBC = reinterpret_cast<NBC *>(myClassifier);
+    }
+    else if(but->text() == "KNN")
+    {
+        myClassifier = new KNN();
+//        setClassifierParams();
+        KNN * myKNN = reinterpret_cast<KNN *>(myClassifier);
+        myKNN->setNumOfNear(ui->knnNumOfNearSpinBox->value());
     }
 
     setClassifierParams();

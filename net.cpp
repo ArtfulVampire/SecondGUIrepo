@@ -29,17 +29,13 @@ Net::Net() :
     myButtonGroup.back()->addButton(ui->bayesRadioButton);
     /// 2
     myButtonGroup.push_back(new QButtonGroup());
-    myButtonGroup.back()->addButton(ui->deltaRadioButton);
-    myButtonGroup.back()->addButton(ui->backpropRadioButton);
-//    myButtonGroup.push_back(new QButtonGroup());
-//    myButtonGroup.back()->addButton(ui->logisticRadioButton);
-//    myButtonGroup.back()->addButton(ui->softmaxRadioButton);
-    /// 3
-    myButtonGroup.push_back(new QButtonGroup());
     myButtonGroup.back()->addButton(ui->classANNRadioButton);
     myButtonGroup.back()->addButton(ui->classQDARadioButton);
     myButtonGroup.back()->addButton(ui->classSVMRadioButton);
     myButtonGroup.back()->addButton(ui->classLDARadioButton);
+    myButtonGroup.back()->addButton(ui->classDISTRadioButton);
+    myButtonGroup.back()->addButton(ui->classNBCRadioButton);
+    myButtonGroup.back()->addButton(ui->classKNNRadioButton);
 
     ui->crossRadioButton->setChecked(true); /// k-fold
     ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
@@ -86,6 +82,8 @@ Net::Net() :
     ui->reduceCoeffSpinBox->setSingleStep(0.5);
     ui->reduceCoeffSpinBox->setValue(4.5); ///  rdc coeff
 
+    ui->knnNumOfNearSpinBox->setValue(10);
+
 
     ui->pcaNumberSpinBox->setMinimum(2);
     ui->pcaNumberSpinBox->setMaximum(500);
@@ -106,10 +104,11 @@ Net::Net() :
     ui->momentumDoubleSpinBox->setSingleStep(0.05);
     ui->momentumDoubleSpinBox->setValue(0.5);
 
-    ui->dimensionalityLineEdit->setText("0 20 0");
+    ui->dimensionalityLineEdit->setText("");
 
     ui->centerCheckBox->setChecked(true);
     ui->varianceCheckBox->setChecked(true);
+    myClassifier = new NBC();
 
 
     QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
@@ -121,8 +120,7 @@ Net::Net() :
 
     QObject::connect(myButtonGroup[0], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setModeSlot(QAbstractButton*, bool)));
     QObject::connect(myButtonGroup[1], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setSourceSlot(QAbstractButton*)));
-    QObject::connect(myButtonGroup[2], SIGNAL(buttonToggled(int,bool)), this, SLOT(methodSetParam(int,bool)));
-    QObject::connect(myButtonGroup[3], SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setClassifier(QAbstractButton*)));
+    QObject::connect(myButtonGroup[2], SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setClassifier(QAbstractButton*)));
 
     /// ANN
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWtsSlot()));
@@ -141,7 +139,12 @@ Net::Net() :
     QObject::connect(ui->svmTypeSpinBox, SIGNAL(valueChanged(int)),
                      this, SLOT(setSvmTypeSlot(int)));
 
+    /// KNN
+    QObject::connect(ui->knnNumOfNearSpinBox, SIGNAL(valueChanged(int)),
+                     this, SLOT(setKnnNumSlot(int)));
+
     this->setAttribute(Qt::WA_DeleteOnClose);
+
 
     aaDefaultSettings();
 }

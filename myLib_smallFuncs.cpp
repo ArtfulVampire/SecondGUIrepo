@@ -595,6 +595,8 @@ template ostream & operator << (std::ostream & os, std::valarray<double> toOut);
 template ostream & operator << (std::ostream & os, QList<int> toOut);
 template ostream & operator << (std::ostream & os, QList<double> toOut);
 
+
+template int indexOfMax(const std::vector<int> & cont);
 template int indexOfMax(const std::vector<double> & cont);
 template int indexOfMax(const std::valarray<double> & cont);
 template int indexOfMax(const std::list<double> & cont);

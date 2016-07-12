@@ -660,25 +660,30 @@ lineType matrix::toVectorByCols() const
     return res;
 }
 
-double sqr(const double & in)
-{
-    return pow(in, 2);
-//    return in * in;
-}
-
 lineType matrix::sigmaOfCols() const
 {
-    lineType res(0., this->rows());
+    lineType res(this->cols());
+#if 1
+    for(int i = 0; i < this->cols(); ++i)
+    {
+        lineType W = this->getCol(i);
+        res[i] = smallLib::sigma(W);
+    }
+#else
+
     lineType avRow = this->averageRow();
+
     matrix M = *this;
-    for(lineType & row : M.data)
+    for(std::valarray<double> & row : M.data)
     {
         row -= avRow;
-        row.apply(sqr);
+        row *= row;
         res += row;
     }
-    res /= this->cols();
-    res.apply(sqrt);
+    res /= this->rows();
+    res = sqrt(res);
+#endif
+
     return res;
 }
 

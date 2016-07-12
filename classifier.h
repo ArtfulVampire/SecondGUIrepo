@@ -16,7 +16,7 @@
 #include <QTime>
 #include <chrono>
 
-enum class ClassifierType {ANN, LDA, QDA, SVM, DIST, NBC};
+enum class ClassifierType {ANN, LDA, QDA, SVM, DIST, NBC, KNN};
 
 #define CLASS_TEST_VIRTUAL 0
 class Classifier
@@ -252,5 +252,29 @@ protected:
 #endif
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
+
+
+
+class KNN : public Classifier
+{
+private:
+    matrix distances{};
+    int numOfNear;
+
+public:
+    KNN();
+    ~KNN();
+
+    void setNumOfNear(int);
+
+protected:
+    void learn(std::vector<int> & indices);
+#if CLASS_TEST_VIRTUAL
+    void test(const std::vector<int> & indices);
+#endif
+    std::pair<int, double> classifyDatum(const int & vecNum);
+};
+
+
 
 #endif // CLASSIFIER_H

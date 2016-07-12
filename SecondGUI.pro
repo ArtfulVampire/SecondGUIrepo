@@ -8,8 +8,8 @@ QT       += core gui svg
 
 TARGET = SecondGUI
 TEMPLATE = app
-CONFIG += console #for better display of processes with cout.flush()
-QMAKE_CXXFLAGS += -std=c++11 #for C++11 standard
+CONFIG += console c++14 #for better display of processes with cout.flush()
+#QMAKE_CXXFLAGS += -std=c++14 #for C++14 standard
 QMAKE_CXXFLAGS += -fopenmp
 LIBS += -fopenmp
 
@@ -48,7 +48,8 @@ SOURCES += main.cpp\
     classifier_lda.cpp \
     classifier_ann_suc.cpp \
     classifier_dist.cpp \
-    classifier_nbc.cpp
+    classifier_nbc.cpp \
+    classifier_knn.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
