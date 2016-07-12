@@ -378,6 +378,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
             edfPlusFlag = true;
             cout << "handleEdfFile: Annotations! " << EDFpath << endl;
         }
+
         /// Mitsar and other sheet
         else
         {
@@ -386,7 +387,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                 if(labels[i].contains(coords::lbl19[j]) &&
                    !labels[i].contains("EEG"))
                 {
-                    labels[i].prepend("EEG ");
+//                    labels[i].prepend("EEG ");
                 }
             }
         }

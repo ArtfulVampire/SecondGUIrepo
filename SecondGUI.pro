@@ -47,7 +47,8 @@ SOURCES += main.cpp\
     classifier_svm.cpp \
     classifier_lda.cpp \
     classifier_ann_suc.cpp \
-    classifier_dist.cpp
+    classifier_dist.cpp \
+    classifier_nbc.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

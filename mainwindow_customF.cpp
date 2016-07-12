@@ -64,7 +64,7 @@ void MainWindow::customFunc()
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
-    if(1)
+    if(0)
     {
         setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
         readData();
@@ -125,25 +125,29 @@ void MainWindow::customFunc()
 
 
 
-#if 0
+#if 1
     /// EEG fMRI
     def::ntFlag = true;
 
-//    GalyaCut(def::mriFolder + slash + "Kabanov",
-//             2);
-//    exit(0);
+    GalyaCut(def::mriFolder + slash + "Biglova",
+             2);
+    GalyaCut(def::mriFolder + slash + "Gudovich",
+             2);
+    GalyaCut(def::mriFolder + slash + "Kabanov",
+             2);
+    exit(0);
 
 
-    QString guy = "ZavylovaV";
+    QString guy = "Biglova";
 //    for(QString guy : leest_mri)
     {
-//        GalyaProcessing(def::mriFolder
-//                        + slash + guy
-//                        + slash + guy + "_windows_cleaned",
-//                        32,
-//                        def::mriFolder
-//                        + slash + guy
-//                        + slash + guy + "_windows_cleaned_out");
+        GalyaProcessing(def::mriFolder
+                        + slash + guy
+                        + slash + guy + "_windows_cleaned",
+                        32,
+                        def::mriFolder
+                        + slash + guy
+                        + slash + guy + "_windows_cleaned_out");
 
         QDir tmp(def::mriFolder + slash + "OUT");
         tmp.mkdir(guy);

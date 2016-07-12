@@ -4,7 +4,6 @@ SVM::SVM() : Classifier()
 {
     workDir = def::dir->absolutePath() + myLib::slash + "PA";
     kernelNum = 0;
-    fold = 5;
     myType = ClassifierType::SVM;
 }
 
@@ -67,14 +66,9 @@ void SVM::setKernelNum(int inNum)
     kernelNum = inNum;
 }
 
-void SVM::setNumPairs(int inNum)
+void SVM::setSvmType(int in)
 {
-    numOfPairs = inNum;
-}
-
-void SVM::setFold(int inFold)
-{
-    fold = inFold;
+    svmType = in;
 }
 
 void SVM::makeFile(const std::vector<int> & indices,

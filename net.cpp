@@ -41,8 +41,6 @@ Net::Net() :
     myButtonGroup.back()->addButton(ui->classSVMRadioButton);
     myButtonGroup.back()->addButton(ui->classLDARadioButton);
 
-    ui->softmaxRadioButton->setChecked(true); /// activation
-
     ui->crossRadioButton->setChecked(true); /// k-fold
     ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
 //    ui->trainTestRadioButton->setChecked(true); /// train-test
@@ -70,15 +68,14 @@ Net::Net() :
 
     ui->learnRateBox->setMinimum(0.001);
     ui->learnRateBox->setMaximum(1.0);
-    ui->learnRateBox->setValue(0.05); /// lrate
     ui->learnRateBox->setSingleStep(0.01);
     ui->learnRateBox->setDecimals(3);
+    ui->learnRateBox->setValue(0.05); /// lrate
 
     ui->numOfPairsBox->setMaximum(100);
     ui->numOfPairsBox->setMinimum(1);
     ui->numOfPairsBox->setValue(10); //// pairs
 
-#define INDICES 1
     ui->foldSpinBox->setMaximum(50);
     ui->foldSpinBox->setMinimum(1);
     ui->foldSpinBox->setValue(4); /////// fold
@@ -87,17 +84,7 @@ Net::Net() :
     ui->reduceCoeffSpinBox->setDecimals(3);
     ui->reduceCoeffSpinBox->setMinimum(0.001);
     ui->reduceCoeffSpinBox->setSingleStep(0.5);
-
     ui->reduceCoeffSpinBox->setValue(4.5); ///  rdc coeff
-
-    ui->highLimitSpinBox->setMaximum(500);
-    ui->highLimitSpinBox->setMinimum(100);
-    ui->highLimitSpinBox->setValue(120); /// highLimit
-
-    ui->lowLimitSpinBox->setMaximum(500);
-    ui->lowLimitSpinBox->setMinimum(50);
-    ui->lowLimitSpinBox->setValue(70);  /// lowLimit
-
 
 
     ui->pcaNumberSpinBox->setMinimum(2);
@@ -107,20 +94,6 @@ Net::Net() :
     ui->traceDoubleSpinBox->setMinimum(0.05);
     ui->traceDoubleSpinBox->setSingleStep(0.01);
     ui->traceDoubleSpinBox->setValue(1.0);
-    ui->sammonComboBox->addItem("wetData");
-    ui->sammonComboBox->addItem("some PCs");
-    ui->sammonComboBox->setCurrentIndex(1);
-
-    ui->pcaCheckBox->setChecked(false);
-    ui->kohonenCheckBox->setChecked(false);
-
-    ui->lambdaDoubleSpinBox->setSingleStep(1.);
-    ui->lambdaDoubleSpinBox->setMinimum(1e-5);
-    ui->lambdaDoubleSpinBox->setMaximum(100.);
-    ui->lambdaDoubleSpinBox->setValue(10.);
-
-    ui->optimizationMethodComboBox->addItem("coords");
-    ui->optimizationMethodComboBox->addItem("gradient");
 
     ui->autoPCAMaxSpinBox->setMinimum(1);
     ui->autoPCAMinSpinBox->setMinimum(1);
@@ -133,26 +106,15 @@ Net::Net() :
     ui->momentumDoubleSpinBox->setSingleStep(0.05);
     ui->momentumDoubleSpinBox->setValue(0.5);
 
-//    ui->numOfLayersSpinBox->setMinimum(2);
-//    ui->numOfLayersSpinBox->setValue(3);
-//    ui->numOfLayersSpinBox->setMaximum(10);
     ui->dimensionalityLineEdit->setText("0 20 0");
 
     ui->centerCheckBox->setChecked(true);
     ui->varianceCheckBox->setChecked(true);
 
-    ui->sizeSpinBox->setValue(6);
-
 
     QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
-
-    QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopActivity()));
-
-    QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWtsSlot()));
-    QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(writeWtsSlot()));
-    QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWtsSlot()));
-
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
+    QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopActivity()));
 
     QObject::connect(ui->autoClassButton, SIGNAL(clicked()), this, SLOT(autoClassificationSimple()));
     QObject::connect(ui->autoClassDataPushButton, SIGNAL(clicked()), this, SLOT(autoClassification()));
@@ -161,6 +123,24 @@ Net::Net() :
     QObject::connect(myButtonGroup[1], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setSourceSlot(QAbstractButton*)));
     QObject::connect(myButtonGroup[2], SIGNAL(buttonToggled(int,bool)), this, SLOT(methodSetParam(int,bool)));
     QObject::connect(myButtonGroup[3], SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setClassifier(QAbstractButton*)));
+
+    /// ANN
+    QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWtsSlot()));
+    QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(writeWtsSlot()));
+    QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWtsSlot()));
+    QObject::connect(ui->learnRateBox, SIGNAL(valueChanged(double)),
+                     this, SLOT(setLrateSlot(double)));
+    QObject::connect(ui->critErrorDoubleSpinBox, SIGNAL(valueChanged(double)),
+                     this, SLOT(setErrCritSlot(double)));
+    QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()),
+                     this, SLOT(setDimensionalitySlot()));
+
+    /// SVM
+    QObject::connect(ui->svmKernelSpinBox, SIGNAL(valueChanged(int)),
+                     this, SLOT(setKernelNumSlot(int)));
+    QObject::connect(ui->svmTypeSpinBox, SIGNAL(valueChanged(int)),
+                     this, SLOT(setSvmTypeSlot(int)));
+
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     aaDefaultSettings();

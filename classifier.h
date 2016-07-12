@@ -16,10 +16,9 @@
 #include <QTime>
 #include <chrono>
 
-enum class ClassifierType {ANN, LDA, QDA, SVM, DIST};
+enum class ClassifierType {ANN, LDA, QDA, SVM, DIST, NBC};
 
 #define CLASS_TEST_VIRTUAL 0
-
 class Classifier
 {
 protected:
@@ -28,6 +27,7 @@ protected:
     const std::vector<int> * types = nullptr;
     const std::vector<QString> * fileNames = nullptr;
     const std::vector<double> * classCount = nullptr; // really int but...
+    const std::vector<double> apriori;
 
     matrix confusionMatrix{}; // rows - realClass, cols - outClass
     double averageAccuracy = 0;
@@ -58,8 +58,9 @@ public:
     virtual std::pair<int, double> classifyDatum(const int & vecNum) = 0;
 };
 
-#define WEIGHT_MATRIX 0
 
+
+#define WEIGHT_MATRIX 0
 class ANN : public Classifier
 {
 #if WEIGHT_MATRIX
@@ -70,7 +71,7 @@ class ANN : public Classifier
     typedef std::vector<std::valarray<double>> outputType;
 
 private:
-    bool resetFlag = true;
+    bool resetFlag = true; /// false for successive
     bool testCleanFlag  = false;
     int epoch = 0;
     const int epochLimit = 250;
@@ -83,9 +84,8 @@ private:
     enum class errorNetType {SME, maxDist};
     const errorNetType errType = errorNetType::SME;
     double critError = 0.04;
-
-
     double learnRate = 0.05;
+
     weightType weight{};
     outputType output{};
     std::vector<int> dim{}; /// only intermediate layers
@@ -113,12 +113,14 @@ public:
     ANN();
     ~ANN();
 
+    void setCritError(double in);
     void setResetFlag(bool inFlag);
     void setTestCleanFlag(bool inFlag);
     void setDim(const std::vector<int> & inDim);
+    void setLrate(double inRate);
+
     int getEpoch();
     double getLrate();
-    void setLrate(double inRate);
     const weightType & getWeight();
 
     void readWeight(const QString & fileName,
@@ -126,7 +128,6 @@ public:
     void writeWeight(const QString & wtsPath = QString());
     void drawWeight(QString wtsPath = QString(),
                     QString picPath = QString());
-
     double adjustLearnRate();
 
     /// successive
@@ -144,6 +145,7 @@ protected:
 #endif
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
+
 
 
 class LDA : public Classifier
@@ -164,6 +166,8 @@ protected:
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
 
+
+
 class QDA : public Classifier
 {
 private:
@@ -183,6 +187,8 @@ protected:
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
 
+
+
 class SVM : public Classifier
 {
 private:
@@ -191,17 +197,15 @@ private:
     const QString testFileName = "svmTest";
     const QString outputFileName = "output";
     int kernelNum = 0;
-    int numOfPairs = 15;
-    int fold = 4;
+    int svmType = 0;
+    void makeFile(const std::vector<int> & indices,
+                  const QString & fileName);
 
 public:
     SVM();
     ~SVM();
     void setKernelNum(int inNum);
-    void setNumPairs(int inNum);
-    void setFold(int inFold);
-    void makeFile(const std::vector<int> & indices,
-                  const QString & fileName);
+    void setSvmType(int inNum);
 
 protected:
     void learn(std::vector<int> & indices);
@@ -210,6 +214,8 @@ protected:
 #endif
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
+
+
 
 class DIST : public Classifier
 {
@@ -228,13 +234,12 @@ protected:
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
 
-
-////////////////////////
+/// gauss NBC
 class NBC : public Classifier
 {
 private:
     std::vector<std::valarray<double>> centers;
-    std::vector<std::vector<std::pair<double, double>>> params; //[class][feature][mean, variance]
+    std::vector<std::valarray<double>> sigmas; //[class][feature]
 
 public:
     NBC();

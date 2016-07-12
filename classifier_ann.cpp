@@ -11,6 +11,11 @@ void ANN::setResetFlag(bool inFlag)
     this->resetFlag = inFlag;
 }
 
+void ANN::setCritError(double in)
+{
+    this->critError = in;
+}
+
 void ANN::setTestCleanFlag(bool inFlag)
 {
     this->testCleanFlag = inFlag;

@@ -660,6 +660,27 @@ lineType matrix::toVectorByCols() const
     return res;
 }
 
+double sqr(const double & in)
+{
+    return pow(in, 2);
+//    return in * in;
+}
+
+lineType matrix::sigmaOfCols() const
+{
+    lineType res(0., this->rows());
+    lineType avRow = this->averageRow();
+    matrix M = *this;
+    for(lineType & row : M.data)
+    {
+        row -= avRow;
+        row.apply(sqr);
+        res += row;
+    }
+    res /= this->cols();
+    res.apply(sqrt);
+    return res;
+}
 
 lineType matrix::averageRow() const
 {

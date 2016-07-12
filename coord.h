@@ -75,6 +75,15 @@ const std::vector<QString> lbl31_more {"Fp1", "Fp2",
                                        "A2", "A1",
                                        "27", "28", "29",
                                        "34", "35", "36", "37", "38", "39", "40"};
+/// fMRI
+const std::vector<QString> lbl32 {"Fp1", "Fp2",
+                                  "F7", "F3", "Fz", "F4", "F8",
+                                  "T3", "C3", "Cz", "C4",
+                                  "Fpz", "Ft7", "Fc3", "Fc4", "Ft8", "Tp7"
+                                  "T4", "T5", "P3", "Pz", "P4", "T6",
+                                  "O1", "O2",
+                                  "Cp3", "Cpz", "Cp4", "Tp8", "Po7", "Po8", "Oz"
+                                 };
 
 
 }

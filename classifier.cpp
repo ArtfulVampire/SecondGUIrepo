@@ -1,12 +1,15 @@
 #include "classifier.h"
 //using namespace myLib;
 
-Classifier::Classifier()
+//Classifier::Classifier() : apriori(std::vector<double>{0.25, 0.25, 0.5})
+Classifier::Classifier() : apriori(std::vector<double>(3, 1./3.))
 {
     numCl = def::numOfClasses();
     confusionMatrix = matrix(numCl, numCl, 0.);
     resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
     workDir = def::dir->absolutePath() + myLib::slash + "PA";
+
+//    apriori = std::vector<double>{0.25, 0.25, 0.5};
 }
 
 Classifier::~Classifier()

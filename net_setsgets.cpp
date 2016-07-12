@@ -11,17 +11,76 @@ void Net::setAutoProcessingFlag(bool a)
 
 double Net::getLrate()
 {
-    return ui->learnRateBox->value();
+    if(myClassifier->getType() != ClassifierType::ANN)
+    {
+        return -1;
+    }
+    ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+    return myANN->getLrate();
 }
+
 void Net::setErrCrit(double in)
 {
     ui->critErrorDoubleSpinBox->setValue(in);
+}
+
+void Net::setErrCritSlot(double in)
+{
+    if(myClassifier->getType() == ClassifierType::ANN)
+    {
+        ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+        myANN->setCritError(in);
+    }
+}
+
+
+void Net::setDimensionalitySlot()
+{
+    if(myClassifier->getType() == ClassifierType::ANN)
+    {
+        ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+        std::vector<int> pewpew;
+        auto strList = ui->dimensionalityLineEdit->text().split(' ', QString::SkipEmptyParts);
+        for(QString peww : strList)
+        {
+            pewpew.push_back(peww.toInt());
+        }
+        myANN->setDim(pewpew);
+    }
 }
 
 void Net::setLrate(double in)
 {
     ui->learnRateBox->setValue(in);
 }
+
+void Net::setLrateSlot(double in)
+{
+    if(myClassifier->getType() == ClassifierType::ANN)
+    {
+        ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+        myANN->setLrate(in);
+    }
+}
+
+void Net::setSvmTypeSlot(int in)
+{
+    if(myClassifier->getType() == ClassifierType::SVM)
+    {
+        SVM * mySVM = reinterpret_cast<SVM *>(myClassifier);
+        mySVM->setSvmType(in);
+    }
+}
+
+void Net::setKernelNumSlot(int in)
+{
+    if(myClassifier->getType() == ClassifierType::SVM)
+    {
+        SVM * mySVM = reinterpret_cast<SVM *>(myClassifier);
+        mySVM->setKernelNum(in);
+    }
+}
+
 void Net::setNumOfPairs(int num)
 {
     this->ui->numOfPairsBox->setValue(num);
@@ -103,49 +162,46 @@ void Net::setClassifier(QAbstractButton * but)
     if(but->text() == "ANN")
     {
         myClassifier = new ANN();
-        setClassifierParams();
         ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
 
-        /// make dim
-        QString helpString = ui->dimensionalityLineEdit->text();
-        QStringList lst = helpString.split(QRegExp("[., ;]"), QString::SkipEmptyParts);
-        std::vector<int> dim;
-        for(int i = 1; i < lst.length() - 1; ++i)
-        {
-            dim.push_back(lst[i].toInt());
-        }
-
         myANN->setData(dataMatrix);
-        myANN->setDim(dim);
         myANN->setLrate(ui->learnRateBox->value());
+        myANN->setCritError(ui->critErrorDoubleSpinBox->value());
+        setDimensionalitySlot();
     }
     else if(but->text() == "QDA")
     {
         myClassifier = new QDA();
-        setClassifierParams();
+//        setClassifierParams();
         QDA * myQDA = reinterpret_cast<QDA *>(myClassifier);
     }
     else if(but->text() == "SVM")
     {
         myClassifier = new SVM();
-        setClassifierParams();
+//        setClassifierParams();
         SVM * mySVM = reinterpret_cast<SVM *>(myClassifier);
-        mySVM->setFold(ui->foldSpinBox->value());
         mySVM->setKernelNum(ui->svmKernelSpinBox->value());
-        mySVM->setNumPairs(ui->numOfPairsBox->value());
     }
     else if(but->text() == "LDA")
     {
         myClassifier = new LDA();
-        setClassifierParams();
+//        setClassifierParams();
         LDA * myLDA = reinterpret_cast<LDA *>(myClassifier);
     }
     else if(but->text() == "DIST")
     {
         myClassifier = new DIST();
-        setClassifierParams();
+//        setClassifierParams();
         DIST * myDIST = reinterpret_cast<DIST *>(myClassifier);
     }
+    else if(but->text() == "NBC")
+    {
+        myClassifier = new NBC();
+//        setClassifierParams();
+        NBC * myNBC = reinterpret_cast<NBC *>(myClassifier);
+    }
+
+    setClassifierParams();
 
 
 }
@@ -154,16 +210,11 @@ void Net::setSourceSlot(QAbstractButton * but)
 {
     if(but->text().contains("Bayes", Qt::CaseInsensitive))
     {
-        ui->highLimitSpinBox->setValue(400);
-        ui->lowLimitSpinBox->setValue(300);
         ui->reduceCoeffSpinBox->setValue(0.05);
         Source = source::bayes;
     }
     else
     {
-        ui->highLimitSpinBox->setValue(160); /// highLimit
-        ui->lowLimitSpinBox->setValue(80);  /// lowLimit
-
         ui->reduceCoeffSpinBox->setValue(7.);
         ui->foldSpinBox->setValue(2);
         if(but->text().contains("wind", Qt::CaseInsensitive))
@@ -221,19 +272,12 @@ void Net::aaDefaultSettings()
     /// source
 //        ui->realsRadioButton->setChecked(true); /// reals
 //        ui->windowsRadioButton->setChecked(true); /// windows
-        ui->pcaRadioButton->setChecked(true); /// PCA
+    ui->pcaRadioButton->setChecked(true); /// PCA
 
-    /// activation
-    ui->highLimitSpinBox->setValue(160); /// highLimit
-    ui->lowLimitSpinBox->setValue(80);  /// lowLimit
-
-    /// classifier
-    ///
-//    ui->classANNRadioButton->setChecked(true);
 
     ui->reduceCoeffSpinBox->setValue(7.); ///  rdc coeff
     ui->foldSpinBox->setValue(2); /////// fold
     ui->numOfPairsBox->setValue(1); //// pairs
     ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
-    ui->learnRateBox->setValue(0.05); /// errcrit PEWPEW
+    ui->learnRateBox->setValue(0.05); /// lrate PEWPEW
 }

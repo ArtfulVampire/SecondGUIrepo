@@ -35,11 +35,14 @@ class Net : public QWidget
 
 private:
     Ui::Net * ui;
-
+    /// ui things
     std::vector<QButtonGroup *> myButtonGroup;
+    bool stopFlag = false;
+    bool autoFlag = false;
+    /// ui private methods
+    void aaDefaultSettings();
 
-    Classifier * myClassifier = nullptr;
-    /// change everywhere
+    /// data
     enum class myMode {N_fold, k_fold, train_test,  half_half};
     enum class source {winds, reals, pca, bayes};
     myMode Mode = myMode::N_fold;
@@ -49,28 +52,14 @@ private:
     std::vector<int> types{};
     std::vector<QString> fileNames{};
     std::vector<double> classCount{}; // really int but...
-
+//    matrix tempRandomMatrix; //test linear transform
     double loadDataNorm = 10.;
     lineType averageDatum;
     lineType sigmaVector;
 
-//    matrix tempRandomMatrix; //test linear transform
-
-    enum class errorNetType {SME, maxDist};
-    const errorNetType errType = errorNetType::SME;
-    const double errorThreshold = 1.0;
-
-    bool resetFlag = true;
-    bool stopFlag = false;
-    bool autoFlag = false;
-    bool tallCleanFlag  = false;
-
-    matrix coords; //new coords for Sammon method
-
-
-    /// private methods
+    /// classification
+    Classifier * myClassifier = nullptr;
     void setClassifierParams();
-    void aaDefaultSettings();
 
     /// data
     void normalizeDataMatrix();
@@ -90,7 +79,7 @@ private:
     void halfHalfClassification();
     void trainTestClassification(const QString & trainTemplate = "_train",
                                  const QString & testTemplate = "_test");
-    void leaveOneOut();
+    void pcaNumCheck();
 
 public:
     explicit Net();
@@ -126,10 +115,6 @@ public:
                  QString picPath = QString());
 
 public slots:
-    void readWtsSlot();
-    void drawWtsSlot();
-    void writeWtsSlot();
-
     void loadDataSlot();
     void stopActivity();
     void pca();
@@ -140,6 +125,19 @@ public slots:
     void setSourceSlot(QAbstractButton*);
     void setModeSlot(QAbstractButton*, bool i);
     void setClassifier(QAbstractButton*);
+
+    /// ANN
+    void setLrateSlot(double in);
+    void setErrCritSlot(double in);
+    void setDimensionalitySlot();
+
+    void readWtsSlot();
+    void drawWtsSlot();
+    void writeWtsSlot();
+
+    /// SVM
+    void setSvmTypeSlot(int);
+    void setKernelNumSlot(int);
 
 
 

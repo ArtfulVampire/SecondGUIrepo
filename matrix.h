@@ -77,6 +77,7 @@ public:
     lineType getCol(uint i, uint numCols = 0) const;
     lineType averageRow() const;
     lineType averageCol() const;
+    lineType sigmaOfCols() const;
     void pop_back();
     void push_back(const lineType &in);
     void push_back(const vectType &in);

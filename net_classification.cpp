@@ -108,26 +108,6 @@ void Net::autoClassificationSimple()
 }
 
 
-/// on pca only
-void Net::leaveOneOut()
-{
-    if(Source == source::pca)
-    {
-        ofstream outStr;
-        outStr.open((def::dir->absolutePath()
-                    + slash + "pcaRes.txt").toStdString());
-        // auto pca classification
-        for(int i = ui->autoPCAMaxSpinBox->value();
-            i >= ui->autoPCAMinSpinBox->value();
-            i -= ui->autoPCAStepSpinBox->value())
-        {
-            cout << "numOfPc = " << i  << " \t";
-            dataMatrix.resizeCols(i);
-        }
-        outStr.close();
-    }
-}
-
 void Net::leaveOneOutClassification()
 {
     std::vector<int> learnIndices;
@@ -272,4 +252,23 @@ void Net::trainTestClassification(const QString & trainTemplate,
     cout << "train-test classification:" << endl;
     myClassifier->averageClassification();
 
+}
+
+void Net::pcaNumCheck()
+{
+    if(Source == source::pca)
+    {
+        ofstream outStr;
+        outStr.open((def::dir->absolutePath()
+                    + slash + "pcaRes.txt").toStdString());
+        // auto pca classification
+        for(int i = ui->autoPCAMaxSpinBox->value();
+            i >= ui->autoPCAMinSpinBox->value();
+            i -= ui->autoPCAStepSpinBox->value())
+        {
+            cout << "numOfPc = " << i  << " \t";
+            dataMatrix.resizeCols(i);
+        }
+        outStr.close();
+    }
 }
