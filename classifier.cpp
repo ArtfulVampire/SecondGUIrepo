@@ -17,13 +17,26 @@ Classifier::~Classifier()
 }
 
 
-void Classifier::printResult(const QString & fileName, int typ, int vecNum)
+void Classifier::setTestCleanFlag(bool inFlag)
+{
+    this->testCleanFlag = inFlag;
+}
+
+void Classifier::deleteFile(int vecNum, int predType)
+{
+    if(this->testCleanFlag && (predType != (*types)[vecNum]))
+    {
+        QFile::remove(filesPath + myLib::slash + (*fileNames)[vecNum]);
+    }
+}
+
+void Classifier::printResult(const QString & fileName, int predType, int vecNum)
 {
     std::ofstream outStr;
     outStr.open((workDir + myLib::slash + fileName).toStdString(), std::ios_base::app);
 
     QString pew;
-    if(typ == (*types)[vecNum])
+    if(predType == (*types)[vecNum])
     {
         pew = "";
     }
@@ -57,6 +70,16 @@ void Classifier::setFileNames(std::vector<QString> & inFileNames)
     this->fileNames = &inFileNames;
 }
 
+void Classifier::setFilesPath(const QString & inPath)
+{
+    this->filesPath = inPath;
+}
+
+//void Classifier::confMatInc(int trueClass, int predClass)
+//{
+//    confusionMatrix[trueClass][predClass] += 1.;
+//}
+
 #if !CLASS_TEST_VIRTUAL
 void Classifier::test(const std::vector<int> & indices)
 {
@@ -67,6 +90,22 @@ void Classifier::test(const std::vector<int> & indices)
     }
 }
 #endif
+
+void Classifier::learnAll()
+{
+    std::vector<int> ind(dataMatrix->rows());
+    std::iota(std::begin(ind), std::end(ind), 0);
+    learn(ind);
+}
+
+void Classifier::testAll()
+{
+    std::vector<int> ind(dataMatrix->rows());
+    std::iota(std::begin(ind), std::end(ind), 0);
+    test(ind);
+}
+
+
 
 double Classifier::averageClassification()
 {

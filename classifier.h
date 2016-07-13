@@ -16,7 +16,7 @@
 #include <QTime>
 #include <chrono>
 
-enum class ClassifierType {ANN, LDA, QDA, SVM, DIST, NBC, KNN};
+enum class ClassifierType {ANN, LDA, QDA, SVM, DIST, NBC, KNN, WORD};
 
 #define CLASS_TEST_VIRTUAL 0
 class Classifier
@@ -29,30 +29,46 @@ protected:
     const std::vector<double> * classCount = nullptr; // really int but...
     const std::vector<double> apriori;
 
+
     matrix confusionMatrix{}; // rows - realClass, cols - outClass
     double averageAccuracy = 0;
     double kappa = 0;
     uint numCl = 0;
 
+    bool testCleanFlag  = false; /// delete wrong classified
+    bool resetFlag = true; /// reset learning values before new learning
+
     QString resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
     QString workDir = def::dir->absolutePath() + myLib::slash + "PA";
+    QString filesPath = def::dir->absolutePath()
+                        + myLib::slash + "SpectraSmooth"
+                        + myLib::slash + "windows";
 
 public:
     Classifier();
     ~Classifier();
 
     const ClassifierType & getType() {return myType;}
-    void printResult(const QString & fileName, int typ, int vecNum);
+    void setTestCleanFlag(bool inFlag);
+
+    void deleteFile(int vecNum, int predClass);
+    void printResult(const QString & fileName, int predType, int vecNum);
+    double averageClassification(); /// on confusionMatrix
     void setData(matrix & inMat);
     void setTypes(std::vector<int> & inTypes);
     void setClassCount(std::vector<double> & inClassCount);
     void setFileNames(std::vector<QString> & inFileNames);
-    double averageClassification(); /// on confusionMatrix
+    void setFilesPath(const QString & inPath);
 
+    /// crutch
+    void confMatInc(int trueClass, int predClass){confusionMatrix[trueClass][predClass] += 1.;}
+
+    void learnAll();
     virtual void learn(std::vector<int> & indices) = 0;
 #if CLASS_TEST_VIRTUAL
     virtual void test(const std::vector<int> & indices) = 0;
 #else
+    void testAll();
     void test(const std::vector<int> & indices);
 #endif
     virtual std::pair<int, double> classifyDatum(const int & vecNum) = 0;
@@ -71,8 +87,6 @@ class ANN : public Classifier
     typedef std::vector<std::valarray<double>> outputType;
 
 private:
-    bool resetFlag = true; /// false for successive
-    bool testCleanFlag  = false;
     int epoch = 0;
     const int epochLimit = 250;
     static const int epochHighLimit = 160;
@@ -90,11 +104,6 @@ private:
     outputType output{};
     std::vector<int> dim{}; /// only intermediate layers
     std::vector<std::valarray<double>> deltaWeights{};
-
-    /// successive fields
-    std::vector<int> exIndices{};
-    int numGoodNew;
-
 
     /// deleberately private functions
     void allocParams(weightType & inMat);
@@ -115,7 +124,6 @@ public:
 
     void setCritError(double in);
     void setResetFlag(bool inFlag);
-    void setTestCleanFlag(bool inFlag);
     void setDim(const std::vector<int> & inDim);
     void setLrate(double inRate);
 
@@ -131,12 +139,7 @@ public:
     double adjustLearnRate();
 
     /// successive
-    void successiveProcessing();
-    void successiveLearning(const std::valarray<double> & newSpectre,
-                           const int newType,
-                           const QString & newFileName);
     void successiveRelearn();
-    void successivePreclean(const QString & spectraPath);
 
 protected:
     void learn(std::vector<int> & indices);
@@ -275,6 +278,32 @@ protected:
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
 
+
+class WORD : public Classifier
+{
+private:
+    std::vector<std::vector<int>> clusts; /// vectors of indices of dataMatrix
+    std::vector<std::valarray<double>> centers;
+    matrix dists{};
+    uint numOfClust;
+
+    double dist(const uint a, const uint b);
+    void merge(const uint one, const uint two);
+    std::pair<int, int> findNearest();
+
+public:
+    WORD();
+    ~WORD();
+
+    void setNumClust(int ii);
+
+protected:
+    void learn(std::vector<int> & indices);
+#if CLASS_TEST_VIRTUAL
+    void test(const std::vector<int> & indices);
+#endif
+    std::pair<int, double> classifyDatum(const int & vecNum);
+};
 
 
 #endif // CLASSIFIER_H

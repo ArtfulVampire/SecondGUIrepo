@@ -19,7 +19,6 @@ struct clustDot
 struct cluster
 {
     int number = -1;
-//    vector <clustDot> dots;
     std::vector<int> dotNums;
     std::vector<double> centroid;
     std::vector<double> sigma;

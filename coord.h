@@ -98,7 +98,7 @@ extern double errorThreshold;
 
 
 
-enum spectraGraphsNormalization {all = 0, each = 1};
+enum class spectraGraphsNormalization {all, each};
 
 namespace def
 {

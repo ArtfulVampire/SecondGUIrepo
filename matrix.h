@@ -72,6 +72,7 @@ public:
     dataType::iterator end();
     dataType::const_iterator begin() const;
     dataType::const_iterator end() const;
+    bool empty() const {return data.empty();}
     lineType toVectorByRows() const;
     lineType toVectorByCols() const;
     lineType getCol(uint i, uint numCols = 0) const;
@@ -129,10 +130,13 @@ public:
     matrix & zero();
     matrix & one();
     matrix & eraseRow(uint i);
+    matrix & eraseCol(uint j);
     matrix & eraseRows(const std::vector<int> & indices);
     matrix & random(double low = 0., double high = 1.);
     matrix & vertCat(matrix && other);
     matrix subCols(int beginCol, int endCol) const; /// submatrix
+    matrix subRows(const std::vector<int> & inds) const; /// submatrix
+
     lineType matrixSystemSolveGauss(const lineType & inVec) const;
 
 //    double det();

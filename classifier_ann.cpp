@@ -16,10 +16,6 @@ void ANN::setCritError(double in)
     this->critError = in;
 }
 
-void ANN::setTestCleanFlag(bool inFlag)
-{
-    this->testCleanFlag = inFlag;
-}
 
 #if 0
 void ANN::forEachWeight(weightType & inWeight,
@@ -355,6 +351,27 @@ void ANN::learn(std::vector<int> & indices)
               << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << std::endl;
 }
 
+
+void ANN::successiveRelearn()
+{
+    // decay weights
+    const double rat = suc::decayRate;
+    for(int i = 0; i < dim.size() - 1; ++i)
+    {
+        std::for_each(std::begin(weight[i]),
+                      std::end(weight[i]),
+                      [rat](lineType & in)
+        {
+            in *= 1. - rat;
+        });
+    }
+
+    this->resetFlag = false;
+    learnAll(); // relearn w/o weights reset
+    this->resetFlag = true;
+
+}
+
 int ANN::getEpoch()
 {
     return epoch;
@@ -408,6 +425,8 @@ std::pair<int, double> ANN::classifyDatum(const int & vecNum)
 
     resFile.close();
 #endif
+
+    deleteFile(vecNum, outClass);
 
     printResult("ANN.txt", outClass, vecNum);
     return std::make_pair(outClass,

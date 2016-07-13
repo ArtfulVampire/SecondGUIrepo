@@ -60,6 +60,13 @@ private:
     /// classification
     Classifier * myClassifier = nullptr;
     void setClassifierParams();
+    /// succesiive
+    std::vector<int> exIndices{};
+    int numGoodNew;
+    void successiveLearning(const std::valarray<double> & newSpectre,
+                            const int newType,
+                            const QString & newFileName);
+
 
     /// data
     void normalizeDataMatrix();
@@ -72,6 +79,7 @@ private:
     std::pair<std::vector<int>, std::vector<int>> makeIndicesSetsCross(
             const std::vector<std::vector<int> > & arr,
             const int numOfFold);
+    QString filesPath;
 
     /// class
     void crossClassification();
@@ -81,12 +89,16 @@ private:
                                  const QString & testTemplate = "_test");
     void pcaNumCheck();
 
+
 public:
     explicit Net();
     ~Net();
 
     /// classification
     void autoClassification(const QString & spectraDir);
+    /// NEED CHECK
+    void successiveProcessing();
+    void successivePreclean(const QString & spectraPath);
 
     /// setsgets
     void setErrCrit(double in);
@@ -143,6 +155,8 @@ public slots:
     /// KNN
     void setKnnNumSlot(int);
 
+    /// WORD
+    void setWordNumSlot(int);
 
 
 };

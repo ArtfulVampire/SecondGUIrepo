@@ -83,6 +83,12 @@ void MainWindow::customFunc()
                       i);
         }
         net->loadData(iris, irisTypes);
+
+//        lineType ar{.5, 7, 4, 0.3, 45, 1.7, 1.4};
+//        cout << ar << endl;
+//        cout << eraseValar(ar, 5) << endl;
+//        exit(0);
+
         return;
     }
 

@@ -1,9 +1,9 @@
-#include "classifier.h"
+#include "net.h"
 using namespace std;
 using namespace myLib;
 
-#if 0
-void ANN::successiveProcessing()
+#if 1
+void Net::successiveProcessing()
 {
     QString helpString = def::dir->absolutePath()
                          + slash + "SpectraSmooth"
@@ -16,7 +16,6 @@ void ANN::successiveProcessing()
     std::vector<int> eraseIndices{};
 
     numGoodNew = 0;
-    confusionMatrix.fill(0.);
     exIndices.clear();
 
     /// check for no test items
@@ -52,20 +51,20 @@ void ANN::successiveProcessing()
     setErrCrit(0.05);
     setLrate(0.05);
 
-    learnClassifierSlot(); /// get initial weights on train set
+    myClassifier->learnAll(); /// get initial weights on train set
 
     setErrCrit(0.02);
     setLrate(0.02);
 
 
-    lineType tempArr;
-    int type = -1;
 
     QStringList leest = QDir(helpString).entryList({'*' + testMarker + '*'}); /// special generality
 
 //    helpString = "/media/michael/Files/Data/RealTime/windows/SpectraSmooth";
 //    QStringList leest = QDir(helpString).entryList(QDir::Files); /// special generality
 
+    lineType tempArr;
+    int type = -1;
     for(const QString & fileNam : leest)
     {
         readFileInLine(helpString + slash + fileNam,
@@ -73,18 +72,19 @@ void ANN::successiveProcessing()
         type = typeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
     }
-    averageClassification();
+    myClassifier->averageClassification();
 }
 
-void ANN::successivePreclean(const QString & spectraPath)
+void Net::successivePreclean(const QString & spectraPath)
 {
     QStringList leest;
     makeFullFileList(spectraPath, leest, {"*train*"});
-    // clean from first 2 winds
+    // clean from first 2 winds from each realisation
     cout << "clean first 2 winds" << endl;
-    for(auto str : leest)
+
+    for(const QString & str : leest)
     {
-        if(str.endsWith(".00") || str.endsWith(".01"))
+        if(str.contains(QRegExp(".0[0-1]$"))) /// change to 0-x for x first windows to delete
         {
             QFile::remove(spectraPath + slash + str);
         }
@@ -92,7 +92,7 @@ void ANN::successivePreclean(const QString & spectraPath)
 
     // clean by learnSetStay
     cout << "clean by learnSetStay" << endl;
-    vector<QStringList> leest2;
+    std::vector<QStringList> leest2;
     makeFileLists(spectraPath, leest2);
 
     for(int j = 0; j < def::numOfClasses(); ++j)
@@ -112,16 +112,18 @@ void ANN::successivePreclean(const QString & spectraPath)
 
     // N-fold cleaning
     cout << "N-fold cleaning" << endl;
-    tallCleanFlag = true;
+
+    ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+    myANN->setTestCleanFlag(true);
     for(int i = 0; i < 0; ++i)
     {
         autoClassification(spectraPath);
-        if(averageAccuracy == 100.) break;
+        if(myClassifier->averageClassification() == 100.) break;
     }
-    tallCleanFlag = false;
+    myANN->setTestCleanFlag(false);
 }
 
-void ANN::successiveLearning(const std::valarray<double> & newSpectre,
+void Net::successiveLearning(const std::valarray<double> & newSpectre,
                              const int newType,
                              const QString & newFileName)
 {
@@ -132,8 +134,10 @@ void ANN::successiveLearning(const std::valarray<double> & newSpectre,
 
     pushBackDatum(newData, newType, newFileName);
 
-    const std::pair<int, double> outType = classifyDatumNet(dataMatrix.rows() - 1); // take the last
-    confusionMatrix[newType][outType.first] += 1.;
+    const std::pair<int, double> outType = myClassifier->classifyDatum(dataMatrix.rows() - 1); // take the last
+    /// adding into confusionMatrix
+    myClassifier->confMatInc(newType, outType.first);
+//    confusionMatrix[newType][outType.first] += 1.;
 
     if(outType.first == newType)
     {
@@ -158,27 +162,13 @@ void ANN::successiveLearning(const std::valarray<double> & newSpectre,
         popBackDatum();
     }
 
+
     if(numGoodNew == suc::numGoodNewLimit)
     {
-        successiveRelearn();
+        ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+        myANN->successiveRelearn();
         numGoodNew = 0;
     }
 }
 
-void ANN::successiveRelearn()
-{
-    // decay weights
-    const double rat = suc::decayRate;
-    for(int i = 0; i < dimensionality.size() - 1; ++i)
-    {
-        std::for_each(weight[i].begin(),
-                      weight[i].end(),
-                      [rat](lineType & in)
-        {
-            in *= 1. - rat;
-        });
-    }
-
-    this->learn(false); // relearn w/o weights reset
-}
 #endif

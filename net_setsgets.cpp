@@ -81,6 +81,15 @@ void Net::setKnnNumSlot(int in)
     }
 }
 
+void Net::setWordNumSlot(int in)
+{
+    if(myClassifier->getType() == ClassifierType::WORD)
+    {
+        WORD * myWORD = reinterpret_cast<WORD *>(myClassifier);
+        myWORD->setNumClust(in);
+    }
+}
+
 void Net::setKernelNumSlot(int in)
 {
     if(myClassifier->getType() == ClassifierType::SVM)
@@ -157,6 +166,7 @@ void Net::setClassifierParams()
     myClassifier->setData(dataMatrix);
     myClassifier->setFileNames(fileNames);
     myClassifier->setTypes(types);
+    myClassifier->setFilesPath(filesPath);
 }
 
 void Net::setClassifier(QAbstractButton * but)
@@ -216,7 +226,13 @@ void Net::setClassifier(QAbstractButton * but)
         KNN * myKNN = reinterpret_cast<KNN *>(myClassifier);
         myKNN->setNumOfNear(ui->knnNumOfNearSpinBox->value());
     }
-
+    else if(but->text() == "WORD")
+    {
+        myClassifier = new WORD();
+//        setClassifierParams();
+        WORD * myWORD = reinterpret_cast<WORD *>(myClassifier);
+        myWORD->setNumClust(ui->knnNumOfNearSpinBox->value());
+    }
     setClassifierParams();
 
 
@@ -282,7 +298,7 @@ void Net::aaDefaultSettings()
 {
     /// mode
     ui->crossRadioButton->setChecked(true); /// k-fold
-//    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
+    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
 //    ui->trainTestRadioButton->setChecked(true); /// train-test
 
     /// source

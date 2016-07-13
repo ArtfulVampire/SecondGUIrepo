@@ -80,13 +80,25 @@ inline int fftL(const int & in)
 }
 
 
-inline void resizeValar(lineType & in, int num)
+inline void resizeValar(std::valarray<double> & in, int num)
 {
     lineType temp = in;
     in.resize(num);
     std::copy(std::begin(temp),
               std::begin(temp) + std::min(in.size(), temp.size()),
               std::begin(in));
+}
+
+inline std::valarray<double> eraseValar(const std::valarray<double> & in, uint num)
+{
+    std::valarray<double> res(in.size() - 1);
+    std::copy(std::begin(in),
+              std::begin(in) + num,
+              std::begin(res));
+    std::copy(std::begin(in) + num + 1,
+              std::end(in),
+              std::begin(res) + num);
+    return res;
 }
 
 

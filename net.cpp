@@ -36,6 +36,7 @@ Net::Net() :
     myButtonGroup.back()->addButton(ui->classDISTRadioButton);
     myButtonGroup.back()->addButton(ui->classNBCRadioButton);
     myButtonGroup.back()->addButton(ui->classKNNRadioButton);
+    myButtonGroup.back()->addButton(ui->classWORDRadioButton);
 
     ui->crossRadioButton->setChecked(true); /// k-fold
     ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
@@ -84,6 +85,7 @@ Net::Net() :
 
     ui->knnNumOfNearSpinBox->setValue(10);
 
+    ui->wordNumOfClustSpinBox->setValue(10);
 
     ui->pcaNumberSpinBox->setMinimum(2);
     ui->pcaNumberSpinBox->setMaximum(500);
@@ -142,6 +144,11 @@ Net::Net() :
     /// KNN
     QObject::connect(ui->knnNumOfNearSpinBox, SIGNAL(valueChanged(int)),
                      this, SLOT(setKnnNumSlot(int)));
+
+    /// WORD
+    QObject::connect(ui->wordNumOfClustSpinBox, SIGNAL(valueChanged(int)),
+                     this, SLOT(setWordNumSlot(int)));
+
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -328,6 +335,7 @@ void Net::loadData(const matrix & inMat,
         classCount[typ] += 1.;
     }
     normalizeDataMatrix();
+    filesPath.clear();
 }
 
 // like readPaFile from library.cpp
@@ -342,6 +350,7 @@ void Net::loadData(const QString & spectraPath,
     classCount.resize(def::numOfClasses(), 0.);
     types.clear();
     fileNames.clear();
+    filesPath = spectraPath;
 
     lineType tempArr;
 //    cout << spectraPath << endl;

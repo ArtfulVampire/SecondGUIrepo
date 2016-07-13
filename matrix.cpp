@@ -501,6 +501,18 @@ matrix matrix::subCols(int beginCol, int endCol) const /// submatrix
     return res;
 }
 
+matrix matrix::subRows(const std::vector<int> & inds) const /// submatrix
+{
+//    matrix res(inds.size(), this->cols());
+    matrix res = matrix();
+//    int col = 0;
+    for(int i : inds)
+    {
+        res.data.push_back(this->data[i]);
+    }
+    return res;
+}
+
 void matrix::resize(int rows, int cols, double val)
 {
     this->resize(rows, cols);
@@ -890,6 +902,18 @@ matrix & matrix::eraseRow(uint i)
         this->data.erase(data.begin() + i);
     }
     return *this;
+}
+
+
+matrix & matrix::eraseCol(uint j)
+{
+    if(j < this->cols())
+    {
+        for(lineType & each : this->data)
+        {
+            each = eraseValar(each, j);
+        }
+    }
 }
 
 
