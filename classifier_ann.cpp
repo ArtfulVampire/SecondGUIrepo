@@ -369,7 +369,6 @@ void ANN::successiveRelearn()
     this->resetFlag = false;
     learnAll(); // relearn w/o weights reset
     this->resetFlag = true;
-
 }
 
 int ANN::getEpoch()

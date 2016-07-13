@@ -72,6 +72,7 @@ public:
     void test(const std::vector<int> & indices);
 #endif
     virtual std::pair<int, double> classifyDatum(const int & vecNum) = 0;
+    virtual void successiveRelearn();
 };
 
 
@@ -138,8 +139,6 @@ public:
                     QString picPath = QString());
     double adjustLearnRate();
 
-    /// successive
-    void successiveRelearn();
 
 protected:
     void learn(std::vector<int> & indices);
@@ -147,6 +146,8 @@ protected:
     void test(const std::vector<int> & indices);
 #endif
     std::pair<int, double> classifyDatum(const int & vecNum);
+    /// successive
+    void successiveRelearn();
 };
 
 

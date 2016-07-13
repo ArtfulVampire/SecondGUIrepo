@@ -61,7 +61,6 @@ private:
     Classifier * myClassifier = nullptr;
     void setClassifierParams();
     /// succesiive
-    std::vector<int> exIndices{};
     int numGoodNew;
     void successiveLearning(const std::valarray<double> & newSpectre,
                             const int newType,

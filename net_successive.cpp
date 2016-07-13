@@ -2,7 +2,6 @@
 using namespace std;
 using namespace myLib;
 
-#if 1
 void Net::successiveProcessing()
 {
     QString helpString = def::dir->absolutePath()
@@ -14,23 +13,11 @@ void Net::successiveProcessing()
 //    const QString testMarker = "_3.";
 
     std::vector<int> eraseIndices{};
-
     numGoodNew = 0;
-    exIndices.clear();
 
     /// check for no test items
     loadData(helpString, {"*" + trainMarker + "*"});
-#if 0
-    for(int i = 0; i < dataMatrix.rows(); ++i)
-    {
-        if(fileNames[i].contains(testMarker))
-        {
-            eraseIndices.push_back(i);
-        }
-    }
-    eraseData(eraseIndices);
-    eraseIndices.clear();
-#endif
+
 
     /// reduce learning set to (NumClasses * suc::learnSetStay)
     std::vector<double> count = classCount;
@@ -44,7 +31,6 @@ void Net::successiveProcessing()
     }
     eraseData(eraseIndices);
     eraseIndices.clear();
-
 
 
     /// consts
@@ -113,14 +99,13 @@ void Net::successivePreclean(const QString & spectraPath)
     // N-fold cleaning
     cout << "N-fold cleaning" << endl;
 
-    ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
-    myANN->setTestCleanFlag(true);
+    myClassifier->setTestCleanFlag(true);
     for(int i = 0; i < 0; ++i)
     {
         autoClassification(spectraPath);
         if(myClassifier->averageClassification() == 100.) break;
     }
-    myANN->setTestCleanFlag(false);
+    myClassifier->setTestCleanFlag(false);
 }
 
 void Net::successiveLearning(const std::valarray<double> & newSpectre,
@@ -165,10 +150,7 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
 
     if(numGoodNew == suc::numGoodNewLimit)
     {
-        ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
-        myANN->successiveRelearn();
+        myClassifier->successiveRelearn();
         numGoodNew = 0;
     }
 }
-
-#endif

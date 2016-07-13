@@ -105,6 +105,13 @@ void Classifier::testAll()
     test(ind);
 }
 
+void Classifier::successiveRelearn()
+{
+    this->resetFlag = false;
+    learnAll(); // relearn w/o weights reset
+    this->resetFlag = true;
+}
+
 
 
 double Classifier::averageClassification()
