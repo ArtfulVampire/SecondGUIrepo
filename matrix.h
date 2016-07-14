@@ -56,6 +56,7 @@ public:
     matrix(std::initializer_list<lineType> lst);
 
 
+
     matrix & resizeRows(int rows);
     matrix & resizeCols(int newCols);
     matrix & fill(double value);
@@ -121,10 +122,12 @@ public:
 
     //"static"
     static matrix transpose(const matrix & input);
+    static matrix ident(int dim);
 
     // "private"
     matrix & transpose();
     matrix & invert(double * det = nullptr);
+    matrix covMatCols(lineType * avRow = nullptr) const;
     matrix & swapCols(uint i, uint j);
     matrix & swapRows(uint i, uint j);
     matrix & zero();

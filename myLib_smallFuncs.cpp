@@ -566,19 +566,20 @@ std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut)
     {
         os << in << separ;
     }
+    os.flush();
     return os;
 }
 
 template <typename Typ, template <typename, typename> class Cont>
 std::ostream & operator<< (std::ostream &os, Cont <Typ, std::allocator<Typ>> toOut)
 {
-    std::string separ = " ";
+    std::string separ = "\t";
     //if(is_container<Typ>) separ = std::endl;
     for(auto in : toOut)
     {
         os << in << separ;
-
     }
+    os.flush();
     return os;
 }
 
@@ -592,6 +593,7 @@ template ostream & operator << (std::ostream & os, std::list<double> toOut);
 
 // w/o allocators
 template ostream & operator << (std::ostream & os, std::valarray<double> toOut);
+template ostream & operator << (std::ostream & os, std::valarray<int> toOut);
 template ostream & operator << (std::ostream & os, QList<int> toOut);
 template ostream & operator << (std::ostream & os, QList<double> toOut);
 

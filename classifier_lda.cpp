@@ -7,7 +7,13 @@ LDA::LDA() : Classifier()
 {
     covMat = matrix();
     centers.resize(numCl);
+    shrinkage = 0.;
     myType = ClassifierType::LDA;
+}
+
+void LDA::setShrinkage(double in)
+{
+    this->shrinkage = in;
 }
 
 void LDA::learn(std::vector<int> & indices)
@@ -36,6 +42,11 @@ void LDA::learn(std::vector<int> & indices)
 
     covMat = matrix::transpose(subMatrix) * subMatrix;
     covMat /= subMatrix.rows();
+
+    /// regularization
+    covMat *= (1. - shrinkage);
+    for(int i = 0; i < covMat.rows(); ++i) {covMat[i][i] += shrinkage;}
+
     covMat.invert();
 }
 
@@ -60,7 +71,7 @@ std::pair<int, double> LDA::classifyDatum(const int & vecNum)
         matrix m1(a, 'r'); // row
         matrix m2(a, 'c'); // col
         double tmp = (m1 * covMat * m2)[0][0];
-        output[i] = -tmp;
+        output[i] = - tmp  + 2. * log(this->apriori[i]);
     }
     int outClass = myLib::indexOfMax(output);
 

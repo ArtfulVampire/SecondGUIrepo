@@ -83,10 +83,6 @@ Net::Net() :
     ui->reduceCoeffSpinBox->setSingleStep(0.5);
     ui->reduceCoeffSpinBox->setValue(4.5); ///  rdc coeff
 
-    ui->knnNumOfNearSpinBox->setValue(10);
-
-    ui->wordNumOfClustSpinBox->setValue(10);
-
     ui->pcaNumberSpinBox->setMinimum(2);
     ui->pcaNumberSpinBox->setMaximum(500);
     ui->pcaNumberSpinBox->setValue(60);
@@ -110,6 +106,14 @@ Net::Net() :
 
     ui->centerCheckBox->setChecked(true);
     ui->varianceCheckBox->setChecked(true);
+
+    ui->knnNumOfNearSpinBox->setValue(10);
+    ui->wordNumOfClustSpinBox->setValue(10);
+    ui->shrinkageSpinBox->setMaximum(0.5);
+    ui->shrinkageSpinBox->setDecimals(3);
+    ui->shrinkageSpinBox->setSingleStep(0.001);
+    ui->shrinkageSpinBox->setValue(0.1);
+
     myClassifier = new NBC();
 
 
@@ -148,6 +152,10 @@ Net::Net() :
     /// WORD
     QObject::connect(ui->wordNumOfClustSpinBox, SIGNAL(valueChanged(int)),
                      this, SLOT(setWordNumSlot(int)));
+
+    /// LDA/QDA
+    QObject::connect(ui->shrinkageSpinBox, SIGNAL(valueChanged(double)),
+    this, SLOT(setShrinkageSlot(double)));
 
 
     this->setAttribute(Qt::WA_DeleteOnClose);

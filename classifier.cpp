@@ -1,15 +1,13 @@
 #include "classifier.h"
 //using namespace myLib;
 
-//Classifier::Classifier() : apriori(std::vector<double>{0.25, 0.25, 0.5})
-Classifier::Classifier() : apriori(std::vector<double>(3, 1./3.))
+Classifier::Classifier()
 {
     numCl = def::numOfClasses();
     confusionMatrix = matrix(numCl, numCl, 0.);
     resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
     workDir = def::dir->absolutePath() + myLib::slash + "PA";
-
-//    apriori = std::vector<double>{0.25, 0.25, 0.5};
+    apriori = std::vector<double>(3, 1./3);
 }
 
 Classifier::~Classifier()
@@ -75,10 +73,43 @@ void Classifier::setFilesPath(const QString & inPath)
     this->filesPath = inPath;
 }
 
-//void Classifier::confMatInc(int trueClass, int predClass)
-//{
-//    confusionMatrix[trueClass][predClass] += 1.;
-//}
+void Classifier::setApriori(const std::vector<double> & in)
+{
+    /// w/o normalization
+    if(in.empty())
+    {
+        apriori = *classCount;
+    }
+    else
+    {
+        apriori = in;
+    }
+    return;
+
+#if 0
+    /// with normalization
+    std::vector<double> * pew;
+    if(in.empty())
+    {
+        pew = &classCount;
+    }
+    else
+    {
+        pew = &in;
+    }
+    double sum = std::accumulate(std::begin(*pew),
+                                 std::end(*pew),
+                                 0.);
+    std::for_each(std::begin(*pew),
+                  std::end(*pew),
+                  [sum](double & in)
+    {
+        in /= sum;
+    }
+    );
+    this->apriori = sum;
+#endif
+}
 
 #if !CLASS_TEST_VIRTUAL
 void Classifier::test(const std::vector<int> & indices)

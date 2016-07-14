@@ -163,6 +163,37 @@ void readMatrixFile(const QString & filePath,
     file.close();
 }
 
+void readUCIdataSet(const QString & setName,
+                    matrix & outData,
+                    std::vector<int> & outTypes)
+{
+    QString newName = setName.toUpper();
+    readMatrixFile(def::uciFolder + slash + newName + "_data.txt", outData);
+
+
+    ifstream inStr;
+    inStr.open((def::uciFolder + slash + newName + "_types.txt").toStdString());
+
+    int num = 0;
+    inStr >> num;
+    std::valarray<int> cls(num);
+    for(int i = 0; i < num; ++i)
+    {
+        inStr >> cls[i];
+    }
+    inStr.close();
+
+    outTypes.resize(cls.sum());
+    auto beg = std::begin(outTypes);
+    for(int i = 0; i < num; ++i)
+    {
+        std::fill(beg,
+                  beg + cls[i],
+                  i);
+        beg += cls[i];
+    }
+}
+
 
 void writeMatrixFile(const QString & filePath,
                       const matrix & outData,

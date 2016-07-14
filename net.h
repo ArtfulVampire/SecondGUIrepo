@@ -157,6 +157,9 @@ public slots:
     /// WORD
     void setWordNumSlot(int);
 
+    /// LDA/QDA
+    void setShrinkageSlot(double);
+
 
 };
 

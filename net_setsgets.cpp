@@ -90,6 +90,20 @@ void Net::setWordNumSlot(int in)
     }
 }
 
+void Net::setShrinkageSlot(double in)
+{
+    if(myClassifier->getType() == ClassifierType::LDA)
+    {
+        LDA * myLDA = reinterpret_cast<LDA *>(myClassifier);
+        myLDA->setShrinkage(in);
+    }
+    else if(myClassifier->getType() == ClassifierType::QDA)
+    {
+        QDA * myQDA = reinterpret_cast<QDA *>(myClassifier);
+        myQDA->setShrinkage(in);
+    }
+}
+
 void Net::setKernelNumSlot(int in)
 {
     if(myClassifier->getType() == ClassifierType::SVM)
@@ -193,6 +207,7 @@ void Net::setClassifier(QAbstractButton * but)
         myClassifier = new QDA();
 //        setClassifierParams();
         QDA * myQDA = reinterpret_cast<QDA *>(myClassifier);
+        myQDA->setShrinkage(ui->shrinkageSpinBox->value());
     }
     else if(but->text() == "SVM")
     {
@@ -206,6 +221,7 @@ void Net::setClassifier(QAbstractButton * but)
         myClassifier = new LDA();
 //        setClassifierParams();
         LDA * myLDA = reinterpret_cast<LDA *>(myClassifier);
+        myLDA->setShrinkage(ui->shrinkageSpinBox->value());
     }
     else if(but->text() == "DIST")
     {

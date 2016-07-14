@@ -262,6 +262,10 @@ void writeMatrixFile(const QString & filePath,
                      const QString & rowsString = "NumOfRows",
                      const QString & colsString = "NumOfCols");
 
+void readUCIdataSet(const QString & setName,
+                    matrix & outData,
+                    std::vector<int> & outTypes);
+
 
 template <typename signalType>
 void readFileInLine(const QString & filePath,
@@ -275,6 +279,8 @@ void writeFileInLine(const QString & filePath,
 
 lineType signalFromFile(const QString & filePath,
                    int channelNumber); // unused
+
+
 
 
 

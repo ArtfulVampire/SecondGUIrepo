@@ -20,6 +20,17 @@ matrix::matrix(int dim)
     this->fill(0.);
 }
 
+
+matrix matrix::ident(int dim)
+{
+    matrix res(dim, dim, 0.);
+    for(int i = 0; i < dim; ++i)
+    {
+        res[i][i] = 1.;
+    }
+    return res;
+}
+
 matrix::matrix(int rows, int cols)
 {
     this->resize(rows, cols);
@@ -510,6 +521,33 @@ matrix matrix::subRows(const std::vector<int> & inds) const /// submatrix
     {
         res.data.push_back(this->data[i]);
     }
+    return res;
+}
+
+matrix matrix::covMatCols(lineType * avRowIn) const
+{
+    matrix cop = *this;
+
+    lineType * avRow;
+    lineType avRowVal;
+    if(avRowIn != nullptr)
+    {
+        *avRowIn = cop.averageRow();
+        avRow = avRowIn;
+    }
+    else
+    {
+        avRowVal =  cop.averageRow();
+        avRow = &avRowVal;
+    }
+
+    for(int j = 0; j < cop.rows(); ++j)
+    {
+        cop.data[j] -= *avRow;
+    }
+
+    matrix res = matrix::transpose(cop) * cop;
+    res /= cop.rows();
     return res;
 }
 

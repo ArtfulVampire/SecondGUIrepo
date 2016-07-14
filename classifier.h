@@ -27,7 +27,7 @@ protected:
     const std::vector<int> * types = nullptr;
     const std::vector<QString> * fileNames = nullptr;
     const std::vector<double> * classCount = nullptr; // really int but...
-    const std::vector<double> apriori;
+    std::vector<double> apriori;
 
 
     matrix confusionMatrix{}; // rows - realClass, cols - outClass
@@ -59,6 +59,7 @@ public:
     void setClassCount(std::vector<double> & inClassCount);
     void setFileNames(std::vector<QString> & inFileNames);
     void setFilesPath(const QString & inPath);
+    void setApriori(const std::vector<double> & in = std::vector<double>());
 
     /// crutch
     void confMatInc(int trueClass, int predClass){confusionMatrix[trueClass][predClass] += 1.;}
@@ -157,10 +158,15 @@ class LDA : public Classifier
 private:
     matrix covMat;
     std::vector<std::valarray<double>> centers;
+    double shrinkage = 0.;
+
+
 
 public:
     LDA();
     ~LDA();
+    void setShrinkage(double);
+
 
 protected:
     void learn(std::vector<int> & indices);
@@ -178,10 +184,14 @@ private:
     std::vector<matrix> covMat;
     std::vector<std::valarray<double>> centers;
     std::vector<double> dets;
+    double shrinkage;
+    double lambda;
 
 public:
     QDA();
     ~QDA();
+    void setShrinkage(double);
+    void setLambda(double);
 
 protected:
     void learn(std::vector<int> & indices);

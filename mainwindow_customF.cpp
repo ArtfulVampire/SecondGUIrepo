@@ -72,22 +72,12 @@ void MainWindow::customFunc()
         Net * net = new Net();
         net->show();
 
-        /// loading IRIS dataset
-        matrix iris(150, 4);
-        readMatrixFile(def::dataFolder + slash + "IRIS_data.txt", iris);
-        std::vector<int> irisTypes(150);
-        for(int i = 0; i < 3; ++i)
-        {
-            std::fill(std::begin(irisTypes) + i * 50,
-                      std::begin(irisTypes) + (i + 1) * 50,
-                      i);
-        }
-        net->loadData(iris, irisTypes);
+        /// loading UCI dataset
+        matrix uciData{};
+        std::vector<int> uciTypes{};
 
-//        lineType ar{.5, 7, 4, 0.3, 45, 1.7, 1.4};
-//        cout << ar << endl;
-//        cout << eraseValar(ar, 5) << endl;
-//        exit(0);
+        readUCIdataSet("wine", uciData, uciTypes);
+        net->loadData(uciData, uciTypes);
 
         return;
     }

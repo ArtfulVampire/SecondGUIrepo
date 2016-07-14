@@ -4,14 +4,30 @@ using namespace myLib;
 
 QDA::QDA() : Classifier()
 {
-    covMat.resize(numCl, matrix());
-    centers.resize(numCl);
+    covMat.resize(numCl + 1, matrix());
+    centers.resize(numCl + 1);
     dets.resize(numCl);
+    shrinkage = 0.;
+    lambda = 0.;
     myType = ClassifierType::QDA;
+}
+
+
+void QDA::setShrinkage(double in)
+{
+    this->shrinkage = in;
+}
+
+void QDA::setLambda(double in)
+{
+    this->lambda = in;
 }
 
 void QDA::learn(std::vector<int> & indices)
 {
+    /// count general covMat
+    covMat[numCl] = dataMatrix->subRows(indices).covMatCols(&(centers[numCl]));
+
     for(int i = 0; i < numCl; ++i)
     {
         /// fill learning submatrix
@@ -23,21 +39,19 @@ void QDA::learn(std::vector<int> & indices)
                 oneClass.push_back((*dataMatrix)[ind]);
             }
         }
-        centers[i] = oneClass.averageRow();
+        covMat[i] = oneClass.covMatCols(&(centers[i]));
 
-        for(int j = 0; j < oneClass.rows(); ++j)
+        /// regularization
+        covMat[i] = (1. - lambda) * covMat[i] + lambda * covMat[numCl];
+        covMat[i] /= (1. - lambda) * oneClass.rows() + lambda * indices.size();
+
+        /// shrinkage
+        covMat[i] *= (1. - shrinkage);
+        for(int j = 0; j < covMat[i].rows(); ++j)
         {
-            oneClass[j] -= centers[i];
+            covMat[i][j][j] += shrinkage;
         }
-
-        covMat[i] = matrix::transpose(oneClass) * oneClass;
-        covMat[i] /= oneClass.rows();
-
-//        std::cout << "covMat = " << std::endl;
-//        covMat[i].print();
         covMat[i].invert(&(dets[i]));
-//        std::cout << "invMat = " << std::endl;
-//        covMat[i].print();
     }
 }
 
@@ -62,10 +76,8 @@ std::pair<int, double> QDA::classifyDatum(const int & vecNum)
         matrix m1(a, 'r'); // row
         matrix m2(a, 'c'); // col
         double tmp = (m1 * covMat[i] * m2)[0][0];
-//        std::cout << tmp << std::endl;
-        output[i] = - tmp - log(dets[i]);
+        output[i] = - tmp - log(dets[i]) + 2 * log(this->apriori[i]);
     }
-//    std::cout << (*types)[vecNum] << ":\t" << output << std::endl;
     int outClass = myLib::indexOfMax(output);
 
     printResult("QDA.txt", outClass, vecNum);

@@ -148,6 +148,7 @@ namespace def
     const QString mriFolder = "/media/Files/Data/MRI";
     const QString GalyaFolder = "/media/Files/Data/Galya";
     const QString DashaFolder = "/media/Files/Data/Dasha/AUDIO";
+    const QString uciFolder = "/media/Files/Data/UCI";
     const bool opencl = true;
     const bool openmp = true;
 
