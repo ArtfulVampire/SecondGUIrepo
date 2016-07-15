@@ -30,9 +30,8 @@ Net::Net() :
     /// 2
     myButtonGroup.push_back(new QButtonGroup());
     myButtonGroup.back()->addButton(ui->classANNRadioButton);
-    myButtonGroup.back()->addButton(ui->classQDARadioButton);
+    myButtonGroup.back()->addButton(ui->classRDARadioButton);
     myButtonGroup.back()->addButton(ui->classSVMRadioButton);
-    myButtonGroup.back()->addButton(ui->classLDARadioButton);
     myButtonGroup.back()->addButton(ui->classDISTRadioButton);
     myButtonGroup.back()->addButton(ui->classNBCRadioButton);
     myButtonGroup.back()->addButton(ui->classKNNRadioButton);
@@ -109,10 +108,17 @@ Net::Net() :
 
     ui->knnNumOfNearSpinBox->setValue(10);
     ui->wordNumOfClustSpinBox->setValue(10);
-    ui->shrinkageSpinBox->setMaximum(0.5);
-    ui->shrinkageSpinBox->setDecimals(3);
-    ui->shrinkageSpinBox->setSingleStep(0.001);
-    ui->shrinkageSpinBox->setValue(0.1);
+
+    ui->rdaShrinkSpinBox->setMaximum(0.5);
+    ui->rdaShrinkSpinBox->setDecimals(3);
+    ui->rdaShrinkSpinBox->setSingleStep(0.005);
+    ui->rdaShrinkSpinBox->setValue(0.1);
+
+    ui->rdaLambdaSpinBox->setMaximum(1.0);
+    ui->rdaLambdaSpinBox->setMinimum(-1.0);
+    ui->rdaLambdaSpinBox->setDecimals(3);
+    ui->rdaLambdaSpinBox->setSingleStep(0.005);
+    ui->rdaLambdaSpinBox->setValue(0.1);
 
     myClassifier = new NBC();
 
@@ -126,7 +132,7 @@ Net::Net() :
 
     QObject::connect(myButtonGroup[0], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setModeSlot(QAbstractButton*, bool)));
     QObject::connect(myButtonGroup[1], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setSourceSlot(QAbstractButton*)));
-    QObject::connect(myButtonGroup[2], SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(setClassifier(QAbstractButton*)));
+    QObject::connect(myButtonGroup[2], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setClassifier(QAbstractButton*, bool)));
 
     /// ANN
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWtsSlot()));
@@ -154,8 +160,10 @@ Net::Net() :
                      this, SLOT(setWordNumSlot(int)));
 
     /// LDA/QDA
-    QObject::connect(ui->shrinkageSpinBox, SIGNAL(valueChanged(double)),
-    this, SLOT(setShrinkageSlot(double)));
+    QObject::connect(ui->rdaShrinkSpinBox, SIGNAL(valueChanged(double)),
+                     this, SLOT(setRdaShrinkSlot(double)));
+    QObject::connect(ui->rdaLambdaSpinBox, SIGNAL(valueChanged(double)),
+                     this, SLOT(setRdaLambdaSlot(double)));
 
 
     this->setAttribute(Qt::WA_DeleteOnClose);

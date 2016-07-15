@@ -50,7 +50,7 @@ void Net::autoClassification(const QString & spectraDir)
 }
 
 
-void Net::autoClassification()
+avType Net::autoClassification()
 {
     QTime myTime;
     myTime.start();
@@ -59,23 +59,32 @@ void Net::autoClassification()
     {
     case myMode::k_fold:
     {
-        crossClassification(); break;
+        crossClassification();
+//        cout << "cross classification:" << endl;
+        break;
     }
     case myMode::N_fold:
     {
-        leaveOneOutClassification(); break;
+        leaveOneOutClassification();
+//        cout << "N-fold cross-validation:" << endl;
+        break;
     }
     case myMode::train_test:
     {
-        trainTestClassification(); break;
+        trainTestClassification();
+//        cout << "train-test classification:" << endl;
+        break;
     }
     case myMode::half_half:
     {
-        halfHalfClassification(); break;
+        halfHalfClassification();
+//        cout << "half-half classification:" << endl;
+        break;
     }
     default: {break;}
     }
-    cout <<  "AutoClassOnData: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+//    cout <<  "AutoClassOnData: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    return myClassifier->averageClassification();
 }
 
 
@@ -113,7 +122,7 @@ void Net::leaveOneOutClassification()
     std::vector<int> learnIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
-        cout << i + 1 << " "; cout.flush();
+//        cout << i + 1 << " "; cout.flush();
 
         learnIndices.clear();
         learnIndices.resize(dataMatrix.rows() - 1);
@@ -127,9 +136,7 @@ void Net::leaveOneOutClassification()
         myClassifier->learn(learnIndices);
         myClassifier->test({i});
     }
-    cout << endl;
-    cout << "N-fold cross-validation:" << endl;
-    myClassifier->averageClassification();
+//    cout << endl;
 }
 
 void Net::crossClassification()
@@ -143,7 +150,7 @@ void Net::crossClassification()
     {
         arr[ types[i] ].push_back(i);
     }
-    cout << "Net: autoclass (max " << numOfPairs << "):" << endl;
+    cout << "Net: crossClass (max " << numOfPairs << "):" << endl;
 
     for(int i = 0; i < numOfPairs; ++i)
     {
@@ -173,8 +180,6 @@ void Net::crossClassification()
         }
     }
     cout << endl;
-    cout << "cross classification:" << endl;
-    myClassifier->averageClassification();
 }
 
 std::pair<std::vector<int>, std::vector<int>> Net::makeIndicesSetsCross(
@@ -221,8 +226,6 @@ void Net::halfHalfClassification()
     }
     myClassifier->learn(learnIndices);
     myClassifier->test(tallIndices);
-    cout << "half-half classification:" << endl;
-    myClassifier->averageClassification();
 }
 
 void Net::trainTestClassification(const QString & trainTemplate,
@@ -246,17 +249,13 @@ void Net::trainTestClassification(const QString & trainTemplate,
         cout << "Net::trainTestClassification: indicesArray empty, return" << endl;
         return;
     }
-
     myClassifier->learn(learnIndices);
     myClassifier->test(tallIndices);
-    cout << "train-test classification:" << endl;
-    myClassifier->averageClassification();
-
 }
 
-void Net::pcaNumCheck()
+void Net::customF()
 {
-    if(Source == source::pca)
+    if(Source == source::pca && 0)
     {
         ofstream outStr;
         outStr.open((def::dir->absolutePath()
@@ -271,4 +270,35 @@ void Net::pcaNumCheck()
         }
         outStr.close();
     }
+
+
+
+    ui->classRDARadioButton->setChecked(true);
+#if 0
+    ui->rdaLambdaSpinBox->setValue(1.0);
+    ui->rdaShrinkSpinBox->setValue(0.2);
+    autoClassification();
+    exit(0);
+#endif
+
+
+    ofstream outStr;
+    outStr.open((def::uciFolder + slash + "res.txt").toStdString());
+    outStr << "lambda" << "\t"
+           << "gamma" << "\t"
+           << "avAccur" << "\t"
+           << "kappa" << std::endl;
+    const double delta = 0.025;
+    for(double i = 0.; i < 1.; i += delta)
+    {
+        for(double j = 0.; j < 0.4; j += delta)
+        {
+            ui->rdaLambdaSpinBox->setValue(i);
+            ui->rdaShrinkSpinBox->setValue(j);
+            auto a = autoClassification();
+            outStr << i << "\t" << j << "\t" << a.first << "\t" << a.second << endl;
+        }
+    }
+    outStr.close();
+
 }

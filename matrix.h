@@ -125,6 +125,7 @@ public:
     static matrix ident(int dim);
 
     // "private"
+    double trace() const;
     matrix & transpose();
     matrix & invert(double * det = nullptr);
     matrix covMatCols(lineType * avRow = nullptr) const;

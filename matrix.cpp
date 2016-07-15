@@ -547,7 +547,6 @@ matrix matrix::covMatCols(lineType * avRowIn) const
     }
 
     matrix res = matrix::transpose(cop) * cop;
-    res /= cop.rows();
     return res;
 }
 
@@ -848,6 +847,17 @@ matrix & matrix::transpose()
                  oldRows);
 #endif
     return *this;
+}
+
+double matrix::trace() const
+{
+    if(this->rows() != this->cols()) return 0.;
+    double res = 0.;
+    for(int i = 0; i < this->rows(); ++i)
+    {
+        res += (*this)[i][i];
+    }
+    return res;
 }
 
 matrix & matrix::invert(double * det)

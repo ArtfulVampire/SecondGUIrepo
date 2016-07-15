@@ -69,15 +69,16 @@ void MainWindow::customFunc()
     {
         setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
         readData();
-        Net * net = new Net();
-        net->show();
 
         /// loading UCI dataset
         matrix uciData{};
         std::vector<int> uciTypes{};
+        readUCIdataSet("iris", uciData, uciTypes);
 
-        readUCIdataSet("wine", uciData, uciTypes);
+        Net * net = new Net();
+        net->show();
         net->loadData(uciData, uciTypes);
+        net->customF();
 
         return;
     }

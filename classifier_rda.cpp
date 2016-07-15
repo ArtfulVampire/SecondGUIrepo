@@ -2,61 +2,64 @@
 
 using namespace myLib;
 
-QDA::QDA() : Classifier()
+RDA::RDA() : Classifier()
 {
     covMat.resize(numCl + 1, matrix());
     centers.resize(numCl + 1);
     dets.resize(numCl);
-    shrinkage = 0.;
+    gamma = 0.;
     lambda = 0.;
-    myType = ClassifierType::QDA;
+    myType = ClassifierType::RDA;
 }
 
 
-void QDA::setShrinkage(double in)
+void RDA::setShrinkage(double in)
 {
-    this->shrinkage = in;
+    this->gamma = in;
 }
 
-void QDA::setLambda(double in)
+void RDA::setLambda(double in)
 {
     this->lambda = in;
 }
 
-void QDA::learn(std::vector<int> & indices)
+void RDA::learn(std::vector<int> & indices)
 {
-    /// count general covMat
-    covMat[numCl] = dataMatrix->subRows(indices).covMatCols(&(centers[numCl]));
-
+//    std::cout << lambda << "\t" << gamma << std::endl;
+    matrix oneClass[numCl];
+    covMat[numCl] = matrix(dataMatrix->cols(), dataMatrix->cols(), 0);
     for(int i = 0; i < numCl; ++i)
     {
-        /// fill learning submatrix
-        matrix oneClass{};
         for(int ind : indices)
         {
             if((*types)[ind] == i)
             {
-                oneClass.push_back((*dataMatrix)[ind]);
+                oneClass[i].push_back((*dataMatrix)[ind]);
             }
         }
-        covMat[i] = oneClass.covMatCols(&(centers[i]));
+        covMat[i] = oneClass[i].covMatCols(&(centers[i]));
+        covMat[numCl] += covMat[i];
+    }
 
+    for(int i = 0; i < numCl; ++i)
+    {
         /// regularization
-        covMat[i] = (1. - lambda) * covMat[i] + lambda * covMat[numCl];
-        covMat[i] /= (1. - lambda) * oneClass.rows() + lambda * indices.size();
+        covMat[i] = covMat[i] * (1. - lambda) + covMat[numCl] * lambda;
+        covMat[i] /= (1. - lambda) * oneClass[i].rows() + lambda * indices.size();
 
         /// shrinkage
-        covMat[i] *= (1. - shrinkage);
+        double tmpTrace = covMat[i].trace();
+        covMat[i] *= (1. - gamma);
         for(int j = 0; j < covMat[i].rows(); ++j)
         {
-            covMat[i][j][j] += shrinkage;
+            covMat[i][j][j] += gamma * tmpTrace / covMat[i].rows();
         }
         covMat[i].invert(&(dets[i]));
     }
 }
 
 #if CLASS_TEST_VIRTUAL
-void QDA::test(const std::vector<int> & indices)
+void RDA::test(const std::vector<int> & indices)
 {
     for(int ind : indices)
     {
@@ -66,7 +69,7 @@ void QDA::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> QDA::classifyDatum(const int & vecNum)
+std::pair<int, double> RDA::classifyDatum(const int & vecNum)
 {
     lineType output(numCl);
 
@@ -80,7 +83,7 @@ std::pair<int, double> QDA::classifyDatum(const int & vecNum)
     }
     int outClass = myLib::indexOfMax(output);
 
-    printResult("QDA.txt", outClass, vecNum);
+    printResult("RDA.txt", outClass, vecNum);
 
     return std::make_pair(outClass,
                           double(outClass != (*types)[vecNum]));

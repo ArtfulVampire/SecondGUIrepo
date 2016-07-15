@@ -90,17 +90,21 @@ void Net::setWordNumSlot(int in)
     }
 }
 
-void Net::setShrinkageSlot(double in)
+void Net::setRdaShrinkSlot(double in)
 {
-    if(myClassifier->getType() == ClassifierType::LDA)
+    if(myClassifier->getType() == ClassifierType::RDA)
     {
-        LDA * myLDA = reinterpret_cast<LDA *>(myClassifier);
-        myLDA->setShrinkage(in);
+        RDA * myRDA = reinterpret_cast<RDA *>(myClassifier);
+        myRDA->setShrinkage(in);
     }
-    else if(myClassifier->getType() == ClassifierType::QDA)
+}
+
+void Net::setRdaLambdaSlot(double in)
+{
+    if(myClassifier->getType() == ClassifierType::RDA)
     {
-        QDA * myQDA = reinterpret_cast<QDA *>(myClassifier);
-        myQDA->setShrinkage(in);
+        RDA * myRDA = reinterpret_cast<RDA *>(myClassifier);
+        myRDA->setLambda(in);
     }
 }
 
@@ -183,8 +187,9 @@ void Net::setClassifierParams()
     myClassifier->setFilesPath(filesPath);
 }
 
-void Net::setClassifier(QAbstractButton * but)
+void Net::setClassifier(QAbstractButton * but, bool i)
 {
+    if(!i) return;
     if(myClassifier != nullptr)
     {
         cout << "delete classifier" << endl;
@@ -197,59 +202,50 @@ void Net::setClassifier(QAbstractButton * but)
         myClassifier = new ANN();
         ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
 
-        myANN->setData(dataMatrix);
+        myANN->setData(dataMatrix); /// should be here to set dimensionality
+
         myANN->setLrate(ui->learnRateBox->value());
         myANN->setCritError(ui->critErrorDoubleSpinBox->value());
         setDimensionalitySlot();
     }
-    else if(but->text() == "QDA")
+    else if(but->text() == "RDA")
     {
-        myClassifier = new QDA();
-//        setClassifierParams();
-        QDA * myQDA = reinterpret_cast<QDA *>(myClassifier);
-        myQDA->setShrinkage(ui->shrinkageSpinBox->value());
+        myClassifier = new RDA();
+        RDA * myRDA = reinterpret_cast<RDA *>(myClassifier);
+        myRDA->setShrinkage(ui->rdaShrinkSpinBox->value());
+        myRDA->setLambda(ui->rdaLambdaSpinBox->value());
     }
     else if(but->text() == "SVM")
     {
         myClassifier = new SVM();
-//        setClassifierParams();
         SVM * mySVM = reinterpret_cast<SVM *>(myClassifier);
         mySVM->setKernelNum(ui->svmKernelSpinBox->value());
-    }
-    else if(but->text() == "LDA")
-    {
-        myClassifier = new LDA();
-//        setClassifierParams();
-        LDA * myLDA = reinterpret_cast<LDA *>(myClassifier);
-        myLDA->setShrinkage(ui->shrinkageSpinBox->value());
     }
     else if(but->text() == "DIST")
     {
         myClassifier = new DIST();
-//        setClassifierParams();
         DIST * myDIST = reinterpret_cast<DIST *>(myClassifier);
     }
     else if(but->text() == "NBC")
     {
         myClassifier = new NBC();
-//        setClassifierParams();
         NBC * myNBC = reinterpret_cast<NBC *>(myClassifier);
     }
     else if(but->text() == "KNN")
     {
         myClassifier = new KNN();
-//        setClassifierParams();
         KNN * myKNN = reinterpret_cast<KNN *>(myClassifier);
         myKNN->setNumOfNear(ui->knnNumOfNearSpinBox->value());
     }
     else if(but->text() == "WORD")
     {
         myClassifier = new WORD();
-//        setClassifierParams();
         WORD * myWORD = reinterpret_cast<WORD *>(myClassifier);
         myWORD->setNumClust(ui->knnNumOfNearSpinBox->value());
     }
     setClassifierParams();
+
+    myClassifier->setApriori(); /// depending on TRUE data but not datasets
 
 
 }

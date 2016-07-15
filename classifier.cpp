@@ -145,7 +145,7 @@ void Classifier::successiveRelearn()
 
 
 
-double Classifier::averageClassification()
+avType Classifier::averageClassification()
 {
     std::ofstream res;
     res.open(resultsPath.toStdString(), std::ios_base::app);
@@ -195,11 +195,16 @@ double Classifier::averageClassification()
 
     res.close();
 
+    /// cout
+#if 1
     confusionMatrix.print();
-    std::cout << "average accuracy = " << smallLib::doubleRound(averageAccuracy, 2) << std::endl;
+    std::cout << "average accuracy = "
+              << smallLib::doubleRound(averageAccuracy, 2) << std::endl;
     std::cout << "kappa = " << kappa << std::endl;
+#endif
 
     confusionMatrix.fill(0.);
-    return averageAccuracy;
+
+    return std::make_pair(averageAccuracy, kappa);
 }
 

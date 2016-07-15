@@ -86,12 +86,13 @@ private:
     void halfHalfClassification();
     void trainTestClassification(const QString & trainTemplate = "_train",
                                  const QString & testTemplate = "_test");
-    void pcaNumCheck();
-
 
 public:
     explicit Net();
     ~Net();
+
+
+    void customF();
 
     /// classification
     void autoClassification(const QString & spectraDir);
@@ -131,11 +132,11 @@ public slots:
     void pca();
 
     void autoClassificationSimple(); /// on SpectraSmooth + Source
-    void autoClassification(); /// on dataMatrix + types
+    avType autoClassification(); /// on dataMatrix + types
 
     void setSourceSlot(QAbstractButton*);
-    void setModeSlot(QAbstractButton*, bool i);
-    void setClassifier(QAbstractButton*);
+    void setModeSlot(QAbstractButton*, bool);
+    void setClassifier(QAbstractButton*, bool);
 
 
     /// ANN
@@ -158,7 +159,8 @@ public slots:
     void setWordNumSlot(int);
 
     /// LDA/QDA
-    void setShrinkageSlot(double);
+    void setRdaShrinkSlot(double);
+    void setRdaLambdaSlot(double);
 
 
 };

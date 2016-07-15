@@ -16,7 +16,9 @@
 #include <QTime>
 #include <chrono>
 
-enum class ClassifierType {ANN, LDA, QDA, SVM, DIST, NBC, KNN, WORD};
+enum class ClassifierType {ANN, LDA, RDA, SVM, DIST, NBC, KNN, WORD};
+typedef std::pair<double, double> avType;
+
 
 #define CLASS_TEST_VIRTUAL 0
 class Classifier
@@ -53,7 +55,7 @@ public:
 
     void deleteFile(int vecNum, int predClass);
     void printResult(const QString & fileName, int predType, int vecNum);
-    double averageClassification(); /// on confusionMatrix
+    avType averageClassification(); /// on confusionMatrix
     void setData(matrix & inMat);
     void setTypes(std::vector<int> & inTypes);
     void setClassCount(std::vector<double> & inClassCount);
@@ -152,46 +154,20 @@ protected:
 };
 
 
-
-class LDA : public Classifier
-{
-private:
-    matrix covMat;
-    std::vector<std::valarray<double>> centers;
-    double shrinkage = 0.;
-
-
-
-public:
-    LDA();
-    ~LDA();
-    void setShrinkage(double);
-
-
-protected:
-    void learn(std::vector<int> & indices);
-#if CLASS_TEST_VIRTUAL
-    void test(const std::vector<int> & indices);
-#endif
-    std::pair<int, double> classifyDatum(const int & vecNum);
-};
-
-
-
-class QDA : public Classifier
+class RDA : public Classifier
 {
 private:
     std::vector<matrix> covMat;
     std::vector<std::valarray<double>> centers;
     std::vector<double> dets;
-    double shrinkage;
+    double gamma; /// gamma
     double lambda;
 
 public:
-    QDA();
-    ~QDA();
+    RDA();
+    ~RDA();
     void setShrinkage(double);
-    void setLambda(double);
+    void setLambda(double); /// 0 - QDA, 1 - LDA
 
 protected:
     void learn(std::vector<int> & indices);
@@ -200,7 +176,6 @@ protected:
 #endif
     std::pair<int, double> classifyDatum(const int & vecNum);
 };
-
 
 
 class SVM : public Classifier

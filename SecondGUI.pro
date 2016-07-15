@@ -43,14 +43,13 @@ SOURCES += main.cpp\
     net.cpp \
     classifier.cpp \
     classifier_ann.cpp \
-    classifier_qda.cpp \
     classifier_svm.cpp \
-    classifier_lda.cpp \
     classifier_dist.cpp \
     classifier_nbc.cpp \
     classifier_knn.cpp \
     net_successive.cpp \
-    classifier_word.cpp
+    classifier_word.cpp \
+    classifier_rda.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
