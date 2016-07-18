@@ -44,13 +44,19 @@ QStringList leest_mri = {
     "Ali-Zade",
     "Atanov",
     "Balaev",
+    "Gudovich",
     "Khasanov",
-    "Nikolaenko",
+    "Khokhlov",
+    "Levando",
     "Mezhenova",
+    "Moskovtsev",
+    "Muchanova",
+    "Nikolaenko",
+    "Novoselova",
+    "Rest",
     "Sushinsky",
-    "LevandoA",
     "Umanskaya",
-    "Muchanova"
+    "Zavyalova"
 };
 void MainWindow::customFunc()
 {
@@ -65,27 +71,47 @@ void MainWindow::customFunc()
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
 
-    if(1)
+    if(0)
     {
-        setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+        setEdfFile("/media/michael/Files/Data/Feedback/SuccessClass/AAX_train.edf");
         readData();
 
         /// loading UCI dataset
         matrix uciData{};
         std::vector<int> uciTypes{};
-        readUCIdataSet("iris", uciData, uciTypes);
+        readUCIdataSet("wine", uciData, uciTypes);
 
         Net * net = new Net();
         net->show();
+        net->setClassifier("RDA");
+        net->setCentering(true);
+        net->setVariancing(true);
+        net->loadData();
+
+
+//        net->customF();
+        net->successiveProcessing();
+        exit(0);
+
+
+        for(bool cent : {true, false})
+        {
+            for(bool vari : {true, false})
+            {
+                net->setCentering(cent);
+                net->setVariancing(vari);
+                net->loadData();
+
+                net->customF();
+            }
+        }
+        return;
         net->loadData(uciData, uciTypes);
         net->customF();
 
         return;
     }
-
-
 //    return;
-
 
 
 
@@ -108,33 +134,21 @@ void MainWindow::customFunc()
 
 
 #if 0
-    /// rename files in a dir
-    const QString renamePath = "/media/michael/Files/Data/MRI/Rest/Rest_windows_cleaned";
-
-    for(const QString & oldName : QDir(renamePath).entryList({"*.edf"}))
-    {
-        QString newName = oldName;
-        newName.remove("_18_17"); ///
-        QFile::rename(renamePath + slash + oldName,
-                      renamePath + slash + newName);
-    }
-    exit(0);
-#endif
-
-
-
-#if 0
     /// EEG fMRI
     def::ntFlag = true;
 
-    GalyaCut(def::mriFolder + slash + "Kabanov",
-             2);
-    exit(0);
+
+//    GalyaCut(def::mriFolder + slash + "Kabanov",
+//             2);
+//    exit(0);
 
 
-    QString guy = "Biglova";
+    QString guy = "Gudovich";
 //    for(QString guy : leest_mri)
     {
+        QDir tmp(def::mriFolder + slash + "OUT");
+        tmp.mkdir(guy);
+
         GalyaProcessing(def::mriFolder
                         + slash + guy
                         + slash + guy + "_windows_cleaned",
@@ -143,8 +157,6 @@ void MainWindow::customFunc()
                         + slash + guy
                         + slash + guy + "_windows_cleaned_out");
 
-        QDir tmp(def::mriFolder + slash + "OUT");
-        tmp.mkdir(guy);
 
         /// check rightNumbers in all subjects
         makeRightNumbers(def::mriFolder
@@ -183,88 +195,19 @@ void MainWindow::customFunc()
 #endif
 
 
-
 #if 0
-    /// loading IRIS dataset
-    matrix iris(150, 4);
-    readMatrixFile(def::dataFolder + slash + "IRIS_data.txt", iris);
-    std::vector<int> irisTypes(150);
-    for(int i = 0; i < 3; ++i)
+    /// test MK channel
+    QString pewpewpew = "/media/michael/Files/Data/MRI/Khokhlov/Khokhlov_windows_cleaned";
+    QStringList leest = QDir(pewpewpew).entryList({"*.edf"});
+    for(QString str : leest)
     {
-        std::fill(std::begin(irisTypes) + i * 50,
-                  std::begin(irisTypes) + (i + 1) * 50,
-                  i);
-    }
-    net->loadData(iris, irisTypes);
-#endif
-
-
-#if 0
-    /// manual rereference
-    std::vector<int> rightChans{1, 5, 6, 9, 10, 11, 15, 16, 18};
-    std::vector<int> leftChans{0, 2, 3, 4, 7, 8, 12, 13, 14, 17};
-    QString filpath = "/media/michael/Files/Data/Xenia/Shapovalova/SHAPOVALOVA_OLESY_BD_.edf";
-    setEdfFile(filpath);
-//    return;
-    this_thread::sleep_for(std::chrono::seconds{3});
-    edfFile feel;
-    feel.readEdfFile(filpath);
-    matrix dt = feel.getData();
-
-
-#if 0
-    // cout corrMatrix
-    cout << "\t";
-    for(int i = 0; i < 21; ++i)
-    {
-        cout << getLabelName(feel.getLabels()[i]) << "\t";
-    }
-    cout << endl;
-    for(int i = 0; i < 21; ++i)
-    {
-        cout << getLabelName(feel.getLabels()[i]) << "\t";
-        for(int j = 0; j < 21; ++j)
+        edfFile feel;
+        feel.readEdfFile(pewpewpew + slash + str);
+        if(feel.getPhysMin()[feel.getNs() - 2] == feel.getPhysMax()[feel.getNs() - 2])
         {
-            double a = doubleRound(smallLib::correlation(dt[i], dt[j]), 3);
-            cout << a;
-            if(abs(a) > 0.9) cout << " !";
-            cout << "\t";
+            cout << str << endl;
         }
-        cout << endl;
     }
-//    exit(0);
-#endif
-
-    for(int i = 200; i < 210; ++i)
-    {
-        cout << dt[15][i] << "\t";
-    }
-    cout << endl;
-    for(int i = 200; i < 210; ++i)
-    {
-        cout << dt[19][i] << "\t";
-    }
-    cout << endl << endl;
-
-    for(int chan : rightChans)
-    {
-        dt[chan] -= dt[19];
-    }
-
-    for(int i = 200; i < 210; ++i)
-    {
-        cout << dt[15][i] << "\t";
-    }
-    cout << endl;
-    for(int i = 200; i < 210; ++i)
-    {
-        cout << dt[19][i] << "\t";
-    }
-    cout << endl << endl;
-
-//    dt.resizeCols(250 * 2);
-    writePlainData(filpath.replace(".edf", "_RRR.scg"), dt);
-//    feel.writeOtherData(dt, filpath.replace(".edf", "_RRR.edf"));
     exit(0);
 #endif
 
@@ -297,6 +240,7 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
+
 #if 0
     /// kyrillic to latin
     ofstream alphabet;
@@ -323,6 +267,87 @@ void MainWindow::customFunc()
     exit(0);
 
 #endif
+
+
+#if 0
+    /// make current numbers to rightNumbers in edfs
+
+    const QString listFile = "/media/michael/Files/Data/list.txt";
+    int count = 0;
+    QString oldPath;
+    QString newPath;
+    for(int i = 1; i < 100; ++i)
+    {
+        QString hlp = "rm " + listFile;
+        system(hlp.toStdString().c_str());
+
+        QString filter = "_" + QString::number(i) + ".edf";
+        QString newFilter = "_" + rightNumber(i, 3) + ".edf";
+
+        hlp = "find " + def::mriFolder + " | grep " + filter + " >> " + listFile;
+        system(hlp.toStdString().c_str());
+
+        QFile inStr(listFile);
+        inStr.open(QIODevice::ReadOnly);
+        while(!inStr.atEnd())
+        {
+            newPath = oldPath = QString(inStr.readLine()).remove('\n');
+            newPath.replace(filter, newFilter);
+            cout << oldPath << endl;
+            cout << newPath << endl;
+            cout << QFile::rename(oldPath, newPath) << endl;
+
+        }
+        inStr.close();
+        ++count;
+    }
+    exit(0);
+#endif
+
+#if 0
+    /// batch recursively rename files in a dir
+    QString renameDir = "/media/michael/Files/Data/Galya/Norm_tactile_July";
+    std::vector<std::pair<QString, QString>> renam{
+    {"Ali-zade", "Ali-Zade"},
+    {"ZavylovaV", "Zavyalova"},
+    {"GAVRILOV", "Gavrilov"},
+    {"atanov", "Atanov"},
+    {"KhoKhlov", "Khokhlov"},
+    {"LevandoA", "Levando"},
+    {"novoselova", "Novoselova"},
+    {"sushinsky", "Sushinsky"},
+    {"ZavylovaV", "Zavyalova"},
+};
+    const QString listFile = "/media/michael/Files/Data/list.txt";
+    int count = 0;
+    QString oldPath;
+    QString newPath;
+    for(auto paar : renam)
+    {
+        QString hlp = "rm " + listFile;
+        system(hlp.toStdString().c_str());
+
+        hlp = "find " + renameDir + " | grep " + paar.first + " >> " + listFile;
+        system(hlp.toStdString().c_str());
+
+        QFile inStr(listFile);
+        inStr.open(QIODevice::ReadOnly);
+        while(!inStr.atEnd())
+        {
+            newPath = oldPath = QString(inStr.readLine()).remove('\n');
+            newPath.replace(paar.first, paar.second);
+            cout << oldPath << endl;
+            cout << newPath << endl;
+            cout << QFile::rename(oldPath, newPath) << endl;
+
+        }
+        inStr.close();
+        break;
+        ++count;
+    }
+    exit(0);
+#endif
+
 
 #if 0
     /// compare data
@@ -571,335 +596,76 @@ void MainWindow::customFunc()
 #endif
 
 
-//    const QString path = "/media/Files/Data/Feedback/SuccessClass/";
-//    setEdfFile(path + "AAU_train.edf");
-//    readData();
-//    ui->reduceChannelsComboBox->setCurrentText("20");
+    const QString path = "/media/Files/Data/Feedback/SuccessClass/";
+    setEdfFile(path + "AAU_train.edf");
+    readData();
+    ui->reduceChannelsComboBox->setCurrentText("20");
 //    const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
-//    for(QString name : names)
-    {
-#if 0
-        /// test classification parameters
-        for(QString suffix : {"_train", "_test"})
-        {
-
-            setEdfFile(path + name + suffix + ".edf");
-            ui->windButton->setChecked(true);
-            ui->windowLengthSpinBox->setValue(4.);
-            ui->timeShiftSpinBox->setValue(4.);
-            readData();
-            cleanDirs();
-            sliceAll();
-
-            countSpectraSimple(1024, 8);
-
-            Net * amn = new Net();
-            amn->setSource("w");
-            amn->setMode("k");
-            amn->setNumOfPairs(15);
-            amn->setFold(5);
-            amn->setActFunc("s");
-
-
-            ofstream of;
-            of.open((path + "softMaxTest.txt").toStdString(),
-                    ios_base::app);
-            of << (name + suffix).toStdString() << '\n';
-            for(double errcrit : {0.1, 0.075, 0.05, 0.025})//, 0.01, 0.005})
-            {
-                for(double lrate : {0.1, 0.075, 0.05, 0.025})//, 0.01, 0.005})
-                {
-                    amn->setErrCrit(errcrit);
-                    amn->setLrate(lrate);
-                    amn->autoClassificationSimple();
-                    of << errcrit << '\t'
-                       << lrate << '\t'
-                       << amn->getAverageAccuracy() << '\t'
-                       << amn->getKappa() << endl;
-                }
-            }
-            of.close();
-            delete amn;
-        }
-        continue;
-
-#endif
-
-#if 0
-        /// inner
-//        for(QString suffix : {"_train", "_test", "_train_ica", "_test_ica"})
-        for(QString suffix : {"_train"})
-        {
-            setEdfFile(path + name + suffix + ".edf");
-            cleanDirs();
-//            ui->windButton->setChecked(true);
-            ui->realButton->setChecked(true);
-            sliceAll();
-//            countSpectraSimple(1024, 8);
-            countSpectraSimple(4096, 15);
-
-            Net * annA = new Net();
-            annA->setMode("N");
-            annA->setSource("real");
-            annA->autoClassificationSimple();
-            delete annA;
-        }
-        continue;
-#endif
-
-#if 0
-        /// ICA
-        /// make test by train maps
-        /// deal with matrixA
-        matrix matA;
-        readICAMatrix(path + "Help"
-                      + slash + "ica"
-                      + slash + name + "_train_maps.txt",
-                      matA);
-        matA.invert();
-
-        /// convert test file with that matrix
-        edfFile fil2;
-        fil2.readEdfFile(path + name + "_test.edf");
-        matrix newData;
-
-        matrixProduct(matA,
-                      fil2.getData(),
-                      newData,
-                      def::nsWOM()); // w/o markers from globalEdf data
-
-        newData.push_back(fil2.getData()[fil2.getMarkChan()]); //copy markers
-
-        fil2.writeOtherData(newData,
-                            path + name + "_test_ica.edf");
-#endif
-
-#if 0
-        /// reduce ICA
-        QString chanString;
-        if(name == "AAU")
-        {
-            chanString = "1 2 3 5 6 9 10 12 14 15 16 18 19 20";
-        }
-        else if(name == "BEA")
-        {
-            chanString = "6 15 16 17 18 20";
-        }
-        else if(name == "CAA")
-        {
-            chanString = "2 8 11 18 20";
-        }
-        else if(name == "GAS")
-        {
-            chanString = "2 5 7 10 11 12 20";
-        }
-        else if(name == "SUA")
-        {
-            chanString = "2 3 14 15 16 20";
-        }
-
-        ui->reduceChannelsLineEdit->setText(chanString);
-        vector<int> chanList;
-        makeChanList(chanList);
-
-        edfFile fil;
-        fil.readEdfFile(path + name + "_train_ica.edf");
-        fil.reduceChannels(chanList);
-        fil.writeEdfFile(path + name + "_train_ica_rdc.edf");
-
-        /// deal with matrixA
-        matrix matA;
-        readICAMatrix(path + "Help"
-                      + slash + "ica"
-                      + slash + name + "_train_maps.txt",
-                      matA);
-        matA.invert();
-//        matA.print();
-        matrix matNew;
-        for(int i = 0; i < chanList.size() - 1; ++i)
-        {
-            matNew.push_back(matA[ chanList[i] ]);
-        }
-
-        /// convert test file with that matrix
-        edfFile fil2;
-        fil2.readEdfFile(path + name + "_test.edf");
-        matrix newData;
-
-        matrixProduct(matNew,
-                      fil2.getData(),
-                      newData,
-                      def::nsWOM()); // w/o markers from globalEdf data
-
-        newData.push_back(fil2.getData()[fil2.getMarkChan()]); //copy markers
-
-        fil2.setChannels(fil.getChannels());
-
-        fil2.writeOtherData(newData,
-                            path + name + "_test_ica_rdc.edf");
-
-
-//        exit(0);
-#endif
-
-#if 0
-        /// draw spectra
-        def::drawNorm = -1.;
-        def::drawNormTyp = all;
-        for(QString suffix : {"_train", "_test"})
-        {
-            setEdfFile(path + name + suffix + "_ica_rdc.edf");
-//            drawMapsICA();
-            cleanDirs();
-            sliceAll();
-            countSpectraSimple(4096, 15);
-//            drawMapsOnSpectra();
-        }
-//        exit(0);
-#endif
-
-
-
-#if 0
-        /// successive
-        const QString suffix = ""; /// empty, _ica, _ica_ord
+    const QStringList names {"AAU"};
 
 #if 1
-        setEdfFile(path + name + "_train" + suffix + ".edf");
+    for(QString name : names)
+    {
+        /// successive
+        setEdfFile(path + name + "_train" + ".edf");
         ui->timeShiftSpinBox->setValue(2.);
         ui->windowLengthSpinBox->setValue(4.);
         ui->windButton->setChecked(true); // sliceWindFromReal
-        cleanDirs(); sliceAll();
+//        cleanDirs(); sliceAll();
 
-        // initially reduce number of windows
-        QStringList windowsList;
-        // delete first three windows from each realisation
-        windowsList = QDir(path + "windows/fromreal").entryList({"*_train*.00",
-                                                                 "*_train*.01",
-                                                                 "*_train*.02"},
-                                                                QDir::Files);
 
-        for(const QString & name : windowsList)
         {
-            QFile::remove(path + "windows/fromreal/" + name);
+            /// initially reduce number of windows
+            QStringList windowsList;
+            // delete first three windows from each realisation
+            windowsList = QDir(path + "windows/fromreal").entryList({"*_train*.00",
+                                                                     "*_train*.01",
+                                                                     "*_train*.02"},
+                                                                    QDir::Files);
+            for(const QString & name : windowsList)
+            {
+                QFile::remove(path + "windows/fromreal/" + name);
+            }
+
+            // leave last 600 (some will fall out due to zeros)
+            makeFullFileList(path + "windows/fromreal", windowsList, {"_train"});
+            for(int i = 0; i < windowsList.length() - 600; ++i) /// constant
+            {
+                QFile::remove(path + "windows/fromreal/" + windowsList[i]);
+            }
         }
 
-        // leave last 600 (some will fall out due to zeros)
-        makeFullFileList(path + "windows/fromreal", windowsList, {"_train"});
-        for(int i = 0; i < windowsList.length() - 600; ++i) /// constant
-        {
-            QFile::remove(path + "windows/fromreal/" + windowsList[i]);
-        }
-#endif
-
-#if 0
-        // delete badFiles from saved file
-//        ifstream badFiles((path + "badFiles-12_400_3.txt").toStdString());
-        ifstream badFiles((path + "badFiles_3sec.txt").toStdString());
-        string nam;
-        while(!badFiles.eof())
-        {
-            badFiles >> nam;
-            const QString toRem = path + "windows/fromreal/" + QString(nam.c_str());
-//            cout  << toRem << endl;
-            QFile::remove(toRem);
-        }
-        badFiles.close();
-        exit(0);
-#endif
-        countSpectraSimple(1024, 8);
+//        countSpectraSimple(1024, 8);
 
         Net * ann = new Net();
+        ann->show();
+        ann->loadData(def::dir->absolutePath()
+                      + slash + "SpectraSmooth"
+                      + slash + "windows", {"_train"}); /// only for ANN set - dataMatrix->cols()
+        ann->setClassifier("WORD");
         ann->setSource("w");
-        ann->setActFunc("s");
-        ann->setMode("N");
+        ann->setMode("t"); // train-test
 
-#if 1
-        // N-fold cleaning
-        cout << "cleaning" << endl;
-        ann->loadData(path + "SpectraSmooth/windows");
 
-        ann->setTallCleanFlag(true); /// with deleting the bad-classified
-
-//        // k-fold
-//        ann->setMode("k");
-//        ann->setNumOfPairs(1);
-//        ann->setFold(20);
-//        ann->autoClassificationSimple(); /// assume only train files in the spectraDir
-        // N-fold
-        for(int i = 0; i < 3; ++i)
-        {
-            ann->autoClassificationSimple(); /// assume only train files in the spectraDir
-        }
-
-        ann->setTallCleanFlag(false);
-#endif
-
-        setEdfFile(path + name + "_test" + suffix + ".edf");
+        setEdfFile(path + name + "_test" + ".edf");
         ui->windowLengthSpinBox->setValue(4.);
         ui->timeShiftSpinBox->setValue(2.); /// really should be 0.5
         ui->windButton->setChecked(true);
         /// DON'T CLEAR, TRAIN WINDOWS TAKEN BY SUCCESSIVE
-        sliceAll(); countSpectraSimple(1024, 8);
+//        sliceAll(); countSpectraSimple(1024, 8);
 
-        ann->setMode("t"); // train-test
 
-        /// current best set (logistic)
+
+        /// current best set
         suc::numGoodNewLimit = 6;
         suc::learnSetStay = 100;
         suc::decayRate = 0.01;
 
-        ann->setTallCleanFlag(false);
-
-        cout << "successive" << endl;
-
-//        ann->setErrCrit(0.05);
-//        ann->setLrate(0.05);
-
         ann->successiveProcessing();
 
-        ofstream outFil;
-        outFil.open((path + "successiveResults_4sec_fin.txt").toStdString(), ios_base::app);
-        outFil << def::ExpName << endl;
-        outFil << "learnSet = " << suc::learnSetStay << '\t';
-        outFil << "numGood = " << suc::numGoodNewLimit << '\t';
-        outFil << "decay = " << suc::decayRate << '\t';
-        outFil << ann->getAverageAccuracy() << '\t';
-        outFil << ann->getKappa() << endl;
-        outFil.close();
-
         delete ann;
-
-#if 0
-        ofstream outFil;
-        outFil.open((path + "successiveResults_4sec.txt").toStdString(), ios_base::app);
-        outFil << def::ExpName << endl;
-        for(int lss : {100})
-        {
-            for(int numG : {4, 6, 8, 10, 12})
-            {
-                for(double dR : {0.03, 0.02, 0.01, 0.005, 0.00}) // 1.00, 0.5
-                {
-                    suc::numGoodNewLimit = numG;
-                    suc::decayRate = dR;
-                    suc::learnSetStay = lss;
-
-                    ann->successiveProcessing();
-                    outFil << "learnSet = " << lss << '\t';
-                    outFil << "numGood = " << numG << '\t';
-                    outFil << "decay = " << dR << '\t';
-                    outFil << ann->getAverageAccuracy() << '\t';
-                    outFil << ann->getKappa() << endl;
-                }
-            }
-        }
-        outFil.close();
-
-        delete ann;
-#endif
-
-#endif
     }
+#endif
     exit(0);
 
 

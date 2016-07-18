@@ -225,8 +225,26 @@ void renameFileToLatin(const QString & filePath)
             newFileName += ch;
         }
     }
-    cout << newFileName << endl;
+//    cout << newFileName << endl;
     QFile::rename(filePath, dirName + slash + newFileName);
+}
+
+void dirToLatin(const QString & dirPath, const QStringList & filters)
+{
+    QStringList leest;
+    if(!filters.empty())
+    {
+        leest = QDir(dirPath).entryList(filters);
+    }
+    else
+    {
+        leest = QDir(dirPath).entryList();
+    }
+
+    for(const QString & str : leest)
+    {
+        renameFileToLatin(dirPath + slash + str);
+    }
 }
 
 void deleteSpaces(const QString & dirPath, const QStringList & filters)

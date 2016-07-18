@@ -415,16 +415,37 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
             if(labels[i].contains("EEG", Qt::CaseInsensitive))
             {
                 /// encephalan only !!!!!1111
-                physMax[i] = 4096;
-                physMin[i] = -4096;
+//                physMax[i] = 4096;
+//                physMin[i] = -4096;
+//                digMax[i] = 32767;
+//                digMin[i] = -32768;
             }
         }
     }
     handleParamArray(physMin, ns, 8, readFlag, edfDescriptor, header);
     handleParamArray(physMax, ns, 8, readFlag, edfDescriptor, header);
-
     handleParamArray(digMin, ns, 8, readFlag, edfDescriptor, header);
     handleParamArray(digMax, ns, 8, readFlag, edfDescriptor, header);
+    if(readFlag)
+    {
+        for(int i = 0; i < ns; ++i)
+        {
+            if(labels[i].contains("EEG", Qt::CaseInsensitive))
+            {
+                if(physMax[i] == physMin[i])
+                {
+                    cout << "edfFile::readEdfFile: phys Max/Min are equal, chan(from 1) = "
+                         << i + 1 << endl;
+                }
+                if(digMax[i] == digMin[i])
+                {
+                    cout << "edfFile::readEdfFile:  dig Max/Min are equal, chan(from 1) = "
+                         << i + 1 << endl;
+                }
+            }
+        }
+    }
+
     handleParamArray(prefiltering, ns, 80, readFlag, edfDescriptor, header);
     handleParamArray(nr, ns, 8, readFlag, edfDescriptor, header);
 
@@ -432,7 +453,6 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     if(readFlag)
     {
         /// olololololololololololololololo
-//        def::freq = std::round(nr[0] / ddr); // frequency of the first channnel
         this->srate = std::round(nr[0] / ddr);
         const long long fileSize = QFile(EDFpath).size();
         const int sumNr = std::accumulate(std::begin(nr),

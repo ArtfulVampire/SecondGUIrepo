@@ -77,7 +77,7 @@ void WORD::learn(std::vector<int> & indices)
 
     for(uint i = 0; i < clusts.size(); ++i)
     {
-        myLib::operator <<(std::cout, clusts[i]); std::cout << std::endl;
+//        myLib::operator <<(std::cout, clusts[i]); std::cout << std::endl;
         centers[i] = (dataMatrix->subRows(clusts[i])).averageRow();
     }
 }

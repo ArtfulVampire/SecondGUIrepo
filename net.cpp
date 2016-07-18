@@ -122,7 +122,6 @@ Net::Net() :
 
     myClassifier = new NBC();
 
-
     QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopActivity()));
@@ -308,6 +307,12 @@ void Net::normalizeDataMatrix()
             dataMatrix[i] -= averageDatum;
         }
     }
+    else
+    {
+        averageDatum = std::valarray<double> (0, dataMatrix.cols());
+    }
+
+
     if(ui->varianceCheckBox->isChecked())
     {
 
@@ -323,6 +328,10 @@ void Net::normalizeDataMatrix()
             }
         }
         dataMatrix.transpose();
+    }
+    else
+    {
+        sigmaVector = std::valarray<double> (0, dataMatrix.cols());
     }
 #endif
 #if 0
@@ -386,6 +395,7 @@ void Net::loadData(const QString & spectraPath,
     }
     normalizeDataMatrix();
 }
+
 
 void Net::loadDataSlot()
 {

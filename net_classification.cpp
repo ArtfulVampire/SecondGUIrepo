@@ -255,25 +255,33 @@ void Net::trainTestClassification(const QString & trainTemplate,
 
 void Net::customF()
 {
-    if(Source == source::pca && 0)
+//    ui->classRDARadioButton->setChecked(true);
+
+    ui->pcaNumberSpinBox->setValue(40);
+    ui->traceDoubleSpinBox->setValue(1.);
+    pca();
+
+    ofstream outStr;
+    outStr.open((def::dir->absolutePath()
+                 + slash + "pcaRes.txt").toStdString(), std::ios_base::app);
+    outStr << "centering = " << ui->centerCheckBox->isChecked() << "\t"
+           << "variancing = " << ui->varianceCheckBox->isChecked() << endl;
+
+    for(int i = 40;
+        i >= 18;
+        i -= 2)
     {
-        ofstream outStr;
-        outStr.open((def::dir->absolutePath()
-                    + slash + "pcaRes.txt").toStdString());
-        // auto pca classification
-        for(int i = ui->autoPCAMaxSpinBox->value();
-            i >= ui->autoPCAMinSpinBox->value();
-            i -= ui->autoPCAStepSpinBox->value())
-        {
-            cout << "numOfPc = " << i  << " \t";
-            dataMatrix.resizeCols(i);
-        }
-        outStr.close();
+        dataMatrix.resizeCols(i);
+
+        auto a = autoClassification();
+        outStr << i << "\t" << a.first << "\t" << a.second << endl;
+
     }
+    outStr.close();
 
 
 
-    ui->classRDARadioButton->setChecked(true);
+
 #if 0
     ui->rdaLambdaSpinBox->setValue(1.0);
     ui->rdaShrinkSpinBox->setValue(0.2);
@@ -281,7 +289,7 @@ void Net::customF()
     exit(0);
 #endif
 
-
+#if 0
     ofstream outStr;
     outStr.open((def::uciFolder + slash + "res.txt").toStdString());
     outStr << "lambda" << "\t"
@@ -300,5 +308,6 @@ void Net::customF()
         }
     }
     outStr.close();
+#endif
 
 }

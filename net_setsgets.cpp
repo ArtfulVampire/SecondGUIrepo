@@ -4,6 +4,18 @@ using namespace std;
 using namespace myLib;
 using namespace smallLib;
 
+
+
+void Net::setVariancing(bool in)
+{
+    ui->varianceCheckBox->setChecked(in);
+}
+
+void Net::setCentering(bool in)
+{
+    ui->centerCheckBox->setChecked(in);
+}
+
 void Net::setAutoProcessingFlag(bool a)
 {
     autoFlag = a;
@@ -175,6 +187,38 @@ void Net::setSource(const QString & in)
     {
         ui->windowsRadioButton->setChecked(true);
         loadDataNorm = 5.;
+    }
+}
+
+void Net::setClassifier(const QString & in)
+{
+    if(in.contains("ANN", Qt::CaseInsensitive))
+    {
+        ui->classANNRadioButton->setChecked(true);
+    }
+    else if(in.contains("RDA", Qt::CaseInsensitive))
+    {
+        ui->classRDARadioButton->setChecked(true);
+    }
+    else if(in.contains("SVM", Qt::CaseInsensitive))
+    {
+        ui->classSVMRadioButton->setChecked(true);
+    }
+    else if(in.contains("DIST", Qt::CaseInsensitive))
+    {
+        ui->classDISTRadioButton->setChecked(true);
+    }
+    else if(in.contains("NBC", Qt::CaseInsensitive))
+    {
+        ui->classNBCRadioButton->setChecked(true);
+    }
+    else if(in.contains("KNN", Qt::CaseInsensitive))
+    {
+        ui->classKNNRadioButton->setChecked(true);
+    }
+    else if(in.contains("WORD", Qt::CaseInsensitive))
+    {
+        ui->classWORDRadioButton->setChecked(true);
     }
 }
 

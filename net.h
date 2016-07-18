@@ -109,8 +109,11 @@ public:
     void setAutoProcessingFlag(bool);
     void setMode(const QString & in = "N-fold");
     void setSource(const QString & in = "reals");
+    void setClassifier(const QString &);
 
     /// data
+    void setVariancing(bool);
+    void setCentering(bool);
     void loadData(const QString & spectraPath = def::dir->absolutePath()
                                                 + myLib::slash + "SpectraSmooth",
                   const QStringList & filters = {},

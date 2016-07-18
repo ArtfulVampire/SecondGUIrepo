@@ -4,13 +4,15 @@ using namespace myLib;
 
 void Net::successiveProcessing()
 {
+
+    cout << "successive: started" << endl;
     QString helpString = def::dir->absolutePath()
                          + slash + "SpectraSmooth"
                          + slash + "windows";
 
+
     const QString trainMarker = "_train";
     const QString testMarker = "_test";
-//    const QString testMarker = "_3.";
 
     std::vector<int> eraseIndices{};
     numGoodNew = 0;
@@ -18,6 +20,7 @@ void Net::successiveProcessing()
     /// check for no test items
     loadData(helpString, {"*" + trainMarker + "*"});
 
+    cout << "successive: data loaded" << endl;
 
     /// reduce learning set to (NumClasses * suc::learnSetStay)
     std::vector<double> count = classCount;
@@ -32,6 +35,7 @@ void Net::successiveProcessing()
     eraseData(eraseIndices);
     eraseIndices.clear();
 
+    cout << "successive: data cleaned" << endl;
 
     /// consts
     setErrCrit(0.05);
@@ -42,6 +46,7 @@ void Net::successiveProcessing()
     setErrCrit(0.02);
     setLrate(0.02);
 
+    cout << "successive: initial learn done" << endl;
 
 
     QStringList leest = QDir(helpString).entryList({'*' + testMarker + '*'}); /// special generality
@@ -58,6 +63,7 @@ void Net::successiveProcessing()
         type = typeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
     }
+    cout << "successive: all done" << endl;
     myClassifier->averageClassification();
 }
 
