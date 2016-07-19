@@ -309,7 +309,7 @@ void Net::normalizeDataMatrix()
     }
     else
     {
-        averageDatum = std::valarray<double> (0, dataMatrix.cols());
+        averageDatum = std::valarray<double> (0., dataMatrix.cols());
     }
 
 
@@ -331,7 +331,7 @@ void Net::normalizeDataMatrix()
     }
     else
     {
-        sigmaVector = std::valarray<double> (0, dataMatrix.cols());
+        sigmaVector = std::valarray<double> (0., dataMatrix.cols());
     }
 #endif
 #if 0

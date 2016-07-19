@@ -78,7 +78,9 @@ void writePlainData(const QString outPath,
     }
     else
     {
-        outStr.open((outPath + '.' + def::plainDataExtension).toStdString());
+        QString outPathNew = outPath;
+        outPathNew.remove("." + def::plainDataExtension);
+        outStr.open((outPathNew + '.' + def::plainDataExtension).toStdString());
     }
     outStr << "NumOfSlices " << numOfSlices << '\t';
     outStr << "NumOfChannels " << data.rows() << "\r\n";

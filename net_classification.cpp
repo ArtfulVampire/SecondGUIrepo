@@ -255,8 +255,8 @@ void Net::trainTestClassification(const QString & trainTemplate,
 
 void Net::customF()
 {
-//    ui->classRDARadioButton->setChecked(true);
 
+#if 0
     ui->pcaNumberSpinBox->setValue(40);
     ui->traceDoubleSpinBox->setValue(1.);
     pca();
@@ -278,7 +278,7 @@ void Net::customF()
 
     }
     outStr.close();
-
+#endif
 
 
 

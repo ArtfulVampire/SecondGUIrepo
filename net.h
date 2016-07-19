@@ -110,6 +110,7 @@ public:
     void setMode(const QString & in = "N-fold");
     void setSource(const QString & in = "reals");
     void setClassifier(const QString &);
+    void setClassifier(ClassifierType);
 
     /// data
     void setVariancing(bool);

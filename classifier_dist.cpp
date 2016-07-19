@@ -2,6 +2,8 @@
 
 using namespace myLib;
 
+/// lowest distance to cluster center
+
 DIST::DIST() : Classifier()
 {
     centers.resize(numCl);

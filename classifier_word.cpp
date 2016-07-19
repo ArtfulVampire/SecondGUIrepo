@@ -119,8 +119,10 @@ void WORD::merge(const uint one, const uint two)
     clusts.erase(std::begin(clusts) + B);
 }
 
+
 std::pair<int, double> WORD::classifyDatum(const int & vecNum)
 {
+    /// can change to RDA solving
     std::vector<double> distances(numOfClust);
     for(int j = 0; j < numOfClust; ++j)
     {
@@ -128,12 +130,16 @@ std::pair<int, double> WORD::classifyDatum(const int & vecNum)
                                            centers[j]);
     }
     int ind = myLib::indexOfMax(distances);
-    std::vector<double> numOfClass(numCl, 0);
 
+
+
+
+    std::valarray<double> numOfClass(0., numCl);
     for(int i = 0; i < clusts[ind].size(); ++i)
     {
         numOfClass[ (*types)[ clusts[ind][i] ] ] += 1;
     }
+    numOfClass /= apriori;
     int outClass = myLib::indexOfMax(numOfClass);
 
 

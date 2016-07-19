@@ -49,13 +49,13 @@ void Net::successiveProcessing()
     cout << "successive: initial learn done" << endl;
 
 
-    QStringList leest = QDir(helpString).entryList({'*' + testMarker + '*'}); /// special generality
-
-//    helpString = "/media/michael/Files/Data/RealTime/windows/SpectraSmooth";
-//    QStringList leest = QDir(helpString).entryList(QDir::Files); /// special generality
+    cout << helpString << endl;
+    QStringList leest = QDir(helpString).entryList({"*" + testMarker + "*"}); /// special generality
+    cout << leest.length() << endl;
 
     lineType tempArr;
     int type = -1;
+
     for(const QString & fileNam : leest)
     {
         readFileInLine(helpString + slash + fileNam,

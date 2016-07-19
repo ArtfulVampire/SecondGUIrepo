@@ -222,6 +222,38 @@ void Net::setClassifier(const QString & in)
     }
 }
 
+void Net::setClassifier(ClassifierType typ)
+{
+    if(typ == ClassifierType::ANN)
+    {
+        ui->classANNRadioButton->setChecked(true);
+    }
+    else if(typ == ClassifierType::RDA)
+    {
+        ui->classRDARadioButton->setChecked(true);
+    }
+    else if(typ == ClassifierType::SVM)
+    {
+        ui->classSVMRadioButton->setChecked(true);
+    }
+    else if(typ == ClassifierType::DIST)
+    {
+        ui->classDISTRadioButton->setChecked(true);
+    }
+    else if(typ == ClassifierType::NBC)
+    {
+        ui->classNBCRadioButton->setChecked(true);
+    }
+    else if(typ == ClassifierType::KNN)
+    {
+        ui->classKNNRadioButton->setChecked(true);
+    }
+    else if(typ == ClassifierType::WORD)
+    {
+        ui->classWORDRadioButton->setChecked(true);
+    }
+}
+
 void Net::setClassifierParams()
 {
     myClassifier->setClassCount(classCount);
