@@ -51,7 +51,7 @@ private:
     matrix dataMatrix{}; // biases and types separately
     std::vector<int> types{};
     std::vector<QString> fileNames{};
-    std::vector<double> classCount{}; // really int but...
+    std::valarray<double> classCount{}; // really int but...
 //    matrix tempRandomMatrix; //test linear transform
     double loadDataNorm = 10.;
     lineType averageDatum;

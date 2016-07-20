@@ -7,7 +7,6 @@ using namespace smallLib;
 
 
 QStringList leest_less = {
-    /// less
     "Berlin-Henis",
     "Bushenkov",
     "CHemerisova",
@@ -21,10 +20,9 @@ QStringList leest_less = {
     "Sarvardinova",
     "SHkarina",
     "Vasina",
-//        "Zelenkov"
+//    "Zelenkov"
 };
 QStringList leest_more = {
-    ///more
     "Burmistrova",
     "Garmotko",
     "Hanenya",
@@ -71,8 +69,8 @@ void MainWindow::customFunc()
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
 
-    if(1)
-    {
+#if 0
+
         QString paath = "/media/michael/Files/Data/Feedback/SuccessClass";
         setEdfFile(paath + "/AAU_train.edf");
         readData();
@@ -93,31 +91,13 @@ void MainWindow::customFunc()
 
         net->autoClassification();
         exit(0);
-
-
-        for(bool cent : {true, false})
-        {
-            for(bool vari : {true, false})
-            {
-                net->setCentering(cent);
-                net->setVariancing(vari);
-                net->loadData();
-
-                net->customF();
-            }
-        }
-        return;
-//        net->loadData(uciData, uciTypes);
-        net->customF();
-
-        return;
     }
-//    return;
+#endif
 
 
 
 
-#if 0
+#if 1
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");
     readData();
@@ -126,8 +106,8 @@ void MainWindow::customFunc()
 //    const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
     const QStringList names {"AAU"};
 
-//    bool sliceAndCount = true;
-    bool sliceAndCount = false;
+    bool sliceAndCount = true;
+//    bool sliceAndCount = false;
 
     for(QString name : names)
     {
@@ -198,6 +178,8 @@ void MainWindow::customFunc()
         suc::numGoodNewLimit = 6;
         suc::learnSetStay = 100;
         suc::decayRate = 0.01;
+
+        exit(0);
 
         ann->successiveProcessing();
 

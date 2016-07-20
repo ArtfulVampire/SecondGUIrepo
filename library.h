@@ -238,7 +238,7 @@ void readPaFile(const QString & paFile,
                 matrix & dataMatrix,
                 std::vector<int> types,
                 std::vector<QString> & FileName,
-                std::vector<double> & classCount);
+                std::valarray<double> & classCount);
 
 void makePaFile(const QString & spectraDir,
                 const QStringList & fileNames,

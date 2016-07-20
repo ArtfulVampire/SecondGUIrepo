@@ -195,7 +195,7 @@ void Net::drawWtsSlot()
     {
         return;
     }
-    ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+    ANN * myANN = dynamic_cast<ANN *>(myClassifier);
     myANN->drawWeight(helpString);
 }
 
@@ -235,7 +235,7 @@ void Net::writeWtsSlot()
         return;
     }
 
-    ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+    ANN * myANN = dynamic_cast<ANN *>(myClassifier);
     myANN->writeWeight(helpString);
 }
 
@@ -254,7 +254,7 @@ void Net::readWtsSlot()
 //        QMessageBox::information((QWidget * )this, tr("Warning"), tr("No wts-file was chosen"), QMessageBox::Ok);
         return;
     }
-    ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+    ANN * myANN = dynamic_cast<ANN *>(myClassifier);
     myANN->readWeight(helpString);
 }
 
@@ -354,7 +354,7 @@ void Net::loadData(const matrix & inMat,
     dataMatrix = matrix();
     dataMatrix = inMat;
     types = inTypes;
-    classCount.resize(def::numOfClasses(), 0.);
+    classCount.resize(def::numOfClasses());
     for(int typ : types)
     {
         classCount[typ] += 1.;
@@ -372,7 +372,7 @@ void Net::loadData(const QString & spectraPath,
     makeFileLists(spectraPath, leest, filters);
 
     dataMatrix = matrix();
-    classCount.resize(def::numOfClasses(), 0.);
+    classCount.resize(def::numOfClasses());
     types.clear();
     fileNames.clear();
     filesPath = spectraPath;

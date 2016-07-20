@@ -28,8 +28,8 @@ protected:
     const matrix * dataMatrix = nullptr; // biases for Net are imaginary
     const std::vector<int> * types = nullptr;
     const std::vector<QString> * fileNames = nullptr;
-    const std::vector<double> * classCount = nullptr; // really int but...
-    std::vector<double> apriori;
+    const std::valarray<double> * classCount = nullptr; // really int but...
+    std::valarray<double> apriori;
 
 
     matrix confusionMatrix{}; // rows - realClass, cols - outClass
@@ -58,10 +58,10 @@ public:
     avType averageClassification(); /// on confusionMatrix
     void setData(matrix & inMat);
     void setTypes(std::vector<int> & inTypes);
-    void setClassCount(std::vector<double> & inClassCount);
+    void setClassCount(std::valarray<double> & inClassCount);
     void setFileNames(std::vector<QString> & inFileNames);
     void setFilesPath(const QString & inPath);
-    void setApriori(const std::vector<double> & in = std::vector<double>());
+    void setApriori(const std::valarray<double> & in = std::valarray<double>());
 
     /// crutch
     void confMatInc(int trueClass, int predClass){confusionMatrix[trueClass][predClass] += 1.;}

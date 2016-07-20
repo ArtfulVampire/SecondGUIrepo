@@ -7,7 +7,7 @@ Classifier::Classifier()
     confusionMatrix = matrix(numCl, numCl, 0.);
     resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
     workDir = def::dir->absolutePath() + myLib::slash + "PA";
-    apriori = std::vector<double>(3, 1./3);
+    apriori = std::valarray<double>(1./3., 3);
 }
 
 Classifier::~Classifier()
@@ -58,7 +58,7 @@ void Classifier::setTypes(std::vector<int> & inTypes)
     this->types = &inTypes;
 }
 
-void Classifier::setClassCount(std::vector<double> & inClassCount)
+void Classifier::setClassCount(std::valarray<double> & inClassCount)
 {
     this->classCount = &inClassCount;
 }
@@ -73,10 +73,10 @@ void Classifier::setFilesPath(const QString & inPath)
     this->filesPath = inPath;
 }
 
-void Classifier::setApriori(const std::vector<double> & in)
+void Classifier::setApriori(const std::valarray<double> & in)
 {
     /// w/o normalization
-    if(in.empty())
+    if(in.size() == 0)
     {
         apriori = *classCount;
     }
@@ -88,7 +88,7 @@ void Classifier::setApriori(const std::vector<double> & in)
 
 #if 0
     /// with normalization
-    std::vector<double> * pew;
+    std::valarray<double> * pew;
     if(in.empty())
     {
         pew = &classCount;

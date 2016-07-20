@@ -27,7 +27,7 @@ double Net::getLrate()
     {
         return -1;
     }
-    ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+    ANN * myANN = dynamic_cast<ANN *>(myClassifier);
     return myANN->getLrate();
 }
 
@@ -40,7 +40,7 @@ void Net::setErrCritSlot(double in)
 {
     if(myClassifier->getType() == ClassifierType::ANN)
     {
-        ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+        ANN * myANN = dynamic_cast<ANN *>(myClassifier);
         myANN->setCritError(in);
     }
 }
@@ -50,7 +50,7 @@ void Net::setDimensionalitySlot()
 {
     if(myClassifier->getType() == ClassifierType::ANN)
     {
-        ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+        ANN * myANN = dynamic_cast<ANN *>(myClassifier);
         std::vector<int> pewpew;
         auto strList = ui->dimensionalityLineEdit->text().split(' ', QString::SkipEmptyParts);
         for(QString peww : strList)
@@ -70,7 +70,7 @@ void Net::setLrateSlot(double in)
 {
     if(myClassifier->getType() == ClassifierType::ANN)
     {
-        ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+        ANN * myANN = dynamic_cast<ANN *>(myClassifier);
         myANN->setLrate(in);
     }
 }
@@ -79,7 +79,7 @@ void Net::setSvmTypeSlot(int in)
 {
     if(myClassifier->getType() == ClassifierType::SVM)
     {
-        SVM * mySVM = reinterpret_cast<SVM *>(myClassifier);
+        SVM * mySVM = dynamic_cast<SVM *>(myClassifier);
         mySVM->setSvmType(in);
     }
 }
@@ -88,7 +88,7 @@ void Net::setKnnNumSlot(int in)
 {
     if(myClassifier->getType() == ClassifierType::KNN)
     {
-        KNN * myKNN = reinterpret_cast<KNN *>(myClassifier);
+        KNN * myKNN = dynamic_cast<KNN *>(myClassifier);
         myKNN->setNumOfNear(in);
     }
 }
@@ -97,7 +97,7 @@ void Net::setWordNumSlot(int in)
 {
     if(myClassifier->getType() == ClassifierType::WORD)
     {
-        WORD * myWORD = reinterpret_cast<WORD *>(myClassifier);
+        WORD * myWORD = dynamic_cast<WORD *>(myClassifier);
         myWORD->setNumClust(in);
     }
 }
@@ -106,7 +106,7 @@ void Net::setRdaShrinkSlot(double in)
 {
     if(myClassifier->getType() == ClassifierType::RDA)
     {
-        RDA * myRDA = reinterpret_cast<RDA *>(myClassifier);
+        RDA * myRDA = dynamic_cast<RDA *>(myClassifier);
         myRDA->setShrinkage(in);
     }
 }
@@ -115,7 +115,7 @@ void Net::setRdaLambdaSlot(double in)
 {
     if(myClassifier->getType() == ClassifierType::RDA)
     {
-        RDA * myRDA = reinterpret_cast<RDA *>(myClassifier);
+        RDA * myRDA = dynamic_cast<RDA *>(myClassifier);
         myRDA->setLambda(in);
     }
 }
@@ -124,7 +124,7 @@ void Net::setKernelNumSlot(int in)
 {
     if(myClassifier->getType() == ClassifierType::SVM)
     {
-        SVM * mySVM = reinterpret_cast<SVM *>(myClassifier);
+        SVM * mySVM = dynamic_cast<SVM *>(myClassifier);
         mySVM->setKernelNum(in);
     }
 }
@@ -276,7 +276,7 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     if(but->text() == "ANN")
     {
         myClassifier = new ANN();
-        ANN * myANN = reinterpret_cast<ANN *>(myClassifier);
+        ANN * myANN = dynamic_cast<ANN *>(myClassifier);
 
         myANN->setData(dataMatrix); /// should be here to set dimensionality
 
@@ -287,36 +287,36 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     else if(but->text() == "RDA")
     {
         myClassifier = new RDA();
-        RDA * myRDA = reinterpret_cast<RDA *>(myClassifier);
+        RDA * myRDA = dynamic_cast<RDA *>(myClassifier);
         myRDA->setShrinkage(ui->rdaShrinkSpinBox->value());
         myRDA->setLambda(ui->rdaLambdaSpinBox->value());
     }
     else if(but->text() == "SVM")
     {
         myClassifier = new SVM();
-        SVM * mySVM = reinterpret_cast<SVM *>(myClassifier);
+        SVM * mySVM = dynamic_cast<SVM *>(myClassifier);
         mySVM->setKernelNum(ui->svmKernelSpinBox->value());
     }
     else if(but->text() == "DIST")
     {
         myClassifier = new DIST();
-        DIST * myDIST = reinterpret_cast<DIST *>(myClassifier);
+        DIST * myDIST = dynamic_cast<DIST *>(myClassifier);
     }
     else if(but->text() == "NBC")
     {
         myClassifier = new NBC();
-        NBC * myNBC = reinterpret_cast<NBC *>(myClassifier);
+        NBC * myNBC = dynamic_cast<NBC *>(myClassifier);
     }
     else if(but->text() == "KNN")
     {
         myClassifier = new KNN();
-        KNN * myKNN = reinterpret_cast<KNN *>(myClassifier);
+        KNN * myKNN = dynamic_cast<KNN *>(myClassifier);
         myKNN->setNumOfNear(ui->knnNumOfNearSpinBox->value());
     }
     else if(but->text() == "WORD")
     {
         myClassifier = new WORD();
-        WORD * myWORD = reinterpret_cast<WORD *>(myClassifier);
+        WORD * myWORD = dynamic_cast<WORD *>(myClassifier);
         myWORD->setNumClust(ui->knnNumOfNearSpinBox->value());
     }
     setClassifierParams();

@@ -625,9 +625,9 @@ lineType signalFromFile(const QString & filePath,
 
 void readPaFile(const QString & paFile,
                 matrix & dataMatrix,
-                vector<int> types,
-                vector<QString> & FileName,
-                vector<double> & classCount)
+                std::vector<int> types,
+                std::vector<QString> & FileName,
+                std::valarray<double> & classCount)
 {
     const int NetLength = def::nsWOM() * def::spLength();
 
@@ -649,7 +649,7 @@ void readPaFile(const QString & paFile,
     vector<double> tempClass(def::numOfClasses());
     double tempVal;
 
-    classCount = vector<double>(def::numOfClasses(), 0);
+    classCount = std::valarray<double>(def::numOfClasses());
     FileName.clear();
     types.clear();
     dataMatrix = matrix(); /// not dataMatrix.clear
