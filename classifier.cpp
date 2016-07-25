@@ -20,7 +20,7 @@ void Classifier::setTestCleanFlag(bool inFlag)
     this->testCleanFlag = inFlag;
 }
 
-void Classifier::deleteFile(int vecNum, int predType)
+void Classifier::deleteFile(uint vecNum, uint predType)
 {
     if(this->testCleanFlag && (predType != (*types)[vecNum]))
     {
@@ -28,7 +28,7 @@ void Classifier::deleteFile(int vecNum, int predType)
     }
 }
 
-void Classifier::printResult(const QString & fileName, int predType, int vecNum)
+void Classifier::printResult(const QString & fileName, uint predType, uint vecNum)
 {
     std::ofstream outStr;
     outStr.open((workDir + myLib::slash + fileName).toStdString(), std::ios_base::app);

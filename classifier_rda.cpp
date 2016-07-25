@@ -69,7 +69,7 @@ void RDA::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> RDA::classifyDatum(const uint & vecNum)
+std::pair<uint, double> RDA::classifyDatum(const uint & vecNum)
 {
     lineType output(numCl);
 
@@ -81,7 +81,7 @@ std::pair<int, double> RDA::classifyDatum(const uint & vecNum)
         double tmp = (m1 * covMat[i] * m2)[0][0];
         output[i] = - tmp - log(dets[i]) + 2 * log(this->apriori[i]);
     }
-    int outClass = myLib::indexOfMax(output);
+    uint outClass = myLib::indexOfMax(output);
 
     printResult("RDA.txt", outClass, vecNum);
 

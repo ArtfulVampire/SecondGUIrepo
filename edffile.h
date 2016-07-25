@@ -205,7 +205,6 @@ public:
     void reduceChannels(const std::vector<int> & chanList);
     void reduceChannels(const QString & chanStr);
     void removeChannels(const std::vector<int> & chanList);
-//    void removeChannels(const QString & chanStr);
 
 
     void setLabels(const std::vector<QString> & inLabels);
@@ -215,19 +214,13 @@ public:
                        bool removeEogChannels = false,
                        std::vector<int> eegNums = {},
                        std::vector<int> eogNums = {});
-//    void writeOtherData(mat & newData,
-//                        const QString & outPath,
-//                        std::vector<int> chanList = {});
     void writeOtherData(const matrix & newData,
                         const QString & outPath,
                         std::vector<int> chanList = {});
-//    void writeOtherData(double ** newData,
-//                        int newDataLength,
-//                        QString outPath,
-//                        std::vector<int> chanList = {}) const;
     void fitData(int initSize);
     void cutZerosAtEnd();
     void adjustMarkerChannel();
+    void repairPhysMax();
 
 
 private:
@@ -349,5 +342,24 @@ public:
     static double checkDdr(const QString & inPath);
 
 };
+
+/// public funcs to repair edfs or filenames
+namespace repair
+{
+
+bool testChannelsOrderConsistency(const QString & dirPath);
+void repairChannelsOrder(const QString & inFilePath,
+                         QString outFilePath = QString(),
+                         const std::vector<QString> & standard = coords::lbl31_more);
+void repairChannels(const QString & inDirPath,
+                    const QString & outDirPath,
+                    const std::vector<QString> & standard = coords::lbl31_more);
+
+void deleteSpaces(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void renameFileToLatin(const QString & filePath);
+void dirToLatin(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void checkPhysBadChan(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void repairPhysBadChan(const QString & dirPath, const QStringList & filters = def::edfFilters);
+}
 
 #endif // EDFFILE_H

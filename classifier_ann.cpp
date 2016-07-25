@@ -145,7 +145,7 @@ void ANN::setLrate(double inRate)
 
 
 
-void ANN::loadVector(int vecNum, int & type)
+void ANN::loadVector(uint vecNum, uint & type)
 {
     /// out.size() == dataMatrix->cols() + 1
     std::copy(std::begin((*dataMatrix)[vecNum]),
@@ -225,7 +225,7 @@ void ANN::countOutputBackprop()
 }
 
 void ANN::moveWeights(const std::vector<double> & normCoeff,
-                      const int type)
+                      const uint type)
 {
     if(learnStyl == learnStyle::delta)
     {
@@ -261,7 +261,7 @@ void ANN::moveWeights(const std::vector<double> & normCoeff,
 #endif
 }
 
-void ANN::countError(int type,
+void ANN::countError(uint type,
                      double & currentError)
 {
     double err = 0.;
@@ -298,7 +298,7 @@ void ANN::learn(std::vector<uint> & indices)
 //    std::cout << "asdkjfjkrgwegb" << std::endl;
 
     double currentError = critError + 0.1;
-    int type = -1;
+    uint type;
 
     /// edit due to Indices
     std::vector<double> normCoeff;
@@ -388,9 +388,9 @@ void ANN::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> ANN::classifyDatum(const uint & vecNum)
+std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
 {
-    int type = -1;
+    uint type;
 
     loadVector(vecNum, type);
     countOutput();
@@ -401,7 +401,7 @@ std::pair<int, double> ANN::classifyDatum(const uint & vecNum)
 
     std::valarray<double> forRes = output.back();
     smallLib::resizeValar(forRes, numCl);
-    int outClass = myLib::indexOfMax(forRes);
+    uint outClass = myLib::indexOfMax(forRes);
 
 #if 0
     /// cout results

@@ -1785,6 +1785,23 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
     cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
+void edfFile::repairPhysMax()
+{
+    bool rewrite = false;
+    for(int i = 0; i < this->ns; ++i)
+    {
+        if(physMin[i] == physMax[i])
+        {
+            rewrite = true;
+            this->physMax[i] = this->physMin[i] + 1.;
+        }
+    }
+    if(rewrite)
+    {
+        this->writeEdfFile(this->filePath);
+    }
+}
+
 
 /// non-members for static operation
 void myTransform(int & output, char * input) {output = atoi(input);}

@@ -5,6 +5,8 @@ using namespace std;
 using namespace std::chrono;
 using namespace smallLib;
 
+
+
 namespace myLib
 {
 
@@ -16,10 +18,10 @@ double distance(double const x1, double const y1, double const x2, double const 
 
 
 template <typename Container>
-int indexOfMax(const Container & cont)
+uint indexOfMax(const Container & cont)
 {
-    int res = 0;
-    int ans = 0;
+    uint res = 0;
+    uint ans = 0;
     auto val = *(std::begin(cont));
 
     for(auto it = std::begin(cont);
@@ -208,68 +210,6 @@ bool areEqualFiles(QString path1, QString path2)
     return true;
 }
 
-void renameFileToLatin(const QString & filePath)
-{
-    QString dirName = getDirPathLib(filePath);
-    QString fileName = getFileName(filePath);
-    QString newFileName;
-    for(const QChar & ch : fileName)
-    {
-        int num = ch.unicode();
-        if(coords::kyrToLatin.find(num) != coords::kyrToLatin.end())
-        {
-            newFileName += coords::kyrToLatin.at(num);
-        }
-        else
-        {
-            newFileName += ch;
-        }
-    }
-//    cout << newFileName << endl;
-    QFile::rename(filePath, dirName + slash + newFileName);
-}
-
-void dirToLatin(const QString & dirPath, const QStringList & filters)
-{
-    QStringList leest;
-    if(!filters.empty())
-    {
-        leest = QDir(dirPath).entryList(filters);
-    }
-    else
-    {
-        leest = QDir(dirPath).entryList();
-    }
-
-    for(const QString & str : leest)
-    {
-        renameFileToLatin(dirPath + slash + str);
-    }
-}
-
-void deleteSpaces(const QString & dirPath, const QStringList & filters)
-{
-    QDir tmp(dirPath);
-    QStringList lst;
-    if(filters.isEmpty())
-    {
-        lst = tmp.entryList(QDir::Files);
-    }
-    else
-    {
-        lst = tmp.entryList(filters, QDir::Files);
-    }
-    QString newName;
-    for(const QString & fileName : lst)
-    {
-        newName = fileName;
-//        newName.remove(' ');
-        newName.replace(' ', '_');
-        newName.remove(R"(')");
-        QFile::rename(tmp.absolutePath() + slash + fileName,
-                      tmp.absolutePath() + slash + newName);
-    }
-}
 
 //const QString slash
 //{
@@ -616,9 +556,9 @@ template ostream & operator << (std::ostream & os, QList<int> toOut);
 template ostream & operator << (std::ostream & os, QList<double> toOut);
 
 
-template int indexOfMax(const std::vector<int> & cont);
-template int indexOfMax(const std::vector<double> & cont);
-template int indexOfMax(const std::valarray<double> & cont);
-template int indexOfMax(const std::list<double> & cont);
+template uint indexOfMax(const std::vector<int> & cont);
+template uint indexOfMax(const std::vector<double> & cont);
+template uint indexOfMax(const std::valarray<double> & cont);
+template uint indexOfMax(const std::list<double> & cont);
 
 }// namespace myLib

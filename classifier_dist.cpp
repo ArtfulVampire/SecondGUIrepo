@@ -37,7 +37,7 @@ void DIST::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> DIST::classifyDatum(const uint & vecNum)
+std::pair<uint, double> DIST::classifyDatum(const uint & vecNum)
 {
 
     std::vector<double> distances(numCl);
@@ -46,7 +46,7 @@ std::pair<int, double> DIST::classifyDatum(const uint & vecNum)
         distances[j] = -smallLib::distance((*dataMatrix)[vecNum],
                                            centers[j]);
     }
-    int outClass = myLib::indexOfMax(distances);
+    uint outClass = myLib::indexOfMax(distances);
 
     printResult("DIST.txt", outClass, vecNum);
 

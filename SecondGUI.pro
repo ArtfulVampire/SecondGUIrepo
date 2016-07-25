@@ -52,7 +52,8 @@ SOURCES += main.cpp\
     classifier_knn.cpp \
     net_successive.cpp \
     classifier_word.cpp \
-    classifier_rda.cpp
+    classifier_rda.cpp \
+    edfFile_repair.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

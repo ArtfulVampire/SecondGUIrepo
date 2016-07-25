@@ -120,7 +120,7 @@ void WORD::merge(const uint one, const uint two)
 }
 
 
-std::pair<int, double> WORD::classifyDatum(const uint & vecNum)
+std::pair<uint, double> WORD::classifyDatum(const uint & vecNum)
 {
 
     std::vector<double> distances(numOfClust);
@@ -141,7 +141,7 @@ std::pair<int, double> WORD::classifyDatum(const uint & vecNum)
         numOfClass[ (*types)[ clusts[ind][i] ] ] += 1;
     }
     numOfClass /= apriori;
-    int outClass = myLib::indexOfMax(numOfClass);
+    uint outClass = myLib::indexOfMax(numOfClass);
 
 
     printResult("WORD.txt", outClass, vecNum);

@@ -2247,61 +2247,6 @@ void MainWindow::GalyaCut(const QString & path,
 
 }
 
-bool MainWindow::testChannelsOrderConsistency(const QString & path)
-{
-    std::vector<QString> labelsBC;
-    std::vector<QString> labels;
-    edfFile fil;
-    QStringList leest = QDir(path).entryList({"*.edf", "*.EDF"});
-//    cout << "main: " << leest[0] << endl;
-
-    fil.readEdfFile(path + slash + leest[0], true);
-    labelsBC = fil.getLabels();
-    for(int i = 0; i < 5; ++i)
-    {
-        auto bad = std::find_if(std::begin(labelsBC),
-                                std::end(labelsBC),
-                                [&labelsBC](const QString & in)
-        {
-            return !in.contains("EEG", Qt::CaseInsensitive);
-        });
-        if(bad != std::end(labelsBC))
-        {
-            labelsBC.erase(bad);
-        }
-    }
-
-    bool res = true;
-
-
-    for(const QString & guy : leest)
-    {
-        fil.readEdfFile(path + slash + guy, true);
-        labels = fil.getLabels();
-
-        for(int i = 0; i < 5; ++i)
-        {
-            auto bad = std::find_if(std::begin(labels),
-                                    std::end(labels),
-                                    [&labels](const QString & in)
-            {
-                return !in.contains("EEG", Qt::CaseInsensitive);
-            });
-            if(bad != std::end(labels))
-            {
-                labels.erase(bad);
-            }
-        }
-
-        if(labels != labelsBC)
-        {
-            cout << guy << endl;
-            res = false;
-        }
-    }
-    cout << "testChannelsOrderConsistency:\n" << path << "\t" << res << endl;
-    return res;
-}
 
 void MainWindow::makeRightNumbers(const QString & dirPath,
                                   int length)
@@ -2364,77 +2309,6 @@ void MainWindow::makeTableFromRows(const QString & work,
     outStr.close();
 }
 
-void MainWindow::repairChannelsOrder(const QString & inPath,
-                                     QString outPath,
-                                     const std::vector<QString> & standard)
-{
-    if(outPath.isEmpty())
-    {
-        outPath = inPath;
-        outPath.replace(".edf", "_goodChan.edf");
-    }
-
-    std::vector<int> reorderChanList{};
-    edfFile initFile;
-    initFile.readEdfFile(inPath, true);
-    for(uint i = 0; i < standard.size(); ++i) /// only for 31 channels
-    {
-        for(int j = 0; j < initFile.getNs(); ++j)
-        {
-            if(initFile.getLabels()[j].contains(standard[i]))
-            {
-                reorderChanList.push_back(j);
-                break;
-            }
-        }
-    }
-    // fill the rest of channels
-    for(int j = 0; j < initFile.getNs(); ++j)
-    {
-        if(std::find(std::begin(reorderChanList),
-                     std::end(reorderChanList),
-                     j)
-           == std::end(reorderChanList))
-        {
-            reorderChanList.push_back(j);
-        }
-    }
-
-    std::vector<int> ident(initFile.getNs());
-    std::iota(std::begin(ident), std::end(ident), 0);
-    if(reorderChanList != ident)
-    {
-        initFile.readEdfFile(inPath);
-        initFile.reduceChannels(reorderChanList);
-        initFile.writeEdfFile(outPath);
-    }
-    else
-    {
-        QFile::copy(inPath, outPath);
-//        cout << "repair31Chans: order is OK" << endl;
-//        cout << initFile.getFilePath() << endl;
-    }
-}
-
-void MainWindow::repairChannels(const QString & inPath,
-                                const QString & outPath,
-                                const std::vector<QString> & standard)
-{
-    const auto leest = QDir(inPath).entryList({"*.edf", "*.EDF"}, QDir::Files);
-    const auto vec = leest.toVector();
-
-//#pragma omp parallel
-//#pragma omp for nowait schedule(dynamic,3)
-    for(int i = 0; i < vec.size(); ++i)
-    {
-        QString outName = vec[i];
-//        outName.replace(".edf", "_goodChan.edf", Qt::CaseInsensitive);
-        cout << outName << endl;
-        repairChannelsOrder(inPath + slash + vec[i],
-                            outPath + slash + outName,
-                            standard);
-    }
-}
 
 void MainWindow::countSpectraFeatures(const QString & filePath,
                                       const int numChan,

@@ -46,8 +46,6 @@
 #endif
 
 
-
-
 namespace wvlt
 {
 #define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
@@ -84,10 +82,6 @@ matrix countWavelet(const signalType & inSignal);
 void drawWavelet(QString picPath,
                  const matrix &inData);
 }
-
-
-
-
 
 namespace myLib
 {
@@ -131,9 +125,7 @@ QString getPicPath(const QString & dataPath,
 QString getFileName(const QString & filePath, bool withExtension = true);
 
 bool areEqualFiles(QString path1, QString path2);
-void deleteSpaces(const QString & dirPath, const QStringList & filters = QStringList());
-void renameFileToLatin(const QString & filePath);
-void dirToLatin(const QString & dirPath, const QStringList & filters = QStringList());
+
 
 QString getExpNameLib(const QString & filePath);
 QString getDirPathLib(const QString & filePath);
@@ -168,7 +160,7 @@ QString getFileMarker(const QString & fileName);
 
 
 template <typename Container>
-int indexOfMax(const Container & cont);
+uint indexOfMax(const Container & cont);
 
 
 

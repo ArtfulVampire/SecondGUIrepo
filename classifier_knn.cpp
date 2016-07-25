@@ -42,7 +42,7 @@ void KNN::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> KNN::classifyDatum(const uint & vecNum)
+std::pair<uint, double> KNN::classifyDatum(const uint & vecNum)
 {
     std::vector<std::pair<double, int>> toSort;
 
@@ -76,7 +76,7 @@ std::pair<int, double> KNN::classifyDatum(const uint & vecNum)
         numOfClass[toSort[i].second] += exp(-pow(toSort[i].first, 2) / (2 * sgm * sgm));
 #endif
     }
-    int outClass = myLib::indexOfMax(numOfClass);
+    uint outClass = myLib::indexOfMax(numOfClass);
 
     printResult("KNN.txt", outClass, vecNum);
 

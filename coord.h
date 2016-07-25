@@ -112,6 +112,7 @@ namespace def
 
     const QString plainDataExtension = "scg";   // slice common gradient
     const QString spectraDataExtension = "psd"; // power spectral density
+    const QStringList edfFilters = {"*.edf", "*.EDF"};
 
 
     extern bool ntFlag;

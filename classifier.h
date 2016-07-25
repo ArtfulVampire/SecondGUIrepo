@@ -48,8 +48,8 @@ protected:
 public:
     const ClassifierType & getType() {return myType;}
     void setTestCleanFlag(bool inFlag);
-    void deleteFile(int vecNum, int predClass);
-    void printResult(const QString & fileName, int predType, int vecNum);
+    void deleteFile(uint vecNum, uint predClass);
+    void printResult(const QString & fileName, uint predType, uint vecNum);
     void setData(matrix & inMat);
     void setTypes(std::vector<uint> & inTypes);
     void setClassCount(std::valarray<double> & inClassCount);
@@ -77,7 +77,7 @@ public:
     void testAll();
     void test(const std::vector<uint> & indices);
 #endif
-    virtual std::pair<int, double> classifyDatum(const uint & vecNum) = 0;
+    virtual std::pair<uint, double> classifyDatum(const uint & vecNum) = 0;
     virtual void successiveRelearn();
 };
 
@@ -116,14 +116,14 @@ private:
     void allocParams(weightType & inMat);
     void zeroParams();
     std::valarray<double> (*activation)(const std::valarray<double> & in) = smallLib::softmax;
-    void loadVector(const int vecNum, int & type);
+    void loadVector(const uint vecNum, uint & type);
     void countOutput();
     void countOutputDelta();
     void countOutputBackprop();
-    void countError(int type,
+    void countError(uint type,
                     double & currentError);
     void moveWeights(const std::vector<double> & normCoeff,
-                     const int type);
+                     const uint type);
 
 public:
     ANN();
@@ -151,7 +151,7 @@ protected:
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const uint & vecNum) override;
+    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
     /// successive
     void successiveRelearn() override;
 };
@@ -176,7 +176,7 @@ protected:
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const uint & vecNum) override;
+    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 };
 
 
@@ -202,7 +202,7 @@ protected:
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const uint & vecNum) override;
+    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 };
 
 
@@ -220,7 +220,7 @@ protected:
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const uint & vecNum) override;
+    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 };
 
 /// gauss NBC
@@ -238,7 +238,7 @@ protected:
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const uint & vecNum) override;
+    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 };
 
 
@@ -259,7 +259,7 @@ protected:
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const uint & vecNum) override;
+    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 };
 
 
@@ -285,7 +285,7 @@ protected:
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const uint & vecNum) override;
+    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 };
 
 

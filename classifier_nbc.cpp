@@ -37,7 +37,7 @@ void NBC::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> NBC::classifyDatum(const uint & vecNum)
+std::pair<uint, double> NBC::classifyDatum(const uint & vecNum)
 {
     std::vector<double> res(numCl);
     std::valarray<double> vec[numCl];
@@ -53,7 +53,7 @@ std::pair<int, double> NBC::classifyDatum(const uint & vecNum)
         }
         res[i] *= this->apriori[i];
     }
-    int outClass = myLib::indexOfMax(res);
+    uint outClass = myLib::indexOfMax(res);
 
     printResult("NBC.txt", outClass, vecNum);
 

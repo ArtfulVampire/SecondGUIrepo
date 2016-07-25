@@ -132,13 +132,7 @@ public:
     void GalyaProcessing(const QString &procDirPath,
                          const int numChan = 31,
                          QString outPath = QString());
-    void repairChannelsOrder(const QString & inPath,
-                             QString outPath = QString(),
-                             const std::vector<QString> & standard = coords::lbl31_more);
 
-    void repairChannels(const QString & inPath,
-                        const QString & outPath,
-                        const std::vector<QString> & standard = coords::lbl31_more);
 
     void makeRightNumbers(const QString & dirPath,
                           int length = 3);
@@ -146,7 +140,6 @@ public:
                            QString tablePath = QString(),
                            const QString & auxFilter = QString());
 
-    bool testChannelsOrderConsistency(const QString & path);
 
     void cutOneFile(const QString & filePath,
                     const int wndLen,

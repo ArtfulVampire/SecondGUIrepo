@@ -33,7 +33,7 @@ void SVM::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> SVM::classifyDatum(const uint & vecNum)
+std::pair<uint, double> SVM::classifyDatum(const uint & vecNum)
 {
     /// to write!
     const QString fileName = "oneVec";
@@ -48,7 +48,7 @@ std::pair<int, double> SVM::classifyDatum(const uint & vecNum)
     system(helpString.toStdString().c_str());
 //    std::cout << std::endl << "Test finish" << std::endl << std::endl;
 
-    int outClass;
+    uint outClass;
     std::ifstream inStr;
     inStr.open((workDir + myLib::slash + outputFileName).toStdString());
     inStr >> outClass;
