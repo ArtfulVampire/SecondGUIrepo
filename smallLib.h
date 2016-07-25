@@ -170,7 +170,7 @@ inline double distance(const lineType & in1,
 
 template <typename T>
 void eraseItems(std::vector<T> & inVect,
-                const std::vector<int> & indices)
+                const std::vector<uint> & indices)
 {
     const int initSize = inVect.size();
     std::set<int, std::less<int>> excludeSet; // less first
@@ -194,9 +194,9 @@ void eraseItems(std::vector<T> & inVect,
     }
     inVect.resize(initSize - excludeSet.size());
 }
-template void eraseItems(std::vector<lineType> & inVect, const std::vector<int> & indices);
-template void eraseItems(std::vector<int> & inVect, const std::vector<int> & indices);
-template void eraseItems(std::vector<double> & inVect, const std::vector<int> & indices);
+template void eraseItems(std::vector<lineType> & inVect, const std::vector<uint> & indices);
+template void eraseItems(std::vector<int> & inVect, const std::vector<uint> & indices);
+template void eraseItems(std::vector<double> & inVect, const std::vector<uint> & indices);
 
 } // namespace smallLib
 

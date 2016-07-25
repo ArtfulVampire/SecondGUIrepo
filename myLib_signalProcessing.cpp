@@ -969,7 +969,7 @@ void product3(const matrix & inMat,
 void randomizeValar(lineType & valar)
 {
     srand(time(NULL));
-    for(int i = 0; i < valar.size(); ++i)
+    for(uint i = 0; i < valar.size(); ++i)
     {
         valar[i] = rand() % 50 - 25;
     }

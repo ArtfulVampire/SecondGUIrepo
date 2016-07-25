@@ -41,7 +41,7 @@ void RDA::learn(std::vector<uint> & indices)
         covMat[numCl] += covMat[i];
     }
 
-    for(int i = 0; i < numCl; ++i)
+    for(uint i = 0; i < numCl; ++i)
     {
         /// regularization
         covMat[i] = covMat[i] * (1. - lambda) + covMat[numCl] * lambda;
@@ -50,7 +50,7 @@ void RDA::learn(std::vector<uint> & indices)
         /// shrinkage
         double tmpTrace = covMat[i].trace();
         covMat[i] *= (1. - gamma);
-        for(int j = 0; j < covMat[i].rows(); ++j)
+        for(uint j = 0; j < covMat[i].rows(); ++j)
         {
             covMat[i][j][j] += gamma * tmpTrace / covMat[i].rows();
         }
@@ -69,7 +69,7 @@ void RDA::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> RDA::classifyDatum(const int & vecNum)
+std::pair<int, double> RDA::classifyDatum(const uint & vecNum)
 {
     lineType output(numCl);
 

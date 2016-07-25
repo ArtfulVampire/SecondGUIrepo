@@ -170,7 +170,7 @@ void ANN::countOutput()
 
 void ANN::countOutputDelta()
 {
-    for(int i = 1; i < dim.size(); ++i)
+    for(uint i = 1; i < dim.size(); ++i)
     {
 //        std::cout << "pew" << std::endl;
 #if WEIGHT_MATRIX
@@ -356,7 +356,7 @@ void ANN::successiveRelearn()
 {
     // decay weights
     const double rat = suc::decayRate;
-    for(int i = 0; i < dim.size() - 1; ++i)
+    for(uint i = 0; i < dim.size() - 1; ++i)
     {
         std::for_each(std::begin(weight[i]),
                       std::end(weight[i]),
@@ -388,7 +388,7 @@ void ANN::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> ANN::classifyDatum(const int & vecNum)
+std::pair<int, double> ANN::classifyDatum(const uint & vecNum)
 {
     int type = -1;
 

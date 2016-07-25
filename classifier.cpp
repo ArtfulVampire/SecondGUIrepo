@@ -53,7 +53,7 @@ void Classifier::setData(matrix & inMat)
     this->dataMatrix = &inMat;
 }
 
-void Classifier::setTypes(std::vector<int> & inTypes)
+void Classifier::setTypes(std::vector<uint> & inTypes)
 {
     this->types = &inTypes;
 }

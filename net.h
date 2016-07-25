@@ -49,7 +49,7 @@ private:
     source Source = source::reals;
 
     matrix dataMatrix{}; // biases and types separately
-    std::vector<int> types{};
+    std::vector<uint> types{};
     std::vector<QString> fileNames{};
     std::valarray<double> classCount{}; // really int but...
 //    matrix tempRandomMatrix; //test linear transform
@@ -71,10 +71,10 @@ private:
     void normalizeDataMatrix();
     void popBackDatum();
     void pushBackDatum(const lineType & inDatum,
-                     const int & inType,
+                     const uint & inType,
                      const QString & inFileName);
-    void eraseDatum(const int & index);
-    void eraseData(const std::vector<int> & indices);
+    void eraseDatum(const uint & index);
+    void eraseData(const std::vector<uint> & indices);
     std::pair<std::vector<uint>, std::vector<uint>> makeIndicesSetsCross(
             const std::vector<std::vector<uint> > & arr,
             const int numOfFold);
@@ -120,7 +120,7 @@ public:
                   const QStringList & filters = {},
                   double rdcCoeff = 1.);
     void loadData(const matrix & inMat,
-                  const std::vector<int> & inTypes);
+                  const std::vector<uint> & inTypes);
 
 
     ///wts

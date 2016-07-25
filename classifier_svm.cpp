@@ -33,7 +33,7 @@ void SVM::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> SVM::classifyDatum(const int & vecNum)
+std::pair<int, double> SVM::classifyDatum(const uint & vecNum)
 {
     /// to write!
     const QString fileName = "oneVec";

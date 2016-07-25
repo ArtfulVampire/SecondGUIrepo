@@ -86,7 +86,7 @@ void writePlainData(const QString outPath,
     outStr << "NumOfChannels " << data.rows() << "\r\n";
     for (int i = 0; i < numOfSlices; ++i)
     {
-        for(int j = 0; j < data.rows(); ++j)
+        for(uint j = 0; j < data.rows(); ++j)
         {
             outStr << doubleRound(data[j][i + start], 3) << '\t';
         }
@@ -212,9 +212,9 @@ void writeMatrixFile(const QString & filePath,
     file << rowsString << " " << outData.rows() << '\t';
     file << colsString << " " << outData.cols() << "\r\n";
 
-    for(int i = 0; i < outData.rows(); ++i)
+    for(uint i = 0; i < outData.rows(); ++i)
     {
-        for(int j = 0; j < outData.cols(); ++j)
+        for(uint j = 0; j < outData.cols(); ++j)
         {
             file << doubleRound(outData[i][j], 4) << '\t';
         }

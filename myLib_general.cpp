@@ -279,7 +279,7 @@ void eyesProcessingStatic(const vector<int> eogChannels,
     matrix matrixInit(Size, Size);
     matrix coefficients(eegChannels.size(), eogChannels.size());
 
-    for(int k = 0; k < eegChannels.size(); ++k)
+    for(uint k = 0; k < eegChannels.size(); ++k)
     {
         signalNums.push_back(eegChannels[k]);
         for(uint j = 0; j < Size; ++j)

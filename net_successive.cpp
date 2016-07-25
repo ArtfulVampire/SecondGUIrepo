@@ -14,7 +14,7 @@ void Net::successiveProcessing()
     const QString trainMarker = "_train";
     const QString testMarker = "_test";
 
-    std::vector<int> eraseIndices{};
+    std::vector<uint> eraseIndices{};
     numGoodNew = 0;
 
     /// check for no test items
@@ -24,7 +24,7 @@ void Net::successiveProcessing()
 
     /// reduce learning set to (NumClasses * suc::learnSetStay)
     std::valarray<double> count = classCount;
-    for(int i = 0; i < dataMatrix.rows(); ++i)
+    for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
         if(count[ types[i] ] > suc::learnSetStay)
         {

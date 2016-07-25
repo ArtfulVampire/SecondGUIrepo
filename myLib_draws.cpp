@@ -688,9 +688,9 @@ void drawMapSpline(const matrix & matrixA,
 
 
     double sum = 0.;
-    for(int i = 0; i < helpMatrix.rows(); ++i)
+    for(uint i = 0; i < helpMatrix.rows(); ++i)
     {
-        for(int j = 0; j < helpMatrix.cols(); ++j)
+        for(uint j = 0; j < helpMatrix.cols(); ++j)
         {
             sum += helpMatrix[i][j];
         }
@@ -1128,7 +1128,7 @@ double drawArrays(const QString & templPath,
         {
             // norm each channel by max peak
             norm = 0;
-            for(int i = 0; i < inMatrix.size(); ++i)
+            for(uint i = 0; i < inMatrix.size(); ++i)
             {
                 for(int j = 0; j < def::spLength(); ++j)
                 {
@@ -1153,7 +1153,7 @@ double drawArrays(const QString & templPath,
         }
 
 
-        for(int numVec = 0; numVec < inMatrix.size(); ++numVec)
+        for(uint numVec = 0; numVec < inMatrix.size(); ++numVec)
         {
             lineType inData = inMatrix[numVec];
             //draw spectra
@@ -1231,7 +1231,7 @@ void drawArraysInLine(const QString & picPath,
     const double offsetY = 1 - 0.1;
     const double norm = inMatrix.maxVal() * scaling * offsetY; /// check scaling * or /
 
-    for(int k = 0; k < inMatrix.rows(); ++k)
+    for(uint k = 0; k < inMatrix.rows(); ++k)
     {
         pnt.setPen(QPen(QBrush(QColor(colors[k])), lineWidth));
         for(int i = 0; i < pic.width() - 1; ++i)
@@ -1373,9 +1373,9 @@ void drawMannWitneyInLine(const QString & picPath,
     const double offsetY = 1 - 0.1;
 
     int num = 0;
-    for(int k = 0; k < inMW.size(); ++k)
+    for(uint k = 0; k < inMW.size(); ++k)
     {
-        for(int j = k + 1; j < inMW.size(); ++j)
+        for(uint j = k + 1; j < inMW.size(); ++j)
         {
             const int currTop = pic.height() * (offsetY + (1. - offsetY) * num);
             const int currBot = pic.height() * (offsetY + (1. - offsetY) * (num + 1));

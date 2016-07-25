@@ -24,9 +24,9 @@ void WORD::setNumClust(int ii)
     dists.clear();
 }
 
-std::pair<int, int> WORD::findNearest()
+std::pair<uint, uint> WORD::findNearest()
 {
-    std::pair<int, int> res{0, 1};
+    std::pair<uint, uint> res{0, 1};
     double tmp = dists[0][1];
     for(uint i = 0; i < dists.size(); ++i)
     {
@@ -55,7 +55,7 @@ void WORD::learn(std::vector<uint> & indices)
     clusts.resize(num);
     for(uint i = 0; i < clusts.size(); ++i)
     {
-        clusts[i] = std::vector<int>{i};
+        clusts[i] = std::vector<uint>{i};
     }
 
     dists = matrix(num, num, 0.);
@@ -120,11 +120,11 @@ void WORD::merge(const uint one, const uint two)
 }
 
 
-std::pair<int, double> WORD::classifyDatum(const int & vecNum)
+std::pair<int, double> WORD::classifyDatum(const uint & vecNum)
 {
 
     std::vector<double> distances(numOfClust);
-    for(int j = 0; j < numOfClust; ++j)
+    for(uint j = 0; j < numOfClust; ++j)
     {
         /// Word distance
         distances[j] = -smallLib::distance((*dataMatrix)[vecNum],
@@ -136,7 +136,7 @@ std::pair<int, double> WORD::classifyDatum(const int & vecNum)
 
 
     std::valarray<double> numOfClass(0., numCl);
-    for(int i = 0; i < clusts[ind].size(); ++i)
+    for(uint i = 0; i < clusts[ind].size(); ++i)
     {
         numOfClass[ (*types)[ clusts[ind][i] ] ] += 1;
     }

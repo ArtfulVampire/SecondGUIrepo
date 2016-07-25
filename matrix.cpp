@@ -275,7 +275,7 @@ matrix matrix::operator -()
 {
     matrix res(this->rows(), this->cols());
 
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         res[i] = -this->data[i];
     }
@@ -471,7 +471,7 @@ matrix & matrix::vertCat(matrix && other)
         std::cout << "matrix::vertCat(): wrong dimensionality" << std::endl;
         return *this;
     }
-    for(int i = 0; i < other.rows(); ++i)
+    for(uint i = 0; i < other.rows(); ++i)
     {
         this->push_back(std::move(other[i]));
     }
@@ -523,6 +523,18 @@ matrix matrix::subRows(const std::vector<int> & inds) const /// submatrix
     return res;
 }
 
+matrix matrix::subRows(const std::vector<uint> & inds) const /// submatrix
+{
+//    matrix res(inds.size(), this->cols());
+    matrix res = matrix();
+//    int col = 0;
+    for(int i : inds)
+    {
+        res.data.push_back(this->data[i]);
+    }
+    return res;
+}
+
 matrix matrix::covMatCols(lineType * avRowIn) const
 {
     matrix cop = *this;
@@ -540,7 +552,7 @@ matrix matrix::covMatCols(lineType * avRowIn) const
         avRow = &avRowVal;
     }
 
-    for(int j = 0; j < cop.rows(); ++j)
+    for(uint j = 0; j < cop.rows(); ++j)
     {
         cop.data[j] -= *avRow;
     }
@@ -712,7 +724,7 @@ lineType matrix::sigmaOfCols() const
 {
     lineType res(this->cols());
 #if 1
-    for(int i = 0; i < this->cols(); ++i)
+    for(uint i = 0; i < this->cols(); ++i)
     {
         lineType W = this->getCol(i);
         res[i] = smallLib::sigma(W);
@@ -852,7 +864,7 @@ double matrix::trace() const
 {
     if(this->rows() != this->cols()) return 0.;
     double res = 0.;
-    for(int i = 0; i < this->rows(); ++i)
+    for(uint i = 0; i < this->rows(); ++i)
     {
         res += (*this)[i][i];
     }
@@ -966,14 +978,14 @@ matrix & matrix::eraseCol(uint j)
 
 
 /// looks like okay
-matrix & matrix::eraseRows(const std::vector<int> & indices)
+matrix & matrix::eraseRows(const std::vector<uint> & indices)
 {
     eraseItems(this->data, indices);
     return *this;
 
     /// old version, the ~same as eraseItems()
 
-    std::set<int, std::less<int>> excludeSet;
+    std::set<uint, std::less<uint>> excludeSet;
     for(auto item : indices)
     {
         excludeSet.emplace(item);
@@ -984,9 +996,9 @@ matrix & matrix::eraseRows(const std::vector<int> & indices)
         excludeVector.push_back(a);
     }
     excludeVector.push_back(this->data.size());
-    for(int i = 0; i < int(excludeVector.size()) - 1; ++i)
+    for(uint i = 0; i < excludeVector.size() - 1; ++i)
     {
-        for(int j = excludeVector[i] - i; j < excludeVector[i + 1] - i - 1; ++j)
+        for(uint j = excludeVector[i] - i; j < excludeVector[i + 1] - i - 1; ++j)
         {
             this->data[j] = this->data[j + 1 + i];
         }

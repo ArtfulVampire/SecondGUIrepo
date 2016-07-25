@@ -789,8 +789,8 @@ void Spectre::countSpectra()
     std::copy(std::begin(lst), std::end(lst), fileNames.begin());
 
     int cnt = 0;
-    std::vector<int> exIndices;
-    int progressCounter = 0;
+    std::vector<uint> exIndices;
+    uint progressCounter = 0;
     for(const QString & fileName : fileNames)
     {
         if(fileName.contains("_num") ||

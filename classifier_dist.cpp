@@ -12,7 +12,7 @@ DIST::DIST() : Classifier()
 
 void DIST::learn(std::vector<uint> & indices)
 {
-    for(int i = 0; i < numCl; ++i)
+    for(uint i = 0; i < numCl; ++i)
     {
         matrix oneClass{};
         for(int ind : indices)
@@ -37,11 +37,11 @@ void DIST::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> DIST::classifyDatum(const int & vecNum)
+std::pair<int, double> DIST::classifyDatum(const uint & vecNum)
 {
 
     std::vector<double> distances(numCl);
-    for(int j = 0; j < numCl; ++j)
+    for(uint j = 0; j < numCl; ++j)
     {
         distances[j] = -smallLib::distance((*dataMatrix)[vecNum],
                                            centers[j]);

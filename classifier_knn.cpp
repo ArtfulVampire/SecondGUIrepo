@@ -2,7 +2,7 @@
 
 using namespace myLib;
 
-KNN::KNN() : Classifier()
+KNN::KNN()
 {
     numOfNear = 10;
     myType = ClassifierType::KNN;    
@@ -42,7 +42,7 @@ void KNN::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> KNN::classifyDatum(const int & vecNum)
+std::pair<int, double> KNN::classifyDatum(const uint & vecNum)
 {
     std::vector<std::pair<double, int>> toSort;
 

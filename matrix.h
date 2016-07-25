@@ -86,7 +86,7 @@ public:
 
     // for compability with vector < vector<Type> >
     void clear() {this->data.clear();}
-    int size() const {return data.size();}
+    uint size() const {return data.size();}
 
     void resize(int rows, int cols, double val);
     void resize(int rows, int cols);
@@ -116,7 +116,7 @@ public:
     matrix operator *= (const double & val);
 
     matrix operator /= (const double & other);
-    matrix operator - ();
+    matrix operator -();
 
     bool operator == (const matrix & other);
 
@@ -135,11 +135,13 @@ public:
     matrix & one();
     matrix & eraseRow(uint i);
     matrix & eraseCol(uint j);
-    matrix & eraseRows(const std::vector<int> & indices);
+//    matrix & eraseRows(const std::vector<int> & indices);
+    matrix & eraseRows(const std::vector<uint> & indices);
     matrix & random(double low = 0., double high = 1.);
     matrix & vertCat(matrix && other);
     matrix subCols(int beginCol, int endCol) const; /// submatrix
     matrix subRows(const std::vector<int> & inds) const; /// submatrix
+    matrix subRows(const std::vector<uint> & inds) const; /// submatrix
 
     lineType matrixSystemSolveGauss(const lineType & inVec) const;
 

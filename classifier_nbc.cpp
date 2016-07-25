@@ -11,7 +11,7 @@ NBC::NBC() : Classifier()
 
 void NBC::learn(std::vector<uint> & indices)
 {
-    for(int i = 0; i < numCl; ++i)
+    for(uint i = 0; i < numCl; ++i)
     {
         matrix oneClass{};
         for(int ind : indices)
@@ -37,11 +37,11 @@ void NBC::test(const std::vector<int> & indices)
 }
 #endif
 
-std::pair<int, double> NBC::classifyDatum(const int & vecNum)
+std::pair<int, double> NBC::classifyDatum(const uint & vecNum)
 {
     std::vector<double> res(numCl);
     std::valarray<double> vec[numCl];
-    for(int i = 0; i < numCl; ++i)
+    for(uint i = 0; i < numCl; ++i)
     {
         vec[i] = (*dataMatrix)[vecNum] - centers[i];
         res[i] = apriori[i];

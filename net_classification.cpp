@@ -192,7 +192,7 @@ std::vector<uint>> Net::makeIndicesSetsCross(
 
     const int fold = ui->foldSpinBox->value();
 
-    for(uint i = 0; i < def::numOfClasses(); ++i)
+    for(int i = 0; i < def::numOfClasses(); ++i)
     {
         for(int j = 0; j < classCount[i]; ++j)
         {

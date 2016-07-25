@@ -495,7 +495,7 @@ void MainWindow::reorderIcaFile(const QString & icaPath,
     localEdf.reduceChannels(chanList);
 
     matrix newMaps(chanList.size() - 1, 0);
-    for(int i = 0; i < chanList.size() - 1; ++i) // -1 for markers
+    for(uint i = 0; i < chanList.size() - 1; ++i) // -1 for markers
     {
         newMaps[i] = maps[chanList[i]];
     }

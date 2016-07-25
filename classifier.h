@@ -19,23 +19,22 @@
 enum class ClassifierType {ANN, LDA, RDA, SVM, DIST, NBC, KNN, WORD};
 typedef std::pair<double, double> avType;
 
-
 #define CLASS_TEST_VIRTUAL 0
 class Classifier
 {
 protected:
     ClassifierType myType;
     const matrix * dataMatrix = nullptr; // biases for Net are imaginary
-    const std::vector<int> * types = nullptr;
+    const std::vector<uint> * types = nullptr;
     const std::vector<QString> * fileNames = nullptr;
     const std::valarray<double> * classCount = nullptr; // really int but...
+
     std::valarray<double> apriori;
 
-
-    matrix confusionMatrix{}; // rows - realClass, cols - outClass
-    double averageAccuracy = 0;
-    double kappa = 0;
-    uint numCl = 0;
+    matrix confusionMatrix; // rows - realClass, cols - outClass
+    double averageAccuracy;
+    double kappa;
+    uint numCl;
 
     bool testCleanFlag  = false; /// delete wrong classified
     bool resetFlag = true; /// reset learning values before new learning
@@ -47,17 +46,12 @@ protected:
                         + myLib::slash + "windows";
 
 public:
-    Classifier();
-    ~Classifier();
-
     const ClassifierType & getType() {return myType;}
     void setTestCleanFlag(bool inFlag);
-
     void deleteFile(int vecNum, int predClass);
     void printResult(const QString & fileName, int predType, int vecNum);
-    avType averageClassification(); /// on confusionMatrix
     void setData(matrix & inMat);
-    void setTypes(std::vector<int> & inTypes);
+    void setTypes(std::vector<uint> & inTypes);
     void setClassCount(std::valarray<double> & inClassCount);
     void setFileNames(std::vector<QString> & inFileNames);
     void setFilesPath(const QString & inPath);
@@ -66,6 +60,15 @@ public:
     /// crutch
     void confMatInc(int trueClass, int predClass){confusionMatrix[trueClass][predClass] += 1.;}
 
+
+
+
+
+public:
+    Classifier();
+    virtual ~Classifier();
+
+    avType averageClassification(); /// on confusionMatrix
     void learnAll();
     virtual void learn(std::vector<uint> & indices) = 0;
 #if CLASS_TEST_VIRTUAL
@@ -74,7 +77,7 @@ public:
     void testAll();
     void test(const std::vector<uint> & indices);
 #endif
-    virtual std::pair<int, double> classifyDatum(const int & vecNum) = 0;
+    virtual std::pair<int, double> classifyDatum(const uint & vecNum) = 0;
     virtual void successiveRelearn();
 };
 
@@ -124,7 +127,7 @@ private:
 
 public:
     ANN();
-    ~ANN();
+
 
     void setCritError(double in);
     void setResetFlag(bool inFlag);
@@ -144,13 +147,13 @@ public:
 
 
 protected:
-    void learn(std::vector<uint> & indices);
+    void learn(std::vector<uint> & indices) override;
 #if CLASS_TEST_VIRTUAL
-    void test(const std::vector<int> & indices);
+    void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const int & vecNum);
+    std::pair<int, double> classifyDatum(const uint & vecNum) override;
     /// successive
-    void successiveRelearn();
+    void successiveRelearn() override;
 };
 
 
@@ -165,16 +168,15 @@ private:
 
 public:
     RDA();
-    ~RDA();
     void setShrinkage(double);
     void setLambda(double); /// 0 - QDA, 1 - LDA
 
 protected:
-    void learn(std::vector<uint> & indices);
+    void learn(std::vector<uint> & indices) override;
 #if CLASS_TEST_VIRTUAL
-    void test(const std::vector<int> & indices);
+    void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const int & vecNum);
+    std::pair<int, double> classifyDatum(const uint & vecNum) override;
 };
 
 
@@ -192,16 +194,15 @@ private:
 
 public:
     SVM();
-    ~SVM();
     void setKernelNum(int inNum);
     void setSvmType(int inNum);
 
 protected:
-    void learn(std::vector<uint> & indices);
+    void learn(std::vector<uint> & indices) override;
 #if CLASS_TEST_VIRTUAL
-    void test(const std::vector<int> & indices);
+    void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const int & vecNum);
+    std::pair<int, double> classifyDatum(const uint & vecNum) override;
 };
 
 
@@ -213,14 +214,13 @@ private:
 
 public:
     DIST();
-    ~DIST();
 
 protected:
-    void learn(std::vector<uint> & indices);
+    void learn(std::vector<uint> & indices) override;
 #if CLASS_TEST_VIRTUAL
-    void test(const std::vector<int> & indices);
+    void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const int & vecNum);
+    std::pair<int, double> classifyDatum(const uint & vecNum) override;
 };
 
 /// gauss NBC
@@ -232,14 +232,13 @@ private:
 
 public:
     NBC();
-    ~NBC();
 
 protected:
-    void learn(std::vector<uint> & indices);
+    void learn(std::vector<uint> & indices) override;
 #if CLASS_TEST_VIRTUAL
-    void test(const std::vector<int> & indices);
+    void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const int & vecNum);
+    std::pair<int, double> classifyDatum(const uint & vecNum) override;
 };
 
 
@@ -252,43 +251,41 @@ private:
 
 public:
     KNN();
-    ~KNN();
 
     void setNumOfNear(int);
 
 protected:
-    void learn(std::vector<uint> & indices);
+    void learn(std::vector<uint> & indices) override;
 #if CLASS_TEST_VIRTUAL
-    void test(const std::vector<int> & indices);
+    void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const int & vecNum);
+    std::pair<int, double> classifyDatum(const uint & vecNum) override;
 };
 
 
 class WORD : public Classifier
 {
 private:
-    std::vector<std::vector<int>> clusts; /// vectors of indices of dataMatrix
+    std::vector<std::vector<uint>> clusts; /// vectors of indices of dataMatrix
     std::vector<std::valarray<double>> centers;
     matrix dists{};
     uint numOfClust;
 
     double dist(const uint a, const uint b);
     void merge(const uint one, const uint two);
-    std::pair<int, int> findNearest();
+    std::pair<uint, uint> findNearest();
 
 public:
     WORD();
-    ~WORD();
 
     void setNumClust(int ii);
 
 protected:
-    void learn(std::vector<uint> & indices);
+    void learn(std::vector<uint> & indices) override;
 #if CLASS_TEST_VIRTUAL
-    void test(const std::vector<int> & indices);
+    void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<int, double> classifyDatum(const int & vecNum);
+    std::pair<int, double> classifyDatum(const uint & vecNum) override;
 };
 
 

@@ -259,7 +259,7 @@ void Net::readWtsSlot()
 }
 
 void Net::pushBackDatum(const lineType & inDatum,
-                      const int & inType,
+                      const uint & inType,
                       const QString & inFileName)
 {
     dataMatrix.push_back(inDatum);
@@ -276,7 +276,7 @@ void Net::popBackDatum()
     fileNames.pop_back();
 }
 
-void Net::eraseDatum(const int & index)
+void Net::eraseDatum(const uint & index)
 {
     dataMatrix.eraseRow(index);
     classCount[ types[index] ] -= 1.;
@@ -284,7 +284,7 @@ void Net::eraseDatum(const int & index)
     fileNames.erase(fileNames.begin() + index);
 }
 
-void Net::eraseData(const vector<int> & indices)
+void Net::eraseData(const std::vector<uint> & indices)
 {
     dataMatrix.eraseRows(indices);
     eraseItems(fileNames, indices);
@@ -349,7 +349,7 @@ void Net::normalizeDataMatrix()
 }
 
 void Net::loadData(const matrix & inMat,
-                   const std::vector<int> & inTypes)
+                   const std::vector<uint> & inTypes)
 {
     dataMatrix = matrix();
     dataMatrix = inMat;
