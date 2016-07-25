@@ -7,7 +7,7 @@ SVM::SVM() : Classifier()
     myType = ClassifierType::SVM;
 }
 
-void SVM::learn(std::vector<int> & indices)
+void SVM::learn(std::vector<uint> & indices)
 {
     makeFile(indices, learnFileName);
 //    std::cout << std::endl << "LEARN start" << std::endl << std::endl;
@@ -71,7 +71,7 @@ void SVM::setSvmType(int in)
     svmType = in;
 }
 
-void SVM::makeFile(const std::vector<int> & indices,
+void SVM::makeFile(const std::vector<uint> & indices,
                    const QString & fileName)
 {
     QString helpString = workDir + myLib::slash + fileName;

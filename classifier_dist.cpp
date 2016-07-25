@@ -10,7 +10,7 @@ DIST::DIST() : Classifier()
     myType = ClassifierType::DIST;
 }
 
-void DIST::learn(std::vector<int> & indices)
+void DIST::learn(std::vector<uint> & indices)
 {
     for(int i = 0; i < numCl; ++i)
     {

@@ -14,7 +14,7 @@ void KNN::setNumOfNear(int ii)
 }
 
 /// recount if dataMatrixChanged!!!!11
-void KNN::learn(std::vector<int> & indices)
+void KNN::learn(std::vector<uint> & indices)
 {
     if(!distances.empty()) return;
 

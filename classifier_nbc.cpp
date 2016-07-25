@@ -9,7 +9,7 @@ NBC::NBC() : Classifier()
     myType = ClassifierType::NBC;
 }
 
-void NBC::learn(std::vector<int> & indices)
+void NBC::learn(std::vector<uint> & indices)
 {
     for(int i = 0; i < numCl; ++i)
     {

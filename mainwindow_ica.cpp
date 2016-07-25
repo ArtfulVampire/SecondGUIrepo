@@ -101,7 +101,7 @@ void MainWindow::ICA() //fastICA
 
     // components = EigenValues^-0.5 * Et * data
     matrix D_minus_05(ns, ns, 0.);
-    for(int i = 0; i < ns; ++i)
+    for(uint i = 0; i < ns; ++i)
     {
         D_minus_05[i][i] = 1. / sqrt(eigenValues[i]);
     }
@@ -155,7 +155,7 @@ void MainWindow::ICA() //fastICA
     //count full mixing matrix A = E * D^0.5 * Et * Wt
     matrix matrixA(ns, ns, 0.);
     matrix D_05(ns, ns, 0.);
-    for(int i = 0; i < ns; ++i)
+    for(uint i = 0; i < ns; ++i)
     {
         D_05[i][i] = sqrt(eigenValues[i]);
     }
@@ -307,7 +307,7 @@ void MainWindow::ICA() //fastICA
     {
         sum1 = norma(matrixA.getCol(i));
 
-        for(int k = 0; k < ns; ++k)
+        for(uint k = 0; k < ns; ++k)
         {
             matrixA[k][i] /= sum1;
         }

@@ -119,7 +119,7 @@ void Net::autoClassificationSimple()
 
 void Net::leaveOneOutClassification()
 {
-    std::vector<int> learnIndices;
+    std::vector<uint> learnIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
 //        cout << i + 1 << " "; cout.flush();
@@ -144,7 +144,7 @@ void Net::crossClassification()
     const int numOfPairs = ui->numOfPairsBox->value();
     const int fold = ui->foldSpinBox->value();
 
-    std::vector<std::vector<int>> arr; // [class][index]
+    std::vector<std::vector<uint>> arr; // [class][index]
     arr.resize(def::numOfClasses());
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
@@ -182,16 +182,17 @@ void Net::crossClassification()
     cout << endl;
 }
 
-std::pair<std::vector<int>, std::vector<int>> Net::makeIndicesSetsCross(
-        const std::vector<std::vector<int>> & arr,
-        const int numOfFold)
+std::pair<std::vector<uint>,
+std::vector<uint>> Net::makeIndicesSetsCross(
+                       const std::vector<std::vector<uint> > & arr,
+                       const int numOfFold)
 {
-    std::vector<int> learnInd;
-    std::vector<int> tallInd;
+    std::vector<uint> learnInd;
+    std::vector<uint> tallInd;
 
     const int fold = ui->foldSpinBox->value();
 
-    for(int i = 0; i < def::numOfClasses(); ++i)
+    for(uint i = 0; i < def::numOfClasses(); ++i)
     {
         for(int j = 0; j < classCount[i]; ++j)
         {
@@ -211,8 +212,8 @@ std::pair<std::vector<int>, std::vector<int>> Net::makeIndicesSetsCross(
 
 void Net::halfHalfClassification()
 {
-    std::vector<int> learnIndices;
-    std::vector<int> tallIndices;
+    std::vector<uint> learnIndices;
+    std::vector<uint> tallIndices;
 
     for(uint i = 0; i < dataMatrix.rows() / 2; ++i)
     {
@@ -231,8 +232,8 @@ void Net::halfHalfClassification()
 void Net::trainTestClassification(const QString & trainTemplate,
                                   const QString & testTemplate)
 {
-    std::vector<int> learnIndices;
-    std::vector<int> tallIndices;
+    std::vector<uint> learnIndices;
+    std::vector<uint> tallIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
         if(fileNames[i].contains(trainTemplate))

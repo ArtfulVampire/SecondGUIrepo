@@ -795,6 +795,7 @@ double MainWindow::innerClass(const QString & workPath,
                               const int & wndLen,
                               const int & tShift)
 {
+    return 0.;
 #if 0
     QString helpString;
 
@@ -869,6 +870,7 @@ double MainWindow::filesCrossClassification(QString workPath,
                                             int wndLen,
                                             int tShift)
 {
+    return 0.;
   #if 0
     QString helpString;
 
@@ -1104,6 +1106,7 @@ double MainWindow::filesDropComponents(QString workPath,
                                        int wndLen,
                                        int tShift)
 {
+    return 0.;
 #if 0
     QString helpString2;
     QString helpString;
@@ -1360,6 +1363,7 @@ double MainWindow::filesAddComponentsCross(QString workPath,
                                            int wndLen,
                                            int tShift)
 {
+    return 0.;
 #if 0
     QString helpString2;
     QString helpString;
@@ -1762,6 +1766,7 @@ double MainWindow::filesAddComponentsInner(const QString &workPath,
                                            int wndLen,
                                            int tShift)
 {
+    return 0.;
 #if 0
     QString helpString;
 
@@ -2465,7 +2470,7 @@ void MainWindow::countSpectraFeatures(const QString & filePath,
     initEdf.readEdfFile(filePath);
 
 
-    const int & fr = initEdf.freq();
+    const double fr = initEdf.freq();
 
     for(int i = 0; i < numChan; ++i)
     {
@@ -2579,7 +2584,7 @@ void MainWindow::countChaosFeatures(const QString & filePath,
     initEdf.setMatiFlag(false);
     initEdf.readEdfFile(filePath);
 
-    const int & fr = initEdf.freq();
+    const double fr = initEdf.freq();
 
     for(double freqCounter = leftFreqLim;
         freqCounter <= rightFreqLim;

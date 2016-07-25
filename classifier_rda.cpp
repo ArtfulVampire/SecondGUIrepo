@@ -23,12 +23,12 @@ void RDA::setLambda(double in)
     this->lambda = in;
 }
 
-void RDA::learn(std::vector<int> & indices)
+void RDA::learn(std::vector<uint> & indices)
 {
 //    std::cout << lambda << "\t" << gamma << std::endl;
     matrix oneClass[numCl];
     covMat[numCl] = matrix(dataMatrix->cols(), dataMatrix->cols(), 0);
-    for(int i = 0; i < numCl; ++i)
+    for(uint i = 0; i < numCl; ++i)
     {
         for(int ind : indices)
         {

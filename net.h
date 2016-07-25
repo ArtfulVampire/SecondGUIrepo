@@ -75,8 +75,8 @@ private:
                      const QString & inFileName);
     void eraseDatum(const int & index);
     void eraseData(const std::vector<int> & indices);
-    std::pair<std::vector<int>, std::vector<int>> makeIndicesSetsCross(
-            const std::vector<std::vector<int> > & arr,
+    std::pair<std::vector<uint>, std::vector<uint>> makeIndicesSetsCross(
+            const std::vector<std::vector<uint> > & arr,
             const int numOfFold);
     QString filesPath;
 

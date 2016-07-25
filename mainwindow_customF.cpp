@@ -97,7 +97,7 @@ void MainWindow::customFunc()
 
 
 
-#if 1
+#if 0
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");
     readData();
@@ -205,7 +205,15 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-
+#if 0
+    /// Galya
+    def::ntFlag = false;
+    const QString procDir = def::GalyaFolder + slash + "Aut_tactile_July";
+    dirToLatin(procDir, def::edfFilters);
+    deleteSpaces(procDir, def::edfFilters);
+    GalyaProcessing(procDir, 19);
+    exit(0);
+#endif
 
 #if 0
     /// EEG fMRI

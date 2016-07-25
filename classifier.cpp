@@ -112,7 +112,7 @@ void Classifier::setApriori(const std::valarray<double> & in)
 }
 
 #if !CLASS_TEST_VIRTUAL
-void Classifier::test(const std::vector<int> & indices)
+void Classifier::test(const std::vector<uint> & indices)
 {
     for(int ind : indices)
     {
@@ -124,14 +124,14 @@ void Classifier::test(const std::vector<int> & indices)
 
 void Classifier::learnAll()
 {
-    std::vector<int> ind(dataMatrix->rows());
+    std::vector<uint> ind(dataMatrix->rows());
     std::iota(std::begin(ind), std::end(ind), 0);
     learn(ind);
 }
 
 void Classifier::testAll()
 {
-    std::vector<int> ind(dataMatrix->rows());
+    std::vector<uint> ind(dataMatrix->rows());
     std::iota(std::begin(ind), std::end(ind), 0);
     test(ind);
 }

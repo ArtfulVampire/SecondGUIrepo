@@ -158,7 +158,6 @@ matrix::matrix(std::initializer_list<double> lst) // diagonal
 matrix matrix::operator = (const matrix & other)
 {
     this->data = other.data;
-
     return *this;
 }
 matrix matrix::operator = (const dataType & other)
@@ -962,6 +961,7 @@ matrix & matrix::eraseCol(uint j)
             each = eraseValar(each, j);
         }
     }
+    return *this;
 }
 
 

@@ -988,7 +988,7 @@ void edfFile::adjustMarkerChannel()
                                    + this->markerChannel); // remove markerChannel
 
 #else
-        this->data.erase(this->data.begin() + this->markerChannel); // remove markerChannel
+        this->data.data.erase(this->data.begin() + this->markerChannel); // remove markerChannel
 #endif
 
 

@@ -44,7 +44,7 @@ std::pair<int, int> WORD::findNearest()
 }
 
 /// recount if dataMatrixChanged!!!!11
-void WORD::learn(std::vector<int> & indices)
+void WORD::learn(std::vector<uint> & indices)
 {
     if(!dists.empty())
     {
@@ -126,6 +126,7 @@ std::pair<int, double> WORD::classifyDatum(const int & vecNum)
     std::vector<double> distances(numOfClust);
     for(int j = 0; j < numOfClust; ++j)
     {
+        /// Word distance
         distances[j] = -smallLib::distance((*dataMatrix)[vecNum],
                                            centers[j]) * clusts[j].size() / (clusts[j].size() + 1);
     }

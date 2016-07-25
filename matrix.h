@@ -26,7 +26,7 @@
 
 using dataType = std::vector<std::valarray<double>>;
 
-class matrix : public dataType
+class matrix
 {
 public:
     matrix();

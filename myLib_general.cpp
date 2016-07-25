@@ -139,6 +139,7 @@ QString getFileMarker(const QString & fileName)
             }
         }
     }
+    return QString();
 }
 
 QString getExt(const QString & filePath)

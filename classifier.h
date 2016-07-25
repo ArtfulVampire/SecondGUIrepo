@@ -67,12 +67,12 @@ public:
     void confMatInc(int trueClass, int predClass){confusionMatrix[trueClass][predClass] += 1.;}
 
     void learnAll();
-    virtual void learn(std::vector<int> & indices) = 0;
+    virtual void learn(std::vector<uint> & indices) = 0;
 #if CLASS_TEST_VIRTUAL
-    virtual void test(const std::vector<int> & indices) = 0;
+    virtual void test(const std::vector<uint> & indices) = 0;
 #else
     void testAll();
-    void test(const std::vector<int> & indices);
+    void test(const std::vector<uint> & indices);
 #endif
     virtual std::pair<int, double> classifyDatum(const int & vecNum) = 0;
     virtual void successiveRelearn();
@@ -144,7 +144,7 @@ public:
 
 
 protected:
-    void learn(std::vector<int> & indices);
+    void learn(std::vector<uint> & indices);
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
 #endif
@@ -170,7 +170,7 @@ public:
     void setLambda(double); /// 0 - QDA, 1 - LDA
 
 protected:
-    void learn(std::vector<int> & indices);
+    void learn(std::vector<uint> & indices);
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
 #endif
@@ -187,7 +187,7 @@ private:
     const QString outputFileName = "output";
     int kernelNum = 0;
     int svmType = 0;
-    void makeFile(const std::vector<int> & indices,
+    void makeFile(const std::vector<uint> & indices,
                   const QString & fileName);
 
 public:
@@ -197,7 +197,7 @@ public:
     void setSvmType(int inNum);
 
 protected:
-    void learn(std::vector<int> & indices);
+    void learn(std::vector<uint> & indices);
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
 #endif
@@ -216,7 +216,7 @@ public:
     ~DIST();
 
 protected:
-    void learn(std::vector<int> & indices);
+    void learn(std::vector<uint> & indices);
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
 #endif
@@ -235,7 +235,7 @@ public:
     ~NBC();
 
 protected:
-    void learn(std::vector<int> & indices);
+    void learn(std::vector<uint> & indices);
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
 #endif
@@ -257,7 +257,7 @@ public:
     void setNumOfNear(int);
 
 protected:
-    void learn(std::vector<int> & indices);
+    void learn(std::vector<uint> & indices);
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
 #endif
@@ -284,7 +284,7 @@ public:
     void setNumClust(int ii);
 
 protected:
-    void learn(std::vector<int> & indices);
+    void learn(std::vector<uint> & indices);
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<int> & indices);
 #endif

@@ -41,7 +41,7 @@ std::string funcName(std::string in)
     for(char a : {' ', '='})
     {
         auto b = in.rfind(a);
-        if(b >= 0)
+        if(b != std::string::npos)
         {
             in = in.substr(b + 1);
         }

@@ -280,7 +280,7 @@ void ANN::countError(int type,
     }
 }
 
-void ANN::learn(std::vector<int> & indices)
+void ANN::learn(std::vector<uint> & indices)
 {
     QTime myTime;
     myTime.start();
@@ -541,10 +541,11 @@ void ANN::drawWeight(QString wtsPath,
 
 double ANN::adjustLearnRate()
 {
-    std::vector<int> mixNum;
+    std::vector<uint> mixNum;
     mixNum.resize(dataMatrix->rows());
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::iota(mixNum.begin(), mixNum.end(), 0);
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::shuffle(mixNum.begin(),
                  mixNum.end(),
                  std::default_random_engine(seed));

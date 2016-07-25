@@ -302,7 +302,7 @@ void Net::normalizeDataMatrix()
     if(ui->centerCheckBox->isChecked())
     {
         averageDatum = dataMatrix.averageRow();
-        for(int i = 0; i < dataMatrix.rows(); ++i)
+        for(uint i = 0; i < dataMatrix.rows(); ++i)
         {
             dataMatrix[i] -= averageDatum;
         }
@@ -318,7 +318,7 @@ void Net::normalizeDataMatrix()
 
         dataMatrix.transpose();
         sigmaVector.resize(dataMatrix.rows());
-        for(int i = 0; i < dataMatrix.rows(); ++i)
+        for(uint i = 0; i < dataMatrix.rows(); ++i)
         {
             sigmaVector[i] = sigma(dataMatrix[i]);
             if(sigmaVector[i] != 0.)
@@ -379,7 +379,7 @@ void Net::loadData(const QString & spectraPath,
 
     lineType tempArr;
 //    cout << spectraPath << endl;
-    for(int i = 0; i < leest.size(); ++i)
+    for(uint i = 0; i < leest.size(); ++i)
     {
         classCount[i] = 0.;
         for(const QString & fileName : leest[i])

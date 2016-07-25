@@ -11,6 +11,9 @@ TEMPLATE = app
 CONFIG += console #for better display of processes with cout.flush()
 QMAKE_CXXFLAGS += -std=c++1y #for C++14 standard
 QMAKE_CXXFLAGS += -fopenmp
+#QMAKE_CXXFLAGS += -Wno-sign-compare
+QMAKE_CXXFLAGS += -Wno-unused-parameter
+QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
 
 #INCLUDEPATH += /usr/include/libxml2
