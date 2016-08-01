@@ -16,44 +16,40 @@ QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
 
-#INCLUDEPATH += /usr/include/libxml2
-#LIBS += -L/usr/lib/x86_64-linux-gnu -lOpenCL
-#LIBS += -L/usr/lib/x86_64-linux-gnu/mesa
-#LIBS += -lxml2 -lmlpack
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    cut.cpp \
-    spectre.cpp \
-    edffile.cpp \
-    matrix.cpp \
-    coord.cpp \
-    mainwindow_autos.cpp \
-    myLib_clustering.cpp \
-    myLib_general.cpp \
-    net_classification.cpp \
-    net_setsgets.cpp \
-    myLib_signalProcessing.cpp \
-    mainwindow_slices.cpp \
-    mainwindow_visualisation.cpp \
-    mainwindow_ica.cpp \
-    mainwindow_editedf.cpp \
-    myLib_draws.cpp \
-    myLib_deprecate.cpp \
-    myLib_dataHandler.cpp \
-    mainwindow_customF.cpp \
-    myLib_smallFuncs.cpp \
-    net.cpp \
-    classifier.cpp \
-    classifier_ann.cpp \
-    classifier_svm.cpp \
-    classifier_dist.cpp \
-    classifier_nbc.cpp \
-    classifier_knn.cpp \
-    net_successive.cpp \
-    classifier_word.cpp \
-    classifier_rda.cpp \
-    edfFile_repair.cpp
+    other/cut.cpp \
+    other/spectre.cpp \
+    other/edffile.cpp \
+    other/edfFile_repair.cpp \
+    other/matrix.cpp \
+    other/coord.cpp \
+    mainwindow/mainwindow.cpp \
+    mainwindow/mainwindow_slices.cpp \
+    mainwindow/mainwindow_visualisation.cpp \
+    mainwindow/mainwindow_ica.cpp \
+    mainwindow/mainwindow_editedf.cpp \
+    mainwindow/mainwindow_autos.cpp \
+    mainwindow/mainwindow_customF.cpp \
+    myLib/myLib_clustering.cpp \
+    myLib/myLib_general.cpp \
+    myLib/myLib_signalProcessing.cpp \
+    myLib/myLib_draws.cpp \
+    myLib/myLib_deprecate.cpp \
+    myLib/myLib_dataHandler.cpp \
+    myLib/myLib_smallFuncs.cpp \
+    net/net.cpp \
+    net/net_classification.cpp \
+    net/net_setsgets.cpp \
+    net/net_successive.cpp \
+    classifier/classifier.cpp \
+    classifier/classifier_ann.cpp \
+    classifier/classifier_svm.cpp \
+    classifier/classifier_dist.cpp \
+    classifier/classifier_nbc.cpp \
+    classifier/classifier_knn.cpp \
+    classifier/classifier_word.cpp \
+    classifier/classifier_rda.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
