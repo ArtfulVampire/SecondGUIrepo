@@ -11,6 +11,30 @@ edfFile::edfFile()
 #endif
 }
 
+std::list<std::valarray<double>> edfFile::getDataAsList() const
+{
+    std::list<std::valarray<double>> res(this->data.cols());
+    uint j = 0;
+    for(auto & in : res)
+    {
+        in = this->data.getCol(j++);
+    }
+    return res;
+}
+
+void edfFile::setDataFromList(const std::list<std::valarray<double>> & inList)
+{
+    this->data.resize(inList.front().size(), inList.size());
+    uint col = 0;
+    for(auto it = std::begin(inList); it != std::end(inList); ++it, ++col)
+    {
+        for(uint i = 0; i < (*it).size(); ++i)
+        {
+            this->data[i][col] = (*it)[i];
+        }
+    }
+}
+
 
 edfFile::edfFile(const edfFile &other, bool noData)
 {
@@ -234,6 +258,9 @@ edfFile::edfFile(const QString & matiLogPath)
                                  );
     }
 }
+
+
+
 
 void edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 {
@@ -1626,7 +1653,7 @@ void edfFile::setChannels(const vector<edfChannel> & inChannels)
 
 void edfFile::writeOtherData(const matrix & newData,
                              const QString & outPath,
-                             vector<int> chanList)
+                             std::vector<int> chanList)
 {
     edfFile temp(*this, true); // copy-construct everything but data
 
@@ -1637,7 +1664,6 @@ void edfFile::writeOtherData(const matrix & newData,
                   std::end(chanList),
                   0);
     }
-
     temp.data = edfDataType();
     temp.channels.clear();
     int num = 0;
@@ -1699,7 +1725,7 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
                 break;
             }
 #else
-            /// for neurotravel cleaning
+            /// for neurotravel cleaning - generality with digmaxmin
             if(abs(this->data[j][currEnd - 1]) >= 30000) break; // do clean
 
             if(this->data[j][currEnd - 1] != 0.)
@@ -1801,6 +1827,8 @@ void edfFile::repairPhysMax()
         this->writeEdfFile(this->filePath);
     }
 }
+
+
 
 
 /// non-members for static operation

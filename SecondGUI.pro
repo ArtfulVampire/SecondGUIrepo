@@ -55,7 +55,6 @@ HEADERS  += mainwindow.h \
     cut.h \
     net.h \
     spectre.h \
-    qtempevent.h \
     tempthread.h \
     library.h \
     edffile.h \

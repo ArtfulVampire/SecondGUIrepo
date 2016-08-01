@@ -325,6 +325,7 @@ public:
 
     const edfDataType & getData() const {return data;}
     void setData(int chanNum, int timeBin, double val) {data[chanNum][timeBin] = val;}
+
 //    void getDataCopy(edfDataType & destination) const {destination = data;}
 
     const lineType & operator [](int i) const
@@ -341,7 +342,11 @@ public:
                                    const QString & newEdfPath);
     static double checkDdr(const QString & inPath);
 
+    std::list<std::valarray<double>> getDataAsList() const;
+    void setDataFromList(const std::list<std::valarray<double>> & inList);
+
 };
+
 
 /// public funcs to repair edfs or filenames
 namespace repair
@@ -351,9 +356,15 @@ bool testChannelsOrderConsistency(const QString & dirPath);
 void repairChannelsOrder(const QString & inFilePath,
                          QString outFilePath = QString(),
                          const std::vector<QString> & standard = coords::lbl31_more);
+/// same for a dir
 void repairChannels(const QString & inDirPath,
                     const QString & outDirPath,
                     const std::vector<QString> & standard = coords::lbl31_more);
+
+void repairHolesFile(const QString & inFilePath,
+                     QString outFilePath = QString());
+void repairHolesDir(const QString & inDirPath,
+                    const QString & outDirPath);
 
 void deleteSpaces(const QString & dirPath, const QStringList & filters = def::edfFilters);
 void renameFileToLatin(const QString & filePath);

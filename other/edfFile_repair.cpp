@@ -224,4 +224,58 @@ void repairChannels(const QString & inDirPath,
     }
 }
 
+void repairHolesFile(const QString & inFilePath,
+                 QString outFilePath)
+{
+    if(outFilePath.isEmpty())
+    {
+        outFilePath = inFilePath;
+        outFilePath.replace(".edf", "_repInf.edf", Qt::CaseInsensitive);
+    }
+
+    static const double thr = 0.005;
+
+    edfFile fil;
+    fil.readEdfFile(inFilePath);
+    auto dataList = fil.getDataAsList();
+    for(auto it = std::begin(dataList); it != std::end(dataList); ++it)
+    {
+        std::valarray<double> & col = *it;
+        int count = 0;
+        for(uint i = 0; i < col.size(); ++i)
+        {
+            if(col[i] > (1. - thr) * fil.getDigMax()[i] + thr * fil.getDigMin()[i] ||
+               col[i] < (1. - thr) * fil.getDigMin()[i] + thr * fil.getDigMax()[i])
+            {
+                ++count;
+            }
+        }
+        if(count > 19)
+        {
+            it = dataList.erase(it);
+            --it;
+        }
+    }
+    fil.setDataFromList(dataList);
+    fil.writeOtherData(fil.getData(), outFilePath);
+}
+
+void repairHolesDir(const QString & inDirPath,
+                    const QString & outDirPath)
+{
+    const auto leest = QDir(inDirPath).entryList(def::edfFilters, QDir::Files);
+    const auto vec = leest.toVector();
+
+//#pragma omp parallel
+//#pragma omp for nowait schedule(dynamic,3)
+    for(int i = 0; i < vec.size(); ++i)
+    {
+        QString outName = vec[i];
+//        outName.replace(".edf", "_repInf.edf", Qt::CaseInsensitive);
+        //        cout << outName << endl;
+        repairHolesFile(inDirPath + slash + vec[i],
+                        outDirPath + slash + outName);
+    }
+}
+
 } /// end namespace repair

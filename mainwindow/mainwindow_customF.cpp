@@ -68,6 +68,8 @@ void MainWindow::customFunc()
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
+
+
 //    return;
 
 #if 0
@@ -209,13 +211,13 @@ void MainWindow::customFunc()
 #if 0
     /// Galya
     def::ntFlag = false;
-    const QString procDir = def::GalyaFolder + slash + "Aut_tactile_July";
+    const QString procDir = def::GalyaFolder + slash + "Norm_tactile_July";
 //    repair::dirToLatin(procDir, def::edfFilters);
 //    repair::deleteSpaces(procDir, def::edfFilters);
 //    repair::checkPhysBadChan(procDir);
-    repair::repairPhysBadChan(procDir + slash + "bad");
+//    repair::repairPhysBadChan(procDir + slash + "bad");
 
-    exit(0);
+//    exit(0);
 
     GalyaProcessing(procDir, 19);
     exit(0);

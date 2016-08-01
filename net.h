@@ -1,7 +1,6 @@
 #ifndef NET_H
 #define NET_H
 
-//#include <QtWidgets>
 #include <QWidget>
 #include <iostream>
 #include <cstdlib>
@@ -13,7 +12,6 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QMouseEvent>
-#include "qtempevent.h"
 #include "tempthread.h"
 #include "library.h"
 #include <fstream>
