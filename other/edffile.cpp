@@ -504,6 +504,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                  << (fileSize - bytes) - ndr * sumNr * 2.<< endl;
         }
         ndr = min(int(realNdr), ndr);
+//        ndr = int(realNdr);
     }
     handleParamArray(reserved, ns, 32, readFlag, edfDescriptor, header);
     //end channels read

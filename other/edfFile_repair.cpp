@@ -122,6 +122,23 @@ void deleteSpaces(const QString & dirPath, const QStringList & filters)
     }
 }
 
+void deleteSpacesDirs(const QString & dirPath)
+{
+    QDir tmp(dirPath);
+    QStringList lst = tmp.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+
+    QString newName;
+    for(const QString & dirName : lst)
+    {
+        newName = dirName;
+        newName.replace(' ', '_');
+        newName.remove(R"(')");
+        newName.replace("__", "_");
+        tmp.rename(dirName,
+                   newName);
+    }
+}
+
 
 bool testChannelsOrderConsistency(const QString & dirPath)
 {

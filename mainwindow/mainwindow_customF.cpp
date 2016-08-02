@@ -68,15 +68,21 @@ void MainWindow::customFunc()
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
-
-    repair::scalingFactorDir("/media/michael/Files/Data/Xenia/OLD_TBI/noScalingFactor",
-                             "/media/michael/Files/Data/Xenia/OLD_TBI/noScalingFactor/good");
+    QString workDir = "/media/michael/Files/Data/Xenia/ToCut";
+    QStringList dirs = QDir(workDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+    for(const QString deer : dirs)
+    {
+        GalyaCut(workDir + slash + deer, 16);
+//        QStringList files = QDir(workDir + slash + deer).entryList(def::edfFilters);
+//        for(const QString feel : files)
+//        {
+//        }
+    }
     exit(0);
 
-//    return;
 
 #if 0
-
+    /// test new classifiers
         QString paath = "/media/michael/Files/Data/Feedback/SuccessClass";
         setEdfFile(paath + "/AAU_train.edf");
         readData();
@@ -104,6 +110,7 @@ void MainWindow::customFunc()
 
 
 #if 0
+/// successive
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");
     readData();
@@ -223,22 +230,6 @@ void MainWindow::customFunc()
 //    exit(0);
 
     GalyaProcessing(procDir, 19);
-    exit(0);
-#endif
-
-#if 0
-    /// test MK channel
-    QString pewpewpew = "/media/michael/Files/Data/MRI/Khokhlov/Khokhlov_windows_cleaned";
-    QStringList leest = QDir(pewpewpew).entryList({"*.edf"});
-    for(QString str : leest)
-    {
-        edfFile feel;
-        feel.readEdfFile(pewpewpew + slash + str);
-        if(feel.getPhysMin()[feel.getNs() - 2] == feel.getPhysMax()[feel.getNs() - 2])
-        {
-            cout << str << endl;
-        }
-    }
     exit(0);
 #endif
 
