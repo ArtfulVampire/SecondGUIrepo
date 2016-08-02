@@ -353,24 +353,29 @@ namespace repair
 {
 
 bool testChannelsOrderConsistency(const QString & dirPath);
-void repairChannelsOrder(const QString & inFilePath,
-                         QString outFilePath = QString(),
-                         const std::vector<QString> & standard = coords::lbl31_more);
-/// same for a dir
-void repairChannels(const QString & inDirPath,
-                    const QString & outDirPath,
-                    const std::vector<QString> & standard = coords::lbl31_more);
+void channelsOrderFile(const QString & inFilePath,
+                       QString outFilePath = QString(),
+                       const std::vector<QString> & standard = coords::lbl31_more);
+void channelsOrderDir(const QString & inDirPath,
+                      const QString & outDirPath,
+                      const std::vector<QString> & standard = coords::lbl31_more);
 
-void repairHolesFile(const QString & inFilePath,
-                     QString outFilePath = QString());
-void repairHolesDir(const QString & inDirPath,
-                    const QString & outDirPath);
+void holesFile(const QString & inFilePath,
+               QString outFilePath = QString());
+void holesDir(const QString & inDirPath,
+              const QString & outDirPath);
+
+void physMinMaxCheck(const QString & dirPath);
+void physMinMaxDir(const QString & dirPath);
+
+void scalingFactorFile(const QString & inFilePath,
+                       QString outFilePath = QString());
+void scalingFactorDir(const QString & inDirPath,
+                      const QString & outDirPath);
 
 void deleteSpaces(const QString & dirPath, const QStringList & filters = def::edfFilters);
-void renameFileToLatin(const QString & filePath);
-void dirToLatin(const QString & dirPath, const QStringList & filters = def::edfFilters);
-void checkPhysBadChan(const QString & dirPath, const QStringList & filters = def::edfFilters);
-void repairPhysBadChan(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void filenameToLatinFile(const QString & filePath);
+void filenameToLatinDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
 }
 
 #endif // EDFFILE_H

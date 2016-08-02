@@ -447,6 +447,11 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 //                digMax[i] = 32767;
 //                digMin[i] = -32768;
             }
+            /// repair for equal phys min/max
+            if(physMin[i] == physMax[i])
+            {
+                physMax[i] = physMin[i] + 1.;
+            }
         }
     }
     handleParamArray(physMin, ns, 8, readFlag, edfDescriptor, header);

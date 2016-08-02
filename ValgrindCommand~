@@ -1,0 +1,7 @@
+cd /home/michael/Qt/Projects/SecondGUI-build-desktop
+valgrind -v --track-fds=yes --log-file=/home/michael/Qt/Projects/SecondGUI/valgring.log --leak-check=full --leak-resolution=high ./SecondGUI
+
+cd /home/michael/Qt/Projects/build-SecondGUI-Desktop_Qt_5_2_1_GCC_64bit-Debug
+valgrind -v --track-fds=yes --log-file=/home/michael/Qt/Projects/SecondGUI/valgring.log --leak-check=full --leak-resolution=high ./SecondGUI
+
+

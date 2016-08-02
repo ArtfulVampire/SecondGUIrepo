@@ -69,6 +69,9 @@ void MainWindow::customFunc()
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
 
+    repair::scalingFactorDir("/media/michael/Files/Data/Xenia/OLD_TBI/noScalingFactor",
+                             "/media/michael/Files/Data/Xenia/OLD_TBI/noScalingFactor/good");
+    exit(0);
 
 //    return;
 
@@ -212,10 +215,10 @@ void MainWindow::customFunc()
     /// Galya
     def::ntFlag = false;
     const QString procDir = def::GalyaFolder + slash + "Norm_tactile_July";
-//    repair::dirToLatin(procDir, def::edfFilters);
+//    repair::filenameToLatinDir(procDir, def::edfFilters);
 //    repair::deleteSpaces(procDir, def::edfFilters);
-//    repair::checkPhysBadChan(procDir);
-//    repair::repairPhysBadChan(procDir + slash + "bad");
+//    repair::physMinMaxCheck(procDir);
+//    repair::physMinMaxDir(procDir + slash + "bad");
 
 //    exit(0);
 
@@ -316,7 +319,7 @@ void MainWindow::customFunc()
     {
         testChannelsOrderConsistency(def::DashaFolder + slash + str);
         deleteSpaces(def::DashaFolder + slash + str);
-//        repairChannels(def::DashaFolder + slash + str,
+//        channelsOrderDir(def::DashaFolder + slash + str,
 //                       def::DashaFolder + slash + "Nonaudio_to_less",
 //                       coords::lbl31_less);
 

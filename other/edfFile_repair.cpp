@@ -5,9 +5,9 @@ namespace repair
 {
 using namespace myLib;
 
-void repairPhysBadChan(const QString & dirPath, const QStringList & filters)
+void physMinMaxDir(const QString & dirPath)
 {
-    for(QString str : QDir(dirPath).entryList(filters))
+    for(QString str : QDir(dirPath).entryList(def::edfFilters))
     {
         edfFile feel;
         feel.readEdfFile(dirPath + slash + str);
@@ -15,10 +15,10 @@ void repairPhysBadChan(const QString & dirPath, const QStringList & filters)
     }
 }
 
-void checkPhysBadChan(const QString & dirPath, const QStringList & filters)
+void physMinMaxCheck(const QString & dirPath)
 {
     QDir(dirPath).mkdir("bad");
-    for(QString str : QDir(dirPath).entryList(filters))
+    for(QString str : QDir(dirPath).entryList(def::edfFilters))
     {
         edfFile feel;
         feel.readEdfFile(dirPath + slash + str);
@@ -33,7 +33,33 @@ void checkPhysBadChan(const QString & dirPath, const QStringList & filters)
     }
 }
 
-void renameFileToLatin(const QString & filePath)
+
+void scalingFactorFile(const QString & inFilePath,
+                       QString outFilePath)
+{
+    if(outFilePath.isEmpty())
+    {
+        outFilePath = inFilePath;
+        outFilePath.replace(".edf", "_scal.edf", Qt::CaseInsensitive);
+    }
+    edfFile fil;
+    fil.readEdfFile(inFilePath);
+    fil.writeEdfFile(outFilePath);
+}
+
+void scalingFactorDir(const QString & inDirPath,
+                      const QString & outDirPath)
+{
+    QStringList leest = QDir(inDirPath).entryList(def::edfFilters);
+
+    for(const QString & str : leest)
+    {
+        scalingFactorFile(inDirPath + slash + str,
+                          outDirPath + slash + str);
+    }
+}
+
+void filenameToLatinFile(const QString & filePath)
 {
     QString dirName = getDirPathLib(filePath);
     QString fileName = getFileName(filePath);
@@ -54,7 +80,7 @@ void renameFileToLatin(const QString & filePath)
     QFile::rename(filePath, dirName + slash + newFileName);
 }
 
-void dirToLatin(const QString & dirPath, const QStringList & filters)
+void filenameToLatinDir(const QString & dirPath, const QStringList & filters)
 {
     QStringList leest;
     if(!filters.empty())
@@ -68,7 +94,7 @@ void dirToLatin(const QString & dirPath, const QStringList & filters)
 
     for(const QString & str : leest)
     {
-        renameFileToLatin(dirPath + slash + str);
+        filenameToLatinFile(dirPath + slash + str);
     }
 }
 
@@ -154,7 +180,7 @@ bool testChannelsOrderConsistency(const QString & dirPath)
 }
 
 
-void repairChannelsOrder(const QString & inFilePath,
+void channelsOrderFile(const QString & inFilePath,
                          QString outFilePath,
                          const std::vector<QString> & standard)
 {
@@ -204,7 +230,7 @@ void repairChannelsOrder(const QString & inFilePath,
     }
 }
 
-void repairChannels(const QString & inDirPath,
+void channelsOrderDir(const QString & inDirPath,
                     const QString & outDirPath,
                     const std::vector<QString> & standard)
 {
@@ -218,13 +244,13 @@ void repairChannels(const QString & inDirPath,
         QString outName = vec[i];
 //        outName.replace(".edf", "_goodChan.edf", Qt::CaseInsensitive);
 //        cout << outName << endl;
-        repairChannelsOrder(inDirPath + slash + vec[i],
+        channelsOrderFile(inDirPath + slash + vec[i],
                             outDirPath + slash + outName,
                             standard);
     }
 }
 
-void repairHolesFile(const QString & inFilePath,
+void holesFile(const QString & inFilePath,
                  QString outFilePath)
 {
     if(outFilePath.isEmpty())
@@ -260,7 +286,7 @@ void repairHolesFile(const QString & inFilePath,
     fil.writeOtherData(fil.getData(), outFilePath);
 }
 
-void repairHolesDir(const QString & inDirPath,
+void holesDir(const QString & inDirPath,
                     const QString & outDirPath)
 {
     const auto leest = QDir(inDirPath).entryList(def::edfFilters, QDir::Files);
@@ -273,7 +299,7 @@ void repairHolesDir(const QString & inDirPath,
         QString outName = vec[i];
 //        outName.replace(".edf", "_repInf.edf", Qt::CaseInsensitive);
         //        cout << outName << endl;
-        repairHolesFile(inDirPath + slash + vec[i],
+        holesFile(inDirPath + slash + vec[i],
                         outDirPath + slash + outName);
     }
 }
