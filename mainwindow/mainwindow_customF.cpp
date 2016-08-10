@@ -65,6 +65,8 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
+#if 0
+    /// Xenia cut
     QStringList leest_audio = leest_more + leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
@@ -73,37 +75,43 @@ void MainWindow::customFunc()
     for(const QString deer : dirs)
     {
         GalyaCut(workDir + slash + deer, 16);
-//        QStringList files = QDir(workDir + slash + deer).entryList(def::edfFilters);
-//        for(const QString feel : files)
-//        {
-//        }
     }
     exit(0);
+#endif
 
+//    return;
 
-#if 0
+#if 1
     /// test new classifiers
-        QString paath = "/media/michael/Files/Data/Feedback/SuccessClass";
-        setEdfFile(paath + "/AAU_train.edf");
-        readData();
+//        QString paath = "/media/Files/Data/Feedback/SuccessClass";
+    QString paath = "/media/Files/Data/AAX";
+    setEdfFile(paath + "/AAX_final.edf");
+    readData();
 
-        /// loading UCI dataset
-//        matrix uciData{};
-//        std::vector<int> uciTypes{};
-//        readUCIdataSet("wine", uciData, uciTypes);
+    Net * net = new Net();
 
-        Net * net = new Net();
-        net->loadData(paath + "/SpectraSmooth/windows", {"*_test*"});
-//        net->setClassifier(ClassifierType::KNN);
-        net->setCentering(true);
-        net->setVariancing(true);
-        net->setSource("w");
-        net->show();
-        return;
+    /// loading UCI dataset
 
-        net->autoClassification();
-        exit(0);
-    }
+    matrix uciData{};
+    std::vector<uint> uciTypes{};
+    readUCIdataSet("wine", uciData, uciTypes);
+
+
+//    net->loadData(paath + "/SpectraSmooth/windows", {"*_test*"});
+
+    net->setClassifier(ClassifierType::RDA);
+//    net->setRdaLambdaSlot();
+//    net->setRdaShrinkSlot();
+    net->setCentering(true);
+    net->setVariancing(true);
+
+    net->loadData(uciData, uciTypes);
+    net->autoClassification();
+
+
+//    writeClassification(net->autoClassification());
+    exit(0);
+
 #endif
 
 
@@ -508,11 +516,6 @@ void MainWindow::customFunc()
     fil.writeEdfFile("/media/michael/Files/Data/BVX/BVX_new.edf");
     exit(0);
 #endif
-
-
-    exit(0);
-
-
 
 
 #if 0

@@ -258,7 +258,7 @@ void writeMatrixFile(const QString & filePath,
 
 void readUCIdataSet(const QString & setName,
                     matrix & outData,
-                    std::vector<int> & outTypes);
+                    std::vector<uint> &outTypes);
 
 
 template <typename signalType>

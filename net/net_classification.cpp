@@ -257,19 +257,18 @@ void Net::trainTestClassification(const QString & trainTemplate,
 void Net::customF()
 {
 
-#if 0
-    ui->pcaNumberSpinBox->setValue(40);
+#if 1
+    ui->pcaNumberSpinBox->setValue(60);
     ui->traceDoubleSpinBox->setValue(1.);
-    pca();
+//    pca();
+    loadData(def::dir->absolutePath() + "/SpectraSmooth/PCA");
 
     ofstream outStr;
     outStr.open((def::dir->absolutePath()
                  + slash + "pcaRes.txt").toStdString(), std::ios_base::app);
-    outStr << "centering = " << ui->centerCheckBox->isChecked() << "\t"
-           << "variancing = " << ui->varianceCheckBox->isChecked() << endl;
 
-    for(int i = 40;
-        i >= 18;
+    for(int i = 60;
+        i >= 30;
         i -= 2)
     {
         dataMatrix.resizeCols(i);

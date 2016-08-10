@@ -1841,7 +1841,7 @@ retType bayesCount(const signalType & dataIn,
     int helpInt;
     retType out(0., numOfIntervals);
 
-    for(int j = 0; j < dataIn.size(); ++j)
+    for(uint j = 0; j < dataIn.size(); ++j)
     {
         helpInt = int(floor((dataIn[j] + maxAmpl) / (2. * maxAmpl / double(numOfIntervals))));
 
@@ -1978,7 +1978,7 @@ retType smoothSpectre(const signalType & inSpectre, const int numOfSmooth)
     for(int num = 0; num < numOfSmooth; ++num)
     {
         help1 = result[0];
-        for(int i = 1; i < result.size() - 1; ++i)
+        for(uint i = 1; i < result.size() - 1; ++i)
         {
             help2 = result[i];
             result[i] = (help1 + help2 + result[i+1]) / 3.;

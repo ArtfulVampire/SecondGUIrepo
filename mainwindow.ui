@@ -130,7 +130,7 @@
       <x>300</x>
       <y>710</y>
       <width>671</width>
-      <height>124</height>
+      <height>128</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -445,7 +445,7 @@
       <x>21</x>
       <y>481</y>
       <width>214</width>
-      <height>215</height>
+      <height>224</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_8">
@@ -927,13 +927,6 @@
        </property>
       </widget>
      </item>
-     <item row="9" column="0">
-      <widget class="QPushButton" name="netButton">
-       <property name="text">
-        <string>&amp;Net</string>
-       </property>
-      </widget>
-     </item>
      <item row="8" column="1">
       <widget class="QPushButton" name="spocPushButton">
        <property name="text">
@@ -1176,6 +1169,13 @@
        </item>
       </layout>
      </item>
+     <item row="7" column="0">
+      <widget class="QPushButton" name="netButton">
+       <property name="text">
+        <string>&amp;Net</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QLineEdit" name="fileMarkersLineEdit">
@@ -1201,8 +1201,6 @@
    <zorder>label_22</zorder>
    <zorder>fileMarkersLineEdit</zorder>
    <zorder>layoutWidget</zorder>
-   <zorder>notchCheckBox</zorder>
-   <zorder>refilterDataPushButton</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
