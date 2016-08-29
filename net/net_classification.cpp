@@ -257,57 +257,99 @@ void Net::trainTestClassification(const QString & trainTemplate,
 void Net::customF()
 {
 
-#if 1
+#if 0
+    /// RDA
     ui->pcaNumberSpinBox->setValue(60);
     ui->traceDoubleSpinBox->setValue(1.);
 //    pca();
     loadData(def::dir->absolutePath() + "/SpectraSmooth/PCA");
 
-    ofstream outStr;
-    outStr.open((def::dir->absolutePath()
-                 + slash + "pcaRes.txt").toStdString(), std::ios_base::app);
+    /// single file _ train, RDA
+    /// AAX opt 32 pcas, lambda 0.9, shrinkage 0.1
+    /// AAU opt 26 pcas, lambda 1.0, shrinkage 0.5-0.7
+    /// BEA opt 32 pcas, lambda 0.9-1.0, shrinkage 0.4
+    /// CAA opt 34 pcas, lambda 0.6-0.7, shrinkage 0.0-0.2
+    /// GAS opt 60 pcas, lambda 0.7-0.9, shrinkage 0.1-0.2
+    /// SUA opt 40 pcas, lambda 0.7-0.8, shrinkage 0.3-0.5
 
-    for(int i = 60;
-        i >= 30;
-        i -= 2)
+
+    std::vector<std::vector<double>> results{};
+    for(int i = 60; i >= 10; i -= 2)
     {
         dataMatrix.resizeCols(i);
-
-        auto a = autoClassification();
-        outStr << i << "\t" << a.first << "\t" << a.second << endl;
-
-    }
-    outStr.close();
-#endif
-
-
-
-#if 0
-    ui->rdaLambdaSpinBox->setValue(1.0);
-    ui->rdaShrinkSpinBox->setValue(0.2);
-    autoClassification();
-    exit(0);
-#endif
-
-#if 0
-    ofstream outStr;
-    outStr.open((def::uciFolder + slash + "res.txt").toStdString());
-    outStr << "lambda" << "\t"
-           << "gamma" << "\t"
-           << "avAccur" << "\t"
-           << "kappa" << std::endl;
-    const double delta = 0.025;
-    for(double i = 0.; i < 1.; i += delta)
-    {
-        for(double j = 0.; j < 0.4; j += delta)
+        for(double lambda = 0.0; lambda <= 1.0; lambda += 0.1)
         {
-            ui->rdaLambdaSpinBox->setValue(i);
-            ui->rdaShrinkSpinBox->setValue(j);
-            auto a = autoClassification();
-            outStr << i << "\t" << j << "\t" << a.first << "\t" << a.second << endl;
+            for(double shr = 0.0; shr <= 1.0; shr += 0.1)
+            {
+                setRdaLambdaSlot(lambda);
+                setRdaShrinkSlot(shr);
+
+                auto a = autoClassification();
+                results.push_back(std::vector<double>{i, lambda, shr, a.first, a.second});
+            }
         }
     }
+    std::sort(std::begin(results), std::end(results),
+              [](const std::vector<double> & in1, const std::vector<double> & in2)
+    {
+        return in1[3] > in2[3];
+    });
+
+
+
+    ofstream outStr;
+    outStr.open((def::dir->absolutePath()
+                 + slash + def::ExpName + "_"
+                 + "pcaRes.txt").toStdString(), std::ios_base::app);
+
+    for(auto vec : results)
+    {
+        if(vec[3] < results[0][3] - 1.5) break;
+        outStr << vec << endl;
+    }
+
     outStr.close();
 #endif
+
+
+#if 1
+    /// ANN
+//    loadData(def::dir->absolutePath() + "/SpectraSmooth/PCA");
+
+    /// single file _ train, ANN
+    std::vector<std::vector<double>> results{};
+//    for(int i = 60; i >= 20; i -= 2)
+//    {
+//        dataMatrix.resizeCols(i);
+//        for(double lrat = 0.005; lrat <= 0.01; lrat += 0.001)
+        for(double lrat : {0.002, 0.005, 0.01, 0.02})
+        {
+            setLrate(lrat);
+            auto a = autoClassification();
+            results.push_back(std::vector<double>{lrat, a.first, a.second});
+        }
+//    }
+
+    const int accNum = 1;
+    std::sort(std::begin(results), std::end(results),
+              [](const std::vector<double> & in1, const std::vector<double> & in2)
+    {
+        return in1[accNum] > in2[accNum];
+    });
+
+    ofstream outStr;
+    outStr.open((def::dir->absolutePath()
+                 + slash + def::ExpName + "_w_"
+                 + "annRes.txt").toStdString(), std::ios_base::app);
+
+    for(auto vec : results)
+    {
+        if(vec[accNum] < results[0][accNum] - 1.5) break;
+        outStr << vec << endl;
+    }
+
+    outStr.close();
+#endif
+
 
 }

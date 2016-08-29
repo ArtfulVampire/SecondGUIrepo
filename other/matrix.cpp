@@ -342,10 +342,11 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
 
 matrix operator * (const matrix & lhs, const double & val)
 {
-    matrix result;
+    matrix result(lhs.rows(), lhs.cols());
+//#pragma omp parallel for
     for(uint i = 0; i < lhs.rows(); ++i)
     {
-        result.push_back(lhs[i] * val);
+        result[i] = lhs[i] * val;
     }
     return result;
 }
@@ -400,6 +401,7 @@ lineType operator * (const lineType & lhs, const matrix & rhs)
 matrix operator / (const matrix & lhs, const double & val)
 {
     matrix result(lhs.rows(), lhs.cols());
+//#pragma omp parallel for
     for(uint i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] / val;

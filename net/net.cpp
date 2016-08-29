@@ -348,6 +348,20 @@ void Net::normalizeDataMatrix()
 #endif
 }
 
+void Net::resizeData(uint newCols)
+{
+    if(newCols >= dataMatrix.cols()) return;
+    dataMatrix.resizeCols(newCols);
+}
+
+void Net::loadDataUCI(const QString & setName)
+{
+    matrix uciData{};
+    std::vector<uint> uciTypes{};
+    myLib::readUCIdataSet(setName, uciData, uciTypes);
+    loadData(uciData, uciTypes);
+}
+
 void Net::loadData(const matrix & inMat,
                    const std::vector<uint> & inTypes)
 {

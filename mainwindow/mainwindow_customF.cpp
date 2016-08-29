@@ -61,57 +61,54 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
 
+    QStringList leest_audio = leest_more + leest_less;
+    leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
+
     /// for standalone eyesClean
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
-#if 0
-    /// Xenia cut
-    QStringList leest_audio = leest_more + leest_less;
-    leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
-    QString workDir = "/media/michael/Files/Data/Xenia/ToCut";
-    QStringList dirs = QDir(workDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-    for(const QString deer : dirs)
-    {
-        GalyaCut(workDir + slash + deer, 16);
-    }
-    exit(0);
-#endif
-
-//    return;
-
-#if 1
+#if 01
     /// test new classifiers
-//        QString paath = "/media/Files/Data/Feedback/SuccessClass";
     QString paath = "/media/Files/Data/AAX";
     setEdfFile(paath + "/AAX_final.edf");
-    readData();
 
-    Net * net = new Net();
+    paath = "/media/Files/Data/Feedback/SuccessClass";
 
-    /// loading UCI dataset
+    for(QString guy : {"AAU",  "BEA", "CAA", "GAS", "SUA"})
+//    QString guy = "CAA";
+    {
+        setEdfFile(paath + slash  + guy + "_train.edf");
+        readData();
+//        return;
 
-    matrix uciData{};
-    std::vector<uint> uciTypes{};
-    readUCIdataSet("wine", uciData, uciTypes);
+        cleanDir(paath + "/Realisations");
+        cleanDir(paath + "/SpectraSmooth");
+        cleanDir(paath + "/SpectraSmooth/PCA");
+        sliceAll();
+        countSpectraSimple(4096);
 
+        Net * net = new Net();
+        net->setMode("N");
+        net->setCentering(true);
+        net->setVariancing(true);
 
-//    net->loadData(paath + "/SpectraSmooth/windows", {"*_test*"});
+        net->loadData(paath + "/SpectraSmooth");
+//        net->pca();
 
-    net->setClassifier(ClassifierType::RDA);
-//    net->setRdaLambdaSlot();
-//    net->setRdaShrinkSlot();
-    net->setCentering(true);
-    net->setVariancing(true);
+//        net->loadData(paath + "/SpectraSmooth/PCA");
 
-    net->loadData(uciData, uciTypes);
-    net->autoClassification();
+        /// loading UCI dataset - add enum
+    //    net->loadDataUCI("wine");
+    //    net->loadDataUCI("iris");
 
-
-//    writeClassification(net->autoClassification());
+        net->setClassifier(ClassifierType::ANN);
+    //    net->autoClassification();
+        net->customF();
+        delete net;
+    }
     exit(0);
-
 #endif
 
 
@@ -211,6 +208,19 @@ void MainWindow::customFunc()
 
 
 #if 0
+    /// Xenia cut
+    QString workDir = "/media/michael/Files/Data/Xenia/moder_TBI";
+    QStringList dirs = QDir(workDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+    for(const QString deer : dirs)
+    {
+        GalyaCut(workDir + slash + deer, 16,
+                 workDir + slash + deer + "_windows");
+    }
+    exit(0);
+#endif
+
+
+#if 0
     /// Xenia rereference + cut
 
     const QString pew = "/media/michael/Files/Data/Xenia/Mihalkova_rr";
@@ -247,12 +257,12 @@ void MainWindow::customFunc()
     def::ntFlag = true;
 
 
-//    GalyaCut(def::mriFolder + slash + "Kabanov",
-//             2);
-//    exit(0);
+    GalyaCut(def::mriFolder + slash + "Sushinsky2",
+             2);
+    exit(0);
 
 
-    QString guy = "Gudovich";
+    QString guy = "Vorobiev";
 //    for(QString guy : leest_mri)
     {
         QDir tmp(def::mriFolder + slash + "OUT");

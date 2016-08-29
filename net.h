@@ -119,6 +119,8 @@ public:
                   double rdcCoeff = 1.);
     void loadData(const matrix & inMat,
                   const std::vector<uint> & inTypes);
+    void loadDataUCI(const QString & setName);
+    void resizeData(uint newCols);
 
 
     ///wts
