@@ -84,7 +84,7 @@ Net::Net() :
 
     ui->pcaNumberSpinBox->setMinimum(2);
     ui->pcaNumberSpinBox->setMaximum(500);
-    ui->pcaNumberSpinBox->setValue(60);
+    ui->pcaNumberSpinBox->setValue(100);
     ui->traceDoubleSpinBox->setMaximum(1.0);
     ui->traceDoubleSpinBox->setMinimum(0.05);
     ui->traceDoubleSpinBox->setSingleStep(0.01);
@@ -146,7 +146,7 @@ Net::Net() :
 
     /// SVM
     QObject::connect(ui->svmKernelSpinBox, SIGNAL(valueChanged(int)),
-                     this, SLOT(setKernelNumSlot(int)));
+                     this, SLOT(setSvmKernelNumSlot(int)));
     QObject::connect(ui->svmTypeSpinBox, SIGNAL(valueChanged(int)),
                      this, SLOT(setSvmTypeSlot(int)));
 

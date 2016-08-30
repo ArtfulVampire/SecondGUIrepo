@@ -130,10 +130,8 @@ std::pair<uint, double> WORD::classifyDatum(const uint & vecNum)
         distances[j] = -smallLib::distance((*dataMatrix)[vecNum],
                                            centers[j]) * clusts[j].size() / (clusts[j].size() + 1);
     }
+    /// add fuzzy solving for first N clusters
     int ind = myLib::indexOfMax(distances);
-
-
-
 
     std::valarray<double> numOfClass(0., numCl);
     for(uint i = 0; i < clusts[ind].size(); ++i)

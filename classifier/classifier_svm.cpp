@@ -61,12 +61,12 @@ std::pair<uint, double> SVM::classifyDatum(const uint & vecNum)
 }
 
 
-void SVM::setKernelNum(int inNum)
+void SVM::setKernelNum(int inNum) /// 0-4
 {
     kernelNum = inNum;
 }
 
-void SVM::setSvmType(int in)
+void SVM::setSvmType(int in) /// 0-4
 {
     svmType = in;
 }

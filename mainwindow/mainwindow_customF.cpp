@@ -76,35 +76,39 @@ void MainWindow::customFunc()
 
     paath = "/media/Files/Data/Feedback/SuccessClass";
 
-    for(QString guy : {"AAU",  "BEA", "CAA", "GAS", "SUA"})
+    for(QString guy : {"AAU", "BEA", "CAA", "GAS", "SUA"})
 //    QString guy = "CAA";
     {
         setEdfFile(paath + slash  + guy + "_train.edf");
         readData();
-//        return;
 
-        cleanDir(paath + "/Realisations");
-        cleanDir(paath + "/SpectraSmooth");
-        cleanDir(paath + "/SpectraSmooth/PCA");
-        sliceAll();
-        countSpectraSimple(4096);
+//        cleanDir(paath + "/Realisations");
+//        cleanDir(paath + "/SpectraSmooth");
+//        cleanDir(paath + "/SpectraSmooth/PCA");
+//        sliceAll();
+//        countSpectraSimple(4096);
+
 
         Net * net = new Net();
         net->setMode("N");
         net->setCentering(true);
         net->setVariancing(true);
 
-        net->loadData(paath + "/SpectraSmooth");
+//        net->loadData(paath + "/SpectraSmooth", {def::ExpName});
 //        net->pca();
+//        delete net; continue;
 
-//        net->loadData(paath + "/SpectraSmooth/PCA");
+
+        net->loadData(paath + "/SpectraSmooth/PCA", {def::ExpName});
+//        net->loadData(paath + "/SpectraSmooth", {def::ExpName});
 
         /// loading UCI dataset - add enum
     //    net->loadDataUCI("wine");
     //    net->loadDataUCI("iris");
 
-        net->setClassifier(ClassifierType::ANN);
-    //    net->autoClassification();
+//        net->resizeData(80);
+//        net->setLrateSlot(0.1); net->autoClassification();
+
         net->customF();
         delete net;
     }

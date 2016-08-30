@@ -185,10 +185,6 @@ avType Classifier::averageClassification()
 
 
     res << smallLib::doubleRound(averageAccuracy, 2) << '\t';
-
-    /// myLib namespace
-//    res << smallLib::doubleRound(kappa, 3) << '\t' << def::ExpName << std::endl;
-
     res << smallLib::doubleRound(kappa, 3) << '\t';
     myLib::operator <<(res, def::ExpName);
     res << std::endl;
@@ -200,11 +196,12 @@ avType Classifier::averageClassification()
     confusionMatrix.print();
     std::cout << "average accuracy = "
               << smallLib::doubleRound(averageAccuracy, 2) << std::endl;
-    std::cout << "kappa = " << kappa << std::endl;
+    std::cout << "kappa = " << kappa << std::endl << std::endl;
 #endif
 
     confusionMatrix.fill(0.);
 
+    /// generality avType
     return std::make_pair(averageAccuracy, kappa);
 }
 

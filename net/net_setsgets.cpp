@@ -84,6 +84,15 @@ void Net::setSvmTypeSlot(int in)
     }
 }
 
+void Net::setSvmKernelNumSlot(int in)
+{
+    if(myClassifier->getType() == ClassifierType::SVM)
+    {
+        SVM * mySVM = dynamic_cast<SVM *>(myClassifier);
+        mySVM->setKernelNum(in);
+    }
+}
+
 void Net::setKnnNumSlot(int in)
 {
     if(myClassifier->getType() == ClassifierType::KNN)
@@ -120,14 +129,7 @@ void Net::setRdaLambdaSlot(double in)
     }
 }
 
-void Net::setKernelNumSlot(int in)
-{
-    if(myClassifier->getType() == ClassifierType::SVM)
-    {
-        SVM * mySVM = dynamic_cast<SVM *>(myClassifier);
-        mySVM->setKernelNum(in);
-    }
-}
+
 
 void Net::setNumOfPairs(int num)
 {

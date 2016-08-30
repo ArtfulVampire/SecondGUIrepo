@@ -16,7 +16,7 @@
 #include <QTime>
 #include <chrono>
 
-enum class ClassifierType {ANN, LDA, RDA, SVM, DIST, NBC, KNN, WORD};
+enum class ClassifierType {ANN, RDA, SVM, DIST, NBC, KNN, WORD};
 typedef std::pair<double, double> avType;
 
 #define CLASS_TEST_VIRTUAL 0
@@ -96,7 +96,7 @@ class ANN : public Classifier
 private:
     int epoch = 0;
     const int epochLimit = 250;
-    static const int epochHighLimit = 160;
+    static const int epochHighLimit = 120;
     static const int epochLowLimit = 80;
 
     enum class learnStyle {backprop, delta};

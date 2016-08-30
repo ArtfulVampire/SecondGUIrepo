@@ -58,6 +58,7 @@ private:
     /// classification
     Classifier * myClassifier = nullptr;
     void setClassifierParams();
+
     /// succesiive
     int numGoodNew;
     void successiveLearning(const std::valarray<double> & newSpectre,
@@ -84,6 +85,7 @@ private:
     void halfHalfClassification();
     void trainTestClassification(const QString & trainTemplate = "_train",
                                  const QString & testTemplate = "_test");
+    void cycleParams(std::vector<std::vector<double>> & in, int i); /// for customF
 
 public:
     explicit Net();
@@ -154,7 +156,7 @@ public slots:
 
     /// SVM
     void setSvmTypeSlot(int);
-    void setKernelNumSlot(int);
+    void setSvmKernelNumSlot(int);
 
     /// KNN
     void setKnnNumSlot(int);

@@ -346,9 +346,10 @@ void ANN::learn(std::vector<uint> & indices)
             currentError /= indices.size();
         }
     }
-    std::cout << "epoch = " << epoch << "\t"
-              << "error = " << smallLib::doubleRound(currentError, 4) << "\t"
-              << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << std::endl;
+    /// cout epoch
+//    std::cout << "epoch = " << epoch << "\t"
+//              << "error = " << smallLib::doubleRound(currentError, 4) << "\t"
+//              << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << std::endl;
 }
 
 
@@ -577,17 +578,20 @@ double ANN::adjustLearnRate()
         }
 
         /// check lrate values
-        if(learnRate < 0.005)
+        if(learnRate <= 0.001)
         {
-            learnRate = 0.005; break;
+            learnRate = 0.001; break;
         }
         else if(learnRate >= 1.)
         {
             learnRate = 1.; break;
         }
         ++counter;
-    } while (counter < 15);
-    std::cout << "ANN::adjustLearnRate: lrate = " << res << std::endl;
+    } while (counter < 10);
+
+    std::cout << "ANN::adjustLearnRate: lrate = " << res << "\t"
+              << "epoch = " << epoch << std::endl;
+
     return res;
 }
 

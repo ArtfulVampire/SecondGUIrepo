@@ -799,7 +799,7 @@ void matrix::print(uint rows, uint cols) const
         }
         cout << endl;
     }
-    cout << endl;
+//    cout << endl;
 }
 
 void matrix::push_back(const lineType & in)

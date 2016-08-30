@@ -83,7 +83,7 @@ avType Net::autoClassification()
     }
     default: {break;}
     }
-//    cout <<  "AutoClassOnData: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    cout <<  "autoClassification: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
     return myClassifier->averageClassification();
 }
 
@@ -119,6 +119,13 @@ void Net::autoClassificationSimple()
 
 void Net::leaveOneOutClassification()
 {
+    if(myClassifier->getType() == ClassifierType::ANN)
+    {
+        /// adjust learnRate
+        ANN * myANN = dynamic_cast<ANN *>(myClassifier);
+        myANN->adjustLearnRate();
+    }
+
     std::vector<uint> learnIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
@@ -254,102 +261,118 @@ void Net::trainTestClassification(const QString & trainTemplate,
     myClassifier->test(tallIndices);
 }
 
+
 void Net::customF()
 {
 
-#if 0
-    /// RDA
-    ui->pcaNumberSpinBox->setValue(60);
-    ui->traceDoubleSpinBox->setValue(1.);
-//    pca();
-    loadData(def::dir->absolutePath() + "/SpectraSmooth/PCA");
-
-    /// single file _ train, RDA
-    /// AAX opt 32 pcas, lambda 0.9, shrinkage 0.1
-    /// AAU opt 26 pcas, lambda 1.0, shrinkage 0.5-0.7
-    /// BEA opt 32 pcas, lambda 0.9-1.0, shrinkage 0.4
-    /// CAA opt 34 pcas, lambda 0.6-0.7, shrinkage 0.0-0.2
-    /// GAS opt 60 pcas, lambda 0.7-0.9, shrinkage 0.1-0.2
-    /// SUA opt 40 pcas, lambda 0.7-0.8, shrinkage 0.3-0.5
+    setClassifier(ClassifierType::SVM);
+    const QString outFileName = "PCA_svmRes.txt";
 
 
     std::vector<std::vector<double>> results{};
-    for(int i = 60; i >= 10; i -= 2)
+    for(int i = 80; i >= 20; i -= 2)
     {
         dataMatrix.resizeCols(i);
-        for(double lambda = 0.0; lambda <= 1.0; lambda += 0.1)
-        {
-            for(double shr = 0.0; shr <= 1.0; shr += 0.1)
-            {
-                setRdaLambdaSlot(lambda);
-                setRdaShrinkSlot(shr);
-
-                auto a = autoClassification();
-                results.push_back(std::vector<double>{i, lambda, shr, a.first, a.second});
-            }
-        }
-    }
-    std::sort(std::begin(results), std::end(results),
-              [](const std::vector<double> & in1, const std::vector<double> & in2)
-    {
-        return in1[3] > in2[3];
-    });
-
-
-
-    ofstream outStr;
-    outStr.open((def::dir->absolutePath()
-                 + slash + def::ExpName + "_"
-                 + "pcaRes.txt").toStdString(), std::ios_base::app);
-
-    for(auto vec : results)
-    {
-        if(vec[3] < results[0][3] - 1.5) break;
-        outStr << vec << endl;
+        cycleParams(results, i);
     }
 
-    outStr.close();
-#endif
-
-
-#if 1
-    /// ANN
-//    loadData(def::dir->absolutePath() + "/SpectraSmooth/PCA");
-
-    /// single file _ train, ANN
-    std::vector<std::vector<double>> results{};
-//    for(int i = 60; i >= 20; i -= 2)
-//    {
-//        dataMatrix.resizeCols(i);
-//        for(double lrat = 0.005; lrat <= 0.01; lrat += 0.001)
-        for(double lrat : {0.002, 0.005, 0.01, 0.02})
-        {
-            setLrate(lrat);
-            auto a = autoClassification();
-            results.push_back(std::vector<double>{lrat, a.first, a.second});
-        }
-//    }
-
-    const int accNum = 1;
+    const int accNum = results[0].size() - 2;
     std::sort(std::begin(results), std::end(results),
-              [](const std::vector<double> & in1, const std::vector<double> & in2)
+              [accNum](const std::vector<double> & in1, const std::vector<double> & in2)
     {
+        if(in1[accNum] == in2[accNum]) return in1[accNum + 1] > in2[accNum + 1]; /// by kappa
         return in1[accNum] > in2[accNum];
     });
 
     ofstream outStr;
     outStr.open((def::dir->absolutePath()
-                 + slash + def::ExpName + "_w_"
-                 + "annRes.txt").toStdString(), std::ios_base::app);
+                 + slash + outFileName).toStdString(), std::ios_base::app);
+    outStr << def::ExpName << endl;
 
+    int num = 0;
     for(auto vec : results)
     {
-        if(vec[accNum] < results[0][accNum] - 1.5) break;
+        if(vec[accNum] < results[0][accNum] - 1.5 || num == 10) break;
         outStr << vec << endl;
+        ++num;
     }
-
     outStr.close();
-#endif
+}
 
+
+void Net::cycleParams(std::vector<std::vector<double> > & in, int i)
+{
+    switch(myClassifier->getType())
+    {
+    case ClassifierType::RDA:
+    {
+        for(double lambda = 0.7; lambda <= 1.0; lambda += 0.1)
+        {
+            for(double shr = 0.0; shr <= 0.7; shr += 0.1)
+            {
+                setRdaLambdaSlot(lambda);
+                setRdaShrinkSlot(shr);
+
+                auto a = autoClassification();
+                in.push_back(std::vector<double>{i, lambda, shr, a.first, a.second});
+            }
+        }
+        break;
+    }
+    case ClassifierType::ANN:
+    {
+        double lrat = 0.01;
+        {
+            setLrate(lrat);
+            auto a = autoClassification();
+            in.push_back(std::vector<double>{i, lrat, a.first, a.second});
+        }
+        break;
+    }
+    case ClassifierType::SVM:
+    {
+        for(int svmTyp = 0; svmTyp <= 1; ++svmTyp)
+        {
+//            for(int kerTyp = 0; kerTyp <= 4; ++kerTyp)
+            int kerTyp = 0;
+            {
+                setSvmTypeSlot(svmTyp);
+                setSvmKernelNumSlot(kerTyp);
+
+                auto a = autoClassification();
+                in.push_back(std::vector<double>{i, svmTyp, kerTyp, a.first, a.second});
+            }
+        }
+        break;
+    }
+    case ClassifierType::KNN:
+    {
+        for(int numNear = 1; numNear <= 10; ++numNear)
+        {
+            setKnnNumSlot(numNear);
+
+            auto a = autoClassification();
+            in.push_back(std::vector<double>{i, numNear, a.first, a.second});
+        }
+        break;
+    }
+    case ClassifierType::WORD:
+    {
+        for(int numClust = 6; numClust <= 20; ++numClust)
+        {
+            setWordNumSlot(numClust);
+
+            auto a = autoClassification();
+            in.push_back(std::vector<double>{i, numClust, a.first, a.second});
+        }
+        break;
+    }
+    default:
+    {
+        auto a = autoClassification();
+        in.push_back(std::vector<double>{i, numClust, a.first, a.second});
+        break;
+    }
+    }
 
 }
