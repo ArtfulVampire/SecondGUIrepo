@@ -10,6 +10,7 @@ RDA::RDA() : Classifier()
     gamma = 0.;
     lambda = 0.;
     myType = ClassifierType::RDA;
+    typeString = "RDA";
 }
 
 

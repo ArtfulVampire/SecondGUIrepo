@@ -76,8 +76,8 @@ void MainWindow::customFunc()
 
     paath = "/media/Files/Data/Feedback/SuccessClass";
 
-    for(QString guy : {"AAU", "BEA", "CAA", "GAS", "SUA"})
-//    QString guy = "CAA";
+//    for(QString guy : {"AAU", "BEA", "CAA", "GAS", "SUA"})
+    for(QString guy : {"AAU"})
     {
         setEdfFile(paath + slash  + guy + "_train.edf");
         readData();
@@ -86,7 +86,10 @@ void MainWindow::customFunc()
 //        cleanDir(paath + "/SpectraSmooth");
 //        cleanDir(paath + "/SpectraSmooth/PCA");
 //        sliceAll();
+//        continue;
+
 //        countSpectraSimple(4096);
+//        exit(0);
 
 
         Net * net = new Net();
@@ -94,9 +97,12 @@ void MainWindow::customFunc()
         net->setCentering(true);
         net->setVariancing(true);
 
-//        net->loadData(paath + "/SpectraSmooth", {def::ExpName});
+        net->loadData(paath + "/SpectraSmooth", {def::ExpName});
 //        net->pca();
-//        delete net; continue;
+//        delete net;
+//        continue;
+//        exit(0);
+
 
 
         net->loadData(paath + "/SpectraSmooth/PCA", {def::ExpName});
@@ -105,9 +111,6 @@ void MainWindow::customFunc()
         /// loading UCI dataset - add enum
     //    net->loadDataUCI("wine");
     //    net->loadDataUCI("iris");
-
-//        net->resizeData(80);
-//        net->setLrateSlot(0.1); net->autoClassification();
 
         net->customF();
         delete net;
@@ -123,13 +126,12 @@ void MainWindow::customFunc()
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");
     readData();
-    ui->reduceChannelsComboBox->setCurrentText("20");
 
 //    const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
     const QStringList names {"AAU"};
 
-    bool sliceAndCount = true;
-//    bool sliceAndCount = false;
+//    bool sliceAndCount = true;
+    bool sliceAndCount = false;
 
     for(QString name : names)
     {
@@ -172,17 +174,19 @@ void MainWindow::customFunc()
             countSpectraSimple(1024, 8);
         }
 
-        Net * ann = new Net();
-        ann->show();
-        ann->loadData(def::dir->absolutePath()
+        Net * net = new Net();
+//        net->show();
+        net->loadData(def::dir->absolutePath()
                       + slash + "SpectraSmooth"
-                      + slash + "windows", {"_train"}); /// only for ANN set - dataMatrix->cols()
+                      + slash + "windows",
+                        {name + "_train"}); /// only for ANN set - dataMatrix->cols()
 
-        ann->setClassifier(ClassifierType::NBC);
+        net->setClassifier(ClassifierType::ANN);
+        net->setRdaLambdaSlot(1);
+        net->setRdaShrinkSlot(0.5);
 
-        ann->setSource("w");
-        ann->setMode("t"); // train-test
-
+        net->setSource("w");
+        net->setMode("t"); // train-test
 
         setEdfFile(path + name + "_test" + ".edf");
         ui->windowLengthSpinBox->setValue(4.);
@@ -201,11 +205,11 @@ void MainWindow::customFunc()
         suc::learnSetStay = 100;
         suc::decayRate = 0.01;
 
-        exit(0);
+//        exit(0);
 
-        ann->successiveProcessing();
+        net->successiveProcessing();
 
-        delete ann;
+        delete net;
     }
     exit(0);
 #endif
@@ -261,12 +265,12 @@ void MainWindow::customFunc()
     def::ntFlag = true;
 
 
-    GalyaCut(def::mriFolder + slash + "Sushinsky2",
-             2);
-    exit(0);
+//    GalyaCut(def::mriFolder + slash + "Sushinsky2",
+//             2);
+//    exit(0);
 
 
-    QString guy = "Vorobiev";
+    QString guy = "Ivashkin";
 //    for(QString guy : leest_mri)
     {
         QDir tmp(def::mriFolder + slash + "OUT");
@@ -562,13 +566,13 @@ void MainWindow::customFunc()
     {
         countSpectraSimple(1024, i);
 
-        Net * ann = new Net();
+        Net * net = new Net();
 
-        ann->autoClassification(def::dir->absolutePath()
+        net->autoClassification(def::dir->absolutePath()
                                 + slash + "SpectraSmooth"
                                 + slash + "windows");
 
-        pew.push_back(make_pair(i, ann->getAverageAccuracy()));
+        pew.push_back(make_pair(i, net->getAverageAccuracy()));
         delete ann;
 
         break;

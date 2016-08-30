@@ -4,6 +4,7 @@ using namespace myLib;
 ANN::ANN() : Classifier()
 {
     myType = ClassifierType::ANN;
+    typeString = "ANN";
 }
 
 void ANN::setResetFlag(bool inFlag)

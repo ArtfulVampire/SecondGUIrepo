@@ -24,6 +24,7 @@ class Classifier
 {
 protected:
     ClassifierType myType;
+    QString typeString;
     const matrix * dataMatrix = nullptr; // biases for Net are imaginary
     const std::vector<uint> * types = nullptr;
     const std::vector<QString> * fileNames = nullptr;
@@ -47,6 +48,7 @@ protected:
 
 public:
     const ClassifierType & getType() {return myType;}
+    const QString & getTypeString() {return typeString;}
     void setTestCleanFlag(bool inFlag);
     void deleteFile(uint vecNum, uint predClass);
     void printResult(const QString & fileName, uint predType, uint vecNum);

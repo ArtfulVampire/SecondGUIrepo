@@ -348,6 +348,13 @@ void Net::normalizeDataMatrix()
 #endif
 }
 
+void Net::applyPCA(const QString & pcaMatFilePath)
+{
+    matrix pca{};
+    readMatrixFile(pcaMatFilePath, pca);
+    dataMatrix *= pca;
+}
+
 void Net::resizeData(uint newCols)
 {
     if(newCols >= dataMatrix.cols()) return;
@@ -441,13 +448,14 @@ void Net::pca()
     const int NetLength = dataMatrix.cols();
 
     matrix centeredMatrix;
-    centeredMatrix = matrix::transpose(dataMatrix); // rows = spectral points, cols - vectors
+    centeredMatrix = matrix::transpose(dataMatrix);
+    // now rows = spectral points/features, cols - vectors
 
     // count covariations
     // centered matrix
     for(int i = 0; i < NetLength; ++i)
     {
-        // should be already zero because of loadData - ok
+        // should be already zero because if loadData centering is on
         centeredMatrix[i] -= mean(centeredMatrix[i]);
     }
 
@@ -486,12 +494,19 @@ void Net::pca()
     matrix pcaMatrix(NumberOfVectors, numOfPc);
     pcaMatrix = centeredMatrix * eigenVectors;
 
+    /// save pca matrix
+    QString helpString;
+    helpString = def::dir->absolutePath()
+                 + slash + "Help"
+                 + slash + "ica"
+                 + slash + def::ExpName + "_pcaMat.txt";
+    writeMatrixFile(helpString, eigenVectors);
+
 
     /// pewpewpewpewpewpewpewpewpewpewpewpewpewpewpewpew
     dataMatrix = pcaMatrix;
 
 
-    QString helpString;
     for(int j = 0; j < NumberOfVectors; ++j)
     {
         helpString = def::dir->absolutePath()

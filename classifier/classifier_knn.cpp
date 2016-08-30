@@ -6,6 +6,7 @@ KNN::KNN()
 {
     numOfNear = 10;
     myType = ClassifierType::KNN;    
+    typeString = "KNN";
 }
 
 void KNN::setNumOfNear(int ii)

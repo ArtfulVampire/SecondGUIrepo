@@ -8,6 +8,7 @@ DIST::DIST() : Classifier()
 {
     centers.resize(numCl);
     myType = ClassifierType::DIST;
+    typeString = "DIST";
 }
 
 void DIST::learn(std::vector<uint> & indices)

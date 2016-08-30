@@ -264,39 +264,70 @@ void Net::trainTestClassification(const QString & trainTemplate,
 
 void Net::customF()
 {
-
-    setClassifier(ClassifierType::SVM);
-    const QString outFileName = "PCA_svmRes.txt";
-
-
-    std::vector<std::vector<double>> results{};
-    for(int i = 80; i >= 20; i -= 2)
+#if 0
+    /// search optimal params
+    QString outFileName;
+//    for(QString cls : {"DIST", "WORD", "KNN", "NBC"}) /// recheck
+    QString cls = "RDA";
     {
-        dataMatrix.resizeCols(i);
-        cycleParams(results, i);
+        setClassifier(cls);
+        outFileName = "PCA_" + cls.toLower() + "Res.txt";
+
+        std::vector<std::vector<double>> results{};
+        for(int i = 70; i >= 20; i -= 2)
+        {
+            dataMatrix.resizeCols(i);
+            cycleParams(results, i);
+        }
+
+        const int accNum = results[0].size() - 2;
+        std::sort(std::begin(results), std::end(results),
+                  [accNum](const std::vector<double> & in1, const std::vector<double> & in2)
+        {
+            if(in1[accNum] == in2[accNum]) return in1[accNum + 1] > in2[accNum + 1]; /// by kappa
+            return in1[accNum] > in2[accNum];
+        });
+
+        ofstream outStr;
+        outStr.open((def::dir->absolutePath()
+                     + slash + outFileName).toStdString(), std::ios_base::app);
+        outStr << def::ExpName << endl;
+
+        int num = 0;
+        for(auto vec : results)
+        {
+            if(vec[accNum] < results[0][accNum] - 1.5 || num == 10) break;
+            outStr << vec << endl;
+            ++num;
+        }
+        outStr.close();
     }
+#endif
 
-    const int accNum = results[0].size() - 2;
-    std::sort(std::begin(results), std::end(results),
-              [accNum](const std::vector<double> & in1, const std::vector<double> & in2)
-    {
-        if(in1[accNum] == in2[accNum]) return in1[accNum + 1] > in2[accNum + 1]; /// by kappa
-        return in1[accNum] > in2[accNum];
-    });
 
-    ofstream outStr;
-    outStr.open((def::dir->absolutePath()
-                 + slash + outFileName).toStdString(), std::ios_base::app);
-    outStr << def::ExpName << endl;
+    setClassifier(ClassifierType::RDA);
+    QString outFileName = "PCA_rdaRes.txt";
+    setRdaLambdaSlot(1.);
+    setRdaShrinkSlot(0.5);
+    int numPc = 30;
 
-    int num = 0;
-    for(auto vec : results)
-    {
-        if(vec[accNum] < results[0][accNum] - 1.5 || num == 10) break;
-        outStr << vec << endl;
-        ++num;
-    }
-    outStr.close();
+    loadData(def::dir->absolutePath() + "/SpectraSmooth/PCA", {def::ExpName});
+    resizeData(numPc);
+    myClassifier->learnAll();
+    loadData(def::dir->absolutePath() + "/SpectraSmooth", {def::ExpName.left(3) + "_test"});
+    applyPCA(def::dir->absolutePath() + "/Help/ica/" + def::ExpName + "_pcaMat.txt");
+    resizeData(numPc);
+    myClassifier->testAll();
+    auto a = myClassifier->averageClassification();
+
+
+//    ofstream outStr;
+//    outStr.open((def::dir->absolutePath()
+//                 + slash + outFileName).toStdString(), std::ios_base::app);
+//    outStr << def::ExpName << endl;
+
+
+//    outStr.close();
 }
 
 
@@ -306,9 +337,9 @@ void Net::cycleParams(std::vector<std::vector<double> > & in, int i)
     {
     case ClassifierType::RDA:
     {
-        for(double lambda = 0.7; lambda <= 1.0; lambda += 0.1)
+        for(double lambda = 0.0; lambda <= 1.0; lambda += 0.1)
         {
-            for(double shr = 0.0; shr <= 0.7; shr += 0.1)
+            for(double shr = 0.0; shr <= 1.0; shr += 0.1)
             {
                 setRdaLambdaSlot(lambda);
                 setRdaShrinkSlot(shr);
@@ -321,7 +352,7 @@ void Net::cycleParams(std::vector<std::vector<double> > & in, int i)
     }
     case ClassifierType::ANN:
     {
-        double lrat = 0.01;
+        double lrat = 0.05;
         {
             setLrate(lrat);
             auto a = autoClassification();
@@ -370,7 +401,7 @@ void Net::cycleParams(std::vector<std::vector<double> > & in, int i)
     default:
     {
         auto a = autoClassification();
-        in.push_back(std::vector<double>{i, numClust, a.first, a.second});
+        in.push_back(std::vector<double>{i, a.first, a.second});
         break;
     }
     }

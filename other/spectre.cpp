@@ -771,6 +771,7 @@ void Spectre::countSpectra()
 //    makeFullFileList(inDirPath, lst, {"_test"});
     makeFullFileList(inDirPath,
                      lst
+//                     , {"_test"}
 //                     ,{def::plainDataExtension}
                      );
     const int numFiles = lst.length();

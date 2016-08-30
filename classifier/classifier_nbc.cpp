@@ -7,6 +7,7 @@ NBC::NBC() : Classifier()
     centers.resize(numCl);
     sigmas.resize(numCl);
     myType = ClassifierType::NBC;
+    typeString = "NBC";
 }
 
 void NBC::learn(std::vector<uint> & indices)

@@ -4,7 +4,6 @@ using namespace myLib;
 
 void Net::successiveProcessing()
 {
-
     cout << "successive: started" << endl;
     QString helpString = def::dir->absolutePath()
                          + slash + "SpectraSmooth"
@@ -37,14 +36,15 @@ void Net::successiveProcessing()
 
     cout << "successive: data cleaned" << endl;
 
-    /// consts
+    /// consts - set prelearn
     setErrCrit(0.05);
     setLrate(0.05);
 
     myClassifier->learnAll(); /// get initial weights on train set
 
-    setErrCrit(0.02);
-    setLrate(0.02);
+    /// consts - set postlearn
+    setErrCrit(0.01);
+    setLrate(0.01);
 
     cout << "successive: initial learn done" << endl;
 
@@ -56,12 +56,16 @@ void Net::successiveProcessing()
     lineType tempArr;
     int type = -1;
 
+
+    /// temp for test
+    int count2 = 0;
     for(const QString & fileNam : leest)
     {
         readFileInLine(helpString + slash + fileNam,
                        tempArr);
         type = typeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
+        ++count2; if(count2 == 1000) break;
     }
     cout << "successive: all done" << endl;
     myClassifier->averageClassification();
@@ -128,7 +132,6 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
     const std::pair<int, double> outType = myClassifier->classifyDatum(dataMatrix.rows() - 1); // take the last
     /// adding into confusionMatrix
     myClassifier->confMatInc(newType, outType.first);
-//    confusionMatrix[newType][outType.first] += 1.;
 
     if(outType.first == newType)
     {

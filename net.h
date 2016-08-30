@@ -123,6 +123,7 @@ public:
                   const std::vector<uint> & inTypes);
     void loadDataUCI(const QString & setName);
     void resizeData(uint newCols);
+    void applyPCA(const QString & pcaMatFilePath);
 
 
     ///wts

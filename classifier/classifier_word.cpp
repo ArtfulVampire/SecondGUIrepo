@@ -5,6 +5,7 @@ WORD::WORD() : Classifier()
     this->numOfClust = 15;
     centers.resize(numOfClust);
     this->myType = ClassifierType::WORD;
+    typeString = "WORD";
 }
 
 double WORD::dist(const uint a, const uint b)
