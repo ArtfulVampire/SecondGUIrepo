@@ -69,7 +69,7 @@ void MainWindow::customFunc()
 //    ui->justSliceButton->setChecked(true);
 
 
-#if 01
+#if 0
     /// test new classifiers
     QString paath = "/media/Files/Data/AAX";
     setEdfFile(paath + "/AAX_final.edf");
@@ -77,8 +77,11 @@ void MainWindow::customFunc()
     paath = "/media/Files/Data/Feedback/SuccessClass";
 
 //    for(QString guy : {"AAU", "BEA", "CAA", "GAS", "SUA"})
-    for(QString guy : {"AAU"})
+    for(QString guy : {"SUA"})
+//    for(QString guy : {"BEA", "CAA", "GAS", "SUA"})
     {
+
+//        setEdfFile(paath + slash  + guy + "_test.edf");
         setEdfFile(paath + slash  + guy + "_train.edf");
         readData();
 
@@ -97,7 +100,7 @@ void MainWindow::customFunc()
         net->setCentering(true);
         net->setVariancing(true);
 
-        net->loadData(paath + "/SpectraSmooth", {def::ExpName});
+//        net->loadData(paath + "/SpectraSmooth", {def::ExpName});
 //        net->pca();
 //        delete net;
 //        continue;
@@ -121,7 +124,7 @@ void MainWindow::customFunc()
 
 
 
-#if 0
+#if 01
 /// successive
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");
@@ -136,14 +139,15 @@ void MainWindow::customFunc()
     for(QString name : names)
     {
         /// successive
-        setEdfFile(path + name + "_train" + ".edf");
+        setEdfFile(path + name + "_train.edf");
+        readData();
         ui->timeShiftSpinBox->setValue(2.);
         ui->windowLengthSpinBox->setValue(4.);
         ui->windButton->setChecked(true); // sliceWindFromReal
 
         if(sliceAndCount)
         {
-            cleanDirs();
+//            cleanDirs();
             sliceAll();
         }
 
@@ -175,18 +179,15 @@ void MainWindow::customFunc()
         }
 
         Net * net = new Net();
-//        net->show();
+        net->setCentering(true);
+        net->setVariancing(true);
         net->loadData(def::dir->absolutePath()
                       + slash + "SpectraSmooth"
                       + slash + "windows",
                         {name + "_train"}); /// only for ANN set - dataMatrix->cols()
+//        net->pca();
 
-        net->setClassifier(ClassifierType::ANN);
-        net->setRdaLambdaSlot(1);
-        net->setRdaShrinkSlot(0.5);
 
-        net->setSource("w");
-        net->setMode("t"); // train-test
 
         setEdfFile(path + name + "_test" + ".edf");
         ui->windowLengthSpinBox->setValue(4.);
@@ -205,7 +206,19 @@ void MainWindow::customFunc()
         suc::learnSetStay = 100;
         suc::decayRate = 0.01;
 
-//        exit(0);
+        /// should not change averageDatum and sigmaVector
+
+        net->setCentering(false);
+        net->setVariancing(false);
+        net->loadData(def::dir->absolutePath()
+                      + slash + "SpectraSmooth"
+                      + slash + "PCA",
+                        {name + "_train"}); /// only for ANN set - dataMatrix->cols()
+
+        net->setClassifier(ClassifierType::ANN);
+        net->setSource("w");
+        net->setMode("t"); // train-test
+
 
         net->successiveProcessing();
 

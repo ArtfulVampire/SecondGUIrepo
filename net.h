@@ -61,6 +61,7 @@ private:
 
     /// succesiive
     int numGoodNew;
+    matrix pcaMat{};
     void successiveLearning(const std::valarray<double> & newSpectre,
                             const int newType,
                             const QString & newFileName);
@@ -85,7 +86,7 @@ private:
     void halfHalfClassification();
     void trainTestClassification(const QString & trainTemplate = "_train",
                                  const QString & testTemplate = "_test");
-    void cycleParams(std::vector<std::vector<double>> & in, int i); /// for customF
+    void cycleParams(std::vector<std::vector<double>> & in); /// for customF
 
 public:
     explicit Net();

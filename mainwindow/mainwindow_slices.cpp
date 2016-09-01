@@ -22,7 +22,9 @@ void MainWindow::sliceWindFromReal()
     QStringList lst;
     makeFullFileList(def::dir->absolutePath()
                      + slash + "Realisations",
-                     lst);
+                     lst
+                     , {def::ExpName}
+                     );
 
     const int timeShift = ui->timeShiftSpinBox->value() * def::freq;
     const int wndLength = ui->windowLengthSpinBox->value() * def::freq;

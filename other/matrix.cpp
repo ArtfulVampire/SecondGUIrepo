@@ -372,7 +372,7 @@ lineType operator * (const matrix & lhs, const lineType & rhs)
     if(rhs.size() != lhs.cols())
     {
         cout << "operator * (matrix, valar) invalid sizes" << endl;
-        return {};
+        return lhs.getCol(0);
     }
     lineType res(lhs.rows());
 #if MATRIX_OMP
@@ -387,12 +387,18 @@ lineType operator * (const matrix & lhs, const lineType & rhs)
 
 lineType operator * (const lineType & lhs, const matrix & rhs)
 {
-    if(lhs.size() != rhs.rows()) return {};
-    lineType res(rhs.cols());
-    for(uint i = 0; i < lhs.size(); ++i)
+    if(lhs.size() != rhs.rows())
+    {
+        cout << "operator * (valar, matrix) invalid sizes" << endl;
+        return lhs;
+    }
+
+    lineType res = rhs[0];
+    for(uint i = 1; i < lhs.size(); ++i)
     {
         res += lhs[i] * rhs[i];
     }
+    exit(0);
     return res;
 
 

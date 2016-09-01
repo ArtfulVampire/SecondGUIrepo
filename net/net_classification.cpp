@@ -264,26 +264,26 @@ void Net::trainTestClassification(const QString & trainTemplate,
 
 void Net::customF()
 {
-#if 0
+#if 01
     /// search optimal params
     QString outFileName;
 //    for(QString cls : {"DIST", "WORD", "KNN", "NBC"}) /// recheck
     QString cls = "RDA";
     {
         setClassifier(cls);
-        outFileName = "PCA_" + cls.toLower() + "Res.txt";
+        outFileName = "PCA_" + cls.toLower() + "SucRes_manual.txt";
 
         std::vector<std::vector<double>> results{};
-        for(int i = 70; i >= 20; i -= 2)
-        {
-            dataMatrix.resizeCols(i);
-            cycleParams(results, i);
-        }
+        cycleParams(results);
+
 
         const int accNum = results[0].size() - 2;
+
         std::sort(std::begin(results), std::end(results),
                   [accNum](const std::vector<double> & in1, const std::vector<double> & in2)
         {
+            /// uncomment to sort
+            return true;
             if(in1[accNum] == in2[accNum]) return in1[accNum + 1] > in2[accNum + 1]; /// by kappa
             return in1[accNum] > in2[accNum];
         });
@@ -296,7 +296,8 @@ void Net::customF()
         int num = 0;
         for(auto vec : results)
         {
-            if(vec[accNum] < results[0][accNum] - 1.5 || num == 10) break;
+            /// comment for all results
+//            if(vec[accNum] < results[0][accNum] - 2.5 || num == 20) break;
             outStr << vec << endl;
             ++num;
         }
@@ -305,105 +306,105 @@ void Net::customF()
 #endif
 
 
-    setClassifier(ClassifierType::RDA);
-    QString outFileName = "PCA_rdaRes.txt";
-    setRdaLambdaSlot(1.);
-    setRdaShrinkSlot(0.5);
-    int numPc = 30;
-
-    loadData(def::dir->absolutePath() + "/SpectraSmooth/PCA", {def::ExpName});
-    resizeData(numPc);
-    myClassifier->learnAll();
-    loadData(def::dir->absolutePath() + "/SpectraSmooth", {def::ExpName.left(3) + "_test"});
-    applyPCA(def::dir->absolutePath() + "/Help/ica/" + def::ExpName + "_pcaMat.txt");
-    resizeData(numPc);
-    myClassifier->testAll();
-    auto a = myClassifier->averageClassification();
-
-
-//    ofstream outStr;
-//    outStr.open((def::dir->absolutePath()
-//                 + slash + outFileName).toStdString(), std::ios_base::app);
-//    outStr << def::ExpName << endl;
-
-
-//    outStr.close();
 }
 
+#define SUCCESSIVE_CHECK {\
+    loadData(def::dir->absolutePath() + "/SpectraSmooth/PCA", {def::ExpName});\
+    resizeData(i);\
+    myClassifier->learnAll();\
+    loadData(def::dir->absolutePath() + "/SpectraSmooth", {def::ExpName.left(3) + "_test"});\
+    applyPCA(def::dir->absolutePath() + "/Help/ica/" + def::ExpName + "_pcaMat.txt");\
+    resizeData(i);\
+    myClassifier->testAll();\
+    a = myClassifier->averageClassification();\
+    }
 
-void Net::cycleParams(std::vector<std::vector<double> > & in, int i)
+void Net::cycleParams(std::vector<std::vector<double> > & in)
 {
-    switch(myClassifier->getType())
+    std::vector<int> rdaPar{8, 10, 0, 10};
+
+    for(int i = 60; i >= 24; i -= 2)
     {
-    case ClassifierType::RDA:
-    {
-        for(double lambda = 0.0; lambda <= 1.0; lambda += 0.1)
+        //            dataMatrix.resizeCols(i);
+        switch(myClassifier->getType())
         {
-            for(double shr = 0.0; shr <= 1.0; shr += 0.1)
+        case ClassifierType::RDA:
+        {
+            for(double lambda = 0.1 * rdaPar[0]; lambda <= 0.1 * rdaPar[1]; lambda += 0.1)
             {
-                setRdaLambdaSlot(lambda);
-                setRdaShrinkSlot(shr);
+                for(double shr = 0.1 * rdaPar[2]; shr <= 0.1 * rdaPar[3]; shr += 0.1)
+                {
+                    setRdaLambdaSlot(lambda);
+                    setRdaShrinkSlot(shr);
+
+
+#if 1
+                    avType a; SUCCESSIVE_CHECK
+        #else
+                    /// one file
+                    auto a = autoClassification();
+#endif
+                    in.push_back(std::vector<double>{i, lambda, shr, a.first, a.second});
+                }
+            }
+            break;
+        }
+        case ClassifierType::ANN:
+        {
+            double lrat = 0.05;
+            {
+                setLrate(lrat);
+                avType a; SUCCESSIVE_CHECK
+                        //            auto a = autoClassification();
+                        in.push_back(std::vector<double>{i, lrat, a.first, a.second});
+            }
+            break;
+        }
+        case ClassifierType::SVM:
+        {
+            for(int svmTyp = 0; svmTyp <= 1; ++svmTyp)
+            {
+                //            for(int kerTyp = 0; kerTyp <= 4; ++kerTyp)
+                int kerTyp = 0;
+                {
+                    setSvmTypeSlot(svmTyp);
+                    setSvmKernelNumSlot(kerTyp);
+
+                    auto a = autoClassification();
+                    in.push_back(std::vector<double>{i, svmTyp, kerTyp, a.first, a.second});
+                }
+            }
+            break;
+        }
+        case ClassifierType::KNN:
+        {
+            for(int numNear = 1; numNear <= 10; ++numNear)
+            {
+                setKnnNumSlot(numNear);
 
                 auto a = autoClassification();
-                in.push_back(std::vector<double>{i, lambda, shr, a.first, a.second});
+                in.push_back(std::vector<double>{i, numNear, a.first, a.second});
             }
+            break;
         }
-        break;
-    }
-    case ClassifierType::ANN:
-    {
-        double lrat = 0.05;
+        case ClassifierType::WORD:
         {
-            setLrate(lrat);
-            auto a = autoClassification();
-            in.push_back(std::vector<double>{i, lrat, a.first, a.second});
-        }
-        break;
-    }
-    case ClassifierType::SVM:
-    {
-        for(int svmTyp = 0; svmTyp <= 1; ++svmTyp)
-        {
-//            for(int kerTyp = 0; kerTyp <= 4; ++kerTyp)
-            int kerTyp = 0;
+            for(int numClust = 6; numClust <= 20; ++numClust)
             {
-                setSvmTypeSlot(svmTyp);
-                setSvmKernelNumSlot(kerTyp);
+                setWordNumSlot(numClust);
 
                 auto a = autoClassification();
-                in.push_back(std::vector<double>{i, svmTyp, kerTyp, a.first, a.second});
+                in.push_back(std::vector<double>{i, numClust, a.first, a.second});
             }
+            break;
         }
-        break;
-    }
-    case ClassifierType::KNN:
-    {
-        for(int numNear = 1; numNear <= 10; ++numNear)
+        default:
         {
-            setKnnNumSlot(numNear);
-
             auto a = autoClassification();
-            in.push_back(std::vector<double>{i, numNear, a.first, a.second});
+            in.push_back(std::vector<double>{i, a.first, a.second});
+            break;
         }
-        break;
-    }
-    case ClassifierType::WORD:
-    {
-        for(int numClust = 6; numClust <= 20; ++numClust)
-        {
-            setWordNumSlot(numClust);
-
-            auto a = autoClassification();
-            in.push_back(std::vector<double>{i, numClust, a.first, a.second});
         }
-        break;
-    }
-    default:
-    {
-        auto a = autoClassification();
-        in.push_back(std::vector<double>{i, a.first, a.second});
-        break;
-    }
     }
 
 }

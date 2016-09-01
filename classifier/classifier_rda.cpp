@@ -24,6 +24,7 @@ void RDA::setLambda(double in)
     this->lambda = in;
 }
 
+/// check!
 void RDA::learn(std::vector<uint> & indices)
 {
 //    std::cout << lambda << "\t" << gamma << std::endl;

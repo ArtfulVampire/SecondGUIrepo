@@ -405,24 +405,27 @@ std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
     smallLib::resizeValar(forRes, numCl);
     uint outClass = myLib::indexOfMax(forRes);
 
-#if 0
+#if 01
     /// cout results
     const int numOfLayers = dim.size();
     std::ofstream resFile;
     resFile.open((def::dir->absolutePath() +
                   slash + "class.txt").toStdString(),
-                 ios_base::app);
+                 std::ios_base::app);
 
-    auto tmp = std::cout.rdbuf();
-    cout.rdbuf(resFile.rdbuf());
+    ///uncomment to write to file
+//    auto tmp = std::cout.rdbuf();
+//    std::cout.rdbuf(resFile.rdbuf());
 
-    cout << "type = " << type << '\t' << "(";
+    std::cout << "type = " << type << '\t' << "(";
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
-        cout << doubleRound(output[numOfLayers - 1][i], 3) << '\t';
+        std::cout << smallLib::doubleRound(output[numOfLayers - 1][i], 3) << '\t';
     }
-    cout << ") " << ((type == outClass) ? "+ " : "- ") << fileNames[vecNum] << endl;
-    cout.rdbuf(tmp);
+    std::cout << ") " << ((type == outClass) ? "+ " : "- ") << "\t"
+              << (*fileNames)[vecNum] << std::endl;
+
+//    std::cout.rdbuf(tmp);
 
     resFile.close();
 #endif

@@ -5,9 +5,7 @@ using namespace myLib;
 void Net::successiveProcessing()
 {
     cout << "successive: started" << endl;
-    QString helpString = def::dir->absolutePath()
-                         + slash + "SpectraSmooth"
-                         + slash + "windows";
+
 
 
     const QString trainMarker = "_train";
@@ -17,7 +15,11 @@ void Net::successiveProcessing()
     numGoodNew = 0;
 
     /// check for no test items
-    loadData(helpString, {"*" + trainMarker + "*"});
+    /// use ExpName
+    QString helpString = def::dir->absolutePath()
+                         + slash + "SpectraSmooth"
+                         + slash + "PCA";
+    loadData(helpString, {def::ExpName.left(3) + "*" + trainMarker + "*"});
 
     cout << "successive: data loaded" << endl;
 
@@ -48,14 +50,23 @@ void Net::successiveProcessing()
 
     cout << "successive: initial learn done" << endl;
 
+    helpString = def::dir->absolutePath()
+                 + slash + "Help"
+                 + slash + "ica"
+                 + slash + def::ExpName.left(3) + "_train"
+                 + "_pcaMat.txt";
+    readMatrixFile(helpString, pcaMat);
 
-    cout << helpString << endl;
-    QStringList leest = QDir(helpString).entryList({"*" + testMarker + "*"}); /// special generality
-    cout << leest.length() << endl;
+    helpString = def::dir->absolutePath()
+                 + slash + "SpectraSmooth"
+                 + slash + "windows";
+    QStringList leest = QDir(helpString).entryList(
+    {def::ExpName.left(3) + "*" + testMarker + "*"}); /// special generality
 
     lineType tempArr;
     int type = -1;
 
+    /// here to remember old averageDatum and sigmaVector
 
     /// temp for test
     int count2 = 0;
@@ -65,7 +76,7 @@ void Net::successiveProcessing()
                        tempArr);
         type = typeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
-        ++count2; if(count2 == 1000) break;
+        ++count2; if(count2 == 30) break;
     }
     cout << "successive: all done" << endl;
     myClassifier->averageClassification();
@@ -118,6 +129,7 @@ void Net::successivePreclean(const QString & spectraPath)
     myClassifier->setTestCleanFlag(false);
 }
 
+/// on one incoming vector
 void Net::successiveLearning(const std::valarray<double> & newSpectre,
                              const int newType,
                              const QString & newFileName)
@@ -126,6 +138,21 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
     /// dataMatrix is learning matrix
 
     lineType newData = (newSpectre - averageDatum) / (sigmaVector * loadDataNorm);
+
+    /// apply pca
+    cout << newData.size() << "\t"
+         << pcaMat.rows() << "\t"
+         << pcaMat.cols() << endl;
+    newData = newData * pcaMat;
+    for(int i = 0; i < 5; ++i)
+    {
+        cout << newData[i] << endl;
+    }
+    exit(0);
+
+    cout << newData.size() << endl;
+
+
 
     pushBackDatum(newData, newType, newFileName);
 

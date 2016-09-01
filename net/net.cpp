@@ -331,7 +331,7 @@ void Net::normalizeDataMatrix()
     }
     else
     {
-        sigmaVector = std::valarray<double> (0., dataMatrix.cols());
+        sigmaVector = std::valarray<double> (1., dataMatrix.cols());
     }
 #endif
 #if 0
