@@ -16,7 +16,7 @@
 #include <QTime>
 #include <chrono>
 
-enum class ClassifierType {ANN, RDA, SVM, DIST, NBC, KNN, WORD};
+enum class ClassifierType {ANN, RDA, SVM, DIST, NBC, KNN, WARD};
 typedef std::pair<double, double> avType;
 
 #define CLASS_TEST_VIRTUAL 0
@@ -265,7 +265,7 @@ protected:
 };
 
 
-class WORD : public Classifier
+class WARD : public Classifier
 {
 private:
     std::vector<std::vector<uint>> clusts; /// vectors of indices of dataMatrix
@@ -278,7 +278,7 @@ private:
     std::pair<uint, uint> findNearest();
 
 public:
-    WORD();
+    WARD();
 
     void setNumClust(int ii);
 

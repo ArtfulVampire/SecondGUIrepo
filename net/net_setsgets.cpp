@@ -104,10 +104,10 @@ void Net::setKnnNumSlot(int in)
 
 void Net::setWordNumSlot(int in)
 {
-    if(myClassifier->getType() == ClassifierType::WORD)
+    if(myClassifier->getType() == ClassifierType::WARD)
     {
-        WORD * myWORD = dynamic_cast<WORD *>(myClassifier);
-        myWORD->setNumClust(in);
+        WARD * myWARD = dynamic_cast<WARD *>(myClassifier);
+        myWARD->setNumClust(in);
     }
 }
 
@@ -218,9 +218,9 @@ void Net::setClassifier(const QString & in)
     {
         ui->classKNNRadioButton->setChecked(true);
     }
-    else if(in.contains("WORD", Qt::CaseInsensitive))
+    else if(in.contains("WARD", Qt::CaseInsensitive))
     {
-        ui->classWORDRadioButton->setChecked(true);
+        ui->classWARDRadioButton->setChecked(true);
     }
 }
 
@@ -250,9 +250,9 @@ void Net::setClassifier(ClassifierType typ)
     {
         ui->classKNNRadioButton->setChecked(true);
     }
-    else if(typ == ClassifierType::WORD)
+    else if(typ == ClassifierType::WARD)
     {
-        ui->classWORDRadioButton->setChecked(true);
+        ui->classWARDRadioButton->setChecked(true);
     }
 }
 
@@ -315,11 +315,11 @@ void Net::setClassifier(QAbstractButton * but, bool i)
         KNN * myKNN = dynamic_cast<KNN *>(myClassifier);
         myKNN->setNumOfNear(ui->knnNumOfNearSpinBox->value());
     }
-    else if(but->text() == "WORD")
+    else if(but->text() == "WARD")
     {
-        myClassifier = new WORD();
-        WORD * myWORD = dynamic_cast<WORD *>(myClassifier);
-        myWORD->setNumClust(ui->knnNumOfNearSpinBox->value());
+        myClassifier = new WARD();
+        WARD * myWARD = dynamic_cast<WARD *>(myClassifier);
+        myWARD->setNumClust(ui->knnNumOfNearSpinBox->value());
     }
     setClassifierParams();
 

@@ -267,7 +267,7 @@ void Net::customF()
 #if 01
     /// search optimal params
     QString outFileName;
-//    for(QString cls : {"DIST", "WORD", "KNN", "NBC"}) /// recheck
+//    for(QString cls : {"DIST", "WARD", "KNN", "NBC"}) /// recheck
     QString cls = "RDA";
     {
         setClassifier(cls);
@@ -387,7 +387,7 @@ void Net::cycleParams(std::vector<std::vector<double> > & in)
             }
             break;
         }
-        case ClassifierType::WORD:
+        case ClassifierType::WARD:
         {
             for(int numClust = 6; numClust <= 20; ++numClust)
             {

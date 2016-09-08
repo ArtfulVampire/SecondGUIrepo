@@ -35,7 +35,7 @@ Net::Net() :
     myButtonGroup.back()->addButton(ui->classDISTRadioButton);
     myButtonGroup.back()->addButton(ui->classNBCRadioButton);
     myButtonGroup.back()->addButton(ui->classKNNRadioButton);
-    myButtonGroup.back()->addButton(ui->classWORDRadioButton);
+    myButtonGroup.back()->addButton(ui->classWARDRadioButton);
 
     ui->crossRadioButton->setChecked(true); /// k-fold
     ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
@@ -154,7 +154,7 @@ Net::Net() :
     QObject::connect(ui->knnNumOfNearSpinBox, SIGNAL(valueChanged(int)),
                      this, SLOT(setKnnNumSlot(int)));
 
-    /// WORD
+    /// WARD
     QObject::connect(ui->wordNumOfClustSpinBox, SIGNAL(valueChanged(int)),
                      this, SLOT(setWordNumSlot(int)));
 

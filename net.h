@@ -163,7 +163,7 @@ public slots:
     /// KNN
     void setKnnNumSlot(int);
 
-    /// WORD
+    /// WARD
     void setWordNumSlot(int);
 
     /// LDA/QDA

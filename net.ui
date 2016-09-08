@@ -462,9 +462,9 @@
      </widget>
     </item>
     <item row="3" column="0">
-     <widget class="QRadioButton" name="classWORDRadioButton">
+     <widget class="QRadioButton" name="classWARDRadioButton">
       <property name="text">
-       <string>WORD</string>
+       <string>WARD</string>
       </property>
      </widget>
     </item>

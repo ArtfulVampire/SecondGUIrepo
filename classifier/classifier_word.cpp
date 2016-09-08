@@ -1,14 +1,14 @@
 #include "classifier.h"
 
-WORD::WORD() : Classifier()
+WARD::WARD() : Classifier()
 {
     this->numOfClust = 15;
     centers.resize(numOfClust);
-    this->myType = ClassifierType::WORD;
-    typeString = "WORD";
+    this->myType = ClassifierType::WARD;
+    typeString = "WARD";
 }
 
-double WORD::dist(const uint a, const uint b)
+double WARD::dist(const uint a, const uint b)
 {
     double res = 0.;
     res = smallLib::distance((dataMatrix->subRows(clusts[a])).averageRow(),
@@ -18,14 +18,14 @@ double WORD::dist(const uint a, const uint b)
     return res;
 }
 
-void WORD::setNumClust(int ii)
+void WARD::setNumClust(int ii)
 {
     this->numOfClust = ii;
     centers.resize(numOfClust);
     dists.clear();
 }
 
-std::pair<uint, uint> WORD::findNearest()
+std::pair<uint, uint> WARD::findNearest()
 {
     std::pair<uint, uint> res{0, 1};
     double tmp = dists[0][1];
@@ -45,7 +45,7 @@ std::pair<uint, uint> WORD::findNearest()
 }
 
 /// recount if dataMatrixChanged!!!!11
-void WORD::learn(std::vector<uint> & indices)
+void WARD::learn(std::vector<uint> & indices)
 {
     if(!dists.empty())
     {
@@ -83,7 +83,7 @@ void WORD::learn(std::vector<uint> & indices)
     }
 }
 
-void WORD::merge(const uint one, const uint two)
+void WARD::merge(const uint one, const uint two)
 {
 
 //    std::cout << one << "\t" << two << std::endl;
@@ -121,7 +121,7 @@ void WORD::merge(const uint one, const uint two)
 }
 
 
-std::pair<uint, double> WORD::classifyDatum(const uint & vecNum)
+std::pair<uint, double> WARD::classifyDatum(const uint & vecNum)
 {
 
     std::vector<double> distances(numOfClust);
@@ -143,7 +143,7 @@ std::pair<uint, double> WORD::classifyDatum(const uint & vecNum)
     uint outClass = myLib::indexOfMax(numOfClass);
 
 
-    printResult("WORD.txt", outClass, vecNum);
+    printResult("WARD.txt", outClass, vecNum);
 
     return std::make_pair(outClass,
                           double(outClass != (*types)[vecNum]));
