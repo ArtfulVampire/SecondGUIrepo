@@ -113,7 +113,7 @@ QString setFileName(const QString & initNameOrPath) // append _num before the do
 QString getExpNameLib(const QString & filePath) // getFileName
 {
     QString hlp;
-    hlp = QDir::toNativeSeparators(filePath);
+    hlp = (filePath);
     hlp = hlp.right(hlp.length() - hlp.lastIndexOf(slash) - 1); // ExpName.edf
     hlp = hlp.left(hlp.lastIndexOf('.')); // ExpName
     return hlp;
@@ -144,7 +144,7 @@ QString getFileMarker(const QString & fileName)
 
 QString getExt(const QString & filePath)
 {
-    QString helpString = QDir::toNativeSeparators(filePath);
+    QString helpString = (filePath);
     if(helpString.contains('.'))
     {
         helpString = helpString.right(helpString.length() - helpString.lastIndexOf('.') - 1);
@@ -158,7 +158,7 @@ QString getExt(const QString & filePath)
 
 QString getFileName(const QString & filePath, bool withExtension)
 {
-    QString helpString = QDir::toNativeSeparators(filePath);
+    QString helpString = (filePath);
     helpString = helpString.right(helpString.length() - helpString.lastIndexOf(slash) - 1);
     if(!withExtension)
     {
@@ -171,11 +171,11 @@ QString getPicPath(const QString & dataPath,
                    const QDir * ExpNameDir,
                    const int & ns)
 {
-    QString fileName = QDir::toNativeSeparators(dataPath);
+    QString fileName = (dataPath);
     fileName = fileName.right(fileName.length() - fileName.lastIndexOf(slash) - 1);
     fileName.replace('.', '_');
 
-    QString helpString = QDir::toNativeSeparators(ExpNameDir->absolutePath() + slash);
+    QString helpString = (ExpNameDir->absolutePath() + slash);
 
     if(dataPath.contains("Realisations"))
     {
@@ -536,7 +536,7 @@ void makePaStatic(const QString & spectraDir,
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(paPath + slash);
+    helpString = (paPath + slash);
     if(!svmFlag)
     {
         helpString += "1.pa";
@@ -559,7 +559,7 @@ void makePaStatic(const QString & spectraDir,
             listToWrite << lst[j][arr[j][i]];
         }
     }
-    helpString = QDir::toNativeSeparators(paPath + slash);
+    helpString = (paPath + slash);
     if(!svmFlag)
     {
         helpString += "2.pa";
@@ -584,7 +584,7 @@ void makePaStatic(const QString & spectraDir,
                 listToWrite << lst[j][arr[j][i]];
             }
         }
-        helpString = QDir::toNativeSeparators(paPath + slash + "all.pa");
+        helpString = (paPath + slash + "all.pa");
         myLib::makePaFile(spectraDir, listToWrite, coeff, helpString);
     }
 }

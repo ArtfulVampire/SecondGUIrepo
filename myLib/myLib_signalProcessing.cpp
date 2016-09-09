@@ -860,7 +860,7 @@ void MannWhitneyFromMakepa(const QString & spectraDir)
 
 
 
-    QString helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+    QString helpString = (def::dir->absolutePath()
                                                   + slash + "Help"
                                                   + slash + def::ExpName
                                                   + "_Mann-Whitney.jpg");

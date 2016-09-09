@@ -299,7 +299,7 @@ void MainWindow::waveletCount()
     NumOfSlices=-1;
 
     FILE * file1;
-    helpString=QDir::toNativeSeparators(dir->absolutePath().append(slash).append(ExpName).append(".dat"));
+    helpString=(dir->absolutePath().append(slash).append(ExpName).append(".dat"));
 
     file1 = fopen(helpString.toStdString().c_str(),"r");
     if(file1 == NULL)
@@ -317,7 +317,7 @@ void MainWindow::waveletCount()
     {
         for(int channel = 0; channel < 19; ++channel)
         {
-            helpString=QDir::toNativeSeparators(dir->absolutePath().append(slash).append(ExpName).append(".dat"));
+            helpString=(dir->absolutePath().append(slash).append(ExpName).append(".dat"));
             file1 = fopen(helpString.toStdString().c_str(),"r");
             if(file1==NULL)
             {
@@ -325,7 +325,7 @@ void MainWindow::waveletCount()
                 break;
             }
 
-            helpString=QDir::toNativeSeparators(dir->absolutePath().append(slash).append("visualisation").append(slash).append(ExpName).append("_wavelet_").append(QString::number(channel)).append(".jpg"));
+            helpString=(dir->absolutePath().append(slash).append("visualisation").append(slash).append(ExpName).append("_wavelet_").append(QString::number(channel)).append(".jpg"));
             //                cout << helpString.toStdString() << endl;
 
             wavelet(helpString, file1, ns, channel, 20., 5., 0.98, 32);
@@ -346,7 +346,7 @@ void MainWindow::waveletCount()
 
         //class
         target = QRectF(600, 0, 150*NumOfSlices/250, 800);
-        helpString =  QDir::toNativeSeparators(dir->absolutePath().append(slash).append("visualisation").append(slash).append("class.jpg"));
+        helpString =  (dir->absolutePath().append(slash).append("visualisation").append(slash).append("class.jpg"));
         pic = QPixmap(helpString);
         source = QRectF(pic.rect());
         painter->drawPixmap(target, pic, source);
@@ -357,19 +357,19 @@ void MainWindow::waveletCount()
 
             //weights
             target = QRectF(0, (i+1)*(800 + 50), 600, 800);
-            helpString = QDir::toNativeSeparators(dir->absolutePath().append(slash).append("visualisation").append(slash).append(ExpName).append("_weights_").append(QString::number(i)).append(".jpg"));
+            helpString = (dir->absolutePath().append(slash).append("visualisation").append(slash).append(ExpName).append("_weights_").append(QString::number(i)).append(".jpg"));
             pic = QPixmap(helpString);
             source = QRectF(pic.rect());
             painter->drawPixmap(target, pic, source);
 
             //wavelets
             target = QRectF(600, (i+1)*(800 + 50), 150*NumOfSlices/250, 800);
-            helpString = QDir::toNativeSeparators(dir->absolutePath().append(slash).append("visualisation").append(slash).append(ExpName).append("_wavelet_").append(QString::number(i)).append(".jpg"));
+            helpString = (dir->absolutePath().append(slash).append("visualisation").append(slash).append(ExpName).append("_wavelet_").append(QString::number(i)).append(".jpg"));
             pic = QPixmap(helpString);
             source = QRectF(pic.rect());
             painter->drawPixmap(target, pic, source);
         }
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(slash).append("visualisation").append(slash).append(ExpName).append("full.jpg"));
+        helpString = (dir->absolutePath().append(slash).append("visualisation").append(slash).append(ExpName).append("full.jpg"));
         full.save(helpString, 0, 100);
 
         cout << "full picture drawn" << endl;
@@ -397,7 +397,7 @@ void MainWindow::drawWeights()
         weight[i] = new double [NetLength+1];
     }
 
-    helpString=QDir::toNativeSeparators(dir->absolutePath().append(slash).append("weights.wts"));
+    helpString=(dir->absolutePath().append(slash).append("weights.wts"));
     FILE * w = fopen(helpString.toStdString().c_str(),"r");
     if(w==NULL)
     {
@@ -460,7 +460,7 @@ void MainWindow::drawWeights()
                 painter->drawLine(pic.width()/2-weight[k][i*63+j]/norm, pic.height()*(1.-j/63.), pic.width()/2-weight[k][i*63+(j+1)]/norm, pic.height()*(1.-(j+1)/63.));  //generality 63
             }
         }
-        helpString = QDir::toNativeSeparators(dir->absolutePath().append(slash).append("visualisation").append(slash).append(ExpName).append("_weights_").append(QString::number(i)).append(".jpg"));
+        helpString = (dir->absolutePath().append(slash).append("visualisation").append(slash).append(ExpName).append("_weights_").append(QString::number(i)).append(".jpg"));
         pic.save(helpString, 0, 100);
 
     }
@@ -482,7 +482,7 @@ void MainWindow::drawClassification()  //needs *.dat & weights.wts
 
     spLength = 63;
 
-    helpString=QDir::toNativeSeparators(dir->absolutePath().append(slash).append(ExpName).append(".dat"));
+    helpString=(dir->absolutePath().append(slash).append(ExpName).append(".dat"));
     file1 = fopen(helpString.toStdString().c_str(),"r");
     fscanf(file1, "NumOfSlices %d\n", &NumOfSlices);
 //    cout << "NumOfSlices=" << NumOfSlices << endl;
@@ -510,7 +510,7 @@ void MainWindow::drawClassification()  //needs *.dat & weights.wts
     int timeShift = 125;
     FILE * wts;
 
-    helpString=QDir::toNativeSeparators(dir->absolutePath().append(slash).append("weights.wts")); //generality
+    helpString=(dir->absolutePath().append(slash).append("weights.wts")); //generality
     wts = fopen(helpString.toStdString().c_str(),"r");
     if(wts==NULL)
     {
@@ -711,10 +711,10 @@ void MainWindow::makeDatFile()
     double finishTime=ui->finishTimeBox->value();
     cout << "finishTime = " << finishTime << endl;
 
-    helpString = QDir::toNativeSeparators(dir->absolutePath().append(slash).append(ExpName).append(".dat"));
+    helpString = (dir->absolutePath().append(slash).append(ExpName).append(".dat"));
 
     cout << "ns in dat-file=" << ns << endl;
-    FILE * datFile = fopen(QDir::toNativeSeparators(helpString).toStdString().c_str(),"w");
+    FILE * datFile = fopen((helpString).toStdString().c_str(),"w");
     if(datFile==NULL)
     {
         QMessageBox::critical((QWidget*)this, tr("critical"), tr("cannot open datFile"), QMessageBox::Ok);

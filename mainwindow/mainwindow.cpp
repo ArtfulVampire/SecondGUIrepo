@@ -491,7 +491,7 @@ void MainWindow::setEdfFile(QString const &filePath)
         return;
     }
 
-    ui->filePathLineEdit->setText(QDir::toNativeSeparators(helpString));
+    ui->filePathLineEdit->setText((helpString));
 
     //set ExpName
 
@@ -656,7 +656,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
                         i < min(ceil(fil.getData().cols() / wndLen), 60.); /// const generality
                         ++i)
                     {
-                        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+                        helpString = (def::dir->absolutePath()
                                                               + slash + "windows"
                                                               + slash + "fromreal"
                                                               + slash + def::ExpName
@@ -717,7 +717,7 @@ void MainWindow::readData()
     myTime.start();
 
     QString helpString;
-    helpString = QDir::toNativeSeparators( ui->filePathLineEdit->text() );
+    helpString = ( ui->filePathLineEdit->text() );
     if(!QFile::exists(helpString))
     {
         cout << "readData: edf file doent exist\n" << helpString.toStdString() << endl;

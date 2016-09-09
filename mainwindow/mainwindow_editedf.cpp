@@ -291,7 +291,7 @@ void MainWindow::reduceChannelsSlot()
     for(const QString & fileName : lst)
     {
         localNs = def::ns;
-        helpString = QDir::toNativeSeparators(localDir.absolutePath()
+        helpString = (localDir.absolutePath()
                                               + slash + fileName);
         readPlainData(helpString, dataR, NumOfSlices);
         for(const int & exclChan : excludeList)
@@ -514,7 +514,7 @@ void MainWindow::constructEDF(const QString & newPath,
 
     for(const QString & fileName : lst)
     {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+        helpString = (def::dir->absolutePath()
                                               + slash + "Realisations"
                                               + slash + fileName);
         readPlainData(helpString, newData, NumOfSlices, currSlice);

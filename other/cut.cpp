@@ -292,7 +292,7 @@ void Cut::cutEyesAll()
 
     for(int k = 0; k < int(lst.length()/4); ++k)
     {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+        helpString = (def::dir->absolutePath()
                                               + slash + ui->dirBox->currentText()
                                               + slash + lst[rand()%lst.length()]);
         emit openFile(helpString);
@@ -327,7 +327,7 @@ void Cut::cutEyesAll()
 
 //    cout<<"5"<<endl;
     FILE * eyes;
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+    helpString = (def::dir->absolutePath()
                                           + slash + "eyesSlices");
     eyes = fopen(helpString, "w");
 
@@ -336,7 +336,7 @@ void Cut::cutEyesAll()
     int num = 0;
     for(int i = 0; i<lst.length(); ++i)
     {
-        helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+        helpString = (def::dir->absolutePath()
                                               + slash + ui->dirBox->currentText()
                                               + slash + lst[i]);
 
@@ -363,7 +363,7 @@ void Cut::cutEyesAll()
     }
 
     fclose(eyes);
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+    helpString = (def::dir->absolutePath()
                                           + slash + "eyesSlices");
     QFile *file = new QFile(helpString);
     file->open(QIODevice::ReadOnly);
@@ -714,7 +714,7 @@ void Cut::undoZero()
 void Cut::cut()
 {
     QString helpString;
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath() +
+    helpString = (def::dir->absolutePath() +
                                           slash + "windows" +
                                           slash + getFileName(currentFile) +
                                           "." + rightNumber(addNum++, 3));

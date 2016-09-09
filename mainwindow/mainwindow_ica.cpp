@@ -287,7 +287,7 @@ void MainWindow::ICA() //fastICA
     }
     delete []tempCol;
 
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+    helpString = (def::dir->absolutePath()
                                           + slash + "Help"
                                           + slash + def::ExpName + "_maps_after_var.txt");
     writeMatrixFile(helpString, matrixA, ns); //generality 19-ns
@@ -381,7 +381,7 @@ void MainWindow::ICA() //fastICA
         cout << "comp = " << i+1 << "\t";
         cout << "explVar = " << doubleRound(explainedVariance[i], 2) << endl;
     }
-    helpString = QDir::toNativeSeparators(pathForAuxFiles
+    helpString = (pathForAuxFiles
                                           + slash + def::ExpName + "_explainedVariance.txt");
     writeFileInLine(helpString, explainedVariance);
     //end componets ordering
@@ -945,7 +945,7 @@ void MainWindow::icaClassTest() /// CAREFUL sliceOneByOneNew() numOfIC
 
     helpString2 = def::ExpName;
     helpString2.replace("_ica", "");
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash + "Help" + slash + helpString2 + "_maps.txt");
+    helpString = (def::dir->absolutePath() + slash + "Help" + slash + helpString2 + "_maps.txt");
     if(!readMatrixFile(helpString, matrixA, numOfIC))
     {
         return;
@@ -1133,7 +1133,7 @@ void MainWindow::throwIC() /// CAREFUL sliceOneByOneNew()
 
     matrix matrixA(numOfIC, numOfIC);
 
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath()
+    helpString = (def::dir->absolutePath()
                                           + slash + "Help"
                                           + slash + def::ExpName + "_maps.txt");
     readMatrixFile(helpString, matrixA);
@@ -1559,7 +1559,7 @@ void MainWindow::spoc()
 
     double * Znew = new double [numOfEpoches];
 
-    helpString = QDir::toNativeSeparators(def::dir->absolutePath() + slash + "spocVar.txt");
+    helpString = (def::dir->absolutePath() + slash + "spocVar.txt");
     FILE * in = fopen(helpString.toStdString().c_str(), "r");
     int helpInt = 0;
     while(!feof(in) && helpInt < numOfEpoches)

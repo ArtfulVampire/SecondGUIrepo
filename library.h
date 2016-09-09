@@ -103,7 +103,7 @@ std::string funcName(std::string in);
 // consts
 const double pi_min_025 = pow(pi, -0.25);
 const double pi_sqrt = sqrt(pi);
-const QString slash = QString(QDir::separator());
+const QString slash = "/"; // QString(QDir::separator());
 
 
 

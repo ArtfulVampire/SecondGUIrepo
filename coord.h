@@ -143,8 +143,8 @@ namespace def
     inline double spStep() {return def::freq / def::fftLength;}
 
 //    Atanov
-
-    const QString dataFolder = "/media/Files/Data/";
+//    const QString dataFolder = "/media/Files/Data";
+    const QString dataFolder = "C:/RealTime/workData";
     const QString XeniaFolder = "/media/Files/Data/Xenia";
     const QString mriFolder = "/media/Files/Data/MRI";
     const QString GalyaFolder = "/media/Files/Data/Galya";

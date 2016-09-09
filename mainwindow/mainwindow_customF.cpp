@@ -56,6 +56,7 @@ QStringList leest_mri = {
     "Umanskaya",
     "Zavyalova"
 };
+
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
@@ -68,6 +69,7 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
+    return;
 
 #if 0
     /// test new classifiers
@@ -124,7 +126,7 @@ void MainWindow::customFunc()
 
 
 
-#if 01
+#if 0
 /// successive
     const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "AAU_train.edf");

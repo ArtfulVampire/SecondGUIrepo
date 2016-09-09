@@ -423,7 +423,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
     if(readFlag)
     {
-        helpString = QDir::toNativeSeparators( dirPath + slash + "labels.txt" );
+        helpString = ( dirPath + slash + "labels.txt" );
         FILE * labelsFile;
         labelsFile = fopen(helpString, "w");
         for(int i = 0; i < ns; ++i)                         //labels write in file
