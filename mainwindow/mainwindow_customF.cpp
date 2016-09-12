@@ -53,23 +53,22 @@ void MainWindow::customFunc()
 //    setEdfFile(def::dataFolder + slash + "Feedback/AAU_3/AAU_3_rr_f3.5-40.edf");
 //    readData();
 //    processEyes();
-    return;
+//    return;
 
 #if 0
     /// test new classifiers
-    QString paath = "/media/Files/Data/AAX";
-    setEdfFile(paath + "/AAX_final.edf");
+//    QString paath = "/media/Files/Data/AAX";
+//    setEdfFile(paath + "/AAX_final.edf");
 
-    paath = "/media/Files/Data/Feedback/SuccessClass";
+    QString paath = "/media/Files/Data/Feedback/Success";
 
 //    for(QString guy : {"AAU", "BEA", "CAA", "GAS", "SUA"})
-    for(QString guy : {"SUA"})
+//    for(QString guy : {"SUA"})
 //    for(QString guy : {"BEA", "CAA", "GAS", "SUA"})
+    for(QString guy : {"GAS"})
     {
-
-//        setEdfFile(paath + slash  + guy + "_test.edf");
         setEdfFile(paath + slash  + guy + "_train.edf");
-        readData();
+
 
 //        cleanDir(paath + "/Realisations");
 //        cleanDir(paath + "/SpectraSmooth");
@@ -110,14 +109,14 @@ void MainWindow::customFunc()
 
 
 
-#if 0
+#if 01
 /// successive
-    const QString path = "/media/Files/Data/Feedback/SuccessClass/";
-    setEdfFile(path + "AAU_train.edf");
+    const QString path = "/media/Files/Data/Feedback/Success/";
+    setEdfFile(path + "GAS_train.edf");
     readData();
 
 //    const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
-    const QStringList names {"AAU"};
+    const QStringList names {"GAS"};
 
 //    bool sliceAndCount = true;
     bool sliceAndCount = false;
@@ -188,9 +187,9 @@ void MainWindow::customFunc()
         }
 
         /// current best set
-        suc::numGoodNewLimit = 6;
-        suc::learnSetStay = 100;
-        suc::decayRate = 0.01;
+//        suc::numGoodNewLimit = 6;
+//        suc::learnSetStay = 100;
+//        suc::decayRate = 0.01;
 
         /// should not change averageDatum and sigmaVector
 
@@ -198,13 +197,12 @@ void MainWindow::customFunc()
         net->setVariancing(false);
         net->loadData(def::dir->absolutePath()
                       + slash + "SpectraSmooth"
-                      + slash + "PCA",
+                      + slash + "windows",
                         {name + "_train"}); /// only for ANN set - dataMatrix->cols()
 
         net->setClassifier(ClassifierType::ANN);
         net->setSource("w");
         net->setMode("t"); // train-test
-
 
         net->successiveProcessing();
 

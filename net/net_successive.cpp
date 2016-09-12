@@ -6,8 +6,6 @@ void Net::successiveProcessing()
 {
     cout << "successive: started" << endl;
 
-
-
     const QString trainMarker = "_train";
     const QString testMarker = "_test";
 
@@ -18,7 +16,7 @@ void Net::successiveProcessing()
     /// use ExpName
     QString helpString = def::dir->absolutePath()
                          + slash + "SpectraSmooth"
-                         + slash + "PCA";
+                         + slash + "windows"; /// "windows" or "PCA"
     loadData(helpString, {def::ExpName.left(3) + "*" + trainMarker + "*"});
 
     cout << "successive: data loaded" << endl;
@@ -40,22 +38,22 @@ void Net::successiveProcessing()
 
     /// consts - set prelearn
     setErrCrit(0.05);
-    setLrate(0.05);
+    setLrate(0.002);
 
     myClassifier->learnAll(); /// get initial weights on train set
 
     /// consts - set postlearn
     setErrCrit(0.01);
-    setLrate(0.01);
+    setLrate(0.005);
 
     cout << "successive: initial learn done" << endl;
 
-    helpString = def::dir->absolutePath()
-                 + slash + "Help"
-                 + slash + "ica"
-                 + slash + def::ExpName.left(3) + "_train"
-                 + "_pcaMat.txt";
-    readMatrixFile(helpString, pcaMat);
+//    helpString = def::dir->absolutePath()
+//                 + slash + "Help"
+//                 + slash + "ica"
+//                 + slash + def::ExpName.left(3) + "_train"
+//                 + "_pcaMat.txt";
+//    readMatrixFile(helpString, pcaMat);
 
     helpString = def::dir->absolutePath()
                  + slash + "SpectraSmooth"
@@ -76,7 +74,7 @@ void Net::successiveProcessing()
                        tempArr);
         type = typeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
-        ++count2; if(count2 == 30) break;
+//        ++count2; if(count2 == 1500) break;
     }
     cout << "successive: all done" << endl;
     myClassifier->averageClassification();
@@ -140,18 +138,7 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
     lineType newData = (newSpectre - averageDatum) / (sigmaVector * loadDataNorm);
 
     /// apply pca
-    cout << newData.size() << "\t"
-         << pcaMat.rows() << "\t"
-         << pcaMat.cols() << endl;
-    newData = newData * pcaMat;
-    for(int i = 0; i < 5; ++i)
-    {
-        cout << newData[i] << endl;
-    }
-    exit(0);
-
-    cout << newData.size() << endl;
-
+//    newData = newData * pcaMat;
 
 
     pushBackDatum(newData, newType, newFileName);
@@ -160,29 +147,26 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
     /// adding into confusionMatrix
     myClassifier->confMatInc(newType, outType.first);
 
-    if(outType.first == newType)
+    static std::vector<int> passed(3, 0);
+
+    if((outType.first == newType && outType.second < suc::errorThreshold)
+       || passed[newType] < suc::learnSetStay
+       )
     {
         /// if accurate classification
-        if(outType.second < suc::errorThreshold)
-        {
-            const int num = std::find(types.begin(),
-                                      types.end(),
-                                      newType)
-                            - types.begin();
-            eraseDatum(num);
-            ++numGoodNew;
-        }
-        else
-        {
-            popBackDatum();
-        }
-
+        const int num = std::find(types.begin(),
+                                  types.end(),
+                                  newType)
+                        - types.begin();
+        eraseDatum(num);
+        ++numGoodNew;
     }
     else
     {
         popBackDatum();
     }
 
+    ++passed[newType];
 
     if(numGoodNew == suc::numGoodNewLimit)
     {
