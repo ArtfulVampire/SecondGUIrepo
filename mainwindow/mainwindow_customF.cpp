@@ -38,25 +38,6 @@ QStringList leest_non = {
     "Dasha_smell_2"
 };
 
-QStringList leest_mri = {
-    "Ali-Zade",
-    "Atanov",
-    "Balaev",
-    "Gudovich",
-    "Khasanov",
-    "Khokhlov",
-    "Levando",
-    "Mezhenova",
-    "Moskovtsev",
-    "Muchanova",
-    "Nikolaenko",
-    "Novoselova",
-    "Rest",
-    "Sushinsky",
-    "Umanskaya",
-    "Zavyalova"
-};
-
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
@@ -69,6 +50,9 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
+//    setEdfFile(def::dataFolder + slash + "Feedback/AAU_3/AAU_3_rr_f3.5-40.edf");
+//    readData();
+//    processEyes();
     return;
 
 #if 0

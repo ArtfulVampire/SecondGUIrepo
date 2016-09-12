@@ -143,8 +143,8 @@ namespace def
     inline double spStep() {return def::freq / def::fftLength;}
 
 //    Atanov
-//    const QString dataFolder = "/media/Files/Data";
-    const QString dataFolder = "C:/RealTime/workData";
+    const QString dataFolder = "/media/Files/Data";
+//    const QString dataFolder = "C:/RealTime/workData";
     const QString XeniaFolder = "/media/Files/Data/Xenia";
     const QString mriFolder = "/media/Files/Data/MRI";
     const QString GalyaFolder = "/media/Files/Data/Galya";
@@ -152,36 +152,6 @@ namespace def
     const QString uciFolder = "/media/Files/Data/UCI";
     const bool opencl = true;
     const bool openmp = true;
-
-
-//    MATI
-//    const int genNs = 20;
-//    const QString dataFolder = "/media/Files/Data/Mati";
-//    const int fftLength = 4096;
-//    const int numOfClasses = 3;
-//    const bool opencl = true;
-//    const bool openmp = true;
-//    const QString cfgFileName = "16sec19ch";
-
-//    //Baklushev
-//    const QString dataFolder = "c:/EEG";
-//    const int fftLength = 2048;
-//    const int left = 41;
-//    const int right = 164;
-//    const int numOfClasses = 2;
-//    const bool opencl = 0;
-//    const bool openmp = 0;
-//    const QString cfgFileName = "8sec19ch";
-
-//    //Ivanitsky
-//    const QString dataFolder = "d:/AtanovMichael/Data";
-//    const int fftLength = 4096;
-//    const int left = 82;
-//    const int right = 328;
-//    const int numOfClasses = 3;
-//    const bool opencl = 0;
-//    const bool openmp = 0;
-//    const QString cfgFileName = "16sec19ch";
 
 }
 

@@ -238,8 +238,8 @@ int typeOfFileName(const QString & fileName)
 
 
 
-void eyesProcessingStatic(const vector<int> eogChannels,
-                          const vector<int> eegChannels,
+void eyesProcessingStatic(const std::vector<int> eogChannels,
+                          const std::vector<int> eegChannels,
                           const QString & windowsDir,
                           const QString & outFilePath)
 {
@@ -248,7 +248,11 @@ void eyesProcessingStatic(const vector<int> eogChannels,
 
 
     QStringList leest;
-    makeFullFileList(windowsDir, leest);
+    /// if cut from reals
+//    makeFullFileList(windowsDir, leest);
+    /// if cut from edf
+    leest = QDir(windowsDir).entryList({"*" + def::plainDataExtension});
+
     for(QString & item : leest)
     {
         item.prepend(windowsDir + slash);
@@ -256,7 +260,7 @@ void eyesProcessingStatic(const vector<int> eogChannels,
 
     const uint Size = eogChannels.size() + 1; // usually 3
 
-    matrix dataE;
+    matrix dataE{};
 
     //make dataE array to count covariation matrix
     int NumOfSlices = 0;
