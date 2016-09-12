@@ -296,19 +296,23 @@ void ANN::learn(std::vector<uint> & indices)
         zeroParams();
     }
 
-//    std::cout << "asdkjfjkrgwegb" << std::endl;
+    //    std::cout << "asdkjfjkrgwegb" << std::endl;
 
     double currentError = critError + 0.1;
     uint type;
 
     /// edit due to Indices
+    std::vector<int> localClassCount(numCl, 0);
+    for(int index : indices)
+    {
+        ++localClassCount[(*types)[index]];
+    }
+    const double helpMin = *std::min_element(std::begin(localClassCount),
+                                             std::end(localClassCount));
     std::vector<double> normCoeff;
-    const double helpMin = *std::min_element(std::begin(*classCount),
-                                             std::end(*classCount));
-
     for(uint i = 0; i < numCl; ++i)
     {
-        normCoeff.push_back(helpMin / (*classCount)[i]);
+        normCoeff.push_back(helpMin / double(localclassCount[i]);
     }
 
     epoch = 0;
