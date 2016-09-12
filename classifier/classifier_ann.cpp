@@ -312,12 +312,11 @@ void ANN::learn(std::vector<uint> & indices)
     std::vector<double> normCoeff;
     for(uint i = 0; i < numCl; ++i)
     {
-        normCoeff.push_back(helpMin / double(localclassCount[i]);
+        normCoeff.push_back(helpMin / double(localClassCount[i]));
     }
 
     epoch = 0;
 
-//    std::cout << "asdkjfjkrgwegb" << std::endl;
     while(currentError > critError && epoch < epochLimit)
     {
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
