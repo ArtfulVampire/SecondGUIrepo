@@ -366,13 +366,14 @@ void holesDir(const QString & inDirPath,
               const QString & outDirPath);
 
 void physMinMaxCheck(const QString & dirPath);
+
 void physMinMaxDir(const QString & dirPath);
 
 /// also repairs wrong filesize
 void scalingFactorFile(const QString & inFilePath,
                        QString outFilePath = QString());
 void scalingFactorDir(const QString & inDirPath,
-                      const QString & outDirPath);
+					  QString outDirPath = QString());
 
 void deleteSpaces(const QString & dirPath, const QStringList & filters = def::edfFilters);
 void deleteSpacesDirs(const QString & dirPath);

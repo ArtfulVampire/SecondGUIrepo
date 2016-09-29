@@ -2588,7 +2588,7 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
     const auto filesVec = filesList.toVector();
 
 #pragma omp parallel
-#pragma omp for nowait schedule(guided, 20)
+#pragma omp for nowait
     for(int i = 0; i < filesVec.size(); ++i)
     {
         QString helpString = dir.absolutePath() + slash + filesVec[i];
@@ -2614,8 +2614,8 @@ void MainWindow::GalyaProcessing(const QString & procDirPath,
              << doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << endl;
 
 
-        countSpectraFeatures(helpString, numChan, outPath);
-        countChaosFeatures(helpString, numChan, outPath);
+//        countSpectraFeatures(helpString, numChan, outPath);
+//        countChaosFeatures(helpString, numChan, outPath);
     }
 }
 

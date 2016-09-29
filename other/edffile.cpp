@@ -377,7 +377,10 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     handleParam(ddr, 8, readFlag, edfDescriptor, header);
     handleParam(ns, 4, readFlag, edfDescriptor, header);
 
-    //start channels read
+	/// experimental
+	def::ns = ns;
+
+	/// start channels read
     handleParamArray(labels, ns, 16, readFlag, edfDescriptor, header);
 
     /// generality for encephalan
@@ -494,6 +497,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                                / (sumNr * 2.); // 2 bytes for a point
         if(int(realNdr) != realNdr)
         {
+			cout << ExpName << ", ";
             cout << "handleEdfFile(read): realNdr is not integral = "
                  << realNdr << endl;
             cout << "dataSize = " << fileSize - bytes << endl;
@@ -503,8 +507,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
             cout << "rest size = "
                  << (fileSize - bytes) - ndr * sumNr * 2.<< endl;
         }
-        ndr = min(int(realNdr), ndr);
-//        ndr = int(realNdr);
+//        ndr = min(int(realNdr), ndr); /// sometimes the tails are shit
+		ndr = int(realNdr); /// sometimes ndr is a lie
     }
     handleParamArray(reserved, ns, 32, readFlag, edfDescriptor, header);
     //end channels read

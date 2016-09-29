@@ -80,7 +80,7 @@ Cut::Cut() :
     ui->saveButton->setShortcut(tr("s"));
     ui->splitButton->setShortcut(tr("x"));
     ui->rewriteButton->setShortcut(tr("r"));
-    QShortcut * undo = new QShortcut(QKeySequence(tr("Ctrl+z")), this);
+	QShortcut * undoZero = new QShortcut(QKeySequence(tr("Ctrl+z")), this);
 
 
     ui->picLabel->installEventFilter(this);
@@ -112,12 +112,13 @@ Cut::Cut() :
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
 #endif
 
-    QObject::connect(undo, SIGNAL(activated()), this, SLOT(undoZero()));
-    QObject::connect(ui->drawNormDoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paint()));
-    QObject::connect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
-                     this, SLOT(resizeWidget(double)));
-    QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
-                     this, SLOT(paint()));
+	QObject::connect(undoZero, SIGNAL(activated()), this, SLOT(undoZeroSlot()));
+	QObject::connect(ui->drawNormDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(paint()));
+	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(paint()));
+	QObject::connect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(resizeWidget(double)));
 
     QObject::connect(this, SIGNAL(buttonPressed(char,int)), this, SLOT(mousePressSlot(char,int)));
     QObject::connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(next()));
@@ -126,8 +127,7 @@ Cut::Cut() :
     QObject::connect(ui->zeroButton, SIGNAL(clicked()), this, SLOT(zero()));
     QObject::connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(save()));
     QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
-    QObject::connect(this, SIGNAL(openFile(QString)), ui->lineEdit, SLOT(setText(QString)));
-//    QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(QString)));
+	QObject::connect(this, SIGNAL(openFile(QString)), ui->lineEdit, SLOT(setText(QString)));
     QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(const QString &)));
     QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
     QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitCut()));
@@ -148,11 +148,27 @@ Cut::~Cut()
 
 void Cut::browse()
 {
-    QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
-                                                      tr("Open realisation"),
-                                                      def::dir->absolutePath() +
-                                                      slash +
-                                                      ui->subdirComboBox->currentText());
+	QString path;
+	if(def::dir->isRoot())
+	{
+		path = def::dataFolder;
+	}
+	else
+	{
+		path = def::dir->absolutePath() + slash + ui->subdirComboBox->currentText();
+	}
+
+	QString filter{};
+	for(const QString & in : def::edfFilters)
+	{
+		filter += in + " ";
+	}
+	filter += "*." + def::plainDataExtension;
+	QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
+													  tr("Open file"),
+													  path,
+													  filter);
+
     if(helpString.isEmpty())
     {
         QMessageBox::information((QWidget*)this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
@@ -421,6 +437,7 @@ void Cut::createImage(const QString & dataFileName)
         NumOfSlices = data3.cols();
         leftDrawLimit = 0;
         ui->paintStartDoubleSpinBox->setMaximum(floor(NumOfSlices / def::freq));
+		ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
         cout << "freq = " << def::freq << endl;
     }
 
@@ -683,13 +700,19 @@ void Cut::zero()
     // move rightLimit after the nearest marker
     // delete [leftLimit, rightLimit)
 
-    // ExpName.left(3)_fileSuffix_TYPE_SESSION_PIECE.MARKER
-    QString helpString = "_0_[0-9]_[0-9]{2,2}"; // MATI counting problem only
-    if(currentFile.contains(QRegExp(helpString)))
-    {
-//        cout << "zero: adjust limits   " << currentFile << endl;
-//        matiAdjustLimits();
-    }
+	/// MATI counting problem only
+	{
+		// ExpName.left(3)_fileSuffix_TYPE_SESSION_PIECE.MARKER
+		QString helpString = "_0_[0-9]_[0-9]{2,2}";
+		if(currentFile.contains(QRegExp(helpString)))
+		{
+//			cout << "zero: adjust limits   " << currentFile << endl;
+//			matiAdjustLimits();
+		}
+	}
+
+
+
     undoBegin = leftDrawLimit + leftLimit;
     undoData = data3.subCols(undoBegin,
                              undoBegin + rightLimit - leftLimit);
@@ -700,7 +723,7 @@ void Cut::zero()
     paint();
 }
 
-void Cut::undoZero()
+void Cut::undoZeroSlot()
 {
     for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
     {
@@ -731,28 +754,7 @@ void Cut::cut()
 /// DANGER markers
 void Cut::splitCut()
 {
-//    vector<list<double>> dataList;
-//    dataList.resize(def::ns);
-//    for(int k = 0; k < def::ns; ++k)
-//    {
-//        std::copy(data3[i].begin(),
-//                  data3[i].end(),
-//                  dataList[i]);
-//    }
-
-//    for(auto it = dataList.back().begin() + rightEdge - 1;
-//        it >= dataList.back().begin() + leftEdge;
-//        --it)
-//    {
-//        if(*it == 0)
-//        {
-//            for(int k = 0; k < def::nsWOM(); ++k)
-//            {
-//                dataList[k].erase
-//            }
-//        }
-
-    for(int i = leftLimit; i < NumOfSlices - (rightLimit - leftLimit); ++i)
+	for(int i = leftDrawLimit + leftLimit; i < NumOfSlices - (rightLimit - leftLimit); ++i)
     {
         for(int k = 0; k < def::nsWOM(); ++k)
         {
@@ -764,10 +766,10 @@ void Cut::splitCut()
         }
     }
     NumOfSlices -= (rightLimit - leftLimit);
+	data3.resizeCols(NumOfSlices);
     paint();
 }
 
-/// unused
 void Cut::save()
 {
     if(myFileType == fileType::real)
@@ -797,9 +799,8 @@ void Cut::rewrite()
         currentPic.save(getPicPath(currentFile), 0, 100);
     }
     else if(myFileType == fileType::edf)
-    {
-        /// WHAT TO DO???
-//        edfFil.writeOtherData(data3, currentFile);
+	{
+		std::cout << "Cut::rewrite: deliberately forbidden for edfs, use Save instead" << std::endl;
     }
 }
 

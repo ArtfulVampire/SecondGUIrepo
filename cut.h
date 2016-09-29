@@ -47,7 +47,7 @@ public slots:
     void prev();
     void cut();
     void zero();
-    void undoZero();
+	void undoZeroSlot();
     void paint();
     void save();
     void rewrite();

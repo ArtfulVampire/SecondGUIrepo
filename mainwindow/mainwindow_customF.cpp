@@ -53,7 +53,7 @@ void MainWindow::customFunc()
 //    setEdfFile(def::dataFolder + slash + "Feedback/AAU_3/AAU_3_rr_f3.5-40.edf");
 //    readData();
 //    processEyes();
-//    return;
+	return;
 
 #if 0
     /// test new classifiers
@@ -109,7 +109,7 @@ void MainWindow::customFunc()
 
 
 
-#if 01
+#if 0
 /// successive
     const QString path = "/media/Files/Data/Feedback/Success/";
     setEdfFile(path + "GAS_train.edf");
@@ -212,14 +212,21 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
+#if 01
     /// Xenia cut
-    QString workDir = "/media/michael/Files/Data/Xenia/moder_TBI";
+	QString workDir = "/media/michael/Files/Data/Xenia/26Sep/severe_TBI";
+//	repair::scalingFactorDir(workDir + slash + "Gladun_Serg_30");
+//	repair::scalingFactorDir(workDir + slash + "Egorov_Pavel_26");
+//	repair::scalingFactorDir(workDir + slash + "Fursenko_Alexandr_23");
+//	exit(0);
+
     QStringList dirs = QDir(workDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
     for(const QString deer : dirs)
     {
-        GalyaCut(workDir + slash + deer, 16,
-                 workDir + slash + deer + "_windows");
+		repair::scalingFactorDir(workDir + slash + deer,
+								 workDir + slash + deer);
+//		GalyaProcessing(workDir + slash + deer, 19,
+//						workDir + slash + "results");
     }
     exit(0);
 #endif
@@ -228,9 +235,11 @@ void MainWindow::customFunc()
 #if 0
     /// Xenia rereference + cut
 
-    const QString pew = "/media/michael/Files/Data/Xenia/Mihalkova_rr";
+	const QString pew = "/media/michael/Files/Data/Xenia/19Sep";
 
-    GalyaCut(pew, 18); exit(0); /// comment to reref
+//	repair::filenameToLatinDir(pew);
+//	GalyaCut(pew, 16); exit(0); /// comment to reref
+	GalyaProcessing(pew, 19); exit(0);
 
     ui->rereferenceDataComboBox->setCurrentText("Base");
     for(QString fil : QDir(pew).entryList({"*.edf"}))
@@ -241,20 +250,6 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 0
-    /// Galya
-    def::ntFlag = false;
-    const QString procDir = def::GalyaFolder + slash + "Norm_tactile_July";
-//    repair::filenameToLatinDir(procDir, def::edfFilters);
-//    repair::deleteSpaces(procDir, def::edfFilters);
-//    repair::physMinMaxCheck(procDir);
-//    repair::physMinMaxDir(procDir + slash + "bad");
-
-//    exit(0);
-
-    GalyaProcessing(procDir, 19);
-    exit(0);
-#endif
 
 
 #if 0
@@ -267,7 +262,7 @@ void MainWindow::customFunc()
 //    exit(0);
 
 
-    QString guy = "Ivashkin";
+    QString guy = "Sushinsky2";
 //    for(QString guy : leest_mri)
     {
         QDir tmp(def::mriFolder + slash + "OUT");

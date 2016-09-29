@@ -48,9 +48,17 @@ void scalingFactorFile(const QString & inFilePath,
 }
 
 void scalingFactorDir(const QString & inDirPath,
-                      const QString & outDirPath)
+					  QString outDirPath)
 {
     QStringList leest = QDir(inDirPath).entryList(def::edfFilters);
+	if(outDirPath.isEmpty())
+	{
+		QDir tmp(inDirPath);
+		tmp.cdUp();
+		tmp.mkdir(myLib::getFileName(inDirPath, false) + "_scal");
+		tmp.cd(myLib::getFileName(inDirPath, false) + "_scal");
+		outDirPath = tmp.absolutePath();
+	}
 
     for(const QString & str : leest)
     {

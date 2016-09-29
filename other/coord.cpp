@@ -28,10 +28,10 @@ QString ExpName;
 QDir * dir = new QDir();
 
 std::vector<QColor> colours {QColor("blue"),
-            QColor("red"),
-            QColor("green"),
-            QColor("black"),
-            QColor("gray")};
+			QColor("red"),
+			QColor("green"),
+			QColor("black"),
+			QColor("gray")};
 QStringList fileMarkers{"_241", "_247", "_254 _244"};
 //QStringList fileMarkers{"train*_241", "train*_247", "train*_254 train*_244"};
 //QStringList fileMarkers{"_241", "_247"};
