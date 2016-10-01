@@ -110,12 +110,16 @@ QString setFileName(const QString & initNameOrPath) // append _num before the do
     return helpString;
 }
 
-QString getExpNameLib(const QString & filePath) // getFileName
+QString getExpNameLib(const QString & filePath, bool shortened) // getFileName
 {
     QString hlp;
     hlp = (filePath);
     hlp = hlp.right(hlp.length() - hlp.lastIndexOf(slash) - 1); // ExpName.edf
     hlp = hlp.left(hlp.lastIndexOf('.')); // ExpName
+	if(shortened)
+	{
+		hlp = hlp.left(hlp.indexOf('_')); //
+	}
     return hlp;
 }
 

@@ -202,10 +202,10 @@ void GalyaCut(const QString & path,
 	}
 
 	/// to change
-	const QString logPath = "/media/Files/Data/Galya/log.txt";
+	const QString logPath = def::GalyaFolder + slash + "log.txt";
 	std::ofstream logStream(logPath.toStdString(), std::ios_base::app);
 
-	const QStringList leest1 = tmpDir.entryList({"*.edf", "*.EDF"});
+	const QStringList leest1 = tmpDir.entryList(def::edfFilters);
 	const auto filesVec = leest1.toVector();
 
 	/// ??????????????????????
@@ -238,6 +238,87 @@ void GalyaCut(const QString & path,
 	}
 	logStream.close();
 
+}
+
+/// local
+void matToFile(const matrix & mat, std::ofstream & fil, double (*func)(const lineType&))
+{
+	for(int i = 0; i < mat.rows(); ++i)
+	{
+		fil << smallLib::doubleRound(func(mat[i]), 4) << "\t";
+	}
+}
+
+
+void waveletOneFile(const matrix & inData,
+					int numChan,
+					double freq,
+					const QString & outFile)
+{
+
+	std::ofstream outStr;
+	outStr.open(outFile.toStdString());
+
+	for(int j = 0; j < numChan; ++j)
+	{
+		matrix m = wvlt::cwt(inData[j], freq);
+		for(auto foo : {smallLib::max,
+			smallLib::min,
+			smallLib::mean,
+			smallLib::median,
+			smallLib::sigma})
+		{
+			matToFile(m, outStr, foo);
+		}
+	}
+	outStr.close();
+}
+
+void GalyaWavelets(const QString & inPath,
+				   const int numChan,
+				   const double freq,
+				   QString outPath)
+{
+	QDir tmpDir(inPath);
+
+	const QStringList lst = tmpDir.entryList(def::edfFilters);
+//	const QString exp = myLib::getExpNameLib(lst.first(), true);
+
+	if(outPath.isEmpty())
+	{
+		tmpDir.mkdir("wavelet");
+		outPath = tmpDir.absolutePath() + myLib::slash + "wavelet";
+	}
+	else
+	{
+//		tmpDir.mkpath(outPath + exp);
+		tmpDir.mkpath(outPath);
+	}
+
+
+	const auto filesVec = lst.toVector();
+
+//#pragma omp parallel
+//#pragma omp for nowait
+	for(int i = 0; i < filesVec.size(); ++i)
+	{
+		cout << filesVec[i] << endl;
+		QString helpString = tmpDir.absolutePath() + slash + filesVec[i];
+
+		edfFile initEdf;
+		initEdf.readEdfFile(helpString);
+
+
+
+		helpString = outPath
+//					 + myLib::slash + exp
+					 + myLib::slash
+					 + myLib::getFileName(filesVec[i], false)
+					 + "_wavelet.txt";
+
+		waveletOneFile(initEdf.getData(), numChan, freq, helpString);
+	}
+	if(wvlt::isInit) wvlt::termMtlb();
 }
 
 

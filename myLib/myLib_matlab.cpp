@@ -41,7 +41,7 @@ int termMtlb()
 	return 1;
 }
 
-matrix cwt(const lineType & signal)
+matrix cwt(const lineType & signal, double freq)
 {
 	if(!isInit)
 	{
@@ -49,7 +49,7 @@ matrix cwt(const lineType & signal)
 	}
 	const int numFreqs = 19; /// number of frequencies in cwt.m (2:1:20)
 
-	mxArray * srate = mxCreateDoubleScalar(def::freq);
+	mxArray * srate = mxCreateDoubleScalar(freq);
 	mxArray * inData = mxCreateDoubleMatrix(1, signal.size(), mxREAL);
 	double * it = mxGetPr(inData);
 	for(auto datum : signal)
@@ -60,9 +60,6 @@ matrix cwt(const lineType & signal)
 	mxArray * res = mxCreateDoubleMatrix(numFreqs, signal.size(), mxCOMPLEX);
 
 	mlfCWT(1, &res, inData, srate);
-
-	std::cout << mxGetM(res) << "\t" << mxGetN(res) << std::endl;
-
 	double * itt = mxGetPr(res);
 
 	matrix result(numFreqs, signal.size());

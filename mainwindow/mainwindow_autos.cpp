@@ -7,23 +7,6 @@ using namespace std;
 using namespace myLib;
 using namespace smallLib;
 
-bool mySort(std::vector<double> i,
-            std::vector<double> j)
-{
-    return (i[0] < j[0]);
-}
-
-template <class InputIterator, class T>
-bool contains (InputIterator first, InputIterator last, const T & val)
-{
-  while (first != last) {
-    if (*first == val) return true;
-    ++first;
-  }
-  return false;
-}
-
-
 void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
 {
     Spectre * sp = new Spectre();

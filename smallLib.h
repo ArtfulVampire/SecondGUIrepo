@@ -137,6 +137,30 @@ inline double sigma(const lineType & arr)
     return sqrt(variance(arr));
 }
 
+inline double min(const lineType & arr)
+{
+	return arr.min();
+}
+
+inline double max(const lineType & arr)
+{
+	return arr.max();
+}
+
+inline double median(const lineType & arr)
+{
+	auto arr2 = arr;
+	std::sort(std::begin(arr2), std::end(arr2));
+	if(arr2.size() % 2 == 1)
+	{
+		return arr2[arr2.size() / 2];
+	}
+	else
+	{
+		return 0.5 * (arr2[arr2.size() / 2] + arr2[arr2.size() / 2 - 1]);
+	}
+}
+
 inline double covariance(const lineType & arr1, const lineType & arr2)
 {
     return prod(arr1 - mean(arr1), arr2 - mean(arr2));

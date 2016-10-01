@@ -50,7 +50,6 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
-
 	exit(0);
 
 //	return;
@@ -296,6 +295,13 @@ void MainWindow::customFunc()
 
 
         // execute matlab & wavelet_new
+		autos::GalyaWavelets(def::mriFolder
+							 + slash + guy
+							 + slash + guy + "_windows_cleaned_out",
+							 32, 256,
+							 def::mriFolder
+							 + slash + "wavelet"
+							 + slash + guy)
         /// rename the folder in OUT to guy
         makeRightNumbers(def::mriFolder
                          + slash + "wavelet"

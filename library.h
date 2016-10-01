@@ -88,7 +88,7 @@ void drawWavelet(QString picPath,
 static bool isInit = false;
 int initMtlb();
 int termMtlb();
-matrix cwt(const lineType & signal);
+matrix cwt(const lineType & signal, double freq);
 void drawWaveletMtlb(const matrix & inData,
 					 QString picPath = QString());
 }
@@ -139,7 +139,7 @@ QString getFileName(const QString & filePath, bool withExtension = true);
 bool areEqualFiles(QString path1, QString path2);
 
 
-QString getExpNameLib(const QString & filePath);
+QString getExpNameLib(const QString & filePath, bool shortened = false);
 QString getDirPathLib(const QString & filePath);
 QString getExt(const QString & filePath);
 QString getLabelName(const QString & label);

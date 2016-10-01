@@ -24,6 +24,14 @@ void GalyaCut(const QString & path,
 void cutOneFile(const QString & filePath,
 				const int wndLen,
 				const QString & outPath);
+void GalyaWavelets(const QString & inDir,
+				   int numChan = 19,
+				   double freq = 250,
+				   QString outDir = QString());
+void waveletOneFile(const matrix & inData,
+					int numChan,
+					double freq,
+					const QString & outFile);
 
 
 void makeRightNumbers(const QString & dirPath,
