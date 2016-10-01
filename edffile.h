@@ -348,7 +348,7 @@ public:
 };
 
 
-/// public funcs to repair edfs or filenames
+/// public static funcs to repair edfs or filenames
 namespace repair
 {
 

@@ -23,6 +23,21 @@ int initMtlb()
 		 << "time elapsed = "
 		 << std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count() / 1000.
 		 << " sec" << std::endl;
+	isInit = true;
+	return 1;
+}
+
+int termMtlb()
+{
+	try
+	{
+		libcwt_rTerminate();
+	}
+	catch(...)
+	{
+		return -1;
+	}
+	isInit = false;
 	return 1;
 }
 
@@ -64,8 +79,7 @@ matrix cwt(const lineType & signal)
 	mxDestroyArray(res);
 	mxDestroyArray(inData);
 	mxDestroyArray(srate);
-	libcwt_rTerminate();
-//	isInit = false;
+
 	return result;
 }
 

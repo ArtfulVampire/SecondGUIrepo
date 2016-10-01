@@ -31,24 +31,6 @@ MainWindow::MainWindow() :
     group2->addButton(ui->windButton);
     group2->addButton(ui->realButton);
     group2->addButton(ui->justSliceButton);
-    group3 = new QButtonGroup();
-    group3->addButton(ui->BayesRadioButton);
-    group3->addButton(ui->HiguchiRadioButton);
-    group4 = new QButtonGroup();
-    group4->addButton(ui->lambdaRadioButton);
-    group4->addButton(ui->r2RadioButton);
-
-    ui->BayesRadioButton->setChecked(true);
-
-    //wavelets
-    ui->classBox->setChecked(true);
-    ui->weightsBox->setChecked(true);
-    ui->waveletsBox->setChecked(true);
-    ui->fullBox->setChecked(true);
-    ui->r2RadioButton->setChecked(true);
-
-    ui->tempBox->setMaximum(1e7);
-    ui->tempBox->setValue(2e3);
 
     ui->enRadio->setChecked(true);
 
@@ -241,25 +223,6 @@ MainWindow::MainWindow() :
     ui->vectwDoubleSpinBox->setValue(12.0);
     ui->vectwDoubleSpinBox->setSingleStep(0.5);
 
-    ui->spocCoeffDoubleSpinBox->setMaximum(5);
-    ui->spocCoeffDoubleSpinBox->setMinimum(0);
-    ui->spocCoeffDoubleSpinBox->setSingleStep(0.1);
-    ui->spocCoeffDoubleSpinBox->setDecimals(1);
-    ui->spocCoeffDoubleSpinBox->setValue(2.2);
-
-    ui->spocTresholdDoubleSpinBox->setMaximum(1.0);
-    ui->spocTresholdDoubleSpinBox->setMinimum(0.6);
-    ui->spocTresholdDoubleSpinBox->setSingleStep(0.005);
-    ui->spocTresholdDoubleSpinBox->setDecimals(3);
-    ui->spocTresholdDoubleSpinBox->setValue(0.95);
-
-    ui->finishTimeBox->setMaximum(60 * 30.);
-    ui->startTimeBox->setMaximum(ui->finishTimeBox->maximum());
-
-    ui->BayesSpinBox->setMaximum(50);
-    ui->BayesSpinBox->setMinimum(1);
-    ui->BayesSpinBox->setValue(20);
-
     ui->cleanFromRealsCheckBox->setChecked(true);
     ui->cleanRealisationsCheckBox->setChecked(true);
     ui->cleanRealsSpectraCheckBox->setChecked(true);
@@ -326,18 +289,6 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->fileMarkersLineEdit, SIGNAL(returnPressed()), this, SLOT(setFileMarkers()));
 
-    QObject::connect(ui->waveletButton, SIGNAL(clicked()), this, SLOT(waveletCount()));
-
-    QObject::connect(ui->finishTimeBox, SIGNAL(valueChanged(double)), this, SLOT(setBoxMax(double)));
-
-    QObject::connect(ui->datFileButton, SIGNAL(clicked()), this, SLOT(makeDatFile()));
-
-    QObject::connect(ui->diffSmoothPushButton, SIGNAL(clicked()), this, SLOT(diffSmooth()));
-
-    QObject::connect(ui->diffPowPushButton, SIGNAL(clicked()), this, SLOT(diffPow()));
-
-    QObject::connect(ui->avTimeButton, SIGNAL(clicked()), this, SLOT(avTime()));
-
     QObject::connect(ui->icaPushButton, SIGNAL(clicked()), this, SLOT(ICA()));
 
     QObject::connect(ui->constructEdfButton, SIGNAL(clicked()), this, SLOT(constructEDFSlot()));
@@ -346,21 +297,7 @@ MainWindow::MainWindow() :
 
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
 
-    QObject::connect(ui->BayesPushButton, SIGNAL(clicked()), this, SLOT(Bayes()));
-
-    QObject::connect(ui->icaTestClassPushButton, SIGNAL(clicked()), this, SLOT(icaClassTest()));
-
-    QObject::connect(ui->spocPushButton, SIGNAL(clicked()), this, SLOT(spoc()));
-
-    QObject::connect(ui->hilbertPushButton, SIGNAL(clicked()), this, SLOT(hilbertCount()));
-
-    QObject::connect(ui->throwICPushButton, SIGNAL(clicked()), this, SLOT(throwIC()));
-
-    QObject::connect(ui->randomDecomposePushButton, SIGNAL(clicked()), this, SLOT(randomDecomposition()));
-
     QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
-
-    QObject::connect(ui->transformRealsPushButton, SIGNAL(clicked()), this, SLOT(transformReals()));
 
     QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
 
@@ -1099,83 +1036,6 @@ void MainWindow::drawMapsSlot()
                 + slash + "Help"
                 + slash + "Maps",
                 def::ExpName);
-}
-
-void MainWindow::avTime()
-{
-    const int maxLen = 32 * def::freq;
-    int numNotSolved = 0;
-    int shortReals = 0;
-
-    std::valarray<double> means{};
-    means.resize(4); /// 4 types of mean - with or w/o shorts and longs
-
-    int num = 0;
-    ifstream inStr;
-
-    QStringList lst;
-    QString helpString;
-
-    QDir localDir;
-    localDir.cd(def::dir->absolutePath() + slash + "Realisations");
-
-    for(const QString & tmp : {"241", "247"})
-    {
-        means = 0.;
-        shortReals = 0;
-        numNotSolved = 0;
-
-        lst = localDir.entryList({"*_" + tmp + "*"}, QDir::Files);
-        for(const QString & fileName : lst)
-        {
-            helpString = localDir.absolutePath() + slash + fileName;
-
-            inStr.open(helpString.toStdString());
-            inStr.ignore(64, ' ');
-            inStr >> num;
-            inStr.close();
-
-            means += num;
-
-            if(num < 500)
-            {
-                means[1] -= num;
-                means[3] -= num;
-                ++shortReals;
-            }
-            else if(num > maxLen - 100)
-            {
-                means[2] -= num;
-                means[3] -= num;
-                ++numNotSolved;
-            }
-        }
-        means[0] /= lst.length();
-        means[1] /= (lst.length() - shortReals);
-        means[2] /= (lst.length() - numNotSolved);
-        means[3] /= (lst.length() - shortReals - numNotSolved);
-        means /= def::freq;
-
-        helpString = def::dir->absolutePath() + slash + "results.txt";
-        ofstream res;
-        res.open(helpString.toStdString(), ios_base::app);
-        res << "Reals type\t" << tmp << ":\r\n";
-        res << "shortReals\t" << shortReals << "\r\n";
-        res << "longReals\t" << numNotSolved << "\r\n";
-        res << "All together\t" << means[0] << "\r\n";
-        res << "w/o shorts\t" << means[1] << "\r\n";
-        res << "w/o longs\t" << means[2] << "\r\n";
-        res << "w/o both\t" << means[3] << "\r\n\r\n";
-        res.close();
-    }
-    cout << "avTime finished" << endl;
-}
-
-
-void MainWindow::setBoxMax(double a)
-{
-    ui->startTimeBox->setValue(min(a - 1., ui->startTimeBox->value()));
-    ui->startTimeBox->setMaximum(a - 1.);
 }
 
 

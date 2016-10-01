@@ -53,15 +53,7 @@ void MainWindow::rereferenceData(const QString newRef,
     QString helpString2;
 
     readData();
-    auto label = globalEdf.getLabels();
-
-//    helpString.clear();
-//    for(int i = 0; i < def::ns; ++i)
-//    {
-//        helpString += QString::number(i + 1) + " ";
-//    }
-//    ui->reduceChannelsLineEdit->setText(helpString);
-//    helpString.clear();
+	auto label = globalEdf.getLabels();
 
     std::vector<int> chanList(def::ns);
     std::iota(chanList.begin(),
@@ -164,8 +156,6 @@ void MainWindow::rereferenceData(const QString newRef,
     }
     cout << "rereferenceData: " << newRef << "\n" << helpString.toStdString() << endl;
     ui->reduceChannelsLineEdit->setText(helpString);
-
-//    return;
 
     //change labels
     globalEdf.setLabels(label);

@@ -50,21 +50,7 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
-	matrix mat{};
-	int num = 0;
-	readPlainData("/media/Files/Data/AAX/Realisations/AAX_final.0001_247.scg",
-				  mat, num);
-	mat.resizeCols(2048);
 
-//	auto res = wvlt::countWavelet(mat[0]);
-//	wvlt::drawWavelet("/media/Files/Data/tetsMy.jpg", res);
-
-
-//	auto m = wvlt::cwt(mat[0]);
-//	writeMatrixFile("/media/Files/Data/tets.txt", m);
-	matrix m{};
-	readMatrixFile("/media/Files/Data/tets.txt", m);
-	wvlt::drawWaveletMtlb(m, "/media/Files/Data/tets.jpg");
 	exit(0);
 
 //	return;

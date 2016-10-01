@@ -4,12 +4,6 @@
 using namespace std;
 using namespace myLib;
 
-void MainWindow::sliceGalya()
-{
-
-}
-
-
 void MainWindow::sliceWindFromReal()
 {
     QTime myTime;

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1207</width>
-    <height>890</height>
+    <height>840</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -100,7 +100,7 @@
      <rect>
       <x>1010</x>
       <y>90</y>
-      <width>161</width>
+      <width>164</width>
       <height>71</height>
      </rect>
     </property>
@@ -121,124 +121,6 @@
      </item>
      <item>
       <widget class="QComboBox" name="drawDirBox"/>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>710</y>
-      <width>671</width>
-      <height>128</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_9">
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_10">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_9">
-         <item>
-          <widget class="QPushButton" name="waveletButton">
-           <property name="text">
-            <string>Wavelet</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <item>
-          <widget class="QSpinBox" name="tempBox"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>temp</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
-       <item>
-        <widget class="QCheckBox" name="classBox">
-         <property name="text">
-          <string>class</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="weightsBox">
-         <property name="text">
-          <string>weights</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="waveletsBox">
-         <property name="text">
-          <string>wavelets</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="fullBox">
-         <property name="text">
-          <string>full</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="visualisationBox">
-         <property name="text">
-          <string>visualisation</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QGridLayout" name="gridLayout_3">
-       <item row="0" column="0">
-        <widget class="QDoubleSpinBox" name="startTimeBox"/>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>begin</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="datFileButton">
-         <property name="text">
-          <string>Make .dat</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QDoubleSpinBox" name="finishTimeBox"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>end</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QCheckBox" name="edfBox">
-         <property name="text">
-          <string>save as EDF</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </item>
     </layout>
    </widget>
@@ -270,7 +152,7 @@
      <rect>
       <x>290</x>
       <y>90</y>
-      <width>708</width>
+      <width>716</width>
       <height>135</height>
      </rect>
     </property>
@@ -445,7 +327,7 @@
       <x>21</x>
       <y>481</y>
       <width>214</width>
-      <height>224</height>
+      <height>262</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_8">
@@ -566,36 +448,12 @@
     <property name="geometry">
      <rect>
       <x>292</x>
-      <y>235</y>
-      <width>711</width>
+      <y>240</y>
+      <width>784</width>
       <height>501</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_7">
-     <item row="0" column="1">
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QDoubleSpinBox" name="highFreqFilterDoubleSpinBox"/>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="label_14">
-         <property name="text">
-          <string>highFreq</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QDoubleSpinBox" name="lowFreqFilterDoubleSpinBox"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="label_15">
-         <property name="text">
-          <string>lowFreq</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
      <item row="0" column="2">
       <layout class="QHBoxLayout" name="horizontalLayout_13">
        <item>
@@ -638,13 +496,6 @@
        </item>
       </layout>
      </item>
-     <item row="1" column="0">
-      <widget class="QPushButton" name="avTimeButton">
-       <property name="text">
-        <string>av time</string>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="1">
       <widget class="QPushButton" name="stopButton">
        <property name="text">
@@ -666,13 +517,6 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QPushButton" name="BayesPushButton">
-       <property name="text">
-        <string>Bayes</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="1">
       <widget class="QComboBox" name="reduceChannelsComboBox"/>
      </item>
@@ -690,87 +534,10 @@
        </item>
       </layout>
      </item>
-     <item row="3" column="0">
-      <widget class="QPushButton" name="countSpectra">
-       <property name="text">
-        <string>Count &amp;Spectra</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_8">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_8">
-         <item>
-          <widget class="QRadioButton" name="BayesRadioButton">
-           <property name="text">
-            <string>Bayes</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="HiguchiRadioButton">
-           <property name="text">
-            <string>Higuchi</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="BayesSpinBox"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>NumOfRanges</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_6">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>78</width>
-           <height>24</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_14">
-         <item>
-          <widget class="QPushButton" name="diffSmoothPushButton">
-           <property name="text">
-            <string>DiffSmooth</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="diffPowPushButton">
-           <property name="text">
-            <string>DiffPow</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
      <item row="4" column="1">
       <widget class="QPushButton" name="cleanDirsButton">
        <property name="text">
         <string>&amp;Clean wndDirs</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <widget class="QPushButton" name="throwICPushButton">
-       <property name="text">
-        <string>ThrowIC</string>
        </property>
       </widget>
      </item>
@@ -819,15 +586,29 @@
        </item>
       </layout>
      </item>
-     <item row="7" column="2">
-      <widget class="QLineEdit" name="throwICLineEdit"/>
-     </item>
-     <item row="6" column="0">
-      <widget class="QPushButton" name="makeCFG">
-       <property name="text">
-        <string>Make C&amp;FG</string>
-       </property>
-      </widget>
+     <item row="0" column="1">
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QDoubleSpinBox" name="highFreqFilterDoubleSpinBox"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>highFreq</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QDoubleSpinBox" name="lowFreqFilterDoubleSpinBox"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>lowFreq</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="6" column="1">
       <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -835,13 +616,6 @@
         <widget class="QPushButton" name="icaPushButton">
          <property name="text">
           <string>ICA</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="icaTestClassPushButton">
-         <property name="text">
-          <string>Optimize ICA set</string>
          </property>
         </widget>
        </item>
@@ -857,7 +631,7 @@
          <item>
           <widget class="QLabel" name="label_7">
            <property name="text">
-            <string>Number of IC</string>
+            <string>Number of ICs</string>
            </property>
           </widget>
          </item>
@@ -897,15 +671,7 @@
             </widget>
            </item>
            <item row="1" column="2">
-            <layout class="QVBoxLayout" name="verticalLayout_15">
-             <item>
-              <widget class="QPushButton" name="transformRealsPushButton">
-               <property name="text">
-                <string>transform reals</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <layout class="QVBoxLayout" name="verticalLayout_15"/>
            </item>
            <item row="0" column="2">
             <widget class="QPushButton" name="drawMapsPushButton">
@@ -917,113 +683,6 @@
           </layout>
          </item>
         </layout>
-       </item>
-      </layout>
-     </item>
-     <item row="8" column="0">
-      <widget class="QPushButton" name="makePA">
-       <property name="text">
-        <string>Make P&amp;A</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="1">
-      <widget class="QPushButton" name="spocPushButton">
-       <property name="text">
-        <string>SPoC</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="1">
-      <widget class="QPushButton" name="hilbertPushButton">
-       <property name="text">
-        <string>Hilbert</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_11">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_11"/>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_12">
-         <item>
-          <widget class="QRadioButton" name="lambdaRadioButton">
-           <property name="text">
-            <string>lambda</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="r2RadioButton">
-           <property name="text">
-            <string>r2</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="gridLayout_6">
-         <item row="0" column="0">
-          <widget class="QDoubleSpinBox" name="spocCoeffDoubleSpinBox"/>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLabel" name="label_12">
-           <property name="text">
-            <string>coeff</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QDoubleSpinBox" name="spocTresholdDoubleSpinBox"/>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="label_13">
-           <property name="text">
-            <string>threshold</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="9" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_12">
-       <item>
-        <widget class="QPushButton" name="randomDecomposePushButton">
-         <property name="text">
-          <string>Rand decompose</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_7">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </item>
@@ -1138,14 +797,14 @@
        <item>
         <widget class="QPushButton" name="eyesButton">
          <property name="text">
-          <string>&amp;Eyes</string>
+          <string>Count &amp;Eyes</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="cleanEdfFromEyesButton">
          <property name="text">
-          <string>Clean EDF</string>
+          <string>Clean EDF -&gt; new EDF</string>
          </property>
         </widget>
        </item>
@@ -1169,7 +828,14 @@
        </item>
       </layout>
      </item>
-     <item row="7" column="0">
+     <item row="4" column="0">
+      <widget class="QPushButton" name="countSpectra">
+       <property name="text">
+        <string>Count &amp;Spectra</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
       <widget class="QPushButton" name="netButton">
        <property name="text">
         <string>&amp;Net</string>
@@ -1193,7 +859,6 @@
    <zorder>setNsLine</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
    <zorder>makeTestDataPushButton</zorder>
    <zorder>numComponentsSpinBox</zorder>
    <zorder>layoutWidget</zorder>
@@ -1208,7 +873,7 @@
      <x>0</x>
      <y>0</y>
      <width>1207</width>
-     <height>19</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

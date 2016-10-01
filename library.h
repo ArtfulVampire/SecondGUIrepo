@@ -87,6 +87,7 @@ void drawWavelet(QString picPath,
 /// cwt, imported from matlab
 static bool isInit = false;
 int initMtlb();
+int termMtlb();
 matrix cwt(const lineType & signal);
 void drawWaveletMtlb(const matrix & inData,
 					 QString picPath = QString());
@@ -711,5 +712,6 @@ namespace deprecate
 {
 
 }
+
 
 #endif // LIBRARY_H

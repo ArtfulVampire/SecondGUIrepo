@@ -35,7 +35,6 @@ SOURCES += main.cpp\
     other/coord.cpp \
     mainwindow/mainwindow.cpp \
     mainwindow/mainwindow_slices.cpp \
-    mainwindow/mainwindow_visualisation.cpp \
     mainwindow/mainwindow_ica.cpp \
     mainwindow/mainwindow_editedf.cpp \
     mainwindow/mainwindow_autos.cpp \
@@ -59,7 +58,8 @@ SOURCES += main.cpp\
     classifier/classifier_nbc.cpp \
     classifier/classifier_knn.cpp \
     classifier/classifier_word.cpp \
-    classifier/classifier_rda.cpp
+    classifier/classifier_rda.cpp \
+    other/autos.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -72,7 +72,8 @@ HEADERS  += mainwindow.h \
     coord.h \
     library.h \
     smallLib.h \
-    classifier.h
+    classifier.h \
+    autos.h
 
 FORMS    += mainwindow.ui \
     cut.ui \
