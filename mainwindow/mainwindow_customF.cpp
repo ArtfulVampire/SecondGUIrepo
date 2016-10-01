@@ -50,10 +50,24 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
-//    setEdfFile(def::dataFolder + slash + "Feedback/AAU_3/AAU_3_rr_f3.5-40.edf");
-//    readData();
-//    processEyes();
-	return;
+	matrix mat{};
+	int num = 0;
+	readPlainData("/media/Files/Data/AAX/Realisations/AAX_final.0001_247.scg",
+				  mat, num);
+	mat.resizeCols(2048);
+
+//	auto res = wvlt::countWavelet(mat[0]);
+//	wvlt::drawWavelet("/media/Files/Data/tetsMy.jpg", res);
+
+
+//	auto m = wvlt::cwt(mat[0]);
+//	writeMatrixFile("/media/Files/Data/tets.txt", m);
+	matrix m{};
+	readMatrixFile("/media/Files/Data/tets.txt", m);
+	wvlt::drawWaveletMtlb(m, "/media/Files/Data/tets.jpg");
+	exit(0);
+
+//	return;
 
 #if 0
     /// test new classifiers
@@ -212,7 +226,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 01
+#if 0
     /// Xenia cut
 	QString workDir = "/media/michael/Files/Data/Xenia/26Sep/severe_TBI";
 //	repair::scalingFactorDir(workDir + slash + "Gladun_Serg_30");

@@ -14,7 +14,6 @@
 #include "cut.h"
 #include "net.h"
 #include "spectre.h"
-//#include "eyes.h"
 #include "matrix.h"
 #include "edffile.h"
 

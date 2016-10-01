@@ -14,7 +14,7 @@ int right() {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}
 double leftFreq = 5.;
 double rightFreq = 20.;
 
-double freq = 250;
+double freq = 250.;
 int fftLength = 4096;
 //int fftLength = 1024;
 QString cfgFileName = "tmp.net";

@@ -16,7 +16,7 @@ void drawWavelet(QString picPath,
     QPainter painter;
     painter.begin(&pic);
 
-    double numb;
+	double numb = 0.;
 
     int currFreqNum = 0;
     int currSliceNum = 0;
@@ -35,7 +35,8 @@ void drawWavelet(QString picPath,
         {
             numb = fmin(floor(inData[currFreqNum][currSliceNum] * wvlt::range), wvlt::range);
 
-            //             numb = pow(numb/wvlt::range, 0.8) * wvlt::range; // sligthly more than numb, may be dropped
+			// sligthly more than numb, may be dropped
+			numb = pow(numb/wvlt::range, 0.6) * wvlt::range;
 
             painter.setBrush(QBrush(myLib::hueJet(wvlt::range, numb)));
             painter.setPen(myLib::hueJet(wvlt::range, numb));

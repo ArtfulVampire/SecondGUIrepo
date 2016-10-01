@@ -44,12 +44,29 @@ void writeFileInLine(const QString & filePath,
         cout << "bad file" << endl;
         return;
     }
-    file << "FileLen " << outData.size() << '\t';
-    file << "Pewpew " << 1 << "\r\n";
-    for(auto out : outData)
-    {
-        file << doubleRound(out, 3) << "\r\n";
-    }
+
+	bool asCol = false;
+
+	if(asCol)
+	{
+		file << "FileLen " << outData.size() << '\t';
+		file << "Pewpew " << 1 << "\r\n";
+		for(auto out : outData)
+		{
+			file << doubleRound(out, 3) << "\r\n";
+		}
+	}
+	else
+	{
+		file << "Pewpew " << 1 << "\r\n";
+		file << "FileLen " << outData.size() << '\t';
+		for(auto out : outData)
+		{
+			file << doubleRound(out, 3) << "\t";
+		}
+	}
+
+
     file.close();
 }
 

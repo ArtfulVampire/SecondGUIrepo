@@ -16,6 +16,15 @@ QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
 
+#matlab cwt function
+LIBS += -L/media/Files/Matlab/Projects/libcwt_r/for_testing -lcwt_r
+INCLUDEPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
+DEPENDPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
+
+INCLUDEPATH += /media/Files/Matlab/MCR/v83/extern/include
+LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -leng -lm
+LIBS += -L/media/Files/Matlab/MCR/v83/runtime/glnxa64 -lmwmclmcrrt
+
 
 SOURCES += main.cpp\
     other/cut.cpp \
@@ -33,6 +42,7 @@ SOURCES += main.cpp\
     mainwindow/mainwindow_customF.cpp \
     myLib/myLib_clustering.cpp \
     myLib/myLib_general.cpp \
+    myLib/myLib_matlab.cpp \
     myLib/myLib_signalProcessing.cpp \
     myLib/myLib_draws.cpp \
     myLib/myLib_deprecate.cpp \

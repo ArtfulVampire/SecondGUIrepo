@@ -41,6 +41,8 @@
 #include <cerrno>
 #include <thread>
 
+#include <libcwt_r.h>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -49,11 +51,11 @@
 namespace wvlt
 {
 #define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
-const int timeStep = ceil(0.1 * def::freq);
-const double freqMax = 20.; // def::rightFreq
-const double freqMin = 5.; // def::leftFreq
-const double freqStep = 0.2;
-const int range = 256;
+static const int timeStep = ceil(0.02 * def::freq);
+static const double freqMax = 20.; // def::rightFreq
+static const double freqMin = 2.; // def::leftFreq
+static const double freqStep = 1.;
+static const int range = 1024;
 
 #if !WAVELET_FREQ_STEP_TYPE
 const int numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqStep)) + 1;
@@ -81,7 +83,16 @@ matrix countWavelet(const signalType & inSignal);
 
 void drawWavelet(QString picPath,
                  const matrix &inData);
+
+/// cwt, imported from matlab
+static bool isInit = false;
+int initMtlb();
+matrix cwt(const lineType & signal);
+void drawWaveletMtlb(const matrix & inData,
+					 QString picPath = QString());
 }
+
+
 
 namespace myLib
 {

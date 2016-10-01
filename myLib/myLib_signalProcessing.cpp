@@ -253,7 +253,9 @@ matrix countWavelet(const signalType & inSignal)
 
 template matrix countWavelet(const lineType & inSignal);
 template matrix countWavelet(const vectType & inSignal);
-}
+
+
+} // namespace wvlt
 
 
 
