@@ -417,7 +417,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                 if(labels[i].contains(coords::lbl19[j]) &&
                    !labels[i].contains("EEG"))
                 {
-//                    labels[i].prepend("EEG ");
+					labels[i].prepend("EEG ");
                 }
             }
         }

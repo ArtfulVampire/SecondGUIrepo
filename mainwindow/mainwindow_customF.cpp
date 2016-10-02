@@ -50,9 +50,10 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
-	exit(0);
-
-//	return;
+//	exit(0);
+	setEdfFile(def::iitpFolder + "/SIA/SIA_palms.edf");
+//	writePlainData(def::iitpFolder + "/SIA/SIA_palms.scg", fil.getData());
+	return;
 
 #if 0
     /// test new classifiers
