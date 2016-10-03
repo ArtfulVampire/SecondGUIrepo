@@ -4,6 +4,8 @@
 namespace wvlt
 {
 
+bool isInit = false;
+
 
 
 int initMtlb()
@@ -15,7 +17,7 @@ int initMtlb()
 		return -1;
 	}
 	if (!libcwt_rInitialize()){
-		std::cout << "Could not initialize the library." << endl;
+        std::cout << "Could not initialize the library." << std::endl;
 		return -2;
 	}
 	auto t1 = std::chrono::high_resolution_clock::now();

@@ -22,7 +22,7 @@ INCLUDEPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
 DEPENDPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
 
 INCLUDEPATH += /media/Files/Matlab/MCR/v83/extern/include
-LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -leng -lm
+LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -leng -lm -lmwcpp11compat
 LIBS += -L/media/Files/Matlab/MCR/v83/runtime/glnxa64 -lmwmclmcrrt
 
 

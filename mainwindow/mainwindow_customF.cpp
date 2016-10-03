@@ -50,10 +50,19 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
-//	exit(0);
-	setEdfFile(def::iitpFolder + "/SIA/SIA_palms.edf");
-//	writePlainData(def::iitpFolder + "/SIA/SIA_palms.scg", fil.getData());
-	return;
+	ifstream fil1((def::mriFolder + "/OUT/Atanov/Atanov_wavelet.txt").toStdString());
+	ifstream fil2((def::mriFolder + "/OUT/Atanov_old/Atanov_wavelet.txt").toStdString());
+	double dat1, dat2;
+	double sum = 0.;
+	for(int i = 0; i < 10000; ++i)
+	{
+		fil1 >> dat1;
+		fil2 >> dat2;
+		sum += pow(dat1-dat2, 2);
+	}
+	cout << sum << endl;
+	exit(0);
+//	return;
 
 #if 0
     /// test new classifiers
@@ -256,64 +265,61 @@ void MainWindow::customFunc()
     /// EEG fMRI
     def::ntFlag = true;
 
+	QString guy = "Atanov";
 
-//    GalyaCut(def::mriFolder + slash + "Sushinsky2",
-//             2);
-//    exit(0);
-
-
-    QString guy = "Sushinsky2";
 //    for(QString guy : leest_mri)
     {
-        QDir tmp(def::mriFolder + slash + "OUT");
-        tmp.mkdir(guy);
+		QDir tmp(def::mriFolder + slash + "OUT");
+		tmp.mkdir(guy);
 
-        GalyaProcessing(def::mriFolder
-                        + slash + guy
-                        + slash + guy + "_windows_cleaned",
-                        32,
-                        def::mriFolder
-                        + slash + guy
-                        + slash + guy + "_windows_cleaned_out");
-
-
-        /// check rightNumbers in all subjects
-        makeRightNumbers(def::mriFolder
-                         + slash + guy
-                         + slash + guy + "_windows_cleaned_out");
-
-        for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
-        {
-            makeTableFromRows(def::mriFolder
-                              + slash + guy
-                              + slash + guy + "_windows_cleaned_out",
-                              def::mriFolder
-                              + slash + "OUT"
-                              + slash + guy
-                              + slash + guy + type + ".txt",
-                              type);
-        }
+		autos::GalyaProcessing(def::mriFolder
+							   + slash + guy
+							   + slash + guy + "_windows_cleaned",
+							   32,
+							   def::mriFolder
+							   + slash + guy
+							   + slash + guy + "_windows_cleaned_out");
 
 
-        // execute matlab & wavelet_new
+		/// check rightNumbers in all subjects
+		autos::makeRightNumbers(def::mriFolder
+								+ slash + guy
+								+ slash + guy + "_windows_cleaned_out");
+
+		for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
+		{
+			autos::makeTableFromRows(def::mriFolder
+									 + slash + guy
+									 + slash + guy + "_windows_cleaned_out",
+									 def::mriFolder
+									 + slash + "OUT"
+									 + slash + guy
+									 + slash + guy + type + ".txt",
+									 type);
+		}
+
+
+		wvlt::initMtlb();
+		// execute matlab & wavelet_new
 		autos::GalyaWavelets(def::mriFolder
 							 + slash + guy
-							 + slash + guy + "_windows_cleaned_out",
+							 + slash + guy + "_windows_cleaned",
 							 32, 256,
 							 def::mriFolder
 							 + slash + "wavelet"
-							 + slash + guy)
-        /// rename the folder in OUT to guy
-        makeRightNumbers(def::mriFolder
-                         + slash + "wavelet"
-                         + slash + guy);
-        makeTableFromRows(def::mriFolder
-                          + slash + "wavelet"
-                          + slash + guy,
-                          def::mriFolder
-                          + slash + "OUT"
-                          + slash + guy
-                          + slash + guy + "_wavelet.txt");
+							 + slash + guy);
+
+		/// rename the folder in OUT to guy
+		autos::makeRightNumbers(def::mriFolder
+								+ slash + "wavelet"
+								+ slash + guy);
+		autos::makeTableFromRows(def::mriFolder
+								 + slash + "wavelet"
+								 + slash + guy,
+								 def::mriFolder
+								 + slash + "OUT"
+								 + slash + guy
+								 + slash + guy + "_wavelet.txt");
 
     }
 

@@ -23,7 +23,7 @@ MainWindow::MainWindow() :
     QString helpString;
 
     // what with deletion?
-    QButtonGroup * group1, *group2, *group3, *group4;
+    QButtonGroup * group1, *group2;
     group1 = new QButtonGroup();
     group1->addButton(ui->enRadio);
     group1->addButton(ui->ntRadio);

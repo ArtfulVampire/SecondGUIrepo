@@ -51,17 +51,12 @@
 namespace wvlt
 {
 #define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
-static const int timeStep = ceil(0.02 * def::freq);
-static const double freqMax = 20.; // def::rightFreq
-static const double freqMin = 2.; // def::leftFreq
-static const double freqStep = 1.;
-static const int range = 1024;
-
-#if !WAVELET_FREQ_STEP_TYPE
-const int numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqStep)) + 1;
-#else
-const int numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
-#endif
+extern const int timeStep;
+extern const double freqMax; // def::rightFreq
+extern const double freqMin; // def::leftFreq
+extern const double freqStep;
+extern const int range;
+extern const int numberOfFreqs;
 //wavelets
 
 double morletCos(double const freq1, double const timeShift, double const pot, double const time);
@@ -85,7 +80,7 @@ void drawWavelet(QString picPath,
                  const matrix &inData);
 
 /// cwt, imported from matlab
-static bool isInit = false;
+extern bool isInit;
 int initMtlb();
 int termMtlb();
 matrix cwt(const lineType & signal, double freq);

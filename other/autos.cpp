@@ -249,7 +249,6 @@ void matToFile(const matrix & mat, std::ofstream & fil, double (*func)(const lin
 	}
 }
 
-
 void waveletOneFile(const matrix & inData,
 					int numChan,
 					double freq,
@@ -259,6 +258,7 @@ void waveletOneFile(const matrix & inData,
 	std::ofstream outStr;
 	outStr.open(outFile.toStdString());
 
+	/// can put OMP here, but wait when writing to file
 	for(int j = 0; j < numChan; ++j)
 	{
 		matrix m = wvlt::cwt(inData[j], freq);
@@ -275,14 +275,15 @@ void waveletOneFile(const matrix & inData,
 }
 
 void GalyaWavelets(const QString & inPath,
-				   const int numChan,
-				   const double freq,
+				   int numChan,
+				   double freq,
 				   QString outPath)
 {
 	QDir tmpDir(inPath);
 
 	const QStringList lst = tmpDir.entryList(def::edfFilters);
 //	const QString exp = myLib::getExpNameLib(lst.first(), true);
+	std::cout << lst.length() << std::endl;
 
 	if(outPath.isEmpty())
 	{

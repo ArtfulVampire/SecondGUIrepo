@@ -4,10 +4,23 @@
 using namespace std;
 using namespace std::chrono;
 using namespace smallLib;
+using namespace myLib;
 
 namespace wvlt
 {
-using namespace myLib;
+
+const int timeStep = ceil(0.02 * def::freq);
+const double freqMax = 20.; // def::rightFreq
+const double freqMin = 2.; // def::leftFreq
+const double freqStep = 1.;
+const int range = 1024;
+
+#if !WAVELET_FREQ_STEP_TYPE
+const int numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqStep)) + 1;
+#else
+const int numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
+#endif
+
 
 
 double const morletFall = 9.; // coef in matlab = mF^2 / (2 * pi^2);
