@@ -132,6 +132,8 @@ QString getPicPath(const QString & dataPath,
 QString getFileName(const QString & filePath, bool withExtension = true);
 
 bool areEqualFiles(QString path1, QString path2);
+double areSimilarFiles(const QString & path1,
+					   const QString & path2);
 
 
 QString getExpNameLib(const QString & filePath, bool shortened = false);

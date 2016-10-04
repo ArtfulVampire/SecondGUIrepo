@@ -33,6 +33,13 @@ void waveletOneFile(const matrix & inData,
 					double freq,
 					const QString & outFile);
 
+void GalyaFull(const QString & inDirPath,
+			   QString outFileNames = QString(),
+			   QString outDirPath = QString(),
+			   int numChan = 32,
+			   int freq = 256,
+			   int rightNum = 3);
+
 
 void makeRightNumbers(const QString & dirPath,
 					  int length = 3);

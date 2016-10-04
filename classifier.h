@@ -81,6 +81,7 @@ public:
 #endif
     virtual std::pair<uint, double> classifyDatum(const uint & vecNum) = 0;
     virtual void successiveRelearn();
+	virtual void printParams();
 };
 
 
@@ -172,13 +173,14 @@ public:
     RDA();
     void setShrinkage(double);
     void setLambda(double); /// 0 - QDA, 1 - LDA
+	void printParams() override;
 
 protected:
     void learn(std::vector<uint> & indices) override;
 #if CLASS_TEST_VIRTUAL
     void test(const std::vector<uint> & indices) override;
 #endif
-    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 };
 
 

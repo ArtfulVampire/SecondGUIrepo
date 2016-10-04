@@ -31,7 +31,10 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 void Classifier::printResult(const QString & fileName, uint predType, uint vecNum)
 {
     std::ofstream outStr;
-    outStr.open((workDir + myLib::slash + fileName).toStdString(), std::ios_base::app);
+	outStr.open((workDir + myLib::slash + fileName).toStdString()
+				, std::ios_base::app
+				);
+
 
     QString pew;
     if(predType == (*types)[vecNum])
@@ -40,10 +43,12 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
     }
     else
     {
-        pew = QString::number(vecNum) + "\n";
+		pew = QString::number(vecNum) + "\n";
+
+		outStr << vecNum+2 << ":\ttrue = " << (*types)[vecNum] << "\tpred = " << predType << "\n";
     }
 
-    outStr << pew.toStdString();
+//    outStr << pew.toStdString();
 
     outStr.close();
 }
@@ -143,6 +148,10 @@ void Classifier::successiveRelearn()
     this->resetFlag = true;
 }
 
+void Classifier::printParams()
+{
+	std::cout << typeString.toStdString() << std::endl;
+}
 
 
 avType Classifier::averageClassification()

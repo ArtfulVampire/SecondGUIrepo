@@ -84,6 +84,16 @@ const std::vector<QString> lbl32 {"Fp1", "Fp2",
                                   "O1", "O2",
                                   "Cp3", "Cpz", "Cp4", "Tp8", "Po7", "Po8", "Oz"
                                  };
+/// most wide list of channles - should add Neurotravel?
+const std::vector<QString> lbl_all {"Fp1", "Fp2",
+								  "F7", "F3", "Fz", "F4", "F8",
+								  "T3", "C3", "Cz", "C4",
+								  "Fpz", "Ft7", "Fc3", "Fc4", "Ft8", "Tp7"
+								  "T4", "T5", "P3", "Pz", "P4", "T6",
+								  "O1", "O2",
+								  "Cp3", "Cpz", "Cp4", "Tp8", "Po7", "Po8", "Oz",
+								  "A1", "A2"
+								 };
 
 
 }
@@ -135,7 +145,11 @@ namespace def
     extern spectraGraphsNormalization drawNormTyp;
 
     inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
-    inline int numOfClasses() {return def::fileMarkers.length();}
+	inline int numOfClasses()
+	{
+		return 6;
+		return def::fileMarkers.length();
+	}
 
     extern int right();
     extern int left();

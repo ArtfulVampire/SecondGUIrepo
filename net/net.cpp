@@ -366,7 +366,7 @@ void Net::loadDataUCI(const QString & setName)
     matrix uciData{};
     std::vector<uint> uciTypes{};
     myLib::readUCIdataSet(setName, uciData, uciTypes);
-    loadData(uciData, uciTypes);
+	loadData(uciData, uciTypes);
 }
 
 void Net::loadData(const matrix & inMat,
@@ -374,8 +374,8 @@ void Net::loadData(const matrix & inMat,
 {
     dataMatrix = matrix();
     dataMatrix = inMat;
-    types = inTypes;
-    classCount.resize(def::numOfClasses());
+	types = inTypes;
+	classCount.resize(def::numOfClasses());
     for(int typ : types)
     {
         classCount[typ] += 1.;

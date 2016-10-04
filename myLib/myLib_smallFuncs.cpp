@@ -210,6 +210,33 @@ bool areEqualFiles(QString path1, QString path2)
     return true;
 }
 
+double areSimilarFiles(const QString & path1,
+					   const QString & path2)
+{
+	std::ifstream fil1(path1.toStdString());
+	std::ifstream fil2(path2.toStdString());
+	if(!fil1.good() || !fil2.good())
+	{
+		std::cout << "areSimilarFiles: some of the files is not good" << std::endl;
+		return -1.;
+	}
+	double dat1, dat2;
+	double sum = 0.;
+	int count = 0;
+	while(!fil1.eof() || !fil2.eof())
+	{
+		fil1 >> dat1;
+		fil2 >> dat2;
+		sum += pow(dat1 - dat2, 2);
+		++count;
+	}
+	fil1.close();
+	fil2.close();
+	sum /= count;
+	std::cout << "areSimilarFiles: items = " << count << " square error = " << sum << std::endl;
+	return sum;
+}
+
 
 //const QString slash
 //{
@@ -522,7 +549,8 @@ std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut)
     //if(is_container<Typ>) separ = std::endl;
     for(auto in : toOut)
     {
-        os << in << separ;
+//		os << in << separ;
+		os << smallLib::doubleRound(in, 1) << separ;
     }
     os.flush();
     return os;
@@ -535,7 +563,8 @@ std::ostream & operator<< (std::ostream &os, Cont <Typ, std::allocator<Typ>> toO
     //if(is_container<Typ>) separ = std::endl;
     for(auto in : toOut)
     {
-        os << in << separ;
+		os << in << separ;
+//		os << smallLib::doubleRound(in, 1) << separ;
     }
     os.flush();
     return os;
@@ -545,6 +574,7 @@ std::ostream & operator<< (std::ostream &os, Cont <Typ, std::allocator<Typ>> toO
 // with allocators
 template ostream & operator << (std::ostream & os, std::vector<std::vector<double>> toOut);
 template ostream & operator << (std::ostream & os, std::vector<int> toOut);
+template ostream & operator << (std::ostream & os, std::vector<uint> toOut);
 template ostream & operator << (std::ostream & os, std::vector<double> toOut);
 template ostream & operator << (std::ostream & os, std::list<int> toOut);
 template ostream & operator << (std::ostream & os, std::list<double> toOut);

@@ -1,9 +1,9 @@
 #include "edffile.h"
 using namespace std;
+using namespace myLib;
 
 namespace repair
 {
-using namespace myLib;
 
 void physMinMaxDir(const QString & dirPath)
 {
@@ -59,7 +59,6 @@ void scalingFactorDir(const QString & inDirPath,
 		tmp.cd(myLib::getFileName(inDirPath, false) + "_scal");
 		outDirPath = tmp.absolutePath();
 	}
-
     for(const QString & str : leest)
     {
         scalingFactorFile(inDirPath + slash + str,
@@ -106,7 +105,7 @@ void filenameToLatinDir(const QString & dirPath, const QStringList & filters)
     }
 }
 
-void deleteSpaces(const QString & dirPath, const QStringList & filters)
+void deleteSpacesDir(const QString & dirPath, const QStringList & filters)
 {
     QDir tmp(dirPath);
     QStringList lst;
@@ -130,7 +129,7 @@ void deleteSpaces(const QString & dirPath, const QStringList & filters)
     }
 }
 
-void deleteSpacesDirs(const QString & dirPath)
+void deleteSpacesFolders(const QString & dirPath)
 {
     QDir tmp(dirPath);
     QStringList lst = tmp.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
@@ -153,50 +152,34 @@ bool testChannelsOrderConsistency(const QString & dirPath)
     std::vector<QString> labelsBC;
     std::vector<QString> labels;
     edfFile fil;
-    QStringList leest = QDir(dirPath).entryList({"*.edf", "*.EDF"});
-//    cout << "main: " << leest[0] << endl;
+	QStringList leest = QDir(dirPath).entryList(def::edfFilters);
 
-    fil.readEdfFile(dirPath + slash + leest[0], true);
-    labelsBC = fil.getLabels();
-    for(int i = 0; i < 5; ++i)
-    {
-        auto bad = std::find_if(std::begin(labelsBC),
-                                std::end(labelsBC),
-                                [&labelsBC](const QString & in)
-        {
-            return !in.contains("EEG", Qt::CaseInsensitive);
-        });
-        if(bad != std::end(labelsBC))
-        {
-            labelsBC.erase(bad);
+	fil.readEdfFile(dirPath + slash + leest[0], true);
+	for(const QString & lbl : fil.getLabels())
+	{
+		if(lbl.startsWith("EEG "));
+		{
+			labelsBC.push_back(lbl);
         }
     }
+	std::cout << "testChannelsOrderConsistency: main seq = " << leest[0] << std::endl;
 
     bool res = true;
 
-
     for(const QString & guy : leest)
     {
-        fil.readEdfFile(dirPath + slash + guy, true);
-        labels = fil.getLabels();
-
-        for(int i = 0; i < 5; ++i)
-        {
-            auto bad = std::find_if(std::begin(labels),
-                                    std::end(labels),
-                                    [&labels](const QString & in)
-            {
-                return !in.contains("EEG", Qt::CaseInsensitive);
-            });
-            if(bad != std::end(labels))
-            {
-                labels.erase(bad);
-            }
-        }
-
+		fil.readEdfFile(dirPath + slash + guy, true);
+		labels.clear();
+		for(const QString & lbl : fil.getLabels())
+		{
+			if(lbl.startsWith("EEG "));
+			{
+				labels.push_back(lbl);
+			}
+		}
         if(labels != labelsBC)
         {
-            cout << guy << endl;
+			std::cout << "testChannelsOrderConsistency: other seq = " << guy << std::endl;
             res = false;
         }
     }
@@ -276,10 +259,10 @@ void channelsOrderDir(const QString & inDirPath,
 }
 
 void holesFile(const QString & inFilePath,
-                 QString outFilePath)
+			   QString outFilePath)
 {
     if(outFilePath.isEmpty())
-    {
+    {	
         outFilePath = inFilePath;
         outFilePath.replace(".edf", "_repInf.edf", Qt::CaseInsensitive);
     }
@@ -312,21 +295,53 @@ void holesFile(const QString & inFilePath,
 }
 
 void holesDir(const QString & inDirPath,
-                    const QString & outDirPath)
+			  const QString & outDirPath)
 {
     const auto leest = QDir(inDirPath).entryList(def::edfFilters, QDir::Files);
     const auto vec = leest.toVector();
 
-//#pragma omp parallel
-//#pragma omp for nowait schedule(dynamic,3)
     for(int i = 0; i < vec.size(); ++i)
-    {
-        QString outName = vec[i];
-//        outName.replace(".edf", "_repInf.edf", Qt::CaseInsensitive);
-        //        cout << outName << endl;
-        holesFile(inDirPath + slash + vec[i],
-                        outDirPath + slash + outName);
+	{
+		holesFile(inDirPath + slash + vec[i],
+				  outDirPath + slash + vec[i]);
     }
+}
+
+void filenameToLowerFile(const QString & filePath)
+{
+	QString dirName = myLib::getDirPathLib(filePath);
+	QString fileName = myLib::getFileName(filePath);
+	QString newFileName = fileName.toLower();
+	newFileName[0] = newFileName[0].toUpper();
+	QFile::rename(filePath, dirName + slash + newFileName);
+}
+
+void filenameToLowerDir(const QString & dirPath, const QStringList & filters)
+{
+	QStringList leest;
+	if(!filters.empty())
+	{
+		leest = QDir(dirPath).entryList(filters);
+	}
+	else
+	{
+		leest = QDir(dirPath).entryList();
+	}
+
+	for(const QString & str : leest)
+	{
+		filenameToLowerFile(dirPath + slash + str);
+	}
+}
+
+void fullRepairDir(const QString & dirPath, const QStringList & filters)
+{
+	repair::deleteSpacesDir(dirPath, filters);
+	repair::filenameToLatinDir(dirPath, filters);
+	repair::filenameToLowerDir(dirPath, filters);
+	repair::physMinMaxDir(dirPath);
+	repair::scalingFactorDir(dirPath, dirPath);
+	repair::holesDir(dirPath, dirPath);
 }
 
 } /// end namespace repair

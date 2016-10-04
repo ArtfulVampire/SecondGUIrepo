@@ -597,7 +597,7 @@ void GalyaProcessing(const QString & procDirPath,
 		dir.mkpath(outPath);
 	}
 
-	const QStringList filesList = dir.entryList({"*.EDF", "*.edf"},
+	const QStringList filesList = dir.entryList(def::edfFilters,
 												QDir::NoFilter,
 												QDir::Size|QDir::Reversed);
 	const auto filesVec = filesList.toVector();
@@ -632,6 +632,61 @@ void GalyaProcessing(const QString & procDirPath,
 		countSpectraFeatures(helpString, numChan, outPath);
 		countChaosFeatures(helpString, numChan, outPath);
 	}
+}
+
+void GalyaFull(const QString & inDirPath,
+			   QString outFileNames,
+			   QString outDirPath,
+			   int numChan,
+			   int freq,
+			   int rightNum)
+{
+	QDir tmp(inDirPath);
+	if(outFileNames.isEmpty())
+	{
+		const QString firstName = tmp.entryList(def::edfFilters)[0];
+		outFileNames = firstName.left(firstName.indexOf('_'));
+	}
+	if(outDirPath.isEmpty())
+	{
+		tmp.cdUp();
+		tmp.cdUp();
+		tmp.mkdir("OUT");
+		tmp.cd("OUT");
+		tmp.mkdir(outFileNames);
+		tmp.cd(outFileNames);
+		outDirPath = tmp.absolutePath();
+	}
+
+
+	tmp.mkpath(outDirPath);
+
+	const QString outPath = inDirPath + "_out";
+	tmp.mkpath(outPath);
+
+	const QString waveletPath = inDirPath + "_wavelet";
+	tmp.mkpath(waveletPath);
+
+	autos::GalyaProcessing(inDirPath,
+						   numChan,
+						   outPath);
+	autos::makeRightNumbers(outPath,
+							rightNum);
+
+	for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
+	{
+		autos::makeTableFromRows(outPath,
+								 outDirPath + slash + outFileNames + type + ".txt",
+								 type);
+	}
+	wvlt::initMtlb();
+	autos::GalyaWavelets(inDirPath,
+						 numChan, freq,
+						 waveletPath);
+
+	/// rename the folder in OUT to guy
+	autos::makeRightNumbers(waveletPath, rightNum);
+	autos::makeTableFromRows(waveletPath, outDirPath + slash + outFileNames + "_wavelet.txt");
 }
 
 

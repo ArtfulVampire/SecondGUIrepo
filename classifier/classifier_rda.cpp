@@ -24,6 +24,15 @@ void RDA::setLambda(double in)
     this->lambda = in;
 }
 
+void RDA::printParams()
+{
+	for(int i = 0; i < numCl; ++i)
+	{
+		std::cout << centers[i] << std::endl;
+	}
+}
+
+
 /// check!
 void RDA::learn(std::vector<uint> & indices)
 {
@@ -82,8 +91,8 @@ std::pair<uint, double> RDA::classifyDatum(const uint & vecNum)
         matrix m1(a, 'r'); // row
         matrix m2(a, 'c'); // col
         double tmp = (m1 * covMat[i] * m2)[0][0];
-        output[i] = - tmp - log(dets[i]) + 2 * log(this->apriori[i]);
-    }
+		output[i] = - tmp - log(dets[i]) + 2 * log(this->apriori[i]);
+	}
     uint outClass = myLib::indexOfMax(output);
 
     printResult("RDA.txt", outClass, vecNum);

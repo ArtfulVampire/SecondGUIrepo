@@ -410,12 +410,13 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         }
 
         /// Mitsar and other sheet
+		/// Need for repair::testChannelOrderConsistency
         else
         {
-            for(uint j = 0; j < coords::lbl19.size(); ++j)
+			for(auto lbl : coords::lbl_all) /// most wide list of channels
             {
-                if(labels[i].contains(coords::lbl19[j]) &&
-                   !labels[i].contains("EEG"))
+				if(labels[i].contains(lbl) &&
+				   !labels[i].startsWith("EEG "))
                 {
 					labels[i].prepend("EEG ");
                 }

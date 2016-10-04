@@ -50,33 +50,22 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
-	ifstream fil1((def::mriFolder + "/OUT/Atanov/Atanov_wavelet.txt").toStdString());
-	ifstream fil2((def::mriFolder + "/OUT/Atanov_old/Atanov_wavelet.txt").toStdString());
-	double dat1, dat2;
-	double sum = 0.;
-	for(int i = 0; i < 10000; ++i)
-	{
-		fil1 >> dat1;
-		fil2 >> dat2;
-		sum += pow(dat1-dat2, 2);
-	}
-	cout << sum << endl;
-	exit(0);
+//	exit(0);
 //	return;
 
-#if 0
+#if 01
     /// test new classifiers
 //    QString paath = "/media/Files/Data/AAX";
 //    setEdfFile(paath + "/AAX_final.edf");
 
-    QString paath = "/media/Files/Data/Feedback/Success";
+	QString paath = "/media/Files/Data/Feedback/Success";
 
 //    for(QString guy : {"AAU", "BEA", "CAA", "GAS", "SUA"})
 //    for(QString guy : {"SUA"})
 //    for(QString guy : {"BEA", "CAA", "GAS", "SUA"})
-    for(QString guy : {"GAS"})
+	for(QString guy : {"GAS"})
     {
-        setEdfFile(paath + slash  + guy + "_train.edf");
+		setEdfFile(paath + slash  + guy + "_train.edf");
 
 
 //        cleanDir(paath + "/Realisations");
@@ -89,11 +78,12 @@ void MainWindow::customFunc()
 //        exit(0);
 
 
-        Net * net = new Net();
-        net->setMode("N");
-        net->setCentering(true);
-        net->setVariancing(true);
+		Net * net = new Net();
+		net->setMode("N");
 
+		net->setCentering(false);
+		net->setVariancing(false);
+//		net->show();
 //        net->loadData(paath + "/SpectraSmooth", {def::ExpName});
 //        net->pca();
 //        delete net;
@@ -102,14 +92,17 @@ void MainWindow::customFunc()
 
 
 
-        net->loadData(paath + "/SpectraSmooth/PCA", {def::ExpName});
+//        net->loadData(paath + "/SpectraSmooth/PCA", {def::ExpName});
 //        net->loadData(paath + "/SpectraSmooth", {def::ExpName});
 
-        /// loading UCI dataset - add enum
-    //    net->loadDataUCI("wine");
-    //    net->loadDataUCI("iris");
+		/// loading UCI dataset - add enum
+		net->loadDataUCI("cmi");
+		net->setClassifier(ClassifierType::RDA);
+		net->setRdaLambdaSlot(0.8);
+		net->setRdaShrinkSlot(0.8);
+		net->autoClassification();
 
-        net->customF();
+//		net->customF();
         delete net;
     }
     exit(0);
@@ -224,41 +217,44 @@ void MainWindow::customFunc()
 #if 0
     /// Xenia cut
 	QString workDir = "/media/michael/Files/Data/Xenia/26Sep/severe_TBI";
-//	repair::scalingFactorDir(workDir + slash + "Gladun_Serg_30");
-//	repair::scalingFactorDir(workDir + slash + "Egorov_Pavel_26");
-//	repair::scalingFactorDir(workDir + slash + "Fursenko_Alexandr_23");
-//	exit(0);
-
+	/// repair dirs and files
+	repair::deleteSpacesFolders(workDir);
     QStringList dirs = QDir(workDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-    for(const QString deer : dirs)
+	for(QString deer : dirs)
     {
-		repair::scalingFactorDir(workDir + slash + deer,
-								 workDir + slash + deer);
-//		GalyaProcessing(workDir + slash + deer, 19,
-//						workDir + slash + "results");
+		repair::fullRepairDir(workDir + myLib::slash + deer);
     }
+
+	if(0)
+	{
+		ui->rereferenceDataComboBox->setCurrentText("Base");
+		for(QString deer : dirs) /// each guy
+		{
+			QString pew = workDir + slash + deer;
+			for(QString fil : QDir().entryList(def::edfFilters)) /// each file
+			{
+				setEdfFile(pew + slash + fil);
+				rereferenceDataSlot();
+			}
+		}
+	}
+	if(1)
+	{
+
+	}
     exit(0);
 #endif
 
 
-#if 0
-    /// Xenia rereference + cut
+//	def::ntFlag = true;
 
-	const QString pew = "/media/michael/Files/Data/Xenia/19Sep";
+//	QString guy = "Shevchenko";
+//	autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_windows_cleaned");
 
-//	repair::filenameToLatinDir(pew);
-//	GalyaCut(pew, 16); exit(0); /// comment to reref
-	GalyaProcessing(pew, 19); exit(0);
-
-    ui->rereferenceDataComboBox->setCurrentText("Base");
-    for(QString fil : QDir(pew).entryList({"*.edf"}))
-    {
-        setEdfFile(pew + slash + fil);
-        rereferenceDataSlot();
-    }
-    exit(0);
-#endif
-
+//	QString type = "_med_freq";
+//	areSimilarFiles("/media/Files/Data/MRI/OUT/" + guy + "_old/" + guy + type + ".txt",
+//					"/media/Files/Data/MRI/OUT/" + guy + "/" + guy + type + ".txt");
+//	exit(0);
 
 
 #if 0
@@ -266,8 +262,6 @@ void MainWindow::customFunc()
     def::ntFlag = true;
 
 	QString guy = "Atanov";
-
-//    for(QString guy : leest_mri)
     {
 		QDir tmp(def::mriFolder + slash + "OUT");
 		tmp.mkdir(guy);
@@ -284,7 +278,8 @@ void MainWindow::customFunc()
 		/// check rightNumbers in all subjects
 		autos::makeRightNumbers(def::mriFolder
 								+ slash + guy
-								+ slash + guy + "_windows_cleaned_out");
+								+ slash + guy + "_windows_cleaned_out",
+								3);
 
 		for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
 		{
@@ -308,11 +303,14 @@ void MainWindow::customFunc()
 							 def::mriFolder
 							 + slash + "wavelet"
 							 + slash + guy);
+		wvlt::termMtlb();
 
 		/// rename the folder in OUT to guy
 		autos::makeRightNumbers(def::mriFolder
 								+ slash + "wavelet"
-								+ slash + guy);
+								+ slash + guy,
+								3);
+
 		autos::makeTableFromRows(def::mriFolder
 								 + slash + "wavelet"
 								 + slash + guy,

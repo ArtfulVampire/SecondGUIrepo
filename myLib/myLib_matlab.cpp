@@ -10,6 +10,7 @@ bool isInit = false;
 
 int initMtlb()
 {
+	if(isInit) return 1;
 	auto t0 = std::chrono::high_resolution_clock::now();
 	std::cout << "matlab lib load starts" << std::endl;
 	if (!libcwt_rInitializeWithHandlers(NULL, 0)){
@@ -31,6 +32,7 @@ int initMtlb()
 
 int termMtlb()
 {
+	if(!isInit) return 1;
 	try
 	{
 		libcwt_rTerminate();

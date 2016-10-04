@@ -287,11 +287,12 @@ void Net::setClassifier(QAbstractButton * but, bool i)
         setDimensionalitySlot();
     }
     else if(but->text() == "RDA")
-    {
+	{
         myClassifier = new RDA();
         RDA * myRDA = dynamic_cast<RDA *>(myClassifier);
         myRDA->setShrinkage(ui->rdaShrinkSpinBox->value());
         myRDA->setLambda(ui->rdaLambdaSpinBox->value());
+
     }
     else if(but->text() == "SVM")
     {

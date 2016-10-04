@@ -366,7 +366,6 @@ void holesDir(const QString & inDirPath,
               const QString & outDirPath);
 
 void physMinMaxCheck(const QString & dirPath);
-
 void physMinMaxDir(const QString & dirPath);
 
 /// also repairs wrong filesize
@@ -375,10 +374,17 @@ void scalingFactorFile(const QString & inFilePath,
 void scalingFactorDir(const QString & inDirPath,
 					  QString outDirPath = QString());
 
-void deleteSpaces(const QString & dirPath, const QStringList & filters = def::edfFilters);
-void deleteSpacesDirs(const QString & dirPath);
+/// only renames files/dirs
+void deleteSpacesDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void deleteSpacesFolders(const QString & dirPath);
+
 void filenameToLatinFile(const QString & filePath);
 void filenameToLatinDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+
+void filenameToLowerFile(const QString & filePath);
+void filenameToLowerDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+
+void fullRepairDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
 }
 
 #endif // EDFFILE_H

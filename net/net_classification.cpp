@@ -60,25 +60,28 @@ avType Net::autoClassification()
     case myMode::k_fold:
     {
         crossClassification();
-//        cout << "cross classification:" << endl;
+//		cout << "cross classification:" << endl;
         break;
     }
     case myMode::N_fold:
-    {
-        leaveOneOutClassification();
-//        cout << "N-fold cross-validation:" << endl;
+	{
+		leaveOneOutClassification();
+
+		myClassifier->learnAll();
+		myClassifier->printParams();
+//		cout << "N-fold cross-validation:" << endl;
         break;
     }
     case myMode::train_test:
     {
         trainTestClassification();
-//        cout << "train-test classification:" << endl;
+//		cout << "train-test classification:" << endl;
         break;
     }
     case myMode::half_half:
     {
         halfHalfClassification();
-//        cout << "half-half classification:" << endl;
+//		cout << "half-half classification:" << endl;
         break;
     }
     default: {break;}
@@ -140,8 +143,8 @@ void Net::leaveOneOutClassification()
                   std::end(learnIndices),
                   i + 1);
 
-        myClassifier->learn(learnIndices);
-        myClassifier->test({i});
+		myClassifier->learn(learnIndices);
+		myClassifier->test({i});
     }
 //    cout << endl;
 }
@@ -276,14 +279,13 @@ void Net::customF()
         std::vector<std::vector<double>> results{};
         cycleParams(results);
 
-
         const int accNum = results[0].size() - 2;
 
         std::sort(std::begin(results), std::end(results),
                   [accNum](const std::vector<double> & in1, const std::vector<double> & in2)
         {
-            /// uncomment to sort
-            return true;
+			/// comment to sort
+//            return true;
             if(in1[accNum] == in2[accNum]) return in1[accNum + 1] > in2[accNum + 1]; /// by kappa
             return in1[accNum] > in2[accNum];
         });
@@ -319,12 +321,14 @@ void Net::customF()
     a = myClassifier->averageClassification();\
     }
 
+
 void Net::cycleParams(std::vector<std::vector<double> > & in)
 {
-    std::vector<int> rdaPar{8, 10, 0, 10};
+	std::vector<int> rdaPar{1, 10, 1, 10};
 
-    for(int i = 60; i >= 24; i -= 2)
-    {
+	int i = 0;
+//    for(int i = 60; i >= 24; i -= 2)
+	{
         //            dataMatrix.resizeCols(i);
         switch(myClassifier->getType())
         {
@@ -338,13 +342,14 @@ void Net::cycleParams(std::vector<std::vector<double> > & in)
                     setRdaShrinkSlot(shr);
 
 
-#if 1
+#if 0
                     avType a; SUCCESSIVE_CHECK
         #else
                     /// one file
                     auto a = autoClassification();
 #endif
-                    in.push_back(std::vector<double>{i, lambda, shr, a.first, a.second});
+//                    in.push_back(std::vector<double>{i, lambda, shr, a.first, a.second});
+					in.push_back(std::vector<double>{lambda, shr, a.first, a.second});
                 }
             }
             break;
