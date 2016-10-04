@@ -179,12 +179,13 @@ void Cut::browse()
 
     setFileType(helpString);
 //    def::fileMarkers = QStringList{"_BD", "_BW", "_CR", "_Fon", "_kh", "_sm", "_NO"};
-    makeFullFileList(getDirPathLib(helpString), lst, {"." + getExt(helpString)});
+//    makeFullFileList(getDirPathLib(helpString), lst, {"." + getExt(helpString)});
+	lst = QDir(getDirPathLib(helpString)).entryList({"*." + getExt(helpString)});
 
-    for(auto str : lst)
-    {
-        cout << str << endl;
-    }
+//    for(auto str : lst)
+//    {
+//        cout << str << endl;
+//    }
     currentNumber = lst.indexOf(getFileName(helpString));
 
     createImage(helpString);
@@ -438,7 +439,7 @@ void Cut::createImage(const QString & dataFileName)
         leftDrawLimit = 0;
         ui->paintStartDoubleSpinBox->setMaximum(floor(NumOfSlices / def::freq));
 		ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
-        cout << "freq = " << def::freq << endl;
+//        cout << "freq = " << def::freq << endl;
     }
 
     /// if too long?
@@ -820,7 +821,7 @@ void Cut::paint() // save to tmp.jpg and display
         rightDrawLimit = NumOfSlices;
     }
 
-    cout << "paint: left = " << leftDrawLimit << "\tright = " << rightDrawLimit << endl;
+//    cout << "paint: left = " << leftDrawLimit << "\tright = " << rightDrawLimit << endl;
 
     currentPic = drawEeg(data3.subCols(leftDrawLimit, rightDrawLimit),
                          def::ns,

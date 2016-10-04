@@ -411,6 +411,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
         /// Mitsar and other sheet
 		/// Need for repair::testChannelOrderConsistency
+		/// essentially need for edfFile::refilter
         else
         {
 			for(auto lbl : coords::lbl_all) /// most wide list of channels
@@ -420,10 +421,14 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                 {
 					labels[i].prepend("EEG ");
                 }
+				if(labels[i].contains("EOG") &&
+				   !labels[i].startsWith("EOG "))
+				{
+					labels[i].prepend("EOG ");
+				}
             }
         }
-
-    }
+	}
 
     if(readFlag)
     {
@@ -1192,10 +1197,11 @@ void edfFile::refilter(const double & lowFreq,
             chanList.push_back(i);
         }
     }
+	cout << chanList << endl;
+	exit(0);
 
     if(this->fftData.empty())
-    {
-//        cout << "edfFile::refilter: countFFT()" << endl;
+	{
         this->countFft();
     }
 

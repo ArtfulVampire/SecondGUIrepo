@@ -602,8 +602,8 @@ void GalyaProcessing(const QString & procDirPath,
 												QDir::Size|QDir::Reversed);
 	const auto filesVec = filesList.toVector();
 
-#pragma omp parallel
-#pragma omp for nowait
+//#pragma omp parallel
+//#pragma omp for nowait
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		QString helpString = dir.absolutePath() + slash + filesVec[i];
@@ -629,8 +629,8 @@ void GalyaProcessing(const QString & procDirPath,
 			 << smallLib::doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << endl;
 
 
-		countSpectraFeatures(helpString, numChan, outPath);
 		countChaosFeatures(helpString, numChan, outPath);
+		countSpectraFeatures(helpString, numChan, outPath);
 	}
 }
 
@@ -679,10 +679,14 @@ void GalyaFull(const QString & inDirPath,
 								 outDirPath + slash + outFileNames + type + ".txt",
 								 type);
 	}
+
+	return;
+
 	wvlt::initMtlb();
 	autos::GalyaWavelets(inDirPath,
 						 numChan, freq,
 						 waveletPath);
+	wvlt::termMtlb();
 
 	/// rename the folder in OUT to guy
 	autos::makeRightNumbers(waveletPath, rightNum);

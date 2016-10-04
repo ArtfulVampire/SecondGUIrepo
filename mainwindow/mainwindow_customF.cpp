@@ -53,7 +53,7 @@ void MainWindow::customFunc()
 //	exit(0);
 //	return;
 
-#if 01
+#if 0
     /// test new classifiers
 //    QString paath = "/media/Files/Data/AAX";
 //    setEdfFile(paath + "/AAX_final.edf");
@@ -245,16 +245,21 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
+//	return;
 
-//	def::ntFlag = true;
+	def::ntFlag = true;
 
-//	QString guy = "Shevchenko";
-//	autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_windows_cleaned");
+	QString guy = "Azieva";
+//	for(QString guy : {"Azieva", "Kabanov", "LevandoA"})
+	{
+		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_windows_cleaned");
+	}
 
-//	QString type = "_med_freq";
-//	areSimilarFiles("/media/Files/Data/MRI/OUT/" + guy + "_old/" + guy + type + ".txt",
-//					"/media/Files/Data/MRI/OUT/" + guy + "/" + guy + type + ".txt");
-//	exit(0);
+
+	QString type = "_med_freq";
+	areSimilarFiles("/media/Files/Data/MRI/OUT/" + guy + "_old/" + guy + type + ".txt",
+					"/media/Files/Data/MRI/OUT/" + guy + "/" + guy + type + ".txt");
+	exit(0);
 
 
 #if 0
