@@ -585,7 +585,7 @@ double variance(const Typ &arr, int length, int shift, bool fromZero)
 {
     double sum1 = 0.;
     double m = mean(arr, length, shift);
-    double sign = (fromZero)?0.:1.;
+	double sign = (fromZero ? 0. : 1.);
     for(int i = 0; i < length; ++i)
     {
         sum1 += pow((arr[i + shift] - m * sign), 2.);
@@ -634,8 +634,8 @@ double correlation(const Typ &arr1, const Typ &arr2, int length, int shift, bool
     double m1, m2;
     int T = abs(shift);
     double sigmas;
-    int signM = (shift >= 0)?1:0;
-    int signL = (shift <= 0)?1:0;
+	int signM = ((shift >= 0) ? 1 : 0);
+	int signL = ((shift <= 0) ? 1 : 0);
 
     m1 = mean(arr1, length - T, T * signL);
     m2 = mean(arr2, length - T, T * signM);
@@ -875,10 +875,10 @@ void MannWhitneyFromMakepa(const QString & spectraDir)
 
 
 
-    QString helpString = (def::dir->absolutePath()
-                                                  + slash + "Help"
-                                                  + slash + def::ExpName
-                                                  + "_Mann-Whitney.jpg");
+	QString helpString = def::dir->absolutePath()
+						 + slash + "Help"
+						 + slash + def::ExpName
+						 + "_Mann-Whitney.jpg";
     drawTemplate(helpString);
     drawArrays(helpString,
                inSpectraAv);

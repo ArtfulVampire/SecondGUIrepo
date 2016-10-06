@@ -98,6 +98,7 @@ const std::vector<QString> lbl_all {"Fp1", "Fp2",
 
 }
 
+
 namespace suc
 {
 extern int numGoodNewLimit;
@@ -147,7 +148,7 @@ namespace def
     inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
 	inline int numOfClasses()
 	{
-		return 6;
+//		return 6;
 		return def::fileMarkers.length();
 	}
 
@@ -176,6 +177,67 @@ inline int fftLimit(const double & inFreq,
                     const int & fftL = def::fftLength)
 {
     return ceil(inFreq / sampleFreq * fftL - 0.5);
+}
+
+
+namespace subjects
+{
+const QStringList leest_less = {
+	"Berlin-Henis",
+	"Bushenkov",
+	"CHemerisova",
+	"Didkovskaya",
+	"Grishina",
+	"Ivanova",
+	"Krasnobaev",
+	"Melnik",
+	"Paramonova",
+	"Ryibalko",
+	"Sarvardinova",
+	"SHkarina",
+	"Vasina",
+//    "Zelenkov"
+};
+const QStringList leest_more = {
+	"Burmistrova",
+	"Garmotko",
+	"Hanenya",
+	"Kalinichenko",
+	"Tinyanova"
+};
+
+const QStringList leest_non = {
+	"tactile",
+	"Dasha_GO",
+	"Dasha_GZ",
+	"Dasha_smell",
+	"Dasha_smell_2"
+};
+
+const QStringList leest_mri = {
+	"Ali-Zade",
+	"Atanov",
+	"Azieva",
+	"Balaev",
+	"Gavrilov",
+	"Gudovich",
+	"Ivashkin",
+	"Kabanov",
+	"Khasanov",
+	"Khokhlov",
+	"Levando",
+	"Mezhenova",
+	"Moskovtsev",
+	"Muchanova",
+	"Nikolaenko",
+	"Novoselova",
+	"Shevchenko",
+	"Sushinsky",
+	"Sushinsky2",
+	"Umanskaya",
+	"Vorobiev",
+	"Zavyalova"
+};
 }
 
 

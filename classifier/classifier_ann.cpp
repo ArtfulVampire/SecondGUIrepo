@@ -421,7 +421,7 @@ std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
 //    std::cout.rdbuf(resFile.rdbuf());
 
     std::cout << "type = " << type << '\t' << "(";
-    for(int i = 0; i < def::numOfClasses(); ++i)
+	for(int i = 0; i < numCl; ++i)
     {
         std::cout << smallLib::doubleRound(output[numOfLayers - 1][i], 3) << '\t';
     }

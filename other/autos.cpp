@@ -602,8 +602,8 @@ void GalyaProcessing(const QString & procDirPath,
 												QDir::Size|QDir::Reversed);
 	const auto filesVec = filesList.toVector();
 
-//#pragma omp parallel
-//#pragma omp for nowait
+#pragma omp parallel
+#pragma omp for nowait
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		QString helpString = dir.absolutePath() + slash + filesVec[i];
@@ -641,6 +641,12 @@ void GalyaFull(const QString & inDirPath,
 			   int freq,
 			   int rightNum)
 {
+	if(!QDir().exists(inDirPath))
+	{
+		std::cout << "GalyaFull: path = " << inDirPath << " is wrong" << std::endl;
+		return;
+	}
+
 	QDir tmp(inDirPath);
 	if(outFileNames.isEmpty())
 	{
@@ -680,7 +686,7 @@ void GalyaFull(const QString & inDirPath,
 								 type);
 	}
 
-	return;
+//	return;
 
 	wvlt::initMtlb();
 	autos::GalyaWavelets(inDirPath,

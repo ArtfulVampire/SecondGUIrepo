@@ -6,44 +6,14 @@ using namespace myLib;
 using namespace smallLib;
 
 
-QStringList leest_less = {
-    "Berlin-Henis",
-    "Bushenkov",
-    "CHemerisova",
-    "Didkovskaya",
-    "Grishina",
-    "Ivanova",
-    "Krasnobaev",
-    "Melnik",
-    "Paramonova",
-    "Ryibalko",
-    "Sarvardinova",
-    "SHkarina",
-    "Vasina",
-//    "Zelenkov"
-};
-QStringList leest_more = {
-    "Burmistrova",
-    "Garmotko",
-    "Hanenya",
-    "Kalinichenko",
-    "Tinyanova"
-};
 
-QStringList leest_non = {
-    "tactile",
-    "Dasha_GO",
-    "Dasha_GZ",
-    "Dasha_smell",
-    "Dasha_smell_2"
-};
 
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
 
-    QStringList leest_audio = leest_more + leest_less;
+	QStringList leest_audio = subjects::leest_more + subjects::leest_less;
     leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
 
     /// for standalone eyesClean
@@ -245,90 +215,71 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-//	return;
-
-	def::ntFlag = true;
-
-	QString guy = "Azieva";
-//	for(QString guy : {"Azieva", "Kabanov", "LevandoA"})
-	{
-		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_windows_cleaned");
-	}
-
-
-	QString type = "_med_freq";
-	areSimilarFiles("/media/Files/Data/MRI/OUT/" + guy + "_old/" + guy + type + ".txt",
-					"/media/Files/Data/MRI/OUT/" + guy + "/" + guy + type + ".txt");
-	exit(0);
-
 
 #if 0
     /// EEG fMRI
     def::ntFlag = true;
 
-	QString guy = "Atanov";
+//	QString guy = "Atanov";
+	for(QString guy : subjects::leest_mri)
     {
-		QDir tmp(def::mriFolder + slash + "OUT");
-		tmp.mkdir(guy);
 
-		autos::GalyaProcessing(def::mriFolder
-							   + slash + guy
-							   + slash + guy + "_windows_cleaned",
-							   32,
-							   def::mriFolder
-							   + slash + guy
-							   + slash + guy + "_windows_cleaned_out");
+		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_windows_cleaned");
+	}
 
-
-		/// check rightNumbers in all subjects
-		autos::makeRightNumbers(def::mriFolder
-								+ slash + guy
-								+ slash + guy + "_windows_cleaned_out",
-								3);
-
-		for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
-		{
-			autos::makeTableFromRows(def::mriFolder
-									 + slash + guy
-									 + slash + guy + "_windows_cleaned_out",
-									 def::mriFolder
-									 + slash + "OUT"
-									 + slash + guy
-									 + slash + guy + type + ".txt",
-									 type);
-		}
-
-
-		wvlt::initMtlb();
-		// execute matlab & wavelet_new
-		autos::GalyaWavelets(def::mriFolder
-							 + slash + guy
-							 + slash + guy + "_windows_cleaned",
-							 32, 256,
-							 def::mriFolder
-							 + slash + "wavelet"
-							 + slash + guy);
-		wvlt::termMtlb();
-
-		/// rename the folder in OUT to guy
-		autos::makeRightNumbers(def::mriFolder
-								+ slash + "wavelet"
-								+ slash + guy,
-								3);
-
-		autos::makeTableFromRows(def::mriFolder
-								 + slash + "wavelet"
-								 + slash + guy,
-								 def::mriFolder
-								 + slash + "OUT"
-								 + slash + guy
-								 + slash + guy + "_wavelet.txt");
-
-    }
+//	QString type = "_med_freq";
+//	areSimilarFiles("/media/Files/Data/MRI/OUT/" + guy + "_old/" + guy + type + ".txt",
+//					"/media/Files/Data/MRI/OUT/" + guy + "/" + guy + type + ".txt");
 
     exit(0);
 #endif
 
+
+
+#if 0
+	/// backuping
+	///
+	/// find -type f -regextype sed -iregex ".*/[^/]\{3,5\}\.edf" | sed 's/\.\//\/media\/Files\/Data\/Feedback\//g'
+	/// find -type f -regextype sed -iregex ".*/[^/]\{3\}\(_train\|_test\|_FB\|E\)\.edf"
+	/// find -type f -regextype sed -iregex ".*/[^/]\{3\}\(_train\|_test\|_FB\|E\|_1\|_3\)\.edf"
+
+
+	QDir tmp("/media/Files/Data/Twins");
+	QDir dest("/media/michael/Seagate Expansion Drive/Michael/Data/BACKUPS/Twins");
+	for(auto deer : tmp.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+	{
+//		if(deer.startsWith("Succ")) continue;
+		tmp.cd(deer);
+		dest.mkdir(deer);
+		dest.cd(deer);
+
+		QString edfF = tmp.entryList(def::edfFilters, QDir::Files, QDir::Time|QDir::Reversed)[0];
+		cout << edfF << endl;
+
+		QFile::copy(tmp.absolutePath() + slash + edfF,
+					dest.absolutePath() + slash + edfF);
+
+		tmp.cdUp();
+		dest.cdUp();
+	}
+	exit(0);
+#endif
+
+#if 0
+	/// files copying
+	QDir tmp("/media/Files/Data/MRI/OUT");
+	for(const QString & deer : tmp.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+	{
+		QString pth = tmp.absolutePath() + slash + deer;
+		for(const QString & feel : QDir(pth).entryList({"*_med*", "*_d2*"}))
+		{
+			QFile::copy(pth + slash + feel,
+						tmp.absolutePath() + slash + feel);
+		}
+	}
+	exit(0);
+
+#endif
 
 
 
@@ -362,7 +313,7 @@ void MainWindow::customFunc()
 
 
 #if 0
-    /// make current numbers to rightNumbers in files
+	/// make current numbers to rightNumbers in edf files
 
     const QString listFile = "/media/michael/Files/Data/list.txt";
     int count = 0;
@@ -846,7 +797,7 @@ void MainWindow::customFunc()
         if(matiCountBit(firstMarker, 10) != matiCountBit(lastMarker, 10)) //if not one of them is the end of some session
         {
             lastMarker = firstMarker
-                + pow(2, 10) * ((matiCountBit(firstMarker, 10))?-1:1); //adjust the last marker
+				+ pow(2, 10) * (matiCountBit(firstMarker, 10) ? -1 : 1); //adjust the last marker
         }
         matiPrintMarker(lastMarker, "last");
         matiPrintMarker(doub2, "newData");

@@ -366,6 +366,7 @@ void Net::loadDataUCI(const QString & setName)
     matrix uciData{};
     std::vector<uint> uciTypes{};
     myLib::readUCIdataSet(setName, uciData, uciTypes);
+	/// set numOfClasses !
 	loadData(uciData, uciTypes);
 }
 

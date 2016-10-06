@@ -321,7 +321,7 @@ double countAngle(double initX, double initY)
 {
     if(initX == 0.)
     {
-        return (initY > 0.)?(pi/2.):(-pi/2);
+		return ((initY > 0.) ? (pi/2.) : (-pi/2));
     }
 
     if(initX > 0.)
@@ -512,7 +512,7 @@ int matiCountDecimal(QString byteMarker)
     int res = 0;
     for(int h = 0; h < 16; ++h)
     {
-        res += ((byteMarker[h]==QChar('1'))?1:0) * pow(2, 15-h);
+		res += ((byteMarker[h] == QChar('1')) ? 1 : 0) * pow(2, 15-h);
     }
     return res;
 }

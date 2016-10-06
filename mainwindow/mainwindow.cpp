@@ -989,14 +989,14 @@ void MainWindow::markerSetBinValueSlot()
     helpString.clear();
     for(int h = 15; h >= 8; --h)
     {
-        helpString += (byteMarker[h])?"1":"0";
+		helpString += (byteMarker[h] ? "1" : "0");
     }
     ui->markerBin0LineEdit->setText(helpString);
 
     helpString.clear();
     for(int h = 7; h >= 0; --h)
     {
-        helpString += (byteMarker[h])?"1":"0";
+		helpString += (byteMarker[h] ? "1" : "0");
     }
     ui->markerBin1LineEdit->setText(helpString);
 }

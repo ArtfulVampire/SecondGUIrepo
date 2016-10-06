@@ -340,7 +340,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     }
 
     FILE * edfDescriptor;
-    edfDescriptor = fopen(EDFpath, (readFlag)?"r":"w"); //generality
+	edfDescriptor = fopen(EDFpath, (readFlag ? "r" : "w")); //generality
     if(edfDescriptor == NULL)
     {
         cout << "handleFile: cannot open edf file " << EDFpath << endl;
@@ -552,7 +552,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     fpos_t *position = new fpos_t;
     fgetpos(edfDescriptor, position);
     fclose(edfDescriptor);
-    edfDescriptor = fopen(EDFpath, readFlag?"rb":"ab");
+	edfDescriptor = fopen(EDFpath, (readFlag ? "rb" : "ab"));
     fsetpos(edfDescriptor, position);
     delete position;
 
@@ -1197,8 +1197,6 @@ void edfFile::refilter(const double & lowFreq,
             chanList.push_back(i);
         }
     }
-	cout << chanList << endl;
-	exit(0);
 
     if(this->fftData.empty())
 	{

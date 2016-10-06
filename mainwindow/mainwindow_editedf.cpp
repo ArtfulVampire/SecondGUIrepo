@@ -607,7 +607,7 @@ void MainWindow::constructEDF(const QString & newPath,
         if((matiCountBit(firstMarker, 10) == matiCountBit(lastMarker, 10)) || lastMarker == 0)
         {
             lastMarker = firstMarker
-                    + pow(2, 10) * ((matiCountBit(firstMarker, 10))?-1:1); //adjust the last marker
+					+ pow(2, 10) * (matiCountBit(firstMarker, 10) ? -1 : 1); //adjust the last marker
         }
     }
     else if(ui->splitZerosCheckBox->isChecked())
