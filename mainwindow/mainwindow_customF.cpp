@@ -20,6 +20,24 @@ void MainWindow::customFunc()
 //    ui->windowLengthSpinBox->setValue(5);
 //    ui->justSliceButton->setChecked(true);
 
+//	int frameW = 8;
+//	QPixmap pic(1280, 1024);
+//	pic.fill("black");
+//	QPainter pnt;
+//	pnt.begin(&pic);
+
+//	pnt.setPen(QColor(40, 140, 40));
+//	pnt.setBrush(QBrush(QColor(40, 140, 40)));
+
+//	pnt.drawRect(0, 0, pic.width(), frameW);
+//	pnt.drawRect(0, pic.height() - frameW, pic.width(), frameW);
+//	pnt.drawRect(0, 0, frameW, pic.height());
+//	pnt.drawRect(pic.width() - frameW, 0, frameW, pic.height());
+
+//	pnt.end();
+//	pic.save("/media/Files/Data/frame.jpg", 0, 100);
+
+
 //	exit(0);
 //	return;
 
@@ -184,33 +202,42 @@ void MainWindow::customFunc()
 #endif
 
 
+
 #if 0
     /// Xenia cut
-	QString workDir = "/media/michael/Files/Data/Xenia/26Sep/severe_TBI";
+	QString workPath = "/media/Files/Data/Xenia/26Sep/moderate_TBI";
 	/// repair dirs and files
-	repair::deleteSpacesFolders(workDir);
-    QStringList dirs = QDir(workDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+	repair::deleteSpacesFolders(workPath);
+	repair::toLatinDir(workPath, {});
+	repair::toLowerDir(workPath, {});
+	QStringList dirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 	for(QString deer : dirs)
     {
-		repair::fullRepairDir(workDir + myLib::slash + deer);
+//		cout << deer << endl;
+		repair::fullRepairDir(workPath + myLib::slash + deer);
     }
+
+	wvlt::initMtlb();
+	for(QString deer : dirs) /// each guy
+	{
+		QString pew = workPath + slash + deer;
+		autos::GalyaProcessing(pew, 19, workPath + slash + getFileName(workPath) + "_results");
+		autos::GalyaWavelets(pew, 19, 250, workPath + slash + getFileName(workPath) + "_wavelet");
+	}
+	wvlt::termMtlb();
 
 	if(0)
 	{
 		ui->rereferenceDataComboBox->setCurrentText("Base");
 		for(QString deer : dirs) /// each guy
 		{
-			QString pew = workDir + slash + deer;
+			QString pew = workPath + slash + deer;
 			for(QString fil : QDir().entryList(def::edfFilters)) /// each file
 			{
 				setEdfFile(pew + slash + fil);
 				rereferenceDataSlot();
 			}
 		}
-	}
-	if(1)
-	{
-
 	}
     exit(0);
 #endif

@@ -283,7 +283,7 @@ void GalyaWavelets(const QString & inPath,
 
 	const QStringList lst = tmpDir.entryList(def::edfFilters);
 //	const QString exp = myLib::getExpNameLib(lst.first(), true);
-	std::cout << lst.length() << std::endl;
+//	std::cout << lst.length() << std::endl;
 
 	if(outPath.isEmpty())
 	{
@@ -319,7 +319,7 @@ void GalyaWavelets(const QString & inPath,
 
 		waveletOneFile(initEdf.getData(), numChan, freq, helpString);
 	}
-	if(wvlt::isInit) wvlt::termMtlb();
+//	if(wvlt::isInit) wvlt::termMtlb();
 }
 
 
@@ -621,7 +621,7 @@ void GalyaProcessing(const QString & procDirPath,
 
 		if(initEdf.getNs() < numChan)
 		{
-			cout << "too few channels" << endl;
+			cout << "GalyaProcessing: too few channels - " << procDirPath << endl;
 			continue;
 		}
 
@@ -635,8 +635,8 @@ void GalyaProcessing(const QString & procDirPath,
 }
 
 void GalyaFull(const QString & inDirPath,
-			   QString outFileNames,
 			   QString outDirPath,
+			   QString outFileNames,
 			   int numChan,
 			   int freq,
 			   int rightNum)
@@ -663,14 +663,15 @@ void GalyaFull(const QString & inDirPath,
 		tmp.cd(outFileNames);
 		outDirPath = tmp.absolutePath();
 	}
-
-
 	tmp.mkpath(outDirPath);
 
+
 	const QString outPath = inDirPath + "_out";
+//	const QString outPath = inDirPath + myLib::slash + myLib::getFileName(inDirPath) + "_out";
 	tmp.mkpath(outPath);
 
 	const QString waveletPath = inDirPath + "_wavelet";
+//	const QString waveletPath = inDirPath + myLib::slash + myLib::getFileName(inDirPath) + "_wavelet";
 	tmp.mkpath(waveletPath);
 
 	autos::GalyaProcessing(inDirPath,
@@ -688,11 +689,10 @@ void GalyaFull(const QString & inDirPath,
 
 //	return;
 
-	wvlt::initMtlb();
+	if(!wvlt::isInit) wvlt::initMtlb();
 	autos::GalyaWavelets(inDirPath,
 						 numChan, freq,
 						 waveletPath);
-	wvlt::termMtlb();
 
 	/// rename the folder in OUT to guy
 	autos::makeRightNumbers(waveletPath, rightNum);

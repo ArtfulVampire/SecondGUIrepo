@@ -1960,6 +1960,59 @@ void kernelEst(const signalType & arr, QString picPath)
     pic.save(picPath, 0, 100);
 }
 
+/// for fftWindow
+//double bes0(double in)
+//{
+//https://en.wikipedia.org/wiki/Bessel_function#Modified_Bessel_functions
+//	return in;
+//}
+
+lineType fftWindow(int length, const QString & name)
+{
+	std::valarray<double> res = std::valarray<double>(length);
+	const double arg = 2. * pi / (length - 1.);
+	/// Hann/Hanning
+	if(name.startsWith("Han", Qt::CaseInsensitive))
+	{
+		for(int i = 0; i < length; ++i)
+		{
+			res[i] = 0.5 * (1. - cos (i * arg));
+		}
+	}
+	/// Hamming
+	else if(name.startsWith("Ham", Qt::CaseInsensitive))
+	{
+		for(int i = 0; i < length; ++i)
+		{
+			res[i] = 0.53836 - 0.46164 * cos (i * arg);
+		}
+	}
+	/// Blackman
+	else if(name.startsWith("Bla", Qt::CaseInsensitive))
+	{
+		double alpha = 1.;
+		for(int i = 0; i < length; ++i)
+		{
+			res[i] = 0.5 * (1. - alpha) - 0.5 * cos(i * arg) + 0.5 * alpha * cos(2 * i * arg);
+		}
+	}
+	/// Kaiser
+//	else if(name.startsWith("Ka", Qt::CaseInsensitive))
+//	{
+//		const double beta = 5.; /// [4; 9]
+//		for(int i = 0; i < length; ++i)
+//		{
+//			res[i] = fabs(bes0(beta * sqrt(1 - pow(2 * i - length + 1 / (length - 1), 2)))) /
+//					 fabs(bes0(beta));
+//		}
+//	}
+	/// rectangular
+	else
+	{
+		res = 1;
+	}
+	return res;
+}
 
 template <typename signalType, typename retType>
 retType spectre(const signalType & data)

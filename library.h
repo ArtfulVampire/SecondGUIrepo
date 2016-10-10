@@ -491,6 +491,8 @@ void kernelEst(const signalType & arr, QString picPath);
 template <typename signalType = lineType>
 void histogram(const signalType & arr, int numSteps, QString picPath);
 
+lineType fftWindow(int length, const QString & name = "Hann");
+
 template <typename signalType = lineType, typename retType = lineType>
 retType spectre(const signalType & data);
 

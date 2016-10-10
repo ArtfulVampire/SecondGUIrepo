@@ -475,12 +475,14 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
             {
                 if(physMax[i] == physMin[i])
                 {
-                    cout << "edfFile::readEdfFile: phys Max/Min are equal, chan(from 1) = "
+					cout << ExpName << "\t"
+						 << "edfFile::readEdfFile: phys Max/Min are equal, chan(from 1) = "
                          << i + 1 << endl;
                 }
                 if(digMax[i] == digMin[i])
                 {
-                    cout << "edfFile::readEdfFile:  dig Max/Min are equal, chan(from 1) = "
+					cout << ExpName << "\t"
+						 << "edfFile::readEdfFile:  dig Max/Min are equal, chan(from 1) = "
                          << i + 1 << endl;
                 }
             }

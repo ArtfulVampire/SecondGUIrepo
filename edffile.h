@@ -378,11 +378,11 @@ void scalingFactorDir(const QString & inDirPath,
 void deleteSpacesDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
 void deleteSpacesFolders(const QString & dirPath);
 
-void filenameToLatinFile(const QString & filePath);
-void filenameToLatinDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void toLatinFileOrFolder(const QString & fileOrFolderPath);
+void toLatinDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
 
-void filenameToLowerFile(const QString & filePath);
-void filenameToLowerDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void toLowerFileOrFolder(const QString & filePath);
+void toLowerDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
 
 void fullRepairDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
 }

@@ -66,28 +66,29 @@ void scalingFactorDir(const QString & inDirPath,
     }
 }
 
-void filenameToLatinFile(const QString & filePath)
+void toLatinFileOrFolder(const QString & fileOrFolderPath)
 {
-    QString dirName = getDirPathLib(filePath);
-    QString fileName = getFileName(filePath);
-    QString newFileName;
-    for(const QChar & ch : fileName)
-    {
-        int num = ch.unicode();
-        if(coords::kyrToLatin.find(num) != coords::kyrToLatin.end())
-        {
-            newFileName += coords::kyrToLatin.at(num);
-        }
-        else
-        {
-            newFileName += ch;
-        }
-    }
-//    cout << newFileName << endl;
-    QFile::rename(filePath, dirName + slash + newFileName);
+	QString dirName = getDirPathLib(fileOrFolderPath);
+	QString fileName = getFileName(fileOrFolderPath);
+	QString newFileName;
+	for(const QChar & ch : fileName)
+	{
+		int num = ch.unicode();
+		if(coords::kyrToLatin.find(num) != coords::kyrToLatin.end())
+		{
+			newFileName += coords::kyrToLatin.at(num);
+		}
+		else
+		{
+			newFileName += ch;
+		}
+	}
+	QDir tmp(fileOrFolderPath);
+	tmp.rename(fileOrFolderPath,  dirName + slash + newFileName);
+//	QFile::rename(fileOrFolderPath, dirName + slash + newFileName);
 }
 
-void filenameToLatinDir(const QString & dirPath, const QStringList & filters)
+void toLatinDir(const QString & dirPath, const QStringList & filters)
 {
     QStringList leest;
     if(!filters.empty())
@@ -101,7 +102,7 @@ void filenameToLatinDir(const QString & dirPath, const QStringList & filters)
 
     for(const QString & str : leest)
     {
-        filenameToLatinFile(dirPath + slash + str);
+		toLatinFileOrFolder(dirPath + slash + str);
     }
 }
 
@@ -145,7 +146,6 @@ void deleteSpacesFolders(const QString & dirPath)
                    newName);
     }
 }
-
 
 bool testChannelsOrderConsistency(const QString & dirPath)
 {
@@ -307,16 +307,29 @@ void holesDir(const QString & inDirPath,
     }
 }
 
-void filenameToLowerFile(const QString & filePath)
+void toLowerFileOrFolder(const QString & fileOrFolderPath)
 {
-	QString dirName = myLib::getDirPathLib(filePath);
-	QString fileName = myLib::getFileName(filePath);
+	QString dirName = myLib::getDirPathLib(fileOrFolderPath);
+	QString fileName = myLib::getFileName(fileOrFolderPath);
 	QString newFileName = fileName.toLower();
+
 	newFileName[0] = newFileName[0].toUpper();
-	QFile::rename(filePath, dirName + slash + newFileName);
+	for(int i = 1; i < newFileName.length(); ++i)
+	{
+		/// care about fileMarkers - not replace the last "_" in edf-files
+		if(newFileName[i - 1] == '_' &&
+		   !(newFileName.contains(".edf", Qt::CaseInsensitive) &&
+			 i - 1 == newFileName.lastIndexOf("_"))
+		   )
+		{
+			newFileName[i] = newFileName[i].toUpper();
+		}
+	}
+	QDir tmp(fileOrFolderPath);
+	tmp.rename(fileOrFolderPath, dirName + slash + newFileName);
 }
 
-void filenameToLowerDir(const QString & dirPath, const QStringList & filters)
+void toLowerDir(const QString & dirPath, const QStringList & filters)
 {
 	QStringList leest;
 	if(!filters.empty())
@@ -330,15 +343,15 @@ void filenameToLowerDir(const QString & dirPath, const QStringList & filters)
 
 	for(const QString & str : leest)
 	{
-		filenameToLowerFile(dirPath + slash + str);
+		toLowerFileOrFolder(dirPath + slash + str);
 	}
 }
 
 void fullRepairDir(const QString & dirPath, const QStringList & filters)
 {
 	repair::deleteSpacesDir(dirPath, filters);
-	repair::filenameToLatinDir(dirPath, filters);
-	repair::filenameToLowerDir(dirPath, filters);
+	repair::toLatinDir(dirPath, filters);
+	repair::toLowerDir(dirPath, filters);
 	repair::physMinMaxDir(dirPath);
 	repair::scalingFactorDir(dirPath, dirPath);
 	repair::holesDir(dirPath, dirPath);

@@ -34,8 +34,8 @@ void waveletOneFile(const matrix & inData,
 					const QString & outFile);
 
 void GalyaFull(const QString & inDirPath,
-			   QString outFileNames = QString(),
 			   QString outDirPath = QString(),
+			   QString outFileNames = QString(),
 			   int numChan = 32,
 			   int freq = 256,
 			   int rightNum = 3);
