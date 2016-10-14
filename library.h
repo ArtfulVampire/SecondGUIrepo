@@ -265,6 +265,8 @@ void writeMatrixFile(const QString & filePath,
                      const QString & rowsString = "NumOfRows",
                      const QString & colsString = "NumOfCols");
 
+matrix readIITPfile(const QString & filePath);
+
 void readUCIdataSet(const QString & setName,
                     matrix & outData,
                     std::vector<uint> &outTypes);

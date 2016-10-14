@@ -182,6 +182,41 @@ void readMatrixFile(const QString & filePath,
     file.close();
 }
 
+matrix readIITPfile(const QString & filePath)
+{
+	std::ifstream inStr;
+	inStr.open(filePath.toStdString());
+	if(!inStr.good())
+	{
+		std::cout << "readIITPfile: file not good - " << filePath << endl;
+		return {};
+	}
+
+
+
+	/// hat
+	inStr.ignore(64, '\n'); /// data
+	inStr.ignore(64, '\n'); /// name
+	inStr.ignore(64, '\n'); /// Hellow
+	inStr.ignore(64, '\n'); /// Dolly
+	inStr.ignore(64, '\n'); /// Frames Values Tstart Interval (ms)
+	uint numOfRows;
+	uint numOfCols;
+	inStr >> numOfRows >> numOfCols; inStr.ignore(64, '\n'); /// no need Tstart and inerval
+	inStr.ignore(64, '\n'); /// names of values
+	matrix res(numOfCols, numOfRows); /// transposed
+	for(int i = 0; i < numOfRows; ++i)
+	{
+		inStr >> res[0][i]; /// ignore first value(time)
+		for(int j = 0; j < numOfCols; ++j)
+		{
+			inStr >> res[j][i];
+		}
+	}
+	inStr.close();
+	return res;
+}
+
 void readUCIdataSet(const QString & setName,
                     matrix & outData,
                     std::vector<uint> & outTypes)

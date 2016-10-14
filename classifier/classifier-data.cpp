@@ -4,6 +4,24 @@
 
 //using namespace myLib;
 
+void ClassifierData::adjust()
+{
+	numOfCl = *std::max_element(std::begin(this->types), std::end(this->types)) + 1;
+	this->indices.resize(numOfCl, std::vector<uint>{});
+	for(uint i = 0; i < this->types.size(); ++i)
+	{
+		this->indices[this->types[i]].push_back(i);
+	}
+
+	classCount.resize(numOfCl);
+	for(uint i = 0; i < numOfCl; ++i)
+	{
+		classCount[i] = indices[i].size();
+	}
+
+	apriori = classCount;
+}
+
 ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & inTypes)
 {
 	if(inData.rows() != inTypes.size())
@@ -12,22 +30,10 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 		return;
 	}
 
-
-	numOfCl = *std::max_element(std::begin(inTypes), std::end(inTypes)) + 1;
 	this->types = inTypes;
 	this->dataMatrix = inData;
 
-	this->indices.resize(numOfCl, std::vector<uint>{});
-	for(uint i = 0; i < inTypes.size(); ++i)
-	{
-		this->indices[inTypes[i]].push_back(i);
-	}
-
-	classCount.resize(numOfCl);
-	for(uint i = 0; i < numOfCl; ++i)
-	{
-		classCount[i] = indices[i].size();
-	}
+	adjust();
 }
 
 void ClassifierData::erase(uint index)

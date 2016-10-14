@@ -11,13 +11,18 @@ class ClassifierData
 public:
 	ClassifierData() {}
 	ClassifierData(const matrix & inData, const std::vector<uint> & inTypes);
+	void adjust();
 
 	/// gets
+	uint getNumOfCl() const {return numOfCl;}
 	const matrix & getData() const {return dataMatrix;}
 	const std::vector<uint> & getTypes() const {return types;}
 	const std::vector<std::vector<uint>> & getIndices() const {return indices;}
 //	const std::vector<QString> & getFileNames() const {return fileNames;} // unused
 	const std::valarray<double> & getClassCount() const {return classCount;}
+
+	/// sets
+	void setApriori(const std::valarray<double> inApriori) {apriori = inApriori;}
 
 	/// matrix modifiers
 	void erase(uint index);
@@ -36,7 +41,6 @@ public:
 	ClassifierData toPca(int numOfPca = 30, double var = 80.) const;
 	ClassifierData productLeft(const matrix & coeffs = matrix()) const;
 
-
 private:
 	uint numOfCl{};
 	std::valarray<double> averageDatum{};
@@ -46,6 +50,7 @@ private:
 	std::vector<std::vector<uint>> indices{}; // arrays of indices for each class
 //	std::vector<QString> fileNames{}; // unused
 	std::valarray<double> classCount{}; // really int but...
+	std::valarray<double> apriori{};
 };
 
 #endif // CLASSIFIERDATA_H

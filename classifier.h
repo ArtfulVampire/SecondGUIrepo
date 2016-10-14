@@ -5,6 +5,7 @@
 #include "library.h"
 #include "coord.h"
 #include "matrix.h"
+#include "classifierdata.h"
 
 #include <QString>
 #include <vector>
@@ -31,17 +32,21 @@ protected:
     const std::vector<uint> * types = nullptr;
     const std::vector<QString> * fileNames = nullptr;
     const std::valarray<double> * classCount = nullptr; // really int but...
-
     std::valarray<double> apriori;
+
+	/// to do
+//	ClassifierData * myData;
 
     matrix confusionMatrix; // rows - realClass, cols - outClass
     double averageAccuracy;
     double kappa;
     uint numCl;
 
-    bool testCleanFlag  = false; /// delete wrong classified
+	bool testCleanFlag  = false; /// delete wrong classified files
     bool resetFlag = true; /// reset learning values before new learning
 
+
+/// sheeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeet
     QString resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
     QString workDir = def::dir->absolutePath() + myLib::slash + "PA";
     QString filesPath = def::dir->absolutePath()

@@ -80,6 +80,7 @@ void Classifier::setFilesPath(const QString & inPath)
 
 void Classifier::setApriori(const std::valarray<double> & in)
 {
+#if 1
     /// w/o normalization
     if(in.size() == 0)
     {
@@ -88,10 +89,8 @@ void Classifier::setApriori(const std::valarray<double> & in)
     else
     {
         apriori = in;
-    }
-    return;
-
-#if 0
+	}
+#else
     /// with normalization
     std::valarray<double> * pew;
     if(in.empty())
@@ -101,18 +100,10 @@ void Classifier::setApriori(const std::valarray<double> & in)
     else
     {
         pew = &in;
-    }
-    double sum = std::accumulate(std::begin(*pew),
-                                 std::end(*pew),
-                                 0.);
-    std::for_each(std::begin(*pew),
-                  std::end(*pew),
-                  [sum](double & in)
-    {
-        in /= sum;
-    }
-    );
-    this->apriori = sum;
+	}
+	this->apriori = *pew / std::accumulate(std::begin(*pew),
+										   std::end(*pew),
+										   0.);
 #endif
 }
 
