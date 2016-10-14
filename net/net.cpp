@@ -490,7 +490,7 @@ void Net::pca()
     cout << "Part of dispersion explained = " << sum1 * 100./double(trace) << " %" << endl;
     cout << "Number of Components = " << numOfPc << endl;
 
-    //memory for pcaProjections
+	/// pcaMatrix
     centeredMatrix.transpose();
     matrix pcaMatrix(NumberOfVectors, numOfPc);
     pcaMatrix = centeredMatrix * eigenVectors;

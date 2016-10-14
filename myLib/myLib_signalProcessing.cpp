@@ -1201,7 +1201,7 @@ void svd(const matrix & initialData,
          lineType & eigenValues,
          const int dimension, // length of the vectors
          const double & threshold,
-         int eigenVecNum) // num of eigenVectors to count
+		 int eigenVecNum) /// num of eigenVectors to count - add variance
 {
     if(eigenVecNum <= 0)
     {

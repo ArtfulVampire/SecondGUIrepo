@@ -59,7 +59,8 @@ SOURCES += main.cpp\
     classifier/classifier_knn.cpp \
     classifier/classifier_word.cpp \
     classifier/classifier_rda.cpp \
-    other/autos.cpp
+    other/autos.cpp \
+    classifier/classifier-data.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -73,7 +74,8 @@ HEADERS  += mainwindow.h \
     library.h \
     smallLib.h \
     classifier.h \
-    autos.h
+    autos.h \
+    classifierdata.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

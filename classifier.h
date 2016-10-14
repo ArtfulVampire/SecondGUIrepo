@@ -25,6 +25,8 @@ class Classifier
 protected:
     ClassifierType myType;
     QString typeString;
+
+	/// dataClass
     const matrix * dataMatrix = nullptr; // biases for Net are imaginary
     const std::vector<uint> * types = nullptr;
     const std::vector<QString> * fileNames = nullptr;

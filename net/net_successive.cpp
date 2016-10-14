@@ -165,7 +165,6 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
     {
         popBackDatum();
     }
-
     ++passed[newType];
 
     if(numGoodNew == suc::numGoodNewLimit)
