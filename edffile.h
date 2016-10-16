@@ -209,6 +209,7 @@ public:
     void reduceChannels(const QString & chanStr);
     void removeChannels(const std::vector<int> & chanList);
 
+	void resample(double newFreq, std::vector<int> chanList = std::vector<int>{});
 
     void setLabels(const std::vector<QString> & inLabels);
     void setChannels(const std::vector<edfChannel> & inChannels);
@@ -223,7 +224,7 @@ public:
     void fitData(int initSize);
     void cutZerosAtEnd();
     void adjustMarkerChannel();
-    void repairPhysMax();
+	void repairPhysMax();
 
 
 private:

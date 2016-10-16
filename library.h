@@ -321,7 +321,8 @@ QPixmap drawEeg(const matrix & dataD,
                 int redChan = -1);
 
 void drawOneArray(const lineType & array, QString outPath);
-
+void drawOneSignal(const std::valarray<double> & signal,
+				   QString outPath);
 
 void drawTemplate(const QString & outPath,
                   bool channelsFlag = true,
@@ -461,34 +462,78 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath = def::dir->absolutePat
 
 // signal processing
 double enthropy(const double *arr, const int N, const int numOfRanges = 30); // not finished?
+
+/// original
 void four1(double * dataF, int nn, int isign);
 
-template <typename signalType = lineType>
-void four1(signalType & inComplexData, int nn = def::fftLength, int isign = 1);
+/// srate for norm
+std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
+//								  const double srate = 250.,
+								  int fftLen = -1);
 
-template <typename signalType = lineType>
-signalType four2(const signalType & inRealData, int nn = def::fftLength, int isign = 1);
+std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
+//								  const double srate = 250.,
+								  int fftLen = -1);
 
+std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
+//								  const double srate = 250.,
+								  int fftLen = -1);
+
+std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
+//								  const double srate = 250.,
+								  int fftLen = -1);
+
+
+std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre);
+
+std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre);
+
+/// from Rosetta stone - the same
 void four3(std::valarray<std::complex<double>> & inputArray);
-void four3(std::valarray<double> & inputRealArray);
 
+
+std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
+									const int numOfSmooth);
+
+
+
+std::valarray<double> refilter(const std::valarray<double> & inputSignal,
+							   double lowFreq,
+							   double highFreq,
+							   double srate = 250.);
+
+lineType fftWindow(int length, const QString & name = "Hann");
+
+
+void calcSpectre(const std::valarray<double> & inSignal,
+				 std::valarray<double> & outSpectre,
+				 const int & fftLength = def::fftLength,
+				 const int & NumOfSmooth = 0,
+				 const int & Eyes = 0,
+				 const double & powArg = 1.);
+
+void makeSine(std::valarray<double> & in,
+			  double freq = 10.,
+			  double phaseInRad = 0.,
+			  int numPoints = -1,
+			  double srate = 250.);
+
+
+/// non-spectral
 template <typename signalType = lineType>
 double fractalDimension(const signalType &arr,
                         const QString & picPath = QString());
 
-template <typename signalType = lineType, typename retType = lineType>
-retType hilbert(const signalType & arr,
-				double lowFreq = def::leftFreq,
-				double highFreq = def::rightFreq,
-                QString picPath  = QString());
+std::valarray<double> hilbert(const std::valarray<double> & arr,
+							  double lowFreq = def::leftFreq,
+							  double highFreq = def::rightFreq,
+							  QString picPath  = QString());
 
-template <typename signalType = lineType, typename retType = lineType>
-retType hilbertPieces(const signalType & arr,
-                   int inLength,
-				   double sampleFreq,
-				   double lowFreq,
-				   double highFreq,
-                   QString picPath = QString());
+std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
+									double sampleFreq,
+									double lowFreq,
+									double highFreq,
+									QString picPath = QString());
 
 template <typename signalType = lineType, typename retType = lineType>
 retType bayesCount(const signalType & dataIn, int numOfIntervals);
@@ -499,25 +544,6 @@ void kernelEst(const signalType & arr, QString picPath);
 template <typename signalType = lineType>
 void histogram(const signalType & arr, int numSteps, QString picPath);
 
-lineType fftWindow(int length, const QString & name = "Hann");
-
-template <typename signalType = lineType, typename retType = lineType>
-retType spectre(const signalType & data);
-
-void spectre(const double * data,
-             const int &length,
-             double *& spectr);
-
-template <typename signalType = lineType, typename retType = lineType>
-retType smoothSpectre(const signalType & inSpectre, const int numOfSmooth);
-
-template <typename signalType = lineType>
-void calcSpectre(const signalType & inSignal,
-                 signalType & outSpectre,
-                 const int & fftLength = def::fftLength,
-                 const int & NumOfSmooth = 0,
-                 const int & Eyes = 0,
-                 const double & powArg = 1.);
 
 double quantile(double arg);
 void kernelEst(QString filePath, QString picPath);

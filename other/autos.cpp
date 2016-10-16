@@ -363,7 +363,8 @@ void countSpectraFeatures(const QString & filePath,
 
 	for(int i = 0; i < numChan; ++i)
 	{
-		helpSpectre = spectre(initEdf.getData()[i]);
+		/// norming is not necessary
+		helpSpectre = spectreRtoR(initEdf.getData()[i]);
 		helpSpectre = smoothSpectre(helpSpectre,
 									ceil(10 * sqrt(initEdf.getDataLen() / 4096.)));
 
@@ -466,8 +467,8 @@ void countChaosFeatures(const QString & filePath,
 
 	double helpDouble;
 	double sumSpec = 0.;
-	lineType env;
-	lineType envSpec;
+	std::valarray<double> env;
+	std::valarray<double> envSpec;
 
 	edfFile initEdf;
 	initEdf.setMatiFlag(false);
@@ -527,15 +528,16 @@ void countChaosFeatures(const QString & filePath,
 		for(int i = 0; i < numChan; ++i)
 		{
 			//                helpString.clear(); // no pictures
-			env = hilbertPieces(initEdf.getData()[i],
-								initEdf.getDataLen(),
+			env = myLib::hilbertPieces(initEdf.getData()[i],
+//								initEdf.getDataLen(),
 								fr,
-								1., // no difference
-								40. // no difference
+								1., /// no difference - why?
+								40. /// no difference - why?
 								//                                    ,helpString
 								);
 
-			envSpec = spectre(env);
+			/// norming is not necessary here
+			envSpec = spectreRtoR(env);
 			envSpec[0] = 0.;
 #if 0
 			iffreqCounter <= rightFreqLim + stepFreq)
@@ -563,8 +565,8 @@ void countChaosFeatures(const QString & filePath,
 				j < fftLimit(hilbertFreqLimit, fr, smallLib::fftL(initEdf.getDataLen()));
 				++j)
 			{
-				sumSpec += envSpec[j];
 				helpDouble += envSpec[j] * j;
+				sumSpec += envSpec[j];
 			}
 			helpDouble /= sumSpec;
 			helpDouble /= fftLimit(1., fr, smallLib::fftL(initEdf.getDataLen())); // convert to Hz

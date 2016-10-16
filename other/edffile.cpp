@@ -633,8 +633,9 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     if(readFlag)
     {
         annotations.clear();
-    }
+	}
     handleData(readFlag, edfDescriptor);
+
 
 //    cout << "ns = " << ns << endl;
     /// experimental annotations
@@ -679,6 +680,7 @@ void edfFile::handleData(bool readFlag,
 #if DATA_POINTER
         (*(this->dataPointer)).resize(ns);
 #else
+		/// fails when different frequency
         this->data = matrix(ns, dataLength, 0.);
 //        cout << this->data.cols() << "\t" << this->data.rows() << endl;
 #endif
@@ -1198,6 +1200,24 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
         this->writeEdfFile(outPath);
     }
 
+}
+
+
+void edfFile::resample(double newFreq, std::vector<int> chanList)
+{
+	if(chanList.empty())
+	{
+		chanList.resize(this->ns);
+		std::iota(std::begin(chanList), std::end(chanList), 0);
+
+		/// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+		chanList.erase(std::find(std::begin(chanList), std::end(chanList), this->markerChannel));
+	}
+	for(int numChan : chanList)
+	{
+		if(nr[numChan] == newFreq) continue;
+//		refilter
+	}
 }
 
 

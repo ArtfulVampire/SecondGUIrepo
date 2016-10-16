@@ -281,6 +281,7 @@ namespace myLib
 {
 
 
+
 void four1(double * dataF, int nn, int isign)
 {
     int n,mmax,m,j,istep,i;
@@ -294,7 +295,7 @@ void four1(double * dataF, int nn, int isign)
         if (j > i)
         {
             std::swap(dataF[j], dataF[i]);
-            std::swap(dataF[j+1],dataF[i+1]);
+			std::swap(dataF[j+1], dataF[i+1]);
         }
         m = n >> 1; // m = n / 2;
         while (m >= 2 && j > m)
@@ -341,48 +342,201 @@ void four1(double * dataF, int nn, int isign)
     }
 }
 
-template <typename signalType>
-void four1(signalType & inComplexData, int fftLen, int isign)
+std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
+//								  const double srate,
+								  int fftLen)
 {
-    double * pew = new double [2 * fftLen];
-    for(int i = 0; i < 2 * fftLen; ++i)
-    {
-        pew[i] = inComplexData[i];
-    }
-    four1(pew - 1, fftLen, isign);
-//    four1(dataF.data() - 1, fftLen, isign);
-    for(int i = 0; i < 2 * fftLen; ++i)
-    {
-        inComplexData[i] = pew[i];
-    }
-    delete []pew;
-}
+	if(fftLen <= 0)
+	{
+		fftLen = smallLib::fftL(inputSignal.size());
+	}
 
-template <typename signalType>
-signalType four2(const signalType & inRealData, int fftLen, int isign)
-{
+//	double norm = 2. / (inputSignal.size() * srate);
+
     double * pew = new double [2 * fftLen];
+	std::fill(pew, pew + 2 * fftLen, 0.);
+
+	for(int i = 0; i < inputSignal.size(); ++i)
+    {
+		pew[2 * i] = inputSignal[i];
+    }
+
+	four1(pew - 1, fftLen, 1);
+
+	std::valarray<double> res(fftLen);
     for(int i = 0; i < fftLen; ++i)
     {
-        pew[2 * i] = inRealData[i];
-        pew[2 * i + 1] = 0.;
+		res[i] = (pew[2 * i] * pew[2 * i] + pew[2 * i + 1] * pew[2 * i + 1]) ;
     }
-//    for(int i = inRealData.size(); i < 2 * fftLen; ++i)
-//    {
-//        pew[i] = 0.;
-//    }
-
-    four1(pew - 1, fftLen, isign);
-
-    signalType res(fftLen);
-    for(int i = 0; i < fftLen; ++i)
-    {
-        res[i] = (pew[2 * i] * pew[2 * i] + pew[2 * i + 1] * pew[2 * i + 1]);
-    }
+//	res *= norm;
     delete []pew;
+
     return res;
 }
 
+std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
+//								  const double srate,
+								  int fftLen)
+{
+	if(fftLen <= 0)
+	{
+		fftLen = smallLib::fftL(inputSignal.size());
+	}
+
+//	double norm = 2. / (inputSignal.size() * srate);
+	double * pew = new double [2 * fftLen];
+	std::fill(pew, pew + 2 * fftLen, 0.);
+
+	for(int i = 0; i < inputSignal.size(); ++i)
+	{
+		pew[2 * i] = inputSignal[i];
+	}
+
+	four1(pew - 1, fftLen, 1);
+
+	std::valarray<double> res(2 * fftLen);
+	std::copy(pew, pew + 2 * fftLen, std::begin(res));
+//	res *= sqrt(norm);
+
+	delete[] pew;
+	return res;
+}
+
+std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
+//								  const double srate.,
+								  int fftLen)
+{
+	if(fftLen <= 0)
+	{
+		fftLen = smallLib::fftL(inputSignal.size());
+	}
+
+//	double norm = 2. / (inputSignal.size() * srate);
+	double * pew = new double [2 * fftLen];
+	std::fill(pew, pew + 2 * fftLen, 0.);
+
+	for(int i = 0; i < inputSignal.size(); ++i)
+	{
+		pew[i] = inputSignal[i];
+	}
+
+	four1(pew - 1, fftLen, 1);
+
+	std::valarray<double> res(fftLen);
+	for(int i = 0; i < fftLen; ++i)
+	{
+		res[i] = (pew[2 * i] * pew[2 * i] + pew[2 * i + 1] * pew[2 * i + 1]);
+	}
+//	res *= norm;
+	delete []pew;
+
+	return res;
+}
+
+std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
+//								  const double srate,
+								  int fftLen)
+{
+	if(fftLen <= 0)
+	{
+		fftLen = smallLib::fftL(inputSignal.size());
+	}
+
+//	double norm = 2. / (inputSignal.size() * srate);
+	double * pew = new double [2 * fftLen];
+	std::fill(pew, pew + 2 * fftLen, 0.);
+
+	for(int i = 0; i < inputSignal.size(); ++i)
+	{
+		pew[i] = inputSignal[i];
+	}
+
+	four1(pew - 1, fftLen, 1);
+
+	std::valarray<double> res(2 * fftLen);
+	std::copy(pew, pew + 2 * fftLen, std::begin(res));
+//	res *= sqrt(norm);
+
+	delete []pew;
+	return res;
+}
+
+std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre)
+{
+	/// check size?
+	int fftLen = inputSpectre.size() / 2;
+	double * pew = new double [inputSpectre.size()];
+	std::fill(pew, pew + 2 * fftLen, 0.);
+	std::copy(std::begin(inputSpectre), std::end(inputSpectre), pew);
+
+	four1(pew - 1, fftLen, -1);
+
+	std::valarray<double> res(fftLen);
+	for(int i = 0; i < res.size(); ++i)
+	{
+		res[i] = pew[2 * i] / fftLen;
+	}
+
+	delete[] pew;
+	return res;
+}
+
+
+std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre)
+{
+	/// check size?
+	int fftLen = inputSpectre.size() / 2;
+	double * pew = new double [inputSpectre.size()];
+	std::fill(pew, pew + 2 * fftLen, 0.);
+	std::copy(std::begin(inputSpectre), std::end(inputSpectre), pew);
+
+	four1(pew - 1, fftLen, -1);
+	std::valarray<double> res(2 * fftLen);
+	std::copy(pew, pew + 2 * fftLen, std::begin(res));
+	res /= fftLen;
+
+
+	delete[] pew;
+	return res;
+}
+
+/// works
+std::valarray<double> refilter(const std::valarray<double> & inputSignal,
+							   double lowFreq,
+							   double highFreq,
+							   double srate)
+{
+	int fftLen = fftL(inputSignal.size());
+	cout << fftLen << endl;
+	std::valarray<double> spectr = spectreRtoC(inputSignal, fftLen);
+	const double spStep = srate / fftLen;
+	const int lowLim = floor(2. * lowFreq / spStep);
+	const int highLim = ceil(2. * highFreq / spStep);
+
+	for(int i = 0; i < fftLen; ++i)
+	{
+		if(i <  lowLim||
+		   i > highLim)
+			spectr[i] = 0.;
+	}
+	for(int i = fftLen; i < 2 * fftLen; ++i)
+	{
+		if((2 * fftLen - i < lowLim) ||
+		   (2 * fftLen - i > highLim))
+			spectr[i] = 0.;
+	}
+	/// constant component
+	spectr[0] = 0.;
+	spectr[1] = 0.;
+	spectr[fftLen] = 0.;
+	spectr[fftLen+1] = 0.;
+
+	return spectreCtoRrev(spectr);
+}
+
+
+
+/// Rosetta stone
 void four3(std::valarray<std::complex<double>> & inputArray)
 {
     // DFT
@@ -435,30 +589,8 @@ void four3(std::valarray<std::complex<double>> & inputArray)
     }
 }
 
-void four3(std::valarray<double> & inputRealArray)
-{
-    std::valarray<std::complex<double>> inputComplexArray(inputRealArray.size());
-    std::transform(begin(inputRealArray),
-                   end(inputRealArray),
-                   begin(inputComplexArray),
-                   [](const double & in)
-    { return std::complex<double>(in);});
-//    for(int i = 0; i < inputRealArray.size(); ++i)
-//    {
-//        inputComplexArray[i] = std::complex<double>(inputRealArray[i]);
-//    }
-    four3(inputComplexArray);
-//    inputRealArray = inputComplexArray.apply(std::real<double>());
-    std::transform(std::begin(inputComplexArray),
-                   std::end(inputComplexArray),
-                   std::begin(inputRealArray),
-                   [](const std::complex<double> & in)
-    { return std::real<double>(in);});
-//    for(int i = 0; i < inputRealArray.size(); ++i)
-//    {
-//        inputRealArray[i] = std::real<double>(inputComplexArray[i]);
-//    }
-}
+
+
 
 
 
@@ -1504,11 +1636,10 @@ double splineOutput(const lineType & inX,
 }
 
 
-template <typename signalType, typename retType>
-retType hilbert(const signalType & arr,
-                double lowFreq,
-                double highFreq,
-                QString picPath)
+std::valarray<double> hilbert(const std::valarray<double> & arr,
+							  double lowFreq,
+							  double highFreq,
+							  QString picPath)
 {
 
     const int inLength = arr.size();
@@ -1516,8 +1647,9 @@ retType hilbert(const signalType & arr,
     const double spStep = def::freq / fftLen;
     const double normCoef = sqrt(fftLen / double(inLength));
 
-    retType out; // result
-    out.resize(2 * fftLen);
+	std::valarray<double> out; // result
+	out.resize(2 * fftLen);
+	std::fill(std::begin(out), std::end(out), 0.);
 
     vectType tempArr;
     tempArr.resize(fftLen, 0.);
@@ -1525,18 +1657,14 @@ retType hilbert(const signalType & arr,
     vectType filteredArr;
     filteredArr.resize(fftLen, 0.);
 
-
     for(int i = 0; i < inLength; ++i)
     {
         out[ 2 * i + 0] = arr[i] * normCoef;
-        out[ 2 * i + 1] = 0.;
     }
-    for(int i = inLength; i < fftLen; ++i)
-    {
-        out[ 2 * i + 0] = 0.;
-        out[ 2 * i + 1] = 0.;
-    }
-    four1(out, fftLen, 1);
+
+
+	spectreCtoC(out, fftLen);
+
     //start filtering
     for(int i = 0; i < fftLen; ++i)
     {
@@ -1550,13 +1678,14 @@ retType hilbert(const signalType & arr,
            || (2 * fftLen - i > 2. * highFreq / spStep))
             out[i] = 0.;
     }
+	/// constant component
     out[0] = 0.;
     out[1] = 0.;
     out[fftLen] = 0.;
     out[fftLen+1] = 0.;
     //end filtering
 
-    four1(out, fftLen, -1);
+	spectreCtoRrev(out);
     for(int i = 0; i < inLength; ++i)
     {
         filteredArr[i] = out[2 * i] / fftLen / normCoef;
@@ -1573,15 +1702,15 @@ retType hilbert(const signalType & arr,
     {
         out[2 * i + 0] = 0.;
         out[2 * i + 1] = 0.;
-    }
-    four1(out, fftLen, 1);
+	}
+	spectreCtoC(out, fftLen);
 
     for(int i = 0; i < fftLen / 2; ++i)
     {
         out[2 * i + 0] = 0.;
         out[2 * i + 1] = 0.;
-    }
-    four1(out, fftLen, -1);
+	}
+	spectreCtoCrev(out);
 
     for(int i = 0; i < inLength; ++i)
     {
@@ -1644,148 +1773,66 @@ retType hilbert(const signalType & arr,
 }
 
 
-template <typename signalType, typename retType>
-retType hilbertPieces(const signalType & arr,
-                      int inLength,
-                      double sampleFreq,
-                      double lowFreq,
-                      double highFreq,
-                      QString picPath)
+std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
+									double sampleFreq,
+									double lowFreq,
+									double highFreq,
+									QString picPath)
 {
-    /// do hilbert transform for the last fftLen bins ???
-    if( inLength <= 0)
-    {
-        inLength = arr.size();
-    }
-    retType outHilbert(inLength);
-    int fftLen = fftL(inLength) / 2;
+	/// do hilbert transform for the first inLength bins
+	const double srate = def::freq; ///- to arguments
+	const int inLength = arr.size();
+	const int fftLen = fftL(inLength) / 2;
 
-    double spStep = sampleFreq/fftLen;
-    vectType out(2*fftLen); // temp
-    vectType tempArr(inLength);
-    vectType filteredArr(inLength);
+	std::valarray<double> outHilbert(inLength); /// result
+	std::valarray<double> tempArr[2];
 
-    for(int i = 0; i < fftLen; ++i)
-    {
-        out[ 2 * i + 0] = arr[i];
-        out[ 2 * i + 1] = 0.;
-    }
-    four1(out, fftLen, 1);
-    //start filtering
-    for(int i = 0; i < fftLen; ++i)
-    {
-        if(i < 2.*lowFreq/spStep || i > 2.*highFreq/spStep)
-            out[i] = 0.;
-    }
-    for(int i = fftLen; i < 2*fftLen; ++i)
-    {
-        if(((2*fftLen - i) < 2.*lowFreq/spStep) || (2*fftLen - i > 2.*highFreq/spStep))
-            out[i] = 0.;
-    }
-    out[0] = 0.;
-    out[1] = 0.;
-    out[fftLen] = 0.;
-    out[fftLen+1] = 0.;
+	const std::valarray<double> filteredArr = myLib::refilter(arr, lowFreq, highFreq, srate);
 
-    four1(out, fftLen, -1);
-    for(int i = 0; i < fftLen; ++i)
-    {
-        filteredArr[i] = out[2*i] / fftLen*2;
-    }
-    //end filtering
+	int start;
+	for(int i = 0; i < 2; ++i)
+	{
+		if(i == 0)
+		{
+			start = 0;
+		}
+		else if(i == 1)
+		{
+			start = inLength - fftLen;
+		}
 
+		//Hilbert via FFT
+		tempArr[i].resize(fftLen);
+		std::copy(std::begin(filteredArr) + start,
+				  std::begin(filteredArr) + start + fftLen,
+				  std::begin(tempArr[i]));
+		tempArr[i] = spectreRtoC(tempArr[i], fftLen);
+		std::fill(std::begin(tempArr[i]), std::begin(tempArr[i]) + fftLen, 0.);
 
+		const std::valarray<double> temp = spectreCtoCrev(tempArr[i]);
+		tempArr[i].resize(inLength);
+		for(int j = 0; j < fftLen; ++j)
+		{
+			tempArr[i][start + j] = temp[2 * j + 1]; // hilbert
+		}
+		tempArr[i] *= 2.;
+		//end Hilbert via FFT
+	}
 
-    //Hilbert via FFT
-    for(int i = 0; i < fftLen; ++i)
-    {
-        out[ 2 * i + 0] = filteredArr[i];
-        out[ 2 * i + 1] = 0.;
-    }
-    four1(out, fftLen, 1);
-
-    for(int i = 0; i < fftLen/2; ++i)
-    {
-        out[2*i + 0] = 0.;
-        out[2*i + 1] = 0.;
-    }
-    four1(out, fftLen, -1);
-
-    for(int i = 0; i < fftLen; ++i)
-    {
-        tempArr[i] = out[2*i+1] / fftLen*2; //hilbert
-    }
-    //end Hilbert via FFT
-
-    for(int i = 0; i < fftLen; ++i)
-    {
-        outHilbert[i] = pow(pow(tempArr[i], 2.) + pow(filteredArr[i], 2.), 0.5);
-    }
-
-
-
-
-
-    //second piece
-    for(int i = 0; i < fftLen; ++i)
-    {
-        out[ 2 * i + 0] = arr[i + inLength-fftLen];
-        out[ 2 * i + 1] = 0.;
-    }
-    four1(out, fftLen, 1);
-    //start filtering
-    for(int i = 0; i < fftLen; ++i)
-    {
-        if(i < 2.*lowFreq/spStep || i > 2.*highFreq/spStep)
-            out[i] = 0.;
-    }
-    for(int i = fftLen; i < 2*fftLen; ++i)
-    {
-        if(((2*fftLen - i) < 2.*lowFreq/spStep) || (2*fftLen - i > 2.*highFreq/spStep))
-            out[i] = 0.;
-    }
-    out[0] = 0.;
-    out[1] = 0.;
-    out[fftLen] = 0.;
-    out[fftLen+1] = 0.;
-
-    four1(out, fftLen, -1);
-    for(int i = 0; i < fftLen; ++i)
-    {
-        filteredArr[i + inLength - fftLen] = out[2*i] / fftLen*2;
-    }
-    //end filtering
-
-
-    //Hilbert via FFT
-    for(int i = 0; i < fftLen; ++i)
-    {
-        out[ 2 * i + 0] = filteredArr[i + inLength - fftLen];
-        out[ 2 * i + 1] = 0.;
-    }
-    four1(out, fftLen, 1);
-    for(int i = 0; i < fftLen/2; ++i)
-    {
-        out[2*i + 0] = 0.;
-        out[2*i + 1] = 0.;
-    }
-    four1(out, fftLen, -1);
-
-    for(int i = 0; i < fftLen; ++i)
-    {
-        tempArr[i + inLength - fftLen] = out[2*i+1] / fftLen*2; //hilbert
-    }
-    //end Hilbert via FFT
-
+	for(int i = 0; i < fftLen; ++i)
+	{
+		outHilbert[i] = sqrt(pow(tempArr[0][i], 2.) + pow(filteredArr[i], 2.));
+	}
 
     int startReplace = 0;
-    double minD = 100.;
-
+	double minD = 100.; // difference between two possible envelopes
     double helpDouble = 0.;
+
     for(int i = inLength - fftLen; i < fftLen; ++i)
     {
-        helpDouble = outHilbert[i] - pow(pow(tempArr[i], 2.) +
+		helpDouble = outHilbert[i] - pow(pow(tempArr[1][i], 2.) +
                                          pow(filteredArr[i], 2.), 0.5);
+		/// could add derivative
         if(fabs(helpDouble) <= fabs(minD))
         {
             minD = helpDouble;
@@ -1795,7 +1842,7 @@ retType hilbertPieces(const signalType & arr,
 
     for(int i = startReplace; i < inLength; ++i)
     {
-        outHilbert[i] = pow(pow(tempArr[i], 2.) + pow(filteredArr[i], 2.), 0.5);
+		outHilbert[i] = sqrt(pow(tempArr[1][i], 2.) + pow(filteredArr[i], 2.));
     }
 
 
@@ -1803,11 +1850,12 @@ retType hilbertPieces(const signalType & arr,
     {
 
         //start check draw - OK
-        QPixmap pic(inLength,600);
+		QPixmap pic(inLength, 600);
         QPainter pnt;
         pic.fill();
         pnt.begin(&pic);
-        double maxVal = *std::max_element(filteredArr.begin(), filteredArr.end()) * 1.1;
+		double maxVal = *std::max_element(std::begin(filteredArr),
+										  std::end(filteredArr)) * 1.1;
 
         pnt.setPen("black");
         for(int i = 0; i < pic.width()-1; ++i)
@@ -1826,13 +1874,18 @@ retType hilbertPieces(const signalType & arr,
         //        }
 
         pnt.setPen("green");
-        for(int i = 0; i < pic.width()-1; ++i)
+		for(int i = 0; i < pic.width() - 1; ++i)
         {
-            pnt.drawLine(i,
-                         pic.height()/2. * (1. - outHilbert[i] / maxVal),
-                         i+1,
-                         pic.height()/2. * (1. - outHilbert[i + 1] / maxVal)
-                    );
+			pnt.drawLine(i,
+						 pic.height()/2. * (1. - outHilbert[i] / maxVal),
+						 i+1,
+						 pic.height()/2. * (1. - outHilbert[i + 1] / maxVal)
+					);
+//			pnt.drawLine(i,
+//						 pic.height()/2. * (1. - fftLen * tempArr[0][i] / maxVal),
+//						 i+1,
+//						 pic.height()/2. * (1. - fftLen * tempArr[0][i + 1] / maxVal)
+//					);
         }
 
         pnt.setPen("blue");
@@ -1848,13 +1901,25 @@ retType hilbertPieces(const signalType & arr,
     return outHilbert;
 }
 
-template <typename signalType, typename retType>
-retType bayesCount(const signalType & dataIn,
-               int numOfIntervals)
+void makeSine(std::valarray<double> & in,
+			  double freq,
+			  double phaseInRad,
+			  int numPoints,
+			  double srate)
+{
+	if(numPoints < 0) numPoints = in.size();
+	for(int i = 0; i < numPoints; ++i)
+	{
+		in[i] = sin(freq * 2 * pi * (i / srate) + phaseInRad);
+	}
+}
+
+std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
+								 int numOfIntervals)
 {
     double maxAmpl = 80.; //generality
     int helpInt;
-    retType out(0., numOfIntervals);
+	std::valarray<double> out(0., numOfIntervals);
 
     for(uint j = 0; j < dataIn.size(); ++j)
     {
@@ -2014,34 +2079,12 @@ lineType fftWindow(int length, const QString & name)
 	return res;
 }
 
-template <typename signalType, typename retType>
-retType spectre(const signalType & data)
+
+
+std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
+									const int numOfSmooth)
 {
-    int length = data.size();
-    int fftLen = fftL(length); // nearest exceeding power of 2
-    double norm = sqrt(fftLen / double(length));
-
-    vectType tempSpectre(2 * fftLen, 0.);
-    for(int i = 0; i < length; ++i)
-    {
-        tempSpectre[ 2 * i + 0 ] = data[i] * norm;
-    }
-    four1(tempSpectre.data() - 1, fftLen, 1);
-
-    retType spectr(fftLen / 2);
-    norm = 2. / (def::freq * fftLen);
-    for(int i = 0; i < fftLen / 2; ++i )      //get the absolute value of FFT
-    {
-        spectr[ i ] = (pow(tempSpectre[ i * 2 ], 2.)
-                      + pow(tempSpectre[ i * 2 + 1 ], 2.)) * norm;
-    }
-    return spectr;
-}
-
-template <typename signalType, typename retType>
-retType smoothSpectre(const signalType & inSpectre, const int numOfSmooth)
-{
-    retType result = inSpectre;
+	std::valarray<double> result = inSpectre;
     double help1, help2;
     for(int num = 0; num < numOfSmooth; ++num)
     {
@@ -2049,7 +2092,7 @@ retType smoothSpectre(const signalType & inSpectre, const int numOfSmooth)
         for(uint i = 1; i < result.size() - 1; ++i)
         {
             help2 = result[i];
-            result[i] = (help1 + help2 + result[i+1]) / 3.;
+			result[i] = (help1 + help2 + result[i + 1]) / 3.;
             help1 = help2;
         }
     }
@@ -2290,9 +2333,8 @@ void calcRawFFT(const Typ & inData,
 }
 
 
-template <typename signalType = lineType>
-void calcSpectre(const signalType & inSignal,
-                 signalType & outSpectre,
+void calcSpectre(const std::valarray<double> & inSignal,
+				 std::valarray<double> & outSpectre,
                  const int & fftLength,
                  const int & NumOfSmooth,
                  const int & Eyes,
@@ -2320,9 +2362,9 @@ void calcSpectre(const signalType & inSignal,
     }
 #else
     const double nrm = 2. / (double(fftLength - Eyes) * def::freq);
-    outSpectre = four2(inSignal, fftLength, 1) * nrm;
+	outSpectre = spectreRtoR(inSignal, fftLength) * nrm;
 #endif
-//    outSpectre = pow(four2(inSignal, fftLength, 1) * nrm, powArg);
+//    outSpectre = pow(four2r(inSignal, fftLength, 1) * nrm, powArg);
 
 
 
@@ -2330,7 +2372,7 @@ void calcSpectre(const signalType & inSignal,
     const int leftSmoothLimit = 1;
     const int rightSmoothLimit = fftLength / 2 - 1;
     double help1, help2;
-    for(int a = 0; a < (int)(NumOfSmooth / norm1); ++a)
+	for(int a = 0; a < (int)(NumOfSmooth / norm1); ++a)
     {
         help1 = outSpectre[leftSmoothLimit - 1];
         for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
@@ -2356,33 +2398,11 @@ template double correlation(const vector<double> &arr1, const vector<double> &ar
 template double correlation(const lineType &arr1, const lineType &arr2, int length, int shift, bool fromZero);
 
 
-template void four1(lineType & dataF, int nn, int isign);
-template void four1(vectType & dataF, int nn, int isign);
-
-template lineType four2(const lineType & inRealData, int fftLen, int isign);
-
-template lineType spectre(const vectType & data);
-template lineType spectre(const lineType & data);
-
-template lineType smoothSpectre(const lineType & inSpectre, const int numOfSmooth);
-
-template lineType hilbert(const lineType & arr, double lowFreq, double highFreq, QString picPath);
-template lineType hilbert(const vectType & arr, double lowFreq, double highFreq, QString picPath);
-
-template lineType hilbertPieces(const lineType & arr, int inLength, double sampleFreq, double lowFreq, double highFreq, QString picPath);
-template lineType hilbertPieces(const vectType & arr, int inLength, double sampleFreq, double lowFreq, double highFreq, QString picPath);
-
-template lineType bayesCount(const vectType & dataIn, int numOfIntervals);
-template lineType bayesCount(const lineType & dataIn, int numOfIntervals);
-
 template double fractalDimension(const lineType &arr, const QString &picPath = QString());
 template double fractalDimension(const vectType &arr, const QString &picPath = QString());
 
 template void calcRawFFT(const mat & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 template void calcRawFFT(const matrix & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
-
-template void calcSpectre(const lineType & inSignal, lineType & outSpectre, const int & fftLength, const int & NumOfSmooth, const int & Eyes, const double & powArg);
-//template void calcSpectre(const vectType & inSignal, vectType & outSpectre, const int & fftLength, const int & NumOfSmooth, const int & Eyes, const double & powArg);
 
 template void kernelEst(const vectType & arr, QString picPath);
 template void kernelEst(const lineType & arr, QString picPath);
