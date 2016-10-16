@@ -149,16 +149,17 @@ QString rerefChannel(const QString & initialName,
                      const std::vector<QString> & sign = {"-", "+"});
 
 
-std::ostream & operator<< (std::ostream &os, QString toOut);
+std::istream & operator>> (std::istream &is, QString & in);
+std::ostream & operator<< (std::ostream &os, const QString & toOut);
 std::ostream & operator<< (std::ostream &os, QChar toOut);
-std::ostream & operator<< (std::ostream &os, matrix toOut);
+std::ostream & operator<< (std::ostream &os, const matrix & toOut);
 
 // containers with no allocators
 template <typename Typ, template <typename> class Cont>
-std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut);
+std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut);
 
 template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont>
-std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut);
+std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut);
 
 char * strToChar(const QString & input);
 FILE * fopen(QString filePath, const char *__modes);
@@ -265,7 +266,12 @@ void writeMatrixFile(const QString & filePath,
                      const QString & rowsString = "NumOfRows",
                      const QString & colsString = "NumOfCols");
 
+
 matrix readIITPfile(const QString & filePath);
+
+void readIITPfile(const QString & filePath,
+				  matrix & outData,
+				  std::vector<QString> & outLabels);
 
 void readUCIdataSet(const QString & setName,
                     matrix & outData,
@@ -298,7 +304,7 @@ void drawRealisation(const QString & inPath);
 QPixmap drawEeg(const matrix & dataD,
                 int ns,
                 int NumOfSlices,
-                int freq = def::freq,
+				int freq = def::freq,
                 const QString & picPath = QString(),
                 double norm = 1.,
                 int blueChan = -1,
@@ -308,7 +314,7 @@ QPixmap drawEeg(const matrix & dataD,
                 int ns,
                 int startSlice,
                 int endSlice,
-                int freq = def::freq,
+				int freq = def::freq,
                 const QString & picPath = QString(),
                 double norm = 1.,
                 int blueChan = -1,
@@ -472,16 +478,16 @@ double fractalDimension(const signalType &arr,
 
 template <typename signalType = lineType, typename retType = lineType>
 retType hilbert(const signalType & arr,
-                double lowFreq = def::leftFreq,
-                double highFreq = def::rightFreq,
+				double lowFreq = def::leftFreq,
+				double highFreq = def::rightFreq,
                 QString picPath  = QString());
 
 template <typename signalType = lineType, typename retType = lineType>
 retType hilbertPieces(const signalType & arr,
                    int inLength,
-                   double sampleFreq,
-                   double lowFreq,
-                   double highFreq,
+				   double sampleFreq,
+				   double lowFreq,
+				   double highFreq,
                    QString picPath = QString());
 
 template <typename signalType = lineType, typename retType = lineType>

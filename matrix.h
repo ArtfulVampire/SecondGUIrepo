@@ -80,6 +80,8 @@ public:
     lineType averageRow() const;
     lineType averageCol() const;
     lineType sigmaOfCols() const;
+	lineType maxOfRows() const;
+	lineType maxOfCols() const;
     void pop_back();
     void push_back(const lineType &in);
     void push_back(const vectType &in);

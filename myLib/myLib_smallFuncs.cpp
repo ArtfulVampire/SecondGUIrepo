@@ -517,9 +517,15 @@ int matiCountDecimal(QString byteMarker)
     return res;
 }
 
+std::istream & operator>> (std::istream &is, QString & in)
+{
+	std::string tmp;
+	is >> tmp;
+	in = QString(tmp.c_str());
+	return is;
+}
 
-
-ostream & operator << (ostream &os, QString toOut)
+ostream & operator << (ostream &os, const QString & toOut)
 {
     os << toOut.toStdString();
     return os;
@@ -529,7 +535,7 @@ ostream & operator << (ostream &os, QChar toOut)
     os << QString(toOut);
     return os;
 }
-ostream & operator << (ostream &os, matrix toOut)
+ostream & operator << (ostream &os, const matrix & toOut)
 {
     for(auto it = std::begin(toOut.data); it < std::end(toOut.data); ++it)
     {
@@ -543,7 +549,7 @@ ostream & operator << (ostream &os, matrix toOut)
 }
 
 template <typename Typ, template <typename> class Cont>
-std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut)
+std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut)
 {
     std::string separ = "\t";
     //if(is_container<Typ>) separ = std::endl;
@@ -557,7 +563,7 @@ std::ostream & operator<< (std::ostream &os, Cont <Typ> toOut)
 }
 
 template <typename Typ, template <typename, typename> class Cont>
-std::ostream & operator<< (std::ostream &os, Cont <Typ, std::allocator<Typ>> toOut)
+std::ostream & operator<< (std::ostream &os, const Cont <Typ, std::allocator<Typ>> & toOut)
 {
     std::string separ = "\t";
     //if(is_container<Typ>) separ = std::endl;
@@ -572,18 +578,18 @@ std::ostream & operator<< (std::ostream &os, Cont <Typ, std::allocator<Typ>> toO
 
 
 // with allocators
-template ostream & operator << (std::ostream & os, std::vector<std::vector<double>> toOut);
-template ostream & operator << (std::ostream & os, std::vector<int> toOut);
-template ostream & operator << (std::ostream & os, std::vector<uint> toOut);
-template ostream & operator << (std::ostream & os, std::vector<double> toOut);
-template ostream & operator << (std::ostream & os, std::list<int> toOut);
-template ostream & operator << (std::ostream & os, std::list<double> toOut);
+template ostream & operator << (std::ostream & os, const std::vector<std::vector<double>> & toOut);
+template ostream & operator << (std::ostream & os, const std::vector<int> & toOut);
+template ostream & operator << (std::ostream & os, const std::vector<uint> & toOut);
+template ostream & operator << (std::ostream & os, const std::vector<double> & toOut);
+template ostream & operator << (std::ostream & os, const std::list<int> & toOut);
+template ostream & operator << (std::ostream & os, const std::list<double> & toOut);
 
 // w/o allocators
-template ostream & operator << (std::ostream & os, std::valarray<double> toOut);
-template ostream & operator << (std::ostream & os, std::valarray<int> toOut);
-template ostream & operator << (std::ostream & os, QList<int> toOut);
-template ostream & operator << (std::ostream & os, QList<double> toOut);
+template ostream & operator << (std::ostream & os, const std::valarray<double> & toOut);
+template ostream & operator << (std::ostream & os, const std::valarray<int> & toOut);
+template ostream & operator << (std::ostream & os, const QList<int> & toOut);
+template ostream & operator << (std::ostream & os, const QList<double> & toOut);
 
 
 template uint indexOfMax(const std::vector<int> & cont);

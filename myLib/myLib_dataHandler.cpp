@@ -182,6 +182,7 @@ void readMatrixFile(const QString & filePath,
     file.close();
 }
 
+
 matrix readIITPfile(const QString & filePath)
 {
 	std::ifstream inStr;
@@ -193,7 +194,6 @@ matrix readIITPfile(const QString & filePath)
 	}
 
 
-
 	/// hat
 	inStr.ignore(64, '\n'); /// data
 	inStr.ignore(64, '\n'); /// name
@@ -203,18 +203,67 @@ matrix readIITPfile(const QString & filePath)
 	uint numOfRows;
 	uint numOfCols;
 	inStr >> numOfRows >> numOfCols; inStr.ignore(64, '\n'); /// no need Tstart and inerval
-	inStr.ignore(64, '\n'); /// names of values
-	matrix res(numOfCols, numOfRows); /// transposed
+	cout << numOfRows << "\t" << numOfCols << endl;
+	inStr.ignore(512, '\n'); /// names of values
+	matrix res(numOfCols, numOfRows, 0); /// transposed
 	for(int i = 0; i < numOfRows; ++i)
 	{
 		inStr >> res[0][i]; /// ignore first value(time)
+		if(i < 10) cout << res[0][i] << endl;
 		for(int j = 0; j < numOfCols; ++j)
 		{
 			inStr >> res[j][i];
+			if(i < 10) cout << res[j][i] << "\t";
 		}
+		if(i < 10) cout << endl;
 	}
 	inStr.close();
 	return res;
+}
+
+
+void readIITPfile(const QString & filePath,
+				  matrix & outData,
+				  std::vector<QString> & outLabels)
+{
+	std::ifstream inStr;
+	inStr.open(filePath.toStdString());
+	if(!inStr.good())
+	{
+		std::cout << "readIITPfile: file not good - " << filePath << endl;
+		return;
+	}
+
+	/// hat
+	inStr.ignore(64, '\n'); /// data
+	inStr.ignore(64, '\n'); /// name
+	inStr.ignore(64, '\n'); /// Hellow
+	inStr.ignore(64, '\n'); /// Dolly
+	inStr.ignore(128, '\n'); /// Frames Values Tstart Interval (ms)
+	uint numOfRows;
+	uint numOfCols;
+	inStr >> numOfRows >> numOfCols; inStr.ignore(128, '\n'); /// no need Tstart and inerval
+
+	std::string tmp;
+	outLabels.resize(numOfCols);
+	inStr >> tmp; /// Time
+	for(int i = 0; i < outLabels.size(); ++i)
+	{
+		inStr >> tmp;
+		outLabels[i] = QString(tmp.c_str());
+	}
+//	inStr.ignore(64, '\n'); /// need?
+
+	outData = matrix(numOfCols, numOfRows, 0.); /// transposed
+	for(int i = 0; i < numOfRows; ++i)
+	{
+		inStr >> outData[0][i]; /// ignore first value(time)
+		for(int j = 0; j < numOfCols; ++j)
+		{
+			inStr >> outData[j][i];
+		}
+	}
+	inStr.close();
 }
 
 void readUCIdataSet(const QString & setName,

@@ -795,7 +795,7 @@ void MainWindow::drawRealisations()
                 helpString,
                 ui->drawCoeffSpinBox->value(),
                 blueCh,
-                redCh); // generality freq
+                redCh); // generality.getFreq()
 
         ui->progressBar->setValue(100 * (i + 1) / lst.length());
         qApp->processEvents();

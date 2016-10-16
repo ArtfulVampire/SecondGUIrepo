@@ -669,6 +669,27 @@ double matrix::minAbsVal() const
     return res;
 }
 
+lineType matrix::maxOfRows() const
+{
+	lineType res(this->rows(), 0);
+	for(int i = 0; i < res.size(); ++i)
+	{
+		res[i] = this->data[i].max();
+	}
+	return res;
+}
+
+lineType matrix::maxOfCols() const
+{
+	lineType res(this->cols(), 0);
+	for(int i = 0; i < res.size(); ++i)
+	{
+		lineType t = this->getCol(i);
+		res[i] = t.max();
+	}
+	return res;
+}
+
 double matrix::sum() const
 {
     double res = 0.;

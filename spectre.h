@@ -30,8 +30,8 @@ public:
     void setPow(double);
     void setFftLength(int);
 
-    void writeSpectra(const double leftFreq = def::leftFreq,
-                      const double rightFreq = def::rightFreq);
+	void writeSpectra(const double leftFreq = def::leftFreq,
+					  const double rightFreq = def::rightFreq);
 
     void setInPath(const QString &);
     void setOutPath(const QString &);

@@ -125,8 +125,7 @@ QString getExpNameLib(const QString & filePath, bool shortened) // getFileName
 
 QString getDirPathLib(const QString & filePath)
 {
-    QString str = filePath;
-    return str.left(str.lastIndexOf(slash));
+	return filePath.left(filePath.lastIndexOf(slash));
 }
 
 

@@ -157,6 +157,8 @@ struct edfChannel
 };
 
 
+enum class inst {mati, iitp};
+
 class edfFile
 {
 public:
@@ -164,8 +166,9 @@ public:
     edfFile();
     ~edfFile() {}
 
-    edfFile(const edfFile & other, bool noData = false);
-    edfFile(const QString & matiLogPath);
+
+	edfFile(const edfFile & other, bool noData = false);
+	edfFile(const QString & txtFilePath, inst which = inst::mati);
 
     void readEdfFile(QString EDFpath, bool headerOnly = false);
     void writeEdfFile(QString EDFpath, bool asPlain = false);
@@ -196,8 +199,8 @@ public:
     void appendFile(QString addEdfPath, QString outPath) const;
     void concatFile(QString addEdfPath, QString outPath = QString());
     void countFft();
-    void refilter(const double &lowFreq,
-                  const double &highFreq,
+	void refilter(const double & lowFreq,
+				  const double & highFreq,
                   const QString & newPath = QString(),
                   bool isNotch = false);
     void saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag = false) const;
@@ -232,7 +235,7 @@ private:
     int ndr = 0;
     double ddr = 1.;
     int ns = 0;
-    int srate = 250; // the same as freq
+	int srate = 250; // the same as.getFreq()
 
     // fast access for slicing (time-bin, marker)
     std::vector<std::pair<int, double>> sessionEdges = std::vector<std::pair<int, double>>();
@@ -285,7 +288,7 @@ public:
     const int & getNdr() const {return ndr;}
     const double & getDdr() const {return ddr;}
     const int & getNs() const {return ns;}
-    const int & freq() const {return srate;}
+	const int & getFreq() const {return srate;}
     const std::vector <QString> & getLabels() const {return labels;}
     const std::vector <QString> & getTransducer() const {return transducerType;}
     const std::vector <QString> & getPhysDim() const {return physDim;}

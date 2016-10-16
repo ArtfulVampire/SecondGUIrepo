@@ -157,7 +157,7 @@ bool testChannelsOrderConsistency(const QString & dirPath)
 	fil.readEdfFile(dirPath + slash + leest[0], true);
 	for(const QString & lbl : fil.getLabels())
 	{
-		if(lbl.startsWith("EEG "));
+		if( lbl.startsWith("EEG ") )
 		{
 			labelsBC.push_back(lbl);
         }
@@ -172,7 +172,7 @@ bool testChannelsOrderConsistency(const QString & dirPath)
 		labels.clear();
 		for(const QString & lbl : fil.getLabels())
 		{
-			if(lbl.startsWith("EEG "));
+			if( lbl.startsWith("EEG ") )
 			{
 				labels.push_back(lbl);
 			}

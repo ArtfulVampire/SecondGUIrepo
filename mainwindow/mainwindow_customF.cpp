@@ -39,7 +39,15 @@ void MainWindow::customFunc()
 
 
 //	exit(0);
-//	return;
+//	edfFile fil("/media/Files/Data/iitp/SIA/SIA_palms.dat", inst::iitp);
+//	fil.writeEdfFile("/media/Files/Data/iitp/SIA/SIA_palms_emg.edf");
+	edfFile fil;
+	fil.readEdfFile("/media/Files/Data/iitp/SIA/SIA_palms.edf");
+//	cout << 1 << endl;
+	fil.appendFile("/media/Files/Data/iitp/SIA/SIA_palms_emg.edf",
+				   "/media/Files/Data/iitp/SIA/SIA_palms_sum.edf");
+	exit(0);
+	return;
 
 #if 0
     /// test new classifiers
@@ -254,7 +262,7 @@ void MainWindow::customFunc()
 		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_windows_cleaned");
 	}
 
-//	QString type = "_med_freq";
+//	QString type = "_med.getFreq()";
 //	areSimilarFiles("/media/Files/Data/MRI/OUT/" + guy + "_old/" + guy + type + ".txt",
 //					"/media/Files/Data/MRI/OUT/" + guy + "/" + guy + type + ".txt");
 
@@ -467,9 +475,9 @@ void MainWindow::customFunc()
 //        }
         for(const QString & guy : leest_audio)
         {
-            /// should be "alpha", "d2_dim", "med_freq", "spectre"
+			/// should be "alpha", "d2_dim", "med.getFreq()", "spectre"
             QStringList tryam = deer.entryList({guy + "*"});
-            if(tryam[1].contains("med_freq"))
+			if(tryam[1].contains("med.getFreq()"))
             {
                 std::swap(tryam[1], tryam[2]);
             }
@@ -526,7 +534,7 @@ void MainWindow::customFunc()
     /// Ossadtchi
 //    setEdfFile("/media/Files/Data/Ossadtchi/lisa2/lisa2.edf");
     setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
-    def::freq = 100;
+	def::freq = 100;
     def::ns = 32;
 #if 0
     // reduce channels in realisations
@@ -597,16 +605,16 @@ void MainWindow::customFunc()
 
 #if 0
     /// different filtering check
-    ui->highFreqFilterDoubleSpinBox->setValue(40.);
-    double highFreq = ui->highFreqFilterDoubleSpinBox->value();
-    for(double lowFreq = 2.0; lowFreq < 3.5; lowFreq += 0.05)
+	ui->highFreqFilterDoubleSpinBox->setValue(40.);
+	double highFreq = ui->highFreqFilterDoubleSpinBox->value();
+	for(double lowFreq = 2.0; lowFreq < 3.5; lowFreq += 0.05)
     {
         setEdfFile(def::dataFolder + "/AAU_train_rr.edf");
-        ui->lowFreqFilterDoubleSpinBox->setValue(lowFreq);
+		ui->lowFreqFilterDoubleSpinBox->setValue(lowFreq);
         refilterDataSlot();
         setEdfFile(def::dataFolder
                    + "/AAU_train_rr_f"
-                   + QString::number(lowFreq) + '-' + QString::number(highFreq)
+				   + QString::number(lowFreq) + '-' + QString::number(highFreq)
                    + ".edf");
         sliceAll();
     }

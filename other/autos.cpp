@@ -158,7 +158,7 @@ void cutOneFile(const QString & filePath,
 		initEdf.removeChannels({initEdf.getMarkChan()}); // remove Annotations
 	}
 
-	const int & fr = initEdf.freq();
+	const int & fr = initEdf.getFreq();
 	const int numOfWindows = ceil(initEdf.getDataLen() / fr / wndLen);
 
 
@@ -359,7 +359,7 @@ void countSpectraFeatures(const QString & filePath,
 	initEdf.readEdfFile(filePath);
 
 
-	const double fr = initEdf.freq();
+	const double fr = initEdf.getFreq();
 
 	for(int i = 0; i < numChan; ++i)
 	{
@@ -386,10 +386,10 @@ void countSpectraFeatures(const QString & filePath,
 		}
 		// max alpha magnitude
 		outAlphaStr << helpDouble << "\t";
-		// max alpha freq
+		// max alpha.getFreq()
 		outAlphaStr << helpInt * fr / smallLib::fftL(initEdf.getDataLen()) << "\t";
 
-		// integrate spectre near the needed freqs
+		// integrate spectre near the needed.getFreq()s
 		fullSpectre.clear();
 		for(double j = leftFreqLim;
 			j <= rightFreqLim;
@@ -453,7 +453,7 @@ void countChaosFeatures(const QString & filePath,
 
 	const QString ExpName = getFileName(filePath, false);
 	const QString d2dimFilePath = outPath + slash + ExpName + "_d2_dim.txt";
-	const QString hilbertFilePath = outPath + slash + ExpName + "_med_freq.txt";
+	const QString hilbertFilePath = outPath + slash + ExpName + "_med.getFreq().txt";
 
 	// remove previous
 	QFile::remove(d2dimFilePath);
@@ -473,11 +473,11 @@ void countChaosFeatures(const QString & filePath,
 	initEdf.setMatiFlag(false);
 	initEdf.readEdfFile(filePath);
 
-	const double fr = initEdf.freq();
+	const double fr = initEdf.getFreq();
 
 	for(double freqCounter = leftFreqLim;
-		freqCounter <= rightFreqLim;
-		freqCounter += stepFreq)
+	freqCounter <= rightFreqLim;
+	freqCounter += stepFreq)
 	{
 		/// remake further, non-filtered first
 		if(freqCounter != rightFreqLim)
@@ -504,10 +504,10 @@ void countChaosFeatures(const QString & filePath,
 		helpString = outPath
 					 + slash + ExpName;
 #if 0
-		if(freqCounter != rightFreqLim)
+		iffreqCounter != rightFreqLim)
 		{
-			helpString += "_" + QString::number(freqCounter)
-						  + "-" + QString::number(freqCounter + stepFreq);
+			helpString += "_" + QString::numberfreqCounter)
+						  + "-" + QString::numberfreqCounter + stepFreq);
 		}
 #endif
 		helpString += "_" + enthropyFileName;
@@ -538,11 +538,11 @@ void countChaosFeatures(const QString & filePath,
 			envSpec = spectre(env);
 			envSpec[0] = 0.;
 #if 0
-			if(freqCounter <= rightFreqLim + stepFreq)
+			iffreqCounter <= rightFreqLim + stepFreq)
 			{
 				helpString = outPath
 							 + slash + ExpName
-							 + "_" + QString::number(freqCounter)
+							 + "_" + QString::numberfreqCounter)
 							 + "_" + QString::number(numChan)
 							 + "_fSpec.jpg";
 			}
@@ -680,7 +680,7 @@ void GalyaFull(const QString & inDirPath,
 	autos::makeRightNumbers(outPath,
 							rightNum);
 
-	for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
+	for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med.getFreq()"})
 	{
 		autos::makeTableFromRows(outPath,
 								 outDirPath + slash + outFileNames + type + ".txt",

@@ -18,22 +18,22 @@ void drawWavelet(QString picPath,
 
 	double numb = 0.;
 
-    int currFreqNum = 0;
+	int currFreqNum = 0;
     int currSliceNum = 0;
 
-    for(double freq = wvlt::freqMax;
-        freq > wvlt::freqMin;
-    #if WAVELET_FREQ_STEP_TYPE==0
-        freq *= wvlt::freqStep
+	for(double freq = wvlt::freqMax;
+	   freq > wvlt::freqMin;
+	#if WAVELET_FREQ_STEP_TYPE==0
+	   freq *= wvlt::freqStep
     #else
 
-        freq -= wvlt::freqStep)
+	   freq -= wvlt::freqStep)
 #endif
     {
         currSliceNum = 0;
         for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
         {
-            numb = fmin(floor(inData[currFreqNum][currSliceNum] * wvlt::range), wvlt::range);
+			numb = fmin(floor(inData[currFreqNum][currSliceNum] * wvlt::range), wvlt::range);
 
 			// sligthly more than numb, may be dropped
 			numb = pow(numb/wvlt::range, 0.6) * wvlt::range;
@@ -43,23 +43,23 @@ void drawWavelet(QString picPath,
 
 #if WAVELET_FREQ_STEP_TYPE==0
             painter.drawRect( currSlice * pic.width() / NumOfSlices,
-                              pic.height() * (wvlt::freqMax - freq
-                                              + 0.5 * freq *
-                                              (1. - wvlt::freqStep) / wvlt::freqStep)
-                              / (wvlt::freqMax-wvlt::freqMin),
+							  pic.height() * (wvlt::freqMax - freq
+											  + 0.5 * freq *
+											  (1. - wvlt::freqStep) / wvlt::freqStep)
+							  / (wvlt::freqMax-wvlt::freqMin),
                               pic.width() * wvlt::timeStep / NumOfSlices,
-                              pic.height() * -0.5 * freq * (1. / wvlt::freqStep - wvlt::freqStep)
-                              / (wvlt::freqMax - wvlt::freqMin) );
+							  pic.height() * -0.5 * freq * (1. / wvlt::freqStep - wvlt::freqStep)
+							  / (wvlt::freqMax - wvlt::freqMin) );
 #else
             painter.drawRect( currSlice * pic.width() / NumOfSlices,
-                              pic.height() * (wvlt::freqMax - freq  - 0.5 * wvlt::freqStep)
-                              / (wvlt::freqMax - wvlt::freqMin),
+							  pic.height() * (wvlt::freqMax - freq  - 0.5 * wvlt::freqStep)
+							  / (wvlt::freqMax - wvlt::freqMin),
                               pic.width() * wvlt::timeStep / NumOfSlices,
-                              pic.height() * wvlt::freqStep / (wvlt::freqMax - wvlt::freqMin));
+							  pic.height() * wvlt::freqStep / (wvlt::freqMax - wvlt::freqMin));
 #endif
             ++currSliceNum;
         }
-        ++currFreqNum;
+		++currFreqNum;
 
     }
     painter.setPen("black");
@@ -67,15 +67,15 @@ void drawWavelet(QString picPath,
 
     painter.setFont(QFont("Helvetica", 28, -1, -1));
     painter.setPen(Qt::DashLine);
-    for(int i = wvlt::freqMax; i > wvlt::freqMin; --i)
+	for(int i = wvlt::freqMax; i > wvlt::freqMin; --i)
     {
 
         painter.drawLine(0,
-                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin),
+						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin),
                          pic.width(),
-                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
+						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
         painter.drawText(0,
-                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
+						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
                          QString::number(i));
 
     }
@@ -1909,8 +1909,8 @@ QPixmap drawEeg(const matrix & dataD,
         if(c3%10 == 0) norm = 20.;
         else if(c3%5  == 0) norm = 15.;
 
-        paint.drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
-        paint.drawText(c3 * freq, pic.height() - 35, QString::number(c3));
+		paint.drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
+		paint.drawText(c3 * freq, pic.height() - 35, QString::number(c3));
         norm = 10.;
     }
 
@@ -1971,13 +1971,13 @@ QPixmap drawEeg(const matrix & dataD,
     }
     norm = 1.;
     paint.setPen(QPen(QBrush("black"), lineWidth));
-    for(int c3 = 0; c3 < NumOfSlices * 10 / freq; ++c3)
+	for(int c3 = 0; c3 < NumOfSlices * 10 / freq; ++c3)
     {
         if(c3%10 == 0) norm = 20.;
         else if(c3%5  == 0) norm = 15.;
 
-        paint.drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2 * norm);
-        paint.drawText(c3 * freq, pic.height() - 35, QString::number(c3));
+		paint.drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2 * norm);
+		paint.drawText(c3 * freq, pic.height() - 35, QString::number(c3));
         norm = 10.;
     }
     pic.save(picPath, 0, 100);

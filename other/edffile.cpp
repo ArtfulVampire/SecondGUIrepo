@@ -49,7 +49,7 @@ edfFile::edfFile(const edfFile &other, bool noData)
     this->ndr = other.getNdr();
     this->ddr = other.getDdr();
     this->ns = other.getNs();
-    this->srate = other.freq();
+	this->srate = other.getFreq();
 
     this->labels = other.getLabels();
     this->transducerType = other.getTransducer();
@@ -92,7 +92,7 @@ edfFile edfFile::operator=(const edfFile & other)
     this->ndr = other.getNdr();
     this->ddr = other.getDdr();
     this->ns = other.getNs();
-    this->srate = other.freq();
+	this->srate = other.getFreq();
 
     this->labels = other.getLabels();
     this->transducerType = other.getTransducer();
@@ -122,141 +122,206 @@ edfFile edfFile::operator=(const edfFile & other)
     return (*this);
 }
 
-edfFile::edfFile(const QString & matiLogPath)
+edfFile::edfFile(const QString & txtFilePath, inst which)
 {
+	if(which == inst::mati)
+	{
 
-    //quant, time
-    //amplX, amplY, freqX, freqY
-    //targX, targY, mousX, mousY
-    //traceSuccessXY, secondBit
-    // right, wrong, skipped answers
+		//quant, time
+		//amplX, amplY, freqX, freqY
+		//targX, targY, mousX, mousY
+		//traceSuccessXY, secondBit
+		// right, wrong, skipped answers
 
-    FILE* inStr;
-    inStr = fopen(matiLogPath, "r");
+		FILE* inStr;
+		inStr = fopen(txtFilePath, "r");
 
-    if(inStr == NULL)
-    {
-        cout << "edfFile(matiLogFile): input file is NULL" << endl;
-        return;
-    }
+		if(inStr == NULL)
+		{
+			cout << "edfFile(matiLogFile): input file is NULL" << endl;
+			return;
+		}
 
-    int numOfParams = 15 - 2; // -currTime & quantLength generality
-    int currTimeIndex;
+		int numOfParams = 15 - 2; // -currTime & quantLength generality
+		int currTimeIndex;
 
-//    this->headerInitialInfo = fitString("Edf for AMOD Data", 184);
-    this->headerInitialInfo = fitString("Edf for AMOD Data", 184).toStdString();
-    this->headerReservedField = fitString("headerReservedField", 44);
-    this->headerRest = QString();
+		//    this->headerInitialInfo = fitString("Edf for AMOD Data", 184);
+		this->headerInitialInfo = fitString("Edf for AMOD Data", 184).toStdString();
+		this->headerReservedField = fitString("headerReservedField", 44);
+		this->headerRest = QString();
 
 
-    this->filePath = matiLogPath;
-    this->ExpName = getExpNameLib(matiLogPath);
-    this->dirPath = matiLogPath.left(matiLogPath.lastIndexOf( slash ) );
+		this->filePath = txtFilePath;
+		this->ExpName = getExpNameLib(txtFilePath);
+		this->dirPath = txtFilePath.left(txtFilePath.lastIndexOf( slash ) );
 
-    this->ns = numOfParams;
-    this->ddr = 1.;
+		this->ns = numOfParams;
+		this->ddr = 1.;
 
-    this->nr = std::valarray <double> (def::freq, this->ns);
-    // ndr definedlater
-    this->bytes = 256 * (this->ns + 1);
+		this->nr = std::valarray <double> (def::freq, this->ns);
+		// ndr definedlater
+		this->bytes = 256 * (this->ns + 1);
 
-    this->labels = {fitString("AMOD amplX", 16),
-                    fitString("AMOD amplY", 16),
-                    fitString("AMOD freqX", 16),
-                    fitString("AMOD freqY", 16),
-                    fitString("AMOD targX", 16),
-                    fitString("AMOD targY", 16),
-                    fitString("AMOD mouseX", 16),
-                    fitString("AMOD mouseX", 16),
-                    fitString("AMOD tracSucces", 16),
-                    fitString("AMOD mouseMove", 16),
-                    fitString("AMOD rightAns", 16),
-                    fitString("AMOD wrongAns", 16),
-                    fitString("AMOD skipdAns", 16)
-                   };
-    this->transducerType = vector <QString> (this->ns, fitString("AMOD transducer", 80));
-    this->physDim = vector <QString> (this->ns, fitString("AMODdim", 8));
+		this->labels = {fitString("AMOD amplX", 16),
+						fitString("AMOD amplY", 16),
+						fitString("AMOD.getFreq()X", 16),
+						fitString("AMOD.getFreq()Y", 16),
+						fitString("AMOD targX", 16),
+						fitString("AMOD targY", 16),
+						fitString("AMOD mouseX", 16),
+						fitString("AMOD mouseX", 16),
+						fitString("AMOD tracSucces", 16),
+						fitString("AMOD mouseMove", 16),
+						fitString("AMOD rightAns", 16),
+						fitString("AMOD wrongAns", 16),
+						fitString("AMOD skipdAns", 16)
+					   };
+		this->transducerType = vector <QString> (this->ns, fitString("AMOD transducer", 80));
+		this->physDim = vector <QString> (this->ns, fitString("AMODdim", 8));
 
-    this->physMin = {0, 0, 0, 0, // ampls, freqs
-                     -1, -1, -1, -1, // coordinates
-                     0, 0, // status values
-                     0,   0,   0}; // answers
+		this->physMin = {0, 0, 0, 0, // ampls, freqs
+						 -1, -1, -1, -1, // coordinates
+						 0, 0, // status values
+						 0,   0,   0}; // answers
 
-    this->physMax = {7, 7, 7, 7,
-                     1,  1,  1,  1,
-                     3, 7,
-                     255, 255, 255};
+		this->physMax = {7, 7, 7, 7,
+						 1,  1,  1,  1,
+						 3, 7,
+						 255, 255, 255};
 
-    this->digMin = {-32768, -32768, -32768, -32768,
-                    -32768, -32768, -32768, -32768,
-                    0, 0,
-                    0,   0,   0};
+		this->digMin = {-32768, -32768, -32768, -32768,
+						-32768, -32768, -32768, -32768,
+						0, 0,
+						0,   0,   0};
 
-    this->digMax = { 32767,  32767,  32767,  32767,
-                     32767,  32767,  32767,  32767,
-                     3-1, 7-1,
-                     255-1, 255-1, 255-1}; // -1 for universal formula except markers
+		this->digMax = { 32767,  32767,  32767,  32767,
+						 32767,  32767,  32767,  32767,
+						 3-1, 7-1,
+						 255-1, 255-1, 255-1}; // -1 for universal formula except markers
 
-    this->prefiltering = vector <QString> (this->ns, QString(fitString("AMOD no prefiltering", 80)));
-    this->reserved = vector <QString> (this->ns, QString(fitString("AMOD reserved", 32)));
+		this->prefiltering = vector <QString> (this->ns, QString(fitString("AMOD no prefiltering", 80)));
+		this->reserved = vector <QString> (this->ns, QString(fitString("AMOD reserved", 32)));
 
-    this->data.resize(this->ns);
-    for(int i = 0; i < this->ns; ++i)
-    {
-        this->data[i].resize(6 * 60 * def::freq); // for 6 minutes generality
-    }
+		this->data.resize(this->ns);
+		for(int i = 0; i < this->ns; ++i)
+		{
+			this->data[i].resize(6 * 60 * def::freq); // for 6 minutes generality
+		}
 #if DATA_POINTER
-    this->dataPointer = &(this->data);
+		this->dataPointer = &(this->data);
 #endif
 
-    currTimeIndex = 0;
-    while(!feof(inStr))
-    {
-        fscanf(inStr, "%*d %*f"); // quantLength & currTime
-        for(int i = 0; i < numOfParams; ++i)
-        {
-            fscanf(inStr, "%lf", &(this->data[i][currTimeIndex]));
-        }
-        ++currTimeIndex;
-    }
-    --currTimeIndex; // to loose the last read string;
-    //// CHECK
-    /// old
-//    this->ndr = ceil(currTimeIndex/250.);
-//    this->dataLength = this->ndr * def::freq;
+		currTimeIndex = 0;
+		while(!feof(inStr))
+		{
+			fscanf(inStr, "%*d %*f"); // quantLength & currTime
+			for(int i = 0; i < numOfParams; ++i)
+			{
+				fscanf(inStr, "%lf", &(this->data[i][currTimeIndex]));
+			}
+			++currTimeIndex;
+		}
+		--currTimeIndex; // to loose the last read string;
 
-//    for(int j = 0; j < numOfParams; ++j)
-//    {
-//        std::remove_if(begin(this->data[j]) + dataLength,
-//                       end(this->data[j]),
-//                       [](double){return true;});
-//    }
-    /// new
-    this->fitData(currTimeIndex);
+		this->fitData(currTimeIndex);
 
-    for(int i = 0; i < this->ns; ++i)
-    {
-        this->channels.push_back(edfChannel(labels[i],
-                                            transducerType[i],
-                                            physDim[i],
-                                            physMax[i],
-                                            physMin[i],
-                                            digMax[i],
-                                            digMin[i],
-                                            prefiltering[i],
-                                            nr[i],
-                                            reserved[i]
+		for(int i = 0; i < this->ns; ++i)
+		{
+			this->channels.push_back(edfChannel(labels[i],
+												transducerType[i],
+												physDim[i],
+												physMax[i],
+												physMin[i],
+												digMax[i],
+												digMin[i],
+												prefiltering[i],
+												nr[i],
+												reserved[i]
 
 
-                                    #if DATA_POINTER_IN_CHANS
-                                        ,&data[i] // edfChannel::dataP
-                                    #endif
-                                    #if DATA_IN_CHANS
-                                            ,data[i]
-                                    #endif
-                                            )
-                                 );
-    }
+									#if DATA_POINTER_IN_CHANS
+												,&data[i] // edfChannel::dataP
+									#endif
+									#if DATA_IN_CHANS
+												,data[i]
+									#endif
+												)
+									 );
+		}
+	}
+	else if(which == inst::iitp)
+	{
+		matrix iitpData{};
+		std::vector<QString> iitpLabels{};
+		myLib::readIITPfile(txtFilePath, iitpData, iitpLabels);
+		this->srate = 1000;
+
+		int numOfParams = iitpData.rows();
+
+		this->headerInitialInfo = fitString("Edf for IITP EMG Data", 184).toStdString();
+		this->headerReservedField = fitString("headerReservedField", 44);
+		this->headerRest = QString();
+
+		this->filePath = txtFilePath;
+		this->ExpName = myLib::getExpNameLib(txtFilePath);
+		this->dirPath = myLib::getDirPathLib(txtFilePath);
+
+		this->ns = numOfParams;
+		this->ddr = 1.;
+		////////////////
+
+		this->nr = std::valarray <double> (this->srate, this->ns);
+		// ndr definedlater
+		this->bytes = 256 * (this->ns + 1);
+
+		this->labels.resize(this->ns);
+		for(int i = 0; i < this->ns; ++i)
+		{
+			this->labels[i] = fitString("IT " + iitpLabels[i], 16); /// information transfer
+		}
+
+		this->transducerType = std::vector<QString> (this->ns, fitString("IITP transducer", 80));
+		this->physDim = std::vector<QString> (this->ns, fitString("IITPdim", 8));
+		this->physMin.resize(this->ns, -128);
+		this->physMax.resize(this->ns, 128);
+
+		this->digMin.resize(this->ns, -32768);
+		this->digMax.resize(this->ns, 32768);
+
+		this->prefiltering = std::vector<QString> (this->ns,
+											   fitString("IITP no prefiltering", 80));
+		this->reserved = std::vector<QString> (this->ns, fitString("IITP reserved", 32));
+
+		/// magic const generality - remake with matrix methods
+//		iitpData *= 50;
+
+		this->data = std::move(iitpData);
+		this->fitData(this->data.cols());
+
+		for(int i = 0; i < this->ns; ++i)
+		{
+			this->channels.push_back(edfChannel(labels[i],
+												transducerType[i],
+												physDim[i],
+												physMax[i],
+												physMin[i],
+												digMax[i],
+												digMin[i],
+												prefiltering[i],
+												nr[i],
+												reserved[i]
+
+
+									#if DATA_POINTER_IN_CHANS
+												,&data[i] // edfChannel::dataP
+									#endif
+									#if DATA_IN_CHANS
+												,data[i]
+									#endif
+												)
+									 );
+		}
+	}
 }
 
 
@@ -510,7 +575,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                  << realNdr << endl;
             cout << "dataSize = " << fileSize - bytes << endl;
             cout << "ns = " << ns << endl;
-            cout << "freq = " << this->srate << endl;
+			cout << "freq = " << this->srate << endl;
             cout << "ddr = " << ddr << endl;
             cout << "rest size = "
                  << (fileSize - bytes) - ndr * sumNr * 2.<< endl;
@@ -580,7 +645,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         this->markerChannel = -1;
     }
 
-    /// experimental
+	/// experimental - ddr to 1
     {
         const double oldDdr = this->getDdr();
         ddr = 1.;
@@ -899,7 +964,7 @@ void edfFile::handleAnnotations(const int & currNs,
             sscanf(annotations[j].toStdString().c_str(), "+%lf\24%s", &markTime, markNum);
             data[ns-1][int(markTime*nr[ns-1]/ddr)] = atoi(markNum);
         }
-//        nr[ns-1] = this->srate; // generality freq change
+//        nr[ns-1] = this->srate; // generality.getFreq() change
     }
     */
 
@@ -1009,6 +1074,8 @@ void edfFile::adjustArraysByChannels()
 
 void edfFile::adjustMarkerChannel()
 {
+	if(this->markerChannel < 0) return;
+
     if(!(this->channels.back().label.contains("Marker") ||
          this->channels.back().label.contains("Status")))
     {
@@ -1049,6 +1116,7 @@ void edfFile::adjustMarkerChannel()
     this->adjustArraysByChannels();
 }
 
+/// vertical concatenation
 void edfFile::appendFile(QString addEdfPath, QString outPath) const
 {
     edfFile temp(*this);
@@ -1071,28 +1139,31 @@ void edfFile::appendFile(QString addEdfPath, QString outPath) const
         this->channels.push_back(tempChan);
     }
 #else
-    edfChannel tempChan;
-    lineType tempData;
+	edfChannel addChan;
+	lineType addData;
+
+	double time1 = temp.getDataLen() / temp.getFreq();
+	double time2 = addEdf.getDataLen() / addEdf.getFreq();
+	double newTime = std::max(time1, time2);
+	temp.data.resizeCols(newTime * temp.getFreq());
+	addEdf.data.resizeCols(newTime * addEdf.getFreq());
+
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
-
-        tempChan = addEdf.getChannels()[i];
-        /// valarray strange handling
-        /// resizeValar(addEdf.data[i], this->dataLength);
-        tempData.resize(this->dataLength);
-        std::copy(begin(addEdf.getData()[i]),
-                  begin(addEdf.getData()[i]) + min(addEdf.getDataLen(), this->getDataLen()),
-                  begin(tempData));
-
-        temp.channels.push_back(tempChan);
-        temp.data.push_back(tempData);
+		addChan = addEdf.getChannels()[i];
+		temp.channels.push_back(addChan);
+		temp.data.push_back(addData);
     }
 #endif
 
-    temp.adjustMarkerChannel();
-    temp.adjustArraysByChannels();
+	cout << 1 << endl;
+	temp.adjustMarkerChannel();
+	cout << 1 << endl;
+	temp.adjustArraysByChannels();
+	cout << 1 << endl;
 
     temp.writeEdfFile(outPath);
+	cout << 1 << endl;
 }
 
 void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only data concat
@@ -1180,7 +1251,7 @@ void edfFile::countFft()
 
 /// remake vector
 void edfFile::refilter(const double & lowFreq,
-                       const double & highFreq,
+					   const double & highFreq,
                        const QString & newPath,
                        bool isNotch)
 {
@@ -1205,8 +1276,8 @@ void edfFile::refilter(const double & lowFreq,
         this->countFft();
     }
 
-    const int lowLim = ceil(2. * lowFreq / spStep);
-    const int highLim = floor(2. * highFreq / spStep);
+	const int lowLim = ceil(2. * lowFreq / spStep);
+	const int highLim = floor(2. * highFreq / spStep);
 
     int i = 0;
     for(int j : chanList)
@@ -1221,14 +1292,14 @@ void edfFile::refilter(const double & lowFreq,
         /// old
         for(int i = 0; i < fftLength; ++i)
         {
-            if(i < 2. * lowFreq / spStep ||
-               i > 2. * highFreq / spStep)
+			if(i < 2. * lowFreq / spStep ||
+			   i > 2. * highFreq / spStep)
                 spectre[i] = 0.;
         }
         for(int i = fftLength; i < 2 * fftLength; ++i)
         {
-            if(2 * fftLength - i < 2. * lowFreq / spStep ||
-               2 * fftLength - i > 2. * highFreq / spStep)
+			if(2 * fftLength - i < 2. * lowFreq / spStep ||
+			   2 * fftLength - i > 2. * highFreq / spStep)
                 spectre[i] = 0.;
         }
 #else

@@ -132,11 +132,11 @@ namespace def
     extern QDir * dir;
     extern int ns;
 
-    extern double freq;
+	extern double freq;
     extern int fftLength;
 
-    extern double leftFreq;
-    extern double rightFreq;
+	extern double leftFreq;
+	extern double rightFreq;
 
     extern QString cfgFileName;
     extern QStringList fileMarkers;
@@ -155,7 +155,7 @@ namespace def
     extern int right();
     extern int left();
     inline int spLength() {return def::right() - def::left();}
-    inline double spStep() {return def::freq / def::fftLength;}
+	inline double spStep() {return def::freq / def::fftLength;}
 
 //    Atanov
     const QString dataFolder = "/media/Files/Data";
@@ -173,10 +173,10 @@ namespace def
 }
 
 inline int fftLimit(const double & inFreq,
-                    const double & sampleFreq = def::freq,
+					const double & sampleFreq = def::freq,
                     const int & fftL = def::fftLength)
 {
-    return ceil(inFreq / sampleFreq * fftL - 0.5);
+	return ceil(inFreq / sampleFreq * fftL - 0.5);
 }
 
 

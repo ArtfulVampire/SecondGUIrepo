@@ -29,9 +29,9 @@ double morletCosNew(double const freq1, // Hz
                     const double time)
 {
     double freq = freq1 * 2. * pi;
-    double res =  sqrt(2. * freq / pi_sqrt / morletFall)
-                  * cos(freq * (time - timeShift) / def::freq)
-                  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
+	double res =  sqrt(2. * freq / pi_sqrt / morletFall)
+				  * cos(freq * (time - timeShift) / def::freq)
+				  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
     return res;
 }
 
@@ -40,9 +40,9 @@ double morletSinNew(double const freq1,
                     const double time)
 {
     double freq = freq1 * 2. * pi;
-    double res =  sqrt(2. * freq / pi_sqrt / morletFall)
-                  * sin(freq * (time - timeShift) / def::freq)
-                  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
+	double res =  sqrt(2. * freq / pi_sqrt / morletFall)
+				  * sin(freq * (time - timeShift) / def::freq)
+				  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
     return res;
 }
 
@@ -82,39 +82,39 @@ void wavelet(QString filePath,
 
     double numb;
 
-    int currFreqNum = 0;
+	int currFreqNum = 0;
     int currSliceNum = 0;
 
-    for(double freq = wvlt::freqMax;
-        freq > wvlt::freqMin;
-    #if WAVELET_FREQ_STEP_TYPE==0
-        freq *= wvlt::freqStep
+	for(double freq = wvlt::freqMax;
+	   freq > wvlt::freqMin;
+	#if WAVELET_FREQ_STEP_TYPE==0
+	   freq *= wvlt::freqStep)
     #else
-        freq -= wvlt::freqStep)
+	   freq -= wvlt::freqStep)
 #endif
     {
-        //        timeStep = def::freq/freq / 2.5;  //in time-bins 250 Hz
+		//        timeStep = def::freqFreq / 2.5;  //in time-bins 250 Hz
         currSliceNum = 0;
         for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
         {
-            temp[currFreqNum][currSliceNum] = 0.;
+			temp[currFreqNum][currSliceNum] = 0.;
             tempR = 0.;
             tempI = 0.;
 
             /////// TO LOOK
             //set left & right limits of counting - should be 2.5 * morletFall... but works so
-            kMin = max(0, int(currSlice - 3 * morletFall * def::freq / freq));
-            kMax = min(NumOfSlices, int(currSlice + 3 * morletFall * def::freq / freq));
+			kMin = max(0, int(currSlice - 3 * morletFall * def::freq / freq));
+			kMax = min(NumOfSlices, int(currSlice + 3 * morletFall * def::freq / freq));
 
             for(int k = kMin; k < kMax; ++k)
             {
-                tempI += (morletSinNew(freq, currSlice, k) * input[k]);
-                tempR += (morletCosNew(freq, currSlice, k) * input[k]);
+				tempI += (morletSinNew(freq, currSlice, k) * input[k]);
+				tempR += (morletCosNew(freq, currSlice, k) * input[k]);
             }
-            temp[currFreqNum][currSliceNum] = pow(tempI, 2) + pow(tempR, 2);
+			temp[currFreqNum][currSliceNum] = pow(tempI, 2) + pow(tempR, 2);
             ++currSliceNum;
         }
-        ++currFreqNum;
+		++currFreqNum;
     }
 
     // maximal value from temp matrix
@@ -132,22 +132,22 @@ void wavelet(QString filePath,
     //    return;
 
 
-    currFreqNum = 0;
-    for(double freq = wvlt::freqMax;
-        freq > wvlt::freqMin;
-    #if WAVELET_FREQ_STEP_TYPE==0
-        freq *= wvlt::freqStep
+	currFreqNum = 0;
+	for(double freq = wvlt::freqMax;
+	   freq > wvlt::freqMin;
+	#if WAVELET_FREQ_STEP_TYPE==0
+	   freq *= wvlt::freqStep)
     #else
-        freq -= wvlt::freqStep)
+	   freq -= wvlt::freqStep)
 #endif
     {
-        //        timeStep = def::freq/freq / 2.5;  //in time-bins 250 Hz
+		//        timeStep = def::freqFreq / 2.5;  //in time-bins 250 Hz
 
         currSliceNum = 0;
         for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
         {
-            //            cout << temp[currFreqNum][currSliceNum] << endl;
-            numb = fmin(floor(temp[currFreqNum][currSliceNum] / helpDouble * wvlt::range),
+			//            cout << temp[currFreqNum][currSliceNum] << endl;
+			numb = fmin(floor(temp[currFreqNum][currSliceNum] / helpDouble * wvlt::range),
                         wvlt::range);
 
             //             numb = pow(numb/wvlt::range, 0.8) * wvlt::range; // sligthly more than numb, may be dropped
@@ -157,39 +157,39 @@ void wavelet(QString filePath,
 
 #if WAVELET_FREQ_STEP_TYPE==0
             painter.drawRect( currSlice * pic.width() / NumOfSlices,
-                              pic.height() * (wvlt::freqMax - freq
-                                              + 0.5 * freq *
-                                              (1. - wvlt::freqStep) / wvlt::freqStep)
-                              / (wvlt::freqMax-wvlt::freqMin),
-                              pic.width() wvlt::timeStep / NumOfSlices,
-                              pic.height() * -0.5 * freq * (1. / wvlt::freqStep - wvlt::freqStep)
-                              / (wvlt::freqMax - wvlt::freqMin) );
+							  pic.height() * (wvlt::freqMax - freq
+											  + 0.5 * freq *
+											  (1. - wvlt::freqStep) / wvlt::freqStep)
+							  / (wvlt::freqMax - wvlt::freqMin),
+							  pic.width() * wvlt::timeStep / NumOfSlices,
+							  pic.height() * -0.5 *Freq * (1. / wvlt::freqStep - wvlt::freqStep)
+							  / (wvlt::freqMax - wvlt::freqMin) );
 #else
 
             painter.drawRect( pic.width() * currSlice / NumOfSlices,
-                              pic.height() * (wvlt::freqMax - freq  - 0.5 * wvlt::freqStep)
-                              / (wvlt::freqMax - wvlt::freqMin),
+							  pic.height() * (wvlt::freqMax - freq  - 0.5 * wvlt::freqStep)
+							  / (wvlt::freqMax - wvlt::freqMin),
                               pic.width() * wvlt::timeStep / NumOfSlices,
-                              pic.height() * wvlt::freqStep / (wvlt::freqMax - wvlt::freqMin));
+							  pic.height() * wvlt::freqStep / (wvlt::freqMax - wvlt::freqMin));
 #endif
             ++currSliceNum;
         }
-        ++currFreqNum;
+		++currFreqNum;
 
     }
     painter.setPen("black");
 
     painter.setFont(QFont("Helvetica", 28, -1, -1));
     painter.setPen(Qt::DashLine);
-    for(int i = wvlt::freqMax; i > wvlt::freqMin; --i)
+	for(int i = wvlt::freqMax; i > wvlt::freqMin; --i)
     {
 
         painter.drawLine(0,
-                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin),
+						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin),
                          pic.width(),
-                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
+						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
         painter.drawText(0,
-                         pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
+						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
                          QString::number(i));
 
     }
@@ -225,40 +225,40 @@ matrix countWavelet(const signalType & inSignal)
     double tempR = 0., tempI = 0.;
     int kMin = 0, kMax = 0;
 
-    int currFreqNum = 0;
+	int currFreqNum = 0;
     int currSliceNum = 0;
 
-    for(double freq = wvlt::freqMax;
-        freq > wvlt::freqMin;
-    #if WAVELET_FREQ_STEP_TYPE==0
-        freq *= wvlt::freqStep
+	for(double freq = wvlt::freqMax;
+	   freq > wvlt::freqMin;
+	#if WAVELET_FREQ_STEP_TYPE==0
+	   freq *= wvlt::freqStep
     #else
-        freq -= wvlt::freqStep)
+	   freq -= wvlt::freqStep)
 #endif
     {
-        //        timeStep = def::freq/freq / 2.5;  //in time-bins 250 Hz
+		//        timeStep = def::freqFreq / 2.5;  //in time-bins 250 Hz
         currSliceNum = 0;
         for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
         {
-            res[currFreqNum][currSliceNum] = 0.;
+			res[currFreqNum][currSliceNum] = 0.;
             tempR = 0.;
             tempI = 0.;
 
             /////// TO LOOK
             //set left & right limits of counting - should be 2.5 * morletFall... but works so
-            kMin = max(0, int(currSlice - 3 * morletFall * def::freq / freq));
-            kMax = min(NumOfSlices, int(currSlice + 3 * morletFall * def::freq / freq));
+			kMin = max(0, int(currSlice - 3 * morletFall * def::freq / freq));
+			kMax = min(NumOfSlices, int(currSlice + 3 * morletFall * def::freq / freq));
 
             for(int k = kMin; k < kMax; ++k)
             {
-                tempI += (morletSinNew(freq, currSlice, k) * inSignal[k]);
-                tempR += (morletCosNew(freq, currSlice, k) * inSignal[k]);
+				tempI += (morletSinNew(freq, currSlice, k) * inSignal[k]);
+				tempR += (morletCosNew(freq, currSlice, k) * inSignal[k]);
             }
-            res[currFreqNum][currSliceNum] = (pow(tempI, 2) + pow(tempR, 2)) / 1e5; // ~1
+			res[currFreqNum][currSliceNum] = (pow(tempI, 2) + pow(tempR, 2)) / 1e5; // ~1
 
             ++currSliceNum;
         }
-        ++currFreqNum;
+		++currFreqNum;
     }
     // no normalization
     return res;
@@ -1418,13 +1418,13 @@ void svd(const matrix & initialData,
 double morletCos(double const freq1, const double timeShift, const double pot, const double time)
 {
     double freq = freq1 * 2. * pi / def::freq;
-    return cos(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
+	return cos(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
 }
 
 double morletSin(double const freq1, const double timeShift, const double pot, const double time)
 {
     double freq = freq1 * 2. * pi / def::freq;
-    return sin(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
+	return sin(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
 }
 
 
