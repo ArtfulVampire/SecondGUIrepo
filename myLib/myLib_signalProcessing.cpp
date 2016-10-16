@@ -507,7 +507,6 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   double srate)
 {
 	int fftLen = fftL(inputSignal.size());
-	cout << fftLen << endl;
 	std::valarray<double> spectr = spectreRtoC(inputSignal, fftLen);
 	const double spStep = srate / fftLen;
 	const int lowLim = floor(2. * lowFreq / spStep);

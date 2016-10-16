@@ -22,36 +22,12 @@ void MainWindow::customFunc()
 
 
 //	edfFile fil("/media/Files/Data/iitp/SIA/SIA_palms.dat", inst::iitp);
-//	fil.writeEdfFile("/media/Files/Data/iitp/SIA/SIA_palms_emg.edf");
 //	edfFile fil;
-//	fil.readEdfFile("/media/Files/Data/iitp/SIA/SIA_palms.edf");
-//	fil.appendFile("/media/Files/Data/iitp/SIA/SIA_palms_emg.edf",
-//				   "/media/Files/Data/iitp/SIA/SIA_palms_sum.edf");
-
-	int L = 1536;
-	std::valarray<double> val1(L);
-	std::valarray<double> val2(L);
-	std::valarray<double> val3(L);
-	std::valarray<double> val4(L);
-	std::valarray<double> val5(L);
-	std::valarray<double> val6(L);
-	makeSine(val1, 12.);	val1 *= 5;
-	makeSine(val2, 10.);	val2 *= 10;
-	makeSine(val3, 9.);		val3 *= 2;
-	makeSine(val4, 8.);		val4 *= 1;
-	makeSine(val5, 11.);	val5 *= 7;
-	val6 = val1 + val2 + val3 + val4 + val5;
-
-	auto env = myLib::hilbertPieces(val6,
-							   250,
-							   1,
-							   40,
-							   "/media/Files/Data/H.jpg"
-
-							   );
+//	fil.readEdfFile("/media/Files/Data/iitp/SIA/SIA_palms_emg.edf");
+//	fil.downsample(250., "/media/Files/Data/iitp/SIA/SIA_palms_emg_DS.edf");
 
 
-	exit(0);
+//	exit(0);
 	return;
 
 #if 0

@@ -1203,21 +1203,53 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
 }
 
 
-void edfFile::resample(double newFreq, std::vector<int> chanList)
+void edfFile::downsample(double newFreq,
+						 QString outPath,
+						 std::vector<int> chanList) const
 {
+	edfFile temp(*this);
+	if(newFreq > temp.getFreq()) // or not integer ratio
+	{
+		cout << "edfFile::downsample: wrong newFreq" << endl;
+		return;
+	}
 	if(chanList.empty())
 	{
-		chanList.resize(this->ns);
+		chanList.resize(temp.ns);
 		std::iota(std::begin(chanList), std::end(chanList), 0);
 
 		/// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-		chanList.erase(std::find(std::begin(chanList), std::end(chanList), this->markerChannel));
+		auto it = std::find(std::begin(chanList), std::end(chanList), temp.markerChannel);
+		if(it != std::end(chanList))
+		{
+			chanList.erase(it);
+		}
 	}
 	for(int numChan : chanList)
 	{
 		if(nr[numChan] == newFreq) continue;
-//		refilter
+		int oldLen = temp.data[numChan].size();
+		double oldFreq = temp.getNr()[numChan];
+		temp.data[numChan] = myLib::refilter(temp.data[numChan],
+											 0,
+											 2 * newFreq,
+											 oldFreq);
+
+		for(int i = 0; i < oldLen * newFreq / oldFreq; ++i)
+		{
+			temp.data[numChan][i] = temp.data[numChan][i * oldFreq / newFreq];
+		}
+		resizeValar(temp.data[numChan], oldLen * newFreq / oldFreq);
+		temp.nr[numChan] = newFreq;
+		temp.channels[numChan].nr = newFreq;
+//		temp.adjustArraysByChannels(); // it makes bad
 	}
+	if(outPath.isEmpty())
+	{
+		outPath = temp.getFilePath();
+		outPath.insert(outPath.lastIndexOf('.'), "_downsampled");
+	}
+	temp.writeEdfFile(outPath);
 }
 
 

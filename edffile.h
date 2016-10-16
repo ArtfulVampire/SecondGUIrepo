@@ -209,7 +209,9 @@ public:
     void reduceChannels(const QString & chanStr);
     void removeChannels(const std::vector<int> & chanList);
 
-	void resample(double newFreq, std::vector<int> chanList = std::vector<int>{});
+	void downsample(double newFreq,
+					QString outPath = QString(),
+					std::vector<int> chanList = std::vector<int>{}) const;
 
     void setLabels(const std::vector<QString> & inLabels);
     void setChannels(const std::vector<edfChannel> & inChannels);
@@ -236,7 +238,7 @@ private:
     int ndr = 0;
     double ddr = 1.;
     int ns = 0;
-	int srate = 250; // the same as.getFreq()
+	int srate = 250;
 
     // fast access for slicing (time-bin, marker)
     std::vector<std::pair<int, double>> sessionEdges = std::vector<std::pair<int, double>>();

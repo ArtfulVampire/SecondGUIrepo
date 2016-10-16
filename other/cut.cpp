@@ -431,7 +431,7 @@ void Cut::createImage(const QString & dataFileName)
         leftDrawLimit = 0;
         rightDrawLimit = NumOfSlices;
     }
-    else
+	else if(this->myFileType == fileType::edf)
     {
         edfFil.readEdfFile(dataFileName);
         data3 = edfFil.getData();
@@ -439,8 +439,12 @@ void Cut::createImage(const QString & dataFileName)
         leftDrawLimit = 0;
 		ui->paintStartDoubleSpinBox->setMaximum(floor(NumOfSlices / def::freq));
 		ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
-//        cout << freq = " << def::freq << endl;
+
+		/// crutch generality
+		def::freq = edfFil.getFreq();
     }
+
+	cout << "freq = " << def::freq << endl;
 
     /// if too long?
     /// draw only needed part?
@@ -833,7 +837,7 @@ void Cut::paint() // save to tmp.jpg and display
                          redCh); // generality.getFreq()
 
     /// -20 for scroll bar generality
-    ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(),
+	ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(),
                                               ui->scrollArea->height() - 20));
 
     rightLimit = rightDrawLimit - leftDrawLimit;
