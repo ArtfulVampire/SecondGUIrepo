@@ -182,9 +182,11 @@ void MainWindow::refilterDataSlot()
     const double lowFreq = ui->lowFreqFilterDoubleSpinBox->value();
     const double highFreq = ui->highFreqFilterDoubleSpinBox->value();
     const bool notch = ui->notchCheckBox->isChecked();
+
     QString helpString = def::dir->absolutePath()
             + slash + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
     readData();
+	/// EDF case sensitivity !!!
     if(!notch)
     {
         helpString.replace(".edf",

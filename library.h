@@ -496,11 +496,17 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 									const int numOfSmooth);
 
 
+void refilterSpectre(std::valarray<double> & spectr,
+					 int lowLim,
+					 int highLim,
+					 bool isNotch);
 
 std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   double lowFreq,
 							   double highFreq,
+							   bool isNotch = false,
 							   double srate = 250.);
+
 
 lineType fftWindow(int length, const QString & name = "Hann");
 

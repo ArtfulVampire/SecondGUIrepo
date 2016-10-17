@@ -474,8 +474,9 @@ std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre)
 	std::valarray<double> res(fftLen);
 	for(int i = 0; i < res.size(); ++i)
 	{
-		res[i] = pew[2 * i] / fftLen;
+		res[i] = pew[2 * i];
 	}
+	res /= fftLen;
 
 	delete[] pew;
 	return res;
@@ -504,33 +505,66 @@ std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre)
 std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   double lowFreq,
 							   double highFreq,
+							   bool isNotch,
 							   double srate)
 {
 	int fftLen = fftL(inputSignal.size());
 	std::valarray<double> spectr = spectreRtoC(inputSignal, fftLen);
 	const double spStep = srate / fftLen;
+	/// 2 because complex values
 	const int lowLim = floor(2. * lowFreq / spStep);
 	const int highLim = ceil(2. * highFreq / spStep);
 
-	for(int i = 0; i < fftLen; ++i)
-	{
-		if(i <  lowLim||
-		   i > highLim)
-			spectr[i] = 0.;
-	}
-	for(int i = fftLen; i < 2 * fftLen; ++i)
-	{
-		if((2 * fftLen - i < lowLim) ||
-		   (2 * fftLen - i > highLim))
-			spectr[i] = 0.;
-	}
+	refilterSpectre(spectr, lowLim, highLim, isNotch);
+
 	/// constant component
 	spectr[0] = 0.;
 	spectr[1] = 0.;
 	spectr[fftLen] = 0.;
-	spectr[fftLen+1] = 0.;
+	spectr[fftLen + 1] = 0.;
 
 	return spectreCtoRrev(spectr);
+}
+
+void refilterSpectre(std::valarray<double> & spectr,
+					 int lowLim,
+					 int highLim,
+					 bool isNotch)
+{
+	/// generality
+	int fftLen = spectr.size() / 2;
+
+	// both lowLim and highLim are in/ex
+	if(!isNotch)
+	{
+//		spectr[std::slice(0, lowLim, 1)] = 0;
+//		spectr[std::slice(highLim, fftLen - highLim, 1)] = 0;
+//		spectr[std::slice(fftLen, fftLen - highLim, 1)] = 0;
+//		spectr[std::slice(2 * fftLen - lowLim, lowLim, 1)] = 0;
+
+
+		std::fill(std::begin(spectr),
+				  std::begin(spectr) + lowLim + 1,
+				  0.);
+		std::fill(std::begin(spectr) + highLim,
+				  std::begin(spectr) + fftLen,
+				  0.);
+		std::fill(std::begin(spectr) + fftLen,
+				  std::begin(spectr) + 2 * fftLen - highLim,
+				  0.);
+		std::fill(std::begin(spectr) + 2 * fftLen - lowLim - 1,
+				  std::begin(spectr) + 2 * fftLen,
+				  0.);
+	}
+	else
+	{
+		std::fill(std::begin(spectr) + lowLim + 1,
+				  std::begin(spectr) + highLim,
+				  0.);
+		std::fill(std::begin(spectr) + 2 * fftLen - highLim,
+				  std::begin(spectr) + 2 * fftLen - lowLim - 1,
+				  0.);
+	}
 }
 
 

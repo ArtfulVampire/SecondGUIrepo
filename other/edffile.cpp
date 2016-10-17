@@ -1218,7 +1218,6 @@ void edfFile::downsample(double newFreq,
 		chanList.resize(temp.ns);
 		std::iota(std::begin(chanList), std::end(chanList), 0);
 
-		/// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 		auto it = std::find(std::begin(chanList), std::end(chanList), temp.markerChannel);
 		if(it != std::end(chanList))
 		{
@@ -1255,9 +1254,6 @@ void edfFile::downsample(double newFreq,
 
 void edfFile::countFft()
 {
-    int fftLength = fftL(this->dataLength);
-    double norm1 = fftLength / double(this->dataLength);
-
     std::vector<int> chanList;
     for(int i = 0; i < this->ns; ++i)
     {
@@ -1268,10 +1264,18 @@ void edfFile::countFft()
     }
     this->fftData.resize(chanList.size());
     int i = 0;
-    double * spectre = new double [2 * fftLength];
+//    double * spectre = new double [2 * fftLength];
     for(auto j : chanList)
     {
+#if 1
+		/// new rewritten
+		fftData[i] = myLib::spectreRtoC(this->data[j]); /// should norm?
+		++i;
+		continue;
+	}
+#else
 
+		/// old
         std::fill(spectre, spectre + fftLength * 2, 0.); // fill all with zeros
 #if DATA_POINTER
         for(auto it = begin((*(this->dataPointer))[chanList[j]]);
@@ -1285,9 +1289,9 @@ void edfFile::countFft()
         {
 #if DATA_POINTER
             // set even elements to signal values
-            spectre[2 * (it - begin((*(this->dataPointer))[j])) ] = (*it) * sqrt(norm1);
+			spectre[2 * (it - begin((*(this->dataPointer))[j])) ] = (*it) * norm1;
 #else
-            spectre[2 * (it - begin(this->data[j])) ] = (*it) * sqrt(norm1);
+			spectre[2 * (it - begin(this->data[j])) ] = (*it) * norm1;
 #endif
         }
         four1(spectre - 1, fftLength, 1);       //Fourier transform
@@ -1299,6 +1303,7 @@ void edfFile::countFft()
         ++i;
     }
     delete[] spectre;
+#endif
 }
 
 /// remake vector
@@ -1309,9 +1314,8 @@ void edfFile::refilter(const double & lowFreq,
 {
 
     int fftLength = fftL(this->dataLength);
-    double spStep = this->srate / double(fftLength);
-    double norm1 = fftLength / double(this->dataLength);
-    double * spectre = new double [fftLength * 2];
+	double spStep = this->srate / double(fftLength);
+	std::valarray<double> spectre(2 * fftLength);
 
     std::vector<int> chanList;
     for(int i = 0; i < this->ns; ++i)
@@ -1333,86 +1337,20 @@ void edfFile::refilter(const double & lowFreq,
 
     int i = 0;
     for(int j : chanList)
-    {
+	{
         std::copy(std::begin(fftData[i]),
                   std::begin(fftData[i]) + 2 * fftLength,
-                  spectre);
-        ++i;
-        //filtering
+				  std::begin(spectre));
+		++i;
 
-#if 0
-        /// old
-        for(int i = 0; i < fftLength; ++i)
-        {
-			if(i < 2. * lowFreq / spStep ||
-			   i > 2. * highFreq / spStep)
-                spectre[i] = 0.;
-        }
-        for(int i = fftLength; i < 2 * fftLength; ++i)
-        {
-			if(2 * fftLength - i < 2. * lowFreq / spStep ||
-			   2 * fftLength - i > 2. * highFreq / spStep)
-                spectre[i] = 0.;
-        }
-#else
-        if(!isNotch)
-        {
-            ///new
-            std::fill(spectre,
-                      spectre + lowLim,
-                      0.);
-            std::fill(spectre + highLim,
-                      spectre + fftLength,
-                      0.);
-            std::fill(spectre + fftLength,
-                      spectre + 2 * fftLength - highLim - 1,
-                      0.);
-            std::fill(spectre + 2 * fftLength - lowLim + 1,
-                      spectre + 2 * fftLength,
-                      0.);
-        }
-        else
-        {
-            std::fill(spectre + lowLim,
-                      spectre + highLim,
-                      0.);
-            std::fill(spectre + 2 * fftLength - highLim,
-                      spectre + 2 * fftLength - lowLim,
-                      0.);
-        }
+		myLib::refilterSpectre(spectre, lowLim, highLim, isNotch);
 
-#endif
-
-        //end filtering
-        four1(spectre - 1, fftLength, -1);       // inverse transform
-#if DATA_POINTER
-        for(auto it = (*(this->dataPointer))[j].begin();
-            it < (*(this->dataPointer))[j].end();
-            ++it)
-        {
-            (*it) = spectre[2 * (it - (*(this->dataPointer))[j].begin()) ]
-                    / (fftLength * sqrt(norm1));
-
-//            if (j == 0 && (it - (*(this->dataPointer))[chanList[j]].begin()) < 24000)
-//            {
-//                cout << *it << endl;
-//            }
-        }
-#else
-        for(auto it = std::begin(this->data[j]);
-            it < std::end(this->data[j]);
-            ++it)
-        {
-            (*it) = spectre[2 * (it - begin(this->data[j])) ]
-                    / (fftLength * sqrt(norm1));
-        }
-#endif
+		this->data[j] = spectreCtoRrev(spectre);
     }
     if(!newPath.isEmpty())
     {
         this->writeEdfFile(newPath);
-    }
-    delete []spectre;
+	}
 }
 
 void edfFile::saveSubsection(int startBin,

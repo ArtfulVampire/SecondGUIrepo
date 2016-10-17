@@ -262,7 +262,7 @@ private:
 
     std::vector<edfChannel> channels;
     edfDataType data; // matrix.cpp
-    std::vector<std::vector<double>> fftData{};
+	std::vector<std::valarray<double>> fftData{};
 
 #if DATA_POINTER
     edfDataType (*dataPointer) = &data;

@@ -121,6 +121,9 @@ public:
     matrix operator -();
 
     bool operator == (const matrix & other);
+	bool operator != (const matrix & other);
+
+	bool isEmpty();
 
     //"static"
     static matrix transpose(const matrix & input);
@@ -152,7 +155,7 @@ public:
 //    void systemGaussSolve();
 
 public:
-    dataType data = dataType();
+	dataType data{dataType()};
 
 };
 

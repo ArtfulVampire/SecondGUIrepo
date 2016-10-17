@@ -200,8 +200,11 @@ void Cut::resizeEvent(QResizeEvent * event)
                                 ui->scrollArea->geometry().y(),
 								newLen * def::freq,
                                 ui->scrollArea->geometry().height());
-    ui->paintLengthDoubleSpinBox->setValue(newLen);
-    paint();
+	ui->paintLengthDoubleSpinBox->setValue(newLen);
+	if(!data3.isEmpty())
+	{
+		paint();
+	}
 }
 
 bool Cut::eventFilter(QObject *obj, QEvent *event)
@@ -444,7 +447,7 @@ void Cut::createImage(const QString & dataFileName)
 		def::freq = edfFil.getFreq();
     }
 
-	cout << "freq = " << def::freq << endl;
+//	cout << "freq = " << def::freq << endl;
 
     /// if too long?
     /// draw only needed part?

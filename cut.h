@@ -86,7 +86,7 @@ private:
     int rightLimit; /// in slices
     int leftLimit; /// in slices
 
-    matrix data3;
+	matrix data3{};
     matrix undoData;
     int undoBegin{0};
     int NumOfSlices{0};

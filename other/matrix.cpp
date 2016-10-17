@@ -442,6 +442,18 @@ bool matrix::operator == (const matrix & other)
     return true;
 }
 
+bool matrix::operator != (const matrix & other)
+{
+	return !(this->operator==(other));
+}
+
+bool matrix::isEmpty()
+{
+	if(this->rows() == 0 || this->cols() == 0) return true;
+	return false;
+}
+
+
 matrix matrix::operator /= (const double & other)
 {
     for(uint i = 0; i < this->rows(); ++i)
