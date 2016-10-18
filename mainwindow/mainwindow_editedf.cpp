@@ -8,12 +8,6 @@ void MainWindow::makeChanList(std::vector<int> & chanList)
 {
     chanList.clear();
     QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
-    if(lst.last().toInt() - 1 != globalEdf.getMarkChan())
-    {
-        cout << "makeChanList: no markers channel" << endl;
-        ///
-//        return;
-    }
     for(auto str : lst)
     {
         chanList.push_back(str.toInt() - 1);
@@ -159,7 +153,8 @@ void MainWindow::rereferenceData(const QString newRef,
 
     //change labels
     globalEdf.setLabels(label);
-    reduceChannelsFast();
+	globalEdf = globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
+	def::ns = globalEdf.getNs();
 
     //set all of channels to the lineedit
     helpString.clear();
@@ -233,10 +228,10 @@ void MainWindow::reduceChannelsEDF(const QString & newFilePath)
     edfFile temp;
     temp.readEdfFile(ui->filePathLineEdit->text());
 
-    vector<int> chanList;
+	std::vector<int> chanList;
     makeChanList(chanList);
 
-    temp.reduceChannels(chanList);
+	temp = temp.reduceChannels(chanList);
     temp.writeEdfFile(newFilePath);
 
     cout << "reduceChannelsEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
@@ -307,20 +302,6 @@ void MainWindow::reduceChannelsSlot()
 #endif
 }
 
-void MainWindow::reduceChannelsFast()
-{
-    QString helpString;
-    globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
-    def::ns = globalEdf.getNs();
-
-    helpString = "channels reduced fast ";
-    ui->textEdit->append(helpString);
-
-    helpString = "ns equals to " + QString::number(def::ns);
-    ui->textEdit->append(helpString);
-
-    ui->progressBar->setValue(0);
-}
 
 void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
 {

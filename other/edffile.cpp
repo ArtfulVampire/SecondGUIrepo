@@ -85,6 +85,8 @@ edfFile::edfFile(const edfFile &other, bool noData)
 
 edfFile edfFile::operator=(const edfFile & other)
 {
+	if(&other == this) return *this;
+
     this->headerInitialInfo = other.getHeaderInit();
     this->bytes = other.getBytes();
     this->headerReservedField = other.getHeaderReserved();
@@ -119,7 +121,7 @@ edfFile edfFile::operator=(const edfFile & other)
     this->filePath = other.getFilePath();
     this->ExpName = other.getExpName();
     this->dirPath = other.getDirPath();
-    return (*this);
+	return *this;
 }
 
 edfFile::edfFile(const QString & txtFilePath, inst which)
@@ -1434,7 +1436,9 @@ void edfFile::cleanFromEyes(QString eyesPath,
     {
         for(int i = 0; i < this->ns; ++i)
         {
-            if(this->channels[i].label.contains("EEG"))
+			/// exclude A1-N and such,
+			/// doubling with eyesProcessingStatic
+			if(this->channels[i].label.contains("EEG"))
             {
                 eegNums.push_back(i);
             }
@@ -1451,99 +1455,43 @@ void edfFile::cleanFromEyes(QString eyesPath,
             }
         }
     }
-
-#if DATA_IN_CHANS
-    for(int i = 0; i < numEeg; ++i)
-    {
-        for(int k = 0; k < numEog; ++k)
-        {
-#if 1
-            std::transform(this->channels[ eegNums[i] ].data.begin(),
-                    this->channels[ eegNums[i] ].data.end(),
-                    this->channels[ eogNums[k] ].data.begin(),
-                    this->channels[ eegNums[i] ].data.begin(),
-                    [&](double a, double b) {return a - b * coefs[i][k];}
-            );
-#else
-
-            for(int j = 0; j < this->dataLength; ++j)
-            {
-                this->data[ eegNums[i] ][j] -= coefs[ i ][ k ]   // dataPointer ???
-                        * this->data[ eogNums[k] ][j];
-            }
-#endif
-        }
-    }
-
-    if(removeEogChannels)
-    {
-        for(int k = 0; k < numEog; ++k)
-        {
-            this->channels.erase(this->channels.begin() + eogNums[k]);
-        }
-    }
-#else
     for(uint i = 0; i < coefs.rows(); ++i)
     {
         for(uint k = 0; k < coefs.cols(); ++k)
         {
-#if DATA_POINTER
-            /// make valarray ?
-            (*(this->dataPointer))[ eegNums[i] ] -= (*(this->dataPointer)) [eogNums[k] ]
-                    * coefs[i][k];
-#else
+
             this->data[ eegNums[i] ] -= this->data [ eogNums[k] ] * coefs[i][k];
-#endif
         }
     }
     if(removeEogChannels)
     {
         this->removeChannels(eogNums);
-    }
-#endif
+	}
 
     cout << "cleanFromEyes: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
-void edfFile::reduceChannels(const std::vector<int> & chanList) // much memory
+edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much memory
 {
-#if 1 // more general, much memory
-    edfFile temp(*this);
-
-    this->channels.clear();
-
-#if !DATA_IN_CHANS
-#if DATA_POINTER
-    (*(this->dataPointer)).clear();
-#else
-    this->data = edfDataType();
-#endif
-#endif
+	// more general, much memory
+	edfFile temp(*this, true);
+	temp.channels.clear();
+	temp.data.clear();
 
     for(int item : chanList)
     {
-        this->channels.push_back( temp.getChannels()[ item ] );
+		if(item >= this->getNs())
+		{
+			cout << "edfFile::reduceChannels: inappropriate number in chanList, return *this" << endl;
+			return *this;
+		}
+		temp.channels.push_back(this->channels[item]);
+		temp.data.push_back(this->data[item]);
+	}
+	/// if the cycle worked well
+	temp.adjustArraysByChannels();
+	return temp;
 
-#if !DATA_IN_CHANS
-
-#if DATA_POINTER
-        (*(this->dataPointer)).push_back( temp.getData()[ item ] );
-#else
-        this->data.push_back( temp.getData()[ item ] );
-#endif
-
-#endif
-
-    }
-#else
-    for(int i = 0; i < chanList.length(); ++i)
-    {
-        this->channels[i] = this->channels[ chanList[i] ];
-        this->data[i] = this->data[ chanList[i] ];
-    }
-#endif
-
-    this->adjustArraysByChannels();
 }
 
 
@@ -1578,19 +1526,24 @@ void edfFile::removeChannels(const std::vector<int> & chanList)
 //void removeChannels(const QString & chanStr);
 
 
-void edfFile::reduceChannels(const QString & chanStr)
+edfFile edfFile::reduceChannels(const QString & chanStr) const
 {
     /// need fix, doesn't work properly
     QTime myTime;
-    myTime.start();
+	myTime.start();
 
     QStringList lst;
     QStringList leest = chanStr.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
     if(leest.last().toInt() - 1 != this->markerChannel)
     {
-        cout << "Reduce channels: bad channels list - no markers" << endl;
-//        return;
+		cout << "edfFile::reduceChannels: warning - last is not marker" << endl;
+		cout << leest.last().toInt() - 1 << "\t" << this->markerChannel << endl;
     }
+
+	edfFile temp(*this, true);
+	temp.data = edfDataType();
+	temp.data.resize(leest.length());
+	temp.channels.resize(leest.length());
 
     /// need write a check of channel sequence
 
@@ -1600,12 +1553,10 @@ void edfFile::reduceChannels(const QString & chanStr)
     for(int k = 0; k < leest.length(); ++k)
     {
         if(QString::number(leest[k].toInt()) == leest[k]) // just copy
-        {
-#if DATA_POINTER
-            (*(this->dataPointer))[k] = (*(this->dataPointer))[leest[k].toInt() - 1];
-#else
-            this->data[k] = this->data[leest[k].toInt() - 1];
-#endif
+		{
+//			this->data[k] = this->data[leest[k].toInt() - 1];
+			temp.data[k] = this->data[leest[k].toInt() - 1];
+			temp.channels[k] = this->channels[leest[k].toInt() - 1];
         }
         else if(leest[k].contains(QRegExp(R"([\+\-\*\/])")))
         {
@@ -1613,13 +1564,14 @@ void edfFile::reduceChannels(const QString & chanStr)
             lst = leest[k].split(QRegExp(R"([\+\-\*\/])"), QString::SkipEmptyParts);
             for(int h = 0; h < lst.length(); ++h)
             {
-                if(QString::number(lst[h].toInt()) != lst[h]) // if not a number between operations
+				if(!smallLib::isInt(lst[h]))
                 {
-                    cout << "NAN between operators" << endl;
-                    return;
+					cout << "edfFile::reduceChannels: NAN between operators, return *this" << endl;
+					return *this;
                 }
             }
-            this->channels[k] = this->channels[lst[0].toInt() - 1];
+//            this->channels[k] = this->channels[lst[0].toInt() - 1];
+			temp.channels[k] = this->channels[lst[0].toInt() - 1];
 
             lengthCounter += lst[0].length();
             for(int h = 1; h < lst.length(); ++h)
@@ -1628,8 +1580,8 @@ void edfFile::reduceChannels(const QString & chanStr)
                 else if(leest[k][lengthCounter] == '-') sign = -1.;
                 else //this should never happen!
                 {
-                    cout << "first sign is not + or -" << endl;
-                    return;
+					cout << "edfFile::reduceChannels: first sign is not + or -, return * this" << endl;
+					return * this;;
                 }
                 lengthCounter += 1; //sign length
                 lengthCounter += lst[h].length();
@@ -1643,31 +1595,12 @@ void edfFile::reduceChannels(const QString & chanStr)
                 {
                     sign *= lst[h+1].toDouble();
                 }
-#if DATA_POINTER
 
-                /// make valarray
-                (*(this->dataPointer))[k] = (*(this->dataPointer))[lst[0].toInt() - 1]
-                + sign * (*(this->dataPointer))[lst[h].toInt() - 1];
+//                this->data[k] = this->data[lst[0].toInt() - 1]
+//                        + sign * this->data[lst[h].toInt() - 1];
 
-//                std::transform((*(this->dataPointer))[lst[0].toInt() - 1].begin(),
-//                        (*(this->dataPointer))[lst[0].toInt() - 1].end(),
-//                        (*(this->dataPointer))[lst[h].toInt() - 1].begin(),
-//                        (*(this->dataPointer))[k].begin(),
-//                        [&](double i, double j){return i + sign * j;}
-//                );
-
-#else
-                this->data[k] = this->data[lst[0].toInt() - 1]
-                        + sign * this->data[lst[h].toInt() - 1];
-
-//                std::transform(this->data[lst[0].toInt() - 1].begin(),
-//                               this->data[lst[0].toInt() - 1].end(),
-//                               this->data[lst[h].toInt() - 1].begin(),
-//                        this->data[k].begin(),
-//                        [&](double i, double j){return i + sign * j;}
-//                );
-
-#endif
+				temp.data[k] = this->data[lst[0].toInt() - 1]
+						+ sign * this->data[lst[h].toInt() - 1];
 
                 if(leest[k][lengthCounter] == '/' || leest[k][lengthCounter] == '*')
                 {
@@ -1680,17 +1613,18 @@ void edfFile::reduceChannels(const QString & chanStr)
         }
         else
         {
-            cout << "unknown format of the string" << endl;
-            return;
+			cout << "edfFile::reduceChannels: unknown format of the string, return *this" << endl;
+			return *this;
         }
-    }
-    this->ns = leest.length();
-    this->channels.resize(this->ns);
-    this->adjustArraysByChannels();
+	}
+	cout << "reduceChannelsFast: ns = " << ns;
+	cout << ", time = " << myTime.elapsed() / 1000. << " sec";
+	cout << endl;
 
-    cout << "reduceChannelsFast: ns = " << ns;
-    cout << ", time = " << myTime.elapsed() / 1000. << " sec";
-    cout << endl;
+	temp.ns = leest.length();
+	temp.adjustArraysByChannels();
+	return temp;
+
 }
 
 void edfFile::setLabels(char ** inLabels)

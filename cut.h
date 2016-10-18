@@ -73,13 +73,13 @@ private:
 
     fileType myFileType{fileType::real};
     int leftDrawLimit; /// in slices
-    int rightDrawLimit{0}; /// in slices
-    edfFile edfFil;
+	int rightDrawLimit{0}; /// in slices
+	edfFile edfFil;
 
     QStringList lst;
     QString currentFile;
-    int currentNumber; /// in lst
-    int addNum = 0; // for cut() windows
+	int currentNumber; /// in lst
+	int addNum = 0; // for cut() windows
 
     QPixmap currentPic;
     int redCh, blueCh; // for drawing

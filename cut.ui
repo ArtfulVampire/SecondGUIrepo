@@ -145,9 +145,6 @@
     <item row="1" column="2">
      <widget class="QComboBox" name="dirBox"/>
     </item>
-    <item row="1" column="3">
-     <widget class="QSpinBox" name="eogSpinBox"/>
-    </item>
     <item row="2" column="0">
      <widget class="QPushButton" name="cutButton">
       <property name="text">
@@ -159,13 +156,6 @@
      <widget class="QPushButton" name="saveButton">
       <property name="text">
        <string>Save</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QPushButton" name="cutEyesButton">
-      <property name="text">
-       <string>Cut Eyes</string>
       </property>
      </widget>
     </item>
@@ -183,30 +173,10 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="2">
-     <widget class="QDoubleSpinBox" name="eogDoubleSpinBox"/>
-    </item>
-    <item row="3" column="3">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>NumOfDispersion</string>
-      </property>
-     </widget>
-    </item>
     <item row="4" column="0">
      <widget class="QPushButton" name="splitButton">
       <property name="text">
        <string>Split</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="2">
-     <widget class="QSpinBox" name="eyesSlicesSpinBox"/>
-    </item>
-    <item row="4" column="3">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>NumOfEyesSlices</string>
       </property>
      </widget>
     </item>
@@ -255,6 +225,45 @@
      <widget class="QLabel" name="label_6">
       <property name="text">
        <string>paint length</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>0</y>
+     <width>231</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <widget class="QPushButton" name="cutEyesButton">
+      <property name="text">
+       <string>Cut Eyes</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QDoubleSpinBox" name="eogDoubleSpinBox"/>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>NumOfDispersion</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QSpinBox" name="eyesSlicesSpinBox"/>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLabel" name="label_8">
+      <property name="text">
+       <string>NumOfEyesSlices</string>
       </property>
      </widget>
     </item>

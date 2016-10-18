@@ -47,7 +47,7 @@ std::pair<uint, uint> WARD::findNearest()
 /// recount if dataMatrixChanged!!!!11
 void WARD::learn(std::vector<uint> & indices)
 {
-    if(!dists.empty())
+	if(!dists.isEmpty())
     {
         return;
     }

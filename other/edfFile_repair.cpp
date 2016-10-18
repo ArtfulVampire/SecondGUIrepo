@@ -229,7 +229,7 @@ void channelsOrderFile(const QString & inFilePath,
     if(reorderChanList != ident)
     {
         initFile.readEdfFile(inFilePath);
-        initFile.reduceChannels(reorderChanList);
+		initFile = initFile.reduceChannels(reorderChanList);
         initFile.writeEdfFile(outFilePath);
     }
     else

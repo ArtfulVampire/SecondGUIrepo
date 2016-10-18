@@ -205,8 +205,8 @@ public:
                   bool isNotch = false);
     void saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
-    void reduceChannels(const std::vector<int> & chanList);
-    void reduceChannels(const QString & chanStr);
+	edfFile reduceChannels(const std::vector<int> & chanList) const;
+	edfFile reduceChannels(const QString & chanStr) const;
     void removeChannels(const std::vector<int> & chanList);
 
 	void downsample(double newFreq,

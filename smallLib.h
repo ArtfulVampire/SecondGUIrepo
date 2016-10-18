@@ -27,6 +27,15 @@ const long double pi = 3.14159265358979323846L;
 namespace smallLib
 {
 
+inline bool isDouble(const QString & in)
+{
+	return QString::number(in.toDouble()) == in;
+}
+
+inline bool isInt(const QString & in)
+{
+	return QString::number(in.toInt()) == in;
+}
 
 inline double doubleRound(const double & in, const int & numSigns)
 {

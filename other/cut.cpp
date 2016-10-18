@@ -32,16 +32,14 @@ Cut::Cut() :
         blueCh = 22;
     }
 
-
+	ui->subdirComboBox->addItem("");
     ui->subdirComboBox->addItem("Realisations");
     ui->subdirComboBox->addItem("windows");
     ui->subdirComboBox->addItem("windows/fromreal"); //generality
 
-//    ui->subdirComboBox->setCurrentText("windows/fromreal"); /// eyes
-    ui->subdirComboBox->setCurrentText("Realisations"); /// me
+	ui->subdirComboBox->setCurrentText(""); /// me
 
 
-    ui->eogSpinBox->setValue(2);
     ui->eogDoubleSpinBox->setValue(2.40);
     ui->eogDoubleSpinBox->setSingleStep(0.1);
 
@@ -294,7 +292,8 @@ void Cut::cutEyesAll()
     lst = def::dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
     def::dir->cdUp();
 
-    int NumEog = ui->eogSpinBox->value();
+	/// generality magic constant
+	int NumEog = 2;
     double * thresholdEog = new double [NumEog];
     for(int i = 0; i < NumEog; ++i)
     {
@@ -442,6 +441,12 @@ void Cut::createImage(const QString & dataFileName)
         leftDrawLimit = 0;
 		ui->paintStartDoubleSpinBox->setMaximum(floor(NumOfSlices / def::freq));
 		ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
+
+		for(int i = 0; i < edfFil.getLabels().size(); ++i)
+		{
+			if( edfFil.getLabels()[i].contains("EOG1")) redCh = i;
+			else if(edfFil.getLabels()[i].contains("EOG2")) blueCh = i;
+		}
 
 		/// crutch generality
 		def::freq = edfFil.getFreq();

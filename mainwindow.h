@@ -63,6 +63,8 @@ public slots:
     void drawDirSlot();
     void setEdfFileSlot();
 	void cleanDirs();
+	void cleanDirsCheckAll();
+	void cleanDirsUnheckAll();
     void drawMapsSlot();
     void constructEDFSlot();
     void reduceChannelsEDFSlot();
@@ -95,8 +97,7 @@ public:
     void sliceBak(int marker1, int marker2, QString marker);
     void readData();
     void sliceWindow(int startSlice, int endSlice, int number, int marker);    
-    void eyesFast();
-    void reduceChannelsFast();
+	void eyesFast();
     void sliceIlya(const QString &fileName, QString marker);
     void sliceIlya(int marker1, int marker2, QString marker);
     void sliceFromTo(int marker1, int marker2, QString marker);

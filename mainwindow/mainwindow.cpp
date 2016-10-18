@@ -223,13 +223,15 @@ MainWindow::MainWindow() :
     ui->vectwDoubleSpinBox->setValue(12.0);
     ui->vectwDoubleSpinBox->setSingleStep(0.5);
 
-    ui->cleanFromRealsCheckBox->setChecked(true);
-    ui->cleanRealisationsCheckBox->setChecked(true);
+	ui->cleanRealsCheckBox->setChecked(true);
     ui->cleanRealsSpectraCheckBox->setChecked(true);
-    ui->cleanWindowsCheckBox->setChecked(false);
-    ui->cleanWindSpectraCheckBox->setChecked(true);
+	ui->cleanWindsCheckBox->setChecked(false);
+	ui->cleanWindsSpectraCheckBox->setChecked(true);
+	ui->cleanRealsSignalsCheckBox->setChecked(true);
+	ui->cleanWindsSignalsCheckBox->setChecked(true);
+	ui->cleanFromRealsCheckBox->setChecked(true);
     ui->cleanMarkersCheckBox->setChecked(true);
-    ui->cleanSignalsCheckBox->setChecked(true);
+
     ui->cleanSpectraImgCheckBox->setChecked(true);
 
     ui->highFreqFilterDoubleSpinBox->setValue(40.);
@@ -280,6 +282,10 @@ MainWindow::MainWindow() :
     QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawDirSlot()));
 
     QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
+
+	QObject::connect(ui->cleanDirsCheckAllButton, SIGNAL(clicked()), this, SLOT(cleanDirsCheckAll()));
+
+	QObject::connect(ui->cleanDirsUncheckAllButton, SIGNAL(clicked()), this, SLOT(cleanDirsUncheckAll()));
 
     QObject::connect(ui->reduceChannelsComboBox, SIGNAL(highlighted(int)), this, SLOT(changeNsLine(int)));
 
@@ -536,7 +542,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
         {
             vector<int> chanList;
             makeChanList(chanList);
-            fil.reduceChannels(chanList);
+			fil = fil.reduceChannels(chanList);
             def::ns = fil.getNs();
         }
         // almost equal time, should use sessionEdges
@@ -562,7 +568,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
             // more general reduce channels
             vector<int> chanList;
             makeChanList(chanList);
-            fil.reduceChannels(chanList);
+			fil = fil.reduceChannels(chanList);
             def::ns = fil.getNs();
         }
         if(ui->sliceCheckBox->isChecked())
@@ -813,6 +819,32 @@ void MainWindow::drawRealisations()
     cout << "drawRealisations: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
+void MainWindow::cleanDirsCheckAll()
+{
+	bool fl = true;
+	ui->cleanRealsCheckBox->setChecked(fl);
+	ui->cleanRealsSpectraCheckBox->setChecked(fl);
+	ui->cleanWindsCheckBox->setChecked(fl);
+	ui->cleanWindsSpectraCheckBox->setChecked(fl);
+	ui->cleanRealsSignalsCheckBox->setChecked(fl);
+	ui->cleanWindsSignalsCheckBox->setChecked(fl);
+	ui->cleanFromRealsCheckBox->setChecked(fl);
+	ui->cleanMarkersCheckBox->setChecked(fl);
+}
+
+void MainWindow::cleanDirsUnheckAll()
+{
+	bool fl = false;
+	ui->cleanRealsCheckBox->setChecked(fl);
+	ui->cleanRealsSpectraCheckBox->setChecked(fl);
+	ui->cleanWindsCheckBox->setChecked(fl);
+	ui->cleanWindsSpectraCheckBox->setChecked(fl);
+	ui->cleanRealsSignalsCheckBox->setChecked(fl);
+	ui->cleanWindsSignalsCheckBox->setChecked(fl);
+	ui->cleanFromRealsCheckBox->setChecked(fl);
+	ui->cleanMarkersCheckBox->setChecked(fl);
+}
+
 void MainWindow::cleanDirs()
 {
     QString helpString;
@@ -824,7 +856,7 @@ void MainWindow::cleanDirs()
     }
 
     // windows
-    if(ui->cleanWindowsCheckBox->isChecked())
+	if(ui->cleanWindsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
                 + slash + "windows";
@@ -832,7 +864,7 @@ void MainWindow::cleanDirs()
     }
 
     // SpectraSmooth/windows
-    if(ui->cleanWindSpectraCheckBox->isChecked())
+	if(ui->cleanWindsSpectraCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
                 + slash + "SpectraSmooth"
@@ -858,7 +890,7 @@ void MainWindow::cleanDirs()
     }
 
     // Realisations
-    if(ui->cleanRealisationsCheckBox->isChecked())
+	if(ui->cleanRealsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
                 + slash + "Realisations";
@@ -874,7 +906,7 @@ void MainWindow::cleanDirs()
     }
 
     // signals
-    if(ui->cleanSignalsCheckBox->isChecked())
+	if(ui->cleanRealsSignalsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
                      + slash + "Signals" + slash;
@@ -888,7 +920,7 @@ void MainWindow::cleanDirs()
 
 
     // signals windows
-    if(ui->cleanWindowsSignalsCheckBox->isChecked())
+	if(ui->cleanWindsSignalsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
                      + slash + "Signals" + slash + "windows" + slash;

@@ -447,7 +447,7 @@ bool matrix::operator != (const matrix & other)
 	return !(this->operator==(other));
 }
 
-bool matrix::isEmpty()
+bool matrix::isEmpty() const
 {
 	if(this->rows() == 0 || this->cols() == 0) return true;
 	return false;

@@ -12,22 +12,6 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
-
-	QStringList leest_audio = subjects::leest_more + subjects::leest_less;
-    leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
-
-    /// for standalone eyesClean
-//    ui->windowLengthSpinBox->setValue(5);
-//    ui->justSliceButton->setChecked(true);
-
-
-//	edfFile fil("/media/Files/Data/iitp/SIA/SIA_palms.dat", inst::iitp);
-//	edfFile fil;
-//	fil.readEdfFile("/media/Files/Data/iitp/SIA/SIA_palms_emg.edf");
-//	fil.downsample(250., "/media/Files/Data/iitp/SIA/SIA_palms_emg_DS.edf");
-
-
-//	exit(0);
 	return;
 
 #if 0
@@ -301,6 +285,8 @@ void MainWindow::customFunc()
 
 #if 0
     /// Dasha processing
+
+
     def::ntFlag = true; /// for Dasha's and EEGMRI
 //    def::ntFlag = false; /// encephalan (+1)
 
@@ -432,6 +418,8 @@ void MainWindow::customFunc()
 
 #if 0
     /// clean "new" Dasha files
+	QStringList leest_audio = subjects::leest_more + subjects::leest_less;
+	leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
     const QString work = def::DashaFolder + "/CHANS/Audio_to_less_out_ALL";
     QDir deer(work);
 

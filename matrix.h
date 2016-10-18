@@ -73,7 +73,12 @@ public:
     dataType::iterator end();
     dataType::const_iterator begin() const;
     dataType::const_iterator end() const;
-    bool empty() const {return data.empty();}
+	bool isEmpty() const;
+	lineType & last() {return data.back();}
+	lineType & back() {return data.back();}
+	lineType & front() {return data.front();}
+	lineType & first() {return data.front();}
+
     lineType toVectorByRows() const;
     lineType toVectorByCols() const;
     lineType getCol(uint i, uint numCols = 0) const;
@@ -123,7 +128,6 @@ public:
     bool operator == (const matrix & other);
 	bool operator != (const matrix & other);
 
-	bool isEmpty();
 
     //"static"
     static matrix transpose(const matrix & input);
