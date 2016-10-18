@@ -1,10 +1,6 @@
 #ifndef EDFFILE_H
 #define EDFFILE_H
 
-#define DATA_IN_CHANS 0
-#define DATA_POINTER_IN_CHANS 0
-#define DATA_POINTER 0
-
 #include "library.h"
 #include "smallLib.h"
 
@@ -57,15 +53,8 @@ struct edfChannel
     QString prefiltering;
     double nr;
     QString reserved;
-#if DATA_IN_CHANS
-    std::vector <double> * dataP;
-#endif
 
-#if DATA_IN_CHANS
-    std::vector <double> data;
-#endif
-
-    edfChannel operator = (const edfChannel & other)
+	edfChannel & operator = (const edfChannel & other)
     {
         if(this == &other)
         {
@@ -82,14 +71,6 @@ struct edfChannel
         this->prefiltering = other.prefiltering;
         this->nr = other.nr;
         this->reserved = other.reserved;
-
-#if DATA_POINTER_IN_CHANS
-        this->dataP = other.dataP;
-#endif
-
-#if DATA_IN_CHANS
-        this->data = other.data;
-#endif
         return *this;
     }
 
@@ -104,13 +85,6 @@ struct edfChannel
                QString in_prefiltering,
                double in_nr,
                QString in_reserved
-
-           #if DATA_POINTER_IN_CHANS
-               , std::vector<double> * in_dataP
-           #endif
-           #if DATA_IN_CHANS
-               ,std::vector <double> in_data
-           #endif
                )
 //
     {
@@ -124,12 +98,6 @@ struct edfChannel
         this->prefiltering = in_prefiltering;
         this->nr = in_nr;
         this->reserved = in_reserved;
-#if DATA_POINTER_IN_CHANS
-        this->dataP = in_dataP;
-#endif
-#if DATA_IN_CHANS
-        this->data = in_data;
-#endif
     }
 
     edfChannel()
@@ -144,12 +112,6 @@ struct edfChannel
         this->prefiltering = QString();
         this->nr = 0.;
         this->reserved = QString();
-#if DATA_POINTER_IN_CHANS
-    this->dataP = nullptr;
-#endif
-#if DATA_IN_CHANS
-        this->data = std::vector <double> ();
-#endif
     }
     ~edfChannel()
     {
@@ -193,7 +155,7 @@ public:
                            QString helpString,
                            std::vector <QString> annotations);
 
-    edfFile operator=(const edfFile & other);
+	edfFile & operator=(const edfFile & other);
 
     void adjustArraysByChannels();
     void appendFile(QString addEdfPath, QString outPath) const;
@@ -262,12 +224,7 @@ private:
 
     std::vector<edfChannel> channels;
     edfDataType data; // matrix.cpp
-	std::vector<std::valarray<double>> fftData{};
-
-#if DATA_POINTER
-    edfDataType (*dataPointer) = &data;
-#endif
-
+	std::vector<std::valarray<double>> fftData{}; // mutable?
 
     int staSlice = 0; // yet not useful
     int dataLength = 0;
@@ -323,11 +280,7 @@ public:
     void setEdfPlusFlag(bool newFlag) {edfPlusFlag = newFlag;}
 
     // operations with data
-#if DATA_POINTER
-    const edfDataType & getData() const {return (*dataPointer);}
-    void setData(int chanNum, int timeBin, double val) {(*dataPointer)[chanNum][timeBin] = val;}
-    void getDataCopy(edfDataType & destination) const {destination = (*dataPointer);}
-#else
+
 
     const edfDataType & getData() const {return data;}
     void setData(int chanNum, int timeBin, double val) {data[chanNum][timeBin] = val;}
@@ -338,8 +291,6 @@ public:
     {
         return data[i];
     }
-
-#endif
 
 
 public:

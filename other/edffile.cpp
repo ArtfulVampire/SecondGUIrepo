@@ -6,9 +6,6 @@ using namespace smallLib;
 
 edfFile::edfFile()
 {
-#if DATA_POINTER
-    this->dataPointer = &(this->data);
-#endif
 }
 
 std::list<std::valarray<double>> edfFile::getDataAsList() const
@@ -70,10 +67,7 @@ edfFile::edfFile(const edfFile &other, bool noData)
     if(!noData)
     {
         this->data = other.getData();
-        this->fftData = other.fftData;
-#if DATA_POINTER
-        this->dataPointer = &(this->data);
-#endif
+		this->fftData = other.fftData;
     }
     else
     {
@@ -83,7 +77,7 @@ edfFile::edfFile(const edfFile &other, bool noData)
 
 
 
-edfFile edfFile::operator=(const edfFile & other)
+edfFile & edfFile::operator=(const edfFile & other)
 {
 	if(&other == this) return *this;
 
@@ -110,10 +104,6 @@ edfFile edfFile::operator=(const edfFile & other)
 
     this->data = other.getData();
     this->fftData = other.fftData;
-
-#if DATA_POINTER
-    this->dataPointer = &(this->data);
-#endif
 
     this->dataLength = this->ndr * this->nr[0];  // other.getDataLen();
     this->channels = other.getChannels();
@@ -209,9 +199,6 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		{
 			this->data[i].resize(6 * 60 * def::freq); // for 6 minutes generality
 		}
-#if DATA_POINTER
-		this->dataPointer = &(this->data);
-#endif
 
 		currTimeIndex = 0;
 		while(!feof(inStr))
@@ -239,14 +226,6 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 												prefiltering[i],
 												nr[i],
 												reserved[i]
-
-
-									#if DATA_POINTER_IN_CHANS
-												,&data[i] // edfChannel::dataP
-									#endif
-									#if DATA_IN_CHANS
-												,data[i]
-									#endif
 												)
 									 );
 		}
@@ -312,14 +291,6 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 												prefiltering[i],
 												nr[i],
 												reserved[i]
-
-
-									#if DATA_POINTER_IN_CHANS
-												,&data[i] // edfChannel::dataP
-									#endif
-									#if DATA_IN_CHANS
-												,data[i]
-									#endif
 												)
 									 );
 		}
@@ -352,15 +323,8 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
         this->handleEdfFile(EDFpath, false);
     }
     else // if(asPLain)
-    {
-#if DATA_POINTER
-        writePlainData(EDFpath,
-                       *(this->dataPointer),
-                       this->ns,
-                       this->dataLength);
-#else
-        writePlainData(EDFpath, this->data);
-#endif
+	{
+		writePlainData(EDFpath, this->data);
     }
 }
 
@@ -425,7 +389,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         header = fopen(helpString, "w");
         if(header == NULL)
         {
-            cout << "handleFile: cannot open header.txt file" << endl;
+			cout << "edfFile::handleEdfFile: cannot open header.txt file" << endl;
             return;
         }
     }
@@ -520,7 +484,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                 /// encephalan only !!!!!1111
 //                physMax[i] = 4096;
 //                physMin[i] = -4096;
-//                digMax[i] = 32767;
+//                digMax[i] = 32768;
 //                digMin[i] = -32768;
             }
             /// repair for equal phys min/max
@@ -544,13 +508,13 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                 {
 					cout << ExpName << "\t"
 						 << "edfFile::readEdfFile: phys Max/Min are equal, chan(from 1) = "
-                         << i + 1 << endl;
+						 << i + 1 << " - " << labels[i] << endl;
                 }
                 if(digMax[i] == digMin[i])
                 {
 					cout << ExpName << "\t"
 						 << "edfFile::readEdfFile:  dig Max/Min are equal, chan(from 1) = "
-                         << i + 1 << endl;
+						 << i + 1 << " - " << labels[i] << endl;
                 }
             }
         }
@@ -602,21 +566,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     if(headerOnly)
     {
         fclose(edfDescriptor);
-
-//        if(this->edfPlusFlag)
-//        {
-
-//            this->channels.erase(std::begin(this->channels) + this->markerChannel);
-//            this->adjustArraysByChannels();
-
-//            this->edfPlusFlag = false;
-//            this->markerChannel = -1;
-//        }
-
         return;
     }
-
-
 
     fpos_t *position = new fpos_t;
     fgetpos(edfDescriptor, position);
@@ -648,7 +599,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         this->markerChannel = -1;
     }
 
-	/// experimental - ddr to 1
+	/// ddr to 1
     {
         const double oldDdr = this->getDdr();
         ddr = 1.;
@@ -678,22 +629,9 @@ void edfFile::handleData(bool readFlag,
     QString helpString;
     if(readFlag)
     {
-        // allocate memory for data array
-#if DATA_POINTER
-        (*(this->dataPointer)).resize(ns);
-#else
+		// allocate memory for data array
 		/// fails when different frequency
-        this->data = matrix(ns, dataLength, 0.);
-//        cout << this->data.cols() << "\t" << this->data.rows() << endl;
-#endif
-        for(int i = 0; i < ns; ++i)
-        {
-#if DATA_POINTER
-            (*(this->dataPointer))[i].resize(dataLength);
-#else
-//            data[i].resize(dataLength);
-#endif
-        }
+		this->data = matrix(ns, dataLength, 0.);
 
         this->channels.clear();
         for(int i = 0; i < this->ns; ++i)
@@ -707,15 +645,7 @@ void edfFile::handleData(bool readFlag,
                                                 digMin[i],
                                                 prefiltering[i],
                                                 nr[i],
-                                                reserved[i]
-
-                                        #if DATA_POINTER_IN_CHANS
-                                            ,&data[i] // edfChannel::dataP
-                                        #endif
-
-                                        #if DATA_IN_CHANS
-                                                ,data[i]
-                                        #endif
+												reserved[i]
                                                 )
                                      );
         }
@@ -749,14 +679,7 @@ void edfFile::handleDatum(const int & currNs,
     qint16 a = 0;
     quint16 markA = 0;
 
-
-#if DATA_POINTER_IN_CHANS
-    double & currDatum = (*(this->channels[currNs].dataP))[currTimeIndex];
-#elif DATA_POINTER
-    double & currDatum = (*(this->dataPointer))[currNs][currTimeIndex];
-#else
     double & currDatum = this->data[currNs][currTimeIndex];
-#endif
 
     if(readFlag)
     {
@@ -1053,69 +976,30 @@ void edfFile::adjustArraysByChannels()
         this->reserved.push_back(this->channels[i].reserved);
     }
 
-#if DATA_IN_CHANS
-    this->data.clear();
-    for(int i = 0; i < this->ns; ++i)
-    {
-        this->data.push_back(this->channels[i].data);
-    }
-#endif
 
-#if DATA_POINTER_IN_CHANS
-    for(int i = 0; i < this->ns; ++i)
-    {
-        this->data[i] = *(this->channels[i].dataP);
-    }
-#endif
 
-    this->headerRest = QString();
-#if DATA_POINTER
-    this->dataLength = (*(this->dataPointer))[0].size(); // dunno
-#else
-    this->dataLength = this->data[0].size(); // dunno
-#endif
+	this->headerRest = QString();
+	this->dataLength = this->data[0].size(); // dunno
 }
 
 void edfFile::adjustMarkerChannel()
 {
-	if(this->markerChannel < 0) return;
+	if(this->markerChannel < 0 || this->markerChannel == this->ns - 1) return;
 
     if(!(this->channels.back().label.contains("Marker") ||
          this->channels.back().label.contains("Status")))
-    {
-#if DATA_IN_CHANS
-        edfChannel tempMarkChan = this->channels[this->markerChannel]; // save markerChannel
-        this->channels.erase(this->channels.begin() + this->markerChannel); // remove markerChannel
-        this->channels.push_back(tempMarkChan); // return markerChannel to the end of a list
-#elif DATA_POINTER_IN_CHANS
+	{
+		// backup marker channel
+		edfChannel tempMarkChan = this->channels[this->markerChannel];
+		lineType tempMarkData = this->data[this->markerChannel];
 
-#else
-        edfChannel tempMarkChan = this->channels[this->markerChannel];
-#if DATA_POINTER
-        lineType tempMarkData = (*(this->dataPointer))[this->markerChannel];
-#else
-        lineType tempMarkData = this->data[this->markerChannel];
-#endif
+		// remove markerChannel
+		this->channels.erase(this->channels.begin() + this->markerChannel);
+		this->data.data.erase(this->data.begin() + this->markerChannel);
 
-        this->channels.erase(this->channels.begin() + this->markerChannel); // remove markerChannel
-#if DATA_POINTER
-        // valarray
-        (*(this->dataPointer)).erase((*(this->dataPointer)).begin()
-                                   + this->markerChannel); // remove markerChannel
-
-#else
-        this->data.data.erase(this->data.begin() + this->markerChannel); // remove markerChannel
-#endif
-
-
-        this->channels.push_back(tempMarkChan); // return markerChannel to the end of a list
-#if DATA_POINTER
-        (*(this->dataPointer)).push_back(tempMarkData); // return markerChannel
-#else
-        this->data.push_back(tempMarkData); // return markerChannel
-#endif
-
-#endif
+		// return markerChannel to the end of a list
+		this->channels.push_back(tempMarkChan);
+		this->data.push_back(tempMarkData);
     }
     this->adjustArraysByChannels();
 }
@@ -1127,22 +1011,7 @@ void edfFile::appendFile(QString addEdfPath, QString outPath) const
     edfFile addEdf;
     addEdf.readEdfFile(addEdfPath);
 
-#if DATA_IN_CHANS
-    edfChannel tempChan;
-    for(int i = 0; i < addEdf.getNs(); ++i)
-    {
-        tempChan = addEdf.getChannels()[i];
-        //old variant
-        for(int i = tempChan.data.size(); i < this->dataLength; ++i)
-        {
 
-            tempChan.data.push_back(0.);
-        }
-        tempChan.data.resize(this->dataLength);
-
-        this->channels.push_back(tempChan);
-    }
-#else
 	edfChannel addChan;
 	lineType addData;
 
@@ -1157,17 +1026,11 @@ void edfFile::appendFile(QString addEdfPath, QString outPath) const
 		addChan = addEdf.getChannels()[i];
 		temp.channels.push_back(addChan);
 		temp.data.push_back(addData);
-    }
-#endif
-
-	cout << 1 << endl;
+	}
 	temp.adjustMarkerChannel();
-	cout << 1 << endl;
 	temp.adjustArraysByChannels();
-	cout << 1 << endl;
 
-    temp.writeEdfFile(outPath);
-	cout << 1 << endl;
+	temp.writeEdfFile(outPath);
 }
 
 void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only data concat
@@ -1265,50 +1128,16 @@ void edfFile::countFft()
         }
     }
     this->fftData.resize(chanList.size());
-    int i = 0;
-//    double * spectre = new double [2 * fftLength];
+	int i = 0;
     for(auto j : chanList)
-    {
-#if 1
+	{
 		/// new rewritten
-		fftData[i] = myLib::spectreRtoC(this->data[j]); /// should norm?
+		fftData[i] = myLib::spectreRtoC(this->data[j]); /// shouldn't norm?
 		++i;
 		continue;
 	}
-#else
-
-		/// old
-        std::fill(spectre, spectre + fftLength * 2, 0.); // fill all with zeros
-#if DATA_POINTER
-        for(auto it = begin((*(this->dataPointer))[chanList[j]]);
-            it < end((*(this->dataPointer))[chanList[j]];
-            ++it)
-#else
-        for(auto it = std::begin(this->data[j]);
-            it < std::end(this->data[j]);
-            ++it)
-#endif
-        {
-#if DATA_POINTER
-            // set even elements to signal values
-			spectre[2 * (it - begin((*(this->dataPointer))[j])) ] = (*it) * norm1;
-#else
-			spectre[2 * (it - begin(this->data[j])) ] = (*it) * norm1;
-#endif
-        }
-        four1(spectre - 1, fftLength, 1);       //Fourier transform
-
-        fftData[i].resize(2 * fftLength);
-        std::copy(spectre,
-                  spectre + 2 * fftLength,
-                  std::begin(fftData[i]));
-        ++i;
-    }
-    delete[] spectre;
-#endif
 }
 
-/// remake vector
 void edfFile::refilter(const double & lowFreq,
 					   const double & highFreq,
                        const QString & newPath,
@@ -1361,33 +1190,16 @@ void edfFile::saveSubsection(int startBin,
                              bool plainFlag) const // [start, finish)
 {
     if(plainFlag)
-    {
-#if DATA_POINTER
-
-        writePlainData(outPath,
-                       *(this->dataPointer),
-                       finishBin-startBin,
-                       startBin);
-#else
+	{
         writePlainData(outPath,
                        this->data,
                        finishBin - startBin,
-                       startBin);
-#endif
-
+					   startBin);
     }
     else
     {
         edfFile temp(*this, true);
-#if 0
-        for(int i = 0; i < this->ns; ++i)
-        {
-            this->data[i].assign(temp.getData()[i].begin() + startBin, temp.getData()[i].begin() + finishBin);
-        }
-        this->dataLength = finishBin - startBin;
-        this->writeEdfFile(outPath, plainFlag);
-        (*this) = temp;
-#else
+
         temp.data.resize(this->ns);
         for(int i = 0; i < this->ns; ++i)
         {
@@ -1397,18 +1209,13 @@ void edfFile::saveSubsection(int startBin,
                       std::begin(temp.data[i]));
         }
         temp.dataLength = finishBin - startBin;
-        temp.writeEdfFile(outPath, plainFlag);
-#endif
+		temp.writeEdfFile(outPath, plainFlag);
     }
 }
 
 void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
 {
-#if DATA_POINTER
-    drawEeg((*(this->dataPointer)),
-#else
-    drawEeg(this->data,
-#endif
+	drawEeg(this->data,
             this->ns,
             startBin,
             finishBin,
@@ -1494,9 +1301,6 @@ edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much
 
 }
 
-
-
-
 void edfFile::removeChannels(const std::vector<int> & chanList)
 {
     std::set<int, std::greater<int>> excludeSet;
@@ -1506,25 +1310,12 @@ void edfFile::removeChannels(const std::vector<int> & chanList)
     }
 
     for(int k : excludeSet)
-    {
-#if DATA_POINTER
-
-        /// was 10-Nov-2015
-//        (*(this->dataPointer)).erase((*(this->dataPointer)).begin() + chanList[k]);
-        /// new 10-Nov-2015
-        (*(this->dataPointer)).erase((*(this->dataPointer)).begin() + k);
-#else
-        this->data.eraseRow(k);
-#endif
-        /// was 10-Nov-2015
-//        this->channels.erase(this->channels.begin() + chanList[k]);
-        /// new 10-Nov-2015
+	{
+		this->data.eraseRow(k);
         this->channels.erase(std::begin(this->channels) + k);
     }
     this->adjustArraysByChannels();
 }
-//void removeChannels(const QString & chanStr);
-
 
 edfFile edfFile::reduceChannels(const QString & chanStr) const
 {
@@ -1694,31 +1485,7 @@ void edfFile::fitData(int initSize) // append zeros to whole ndr's
 {
     this->ndr = ceil(double(initSize) / (this->srate * this->ddr)); // generality
     this->dataLength = this->ndr * (this->srate * this->ddr);
-
-    for(int i = 0; i < this->ns; ++i)
-    {
-#if DATA_POINTER
-        (*(this->dataPointer))[i].resize(this->dataLength);
-        std::fill(begin((*(this->dataPointer))[i]) + initSize,
-                  end((*(this->dataPointer))[i]),
-                  0.)
-#else
-        /// valarray strange handling
-        resizeValar(data[i], this->dataLength);
-//        lineType tempData = data[i];
-//        this->data[i].resize(this->dataLength);
-//        std::copy(begin(tempData),
-//                  end(tempData),
-//                  begin(this->data[i]));
-#endif
-
-#if DATA_IN_CHANS
-        this->channels[i].data.resize(this->dataLength);
-        std::fill(this->channels[i].data.begin() + initSize,
-                  this->channels[i].data.end(),
-                  0.); // optional ?
-#endif
-    }
+	this->data.resizeCols(this->dataLength);
 }
 
 void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are allocated
@@ -1729,14 +1496,7 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
     while(1)
     {
         for(int j = 0; j < this->ns; ++j)
-        {
-#if DATA_POINTER
-            if((*(this->dataPointer))[j][currEnd - 1] != 0.)
-            {
-                doFlag = false;
-                break;
-            }
-#else
+		{
             /// for neurotravel cleaning - generality with digmaxmin
             if(abs(this->data[j][currEnd - 1]) >= 30000) break; // do clean
 
@@ -1744,8 +1504,7 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
             {
                 doFlag = false;
                 break;
-            }
-#endif
+			}
         }
         if(doFlag)
         {
@@ -1758,28 +1517,8 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
         doFlag = true;
     }
     this->dataLength = currEnd;
-    for(int j = 0; j < this->ns; ++j)
-    {
-#if DATA_POINTER
-        (*(this->dataPointer))[j].resize(this->dataLength);
+	this->data.resizeCols(currEnd);
 
-#else
-        /// good removing
-        resizeValar(data[j], currEnd);
-
-//        lineType newArr = this->data[j][slice(0, currEnd, 1)];
-//        this->data[j] = newArr;
-
-//        std::remove_if(begin(this->data[j]) + currEnd,
-//                       end(this->data[j]),
-//                       [](double){return true;});
-
-#endif
-#if DATA_IN_CHANS
-        this->channels[j].data.resize(this->dataLength);
-#endif
-    }
-//    cout << this->data.maxVal() << endl;
     this->ndr = ceil(this->dataLength / (this->srate * this->ddr)); // should be unchanged
 }
 
