@@ -94,6 +94,8 @@ private:
 
     bool autoFlag;
 
+	void drawSamples();
+
 };
 
 #endif // CUT_H

@@ -745,21 +745,20 @@ void drawOneArray(const lineType & array,
     pic.save(outPath, 0, 100);
 }
 
-void drawOneSignal(const std::valarray<double> & signal,
-				   QString outPath)
+QPixmap drawOneSignal(const std::valarray<double> & signal,
+					  int picHeight,
+					  QString outPath)
 {
-	if(outPath.isEmpty()) return;
 
-	const double picH = 600;
 	const int penWidth = 2;
 
-	QPixmap pic(signal.size(), picH);
+	QPixmap pic(signal.size(), picHeight);
 	pic.fill();
 	QPainter pnt;
 	pnt.begin(&pic);
 
 //    const double maxVal = signal.max();
-	const double norm = 0.4 / signal.max();
+	const double norm = 0.4 / abs(signal).max();
 	pnt.setPen(QPen(QBrush("black"), penWidth));
 	for(int i = 0; i < pic.width() - 1; ++i)
 	{
@@ -769,7 +768,11 @@ void drawOneSignal(const std::valarray<double> & signal,
 					 pic.height() * (0.5 - signal[i + 1] * norm));
 	}
 	pnt.end();
-	pic.save(outPath, 0, 100);
+	if(!outPath.isEmpty())
+	{
+		pic.save(outPath, 0, 100);
+	}
+	return pic;
 }
 
 

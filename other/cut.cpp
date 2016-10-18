@@ -65,12 +65,6 @@ Cut::Cut() :
 	ui->dirBox->addItem("winds");
     ui->dirBox->setCurrentIndex(0);
 
-//    this->ui->lineEdit_1->setText("0.0");
-//    this->ui->lineEdit_2->setText("125");
-//    this->ui->lineEdit_3->setText("4.0");
-//    this->ui->extYbox->setValue(7);
-//    this->ui->tempSpinBox->setMaximum(1500);
-
     ui->nextButton->setShortcut(tr("d"));
     ui->prevButton->setShortcut(tr("a"));
     ui->cutButton->setShortcut(tr("c"));
@@ -84,6 +78,7 @@ Cut::Cut() :
 
 
     ui->picLabel->installEventFilter(this);
+	drawSamples();
 
     ui->scrollArea->setWidget(ui->picLabel);
     ui->scrollArea->installEventFilter(this);
@@ -145,6 +140,32 @@ Cut::~Cut()
     delete ui;
 }
 
+void Cut::drawSamples()
+{
+	std::vector<QLabel *> picLabels{
+		ui->hz5Label,
+				ui->hz10Label,
+				ui->hz15Label,
+				ui->hz20Label,
+				ui->hz25Label,
+				ui->hz30Label
+	};
+
+	std::valarray<double> seen(150);
+	for(int num = 0; num < 6; ++num)
+	{
+		int freq = 5 * (num + 1);
+		myLib::makeSine(seen, freq, 0, -1, 250.);
+		QPixmap pic = drawOneSignal(seen, 50);
+
+		picLabels[num]->setPixmap(pic);
+//		picLabels[num]->setPixmap(pic.scaledToHeight(picLabels[num]->height()));
+	}
+//	ui->hzLayout->setGeometry(QRect(ui->hzLayout->geometry().x(),
+//									ui->hzLayout->geometry().y(),
+//									ui->hzLayout->sizeHint().width(),
+//									ui->hzLayout->sizeHint().height()));
+}
 
 void Cut::browse()
 {

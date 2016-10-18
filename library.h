@@ -321,8 +321,9 @@ QPixmap drawEeg(const matrix & dataD,
                 int redChan = -1);
 
 void drawOneArray(const lineType & array, QString outPath);
-void drawOneSignal(const std::valarray<double> & signal,
-				   QString outPath);
+QPixmap drawOneSignal(const std::valarray<double> & signal,
+					  int picHeight = 600,
+					  QString outPath = QString());
 
 void drawTemplate(const QString & outPath,
                   bool channelsFlag = true,
