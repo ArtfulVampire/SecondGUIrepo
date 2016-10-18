@@ -122,12 +122,13 @@ void Net::applyPCA(const QString & pcaMatFilePath)
 	dataMatrix *= pca;
 #endif
 }
-
+#if OLD_DATA
 void Net::resizeData(uint newCols)
 {
 	if(newCols >= dataMatrix.cols()) return;
 	dataMatrix.resizeCols(newCols);
 }
+#endif
 
 void Net::loadDataUCI(const QString & setName)
 {
@@ -206,6 +207,8 @@ void Net::pca()
 {
 	QTime myTime;
 	myTime.start();
+	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
+	const std::vector<QString> & fileNames = myClassifier->getClassifierData()->getFileNames();
 
 	const int NumberOfVectors = dataMatrix.rows();
 	const int NetLength = dataMatrix.cols();
@@ -267,7 +270,7 @@ void Net::pca()
 
 
 	/// pewpewpewpewpewpewpewpewpewpewpewpewpewpewpewpew
-	dataMatrix = pcaMatrix;
+//	dataMatrix = pcaMatrix;
 
 
 	for(int j = 0; j < NumberOfVectors; ++j)

@@ -5,17 +5,25 @@
 
 Classifier::Classifier()
 {
-#if OLD_DATA
-	myData.getNumOfCl() = def::numOfClasses();
-	confusionMatrix = matrix(myData.getNumOfCl(), myData.getNumOfCl(), 0.);
-    resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
-    workDir = def::dir->absolutePath() + myLib::slash + "PA";
-    apriori = std::valarray<double>(1./3., 3);
-#else
+	myData = new ClassifierData();
+	confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
+	resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
+	workDir = def::dir->absolutePath() + myLib::slash + "PA";
+}
 
-#endif
+void Classifier::adjustToNewData()
+{
+	confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
+}
 
-
+void Classifier::setClassifierData(ClassifierData & in)
+{
+	if(&in != myData)
+	{
+		delete myData;
+		myData = &in;
+		this->adjustToNewData();
+	}
 }
 
 Classifier::~Classifier()
@@ -30,9 +38,9 @@ void Classifier::setTestCleanFlag(bool inFlag)
 
 void Classifier::deleteFile(uint vecNum, uint predType)
 {
-	if(this->testCleanFlag && (predType != myData.getTypes()[vecNum]))
+	if(this->testCleanFlag && (predType != myData->getTypes()[vecNum]))
     {
-		QFile::remove(filesPath + myLib::slash + myData.getFileNames()[vecNum]);
+		QFile::remove(filesPath + myLib::slash + myData->getFileNames()[vecNum]);
     }
 }
 
@@ -46,7 +54,7 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
 
     QString pew;
 
-	if(predType == myData.getTypes()[vecNum])
+	if(predType == myData->getTypes()[vecNum])
 
     {
         pew = "";
@@ -55,7 +63,7 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
     {
 		pew = QString::number(vecNum) + "\n";
 
-		outStr << vecNum+2 << ":\ttrue = " << myData.getTypes()[vecNum] << "\tpred = " << predType << "\n";
+		outStr << vecNum+2 << ":\ttrue = " << myData->getTypes()[vecNum] << "\tpred = " << predType << "\n";
     }
 
 //    outStr << pew.toStdString();
@@ -125,22 +133,22 @@ void Classifier::test(const std::vector<uint> & indices)
 {
     for(int ind : indices)
     {
-        auto res = classifyDatum(ind);
-		confusionMatrix[myData.getTypes()[ind]][res.first] += 1.;
+		auto res = classifyDatum(ind);
+		confusionMatrix[myData->getTypes()[ind]][res.first] += 1.;
     }
 }
 #endif
 
 void Classifier::learnAll()
 {
-	std::vector<uint> ind(myData.getData().rows());
+	std::vector<uint> ind(myData->getData().rows());
     std::iota(std::begin(ind), std::end(ind), 0);
     learn(ind);
 }
 
 void Classifier::testAll()
 {
-	std::vector<uint> ind(myData.getData().rows());
+	std::vector<uint> ind(myData->getData().rows());
     std::iota(std::begin(ind), std::end(ind), 0);
     test(ind);
 }
@@ -163,7 +171,7 @@ avType Classifier::averageClassification()
     std::ofstream res;
     res.open(resultsPath.toStdString(), std::ios_base::app);
 
-	for(uint i = 0; i < myData.getNumOfCl(); ++i)
+	for(uint i = 0; i < myData->getNumOfCl(); ++i)
     {
         const double num = confusionMatrix[i].sum();
         if(num != 0.)
@@ -180,7 +188,7 @@ avType Classifier::averageClassification()
     double corrSum = 0.;
     double wholeNum = 0.;
 
-	for(uint i = 0; i < myData.getNumOfCl(); ++i)
+	for(uint i = 0; i < myData->getNumOfCl(); ++i)
     {
         corrSum += confusionMatrix[i][i];
         wholeNum += confusionMatrix[i].sum();
@@ -190,7 +198,7 @@ avType Classifier::averageClassification()
     // kappa
     double pE = 0.; // for Cohen's kappa
     const double S = confusionMatrix.sum();
-	for(uint i = 0; i < myData.getNumOfCl(); ++i)
+	for(uint i = 0; i < myData->getNumOfCl(); ++i)
     {
         pE += (confusionMatrix[i].sum() * confusionMatrix.getCol(i).sum()) / pow(S, 2);
     }

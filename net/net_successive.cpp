@@ -2,8 +2,13 @@
 using namespace std;
 using namespace myLib;
 
+
 void Net::successiveProcessing()
 {
+	const std::vector<uint> & types = myClassifier->getClassifierData()->getTypes();
+	const std::valarray<double> & classCount = myClassifier->getClassifierData()->getClassCount();
+
+	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
     cout << "successive: started" << endl;
 
     const QString trainMarker = "_train";
@@ -132,44 +137,45 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
                              const int newType,
                              const QString & newFileName)
 {
-    /// consider loaded wts
-    /// dataMatrix is learning matrix
+//	const auto & dataMatrix = myClassifier->getClassifierData()->getData();
+//    /// consider loaded wts
+//    /// dataMatrix is learning matrix
 
-    lineType newData = (newSpectre - averageDatum) / (sigmaVector * loadDataNorm);
+//    lineType newData = (newSpectre - averageDatum) / (sigmaVector * loadDataNorm);
 
-    /// apply pca
-//    newData = newData * pcaMat;
+//    /// apply pca
+////    newData = newData * pcaMat;
 
 
-    pushBackDatum(newData, newType, newFileName);
+//    pushBackDatum(newData, newType, newFileName);
 
-    const std::pair<int, double> outType = myClassifier->classifyDatum(dataMatrix.rows() - 1); // take the last
-    /// adding into confusionMatrix
-    myClassifier->confMatInc(newType, outType.first);
+//    const std::pair<int, double> outType = myClassifier->classifyDatum(dataMatrix.rows() - 1); // take the last
+//    /// adding into confusionMatrix
+//    myClassifier->confMatInc(newType, outType.first);
 
-    static std::vector<int> passed(3, 0);
+//    static std::vector<int> passed(3, 0);
 
-    if((outType.first == newType && outType.second < suc::errorThreshold)
-       || passed[newType] < suc::learnSetStay
-       )
-    {
-        /// if accurate classification
-        const int num = std::find(types.begin(),
-                                  types.end(),
-                                  newType)
-                        - types.begin();
-        eraseDatum(num);
-        ++numGoodNew;
-    }
-    else
-    {
-        popBackDatum();
-    }
-    ++passed[newType];
+//    if((outType.first == newType && outType.second < suc::errorThreshold)
+//       || passed[newType] < suc::learnSetStay
+//       )
+//    {
+//        /// if accurate classification
+//        const int num = std::find(types.begin(),
+//                                  types.end(),
+//                                  newType)
+//                        - types.begin();
+//        eraseDatum(num);
+//        ++numGoodNew;
+//    }
+//    else
+//    {
+//        popBackDatum();
+//    }
+//    ++passed[newType];
 
-    if(numGoodNew == suc::numGoodNewLimit)
-    {
-        myClassifier->successiveRelearn();
-        numGoodNew = 0;
-    }
+//    if(numGoodNew == suc::numGoodNewLimit)
+//    {
+//        myClassifier->successiveRelearn();
+//        numGoodNew = 0;
+//    }
 }

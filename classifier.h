@@ -37,7 +37,7 @@ protected:
 	uint myData.getNumOfCl();
 #else
 	/// to do
-	ClassifierData myData;
+	ClassifierData * myData;
 #endif
 
     matrix confusionMatrix; // rows - realClass, cols - outClass
@@ -55,6 +55,7 @@ protected:
                         + myLib::slash + "SpectraSmooth"
                         + myLib::slash + "winds";
 
+
 public:
     const ClassifierType & getType() {return myType;}
     const QString & getTypeString() {return typeString;}
@@ -64,7 +65,8 @@ public:
 
 #if !OLD_DATA
 	/// to do
-	void setClassifierData(const ClassifierData & in) {myData = in;}
+	void setClassifierData(ClassifierData & in);
+	ClassifierData * getClassifierData() {return myData;}
 #else
 	void setData(matrix & inMat);
     void setTypes(std::vector<uint> & inTypes);
@@ -97,6 +99,7 @@ public:
     virtual std::pair<uint, double> classifyDatum(const uint & vecNum) = 0;
     virtual void successiveRelearn();
 	virtual void printParams();
+	virtual void adjustToNewData();
 };
 
 
@@ -172,6 +175,7 @@ protected:
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
     /// successive
     void successiveRelearn() override;
+	void adjustToNewData() override;
 };
 
 
@@ -196,6 +200,7 @@ protected:
     void test(const std::vector<uint> & indices) override;
 #endif
 	std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	void adjustToNewData() override;
 };
 
 
@@ -222,6 +227,7 @@ protected:
     void test(const std::vector<uint> & indices) override;
 #endif
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+//	void adjustToNewData() override;
 };
 
 
@@ -240,6 +246,7 @@ protected:
     void test(const std::vector<uint> & indices) override;
 #endif
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	void adjustToNewData() override;
 };
 
 /// gauss NBC
@@ -258,6 +265,7 @@ protected:
     void test(const std::vector<uint> & indices) override;
 #endif
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	void adjustToNewData() override;
 };
 
 
@@ -279,6 +287,7 @@ protected:
     void test(const std::vector<uint> & indices) override;
 #endif
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+//	void adjustToNewData() override;
 };
 
 
@@ -305,6 +314,7 @@ protected:
     void test(const std::vector<uint> & indices) override;
 #endif
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+//	void adjustToNewData() override;
 };
 
 

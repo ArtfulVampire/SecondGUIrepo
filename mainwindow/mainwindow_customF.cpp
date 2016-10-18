@@ -16,7 +16,9 @@ void MainWindow::customFunc()
 	setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
 	readData();
 	Net * ann = new Net();
-	ann->show();
+	ann->loadData("/media/Files/Data/AAX/SpectraSmooth");
+	ann->setClassifier(ClassifierType::ANN);
+	ann->autoClassification();
 	return;
 
 #if 0

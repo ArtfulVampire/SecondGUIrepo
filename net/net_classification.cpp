@@ -122,6 +122,7 @@ void Net::autoClassificationSimple()
 
 void Net::leaveOneOutClassification()
 {
+	const auto & dataMatrix = myClassifier->getClassifierData()->getData();
     if(myClassifier->getType() == ClassifierType::ANN)
     {
         /// adjust learnRate
@@ -132,7 +133,7 @@ void Net::leaveOneOutClassification()
     std::vector<uint> learnIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
-//        cout << i + 1 << " "; cout.flush();
+//		cout << i + 1 << " "; cout.flush();
 
         learnIndices.clear();
         learnIndices.resize(dataMatrix.rows() - 1);
@@ -151,6 +152,10 @@ void Net::leaveOneOutClassification()
 
 void Net::crossClassification()
 {
+	/// OLD_DATA
+	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
+	const std::vector<uint> & types = myClassifier->getClassifierData()->getTypes();
+
     const int numOfPairs = ui->numOfPairsBox->value();
     const int fold = ui->foldSpinBox->value();
 
@@ -197,12 +202,15 @@ std::vector<uint>> Net::makeIndicesSetsCross(
                        const std::vector<std::vector<uint> > & arr,
                        const int numOfFold)
 {
+	const std::valarray<double> & classCount = myClassifier->getClassifierData()->getClassCount();
+	const double & numOfClasses = myClassifier->getClassifierData()->getNumOfCl();
+
     std::vector<uint> learnInd;
     std::vector<uint> tallInd;
 
     const int fold = ui->foldSpinBox->value();
 
-    for(int i = 0; i < def::numOfClasses(); ++i)
+	for(int i = 0; i < numOfClasses; ++i)
     {
         for(int j = 0; j < classCount[i]; ++j)
         {
@@ -222,6 +230,7 @@ std::vector<uint>> Net::makeIndicesSetsCross(
 
 void Net::halfHalfClassification()
 {
+	const auto & dataMatrix = myClassifier->getClassifierData()->getData();
     std::vector<uint> learnIndices;
     std::vector<uint> tallIndices;
 
@@ -242,6 +251,9 @@ void Net::halfHalfClassification()
 void Net::trainTestClassification(const QString & trainTemplate,
                                   const QString & testTemplate)
 {
+	const auto & dataMatrix = myClassifier->getClassifierData()->getData();
+	const std::vector<QString> & fileNames = myClassifier->getClassifierData()->getFileNames();
+
     std::vector<uint> learnIndices;
     std::vector<uint> tallIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
@@ -359,7 +371,8 @@ void Net::cycleParams(std::vector<std::vector<double> > & in)
             double lrat = 0.05;
             {
                 setLrate(lrat);
-                avType a; SUCCESSIVE_CHECK
+				avType a;
+//				SUCCESSIVE_CHECK
                         //            auto a = autoClassification();
                         in.push_back(std::vector<double>{i, lrat, a.first, a.second});
             }

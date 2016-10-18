@@ -12,7 +12,7 @@ public:
 	ClassifierData() {}
 	~ClassifierData() {}
 	ClassifierData(const matrix & inData, const std::vector<uint> & inTypes);
-	ClassifierData(const QString & inPath, const QStringList & filters);
+	ClassifierData(const QString & inPath, const QStringList & filters = QStringList());
 	ClassifierData(const ClassifierData &) = default;
 	ClassifierData(ClassifierData &&) = default;
 	ClassifierData & operator=(const ClassifierData &) = default;

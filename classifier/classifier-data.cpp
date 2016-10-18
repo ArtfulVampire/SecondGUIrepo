@@ -45,6 +45,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 	myLib::makeFileLists(inPath, leest, filters);
 
 	this->numOfCl = leest.size();
+//	std::cout << numOfCl << std::endl;
 
 	this->dataMatrix = matrix();
 	this->classCount.resize(this->numOfCl);
@@ -64,7 +65,13 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 			this->push_back(tempArr, i, fileName);
 		}
 	}
+	this->apriori = classCount;
+
+	/// paskdnfajfkqnwjklerqw
+//	this->dataMatrix.resizeCols(60);
+
 	this->z_transform();
+
 }
 
 void ClassifierData::erase(uint index)

@@ -47,6 +47,7 @@ private:
     myMode Mode = myMode::N_fold;
     source Source = source::reals;
 
+#if OLD_DATA
     matrix dataMatrix{}; // biases and types separately
     std::vector<uint> types{};
     std::vector<QString> fileNames{};
@@ -55,10 +56,14 @@ private:
     double loadDataNorm = 10.;
     lineType averageDatum;
     lineType sigmaVector;
+#endif
+
 
     /// classification
     Classifier * myClassifier = nullptr;
 	ClassifierData myClassifierData{};
+
+
 #if OLD_DATA
     void setClassifierParams();
 #endif
@@ -128,7 +133,7 @@ public:
     void loadData(const matrix & inMat,
                   const std::vector<uint> & inTypes);
     void loadDataUCI(const QString & setName);
-    void resizeData(uint newCols);
+//    void resizeData(uint newCols); /// OLD_DATA
     void applyPCA(const QString & pcaMatFilePath);
 
 

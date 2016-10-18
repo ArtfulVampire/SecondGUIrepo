@@ -183,12 +183,12 @@ void Net::setSource(const QString & in)
     if(in.contains("real", Qt::CaseInsensitive) || in.startsWith('r'))
     {
         ui->realsRadioButton->setChecked(true);
-        loadDataNorm = 10.;
+//        loadDataNorm = 10.;
     }
     else if(in.contains("wind", Qt::CaseInsensitive) || in.startsWith('w'))
     {
         ui->windsRadioButton->setChecked(true);
-        loadDataNorm = 5.;
+//        loadDataNorm = 5.;
     }
 }
 
@@ -277,19 +277,21 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     }
 
 
+//	std::cout << "sdfgsdfgs = " << myClassifierData.getNumOfCl() << std::endl;
     if(but->text() == "ANN")
     {
         myClassifier = new ANN();
         ANN * myANN = dynamic_cast<ANN *>(myClassifier);
-#if !OLD_DATA
-		myANN->setClassifierData(myClassifierData);
-#else
+
+		myClassifier->setClassifierData(myClassifierData);
+
+#if OLD_DATA
 //        myANN->setData(dataMatrix); /// should be here to set dimensionality
 #endif
 
         myANN->setLrate(ui->learnRateBox->value());
         myANN->setCritError(ui->critErrorDoubleSpinBox->value());
-        setDimensionalitySlot();
+		setDimensionalitySlot();
     }
     else if(but->text() == "RDA")
 	{
@@ -328,7 +330,13 @@ void Net::setClassifier(QAbstractButton * but, bool i)
 		myWARD->setNumClust(ui->knnNumOfNearSpinBox->value());
 	}
 
-#if OLD_DATA
+
+#if !OLD_DATA
+//	cout << "asdas = " << myClassifier->getClassifierData()->getNumOfCl() << endl;
+	myClassifier->setClassifierData(myClassifierData);
+//	cout << "asdas = " << myClassifier->getClassifierData()->getNumOfCl() << endl;
+//	setDimensionalitySlot(); /// ANN only
+#else
 	setClassifierParams(); // deprecate
     myClassifier->setApriori(); /// depending on TRUE data but not datasets
 #endif
@@ -349,17 +357,17 @@ void Net::setSourceSlot(QAbstractButton * but)
         ui->foldSpinBox->setValue(2);
         if(but->text().contains("wind", Qt::CaseInsensitive))
         {
-            loadDataNorm = 5.;
+//            loadDataNorm = 5.;
             Source = source::winds;
         }
         else if(but->text().contains("real", Qt::CaseInsensitive))
         {
-            loadDataNorm = 10.;
+//            loadDataNorm = 10.;
             Source = source::reals;
         }
         else if(but->text().contains("pca", Qt::CaseInsensitive))
         {
-            loadDataNorm = 5.;
+//            loadDataNorm = 5.;
             Source = source::pca;
         }
     }

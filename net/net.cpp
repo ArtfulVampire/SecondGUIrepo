@@ -14,6 +14,14 @@ Net::Net() :
 
     stopFlag = 0;
 
+
+
+//	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
+//	const std::vector<uint> & types = myClassifier->getClassifierData()->getTypes();
+//	const std::vector<QString> & fileNames = myClassifier->getClassifierData()->getFileNames();
+//	const std::valarray<double> & classCount = myClassifier->getClassifierData()->getClassCount();
+//	const double & numOfClasses = myClassifier->getClassifierData()->getNumOfCl();
+
 //    tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
     /// 0
     myButtonGroup.push_back(new QButtonGroup());
@@ -120,8 +128,11 @@ Net::Net() :
     ui->rdaLambdaSpinBox->setSingleStep(0.005);
     ui->rdaLambdaSpinBox->setValue(0.1);
 
-    myClassifier = new NBC();
-	myClassifierData = ClassifierData();
+
+	myClassifierData = ClassifierData("/media/Files/Data/AAX/SpectraSmooth");
+	myClassifier = new NBC();
+
+
 
     QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
@@ -170,6 +181,7 @@ Net::Net() :
 
 
     aaDefaultSettings();
+
 }
 
 
