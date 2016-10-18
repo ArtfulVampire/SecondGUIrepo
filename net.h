@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <QTime>
 #include "classifier.h"
-
+#include "classifierdata.h"
 #include <QMessageBox>
 
 
@@ -57,6 +57,7 @@ private:
 
     /// classification
     Classifier * myClassifier = nullptr;
+	ClassifierData myClassifierData{};
     void setClassifierParams();
 
     /// succesiive
@@ -78,6 +79,7 @@ private:
     std::pair<std::vector<uint>, std::vector<uint>> makeIndicesSetsCross(
             const std::vector<std::vector<uint> > & arr,
             const int numOfFold);
+
     QString filesPath;
 
     /// class

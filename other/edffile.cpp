@@ -75,45 +75,6 @@ edfFile::edfFile(const edfFile &other, bool noData)
     }
 }
 
-
-
-edfFile & edfFile::operator=(const edfFile & other)
-{
-	if(&other == this) return *this;
-
-    this->headerInitialInfo = other.getHeaderInit();
-    this->bytes = other.getBytes();
-    this->headerReservedField = other.getHeaderReserved();
-
-    this->ndr = other.getNdr();
-    this->ddr = other.getDdr();
-    this->ns = other.getNs();
-	this->srate = other.getFreq();
-
-    this->labels = other.getLabels();
-    this->transducerType = other.getTransducer();
-    this->physDim = other.getPhysDim();
-    this->physMax = other.getPhysMax();
-    this->physMin = other.getPhysMin();
-    this->digMax = other.getDigMax();
-    this->digMin = other.getDigMin();
-    this->prefiltering = other.getPrefiltering();
-    this->nr = other.getNr();
-    this->reserved = other.getReserved();
-    this->headerRest = other.getHeaderRest();
-
-    this->data = other.getData();
-    this->fftData = other.fftData;
-
-    this->dataLength = this->ndr * this->nr[0];  // other.getDataLen();
-    this->channels = other.getChannels();
-    this->markerChannel = other.getMarkChan();
-    this->filePath = other.getFilePath();
-    this->ExpName = other.getExpName();
-    this->dirPath = other.getDirPath();
-	return *this;
-}
-
 edfFile::edfFile(const QString & txtFilePath, inst which)
 {
 	if(which == inst::mati)

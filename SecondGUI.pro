@@ -60,7 +60,8 @@ SOURCES += main.cpp\
     classifier/classifier_word.cpp \
     classifier/classifier_rda.cpp \
     other/autos.cpp \
-    classifier/classifier-data.cpp
+    classifier/classifier-data.cpp \
+    net/net_data.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

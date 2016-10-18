@@ -599,6 +599,11 @@ void matrix::resize(int newRows, int newCols)
 
 }
 
+void matrix::resize(int i)
+{
+	this->data.resize(i);
+}
+
 
 matrix & matrix::resizeRows(int newRows)
 {

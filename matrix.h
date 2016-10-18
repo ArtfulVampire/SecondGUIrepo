@@ -97,7 +97,7 @@ public:
 
     void resize(int rows, int cols, double val);
     void resize(int rows, int cols);
-    void resize(int i) {data.resize(i);}
+	void resize(int i);
 
 
     lineType & operator [](int i)

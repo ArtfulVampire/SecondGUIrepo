@@ -10,7 +10,14 @@ class ClassifierData
 {
 public:
 	ClassifierData() {}
+	~ClassifierData() {}
 	ClassifierData(const matrix & inData, const std::vector<uint> & inTypes);
+	ClassifierData(const QString & inPath, const QStringList & filters);
+	ClassifierData(const ClassifierData &) = default;
+	ClassifierData(ClassifierData &&) = default;
+	ClassifierData & operator=(const ClassifierData &) = default;
+	ClassifierData & operator=(const matrix &);
+
 	void adjust();
 
 	/// gets
@@ -32,6 +39,9 @@ public:
 	void pop_front();
 //	void insert(const std::valarray<double> & inDatum, uint inType, uint index); // unused
 //	void push_front(const std::valarray<double> & inDatum, uint inType); // unused - insert(0)
+	void resize(int rows, int cols, double val);
+	void resizeRows(int newRows);
+	void resizeCols(int newCols);
 
 	/// data modifiers
 	void center();		// by cols
@@ -51,6 +61,7 @@ private:
 //	std::vector<QString> fileNames{}; // unused
 	std::valarray<double> classCount{}; // really int but...
 	std::valarray<double> apriori{};
+	QString filesPath{};
 };
 
 #endif // CLASSIFIERDATA_H

@@ -41,7 +41,7 @@ void writeFileInLine(const QString & filePath,
     ofstream file(filePath.toStdString());
     if(!file.good())
     {
-        cout << "bad file" << endl;
+		cout << "writeFileInLine: bad file" << endl;
         return;
     }
 

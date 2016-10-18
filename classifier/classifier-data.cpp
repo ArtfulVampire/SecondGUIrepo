@@ -36,6 +36,33 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 	adjust();
 }
 
+
+ClassifierData::ClassifierData(const QString & inPath, const QStringList & filters)
+{
+	std::vector<QStringList> leest;
+	myLib::makeFileLists(inPath, leest, filters);
+	this->numOfCl = filters.length();
+
+	this->dataMatrix = matrix();
+	this->classCount.resize(this->numOfCl);
+	this->types.clear();
+//    fileNames.clear();
+	this->filesPath = inPath;
+
+	std::valarray<double> tempArr;
+	for(uint i = 0; i < leest.size(); ++i)
+	{
+		classCount[i] = 0.;
+		for(const QString & fileName : leest[i])
+		{
+			myLib::readFileInLine(inPath + myLib::slash + fileName,
+								  tempArr);
+			this->push_back(tempArr, i); //, fileName);
+		}
+	}
+	this->z_transform();
+}
+
 void ClassifierData::erase(uint index)
 {
 	dataMatrix.eraseRow(index);
@@ -88,7 +115,7 @@ void ClassifierData::erase(const std::vector<uint> & indices)
 
 void ClassifierData::push_back(const std::valarray<double> & inDatum, uint inType)
 {
-	indices[inType].push_back(dataMatrix.rows());
+	indices[inType].push_back(dataMatrix.rows()); // index of a new
 
 	dataMatrix.push_back(inDatum);
 	classCount[inType] += 1.;
@@ -99,7 +126,7 @@ void ClassifierData::push_back(const std::valarray<double> & inDatum, uint inTyp
 void ClassifierData::pop_back()
 {
 #if 1
-	erase(dataMatrix.rows() - 1);
+	this->erase(dataMatrix.rows() - 1);
 #else
 	const uint typ = types.back();
 	auto & ind = indices[typ];
@@ -115,8 +142,23 @@ void ClassifierData::pop_back()
 
 void ClassifierData::pop_front()
 {
-	erase(0);
+	this->erase(0);
 }
+
+void ClassifierData::resize(int rows, int cols, double val)
+{
+	this->dataMatrix.resize(rows, cols, val);
+}
+
+void ClassifierData::resizeRows(int newRows)
+{
+	this->dataMatrix.resizeRows(newRows);
+}
+void ClassifierData::resizeCols(int newCols)
+{
+
+}
+
 
 void ClassifierData::center()
 {
@@ -188,6 +230,7 @@ ClassifierData ClassifierData::toPca(int numOfPca, double var) const
 	ret.dataMatrix = pcaMatrix;
 	return ret;
 }
+
 
 
 ClassifierData ClassifierData::productLeft(const matrix & coeffs) const

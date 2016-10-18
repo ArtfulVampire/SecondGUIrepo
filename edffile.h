@@ -155,7 +155,8 @@ public:
                            QString helpString,
                            std::vector <QString> annotations);
 
-	edfFile & operator=(const edfFile & other);
+	edfFile & operator=(const edfFile & other) = default;
+	edfFile & operator=(edfFile && other) = default;
 
     void adjustArraysByChannels();
     void appendFile(QString addEdfPath, QString outPath) const;
