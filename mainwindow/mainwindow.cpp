@@ -255,72 +255,58 @@ MainWindow::MainWindow() :
 
     ui->roundOffsetCheckBox->setChecked(true); // for mati constructEDF
 
-
+	/// widgets
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(setEdfFileSlot()));
+	QObject::connect(ui->cut_e, SIGNAL(clicked()), this, SLOT(showCut()));
+	QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(showNet()));
+	QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(showCountSpectra()));
 
-    QObject::connect(ui->Name, SIGNAL(returnPressed()), this, SLOT(setExpName()));
+	/// small things, ~constant edf
+	QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
+	QObject::connect(ui->Name, SIGNAL(returnPressed()), this, SLOT(setExpName()));
+	QObject::connect(ui->setNsLine, SIGNAL(returnPressed()), this, SLOT(setNs()));
+	QObject::connect(ui->fileMarkersLineEdit, SIGNAL(returnPressed()), this, SLOT(setFileMarkers()));
+	QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
+	QObject::connect(ui->cleanDirsCheckAllButton, SIGNAL(clicked()), this, SLOT(cleanDirsCheckAll()));
+	QObject::connect(ui->cleanDirsUncheckAllButton, SIGNAL(clicked()), this, SLOT(cleanDirsUncheckAll()));
+	QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawDirSlot()));
+	QObject::connect(ui->drawMapsPushButton, SIGNAL(clicked()), this, SLOT(drawMapsSlot()));
+	QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(processEyes()));
 
-    QObject::connect(ui->cutEDF, SIGNAL(clicked()), this, SLOT(sliceAll()));
-
-    QObject::connect(ui->matiPreprocessingPushButton, SIGNAL(clicked()), this, SLOT(matiPreprocessingSlot()));
-
+	/// slice
+	QObject::connect(ui->cutEDF, SIGNAL(clicked()), this, SLOT(sliceAll()));
     QObject::connect(ui->windFromRealButton, SIGNAL(clicked()), this, SLOT(sliceWindFromReal()));
 
-    QObject::connect(ui->cut_e, SIGNAL(clicked()), this, SLOT(showCut()));
+	/// process edf
+	QObject::connect(ui->icaPushButton, SIGNAL(clicked()), this, SLOT(ICA()));
+	QObject::connect(ui->constructEdfButton, SIGNAL(clicked()), this, SLOT(constructEDFSlot()));
 
-    QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(showNet()));
-
-    QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(showCountSpectra()));
-
-    QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(processEyes()));
-
-    QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
-                     this, SLOT(cleanEdfFromEyesSlot()));
-
-    QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
-
-    QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawDirSlot()));
-
-    QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
-
-	QObject::connect(ui->cleanDirsCheckAllButton, SIGNAL(clicked()), this, SLOT(cleanDirsCheckAll()));
-
-	QObject::connect(ui->cleanDirsUncheckAllButton, SIGNAL(clicked()), this, SLOT(cleanDirsUncheckAll()));
-
-    QObject::connect(ui->reduceChannelsComboBox, SIGNAL(highlighted(int)), this, SLOT(changeNsLine(int)));
-
-    QObject::connect(ui->reduceChannelsComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeNsLine(int)));
-
-    QObject::connect(ui->setNsLine, SIGNAL(returnPressed()), this, SLOT(setNs()));
-
-    QObject::connect(ui->fileMarkersLineEdit, SIGNAL(returnPressed()), this, SLOT(setFileMarkers()));
-
-    QObject::connect(ui->icaPushButton, SIGNAL(clicked()), this, SLOT(ICA()));
-
-    QObject::connect(ui->constructEdfButton, SIGNAL(clicked()), this, SLOT(constructEDFSlot()));
-
-    QObject::connect(ui->drawMapsPushButton, SIGNAL(clicked()), this, SLOT(drawMapsSlot()));
-
-    QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
-
+	/// edit edf
+	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(highlighted(int)), this, SLOT(changeNsLine(int)));
+	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeNsLine(int)));
+	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
+					 this, SLOT(cleanEdfFromEyesSlot()));
+	QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
     QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
-
     QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
-
     QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
 
-    QObject::connect(ui->markerGetPushButton, SIGNAL(clicked()), this, SLOT(markerGetSlot()));
-    QObject::connect(ui->markerSetPushButton, SIGNAL(clicked()), this, SLOT(markerSetSlot()));
-    QObject::connect(ui->markerBinTimeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(markerSetSecTime(int)));
-//    QObject::connect(ui->markerDecimalLineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetBinValueSlot()));
-    QObject::connect(ui->markerDecimalLineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetBinValueSlot()));
-//    QObject::connect(ui->markerBin0LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
-    QObject::connect(ui->markerBin0LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
-//    QObject::connect(ui->markerBin1LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
-    QObject::connect(ui->markerBin1LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
-    QObject::connect(ui->markerSaveEdfPushButton, SIGNAL(clicked()), this, SLOT(markerSaveEdf()));
+	/// mati
+	QObject::connect(ui->matiPreprocessingPushButton, SIGNAL(clicked()), this, SLOT(matiPreprocessingSlot()));
+	QObject::connect(ui->markerGetPushButton, SIGNAL(clicked()), this, SLOT(markerGetSlot()));
+	QObject::connect(ui->markerSetPushButton, SIGNAL(clicked()), this, SLOT(markerSetSlot()));
+	QObject::connect(ui->markerBinTimeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(markerSetSecTime(int)));
 
+//	QObject::connect(ui->markerDecimalLineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetBinValueSlot()));
+	QObject::connect(ui->markerDecimalLineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetBinValueSlot()));
+//	QObject::connect(ui->markerBin0LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
+	QObject::connect(ui->markerBin0LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
+//	QObject::connect(ui->markerBin1LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
+	QObject::connect(ui->markerBin1LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
+
+	QObject::connect(ui->markerSaveEdfPushButton, SIGNAL(clicked()), this, SLOT(markerSaveEdf()));
     QObject::connect(ui->matiCheckBox, SIGNAL(stateChanged(int)), this, SLOT(matiCheckBoxSlot(int)));
+
 
     globalEdf.setMatiFlag(ui->matiCheckBox->isChecked());
     customFunc();
@@ -819,9 +805,8 @@ void MainWindow::drawRealisations()
     cout << "drawRealisations: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
-void MainWindow::cleanDirsCheckAll()
+void MainWindow::cleanDirsAll(bool fl)
 {
-	bool fl = true;
 	ui->cleanRealsCheckBox->setChecked(fl);
 	ui->cleanRealsSpectraCheckBox->setChecked(fl);
 	ui->cleanWindsCheckBox->setChecked(fl);
@@ -830,19 +815,17 @@ void MainWindow::cleanDirsCheckAll()
 	ui->cleanWindsSignalsCheckBox->setChecked(fl);
 	ui->cleanFromRealsCheckBox->setChecked(fl);
 	ui->cleanMarkersCheckBox->setChecked(fl);
+	ui->cleanSpectraImgCheckBox->setChecked(fl);
 }
 
-void MainWindow::cleanDirsUnheckAll()
+void MainWindow::cleanDirsCheckAll()
 {
-	bool fl = false;
-	ui->cleanRealsCheckBox->setChecked(fl);
-	ui->cleanRealsSpectraCheckBox->setChecked(fl);
-	ui->cleanWindsCheckBox->setChecked(fl);
-	ui->cleanWindsSpectraCheckBox->setChecked(fl);
-	ui->cleanRealsSignalsCheckBox->setChecked(fl);
-	ui->cleanWindsSignalsCheckBox->setChecked(fl);
-	ui->cleanFromRealsCheckBox->setChecked(fl);
-	ui->cleanMarkersCheckBox->setChecked(fl);
+	cleanDirsAll(true);
+}
+
+void MainWindow::cleanDirsUncheckAll()
+{
+	cleanDirsAll(false);
 }
 
 void MainWindow::cleanDirs()

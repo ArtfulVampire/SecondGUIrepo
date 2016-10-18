@@ -78,6 +78,8 @@ Cut::Cut() :
     ui->saveButton->setShortcut(tr("s"));
     ui->splitButton->setShortcut(tr("x"));
     ui->rewriteButton->setShortcut(tr("r"));
+	ui->forwardFrameButton->setShortcut(QKeySequence::Forward);
+	ui->backwardFrameButton->setShortcut(QKeySequence::Back);
 	QShortcut * undoZero = new QShortcut(QKeySequence(tr("Ctrl+z")), this);
 
 
@@ -255,9 +257,23 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
                 return false;
             }
         }
+		else if(event->type() == QEvent::MouseButtonRelease)
+		{
+			QMouseEvent * clickEvent = static_cast<QMouseEvent*>(event);
+			if(clickEvent->button() == Qt::BackButton)
+			{
+				this->backwardFrameSlot();
+			}
+			else if(clickEvent->button() == Qt::ForwardButton)
+			{
+				this->forwardFrameSlot();
+			}
+
+			return true;
+		}
 
         else
-        {
+		{
             return false;
         }
     }
@@ -799,7 +815,9 @@ void Cut::save()
         QString newPath = currentFile;
         newPath.insert(newPath.lastIndexOf('.'), "_new");
         edfFil.writeOtherData(data3, newPath);
+		cout << "Cut::save: edfFile saved - " << newPath << endl;
     }
+
 }
 
 

@@ -236,7 +236,7 @@ private:
     bool matiFlag = def::matiFlag;
     bool ntFlag = def::ntFlag;
     bool edfPlusFlag = false; // to detect
-    bool writeMarkersFlag = false;
+	bool writeMarkersFlag = true;
 
 public:
 //    const QString & getHeaderInit() const {return headerInitialInfo;}

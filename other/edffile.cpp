@@ -168,8 +168,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 						fitString("AMOD wrongAns", 16),
 						fitString("AMOD skipdAns", 16)
 					   };
-		this->transducerType = vector <QString> (this->ns, fitString("AMOD transducer", 80));
-		this->physDim = vector <QString> (this->ns, fitString("AMODdim", 8));
+		this->transducerType = std::vector<QString> (this->ns, fitString("AMOD transducer", 80));
+		this->physDim = std::vector<QString> (this->ns, fitString("AMODdim", 8));
 
 		this->physMin = {0, 0, 0, 0, // ampls, freqs
 						 -1, -1, -1, -1, // coordinates
@@ -191,8 +191,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 						 3-1, 7-1,
 						 255-1, 255-1, 255-1}; // -1 for universal formula except markers
 
-		this->prefiltering = vector <QString> (this->ns, QString(fitString("AMOD no prefiltering", 80)));
-		this->reserved = vector <QString> (this->ns, QString(fitString("AMOD reserved", 32)));
+		this->prefiltering = std::vector<QString> (this->ns, QString(fitString("AMOD no prefiltering", 80)));
+		this->reserved = std::vector<QString> (this->ns, QString(fitString("AMOD reserved", 32)));
 
 		this->data.resize(this->ns);
 		for(int i = 0; i < this->ns; ++i)
@@ -799,14 +799,16 @@ void edfFile::handleDatum(const int & currNs,
 void edfFile::writeMarker(const double & currDatum,
                            const int & currTimeIndex) const
 {
-    vector <bool> byteMarker;
-    QString helpString;
-//    const double & currDatum = (*dataPointer)[currNs][currTimeIndex];
+	std::vector<bool> byteMarker;
+	QString helpString;
 
     FILE * markers;
 
 
-    helpString = dirPath + slash + this->ExpName + "_markers.txt";
+	/// marker file name choose
+//    helpString = dirPath + slash + this->ExpName + "_markers.txt";
+	helpString = dirPath + slash + "markers.txt";
+
     markers = fopen(helpString, "a+");
     fprintf(markers, "%d %d", currTimeIndex, int(currDatum));
     if(this->matiFlag)
@@ -846,7 +848,7 @@ void edfFile::writeMarker(const double & currDatum,
 void edfFile::handleAnnotations(const int & currNs,
                                 const int & currentTimeIndex,
                                 QString helpString,
-                                std::vector <QString> annotations)
+								std::vector<QString> annotations)
 {
 
 //    return; // I dont care

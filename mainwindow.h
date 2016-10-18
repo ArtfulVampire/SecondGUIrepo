@@ -64,7 +64,7 @@ public slots:
     void setEdfFileSlot();
 	void cleanDirs();
 	void cleanDirsCheckAll();
-	void cleanDirsUnheckAll();
+	void cleanDirsUncheckAll();
     void drawMapsSlot();
     void constructEDFSlot();
     void reduceChannelsEDFSlot();
@@ -110,7 +110,7 @@ public:
 	void sliceOneByOneNew();
     void setEdfFile(const QString &filePath);
 	void makeChanList(std::vector<int> & chanList);
-
+	void cleanDirsAll(bool);
 
 
 	void drawSpectra(const QString & inPath,
