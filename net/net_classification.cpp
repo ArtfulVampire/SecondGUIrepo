@@ -394,12 +394,12 @@ void Net::cycleParams(std::vector<std::vector<double> > & in)
         }
         case ClassifierType::WARD:
         {
-            for(int numClust = 6; numClust <= 20; ++numClust)
+			for(int numOfClust = 6; numOfClust <= 20; ++numOfClust)
             {
-                setWordNumSlot(numClust);
+				setWordNumSlot(numOfClust);
 
                 auto a = autoClassification();
-                in.push_back(std::vector<double>{i, numClust, a.first, a.second});
+				in.push_back(std::vector<double>{i, numOfClust, a.first, a.second});
             }
             break;
         }

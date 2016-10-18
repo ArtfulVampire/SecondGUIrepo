@@ -11,8 +11,8 @@ WARD::WARD() : Classifier()
 double WARD::dist(const uint a, const uint b)
 {
     double res = 0.;
-    res = smallLib::distance((dataMatrix->subRows(clusts[a])).averageRow(),
-                             (dataMatrix->subRows(clusts[b])).averageRow());
+    res = smallLib::distance((myData.getData().subRows(clusts[a])).averageRow(),
+                             (myData.getData().subRows(clusts[b])).averageRow());
     /// Word distance
     res *= clusts[a].size() * clusts[b].size() / double((clusts[a].size() + clusts[b].size()));
     return res;
@@ -52,7 +52,7 @@ void WARD::learn(std::vector<uint> & indices)
         return;
     }
 
-    uint num = dataMatrix->rows();
+    uint num = myData.getData().rows();
     clusts.resize(num);
     for(uint i = 0; i < clusts.size(); ++i)
     {
@@ -79,7 +79,7 @@ void WARD::learn(std::vector<uint> & indices)
     for(uint i = 0; i < clusts.size(); ++i)
     {
 //        myLib::operator <<(std::cout, clusts[i]); std::cout << std::endl;
-        centers[i] = (dataMatrix->subRows(clusts[i])).averageRow();
+        centers[i] = (myData.getData().subRows(clusts[i])).averageRow();
     }
 }
 
@@ -128,24 +128,24 @@ std::pair<uint, double> WARD::classifyDatum(const uint & vecNum)
     for(uint j = 0; j < numOfClust; ++j)
     {
         /// Word distance
-        distances[j] = -smallLib::distance((*dataMatrix)[vecNum],
+        distances[j] = -smallLib::distance(myData.getData()[vecNum],
                                            centers[j]) * clusts[j].size() / (clusts[j].size() + 1);
     }
     /// add fuzzy solving for first N clusters
     int ind = myLib::indexOfMax(distances);
 
-    std::valarray<double> numOfClass(0., numCl);
+    std::valarray<double> numOfClass(0., myData.getNumOfCl());
     for(uint i = 0; i < clusts[ind].size(); ++i)
     {
-        numOfClass[ (*types)[ clusts[ind][i] ] ] += 1;
+        numOfClass[ myData.getTypes()[ clusts[ind][i] ] ] += 1;
     }
-    numOfClass /= apriori;
+	numOfClass /= myData.getApriori();
     uint outClass = myLib::indexOfMax(numOfClass);
 
 
     printResult("WARD.txt", outClass, vecNum);
 
     return std::make_pair(outClass,
-                          double(outClass != (*types)[vecNum]));
+                          double(outClass != myData.getTypes()[vecNum]));
 
 }

@@ -39,27 +39,27 @@ matrix::matrix(int rows, int cols)
 
 matrix::matrix(const matrix & other)
 {
-    this->data = other.data;
+	this->myData = other.myData;
 }
 
 
-matrix::matrix(const dataType & other)
+matrix::matrix(const matrixType & other)
 {
-    this->data = other;
+	this->myData = other;
 }
 matrix::matrix(const lineType & vect, bool orientH)
 {
     if(orientH)
     {
         this->resize(1, vect.size());
-        this->data[0] = vect;
+		this->myData[0] = vect;
     }
     else
     {
         this->resize(vect.size(), 1);
         for(uint i = 0; i < vect.size(); ++i)
         {
-            this->data[i][0] = vect[i];
+			this->myData[i][0] = vect[i];
         }
     }
 }
@@ -68,14 +68,14 @@ matrix::matrix(const lineType & vect, char orient)
     if(orient == 'h' || orient == 'H' || orient == 'r' || orient == 'R')
     {
         this->resize(1, vect.size());
-        this->data[0] = vect;
+		this->myData[0] = vect;
     }
     else if(orient == 'v' || orient == 'V' || orient == 'c' || orient == 'C')
     {
         this->resize(vect.size(), 1);
         for(uint i = 0; i < vect.size(); ++i)
         {
-            this->data[i][0] = vect[i];
+			this->myData[i][0] = vect[i];
         }
     }
     else
@@ -98,16 +98,16 @@ matrix::matrix(const lineType & vect, uint inRows)
     {
         std::copy(std::begin(vect) + i * newCols,
                   std::begin(vect) + (i + 1) * newCols,
-                  std::begin(this->data[i]));
+				  std::begin(this->myData[i]));
     }
 }
 
 matrix::matrix(const lineType & vect1, const lineType & vect2)
 {
-    this->data.clear();
+	this->myData.clear();
     for(uint i = 0; i < vect1.size(); ++i)
     {
-        this->data.push_back(vect1[i] * vect2);
+		this->myData.push_back(vect1[i] * vect2);
     }
 }
 
@@ -118,7 +118,7 @@ matrix::matrix(std::initializer_list<lineType> lst)
                   lst.end(),
                   [this](lineType in)
     {
-        this->data.push_back(in);
+		this->myData.push_back(in);
     });
 }
 
@@ -131,7 +131,7 @@ matrix::matrix(const lineType & vect) // diagonal
     int count = 0;
     for(int item : vect)
     {
-        this->data[count][count] = item;
+		this->myData[count][count] = item;
         ++count;
     }
 }
@@ -145,7 +145,7 @@ matrix::matrix(std::initializer_list<double> lst) // diagonal
     int count = 0;
     for(int item : lst)
     {
-        this->data[count][count] = item;
+		this->myData[count][count] = item;
         ++count;
     }
 }
@@ -157,12 +157,12 @@ matrix::matrix(std::initializer_list<double> lst) // diagonal
 
 matrix matrix::operator = (const matrix & other)
 {
-    this->data = other.data;
+	this->myData = other.myData;
     return *this;
 }
-matrix matrix::operator = (const dataType & other)
+matrix matrix::operator = (const matrixType & other)
 {
-    this->data = other;
+	this->myData = other;
 
     return *this;
 }
@@ -277,7 +277,7 @@ matrix matrix::operator -()
 
     for(uint i = 0; i < this->rows(); ++i)
     {
-        res[i] = -this->data[i];
+		res[i] = -this->myData[i];
     }
     return res;
 }
@@ -355,7 +355,7 @@ matrix matrix::operator *= (const double & other)
 {
     for(uint i = 0; i < this->rows(); ++i)
     {
-        this->data[i] *= other;
+		this->myData[i] *= other;
     }
     return *this;
 }
@@ -458,7 +458,7 @@ matrix matrix::operator /= (const double & other)
 {
     for(uint i = 0; i < this->rows(); ++i)
     {
-        this->data[i] /= other;
+		this->myData[i] /= other;
 
     }
     return *this;
@@ -474,7 +474,7 @@ matrix::matrix(int rows, int cols, double value)
 
 matrix & matrix::fill(double value)
 {
-    for(auto it = data.begin(); it < data.end(); ++it)
+	for(auto it = myData.begin(); it < myData.end(); ++it)
     {
         for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
         {
@@ -503,7 +503,7 @@ matrix & matrix::random(double low, double high)
     std::default_random_engine gen(std::chrono::system_clock::now().time_since_epoch().count());
 //    std::default_random_engine gen;
     std::uniform_real_distribution<double> distr(low, high);
-    for(auto it = data.begin(); it < data.end(); ++it)
+	for(auto it = myData.begin(); it < myData.end(); ++it)
     {
 #if MATRIX_OMP
 #pragma omp parallel for
@@ -520,8 +520,8 @@ matrix matrix::subCols(int beginCol, int endCol) const /// submatrix
 {
     matrix res(this->rows(), endCol - beginCol);
     int row = 0;
-    for(auto it = std::begin(this->data);
-        it != std::end(this->data);
+	for(auto it = std::begin(this->myData);
+		it != std::end(this->myData);
         ++it)
     {
         std::copy(std::begin(*it) + beginCol,
@@ -538,7 +538,7 @@ matrix matrix::subRows(const std::vector<int> & inds) const /// submatrix
 //    int col = 0;
     for(int i : inds)
     {
-        res.data.push_back(this->data[i]);
+		res.myData.push_back(this->myData[i]);
     }
     return res;
 }
@@ -550,7 +550,7 @@ matrix matrix::subRows(const std::vector<uint> & inds) const /// submatrix
 //    int col = 0;
     for(int i : inds)
     {
-        res.data.push_back(this->data[i]);
+		res.myData.push_back(this->myData[i]);
     }
     return res;
 }
@@ -574,7 +574,7 @@ matrix matrix::covMatCols(lineType * avRowIn) const
 
     for(uint j = 0; j < cop.rows(); ++j)
     {
-        cop.data[j] -= *avRow;
+		cop.myData[j] -= *avRow;
     }
 
     matrix res = matrix::transpose(cop) * cop;
@@ -589,9 +589,9 @@ void matrix::resize(int rows, int cols, double val)
 
 void matrix::resize(int newRows, int newCols)
 {
-    this->data.resize(newRows);
-    std::for_each(data.begin(),
-                  data.end(),
+	this->myData.resize(newRows);
+	std::for_each(myData.begin(),
+				  myData.end(),
                   [newCols](lineType & in)
     {
         resizeValar(in, newCols);
@@ -601,7 +601,7 @@ void matrix::resize(int newRows, int newCols)
 
 void matrix::resize(int i)
 {
-	this->data.resize(i);
+	this->myData.resize(i);
 }
 
 
@@ -609,11 +609,11 @@ matrix & matrix::resizeRows(int newRows)
 {
     int cols = this->cols();
     int oldRows = this->rows();
-    data.resize(newRows);
+	myData.resize(newRows);
     if(oldRows < newRows)
     {
-        std::for_each(data.begin() + oldRows,
-                      data.end(),
+		std::for_each(myData.begin() + oldRows,
+					  myData.end(),
                       [cols](lineType & in)
         {
             resizeValar(in, cols);
@@ -625,8 +625,8 @@ matrix & matrix::resizeRows(int newRows)
 
 matrix & matrix::resizeCols(int newCols)
 {
-    std::for_each(data.begin(),
-                  data.end(),
+	std::for_each(myData.begin(),
+				  myData.end(),
                   [newCols](lineType & in)
     {
         resizeValar(in, newCols);
@@ -636,15 +636,15 @@ matrix & matrix::resizeCols(int newCols)
 
 uint matrix::rows() const
 {
-   return data.size();
+   return myData.size();
 }
 
 
 double matrix::maxVal() const
 {
-    double res = data[0][0];
-    std::for_each(this->data.begin(),
-                  this->data.end(),
+	double res = myData[0][0];
+	std::for_each(this->myData.begin(),
+				  this->myData.end(),
                   [&res](const lineType & in)
     {
         res = max(res, in.max());
@@ -653,9 +653,9 @@ double matrix::maxVal() const
 }
 double matrix::minVal() const
 {
-    double res = data[0][0];
-    std::for_each(this->data.begin(),
-                  this->data.end(),
+	double res = myData[0][0];
+	std::for_each(this->myData.begin(),
+				  this->myData.end(),
                   [&res](const lineType & in)
     {
         res = min(res, in.min());
@@ -665,9 +665,9 @@ double matrix::minVal() const
 
 double matrix::maxAbsVal() const
 {
-    double res = data[0][0];
-    std::for_each(this->data.begin(),
-                  this->data.end(),
+	double res = myData[0][0];
+	std::for_each(this->myData.begin(),
+				  this->myData.end(),
                   [&res](const lineType & in)
     {
         res = max(res, abs(in).max());
@@ -676,9 +676,9 @@ double matrix::maxAbsVal() const
 }
 double matrix::minAbsVal() const
 {
-    double res = data[0][0];
-    std::for_each(this->data.begin(),
-                  this->data.end(),
+	double res = myData[0][0];
+	std::for_each(this->myData.begin(),
+				  this->myData.end(),
                   [&res](const lineType & in)
     {
         res = min(res, abs(in).min());
@@ -691,7 +691,7 @@ lineType matrix::maxOfRows() const
 	lineType res(this->rows(), 0);
 	for(int i = 0; i < res.size(); ++i)
 	{
-		res[i] = this->data[i].max();
+		res[i] = this->myData[i].max();
 	}
 	return res;
 }
@@ -710,8 +710,8 @@ lineType matrix::maxOfCols() const
 double matrix::sum() const
 {
     double res = 0.;
-    std::for_each(this->data.begin(),
-                  this->data.end(),
+	std::for_each(this->myData.begin(),
+				  this->myData.end(),
                   [&res](const lineType & in)
     {
        res += in.sum();
@@ -720,24 +720,24 @@ double matrix::sum() const
 }
 
 
-dataType::iterator matrix::begin()
+matrixType::iterator matrix::begin()
 {
-    return this->data.begin();
+	return this->myData.begin();
 }
 
-dataType::iterator matrix::end()
+matrixType::iterator matrix::end()
 {
-    return this->data.end();
+	return this->myData.end();
 }
 
-dataType::const_iterator matrix::begin() const
+matrixType::const_iterator matrix::begin() const
 {
-    return this->data.begin();
+	return this->myData.begin();
 }
 
-dataType::const_iterator matrix::end() const
+matrixType::const_iterator matrix::end() const
 {
-    return this->data.end();
+	return this->myData.end();
 }
 
 lineType matrix::toVectorByRows() const
@@ -745,8 +745,8 @@ lineType matrix::toVectorByRows() const
     lineType res(this->rows() * this->cols());
     for(uint i = 0; i < this->rows(); ++i)
     {
-        std::copy(std::begin(this->data[i]),
-                  std::end(this->data[i]),
+		std::copy(std::begin(this->myData[i]),
+				  std::end(this->myData[i]),
                   std::begin(res) + this->cols() * i);
     }
     return res;
@@ -760,7 +760,7 @@ lineType matrix::toVectorByCols() const
     {
         for(uint j = 0; j < this->rows(); ++j)
         {
-            res[count++] = this->data[j][i];
+			res[count++] = this->myData[j][i];
         }
     }
     return res;
@@ -780,7 +780,7 @@ lineType matrix::sigmaOfCols() const
     lineType avRow = this->averageRow();
 
     matrix M = *this;
-    for(std::valarray<double> & row : M.data)
+	for(std::valarray<double> & row : M.myData)
     {
         row -= avRow;
         row *= row;
@@ -798,7 +798,7 @@ lineType matrix::averageRow() const
     lineType res(0., this->cols());
     for(uint i = 0; i < this->rows(); ++i)
     {
-        res += this->data[i];
+		res += this->myData[i];
     }
     res /= this->rows();
     return res;
@@ -809,7 +809,7 @@ lineType matrix::averageCol() const
     lineType res(this->rows());
     for(uint i = 0; i < this->rows(); ++i)
     {
-        res[i] = this->data[i].sum() / this->data[i].size();
+		res[i] = this->myData[i].sum() / this->myData[i].size();
     }
     return res;
 }
@@ -820,14 +820,14 @@ lineType matrix::getCol(uint i, uint numCols) const
     lineType res(numCols);
     for(uint j = 0; j < numCols; ++j)
     {
-        res[j] = this->data[j][i];
+		res[j] = this->myData[j][i];
     }
     return res;
 }
 
 void matrix::pop_back()
 {
-    this->data.pop_back();
+	this->myData.pop_back();
 }
 
 void matrix::print(uint rows, uint cols) const
@@ -839,7 +839,7 @@ void matrix::print(uint rows, uint cols) const
     {
         for(uint j = 0; j < cols; ++j)
         {
-            cout << doubleRound(data[i][j], 3) << "\t";
+			cout << doubleRound(myData[i][j], 3) << "\t";
         }
         cout << endl;
     }
@@ -848,18 +848,18 @@ void matrix::print(uint rows, uint cols) const
 
 void matrix::push_back(const lineType & in)
 {
-    this->data.push_back(in);
+	this->myData.push_back(in);
 }
 
 void matrix::push_back(const vectType & in)
 {
-    lineType temp{in.data(), in.size()};
-    this->data.push_back(temp);
+	lineType temp{in.data(), in.size()};
+	this->myData.push_back(temp);
 }
 
 uint matrix::cols() const
 {
-    return data[0].size();
+	return myData[0].size();
 }
 
 matrix matrix::transpose(const matrix &input)
@@ -897,7 +897,7 @@ matrix & matrix::transpose()
     {
         for(int j = i + 1; j < this->cols(); ++j)
         {
-            std::swap(this->data[j][i], this->data[i][j]);
+			std::swap(this->myData[j][i], this->myData[i][j]);
         }
     }
     this->resize(oldCols,
@@ -990,13 +990,13 @@ matrix & matrix::swapCols(uint i, uint j)
 {
     for(uint k = 0; k < this->rows(); ++k)
     {
-        std::swap(this->data[k][i], this->data[k][j]);
+		std::swap(this->myData[k][i], this->myData[k][j]);
     }
     return *this;
 }
 matrix & matrix::swapRows(uint i, uint j)
 {
-    std::swap(this->data[i], this->data[j]);
+	std::swap(this->myData[i], this->myData[j]);
     return *this;
 }
 
@@ -1004,7 +1004,7 @@ matrix & matrix::eraseRow(uint i)
 {
     if(i < this->rows())
     {
-        this->data.erase(data.begin() + i);
+		this->myData.erase(myData.begin() + i);
     }
     return *this;
 }
@@ -1014,7 +1014,7 @@ matrix & matrix::eraseCol(uint j)
 {
     if(j < this->cols())
     {
-        for(lineType & each : this->data)
+		for(lineType & each : this->myData)
         {
             each = eraseValar(each, j);
         }
@@ -1026,7 +1026,7 @@ matrix & matrix::eraseCol(uint j)
 /// looks like okay
 matrix & matrix::eraseRows(const std::vector<uint> & indices)
 {
-    eraseItems(this->data, indices);
+	eraseItems(this->myData, indices);
     return *this;
 }
 
@@ -1106,64 +1106,3 @@ lineType matrix::matrixSystemSolveGauss(const lineType & inVec) const
     res = initMat * inVec;
     return res;
 }
-//template
-//void matrixProduct(const matrix & in1,
-//                   const matrix & in2,
-//                   matrix & result,
-//                   int dim,
-//                   int rows1,
-//                   int cols2);
-//template
-//void matrixProduct(const matrix & in1,
-//                   const dataType & in2,
-//                   matrix & result,
-//                   int dim,
-//                   int rows1,
-//                   int cols2);
-//template
-//void matrixProduct(const dataType & in1,
-//                   const matrix & in2,
-//                   matrix & result,
-//                   int dim,
-//                   int rows1,
-//                   int cols2);
-//template
-//void matrixProduct(const dataType & in1,
-//                   const dataType & in2,
-//                   matrix & result,
-//                   int dim,
-//                   int rows1,
-//                   int cols2);
-
-//void matrixProduct(const lineType & in1,
-//                   const matrix &in2,
-//                   matrix & result,
-//                   int dim,
-//                   int rows1,
-//                   int cols2)
-//{
-//    matrixProduct(matrix(in1, 'h'),
-//                  in2,
-//                  result,
-//                  dim,
-//                  rows1,
-//                  cols2);
-//}
-
-//void matrixProduct(const matrix &in1,
-//                   const lineType &in2,
-//                   matrix & result,
-//                   int dim,
-//                   int rows1,
-//                   int cols2)
-//{
-//    matrixProduct(in1,
-//                  matrix(in2, 'v'),
-//                  result,
-//                  dim,
-//                  rows1,
-//                  cols2);
-//}
-
-
-

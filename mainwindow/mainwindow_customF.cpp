@@ -12,6 +12,11 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
+
+	setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+	readData();
+	Net * ann = new Net();
+	ann->show();
 	return;
 
 #if 0
@@ -132,7 +137,7 @@ void MainWindow::customFunc()
         net->loadData(def::dir->absolutePath()
                       + slash + "SpectraSmooth"
 					  + slash + "winds",
-                        {name + "_train"}); /// only for ANN set - dataMatrix->cols()
+						{name + "_train"}); /// only for ANN set - myData.getData().cols()
 //        net->pca();
 
 
@@ -161,7 +166,7 @@ void MainWindow::customFunc()
         net->loadData(def::dir->absolutePath()
                       + slash + "SpectraSmooth"
 					  + slash + "winds",
-                        {name + "_train"}); /// only for ANN set - dataMatrix->cols()
+						{name + "_train"}); /// only for ANN set - myData.getData().cols()
 
         net->setClassifier(ClassifierType::ANN);
         net->setSource("w");

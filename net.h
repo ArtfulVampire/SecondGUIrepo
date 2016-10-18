@@ -23,6 +23,7 @@
 #include <QMessageBox>
 
 
+
 namespace Ui {
     class Net;
 }
@@ -58,7 +59,9 @@ private:
     /// classification
     Classifier * myClassifier = nullptr;
 	ClassifierData myClassifierData{};
+#if OLD_DATA
     void setClassifierParams();
+#endif
 
     /// succesiive
     int numGoodNew;

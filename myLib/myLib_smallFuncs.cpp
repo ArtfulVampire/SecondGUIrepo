@@ -537,7 +537,7 @@ ostream & operator << (ostream &os, QChar toOut)
 }
 ostream & operator << (ostream &os, const matrix & toOut)
 {
-    for(auto it = std::begin(toOut.data); it < std::end(toOut.data); ++it)
+	for(auto it = std::begin(toOut.myData); it < std::end(toOut.myData); ++it)
     {
         for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
         {

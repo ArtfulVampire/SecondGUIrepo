@@ -224,7 +224,7 @@ private:
     QString headerRest = QString();
 
     std::vector<edfChannel> channels;
-    edfDataType data; // matrix.cpp
+	edfDataType edfData; // matrix.cpp
 	std::vector<std::valarray<double>> fftData{}; // mutable?
 
     int staSlice = 0; // yet not useful
@@ -283,14 +283,14 @@ public:
     // operations with data
 
 
-    const edfDataType & getData() const {return data;}
-    void setData(int chanNum, int timeBin, double val) {data[chanNum][timeBin] = val;}
+	const edfDataType & getData() const {return edfData;}
+	void setData(int chanNum, int timeBin, double val) {edfData[chanNum][timeBin] = val;}
 
 //    void getDataCopy(edfDataType & destination) const {destination = data;}
 
     const lineType & operator [](int i) const
     {
-        return data[i];
+		return edfData[i];
     }
 
 

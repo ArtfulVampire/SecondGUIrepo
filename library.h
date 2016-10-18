@@ -47,6 +47,7 @@
 #include <omp.h>
 #endif
 
+#define OLD_DATA 0
 
 namespace wvlt
 {

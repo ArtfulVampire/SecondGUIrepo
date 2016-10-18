@@ -24,7 +24,7 @@
 // omp not effective
 #define MATRIX_OMP _OPENMP&&0
 
-using dataType = std::vector<std::valarray<double>>;
+using matrixType = std::vector<std::valarray<double>>;
 
 class matrix
 {
@@ -36,12 +36,12 @@ public:
     matrix(int rows, int cols, double value);
 
     matrix(const matrix & other);
-    matrix(const dataType & other);
+	matrix(const matrixType & other);
 
     matrix(matrix && other)
-        :data{other.data}
+		:myData{other.myData}
     {
-        other.data = dataType();
+		other.myData = matrixType();
     }
 
 
@@ -69,15 +69,15 @@ public:
     double minAbsVal() const;
 
     double sum() const;
-    dataType::iterator begin();
-    dataType::iterator end();
-    dataType::const_iterator begin() const;
-    dataType::const_iterator end() const;
+	matrixType::iterator begin();
+	matrixType::iterator end();
+	matrixType::const_iterator begin() const;
+	matrixType::const_iterator end() const;
 	bool isEmpty() const;
-	lineType & last() {return data.back();}
-	lineType & back() {return data.back();}
-	lineType & front() {return data.front();}
-	lineType & first() {return data.front();}
+	lineType & last() {return myData.back();}
+	lineType & back() {return myData.back();}
+	lineType & front() {return myData.front();}
+	lineType & first() {return myData.front();}
 
     lineType toVectorByRows() const;
     lineType toVectorByCols() const;
@@ -92,8 +92,8 @@ public:
     void push_back(const vectType &in);
 
     // for compability with vector < vector<Type> >
-    void clear() {this->data.clear();}
-    uint size() const {return data.size();}
+	void clear() {this->myData.clear();}
+	uint size() const {return myData.size();}
 
     void resize(int rows, int cols, double val);
     void resize(int rows, int cols);
@@ -102,16 +102,16 @@ public:
 
     lineType & operator [](int i)
     {
-        return data[i];
+		return myData[i];
 
     }
     const lineType & operator [](int i) const
     {
-        return data[i];
+		return myData[i];
     }
 
     matrix operator = (const matrix & other);
-    matrix operator = (const dataType & other);
+	matrix operator = (const matrixType & other);
 
     matrix operator += (const matrix & other);
     matrix operator += (const double & val);
@@ -159,7 +159,7 @@ public:
 //    void systemGaussSolve();
 
 public:
-	dataType data{dataType()};
+	matrixType myData {matrixType()};
 
 };
 

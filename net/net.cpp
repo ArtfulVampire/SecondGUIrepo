@@ -10,7 +10,7 @@ Net::Net() :
     ui(new Ui::Net)
 {
     ui->setupUi(this);
-    this->setWindowTitle("Net");
+	this->setWindowTitle("Net");
 
     stopFlag = 0;
 
@@ -121,6 +121,7 @@ Net::Net() :
     ui->rdaLambdaSpinBox->setValue(0.1);
 
     myClassifier = new NBC();
+	myClassifierData = ClassifierData();
 
     QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
@@ -261,7 +262,7 @@ void Net::readWtsSlot()
 
 void Net::loadDataSlot()
 {
-    QString helpString = QFileDialog::getExistingDirectory((QWidget * )NULL,
+	QString helpString = QFileDialog::getExistingDirectory(nullptr,
                                                            tr("load data"),
                                                            def::dir->absolutePath());
     if(helpString.isEmpty())
@@ -272,9 +273,14 @@ void Net::loadDataSlot()
                                  QMessageBox::Ok);
         return;
     }
-    loadData(helpString, {}
+	cout << helpString << endl;
+#if !OLD_DATA
+	myClassifierData = ClassifierData(helpString, QStringList());
+#else
+	loadData(helpString, {}
 //             , ui->reduceCoeffSpinBox->value()
              );
+#endif
 }
 
 

@@ -7,7 +7,7 @@ void Net::pushBackDatum(const lineType & inDatum,
 					  const QString & inFileName)
 {
 #if !OLD_DATA
-	myClassifierData.push_back(inDatum, inType);
+	myClassifierData.push_back(inDatum, inType, inFileName);
 #else
 	dataMatrix.push_back(inDatum);
 	classCount[inType] += 1.;

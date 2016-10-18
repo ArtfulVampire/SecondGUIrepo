@@ -19,6 +19,8 @@ void ClassifierData::adjust()
 		classCount[i] = indices[i].size();
 	}
 
+	fileNames.resize(this->types.size(), "pewpew_fileName");
+
 	apriori = classCount;
 }
 
@@ -41,13 +43,15 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 {
 	std::vector<QStringList> leest;
 	myLib::makeFileLists(inPath, leest, filters);
-	this->numOfCl = filters.length();
+
+	this->numOfCl = leest.size();
 
 	this->dataMatrix = matrix();
 	this->classCount.resize(this->numOfCl);
 	this->types.clear();
-//    fileNames.clear();
+	fileNames.clear();
 	this->filesPath = inPath;
+	this->indices.resize(numOfCl);
 
 	std::valarray<double> tempArr;
 	for(uint i = 0; i < leest.size(); ++i)
@@ -57,7 +61,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 		{
 			myLib::readFileInLine(inPath + myLib::slash + fileName,
 								  tempArr);
-			this->push_back(tempArr, i); //, fileName);
+			this->push_back(tempArr, i, fileName);
 		}
 	}
 	this->z_transform();
@@ -89,14 +93,14 @@ void ClassifierData::erase(uint index)
 #endif
 
 	types.erase(std::begin(types) + index);
-//    fileNames.erase(fileNames.begin() + index);
+	fileNames.erase(fileNames.begin() + index);
 }
 
 void ClassifierData::erase(const std::vector<uint> & indices)
 {
 
 	dataMatrix.eraseRows(indices);
-//    eraseItems(fileNames, indices);
+	smallLib::eraseItems(fileNames, indices);
 
 	for(int index : indices)
 	{
@@ -113,14 +117,16 @@ void ClassifierData::erase(const std::vector<uint> & indices)
 	}
 }
 
-void ClassifierData::push_back(const std::valarray<double> & inDatum, uint inType)
+void ClassifierData::push_back(const std::valarray<double> & inDatum,
+							   uint inType,
+							   const QString & inFileName)
 {
 	indices[inType].push_back(dataMatrix.rows()); // index of a new
 
 	dataMatrix.push_back(inDatum);
 	classCount[inType] += 1.;
 	types.push_back(inType);
-//    fileNames.push_back(inFileName);
+	fileNames.push_back(inFileName);
 }
 
 void ClassifierData::pop_back()
@@ -135,7 +141,7 @@ void ClassifierData::pop_back()
 	dataMatrix.pop_back();
 	classCount[typ] -= 1.;
 	types.pop_back();
-//	fileNames.pop_back();
+	fileNames.pop_back();
 #endif
 }
 
@@ -181,7 +187,7 @@ void ClassifierData::variance(double var)
 		if(sigmaVector[i] != 0.)
 		{
 			// to equal variance, 10 for reals, 5 winds
-			dataMatrix[i] /= tmp[i] * var;
+			tmp[i] /= sigmaVector[i] * var;
 		}
 	}
 	tmp.transpose();

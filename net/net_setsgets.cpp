@@ -107,7 +107,7 @@ void Net::setWordNumSlot(int in)
     if(myClassifier->getType() == ClassifierType::WARD)
     {
         WARD * myWARD = dynamic_cast<WARD *>(myClassifier);
-        myWARD->setNumClust(in);
+		myWARD->setNumClust(in);
     }
 }
 
@@ -256,6 +256,7 @@ void Net::setClassifier(ClassifierType typ)
     }
 }
 
+#if OLD_DATA
 void Net::setClassifierParams()
 {
     myClassifier->setClassCount(classCount);
@@ -264,6 +265,7 @@ void Net::setClassifierParams()
     myClassifier->setTypes(types);
     myClassifier->setFilesPath(filesPath);
 }
+#endif
 
 void Net::setClassifier(QAbstractButton * but, bool i)
 {
@@ -279,8 +281,11 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     {
         myClassifier = new ANN();
         ANN * myANN = dynamic_cast<ANN *>(myClassifier);
-
-        myANN->setData(dataMatrix); /// should be here to set dimensionality
+#if !OLD_DATA
+		myANN->setClassifierData(myClassifierData);
+#else
+//        myANN->setData(dataMatrix); /// should be here to set dimensionality
+#endif
 
         myANN->setLrate(ui->learnRateBox->value());
         myANN->setCritError(ui->critErrorDoubleSpinBox->value());
@@ -320,11 +325,13 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     {
         myClassifier = new WARD();
         WARD * myWARD = dynamic_cast<WARD *>(myClassifier);
-        myWARD->setNumClust(ui->knnNumOfNearSpinBox->value());
-    }
-    setClassifierParams();
+		myWARD->setNumClust(ui->knnNumOfNearSpinBox->value());
+	}
 
+#if OLD_DATA
+	setClassifierParams(); // deprecate
     myClassifier->setApriori(); /// depending on TRUE data but not datasets
+#endif
 
 
 }

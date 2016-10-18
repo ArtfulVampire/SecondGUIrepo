@@ -27,20 +27,22 @@ protected:
     ClassifierType myType;
     QString typeString;
 
+#if OLD_DATA
 	/// dataClass
     const matrix * dataMatrix = nullptr; // biases for Net are imaginary
     const std::vector<uint> * types = nullptr;
     const std::vector<QString> * fileNames = nullptr;
     const std::valarray<double> * classCount = nullptr; // really int but...
     std::valarray<double> apriori;
-
+	uint myData.getNumOfCl();
+#else
 	/// to do
-//	ClassifierData * myData;
+	ClassifierData myData;
+#endif
 
     matrix confusionMatrix; // rows - realClass, cols - outClass
     double averageAccuracy;
-    double kappa;
-    uint numCl;
+	double kappa;
 
 	bool testCleanFlag  = false; /// delete wrong classified files
     bool resetFlag = true; /// reset learning values before new learning
@@ -58,13 +60,19 @@ public:
     const QString & getTypeString() {return typeString;}
     void setTestCleanFlag(bool inFlag);
     void deleteFile(uint vecNum, uint predClass);
-    void printResult(const QString & fileName, uint predType, uint vecNum);
-    void setData(matrix & inMat);
+	void printResult(const QString & fileName, uint predType, uint vecNum);
+
+#if !OLD_DATA
+	/// to do
+	void setClassifierData(const ClassifierData & in) {myData = in;}
+#else
+	void setData(matrix & inMat);
     void setTypes(std::vector<uint> & inTypes);
     void setClassCount(std::valarray<double> & inClassCount);
     void setFileNames(std::vector<QString> & inFileNames);
     void setFilesPath(const QString & inPath);
     void setApriori(const std::valarray<double> & in = std::valarray<double>());
+#endif
 
     /// crutch
     void confMatInc(int trueClass, int predClass){confusionMatrix[trueClass][predClass] += 1.;}

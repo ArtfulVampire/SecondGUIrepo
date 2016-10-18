@@ -21,7 +21,7 @@ void Net::successiveProcessing()
 
     cout << "successive: data loaded" << endl;
 
-    /// reduce learning set to (NumClasses * suc::learnSetStay)
+	/// reduce learning set to (NumOfClasses * suc::learnSetStay)
     std::valarray<double> count = classCount;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {

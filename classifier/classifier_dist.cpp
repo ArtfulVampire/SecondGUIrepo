@@ -6,21 +6,21 @@ using namespace myLib;
 
 DIST::DIST() : Classifier()
 {
-    centers.resize(numCl);
+	centers.resize(myData.getNumOfCl());
     myType = ClassifierType::DIST;
     typeString = "DIST";
 }
 
 void DIST::learn(std::vector<uint> & indices)
 {
-    for(uint i = 0; i < numCl; ++i)
+	for(uint i = 0; i < myData.getNumOfCl(); ++i)
     {
         matrix oneClass{};
         for(int ind : indices)
         {
-            if((*types)[ind] == i)
+			if(myData.getTypes()[ind] == i)
             {
-                oneClass.push_back((*dataMatrix)[ind]);
+				oneClass.push_back(myData.getData()[ind]);
             }
         }
         centers[i] = oneClass.averageRow();
@@ -33,7 +33,7 @@ void DIST::test(const std::vector<int> & indices)
     for(int ind : indices)
     {
         auto res = classifyDatum(ind);
-        confusionMatrix[(*types)[ind]][res.first] += 1.;
+		confusionMatrix[myData.getTypes()[ind]][res.first] += 1.;
     }
 }
 #endif
@@ -41,10 +41,10 @@ void DIST::test(const std::vector<int> & indices)
 std::pair<uint, double> DIST::classifyDatum(const uint & vecNum)
 {
 
-    std::vector<double> distances(numCl);
-    for(uint j = 0; j < numCl; ++j)
+	std::vector<double> distances(myData.getNumOfCl());
+	for(uint j = 0; j < myData.getNumOfCl(); ++j)
     {
-        distances[j] = -smallLib::distance((*dataMatrix)[vecNum],
+		distances[j] = -smallLib::distance(myData.getData()[vecNum],
                                            centers[j]);
     }
     uint outClass = myLib::indexOfMax(distances);
@@ -52,5 +52,5 @@ std::pair<uint, double> DIST::classifyDatum(const uint & vecNum)
     printResult("DIST.txt", outClass, vecNum);
 
     return std::make_pair(outClass,
-                          double(outClass != (*types)[vecNum]));
+						  double(outClass != myData.getTypes()[vecNum]));
 }

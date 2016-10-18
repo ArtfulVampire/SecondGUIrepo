@@ -107,12 +107,12 @@ void ANN::zeroParams()
 void ANN::setDim(const std::vector<int> & inDim)
 {
     dim.clear();
-    dim.push_back(dataMatrix->cols());
+	dim.push_back(myData.getData().cols());
     for(uint i = 0; i < inDim.size(); ++i)
     {
         dim.push_back(inDim[i]);
     }
-    dim.push_back(numCl);
+	dim.push_back(myData.getNumOfCl());
 
     allocParams(weight);
 
@@ -144,16 +144,14 @@ void ANN::setLrate(double inRate)
     learnRate = inRate;
 }
 
-
-
 void ANN::loadVector(uint vecNum, uint & type)
 {
-    /// out.size() == dataMatrix->cols() + 1
-    std::copy(std::begin((*dataMatrix)[vecNum]),
-              std::end((*dataMatrix)[vecNum]),
+	/// out.size() == myData.getData().cols() + 1
+	std::copy(std::begin(myData.getData()[vecNum]),
+			  std::end(myData.getData()[vecNum]),
               std::begin(output[0]));
     output[0][output[0].size() - 1] = 1.; //bias
-    type = (*types)[vecNum]; // true class
+	type = myData.getTypes()[vecNum]; // true class
 }
 
 void ANN::countOutput()
@@ -230,7 +228,7 @@ void ANN::moveWeights(const std::vector<double> & normCoeff,
 {
     if(learnStyl == learnStyle::delta)
     {
-        for(uint j = 0; j < numCl; ++j)
+		for(uint j = 0; j < myData.getNumOfCl(); ++j)
         {
             weight[0][j] += output[0]
                     * (learnRate * normCoeff[type]
@@ -302,15 +300,15 @@ void ANN::learn(std::vector<uint> & indices)
     uint type;
 
     /// edit due to Indices
-    std::vector<int> localClassCount(numCl, 0);
+	std::vector<int> localClassCount(myData.getNumOfCl(), 0);
     for(int index : indices)
     {
-        ++localClassCount[(*types)[index]];
+		++localClassCount[myData.getTypes()[index]];
     }
     const double helpMin = *std::min_element(std::begin(localClassCount),
                                              std::end(localClassCount));
     std::vector<double> normCoeff;
-    for(uint i = 0; i < numCl; ++i)
+	for(uint i = 0; i < myData.getNumOfCl(); ++i)
     {
         normCoeff.push_back(helpMin / double(localClassCount[i]));
     }
@@ -388,7 +386,7 @@ void ANN::test(const std::vector<int> & indices)
     for(int ind : indices)
     {
         auto res = classifyDatum(ind);
-        confusionMatrix[(*types)[ind]][res.first] += 1.;
+		confusionMatrix[myData.getTypes()[ind]][res.first] += 1.;
     }
 }
 #endif
@@ -405,7 +403,7 @@ std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
     countError(type, res);
 
     std::valarray<double> forRes = output.back();
-    smallLib::resizeValar(forRes, numCl);
+	smallLib::resizeValar(forRes, myData.getNumOfCl());
     uint outClass = myLib::indexOfMax(forRes);
 
 #if 01
@@ -421,12 +419,12 @@ std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
 //    std::cout.rdbuf(resFile.rdbuf());
 
     std::cout << "type = " << type << '\t' << "(";
-	for(int i = 0; i < numCl; ++i)
+	for(int i = 0; i < myData.getNumOfCl(); ++i)
     {
         std::cout << smallLib::doubleRound(output[numOfLayers - 1][i], 3) << '\t';
     }
     std::cout << ") " << ((type == outClass) ? "+ " : "- ") << "\t"
-              << (*fileNames)[vecNum] << std::endl;
+			  << myData.getFileNames()[vecNum] << std::endl;
 
 //    std::cout.rdbuf(tmp);
 
@@ -550,7 +548,7 @@ void ANN::drawWeight(QString wtsPath,
 double ANN::adjustLearnRate()
 {
     std::vector<uint> mixNum;
-    mixNum.resize(dataMatrix->rows());
+	mixNum.resize(myData.getData().rows());
     std::iota(mixNum.begin(), mixNum.end(), 0);
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();

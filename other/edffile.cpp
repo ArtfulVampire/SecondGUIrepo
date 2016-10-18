@@ -10,24 +10,24 @@ edfFile::edfFile()
 
 std::list<std::valarray<double>> edfFile::getDataAsList() const
 {
-    std::list<std::valarray<double>> res(this->data.cols());
+	std::list<std::valarray<double>> res(this->edfData.cols());
     uint j = 0;
     for(auto & in : res)
     {
-        in = this->data.getCol(j++);
+		in = this->edfData.getCol(j++);
     }
     return res;
 }
 
 void edfFile::setDataFromList(const std::list<std::valarray<double>> & inList)
 {
-    this->data.resize(inList.front().size(), inList.size());
+	this->edfData.resize(inList.front().size(), inList.size());
     uint col = 0;
     for(auto it = std::begin(inList); it != std::end(inList); ++it, ++col)
     {
         for(uint i = 0; i < (*it).size(); ++i)
         {
-            this->data[i][col] = (*it)[i];
+			this->edfData[i][col] = (*it)[i];
         }
     }
 }
@@ -62,16 +62,16 @@ edfFile::edfFile(const edfFile &other, bool noData)
 
     this->channels = other.getChannels();
     this->markerChannel = other.getMarkChan();
-    this->dataLength = this->ndr * this->nr[0]; // other.getDataLen();
+	this->dataLength = this->ndr * this->nr[0]; // other.getDataLen();
 
     if(!noData)
     {
-        this->data = other.getData();
+		this->edfData = other.getData();
 		this->fftData = other.fftData;
     }
     else
     {
-        this->data = edfDataType();
+		this->edfData = edfDataType();
     }
 }
 
@@ -155,10 +155,10 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		this->prefiltering = std::vector<QString> (this->ns, QString(fitString("AMOD no prefiltering", 80)));
 		this->reserved = std::vector<QString> (this->ns, QString(fitString("AMOD reserved", 32)));
 
-		this->data.resize(this->ns);
+		this->edfData.resize(this->ns);
 		for(int i = 0; i < this->ns; ++i)
 		{
-			this->data[i].resize(6 * 60 * def::freq); // for 6 minutes generality
+			this->edfData[i].resize(6 * 60 * def::freq); // for 6 minutes generality
 		}
 
 		currTimeIndex = 0;
@@ -167,7 +167,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 			fscanf(inStr, "%*d %*f"); // quantLength & currTime
 			for(int i = 0; i < numOfParams; ++i)
 			{
-				fscanf(inStr, "%lf", &(this->data[i][currTimeIndex]));
+				fscanf(inStr, "%lf", &(this->edfData[i][currTimeIndex]));
 			}
 			++currTimeIndex;
 		}
@@ -237,8 +237,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		/// magic const generality - remake with matrix methods
 //		iitpData *= 50;
 
-		this->data = std::move(iitpData);
-		this->fitData(this->data.cols());
+		this->edfData = std::move(iitpData);
+		this->fitData(this->edfData.cols());
 
 		for(int i = 0; i < this->ns; ++i)
 		{
@@ -285,7 +285,7 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
     }
     else // if(asPLain)
 	{
-		writePlainData(EDFpath, this->data);
+		writePlainData(EDFpath, this->edfData);
     }
 }
 
@@ -357,9 +357,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
     if(!readFlag)
     {
-        this->fitData(this->dataLength);
+		this->fitData(this->dataLength);
     }
-
 
 
     handleParam(headerInitialInfo, 184, readFlag, edfDescriptor, header);
@@ -592,7 +591,7 @@ void edfFile::handleData(bool readFlag,
     {
 		// allocate memory for data array
 		/// fails when different frequency
-		this->data = matrix(ns, dataLength, 0.);
+		this->edfData = matrix(ns, dataLength, 0.);
 
         this->channels.clear();
         for(int i = 0; i < this->ns; ++i)
@@ -640,7 +639,7 @@ void edfFile::handleDatum(const int & currNs,
     qint16 a = 0;
     quint16 markA = 0;
 
-    double & currDatum = this->data[currNs][currTimeIndex];
+	double & currDatum = this->edfData[currNs][currTimeIndex];
 
     if(readFlag)
     {
@@ -942,7 +941,7 @@ void edfFile::adjustArraysByChannels()
 
 
 	this->headerRest = QString();
-	this->dataLength = this->data[0].size(); // dunno
+	this->dataLength = this->edfData[0].size(); // dunno
 }
 
 void edfFile::adjustMarkerChannel()
@@ -954,15 +953,15 @@ void edfFile::adjustMarkerChannel()
 	{
 		// backup marker channel
 		edfChannel tempMarkChan = this->channels[this->markerChannel];
-		lineType tempMarkData = this->data[this->markerChannel];
+		lineType tempMarkData = this->edfData[this->markerChannel];
 
 		// remove markerChannel
 		this->channels.erase(this->channels.begin() + this->markerChannel);
-		this->data.data.erase(this->data.begin() + this->markerChannel);
+		this->edfData.myData.erase(this->edfData.begin() + this->markerChannel);
 
 		// return markerChannel to the end of a list
 		this->channels.push_back(tempMarkChan);
-		this->data.push_back(tempMarkData);
+		this->edfData.push_back(tempMarkData);
     }
     this->adjustArraysByChannels();
 }
@@ -981,14 +980,14 @@ void edfFile::appendFile(QString addEdfPath, QString outPath) const
 	double time1 = temp.getDataLen() / temp.getFreq();
 	double time2 = addEdf.getDataLen() / addEdf.getFreq();
 	double newTime = std::max(time1, time2);
-	temp.data.resizeCols(newTime * temp.getFreq());
-	addEdf.data.resizeCols(newTime * addEdf.getFreq());
+	temp.edfData.resizeCols(newTime * temp.getFreq());
+	addEdf.edfData.resizeCols(newTime * addEdf.getFreq());
 
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
 		addChan = addEdf.getChannels()[i];
 		temp.channels.push_back(addChan);
-		temp.data.push_back(addData);
+		temp.edfData.push_back(addData);
 	}
 	temp.adjustMarkerChannel();
 	temp.adjustArraysByChannels();
@@ -1009,15 +1008,15 @@ void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only dat
     const int dataLen2 = addEdf.getDataLen();
     for(int i = 0; i < this->ns; ++i)
     {
-        this->data[i].resize( dataLen1 + dataLen2 );
+		this->edfData[i].resize( dataLen1 + dataLen2 );
         // copy 1
-        std::copy(begin(temp.data[i]),
-                  end(temp.data[i]),
-                  begin(this->data[i]));
+		std::copy(begin(temp.edfData[i]),
+				  end(temp.edfData[i]),
+				  begin(this->edfData[i]));
         // copy 2
-        std::copy(begin(addEdf.data[i]),
-                  end(addEdf.data[i]),
-                  begin(this->data[i]) + dataLen1);
+		std::copy(begin(addEdf.edfData[i]),
+				  end(addEdf.edfData[i]),
+				  begin(this->edfData[i]) + dataLen1);
     }
     temp.adjustArraysByChannels();
 
@@ -1055,18 +1054,18 @@ void edfFile::downsample(double newFreq,
 	for(int numChan : chanList)
 	{
 		if(nr[numChan] == newFreq) continue;
-		int oldLen = temp.data[numChan].size();
+		int oldLen = temp.edfData[numChan].size();
 		double oldFreq = temp.getNr()[numChan];
-		temp.data[numChan] = myLib::refilter(temp.data[numChan],
+		temp.edfData[numChan] = myLib::refilter(temp.edfData[numChan],
 											 0,
 											 2 * newFreq,
 											 oldFreq);
 
 		for(int i = 0; i < oldLen * newFreq / oldFreq; ++i)
 		{
-			temp.data[numChan][i] = temp.data[numChan][i * oldFreq / newFreq];
+			temp.edfData[numChan][i] = temp.edfData[numChan][i * oldFreq / newFreq];
 		}
-		resizeValar(temp.data[numChan], oldLen * newFreq / oldFreq);
+		resizeValar(temp.edfData[numChan], oldLen * newFreq / oldFreq);
 		temp.nr[numChan] = newFreq;
 		temp.channels[numChan].nr = newFreq;
 //		temp.adjustArraysByChannels(); // it makes bad
@@ -1095,7 +1094,7 @@ void edfFile::countFft()
     for(auto j : chanList)
 	{
 		/// new rewritten
-		fftData[i] = myLib::spectreRtoC(this->data[j]); /// shouldn't norm?
+		fftData[i] = myLib::spectreRtoC(this->edfData[j]); /// shouldn't norm?
 		++i;
 		continue;
 	}
@@ -1107,7 +1106,7 @@ void edfFile::refilter(const double & lowFreq,
                        bool isNotch)
 {
 
-    int fftLength = fftL(this->dataLength);
+	int fftLength = fftL(this->dataLength);
 	double spStep = this->srate / double(fftLength);
 	std::valarray<double> spectre(2 * fftLength);
 
@@ -1139,7 +1138,7 @@ void edfFile::refilter(const double & lowFreq,
 
 		myLib::refilterSpectre(spectre, lowLim, highLim, isNotch);
 
-		this->data[j] = spectreCtoRrev(spectre);
+		this->edfData[j] = spectreCtoRrev(spectre);
     }
     if(!newPath.isEmpty())
     {
@@ -1155,7 +1154,7 @@ void edfFile::saveSubsection(int startBin,
     if(plainFlag)
 	{
         writePlainData(outPath,
-                       this->data,
+					   this->edfData,
                        finishBin - startBin,
 					   startBin);
     }
@@ -1163,22 +1162,22 @@ void edfFile::saveSubsection(int startBin,
     {
         edfFile temp(*this, true);
 
-        temp.data.resize(this->ns);
+		temp.edfData.resize(this->ns);
         for(int i = 0; i < this->ns; ++i)
         {
-            temp.data[i].resize(finishBin - startBin);
-            std::copy(std::begin(this->data[i]) + startBin,
-                      std::begin(this->data[i]) + finishBin,
-                      std::begin(temp.data[i]));
+			temp.edfData[i].resize(finishBin - startBin);
+			std::copy(std::begin(this->edfData[i]) + startBin,
+					  std::begin(this->edfData[i]) + finishBin,
+					  std::begin(temp.edfData[i]));
         }
-        temp.dataLength = finishBin - startBin;
+		temp.dataLength = finishBin - startBin;
 		temp.writeEdfFile(outPath, plainFlag);
     }
 }
 
 void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
 {
-	drawEeg(this->data,
+	drawEeg(this->edfData,
             this->ns,
             startBin,
             finishBin,
@@ -1230,7 +1229,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
         for(uint k = 0; k < coefs.cols(); ++k)
         {
 
-            this->data[ eegNums[i] ] -= this->data [ eogNums[k] ] * coefs[i][k];
+			this->edfData[ eegNums[i] ] -= this->edfData [ eogNums[k] ] * coefs[i][k];
         }
     }
     if(removeEogChannels)
@@ -1246,7 +1245,7 @@ edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much
 	// more general, much memory
 	edfFile temp(*this, true);
 	temp.channels.clear();
-	temp.data.clear();
+	temp.edfData.clear();
 
     for(int item : chanList)
     {
@@ -1256,7 +1255,7 @@ edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much
 			return *this;
 		}
 		temp.channels.push_back(this->channels[item]);
-		temp.data.push_back(this->data[item]);
+		temp.edfData.push_back(this->edfData[item]);
 	}
 	/// if the cycle worked well
 	temp.adjustArraysByChannels();
@@ -1274,7 +1273,7 @@ void edfFile::removeChannels(const std::vector<int> & chanList)
 
     for(int k : excludeSet)
 	{
-		this->data.eraseRow(k);
+		this->edfData.eraseRow(k);
         this->channels.erase(std::begin(this->channels) + k);
     }
     this->adjustArraysByChannels();
@@ -1295,8 +1294,8 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
     }
 
 	edfFile temp(*this, true);
-	temp.data = edfDataType();
-	temp.data.resize(leest.length());
+	temp.edfData = edfDataType();
+	temp.edfData.resize(leest.length());
 	temp.channels.resize(leest.length());
 
     /// need write a check of channel sequence
@@ -1308,8 +1307,8 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
     {
         if(QString::number(leest[k].toInt()) == leest[k]) // just copy
 		{
-//			this->data[k] = this->data[leest[k].toInt() - 1];
-			temp.data[k] = this->data[leest[k].toInt() - 1];
+//			this->edfData[k] = this->edfData[leest[k].toInt() - 1];
+			temp.edfData[k] = this->edfData[leest[k].toInt() - 1];
 			temp.channels[k] = this->channels[leest[k].toInt() - 1];
         }
         else if(leest[k].contains(QRegExp(R"([\+\-\*\/])")))
@@ -1350,11 +1349,11 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
                     sign *= lst[h+1].toDouble();
                 }
 
-//                this->data[k] = this->data[lst[0].toInt() - 1]
-//                        + sign * this->data[lst[h].toInt() - 1];
+//                this->edfData[k] = this->edfData[lst[0].toInt() - 1]
+//                        + sign * this->edfData[lst[h].toInt() - 1];
 
-				temp.data[k] = this->data[lst[0].toInt() - 1]
-						+ sign * this->data[lst[h].toInt() - 1];
+				temp.edfData[k] = this->edfData[lst[0].toInt() - 1]
+						+ sign * this->edfData[lst[h].toInt() - 1];
 
                 if(leest[k][lengthCounter] == '/' || leest[k][lengthCounter] == '*')
                 {
@@ -1430,15 +1429,15 @@ void edfFile::writeOtherData(const matrix & newData,
                   std::end(chanList),
                   0);
     }
-    temp.data = edfDataType();
+	temp.edfData = edfDataType();
     temp.channels.clear();
     int num = 0;
     for(int item : chanList)
     {
         temp.channels.push_back( this->channels[item] );
         /// pewpwepwwpepwpewpepwepwpep
-//        temp.data.push_back( newData[item] );
-        temp.data.push_back( newData[num++] );
+//        temp.edfData.push_back( newData[item] );
+		temp.edfData.push_back( newData[num++] );
     }
     temp.adjustArraysByChannels(); // set in particular ns = chanList.length();
     temp.writeEdfFile(outPath);
@@ -1447,13 +1446,13 @@ void edfFile::writeOtherData(const matrix & newData,
 void edfFile::fitData(int initSize) // append zeros to whole ndr's
 {
     this->ndr = ceil(double(initSize) / (this->srate * this->ddr)); // generality
-    this->dataLength = this->ndr * (this->srate * this->ddr);
-	this->data.resizeCols(this->dataLength);
+	this->dataLength = this->ndr * (this->srate * this->ddr);
+	this->edfData.resizeCols(this->dataLength);
 }
 
 void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are allocated
 {
-    int currEnd = this->dataLength;
+	int currEnd = this->dataLength;
     bool doFlag = true;
 
     while(1)
@@ -1461,9 +1460,9 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
         for(int j = 0; j < this->ns; ++j)
 		{
             /// for neurotravel cleaning - generality with digmaxmin
-            if(abs(this->data[j][currEnd - 1]) >= 30000) break; // do clean
+			if(abs(this->edfData[j][currEnd - 1]) >= 30000) break; // do clean
 
-            if(this->data[j][currEnd - 1] != 0.)
+			if(this->edfData[j][currEnd - 1] != 0.)
             {
                 doFlag = false;
                 break;
@@ -1479,10 +1478,10 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
         }
         doFlag = true;
     }
-    this->dataLength = currEnd;
-	this->data.resizeCols(currEnd);
+	this->dataLength = currEnd;
+	this->edfData.resizeCols(currEnd);
 
-    this->ndr = ceil(this->dataLength / (this->srate * this->ddr)); // should be unchanged
+	this->ndr = ceil(this->dataLength / (this->srate * this->ddr)); // should be unchanged
 }
 
 double edfFile::checkDdr(const QString & inPath)

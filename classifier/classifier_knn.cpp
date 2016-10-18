@@ -19,14 +19,14 @@ void KNN::learn(std::vector<uint> & indices)
 {
 	if(!distances.isEmpty()) return;
 
-    uint num = dataMatrix->rows();
+    uint num = myData.getData().rows();
     distances = matrix(num, num, 0.);
     for(uint i = 0; i < num; ++i)
     {
         for(uint j = i + 1; j < num; ++j)
         {
-           distances[i][j] = smallLib::distance((*dataMatrix)[i],
-                    (*dataMatrix)[j]);
+           distances[i][j] = smallLib::distance(myData.getData()[i],
+                    myData.getData()[j]);
            distances[j][i] = distances[i][j];
         }
     }
@@ -38,7 +38,7 @@ void KNN::test(const std::vector<int> & indices)
     for(int ind : indices)
     {
         auto res = classifyDatum(ind);
-        confusionMatrix[(*types)[ind]][res.first] += 1.;
+        confusionMatrix[myData.getTypes()[ind]][res.first] += 1.;
     }
 }
 #endif
@@ -47,12 +47,12 @@ std::pair<uint, double> KNN::classifyDatum(const uint & vecNum)
 {
     std::vector<std::pair<double, int>> toSort;
 
-    for(uint i = 0; i < dataMatrix->rows(); ++i)
+    for(uint i = 0; i < myData.getData().rows(); ++i)
     {
         if(i == vecNum) continue;
         toSort.push_back(std::make_pair(
                              distances[i][vecNum],
-                             (*types)[i])
+                             myData.getTypes()[i])
                          );
     }
     std::sort(std::begin(toSort),
@@ -64,7 +64,7 @@ std::pair<uint, double> KNN::classifyDatum(const uint & vecNum)
     );
 
     /// solving part
-    std::vector<double> numOfClass(numCl, 0);
+    std::vector<double> numOfClass(myData.getNumOfCl(), 0);
     double sgm = toSort[numOfNear].first / 3.;
 
     for(int i = 0; i < numOfNear; ++i)
@@ -82,5 +82,5 @@ std::pair<uint, double> KNN::classifyDatum(const uint & vecNum)
     printResult("KNN.txt", outClass, vecNum);
 
     return std::make_pair(outClass,
-                          double(outClass != (*types)[vecNum]));
+                          double(outClass != myData.getTypes()[vecNum]));
 }

@@ -29,7 +29,7 @@ void SVM::test(const std::vector<int> & indices)
     for(int ind : indices)
     {
         auto res = classifyDatum(ind);
-        confusionMatrix[(*types)[ind]][res.first] += 1.;
+        confusionMatrix[myData.getTypes()[ind]][res.first] += 1.;
     }
 }
 #endif
@@ -58,7 +58,7 @@ std::pair<uint, double> SVM::classifyDatum(const uint & vecNum)
     printResult("SVM.txt", outClass, vecNum);
 
     return std::make_pair(outClass,
-                          double(outClass != (*types)[vecNum]));
+                          double(outClass != myData.getTypes()[vecNum]));
 }
 
 
@@ -81,11 +81,11 @@ void SVM::makeFile(const std::vector<uint> & indices,
 
     for(int ind : indices)
     {
-        outStream << (*types)[ind] << ' ';
-        for(uint l = 0; l < dataMatrix->cols(); ++l)
+        outStream << myData.getTypes()[ind] << ' ';
+		for(uint l = 0; l < myData.getData().cols(); ++l)
         {
             outStream << l + 1 << ':'
-                      << smallLib::doubleRound((*dataMatrix)[ind][l], 4) << ' ';
+                      << smallLib::doubleRound(myData.getData()[ind][l], 4) << ' ';
         }
         outStream << std::endl;
     }
