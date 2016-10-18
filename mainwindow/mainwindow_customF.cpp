@@ -29,7 +29,7 @@ void MainWindow::customFunc()
 		setEdfFile(paath + slash  + guy + "_train.edf");
 
 
-//        cleanDir(paath + "/Realisations");
+//        cleanDir(paath + "/Reals");
 //        cleanDir(paath + "/SpectraSmooth");
 //        cleanDir(paath + "/SpectraSmooth/PCA");
 //        sliceAll();
@@ -101,23 +101,23 @@ void MainWindow::customFunc()
 
 
         {
-            /// initially reduce number of windows
-            QStringList windowsList;
-            // delete first three windows from each realisation
-            windowsList = QDir(path + "windows/fromreal").entryList({"*_train*.00",
+			/// initially reduce number of winds
+			QStringList windsList;
+			// delete first three winds from each realisation
+			windsList = QDir(path + "winds/fromreal").entryList({"*_train*.00",
                                                                      "*_train*.01",
                                                                      "*_train*.02"},
                                                                     QDir::Files);
-            for(const QString & name : windowsList)
+			for(const QString & name : windsList)
             {
-                QFile::remove(path + "windows/fromreal/" + name);
+				QFile::remove(path + "winds/fromreal/" + name);
             }
 
             // leave last 600 (some will fall out due to zeros)
-            makeFullFileList(path + "windows/fromreal", windowsList, {"_train"});
-            for(int i = 0; i < windowsList.length() - 600; ++i) /// constant
+			makeFullFileList(path + "winds/fromreal", windsList, {"_train"});
+			for(int i = 0; i < windsList.length() - 600; ++i) /// constant
             {
-                QFile::remove(path + "windows/fromreal/" + windowsList[i]);
+				QFile::remove(path + "winds/fromreal/" + windsList[i]);
             }
         }
 
@@ -131,7 +131,7 @@ void MainWindow::customFunc()
         net->setVariancing(true);
         net->loadData(def::dir->absolutePath()
                       + slash + "SpectraSmooth"
-                      + slash + "windows",
+					  + slash + "winds",
                         {name + "_train"}); /// only for ANN set - dataMatrix->cols()
 //        net->pca();
 
@@ -141,7 +141,7 @@ void MainWindow::customFunc()
         ui->windowLengthSpinBox->setValue(4.);
         ui->timeShiftSpinBox->setValue(2.); /// really should be 0.5
         ui->windButton->setChecked(true);
-        /// DON'T CLEAR, TRAIN WINDOWS TAKEN BY SUCCESSIVE
+		/// DON'T CLEAR, TRAIN winds TAKEN BY SUCCESSIVE
 
         if(sliceAndCount)
         {
@@ -160,7 +160,7 @@ void MainWindow::customFunc()
         net->setVariancing(false);
         net->loadData(def::dir->absolutePath()
                       + slash + "SpectraSmooth"
-                      + slash + "windows",
+					  + slash + "winds",
                         {name + "_train"}); /// only for ANN set - dataMatrix->cols()
 
         net->setClassifier(ClassifierType::ANN);
@@ -224,7 +224,7 @@ void MainWindow::customFunc()
 	for(QString guy : subjects::leest_mri)
     {
 
-		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_windows_cleaned");
+		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_winds_cleaned");
 	}
 
 //	QString type = "_med.getFreq()";
@@ -406,8 +406,8 @@ void MainWindow::customFunc()
 
 #if 0
     /// compare files in folders
-    QString hgf = "/media/michael/Files/Data/Dasha/AUDIO/CHANS/Audio_to_less/Audio_to_less_windows/";
-    QString q = "/media/michael/KINGSTON/GOODCHANS_to_less_windows/";
+	QString hgf = "/media/michael/Files/Data/Dasha/AUDIO/CHANS/Audio_to_less/Audio_to_less_windows/";
+	QString q = "/media/michael/KINGSTON/GOODCHANS_to_less_windows/";
     QStringList leeest = QDir(q).entryList(QDir::Files);
     for(QString name : leeest)
     {
@@ -506,7 +506,7 @@ void MainWindow::customFunc()
 	def::freq = 100;
     def::ns = 32;
 #if 0
-    // reduce channels in realisations
+	// reduce channels in Reals
     def::ns = 32;
     const set<int, std::less<int>> exclude{3, 4, 14};
     QString helpString;
@@ -533,7 +533,7 @@ void MainWindow::customFunc()
 
         net->autoClassification(def::dir->absolutePath()
                                 + slash + "SpectraSmooth"
-                                + slash + "windows");
+								+ slash + "winds");
 
         pew.push_back(make_pair(i, net->getAverageAccuracy()));
         delete ann;
@@ -587,7 +587,7 @@ void MainWindow::customFunc()
                    + ".edf");
         sliceAll();
     }
-    drawRealisations();
+	drawReals();
     exit(0);
 #endif
 
@@ -750,7 +750,7 @@ void MainWindow::customFunc()
         exit(0);
 //        ns = 22;
 //        cutShow();
-//        drawRealisations();
+//        drawReals();
 //        sliceAll();
 //        ns = 19;
 //        ui->reduceChannelsLineEdit->setText("1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
@@ -780,7 +780,7 @@ void MainWindow::customFunc()
             helpString = tdef::dir->absolutePath() + "/" + lst[i] + "_rr_f.edf";
             setEdfFile(helpString);
             sliceAll();
-            drawRealisations();
+			drawReals();
             tdef::dir->cdUp();
 
         }

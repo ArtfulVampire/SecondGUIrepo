@@ -16,7 +16,7 @@ void Net::successiveProcessing()
     /// use ExpName
     QString helpString = def::dir->absolutePath()
                          + slash + "SpectraSmooth"
-                         + slash + "windows"; /// "windows" or "PCA"
+                         + slash + "winds"; /// "winds" or "PCA"
     loadData(helpString, {def::ExpName.left(3) + "*" + trainMarker + "*"});
 
     cout << "successive: data loaded" << endl;
@@ -57,7 +57,7 @@ void Net::successiveProcessing()
 
     helpString = def::dir->absolutePath()
                  + slash + "SpectraSmooth"
-                 + slash + "windows";
+                 + slash + "winds";
     QStringList leest = QDir(helpString).entryList(
     {def::ExpName.left(3) + "*" + testMarker + "*"}); /// special generality
 
@@ -89,7 +89,7 @@ void Net::successivePreclean(const QString & spectraPath)
 
     for(const QString & str : leest)
     {
-        if(str.contains(QRegExp(".0[0-1]$"))) /// change to 0-x for x first windows to delete
+        if(str.contains(QRegExp(".0[0-1]$"))) /// change to 0-x for x first winds to delete
         {
             QFile::remove(spectraPath + slash + str);
         }

@@ -159,10 +159,10 @@ void cutOneFile(const QString & filePath,
 	}
 
 	const int & fr = initEdf.getFreq();
-	const int numOfWindows = ceil(initEdf.getDataLen() / fr / wndLen);
+	const int numOfWinds = ceil(initEdf.getDataLen() / fr / wndLen);
 
 
-	for(int i = 0; i < numOfWindows; ++i)
+	for(int i = 0; i < numOfWinds; ++i)
 	{
 		initEdf.saveSubsection(
 					i * fr * wndLen,
@@ -174,7 +174,7 @@ void cutOneFile(const QString & filePath,
 							+ slash + initEdf.getExpName()
 							+ "_wnd_" + myLib::rightNumber(
 								i + 1,
-								floor(log10(numOfWindows)) + 1)
+								floor(log10(numOfWinds)) + 1)
 							+ ".edf"));
 	}
 }
@@ -184,7 +184,7 @@ void GalyaCut(const QString & path,
 			  QString outPath)
 {
 
-	const QString outDir = getFileName(path) + "_windows";
+	const QString outDir = getFileName(path) + "_winds";
 	const QString smallsDir = getFileName(path) + "_smalls";
 
 	QDir tmpDir(path);

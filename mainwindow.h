@@ -58,7 +58,7 @@ public slots:
     void sliceAll();
 	void sliceWindFromReal();
     void reduceChannelsSlot();
-    void drawRealisations();
+	void drawReals();
     void drawSpectraSlot();
     void drawDirSlot();
     void setEdfFileSlot();

@@ -180,19 +180,19 @@ QString getPicPath(const QString & dataPath,
 
     QString helpString = (ExpNameDir->absolutePath() + slash);
 
-    if(dataPath.contains("Realisations"))
+    if(dataPath.contains("Reals"))
     {
         helpString += "Signals";
     }
-    else if(dataPath.contains("windows"))
+    else if(dataPath.contains("winds"))
     {
         if(!dataPath.contains("fromreal"))
         {
-            helpString += "Signals" + slash + "windows";
+            helpString += "Signals" + slash + "winds";
         }
         else /// fromreals need other path?
         {
-            helpString += "Signals" + slash + "windows";
+            helpString += "Signals" + slash + "winds";
         }
     }
     else if(dataPath.contains("cut"))
@@ -243,7 +243,7 @@ int typeOfFileName(const QString & fileName)
 
 void eyesProcessingStatic(const std::vector<int> eogChannels,
                           const std::vector<int> eegChannels,
-                          const QString & windowsDir,
+                          const QString & windsDir,
                           const QString & outFilePath)
 {
     QTime myTime;
@@ -252,13 +252,13 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 
     QStringList leest;
     /// if cut from reals
-//    makeFullFileList(windowsDir, leest);
+//    makeFullFileList(windsDir, leest);
     /// if cut from edf
-    leest = QDir(windowsDir).entryList({"*" + def::plainDataExtension});
+    leest = QDir(windsDir).entryList({"*" + def::plainDataExtension});
 
     for(QString & item : leest)
     {
-        item.prepend(windowsDir + slash);
+        item.prepend(windsDir + slash);
     }
 
     const uint Size = eogChannels.size() + 1; // usually 3

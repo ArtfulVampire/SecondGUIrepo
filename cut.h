@@ -79,7 +79,7 @@ private:
     QStringList lst;
     QString currentFile;
 	int currentNumber; /// in lst
-	int addNum = 0; // for cut() windows
+	int addNum = 0; // for cut() winds
 
     QPixmap currentPic;
     int redCh, blueCh; // for drawing

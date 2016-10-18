@@ -51,7 +51,7 @@ protected:
     QString workDir = def::dir->absolutePath() + myLib::slash + "PA";
     QString filesPath = def::dir->absolutePath()
                         + myLib::slash + "SpectraSmooth"
-                        + myLib::slash + "windows";
+                        + myLib::slash + "winds";
 
 public:
     const ClassifierType & getType() {return myType;}

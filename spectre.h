@@ -59,16 +59,16 @@ private:
     Ui::Spectre * ui;
     QString backupDirPath;
     QString defaultInPath = def::dir->absolutePath()
-                            + myLib::slash +"Realisations";
+                            + myLib::slash +"Reals";
     QString defaultOutPath = def::dir->absolutePath()
                              + myLib::slash +"SpectraSmooth";
 
     QString defaultInPathW = def::dir->absolutePath()
-                             + myLib::slash + "windows"
+                             + myLib::slash + "winds"
                              + myLib::slash + "fromreal";
     QString defaultOutPathW = def::dir->absolutePath()
                              + myLib::slash + "SpectraSmooth"
-                             + myLib::slash + "windows";
+                             + myLib::slash + "winds";
 
     std::vector<std::pair<int, int>> rangeLimits;
 

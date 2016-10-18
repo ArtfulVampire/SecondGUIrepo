@@ -100,7 +100,7 @@ void Net::autoClassificationSimple()
     {
     case source::winds:
     {
-        helpString += slash + "windows"; break;
+        helpString += slash + "winds"; break;
     }
     case source::bayes:
     {

@@ -38,20 +38,20 @@ MainWindow::MainWindow() :
     ui->drawCoeffSpinBox->setSingleStep(0.1); //draw coeff
     ui->sliceCheckBox->setChecked(true);
     ui->eyesCleanCheckBox->setChecked(false);
-//    ui->eyesCleanCheckBox->setChecked(true);   ///for windows
+//    ui->eyesCleanCheckBox->setChecked(true);   ///for winds
     ui->reduceChannelsCheckBox->setChecked(true);
     ui->reduceChannelsCheckBox->setChecked(false);
     ui->progressBar->setValue(0);
     ui->setNsLine->property("S&et");
 
-    ui->drawDirBox->addItem("Realisations");
+	ui->drawDirBox->addItem("Reals");
     ui->drawDirBox->addItem("cut");
-    ui->drawDirBox->addItem("windows");
+	ui->drawDirBox->addItem("winds");
 
     ui->drawDirBox->addItem("SpectraSmooth");
-    ui->drawDirBox->addItem("SpectraSmooth/windows");
-    ui->drawDirBox->addItem("windows/SpectraSmooth"); /// tcpClient test
-    ui->drawDirBox->addItem("windows/fromreal"); //generality
+	ui->drawDirBox->addItem("SpectraSmooth/winds");
+	ui->drawDirBox->addItem("winds/SpectraSmooth"); /// tcpClient test
+	ui->drawDirBox->addItem("winds/fromreal"); //generality
 
     /// set fileMarks lineEdit
     helpString.clear();
@@ -463,23 +463,23 @@ void MainWindow::setEdfFile(QString const &filePath)
     def::dir->mkdir("Signals/before");
     def::dir->mkdir("Signals/after");
     def::dir->mkdir("Signals/other");
-    def::dir->mkdir("Signals/windows");
-    def::dir->mkdir("Signals/windows/after");
-    def::dir->mkdir("Signals/windows/before");
-    def::dir->mkdir("Signals/windows/other");
+	def::dir->mkdir("Signals/winds");
+	def::dir->mkdir("Signals/winds/after");
+	def::dir->mkdir("Signals/winds/before");
+	def::dir->mkdir("Signals/winds/other");
     def::dir->mkdir("SignalsCut");
     def::dir->mkdir("SignalsCut/before");
     def::dir->mkdir("SignalsCut/after");
     def::dir->mkdir("SpectraImg");
     def::dir->mkdir("SpectraSmooth");
-    def::dir->mkdir("SpectraSmooth/windows");
+	def::dir->mkdir("SpectraSmooth/winds");
     def::dir->mkdir("SpectraSmooth/Bayes");
     def::dir->mkdir("SpectraSmooth/PCA");
     def::dir->mkdir("SpectraSmooth/Clean");
-    def::dir->mkdir("windows");
-    def::dir->mkdir("windows/fromreal");
-    def::dir->mkdir("Realisations");
-    def::dir->mkdir("Realisations/BC");
+	def::dir->mkdir("winds");
+	def::dir->mkdir("winds/fromreal");
+	def::dir->mkdir("Reals");
+	def::dir->mkdir("Reals/BC");
     def::dir->mkdir("cut");
     def::dir->mkdir("visualisation");
     def::dir->mkdir("visualisation/video");
@@ -586,7 +586,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
                         ++i)
                     {
                         helpString = (def::dir->absolutePath()
-                                                              + slash + "windows"
+															  + slash + "winds"
                                                               + slash + "fromreal"
                                                               + slash + def::ExpName
                                                               + "-" + rightNumber(i, 4)
@@ -620,7 +620,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 //                        sliceFromTo(241, 231, "241_pre");
 //                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
 //                        sliceFromTo(247, 237, "247_pre");
-//                        helpString = def::dir->absolutePath() + slash + "Realisations";
+//                        helpString = def::dir->absolutePath() + slash + "Reals";
 //                        cleanDir(helpString, "_pre", false);
                     }
                 }
@@ -674,7 +674,7 @@ void MainWindow::drawDirSlot()
     }
     else
     {
-        drawRealisations();
+		drawReals();
     }
 }
 
@@ -720,7 +720,7 @@ void MainWindow::drawSpectra(const QString & prePath,
     cout << "drawSpectra: time = " << myTime.elapsed() / 1000. << " sec" << endl;
 }
 
-void MainWindow::drawRealisations()
+void MainWindow::drawReals()
 {
     QStringList lst;
     QString helpString;
@@ -802,7 +802,7 @@ void MainWindow::drawRealisations()
     ui->textEdit->append(helpString);
 
     stopFlag = 0;
-    cout << "drawRealisations: time = " << myTime.elapsed()/1000. << " sec" << endl;
+	cout << "drawReals: time = " << myTime.elapsed()/1000. << " sec" << endl;
 }
 
 void MainWindow::cleanDirsAll(bool fl)
@@ -838,20 +838,20 @@ void MainWindow::cleanDirs()
         return;
     }
 
-    // windows
+	// winds
 	if(ui->cleanWindsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                + slash + "windows";
+				+ slash + "winds";
         cleanDir(helpString);
     }
 
-    // SpectraSmooth/windows
+	// SpectraSmooth/winds
 	if(ui->cleanWindsSpectraCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
                 + slash + "SpectraSmooth"
-                + slash + "windows";
+				+ slash + "winds";
         cleanDir(helpString);
     }
 
@@ -863,20 +863,20 @@ void MainWindow::cleanDirs()
         cleanDir(helpString);
     }
 
-    // windows/fromreal
+	// winds/fromreal
     if(ui->cleanFromRealsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                + slash + "windows"
+				+ slash + "winds"
                 + slash + "fromreal";
         cleanDir(helpString);
     }
 
-    // Realisations
+	// Reals
 	if(ui->cleanRealsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                + slash + "Realisations";
+				+ slash + "Reals";
         cleanDir(helpString);
     }
 
@@ -902,11 +902,11 @@ void MainWindow::cleanDirs()
 
 
 
-    // signals windows
+	// signals winds
 	if(ui->cleanWindsSignalsCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath()
-                     + slash + "Signals" + slash + "windows" + slash;
+					 + slash + "Signals" + slash + "winds" + slash;
 
         for(auto str2 : {"before", "after", "other"})
         {

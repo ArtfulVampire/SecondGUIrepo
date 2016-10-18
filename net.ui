@@ -209,9 +209,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="windowsRadioButton">
+       <widget class="QRadioButton" name="windsRadioButton">
         <property name="text">
-         <string>windows</string>
+         <string>winds</string>
         </property>
        </widget>
       </item>

@@ -33,9 +33,9 @@ Cut::Cut() :
     }
 
 	ui->subdirComboBox->addItem("");
-    ui->subdirComboBox->addItem("Realisations");
-    ui->subdirComboBox->addItem("windows");
-    ui->subdirComboBox->addItem("windows/fromreal"); //generality
+	ui->subdirComboBox->addItem("Reals");
+	ui->subdirComboBox->addItem("winds");
+	ui->subdirComboBox->addItem("winds/fromreal"); //generality
 
 	ui->subdirComboBox->setCurrentText(""); /// me
 
@@ -60,9 +60,9 @@ Cut::Cut() :
 
     ui->checkBox->setChecked(true);
 
-    ui->dirBox->addItem("Realisations");
+	ui->dirBox->addItem("Reals");
     ui->dirBox->addItem("cut");
-    ui->dirBox->addItem("windows");
+	ui->dirBox->addItem("winds");
     ui->dirBox->setCurrentIndex(0);
 
 //    this->ui->lineEdit_1->setText("0.0");
@@ -289,10 +289,10 @@ void Cut::cutEyesAll()
     if(autoFlag)
     {
         ui->checkBox->setChecked(false);
-        def::dir->cd("Realisations");
+		def::dir->cd("Reals");
         helpString = def::dir->entryList(QDir::Files)[0];
         def::dir->cdUp();
-        helpString.prepend(def::dir->absolutePath() + slash + "Realisations" + slash);
+		helpString.prepend(def::dir->absolutePath() + slash + "Reals" + slash);
         cout<<helpString.toStdString()<<endl;
         emit openFile(helpString);
     }
@@ -767,7 +767,7 @@ void Cut::cut()
 {
     QString helpString;
     helpString = (def::dir->absolutePath() +
-                                          slash + "windows" +
+										  slash + "winds" +
                                           slash + getFileName(currentFile) +
                                           "." + rightNumber(addNum++, 3));
     writePlainData(helpString,

@@ -187,7 +187,7 @@ void Net::setSource(const QString & in)
     }
     else if(in.contains("wind", Qt::CaseInsensitive) || in.startsWith('w'))
     {
-        ui->windowsRadioButton->setChecked(true);
+        ui->windsRadioButton->setChecked(true);
         loadDataNorm = 5.;
     }
 }
@@ -394,7 +394,7 @@ void Net::aaDefaultSettings()
 
     /// source
 //        ui->realsRadioButton->setChecked(true); /// reals
-//        ui->windowsRadioButton->setChecked(true); /// windows
+//        ui->windsRadioButton->setChecked(true); /// winds
     ui->pcaRadioButton->setChecked(true); /// PCA
 
 

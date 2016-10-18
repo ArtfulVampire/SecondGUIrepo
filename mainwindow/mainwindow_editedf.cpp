@@ -241,7 +241,7 @@ void MainWindow::reduceChannelsEDF(const QString & newFilePath)
 void MainWindow::reduceChannelsSlot()
 {
 #if 1
-    // reduce channels in Realisations
+	// reduce channels in Reals
     /// not the same as edfFile::reduceChannels
     QStringList lst;
     matrix dataR;
@@ -269,7 +269,7 @@ void MainWindow::reduceChannelsSlot()
     cout << endl;
 
     QDir localDir(def::dir->absolutePath());
-    localDir.cd("Realisations");
+	localDir.cd("Reals");
     lst = localDir.entryList(QDir::Files, QDir::NoSort);
 
 
@@ -369,7 +369,7 @@ void MainWindow::constructEDFSlot()
             {
 
                 filters.clear();
-                // filter for realisations
+				// filter for Reals
                 helpString = def::ExpName
                         + "_" + QString::number(i)
                         + "_" + QString::number(j)
@@ -387,7 +387,7 @@ void MainWindow::constructEDFSlot()
                         + "_" + QString::number(j)
                         + ".edf";
 
-                constructEDF(helpString, filters); // construct 1 session from realisations
+				constructEDF(helpString, filters); // construct 1 session from Reals
                 ui->progressBar->setValue(100. *
                                           (1. / 3. * (i + 1. / 6. * j)));
                 qApp->processEvents();
@@ -449,7 +449,7 @@ void MainWindow::constructEDFSlot()
 void MainWindow::constructEDF(const QString & newPath,
                               const QStringList & nameFilters)
 {
-    // all the realisations, to newPath based on ui->filePathLineEdit
+	// all the Reals, to newPath based on ui->filePathLineEdit
     QString helpString;
 
     QTime myTime;
@@ -466,17 +466,17 @@ void MainWindow::constructEDF(const QString & newPath,
     QStringList lst;
     if(!nameFilters.isEmpty())
     {
-        lst = QDir(def::dir->absolutePath() + slash + "Realisations").entryList(
+		lst = QDir(def::dir->absolutePath() + slash + "Reals").entryList(
                   nameFilters, QDir::Files, QDir::Name); /// Name ~ order
     }
     else
     {
-        lst = QDir(def::dir->absolutePath() + slash + "Realisations").entryList(
+		lst = QDir(def::dir->absolutePath() + slash + "Reals").entryList(
                   QDir::Files, QDir::Name); /// Name ~ order
     }
     if(lst.isEmpty())
     {
-        cout << "constructEDF: list of realisations is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
+		cout << "constructEDF: list of Reals is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
         return;
     }
 
@@ -488,12 +488,12 @@ void MainWindow::constructEDF(const QString & newPath,
     for(const QString & fileName : lst)
     {
         helpString = (def::dir->absolutePath()
-                                              + slash + "Realisations"
+											  + slash + "Reals"
                                               + slash + fileName);
         readPlainData(helpString, newData, NumOfSlices, currSlice);
         currSlice += NumOfSlices;
     }
-//    cout << "constructEDF: slices read from Realisations = " << currSlice << endl;
+//    cout << "constructEDF: slices read from Reals = " << currSlice << endl;
 
     int helpInt = currSlice;
 

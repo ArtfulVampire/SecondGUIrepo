@@ -24,7 +24,7 @@ Net::Net() :
     /// 1
     myButtonGroup.push_back(new QButtonGroup());
     myButtonGroup.back()->addButton(ui->realsRadioButton);
-    myButtonGroup.back()->addButton(ui->windowsRadioButton);
+    myButtonGroup.back()->addButton(ui->windsRadioButton);
     myButtonGroup.back()->addButton(ui->pcaRadioButton);
     myButtonGroup.back()->addButton(ui->bayesRadioButton);
     /// 2
@@ -46,7 +46,7 @@ Net::Net() :
     }
 
 //    ui->realsRadioButton->setChecked(true); /// reals
-    ui->windowsRadioButton->setChecked(true); /// windows
+    ui->windsRadioButton->setChecked(true); /// winds
 //    ui->pcaRadioButton->setChecked(true); /// PCA
 
     ui->backpropRadioButton->setChecked(false);

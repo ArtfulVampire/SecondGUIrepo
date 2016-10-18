@@ -15,7 +15,7 @@ void MainWindow::sliceWindFromReal()
 
     QStringList lst;
     makeFullFileList(def::dir->absolutePath()
-                     + slash + "Realisations",
+					 + slash + "Reals",
                      lst
                      , {def::ExpName}
                      );
@@ -34,7 +34,7 @@ void MainWindow::sliceWindFromReal()
     {
         localNs = def::ns;
         helpString = (def::dir->absolutePath()
-                                              + slash + "Realisations"
+											  + slash + "Reals"
                                               + slash + lst[i]);
         readPlainData(helpString, dataReal, NumOfSlices);
 
@@ -61,7 +61,7 @@ void MainWindow::sliceWindFromReal()
 
             //else
             helpString = def::dir->absolutePath()
-                         + slash + "windows"
+						 + slash + "winds"
                          + slash + "fromreal"
                          + slash + lst[i]
                          + "." + rightNumber(h, 2);
@@ -83,7 +83,7 @@ void MainWindow::sliceWindFromReal()
     }
 
     ui->progressBar->setValue(0);
-    helpString = "windows from realisations sliced ";
+	helpString = "winds from Reals sliced ";
     ui->textEdit->append(helpString);
 
     helpString = "ns equals to " + QString::number(def::ns);
@@ -191,7 +191,7 @@ void MainWindow::sliceIlya(int marker1, int marker2, QString marker) //beginning
         if(h==2)
         {
             ++number;
-            helpString=(def::dir->absolutePath()).append(slash).append("Realisations").append(slash).append(def::ExpName).append("_").append(marker);
+			helpString=(def::dir->absolutePath()).append(slash).append("Reals").append(slash).append(def::ExpName).append("_").append(marker);
             file=fopen(helpString.toStdString().c_str(), "w");
 
             fprintf(file, "NumOfSlices %d \r\n", k-j);
@@ -242,7 +242,7 @@ void MainWindow::slice(int marker1, int marker2, QString marker) //beginning - f
                 h = 0;
                 if(k-j < 500) continue;
                 ++number;
-                helpString=(def::dir->absolutePath()).append(slash).append("Realisations").append(slash).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
+				helpString=(def::dir->absolutePath()).append(slash).append("Reals").append(slash).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
                 file=fopen(helpString.toStdString().c_str(), "w");
 
                 fprintf(file, "NumOfSlices %d \n", k-j);
@@ -326,7 +326,7 @@ void MainWindow::sliceFromTo(int marker1, int marker2, QString marker) //beginni
                     h = 0;
                     if(k-j < 1000) continue;
                     ++number;
-                    helpString=(def::dir->absolutePath().append(slash).append("Realisations").append(slash).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4)));
+					helpString=(def::dir->absolutePath().append(slash).append("Reals").append(slash).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4)));
                     file=fopen(helpString.toStdString().c_str(), "w");
                     fprintf(file, "NumOfSlices %d \n", k-j);
 
@@ -406,7 +406,7 @@ void MainWindow::sliceByNumberAfter(int marker1, int marker2, QString marker)
             {
                 ++number;
                 h = 0;
-                helpString=(def::dir->absolutePath()).append(slash).append("Realisations").append(slash).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
+				helpString=(def::dir->absolutePath()).append(slash).append("Reals").append(slash).append(def::ExpName).append("_").append(marker).append(".").append(rightNumber(number, 4));
                 file=fopen(helpString.toStdString().c_str(), "w");
 
                 fprintf(file, "NumOfSlices %d \n", k-j);
@@ -458,7 +458,7 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning 
         {
             ++number;
             helpString = def::dir->absolutePath()
-                    + slash + "Realisations"
+					+ slash + "Reals"
                     + slash + def::ExpName
                     + "_" + marker
                     + "." + rightNumber(number, 4);
@@ -494,7 +494,7 @@ void MainWindow::sliceWindow(int startSlice, int endSlice, int number, int marke
 
 
     helpString = (def::dir->absolutePath()
-                                          + slash + "windows"
+										  + slash + "winds"
                                           + slash + def::ExpName
                                           + "-" + rightNumber(number, 4)
                                           + "_" + QString::number(marker)); //number.marker
@@ -537,7 +537,7 @@ void MainWindow::sliceGaps()
                 h = 0;
                 if(k-j < 500 || (k-j)>10000) continue;
                 ++number;
-                helpString=(def::dir->absolutePath()).append(slash).append("Realisations").append(slash).append(def::ExpName).append("_254.").append(rightNumber(number, 4));
+				helpString=(def::dir->absolutePath()).append(slash).append("Reals").append(slash).append(def::ExpName).append("_254.").append(rightNumber(number, 4));
                 file=fopen(helpString.toStdString().c_str(), "w");
                 fprintf(file, "NumOfSlices %d \n", k-j);
                 for(int l=j; l < k; ++l)
@@ -580,7 +580,7 @@ void MainWindow::sliceOneByOne()
             const int & finish = i;
 
             helpString = def::dir->absolutePath()
-                         + slash + "Realisations"
+						 + slash + "Reals"
                          + slash + def::ExpName
                          + "." + rightNumber(number++, 4);
 
@@ -628,7 +628,7 @@ void MainWindow::sliceOneByOne()
     /// write final
     {
         helpString = def::dir->absolutePath()
-                     + slash + "Realisations"
+					 + slash + "Reals"
                      + slash + def::ExpName
                      + "." + rightNumber(number++, 4);
         if(fil.getDataLen() - start < 40 * def::freq) /// if last realisation or interstimulus
@@ -700,7 +700,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
             }
 
             helpString = def::dir->absolutePath()
-                         + slash + "Realisations"
+						 + slash + "Reals"
                          + slash + def::ExpName
                          + "." + rightNumber(number++, 4);
 //            cout << helpString << endl;
@@ -747,7 +747,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
     /// write final
     {
         helpString = def::dir->absolutePath()
-                     + slash + "Realisations"
+					 + slash + "Reals"
                      + slash + def::ExpName
                      + "." + rightNumber(number++, 4);
         if(fil.getDataLen() - j < 40 * def::freq) /// if last realisation or interstimulus
@@ -852,7 +852,7 @@ void MainWindow::sliceMatiSimple()
                 for(int j = 0; j < number; ++j) // num of pieces
                 {
                     helpString = (def::dir->absolutePath()
-                                                          + slash + "Realisations"
+														  + slash + "Reals"
                                                           + slash + def::ExpName
                                                           + "_" + QString::number(type)
                                                           + "_" + QString::number(session[type])
@@ -1006,11 +1006,11 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 
     if(pieceLength <= 4.)
     {
-        folder = "windows";
+		folder = "winds";
     }
     else
     {
-        folder = "Realisations";
+		folder = "Reals";
     }
 
     for(int type = 0; type < 3; ++type)
