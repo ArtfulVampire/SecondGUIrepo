@@ -12,7 +12,6 @@ RDA::RDA() : Classifier()
 
 void RDA::adjustToNewData()
 {
-	confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
 	covMat.resize(myData->getNumOfCl() + 1, matrix());
 	centers.resize(myData->getNumOfCl() + 1);
 	dets.resize(myData->getNumOfCl());

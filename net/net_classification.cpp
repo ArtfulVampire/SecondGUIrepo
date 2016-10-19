@@ -130,7 +130,7 @@ void Net::leaveOneOutClassification()
         myANN->adjustLearnRate();
     }
 
-    std::vector<uint> learnIndices;
+	std::vector<uint> learnIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
 //		cout << i + 1 << " "; cout.flush();

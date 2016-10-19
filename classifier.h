@@ -99,7 +99,7 @@ public:
     virtual std::pair<uint, double> classifyDatum(const uint & vecNum) = 0;
     virtual void successiveRelearn();
 	virtual void printParams();
-	virtual void adjustToNewData();
+	virtual void adjustToNewData() {}
 };
 
 

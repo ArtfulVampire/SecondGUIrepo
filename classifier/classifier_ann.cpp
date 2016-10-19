@@ -9,6 +9,7 @@ ANN::ANN() : Classifier()
 
 void ANN::adjustToNewData()
 {
+	/// generality
 	this->setDim({});
 }
 
@@ -411,7 +412,7 @@ std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
 	smallLib::resizeValar(forRes, myData->getNumOfCl());
     uint outClass = myLib::indexOfMax(forRes);
 
-#if 01
+#if 0
     /// cout results
     const int numOfLayers = dim.size();
     std::ofstream resFile;
@@ -438,7 +439,7 @@ std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
 
     deleteFile(vecNum, outClass);
 
-    printResult("ANN.txt", outClass, vecNum);
+//    printResult("ANN.txt", outClass, vecNum);
     return std::make_pair(outClass,
                           res);
 }

@@ -11,17 +11,13 @@ Classifier::Classifier()
 	workDir = def::dir->absolutePath() + myLib::slash + "PA";
 }
 
-void Classifier::adjustToNewData()
-{
-	confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
-}
-
 void Classifier::setClassifierData(ClassifierData & in)
 {
 	if(&in != myData)
 	{
 		delete myData;
 		myData = &in;
+		confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
 		this->adjustToNewData();
 	}
 }
