@@ -62,6 +62,7 @@ public:
     void setTestCleanFlag(bool inFlag);
     void deleteFile(uint vecNum, uint predClass);
 	void printResult(const QString & fileName, uint predType, uint vecNum);
+	std::pair<uint, double> classifyDatumLast();
 
 #if !OLD_DATA
 	/// to do

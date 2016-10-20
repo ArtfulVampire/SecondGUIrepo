@@ -74,6 +74,8 @@ Cut::Cut() :
     ui->rewriteButton->setShortcut(tr("r"));
 	ui->forwardFrameButton->setShortcut(QKeySequence::Forward);
 	ui->backwardFrameButton->setShortcut(QKeySequence::Back);
+	ui->forwardFrameButton->setShortcut(tr("e"));
+	ui->backwardFrameButton->setShortcut(tr("q"));
 	QShortcut * undoZero = new QShortcut(QKeySequence(tr("Ctrl+z")), this);
 
 
@@ -190,6 +192,7 @@ void Cut::browse()
 													  path,
 													  filter);
 
+
     if(helpString.isEmpty())
     {
         QMessageBox::information((QWidget*)this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
@@ -197,16 +200,27 @@ void Cut::browse()
     }
     ui->lineEdit->setText(helpString);
 
+	setFileType(helpString);
 
-    setFileType(helpString);
+	/// set def::dir
+	if(def::dir->isRoot())
+	{
+		def::dir->cd(myLib::getDirPathLib(helpString));
+		if(this->myFileType == fileType::edf)
+		{
+			// do nothing
+		}
+		else if(this->myFileType == fileType::real)
+		{
+			def::dir->cdUp();
+		}
+	}
+
+
 //    def::fileMarkers = QStringList{"_BD", "_BW", "_CR", "_Fon", "_kh", "_sm", "_NO"};
 //    makeFullFileList(getDirPathLib(helpString), lst, {"." + getExt(helpString)});
 	lst = QDir(getDirPathLib(helpString)).entryList({"*." + getExt(helpString)});
 
-//    for(auto str : lst)
-//    {
-//        cout << str << endl;
-//    }
     currentNumber = lst.indexOf(getFileName(helpString));
 
     createImage(helpString);
@@ -453,7 +467,7 @@ void Cut::setFileType(const QString & dataFileName)
     {
         this->myFileType = fileType::edf;
     }
-    else
+	else if(dataFileName.endsWith(def::plainDataExtension, Qt::CaseInsensitive))
     {
         this->myFileType = fileType::real;
     }

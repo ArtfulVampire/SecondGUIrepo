@@ -129,8 +129,11 @@ Net::Net() :
     ui->rdaLambdaSpinBox->setValue(0.1);
 
 
-	myClassifierData = ClassifierData("/media/Files/Data/AAX/SpectraSmooth");
+//	cout << 11 << endl;
+	myClassifierData = ClassifierData();
+//	cout << 22 << endl;
 	myClassifier = new NBC();
+//	cout << 33 << endl;
 
 
 

@@ -1195,7 +1195,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
 
     if(eyesPath.isEmpty())
     {
-        eyesPath = this->dirPath + slash + "eyes.txt";
+		eyesPath = this->dirPath + slash + "eyes.txt";
     }
 
     matrix coefs;

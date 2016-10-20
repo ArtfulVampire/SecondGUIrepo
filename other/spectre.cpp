@@ -767,11 +767,10 @@ void Spectre::countSpectra()
     myTime.start();
 
     const QString inDirPath = ui->lineEdit_1->text();
-    QStringList lst;
-//    makeFullFileList(inDirPath, lst, {"_test"});
+	QStringList lst;
     makeFullFileList(inDirPath,
                      lst
-                     , {def::ExpName}
+//                     , {def::ExpName}
 //                     ,{def::plainDataExtension}
                      );
     const int numFiles = lst.length();

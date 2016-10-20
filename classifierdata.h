@@ -39,6 +39,10 @@ public:
 	void push_back(const std::valarray<double> & inDatum,
 				   uint inType,
 				   const QString & inFileName);
+	void addItem(const std::valarray<double> & inDatum,
+				 uint inType,
+				 const QString & inFileName); /// apply centering & variancing & push_back
+	void removeFirstItemOfType(uint type);
 	void pop_back();
 	void pop_front();
 //	void insert(const std::valarray<double> & inDatum, uint inType, uint index); // unused
@@ -47,9 +51,10 @@ public:
 	void resizeRows(int newRows);
 	void resizeCols(int newCols);
 
+
 	/// data modifiers
-	void center();		// by cols
-	void variance(double var = 10.);
+	void centering();		// by cols
+	void variancing(double var = 10.);
 	void z_transform(double var = 10.);
 
 	ClassifierData toPca(int numOfPca = 30, double var = 80.) const;
@@ -59,6 +64,7 @@ private:
 	uint numOfCl{};
 	std::valarray<double> averageDatum{};
 	std::valarray<double> sigmaVector{};
+	double variance{1.};
 	matrix dataMatrix{}; // biases for Net are imaginary
 	std::vector<uint> types{};
 	std::vector<std::vector<uint>> indices{}; // arrays of indices for each class

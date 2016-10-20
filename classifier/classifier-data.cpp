@@ -124,6 +124,24 @@ void ClassifierData::erase(const std::vector<uint> & indices)
 	}
 }
 
+void ClassifierData::removeFirstItemOfType(uint type)
+{
+	uint num = std::distance(std::begin(types),
+							 std::find(std::begin(types),
+									   std::end(types),
+									   type));
+	this->erase(num);
+}
+
+
+void ClassifierData::addItem(const std::valarray<double> & inDatum,
+							 uint inType,
+							 const QString & inFileName)
+{
+	std::valarray<double> newDatum = (inDatum - averageDatum) / (sigmaVector * variance);
+	this->push_back(newDatum, inType, inFileName);
+}
+
 void ClassifierData::push_back(const std::valarray<double> & inDatum,
 							   uint inType,
 							   const QString & inFileName)
@@ -173,7 +191,7 @@ void ClassifierData::resizeCols(int newCols)
 }
 
 
-void ClassifierData::center()
+void ClassifierData::centering()
 {
 	averageDatum = dataMatrix.averageRow();
 	for(uint i = 0; i < dataMatrix.rows(); ++i)
@@ -182,8 +200,9 @@ void ClassifierData::center()
 	}
 }
 
-void ClassifierData::variance(double var)
+void ClassifierData::variancing(double var)
 {
+	this->variance = var;
 	matrix tmp = dataMatrix;
 	tmp.transpose();
 
@@ -204,8 +223,8 @@ void ClassifierData::variance(double var)
 
 void ClassifierData::z_transform(double var)
 {
-	this->center();
-	this->variance(var);
+	this->centering();
+	this->variancing(var);
 }
 
 ClassifierData ClassifierData::toPca(int numOfPca, double var) const

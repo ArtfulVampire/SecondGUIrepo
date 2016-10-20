@@ -13,13 +13,14 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
     ui->realButton->setChecked(true);
 
-	setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
-	readData();
-	Net * ann = new Net();
-	ann->loadData("/media/Files/Data/AAX/SpectraSmooth");
-	ann->setClassifier(ClassifierType::ANN);
-	ann->autoClassification();
-	return;
+//	setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+//	readData();
+//	Net * ann = new Net();
+//	ann->loadData("/media/Files/Data/AAX/SpectraSmooth");
+//	ann->setClassifier(ClassifierType::ANN);
+//	ann->autoClassification();
+
+//	return;
 
 #if 0
     /// test new classifiers
@@ -79,17 +80,18 @@ void MainWindow::customFunc()
 
 
 
-#if 0
+//	return;
+#if 01
 /// successive
-    const QString path = "/media/Files/Data/Feedback/Success/";
+	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "GAS_train.edf");
     readData();
 
 //    const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
     const QStringList names {"GAS"};
 
-//    bool sliceAndCount = true;
-    bool sliceAndCount = false;
+//	bool sliceAndCount = true;
+	bool sliceAndCount = false;
 
     for(QString name : names)
     {
@@ -101,26 +103,27 @@ void MainWindow::customFunc()
         ui->windButton->setChecked(true); // sliceWindFromReal
 
         if(sliceAndCount)
-        {
-//            cleanDirs();
-            sliceAll();
+		{
+			sliceAll();
+			cleanDir(path + "Reals");
         }
 
 
-        {
-			/// initially reduce number of winds
+		{
 			QStringList windsList;
 			// delete first three winds from each realisation
 			windsList = QDir(path + "winds/fromreal").entryList({"*_train*.00",
                                                                      "*_train*.01",
                                                                      "*_train*.02"},
-                                                                    QDir::Files);
+																	QDir::Files);
+			/// delete first some winds from reals
 			for(const QString & name : windsList)
             {
 				QFile::remove(path + "winds/fromreal/" + name);
             }
 
-            // leave last 600 (some will fall out due to zeros)
+			/// magic constant
+			/// leave last 600 winds (some will fall out further due to zeros)
 			makeFullFileList(path + "winds/fromreal", windsList, {"_train"});
 			for(int i = 0; i < windsList.length() - 600; ++i) /// constant
             {
@@ -130,18 +133,8 @@ void MainWindow::customFunc()
 
         if(sliceAndCount)
         {
-            countSpectraSimple(1024, 8);
+//            countSpectraSimple(1024, 8);
         }
-
-        Net * net = new Net();
-        net->setCentering(true);
-        net->setVariancing(true);
-        net->loadData(def::dir->absolutePath()
-                      + slash + "SpectraSmooth"
-					  + slash + "winds",
-						{name + "_train"}); /// only for ANN set - myData.getData().cols()
-//        net->pca();
-
 
 
         setEdfFile(path + name + "_test" + ".edf");
@@ -153,26 +146,32 @@ void MainWindow::customFunc()
         if(sliceAndCount)
         {
             sliceAll();
+			cleanDir(path + "Reals");
             countSpectraSimple(1024, 8);
         }
 
         /// current best set
-//        suc::numGoodNewLimit = 6;
-//        suc::learnSetStay = 100;
-//        suc::decayRate = 0.01;
+		suc::numGoodNewLimit = 6;
+		suc::learnSetStay = 100;
+		suc::decayRate = 0.01;
 
-        /// should not change averageDatum and sigmaVector
-
-        net->setCentering(false);
-        net->setVariancing(false);
+		/// should not change averageDatum and sigmaVector
+		cout << 0 << endl;
+		Net * net = new Net();
+		cout << 1 << endl;
+//		net->setCentering(true); /// useless now
+//		net->setVariancing(true); /// useless now
         net->loadData(def::dir->absolutePath()
                       + slash + "SpectraSmooth"
 					  + slash + "winds",
-						{name + "_train"}); /// only for ANN set - myData.getData().cols()
+						{name + "_train"});
+		cout << 2 << endl;
 
         net->setClassifier(ClassifierType::ANN);
+		cout << 3 << endl;
         net->setSource("w");
         net->setMode("t"); // train-test
+		cout << 4 << endl;
 
         net->successiveProcessing();
 

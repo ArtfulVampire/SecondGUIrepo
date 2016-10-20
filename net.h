@@ -71,9 +71,9 @@ private:
     /// succesiive
     int numGoodNew;
     matrix pcaMat{};
-    void successiveLearning(const std::valarray<double> & newSpectre,
-                            const int newType,
-                            const QString & newFileName);
+	void successiveLearning(const std::valarray<double> & newSpectre,
+							const uint newType,
+							const QString & newFileName);
 
 
     /// data

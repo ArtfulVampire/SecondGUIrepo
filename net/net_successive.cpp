@@ -7,18 +7,17 @@ void Net::successiveProcessing()
 {
 	const std::vector<uint> & types = myClassifier->getClassifierData()->getTypes();
 	const std::valarray<double> & classCount = myClassifier->getClassifierData()->getClassCount();
-
 	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
-    cout << "successive: started" << endl;
 
     const QString trainMarker = "_train";
     const QString testMarker = "_test";
 
-    std::vector<uint> eraseIndices{};
+	cout << "successive: started" << endl;
+
     numGoodNew = 0;
 
     /// check for no test items
-    /// use ExpName
+	/// use ExpName
     QString helpString = def::dir->absolutePath()
                          + slash + "SpectraSmooth"
                          + slash + "winds"; /// "winds" or "PCA"
@@ -27,7 +26,8 @@ void Net::successiveProcessing()
     cout << "successive: data loaded" << endl;
 
 	/// reduce learning set to (NumOfClasses * suc::learnSetStay)
-    std::valarray<double> count = classCount;
+	std::valarray<double> count = classCount;
+	std::vector<uint> eraseIndices{};
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
         if(count[ types[i] ] > suc::learnSetStay)
@@ -36,10 +36,8 @@ void Net::successiveProcessing()
             count[ types[i] ] -= 1.;
         }
     }
-    eraseData(eraseIndices);
-    eraseIndices.clear();
-
-    cout << "successive: data cleaned" << endl;
+	eraseData(eraseIndices);
+	cout << "successive: data cleaned to right quantity" << endl;
 
     /// consts - set prelearn
     setErrCrit(0.05);
@@ -53,18 +51,12 @@ void Net::successiveProcessing()
 
     cout << "successive: initial learn done" << endl;
 
-//    helpString = def::dir->absolutePath()
-//                 + slash + "Help"
-//                 + slash + "ica"
-//                 + slash + def::ExpName.left(3) + "_train"
-//                 + "_pcaMat.txt";
-//    readMatrixFile(helpString, pcaMat);
-
     helpString = def::dir->absolutePath()
                  + slash + "SpectraSmooth"
                  + slash + "winds";
     QStringList leest = QDir(helpString).entryList(
     {def::ExpName.left(3) + "*" + testMarker + "*"}); /// special generality
+//	cout << leest.size() << endl;
 
     lineType tempArr;
     int type = -1;
@@ -75,11 +67,12 @@ void Net::successiveProcessing()
     int count2 = 0;
     for(const QString & fileNam : leest)
     {
+//		cout << fileNam << endl;
         readFileInLine(helpString + slash + fileNam,
                        tempArr);
         type = typeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
-//        ++count2; if(count2 == 1500) break;
+		++count2; if(count2 == 500) break;
     }
     cout << "successive: all done" << endl;
     myClassifier->averageClassification();
@@ -134,48 +127,37 @@ void Net::successivePreclean(const QString & spectraPath)
 
 /// on one incoming vector
 void Net::successiveLearning(const std::valarray<double> & newSpectre,
-                             const int newType,
+							 const uint newType,
                              const QString & newFileName)
 {
-//	const auto & dataMatrix = myClassifier->getClassifierData()->getData();
-//    /// consider loaded wts
-//    /// dataMatrix is learning matrix
+	myClassifierData.addItem(newSpectre, newType, newFileName);
 
-//    lineType newData = (newSpectre - averageDatum) / (sigmaVector * loadDataNorm);
+	/// apply pca
+//    newData = newData * pcaMat;
 
-//    /// apply pca
-////    newData = newData * pcaMat;
+	const std::pair<int, double> outType = myClassifier->classifyDatumLast(); // take the last
+	/// adding into confusionMatrix
+	myClassifier->confMatInc(newType, outType.first);
 
+	static std::vector<int> passed(3, 0);
 
-//    pushBackDatum(newData, newType, newFileName);
+	if((outType.first == newType && outType.second < suc::errorThreshold)
+	   || passed[newType] < suc::learnSetStay /// add first learnSetStay windows unconditionally
+	   )
+	{
+		/// delete older of the same type
+		myClassifierData.removeFirstItemOfType(newType);
+		++numGoodNew;
+	}
+	else
+	{
+		myClassifierData.pop_back();
+	}
+	++passed[newType];
 
-//    const std::pair<int, double> outType = myClassifier->classifyDatum(dataMatrix.rows() - 1); // take the last
-//    /// adding into confusionMatrix
-//    myClassifier->confMatInc(newType, outType.first);
-
-//    static std::vector<int> passed(3, 0);
-
-//    if((outType.first == newType && outType.second < suc::errorThreshold)
-//       || passed[newType] < suc::learnSetStay
-//       )
-//    {
-//        /// if accurate classification
-//        const int num = std::find(types.begin(),
-//                                  types.end(),
-//                                  newType)
-//                        - types.begin();
-//        eraseDatum(num);
-//        ++numGoodNew;
-//    }
-//    else
-//    {
-//        popBackDatum();
-//    }
-//    ++passed[newType];
-
-//    if(numGoodNew == suc::numGoodNewLimit)
-//    {
-//        myClassifier->successiveRelearn();
-//        numGoodNew = 0;
-//    }
+	if(numGoodNew == suc::numGoodNewLimit)
+	{
+		myClassifier->successiveRelearn();
+		numGoodNew = 0;
+	}
 }

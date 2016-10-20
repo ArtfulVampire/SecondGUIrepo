@@ -57,6 +57,7 @@ void MainWindow::rereferenceData(const QString newRef,
     int groundChan = -1; //A1-N
     int earsChan1 = -1; //A1-A2
     int earsChan2 = -1; //A2-A1
+	cout << def::ns << endl;
     for(int i = 0; i < def::ns; ++i)
     {
         if(label[i].contains("A1-N"))

@@ -39,6 +39,10 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 		QFile::remove(filesPath + myLib::slash + myData->getFileNames()[vecNum]);
     }
 }
+std::pair<uint, double> Classifier::classifyDatumLast()
+{
+	return this->classifyDatum(this->myData->getData().rows() - 1);
+}
 
 void Classifier::printResult(const QString & fileName, uint predType, uint vecNum)
 {
@@ -51,7 +55,6 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
     QString pew;
 
 	if(predType == myData->getTypes()[vecNum])
-
     {
         pew = "";
     }

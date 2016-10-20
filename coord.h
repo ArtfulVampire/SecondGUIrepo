@@ -94,8 +94,6 @@ const std::vector<QString> lbl_all {"Fp1", "Fp2",
 								  "Cp3", "Cpz", "Cp4", "Tp8", "Po7", "Po8", "Oz",
 								  "A1", "A2"
 								 };
-
-
 }
 
 
