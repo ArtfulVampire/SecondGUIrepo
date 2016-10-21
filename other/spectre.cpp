@@ -770,7 +770,7 @@ void Spectre::countSpectra()
 	QStringList lst;
     makeFullFileList(inDirPath,
                      lst
-//                     , {def::ExpName}
+					 , {def::ExpName.left(3)}
 //                     ,{def::plainDataExtension}
                      );
     const int numFiles = lst.length();

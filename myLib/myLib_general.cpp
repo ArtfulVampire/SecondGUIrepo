@@ -405,6 +405,7 @@ void makeFileLists(const QString & path,
     QString helpString;
     for(const QString & fileMark : def::fileMarkers)
     {
+//		cout << fileMark << endl;
         nameFilters.clear();
         leest.clear();
         leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
@@ -426,6 +427,7 @@ void makeFileLists(const QString & path,
 
             }
         }
+//		cout << nameFilters.toStdList() << endl;
         lst.push_back(localDir.entryList(nameFilters,
                                          QDir::Files,
                                          QDir::Name)); /// Name ~ order

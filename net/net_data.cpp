@@ -169,7 +169,9 @@ void Net::loadData(const QString & spectraPath,
 {
 #if !OLD_DATA
 	/// new
+//	std::cout << "spectraPath = " << spectraPath.toStdString() << std::endl;
 	myClassifierData = ClassifierData(spectraPath, filters);
+//	std::cout << "subset size = " << myClassifierData.getData().rows() << std::endl;
 	return;
 #else
 

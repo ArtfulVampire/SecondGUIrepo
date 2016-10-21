@@ -33,14 +33,14 @@ void Net::successiveProcessing()
 
     lineType tempArr;
     int type = -1;
-	int count = 0;
+//	int count = 0;
     for(const QString & fileNam : leest)
     {
         readFileInLine(helpString + slash + fileNam,
                        tempArr);
         type = typeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
-		++count; if(count == 500) break;
+//		++count; if(count == 500) break;
     }
     myClassifier->averageClassification();
 }

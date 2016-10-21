@@ -43,9 +43,10 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 {
 	std::vector<QStringList> leest;
 	myLib::makeFileLists(inPath, leest, filters);
+	//////////////////////////////////////////////////////////
+//	std::cout << leest[0].size() << std::endl;
 
 	this->numOfCl = leest.size();
-//	std::cout << numOfCl << std::endl;
 
 	this->dataMatrix = matrix();
 	this->classCount.resize(this->numOfCl);

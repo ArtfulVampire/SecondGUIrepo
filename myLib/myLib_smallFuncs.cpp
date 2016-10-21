@@ -584,6 +584,7 @@ template ostream & operator << (std::ostream & os, const std::vector<uint> & toO
 template ostream & operator << (std::ostream & os, const std::vector<double> & toOut);
 template ostream & operator << (std::ostream & os, const std::list<int> & toOut);
 template ostream & operator << (std::ostream & os, const std::list<double> & toOut);
+template ostream & operator << (std::ostream & os, const std::list<QString> & toOut);
 
 // w/o allocators
 template ostream & operator << (std::ostream & os, const std::valarray<double> & toOut);

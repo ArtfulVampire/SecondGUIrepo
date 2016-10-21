@@ -85,8 +85,8 @@ void MainWindow::customFunc()
     setEdfFile(path + "GAS_train.edf");
     readData();
 
-//    const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"})
-    const QStringList names {"GAS"};
+	const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"};
+//    const QStringList names {"GAS"};
 
 //	bool sliceAndCount = true;
 	bool sliceAndCount = false;
@@ -123,7 +123,8 @@ void MainWindow::customFunc()
 
 			/// magic constant
 			/// leave last 600 winds (some will fall out further due to zeros)
-			makeFullFileList(path + "winds/fromreal", windsList, {"_train"});
+			makeFullFileList(path + "winds/fromreal",
+							 windsList, {def::ExpName.left(3) + "_train"});
 			for(int i = 0; i < windsList.length() - 600; ++i) /// constant
             {
 				QFile::remove(path + "winds/fromreal/" + windsList[i]);
@@ -140,25 +141,28 @@ void MainWindow::customFunc()
 			cleanDir(path + "Reals");
             countSpectraSimple(1024, 8);
         }
+		else
+		{
+			readData();
+		}
 
         /// current best set
-		suc::numGoodNewLimit = 6;
-		suc::learnSetStay = 100;
-		suc::decayRate = 0.01;
+		suc::numGoodNewLimit = 3;
+		suc::learnSetStay = 40;
+		suc::decayRate = 0.00;
 
 		/// should not change averageDatum and sigmaVector
 		Net * net = new Net();
 		net->loadData(def::windsSpectraDir(), {name + "_train"});
 
-        net->setClassifier(ClassifierType::ANN);
+		net->setClassifier(ClassifierType::ANN);
         net->setSource("w");
         net->setMode("t"); // train-test
 
+		cout << name << endl;
         net->successiveProcessing();
 
-
-        delete net;
-		exit(7);
+		delete net;
     }
     exit(0);
 #endif
