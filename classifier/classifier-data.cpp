@@ -133,6 +133,21 @@ void ClassifierData::removeFirstItemOfType(uint type)
 	this->erase(num);
 }
 
+void ClassifierData::reduceSize(uint oneClass)
+{
+	std::vector<uint> eraseIndices{};
+	std::valarray<double> count = classCount;
+	for(uint i = 0; i < dataMatrix.rows(); ++i)
+	{
+		if(count[ types[i] ] > oneClass)
+		{
+			eraseIndices.push_back(i);
+			count[ types[i] ] -= 1.;
+		}
+	}
+	this->erase(eraseIndices);
+}
+
 
 void ClassifierData::addItem(const std::valarray<double> & inDatum,
 							 uint inType,

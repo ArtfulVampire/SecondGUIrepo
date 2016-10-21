@@ -4,18 +4,6 @@ using namespace std;
 using namespace myLib;
 using namespace smallLib;
 
-
-
-void Net::setVariancing(bool in)
-{
-    ui->varianceCheckBox->setChecked(in);
-}
-
-void Net::setCentering(bool in)
-{
-    ui->centerCheckBox->setChecked(in);
-}
-
 void Net::setAutoProcessingFlag(bool a)
 {
     autoFlag = a;
@@ -347,13 +335,11 @@ void Net::setClassifier(QAbstractButton * but, bool i)
 void Net::setSourceSlot(QAbstractButton * but)
 {
     if(but->text().contains("Bayes", Qt::CaseInsensitive))
-    {
-        ui->reduceCoeffSpinBox->setValue(0.05);
+	{
         Source = source::bayes;
     }
     else
-    {
-        ui->reduceCoeffSpinBox->setValue(7.);
+	{
         ui->foldSpinBox->setValue(2);
         if(but->text().contains("wind", Qt::CaseInsensitive))
         {
@@ -412,8 +398,6 @@ void Net::aaDefaultSettings()
 //        ui->windsRadioButton->setChecked(true); /// winds
     ui->pcaRadioButton->setChecked(true); /// PCA
 
-
-    ui->reduceCoeffSpinBox->setValue(7.); ///  rdc coeff
     ui->foldSpinBox->setValue(2); /////// fold
     ui->numOfPairsBox->setValue(1); //// pairs
     ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW

@@ -8,7 +8,7 @@ Classifier::Classifier()
 	myData = new ClassifierData();
 	confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
 	resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
-	workDir = def::dir->absolutePath() + myLib::slash + "PA";
+	workDir = def::dir->absolutePath() + myLib::slash + "Help" + myLib::slash + "PA";
 }
 
 void Classifier::setClassifierData(ClassifierData & in)
@@ -41,7 +41,9 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 }
 std::pair<uint, double> Classifier::classifyDatumLast()
 {
-	return this->classifyDatum(this->myData->getData().rows() - 1);
+	auto a = this->classifyDatum(this->myData->getData().rows() - 1);
+	this->confusionMatrix[myData->getTypes().back()][a.first] += 1.;
+	return a;
 }
 
 void Classifier::printResult(const QString & fileName, uint predType, uint vecNum)

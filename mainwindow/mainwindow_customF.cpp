@@ -29,9 +29,7 @@ void MainWindow::customFunc()
 
 	QString paath = "/media/Files/Data/Feedback/Success";
 
-//    for(QString guy : {"AAU", "BEA", "CAA", "GAS", "SUA"})
-//    for(QString guy : {"SUA"})
-//    for(QString guy : {"BEA", "CAA", "GAS", "SUA"})
+//    for(QString guy : {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"})
 	for(QString guy : {"GAS"})
     {
 		setEdfFile(paath + slash  + guy + "_train.edf");
@@ -87,35 +85,36 @@ void MainWindow::customFunc()
     setEdfFile(path + "GAS_train.edf");
     readData();
 
-//    const QStringList names {"AAU", "BEA", "CAA", "SUA", "GAS"};
+//    const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"})
     const QStringList names {"GAS"};
 
 //	bool sliceAndCount = true;
 	bool sliceAndCount = false;
 
+	ui->timeShiftSpinBox->setValue(2.);
+	ui->windowLengthSpinBox->setValue(4.);
+	ui->windButton->setChecked(true); // sliceWindFromReal
+
     for(QString name : names)
     {
         /// successive
-        setEdfFile(path + name + "_train.edf");
-        readData();
-        ui->timeShiftSpinBox->setValue(2.);
-        ui->windowLengthSpinBox->setValue(4.);
-        ui->windButton->setChecked(true); // sliceWindFromReal
+		setEdfFile(path + name + "_train.edf");
 
+		cleanDir(path + "Reals");
+
+		ui->timeShiftSpinBox->setValue(2.);
         if(sliceAndCount)
 		{
 			sliceAll();
 			cleanDir(path + "Reals");
-        }
 
 
-		{
 			QStringList windsList;
 			// delete first three winds from each realisation
 			windsList = QDir(path + "winds/fromreal").entryList({"*_train*.00",
-                                                                     "*_train*.01",
-                                                                     "*_train*.02"},
-																	QDir::Files);
+																 "*_train*.01",
+																 "*_train*.02"},
+																QDir::Files);
 			/// delete first some winds from reals
 			for(const QString & name : windsList)
             {
@@ -129,18 +128,10 @@ void MainWindow::customFunc()
             {
 				QFile::remove(path + "winds/fromreal/" + windsList[i]);
             }
-        }
+		}
 
-        if(sliceAndCount)
-        {
-//            countSpectraSimple(1024, 8);
-        }
-
-
-        setEdfFile(path + name + "_test" + ".edf");
-        ui->windowLengthSpinBox->setValue(4.);
-        ui->timeShiftSpinBox->setValue(2.); /// really should be 0.5
-        ui->windButton->setChecked(true);
+		setEdfFile(path + name + "_test" + ".edf");
+		ui->timeShiftSpinBox->setValue(1.); /// really should be 0.5
 		/// DON'T CLEAR, TRAIN winds TAKEN BY SUCCESSIVE
 
         if(sliceAndCount)
@@ -156,26 +147,18 @@ void MainWindow::customFunc()
 		suc::decayRate = 0.01;
 
 		/// should not change averageDatum and sigmaVector
-		cout << 0 << endl;
 		Net * net = new Net();
-		cout << 1 << endl;
-//		net->setCentering(true); /// useless now
-//		net->setVariancing(true); /// useless now
-        net->loadData(def::dir->absolutePath()
-                      + slash + "SpectraSmooth"
-					  + slash + "winds",
-						{name + "_train"});
-		cout << 2 << endl;
+		net->loadData(def::windsSpectraDir(), {name + "_train"});
 
         net->setClassifier(ClassifierType::ANN);
-		cout << 3 << endl;
         net->setSource("w");
         net->setMode("t"); // train-test
-		cout << 4 << endl;
 
         net->successiveProcessing();
 
+
         delete net;
+		exit(7);
     }
     exit(0);
 #endif

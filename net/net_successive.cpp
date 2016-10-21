@@ -5,39 +5,15 @@ using namespace myLib;
 
 void Net::successiveProcessing()
 {
-	const std::vector<uint> & types = myClassifier->getClassifierData()->getTypes();
-	const std::valarray<double> & classCount = myClassifier->getClassifierData()->getClassCount();
-	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
-
     const QString trainMarker = "_train";
-    const QString testMarker = "_test";
-
-	cout << "successive: started" << endl;
-
+	const QString testMarker = "_test";
     numGoodNew = 0;
+	const QString helpString = def::windsSpectraDir();
 
-    /// check for no test items
-	/// use ExpName
-    QString helpString = def::dir->absolutePath()
-                         + slash + "SpectraSmooth"
-                         + slash + "winds"; /// "winds" or "PCA"
-    loadData(helpString, {def::ExpName.left(3) + "*" + trainMarker + "*"});
-
-    cout << "successive: data loaded" << endl;
+	this->loadData(helpString, {def::ExpName.left(3) + "*" + trainMarker + "*"});
 
 	/// reduce learning set to (NumOfClasses * suc::learnSetStay)
-	std::valarray<double> count = classCount;
-	std::vector<uint> eraseIndices{};
-    for(uint i = 0; i < dataMatrix.rows(); ++i)
-    {
-        if(count[ types[i] ] > suc::learnSetStay)
-        {
-            eraseIndices.push_back(i);
-            count[ types[i] ] -= 1.;
-        }
-    }
-	eraseData(eraseIndices);
-	cout << "successive: data cleaned to right quantity" << endl;
+	myClassifierData.reduceSize(suc::learnSetStay);
 
     /// consts - set prelearn
     setErrCrit(0.05);
@@ -49,32 +25,23 @@ void Net::successiveProcessing()
     setErrCrit(0.01);
     setLrate(0.005);
 
-    cout << "successive: initial learn done" << endl;
 
-    helpString = def::dir->absolutePath()
-                 + slash + "SpectraSmooth"
-                 + slash + "winds";
-    QStringList leest = QDir(helpString).entryList(
+	QStringList leest = QDir(helpString).entryList(
     {def::ExpName.left(3) + "*" + testMarker + "*"}); /// special generality
-//	cout << leest.size() << endl;
+
+	this->passed.resize(this->myClassifierData.getNumOfCl());
 
     lineType tempArr;
     int type = -1;
-
-    /// here to remember old averageDatum and sigmaVector
-
-    /// temp for test
-    int count2 = 0;
+	int count = 0;
     for(const QString & fileNam : leest)
     {
-//		cout << fileNam << endl;
         readFileInLine(helpString + slash + fileNam,
                        tempArr);
         type = typeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
-		++count2; if(count2 == 500) break;
+		++count; if(count == 500) break;
     }
-    cout << "successive: all done" << endl;
     myClassifier->averageClassification();
 }
 
@@ -87,7 +54,7 @@ void Net::successivePreclean(const QString & spectraPath)
 
     for(const QString & str : leest)
     {
-        if(str.contains(QRegExp(".0[0-1]$"))) /// change to 0-x for x first winds to delete
+		if(str.contains(QRegExp("\\.0[0-1]$"))) /// change to 0-x for x first winds to delete
         {
             QFile::remove(spectraPath + slash + str);
         }
@@ -102,7 +69,7 @@ void Net::successivePreclean(const QString & spectraPath)
     {
         auto it = leest2[j].begin();
         for(int i = 0;
-            i < leest2[j].size() - suc::learnSetStay * 1.3; /// consts generality
+			i < leest2[j].size() - suc::learnSetStay * 1.3; /// magic const generality
             ++i, ++it)
         {
             QFile::remove(spectraPath + slash + (*it));
@@ -131,21 +98,15 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
                              const QString & newFileName)
 {
 	myClassifierData.addItem(newSpectre, newType, newFileName);
+	// take the last and increment confusion matrix
+	const std::pair<int, double> outType = myClassifier->classifyDatumLast();
 
-	/// apply pca
-//    newData = newData * pcaMat;
-
-	const std::pair<int, double> outType = myClassifier->classifyDatumLast(); // take the last
-	/// adding into confusionMatrix
-	myClassifier->confMatInc(newType, outType.first);
-
-	static std::vector<int> passed(3, 0);
 
 	if((outType.first == newType && outType.second < suc::errorThreshold)
 	   || passed[newType] < suc::learnSetStay /// add first learnSetStay windows unconditionally
 	   )
 	{
-		/// delete older of the same type
+		/// delete older row of the same type
 		myClassifierData.removeFirstItemOfType(newType);
 		++numGoodNew;
 	}

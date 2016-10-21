@@ -50,6 +50,7 @@ public:
 	void resize(int rows, int cols, double val);
 	void resizeRows(int newRows);
 	void resizeCols(int newCols);
+	void reduceSize(uint oneClass);
 
 
 	/// data modifiers

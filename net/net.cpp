@@ -84,12 +84,6 @@ Net::Net() :
     ui->foldSpinBox->setMinimum(1);
     ui->foldSpinBox->setValue(4); /////// fold
 
-    ui->reduceCoeffSpinBox->setMaximum(100);
-    ui->reduceCoeffSpinBox->setDecimals(3);
-    ui->reduceCoeffSpinBox->setMinimum(0.001);
-    ui->reduceCoeffSpinBox->setSingleStep(0.5);
-    ui->reduceCoeffSpinBox->setValue(4.5); ///  rdc coeff
-
     ui->pcaNumberSpinBox->setMinimum(2);
     ui->pcaNumberSpinBox->setMaximum(500);
     ui->pcaNumberSpinBox->setValue(100);
@@ -110,9 +104,6 @@ Net::Net() :
     ui->momentumDoubleSpinBox->setValue(0.5);
 
     ui->dimensionalityLineEdit->setText("");
-
-    ui->centerCheckBox->setChecked(true);
-    ui->varianceCheckBox->setChecked(true);
 
     ui->knnNumOfNearSpinBox->setValue(10);
     ui->wordNumOfClustSpinBox->setValue(10);
@@ -266,8 +257,7 @@ void Net::readWtsSlot()
                                                       def::dir->absolutePath(),
                                                       tr("wts files (*.wts)"));
     if(helpString.isEmpty())
-    {
-//        QMessageBox::information((QWidget * )this, tr("Warning"), tr("No wts-file was chosen"), QMessageBox::Ok);
+	{
         return;
     }
     ANN * myANN = dynamic_cast<ANN *>(myClassifier);
@@ -293,7 +283,6 @@ void Net::loadDataSlot()
 	myClassifierData = ClassifierData(helpString, QStringList());
 #else
 	loadData(helpString, {}
-//             , ui->reduceCoeffSpinBox->value()
              );
 #endif
 }

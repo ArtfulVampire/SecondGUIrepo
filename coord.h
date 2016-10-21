@@ -16,13 +16,14 @@ const double scale = 250./1600.;
 
 /// + 2 EOG
 const int numOfChan = 21; // for drawTemplate
-
+// 1/32 + n * 6/32
 const std::vector<double> x {0.21875, 0.59375,
                              0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
                              0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
                              0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
                              0.21875, 0.59375,
                              0.03125, 0.78125};
+// 6/32 * n
 const std::vector<double> y {0.1875, 0.1875,
                              0.375, 0.375, 0.375, 0.375, 0.375,
                              0.5625, 0.5625, 0.5625, 0.5625, 0.5625,
@@ -123,11 +124,17 @@ namespace def
     const QString spectraDataExtension = "psd"; // power spectral density
     const QStringList edfFilters = {"*.edf", "*.EDF"};
 
+	extern QDir * dir;
+	inline QString realsDir() {return def::dir->absolutePath() + "/Reals";}
+	inline QString windsDir() {return def::dir->absolutePath() + "/winds";}
+	inline QString windsFromRealsDir() {return def::dir->absolutePath() + "/winds/fromreal";}
+	inline QString realsSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth";}
+	inline QString windsSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth/winds";}
+	inline QString pcaSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth/PCA";}
 
     extern bool ntFlag;
 
-    extern QString ExpName;
-    extern QDir * dir;
+	extern QString ExpName;
     extern int ns;
 
 	extern double freq;

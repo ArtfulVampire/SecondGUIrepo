@@ -485,7 +485,7 @@ void makePaStatic(const QString & spectraDir,
 
     QString helpString;
     const QString paPath = def::dir->absolutePath()
-                          + slash + "PA";
+						   + myLib::slash + "Help"+ myLib::slash + "PA";
     std::vector<QStringList> lst;
     makeFileLists(spectraDir, lst);
 

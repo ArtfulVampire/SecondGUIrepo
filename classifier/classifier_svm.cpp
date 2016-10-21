@@ -2,7 +2,6 @@
 
 SVM::SVM() : Classifier()
 {
-    workDir = def::dir->absolutePath() + myLib::slash + "PA";
     kernelNum = 0;
     myType = ClassifierType::SVM;
     typeString = "SVM";

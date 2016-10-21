@@ -70,6 +70,7 @@ private:
 
     /// succesiive
     int numGoodNew;
+	std::valarray<int> passed{};
     matrix pcaMat{};
 	void successiveLearning(const std::valarray<double> & newSpectre,
 							const uint newType,
@@ -123,9 +124,7 @@ public:
     void setClassifier(const QString &);
     void setClassifier(ClassifierType);
 
-    /// data
-    void setVariancing(bool);
-    void setCentering(bool);
+	/// data
     void loadData(const QString & spectraPath = def::dir->absolutePath()
                                                 + myLib::slash + "SpectraSmooth",
                   const QStringList & filters = {},

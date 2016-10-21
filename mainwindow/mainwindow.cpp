@@ -450,46 +450,48 @@ void MainWindow::setEdfFile(QString const &filePath)
     }
 
 
-    def::dir->mkdir("Help");
-    def::dir->mkdir("Help/maps");
-    def::dir->mkdir("Help/psa");
-    def::dir->mkdir("Help/ica");
-    def::dir->mkdir("Help/wm");
-    def::dir->mkdir("amod");
-    def::dir->mkdir("auxEdfs");
-    def::dir->mkdir("PA");
-
-    def::dir->mkdir("Signals");
-    def::dir->mkdir("Signals/before");
-    def::dir->mkdir("Signals/after");
-    def::dir->mkdir("Signals/other");
-	def::dir->mkdir("Signals/winds");
-	def::dir->mkdir("Signals/winds/after");
-	def::dir->mkdir("Signals/winds/before");
-	def::dir->mkdir("Signals/winds/other");
-    def::dir->mkdir("SignalsCut");
-    def::dir->mkdir("SignalsCut/before");
-    def::dir->mkdir("SignalsCut/after");
-    def::dir->mkdir("SpectraImg");
-    def::dir->mkdir("SpectraSmooth");
-	def::dir->mkdir("SpectraSmooth/winds");
-    def::dir->mkdir("SpectraSmooth/Bayes");
-    def::dir->mkdir("SpectraSmooth/PCA");
-    def::dir->mkdir("SpectraSmooth/Clean");
-	def::dir->mkdir("winds");
-	def::dir->mkdir("winds/fromreal");
 	def::dir->mkdir("Reals");
 	def::dir->mkdir("Reals/BC");
-    def::dir->mkdir("cut");
-    def::dir->mkdir("visualisation");
-    def::dir->mkdir("visualisation/video");
-    def::dir->mkdir("visualisation/wavelets");
+	def::dir->mkdir("winds");
+	def::dir->mkdir("winds/fromreal");
+	def::dir->mkdir("SpectraSmooth");
+	def::dir->mkdir("SpectraSmooth/winds");
 
-    for(int i = 0; i < 19; ++i)
-    {
-        helpString = "visualisation/wavelets/";
-        def::dir->mkdir(helpString.append(QString::number(i)));
-    }
+	def::dir->mkdir("Signals");
+	def::dir->mkdir("Signals/winds");
+	def::dir->mkdir("SpectraImg");
+
+	def::dir->mkdir("Help");
+	def::dir->mkdir("Help/maps");
+	def::dir->mkdir("Help/psa");
+	def::dir->mkdir("Help/ica");
+	def::dir->mkdir("Help/wm");
+	def::dir->mkdir("Help/PA");
+//	def::dir->mkdir("amod");
+//	def::dir->mkdir("auxEdfs");
+
+//	def::dir->mkdir("Signals/before");
+//	def::dir->mkdir("Signals/after");
+//	def::dir->mkdir("Signals/other");
+//	def::dir->mkdir("Signals/winds/after");
+//	def::dir->mkdir("Signals/winds/before");
+//	def::dir->mkdir("Signals/winds/other");
+//	def::dir->mkdir("SignalsCut");
+//	def::dir->mkdir("SignalsCut/before");
+//	def::dir->mkdir("SignalsCut/after");
+//	def::dir->mkdir("SpectraSmooth/Bayes");
+//	def::dir->mkdir("SpectraSmooth/PCA");
+//	def::dir->mkdir("SpectraSmooth/Clean");
+//	def::dir->mkdir("cut");
+
+//	def::dir->mkdir("visualisation");
+//	def::dir->mkdir("visualisation/video");
+//	def::dir->mkdir("visualisation/wavelets");
+//	for(int i = 0; i < 19; ++i)
+//	{
+//		helpString = "visualisation/wavelets/";
+//		def::dir->mkdir(helpString.append(QString::number(i)));
+//	}
 
 
     helpString = "EDF file read successfull";
