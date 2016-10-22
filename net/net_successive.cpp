@@ -38,7 +38,7 @@ void Net::successiveProcessing()
     {
         readFileInLine(helpString + slash + fileNam,
                        tempArr);
-        type = typeOfFileName(fileNam);
+		type = getTypeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
 //		++count; if(count == 500) break;
     }

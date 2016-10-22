@@ -218,7 +218,7 @@ QString getPicPath(const QString & dataPath,
 
 
 
-int typeOfFileName(const QString & fileName)
+int getTypeOfFileName(const QString & fileName)
 {
     QStringList leest;
     int res = 0;
@@ -344,7 +344,7 @@ void makePaFile(const QString & spectraDir,
 
     for(const QString & fileName: fileNames)
     {
-        type = myLib::typeOfFileName(fileName);
+		type = myLib::getTypeOfFileName(fileName);
         helpString = spectraDir
                      + slash + fileName;
         readMatrixFile(helpString, data4);
@@ -397,7 +397,7 @@ void makePaFile(const QString & spectraDir,
 }
 
 void makeFileLists(const QString & path,
-                   vector<QStringList> & lst,
+				   std::vector<QStringList> & lst,
                    const QStringList & auxFilters)
 {
     QDir localDir(path);
@@ -442,7 +442,7 @@ void makeFullFileList(const QString & path,
     {
         lst = QDir(path).entryList({"*.edf", "*.EDF", QString("*." + def::plainDataExtension)},
                                    QDir::Files,
-                                   QDir::Name); /// Name ~ order
+								   QDir::Name); /// Name ~ order
     }
     else
     {
@@ -475,7 +475,7 @@ void makeFullFileList(const QString & path,
         }
         lst = localDir.entryList(nameFilters,
                                  QDir::Files,
-                                 QDir::Name); /// Name ~ order
+								 QDir::Name); /// Name ~ order
     }
 }
 

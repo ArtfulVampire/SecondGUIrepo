@@ -29,7 +29,7 @@ protected:
 
 #if OLD_DATA
 	/// dataClass
-    const matrix * dataMatrix = nullptr; // biases for Net are imaginary
+	const matrix * dataMatrix = nullptr; // biases for ANN are imaginary
     const std::vector<uint> * types = nullptr;
     const std::vector<QString> * fileNames = nullptr;
     const std::valarray<double> * classCount = nullptr; // really int but...
@@ -77,10 +77,6 @@ public:
 
     /// crutch
     void confMatInc(int trueClass, int predClass){confusionMatrix[trueClass][predClass] += 1.;}
-
-
-
-
 
 public:
     Classifier();

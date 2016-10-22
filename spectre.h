@@ -12,6 +12,8 @@
 
 #include "coord.h"
 
+#define SPECTRA_EXP_NAME_SPECIFICITY 1
+
 
 namespace Ui {
     class Spectre;

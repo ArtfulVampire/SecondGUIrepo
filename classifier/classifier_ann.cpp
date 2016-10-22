@@ -353,7 +353,7 @@ void ANN::learn(std::vector<uint> & indices)
         {
             currentError /= indices.size();
         }
-    }
+	}
     /// cout epoch
 //    std::cout << "epoch = " << epoch << "\t"
 //              << "error = " << smallLib::doubleRound(currentError, 4) << "\t"
@@ -451,13 +451,15 @@ const ANN::weightType & ANN::getWeight()
 
 void ANN::writeWeight(const QString & wtsPath)
 {
-    static int wtsCounter = 0;
+//    static int wtsCounter = 0;
     std::ofstream weightsFile;
     if(wtsPath.isEmpty())
     {
-        weightsFile.open((def::dir->absolutePath() + myLib::slash +
-                         def::ExpName + "_" +
-                         QString::number(wtsCounter++) + ".wts").toStdString());
+		weightsFile.open((def::dir->absolutePath() + myLib::slash
+						  + "Help" + myLib::slash + "wts" + myLib::slash
+						  + def::ExpName
+//						  + "_" + QString::number(wtsCounter++)
+						  + ".wts").toStdString());
     }
     else
     {
@@ -524,8 +526,9 @@ void ANN::drawWeight(QString wtsPath,
 
     if(!QFile::exists(wtsPath))
     {
-        wtsPath = def::dir->absolutePath()
-                  + slash + def::ExpName + ".wts";
+		wtsPath = def::dir->absolutePath() + myLib::slash
+				  + "Help" + myLib::slash + "wts" + myLib::slash
+				  + def::ExpName + ".wts";
         if(!QFile::exists(wtsPath))
         {
             std::cout << "ANN::drawWeight: cant find wtsFile" << std::endl;

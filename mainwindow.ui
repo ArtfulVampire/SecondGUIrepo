@@ -235,16 +235,16 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QRadioButton" name="realButton">
+        <widget class="QRadioButton" name="realsButton">
          <property name="text">
-          <string>Realisations</string>
+          <string>Reals</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="windButton">
+        <widget class="QRadioButton" name="windsButton">
          <property name="text">
-          <string>windows</string>
+          <string>winds</string>
          </property>
         </widget>
        </item>
@@ -258,7 +258,7 @@
        <item>
         <widget class="QPushButton" name="windFromRealButton">
          <property name="text">
-          <string>wind from real</string>
+          <string>winds from real</string>
          </property>
         </widget>
        </item>
@@ -441,7 +441,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>293</x>
@@ -863,23 +863,6 @@
      </item>
     </layout>
    </widget>
-   <zorder>browseButton</zorder>
-   <zorder>filePathLineEdit</zorder>
-   <zorder>setNsLine</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>makeTestDataPushButton</zorder>
-   <zorder>numComponentsSpinBox</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>label_22</zorder>
-   <zorder>fileMarkersLineEdit</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>reduceChannelsNewEDFPushButton</zorder>
-   <zorder>reduceChannesPushButton</zorder>
-   <zorder>cleanDirsCheckAllButton</zorder>
-   <zorder>cleanDirsUncheckAllButton</zorder>
-   <zorder>cleanDirsButton</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

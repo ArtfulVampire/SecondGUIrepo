@@ -279,7 +279,25 @@ void Net::trainTestClassification(const QString & trainTemplate,
 
 void Net::customF()
 {
+
 #if 01
+	/// get wts pics from classifier
+
+	ANN * myANN = dynamic_cast<ANN *>(myClassifier);
+	myANN->learnAll();
+	myANN->writeWeight();
+	myANN->drawWeight();
+	return;
+#endif
+
+#if 0
+	/// clean CLassifierData to 3 * N train windows
+	uint N = 80;
+	myClassifierData.clean(N, "_train");
+	return;
+#endif
+
+#if 0
     /// search optimal params
     QString outFileName;
 //    for(QString cls : {"DIST", "WARD", "KNN", "NBC"}) /// recheck

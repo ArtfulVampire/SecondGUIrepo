@@ -11,7 +11,7 @@ using namespace smallLib;
 void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
-    ui->realButton->setChecked(true);
+	ui->realsButton->setChecked(true);
 
 //	setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
 //	readData();
@@ -22,64 +22,78 @@ void MainWindow::customFunc()
 
 //	return;
 
-#if 0
-    /// test new classifiers
-//    QString paath = "/media/Files/Data/AAX";
-//    setEdfFile(paath + "/AAX_final.edf");
+#if 01
+	/// test new classifiers
+	QString paath = "/media/Files/Data/Feedback/SuccessClass/";
 
-	QString paath = "/media/Files/Data/Feedback/Success";
+	for(QString guy : {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"})
+//	for(QString guy : {"GAS"})
+	{
+		for(QString suff :{"_train", "_test"})
+		{
+			setEdfFile(paath + guy + suff + ".edf");
 
-//    for(QString guy : {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"})
-	for(QString guy : {"GAS"})
-    {
-		setEdfFile(paath + slash  + guy + "_train.edf");
+			Net * net = new Net();
+			net->setMode("N");
+			net->loadData(paath + "/SpectraSmooth", {def::ExpName});
 
+//			net->customF(); /// clean to 3*N train windows
+//			auto a = net->getClassifierData().getFileNames();
+//			for(auto peww : a)
+//			{
+//				cout << peww << endl;
+//			}
+//			exit(0);
 
-//        cleanDir(paath + "/Reals");
-//        cleanDir(paath + "/SpectraSmooth");
-//        cleanDir(paath + "/SpectraSmooth/PCA");
-//        sliceAll();
-//        continue;
+			net->setClassifier(ClassifierType::ANN);
+			net->customF();
+//			net->autoClassification();
+			delete net;
+//			exit(0);
+//			break; /// only suff = "_train"
+		}
 
-//        countSpectraSimple(4096);
-//        exit(0);
-
-
-		Net * net = new Net();
-		net->setMode("N");
-
-		net->setCentering(false);
-		net->setVariancing(false);
-//		net->show();
-//        net->loadData(paath + "/SpectraSmooth", {def::ExpName});
-//        net->pca();
-//        delete net;
-//        continue;
-//        exit(0);
-
-
-
-//        net->loadData(paath + "/SpectraSmooth/PCA", {def::ExpName});
-//        net->loadData(paath + "/SpectraSmooth", {def::ExpName});
+//		continue;
 
 		/// loading UCI dataset - add enum
-		net->loadDataUCI("cmi");
-		net->setClassifier(ClassifierType::RDA);
-		net->setRdaLambdaSlot(0.8);
-		net->setRdaShrinkSlot(0.8);
-		net->autoClassification();
+//		net->loadDataUCI("cmi");
+//		net->setClassifier(ClassifierType::RDA);
+//		net->setRdaLambdaSlot(0.8);
+//		net->setRdaShrinkSlot(0.8);
+//		net->autoClassification();
 
-//		net->customF();
-        delete net;
     }
     exit(0);
 #endif
 
+#if 0
+	/// successive auxiliary
+	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
 
+	const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"};
+
+
+	ui->realsButton->setChecked(true); // sliceWindFromReal
+
+	for(QString name : names)
+	{
+		def::drawNorm = -1;
+		setEdfFile(path + name + "_train.edf");
+		sliceAll();
+		countSpectraSimple(4096, 15);
+
+		setEdfFile(path + name + "_test.edf");
+		sliceAll();
+		countSpectraSimple(4096, 15);
+//		exit(0);
+	}
+	exit(0);
+
+#endif
 
 
 //	return;
-#if 01
+#if 0
 /// successive
 	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
     setEdfFile(path + "GAS_train.edf");
@@ -93,7 +107,7 @@ void MainWindow::customFunc()
 
 	ui->timeShiftSpinBox->setValue(2.);
 	ui->windowLengthSpinBox->setValue(4.);
-	ui->windButton->setChecked(true); // sliceWindFromReal
+	ui->windsButton->setChecked(true); // sliceWindFromReal
 
     for(QString name : names)
     {
@@ -123,9 +137,10 @@ void MainWindow::customFunc()
 
 			/// magic constant
 			/// leave last 600 winds (some will fall out further due to zeros)
+			/// REMAKE - leave 120 each type
 			makeFullFileList(path + "winds/fromreal",
 							 windsList, {def::ExpName.left(3) + "_train"});
-			for(int i = 0; i < windsList.length() - 600; ++i) /// constant
+			for(int i = 0; i < windsList.length() - 800; ++i) /// constant
             {
 				QFile::remove(path + "winds/fromreal/" + windsList[i]);
             }

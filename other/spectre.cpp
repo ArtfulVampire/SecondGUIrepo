@@ -384,9 +384,9 @@ void Spectre::psaSlot()
     for(int i = 0; i < def::numOfClasses(); ++i)
     {
         helpString = (psaPath
-                                              + slash + def::ExpName
-                                              + "_class_" + QString::number(i + 1)
-                                              + ".psa");
+					  + slash + def::ExpName
+					  + "_class_" + QString::number(i + 1)
+					  + ".psa");
         readFileInLine(helpString, tempVec);
 
         drawData.push_back(tempVec);
@@ -424,7 +424,7 @@ void Spectre::psaSlot()
             }
         }
 
-        def::drawNorm = -1;
+//        def::drawNorm = -1;
         def::drawNorm = drawArrays(helpString,
                                    drawData,
                                    false,
@@ -459,7 +459,7 @@ void Spectre::compare()
     myTime.start();
 
     QString helpString;
-    vector<QStringList> leest;
+	std::vector<QStringList> leest;
 
     lineType tempVec(def::spLength() * def::nsWOM());
     lineType meanVec(0., def::spLength() * def::nsWOM());
@@ -471,6 +471,10 @@ void Spectre::compare()
 
     makeFileLists(filesPath,
                   leest
+			  #if SPECTRA_EXP_NAME_SPECIFICITY
+				  ,{def::ExpName}
+			  #endif
+
 //                  ,{def::spectraDataExtension}
                   );
 
@@ -494,21 +498,19 @@ void Spectre::compare()
         meanVec /= NumOfPatterns;
 
         // psa name
-        helpString = (savePath
-                                              + slash + def::ExpName
-                                              + "_class_" + QString::number(i + 1)
-                                              + ".psa");
+		helpString = (savePath
+					  + slash + def::ExpName
+					  + "_class_" + QString::number(i + 1)
+					  + ".psa");
         /// maybe make as spectraFile?
         writeFileInLine(helpString, meanVec);
 #if 0
-        // draw average for one type
-        helpString = (def::dir->absolutePath()
-                                              + slash + "Help"
-                                              + slash + def::ExpName
-                                              + "_class_" + QString::number(i + 1)
-                                              + ".jpg");
-
-        //        cout << helpString << endl;
+		/// draw average for one type
+		helpString = (def::dir->absolutePath()
+					  + slash + "Help"
+					  + slash + def::ExpName
+					  + "_class_" + QString::number(i + 1)
+					  + ".jpg");
         drawTemplate(helpString);
         drawArray(helpString, meanVec);
 #endif
@@ -623,13 +625,6 @@ void Spectre::writeSpectra(const double leftFreq,
     const int left = fftLimit(leftFreq); /// = def::left()
     const int right = fftLimit(rightFreq) + 1; /// = def::right()
 
-//    cout << leftFreq << '\t' << rightFreq << endl;
-//    cout << left << '\t' << right << endl;
-//    for(int i = 0; i < def::nsWOM(); ++i)
-//    {
-//        cout << rangeLimits[i].first << '\t' << rangeLimits[i].second << endl;
-//    }
-
     QStringList lst = ui->dropChannelsLineEdit->text().split(
                           QRegExp("[,;\\s]"), QString::SkipEmptyParts);
     cout << "writeSpectra: num of dropped channels = " << lst.length() << endl;
@@ -638,11 +633,7 @@ void Spectre::writeSpectra(const double leftFreq,
         rangeLimits[str.toInt() - 1] = {0, 0}; // to fill with zeros
     }
 
-//    cout << "left = " << left << endl;
-//    cout << "right = " << right << endl;
-//    cout << "nsWOM = " << def::nsWOM() << endl;
-
-    for(quint32 i = 0; i < fileNames.size(); ++i)
+	for(uint i = 0; i < fileNames.size(); ++i)
     {
         helpString = outDirPath + slash + fileNames[i];
         helpString.remove("." + def::plainDataExtension);
@@ -665,11 +656,7 @@ void Spectre::writeSpectra(const double leftFreq,
         {
             /// which channels to write ???
             for(int j = 0; j < def::nsWOM(); ++j) //
-            {
-
-//                cout << "RL[left] = " << rangeLimits[j].first << endl;
-//                cout << "RL[right] = " << rangeLimits[j].second << endl;
-
+			{
                 for(int k = left; k < left + rangeLimits[j].first; ++k)
                 {
                     outStream << "0.000" << '\t';
@@ -698,8 +685,6 @@ void Spectre::countSpectraSlot()
     defaultState();
     countSpectra();
     writeSpectra();
-
-
 #if 0
     /// if clean
     cleanSpectra(); // using mann-whitney
@@ -769,8 +754,11 @@ void Spectre::countSpectra()
     const QString inDirPath = ui->lineEdit_1->text();
 	QStringList lst;
     makeFullFileList(inDirPath,
-                     lst
-					 , {def::ExpName.left(3)}
+					 lst
+				 #if SPECTRA_EXP_NAME_SPECIFICITY
+					 ,{def::ExpName}
+				 #endif
+//					 , {def::ExpName.left(3)}
 //                     ,{def::plainDataExtension}
                      );
     const int numFiles = lst.length();
@@ -786,7 +774,7 @@ void Spectre::countSpectra()
     }
 
     fileNames.resize(numFiles);
-    std::copy(std::begin(lst), std::end(lst), fileNames.begin());
+	std::copy(std::begin(lst), std::end(lst), std::begin(fileNames));
 
     int cnt = 0;
     std::vector<uint> exIndices;
@@ -804,9 +792,7 @@ void Spectre::countSpectra()
                       dataIn,
                       NumOfSlices);
 
-
-
-        if(ui->brainRateRadioButton->isChecked() || ui->spectraRadioButton->isChecked())
+		if(ui->spectraRadioButton->isChecked())
         {
             if(countOneSpectre(dataIn, dataFFT[cnt]))
             {
@@ -816,53 +802,10 @@ void Spectre::countSpectra()
             {
                 exIndices.push_back(progressCounter);
             }
+		}
 
-
-#if 0
-            else if(ui->brainRateRadioButton->isChecked())
-            {
-                // write brainRate
-                for(int j = 0; j < def::nsWOM(); ++j)
-                {
-                    double sum1 = 0.;
-                    double sum2 = 0.;
-                    for(int k = def::left(); k < def::right(); ++k)
-                    {
-                        sum1 += dataFFT[i][j][k];
-                        sum2 += dataFFT[i][j][k] * (k * def::spStep());
-                    }
-                    sum2 /= sum1; /// sum2 is the result
-                }
-            }
-#endif
-        }
-        else if(ui->hilbertsVarRadioButton->isChecked())
-        {
-            QMessageBox::critical(this,
-                                  tr("error"),
-                                  tr("look at code, fix split zeros"),
-                                  QMessageBox::Ok);
-            return;
-        }
-        else if(ui->bayesRadioButton->isChecked())
-        {
-            //clean from zeros
-            QMessageBox::critical(this,
-                                  tr("error"),
-                                  tr("look at code, fix split zeros"),
-                                  QMessageBox::Ok);
-            return;
-        }
-        else if(ui->d2RadioButton->isChecked())
-        {
-//            splitZerosEdges(dataIn, def::ns, def::fftLength, &NumOfSlices);
-//            for(int i = 0; i < def::ns; ++i)
-//            {
-//                outStream << fractalDimension(dataIn[i]) << '\n';
-//            }
-        }
-        ui->progressBar->setValue(++progressCounter * 100. / numFiles);
-        qApp->processEvents();
+		ui->progressBar->setValue(++progressCounter * 100. / numFiles);
+		qApp->processEvents();
     }
 
     eraseItems(fileNames, exIndices);

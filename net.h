@@ -123,12 +123,13 @@ public:
     void setSource(const QString & in = "reals");
     void setClassifier(const QString &);
     void setClassifier(ClassifierType);
+	const Classifier & getClassifier() const {return *myClassifier;}
+	const ClassifierData & getClassifierData() const {return myClassifierData;}
 
 	/// data
     void loadData(const QString & spectraPath = def::dir->absolutePath()
                                                 + myLib::slash + "SpectraSmooth",
-                  const QStringList & filters = {},
-                  double rdcCoeff = 1.);
+				  const QStringList & filters = {});
     void loadData(const matrix & inMat,
                   const std::vector<uint> & inTypes);
     void loadDataUCI(const QString & setName);

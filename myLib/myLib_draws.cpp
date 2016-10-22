@@ -1062,7 +1062,7 @@ double drawArrays(const QString & templPath,
                   const bool weightsFlag,
                   const spectraGraphsNormalization normType,
                   double norm,
-                  const vector<QColor> & colors,
+				  const std::vector<QColor> & colors,
                   const double scaling,
                   const int lineWidth)
 {

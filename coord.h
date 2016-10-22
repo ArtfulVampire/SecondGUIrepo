@@ -107,7 +107,7 @@ extern double errorThreshold;
 }
 
 
-
+/// all channels the same or each channel has self coefficient
 enum class spectraGraphsNormalization {all, each};
 
 namespace def
@@ -131,6 +131,7 @@ namespace def
 	inline QString realsSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth";}
 	inline QString windsSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth/winds";}
 	inline QString pcaSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth/PCA";}
+	inline QString paDir() {return def::dir->absolutePath() + "/Help/PA";}
 
     extern bool ntFlag;
 

@@ -164,8 +164,7 @@ void Net::loadData(const matrix & inMat,
 
 // like readPaFile from library.cpp
 void Net::loadData(const QString & spectraPath,
-				   const QStringList & filters,
-				   double rdcCoeff)
+				   const QStringList & filters)
 {
 #if !OLD_DATA
 	/// new

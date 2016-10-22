@@ -342,18 +342,15 @@ void Net::setSourceSlot(QAbstractButton * but)
 	{
         ui->foldSpinBox->setValue(2);
         if(but->text().contains("wind", Qt::CaseInsensitive))
-        {
-//            loadDataNorm = 5.;
+		{
             Source = source::winds;
         }
         else if(but->text().contains("real", Qt::CaseInsensitive))
-        {
-//            loadDataNorm = 10.;
+		{
             Source = source::reals;
         }
         else if(but->text().contains("pca", Qt::CaseInsensitive))
-        {
-//            loadDataNorm = 5.;
+		{
             Source = source::pca;
         }
     }

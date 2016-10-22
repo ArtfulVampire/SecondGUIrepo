@@ -51,6 +51,7 @@ public:
 	void resizeRows(int newRows);
 	void resizeCols(int newCols);
 	void reduceSize(uint oneClass);
+	void clean(uint size, const QString & filter = QString());
 
 
 	/// data modifiers

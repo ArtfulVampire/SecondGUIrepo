@@ -41,12 +41,18 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 
 ClassifierData::ClassifierData(const QString & inPath, const QStringList & filters)
 {
+#if 0
 	std::vector<QStringList> leest;
 	myLib::makeFileLists(inPath, leest, filters);
-	//////////////////////////////////////////////////////////
-//	std::cout << leest[0].size() << std::endl;
-
 	this->numOfCl = leest.size();
+#else
+
+	QStringList lst;
+	myLib::makeFullFileList(inPath, lst, filters);
+	this->numOfCl = def::fileMarkers.length();
+#endif
+
+
 
 	this->dataMatrix = matrix();
 	this->classCount.resize(this->numOfCl);
@@ -56,6 +62,9 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 	this->indices.resize(numOfCl);
 
 	std::valarray<double> tempArr;
+
+#if 0
+	/// std::vector<QStringList>
 	for(uint i = 0; i < leest.size(); ++i)
 	{
 		classCount[i] = 0.;
@@ -66,6 +75,18 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 			this->push_back(tempArr, i, fileName);
 		}
 	}
+#else
+	classCount = 0;
+	for(const QString & fileName : lst)
+	{
+		myLib::readFileInLine(inPath + myLib::slash + fileName,
+							  tempArr);
+		this->push_back(tempArr,
+						myLib::getTypeOfFileName(fileName),
+						fileName);
+	}
+#endif
+
 	this->apriori = classCount;
 
 	/// paskdnfajfkqnwjklerqw
@@ -146,6 +167,36 @@ void ClassifierData::reduceSize(uint oneClass)
 			count[ types[i] ] -= 1.;
 		}
 	}
+	this->erase(eraseIndices);
+}
+
+void ClassifierData::clean(uint size, const QString & filter)
+{
+	std::vector<uint> eraseIndices{};
+	std::vector<uint> tmpClCo(this->getNumOfCl());
+	std::vector<uint> tmpTypes;
+	std::vector<uint> inds;
+
+	for(uint i = 0; i < fileNames.size(); ++i)
+	{
+		if(fileNames[i].contains(filter))
+		{
+			++tmpClCo[types[i]];
+			inds.push_back(i);
+			tmpTypes.push_back(types[i]);
+		}
+	}
+
+
+	for(uint i = 0; i < tmpTypes.size(); ++i)
+	{
+		if(tmpClCo[tmpTypes[i]] > size)
+		{
+			eraseIndices.push_back(inds[i]);
+			--tmpClCo[tmpTypes[i]];
+		}
+	}
+
 	this->erase(eraseIndices);
 }
 
@@ -239,6 +290,7 @@ void ClassifierData::variancing(double var)
 
 void ClassifierData::z_transform(double var)
 {
+//	this->dataMatrix /= 30; return;
 	this->centering();
 	this->variancing(var);
 }

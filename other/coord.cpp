@@ -19,7 +19,7 @@ int fftLength = 4096;
 //int fftLength = 1024;
 QString cfgFileName = "tmp.net";
 
-// for pewpew
+
 double drawNorm = -1.;
 spectraGraphsNormalization drawNormTyp = spectraGraphsNormalization::all;
 

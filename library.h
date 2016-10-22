@@ -166,7 +166,7 @@ char * strToChar(const QString & input);
 FILE * fopen(QString filePath, const char *__modes);
 char * QStrToCharArr(const QString & input, const int & len = -1);
 
-int typeOfFileName(const QString & fileName);
+int getTypeOfFileName(const QString & fileName);
 QString getFileMarker(const QString & fileName);
 
 

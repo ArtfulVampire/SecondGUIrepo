@@ -28,8 +28,8 @@ MainWindow::MainWindow() :
     group1->addButton(ui->enRadio);
     group1->addButton(ui->ntRadio);
     group2 = new QButtonGroup();
-    group2->addButton(ui->windButton);
-    group2->addButton(ui->realButton);
+    group2->addButton(ui->windsButton);
+    group2->addButton(ui->realsButton);
     group2->addButton(ui->justSliceButton);
 
     ui->enRadio->setChecked(true);
@@ -195,7 +195,7 @@ MainWindow::MainWindow() :
     ui->windowLengthSpinBox->setMinimum(1);
     ui->windowLengthSpinBox->setSingleStep(0.1);
     ui->windowLengthSpinBox->setValue(4);
-    ui->realButton->setChecked(true);
+    ui->realsButton->setChecked(true);
 
     if(def::OssadtchiFlag)
     {
@@ -467,6 +467,7 @@ void MainWindow::setEdfFile(QString const &filePath)
 	def::dir->mkdir("Help/ica");
 	def::dir->mkdir("Help/wm");
 	def::dir->mkdir("Help/PA");
+	def::dir->mkdir("Help/wts");
 //	def::dir->mkdir("amod");
 //	def::dir->mkdir("auxEdfs");
 
@@ -573,7 +574,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
             }
             else if(ui->enRadio->isChecked())
             {
-                if(ui->windButton->isChecked()) //bad work
+                if(ui->windsButton->isChecked()) //bad work
                 {
                     sliceOneByOneNew();
                     sliceWindFromReal();
@@ -606,7 +607,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 
                     }
                 }
-                else if(ui->realButton->isChecked())
+                else if(ui->realsButton->isChecked())
                 {
                     if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) //generality
                     {
