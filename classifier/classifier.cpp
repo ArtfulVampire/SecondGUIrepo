@@ -163,13 +163,20 @@ void Classifier::successiveRelearn()
 
 void Classifier::printParams()
 {
-	std::cout << typeString.toStdString() << std::endl;
+//	std::cout << typeString.toStdString() << std::endl;
 }
 
 
 avType Classifier::averageClassification()
 {
     std::ofstream res;
+	/// for successive
+	resultsPath = def::dir->absolutePath()
+				  + myLib::slash + "results"
+				  + "_" + QString::number(suc::numGoodNewLimit)
+				  + "_" + QString::number(suc::learnSetStay)
+				  + "_" + QString::number(suc::decayRate)
+				  + ".txt";
     res.open(resultsPath.toStdString(), std::ios_base::app);
 
 	for(uint i = 0; i < myData->getNumOfCl(); ++i)
@@ -208,17 +215,18 @@ avType Classifier::averageClassification()
 
     res << smallLib::doubleRound(averageAccuracy, 2) << '\t';
     res << smallLib::doubleRound(kappa, 3) << '\t';
-    myLib::operator <<(res, def::ExpName);
+	res << def::ExpName.toStdString();
     res << std::endl;
-
     res.close();
+
 
     /// cout
 #if 1
     confusionMatrix.print();
     std::cout << "average accuracy = "
-              << smallLib::doubleRound(averageAccuracy, 2) << std::endl;
-    std::cout << "kappa = " << kappa << std::endl << std::endl;
+			  << smallLib::doubleRound(averageAccuracy, 2) << '\t';
+	std::cout << "kappa = " << kappa << '\t';
+	std::cout << std::endl << std::endl;
 #endif
 
     confusionMatrix.fill(0.);

@@ -55,6 +55,13 @@ avType Net::autoClassification()
     QTime myTime;
     myTime.start();
 
+	if(myClassifier->getType() == ClassifierType::ANN)
+	{
+		/// adjust learnRate
+		ANN * myANN = dynamic_cast<ANN *>(myClassifier);
+		myANN->adjustLearnRate();
+	}
+
     switch(Mode)
     {
     case myMode::k_fold:
@@ -123,12 +130,6 @@ void Net::autoClassificationSimple()
 void Net::leaveOneOutClassification()
 {
 	const auto & dataMatrix = myClassifier->getClassifierData()->getData();
-    if(myClassifier->getType() == ClassifierType::ANN)
-    {
-        /// adjust learnRate
-        ANN * myANN = dynamic_cast<ANN *>(myClassifier);
-        myANN->adjustLearnRate();
-    }
 
 	std::vector<uint> learnIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
@@ -280,7 +281,7 @@ void Net::trainTestClassification(const QString & trainTemplate,
 void Net::customF()
 {
 
-#if 01
+#if 0
 	/// get wts pics from classifier
 
 	ANN * myANN = dynamic_cast<ANN *>(myClassifier);
@@ -290,7 +291,7 @@ void Net::customF()
 	return;
 #endif
 
-#if 0
+#if 01
 	/// clean CLassifierData to 3 * N train windows
 	uint N = 80;
 	myClassifierData.clean(N, "_train");

@@ -20,9 +20,43 @@ void MainWindow::customFunc()
 //	ann->setClassifier(ClassifierType::ANN);
 //	ann->autoClassification();
 
+	const double leftFreqLim = 2.;
+	const double rightFreqLim = 20.;
+	const double stepFreq = 2.;
+
+	ofstream of;
+	of.open("/media/Files/Data/str.txt");
+int co = 0;
+	for(double freqCounter = leftFreqLim;
+	freqCounter <= rightFreqLim;
+	freqCounter += stepFreq)
+	{
+		QString fr;
+		if(freqCounter != rightFreqLim)
+		{
+			fr = "_" + QString::number(freqCounter)
+				 + "-" + QString::number(freqCounter + 2);
+		}
+		else
+		{
+			fr = "_all";
+		}
+		for(int i = 0; i < 19; ++i)
+		{
+			QString ch = "_" + coords::lbl19[i];
+			for(QString t : {"_old", "_new"})
+			{
+				of << "hilb" << t << fr << ch << "\t";
+				++co;
+			}
+		}
+	}
+	cout << co << endl;
+	of.close();
+	exit(0);
 //	return;
 
-#if 01
+#if 0
 	/// test new classifiers
 	QString paath = "/media/Files/Data/Feedback/SuccessClass/";
 
@@ -32,24 +66,51 @@ void MainWindow::customFunc()
 		for(QString suff :{"_train", "_test"})
 		{
 			setEdfFile(paath + guy + suff + ".edf");
+//			readData();
 
 			Net * net = new Net();
-			net->setMode("N");
-			net->loadData(paath + "/SpectraSmooth", {def::ExpName});
-
-//			net->customF(); /// clean to 3*N train windows
-//			auto a = net->getClassifierData().getFileNames();
-//			for(auto peww : a)
-//			{
-//				cout << peww << endl;
-//			}
-//			exit(0);
+			net->loadData(paath + "/SpectraSmooth/winds", {def::ExpName});
 
 			net->setClassifier(ClassifierType::ANN);
-			net->customF();
-//			net->autoClassification();
+			net->setMode("k");
+			net->setSource("w");
+			net->setNumOfPairs(30);
+			net->setFold(4);
+
+//			net->customF(); /// clean to 3*N train windows
+
+
+			cout << guy + suff << endl;
+			net->autoClassification();
+
+
+
+//			std::vector<std::vector<double>> allPew =  {{3., 40.},
+//														{5., 60.},
+//														{6., 70.},
+//														{8., 90.}
+//													   };
+//			for(auto pewww : allPew)
+//			{
+//				for(double i3 : {0.00, 0.01})
+//				{
+//					suc::numGoodNewLimit = pewww[0];
+//					suc::learnSetStay = pewww[1];
+//					suc::decayRate = i3;
+//					cout << suc::numGoodNewLimit << '\t';
+//					cout << suc::learnSetStay << '\t';
+//					cout << suc::decayRate << endl;
+//					net->successiveProcessing();
+//				}
+
+//			}
+//			ofstream res;
+//			res.open((def::dir->absolutePath() + slash + "results.txt").toStdString(),
+//					 ios_base::app);
+//			res << std::endl;
+//			res.close();
+
 			delete net;
-//			exit(0);
 //			break; /// only suff = "_train"
 		}
 

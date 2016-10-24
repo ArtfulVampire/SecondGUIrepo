@@ -12,6 +12,7 @@ void Net::successiveProcessing()
 
 	this->loadData(helpString, {def::ExpName.left(3) + "*" + trainMarker + "*"});
 
+//	cout << 1 << endl;
 	/// reduce learning set to (NumOfClasses * suc::learnSetStay)
 	myClassifierData.reduceSize(suc::learnSetStay);
 
@@ -19,8 +20,10 @@ void Net::successiveProcessing()
     setErrCrit(0.05);
     setLrate(0.002);
 
+//	cout << 1 << endl;
     myClassifier->learnAll(); /// get initial weights on train set
 
+//	cout << 1 << endl;
     /// consts - set postlearn
     setErrCrit(0.01);
     setLrate(0.005);
@@ -31,6 +34,7 @@ void Net::successiveProcessing()
 
 	this->passed.resize(this->myClassifierData.getNumOfCl());
 
+//	cout << 1 << endl;
     lineType tempArr;
     int type = -1;
 //	int count = 0;
@@ -100,7 +104,6 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
 	myClassifierData.addItem(newSpectre, newType, newFileName);
 	// take the last and increment confusion matrix
 	const std::pair<int, double> outType = myClassifier->classifyDatumLast();
-
 
 	if((outType.first == newType && outType.second < suc::errorThreshold)
 	   || passed[newType] < suc::learnSetStay /// add first learnSetStay windows unconditionally

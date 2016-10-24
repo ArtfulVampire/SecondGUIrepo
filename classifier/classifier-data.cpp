@@ -205,7 +205,9 @@ void ClassifierData::addItem(const std::valarray<double> & inDatum,
 							 uint inType,
 							 const QString & inFileName)
 {
-	std::valarray<double> newDatum = (inDatum - averageDatum) / (sigmaVector * variance);
+//	std::valarray<double> newDatum = (inDatum - averageDatum) / (sigmaVector * variance);
+	std::valarray<double> newDatum = inDatum / 20.;
+//	newDatum /= 20.; /// same as in z_transform();
 	this->push_back(newDatum, inType, inFileName);
 }
 
@@ -290,7 +292,7 @@ void ClassifierData::variancing(double var)
 
 void ClassifierData::z_transform(double var)
 {
-//	this->dataMatrix /= 30; return;
+//	this->dataMatrix /= 20; return;
 	this->centering();
 	this->variancing(var);
 }

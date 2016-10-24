@@ -260,7 +260,7 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     if(!i) return;
     if(myClassifier != nullptr)
     {
-        cout << "delete classifier" << endl;
+//        cout << "delete classifier" << endl;
         delete myClassifier;
     }
 
