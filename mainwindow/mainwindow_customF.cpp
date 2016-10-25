@@ -20,7 +20,51 @@ void MainWindow::customFunc()
 //	ann->setClassifier(ClassifierType::ANN);
 //	ann->autoClassification();
 
+	//	return;
 
+	const QString pth = "/media/Files/Data/Feedback/SuccessClass/Help/Succ";
+	for(QString suf :{"_z", "_noz"})
+	{
+		QDir dr(pth + suf);
+		auto fls = dr.entryList(QDir::Files);
+		for(QString nam : fls)
+		{
+			std::vector<std::vector<double>> values(5);
+			double tmp;
+			std::string tmpStr;
+			QString filePath = pth + suf + slash + nam;
+			ifstream inStr;
+			inStr.open(filePath.toStdString());
+			while(inStr.good())
+			{
+				for(int i = 0; i < 5; ++i)
+				{
+					inStr >> tmp;
+					values[i].push_back(tmp);
+				}
+				inStr >> tmpStr;
+			}
+			inStr.close();
+
+			cout << values[0].size() << endl;
+
+			ofstream outStr;
+			outStr.open(filePath.toStdString(), std::ios_base::app);
+			for(int i = 0; i < 5; ++i)
+			{
+				outStr << std::accumulate(std::begin(values[i]),
+										  std::end(values[i]) - 1, 0.) / (values[i].size() - 1) << '\t';
+			}
+			outStr.close();
+
+			exit(0);
+
+		}
+
+	}
+
+#if 0
+	/// conference drawing
 	std::vector<std::valarray<double>> myArr(4);
 	std::vector<QString> colors {"red", "green", "blue", "orange"};
 	for(int i = 0; i < myArr.size(); ++i)
@@ -71,8 +115,9 @@ void MainWindow::customFunc()
 	myLib::drawOneArray(al2, "/media/Files/Data/gr_al2.jpg",
 						"black");
 
+
 	exit(0);
-//	return;
+#endif
 
 #if 0
 	/// test new classifiers
