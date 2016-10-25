@@ -601,7 +601,7 @@ void makePaStatic(const QString & spectraDir,
 
 
 template <typename T>
-double distance(const vector<T> &vec1, const vector<T> &vec2, const int &dim)
+double distance(const std::vector<T> &vec1, const std::vector<T> &vec2, const int &dim)
 {
     double dist = 0.;
     //Euclid
@@ -656,7 +656,7 @@ void readPaFile(const QString & paFile,
         return;
     }
 
-    vector<double> tempClass(def::numOfClasses());
+    std::vector<double> tempClass(def::numOfClasses());
     double tempVal;
 
     classCount = std::valarray<double>(def::numOfClasses());
@@ -665,7 +665,7 @@ void readPaFile(const QString & paFile,
     dataMatrix = matrix(); /// not dataMatrix.clear
 
     std::string tempStr;
-    vector<double> tempVec(NetLength + 2); // bias and class
+    std::vector<double> tempVec(NetLength + 2); // bias and class
 
     while(!paSrc.eof())
     {

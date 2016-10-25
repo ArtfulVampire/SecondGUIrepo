@@ -147,7 +147,7 @@ QString rerefChannel(const QString & initialName,
                      const QString & currentNum = "1",
                      const QString & earsChan = "20",
                      const QString & groundChan = "21",
-                     const std::vector<QString> & sign = {"-", "+"});
+					 const std::vector<QString> & sign = {"-", "+"});
 
 
 std::istream & operator>> (std::istream &is, QString & in);
@@ -210,7 +210,7 @@ QColor grayScale(int range, int j);
 
 const std::vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
 void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
-                          const std::vector<int> eegChannels = leest19,
+						  const std::vector<int> eegChannels = leest19,
 						  const QString & windsDir = def::dir->absolutePath()
 													   + slash + "winds",
                           const QString & outFilePath = def::dir->absolutePath()
@@ -231,7 +231,7 @@ void makeFullFileList(const QString & path,
                       const QStringList & auxFilters = QStringList());
 
 void makeFileLists(const QString & path,
-                   std::vector<QStringList> & lst,
+				   std::vector<QStringList> & lst,
                    const QStringList & auxFilters = QStringList());
 
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
@@ -239,8 +239,8 @@ void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
 void readPaFile(const QString & paFile,
                 matrix & dataMatrix,
-                std::vector<int> types,
-                std::vector<QString> & FileName,
+				std::vector<int> types,
+				std::vector<QString> & FileName,
                 std::valarray<double> & classCount);
 
 void makePaFile(const QString & spectraDir,
@@ -276,7 +276,7 @@ void readIITPfile(const QString & filePath,
 
 void readUCIdataSet(const QString & setName,
                     matrix & outData,
-                    std::vector<uint> &outTypes);
+					std::vector<uint> &outTypes);
 
 
 template <typename signalType>
@@ -321,15 +321,23 @@ QPixmap drawEeg(const matrix & dataD,
                 int blueChan = -1,
                 int redChan = -1);
 
-void drawOneArray(const lineType & array, QString outPath);
+void drawOneSignal(const lineType & array, QString outPath);
+
 QPixmap drawOneSignal(const std::valarray<double> & signal,
 					  int picHeight = 600,
 					  QString outPath = QString());
 
+QPixmap drawOneTemplate(const int chanNum = -1,
+						const bool channelsFlag = true);
 void drawTemplate(const QString & outPath,
                   bool channelsFlag = true,
                   int width = 1600,
                   int height = 1600);
+
+QPixmap drawOneArray(const std::valarray<double> & arr,
+					 const QString & outPath,
+					 const QString & color = "black",
+					 const int & lineWidth = 2);
 
 void drawArray(const QString & templPath,
                const matrix & inData,
@@ -337,6 +345,7 @@ void drawArray(const QString & templPath,
                const QString & color = "black",
                const double & scaling = 1.,
                const int & lineWidth = 3);
+
 void drawArray(const QString & templPath,
                const lineType & inData,
 //               const spectraGraphsNormalization normType = 0, ////// TODO
@@ -350,19 +359,21 @@ double drawArrays(const QString & templPath,
                 const bool weightsFlag = false,
                 const spectraGraphsNormalization normType = spectraGraphsNormalization::all,
                 double norm = 0.,
-                const std::vector<QColor> & colors = def::colours,
+				const std::vector<QColor> & colors = def::colours,
                 const double scaling = 1.,
                 const int lineWidth = 3);
 
 
 void drawArraysInLine(const QString & picPath,
                       const matrix & inMatrix,
-                      const std::vector<QColor> & colors = def::colours,
+					  const std::vector<QColor> & colors = def::colours,
                       const double scaling = 1.,
                       const int lineWidth = 3);
 
 void drawCutOneChannel(const QString & inSpectraPath,
                        const int numChan);
+
+
 
 
 
@@ -381,12 +392,12 @@ void MannWhitneyFromMakepa(const QString & spectraDir);
 
 
 void drawMannWitney(const QString & templPath,
-                    const trivector<int> & inMW,
-                    const std::vector<QColor> & inColors = def::colours);
+					const trivector<int> & inMW,
+					const std::vector<QColor> & inColors = def::colours);
 
 void drawMannWitneyInLine(const QString & picPath,
-                          const trivector<int> & inMW,
-                          const std::vector<QColor> & inColors = def::colours);
+						  const trivector<int> & inMW,
+						  const std::vector<QColor> & inColors = def::colours);
 
 
 
@@ -590,7 +601,7 @@ double correlation(const Typ &arr1,
 
 template <typename T>
 double distance(const std::vector<T> & vec1,
-                const std::vector<T> & vec2,
+				const std::vector<T> & vec2,
                 const int &dim);
 
 double distance(double const x1, double const y1,
@@ -692,7 +703,7 @@ inline bool matiCountBit(double const & marker, int num)
 // do sammon class
 //sammon
 void drawSammon(const coordType & plainCoords,
-                const std::vector<int> & types,
+				const std::vector<int> & types,
                 const QString & picPath);
 
 void drawShepard(const mat & distOld,
@@ -700,7 +711,7 @@ void drawShepard(const mat & distOld,
                  const QString & picPath);
 
 void sammonProj(const mat & distOld,
-                const std::vector<int> & types,
+				const std::vector<int> & types,
                 const QString & picPath);
 double errorSammon(const mat & distOld,
                    const mat & distNew);
@@ -718,32 +729,32 @@ void refreshDist(mat & dist,
 void countGradient(const coordType & plainCoords,
                    const mat &distOld,
                    mat &distNew,
-                   std::vector<double> &gradient);
+				   std::vector<double> &gradient);
 
 void sammonAddDot(const mat & distOld,
                   mat & distNew, // change only last coloumn
                   coordType & plainCoords,
-                  const std::vector<int> & placedDots);
+				  const std::vector<int> & placedDots);
 
 void countDistNewAdd(mat & distNew, // change only last coloumn
                      const coordType &crds,
-                     const std::vector<int> & placedDots);
+					 const std::vector<int> & placedDots);
 
 void countGradientAddDot(const mat & distOld,
                          const mat & distNew,
                          const coordType & crds,
-                         const std::vector<int> & placedDots,
-                         std::vector<double>  & gradient);
+						 const std::vector<int> & placedDots,
+						 std::vector<double>  & gradient);
 
 void countInvHessianAddDot(const mat & distOld,
                            const mat & distNew,
                            const coordType & crds,
-                           const std::vector<int> & placedDots,
+						   const std::vector<int> & placedDots,
                            mat & invHessian);
 
 double errorSammonAdd(const mat & distOld,
                       const mat & distNew,
-                      const std::vector<int> & placedDots);
+					  const std::vector<int> & placedDots);
 
 
 

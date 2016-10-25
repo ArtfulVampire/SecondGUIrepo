@@ -782,7 +782,7 @@ void MainWindow::sliceMatiSimple()
     QString helpString;
     int start = 0;
     int end = -1;
-    vector<bool> markers;
+    std::vector<bool> markers;
     bool state[3];
     QString fileMark;
     int session[4]; //generality
@@ -891,7 +891,7 @@ void MainWindow::sliceMati()
     QString helpString;
     int start = 0;
     int end = -1;
-    vector<bool> markers;
+    std::vector<bool> markers;
     bool state[3];
     QString fileMark;
     int session[4]; //generality

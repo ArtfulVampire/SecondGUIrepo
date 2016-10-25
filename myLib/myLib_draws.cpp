@@ -719,7 +719,7 @@ void drawMapSpline(const matrix & matrixA,
 }
 
 
-void drawOneArray(const lineType & array,
+void drawOneSignal(const lineType & array,
                   QString outPath)
 {
     if(outPath.isEmpty()) return;
@@ -775,7 +775,95 @@ QPixmap drawOneSignal(const std::valarray<double> & signal,
 	return pic;
 }
 
+QPixmap drawOneTemplate(const int chanNum,
+						const bool channelsFlag)
+{
+	const int gap = 20;
+	const int fontSize = 24;
+	const int graphHeight = 250;
+	const int graphWidth = 250;
+	QString helpString;
 
+	QPixmap pic( graphWidth + 2 * gap, graphHeight + 2 * gap); // second gap for chanNum and 20 Hz
+	pic.fill();
+	QPainter paint;
+	paint.begin(&pic);
+
+	const double X = gap;
+	const double Y = pic.height() - gap;
+
+	//draw axes
+	paint.setPen("black");
+	paint.drawLine(QPointF(X,
+						   Y),
+				   QPointF(X,
+						   Y - graphHeight));
+	paint.drawLine(QPointF(X,
+						   Y),
+				   QPointF(X + graphWidth,
+						   Y));
+
+	//draw Herzes
+	const double hzFontSize = fontSize / 3;
+	paint.setFont(QFont("Helvitica", int(hzFontSize)));
+
+	const double unit = (def::rightFreq - def::leftFreq) / graphWidth;
+	auto currFreq = [unit](int in) -> double {return def::leftFreq + in * unit;};
+
+	for(int k = 0; k < graphWidth + 1; ++k)
+	{
+		const double cF = currFreq(k);
+		if( std::abs(cF - std::round(cF)) <= unit / 2. )
+		{
+			paint.drawLine(QPointF(X + k,
+								   Y),
+						   QPointF(X + k,
+								   Y + 5)); /// magic const
+
+			helpString = QString::number(std::round(cF));
+
+			/// Hz to draw - useless
+			if(helpString.toInt() % 5 != 0) continue;
+
+
+			if(helpString.toInt() < 10)
+			{
+				paint.drawText(QPointF(X + k - hzFontSize / 3,
+									   Y + hzFontSize * 2),
+							   helpString);
+			}
+			else
+			{
+				paint.drawText(QPointF(X + k - hzFontSize / 3 * 2,
+									   Y + hzFontSize * 2),
+							   helpString);
+			}
+		}
+	}
+	paint.setFont(QFont("Helvetica", int(fontSize), -1, false));
+	if(chanNum >= 0)
+	{
+		if(channelsFlag)
+		{
+			helpString = coords::lbl21[chanNum]
+						 + "(" + QString::number(chanNum + 1) + ")" // can be commented
+						 ;
+		}
+		else
+		{
+			helpString = QString::number(chanNum + 1);
+
+		}
+		paint.drawText(QPointF(X - fontSize / 2,
+							   Y - graphHeight + fontSize),
+					   helpString);
+	}
+
+
+	paint.end();
+	return pic;
+
+}
 
 void drawTemplate(const QString & outPath,
                   bool channelsFlag,
@@ -821,6 +909,7 @@ void drawTemplate(const QString & outPath,
 
     for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
     {
+		/// replace with drawOneTemplate
 
         const double Y = paint.device()->height() * coords::y[c2];
         const double X = paint.device()->width() * coords::x[c2];
@@ -1217,7 +1306,7 @@ double drawArrays(const QString & templPath,
         }
     }
 
-    //returning norm = max magnitude
+	// returning norm = max magnitude
     norm /= scaling;
     norm = graphHeight / norm;
     norm /= scaling;  //scaling generality
@@ -1249,7 +1338,7 @@ double drawArrays(const QString & templPath,
 
 void drawArraysInLine(const QString & picPath,
                       const matrix & inMatrix,
-                      const vector<QColor> & colors,
+					  const std::vector<QColor> & colors,
                       const double scaling,
                       const int lineWidth)
 {
@@ -1264,14 +1353,14 @@ void drawArraysInLine(const QString & picPath,
 
     for(uint k = 0; k < inMatrix.rows(); ++k)
     {
-        pnt.setPen(QPen(QBrush(QColor(colors[k])), lineWidth));
+		pnt.setPen(QPen(QBrush(colors[k]), lineWidth));
         for(int i = 0; i < pic.width() - 1; ++i)
         {
             pnt.drawLine(i, (offsetY - inMatrix[k][i] / norm) * pic.height(),
                          i + 1, (offsetY - inMatrix[k][i + 1] / norm) * pic.height());
         }
     }
-    pnt.setPen(QPen(QBrush(QColor("black")), 1));
+	pnt.setPen(QPen(QBrush("black"), 1));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         pnt.drawLine(i * pic.width() / def::nsWOM(), offsetY * pic.height(),
@@ -1285,9 +1374,7 @@ void drawArraysInLine(const QString & picPath,
 
 
 
-///////////////////////// scales and shit
-///
-///
+///////////////////////// should add scales and shit
 void drawCutOneChannel(const QString & inSpectraPath,
                        const int numChan)
 {
@@ -1298,16 +1385,58 @@ void drawCutOneChannel(const QString & inSpectraPath,
     QPixmap cut = pic.copy(QRect(coords::x[numChan] * pic.width() - 20,
                                  coords::y[numChan] * pic.height() - 250 - 10,
                                  250 + 38,
-                                 250 + 53));
+								 250 + 53)); /// magic constants
 
     cut.save(outPath, 0, 100);
+
+}
+///// the same magic constants as in drawCutOneChannel
+QPixmap drawOneArray(const std::valarray<double> & arr,
+					 const QString & outPath,
+					 const QString & color,
+					 const int & lineWidth)
+{
+
+	/// to namespace
+	const int gap = 20;
+	const int graphHeight = 250;
+	const int graphWidth = 250;
+	if(arr.size() != graphWidth)
+	{
+		std::cout << "drawOneArray: wrong input array size" << std::endl;
+		return {};
+	}
+
+	QPixmap pic = drawOneTemplate(-1, false);
+	QPainter pnt;
+	pnt.begin(&pic);
+
+	const double X = gap;
+	const double Y = pnt.device()->height() - gap;
+//	const double norm = graphHeight / arr.max();
+	const double norm = 250. / 12.;
+
+	pnt.setPen(QPen(QBrush(QColor(color)), lineWidth));
+	for(int k = 0; k < graphWidth - 1; ++k)
+	{
+		pnt.drawLine(QPoint(X + k,
+							Y - arr[k] * norm),
+					 QPoint(X + k + 1,
+							Y - arr[k + 1] * norm));
+	}
+	pnt.end();
+	if(!outPath.isEmpty())
+	{
+		pic.save(outPath, nullptr, 100);
+	}
+	return pic;
 
 }
 
 
 void drawMannWitney(const QString & templPath,
-                    const trivector<int> & inMW,
-                    const vector<QColor> & inColors)
+					const trivector<int> & inMW,
+					const std::vector<QColor> & inColors)
 {
     QSvgGenerator svgGen;
     QSvgRenderer svgRen;
@@ -1392,8 +1521,8 @@ void drawMannWitney(const QString & templPath,
 }
 
 void drawMannWitneyInLine(const QString & picPath,
-                          const trivector<int> & inMW,
-                          const std::vector<QColor> & inColors)
+						  const trivector<int> & inMW,
+						  const std::vector<QColor> & inColors)
 {
     QPixmap pic;
     pic.load(picPath);

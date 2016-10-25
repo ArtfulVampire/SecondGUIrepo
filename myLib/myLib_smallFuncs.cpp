@@ -435,7 +435,7 @@ double rankit(int i, int length, double k)
 QString matiCountByteStr(const double & marker)
 {
     QString result;
-    vector<bool> byteMarker;
+    std::vector<bool> byteMarker;
     byteMarker = matiCountByte(marker);
 
     for(int h = 15; h >= 0; --h)
@@ -448,7 +448,7 @@ QString matiCountByteStr(const double & marker)
 }
 void matiPrintMarker(const double &marker, QString pre)
 {
-    vector<bool> byteMarker;
+    std::vector<bool> byteMarker;
     byteMarker = matiCountByte(marker);
 
     if(!pre.isEmpty())
@@ -458,9 +458,9 @@ void matiPrintMarker(const double &marker, QString pre)
     cout << marker << "\t" << matiCountByteStr(marker) << endl;
 }
 
-vector<bool> matiCountByte(double const &  marker)
+std::vector<bool> matiCountByte(double const &  marker)
 {
-    vector<bool> byteMarker;
+    std::vector<bool> byteMarker;
     for(int h = 0; h < 16; ++h)
     {
         byteMarker.push_back(matiCountBit(marker, h));
@@ -477,7 +477,7 @@ void matiFixMarker(double & marker)
         return;
     }
 
-    vector<bool> byteMarker = matiCountByte(marker);
+    std::vector<bool> byteMarker = matiCountByte(marker);
     bool boolBuf;
 
     if(!byteMarker[7]) //elder byte should start with 0 and younger - with 1
@@ -494,7 +494,7 @@ void matiFixMarker(double & marker)
     marker = double(matiCountDecimal(byteMarker));
 }
 
-int matiCountDecimal(vector<bool> byteMarker)
+int matiCountDecimal(std::vector<bool> byteMarker)
 {
     int res = 0;
     for(int h = 0; h < 16; ++h)

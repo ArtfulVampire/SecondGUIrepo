@@ -742,8 +742,8 @@ double mean(const Typ &arr, int length, int shift)
 }
 template double mean(const double * const &arr, int length, int shift);
 template double mean(const int * const &arr, int length, int shift);
-template double mean(const vector<int> &arr, int length, int shift);
-template double mean(const vector<double> &arr, int length, int shift);
+template double mean(const std::vector<int> &arr, int length, int shift);
+template double mean(const std::vector<double> &arr, int length, int shift);
 
 template <typename Typ>
 double variance(const Typ &arr, int length, int shift, bool fromZero)
@@ -760,8 +760,8 @@ double variance(const Typ &arr, int length, int shift, bool fromZero)
 }
 template double variance(const double * const &arr, int length, int shift, bool fromZero);
 template double variance(const int * const &arr, int length, int shift, bool fromZero);
-template double variance(const vector<int> &arr, int length, int shift, bool fromZero);
-template double variance(const vector<double> &arr, int length, int shift, bool fromZero);
+template double variance(const std::vector<int> &arr, int length, int shift, bool fromZero);
+template double variance(const std::vector<double> &arr, int length, int shift, bool fromZero);
 
 template <typename Typ>
 double sigma(const Typ &arr, int length, int shift, bool fromZero)
@@ -770,8 +770,8 @@ double sigma(const Typ &arr, int length, int shift, bool fromZero)
 }
 template double sigma(const double * const &arr, int length, int shift, bool fromZero);
 template double sigma(const int * const &arr, int length, int shift, bool fromZero);
-template double sigma(const vector<int> &arr, int length, int shift, bool fromZero);
-template double sigma(const vector<double> &arr, int length, int shift, bool fromZero);
+template double sigma(const std::vector<int> &arr, int length, int shift, bool fromZero);
+template double sigma(const std::vector<double> &arr, int length, int shift, bool fromZero);
 
 template <typename Typ>
 double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool fromZero)
@@ -952,8 +952,8 @@ void countMannWhitney(trivector<int> & outMW,
 
     QString helpString;
     const QDir dir_(spectraPath);
-    vector<QStringList> lst; //0 - Spatial, 1 - Verbal, 2 - Rest
-    vector<matrix> spectra(numOfClasses);
+    std::vector<QStringList> lst; //0 - Spatial, 1 - Verbal, 2 - Rest
+    std::vector<matrix> spectra(numOfClasses);
 
     matrix averageSpectra(numOfClasses, NetLength, 0);
     matrix distances(numOfClasses, numOfClasses, 0);
@@ -2150,7 +2150,7 @@ void splitZeros(matrix & dataIn,
                 const QString & dataName)
 {
     //remake with std::list of slices
-    vector<bool> flags(inLength + 1, false); //1 if usual, 0 if eyes, 1 for additional one point
+    std::vector<bool> flags(inLength + 1, false); //1 if usual, 0 if eyes, 1 for additional one point
 
     bool startFlag = false;
     int start = -1;
@@ -2382,7 +2382,7 @@ void calcSpectre(const std::valarray<double> & inSignal,
     const double norm1 = sqrt(fftLength / double(fftLength - Eyes));
 #if 0
     const double norm2 = 2. / (def::freq * fftLength);
-    vector<double> spectre (fftLength * 2, 0.); // can be valarray, but not important
+    std::vector<double> spectre (fftLength * 2, 0.); // can be valarray, but not important
     for(int i = 0; i < fftLength; ++i)
     {
         spectre[ i * 2 ] = inSignal[ i ] * norm1;
@@ -2420,14 +2420,14 @@ void calcSpectre(const std::valarray<double> & inSignal,
 
 template double covariance(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
 template double covariance(const int * const &arr1, const int * const &arr2, int length, int shift, bool fromZero);
-template double covariance(const vector<int> &arr1, const vector<int> &arr2, int length, int shift, bool fromZero);
-template double covariance(const vector<double> &arr1, const vector<double> &arr2, int length, int shift, bool fromZero);
+template double covariance(const std::vector<int> &arr1, const std::vector<int> &arr2, int length, int shift, bool fromZero);
+template double covariance(const std::vector<double> &arr1, const std::vector<double> &arr2, int length, int shift, bool fromZero);
 template double covariance(const lineType &arr1, const lineType &arr2, int length, int shift, bool fromZero);
 
 template double correlation(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
 template double correlation(const int * const  &arr1, const int * const &arr2, int length, int shift, bool fromZero);
-template double correlation(const vector<int> &arr1, const vector<int> &arr2, int length, int shift, bool fromZero);
-template double correlation(const vector<double> &arr1, const vector<double> &arr2, int length, int shift, bool fromZero);
+template double correlation(const std::vector<int> &arr1, const std::vector<int> &arr2, int length, int shift, bool fromZero);
+template double correlation(const std::vector<double> &arr1, const std::vector<double> &arr2, int length, int shift, bool fromZero);
 template double correlation(const lineType &arr1, const lineType &arr2, int length, int shift, bool fromZero);
 
 

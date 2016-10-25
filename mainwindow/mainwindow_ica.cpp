@@ -427,7 +427,7 @@ void MainWindow::ICA() //fastICA
     helpString = def::dir->absolutePath()
                  + slash + def::ExpName + "_ica.edf";
 
-    vector<int> chanList(ns);
+    std::vector<int> chanList(ns);
     std::iota(chanList.begin(), chanList.end(), 0);
     chanList.push_back(globalEdf.getMarkChan());
 

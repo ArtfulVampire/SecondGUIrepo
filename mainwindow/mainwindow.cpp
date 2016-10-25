@@ -529,7 +529,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
         }
         if(ui->reduceChannelsCheckBox->isChecked())
         {
-            vector<int> chanList;
+            std::vector<int> chanList;
             makeChanList(chanList);
 			fil = fil.reduceChannels(chanList);
             def::ns = fil.getNs();
@@ -555,7 +555,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
         if(ui->reduceChannelsCheckBox->isChecked())
         {
             // more general reduce channels
-            vector<int> chanList;
+            std::vector<int> chanList;
             makeChanList(chanList);
 			fil = fil.reduceChannels(chanList);
             def::ns = fil.getNs();
@@ -1002,7 +1002,7 @@ void MainWindow::markerSetBinValueSlot()
     int marker = ui->markerDecimalLineEdit->text().toInt();
     QString helpString;
 
-    vector<bool> byteMarker = matiCountByte(double(marker));
+    std::vector<bool> byteMarker = matiCountByte(double(marker));
 
     helpString.clear();
     for(int h = 15; h >= 8; --h)

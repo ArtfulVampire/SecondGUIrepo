@@ -106,11 +106,11 @@ void clustering::readFile(QString filePath)
     cout << endl;
 
 
-    vector<vector<double> >::iterator itt;
+    std::vector<std::vector<double> >::iterator itt;
     while (contains(isolDots.begin(), isolDots.end(), true))
     {
         //adjust dists[i][3]
-        for(vector<vector<double> >::iterator iit = dists.begin();
+        for(std::vector<std::vector<double> >::iterator iit = dists.begin();
             iit < dists.end();
             ++iit)
         {

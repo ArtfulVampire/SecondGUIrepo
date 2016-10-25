@@ -554,7 +554,7 @@ void countChaosFeatures(const QString & filePath,
 			}
 			helpString.clear(); // no picture of spectre
 
-			drawOneArray(envSpec,
+			drawOneSignal(envSpec,
 						 helpString);
 #endif
 
@@ -850,7 +850,7 @@ void clustering()
 		distOld[i].resize(N);
 	}
 
-	vector < vector<double> > dots;
+	vector < std::vector<double> > dots;
 	dots.resize(N);
 	vector <double> ass;
 	ass.resize(dim);
@@ -908,11 +908,11 @@ return;
 
 
 
-	vector<vector<double> >::iterator itt;
+	std::vector<std::vector<double> >::iterator itt;
 	while (contains(isolDots.begin(), isolDots.end(), true))
 	{
 		//adjust dists[i][3]
-		for(vector<vector<double> >::iterator iit = dists.begin();
+		for(std::vector<std::vector<double> >::iterator iit = dists.begin();
 			iit < dists.end();
 			++iit)
 		{

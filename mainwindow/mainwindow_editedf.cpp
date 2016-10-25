@@ -458,7 +458,7 @@ void MainWindow::constructEDF(const QString & newPath,
 
     readData(); // read globalEdf based on ui->filePathEdit to renew the initial channels list
 
-    vector<int> chanList;
+    std::vector<int> chanList;
     makeChanList(chanList);
 
     def::ns = chanList.size();

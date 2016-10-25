@@ -1405,7 +1405,7 @@ void edfFile::setLabels(const std::vector<QString> & inLabels)
 }
 
 /// exceptions
-void edfFile::setChannels(const vector<edfChannel> & inChannels)
+void edfFile::setChannels(const std::vector<edfChannel> & inChannels)
 {
     for(uint i = 0; i < inChannels.size(); ++i)
     {

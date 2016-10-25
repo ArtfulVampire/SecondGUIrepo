@@ -20,39 +20,57 @@ void MainWindow::customFunc()
 //	ann->setClassifier(ClassifierType::ANN);
 //	ann->autoClassification();
 
-	const double leftFreqLim = 2.;
-	const double rightFreqLim = 20.;
-	const double stepFreq = 2.;
 
-	ofstream of;
-	of.open("/media/Files/Data/str.txt");
-int co = 0;
-	for(double freqCounter = leftFreqLim;
-	freqCounter <= rightFreqLim;
-	freqCounter += stepFreq)
+	std::vector<std::valarray<double>> myArr(4);
+	std::vector<QString> colors {"red", "green", "blue", "orange"};
+	for(int i = 0; i < myArr.size(); ++i)
 	{
-		QString fr;
-		if(freqCounter != rightFreqLim)
-		{
-			fr = "_" + QString::number(freqCounter)
-				 + "-" + QString::number(freqCounter + 2);
-		}
-		else
-		{
-			fr = "_all";
-		}
-		for(int i = 0; i < 19; ++i)
-		{
-			QString ch = "_" + coords::lbl19[i];
-			for(QString t : {"_old", "_new"})
-			{
-				of << "hilb" << t << fr << ch << "\t";
-				++co;
-			}
-		}
+		std::valarray<double> & my = myArr[i];
+		my.resize(250);
+		/// fil random
 	}
-	cout << co << endl;
-	of.close();
+	/// 16 ~ 1 Hz
+	myArr[0][18] = 50.; // 6 Hz
+	myArr[1][83] = 90.; // 10 Hz
+	myArr[2][105] = 70.; // 11 Hz
+	const int r = 250;
+	const int l = 100;
+	for(int i = l; i < r; ++i)
+	{
+		std::valarray<double> & my = myArr[3];
+		const double arg = (i - (l+r) / 2) / double(r - l)*2;
+		my[i] += 1.6 / (1. +  exp (-arg * 4));
+	}
+//	std::for_each(std::begin(myArr[3]) + 190, std::end(myArr[3]) - 20, 10.);// 15-20 Hz
+//	my[3][80] = 50.;
+
+
+	for(int i = 0; i < myArr.size(); ++i)
+	{
+		std::valarray<double> & my = myArr[i];
+		my = myLib::smoothSpectre(my, 15);
+		auto myDraw = my;
+		std::for_each(std::begin(myDraw), std::end(myDraw),
+					  [](double & in){in += 0.5 + (rand() % 100) / 500.;});
+		myDraw = myLib::smoothSpectre(myDraw, 2);
+		myLib::drawOneArray(myDraw, "/media/Files/Data/gr_" + QString::number(i) + ".jpg",
+							"black");
+	}
+
+	std::valarray<double> al = myArr[0] + myArr[1] + myArr[2] + myArr[3];
+	std::for_each(std::begin(al), std::end(al),
+				  [](double & in){in += 0.5 + (rand() % 100) / 500.;});
+	al = myLib::smoothSpectre(al, 2);
+	myLib::drawOneArray(al, "/media/Files/Data/gr_al.jpg",
+						"black");
+
+	std::valarray<double> al2 = 1.1 * myArr[0] + 0.9 * myArr[1] + 1.4 * myArr[2] + 0.3 * myArr[3];
+	std::for_each(std::begin(al2), std::end(al2),
+				  [](double & in){in += 0.5 + (rand() % 100) / 500.;});
+	al2 = myLib::smoothSpectre(al2, 2);
+	myLib::drawOneArray(al2, "/media/Files/Data/gr_al2.jpg",
+						"black");
+
 	exit(0);
 //	return;
 
@@ -593,7 +611,7 @@ int co = 0;
 
     def::ns = 29;
 
-    vector<pair<int, double>> pew;
+    std::vector<pair<int, double>> pew;
     for(int i : {17, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20})
     {
         countSpectraSimple(1024, i);
