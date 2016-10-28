@@ -204,7 +204,7 @@ void MainWindow::ICA() //fastICA
 
 
 #if 0
-    /// remake
+	/// remake with valarrays
 	// norm components - to equal dispersion
 	// sort by maps length
 
@@ -267,19 +267,24 @@ void MainWindow::ICA() //fastICA
             matrixA[j][ colsNorms[i].second ] = tempCol[j];
         }
 
+		/// swap rows i and colsNorms[i].second
         tempComp = components[i];
         components[i] = components[ colsNorms[i].second ];
         components[ colsNorms[i].second ] = tempComp;
 
-        // swap i and colsNorms[i].second values in colsNorms
+		/// swap cols i and colsNorms[i].second
+		/// find first
         auto it1 = std::find_if(colsNorms.begin(),
                                 colsNorms.end(),
                                 [i](std::pair <double, int> in)
         {return in.second == i;});
+		/// find second
         auto it2 = std::find_if(colsNorms.begin(),
                                 colsNorms.end(),
                                 [colsNorms, i](std::pair <double, int> in)
         {return in.second == colsNorms[i].second;});
+
+		/// swap
         tempIndex = (*it1).second;
         (*it1).second = (*it2).second;
         (*it2).second = tempIndex;

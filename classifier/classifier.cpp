@@ -171,7 +171,9 @@ avType Classifier::averageClassification()
 {
     std::ofstream res;
 	/// for successive
-	resultsPath = def::dir->absolutePath()
+	resultsPath =
+//			def::dir->absolutePath()
+			"/media/Dropbox/Successive/"
 				  + myLib::slash + "results"
 				  + "_" + QString::number(suc::numGoodNewLimit)
 				  + "_" + QString::number(suc::learnSetStay)

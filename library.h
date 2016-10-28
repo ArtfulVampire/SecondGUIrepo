@@ -113,6 +113,10 @@ const double pi_min_025 = pow(pi, -0.25);
 const double pi_sqrt = sqrt(pi);
 const QString slash = "/"; // QString(QDir::separator());
 
+template <typename Typ>
+inline QString nm(Typ in) {return QString::number(in);}
+template QString nm(int in);
+template QString nm(double in);
 
 
 
@@ -177,7 +181,7 @@ uint indexOfMax(const Container & cont);
 
 
 
-//colorscales
+/// colorscales (for wavelets)
 enum ColorScale {jet = 0,
                  htc = 1,
                  gray = 2,
@@ -206,7 +210,7 @@ QColor grayScale(int range, int j);
 
 
 
-// "static" functions
+/// "static" functions
 
 const std::vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
 void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
@@ -216,15 +220,9 @@ void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 e
                           const QString & outFilePath = def::dir->absolutePath()
                                                         + slash + "eyes.txt");
 
-void makePaStatic(const QString & spectraDir,
-                  const int & fold = 2,
-                  const double & coeff = 7.,
-                  const bool svmFlag = false);
 
 
-
-
-// dataHandlers
+/// dataHandlers
 
 void makeFullFileList(const QString & path,
                       QStringList & lst,
@@ -235,19 +233,6 @@ void makeFileLists(const QString & path,
                    const QStringList & auxFilters = QStringList());
 
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
-
-
-void readPaFile(const QString & paFile,
-                matrix & dataMatrix,
-				std::vector<int> types,
-				std::vector<QString> & FileName,
-                std::valarray<double> & classCount);
-
-void makePaFile(const QString & spectraDir,
-                const QStringList & fileNames,
-                const double & coeff,
-                const QString & outFile,
-                const bool svmFlag = false);
 
 void readPlainData(const QString & inPath,
                    matrix & data,
@@ -279,14 +264,12 @@ void readUCIdataSet(const QString & setName,
 					std::vector<uint> &outTypes);
 
 
-template <typename signalType>
 void readFileInLine(const QString & filePath,
-                    signalType & result);
+					std::valarray<double> & result);
 
-
-template <typename signalType>
+template <typename ArrayType>
 void writeFileInLine(const QString & filePath,
-                     const signalType & outData);
+					 const ArrayType & outData);
 
 
 lineType signalFromFile(const QString & filePath,
@@ -473,11 +456,14 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath = def::dir->absolutePat
 
 
 
-// signal processing
+/// signal processing
 double enthropy(const double *arr, const int N, const int numOfRanges = 30); // not finished?
 
 /// original
 void four1(double * dataF, int nn, int isign);
+
+/// from Rosetta stone - the same
+void four3(std::valarray<std::complex<double>> & inputArray);
 
 /// srate for norm
 std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
@@ -501,8 +487,6 @@ std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre)
 
 std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre);
 
-/// from Rosetta stone - the same
-void four3(std::valarray<std::complex<double>> & inputArray);
 
 
 std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
@@ -634,7 +618,7 @@ void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit);
 
 
 
-//products for ICA
+/// products for ICA
 void product1(const matrix & arr,
               const int length,
               const int ns,

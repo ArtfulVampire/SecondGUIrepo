@@ -14,116 +14,22 @@ void MainWindow::customFunc()
 	ui->realsButton->setChecked(true);
 
 //	setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
-//	readData();
-//	Net * ann = new Net();
-//	ann->loadData("/media/Files/Data/AAX/SpectraSmooth");
-//	ann->setClassifier(ClassifierType::ANN);
-//	ann->autoClassification();
-
-	//	return;
-
-	const QString pth = "/media/Files/Data/Feedback/SuccessClass/Help/Succ";
-	for(QString suf :{"_z", "_noz"})
-	{
-		QDir dr(pth + suf);
-		auto fls = dr.entryList(QDir::Files);
-		for(QString nam : fls)
-		{
-			std::vector<std::vector<double>> values(5);
-			double tmp;
-			std::string tmpStr;
-			QString filePath = pth + suf + slash + nam;
-			ifstream inStr;
-			inStr.open(filePath.toStdString());
-			while(inStr.good())
-			{
-				for(int i = 0; i < 5; ++i)
-				{
-					inStr >> tmp;
-					values[i].push_back(tmp);
-				}
-				inStr >> tmpStr;
-			}
-			inStr.close();
-
-			cout << values[0].size() << endl;
-
-			ofstream outStr;
-			outStr.open(filePath.toStdString(), std::ios_base::app);
-			for(int i = 0; i < 5; ++i)
-			{
-				outStr << std::accumulate(std::begin(values[i]),
-										  std::end(values[i]) - 1, 0.) / (values[i].size() - 1) << '\t';
-			}
-			outStr.close();
-
-			exit(0);
-
-		}
-
-	}
-
-#if 0
-	/// conference drawing
-	std::vector<std::valarray<double>> myArr(4);
-	std::vector<QString> colors {"red", "green", "blue", "orange"};
-	for(int i = 0; i < myArr.size(); ++i)
-	{
-		std::valarray<double> & my = myArr[i];
-		my.resize(250);
-		/// fil random
-	}
-	/// 16 ~ 1 Hz
-	myArr[0][18] = 50.; // 6 Hz
-	myArr[1][83] = 90.; // 10 Hz
-	myArr[2][105] = 70.; // 11 Hz
-	const int r = 250;
-	const int l = 100;
-	for(int i = l; i < r; ++i)
-	{
-		std::valarray<double> & my = myArr[3];
-		const double arg = (i - (l+r) / 2) / double(r - l)*2;
-		my[i] += 1.6 / (1. +  exp (-arg * 4));
-	}
-//	std::for_each(std::begin(myArr[3]) + 190, std::end(myArr[3]) - 20, 10.);// 15-20 Hz
-//	my[3][80] = 50.;
+//	QString spec = "/media/Files/Data/AAX/Help/psa/AAX_final_class_1.psa";
+//	QString peec = "/media/Files/Data/AAX/Help/AAX_final_class_1.jpg";
+//	drawTemplate(peec);
+//	std::valarray<double> sp{};
+//	readFileInLine(spec, sp);
+//	drawArray(peec, sp, "black", 1, 2);
+//	exit(0);
+//	return;
 
 
-	for(int i = 0; i < myArr.size(); ++i)
-	{
-		std::valarray<double> & my = myArr[i];
-		my = myLib::smoothSpectre(my, 15);
-		auto myDraw = my;
-		std::for_each(std::begin(myDraw), std::end(myDraw),
-					  [](double & in){in += 0.5 + (rand() % 100) / 500.;});
-		myDraw = myLib::smoothSpectre(myDraw, 2);
-		myLib::drawOneArray(myDraw, "/media/Files/Data/gr_" + QString::number(i) + ".jpg",
-							"black");
-	}
-
-	std::valarray<double> al = myArr[0] + myArr[1] + myArr[2] + myArr[3];
-	std::for_each(std::begin(al), std::end(al),
-				  [](double & in){in += 0.5 + (rand() % 100) / 500.;});
-	al = myLib::smoothSpectre(al, 2);
-	myLib::drawOneArray(al, "/media/Files/Data/gr_al.jpg",
-						"black");
-
-	std::valarray<double> al2 = 1.1 * myArr[0] + 0.9 * myArr[1] + 1.4 * myArr[2] + 0.3 * myArr[3];
-	std::for_each(std::begin(al2), std::end(al2),
-				  [](double & in){in += 0.5 + (rand() % 100) / 500.;});
-	al2 = myLib::smoothSpectre(al2, 2);
-	myLib::drawOneArray(al2, "/media/Files/Data/gr_al2.jpg",
-						"black");
-
-
-	exit(0);
-#endif
-
-#if 0
+#if 01
 	/// test new classifiers
 	QString paath = "/media/Files/Data/Feedback/SuccessClass/";
 
-	for(QString guy : {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"})
+//	for(QString guy : {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"})
+	for(QString guy : {"PMI", "SMM", "SMS", "SUA"})
 //	for(QString guy : {"GAS"})
 	{
 		for(QString suff :{"_train", "_test"})
@@ -143,38 +49,46 @@ void MainWindow::customFunc()
 //			net->customF(); /// clean to 3*N train windows
 
 
-			cout << guy + suff << endl;
-			net->autoClassification();
+//			cout << guy + suff << endl;
+//			net->autoClassification();
 
 
 
-//			std::vector<std::vector<double>> allPew =  {{3., 40.},
-//														{5., 60.},
-//														{6., 70.},
-//														{8., 90.}
-//													   };
+			std::vector<std::vector<double>> allPew =  {{3., 30.},
+														{3., 40.},
+														{4., 40.},
+														{4., 50.},
+														{5., 50.},
+														{6., 60.},
+														{8., 80.},
+														{8., 100.},
+														{10., 100.}
+													   };
 //			for(auto pewww : allPew)
 //			{
-//				for(double i3 : {0.00, 0.01})
-//				{
-//					suc::numGoodNewLimit = pewww[0];
-//					suc::learnSetStay = pewww[1];
-//					suc::decayRate = i3;
-//					cout << suc::numGoodNewLimit << '\t';
-//					cout << suc::learnSetStay << '\t';
-//					cout << suc::decayRate << endl;
-//					net->successiveProcessing();
-//				}
+			for(int i1 = 3; i1 <= 8; ++i1)
+			{
+				for(int i2 = 70; i2 <= 110; i2 += 10)
+				{
+					for(double i3 : {-0.005, 0.00, 0.005})
+					{
+//						suc::numGoodNewLimit = pewww[0];
+//						suc::learnSetStay = pewww[1];
+						suc::numGoodNewLimit = i1;
+						suc::learnSetStay = i2;
+						suc::decayRate = i3;
+						cout << guy << endl;
+						cout << suc::numGoodNewLimit << '\t';
+						cout << suc::learnSetStay << '\t';
+						cout << suc::decayRate << endl;
+						net->successiveProcessing();
+					}
+				}
 
-//			}
-//			ofstream res;
-//			res.open((def::dir->absolutePath() + slash + "results.txt").toStdString(),
-//					 ios_base::app);
-//			res << std::endl;
-//			res.close();
+			}
 
 			delete net;
-//			break; /// only suff = "_train"
+			break; /// only suff = "_train"
 		}
 
 //		continue;
@@ -479,6 +393,112 @@ void MainWindow::customFunc()
         ++count;
     }
     exit(0);
+#endif
+
+
+#if 0
+	/// averaging data in results files
+	const QString pth = "/media/Files/Data/Feedback/SuccessClass/Help/Succ";
+//	for(QString suf :{"_z", "_noz"})
+	QString suf = "_z";
+
+	{
+		QDir dr(pth + suf);
+		QString outFilePath = "/media/Files/Data/Feedback/SuccessClass/avres.txt";
+
+		auto fls = dr.entryList(QDir::Files);
+		for(QString nam : fls)
+		{
+			std::vector<std::vector<double>> values(5);
+			double tmp;
+			std::string tmpStr;
+			QString filePath = pth + suf + slash + nam;
+			ifstream inStr;
+			inStr.open(filePath.toStdString());
+			while(inStr.good())
+			{
+				for(int i = 0; i < 5; ++i)
+				{
+					inStr >> tmp;
+					values[i].push_back(tmp);
+				}
+				inStr >> tmpStr;
+			}
+			inStr.close();
+
+			ofstream outStr;
+			outStr.open(outFilePath.toStdString(), std::ios_base::app);
+			auto splitList = nam.split("_", QString::SkipEmptyParts);
+			outStr << splitList[1] << '\t'
+								   << splitList[2] << '\t'
+								   << splitList[3].remove(".txt") << '\t';
+			for(int i = 0; i < 5; ++i)
+			{
+				outStr << doubleRound( std::accumulate(std::begin(values[i]),
+										  std::end(values[i]) - 1, 0.) / (values[i].size() - 1), 2) << '\t';
+			}
+			outStr << "\r\n";
+			outStr.close();
+		}
+
+	}
+	exit(0);
+#endif
+
+#if 0
+	/// conference drawing
+	std::vector<std::valarray<double>> myArr(4);
+	std::vector<QString> colors {"red", "green", "blue", "orange"};
+	for(int i = 0; i < myArr.size(); ++i)
+	{
+		std::valarray<double> & my = myArr[i];
+		my.resize(250);
+		/// fil random
+	}
+	/// 16 ~ 1 Hz
+	myArr[0][18] = 50.; // 6 Hz
+	myArr[1][83] = 90.; // 10 Hz
+	myArr[2][105] = 70.; // 11 Hz
+	const int r = 250;
+	const int l = 100;
+	for(int i = l; i < r; ++i)
+	{
+		std::valarray<double> & my = myArr[3];
+		const double arg = (i - (l+r) / 2) / double(r - l)*2;
+		my[i] += 1.6 / (1. +  exp (-arg * 4));
+	}
+//	std::for_each(std::begin(myArr[3]) + 190, std::end(myArr[3]) - 20, 10.);// 15-20 Hz
+//	my[3][80] = 50.;
+
+
+	for(int i = 0; i < myArr.size(); ++i)
+	{
+		std::valarray<double> & my = myArr[i];
+		my = myLib::smoothSpectre(my, 15);
+		auto myDraw = my;
+		std::for_each(std::begin(myDraw), std::end(myDraw),
+					  [](double & in){in += 0.5 + (rand() % 100) / 500.;});
+		myDraw = myLib::smoothSpectre(myDraw, 2);
+		myLib::drawOneArray(myDraw, "/media/Files/Data/gr_" + QString::number(i) + ".jpg",
+							"black");
+	}
+
+	std::valarray<double> al = myArr[0] + myArr[1] + myArr[2] + myArr[3];
+	std::for_each(std::begin(al), std::end(al),
+				  [](double & in){in += 0.5 + (rand() % 100) / 500.;});
+	al = myLib::smoothSpectre(al, 2);
+	myLib::drawOneArray(al, "/media/Files/Data/gr_al.jpg",
+						"black");
+
+	std::valarray<double> al2 = 1.1 * myArr[0] + 0.9 * myArr[1] + 1.4 * myArr[2] + 0.3 * myArr[3];
+	std::for_each(std::begin(al2), std::end(al2),
+				  [](double & in){in += 0.5 + (rand() % 100) / 500.;});
+	al2 = myLib::smoothSpectre(al2, 2);
+	myLib::drawOneArray(al2, "/media/Files/Data/gr_al2.jpg",
+						"black");
+
+
+	exit(0);
 #endif
 
 #if 0

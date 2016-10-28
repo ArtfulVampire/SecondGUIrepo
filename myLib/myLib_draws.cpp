@@ -1110,6 +1110,7 @@ void drawArray(const QString & templPath,
     pic.save(templPath, 0, 100);
 }
 
+/// overload matrix/lineType
 void drawArray(const QString & templPath,
                const lineType & inData,
                const QString & color,
@@ -1122,7 +1123,7 @@ void drawArray(const QString & templPath,
     {
         if(len % nch == 0)
         {
-            dataS.resize(nch, len / nch, 0.);
+			dataS.resize(nch, len / nch, 0.);
             for(int i = 0; i < nch; ++i)
             {
                 std::copy(std::begin(inData) + len / nch * i,

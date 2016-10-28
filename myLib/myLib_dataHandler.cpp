@@ -8,9 +8,8 @@ namespace myLib
 {
 
 // make valarray
-template <typename signalType>
 void readFileInLine(const QString & filePath,
-                    signalType & result)
+					std::valarray<double> & result)
 {
     ifstream file(filePath.toStdString());
     if(!file.good())
@@ -34,9 +33,9 @@ void readFileInLine(const QString & filePath,
     file.close();
 }
 
-template <typename signalType>
+template <typename ArrayType>
 void writeFileInLine(const QString & filePath,
-                     const signalType & outData)
+					 const ArrayType & outData)
 {
     ofstream file(filePath.toStdString());
     if(!file.good())
@@ -299,9 +298,9 @@ void readUCIdataSet(const QString & setName,
 
 
 void writeMatrixFile(const QString & filePath,
-                      const matrix & outData,
-                     const QString & rowsString,
-                     const QString & colsString)
+					 const matrix & outData,
+					 const QString & rowsString,
+					 const QString & colsString)
 {
     ofstream file(filePath.toStdString());
     if(!file.good())
@@ -325,10 +324,7 @@ void writeMatrixFile(const QString & filePath,
 }
 
 
+template void writeFileInLine(const QString & filePath, const std::vector<double> & outData);
+template void writeFileInLine(const QString & filePath, const std::valarray<double> & outData);
 
-template void writeFileInLine(const QString & filePath, const lineType & outData);
-template void writeFileInLine(const QString & filePath, const vectType & outData);
-
-template void readFileInLine(const QString & filePath, lineType & outData);
-template void readFileInLine(const QString & filePath, vectType & outData);
-}
+} /// end of namespace myLib

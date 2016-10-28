@@ -1973,7 +1973,7 @@ std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 
 void kernelEst(QString filePath, QString picPath)
 {
-    vectType arr;
+	std::valarray<double> arr;
     readFileInLine(filePath, arr);
     kernelEst(arr, picPath);
 }

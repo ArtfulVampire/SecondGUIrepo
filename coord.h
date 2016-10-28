@@ -15,7 +15,7 @@ namespace coords
 const double scale = 250./1600.;
 
 /// + 2 EOG
-const int numOfChan = 21; // for drawTemplate
+const int numOfChan = 19; // for drawTemplate - move to draw namespace
 // 1/32 + n * 6/32
 const std::vector<double> x {0.21875, 0.59375,
                              0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
