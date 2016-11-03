@@ -123,6 +123,7 @@ namespace def
     const QString plainDataExtension = "scg";   // slice common gradient
     const QString spectraDataExtension = "psd"; // power spectral density
     const QStringList edfFilters = {"*.edf", "*.EDF"};
+	const QRegExp eeogReg = QRegExp("E[EO]G");
 
 	extern QDir * dir;
 	inline QString realsDir() {return def::dir->absolutePath() + "/Reals";}

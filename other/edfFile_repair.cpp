@@ -316,7 +316,7 @@ void toLowerFileOrFolder(const QString & fileOrFolderPath)
 	newFileName[0] = newFileName[0].toUpper();
 	for(int i = 1; i < newFileName.length(); ++i)
 	{
-		/// care about fileMarkers - not replace the last "_" in edf-files
+		/// care about fileMarkers - not replace the last "_**" in edf-files
 		if(newFileName[i - 1] == '_' &&
 		   !(newFileName.contains(".edf", Qt::CaseInsensitive) &&
 			 i - 1 == newFileName.lastIndexOf("_"))
@@ -352,9 +352,9 @@ void fullRepairDir(const QString & dirPath, const QStringList & filters)
 	repair::deleteSpacesDir(dirPath, filters);
 	repair::toLatinDir(dirPath, filters);
 	repair::toLowerDir(dirPath, filters);
-	repair::physMinMaxDir(dirPath);
+//	repair::physMinMaxDir(dirPath);
 	repair::scalingFactorDir(dirPath, dirPath);
-	repair::holesDir(dirPath, dirPath);
+//	repair::holesDir(dirPath, dirPath);
 }
 
 } /// end namespace repair

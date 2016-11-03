@@ -375,50 +375,53 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     handleParamArray(labels, ns, 16, readFlag, edfDescriptor, header);
 
     /// generality for encephalan
-    for(int i = 0; i < ns; ++i)
-    {
-        /// edit EOG channels to encephalan
-        if(labels[i].contains("EOG 1"))
-        {
-            labels[i] = "EOG EOG1-A2     ";
-        }
-        else if(labels[i].contains("EOG 2"))
-        {
-            labels[i] = "EOG EOG2-A1     ";
-        }
-        /// set marker channel
-        else if(labels[i].contains("Marker") ||
-                labels[i].contains("Status"))
-        {
-            markerChannel = i;
-            edfPlusFlag = false;
-        }
-        else if(labels[i].contains("Annotations"))
-        {
-            markerChannel = i;
-            edfPlusFlag = true;
-            cout << "handleEdfFile: Annotations! " << EDFpath << endl;
-        }
-
-        /// Mitsar and other sheet
-		/// Need for repair::testChannelOrderConsistency
-		/// essentially need for edfFile::refilter
-        else
-        {
-			for(auto lbl : coords::lbl_all) /// most wide list of channels
-            {
-				if(labels[i].contains(lbl) &&
-				   !labels[i].startsWith("EEG "))
-                {
-					labels[i].prepend("EEG ");
-                }
-				if(labels[i].contains("EOG") &&
-				   !labels[i].startsWith("EOG "))
+	if(readFlag)
+	{
+		for(int i = 0; i < ns; ++i)
+		{
+			/// edit EOG channels to encephalan
+			if(labels[i].contains("EOG 1"))
+			{
+				labels[i] = fitString("EOG EOG1-A2", 16);
+			}
+			else if(labels[i].contains("EOG 2"))
+			{
+				labels[i] = fitString("EOG EOG2-A1", 16);
+			}
+			/// set marker channel
+			else if(labels[i].contains("Marker") ||
+					labels[i].contains("Status"))
+			{
+				markerChannel = i;
+				edfPlusFlag = false;
+			}
+			else if(labels[i].contains("Annotations"))
+			{
+				markerChannel = i;
+				edfPlusFlag = true;
+				cout << "handleEdfFile: Annotations! " << EDFpath << endl;
+			}
+			/// Mitsar and other sheet
+			/// Need for repair::testChannelOrderConsistency
+			/// essentially need for edfFile::refilter
+			else
+			{
+				for(auto lbl : coords::lbl_all) /// most wide list of channels
 				{
-					labels[i].prepend("EOG ");
+					if(labels[i].contains("EOG") &&
+					   !labels[i].startsWith("EOG "))
+					{
+						labels[i].prepend("EOG ");
+					}
+					if(labels[i].contains(lbl) &&
+					   !labels[i].startsWith("EEG "))
+					{
+						labels[i].prepend("EEG ");
+					}
+
 				}
-            }
-        }
+			}
+		}
 	}
 
     if(readFlag)
@@ -439,13 +442,13 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     {
         for(int i = 0; i < ns; ++i)
         {
-            if(labels[i].contains("EEG", Qt::CaseInsensitive))
+			if(labels[i].contains(QRegExp("E[EO]G")))
             {
                 /// encephalan only !!!!!1111
-//                physMax[i] = 4096;
-//                physMin[i] = -4096;
-//                digMax[i] = 32768;
-//                digMin[i] = -32768;
+				physMax[i] = 4096;
+				physMin[i] = -4096;
+				digMax[i] = 32768;
+				digMin[i] = -32768;
             }
             /// repair for equal phys min/max
             if(physMin[i] == physMax[i])

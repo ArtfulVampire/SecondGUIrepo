@@ -13,18 +13,17 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-//	setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
-//	QString spec = "/media/Files/Data/AAX/Help/psa/AAX_final_class_1.psa";
-//	QString peec = "/media/Files/Data/AAX/Help/AAX_final_class_1.jpg";
-//	drawTemplate(peec);
-//	std::valarray<double> sp{};
-//	readFileInLine(spec, sp);
-//	drawArray(peec, sp, "black", 1, 2);
-//	exit(0);
-//	return;
+	return;
 
 
-#if 01
+#if 0
+	/// IITP
+
+	exit(0);
+#endif
+
+
+#if 0
 	/// test new classifiers
 	QString paath = "/media/Files/Data/Feedback/SuccessClass/";
 
@@ -130,7 +129,6 @@ void MainWindow::customFunc()
 #endif
 
 
-//	return;
 #if 0
 /// successive
 	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
@@ -220,41 +218,83 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-
-
 #if 0
-    /// Xenia cut
-	QString workPath = "/media/Files/Data/Xenia/26Sep/moderate_TBI";
-	/// repair dirs and files
-	repair::deleteSpacesFolders(workPath);
-	repair::toLatinDir(workPath, {});
-	repair::toLowerDir(workPath, {});
-	QStringList dirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-	for(QString deer : dirs)
-    {
-//		cout << deer << endl;
-		repair::fullRepairDir(workPath + myLib::slash + deer);
-    }
-
-	wvlt::initMtlb();
-	for(QString deer : dirs) /// each guy
+	/// Xenia - check all files markers
+	QString p = def::XeniaFolder + "/3Nov";
+	QDir dr(p);
+	for(QString str : dr.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
-		QString pew = workPath + slash + deer;
-		autos::GalyaProcessing(pew, 19, workPath + slash + getFileName(workPath) + "_results");
-		autos::GalyaWavelets(pew, 19, 250, workPath + slash + getFileName(workPath) + "_wavelet");
-	}
-	wvlt::termMtlb();
-
-	if(0)
-	{
-		ui->rereferenceDataComboBox->setCurrentText("Base");
-		for(QString deer : dirs) /// each guy
+		dr.cd(str);
+		for(QString str2 : dr.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 		{
-			QString pew = workPath + slash + deer;
-			for(QString fil : QDir().entryList(def::edfFilters)) /// each file
+			dr.cd(str2);
+			auto lst = dr.entryList(QDir::Files);
+			for(QString marker : {"_bd", "_bw", "_cr", "_fon", "_kh", "_no", "_sm"})
 			{
-				setEdfFile(pew + slash + fil);
-				rereferenceDataSlot();
+				bool peeew = false;
+				for(auto str3 : lst)
+				{
+					if(str3.contains(marker + ".edf")) peeew = true;
+				}
+				if(!peeew)
+				{
+					cout << dr.absolutePath() << ": no " << marker << endl;
+				}
+			}
+
+
+			dr.cdUp();
+		}
+		dr.cdUp();
+	}
+	exit(0);
+#endif
+
+#if 01
+	/// Xenia cut
+	QString initPath = "/media/Files/Data/Xenia/3Nov";
+	for(QString str : {"healthy", "moderate_TBI", "severe_TBI"})
+	{
+		QString workPath = initPath + slash + str;
+
+		/// repair dirs and files
+//		repair::deleteSpacesFolders(workPath);
+//		repair::toLatinDir(workPath, {});
+//		repair::toLowerDir(workPath, {});
+
+		/// list of guys
+		QStringList dirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+		for(QString guy : dirs)
+		{
+
+//			repair::fullRepairDir(workPath + myLib::slash + guy);
+			autos::GalyaCut(workPath + myLib::slash + guy, 16,
+							workPath + "_cut" + myLib::slash + guy);
+		}
+
+		if(0)
+		{
+			wvlt::initMtlb();
+			for(QString deer : dirs) /// each guy
+			{
+				QString pew = workPath + slash + deer;
+				autos::GalyaProcessing(pew, 19, workPath + slash + getFileName(workPath) + "_results");
+				autos::GalyaWavelets(pew, 19, 250, workPath + slash + getFileName(workPath) + "_wavelet");
+			}
+			wvlt::termMtlb();
+		}
+
+		if(0)
+		{
+			ui->rereferenceDataComboBox->setCurrentText("Base");
+			for(QString deer : dirs) /// each guy
+			{
+				QString pew = workPath + slash + deer;
+				for(QString fil : QDir().entryList(def::edfFilters)) /// each file
+				{
+					setEdfFile(pew + slash + fil);
+					rereferenceDataSlot();
+				}
 			}
 		}
 	}
@@ -262,15 +302,28 @@ void MainWindow::customFunc()
 #endif
 
 
+	//	auto lst = QDir(def::mriFolder).entryList(def::edfFilters);
+	//	for(QString str : lst)
+	//	{
+	//		QString dr = myLib::getExpNameLib(str);
+	////		cout << dr << endl;
+	//		QDir(def::mriFolder).mkdir(dr);
+	//		QFile::rename(def::mriFolder + slash + str,
+	//					  def::mriFolder + slash + dr + slash + str);
+	//	}
+	//	exit(0);
+	//	return;
+
 #if 0
     /// EEG fMRI
     def::ntFlag = true;
 
-//	QString guy = "Atanov";
-	for(QString guy : subjects::leest_mri)
-    {
-
-		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_winds_cleaned");
+	QString guy = "Sushinskaya";
+//	for(QString guy : subjects::leest_mri)
+//	for(QString guy : leest)
+	{
+		autos::GalyaCut(def::mriFolder + slash + guy, 2);
+//		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_winds_cleaned");
 	}
 
 //	QString type = "_med.getFreq()";
@@ -331,7 +384,6 @@ void MainWindow::customFunc()
 
 #if 0
     /// Dasha processing
-
 
     def::ntFlag = true; /// for Dasha's and EEGMRI
 //    def::ntFlag = false; /// encephalan (+1)
@@ -400,7 +452,7 @@ void MainWindow::customFunc()
 	/// averaging data in results files
 	const QString pth = "/media/Files/Data/Feedback/SuccessClass/Help/Succ";
 //	for(QString suf :{"_z", "_noz"})
-	QString suf = "_z";
+	QString suf = "_z_more";
 
 	{
 		QDir dr(pth + suf);
@@ -544,7 +596,6 @@ void MainWindow::customFunc()
     }
     exit(0);
 #endif
-
 
 #if 0
     /// compare data
