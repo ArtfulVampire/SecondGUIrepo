@@ -201,20 +201,18 @@ matrix readIITPfile(const QString & filePath)
 	inStr.ignore(64, '\n'); /// Frames Values Tstart Interval (ms)
 	uint numOfRows;
 	uint numOfCols;
-	inStr >> numOfRows >> numOfCols; inStr.ignore(64, '\n'); /// no need Tstart and inerval
-	cout << numOfRows << "\t" << numOfCols << endl;
+	inStr >> numOfRows >> numOfCols; inStr.ignore(128, '\n'); /// no need Tstart and inerval
+
 	inStr.ignore(512, '\n'); /// names of values
+
 	matrix res(numOfCols, numOfRows, 0); /// transposed
 	for(int i = 0; i < numOfRows; ++i)
 	{
 		inStr >> res[0][i]; /// ignore first value(time)
-		if(i < 10) cout << res[0][i] << endl;
 		for(int j = 0; j < numOfCols; ++j)
 		{
 			inStr >> res[j][i];
-			if(i < 10) cout << res[j][i] << "\t";
 		}
-		if(i < 10) cout << endl;
 	}
 	inStr.close();
 	return res;
@@ -234,14 +232,15 @@ void readIITPfile(const QString & filePath,
 	}
 
 	/// hat
-	inStr.ignore(64, '\n'); /// data
-	inStr.ignore(64, '\n'); /// name
-	inStr.ignore(64, '\n'); /// Hellow
-	inStr.ignore(64, '\n'); /// Dolly
-	inStr.ignore(128, '\n'); /// Frames Values Tstart Interval (ms)
-	uint numOfRows;
-	uint numOfCols;
-	inStr >> numOfRows >> numOfCols; inStr.ignore(128, '\n'); /// no need Tstart and inerval
+	inStr.ignore(256, '\n'); /// data
+	inStr.ignore(256, '\n'); /// name
+	inStr.ignore(256, '\n'); /// Hellow
+	inStr.ignore(256, '\n'); /// Dolly
+	inStr.ignore(256, '\n'); /// Frames Values Tstart Interval (ms)
+	int numOfRows;
+	int numOfCols;
+	inStr >> numOfRows >> numOfCols; inStr.ignore(256, '\n'); /// no need Tstart and inerval
+//	cout << numOfRows << '\t' << numOfCols << endl;
 
 	std::string tmp;
 	outLabels.resize(numOfCols);
@@ -263,6 +262,13 @@ void readIITPfile(const QString & filePath,
 		}
 	}
 	inStr.close();
+
+	for(int i = 0; i < outData.rows(); ++i)
+	{
+		outData[i] -= outData[i].sum() / outData[i].size();
+		outData[i] *= 1000; /// magic const
+	}
+
 }
 
 void readUCIdataSet(const QString & setName,

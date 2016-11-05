@@ -56,6 +56,7 @@ Cut::Cut() :
 //    ui->paintLengthDoubleSpinBox->setValue(4);
     ui->paintLengthDoubleSpinBox->setDecimals(1);
     ui->paintLengthDoubleSpinBox->setSingleStep(0.5);
+	/// can change
 	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / def::freq);
 
     ui->checkBox->setChecked(true);
@@ -501,6 +502,7 @@ void Cut::createImage(const QString & dataFileName)
 
 		/// crutch generality
 		def::freq = edfFil.getFreq();
+		ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / def::freq);
     }
 
 //	cout << "freq = " << def::freq << endl;

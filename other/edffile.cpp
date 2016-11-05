@@ -71,7 +71,7 @@ edfFile::edfFile(const edfFile &other, bool noData)
     }
     else
     {
-		this->edfData = edfDataType();
+		this->edfData = matrix();
     }
 }
 
@@ -196,6 +196,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		matrix iitpData{};
 		std::vector<QString> iitpLabels{};
 		myLib::readIITPfile(txtFilePath, iitpData, iitpLabels);
+
 		this->srate = 1000;
 
 		int numOfParams = iitpData.rows();
@@ -224,8 +225,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 
 		this->transducerType = std::vector<QString> (this->ns, fitString("IITP transducer", 80));
 		this->physDim = std::vector<QString> (this->ns, fitString("IITPdim", 8));
-		this->physMin.resize(this->ns, -128);
-		this->physMax.resize(this->ns, 128);
+		this->physMin.resize(this->ns, -2048);
+		this->physMax.resize(this->ns, 2048);
 
 		this->digMin.resize(this->ns, -32768);
 		this->digMax.resize(this->ns, 32768);
@@ -234,9 +235,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 											   fitString("IITP no prefiltering", 80));
 		this->reserved = std::vector<QString> (this->ns, fitString("IITP reserved", 32));
 
-		/// magic const generality - remake with matrix methods
-//		iitpData *= 50;
-
+//		this->edfData = matrix();
 		this->edfData = std::move(iitpData);
 		this->fitData(this->edfData.cols());
 
@@ -442,7 +441,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     {
         for(int i = 0; i < ns; ++i)
         {
-			if(labels[i].contains(QRegExp("E[EO]G")))
+			/// ECG for IITP
+			if(labels[i].contains(QRegExp("E[EOC]G")))
             {
                 /// encephalan only !!!!!1111
 				physMax[i] = 4096;
@@ -485,6 +485,9 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
     handleParamArray(prefiltering, ns, 80, readFlag, edfDescriptor, header);
     handleParamArray(nr, ns, 8, readFlag, edfDescriptor, header);
+
+	/// experimental
+//	def::freq = nr[0];
 
     // real length handler
     if(readFlag)
@@ -969,8 +972,7 @@ void edfFile::adjustMarkerChannel()
     this->adjustArraysByChannels();
 }
 
-/// vertical concatenation
-void edfFile::appendFile(QString addEdfPath, QString outPath) const
+void edfFile::vertcatFile(QString addEdfPath, QString outPath) const
 {
     edfFile temp(*this);
     edfFile addEdf;
@@ -1040,7 +1042,7 @@ void edfFile::downsample(double newFreq,
 	edfFile temp(*this);
 	if(newFreq > temp.getFreq()) // or not integer ratio
 	{
-		cout << "edfFile::downsample: wrong newFreq" << endl;
+		std::cout << "edfFile::downsample: wrong newFreq" << std::endl;
 		return;
 	}
 	if(chanList.empty())
@@ -1057,12 +1059,14 @@ void edfFile::downsample(double newFreq,
 	for(int numChan : chanList)
 	{
 		if(nr[numChan] == newFreq) continue;
+
 		int oldLen = temp.edfData[numChan].size();
 		double oldFreq = temp.getNr()[numChan];
 		temp.edfData[numChan] = myLib::refilter(temp.edfData[numChan],
-											 0,
-											 2 * newFreq,
-											 oldFreq);
+												0,
+												2 * newFreq,
+												false,
+												oldFreq);
 
 		for(int i = 0; i < oldLen * newFreq / oldFreq; ++i)
 		{
@@ -1087,7 +1091,8 @@ void edfFile::countFft()
     std::vector<int> chanList;
     for(int i = 0; i < this->ns; ++i)
     {
-        if(this->labels[i].contains(QRegExp("E[OE]G"))) // filter only EEG, EOG signals
+		/// ECG for IITP
+		if(this->labels[i].contains(QRegExp("E[OEC]G"))) // filter only EEG, EOG and ECG signals
         {
             chanList.push_back(i);
         }
@@ -1108,20 +1113,33 @@ void edfFile::refilter(const double & lowFreq,
                        const QString & newPath,
                        bool isNotch)
 {
-
-	int fftLength = fftL(this->dataLength);
-	double spStep = this->srate / double(fftLength);
-	std::valarray<double> spectre(2 * fftLength);
-
     std::vector<int> chanList;
     for(int i = 0; i < this->ns; ++i)
     {
         /// filter only EEG, EOG signals - look labels!!!!
-        if(this->labels[i].contains(QRegExp("E[OE]G")))
+		if(this->labels[i].contains(QRegExp("E[OEC]G")))
         {
             chanList.push_back(i);
         }
     }
+#if 1
+	/// new butterworth filtering
+	for(int j : chanList)
+	{
+
+		this->edfData[j] = myDsp::refilter(this->edfData[j],
+										   lowFreq,
+										   highFreq,
+										   isNotch,
+										   this->getNr()[j]);
+	}
+#else
+
+
+	/// old FFT filtering
+	int fftLength = fftL(this->dataLength);
+	double spStep = this->srate / double(fftLength);
+	std::valarray<double> spectre(2 * fftLength);
 
     if(this->fftData.empty())
 	{
@@ -1143,6 +1161,8 @@ void edfFile::refilter(const double & lowFreq,
 
 		this->edfData[j] = spectreCtoRrev(spectre);
     }
+#endif
+
     if(!newPath.isEmpty())
     {
         this->writeEdfFile(newPath);
@@ -1297,7 +1317,7 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
     }
 
 	edfFile temp(*this, true);
-	temp.edfData = edfDataType();
+	temp.edfData = matrix();
 	temp.edfData.resize(leest.length());
 	temp.channels.resize(leest.length());
 
@@ -1432,7 +1452,7 @@ void edfFile::writeOtherData(const matrix & newData,
                   std::end(chanList),
                   0);
     }
-	temp.edfData = edfDataType();
+	temp.edfData = matrix();
     temp.channels.clear();
     int num = 0;
     for(int item : chanList)

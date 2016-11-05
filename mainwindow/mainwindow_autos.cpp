@@ -202,7 +202,7 @@ void MainWindow::matiPreprocessingSlot()
                             + "_" + QString::number(session)
                             + ".edf"; // generality
 
-                    tempEdf.appendFile(addPath, outPath);
+                    tempEdf.vertcatFile(addPath, outPath);
 
 #if 0
                     // copy the same files into amod dir

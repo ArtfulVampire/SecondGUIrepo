@@ -40,12 +40,12 @@ public:
     ~MainWindow();
 
 public slots:
-    //other widgets
+	// other widgets
     void showNet();
     void showCountSpectra();
     void showCut();
 
-    //parameters processing
+	// parameters processing
     void setExpName();
     void setFileMarkers();
     void setNs();
@@ -53,8 +53,8 @@ public slots:
     void setNsSlot(int);
     void matiCheckBoxSlot(int a);
 
-    //in-window calculations, substantional actions
-    //files
+	// in-window calculations, substantional actions
+	// files
     void sliceAll();
 	void sliceWindFromReal();
     void reduceChannelsSlot();
@@ -79,13 +79,13 @@ public slots:
     void markerSetBinValueSlot();
 	void matiPreprocessingSlot();
 
-    //signals
+	// signals
     void processEyes();
     void ICA();
     void refilterDataSlot();
     void rereferenceDataSlot();
 
-    //other
+	// other
     void stop();
 
 

@@ -1,6 +1,79 @@
 #include "library.h"
 
 
+
+
+
+namespace myDsp
+{
+std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
+									  double lowFreq,
+									  double highFreq,
+									  bool isNotch,
+									  double srate)
+{
+	double * tempArr = new double [inputSignal.size()];
+	std::copy(std::begin(inputSignal), std::end(inputSignal), tempArr);
+
+	Dsp::Params params;
+	params[0] = srate; // sample rate
+	params[1] = 6; // order
+	params[2] = (lowFreq + highFreq) / 2; // center frequency
+	params[3] = highFreq - lowFreq; // band width
+
+
+	Dsp::Filter * f;
+	if(isNotch)
+	{
+		f = new Dsp::FilterDesign
+		<Dsp::Butterworth::Design::BandStop <6>, 1, Dsp::DirectFormII>;
+	}
+	else
+	{
+		f = new Dsp::FilterDesign
+		<Dsp::Butterworth::Design::BandPass <6>, 1, Dsp::DirectFormII>;
+	}
+
+	f->setParams(params);
+	f->process(inputSignal.size(), &tempArr);
+
+	std::valarray<double> res(inputSignal.size());
+	std::copy(tempArr, tempArr + inputSignal.size(), std::begin(res));
+	delete[] tempArr;
+	delete f;
+	return res;
+}
+std::valarray<double> refilter(const std::valarray<double> & inputSignal,
+							   double lowFreq,
+							   double highFreq,
+							   bool isNotch,
+							   double srate)
+{
+	std::valarray<double> tmp = refilterOneSide(inputSignal,
+												lowFreq,
+												highFreq,
+												isNotch,
+												srate);
+	// reverse signal
+	for(int i = 0; i < tmp.size() / 2; ++i)
+	{
+		std::swap(tmp[i], tmp[tmp.size() - 1 - i]);
+	}
+
+	tmp = refilterOneSide(tmp,
+						  lowFreq,
+						  highFreq,
+						  isNotch,
+						  srate);
+	// reverse back
+	for(int i = 0; i < tmp.size() / 2; ++i)
+	{
+		std::swap(tmp[i], tmp[tmp.size() - 1 - i]);
+	}
+	return tmp;
+}
+}
+
 using namespace std;
 using namespace std::chrono;
 using namespace smallLib;
@@ -356,7 +429,8 @@ std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
     double * pew = new double [2 * fftLen];
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
-	for(int i = 0; i < inputSignal.size(); ++i)
+	/// hope, size() is not too big
+	for(int i = 0; i < std::min(fftLen, int(inputSignal.size())); ++i)
     {
 		pew[2 * i] = inputSignal[i];
     }
@@ -387,7 +461,8 @@ std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
 	double * pew = new double [2 * fftLen];
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
-	for(int i = 0; i < inputSignal.size(); ++i)
+	/// hope, size() is not too big
+	for(int i = 0; i < std::min(fftLen, int(inputSignal.size())); ++i)
 	{
 		pew[2 * i] = inputSignal[i];
 	}
@@ -406,6 +481,11 @@ std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
 //								  const double srate.,
 								  int fftLen)
 {
+	{
+		std::cout << "spectreCtoR: should deal with fftLen, return" <<std::endl;
+		return {};
+	}
+
 	if(fftLen <= 0)
 	{
 		fftLen = smallLib::fftL(inputSignal.size());
@@ -433,10 +513,16 @@ std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
 	return res;
 }
 
+/// unused now
 std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 //								  const double srate,
-								  int fftLen)
+								  int fftLen) /// what is fftLen here?
 {
+	{
+		std::cout << "spectreCtoC: should deal with fftLen, return" <<std::endl;
+		return {};
+	}
+
 	if(fftLen <= 0)
 	{
 		fftLen = smallLib::fftL(inputSignal.size());
@@ -537,12 +623,6 @@ void refilterSpectre(std::valarray<double> & spectr,
 	// both lowLim and highLim are in/ex
 	if(!isNotch)
 	{
-//		spectr[std::slice(0, lowLim, 1)] = 0;
-//		spectr[std::slice(highLim, fftLen - highLim, 1)] = 0;
-//		spectr[std::slice(fftLen, fftLen - highLim, 1)] = 0;
-//		spectr[std::slice(2 * fftLen - lowLim, lowLim, 1)] = 0;
-
-
 		std::fill(std::begin(spectr),
 				  std::begin(spectr) + lowLim + 1,
 				  0.);

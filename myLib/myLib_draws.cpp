@@ -1391,6 +1391,7 @@ void drawCutOneChannel(const QString & inSpectraPath,
     cut.save(outPath, 0, 100);
 
 }
+
 ///// the same magic constants as in drawCutOneChannel
 QPixmap drawOneArray(const std::valarray<double> & arr,
 					 const QString & outPath,

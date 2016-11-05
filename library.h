@@ -15,6 +15,7 @@
 #include "coord.h"
 #include "matrix.h"
 #include "smallLib.h"
+#include <DspFilters/Dsp.h>
 
 #include <ios>
 #include <iostream>
@@ -87,6 +88,45 @@ int termMtlb();
 matrix cwt(const lineType & signal, double freq);
 void drawWaveletMtlb(const matrix & inData,
 					 QString picPath = QString());
+}
+#include <stdio.h>
+#include <complex>
+#include <cmath>
+#include <iostream>
+#include <vector>
+
+namespace btr
+{
+
+void zeros2coeffs(std::vector<std::complex<double>> & zeros,
+				  std::vector<std::complex<double>> & coeffs,
+				  int size); // symmetric polynoms
+void butterworth_poles(std::vector<std::complex<double>> & poles,
+					   int order,
+					   double cutoff); // cutoff Hz
+void butterworth_z_zeros(std::vector<std::complex<double>> & zeros, int order);
+double warp_freq(double freq, double Fs);
+void p2z(std::vector<std::complex<double>> & p,
+		 std::vector<std::complex<double>> & z,
+		 int size,
+		 double Fs);
+void inverse_poly(std::vector<std::complex<double>> & coeffs, int size);
+void print_line(int len = 80);
+int test();
+}
+
+namespace myDsp
+{
+std::valarray<double> refilter(const std::valarray<double> & inputSignal,
+							   double lowFreq,
+							   double highFreq,
+							   bool isNotch = false,
+							   double srate = 250.);
+std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
+									  double lowFreq,
+									  double highFreq,
+									  bool isNotch = false,
+									  double srate = 250.);
 }
 
 

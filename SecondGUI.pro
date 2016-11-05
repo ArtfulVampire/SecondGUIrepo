@@ -16,6 +16,9 @@ QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
 
+#DSP
+INCLUDEPATH += ./DSP
+
 #matlab cwt function
 LIBS += -L/media/Files/Matlab/Projects/libcwt_r/for_testing -lcwt_r
 INCLUDEPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
@@ -47,6 +50,7 @@ SOURCES += main.cpp\
     myLib/myLib_deprecate.cpp \
     myLib/myLib_dataHandler.cpp \
     myLib/myLib_smallFuncs.cpp \
+    myLib/myLib_butterworth.cpp \
     net/net.cpp \
     net/net_classification.cpp \
     net/net_setsgets.cpp \
@@ -61,7 +65,24 @@ SOURCES += main.cpp\
     classifier/classifier_rda.cpp \
     other/autos.cpp \
     classifier/classifier-data.cpp \
-    net/net_data.cpp
+    net/net_data.cpp \
+    DSP/Bessel.cpp \
+    DSP/Biquad.cpp \
+    DSP/Butterworth.cpp \
+    DSP/Cascade.cpp \
+    DSP/ChebyshevI.cpp \
+    DSP/ChebyshevII.cpp \
+    DSP/Custom.cpp \
+    DSP/Design.cpp \
+    DSP/Documentation.cpp \
+    DSP/Elliptic.cpp \
+    DSP/Filter.cpp \
+    DSP/Legendre.cpp \
+    DSP/Param.cpp \
+    DSP/PoleFilter.cpp \
+    DSP/RBJ.cpp \
+    DSP/RootFinder.cpp \
+    DSP/State.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -76,7 +97,30 @@ HEADERS  += mainwindow.h \
     smallLib.h \
     classifier.h \
     autos.h \
-    classifierdata.h
+    classifierdata.h \
+    DSP/DspFilters/Bessel.h \
+    DSP/DspFilters/Biquad.h \
+    DSP/DspFilters/Butterworth.h \
+    DSP/DspFilters/Cascade.h \
+    DSP/DspFilters/ChebyshevI.h \
+    DSP/DspFilters/ChebyshevII.h \
+    DSP/DspFilters/Common.h \
+    DSP/DspFilters/Custom.h \
+    DSP/DspFilters/Design.h \
+    DSP/DspFilters/Dsp.h \
+    DSP/DspFilters/Elliptic.h \
+    DSP/DspFilters/Filter.h \
+    DSP/DspFilters/Layout.h \
+    DSP/DspFilters/Legendre.h \
+    DSP/DspFilters/MathSupplement.h \
+    DSP/DspFilters/Params.h \
+    DSP/DspFilters/PoleFilter.h \
+    DSP/DspFilters/RBJ.h \
+    DSP/DspFilters/RootFinder.h \
+    DSP/DspFilters/SmoothedFilter.h \
+    DSP/DspFilters/State.h \
+    DSP/DspFilters/Types.h \
+    DSP/DspFilters/Utilities.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

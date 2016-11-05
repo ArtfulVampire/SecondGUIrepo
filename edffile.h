@@ -39,7 +39,7 @@ void myTransform(const QString & input, const int & len, char ** output);
 
 
 
-typedef matrix edfDataType;
+//typedef matrix edfDataType;
 
 struct edfChannel
 {
@@ -132,6 +132,10 @@ public:
 	edfFile(const edfFile & other, bool noData = false);
 	edfFile(const QString & txtFilePath, inst which = inst::mati);
 
+	edfFile & operator=(const edfFile & other) = default;
+	edfFile & operator=(edfFile && other) = default;
+
+	/// read/write
     void readEdfFile(QString EDFpath, bool headerOnly = false);
     void writeEdfFile(QString EDFpath, bool asPlain = false);
     void handleEdfFile(QString EDFpath,
@@ -140,26 +144,21 @@ public:
 
     void handleData(bool readFlag,
                     FILE * edfForData);
-
     void handleDatum(const int & currNs,
                      const int & currTimeIndex,
                      bool readFlag,
                      QString & ntAnnot,
                      FILE * edfForDatum);
-
     void writeMarker(const double & currDatum,
                      const int & currTimeIndex) const;
-
     void handleAnnotations(const int & currNs,
                            const int & currentTimeIndex,
                            QString helpString,
                            std::vector <QString> annotations);
 
-	edfFile & operator=(const edfFile & other) = default;
-	edfFile & operator=(edfFile && other) = default;
-
+	/// modify
     void adjustArraysByChannels();
-    void appendFile(QString addEdfPath, QString outPath) const;
+	void vertcatFile(QString addEdfPath, QString outPath) const;
     void concatFile(QString addEdfPath, QString outPath = QString());
     void countFft();
 	void refilter(const double & lowFreq,
@@ -224,7 +223,7 @@ private:
     QString headerRest = QString();
 
     std::vector<edfChannel> channels;
-	edfDataType edfData; // matrix.cpp
+	matrix edfData; // matrix.cpp
 	std::vector<std::valarray<double>> fftData{}; // mutable?
 
     int staSlice = 0; // yet not useful
@@ -283,10 +282,8 @@ public:
     // operations with data
 
 
-	const edfDataType & getData() const {return edfData;}
+	const matrix & getData() const {return edfData;}
 	void setData(int chanNum, int timeBin, double val) {edfData[chanNum][timeBin] = val;}
-
-//    void getDataCopy(edfDataType & destination) const {destination = data;}
 
     const lineType & operator [](int i) const
     {
