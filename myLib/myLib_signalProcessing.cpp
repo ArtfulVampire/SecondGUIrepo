@@ -12,12 +12,14 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 									  bool isNotch,
 									  double srate)
 {
+	const int order = 8;
+
 	double * tempArr = new double [inputSignal.size()];
 	std::copy(std::begin(inputSignal), std::end(inputSignal), tempArr);
 
 	Dsp::Params params;
 	params[0] = srate; // sample rate
-	params[1] = 6; // order
+	params[1] = order; // order
 	params[2] = (lowFreq + highFreq) / 2; // center frequency
 	params[3] = highFreq - lowFreq; // band width
 
@@ -26,12 +28,12 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 	if(isNotch)
 	{
 		f = new Dsp::FilterDesign
-		<Dsp::Butterworth::Design::BandStop <6>, 1, Dsp::DirectFormII>;
+		<Dsp::Butterworth::Design::BandStop <order>, 1, Dsp::DirectFormII>;
 	}
 	else
 	{
 		f = new Dsp::FilterDesign
-		<Dsp::Butterworth::Design::BandPass <6>, 1, Dsp::DirectFormII>;
+		<Dsp::Butterworth::Design::BandPass <order>, 1, Dsp::DirectFormII>;
 	}
 
 	f->setParams(params);

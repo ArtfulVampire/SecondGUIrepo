@@ -26,51 +26,66 @@ void MainWindow::customFunc()
 //	drawOneSignal(dr , 600,  def::iitpFolder + "/after.jpg");
 
 //	exit(0);
-//	return;
+	return;
 
 #if 01
 	/// IITP
 	def::ntFlag = true;
 
-	QString out = def::iitpFolder + "/XIX/Ira_eeg_00_f.edf";
-	edfFile fil;
-	fil.readEdfFile(def::iitpFolder + "/XIX/Ira_eeg_00.edf");
-	fil.refilter(0.5, 70, {}, false);
-	fil.refilter(45, 55, out, true);
-
-	return;
-//	int fftLe = 4096;
-//	double spStep = double(fil.getFreq()) / fftLe;
-//	std::valarray<double> spec = myLib::spectreRtoR(fil.getData()[0], fftLe) / 1e8;
-//	for(int i = 0; i < 1000; ++i)
-//	{
-//		cout << i * spStep << '\t' << spec[i] << endl;
-//	}
-
-
-//	drawOneSignal(spec, def::iitpFolder + "/XIX/spec.jpg");
-//	fil.vertcatFile(def::iitpFolder + "/XIX/Ira_00_dwn.edf",
-//					def::iitpFolder + "/XIX/Ira_00_f.edf");
-//	fil.downsample(250., def::iitpFolder + "/XIX/Ira_00_dwn.edf");
-	exit(0);
-
-//	repair::deleteSpacesDir(def::iitpFolder + "/XIX");
-
 	/// make edfs from dats
+	QString folder = "SVX";
+	QString guy = "Victor";
+//	repair::deleteSpacesDir(def::iitpFolder + slash + folder);
+//	repair::toLatinDir(def::iitpFolder + slash + folder);
+//	exit(0);
+	QString ExpNamePre;
+	QString ExpName;
+	edfFile fil;
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
+		fileNum = 14;
 		QString num = rightNumber(fileNum, 2);
-		if(!QFile::exists(def::iitpFolder + "/XIX/Ira_" + num + ".dat")) continue;
+		ExpNamePre = def::iitpFolder + slash +
+					 folder + slash + guy + "_";
 
-		edfFile fil1(def::iitpFolder + "/XIX/Ira_" + num + ".dat", inst::iitp);
-		fil1.writeEdfFile(def::iitpFolder + "/XIX/Ira_" + num + ".edf");
+#if 0
+		/// filter eeg edfs
+		ExpName = ExpNamePre + "eeg_" + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		ExpName.replace(".edf", "_f.edf");
+		fil.refilter(0.5, 70);
+		fil.refilter(45, 55, ExpName, true);
+		continue;
+#endif
+
+#if 01
+		/// filter double notch
+		ExpName = ExpNamePre + "eeg_" + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		ExpName.replace(".edf", "_2notch.edf");
+		fil.refilter(45, 55, {}, true);
+		fil.refilter(95, 105, ExpName, true);
+		break;
+		continue;
+#endif
+
+
+#if 0
+		/// dat to edf
+		ExpName = ExpNamePre + num + ".dat";
+		if(!QFile::exists(ExpName)) continue;
+		edfFile fil1(ExpName, inst::iitp);
+		ExpName.replace(".dat", ".edf");
+		fil1.writeEdfFile(ExpName);
+		continue;
+#endif
+
+		break;
 	}
-
-//	edfFile fil;
-//	fil.readEdfFile(def::iitpFolder + "/XIX/Ira_0" + nm(fileNum) + ".edf");
-//	fil.writeEdfFile(def::iitpFolder + "/XIX/Ira_0" + nm(fileNum) + ".scg", true);
-
-
 	exit(0);
 #endif
 

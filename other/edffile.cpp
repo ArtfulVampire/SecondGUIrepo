@@ -1085,6 +1085,24 @@ void edfFile::downsample(double newFreq,
 	temp.writeEdfFile(outPath);
 }
 
+int edfFile::findJump(int channel,
+					  int startPoint,
+					  double numSigmas)
+{
+	const int lenForSigma = 250;
+	std::valarray<double> & chan = edfData[channel];
+	for(int i = startPoint; i < chan.size(); ++i)
+	{
+		if(abs(chan[i + 1] - chan[i]) >
+		   numSigmas * smallLib::sigma(chan[std::slice(i - lenForSigma, lenForSigma, 1)]))
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+
 
 void edfFile::countFft()
 {
@@ -1122,8 +1140,9 @@ void edfFile::refilter(const double & lowFreq,
             chanList.push_back(i);
         }
     }
-#if 1
+#if 01
 	/// new butterworth filtering
+	/// faster and better on lower frequencies
 	for(int j : chanList)
 	{
 

@@ -171,9 +171,6 @@ public:
 	edfFile reduceChannels(const QString & chanStr) const;
     void removeChannels(const std::vector<int> & chanList);
 
-	void downsample(double newFreq,
-					QString outPath = QString(),
-					std::vector<int> chanList = std::vector<int>{}) const;
 
     void setLabels(const std::vector<QString> & inLabels);
     void setChannels(const std::vector<edfChannel> & inChannels);
@@ -189,6 +186,15 @@ public:
     void cutZerosAtEnd();
     void adjustMarkerChannel();
 	void repairPhysMax();
+
+	/// for iitp
+	void downsample(double newFreq,
+					QString outPath = QString(),
+					std::vector<int> chanList = std::vector<int>{}) const;
+	int findJump(int channel,
+				 int startPoint,
+				 double numSigmas = 5);
+
 
 
 private:
