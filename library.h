@@ -117,6 +117,16 @@ int test();
 
 namespace myDsp
 {
+std::valarray<double> reverseArray(std::valarray<double> & in);
+std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
+									 double cutoffFreq,
+									 double srate = 250.);
+std::valarray<double> lowPass(const std::valarray<double> & inputSignal,
+							  double cutoffFreq,
+							  double srate = 250.);
+
+
+/// bandPass/bandStop
 std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   double lowFreq,
 							   double highFreq,
@@ -543,7 +553,15 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   double srate = 250.);
 
 
-lineType fftWindow(int length, const QString & name = "Hann");
+std::valarray<double> fftWindow(int length, const QString & name = "Hann");
+
+std::valarray<double> upsample(const std::valarray<double> & inSignal,
+							   double oldFreq,
+							   double newFreq);
+
+std::valarray<double> downsample(const std::valarray<double> & inSignal,
+								 double oldFreq,
+								 double newFreq);
 
 
 void calcSpectre(const std::valarray<double> & inSignal,

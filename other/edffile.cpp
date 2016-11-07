@@ -1059,9 +1059,10 @@ void edfFile::downsample(double newFreq,
 	for(int numChan : chanList)
 	{
 		if(nr[numChan] == newFreq) continue;
-
 		int oldLen = temp.edfData[numChan].size();
 		double oldFreq = temp.getNr()[numChan];
+
+		/// downsampling itself
 		temp.edfData[numChan] = myLib::refilter(temp.edfData[numChan],
 												0,
 												2 * newFreq,
@@ -1073,9 +1074,50 @@ void edfFile::downsample(double newFreq,
 			temp.edfData[numChan][i] = temp.edfData[numChan][i * oldFreq / newFreq];
 		}
 		resizeValar(temp.edfData[numChan], oldLen * newFreq / oldFreq);
+
+
+
 		temp.nr[numChan] = newFreq;
 		temp.channels[numChan].nr = newFreq;
-//		temp.adjustArraysByChannels(); // it makes bad
+	}
+	if(outPath.isEmpty())
+	{
+		outPath = temp.getFilePath();
+		outPath.insert(outPath.lastIndexOf('.'), "_downsampled");
+	}
+	temp.writeEdfFile(outPath);
+}
+
+void edfFile::upsample(double newFreq,
+					   QString outPath,
+					   std::vector<int> chanList) const
+{
+	edfFile temp(*this);
+	if(newFreq > temp.getFreq()) // or not integer ratio
+	{
+		std::cout << "edfFile::downsample: wrong newFreq" << std::endl;
+		return;
+	}
+	if(chanList.empty())
+	{
+		chanList.resize(temp.ns);
+		std::iota(std::begin(chanList), std::end(chanList), 0);
+
+		auto it = std::find(std::begin(chanList), std::end(chanList), temp.markerChannel);
+		if(it != std::end(chanList))
+		{
+			chanList.erase(it);
+		}
+	}
+	for(int numChan : chanList)
+	{
+		if(nr[numChan] == newFreq) continue;
+
+		temp.edfData[numChan] = myLib::upsample(temp.edfData[numChan],
+												temp.nr[numChan],
+												newFreq);
+		temp.nr[numChan] = newFreq;
+		temp.channels[numChan].nr = newFreq;
 	}
 	if(outPath.isEmpty())
 	{
@@ -1135,17 +1177,18 @@ void edfFile::refilter(const double & lowFreq,
     for(int i = 0; i < this->ns; ++i)
     {
         /// filter only EEG, EOG signals - look labels!!!!
-		if(this->labels[i].contains(QRegExp("E[OEC]G")))
+		/// pewpew IITP
+		if(this->labels[i].contains(QRegExp("E[OEC]G")) ||
+		   this->labels[i].contains("IT"))
         {
             chanList.push_back(i);
         }
-    }
+	}
 #if 01
 	/// new butterworth filtering
 	/// faster and better on lower frequencies
 	for(int j : chanList)
 	{
-
 		this->edfData[j] = myDsp::refilter(this->edfData[j],
 										   lowFreq,
 										   highFreq,

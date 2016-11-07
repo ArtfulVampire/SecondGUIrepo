@@ -3,18 +3,70 @@
 
 
 
-
 namespace myDsp
 {
+std::valarray<double> reverseArray(std::valarray<double> & in)
+{
+	for(int i = 0; i < in.size() / 2; ++i)
+	{
+		std::swap(in[i], in[in.size() - 1 - i]);
+	}
+}
+
+std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
+									 double cutoffFreq,
+									 double srate)
+{
+	const int order = 6;
+
+	double * tempArr= new double [inputSignal.size()];
+	std::copy(std::begin(inputSignal), std::end(inputSignal), tempArr);
+
+	Dsp::Params params;
+	params[0] = srate; // sample rate
+	params[1] = order; // order
+	params[2] = cutoffFreq; // cutoff
+
+	Dsp::Filter * f = new Dsp::FilterDesign
+		<Dsp::Butterworth::Design::LowPass <order>, 1, Dsp::DirectFormII>;
+	f->setParams(params);
+	f->process(inputSignal.size(), &tempArr);
+
+	std::valarray<double> res(inputSignal.size());
+	std::copy(tempArr, tempArr + inputSignal.size(), std::begin(res));
+	delete f;
+	delete[] tempArr;
+
+	return res;
+}
+
+std::valarray<double> lowPass(const std::valarray<double> & inputSignal,
+							  double cutoffFreq,
+							  double srate)
+{
+	std::valarray<double> tmp = lowPassOneSide(inputSignal,
+											   cutoffFreq,
+											   srate);
+	// reverse signal
+	reverseArray(tmp);
+
+	tmp = lowPassOneSide(inputSignal,
+						 cutoffFreq,
+						 srate);
+	// reverse back
+	reverseArray(tmp);
+	return tmp;
+}
+
 std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 									  double lowFreq,
 									  double highFreq,
 									  bool isNotch,
 									  double srate)
 {
-	const int order = 8;
+	const int order = 6;
 
-	double * tempArr = new double [inputSignal.size()];
+	double * tempArr= new double [inputSignal.size()];
 	std::copy(std::begin(inputSignal), std::end(inputSignal), tempArr);
 
 	Dsp::Params params;
@@ -22,7 +74,6 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 	params[1] = order; // order
 	params[2] = (lowFreq + highFreq) / 2; // center frequency
 	params[3] = highFreq - lowFreq; // band width
-
 
 	Dsp::Filter * f;
 	if(isNotch)
@@ -35,16 +86,17 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 		f = new Dsp::FilterDesign
 		<Dsp::Butterworth::Design::BandPass <order>, 1, Dsp::DirectFormII>;
 	}
-
 	f->setParams(params);
 	f->process(inputSignal.size(), &tempArr);
 
 	std::valarray<double> res(inputSignal.size());
 	std::copy(tempArr, tempArr + inputSignal.size(), std::begin(res));
-	delete[] tempArr;
 	delete f;
+	delete[] tempArr;
+
 	return res;
 }
+
 std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   double lowFreq,
 							   double highFreq,
@@ -57,10 +109,7 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 												isNotch,
 												srate);
 	// reverse signal
-	for(int i = 0; i < tmp.size() / 2; ++i)
-	{
-		std::swap(tmp[i], tmp[tmp.size() - 1 - i]);
-	}
+	reverseArray(tmp);
 
 	tmp = refilterOneSide(tmp,
 						  lowFreq,
@@ -68,10 +117,7 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 						  isNotch,
 						  srate);
 	// reverse back
-	for(int i = 0; i < tmp.size() / 2; ++i)
-	{
-		std::swap(tmp[i], tmp[tmp.size() - 1 - i]);
-	}
+	reverseArray(tmp);
 	return tmp;
 }
 }
@@ -613,6 +659,31 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 
 	return spectreCtoRrev(spectr);
 }
+
+
+std::valarray<double> upsample(const std::valarray<double> & inSignal,
+							   double oldFreq,
+							   double newFreq)
+{
+	int rat = newFreq / oldFreq;
+	std::valarray<double> res(inSignal.size() * rat);
+	for(int i = 0; i < inSignal.size(); ++i)
+	{
+		res[i * rat] = inSignal[i];
+	}
+
+	res = myDsp::lowPass(res,
+						 newFreq / rat,
+						 newFreq);
+
+	return res;
+}
+
+
+std::valarray<double> downsample(const std::valarray<double> & inSignal,
+								 double oldFreq,
+								 double newFreq)
+{}
 
 void refilterSpectre(std::valarray<double> & spectr,
 					 int lowLim,

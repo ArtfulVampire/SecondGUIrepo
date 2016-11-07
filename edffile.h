@@ -191,6 +191,11 @@ public:
 	void downsample(double newFreq,
 					QString outPath = QString(),
 					std::vector<int> chanList = std::vector<int>{}) const;
+
+	void upsample(double newFreq,
+				  QString outPath = QString(),
+				  std::vector<int> chanList = std::vector<int>{}) const;
+
 	int findJump(int channel,
 				 int startPoint,
 				 double numSigmas = 5);

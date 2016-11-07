@@ -503,6 +503,7 @@ void Cut::createImage(const QString & dataFileName)
 		/// crutch generality
 		def::freq = edfFil.getFreq();
 		ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / def::freq);
+		this->resizeWidget(this->width() / def::freq);
     }
 
 //	cout << "freq = " << def::freq << endl;

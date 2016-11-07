@@ -454,7 +454,7 @@ void countChaosFeatures(const QString & filePath,
 
 	const QString ExpName = getFileName(filePath, false);
 	const QString d2dimFilePath = outPath + slash + ExpName + "_d2_dim.txt";
-	const QString hilbertFilePath = outPath + slash + ExpName + "_med.getFreq().txt";
+	const QString hilbertFilePath = outPath + slash + ExpName + "_med_freq.txt";
 
 	// remove previous
 	QFile::remove(d2dimFilePath);

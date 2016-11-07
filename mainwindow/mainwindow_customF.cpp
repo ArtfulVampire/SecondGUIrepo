@@ -11,24 +11,36 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-//	edfFile fl;
-//	fl.readEdfFile(def::iitpFolder + "/XIX/Ira_eeg_00.edf");
-//	std::valarray<double> dr = fl.getData()[0];
+//	return;
 
-//	resizeValar(dr, 2048);
-//	drawOneSignal(dr , 600,  def::iitpFolder + "/before.jpg");
+#if 0
+	/// thesholding pictures
+	QImage pic;
+	pic.load("/media/Files/Rep/home2.png");
+	const int thr = 170;
+	for(int i = 0; i < pic.width(); ++i)
+	{
+		for(int j = 0; j < pic.height(); ++j)
+		{
+			QColor color = QColor(pic.pixel(i, j));
 
-//	dr = fl.getData()[0];
-//	dr = myDsp::refilter(dr, 45, 55, true, 250.);
-//	dr = myDsp::refilter(dr, 0.5, 70, false, 250.);
+			if(color.red() > thr &&
+			   color.green() > thr &&
+			   color.blue() > thr)
+			{
+				pic.setPixelColor(i, j, QColor("white"));
+			}
+			else
+			{
+				pic.setPixelColor(i, j, QColor("black"));
+			}
+		}
+	}
+	pic.save("/media/Files/Rep/home2_.jpg", nullptr, 100);
+	exit(0);
+#endif
 
-//	resizeValar(dr, 2048);
-//	drawOneSignal(dr , 600,  def::iitpFolder + "/after.jpg");
-
-//	exit(0);
-	return;
-
-#if 01
+#if 0
 	/// IITP
 	def::ntFlag = true;
 
@@ -43,35 +55,10 @@ void MainWindow::customFunc()
 	edfFile fil;
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-		fileNum = 14;
+//		fileNum = 14;
 		QString num = rightNumber(fileNum, 2);
 		ExpNamePre = def::iitpFolder + slash +
 					 folder + slash + guy + "_";
-
-#if 0
-		/// filter eeg edfs
-		ExpName = ExpNamePre + "eeg_" + num + ".edf";
-		if(!QFile::exists(ExpName)) continue;
-		fil.readEdfFile(ExpName);
-
-		ExpName.replace(".edf", "_f.edf");
-		fil.refilter(0.5, 70);
-		fil.refilter(45, 55, ExpName, true);
-		continue;
-#endif
-
-#if 01
-		/// filter double notch
-		ExpName = ExpNamePre + "eeg_" + num + ".edf";
-		if(!QFile::exists(ExpName)) continue;
-		fil.readEdfFile(ExpName);
-
-		ExpName.replace(".edf", "_2notch.edf");
-		fil.refilter(45, 55, {}, true);
-		fil.refilter(95, 105, ExpName, true);
-		break;
-		continue;
-#endif
 
 
 #if 0
@@ -84,8 +71,62 @@ void MainWindow::customFunc()
 		continue;
 #endif
 
-		break;
+#if 0
+		/// filter EEG edfs
+		ExpName = ExpNamePre + "eeg_" + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		ExpName.replace(".edf", "_f.edf");
+		fil.refilter(0.5, 70);
+		fil.refilter(45, 55, ExpName, true);
+		continue;
+#endif
+
+#if 0
+		/// filter EEGs double notch
+		ExpName = ExpNamePre + "eeg_" + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		ExpName.replace(".edf", "_2notch.edf");
+		fil.refilter(45, 55, {}, true);
+		fil.refilter(95, 105, ExpName, true);
+		continue;
+#endif
+
+#if 0
+		/// downsample EMGs
+		ExpName = ExpNamePre + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		ExpName = ExpNamePre + num + "_dwn.edf";
+		fil.downsample(250., ExpName);
+
+//		break;
+
+//		continue;
+#endif
+
+#if 0
+		/// filter downsampled EMGs double notch
+		ExpName = ExpNamePre + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		fil.refilter(45, 55, {}, true);
+		fil.refilter(95, 105, {}, true);
+		ExpName = ExpNamePre + "emg_" + num + ".edf";
+		fil.writeEdfFile(ExpName);
+
+//		break;
+
+//		continue;
+#endif
+
 	}
+	return;
 	exit(0);
 #endif
 
@@ -317,7 +358,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// Xenia cut
 	QString initPath = "/media/Files/Data/Xenia/3Nov";
 	for(QString str : {"healthy", "moderate_TBI", "severe_TBI"})
@@ -385,12 +426,12 @@ void MainWindow::customFunc()
     /// EEG fMRI
     def::ntFlag = true;
 
-	QString guy = "Sushinskaya";
+	QString guy = "Degterev";
 //	for(QString guy : subjects::leest_mri)
 //	for(QString guy : leest)
 	{
-		autos::GalyaCut(def::mriFolder + slash + guy, 2);
-//		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_winds_cleaned");
+//		autos::GalyaCut(def::mriFolder + slash + guy, 2);
+		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_winds_cleaned");
 	}
 
 //	QString type = "_med.getFreq()";
