@@ -1050,6 +1050,7 @@ void edfFile::downsample(double newFreq,
 		chanList.resize(temp.ns);
 		std::iota(std::begin(chanList), std::end(chanList), 0);
 
+		/// really needed?
 		auto it = std::find(std::begin(chanList), std::end(chanList), temp.markerChannel);
 		if(it != std::end(chanList))
 		{
@@ -1059,24 +1060,10 @@ void edfFile::downsample(double newFreq,
 	for(int numChan : chanList)
 	{
 		if(nr[numChan] == newFreq) continue;
-		int oldLen = temp.edfData[numChan].size();
-		double oldFreq = temp.getNr()[numChan];
 
-		/// downsampling itself
-		temp.edfData[numChan] = myLib::refilter(temp.edfData[numChan],
-												0,
-												2 * newFreq,
-												false,
-												oldFreq);
-
-		for(int i = 0; i < oldLen * newFreq / oldFreq; ++i)
-		{
-			temp.edfData[numChan][i] = temp.edfData[numChan][i * oldFreq / newFreq];
-		}
-		resizeValar(temp.edfData[numChan], oldLen * newFreq / oldFreq);
-
-
-
+		temp.edfData[numChan] = myLib::downsample(temp.edfData[numChan],
+												  temp.nr[numChan],
+												  newFreq);
 		temp.nr[numChan] = newFreq;
 		temp.channels[numChan].nr = newFreq;
 	}
@@ -1103,6 +1090,7 @@ void edfFile::upsample(double newFreq,
 		chanList.resize(temp.ns);
 		std::iota(std::begin(chanList), std::end(chanList), 0);
 
+		/// really needed?
 		auto it = std::find(std::begin(chanList), std::end(chanList), temp.markerChannel);
 		if(it != std::end(chanList))
 		{

@@ -12,6 +12,7 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QMessageBox>
+
 #include "coord.h"
 #include "matrix.h"
 #include "smallLib.h"
@@ -89,11 +90,7 @@ matrix cwt(const lineType & signal, double freq);
 void drawWaveletMtlb(const matrix & inData,
 					 QString picPath = QString());
 }
-#include <stdio.h>
-#include <complex>
-#include <cmath>
-#include <iostream>
-#include <vector>
+
 
 namespace btr
 {
@@ -117,7 +114,7 @@ int test();
 
 namespace myDsp
 {
-std::valarray<double> reverseArray(std::valarray<double> & in);
+std::valarray<double> reverseArray(const std::valarray<double> & in);
 std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
 									 double cutoffFreq,
 									 double srate = 250.);

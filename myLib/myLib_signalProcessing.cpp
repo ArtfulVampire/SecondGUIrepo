@@ -5,12 +5,14 @@
 
 namespace myDsp
 {
-std::valarray<double> reverseArray(std::valarray<double> & in)
+std::valarray<double> reverseArray(const std::valarray<double> & in)
 {
-	for(int i = 0; i < in.size() / 2; ++i)
+	std::valarray<double> res(in.size());
+	for(int i = 0; i < in.size(); ++i)
 	{
-		std::swap(in[i], in[in.size() - 1 - i]);
+		res[i] = in[in.size() - 1 - i];
 	}
+	return res;
 }
 
 std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
@@ -19,21 +21,51 @@ std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
 {
 	const int order = 6;
 
-	double * tempArr= new double [inputSignal.size()];
+	double * tempArr;
+	try
+	{
+		 tempArr = new double [inputSignal.size()];
+	}
+	catch(std::bad_alloc)
+	{
+		std::cout << "bad alloc array" << std::endl;
+		exit(0);
+	}
+	catch(...)
+	{
+		throw;
+	}
 	std::copy(std::begin(inputSignal), std::end(inputSignal), tempArr);
+
 
 	Dsp::Params params;
 	params[0] = srate; // sample rate
 	params[1] = order; // order
 	params[2] = cutoffFreq; // cutoff
 
-	Dsp::Filter * f = new Dsp::FilterDesign
-		<Dsp::Butterworth::Design::LowPass <order>, 1, Dsp::DirectFormII>;
+
+	Dsp::Filter * f;
+	try
+	{
+		f = new Dsp::FilterDesign
+			<Dsp::Butterworth::Design::LowPass <order>, 1, Dsp::DirectFormII>;
+	}
+	catch(std::bad_alloc)
+	{
+		std::cout << "bad alloc filter" << std::endl;
+		exit(0);
+	}
+	catch(...)
+	{
+		throw;
+	}
 	f->setParams(params);
 	f->process(inputSignal.size(), &tempArr);
 
 	std::valarray<double> res(inputSignal.size());
-	std::copy(tempArr, tempArr + inputSignal.size(), std::begin(res));
+	std::copy(tempArr-1, tempArr + inputSignal.size()-1, std::begin(res));
+
+
 	delete f;
 	delete[] tempArr;
 
@@ -44,17 +76,24 @@ std::valarray<double> lowPass(const std::valarray<double> & inputSignal,
 							  double cutoffFreq,
 							  double srate)
 {
-	std::valarray<double> tmp = lowPassOneSide(inputSignal,
-											   cutoffFreq,
-											   srate);
-	// reverse signal
-	reverseArray(tmp);
+	std::valarray<double> tmp;
+
 
 	tmp = lowPassOneSide(inputSignal,
 						 cutoffFreq,
 						 srate);
+
+//	myLib::operator <<(std::cout, tmp);
+//	std::cout << std::endl;
+
+	// reverse signal
+	tmp = myDsp::reverseArray(tmp);
+	tmp = lowPassOneSide(tmp,
+						 cutoffFreq,
+						 srate);
+
 	// reverse back
-	reverseArray(tmp);
+	tmp = myDsp::reverseArray(tmp);
 	return tmp;
 }
 
@@ -673,7 +712,7 @@ std::valarray<double> upsample(const std::valarray<double> & inSignal,
 	}
 
 	res = myDsp::lowPass(res,
-						 newFreq / rat,
+						 oldFreq / rat,
 						 newFreq);
 
 	return res;
@@ -683,7 +722,19 @@ std::valarray<double> upsample(const std::valarray<double> & inSignal,
 std::valarray<double> downsample(const std::valarray<double> & inSignal,
 								 double oldFreq,
 								 double newFreq)
-{}
+{
+	int rat = oldFreq / newFreq;
+	std::valarray<double> res(inSignal.size() / rat);
+
+	/// downsampling itself
+	res = myDsp::lowPass(inSignal, 2 * newFreq, oldFreq);
+
+	for(int i = 0; i < inSignal.size() / rat; ++i)
+	{
+		res[i] = res[i * rat];
+	}
+	resizeValar(res, inSignal.size() / rat);
+}
 
 void refilterSpectre(std::valarray<double> & spectr,
 					 int lowLim,

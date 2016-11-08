@@ -11,6 +11,12 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
+//	edfFile fil;
+//	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+//	std::valarray<double> dt = fil.getData()[0];
+//	resizeValar(dt, 1000);
+
+//	dt = myLib::upsample(dt, 250, 1000);
 //	return;
 
 #if 0
