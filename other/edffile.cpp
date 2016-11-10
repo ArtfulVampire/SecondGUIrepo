@@ -117,8 +117,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 
 		this->labels = {fitString("AMOD amplX", 16),
 						fitString("AMOD amplY", 16),
-						fitString("AMOD.getFreq()X", 16),
-						fitString("AMOD.getFreq()Y", 16),
+						fitString("AMOD freqX", 16),
+						fitString("AMOD freqY", 16),
 						fitString("AMOD targX", 16),
 						fitString("AMOD targY", 16),
 						fitString("AMOD mouseX", 16),
@@ -449,6 +449,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 				physMin[i] = -4096;
 				digMax[i] = 32768;
 				digMin[i] = -32768;
+				def::ntFlag = true;
             }
             /// repair for equal phys min/max
             if(physMin[i] == physMax[i])

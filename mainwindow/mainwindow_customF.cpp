@@ -17,7 +17,7 @@ void MainWindow::customFunc()
 //	resizeValar(dt, 1000);
 
 //	dt = myLib::upsample(dt, 250, 1000);
-//	return;
+	return;
 
 #if 0
 	/// thesholding pictures
@@ -372,13 +372,14 @@ void MainWindow::customFunc()
 		QString workPath = initPath + slash + str;
 
 		/// repair dirs and files
-//		repair::deleteSpacesFolders(workPath);
+		repair::deleteSpacesFolders(workPath);
 //		repair::toLatinDir(workPath, {});
-//		repair::toLowerDir(workPath, {});
+		repair::toLowerDir(workPath, {});
 
 		/// list of guys
 		QStringList dirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 		for(QString guy : dirs)
+//		QString guy = "Larina_Irina_Igorevna_30";
 		{
 
 //			repair::fullRepairDir(workPath + myLib::slash + guy);
@@ -415,24 +416,82 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
+#if 0
+	/// Xenia TBI tables
+	def::ntFlag = false;
 
-	//	auto lst = QDir(def::mriFolder).entryList(def::edfFilters);
-	//	for(QString str : lst)
-	//	{
-	//		QString dr = myLib::getExpNameLib(str);
-	////		cout << dr << endl;
-	//		QDir(def::mriFolder).mkdir(dr);
-	//		QFile::rename(def::mriFolder + slash + str,
-	//					  def::mriFolder + slash + dr + slash + str);
-	//	}
-	//	exit(0);
-	//	return;
+	QString tbi_path = def::XeniaFolder + "/3Nov";
+//	bool skeep = true;
+	/// make tables
+	for(QString subdir : {"severe_TBI", "moderate_TBI", "severe_TBI"})
+	{
+		QString workPath = tbi_path + slash + subdir + "_tmp2";
+		for(QString marker : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
+		{
+			autos::makeTableFromRows(workPath,
+									 tbi_path + slash + subdir + "_table" + marker + ".txt",
+									 marker);
+		}
+	}
+	exit(0);
+	/// count
+	for(QString subdir : {"healthy", "moderate_TBI", "severe_TBI"})
+	{
+		QString workPath = tbi_path + slash + subdir;
+
+		/// list of guys
+		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+		for(QString guy : guys)
+		{
+//			if(!guy.contains("Larina")) continue;//skeep = false;
+//			if(skeep) continue;
+
+			QStringList t = QDir(workPath + slash + guy).entryList(def::edfFilters);
+			if(t.isEmpty()) continue;
+
+			QString ExpName = t[0];
+			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
+			autos::GalyaProcessing(workPath + slash + guy,
+								   19,
+								   workPath + "_tmp");
+			autos::GalyaWavelets(workPath + slash + guy,
+								 19,
+								 250,
+								 workPath + "_tmp");
+			QStringList fileNames;
+			for(QString marker : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
+			{
+				fileNames.clear();
+				for(QString typ : {"_alpha", "_d2_dim", "_med_freq", "_spectre", "_wavelet"})
+				{
+					fileNames << ExpName + marker + typ + ".txt";
+				}
+				autos::XeniaArrangeToLine(workPath + "_tmp",
+										  fileNames,
+										  workPath + "_tmp2" + slash
+										  + ExpName + marker + ".txt"); /// guy <-> ExpName
+			}
+
+			fileNames.clear();
+			for(QString marker : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
+			{
+				fileNames <<  ExpName + marker + ".txt"; /// guy <-> ExpName
+			}
+			autos::XeniaArrangeToLine(workPath + "_tmp2",
+									  fileNames,
+									  workPath + "_OUT" + slash
+									  + ExpName + ".txt"); /// guy <-> ExpName
+		}
+	}
+	exit(0);
+#endif
+
 
 #if 0
     /// EEG fMRI
     def::ntFlag = true;
 
-	QString guy = "Degterev";
+	QString guy = "Gladun";
 //	for(QString guy : subjects::leest_mri)
 //	for(QString guy : leest)
 	{
@@ -762,9 +821,9 @@ void MainWindow::customFunc()
 //        }
         for(const QString & guy : leest_audio)
         {
-			/// should be "alpha", "d2_dim", "med.getFreq()", "spectre"
+			/// should be "alpha", "d2_dim", "med_freq", "spectre"
             QStringList tryam = deer.entryList({guy + "*"});
-			if(tryam[1].contains("med.getFreq()"))
+			if(tryam[1].contains("med_freq"))
             {
                 std::swap(tryam[1], tryam[2]);
             }

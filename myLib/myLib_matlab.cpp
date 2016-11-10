@@ -51,7 +51,7 @@ matrix cwt(const lineType & signal, double freq)
 	{
 		initMtlb();
 	}
-	const int numFreqs = 19; /// number of.getFreq()uencies in cwt.m (2:1:20)
+	const int numFreqs = 19; /// number of frequencies in cwt.m (2:1:20)
 
 	mxArray * srate = mxCreateDoubleScalar(freq);
 	mxArray * inData = mxCreateDoubleMatrix(1, signal.size(), mxREAL);

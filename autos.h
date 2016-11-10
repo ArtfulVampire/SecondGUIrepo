@@ -40,6 +40,10 @@ void GalyaFull(const QString & inDirPath,
 			   int freq = 256,
 			   int rightNum = 3);
 
+void XeniaArrangeToLine(const QString & dirPath,
+						const QStringList & fileNames,
+						const QString & outFilePath);
+
 
 void makeRightNumbers(const QString & dirPath,
 					  int length = 3);

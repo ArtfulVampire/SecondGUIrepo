@@ -66,6 +66,7 @@ void makeTableFromRows(const QString & work,
 		outStr.write(contents);
 		outStr.write("\r\n");
 	}
+
 	outStr.close();
 }
 
@@ -134,6 +135,28 @@ matrix makeTestData(const QString & outPath)
 	return pewM;
 }
 
+
+void XeniaArrangeToLine(const QString & dirPath,
+						const QStringList & fileNames,
+						const QString & outFilePath)
+{
+	QDir().mkpath(myLib::getDirPathLib(outFilePath));
+	std::ofstream outStr;
+	outStr.open(outFilePath.toStdString());
+	std::ifstream inStr;
+	for(const QString & fileName : fileNames)
+	{
+		inStr.open((dirPath + slash + fileName).toStdString());
+		double val;
+		while(inStr.good() && !inStr.eof())
+		{
+			inStr >> val;
+			outStr << val << '\t';
+		}
+		inStr.close();
+	}
+	outStr.close();
+}
 
 
 
@@ -363,8 +386,9 @@ void countSpectraFeatures(const QString & filePath,
 
 	for(int i = 0; i < numChan; ++i)
 	{
-		/// norming is not necessary
-		helpSpectre = spectreRtoR(initEdf.getData()[i]);
+		/// norming is necessary
+		helpSpectre = spectreRtoR(initEdf.getData()[i]) *
+					  (2. / (double(initEdf.getData()[i].size()) * initEdf.getNr()[i]));
 		helpSpectre = smoothSpectre(helpSpectre,
 									ceil(10 * sqrt(initEdf.getDataLen() / 4096.)));
 
@@ -387,10 +411,10 @@ void countSpectraFeatures(const QString & filePath,
 		}
 		// max alpha magnitude
 		outAlphaStr << helpDouble << "\t";
-		// max alpha.getFreq()
+		// max alpha freq
 		outAlphaStr << helpInt * fr / smallLib::fftL(initEdf.getDataLen()) << "\t";
 
-		// integrate spectre near the needed.getFreq()s
+		// integrate spectre near the needed freqs
 		fullSpectre.clear();
 		for(double j = leftFreqLim;
 			j <= rightFreqLim;
@@ -682,7 +706,7 @@ void GalyaFull(const QString & inDirPath,
 	autos::makeRightNumbers(outPath,
 							rightNum);
 
-	for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med.getFreq()"})
+	for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
 	{
 		autos::makeTableFromRows(outPath,
 								 outDirPath + slash + outFileNames + type + ".txt",
