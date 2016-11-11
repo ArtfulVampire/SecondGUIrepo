@@ -17,7 +17,51 @@ void MainWindow::customFunc()
 //	resizeValar(dt, 1000);
 
 //	dt = myLib::upsample(dt, 250, 1000);
-	return;
+//	return;
+
+//	QDir dr("/media/Files/Data/Dasha/Totable");
+//	QStringList lst = dr.entryList(def::edfFilters);
+//	for(QString str : lst)
+//	{
+//		if(!str.contains(".edf") && !str.contains(".EDF"))
+//		{
+//			QFile::rename(dr.absolutePath() + slash + str,
+//						  dr.absolutePath() + slash + str + ".edf");
+//		}
+
+//		if(str.contains("_48.edf"))
+//		{
+//			QString newName = str;
+//			newName = newName.left(newName.indexOf('_'));
+//			newName += "_wc.edf";
+//			QFile::rename(dr.absolutePath() + slash + str,
+//						  dr.absolutePath() + slash + newName);
+//		}
+
+//#if 01
+		/// copy to folders
+//		QString newName = str;
+//		newName = newName.left(newName.indexOf('_'));
+//		if(!dr.exists(newName))
+//		{
+//			dr.mkdir(newName);
+//		}
+//		QFile::copy(dr.absolutePath() + slash + str,
+//					dr.absolutePath() + slash + newName + slash + str);
+//#endif
+
+//	}
+//exit(0);
+
+//	def::ntFlag = false;
+//	edfFile fil;
+//	fil.readEdfFile("/media/Files/Data/Xenia/3Nov/healthy_cut/Gai/Gai_bd_wnd_01.edf");
+//	matrix dt = fil.getData();
+//	dt.resizeCols(15);
+//	cout << dt << endl;
+//	exit(0);
+
+
 
 #if 0
 	/// thesholding pictures
@@ -372,9 +416,9 @@ void MainWindow::customFunc()
 		QString workPath = initPath + slash + str;
 
 		/// repair dirs and files
-		repair::deleteSpacesFolders(workPath);
+//		repair::deleteSpacesFolders(workPath);
 //		repair::toLatinDir(workPath, {});
-		repair::toLowerDir(workPath, {});
+//		repair::toLowerDir(workPath, {});
 
 		/// list of guys
 		QStringList dirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
@@ -418,24 +462,47 @@ void MainWindow::customFunc()
 
 #if 0
 	/// Xenia TBI tables
-	def::ntFlag = false;
+	def::ntFlag = true;
 
-	QString tbi_path = def::XeniaFolder + "/3Nov";
-//	bool skeep = true;
-	/// make tables
-	for(QString subdir : {"severe_TBI", "moderate_TBI", "severe_TBI"})
+//	QStringList markers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
+						"_cry", "_fire", "_flower", "_wc"};
+
+//	QStringList subdirs{"severe_TBI", "moderate_TBI", "severe_TBI"};
+	QStringList subdirs{"Totable"};
+
+//	QString tbi_path = def::XeniaFolder + "/3Nov";
+	QString tbi_path = "/media/Files/Data/Dasha";
+
+
+#if 0
+	/// make tables by stimulus
+	for(QString subdir : subdirs)
 	{
 		QString workPath = tbi_path + slash + subdir + "_tmp2";
-		for(QString marker : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
+		for(QString marker : markers)
 		{
 			autos::makeTableFromRows(workPath,
 									 tbi_path + slash + subdir + "_table" + marker + ".txt",
 									 marker);
 		}
 	}
+#endif
+
+#if 01
+	/// make tables whole
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + slash + subdir + "_OUT";
+		autos::makeTableFromRows(workPath,
+								 tbi_path + slash + subdir + "_all" + ".txt");
+	}
+#endif
 	exit(0);
+
+
 	/// count
-	for(QString subdir : {"healthy", "moderate_TBI", "severe_TBI"})
+	for(QString subdir : subdirs)
 	{
 		QString workPath = tbi_path + slash + subdir;
 
@@ -443,8 +510,7 @@ void MainWindow::customFunc()
 		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 		for(QString guy : guys)
 		{
-//			if(!guy.contains("Larina")) continue;//skeep = false;
-//			if(skeep) continue;
+//			cout << guy << endl; continue;
 
 			QStringList t = QDir(workPath + slash + guy).entryList(def::edfFilters);
 			if(t.isEmpty()) continue;
@@ -459,7 +525,7 @@ void MainWindow::customFunc()
 								 250,
 								 workPath + "_tmp");
 			QStringList fileNames;
-			for(QString marker : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
+			for(QString marker : markers)
 			{
 				fileNames.clear();
 				for(QString typ : {"_alpha", "_d2_dim", "_med_freq", "_spectre", "_wavelet"})
@@ -473,7 +539,7 @@ void MainWindow::customFunc()
 			}
 
 			fileNames.clear();
-			for(QString marker : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
+			for(QString marker : markers)
 			{
 				fileNames <<  ExpName + marker + ".txt"; /// guy <-> ExpName
 			}
@@ -487,11 +553,11 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
+#if 01
     /// EEG fMRI
-    def::ntFlag = true;
+	def::ntFlag = false;
 
-	QString guy = "Gladun";
+	QString guy = "Kalinin";
 //	for(QString guy : subjects::leest_mri)
 //	for(QString guy : leest)
 	{

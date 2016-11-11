@@ -224,8 +224,12 @@ void channelsOrderFile(const QString & inFilePath,
         }
     }
 
+//	cout << inFilePath << endl;
+//	cout << reorderChanList << endl;
+
     std::vector<int> ident(initFile.getNs());
     std::iota(std::begin(ident), std::end(ident), 0);
+
     if(reorderChanList != ident)
     {
         initFile.readEdfFile(inFilePath);
@@ -255,6 +259,7 @@ void channelsOrderDir(const QString & inDirPath,
         channelsOrderFile(inDirPath + slash + vec[i],
                             outDirPath + slash + outName,
                             standard);
+//		break;
     }
 }
 

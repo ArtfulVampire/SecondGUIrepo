@@ -447,9 +447,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                 /// encephalan only !!!!!1111
 				physMax[i] = 4096;
 				physMin[i] = -4096;
-				digMax[i] = 32768;
+				digMax[i] = 32767;
 				digMin[i] = -32768;
-				def::ntFlag = true;
             }
             /// repair for equal phys min/max
             if(physMin[i] == physMax[i])
@@ -1333,8 +1332,8 @@ edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much
 	}
 	/// if the cycle worked well
 	temp.adjustArraysByChannels();
-	return temp;
 
+	return temp;
 }
 
 void edfFile::removeChannels(const std::vector<int> & chanList)
