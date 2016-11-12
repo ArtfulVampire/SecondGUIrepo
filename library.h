@@ -349,34 +349,38 @@ QPixmap drawEeg(const matrix & dataD,
                 int blueChan = -1,
                 int redChan = -1);
 
-void drawOneSignal(const lineType & array, QString outPath);
-
 QPixmap drawOneSignal(const std::valarray<double> & signal,
 					  int picHeight = 600,
 					  QString outPath = QString());
 
-QPixmap drawOneTemplate(const int chanNum = -1,
-						const bool channelsFlag = true);
-void drawTemplate(const QString & outPath,
-                  bool channelsFlag = true,
-                  int width = 1600,
-                  int height = 1600);
 
-QPixmap drawOneArray(const std::valarray<double> & arr,
-					 const QString & outPath,
+QPixmap drawOneTemplate(const int chanNum = -1,
+						const bool channelsFlag = true,
+						const QString & savePath = QString(),
+						const double leftF = def::leftFreq,
+						const double rightF = def::rightFreq);
+
+QPixmap drawOneArray(const QString & templPath,
+					 const std::valarray<double> & arr,
+					 const QString & outPath =  QString(),
 					 const QString & color = "black",
 					 const int & lineWidth = 2);
 
+void drawTemplate(const QString & outPath,
+				  bool channelsFlag = true,
+				  int width = 1600,
+				  int height = 1600);
+
 void drawArray(const QString & templPath,
                const matrix & inData,
-//               const spectraGraphsNormalization normType = 0, ////// TODO
+//               const spectraGraphsNormalization normType = 0, ////// TO DO
                const QString & color = "black",
                const double & scaling = 1.,
                const int & lineWidth = 3);
 
 void drawArray(const QString & templPath,
                const lineType & inData,
-//               const spectraGraphsNormalization normType = 0, ////// TODO
+//               const spectraGraphsNormalization normType = 0, ////// TO DO
                const QString & color = "black",
                const double & scaling = 1.,
                const int & lineWidth = 3);
@@ -391,7 +395,6 @@ double drawArrays(const QString & templPath,
                 const double scaling = 1.,
                 const int lineWidth = 3);
 
-
 void drawArraysInLine(const QString & picPath,
                       const matrix & inMatrix,
 					  const std::vector<QColor> & colors = def::colours,
@@ -400,6 +403,15 @@ void drawArraysInLine(const QString & picPath,
 
 void drawCutOneChannel(const QString & inSpectraPath,
                        const int numChan);
+
+QPixmap drawOneSpectrum(const std::valarray<double> & signal,
+						const QString & outPath = QString(),
+						double leftFr = def::leftFreq,
+						double rightFr = def::rightFreq,
+						double srate = def::freq,
+						int numOfSmooth = 10,
+						const QString & color = "black",
+						const int & lineWidth = 2);
 
 
 
@@ -527,11 +539,14 @@ std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 //								  const double srate = 250.,
 								  int fftLen = -1);
 
+std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
+								   double leftFreq,
+								   double rightFreq,
+								   double srate = 250.);
 
 std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre);
 
 std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre);
-
 
 
 std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,

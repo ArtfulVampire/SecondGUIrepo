@@ -719,32 +719,6 @@ void drawMapSpline(const matrix & matrixA,
 }
 
 
-void drawOneSignal(const lineType & array,
-                  QString outPath)
-{
-    if(outPath.isEmpty()) return;
-
-    const double picH = 600;
-    const int penWidth = 2;
-
-    QPixmap pic(array.size(), picH);
-    pic.fill();
-    QPainter pnt;
-    pnt.begin(&pic);
-
-    const double maxVal = array.max();
-    pnt.setPen(QPen(QBrush("black"), penWidth));
-    for(int i = 0; i < pic.width() - 1; ++i)
-    {
-        pnt.drawLine(i,
-                     pic.height() * (1. - array[i] / maxVal),
-                     i + 1,
-                     pic.height() * (1. - array[i + 1] / maxVal));
-    }
-    pnt.end();
-    pic.save(outPath, 0, 100);
-}
-
 QPixmap drawOneSignal(const std::valarray<double> & signal,
 					  int picHeight,
 					  QString outPath)
@@ -776,7 +750,10 @@ QPixmap drawOneSignal(const std::valarray<double> & signal,
 }
 
 QPixmap drawOneTemplate(const int chanNum,
-						const bool channelsFlag)
+						const bool channelsFlag,
+						const QString & savePath,
+						const double leftF,
+						const double rightF)
 {
 	const int gap = 20;
 	const int fontSize = 24;
@@ -807,8 +784,8 @@ QPixmap drawOneTemplate(const int chanNum,
 	const double hzFontSize = fontSize / 3;
 	paint.setFont(QFont("Helvitica", int(hzFontSize)));
 
-	const double unit = (def::rightFreq - def::leftFreq) / graphWidth;
-	auto currFreq = [unit](int in) -> double {return def::leftFreq + in * unit;};
+	const double unit = (rightF - leftF) / graphWidth;
+	auto currFreq = [unit, leftF](int in) -> double {return leftF + in * unit;};
 
 	for(int k = 0; k < graphWidth + 1; ++k)
 	{
@@ -858,9 +835,11 @@ QPixmap drawOneTemplate(const int chanNum,
 							   Y - graphHeight + fontSize),
 					   helpString);
 	}
-
-
 	paint.end();
+	if(!savePath.isEmpty())
+	{
+		pic.save(savePath, nullptr, 100);
+	}
 	return pic;
 
 }
@@ -1393,12 +1372,62 @@ void drawCutOneChannel(const QString & inSpectraPath,
 }
 
 ///// the same magic constants as in drawCutOneChannel
-QPixmap drawOneArray(const std::valarray<double> & arr,
+QPixmap drawOneSpectrum(const std::valarray<double> & signal,
+						const QString & outPath,
+						double leftFr,
+						double rightFr,
+						double srate,
+						int numOfSmooth,
+						const QString & color,
+						const int & lineWidth)
+{
+	/// to namespace
+	const int gap = 20;
+	const int graphHeight = 250;
+	const int graphWidth = 250;
+
+
+	QPixmap pic = drawOneTemplate(-1, false, {}, leftFr, rightFr);
+	QPainter pnt;
+	pnt.begin(&pic);
+
+
+	std::valarray<double> drawArr = myLib::subSpectrumR(
+										myLib::smoothSpectre(myLib::spectreRtoR(signal),
+															 numOfSmooth),
+										leftFr,
+										rightFr,
+										srate);
+
+	const double X = gap;
+	const double Y = pnt.device()->height() - gap;
+	std::cout << drawArr.max() << std::endl;
+	const double norm = graphHeight / drawArr.max();
+	const double normX = double(drawArr.size()) / graphWidth;
+
+	pnt.setPen(QPen(QBrush(QColor(color)), lineWidth));
+	for(int k = 0; k < graphWidth - 1; ++k)
+	{
+		pnt.drawLine(QPoint(X + k,
+							Y - drawArr[k * normX] * norm),
+					 QPoint(X + k + 1,
+							Y - drawArr[(k + 1) * normX] * norm));
+	}
+	pnt.end();
+	if(!outPath.isEmpty())
+	{
+		pic.save(outPath, nullptr, 100);
+	}
+	return pic;
+}
+
+///// the same magic constants as in drawCutOneChannel
+QPixmap drawOneArray(const QString & templPath,
+					 const std::valarray<double> & arr,
 					 const QString & outPath,
 					 const QString & color,
 					 const int & lineWidth)
 {
-
 	/// to namespace
 	const int gap = 20;
 	const int graphHeight = 250;
@@ -1409,14 +1438,14 @@ QPixmap drawOneArray(const std::valarray<double> & arr,
 		return {};
 	}
 
-	QPixmap pic = drawOneTemplate(-1, false);
+	QPixmap pic;
 	QPainter pnt;
+	pic.load(templPath);
 	pnt.begin(&pic);
 
 	const double X = gap;
 	const double Y = pnt.device()->height() - gap;
-//	const double norm = graphHeight / arr.max();
-	const double norm = 250. / 12.;
+	const double norm = graphHeight / arr.max();
 
 	pnt.setPen(QPen(QBrush(QColor(color)), lineWidth));
 	for(int k = 0; k < graphWidth - 1; ++k)

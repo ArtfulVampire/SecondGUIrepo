@@ -634,6 +634,27 @@ std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 	return res;
 }
 
+std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
+								  double leftFreq,
+								  double rightFreq,
+								  double srate)
+{
+	double a = log2(inputSpectre.size());
+	if(a != double(int(a)))
+	{
+		std::cout << "subSpectrum: inputSpectre.size() is not power of 2" << endl;
+		return {};
+	}
+	int fftLen = inputSpectre.size();
+	int left = fftLimit(leftFreq, srate, fftLen);
+	int right = fftLimit(rightFreq, srate, fftLen);
+	std::valarray<double> res(right - left);
+	std::copy(std::begin(inputSpectre) + left,
+			  std::begin(inputSpectre) + right,
+			  std::begin(res));
+	return res;
+}
+
 std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre)
 {
 	/// check size?
@@ -2323,6 +2344,10 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 {
 	std::valarray<double> result = inSpectre;
     double help1, help2;
+
+	std::vector<double> coefs{1., 1., 1.};
+	coefs.push_back(1. / std::accumulate(std::begin(coefs), std::end(coefs), 0.));
+
     for(int num = 0; num < numOfSmooth; ++num)
     {
         help1 = result[0];
@@ -2330,6 +2355,9 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
         {
             help2 = result[i];
 			result[i] = (help1 + help2 + result[i + 1]) / 3.;
+//			result[i] = (help1 * coefs[0] +
+//						help2 * coefs[1] +
+//						result[i + 1] * coefs[2]) * coefs[3].;
             help1 = help2;
         }
     }

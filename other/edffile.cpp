@@ -445,10 +445,10 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			if(labels[i].contains(QRegExp("E[EOC]G")))
             {
                 /// encephalan only !!!!!1111
-				physMax[i] = 4096;
-				physMin[i] = -4096;
-				digMax[i] = 32767;
-				digMin[i] = -32768;
+//				physMax[i] = 4096;
+//				physMin[i] = -4096;
+//				digMax[i] = 32767;
+//				digMin[i] = -32768;
             }
             /// repair for equal phys min/max
             if(physMin[i] == physMax[i])
@@ -456,7 +456,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                 physMax[i] = physMin[i] + 1.;
             }
         }
-    }
+	}
     handleParamArray(physMin, ns, 8, readFlag, edfDescriptor, header);
     handleParamArray(physMax, ns, 8, readFlag, edfDescriptor, header);
     handleParamArray(digMin, ns, 8, readFlag, edfDescriptor, header);
@@ -553,7 +553,9 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     {
         annotations.clear();
 	}
+
     handleData(readFlag, edfDescriptor);
+
 
 
 //    cout << "ns = " << ns << endl;
@@ -1066,6 +1068,7 @@ void edfFile::downsample(double newFreq,
 												  newFreq);
 		temp.nr[numChan] = newFreq;
 		temp.channels[numChan].nr = newFreq;
+		temp.srate = newFreq;
 	}
 	if(outPath.isEmpty())
 	{
@@ -1080,9 +1083,9 @@ void edfFile::upsample(double newFreq,
 					   std::vector<int> chanList) const
 {
 	edfFile temp(*this);
-	if(newFreq > temp.getFreq()) // or not integer ratio
+	if(newFreq < temp.getFreq()) // or not integer ratio
 	{
-		std::cout << "edfFile::downsample: wrong newFreq" << std::endl;
+		std::cout << "edfFile::upsample: wrong newFreq" << std::endl;
 		return;
 	}
 	if(chanList.empty())
@@ -1106,11 +1109,12 @@ void edfFile::upsample(double newFreq,
 												newFreq);
 		temp.nr[numChan] = newFreq;
 		temp.channels[numChan].nr = newFreq;
+		temp.srate = newFreq;
 	}
 	if(outPath.isEmpty())
 	{
 		outPath = temp.getFilePath();
-		outPath.insert(outPath.lastIndexOf('.'), "_downsampled");
+		outPath.insert(outPath.lastIndexOf('.'), "_upsampled");
 	}
 	temp.writeEdfFile(outPath);
 }

@@ -43,11 +43,18 @@ Cut::Cut() :
     ui->eogDoubleSpinBox->setValue(2.40);
     ui->eogDoubleSpinBox->setSingleStep(0.1);
 
-    ui->drawNormDoubleSpinBox->setValue(1.);
-    ui->drawNormDoubleSpinBox->setMaximum(10.);
-    ui->drawNormDoubleSpinBox->setMinimum(0.01);
-    ui->drawNormDoubleSpinBox->setSingleStep(0.1);
-    ui->drawNormDoubleSpinBox->setDecimals(2);
+	ui->yNormDoubleSpinBox->setDecimals(2);
+	ui->yNormDoubleSpinBox->setMaximum(5.);
+	ui->yNormDoubleSpinBox->setMinimum(0.01);
+	ui->yNormDoubleSpinBox->setValue(1.);
+	ui->yNormDoubleSpinBox->setSingleStep(0.05);
+
+
+	ui->xNormDoubleSpinBox->setDecimals(2);
+	ui->xNormDoubleSpinBox->setMaximum(4.);
+	ui->xNormDoubleSpinBox->setMinimum(0.25);
+	ui->xNormDoubleSpinBox->setValue(1.);
+	ui->xNormDoubleSpinBox->setSingleStep(0.25);
 
 //    ui->paintStartDoubleSpinBox->setValue(0);
     ui->paintStartDoubleSpinBox->setDecimals(1);
@@ -111,7 +118,7 @@ Cut::Cut() :
 #endif
 
 	QObject::connect(undoZero, SIGNAL(activated()), this, SLOT(undoZeroSlot()));
-	QObject::connect(ui->drawNormDoubleSpinBox, SIGNAL(valueChanged(double)),
+	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
 	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
@@ -882,6 +889,9 @@ void Cut::paint() // save to tmp.jpg and display
     {
 		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * def::freq;
         rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
+
+		/// experimental xNorm
+		rightDrawLimit *= ui->xNormDoubleSpinBox->value();
     }
     else if(myFileType == fileType::real)
     {
@@ -891,18 +901,19 @@ void Cut::paint() // save to tmp.jpg and display
 
 //    cout << "paint: left = " << leftDrawLimit << "\tright = " << rightDrawLimit << endl;
 
-    currentPic = drawEeg(data3.subCols(leftDrawLimit, rightDrawLimit),
+	currentPic = drawEeg(data3.subCols(leftDrawLimit, rightDrawLimit),
                          def::ns,
                          rightDrawLimit - leftDrawLimit,
 						 def::freq,
                          helpString,
-                         ui->drawNormDoubleSpinBox->value(),
+						 ui->yNormDoubleSpinBox->value(),
                          blueCh,
                          redCh); // generality.getFreq()
 
     /// -20 for scroll bar generality
-	ui->picLabel->setPixmap(currentPic.scaled(currentPic.width(),
-                                              ui->scrollArea->height() - 20));
+	/// experimental xNorm
+	ui->picLabel->setPixmap(currentPic.scaled(currentPic.width() / ui->xNormDoubleSpinBox->value(),
+											  ui->scrollArea->height() - 20));
 
     rightLimit = rightDrawLimit - leftDrawLimit;
     leftLimit = 0;

@@ -11,47 +11,8 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-//	edfFile fil;
-//	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
-//	std::valarray<double> dt = fil.getData()[0];
-//	resizeValar(dt, 1000);
-
-//	dt = myLib::upsample(dt, 250, 1000);
 //	return;
 
-//	QDir dr("/media/Files/Data/Dasha/Totable");
-//	QStringList lst = dr.entryList(def::edfFilters);
-//	for(QString str : lst)
-//	{
-//		if(!str.contains(".edf") && !str.contains(".EDF"))
-//		{
-//			QFile::rename(dr.absolutePath() + slash + str,
-//						  dr.absolutePath() + slash + str + ".edf");
-//		}
-
-//		if(str.contains("_48.edf"))
-//		{
-//			QString newName = str;
-//			newName = newName.left(newName.indexOf('_'));
-//			newName += "_wc.edf";
-//			QFile::rename(dr.absolutePath() + slash + str,
-//						  dr.absolutePath() + slash + newName);
-//		}
-
-//#if 01
-		/// copy to folders
-//		QString newName = str;
-//		newName = newName.left(newName.indexOf('_'));
-//		if(!dr.exists(newName))
-//		{
-//			dr.mkdir(newName);
-//		}
-//		QFile::copy(dr.absolutePath() + slash + str,
-//					dr.absolutePath() + slash + newName + slash + str);
-//#endif
-
-//	}
-//exit(0);
 
 //	def::ntFlag = false;
 //	edfFile fil;
@@ -61,42 +22,27 @@ void MainWindow::customFunc()
 //	cout << dt << endl;
 //	exit(0);
 
-
-
-#if 0
-	/// thesholding pictures
-	QImage pic;
-	pic.load("/media/Files/Rep/home2.png");
-	const int thr = 170;
-	for(int i = 0; i < pic.width(); ++i)
-	{
-		for(int j = 0; j < pic.height(); ++j)
-		{
-			QColor color = QColor(pic.pixel(i, j));
-
-			if(color.red() > thr &&
-			   color.green() > thr &&
-			   color.blue() > thr)
-			{
-				pic.setPixelColor(i, j, QColor("white"));
-			}
-			else
-			{
-				pic.setPixelColor(i, j, QColor("black"));
-			}
-		}
-	}
-	pic.save("/media/Files/Rep/home2_.jpg", nullptr, 100);
+//	QString p = def::iitpFolder + "/XIrinaX/NEW_EEG/Ira_eeg_00.edf";
+	QString p = def::iitpFolder + "/XIrinaX/Ira_eeg_00.edf";
+//	QString p = "/media/Files/Data/AAX/AAX_rr.edf";
+	QString pf = def::iitpFolder + "/XIrinaX/Ira_eeg_00_f.edf";
+	QString pe = def::iitpFolder + "/XIrinaX/Ira_eeg_00.jpg";
+	edfFile fil;
+	fil.readEdfFile(p);
+//	fil.refilter(5, 70);
+//	fil.refilter(45, 55, pf, true);
+	drawOneSpectrum(fil.getData()[0],
+			pe,
+			0, 5, fil.getFreq(),
+			10);
 	exit(0);
-#endif
-
 #if 0
 	/// IITP
 	def::ntFlag = true;
 
 	/// make edfs from dats
-	QString folder = "SVX";
-	QString guy = "Victor";
+	QString folder = "XIrinaX";
+	QString guy = "Ira";
 //	repair::deleteSpacesDir(def::iitpFolder + slash + folder);
 //	repair::toLatinDir(def::iitpFolder + slash + folder);
 //	exit(0);
@@ -119,6 +65,21 @@ void MainWindow::customFunc()
 		ExpName.replace(".dat", ".edf");
 		fil1.writeEdfFile(ExpName);
 		continue;
+#endif
+
+#if 01
+		/// upsample EEGs
+		ExpName = ExpNamePre + "eeg_" + num + ".edf";
+//		cout << ExpName << endl; exit(0);
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		ExpName = ExpNamePre + "eeg_" + num + "_up.edf";
+		fil.upsample(1000., ExpName);
+
+		break;
+
+//		continue;
 #endif
 
 #if 0
@@ -553,7 +514,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 01
+#if 0
     /// EEG fMRI
 	def::ntFlag = false;
 
@@ -620,6 +581,42 @@ void MainWindow::customFunc()
 #endif
 
 
+#if 0
+	/// Dasha rename files totable
+	QDir dr("/media/Files/Data/Dasha/Totable");
+	QStringList lst = dr.entryList(def::edfFilters);
+	for(QString str : lst)
+	{
+		if(!str.contains(".edf") && !str.contains(".EDF"))
+		{
+			QFile::rename(dr.absolutePath() + slash + str,
+						  dr.absolutePath() + slash + str + ".edf");
+		}
+
+		if(str.contains("_48.edf"))
+		{
+			QString newName = str;
+			newName = newName.left(newName.indexOf('_'));
+			newName += "_wc.edf";
+			QFile::rename(dr.absolutePath() + slash + str,
+						  dr.absolutePath() + slash + newName);
+		}
+
+#if 01
+		/// copy to folders
+		QString newName = str;
+		newName = newName.left(newName.indexOf('_'));
+		if(!dr.exists(newName))
+		{
+			dr.mkdir(newName);
+		}
+		QFile::copy(dr.absolutePath() + slash + str,
+					dr.absolutePath() + slash + newName + slash + str);
+#endif
+
+	}
+exit(0);
+#endif
 
 #if 0
     /// Dasha processing
@@ -733,6 +730,35 @@ void MainWindow::customFunc()
 		}
 
 	}
+	exit(0);
+#endif
+
+
+
+#if 0
+	/// thesholding pictures
+	QImage pic;
+	pic.load("/media/Files/Rep/home2.png");
+	const int thr = 170;
+	for(int i = 0; i < pic.width(); ++i)
+	{
+		for(int j = 0; j < pic.height(); ++j)
+		{
+			QColor color = QColor(pic.pixel(i, j));
+
+			if(color.red() > thr &&
+			   color.green() > thr &&
+			   color.blue() > thr)
+			{
+				pic.setPixelColor(i, j, QColor("white"));
+			}
+			else
+			{
+				pic.setPixelColor(i, j, QColor("black"));
+			}
+		}
+	}
+	pic.save("/media/Files/Rep/home2_.jpg", nullptr, 100);
 	exit(0);
 #endif
 

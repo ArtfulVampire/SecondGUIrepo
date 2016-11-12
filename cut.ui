@@ -121,16 +121,6 @@
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="1">
-     <widget class="QDoubleSpinBox" name="drawNormDoubleSpinBox"/>
-    </item>
-    <item row="0" column="2">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>draw norm</string>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="0">
      <widget class="QPushButton" name="prevButton">
       <property name="text">
@@ -228,6 +218,26 @@
       </property>
      </widget>
     </item>
+    <item row="1" column="2">
+     <widget class="QDoubleSpinBox" name="yNormDoubleSpinBox"/>
+    </item>
+    <item row="1" column="3">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Y norm</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QDoubleSpinBox" name="xNormDoubleSpinBox"/>
+    </item>
+    <item row="2" column="3">
+     <widget class="QLabel" name="label_12">
+      <property name="text">
+       <string>X norm</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QWidget" name="layoutWidget">
@@ -236,7 +246,7 @@
      <x>560</x>
      <y>40</y>
      <width>231</width>
-     <height>91</height>
+     <height>95</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
@@ -272,7 +282,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>851</x>
