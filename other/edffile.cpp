@@ -1066,6 +1066,7 @@ void edfFile::downsample(double newFreq,
 		temp.edfData[numChan] = myLib::downsample(temp.edfData[numChan],
 												  temp.nr[numChan],
 												  newFreq);
+		if(numChan == 0) temp.dataLength = temp.edfData[numChan].size();
 		temp.nr[numChan] = newFreq;
 		temp.channels[numChan].nr = newFreq;
 		temp.srate = newFreq;
@@ -1107,6 +1108,10 @@ void edfFile::upsample(double newFreq,
 		temp.edfData[numChan] = myLib::upsample(temp.edfData[numChan],
 												temp.nr[numChan],
 												newFreq);
+
+		if(numChan == 0) temp.dataLength = temp.edfData[numChan].size();
+
+
 		temp.nr[numChan] = newFreq;
 		temp.channels[numChan].nr = newFreq;
 		temp.srate = newFreq;

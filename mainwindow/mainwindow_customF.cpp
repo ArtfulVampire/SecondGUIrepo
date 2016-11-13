@@ -22,21 +22,19 @@ void MainWindow::customFunc()
 //	cout << dt << endl;
 //	exit(0);
 
-//	QString p = def::iitpFolder + "/XIrinaX/NEW_EEG/Ira_eeg_00.edf";
-	QString p = def::iitpFolder + "/XIrinaX/Ira_eeg_00.edf";
-//	QString p = "/media/Files/Data/AAX/AAX_rr.edf";
-	QString pf = def::iitpFolder + "/XIrinaX/Ira_eeg_00_f.edf";
-	QString pe = def::iitpFolder + "/XIrinaX/Ira_eeg_00.jpg";
-	edfFile fil;
-	fil.readEdfFile(p);
-//	fil.refilter(5, 70);
-//	fil.refilter(45, 55, pf, true);
-	drawOneSpectrum(fil.getData()[0],
-			pe,
-			0, 5, fil.getFreq(),
-			10);
-	exit(0);
-#if 0
+//	QString p = def::iitpFolder + "/XIrinaX/Ira_eeg_00.edf";
+//	QString pe = def::iitpFolder + "/XIrinaX/Ira_eeg_00.jpg";
+//	QString p_up = def::iitpFolder + "/XIrinaX/Ira_eeg_00_up.edf";
+//	edfFile fil;
+//	fil.readEdfFile(p);
+//	fil.upsample(1000., p_up);
+//	drawOneSpectrum(fil.getData()[18],
+//			pe,
+//			0, 5, fil.getFreq(),
+//			10);
+//	return;
+//	exit(0);
+#if 01
 	/// IITP
 	def::ntFlag = true;
 
@@ -70,16 +68,15 @@ void MainWindow::customFunc()
 #if 01
 		/// upsample EEGs
 		ExpName = ExpNamePre + "eeg_" + num + ".edf";
-//		cout << ExpName << endl; exit(0);
 		if(!QFile::exists(ExpName)) continue;
 		fil.readEdfFile(ExpName);
 
 		ExpName = ExpNamePre + "eeg_" + num + "_up.edf";
 		fil.upsample(1000., ExpName);
 
-		break;
+//		break;
 
-//		continue;
+		continue;
 #endif
 
 #if 0

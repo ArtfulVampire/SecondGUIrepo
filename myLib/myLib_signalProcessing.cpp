@@ -77,8 +77,6 @@ std::valarray<double> lowPass(const std::valarray<double> & inputSignal,
 							  double srate)
 {
 	std::valarray<double> tmp;
-
-
 	tmp = lowPassOneSide(inputSignal,
 						 cutoffFreq,
 						 srate);
@@ -735,7 +733,7 @@ std::valarray<double> upsample(const std::valarray<double> & inSignal,
 	res = myDsp::lowPass(res,
 						 oldFreq / rat,
 						 newFreq);
-
+	res *= rat;
 	return res;
 }
 

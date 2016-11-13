@@ -75,6 +75,7 @@ private:
     int leftDrawLimit; /// in slices
 	int rightDrawLimit{0}; /// in slices
 	edfFile edfFil;
+	double currFreq{250};
 
     QStringList lst;
     QString currentFile;
