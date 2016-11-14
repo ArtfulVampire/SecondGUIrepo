@@ -12,7 +12,25 @@ void MainWindow::customFunc()
 	ui->realsButton->setChecked(true);
 
 //	return;
+	edfFile feel;
+	feel.readEdfFile("/media/Files/Data/Xenia/Temp/MAMAN_EC.edf");
 
+	auto a = feel.getData();
+	drawEeg(a, a.rows(), 0, 1500, 250., "/media/Files/Data/Xenia/Temp/f_0.jpg");
+
+	feel.refilter(0.01, 110, "/media/Files/Data/Xenia/Temp/MAMAN_EC_f.edf");
+	a = feel.getData();
+	drawEeg(a, a.rows(), 0, 1500, 250., "/media/Files/Data/Xenia/Temp/f_1.jpg");
+
+	feel.refilter(0.01, 110, "/media/Files/Data/Xenia/Temp/MAMAN_EC_f_f.edf");
+	a = feel.getData();
+	drawEeg(a, a.rows(), 0, 1500, 250., "/media/Files/Data/Xenia/Temp/f_2.jpg");
+
+	feel.refilter(0.01, 110, "/media/Files/Data/Xenia/Temp/MAMAN_EC_f_f_f.edf");
+	a = feel.getData();
+	drawEeg(a, a.rows(), 0, 1500, 250., "/media/Files/Data/Xenia/Temp/f_3.jpg");
+
+	exit(0);
 
 //	def::ntFlag = false;
 //	edfFile fil;
@@ -34,7 +52,7 @@ void MainWindow::customFunc()
 //			10);
 //	return;
 //	exit(0);
-#if 01
+#if 0
 	/// IITP
 	def::ntFlag = true;
 
@@ -366,7 +384,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// Xenia cut
 	QString initPath = "/media/Files/Data/Xenia/3Nov";
 	for(QString str : {"healthy", "moderate_TBI", "severe_TBI"})
@@ -383,10 +401,25 @@ void MainWindow::customFunc()
 		for(QString guy : dirs)
 //		QString guy = "Larina_Irina_Igorevna_30";
 		{
+			QStringList files = QDir(workPath + slash + guy).entryList(def::edfFilters);
+			for(QString fileName : files)
+			{
+				edfFile fil;
+//				cout << workPath + slash + guy + slash + fileName << endl;
+				fil.readEdfFile(workPath + slash + guy + slash + fileName);
+				for(int i = 0; i < fil.getNs(); ++i)
+				{
+					if(fil.getPhysMax()[i] > 4100 && fil.getPhysMax()[i] < 32766)
+					{
+						cout << fileName << endl;
+						break;
+					}
+				}
+			}
 
 //			repair::fullRepairDir(workPath + myLib::slash + guy);
-			autos::GalyaCut(workPath + myLib::slash + guy, 16,
-							workPath + "_cut" + myLib::slash + guy);
+//			autos::GalyaCut(workPath + myLib::slash + guy, 16,
+//							workPath + "_cut" + myLib::slash + guy);
 		}
 
 		if(0)

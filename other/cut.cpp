@@ -510,7 +510,7 @@ void Cut::createImage(const QString & dataFileName)
 
 		/// crutch generality		
 		ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
-		this->resizeWidget(this->width() / currFreq);
+		this->resizeWidget((this->width() - 20) / currFreq);
     }
 
     /// if too long?

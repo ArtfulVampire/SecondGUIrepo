@@ -145,8 +145,9 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 												highFreq,
 												isNotch,
 												srate);
+#if 01
 	// reverse signal
-	reverseArray(tmp);
+	tmp = reverseArray(tmp);
 
 	tmp = refilterOneSide(tmp,
 						  lowFreq,
@@ -154,7 +155,8 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 						  isNotch,
 						  srate);
 	// reverse back
-	reverseArray(tmp);
+	tmp = reverseArray(tmp);
+#endif
 	return tmp;
 }
 }
