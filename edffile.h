@@ -159,7 +159,7 @@ public:
 	/// modify
     void adjustArraysByChannels();
 	void vertcatFile(QString addEdfPath, QString outPath) const;
-    void concatFile(QString addEdfPath, QString outPath = QString());
+	edfFile & concatFile(QString addEdfPath, QString outPath = QString());
     void countFft();
 	void refilter(const double & lowFreq,
 				  const double & highFreq,
@@ -310,6 +310,7 @@ public:
 
     std::list<std::valarray<double>> getDataAsList() const;
     void setDataFromList(const std::list<std::valarray<double>> & inList);
+	void repairThousand(const QString & outPath, int denominator = 1000.);
 
 };
 

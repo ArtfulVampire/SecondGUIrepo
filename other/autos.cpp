@@ -149,10 +149,13 @@ void XeniaArrangeToLine(const QString & dirPath,
 	{
 		inStr.open((dirPath + slash + fileName).toStdString());
 		double val;
-		while(inStr.good() && !inStr.eof())
+		while(inStr.good())
 		{
 			inStr >> val;
-			outStr << val << '\t';
+			if(!inStr.eof())
+			{
+				outStr << val << '\t';
+			}
 		}
 		inStr.close();
 	}
@@ -375,14 +378,15 @@ void countSpectraFeatures(const QString & filePath,
 
 	int helpInt;
 	double helpDouble;
-	vectType fullSpectre;
-	lineType helpSpectre;
+	std::vector<double> fullSpectre;
+	std::valarray<double> helpSpectre;
 
 	edfFile initEdf;
 	initEdf.setMatiFlag(false);
 	initEdf.readEdfFile(filePath);
 
 
+	const int dataL = initEdf.getDataLen();
 	const double fr = initEdf.getFreq();
 
 	for(int i = 0; i < numChan; ++i)
@@ -391,17 +395,17 @@ void countSpectraFeatures(const QString & filePath,
 		helpSpectre = spectreRtoR(initEdf.getData()[i]) *
 					  (2. / (double(initEdf.getData()[i].size()) * initEdf.getNr()[i]));
 		helpSpectre = smoothSpectre(helpSpectre,
-									ceil(10 * sqrt(initEdf.getDataLen() / 4096.)));
+									ceil(10 * sqrt(dataL / 4096.))); /// magic constant
 
 		// count individual alpha peak
 		helpDouble = 0.;
 		helpInt = 0;
 		for(int k = fftLimit(alphaMaxLimLeft,
 							 fr,
-							 smallLib::fftL(initEdf.getDataLen()));
+							 smallLib::fftL(dataL));
 			k < fftLimit(alphaMaxLimRight,
 						 fr,
-						 smallLib::fftL(initEdf.getDataLen()));
+						 smallLib::fftL(dataL));
 			++k)
 		{
 			if(helpSpectre[k] > helpDouble)
@@ -413,7 +417,8 @@ void countSpectraFeatures(const QString & filePath,
 		// max alpha magnitude
 		outAlphaStr << helpDouble << "\t";
 		// max alpha freq
-		outAlphaStr << helpInt * fr / smallLib::fftL(initEdf.getDataLen()) << "\t";
+		outAlphaStr << helpInt * fr / smallLib::fftL(dataL) << "\t";
+
 
 		// integrate spectre near the needed freqs
 		fullSpectre.clear();
@@ -425,16 +430,17 @@ void countSpectraFeatures(const QString & filePath,
 			helpInt = 0;
 			for(int k = fftLimit(j - spectreStepFreq / 2.,
 								 fr,
-								 smallLib::fftL(initEdf.getDataLen()));
+								 smallLib::fftL(dataL));
 				k < fftLimit(j + spectreStepFreq / 2.,
 							 fr,
-							 smallLib::fftL(initEdf.getDataLen()));
+							 smallLib::fftL(dataL));
 				++k)
 			{
 				helpDouble += helpSpectre[k];
 				++helpInt;
 			}
-			fullSpectre.push_back(helpDouble/helpInt);
+			/// normalize spectre to unit sum
+			fullSpectre.push_back(helpDouble / helpInt);
 		}
 
 #if 0
@@ -499,29 +505,27 @@ void countChaosFeatures(const QString & filePath,
 	initEdf.setMatiFlag(false);
 	initEdf.readEdfFile(filePath);
 
+	const matrix BACKUP = initEdf.getData();
+	matrix currMat = matrix();
 	const double fr = initEdf.getFreq();
 
 	for(double freqCounter = leftFreqLim;
-	freqCounter <= rightFreqLim;
-	freqCounter += stepFreq)
+		freqCounter <= rightFreqLim;
+		freqCounter += stepFreq)
 	{
 		/// remake further, non-filtered first
 		if(freqCounter != rightFreqLim)
 		{
-			initEdf.refilter(freqCounter, freqCounter + stepFreq);
+			currMat = myDsp::refilter(BACKUP, freqCounter, freqCounter + stepFreq);
 		}
 		else
 		{
-			/// reread file
-			initEdf.readEdfFile(initEdf.getFilePath());
-			/// or refilter 0. 70.
+			currMat = BACKUP;
 		}
-
-		// write d2 dimension
 
 		for(int i = 0; i < numChan; ++i)
 		{
-			helpDouble = fractalDimension(initEdf.getData()[i]);
+			helpDouble = fractalDimension(currMat[i]);
 			outDimStr << smallLib::doubleRound(helpDouble, 4) << "\t";
 		}
 
@@ -553,7 +557,7 @@ void countChaosFeatures(const QString & filePath,
 		for(int i = 0; i < numChan; ++i)
 		{
 			//                helpString.clear(); // no pictures
-			env = myLib::hilbertPieces(initEdf.getData()[i],
+			env = myLib::hilbertPieces(currMat[i],
 //								initEdf.getDataLen(),
 								fr,
 								1., /// no difference - why?
@@ -599,7 +603,8 @@ void countChaosFeatures(const QString & filePath,
 			outHilbertStr << smallLib::doubleRound(helpDouble, 4) << "\t";
 
 			/// experimental add
-			outHilbertStr << smallLib::doubleRound(smallLib::sigma(env) / smallLib::mean(env), 4) << "\t";
+			outHilbertStr << smallLib::doubleRound(smallLib::sigma(env) / smallLib::mean(env), 4)
+						  << "\t";
 		}
 	}
 	outDimStr.close();

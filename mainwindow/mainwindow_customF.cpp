@@ -12,46 +12,31 @@ void MainWindow::customFunc()
 	ui->realsButton->setChecked(true);
 
 //	return;
-	edfFile feel;
-	feel.readEdfFile("/media/Files/Data/Xenia/Temp/MAMAN_EC.edf");
 
-	auto a = feel.getData();
-	drawEeg(a, a.rows(), 0, 1500, 250., "/media/Files/Data/Xenia/Temp/f_0.jpg");
+#if 0
+	/// Baklushev draw
 
-	feel.refilter(0.01, 110, "/media/Files/Data/Xenia/Temp/MAMAN_EC_f.edf");
-	a = feel.getData();
-	drawEeg(a, a.rows(), 0, 1500, 250., "/media/Files/Data/Xenia/Temp/f_1.jpg");
+	QString dr = "/media/Files/Data/Baklushev";
+	for(QString guy : QDir(dr).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+	{
+		QString filePath = dr + slash + guy + slash + guy + ".EDF";
 
-	feel.refilter(0.01, 110, "/media/Files/Data/Xenia/Temp/MAMAN_EC_f_f.edf");
-	a = feel.getData();
-	drawEeg(a, a.rows(), 0, 1500, 250., "/media/Files/Data/Xenia/Temp/f_2.jpg");
+		edfFile fil;
+		fil.readEdfFile(filePath);
+		std::vector<int> rdc(22);
+		std::iota(std::begin(rdc), std::end(rdc), 0);
+		rdc[19] = 22;
+		rdc[20] = 23;
+		rdc.back() = fil.getMarkChan();
 
-	feel.refilter(0.01, 110, "/media/Files/Data/Xenia/Temp/MAMAN_EC_f_f_f.edf");
-	a = feel.getData();
-	drawEeg(a, a.rows(), 0, 1500, 250., "/media/Files/Data/Xenia/Temp/f_3.jpg");
 
-	exit(0);
+		QString newPath = dr + slash + guy + slash + guy + ".edf";
+		(fil.reduceChannels(rdc)).writeEdfFile(newPath);
+	}
+	exit(2);
+#endif
 
-//	def::ntFlag = false;
-//	edfFile fil;
-//	fil.readEdfFile("/media/Files/Data/Xenia/3Nov/healthy_cut/Gai/Gai_bd_wnd_01.edf");
-//	matrix dt = fil.getData();
-//	dt.resizeCols(15);
-//	cout << dt << endl;
-//	exit(0);
 
-//	QString p = def::iitpFolder + "/XIrinaX/Ira_eeg_00.edf";
-//	QString pe = def::iitpFolder + "/XIrinaX/Ira_eeg_00.jpg";
-//	QString p_up = def::iitpFolder + "/XIrinaX/Ira_eeg_00_up.edf";
-//	edfFile fil;
-//	fil.readEdfFile(p);
-//	fil.upsample(1000., p_up);
-//	drawOneSpectrum(fil.getData()[18],
-//			pe,
-//			0, 5, fil.getFreq(),
-//			10);
-//	return;
-//	exit(0);
 #if 0
 	/// IITP
 	def::ntFlag = true;
@@ -354,9 +339,9 @@ void MainWindow::customFunc()
 
 #if 0
 	/// Xenia - check all files markers
-	QString p = def::XeniaFolder + "/3Nov";
+	QString p = def::XeniaFolder + "/15Nov";
 	QDir dr(p);
-	for(QString str : dr.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+	for(QString str : {"healthy", "moderate_TBI", "severe_TBI"})
 	{
 		dr.cd(str);
 		for(QString str2 : dr.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
@@ -384,9 +369,9 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// Xenia cut
-	QString initPath = "/media/Files/Data/Xenia/3Nov";
+	QString initPath = "/media/Files/Data/Xenia/15Nov";
 	for(QString str : {"healthy", "moderate_TBI", "severe_TBI"})
 	{
 		QString workPath = initPath + slash + str;
@@ -395,31 +380,41 @@ void MainWindow::customFunc()
 //		repair::deleteSpacesFolders(workPath);
 //		repair::toLatinDir(workPath, {});
 //		repair::toLowerDir(workPath, {});
+//		continue;
 
 		/// list of guys
 		QStringList dirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-		for(QString guy : dirs)
-//		QString guy = "Larina_Irina_Igorevna_30";
+		if(1)
 		{
-			QStringList files = QDir(workPath + slash + guy).entryList(def::edfFilters);
-			for(QString fileName : files)
+			for(QString guy : dirs)
+				//		QString guy = "Larina_Irina_Igorevna_30";
 			{
-				edfFile fil;
-//				cout << workPath + slash + guy + slash + fileName << endl;
-				fil.readEdfFile(workPath + slash + guy + slash + fileName);
-				for(int i = 0; i < fil.getNs(); ++i)
-				{
-					if(fil.getPhysMax()[i] > 4100 && fil.getPhysMax()[i] < 32766)
-					{
-						cout << fileName << endl;
-						break;
-					}
-				}
-			}
+//				QStringList files = QDir(workPath + slash + guy).entryList(def::edfFilters);
+//				for(QString fileName : files)
+//				{
 
-//			repair::fullRepairDir(workPath + myLib::slash + guy);
-//			autos::GalyaCut(workPath + myLib::slash + guy, 16,
-//							workPath + "_cut" + myLib::slash + guy);
+					edfFile fil;
+
+//					if(fil.getPhysMax()[0] > 4100)
+//					{
+//						cout << workPath + slash + guy + slash + fileName << endl;
+//						break;
+//					}
+
+//					if(fileName.contains("Portnova") || fileName.contains("Natasha_Ber"))
+//					{
+//						fil.readEdfFile(workPath + slash + guy + slash + fileName);
+//						fil.refilter(1.6, 30,
+//									 workPath + slash + guy + slash + fileName,
+//									 false);
+//						cout << fileName << endl;
+//					}
+
+//				}
+
+				autos::GalyaCut(workPath + slash + guy, 8,
+								workPath + "_cut" + slash + guy);
+			}
 		}
 
 		if(0)
@@ -451,22 +446,23 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 0
-	/// Xenia TBI tables
+#if 01
+	/// tables
 	def::ntFlag = true;
 
 //	QStringList markers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
 	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
 						"_cry", "_fire", "_flower", "_wc"};
 
-//	QStringList subdirs{"severe_TBI", "moderate_TBI", "severe_TBI"};
-	QStringList subdirs{"Totable"};
-
 //	QString tbi_path = def::XeniaFolder + "/3Nov";
 	QString tbi_path = "/media/Files/Data/Dasha";
 
+//	QStringList subdirs{"severe_TBI", "moderate_TBI", "severe_TBI"};
+	QStringList subdirs{"Totable"};
 
-#if 0
+
+
+#if 01
 	/// make tables by stimulus
 	for(QString subdir : subdirs)
 	{
@@ -501,16 +497,17 @@ void MainWindow::customFunc()
 		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 		for(QString guy : guys)
 		{
-//			cout << guy << endl; continue;
 
 			QStringList t = QDir(workPath + slash + guy).entryList(def::edfFilters);
 			if(t.isEmpty()) continue;
 
 			QString ExpName = t[0];
 			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
+
 			autos::GalyaProcessing(workPath + slash + guy,
 								   19,
 								   workPath + "_tmp");
+
 			autos::GalyaWavelets(workPath + slash + guy,
 								 19,
 								 250,
@@ -548,7 +545,7 @@ void MainWindow::customFunc()
     /// EEG fMRI
 	def::ntFlag = false;
 
-	QString guy = "Kalinin";
+	QString guy = "Senotov";
 //	for(QString guy : subjects::leest_mri)
 //	for(QString guy : leest)
 	{

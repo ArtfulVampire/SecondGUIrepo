@@ -725,7 +725,6 @@ void MainWindow::drawSpectra(const QString & prePath,
 
 void MainWindow::drawReals()
 {
-    QStringList lst;
     QString helpString;
 
     QTime myTime;
@@ -734,7 +733,10 @@ void MainWindow::drawReals()
     matrix dataD;
 
     QString prePath = def::dir->absolutePath() + slash + ui->drawDirBox->currentText();
-    makeFullFileList(prePath, lst);
+//    makeFullFileList(prePath, lst);
+
+	auto a = def::edfFilters + QStringList("*." + def::plainDataExtension);
+	QStringList lst = QDir(prePath).entryList(a);
 
     int redCh = -1;
     int blueCh = -1;
@@ -781,7 +783,7 @@ void MainWindow::drawReals()
             continue;
         }
 
-        helpString = getPicPath(helpString);
+		helpString = getPicPath(helpString);
 
         drawEeg(dataD,
                 def::ns,

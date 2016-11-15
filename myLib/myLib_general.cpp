@@ -199,19 +199,21 @@ QString getPicPath(const QString & dataPath,
     {
         helpString += "SignalsCut";
     }
-    helpString += slash;
-    if(ns == 19)
-    {
-        helpString += "after";
-    }
-    else if(ns == 21)
-    {
-        helpString += "before";
-    }
-    else
-    {
-        helpString += "other";
-    }
+	/// exclude
+//    helpString += slash;
+//    if(ns == 19)
+//    {
+//        helpString += "after";
+//    }
+//    else if(ns == 21)
+//    {
+//        helpString += "before";
+//    }
+//    else
+//    {
+//        helpString += "other";
+//    }
+
     helpString += slash + fileName + ".jpg";
     return helpString;
 }

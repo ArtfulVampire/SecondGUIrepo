@@ -159,6 +159,25 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 #endif
 	return tmp;
 }
+
+matrix refilter(const matrix & inputMatrix,
+				double lowFreq,
+				double highFreq,
+				bool isNotch,
+				double srate)
+{
+	matrix res = matrix();
+	for(int i = 0; i < inputMatrix.rows(); ++i)
+	{
+		res.push_back(myDsp::refilter(inputMatrix[i],
+									  lowFreq,
+									  highFreq,
+									  isNotch,
+									  srate));
+	}
+	return res;
+}
+
 }
 
 using namespace std;

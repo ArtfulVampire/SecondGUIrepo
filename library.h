@@ -129,6 +129,11 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   double highFreq,
 							   bool isNotch = false,
 							   double srate = 250.);
+matrix refilter(const matrix & inputMatrix,
+				double lowFreq,
+				double highFreq,
+				bool isNotch = false,
+				double srate = 250.);
 std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 									  double lowFreq,
 									  double highFreq,

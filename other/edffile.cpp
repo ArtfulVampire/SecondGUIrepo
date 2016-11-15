@@ -1002,38 +1002,30 @@ void edfFile::vertcatFile(QString addEdfPath, QString outPath) const
 	temp.writeEdfFile(outPath);
 }
 
-void edfFile::concatFile(QString addEdfPath, QString outPath) // assume only data concat
+edfFile & edfFile::concatFile(QString addEdfPath, QString outPath) // assume only data concat
 {
-    edfFile temp(*this);
     edfFile addEdf;
     addEdf.readEdfFile(addEdfPath);
 
-    addEdf.cutZerosAtEnd();
-    temp.cutZerosAtEnd();
+	const int oldLen = this->getDataLen();
+	const int addLen = addEdf.getDataLen();
 
-    const int dataLen1 = temp.getDataLen();
-    const int dataLen2 = addEdf.getDataLen();
-    for(int i = 0; i < this->ns; ++i)
-    {
-		this->edfData[i].resize( dataLen1 + dataLen2 );
-        // copy 1
-		std::copy(begin(temp.edfData[i]),
-				  end(temp.edfData[i]),
-				  begin(this->edfData[i]));
-        // copy 2
-		std::copy(begin(addEdf.edfData[i]),
-				  end(addEdf.edfData[i]),
-				  begin(this->edfData[i]) + dataLen1);
-    }
-    temp.adjustArraysByChannels();
+	edfData.resizeCols( oldLen + addLen);
 
+
+	for(int i = 0; i < min(this->ns, addEdf.getNs()); ++i)
+	{
+		std::copy(std::begin(addEdf.getData()[i]),
+				  std::end(addEdf.getData()[i]),
+				  std::begin(this->edfData[i]) + oldLen);
+	}
+	this->adjustArraysByChannels();
     /// remake
-
     if(!outPath.isEmpty())
     {
         this->writeEdfFile(outPath);
     }
-
+	return (*this);
 }
 
 
@@ -1583,6 +1575,14 @@ double edfFile::checkDdr(const QString & inPath)
 
     return localDdr;
 
+}
+
+void edfFile::repairThousand(const QString & outPath, int denominator)
+{
+	edfData /= denominator;
+	physMax /= denominator;
+	physMin /= denominator;
+	this->writeEdfFile(outPath);
 }
 
 void edfFile::transformEdfMatrix(const QString & inEdfPath,
