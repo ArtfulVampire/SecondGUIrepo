@@ -229,9 +229,9 @@ void MainWindow::ICA() //fastICA
     }
 
     //ordering components by sum of squares of the matrixA coloumn
-    std::vector <std::pair <double, int>> colsNorms;
+    std::vector<std::pair <double, int>> colsNorms;
     double sumSquares = 0.;
-    std::vector <double> explainedVariance;
+    std::vector<double> explainedVariance;
 
     for(int i = 0; i < ns; ++i) // w/o markers
     {
@@ -255,7 +255,7 @@ void MainWindow::ICA() //fastICA
 
     double * tempCol = new double [ns];
     int tempIndex;
-    std::vector <double> tempComp;
+    std::vector<double> tempComp;
     for(int i = 0; i < ns - 1; ++i) // dont move the last
     {
         //swap cols and components
@@ -319,7 +319,7 @@ void MainWindow::ICA() //fastICA
     }
 
     // ordering components by dispersion
-    std::vector <std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
+    std::vector<std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
     double sumSquares = 0.; // sum of all dispersions
     vectType explainedVariance;
 

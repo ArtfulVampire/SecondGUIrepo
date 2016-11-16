@@ -880,9 +880,9 @@ void clustering()
 		distOld[i].resize(N);
 	}
 
-	vector < std::vector<double> > dots;
+	vector< std::vector<double> > dots;
 	dots.resize(N);
-	vector <double> ass;
+	vector<double> ass;
 	ass.resize(dim);
 
 	types.clear();
@@ -980,7 +980,7 @@ return;
 //        cout << endl;
 	}
 	std::sort(newDists.begin(), newDists.end(), mySort);
-	vector <double> newD;
+	vector<double> newD;
 	for(int i = 0; i < newDists.size(); ++i)
 	{
 		newD.push_back(newDists[i][0]);

@@ -764,16 +764,14 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 								 double newFreq)
 {
 	int rat = oldFreq / newFreq;
-	std::valarray<double> res(inSignal.size() / rat);
-
-	/// downsampling itself
-	res = myDsp::lowPass(inSignal, 2 * newFreq, oldFreq);
+	std::valarray<double> res = myDsp::lowPass(inSignal, 2 * newFreq, oldFreq);
 
 	for(int i = 0; i < inSignal.size() / rat; ++i)
 	{
 		res[i] = res[i * rat];
 	}
 	resizeValar(res, inSignal.size() / rat);
+	return res;
 }
 
 void refilterSpectre(std::valarray<double> & spectr,
@@ -1092,7 +1090,7 @@ int MannWhitney(const signalType & arr1,
                 const signalType & arr2,
                 const double p)
 {
-    vector <pair <double, int>> arr;
+    vector<pair <double, int>> arr;
 
     // fill first array
     std::for_each(begin(arr1),
@@ -1563,7 +1561,7 @@ void ica(const matrix & initialData,
 
 #if 0
     // ordering components by dispersion
-    std::vector <std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
+    std::vector<std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
     double sumSquares = 0.; // sum of all dispersions
 
     for(int i = 0; i < ns; ++i)

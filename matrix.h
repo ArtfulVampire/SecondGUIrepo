@@ -91,7 +91,7 @@ public:
     void push_back(const lineType &in);
     void push_back(const vectType &in);
 
-    // for compability with vector < std::vector<Type> >
+    // for compability with vector< std::vector<Type> >
 	void clear() {this->myData.clear();}
 	uint size() const {return myData.size();}
 

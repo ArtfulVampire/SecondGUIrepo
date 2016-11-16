@@ -14,14 +14,14 @@ void handleParam(Typ & qStr,
                  FILE * headerFile);
 
 template <typename Typ>
-void handleParamArray(std::vector <Typ> & qStr,
+void handleParamArray(std::vector<Typ> & qStr,
                       int number,
                       int length,
                       bool readFlag,
                       FILE * ioFile,
                       FILE * headerFile);
 template <typename Typ>
-void handleParamArray(std::valarray <Typ> & qStr,
+void handleParamArray(std::valarray<Typ> & qStr,
                       int number,
                       int length,
                       bool readFlag,
@@ -43,38 +43,22 @@ void myTransform(const QString & input, const int & len, char ** output);
 
 struct edfChannel
 {
-    QString label;
-    QString transducerType;
-    QString physDim;
-    double physMax;
-    double physMin;
-    double digMax;
-    double digMin;
-    QString prefiltering;
-    double nr;
-    QString reserved;
+public:
+	QString label{};
+	QString transducerType{};
+	QString physDim{};
+	double physMax{};
+	double physMin{};
+	double digMax{};
+	double digMin{};
+	QString prefiltering{};
+	double nr{};
+	QString reserved{};
 
-	edfChannel & operator = (const edfChannel & other)
-    {
-        if(this == &other)
-        {
-//            cout << "operator =: channels are the same" << endl;
-            return *this;
-        }
-        this->label = other.label;
-        this->transducerType = other.transducerType;
-        this->physDim = other.physDim;
-        this->physMax = other.physMax;
-        this->physMin = other.physMin;
-        this->digMax = other.digMax;
-        this->digMin = other.digMin;
-        this->prefiltering = other.prefiltering;
-        this->nr = other.nr;
-        this->reserved = other.reserved;
-        return *this;
-    }
+public:
+	edfChannel()=default;
+	~edfChannel() {}
 
-    //edfChannel(edfFile, int);
     edfChannel(QString in_label,
                QString in_transducerType,
                QString in_physDim,
@@ -84,9 +68,7 @@ struct edfChannel
                double in_digMin,
                QString in_prefiltering,
                double in_nr,
-               QString in_reserved
-               )
-//
+			   QString in_reserved)
     {
         this->label = in_label;
         this->transducerType = in_transducerType;
@@ -100,22 +82,10 @@ struct edfChannel
         this->reserved = in_reserved;
     }
 
-    edfChannel()
-    {
-        this->label = QString();
-        this->transducerType = QString();
-        this->physDim = QString();
-        this->physMax = 0.;
-        this->physMin = 0.;
-        this->digMax = 0.;
-        this->digMin = 0.;
-        this->prefiltering = QString();
-        this->nr = 0.;
-        this->reserved = QString();
-    }
-    ~edfChannel()
-    {
-    }
+	edfChannel & operator=(const edfChannel & other)=default;
+//	edfChannel & operator=(edfChannel && other)=default;
+
+
 };
 
 
@@ -125,15 +95,15 @@ class edfFile
 {
 public:
 
-    edfFile();
-    ~edfFile() {}
+	edfFile()=default;
+	~edfFile() {}
 
 
 	edfFile(const edfFile & other, bool noData = false);
 	edfFile(const QString & txtFilePath, inst which = inst::mati);
 
-	edfFile & operator=(const edfFile & other) = default;
-	edfFile & operator=(edfFile && other) = default;
+	edfFile & operator=(const edfFile & other)=default;
+	edfFile & operator=(edfFile && other)=default;
 
 	/// read/write
     void readEdfFile(QString EDFpath, bool headerOnly = false);
@@ -154,7 +124,7 @@ public:
     void handleAnnotations(const int & currNs,
                            const int & currentTimeIndex,
                            QString helpString,
-                           std::vector <QString> annotations);
+						   std::vector<QString> annotations);
 
 	/// modify
     void adjustArraysByChannels();
@@ -184,8 +154,7 @@ public:
                         std::vector<int> chanList = {});
     void fitData(int initSize);
     void cutZerosAtEnd();
-    void adjustMarkerChannel();
-	void repairPhysMax();
+	void adjustMarkerChannel();
 
 	/// for iitp
 	void downsample(double newFreq,
@@ -210,35 +179,36 @@ private:
 
     int ndr = 0;
     double ddr = 1.;
-    int ns = 0;
-	int srate = 250;
+	int ns = 0;
 
-    // fast access for slicing (time-bin, marker)
-    std::vector<std::pair<int, double>> sessionEdges = std::vector<std::pair<int, double>>();
 
     //channels arrays start
-    std::vector <QString> labels;
-    std::vector <QString> transducerType;
-    std::vector <QString> physDim;
-    std::valarray <double> physMax;
-    std::valarray <double> physMin;
-    std::valarray <double> digMax;
-    std::valarray <double> digMin;
-    std::vector <QString> prefiltering;
-    std::valarray <double> nr; // it is int really
-    std::vector <QString> reserved;
-    std::vector <QString> annotations;
+	std::vector<QString> labels;
+	std::vector<QString> transducerType;
+	std::vector<QString> physDim;
+	std::valarray<double> physMax;
+	std::valarray<double> physMin;
+	std::valarray<double> digMax;
+	std::valarray<double> digMin;
+	std::vector<QString> prefiltering;
+	std::valarray<double> nr; // it is int really
+	std::vector<QString> reserved;
+	std::vector<QString> annotations;
 
     //channels arrays end
 
     QString headerRest = QString();
 
+	/// my fields
+
+	// fast access for slicing (time-bin, marker)
+	std::vector<std::pair<int, double>> sessionEdges = std::vector<std::pair<int, double>>();
+	int srate = 250;
+
     std::vector<edfChannel> channels;
 	matrix edfData; // matrix.cpp
 	std::vector<std::valarray<double>> fftData{}; // mutable?
 
-    int staSlice = 0; // yet not useful
-    int dataLength = 0;
     int markerChannel = -1;
     QString filePath = QString();
     QString ExpName = QString();
@@ -247,7 +217,10 @@ private:
     bool matiFlag = def::matiFlag;
     bool ntFlag = def::ntFlag;
     bool edfPlusFlag = false; // to detect
-	bool writeMarkersFlag = true;
+
+	bool writeMarkersFlag = false;
+	bool writeLabelsFlag = false;
+	bool writeHeaderFlag = false;
 
 public:
 //    const QString & getHeaderInit() const {return headerInitialInfo;}
@@ -260,22 +233,23 @@ public:
     const double & getDdr() const {return ddr;}
     const int & getNs() const {return ns;}
 	const int & getFreq() const {return srate;}
-    const std::vector <QString> & getLabels() const {return labels;}
-    const std::vector <QString> & getTransducer() const {return transducerType;}
-    const std::vector <QString> & getPhysDim() const {return physDim;}
-    const std::valarray <double> & getPhysMax() const {return physMax;}
-    const std::valarray <double> & getPhysMin() const {return physMin;}
-    const std::valarray <double> & getDigMax() const {return digMax;}
-    const std::valarray <double> & getDigMin() const {return digMin;}
-    const std::vector <QString> & getPrefiltering() const {return prefiltering;}
-    const std::valarray <double> & getNr() const {return nr;}
-    const std::vector <QString> & getReserved() const {return reserved;}
+
+	const std::vector<QString> & getLabels() const {return labels;}
+	const std::vector<QString> & getTransducer() const {return transducerType;}
+	const std::vector<QString> & getPrefiltering() const {return prefiltering;}
+	const std::vector<QString> & getPhysDim() const {return physDim;}
+	const std::vector<QString> & getReserved() const {return reserved;}
+	const std::valarray<double> & getPhysMax() const {return physMax;}
+	const std::valarray<double> & getPhysMin() const {return physMin;}
+	const std::valarray<double> & getDigMax() const {return digMax;}
+	const std::valarray<double> & getDigMin() const {return digMin;}
+	const std::valarray<double> & getNr() const {return nr;}
     const QString & getHeaderRest() const {return headerRest;}
 
     const std::vector<edfChannel> & getChannels() const {return channels;}
 
-    const int & getDataLen() const {return dataLength;}
-    const int & getMarkChan() const {return markerChannel;}
+	int getDataLen() const {return edfData.cols();}
+	int getMarkChan() const {return markerChannel;}
 
     const QString & getFilePath() const {return filePath;}
     const QString & getDirPath() const  {return dirPath;}
@@ -310,12 +284,17 @@ public:
 
     std::list<std::valarray<double>> getDataAsList() const;
     void setDataFromList(const std::list<std::valarray<double>> & inList);
-	void repairThousand(const QString & outPath, int denominator = 1000.);
+
+	/// edf file repairs
+	edfFile repairDataScaling(int denominator = 1000.) const;
+	edfFile repairChannelsOrder(const std::vector<QString> & standard) const;
+	edfFile repairHoles() const;
+	edfFile repairPhysEqual() const;
 
 };
 
 
-/// public static funcs to repair edfs or filenames
+/// public "static" funcs to repair edfs or filenames
 namespace repair
 {
 
@@ -333,17 +312,12 @@ void holesDir(const QString & inDirPath,
               const QString & outDirPath);
 
 void physMinMaxCheck(const QString & dirPath);
-void physMinMaxDir(const QString & dirPath);
+void physMinMaxDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
 
-/// also repairs wrong filesize
-void scalingFactorFile(const QString & inFilePath,
-                       QString outFilePath = QString());
-void scalingFactorDir(const QString & inDirPath,
-					  QString outDirPath = QString());
 
 /// only renames files/dirs
+void deleteSpacesFileOrFolder(const QString & fileOrFolderPath);
 void deleteSpacesDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
-void deleteSpacesFolders(const QString & dirPath);
 
 void toLatinFileOrFolder(const QString & fileOrFolderPath);
 void toLatinDir(const QString & dirPath, const QStringList & filters = def::edfFilters);

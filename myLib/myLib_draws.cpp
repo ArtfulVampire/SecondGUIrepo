@@ -1788,8 +1788,8 @@ void histogram(const signalType & arr, int numSteps, QString picPath)
 }
 
 
-void drawSammon(const vector < pair <double, double> > & plainCoords,
-                const vector <int> & types,
+void drawSammon(const vector< pair <double, double> > & plainCoords,
+                const vector<int> & types,
                 const QString & picPath) //uses coords array
 {
 

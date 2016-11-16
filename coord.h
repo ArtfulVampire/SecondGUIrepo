@@ -107,6 +107,7 @@ extern double errorThreshold;
 }
 
 
+
 /// all channels the same or each channel has self coefficient
 enum class spectraGraphsNormalization {all, each};
 
@@ -117,12 +118,13 @@ namespace def
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
     const bool OssadtchiFlag = false;
 
-    const bool wirteStartEndLong = true; // for slice
-    const bool redirectCoutFlag = false; // redirect to generalLog.txt
+	const bool wirteStartEndLong = true; // for slice
+	const bool redirectCoutFlag = false; // redirect cout to generalLog.txt
 
-    const QString plainDataExtension = "scg";   // slice common gradient
+	const QString plainDataExtension = "scg";   // slice common gradient ???
     const QString spectraDataExtension = "psd"; // power spectral density
 	const QStringList edfFilters = {"*.edf", "*.EDF"};
+	const QStringList plainFilters = {"*.scg"};
 
 	extern QDir * dir;
 	inline QString realsDir() {return def::dir->absolutePath() + "/Reals";}
@@ -180,7 +182,7 @@ namespace def
 
 inline int fftLimit(const double & inFreq,
 					const double & sampleFreq = def::freq,
-                    const int & fftL = def::fftLength)
+					const int & fftL = def::fftLength)
 {
 	return ceil(inFreq / sampleFreq * fftL - 0.5);
 }

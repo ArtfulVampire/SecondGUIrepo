@@ -28,11 +28,11 @@ struct clustering
 {
     int numDots = -1;
     int dimDots = -1;
-    vector <cluster> clusts;
-    vector <clustDot> dots;
+    vector<cluster> clusts;
+    vector<clustDot> dots;
     mat dists;
-    vector <bool> boundDots;
-    vector <bool> isolDots;
+    vector<bool> boundDots;
+    vector<bool> isolDots;
 
     void readFile(QString filePath);
 };
@@ -42,7 +42,7 @@ struct clustering
 void clustering::readFile(QString filePath)
 {
 
-    vector < std::vector<double> > cData;
+    vector< std::vector<double> > cData;
 
     ifstream inStr;
     inStr.open(filePath.toStdString().c_str());
@@ -171,7 +171,7 @@ void clustering::readFile(QString filePath)
 
 
 void refreshDist(mat & dist,
-const vector <pair <double, double> > & testCoords,
+const vector<pair <double, double> > & testCoords,
 const int input)
 {
 
@@ -194,7 +194,7 @@ const int input)
 }
 
 void refreshDistAll(mat & distNew,
-                    const vector <pair <double, double> > & plainCoords)
+                    const vector<pair <double, double> > & plainCoords)
 {
     // numRow * (numRow + 1) / 2 = distSize
 
@@ -216,14 +216,14 @@ void refreshDistAll(mat & distNew,
     }
 }
 
-void countGradient(const vector <pair <double, double> > & plainCoords,
-                   const vector <std::vector<double> >  & distOld,
-                   vector <std::vector<double> > & distNew,
+void countGradient(const vector<pair <double, double> > & plainCoords,
+                   const vector<std::vector<double> >  & distOld,
+                   vector<std::vector<double> > & distNew,
                    std::vector<double> & gradient)
 {
     const int size = plainCoords.size();
     const double delta = 0.1;
-    vector <pair <double, double> > tempCoords = plainCoords;
+    vector<pair <double, double> > tempCoords = plainCoords;
 
     for(int i = 0; i < size; ++i)
     {
@@ -261,7 +261,7 @@ void countGradient(const vector <pair <double, double> > & plainCoords,
     }
 }
 
-void moveCoordsGradient(vector <pair <double, double> > & plainCoords,
+void moveCoordsGradient(vector<pair <double, double> > & plainCoords,
                         const mat & distOld,
                         mat & distNew)
 {
@@ -339,7 +339,7 @@ double errorSammonAdd(const mat & distOld,
 
 void countInvHessianAddDot(const mat & distOld,
                            const mat & distNew,
-                           const vector <pair <double, double> > & crds,
+                           const vector<pair <double, double> > & crds,
                            const std::vector<int> & placedDots,
                            mat & invHessian)
 {
@@ -392,7 +392,7 @@ void countInvHessianAddDot(const mat & distOld,
 
 void countGradientAddDot(const mat & distOld,
                          const mat & distNew,
-                         const vector <pair <double, double> > & crds,
+                         const vector<pair <double, double> > & crds,
                          const std::vector<int> & placedDots,
                          std::vector<double>  & gradient) // gradient for one dot
 {
@@ -418,7 +418,7 @@ void countGradientAddDot(const mat & distOld,
 }
 
 void countDistNewAdd(mat & distNew, // change only last coloumn
-                     const std::vector < std::pair <double, double> > & crds,
+                     const std::vector< std::pair <double, double> > & crds,
                      const std::vector<int> & placedDots)
 {
     const int & b = placedDots.back(); // placedDots[placedDots.size() - 1];
@@ -544,7 +544,7 @@ void sammonProj(const mat & distOld,
         distNew[i].resize(size);
     }
 
-    vector < pair <double, double> > plainCoords;
+    vector< pair <double, double> > plainCoords;
     //    plainCoords.resize(size);
 
     // find three most distant points

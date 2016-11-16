@@ -11,6 +11,11 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
+//	cout << QDir("/media/Files/Data").entryList(QDir::Files).size() << endl;
+	repair::deleteSpacesDir("/media/Files/Data", {});
+	exit(0);
+
+
 //	return;
 
 #if 0

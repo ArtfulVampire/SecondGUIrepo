@@ -11,7 +11,7 @@ void physMinMaxDir(const QString & dirPath)
     {
         edfFile feel;
         feel.readEdfFile(dirPath + slash + str);
-        feel.repairPhysMax();
+		feel.repairPhysEqual();
     }
 }
 
@@ -30,39 +30,6 @@ void physMinMaxCheck(const QString & dirPath)
                               dirPath + slash + "bad" + slash + str);
             }
         }
-    }
-}
-
-
-void scalingFactorFile(const QString & inFilePath,
-                       QString outFilePath)
-{
-    if(outFilePath.isEmpty())
-    {
-        outFilePath = inFilePath;
-        outFilePath.replace(".edf", "_scal.edf", Qt::CaseInsensitive);
-    }
-    edfFile fil;
-    fil.readEdfFile(inFilePath);
-    fil.writeEdfFile(outFilePath);
-}
-
-void scalingFactorDir(const QString & inDirPath,
-					  QString outDirPath)
-{
-    QStringList leest = QDir(inDirPath).entryList(def::edfFilters);
-	if(outDirPath.isEmpty())
-	{
-		QDir tmp(inDirPath);
-		tmp.cdUp();
-		tmp.mkdir(myLib::getFileName(inDirPath, false) + "_scal");
-		tmp.cd(myLib::getFileName(inDirPath, false) + "_scal");
-		outDirPath = tmp.absolutePath();
-	}
-    for(const QString & str : leest)
-    {
-        scalingFactorFile(inDirPath + slash + str,
-                          outDirPath + slash + str);
     }
 }
 
@@ -106,27 +73,33 @@ void toLatinDir(const QString & dirPath, const QStringList & filters)
     }
 }
 
+void deleteSpacesFileOrFolder(const QString & fileOrFolderPath)
+{
+	QDir tmp(fileOrFolderPath);
+	QString path = myLib::getDirPathLib(fileOrFolderPath);
+	QString newName = myLib::getFileName(fileOrFolderPath);
+	newName.replace(' ', '_');
+	newName.remove(R"(')");
+	newName.replace(QRegExp("[_]{2,}"), "_");
+	tmp.rename(fileOrFolderPath,
+			   path + slash + newName);
+}
+
 void deleteSpacesDir(const QString & dirPath, const QStringList & filters)
 {
-    QDir tmp(dirPath);
+	QDir tmp(dirPath);
     QStringList lst;
     if(filters.isEmpty())
     {
-        lst = tmp.entryList(QDir::Files);
+		lst = tmp.entryList(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot);
     }
     else
     {
-        lst = tmp.entryList(filters, QDir::Files);
-    }
-    QString newName;
+		lst = tmp.entryList(filters, QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot);
+	}
     for(const QString & fileName : lst)
-    {
-        newName = fileName;
-        newName.replace(' ', '_');
-        newName.remove(R"(')");
-        newName.replace("__", "_");
-        QFile::rename(tmp.absolutePath() + slash + fileName,
-                      tmp.absolutePath() + slash + newName);
+	{
+		deleteSpacesFileOrFolder(dirPath + slash + fileName);
     }
 }
 
@@ -357,9 +330,6 @@ void fullRepairDir(const QString & dirPath, const QStringList & filters)
 	repair::deleteSpacesDir(dirPath, filters);
 	repair::toLatinDir(dirPath, filters);
 	repair::toLowerDir(dirPath, filters);
-//	repair::physMinMaxDir(dirPath);
-	repair::scalingFactorDir(dirPath, dirPath);
-//	repair::holesDir(dirPath, dirPath);
 }
 
 } /// end namespace repair
