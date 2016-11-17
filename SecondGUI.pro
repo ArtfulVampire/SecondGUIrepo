@@ -9,7 +9,7 @@ QT       += core gui svg
 TARGET = SecondGUI
 TEMPLATE = app
 CONFIG += console #for better display of processes with cout.flush()
-QMAKE_CXXFLAGS += -std=c++1y #for C++14 standard
+QMAKE_CXXFLAGS += -std=c++1y
 QMAKE_CXXFLAGS += -fopenmp
 QMAKE_CXXFLAGS += -Wno-sign-compare
 QMAKE_CXXFLAGS += -Wno-unused-parameter
@@ -19,13 +19,20 @@ LIBS += -fopenmp
 #DSP
 INCLUDEPATH += ./DSP
 
+#cwt
+#INCLUDEPATH += ./matlab/for_testing
+#DEPENDPATH += ./matlab/for_testing
+#INCLUDEPATH += ./matlab/mcr_extern_include
+#LIBS += -L../SecondGUI/matlab/libs -leng -lmwcpp11compat -lmwmclmcrrt -lcwt_r
+
+
 #matlab cwt function
 LIBS += -L/media/Files/Matlab/Projects/libcwt_r/for_testing -lcwt_r
 INCLUDEPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
 DEPENDPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
 
 INCLUDEPATH += /media/Files/Matlab/MCR/v83/extern/include
-LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -leng -lm -lmwcpp11compat
+LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -leng -lmwcpp11compat
 LIBS += -L/media/Files/Matlab/MCR/v83/runtime/glnxa64 -lmwmclmcrrt
 
 

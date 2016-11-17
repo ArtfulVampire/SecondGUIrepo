@@ -18,7 +18,7 @@ void MainWindow::customFunc()
 
 //	return;
 
-#if 01
+#if 0
 	/// make right numbers
 	QString dirPath = "/media/Files/Pictures/NewCF/2exp";
 	int count = 41;
@@ -475,44 +475,20 @@ void MainWindow::customFunc()
 	/// tables
 	def::ntFlag = true;
 
-//	QStringList markers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
-						"_cry", "_fire", "_flower", "_wc"};
+	QStringList markers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+//	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
+//						"_cry", "_fire", "_flower", "_wc"};
 
-//	QString tbi_path = def::XeniaFolder + "/3Nov";
-	QString tbi_path = "/media/Files/Data/Dasha";
+	QString tbi_path = def::XeniaFolder + "/15Nov";
+//	QString tbi_path = "/media/Files/Data/Dasha";
 
-//	QStringList subdirs{"severe_TBI", "moderate_TBI", "severe_TBI"};
-	QStringList subdirs{"Totable"};
-
-
-
-#if 01
-	/// make tables by stimulus
-	for(QString subdir : subdirs)
-	{
-		QString workPath = tbi_path + slash + subdir + "_tmp2";
-		for(QString marker : markers)
-		{
-			autos::makeTableFromRows(workPath,
-									 tbi_path + slash + subdir + "_table" + marker + ".txt",
-									 marker);
-		}
-	}
-#endif
-
-#if 01
-	/// make tables whole
-	for(QString subdir : subdirs)
-	{
-		QString workPath = tbi_path + slash + subdir + "_OUT";
-		autos::makeTableFromRows(workPath,
-								 tbi_path + slash + subdir + "_all" + ".txt");
-	}
-#endif
-	exit(0);
+	QStringList subdirs{"healthy", "moderate_TBI", "severe_TBI"};
+//	QStringList subdirs{"Totable"};
 
 
+
+
+#if 0
 	/// count
 	for(QString subdir : subdirs)
 	{
@@ -562,6 +538,51 @@ void MainWindow::customFunc()
 									  + ExpName + ".txt"); /// guy <-> ExpName
 		}
 	}
+#endif
+
+#if 0
+	/// make tables by stimulus
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + slash + subdir + "_tmp2";
+		for(QString marker : markers)
+		{
+			autos::makeTableFromRows(workPath,
+									 tbi_path + slash + subdir + "_table" + marker + ".txt",
+									 marker);
+		}
+	}
+#endif
+
+
+#if 0
+	/// make tables whole
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + slash + subdir + "_OUT";
+		autos::makeTableFromRows(workPath,
+								 tbi_path + slash + subdir + "_all" + ".txt");
+	}
+#endif
+
+#if 01
+	/// people list
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + slash + subdir + "_OUT";
+		QString outFile = tbi_path + slash + subdir + "_people.txt";
+		std::ofstream outStr;
+		outStr.open(outFile.toStdString());
+
+		for(QString fileName : QDir(workPath).entryList({"*.txt"},
+														QDir::Files,
+														QDir::Name))
+		{
+			outStr << fileName.remove(".txt") << endl;
+		}
+		outStr.close();
+	}
+#endif
 	exit(0);
 #endif
 

@@ -50,6 +50,7 @@ void makeTableFromRows(const QString & work,
 	}
 	const QString tableName = getFileName(tablePath);
 
+
 	QFile outStr(tablePath);
 	outStr.open(QIODevice::WriteOnly);
 
@@ -58,7 +59,6 @@ void makeTableFromRows(const QString & work,
 												  QDir::Name))
 	{
 		if(fileName.contains(tableName)) continue;
-//		cout << fileName << endl; continue;
 
 		QFile fil(deer.absolutePath() + slash + fileName);
 		fil.open(QIODevice::ReadOnly);
