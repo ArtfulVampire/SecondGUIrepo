@@ -12,11 +12,31 @@ void MainWindow::customFunc()
 	ui->realsButton->setChecked(true);
 
 //	cout << QDir("/media/Files/Data").entryList(QDir::Files).size() << endl;
-	repair::deleteSpacesDir("/media/Files/Data", {});
-	exit(0);
+//	repair::deleteSpacesDir("/media/Files/Data", {});
+//	exit(0);
 
 
 //	return;
+
+#if 01
+	/// make right numbers
+	QString dirPath = "/media/Files/Pictures/NewCF/2exp";
+	int count = 41;
+	ofstream outStr;
+	outStr.open((dirPath + slash + "ans.txt").toStdString());
+	for(QString str : QDir(dirPath).entryList({"complex*.jpg"}, QDir::Files, QDir::Name))
+	{
+		QStringList parts = str.split(QRegExp("[_\.]"), QString::SkipEmptyParts);
+		QString newName = "cf_" + rightNumber(count++, 3) + ".jpg";
+		outStr << newName << '\t' << parts[3] << "\r\n";
+
+		QFile::copy(dirPath + slash + str,
+					dirPath + slash + newName);
+	}
+	outStr.close();
+	exit(0);
+#endif
+
 
 #if 0
 	/// Baklushev draw
@@ -451,7 +471,7 @@ void MainWindow::customFunc()
     exit(0);
 #endif
 
-#if 01
+#if 0
 	/// tables
 	def::ntFlag = true;
 
@@ -1070,30 +1090,6 @@ exit(0);
     exit(0);
 
 #endif
-
-
-
-#if 0
-    /// different filtering check
-	ui->highFreqFilterDoubleSpinBox->setValue(40.);
-	double highFreq = ui->highFreqFilterDoubleSpinBox->value();
-	for(double lowFreq = 2.0; lowFreq < 3.5; lowFreq += 0.05)
-    {
-        setEdfFile(def::dataFolder + "/AAU_train_rr.edf");
-		ui->lowFreqFilterDoubleSpinBox->setValue(lowFreq);
-        refilterDataSlot();
-        setEdfFile(def::dataFolder
-                   + "/AAU_train_rr_f"
-				   + QString::number(lowFreq) + '-' + QString::number(highFreq)
-                   + ".edf");
-        sliceAll();
-    }
-	drawReals();
-    exit(0);
-#endif
-
-
-
 
 #if 0
     /// uncode matlab color scale
