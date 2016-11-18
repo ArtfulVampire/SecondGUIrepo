@@ -264,6 +264,10 @@ void edfFile::readEdfFile(QString EDFpath, bool headerOnly)
     this->fftData.clear(); /// crucial
 
     handleEdfFile(EDFpath, true, headerOnly);
+
+	/// experimental
+	def::ns = this->ns;
+	def::freq = srate;
 }
 
 void edfFile::writeEdfFile(QString EDFpath, bool asPlain)

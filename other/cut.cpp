@@ -495,6 +495,7 @@ void Cut::createImage(const QString & dataFileName)
 	else if(this->myFileType == fileType::edf)
     {
         edfFil.readEdfFile(dataFileName);
+		def::ns = edfFil.getNs();
 		currFreq = edfFil.getFreq();
         data3 = edfFil.getData();
         NumOfSlices = data3.cols();

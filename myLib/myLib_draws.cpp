@@ -886,6 +886,13 @@ void drawTemplate(const QString & outPath,
     const double scaleY = paint.device()->height() / 1600.;
     const double scaleX = paint.device()->width() / 1600.;
 
+
+	const double unit = graphScale * def::spStep();
+	auto currFreq = [unit](int in) -> double
+	{
+		return def::left() * def::spStep() + in * unit;
+	};
+
     for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
     {
 		/// replace with drawOneTemplate
@@ -908,9 +915,9 @@ void drawTemplate(const QString & outPath,
         paint.setFont(QFont("Helvitica", int(12 * scaleY)));
         for(int k = 0; k < graphWidth; ++k) //for every Hz generality
         {
-            if( abs((def::left() + k * graphScale) * def::spStep()
-                    - ceil((def::left() + k * graphScale) * def::spStep() - 0.5))
-                < graphScale * def::spStep() / 2. )
+
+			const double cF = currFreq(k);
+			if( abs(cF - std::round(cF)) < unit / 2. )
             {
                 paint.drawLine(QPointF(X + k,
                                        Y),
@@ -1123,6 +1130,115 @@ void drawArray(const QString & templPath,
               color,
               scaling,
               lineWidth);
+}
+
+void drawArrayWithSigma(const QString &templPath,
+						const lineType &inData,
+						const lineType &inSigma,
+						const QString &color,
+						int lineWidth)
+{
+	QSvgGenerator svgGen;
+	QSvgRenderer svgRen;
+	QPixmap pic;
+	QPainter paint;
+	QString helpString;
+	int numOfChan = 19;
+
+	if(inData.size() != inSigma.size())
+	{
+		cout << "data and sigma different length" << endl;
+		return;
+	}
+
+	if(templPath.contains(".svg"))
+	{
+		return;
+		//// TO FIX
+		///
+
+#if 0
+		svgRen = QSvgRenderer(templPath);
+		svgGen.setSize(QSize(width, height));
+		svgGen.setViewBox(QRect(QPoint(0,0), svgGen.size()));
+		svgGen.setFileName(outPath);
+		paint.begin(&svgGen);
+		paint.setBrush(QBrush("white"));
+		paint.drawRect(QRect(QPoint(0,0), svgGen.size()));
+#endif
+
+
+	}
+	else if(templPath.contains(".jpg") || templPath.contains(".png"))
+	{
+		pic.load(templPath);
+		paint.begin(&pic);
+	}
+	double norm = (inData + inSigma).max();
+
+	const double graphHeight = paint.device()->height() * coords::scale;
+	const double graphWidth = paint.device()->width() * coords::scale;
+
+	const int spL = inData.size() / numOfChan;
+	const double graphScale =  spL / graphWidth;
+
+	// initial fonts prepared for 1600*1600
+	const double scaleY = paint.device()->height() / 1600.;
+	const double scaleX = paint.device()->width() / 1600.;
+
+	norm = graphHeight / norm ; //250 - pixels per graph, generality
+
+	const auto lowLine = inData - inSigma;
+	const auto highLine = inData + inSigma;
+
+
+	for(auto drawLine : std::vector<lineType>{inData, lowLine, highLine})
+	{
+		for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
+		{
+			auto index = [=](int in) -> int
+			{
+				return c2 * spL + in * graphScale;
+			};
+
+			const double Y = paint.device()->height() * coords::y[c2];
+			const double X = paint.device()->width() * coords::x[c2];
+
+
+
+			//draw spectra
+			for(int k = 0; k < graphWidth - 1; ++k)
+			{
+				paint.setPen(QPen(QBrush(QColor(color)), lineWidth));
+
+				// usual
+
+				paint.drawLine(QPointF(X + k,
+									   Y - drawLine[index(k)] * norm),
+						QPointF(X + k + 1,
+								Y - drawLine[index(k+1)] * norm));
+
+			}
+		}
+		lineWidth = 1;
+
+
+	}
+	//returning norm = max magnitude
+	norm = graphHeight / norm;
+	norm = doubleRound(norm,
+					   min(1., 2 - floor(log10(norm)) )
+					   );
+
+	helpString.setNum(norm);
+	helpString += QObject::tr(" mcV^2/Hz");
+	paint.setPen("black");
+	paint.setFont(QFont("Helvetica", int(24 * scaleY)));
+	paint.drawText(QPointF(pic.width() * coords::x[6] + 5 * scaleX,
+				   pic.height() * coords::y[1] - graphHeight / 2),
+			helpString);
+
+	pic.save(templPath, 0, 100);
 }
 
 

@@ -44,19 +44,31 @@ void MainWindow::customFunc()
 	QString dr = "/media/Files/Data/Baklushev";
 	for(QString guy : QDir(dr).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
-		QString filePath = dr + slash + guy + slash + guy + ".EDF";
+		QString filePath = dr + slash + guy + slash + guy + "_draw.edf";
+		if(!QFile::exists(filePath)) continue;
 
-		edfFile fil;
-		fil.readEdfFile(filePath);
-		std::vector<int> rdc(22);
-		std::iota(std::begin(rdc), std::end(rdc), 0);
-		rdc[19] = 22;
-		rdc[20] = 23;
-		rdc.back() = fil.getMarkChan();
+		setEdfFile(filePath);
+//		sliceAll();
+//		countSpectraSimple(2048, 8);
+		QString spectraPath = dr + slash + guy + slash + "SpectraSmooth";
 
 
-		QString newPath = dr + slash + guy + slash + guy + ".edf";
-		(fil.reduceChannels(rdc)).writeEdfFile(newPath);
+		const QString picture = dr + slash + guy + slash + "pic.jpg";
+		drawTemplate(picture);
+		std::valarray<double> drawArr;
+		auto lst = QDir(spectraPath).entryList({"*_241*"});
+		int count = 0;
+		matrix drawMat = matrix(lst.size(), 1);
+		for(QString sp : lst)
+		{
+			readFileInLine(spectraPath + slash + sp, drawMat[count++]);
+		}
+		auto avArr = drawMat.averageRow();
+		auto sigmArr = drawMat.sigmaOfCols();
+		cout << drawMat.maxVal() << endl;
+
+		drawArrayWithSigma(picture, avArr, sigmArr, "blue", 2);
+
 	}
 	exit(2);
 #endif
@@ -591,7 +603,7 @@ void MainWindow::customFunc()
     /// EEG fMRI
 	def::ntFlag = false;
 
-	QString guy = "Senotov";
+	QString guy = "Sushinskaya";
 //	for(QString guy : subjects::leest_mri)
 //	for(QString guy : leest)
 	{
