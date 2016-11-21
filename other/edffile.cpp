@@ -410,13 +410,15 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 					   !labels[i].startsWith("EOG "))
 					{
 						labels[i].prepend("EOG ");
+						continue;
 					}
-					if(labels[i].contains(lbl) &&
-					   !labels[i].startsWith("EEG "))
+					else if(labels[i].contains(lbl) &&
+							!labels[i].contains(QRegExp("E[OC]G")) &&
+							!labels[i].startsWith("EEG "))
 					{
 						labels[i].prepend("EEG ");
+						continue;
 					}
-
 				}
 			}
 		}

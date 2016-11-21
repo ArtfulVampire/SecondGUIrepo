@@ -16,7 +16,7 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-//	return;
+	return;
 
 #if 0
 	/// make right numbers
