@@ -576,7 +576,8 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
             {
                 if(ui->windsButton->isChecked()) //bad work
                 {
-                    sliceOneByOneNew();
+					sliceOneByOne();
+//                    sliceOneByOneNew();
                     sliceWindFromReal();
                 }
                 else if(ui->justSliceButton->isChecked())

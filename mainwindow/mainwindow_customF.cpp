@@ -11,12 +11,86 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-//	cout << QDir("/media/Files/Data").entryList(QDir::Files).size() << endl;
-//	repair::deleteSpacesDir("/media/Files/Data", {});
+
+//	QString wndPath = "/media/Files/Data/FeedbackNew/XAX/SpectraSmooth/winds";
+//	QStringList lst = QDir(wndPath).entryList({"*.psd"}, QDir::Files, QDir::Name);
+//	for(int i = 0; i < lst.size() - 800; ++i)
+//	{
+//		QFile::remove(wndPath + "/" + lst[i]);
+//	}
 //	exit(0);
 
 
-	return;
+//	return;
+
+#if 0
+	/// repair markers in my files
+	QString dr = "/media/Files/Data/FeedbackNew";
+	QString toFile = "/XAX/XAX_train.edf";
+
+	edfFile fil;
+	fil.readEdfFile(dr + toFile);
+	const lineType & markArr = fil.getData()[fil.getMarkChan()];
+	std::vector<std::vector<int>> marks;
+
+	for(int i = 0; i < markArr.size(); ++i)
+	{
+		if(markArr[i] == 239.)
+		{
+			marks.push_back({i, markArr[i]});
+		}
+	}
+
+	for(int i = 0; i < markArr.size(); ++i)
+	{
+		if(markArr[i] == 241. || markArr[i] == 247.)
+		{
+			fil.setData(fil.getMarkChan(), i, 0.);
+		}
+	}
+
+
+	ifstream inStr;
+	inStr.open(XAX/list1.txt");
+	std::vector<int> marksList;
+	std::string typ;
+	int num;
+	std::string fileName;
+	while(!inStr.eof())
+	{
+		inStr >> typ;
+		inStr >> num;
+		inStr >> fileName;
+		if(!inStr.eof())
+		{
+			if(typ == "S1")
+			{
+				marksList.push_back(241);
+			}
+			else if(typ == "V1")
+			{
+				marksList.push_back(247);
+			}
+		}
+	}
+
+	if(marksList.size() != marks.size())
+	{
+		cout << "inequal sizes: ";
+		cout << marksList.size() << '\t';
+		cout << marks.size() << endl;
+		exit(1);
+	}
+
+	for(int i = 0; i < 80; ++i)
+	{
+		fil.setData(fil.getMarkChan(), marks[i][0], marksList[i]);
+	}
+	toFile.replace(".edf", "_good.edf")
+	fil.writeEdfFile(dr + toFile);
+
+	exit(0);
+#endif
 
 #if 0
 	/// make right numbers
@@ -653,13 +727,14 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 01
+#if 0
     /// EEG fMRI
 	def::ntFlag = false;
 
-	QString guy = "Toropova";
+//	QString guy = "Toropova";
 //	for(QString guy : subjects::leest_mri)
 //	for(QString guy : leest)
+	for(QString guy : {"Rest", "Levando", "Moskovtsev"})
 	{
 //		autos::GalyaCut(def::mriFolder + slash + guy, 2);
 		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_winds_cleaned");
