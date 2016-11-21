@@ -619,19 +619,19 @@ std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
 	return res;
 }
 
-/// unused now
+/// complex signal of fftLen = 2*fftLen numbers
 std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 //								  const double srate,
 								  int fftLen) /// what is fftLen here?
 {
-	{
-		std::cout << "spectreCtoC: should deal with fftLen, return" <<std::endl;
-		return {};
-	}
+//	{
+//		std::cout << "spectreCtoC: should deal with fftLen, return" <<std::endl;
+//		return {};
+//	}
 
 	if(fftLen <= 0)
 	{
-		fftLen = smallLib::fftL(inputSignal.size());
+		fftLen = smallLib::fftL(inputSignal.size() / 2);
 	}
 
 //	double norm = 2. / (inputSignal.size() * srate);

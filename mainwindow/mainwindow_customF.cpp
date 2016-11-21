@@ -20,13 +20,58 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
+	edfFile fil;
+	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+
+	int fftLen = 4096;
+	double spStep = 250. / fftLen;
+	double lowFreq = 8.;
+	double highFreq = 8.5;
+	double dF = highFreq - lowFreq;
+
+	double lF = 7.5;
+	double hF = 9;
+	auto signal = fil.getData().subCols(18000, 18000 + fftLen)[10];
+
+
+	auto signal2 = myDsp::refilter(signal,
+								   lowFreq,
+								   highFreq - spStep,
+								   true, 250.);
+	signal2[0] = 0.;
+
+	auto sp = myLib::spectreRtoC(signal, fftLen);
+
+	for(int i = int(lowFreq / spStep) + 2;
+		i < int(highFreq / spStep);
+		++i)
+	{
+		sp[i * 2 ] = 0.;
+		sp[i * 2 + 1] = 0.;
+
+		sp[2 * fftLen - 1 - i * 2] = 0.;
+		sp[2 * fftLen - 1 - i * 2 - 1] = 0.;
+	}
+
+	auto signal3 = myLib::spectreCtoRrev(sp);
+
+
+//	drawOneSignal(signal, 600, def::dataFolder + "/init.jpg");
+//	drawOneSignal(signal2, 600, def::dataFolder + "/butter.jpg");
+//	drawOneSignal(signal3, 600, def::dataFolder + "/fft.jpg");
+
+
+	drawOneSpectrum(signal , def::dataFolder + "/sp_init.jpg", lF, hF, 250, 0);
+	drawOneSpectrum(signal2, def::dataFolder + "/sp_but.jpg", lF, hF, 250, 0);
+	drawOneSpectrum(signal3, def::dataFolder + "/sp_fft.jpg", lF, hF, 250, 0);
+	exit(0);
 
 //	return;
 
 #if 0
 	/// repair markers in my files
 	QString dr = "/media/Files/Data/FeedbackNew";
-	QString toFile = "/XAX/XAX_train.edf";
+	QString toFile = "/XDX/XDX.EDF";
 
 	edfFile fil;
 	fil.readEdfFile(dr + toFile);
@@ -50,8 +95,8 @@ void MainWindow::customFunc()
 	}
 
 
-	ifstream inStr;
-	inStr.open(XAX/list1.txt");
+	std::ifstream inStr;
+	inStr.open((dr + "/list1.txt").toStdString());
 	std::vector<int> marksList;
 	std::string typ;
 	int num;
@@ -86,7 +131,7 @@ void MainWindow::customFunc()
 	{
 		fil.setData(fil.getMarkChan(), marks[i][0], marksList[i]);
 	}
-	toFile.replace(".edf", "_good.edf")
+	toFile.replace(".edf", "_good.edf");
 	fil.writeEdfFile(dr + toFile);
 
 	exit(0);
