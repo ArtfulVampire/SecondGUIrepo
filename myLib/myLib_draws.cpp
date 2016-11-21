@@ -844,14 +844,17 @@ QPixmap drawOneTemplate(const int chanNum,
 
 }
 
-void drawTemplate(const QString & outPath,
+QPixmap drawTemplate(const QString & outPath,
                   bool channelsFlag,
                   int width,
                   int height)
 {
-    QSvgGenerator svgGen;
-    QPixmap pic;
+	QPixmap pic(width, height);
     QPainter paint;
+	pic.fill();
+	paint.begin(&pic);
+
+
     QString helpString;
 
     int numOfChan = coords::numOfChan;
@@ -861,21 +864,7 @@ void drawTemplate(const QString & outPath,
         channelsFlag = false; // numbers for ICAs
     }
 
-    if(outPath.contains(".svg"))
-    {
-        svgGen.setSize(QSize(width, height));
-        svgGen.setViewBox(QRect(QPoint(0,0), svgGen.size()));
-        svgGen.setFileName(outPath);
-        paint.begin(&svgGen);
-        paint.setBrush(QBrush("white"));
-        paint.drawRect(QRect(QPoint(0,0), svgGen.size()));
-    }
-    else if(outPath.contains(".jpg") || outPath.contains(".png"))
-    {
-        pic = QPixmap(width, height);
-        pic.fill();
-        paint.begin(&pic);
-    }
+
 
 
 
@@ -892,7 +881,6 @@ void drawTemplate(const QString & outPath,
 	{
 		return def::left() * def::spStep() + in * unit;
 	};
-
     for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
     {
 		/// replace with drawOneTemplate
@@ -917,7 +905,7 @@ void drawTemplate(const QString & outPath,
         {
 
 			const double cF = currFreq(k);
-			if( abs(cF - std::round(cF)) < unit / 2. )
+			if( abs(cF - std::round(cF)) <= unit / 2. )
             {
                 paint.drawLine(QPointF(X + k,
                                        Y),
@@ -963,11 +951,12 @@ void drawTemplate(const QString & outPath,
     }
     //write channels labels
 
-    paint.end();
-    if(!outPath.contains(".svg"))
+	paint.end();
+	if(!outPath.isEmpty() && !outPath.contains(".svg"))
     {
         pic.save(outPath, 0, 100);
-    }
+	}
+	return pic;
 }
 
 void drawArray(const QString & templPath,
@@ -1132,16 +1121,20 @@ void drawArray(const QString & templPath,
               lineWidth);
 }
 
+int BaklushevChans = 19;
+
 void drawArrayWithSigma(const QString &templPath,
 						const lineType &inData,
 						const lineType &inSigma,
+						double norm,
 						const QString &color,
 						int lineWidth)
 {
-	QSvgGenerator svgGen;
-	QSvgRenderer svgRen;
 	QPixmap pic;
 	QPainter paint;
+	pic.load(templPath);
+	paint.begin(&pic);
+
 	QString helpString;
 	int numOfChan = 19;
 
@@ -1151,30 +1144,10 @@ void drawArrayWithSigma(const QString &templPath,
 		return;
 	}
 
-	if(templPath.contains(".svg"))
+	if(norm <= 0.)
 	{
-		return;
-		//// TO FIX
-		///
-
-#if 0
-		svgRen = QSvgRenderer(templPath);
-		svgGen.setSize(QSize(width, height));
-		svgGen.setViewBox(QRect(QPoint(0,0), svgGen.size()));
-		svgGen.setFileName(outPath);
-		paint.begin(&svgGen);
-		paint.setBrush(QBrush("white"));
-		paint.drawRect(QRect(QPoint(0,0), svgGen.size()));
-#endif
-
-
+		norm = (inData + inSigma).max();
 	}
-	else if(templPath.contains(".jpg") || templPath.contains(".png"))
-	{
-		pic.load(templPath);
-		paint.begin(&pic);
-	}
-	double norm = (inData + inSigma).max();
 
 	const double graphHeight = paint.device()->height() * coords::scale;
 	const double graphWidth = paint.device()->width() * coords::scale;
@@ -1194,11 +1167,16 @@ void drawArrayWithSigma(const QString &templPath,
 
 	for(auto drawLine : std::vector<lineType>{inData, lowLine, highLine})
 	{
-		for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
+		for(int c2 = 0; c2 < BaklushevChans; ++c2)  //exept markers channel
 		{
 			auto index = [=](int in) -> int
 			{
 				return c2 * spL + in * graphScale;
+			};
+
+			auto index2 = [=](int in) -> int
+			{
+				return c2 * spL + in;
 			};
 
 			const double Y = paint.device()->height() * coords::y[c2];
@@ -1207,23 +1185,63 @@ void drawArrayWithSigma(const QString &templPath,
 
 
 			//draw spectra
-			for(int k = 0; k < graphWidth - 1; ++k)
+//			for(int k = 0; k < graphWidth - 1; ++k)
+			for(int k = 0; k < spL - 1; ++k)
 			{
 				paint.setPen(QPen(QBrush(QColor(color)), lineWidth));
 
 				// usual
 
-				paint.drawLine(QPointF(X + k,
-									   Y - drawLine[index(k)] * norm),
-						QPointF(X + k + 1,
-								Y - drawLine[index(k+1)] * norm));
+//				paint.drawLine(QPointF(X + k,
+//									   Y - drawLine[index(k)] * norm),
+//						QPointF(X + k + 1,
+//								Y - drawLine[index(k+1)] * norm));
+
+				paint.drawLine(QPointF(X + k / graphScale,
+									   Y - drawLine[index2(k)] * norm),
+						QPointF(X + (k + 1)  / graphScale,
+								Y - drawLine[index2(k+1)] * norm));
 
 			}
+
 		}
+
 		lineWidth = 1;
-
-
 	}
+
+
+
+	paint.setOpacity(0.5);
+	for(int c2 = 0; c2 < BaklushevChans; ++c2)
+	{
+		auto index2 = [=](int in) -> int
+		{
+			return c2 * spL + in;
+		};
+		auto index = [=](int in) -> int
+		{
+			return c2 * spL + in * graphScale;
+		};
+
+		const double Y = paint.device()->height() * coords::y[c2];
+		const double X = paint.device()->width() * coords::x[c2];
+		for(int k = 0; k < spL; ++k)
+//		for(int k = 0; k < graphWidth; ++k)
+		{
+			paint.drawLine(QPointF(X + k / graphScale,
+								   Y - highLine[index2(k)] * norm),
+					QPointF(X + k / graphScale,
+							Y - lowLine[index2(k)] * norm));
+//			paint.drawLine(QPointF(X + k,
+//								   Y - highLine[index(k)] * norm),
+//					QPointF(X + k,
+//							Y - lowLine[index(k)] * norm));
+		}
+	}
+	paint.setOpacity(1.0);
+
+
+
 	//returning norm = max magnitude
 	norm = graphHeight / norm;
 	norm = doubleRound(norm,
@@ -1241,6 +1259,170 @@ void drawArrayWithSigma(const QString &templPath,
 	pic.save(templPath, 0, 100);
 }
 
+QPixmap drawArrays(const QPixmap & templPixmap,
+				  const matrix & inMatrix,
+				  const bool weightsFlag,
+				  const spectraGraphsNormalization normType,
+				  double norm,
+				  const std::vector<QColor> & colors,
+				  const double scaling,
+				  const int lineWidth)
+{
+	QPixmap pic = templPixmap;
+	QPainter paint;
+	paint.begin(&pic);
+
+	QString helpString;
+	int numOfChan = inMatrix.cols() / def::spLength();
+
+	// test size
+	int shouldSize = numOfChan * def::spLength();
+
+	std::for_each(inMatrix.begin(),
+				  inMatrix.end(),
+				  [shouldSize](lineType inData)
+	{
+		if(inData.size() > shouldSize)
+		{
+			cout << "drawArrays: inappropriate array size = " << inData.size() << endl;
+			return;
+		}
+	});
+
+
+
+	if(norm <= 0.)
+	{
+		std::for_each(inMatrix.begin(),
+					  inMatrix.end(),
+					  [&norm](lineType inData)
+		{
+			norm = max(norm, abs(inData).max()); // fabs for negative weights e.g.
+		});
+
+		if(weightsFlag)
+		{
+			norm *= 2;
+		}
+	}
+
+	const double graphHeight = paint.device()->height() * coords::scale;
+	const double graphWidth = paint.device()->width() * coords::scale;
+	const double graphScale = def::spLength() / graphWidth;
+	// initial fonts prepared for 1600*1600
+	const double scaleY = paint.device()->height() / 1600.;
+	const double scaleX = paint.device()->width() / 1600.;
+
+	norm = graphHeight / norm ; //250 - pixels per graph, generality
+	norm *= scaling;
+
+	const double normBC = norm;
+
+	for(int c2 = 0; c2 < BaklushevChans; ++c2)  //exept markers channel
+	{
+		const double Y = paint.device()->height() * coords::y[c2];
+		const double X = paint.device()->width() * coords::x[c2];
+
+		if(weightsFlag)
+		{
+			// for weigths
+			paint.setPen(QPen(QBrush("black"), 1));
+			paint.drawLine(QPointF(X, Y - graphHeight / 2),
+						   QPointF(X + graphWidth, Y - graphHeight / 2));
+		}
+
+		norm = normBC;
+		if(normType == spectraGraphsNormalization::each)
+		{
+			// norm each channel by max peak
+			norm = 0;
+			for(uint i = 0; i < inMatrix.size(); ++i)
+			{
+				for(int j = 0; j < def::spLength(); ++j)
+				{
+					norm = fmax(norm,
+								fabs(inMatrix[i][def::spLength() * c2 + j])
+						   * (1. + (j > 0.7 * def::spLength()) * 0.7) );
+				}
+			}
+
+			paint.setPen("black");
+			paint.setFont(QFont("Helvetica", int(20 * scaleY)));
+
+							   #if 0
+			paint.drawText(QPointF(X + graphWidth * 0.4,
+								   Y - graphHeight - 5 * scaleY),
+						   QString::number(doubleRound(norm)));
+							   #endif
+
+			// make drawNorm
+			norm = graphHeight / norm ; //250 - pixels per graph, generality
+			norm *= scaling;
+		}
+
+
+		const int offset = c2 * def::spLength();
+		for(uint numVec = 0; numVec < inMatrix.size(); ++numVec)
+		{
+			const lineType & inData = inMatrix[numVec];
+			//draw spectra
+//			for(int k = 0; k < graphWidth - 1; ++k)
+			for(int k = 0; k < def::spLength() - 1; ++k)
+			{
+				paint.setPen(QPen(QBrush(QColor(colors[numVec])), lineWidth));
+				if(weightsFlag)
+				{
+					// weights
+					paint.drawLine(QPointF(X + k,
+										   Y - graphHeight / 2.
+										   - inData[offset + k * graphScale] * norm),
+							QPointF(X + k + 1,
+									Y - graphHeight / 2.
+									- inData[offset + (k + 1) * graphScale] * norm));
+
+				}
+				else
+				{
+					// usual
+//					paint.drawLine(QPointF(X + k,
+//										   Y - inData[offset + k * graphScale] * norm),
+//							QPointF(X + k + 1,
+//									Y - inData[offset + (k + 1) * graphScale] * norm));
+					/// smooth
+					paint.drawLine(QPointF(X + k / graphScale,
+										   Y - inData[offset + k] * norm),
+							QPointF(X + (k + 1) / graphScale,
+									Y - inData[offset + k + 1] * norm));
+				}
+			}
+		}
+	}
+
+	// returning norm = max magnitude
+	norm /= scaling;
+	norm = graphHeight / norm;
+	norm /= scaling;  //scaling generality
+	norm = doubleRound(norm,
+					   min(1., 2 - floor(log10(norm)) )
+					   );
+	if(normType == spectraGraphsNormalization::all)
+	{
+		paint.drawLine(QPointF(paint.device()->width() * coords::x[6],
+					   paint.device()->height() * coords::y[1]),
+				QPointF(paint.device()->width() * coords::x[6],
+				paint.device()->height() * coords::y[1] - graphHeight));
+
+		helpString.setNum(norm);
+		helpString += QObject::tr(" mcV^2/Hz");
+		paint.setPen("black");
+		paint.setFont(QFont("Helvetica", int(24 * scaleY)));
+		paint.drawText(QPointF(pic.width() * coords::x[6] + 5 * scaleX,
+					   pic.height() * coords::y[1] - graphHeight / 2),
+				helpString);
+	}
+	paint.end();
+	return pic;
+}
 
 double drawArrays(const QString & templPath,
                   const matrix & inMatrix,
@@ -1257,6 +1439,8 @@ double drawArrays(const QString & templPath,
     QPainter paint;
     QString helpString;
     int numOfChan = inMatrix.cols() / def::spLength();
+//	cout << inMatrix.cols() << "\t" << def::spLength() << "\t" << numOfChan << endl;
+//	exit(0);
 
     if(templPath.contains(".svg"))
     {
@@ -1427,9 +1611,13 @@ double drawArrays(const QString & templPath,
 
 
     paint.end();
-    pic.save(templPath, 0, 100);
+	if(!templPath.isEmpty())
+	{
+		pic.save(templPath, 0, 100);
+	}
+//	return pic;
 
-    return res;
+	return res;
 }
 
 void drawArraysInLine(const QString & picPath,

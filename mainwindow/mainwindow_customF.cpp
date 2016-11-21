@@ -42,33 +42,87 @@ void MainWindow::customFunc()
 	/// Baklushev draw
 
 	QString dr = "/media/Files/Data/Baklushev";
-	for(QString guy : QDir(dr).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+	for(QString guy : {"ANO"})
+//	for(QString guy : QDir(dr).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
 		QString filePath = dr + slash + guy + slash + guy + "_draw.edf";
 		if(!QFile::exists(filePath)) continue;
 
 		setEdfFile(filePath);
+
+//		readData();
+//		sliceBak(1, 60, "241");
+//		sliceBak(61, 120, "247");
+//		sliceBak(121, 180, "241");
+//		sliceBak(181, 240, "247");
+//		exit(0);
+
 //		sliceAll();
-//		countSpectraSimple(2048, 8);
+//		countSpectraSimple(2048, 3);
+//		exit(0);
+
+		Spectre * sp = new Spectre();
+		sp->setFftLength(2048);
+		delete sp;
+
 		QString spectraPath = dr + slash + guy + slash + "SpectraSmooth";
 
 
-		const QString picture = dr + slash + guy + slash + "pic.jpg";
-		drawTemplate(picture);
-		std::valarray<double> drawArr;
-		auto lst = QDir(spectraPath).entryList({"*_241*"});
-		int count = 0;
-		matrix drawMat = matrix(lst.size(), 1);
-		for(QString sp : lst)
+
+
+		QPixmap pics[2];
+		int numOfReals[2];
+		QStringList lst[2];
+		QString marker[2] = {"*_241*" , "*_247*"};
+		matrix drawMat[2];
+
+		for(int i = 0; i < 2; ++i)
 		{
-			readFileInLine(spectraPath + slash + sp, drawMat[count++]);
+			lst[i] = QDir(spectraPath).entryList({marker[i]});
+			numOfReals[i] = lst[i].size();
+
+			drawMat[i] = matrix(numOfReals[i], 1);
+
+			for(int j = 0; j < numOfReals[i]; ++j)
+			{
+				readFileInLine(spectraPath + slash + lst[i][j], drawMat[i][j]);
+			}
 		}
-		auto avArr = drawMat.averageRow();
-		auto sigmArr = drawMat.sigmaOfCols();
-		cout << drawMat.maxVal() << endl;
 
-		drawArrayWithSigma(picture, avArr, sigmArr, "blue", 2);
 
+		double norm = max(drawMat[0].maxVal(), drawMat[1].maxVal());
+		norm = 16;
+		QColor currColor;
+
+		const QString picture[2] = {dr + slash + guy + slash + guy + "_picSpat.jpg",
+									dr + slash + guy + slash + guy + "_picVerb.jpg"};
+		const QString pictures[2] = {dr + slash + guy + slash + guy + "_picSpat_2.jpg",
+									dr + slash + guy + slash + guy + "_picVerb_2.jpg"};
+		for(int i = 0; i < 2; ++i)
+		{
+			currColor = ((i == 0) ? "blue" : "red");
+			pics[i] = drawTemplate(QString(), true, 1600, 1600);
+
+			pics[i].save(pictures[i], 0, 100);
+			auto avArr = drawMat[i].averageRow();
+			auto sigmArr = drawMat[i].sigmaOfCols();
+//			norm = max(avArr.max() + sigmArr.max(), drawMat[i].maxVal());
+			drawArrayWithSigma(pictures[i], avArr, sigmArr,
+							   norm,
+							   currColor.name(), 2);
+
+			pics[i] = drawArrays(pics[i], drawMat[i], false, spectraGraphsNormalization::all,
+
+//								 drawMat[i].maxVal(),
+								 norm,
+
+								 std::vector<QColor>(drawMat[i].rows(), currColor),
+								 1,
+								 1);
+			pics[i].save(picture[i], 0, 100);
+
+		}
+		exit(7);
 	}
 	exit(2);
 #endif
@@ -599,11 +653,11 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
+#if 01
     /// EEG fMRI
 	def::ntFlag = false;
 
-	QString guy = "Sushinskaya";
+	QString guy = "Toropova";
 //	for(QString guy : subjects::leest_mri)
 //	for(QString guy : leest)
 	{

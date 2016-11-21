@@ -425,12 +425,21 @@ void Spectre::psaSlot()
         }
 
 //        def::drawNorm = -1;
-        def::drawNorm = drawArrays(helpString,
-                                   drawData,
-                                   false,
-                                   def::drawNormTyp,
-                                   def::drawNorm,
-                                   colors);
+		/// old
+//        def::drawNorm = drawArrays(helpString,
+//                                   drawData,
+//                                   false,
+//                                   def::drawNormTyp,
+//                                   def::drawNorm,
+//                                   colors);
+
+		drawArrays(helpString,
+				   drawData,
+				   false,
+				   def::drawNormTyp,
+				   -1,
+				   colors);
+
         if(ui->MWcheckBox->isChecked())
         {
             drawMannWitney(helpString,

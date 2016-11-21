@@ -439,17 +439,19 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning 
     int j = 0;                                     //flag of marker1 read
     int h = 0;                                     //flag of marker2 read
     const edfFile & fil = globalEdf;
+	const auto & markerChan = fil.getData()[fil.getMarkChan()];
 
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
-        if((fil.getData()[fil.getMarkChan()][i] >= marker1)
-                && (fil.getData()[fil.getMarkChan()][i] <= marker2) && h== 0)
+		if(markerChan[i] >= marker1
+		   && markerChan[i] <= marker2
+		   && h== 0)
         {
             j = i;
             h = 1;
             continue;
         }
-        if(fil.getData()[fil.getMarkChan()][i] == 250.)
+		if(markerChan[i] == 250.)
         {
             k = i;
             if(h == 1) ++h;
@@ -462,6 +464,7 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning 
                     + slash + def::ExpName
                     + "_" + marker
                     + "." + rightNumber(number, 4);
+
             // to test?
             fil.saveSubsection(j, k, helpString, true);
 

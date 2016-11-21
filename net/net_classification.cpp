@@ -393,7 +393,7 @@ void Net::cycleParams(std::vector<std::vector<double> > & in)
 				avType a;
 //				SUCCESSIVE_CHECK
                         //            auto a = autoClassification();
-                        in.push_back(std::vector<double>{i, lrat, a.first, a.second});
+						in.push_back(std::vector<double>{double(i), lrat, a.first, a.second});
             }
             break;
         }
@@ -408,7 +408,7 @@ void Net::cycleParams(std::vector<std::vector<double> > & in)
                     setSvmKernelNumSlot(kerTyp);
 
                     auto a = autoClassification();
-                    in.push_back(std::vector<double>{i, svmTyp, kerTyp, a.first, a.second});
+					in.push_back(std::vector<double>{double(i), double(svmTyp), double(kerTyp), a.first, a.second});
                 }
             }
             break;
@@ -420,7 +420,7 @@ void Net::cycleParams(std::vector<std::vector<double> > & in)
                 setKnnNumSlot(numNear);
 
                 auto a = autoClassification();
-                in.push_back(std::vector<double>{i, numNear, a.first, a.second});
+				in.push_back(std::vector<double>{double(i), double(numNear), a.first, a.second});
             }
             break;
         }
@@ -431,14 +431,14 @@ void Net::cycleParams(std::vector<std::vector<double> > & in)
 				setWordNumSlot(numOfClust);
 
                 auto a = autoClassification();
-				in.push_back(std::vector<double>{i, numOfClust, a.first, a.second});
+				in.push_back(std::vector<double>{double(i), double(numOfClust), a.first, a.second});
             }
             break;
         }
         default:
         {
             auto a = autoClassification();
-            in.push_back(std::vector<double>{i, a.first, a.second});
+			in.push_back(std::vector<double>{double(i), a.first, a.second});
             break;
         }
         }
