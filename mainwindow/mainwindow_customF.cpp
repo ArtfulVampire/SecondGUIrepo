@@ -19,7 +19,9 @@ void MainWindow::customFunc()
 //		QFile::remove(wndPath + "/" + lst[i]);
 //	}
 //	exit(0);
+//	return;
 
+#if 0
 	edfFile fil;
 	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
 
@@ -67,6 +69,7 @@ void MainWindow::customFunc()
 	exit(0);
 
 //	return;
+#endif
 
 #if 0
 	/// repair markers in my files
@@ -582,6 +585,8 @@ void MainWindow::customFunc()
 #if 0
 	/// Xenia cut
 	QString initPath = "/media/Files/Data/Xenia/15Nov";
+//	QString initPath = "/media/michael/My Passport/TBI_all_results_20Nov";
+
 	for(QString str : {"healthy", "moderate_TBI", "severe_TBI"})
 	{
 		QString workPath = initPath + slash + str;
@@ -603,7 +608,7 @@ void MainWindow::customFunc()
 //				for(QString fileName : files)
 //				{
 
-					edfFile fil;
+//					edfFile fil;
 
 //					if(fil.getPhysMax()[0] > 4100)
 //					{
@@ -673,7 +678,7 @@ void MainWindow::customFunc()
 
 
 
-#if 0
+#if 01
 	/// count
 	for(QString subdir : subdirs)
 	{
@@ -683,6 +688,7 @@ void MainWindow::customFunc()
 		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 		for(QString guy : guys)
 		{
+			if(!guy.contains("Shamukaeva")) continue;
 
 			QStringList t = QDir(workPath + slash + guy).entryList(def::edfFilters);
 			if(t.isEmpty()) continue;
@@ -725,7 +731,7 @@ void MainWindow::customFunc()
 	}
 #endif
 
-#if 0
+#if 01
 	/// make tables by stimulus
 	for(QString subdir : subdirs)
 	{
@@ -740,7 +746,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
+#if 01
 	/// make tables whole
 	for(QString subdir : subdirs)
 	{
@@ -750,7 +756,7 @@ void MainWindow::customFunc()
 	}
 #endif
 
-#if 01
+#if 0
 	/// people list
 	for(QString subdir : subdirs)
 	{
@@ -776,18 +782,31 @@ void MainWindow::customFunc()
     /// EEG fMRI
 	def::ntFlag = false;
 
-//	QString guy = "Toropova";
+	QString guy = "Umanskaya";
 //	for(QString guy : subjects::leest_mri)
 //	for(QString guy : leest)
-	for(QString guy : {"Rest", "Levando", "Moskovtsev"})
+//	for(QString guy : {"Rest", "Levando", "Moskovtsev"})
 	{
 //		autos::GalyaCut(def::mriFolder + slash + guy, 2);
 		autos::GalyaFull(def::mriFolder + slash + guy + slash + guy + "_winds_cleaned");
-	}
 
-//	QString type = "_med.getFreq()";
-//	areSimilarFiles("/media/Files/Data/MRI/OUT/" + guy + "_old/" + guy + type + ".txt",
-//					"/media/Files/Data/MRI/OUT/" + guy + "/" + guy + type + ".txt");
+		QString outPath = def::mriFolder + "/OUT/" + guy;
+		QString dropPath = "/media/Files/Dropbox/DifferentData/EEG-MRI/Results";
+		QStringList files = QDir(outPath).entryList({"*.txt"});
+		QString cmd = "cd " + outPath + " && " +
+					  "rar a " + guy + ".rar ";
+		for(QString a : files)
+		{
+			cmd += a + " ";
+		}
+		cout << cmd << endl;
+		system(cmd.toStdString().c_str());
+		/// check if exists
+		cmd = "cp " + outPath + "/" + guy + ".rar " +
+			  dropPath + "/" + guy + ".rar";
+		cout << cmd << endl;
+		system(cmd.toStdString().c_str());
+	}
 
     exit(0);
 #endif

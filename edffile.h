@@ -218,7 +218,7 @@ private:
     bool ntFlag = def::ntFlag;
     bool edfPlusFlag = false; // to detect
 
-	bool writeMarkersFlag = true;
+	bool writeMarkersFlag = false;
 	bool writeLabelsFlag = false;
 	bool writeHeaderFlag = false;
 
