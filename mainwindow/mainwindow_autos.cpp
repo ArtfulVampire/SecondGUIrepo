@@ -7,6 +7,262 @@ using namespace std;
 using namespace myLib;
 using namespace smallLib;
 
+void MainWindow::testSuccessive()
+{
+	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
+	setEdfFile(path + "GAS_train.edf");
+	readData();
+
+	const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"};
+//    const QStringList names {"GAS"};
+
+//	bool sliceAndCount = true;
+	bool sliceAndCount = false;
+
+	ui->timeShiftSpinBox->setValue(2.);
+	ui->windowLengthSpinBox->setValue(4.);
+	ui->windsButton->setChecked(true); // sliceWindFromReal
+
+	for(QString name : names)
+	{
+		/// successive
+		setEdfFile(path + name + "_train.edf");
+
+		cleanDir(path + "Reals");
+
+		ui->timeShiftSpinBox->setValue(2.);
+		if(sliceAndCount)
+		{
+			sliceAll();
+			cleanDir(path + "Reals");
+
+
+			QStringList windsList;
+			// delete first three winds from each realisation
+			windsList = QDir(path + "winds/fromreal").entryList({"*_train*.00",
+																 "*_train*.01",
+																 "*_train*.02"},
+																QDir::Files);
+			/// delete first some winds from reals
+			for(const QString & name : windsList)
+			{
+				QFile::remove(path + "winds/fromreal/" + name);
+			}
+
+			/// magic constant
+			/// leave last 600 winds (some will fall out further due to zeros)
+			/// REMAKE - leave 120 each type
+			makeFullFileList(path + "winds/fromreal",
+							 windsList, {def::ExpName.left(3) + "_train"});
+			for(int i = 0; i < windsList.length() - 800; ++i) /// constant
+			{
+				QFile::remove(path + "winds/fromreal/" + windsList[i]);
+			}
+		}
+
+		setEdfFile(path + name + "_test" + ".edf");
+		ui->timeShiftSpinBox->setValue(1.); /// really should be 0.5
+		/// DON'T CLEAR, TRAIN winds TAKEN BY SUCCESSIVE
+
+		if(sliceAndCount)
+		{
+			sliceAll();
+			cleanDir(path + "Reals");
+			countSpectraSimple(1024, 8);
+		}
+		else
+		{
+			readData();
+		}
+
+		/// current best set
+		suc::numGoodNewLimit = 3;
+		suc::learnSetStay = 40;
+		suc::decayRate = 0.00;
+
+		/// should not change averageDatum and sigmaVector
+		Net * net = new Net();
+		net->loadData(def::windsSpectraDir(), {name + "_train"});
+
+		net->setClassifier(ClassifierType::ANN);
+		net->setSource("w");
+		net->setMode("t"); // train-test
+
+		cout << name << endl;
+		net->successiveProcessing();
+
+		delete net;
+	}
+}
+
+void MainWindow::testNewClassifiers()
+{
+	QString paath = "/media/Files/Data/Feedback/SuccessClass/";
+
+//	for(QString guy : {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"})
+	for(QString guy : {"PMI", "SMM", "SMS", "SUA"})
+//	for(QString guy : {"GAS"})
+	{
+		for(QString suff :{"_train", "_test"})
+		{
+			setEdfFile(paath + guy + suff + ".edf");
+//			readData();
+
+			Net * net = new Net();
+			net->loadData(paath + "/SpectraSmooth/winds", {def::ExpName});
+
+			net->setClassifier(ClassifierType::ANN);
+			net->setMode("k");
+			net->setSource("w");
+			net->setNumOfPairs(30);
+			net->setFold(4);
+
+//			net->customF(); /// clean to 3*N train windows
+
+
+//			cout << guy + suff << endl;
+//			net->autoClassification();
+
+
+
+			std::vector<std::vector<double>> allPew =  {{3., 30.},
+														{3., 40.},
+														{4., 40.},
+														{4., 50.},
+														{5., 50.},
+														{6., 60.},
+														{8., 80.},
+														{8., 100.},
+														{10., 100.}
+													   };
+//			for(auto pewww : allPew)
+//			{
+			for(int i1 = 3; i1 <= 8; ++i1)
+			{
+				for(int i2 = 70; i2 <= 110; i2 += 10)
+				{
+					for(double i3 : {-0.005, 0.00, 0.005})
+					{
+//						suc::numGoodNewLimit = pewww[0];
+//						suc::learnSetStay = pewww[1];
+						suc::numGoodNewLimit = i1;
+						suc::learnSetStay = i2;
+						suc::decayRate = i3;
+						cout << guy << endl;
+						cout << suc::numGoodNewLimit << '\t';
+						cout << suc::learnSetStay << '\t';
+						cout << suc::decayRate << endl;
+						net->successiveProcessing();
+					}
+				}
+
+			}
+
+			delete net;
+			break; /// only suff = "_train"
+		}
+
+//		continue;
+
+		/// loading UCI dataset - add enum
+//		net->loadDataUCI("cmi");
+//		net->setClassifier(ClassifierType::RDA);
+//		net->setRdaLambdaSlot(0.8);
+//		net->setRdaShrinkSlot(0.8);
+//		net->autoClassification();
+
+	}
+}
+
+void MainWindow::BaklushevDraw()
+{
+
+	QString dr = "/media/Files/Data/Baklushev";
+	for(QString guy : {"ANO"})
+//	for(QString guy : QDir(dr).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+	{
+		QString filePath = dr + slash + guy + slash + guy + "_draw.edf";
+		if(!QFile::exists(filePath)) continue;
+
+		setEdfFile(filePath);
+
+//		readData();
+//		sliceBak(1, 60, "241");
+//		sliceBak(61, 120, "247");
+//		sliceBak(121, 180, "241");
+//		sliceBak(181, 240, "247");
+//		exit(0);
+
+//		sliceAll();
+//		countSpectraSimple(2048, 3);
+//		exit(0);
+
+		Spectre * sp = new Spectre();
+		sp->setFftLength(2048);
+		delete sp;
+
+		QString spectraPath = dr + slash + guy + slash + "SpectraSmooth";
+
+
+
+
+		QPixmap pics[2];
+		int numOfReals[2];
+		QStringList lst[2];
+		QString marker[2] = {"*_241*" , "*_247*"};
+		matrix drawMat[2];
+
+		for(int i = 0; i < 2; ++i)
+		{
+			lst[i] = QDir(spectraPath).entryList({marker[i]});
+			numOfReals[i] = lst[i].size();
+
+			drawMat[i] = matrix(numOfReals[i], 1);
+
+			for(int j = 0; j < numOfReals[i]; ++j)
+			{
+				readFileInLine(spectraPath + slash + lst[i][j], drawMat[i][j]);
+			}
+		}
+
+
+		double norm = max(drawMat[0].maxVal(), drawMat[1].maxVal());
+		norm = 16;
+		QColor currColor;
+
+		const QString picture[2] = {dr + slash + guy + slash + guy + "_picSpat.jpg",
+									dr + slash + guy + slash + guy + "_picVerb.jpg"};
+		const QString pictures[2] = {dr + slash + guy + slash + guy + "_picSpat_2.jpg",
+									dr + slash + guy + slash + guy + "_picVerb_2.jpg"};
+		for(int i = 0; i < 2; ++i)
+		{
+			currColor = ((i == 0) ? "blue" : "red");
+			pics[i] = drawTemplate(QString(), true, 1600, 1600);
+
+			pics[i].save(pictures[i], 0, 100);
+			auto avArr = drawMat[i].averageRow();
+			auto sigmArr = drawMat[i].sigmaOfCols();
+//			norm = max(avArr.max() + sigmArr.max(), drawMat[i].maxVal());
+			drawArrayWithSigma(pictures[i], avArr, sigmArr,
+							   norm,
+							   currColor.name(), 2);
+
+			pics[i] = drawArrays(pics[i], drawMat[i], false, spectraGraphsNormalization::all,
+
+//								 drawMat[i].maxVal(),
+								 norm,
+
+								 std::vector<QColor>(drawMat[i].rows(), currColor),
+								 1,
+								 1);
+			pics[i].save(picture[i], 0, 100);
+
+		}
+		exit(7);
+	}
+	exit(2);
+}
+
 void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
 {
     Spectre * sp = new Spectre();

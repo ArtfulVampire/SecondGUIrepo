@@ -7,6 +7,357 @@ using namespace myLib;
 namespace autos
 {
 
+void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
+{
+	def::ntFlag = false;
+
+	for(QString guy : guyList)
+	{
+		if(cutOnlyFlag)
+		{
+			autos::GalyaCut(def::mriFolder + slash + guy, 2);
+			continue;
+		}
+
+		autos::GalyaFull(def::mriFolder +
+						 slash + guy +
+						 slash + guy + "_winds_cleaned");
+
+		QString outPath = def::mriFolder + "/OUT/" + guy;
+		QString dropPath = "/media/Files/Dropbox/DifferentData/EEG-MRI/Results";
+		QStringList files = QDir(outPath).entryList({"*.txt"});
+		QString cmd = "cd " + outPath + " && " +
+					  "rar a " + guy + ".rar ";
+		for(QString a : files)
+		{
+			cmd += a + " ";
+		}
+		system(cmd.toStdString().c_str());
+		/// check if exists
+		cmd = "cp " + outPath + "/" + guy + ".rar " +
+			  dropPath + "/" + guy + ".rar";
+		system(cmd.toStdString().c_str());
+	}
+
+}
+
+void Xenia_TBI()
+{
+	/// TBI Xenia cut, process, tables
+	def::ntFlag = false;
+
+	QStringList markers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+//	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
+//						"_cry", "_fire", "_flower", "_wc"};
+
+	QString tbi_path = def::XeniaFolder + "/15Nov";
+//	QString tbi_path = "/media/Files/Data/Dasha";
+//	QString tbi_path = "/media/michael/My Passport/TBI_all_results_20Nov";
+
+	QStringList subdirs{"healthy", "moderate_TBI", "severe_TBI"};
+//	QStringList subdirs{"Totable"};
+
+
+
+
+#if 01
+	/// count
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + slash + subdir;
+
+//		repair::deleteSpacesFolders(workPath);
+//		repair::toLatinDir(workPath, {});
+//		repair::toLowerDir(workPath, {});
+
+		/// list of guys
+		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+		for(QString guy : guys)
+		{
+//			if(!guy.contains("Shamukaeva")) continue;
+
+			QStringList t = QDir(workPath + slash + guy).entryList(def::edfFilters);
+			if(t.isEmpty()) continue;
+
+			QString ExpName = t[0];
+			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
+
+			/// cut?
+			if(0)
+			{
+				autos::GalyaCut(workPath + slash + guy,
+								8,
+								workPath + "_cut" + slash + guy);
+			}
+
+			autos::GalyaProcessing(workPath + slash + guy,
+								   19,
+								   workPath + "_tmp");
+
+			autos::GalyaWavelets(workPath + slash + guy,
+								 19,
+								 250,
+								 workPath + "_tmp");
+
+			QStringList fileNames;
+			for(QString marker : markers)
+			{
+				fileNames.clear();
+				for(QString typ : {"_alpha", "_d2_dim", "_med_freq", "_spectre", "_wavelet"})
+				{
+					fileNames << ExpName + marker + typ + ".txt";
+				}
+				autos::XeniaArrangeToLine(workPath + "_tmp",
+										  fileNames,
+										  workPath + "_tmp2" + slash
+										  + ExpName + marker + ".txt"); /// guy <-> ExpName
+			}
+
+			fileNames.clear();
+			for(QString marker : markers)
+			{
+				fileNames <<  ExpName + marker + ".txt"; /// guy <-> ExpName
+			}
+			autos::XeniaArrangeToLine(workPath + "_tmp2",
+									  fileNames,
+									  workPath + "_OUT" + slash
+									  + ExpName + ".txt"); /// guy <-> ExpName
+		}
+	}
+#endif
+
+#if 01
+	/// make tables by stimulus
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + slash + subdir + "_tmp2";
+		for(QString marker : markers)
+		{
+			autos::makeTableFromRows(workPath,
+									 tbi_path + slash + subdir + "_table" + marker + ".txt",
+									 marker);
+		}
+	}
+#endif
+
+
+#if 01
+	/// make tables whole
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + slash + subdir + "_OUT";
+		autos::makeTableFromRows(workPath,
+								 tbi_path + slash + subdir + "_all" + ".txt");
+	}
+#endif
+
+#if 0
+	/// people list
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + slash + subdir + "_OUT";
+		QString outFile = tbi_path + slash + subdir + "_people.txt";
+		std::ofstream outStr;
+		outStr.open(outFile.toStdString());
+
+		for(QString fileName : QDir(workPath).entryList({"*.txt"},
+														QDir::Files,
+														QDir::Name))
+		{
+			outStr << fileName.remove(".txt") << endl;
+		}
+		outStr.close();
+	}
+#endif
+}
+
+void IITP()
+{
+	def::ntFlag = true;
+
+	/// make edfs from dats
+	QString folder = "XIrinaX";
+	QString guy = "Ira";
+//	repair::deleteSpacesDir(def::iitpFolder + slash + folder);
+//	repair::toLatinDir(def::iitpFolder + slash + folder);
+//	exit(0);
+	QString ExpNamePre;
+	QString ExpName;
+	edfFile fil;
+	for(int fileNum = 0; fileNum < 30; ++fileNum)
+	{
+//		fileNum = 14;
+		QString num = rightNumber(fileNum, 2);
+		ExpNamePre = def::iitpFolder + slash +
+					 folder + slash + guy + "_";
+
+
+#if 0
+		/// dat to edf
+		ExpName = ExpNamePre + num + ".dat";
+		if(!QFile::exists(ExpName)) continue;
+		edfFile fil1(ExpName, inst::iitp);
+		ExpName.replace(".dat", ".edf");
+		fil1.writeEdfFile(ExpName);
+		continue;
+#endif
+
+#if 01
+		/// upsample EEGs
+		ExpName = ExpNamePre + "eeg_" + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		ExpName = ExpNamePre + "eeg_" + num + "_up.edf";
+		fil.upsample(1000., ExpName);
+
+//		break;
+
+		continue;
+#endif
+
+#if 0
+		/// filter EEG edfs
+		ExpName = ExpNamePre + "eeg_" + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		ExpName.replace(".edf", "_f.edf");
+		fil.refilter(0.5, 70);
+		fil.refilter(45, 55, ExpName, true);
+		continue;
+#endif
+
+#if 0
+		/// filter EEGs double notch
+		ExpName = ExpNamePre + "eeg_" + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		ExpName.replace(".edf", "_2notch.edf");
+		fil.refilter(45, 55, {}, true);
+		fil.refilter(95, 105, ExpName, true);
+		continue;
+#endif
+
+#if 0
+		/// downsample EMGs
+		ExpName = ExpNamePre + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		ExpName = ExpNamePre + num + "_dwn.edf";
+		fil.downsample(250., ExpName);
+
+//		break;
+
+//		continue;
+#endif
+
+#if 0
+		/// filter downsampled EMGs double notch
+		ExpName = ExpNamePre + num + ".edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+
+		fil.refilter(45, 55, {}, true);
+		fil.refilter(95, 105, {}, true);
+		ExpName = ExpNamePre + "emg_" + num + ".edf";
+		fil.writeEdfFile(ExpName);
+
+//		break;
+
+//		continue;
+#endif
+
+	}
+
+}
+
+void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile)
+{
+	/// repair markers in my files
+
+	edfFile fil;
+	fil.readEdfFile(dirPath + toFile);
+	const lineType & markArr = fil.getData()[fil.getMarkChan()];
+	std::vector<std::vector<int>> marks;
+
+	for(int i = 0; i < markArr.size(); ++i)
+	{
+		if(markArr[i] == 239.)
+		{
+			marks.push_back({i, markArr[i]});
+		}
+	}
+
+	for(int i = 0; i < markArr.size(); ++i)
+	{
+		if(markArr[i] == 241. || markArr[i] == 247.)
+		{
+			fil.setData(fil.getMarkChan(), i, 0.);
+		}
+	}
+
+
+	std::ifstream inStr;
+	inStr.open((dirPath + "/list1.txt").toStdString());
+	std::vector<int> marksList;
+	std::string typ;
+	int num;
+	std::string fileName;
+	while(!inStr.eof())
+	{
+		inStr >> typ;
+		inStr >> num;
+		inStr >> fileName;
+		if(!inStr.eof())
+		{
+			if(typ == "S1")
+			{
+				marksList.push_back(241);
+			}
+			else if(typ == "V1")
+			{
+				marksList.push_back(247);
+			}
+		}
+	}
+
+	if(marksList.size() != marks.size())
+	{
+		cout << "inequal sizes: ";
+		cout << marksList.size() << '\t';
+		cout << marks.size() << endl;
+		exit(1);
+	}
+
+	for(int i = 0; i < 80; ++i)
+	{
+		fil.setData(fil.getMarkChan(), marks[i][0], marksList[i]);
+	}
+	toFile.replace(".edf", "_good.edf");
+	fil.writeEdfFile(dirPath + toFile);
+
+}
+
+void makeRightNumbersCF(const QString & dirPath, int startNum)
+{
+	std::ofstream outStr;
+	outStr.open((dirPath + slash + "ans.txt").toStdString());
+
+	for(QString str : QDir(dirPath).entryList({"complex*.jpg"}, QDir::Files, QDir::Name))
+	{
+		QStringList parts = str.split(QRegExp("[_\.]"), QString::SkipEmptyParts);
+		QString newName = "cf_" + rightNumber(startNum++, 3) + ".jpg";
+		outStr << newName << '\t' << parts[3] << "\r\n";
+
+		QFile::copy(dirPath + slash + str,
+					dirPath + slash + newName);
+	}
+	outStr.close();
+}
+
 void makeRightNumbers(const QString & dirPath,
 					  int length)
 {

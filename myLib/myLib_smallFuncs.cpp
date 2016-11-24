@@ -237,6 +237,20 @@ double areSimilarFiles(const QString & path1,
 	return sum;
 }
 
+int countSymbolsInFile(const QString & filePath, char inChar)
+{
+	FILE * inStr;
+	inStr = fopen(filePath, "rb");
+	char tmpChar;
+	int res = 0;
+	while(!feof(inStr))
+	{
+		fscanf(inStr, "%c", &tmpChar);
+		if(!feof(inStr) && tmpChar == inChar) ++res;
+	}
+	return res;
+}
+
 
 //const QString slash
 //{
@@ -582,6 +596,7 @@ template ostream & operator << (std::ostream & os, const std::vector<std::vector
 template ostream & operator << (std::ostream & os, const std::vector<int> & toOut);
 template ostream & operator << (std::ostream & os, const std::vector<uint> & toOut);
 template ostream & operator << (std::ostream & os, const std::vector<double> & toOut);
+template ostream & operator << (std::ostream & os, const std::vector<QString> & toOut);
 template ostream & operator << (std::ostream & os, const std::list<int> & toOut);
 template ostream & operator << (std::ostream & os, const std::list<double> & toOut);
 template ostream & operator << (std::ostream & os, const std::list<QString> & toOut);

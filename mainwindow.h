@@ -105,6 +105,7 @@ public:
     void sliceMatiPieces(bool plainFlag = true);
     void sliceMatiSimple();
 
+
     void countSpectraSimple(int fftLen, int inSmooth = -1);
     void sliceOneByOne();
 	void sliceOneByOneNew();
@@ -131,6 +132,10 @@ public:
     void concatenateEDFs(QString inPath1, QString inPath2, QString outPath);
     void concatenateEDFs(QStringList inPath, QString outPath);
 	void customFunc();
+
+	void BaklushevDraw();
+	void testNewClassifiers();
+	void testSuccessive();
 
 
 private:
