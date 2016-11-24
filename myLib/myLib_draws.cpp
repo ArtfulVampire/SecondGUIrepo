@@ -731,9 +731,8 @@ QPixmap drawOneSignal(const std::valarray<double> & signal,
 	QPainter pnt;
 	pnt.begin(&pic);
 
-//    const double maxVal = signal.max();
-//	const double norm = 0.4 / abs(signal).max();
-	const double norm = 0.4 / 20.;
+	const double norm = 0.4 / abs(signal).max();
+//	const double norm = 0.4 / 20.;
 	pnt.setPen(QPen(QBrush("black"), penWidth));
 	for(int i = 0; i < pic.width() - 1; ++i)
 	{
@@ -1706,9 +1705,8 @@ QPixmap drawOneSpectrum(const std::valarray<double> & signal,
 
 	const double X = gap;
 	const double Y = pnt.device()->height() - gap;
-//	std::cout << drawArr.max() << std::endl;
-//	const double norm = graphHeight / drawArr.max();
-	const double norm = graphHeight / 3.7e6;
+	const double norm = graphHeight / drawArr.max();
+//	const double norm = graphHeight / 3.7e6;
 	const double normX = double(drawArr.size()) / graphWidth;
 
 	pnt.setPen(QPen(QBrush(QColor(color)), lineWidth));

@@ -22,7 +22,7 @@ void MainWindow::customFunc()
 
 //	autos::IITP();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew", "/XDX/XDX.EDF")
-//	autos::makeRightNumbersCF("/media/Files/Pictures/NewCF/3exp", 81);
+//	autos::makeRightNumbersCF("/media/Files/Pictures/3exp", 81);
 //	BaklushevDraw();
 //	testNewClassifiers();
 //	testSuccessive()
@@ -31,9 +31,9 @@ void MainWindow::customFunc()
 
 
 
-	/// further goes unused and old
-//	return;
+	return;
 	exit(0);
+	/// further goes unused and old
 
 //	cout << countSymbolsInFile(def::XeniaFolder + "/15Nov/str_bd.txt", '\t') << endl;
 //	exit(0);
