@@ -31,6 +31,44 @@ matrix matrix::ident(int dim)
     return res;
 }
 
+matrix vertCat(const matrix & upper, const matrix & lower)
+{
+	const int maxLen = std::max(upper.cols(), lower.cols());
+	matrix res;
+	for(const matrix & mat : {upper, lower})
+	{
+		for(const auto & row : mat.myData)
+		{
+			res.myData.push_back(row);
+		}
+	}
+	res.resizeCols(maxLen);
+	return res;
+}
+
+matrix horzCat(const matrix & left, const matrix & right)
+{
+	if(left.rows() != right.rows())
+	{
+		std::cout << "matrix::horzCat: inequal rows = "
+				  << left.rows() << " " << right.rows() << std::endl;
+		return left;
+	}
+	const int sumLen = left.cols() + right.cols();
+	matrix res = left;
+	res.resizeCols(sumLen);
+
+	int i = 0;
+	for(const auto & row : right.myData)
+	{
+		std::copy(std::begin(row),
+				  std::end(row),
+				  std::begin(res[i]) + left.cols());
+		++i;
+	}
+	return res;
+}
+
 matrix::matrix(int rows, int cols)
 {
     this->resize(rows, cols);
@@ -514,6 +552,15 @@ matrix & matrix::random(double low, double high)
         }
     }
     return *this;
+}
+
+matrix & matrix::pop_front(uint numOfCols)
+{
+	for(std::valarray<double> & row : myData)
+	{
+		row = smallLib::pop_front_valar(row, numOfCols);
+	}
+	return *this;
 }
 
 matrix matrix::subCols(int beginCol, int endCol) const /// submatrix

@@ -88,6 +88,12 @@ inline int fftL(const int & in)
     return pow(2., ceil(log2(in)));
 }
 
+inline std::valarray<double> pop_front_valar(const std::valarray<double> & in, uint numOfPop)
+{
+	std::valarray<double> res(in.size() - numOfPop);
+	std::copy(std::begin(in) + numOfPop, std::end(in), std::begin(res));
+	return res;
+}
 
 inline void resizeValar(std::valarray<double> & in, int num)
 {

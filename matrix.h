@@ -132,6 +132,8 @@ public:
     //"static"
     static matrix transpose(const matrix & input);
     static matrix ident(int dim);
+	static matrix vertCat(const matrix & upper, const matrix & lower);
+	static matrix horzCat(const matrix & left, const matrix & right);
 
     // "private"
     double trace() const;
@@ -148,6 +150,7 @@ public:
     matrix & eraseRows(const std::vector<uint> & indices);
     matrix & random(double low = 0., double high = 1.);
     matrix & vertCat(matrix && other);
+	matrix & pop_front(uint numOfCols);
     matrix subCols(int beginCol, int endCol) const; /// submatrix
     matrix subRows(const std::vector<int> & inds) const; /// submatrix
     matrix subRows(const std::vector<uint> & inds) const; /// submatrix

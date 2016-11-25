@@ -951,7 +951,7 @@ void edfFile::adjustMarkerChannel()
     this->adjustArraysByChannels();
 }
 
-void edfFile::vertcatFile(QString addEdfPath, QString outPath) const
+edfFile edfFile::vertcatFile(QString addEdfPath, QString outPath) const
 {
     edfFile temp(*this);
     edfFile addEdf;
@@ -971,13 +971,18 @@ void edfFile::vertcatFile(QString addEdfPath, QString outPath) const
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
 		addChan = addEdf.getChannels()[i];
+		addData = addEdf.getData()[i];
 		temp.channels.push_back(addChan);
 		temp.edfData.push_back(addData);
 	}
 	temp.adjustMarkerChannel();
 	temp.adjustArraysByChannels();
 
-	temp.writeEdfFile(outPath);
+	if(!outPath.isEmpty())
+	{
+		temp.writeEdfFile(outPath);
+	}
+	return temp;
 }
 
 edfFile & edfFile::concatFile(QString addEdfPath, QString outPath) // assume only data concat
@@ -1108,6 +1113,97 @@ int edfFile::findJump(int channel,
 	return -1;
 }
 
+edfFile edfFile::vertcatIITP(const QString & eegPath,
+							 const QString & emgPath,
+							 int startEmg,
+							 int startSearchEeg)
+{
+	edfFile wholeFile;
+	wholeFile.readEdfFile(eegPath);
+	const int eegNs = wholeFile.getNs();
+
+	wholeFile = wholeFile.vertcatFile(emgPath, QString());
+//	const int emgNs = wholeFile.getNs() - eegNs;
+
+
+	const int searchLength = 5000;
+	const int corrLength = 2000;
+
+	int numECG = 0;
+	int numArtefac = 0;
+	for(int i = 0; i < eegNs; ++i) if(wholeFile.labels[i].contains("ECG")) {numECG = i; break;}
+	for(int i = eegNs; i < wholeFile.getNs(); ++i)
+		if(wholeFile.labels[i].contains("Artefac")) {numArtefac = i; break;}
+
+	const std::valarray<double> & eegMarkChan = wholeFile.getData()[numECG];
+	const std::valarray<double> & emgMarkChan = wholeFile.getData()[numArtefac];
+
+	std::valarray<double> eegMarkSignal;
+	eegMarkSignal.resize(corrLength);
+
+	std::valarray<double> emgMarkSignal;
+	emgMarkSignal.resize(corrLength);
+
+	std::copy(std::begin(emgMarkChan) + startEmg,
+			  std::begin(emgMarkChan) + startEmg + corrLength,
+			  std::begin(emgMarkSignal));
+
+	int offset = 0;
+	double maxCorr = 0.;
+	for(int searchOffset = 0; searchOffset < searchLength; ++searchOffset)
+	{
+		std::copy(std::begin(eegMarkChan) + startSearchEeg + searchOffset,
+				  std::begin(eegMarkChan) + startSearchEeg + searchOffset + corrLength,
+				  std::begin(eegMarkSignal));
+
+		double a = smallLib::correlation(eegMarkSignal, emgMarkSignal);
+		cout << a << endl;
+
+		if(abs(a) > maxCorr)
+		{
+			maxCorr = abs(a);
+			offset = searchOffset + startSearchEeg;
+		}
+		if(a > 0.99)
+		{
+			break;
+		}
+	}
+
+	for(int i = 0; i < eegNs; ++i)
+	{
+		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], offset);
+	}
+	for(int i = eegNs; i < wholeFile.getNs(); ++i)
+	{
+		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], startEmg);
+	}
+	return wholeFile;
+}
+
+edfFile edfFile::vertcatIITPmanual(const QString & eegPath,
+								   const QString & emgPath,
+								   int offsetEeg,
+								   int offsetEmg)
+{
+	edfFile wholeFile;
+	wholeFile.readEdfFile(eegPath);
+	const int eegNs = wholeFile.getNs();
+
+	wholeFile = wholeFile.vertcatFile(emgPath, QString());
+
+	for(int i = 0; i < eegNs; ++i)
+	{
+		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], offsetEeg);
+	}
+	for(int i = eegNs; i < wholeFile.getNs(); ++i)
+	{
+		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], offsetEmg);
+	}
+
+	return wholeFile;
+}
+
 
 
 void edfFile::countFft()
@@ -1132,7 +1228,7 @@ void edfFile::countFft()
 	}
 }
 
-void edfFile::refilter(const double & lowFreq,
+edfFile edfFile::refilter(const double & lowFreq,
 					   const double & highFreq,
                        const QString & newPath,
                        bool isNotch)
@@ -1193,6 +1289,7 @@ void edfFile::refilter(const double & lowFreq,
     {
         this->writeEdfFile(newPath);
 	}
+	return *this;
 }
 
 void edfFile::saveSubsection(int startBin,

@@ -128,10 +128,10 @@ public:
 
 	/// modify
     void adjustArraysByChannels();
-	void vertcatFile(QString addEdfPath, QString outPath) const;
+	edfFile vertcatFile(QString addEdfPath, QString outPath) const;
 	edfFile & concatFile(QString addEdfPath, QString outPath = QString());
     void countFft();
-	void refilter(const double & lowFreq,
+	edfFile refilter(const double & lowFreq,
 				  const double & highFreq,
                   const QString & newPath = QString(),
                   bool isNotch = false);
@@ -169,6 +169,17 @@ public:
 				 int startPoint,
 				 double numSigmas = 5);
 
+	static edfFile vertcatIITP(const QString & eegPath,
+							   const QString & emgPath,
+							   int startEmg,
+							   int startSearchEeg);
+
+
+	static edfFile vertcatIITPmanual(const QString & eegPath,
+									 const QString & emgPath,
+									 int offsetEeg,
+									 int offsetEmg,
+									 int addLeft = 0);
 
 
 private:

@@ -12,26 +12,38 @@ void MainWindow::customFunc()
 	ui->realsButton->setChecked(true);
 
 
-//	QString wndPath = "/media/Files/Data/FeedbackNew/XAX/SpectraSmooth/winds";
+//	QString wndPath = "/media/Files/Data/FeedbackNew/MIX/SpectraSmooth/winds";
 //	QStringList lst = QDir(wndPath).entryList({"*.psd"}, QDir::Files, QDir::Name);
 //	for(int i = 0; i < lst.size() - 800; ++i)
 //	{
 //		QFile::remove(wndPath + "/" + lst[i]);
 //	}
 
+	return;
+	QString pth = "/media/Files/Data/iitp/Oleg";
+	edfFile::vertcatIITP(pth + "/Oleg_01_eeg_up.edf",
+						 pth + "/Oleg_01_emg.edf",
+						 1200, 3800 ).writeEdfFile(
+				pth + "/Oleg_01_sum.edf");
+
 
 //	autos::IITP();
-//	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew", "/XDX/XDX.EDF")
+//	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
+//									 "/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
 //	autos::makeRightNumbersCF("/media/Files/Pictures/3exp", 81);
 //	BaklushevDraw();
 //	testNewClassifiers();
 //	testSuccessive()
 //	Xenia_TBI();
 
+//	edfFile fil;
+//	fil.readEdfFile("/media/Files/Data/FeedbackNew/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new.edf");
+//	fil.setData(fil.getMarkChan(), 104200, 239);
+//	fil.writeEdfFile("/media/Files/Data/FeedbackNew/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
 
 
 
-	return;
+//	return;
 	exit(0);
 	/// further goes unused and old
 

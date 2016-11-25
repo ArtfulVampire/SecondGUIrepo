@@ -176,8 +176,8 @@ void IITP()
 	def::ntFlag = true;
 
 	/// make edfs from dats
-	QString folder = "XIrinaX";
-	QString guy = "Ira";
+	QString folder = "Oleg";
+	QString guy = "Oleg";
 //	repair::deleteSpacesDir(def::iitpFolder + slash + folder);
 //	repair::toLatinDir(def::iitpFolder + slash + folder);
 //	exit(0);
@@ -192,23 +192,23 @@ void IITP()
 					 folder + slash + guy + "_";
 
 
-#if 0
+#if 01
 		/// dat to edf
 		ExpName = ExpNamePre + num + ".dat";
 		if(!QFile::exists(ExpName)) continue;
 		edfFile fil1(ExpName, inst::iitp);
-		ExpName.replace(".dat", ".edf");
+		ExpName.replace(".dat", "_emg.edf");
 		fil1.writeEdfFile(ExpName);
 		continue;
 #endif
 
-#if 01
+#if 0
 		/// upsample EEGs
-		ExpName = ExpNamePre + "eeg_" + num + ".edf";
+		ExpName = ExpNamePre + num + "_eeg.edf";
 		if(!QFile::exists(ExpName)) continue;
 		fil.readEdfFile(ExpName);
 
-		ExpName = ExpNamePre + "eeg_" + num + "_up.edf";
+		ExpName = ExpNamePre + num + "_eeg_up.edf";
 		fil.upsample(1000., ExpName);
 
 //		break;
