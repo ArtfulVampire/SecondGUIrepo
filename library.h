@@ -597,6 +597,8 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 								 double oldFreq,
 								 double newFreq);
 
+int findJump(const std::valarray<double> & inSignal, int startSearch, double numOfSigmas = 3.5);
+
 
 void calcSpectre(const std::valarray<double> & inSignal,
 				 std::valarray<double> & outSpectre,

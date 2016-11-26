@@ -62,7 +62,7 @@ Cut::Cut() :
 
 //    ui->paintLengthDoubleSpinBox->setValue(4);
     ui->paintLengthDoubleSpinBox->setDecimals(1);
-    ui->paintLengthDoubleSpinBox->setSingleStep(0.5);
+	ui->paintLengthDoubleSpinBox->setSingleStep(0.2);
 	/// can change
 	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
 
@@ -142,7 +142,8 @@ Cut::Cut() :
     QObject::connect(ui->forwardFrameButton, SIGNAL(clicked()), this, SLOT(forwardFrameSlot()));
 	QObject::connect(ui->backwardFrameButton, SIGNAL(clicked()), this, SLOT(backwardFrameSlot()));
 
-	QObject::connect(ui->iitpAutoPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoSlot()));
+	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
+	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()), this, SLOT(subtractMeansSlot()));
 
@@ -191,7 +192,17 @@ void Cut::browse()
 	}
 	else
 	{
-		path = def::dir->absolutePath() + slash + ui->subdirComboBox->currentText();
+
+		if(this->myFileType == fileType::edf)
+		{
+			path = edfFil.getDirPath();
+		}
+		else if(this->myFileType == fileType::real)
+		{
+			path = def::dir->absolutePath() +
+				   slash + ui->subdirComboBox->currentText();
+		}
+
 	}
 
 	QString filter{};
@@ -228,10 +239,6 @@ void Cut::browse()
 			def::dir->cdUp();
 		}
 	}
-
-
-//    def::fileMarkers = QStringList{"_BD", "_BW", "_CR", "_Fon", "_kh", "_sm", "_NO"};
-//    makeFullFileList(getDirPathLib(helpString), lst, {"." + getExt(helpString)});
 	lst = QDir(getDirPathLib(helpString)).entryList({"*." + getExt(helpString)});
 
     currentNumber = lst.indexOf(getFileName(helpString));
@@ -243,7 +250,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 {
     // adjust scrollArea size
 	double newLen = doubleRound((event->size().width() - 10 * 2) / currFreq,
-                             ui->paintLengthDoubleSpinBox->decimals());
+								ui->paintLengthDoubleSpinBox->decimals());
     ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
                                 ui->scrollArea->geometry().y(),
 								newLen * currFreq,
@@ -505,22 +512,29 @@ void Cut::createImage(const QString & dataFileName)
         data3 = edfFil.getData();
         NumOfSlices = data3.cols();
         leftDrawLimit = 0;
-		ui->paintStartDoubleSpinBox->setMaximum(floor(NumOfSlices / currFreq));
-		ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
 
 		ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
 		ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
 
-		for(int i = 0; i < edfFil.getLabels().size(); ++i)
+		ui->paintStartDoubleSpinBox->setMaximum(floor(NumOfSlices / currFreq));
+		ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
+		ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
+		ui->paintLengthDoubleSpinBox->setValue((this->width() - 20) / currFreq);
+
+		/// set coloured channels
+		QString redStr = "EOG1";
+		QString blueStr = "EOG2";
+		if(edfFil.getNs() > 35)
 		{
-			if( edfFil.getLabels()[i].contains("EOG1")) redCh = i;
-			else if(edfFil.getLabels()[i].contains("EOG2")) blueCh = i;
+			redStr = "ECG";
+			blueStr = "Artefac";
+		}
+		for(int i = 0; i < edfFil.getNs(); ++i)
+		{
+			if(edfFil.getLabels()[i].contains(redStr)) redCh = i;
+			else if(edfFil.getLabels()[i].contains(blueStr)) blueCh = i;
 		}
 
-		/// crutch generality		
-//		ui->paintLengthDoubleSpinBox->setValue((this->width() - 20) / currFreq);
-		ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
-		this->resizeWidget((this->width() - 20) / currFreq);
     }
 
     /// if too long?
@@ -538,10 +552,20 @@ void Cut::createImage(const QString & dataFileName)
 }
 
 
-void Cut::iitpAutoSlot()
+void Cut::iitpAutoCorrSlot()
 {
-	edfFil.iitpSyncAuto(ui->rightLimitSpinBox->value(),
-						ui->leftLimitSpinBox->value());
+	edfFil.iitpSyncAutoCorr(ui->rightLimitSpinBox->value(),
+							ui->leftLimitSpinBox->value());
+	QString newName = edfFil.getFileNam();
+	newName.replace(".edf", "_sync.edf");
+	std::cout << "iitpAutoSlot: newFileName = " << newName << std::endl;
+	edfFil.writeEdfFile(edfFil.getDirPath() + slash + newName);
+}
+
+void Cut::iitpAutoJumpSlot()
+{
+	edfFil.iitpSyncAutoJump(ui->rightLimitSpinBox->value(),
+							ui->leftLimitSpinBox->value());
 	QString newName = edfFil.getFileNam();
 	newName.replace(".edf", "_sync.edf");
 	std::cout << "iitpAutoSlot: newFileName = " << newName << std::endl;
@@ -571,17 +595,17 @@ void Cut::mousePressSlot(char btn, int coord)
 		ui->rightLimitSpinBox->setValue(rightLimit + leftDrawLimit);
 	}
 
-    QPixmap pic = currentPic;
+	QPixmap tempPic = currentPic;
     QPainter paint;
-    paint.begin(&pic);
+	paint.begin(&tempPic);
 
     paint.setPen(QPen(QBrush("blue"), 2));
     paint.drawLine(leftLimit, 0, leftLimit, currentPic.height());
     paint.setPen(QPen(QBrush("red"), 2));
     paint.drawLine(rightLimit, 0, rightLimit, currentPic.height());
 
-    ui->picLabel->setPixmap(pic.scaled(pic.width(), ui->scrollArea->height() - 20)); // -20 generality
-
+	ui->picLabel->setPixmap(tempPic.scaled(currentPic.width() / ui->xNormDoubleSpinBox->value() - 2,
+											  ui->scrollArea->height() - 20));
     paint.end();
 }
 
@@ -958,7 +982,7 @@ void Cut::paint() // save to tmp.jpg and display
 
     /// -20 for scroll bar generality
 	/// experimental xNorm
-	ui->picLabel->setPixmap(currentPic.scaled(currentPic.width() / ui->xNormDoubleSpinBox->value(),
+	ui->picLabel->setPixmap(currentPic.scaled(currentPic.width() / ui->xNormDoubleSpinBox->value() - 2,
 											  ui->scrollArea->height() - 20));
 
     rightLimit = rightDrawLimit - leftDrawLimit;

@@ -39,7 +39,7 @@ inline bool isInt(const QString & in)
 
 inline double doubleRound(const double & in, const int & numSigns)
 {
-    return int(  ceil(in * pow(10., numSigns) - 0.5)  ) / pow(10., numSigns);
+	return std::round(in * pow(10., numSigns)) / double(pow(10, numSigns));
 }
 
 inline double doubleRound(const double & in)

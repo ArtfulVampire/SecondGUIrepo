@@ -217,7 +217,14 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		this->labels.resize(this->ns);
 		for(int i = 0; i < this->ns; ++i)
 		{
-			this->labels[i] = fitString("IT " + iitpLabels[i], 16); /// information transfer
+			if(!iitpLabels[i].contains("Artefac"))
+			{
+				this->labels[i] = fitString("IT " + iitpLabels[i], 16);
+			}
+			else
+			{
+				this->labels[i] = fitString("XX " + iitpLabels[i], 16);
+			}
 		}
 
 		this->transducerType = std::vector<QString> (this->ns, fitString("IITP transducer", 80));
@@ -339,9 +346,12 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         return;
     }
 
-    filePath = EDFpath;
-    dirPath = EDFpath.left(EDFpath.lastIndexOf(slash));
-    ExpName = getExpNameLib(filePath);
+	if(readFlag)
+	{
+		filePath = EDFpath;
+		dirPath = EDFpath.left(EDFpath.lastIndexOf(slash));
+		ExpName = getExpNameLib(filePath);
+	}
 
 	FILE * header = NULL;
 	if(readFlag && (writeHeaderFlag || headerOnly))
@@ -985,6 +995,21 @@ edfFile edfFile::vertcatFile(QString addEdfPath, QString outPath) const
 	return temp;
 }
 
+edfFile & edfFile::divideChannel(int chanNum, double denom)
+{
+	this->edfData[chanNum] /= denom;
+	return *this;
+}
+
+int edfFile::findChannel(const QString & str)
+{
+	for(int i = 0; i < this->ns; ++i)
+	{
+		if(labels[i].contains(str)) return i;
+	}
+	return -1;
+}
+
 edfFile & edfFile::subtractMeans(const QString & outPath)
 {
 	for(int i = 0; i < this->ns; ++i)
@@ -1113,17 +1138,8 @@ int edfFile::findJump(int channel,
 					  int startPoint,
 					  double numSigmas)
 {
-	const int lenForSigma = 250;
-	std::valarray<double> & chan = edfData[channel];
-	for(int i = startPoint; i < chan.size(); ++i)
-	{
-		if(abs(chan[i + 1] - chan[i]) >
-		   numSigmas * smallLib::sigma(chan[std::slice(i - lenForSigma, lenForSigma, 1)]))
-		{
-			return i;
-		}
-	}
-	return -1;
+	const std::valarray<double> & chan = edfData[channel];
+	return myLib::findJump(chan, startPoint, numSigmas);
 }
 
 edfFile edfFile::vertcatIITP(const QString & eegPath,
@@ -1218,19 +1234,18 @@ edfFile edfFile::vertcatIITPmanual(const QString & eegPath,
 	return wholeFile;
 }
 
-edfFile & edfFile::iitpSyncAuto(int startSearchEeg,
-								int startEmg
-								)
+edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
+									int startEmg)
 {
-	const int searchLength = 500;
-	const int corrLength = 1200;
+	const int searchLength = 300;
+	const int corrLength = 1600;
 
 	int numECG = 0;
 	int numArtefac = 0;
 	for(int i = 0; i < this->ns; ++i)
 	{
-		if(this->labels[i].contains("ECG")) {numECG = i; break;}
-		else if(this->labels[i].contains("Artefac")) {numArtefac = i; break;}
+		if(this->labels[i].contains("ECG")) {numECG = i;}
+		else if(this->labels[i].contains("Artefac")) {numArtefac = i;}
 	}
 
 	const std::valarray<double> & eegMarkChan = this->getData()[numECG];
@@ -1264,7 +1279,30 @@ edfFile & edfFile::iitpSyncAuto(int startSearchEeg,
 		}
 	}
 
-	this->iitpSyncManual(offset, startEmg, 0);
+	std::cout << "emgPoint = " << startEmg << '\t' << "eegPoint = " << offset << std::endl;
+	this->iitpSyncManual(offset, startEmg, 200);
+	return *this;
+}
+
+edfFile & edfFile::iitpSyncAutoJump(int startSearchEeg,
+									int startSearchEmg)
+{
+	int numECG = 0;
+	int numArtefac = 0;
+	for(int i = 0; i < this->ns; ++i)
+	{
+		if(this->labels[i].contains("ECG")) {numECG = i;}
+		else if(this->labels[i].contains("Artefac")) {numArtefac = i;}
+	}
+
+	const std::valarray<double> & eegMarkChan = this->getData()[numECG];
+	const std::valarray<double> & emgMarkChan = this->getData()[numArtefac];
+
+	int eegPoint = myLib::findJump(eegMarkChan, startSearchEeg);
+	int emgPoint = myLib::findJump(emgMarkChan, startSearchEmg);
+
+	std::cout << "emgPoint = " << emgPoint << '\t' << "eegPoint = " << eegPoint << std::endl;
+	this->iitpSyncManual(eegPoint, emgPoint, 200);
 	return *this;
 }
 
@@ -1319,8 +1357,8 @@ edfFile edfFile::refilter(const double & lowFreq,
     for(int i = 0; i < this->ns; ++i)
     {
         /// filter only EEG, EOG signals - look labels!!!!
-		/// pewpew IITP
-		if(this->labels[i].contains(QRegExp("E[OEC]G")) ||
+		/// pewpew IITP - no filter ECG
+		if(this->labels[i].contains(QRegExp("E[OE]G")) ||
 		   (this->filterIITPflag && this->labels[i].contains("IT")))
         {
             chanList.push_back(i);

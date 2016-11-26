@@ -774,6 +774,20 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 	return res;
 }
 
+int findJump(const std::valarray<double> & inSignal, int startSearch, double numOfSigmas)
+{
+	const int lenForSigma = 250;
+	for(int i = startSearch; i < inSignal.size() - 1; ++i)
+	{
+		if(abs(inSignal[i + 1] - inSignal[i]) >
+		   numOfSigmas * smallLib::sigma(inSignal[std::slice(i - lenForSigma, lenForSigma, 1)]))
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 void refilterSpectre(std::valarray<double> & spectr,
 					 int lowLim,
 					 int highLim,

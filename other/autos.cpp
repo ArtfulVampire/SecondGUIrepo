@@ -171,111 +171,92 @@ void Xenia_TBI()
 #endif
 }
 
-void IITP()
+void IITP(const QString & dirName, const QString & guyName)
 {
 	def::ntFlag = true;
 
-	/// make edfs from dats
-	QString folder = "Oleg";
-	QString guy = "Oleg";
-//	repair::deleteSpacesDir(def::iitpFolder + slash + folder);
-//	repair::toLatinDir(def::iitpFolder + slash + folder);
-//	exit(0);
-	QString ExpNamePre;
-	QString ExpName;
-	edfFile fil;
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-//		fileNum = 14;
-		QString num = rightNumber(fileNum, 2);
-		ExpNamePre = def::iitpFolder + slash +
-					 folder + slash + guy + "_";
-
-
+		if(fileNum != 0) break;
+		const QString ExpNamePre = def::iitpFolder + slash +
+								   dirName + slash +
+								   guyName + "_" + rightNumber(fileNum, 2);
+		QString filePath;
+		edfFile fil;
 #if 0
 		/// dat to edf
-		ExpName = ExpNamePre + num + ".dat";
-		if(!QFile::exists(ExpName)) continue;
-		edfFile fil1(ExpName, inst::iitp);
-		ExpName.replace(".dat", "_emg.edf");
-		fil1.writeEdfFile(ExpName);
-		continue;
+		filePath = ExpNamePre + ".dat";
+		if(!QFile::exists(filePath)) continue;
+		edfFile fil1(filePath, inst::iitp);
+
+		filePath = ExpNamePre + "_emg.edf";
+		fil1.writeEdfFile(filePath);
+#endif
+
+#if 0
+		/// filter EMG double notch
+		filePath = ExpNamePre + "_emg.edf";
+		if(!QFile::exists(filePath)) continue;
+		fil.readEdfFile(filePath);
+
+		fil.refilter(45, 55, {}, true);
+		fil.refilter(95, 105, {}, true);
+		filePath = ExpNamePre + "_emg_f.edf";
+		fil.writeEdfFile(filePath);
+#endif
+
+#if 01
+		/// filter EEG edfs
+		filePath = ExpNamePre + "_eeg.edf";
+		if(!QFile::exists(filePath)) continue;
+		fil.readEdfFile(filePath);
+		fil.divideChannel(fil.findChannel("ECG"), 2.);
+
+		filePath = ExpNamePre + "_eeg_f.edf";
+		fil.refilter(95, 105, {}, true);
+		fil.refilter(45, 55, filePath, true);
+//		fil.refilter(0.5, 70, filePath);
 #endif
 
 #if 0
 		/// upsample EEGs
-		ExpName = ExpNamePre + num + "_eeg.edf";
-		if(!QFile::exists(ExpName)) continue;
-		fil.readEdfFile(ExpName);
-		ExpName = ExpNamePre + num + "_eeg_up.edf";
-		fil.upsample(1000., ExpName);
-		continue;
+		filePath = ExpNamePre + "_eeg.edf";
+		if(!QFile::exists(filePath)) continue;
+		fil.readEdfFile(filePath);
+		filePath = ExpNamePre + "_eeg_up.edf";
+		fil.upsample(1000., filePath);
+#endif
+
+#if 01
+		/// upsample EEGs
+		filePath = ExpNamePre + "_eeg_f.edf";
+		if(!QFile::exists(filePath)) continue;
+		fil.readEdfFile(filePath);
+		filePath = ExpNamePre + "_eeg_f_up.edf";
+		fil.upsample(1000., filePath);
+#endif
+
+
+#if 01
+		/// vertcat eeg+emg
+		filePath = ExpNamePre + "_eeg_f_up.edf";
+		if(!QFile::exists(filePath)) continue;
+		fil.readEdfFile(filePath);
+		filePath = ExpNamePre + "_emg.edf";
+		fil = fil.vertcatFile(filePath, {});
+		filePath = ExpNamePre + "_sum.edf";
+		fil.writeEdfFile(filePath);
 #endif
 
 #if 0
 		/// vertcat eeg+emg
-		ExpName = ExpNamePre + num + "_eeg_up.edf";
-		if(!QFile::exists(ExpName)) continue;
-		fil.readEdfFile(ExpName);
-		ExpName = ExpNamePre + num + "_emg.edf";
-		fil = fil.vertcatFile(ExpName, {});
-		ExpName = ExpNamePre + num + "_sum.edf";
-		fil.writeEdfFile(ExpName);
-		continue;
-#endif
-
-#if 0
-		/// filter EEG edfs
-		ExpName = ExpNamePre + "eeg_" + num + ".edf";
-		if(!QFile::exists(ExpName)) continue;
-		fil.readEdfFile(ExpName);
-
-		ExpName.replace(".edf", "_f.edf");
-		fil.refilter(0.5, 70);
-		fil.refilter(45, 55, ExpName, true);
-		continue;
-#endif
-
-#if 0
-		/// filter EEGs double notch
-		ExpName = ExpNamePre + "eeg_" + num + ".edf";
-		if(!QFile::exists(ExpName)) continue;
-		fil.readEdfFile(ExpName);
-
-		ExpName.replace(".edf", "_2notch.edf");
-		fil.refilter(45, 55, {}, true);
-		fil.refilter(95, 105, ExpName, true);
-		continue;
-#endif
-
-#if 0
-		/// downsample EMGs
-		ExpName = ExpNamePre + num + ".edf";
-		if(!QFile::exists(ExpName)) continue;
-		fil.readEdfFile(ExpName);
-
-		ExpName = ExpNamePre + num + "_dwn.edf";
-		fil.downsample(250., ExpName);
-
-//		break;
-
-//		continue;
-#endif
-
-#if 0
-		/// filter downsampled EMGs double notch
-		ExpName = ExpNamePre + num + ".edf";
-		if(!QFile::exists(ExpName)) continue;
-		fil.readEdfFile(ExpName);
-
-		fil.refilter(45, 55, {}, true);
-		fil.refilter(95, 105, {}, true);
-		ExpName = ExpNamePre + "emg_" + num + ".edf";
-		fil.writeEdfFile(ExpName);
-
-//		break;
-
-//		continue;
+		filePath = ExpNamePre + "_eeg_up.edf";
+		if(!QFile::exists(filePath)) continue;
+		fil.readEdfFile(filePath);
+		filePath = ExpNamePre + "_emg.edf";
+		fil = fil.vertcatFile(filePath, {});
+		filePath = ExpNamePre + "_sum.edf";
+		fil.writeEdfFile(filePath);
 #endif
 
 	}

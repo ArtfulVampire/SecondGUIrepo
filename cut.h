@@ -59,7 +59,8 @@ public slots:
     void forwardFrameSlot();
     void backwardFrameSlot();
     void resizeWidget(double);
-	void iitpAutoSlot();
+	void iitpAutoCorrSlot();
+	void iitpAutoJumpSlot();
 	void iitpManualSlot();
 	void subtractMeansSlot();
 

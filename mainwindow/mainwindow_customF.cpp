@@ -20,18 +20,18 @@ void MainWindow::customFunc()
 //	}
 
 
-//	repair::deleteSpacesDir("/media/Files/Data/iitp/BlinovE", {});
-//	repair::toLatinDir("/media/Files/Data/iitp/BlinovE", {});
+//	edfFile fil;
+//	fil.readEdfFile(def::iitpFolder + "/Oleg/Oleg_00_sum.edf");
+//	fil.saveSubsection(4450, 4650, def::iitpFolder + "/Oleg/Oleg_00_sum.scg", true);
 
 	return;
-//	QString pth = "/media/Files/Data/iitp/Oleg";
-//	edfFile::vertcatIITP(pth + "/Oleg_01_eeg_up.edf",
-//						 pth + "/Oleg_01_emg.edf",
-//						 1200, 3800 ).writeEdfFile(
-//				pth + "/Oleg_01_sum.edf");
+//	autos::IITP("Oleg", "Oleg");
+//	autos::IITP("LevikUS", "Levik");
+//	autos::IITP("BlinovE", "Egor");
+//	autos::IITP("Irina", "Ira");
+//	autos::IITP("SelionovV", "Victor");
 
 
-	autos::IITP();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
 //									 "/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
 //	autos::makeRightNumbersCF("/media/Files/Pictures/3exp", 81);
