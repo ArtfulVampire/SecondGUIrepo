@@ -19,15 +19,19 @@ void MainWindow::customFunc()
 //		QFile::remove(wndPath + "/" + lst[i]);
 //	}
 
+
+//	repair::deleteSpacesDir("/media/Files/Data/iitp/BlinovE", {});
+//	repair::toLatinDir("/media/Files/Data/iitp/BlinovE", {});
+
 	return;
-	QString pth = "/media/Files/Data/iitp/Oleg";
-	edfFile::vertcatIITP(pth + "/Oleg_01_eeg_up.edf",
-						 pth + "/Oleg_01_emg.edf",
-						 1200, 3800 ).writeEdfFile(
-				pth + "/Oleg_01_sum.edf");
+//	QString pth = "/media/Files/Data/iitp/Oleg";
+//	edfFile::vertcatIITP(pth + "/Oleg_01_eeg_up.edf",
+//						 pth + "/Oleg_01_emg.edf",
+//						 1200, 3800 ).writeEdfFile(
+//				pth + "/Oleg_01_sum.edf");
 
 
-//	autos::IITP();
+	autos::IITP();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
 //									 "/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
 //	autos::makeRightNumbersCF("/media/Files/Pictures/3exp", 81);

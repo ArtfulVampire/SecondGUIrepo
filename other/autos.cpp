@@ -192,7 +192,7 @@ void IITP()
 					 folder + slash + guy + "_";
 
 
-#if 01
+#if 0
 		/// dat to edf
 		ExpName = ExpNamePre + num + ".dat";
 		if(!QFile::exists(ExpName)) continue;
@@ -207,12 +207,20 @@ void IITP()
 		ExpName = ExpNamePre + num + "_eeg.edf";
 		if(!QFile::exists(ExpName)) continue;
 		fil.readEdfFile(ExpName);
-
 		ExpName = ExpNamePre + num + "_eeg_up.edf";
 		fil.upsample(1000., ExpName);
+		continue;
+#endif
 
-//		break;
-
+#if 0
+		/// vertcat eeg+emg
+		ExpName = ExpNamePre + num + "_eeg_up.edf";
+		if(!QFile::exists(ExpName)) continue;
+		fil.readEdfFile(ExpName);
+		ExpName = ExpNamePre + num + "_emg.edf";
+		fil = fil.vertcatFile(ExpName, {});
+		ExpName = ExpNamePre + num + "_sum.edf";
+		fil.writeEdfFile(ExpName);
 		continue;
 #endif
 

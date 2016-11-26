@@ -238,6 +238,33 @@
       </property>
      </widget>
     </item>
+    <item row="3" column="2">
+     <widget class="QSpinBox" name="leftLimitSpinBox"/>
+    </item>
+    <item row="4" column="2">
+     <widget class="QSpinBox" name="rightLimitSpinBox"/>
+    </item>
+    <item row="3" column="3">
+     <widget class="QLabel" name="label_13">
+      <property name="text">
+       <string>leftLimit</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="3">
+     <widget class="QLabel" name="label_14">
+      <property name="text">
+       <string>rightLimit</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QPushButton" name="subtractMeansPushButton">
+      <property name="text">
+       <string>subtract Means</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QWidget" name="layoutWidget">
@@ -377,6 +404,32 @@
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="iitpAutoPushButton">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>190</y>
+     <width>99</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>IITP semiauto</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="iitpManualPushButton">
+   <property name="geometry">
+    <rect>
+     <x>690</x>
+     <y>190</y>
+     <width>99</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>IITP manual</string>
+   </property>
   </widget>
  </widget>
  <resources/>

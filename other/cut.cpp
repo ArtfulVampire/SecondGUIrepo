@@ -136,10 +136,15 @@ Cut::Cut() :
     QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(const QString &)));
     QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
     QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitCut()));
+
     QObject::connect(ui->forwardStepButton, SIGNAL(clicked()), this, SLOT(forwardStepSlot()));
     QObject::connect(ui->backwardStepButton, SIGNAL(clicked()), this, SLOT(backwardStepSlot()));
     QObject::connect(ui->forwardFrameButton, SIGNAL(clicked()), this, SLOT(forwardFrameSlot()));
-    QObject::connect(ui->backwardFrameButton, SIGNAL(clicked()), this, SLOT(backwardFrameSlot()));
+	QObject::connect(ui->backwardFrameButton, SIGNAL(clicked()), this, SLOT(backwardFrameSlot()));
+
+	QObject::connect(ui->iitpAutoPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoSlot()));
+	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
+	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()), this, SLOT(subtractMeansSlot()));
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -503,6 +508,9 @@ void Cut::createImage(const QString & dataFileName)
 		ui->paintStartDoubleSpinBox->setMaximum(floor(NumOfSlices / currFreq));
 		ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
 
+		ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
+		ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
+
 		for(int i = 0; i < edfFil.getLabels().size(); ++i)
 		{
 			if( edfFil.getLabels()[i].contains("EOG1")) redCh = i;
@@ -510,6 +518,7 @@ void Cut::createImage(const QString & dataFileName)
 		}
 
 		/// crutch generality		
+//		ui->paintLengthDoubleSpinBox->setValue((this->width() - 20) / currFreq);
 		ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
 		this->resizeWidget((this->width() - 20) / currFreq);
     }
@@ -528,10 +537,39 @@ void Cut::createImage(const QString & dataFileName)
     ui->scrollArea->horizontalScrollBar()->setSliderPosition(0);
 }
 
+
+void Cut::iitpAutoSlot()
+{
+	edfFil.iitpSyncAuto(ui->rightLimitSpinBox->value(),
+						ui->leftLimitSpinBox->value());
+	QString newName = edfFil.getFileNam();
+	newName.replace(".edf", "_sync.edf");
+	std::cout << "iitpAutoSlot: newFileName = " << newName << std::endl;
+	edfFil.writeEdfFile(edfFil.getDirPath() + slash + newName);
+}
+
+void Cut::iitpManualSlot()
+{
+	edfFil.iitpSyncManual(ui->rightLimitSpinBox->value(),
+						  ui->leftLimitSpinBox->value(), 200);
+	QString newName = edfFil.getFileNam();
+	newName.replace(".edf", "_sync.edf");
+	std::cout << "iitpManualSlot: newFileName = " << newName << std::endl;
+	edfFil.writeEdfFile(edfFil.getDirPath() + slash + newName);
+}
+
 void Cut::mousePressSlot(char btn, int coord)
 {
-    if(btn == 'l' && coord < rightLimit) leftLimit = coord;
-    if(btn == 'r' && coord > leftLimit && coord < NumOfSlices) rightLimit = coord;
+	if(btn == 'l' && coord < rightLimit)
+	{
+		leftLimit = coord;
+		ui->leftLimitSpinBox->setValue(leftLimit + leftDrawLimit);
+	}
+	if(btn == 'r' && coord > leftLimit && coord < NumOfSlices)
+	{
+		rightLimit = coord;
+		ui->rightLimitSpinBox->setValue(rightLimit + leftDrawLimit);
+	}
 
     QPixmap pic = currentPic;
     QPainter paint;
@@ -841,6 +879,15 @@ void Cut::splitCut()
     NumOfSlices -= (rightLimit - leftLimit);
 	data3.resizeCols(NumOfSlices);
     paint();
+}
+
+void Cut::subtractMeansSlot()
+{
+	for(auto & row : data3)
+	{
+		row -= smallLib::mean(row);
+	}
+	paint();
 }
 
 void Cut::save()

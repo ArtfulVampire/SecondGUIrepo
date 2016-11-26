@@ -985,6 +985,19 @@ edfFile edfFile::vertcatFile(QString addEdfPath, QString outPath) const
 	return temp;
 }
 
+edfFile & edfFile::subtractMeans(const QString & outPath)
+{
+	for(int i = 0; i < this->ns; ++i)
+	{
+		this->edfData[i] -= smallLib::mean(this->edfData[i]);
+	}
+	if(!outPath.isEmpty())
+	{
+		this->writeEdfFile(outPath);
+	}
+	return *this;
+}
+
 edfFile & edfFile::concatFile(QString addEdfPath, QString outPath) // assume only data concat
 {
     edfFile addEdf;
@@ -1115,8 +1128,8 @@ int edfFile::findJump(int channel,
 
 edfFile edfFile::vertcatIITP(const QString & eegPath,
 							 const QString & emgPath,
-							 int startEmg,
-							 int startSearchEeg)
+							 int startSearchEeg,
+							 int startEmg)
 {
 	edfFile wholeFile;
 	wholeFile.readEdfFile(eegPath);
@@ -1184,7 +1197,8 @@ edfFile edfFile::vertcatIITP(const QString & eegPath,
 edfFile edfFile::vertcatIITPmanual(const QString & eegPath,
 								   const QString & emgPath,
 								   int offsetEeg,
-								   int offsetEmg)
+								   int offsetEmg,
+								   int addLeft)
 {
 	edfFile wholeFile;
 	wholeFile.readEdfFile(eegPath);
@@ -1194,16 +1208,84 @@ edfFile edfFile::vertcatIITPmanual(const QString & eegPath,
 
 	for(int i = 0; i < eegNs; ++i)
 	{
-		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], offsetEeg);
+		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], offsetEeg - addLeft);
 	}
 	for(int i = eegNs; i < wholeFile.getNs(); ++i)
 	{
-		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], offsetEmg);
+		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], offsetEmg - addLeft);
 	}
 
 	return wholeFile;
 }
 
+edfFile & edfFile::iitpSyncAuto(int startSearchEeg,
+								int startEmg
+								)
+{
+	const int searchLength = 500;
+	const int corrLength = 1200;
+
+	int numECG = 0;
+	int numArtefac = 0;
+	for(int i = 0; i < this->ns; ++i)
+	{
+		if(this->labels[i].contains("ECG")) {numECG = i; break;}
+		else if(this->labels[i].contains("Artefac")) {numArtefac = i; break;}
+	}
+
+	const std::valarray<double> & eegMarkChan = this->getData()[numECG];
+	const std::valarray<double> & emgMarkChan = this->getData()[numArtefac];
+
+	std::valarray<double> eegMarkSignal(corrLength);
+	std::valarray<double> emgMarkSignal(corrLength);
+
+	std::copy(std::begin(emgMarkChan) + startEmg,
+			  std::begin(emgMarkChan) + startEmg + corrLength,
+			  std::begin(emgMarkSignal));
+
+	int offset = 0;
+	double maxCorr = 0.;
+	for(int searchOffset = 0; searchOffset < searchLength; ++searchOffset)
+	{
+		std::copy(std::begin(eegMarkChan) + startSearchEeg + searchOffset,
+				  std::begin(eegMarkChan) + startSearchEeg + searchOffset + corrLength,
+				  std::begin(eegMarkSignal));
+
+		double a = smallLib::correlation(eegMarkSignal, emgMarkSignal);
+
+		if(abs(a) > maxCorr)
+		{
+			maxCorr = abs(a);
+			offset = searchOffset + startSearchEeg;
+		}
+		if(a > 0.99)
+		{
+			break;
+		}
+	}
+
+	this->iitpSyncManual(offset, startEmg, 0);
+	return *this;
+}
+
+edfFile & edfFile::iitpSyncManual(int offsetEeg,
+								  int offsetEmg,
+								  int addLeft)
+{
+	for(int i = 0; i < getNs(); ++i)
+	{
+		if(!labels[i].startsWith("IT "))
+		{
+			this->edfData[i] = smallLib::pop_front_valar(this->edfData[i], offsetEeg - addLeft);
+		}
+		else
+		{
+			this->edfData[i] = smallLib::pop_front_valar(this->edfData[i], offsetEmg - addLeft);
+		}
+	}
+
+	return *this;
+}
 
 
 void edfFile::countFft()
@@ -1239,7 +1321,7 @@ edfFile edfFile::refilter(const double & lowFreq,
         /// filter only EEG, EOG signals - look labels!!!!
 		/// pewpew IITP
 		if(this->labels[i].contains(QRegExp("E[OEC]G")) ||
-		   this->labels[i].contains("IT"))
+		   (this->filterIITPflag && this->labels[i].contains("IT")))
         {
             chanList.push_back(i);
         }

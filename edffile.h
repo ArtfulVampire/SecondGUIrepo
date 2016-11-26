@@ -126,10 +126,13 @@ public:
                            QString helpString,
 						   std::vector<QString> annotations);
 
+	/// make edfFile & func(...);
+	/// and  edfFile   func(...) const;
 	/// modify
     void adjustArraysByChannels();
-	edfFile vertcatFile(QString addEdfPath, QString outPath) const;
+	edfFile vertcatFile(QString addEdfPath, QString outPath = QString()) const;
 	edfFile & concatFile(QString addEdfPath, QString outPath = QString());
+	edfFile & subtractMeans(const QString & outPath = QString());
     void countFft();
 	edfFile refilter(const double & lowFreq,
 				  const double & highFreq,
@@ -139,8 +142,7 @@ public:
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
 	edfFile reduceChannels(const QString & chanStr) const;
-    void removeChannels(const std::vector<int> & chanList);
-
+	void removeChannels(const std::vector<int> & chanList);
 
     void setLabels(const std::vector<QString> & inLabels);
     void setChannels(const std::vector<edfChannel> & inChannels);
@@ -169,17 +171,24 @@ public:
 				 int startPoint,
 				 double numSigmas = 5);
 
+
 	static edfFile vertcatIITP(const QString & eegPath,
 							   const QString & emgPath,
-							   int startEmg,
-							   int startSearchEeg);
-
+							   int startSearchEeg,
+							   int startEmg);
 
 	static edfFile vertcatIITPmanual(const QString & eegPath,
 									 const QString & emgPath,
 									 int offsetEeg,
 									 int offsetEmg,
 									 int addLeft = 0);
+
+	edfFile & iitpSyncManual(int offsetEeg,
+							 int offsetEmg,
+							 int addLeft = 0);
+
+	edfFile & iitpSyncAuto(int startSearchEeg,
+						   int startEmg);
 
 
 private:
@@ -228,6 +237,7 @@ private:
     bool matiFlag = def::matiFlag;
     bool ntFlag = def::ntFlag;
     bool edfPlusFlag = false; // to detect
+	bool filterIITPflag = true;
 
 	bool writeMarkersFlag = false;
 	bool writeLabelsFlag = false;
@@ -274,6 +284,7 @@ public:
     void setMatiFlag(bool newFlag) {matiFlag = newFlag;}
     void setNtFlag(bool newFlag) {ntFlag = newFlag;}
     void setEdfPlusFlag(bool newFlag) {edfPlusFlag = newFlag;}
+	void setFilterIITPFlag(bool newFlag) {filterIITPflag = newFlag;}
 
     // operations with data
 
