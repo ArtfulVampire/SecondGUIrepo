@@ -110,6 +110,18 @@ void p2z(std::vector<std::complex<double>> & p,
 void inverse_poly(std::vector<std::complex<double>> & coeffs, int size);
 void print_line(int len = 80);
 int test();
+
+/// from GA fortran
+std::valarray<double> butterworth(const std::valarray<double> & in,
+								  int order,
+								  double srate,
+								  double centerFreq,
+								  double halfBand);
+std::valarray<double> refilterButter(const std::valarray<double> & in,
+									 int order,
+									 double srate,
+									 double lowFreq,
+									 double highFreq);
 }
 
 namespace myDsp

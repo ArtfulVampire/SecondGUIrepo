@@ -7,6 +7,51 @@ using namespace myLib;
 namespace autos
 {
 
+void filtering_test()
+{
+	edfFile fil;
+	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+
+	int fftLen = 4096;
+	double spStep = 250. / fftLen;
+	double lowFreq = 8.;
+	double highFreq = 8.5;
+	double dF = highFreq - lowFreq;
+
+	int start = 18000;
+	auto signal = fil.getData().subCols(start, start + fftLen)[10];
+
+
+	auto signal2 = myDsp::refilter(signal,
+								   lowFreq,
+								   highFreq - spStep,
+								   true, 250.);
+	signal2[0] = 0.;
+
+	auto sp = myLib::spectreRtoC(signal, fftLen);
+	refilterSpectre(sp, 2 * int(lowFreq / spStep), 2 * int(highFreq / spStep), true);
+	auto signal3 = myLib::spectreCtoRrev(sp);
+
+	auto signal4 = btr::refilterButter(signal, 40, 250., lowFreq, highFreq);
+	cout << signal4.size() << " " << signal.size() << endl;
+	signal4 = signal - signal4;
+
+
+
+	drawOneSignal(signal, 600, def::dataFolder + "/init.jpg");
+	drawOneSignal(signal2, 600, def::dataFolder + "/butter.jpg");
+	drawOneSignal(signal3, 600, def::dataFolder + "/fft.jpg");
+	drawOneSignal(signal4, 600, def::dataFolder + "/btr.jpg");
+
+
+	double lF = 7.5;
+	double hF = 9;
+	drawOneSpectrum(signal , def::dataFolder + "/sp_init.jpg", lF, hF, 250, 0);
+	drawOneSpectrum(signal2, def::dataFolder + "/sp_but.jpg", lF, hF, 250, 0);
+	drawOneSpectrum(signal3, def::dataFolder + "/sp_fft.jpg", lF, hF, 250, 0);
+	drawOneSpectrum(signal4, def::dataFolder + "/sp_btr.jpg", lF, hF, 250, 0);
+}
+
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 {
 	def::ntFlag = false;

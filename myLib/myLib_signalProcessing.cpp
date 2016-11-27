@@ -800,25 +800,25 @@ void refilterSpectre(std::valarray<double> & spectr,
 	if(!isNotch)
 	{
 		std::fill(std::begin(spectr),
-				  std::begin(spectr) + lowLim + 1,
+				  std::begin(spectr) + lowLim,
 				  0.);
 		std::fill(std::begin(spectr) + highLim,
 				  std::begin(spectr) + fftLen,
 				  0.);
 		std::fill(std::begin(spectr) + fftLen,
-				  std::begin(spectr) + 2 * fftLen - highLim,
+				  std::begin(spectr) + 2 * fftLen + 2 - highLim,
 				  0.);
-		std::fill(std::begin(spectr) + 2 * fftLen - lowLim - 1,
+		std::fill(std::begin(spectr) + 2 * fftLen + 2 - lowLim,
 				  std::begin(spectr) + 2 * fftLen,
 				  0.);
 	}
 	else
 	{
-		std::fill(std::begin(spectr) + lowLim + 1,
+		std::fill(std::begin(spectr) + lowLim,
 				  std::begin(spectr) + highLim,
 				  0.);
-		std::fill(std::begin(spectr) + 2 * fftLen - highLim,
-				  std::begin(spectr) + 2 * fftLen - lowLim - 1,
+		std::fill(std::begin(spectr) + 2 * fftLen + 2 - highLim ,
+				  std::begin(spectr) + 2 * fftLen + 2 - lowLim,
 				  0.);
 	}
 }

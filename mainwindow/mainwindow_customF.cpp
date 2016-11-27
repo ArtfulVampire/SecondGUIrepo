@@ -20,9 +20,12 @@ void MainWindow::customFunc()
 //	}
 
 
-//	edfFile fil;
-//	fil.readEdfFile(def::iitpFolder + "/Oleg/Oleg_00_sum.edf");
-//	fil.saveSubsection(4450, 4650, def::iitpFolder + "/Oleg/Oleg_00_sum.scg", true);
+
+
+
+
+
+
 
 	return;
 //	autos::IITP("Oleg", "Oleg");
@@ -30,7 +33,7 @@ void MainWindow::customFunc()
 //	autos::IITP("BlinovE", "Egor");
 //	autos::IITP("Irina", "Ira");
 //	autos::IITP("SelionovV", "Victor");
-
+//	autos::filtering_test();
 
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
 //									 "/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
@@ -40,19 +43,10 @@ void MainWindow::customFunc()
 //	testSuccessive()
 //	Xenia_TBI();
 
-//	edfFile fil;
-//	fil.readEdfFile("/media/Files/Data/FeedbackNew/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new.edf");
-//	fil.setData(fil.getMarkChan(), 104200, 239);
-//	fil.writeEdfFile("/media/Files/Data/FeedbackNew/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
-
-
 
 //	return;
 	exit(0);
 	/// further goes unused and old
-
-//	cout << countSymbolsInFile(def::XeniaFolder + "/15Nov/str_bd.txt", '\t') << endl;
-//	exit(0);
 
 #if 0
 	/// compose names for Xenia_TBI tables

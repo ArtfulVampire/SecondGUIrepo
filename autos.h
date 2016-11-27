@@ -7,6 +7,8 @@
 namespace autos
 {
 
+void filtering_test();
+
 matrix makeTestData(const QString & outPath);
 
 void GalyaProcessing(const QString &procDirPath,
