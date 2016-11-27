@@ -421,8 +421,8 @@
   <widget class="QPushButton" name="iitpManualPushButton">
    <property name="geometry">
     <rect>
-     <x>690</x>
-     <y>190</y>
+     <x>570</x>
+     <y>150</y>
      <width>99</width>
      <height>27</height>
     </rect>
@@ -442,6 +442,19 @@
    </property>
    <property name="text">
     <string>IITP jump</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="iitpByEegCheckBox">
+   <property name="geometry">
+    <rect>
+     <x>690</x>
+     <y>190</y>
+     <width>97</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>by EEG</string>
    </property>
   </widget>
  </widget>

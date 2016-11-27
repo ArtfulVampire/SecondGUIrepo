@@ -190,11 +190,13 @@ public:
 							 int addLeft = 0);
 
 	edfFile & iitpSyncAutoCorr(int startSearchEeg,
-							   int startEmg);
+							   int startEmg,
+							   bool byEeg = false);
 
 
 	edfFile & iitpSyncAutoJump(int startSearchEeg,
-							   int startSearchEmg);
+							   int startSearchEmg,
+							   bool byEeg = false);
 
 
 private:

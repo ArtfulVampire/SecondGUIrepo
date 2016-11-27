@@ -555,7 +555,8 @@ void Cut::createImage(const QString & dataFileName)
 void Cut::iitpAutoCorrSlot()
 {
 	edfFil.iitpSyncAutoCorr(ui->rightLimitSpinBox->value(),
-							ui->leftLimitSpinBox->value());
+							ui->leftLimitSpinBox->value(),
+							ui->iitpByEegCheckBox->isChecked());
 	QString newName = edfFil.getFileNam();
 	newName.replace(".edf", "_sync.edf");
 	std::cout << "iitpAutoSlot: newFileName = " << newName << std::endl;
@@ -565,7 +566,8 @@ void Cut::iitpAutoCorrSlot()
 void Cut::iitpAutoJumpSlot()
 {
 	edfFil.iitpSyncAutoJump(ui->rightLimitSpinBox->value(),
-							ui->leftLimitSpinBox->value());
+							ui->leftLimitSpinBox->value(),
+							ui->iitpByEegCheckBox->isChecked());
 	QString newName = edfFil.getFileNam();
 	newName.replace(".edf", "_sync.edf");
 	std::cout << "iitpAutoSlot: newFileName = " << newName << std::endl;

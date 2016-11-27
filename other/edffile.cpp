@@ -1235,7 +1235,8 @@ edfFile edfFile::vertcatIITPmanual(const QString & eegPath,
 }
 
 edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
-									int startEmg)
+									int startEmg,
+									bool byEeg)
 {
 	const int searchLength = 300;
 	const int corrLength = 1600;
@@ -1247,6 +1248,8 @@ edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
 		if(this->labels[i].contains("ECG")) {numECG = i;}
 		else if(this->labels[i].contains("Artefac")) {numArtefac = i;}
 	}
+
+	if(byEeg) numECG = 0;
 
 	const std::valarray<double> & eegMarkChan = this->getData()[numECG];
 	const std::valarray<double> & emgMarkChan = this->getData()[numArtefac];
@@ -1285,7 +1288,8 @@ edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
 }
 
 edfFile & edfFile::iitpSyncAutoJump(int startSearchEeg,
-									int startSearchEmg)
+									int startSearchEmg,
+									bool byEeg)
 {
 	int numECG = 0;
 	int numArtefac = 0;
@@ -1294,6 +1298,8 @@ edfFile & edfFile::iitpSyncAutoJump(int startSearchEeg,
 		if(this->labels[i].contains("ECG")) {numECG = i;}
 		else if(this->labels[i].contains("Artefac")) {numArtefac = i;}
 	}
+
+	if(byEeg) numECG = 0;
 
 	const std::valarray<double> & eegMarkChan = this->getData()[numECG];
 	const std::valarray<double> & emgMarkChan = this->getData()[numArtefac];
