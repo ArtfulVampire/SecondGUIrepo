@@ -19,20 +19,12 @@ void MainWindow::customFunc()
 //		QFile::remove(wndPath + "/" + lst[i]);
 //	}
 
-
-
-
-
-
-
-
-
 	return;
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
 //	autos::IITP("Irina", "Ira");
-//	autos::IITP("SelionovV", "Victor");
+	autos::IITP("SelionovV", "Victor");
 //	autos::filtering_test();
 
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",

@@ -978,7 +978,8 @@ void Cut::paint() // save to tmp.jpg and display
                          rightDrawLimit - leftDrawLimit,
 						 currFreq,
                          helpString,
-						 ui->yNormDoubleSpinBox->value(),
+						 ui->yNormDoubleSpinBox->value()
+						 * ((ui->yNormInvertCheckBox->isChecked())? -1 : 1),
                          blueCh,
                          redCh); // generality.getFreq()
 

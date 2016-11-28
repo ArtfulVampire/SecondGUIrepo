@@ -222,13 +222,13 @@ void IITP(const QString & dirName, const QString & guyName)
 
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-		if(fileNum != 0) break;
+		if(fileNum == 3) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
 								   guyName + "_" + rightNumber(fileNum, 2);
 		QString filePath;
 		edfFile fil;
-#if 0
+#if 01
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
 		if(!QFile::exists(filePath)) continue;
@@ -238,7 +238,7 @@ void IITP(const QString & dirName, const QString & guyName)
 		fil1.writeEdfFile(filePath);
 #endif
 
-#if 0
+#if 01
 		/// filter EMG double notch
 		filePath = ExpNamePre + "_emg.edf";
 		if(!QFile::exists(filePath)) continue;
@@ -259,8 +259,8 @@ void IITP(const QString & dirName, const QString & guyName)
 
 		filePath = ExpNamePre + "_eeg_f.edf";
 		fil.refilter(95, 105, {}, true);
-		fil.refilter(45, 55, filePath, true);
-//		fil.refilter(0.5, 70, filePath);
+		fil.refilter(45, 55, {}, true);
+		fil.refilter(0.5, 70, filePath);
 #endif
 
 #if 0
@@ -287,9 +287,9 @@ void IITP(const QString & dirName, const QString & guyName)
 		filePath = ExpNamePre + "_eeg_f_up.edf";
 		if(!QFile::exists(filePath)) continue;
 		fil.readEdfFile(filePath);
-		filePath = ExpNamePre + "_emg.edf";
+		filePath = ExpNamePre + "_emg_f.edf";
 		fil = fil.vertcatFile(filePath, {});
-		filePath = ExpNamePre + "_sum.edf";
+		filePath = ExpNamePre + "_sum_f.edf";
 		fil.writeEdfFile(filePath);
 #endif
 

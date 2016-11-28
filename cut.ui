@@ -221,13 +221,6 @@
     <item row="1" column="2">
      <widget class="QDoubleSpinBox" name="yNormDoubleSpinBox"/>
     </item>
-    <item row="1" column="3">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Y norm</string>
-      </property>
-     </widget>
-    </item>
     <item row="2" column="2">
      <widget class="QDoubleSpinBox" name="xNormDoubleSpinBox"/>
     </item>
@@ -264,6 +257,24 @@
        <string>subtract Means</string>
       </property>
      </widget>
+    </item>
+    <item row="1" column="3">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Y norm</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="yNormInvertCheckBox">
+        <property name="text">
+         <string>invert</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
