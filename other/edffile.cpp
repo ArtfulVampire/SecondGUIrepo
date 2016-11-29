@@ -1158,11 +1158,8 @@ edfFile edfFile::vertcatIITP(const QString & eegPath,
 	const int searchLength = 5000;
 	const int corrLength = 2000;
 
-	int numECG = 0;
-	int numArtefac = 0;
-	for(int i = 0; i < eegNs; ++i) if(wholeFile.labels[i].contains("ECG")) {numECG = i; break;}
-	for(int i = eegNs; i < wholeFile.getNs(); ++i)
-		if(wholeFile.labels[i].contains("Artefac")) {numArtefac = i; break;}
+	int numECG = wholeFile.findChannel("ECG");
+	int numArtefac = wholeFile.findChannel("Artefac");
 
 	const std::valarray<double> & eegMarkChan = wholeFile.getData()[numECG];
 	const std::valarray<double> & emgMarkChan = wholeFile.getData()[numArtefac];
@@ -1241,13 +1238,8 @@ edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
 	const int searchLength = 300;
 	const int corrLength = 1600;
 
-	int numECG = 0;
-	int numArtefac = 0;
-	for(int i = 0; i < this->ns; ++i)
-	{
-		if(this->labels[i].contains("ECG")) {numECG = i;}
-		else if(this->labels[i].contains("Artefac")) {numArtefac = i;}
-	}
+	int numECG = this->findChannel("ECG");
+	int numArtefac = this->findChannel("Artefac");
 
 	if(byEeg) numECG = 0;
 
@@ -1291,13 +1283,8 @@ edfFile & edfFile::iitpSyncAutoJump(int startSearchEeg,
 									int startSearchEmg,
 									bool byEeg)
 {
-	int numECG = 0;
-	int numArtefac = 0;
-	for(int i = 0; i < this->ns; ++i)
-	{
-		if(this->labels[i].contains("ECG")) {numECG = i;}
-		else if(this->labels[i].contains("Artefac")) {numArtefac = i;}
-	}
+	int numECG = this->findChannel("ECG");
+	int numArtefac = this->findChannel("Artefac");
 
 	if(byEeg) numECG = 0;
 
