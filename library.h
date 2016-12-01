@@ -51,6 +51,9 @@
 
 #define OLD_DATA 0
 
+
+#include <myLib/signalProcessing.h>
+
 namespace wvlt
 {
 #define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
@@ -562,37 +565,8 @@ void four1(double * dataF, int nn, int isign);
 /// from Rosetta stone - the same
 void four3(std::valarray<std::complex<double>> & inputArray);
 
-/// srate for norm
-std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
-//								  const double srate = 250.,
-								  int fftLen = -1);
 
-std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
-//								  const double srate = 250.,
-								  int fftLen = -1);
-
-std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
-//								  const double srate = 250.,
-								  int fftLen = -1);
-
-std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
-//								  const double srate = 250.,
-								  int fftLen = -1);
-
-std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
-								   double leftFreq,
-								   double rightFreq,
-								   double srate = 250.);
-
-std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre);
-
-std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre);
-
-
-std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
-									const int numOfSmooth);
-
-
+/// by FFT
 void refilterSpectre(std::valarray<double> & spectr,
 					 int lowLim,
 					 int highLim,

@@ -242,7 +242,7 @@ void eraseItems(std::vector<T> & inVect,
     }
     inVect.resize(initSize - excludeSet.size());
 }
-template void eraseItems(std::vector<lineType> & inVect, const std::vector<uint> & indices);
+template void eraseItems(std::vector<std::valarray<double>> & inVect, const std::vector<uint> & indices);
 template void eraseItems(std::vector<int> & inVect, const std::vector<uint> & indices);
 template void eraseItems(std::vector<double> & inVect, const std::vector<uint> & indices);
 

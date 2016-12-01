@@ -1,8 +1,6 @@
 #include "library.h"
 
 
-
-
 namespace myDsp
 {
 std::valarray<double> reverseArray(const std::valarray<double> & in)

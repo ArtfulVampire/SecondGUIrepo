@@ -1,8 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
+#include <myLib/drw.h>
 using namespace std;
 using namespace myLib;
 using namespace smallLib;
+
 
 
 
@@ -19,6 +22,16 @@ void MainWindow::customFunc()
 //		QFile::remove(wndPath + "/" + lst[i]);
 //	}
 
+	const QString p = def::dataFolder + "/AAX/Help/psa/";
+	matrix ps;
+	ps.resize(3);
+	myLib::readFileInLine(p + "AAX_final_class_1.psa", ps[0]);
+	myLib::readFileInLine(p + "AAX_final_class_2.psa", ps[1]);
+	myLib::readFileInLine(p + "AAX_final_class_3.psa", ps[2]);
+	myLib::drw::drawCutOneChannel(myLib::drw::drawArrays(myLib::drw::drawTemplate(),
+						   ps,
+						   ps.maxAbsVal()), 10).save(p + "2.jpg");
+	exit(0);
 
 	return;
 //	autos::IITP("Oleg", "Oleg");

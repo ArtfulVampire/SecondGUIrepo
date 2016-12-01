@@ -89,7 +89,8 @@ SOURCES += main.cpp\
     DSP/PoleFilter.cpp \
     DSP/RBJ.cpp \
     DSP/RootFinder.cpp \
-    DSP/State.cpp
+    DSP/State.cpp \
+    myLib/myLib_drw.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -127,7 +128,9 @@ HEADERS  += mainwindow.h \
     DSP/DspFilters/SmoothedFilter.h \
     DSP/DspFilters/State.h \
     DSP/DspFilters/Types.h \
-    DSP/DspFilters/Utilities.h
+    DSP/DspFilters/Utilities.h \
+    myLib/drw.h \
+    myLib/signalProcessing.h
 
 FORMS    += mainwindow.ui \
     cut.ui \
