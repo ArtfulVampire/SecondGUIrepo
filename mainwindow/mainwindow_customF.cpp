@@ -25,12 +25,13 @@ void MainWindow::customFunc()
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
 //	autos::IITP("Irina", "Ira");
-	autos::IITP("SelionovV", "Victor");
+//	autos::IITP("SelionovV", "Victor");
 //	autos::filtering_test();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
 //									 "/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
 //	autos::makeRightNumbersCF("/media/Files/Pictures/3exp", 81);
 //	autos::Xenia_TBI();
+//	autos::EEG_MRI();
 
 //	BaklushevDraw();
 //	testNewClassifiers();

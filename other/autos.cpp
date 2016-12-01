@@ -82,6 +82,12 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 		cmd = "cp " + outPath + "/" + guy + ".rar " +
 			  dropPath + "/" + guy + ".rar";
 		system(cmd.toStdString().c_str());
+
+		/// copy link
+		std::this_thread::sleep_for(std::chrono::seconds(15));
+		cmd = "./dropbox.py sharelink " +  dropPath + "/" + guy + ".rar" +
+			  " | xclip -selection clipboard";
+		system(cmd.toStdString().c_str());
 	}
 
 }
