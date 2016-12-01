@@ -2047,9 +2047,14 @@ void drawColorScale(QString filePath, int range, ColorScale type, bool full)
 
 
 template <typename signalType>
-void histogram(const signalType & arr, int numSteps, QString picPath)
+void histogram(const signalType & arr,
+			   int numSteps,
+			   const QString & picPath,
+			   std::pair<double, double> xMinMax,
+			   const QString & color,
+			   int valueMax)
 {
-    vectType values(numSteps, 0.);
+	std::vector<double> values(numSteps, 0.);
     int length = arr.size();
 
     QPixmap pic(1000, 400);
@@ -2060,20 +2065,43 @@ void histogram(const signalType & arr, int numSteps, QString picPath)
     pnt.setPen("black");
     pnt.setBrush(QBrush("black"));
 
-    double xMin, xMax;
 
-    xMin = *std::min(arr.begin(),
-                    arr.end());
-    xMax = *std::max(arr.begin(),
-                    arr.end());
+
+	double xMin, xMax;
+	if(xMinMax == std::pair<double, double>())
+	{
+		xMin = *std::min_element(std::begin(arr),
+								 std::end(arr));
+		xMax = *std::max_element(std::begin(arr),
+								 std::end(arr));
+	}
+	else
+	{
+		xMin = xMinMax.first;
+		xMax = xMinMax.second;
+	}
+
+	int denom = floor(log10(xMax - xMin));
+	xMin = smallLib::doubleRoundFraq(xMin, denom);
+	xMax = smallLib::doubleRoundFraq(xMax, denom);
+
 
     for(int j = 0; j < length; ++j)
     {
         values[ int(floor((arr[j] - xMin) / ((xMax-xMin) / numSteps))) ] += 1.;
     }
-    double valueMax = *std::max(values.begin(),
-                               values.end());
+	if(valueMax <= 0)
+	{
+		valueMax = *std::max_element(std::begin(values),
+									 std::end(values));
+	}
 
+
+
+
+
+	pnt.setPen(color);
+	pnt.setBrush(QBrush(QColor(color)));
     for(int i = 0; i < numSteps; ++i)
     {
         pnt.drawRect (QRect(QPoint(i * pic.width() / numSteps,
@@ -2082,13 +2110,37 @@ void histogram(const signalType & arr, int numSteps, QString picPath)
                                    pic.height() * 0.9)
                             )
                       );
-    }
-    pnt.drawLine(0,
-                 pic.height() * 0.9,
-                 pic.width(),
-                 pic.height() * 0.9);
+	}
 
-    pic.save(picPath, 0, 100);
+	pnt.setPen("black");
+	pnt.setBrush(QBrush(QColor("black")));
+	pnt.drawLine(0,
+				 pic.height() * 0.9,
+				 pic.width(),
+				 pic.height() * 0.9);
+
+	for(double i = xMin; i <= xMax; i += 1/denom)
+	{
+		const double X = pic.width() * (i - xMin) / (xMax - xMin);
+		pnt.drawLine(X, pic.height() * 0.9,
+					 X, pic.height() * 0.95);
+		pnt.drawText(X - 5, pic.height() - 3,
+					 myLib::nm(i));
+	}
+	for(int i = 1; i <= valueMax; ++i)
+	{
+		const double Y = pic.height() * 0.9 * (1. - double(i) / valueMax);
+		pnt.drawLine(0, Y,
+					 10, Y);
+		pnt.drawText(13, Y + 5,
+					 myLib::nm(i));
+	}
+
+
+	if(!picPath.isEmpty())
+	{
+		pic.save(picPath, 0, 100);
+	}
 }
 
 
@@ -2539,4 +2591,19 @@ void drawRCP(const lineType & values, const QString & picPath)
     pic.save(picPath, 0, 100);
 }
 
-} // nemspace myLib
+template
+void histogram(const std::valarray<double> & arr,
+			   int numSteps,
+			   const QString & picPath,
+			   std::pair<double, double> xMinMax,
+			   const QString & color,
+			   int valueMax);
+template
+void histogram(const std::vector<double> & arr,
+			   int numSteps,
+			   const QString & picPath,
+			   std::pair<double, double> xMinMax,
+			   const QString & color,
+			   int valueMax);
+
+} // namespace myLib

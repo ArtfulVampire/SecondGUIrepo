@@ -310,6 +310,9 @@ void writePlainData(const QString outPath,
 void readMatrixFile(const QString & filePath,
                     matrix & outData);
 
+void readMatrixFileRaw(const QString & filePath,
+					   matrix & outData);
+
 void writeMatrixFile(const QString & filePath,
                      const matrix & outData,
                      const QString & rowsString = "NumOfRows",
@@ -329,6 +332,9 @@ void readUCIdataSet(const QString & setName,
 
 void readFileInLine(const QString & filePath,
 					std::valarray<double> & result);
+
+void readFileInLineRaw(const QString & filePath,
+					   std::valarray<double> & result);
 
 template <typename ArrayType>
 void writeFileInLine(const QString & filePath,
@@ -649,7 +655,12 @@ template <typename signalType = lineType>
 void kernelEst(const signalType & arr, QString picPath);
 
 template <typename signalType = lineType>
-void histogram(const signalType & arr, int numSteps, QString picPath);
+void histogram(const signalType & arr,
+			   int numSteps,
+			   const QString & picPath = QString(),
+			   std::pair<double, double> xMinMax = {},
+			   const QString & color = "drakgray",
+			   int valueMax = 0);
 
 
 double quantile(double arg);

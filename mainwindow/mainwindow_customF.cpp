@@ -19,6 +19,7 @@ void MainWindow::customFunc()
 //		QFile::remove(wndPath + "/" + lst[i]);
 //	}
 
+
 	return;
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
@@ -26,19 +27,40 @@ void MainWindow::customFunc()
 //	autos::IITP("Irina", "Ira");
 	autos::IITP("SelionovV", "Victor");
 //	autos::filtering_test();
-
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
 //									 "/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
 //	autos::makeRightNumbersCF("/media/Files/Pictures/3exp", 81);
+//	autos::Xenia_TBI();
+
 //	BaklushevDraw();
 //	testNewClassifiers();
 //	testSuccessive()
-//	Xenia_TBI();
 
 
 //	return;
 	exit(0);
 	/// further goes unused and old
+
+#if 0
+	/// Baklushev histograms
+
+	int steps = 20;
+	int norm = 8;
+	std::valarray<double> res1;
+	std::valarray<double> res2;
+	readFileInLineRaw(def::dataFolder + "/Baklushev/healthy.txt", res1);
+	readFileInLineRaw(def::dataFolder + "/Baklushev/ill.txt", res2);
+	for(int steps = 12; steps <= 30; steps += 2)
+	{
+		myLib::histogram(res1, steps,
+						 def::dataFolder + "/Baklushev/healthy_" + nm(steps) + ".jpg",
+		{50., 94.}, "blue", norm);
+		myLib::histogram(res2, steps,
+						 def::dataFolder + "/Baklushev/ill_" + nm(steps) + ".jpg",
+		{50., 94.}, "red", norm);
+	}
+	exit(0);
+#endif
 
 #if 0
 	/// compose names for Xenia_TBI tables

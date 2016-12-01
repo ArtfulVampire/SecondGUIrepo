@@ -7,7 +7,32 @@ using namespace smallLib;
 namespace myLib
 {
 
-// make valarray
+
+void readFileInLineRaw(const QString & filePath,
+					   std::valarray<double> & result)
+{
+	ifstream file(filePath.toStdString());
+	if(!file.good())
+	{
+		cout << "readFileInLine: bad file " << filePath << endl;
+		return;
+	}
+	std::vector<double> res;
+	double tmp;
+	while(1)
+	{
+		file >> tmp;
+		if(!file.eof())
+		{
+			res.push_back(tmp);
+		}
+		else break;
+	}
+	file.close();
+	result.resize(res.size());
+	std::copy(std::begin(res), std::end(res), std::begin(result));
+}
+
 void readFileInLine(const QString & filePath,
 					std::valarray<double> & result)
 {
@@ -151,6 +176,41 @@ void readPlainData(const QString & inPath,
         }
     }
     inStr.close();
+}
+
+void readMatrixFileRaw(const QString & filePath,
+					   matrix & outData)
+{
+	ifstream file(filePath.toStdString());
+	if(!file.good())
+	{
+		cout << "readMatrixFile: bad input file " << filePath << endl;
+		return;
+	}
+
+	outData = matrix();
+	std::vector<double> tmp;
+	int bufSiz = 10000;
+	char * tmpStr = new char [bufSiz];
+	QString str;
+	QStringList lst;
+
+	while(1)
+	{
+		file.getline(tmpStr, bufSiz);
+		if(file.eof()) break;
+
+		str = QString(tmpStr);
+		lst = str.split('\t', QString::SkipEmptyParts);
+		for(const QString & item : lst)
+		{
+			tmp.push_back(item.toDouble());
+		}
+		outData.push_back(tmp);
+		tmp.clear();
+	}
+	file.close();
+	delete[] tmpStr;
 }
 
 void readMatrixFile(const QString & filePath,
