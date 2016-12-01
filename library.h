@@ -127,37 +127,6 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 									 double highFreq);
 }
 
-namespace myDsp
-{
-std::valarray<double> reverseArray(const std::valarray<double> & in);
-std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
-									 double cutoffFreq,
-									 double srate = 250.);
-std::valarray<double> lowPass(const std::valarray<double> & inputSignal,
-							  double cutoffFreq,
-							  double srate = 250.);
-
-
-/// bandPass/bandStop
-std::valarray<double> refilter(const std::valarray<double> & inputSignal,
-							   double lowFreq,
-							   double highFreq,
-							   bool isNotch = false,
-							   double srate = 250.);
-matrix refilter(const matrix & inputMatrix,
-				double lowFreq,
-				double highFreq,
-				bool isNotch = false,
-				double srate = 250.);
-std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
-									  double lowFreq,
-									  double highFreq,
-									  bool isNotch = false,
-									  double srate = 250.);
-}
-
-
-
 namespace myLib
 {
 
@@ -246,6 +215,11 @@ template <typename Container>
 uint indexOfMax(const Container & cont);
 
 
+void makeSine(std::valarray<double> & in,
+			  double freq = 10.,
+			  double phaseInRad = 0.,
+			  int numPoints = -1,
+			  double srate = 250.);
 
 
 
@@ -557,53 +531,8 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath = def::dir->absolutePat
 
 
 /// signal processing
-double enthropy(const double *arr, const int N, const int numOfRanges = 30); // not finished?
-
-/// original
-void four1(double * dataF, int nn, int isign);
-
-/// from Rosetta stone - the same
-void four3(std::valarray<std::complex<double>> & inputArray);
 
 
-/// by FFT
-void refilterSpectre(std::valarray<double> & spectr,
-					 int lowLim,
-					 int highLim,
-					 bool isNotch);
-
-std::valarray<double> refilter(const std::valarray<double> & inputSignal,
-							   double lowFreq,
-							   double highFreq,
-							   bool isNotch = false,
-							   double srate = 250.);
-
-
-std::valarray<double> fftWindow(int length, const QString & name = "Hann");
-
-std::valarray<double> upsample(const std::valarray<double> & inSignal,
-							   double oldFreq,
-							   double newFreq);
-
-std::valarray<double> downsample(const std::valarray<double> & inSignal,
-								 double oldFreq,
-								 double newFreq);
-
-int findJump(const std::valarray<double> & inSignal, int startSearch, double numOfSigmas = 3.5);
-
-
-void calcSpectre(const std::valarray<double> & inSignal,
-				 std::valarray<double> & outSpectre,
-				 const int & fftLength = def::fftLength,
-				 const int & NumOfSmooth = 0,
-				 const int & Eyes = 0,
-				 const double & powArg = 1.);
-
-void makeSine(std::valarray<double> & in,
-			  double freq = 10.,
-			  double phaseInRad = 0.,
-			  int numPoints = -1,
-			  double srate = 250.);
 
 
 /// non-spectral
