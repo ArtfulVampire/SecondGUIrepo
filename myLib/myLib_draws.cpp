@@ -215,69 +215,6 @@ QColor mapColor(double minMagn,
 
 
 
-
-void drawMap(const matrix & matrixA,
-             double maxAbs,
-             QString outDir,
-             QString outName,
-             int num,
-             int size,
-             bool colourFlag)
-{
-    QPixmap pic = QPixmap(size, size);
-    QPainter painter;
-    pic.fill();
-    painter.begin(&pic);
-
-    matrix helpMatrix(5, 5);
-
-    int currIndex = 0.;
-    for(int i = 0; i < 25; ++i) //generality for ns = 19
-    {
-        if(i == 0 || i == 2 || i == 4 || i == 20 || i == 22 || i == 24)  //generality for ns = 19
-        {
-            helpMatrix[i/5][i%5] = 0.;
-        }
-        else
-        {
-            helpMatrix[i/5][i%5] = matrixA[currIndex++][num]; //here was fabs()
-        }
-    }
-
-    //approximation for square
-    helpMatrix[0][0] = (helpMatrix[0][1] + helpMatrix[1][0] + helpMatrix[1][1])/3.;
-    helpMatrix[0][2] = (helpMatrix[0][1] + helpMatrix[1][1] + helpMatrix[1][2] + helpMatrix[1][2] + helpMatrix[1][3] + helpMatrix[0][3])/6.;
-    helpMatrix[0][4] = (helpMatrix[0][3] + helpMatrix[1][3] + helpMatrix[1][4])/3.;;
-    helpMatrix[4][0] = (helpMatrix[3][0] + helpMatrix[3][1] + helpMatrix[4][1])/3.;
-    helpMatrix[4][2] = (helpMatrix[4][1] + helpMatrix[3][1] + helpMatrix[3][2] + helpMatrix[3][2] + helpMatrix[3][3] + helpMatrix[4][3])/6.;
-    helpMatrix[4][4] = (helpMatrix[4][3] + helpMatrix[3][3] + helpMatrix[3][4])/3.;
-
-    int numX, numY;
-    double leftCoeff = 0.0; //gap from left
-    double rightCoeff = 4.0; // gap from right
-    double scale1 = size/(leftCoeff + rightCoeff);
-
-    //generality 5 -> ns=19
-    //usual approximations
-    for(int x = floor(scale1) * leftCoeff; x < floor(scale1) * rightCoeff; ++x)
-    {
-        for(int y = floor(scale1) * leftCoeff; y < floor(scale1) * rightCoeff; ++y)
-        {
-            if(myLib::distance(x, y, size/2, size/2) > size/2 ) continue; // make it round
-
-            numX = floor(x/int(scale1)) ; //1 2
-            numY = floor(y/int(scale1)) ; //3 4
-
-            painter.setPen(mapColor(-maxAbs, maxAbs, helpMatrix, numX, numY, double(double(x%int(scale1))/scale1 + 0.003/scale1), double(double(y%int(scale1))/scale1) + 0.003/scale1, colourFlag)); // why 0.003
-            painter.drawPoint(x,y);
-        }
-    }
-
-
-    QString helpString = outDir + slash + outName + "_map_" + QString::number(num) + ".png";
-    pic.save(helpString, 0, 100);
-}
-
 void drawMapsICA(const QString &mapsFilePath,
                  const QString &outDir,
                  const QString &outName,

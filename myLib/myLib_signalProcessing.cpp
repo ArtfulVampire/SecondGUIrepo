@@ -812,28 +812,9 @@ double correlation(const Typ &arr1, const Typ &arr2, int length, int shift, bool
 }
 
 
-int MannWhitney(double * arr1, int len1,
-                 double * arr2, int len2,
-                 double p)
-{
-    vectType vect1;
-    vectType vect2;
-    for(int i = 0; i < len1; ++i)
-    {
-        vect1.push_back(arr1[i]);
-    }
-    for(int i = 0; i < len2; ++i)
-    {
-        vect2.push_back(arr2[i]);
-    }
-    return MannWhitney(vect1, vect2, p);
-
-}
-
-template <typename signalType>
-int MannWhitney(const signalType & arr1,
-                const signalType & arr2,
-                const double p)
+int MannWhitney(const std::valarray<double> & arr1,
+				const std::valarray<double> & arr2,
+				const double p)
 {
 	std::vector<std::pair <double, int>> arr;
 
@@ -1024,8 +1005,6 @@ void MannWhitneyFromMakepa(const QString & spectraDir)
                      spectraDir,
                      &inSpectraAv,
                      &dists);
-
-
 
 	QString helpString = def::dir->absolutePath()
 						 + slash + "Help"

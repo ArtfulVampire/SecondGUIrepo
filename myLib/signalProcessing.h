@@ -77,6 +77,17 @@ void calcSpectre(const std::valarray<double> & inSignal,
 				 const int & Eyes = 0,
 				 const double & powArg = 1.);
 
+/// Mann-Whitney
+int MannWhitney(const std::valarray<double> & arr1,
+				 const std::valarray<double> & arr2,
+				 const double p = 0.05);
+void countMannWhitney(trivector<int> & outMW,
+					  const QString & spectraPath,
+					  matrix * averageSpectraOut = nullptr,
+					  matrix * distancesOut = nullptr);
+void MannWhitneyFromMakepa(const QString & spectraDir);
+
+
 
 } // namespace myLib
 

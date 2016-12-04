@@ -312,24 +312,6 @@ QPixmap drawOneSpectrum(const std::valarray<double> & signal,
 						const QString & color = "black",
 						const int & lineWidth = 2);
 
-
-
-
-
-/// Mann-Whitney
-int MannWhitney(double * arr1, int len1, double * arr2, int len2, double p = 0.05);
-template <typename signalType = lineType>
-int MannWhitney(const signalType & arr1,
-                 const signalType & arr2,
-                 const double p = 0.05);
-void countMannWhitney(trivector<int> & outMW,
-                      const QString & spectraPath = def::dir->absolutePath()
-                                                    + slash + "SpectraSmooth",
-                      matrix * averageSpectraOut = nullptr,
-                      matrix * distancesOut = nullptr);
-void MannWhitneyFromMakepa(const QString & spectraDir);
-
-
 void drawMannWitney(const QString & templPath,
 					const trivector<int> & inMW,
 					const std::vector<QColor> & inColors = def::colours);
@@ -363,13 +345,6 @@ QColor mapColor(double minMagn, double maxMagn,
                 double partX, double partY,
                 bool colour = true);
 // old unused
-void drawMap      (const matrix & matrixA,
-                   double maxAbs,
-                   QString outDir,
-                   QString outName,
-                   int num,
-                   int size = 240,
-                   bool colourFlag = true);
 
 void drawMapSpline(const matrix & matrixA,
                    const int numOfColoumn,
