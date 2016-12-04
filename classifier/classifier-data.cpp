@@ -315,7 +315,7 @@ ClassifierData ClassifierData::toPca(int numOfPca, double var) const
 	}
 
 	matrix eigenVectors;
-	lineType eigenValues;
+	std::valarray<double> eigenValues;
 	const double eigenValuesTreshold = pow(10., -8.);
 
 	myLib::svd(centeredMatrix,

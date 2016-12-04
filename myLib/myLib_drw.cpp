@@ -243,7 +243,7 @@ QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 	int numOfChans = myLib::drw::numOfChans(inData);
 	int lineWidth_ = myLib::drw::lineWidth;
 
-	for(auto drawLine : std::vector<lineType>{inData, lowLine, highLine})
+	for(auto drawLine : std::vector<std::valarray<double>>{inData, lowLine, highLine})
 	{
 		for(int chanNum = 0; chanNum < numOfChans; ++chanNum)  //exept markers channel
 		{

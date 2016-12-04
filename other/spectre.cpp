@@ -375,7 +375,7 @@ void Spectre::psaSlot()
     myTime.start();
 
     matrix drawData;
-    lineType tempVec(def::spLength() * def::nsWOM());
+    std::valarray<double> tempVec(def::spLength() * def::nsWOM());
     QString helpString;
     const QString psaPath = def::dir->absolutePath()
                             + slash + "Help"
@@ -470,8 +470,8 @@ void Spectre::compare()
     QString helpString;
 	std::vector<QStringList> leest;
 
-    lineType tempVec(def::spLength() * def::nsWOM());
-    lineType meanVec(0., def::spLength() * def::nsWOM());
+    std::valarray<double> tempVec(def::spLength() * def::nsWOM());
+    std::valarray<double> meanVec(0., def::spLength() * def::nsWOM());
 
     const QString filesPath = ui->lineEdit_1->text();
     const QString savePath = def::dir->absolutePath()
@@ -492,7 +492,7 @@ void Spectre::compare()
     {
         const QStringList & lst = leest[i];
         const int NumOfPatterns = lst.length();
-        meanVec = lineType(0., def::spLength() * def::nsWOM());
+        meanVec = std::valarray<double>(0., def::spLength() * def::nsWOM());
 
 
         for(int j = 0; j < NumOfPatterns; ++j)
@@ -842,9 +842,9 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
 
         std::for_each(data2.begin(),
                       data2.end(),
-                      [a](lineType & in)
+                      [a](std::valarray<double> & in)
         {
-            lineType newArr = in[std::slice(in.size() - a,
+            std::valarray<double> newArr = in[std::slice(in.size() - a,
                                             a,
                                             1)];
             in = newArr;

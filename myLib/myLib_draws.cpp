@@ -418,11 +418,11 @@ void drawMapSpline(const matrix & matrixA,
 
     matrix Ah(5, 6);
     matrix Bh(5, 6);
-    lineType inX(dim);
-    lineType inY(dim);
-    lineType inYv(dim);
-    lineType Av(dim - 1);
-    lineType Bv(dim - 1);
+	std::valarray<double> inX(dim);
+	std::valarray<double> inY(dim);
+	std::valarray<double> inYv(dim);
+	std::valarray<double> Av(dim - 1);
+	std::valarray<double> Bv(dim - 1);
 
     std::iota(std::begin(inX), std::end(inX), 0); //hope, it's constant
 
@@ -467,36 +467,36 @@ void drawMapSpline(const matrix & matrixA,
 
             switch(colorTheme)
             {
-            case jet:
+			case ColorScale::jet:
             {
-                painter.setBrush(QBrush(hueJet(drawRange, drawArg)));
-                painter.setPen(hueJet(drawRange, drawArg));
-                painter1.setBrush(QBrush(hueJet(drawRange, drawRange - drawArg)));
-                painter1.setPen(hueJet(drawRange, drawRange - drawArg));
+				painter.setBrush(QBrush(myLib::hueJet(drawRange, drawArg)));
+				painter.setPen(myLib::hueJet(drawRange, drawArg));
+				painter1.setBrush(QBrush(myLib::hueJet(drawRange, drawRange - drawArg)));
+				painter1.setPen(myLib::hueJet(drawRange, drawRange - drawArg));
                 break;
             }
-            case htc:
+			case ColorScale::htc:
             {
-                painter.setBrush(QBrush(hueOld(drawRange, drawArg)));
-                painter.setPen(hueOld(drawRange, drawArg));
-                painter1.setBrush(QBrush(hueOld(drawRange, drawRange - drawArg)));
-                painter1.setPen(hueOld(drawRange, drawRange - drawArg));
+				painter.setBrush(QBrush(myLib::hueOld(drawRange, drawArg)));
+				painter.setPen(myLib::hueOld(drawRange, drawArg));
+				painter1.setBrush(QBrush(myLib::hueOld(drawRange, drawRange - drawArg)));
+				painter1.setPen(myLib::hueOld(drawRange, drawRange - drawArg));
                 break;
             }
-            case gray:
+			case ColorScale::gray:
             {
-                painter.setBrush(QBrush(grayScale(drawRange, drawArg)));
-                painter.setPen(grayScale(drawRange, drawArg));
-                painter1.setBrush(QBrush(grayScale(drawRange, drawRange - drawArg)));
-                painter1.setPen(grayScale(drawRange, drawRange - drawArg));
+				painter.setBrush(QBrush(myLib::grayScale(drawRange, drawArg)));
+				painter.setPen(myLib::grayScale(drawRange, drawArg));
+				painter1.setBrush(QBrush(myLib::grayScale(drawRange, drawRange - drawArg)));
+				painter1.setPen(myLib::grayScale(drawRange, drawRange - drawArg));
                 break;
             }
-            case pew:
+			case ColorScale::pew:
             {
-                painter.setBrush(QBrush(grayScale(drawRange, drawArg)));
-                painter.setPen(grayScale(drawRange, drawArg));
-                painter1.setBrush(QBrush(grayScale(drawRange, drawRange - drawArg)));
-                painter1.setPen(grayScale(drawRange, drawRange - drawArg));
+				painter.setBrush(QBrush(myLib::grayScale(drawRange, drawArg)));
+				painter.setPen(myLib::grayScale(drawRange, drawArg));
+				painter1.setBrush(QBrush(myLib::grayScale(drawRange, drawRange - drawArg)));
+				painter1.setPen(myLib::grayScale(drawRange, drawRange - drawArg));
                 break;
             }
             }
@@ -932,9 +932,9 @@ void drawArray(const QString & templPath,
     pic.save(templPath, 0, 100);
 }
 
-/// overload matrix/lineType
+/// overload matrix/std::valarray<double>
 void drawArray(const QString & templPath,
-               const lineType & inData,
+			   const std::valarray<double> & inData,
                const QString & color,
                const double & scaling,
                const int & lineWidth)
@@ -971,8 +971,8 @@ void drawArray(const QString & templPath,
 int BaklushevChans = 19;
 
 void drawArrayWithSigma(const QString &templPath,
-						const lineType &inData,
-						const lineType &inSigma,
+						const std::valarray<double> &inData,
+						const std::valarray<double> &inSigma,
 						double norm,
 						const QString &color,
 						int lineWidth)
@@ -1012,7 +1012,7 @@ void drawArrayWithSigma(const QString &templPath,
 	const auto highLine = inData + inSigma;
 
 
-	for(auto drawLine : std::vector<lineType>{inData, lowLine, highLine})
+	for(auto drawLine : std::vector<std::valarray<double>>{inData, lowLine, highLine})
 	{
 		for(int c2 = 0; c2 < BaklushevChans; ++c2)  //exept markers channel
 		{
@@ -1127,7 +1127,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 
 	std::for_each(inMatrix.begin(),
 				  inMatrix.end(),
-				  [shouldSize](lineType inData)
+				  [shouldSize](std::valarray<double> inData)
 	{
 		if(inData.size() > shouldSize)
 		{
@@ -1142,7 +1142,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 	{
 		std::for_each(inMatrix.begin(),
 					  inMatrix.end(),
-					  [&norm](lineType inData)
+					  [&norm](std::valarray<double> inData)
 		{
 			norm = max(norm, abs(inData).max()); // fabs for negative weights e.g.
 		});
@@ -1211,7 +1211,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 		const int offset = c2 * def::spLength();
 		for(uint numVec = 0; numVec < inMatrix.size(); ++numVec)
 		{
-			const lineType & inData = inMatrix[numVec];
+			const std::valarray<double> & inData = inMatrix[numVec];
 			//draw spectra
 //			for(int k = 0; k < graphWidth - 1; ++k)
 			for(int k = 0; k < def::spLength() - 1; ++k)
@@ -1318,7 +1318,7 @@ double drawArrays(const QString & templPath,
 
     std::for_each(inMatrix.begin(),
                   inMatrix.end(),
-                  [shouldSize](lineType inData)
+				  [shouldSize](std::valarray<double> inData)
     {
         if(inData.size() > shouldSize)
         {
@@ -1331,7 +1331,7 @@ double drawArrays(const QString & templPath,
     {
         std::for_each(inMatrix.begin(),
                       inMatrix.end(),
-                      [&norm](lineType inData)
+					  [&norm](std::valarray<double> inData)
         {
             norm = max(norm, abs(inData).max()); // fabs for negative weights e.g.
         });
@@ -1402,7 +1402,7 @@ double drawArrays(const QString & templPath,
 
         for(uint numVec = 0; numVec < inMatrix.size(); ++numVec)
         {
-            lineType inData = inMatrix[numVec];
+			std::valarray<double> inData = inMatrix[numVec];
             //draw spectra
             for(int k = 0; k < graphWidth - 1; ++k)
             {
@@ -1786,28 +1786,28 @@ void drawColorScale(QString filePath, int range, ColorScale type, bool full)
     {
         switch(type)
         {
-        case 0:
+		case ColorScale::jet:
         {
-            painter.setBrush(QBrush(hueJet(range, i)));
-            painter.setPen(hueJet(range, i));
+			painter.setBrush(QBrush(myLib::hueJet(range, i)));
+			painter.setPen(myLib::hueJet(range, i));
             break;
         }
-        case 1:
+		case ColorScale::htc:
         {
-            painter.setBrush(QBrush(hueOld(range, i)));
-            painter.setPen(hueOld(range, i));
+			painter.setBrush(QBrush(myLib::hueOld(range, i)));
+			painter.setPen(myLib::hueOld(range, i));
             break;
         }
-        case 2:
+		case ColorScale::gray:
         {
-            painter.setBrush(QBrush(grayScale(range, i)));
-            painter.setPen(grayScale(range, i));
+			painter.setBrush(QBrush(myLib::grayScale(range, i)));
+			painter.setPen(myLib::grayScale(range, i));
             break;
         }
-        case 3:
+		case ColorScale::pew:
         {
-            painter.setBrush(QBrush(grayScale(range, i)));
-            painter.setPen(grayScale(range, i));
+			painter.setBrush(QBrush(myLib::grayScale(range, i)));
+			painter.setPen(myLib::grayScale(range, i));
             break;
         }
         }
@@ -1834,7 +1834,7 @@ void drawColorScale(QString filePath, int range, ColorScale type, bool full)
         {
             switch(type)
             {
-            case 0:
+			case ColorScale::jet:
             {
                 painter.setPen(QPen(QBrush("red"), 2));
                 painter.drawLine(i*pic.width()/double(range),
@@ -1855,7 +1855,7 @@ void drawColorScale(QString filePath, int range, ColorScale type, bool full)
                                  pic.height()*0.95 - (pic.height() * 0.85) * blue(range, int(i+1)));
                 break;
             }
-            case 1:
+			case ColorScale::htc:
             {
                 painter.setPen(QPen(QBrush("red"), 2));
                 painter.drawLine(i*pic.width()/double(range),
@@ -2379,7 +2379,7 @@ QPixmap drawEeg(const matrix & dataD,
 }
 
 
-void drawRCP(const lineType & values, const QString & picPath)
+void drawRCP(const std::valarray<double> & values, const QString & picPath)
 {
     QPixmap pic(1000, 400);
     QPainter pnt;
@@ -2395,7 +2395,7 @@ void drawRCP(const lineType & values, const QString & picPath)
 //    xMin = -numOfDisp;
 //    xMax = numOfDisp;
 
-    lineType line(pic.width());
+	std::valarray<double> line(pic.width());
 
     for(int i = 0; i < pic.width(); ++i)
     {

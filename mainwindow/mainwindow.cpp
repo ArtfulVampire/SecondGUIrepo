@@ -699,7 +699,7 @@ void MainWindow::drawSpectra(const QString & prePath,
 
     QStringList lst;
     makeFullFileList(prePath, lst);
-    lineType dataS;
+    std::valarray<double> dataS;
     int i = 0;
     QString helpString;
     for(const QString & str : lst)

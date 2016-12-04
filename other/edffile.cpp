@@ -948,7 +948,7 @@ void edfFile::adjustMarkerChannel()
 	{
 		// backup marker channel
 		edfChannel tempMarkChan = this->channels[this->markerChannel];
-		lineType tempMarkData = this->edfData[this->markerChannel];
+		std::valarray<double> tempMarkData = this->edfData[this->markerChannel];
 
 		// remove markerChannel
 		this->channels.erase(this->channels.begin() + this->markerChannel);

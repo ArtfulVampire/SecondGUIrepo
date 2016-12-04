@@ -35,7 +35,7 @@ void Net::successiveProcessing()
 	this->passed.resize(this->myClassifierData.getNumOfCl());
 
 //	cout << 1 << endl;
-    lineType tempArr;
+    std::valarray<double> tempArr;
     int type = -1;
 //	int count = 0;
     for(const QString & fileNam : leest)

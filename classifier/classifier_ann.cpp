@@ -54,7 +54,7 @@ void ANN::allocParams(weightType & inMat)
         inMat[i].resize(dim[i + 1]);
         for(auto & b : inMat[i]) // to j'th in i+1 layer
         {
-            // resizing lineType -> fill zeros
+            // resizing std::valarray<double> -> fill zeros
             b.resize(dim[i] + 1); // from k'th in i layer + bias
         }        
 #endif
@@ -369,7 +369,7 @@ void ANN::successiveRelearn()
     {
         std::for_each(std::begin(weight[i]),
                       std::end(weight[i]),
-                      [rat](lineType & in)
+                      [rat](std::valarray<double> & in)
         {
             in *= 1. - rat;
         });
@@ -535,7 +535,7 @@ void ANN::drawWeight(QString wtsPath,
             return;
         }
     }
-    twovector<lineType> tempWeights;
+    twovector<std::valarray<double>> tempWeights;
     readWeight(wtsPath, &tempWeights);
     matrix drawWts; // 3 arrays of weights
 

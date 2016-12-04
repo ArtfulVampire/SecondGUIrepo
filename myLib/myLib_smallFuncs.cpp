@@ -68,7 +68,7 @@ void writeBytes(FILE * fil, int value, int numBytes)
 }
 
 
-void writeWavFile(const vectType & inData, const QString & outPath)
+void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 {
     // http://soundfile.sapp.org/doc/WaveFormat/
 
@@ -375,7 +375,7 @@ bool gaussApproval(double * arr, int length) //kobzar page 239
 
 bool gaussApproval(QString filePath)
 {
-    vectType arr;
+	std::vector<double> arr;
     readFileInLine(filePath, arr);
     return gaussApproval(arr.data(), arr.size());
 }

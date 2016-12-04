@@ -345,7 +345,7 @@ void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile)
 
 	edfFile fil;
 	fil.readEdfFile(dirPath + toFile);
-	const lineType & markArr = fil.getData()[fil.getMarkChan()];
+	const std::valarray<double> & markArr = fil.getData()[fil.getMarkChan()];
 	std::vector<std::vector<int>> marks;
 
 	for(int i = 0; i < markArr.size(); ++i)
@@ -684,7 +684,7 @@ void GalyaCut(const QString & path,
 }
 
 /// local
-void matToFile(const matrix & mat, std::ofstream & fil, double (*func)(const lineType&))
+void matToFile(const matrix & mat, std::ofstream & fil, double (*func)(const std::valarray<double>&))
 {
 	for(int i = 0; i < mat.rows(); ++i)
 	{

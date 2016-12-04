@@ -148,7 +148,7 @@ private:
     int staSlice;
 
     matrix spocMixMatrix;
-    lineType spocWVector;
+	std::valarray<double> spocWVector;
 
     bool autoProcessingFlag;
     bool stopFlag;

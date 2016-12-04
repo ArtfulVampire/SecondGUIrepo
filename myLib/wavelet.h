@@ -30,7 +30,7 @@ void wavelet(QString filePath,
 			 int channelNumber = 0,
 			 int ns = 20);
 
-template <typename signalType = lineType>
+template <typename signalType = std::valarray<double>>
 matrix countWavelet(const signalType & inSignal);
 
 
@@ -49,7 +49,7 @@ void drawWavelet(QString picPath,
 extern bool isInit;
 int initMtlb();
 int termMtlb();
-matrix cwt(const lineType & signal, double freq);
+matrix cwt(const std::valarray<double> & signal, double freq);
 void drawWaveletMtlb(const matrix & inData,
 					 QString picPath = QString());
 }

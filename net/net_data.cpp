@@ -2,7 +2,7 @@
 
 #include "ui_net.h"
 
-void Net::pushBackDatum(const lineType & inDatum,
+void Net::pushBackDatum(const std::valarray<double> & inDatum,
 					  const uint & inType,
 					  const QString & inFileName)
 {
@@ -184,7 +184,7 @@ void Net::loadData(const QString & spectraPath,
 	fileNames.clear();
 	filesPath = spectraPath;
 
-	lineType tempArr;
+	std::valarray<double> tempArr;
 //    cout << spectraPath << endl;
 	for(uint i = 0; i < leest.size(); ++i)
 	{
@@ -236,7 +236,7 @@ void Net::pca()
 
 	// count eigenvalue decomposition
 	matrix eigenVectors;
-	lineType eigenValues;
+	std::valarray<double> eigenValues;
 	const double eigenValuesTreshold = pow(10., -8.);
 	const int numOfPc = this->ui->pcaNumberSpinBox->value();
 

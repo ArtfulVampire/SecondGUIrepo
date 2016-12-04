@@ -54,8 +54,8 @@ private:
     std::valarray<double> classCount{}; // really int but...
 //    matrix tempRandomMatrix; //test linear transform
     double loadDataNorm = 10.;
-    lineType averageDatum;
-    lineType sigmaVector;
+    std::valarray<double> averageDatum;
+    std::valarray<double> sigmaVector;
 #endif
 
 
@@ -80,7 +80,7 @@ private:
     /// data
     void normalizeDataMatrix();
     void popBackDatum();
-    void pushBackDatum(const lineType & inDatum,
+    void pushBackDatum(const std::valarray<double> & inDatum,
                      const uint & inType,
                      const QString & inFileName);
     void eraseDatum(const uint & index);
@@ -139,7 +139,7 @@ public:
 
     ///wts
     void readWtsByName(const QString & fileName,
-                       twovector<lineType> * wtsMatrix = nullptr);
+                       twovector<std::valarray<double>> * wtsMatrix = nullptr);
     void writeWts(const QString & wtsPath = QString());
     void drawWts(QString wtsPath = QString(),
                  QString picPath = QString());

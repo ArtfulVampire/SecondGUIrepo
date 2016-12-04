@@ -45,15 +45,15 @@ public:
     }
 
 
-    matrix(const lineType & vect1, const lineType & vect2);
-    matrix(const lineType & vect, bool orientH);
-    matrix(const lineType & vect, char orient);
-    matrix(const lineType & vect, uint rows);
+	matrix(const std::valarray<double> & vect1, const std::valarray<double> & vect2);
+	matrix(const std::valarray<double> & vect, bool orientH);
+	matrix(const std::valarray<double> & vect, char orient);
+	matrix(const std::valarray<double> & vect, uint rows);
 
-    matrix(const lineType & vect); // diagonal
+	matrix(const std::valarray<double> & vect); // diagonal
     matrix(std::initializer_list<double> lst); // diagonal
 
-    matrix(std::initializer_list<lineType> lst);
+	matrix(std::initializer_list<std::valarray<double>> lst);
 
 
 
@@ -74,22 +74,22 @@ public:
 	matrixType::const_iterator begin() const;
 	matrixType::const_iterator end() const;
 	bool isEmpty() const;
-	lineType & last() {return myData.back();}
-	lineType & back() {return myData.back();}
-	lineType & front() {return myData.front();}
-	lineType & first() {return myData.front();}
+	std::valarray<double> & last() {return myData.back();}
+	std::valarray<double> & back() {return myData.back();}
+	std::valarray<double> & front() {return myData.front();}
+	std::valarray<double> & first() {return myData.front();}
 
-    lineType toVectorByRows() const;
-    lineType toVectorByCols() const;
-    lineType getCol(uint i, uint numCols = 0) const;
-    lineType averageRow() const;
-    lineType averageCol() const;
-    lineType sigmaOfCols() const;
-	lineType maxOfRows() const;
-	lineType maxOfCols() const;
+	std::valarray<double> toVectorByRows() const;
+	std::valarray<double> toVectorByCols() const;
+	std::valarray<double> getCol(uint i, uint numCols = 0) const;
+	std::valarray<double> averageRow() const;
+	std::valarray<double> averageCol() const;
+	std::valarray<double> sigmaOfCols() const;
+	std::valarray<double> maxOfRows() const;
+	std::valarray<double> maxOfCols() const;
     void pop_back();
-    void push_back(const lineType &in);
-    void push_back(const vectType &in);
+	void push_back(const std::valarray<double> &in);
+	void push_back(const std::vector<double> &in);
 
     // for compability with vector< std::vector<Type> >
 	void clear() {this->myData.clear();}
@@ -100,12 +100,12 @@ public:
 	void resize(int i);
 
 
-    lineType & operator [](int i)
+	std::valarray<double> & operator [](int i)
     {
 		return myData[i];
 
     }
-    const lineType & operator [](int i) const
+	const std::valarray<double> & operator [](int i) const
     {
 		return myData[i];
     }
@@ -139,7 +139,7 @@ public:
     double trace() const;
     matrix & transpose();
     matrix & invert(double * det = nullptr);
-    matrix covMatCols(lineType * avRow = nullptr) const;
+	matrix covMatCols(std::valarray<double> * avRow = nullptr) const;
     matrix & swapCols(uint i, uint j);
     matrix & swapRows(uint i, uint j);
     matrix & zero();
@@ -155,7 +155,7 @@ public:
     matrix subRows(const std::vector<int> & inds) const; /// submatrix
     matrix subRows(const std::vector<uint> & inds) const; /// submatrix
 
-    lineType matrixSystemSolveGauss(const lineType & inVec) const;
+	std::valarray<double> matrixSystemSolveGauss(const std::valarray<double> & inVec) const;
 
 //    double det();
 //    void cofactor();
@@ -171,8 +171,8 @@ matrix operator + (const matrix & lhs, const double & val);
 matrix operator / (const matrix & lhs, const double & val);
 matrix operator * (const matrix & lhs, const matrix & rhs);
 matrix operator * (const matrix & lhs, const double & val);
-lineType operator * (const matrix & lhs, const lineType & rhs);
-lineType operator * (const lineType & lhs, const matrix & rhs);
+std::valarray<double> operator * (const matrix & lhs, const std::valarray<double> & rhs);
+std::valarray<double> operator * (const std::valarray<double> & lhs, const matrix & rhs);
 matrix operator - (const matrix & lhs, const matrix & rhs);
 matrix operator - (const matrix & lhs, const double & val);
 
@@ -184,7 +184,7 @@ void matrixProduct(const matrix & in1,
                    uint rows1 = 0,
                    uint cols2 = 0);
 
-//void matrixProduct(const lineType &in1,
+//void matrixProduct(const std::valarray<double> &in1,
 //                   const matrix &in2,
 //                   matrix & result,
 //                   int dim = -1,
@@ -192,7 +192,7 @@ void matrixProduct(const matrix & in1,
 //                   int cols2 = -1);
 
 //void matrixProduct(const matrix &in1,
-//                   const lineType &in2,
+//                   const std::valarray<double> &in2,
 //                   matrix & result,
 //                   int dim = -1,
 //                   int rows1 = -1,

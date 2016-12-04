@@ -53,6 +53,7 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/wavelet.h>
 #include <myLib/dataHandlers.h>
+#include <myLib/draws.h>
 
 
 
@@ -102,7 +103,7 @@ template QString nm(double in);
 
 
 // small shit
-void writeWavFile(const vectType & inData, const QString & outPath);
+void writeWavFile(const std::vector<double> & inData, const QString & outPath);
 int len(const QString & s); // string length for EDF+ annotations
 
 QString rightNumber(const unsigned int input, int N); // prepend zeros
@@ -168,12 +169,8 @@ QString rerefChannel(const QString & initialName,
 
 
 
-/// colorscales (for wavelets)
-enum ColorScale {jet = 0,
-                 htc = 1,
-                 gray = 2,
-                 pew = 3};
-void drawColorScale(QString filename, int range, ColorScale type = jet, bool full = false);
+/// colorscales
+
 // jet
 const double defV = 1.;
 const std::vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
@@ -211,180 +208,22 @@ void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 e
 
 
 // drawings
-void drawRealisation(const QString & inPath);
-
-QPixmap drawEeg(const matrix & dataD,
-                int ns,
-                int NumOfSlices,
-				int freq = def::freq,
-                const QString & picPath = QString(),
-                double norm = 1.,
-                int blueChan = -1,
-                int redChan = -1);
-
-QPixmap drawEeg(const matrix & dataD,
-                int ns,
-                int startSlice,
-                int endSlice,
-				int freq = def::freq,
-                const QString & picPath = QString(),
-                double norm = 1.,
-                int blueChan = -1,
-                int redChan = -1);
-
-QPixmap drawOneSignal(const std::valarray<double> & signal,
-					  int picHeight = 600,
-					  QString outPath = QString());
-
-
-QPixmap drawOneTemplate(const int chanNum = -1,
-						const bool channelsFlag = true,
-						const QString & savePath = QString(),
-						const double leftF = def::leftFreq,
-						const double rightF = def::rightFreq);
-
-QPixmap drawOneArray(const QString & templPath,
-					 const std::valarray<double> & arr,
-					 const QString & outPath =  QString(),
-					 const QString & color = "black",
-					 const int & lineWidth = 2);
-
-QPixmap drawTemplate(const QString & outPath = QString(),
-				  bool channelsFlag = true,
-				  int width = 1600,
-				  int height = 1600);
-
-void drawArray(const QString & templPath,
-               const matrix & inData,
-//               const spectraGraphsNormalization normType = 0, ////// TO DO
-               const QString & color = "black",
-               const double & scaling = 1.,
-               const int & lineWidth = 3);
-
-void drawArray(const QString & templPath,
-               const lineType & inData,
-//               const spectraGraphsNormalization normType = 0, ////// TO DO
-               const QString & color = "black",
-               const double & scaling = 1.,
-               const int & lineWidth = 3);
-
-void drawArrayWithSigma(const QString & templPath,
-						const lineType & inData,
-						const lineType & inSigma,
-						double norm = 0.,
-						const QString & color = "blue",
-						int lineWidth = 3);
-
-//inMatrix supposed to be def::spLength() * 19 size
-double drawArrays(const QString & templPath,
-				const matrix & inMatrix,
-				const bool weightsFlag = false,
-				const spectraGraphsNormalization normType = spectraGraphsNormalization::all,
-				double norm = 0.,
-				const std::vector<QColor> & colors = def::colours,
-				const double scaling = 1.,
-				const int lineWidth = 3);
-
-QPixmap drawArrays(const QPixmap & templPixmap,
-                const matrix & inMatrix,
-                const bool weightsFlag = false,
-                const spectraGraphsNormalization normType = spectraGraphsNormalization::all,
-                double norm = 0.,
-				const std::vector<QColor> & colors = def::colours,
-                const double scaling = 1.,
-                const int lineWidth = 3);
-
-void drawArraysInLine(const QString & picPath,
-                      const matrix & inMatrix,
-					  const std::vector<QColor> & colors = def::colours,
-                      const double scaling = 1.,
-                      const int lineWidth = 3);
-
-void drawCutOneChannel(const QString & inSpectraPath,
-                       const int numChan);
-
-QPixmap drawOneSpectrum(const std::valarray<double> & signal,
-						const QString & outPath = QString(),
-						double leftFr = def::leftFreq,
-						double rightFr = def::rightFreq,
-						double srate = def::freq,
-						int numOfSmooth = 10,
-						const QString & color = "black",
-						const int & lineWidth = 2);
-
-void drawMannWitney(const QString & templPath,
-					const trivector<int> & inMW,
-					const std::vector<QColor> & inColors = def::colours);
-
-void drawMannWitneyInLine(const QString & picPath,
-						  const trivector<int> & inMW,
-						  const std::vector<QColor> & inColors = def::colours);
 
 
 
 
 
-
-
-/// maps + drawings
-void splineCoeffCount(const lineType & inX,
-                      const lineType & inY,
-                      int dim,
-                      lineType & outA,
-                      lineType & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
-double splineOutput(const lineType & inX,
-                    const lineType & inY,
-                    int dim,
-                    const lineType & A,
-                    const lineType & B,
-                    double probeX);
-
-QColor mapColor(double minMagn, double maxMagn,
-                const matrix & helpMatrix,
-                int numX, int numY,
-                double partX, double partY,
-                bool colour = true);
-// old unused
-
-void drawMapSpline(const matrix & matrixA,
-                   const int numOfColoumn,
-                   const QString & outDir,
-                   const QString & outName,
-                   const double & maxAbs,
-                   const int picSize = 240,
-                   const ColorScale colorTheme = jet);
-
-void drawMapsICA(const QString & mapsFilePath = def::dir->absolutePath()
-                                                + slash + "Help"
-                                                + slash + "ica"
-                                                + slash + def::ExpName + "_maps.txt",
-                 const QString & outDir = def::dir->absolutePath()
-                                          + slash + "Help"
-                                          + slash + "maps",
-                 const QString & outName = def::ExpName,
-                 const ColorScale colourTheme = jet,
-                 void (*draw1MapFunc)(const matrix &,
-                                      const int,
-                                      const QString &,
-                                      const QString &,
-                                      const double &,
-                                      const int,
-                                      const ColorScale) = &drawMapSpline);
-
-void drawMapsOnSpectra(const QString & inSpectraFilePath = def::dir->absolutePath()
-                                                           + slash + "Help"
-                                                           + slash + def::ExpName + "_all.jpg",
-                       const QString & outSpectraFilePath = def::dir->absolutePath()
-                                                            + slash + "Help"
-                                                            + slash + def::ExpName + "_all_wm.jpg",
-                       const QString & mapsDirPath = def::dir->absolutePath()
-                                                     + slash + "Help"
-                                                     + slash + "maps",
-                       const QString & mapsNames = def::ExpName);
-
-
-
-
+void splineCoeffCount(const std::valarray<double> & inX,
+					  const std::valarray<double> & inY,
+					  int dim,
+					  std::valarray<double> & outA,
+					  std::valarray<double> & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+double splineOutput(const std::valarray<double> & inX,
+					const std::valarray<double> & inY,
+					int dim,
+					const std::valarray<double> & A,
+					const std::valarray<double> & B,
+					double probeX);
 
 
 /// signal processing
@@ -393,7 +232,7 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath = def::dir->absolutePat
 
 
 /// non-spectral
-template <typename signalType = lineType>
+template <typename signalType = std::valarray<double>>
 double fractalDimension(const signalType &arr,
                         const QString & picPath = QString());
 
@@ -408,13 +247,13 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 									double highFreq,
 									QString picPath = QString());
 
-template <typename signalType = lineType, typename retType = lineType>
+template <typename signalType = std::valarray<double>, typename retType = std::valarray<double>>
 retType bayesCount(const signalType & dataIn, int numOfIntervals);
 
-template <typename signalType = lineType>
+template <typename signalType = std::valarray<double>>
 void kernelEst(const signalType & arr, QString picPath);
 
-template <typename signalType = lineType>
+template <typename signalType = std::valarray<double>>
 void histogram(const signalType & arr,
 			   int numSteps,
 			   const QString & picPath = QString(),
@@ -473,7 +312,7 @@ double countAngle(double initX, double initY);
 
 
 /// what is RCP ???
-void drawRCP(const lineType & values,
+void drawRCP(const std::valarray<double> & values,
              const QString & picPath);
 void countRCP(QString filename,
               QString picPath  = QString(),
@@ -497,21 +336,21 @@ void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit);
 void product1(const matrix & arr,
               const int length,
               const int ns,
-              const lineType & vect,
-              lineType & outVector);
+			  const std::valarray<double> & vect,
+			  std::valarray<double> & outVector);
 
 void product2(const matrix & arr,
               const int length,
               const int ns,
-              const lineType & vect,
-              lineType & outVector);
+			  const std::valarray<double> & vect,
+			  std::valarray<double> & outVector);
 
 void product3(const matrix & inMat,
               const int ns,
               const int currNum,
-              lineType & outVector);
+			  std::valarray<double> & outVector);
 
-void randomizeValar(lineType & valar);
+void randomizeValar(std::valarray<double> & valar);
 
 void countVectorW(matrix & vectorW,
                   const matrix & dataICA,
@@ -528,7 +367,7 @@ void ica(const matrix & initialData,
 
 void svd(const matrix & initialData,
          matrix & eigenVectors,
-         lineType & eigenValues,
+		 std::valarray<double> & eigenValues,
          const int dimension,
          const double & threshold = 1e-9,
          int eigenVecNum = -1);

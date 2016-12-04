@@ -289,7 +289,7 @@ public:
 	const matrix & getData() const {return edfData;}
 	void setData(int chanNum, int timeBin, double val) {edfData[chanNum][timeBin] = val;}
 
-    const lineType & operator [](int i) const
+    const std::valarray<double> & operator [](int i) const
     {
 		return edfData[i];
     }

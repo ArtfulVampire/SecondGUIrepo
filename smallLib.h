@@ -10,8 +10,6 @@
 #include <algorithm>
 #include <numeric>
 
-typedef std::valarray<double> lineType;
-typedef std::vector<double> vectType;
 typedef std::vector<std::vector<double>> mat;
 typedef std::vector<std::pair<double, double>> coordType;
 
@@ -97,7 +95,7 @@ inline std::valarray<double> pop_front_valar(const std::valarray<double> & in, u
 
 inline void resizeValar(std::valarray<double> & in, int num)
 {
-	lineType temp = in;
+	std::valarray<double> temp = in;
 	in.resize(num);
 	std::copy(std::begin(temp),
 			  std::begin(temp) + std::min(in.size(), temp.size()),
@@ -106,7 +104,7 @@ inline void resizeValar(std::valarray<double> & in, int num)
 
 //inline std::valarray<double> resizeValar(const std::valarray<double> & in, int num)
 //{
-//	lineType temp(num);
+//	std::valarray<double> temp(num);
 //	std::copy(std::begin(in),
 //			  std::begin(in) + std::min(in.size(), num),
 //			  std::begin(temp));
@@ -126,7 +124,7 @@ inline std::valarray<double> eraseValar(const std::valarray<double> & in, uint n
 }
 
 
-inline double prod(const lineType & in1, const lineType & in2)
+inline double prod(const std::valarray<double> & in1, const std::valarray<double> & in2)
 {
 //    if(in1.size() != in2.size())
 //    {
@@ -139,39 +137,39 @@ inline double prod(const lineType & in1, const lineType & in2)
                               0.);
 }
 
-inline double normaSq(const lineType & in)
+inline double normaSq(const std::valarray<double> & in)
 {
     return std::inner_product(std::begin(in),
                               std::end(in),
                               std::begin(in),
                               0.);
 }
-inline double mean(const lineType & arr)
+inline double mean(const std::valarray<double> & arr)
 {
     return arr.sum() / arr.size();
 }
 
-inline double variance(const lineType & arr)
+inline double variance(const std::valarray<double> & arr)
 {
     return normaSq(arr - mean(arr)) / arr.size();
 }
 
-inline double sigma(const lineType & arr)
+inline double sigma(const std::valarray<double> & arr)
 {
     return sqrt(variance(arr));
 }
 
-inline double min(const lineType & arr)
+inline double min(const std::valarray<double> & arr)
 {
 	return arr.min();
 }
 
-inline double max(const lineType & arr)
+inline double max(const std::valarray<double> & arr)
 {
 	return arr.max();
 }
 
-inline double median(const lineType & arr)
+inline double median(const std::valarray<double> & arr)
 {
 	auto arr2 = arr;
 	std::sort(std::begin(arr2), std::end(arr2));
@@ -185,32 +183,32 @@ inline double median(const lineType & arr)
 	}
 }
 
-inline double covariance(const lineType & arr1, const lineType & arr2)
+inline double covariance(const std::valarray<double> & arr1, const std::valarray<double> & arr2)
 {
     return prod(arr1 - mean(arr1), arr2 - mean(arr2));
 }
 
-inline double correlation(const lineType & arr1, const lineType & arr2)
+inline double correlation(const std::valarray<double> & arr1, const std::valarray<double> & arr2)
 {
     return covariance(arr1, arr2) / (sigma(arr1) * sigma(arr2) * arr1.size());
 }
 
-inline double norma(const lineType & in)
+inline double norma(const std::valarray<double> & in)
 {
     return sqrt(normaSq(in));
 }
 
-inline void normalize(lineType & in)
+inline void normalize(std::valarray<double> & in)
 {
     in /= norma(in);
 }
 
-inline double distance(const lineType & in1,
-                       const lineType & in2)
+inline double distance(const std::valarray<double> & in1,
+					   const std::valarray<double> & in2)
 {
     if(in1.size() != in2.size())
     {
-        std::cout << "distance: lineTypes of different size" << std::endl;
+		std::cout << "distance: std::valarray<double>s of different size" << std::endl;
         return 0.; /// exception
     }
     return norma(in1 - in2);

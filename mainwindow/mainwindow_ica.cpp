@@ -59,7 +59,7 @@ void MainWindow::ICA() //fastICA
 
     // count eigenvalue decomposition
     matrix eigenVectors;
-    lineType eigenValues;
+    std::valarray<double> eigenValues;
 
     dealWithEyes(centeredMatrix,
                  ns);
@@ -180,7 +180,7 @@ void MainWindow::ICA() //fastICA
     counter = 0;
     for(int j = 0; j < dataLength; ++j)
     {
-        lineType currCol = components.getCol(j, ns);
+        std::valarray<double> currCol = components.getCol(j, ns);
         for(int i = 0; i < ns; ++i)
         {
             sum1 = abs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
@@ -321,7 +321,7 @@ void MainWindow::ICA() //fastICA
     // ordering components by dispersion
     std::vector<std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
     double sumSquares = 0.; // sum of all dispersions
-    vectType explainedVariance;
+    std::vector<double> explainedVariance;
 
     for(uint i = 0; i < ns; ++i)
     {
@@ -344,7 +344,7 @@ void MainWindow::ICA() //fastICA
 #if MATRICES_ICA_4
         matrixA.swapCols(i, colsNorms[i].second);
 #else
-        vectType tempCol(ns);
+        std::vector<double> tempCol(ns);
         for(int j = 0; j < ns; ++j) // swap j'th elements in i'th and colsNorms[i].second'th cols
         {
             tempCol[j] = matrixA[j][i];
@@ -357,7 +357,7 @@ void MainWindow::ICA() //fastICA
 #if MATRICES_ICA_5
         components.swapRows(i, colsNorms[i].second);
 #else
-        vectType tempComp;
+        std::vector<double> tempComp;
         tempComp = components[i];
         components[i] = components[ colsNorms[i].second ];
         components[ colsNorms[i].second ] = tempComp;
@@ -399,7 +399,7 @@ void MainWindow::ICA() //fastICA
     counter = 0;
     for(int j = 0; j < dataLength; ++j)
     {
-        lineType currCol = components.getCol(j, ns);
+        std::valarray<double> currCol = components.getCol(j, ns);
         for(uint i = 0; i < ns; ++i)
         {
             sum1 = abs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))

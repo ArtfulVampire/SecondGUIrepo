@@ -1048,8 +1048,8 @@ void MannWhitneyFromMakepa(const QString & spectraDir)
 void product1(const matrix & arr,
               const int length,
               const int ns,
-              const lineType & vect,
-              lineType & outVector)
+			  const std::valarray<double> & vect,
+			  std::valarray<double> & outVector)
 {
     //<X*g(Wt*X)>
     //vec = Wt
@@ -1073,8 +1073,8 @@ void product1(const matrix & arr,
 void product2(const matrix & arr,
               const int length,
               const int ns,
-              const lineType & vect,
-              lineType & outVector)
+			  const std::valarray<double> & vect,
+			  std::valarray<double> & outVector)
 {
     //g'(Wt*X)*1*W
     //vec = Wt
@@ -1099,7 +1099,7 @@ void product2(const matrix & arr,
 void product3(const matrix & inMat,
               const int ns,
               const int currNum,
-              lineType & outVector)
+			  std::valarray<double> & outVector)
 {
     //sum(Wt*Wi*Wi)
     outVector.resize(ns);
@@ -1112,7 +1112,7 @@ void product3(const matrix & inMat,
     }
 }
 
-void randomizeValar(lineType & valar)
+void randomizeValar(std::valarray<double> & valar)
 {
     srand(time(NULL));
     for(uint i = 0; i < valar.size(); ++i)
@@ -1133,10 +1133,10 @@ void countVectorW(matrix & vectorW,
 
     double sum1;
     double sum2;
-    lineType vector1(ns);
-    lineType vector2(ns);
-    lineType vector3(ns);
-    lineType vectorOld(ns);
+	std::valarray<double> vector1(ns);
+	std::valarray<double> vector2(ns);
+	std::valarray<double> vector3(ns);
+	std::valarray<double> vectorOld(ns);
 
     int counter;
 
@@ -1195,7 +1195,7 @@ void dealWithEyes(matrix & inData,
     int eyes = 0;
     for(int i = 0; i < dataLen; ++i)
     {
-        const lineType temp = inData.getCol(i, dimension);
+		const std::valarray<double> temp = inData.getCol(i, dimension);
         if(abs(temp).max() == 0.)
         {
             ++eyes;
@@ -1236,7 +1236,7 @@ void ica(const matrix & initialData,
                  ns);
 
     matrix eigenVectors;
-    lineType eigenValues;
+	std::valarray<double> eigenValues;
 
     svd(centeredMatrix,
         eigenVectors,
@@ -1329,7 +1329,7 @@ void ica(const matrix & initialData,
 
 void svd(const matrix & initialData,
          matrix & eigenVectors,
-         lineType & eigenValues,
+		 std::valarray<double> & eigenValues,
          const int dimension, // length of the vectors
          const double & threshold,
 		 int eigenVecNum) /// num of eigenVectors to count - add variance
@@ -1352,8 +1352,8 @@ void svd(const matrix & initialData,
     eigenValues.resize(eigenVecNum);
     eigenVectors.resize(dimension, eigenVecNum);
 
-    lineType tempA(dimension);
-    lineType tempB(dataLen);
+	std::valarray<double> tempA(dimension);
+	std::valarray<double> tempB(dataLen);
 
     double sum1, sum2; //temporary help values
     double dF, F;
@@ -1380,7 +1380,7 @@ void svd(const matrix & initialData,
 
     // maybe lines longer than dimension but OK
 
-    // lineType tempLine(dataLen); // for debug acceleration
+	// std::valarray<double> tempLine(dataLen); // for debug acceleration
 
     matrix inData = initialData;
     const matrix inDataTrans = matrix::transpose(initialData);
@@ -1559,17 +1559,17 @@ double morletSin(double const freq1, const double timeShift, const double pot, c
 }
 
 
-void splineCoeffCount(const lineType & inX,
-                      const lineType & inY,
+void splineCoeffCount(const std::valarray<double> & inX,
+					  const std::valarray<double> & inY,
                       int dim,
-                      lineType & outA,
-                      lineType & outB)
+					  std::valarray<double> & outA,
+					  std::valarray<double> & outB)
 {
 
     //[inX[i-1]...inX[i]] - q[i-1] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
     matrix coefsMatrix(dim, dim, 0);
-    lineType rightVec(dim);
-    lineType vectorK(dim);
+	std::valarray<double> rightVec(dim);
+	std::valarray<double> vectorK(dim);
 
     //set coefs and rightVec
     coefsMatrix[0][0] = 2.*(inX[1] - inX[0]);
@@ -1608,11 +1608,11 @@ void splineCoeffCount(const lineType & inX,
     }
 }
 
-double splineOutput(const lineType & inX,
-                    const lineType & inY,
+double splineOutput(const std::valarray<double> & inX,
+					const std::valarray<double> & inY,
                     int dim,
-                    const lineType & A,
-                    const lineType & B,
+					const std::valarray<double> & A,
+					const std::valarray<double> & B,
                     double probeX)
 {
     //[inX[i-1]...inX[i]] - q[i] = (1-t)*inY[i1] + t*inY[i] + t(1-t)(outA[i](1-t) + outB[i]t));
@@ -1650,10 +1650,10 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 	out.resize(2 * fftLen);
 	std::fill(std::begin(out), std::end(out), 0.);
 
-    vectType tempArr;
+	std::vector<double> tempArr;
     tempArr.resize(fftLen, 0.);
 
-    vectType filteredArr;
+	std::vector<double> filteredArr;
     filteredArr.resize(fftLen, 0.);
 
     for(int i = 0; i < inLength; ++i)
@@ -1960,7 +1960,7 @@ void kernelEst(const signalType & arr, QString picPath)
     pnt.begin(&pic);
     pnt.setPen("black");
 
-    vectType values(pic.width(), 0.);
+	std::vector<double> values(pic.width(), 0.);
 
     double xMin, xMax;
 
@@ -2031,7 +2031,7 @@ void kernelEst(const signalType & arr, QString picPath)
 //	return in;
 //}
 
-lineType fftWindow(int length, const QString & name)
+std::valarray<double> fftWindow(int length, const QString & name)
 {
 	std::valarray<double> res = std::valarray<double>(length);
 	const double arg = 2. * pi / (length - 1.);
@@ -2300,7 +2300,7 @@ void calcRawFFT(const Typ & inData,
     dataFFT.resize(ns);
     std::for_each(dataFFT.begin(),
                   dataFFT.end(),
-                  [fftLength](vectType & in){in.resize(fftLength/2);});
+				  [fftLength](std::vector<double> & in){in.resize(fftLength/2);});
 
 //    double help1, help2;
 //    int leftSmoothLimit, rightSmoothLimit;
@@ -2395,22 +2395,22 @@ template double covariance(const double * const &arr1, const double * const &arr
 template double covariance(const int * const &arr1, const int * const &arr2, int length, int shift, bool fromZero);
 template double covariance(const std::vector<int> &arr1, const std::vector<int> &arr2, int length, int shift, bool fromZero);
 template double covariance(const std::vector<double> &arr1, const std::vector<double> &arr2, int length, int shift, bool fromZero);
-template double covariance(const lineType &arr1, const lineType &arr2, int length, int shift, bool fromZero);
+template double covariance(const std::valarray<double> &arr1, const std::valarray<double> &arr2, int length, int shift, bool fromZero);
 
 template double correlation(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
 template double correlation(const int * const  &arr1, const int * const &arr2, int length, int shift, bool fromZero);
 template double correlation(const std::vector<int> &arr1, const std::vector<int> &arr2, int length, int shift, bool fromZero);
 template double correlation(const std::vector<double> &arr1, const std::vector<double> &arr2, int length, int shift, bool fromZero);
-template double correlation(const lineType &arr1, const lineType &arr2, int length, int shift, bool fromZero);
+template double correlation(const std::valarray<double> &arr1, const std::valarray<double> &arr2, int length, int shift, bool fromZero);
 
 
-template double fractalDimension(const lineType &arr, const QString &picPath = QString());
-template double fractalDimension(const vectType &arr, const QString &picPath = QString());
+template double fractalDimension(const std::valarray<double> &arr, const QString &picPath = QString());
+template double fractalDimension(const std::vector<double> &arr, const QString &picPath = QString());
 
 template void calcRawFFT(const mat & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 template void calcRawFFT(const matrix & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
-template void kernelEst(const vectType & arr, QString picPath);
-template void kernelEst(const lineType & arr, QString picPath);
+template void kernelEst(const std::vector<double> & arr, QString picPath);
+template void kernelEst(const std::valarray<double> & arr, QString picPath);
 
 }// namespace myLib

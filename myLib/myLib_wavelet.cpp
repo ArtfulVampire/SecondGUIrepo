@@ -50,7 +50,7 @@ int termMtlb()
 	return 1;
 }
 
-matrix cwt(const lineType & signal, double freq)
+matrix cwt(const std::valarray<double> & signal, double freq)
 {
 	if(!isInit)
 	{
@@ -202,7 +202,7 @@ void wavelet(QString filePath,
 	matrix fileData;
 	myLib::readPlainData(filePath, fileData, NumOfSlices);
 
-	lineType input = fileData[channelNumber];
+	std::valarray<double> input = fileData[channelNumber];
 
 	QPixmap pic(NumOfSlices, 1000);
 	pic.fill();
@@ -569,8 +569,8 @@ void drawWavelet(QString picPath,
 }
 
 
-template matrix countWavelet(const lineType & inSignal);
-template matrix countWavelet(const vectType & inSignal);
+template matrix countWavelet(const std::valarray<double> & inSignal);
+template matrix countWavelet(const std::vector<double> & inSignal);
 
 
 

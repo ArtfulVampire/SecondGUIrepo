@@ -545,7 +545,7 @@ void MainWindow::constructEDF(const QString & newPath,
 //                newData[i].erase(newData[i].begin(),
 //                                 newData[i].begin() + offset);
                 // valarray
-                lineType newArr = newData[i][std::slice(offset,
+                std::valarray<double> newArr = newData[i][std::slice(offset,
                                                         newData[i].size() - offset,
                                                         1)];
                 newData[i] = newArr;

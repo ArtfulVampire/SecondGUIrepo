@@ -341,7 +341,7 @@ double distance(const std::vector<T> &vec1, const std::vector<T> &vec2, const in
 
 void countRCP(QString filePath, QString picPath, double * outMean, double * outSigma)
 {
-    lineType arr;
+	std::valarray<double> arr;
     readFileInLine(filePath, arr);
 
     (*outMean) = smallLib::mean(arr);

@@ -566,7 +566,7 @@ void MainWindow::sliceOneByOne()
     int start = 0;
 
     const edfFile & fil = globalEdf;
-    const lineType & markChanArr = fil.getData()[fil.getMarkChan()];
+    const std::valarray<double> & markChanArr = fil.getData()[fil.getMarkChan()];
 
     // 200, (241||247, (1), 254, 255)
     for(int i = 0; i < fil.getDataLen(); ++i)
@@ -671,7 +671,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
 
     const edfFile & fil = globalEdf;
 
-    const lineType & markChanArr = fil.getData()[fil.getMarkChan()];
+    const std::valarray<double> & markChanArr = fil.getData()[fil.getMarkChan()];
 
     // 200, 255, (241||247, num, 254, 255)
     // with feedback 200 (241||247, num, 231||237, (234), 254, 255)

@@ -88,11 +88,11 @@ void RDA::test(const std::vector<int> & indices)
 
 std::pair<uint, double> RDA::classifyDatum(const uint & vecNum)
 {
-	lineType output(myData->getNumOfCl());
+	std::valarray<double> output(myData->getNumOfCl());
 
 	for(uint i = 0; i < myData->getNumOfCl(); ++i)
 	{
-		lineType a = (myData->getData()[vecNum] - centers[i]);
+		std::valarray<double> a = (myData->getData()[vecNum] - centers[i]);
         matrix m1(a, 'r'); // row
         matrix m2(a, 'c'); // col
 		double tmp = (m1 * covMat[i] * m2)[0][0];
