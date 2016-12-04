@@ -3,7 +3,6 @@
 
 #include <matrix.h>
 #include <QString>
-#include "coord.h"
 #include <valarray>
 
 namespace myLib

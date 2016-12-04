@@ -1,5 +1,7 @@
-#include "library.h"
-
+#include <myLib/dataHandlers.h>
+#include <myLib/output.h>
+#include <fstream>
+#include <iostream>
 
 namespace myLib
 {
@@ -408,7 +410,6 @@ void readIITPfile(const QString & filePath,
 		outData[i] -= outData[i].sum() / outData[i].size();
 		outData[i] *= 1000; /// magic const
 	}
-
 }
 
 void readUCIdataSet(const QString & setName,

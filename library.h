@@ -54,6 +54,7 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/draws.h>
 #include <myLib/statistics.h>
+#include <myLib/output.h>
 
 
 
@@ -76,7 +77,6 @@ std::string funcName(std::string in);
 
 
 // consts
-const QString slash = "/"; // QString(QDir::separator());
 
 template <typename Typ>
 inline QString nm(Typ in) {return QString::number(in);}
@@ -113,18 +113,6 @@ QString getExt(const QString & filePath);
 QString getLabelName(const QString & label);
 
 
-
-std::istream & operator>> (std::istream &is, QString & in);
-std::ostream & operator<< (std::ostream &os, const QString & toOut);
-std::ostream & operator<< (std::ostream &os, QChar toOut);
-std::ostream & operator<< (std::ostream &os, const matrix & toOut);
-
-// containers with no allocators
-template <typename Typ, template <typename> class Cont>
-std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut);
-
-template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont>
-std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut);
 
 char * strToChar(const QString & input);
 FILE * fopen(QString filePath, const char *__modes);

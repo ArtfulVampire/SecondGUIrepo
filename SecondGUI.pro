@@ -90,7 +90,8 @@ SOURCES += main.cpp\
     DSP/State.cpp \
     myLib/myLib_drw.cpp \
     myLib/myLib_wavelet.cpp \
-    myLib/myLib_statistics.cpp
+    myLib/myLib_statistics.cpp \
+    myLib/myLib_output.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -135,7 +136,8 @@ HEADERS  += mainwindow.h \
     myLib/dataHandlers.h \
     myLib/draws.h \
     myLib/statistics.h \
-    myLib/clustering.h
+    myLib/clustering.h \
+    myLib/output.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

@@ -157,15 +157,13 @@ public:
     matrix subRows(const std::vector<uint> & inds) const; /// submatrix
 
 	std::valarray<double> matrixSystemSolveGauss(const std::valarray<double> & inVec) const;
-
-//    double det();
-//    void cofactor();
-//    void systemGaussSolve();
-
 public:
 	matrixType myData {matrixType()};
 
+public:
+	friend std::ostream & operator<<(std::ostream & os, const matrix & in);
 };
+
 
 matrix operator + (const matrix & lhs, const matrix & rhs);
 matrix operator + (const matrix & lhs, const double & val);
@@ -184,34 +182,4 @@ void matrixProduct(const matrix & in1,
                    uint dim = 0,
                    uint rows1 = 0,
                    uint cols2 = 0);
-
-//void matrixProduct(const std::valarray<double> &in1,
-//                   const matrix &in2,
-//                   matrix & result,
-//                   int dim = -1,
-//                   int rows1 = -1,
-//                   int cols2 = -1);
-
-//void matrixProduct(const matrix &in1,
-//                   const std::valarray<double> &in2,
-//                   matrix & result,
-//                   int dim = -1,
-//                   int rows1 = -1,
-//                   int cols2 = -1);
-
-#if 0
-    matrix invert(const matrix & input);
-    matrix det(const matrix & input);
-    matrix cofactor(const matrix & input);
-    matrix systemGaussSolve(const matrix & input);
-    matrix product(const matrix & in1, const matrix & in2);
-
-    //"private"
-    void product(const matrix & in2, matrix & result);
-#endif
-
-
-
-
-
 #endif // MATRIX_H

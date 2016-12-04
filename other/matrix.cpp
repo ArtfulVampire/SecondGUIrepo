@@ -1153,3 +1153,16 @@ std::valarray<double> matrix::matrixSystemSolveGauss(const std::valarray<double>
     res = initMat * inVec;
     return res;
 }
+
+std::ostream & operator<<(std::ostream & os, const matrix & toOut)
+{
+	for(auto it = std::begin(toOut.myData); it < std::end(toOut.myData); ++it)
+	{
+		for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
+		{
+			os << smallLib::doubleRound((*itt), 4) << "\t";
+		}
+		os << std::endl;
+	}
+	return os;
+}

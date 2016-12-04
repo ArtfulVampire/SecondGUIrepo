@@ -213,7 +213,7 @@ const int input)
 }
 
 void refreshDistAll(mat & distNew,
-					const std::vector<std::pair <double, double> > & plainCoords)
+					const coordType & plainCoords)
 {
     // numRow * (numRow + 1) / 2 = distSize
 
@@ -235,7 +235,7 @@ void refreshDistAll(mat & distNew,
     }
 }
 
-void countGradient(const std::vector<std::pair <double, double> > & plainCoords,
+void countGradient(const coordType & plainCoords,
 				   const std::vector<std::vector<double> >  & distOld,
 				   std::vector<std::vector<double> > & distNew,
 				   std::vector<double> & gradient)
@@ -280,7 +280,7 @@ void countGradient(const std::vector<std::pair <double, double> > & plainCoords,
     }
 }
 
-void moveCoordsGradient(std::vector<std::pair <double, double> > & plainCoords,
+void moveCoordsGradient(coordType & plainCoords,
                         const mat & distOld,
                         mat & distNew)
 {
@@ -358,7 +358,7 @@ double errorSammonAdd(const mat & distOld,
 
 void countInvHessianAddDot(const mat & distOld,
                            const mat & distNew,
-						   const std::vector<std::pair <double, double> > & crds,
+						   const coordType & crds,
 						   const std::vector<int> & placedDots,
                            mat & invHessian)
 {
@@ -411,7 +411,7 @@ void countInvHessianAddDot(const mat & distOld,
 
 void countGradientAddDot(const mat & distOld,
                          const mat & distNew,
-						 const std::vector<std::pair <double, double> > & crds,
+						 const coordType & crds,
 						 const std::vector<int> & placedDots,
 						 std::vector<double>  & gradient) // gradient for one dot
 {
@@ -437,7 +437,7 @@ void countGradientAddDot(const mat & distOld,
 }
 
 void countDistNewAdd(mat & distNew, // change only last coloumn
-					 const std::vector< std::pair <double, double>> & crds,
+					 const coordType & crds,
 					 const std::vector<int> & placedDots)
 {
     const int & b = placedDots.back(); // placedDots[placedDots.size() - 1];
@@ -454,7 +454,7 @@ void countDistNewAdd(mat & distNew, // change only last coloumn
 
 void sammonAddDot(const mat & distOld,
                   mat & distNew, // change only last coloumn
-				  std::vector<std::pair<double, double>> & plainCoords,
+				  coordType & plainCoords,
 				  const std::vector<int> & placedDots)
 {
     const int addNum = placedDots.size() - 1;
@@ -677,7 +677,7 @@ void sammonProj(const mat & distOld,
 }
 
 
-void drawSammon(const std::vector<std::pair<double, double>> & plainCoords,
+void drawSammon(const coordType & plainCoords,
 				const std::vector<int> & types,
 				const QString & picPath) //uses coords array
 {
