@@ -425,7 +425,9 @@ void MainWindow::ICA() //fastICA
         helpString = pathForAuxFiles
                      + slash + def::ExpName + "_maps.txt";
     writeMatrixFile(helpString, matrixA); //generality 19-ns
-    drawMapsICA(helpString);
+	drawMapsICA(helpString,
+				def::dir->absolutePath() + "/Help/ica",
+				def::ExpName);
 
 
     // save components

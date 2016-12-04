@@ -1,48 +1,67 @@
-#include "library.h"
+#include <myLib/clustering.h>
+#include <iostream>
+#include <cmath>
+#include <QPixmap>
+#include <QPainter>
 
 
-using namespace std;
-using namespace std::chrono;
-namespace myLib
+namespace clust
 {
 
 struct clustDot
 {
     int number = -1;
-    std::vector<double> initCoords;
-    std::vector<double> initDists;
-    std::vector<double> newCoords;
-    std::vector<double> newDists;
+	std::vector<double> initCoords;
+	std::vector<double> initDists;
+	std::vector<double> newCoords;
+	std::vector<double> newDists;
     int clustNum = -1;
 };
 
 struct cluster
 {
     int number = -1;
-    std::vector<int> dotNums;
-    std::vector<double> centroid;
-    std::vector<double> sigma;
+	std::vector<int> dotNums;
+	std::vector<double> centroid;
+	std::vector<double> sigma;
 };
 
 struct clustering
 {
     int numDots = -1;
     int dimDots = -1;
-    vector<cluster> clusts;
-    vector<clustDot> dots;
+	std::vector<cluster> clusts;
+	std::vector<clustDot> dots;
     mat dists;
-    vector<bool> boundDots;
-    vector<bool> isolDots;
+	std::vector<bool> boundDots;
+	std::vector<bool> isolDots;
 
     void readFile(QString filePath);
 };
 
 
+
+double countAngle(double initX, double initY)
+{
+	if(initX == 0.)
+	{
+		return ((initY > 0.) ? (M_PI/2.) : (-M_PI/2));
+	}
+
+	if(initX > 0.)
+	{
+		return atan(initY/initX);
+	}
+	else
+	{
+		return atan(initY/initX) + M_PI;
+	}
+}
 /*
 void clustering::readFile(QString filePath)
 {
 
-    vector< std::vector<double> > cData;
+	std::vector< std::vector<double> > cData;
 
     ifstream inStr;
     inStr.open(filePath.toStdString().c_str());
@@ -65,7 +84,7 @@ void clustering::readFile(QString filePath)
             inStr >> cData[i][j];
         }
     }
-    std::vector<double> temp;
+	std::vector<double> temp;
     temp.resize(4);
 
     boundDots.resize(numDots);
@@ -88,7 +107,7 @@ void clustering::readFile(QString filePath)
     std::sort(dists.begin(), dists.end(), mySort);
 
     // make first bound
-    std::vector<int>::iterator it;
+	std::vector<int>::iterator it;
 
     boundDots[ dists[0][1] ] = true;
     isolDots[ dists[0][1] ] = false;
@@ -106,11 +125,11 @@ void clustering::readFile(QString filePath)
     cout << endl;
 
 
-    std::vector<std::vector<double> >::iterator itt;
+	std::vector<std::vector<double> >::iterator itt;
     while (contains(isolDots.begin(), isolDots.end(), true))
     {
         //adjust dists[i][3]
-        for(std::vector<std::vector<double> >::iterator iit = dists.begin();
+		for(std::vector<std::vector<double> >::iterator iit = dists.begin();
             iit < dists.end();
             ++iit)
         {
@@ -153,7 +172,7 @@ void clustering::readFile(QString filePath)
         cout << endl;
     }
     std::sort(newDists.begin(), newDists.end(), mySort);
-    std::vector<double> newD;
+	std::vector<double> newD;
     for(int i = 0; i < newDists.size(); ++i)
     {
         newD.push_back(newDists[i][0]);
@@ -171,7 +190,7 @@ void clustering::readFile(QString filePath)
 
 
 void refreshDist(mat & dist,
-const vector<pair <double, double> > & testCoords,
+const std::vector<std::pair <double, double> > & testCoords,
 const int input)
 {
 
@@ -194,7 +213,7 @@ const int input)
 }
 
 void refreshDistAll(mat & distNew,
-                    const vector<pair <double, double> > & plainCoords)
+					const std::vector<std::pair <double, double> > & plainCoords)
 {
     // numRow * (numRow + 1) / 2 = distSize
 
@@ -216,14 +235,14 @@ void refreshDistAll(mat & distNew,
     }
 }
 
-void countGradient(const vector<pair <double, double> > & plainCoords,
-                   const vector<std::vector<double> >  & distOld,
-                   vector<std::vector<double> > & distNew,
-                   std::vector<double> & gradient)
+void countGradient(const std::vector<std::pair <double, double> > & plainCoords,
+				   const std::vector<std::vector<double> >  & distOld,
+				   std::vector<std::vector<double> > & distNew,
+				   std::vector<double> & gradient)
 {
     const int size = plainCoords.size();
     const double delta = 0.1;
-    vector<pair <double, double> > tempCoords = plainCoords;
+	std::vector<std::pair <double, double> > tempCoords = plainCoords;
 
     for(int i = 0; i < size; ++i)
     {
@@ -261,13 +280,13 @@ void countGradient(const vector<pair <double, double> > & plainCoords,
     }
 }
 
-void moveCoordsGradient(vector<pair <double, double> > & plainCoords,
+void moveCoordsGradient(std::vector<std::pair <double, double> > & plainCoords,
                         const mat & distOld,
                         mat & distNew)
 {
     int size = plainCoords.size();
 
-    std::vector<double> gradient;
+	std::vector<double> gradient;
     gradient.resize(size * 2);
     double lambda = 0.1;
 
@@ -324,7 +343,7 @@ double errorSammon(const mat & distOld,
 
 double errorSammonAdd(const mat & distOld,
                       const mat & distNew,
-                      const std::vector<int> & placedDots) // square matrices
+					  const std::vector<int> & placedDots) // square matrices
 {
     double res = 0.;
     for(unsigned int i = 0; i < placedDots.size(); ++i)
@@ -339,8 +358,8 @@ double errorSammonAdd(const mat & distOld,
 
 void countInvHessianAddDot(const mat & distOld,
                            const mat & distNew,
-                           const vector<pair <double, double> > & crds,
-                           const std::vector<int> & placedDots,
+						   const std::vector<std::pair <double, double> > & crds,
+						   const std::vector<int> & placedDots,
                            mat & invHessian)
 {
     invHessian[0][0] = 0.;
@@ -392,9 +411,9 @@ void countInvHessianAddDot(const mat & distOld,
 
 void countGradientAddDot(const mat & distOld,
                          const mat & distNew,
-                         const vector<pair <double, double> > & crds,
-                         const std::vector<int> & placedDots,
-                         std::vector<double>  & gradient) // gradient for one dot
+						 const std::vector<std::pair <double, double> > & crds,
+						 const std::vector<int> & placedDots,
+						 std::vector<double>  & gradient) // gradient for one dot
 {
     const int & b = placedDots.back();
     gradient[0] = 0.;
@@ -418,8 +437,8 @@ void countGradientAddDot(const mat & distOld,
 }
 
 void countDistNewAdd(mat & distNew, // change only last coloumn
-                     const std::vector< std::pair <double, double> > & crds,
-                     const std::vector<int> & placedDots)
+					 const std::vector< std::pair <double, double>> & crds,
+					 const std::vector<int> & placedDots)
 {
     const int & b = placedDots.back(); // placedDots[placedDots.size() - 1];
     for(unsigned int i = 0; i < placedDots.size() - 1; ++i)
@@ -435,8 +454,8 @@ void countDistNewAdd(mat & distNew, // change only last coloumn
 
 void sammonAddDot(const mat & distOld,
                   mat & distNew, // change only last coloumn
-                  std::vector<std::pair<double, double>> & plainCoords,
-                  const std::vector<int> & placedDots)
+				  std::vector<std::pair<double, double>> & plainCoords,
+				  const std::vector<int> & placedDots)
 {
     const int addNum = placedDots.size() - 1;
     // set initial place
@@ -454,14 +473,14 @@ void sammonAddDot(const mat & distOld,
     helpX /= sumW;
     helpY /= sumW;
 
-    plainCoords.push_back(make_pair(helpX, helpY));
+	plainCoords.push_back(std::make_pair(helpX, helpY));
 
     //cout all the dots
 
 
 
     // gradien descent
-    std::vector<double> gradient;
+	std::vector<double> gradient;
     gradient.resize(2);
     mat invHessian; // matrix 2x2
     invHessian.resize(2);
@@ -531,7 +550,7 @@ void sammonAddDot(const mat & distOld,
 }
 
 void sammonProj(const mat & distOld,
-                const std::vector<int> & types,
+				const std::vector<int> & types,
                 const QString & picPath)
 {
     srand(time(NULL));
@@ -544,7 +563,7 @@ void sammonProj(const mat & distOld,
         distNew[i].resize(size);
     }
 
-    vector< pair <double, double> > plainCoords;
+	std::vector< std::pair <double, double> > plainCoords;
     //    plainCoords.resize(size);
 
     // find three most distant points
@@ -552,7 +571,7 @@ void sammonProj(const mat & distOld,
     int num1 = -1;
     int num2 = -1;
     int num3 = -1;
-    std::vector<int> placedDots;
+	std::vector<int> placedDots;
     double maxDist = 0.;
 
     for(int i = 0; i < size; ++i)
@@ -568,8 +587,8 @@ void sammonProj(const mat & distOld,
         }
     }
     //    cout << "maxDist = " << maxDist << endl;
-    plainCoords.push_back(make_pair(0., 0.));
-    plainCoords.push_back(make_pair(maxDist, 0.));
+	plainCoords.push_back(std::make_pair(0., 0.));
+	plainCoords.push_back(std::make_pair(maxDist, 0.));
     maxDist = 0.;
 
     for(int i = 0; i < size; ++i)
@@ -588,7 +607,7 @@ void sammonProj(const mat & distOld,
                  pow(distOld[num2][num3], 2.)
                  ) * 0.5 / distOld[num1][num2];
     //    cout << "tm = " << tm << endl;
-    plainCoords.push_back(make_pair(tm,
+	plainCoords.push_back(std::make_pair(tm,
                                     pow( pow(distOld[num1][num3], 2.) -
                                          pow(tm, 2.),
                                          0.5)
@@ -645,9 +664,10 @@ void sammonProj(const mat & distOld,
 
     for(int i = 0; i < size; ++i)
     {
-        cout << "dot[" << i << "] = " << plainCoords[i].first << '\t' << plainCoords[i].second << endl;
+		std::cout << "dot[" << i << "] = "
+				  << plainCoords[i].first << '\t' << plainCoords[i].second << std::endl;
     }
-    cout << endl;
+	std::cout << std::endl;
 
 
     drawSammon(plainCoords, types, picPath);
@@ -655,4 +675,238 @@ void sammonProj(const mat & distOld,
     helpString.replace(".jpg", "_.jpg");
     drawShepard(distOld, distNew, helpString);
 }
+
+
+void drawSammon(const std::vector<std::pair<double, double>> & plainCoords,
+				const std::vector<int> & types,
+				const QString & picPath) //uses coords array
+{
+
+	const int NumberOfVectors = plainCoords.size();
+	//draw the points
+	QPixmap pic(1200, 1200);
+	pic.fill();
+	QPainter painter;
+	painter.begin(&pic);
+
+	painter.setPen("black");
+	painter.drawLine(QPointF(0, pic.height()/2.),
+					 QPointF(pic.width(), pic.height()/2.));
+	painter.drawLine(QPointF(pic.width()/2., 0),
+					 QPointF(pic.width()/2, pic.height()));
+
+	double minX = 0., minY = 0., maxX = 0., maxY = 0., avX, avY, rangeX, rangeY;
+	const double rectSize = 4;
+
+	double sum1 = 0., sum2 = 0.;
+
+	minX = plainCoords.front().first;
+	minY = plainCoords.front().second;
+	for(int i = 0; i < NumberOfVectors; ++i)
+	{
+		maxX = fmax(maxX, plainCoords[i].first);
+		maxY = fmax(maxY, plainCoords[i].second);
+
+		minX = fmin(minX, plainCoords[i].first);
+		minY = fmin(minY, plainCoords[i].second);
+	}
+	avX = (minX + maxX)/2.;
+	avY = (minY + maxY)/2.;
+
+	rangeX = (maxX - minX)/2.;
+	rangeY = (maxY - minY)/2.;
+
+	rangeX *= 1.02;
+	rangeY *= 1.02;
+
+	double range = fmax(rangeX, rangeY);
+
+	double initX = 0.;
+	double initY = 0.;
+	double leng = 0.;
+	double angle = 0.;
+	double drawX = 0.;
+	double drawY = 0.;
+
+	// count half of points for right angle
+	double sumAngle1 = 0.;
+	double sumAngle2 = 0.;
+	double maxLeng = 0;
+	for(int i = 0; i < NumberOfVectors; ++i)
+	{
+		sum1 = plainCoords[i].first;
+		sum2 = plainCoords[i].second;
+
+		// relative coordinates (centroid)
+		initX = sum1 - avX;
+		initY = sum2 - avY;
+
+		leng = pow(pow(initX, 2.) + pow(initY, 2.), 0.5);
+		maxLeng = fmax(leng, maxLeng);
+
+		angle = countAngle(initX, initY);
+
+		if(i < NumberOfVectors/2)
+		{
+			sumAngle1 += angle;
+		}
+		if(i >= NumberOfVectors/4 && i < NumberOfVectors*3/4)
+		{
+			sumAngle2 += angle;
+		}
+	}
+	sumAngle1 /= (NumberOfVectors/2);
+	sumAngle2 /= (NumberOfVectors/2);
+	range = maxLeng * 1.02;
+
+	int mirror = 1;
+	if(cos(sumAngle1) * sin(sumAngle2) - cos(sumAngle2) * sin(sumAngle1) < 0.)
+	{
+		mirror = -1;
+	}
+
+	int pew = 0;
+	for(int i = 0; i < NumberOfVectors; ++i)
+	{
+		sum1 = plainCoords[i].first;
+		sum2 = plainCoords[i].second;
+
+		if( i<3 )
+		{
+			painter.setBrush(QBrush("red"));
+			painter.setPen("red");
+
+		}
+		else if(0)
+		{
+			switch(types[i])
+			{
+			case 0:
+			{
+				painter.setBrush(QBrush("blue"));
+				painter.setPen("blue");
+				break;
+			}
+			case 1:
+			{
+				painter.setBrush(QBrush("red"));
+				painter.setPen("red");
+				break;
+			}
+			case 2:
+			{
+				painter.setBrush(QBrush("green"));
+				painter.setPen("green");
+				break;
+			}
+			default:
+			{
+				painter.setBrush(QBrush("black"));
+				painter.setPen("black");
+				break;
+			}
+			}
+		}
+		else
+		{
+			//            painter.setBrush(QBrush("red"));
+			//            painter.setPen("red");
+
+			pew = int(255.*i/NumberOfVectors);
+			painter.setBrush(QBrush(QColor(pew,0,pew)));
+			painter.setPen(QColor(pew,0,pew));
+		}
+
+
+
+
+
+		initX = sum1 - avX;
+		initY = -(sum2 - avY);
+
+		leng = pow(pow(initX, 2.) + pow(initY, 2.), 0.5);
+		angle = countAngle(initX, initY);
+
+		angle -= sumAngle1;
+		//        initX = leng * cos(angle);
+		//        initY = leng * sin(angle);
+		mirror = 1;
+
+
+		drawX = pic.width()  * 0.5 * (1. + (initX / range));
+		drawY = pic.height() * 0.5 * (1. + (initY / range) * mirror);
+
+		//        cout << drawX << '\t' << drawY << endl;
+
+		painter.drawRect(QRectF(QPointF(drawX - rectSize,
+										drawY - rectSize),
+								QPointF(drawX + rectSize,
+										drawY + rectSize)
+								)
+						 );
+
+	}
+	pic.save(picPath, 0, 100);
+	painter.end();
+	std::cout << "Sammon projection done" << std::endl;
+}
+
+void drawShepard(const mat & distOld,
+				 const mat & distNew,
+				 const QString & picPath)
+{
+	//    cout << distNew << endl;
+	const int num = distOld.size();
+	//draw the points
+	QPixmap pic(1200, 1200);
+	pic.fill();
+	QPainter painter;
+	painter.begin(&pic);
+
+	painter.setPen("black");
+	painter.setBrush(QBrush("black"));
+	painter.drawLine(QPointF(pic.width() * 0.1, pic.height() * 0.9),
+					 QPointF(pic.width() * 1.0, pic.height() * 0.9)
+					 );
+	painter.drawLine(QPointF(pic.width() * 0.1, pic.height() * 0.9),
+					 QPointF(pic.width() * 0.1, pic.height() * 0.0)
+					 );
+	painter.drawLine(QPointF(pic.width() * 0.1, pic.height() * 0.9),
+					 QPointF(pic.width() * 1.0, pic.height() * 0.0)
+					 );
+
+	double drawX = 0.;
+	double drawY = 0.;
+	double maxDistOld = 0.;
+	double maxDistNew = 0.;
+	for(int i = 0; i < num; ++i)
+	{
+		for(int j = i+1; j < num; ++j)
+		{
+			maxDistOld = fmax(distOld[i][j], maxDistOld);
+			maxDistNew = fmax(distNew[i][j], maxDistNew);
+		}
+	}
+	maxDistNew *= 1.02;
+	maxDistOld *= 1.02;
+
+	const int rectSize = 4;
+	for(int i = 0; i < num; ++i)
+	{
+		for(int j = i+1; j < num; ++j)
+		{
+			drawX = pic.width()  * (0.1 + 0.9 * distOld[i][j] / maxDistOld);
+			drawY = pic.height() * (0.9 - 0.9 * distNew[i][j] / maxDistNew);
+
+			painter.drawRect(QRectF(QPoint(drawX - rectSize, drawY - rectSize),
+									QPoint(drawX + rectSize, drawY + rectSize)
+									)
+							 );
+		}
+	}
+	painter.end();
+	pic.save(picPath, 0, 100);
+
+}
+
 }

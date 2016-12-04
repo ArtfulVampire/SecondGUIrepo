@@ -160,36 +160,15 @@ void makeSine(std::valarray<double> & in,
 			  double srate = 250.);
 
 
+
+
+
 QString rerefChannel(const QString & initialName,
 					 const QString & targetRef = "Ar",
 					 const QString & currentNum = "1",
 					 const QString & earsChan = "20",
 					 const QString & groundChan = "21",
 					 const std::vector<QString> & sign = {"-", "+"});
-
-
-
-/// colorscales
-
-// jet
-const double defV = 1.;
-const std::vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
-double red(const int &range, double j, double V = defV, double S = 1.0);
-double green(const int &range, double j, double V = defV, double S = 1.0);
-double blue(const int &range, double j, double V = defV, double S = 1.0);
-QColor hueJet(const int &range, double j);
-// hot-to-cold
-double red1(int range, int j);
-double green1(int range, int j);
-double blue1(int range, int j);
-
-QColor hueOld(int range, double j, int numOfContours = 0, double V = 0.95, double S = 1.0);
-QColor grayScale(int range, int j);
-
-
-
-
-
 
 
 
@@ -203,11 +182,6 @@ void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 e
                           const QString & outFilePath = def::dir->absolutePath()
                                                         + slash + "eyes.txt");
 
-
-
-
-
-// drawings
 
 
 
@@ -226,32 +200,7 @@ double splineOutput(const std::valarray<double> & inX,
 					double probeX);
 
 
-/// signal processing
-
-
-
-
-/// non-spectral
-template <typename signalType = std::valarray<double>>
-double fractalDimension(const signalType &arr,
-                        const QString & picPath = QString());
-
-std::valarray<double> hilbert(const std::valarray<double> & arr,
-							  double lowFreq = def::leftFreq,
-							  double highFreq = def::rightFreq,
-							  QString picPath  = QString());
-
-std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
-									double sampleFreq,
-									double lowFreq,
-									double highFreq,
-									QString picPath = QString());
-
-template <typename signalType = std::valarray<double>, typename retType = std::valarray<double>>
-retType bayesCount(const signalType & dataIn, int numOfIntervals);
-
-template <typename signalType = std::valarray<double>>
-void kernelEst(const signalType & arr, QString picPath);
+void kernelEst(const std::valarray<double> & arr, QString picPath);
 
 template <typename signalType = std::valarray<double>>
 void histogram(const signalType & arr,
@@ -273,15 +222,9 @@ bool gaussApproval2(double * arr, int length); // not finished?
 
 
 template <typename Typ>
-double mean(const Typ &arr, int length, int shift = 0);
+double mean(const Typ & arr, int length, int shift = 0);
 
-template <typename Typ>
-double variance(const Typ &arr, int length, int shift = 0, bool fromZero = false);
-
-template <typename Typ>
-double sigma(const Typ &arr, int length, int shift = 0, bool fromZero = false);
-
-/// remake with
+/// needed for fractal dimension
 template <typename Typ>
 double covariance (const Typ & arr1,
                    const Typ & arr2,
@@ -289,24 +232,6 @@ double covariance (const Typ & arr1,
                    int shift = 0,
                    bool fromZero = false);
 
-template <typename Typ>
-double correlation(const Typ &arr1,
-                   const Typ &arr2,
-                   int length,
-                   int shift = 0,
-                   bool fromZero = false);
-
-
-template <typename T>
-double distance(const std::vector<T> & vec1,
-				const std::vector<T> & vec2,
-                const int &dim);
-
-double distance(double const x1, double const y1,
-                double const x2, double const y2);
-
-
-double countAngle(double initX, double initY);
 
 
 
@@ -319,6 +244,11 @@ void countRCP(QString filename,
               double * outMean = nullptr,
               double * outSigma = nullptr);
 
+
+
+
+
+
 void splitZeros(matrix & inData,
                 const int & inLength,
                 int * outLength,
@@ -330,53 +260,18 @@ void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit);
 
 
 
+void dealWithEyes(matrix & inData,
+				  const int dimension);
 
 
 /// products for ICA
-void product1(const matrix & arr,
-              const int length,
-              const int ns,
-			  const std::valarray<double> & vect,
-			  std::valarray<double> & outVector);
 
-void product2(const matrix & arr,
-              const int length,
-              const int ns,
-			  const std::valarray<double> & vect,
-			  std::valarray<double> & outVector);
-
-void product3(const matrix & inMat,
-              const int ns,
-              const int currNum,
-			  std::valarray<double> & outVector);
-
-void randomizeValar(std::valarray<double> & valar);
-
-void countVectorW(matrix & vectorW,
-                  const matrix & dataICA,
-                  const int ns,
-                  const int dataLen,
-                  const double vectorWTreshold);
-
-void dealWithEyes(matrix & inData,
-                  const int dimension);
-
-void ica(const matrix & initialData,
-         matrix & matrixA,
-         double eigenValuesTreshold, double vectorWTreshold);
-
-void svd(const matrix & initialData,
-         matrix & eigenVectors,
-		 std::valarray<double> & eigenValues,
-         const int dimension,
-         const double & threshold = 1e-9,
-         int eigenVecNum = -1);
 
 
 
 
 template <typename Typ>
-void calcRawFFT(const Typ & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
+void calcRawFFT(const Typ & inData, std::vector<std::vector<double>> & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
 
 
@@ -394,66 +289,6 @@ inline bool matiCountBit(double const & marker, int num)
 {
     return (int(marker) / int(pow(2, num))) % 2;
 }
-
-
-
-
-// do sammon class
-//sammon
-void drawSammon(const coordType & plainCoords,
-				const std::vector<int> & types,
-                const QString & picPath);
-
-void drawShepard(const mat & distOld,
-                 const mat & distNew,
-                 const QString & picPath);
-
-void sammonProj(const mat & distOld,
-				const std::vector<int> & types,
-                const QString & picPath);
-double errorSammon(const mat & distOld,
-                   const mat & distNew);
-
-void moveCoordsGradient(coordType & plainCoords,
-                        const mat & distOld,
-                        mat & distNew);
-void refreshDistAll(mat & distNew,
-                    const coordType & plainCoords);
-
-void refreshDist(mat & dist,
-                 const coordType & testCoords,
-                 const int input);
-
-void countGradient(const coordType & plainCoords,
-                   const mat &distOld,
-                   mat &distNew,
-				   std::vector<double> &gradient);
-
-void sammonAddDot(const mat & distOld,
-                  mat & distNew, // change only last coloumn
-                  coordType & plainCoords,
-				  const std::vector<int> & placedDots);
-
-void countDistNewAdd(mat & distNew, // change only last coloumn
-                     const coordType &crds,
-					 const std::vector<int> & placedDots);
-
-void countGradientAddDot(const mat & distOld,
-                         const mat & distNew,
-                         const coordType & crds,
-						 const std::vector<int> & placedDots,
-						 std::vector<double>  & gradient);
-
-void countInvHessianAddDot(const mat & distOld,
-                           const mat & distNew,
-                           const coordType & crds,
-						   const std::vector<int> & placedDots,
-                           mat & invHessian);
-
-double errorSammonAdd(const mat & distOld,
-                      const mat & distNew,
-					  const std::vector<int> & placedDots);
-
 
 
 } // myLib namespace

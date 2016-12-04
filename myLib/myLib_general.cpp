@@ -326,17 +326,6 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 
 
 
-template <typename T>
-double distance(const std::vector<T> &vec1, const std::vector<T> &vec2, const int &dim)
-{
-    double dist = 0.;
-    //Euclid
-    for(int i = 0; i < dim; ++i)
-    {
-        dist += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
-    }
-    return dist;
-}
 
 
 void countRCP(QString filePath, QString picPath, double * outMean, double * outSigma)

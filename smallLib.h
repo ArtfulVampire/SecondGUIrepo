@@ -10,8 +10,6 @@
 #include <algorithm>
 #include <numeric>
 
-typedef std::vector<std::vector<double>> mat;
-typedef std::vector<std::pair<double, double>> coordType;
 
 template <typename Typ>
 class trivector : public std::vector<std::vector<std::vector<Typ>>>
@@ -202,6 +200,13 @@ inline void normalize(std::valarray<double> & in)
 {
     in /= norma(in);
 }
+
+inline double distance(double const x1, double const y1,
+					   double const x2, double const y2)
+{
+	return sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
+}
+
 
 inline double distance(const std::valarray<double> & in1,
 					   const std::valarray<double> & in2)

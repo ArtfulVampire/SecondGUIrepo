@@ -10,10 +10,6 @@ using namespace smallLib;
 namespace myLib
 {
 
-double distance(double const x1, double const y1, double const x2, double const y2)
-{
-    return sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
-}
 
 
 
@@ -330,23 +326,6 @@ void cleanDir(QString dirPath, QString nameFilter, bool ext)
 
 }
 
-
-double countAngle(double initX, double initY)
-{
-    if(initX == 0.)
-    {
-		return ((initY > 0.) ? (pi/2.) : (-pi/2));
-    }
-
-    if(initX > 0.)
-    {
-        return atan(initY/initX);
-    }
-    else
-    {
-        return atan(initY/initX) + pi;
-    }
-}
 
 /*
 bool gaussApproval(double * arr, int length) //kobzar page 239

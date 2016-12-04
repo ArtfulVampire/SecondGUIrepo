@@ -133,7 +133,9 @@ HEADERS  += mainwindow.h \
     myLib/signalProcessing.h \
     myLib/wavelet.h \
     myLib/dataHandlers.h \
-    myLib/draws.h
+    myLib/draws.h \
+    myLib/statistics.h \
+    myLib/clustering.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

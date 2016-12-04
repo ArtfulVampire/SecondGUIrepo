@@ -633,8 +633,10 @@ double fractalDimension(const signalType & arr,
 
     minLimit = 15;
 
-    double * drawK = new double [maxLimit - minLimit];
-    double * drawL = new double [maxLimit - minLimit];
+	int arrSize = maxLimit - minLimit;
+
+	std::valarray<double> drawK(arrSize);
+	std::valarray<double> drawL(arrSize);
 
     for(int h = minLimit; h < maxLimit; ++h)
     {
@@ -646,19 +648,17 @@ double fractalDimension(const signalType & arr,
             coeff = (N - 1) / (floor((N - m) / timeShift)) / timeShift;
             for(int i = 1; i < floor((N - m) / timeShift); ++i)
             {
-                tempL += fabs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]) * coeff;
+				tempL += abs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]) * coeff;
 
             }
             L += tempL / timeShift;
         }
         drawK[h - minLimit] = log(timeShift);
-        drawL[h - minLimit] = log(L);
-		//        std::cout << drawK[h - minLimit] << '\t' << drawL[h - minLimit] << std::endl;
+		drawL[h - minLimit] = log(L);
     }
 
     //least square approximation
-    double slope = covariance(drawK, drawL, maxLimit - minLimit) / covariance(drawK, drawK, maxLimit - minLimit);
-	//    std::cout << "slope = " << slope << std::endl;
+	double slope = smallLib::covariance(drawK, drawL) / smallLib::covariance(drawK, drawK);
 
     double drawX = 0.;
     double drawY = 0.;
@@ -672,17 +672,17 @@ double fractalDimension(const signalType & arr,
         pnt.setPen("black");
         pnt.setBrush(QBrush("black"));
 
-        double minX = fmin(drawK[0], drawK[maxLimit - minLimit - 1]);
-        double maxX = fmax(drawK[0], drawK[maxLimit - minLimit - 1]);
-        double minY = fmin(drawL[0], drawL[maxLimit - minLimit - 1]);
-        double maxY = fmax(drawL[0], drawL[maxLimit - minLimit - 1]);
+		double minX = std::min(drawK[0], drawK[drawK.size() - 1]);
+		double maxX = std::max(drawK[0], drawK[drawK.size() - 1]);
+		double minY = std::min(drawL[0], drawL[drawL.size() - 1]);
+		double maxY = std::max(drawL[0], drawL[drawL.size() - 1]);
         double lenX = maxX - minX;
         double lenY = maxY - minY;
 
         for(int h = 0; h < maxLimit - minLimit; ++h) // drawK, drawL [last] is bottom-left
         {
-            drawX = fabs(drawK[h] - minX) / lenX * pic.width() - 3;
-            drawY = (1. - fabs(drawL[h] - minY) / lenY) * pic.height() - 3;
+			drawX = abs(drawK[h] - minX) / lenX * pic.width() - 3;
+			drawY = (1. - abs(drawL[h] - minY) / lenY) * pic.height() - 3;
             pnt.drawRect(QRect(int(drawX), int(drawY), 3, 3));
         }
 
@@ -690,12 +690,10 @@ double fractalDimension(const signalType & arr,
         pnt.setBrush(QBrush("red"));
 
         // line passes (meanX, meanY)
-        double add = mean(drawL, maxLimit - minLimit) - slope * mean(drawK, maxLimit - minLimit);
-		//        std::cout << "add = " << add << std::endl;
+		double add = smallLib::mean(drawL) - slope * smallLib::mean(drawK);
 
         drawX = (1. - (slope * minX + add - minY) / lenY) * pic.height(); // startY
-        drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); // endY
-		//        std::cout << drawX << '\t' << drawY << std::endl;
+		drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); // endY
 
         pnt.drawLine(0,
                      drawX,
@@ -705,111 +703,10 @@ double fractalDimension(const signalType & arr,
 
         pnt.end();
         pic.save(picPath, 0, 100);
-
-
-    }
-
-    delete []drawK;
-    delete []drawL;
+	}
     return -slope;
 }
 
-
-
-template <typename Typ>
-double mean(const Typ &arr, int length, int shift)
-{
-    double sum = 0.;
-    for(int i = 0; i < length; ++i)
-    {
-        sum += arr[i + shift];
-    }
-    sum /= length;
-    return sum;
-}
-template double mean(const double * const &arr, int length, int shift);
-template double mean(const int * const &arr, int length, int shift);
-template double mean(const std::vector<int> &arr, int length, int shift);
-template double mean(const std::vector<double> &arr, int length, int shift);
-
-template <typename Typ>
-double variance(const Typ &arr, int length, int shift, bool fromZero)
-{
-    double sum1 = 0.;
-    double m = mean(arr, length, shift);
-	double sign = (fromZero ? 0. : 1.);
-    for(int i = 0; i < length; ++i)
-    {
-        sum1 += pow((arr[i + shift] - m * sign), 2.);
-    }
-    sum1 /= length; // needed ?
-    return sum1;
-}
-template double variance(const double * const &arr, int length, int shift, bool fromZero);
-template double variance(const int * const &arr, int length, int shift, bool fromZero);
-template double variance(const std::vector<int> &arr, int length, int shift, bool fromZero);
-template double variance(const std::vector<double> &arr, int length, int shift, bool fromZero);
-
-template <typename Typ>
-double sigma(const Typ &arr, int length, int shift, bool fromZero)
-{
-    return sqrt(variance(arr, length, shift, fromZero));
-}
-template double sigma(const double * const &arr, int length, int shift, bool fromZero);
-template double sigma(const int * const &arr, int length, int shift, bool fromZero);
-template double sigma(const std::vector<int> &arr, int length, int shift, bool fromZero);
-template double sigma(const std::vector<double> &arr, int length, int shift, bool fromZero);
-
-template <typename Typ>
-double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool fromZero)
-{
-    double res = 0.;
-    double m1 = 0.;
-    double m2 = 0.;
-    if(!fromZero)
-    {
-        m1 = mean(arr1, length, shift);
-        m2 = mean(arr2, length, shift);
-    }
-    for(int i = 0; i < length; ++i)
-    {
-        res += (arr1[i + shift] - m1) *
-                (arr2[i + shift] - m2);
-    }
-    return res;
-}
-
-template <typename Typ>
-double correlation(const Typ &arr1, const Typ &arr2, int length, int shift, bool fromZero)
-{
-    double res = 0.;
-    double m1, m2;
-    int T = abs(shift);
-    double sigmas;
-	int signM = ((shift >= 0) ? 1 : 0);
-	int signL = ((shift <= 0) ? 1 : 0);
-
-    m1 = mean(arr1, length - T, T * signL);
-    m2 = mean(arr2, length - T, T * signM);
-    for(int i = 0; i < length - T; ++i)
-    {
-        res += (arr1[i + T * signL] - m1) * (arr2[i + T * signM] - m2);
-    }
-    sigmas = sigma(arr1, length - T, T * signL, fromZero) *
-             sigma(arr2, length - T, T * signM, fromZero);
-    if(sigmas != 0.)
-    {
-        res /= sigmas;
-    }
-    else
-    {
-		std::cout << "correlation const signal" << std::endl;
-        return 0.;
-    }
-
-    res /= double(length - T);
-    return res;
-}
 
 
 int MannWhitney(const std::valarray<double> & arr1,
@@ -1093,9 +990,6 @@ void product2(const matrix & arr,
     outVector = vect * sum1;
 }
 
-
-
-//void product3(double ** vec, int ns, int currNum, double ** outVector)
 void product3(const matrix & inMat,
               const int ns,
               const int currNum,
@@ -1170,7 +1064,7 @@ void countVectorW(matrix & vectorW,
 
             vectorW[i] = vector1 - vector2;
             //orthogonalization
-            product3(vectorW, ns, i, vector3);
+			myLib::product3(vectorW, ns, i, vector3);
             vectorW[i] -= vector3;
 			smallLib::normalize(vectorW[i]);
 
@@ -1944,13 +1838,12 @@ void kernelEst(QString filePath, QString picPath)
     kernelEst(arr, picPath);
 }
 
-template <typename signalType>
-void kernelEst(const signalType & arr, QString picPath)
+void kernelEst(const std::valarray<double> & arr, QString picPath)
 {
     double sigma = 0.;
     int length = arr.size();
 
-    sigma = variance(arr, length);
+	sigma = smallLib::variance(arr);
     sigma = sqrt(sigma);
     double h = 1.06 * sigma * pow(length, -0.2);
 
@@ -1964,10 +1857,10 @@ void kernelEst(const signalType & arr, QString picPath)
 
     double xMin, xMax;
 
-    xMin = *std::min(begin(arr),
-                    end(arr));
-    xMax = *std::max(begin(arr),
-                    end(arr));
+	xMin = *std::min_element(std::begin(arr),
+							 std::end(arr));
+	xMax = *std::max_element(std::begin(arr),
+							 std::end(arr));
 
     xMin = floor(xMin);
     xMax = ceil(xMax);
@@ -1994,8 +1887,8 @@ void kernelEst(const signalType & arr, QString picPath)
     }
 
     double valueMax;
-    valueMax = *std::max(values.begin(),
-                        values.end());
+	valueMax = *std::max_element(std::begin(values),
+								 std::end(values));
 
     for(int i = 0; i < pic.width() - 1; ++i)
     {
@@ -2287,11 +2180,11 @@ void splitZerosEdges(matrix & dataIn, const int & ns, const int & length, int * 
 
 template <typename Typ>
 void calcRawFFT(const Typ & inData,
-                mat & dataFFT,
-                const int &ns,
-                const int &fftLength,
-                const int &Eyes,
-                const int &NumOfSmooth)
+				std::vector<std::vector<double>> & dataFFT,
+				const int & ns,
+				const int & fftLength,
+				const int & Eyes,
+				const int & NumOfSmooth)
 {
 
     const double norm1 = sqrt(fftLength / double(fftLength-Eyes));
@@ -2391,26 +2284,47 @@ void calcSpectre(const std::valarray<double> & inSignal,
 }
 
 
-template double covariance(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
-template double covariance(const int * const &arr1, const int * const &arr2, int length, int shift, bool fromZero);
-template double covariance(const std::vector<int> &arr1, const std::vector<int> &arr2, int length, int shift, bool fromZero);
+template <typename Typ>
+double mean(const Typ & arr, int length, int shift)
+{
+	double res = 0.;
+	for(int i = shift; i < shift + length; ++i)
+	{
+		res += arr[i];
+	}
+	return res / length;
+}
+template double mean(const std::vector<double> &arr, int length, int shift);
+template double mean(const std::valarray<double> &arr, int length, int shift);
+
+/// needed for fractal dimension
+template <typename Typ>
+double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool fromZero)
+{
+	double res = 0.;
+	double m1 = 0.;
+	double m2 = 0.;
+	if(!fromZero)
+	{
+		m1 = mean(arr1, length, shift);
+		m2 = mean(arr2, length, shift);
+	}
+	for(int i = 0; i < length; ++i)
+	{
+		res += (arr1[i + shift] - m1) *
+				(arr2[i + shift] - m2);
+	}
+	return res;
+}
 template double covariance(const std::vector<double> &arr1, const std::vector<double> &arr2, int length, int shift, bool fromZero);
 template double covariance(const std::valarray<double> &arr1, const std::valarray<double> &arr2, int length, int shift, bool fromZero);
 
-template double correlation(const double * const &arr1, const double * const &arr2, int length, int shift, bool fromZero);
-template double correlation(const int * const  &arr1, const int * const &arr2, int length, int shift, bool fromZero);
-template double correlation(const std::vector<int> &arr1, const std::vector<int> &arr2, int length, int shift, bool fromZero);
-template double correlation(const std::vector<double> &arr1, const std::vector<double> &arr2, int length, int shift, bool fromZero);
-template double correlation(const std::valarray<double> &arr1, const std::valarray<double> &arr2, int length, int shift, bool fromZero);
 
 
 template double fractalDimension(const std::valarray<double> &arr, const QString &picPath = QString());
 template double fractalDimension(const std::vector<double> &arr, const QString &picPath = QString());
 
-template void calcRawFFT(const mat & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
-template void calcRawFFT(const matrix & inData, mat & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
-
-template void kernelEst(const std::vector<double> & arr, QString picPath);
-template void kernelEst(const std::valarray<double> & arr, QString picPath);
+template void calcRawFFT(const std::vector<std::vector<double>> & inData, std::vector<std::vector<double>> & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
+template void calcRawFFT(const matrix & inData, std::vector<std::vector<double>> & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
 }// namespace myLib

@@ -1,4 +1,5 @@
 #include "autos.h"
+#include <myLib/clustering.h>
 
 using std::cout;
 using std::endl;
@@ -1281,7 +1282,7 @@ void clustering()
 		}
 	}
 
-	myLib::sammonProj(distOld, types,
+	clust::sammonProj(distOld, types,
 					  "/media/Files/Data/Mati/sammon.jpg");
 #if 0
 	//test
