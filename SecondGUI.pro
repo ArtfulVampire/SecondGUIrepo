@@ -50,12 +50,10 @@ SOURCES += main.cpp\
     mainwindow/mainwindow_autos.cpp \
     mainwindow/mainwindow_customF.cpp \
     myLib/myLib_clustering.cpp \
-    myLib/myLib_general.cpp \
     myLib/myLib_signalProcessing.cpp \
     myLib/myLib_draws.cpp \
     myLib/myLib_deprecate.cpp \
     myLib/myLib_dataHandler.cpp \
-    myLib/myLib_smallFuncs.cpp \
     net/net.cpp \
     net/net_classification.cpp \
     net/net_setsgets.cpp \
@@ -91,7 +89,9 @@ SOURCES += main.cpp\
     myLib/myLib_drw.cpp \
     myLib/myLib_wavelet.cpp \
     myLib/myLib_statistics.cpp \
-    myLib/myLib_output.cpp
+    myLib/myLib_output.cpp \
+    myLib/myLib_mati.cpp \
+    myLib/myLib_smallFuncs.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

@@ -1,201 +1,318 @@
 #include "library.h"
 
 
-
 namespace myLib
 {
+
+QString getLabelName(const QString & label)
+{
+    QRegExp forChan(R"([ ].{1,4}[\-])");
+    forChan.indexIn(label);
+    QString chanName = forChan.cap();
+    chanName.remove(QRegExp(R"([\-\s])"));
+    return chanName;
+}
+
+QString rerefChannel(const QString & initialRef,
+                     const QString & targetRef,
+                     const QString & currentNum,
+                     const QString & earsChan,
+                     const QString & groundChan,
+                     const std::vector<QString> & sign)
+{
+    /// assume there is only one '-' char in channel name
+    /// assume the name to be: * Name-Ref *
+    /// length of channel and ref are less than 4
+
+    if(targetRef == "A1")
+    {
+        if(initialRef == "A2")
+        {
+            return currentNum + sign[0] + earsChan;
+        }
+        else if(initialRef == "N")
+        {
+            return currentNum + "-" + groundChan;
+        }
+        else if(initialRef == "Ar")
+        {
+            return currentNum + sign[0] + earsChan + "/2";
+        }
+    }
+    else if(targetRef == "A2")
+    {
+        if(initialRef == "A1")
+        {
+            return currentNum + sign[1] + earsChan;
+        }
+        else if(initialRef == "N")
+        {
+            return currentNum + "-" + groundChan + sign[1] + earsChan;
+        }
+        else if(initialRef == "Ar")
+        {
+            return currentNum + sign[1] + earsChan + "/2";
+        }
+    }
+    else if(targetRef == "N")
+    {
+        if(initialRef == "A1")
+        {
+            return currentNum + "+" + groundChan;
+        }
+        else if(initialRef == "A2")
+        {
+            return currentNum + sign[0] + earsChan + "+" + groundChan;
+        }
+        else if(initialRef == "Ar")
+        {
+            return currentNum + sign[0] + earsChan + "/2"  + "+" + groundChan;
+        }
+    }
+    else if(targetRef == "Ar")
+    {
+        if(initialRef == "A1")
+        {
+            return currentNum + sign[1] + earsChan + "/2";
+        }
+        else if(initialRef == "A2")
+        {
+            return currentNum + sign[0] + earsChan + "/2";
+        }
+        else if(initialRef == "N")
+        {
+            return currentNum + "-" + groundChan + sign[1] + earsChan + "/2";
+        }
+    }
+    return currentNum;
+
+}
+
+QString setFileName(const QString & initNameOrPath) // append _num before the dot
+{
+    QString beforeDot = initNameOrPath;
+    beforeDot.resize(beforeDot.lastIndexOf('.'));
+
+    QString afterDot = initNameOrPath; //with the dot
+    afterDot = afterDot.right(afterDot.length() - afterDot.lastIndexOf('.'));
+
+    QString helpString;
+    helpString = beforeDot + afterDot;
+    int counter = 0;
+    while (QFile::exists(helpString))
+    {
+        helpString = beforeDot + "_" + QString::number(counter++) + afterDot;
+    }
+    return helpString;
+}
+
+QString getExpNameLib(const QString & filePath, bool shortened) // getFileName
+{
+    QString hlp;
+    hlp = (filePath);
+    hlp = hlp.right(hlp.length() - hlp.lastIndexOf(slash) - 1); // ExpName.edf
+    hlp = hlp.left(hlp.lastIndexOf('.')); // ExpName
+	if(shortened)
+	{
+		hlp = hlp.left(hlp.indexOf('_')); //
+	}
+    return hlp;
+}
+
+QString getDirPathLib(const QString & filePath)
+{
+	return filePath.left(filePath.lastIndexOf(slash));
+}
+
+
+QString getFileMarker(const QString & fileName)
+{
+    for(const QString & fileMark : def::fileMarkers)
+    {
+        QStringList lst = fileMark.split(' ', QString::SkipEmptyParts);
+        for(const QString & filter : lst)
+        {
+            if(fileName.contains(filter))
+            {
+                return filter.right(3); // generality markers appearance
+            }
+        }
+    }
+    return QString();
+}
+
+QString getExt(const QString & filePath)
+{
+    QString helpString = (filePath);
+    if(helpString.contains('.'))
+    {
+        helpString = helpString.right(helpString.length() - helpString.lastIndexOf('.') - 1);
+        return helpString;
+    }
+    else
+    {
+        return QString();
+    }
+}
+
+QString getFileName(const QString & filePath, bool withExtension)
+{
+    QString helpString = (filePath);
+    helpString = helpString.right(helpString.length() - helpString.lastIndexOf(slash) - 1);
+    if(!withExtension)
+    {
+        helpString = helpString.left(helpString.lastIndexOf("."));
+    }
+    return helpString;
+}
+
+QString getPicPath(const QString & dataPath,
+				   const QString & ExpNameDir)
+{
+	QString fileName = myLib::getFileName(dataPath);
+    fileName.replace('.', '_');
+
+	QString helpString = (ExpNameDir + slash);
+
+    if(dataPath.contains("Reals"))
+    {
+		helpString += "Signals";
+	}
+    else if(dataPath.contains("winds"))
+	{
+		helpString += "Signals" + slash + "winds";
+    }
+    else if(dataPath.contains("cut"))
+    {
+        helpString += "SignalsCut";
+    }
+    helpString += slash + fileName + ".jpg";
+    return helpString;
+}
+
+int getTypeOfFileName(const QString & fileName)
+{
+    QStringList leest;
+    int res = 0;
+    for(const QString & marker : def::fileMarkers)
+    {
+        leest.clear();
+        leest = marker.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+        for(const QString & filter : leest)
+        {
+            if(fileName.contains(filter))
+            {
+                return res;
+            }
+        }
+        ++res;
+    }
+    return -1;
+}
 
 template <typename Container>
 uint indexOfMax(const Container & cont)
 {
-    uint res = 0;
-    uint ans = 0;
-    auto val = *(std::begin(cont));
+	uint res = 0;
+	uint ans = 0;
+	auto val = *(std::begin(cont));
 
-    for(auto it = std::begin(cont);
-        it != std::end(cont);
-        ++it, ++res)
-    {
-        if(*it > val)
-        {
-            ans = res;
-            val = *it;
-        }
-    }
-    return ans;
+	for(auto it = std::begin(cont);
+		it != std::end(cont);
+		++it, ++res)
+	{
+		if(*it > val)
+		{
+			ans = res;
+			val = *it;
+		}
+	}
+	return ans;
 }
 
 std::string funcName(std::string in)
 {
-    in.resize(in.find('('));
-    for(char a : {' ', '='})
-    {
-        auto b = in.rfind(a);
-        if(b != std::string::npos)
-        {
-            in = in.substr(b + 1);
-        }
-    }
-    return in;
+	in.resize(in.find('('));
+	for(char a : {' ', '='})
+	{
+		auto b = in.rfind(a);
+		if(b != std::string::npos)
+		{
+			in = in.substr(b + 1);
+		}
+	}
+	return in;
 }
 
 void writeByte(FILE * fil, int num)
 {
-    char tempChar = num;
-    fwrite(&tempChar, sizeof(char), 1, fil);
+	char tempChar = num;
+	fwrite(&tempChar, sizeof(char), 1, fil);
 }
 
 void writeBytes(FILE * fil, int value, int numBytes)
 {
-    int tempInt;
-    for(int i = 0; i < numBytes; ++i)
-    {
-        tempInt = (value / int(pow(256, i)))%256;
-        writeByte(fil, tempInt);
-    }
-}
-
-
-void writeWavFile(const std::vector<double> & inData, const QString & outPath)
-{
-    // http://soundfile.sapp.org/doc/WaveFormat/
-
-
-    FILE * outFile;
-    outFile = fopen(outPath, "wb");
-    if(outFile == NULL)
-    {
-		std::cout << "cant open file to write" << std::endl;
-        return;
-    }
-
-    const int numChannels = 1;
-    const int bitsPerSample = 16;
-    const int sampleFreq = 44100;
-    const int numSamples = inData.size();
-    const double maxAmpl = *(std::max_element(inData.begin(), inData.end())) + 1e-3;
-    const int subchunk2size = numSamples * numChannels * bitsPerSample / 8;
-    const int chunkSize = 4 + (8 + 16) + (8 + subchunk2size);
-    const int byteRate = sampleFreq * numChannels * bitsPerSample / 8;
-    const int blockAlign = numChannels * bitsPerSample / 8;
-
-    //RIFF
-    writeByte(outFile, 0x52);
-    writeByte(outFile, 0x49);
-    writeByte(outFile, 0x46);
-    writeByte(outFile, 0x46);
-
-    //chunksize = 44 + ns * numSamples * bytesPerSample
-    writeBytes(outFile, chunkSize, 4);
-
-    //WAVE
-    writeByte(outFile, 0x57);
-    writeByte(outFile, 0x41);
-    writeByte(outFile, 0x56);
-    writeByte(outFile, 0x45);
-
-    // fmt
-    writeByte(outFile, 0x66);
-    writeByte(outFile, 0x6d);
-    writeByte(outFile, 0x74);
-    writeByte(outFile, 0x20);
-
-    //Subchunk1Size = 16 for pcm
-    writeBytes(outFile, 16, 4);
-
-    //audioFormat = 1 PCM
-    writeBytes(outFile, 1, 2);
-
-    //numChannels
-    writeBytes(outFile, numChannels, 2);
-
-    //sampleRate
-    writeBytes(outFile, sampleFreq, 4);
-
-    //BYTErate
-    writeBytes(outFile, byteRate, 4);
-
-    //block align
-    writeBytes(outFile, blockAlign, 2);
-
-    //bitsPerSample
-    writeBytes(outFile, bitsPerSample, 2);
-
-    //data
-    writeByte(outFile, 0x64);
-    writeByte(outFile, 0x61);
-    writeByte(outFile, 0x74);
-    writeByte(outFile, 0x61);
-
-    //subchunk2size
-    writeBytes(outFile, subchunk2size, 4);
-
-    //the data itself
-    int currVal;
-    for(int i = 0; i < numSamples; ++i)
-    {
-        for(int j = 0; j < numChannels; ++j)
-        {
-            currVal = int(inData[i] * pow(256, bitsPerSample/8/numChannels) / maxAmpl);
-            writeBytes(outFile, currVal, int(bitsPerSample/8/numChannels));
-        }
-    }
-    fclose(outFile);
+	int tempInt;
+	for(int i = 0; i < numBytes; ++i)
+	{
+		tempInt = (value / int(pow(256, i)))%256;
+		writeByte(fil, tempInt);
+	}
 }
 
 
 int len(const QString & s) //lentgh till double \0-byte for EDF+annotations
 {
-    int l = 0;
-    for(int i = 0; i < 100500; ++i)
-    {
-        if(s[i]!='\0') ++l;
-        else
-        {
-            if(s[i+1]!='\0') ++l;
-            if(s[i+1]=='\0')
-            {
-                ++l;
-                return l;
-            }
-        }
-    }
-    return -1;
+	int l = 0;
+	for(int i = 0; i < 100500; ++i)
+	{
+		if(s[i]!='\0') ++l;
+		else
+		{
+			if(s[i+1]!='\0') ++l;
+			if(s[i+1]=='\0')
+			{
+				++l;
+				return l;
+			}
+		}
+	}
+	return -1;
 }
 
 
 bool areEqualFiles(QString path1, QString path2)
 {
-    QTime myTime;
-    myTime.start();
+	QTime myTime;
+	myTime.start();
 
-    typedef qint8 byte;
-    FILE * fil1 = fopen(path1, "rb");
-    FILE * fil2 = fopen(path2, "rb");
-    if(fil1 == NULL || fil2 == NULL)
-    {
+	typedef qint8 byte;
+	FILE * fil1 = fopen(path1, "rb");
+	FILE * fil2 = fopen(path2, "rb");
+	if(fil1 == NULL || fil2 == NULL)
+	{
 		std::cout << "areEqualFiles: some of the files == NULL" << std::endl;
-    }
-    byte byt1, byt2;
-    int pos = 0;
-    while(!feof(fil1) && !feof(fil2))
-    {
-        fread(&byt1, sizeof(byte), 1, fil1);
-        fread(&byt2, sizeof(byte), 1, fil2);
-        if(byt1 != byt2)
-        {
-            fclose(fil1);
-            fclose(fil2);
+	}
+	byte byt1, byt2;
+	int pos = 0;
+	while(!feof(fil1) && !feof(fil2))
+	{
+		fread(&byt1, sizeof(byte), 1, fil1);
+		fread(&byt2, sizeof(byte), 1, fil2);
+		if(byt1 != byt2)
+		{
+			fclose(fil1);
+			fclose(fil2);
 			std::cout << "equalFiles(false): time = " << myTime.elapsed() / 1000. << " sec"
 				 << "\t" << "pos(bytes) = " << pos << std::endl;
-            return false;
-        }
-        ++pos;
-    }
-    fclose(fil1);
-    fclose(fil2);
+			return false;
+		}
+		++pos;
+	}
+	fclose(fil1);
+	fclose(fil2);
 	std::cout << "equalFiles(true): time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
-    return true;
+	return true;
 }
 
 double areSimilarFiles(const QString & path1,
@@ -241,190 +358,166 @@ int countSymbolsInFile(const QString & filePath, char inChar)
 
 char * strToChar(const QString & input)
 {
-    char * array = new char [input.length() + 1];
-    memcpy(array, input.toStdString().c_str(), input.length());
-    array[input.length()] = '\0';
-    return array;
+	char * array = new char [input.length() + 1];
+	memcpy(array, input.toStdString().c_str(), input.length());
+	array[input.length()] = '\0';
+	return array;
 }
 
 char * QStrToCharArr(const QString & input, const int &len)
 {
-    // fixes problem with labels length
+	// fixes problem with labels length
 
-    int leng = input.length();
-    if(len != -1)
-    {
-        leng = len;
-    }
-    char * array = new char [leng + 1];
-    memcpy(array, input.toStdString().c_str(), input.length());
+	int leng = input.length();
+	if(len != -1)
+	{
+		leng = len;
+	}
+	char * array = new char [leng + 1];
+	memcpy(array, input.toStdString().c_str(), input.length());
 
-    if(len != -1)
-    {
-        for(int i = input.length(); i < leng; ++i)
-        {
-            array[i] = ' ';
-        }
-    }
-    array[leng] = '\0';
-    return array;
+	if(len != -1)
+	{
+		for(int i = input.length(); i < leng; ++i)
+		{
+			array[i] = ' ';
+		}
+	}
+	array[leng] = '\0';
+	return array;
 }
 
 
 FILE * fopen(QString filePath, const char *__modes)
 {
-    return std::fopen(filePath.toStdString().c_str(), __modes);
+	return std::fopen(filePath.toStdString().c_str(), __modes);
 }
 
 
 
 void cleanDir(QString dirPath, QString nameFilter, bool ext)
 {
-    QDir tmpDir(dirPath);
+	QDir tmpDir(dirPath);
 
-    QStringList lst;
+	QStringList lst;
 
-    if(nameFilter.isEmpty())
-    {
-        lst = tmpDir.entryList(QDir::Files);
-    }
-    else
-    {
-        QStringList filter;
-        QString hlp;
-        filter.clear();
-        if(ext)
-        {
-            hlp = "*." + nameFilter;
-        }
-        else
-        {
-            hlp = "*" + nameFilter + "*";
-        }
-        filter << hlp;
-        lst = tmpDir.entryList(filter, QDir::Files);
-    }
+	if(nameFilter.isEmpty())
+	{
+		lst = tmpDir.entryList(QDir::Files);
+	}
+	else
+	{
+		QStringList filter;
+		QString hlp;
+		filter.clear();
+		if(ext)
+		{
+			hlp = "*." + nameFilter;
+		}
+		else
+		{
+			hlp = "*" + nameFilter + "*";
+		}
+		filter << hlp;
+		lst = tmpDir.entryList(filter, QDir::Files);
+	}
 
-    for(int h = 0; h < lst.length(); ++h)
-    {
-        QFile::remove(tmpDir.absolutePath() + slash + lst[h]);
-    }
+	for(int h = 0; h < lst.length(); ++h)
+	{
+		QFile::remove(tmpDir.absolutePath() + slash + lst[h]);
+	}
 
 }
 
 
-
-QString fitNumber(const double &input, int N) // append spaces
+void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 {
-    QString h;
-    h.setNum(input);
-    h += QString(N, ' ');
-    return h.left(N);
-}
-QString fitString(const QString & input, int N) // append spaces
-{
-    QString h(input);
-    h += QString(N, ' ');
-    return h.left(N);
-}
-
-QString rightNumber(const unsigned int input, int N) // prepend zeros
-{
-    QString h;
-    h.setNum(input);
-    h.prepend(QString(N, '0'));
-    return h.right(N);
-}
+	// http://soundfile.sapp.org/doc/WaveFormat/
 
 
+	FILE * outFile;
+	outFile = fopen(outPath, "wb");
+	if(outFile == NULL)
+	{
+		std::cout << "cant open file to write" << std::endl;
+		return;
+	}
 
+	const int numChannels = 1;
+	const int bitsPerSample = 16;
+	const int sampleFreq = 44100;
+	const int numSamples = inData.size();
+	const double maxAmpl = *(std::max_element(inData.begin(), inData.end())) + 1e-3;
+	const int subchunk2size = numSamples * numChannels * bitsPerSample / 8;
+	const int chunkSize = 4 + (8 + 16) + (8 + subchunk2size);
+	const int byteRate = sampleFreq * numChannels * bitsPerSample / 8;
+	const int blockAlign = numChannels * bitsPerSample / 8;
 
+	//RIFF
+	writeByte(outFile, 0x52);
+	writeByte(outFile, 0x49);
+	writeByte(outFile, 0x46);
+	writeByte(outFile, 0x46);
 
+	//chunksize = 44 + ns * numSamples * bytesPerSample
+	writeBytes(outFile, chunkSize, 4);
 
-QString matiCountByteStr(const double & marker)
-{
-    QString result;
-    std::vector<bool> byteMarker;
-    byteMarker = matiCountByte(marker);
+	//WAVE
+	writeByte(outFile, 0x57);
+	writeByte(outFile, 0x41);
+	writeByte(outFile, 0x56);
+	writeByte(outFile, 0x45);
 
-    for(int h = 15; h >= 0; --h)
-    {
-        result += QString::number(int(byteMarker[h]));
-        if(h == 8) result += " ";
-    }
-    return result;
+	// fmt
+	writeByte(outFile, 0x66);
+	writeByte(outFile, 0x6d);
+	writeByte(outFile, 0x74);
+	writeByte(outFile, 0x20);
 
-}
-void matiPrintMarker(const double &marker, QString pre)
-{
-    std::vector<bool> byteMarker;
-    byteMarker = matiCountByte(marker);
+	//Subchunk1Size = 16 for pcm
+	writeBytes(outFile, 16, 4);
 
-    if(!pre.isEmpty())
-    {
-		std::cout << pre.toStdString() << " = ";
-    }
-	std::cout << marker << "\t" << matiCountByteStr(marker) << std::endl;
-}
+	//audioFormat = 1 PCM
+	writeBytes(outFile, 1, 2);
 
-std::vector<bool> matiCountByte(double const &  marker)
-{
-    std::vector<bool> byteMarker;
-    for(int h = 0; h < 16; ++h)
-    {
-        byteMarker.push_back(matiCountBit(marker, h));
-    }
-    return byteMarker;
-}
+	//numChannels
+	writeBytes(outFile, numChannels, 2);
 
-void matiFixMarker(double & marker)
-{
-    //throw 10000000 00000000 and 00000000 10000000 and 00000000 00000000
-    if(marker == pow(2, 15) || marker == pow(2, 7) || marker == 0)
-    {
-        marker = 0;
-        return;
-    }
+	//sampleRate
+	writeBytes(outFile, sampleFreq, 4);
 
-    std::vector<bool> byteMarker = matiCountByte(marker);
-    bool boolBuf;
+	//BYTErate
+	writeBytes(outFile, byteRate, 4);
 
-    if(!byteMarker[7]) //elder byte should start with 0 and younger - with 1
-    {
-        //swap bytes if wrong order
-        for(int h = 0; h < 8; ++h)
-        {
-            boolBuf = byteMarker[h];
-            byteMarker[h] = byteMarker[h + 8];
-            byteMarker[h + 8] = boolBuf;
-        }
-        byteMarker[7] = 1;
-    }
-    marker = double(matiCountDecimal(byteMarker));
+	//block align
+	writeBytes(outFile, blockAlign, 2);
+
+	//bitsPerSample
+	writeBytes(outFile, bitsPerSample, 2);
+
+	//data
+	writeByte(outFile, 0x64);
+	writeByte(outFile, 0x61);
+	writeByte(outFile, 0x74);
+	writeByte(outFile, 0x61);
+
+	//subchunk2size
+	writeBytes(outFile, subchunk2size, 4);
+
+	//the data itself
+	int currVal;
+	for(int i = 0; i < numSamples; ++i)
+	{
+		for(int j = 0; j < numChannels; ++j)
+		{
+			currVal = int(inData[i] * pow(256, bitsPerSample/8/numChannels) / maxAmpl);
+			writeBytes(outFile, currVal, int(bitsPerSample/8/numChannels));
+		}
+	}
+	fclose(outFile);
 }
 
-int matiCountDecimal(std::vector<bool> byteMarker)
-{
-    int res = 0;
-    for(int h = 0; h < 16; ++h)
-    {
-        res += byteMarker[h] * pow(2, h);
-    }
-    return res;
-}
 
-int matiCountDecimal(QString byteMarker)
-{
-    byteMarker.remove(' ');
-    if(byteMarker.length() != 16) return 0;
-
-    int res = 0;
-    for(int h = 0; h < 16; ++h)
-    {
-		res += ((byteMarker[h] == QChar('1')) ? 1 : 0) * pow(2, 15-h);
-    }
-    return res;
-}
 
 
 template uint indexOfMax(const std::vector<int> & cont);
@@ -432,4 +525,8 @@ template uint indexOfMax(const std::vector<double> & cont);
 template uint indexOfMax(const std::valarray<double> & cont);
 template uint indexOfMax(const std::list<double> & cont);
 
-}// namespace myLib
+
+} // namespace myLib
+
+
+

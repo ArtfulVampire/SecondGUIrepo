@@ -133,6 +133,14 @@ void svd(const matrix & initialData,
 		 int eigenVecNum = -1);
 
 
+const std::vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
+						  const std::vector<int> eegChannels = leest19,
+						  const QString & windsDir = def::dir->absolutePath()
+													   + "/winds",
+						  const QString & outFilePath = def::dir->absolutePath()
+														+ "/eyes.txt");
+
 
 } // namespace myLib
 

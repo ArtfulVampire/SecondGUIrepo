@@ -4,6 +4,31 @@
 
 namespace myLib
 {
+
+QString fitNumber(const double &input, int N) // append spaces
+{
+	QString h;
+	h.setNum(input);
+	h += QString(N, ' ');
+	return h.left(N);
+}
+QString fitString(const QString & input, int N) // append spaces
+{
+	QString h(input);
+	h += QString(N, ' ');
+	return h.left(N);
+}
+
+QString rightNumber(const unsigned int input, int N) // prepend zeros
+{
+	QString h;
+	h.setNum(input);
+	h.prepend(QString(N, '0'));
+	return h.right(N);
+}
+
+
+
 std::istream & operator>> (std::istream &is, QString & in)
 {
 	std::string tmp;

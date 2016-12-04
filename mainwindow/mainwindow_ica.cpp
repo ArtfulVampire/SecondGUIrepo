@@ -1,10 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-
-using namespace std;
+#include <myLib/output.h>
 using namespace myLib;
-using namespace smallLib;
 
 void MainWindow::ICA() //fastICA
 {
@@ -37,8 +35,8 @@ void MainWindow::ICA() //fastICA
     int counter;
 
     helpString = def::dir->absolutePath()
-                 + slash + def::ExpName + ".edf";
-    cout << "Ica started: " << helpString << endl;
+				 + "/" + def::ExpName + ".edf";
+	std::cout << "Ica started: " << helpString << std::endl;
     readData();
 
     const uint ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
@@ -48,8 +46,7 @@ void MainWindow::ICA() //fastICA
     const double eigenValuesTreshold = pow(10., - ui->svdDoubleSpinBox->value());
     const double vectorWTreshold = pow(10., - ui->vectwDoubleSpinBox->value());
     const QString pathForAuxFiles = def::dir->absolutePath()
-                                    + slash + "Help"
-                                    + slash + "ica";
+									+ "/Help/ica";
 
     matrix centeredMatrix = globalEdf.getData();
 
@@ -61,8 +58,8 @@ void MainWindow::ICA() //fastICA
     matrix eigenVectors;
     std::valarray<double> eigenValues;
 
-    dealWithEyes(centeredMatrix,
-                 ns);
+	myLib::dealWithEyes(centeredMatrix,
+						ns);
 
     const QString eigMatPath = pathForAuxFiles
 							   + slash + def::ExpName
@@ -74,28 +71,28 @@ void MainWindow::ICA() //fastICA
     if(!QFile::exists(eigMatPath) &&
        !QFile::exists(eigValPath))
     {
-        svd(centeredMatrix,
-            eigenVectors,
-            eigenValues,
-            ns,
-            eigenValuesTreshold);
+		myLib::svd(centeredMatrix,
+				   eigenVectors,
+				   eigenValues,
+				   ns,
+				   eigenValuesTreshold);
 
         // write eigenVectors
-        writeMatrixFile(eigMatPath, eigenVectors);
+		myLib::writeMatrixFile(eigMatPath, eigenVectors);
 
         // write eigenValues
-        writeFileInLine(eigValPath, eigenValues);
+		myLib::writeFileInLine(eigValPath, eigenValues);
     }
     else /// read
     {
         // write eigenVectors
-        readMatrixFile(eigMatPath, eigenVectors);
+		myLib::readMatrixFile(eigMatPath, eigenVectors);
 
         // write eigenValues
-        readFileInLine(eigValPath, eigenValues);
+		myLib::readFileInLine(eigValPath, eigenValues);
     }
 
-    cout << "ICA: svd read = " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "ICA: svd read = " << myTime.elapsed() / 1000. << " sec" << std::endl;
     myTime.restart();
 
 
@@ -130,12 +127,12 @@ void MainWindow::ICA() //fastICA
 
 
     matrix vectorW(ns, ns);
-    countVectorW(vectorW,
-                 dataICA,
-                 ns,
-                 dataLength,
-                 vectorWTreshold);
-    cout << "ICA: vectorW ready = " << myTime.elapsed() / 1000. << " sec" << endl;
+	myLib::countVectorW(vectorW,
+						dataICA,
+						ns,
+						dataLength,
+						vectorWTreshold);
+	std::cout << "ICA: vectorW ready = " << myTime.elapsed() / 1000. << " sec" << std::endl;
     myTime.restart();
 
 //    helpString = pathForAuxFiles
@@ -309,7 +306,7 @@ void MainWindow::ICA() //fastICA
     double sum1;
     for(uint i = 0; i < ns; ++i) // for each component
     {
-        sum1 = norma(matrixA.getCol(i));
+		sum1 = smallLib::norma(matrixA.getCol(i));
 
         for(uint k = 0; k < ns; ++k)
         {
@@ -325,13 +322,13 @@ void MainWindow::ICA() //fastICA
 
     for(uint i = 0; i < ns; ++i)
     {
-        sum1 = variance(components[i]);
+		sum1 = smallLib::variance(components[i]);
         sumSquares += sum1;
         colsNorms.push_back(std::make_pair(sum1, i));
     }
 
-    std::sort(colsNorms.begin(),
-              colsNorms.end(),
+	std::sort(std::begin(colsNorms),
+			  std::end(colsNorms),
               [](std::pair <double, int> i, std::pair <double, int> j)
     {
         return i.first > j.first;
@@ -382,12 +379,12 @@ void MainWindow::ICA() //fastICA
     for(uint i = 0; i < ns; ++i)
     {
         explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
-        cout << "comp = " << i+1 << "\t";
-        cout << "explVar = " << doubleRound(explainedVariance[i], 2) << endl;
+		std::cout << "comp = " << i+1 << "\t";
+		std::cout << "explVar = " << smallLib::doubleRound(explainedVariance[i], 2) << std::endl;
     }
-    helpString = (pathForAuxFiles
-                                          + slash + def::ExpName + "_explainedVariance.txt");
-    writeFileInLine(helpString, explainedVariance);
+	helpString = (pathForAuxFiles
+				  + "/" + def::ExpName + "_explainedVariance.txt");
+	myLib::writeFileInLine(helpString, explainedVariance);
     //end componets ordering
 #endif
 
@@ -402,7 +399,7 @@ void MainWindow::ICA() //fastICA
         std::valarray<double> currCol = components.getCol(j, ns);
         for(uint i = 0; i < ns; ++i)
         {
-            sum1 = abs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
+			sum1 = abs((centeredMatrix[i][j] - smallLib::prod(currCol, matrixA[i]))
                        / centeredMatrix[i][j]);
             if(sum1 > 0.05
                && abs(centeredMatrix[i][j]) > 0.5)
@@ -417,17 +414,17 @@ void MainWindow::ICA() //fastICA
             }
         }
     }
-    cout << "num of errors = " << counter << endl;
+	std::cout << "num of errors = " << counter << std::endl;
 #endif
 
 
     //now should draw amplitude maps OR write to file
         helpString = pathForAuxFiles
                      + slash + def::ExpName + "_maps.txt";
-    writeMatrixFile(helpString, matrixA); //generality 19-ns
-	drawMapsICA(helpString,
-				def::dir->absolutePath() + "/Help/ica",
-				def::ExpName);
+		myLib::writeMatrixFile(helpString, matrixA); //generality 19-ns
+		myLib::drawMapsICA(helpString,
+						   def::dir->absolutePath() + "/Help/ica",
+						   def::ExpName);
 
 
     // save components
@@ -442,5 +439,5 @@ void MainWindow::ICA() //fastICA
     globalEdf.writeOtherData(components, helpString, chanList);
     def::ns = ns + 1; // numOfICs + markers
 
-    cout << "ICA ended. time = " << wholeTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "ICA ended. time = " << wholeTime.elapsed()/1000. << " sec" << std::endl;
 }

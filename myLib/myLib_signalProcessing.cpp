@@ -1,4 +1,5 @@
 #include <myLib/signalProcessing.h>
+#include <myLib/dataHandlers.h>
 #include <DspFilters/Dsp.h>
 #include <QPixmap>
 #include <QPainter>
@@ -1913,5 +1914,84 @@ void calcSpectre(const std::valarray<double> & inSignal,
     }
 }
 
+
+void eyesProcessingStatic(const std::vector<int> eogChannels,
+						  const std::vector<int> eegChannels,
+						  const QString & windsDir,
+						  const QString & outFilePath)
+{
+	QTime myTime;
+	myTime.start();
+
+
+	QStringList leest;
+	/// if cut from reals
+//    makeFullFileList(windsDir, leest);
+	/// if cut from edf
+	leest = QDir(windsDir).entryList({"*" + def::plainDataExtension});
+
+	for(QString & item : leest)
+	{
+		item.prepend(windsDir + "/");
+	}
+
+	const uint Size = eogChannels.size() + 1; // usually 3
+
+	matrix dataE{};
+
+	//make dataE array to count covariation matrix
+	int NumOfSlices = 0;
+	int help;
+	for(auto filePath : leest)
+	{
+		readPlainData(filePath,
+					  dataE,
+					  help,
+					  NumOfSlices);
+		NumOfSlices += help;
+	}
+
+	std::vector<int> signalNums;
+	for(int eogNum : eogChannels)
+	{
+		signalNums.push_back(eogNum);
+	}
+
+	matrix matrixInit(Size, Size);
+	matrix coefficients(eegChannels.size(), eogChannels.size());
+
+	for(uint k = 0; k < eegChannels.size(); ++k)
+	{
+		signalNums.push_back(eegChannels[k]);
+		for(uint j = 0; j < Size; ++j)
+		{
+			for(uint z = j; z < Size; ++z)
+			{
+				matrixInit[j][z] = smallLib::prod(dataE[signalNums[j]],
+						dataE[ signalNums[z]])
+						/ NumOfSlices;
+				// maybe (NumOfSlices-1), but it's not important here
+				if(j != z)
+				{
+					matrixInit[z][j] = matrixInit[j][z];
+				}
+			}
+		}
+		matrixInit.invert();
+		for(uint i = 0; i < eogChannels.size(); ++i)
+		{
+			coefficients[k][i] = - matrixInit[i][eogChannels.size()]
+								 / matrixInit[eogChannels.size()][eogChannels.size()];
+		}
+		signalNums.pop_back();
+	}
+
+	writeMatrixFile(outFilePath,
+					coefficients,
+					"NumOfEegChannels",
+					"NumOfEogChannels");
+
+	std::cout << "eyesProcessing: time elapsed = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+}
 
 }// namespace myLib

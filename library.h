@@ -57,9 +57,6 @@
 #include <myLib/output.h>
 
 
-
-
-
 namespace myLib
 {
 
@@ -76,30 +73,25 @@ std::string funcName(std::string in);
     }while(false)
 
 
-// consts
-
-template <typename Typ>
-inline QString nm(Typ in) {return QString::number(in);}
-template QString nm(int in);
-template QString nm(double in);
-
-
-
-
 
 // small shit
 void writeWavFile(const std::vector<double> & inData, const QString & outPath);
 int len(const QString & s); // string length for EDF+ annotations
 
-QString rightNumber(const unsigned int input, int N); // prepend zeros
-QString fitNumber(const double & input, int N); // append spaces
-QString fitString(const QString & input, int N); // append spaces
+QString getFileName(const QString & filePath, bool withExtension = true);
+QString getExpNameLib(const QString & filePath, bool shortened = false);
+QString getDirPathLib(const QString & filePath);
+QString getExt(const QString & filePath);
+QString getLabelName(const QString & label);
+QString getPicPath(const QString & dataPath,
+				   const QString & ExpNameDir = def::dir->absolutePath());
+QString getFileMarker(const QString & fileName);
+int getTypeOfFileName(const QString & fileName);
+
 
 QString setFileName(const QString & initNameOrPath); //-> initName_i.ext
-QString getPicPath(const QString & dataPath,
-                   const QDir * ExpNameDir = def::dir,
-                   const int & ns = def::ns);
-QString getFileName(const QString & filePath, bool withExtension = true);
+
+
 
 bool areEqualFiles(QString path1, QString path2);
 double areSimilarFiles(const QString & path1,
@@ -107,19 +99,10 @@ double areSimilarFiles(const QString & path1,
 int countSymbolsInFile(const QString & filePath, char inChar);
 
 
-QString getExpNameLib(const QString & filePath, bool shortened = false);
-QString getDirPathLib(const QString & filePath);
-QString getExt(const QString & filePath);
-QString getLabelName(const QString & label);
-
-
-
 char * strToChar(const QString & input);
 FILE * fopen(QString filePath, const char *__modes);
 char * QStrToCharArr(const QString & input, const int & len = -1);
 
-int getTypeOfFileName(const QString & fileName);
-QString getFileMarker(const QString & fileName);
 
 
 template <typename Container>
@@ -132,34 +115,12 @@ void makeSine(std::valarray<double> & in,
 			  int numPoints = -1,
 			  double srate = 250.);
 
-
-
-
-
 QString rerefChannel(const QString & initialName,
 					 const QString & targetRef = "Ar",
 					 const QString & currentNum = "1",
 					 const QString & earsChan = "20",
 					 const QString & groundChan = "21",
 					 const std::vector<QString> & sign = {"-", "+"});
-
-
-
-
-/// "static" functions
-const std::vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
-void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
-						  const std::vector<int> eegChannels = leest19,
-						  const QString & windsDir = def::dir->absolutePath()
-													   + slash + "winds",
-                          const QString & outFilePath = def::dir->absolutePath()
-                                                        + slash + "eyes.txt");
-
-
-
-
-
-
 void splineCoeffCount(const std::valarray<double> & inX,
 					  const std::valarray<double> & inY,
 					  int dim,
@@ -171,17 +132,11 @@ double splineOutput(const std::valarray<double> & inX,
 					const std::valarray<double> & A,
 					const std::valarray<double> & B,
 					double probeX);
-
-
-
-
 void splitZeros(matrix & inData,
 				const int & inLength,
 				int & outLength,
 				const QString & logFile = QString(),
 				const QString & dataName = def::ExpName);
-
-
 void dealWithEyes(matrix & inData,
 				  const int dimension);
 
