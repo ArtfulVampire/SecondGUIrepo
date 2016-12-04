@@ -1,11 +1,10 @@
-#include "library.h"
-
+#include <myLib/mati.h>
+#include <myLib/output.h>
+#include <iostream>
 
 
 namespace myLib
 {
-
-
 
 
 QString matiCountByteStr(const double & marker)

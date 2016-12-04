@@ -52,7 +52,6 @@ SOURCES += main.cpp\
     myLib/myLib_clustering.cpp \
     myLib/myLib_signalProcessing.cpp \
     myLib/myLib_draws.cpp \
-    myLib/myLib_deprecate.cpp \
     myLib/myLib_dataHandler.cpp \
     net/net.cpp \
     net/net_classification.cpp \
@@ -137,7 +136,8 @@ HEADERS  += mainwindow.h \
     myLib/draws.h \
     myLib/statistics.h \
     myLib/clustering.h \
-    myLib/output.h
+    myLib/output.h \
+    myLib/mati.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

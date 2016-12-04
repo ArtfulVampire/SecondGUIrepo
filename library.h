@@ -55,6 +55,7 @@
 #include <myLib/draws.h>
 #include <myLib/statistics.h>
 #include <myLib/output.h>
+#include <myLib/mati.h>
 
 
 namespace myLib
@@ -121,17 +122,6 @@ QString rerefChannel(const QString & initialName,
 					 const QString & earsChan = "20",
 					 const QString & groundChan = "21",
 					 const std::vector<QString> & sign = {"-", "+"});
-void splineCoeffCount(const std::valarray<double> & inX,
-					  const std::valarray<double> & inY,
-					  int dim,
-					  std::valarray<double> & outA,
-					  std::valarray<double> & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
-double splineOutput(const std::valarray<double> & inX,
-					const std::valarray<double> & inY,
-					int dim,
-					const std::valarray<double> & A,
-					const std::valarray<double> & B,
-					double probeX);
 void splitZeros(matrix & inData,
 				const int & inLength,
 				int & outLength,
@@ -141,26 +131,6 @@ void dealWithEyes(matrix & inData,
 				  const int dimension);
 
 
-// mati
-/// use bitset
-std::vector<bool> matiCountByte(const double & marker);
-QString matiCountByteStr(const double & marker);
-void matiPrintMarker(double const & marker, QString pre  = QString());
-void matiFixMarker(double & marker);
-int matiCountDecimal(std::vector<bool> byteMarker);
-int matiCountDecimal(QString byteMarker);
-inline bool matiCountBit(double const & marker, int num)
-{
-    return (int(marker) / int(pow(2, num))) % 2;
-}
-
-
 } // myLib namespace
-
-namespace deprecate
-{
-
-}
-
 
 #endif // LIBRARY_H

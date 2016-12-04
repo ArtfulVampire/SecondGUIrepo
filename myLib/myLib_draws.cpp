@@ -1,9 +1,9 @@
-#include "library.h"
-
-
-using namespace std;
-using namespace std::chrono;
-using namespace smallLib;
+#include <myLib/draws.h>
+#include <myLib/dataHandlers.h>
+#include <myLib/output.h>
+#include <myLib/signalProcessing.h>
+#include <QPixmap>
+#include <QPainter>
 
 namespace myLib
 {
@@ -39,11 +39,11 @@ double red(const int & range, double j, double V, double S)
 {
     double part = j / double(range);
     // matlab
-    if    (0. <= part && part <= colDots[0]) return V*(1.-S);
-    else if(colDots[0] < part && part <= colDots[1]) return V*(1.-S);
-    else if(colDots[1] < part && part <= colDots[2]) return V*(1.-S) + V*S*(part-colDots[1])/(colDots[2] - colDots[1]);
-    else if(colDots[2] < part && part <= colDots[3]) return V;
-    else if(colDots[3] < part && part <= 1.) return V - V*S*(part-colDots[3])/(1 - colDots[3])/2.;
+	if    (0. <= part && part <= myLib::colDots[0]) return V*(1.-S);
+	else if(myLib::colDots[0] < part && part <= myLib::colDots[1]) return V*(1.-S);
+	else if(myLib::colDots[1] < part && part <= myLib::colDots[2]) return V*(1.-S) + V*S*(part-myLib::colDots[1])/(myLib::colDots[2] - myLib::colDots[1]);
+	else if(myLib::colDots[2] < part && part <= myLib::colDots[3]) return V;
+	else if(myLib::colDots[3] < part && part <= 1.) return V - V*S*(part-myLib::colDots[3])/(1 - myLib::colDots[3])/2.;
     // old
     if    (0.000 <= part && part <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(part)*3.;
     else if(0.167 < part && part <= 0.400) return V*(1.-S);
@@ -58,11 +58,11 @@ double green(const int & range, double j, double V, double S)
     double part = j / double(range);
     double hlp = 1.0;
     // matlab
-    if    (0.0 <= part && part <= colDots[0]) return V*(1.-S);
-    else if(colDots[0] < part && part <= colDots[1]) return V*(1.-S) + V*S*(part-colDots[0])/(colDots[1] - colDots[0]);
-    else if(colDots[1] < part && part <= colDots[2]) return V;
-    else if(colDots[2] < part && part <= colDots[3]) return V - V*S*(part-colDots[2])/(colDots[3] - colDots[2]);
-    else if(colDots[3] < part && part <= 1.) return V*(1.-S);
+	if    (0.0 <= part && part <= myLib::colDots[0]) return V*(1.-S);
+	else if(myLib::colDots[0] < part && part <= myLib::colDots[1]) return V*(1.-S) + V*S*(part-myLib::colDots[0])/(myLib::colDots[1] - myLib::colDots[0]);
+	else if(myLib::colDots[1] < part && part <= myLib::colDots[2]) return V;
+	else if(myLib::colDots[2] < part && part <= myLib::colDots[3]) return V - V*S*(part-myLib::colDots[2])/(myLib::colDots[3] - myLib::colDots[2]);
+	else if(myLib::colDots[3] < part && part <= 1.) return V*(1.-S);
     // old
     if    (0.000 <= part && part <= 0.167) return V*(1.-S);
     else if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
@@ -77,11 +77,11 @@ double blue(const int & range, double j, double V, double S)
 {
     double part = j / double(range);
 
-    if    (0.0 <= part && part <= colDots[0]) return V -V*S/2. + V*S*(part)/(colDots[0] - 0.0)/2.;
-    else if(colDots[0] < part && part <= colDots[1]) return V;
-    else if(colDots[1] < part && part <= colDots[2]) return V - V*S*(part-colDots[1])/(colDots[2] - colDots[1]);
-    else if(colDots[2] < part && part <= colDots[3]) return V*(1.-S);
-    else if(colDots[3] < part && part <= 1.) return V*(1.-S);
+	if    (0.0 <= part && part <= myLib::colDots[0]) return V -V*S/2. + V*S*(part)/(myLib::colDots[0] - 0.0)/2.;
+	else if(myLib::colDots[0] < part && part <= myLib::colDots[1]) return V;
+	else if(myLib::colDots[1] < part && part <= myLib::colDots[2]) return V - V*S*(part-myLib::colDots[1])/(myLib::colDots[2] - myLib::colDots[1]);
+	else if(myLib::colDots[2] < part && part <= myLib::colDots[3]) return V*(1.-S);
+	else if(myLib::colDots[3] < part && part <= 1.) return V*(1.-S);
 
     // old
     if    (0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
@@ -200,7 +200,7 @@ QColor mapColor(double minMagn,
         {
             deltaX = (i%5) - probeX;
             deltaY = (i/5) - probeY;
-            val += helpMatrix[i/5][i%5] * gaussian(sqrt(deltaX*deltaX + deltaY*deltaY), sigma);
+			val += helpMatrix[i/5][i%5] * smallLib::gaussian(sqrt(deltaX*deltaX + deltaY*deltaY), sigma);
         }
     }
     if(!colour)
@@ -243,11 +243,11 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
                        const QString &mapsDirPath,
                        const QString &mapsNames)
 {
-//    cout << def::ExpName << endl;
-//    cout << inSpectraFilePath << endl;
-//    cout << outSpectraFilePath << endl;
-//    cout << mapsDirPath << endl;
-//    cout << mapsNames << endl;
+//    std::cout << def::ExpName << std::endl;
+//    std::cout << inSpectraFilePath << std::endl;
+//    std::cout << outSpectraFilePath << std::endl;
+//    std::cout << mapsDirPath << std::endl;
+//    std::cout << mapsNames << std::endl;
 
     QPixmap pic;
     pic = QPixmap(inSpectraFilePath);
@@ -277,13 +277,13 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
             helpString.replace("+.png", "-.png");
             if(!QFile::exists(helpString))
             {
-                cout << "drawMapsOnSpectra: no map file found " << helpString.toStdString() << endl;
+				std::cout << "drawMapsOnSpectra: no map file found " << helpString.toStdString() << std::endl;
                 return;
             }
         }
-//        cout << 1 << endl;
+//        std::cout << 1 << std::endl;
         pic1 = QPixmap(helpString);
-//        cout << 2 << endl;
+//        std::cout << 2 << std::endl;
 
 
 
@@ -429,7 +429,7 @@ void drawMapSpline(const matrix & matrixA,
     for(int i = 1; i < dim - 1; ++i) // number of helpMatrix row
     {
         inY = helpMatrix[i];
-        splineCoeffCount(inX, inY, dim, Ah[i - 1], Bh[i - 1]); // horizontal splines coeffs
+		myLib::splineCoeffCount(inX, inY, dim, Ah[i - 1], Bh[i - 1]); // horizontal splines coeffs
     }
 
     for(int x = 0; x < picSize; ++x)
@@ -812,8 +812,6 @@ void drawArray(const QString & templPath,
                const double & scaling,
                const int & lineWidth)
 {
-    QSvgGenerator svgGen;
-    QSvgRenderer svgRen;
     QPixmap pic;
     QPainter paint;
     QString helpString;
@@ -823,35 +821,9 @@ void drawArray(const QString & templPath,
         return;
     }
 
-    if(templPath.contains(".svg"))
-    {
-        return;
-        //// TO FIX
-        ///
+	pic.load(templPath);
+	paint.begin(&pic);
 
-#if 0
-        svgRen = QSvgRenderer(templPath);
-        svgGen.setSize(QSize(width, height));
-        svgGen.setViewBox(QRect(QPoint(0,0), svgGen.size()));
-        svgGen.setFileName(outPath);
-        paint.begin(&svgGen);
-        paint.setBrush(QBrush("white"));
-        paint.drawRect(QRect(QPoint(0,0), svgGen.size()));
-#endif
-
-
-    }
-    else if(templPath.contains(".jpg") || templPath.contains(".png"))
-    {
-        pic.load(templPath);
-        paint.begin(&pic);
-    }
-
-//    if(inData.size() != numOfChan * def::spLength())
-//    {
-//        cout << "drawArray: inappropriate array size" << endl;
-//        return;
-//    }
 
     double norm = inData.maxVal();
 
@@ -917,8 +889,8 @@ void drawArray(const QString & templPath,
     norm /= scaling;
     norm = graphHeight / norm;
     norm /= scaling;  //scaling generality
-    norm = doubleRound(norm,
-                       min(1., 2 - floor(log10(norm)) )
+	norm = smallLib::doubleRound(norm,
+					   std::min(1., 2 - floor(log10(norm)) )
                        );
 
     helpString.setNum(norm);
@@ -987,7 +959,7 @@ void drawArrayWithSigma(const QString &templPath,
 
 	if(inData.size() != inSigma.size())
 	{
-		cout << "data and sigma different length" << endl;
+		std::cout << "data and sigma different length" << std::endl;
 		return;
 	}
 
@@ -1091,9 +1063,9 @@ void drawArrayWithSigma(const QString &templPath,
 
 	//returning norm = max magnitude
 	norm = graphHeight / norm;
-	norm = doubleRound(norm,
-					   min(1., 2 - floor(log10(norm)) )
-					   );
+	norm = smallLib::doubleRound(norm,
+								 std::min(1., 2 - floor(log10(norm)) )
+								 );
 
 	helpString.setNum(norm);
 	helpString += QObject::tr(" mcV^2/Hz");
@@ -1131,7 +1103,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 	{
 		if(inData.size() > shouldSize)
 		{
-			cout << "drawArrays: inappropriate array size = " << inData.size() << endl;
+			std::cout << "drawArrays: inappropriate array size = " << inData.size() << std::endl;
 			return;
 		}
 	});
@@ -1144,7 +1116,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 					  inMatrix.end(),
 					  [&norm](std::valarray<double> inData)
 		{
-			norm = max(norm, abs(inData).max()); // fabs for negative weights e.g.
+			norm = std::max(norm, abs(inData).max()); // fabs for negative weights e.g.
 		});
 
 		if(weightsFlag)
@@ -1249,9 +1221,9 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 	norm /= scaling;
 	norm = graphHeight / norm;
 	norm /= scaling;  //scaling generality
-	norm = doubleRound(norm,
-					   min(1., 2 - floor(log10(norm)) )
-					   );
+	norm = smallLib::doubleRound(norm,
+								 std::min(1., 2 - floor(log10(norm)) )
+								 );
 	if(normType == spectraGraphsNormalization::all)
 	{
 		paint.drawLine(QPointF(paint.device()->width() * coords::x[6],
@@ -1280,38 +1252,13 @@ double drawArrays(const QString & templPath,
                   const double scaling,
                   const int lineWidth)
 {
-    QSvgGenerator svgGen;
-    QSvgRenderer svgRen;
     QPixmap pic;
     QPainter paint;
     QString helpString;
     int numOfChan = inMatrix.cols() / def::spLength();
-//	cout << inMatrix.cols() << "\t" << def::spLength() << "\t" << numOfChan << endl;
-//	exit(0);
 
-    if(templPath.contains(".svg"))
-    {
-        cout << "will do nothing, look into library.h" << endl;
-        return -1;
-        //// TO FIX ///
-
-#if 0
-        svgRen = QSvgRenderer(templPath);
-        svgGen.setSize(QSize(width, height));
-        svgGen.setViewBox(QRect(QPoint(0,0), svgGen.size()));
-        svgGen.setFileName(outPath);
-        paint.begin(&svgGen);
-        paint.setBrush(QBrush("white"));
-        paint.drawRect(QRect(QPoint(0,0), svgGen.size()));
-#endif
-
-
-    }
-    else if(templPath.contains(".jpg") || templPath.contains(".png"))
-    {
-        pic.load(templPath);
-        paint.begin(&pic);
-    }
+	pic.load(templPath);
+	paint.begin(&pic);
 
     // test size
     int shouldSize = numOfChan * def::spLength();
@@ -1322,7 +1269,7 @@ double drawArrays(const QString & templPath,
     {
         if(inData.size() > shouldSize)
         {
-            cout << "drawArrays: inappropriate array size = " << inData.size() << endl;
+			std::cout << "drawArrays: inappropriate array size = " << inData.size() << std::endl;
             return;
         }
     });
@@ -1333,7 +1280,7 @@ double drawArrays(const QString & templPath,
                       inMatrix.end(),
 					  [&norm](std::valarray<double> inData)
         {
-            norm = max(norm, abs(inData).max()); // fabs for negative weights e.g.
+			norm = std::max(norm, abs(inData).max()); // fabs for negative weights e.g.
         });
 
         if(weightsFlag)
@@ -1437,9 +1384,9 @@ double drawArrays(const QString & templPath,
     norm /= scaling;
     norm = graphHeight / norm;
     norm /= scaling;  //scaling generality
-    norm = doubleRound(norm,
-                       min(1., 2 - floor(log10(norm)) )
-                       );
+	norm = smallLib::doubleRound(norm,
+								 std::min(1., 2 - floor(log10(norm)) )
+								 );
     if(normType == spectraGraphsNormalization::all)
     {
         paint.drawLine(QPointF(paint.device()->width() * coords::x[6],
@@ -1620,34 +1567,10 @@ void drawMannWitney(const QString & templPath,
 					const trivector<int> & inMW,
 					const std::vector<QColor> & inColors)
 {
-    QSvgGenerator svgGen;
-    QSvgRenderer svgRen;
-    QPixmap pic;
-    QPainter paint;
-
-    if(templPath.contains(".svg"))
-    {
-        cout << "will do nothing, look into library.h" << endl;
-        return;
-        //// TO FIX ///
-
-#if 0
-        svgRen = QSvgRenderer(templPath);
-        svgGen.setSize(QSize(width, height));
-        svgGen.setViewBox(QRect(QPoint(0,0), svgGen.size()));
-        svgGen.setFileName(outPath);
-        paint.begin(&svgGen);
-        paint.setBrush(QBrush("white"));
-        paint.drawRect(QRect(QPoint(0,0), svgGen.size()));
-#endif
-
-
-    }
-    else if(templPath.contains(".jpg") || templPath.contains(".png"))
-    {
-        pic.load(templPath);
-        paint.begin(&pic);
-    }
+	QPixmap pic;
+	QPainter paint;
+	pic.load(templPath);
+	paint.begin(&pic);
 
     const double barWidth = 1/2.;
     const int barHeight = 5; // pixels

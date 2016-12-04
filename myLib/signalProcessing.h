@@ -95,6 +95,19 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 
 std::valarray<double> bayesCount(const std::valarray<double> & dataIn, int numOfIntervals);
 
+/// whaaaaat???
+void splineCoeffCount(const std::valarray<double> & inX,
+					  const std::valarray<double> & inY,
+					  int dim,
+					  std::valarray<double> & outA,
+					  std::valarray<double> & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+double splineOutput(const std::valarray<double> & inX,
+					const std::valarray<double> & inY,
+					int dim,
+					const std::valarray<double> & A,
+					const std::valarray<double> & B,
+					double probeX);
+
 /// ICA
 void product1(const matrix & arr,
 			  const int length,

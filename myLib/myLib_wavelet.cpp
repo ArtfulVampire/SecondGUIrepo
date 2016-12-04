@@ -1,9 +1,8 @@
 #include <myLib/wavelet.h>
+#include <myLib/dataHandlers.h>
 #include <libcwt_r.h>
 #include <QPixmap>
 #include <QPainter>
-#include <cmath>
-#include <myLib/dataHandlers.h>
 
 
 namespace wvlt
