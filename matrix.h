@@ -21,6 +21,7 @@
 #if _OPENMP
 #include <omp.h>
 #endif
+
 // omp not effective
 #define MATRIX_OMP _OPENMP&&0
 

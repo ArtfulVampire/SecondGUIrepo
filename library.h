@@ -16,7 +16,6 @@
 #include "coord.h"
 #include "matrix.h"
 #include "smallLib.h"
-#include <DspFilters/Dsp.h>
 
 #include <ios>
 #include <iostream>
@@ -54,23 +53,11 @@
 #include <myLib/wavelet.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/draws.h>
+#include <myLib/statistics.h>
 
 
 
-namespace btr
-{
-/// from GA fortran
-std::valarray<double> butterworth(const std::valarray<double> & in,
-								  int order,
-								  double srate,
-								  double centerFreq,
-								  double halfBand);
-std::valarray<double> refilterButter(const std::valarray<double> & in,
-									 int order,
-									 double srate,
-									 double lowFreq,
-									 double highFreq);
-}
+
 
 namespace myLib
 {
@@ -89,8 +76,6 @@ std::string funcName(std::string in);
 
 
 // consts
-const double pi_min_025 = pow(pi, -0.25);
-const double pi_sqrt = sqrt(pi);
 const QString slash = "/"; // QString(QDir::separator());
 
 template <typename Typ>
@@ -200,81 +185,17 @@ double splineOutput(const std::valarray<double> & inX,
 					double probeX);
 
 
-void kernelEst(const std::valarray<double> & arr, QString picPath);
-
-template <typename signalType = std::valarray<double>>
-void histogram(const signalType & arr,
-			   int numSteps,
-			   const QString & picPath = QString(),
-			   std::pair<double, double> xMinMax = {},
-			   const QString & color = "drakgray",
-			   int valueMax = 0);
-
-
-double quantile(double arg);
-void kernelEst(QString filePath, QString picPath);
-
-double rankit(int i, int length, double k = 0.375);
-bool gaussApproval(double * arr, int length); // not finished?
-bool gaussApproval(QString filePath); // not finished?
-bool gaussApproval2(double * arr, int length); // not finished?
-
-
-
-template <typename Typ>
-double mean(const Typ & arr, int length, int shift = 0);
-
-/// needed for fractal dimension
-template <typename Typ>
-double covariance (const Typ & arr1,
-                   const Typ & arr2,
-                   int length,
-                   int shift = 0,
-                   bool fromZero = false);
-
-
-
-
-
-/// what is RCP ???
-void drawRCP(const std::valarray<double> & values,
-             const QString & picPath);
-void countRCP(QString filename,
-              QString picPath  = QString(),
-              double * outMean = nullptr,
-              double * outSigma = nullptr);
-
-
-
-
 
 
 void splitZeros(matrix & inData,
-                const int & inLength,
-                int * outLength,
-                const QString & logFile = QString(),
-                const QString & dataName = def::ExpName);
-
-void splitZerosEdges(matrix & dataIn, const int & ns, const int & length, int * outLength);
-void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit);
-
+				const int & inLength,
+				int & outLength,
+				const QString & logFile = QString(),
+				const QString & dataName = def::ExpName);
 
 
 void dealWithEyes(matrix & inData,
 				  const int dimension);
-
-
-/// products for ICA
-
-
-
-
-
-template <typename Typ>
-void calcRawFFT(const Typ & inData, std::vector<std::vector<double>> & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
-
-
-
 
 
 // mati

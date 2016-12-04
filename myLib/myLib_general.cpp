@@ -328,20 +328,6 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 
 
 
-void countRCP(QString filePath, QString picPath, double * outMean, double * outSigma)
-{
-	std::valarray<double> arr;
-    readFileInLine(filePath, arr);
-
-    (*outMean) = smallLib::mean(arr);
-    (*outSigma) = smallLib::sigma(arr);
-
-    if(!picPath.isEmpty())
-    {
-        kernelEst(arr, picPath);
-    }
-}
-
 } // namespace myLib
 
 

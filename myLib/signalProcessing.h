@@ -79,8 +79,7 @@ void calcSpectre(const std::valarray<double> & inSignal,
 
 
 
-template <typename signalType = std::valarray<double>>
-double fractalDimension(const signalType &arr,
+double fractalDimension(const std::valarray<double> &arr,
 						const QString & picPath = QString());
 
 std::valarray<double> hilbert(const std::valarray<double> & arr,
@@ -94,18 +93,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 									double highFreq,
 									QString picPath = QString());
 
-template <typename signalType = std::valarray<double>, typename retType = std::valarray<double>>
-retType bayesCount(const signalType & dataIn, int numOfIntervals);
-
-/// Mann-Whitney
-int MannWhitney(const std::valarray<double> & arr1,
-				 const std::valarray<double> & arr2,
-				 const double p = 0.05);
-void countMannWhitney(trivector<int> & outMW,
-					  const QString & spectraPath,
-					  matrix * averageSpectraOut = nullptr,
-					  matrix * distancesOut = nullptr);
-void MannWhitneyFromMakepa(const QString & spectraDir);
+std::valarray<double> bayesCount(const std::valarray<double> & dataIn, int numOfIntervals);
 
 /// ICA
 void product1(const matrix & arr,
@@ -148,6 +136,20 @@ void svd(const matrix & initialData,
 
 } // namespace myLib
 
+namespace btr
+{
+/// from GA fortran
+std::valarray<double> butterworth(const std::valarray<double> & in,
+								  int order,
+								  double srate,
+								  double centerFreq,
+								  double halfBand);
+std::valarray<double> refilterButter(const std::valarray<double> & in,
+									 int order,
+									 double srate,
+									 double lowFreq,
+									 double highFreq);
+} // namespace btr
 
 namespace myDsp
 {

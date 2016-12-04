@@ -515,7 +515,7 @@ void MainWindow::constructEDF(const QString & newPath,
                      + slash + def::ExpName.left(3)
                      + "_splitZerosLog.txt";
 
-        splitZeros(newData, helpInt, &currSlice, helpString, fileName); // helpString unchanged
+		splitZeros(newData, helpInt, currSlice, helpString, fileName); // helpString unchanged
 
         ofstream outStream;
         outStream.open(helpString.toStdString(), ios_base::app);
@@ -596,7 +596,7 @@ void MainWindow::constructEDF(const QString & newPath,
     }
     else if(ui->splitZerosCheckBox->isChecked())
     {
-        splitZeros(newData, helpInt, &currSlice);
+		splitZeros(newData, helpInt, currSlice);
     }
 
     /// remake with dataType

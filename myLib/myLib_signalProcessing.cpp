@@ -1,4 +1,69 @@
-#include "library.h"
+#include <myLib/signalProcessing.h>
+#include <DspFilters/Dsp.h>
+#include <QPixmap>
+#include <QPainter>
+#include <QTime>
+#include <fstream>
+
+
+namespace btr
+{
+std::valarray<double> butterworth(const std::valarray<double> & in,
+								  int order,
+								  double srate,
+								  double centerFreq,
+								  double halfBand)
+{
+	std::valarray<double> res(in.size());
+
+	std::complex<double> U, P;
+	std::vector<std::complex<double>> B;
+	std::vector<std::complex<double>> G;
+
+	B.resize(order + 1);
+	G.resize(order + 1);
+	double timeBin = 1. / srate;
+
+	auto U0 = 2 * pi * halfBand * timeBin;
+	U = U0;
+	auto U1 = 1. - exp(-U0);
+
+	for(int i = 1; i <= order; ++i)
+	{
+		P = exp(std::complex<double>(0., (pi * (order + 2 * i - 1)) / (2 * order)))
+				+ std::complex<double>(0., centerFreq / halfBand);
+		B[i] = exp(U * P);
+		G[i] = std::complex<double>(0., 0.);
+	}
+
+	for(int i = 1; i <= in.size(); ++i)
+	{
+		G[1] = U1 * in[i - 1] + B[1] * G[1];
+
+
+		for(int j = 2; j <= order; ++j)
+		{
+			G[j] = G[j - 1] * U1 + B[j] * G[j];
+		}
+		res[i - 1] = G[order].real();
+	}
+	return res;
+}
+std::valarray<double> refilterButter(const std::valarray<double> & in,
+									 int order,
+									 double srate,
+									 double lowFreq,
+									 double highFreq)
+{
+	std::valarray<double> res(in.size());
+	res = btr::butterworth(in, order, srate, (lowFreq + highFreq) / 2., (highFreq - lowFreq) / 2.);
+	res = myDsp::reverseArray(res);
+	res = btr::butterworth(res, order, srate, (lowFreq + highFreq) / 2., (highFreq - lowFreq) / 2.);
+	res = myDsp::reverseArray(res);
+	return res;
+}
+} // namespace btr
+
 
 
 namespace myDsp
@@ -614,8 +679,7 @@ void four3(std::valarray<std::complex<double>> & inputArray)
 
 
 
-template <typename signalType>
-double fractalDimension(const signalType & arr,
+double fractalDimension(const std::valarray<double> & arr,
                         const QString & picPath)
 {
     int timeShift; //timeShift
@@ -707,233 +771,6 @@ double fractalDimension(const signalType & arr,
     return -slope;
 }
 
-
-
-int MannWhitney(const std::valarray<double> & arr1,
-				const std::valarray<double> & arr2,
-				const double p)
-{
-	std::vector<std::pair <double, int>> arr;
-
-    // fill first array
-	std::for_each(std::begin(arr1),
-				  std::end(arr1),
-                  [&arr](double in)
-    {arr.push_back(std::make_pair(in, 0));});
-
-    // fill second array
-	std::for_each(std::begin(arr2),
-				  std::end(arr2),
-                  [&arr](double in)
-    {arr.push_back(std::make_pair(in, 1));});
-
-	std::sort(std::begin(arr),
-			  std::end(arr),
-              [](std::pair<double, int> i,
-              std::pair<double, int> j) {return i.first > j.first;});
-
-    int sum0 = 0;
-    int sumAll;
-    const int N1 = arr1.size();
-    const int N2 = arr2.size();
-
-    const double average = N1 * N2 / 2.;
-    const double dispersion = sqrt(N1 * N2 * ( N1 + N2 ) / 12.);
-
-    double U = 0.;
-
-
-    //count sums
-    for(unsigned int i = 0; i < arr.size(); ++i)
-    {
-        if(arr[i].second == 0)
-        {
-            sum0 += (i+1);
-        }
-    }
-
-	//    std::cout << "vec " << sum0 << std::endl;
-
-    sumAll = ( N1 + N2 )
-             * (N1 + N2 + 1) / 2;
-
-    if(sum0 > sumAll/2 )
-    {
-        U = double(N1 * N2
-                   + N1 * (N1 + 1) /2. - sum0);
-    }
-    else
-    {
-
-        U = double(N1 * N2
-                   + N2 * (N2 + 1) /2. - (sumAll - sum0));
-    }
-
-    const double beliefLimit = quantile( (1.00 + (1. - p) ) / 2.);
-    const double ourValue = (U - average) / dispersion;
-
-    // old
-    if(fabs(ourValue) > beliefLimit)
-    {
-//        if(s1 > s2)
-        // new
-        if(sum0 < sumAll / 2 )
-        {
-            return 1;
-        }
-        else
-        {
-            return 2;
-        }
-    }
-    else
-    {
-        return 0;
-    }
-
-    /// new try DONT WORK??? to test
-    if(ourValue > beliefLimit)
-    {
-        return 1;
-    }
-    else if (ourValue < -beliefLimit)
-    {
-        return 2;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-void countMannWhitney(trivector<int> & outMW,
-                      const QString & spectraPath,
-                      matrix * averageSpectraOut,
-                      matrix * distancesOut)
-{
-
-    const int NetLength = def::nsWOM() * def::spLength();
-    const int numOfClasses = def::numOfClasses();
-
-    QString helpString;
-    const QDir dir_(spectraPath);
-    std::vector<QStringList> lst; //0 - Spatial, 1 - Verbal, 2 - Rest
-    std::vector<matrix> spectra(numOfClasses);
-
-    matrix averageSpectra(numOfClasses, NetLength, 0);
-    matrix distances(numOfClasses, numOfClasses, 0);
-
-    makeFileLists(spectraPath, lst);
-
-    for(int i = 0; i < numOfClasses; ++i)
-    {
-        spectra[i].resize(lst[i].length());
-        for(int j = 0; j < lst[i].length(); ++j) /// remake : lst[i]
-        {
-            helpString = dir_.absolutePath() + slash + lst[i][j];
-            readFileInLine(helpString, spectra[i][j]);
-        }
-        averageSpectra[i] = spectra[i].averageRow();
-
-        spectra[i].transpose();
-    }
-
-
-#if 1
-    // trivector
-    outMW.resize(numOfClasses);
-    for(int i = 0; i < numOfClasses; ++i)
-    {
-        outMW[i].resize(numOfClasses);
-        for(int j = i + 1; j < numOfClasses; ++j)
-        {
-            outMW[i][j - i].resize(NetLength);
-            int dist1 = 0;
-            for(int k = 0; k < NetLength; ++k)
-            {
-                outMW[i][j - i][k] = MannWhitney(spectra[i][k],
-                                                 spectra[j][k]);
-                if(outMW[i][j - i][k] != 0)
-                {
-                    ++dist1;
-                }
-            }
-            distances[i][j - i] = dist1 / double(NetLength);
-        }
-    }
-#else
-    /// twovector not ready
-    outMW.resize((numOfClasses * (numOfClasses - 1)) / 2 );
-    for(int i = 0; i < outMW.size(); ++i)
-    {
-        outMW[i].resize(NetLength);
-        int dist1 = 0;
-        for(int k = 0; k < NetLength; ++k)
-        {
-            outMW[i][k] = MannWhitney(spectra[i][k],
-                                      spectra[j][k]);
-            if(outMW[i][j - i][k] != 0)
-            {
-                ++dist1;
-            }
-        }
-        distances[i][j - i] = dist1 / double(NetLength);
-
-    }
-#endif
-
-    if(averageSpectraOut != nullptr)
-    {
-        (*averageSpectraOut) = std::move(averageSpectra);
-    }
-    if(distancesOut != nullptr)
-    {
-        (*distancesOut) = std::move(distances);
-    }
-}
-
-void MannWhitneyFromMakepa(const QString & spectraDir)
-{
-    matrix inSpectraAv;
-    matrix dists;
-    trivector<int> MW;
-
-    countMannWhitney(MW,
-                     spectraDir,
-                     &inSpectraAv,
-                     &dists);
-
-	QString helpString = def::dir->absolutePath()
-						 + slash + "Help"
-						 + slash + def::ExpName
-						 + "_Mann-Whitney.jpg";
-    drawTemplate(helpString);
-    drawArrays(helpString,
-               inSpectraAv);
-    drawMannWitney(helpString,
-                   MW);
-
-    helpString = def::dir->absolutePath()
-                 + slash + "results.txt";
-	std::ofstream outStr;
-	outStr.open(helpString.toStdString(), std::ios_base::app);
-    if(!outStr.good())
-    {
-		std::cout << "can't open log file: " << helpString << std::endl;
-    }
-    else
-    {
-        for(int i = 0; i < def::numOfClasses(); ++i)
-        {
-            for(int j = i + 1; j < def::numOfClasses(); ++j)
-            {
-                outStr << "dist " << i << " - " << j << '\t' << dists[i][j - i] << '\n';
-            }
-        }
-    }
-    outStr.flush();
-    outStr.close();
-}
 
 
 
@@ -1097,9 +934,6 @@ void dealWithEyes(matrix & inData,
     }
     const double realSignalFrac =  double(dataLen - eyes) / dataLen; /// deprecate?!! splitZeros
 
-
-//    auto t0 = high_resolution_clock::now();
-    // subtract averages
     for(int i = 0; i < dimension; ++i)
     {
         const double temp = - smallLib::mean(inData[i]) * realSignalFrac;
@@ -1113,9 +947,7 @@ void dealWithEyes(matrix & inData,
                 in += temp;
             }
         }); // retain zeros
-    }
-//    auto t1 = high_resolution_clock::now();
-//    std::cout << duration_cast<microseconds>(t1-t0).count() << std::endl;
+	}
 }
 
 void ica(const matrix & initialData,
@@ -1175,8 +1007,6 @@ void ica(const matrix & initialData,
         }
         dataICA[i] *= sum1;
     }
-
-
 #if 0
     // ordering components by dispersion
     std::vector<std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
@@ -1831,91 +1661,6 @@ std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 
 
 
-void kernelEst(QString filePath, QString picPath)
-{
-	std::valarray<double> arr;
-    readFileInLine(filePath, arr);
-    kernelEst(arr, picPath);
-}
-
-void kernelEst(const std::valarray<double> & arr, QString picPath)
-{
-    double sigma = 0.;
-    int length = arr.size();
-
-	sigma = smallLib::variance(arr);
-    sigma = sqrt(sigma);
-    double h = 1.06 * sigma * pow(length, -0.2);
-
-    QPixmap pic(1000, 400);
-    QPainter pnt;
-    pic.fill();
-    pnt.begin(&pic);
-    pnt.setPen("black");
-
-	std::vector<double> values(pic.width(), 0.);
-
-    double xMin, xMax;
-
-	xMin = *std::min_element(std::begin(arr),
-							 std::end(arr));
-	xMax = *std::max_element(std::begin(arr),
-							 std::end(arr));
-
-    xMin = floor(xMin);
-    xMax = ceil(xMax);
-
-    //    sigma = (xMax - xMin);
-    //    xMin -= 0.1 * sigma;
-    //    xMax += 0.1 * sigma;
-
-    //    //generality
-    //    xMin = -20;
-    //    xMax = 20;
-
-    //    xMin = 65;
-    //    xMax = 100;
-
-
-    for(int i = 0; i < pic.width(); ++i)
-    {
-        for(int j = 0; j < length; ++j)
-        {
-            values[i] += 1 / (length * h)
-						 * smallLib::gaussian((xMin + (xMax - xMin) / double(pic.width()) * i - arr[j]) / h);
-        }
-    }
-
-    double valueMax;
-	valueMax = *std::max_element(std::begin(values),
-								 std::end(values));
-
-    for(int i = 0; i < pic.width() - 1; ++i)
-    {
-        pnt.drawLine(i,
-                     pic.height() * 0.9 * ( 1. - values[i] / valueMax),
-                     i + 1,
-                     pic.height() * 0.9 * (1. - values[i + 1] / valueMax));
-
-    }
-    pnt.drawLine(0,
-                 pic.height() * 0.9,
-                 pic.width(),
-                 pic.height() * 0.9);
-
-    // x markers - 10 items
-    for(int i = xMin; i <= xMax; i += (xMax - xMin) / 10)
-    {
-        pnt.drawLine((i - xMin) / (xMax - xMin) * pic.width(),
-                     pic.height() * 0.9,
-                     (i - xMin) / (xMax - xMin) * pic.width(),
-                     pic.height());
-        pnt.drawText((i - xMin) / (xMax - xMin) * pic.width(),
-                     pic.height() * 0.95,
-                     QString::number(i));
-    }
-    pic.save(picPath, 0, 100);
-}
 
 /// for fftWindow
 //double bes0(double in)
@@ -1999,19 +1744,11 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 }
 
 
-void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit)
-{
-    for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
-    {
-        std::for_each(begin(inData[k]) + leftLimit,
-                      begin(inData[k]) + rightLimit,
-                      [](double & in){in = 0.;});
-    }
-}
+
 
 void splitZeros(matrix & dataIn,
                 const int & inLength,
-                int * outLength,
+				int & outLength,
                 const QString & logFilePath,
                 const QString & dataName)
 {
@@ -2111,124 +1848,17 @@ void splitZeros(matrix & dataIn,
         }
         ++i;
     } while (i <= inLength - allEyes); // = for the last zero piece
-    (*outLength) = inLength - allEyes;
+	outLength = inLength - allEyes;
 
     // valarray
-    dataIn.resizeCols(*outLength);
+	dataIn.resizeCols(outLength);
 
     outStream.close();
 
 //    std::cout << "allEyes = " << allEyes << std::endl;
 
     dataIn[markChan][0] = firstMarker;
-    dataIn[markChan][(*outLength) - 1] = lastMarker;
-}
-
-
-void splitZerosEdges(matrix & dataIn, const int & ns, const int & length, int * outLength)
-{
-    bool flag[length];
-    (*outLength) = length;
-    for(int i = 0; i < length; ++i)
-    {
-        flag[i] = 0;
-        for(int j = 0; j < ns; ++j)
-        {
-            if(dataIn[j][i] != 0.)
-            {
-                flag[i] = 1;
-                break;
-            }
-        }
-    }
-    if(flag[0] == 0)
-    {
-        for(int i = 0; i < length; ++i)
-        {
-            if(flag[i] == 1)
-            {
-                //generality, use relocate pointer
-                for(int k = 0; k < i; ++k)
-                {
-                    for(int j = 0; j < ns; ++j)
-                    {
-                        dataIn[j][k] = dataIn[j][k + i];
-                    }
-                }
-                (*outLength) -= i;
-                break;
-            }
-
-        }
-    }
-    if(flag[(*outLength) - 1] == 0)
-    {
-        for(int i = (*outLength) - 1; i > 0; --i)
-        {
-            if(flag[i] == 1)
-            {
-                (*outLength) = i;
-                break;
-            }
-
-        }
-    }
-
-}
-
-
-
-template <typename Typ>
-void calcRawFFT(const Typ & inData,
-				std::vector<std::vector<double>> & dataFFT,
-				const int & ns,
-				const int & fftLength,
-				const int & Eyes,
-				const int & NumOfSmooth)
-{
-
-    const double norm1 = sqrt(fftLength / double(fftLength-Eyes));
-    const double norm2 = 2. / def::freq / fftLength;
-    double * spectre = new double [fftLength*2];
-    dataFFT.resize(ns);
-    std::for_each(dataFFT.begin(),
-                  dataFFT.end(),
-				  [fftLength](std::vector<double> & in){in.resize(fftLength/2);});
-
-//    double help1, help2;
-//    int leftSmoothLimit, rightSmoothLimit;
-
-    for(int j = 0; j < ns; ++j)
-    {
-        for(int i = 0; i < fftLength; ++i)            //make appropriate array
-        {
-            spectre[ i * 2 + 0 ] = (double)(inData[j][ i ] * norm1);
-            spectre[ i * 2 + 1 ] = 0.;
-        }
-        four1(spectre-1, fftLength, 1);       //Fourier transform
-
-        for(int i = 0; i < fftLength; ++i )      //get the absolute value of FFT
-        {
-            dataFFT[j][ i ] = spectre[ i ] * norm2; //0.004 = 1/250 generality
-        }
-
-
-        //smooth spectre - odd and even split
-        /*
-        leftSmoothLimit = 0;
-        rightSmoothLimit = fftLength / 2 - 1;
-        for(int a = 0; a < (int)(NumOfSmooth / sqrt(norm1)); ++a)
-        {
-            help1 = (*dataFFT)[j][leftSmoothLimit-1];
-            for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
-            {
-                help2 = (*dataFFT)[j][k];
-                (*dataFFT)[j][k] = (help1 + help2 + (*dataFFT)[j][k+1]) / 3.;
-                help1 = help2;
-            }
-        }
-*/
-    }
+	dataIn[markChan][outLength - 1] = lastMarker;
 }
 
 
@@ -2283,48 +1913,5 @@ void calcSpectre(const std::valarray<double> & inSignal,
     }
 }
 
-
-template <typename Typ>
-double mean(const Typ & arr, int length, int shift)
-{
-	double res = 0.;
-	for(int i = shift; i < shift + length; ++i)
-	{
-		res += arr[i];
-	}
-	return res / length;
-}
-template double mean(const std::vector<double> &arr, int length, int shift);
-template double mean(const std::valarray<double> &arr, int length, int shift);
-
-/// needed for fractal dimension
-template <typename Typ>
-double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool fromZero)
-{
-	double res = 0.;
-	double m1 = 0.;
-	double m2 = 0.;
-	if(!fromZero)
-	{
-		m1 = mean(arr1, length, shift);
-		m2 = mean(arr2, length, shift);
-	}
-	for(int i = 0; i < length; ++i)
-	{
-		res += (arr1[i + shift] - m1) *
-				(arr2[i + shift] - m2);
-	}
-	return res;
-}
-template double covariance(const std::vector<double> &arr1, const std::vector<double> &arr2, int length, int shift, bool fromZero);
-template double covariance(const std::valarray<double> &arr1, const std::valarray<double> &arr2, int length, int shift, bool fromZero);
-
-
-
-template double fractalDimension(const std::valarray<double> &arr, const QString &picPath = QString());
-template double fractalDimension(const std::vector<double> &arr, const QString &picPath = QString());
-
-template void calcRawFFT(const std::vector<std::vector<double>> & inData, std::vector<std::vector<double>> & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
-template void calcRawFFT(const matrix & inData, std::vector<std::vector<double>> & dataFFT, const int &ns, const int &fftLength, const int &Eyes, const int &NumOfSmooth);
 
 }// namespace myLib

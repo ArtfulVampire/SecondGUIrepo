@@ -140,6 +140,16 @@ Cut::~Cut()
     delete ui;
 }
 
+void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit)
+{
+	for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
+	{
+		std::for_each(std::begin(inData[k]) + leftLimit,
+					  std::begin(inData[k]) + rightLimit,
+					  [](double & in){in = 0.;});
+	}
+}
+
 void Cut::drawSamples()
 {
 	std::vector<QLabel *> picLabels{

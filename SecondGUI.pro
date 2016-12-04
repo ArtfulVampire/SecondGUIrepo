@@ -56,7 +56,6 @@ SOURCES += main.cpp\
     myLib/myLib_deprecate.cpp \
     myLib/myLib_dataHandler.cpp \
     myLib/myLib_smallFuncs.cpp \
-    myLib/myLib_butterworth.cpp \
     net/net.cpp \
     net/net_classification.cpp \
     net/net_setsgets.cpp \
@@ -90,7 +89,8 @@ SOURCES += main.cpp\
     DSP/RootFinder.cpp \
     DSP/State.cpp \
     myLib/myLib_drw.cpp \
-    myLib/myLib_wavelet.cpp
+    myLib/myLib_wavelet.cpp \
+    myLib/myLib_statistics.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

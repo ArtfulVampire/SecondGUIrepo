@@ -1,17 +1,9 @@
 #include "library.h"
 
 
-using namespace std;
-using namespace std::chrono;
-using namespace smallLib;
-
-
 
 namespace myLib
 {
-
-
-
 
 template <typename Container>
 uint indexOfMax(const Container & cont)
@@ -73,7 +65,7 @@ void writeWavFile(const std::vector<double> & inData, const QString & outPath)
     outFile = fopen(outPath, "wb");
     if(outFile == NULL)
     {
-        cout << "cant open file to write" << endl;
+		std::cout << "cant open file to write" << std::endl;
         return;
     }
 
@@ -182,7 +174,7 @@ bool areEqualFiles(QString path1, QString path2)
     FILE * fil2 = fopen(path2, "rb");
     if(fil1 == NULL || fil2 == NULL)
     {
-        cout << "areEqualFiles: some of the files == NULL" << endl;
+		std::cout << "areEqualFiles: some of the files == NULL" << std::endl;
     }
     byte byt1, byt2;
     int pos = 0;
@@ -194,15 +186,15 @@ bool areEqualFiles(QString path1, QString path2)
         {
             fclose(fil1);
             fclose(fil2);
-            cout << "equalFiles(false): time = " << myTime.elapsed() / 1000. << " sec"
-                 << "\t" << "pos(bytes) = " << pos << endl;
+			std::cout << "equalFiles(false): time = " << myTime.elapsed() / 1000. << " sec"
+				 << "\t" << "pos(bytes) = " << pos << std::endl;
             return false;
         }
         ++pos;
     }
     fclose(fil1);
     fclose(fil2);
-    cout << "equalFiles(true): time = " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "equalFiles(true): time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
     return true;
 }
 
@@ -246,12 +238,6 @@ int countSymbolsInFile(const QString & filePath, char inChar)
 	}
 	return res;
 }
-
-
-//const QString slash
-//{
-//    return QString(QDir::separator());
-//}
 
 char * strToChar(const QString & input)
 {
@@ -327,62 +313,6 @@ void cleanDir(QString dirPath, QString nameFilter, bool ext)
 }
 
 
-/*
-bool gaussApproval(double * arr, int length) //kobzar page 239
-{
-    double z;
-    int m = int(length/2);
-    double a[m+1];
-    double disp = variance(arr, length) * length;
-    double B = 0.;
-    double W;
-
-    a[0] = 0.899/pow(length-2.4, 0.4162) - 0.02;
-    for(int j = 1; j <= m; ++j)
-    {
-        z = (length - 2*j + 1.) / (length - 0.5);
-        a[j] = a[0] * (z + 1483 / pow(3.-z, 10.845) + pow(71.61, -10.) / pow(1.1-z, 8.26));
-        B += a[j] * (arr[length-j+1] - arr[j-1]); //or without +1
-    }
-    B *= B;
-    W = (1 - 0.6695 / pow(length, 0.6518)) * disp / B;
-
-    if(W < 1.) return true;
-    return false;
-}
-
-
-bool gaussApproval(QString filePath)
-{
-	std::vector<double> arr;
-    readFileInLine(filePath, arr);
-    return gaussApproval(arr.data(), arr.size());
-}
-
-bool gaussApproval2(double * arr, int length) //kobzar page 238
-{
-    double W = 0.;
-    double disp = variance(arr, length) * length;
-    double c[length+1];
-    double sum = 0.;
-    for(int i = 1; i <= length; ++i)
-    {
-        sum += pow(rankit(i, length), 2.);
-    }
-    sum = sqrt(sum);
-    for(int j = 1; j < length; ++j)
-    {
-        c[j] = rankit(length - j + 1, length) / sum;
-        W += c[j] * (arr[length - j] - arr[j - 1]);
-    }
-    W /= disp;
-
-    /// NOT READY
-    return false;
-
-
-}
-*/
 
 QString fitNumber(const double &input, int N) // append spaces
 {
@@ -408,20 +338,6 @@ QString rightNumber(const unsigned int input, int N) // prepend zeros
 
 
 
-double quantile(double arg)
-{
-    double a, b;
-    //    a = exp(0.14*log(arg));
-    //    b = exp(0.14*log(1-arg));
-    a = pow(arg, 0.14);
-    b = pow(1. - arg, 0.14);
-    return (4.91*(a-b));
-}
-
-double rankit(int i, int length, double k)
-{
-    return quantile( (i-k) / (length + 1. - 2. * k) );
-}
 
 
 
@@ -446,9 +362,9 @@ void matiPrintMarker(const double &marker, QString pre)
 
     if(!pre.isEmpty())
     {
-        cout << pre.toStdString() << " = ";
+		std::cout << pre.toStdString() << " = ";
     }
-    cout << marker << "\t" << matiCountByteStr(marker) << endl;
+	std::cout << marker << "\t" << matiCountByteStr(marker) << std::endl;
 }
 
 std::vector<bool> matiCountByte(double const &  marker)
@@ -518,25 +434,25 @@ std::istream & operator>> (std::istream &is, QString & in)
 	return is;
 }
 
-ostream & operator << (ostream &os, const QString & toOut)
+std::ostream & operator << (std::ostream &os, const QString & toOut)
 {
     os << toOut.toStdString();
     return os;
 }
-ostream & operator << (ostream &os, QChar toOut)
+std::ostream & operator << (std::ostream &os, QChar toOut)
 {
     os << QString(toOut);
     return os;
 }
-ostream & operator << (ostream &os, const matrix & toOut)
+std::ostream & operator << (std::ostream &os, const matrix & toOut)
 {
 	for(auto it = std::begin(toOut.myData); it < std::end(toOut.myData); ++it)
     {
         for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
         {
-            os << doubleRound((*itt), 4) << "\t";
+			os << smallLib::doubleRound((*itt), 4) << "\t";
         }
-        os << endl;
+		os << std::endl;
     }
     return os;
 }
@@ -545,7 +461,7 @@ template <typename Typ, template <typename> class Cont>
 std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut)
 {
     std::string separ = "\t";
-    //if(is_container<Typ>) separ = std::endl;
+	//if(is_container<Typ>) separ = std::endl;
     for(auto in : toOut)
     {
 //		os << in << separ;
@@ -559,7 +475,7 @@ template <typename Typ, template <typename, typename> class Cont>
 std::ostream & operator<< (std::ostream &os, const Cont <Typ, std::allocator<Typ>> & toOut)
 {
     std::string separ = "\t";
-    //if(is_container<Typ>) separ = std::endl;
+	//if(is_container<Typ>) separ = std::endl;
     for(auto in : toOut)
     {
 		os << in << separ;
@@ -571,20 +487,20 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ, std::allocator<Typ
 
 
 // with allocators
-template ostream & operator << (std::ostream & os, const std::vector<std::vector<double>> & toOut);
-template ostream & operator << (std::ostream & os, const std::vector<int> & toOut);
-template ostream & operator << (std::ostream & os, const std::vector<uint> & toOut);
-template ostream & operator << (std::ostream & os, const std::vector<double> & toOut);
-template ostream & operator << (std::ostream & os, const std::vector<QString> & toOut);
-template ostream & operator << (std::ostream & os, const std::list<int> & toOut);
-template ostream & operator << (std::ostream & os, const std::list<double> & toOut);
-template ostream & operator << (std::ostream & os, const std::list<QString> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::vector<std::vector<double>> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::vector<int> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::vector<uint> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::vector<double> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::vector<QString> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::list<int> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::list<double> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::list<QString> & toOut);
 
 // w/o allocators
-template ostream & operator << (std::ostream & os, const std::valarray<double> & toOut);
-template ostream & operator << (std::ostream & os, const std::valarray<int> & toOut);
-template ostream & operator << (std::ostream & os, const QList<int> & toOut);
-template ostream & operator << (std::ostream & os, const QList<double> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::valarray<double> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::valarray<int> & toOut);
+template std::ostream & operator << (std::ostream & os, const QList<int> & toOut);
+template std::ostream & operator << (std::ostream & os, const QList<double> & toOut);
 
 
 template uint indexOfMax(const std::vector<int> & cont);
