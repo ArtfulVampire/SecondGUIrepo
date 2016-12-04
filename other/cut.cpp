@@ -16,22 +16,6 @@ Cut::Cut() :
     redCh = -1;
     blueCh = -1;
 
-    if(def::ns == 41)
-    {
-        redCh = 21;
-        blueCh = 22;
-    }
-    else if(def::ns == 22 || def::ns == 21)
-    {
-        redCh = 19;
-        blueCh = 20;
-    }
-    else if(def::ns == 24)
-    {
-        redCh = 21;
-        blueCh = 22;
-    }
-
 	ui->subdirComboBox->addItem("");
 	ui->subdirComboBox->addItem("Reals");
 	ui->subdirComboBox->addItem("winds");
@@ -554,34 +538,38 @@ void Cut::createImage(const QString & dataFileName)
 
 void Cut::iitpAutoCorrSlot()
 {
-	edfFil.iitpSyncAutoCorr(ui->rightLimitSpinBox->value(),
-							ui->leftLimitSpinBox->value(),
-							ui->iitpByEegCheckBox->isChecked());
-	QString newName = edfFil.getFileNam();
+	edfFile tmpFile = edfFil;
+	tmpFile.iitpSyncAutoCorr(ui->rightLimitSpinBox->value(),
+							 ui->leftLimitSpinBox->value(),
+							 ui->iitpByEegCheckBox->isChecked());
+	QString newName = tmpFile.getFileNam();
 	newName.replace(".edf", "_sync.edf");
 	std::cout << "iitpAutoSlot: newFileName = " << newName << std::endl;
-	edfFil.writeEdfFile(edfFil.getDirPath() + slash + newName);
+	tmpFile.writeEdfFile(tmpFile.getDirPath() + slash + newName);
 }
 
 void Cut::iitpAutoJumpSlot()
 {
-	edfFil.iitpSyncAutoJump(ui->rightLimitSpinBox->value(),
-							ui->leftLimitSpinBox->value(),
-							ui->iitpByEegCheckBox->isChecked());
-	QString newName = edfFil.getFileNam();
+	edfFile tmpFile = edfFil;
+	tmpFile.iitpSyncAutoJump(ui->rightLimitSpinBox->value(),
+							 ui->leftLimitSpinBox->value(),
+							 ui->iitpByEegCheckBox->isChecked());
+	QString newName = tmpFile.getFileNam();
 	newName.replace(".edf", "_sync.edf");
 	std::cout << "iitpAutoSlot: newFileName = " << newName << std::endl;
-	edfFil.writeEdfFile(edfFil.getDirPath() + slash + newName);
+	tmpFile.writeEdfFile(tmpFile.getDirPath() + slash + newName);
 }
 
 void Cut::iitpManualSlot()
 {
-	edfFil.iitpSyncManual(ui->rightLimitSpinBox->value(),
-						  ui->leftLimitSpinBox->value(), 200);
-	QString newName = edfFil.getFileNam();
+	edfFile tmpFile = edfFil;
+	tmpFile.iitpSyncManual(ui->rightLimitSpinBox->value(),
+						   ui->leftLimitSpinBox->value(),
+						   200);
+	QString newName = tmpFile.getFileNam();
 	newName.replace(".edf", "_sync.edf");
 	std::cout << "iitpManualSlot: newFileName = " << newName << std::endl;
-	edfFil.writeEdfFile(edfFil.getDirPath() + slash + newName);
+	tmpFile.writeEdfFile(tmpFile.getDirPath() + slash + newName);
 }
 
 void Cut::mousePressSlot(char btn, int coord)

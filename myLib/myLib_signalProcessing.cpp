@@ -774,7 +774,7 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 
 int findJump(const std::valarray<double> & inSignal, int startSearch, double numOfSigmas)
 {
-	const int lenForSigma = 250;
+	const int lenForSigma = 100;
 	for(int i = startSearch; i < inSignal.size() - 1; ++i)
 	{
 		if(abs(inSignal[i + 1] - inSignal[i]) >

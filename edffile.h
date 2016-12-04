@@ -133,8 +133,9 @@ public:
 	edfFile vertcatFile(QString addEdfPath, QString outPath = QString()) const;
 	edfFile & concatFile(QString addEdfPath, QString outPath = QString());
 	edfFile & subtractMeans(const QString & outPath = QString());
-	edfFile & divideChannel(int chanNum, double denom);
-	int findChannel(const QString & str);
+	edfFile & divideChannel(uint chanNum, double denom);
+	edfFile & divideChannels(std::vector<uint> chanNums = {}, double denom = 2.);
+	uint findChannel(const QString & str);
     void countFft();
 	edfFile refilter(const double & lowFreq,
 				  const double & highFreq,
@@ -173,18 +174,7 @@ public:
 				 int startPoint,
 				 double numSigmas = 5);
 
-
-	static edfFile vertcatIITP(const QString & eegPath,
-							   const QString & emgPath,
-							   int startSearchEeg,
-							   int startEmg);
-
-	static edfFile vertcatIITPmanual(const QString & eegPath,
-									 const QString & emgPath,
-									 int offsetEeg,
-									 int offsetEmg,
-									 int addLeft = 0);
-
+	/// modifying
 	edfFile & iitpSyncManual(int offsetEeg,
 							 int offsetEmg,
 							 int addLeft = 0);
@@ -197,7 +187,6 @@ public:
 	edfFile & iitpSyncAutoJump(int startSearchEeg,
 							   int startSearchEmg,
 							   bool byEeg = false);
-
 
 private:
 //    QString headerInitialInfo = QString();

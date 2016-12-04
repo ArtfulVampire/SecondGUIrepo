@@ -228,13 +228,14 @@ void IITP(const QString & dirName, const QString & guyName)
 
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-		if(fileNum == 3) break;
+		if(fileNum == 5) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
 								   guyName + "_" + rightNumber(fileNum, 2);
 		QString filePath;
 		edfFile fil;
-#if 01
+
+#if 0
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
 		if(!QFile::exists(filePath)) continue;
@@ -244,6 +245,25 @@ void IITP(const QString & dirName, const QString & guyName)
 		fil1.writeEdfFile(filePath);
 #endif
 
+#if 01
+		/// divide ECG chan to prevent oversclaing amplitude
+		filePath = ExpNamePre + "_eeg.edf";
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
+			std::vector<uint> chanNums(fil.getNs());
+			std::iota(std::begin(chanNums), std::end(chanNums), 0.);
+//			chanNums.pop_back(); /// ECG
+			fil.divideChannels(chanNums, 2.);
+			filePath = ExpNamePre + "_eeg_div.edf";
+			fil.writeEdfFile(filePath);
+		}
+#endif
+
+
+
+#if 0
+		/// with filtering
 #if 01
 		/// filter EMG double notch
 		filePath = ExpNamePre + "_emg.edf";
@@ -257,25 +277,15 @@ void IITP(const QString & dirName, const QString & guyName)
 #endif
 
 #if 01
-		/// filter EEG edfs
+		/// filter EEG edfs, but not ECG
 		filePath = ExpNamePre + "_eeg.edf";
 		if(!QFile::exists(filePath)) continue;
 		fil.readEdfFile(filePath);
-		fil.divideChannel(fil.findChannel("ECG"), 2.);
 
 		filePath = ExpNamePre + "_eeg_f.edf";
 		fil.refilter(95, 105, {}, true);
 		fil.refilter(45, 55, {}, true);
 		fil.refilter(0.5, 70, filePath);
-#endif
-
-#if 0
-		/// upsample EEGs
-		filePath = ExpNamePre + "_eeg.edf";
-		if(!QFile::exists(filePath)) continue;
-		fil.readEdfFile(filePath);
-		filePath = ExpNamePre + "_eeg_up.edf";
-		fil.upsample(1000., filePath);
 #endif
 
 #if 01
@@ -299,7 +309,20 @@ void IITP(const QString & dirName, const QString & guyName)
 		fil.writeEdfFile(filePath);
 #endif
 
-#if 0
+#else
+	/// w/o filtering
+
+#if 01
+		/// upsample EEGs
+//		filePath = ExpNamePre + "_eeg.edf";
+		filePath = ExpNamePre + "_eeg_div.edf";
+		if(!QFile::exists(filePath)) continue;
+		fil.readEdfFile(filePath);
+		filePath = ExpNamePre + "_eeg_up.edf";
+		fil.upsample(1000., filePath);
+#endif
+
+#if 01
 		/// vertcat eeg+emg
 		filePath = ExpNamePre + "_eeg_up.edf";
 		if(!QFile::exists(filePath)) continue;
@@ -308,6 +331,8 @@ void IITP(const QString & dirName, const QString & guyName)
 		fil = fil.vertcatFile(filePath, {});
 		filePath = ExpNamePre + "_sum.edf";
 		fil.writeEdfFile(filePath);
+#endif
+
 #endif
 
 	}

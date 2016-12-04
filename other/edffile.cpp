@@ -995,13 +995,33 @@ edfFile edfFile::vertcatFile(QString addEdfPath, QString outPath) const
 	return temp;
 }
 
-edfFile & edfFile::divideChannel(int chanNum, double denom)
+edfFile & edfFile::divideChannel(uint chanNum, double denom)
 {
 	this->edfData[chanNum] /= denom;
 	return *this;
 }
 
-int edfFile::findChannel(const QString & str)
+edfFile & edfFile::divideChannels(std::vector<uint> chanNums, double denom)
+{
+	if(chanNums.empty())
+	{
+		for(uint i = 0; i < this->getNs(); ++i)
+		{
+			if(i != this->markerChannel)
+			{
+				chanNums.push_back(i);
+			}
+		}
+	}
+
+	for(uint ind : chanNums)
+	{
+		this->edfData[ind] /= denom;
+	}
+	return *this;
+}
+
+uint edfFile::findChannel(const QString & str)
 {
 	for(int i = 0; i < this->ns; ++i)
 	{
@@ -1142,95 +1162,6 @@ int edfFile::findJump(int channel,
 	return myLib::findJump(chan, startPoint, numSigmas);
 }
 
-edfFile edfFile::vertcatIITP(const QString & eegPath,
-							 const QString & emgPath,
-							 int startSearchEeg,
-							 int startEmg)
-{
-	edfFile wholeFile;
-	wholeFile.readEdfFile(eegPath);
-	const int eegNs = wholeFile.getNs();
-
-	wholeFile = wholeFile.vertcatFile(emgPath, QString());
-//	const int emgNs = wholeFile.getNs() - eegNs;
-
-
-	const int searchLength = 5000;
-	const int corrLength = 2000;
-
-	int numECG = wholeFile.findChannel("ECG");
-	int numArtefac = wholeFile.findChannel("Artefac");
-
-	const std::valarray<double> & eegMarkChan = wholeFile.getData()[numECG];
-	const std::valarray<double> & emgMarkChan = wholeFile.getData()[numArtefac];
-
-	std::valarray<double> eegMarkSignal;
-	eegMarkSignal.resize(corrLength);
-
-	std::valarray<double> emgMarkSignal;
-	emgMarkSignal.resize(corrLength);
-
-	std::copy(std::begin(emgMarkChan) + startEmg,
-			  std::begin(emgMarkChan) + startEmg + corrLength,
-			  std::begin(emgMarkSignal));
-
-	int offset = 0;
-	double maxCorr = 0.;
-	for(int searchOffset = 0; searchOffset < searchLength; ++searchOffset)
-	{
-		std::copy(std::begin(eegMarkChan) + startSearchEeg + searchOffset,
-				  std::begin(eegMarkChan) + startSearchEeg + searchOffset + corrLength,
-				  std::begin(eegMarkSignal));
-
-		double a = smallLib::correlation(eegMarkSignal, emgMarkSignal);
-		cout << a << endl;
-
-		if(abs(a) > maxCorr)
-		{
-			maxCorr = abs(a);
-			offset = searchOffset + startSearchEeg;
-		}
-		if(a > 0.99)
-		{
-			break;
-		}
-	}
-
-	for(int i = 0; i < eegNs; ++i)
-	{
-		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], offset);
-	}
-	for(int i = eegNs; i < wholeFile.getNs(); ++i)
-	{
-		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], startEmg);
-	}
-	return wholeFile;
-}
-
-edfFile edfFile::vertcatIITPmanual(const QString & eegPath,
-								   const QString & emgPath,
-								   int offsetEeg,
-								   int offsetEmg,
-								   int addLeft)
-{
-	edfFile wholeFile;
-	wholeFile.readEdfFile(eegPath);
-	const int eegNs = wholeFile.getNs();
-
-	wholeFile = wholeFile.vertcatFile(emgPath, QString());
-
-	for(int i = 0; i < eegNs; ++i)
-	{
-		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], offsetEeg - addLeft);
-	}
-	for(int i = eegNs; i < wholeFile.getNs(); ++i)
-	{
-		wholeFile.edfData[i] = smallLib::pop_front_valar(wholeFile.edfData[i], offsetEmg - addLeft);
-	}
-
-	return wholeFile;
-}
-
 edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
 									int startEmg,
 									bool byEeg)
@@ -1303,9 +1234,9 @@ edfFile & edfFile::iitpSyncManual(int offsetEeg,
 								  int offsetEmg,
 								  int addLeft)
 {
-	for(int i = 0; i < getNs(); ++i)
+	for(int i = 0; i < this->getNs(); ++i)
 	{
-		if(!labels[i].startsWith("IT "))
+		if(!(labels[i].startsWith("IT ") || labels[i].startsWith("XX "))) /// XX Artefac
 		{
 			this->edfData[i] = smallLib::pop_front_valar(this->edfData[i], offsetEeg - addLeft);
 		}
@@ -1352,7 +1283,7 @@ edfFile edfFile::refilter(const double & lowFreq,
         /// filter only EEG, EOG signals - look labels!!!!
 		/// pewpew IITP - no filter ECG
 		if(this->labels[i].contains(QRegExp("E[OE]G")) ||
-		   (this->filterIITPflag && this->labels[i].contains("IT")))
+		   (this->filterIITPflag && this->labels[i].startsWith("IT ")))
         {
             chanList.push_back(i);
         }
