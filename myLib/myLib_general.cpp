@@ -325,89 +325,6 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 
 
 
-void makeFileLists(const QString & path,
-				   std::vector<QStringList> & lst,
-                   const QStringList & auxFilters)
-{
-    QDir localDir(path);
-    QStringList nameFilters, leest;
-    QString helpString;
-    for(const QString & fileMark : def::fileMarkers)
-    {
-//		cout << fileMark << endl;
-        nameFilters.clear();
-        leest.clear();
-        leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-        for(const QString & filter : leest)
-        {
-            helpString = "*" + filter + "*";
-            if(!auxFilters.isEmpty())
-            {
-                for(const QString & aux : auxFilters)
-                {
-//                    nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
-                    nameFilters << QString("*" + aux + helpString);
-                }
-            }
-            else
-            {
-//                nameFilters << QString(def::ExpName.left(3) + helpString);
-                nameFilters << helpString;
-
-            }
-        }
-//		cout << nameFilters.toStdList() << endl;
-        lst.push_back(localDir.entryList(nameFilters,
-                                         QDir::Files,
-                                         QDir::Name)); /// Name ~ order
-    }
-}
-
-void makeFullFileList(const QString & path,
-                      QStringList & lst,
-                      const QStringList & auxFilters)
-{
-    if(def::fileMarkers.isEmpty())
-    {
-        lst = QDir(path).entryList({"*.edf", "*.EDF", QString("*." + def::plainDataExtension)},
-                                   QDir::Files,
-								   QDir::Name); /// Name ~ order
-    }
-    else
-    {
-        QDir localDir(path);
-        QStringList nameFilters, leest;
-        QString helpString;
-        for(const QString & fileMark : def::fileMarkers)
-        {
-            leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-            for(const QString & filter : leest)
-            {
-                helpString = "*" + filter + "*";
-                if(!auxFilters.isEmpty())
-                {
-                    for(const QString & aux : auxFilters)
-                    {
-//                        nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
-                        nameFilters << QString("*" + aux + helpString);
-                        nameFilters << QString(helpString + aux + "*");
-
-                    }
-                }
-                else
-                {
-//                    nameFilters << QString(def::ExpName.left(3) + helpString);
-                    nameFilters << helpString;
-                }
-
-            }
-        }
-        lst = localDir.entryList(nameFilters,
-                                 QDir::Files,
-								 QDir::Name); /// Name ~ order
-    }
-}
-
 
 template <typename T>
 double distance(const std::vector<T> &vec1, const std::vector<T> &vec2, const int &dim)
@@ -421,16 +338,6 @@ double distance(const std::vector<T> &vec1, const std::vector<T> &vec2, const in
     return dist;
 }
 
-lineType signalFromFile(const QString & filePath,
-                   int channelNumber)
-{
-    matrix tempMat;
-    int tempInt;
-    readPlainData(filePath,
-                  tempMat,
-                  tempInt);
-    return tempMat[channelNumber];
-}
 
 void countRCP(QString filePath, QString picPath, double * outMean, double * outSigma)
 {

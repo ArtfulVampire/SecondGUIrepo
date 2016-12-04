@@ -1,20 +1,100 @@
 #include "library.h"
 
 
-using namespace std;
-using namespace std::chrono;
-using namespace smallLib;
 namespace myLib
 {
+
+void makeFileLists(const QString & path,
+				   std::vector<QStringList> & lst,
+				   const QStringList & auxFilters)
+{
+	QDir localDir(path);
+	QStringList nameFilters, leest;
+	QString helpString;
+	for(const QString & fileMark : def::fileMarkers)
+	{
+//		std::cout << fileMark << std::endl;
+		nameFilters.clear();
+		leest.clear();
+		leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+		for(const QString & filter : leest)
+		{
+			helpString = "*" + filter + "*";
+			if(!auxFilters.isEmpty())
+			{
+				for(const QString & aux : auxFilters)
+				{
+//                    nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
+					nameFilters << QString("*" + aux + helpString);
+				}
+			}
+			else
+			{
+//                nameFilters << QString(def::ExpName.left(3) + helpString);
+				nameFilters << helpString;
+
+			}
+		}
+//		std::cout << nameFilters.toStdList() << std::endl;
+		lst.push_back(localDir.entryList(nameFilters,
+										 QDir::Files,
+										 QDir::Name)); /// Name ~ order
+	}
+}
+
+void makeFullFileList(const QString & path,
+					  QStringList & lst,
+					  const QStringList & auxFilters)
+{
+	if(def::fileMarkers.isEmpty())
+	{
+		lst = QDir(path).entryList({"*.edf", "*.EDF", QString("*." + def::plainDataExtension)},
+								   QDir::Files,
+								   QDir::Name); /// Name ~ order
+	}
+	else
+	{
+		QDir localDir(path);
+		QStringList nameFilters, leest;
+		QString helpString;
+		for(const QString & fileMark : def::fileMarkers)
+		{
+			leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+			for(const QString & filter : leest)
+			{
+				helpString = "*" + filter + "*";
+				if(!auxFilters.isEmpty())
+				{
+					for(const QString & aux : auxFilters)
+					{
+//                        nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
+						nameFilters << QString("*" + aux + helpString);
+						nameFilters << QString(helpString + aux + "*");
+
+					}
+				}
+				else
+				{
+//                    nameFilters << QString(def::ExpName.left(3) + helpString);
+					nameFilters << helpString;
+				}
+
+			}
+		}
+		lst = localDir.entryList(nameFilters,
+								 QDir::Files,
+								 QDir::Name); /// Name ~ order
+	}
+}
 
 
 void readFileInLineRaw(const QString & filePath,
 					   std::valarray<double> & result)
 {
-	ifstream file(filePath.toStdString());
+	std::ifstream file(filePath.toStdString());
 	if(!file.good())
 	{
-		cout << "readFileInLine: bad file " << filePath << endl;
+		std::cout << "readFileInLine: bad file " << filePath << std::endl;
 		return;
 	}
 	std::vector<double> res;
@@ -36,10 +116,10 @@ void readFileInLineRaw(const QString & filePath,
 void readFileInLine(const QString & filePath,
 					std::valarray<double> & result)
 {
-    ifstream file(filePath.toStdString());
+	std::ifstream file(filePath.toStdString());
     if(!file.good())
     {
-        cout << "readFileInLine: bad file " << filePath << endl;
+		std::cout << "readFileInLine: bad file " << filePath << std::endl;
         return;
     }
     int rows;
@@ -62,10 +142,10 @@ template <typename ArrayType>
 void writeFileInLine(const QString & filePath,
 					 const ArrayType & outData)
 {
-    ofstream file(filePath.toStdString());
+	std::ofstream file(filePath.toStdString());
     if(!file.good())
     {
-		cout << "writeFileInLine: bad file" << endl;
+		std::cout << "writeFileInLine: bad file" << std::endl;
         return;
     }
 
@@ -77,7 +157,7 @@ void writeFileInLine(const QString & filePath,
 		file << "Pewpew " << 1 << "\r\n";
 		for(auto out : outData)
 		{
-			file << doubleRound(out, 3) << "\r\n";
+			file << smallLib::doubleRound(out, 3) << "\r\n";
 		}
 	}
 	else
@@ -86,7 +166,7 @@ void writeFileInLine(const QString & filePath,
 		file << "FileLen " << outData.size() << '\t';
 		for(auto out : outData)
 		{
-			file << doubleRound(out, 3) << "\t";
+			file << smallLib::doubleRound(out, 3) << "\t";
 		}
 	}
 
@@ -106,13 +186,13 @@ void writePlainData(const QString outPath,
     }
     else
     {
-        numOfSlices = min(uint(numOfSlices),
-                          data.cols() - start);
+		numOfSlices = std::min(uint(numOfSlices),
+							   data.cols() - start);
     }
 
 //    if(numOfSlices < 250) return; /// used for sliceWindFromReal() but Cut::cut() ...
 
-    ofstream outStr;
+	std::ofstream outStr;
     if(outPath.endsWith(def::plainDataExtension))
     {
         outStr.open(outPath.toStdString());
@@ -129,7 +209,7 @@ void writePlainData(const QString outPath,
     {
         for(uint j = 0; j < data.rows(); ++j)
         {
-            outStr << doubleRound(data[j][i + start], 3) << '\t';
+			outStr << smallLib::doubleRound(data[j][i + start], 3) << '\t';
         }
         outStr << "\r\n";
     }
@@ -145,11 +225,11 @@ void readPlainData(const QString & inPath,
                    int & numOfSlices,
                    const int & start)
 {
-    ifstream inStr;
+	std::ifstream inStr;
     inStr.open(inPath.toStdString());
     if(!inStr.good())
     {
-        cout << "readPlainData: cannot open file\n" << inPath << endl;
+		std::cout << "readPlainData: cannot open file\n" << inPath << std::endl;
         return;
     }
     int localNs;
@@ -181,10 +261,10 @@ void readPlainData(const QString & inPath,
 void readMatrixFileRaw(const QString & filePath,
 					   matrix & outData)
 {
-	ifstream file(filePath.toStdString());
+	std::ifstream file(filePath.toStdString());
 	if(!file.good())
 	{
-		cout << "readMatrixFile: bad input file " << filePath << endl;
+		std::cout << "readMatrixFile: bad input file " << filePath << std::endl;
 		return;
 	}
 
@@ -216,10 +296,10 @@ void readMatrixFileRaw(const QString & filePath,
 void readMatrixFile(const QString & filePath,
                     matrix & outData)
 {
-    ifstream file(filePath.toStdString());
+	std::ifstream file(filePath.toStdString());
     if(!file.good())
     {
-        cout << "readMatrixFile: bad input file " << filePath << endl;
+		std::cout << "readMatrixFile: bad input file " << filePath << std::endl;
         return;
     }
     int rows;
@@ -248,7 +328,7 @@ matrix readIITPfile(const QString & filePath)
 	inStr.open(filePath.toStdString());
 	if(!inStr.good())
 	{
-		std::cout << "readIITPfile: file not good - " << filePath << endl;
+		std::cout << "readIITPfile: file not good - " << filePath << std::endl;
 		return {};
 	}
 
@@ -287,7 +367,7 @@ void readIITPfile(const QString & filePath,
 	inStr.open(filePath.toStdString());
 	if(!inStr.good())
 	{
-		std::cout << "readIITPfile: file not good - " << filePath << endl;
+		std::cout << "readIITPfile: file not good - " << filePath << std::endl;
 		return;
 	}
 
@@ -300,7 +380,7 @@ void readIITPfile(const QString & filePath,
 	int numOfRows;
 	int numOfCols;
 	inStr >> numOfRows >> numOfCols; inStr.ignore(256, '\n'); /// no need Tstart and inerval
-//	cout << numOfRows << '\t' << numOfCols << endl;
+//	std::cout << numOfRows << '\t' << numOfCols << std::endl;
 
 	std::string tmp;
 	outLabels.resize(numOfCols);
@@ -339,7 +419,7 @@ void readUCIdataSet(const QString & setName,
     readMatrixFile(def::uciFolder + slash + newName + "_data.txt", outData);
 
 
-    ifstream inStr;
+	std::ifstream inStr;
     inStr.open((def::uciFolder + slash + newName + "_types.txt").toStdString());
 
     int num = 0;
@@ -368,10 +448,10 @@ void writeMatrixFile(const QString & filePath,
 					 const QString & rowsString,
 					 const QString & colsString)
 {
-    ofstream file(filePath.toStdString());
+	std::ofstream file(filePath.toStdString());
     if(!file.good())
     {
-        cout << "writeMatrixFile: bad output file\n" << filePath.toStdString() << endl;
+		std::cout << "writeMatrixFile: bad output file\n" << filePath.toStdString() << std::endl;
         return;
     }
 
@@ -382,7 +462,7 @@ void writeMatrixFile(const QString & filePath,
     {
         for(uint j = 0; j < outData.cols(); ++j)
         {
-            file << doubleRound(outData[i][j], 4) << '\t';
+			file << smallLib::doubleRound(outData[i][j], 4) << '\t';
         }
         file << "\r\n";
     }

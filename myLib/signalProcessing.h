@@ -2,6 +2,8 @@
 #define SIGNALPROCESSING_H
 
 #include <valarray>
+#include <complex>
+#include "matrix.h"
 
 namespace myLib
 {

@@ -178,274 +178,7 @@ matrix refilter(const matrix & inputMatrix,
 
 }
 
-using namespace std;
-using namespace std::chrono;
-using namespace smallLib;
-using namespace myLib;
 
-namespace wvlt
-{
-
-const int timeStep = ceil(0.02 * def::freq);
-const double freqMax = 20.; // def::rightFreq
-const double freqMin = 2.; // def::leftFreq
-const double freqStep = 1.;
-const int range = 1024;
-
-#if !WAVELET_FREQ_STEP_TYPE
-const int numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqStep)) + 1;
-#else
-const int numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
-#endif
-
-
-
-double const morletFall = 9.; // coef in matlab = mF^2 / (2 * pi^2);
-double morletCosNew(double const freq1, // Hz
-                    const double timeShift,
-                    const double time)
-{
-    double freq = freq1 * 2. * pi;
-	double res =  sqrt(2. * freq / pi_sqrt / morletFall)
-				  * cos(freq * (time - timeShift) / def::freq)
-				  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
-    return res;
-}
-
-double morletSinNew(double const freq1,
-                    const double timeShift,
-                    const double time)
-{
-    double freq = freq1 * 2. * pi;
-	double res =  sqrt(2. * freq / pi_sqrt / morletFall)
-				  * sin(freq * (time - timeShift) / def::freq)
-				  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
-    return res;
-}
-
-void wavelet(QString filePath,
-             QString picPath,
-             int channelNumber,
-             int ns)
-{
-    // continious
-    int NumOfSlices;
-    double helpDouble;
-
-    matrix fileData;
-    myLib::readPlainData(filePath, fileData, NumOfSlices);
-
-    lineType input = fileData[channelNumber];
-
-    QPixmap pic(NumOfSlices, 1000);
-    pic.fill();
-    QPainter painter;
-    painter.begin(&pic);
-
-    matrix temp;
-    temp.resize(wvlt::numberOfFreqs,
-                ceil(NumOfSlices / wvlt::timeStep) + 1);
-    temp.fill(0.);
-
-    //    mat temp;
-    //    temp.resize(wvlt::numberOfFreqs);
-    //    const int num = ceil(NumOfSlices / wvlt::timeStep);
-    //    std::for_each(temp.begin(),
-    //                  temp.end(),
-    //                  [num](vec & in){in.resize(num, 0.);});
-
-    double tempR = 0., tempI = 0.;
-    int kMin = 0, kMax = 0;
-
-    double numb;
-
-	int currFreqNum = 0;
-    int currSliceNum = 0;
-
-	for(double freq = wvlt::freqMax;
-	   freq > wvlt::freqMin;
-	#if WAVELET_FREQ_STEP_TYPE==0
-	   freq *= wvlt::freqStep)
-    #else
-	   freq -= wvlt::freqStep)
-#endif
-    {
-		//        timeStep = def::freqFreq / 2.5;  //in time-bins 250 Hz
-        currSliceNum = 0;
-        for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
-        {
-			temp[currFreqNum][currSliceNum] = 0.;
-            tempR = 0.;
-            tempI = 0.;
-
-            /////// TO LOOK
-            //set left & right limits of counting - should be 2.5 * morletFall... but works so
-			kMin = max(0, int(currSlice - 3 * morletFall * def::freq / freq));
-			kMax = min(NumOfSlices, int(currSlice + 3 * morletFall * def::freq / freq));
-
-            for(int k = kMin; k < kMax; ++k)
-            {
-				tempI += (morletSinNew(freq, currSlice, k) * input[k]);
-				tempR += (morletCosNew(freq, currSlice, k) * input[k]);
-            }
-			temp[currFreqNum][currSliceNum] = pow(tempI, 2) + pow(tempR, 2);
-            ++currSliceNum;
-        }
-		++currFreqNum;
-    }
-
-    // maximal value from temp matrix
-    helpDouble = temp.maxVal();
-    //    helpDouble = 800000;
-
-    //    cout << helpDouble << endl;
-    //    helpDouble = 1e5;
-
-    //    /// test for maxVal
-    //    ofstream str;
-    //    str.open("/media/Files/Data/wav.txt", ios_base::app);
-    //    str << helpDouble << endl;
-    //    str.close();
-    //    return;
-
-
-	currFreqNum = 0;
-	for(double freq = wvlt::freqMax;
-	   freq > wvlt::freqMin;
-	#if WAVELET_FREQ_STEP_TYPE==0
-	   freq *= wvlt::freqStep)
-    #else
-	   freq -= wvlt::freqStep)
-#endif
-    {
-		//        timeStep = def::freqFreq / 2.5;  //in time-bins 250 Hz
-
-        currSliceNum = 0;
-        for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
-        {
-			//            cout << temp[currFreqNum][currSliceNum] << endl;
-			numb = fmin(floor(temp[currFreqNum][currSliceNum] / helpDouble * wvlt::range),
-                        wvlt::range);
-
-            //             numb = pow(numb/wvlt::range, 0.8) * wvlt::range; // sligthly more than numb, may be dropped
-
-            painter.setBrush(QBrush(myLib::hueJet(wvlt::range, numb)));
-            painter.setPen(myLib::hueJet(wvlt::range, numb));
-
-#if WAVELET_FREQ_STEP_TYPE==0
-            painter.drawRect( currSlice * pic.width() / NumOfSlices,
-							  pic.height() * (wvlt::freqMax - freq
-											  + 0.5 * freq *
-											  (1. - wvlt::freqStep) / wvlt::freqStep)
-							  / (wvlt::freqMax - wvlt::freqMin),
-							  pic.width() * wvlt::timeStep / NumOfSlices,
-							  pic.height() * -0.5 *Freq * (1. / wvlt::freqStep - wvlt::freqStep)
-							  / (wvlt::freqMax - wvlt::freqMin) );
-#else
-
-            painter.drawRect( pic.width() * currSlice / NumOfSlices,
-							  pic.height() * (wvlt::freqMax - freq  - 0.5 * wvlt::freqStep)
-							  / (wvlt::freqMax - wvlt::freqMin),
-                              pic.width() * wvlt::timeStep / NumOfSlices,
-							  pic.height() * wvlt::freqStep / (wvlt::freqMax - wvlt::freqMin));
-#endif
-            ++currSliceNum;
-        }
-		++currFreqNum;
-
-    }
-    painter.setPen("black");
-
-    painter.setFont(QFont("Helvetica", 28, -1, -1));
-    painter.setPen(Qt::DashLine);
-	for(int i = wvlt::freqMax; i > wvlt::freqMin; --i)
-    {
-
-        painter.drawLine(0,
-						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin),
-                         pic.width(),
-						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
-        painter.drawText(0,
-						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
-                         QString::number(i));
-
-    }
-    painter.setPen(Qt::SolidLine);
-    for(int i = 0; i < int(NumOfSlices / def::freq); ++i)
-    {
-        painter.drawLine(pic.width() * i * def::freq / NumOfSlices,
-                         pic.height(),
-                         pic.width() * i * def::freq / NumOfSlices,
-                         pic.height() - 20);
-        painter.drawText(pic.width() * i * def::freq / NumOfSlices - 8,
-                         pic.height() - 2,
-                         QString::number(i));
-
-    }
-    pic.save(picPath, 0, 100);
-    painter.end();
-}
-
-
-
-template <typename signalType>
-matrix countWavelet(const signalType & inSignal)
-{
-    // continious
-    int NumOfSlices = inSignal.size();
-
-    matrix res;
-    res.resize(wvlt::numberOfFreqs,
-               ceil(NumOfSlices / wvlt::timeStep) + 1);
-    res.fill(0.);
-
-    double tempR = 0., tempI = 0.;
-    int kMin = 0, kMax = 0;
-
-	int currFreqNum = 0;
-    int currSliceNum = 0;
-
-	for(double freq = wvlt::freqMax;
-	   freq > wvlt::freqMin;
-	#if WAVELET_FREQ_STEP_TYPE==0
-	   freq *= wvlt::freqStep
-    #else
-	   freq -= wvlt::freqStep)
-#endif
-    {
-		//        timeStep = def::freqFreq / 2.5;  //in time-bins 250 Hz
-        currSliceNum = 0;
-        for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
-        {
-			res[currFreqNum][currSliceNum] = 0.;
-            tempR = 0.;
-            tempI = 0.;
-
-            /////// TO LOOK
-            //set left & right limits of counting - should be 2.5 * morletFall... but works so
-			kMin = max(0, int(currSlice - 3 * morletFall * def::freq / freq));
-			kMax = min(NumOfSlices, int(currSlice + 3 * morletFall * def::freq / freq));
-
-            for(int k = kMin; k < kMax; ++k)
-            {
-				tempI += (morletSinNew(freq, currSlice, k) * inSignal[k]);
-				tempR += (morletCosNew(freq, currSlice, k) * inSignal[k]);
-            }
-			res[currFreqNum][currSliceNum] = (pow(tempI, 2) + pow(tempR, 2)) / 1e5; // ~1
-
-            ++currSliceNum;
-        }
-		++currFreqNum;
-    }
-    // no normalization
-    return res;
-}
-
-template matrix countWavelet(const lineType & inSignal);
-template matrix countWavelet(const vectType & inSignal);
-
-
-} // namespace wvlt
 
 
 
@@ -659,7 +392,7 @@ std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 	double a = log2(inputSpectre.size());
 	if(a != double(int(a)))
 	{
-		std::cout << "subSpectrum: inputSpectre.size() is not power of 2" << endl;
+		std::cout << "subSpectrum: inputSpectre.size() is not power of 2" << std::endl;
 		return {};
 	}
 	int fftLen = inputSpectre.size();
@@ -719,7 +452,7 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   bool isNotch,
 							   double srate)
 {
-	int fftLen = fftL(inputSignal.size());
+	int fftLen = smallLib::fftL(inputSignal.size());
 	std::valarray<double> spectr = spectreRtoC(inputSignal, fftLen);
 	const double spStep = srate / fftLen;
 	/// 2 because complex values
@@ -768,7 +501,7 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 	{
 		res[i] = res[i * rat];
 	}
-	resizeValar(res, inSignal.size() / rat);
+	smallLib::resizeValar(res, inSignal.size() / rat);
 	return res;
 }
 
@@ -896,7 +629,7 @@ double fractalDimension(const signalType & arr,
 
     maxLimit = 100;
 
-    int minLimit = max(maxLimit - 10, 3);
+	int minLimit = std::max(maxLimit - 10, 3);
 
     minLimit = 15;
 
@@ -920,12 +653,12 @@ double fractalDimension(const signalType & arr,
         }
         drawK[h - minLimit] = log(timeShift);
         drawL[h - minLimit] = log(L);
-        //        cout << drawK[h - minLimit] << '\t' << drawL[h - minLimit] << endl;
+		//        std::cout << drawK[h - minLimit] << '\t' << drawL[h - minLimit] << std::endl;
     }
 
     //least square approximation
     double slope = covariance(drawK, drawL, maxLimit - minLimit) / covariance(drawK, drawK, maxLimit - minLimit);
-    //    cout << "slope = " << slope << endl;
+	//    std::cout << "slope = " << slope << std::endl;
 
     double drawX = 0.;
     double drawY = 0.;
@@ -958,11 +691,11 @@ double fractalDimension(const signalType & arr,
 
         // line passes (meanX, meanY)
         double add = mean(drawL, maxLimit - minLimit) - slope * mean(drawK, maxLimit - minLimit);
-        //        cout << "add = " << add << endl;
+		//        std::cout << "add = " << add << std::endl;
 
         drawX = (1. - (slope * minX + add - minY) / lenY) * pic.height(); // startY
         drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); // endY
-        //        cout << drawX << '\t' << drawY << endl;
+		//        std::cout << drawX << '\t' << drawY << std::endl;
 
         pnt.drawLine(0,
                      drawX,
@@ -1070,7 +803,7 @@ double correlation(const Typ &arr1, const Typ &arr2, int length, int shift, bool
     }
     else
     {
-        cout << "correlation const signal" << endl;
+		std::cout << "correlation const signal" << std::endl;
         return 0.;
     }
 
@@ -1102,22 +835,22 @@ int MannWhitney(const signalType & arr1,
                 const signalType & arr2,
                 const double p)
 {
-    vector<pair <double, int>> arr;
+	std::vector<std::pair <double, int>> arr;
 
     // fill first array
-    std::for_each(begin(arr1),
-                  end(arr1),
+	std::for_each(std::begin(arr1),
+				  std::end(arr1),
                   [&arr](double in)
     {arr.push_back(std::make_pair(in, 0));});
 
     // fill second array
-    std::for_each(begin(arr2),
-                  end(arr2),
+	std::for_each(std::begin(arr2),
+				  std::end(arr2),
                   [&arr](double in)
     {arr.push_back(std::make_pair(in, 1));});
 
-    std::sort(arr.begin(),
-              arr.end(),
+	std::sort(std::begin(arr),
+			  std::end(arr),
               [](std::pair<double, int> i,
               std::pair<double, int> j) {return i.first > j.first;});
 
@@ -1141,7 +874,7 @@ int MannWhitney(const signalType & arr1,
         }
     }
 
-    //    cout << "vec " << sum0 << endl;
+	//    std::cout << "vec " << sum0 << std::endl;
 
     sumAll = ( N1 + N2 )
              * (N1 + N2 + 1) / 2;
@@ -1306,11 +1039,11 @@ void MannWhitneyFromMakepa(const QString & spectraDir)
 
     helpString = def::dir->absolutePath()
                  + slash + "results.txt";
-    ofstream outStr;
-    outStr.open(helpString.toStdString(), ios_base::app);
+	std::ofstream outStr;
+	outStr.open(helpString.toStdString(), std::ios_base::app);
     if(!outStr.good())
     {
-        cout << "can't open log file: " << helpString << endl;
+		std::cout << "can't open log file: " << helpString << std::endl;
     }
     else
     {
@@ -1350,7 +1083,7 @@ void product1(const matrix & arr,
 
     for(int j = 0; j < length; ++j)
     {
-        sum = prod(vect, arr[j]);
+		sum = smallLib::prod(vect, arr[j]);
         outVector +=  tanh(sum) * arr[j];
     }
     outVector /= length;
@@ -1374,7 +1107,7 @@ void product2(const matrix & arr,
 
     for(int j = 0; j < length; ++j)
     {
-        sum = prod(vect, arr[j]);
+		sum = smallLib::prod(vect, arr[j]);
         sum1 += 1 - tanh(sum) * tanh(sum);
     }
     sum1 /= length;
@@ -1395,7 +1128,7 @@ void product3(const matrix & inMat,
     double sum = 0.;
     for(int j = 0; j < currNum; ++j)
     {
-        sum = prod(inMat[currNum], inMat[j]); // short valarray, no difference
+		sum = smallLib::prod(inMat[currNum], inMat[j]); // short valarray, no difference
         outVector += inMat[j] * sum;
     }
 }
@@ -1407,7 +1140,7 @@ void randomizeValar(lineType & valar)
     {
         valar[i] = rand() % 50 - 25;
     }
-    normalize(valar);
+	smallLib::normalize(valar);
 }
 
 void countVectorW(matrix & vectorW,
@@ -1445,7 +1178,7 @@ void countVectorW(matrix & vectorW,
             sum1 = 0.;
             for(int j = 0; j < dataLen; ++j)
             {
-                const double temp = tanh(prod(vectorW[i], tempMatrix[j]));
+				const double temp = tanh(smallLib::prod(vectorW[i], tempMatrix[j]));
 
                 vector1 += tempMatrix[j] * temp;
                 sum1 += (1. - temp * temp);
@@ -1460,18 +1193,18 @@ void countVectorW(matrix & vectorW,
             //orthogonalization
             product3(vectorW, ns, i, vector3);
             vectorW[i] -= vector3;
-            normalize(vectorW[i]);
+			smallLib::normalize(vectorW[i]);
 
-            sum2 = norma(vectorOld - vectorW[i]);
+			sum2 = smallLib::norma(vectorOld - vectorW[i]);
 
             ++counter;
             if(sum2 < vectorWTreshold || 2. - sum2 < vectorWTreshold) break;
             if(counter == 100) break;
         }
-        cout << "vectW num = " << i << "\t";
-        cout << "iters = " << counter << "\t";
-        cout << "error = " << fabs(sum2 - int(sum2 + 0.5)) << "\t";
-        cout << "time = " << doubleRound(myTime.elapsed() / 1000., 1) << " sec" << endl;
+		std::cout << "vectW num = " << i << "\t";
+		std::cout << "iters = " << counter << "\t";
+		std::cout << "error = " << fabs(sum2 - int(sum2 + 0.5)) << "\t";
+		std::cout << "time = " << smallLib::doubleRound(myTime.elapsed() / 1000., 1) << " sec" << std::endl;
     }
 }
 
@@ -1509,7 +1242,7 @@ void dealWithEyes(matrix & inData,
         }); // retain zeros
     }
 //    auto t1 = high_resolution_clock::now();
-//    cout << duration_cast<microseconds>(t1-t0).count() << endl;
+//    std::cout << duration_cast<microseconds>(t1-t0).count() << std::endl;
 }
 
 void ica(const matrix & initialData,
@@ -1561,7 +1294,7 @@ void ica(const matrix & initialData,
     double sum1 {};
     for(int i = 0; i < ns; ++i)
     {
-        sum1 = norma(matrixA.getCol(i)) / 2.;
+		sum1 = smallLib::norma(matrixA.getCol(i)) / 2.;
 
         for(int k = 0; k < ns; ++k)
         {
@@ -1698,7 +1431,7 @@ void svd(const matrix & initialData,
 #if 0
                     F += 0.5 * pow(inData[i] - tempB * tempA[i], 2.).sum();
 #elif 1
-                    F += 0.5 * normaSq(inData[i] - tempB * tempA[i]);
+					F += 0.5 * smallLib::normaSq(inData[i] - tempB * tempA[i]);
 #elif 1
                     // much faster in debug
                     const double coef = tempA[i];
@@ -1723,7 +1456,7 @@ void svd(const matrix & initialData,
             }
 
             //count vector tempB
-            sum2 = 1. / normaSq(tempA);
+			sum2 = 1. / smallLib::normaSq(tempA);
             for(int j = 0; j < dataLen; ++j)
             {
 //                tempB[j] = sum2 * (inDataTrans[j] * tempA).sum();
@@ -1732,11 +1465,11 @@ void svd(const matrix & initialData,
 //                                                     end(tempA), // begin + dimension
 //                                                     begin(inDataTrans[j]),
 //                                                     0.);
-                tempB[j] = sum2 * prod(tempA, inDataTrans[j]);
+				tempB[j] = sum2 * smallLib::prod(tempA, inDataTrans[j]);
             }
 
             //count vector tempA
-            sum2 = 1. / normaSq(tempB);
+			sum2 = 1. / smallLib::normaSq(tempB);
             for(int i = 0; i < dimension; ++i)
             {
 //                tempA[i] = sum2 * (tempB * inData[i]).sum();
@@ -1745,7 +1478,7 @@ void svd(const matrix & initialData,
 //                                                     end(tempB),
 //                                                     begin(inData[i]),
 //                                                     0.);
-                tempA[i] = sum2 * prod(tempB, inData[i]);
+				tempA[i] = sum2 * smallLib::prod(tempB, inData[i]);
             }
 
             if((counter) % errorStep == 0)
@@ -1756,7 +1489,7 @@ void svd(const matrix & initialData,
 #if 0
                     dF += 0.5 * pow((inData[i] - tempB * tempA[i]), 2.).sum();
 #elif 1
-                    dF += 0.5 * normaSq(inData[i] - tempB * tempA[i]);
+					dF += 0.5 * smallLib::normaSq(inData[i] - tempB * tempA[i]);
 #elif 1
                     // much faster in debug
                     const double coef = tempA[i];
@@ -1811,21 +1544,21 @@ void svd(const matrix & initialData,
 
 
         //count eigenVectors && eigenValues
-        sum1 = normaSq(tempA);
-        sum2 = normaSq(tempB);
+		sum1 = smallLib::normaSq(tempA);
+		sum2 = smallLib::normaSq(tempB);
         eigenValues[k] = sum1 * sum2 / double(dataLen - 1.);
         tempA /= sqrt(sum1);
 
-        sum1 = std::accumulate(begin(eigenValues),
-                               begin(eigenValues) + k + 1,
+		sum1 = std::accumulate(std::begin(eigenValues),
+							   std::begin(eigenValues) + k + 1,
                                0.);
 
-        cout << k << "\t";
-        cout << "val = " << doubleRound(eigenValues[k], 3) << "\t";
-        cout << "disp = " << doubleRound(100. * eigenValues[k] / trace, 2) << "\t";
-        cout << "total = " << doubleRound(100. * sum1 / trace, 2) << "\t";
-        cout << "iters = " << counter << "\t";
-        cout << doubleRound(myTime.elapsed()/1000., 1) << " s" << endl;
+		std::cout << k << "\t";
+		std::cout << "val = " << smallLib::doubleRound(eigenValues[k], 3) << "\t";
+		std::cout << "disp = " << smallLib::doubleRound(100. * eigenValues[k] / trace, 2) << "\t";
+		std::cout << "total = " << smallLib::doubleRound(100. * sum1 / trace, 2) << "\t";
+		std::cout << "iters = " << counter << "\t";
+		std::cout << smallLib::doubleRound(myTime.elapsed()/1000., 1) << " s" << std::endl;
 
         for(int i = 0; i < dimension; ++i)
         {
@@ -1875,15 +1608,15 @@ void splineCoeffCount(const lineType & inX,
 
         rightVec[i] = 3 * ( (inY[i] - inY[i-1]) / ( (inX[i] - inX[i-1]) * (inX[i] - inX[i-1]) ) + (inY[i+1] - inY[i]) / ( (inX[i+1] - inX[i]) * (inX[i+1] - inX[i]) ));
     }
-    if(0) //cout matrix and rightvec - OK
+	if(0) //std::cout matrix and rightvec - OK
     {
         for(int i = 0; i < dim; ++i)
         {
             for(int j = 0; j < dim; ++j)
             {
-                cout << coefsMatrix[i][j] << "\t ";
+				std::cout << coefsMatrix[i][j] << "\t ";
             }
-            cout << rightVec[i] << endl;
+			std::cout << rightVec[i] << std::endl;
         }
     }
     //count K's
@@ -1930,7 +1663,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 {
 
     const int inLength = arr.size();
-    const int fftLen = fftL(inLength); // int(pow(2., ceil(log(inLength)/log(2.))));
+	const int fftLen = smallLib::fftL(inLength); // int(pow(2., ceil(log(inLength)/log(2.))));
     const double spStep = def::freq / fftLen;
     const double normCoef = sqrt(fftLen / double(inLength));
 
@@ -2053,7 +1786,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
         pic.save(picPath, 0, 100);
         pic.fill();
         pnt.end();
-        cout << "hilber drawn" << endl;
+		std::cout << "hilber drawn" << std::endl;
         //end check draw
     }
     return out;
@@ -2069,7 +1802,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 	/// do hilbert transform for the first inLength bins
 	const double srate = def::freq; ///- to arguments
 	const int inLength = arr.size();
-	const int fftLen = fftL(inLength) / 2;
+	const int fftLen = smallLib::fftL(inLength) / 2;
 
 	std::valarray<double> outHilbert(inLength); /// result
 	std::valarray<double> tempArr[2];
@@ -2212,7 +1945,7 @@ std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
     {
         helpInt = int(floor((dataIn[j] + maxAmpl) / (2. * maxAmpl / double(numOfIntervals))));
 
-        if(helpInt != min(max(0, helpInt), numOfIntervals - 1))
+		if(helpInt != std::min(std::max(0, helpInt), numOfIntervals - 1))
         {
             continue; //if helpInt not in range
         }
@@ -2277,7 +2010,7 @@ void kernelEst(const signalType & arr, QString picPath)
         for(int j = 0; j < length; ++j)
         {
             values[i] += 1 / (length * h)
-                         * gaussian((xMin + (xMax - xMin) / double(pic.width()) * i - arr[j]) / h);
+						 * smallLib::gaussian((xMin + (xMax - xMin) / double(pic.width()) * i - arr[j]) / h);
         }
     }
 
@@ -2418,7 +2151,7 @@ void splitZeros(matrix & dataIn,
     int finish = -1;
     int allEyes = 0;
 
-    ofstream outStream;
+	std::ofstream outStream;
     int markChan = def::ns - 1; // generality markers channel
 
     const double firstMarker = dataIn[markChan][0];
@@ -2435,7 +2168,7 @@ void splitZeros(matrix & dataIn,
                 break;
             }
         }
-//        of << flag[i] << endl;
+//        of << flag[i] << std::endl;
     }
     flags[inLength] = true; // for terminate zero piece
 //    of.close();
@@ -2445,16 +2178,16 @@ void splitZeros(matrix & dataIn,
 
     if(!logFilePath.isEmpty())
     {
-        outStream.open(logFilePath.toStdString(), ios_base::app);
+		outStream.open(logFilePath.toStdString(), std::ios_base::app);
         if(!outStream.good())
         {
-            cout << "splitZeros: outStream is not good" << endl;
+			std::cout << "splitZeros: outStream is not good" << std::endl;
             return;
         }
     }
     else
     {
-        cout << "splitZeros: logFilePath is empty" << endl;
+		std::cout << "splitZeros: logFilePath is empty" << std::endl;
         return;
     }
 
@@ -2483,7 +2216,7 @@ void splitZeros(matrix & dataIn,
 
                 outStream << (start + allEyes) / def::freq << "\t"; // start time
                 outStream << (finish + allEyes) / def::freq << "\t"; // finish time
-                outStream << (finish - start) / def::freq << endl; // length
+				outStream << (finish - start) / def::freq << std::endl; // length
 
                 //split. vector.erase();
                 for(int j = 0; j < def::ns; ++j) //shift with markers and flags
@@ -2513,7 +2246,7 @@ void splitZeros(matrix & dataIn,
 
     outStream.close();
 
-//    cout << "allEyes = " << allEyes << endl;
+//    std::cout << "allEyes = " << allEyes << std::endl;
 
     dataIn[markChan][0] = firstMarker;
     dataIn[markChan][(*outLength) - 1] = lastMarker;
@@ -2636,7 +2369,7 @@ void calcSpectre(const std::valarray<double> & inSignal,
 {
     if(inSignal.size() != fftLength)
     {
-        cout << "calcSpectre: inappropriate signal length" << endl;
+		std::cout << "calcSpectre: inappropriate signal length" << std::endl;
         return;
     }
 

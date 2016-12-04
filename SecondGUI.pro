@@ -51,7 +51,6 @@ SOURCES += main.cpp\
     mainwindow/mainwindow_customF.cpp \
     myLib/myLib_clustering.cpp \
     myLib/myLib_general.cpp \
-    myLib/myLib_matlab.cpp \
     myLib/myLib_signalProcessing.cpp \
     myLib/myLib_draws.cpp \
     myLib/myLib_deprecate.cpp \
@@ -90,7 +89,8 @@ SOURCES += main.cpp\
     DSP/RBJ.cpp \
     DSP/RootFinder.cpp \
     DSP/State.cpp \
-    myLib/myLib_drw.cpp
+    myLib/myLib_drw.cpp \
+    myLib/myLib_wavelet.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -130,7 +130,10 @@ HEADERS  += mainwindow.h \
     DSP/DspFilters/Types.h \
     DSP/DspFilters/Utilities.h \
     myLib/drw.h \
-    myLib/signalProcessing.h
+    myLib/signalProcessing.h \
+    myLib/wavelet.h \
+    myLib/dataHandlers.h \
+    myLib/draws.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

@@ -5,97 +5,6 @@ using namespace std;
 using namespace std::chrono;
 using namespace smallLib;
 
-namespace wvlt
-{
-void drawWavelet(QString picPath,
-                 const matrix & inData)
-{
-    int NumOfSlices = ceil(inData.cols() * wvlt::timeStep);
-    QPixmap pic(NumOfSlices, 1000);
-    pic.fill();
-    QPainter painter;
-    painter.begin(&pic);
-
-	double numb = 0.;
-
-	int currFreqNum = 0;
-    int currSliceNum = 0;
-
-	for(double freq = wvlt::freqMax;
-	   freq > wvlt::freqMin;
-	#if WAVELET_FREQ_STEP_TYPE==0
-	   freq *= wvlt::freqStep
-    #else
-
-	   freq -= wvlt::freqStep)
-#endif
-    {
-        currSliceNum = 0;
-        for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
-        {
-			numb = fmin(floor(inData[currFreqNum][currSliceNum] * wvlt::range), wvlt::range);
-
-			// sligthly more than numb, may be dropped
-			numb = pow(numb/wvlt::range, 0.6) * wvlt::range;
-
-            painter.setBrush(QBrush(myLib::hueJet(wvlt::range, numb)));
-            painter.setPen(myLib::hueJet(wvlt::range, numb));
-
-#if WAVELET_FREQ_STEP_TYPE==0
-            painter.drawRect( currSlice * pic.width() / NumOfSlices,
-							  pic.height() * (wvlt::freqMax - freq
-											  + 0.5 * freq *
-											  (1. - wvlt::freqStep) / wvlt::freqStep)
-							  / (wvlt::freqMax-wvlt::freqMin),
-                              pic.width() * wvlt::timeStep / NumOfSlices,
-							  pic.height() * -0.5 * freq * (1. / wvlt::freqStep - wvlt::freqStep)
-							  / (wvlt::freqMax - wvlt::freqMin) );
-#else
-            painter.drawRect( currSlice * pic.width() / NumOfSlices,
-							  pic.height() * (wvlt::freqMax - freq  - 0.5 * wvlt::freqStep)
-							  / (wvlt::freqMax - wvlt::freqMin),
-                              pic.width() * wvlt::timeStep / NumOfSlices,
-							  pic.height() * wvlt::freqStep / (wvlt::freqMax - wvlt::freqMin));
-#endif
-            ++currSliceNum;
-        }
-		++currFreqNum;
-
-    }
-    painter.setPen("black");
-
-
-    painter.setFont(QFont("Helvetica", 28, -1, -1));
-    painter.setPen(Qt::DashLine);
-	for(int i = wvlt::freqMax; i > wvlt::freqMin; --i)
-    {
-
-        painter.drawLine(0,
-						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin),
-                         pic.width(),
-						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
-        painter.drawText(0,
-						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
-                         QString::number(i));
-
-    }
-    painter.setPen(Qt::SolidLine);
-    for(int i = 0; i < int(NumOfSlices / def::freq); ++i)
-    {
-        painter.drawLine(pic.width() * i * def::freq / NumOfSlices,
-                         pic.height(),
-                         pic.width() * i * def::freq / NumOfSlices,
-                         pic.height() - 20);
-        painter.drawText(pic.width() * i * def::freq / NumOfSlices - 8,
-                         pic.height() - 2,
-                         QString::number(i));
-
-    }
-    pic.save(picPath, 0, 100);
-    painter.end();
-}
-}
-
 namespace myLib
 {
 
@@ -186,6 +95,16 @@ double blue(const int & range, double j, double V, double S)
     else return 0.0;
 }
 
+QColor hueJet(const int & range, double j)
+{
+	if(j > range) j = range; //bicycle for no black colour
+	if(j < 0) j = 0; //bicycle for no black colour
+	//    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
+	return QColor(255. * red(range, j),
+				  255. * green(range, j),
+				  255. * blue(range, j));
+}
+
 // hot to cold
 QColor hueOld(int range, double j, int numOfContours, double V, double S)
 {
@@ -202,15 +121,6 @@ QColor hueOld(int range, double j, int numOfContours, double V, double S)
     return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
 }
 
-QColor hueJet(const int & range, double j)
-{
-    if(j > range) j = range; //bicycle for no black colour
-    if(j < 0) j = 0; //bicycle for no black colour
-    //    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
-    return QColor(255. * red(range, j),
-                  255. * green(range, j),
-                  255. * blue(range, j));
-}
 
 QColor grayScale(int range, int j)
 {

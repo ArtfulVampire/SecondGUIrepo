@@ -43,8 +43,6 @@
 #include <cerrno>
 #include <thread>
 
-#include <libcwt_r.h>
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -53,67 +51,13 @@
 
 
 #include <myLib/signalProcessing.h>
+#include <myLib/wavelet.h>
+#include <myLib/dataHandlers.h>
 
-namespace wvlt
-{
-#define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
-extern const int timeStep;
-extern const double freqMax; // def::rightFreq
-extern const double freqMin; // def::leftFreq
-extern const double freqStep;
-extern const int range;
-extern const int numberOfFreqs;
-//wavelets
-
-double morletCos(double const freq1, double const timeShift, double const pot, double const time);
-double morletSin(double const freq1, double const timeShift, double const pot, double const time);
-double morletCosNew(double const freq1,
-                    const double timeShift,
-                    const double time);
-double morletSinNew(double const freq1,
-                    const double timeShift,
-                    const double time);
-
-void wavelet(QString filePath,
-             QString picPath,
-             int channelNumber = 0,
-             int ns = 20);
-
-template <typename signalType = lineType>
-matrix countWavelet(const signalType & inSignal);
-
-void drawWavelet(QString picPath,
-                 const matrix &inData);
-
-/// cwt, imported from matlab
-extern bool isInit;
-int initMtlb();
-int termMtlb();
-matrix cwt(const lineType & signal, double freq);
-void drawWaveletMtlb(const matrix & inData,
-					 QString picPath = QString());
-}
 
 
 namespace btr
 {
-
-void zeros2coeffs(std::vector<std::complex<double>> & zeros,
-				  std::vector<std::complex<double>> & coeffs,
-				  int size); // symmetric polynoms
-void butterworth_poles(std::vector<std::complex<double>> & poles,
-					   int order,
-					   double cutoff); // cutoff Hz
-void butterworth_z_zeros(std::vector<std::complex<double>> & zeros, int order);
-double warp_freq(double freq, double Fs);
-void p2z(std::vector<std::complex<double>> & p,
-		 std::vector<std::complex<double>> & z,
-		 int size,
-		 double Fs);
-void inverse_poly(std::vector<std::complex<double>> & coeffs, int size);
-void print_line(int len = 80);
-int test();
-
 /// from GA fortran
 std::valarray<double> butterworth(const std::valarray<double> & in,
 								  int order,
@@ -129,7 +73,6 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 
 namespace myLib
 {
-
 
 std::string funcName(std::string in);
 #define TIME(arg)\
@@ -183,12 +126,6 @@ QString getDirPathLib(const QString & filePath);
 QString getExt(const QString & filePath);
 QString getLabelName(const QString & label);
 
-QString rerefChannel(const QString & initialName,
-                     const QString & targetRef = "Ar",
-                     const QString & currentNum = "1",
-                     const QString & earsChan = "20",
-                     const QString & groundChan = "21",
-					 const std::vector<QString> & sign = {"-", "+"});
 
 
 std::istream & operator>> (std::istream &is, QString & in);
@@ -222,6 +159,14 @@ void makeSine(std::valarray<double> & in,
 			  double srate = 250.);
 
 
+QString rerefChannel(const QString & initialName,
+					 const QString & targetRef = "Ar",
+					 const QString & currentNum = "1",
+					 const QString & earsChan = "20",
+					 const QString & groundChan = "21",
+					 const std::vector<QString> & sign = {"-", "+"});
+
+
 
 /// colorscales (for wavelets)
 enum ColorScale {jet = 0,
@@ -229,19 +174,19 @@ enum ColorScale {jet = 0,
                  gray = 2,
                  pew = 3};
 void drawColorScale(QString filename, int range, ColorScale type = jet, bool full = false);
-const std::vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
 // jet
 const double defV = 1.;
+const std::vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
 double red(const int &range, double j, double V = defV, double S = 1.0);
 double green(const int &range, double j, double V = defV, double S = 1.0);
 double blue(const int &range, double j, double V = defV, double S = 1.0);
+QColor hueJet(const int &range, double j);
 // hot-to-cold
 double red1(int range, int j);
 double green1(int range, int j);
 double blue1(int range, int j);
 
 QColor hueOld(int range, double j, int numOfContours = 0, double V = 0.95, double S = 1.0);
-QColor hueJet(const int &range, double j);
 QColor grayScale(int range, int j);
 
 
@@ -260,69 +205,6 @@ void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 e
 													   + slash + "winds",
                           const QString & outFilePath = def::dir->absolutePath()
                                                         + slash + "eyes.txt");
-
-
-
-/// dataHandlers
-void makeFullFileList(const QString & path,
-                      QStringList & lst,
-                      const QStringList & auxFilters = QStringList());
-
-void makeFileLists(const QString & path,
-				   std::vector<QStringList> & lst,
-                   const QStringList & auxFilters = QStringList());
-
-void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
-
-void readPlainData(const QString & inPath,
-                   matrix & data,
-                   int & numOfSlices,
-                   const int & start = 0);
-
-void writePlainData(const QString outPath,
-                    const matrix & data,
-                    int numOfSlices = 0,
-                    int start = 0);
-
-void readMatrixFile(const QString & filePath,
-                    matrix & outData);
-
-void readMatrixFileRaw(const QString & filePath,
-					   matrix & outData);
-
-void writeMatrixFile(const QString & filePath,
-                     const matrix & outData,
-                     const QString & rowsString = "NumOfRows",
-                     const QString & colsString = "NumOfCols");
-
-
-matrix readIITPfile(const QString & filePath);
-
-void readIITPfile(const QString & filePath,
-				  matrix & outData,
-				  std::vector<QString> & outLabels);
-
-void readUCIdataSet(const QString & setName,
-                    matrix & outData,
-					std::vector<uint> &outTypes);
-
-
-void readFileInLine(const QString & filePath,
-					std::valarray<double> & result);
-
-void readFileInLineRaw(const QString & filePath,
-					   std::valarray<double> & result);
-
-template <typename ArrayType>
-void writeFileInLine(const QString & filePath,
-					 const ArrayType & outData);
-
-
-lineType signalFromFile(const QString & filePath,
-                   int channelNumber); // unused
-
-
-
 
 
 
