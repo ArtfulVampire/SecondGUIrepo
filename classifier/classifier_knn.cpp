@@ -1,6 +1,7 @@
 #include "classifier.h"
 
 using namespace myLib;
+using namespace myOut;
 
 KNN::KNN()
 {

@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <myLib/output.h>
-using namespace myLib;
+using namespace myOut;
 
 void MainWindow::ICA() //fastICA
 {

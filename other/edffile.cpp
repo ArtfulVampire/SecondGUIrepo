@@ -4,6 +4,8 @@ using namespace std;
 using namespace myLib;
 using namespace smallLib;
 
+using namespace myOut;
+
 
 std::list<std::valarray<double>> edfFile::getDataAsList() const
 {

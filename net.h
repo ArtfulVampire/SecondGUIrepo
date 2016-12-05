@@ -128,7 +128,7 @@ public:
 
 	/// data
     void loadData(const QString & spectraPath = def::dir->absolutePath()
-                                                + myLib::slash + "SpectraSmooth",
+                                                + slash + "SpectraSmooth",
 				  const QStringList & filters = {});
     void loadData(const matrix & inMat,
                   const std::vector<uint> & inTypes);

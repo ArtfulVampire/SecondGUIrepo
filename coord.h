@@ -125,7 +125,7 @@ namespace def
     const bool OssadtchiFlag = false;
 
 	const bool wirteStartEndLong = true; // for slice
-	const bool redirectCoutFlag = false; // redirect cout to generalLog.txt
+	const bool redirectStdOutFlag = false; // redirect cout to generalLog.txt
 
 	const QString plainDataExtension = "scg";   // slice common gradient ???
     const QString spectraDataExtension = "psd"; // power spectral density

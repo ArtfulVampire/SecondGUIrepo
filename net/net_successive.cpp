@@ -1,7 +1,7 @@
 #include "net.h"
 using namespace std;
 using namespace myLib;
-
+using namespace myOut;
 
 void Net::successiveProcessing()
 {

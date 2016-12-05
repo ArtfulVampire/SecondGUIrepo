@@ -1,6 +1,7 @@
 #include "edffile.h"
 using namespace std;
 using namespace myLib;
+using namespace myOut;
 
 namespace repair
 {

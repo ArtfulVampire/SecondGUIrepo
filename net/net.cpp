@@ -6,6 +6,8 @@ using namespace std;
 using namespace myLib;
 using namespace smallLib;
 
+using namespace myOut;
+
 Net::Net() :
     ui(new Ui::Net)
 {

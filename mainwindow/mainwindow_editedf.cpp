@@ -3,6 +3,7 @@
 
 using namespace std;
 using namespace myLib;
+using namespace myOut;
 
 void MainWindow::makeChanList(std::vector<int> & chanList)
 {

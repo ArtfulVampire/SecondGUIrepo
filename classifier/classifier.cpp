@@ -7,8 +7,8 @@ Classifier::Classifier()
 {
 	myData = new ClassifierData();
 	confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
-	resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
-	workDir = def::dir->absolutePath() + myLib::slash + "Help" + myLib::slash + "PA";
+	resultsPath = def::dir->absolutePath() + slash + "results.txt";
+	workDir = def::dir->absolutePath() + slash + "Help" + slash + "PA";
 }
 
 void Classifier::setClassifierData(ClassifierData & in)
@@ -36,7 +36,7 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 {
 	if(this->testCleanFlag && (predType != myData->getTypes()[vecNum]))
     {
-		QFile::remove(filesPath + myLib::slash + myData->getFileNames()[vecNum]);
+		QFile::remove(filesPath + slash + myData->getFileNames()[vecNum]);
     }
 }
 std::pair<uint, double> Classifier::classifyDatumLast()
@@ -49,7 +49,7 @@ std::pair<uint, double> Classifier::classifyDatumLast()
 void Classifier::printResult(const QString & fileName, uint predType, uint vecNum)
 {
     std::ofstream outStr;
-	outStr.open((workDir + myLib::slash + fileName).toStdString()
+	outStr.open((workDir + slash + fileName).toStdString()
 				, std::ios_base::app
 				);
 
@@ -174,7 +174,7 @@ avType Classifier::averageClassification()
 	resultsPath =
 //			def::dir->absolutePath()
 			"/media/Files/Dropbox/Successive/"
-				  + myLib::slash + "results"
+				  + slash + "results"
 				  + "_" + QString::number(suc::numGoodNewLimit)
 				  + "_" + QString::number(suc::learnSetStay)
 				  + "_" + QString::number(suc::decayRate)

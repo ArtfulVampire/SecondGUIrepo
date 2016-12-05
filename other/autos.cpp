@@ -4,6 +4,7 @@
 using std::cout;
 using std::endl;
 using namespace myLib;
+using namespace myOut;
 
 namespace autos
 {
@@ -732,7 +733,7 @@ void GalyaWavelets(const QString & inPath,
 	if(outPath.isEmpty())
 	{
 		tmpDir.mkdir("wavelet");
-		outPath = tmpDir.absolutePath() + myLib::slash + "wavelet";
+		outPath = tmpDir.absolutePath() + slash + "wavelet";
 	}
 	else
 	{
@@ -756,8 +757,8 @@ void GalyaWavelets(const QString & inPath,
 
 
 		helpString = outPath
-//					 + myLib::slash + exp
-					 + myLib::slash
+//					 + slash + exp
+					 + slash
 					 + myLib::getFileName(filesVec[i], false)
 					 + "_wavelet.txt";
 
@@ -1116,11 +1117,11 @@ void GalyaFull(const QString & inDirPath,
 
 
 	const QString outPath = inDirPath + "_out";
-//	const QString outPath = inDirPath + myLib::slash + myLib::getFileName(inDirPath) + "_out";
+//	const QString outPath = inDirPath + slash + myLib::getFileName(inDirPath) + "_out";
 	tmp.mkpath(outPath);
 
 	const QString waveletPath = inDirPath + "_wavelet";
-//	const QString waveletPath = inDirPath + myLib::slash + myLib::getFileName(inDirPath) + "_wavelet";
+//	const QString waveletPath = inDirPath + slash + myLib::getFileName(inDirPath) + "_wavelet";
 	tmp.mkpath(waveletPath);
 
 	autos::GalyaProcessing(inDirPath,
@@ -1177,7 +1178,7 @@ void avTime(const QString & realsDir)
 		lst = localDir.entryList({"*_" + tmp + "*"}, QDir::Files);
 		for(const QString & fileName : lst)
 		{
-			helpString = localDir.absolutePath() + myLib::slash + fileName;
+			helpString = localDir.absolutePath() + slash + fileName;
 
 			// read numOfSlices
 			inStr.open(helpString.toStdString());
@@ -1207,7 +1208,7 @@ void avTime(const QString & realsDir)
 		means /= def::freq;
 
 		localDir.cdUp();
-		helpString = localDir.absolutePath() + myLib::slash + "avTime.txt";
+		helpString = localDir.absolutePath() + slash + "avTime.txt";
 		std::ofstream res;
 		res.open(helpString.toStdString(), std::ios_base::app);
 		res << "Reals type\t" << tmp << ":\r\n";

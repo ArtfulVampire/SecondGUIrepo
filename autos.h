@@ -58,7 +58,7 @@ void makeTableFromRows(const QString & work,
 					   QString tablePath = QString(),
 					   const QString & auxFilter = QString());
 
-void avTime(const QString & realsDir = def::dir->absolutePath() + myLib::slash + "Reals");
+void avTime(const QString & realsDir = def::dir->absolutePath() + slash + "Reals");
 
 void clustering();
 }

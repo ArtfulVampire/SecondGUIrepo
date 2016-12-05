@@ -27,7 +27,12 @@ QString rightNumber(const unsigned int input, int N) // prepend zeros
 	return h.right(N);
 }
 
+} // namespace myLib
 
+
+
+namespace myOut
+{
 
 std::istream & operator>> (std::istream &is, QString & in)
 {
@@ -77,7 +82,6 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ, std::allocator<Typ
 	return os;
 }
 
-
 // with allocators
 template std::ostream & operator << (std::ostream & os, const std::vector<std::vector<double>> & toOut);
 template std::ostream & operator << (std::ostream & os, const std::vector<int> & toOut);
@@ -93,4 +97,4 @@ template std::ostream & operator << (std::ostream & os, const std::valarray<doub
 template std::ostream & operator << (std::ostream & os, const std::valarray<int> & toOut);
 template std::ostream & operator << (std::ostream & os, const QList<int> & toOut);
 template std::ostream & operator << (std::ostream & os, const QList<double> & toOut);
-} // namespace myLib
+} // namespace myOut

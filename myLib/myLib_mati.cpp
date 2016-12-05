@@ -1,7 +1,7 @@
 #include <myLib/mati.h>
 #include <myLib/output.h>
 #include <iostream>
-
+using namespace myOut;
 
 namespace myLib
 {

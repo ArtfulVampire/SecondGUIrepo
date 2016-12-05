@@ -5,6 +5,7 @@
 using namespace std;
 using namespace myLib;
 using namespace smallLib;
+using namespace myOut;
 
 
 

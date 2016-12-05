@@ -1,4 +1,5 @@
 #include "classifier.h"
+using namespace myOut;
 
 SVM::SVM() : Classifier()
 {
@@ -50,7 +51,7 @@ std::pair<uint, double> SVM::classifyDatum(const uint & vecNum)
 
     uint outClass;
     std::ifstream inStr;
-    inStr.open((workDir + myLib::slash + outputFileName).toStdString());
+    inStr.open((workDir + slash + outputFileName).toStdString());
     inStr >> outClass;
     inStr.close();
 
@@ -74,7 +75,7 @@ void SVM::setSvmType(int in) /// 0-4
 void SVM::makeFile(const std::vector<uint> & indices,
                    const QString & fileName)
 {
-    QString helpString = workDir + myLib::slash + fileName;
+    QString helpString = workDir + slash + fileName;
     /// create/clear
     std::ofstream outStream(helpString.toStdString());
 

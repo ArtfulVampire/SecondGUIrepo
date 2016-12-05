@@ -142,7 +142,7 @@ private:
     Ui::MainWindow *ui;
 
     std::ofstream generalLogStream;
-    std::streambuf * coutBuf;
+	std::streambuf * stdOutBuf;
 
     edfFile globalEdf;
     int staSlice;

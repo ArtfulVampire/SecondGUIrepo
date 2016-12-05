@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 
+using namespace myOut;
+
 namespace myLib
 {
 

@@ -5,6 +5,8 @@ using namespace std;
 using namespace myLib;
 using namespace smallLib;
 
+using namespace myOut;
+
 Spectre::Spectre() :
     ui(new Ui::Spectre)
 {

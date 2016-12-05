@@ -49,8 +49,8 @@ protected:
 
 
 /// sheeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeet
-    QString resultsPath = def::dir->absolutePath() + myLib::slash + "results.txt";
-	QString workDir = def::dir->absolutePath() + myLib::slash + "Help" + myLib::slash + "PA";
+	QString resultsPath = def::dir->absolutePath() + slash + "results.txt";
+	QString workDir = def::dir->absolutePath() + slash + "Help" + slash + "PA";
 	QString filesPath = def::windsSpectraDir();
 
 

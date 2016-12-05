@@ -1,5 +1,7 @@
 #include "classifier.h"
 
+using namespace myOut;
+
 WARD::WARD() : Classifier()
 {
     this->numOfClust = 15;

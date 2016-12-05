@@ -4,6 +4,7 @@
 #include <myLib/signalProcessing.h>
 #include <QPixmap>
 #include <QPainter>
+using namespace myOut;
 
 namespace myLib
 {

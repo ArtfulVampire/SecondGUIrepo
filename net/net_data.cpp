@@ -264,9 +264,9 @@ void Net::pca()
 	/// save pca matrix
 	QString helpString;
 	helpString = def::dir->absolutePath()
-				 + myLib::slash + "Help"
-				 + myLib::slash + "ica"
-				 + myLib::slash + def::ExpName + "_pcaMat.txt";
+				 + slash + "Help"
+				 + slash + "ica"
+				 + slash + def::ExpName + "_pcaMat.txt";
 	myLib::writeMatrixFile(helpString, eigenVectors);
 
 
@@ -277,9 +277,9 @@ void Net::pca()
 	for(int j = 0; j < NumberOfVectors; ++j)
 	{
 		helpString = def::dir->absolutePath()
-					 + myLib::slash + "SpectraSmooth"
-					 + myLib::slash + "PCA"
-					 + myLib::slash + fileNames[j];
+					 + slash + "SpectraSmooth"
+					 + slash + "PCA"
+					 + slash + fileNames[j];
 		myLib::writeFileInLine(helpString,
 						pcaMatrix[j]);
 	}
@@ -287,9 +287,9 @@ void Net::pca()
 	eigenVectors.transpose();
 	eigenVectors.resizeRows(3); /// ???
 	helpString = def::dir->absolutePath()
-				 + myLib::slash + "Help"
-				 + myLib::slash + "ica"
-				 + myLib::slash + def::ExpName + "_pcas.jpg";
+				 + slash + "Help"
+				 + slash + "ica"
+				 + slash + def::ExpName + "_pcas.jpg";
 	myLib::drawTemplate(helpString);
 	myLib::drawArrays(helpString,
 			   eigenVectors,

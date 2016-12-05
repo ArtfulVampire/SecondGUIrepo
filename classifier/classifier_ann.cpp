@@ -1,5 +1,6 @@
 #include "classifier.h"
 using namespace myLib;
+using namespace myOut;
 
 ANN::ANN() : Classifier()
 {
@@ -455,8 +456,8 @@ void ANN::writeWeight(const QString & wtsPath)
     std::ofstream weightsFile;
     if(wtsPath.isEmpty())
     {
-		weightsFile.open((def::dir->absolutePath() + myLib::slash
-						  + "Help" + myLib::slash + "wts" + myLib::slash
+		weightsFile.open((def::dir->absolutePath() + slash
+						  + "Help" + slash + "wts" + slash
 						  + def::ExpName
 //						  + "_" + QString::number(wtsCounter++)
 						  + ".wts").toStdString());
@@ -526,8 +527,8 @@ void ANN::drawWeight(QString wtsPath,
 
     if(!QFile::exists(wtsPath))
     {
-		wtsPath = def::dir->absolutePath() + myLib::slash
-				  + "Help" + myLib::slash + "wts" + myLib::slash
+		wtsPath = def::dir->absolutePath() + slash
+				  + "Help" + slash + "wts" + slash
 				  + def::ExpName + ".wts";
         if(!QFile::exists(wtsPath))
         {

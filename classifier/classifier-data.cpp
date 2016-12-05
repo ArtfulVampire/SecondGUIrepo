@@ -70,7 +70,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 		classCount[i] = 0.;
 		for(const QString & fileName : leest[i])
 		{
-			myLib::readFileInLine(inPath + myLib::slash + fileName,
+			myLib::readFileInLine(inPath + slash + fileName,
 								  tempArr);
 			this->push_back(tempArr, i, fileName);
 		}
@@ -79,7 +79,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 	classCount = 0;
 	for(const QString & fileName : lst)
 	{
-		myLib::readFileInLine(inPath + myLib::slash + fileName,
+		myLib::readFileInLine(inPath + slash + fileName,
 							  tempArr);
 		this->push_back(tempArr,
 						myLib::getTypeOfFileName(fileName),

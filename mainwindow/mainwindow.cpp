@@ -1,8 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-using namespace std;
-using namespace myLib;
+using namespace myOut;
 
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow)
@@ -13,7 +12,7 @@ MainWindow::MainWindow() :
 
     autoProcessingFlag = false;
 
-    coutBuf = cout.rdbuf();
+	stdOutBuf = std::cout.rdbuf();
 
     staSlice = 0;
     stopFlag = 0;
@@ -361,7 +360,7 @@ void MainWindow::processEyes()
         }
     }
     /// or (eogs, eegs)
-    eyesProcessingStatic(eogs); // for first 19 eeg channels
+	myLib::eyesProcessingStatic(eogs); // for first 19 eeg channels
 }
 
 void MainWindow::showNet()
@@ -416,7 +415,7 @@ void MainWindow::setEdfFile(QString const &filePath)
     if(!QFile::exists(helpString))
     {
         helpString = "Cannot open EDF file:\n" + helpString;
-        cout << helpString << endl;
+		std::cout << helpString << std::endl;
         return;
     }
 
@@ -424,29 +423,29 @@ void MainWindow::setEdfFile(QString const &filePath)
 
     //set ExpName
 
-    def::ExpName = getExpNameLib(filePath);
+	def::ExpName = myLib::getExpNameLib(filePath);
     ui->Name->setText(def::ExpName);
 
-    helpString.resize(helpString.lastIndexOf(slash));
+	helpString.resize(helpString.lastIndexOf(slash));
     def::dir->cd(helpString);
 
-    if(def::redirectCoutFlag)
+	if(def::redirectStdOutFlag)
     {
-        //redirect cout to logfile
+		//redirect std::cout to logfile
         if(generalLogStream.is_open())
         {
             generalLogStream.close();
         }
         helpString += QString(slash) + "generalLog.txt";
 
-        generalLogStream.open(helpString.toStdString().c_str(), ios_base::app);
-        generalLogStream << endl << endl << endl;
+		generalLogStream.open(helpString.toStdString().c_str(), std::ios_base::app);
+		generalLogStream << std::endl << std::endl << std::endl;
 
-        cout.rdbuf(generalLogStream.rdbuf());
+		std::cout.rdbuf(generalLogStream.rdbuf());
     }
     else
     {
-        cout.rdbuf(coutBuf);
+		std::cout.rdbuf(stdOutBuf);
     }
 
 
@@ -586,20 +585,20 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
                     const double wndLen = ui->windowLengthSpinBox->value() * def::freq;
 
                     for(int i = 0;
-                        i < min(ceil(fil.getData().cols() / wndLen), 60.); /// const generality
+						i < std::min(ceil(fil.getData().cols() / wndLen), 60.); /// const generality
                         ++i)
                     {
                         helpString = (def::dir->absolutePath()
 															  + slash + "winds"
                                                               + slash + "fromreal"
                                                               + slash + def::ExpName
-                                                              + "-" + rightNumber(i, 4)
-                                                              + "_" + QString::number(254)
+															  + "-" + myLib::rightNumber(i, 4)
+															  + "_" + nm(254)
 //                                                              + ".edf"
                                                               );
 
                         fil.saveSubsection(i * wndLen,
-                                           min((i + 1) * wndLen,
+										   std::min((i + 1) * wndLen,
                                                double(fil.getData().cols())),
                                            helpString,
                                            true
@@ -640,7 +639,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
     helpString += QString::number(def::ns);
     ui->textEdit->append(helpString);
 
-    cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
 void MainWindow::readData()
@@ -653,7 +652,7 @@ void MainWindow::readData()
     helpString = ( ui->filePathLineEdit->text() );
     if(!QFile::exists(helpString))
     {
-        cout << "readData: edf file doent exist\n" << helpString.toStdString() << endl;
+		std::cout << "readData: edf file doent exist\n" << helpString.toStdString() << std::endl;
         return;
     }
 
@@ -698,19 +697,19 @@ void MainWindow::drawSpectra(const QString & prePath,
     myTime.start();
 
     QStringList lst;
-    makeFullFileList(prePath, lst);
+	myLib::makeFullFileList(prePath, lst);
     std::valarray<double> dataS;
     int i = 0;
     QString helpString;
     for(const QString & str : lst)
     {
         helpString = prePath + slash + str;
-        readFileInLine(helpString,
+		myLib::readFileInLine(helpString,
                        dataS);
 
         helpString = outPath + slash + str + ".jpg";
-        drawTemplate(helpString);
-        drawArray(helpString, dataS);
+		myLib::drawTemplate(helpString);
+		myLib::drawArray(helpString, dataS);
 
         ui->progressBar->setValue(100 * (++i) / lst.length());
         qApp->processEvents();
@@ -721,7 +720,7 @@ void MainWindow::drawSpectra(const QString & prePath,
         }
     }
     ui->progressBar->setValue(0);
-    cout << "drawSpectra: time = " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "drawSpectra: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::drawReals()
@@ -775,7 +774,7 @@ void MainWindow::drawReals()
             break;
         }
         helpString = prePath + slash + lst[i];
-        readPlainData(helpString,
+		myLib::readPlainData(helpString,
                       dataD,
                       NumOfSlices);
 
@@ -784,16 +783,16 @@ void MainWindow::drawReals()
             continue;
         }
 
-		helpString = getPicPath(helpString);
+		helpString = myLib::getPicPath(helpString);
 
-        drawEeg(dataD,
-                def::ns,
-                NumOfSlices,
-                def::freq,
-                helpString,
-                ui->drawCoeffSpinBox->value(),
-                blueCh,
-                redCh); // generality.getFreq()
+		myLib::drawEeg(dataD,
+					   def::ns,
+					   NumOfSlices,
+					   def::freq,
+					   helpString,
+					   ui->drawCoeffSpinBox->value(),
+					   blueCh,
+					   redCh); // generality.getFreq()
 
         ui->progressBar->setValue(100 * (i + 1) / lst.length());
         qApp->processEvents();
@@ -808,7 +807,7 @@ void MainWindow::drawReals()
     ui->textEdit->append(helpString);
 
     stopFlag = 0;
-	cout << "drawReals: time = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "drawReals: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
 void MainWindow::cleanDirsAll(bool fl)
@@ -849,7 +848,7 @@ void MainWindow::cleanDirs()
     {
         helpString = def::dir->absolutePath()
 				+ slash + "winds";
-        cleanDir(helpString);
+		myLib::cleanDir(helpString);
     }
 
 	// SpectraSmooth/winds
@@ -858,7 +857,7 @@ void MainWindow::cleanDirs()
         helpString = def::dir->absolutePath()
                 + slash + "SpectraSmooth"
 				+ slash + "winds";
-        cleanDir(helpString);
+		myLib::cleanDir(helpString);
     }
 
     // SpectraSmooth
@@ -866,7 +865,7 @@ void MainWindow::cleanDirs()
     {
         helpString = def::dir->absolutePath()
                 + slash + "SpectraSmooth";
-        cleanDir(helpString);
+		myLib::cleanDir(helpString);
     }
 
 	// winds/fromreal
@@ -875,7 +874,7 @@ void MainWindow::cleanDirs()
         helpString = def::dir->absolutePath()
 				+ slash + "winds"
                 + slash + "fromreal";
-        cleanDir(helpString);
+		myLib::cleanDir(helpString);
     }
 
 	// Reals
@@ -883,7 +882,7 @@ void MainWindow::cleanDirs()
     {
         helpString = def::dir->absolutePath()
 				+ slash + "Reals";
-        cleanDir(helpString);
+		myLib::cleanDir(helpString);
     }
 
     // SpectraImg
@@ -891,7 +890,7 @@ void MainWindow::cleanDirs()
     {
         helpString = def::dir->absolutePath()
                      + slash + "SpectraImg";
-        cleanDir(helpString);
+		myLib::cleanDir(helpString);
     }
 
     // signals
@@ -902,7 +901,7 @@ void MainWindow::cleanDirs()
 
         for(auto str2 : {"before", "after", "other"})
         {
-            cleanDir(helpString + str2);
+			myLib::cleanDir(helpString + str2);
         }
     }
 
@@ -916,7 +915,7 @@ void MainWindow::cleanDirs()
 
         for(auto str2 : {"before", "after", "other"})
         {
-            cleanDir(helpString + str2);
+			myLib::cleanDir(helpString + str2);
         }
     }
 
@@ -924,7 +923,7 @@ void MainWindow::cleanDirs()
     if(ui->cleanMarkersCheckBox->isChecked())
     {
         helpString = def::dir->absolutePath();
-        cleanDir(helpString, "markers", 0);
+		myLib::cleanDir(helpString, "markers", 0);
     }
 
     helpString = "dirs cleaned ";
@@ -1005,7 +1004,7 @@ void MainWindow::markerSetBinValueSlot()
     int marker = ui->markerDecimalLineEdit->text().toInt();
     QString helpString;
 
-    std::vector<bool> byteMarker = matiCountByte(double(marker));
+	std::vector<bool> byteMarker = myLib::matiCountByte(double(marker));
 
     helpString.clear();
     for(int h = 15; h >= 8; --h)
@@ -1030,7 +1029,7 @@ void MainWindow::markerSaveEdf()
     {
         helpString += ".edf";
     }
-    helpString = setFileName(helpString);
+	helpString = myLib::setFileName(helpString);
     globalEdf.writeEdfFile(helpString);
 }
 
@@ -1052,11 +1051,11 @@ void MainWindow::drawMapsSlot()
     {
         return;
     }
-    drawMapsICA(helpString,
-                def::dir->absolutePath()
-                + slash + "Help"
-                + slash + "Maps",
-                def::ExpName);
+	myLib::drawMapsICA(helpString,
+					   def::dir->absolutePath()
+					   + slash + "Help"
+					   + slash + "Maps",
+					   def::ExpName);
 }
 
 
