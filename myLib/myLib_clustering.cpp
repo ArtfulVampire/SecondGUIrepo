@@ -67,7 +67,7 @@ void clustering::readFile(QString filePath)
     inStr.open(filePath.toStdString().c_str());
     if(!inStr.good())
     {
-        cout << "readFile: can't read file" << endl;
+		std::cout << "readFile: can't read file" << std::endl;
         return;
     }
 
@@ -120,9 +120,9 @@ void clustering::readFile(QString filePath)
 
     for(int j = 0; j < 3; ++j)
     {
-        cout << dists[0][j] << '\t';
+		std::cout << dists[0][j] << '\t';
     }
-    cout << endl;
+	std::cout << std::endl;
 
 
 	std::vector<std::vector<double> >::iterator itt;
@@ -167,9 +167,9 @@ void clustering::readFile(QString filePath)
 
         for(int j = 0; j < 3; ++j)
         {
-            cout << (*itt)[j] << '\t';
+			std::cout << (*itt)[j] << '\t';
         }
-        cout << endl;
+		std::cout << std::endl;
     }
     std::sort(newDists.begin(), newDists.end(), mySort);
 	std::vector<double> newD;
@@ -177,7 +177,7 @@ void clustering::readFile(QString filePath)
     {
         newD.push_back(newDists[i][0]);
     }
-    cout << newD << endl;
+	std::cout << newD << std::endl;
 
 }
 
@@ -218,7 +218,7 @@ void refreshDistAll(mat & distNew,
     // numRow * (numRow + 1) / 2 = distSize
 
     int numRow = plainCoords.size();
-    //    cout << "numRow = " << numRow << endl;
+	//    std::cout << "numRow = " << numRow << std::endl;
 
 
 
@@ -258,7 +258,7 @@ void countGradient(const coordType & plainCoords,
 
         if(fabs(tempCoords[i].first - plainCoords[i].first) > 1e-5)
         {
-            cout << "coords1 changed " << plainCoords[i].first - tempCoords[i].first << endl;
+			std::cout << "coords1 changed " << plainCoords[i].first - tempCoords[i].first << std::endl;
         }
 
         tempCoords[i].second += delta/2.;
@@ -273,7 +273,7 @@ void countGradient(const coordType & plainCoords,
 
         if(fabs(tempCoords[i].second - plainCoords[i].second) > 1e-5)
         {
-            cout << "coords2 changed " << plainCoords[i].second - tempCoords[i].second << endl;
+			std::cout << "coords2 changed " << plainCoords[i].second - tempCoords[i].second << std::endl;
         }
 
         refreshDist(distNew, tempCoords, i);
@@ -320,14 +320,14 @@ void moveCoordsGradient(coordType & plainCoords,
         ++numSteps;
         if(numSteps % 5 == 4) lambda *= 2;
     }
-    //    cout << "gradient steps = " << numSteps  << endl;
+	//    std::cout << "gradient steps = " << numSteps  << std::endl;
 }
 
 double errorSammon(const mat & distOld,
                    const mat & distNew) // square matrices
 {
     int size = distOld.size();
-    //    cout << "errorSammon size = " << size << endl;
+	//    std::cout << "errorSammon size = " << size << std::endl;
     double res = 0.;
     for(int i = 0; i < size; ++i)
     {
@@ -399,7 +399,7 @@ void countInvHessianAddDot(const mat & distOld,
     invHessian[1][0] = invHessian[0][1];
 
     double det = invHessian[1][1] * invHessian[0][0] - invHessian[1][0] * invHessian[0][1];
-    //    cout << "det = " << det << endl;
+	//    std::cout << "det = " << det << std::endl;
     invHessian[0][0] /= det;
     invHessian[0][1] /= det;
     invHessian[1][0] /= det;
@@ -475,7 +475,7 @@ void sammonAddDot(const mat & distOld,
 
 	plainCoords.push_back(std::make_pair(helpX, helpY));
 
-    //cout all the dots
+	//std::cout all the dots
 
 
 
@@ -543,8 +543,8 @@ void sammonAddDot(const mat & distOld,
            || (fabs(tmpError1 - tmpError2) / tmpError1) < 1e-6
            || iterationsCount > 100) break;
     }
-    //    cout << "NewDot = " << plainCoords[addNum].first << '\t' << plainCoords[addNum].second << endl;
-    //    cout << "NumOfIterations addDot = " << iterationsCount << " error = " << tmpError2 << endl;
+	//    std::cout << "NewDot = " << plainCoords[addNum].first << '\t' << plainCoords[addNum].second << std::endl;
+	//    std::cout << "NumOfIterations addDot = " << iterationsCount << " error = " << tmpError2 << std::endl;
 
     //    if(addNum == 4) exit(1);
 }
@@ -586,7 +586,7 @@ void sammonProj(const mat & distOld,
             }
         }
     }
-    //    cout << "maxDist = " << maxDist << endl;
+	//    std::cout << "maxDist = " << maxDist << std::endl;
 	plainCoords.push_back(std::make_pair(0., 0.));
 	plainCoords.push_back(std::make_pair(maxDist, 0.));
     maxDist = 0.;
@@ -600,13 +600,13 @@ void sammonProj(const mat & distOld,
             num3 = i;
         }
     }
-    //    cout << "maxDist = " << maxDist << endl;
+	//    std::cout << "maxDist = " << maxDist << std::endl;
     //count third dot coords
     double tm = (pow(distOld[num1][num3], 2.) +
                  pow(distOld[num1][num1], 2.) -
                  pow(distOld[num2][num3], 2.)
                  ) * 0.5 / distOld[num1][num2];
-    //    cout << "tm = " << tm << endl;
+	//    std::cout << "tm = " << tm << std::endl;
 	plainCoords.push_back(std::make_pair(tm,
                                     pow( pow(distOld[num1][num3], 2.) -
                                          pow(tm, 2.),
@@ -623,7 +623,7 @@ void sammonProj(const mat & distOld,
         distNew[placedDots[(i+1)%3]][placedDots[i]] = distNew[placedDots[i]][placedDots[(i+1)%3]];
     }
 
-    //    cout << distNew << endl;
+	//    std::cout << distNew << std::endl;
 
 
     double helpDist = 0.;
@@ -649,7 +649,7 @@ void sammonProj(const mat & distOld,
                 num3 = i;
             }
         }
-        //        cout << "newDotNum = " << num3 << endl;
+		//        std::cout << "newDotNum = " << num3 << std::endl;
 
         //place this dot
         placedDots.push_back(num3);
@@ -660,7 +660,7 @@ void sammonProj(const mat & distOld,
             //            adjustSkeletonDots(distOld, distNew, plainCoords, placedDots);
         }
     }
-    //    cout << distNew << endl;
+	//    std::cout << distNew << std::endl;
 
     for(int i = 0; i < size; ++i)
     {
@@ -836,7 +836,7 @@ void drawSammon(const coordType & plainCoords,
 		drawX = pic.width()  * 0.5 * (1. + (initX / range));
 		drawY = pic.height() * 0.5 * (1. + (initY / range) * mirror);
 
-		//        cout << drawX << '\t' << drawY << endl;
+		//        std::cout << drawX << '\t' << drawY << std::endl;
 
 		painter.drawRect(QRectF(QPointF(drawX - rectSize,
 										drawY - rectSize),
@@ -855,7 +855,7 @@ void drawShepard(const mat & distOld,
 				 const mat & distNew,
 				 const QString & picPath)
 {
-	//    cout << distNew << endl;
+	//    std::cout << distNew << std::endl;
 	const int num = distOld.size();
 	//draw the points
 	QPixmap pic(1200, 1200);

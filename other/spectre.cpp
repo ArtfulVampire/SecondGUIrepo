@@ -1,10 +1,6 @@
 #include "spectre.h"
 #include "ui_spectre.h"
 
-using namespace std;
-using namespace myLib;
-using namespace smallLib;
-
 using namespace myOut;
 
 Spectre::Spectre() :
@@ -333,24 +329,24 @@ void Spectre::integrate()
     {
         nameFilters = item.split('-', QString::SkipEmptyParts);
 
-        begins.push_back(max(fftLimit(nameFilters[0].toDouble()) - def::left() + 1,
-                         0));
-        ends.push_back(min(fftLimit(nameFilters[1].toDouble()) - def::left() + 1,
-                         def::spLength()));
+		begins.push_back(std::max(fftLimit(nameFilters[0].toDouble()) - def::left() + 1,
+						 0));
+		ends.push_back(std::min(fftLimit(nameFilters[1].toDouble()) - def::left() + 1,
+					   def::spLength()));
     }
 
     matrix dataInt(def::nsWOM(), def::spLength());
     matrix dataOut(def::nsWOM(), numOfInt, 0.);
 
-    makeFullFileList(ui->lineEdit_1->text(), lst);
+	myLib::makeFullFileList(ui->lineEdit_1->text(), lst);
 
     for(const QString & fileName : lst)
     {
 
         helpString = (ui->lineEdit_1->text()
                                               + slash + fileName);
-        readMatrixFile(helpString,
-                        dataInt);
+		myLib::readMatrixFile(helpString,
+								 dataInt);
 
         for(uint h = 0; h < dataOut.rows(); ++h)
         {
@@ -366,8 +362,7 @@ void Spectre::integrate()
         }
         helpString = (ui->lineEdit_2->text()
                                               + slash + fileName);
-        writeMatrixFile(helpString,
-                        dataOut);
+		myLib::writeMatrixFile(helpString, dataOut);
     }
 }
 
@@ -389,7 +384,7 @@ void Spectre::psaSlot()
 					  + slash + def::ExpName
 					  + "_class_" + QString::number(i + 1)
 					  + ".psa");
-        readFileInLine(helpString, tempVec);
+		myLib::readFileInLine(helpString, tempVec);
 
         drawData.push_back(tempVec);
     }
@@ -402,14 +397,14 @@ void Spectre::psaSlot()
 
     if(ui->MWcheckBox->isChecked())
     {
-        countMannWhitney(MW,
+		myLib::countMannWhitney(MW,
                          ui->lineEdit_1->text());
     }
 
     if(drawData.cols() == 19 * def::spLength() ||
        drawData.cols() == 21 * def::spLength())
     {
-        drawTemplate(helpString);
+		myLib::drawTemplate(helpString);
 
         std::vector<QColor> colors;
         if(ui->colourRadioButton->isChecked())
@@ -435,7 +430,7 @@ void Spectre::psaSlot()
 //                                   def::drawNorm,
 //                                   colors);
 
-		drawArrays(helpString,
+		myLib::drawArrays(helpString,
 				   drawData,
 				   false,
 				   def::drawNormTyp,
@@ -444,24 +439,24 @@ void Spectre::psaSlot()
 
         if(ui->MWcheckBox->isChecked())
         {
-            drawMannWitney(helpString,
+			myLib::drawMannWitney(helpString,
                            MW,
                            colors);
         }
     }
     else if(def::OssadtchiFlag)
     {
-        drawArraysInLine(helpString,
+		myLib::drawArraysInLine(helpString,
                          drawData);
         if(ui->MWcheckBox->isChecked())
         {
-            drawMannWitneyInLine(helpString,
+			myLib::drawMannWitneyInLine(helpString,
                                  MW);
         }
     }
     defaultState();
     ui->specLabel->setPixmap(QPixmap(helpString).scaled(ui->specLabel->size()));
-    cout << "psaSlot: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "psaSlot: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void Spectre::compare()
@@ -480,7 +475,7 @@ void Spectre::compare()
                              + slash + "Help"
                              + slash + "psa";
 
-    makeFileLists(filesPath,
+   myLib:: makeFileLists(filesPath,
                   leest
 			  #if SPECTRA_EXP_NAME_SPECIFICITY
 				  ,{def::ExpName}
@@ -502,7 +497,7 @@ void Spectre::compare()
             helpString = (filesPath
                                                   + slash
                                                   + lst[j]);
-            readFileInLine(helpString, tempVec);
+			myLib::readFileInLine(helpString, tempVec);
 
             meanVec += tempVec;
         }
@@ -514,7 +509,7 @@ void Spectre::compare()
 					  + "_class_" + QString::number(i + 1)
 					  + ".psa");
         /// maybe make as spectraFile?
-        writeFileInLine(helpString, meanVec);
+		myLib::writeFileInLine(helpString, meanVec);
 #if 0
 		/// draw average for one type
 		helpString = (def::dir->absolutePath()
@@ -527,7 +522,7 @@ void Spectre::compare()
 #endif
     }
 
-    cout << "compare: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "compare: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void Spectre::setFftLengthSlot()
@@ -562,7 +557,7 @@ void Spectre::center()
     {
         helpString = (def::dir->absolutePath()
                                               + slash + fileName);
-        readMatrixFile(helpString,
+		myLib::readMatrixFile(helpString,
                         tempData);
         averages += tempData;
     }
@@ -574,11 +569,11 @@ void Spectre::center()
     {
         helpString = (def::dir->absolutePath()
                                               + slash + fileName);
-        readMatrixFile(helpString,
+		myLib::readMatrixFile(helpString,
                         tempData);
         tempData -= averages;
         tempData *= 10.;
-        writeMatrixFile(helpString,
+		myLib::writeMatrixFile(helpString,
                          tempData);
     }
 }
@@ -624,12 +619,12 @@ void Spectre::writeSpectra(const double leftFreq,
     QTime myTime;
     myTime.start();
 
-    ofstream outStream;
+	std::ofstream outStream;
     QString helpString;
     const QString outDirPath = ui->lineEdit_2->text();
     if(!QDir(outDirPath).exists())
     {
-        cout << "writeSpectra: outDir doesn't exist" << endl;
+		std::cout << "writeSpectra: outDir doesn't exist" << std::endl;
         return;
     }
 
@@ -638,7 +633,7 @@ void Spectre::writeSpectra(const double leftFreq,
 
     QStringList lst = ui->dropChannelsLineEdit->text().split(
                           QRegExp("[,;\\s]"), QString::SkipEmptyParts);
-    cout << "writeSpectra: num of dropped channels = " << lst.length() << endl;
+	std::cout << "writeSpectra: num of dropped channels = " << lst.length() << std::endl;
     for(QString str : lst)
     {
         rangeLimits[str.toInt() - 1] = {0, 0}; // to fill with zeros
@@ -649,12 +644,12 @@ void Spectre::writeSpectra(const double leftFreq,
         helpString = outDirPath + slash + fileNames[i];
         helpString.remove("." + def::plainDataExtension);
         helpString += "." + def::spectraDataExtension;
-//        cout << helpString << endl;
+//        std::cout << helpString << std::endl;
 
         outStream.open(helpString.toStdString());
         if(!outStream.good())
         {
-            cout << "bad outStream" << endl;
+			std::cout << "bad outStream" << std::endl;
             continue;
         }
 
@@ -675,9 +670,9 @@ void Spectre::writeSpectra(const double leftFreq,
                 for(int k = left + rangeLimits[j].first;
                     k < left + rangeLimits[j].second; ++k)
                 {
-                    outStream << doubleRound(dataFFT[i][j][k], 4) << '\t';
+					outStream << smallLib::doubleRound(dataFFT[i][j][k], 4) << '\t';
                 }
-                for(int k = max(left + rangeLimits[j].first,
+				for(int k = std::max(left + rangeLimits[j].first,
                                 left + rangeLimits[j].second);
                     k < right; ++k)
                 {
@@ -689,7 +684,7 @@ void Spectre::writeSpectra(const double leftFreq,
         outStream.close();
     }
 
-    cout << "writeSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "writeSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 void Spectre::countSpectraSlot()
 {
@@ -711,15 +706,15 @@ void Spectre::cleanSpectra()
     myTime.start();
 
 
-    cout << ui->lineEdit_2->text() << endl;
+	std::cout << ui->lineEdit_2->text() << std::endl;
     trivector<int> MW;
-    countMannWhitney(MW,
+	myLib::countMannWhitney(MW,
                      ui->lineEdit_2->text()); // SpectraSmooth
     int num;
     int cnt = 0;
     for(int k = 0; k < def::spLength() * def::nsWOM(); ++k)
     {
-//        cout << "spPoint = " << k << endl;
+//        std::cout << "spPoint = " << k << std::endl;
         num = 0;
         for(int i = 0; i < def::numOfClasses(); ++i)
         {
@@ -741,10 +736,10 @@ void Spectre::cleanSpectra()
         }
         num = 0;
     }
-    cout << "cleanSpectra: num of zeroed points = " << cnt << endl;
+	std::cout << "cleanSpectra: num of zeroed points = " << cnt << std::endl;
     ui->lineEdit_2->setText(ui->lineEdit_2->text() + slash + "Clean");
     writeSpectra();
-    cout << "cleanSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "cleanSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 
 }
 
@@ -764,7 +759,7 @@ void Spectre::countSpectra()
 
     const QString inDirPath = ui->lineEdit_1->text();
 	QStringList lst;
-    makeFullFileList(inDirPath,
+   myLib:: makeFullFileList(inDirPath,
 					 lst
 				 #if SPECTRA_EXP_NAME_SPECIFICITY
 					 ,{def::ExpName}
@@ -797,11 +792,10 @@ void Spectre::countSpectra()
            fileName.contains("_sht")) continue;
 
         //read data file
-        helpString = (inDirPath
-                                              + slash + fileName);
-        readPlainData(helpString,
-                      dataIn,
-                      NumOfSlices);
+		helpString = inDirPath + slash + fileName;
+		myLib::readPlainData(helpString,
+							 dataIn,
+							 NumOfSlices);
 
 		if(ui->spectraRadioButton->isChecked())
         {
@@ -819,13 +813,13 @@ void Spectre::countSpectra()
 		qApp->processEvents();
     }
 
-    eraseItems(fileNames, exIndices);
+	smallLib::eraseItems(fileNames, exIndices);
     dataFFT.resize(cnt);
 
     ui->progressBar->setValue(0);
 
     //generality
-    cout << "countSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "countSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
 bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
@@ -873,11 +867,11 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
     /// calculate spectra for all channels, but write not all ???
     for(uint i = 0; i < data2.rows(); ++i)
     {
-        calcSpectre(data2[i],
-                    outData[i],
-                    def::fftLength,
-                    ui->smoothBox->value(),
-                    Eyes);
+		myLib::calcSpectre(data2[i],
+						   outData[i],
+						   def::fftLength,
+						   ui->smoothBox->value(),
+						   Eyes);
     }
     return true;
 }
@@ -910,13 +904,13 @@ void Spectre::drawWavelets()
     }
 
     QStringList lst;
-    makeFullFileList(ui->lineEdit_1->text(), lst);
+	myLib::makeFullFileList(ui->lineEdit_1->text(), lst);
 
     matrix signal;
     matrix coefs;
-    ofstream outStr;
+	std::ofstream outStr;
 
-    set<double, std::greater<double>> tempVec;
+	std::set<double, std::greater<double>> tempVec;
 
     // count maxValue
     int NumOfSlices = 0;
@@ -924,9 +918,9 @@ void Spectre::drawWavelets()
     {
         filePath = (ui->lineEdit_1->text()
                                             + slash + fileName);
-        readPlainData(filePath,
-                      signal,
-                      NumOfSlices);
+		myLib::readPlainData(filePath,
+							 signal,
+							 NumOfSlices);
 
         for(int chanNum = 0; chanNum < def::nsWOM(); ++chanNum)
         {
@@ -939,8 +933,8 @@ void Spectre::drawWavelets()
                                                   + slash + "wavelets"
                                                   + slash + QString::number(chanNum) + ".txt");
 
-            outStr.open(helpString.toStdString(), ios_base::app);
-            outStr << coefs.maxVal() << endl;
+			outStr.open(helpString.toStdString(), std::ios_base::app);
+			outStr << coefs.maxVal() << std::endl;
             outStr.close();
         }
     }
@@ -953,7 +947,7 @@ void Spectre::drawWavelets()
 //                                              + slash + QString::number(chanNum) + ".txt");
 //        readFileInLine(helpString, tempVec);
 //        std::sort(tempVec.begin(), tempVec.end());
-//        cout << tempVec.front() << "\t" << tempVec.back() << endl;
+//        std::cout << tempVec.front() << "\t" << tempVec.back() << std::endl;
 //    }
     return;
 
@@ -976,7 +970,7 @@ void Spectre::drawWavelets()
                                                       + slash + helpString
                                                       + "_wavelet_" + QString::number(channel)
                                                       + ".jpg");
-                cout << helpString.toStdString() << endl;
+				std::cout << helpString.toStdString() << std::endl;
                 wvlt::wavelet(filePath, helpString, channel, def::ns);
             }
         }
@@ -997,7 +991,7 @@ void Spectre::drawWavelets()
                                                           + "_wavelet_" + QString::number(channel1)
                                                           + "_" + QString::number(channel2)
                                                           + ".jpg");
-                    cout << helpString.toStdString() << endl;
+					std::cout << helpString.toStdString() << std::endl;
                     /// remake waveletPhase
 //                    waveletPhase(helpString, file1, ns, channel1, channel2, 20., 5., 0.95, 32);
 //                    if(channel2 == 2) return;

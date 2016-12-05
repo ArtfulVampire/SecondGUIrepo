@@ -1,9 +1,6 @@
 #include "cut.h"
 #include "ui_cut.h"
 
-using namespace std;
-using namespace myLib;
-using namespace smallLib;
 
 using namespace myOut;
 
@@ -168,7 +165,7 @@ void Cut::drawSamples()
 	{
 		int freq = 5 * (num + 1);
 		myLib::makeSine(seen, freq, 0, -1, 250.);
-		QPixmap pic = drawOneSignal(seen, 50);
+		QPixmap pic = myLib::drawOneSignal(seen, 50);
 
 		picLabels[num]->setPixmap(pic);
 //		picLabels[num]->setPixmap(pic.scaledToHeight(picLabels[num]->height()));
@@ -235,9 +232,9 @@ void Cut::browse()
 			def::dir->cdUp();
 		}
 	}
-	lst = QDir(getDirPathLib(helpString)).entryList({"*." + getExt(helpString)});
+	lst = QDir(myLib::getDirPathLib(helpString)).entryList({"*." + myLib::getExt(helpString)});
 
-    currentNumber = lst.indexOf(getFileName(helpString));
+	currentNumber = lst.indexOf(myLib::getFileName(helpString));
 
     createImage(helpString);
 }
@@ -245,8 +242,8 @@ void Cut::browse()
 void Cut::resizeEvent(QResizeEvent * event)
 {
     // adjust scrollArea size
-	double newLen = doubleRound((event->size().width() - 10 * 2) / currFreq,
-								ui->paintLengthDoubleSpinBox->decimals());
+	double newLen = smallLib::doubleRound((event->size().width() - 10 * 2) / currFreq,
+										  ui->paintLengthDoubleSpinBox->decimals());
     ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
                                 ui->scrollArea->geometry().y(),
 								newLen * currFreq,
@@ -284,7 +281,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 
             if(myFileType == fileType::real)
             {
-//                cout << "real" << endl;
+//                std::cout << "real" << std::endl;
                 ui->scrollArea->horizontalScrollBar()->setSliderPosition(
                             ui->scrollArea->horizontalScrollBar()->sliderPosition() +
                             offset);
@@ -292,7 +289,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
             }
             else if(myFileType == fileType::edf)
             {
-//                cout << "edf" << endl;
+//                std::cout << "edf" << std::endl;
                 if((leftDrawLimit + ui->scrollArea->width() > NumOfSlices && offset > 0) ||
                    (leftDrawLimit == 0 && offset < 0))
                 {
@@ -304,7 +301,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
             }
             else
             {
-//                cout << "none" << endl;
+//                std::cout << "none" << std::endl;
                 return false;
             }
         }
@@ -344,7 +341,7 @@ void Cut::cutEyesAll()
         helpString = def::dir->entryList(QDir::Files)[0];
         def::dir->cdUp();
 		helpString.prepend(def::dir->absolutePath() + slash + "Reals" + slash);
-        cout<<helpString.toStdString()<<endl;
+		std::cout<<helpString.toStdString()<<std::endl;
         emit openFile(helpString);
     }
 
@@ -366,7 +363,7 @@ void Cut::cutEyesAll()
     {
         thresholdEog[i]=0.;
     }
-//    cout<<"2"<<endl;
+//    std::cout<<"2"<<std::endl;
 
     double ** eogArray = new double* [NumEog];
     for(int i = 0; i < NumEog; ++i)
@@ -374,7 +371,7 @@ void Cut::cutEyesAll()
         eogArray[i] = new double [8192*50]; // 50, size generality
     }
     int currentSlice = 0;
-//    cout<<"3"<<endl;
+//    std::cout<<"3"<<std::endl;
 
     for(int k = 0; k < int(lst.length()/4); ++k)
     {
@@ -393,7 +390,7 @@ void Cut::cutEyesAll()
         }
 
     }
-//    cout<<"4"<<endl;
+//    std::cout<<"4"<<std::endl;
 
     for(int i = 0; i < NumEog; ++i)
     {
@@ -411,7 +408,7 @@ void Cut::cutEyesAll()
     }
     delete[] eogArray;
 
-//    cout<<"5"<<endl;
+//    std::cout<<"5"<<std::endl;
     FILE * eyes;
     helpString = (def::dir->absolutePath()
                                           + slash + "eyesSlices");
@@ -496,7 +493,7 @@ void Cut::createImage(const QString & dataFileName)
 
     if(this->myFileType == fileType::real)
     {
-        readPlainData(dataFileName, data3, NumOfSlices);
+		myLib::readPlainData(dataFileName, data3, NumOfSlices);
         leftDrawLimit = 0;
         rightDrawLimit = NumOfSlices;
     }
@@ -630,12 +627,12 @@ void Cut::next()
         {
             continue;
         }
-        helpString = getDirPathLib(currentFile) + slash + lst[++currentNumber];
+		helpString = myLib::getDirPathLib(currentFile) + slash + lst[++currentNumber];
         emit openFile(helpString);
         return;
     }
     currentNumber = tmp;
-    cout << "next: bad number, too big" << endl;
+	std::cout << "next: bad number, too big" << std::endl;
 
 }
 
@@ -653,12 +650,12 @@ void Cut::prev()
         {
             continue;
         }
-        helpString = getDirPathLib(currentFile) + slash + lst[--currentNumber];
+		helpString = myLib::getDirPathLib(currentFile) + slash + lst[--currentNumber];
         emit openFile(helpString);
         return;
     }
     currentNumber = tmp;
-    cout << "prev: bad number, too little" << endl;
+	std::cout << "prev: bad number, too little" << std::endl;
 
 }
 
@@ -667,7 +664,7 @@ void Cut::forwardStepSlot()
 {
     if(leftDrawLimit + ui->scrollArea->width() > NumOfSlices)
     {
-        cout << "end of file" << endl;
+		std::cout << "end of file" << std::endl;
         return;
     }
 
@@ -678,7 +675,7 @@ void Cut::backwardStepSlot()
 {
     if(leftDrawLimit == 0)
     {
-        cout << "begin of file" << endl;
+		std::cout << "begin of file" << std::endl;
         return;
     }
 	leftDrawLimit = std::max(leftDrawLimit - currFreq, 0.);
@@ -688,7 +685,7 @@ void Cut::forwardFrameSlot()
 {
     if(leftDrawLimit + ui->scrollArea->width() > NumOfSlices)
     {
-        cout << "end of file" << endl;
+		std::cout << "end of file" << std::endl;
         return;
     }
     leftDrawLimit = std::min(leftDrawLimit +
@@ -700,7 +697,7 @@ void Cut::backwardFrameSlot()
 {
     if(leftDrawLimit == 0)
     {
-        cout << "begin of file" << endl;
+		std::cout << "begin of file" << std::endl;
         return;
     }
     leftDrawLimit = std::max(leftDrawLimit -
@@ -733,27 +730,29 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     int sesNum = lst[tempNum + 1].toInt();
     int pieceNum = lst[tempNum + 2].toInt();
 
-//    cout << "typeNum = " << typeNum << endl;
-//    cout << "sesNum = " << sesNum << endl;
-//    cout << "pieceNum = " << pieceNum << endl;
+//    std::cout << "typeNum = " << typeNum << std::endl;
+//    std::cout << "sesNum = " << sesNum << std::endl;
+//    std::cout << "pieceNum = " << pieceNum << std::endl;
 
     if(typeNum != 0 && typeNum != 2) return; // adjust only if count or composed activity
 
     int newLeftLimit = leftLimit;
     int newRightLimit = rightLimit;
 
-    while (!matiCountBit(data3[def::ns - 1][newLeftLimit], 14) && newLeftLimit > 0)
+	while (!myLib::matiCountBit(data3[def::ns - 1][newLeftLimit], 14)
+		   && newLeftLimit > 0)
     {
         --newLeftLimit;
     }
-    while (!matiCountBit(data3[def::ns - 1][newRightLimit], 14) && newRightLimit < NumOfSlices)
+	while (!myLib::matiCountBit(data3[def::ns - 1][newRightLimit], 14)
+		   && newRightLimit < NumOfSlices)
     {
         ++newRightLimit; // maximum of NumOfSlices
     }
 
 
-    cout << "newLeftLimit = " << newLeftLimit << endl;
-    cout << "newRightLimit = " << newRightLimit << endl;
+	std::cout << "newLeftLimit = " << newLeftLimit << std::endl;
+	std::cout << "newRightLimit = " << newRightLimit << std::endl;
 
     // adjust limits if slice by whole count problems
     ++newLeftLimit;
@@ -766,7 +765,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 
 
     // adjust limits if slice by N seconds
-    if(newLeftLimit > 0 || matiCountBit(data3[def::ns - 1][0], 14))
+	if(newLeftLimit > 0 || myLib::matiCountBit(data3[def::ns - 1][0], 14))
     {
         ++newLeftLimit; // after the previous marker
     }
@@ -775,15 +774,15 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
         // cut end in previous file, suspect that there ARE count answers
         if(pieceNum != 0) // if this piece is not the first in the session
         {
-//            cout << "zero prev file" << endl;
+//            std::cout << "zero prev file" << std::endl;
             prev();
             leftLimit = rightLimit;
-            while (!matiCountBit(data3[def::ns - 1][leftLimit], 14)) // there ARE count answers
+			while (!myLib::matiCountBit(data3[def::ns - 1][leftLimit], 14)) // there ARE count answers
             {
                 --leftLimit;
             }
             ++leftLimit;
-            cout << "prev file leftLimit = " << leftLimit << endl;
+			std::cout << "prev file leftLimit = " << leftLimit << std::endl;
             // zero() from tempLimit to rightLimit
             zeroData(data3, leftLimit, rightLimit);
             rewrite();
@@ -796,7 +795,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     {
         ++newRightLimit; // after the previous marker
     }
-    else if (matiCountBit(data3[def::ns - 1][NumOfSlices - 1], 14))
+	else if (myLib::matiCountBit(data3[def::ns - 1][NumOfSlices - 1], 14))
     {
         //do nothing
     }
@@ -806,19 +805,19 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
         next();
         lst = currentFile.split(QRegExp("[_.]"),
                                 QString::SkipEmptyParts);
-        if (lst[tempNum + 1].toInt() == sesNum
-                && lst[tempNum].toInt() == typeNum
-                && lst[tempNum + 2].toInt() == pieceNum + 1) // if next piece is ok
+		if (lst[tempNum + 1].toInt() == sesNum
+			&& lst[tempNum].toInt() == typeNum
+			&& lst[tempNum + 2].toInt() == pieceNum + 1) // if next piece is ok
         {
             rightLimit = leftLimit;
-            while (!matiCountBit(data3[def::ns - 1][rightLimit], 14)) // there ARE count answers
+			while (!myLib::matiCountBit(data3[def::ns - 1][rightLimit], 14)) // there ARE count answers
             {
                 ++rightLimit;
             }
             ++rightLimit;
-            cout << "next file rightLimit = " << rightLimit << endl;
+			std::cout << "next file rightLimit = " << rightLimit << std::endl;
 
-            zeroData(data3, leftLimit, rightLimit);
+			zeroData(data3, leftLimit, rightLimit);
             rewrite();
         }
         prev();
@@ -843,7 +842,7 @@ void Cut::zero()
 		QString helpString = "_0_[0-9]_[0-9]{2,2}";
 		if(currentFile.contains(QRegExp(helpString)))
 		{
-//			cout << "zero: adjust limits   " << currentFile << endl;
+//			std::cout << "zero: adjust limits   " << currentFile << std::endl;
 //			matiAdjustLimits();
 		}
 	}
@@ -876,12 +875,12 @@ void Cut::cut()
     QString helpString;
 	helpString = def::dir->absolutePath() +
 				 slash + "winds" +
-				 slash + getFileName(currentFile) +
-				 "." + rightNumber(addNum++, 3);
-    writePlainData(helpString,
-                   data3,
-                   rightLimit - leftLimit,
-                   leftDrawLimit + leftLimit);
+				 slash + myLib::getFileName(currentFile) +
+				 "." + myLib::rightNumber(addNum++, 3);
+	myLib::writePlainData(helpString,
+						  data3,
+						  rightLimit - leftLimit,
+						  leftDrawLimit + leftLimit);
 
     rightLimit = rightDrawLimit - leftDrawLimit;
     leftLimit = 0;
@@ -922,17 +921,17 @@ void Cut::save()
     {
         QString helpString = def::dir->absolutePath()
                              + slash + "cut"
-                             + slash + getFileName(currentFile);
+							 + slash + myLib::getFileName(currentFile);
 
         // new
-        writePlainData(helpString, data3);
+		myLib::writePlainData(helpString, data3);
     }
     else if(myFileType == fileType::edf)
     {
         QString newPath = currentFile;
         newPath.insert(newPath.lastIndexOf('.'), "_new");
         edfFil.writeOtherData(data3, newPath);
-		cout << "Cut::save: edfFile saved - " << newPath << endl;
+		std::cout << "Cut::save: edfFile saved - " << newPath << std::endl;
     }
 
 }
@@ -942,9 +941,9 @@ void Cut::rewrite()
 {
     if(myFileType == fileType::real)
     {
-        writePlainData(currentFile,
-                       data3);
-        currentPic.save(getPicPath(currentFile), 0, 100);
+		myLib::writePlainData(currentFile,
+							  data3);
+		currentPic.save(myLib::getPicPath(currentFile), 0, 100);
     }
     else if(myFileType == fileType::edf)
 	{
@@ -971,17 +970,17 @@ void Cut::paint() // save to tmp.jpg and display
         rightDrawLimit = NumOfSlices;
     }
 
-//    cout << "paint: left = " << leftDrawLimit << "\tright = " << rightDrawLimit << endl;
+//    std::cout << "paint: left = " << leftDrawLimit << "\tright = " << rightDrawLimit << std::endl;
 
-	currentPic = drawEeg(data3.subCols(leftDrawLimit, rightDrawLimit),
-                         def::ns,
-                         rightDrawLimit - leftDrawLimit,
-						 currFreq,
-                         helpString,
-						 ui->yNormDoubleSpinBox->value()
-						 * ((ui->yNormInvertCheckBox->isChecked())? -1 : 1),
-                         blueCh,
-                         redCh); // generality.getFreq()
+	currentPic = myLib::drawEeg(data3.subCols(leftDrawLimit, rightDrawLimit),
+								def::ns,
+								rightDrawLimit - leftDrawLimit,
+								currFreq,
+								helpString,
+								ui->yNormDoubleSpinBox->value()
+								* ((ui->yNormInvertCheckBox->isChecked())? -1 : 1),
+								blueCh,
+								redCh); // generality.getFreq()
 
     /// -20 for scroll bar generality
 	/// experimental xNorm

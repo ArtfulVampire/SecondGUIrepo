@@ -1,6 +1,4 @@
 #include "net.h"
-using namespace std;
-using namespace myLib;
 using namespace myOut;
 
 void Net::successiveProcessing()
@@ -12,7 +10,7 @@ void Net::successiveProcessing()
 
 	this->loadData(helpString, {def::ExpName.left(3) + "*" + trainMarker + "*"});
 
-//	cout << 1 << endl;
+//	std::cout << 1 << std::endl;
 	/// reduce learning set to (NumOfClasses * suc::learnSetStay)
 	myClassifierData.reduceSize(suc::learnSetStay);
 
@@ -20,10 +18,10 @@ void Net::successiveProcessing()
     setErrCrit(0.05);
     setLrate(0.002);
 
-//	cout << 1 << endl;
+//	std::cout << 1 << std::endl;
     myClassifier->learnAll(); /// get initial weights on train set
 
-//	cout << 1 << endl;
+//	std::cout << 1 << std::endl;
     /// consts - set postlearn
     setErrCrit(0.01);
     setLrate(0.005);
@@ -34,15 +32,15 @@ void Net::successiveProcessing()
 
 	this->passed.resize(this->myClassifierData.getNumOfCl());
 
-//	cout << 1 << endl;
+//	std::cout << 1 << std::endl;
     std::valarray<double> tempArr;
     int type = -1;
 //	int count = 0;
     for(const QString & fileNam : leest)
     {
-        readFileInLine(helpString + slash + fileNam,
+		myLib::readFileInLine(helpString + slash + fileNam,
                        tempArr);
-		type = getTypeOfFileName(fileNam);
+		type = myLib::getTypeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
 //		++count; if(count == 500) break;
     }
@@ -52,9 +50,9 @@ void Net::successiveProcessing()
 void Net::successivePreclean(const QString & spectraPath)
 {
     QStringList leest;
-    makeFullFileList(spectraPath, leest, {"*train*"});
+	myLib::makeFullFileList(spectraPath, leest, {"*train*"});
     // clean from first 2 winds from each realisation
-    cout << "clean first 2 winds" << endl;
+	std::cout << "clean first 2 winds" << std::endl;
 
     for(const QString & str : leest)
     {
@@ -65,9 +63,9 @@ void Net::successivePreclean(const QString & spectraPath)
     }
 
     // clean by learnSetStay
-    cout << "clean by learnSetStay" << endl;
+	std::cout << "clean by learnSetStay" << std::endl;
     std::vector<QStringList> leest2;
-    makeFileLists(spectraPath, leest2);
+	myLib::makeFileLists(spectraPath, leest2);
 
     for(int j = 0; j < def::numOfClasses(); ++j)
     {
@@ -85,7 +83,7 @@ void Net::successivePreclean(const QString & spectraPath)
     setErrCrit(0.05);
 
     // N-fold cleaning
-    cout << "N-fold cleaning" << endl;
+	std::cout << "N-fold cleaning" << std::endl;
 
     myClassifier->setTestCleanFlag(true);
     for(int i = 0; i < 0; ++i)

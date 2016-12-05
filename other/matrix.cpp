@@ -1,9 +1,5 @@
 #include "matrix.h"
 
-
-using namespace std;
-using namespace smallLib;
-
 matrix::matrix()
 {
 
@@ -126,7 +122,7 @@ matrix::matrix(const std::valarray<double> & vect, uint inRows)
 {
     if(vect.size() % inRows != 0)
     {
-        cout << "not appropriate size" << endl;
+		std::cout << "not appropriate size" << std::endl;
         return;
     }
     int newCols = vect.size() / inRows;
@@ -213,7 +209,7 @@ matrix operator + (const matrix & lhs, const matrix & rhs)
     if(lhs.rows() != rhs.rows()
        || lhs.cols() != rhs.cols())
     {
-        cout << "matrix sum failed, dimensions" << endl;
+		std::cout << "matrix sum failed, dimensions" << std::endl;
         return lhs;
     }
     matrix result(lhs.rows(), lhs.cols());
@@ -239,7 +235,7 @@ matrix matrix::operator += (const matrix & other)
     if(this->rows() != other.rows()
        || this->cols() != other.cols())
     {
-        cout << "matrix sum failed" << endl;
+		std::cout << "matrix sum failed" << std::endl;
         return *this;
     }
     for(uint i = 0; i < this->rows(); ++i)
@@ -265,7 +261,7 @@ matrix operator - (const matrix & lhs, const matrix & rhs)
     if(lhs.rows() != rhs.rows()
        || lhs.cols() != rhs.cols())
     {
-        cout << "matrix sum failed, dimensions" << endl;
+		std::cout << "matrix sum failed, dimensions" << std::endl;
         return lhs;
     }
     matrix result(lhs.rows(), lhs.cols());
@@ -291,7 +287,7 @@ matrix matrix::operator -= (const matrix & other)
     if(this->rows() != other.rows()
        || this->cols() != other.cols())
     {
-        cout << "matrix sum failed" << endl;
+		std::cout << "matrix sum failed" << std::endl;
         return *this;
     }
     for(uint i = 0; i < this->rows(); ++i)
@@ -326,7 +322,7 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
 {
     if(lhs.cols() != rhs.rows())
     {
-        cout << "matrixProduct (operator *): input matrices are not productable" << endl;
+		std::cout << "matrixProduct (operator *): input matrices are not productable" << std::endl;
         return lhs;
     }
 
@@ -409,7 +405,7 @@ std::valarray<double> operator * (const matrix & lhs, const std::valarray<double
 {
     if(rhs.size() != lhs.cols())
     {
-        cout << "operator * (matrix, valar) invalid sizes" << endl;
+		std::cout << "operator * (matrix, valar) invalid sizes" << std::endl;
         return lhs.getCol(0);
     }
     std::valarray<double> res(lhs.rows());
@@ -418,7 +414,7 @@ std::valarray<double> operator * (const matrix & lhs, const std::valarray<double
 #endif
     for(uint i = 0; i < res.size(); ++i)
     {
-        res[i] = prod(lhs[i], rhs);
+		res[i] = smallLib::prod(lhs[i], rhs);
     }
     return res;
 }
@@ -427,7 +423,7 @@ std::valarray<double> operator * (const std::valarray<double> & lhs, const matri
 {
     if(lhs.size() != rhs.rows())
     {
-        cout << "operator * (valar, matrix) invalid sizes" << endl;
+		std::cout << "operator * (valar, matrix) invalid sizes" << std::endl;
         return lhs;
     }
 
@@ -457,12 +453,12 @@ bool matrix::operator == (const matrix & other)
 {
     if(this->rows() != other.rows())
     {
-        cout << "diff rows: " << this->rows() << " " << other.rows() << endl;
+		std::cout << "diff rows: " << this->rows() << " " << other.rows() << std::endl;
         return false;
     }
     if(this->cols() != other.cols())
     {
-        cout << "diff cols: " << this->cols() << " " << other.cols() << endl;
+		std::cout << "diff cols: " << this->cols() << " " << other.cols() << std::endl;
         return false;
     }
 
@@ -472,7 +468,7 @@ bool matrix::operator == (const matrix & other)
         {
             if((*this)[i][j] != other[i][j])
             {
-                cout << "diff val, (row, col) = (" << i << "," << j << ")" << endl;
+				std::cout << "diff val, (row, col) = (" << i << "," << j << ")" << std::endl;
                 return false;
             }
         }
@@ -526,7 +522,7 @@ matrix & matrix::vertCat(matrix && other)
 {
     if(this->cols() != other.cols())
     {
-        std::cout << "matrix::vertCat(): wrong dimensionality" << std::endl;
+		std::cout << "matrix::vertCat(): wrong dimensionality" << std::endl;
         return *this;
     }
     for(uint i = 0; i < other.rows(); ++i)
@@ -641,7 +637,7 @@ void matrix::resize(int newRows, int newCols)
 				  myData.end(),
                   [newCols](std::valarray<double> & in)
     {
-        resizeValar(in, newCols);
+		smallLib::resizeValar(in, newCols);
     });
 
 }
@@ -663,7 +659,7 @@ matrix & matrix::resizeRows(int newRows)
 					  myData.end(),
                       [cols](std::valarray<double> & in)
         {
-            resizeValar(in, cols);
+			smallLib::resizeValar(in, cols);
         });
     }
     return *this;
@@ -676,7 +672,7 @@ matrix & matrix::resizeCols(int newCols)
 				  myData.end(),
                   [newCols](std::valarray<double> & in)
     {
-        resizeValar(in, newCols);
+		smallLib::resizeValar(in, newCols);
     });
     return *this;
 }
@@ -694,7 +690,7 @@ double matrix::maxVal() const
 				  this->myData.end(),
                   [&res](const std::valarray<double> & in)
     {
-        res = max(res, in.max());
+		res = std::max(res, in.max());
     });
     return res;
 }
@@ -705,7 +701,7 @@ double matrix::minVal() const
 				  this->myData.end(),
                   [&res](const std::valarray<double> & in)
     {
-        res = min(res, in.min());
+		res = std::min(res, in.min());
     });
     return res;
 }
@@ -717,7 +713,7 @@ double matrix::maxAbsVal() const
 				  this->myData.end(),
                   [&res](const std::valarray<double> & in)
     {
-        res = max(res, abs(in).max());
+		res = std::max(res, abs(in).max());
     });
     return res;
 }
@@ -728,7 +724,7 @@ double matrix::minAbsVal() const
 				  this->myData.end(),
                   [&res](const std::valarray<double> & in)
     {
-        res = min(res, abs(in).min());
+		res = std::min(res, abs(in).min());
     });
     return res;
 }
@@ -886,11 +882,11 @@ void matrix::print(uint rows, uint cols) const
     {
         for(uint j = 0; j < cols; ++j)
         {
-			cout << doubleRound(myData[i][j], 3) << "\t";
+			std::cout << smallLib::doubleRound(myData[i][j], 3) << "\t";
         }
-        cout << endl;
+		std::cout << std::endl;
     }
-//    cout << endl;
+//    std::cout << std::endl;
 }
 
 void matrix::push_back(const std::valarray<double> & in)
@@ -968,7 +964,7 @@ matrix & matrix::invert(double * det)
 {
     if(this->rows() != this->cols())
     {
-        cout << "matrix::invert: matrix is not square" << endl;
+		std::cout << "matrix::invert: matrix is not square" << std::endl;
 //        exit(1);
         return *this;
     }
@@ -984,7 +980,7 @@ matrix & matrix::invert(double * det)
     }
     double coeff;
 
-//    cout << "start first cycle" << endl;
+//    std::cout << "start first cycle" << std::endl;
 
     //1) make higher-triangular
     for(uint i = 0; i < size - 1; ++i) //which line to substract
@@ -999,7 +995,7 @@ matrix & matrix::invert(double * det)
         }
     }
 
-//    cout << "start second cycle" << endl;
+//    std::cout << "start second cycle" << std::endl;
     //2) make diagonal
     for(int i = size - 1; i > 0; --i) //which line to substract (bottom -> up)
     {
@@ -1012,7 +1008,7 @@ matrix & matrix::invert(double * det)
             tempMat[j] -= tempMat[i] * coeff;
         }
     }
-//    cout << "do the rest" << endl;
+//    std::cout << "do the rest" << std::endl;
 
     if(det != nullptr)
     {
@@ -1063,7 +1059,7 @@ matrix & matrix::eraseCol(uint j)
     {
 		for(std::valarray<double> & each : this->myData)
         {
-            each = eraseValar(each, j);
+			each = smallLib::eraseValar(each, j);
         }
     }
     return *this;
@@ -1073,7 +1069,7 @@ matrix & matrix::eraseCol(uint j)
 /// looks like okay
 matrix & matrix::eraseRows(const std::vector<uint> & indices)
 {
-	eraseItems(this->myData, indices);
+	smallLib::eraseItems(this->myData, indices);
     return *this;
 }
 
@@ -1113,7 +1109,7 @@ void matrixProduct(const matrix & in1,
     }
     else if(in1.cols() != in2.rows())
     {
-        cout << "matrixProduct: input matrices are not productable" << endl;
+		std::cout << "matrixProduct: input matrices are not productable" << std::endl;
         result = matrix();
         return;
     }

@@ -1,6 +1,4 @@
 #include "edffile.h"
-using namespace std;
-using namespace myLib;
 using namespace myOut;
 
 namespace repair
@@ -36,8 +34,8 @@ void physMinMaxCheck(const QString & dirPath)
 
 void toLatinFileOrFolder(const QString & fileOrFolderPath)
 {
-	QString dirName = getDirPathLib(fileOrFolderPath);
-	QString fileName = getFileName(fileOrFolderPath);
+	QString dirName = myLib::getDirPathLib(fileOrFolderPath);
+	QString fileName = myLib::getFileName(fileOrFolderPath);
 	QString newFileName;
 	for(const QChar & ch : fileName)
 	{
@@ -157,7 +155,7 @@ bool testChannelsOrderConsistency(const QString & dirPath)
             res = false;
         }
     }
-    cout << "testChannelsOrderConsistency:\n" << dirPath << "\t" << res << endl;
+	std::cout << "testChannelsOrderConsistency:\n" << dirPath << "\t" << res << std::endl;
     return res;
 }
 
@@ -198,8 +196,8 @@ void channelsOrderFile(const QString & inFilePath,
         }
     }
 
-//	cout << inFilePath << endl;
-//	cout << reorderChanList << endl;
+//	std::cout << inFilePath << std::endl;
+//	std::cout << reorderChanList << std::endl;
 
     std::vector<int> ident(initFile.getNs());
     std::iota(std::begin(ident), std::end(ident), 0);
@@ -229,7 +227,7 @@ void channelsOrderDir(const QString & inDirPath,
     {
         QString outName = vec[i];
 //        outName.replace(".edf", "_goodChan.edf", Qt::CaseInsensitive);
-//        cout << outName << endl;
+//        std::cout << outName << std::endl;
         channelsOrderFile(inDirPath + slash + vec[i],
                             outDirPath + slash + outName,
                             standard);

@@ -1,8 +1,5 @@
 #include "net.h"
 #include "ui_net.h"
-using namespace std;
-using namespace myLib;
-using namespace smallLib;
 
 void Net::setAutoProcessingFlag(bool a)
 {
@@ -161,7 +158,7 @@ void Net::setMode(const QString & in)
     }
     else
     {
-        cout << "setMode: wrong mode" << endl;
+		std::cout << "setMode: wrong mode" << std::endl;
         exit(0);
     }
 }
@@ -260,7 +257,7 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     if(!i) return;
     if(myClassifier != nullptr)
     {
-//        cout << "delete classifier" << endl;
+//        std::cout << "delete classifier" << std::endl;
         delete myClassifier;
     }
 
@@ -320,9 +317,9 @@ void Net::setClassifier(QAbstractButton * but, bool i)
 
 
 #if !OLD_DATA
-//	cout << "asdas = " << myClassifier->getClassifierData()->getNumOfCl() << endl;
+//	std::cout << "asdas = " << myClassifier->getClassifierData()->getNumOfCl() << std::endl;
 	myClassifier->setClassifierData(myClassifierData);
-//	cout << "asdas = " << myClassifier->getClassifierData()->getNumOfCl() << endl;
+//	std::cout << "asdas = " << myClassifier->getClassifierData()->getNumOfCl() << std::endl;
 //	setDimensionalitySlot(); /// ANN only
 #else
 	setClassifierParams(); // deprecate

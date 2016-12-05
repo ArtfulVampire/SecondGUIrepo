@@ -1,4 +1,6 @@
 #include "library.h"
+#include <myLib/output.h>
+using namespace myOut;
 
 
 namespace myLib
@@ -356,42 +358,6 @@ int countSymbolsInFile(const QString & filePath, char inChar)
 	return res;
 }
 
-char * strToChar(const QString & input)
-{
-	char * array = new char [input.length() + 1];
-	memcpy(array, input.toStdString().c_str(), input.length());
-	array[input.length()] = '\0';
-	return array;
-}
-
-char * QStrToCharArr(const QString & input, const int &len)
-{
-	// fixes problem with labels length
-
-	int leng = input.length();
-	if(len != -1)
-	{
-		leng = len;
-	}
-	char * array = new char [leng + 1];
-	memcpy(array, input.toStdString().c_str(), input.length());
-
-	if(len != -1)
-	{
-		for(int i = input.length(); i < leng; ++i)
-		{
-			array[i] = ' ';
-		}
-	}
-	array[leng] = '\0';
-	return array;
-}
-
-
-FILE * fopen(QString filePath, const char *__modes)
-{
-	return std::fopen(filePath.toStdString().c_str(), __modes);
-}
 
 
 

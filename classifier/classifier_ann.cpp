@@ -301,7 +301,7 @@ void ANN::learn(std::vector<uint> & indices)
         zeroParams();
     }
 
-    //    std::cout << "asdkjfjkrgwegb" << std::endl;
+	//    std::cout << "asdkjfjkrgwegb" << std::endl;
 
     double currentError = critError + 0.1;
     uint type;
@@ -355,7 +355,7 @@ void ANN::learn(std::vector<uint> & indices)
             currentError /= indices.size();
         }
 	}
-    /// cout epoch
+	/// std::cout epoch
 //    std::cout << "epoch = " << epoch << "\t"
 //              << "error = " << smallLib::doubleRound(currentError, 4) << "\t"
 //              << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << std::endl;
@@ -414,7 +414,7 @@ std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
     uint outClass = myLib::indexOfMax(forRes);
 
 #if 0
-    /// cout results
+	/// std::cout results
     const int numOfLayers = dim.size();
     std::ofstream resFile;
     resFile.open((def::dir->absolutePath() +
@@ -425,12 +425,12 @@ std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
 //    auto tmp = std::cout.rdbuf();
 //    std::cout.rdbuf(resFile.rdbuf());
 
-    std::cout << "type = " << type << '\t' << "(";
+	std::cout << "type = " << type << '\t' << "(";
 	for(int i = 0; i < myData->getNumOfCl(); ++i)
     {
-        std::cout << smallLib::doubleRound(output[numOfLayers - 1][i], 3) << '\t';
+		std::cout << smallLib::doubleRound(output[numOfLayers - 1][i], 3) << '\t';
     }
-    std::cout << ") " << ((type == outClass) ? "+ " : "- ") << "\t"
+	std::cout << ") " << ((type == outClass) ? "+ " : "- ") << "\t"
 			  << myData->getFileNames()[vecNum] << std::endl;
 
 //    std::cout.rdbuf(tmp);
@@ -470,7 +470,7 @@ void ANN::writeWeight(const QString & wtsPath)
     if(!weightsFile.good())
     {
         /// namespace myLib
-        std::cout << "ANN::writeWeight: cannot open file = " << wtsPath << std::endl;
+		std::cout << "ANN::writeWeight: cannot open file = " << wtsPath << std::endl;
         return;
     }
 
@@ -496,7 +496,7 @@ void ANN::readWeight(const QString & fileName,
     wtsStr.open(fileName.toStdString());
     if(!wtsStr.good())
     {
-        std::cout << "ANN::readWeight: wtsPath is not good() " << std::endl;
+		std::cout << "ANN::readWeight: wtsPath is not good() " << std::endl;
         return;
     }
 
@@ -532,7 +532,7 @@ void ANN::drawWeight(QString wtsPath,
 				  + def::ExpName + ".wts";
         if(!QFile::exists(wtsPath))
         {
-            std::cout << "ANN::drawWeight: cant find wtsFile" << std::endl;
+			std::cout << "ANN::drawWeight: cant find wtsFile" << std::endl;
             return;
         }
     }
@@ -604,8 +604,8 @@ double ANN::adjustLearnRate()
         ++counter;
     } while (counter < 10);
 
-    std::cout << "ANN::adjustLearnRate: lrate = " << res << "\t"
-              << "epoch = " << epoch << std::endl;
+	std::cout << "ANN::adjustLearnRate: lrate = " << res << "\t"
+			  << "epoch = " << epoch << std::endl;
 
     return res;
 }

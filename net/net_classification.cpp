@@ -1,8 +1,5 @@
 #include "net.h"
 #include "ui_net.h"
-using namespace std;
-using namespace myLib;
-using namespace smallLib;
 
 
 void Net::autoClassification(const QString & spectraDir)
@@ -46,7 +43,7 @@ void Net::autoClassification(const QString & spectraDir)
     }
     default: {break;}
     }
-    cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    std::cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
 
@@ -67,7 +64,7 @@ avType Net::autoClassification()
     case myMode::k_fold:
     {
         crossClassification();
-//		cout << "cross classification:" << endl;
+//		std::cout << "cross classification:" << std::endl;
         break;
     }
     case myMode::N_fold:
@@ -76,24 +73,24 @@ avType Net::autoClassification()
 
 		myClassifier->learnAll();
 		myClassifier->printParams();
-//		cout << "N-fold cross-validation:" << endl;
+//		std::cout << "N-fold cross-validation:" << std::endl;
         break;
     }
     case myMode::train_test:
     {
         trainTestClassification();
-//		cout << "train-test classification:" << endl;
+//		std::cout << "train-test classification:" << std::endl;
         break;
     }
     case myMode::half_half:
     {
         halfHalfClassification();
-//		cout << "half-half classification:" << endl;
+//		std::cout << "half-half classification:" << std::endl;
         break;
     }
     default: {break;}
     }
-    cout <<  "autoClassification: time elapsed = " << myTime.elapsed()/1000. << " sec" << endl;
+    std::cout <<  "autoClassification: time elapsed = " << myTime.elapsed()/1000. << " sec" << std::endl;
     return myClassifier->averageClassification();
 }
 
@@ -134,7 +131,7 @@ void Net::leaveOneOutClassification()
 	std::vector<uint> learnIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
-//		cout << i + 1 << " "; cout.flush();
+//		std::cout << i + 1 << " "; std::cout.flush();
 
         learnIndices.clear();
         learnIndices.resize(dataMatrix.rows() - 1);
@@ -148,7 +145,7 @@ void Net::leaveOneOutClassification()
 		myClassifier->learn(learnIndices);
 		myClassifier->test({i});
     }
-//    cout << endl;
+//    std::cout << std::endl;
 }
 
 void Net::crossClassification()
@@ -166,11 +163,11 @@ void Net::crossClassification()
     {
         arr[ types[i] ].push_back(i);
     }
-    cout << "Net: crossClass (max " << numOfPairs << "):" << endl;
+    std::cout << "Net: crossClass (max " << numOfPairs << "):" << std::endl;
 
     for(int i = 0; i < numOfPairs; ++i)
     {
-        cout << i + 1 << " "; cout.flush();
+        std::cout << i + 1 << " "; std::cout.flush();
 
         // mix arr for one "pair"-iteration
         for(int i = 0; i < def::numOfClasses(); ++i)
@@ -195,7 +192,7 @@ void Net::crossClassification()
             return;
         }
     }
-    cout << endl;
+    std::cout << std::endl;
 }
 
 std::pair<std::vector<uint>,
@@ -242,7 +239,7 @@ void Net::halfHalfClassification()
     }
     if(learnIndices.empty() || tallIndices.empty())
     {
-        cout << "Net::halfHalfClassification: indicesArray empty, return" << endl;
+        std::cout << "Net::halfHalfClassification: indicesArray empty, return" << std::endl;
         return;
     }
     myClassifier->learn(learnIndices);
@@ -270,7 +267,7 @@ void Net::trainTestClassification(const QString & trainTemplate,
     }
     if(learnIndices.empty() || tallIndices.empty())
     {
-        cout << "Net::trainTestClassification: indicesArray empty, return" << endl;
+        std::cout << "Net::trainTestClassification: indicesArray empty, return" << std::endl;
         return;
     }
     myClassifier->learn(learnIndices);
@@ -324,14 +321,14 @@ void Net::customF()
         ofstream outStr;
         outStr.open((def::dir->absolutePath()
                      + slash + outFileName).toStdString(), std::ios_base::app);
-        outStr << def::ExpName << endl;
+        outStr << def::ExpName << std::endl;
 
         int num = 0;
         for(auto vec : results)
         {
             /// comment for all results
 //            if(vec[accNum] < results[0][accNum] - 2.5 || num == 20) break;
-            outStr << vec << endl;
+            outStr << vec << std::endl;
             ++num;
         }
         outStr.close();

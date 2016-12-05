@@ -44,7 +44,7 @@ namespace Dsp {
 /*
  * System for abstracting parameterizable filter specifications.
  *
- * This provides a "GUI-friendly" layer to the filters. Note that
+ * This provides a "GUI-fristd::endly" layer to the filters. Note that
  * it is not necessary to use this layer, it is possible to instantiate
  * the filters and their associated processing state directly,
  * and bypass the overhead for this API if it is not needed.

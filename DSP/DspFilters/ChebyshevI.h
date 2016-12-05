@@ -193,7 +193,7 @@ struct BandShelf : PoleFilter <BandShelfBase, MaxOrder, MaxOrder*2>
 //------------------------------------------------------------------------------
 
 //
-// Gui-friendly Design layer
+// Gui-fristd::endly Design layer
 //
 
 namespace Design {

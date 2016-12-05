@@ -2,10 +2,6 @@
 #include "ui_net.h"
 //#include <CL/cl.h>
 
-using namespace std;
-using namespace myLib;
-using namespace smallLib;
-
 using namespace myOut;
 
 Net::Net() :
@@ -122,11 +118,11 @@ Net::Net() :
     ui->rdaLambdaSpinBox->setValue(0.1);
 
 
-//	cout << 11 << endl;
+//	std::cout << 11 << std::endl;
 	myClassifierData = ClassifierData();
-//	cout << 22 << endl;
+//	std::cout << 22 << std::endl;
 	myClassifier = new NBC();
-//	cout << 33 << endl;
+//	std::cout << 33 << std::endl;
 
 
 
@@ -240,7 +236,7 @@ void Net::writeWtsSlot()
 
     if(helpString.isEmpty())
     {
-        cout << "saveWtsSlot: no file is chosen to save" << endl;
+		std::cout << "saveWtsSlot: no file is chosen to save" << std::endl;
         return;
     }
 
@@ -280,7 +276,7 @@ void Net::loadDataSlot()
                                  QMessageBox::Ok);
         return;
     }
-	cout << helpString << endl;
+	std::cout << helpString << std::endl;
 #if !OLD_DATA
 	myClassifierData = ClassifierData(helpString, QStringList());
 #else

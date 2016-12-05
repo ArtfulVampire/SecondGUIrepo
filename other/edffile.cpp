@@ -1,9 +1,5 @@
 #include "edffile.h"
 
-using namespace std;
-using namespace myLib;
-using namespace smallLib;
-
 using namespace myOut;
 
 
@@ -90,21 +86,21 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 
 		if(inStr == NULL)
 		{
-			cout << "edfFile(matiLogFile): input file is NULL" << endl;
+			std::cout << "edfFile(matiLogFile): input file is NULL" << std::endl;
 			return;
 		}
 
 		int numOfParams = 15 - 2; // -currTime & quantLength generality
 		int currTimeIndex;
 
-		//    this->headerInitialInfo = fitString("Edf for AMOD Data", 184);
-		this->headerInitialInfo = fitString("Edf for AMOD Data", 184).toStdString();
-		this->headerReservedField = fitString("headerReservedField", 44);
+		//    this->headerInitialInfo = myLib::fitString("Edf for AMOD Data", 184);
+		this->headerInitialInfo = myLib::fitString("Edf for AMOD Data", 184).toStdString();
+		this->headerReservedField = myLib::fitString("headerReservedField", 44);
 		this->headerRest = QString();
 
 
 		this->filePath = txtFilePath;
-		this->ExpName = getExpNameLib(txtFilePath);
+		this->ExpName = myLib::getExpNameLib(txtFilePath);
 		this->dirPath = txtFilePath.left(txtFilePath.lastIndexOf( slash ) );
 
 		this->ns = numOfParams;
@@ -114,22 +110,22 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		// ndr definedlater
 		this->bytes = 256 * (this->ns + 1);
 
-		this->labels = {fitString("AMOD amplX", 16),
-						fitString("AMOD amplY", 16),
-						fitString("AMOD freqX", 16),
-						fitString("AMOD freqY", 16),
-						fitString("AMOD targX", 16),
-						fitString("AMOD targY", 16),
-						fitString("AMOD mouseX", 16),
-						fitString("AMOD mouseX", 16),
-						fitString("AMOD tracSucces", 16),
-						fitString("AMOD mouseMove", 16),
-						fitString("AMOD rightAns", 16),
-						fitString("AMOD wrongAns", 16),
-						fitString("AMOD skipdAns", 16)
+		this->labels = {myLib::fitString("AMOD amplX", 16),
+						myLib::fitString("AMOD amplY", 16),
+						myLib::fitString("AMOD freqX", 16),
+						myLib::fitString("AMOD freqY", 16),
+						myLib::fitString("AMOD targX", 16),
+						myLib::fitString("AMOD targY", 16),
+						myLib::fitString("AMOD mouseX", 16),
+						myLib::fitString("AMOD mouseX", 16),
+						myLib::fitString("AMOD tracSucces", 16),
+						myLib::fitString("AMOD mouseMove", 16),
+						myLib::fitString("AMOD rightAns", 16),
+						myLib::fitString("AMOD wrongAns", 16),
+						myLib::fitString("AMOD skipdAns", 16)
 					   };
-		this->transducerType = std::vector<QString> (this->ns, fitString("AMOD transducer", 80));
-		this->physDim = std::vector<QString> (this->ns, fitString("AMODdim", 8));
+		this->transducerType = std::vector<QString> (this->ns, myLib::fitString("AMOD transducer", 80));
+		this->physDim = std::vector<QString> (this->ns, myLib::fitString("AMODdim", 8));
 
 		this->physMin = {0, 0, 0, 0, // ampls, freqs
 						 -1, -1, -1, -1, // coordinates
@@ -151,8 +147,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 						 3-1, 7-1,
 						 255-1, 255-1, 255-1}; // -1 for universal formula except markers
 
-		this->prefiltering = std::vector<QString> (this->ns, QString(fitString("AMOD no prefiltering", 80)));
-		this->reserved = std::vector<QString> (this->ns, QString(fitString("AMOD reserved", 32)));
+		this->prefiltering = std::vector<QString> (this->ns, QString(myLib::fitString("AMOD no prefiltering", 80)));
+		this->reserved = std::vector<QString> (this->ns, QString(myLib::fitString("AMOD reserved", 32)));
 
 		this->edfData.resize(this->ns);
 		for(int i = 0; i < this->ns; ++i)
@@ -200,8 +196,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 
 		int numOfParams = iitpData.rows();
 
-		this->headerInitialInfo = fitString("Edf for IITP EMG Data", 184).toStdString();
-		this->headerReservedField = fitString("headerReservedField", 44);
+		this->headerInitialInfo = myLib::fitString("Edf for IITP EMG Data", 184).toStdString();
+		this->headerReservedField = myLib::fitString("headerReservedField", 44);
 		this->headerRest = QString();
 
 		this->filePath = txtFilePath;
@@ -221,16 +217,16 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		{
 			if(!iitpLabels[i].contains("Artefac"))
 			{
-				this->labels[i] = fitString("IT " + iitpLabels[i], 16);
+				this->labels[i] = myLib::fitString("IT " + iitpLabels[i], 16);
 			}
 			else
 			{
-				this->labels[i] = fitString("XX " + iitpLabels[i], 16);
+				this->labels[i] = myLib::fitString("XX " + iitpLabels[i], 16);
 			}
 		}
 
-		this->transducerType = std::vector<QString> (this->ns, fitString("IITP transducer", 80));
-		this->physDim = std::vector<QString> (this->ns, fitString("IITPdim", 8));
+		this->transducerType = std::vector<QString> (this->ns, myLib::fitString("IITP transducer", 80));
+		this->physDim = std::vector<QString> (this->ns, myLib::fitString("IITPdim", 8));
 		this->physMin.resize(this->ns, -2048);
 		this->physMax.resize(this->ns, 2048);
 
@@ -238,8 +234,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		this->digMax.resize(this->ns, 32768);
 
 		this->prefiltering = std::vector<QString> (this->ns,
-											   fitString("IITP no prefiltering", 80));
-		this->reserved = std::vector<QString> (this->ns, fitString("IITP reserved", 32));
+											   myLib::fitString("IITP no prefiltering", 80));
+		this->reserved = std::vector<QString> (this->ns, myLib::fitString("IITP reserved", 32));
 
 //		this->edfData = matrix();
 		this->edfData = std::move(iitpData);
@@ -287,14 +283,14 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
     {
         if(QFile::exists(EDFpath))
         {
-//            cout << "writeEdfFile: destination file already exists, RETURN\n" << EDFpath << endl; return;
-//            cout << "writeEdfFile: destination file already exists, REWRITE = \n" << EDFpath << " ";
+//            std::cout << "writeEdfFile: destination file already exists, RETURN\n" << EDFpath << std::endl; return;
+//            std::cout << "writeEdfFile: destination file already exists, REWRITE = \n" << EDFpath << " ";
         }
         this->handleEdfFile(EDFpath, false);
     }
     else // if(asPLain)
 	{
-		writePlainData(EDFpath, this->edfData);
+		myLib::writePlainData(EDFpath, this->edfData);
     }
 }
 
@@ -336,7 +332,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     QString helpString;
     if(readFlag && !QFile::exists(EDFpath))
     {
-        cout << "handleFile: file to read doesn't exist\n" << EDFpath << endl;
+		std::cout << "handleFile: file to read doesn't exist\n" << EDFpath << std::endl;
         return;
     }
 
@@ -344,7 +340,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 	edfDescriptor = fopen(EDFpath, (readFlag ? "r" : "w")); //generality
     if(edfDescriptor == NULL)
     {
-        cout << "handleFile: cannot open edf file " << EDFpath << endl;
+		std::cout << "handleFile: cannot open edf file " << EDFpath << std::endl;
         return;
     }
 
@@ -352,7 +348,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 	{
 		filePath = EDFpath;
 		dirPath = EDFpath.left(EDFpath.lastIndexOf(slash));
-		ExpName = getExpNameLib(filePath);
+		ExpName = myLib::getExpNameLib(filePath);
 	}
 
 	FILE * header = NULL;
@@ -362,7 +358,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         header = fopen(helpString, "w");
         if(header == NULL)
         {
-			cout << "edfFile::handleEdfFile: cannot open header.txt file" << endl;
+			std::cout << "edfFile::handleEdfFile: cannot open header.txt file" << std::endl;
             return;
         }
     }
@@ -392,11 +388,11 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			/// edit EOG channels to encephalan
 			if(labels[i].contains("EOG 1"))
 			{
-				labels[i] = fitString("EOG EOG1-A2", 16);
+				labels[i] = myLib::fitString("EOG EOG1-A2", 16);
 			}
 			else if(labels[i].contains("EOG 2"))
 			{
-				labels[i] = fitString("EOG EOG2-A1", 16);
+				labels[i] = myLib::fitString("EOG EOG2-A1", 16);
 			}
 			/// set marker channel
 			else if(labels[i].contains("Marker") ||
@@ -409,7 +405,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			{
 				markerChannel = i;
 				edfPlusFlag = true;
-				cout << "handleEdfFile: Annotations! " << EDFpath << endl;
+				std::cout << "handleEdfFile: Annotations! " << EDFpath << std::endl;
 			}
 			/// Mitsar and other sheet
 			/// Need for repair::testChannelOrderConsistency
@@ -485,15 +481,15 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
             {
                 if(physMax[i] == physMin[i])
                 {
-					cout << ExpName << "\t"
+					std::cout << ExpName << "\t"
 						 << "edfFile::readEdfFile: phys Max/Min are equal, chan(from 1) = "
-						 << i + 1 << " - " << labels[i] << endl;
+						 << i + 1 << " - " << labels[i] << std::endl;
                 }
                 if(digMax[i] == digMin[i])
                 {
-					cout << ExpName << "\t"
+					std::cout << ExpName << "\t"
 						 << "edfFile::readEdfFile:  dig Max/Min are equal, chan(from 1) = "
-						 << i + 1 << " - " << labels[i] << endl;
+						 << i + 1 << " - " << labels[i] << std::endl;
                 }
             }
         }
@@ -515,15 +511,15 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
                                / (sumNr * 2.); // 2 bytes for a point
         if(int(realNdr) != realNdr)
         {
-			cout << ExpName << ", ";
-            cout << "handleEdfFile(read): realNdr is not integral = "
-                 << realNdr << endl;
-            cout << "dataSize = " << fileSize - bytes << endl;
-            cout << "ns = " << ns << endl;
-			cout << "freq = " << this->srate << endl;
-            cout << "ddr = " << ddr << endl;
-            cout << "rest size = "
-                 << (fileSize - bytes) - ndr * sumNr * 2.<< endl;
+			std::cout << ExpName << ", ";
+			std::cout << "handleEdfFile(read): realNdr is not integral = "
+				 << realNdr << std::endl;
+			std::cout << "dataSize = " << fileSize - bytes << std::endl;
+			std::cout << "ns = " << ns << std::endl;
+			std::cout << "freq = " << this->srate << std::endl;
+			std::cout << "ddr = " << ddr << std::endl;
+			std::cout << "rest size = "
+				 << (fileSize - bytes) - ndr * sumNr * 2.<< std::endl;
         }
 //        ndr = min(int(realNdr), ndr); /// sometimes the tails are shit
 		ndr = int(realNdr); /// sometimes ndr from file is a lie
@@ -686,7 +682,7 @@ void edfFile::handleDatum(const int & currNs,
 
                 if(currDatum != 0 )
                 {
-                    matiFixMarker(currDatum);
+					myLib::matiFixMarker(currDatum);
                 }
             }
             else // simple edf
@@ -714,10 +710,10 @@ void edfFile::handleDatum(const int & currNs,
             // round better to N * 1/8.
             if(currNs < 21) // generality bicycle
             {
-                currDatum = doubleRoundFraq(currDatum,
-                                            int( (digMax[currNs] - digMin[currNs] + 1)
-                                                 / (physMax[currNs] - physMin[currNs]) )
-                                            ); // need for eyes cleaned EEG only
+				currDatum = smallLib::doubleRoundFraq(currDatum,
+													  int( (digMax[currNs] - digMin[currNs] + 1)
+														   / (physMax[currNs] - physMin[currNs]) )
+													  ); // need for eyes cleaned EEG only
             }
 
             a = (qint16)((currDatum - physMin[currNs])
@@ -773,7 +769,7 @@ void edfFile::writeMarker(const double & currDatum,
     fprintf(markers, "%d %d", currTimeIndex, int(currDatum));
     if(this->matiFlag)
     {
-        byteMarker = matiCountByte(currDatum);
+		byteMarker = myLib::matiCountByte(currDatum);
 
         fprintf(markers, "\t");
         for(int s = 15; s >= 0; --s)
@@ -1056,7 +1052,7 @@ edfFile & edfFile::concatFile(QString addEdfPath, QString outPath) // assume onl
 	edfData.resizeCols( oldLen + addLen);
 
 
-	for(int i = 0; i < min(this->ns, addEdf.getNs()); ++i)
+	for(int i = 0; i < std::min(this->ns, addEdf.getNs()); ++i)
 	{
 		std::copy(std::begin(addEdf.getData()[i]),
 				  std::end(addEdf.getData()[i]),
@@ -1345,7 +1341,7 @@ void edfFile::saveSubsection(int startBin,
 {
     if(plainFlag)
 	{
-        writePlainData(outPath,
+		myLib::writePlainData(outPath,
 					   this->edfData,
                        finishBin - startBin,
 					   startBin);
@@ -1367,12 +1363,12 @@ void edfFile::saveSubsection(int startBin,
 
 void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
 {
-	drawEeg(this->edfData,
-            this->ns,
-            startBin,
-            finishBin,
-            this->srate,
-            outPath);
+	myLib::drawEeg(this->edfData,
+				   this->ns,
+				   startBin,
+				   finishBin,
+				   this->srate,
+				   outPath);
 }
 
 void edfFile::cleanFromEyes(QString eyesPath,
@@ -1389,7 +1385,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
     }
 
     matrix coefs;
-    readMatrixFile(eyesPath, coefs);
+	myLib::readMatrixFile(eyesPath, coefs);
 
     if(eegNums.empty())
     {
@@ -1427,7 +1423,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
         this->removeChannels(eogNums);
 	}
 
-    cout << "cleanFromEyes: time = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "cleanFromEyes: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
 edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much memory
@@ -1441,7 +1437,7 @@ edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much
     {
 		if(item >= this->getNs())
 		{
-			cout << "edfFile::reduceChannels: inappropriate number in chanList, return *this" << endl;
+			std::cout << "edfFile::reduceChannels: inappropriate number in chanList, return *this" << std::endl;
 			return *this;
 		}
 		temp.channels.push_back(this->channels[item]);
@@ -1479,8 +1475,8 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
     QStringList leest = chanStr.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
     if(leest.last().toInt() - 1 != this->markerChannel)
     {
-		cout << "edfFile::reduceChannels: warning - last is not marker" << endl;
-		cout << leest.last().toInt() - 1 << "\t" << this->markerChannel << endl;
+		std::cout << "edfFile::reduceChannels: warning - last is not marker" << std::endl;
+		std::cout << leest.last().toInt() - 1 << "\t" << this->markerChannel << std::endl;
     }
 
 	edfFile temp(*this, true);
@@ -1509,7 +1505,7 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
             {
 				if(!smallLib::isInt(lst[h]))
                 {
-					cout << "edfFile::reduceChannels: NAN between operators, return *this" << endl;
+					std::cout << "edfFile::reduceChannels: NAN between operators, return *this" << std::endl;
 					return *this;
                 }
             }
@@ -1523,7 +1519,7 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
                 else if(leest[k][lengthCounter] == '-') sign = -1.;
                 else //this should never happen!
                 {
-					cout << "edfFile::reduceChannels: first sign is not + or -, return * this" << endl;
+					std::cout << "edfFile::reduceChannels: first sign is not + or -, return * this" << std::endl;
 					return * this;;
                 }
                 lengthCounter += 1; //sign length
@@ -1556,13 +1552,13 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
         }
         else
         {
-			cout << "edfFile::reduceChannels: unknown format of the string, return *this" << endl;
+			std::cout << "edfFile::reduceChannels: unknown format of the string, return *this" << std::endl;
 			return *this;
         }
 	}
-	cout << "reduceChannelsFast: ns = " << ns;
-	cout << ", time = " << myTime.elapsed() / 1000. << " sec";
-	cout << endl;
+	std::cout << "reduceChannelsFast: ns = " << ns;
+	std::cout << ", time = " << myTime.elapsed() / 1000. << " sec";
+	std::cout << std::endl;
 
 	temp.ns = leest.length();
 	temp.adjustArraysByChannels();
@@ -1583,8 +1579,8 @@ void edfFile::setLabels(const std::vector<QString> & inLabels)
 {
     if(this->ns != inLabels.size())
     {
-        cout << "edfFile::setLabels: inappropriate vector size "
-             << this->ns << " != " << inLabels.size() << endl;
+		std::cout << "edfFile::setLabels: inappropriate vector size "
+			 << this->ns << " != " << inLabels.size() << std::endl;
         return;
     }
     for(int i = 0; i < this->ns; ++i)
@@ -1676,7 +1672,7 @@ double edfFile::checkDdr(const QString & inPath)
 {
     if(!QFile::exists(inPath))
     {
-        cout << "edfFile::checkDdr: file doesn't exist" << endl;
+		std::cout << "edfFile::checkDdr: file doesn't exist" << std::endl;
         return -1;
     }
     FILE * tmp = fopen(inPath, "r");
@@ -1829,7 +1825,7 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
 
     newData.push_back(fil.getData()[fil.getMarkChan()]); //copy markers
     fil.writeOtherData(newData, newEdfPath);
-    cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 
@@ -1845,13 +1841,36 @@ void myTransform(double & output, char * input) {output = atof(input);}
 void myTransform(QString & output, char * input) {output = QString(input);}
 void myTransform(std::string & output, char * input) {output = std::string(input);}
 
+char * QStrToCharArr(const QString & input, int len = -1)
+{
+	// fixes problem with labels length
+
+	int leng = input.length();
+	if(len <= 0)
+	{
+		leng = len;
+	}
+	char * array = new char [leng + 1];
+	memcpy(array, input.toStdString().c_str(), input.length());
+
+	if(len != -1)
+	{
+		for(int i = input.length(); i < leng; ++i)
+		{
+			array[i] = ' ';
+		}
+	}
+	array[leng] = '\0';
+	return array;
+}
+
 void myTransform(const int & input, const int & len, char ** output)
 {
-    (*output) = QStrToCharArr(fitNumber(input, len));
+	(*output) = QStrToCharArr(myLib::fitNumber(input, len));
 }
 void myTransform(const double & input, const int & len, char ** output)
 {
-    (*output) = QStrToCharArr(fitNumber(input, len));
+	(*output) = QStrToCharArr(myLib::fitNumber(input, len));
 }
 void myTransform(const QString & input, const int & len, char ** output)
 {

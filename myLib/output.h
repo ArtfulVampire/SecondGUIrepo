@@ -24,6 +24,9 @@ inline QString nm(Typ in) {return QString::number(in);}
 template QString nm(int in);
 template QString nm(double in);
 
+
+FILE * fopen(QString filePath, const char *__modes);
+
 std::istream & operator>> (std::istream &is, QString & in);
 std::ostream & operator<< (std::ostream &os, const QString & toOut);
 std::ostream & operator<< (std::ostream &os, QChar toOut);

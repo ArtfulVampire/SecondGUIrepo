@@ -121,7 +121,7 @@ private:
 /*
  * FilterDesign
  *
- * This container holds a filter Design (Gui-friendly layer) and
+ * This container holds a filter Design (Gui-fristd::endly layer) and
  * optionally combines it with the necessary state information to
  * process channel data.
  *

@@ -1,8 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-using namespace std;
-using namespace myLib;
 using namespace myOut;
 
 void MainWindow::sliceWindFromReal()
@@ -15,11 +13,11 @@ void MainWindow::sliceWindFromReal()
 
 
     QStringList lst;
-    makeFullFileList(def::dir->absolutePath()
-					 + slash + "Reals",
-                     lst
-                     , {def::ExpName}
-                     );
+	myLib::makeFullFileList(def::dir->absolutePath()
+							+ slash + "Reals",
+							lst
+							, {def::ExpName}
+							);
 
     const int timeShift = ui->timeShiftSpinBox->value() * def::freq;
     const int wndLength = ui->windowLengthSpinBox->value() * def::freq;
@@ -37,14 +35,14 @@ void MainWindow::sliceWindFromReal()
         helpString = (def::dir->absolutePath()
 											  + slash + "Reals"
                                               + slash + lst[i]);
-        readPlainData(helpString, dataReal, NumOfSlices);
+		myLib::readPlainData(helpString, dataReal, NumOfSlices);
 
         offset = 0;
         for(int h = 0; h < ceil((NumOfSlices - wndLength) / double(timeShift)); ++h)
         {
             //correct eyes number
             eyes = 0;
-            for(int l = offset; l < min(offset + wndLength, NumOfSlices); ++l)
+			for(int l = offset; l < std::min(offset + wndLength, NumOfSlices); ++l)
             {
                 eyesCounter = 0.;
                 for(int m = 0; m < localNs; ++m)
@@ -65,11 +63,10 @@ void MainWindow::sliceWindFromReal()
 						 + slash + "winds"
                          + slash + "fromreal"
                          + slash + lst[i]
-                         + "." + rightNumber(h, 2);
-            helpString = (helpString);
+						 + "." + myLib::rightNumber(h, 2);
 
             /// wowo wowoww wowowowo owowwowo
-            writePlainData(helpString, dataReal, wndLength, offset);
+			myLib::writePlainData(helpString, dataReal, wndLength, offset);
 
             offset += timeShift;
         }
@@ -90,7 +87,7 @@ void MainWindow::sliceWindFromReal()
     helpString = "ns equals to " + QString::number(def::ns);
     ui->textEdit->append(helpString);
 
-    cout << "sliceWindFromReal: time = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "sliceWindFromReal: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
 void MainWindow::sliceIlya(const QString &fileName, QString marker) //beginning - from mark1 to mark 2, end - from 251 to 255. Marker - included in filename
@@ -271,14 +268,14 @@ void MainWindow::slice(int marker1, int marker2, QString marker) //beginning - f
             }
         }
     }
-//    cout << number << endl;
+//    std::cout << number << std::endl;
 //    for(int i = 0; i < 4; ++i)
 //    {
-//        cout << "solve[" << i << "]=" << solve[i]/(12 *def::freq) << endl;
+//        std::cout << "solve[" << i << "]=" << solve[i]/(12 *def::freq) << std::endl;
 //    }
 
     solveTime/=(def::freq*number);
-    cout << "solveTime " << marker.toStdString() << " =" << solveTime << endl << endl;
+	std::cout << "solveTime " << marker.toStdString() << " =" << solveTime << std::endl << std::endl;
 
     FILE * res = fopen((def::dir->absolutePath().append(slash).append("results.txt")).toStdString().c_str(), "a+");
     if(ui->eyesCleanCheckBox->isChecked()) fprintf(res, "solve time %s \t %lf \n", marker.toStdString().c_str(), solveTime);
@@ -364,7 +361,7 @@ void MainWindow::sliceFromTo(int marker1, int marker2, QString marker) //beginni
 //    kernelest(helpString);
 
     solveTime/=(def::freq*number);
-//    cout << "average time before feedback " << marker.toStdString() << " =" << solveTime << endl;
+//    std::cout << "average time before feedback " << marker.toStdString() << " =" << solveTime << std::endl;
 
     FILE * res = fopen((def::dir->absolutePath().append(slash).append("results.txt")).toStdString().c_str(), "a+");
     if(def::ExpName.contains("FB")) fprintf(res, "time before feedback %s\t%lf\n", marker.toStdString().c_str(), solveTime);
@@ -464,7 +461,7 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning 
 					+ slash + "Reals"
                     + slash + def::ExpName
                     + "_" + marker
-                    + "." + rightNumber(number, 4);
+					+ "." + myLib::rightNumber(number, 4);
 
             // to test?
             fil.saveSubsection(j, k, helpString, true);
@@ -500,8 +497,8 @@ void MainWindow::sliceWindow(int startSlice, int endSlice, int number, int marke
     helpString = (def::dir->absolutePath()
 										  + slash + "winds"
                                           + slash + def::ExpName
-                                          + "-" + rightNumber(number, 4)
-                                          + "_" + QString::number(marker)); //number.marker
+										  + "-" + myLib::rightNumber(number, 4)
+										  + "_" + nm(marker)); //number.marker
 
     globalEdf.saveSubsection(startSlice, endSlice, helpString, true);
 }
@@ -586,7 +583,7 @@ void MainWindow::sliceOneByOne()
             helpString = def::dir->absolutePath()
 						 + slash + "Reals"
                          + slash + def::ExpName
-                         + "." + rightNumber(number++, 4);
+						 + "." + myLib::rightNumber(number++, 4);
 
 
             if(finish > start)
@@ -600,7 +597,7 @@ void MainWindow::sliceOneByOne()
                 }
                 else /// pause rest
                 {
-                    if(def::wirteStartEndLong)
+					if(def::writeLongStartEnd)
                     {
                         helpString += "_000";
                         fil.saveSubsection(start,
@@ -612,7 +609,7 @@ void MainWindow::sliceOneByOne()
                         helpString += "_" + marker;
                         matrix tempData(fil.getNs(), 100, 0.);
                         tempData[fil.getMarkChan()][0] = markChanArr[start];
-                        writePlainData(helpString, tempData);
+						myLib::writePlainData(helpString, tempData);
                     }
                 }
             }
@@ -634,7 +631,7 @@ void MainWindow::sliceOneByOne()
         helpString = def::dir->absolutePath()
 					 + slash + "Reals"
                      + slash + def::ExpName
-                     + "." + rightNumber(number++, 4);
+					 + "." + myLib::rightNumber(number++, 4);
         if(fil.getDataLen() - start < 40 * def::freq) /// if last realisation or interstimulus
         {
             helpString += "_" + marker;
@@ -644,7 +641,7 @@ void MainWindow::sliceOneByOne()
         }
         else /// just last big rest with eyes closed/open
         {
-            if(def::wirteStartEndLong)
+			if(def::writeLongStartEnd)
             {
                 helpString += "_000";
                 fil.saveSubsection(start,
@@ -656,7 +653,7 @@ void MainWindow::sliceOneByOne()
                 helpString += "_" + marker;
                 matrix tempData(fil.getNs(), 100, 0.);
                 tempData[fil.getMarkChan()][0] = markChanArr[start];
-                writePlainData(helpString, tempData);
+				myLib::writePlainData(helpString, tempData);
             }
         }
     }
@@ -706,8 +703,8 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
             helpString = def::dir->absolutePath()
 						 + slash + "Reals"
                          + slash + def::ExpName
-                         + "." + rightNumber(number++, 4);
-//            cout << helpString << endl;
+						 + "." + myLib::rightNumber(number++, 4);
+//            std::cout << helpString << std::endl;
             if(i > j)
             {
                 if(i - j <= def::freq * 60) /// const generality limit
@@ -717,7 +714,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
                 }
                 else /// pause rest
                 {
-                    if(def::wirteStartEndLong)
+					if(def::writeLongStartEnd)
                     {
                         helpString += "_000";
                         fil.saveSubsection(j, i, helpString, true);
@@ -727,7 +724,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
                         helpString += "_" + marker;
                         matrix tempData(fil.getNs(), 100, 0.);
                         tempData[fil.getMarkChan()][0] = markChanArr[j];
-                        writePlainData(helpString, tempData);
+						myLib::writePlainData(helpString, tempData);
                     }
                 }
             }
@@ -753,7 +750,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
         helpString = def::dir->absolutePath()
 					 + slash + "Reals"
                      + slash + def::ExpName
-                     + "." + rightNumber(number++, 4);
+					 + "." + myLib::rightNumber(number++, 4);
         if(fil.getDataLen() - j < 40 * def::freq) /// if last realisation or interstimulus
         {
             helpString += "_" + marker;
@@ -761,7 +758,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
         }
         else /// just last big rest with eyes closed/open
         {
-            if(def::wirteStartEndLong)
+			if(def::writeLongStartEnd)
             {
                 helpString += "_000";
                 fil.saveSubsection(j, fil.getDataLen(), helpString, true);
@@ -771,7 +768,7 @@ void MainWindow::sliceOneByOneNew() // deprecated numChanWrite - always with mar
                 helpString += "_" + marker;
                 matrix tempData(fil.getNs(), 100, 0.);
                 tempData[fil.getMarkChan()][0] = markChanArr[j];
-                writePlainData(helpString, tempData);
+				myLib::writePlainData(helpString, tempData);
             }
         }
     }
@@ -811,7 +808,7 @@ void MainWindow::sliceMatiSimple()
         }
         else
         {
-            markers = matiCountByte(currMarker);
+			markers = myLib::matiCountByte(currMarker);
             //decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
             for(int i = 0; i < 3; ++i)
             {
@@ -858,13 +855,13 @@ void MainWindow::sliceMatiSimple()
                     helpString = (def::dir->absolutePath()
 														  + slash + "Reals"
                                                           + slash + def::ExpName
-                                                          + "_" + QString::number(type)
-                                                          + "_" + QString::number(session[type])
-                                                          + "_" + rightNumber(j, 2)
+														  + "_" + nm(type)
+														  + "_" + nm(session[type])
+														  + "_" + myLib::rightNumber(j, 2)
                                                           + '.' + fileMark);
 
-                    int NumOfSlices = min(end - start - j * piece, piece);
-                    writePlainData(helpString, fil.getData(), NumOfSlices, start + j * piece);
+					int NumOfSlices = std::min(end - start - j * piece, piece);
+					myLib::writePlainData(helpString, fil.getData(), NumOfSlices, start + j * piece);
                 }
                 fileMark.clear();
                 ++session[type];
@@ -883,7 +880,7 @@ void MainWindow::sliceMatiSimple()
     }
     ui->progressBar->setValue(0);
 
-    cout << "sliceMatiSimple: time = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "sliceMatiSimple: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
     stopFlag = 0;
 }
 
@@ -919,7 +916,7 @@ void MainWindow::sliceMati()
         }
         else
         {
-            markers = matiCountByte(currMarker);
+			markers = myLib::matiCountByte(currMarker);
             //decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
             for(int i = 0; i < 3; ++i)
             {
@@ -986,10 +983,11 @@ void MainWindow::sliceMati()
         }
     }
     ui->progressBar->setValue(0);
-    cout << "sliceMati: time = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "sliceMati: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
     stopFlag = 0;
 }
 
+/// add markChan alias
 void MainWindow::sliceMatiPieces(bool plainFlag)
 {
     QTime myTime;
@@ -1027,8 +1025,8 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                                                   + slash + "auxEdfs"
 
                                                   + slash + globalEdf.getExpName()
-                                                  + "_" + QString::number(type)
-                                                  + "_" + QString::number(session)
+												  + "_" + nm(type)
+												  + "_" + nm(session)
                                                   + ".edf");
 
             if(QFile::exists(helpString))
@@ -1048,20 +1046,20 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                 {
                     do
                     {
-                        currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
+						currEnd = std::min(int(currStart + pieceLength * def::freq), dataLen);
 
                         if(type == 0 || type == 2)
                         {
                             // std::search
-                            while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 14) ||
-                                       matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) // while not (given answer OR session End)
+							while ( ! (myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 14) ||
+									   myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) // while not (given answer OR session End)
                             {
                                 --currEnd;
                             }
                         }
                         else if(currEnd == dataLen) // should do nothing due to edfFile::cutZerosAtEnd
                         {
-                            while ( ! (matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10)) ) // while not session end
+							while ( ! (myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10)) ) // while not session end
                             {
                                 --currEnd;
                             }
@@ -1069,33 +1067,33 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 
                         if(currEnd <= currStart) // no count answers during pieceLength seconds
                         {
-                            currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
+							currEnd = std::min(int(currStart + pieceLength * def::freq), dataLen);
                         }
 
                         // type and session already in the fil.ExpName
 
-                        helpString = (def::dir->absolutePath()
-                                                              + slash + folder
-                                                              + slash + fil.getExpName()
-                                                              + "_" + rightNumber(pieceNum, 2)
-                                                              + '_' + fileMark);
+						helpString = def::dir->absolutePath()
+									 + slash + folder
+									 + slash + fil.getExpName()
+									 + "_" + myLib::rightNumber(pieceNum, 2)
+									 + '_' + fileMark;
 
 
                         fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
                         ++pieceNum;
                         currStart = currEnd;
 
-                    } while (!matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10) );
+					} while (!myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10) );
                 }
                 else
                 {
                     while(currStart < dataLen)
                     {
-                        currEnd = min(int(currStart + pieceLength * def::freq), dataLen);
+						currEnd = std::min(int(currStart + pieceLength * def::freq), dataLen);
                         helpString = (def::dir->absolutePath()
                                                               + slash + folder
                                                               + slash + fil.getExpName()
-                                                              + "_" + rightNumber(pieceNum, 2)
+															  + "_" + myLib::rightNumber(pieceNum, 2)
                                                               + '_' + fileMark);
                         fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
                         ++pieceNum;
@@ -1105,5 +1103,5 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
             }
         }
     }
-    cout << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }

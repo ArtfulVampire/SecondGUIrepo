@@ -1,8 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-using namespace std;
-using namespace myLib;
 using namespace myOut;
 
 void MainWindow::makeChanList(std::vector<int> & chanList)
@@ -58,7 +56,7 @@ void MainWindow::rereferenceData(const QString newRef,
     int groundChan = -1; //A1-N
     int earsChan1 = -1; //A1-A2
     int earsChan2 = -1; //A2-A1
-	cout << def::ns << endl;
+	std::cout << def::ns << std::endl;
     for(int i = 0; i < def::ns; ++i)
     {
         if(label[i].contains("A1-N"))
@@ -76,7 +74,7 @@ void MainWindow::rereferenceData(const QString newRef,
     }
     if(groundChan == -1 || (earsChan1 == -1 && earsChan2 == -1))
     {
-        cout << "some of reref channels are absent" << endl;
+		std::cout << "some of reref channels are absent" << std::endl;
         return;
     }
 
@@ -118,7 +116,7 @@ void MainWindow::rereferenceData(const QString newRef,
             QString refName = forRef.cap();
             refName.remove(QRegExp(R"([\-\s])"));
 
-            QString chanName = getLabelName(label[i]);
+			QString chanName = myLib::getLabelName(label[i]);
 
             QString targetRef = newRef;
             /// if newRef == "Base"
@@ -138,19 +136,19 @@ void MainWindow::rereferenceData(const QString newRef,
                     targetRef = "A2";
                 }
             }
-            helpString += rerefChannel(refName,
-                                       targetRef,
-                                       currNumStr,
-                                       earsChanStr,
-                                       groundChanStr,
-                                       sign) + " ";
+			helpString += myLib::rerefChannel(refName,
+											  targetRef,
+											  currNumStr,
+											  earsChanStr,
+											  groundChanStr,
+											  sign) + " ";
 
             helpString2 = label[i];
             helpString2.replace(refName, targetRef);
             label[i] = helpString2;
         }
     }
-    cout << "rereferenceData: " << newRef << "\n" << helpString.toStdString() << endl;
+	std::cout << "rereferenceData: " << newRef << "\n" << helpString.toStdString() << std::endl;
     ui->reduceChannelsLineEdit->setText(helpString);
 
     //change labels
@@ -167,7 +165,7 @@ void MainWindow::rereferenceData(const QString newRef,
     ui->reduceChannelsLineEdit->setText(helpString);
 
     globalEdf.writeEdfFile(newPath);
-    cout << "rereferenceData: time = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "rereferenceData: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
 void MainWindow::refilterDataSlot()
@@ -204,7 +202,7 @@ void MainWindow::refilterDataSlot()
     ui->reduceChannelsComboBox->setCurrentIndex(0);
     ui->reduceChannelsComboBox->setCurrentIndex(tmp);
 
-    cout << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::refilterData(const double & lowFreq,
@@ -236,7 +234,7 @@ void MainWindow::reduceChannelsEDF(const QString & newFilePath)
 	temp = temp.reduceChannels(chanList);
     temp.writeEdfFile(newFilePath);
 
-    cout << "reduceChannelsEDF: time = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "reduceChannelsEDF: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
 /// Ossadtchi only ?
@@ -263,12 +261,12 @@ void MainWindow::reduceChannelsSlot()
                                     excludeList.end(),
                                     chanStr.toInt() - 1));
     }
-    cout << "reduceChannelsSlot: excludeList = ";
+	std::cout << "reduceChannelsSlot: excludeList = ";
     for(const int & in : excludeList)
     {
-        cout << in << "  ";
+		std::cout << in << "  ";
     }
-    cout << endl;
+	std::cout << std::endl;
 
     QDir localDir(def::dir->absolutePath());
 	localDir.cd("Reals");
@@ -282,13 +280,13 @@ void MainWindow::reduceChannelsSlot()
         localNs = def::ns;
         helpString = (localDir.absolutePath()
                                               + slash + fileName);
-        readPlainData(helpString, dataR, NumOfSlices);
+		myLib::readPlainData(helpString, dataR, NumOfSlices);
         for(const int & exclChan : excludeList)
         {
             dataR.eraseRow(exclChan);
             --localNs;
         }
-        writePlainData(helpString, dataR, localNs, NumOfSlices);
+		myLib::writePlainData(helpString, dataR, localNs, NumOfSlices);
     }
 
     def::ns -= excludeList.size();
@@ -300,7 +298,7 @@ void MainWindow::reduceChannelsSlot()
     helpString += QString::number(def::ns);
     ui->textEdit->append(helpString);
 
-    cout << "reduceChannelsSlot: finished";
+	std::cout << "reduceChannelsSlot: finished";
 #endif
 }
 
@@ -309,7 +307,7 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
 {
     if(inPath.isEmpty())
     {
-        cout << "concatenateEDFs: input list is empty" << endl;
+		std::cout << "concatenateEDFs: input list is empty" << std::endl;
         return;
     }
     QTime myTime;
@@ -324,7 +322,8 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
     }
     resultEdf->writeEdfFile(outPath);
     delete resultEdf;
-    cout << "concatenateEDF: " << getFileName(outPath) << "\ttime = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "concatenateEDF: " << myLib::getFileName(outPath)
+			  << "\ttime = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
 void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPath)
@@ -334,7 +333,8 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
     QStringList lst;
     lst << inPath1 << inPath2;
     concatenateEDFs(lst, outPath);
-    cout << "concatenateEDFs: " << getFileName(outPath) << "\ttime = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "concatenateEDFs: " << myLib::getFileName(outPath)
+			  << "\ttime = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
 void MainWindow::constructEDFSlot()
@@ -355,13 +355,13 @@ void MainWindow::constructEDFSlot()
                 + slash + def::ExpName.left(3)
                 + "_splitZerosLog.txt";
 
-        ofstream outStream;
+		std::ofstream outStream;
         outStream.open(helpString.toStdString());
         outStream << def::ExpName.left(3).toStdString() << "\t";
         outStream << "type" << "\t";
         outStream << "sessn" << "\t";
         outStream << "offset" << "\t";
-        outStream << "offsetS" << endl;
+		outStream << "offsetS" << std::endl;
         outStream.close();
 
         for(int i = 0; i < 3; ++i) //every type 0-count, 1-track, 2-composed, 3-rest
@@ -440,7 +440,7 @@ void MainWindow::constructEDFSlot()
         setEdfFile(initEDF);
     }
     ui->progressBar->setValue(0);
-    cout << "constructEdf: FULL time = " << myTime.elapsed()/1000. << " sec" << endl;
+	std::cout << "constructEdf: FULL time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 
     helpString = "constructEdf finished\n";
     helpString += "ns equals to ";
@@ -478,7 +478,7 @@ void MainWindow::constructEDF(const QString & newPath,
     }
     if(lst.isEmpty())
     {
-		cout << "constructEDF: list of Reals is empty. filter[0] = " << nameFilters[0].toStdString() << endl;
+		std::cout << "constructEDF: list of Reals is empty. filter[0] = " << nameFilters[0].toStdString() << std::endl;
         return;
     }
 
@@ -492,17 +492,17 @@ void MainWindow::constructEDF(const QString & newPath,
         helpString = (def::dir->absolutePath()
 											  + slash + "Reals"
                                               + slash + fileName);
-        readPlainData(helpString, newData, NumOfSlices, currSlice);
+		myLib::readPlainData(helpString, newData, NumOfSlices, currSlice);
         currSlice += NumOfSlices;
     }
-//    cout << "constructEDF: slices read from Reals = " << currSlice << endl;
+//    std::cout << "constructEDF: slices read from Reals = " << currSlice << std::endl;
 
     int helpInt = currSlice;
 
     /// why do I need this?
     if(currSlice < 16 * def::freq)
     {
-        cout << "constructEDF: too little data 1 =  " << currSlice << endl;
+		std::cout << "constructEDF: too little data 1 =  " << currSlice << std::endl;
         return;
     }
 
@@ -511,21 +511,21 @@ void MainWindow::constructEDF(const QString & newPath,
 //    if(globalEdf.getMatiFlag())
     if(ui->matiCheckBox->isChecked()) // bicycle generality
     {
-        QString fileName = getFileName(newPath);
+		QString fileName = myLib::getFileName(newPath);
         helpString = def::dir->absolutePath()
                      + slash + def::ExpName.left(3)
                      + "_splitZerosLog.txt";
 
-		splitZeros(newData, helpInt, currSlice, helpString, fileName); // helpString unchanged
+		myLib::splitZeros(newData, helpInt, currSlice, helpString, fileName); // helpString unchanged
 
-        ofstream outStream;
-        outStream.open(helpString.toStdString(), ios_base::app);
+		std::ofstream outStream;
+		outStream.open(helpString.toStdString(), std::ios_base::app);
 
         if(ui->roundOffsetCheckBox->isChecked())
         {
             if(currSlice < 16 * def::freq)
             {
-                cout << "too little data to construct edf" << endl;
+				std::cout << "too little data to construct edf" << std::endl;
                 return;
             }
 
@@ -535,7 +535,7 @@ void MainWindow::constructEDF(const QString & newPath,
 
             if(currSlice <= offset)
             {
-                cout << "constructEDF: too little data " << currSlice << endl;
+				std::cout << "constructEDF: too little data " << currSlice << std::endl;
                 return;
             }
 
@@ -566,7 +566,7 @@ void MainWindow::constructEDF(const QString & newPath,
 
             outStream << "0.000" << "\t"; // start time to exclude
             outStream << offset / def::freq << "\t"; // first time NOT TO exclude
-            outStream << offset / def::freq << endl << endl; // length
+			outStream << offset / def::freq << std::endl << std::endl; // length
             outStream.close();
         }
 
@@ -576,7 +576,7 @@ void MainWindow::constructEDF(const QString & newPath,
         //fix the first resting file
         if(newData[ns - 1][0] == 0)
         {
-            newData[ns - 1][0] = matiCountDecimal("0000 0101 1000 0000"); //as a count session end
+			newData[ns - 1][0] = myLib::matiCountDecimal("0000 0101 1000 0000"); //as a count session end
         }
         else
         {
@@ -585,32 +585,34 @@ void MainWindow::constructEDF(const QString & newPath,
 
         double & firstMarker = newData[ns - 1][0];
         double & lastMarker = newData[ns - 1][currSlice -  1];
-        matiFixMarker(firstMarker); //fix the start marker for this small edf file
-        matiFixMarker(lastMarker);  //fix the last  marker for this small edf file
+		myLib::matiFixMarker(firstMarker); //fix the start marker for this small edf file
+		myLib::matiFixMarker(lastMarker);  //fix the last  marker for this small edf file
 
         //if not one of them is the end of some session
-        if((matiCountBit(firstMarker, 10) == matiCountBit(lastMarker, 10)) || lastMarker == 0)
+		if( (myLib::matiCountBit(firstMarker, 10) == myLib::matiCountBit(lastMarker, 10))
+		   || lastMarker == 0)
         {
             lastMarker = firstMarker
-					+ pow(2, 10) * (matiCountBit(firstMarker, 10) ? -1 : 1); //adjust the last marker
+					+ pow(2, 10) * (myLib::matiCountBit(firstMarker, 10) ? -1 : 1); //adjust the last marker
         }
     }
     else if(ui->splitZerosCheckBox->isChecked())
     {
-		splitZeros(newData, helpInt, currSlice);
+		myLib::splitZeros(newData, helpInt, currSlice);
     }
 
     /// remake with dataType
 
-//    cout << "constructEDF: before writeData\n"
+//    std::cout << "constructEDF: before writeData\n"
 //         << "rows = " << newData.rows() << "   "
 //         << "cols = " << newData.cols() << "   "
-//         << endl;
+//         << std::endl;
     globalEdf.writeOtherData(newData, newPath, chanList); // new to check
 
 //    def::ns = globalEdf.getNs(); /// should test
 
-    cout << "constructEDF: " << getFileName(newPath) << "\ttime = " << myTime.elapsed() / 1000. << " sec" << endl;
+	std::cout << "constructEDF: " << myLib::getFileName(newPath)
+			  << "\ttime = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::eyesFast()  //generality

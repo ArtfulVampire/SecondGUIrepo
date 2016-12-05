@@ -3,9 +3,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-using namespace std;
-using namespace myLib;
-using namespace smallLib;
 using namespace myOut;
 
 void MainWindow::testSuccessive()
@@ -29,13 +26,13 @@ void MainWindow::testSuccessive()
 		/// successive
 		setEdfFile(path + name + "_train.edf");
 
-		cleanDir(path + "Reals");
+		myLib::cleanDir(path + "Reals");
 
 		ui->timeShiftSpinBox->setValue(2.);
 		if(sliceAndCount)
 		{
 			sliceAll();
-			cleanDir(path + "Reals");
+			myLib::cleanDir(path + "Reals");
 
 
 			QStringList windsList;
@@ -53,8 +50,8 @@ void MainWindow::testSuccessive()
 			/// magic constant
 			/// leave last 600 winds (some will fall out further due to zeros)
 			/// REMAKE - leave 120 each type
-			makeFullFileList(path + "winds/fromreal",
-							 windsList, {def::ExpName.left(3) + "_train"});
+			myLib::makeFullFileList(path + "winds/fromreal",
+									windsList, {def::ExpName.left(3) + "_train"});
 			for(int i = 0; i < windsList.length() - 800; ++i) /// constant
 			{
 				QFile::remove(path + "winds/fromreal/" + windsList[i]);
@@ -68,7 +65,7 @@ void MainWindow::testSuccessive()
 		if(sliceAndCount)
 		{
 			sliceAll();
-			cleanDir(path + "Reals");
+			myLib::cleanDir(path + "Reals");
 			countSpectraSimple(1024, 8);
 		}
 		else
@@ -89,7 +86,7 @@ void MainWindow::testSuccessive()
 		net->setSource("w");
 		net->setMode("t"); // train-test
 
-		cout << name << endl;
+		std::cout << name << std::endl;
 		net->successiveProcessing();
 
 		delete net;
@@ -121,7 +118,7 @@ void MainWindow::testNewClassifiers()
 //			net->customF(); /// clean to 3*N train windows
 
 
-//			cout << guy + suff << endl;
+//			std::cout << guy + suff << std::endl;
 //			net->autoClassification();
 
 
@@ -149,10 +146,10 @@ void MainWindow::testNewClassifiers()
 						suc::numGoodNewLimit = i1;
 						suc::learnSetStay = i2;
 						suc::decayRate = i3;
-						cout << guy << endl;
-						cout << suc::numGoodNewLimit << '\t';
-						cout << suc::learnSetStay << '\t';
-						cout << suc::decayRate << endl;
+						std::cout << guy << std::endl;
+						std::cout << suc::numGoodNewLimit << '\t';
+						std::cout << suc::learnSetStay << '\t';
+						std::cout << suc::decayRate << std::endl;
 						net->successiveProcessing();
 					}
 				}
@@ -222,12 +219,12 @@ void MainWindow::BaklushevDraw()
 
 			for(int j = 0; j < numOfReals[i]; ++j)
 			{
-				readFileInLine(spectraPath + slash + lst[i][j], drawMat[i][j]);
+				myLib::readFileInLine(spectraPath + slash + lst[i][j], drawMat[i][j]);
 			}
 		}
 
 
-		double norm = max(drawMat[0].maxVal(), drawMat[1].maxVal());
+		double norm = std::max(drawMat[0].maxVal(), drawMat[1].maxVal());
 		norm = 16;
 		QColor currColor;
 
@@ -238,23 +235,26 @@ void MainWindow::BaklushevDraw()
 		for(int i = 0; i < 2; ++i)
 		{
 			currColor = ((i == 0) ? "blue" : "red");
-			pics[i] = drawTemplate(QString(), true, 1600, 1600);
+			pics[i] = myLib::drawTemplate(QString(), true, 1600, 1600);
 
 			pics[i].save(pictures[i], 0, 100);
 			auto avArr = drawMat[i].averageRow();
 			auto sigmArr = drawMat[i].sigmaOfCols();
 //			norm = max(avArr.max() + sigmArr.max(), drawMat[i].maxVal());
-			drawArrayWithSigma(pictures[i], avArr, sigmArr,
-							   norm,
-							   currColor.name(), 2);
+			myLib::drawArrayWithSigma(pictures[i], avArr, sigmArr,
+									  norm,
+									  currColor.name(), 2);
 
-			pics[i] = drawArrays(pics[i], drawMat[i], false, spectraGraphsNormalization::all,
+			pics[i] = myLib::drawArrays(pics[i],
+										drawMat[i],
+										false,
+										spectraGraphsNormalization::all,
 
-//								 drawMat[i].maxVal(),
-								 norm,
+//										drawMat[i].maxVal(),
+										norm,
 
-								 std::vector<QColor>(drawMat[i].rows(), currColor),
-								 1,
+										std::vector<QColor>(drawMat[i].rows(), currColor),
+										1,
 								 1);
 			pics[i].save(picture[i], 0, 100);
 
@@ -316,7 +316,7 @@ void MainWindow::matiPreprocessingSlot()
             ui->progressBar->setValue(0.);
             QTime myTime;
             myTime.start();
-            cout << "comma->dot replace start" << endl;
+			std::cout << "comma->dot replace start" << std::endl;
 
             char ch;
             QString helpString;
@@ -332,7 +332,7 @@ void MainWindow::matiPreprocessingSlot()
                         + slash + dirList[dirNum]
                         + slash + "amod"
                         + slash + lst[i];
-                fil = fopen(helpString, "r");
+				fil = fopen(helpString, "r");
                 helpString = def::dataFolder
                         + slash + dirList[dirNum]
                         + slash + "amod"
@@ -349,7 +349,7 @@ void MainWindow::matiPreprocessingSlot()
                 ui->progressBar->setValue(i * 100. / lst.length());
             }
 
-            cout << "comma->dot replace finish: time = " << myTime.elapsed()/1000. << " sec" << endl;
+			std::cout << "comma->dot replace finish: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
             ui->progressBar->setValue(0.);
         }
 
@@ -358,7 +358,7 @@ void MainWindow::matiPreprocessingSlot()
             ui->progressBar->setValue(0.);
             QTime myTime;
             myTime.start();
-            cout << "amod.txt -> amod.edf start" << endl;
+			std::cout << "amod.txt -> amod.edf start" << std::endl;
             QString helpString = def::dataFolder + slash + dirList[dirNum] + slash + "amod";
             def::dir->cd(helpString);
             QStringList lst = def::dir->entryList(QStringList("*.txt_")); // _ for corrected logs
@@ -375,13 +375,13 @@ void MainWindow::matiPreprocessingSlot()
                 helpString = def::dataFolder
                         + slash + "auxEdfs"
                         + slash + dirList[dirNum]
-                        + slash + getExpNameLib(lst[i])
+						+ slash + myLib::getExpNameLib(lst[i])
                         + "_amod.edf";
                 tempEdf.writeEdfFile(helpString);
 
                 ui->progressBar->setValue(i * 100. / lst.length());
             }
-            cout << "amod.txt -> amod.edf: time = " << myTime.elapsed()/1000. << " sec" << endl;
+			std::cout << "amod.txt -> amod.edf: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
             ui->progressBar->setValue(0);
         }
 
@@ -389,7 +389,7 @@ void MainWindow::matiPreprocessingSlot()
         {
             QTime myTime;
             myTime.start();
-            cout << "slice edf by sessions start" << endl;
+			std::cout << "slice edf by sessions start" << std::endl;
 
             QString helpString;
             helpString = def::dataFolder
@@ -398,13 +398,13 @@ void MainWindow::matiPreprocessingSlot()
                     + ".edf";
             if(!QFile(helpString).exists())
             {
-                cout << "cant open ExpName_fileSuffix.edf (flagSliceEdfBySessions)" << endl;
+				std::cout << "cant open ExpName_fileSuffix.edf (flagSliceEdfBySessions)" << std::endl;
                 break;
             }
             setEdfFile(helpString);
             sliceMati();
 
-            cout << "slice edf by sessions: time = " << myTime.elapsed()/1000. << " sec" << endl;
+			std::cout << "slice edf by sessions: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
         }
 
 
@@ -412,7 +412,7 @@ void MainWindow::matiPreprocessingSlot()
         {
             QTime myTime;
             myTime.start();
-            cout << "append amod.edf to eeg.edf start" << endl;
+			std::cout << "append amod.edf to eeg.edf start" << std::endl;
 
 
             QString outPath;
@@ -434,7 +434,7 @@ void MainWindow::matiPreprocessingSlot()
 
                     if(!QFile(helpString).exists())
                     {
-                        cout << "cant open session.edf (flagAppendAmodToEeg)" << endl;
+						std::cout << "cant open session.edf (flagAppendAmodToEeg)" << std::endl;
                         continue;
                     }
 
@@ -479,14 +479,14 @@ void MainWindow::matiPreprocessingSlot()
 
                 }
             }
-            cout << "append amod.edf to eeg.edf: time = " << myTime.elapsed()/1000. << " sec" << endl;
+			std::cout << "append amod.edf to eeg.edf: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
         }
 
         if(flagMakeDiffMark) // make files of markers differences
         {
             QTime myTime;
             myTime.start();
-            cout << "make diffMark files start" << endl;
+			std::cout << "make diffMark files start" << std::endl;
 
             edfFile fil;
             QString diffMark;
@@ -512,13 +512,13 @@ void MainWindow::matiPreprocessingSlot()
                     diffMark.replace(".edf", "_diffMark.txt");
 
                     fil.readEdfFile(helpString);
-                    ofstream outStr(diffMark.toStdString().c_str());
-                    outStr << "board" << '\t' << "amod" << '\t' << endl;
+					std::ofstream outStr(diffMark.toStdString().c_str());
+					outStr << "board" << '\t' << "amod" << '\t' << std::endl;
 
                     for(int i = 0; i < fil.getDataLen(); ++i)
                     {
                         if(fil.getData()[fil.getMarkChan()][i] == 0) continue;
-                        if(matiCountBit(fil.getData()[fil.getMarkChan()][i], 14))
+						if(myLib::matiCountBit(fil.getData()[fil.getMarkChan()][i], 14))
                         {
                             for(int j = i - 40; j < i + 40; ++j)
                             {
@@ -535,7 +535,7 @@ void MainWindow::matiPreprocessingSlot()
                 }
             }
 
-            cout << "make diffMark files: time = " << myTime.elapsed()/1000. << " sec" << endl;
+			std::cout << "make diffMark files: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
         }
 
         if(flagSliceSessionsToPieces) // slice constructed eeg+amod files for small pieces
@@ -543,7 +543,7 @@ void MainWindow::matiPreprocessingSlot()
             // not finished
             QTime myTime;
             myTime.start();
-            cout << "slice sessions to pieces start" << endl;
+			std::cout << "slice sessions to pieces start" << std::endl;
 
             QString outPath;
             QString helpString;
@@ -569,7 +569,7 @@ void MainWindow::matiPreprocessingSlot()
 
             sliceMatiPieces(true);
 
-            cout << "slice sessions to pieces: time = " << myTime.elapsed()/1000. << " sec" << endl;
+			std::cout << "slice sessions to pieces: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
         }
     }
 }

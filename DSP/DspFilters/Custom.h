@@ -74,7 +74,7 @@ struct TwoPole : Biquad
 //------------------------------------------------------------------------------
 
 //
-// Gui-friendly Design layer
+// Gui-fristd::endly Design layer
 //
 
 namespace Design {

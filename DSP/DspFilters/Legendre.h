@@ -270,7 +270,7 @@ struct BandStop : PoleFilter <BandStopBase, MaxOrder, MaxOrder*2>
 //------------------------------------------------------------------------------
 
 //
-// Gui-friendly Design layer
+// Gui-fristd::endly Design layer
 //
 
 namespace Design {

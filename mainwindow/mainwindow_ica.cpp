@@ -187,15 +187,15 @@ void MainWindow::ICA() //fastICA
             {
                 ++counter;
 #if 0
-                cout << "before norm" << "\t";
-                cout << i << "\t" << j << "\t";
-                cout << "err = " << doubleRound(sum1, 3) << "\t";
-                cout << "init value = " << doubleRound(centeredMatrix[i][j], 4) << endl;
+				std::cout << "before norm" << "\t";
+				std::cout << i << "\t" << j << "\t";
+				std::cout << "err = " << doubleRound(sum1, 3) << "\t";
+				std::cout << "init value = " << doubleRound(centeredMatrix[i][j], 4) << std::endl;
 #endif
             }
         }
     }
-    cout << "num of errors = " << counter << endl;
+	std::cout << "num of errors = " << counter << std::endl;
 #endif
 
 
@@ -247,7 +247,7 @@ void MainWindow::ICA() //fastICA
 
     for(int i = 0; i < ns; ++i)
     {
-        cout << colsNorms[i].first << "\t" << colsNorms[i].second << endl;
+		std::cout << colsNorms[i].first << "\t" << colsNorms[i].second << std::endl;
     }
 
     double * tempCol = new double [ns];
@@ -296,8 +296,8 @@ void MainWindow::ICA() //fastICA
     for(int i = 0; i < ns; ++i)
     {
         explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
-        cout << "comp = " << i+1 << "\t";
-        cout << "explVar = " << doubleRound(explainedVariance[i], 2) << endl;
+		std::cout << "comp = " << i+1 << "\t";
+		std::cout << "explVar = " << doubleRound(explainedVariance[i], 2) << std::endl;
     }
     //end componets ordering
 #else
@@ -406,10 +406,10 @@ void MainWindow::ICA() //fastICA
             {
                 ++counter;
 #if 0
-                cout << "after norm" << "\t";
-                cout << i << "\t" << j << "\t";
-                cout << "err = " << doubleRound(sum1, 3) << "\t";
-                cout << "init value = " << doubleRound(centeredMatrix[i][j], 4) << endl;
+				std::cout << "after norm" << "\t";
+				std::cout << i << "\t" << j << "\t";
+				std::cout << "err = " << doubleRound(sum1, 3) << "\t";
+				std::cout << "init value = " << doubleRound(centeredMatrix[i][j], 4) << std::endl;
 #endif
             }
         }

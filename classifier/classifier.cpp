@@ -218,14 +218,14 @@ avType Classifier::averageClassification()
     res << smallLib::doubleRound(averageAccuracy, 2) << '\t';
     res << smallLib::doubleRound(kappa, 3) << '\t';
 	res << def::ExpName.toStdString();
-    res << std::endl;
+	res << std::endl;
     res.close();
 
 
-    /// cout
+	/// std::cout
 #if 1
     confusionMatrix.print();
-    std::cout << "average accuracy = "
+	std::cout << "average accuracy = "
 			  << smallLib::doubleRound(averageAccuracy, 2) << '\t';
 	std::cout << "kappa = " << kappa << '\t';
 	std::cout << std::endl << std::endl;

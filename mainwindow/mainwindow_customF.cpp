@@ -2,9 +2,6 @@
 #include "ui_mainwindow.h"
 
 #include <myLib/drw.h>
-using namespace std;
-using namespace myLib;
-using namespace smallLib;
 using namespace myOut;
 
 
@@ -164,7 +161,7 @@ void MainWindow::customFunc()
 				}
 			}
 		}
-//		cout << count << endl;
+//		std::cout << count << std::endl;
 		outFil.close();
 	}
 	allFil.close();
@@ -219,7 +216,7 @@ void MainWindow::customFunc()
 				}
 				if(!peeew)
 				{
-					cout << dr.absolutePath() << ": no " << marker << endl;
+					std::cout << dr.absolutePath() << ": no " << marker << std::endl;
 				}
 			}
 
@@ -250,7 +247,7 @@ void MainWindow::customFunc()
 		dest.cd(deer);
 
 		QString edfF = tmp.entryList(def::edfFilters, QDir::Files, QDir::Time|QDir::Reversed)[0];
-		cout << edfF << endl;
+		std::cout << edfF << std::endl;
 
 		QFile::copy(tmp.absolutePath() + slash + edfF,
 					dest.absolutePath() + slash + edfF);
@@ -503,7 +500,7 @@ exit(0);
     }
     for(auto out : pew)
     {
-        cout << out.first << "\t" << out.second << endl;
+		std::cout << out.first << "\t" << out.second << std::endl;
     }
     exit(0);
     return;
@@ -603,7 +600,7 @@ exit(0);
         readPlainData(helpString,
                       dataMat,
                       newDataLen);
-        cout << newDataLen << endl;
+		std::cout << newDataLen << std::endl;
 
         for(int i = 0; i < 20; ++i)
         {
@@ -614,7 +611,7 @@ exit(0);
         helpString = oneFile;
         helpString.replace("_ica.txt", ".edf");
         helpString = init + helpString;
-        cout << "initFile = " << helpString << endl;
+		std::cout << "initFile = " << helpString << std::endl;
 
         globalEdf.readEdfFile(helpString);
         dataMat[19] = globalEdf.getData()[globalEdf.getMarkChan()];
@@ -622,7 +619,7 @@ exit(0);
         helpString = oneFile;
         helpString.replace(".txt", ".edf");
         helpString = init + helpString;
-        cout << "outFile = " << helpString << endl;
+		std::cout << "outFile = " << helpString << std::endl;
         globalEdf.writeOtherData(dataMat, helpString);
     }
 
@@ -672,7 +669,7 @@ exit(0);
         exit(0);
 
 //        QString helpString1 = "/media/Files/Data/Mati/PYV/PY_3.edf";
-//        cout << fileNameOf(helpString1) << endl;
+//        std::cout << fileNameOf(helpString1) << std::endl;
 
 
 //        ui->matiCheckBox->setChecked(true);

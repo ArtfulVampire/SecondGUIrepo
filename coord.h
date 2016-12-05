@@ -124,8 +124,8 @@ namespace def
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
     const bool OssadtchiFlag = false;
 
-	const bool wirteStartEndLong = true; // for slice
-	const bool redirectStdOutFlag = false; // redirect cout to generalLog.txt
+	const bool writeLongStartEnd = true; // for slice
+	const bool redirectStdOutFlag = false; // redirect std::cout to generalLog.txt
 
 	const QString plainDataExtension = "scg";   // slice common gradient ???
     const QString spectraDataExtension = "psd"; // power spectral density

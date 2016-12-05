@@ -22,7 +22,7 @@ int initMtlb()
 		return -1;
 	}
 	if (!libcwt_rInitialize()){
-        std::cout << "Could not initialize the library." << std::endl;
+		std::cout << "Could not initialize the library." << std::endl;
 		return -2;
 	}
 	auto t1 = std::chrono::high_resolution_clock::now();
@@ -264,13 +264,13 @@ void wavelet(QString filePath,
 	helpDouble = temp.maxVal();
 	//    helpDouble = 800000;
 
-	//    cout << helpDouble << endl;
+	//    std::cout << helpDouble << std::endl;
 	//    helpDouble = 1e5;
 
 	//    /// test for maxVal
 	//    ofstream str;
 	//    str.open("/media/Files/Data/wav.txt", ios_base::app);
-	//    str << helpDouble << endl;
+	//    str << helpDouble << std::endl;
 	//    str.close();
 	//    return;
 
@@ -289,7 +289,7 @@ void wavelet(QString filePath,
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
 		{
-			//            cout << temp[currFreqNum][currSliceNum] << endl;
+			//            std::cout << temp[currFreqNum][currSliceNum] << std::endl;
 			numb = fmin(floor(temp[currFreqNum][currSliceNum] / helpDouble * wvlt::range),
 						wvlt::range);
 

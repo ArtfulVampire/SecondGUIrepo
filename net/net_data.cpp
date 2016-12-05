@@ -1,6 +1,6 @@
 #include "net.h"
-
 #include "ui_net.h"
+
 
 void Net::pushBackDatum(const std::valarray<double> & inDatum,
 					  const uint & inType,
@@ -185,7 +185,7 @@ void Net::loadData(const QString & spectraPath,
 	filesPath = spectraPath;
 
 	std::valarray<double> tempArr;
-//    cout << spectraPath << endl;
+//    std::cout << spectraPath << std::endl;
 	for(uint i = 0; i < leest.size(); ++i)
 	{
 		classCount[i] = 0.;

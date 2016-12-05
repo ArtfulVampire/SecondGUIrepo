@@ -1,9 +1,6 @@
 #include "autos.h"
 #include <myLib/clustering.h>
 
-using std::cout;
-using std::endl;
-using namespace myLib;
 using namespace myOut;
 
 namespace autos
@@ -31,27 +28,27 @@ void filtering_test()
 	signal2[0] = 0.;
 
 	auto sp = myLib::spectreRtoC(signal, fftLen);
-	refilterSpectre(sp, 2 * int(lowFreq / spStep), 2 * int(highFreq / spStep), true);
+	myLib::refilterSpectre(sp, 2 * int(lowFreq / spStep), 2 * int(highFreq / spStep), true);
 	auto signal3 = myLib::spectreCtoRrev(sp);
 
 	auto signal4 = btr::refilterButter(signal, 40, 250., lowFreq, highFreq);
-	cout << signal4.size() << " " << signal.size() << endl;
+	std::cout << signal4.size() << " " << signal.size() << std::endl;
 	signal4 = signal - signal4;
 
 
 
-	drawOneSignal(signal, 600, def::dataFolder + "/init.jpg");
-	drawOneSignal(signal2, 600, def::dataFolder + "/butter.jpg");
-	drawOneSignal(signal3, 600, def::dataFolder + "/fft.jpg");
-	drawOneSignal(signal4, 600, def::dataFolder + "/btr.jpg");
+	myLib::drawOneSignal(signal, 600, def::dataFolder + "/init.jpg");
+	myLib::drawOneSignal(signal2, 600, def::dataFolder + "/butter.jpg");
+	myLib::drawOneSignal(signal3, 600, def::dataFolder + "/fft.jpg");
+	myLib::drawOneSignal(signal4, 600, def::dataFolder + "/btr.jpg");
 
 
 	double lF = 7.5;
 	double hF = 9;
-	drawOneSpectrum(signal , def::dataFolder + "/sp_init.jpg", lF, hF, 250, 0);
-	drawOneSpectrum(signal2, def::dataFolder + "/sp_but.jpg", lF, hF, 250, 0);
-	drawOneSpectrum(signal3, def::dataFolder + "/sp_fft.jpg", lF, hF, 250, 0);
-	drawOneSpectrum(signal4, def::dataFolder + "/sp_btr.jpg", lF, hF, 250, 0);
+	myLib::drawOneSpectrum(signal , def::dataFolder + "/sp_init.jpg", lF, hF, 250, 0);
+	myLib::drawOneSpectrum(signal2, def::dataFolder + "/sp_but.jpg", lF, hF, 250, 0);
+	myLib::drawOneSpectrum(signal3, def::dataFolder + "/sp_fft.jpg", lF, hF, 250, 0);
+	myLib::drawOneSpectrum(signal4, def::dataFolder + "/sp_btr.jpg", lF, hF, 250, 0);
 }
 
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
@@ -217,7 +214,7 @@ void Xenia_TBI()
 														QDir::Files,
 														QDir::Name))
 		{
-			outStr << fileName.remove(".txt") << endl;
+			outStr << fileName.remove(".txt") << std::endl;
 		}
 		outStr.close();
 	}
@@ -233,7 +230,7 @@ void IITP(const QString & dirName, const QString & guyName)
 		if(fileNum == 5) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
-								   guyName + "_" + rightNumber(fileNum, 2);
+								   guyName + "_" + myLib::rightNumber(fileNum, 2);
 		QString filePath;
 		edfFile fil;
 
@@ -393,9 +390,9 @@ void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile)
 
 	if(marksList.size() != marks.size())
 	{
-		cout << "inequal sizes: ";
-		cout << marksList.size() << '\t';
-		cout << marks.size() << endl;
+		std::cout << "inequal sizes: ";
+		std::cout << marksList.size() << '\t';
+		std::cout << marks.size() << std::endl;
 		exit(1);
 	}
 
@@ -416,7 +413,7 @@ void makeRightNumbersCF(const QString & dirPath, int startNum)
 	for(QString str : QDir(dirPath).entryList({"complex*.jpg"}, QDir::Files, QDir::Name))
 	{
 		QStringList parts = str.split(QRegExp("[_\.]"), QString::SkipEmptyParts);
-		QString newName = "cf_" + rightNumber(startNum++, 3) + ".jpg";
+		QString newName = "cf_" + myLib::rightNumber(startNum++, 3) + ".jpg";
 		outStr << newName << '\t' << parts[3] << "\r\n";
 
 		QFile::copy(dirPath + slash + str,
@@ -466,7 +463,7 @@ void makeTableFromRows(const QString & work,
 					+ slash + "table.txt";
 		deer.cd(work);
 	}
-	const QString tableName = getFileName(tablePath);
+	const QString tableName = myLib::getFileName(tablePath);
 
 
 	QFile outStr(tablePath);
@@ -547,10 +544,10 @@ matrix makeTestData(const QString & outPath)
 
 	testSignals = pewM * testSignals;
 
-	writePlainData(outPath,
-				   testSignals);
-	writePlainData(outPath + "_",
-				   testSignals, 2000); // edit out time
+	myLib::writePlainData(outPath,
+						  testSignals);
+	myLib::writePlainData(outPath + "_",
+						  testSignals, 2000); // edit out time
 	return pewM;
 }
 
@@ -629,8 +626,8 @@ void GalyaCut(const QString & path,
 			  QString outPath)
 {
 
-	const QString outDir = getFileName(path) + "_winds";
-	const QString smallsDir = getFileName(path) + "_smalls";
+	const QString outDir = myLib::getFileName(path) + "_winds";
+	const QString smallsDir = myLib::getFileName(path) + "_smalls";
 
 	QDir tmpDir(path);
 	tmpDir.mkdir(smallsDir);
@@ -660,7 +657,7 @@ void GalyaCut(const QString & path,
 #pragma omp for nowait schedule(dynamic,2)
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
-		cout << filesVec[i] << endl;
+		std::cout << filesVec[i] << std::endl;
 		QString helpString = tmpDir.absolutePath() + slash + filesVec[i];
 		edfFile initEdf;
 		initEdf.readEdfFile(helpString, true);
@@ -672,7 +669,7 @@ void GalyaCut(const QString & path,
 			QFile::copy(initEdf.getFilePath(),
 						smallsPath + slash + initEdf.getFileNam());
 
-			cout << "smallFile \t" << initEdf.getFileNam() << endl;
+			std::cout << "smallFile \t" << initEdf.getFileNam() << std::endl;
 			logStream << initEdf.getFilePath() << "\t" << "too small" << "\n";
 			continue;
 		}
@@ -748,7 +745,7 @@ void GalyaWavelets(const QString & inPath,
 //#pragma omp for nowait
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
-		cout << filesVec[i] << endl;
+		std::cout << filesVec[i] << std::endl;
 		QString helpString = tmpDir.absolutePath() + slash + filesVec[i];
 
 		edfFile initEdf;
@@ -781,7 +778,7 @@ void countSpectraFeatures(const QString & filePath,
 	const double alphaMaxLimLeft = 8.;
 	const double alphaMaxLimRight = 13.;
 
-	const QString ExpName = getFileName(filePath, false);
+	const QString ExpName = myLib::getFileName(filePath, false);
 	const QString spectraFilePath = outPath + slash + ExpName + "_spectre.txt";
 	const QString alphaFilePath = outPath + slash + ExpName + "_alpha.txt";
 
@@ -810,10 +807,10 @@ void countSpectraFeatures(const QString & filePath,
 	for(int i = 0; i < numChan; ++i)
 	{
 		/// norming is necessary
-		helpSpectre = spectreRtoR(initEdf.getData()[i]) *
+		helpSpectre = myLib::spectreRtoR(initEdf.getData()[i]) *
 					  (2. / (double(initEdf.getData()[i].size()) * initEdf.getNr()[i]));
-		helpSpectre = smoothSpectre(helpSpectre,
-									ceil(10 * sqrt(dataL / 4096.))); /// magic constant
+		helpSpectre = myLib::smoothSpectre(helpSpectre,
+										   ceil(10 * sqrt(dataL / 4096.))); /// magic constant
 
 		// count individual alpha peak
 		helpDouble = 0.;
@@ -901,7 +898,7 @@ void countChaosFeatures(const QString & filePath,
 	const double stepFreq = 2.;
 	const double hilbertFreqLimit = 40.;
 
-	const QString ExpName = getFileName(filePath, false);
+	const QString ExpName = myLib::getFileName(filePath, false);
 	const QString d2dimFilePath = outPath + slash + ExpName + "_d2_dim.txt";
 	const QString hilbertFilePath = outPath + slash + ExpName + "_med_freq.txt";
 
@@ -943,7 +940,7 @@ void countChaosFeatures(const QString & filePath,
 
 		for(int i = 0; i < numChan; ++i)
 		{
-			helpDouble = fractalDimension(currMat[i]);
+			helpDouble = myLib::fractalDimension(currMat[i]);
 			outDimStr << smallLib::doubleRound(helpDouble, 4) << "\t";
 		}
 
@@ -984,7 +981,7 @@ void countChaosFeatures(const QString & filePath,
 								);
 
 			/// norming is not necessary here
-			envSpec = spectreRtoR(env);
+			envSpec = myLib::spectreRtoR(env);
 			envSpec[0] = 0.;
 #if 0
 			iffreqCounter <= rightFreqLim + stepFreq)
@@ -1033,7 +1030,7 @@ void GalyaProcessing(const QString & procDirPath,
 					 const int numChan,
 					 QString outPath)
 {
-	const QString outDir = getFileName(procDirPath) + "_out";
+	const QString outDir = myLib::getFileName(procDirPath) + "_out";
 
 	QDir dir;
 	dir.cd(procDirPath);
@@ -1064,19 +1061,19 @@ void GalyaProcessing(const QString & procDirPath,
 		/// different checks
 		if(initEdf.getNdr() == 0)
 		{
-			cout << "ndr = 0\t" << filesVec[i] << endl;
+			std::cout << "ndr = 0\t" << filesVec[i] << std::endl;
 			continue;
 		}
 
 
 		if(initEdf.getNs() < numChan)
 		{
-			cout << "GalyaProcessing: too few channels - " << procDirPath << endl;
+			std::cout << "GalyaProcessing: too few channels - " << procDirPath << std::endl;
 			continue;
 		}
 
-		cout << filesList[i] << '\t'
-			 << smallLib::doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << endl;
+		std::cout << filesList[i] << '\t'
+			 << smallLib::doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << std::endl;
 
 
 		countChaosFeatures(helpString, numChan, outPath);
@@ -1220,7 +1217,7 @@ void avTime(const QString & realsDir)
 		res << "w/o both\t" << means[3] << "\r\n\r\n";
 		res.close();
 	}
-	cout << "avTime: finished" << endl;
+	std::cout << "avTime: finished" << std::endl;
 }
 
 
@@ -1327,7 +1324,7 @@ void clustering()
 		}
 	}
 
-//    cout << distOld << endl;
+//    std::cout << distOld << std::endl;
 
 	sammonProj(distOld, types,
 			   "/media/Files/Data/Mati/sammon.jpg");
@@ -1393,9 +1390,9 @@ return;
 
 //        for(int j = 0; j < 3; ++j)
 //        {
-//            cout << (*itt)[j] << '\t';
+//            std::cout << (*itt)[j] << '\t';
 //        }
-//        cout << endl;
+//        std::cout << std::endl;
 	}
 	std::sort(newDists.begin(), newDists.end(), mySort);
 	vector<double> newD;
@@ -1403,7 +1400,7 @@ return;
 	{
 		newD.push_back(newDists[i][0]);
 	}
-//    cout << newD << endl;
+//    std::cout << newD << std::endl;
 
 
 //    helpString = "/media/Files/Data/Mati/clust.jpg";

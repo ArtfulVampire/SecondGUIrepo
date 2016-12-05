@@ -99,13 +99,6 @@ double areSimilarFiles(const QString & path1,
 					   const QString & path2);
 int countSymbolsInFile(const QString & filePath, char inChar);
 
-
-char * strToChar(const QString & input);
-FILE * fopen(QString filePath, const char *__modes);
-char * QStrToCharArr(const QString & input, const int & len = -1);
-
-
-
 template <typename Container>
 uint indexOfMax(const Container & cont);
 

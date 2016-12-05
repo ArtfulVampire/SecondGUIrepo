@@ -249,7 +249,7 @@ struct LowShelf : PoleFilter <LowShelfBase, MaxOrder, MaxOrder*2>
 //------------------------------------------------------------------------------
 
 //
-// Gui-friendly Design layer
+// Gui-fristd::endly Design layer
 //
 
 namespace Design {
@@ -437,7 +437,7 @@ struct OrderBase : TypeClass <FilterClass <MaxOrder> >
 //------------------------------------------------------------------------------
 
 //
-// Gui-friendly Design layer
+// Gui-fristd::endly Design layer
 //
 
 template <int MaxOrder>

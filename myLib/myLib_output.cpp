@@ -34,6 +34,13 @@ QString rightNumber(const unsigned int input, int N) // prepend zeros
 namespace myOut
 {
 
+
+FILE * fopen(QString filePath, const char *__modes)
+{
+	return std::fopen(filePath.toStdString().c_str(), __modes);
+}
+
+
 std::istream & operator>> (std::istream &is, QString & in)
 {
 	std::string tmp;
