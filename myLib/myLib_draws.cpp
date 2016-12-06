@@ -140,75 +140,6 @@ QColor qcolor(int range, int j)
                   255. * exp(- (j - offB) * (j - offB) / (2 * sigmaB * sigmaB)));
 }
 
-QColor mapColor(double minMagn,
-                double maxMagn,
-                const matrix & helpMatrix,
-                int numX, int numY,
-                double partX, double partY,
-                bool colour)
-{
-    double a[4];
-    a[0] = helpMatrix[numY][numX];
-    a[1] = helpMatrix[numY][numX+1];
-    a[2] = helpMatrix[numY+1][numX];
-    a[3] = helpMatrix[numY+1][numX+1];
-
-
-    double val = 0.;
-
-    //mean harmonic
-    if(0)
-    {
-        val = 0.;
-        val += a[0] / (partX * partX + partY * partY) ;
-        val += a[1] / ( (1. - partX) * (1. - partX) + partY * partY ) ;
-        val += a[2] / ( partX * partX + (1. - partY) * (1. - partY) );
-        val += a[3] / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
-
-        val /=    1. / (partX * partX + partY * partY)
-                  + 1. / ( (1. - partX) * (1. - partX) + partY * partY )
-                  + 1. / ( partX * partX + (1. - partY) * (1. - partY) )
-                  + 1. / ( (1. - partX) * (1. - partX) + (1. - partY) * (1. - partY) );
-    }
-
-    //bilinear approximation - OK
-    if(0)
-    {
-        val = 0.;
-        val += a[3] * ( partX * partY );
-        val += a[2] * ( (1. - partX) * partY );
-        val += a[1] * ( partX * (1. - partY) );
-        val += a[0] * ( (1. - partX) * (1. - partY) );
-    }
-
-    //gaussian approximation
-    if(0)
-    {
-        double sigma = 0.45;
-        val = 0;
-        double deltaX;
-        double deltaY;
-        double probeX = numX + partX;
-        double probeY = numY + partY;
-        for(int i = 0; i < 25; ++i) //25 the number of values in helpMatrix
-        {
-            deltaX = (i%5) - probeX;
-            deltaY = (i/5) - probeY;
-			val += helpMatrix[i/5][i%5] * smallLib::gaussian(sqrt(deltaX*deltaX + deltaY*deltaY), sigma);
-        }
-    }
-    if(!colour)
-    {
-        return grayScale(256, ((val - minMagn) / (maxMagn - minMagn))*256.);
-    }
-    else
-    {
-        return hueJet(256, ((val - minMagn) / (maxMagn - minMagn))*256.);
-    }
-}
-
-
-
 void drawMapsICA(const QString &mapsFilePath,
                  const QString &outDir,
                  const QString &outName,
@@ -237,12 +168,6 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
                        const QString &mapsDirPath,
                        const QString &mapsNames)
 {
-//    std::cout << def::ExpName << std::endl;
-//    std::cout << inSpectraFilePath << std::endl;
-//    std::cout << outSpectraFilePath << std::endl;
-//    std::cout << mapsDirPath << std::endl;
-//    std::cout << mapsNames << std::endl;
-
     QPixmap pic;
     pic = QPixmap(inSpectraFilePath);
     QPainter paint;

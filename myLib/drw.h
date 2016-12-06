@@ -189,6 +189,13 @@ QColor hueMatlab(int range, int j);
 QPixmap drawOneMap(const std::valarray<double> & inData,
 				   double maxAbs,
 				   const ColorScale & colorTheme);
+void drawMapsICA(const QString & mapsFilePath,
+				 const QString & outDir,
+				 const QString & outName,
+				 const ColorScale colourTheme);
+QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
+						  const QString & mapsDirPath,
+						  const QString & mapsName);
 
 } // namespace drw
 

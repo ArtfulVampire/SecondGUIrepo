@@ -152,14 +152,6 @@ void drawMannWitneyInLine(const QString & picPath,
 
 
 /// maps + drawings
-
-QColor mapColor(double minMagn, double maxMagn,
-				const matrix & helpMatrix,
-				int numX, int numY,
-				double partX, double partY,
-				bool colour = true);
-// old unused
-
 void drawMapSpline(const matrix & matrixA,
 				   const int numOfColoumn,
 				   const QString & outDir,

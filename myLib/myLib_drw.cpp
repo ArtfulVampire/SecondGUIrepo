@@ -227,10 +227,10 @@ QPixmap drawArray(const QPixmap & templatePic,
 
 
 QPixmap drawArrayWithSigma(const QPixmap & templatePic,
-						const std::valarray<double> & inData,
-						const std::valarray<double> & inSigma,
-						double maxVal,
-						const QColor & color)
+						   const std::valarray<double> & inData,
+						   const std::valarray<double> & inSigma,
+						   double maxVal,
+						   const QColor & color)
 {
 	QPixmap pic = templatePic;
 	QPainter paint;
@@ -289,8 +289,8 @@ QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 			{
 				paint.drawLine(QPointF(X + k,
 									   Y - lowLine[k * indexScale] * norm),
-							   QPointF(X + k,
-									   Y - highLine[k * indexScale] * norm));
+						QPointF(X + k,
+								Y - highLine[k * indexScale] * norm));
 			}
 		}
 	}
@@ -469,8 +469,8 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 		{
 			paint.drawLine(QPointF(X + k,
 								   Y - inData[k * indexScale] * norm),
-						   QPointF(X + (k+1),
-								   Y - inData[(k+1) * indexScale] * norm));
+					QPointF(X + (k+1),
+							Y - inData[(k+1) * indexScale] * norm));
 		}
 	}
 
@@ -899,14 +899,14 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 				// "private" limits
 				// each map frop deep blue to deep red
 				drawArg = (val - minMagn)
-						/ (maxMagn - minMagn) * drawRange;
+						  / (maxMagn - minMagn) * drawRange;
 			}
 			else
 			{
 				// global limits
 				// current variant
 				drawArg = (val + maxAbs)
-						/ (2 * maxAbs) * drawRange;
+						  / (2 * maxAbs) * drawRange;
 			}
 
 			QColor (*colorFunc)(int, int);
@@ -989,9 +989,100 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	}
 }
 
+QString mapPath(const QString & dir,
+				const QString & name,
+				int i)
+{
+	return dir + "/" + name + "_" + QString::number(i) + ".png";
+}
+
+void drawMapsICA(const QString & mapsFilePath,
+				 const QString & outDir,
+				 const QString & outName,
+				 const ColorScale colourTheme)
+{
+	matrix matrixA;
+	myLib::readMatrixFile(mapsFilePath, matrixA);
+	double maxAbs = matrixA.maxAbsVal();
+
+	for(int i = 0; i < matrixA.cols(); ++i)
+	{
+		drawOneMap(matrixA.getCol(i), maxAbs, colourTheme).save(
+					mapPath(outDir, outName, i),
+					nullptr,
+					0);
+	}
+}
+
+QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
+						  const QString & mapsDirPath,
+						  const QString & mapsName)
+{
+	QPixmap pic = inSpectraPic;
+	QPainter paint;
+	paint.begin(&pic);
+
+	QPixmap pic1;
+	QString helpString;
+	QRect earRect;
+
+	const double offsetX = 0.7;
+	const int earSize = 8; //generality
+	const double shitCoeff = 1.05; // smth about width of map on spectra pic
+
+	for(int i = 0; i < 21; ++i) // not more than
+	{
+		helpString = mapPath(mapsDirPath, mapsName, i);
+		if(!QFile::exists(helpString))
+		{
+			std::cout << "drawMapsOnSpectra: no map file found " << helpString.toStdString() << std::endl;
+			break;
+		}
+		pic1 = QPixmap(helpString);
+
+		const double X = myLib::drw::xc[i] + offsetX * myLib::drw::graphWidth;
+		const double Y = myLib::drw::yy[i];
+		const double coeff = (shitCoeff - offsetX) * graphWidth / 2;
+
+		paint.drawPixmap(QRect(X,
+							   Y,
+							   (shitCoeff - offsetX) * myLib::drw::graphWidth,
+							   (shitCoeff - offsetX) * myLib::drw::graphHeight),
+						 pic1);
+
+		paint.setPen(QPen(QBrush("black"), 2));
+
+		//draw the nose
+		// left side
+		paint.drawLine(X + coeff - 4,
+					   Y + 2,
+					   X + coeff,
+					   Y - 6);
+		// right side
+		paint.drawLine(X + coeff + 4,
+					   Y + 2,
+					   X + coeff,
+					   Y - 6);
 
 
+		// left ear
+		earRect = QRect(X - 0.5 * earSize,
+						Y + coeff - earSize,
+						earSize,
+						2 * earSize);
+		paint.drawArc(earRect, 60 * 16, 240 * 16); // degrees
 
+		// right ear
+		earRect = QRect(X + 2 * coeff - 0.5 * earSize,
+						Y + coeff - earSize,
+						earSize,
+						2 * earSize);
+		paint.drawArc(earRect, 240 * 16, 240 * 16); // degrees
+
+	}
+	paint.end();
+	return pic;
+}
 
 
 } // namespace drw
