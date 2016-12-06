@@ -14,23 +14,26 @@ namespace myLib
 // jet
 const double defV = 1.;
 const std::vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
-double red(const int &range, double j, double V = defV, double S = 1.0);
-double green(const int &range, double j, double V = defV, double S = 1.0);
-double blue(const int &range, double j, double V = defV, double S = 1.0);
-QColor hueJet(const int &range, double j);
-// hot-to-cold
+
+double red(int range, int j, double V = defV, double S = 1.0);
+double green(int range, int j, double V = defV, double S = 1.0);
+double blue(int range, int j, double V = defV, double S = 1.0);
+QColor hueJet(int range, int j);
+
 double red1(int range, int j);
 double green1(int range, int j);
 double blue1(int range, int j);
+QColor hueOld(int range, int j);
 
-QColor hueOld(int range, double j, int numOfContours = 0, double V = 0.95, double S = 1.0);
 QColor grayScale(int range, int j);
-
 
 enum class ColorScale {jet,
 					   htc,
 					   gray,
 					   pew};
+
+
+
 void drawColorScale(QString filename, int range, ColorScale type = ColorScale::jet, bool full = false);
 
 void drawRealisation(const QString & inPath);

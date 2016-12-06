@@ -1,5 +1,6 @@
 #include <myLib/drw.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/dataHandlers.h>
 
 namespace myLib
 {
@@ -14,11 +15,16 @@ void setNumOfChans(int in)
 
 int numOfChans(const std::valarray<double> & inData)
 {
+	return numOfChans(inData.size());
+}
+
+int numOfChans(int inDataSize)
+{
 	if(myLib::drw::manualNs > 0) return myLib::drw::manualNs;
 
 	for(const int nch : {19, 23, 20, 21})
 	{
-		if(inData.size() % nch == 0)
+		if(inDataSize % nch == 0)
 		{
 			return nch;
 		}
@@ -342,8 +348,7 @@ QPixmap drawArraysInLine(const matrix & inMatrix,
 	pic.fill();
 	paint.begin(&pic);
 
-	const double offsetY = 1 - 0.1;
-	const double norm = pic.height() * offsetY / inMatrix.maxAbsVal();
+	const double norm = pic.height() * offsetYinLine / inMatrix.maxAbsVal();
 
 	for(uint k = 0; k < inMatrix.rows(); ++k)
 	{
@@ -351,9 +356,9 @@ QPixmap drawArraysInLine(const matrix & inMatrix,
 		for(int i = 0; i < pic.width() - 1; ++i)
 		{
 			paint.drawLine(i,
-						   pic.height() * (offsetY - inMatrix[k][i] * norm),
+						   pic.height() * (offsetYinLine - inMatrix[k][i] * norm),
 						   i + 1,
-						   pic.height() * (offsetY - inMatrix[k][i + 1] * norm) );
+						   pic.height() * (offsetYinLine - inMatrix[k][i + 1] * norm) );
 		}
 	}
 
@@ -365,7 +370,7 @@ QPixmap drawArraysInLine(const matrix & inMatrix,
 		paint.drawLine(i * pic.width() / nch,
 					   0,
 					   i * pic.width() / nch,
-					   offsetY * pic.height());
+					   offsetYinLine * pic.height());
 	}
 	paint.end();
 	return pic;
@@ -484,39 +489,30 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 }
 
 
-void drawMannWitney(const QString & templPath,
-					const trivector<int> & inMW,
-					const std::vector<QColor> & inColors)
+QPixmap drawMannWitney(const QPixmap & templatePic,
+					   const trivector<int> & inMW,
+					   const std::vector<QColor> & inColors)
 {
 
-	QPixmap pic;
+	QPixmap pic = templatePic;
 	QPainter paint;
-
-
-	pic.load(templPath);
 	paint.begin(&pic);
 
+	const int numOfClasses = inMW.size();
+	const int numOfChannels = numOfChans(inMW[0][0].size());
+	const int spLength = inMW[0][0].size() / numOfChannels;
+	const double normX = myLib::drw::graphWidth / spLength;
 
-	const double barWidth = 1/2.;
-	const int barHeight = 5; // pixels
-	const int barHeightStart = 18; // pixels
-	const int barHeightStep = 8; // pixels
-
-	const double graphWidth = paint.device()->width() * coords::scale;
-	const double ext = def::spLength() / graphWidth;
-
-	for(int chanNum = 0; chanNum < def::nsWOM(); ++chanNum)  //exept markers channel
+	for(int chanNum = 0; chanNum < numOfChannels; ++chanNum)  //exept markers channel
 	{
-		const double X = paint.device()->width() * coords::x[chanNum];
-		const double Y = paint.device()->height() * coords::y[chanNum];
-		const int offset = chanNum * def::spLength();
+		const int offset = chanNum * spLength;
 
 		//statistic difference bars
 		int barCounter = 0;
-		for(int h = 0; h < def::numOfClasses(); ++h) // class1
+		for(int h = 0; h < numOfClasses; ++h) // class1
 		{
 
-			for(int l = h + 1; l < def::numOfClasses(); ++l) // class2
+			for(int l = h + 1; l < numOfClasses; ++l) // class2
 			{
 				QColor color1 = QColor(inColors[h]);
 				QColor color2 = QColor(inColors[l]);
@@ -536,9 +532,10 @@ void drawMannWitney(const QString & templPath,
 						paint.setBrush(QBrush(color2));
 					}
 
-					paint.drawRect(X + (j % def::spLength() - barWidth) / ext,
-								   Y + barHeightStart + barHeightStep * barCounter,
-								   2 * barWidth / ext,
+					paint.drawRect(myLib::drw::xc[chanNum] + (j % spLength - barWidth) * normX,
+								   myLib::drw::yc[chanNum] +
+								   barHeightStart + barHeightStep * barCounter,
+								   2 * barWidth * normX,
 								   barHeight);
 				}
 				++barCounter; // height shift of bars
@@ -547,30 +544,25 @@ void drawMannWitney(const QString & templPath,
 	}
 
 	paint.end();
-	pic.save(templPath, 0, 100);
+	return pic;
 }
 
-void drawMannWitneyInLine(const QString & picPath,
-						  const trivector<int> & inMW,
-						  const std::vector<QColor> & inColors)
+QPixmap drawMannWitneyInLine(const QPixmap & templatePic,
+							 const trivector<int> & inMW,
+							 const std::vector<QColor> & inColors)
 {
-	QPixmap pic;
-	pic.load(picPath);
+	QPixmap pic = templatePic;
 	QPainter paint;
 	paint.begin(&pic);
 
-	/// same as drawArraysInLine
-	const double offsetY = 1 - 0.1;
 
-	int num = 0;
+	int num = 0; /// barCounter
 	for(uint k = 0; k < inMW.size(); ++k)
 	{
-		for(uint j = k + 1; j < inMW.size(); ++j)
+		for(uint j = k + 1; j < inMW.size(); ++j) /// inMW[0].size()
 		{
-			const int currTop = pic.height() * (offsetY + (1. - offsetY) * num);
-			const int currBot = pic.height() * (offsetY + (1. - offsetY) * (num + 1));
-//            const int currHeight = currBot - currTop;
-
+			const int currTop = pic.height() * (offsetYinLine + (1. - offsetYinLine) * num);
+			const int currBot = pic.height() * (offsetYinLine + (1. - offsetYinLine) * (num + 1));
 
 			QColor color1 = QColor(inColors[k]);
 			QColor color2 = QColor(inColors[j]);
@@ -588,18 +580,418 @@ void drawMannWitneyInLine(const QString & picPath,
 					paint.setBrush(QBrush(color2));
 				}
 				paint.drawLine(i,
-							 currTop,
-							 i,
-							 currBot);
+							   currTop,
+							   i,
+							   currBot);
 			}
 
 			++num;
 		}
 	}
-	pic.save(picPath, 0, 100);
 	paint.end();
-
+	return pic;
 }
+
+QPixmap drawRealisation(const QString & inPath, int srate)
+{
+	matrix inData;
+	int num = 0;
+	myLib::readPlainData(inPath, inData, num);
+
+	return drawEeg(inData, srate);
+}
+
+QPixmap drawEeg(const matrix & inData,
+				int srate,
+				const std::vector<std::pair<int, QColor>> & colouredChans)
+{
+	QPixmap pic = QPixmap(inData.cols(), myLib::drw::eegPicHeight);
+	QPainter paint;
+	pic.fill();
+	paint.begin(&pic);
+
+	const double norm = 1.;
+
+	for(int chanNum = 0; chanNum < inData.rows(); ++chanNum)
+	{
+		auto it = std::find_if(std::begin(colouredChans), std::end(colouredChans),
+							   [chanNum](const std::pair<int, QColor> & in)
+		{
+			return (in.first == chanNum);
+		}
+		);
+		if(it != std::end(colouredChans))
+		{
+			paint.setPen(QPen(QBrush((*it).second), myLib::drw::penWidth));
+		}
+		else
+		{
+			paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth)); /// default color
+		}
+
+		const double offsetY = (chanNum + 1) * pic.height() / (inData.rows() + 2);
+		for(int currX = 0; currX < pic.width() - 1; ++currX)
+		{
+			paint.drawLine(currX,
+						   offsetY + inData[chanNum][currX] * norm,
+						   currX + 1,
+						   offsetY + inData[chanNum][currX + 1] * norm);
+		}
+	}
+	/// paint seconds marks
+	paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
+	for(int numSec = 0; numSec < inData.cols() / srate; ++numSec)
+	{
+		paint.drawLine(numSec * srate, pic.height(),
+					   numSec * srate, pic.height() - 32);
+		paint.drawText(numSec * srate,
+					   pic.height() - 35,
+					   QString::number(numSec));
+
+		for(int subSec = 1; subSec < 5; ++subSec) /// const 5
+		{
+			paint.drawLine((numSec + subSec / 5.) * srate, pic.height(),
+						   (numSec + subSec / 5.) * srate, pic.height() - 25);
+		}
+	}
+	paint.end();
+	return pic;
+}
+
+
+// hot-to-cold, http://stackoverflow.com/questions/7706339/grayscale-to-red-green-blue-matlab-jet-color-scale
+double redOld(int range, int j)
+{
+	double part = j / double(range);
+	if(0.000 <= part && part <= 0.5) return 0.;
+	else if(0.500 < part && part <= 0.800) return (part - 0.5) / (0.8 - 0.5);
+	else if(0.800 < part && part <= 1.000) return 1.;
+	else return 0.0;
+}
+double greenOld(int range, int j)
+{
+	double part = j / double(range);
+	if(0.000 <= part && part <= 0.2) return part * 5;
+	else if(0.200 < part && part <= 0.800) return 1.;
+	else if(0.800 < part && part <= 1.000) return 1. - (part - 0.8) / (1.0 - 0.8);
+	else return 0.0;
+}
+double blueOld(int range, int j)
+{
+	double part = j / double(range);
+	if(0.000 <= part && part <= 0.2) return 1.;
+	else if(0.200 < part && part <= 0.500) return 1 - (part - 0.2) / (0.5 - 0.2);
+	else if(0.500 < part && part <= 1.000) return 0.;
+	else return 0.0;
+}
+QColor hueOld(int range, int j)
+{
+	if(j > range) j = range;
+	if(j < 0) j = 0;
+
+	return QColor(255. * myLib::drw::redOld(range, j),
+				  255. * myLib::drw::greenOld(range, j),
+				  255. * myLib::drw::blueOld(range, j));
+}
+
+double redMatlab(int range, int j, double V, double S)
+{
+	double part = j / double(range);
+	// matlab
+	if    (0. <= part && part <= myLib::drw::colDots[0]) return V*(1.-S);
+	else if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S);
+	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[1])/(myLib::drw::colDots[2] - myLib::drw::colDots[1]);
+	else if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V;
+	else if(myLib::drw::colDots[3] < part && part <= 1.) return V - V*S*(part-myLib::drw::colDots[3])/(1 - myLib::drw::colDots[3])/2.;
+}
+
+double greenMatlab(int range, int j, double V, double S)
+{
+	double part = j / double(range);
+	// matlab
+	if    (0.0 <= part && part <= myLib::drw::colDots[0]) return V*(1.-S);
+	else if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[0])/(myLib::drw::colDots[1] - myLib::drw::colDots[0]);
+	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V;
+	else if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V - V*S*(part-myLib::drw::colDots[2])/(myLib::drw::colDots[3] - myLib::drw::colDots[2]);
+	else if(myLib::drw::colDots[3] < part && part <= 1.) return V*(1.-S);
+}
+
+double blueMatlab(int range, int j, double V, double S)
+{
+	double part = j / double(range);
+	// matlab
+	if    (0.0 <= part && part <= myLib::drw::colDots[0]) return V -V*S/2. + V*S*(part)/(myLib::drw::colDots[0] - 0.0)/2.;
+	else if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V;
+	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V - V*S*(part-myLib::drw::colDots[1])/(myLib::drw::colDots[2] - myLib::drw::colDots[1]);
+	else if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V*(1.-S);
+	else if(myLib::drw::colDots[3] < part && part <= 1.) return V*(1.-S);
+}
+
+
+QColor hueMatlab(int range, int j)
+{
+	if(j > range) j = range;
+	if(j < 0) j = 0;
+	return QColor(255. * myLib::drw::redMatlab(range, j),
+				  255. * myLib::drw::greenMatlab(range, j),
+				  255. * myLib::drw::blueMatlab(range, j));
+}
+
+double redJet(int range, int j, double V, double S)
+{
+	double part = j / double(range);
+
+	// old
+	if    (0.000 <= part && part <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(part)*3.;
+	else if(0.167 < part && part <= 0.400) return V*(1.-S);
+	else if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
+	else if(0.500 < part && part <= 0.600) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
+	else if(0.600 < part && part <= 0.833) return V;
+	else if(0.833 < part && part <= 1.000) return V - V*S*(part-0.833)/(1.000-0.833)/2.;
+	else return 0.0;
+}
+
+double greenJet(int range, int j, double V, double S)
+{
+	double part = j / double(range);
+	double hlp = 1.0;
+
+	// old
+	if    (0.000 <= part && part <= 0.167) return V*(1.-S);
+	else if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
+	else if(0.400 < part && part <= 0.500) return V-V*S*(1.-hlp);
+	else if(0.500 < part && part <= 0.600) return V-V*S*(1.-hlp);
+	else if(0.600 < part && part <= 0.833) return V-V*S*(1.-hlp) - V*S*hlp*(part-0.600)/(0.833-0.600);
+	else if(0.833 < part && part <= 1.000) return V*(1.-S);
+	else return 0.0;
+}
+
+double blueJet(int range, int j, double V, double S)
+{
+	double part = j / double(range);
+	// old
+	if    (0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
+	else if(0.167 < part && part <= 0.400) return V;
+	else if(0.400 < part && part <= 0.500) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
+	else if(0.500 < part && part <= 0.600) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
+	else if(0.600 < part && part <= 0.833) return V*(1.-S);
+	else if(0.833 < part && part <= 1.000) return V*(1.-S);
+
+
+	else return 0.0;
+}
+QColor hueJet(int range, int j)
+{
+	if(j > range) j = range;
+	if(j < 0) j = 0;
+	return QColor(255. * myLib::drw::redJet(range, j),
+				  255. * myLib::drw::greenJet(range, j),
+				  255. * myLib::drw::blueJet(range, j));
+}
+
+QColor grayScale(int range, int j)
+{
+	if(j > range) j = range;
+	if(j < 0) j = 0;
+	return QColor(255. * (1. - double(j) / range),
+				  255. * (1. - double(j) / range),
+				  255. * (1. - double(j) / range));
+}
+
+
+QPixmap drawOneMap(const std::valarray<double> & inData,
+				   double maxAbs,
+				   const ColorScale & colorTheme)
+{
+	QPixmap pic1 = QPixmap(mapSize, mapSize);
+	QPainter paint1;
+	pic1.fill();
+	paint1.begin(&pic1);
+
+	QPixmap pic2 = QPixmap(mapSize, mapSize);
+	pic2.fill();
+	QPainter paint2;
+	paint2.begin(&pic2);
+
+
+	double val;
+	double drawArg;
+	int drawRange = 256;
+
+	int dim = 7;
+	double scale = double(dim-1) / mapSize;
+
+	matrix helpMatrix(dim, dim, 0.);
+
+	int currIndex = 0.;
+	for(int i = 0; i < dim * dim; ++i)
+	{
+		const int rest = i % dim;
+		const int quot = i / dim;
+
+		if(quot % (dim - 1) == 0|| rest % (dim-1) == 0)  // set 0 to all edge values
+		{
+			helpMatrix[quot][rest] = 0.;
+		}
+		else if(quot == 1
+				&& (rest - 1) * (rest - 3) * (rest - 5) == 0) // ~Fp3, Fpz, Fp4
+		{
+			helpMatrix[quot][rest] = 0.;
+		}
+		else if(quot == 5
+				&& (rest - 1) * (rest - 3) * (rest - 5) == 0) // ~O3, Oz, O4
+		{
+			helpMatrix[quot][rest] = 0.;
+		}
+		else
+		{
+			helpMatrix[quot][rest] = inData[currIndex++];
+		}
+	}
+
+	// some approximation for square - Fp3, Fpz, Fp, O3, Oz, O4
+	helpMatrix[1][1] = (helpMatrix[1][2] + helpMatrix[2][1] + helpMatrix[2][2])/3.;
+	helpMatrix[1][3] = (helpMatrix[1][2] + helpMatrix[1][4] + helpMatrix[2][2] + helpMatrix[2][3] + helpMatrix[2][4])/5.;
+	helpMatrix[1][5] = (helpMatrix[1][4] + helpMatrix[2][4] + helpMatrix[2][5])/3.;;
+	helpMatrix[5][1] = (helpMatrix[4][1] + helpMatrix[4][2] + helpMatrix[5][2])/3.;
+	helpMatrix[5][3] = (helpMatrix[5][2] + helpMatrix[4][2] + helpMatrix[4][3] + helpMatrix[4][4] + helpMatrix[4][5])/5.;
+	helpMatrix[5][5] = (helpMatrix[5][4] + helpMatrix[4][4] + helpMatrix[4][5])/3.;
+
+	const double minMagn = helpMatrix.minVal();
+	const double maxMagn = helpMatrix.maxVal();
+
+	/// splines
+	matrix Ah(5, 6);
+	matrix Bh(5, 6);
+	std::valarray<double> inX(dim);
+	std::valarray<double> inY(dim);
+	std::valarray<double> inYv(dim);
+	std::valarray<double> Av(dim - 1);
+	std::valarray<double> Bv(dim - 1);
+	std::iota(std::begin(inX), std::end(inX), 0); // hope, it's constant
+
+	for(int i = 1; i < dim - 1; ++i) // number of helpMatrix row
+	{
+		inY = helpMatrix[i];
+		myLib::splineCoeffCount(inX, inY, dim, Ah[i - 1], Bh[i - 1]); // horizontal splines coeffs
+	}
+
+	for(int x = 0; x < mapSize; ++x)
+	{
+		for(int k = 1; k < dim - 1; ++k)
+		{
+			inY = helpMatrix[k]; // set inX and inY for k'th row of helpMatrix
+			inYv[k] = myLib::splineOutput(inX, inY, dim, Ah[k - 1], Bh[k - 1], x * scale);
+		}
+		inYv[0] = 0.;
+		inYv[dim - 1] = 0.;
+
+		splineCoeffCount(inX, inYv, dim, Av, Bv);
+		for(int y = 0; y < mapSize; ++y)
+		{
+			/// round shape
+			if(smallLib::distance(x, y, mapSize / 2, mapSize / 2) >
+			   mapSize * 2. * sqrt(2.) / (dim - 1) ) continue;
+
+			val = myLib::splineOutput(inX, inYv, dim, Av, Bv, y * scale);
+			if(maxAbs == 0)
+			{
+				// "private" limits
+				// each map frop deep blue to deep red
+				drawArg = (val - minMagn)
+						/ (maxMagn - minMagn) * drawRange;
+			}
+			else
+			{
+				// global limits
+				// current variant
+				drawArg = (val + maxAbs)
+						/ (2 * maxAbs) * drawRange;
+			}
+
+			QColor (*colorFunc)(int, int);
+			switch(colorTheme)
+			{
+			case ColorScale::jet:
+			{
+				colorFunc = myLib::drw::hueJet; break;
+			}
+			case ColorScale::htc:
+			{
+				colorFunc = myLib::drw::hueOld; break;
+			}
+			case ColorScale::gray:
+			{
+				colorFunc = myLib::drw::grayScale; break;
+			}
+			case ColorScale::matlab:
+			{
+				colorFunc = myLib::drw::hueMatlab; break;
+			}
+			}
+			paint1.setBrush(QBrush(colorFunc(drawRange, drawArg)));
+			paint1.setPen(colorFunc(drawRange, drawArg));
+			paint2.setBrush(QBrush(colorFunc(drawRange, drawRange - drawArg)));
+			paint2.setPen(colorFunc(drawRange, drawRange - drawArg));
+
+			paint1.drawPoint(x,y);
+			paint2.drawPoint(x,y);
+		}
+	}
+
+	if(1) //draw channels locations
+	{
+		// zero for absent electrodes
+		helpMatrix[1][1] = 0.;
+		helpMatrix[1][3] = 0.;
+		helpMatrix[1][5] = 0.;
+		helpMatrix[5][1] = 0.;
+		helpMatrix[5][3] = 0.;
+		helpMatrix[5][5] = 0.;
+
+		paint1.setBrush(QBrush("black"));
+		paint1.setPen("black");
+		paint2.setBrush(QBrush("black"));
+		paint2.setPen("black");
+		for(int i = 0; i < dim; ++i)
+		{
+			for(int j = 0; j < dim; ++j)
+			{
+				if(helpMatrix[i][j] != 0.)
+				{
+					paint1.drawEllipse(j / scale - 1, i / scale - 1, 2, 2);
+					paint2.drawEllipse(j / scale - 1, i / scale - 1, 2, 2);
+				}
+			}
+		}
+	}
+	double sum = helpMatrix.sum();
+
+	paint1.end();
+	paint2.end();
+
+	//+- solver
+	if(abs(maxMagn) > 1.5 * abs(minMagn))
+	{
+		return pic1;
+	}
+	else if(1.5 * abs(maxMagn) < abs(minMagn))
+	{
+		return pic2;
+	}
+	else if(sum >= 0.)
+	{
+		return pic1;
+	}
+	else if(sum < 0.)
+	{
+		return pic2;
+	}
+}
+
+
+
+
 
 
 } // namespace drw

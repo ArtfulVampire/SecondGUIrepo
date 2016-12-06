@@ -36,7 +36,7 @@ double blue1(int range, int j)
 }
 
 //jet
-double red(const int & range, double j, double V, double S)
+double red(int range, int j, double V, double S)
 {
     double part = j / double(range);
     // matlab
@@ -54,7 +54,7 @@ double red(const int & range, double j, double V, double S)
     else if(0.833 < part && part <= 1.000) return V - V*S*(part-0.833)/(1.000-0.833)/2.;
     else return 0.0;
 }
-double green(const int & range, double j, double V, double S)
+double green(int range, int j, double V, double S)
 {
     double part = j / double(range);
     double hlp = 1.0;
@@ -74,7 +74,7 @@ double green(const int & range, double j, double V, double S)
     else return 0.0;
 }
 
-double blue(const int & range, double j, double V, double S)
+double blue(int range, int j, double V, double S)
 {
     double part = j / double(range);
 
@@ -96,32 +96,25 @@ double blue(const int & range, double j, double V, double S)
     else return 0.0;
 }
 
-QColor hueJet(const int & range, double j)
+QColor hueJet(int range, int j)
 {
-	if(j > range) j = range; //bicycle for no black colour
-	if(j < 0) j = 0; //bicycle for no black colour
-	//    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
+	if(j > range) j = range;
+	if(j < 0) j = 0;
 	return QColor(255. * red(range, j),
 				  255. * green(range, j),
 				  255. * blue(range, j));
 }
 
 // hot to cold
-QColor hueOld(int range, double j, int numOfContours, double V, double S)
+QColor hueOld(int range, int j)
 {
-    if(j > range) j = range; //bicycle for no black colour
-    if(j < 0) j = 0; //bicycle for no black colour
+	if(j > range) j = range;
+	if(j < 0) j = 0;
 
-    for(int i = 1; i < numOfContours + 1; ++i)
-    {
-        if(fabs(j/range - double(i)/(numOfContours + 1)) < 0.003)
-        {
-            return QColor("black");
-        }
-    }
-    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
+	return QColor(255. * red1(range, j),
+				  255. * green1(range, j),
+				  255. * blue1(range, j));
 }
-
 
 QColor grayScale(int range, int j)
 {
@@ -1821,20 +1814,19 @@ void drawColorScale(QString filePath, int range, ColorScale type, bool full)
 
 void drawRealisation(const QString & inPath)
 {
-        matrix inData;
-        int num = 0;
-        readPlainData(inPath, inData, num);
+	matrix inData;
+	int num = 0;
+	readPlainData(inPath, inData, num);
 
-        QString outPath = inPath;
-        outPath.resize(outPath.lastIndexOf('.'));
-        outPath += ".jpg";
+	QString outPath = inPath;
+	outPath.resize(outPath.lastIndexOf('.'));
+	outPath += ".jpg";
 
-        drawEeg(inData,
-                inData.rows(),
-                inData.cols(),
-                def::freq,
-                outPath);
-
+	drawEeg(inData,
+			inData.rows(),
+			inData.cols(),
+			def::freq,
+			outPath);
 }
 
 QPixmap drawEeg(const matrix & dataD,

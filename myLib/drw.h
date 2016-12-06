@@ -23,6 +23,9 @@ const double graphHeight = 250.;
 const double graphWidth = 250.;
 const int lineWidth = 3; // for arrays
 const int penWidth = 2; // for signals
+const double offsetYinLine = 1 - 0.1;
+const int eegPicHeight = 600;
+const int mapSize = 240;
 // Mann-Witney
 const double barWidth = 1/2.;
 const int barHeight = 5;
@@ -50,13 +53,13 @@ const std::valarray<double> y {c(0), c(0),
 			c(3), c(3), c(3), c(3), c(3),
 			c(4), c(4)};
 
-/// for drawTemplate
+/// for drawTemplate - left upper corner of oneTemplate
 const std::valarray<double> xx {(myLib::drw::x + 1/32.) * double(myLib::drw::templateWidth)
 			- myLib::drw::gap};
 const std::valarray<double> yy {(myLib::drw::y + 6/32.) * double(myLib::drw::templateHeight)
 			- myLib::drw::graphHeight - myLib::drw::gap};
 
-/// for drawOneArray
+/// for drawOneArray - start of signal drawing
 const std::valarray<double> xc {(myLib::drw::x + 1/32.) * double(myLib::drw::templateWidth)};
 const std::valarray<double> yc {(myLib::drw::y + 6/32.) * double(myLib::drw::templateHeight)};
 
@@ -67,6 +70,7 @@ const std::valarray<double> yc {(myLib::drw::y + 6/32.) * double(myLib::drw::tem
 extern int manualNs;
 void setNumOfChans(int in);
 int numOfChans(const std::valarray<double> & inData);
+int numOfChans(int inDataSize);
 
 /// big funcs
 /// ones
@@ -136,15 +140,55 @@ void cutToChannels(const QString & inSpectraPath,
 				   const QString & outDir,
 				   const QString & fileName);
 
-
+/// for Baklushev
 QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 						   const std::valarray<double> & inData,
 						   const std::valarray<double> & inSigma,
 						   double maxVal = 0.,
 						   const QColor & color = QColor("blue"));
 
+/// Mann-Witney
+QPixmap drawMannWitney(const QPixmap & templatePic,
+					   const trivector<int> & inMW,
+					   const std::vector<QColor> & inColors);
+QPixmap drawMannWitneyInLine(const QPixmap & templatePic,
+							 const trivector<int> & inMW,
+							 const std::vector<QColor> & inColors);
 
 
+/// EEGs
+QPixmap drawRealisation(const QString & inPath, int srate);
+QPixmap drawEeg(const matrix & inData,
+				int srate,
+				const std::vector<std::pair<int, QColor>> & colouredChans = {});
+
+/// colorScales
+enum class ColorScale {jet, htc, gray, matlab};
+const double defV = 1.;
+const double defS = 1.;
+const std::vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
+
+double redJet(int range, int j, double V = defV, double S = defS);
+double greenJet(int range, int j, double V = defV, double S = defS);
+double blueJet(int range, int j, double V = defV, double S = defS);
+QColor hueJet(int range, int j);
+
+double redOld(int range, int j);
+double greenOld(int range, int j);
+double blueOld(int range, int j);
+QColor hueOld(int range, int j);
+
+QColor grayScale(int range, int j);
+
+double redMatlab(int range, int j, double V = defV, double S = defS);
+double greenMatlab(int range, int j, double V = defV, double S = defS);
+double blueMatlab(int range, int j, double V = defV, double S = defS);
+QColor hueMatlab(int range, int j);
+
+/// ica maps
+QPixmap drawOneMap(const std::valarray<double> & inData,
+				   double maxAbs,
+				   const ColorScale & colorTheme);
 
 } // namespace drw
 
