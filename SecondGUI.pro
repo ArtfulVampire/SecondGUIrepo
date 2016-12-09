@@ -69,23 +69,6 @@ SOURCES += main.cpp\
     other/autos.cpp \
     classifier/classifier-data.cpp \
     net/net_data.cpp \
-#    DSP/Documentation.cpp \
-#    DSP/Bessel.cpp \
-#    DSP/Biquad.cpp \
-#    DSP/Butterworth.cpp \
-#    DSP/Cascade.cpp \
-#    DSP/ChebyshevI.cpp \
-#    DSP/ChebyshevII.cpp \
-#    DSP/Custom.cpp \
-#    DSP/Design.cpp \
-#    DSP/Elliptic.cpp \
-#    DSP/Filter.cpp \
-#    DSP/Legendre.cpp \
-#    DSP/Param.cpp \
-#    DSP/PoleFilter.cpp \
-#    DSP/RBJ.cpp \
-#    DSP/RootFinder.cpp \
-#    DSP/State.cpp \
     myLib/myLib_drw.cpp \
     myLib/myLib_wavelet.cpp \
     myLib/myLib_statistics.cpp \
@@ -107,29 +90,6 @@ HEADERS  += mainwindow.h \
     classifier.h \
     autos.h \
     classifierdata.h \
-DSP/DspFilters/Dsp.h \
-#    DSP/DspFilters/Bessel.h \
-#    DSP/DspFilters/Biquad.h \
-#    DSP/DspFilters/Butterworth.h \
-#    DSP/DspFilters/Cascade.h \
-#    DSP/DspFilters/ChebyshevI.h \
-#    DSP/DspFilters/ChebyshevII.h \
-#    DSP/DspFilters/Common.h \
-#    DSP/DspFilters/Custom.h \
-#    DSP/DspFilters/Design.h \
-#    DSP/DspFilters/Elliptic.h \
-#    DSP/DspFilters/Filter.h \
-#    DSP/DspFilters/Layout.h \
-#    DSP/DspFilters/Legendre.h \
-#    DSP/DspFilters/MathSupplement.h \
-#    DSP/DspFilters/Params.h \
-#    DSP/DspFilters/PoleFilter.h \
-#    DSP/DspFilters/RBJ.h \
-#    DSP/DspFilters/RootFinder.h \
-#    DSP/DspFilters/SmoothedFilter.h \
-#    DSP/DspFilters/State.h \
-#    DSP/DspFilters/Types.h \
-#    DSP/DspFilters/Utilities.h \
     myLib/drw.h \
     myLib/signalProcessing.h \
     myLib/wavelet.h \
@@ -138,6 +98,7 @@ DSP/DspFilters/Dsp.h \
     myLib/statistics.h \
     myLib/clustering.h \
     myLib/output.h \
+DSP/DspFilters/Dsp.h \
     myLib/mati.h
 
 FORMS    += mainwindow.ui \

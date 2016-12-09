@@ -1846,7 +1846,7 @@ char * QStrToCharArr(const QString & input, int len = -1)
 	// fixes problem with labels length
 
 	int leng = input.length();
-	if(len <= 0)
+	if(len != -1)
 	{
 		leng = len;
 	}
