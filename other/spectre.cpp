@@ -853,7 +853,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
         h = 0;
         for(int j = 0; j < def::nsWOM(); ++j)
         {
-            if(fabs(data2[j][i]) <= 0.125) ++h; // generality 1/8.
+            if(std::abs(data2[j][i]) <= 0.125) ++h; // generality 1/8.
         }
         if(h == def::nsWOM()) Eyes += 1;
     }

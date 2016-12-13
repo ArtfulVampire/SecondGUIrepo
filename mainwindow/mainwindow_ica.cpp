@@ -180,10 +180,10 @@ void MainWindow::ICA() //fastICA
         std::valarray<double> currCol = components.getCol(j, ns);
         for(int i = 0; i < ns; ++i)
         {
-            sum1 = abs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
+			sum1 = std::abs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
                        / centeredMatrix[i][j]);
             if(sum1 > 0.05
-               && abs(centeredMatrix[i][j]) > 0.5)
+			   && std::abs(centeredMatrix[i][j]) > 0.5)
             {
                 ++counter;
 #if 0
@@ -399,10 +399,10 @@ void MainWindow::ICA() //fastICA
         std::valarray<double> currCol = components.getCol(j, ns);
         for(uint i = 0; i < ns; ++i)
         {
-			sum1 = abs((centeredMatrix[i][j] - smallLib::prod(currCol, matrixA[i]))
+			sum1 = std::abs((centeredMatrix[i][j] - smallLib::prod(currCol, matrixA[i]))
                        / centeredMatrix[i][j]);
             if(sum1 > 0.05
-               && abs(centeredMatrix[i][j]) > 0.5)
+			   && std::abs(centeredMatrix[i][j]) > 0.5)
             {
                 ++counter;
 #if 0

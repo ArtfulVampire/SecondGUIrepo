@@ -12,26 +12,21 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
+	QString dirPath = "/media/Files/Data/AAX";
+	QString edfName = "AAX_final.edf";
+	BaklushevDraw(dirPath, edfName);
+	exit(0);
 
-//	QString wndPath = "/media/Files/Data/FeedbackNew/MIX/SpectraSmooth/winds";
+
+//	QString wndPath = "/media/Files/Data/FeedbackNew/PDI/SpectraSmooth/winds";
 //	QStringList lst = QDir(wndPath).entryList({"*.psd"}, QDir::Files, QDir::Name);
 //	for(int i = 0; i < lst.size() - 800; ++i)
 //	{
 //		QFile::remove(wndPath + "/" + lst[i]);
 //	}
-
-//	const QString p = def::dataFolder + "/AAX/Help/psa/";
-//	matrix ps;
-//	ps.resize(3);
-//	myLib::readFileInLine(p + "AAX_final_class_1.psa", ps[0]);
-//	myLib::readFileInLine(p + "AAX_final_class_2.psa", ps[1]);
-//	myLib::readFileInLine(p + "AAX_final_class_3.psa", ps[2]);
-//	myLib::drw::drawCutOneChannel(myLib::drw::drawArrays(myLib::drw::drawTemplate(),
-//						   ps,
-//						   ps.maxAbsVal()), 10).save(p + "2.jpg");
 //	exit(0);
 
-	return;
+//	return;
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
@@ -44,7 +39,7 @@ void MainWindow::customFunc()
 //	autos::Xenia_TBI();
 //	autos::EEG_MRI();
 
-//	BaklushevDraw();
+
 //	testNewClassifiers();
 //	testSuccessive()
 

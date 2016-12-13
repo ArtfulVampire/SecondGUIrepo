@@ -256,7 +256,7 @@ void countGradient(const coordType & plainCoords,
         gradient[2 * i] /= delta;
         tempCoords[i].first += delta/2.;
 
-        if(fabs(tempCoords[i].first - plainCoords[i].first) > 1e-5)
+		if(std::abs(tempCoords[i].first - plainCoords[i].first) > 1e-5)
         {
 			std::cout << "coords1 changed " << plainCoords[i].first - tempCoords[i].first << std::endl;
         }
@@ -271,7 +271,7 @@ void countGradient(const coordType & plainCoords,
         gradient[2 * i + 1] /= delta;
         tempCoords[i].second += delta/2.;
 
-        if(fabs(tempCoords[i].second - plainCoords[i].second) > 1e-5)
+		if(std::abs(tempCoords[i].second - plainCoords[i].second) > 1e-5)
         {
 			std::cout << "coords2 changed " << plainCoords[i].second - tempCoords[i].second << std::endl;
         }
@@ -540,7 +540,7 @@ void sammonAddDot(const mat & distOld,
         ++iterationsCount;
 
         if(tmpError2 < 1e-10
-           || (fabs(tmpError1 - tmpError2) / tmpError1) < 1e-6
+		   || (std::abs(tmpError1 - tmpError2) / tmpError1) < 1e-6
            || iterationsCount > 100) break;
     }
 	//    std::cout << "NewDot = " << plainCoords[addNum].first << '\t' << plainCoords[addNum].second << std::endl;

@@ -1192,17 +1192,20 @@ edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
 
 		double a = smallLib::correlation(eegMarkSignal, emgMarkSignal);
 
-		if(abs(a) > maxCorr)
+
+
+		if(std::abs(a) >= maxCorr)
 		{
-			maxCorr = abs(a);
+//			std::cout << ">" << std::endl;
+			maxCorr = std::abs(a);
 			offset = searchOffset + startSearchEeg;
-		}
-		if(a > 0.99)
+		}		
+		if(std::abs(a) > 0.99)
 		{
 			break;
 		}
 	}
-
+	std::cout << "maxCorr = " << maxCorr << std::endl;
 	std::cout << "emgPoint = " << startEmg << '\t' << "eegPoint = " << offset << std::endl;
 	this->iitpSyncManual(offset, startEmg, 200);
 	return *this;
@@ -1645,7 +1648,7 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
         for(int j = 0; j < this->ns; ++j)
 		{
             /// for neurotravel cleaning - generality with digmaxmin
-			if(abs(this->edfData[j][currEnd - 1]) >= 30000) break; // do clean
+			if(std::abs(this->edfData[j][currEnd - 1]) >= 30000) break; // do clean
 
 			if(this->edfData[j][currEnd - 1] != 0.)
             {

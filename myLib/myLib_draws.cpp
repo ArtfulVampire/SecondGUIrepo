@@ -465,11 +465,11 @@ void drawMapSpline(const matrix & matrixA,
 
 #if 1
     //+- solver
-    if(fabs(maxMagn) > 1.5 * fabs(minMagn))
+    if(std::abs(maxMagn) > 1.5 * std::abs(minMagn))
     {
         QFile::remove(savePath2);
     }
-    else if(1.5 * fabs(maxMagn) < fabs(minMagn))
+    else if(1.5 * std::abs(maxMagn) < std::abs(minMagn))
     {
         QFile::remove(savePath1);
     }
@@ -671,7 +671,7 @@ QPixmap drawTemplate(const QString & outPath,
         {
 
 			const double cF = currFreq(k);
-			if( abs(cF - std::round(cF)) <= unit / 2. )
+			if( std::abs(cF - std::round(cF)) <= unit / 2. )
             {
                 paint.drawLine(QPointF(X + k,
                                        Y),
@@ -1035,7 +1035,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 					  inMatrix.end(),
 					  [&norm](std::valarray<double> inData)
 		{
-			norm = std::max(norm, abs(inData).max()); // fabs for negative weights e.g.
+			norm = std::max(norm, std::abs(inData).max()); // fabs for negative weights e.g.
 		});
 
 		if(weightsFlag)
@@ -1079,7 +1079,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 				for(int j = 0; j < def::spLength(); ++j)
 				{
 					norm = fmax(norm,
-								fabs(inMatrix[i][def::spLength() * c2 + j])
+								std::abs(inMatrix[i][def::spLength() * c2 + j])
 						   * (1. + (j > 0.7 * def::spLength()) * 0.7) );
 				}
 			}
@@ -1199,7 +1199,7 @@ double drawArrays(const QString & templPath,
                       inMatrix.end(),
 					  [&norm](std::valarray<double> inData)
         {
-			norm = std::max(norm, abs(inData).max()); // fabs for negative weights e.g.
+			norm = std::max(norm, std::abs(inData).max()); // fabs for negative weights e.g.
         });
 
         if(weightsFlag)
@@ -1246,7 +1246,7 @@ double drawArrays(const QString & templPath,
                 for(int j = 0; j < def::spLength(); ++j)
                 {
                     norm = fmax(norm,
-                                fabs(inMatrix[i][def::spLength() * c2 + j])
+                                std::abs(inMatrix[i][def::spLength() * c2 + j])
                            * (1. + (j > 0.7 * def::spLength()) * 0.7) );
                 }
             }

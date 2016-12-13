@@ -234,7 +234,7 @@ void IITP(const QString & dirName, const QString & guyName)
 		QString filePath;
 		edfFile fil;
 
-#if 0
+#if 01
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
 		if(!QFile::exists(filePath)) continue;
@@ -512,7 +512,7 @@ matrix makeTestData(const QString & outPath)
 		y = distr(gen);
 		testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * pi * y); // gauss?
 
-		testSignals[4][i] = fabs(i % 22 - 11); //triangle
+		testSignals[4][i] = std::abs(i % 22 - 11); //triangle
 
 		testSignals[5][i] = rand() % 27; // noise
 

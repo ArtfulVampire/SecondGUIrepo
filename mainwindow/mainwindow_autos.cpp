@@ -2,6 +2,7 @@
 #define AUTOS_CPP
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <myLib/drw.h>
 
 using namespace myOut;
 
@@ -172,96 +173,85 @@ void MainWindow::testNewClassifiers()
 	}
 }
 
-void MainWindow::BaklushevDraw()
+void MainWindow::BaklushevDraw(const QString & workPath, const QString & edfName)
 {
+	QString guy = myLib::getFileName(edfName, false);
 
-	QString dr = "/media/Files/Data/Baklushev";
-	for(QString guy : {"ANO"})
-//	for(QString guy : QDir(dr).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+	QString filePath = workPath + "/" + edfName;
+	if(!QFile::exists(filePath))
 	{
-		QString filePath = dr + slash + guy + slash + guy + "_draw.edf";
-		if(!QFile::exists(filePath)) continue;
-
-		setEdfFile(filePath);
-
-//		readData();
-//		sliceBak(1, 60, "241");
-//		sliceBak(61, 120, "247");
-//		sliceBak(121, 180, "241");
-//		sliceBak(181, 240, "247");
-//		exit(0);
-
-//		sliceAll();
-//		countSpectraSimple(2048, 3);
-//		exit(0);
-
-		Spectre * sp = new Spectre();
-		sp->setFftLength(2048);
-		delete sp;
-
-		QString spectraPath = dr + slash + guy + slash + "SpectraSmooth";
-
-
-
-
-		QPixmap pics[2];
-		int numOfReals[2];
-		QStringList lst[2];
-		QString marker[2] = {"*_241*" , "*_247*"};
-		matrix drawMat[2];
-
-		for(int i = 0; i < 2; ++i)
-		{
-			lst[i] = QDir(spectraPath).entryList({marker[i]});
-			numOfReals[i] = lst[i].size();
-
-			drawMat[i] = matrix(numOfReals[i], 1);
-
-			for(int j = 0; j < numOfReals[i]; ++j)
-			{
-				myLib::readFileInLine(spectraPath + slash + lst[i][j], drawMat[i][j]);
-			}
-		}
-
-
-		double norm = std::max(drawMat[0].maxVal(), drawMat[1].maxVal());
-		norm = 16;
-		QColor currColor;
-
-		const QString picture[2] = {dr + slash + guy + slash + guy + "_picSpat.jpg",
-									dr + slash + guy + slash + guy + "_picVerb.jpg"};
-		const QString pictures[2] = {dr + slash + guy + slash + guy + "_picSpat_2.jpg",
-									dr + slash + guy + slash + guy + "_picVerb_2.jpg"};
-		for(int i = 0; i < 2; ++i)
-		{
-			currColor = ((i == 0) ? "blue" : "red");
-			pics[i] = myLib::drawTemplate(QString(), true, 1600, 1600);
-
-			pics[i].save(pictures[i], 0, 100);
-			auto avArr = drawMat[i].averageRow();
-			auto sigmArr = drawMat[i].sigmaOfCols();
-//			norm = max(avArr.max() + sigmArr.max(), drawMat[i].maxVal());
-			myLib::drawArrayWithSigma(pictures[i], avArr, sigmArr,
-									  norm,
-									  currColor.name(), 2);
-
-			pics[i] = myLib::drawArrays(pics[i],
-										drawMat[i],
-										false,
-										spectraGraphsNormalization::all,
-
-//										drawMat[i].maxVal(),
-										norm,
-
-										std::vector<QColor>(drawMat[i].rows(), currColor),
-										1,
-								 1);
-			pics[i].save(picture[i], 0, 100);
-
-		}
-		exit(7);
+		std::cout << "file doesn't exist: " << filePath << std::endl;
+		std::cout << "nothing will be drawn" << std::endl;
+		return;
 	}
-	exit(2);
+
+	setEdfFile(filePath);
+	readData();
+	Spectre * sp = new Spectre();
+	sp->setFftLength(4096);
+	delete sp;
+
+	QString spectraPath = workPath + "/SpectraSmooth";
+
+	int numOfReals[2];
+	QStringList lst[2];
+	QString marker[2] = {"*_241*" , "*_247*"};
+	matrix drawMat[2];
+
+	for(int i = 0; i < 2; ++i)
+	{
+		lst[i] = QDir(spectraPath).entryList({marker[i]});
+		numOfReals[i] = lst[i].size();
+
+		drawMat[i] = matrix(numOfReals[i], 1);
+
+		for(int j = 0; j < numOfReals[i]; ++j)
+		{
+			myLib::readFileInLine(spectraPath + slash + lst[i][j], drawMat[i][j]);
+		}
+	}
+	double norm = 0;
+
+	std::vector<std::valarray<double>> avArr = {drawMat[0].averageRow(),
+												drawMat[1].averageRow()};
+	std::vector<std::valarray<double>> sigmArr = {drawMat[0].sigmaOfCols(),
+												  drawMat[1].sigmaOfCols()};
+
+
+	QColor currColor[2] = {QColor("blue"), QColor("red")};
+
+	const QString picture[2] = {workPath + "/" + guy + "_picSpat.jpg",
+								workPath + "/" + guy + "_picVerb.jpg"};
+	const QString pictures[2] = {workPath + "/"  + guy + "_picSpat_2.jpg",
+								 workPath + "/"  + guy + "_picVerb_2.jpg"};
+
+
+	/// max val of avArr + sigmArr
+	norm = std::max((avArr[0] + sigmArr[0]).max(), (avArr[1] + sigmArr[1]).max());
+	for(int i = 0; i < 2; ++i)
+	{
+		myLib::drw::drawArrayWithSigma(myLib::drw::drawTemplate(true),
+									   avArr[i],
+									   sigmArr[i],
+									   norm,
+									   currColor[i]).save(pictures[i], nullptr, 100);
+	}
+
+
+	/// max val in any of realisations
+	norm = std::max(drawMat[0].maxVal(), drawMat[1].maxVal());
+	/// draw each realisation spectre
+	for(int i = 0; i < 2; ++i)
+	{
+		myLib::drw::drawArrays(myLib::drw::drawTemplate(),
+							   drawMat[i],
+							   norm,
+							   false,
+							   std::vector<QColor>(drawMat[i].rows(), currColor[i]),
+							   std::vector<int>(drawMat[i].rows(), 1)).save(
+					picture[i], 0, 100);
+
+	}
 }
 
 void MainWindow::countSpectraSimple(int fftLen, int inSmooth)

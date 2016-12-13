@@ -39,7 +39,7 @@ QPixmap drawOneSignal(const std::valarray<double> & inData,
 	pic.fill();
 	paint.begin(&pic);
 
-	const double norm = 0.4 / abs(inData).max();
+	const double norm = 0.4 / std::abs(inData).max();
 	paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
 	for(int i = 0; i < pic.width() - 1; ++i)
 	{
@@ -208,7 +208,6 @@ QPixmap drawArray(const QPixmap & templatePic,
 	matrix dataMat;
 	const int nch = myLib::drw::numOfChans(inData);
 	const int len = inData.size();
-
 	dataMat.resize(nch, len / nch, 0.);
 	for(int i = 0; i < nch; ++i)
 	{
@@ -233,15 +232,13 @@ QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 						   const QColor & color)
 {
 	QPixmap pic = templatePic;
-	QPainter paint;
-	paint.begin(&pic);
-
 
 	if(maxVal <= 0.)
 	{
 		maxVal = (inData + inSigma).max();
 	}
-	double norm = myLib::drw::graphHeight / maxVal;
+	const double norm = myLib::drw::graphHeight / maxVal;
+//	std::cout << norm << std::endl;
 
 	const auto lowLine = inData - inSigma;
 	const auto highLine = inData + inSigma;
@@ -249,63 +246,70 @@ QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 	int numOfChans = myLib::drw::numOfChans(inData);
 	int lineWidth_ = myLib::drw::lineWidth;
 
+
 	for(auto drawLine : std::vector<std::valarray<double>>{inData, lowLine, highLine})
 	{
-		for(int chanNum = 0; chanNum < numOfChans; ++chanNum)  //exept markers channel
-		{
-			myLib::drw::drawArray(templatePic,
-								  drawLine,
-								  color,
-								  false,
-								  maxVal,
-								  lineWidth_);
-
-		}
+		pic = myLib::drw::drawArray(pic,
+									drawLine,
+									color,
+									false,
+									maxVal,
+									lineWidth_);
 		lineWidth_ = 1; // for lowLine and highLine
 	}
 
+
+	QPainter paint;
+	paint.begin(&pic);
+	paint.setPen(QPen(QBrush(color), 1));
 
 	paint.setOpacity(0.5);
 	for(int chanNum = 0; chanNum < numOfChans; ++chanNum)
 	{
 		const double X = myLib::drw::xc[chanNum];
 		const double Y = myLib::drw::yc[chanNum];
+		const int spL = inData.size() / numOfChans;
+		const int offsetX = chanNum * spL;
+		const auto drawData = inData[std::slice(offsetX, spL, 1)];
+
 		/// passage from drawOneArray
-		if(inData.size() < myLib::drw::graphWidth)
+		if(drawData.size() < myLib::drw::graphWidth)
 		{
-			const double indexScale = myLib::drw::graphWidth / inData.size();
-			for(int k = 0; k < inData.size(); ++k)
+			const double indexScale = myLib::drw::graphWidth / drawData.size();
+
+			for(int k = 0; k < drawData.size(); ++k)
 			{
 				paint.drawLine(QPointF(X + k * indexScale,
-									   Y - lowLine[k] * norm),
+									   Y - lowLine[spL * chanNum + k] * norm),
 							   QPointF(X + k * indexScale,
-									   Y - highLine[k] * norm));
+									   Y - highLine[spL * chanNum + k] * norm));
 			}
 		}
 		else
 		{
-			const double indexScale = inData.size() / myLib::drw::graphWidth;
+			const double indexScale = drawData.size() / myLib::drw::graphWidth;
 			for(int k = 0; k < myLib::drw::graphWidth; ++k)
 			{
 				paint.drawLine(QPointF(X + k,
-									   Y - lowLine[k * indexScale] * norm),
+									   Y - lowLine[spL * chanNum + k * indexScale] * norm),
 						QPointF(X + k,
-								Y - highLine[k * indexScale] * norm));
+								Y - highLine[spL * chanNum + k * indexScale] * norm));
 			}
 		}
 	}
 	paint.setOpacity(1.0);
 
 
-
 	//returning norm = max magnitude
-	paint.setPen("black");
-	paint.setFont(QFont("Helvetica", myLib::drw::fontSizeChan));
-	paint.drawText(QPointF(myLib::drw::templateWidth * myLib::drw::c(4),
-						   myLib::drw::templateHeight * myLib::drw::c(0)
-						   + myLib::drw::graphHeight / 2),
-				   QString::number(maxVal) + " mcV^2/Hz");
+//	paint.setPen("black");
+//	paint.setFont(QFont("Helvetica", myLib::drw::fontSizeChan));
+//	paint.drawText(QPointF(myLib::drw::templateWidth * myLib::drw::c(4),
+//						   myLib::drw::templateHeight * myLib::drw::c(0)
+//						   + myLib::drw::graphHeight / 2),
+//				   QString::number(maxVal) + " mcV^2/Hz");
 
+	paint.end();
+	return pic;
 }
 
 QPixmap drawArrays(const QPixmap & templatePic,
@@ -445,8 +449,10 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 	QPainter paint;
 	paint.begin(&pic);
 
-	if(maxVal <= 0.) maxVal = abs(inData).max();
+	if(maxVal <= 0.) maxVal = std::abs(inData).max();
 	const double norm = myLib::drw::graphHeight / maxVal / (weightsFlag + 1);
+
+
 	Y -= weightsFlag * myLib::drw::graphHeight / 2;
 
 	paint.setPen(QPen(QBrush(color), lineWidth_));
@@ -971,11 +977,11 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	paint2.end();
 
 	//+- solver
-	if(abs(maxMagn) > 1.5 * abs(minMagn))
+	if(std::abs(maxMagn) > 1.5 * std::abs(minMagn))
 	{
 		return pic1;
 	}
-	else if(1.5 * abs(maxMagn) < abs(minMagn))
+	else if(1.5 * std::abs(maxMagn) < std::abs(minMagn))
 	{
 		return pic2;
 	}

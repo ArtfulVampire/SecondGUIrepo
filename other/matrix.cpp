@@ -713,7 +713,7 @@ double matrix::maxAbsVal() const
 				  this->myData.end(),
                   [&res](const std::valarray<double> & in)
     {
-		res = std::max(res, abs(in).max());
+		res = std::max(res, std::abs(in).max());
     });
     return res;
 }
@@ -724,7 +724,7 @@ double matrix::minAbsVal() const
 				  this->myData.end(),
                   [&res](const std::valarray<double> & in)
     {
-		res = std::min(res, abs(in).min());
+		res = std::min(res, std::abs(in).min());
     });
     return res;
 }

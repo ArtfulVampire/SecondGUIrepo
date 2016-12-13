@@ -408,7 +408,7 @@ int MannWhitney(const std::valarray<double> & arr1,
 	const double ourValue = (U - average) / dispersion;
 
 	// old
-	if(fabs(ourValue) > beliefLimit)
+	if(std::abs(ourValue) > beliefLimit)
 	{
 //        if(s1 > s2)
 		// new

@@ -576,7 +576,7 @@ int findJump(const std::valarray<double> & inSignal, int startSearch, double num
 	const int lenForSigma = 100;
 	for(int i = startSearch; i < inSignal.size() - 1; ++i)
 	{
-		if(abs(inSignal[i + 1] - inSignal[i]) >
+		if(std::abs(inSignal[i + 1] - inSignal[i]) >
 		   numOfSigmas * smallLib::sigma(inSignal[std::slice(i - lenForSigma, lenForSigma, 1)]))
 		{
 			return i;
@@ -713,7 +713,7 @@ double fractalDimension(const std::valarray<double> & arr,
             coeff = (N - 1) / (floor((N - m) / timeShift)) / timeShift;
             for(int i = 1; i < floor((N - m) / timeShift); ++i)
             {
-				tempL += abs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]) * coeff;
+				tempL += std::abs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]) * coeff;
 
             }
             L += tempL / timeShift;
@@ -746,8 +746,8 @@ double fractalDimension(const std::valarray<double> & arr,
 
         for(int h = 0; h < maxLimit - minLimit; ++h) // drawK, drawL [last] is bottom-left
         {
-			drawX = abs(drawK[h] - minX) / lenX * pic.width() - 3;
-			drawY = (1. - abs(drawL[h] - minY) / lenY) * pic.height() - 3;
+			drawX = std::abs(drawK[h] - minX) / lenX * pic.width() - 3;
+			drawY = (1. - std::abs(drawL[h] - minY) / lenY) * pic.height() - 3;
             pnt.drawRect(QRect(int(drawX), int(drawY), 3, 3));
         }
 
@@ -914,7 +914,7 @@ void countVectorW(matrix & vectorW,
         }
 		std::cout << "vectW num = " << i << "\t";
 		std::cout << "iters = " << counter << "\t";
-		std::cout << "error = " << fabs(sum2 - int(sum2 + 0.5)) << "\t";
+		std::cout << "error = " << std::abs(sum2 - int(sum2 + 0.5)) << "\t";
 		std::cout << "time = " << smallLib::doubleRound(myTime.elapsed() / 1000., 1) << " sec" << std::endl;
     }
 }
@@ -928,7 +928,7 @@ void dealWithEyes(matrix & inData,
     for(int i = 0; i < dataLen; ++i)
     {
 		const std::valarray<double> temp = inData.getCol(i, dimension);
-        if(abs(temp).max() == 0.)
+		if(std::abs(temp).max() == 0.)
         {
             ++eyes;
         }
@@ -1222,7 +1222,7 @@ void svd(const matrix & initialData,
                 break;
             }
             ++counter;
-            if(fabs(dF) < threshold) break; //crucial cap
+            if(std::abs(dF) < threshold) break; //crucial cap
         }
 
         //edit currMatrix
@@ -1557,7 +1557,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 		helpDouble = outHilbert[i] - pow(pow(tempArr[1][i], 2.) +
                                          pow(filteredArr[i], 2.), 0.5);
 		/// could add derivative
-        if(fabs(helpDouble) <= fabs(minD))
+        if(std::abs(helpDouble) <= std::abs(minD))
         {
             minD = helpDouble;
             startReplace = i;
@@ -1705,8 +1705,8 @@ std::valarray<double> fftWindow(int length, const QString & name)
 //		const double beta = 5.; /// [4; 9]
 //		for(int i = 0; i < length; ++i)
 //		{
-//			res[i] = fabs(bes0(beta * sqrt(1 - pow(2 * i - length + 1 / (length - 1), 2)))) /
-//					 fabs(bes0(beta));
+//			res[i] = std::abs(bes0(beta * sqrt(1 - pow(2 * i - length + 1 / (length - 1), 2)))) /
+//					 std::abs(bes0(beta));
 //		}
 //	}
 	/// rectangular

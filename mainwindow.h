@@ -133,7 +133,7 @@ public:
     void concatenateEDFs(QStringList inPath, QString outPath);
 	void customFunc();
 
-	void BaklushevDraw();
+	void BaklushevDraw(const QString & workPath, const QString & edfName);
 	void testNewClassifiers();
 	void testSuccessive();
 
