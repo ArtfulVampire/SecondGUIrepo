@@ -202,6 +202,9 @@ MainWindow::MainWindow() :
         ui->windowLengthSpinBox->setValue(10);
     }
 
+	ui->highFreqFilterDoubleSpinBox->setMaximum(500);
+	ui->lowFreqFilterDoubleSpinBox->setMaximum(500);
+
     ui->numOfIcSpinBox->setMaximum(19); //generality
     ui->numOfIcSpinBox->setMinimum(2);
     ui->numOfIcSpinBox->setValue(19);

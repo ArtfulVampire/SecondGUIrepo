@@ -227,14 +227,14 @@ void IITP(const QString & dirName, const QString & guyName)
 
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-		if(fileNum == 3) break;
+//		if(fileNum == 3) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
 		QString filePath;
 		edfFile fil;
 
-#if 01
+#if 0
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
 		if(!QFile::exists(filePath)) continue;
@@ -243,9 +243,9 @@ void IITP(const QString & dirName, const QString & guyName)
 		filePath = ExpNamePre + "_emg.edf";
 		fil1.writeEdfFile(filePath);
 #endif
-		continue;
+//		continue;
 
-#if 01
+#if 0
 		/// divide ECG chan to prevent oversclaing amplitude
 		filePath = ExpNamePre + "_eeg.edf";
 		if(QFile::exists(filePath))
@@ -262,28 +262,32 @@ void IITP(const QString & dirName, const QString & guyName)
 
 
 
-#if 0
+#if 01
 		/// with filtering
 #if 01
-		/// filter EMG double notch
+		/// filter EMG notch
 		filePath = ExpNamePre + "_emg.edf";
 		if(!QFile::exists(filePath)) continue;
 		fil.readEdfFile(filePath);
 
-		fil.refilter(45, 55, {}, true);
-		fil.refilter(95, 105, {}, true);
+		for(int fr = 50; fr <= 450; fr += 50)
+		{
+			fil.refilter(fr - 5, fr + 5, {}, true);
+		}
 		filePath = ExpNamePre + "_emg_f.edf";
 		fil.writeEdfFile(filePath);
 #endif
+//		continue;
 
 #if 01
 		/// filter EEG edfs, but not ECG
-		filePath = ExpNamePre + "_eeg.edf";
+//		filePath = ExpNamePre + "_eeg.edf";
+		filePath = ExpNamePre + "_eeg_div.edf";
 		if(!QFile::exists(filePath)) continue;
 		fil.readEdfFile(filePath);
 
 		filePath = ExpNamePre + "_eeg_f.edf";
-		fil.refilter(95, 105, {}, true);
+//		fil.refilter(95, 105, {}, true);
 		fil.refilter(45, 55, {}, true);
 		fil.refilter(0.5, 70, filePath);
 #endif

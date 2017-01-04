@@ -569,7 +569,7 @@ std::valarray<double> upsample(const std::valarray<double> & inSignal,
 	}
 
 	res = myDsp::lowPass(res,
-						 oldFreq / rat,
+						 oldFreq / 2, /// whaaaaaaat
 						 newFreq);
 	res *= rat;
 	return res;
@@ -581,7 +581,7 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 								 double newFreq)
 {
 	int rat = oldFreq / newFreq;
-	std::valarray<double> res = myDsp::lowPass(inSignal, 2 * newFreq, oldFreq);
+	std::valarray<double> res = myDsp::lowPass(inSignal, newFreq / 2, oldFreq);
 
 	for(int i = 0; i < inSignal.size() / rat; ++i)
 	{

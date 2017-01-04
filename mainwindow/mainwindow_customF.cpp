@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <myLib/drw.h>
+#include <myLib/iitp.h>
 using namespace myOut;
 
 
@@ -26,11 +27,22 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-	return;
+	iitp::iitpData dt;
+	dt.readEdfFile("/media/Files/Data/iitp/Irina/test4.edf");
+	dt.cutPieces(4);
+//	dt.crossSpectrum(8, 8);
+//	dt.crossSpectrum(8, 22);
+//	dt.crossSpectrum(22, 22);
+	std::complex<double> a = dt.coherency(10, 22, 10);
+	std::cout << a << std::endl;
+	exit(0);
+
+
+//	return;
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
-	autos::IITP("Irina", "Ira");
+//	autos::IITP("Irina", "Ira");
 //	autos::IITP("SelionovV", "Victor");
 //	autos::filtering_test();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
@@ -47,6 +59,20 @@ void MainWindow::customFunc()
 //	return;
 	exit(0);
 	/// further goes unused and old
+
+#if 0
+	/// filtering iitp
+	QString p = "/media/Files/Data/iitp/Irina/";
+	edfFile ir;
+	QFile::copy(p + "Ira_02_emg.edf",
+				p + "1.edf");
+	for(int i = 1; i <=9; ++i)
+	{
+		ir.readEdfFile(p + nm(i) + ".edf");
+		ir.refilter(i * 50 - 5, i * 50 + 5, p + nm(i + 1) + ".edf", true);
+	}
+	exit(0);
+#endif
 
 #if 0
 	/// Baklushev histograms

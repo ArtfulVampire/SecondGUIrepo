@@ -61,6 +61,12 @@ std::ostream & operator << (std::ostream &os, QChar toOut)
 	return os;
 }
 
+std::ostream & operator<< (std::ostream &os, const std::complex<double> & toOut)
+{
+	os << toOut.real() << ((toOut.imag() >= 0.)?" + ":" - ") << std::abs(toOut.imag()) << "i";
+	return os;
+}
+
 template <typename Typ, template <typename> class Cont>
 std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut)
 {
@@ -101,6 +107,7 @@ template std::ostream & operator << (std::ostream & os, const std::list<QString>
 
 // w/o allocators
 template std::ostream & operator << (std::ostream & os, const std::valarray<double> & toOut);
+template std::ostream & operator << (std::ostream & os, const std::valarray<std::complex<double>> & toOut);
 template std::ostream & operator << (std::ostream & os, const std::valarray<int> & toOut);
 template std::ostream & operator << (std::ostream & os, const QList<int> & toOut);
 template std::ostream & operator << (std::ostream & os, const QList<double> & toOut);

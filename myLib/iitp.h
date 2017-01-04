@@ -22,15 +22,17 @@ class iitpData : public edfFile
 {
 private:
 	std::vector<matrix> piecesData;
+	std::vector<std::vector<std::valarray<std::complex<double>>>> crossSpectra;
 
-	int fftLen;
-	double spStep;
+	int fftLen = -1;
+	double spStep = 0.;
 
 public:
 	std::complex<double> coherency(int chan1, int chan2, double freq);
-	std::valarray<std::complex<double>> crossSpectrum(int chan1, int chan2);
+	void crossSpectrum(int chan1, int chan2);
 
 	void setPieces(int mark1 = 10, int mark2 = 20);
+	void cutPieces(int length);
 
 	int setFftLen(); /// determine by piecesData lengths
 	void setFftLen(int in);

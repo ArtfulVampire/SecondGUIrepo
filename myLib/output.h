@@ -3,6 +3,7 @@
 
 #include <ios>
 #include <QString>
+#include <complex>
 
 const QString slash = "/"; // QString(QDir::separator());
 
@@ -30,6 +31,7 @@ FILE * fopen(QString filePath, const char *__modes);
 std::istream & operator>> (std::istream &is, QString & in);
 std::ostream & operator<< (std::ostream &os, const QString & toOut);
 std::ostream & operator<< (std::ostream &os, QChar toOut);
+std::ostream & operator<< (std::ostream &os, const std::complex<double> & toOut);
 
 // containers w/o allocators
 template <typename Typ, template <typename> class Cont>

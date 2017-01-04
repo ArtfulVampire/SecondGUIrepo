@@ -1,5 +1,8 @@
 #include "iitp.h"
 #include <myLib/signalProcessing.h>
+#include <myLib/output.h>
+
+using namespace myOut;
 
 
 namespace iitp
@@ -46,13 +49,42 @@ std::valarray<std::complex<double>> crossSpectrum(
 	return res;
 }
 
+
+/// iitpData class
+
 std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 {
+	if(chan1 > chan2) std::swap(chan1, chan2);
+	int index = freq / this->spStep;
+	index = 4;
+
+	for(std::pair<int, int> a : {
+	std::pair<int, int>(chan1, chan2),
+	std::pair<int, int>(chan2, chan2),
+	std::pair<int, int>(chan1, chan1)
+})
+	{
+//		std::cout << 1 << std::endl;
+		uint b = this->crossSpectra[a.first][a.second].size();
+		if(b == 0)
+		{
+//			std::cout << 2 << std::endl;
+			this->crossSpectrum(a.first, a.second);
+//			std::cout << 3 << std::endl;
+		}
+//		std::cout << this->crossSpectra[a.first][a.second][index] << std::endl;
+	}
+//	exit(0);
+
+	return this->crossSpectra[chan1][chan2][index] /
+			sqrt( this->crossSpectra[chan1][chan1][index] *
+				  this->crossSpectra[chan2][chan2][index]);
 
 }
 
-std::valarray<std::complex<double>> iitpData::crossSpectrum(int chan1, int chan2)
+void iitpData::crossSpectrum(int chan1, int chan2)
 {
+	if(chan1 > chan2) std::swap(chan1, chan2);
 	std::valarray<std::complex<double>> spec1;
 	std::valarray<std::complex<double>> spec2;
 
@@ -61,6 +93,7 @@ std::valarray<std::complex<double>> iitpData::crossSpectrum(int chan1, int chan2
 	std::valarray<std::complex<double>> res =
 			spec1 * myLib::spectreConj(spec2);
 
+
 	for(int i = 1; i < this->piecesData.size(); ++i)
 	{
 		spec1 = myLib::spectreRtoCcomplex(this->piecesData[i][chan1], fftLen);
@@ -68,7 +101,25 @@ std::valarray<std::complex<double>> iitpData::crossSpectrum(int chan1, int chan2
 		res += spec1 * myLib::spectreConj(spec2);
 	}
 	res /= this->piecesData.size();
-	return res;
+
+	this->crossSpectra[chan1][chan2] = res;
+}
+
+void iitpData::cutPieces(int length)
+{
+	this->piecesData.clear();
+	const int numPieces = this->getDataLen() / (this->srate * length);
+	for(int i = 0; i < numPieces; ++i)
+	{
+		this->piecesData.push_back(this->edfData.subCols(length * this->srate * i,
+														 length * this->srate * (i + 1)));
+	}
+	this->setFftLen();
+	this->crossSpectra.resize(this->ns);
+	for(int i = 0; i < this->crossSpectra.size(); ++i)
+	{
+		this->crossSpectra[i].resize(this->ns, {});
+	}
 }
 
 void iitpData::setPieces(int mark1, int mark2)
@@ -98,6 +149,12 @@ void iitpData::setPieces(int mark1, int mark2)
 			}
 		}
 	}
+	this->setFftLen();
+	this->crossSpectra.resize(this->ns);
+	for(int i = 0; i < this->crossSpectra.size(); ++i)
+	{
+		this->crossSpectra[i].resize(this->ns);
+	}
 }
 
 int iitpData::setFftLen()
@@ -107,12 +164,15 @@ int iitpData::setFftLen()
 	{
 		res = std::max(smallLib::fftL(in.cols()), res);
 	}
+	this->fftLen = res;
+	this->spStep = this->srate / double(this->fftLen);
 	return res;
 }
 
 void iitpData::setFftLen(int in)
 {
-	this->fftLen = in;
+	this->fftLen = smallLib::fftL(in);
+	this->spStep = this->srate / this->fftLen;
 }
 
 

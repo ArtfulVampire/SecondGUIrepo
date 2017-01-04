@@ -192,7 +192,7 @@ void MainWindow::refilterDataSlot()
     else
     {
         helpString.replace(".edf",
-                           "_notch"
+						   "_n"
                            + QString::number(lowFreq) + '-' + QString::number(highFreq)
                            + ".edf");
     }

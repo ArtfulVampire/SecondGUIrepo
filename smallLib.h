@@ -9,6 +9,7 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
+#include <complex>
 
 
 template <typename Typ>
@@ -36,6 +37,12 @@ inline bool isInt(const QString & in)
 inline double doubleRound(const double & in, const int & numSigns)
 {
 	return std::round(in * pow(10., numSigns)) / double(pow(10, numSigns));
+}
+
+inline std::complex<double> doubleRound(const std::complex<double> & in, const int & numSigns)
+{
+	return std::complex<double>(doubleRound(in.real(), numSigns),
+								doubleRound(in.imag(), numSigns));
 }
 
 inline double doubleRound(const double & in)
@@ -91,9 +98,10 @@ inline std::valarray<double> pop_front_valar(const std::valarray<double> & in, u
 	return res;
 }
 
-inline void resizeValar(std::valarray<double> & in, int num)
+template <typename Typ>
+inline void resizeValar(std::valarray<Typ> & in, int num)
 {
-	std::valarray<double> temp = in;
+	std::valarray<Typ> temp = in;
 	in.resize(num);
 	std::copy(std::begin(temp),
 			  std::begin(temp) + std::min(in.size(), temp.size()),
@@ -248,6 +256,8 @@ void eraseItems(std::vector<T> & inVect,
 template void eraseItems(std::vector<std::valarray<double>> & inVect, const std::vector<uint> & indices);
 template void eraseItems(std::vector<int> & inVect, const std::vector<uint> & indices);
 template void eraseItems(std::vector<double> & inVect, const std::vector<uint> & indices);
+template void resizeValar(std::valarray<double> & in, int num);
+template void resizeValar(std::valarray<std::complex<double>> & in, int num);
 
 } // namespace smallLib
 
