@@ -45,4 +45,75 @@ std::valarray<std::complex<double>> crossSpectrum(
 	res /= siz;
 	return res;
 }
+
+std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
+{
+
+}
+
+std::valarray<std::complex<double>> iitpData::crossSpectrum(int chan1, int chan2)
+{
+	std::valarray<std::complex<double>> spec1;
+	std::valarray<std::complex<double>> spec2;
+
+	spec1 = myLib::spectreRtoCcomplex(this->piecesData[0][chan1], fftLen);
+	spec2 = myLib::spectreRtoCcomplex(this->piecesData[0][chan2], fftLen);
+	std::valarray<std::complex<double>> res =
+			spec1 * myLib::spectreConj(spec2);
+
+	for(int i = 1; i < this->piecesData.size(); ++i)
+	{
+		spec1 = myLib::spectreRtoCcomplex(this->piecesData[i][chan1], fftLen);
+		spec2 = myLib::spectreRtoCcomplex(this->piecesData[i][chan2], fftLen);
+		res += spec1 * myLib::spectreConj(spec2);
+	}
+	res /= this->piecesData.size();
+	return res;
+}
+
+void iitpData::setPieces(int mark1, int mark2)
+{
+	const int badBeg = -1;
+	int beg = badBeg;
+	for(int i = 0; i < this->edfData.cols(); ++i)
+	{
+		if(this->edfData[this->markerChannel][i] == mark1)
+		{
+			if(beg == badBeg)
+			{
+				std::cout << "iitpData::setPieces: something wrong with markers" << std::endl;
+			}
+			beg = i;
+		}
+		else if(this->edfData[this->markerChannel][i] == mark2)
+		{
+			if(beg == badBeg)
+			{
+				std::cout << "iitpData::setPieces: something wrong with markers" << std::endl;
+			}
+			else
+			{
+				piecesData.push_back(this->edfData.subCols(beg, i));
+				beg = badBeg;
+			}
+		}
+	}
+}
+
+int iitpData::setFftLen()
+{
+	int res = 0;
+	for(const auto & in : this->piecesData)
+	{
+		res = std::max(smallLib::fftL(in.cols()), res);
+	}
+	return res;
+}
+
+void iitpData::setFftLen(int in)
+{
+	this->fftLen = in;
+}
+
+
 } // namespace iitp

@@ -188,7 +188,7 @@ public:
 							   int startSearchEmg,
 							   bool byEeg = false);
 
-private:
+protected:
 //    QString headerInitialInfo = QString();
     std::string headerInitialInfo = std::string();
     int bytes = 256;

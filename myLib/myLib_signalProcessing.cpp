@@ -346,7 +346,7 @@ std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
 		res[i] = (pew[2 * i] * pew[2 * i] + pew[2 * i + 1] * pew[2 * i + 1]) ;
     }
 //	res *= norm;
-    delete []pew;
+	delete[] pew;
 
     return res;
 }

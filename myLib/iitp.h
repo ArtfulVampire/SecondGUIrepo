@@ -6,6 +6,7 @@
 #include <vector>
 #include <cmath>
 #include "matrix.h"
+#include "edffile.h"
 
 namespace iitp
 {
@@ -17,7 +18,7 @@ std::valarray<std::complex<double>> crossSpectrum(
 		const std::vector<std::valarray<double>> & in1,
 		const std::vector<std::valarray<double>> & in2);
 
-class iitpData
+class iitpData : public edfFile
 {
 private:
 	std::vector<matrix> piecesData;
@@ -27,13 +28,12 @@ private:
 
 public:
 	std::complex<double> coherency(int chan1, int chan2, double freq);
-	void readPiecesFromEdf(const QString & edfPath,
-						   int mark1,
-						   int mark2);
+	std::valarray<std::complex<double>> crossSpectrum(int chan1, int chan2);
+
+	void setPieces(int mark1 = 10, int mark2 = 20);
 
 	int setFftLen(); /// determine by piecesData lengths
 	void setFftLen(int in);
-	std::valarray<std::complex<double>> crossSpectrum(int chan1, int chan2);
 
 };
 

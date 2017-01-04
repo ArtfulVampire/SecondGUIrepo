@@ -102,7 +102,8 @@ HEADERS  += mainwindow.h \
     myLib/output.h \
 DSP/DspFilters/Dsp.h \
     myLib/mati.h \
-    myLib/iitp.h
+    myLib/iitp.h \
+    myLib/mySpectre.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

@@ -839,10 +839,10 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
         std::for_each(data2.begin(),
                       data2.end(),
                       [a](std::valarray<double> & in)
-        {
-            std::valarray<double> newArr = in[std::slice(in.size() - a,
-                                            a,
-                                            1)];
+		{
+			std::valarray<double> newArr = in[std::slice(in.size() - a,
+														 a,
+														 1)];
             in = newArr;
         });
     }
