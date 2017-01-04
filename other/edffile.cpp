@@ -209,7 +209,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		////////////////
 
 		this->nr = std::valarray<double> (this->srate, this->ns);
-		// ndr definedlater
+		// ndr defined later
 		this->bytes = 256 * (this->ns + 1);
 
 		this->labels.resize(this->ns);
@@ -227,6 +227,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 
 		this->transducerType = std::vector<QString> (this->ns, myLib::fitString("IITP transducer", 80));
 		this->physDim = std::vector<QString> (this->ns, myLib::fitString("IITPdim", 8));
+
 		this->physMin.resize(this->ns, -2048);
 		this->physMax.resize(this->ns, 2048);
 
@@ -256,6 +257,23 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 												)
 									 );
 		}
+
+		/// add markers channel
+		this->edfData.push_back(std::valarray<double>(this->edfData.cols(), 0.));
+		this->channels.push_back(edfChannel(myLib::fitString("Markers", 16),
+											myLib::fitString("", 80),
+											myLib::fitString("", 8),
+											255,
+											0,
+											255,
+											0,
+											myLib::fitString("", 80),
+											this->srate,
+											myLib::fitString("", 32)
+											)
+								 );
+		this->adjustArraysByChannels();
+
 	}
 }
 

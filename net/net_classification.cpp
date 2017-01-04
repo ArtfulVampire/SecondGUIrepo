@@ -43,6 +43,7 @@ void Net::autoClassification(const QString & spectraDir)
     }
     default: {break;}
     }
+	myClassifier->averageClassification();
     std::cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 

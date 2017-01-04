@@ -450,6 +450,26 @@ std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 	return res;
 }
 
+std::valarray<double> spectreConj(
+		const std::valarray<double> & inputSpectre)
+{
+	std::valarray<double> res{inputSpectre};
+	for(int i = 0; i < res.size() / 2; ++i)
+	{
+		/// check +1 or +0
+		res[2 * i + 1] = - res[2 * i + 1];
+	}
+	return res;
+}
+
+std::valarray<std::complex<double>> spectreConj(
+		const std::valarray<std::complex<double>> & inputSpectre)
+{
+	std::valarray<std::complex<double>> res{inputSpectre};
+	res.apply(std::conj);
+	return res;
+}
+
 std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 								  double leftFreq,
 								  double rightFreq,
@@ -622,11 +642,25 @@ void refilterSpectre(std::valarray<double> & spectr,
 
 
 
-/// Rosetta stone
-void four3(std::valarray<std::complex<double>> & inputArray)
+/// Rosetta stone - to check
+std::valarray<std::complex<double>> spectreCtoCcomplex(
+		const std::valarray<std::complex<double>> & inputArray,
+		int fftLen)
 {
-    // DFT
-    unsigned int N = inputArray.size();
+	/// prepare
+	if(fftLen <= 0)
+	{
+		fftLen = smallLib::fftL(inputArray.size());
+	}
+	std::valarray<std::complex<double>> res(fftLen);
+	std::copy(std::begin(inputArray),
+			  std::end(inputArray),
+			  std::begin(res));
+
+
+
+	// DFT
+	unsigned int N = res.size();
     unsigned int k = N;
     unsigned int n;
     const double thetaT = pi / N;
@@ -643,9 +677,9 @@ void four3(std::valarray<std::complex<double>> & inputArray)
             for (unsigned int a = l; a < N; a += n)
             {
                 unsigned int b = a + k;
-                std::complex<double> t = inputArray[a] - inputArray[b];
-                inputArray[a] += inputArray[b];
-                inputArray[b] = t * T;
+				std::complex<double> t = res[a] - res[b];
+				res[a] += res[b];
+				res[b] = t * T;
             }
             T *= phiT;
         }
@@ -665,14 +699,36 @@ void four3(std::valarray<std::complex<double>> & inputArray)
         if (b > a)
         {
 #if 1
-            std::swap(inputArray[a], inputArray[b]);
+			std::swap(res[a], res[b]);
 #else
-            std::complex<double> t = inputArray[a];
-            inputArray[a] = inputArray[b];
-            inputArray[b] = t;
+			std::complex<double> t = res[a];
+			res[a] = res[b];
+			res[b] = t;
 #endif
         }
     }
+	return res;
+}
+
+std::valarray<std::complex<double>> spectreRtoCcomplex(
+		const std::valarray<double> & inputArray,
+		int fftLen)
+{
+#if 0
+	std::valarray<std::complex<double>> res{inputArray};
+#else
+	std::valarray<std::complex<double>> res(inputArray.size());
+	std::transform(std::begin(inputArray),
+				   std::end(inputArray),
+				   std::begin(res),
+				   [](double in)
+	{
+		return std::complex<double>(in);
+	}
+	);
+#endif
+
+	return spectreCtoCcomplex(res, fftLen);
 }
 
 
@@ -1913,6 +1969,8 @@ void calcSpectre(const std::valarray<double> & inSignal,
         }
     }
 }
+
+
 
 
 void eyesProcessingStatic(const std::vector<int> eogChannels,

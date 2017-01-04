@@ -16,6 +16,7 @@ QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
 
+
 #DSP
 INCLUDEPATH += ./DSP
 LIBS += -L../SecondGUI/DSP -ldspFilters
@@ -74,7 +75,8 @@ SOURCES += main.cpp\
     myLib/myLib_statistics.cpp \
     myLib/myLib_output.cpp \
     myLib/myLib_mati.cpp \
-    myLib/myLib_smallFuncs.cpp
+    myLib/myLib_smallFuncs.cpp \
+    myLib/myLib_iitp.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -99,7 +101,8 @@ HEADERS  += mainwindow.h \
     myLib/clustering.h \
     myLib/output.h \
 DSP/DspFilters/Dsp.h \
-    myLib/mati.h
+    myLib/mati.h \
+    myLib/iitp.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

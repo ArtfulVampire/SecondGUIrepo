@@ -47,7 +47,7 @@ public slots:
         lst = helpString.split(" ");
         for(int j=0; j<lst.length(); ++j)
         {
-            if(lst[j]=="degrees") heat1 = lst[j-1].toDouble();
+			if(lst[j] == "degrees") heat1 = lst[j-1].toDouble();
         }
 
         fgets(a, 50, file);
@@ -57,10 +57,10 @@ public slots:
         {
             if(lst[j]=="degrees") heat2 = lst[j-1].toDouble();
         }
-        temp = fmax(heat1,heat2);
+		temp = fmax(heat1, heat2);
         delete []a;
 
-        if(temp>=85.)
+		if(temp >= 85.)
         {
             std::cout << "CRITICAL temp = " << temp << std::endl;
             sleep(3);

@@ -30,6 +30,11 @@ std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 								   double rightFreq,
 								   double srate = 250.);
 
+std::valarray<double> spectreConj(const std::valarray<double> & inputSpectre);
+
+std::valarray<std::complex<double>> spectreConj(
+		const std::valarray<std::complex<double>> & inputSpectre);
+
 std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre);
 
 std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre);
@@ -42,7 +47,13 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 void four1(double * dataF, int nn, int isign);
 
 /// from Rosetta stone - the same
-void four3(std::valarray<std::complex<double>> & inputArray);
+std::valarray<std::complex<double>> spectreCtoCcomplex(
+		const std::valarray<std::complex<double>> & inputArray,
+		int fftLen = -1);
+std::valarray<std::complex<double>> spectreRtoCcomplex(
+		const std::valarray<double> & inputArray,
+		int fftLen = -1);
+
 
 /// by FFT
 void refilterSpectre(std::valarray<double> & spectr,
@@ -79,6 +90,9 @@ void calcSpectre(const std::valarray<double> & inSignal,
 
 
 
+
+
+
 double fractalDimension(const std::valarray<double> &arr,
 						const QString & picPath = QString());
 
@@ -94,6 +108,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 									QString picPath = QString());
 
 std::valarray<double> bayesCount(const std::valarray<double> & dataIn, int numOfIntervals);
+
 
 /// whaaaaat???
 void splineCoeffCount(const std::valarray<double> & inX,
@@ -157,6 +172,8 @@ void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 e
 
 } // namespace myLib
 
+
+
 namespace btr
 {
 /// from GA fortran
@@ -171,6 +188,9 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 									 double lowFreq,
 									 double highFreq);
 } // namespace btr
+
+
+
 
 namespace myDsp
 {

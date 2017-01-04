@@ -227,7 +227,7 @@ void IITP(const QString & dirName, const QString & guyName)
 
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-		if(fileNum == 5) break;
+		if(fileNum == 3) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
@@ -243,6 +243,7 @@ void IITP(const QString & dirName, const QString & guyName)
 		filePath = ExpNamePre + "_emg.edf";
 		fil1.writeEdfFile(filePath);
 #endif
+		continue;
 
 #if 01
 		/// divide ECG chan to prevent oversclaing amplitude
@@ -351,7 +352,7 @@ void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile)
 	{
 		if(markArr[i] == 239.)
 		{
-			marks.push_back({i, markArr[i]});
+			marks.push_back({double(i), markArr[i]});
 		}
 	}
 
@@ -412,7 +413,7 @@ void makeRightNumbersCF(const QString & dirPath, int startNum)
 
 	for(QString str : QDir(dirPath).entryList({"complex*.jpg"}, QDir::Files, QDir::Name))
 	{
-		QStringList parts = str.split(QRegExp("[_\.]"), QString::SkipEmptyParts);
+		QStringList parts = str.split(QRegExp(R"([_\.])"), QString::SkipEmptyParts);
 		QString newName = "cf_" + myLib::rightNumber(startNum++, 3) + ".jpg";
 		outStr << newName << '\t' << parts[3] << "\r\n";
 

@@ -21,6 +21,7 @@
 #include <QScrollBar>
 #include "mainwindow.h"
 #include "edffile.h"
+#include <functional>
 
 namespace Ui {
     class Cut;
@@ -47,7 +48,7 @@ public slots:
     void prev();
     void cut();
     void zero();
-	void undoZeroSlot();
+	void undoSlot();
     void paint();
     void save();
     void rewrite();
@@ -63,6 +64,8 @@ public slots:
 	void iitpAutoJumpSlot();
 	void iitpManualSlot();
 	void subtractMeansSlot();
+	void set1MarkerSlot();
+	void set2MarkerSlot();
 
 
 protected:
@@ -74,6 +77,11 @@ signals:
 
 private:
     Ui::Cut *ui;
+
+	bool autoFlag;
+
+	void drawSamples();
+
 
     fileType myFileType{fileType::real};
     int leftDrawLimit; /// in slices
@@ -92,14 +100,12 @@ private:
     int leftLimit; /// in slices
 
 	matrix data3{};
-    matrix undoData;
-    int undoBegin{0};
-    int NumOfSlices{0};
+	int NumOfSlices{0};
 
+	std::vector<matrix> undoData;
+	std::function<void(void)> undoAction;
+	std::vector<std::function<void(void)>> undos;
 
-    bool autoFlag;
-
-	void drawSamples();
 
 };
 

@@ -98,7 +98,7 @@ public:
     void readData();
     void sliceWindow(int startSlice, int endSlice, int number, int marker);    
 	void eyesFast();
-    void sliceIlya(const QString &fileName, QString marker);
+	void sliceIlya(const QString & fileName, QString marker);
     void sliceIlya(int marker1, int marker2, QString marker);
     void sliceFromTo(int marker1, int marker2, QString marker);
     void sliceMati();
@@ -109,7 +109,7 @@ public:
     void countSpectraSimple(int fftLen, int inSmooth = -1);
     void sliceOneByOne();
 	void sliceOneByOneNew();
-    void setEdfFile(const QString &filePath);
+	void setEdfFile(const QString & filePath);
 	void makeChanList(std::vector<int> & chanList);
 	void cleanDirsAll(bool);
 
@@ -121,8 +121,8 @@ public:
 					  const double & highFreq,
 					  const QString & newPath,
 					  bool notch);
-	void rereferenceData(const QString newRef,
-						 const QString newPath);
+	void rereferenceData(const QString & newRef,
+						 const QString & newPath);
 	void reduceChannelsEDF(const QString & newFilePath);
 	void constructEDF(const QString & newPath,
 					  const QStringList & nameFilters = QStringList());

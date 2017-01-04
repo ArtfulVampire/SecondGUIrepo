@@ -29,6 +29,7 @@ int numOfChans(int inDataSize)
 			return nch;
 		}
 	}
+	return -1;
 }
 
 QPixmap drawOneSignal(const std::valarray<double> & inData,
@@ -706,9 +707,10 @@ double redMatlab(int range, int j, double V, double S)
 	// matlab
 	if    (0. <= part && part <= myLib::drw::colDots[0]) return V*(1.-S);
 	else if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S);
-	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[1])/(myLib::drw::colDots[2] - myLib::drw::colDots[1]);
+	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[1]) / (myLib::drw::colDots[2] - myLib::drw::colDots[1]);
 	else if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V;
 	else if(myLib::drw::colDots[3] < part && part <= 1.) return V - V*S*(part-myLib::drw::colDots[3])/(1 - myLib::drw::colDots[3])/2.;
+	return 0; /// never happens
 }
 
 double greenMatlab(int range, int j, double V, double S)
@@ -720,6 +722,7 @@ double greenMatlab(int range, int j, double V, double S)
 	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V;
 	else if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V - V*S*(part-myLib::drw::colDots[2])/(myLib::drw::colDots[3] - myLib::drw::colDots[2]);
 	else if(myLib::drw::colDots[3] < part && part <= 1.) return V*(1.-S);
+	return 0; /// never happens
 }
 
 double blueMatlab(int range, int j, double V, double S)
@@ -731,6 +734,7 @@ double blueMatlab(int range, int j, double V, double S)
 	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V - V*S*(part-myLib::drw::colDots[1])/(myLib::drw::colDots[2] - myLib::drw::colDots[1]);
 	else if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V*(1.-S);
 	else if(myLib::drw::colDots[3] < part && part <= 1.) return V*(1.-S);
+	return 0; /// never happens
 }
 
 
@@ -915,7 +919,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 						  / (2 * maxAbs) * drawRange;
 			}
 
-			QColor (*colorFunc)(int, int);
+			QColor (*colorFunc)(int, int) = myLib::drw::grayScale;
 			switch(colorTheme)
 			{
 			case ColorScale::jet:
@@ -984,12 +988,12 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	else if(1.5 * std::abs(maxMagn) < std::abs(minMagn))
 	{
 		return pic2;
-	}
+	}	
 	else if(sum >= 0.)
 	{
 		return pic1;
 	}
-	else if(sum < 0.)
+	else
 	{
 		return pic2;
 	}

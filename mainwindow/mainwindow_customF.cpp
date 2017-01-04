@@ -12,10 +12,10 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-	QString dirPath = "/media/Files/Data/AAX";
-	QString edfName = "AAX_final.edf";
-	BaklushevDraw(dirPath, edfName);
-	exit(0);
+//	QString dirPath = "/media/Files/Data/AAX";
+//	QString edfName = "AAX_final.edf";
+//	BaklushevDraw(dirPath, edfName);
+//	exit(0);
 
 
 //	QString wndPath = "/media/Files/Data/FeedbackNew/PDI/SpectraSmooth/winds";
@@ -26,11 +26,11 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-//	return;
+	return;
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
-//	autos::IITP("Irina", "Ira");
+	autos::IITP("Irina", "Ira");
 //	autos::IITP("SelionovV", "Victor");
 //	autos::filtering_test();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",

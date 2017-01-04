@@ -337,7 +337,9 @@ void MainWindow::showCountSpectra()
 
 void MainWindow::processEyes()
 {
+	readData();
 	const edfFile & fil = globalEdf;
+
     std::vector<int> eegs;
     std::vector<int> eogs;
     for(int i = 0; i < fil.getNs(); ++i)
@@ -402,7 +404,7 @@ void MainWindow::setEdfFileSlot()
     setEdfFile(helpString);
 }
 
-void MainWindow::setEdfFile(QString const &filePath)
+void MainWindow::setEdfFile(const QString & filePath)
 {
     QString helpString;
     helpString = filePath;

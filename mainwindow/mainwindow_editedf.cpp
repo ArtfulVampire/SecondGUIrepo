@@ -32,8 +32,8 @@ void MainWindow::rereferenceDataSlot()
 
 
 
-void MainWindow::rereferenceData(const QString newRef,
-                                 const QString newPath)
+void MainWindow::rereferenceData(const QString & newRef,
+								 const QString & newPath)
 {
     //A1, A2, Ar, N
     //A1-A2, A1-N

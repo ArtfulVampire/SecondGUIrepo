@@ -67,8 +67,12 @@ Cut::Cut() :
 	ui->backwardFrameButton->setShortcut(QKeySequence::Back);
 	ui->forwardFrameButton->setShortcut(tr("e"));
 	ui->backwardFrameButton->setShortcut(tr("q"));
-	QShortcut * undoZero = new QShortcut(QKeySequence(tr("Ctrl+z")), this);
+	QShortcut * undo = new QShortcut(QKeySequence(tr("Ctrl+z")), this);
+	ui->setMark1PushButton->setShortcut(tr("1"));
+	ui->setMark2PushButton->setShortcut(tr("2"));
 
+	ui->mark1LineEdit->setText("10");
+	ui->mark2LineEdit->setText("20");
 
     ui->picLabel->installEventFilter(this);
 	drawSamples();
@@ -100,7 +104,7 @@ Cut::Cut() :
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
 #endif
 
-	QObject::connect(undoZero, SIGNAL(activated()), this, SLOT(undoZeroSlot()));
+	QObject::connect(undo, SIGNAL(activated()), this, SLOT(undoSlot()));
 	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
 	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
@@ -129,6 +133,8 @@ Cut::Cut() :
 	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()), this, SLOT(subtractMeansSlot()));
+	QObject::connect(ui->setMark1PushButton, SIGNAL(clicked()), this, SLOT(set1MarkerSlot()));
+	QObject::connect(ui->setMark2PushButton, SIGNAL(clicked()), this, SLOT(set2MarkerSlot()));
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -849,24 +855,40 @@ void Cut::zero()
 
 
 
-    undoBegin = leftDrawLimit + leftLimit;
-    undoData = data3.subCols(undoBegin,
-                             undoBegin + rightLimit - leftLimit);
+	int undoBegin = leftDrawLimit + leftLimit;
+	undoData.push_back(data3.subCols(undoBegin,
+									 undoBegin + rightLimit - leftLimit));
+
+	undoAction = [undoBegin, this]()
+	{
+		for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
+		{
+			std::copy(std::begin(undoData.back()[k]),
+					  std::end(undoData.back()[k]),
+					  std::begin(data3[k]) + undoBegin);
+		}
+		undoData.pop_back();
+	};
+	undos.push_back(undoAction);
+
+
 
     zeroData(data3,
              leftDrawLimit + leftLimit,
-             leftDrawLimit + rightLimit); ///////// should TEST !!!!!!!1111
+			 leftDrawLimit + rightLimit);
     paint();
 }
 
-void Cut::undoZeroSlot()
+void Cut::undoSlot()
 {
-    for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
-    {
-        std::copy(std::begin(undoData[k]),
-                  std::end(undoData[k]),
-                  std::begin(data3[k]) + undoBegin);
-    }
+	if(undos.empty())
+	{
+		std::cout << "Cut::undoSlot: undos empty" << std::endl;
+		return;
+	}
+
+	undos.back()();
+	undos.pop_back();
     paint();
 }
 
@@ -904,6 +926,47 @@ void Cut::splitCut()
     NumOfSlices -= (rightLimit - leftLimit);
 	data3.resizeCols(NumOfSlices);
     paint();
+}
+
+
+void Cut::set1MarkerSlot()
+{
+	if(myFileType == fileType::edf)
+	{
+		int num = edfFil.getMarkChan();
+		if(num <= 0)
+		{
+			std::cout << "Cut::set1MarkSlot: haven't found markers channel" << std::endl;
+			return;
+		}
+		int offset = leftDrawLimit + leftLimit;
+
+		undoAction = [num, offset, this](){data3[num][offset] = 0.;};
+		undos.push_back(undoAction);
+
+		data3[num][offset] = ui->mark1LineEdit->text().toInt();
+		paint();
+	}
+}
+
+void Cut::set2MarkerSlot()
+{
+	if(myFileType == fileType::edf)
+	{
+		int num = edfFil.getMarkChan();
+		if(num <= 0)
+		{
+			std::cout << "Cut::set2MarkSlot: haven't found markers channel" << std::endl;
+			return;
+		}
+		int offset = leftDrawLimit + leftLimit;
+
+		undoAction = [num, offset, this](){data3[num][offset] = 0.;};
+		undos.push_back(undoAction);
+
+		data3[num][offset] = ui->mark2LineEdit->text().toInt();
+		paint();
+	}
 }
 
 void Cut::subtractMeansSlot()
