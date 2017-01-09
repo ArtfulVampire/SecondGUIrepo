@@ -533,6 +533,7 @@ void Cut::createImage(const QString & dataFileName)
 			if(edfFil.getLabels()[i].contains(redStr)) redCh = i;
 			else if(edfFil.getLabels()[i].contains(blueStr)) blueCh = i;
 		}
+//		redCh = 17;
 
     }
 

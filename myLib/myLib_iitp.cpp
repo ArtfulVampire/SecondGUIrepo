@@ -13,86 +13,141 @@ std::complex<double> gFunc(const std::complex<double> & in)
 	return (1 - pow(std::abs(in), 2)) * pow(atanh(std::abs(in)), 2) / std::norm(in);
 }
 
-std::valarray<std::complex<double>> crossSpectrum(
-		const std::vector<std::valarray<double>> & in1,
-		const std::vector<std::valarray<double>> & in2)
+
+
+std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
+							   const std::vector<std::valarray<double>> & sig2,
+							   double srate,
+							   double freq)
 {
-	if(in1.size() != in2.size())
+	if(sig1.size() != sig2.size())
 	{
-		std::cout << "crossSpectrum: data sizes inequal" << std::endl;
 		return {};
 	}
-	const int siz = in1.size();
+	int siz = sig1.size();
 
-	/// determine fftLength
+	/// define fftLen
 	int fftLen = 0;
-	for(int i = 0; i < siz; ++i)
+	std::for_each(std::begin(sig1),
+				  std::end(sig1),
+				  [&fftLen](const std::valarray<double> & in)
 	{
-		fftLen = std::max(smallLib::fftL(in1[i].size()),
-						  fftLen);
-		fftLen = std::max(smallLib::fftL(in2[i].size()),
-						  fftLen);
-	}
+		fftLen = std::max(size_t(fftLen), in.size());
+	});
+	fftLen = smallLib::fftL(fftLen);
 
-	/// count spectra
-	std::valarray<std::complex<double>> spec1 = myLib::spectreRtoCcomplex(in1[0], fftLen);
-	std::valarray<std::complex<double>> spec2 = myLib::spectreConj(
-													myLib::spectreRtoCcomplex(in2[0], fftLen));
-	std::valarray<std::complex<double>> res = spec1 * spec2; /// to determine size
-	for(int i = 1; i < in1.size(); ++i)
+	const int index = freq * fftLen / srate;
+	const double lowThreshold = 1e-5;
+
+	/// set sizes
+	std::valarray<std::complex<double>> spec1;
+	std::valarray<std::complex<double>> spec2;
+
+	spec1 = myLib::spectreRtoCcomplex(sig1[0], fftLen);
+	spec2 = myLib::spectreRtoCcomplex(sig2[0], fftLen);
+
+	std::valarray<std::complex<double>> res12 =
+			spec1 * myLib::spectreConj(spec2);
+	std::valarray<std::complex<double>> res11 =
+			spec1 * myLib::spectreConj(spec1);
+	std::valarray<std::complex<double>> res22 =
+			spec2 * myLib::spectreConj(spec2);
+
+	std::valarray<std::complex<double>> res1122 =
+			sqrt(res11 * res22);
+	std::valarray<std::complex<double>> R = res12 /
+											sqrt(res11 * res22);
+	std::valarray<std::complex<double>> a12, a11, a22;
+
+	for(int i = 1; i < siz; ++i)
 	{
-		spec1 = myLib::spectreRtoCcomplex(in1[i], fftLen);
-		spec2 = myLib::spectreConj(myLib::spectreRtoCcomplex(in2[i], fftLen));
-		res += spec1 * spec2;
+		spec1 = myLib::spectreRtoCcomplex(sig1[i], fftLen);
+		spec2 = myLib::spectreRtoCcomplex(sig2[i], fftLen);
+
+		a12 = spec1 * myLib::spectreConj(spec2);
+		a11 = spec1 * myLib::spectreConj(spec1);
+		a22 = spec2 * myLib::spectreConj(spec2);
+
+//		std::cout << i << '\t'
+//				  << smallLib::doubleRound(std::abs(a12[index]), 6) << '\t'
+//				  << smallLib::doubleRound(std::abs(a11[index]), 6) << '\t'
+//				  << smallLib::doubleRound(std::abs(a22[index]), 6) << '\t'
+//				  << std::abs((a12 / sqrt(a11 * a22))[index]) << std::endl;
+
+		if(std::abs(a22[index]) > lowThreshold && std::abs(a11[index]) > lowThreshold)
+		{
+			R += a12 / sqrt(a11 * a22);
+		}
+
+		res12 += a12;
+		res11 += a11;
+		res22 += a22;
+		res1122 += sqrt(a11 * a22);
 	}
-	res /= siz;
-	return res;
+	res12 /= siz;
+	res11 /= siz;
+	res22 /= siz;
+	res1122 /= siz;
+	R /= siz;
+
+
+//	return res12[index] / res1122[index];
+//	return R[index];
+	return res12[index] / sqrt(res11[index] * res22[index]);
 }
 
 
-/// iitpData class
 
+/// iitpData class
 std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 {
 	if(chan1 > chan2) std::swap(chan1, chan2);
-	int index = freq / this->spStep;
-	index = 4;
-
-	for(std::pair<int, int> a : {
-	std::pair<int, int>(chan1, chan2),
-	std::pair<int, int>(chan2, chan2),
-	std::pair<int, int>(chan1, chan1)
-})
+	std::vector<std::valarray<double>> sig1;
+	std::vector<std::valarray<double>> sig2;
+	for(const matrix & m : this->piecesData)
 	{
-//		std::cout << 1 << std::endl;
-		uint b = this->crossSpectra[a.first][a.second].size();
-		if(b == 0)
-		{
-//			std::cout << 2 << std::endl;
-			this->crossSpectrum(a.first, a.second);
-//			std::cout << 3 << std::endl;
-		}
-//		std::cout << this->crossSpectra[a.first][a.second][index] << std::endl;
+		sig1.push_back(m[chan1]);
+		sig2.push_back(m[chan2]);
 	}
-//	exit(0);
+	return iitp::coherency(sig1, sig2, this->srate, freq);
 
-	return this->crossSpectra[chan1][chan2][index] /
-			sqrt( this->crossSpectra[chan1][chan1][index] *
-				  this->crossSpectra[chan2][chan2][index]);
+
+//	for(std::pair<int, int> a : {
+//		std::pair<int, int>(chan1, chan1),
+//		std::pair<int, int>(chan2, chan2),
+//		std::pair<int, int>(chan1, chan2)
+//})
+//	{
+//		uint b = this->crossSpectra[a.first][a.second].size();
+//		if(b == 0)
+//		{
+//			this->crossSpectrum(a.first, a.second);
+//		}
+//	}
+//	int index = freq / this->spStep;
+//	auto tmp = this->crossSpectra[chan1][chan1][index] *
+//			   this->crossSpectra[chan2][chan2][index];
+
+//	return this->crossSpectra[chan1][chan2][index] /
+//			sqrt(tmp);
 
 }
 
 void iitpData::crossSpectrum(int chan1, int chan2)
 {
-	if(chan1 > chan2) std::swap(chan1, chan2);
+//	std::cout << chan1 << "   " << chan2 << std::endl;
+	if(chan1 > chan2)
+	{
+		std::swap(chan1, chan2);
+	}
+//	std::cout << chan1 << "   " << chan2 << std::endl;
+
 	std::valarray<std::complex<double>> spec1;
 	std::valarray<std::complex<double>> spec2;
 
 	spec1 = myLib::spectreRtoCcomplex(this->piecesData[0][chan1], fftLen);
 	spec2 = myLib::spectreRtoCcomplex(this->piecesData[0][chan2], fftLen);
-	std::valarray<std::complex<double>> res =
-			spec1 * myLib::spectreConj(spec2);
-
+	std::valarray<std::complex<double>> res = spec1 * myLib::spectreConj(spec2);
 
 	for(int i = 1; i < this->piecesData.size(); ++i)
 	{
@@ -105,7 +160,7 @@ void iitpData::crossSpectrum(int chan1, int chan2)
 	this->crossSpectra[chan1][chan2] = res;
 }
 
-void iitpData::cutPieces(int length)
+void iitpData::cutPieces(double length)
 {
 	this->piecesData.clear();
 	const int numPieces = this->getDataLen() / (this->srate * length);
@@ -115,11 +170,32 @@ void iitpData::cutPieces(int length)
 														 length * this->srate * (i + 1)));
 	}
 	this->setFftLen();
+	this->clearCrossSpectra();
+}
+
+void iitpData::clearCrossSpectra()
+{
+	this->crossSpectra.clear();
 	this->crossSpectra.resize(this->ns);
 	for(int i = 0; i < this->crossSpectra.size(); ++i)
 	{
 		this->crossSpectra[i].resize(this->ns, {});
 	}
+}
+
+void iitpData::resizePieces(int in)
+{
+	for(matrix & m : this->piecesData)
+	{
+		m.resizeCols(in);
+	}
+	this->clearCrossSpectra();
+}
+
+void iitpData::getPiecesParams()
+{
+	std::cout << "size = " << this->piecesData.size() << std::endl;
+	std::cout << "length = " << this->piecesData[0].cols() << std::endl;
 }
 
 void iitpData::setPieces(int mark1, int mark2)

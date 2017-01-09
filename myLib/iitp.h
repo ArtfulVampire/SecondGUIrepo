@@ -14,9 +14,11 @@ namespace iitp
 std::complex<double> gFunc(const std::complex<double> & in);
 /// PHI  = PHI(w) = crossSpectrum(w).arg();
 
-std::valarray<std::complex<double>> crossSpectrum(
-		const std::vector<std::valarray<double>> & in1,
-		const std::vector<std::valarray<double>> & in2);
+
+std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
+							   const std::vector<std::valarray<double>> & sig2,
+							   double srate,
+							   double freq);
 
 class iitpData : public edfFile
 {
@@ -32,8 +34,12 @@ public:
 	void crossSpectrum(int chan1, int chan2);
 
 	void setPieces(int mark1 = 10, int mark2 = 20);
-	void cutPieces(int length);
+	void cutPieces(double length);
+	void resizePieces(int in);
+	void getPiecesParams();
+	const std::vector<matrix> & getPieces() {return piecesData;}
 
+	void clearCrossSpectra();
 	int setFftLen(); /// determine by piecesData lengths
 	void setFftLen(int in);
 

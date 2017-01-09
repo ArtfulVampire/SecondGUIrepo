@@ -86,7 +86,7 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 					 bool weightsFlag = false,
 					 int lineWidth_ = myLib::drw::lineWidth,
 					 double X = myLib::drw::gap,
-					 double Y = myLib::drw::graphHeight - myLib::drw::gap);
+					 double Y = myLib::drw::graphHeight + myLib::drw::gap); /// + top gap
 
 QPixmap drawOneSignal(const std::valarray<double> & inData,
 					  int picHeight = 600);
@@ -96,7 +96,7 @@ QPixmap drawOneSpectrum(const std::valarray<double> & inData,
 						double rightFr,
 						double srate,
 						int numOfSmooth,
-						const QColor & color);
+						const QColor & color = QColor("black"));
 /// many
 QPixmap drawTemplate(const bool channelsFlag = true,
 					 const double leftF = 5.0,

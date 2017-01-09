@@ -2,6 +2,9 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
 
+#include <myLib/output.h>
+using namespace myOut;
+
 namespace myLib
 {
 namespace drw
@@ -430,6 +433,7 @@ QPixmap drawOneSpectrum(const std::valarray<double> & inData,
 										leftFr,
 										rightFr,
 										srate);
+	std::cout << drawArr << std::endl;
 	return myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(-1, false, leftFr, rightFr),
 									drawArr,
 									drawArr.max(),
@@ -457,6 +461,8 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 	Y -= weightsFlag * myLib::drw::graphHeight / 2;
 
 	paint.setPen(QPen(QBrush(color), lineWidth_));
+
+//	std::cout << Y << std::endl;
 
 	if(inData.size() < myLib::drw::graphWidth)
 	{

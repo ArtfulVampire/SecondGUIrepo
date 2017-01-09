@@ -27,14 +27,118 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
+
+
+
+//	int leng = 1500;
+//	std::vector<std::valarray<double>> s1;
+//	std::vector<std::valarray<double>> s2;
+//	std::valarray<double> t(leng);
+
+//	double srate = 250;
+//	double fr1 = 10.;
+//	double fr2 = 10.;
+//	auto ph1 = [](){return 0.;};
+
+//	auto ph2 = [](int i)
+//	{
+//		return M_PI / 2. / 100. * i;
+//	};
+
+//	for(int i = 0; i <= 100; ++i)
+//	{
+//		for(int j = 0; j < leng; ++j)
+//		{
+//			t[j] = 2 * sin(2. * M_PI * fr1 * j/srate + ph1());
+//		}
+//		s1.push_back(t);
+
+//		auto ph = ph2(i);
+//		for(int j = 0; j < leng; ++j)
+//		{
+//			t[j] = sin(2. * M_PI * fr2 * j/srate + ph);
+//		}
+//		s2.push_back(t);
+//	}
+////	myLib::drw::drawOneSpectrum(s1[5], 8, 12, srate, 0).save("/media/Files/Data/1.jpg");
+//	auto c = iitp::coherency(s1, s2, srate, 10.);
+//	std::cout << c << "\tabs = " << std::abs(c) << "\targ = " << std::arg(c) << std::endl;
+//	exit(0);
+
+
+//	return;
+
 	iitp::iitpData dt;
 	dt.readEdfFile("/media/Files/Data/iitp/Irina/test4.edf");
-	dt.cutPieces(4);
-//	dt.crossSpectrum(8, 8);
-//	dt.crossSpectrum(8, 22);
-//	dt.crossSpectrum(22, 22);
-	std::complex<double> a = dt.coherency(10, 22, 10);
-	std::cout << a << std::endl;
+
+	std::vector<std::complex<double>> vals;
+//	for(double len : {1.024, 2.048})
+//	double len = 1.024;
+//	dt.cutPieces(1.024);
+
+	std::vector<std::tuple<int, int, std::complex<double>>> PP;
+//	for(int c1 = 0; c1 < 19; ++c1)
+//		for(int c2 = 21; c2 < 38; ++c2)
+//	int c1 = 7;
+//	int c2 = 35;
+
+	for(double len = 1.000; len <= 1.024; len += 0.001)
+//	for(int i = 1024; i >= 1000; --i)
+//	for(int fff = 5; fff < 25; ++fff)
+	{
+//		if(c2 == 35 || c2 == 37) continue;
+
+		dt.cutPieces(len);
+//		dt.resizePieces(i);
+
+
+//		std::complex<double> a = dt.coherency(dt.findChannel("C3"),
+//											  dt.findChannel("Ta_l"),
+//											  10);
+
+//		std::complex<double> a = dt.coherency(c1,
+//											  c2,
+//											  10);
+
+		std::complex<double> a = dt.coherency(17,
+											  33,
+											  10);
+
+//		PP.push_back(std::tuple<int, int, std::complex<double>>(c1, c2, a));
+		std::cout
+//				<< c1 << '\t' << c2 << '\t'
+//				<< fff << '\t'
+				<< smallLib::doubleRound(len, 3) << '\t'
+//				<< "numPieces = " << dt.getPieces().size() << '\t'
+//				<< i << '\t'
+				<< smallLib::doubleRound(a, 3) << '\t'
+				<< "abs = " << std::abs(a) << '\t'
+				<< "arg = " << std::arg(a) << '\t'
+//				<< "lowLim = " << 1 - pow(0.05, 1./(dt.getPieces().size() - 1) ) << '\t'
+				<< std::endl;
+		vals.push_back(std::arg(a));
+	}
+
+//	std::sort(std::begin(PP), std::end(PP),
+//			  [](const std::tuple<int, int, std::complex<double>> & in1,
+//			  const std::tuple<int, int, std::complex<double>> & in2)
+//	{
+//		return std::abs(std::get<2>(in1)) > std::abs(std::get<2>(in2));
+//	});
+//	for(int g = 0; g < 10; ++g)
+//	{
+//		std::cout << std::get<0>(PP[g]) << '\t'
+//				  << std::get<1>(PP[g]) << '\t'
+//				  << std::abs(std::get<2>(PP[g])) << '\t'
+//				  << std::endl;
+//	}
+
+
+	std::valarray<std::complex<double>> v(vals.size());
+	std::copy(std::begin(vals), std::end(vals), std::begin(v));
+	std::cout << "mean = " << v.sum() / double(v.size()) << std::endl;
+	std::cout << "sigm = " << sqrt(pow(v - v.sum() / double(v.size()), 2).sum() / double(v.size())) << std::endl;
+
 	exit(0);
 
 

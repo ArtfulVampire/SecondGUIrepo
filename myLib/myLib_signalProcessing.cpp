@@ -466,7 +466,7 @@ std::valarray<std::complex<double>> spectreConj(
 		const std::valarray<std::complex<double>> & inputSpectre)
 {
 	std::valarray<std::complex<double>> res{inputSpectre};
-	res.apply(std::conj);
+	res = res.apply(std::conj);
 	return res;
 }
 

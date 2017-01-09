@@ -154,6 +154,7 @@ void writeFileInLine(const QString & filePath,
     }
 
 	bool asCol = false;
+//	bool asCol = true;
 
 	if(asCol)
 	{
