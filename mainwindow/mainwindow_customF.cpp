@@ -66,7 +66,7 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-//	return;
+	return;
 
 	iitp::iitpData dt;
 	dt.readEdfFile("/media/Files/Data/iitp/Irina/test4.edf");

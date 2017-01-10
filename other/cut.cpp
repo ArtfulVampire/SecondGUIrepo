@@ -1036,7 +1036,8 @@ void Cut::paint() // save to tmp.jpg and display
 
 //    std::cout << "paint: left = " << leftDrawLimit << "\tright = " << rightDrawLimit << std::endl;
 
-	currentPic = myLib::drawEeg(data3.subCols(leftDrawLimit, rightDrawLimit),
+	matrix subData = data3.subCols(leftDrawLimit, rightDrawLimit);
+	currentPic = myLib::drawEeg(subData,
 								def::ns,
 								rightDrawLimit - leftDrawLimit,
 								currFreq,
@@ -1045,6 +1046,24 @@ void Cut::paint() // save to tmp.jpg and display
 								* ((ui->yNormInvertCheckBox->isChecked())? -1 : 1),
 								blueCh,
 								redCh); // generality.getFreq()
+	/// draw markers numbers
+	if(1)
+	{
+		QPainter pnt;
+		pnt.begin(&currentPic);
+		pnt.setFont(QFont("", 14));
+		const int mrk = edfFil.getMarkChan();
+		for(int i = 0; i < subData.cols(); ++i)
+		{
+			if(subData[mrk][i] != 0.)
+			{
+				pnt.drawText(i,
+							 pnt.device()->height() * (mrk+1) / (subData.rows() + 2) - 3,
+							 QString::number(int(subData[mrk][i])));
+			}
+		}
+		pnt.end();
+	}
 
     /// -20 for scroll bar generality
 	/// experimental xNorm
