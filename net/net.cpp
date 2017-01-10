@@ -270,10 +270,10 @@ void Net::loadDataSlot()
                                                            def::dir->absolutePath());
     if(helpString.isEmpty())
     {
-        QMessageBox::information((QWidget * )this,
-                                 tr("Information"),
-                                 tr("No directory was chosen"),
-                                 QMessageBox::Ok);
+//        QMessageBox::information((QWidget * )this,
+//                                 tr("Information"),
+//                                 tr("No directory was chosen"),
+//                                 QMessageBox::Ok);
         return;
     }
 	std::cout << helpString << std::endl;

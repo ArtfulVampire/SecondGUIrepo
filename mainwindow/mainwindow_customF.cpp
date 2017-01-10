@@ -66,81 +66,151 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-	return;
-
+//	return;
+#if 01
+	/// test coherency
 	iitp::iitpData dt;
-	dt.readEdfFile("/media/Files/Data/iitp/Irina/test4.edf");
-
-	std::vector<std::complex<double>> vals;
-//	for(double len : {1.024, 2.048})
-//	double len = 1.024;
-//	dt.cutPieces(1.024);
-
-	std::vector<std::tuple<int, int, std::complex<double>>> PP;
-//	for(int c1 = 0; c1 < 19; ++c1)
-//		for(int c2 = 21; c2 < 38; ++c2)
-//	int c1 = 7;
-//	int c2 = 35;
-
-	for(double len = 1.000; len <= 1.024; len += 0.001)
-//	for(int i = 1024; i >= 1000; --i)
-//	for(int fff = 5; fff < 25; ++fff)
+	const QString direct = "/media/Files/Data/iitp/Irina/";
+	const QString postfix = "_sum_f_sync_new.edf";
+	auto filePath = [=](int i) -> QString
 	{
-//		if(c2 == 35 || c2 == 37) continue;
+		return direct + "Ira_" + rn(i, 2) + postfix;
+	};
 
-		dt.cutPieces(len);
-//		dt.resizePieces(i);
+	/// chan1, chan2, freq, len
+	std::vector<std::vector<std::vector<std::valarray<std::complex<double>>>>> vals;
+	std::vector<std::vector<std::vector<std::complex<double>>>> cohs;
+
+	const int numChansEeg = 19;
+	const int numChansEmg = 18;
+	const int minChansEmg = 20;
+	const int minFreq = 1;
+	const int numFreq = 45;
+	const int numLen = 25;
+
+	std::ofstream ofile;
+	for(int fileNum = 0; fileNum < 30; ++fileNum)
+//	int fileNum = 6;
+	{
 
 
-//		std::complex<double> a = dt.coherency(dt.findChannel("C3"),
-//											  dt.findChannel("Ta_l"),
-//											  10);
+		if(!QFile::exists(filePath(fileNum))) continue;
+//		if(fileNum == 5 || fileNum == 6) continue;
 
-//		std::complex<double> a = dt.coherency(c1,
-//											  c2,
-//											  10);
+		ofile.open((direct + "Ira_" + rn(fileNum, 2) + "_res.txt").toStdString());
 
-		std::complex<double> a = dt.coherency(17,
-											  33,
-											  10);
+		dt.readEdfFile(filePath(fileNum));
 
-//		PP.push_back(std::tuple<int, int, std::complex<double>>(c1, c2, a));
-		std::cout
-//				<< c1 << '\t' << c2 << '\t'
-//				<< fff << '\t'
-				<< smallLib::doubleRound(len, 3) << '\t'
-//				<< "numPieces = " << dt.getPieces().size() << '\t'
-//				<< i << '\t'
-				<< smallLib::doubleRound(a, 3) << '\t'
-				<< "abs = " << std::abs(a) << '\t'
-				<< "arg = " << std::arg(a) << '\t'
-//				<< "lowLim = " << 1 - pow(0.05, 1./(dt.getPieces().size() - 1) ) << '\t'
-				<< std::endl;
-		vals.push_back(std::arg(a));
+
+#if 0
+		dt.cutPieces(1.024);
+		auto t0 = std::chrono::high_resolution_clock::now();
+		std::complex<double> tmp1;
+
+		tmp1 = dt.coherency(10,
+							22,
+							1);
+
+		auto t1 = std::chrono::high_resolution_clock::now();
+		std::cout << tmp1 << std::endl;
+		std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count() << std::endl;
+		exit(0);
+#endif
+
+		/// resize vals
+		vals.resize(numChansEeg);
+		cohs.resize(numChansEeg);
+		for(int c1 = 0; c1 < numChansEeg; ++c1)
+		{
+			vals[c1].resize(numChansEmg);
+			cohs[c1].resize(numChansEmg);
+			for(int c2 = 0; c2 < numChansEmg; ++c2)
+			{
+				vals[c1][c2].resize(numFreq);
+				cohs[c1][c2].resize(numFreq);
+				for(int fff = 0; fff < numFreq; ++fff)
+				{
+					vals[c1][c2][fff].resize(numLen);
+				}
+			}
+		}
+
+		/// fillVals
+		std::cout << "lens" << std::endl;
+		for(int lenInd = 0; lenInd < numLen; ++lenInd)
+		{
+			dt.cutPieces(1. + 0.001 * lenInd);
+
+			for(int fff = 0; fff < numFreq; ++fff)
+			{
+				for(int c1 = 0; c1 < numChansEeg; ++c1)
+				{
+					for(int c2 = 0; c2 < numChansEmg; ++c2)
+					{
+						if(c2 + minChansEmg == 35 || c2 + minChansEmg == 37) continue;
+
+						std::complex<double> tmpCoh = dt.coherency(c1,
+																   c2 + minChansEmg,
+																   fff + minFreq);
+						vals[c1][c2][fff][lenInd] = tmpCoh;
+					}
+				}
+			}
+			std:: cout << lenInd << " "; std::cout.flush();
+		}
+		std::cout << std::endl;
+
+		/// are stable?
+		std::valarray<double> abss(numLen);
+		std::valarray<double> args(numLen);
+		for(int c1 = 0; c1 < numChansEeg; ++c1)
+		{
+			for(int c2 = 0; c2 < numChansEmg; ++c2)
+			{
+				if(c2 + minChansEmg == 35 || c2 + minChansEmg == 37) continue;
+				for(int fff = 0; fff < numFreq; ++fff)
+				{
+					const std::valarray<std::complex<double>> & tmp = vals[c1][c2][fff];
+					std::transform(std::begin(tmp),
+								   std::end(tmp),
+								   std::begin(abss),
+								   [](const std::complex<double> & in)
+					{
+						return std::abs(in);
+					});
+					std::transform(std::begin(tmp),
+								   std::end(tmp),
+								   std::begin(args),
+								   [](const std::complex<double> & in)
+					{
+						return std::arg(in);
+					});
+
+					if(smallLib::mean(abss) > 0.2 &&
+					   smallLib::sigma(abss) * 3 < smallLib::mean(abss) &&
+					   smallLib::sigma(args) < 0.3
+					   )
+					{
+						ofile
+								<< "ch1 = " << c1 << '\t'
+								<< "ch2 = " << c2 + minChansEmg << '\t'
+								<< "freq = " << fff + minFreq << '\t'
+								<< "val = " << smallLib::doubleRound(smallLib::mean(tmp), 3) << '\t'
+								<< "abs = " << smallLib::doubleRound(smallLib::mean(abss), 3) << '\t'
+								<< "s(abs) = " << smallLib::doubleRound(smallLib::sigma(abss), 3) << '\t'
+								<< "arg = " << smallLib::doubleRound(smallLib::mean(args), 3) << '\t'
+								<< "s(arg) = " << smallLib::doubleRound(smallLib::sigma(args), 4) << '\t'
+								<< std::endl;
+
+						cohs[c1][c2][fff] = smallLib::mean(tmp);
+					}
+				}
+			}
+		}
+		ofile.close();
 	}
-
-//	std::sort(std::begin(PP), std::end(PP),
-//			  [](const std::tuple<int, int, std::complex<double>> & in1,
-//			  const std::tuple<int, int, std::complex<double>> & in2)
-//	{
-//		return std::abs(std::get<2>(in1)) > std::abs(std::get<2>(in2));
-//	});
-//	for(int g = 0; g < 10; ++g)
-//	{
-//		std::cout << std::get<0>(PP[g]) << '\t'
-//				  << std::get<1>(PP[g]) << '\t'
-//				  << std::abs(std::get<2>(PP[g])) << '\t'
-//				  << std::endl;
-//	}
-
-
-	std::valarray<std::complex<double>> v(vals.size());
-	std::copy(std::begin(vals), std::end(vals), std::begin(v));
-	std::cout << "mean = " << v.sum() / double(v.size()) << std::endl;
-	std::cout << "sigm = " << sqrt(pow(v - v.sum() / double(v.size()), 2).sum() / double(v.size())) << std::endl;
-
 	exit(0);
-
+#endif
 
 //	return;
 //	autos::IITP("Oleg", "Oleg");

@@ -101,46 +101,47 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 /// iitpData class
 std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 {
-	if(chan1 > chan2) std::swap(chan1, chan2);
-	std::vector<std::valarray<double>> sig1;
-	std::vector<std::valarray<double>> sig2;
-	for(const matrix & m : this->piecesData)
-	{
-		sig1.push_back(m[chan1]);
-		sig2.push_back(m[chan2]);
-	}
-	return iitp::coherency(sig1, sig2, this->srate, freq);
-
-
-//	for(std::pair<int, int> a : {
-//		std::pair<int, int>(chan1, chan1),
-//		std::pair<int, int>(chan2, chan2),
-//		std::pair<int, int>(chan1, chan2)
-//})
+//	if(chan1 > chan2) std::swap(chan1, chan2);
+//	std::vector<std::valarray<double>> sig1;
+//	std::vector<std::valarray<double>> sig2;
+//	for(const matrix & m : this->piecesData)
 //	{
-//		uint b = this->crossSpectra[a.first][a.second].size();
-//		if(b == 0)
-//		{
-//			this->crossSpectrum(a.first, a.second);
-//		}
+//		sig1.push_back(m[chan1]);
+//		sig2.push_back(m[chan2]);
 //	}
-//	int index = freq / this->spStep;
-//	auto tmp = this->crossSpectra[chan1][chan1][index] *
-//			   this->crossSpectra[chan2][chan2][index];
+//	return iitp::coherency(sig1, sig2, this->srate, freq);
 
-//	return this->crossSpectra[chan1][chan2][index] /
-//			sqrt(tmp);
+
+	for(std::pair<int, int> a : {
+		std::pair<int, int>(chan1, chan1),
+		std::pair<int, int>(chan2, chan2),
+		std::pair<int, int>(chan1, chan2)
+})
+	{
+		uint b = this->crossSpectra[a.first][a.second].size();
+		if(b == 0)
+		{
+			this->crossSpectrum(a.first, a.second);
+		}
+	}
+	if(this->coherencies[chan1][chan2].size() == 0)
+	{
+		this->coherencies[chan1][chan2] = this->crossSpectra[chan1][chan2] /
+										  sqrt(this->crossSpectra[chan1][chan1] *
+											   this->crossSpectra[chan2][chan2]);
+	}
+	int index = freq / this->spStep;
+
+	return coherencies[chan1][chan2][index];
 
 }
 
 void iitpData::crossSpectrum(int chan1, int chan2)
 {
-//	std::cout << chan1 << "   " << chan2 << std::endl;
 	if(chan1 > chan2)
 	{
 		std::swap(chan1, chan2);
 	}
-//	std::cout << chan1 << "   " << chan2 << std::endl;
 
 	std::valarray<std::complex<double>> spec1;
 	std::valarray<std::complex<double>> spec2;
@@ -180,6 +181,13 @@ void iitpData::clearCrossSpectra()
 	for(int i = 0; i < this->crossSpectra.size(); ++i)
 	{
 		this->crossSpectra[i].resize(this->ns, {});
+	}
+
+	this->coherencies.clear();
+	this->coherencies.resize(this->ns);
+	for(int i = 0; i < this->coherencies.size(); ++i)
+	{
+		this->coherencies[i].resize(this->ns, {});
 	}
 }
 
@@ -226,11 +234,7 @@ void iitpData::setPieces(int mark1, int mark2)
 		}
 	}
 	this->setFftLen();
-	this->crossSpectra.resize(this->ns);
-	for(int i = 0; i < this->crossSpectra.size(); ++i)
-	{
-		this->crossSpectra[i].resize(this->ns);
-	}
+	this->clearCrossSpectra();
 }
 
 int iitpData::setFftLen()

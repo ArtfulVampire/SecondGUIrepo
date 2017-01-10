@@ -6,7 +6,7 @@
 #include <QString>
 #include <QStringList>
 #include <QFileDialog>
-#include <QMessageBox>
+//#include <QMessageBox>
 #include <QtSvg>
 #include "mainwindow.h"
 

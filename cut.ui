@@ -84,7 +84,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>581</width>
+     <width>791</width>
      <height>31</height>
     </rect>
    </property>
@@ -103,11 +103,7 @@
      <widget class="QComboBox" name="subdirComboBox"/>
     </item>
     <item>
-     <widget class="QCheckBox" name="checkBox">
-      <property name="text">
-       <string>paint?</string>
-      </property>
-     </widget>
+     <widget class="QComboBox" name="suffixComboBox"/>
     </item>
    </layout>
   </widget>

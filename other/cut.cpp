@@ -19,8 +19,15 @@ Cut::Cut() :
 	ui->subdirComboBox->addItem("Reals");
 	ui->subdirComboBox->addItem("winds");
 	ui->subdirComboBox->addItem("winds/fromreal"); //generality
-
 	ui->subdirComboBox->setCurrentText(""); /// me
+
+	ui->suffixComboBox->addItem("");
+	ui->suffixComboBox->addItem("eeg");
+	ui->suffixComboBox->addItem("emg");
+	ui->suffixComboBox->addItem("sum");
+	ui->suffixComboBox->addItem("new");
+//	ui->suffixComboBox->setCurrentText("");
+	ui->suffixComboBox->setCurrentText("sum"); /// iitp
 
 
     ui->eogDoubleSpinBox->setValue(2.40);
@@ -49,7 +56,6 @@ Cut::Cut() :
 	/// can change
 	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
 
-    ui->checkBox->setChecked(true);
 
 	ui->dirBox->addItem("Reals");
     ui->dirBox->addItem("cut");
@@ -193,7 +199,6 @@ void Cut::browse()
 	}
 	else
 	{
-
 		if(this->myFileType == fileType::edf)
 		{
 			path = edfFil.getDirPath();
@@ -206,12 +211,13 @@ void Cut::browse()
 
 	}
 
+	const QString suffix = ui->suffixComboBox->currentText();
 	QString filter{};
 	for(const QString & in : def::edfFilters)
 	{
-		filter += in + " ";
+		filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + in + " ";
 	}
-	filter += "*." + def::plainDataExtension;
+	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + def::plainDataExtension;
 	QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
 													  tr("Open file"),
 													  path,
@@ -220,7 +226,7 @@ void Cut::browse()
 
     if(helpString.isEmpty())
     {
-        QMessageBox::information((QWidget*)this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
+//        QMessageBox::information((QWidget*)this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
         return;
     }
     ui->lineEdit->setText(helpString);
@@ -477,7 +483,7 @@ void Cut::cutEyesAll()
     // automatization
     if(!autoFlag)
     {
-        QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
+//        QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
     }
 #endif
 }
@@ -539,17 +545,7 @@ void Cut::createImage(const QString & dataFileName)
 
     }
 
-    /// if too long?
-    /// draw only needed part?
-    if(ui->checkBox->isChecked())
-    {
-        paint();
-    }
-    else
-    {
-        leftLimit = 0;
-        rightLimit = 0;
-    }
+	paint();
     ui->scrollArea->horizontalScrollBar()->setSliderPosition(0);
 }
 

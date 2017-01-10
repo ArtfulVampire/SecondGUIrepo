@@ -25,6 +25,8 @@ inline QString nm(Typ in) {return QString::number(in);}
 template QString nm(int in);
 template QString nm(double in);
 
+inline QString rn(double in, int num) {return myLib::rightNumber(in, num);}
+
 
 FILE * fopen(QString filePath, const char *__modes);
 

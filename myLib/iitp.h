@@ -24,7 +24,8 @@ class iitpData : public edfFile
 {
 private:
 	std::vector<matrix> piecesData;
-	std::vector<std::vector<std::valarray<std::complex<double>>>> crossSpectra;
+	std::vector<std::vector< std::valarray<std::complex<double>> >> crossSpectra;
+	std::vector<std::vector< std::valarray<std::complex<double>> >> coherencies;
 
 	int fftLen = -1;
 	double spStep = 0.;

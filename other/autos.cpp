@@ -234,7 +234,7 @@ void IITP(const QString & dirName, const QString & guyName)
 		QString filePath;
 		edfFile fil;
 
-#if 0
+#if 01
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
 		if(!QFile::exists(filePath)) continue;
@@ -245,7 +245,7 @@ void IITP(const QString & dirName, const QString & guyName)
 #endif
 //		continue;
 
-#if 0
+#if 01
 		/// divide ECG chan to prevent oversclaing amplitude
 		filePath = ExpNamePre + "_eeg.edf";
 		if(QFile::exists(filePath))

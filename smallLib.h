@@ -150,10 +150,14 @@ inline double normaSq(const std::valarray<double> & in)
                               std::begin(in),
                               0.);
 }
-inline double mean(const std::valarray<double> & arr)
+
+template <typename Typ>
+inline Typ mean(const std::valarray<Typ> & arr)
 {
-    return arr.sum() / arr.size();
+	return arr.sum() / Typ(arr.size());
 }
+template std::complex<double> mean(const std::valarray<std::complex<double>> & arr);
+template double mean(const std::valarray<double> & arr);
 
 inline double variance(const std::valarray<double> & arr)
 {

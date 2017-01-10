@@ -401,7 +401,7 @@ void MainWindow::setEdfFileSlot()
 
     if(helpString.isEmpty())
     {
-        QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
+//        QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
         return;
     }
     setEdfFile(helpString);
