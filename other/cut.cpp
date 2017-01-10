@@ -123,6 +123,9 @@ Cut::Cut() :
     QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(const QString &)));
     QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
     QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitCut()));
+	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()), this, SLOT(subtractMeansSlot()));
+	QObject::connect(ui->zeroFromZeroPushButton, SIGNAL(clicked()), this, SLOT(zeroFromZeroSlot()));
+	QObject::connect(ui->splitFromZeroPushButton, SIGNAL(clicked()), this, SLOT(splitFromZeroSlot()));
 
     QObject::connect(ui->forwardStepButton, SIGNAL(clicked()), this, SLOT(forwardStepSlot()));
     QObject::connect(ui->backwardStepButton, SIGNAL(clicked()), this, SLOT(backwardStepSlot()));
@@ -132,7 +135,6 @@ Cut::Cut() :
 	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
 	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
-	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()), this, SLOT(subtractMeansSlot()));
 	QObject::connect(ui->setMark1PushButton, SIGNAL(clicked()), this, SLOT(set1MarkerSlot()));
 	QObject::connect(ui->setMark2PushButton, SIGNAL(clicked()), this, SLOT(set2MarkerSlot()));
 
@@ -875,7 +877,7 @@ void Cut::zero()
 
 
     zeroData(data3,
-             leftDrawLimit + leftLimit,
+			 undoBegin,
 			 leftDrawLimit + rightLimit);
     paint();
 }
@@ -913,7 +915,8 @@ void Cut::cut()
 /// DANGER markers
 void Cut::splitCut()
 {
-	for(int i = leftDrawLimit + leftLimit; i < NumOfSlices - (rightLimit - leftLimit); ++i)
+	const int splitSize = rightLimit - leftLimit;
+	for(int i = leftDrawLimit + leftLimit; i < NumOfSlices - splitSize; ++i)
     {
         for(int k = 0; k < def::nsWOM(); ++k)
         {
@@ -921,10 +924,10 @@ void Cut::splitCut()
             {
                 continue;
             }
-            data3[k][i] = data3[k][i + (rightLimit - leftLimit)];
+			data3[k][i] = data3[k][i + splitSize];
         }
     }
-    NumOfSlices -= (rightLimit - leftLimit);
+	NumOfSlices -= splitSize;
 	data3.resizeCols(NumOfSlices);
     paint();
 }
@@ -968,6 +971,52 @@ void Cut::set2MarkerSlot()
 		data3[num][offset] = ui->mark2LineEdit->text().toInt();
 		paint();
 	}
+}
+
+void Cut::zeroFromZeroSlot()
+{
+	int undoBegin = 0;
+	undoData.push_back(data3.subCols(undoBegin,
+									 undoBegin + leftDrawLimit + rightLimit));
+
+	undoAction = [undoBegin, this]()
+	{
+		for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
+		{
+			std::copy(std::begin(undoData.back()[k]),
+					  std::end(undoData.back()[k]),
+					  std::begin(data3[k]) + undoBegin);
+		}
+		undoData.pop_back();
+	};
+	undos.push_back(undoAction);
+
+
+
+	zeroData(data3,
+			 undoBegin,
+			 leftDrawLimit + rightLimit);
+	paint();
+}
+
+void Cut::splitFromZeroSlot()
+{
+	const int splitSize = leftDrawLimit + rightLimit;
+	for(int i = 0; i < NumOfSlices - splitSize; ++i)
+	{
+		for(int k = 0; k < def::nsWOM(); ++k)
+		{
+			if(i == 0) // dont touch first marker value - for reals
+			{
+				continue;
+			}
+			data3[k][i] = data3[k][i + (splitSize)];
+		}
+	}
+	NumOfSlices -= splitSize;
+	data3.resizeCols(NumOfSlices);
+	ui->paintStartDoubleSpinBox->setValue(0.);
+	paint();
 }
 
 void Cut::subtractMeansSlot()

@@ -66,6 +66,8 @@ public slots:
 	void subtractMeansSlot();
 	void set1MarkerSlot();
 	void set2MarkerSlot();
+	void zeroFromZeroSlot();
+	void splitFromZeroSlot();
 
 
 protected:

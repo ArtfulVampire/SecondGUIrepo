@@ -416,7 +416,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>560</x>
@@ -456,7 +456,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>570</x>
@@ -487,6 +487,32 @@
      <widget class="QLineEdit" name="mark2LineEdit"/>
     </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="splitFromZeroPushButton">
+   <property name="geometry">
+    <rect>
+     <x>740</x>
+     <y>210</y>
+     <width>80</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Split from 0</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="zeroFromZeroPushButton">
+   <property name="geometry">
+    <rect>
+     <x>740</x>
+     <y>240</y>
+     <width>80</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Zero from 0</string>
+   </property>
   </widget>
  </widget>
  <resources/>
