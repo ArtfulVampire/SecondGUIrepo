@@ -54,6 +54,7 @@ void IITP(const QString & dirName = "Oleg", const QString & guyName = "Oleg");
 void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile);
 void repairMarkersInSecondNewFB(QString edfPath);
 void repairMarkersInThirdNewFB(QString edfPath);
+int numMarkers(const QString & edfPath, const std::vector<int> & markers);
 
 void makeRightNumbersCF(const QString & dirPath, int startNum);
 void makeRightNumbers(const QString & dirPath,

@@ -15,7 +15,7 @@ void filtering_test()
 	double spStep = 250. / fftLen;
 	double lowFreq = 8.;
 	double highFreq = 8.5;
-	double dF = highFreq - lowFreq;
+//	double dF = highFreq - lowFreq;
 
 	int start = 18000;
 	auto signal = fil.getData().subCols(start, start + fftLen)[10];
@@ -356,7 +356,7 @@ void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile)
 	{
 		if(markArr[i] == 239.)
 		{
-			marks.push_back({i, markArr[i]});
+			marks.push_back({i, int(markArr[i])});
 		}
 	}
 
@@ -475,10 +475,30 @@ void repairMarkersInSecondNewFB(QString edfPath)
 
 	for(int i = 0; i < 80; ++i)
 	{
-		fil.setData(fil.getMarkChan(), marks[i], marksList[i]);
+		fil.setData(fil.getMarkChan(), marks[i] - 1, marksList[i]);
 	}
 	edfPath.replace(".edf", "_good239.edf");
 	fil.writeEdfFile(edfPath);
+
+}
+
+
+int numMarkers(const QString & edfPath, const std::vector<int> & markers)
+{
+	edfFile fil;
+	fil.readEdfFile(edfPath);
+	const std::valarray<double> & mrk = fil.getData()[fil.getMarkChan()];
+	int res = 0;
+	for(double i : mrk)
+	{
+		if(std::find(std::begin(markers),
+					 std::end(markers),
+					 std::round(i)) != std::end(markers))
+		{
+			++res;
+		}
+	}
+	return res;
 
 }
 

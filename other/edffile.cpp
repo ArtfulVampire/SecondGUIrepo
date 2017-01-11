@@ -301,10 +301,11 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
     {
         if(QFile::exists(EDFpath))
         {
-//            std::cout << "writeEdfFile: destination file already exists, RETURN\n" << EDFpath << std::endl; return;
-//            std::cout << "writeEdfFile: destination file already exists, REWRITE = \n" << EDFpath << " ";
-			std::cout << "writeEdfFile: destination file already exists, NAME += _rw" << std::endl;
-			EDFpath.replace(".", "_rw.");
+//			std::cout << "writeEdfFile: destination file already exists, RETURN\n" << EDFpath << std::endl; return;
+//			std::cout << "writeEdfFile: destination file already exists, REWRITE = \n" << EDFpath << " ";
+
+//			std::cout << "writeEdfFile: destination file already exists, NAME += _rw" << std::endl;
+//			EDFpath.replace(".", "_rw.");
         }
         this->handleEdfFile(EDFpath, false);
     }

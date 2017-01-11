@@ -228,10 +228,41 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-//	autos::repairMarkersInSecondNewFB("/media/Files/Data/FeedbackNew/MSM/MSM_FB.edf");
-//	exit(0);
 
+//	return;
+	const QString ddd = "/media/Files/Data/FeedbackNew/";
+	QStringList lll = QDir(ddd).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+//	QStringList lll = {"PDI"};
+	for(QString guy : lll)
+	{
+		QString fff = ddd + guy + "/" + guy + "_FB.edf";
+		if(!QFile::exists(fff))
+		{
+			std::cout << guy << " dir skipped" << std::endl;
+			continue;
+		}
+
+		if(autos::numMarkers(fff, {241, 247}) != 80)
+		{
+			autos::repairMarkersInSecondNewFB(fff);
+
+			if(autos::numMarkers(ddd + guy + "/" + guy + "_FB_good239.edf", {241, 247}) != 80)
+			{
+				std::cout << guy << " still bad" << std::endl;
+			}
+			else
+			{
+				std::cout << guy << " is OK" << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << guy << " is OK" << std::endl;
+		}
+	}
+	exit(0);
 	return;
+
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
