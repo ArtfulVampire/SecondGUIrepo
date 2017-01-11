@@ -233,31 +233,35 @@ void MainWindow::customFunc()
 	const QString ddd = "/media/Files/Data/FeedbackNew/";
 	QStringList lll = QDir(ddd).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 //	QStringList lll = {"PDI"};
+	std::vector<QString> suffix{"", "_FB" "_3"};
 	for(QString guy : lll)
 	{
-		QString fff = ddd + guy + "/" + guy + "_FB.edf";
-		if(!QFile::exists(fff))
+		for(int i = 0; i < 3; ++i)
 		{
-			std::cout << guy << " dir skipped" << std::endl;
-			continue;
-		}
-
-		if(autos::numMarkers(fff, {241, 247}) != 80)
-		{
-			autos::repairMarkersInSecondNewFB(fff);
-
-			if(autos::numMarkers(ddd + guy + "/" + guy + "_FB_good239.edf", {241, 247}) != 80)
+			QString fff = ddd + guy + "/" + guy + suffix[i] + ".edf";
+			if(!QFile::exists(fff))
 			{
-				std::cout << guy << " still bad" << std::endl;
+				std::cout << guy << " " << i << " skipped" << std::endl;
+				continue;
+			}
+
+			if(autos::numMarkers(fff, {241, 247}) != 80)
+			{
+				autos::repairMarkersInNewFB(fff, i);
+
+				if(autos::numMarkers(ddd + guy + "/" + guy + suffix[i] + "_good239.edf", {241, 247}) != 80)
+				{
+					std::cout << guy << " " << i << " still bad" << std::endl;
+				}
+				else
+				{
+					std::cout << guy << " " << i << " is OK" << std::endl;
+				}
 			}
 			else
 			{
-				std::cout << guy << " is OK" << std::endl;
+				std::cout << guy << " " << i << " is OK" << std::endl;
 			}
-		}
-		else
-		{
-			std::cout << guy << " is OK" << std::endl;
 		}
 	}
 	exit(0);

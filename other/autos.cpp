@@ -343,75 +343,71 @@ void IITP(const QString & dirName, const QString & guyName)
 
 }
 
-void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile)
-{
-	/// repair markers in my files
+//void repairMarkersIn13NewFB(QString edfPath, int)
+//{
+//	/// repair markers in my files
 
-	edfFile fil;
-	fil.readEdfFile(dirPath + toFile);
-	const std::valarray<double> & markArr = fil.getData()[fil.getMarkChan()];
-	std::vector<std::vector<int>> marks;
+//	edfFile fil;
+//	fil.readEdfFile(edfPath);
+//	const std::valarray<double> & markArr = fil.getData()[fil.getMarkChan()];
+//	std::vector<int> marks;
 
-	for(int i = 0; i < markArr.size(); ++i)
-	{
-		if(markArr[i] == 239.)
-		{
-			marks.push_back({i, int(markArr[i])});
-		}
-	}
+//	for(int i = 0; i < markArr.size(); ++i)
+//	{
+//		if(markArr[i] == 239.)
+//		{
+//			marks.push_back(i);
+//		}
+//	}
 
-	for(int i = 0; i < markArr.size(); ++i)
-	{
-		if(markArr[i] == 241. || markArr[i] == 247.)
-		{
-			fil.setData(fil.getMarkChan(), i, 0.);
-		}
-	}
-
-
-	std::ifstream inStr;
-	inStr.open((dirPath + "/list1.txt").toStdString());
-	std::vector<int> marksList;
-	std::string typ;
-	int num;
-	std::string fileName;
-	while(!inStr.eof())
-	{
-		inStr >> typ;
-		inStr >> num;
-		inStr >> fileName;
-		if(!inStr.eof())
-		{
-			if(typ == "S1")
-			{
-				marksList.push_back(241);
-			}
-			else if(typ == "V1")
-			{
-				marksList.push_back(247);
-			}
-		}
-	}
-
-	if(marksList.size() != marks.size())
-	{
-		std::cout << "inequal sizes: ";
-		std::cout << marksList.size() << '\t';
-		std::cout << marks.size() << std::endl;
-		exit(1);
-	}
-
-	for(int i = 0; i < 80; ++i)
-	{
-		fil.setData(fil.getMarkChan(), marks[i][0], marksList[i]);
-	}
-	toFile.replace(".edf", "_good.edf");
-	fil.writeEdfFile(dirPath + toFile);
-
-}
+//	for(int i = 0; i < markArr.size(); ++i)
+//	{
+//		if(markArr[i] == 241. || markArr[i] == 247.)
+//		{
+//			fil.setData(fil.getMarkChan(), i, 0.);
+//		}
+//	}
 
 
-void repairMarkersInSecondNewFB(QString edfPath)
+//	std::ifstream inStr;
+//	inStr.open("/media/Files/Data/FeedbackNew/Tables/types2.txt");
+//	std::vector<int> marksList;
+//	char c;
+//	while(!inStr.eof())
+//	{
+//		inStr >> c;
+//		if(!inStr.eof())
+//		{
+//			if(c == 's')
+//			{
+//				marksList.push_back(241);
+//			}
+//			else if(c == 'v')
+//			{
+//				marksList.push_back(247);
+//			}
+//		}
+//	}
+
+//	if(marksList.size() != marks.size())
+//	{
+//		std::cout << "inequal sizes: ";
+//		std::cout << marksList.size() << '\t';
+//		std::cout << marks.size() << std::endl;
+//		exit(1);
+//	}
+
+//	for(int i = 0; i < 80; ++i)
+//	{
+//		fil.setData(fil.getMarkChan(), marks[i][, marksList[i]);
+//	}
+//	edfPath.replace(".edf", "_good239.edf");
+//	fil.writeEdfFile(edfPath);
+
+//}
+
+
+void repairMarkersInNewFB(QString edfPath, int numSession)
 {
 	/// repair markers in my files
 
@@ -446,7 +442,8 @@ void repairMarkersInSecondNewFB(QString edfPath)
 
 
 	std::ifstream inStr;
-	inStr.open("/media/Files/Data/FeedbackNew/Tables/types2.txt");
+	inStr.open(("/media/Files/Data/FeedbackNew/Tables/types"
+				+ QString::number(numSession + 1) + ".txt").toStdString());
 	std::vector<int> marksList;
 	char c;
 	while(!inStr.eof())

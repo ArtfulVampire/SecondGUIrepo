@@ -51,9 +51,8 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 void Xenia_TBI();
 void IITP(const QString & dirName = "Oleg", const QString & guyName = "Oleg");
 
-void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile);
-void repairMarkersInSecondNewFB(QString edfPath);
-void repairMarkersInThirdNewFB(QString edfPath);
+//void repairMarkersIn13NewFB(QString edfPath);
+void repairMarkersInNewFB(QString edfPath, int numSession);
 int numMarkers(const QString & edfPath, const std::vector<int> & markers);
 
 void makeRightNumbersCF(const QString & dirPath, int startNum);
