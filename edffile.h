@@ -161,6 +161,7 @@ public:
     void cutZerosAtEnd();
 	void adjustMarkerChannel();
 
+
 	/// for iitp
 	void downsample(double newFreq,
 					QString outPath = QString(),
@@ -236,7 +237,7 @@ protected:
     bool edfPlusFlag = false; // to detect
 	bool filterIITPflag = true;
 
-	bool writeMarkersFlag = false;
+	bool writeMarkersFlag = true;
 	bool writeLabelsFlag = false;
 	bool writeHeaderFlag = false;
 

@@ -356,7 +356,7 @@ void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile)
 	{
 		if(markArr[i] == 239.)
 		{
-			marks.push_back({double(i), markArr[i]});
+			marks.push_back({i, markArr[i]});
 		}
 	}
 
@@ -407,6 +407,78 @@ void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile)
 	}
 	toFile.replace(".edf", "_good.edf");
 	fil.writeEdfFile(dirPath + toFile);
+
+}
+
+
+void repairMarkersInSecondNewFB(QString edfPath)
+{
+	/// repair markers in my files
+
+	edfFile fil;
+	fil.readEdfFile(edfPath);
+
+	const std::valarray<double> & mrk = fil.getData()[fil.getMarkChan()];
+	std::vector<int> marks;
+
+	bool startFlag = true;
+	for(int i = 0; i < mrk.size(); ++i)
+	{
+		if(mrk[i] == 239 && startFlag == true)
+		{
+			marks.push_back(i);
+			startFlag = false;
+		}
+		else if(mrk[i] == 254)
+		{
+			startFlag = true;
+		}
+
+	}
+
+	for(int i = 0; i < mrk.size(); ++i)
+	{
+		if(mrk[i] == 241. || mrk[i] == 247.)
+		{
+			fil.setData(fil.getMarkChan(), i, 0.);
+		}
+	}
+
+
+	std::ifstream inStr;
+	inStr.open("/media/Files/Data/FeedbackNew/Tables/types2.txt");
+	std::vector<int> marksList;
+	char c;
+	while(!inStr.eof())
+	{
+		inStr >> c;
+		if(!inStr.eof())
+		{
+			if(c =='s')
+			{
+				marksList.push_back(241);
+			}
+			else if(c == 'v')
+			{
+				marksList.push_back(247);
+			}
+		}
+	}
+
+	if(marksList.size() != marks.size())
+	{
+		std::cout << "inequal sizes: ";
+		std::cout << marksList.size() << '\t';
+		std::cout << marks.size() << std::endl;
+		exit(1);
+	}
+
+	for(int i = 0; i < 80; ++i)
+	{
+		fil.setData(fil.getMarkChan(), marks[i], marksList[i]);
+	}
+	edfPath.replace(".edf", "_good239.edf");
+	fil.writeEdfFile(edfPath);
 
 }
 

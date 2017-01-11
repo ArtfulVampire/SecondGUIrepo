@@ -13,21 +13,13 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-//	QString dirPath = "/media/Files/Data/AAX";
-//	QString edfName = "AAX_final.edf";
-//	BaklushevDraw(dirPath, edfName);
-//	exit(0);
-
-
-//	QString wndPath = "/media/Files/Data/FeedbackNew/PDI/SpectraSmooth/winds";
+	//	QString wndPath = "/media/Files/Data/FeedbackNew/PDI/SpectraSmooth/winds";
 //	QStringList lst = QDir(wndPath).entryList({"*.psd"}, QDir::Files, QDir::Name);
 //	for(int i = 0; i < lst.size() - 800; ++i)
 //	{
 //		QFile::remove(wndPath + "/" + lst[i]);
 //	}
 //	exit(0);
-
-
 
 
 //	int leng = 1500;
@@ -66,8 +58,32 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
+
+//	edfFile cab;
+//	cab.readEdfFile("/media/Files/Data/FeedbackNew/TihAA/TIHAA_FB_00_cable.EDF");
+//	matrix cabDat = cab.getData().subCols(5, 3703);
+//	std::cout << cabDat.rows() << std::endl;
+
+
+//	edfFile fee;
+//	fee.readEdfFile("/media/Files/Data/FeedbackNew/TihAA/TihAA_FB_all.edf");
+//	matrix newDat = fee.getData().subCols(0, 191403);
+//	std::cout << newDat.rows() << std::endl;
+//	newDat.horzCat(cabDat);
+//	matrix newDat1 = fee.getData().subCols(192197, fee.getData().cols());
+//	std::cout << newDat1.rows() << std::endl;
+//	newDat.horzCat(newDat1);
+//	fee.writeOtherData(newDat, "/media/Files/Data/FeedbackNew/TihAA/TIHAA_FB_all_cab.edf");
+
+//	edfFile fee;
+//	fee.readEdfFile("/media/Files/Data/FeedbackNew/MSM/MSM_FB_0_new.EDF");
+//	fee.concatFile("/media/Files/Data/FeedbackNew/MSM/MSM_FB_1_new.EDF").concatFile(
+//				"/media/Files/Data/FeedbackNew/MSM/MSM_FB_2_new.EDF",
+//				"/media/Files/Data/FeedbackNew/MSM/MSM_FB_all.edf");
+//	exit(0);
+
 //	return;
-#if 01
+#if 0
 	/// test coherency
 	iitp::iitpData dt;
 	const QString direct = "/media/Files/Data/iitp/Irina/";
@@ -82,7 +98,7 @@ void MainWindow::customFunc()
 	std::vector<std::vector<std::vector<std::complex<double>>>> cohs;
 
 	const int numChansEeg = 19;
-	const int numChansEmg = 18;
+	const int numChansEmg = 8;
 	const int minChansEmg = 20;
 	const int minFreq = 1;
 	const int numFreq = 45;
@@ -212,7 +228,10 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-//	return;
+//	autos::repairMarkersInSecondNewFB("/media/Files/Data/FeedbackNew/MSM/MSM_FB.edf");
+//	exit(0);
+
+	return;
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
@@ -432,25 +451,45 @@ void MainWindow::customFunc()
 	/// find -type f -regextype sed -iregex ".*/[^/]\{3\}\(_train\|_test\|_FB\|E\|_1\|_3\)\.edf"
 
 
-	QDir tmp("/media/Files/Data/Twins");
-	QDir dest("/media/michael/Seagate Expansion Drive/Michael/Data/BACKUPS/Twins");
+	QDir tmp("/media/Files/Data/FeedbackNew");
+	QDir dest("/media/Files/Data/FeedbackNew/UDFs");
+//	QDir dest("/media/michael/Seagate Expansion Drive/Michael/Data/BACKUPS/Twins");
+
 	for(auto deer : tmp.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
 //		if(deer.startsWith("Succ")) continue;
+
 		tmp.cd(deer);
 		dest.mkdir(deer);
 		dest.cd(deer);
 
 		QString edfF = tmp.entryList(def::edfFilters, QDir::Files, QDir::Time|QDir::Reversed)[0];
-		std::cout << edfF << std::endl;
+		QStringList udfF = tmp.entryList({"*.UDF", "*.Hdr"}, QDir::Files);
+//		std::cout << edfF << std::endl;
 
-		QFile::copy(tmp.absolutePath() + slash + edfF,
-					dest.absolutePath() + slash + edfF);
+		for(QString udfFin : udfF)
+		{
+			QFile::rename(tmp.absolutePath() + slash + udfFin, dest.absolutePath() + slash + udfFin);
+		}
+//		QFile::copy(tmp.absolutePath() + slash + edfF, dest.absolutePath() + slash + edfF);
 
 		tmp.cdUp();
 		dest.cdUp();
 	}
 	exit(0);
+
+
+//	const QString pe = "/media/Files/Data/FeedbackNew";
+//	QStringList dl = QDir(pe).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+//	for(QString dr : dl)
+//	{
+//		for(QString fn : {"ans1.txt", "ans2.txt", "ans3.txt"})
+//		{
+//			QFile::copy(pe + "/" + dr + "/" + fn,
+//						pe + "/Tables/" + dr + "_" + fn);
+//		}
+//	}
+//	exit(0);
 #endif
 
 #if 0

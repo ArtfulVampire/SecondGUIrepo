@@ -50,7 +50,11 @@ void XeniaArrangeToLine(const QString & dirPath,
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 void Xenia_TBI();
 void IITP(const QString & dirName = "Oleg", const QString & guyName = "Oleg");
+
 void repairMarkersInFirstNewFB(const QString & dirPath, QString toFile);
+void repairMarkersInSecondNewFB(QString edfPath);
+void repairMarkersInThirdNewFB(QString edfPath);
+
 void makeRightNumbersCF(const QString & dirPath, int startNum);
 void makeRightNumbers(const QString & dirPath,
 					  int length = 3);

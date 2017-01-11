@@ -47,14 +47,18 @@ public slots:
     void next();
     void prev();
     void cut();
-    void zero();
+	void zero();
+	void split();
+	void zeroFromZeroSlot();
+	void splitFromZeroSlot();
+	void zeroTillEndSlot();
+	void splitTillEndSlot();
 	void undoSlot();
     void paint();
     void save();
     void rewrite();
     void cutEyesAll();
-    void browse();
-    void splitCut();
+	void browse();
     void forwardStepSlot();
     void backwardStepSlot();
     void forwardFrameSlot();
@@ -66,8 +70,7 @@ public slots:
 	void subtractMeansSlot();
 	void set1MarkerSlot();
 	void set2MarkerSlot();
-	void zeroFromZeroSlot();
-	void splitFromZeroSlot();
+
 
 
 protected:

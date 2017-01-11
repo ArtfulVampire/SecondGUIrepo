@@ -151,6 +151,7 @@ public:
     matrix & eraseRows(const std::vector<uint> & indices);
     matrix & random(double low = 0., double high = 1.);
     matrix & vertCat(matrix && other);
+	matrix & horzCat(const matrix & other);
 	matrix & pop_front(uint numOfCols);
     matrix subCols(int beginCol, int endCol) const; /// submatrix
     matrix subRows(const std::vector<int> & inds) const; /// submatrix

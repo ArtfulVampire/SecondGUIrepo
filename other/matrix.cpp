@@ -532,6 +532,27 @@ matrix & matrix::vertCat(matrix && other)
     return *this;
 }
 
+matrix & matrix::horzCat(const matrix & other)
+{
+	if(this->rows() != other.rows())
+	{
+		std::cout << "matrix::horzCat(): wrong dimensionality" << std::endl;
+		return *this;
+	}
+	const int startCopy = this->cols();
+	this->resizeCols(this->cols() + other.cols());
+
+	for(uint i = 0; i < this->rows(); ++i)
+	{
+		std::copy(std::begin(other[i]),
+				  std::end(other[i]),
+				  std::begin(this->myData[i]) + startCopy);
+	}
+	return *this;
+
+}
+
+
 matrix & matrix::random(double low, double high)
 {
     std::default_random_engine gen(std::chrono::system_clock::now().time_since_epoch().count());
