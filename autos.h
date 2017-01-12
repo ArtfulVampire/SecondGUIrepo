@@ -51,7 +51,6 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 void Xenia_TBI();
 void IITP(const QString & dirName = "Oleg", const QString & guyName = "Oleg");
 
-//void repairMarkersIn13NewFB(QString edfPath);
 void repairMarkersInNewFB(QString edfPath, int numSession);
 int numMarkers(const QString & edfPath, const std::vector<int> & markers);
 
@@ -63,6 +62,8 @@ void makeTableFromRows(const QString & work,
 					   const QString & auxFilter = QString());
 
 void avTime(const QString & realsDir = def::dir->absolutePath() + slash + "Reals");
+void timesNew(const QString & edfPath, int numSession);
+void avTimesNew(const QString & edfPath, int numSession);
 
 void clustering();
 }

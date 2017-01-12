@@ -84,7 +84,15 @@ inline std::valarray<double> softmax(const std::valarray<double> & in)
 
 }
 
-
+template <typename Typ>
+inline std::valarray<Typ> vecToValar(const std::vector<Typ> & in)
+{
+	std::valarray<Typ> res(in.size());
+	std::copy(std::begin(in),
+			  std::end(in),
+			  std::begin(res));
+	return res;
+}
 
 inline int fftL(const int & in)
 {
@@ -262,6 +270,8 @@ template void eraseItems(std::vector<int> & inVect, const std::vector<uint> & in
 template void eraseItems(std::vector<double> & inVect, const std::vector<uint> & indices);
 template void resizeValar(std::valarray<double> & in, int num);
 template void resizeValar(std::valarray<std::complex<double>> & in, int num);
+template std::valarray<double> vecToValar(const std::vector<double> & in);
+template std::valarray<std::complex<double>> vecToValar(const std::vector<std::complex<double>> & in);
 
 } // namespace smallLib
 

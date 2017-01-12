@@ -22,67 +22,43 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-//	int leng = 1500;
-//	std::vector<std::valarray<double>> s1;
-//	std::vector<std::valarray<double>> s2;
-//	std::valarray<double> t(leng);
+	const QString pth = "/media/Files/Data/FeedbackNew/";
+	const QStringList lll = QDir(pth).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+//	const QStringList lll = {"CDV"};
+	const QString outFile = pth + "avTimes_247.txt";
+	std::ofstream outStr;
+	outStr.open(outFile.toStdString());
+	double tim;
+	for(const QString & guy : lll)
+	{
+//		const QStringList files = QDir(pth + guy).entryList({"*_good.edf"});
 
-//	double srate = 250;
-//	double fr1 = 10.;
-//	double fr2 = 10.;
-//	auto ph1 = [](){return 0.;};
-
-//	auto ph2 = [](int i)
-//	{
-//		return M_PI / 2. / 100. * i;
-//	};
-
-//	for(int i = 0; i <= 100; ++i)
-//	{
-//		for(int j = 0; j < leng; ++j)
+//		for(const QString & fil : files)
 //		{
-//			t[j] = 2 * sin(2. * M_PI * fr1 * j/srate + ph1());
+//			if(fil.contains("_2") || fil.contains("_FB")) continue;
+//			int numSession = (fil.contains("_3")) ? 3 : 1;
+//			autos::timesNew(pth + guy + "/" + fil, numSession);
+//			autos::avTimesNew(pth + guy + "/" + fil, numSession);
 //		}
-//		s1.push_back(t);
 
-//		auto ph = ph2(i);
-//		for(int j = 0; j < leng; ++j)
-//		{
-//			t[j] = sin(2. * M_PI * fr2 * j/srate + ph);
-//		}
-//		s2.push_back(t);
-//	}
-////	myLib::drw::drawOneSpectrum(s1[5], 8, 12, srate, 0).save("/media/Files/Data/1.jpg");
-//	auto c = iitp::coherency(s1, s2, srate, 10.);
-//	std::cout << c << "\tabs = " << std::abs(c) << "\targ = " << std::arg(c) << std::endl;
-//	exit(0);
+		for(QString fileName : {
+			pth + guy + "/avTimes_1_247.txt",
+			pth + guy + "/avTimes_3_247.txt"})
+		{
+			std::ifstream inStr;
+			inStr.open(fileName.toStdString());
+			inStr.ignore(64, '\n');
+			inStr.ignore(64, '\t');
+			inStr >> tim;
+			inStr.close();
 
+			outStr << tim << '\t';
+		}
+		outStr << guy << "\r\n";
+	}
+	outStr.close();
+	exit(0);
 
-
-//	edfFile cab;
-//	cab.readEdfFile("/media/Files/Data/FeedbackNew/TihAA/TIHAA_FB_00_cable.EDF");
-//	matrix cabDat = cab.getData().subCols(5, 3703);
-//	std::cout << cabDat.rows() << std::endl;
-
-
-//	edfFile fee;
-//	fee.readEdfFile("/media/Files/Data/FeedbackNew/TihAA/TihAA_FB_all.edf");
-//	matrix newDat = fee.getData().subCols(0, 191403);
-//	std::cout << newDat.rows() << std::endl;
-//	newDat.horzCat(cabDat);
-//	matrix newDat1 = fee.getData().subCols(192197, fee.getData().cols());
-//	std::cout << newDat1.rows() << std::endl;
-//	newDat.horzCat(newDat1);
-//	fee.writeOtherData(newDat, "/media/Files/Data/FeedbackNew/TihAA/TIHAA_FB_all_cab.edf");
-
-//	edfFile fee;
-//	fee.readEdfFile("/media/Files/Data/FeedbackNew/MSM/MSM_FB_0_new.EDF");
-//	fee.concatFile("/media/Files/Data/FeedbackNew/MSM/MSM_FB_1_new.EDF").concatFile(
-//				"/media/Files/Data/FeedbackNew/MSM/MSM_FB_2_new.EDF",
-//				"/media/Files/Data/FeedbackNew/MSM/MSM_FB_all.edf");
-//	exit(0);
-
-//	return;
 #if 0
 	/// test coherency
 	iitp::iitpData dt;
@@ -228,34 +204,44 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
-//	return;
+#if 0
+	/// fix markers feedback new
 	const QString ddd = "/media/Files/Data/FeedbackNew/";
 	QStringList lll = QDir(ddd).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 //	QStringList lll = {"PDI"};
-	std::vector<QString> suffix{"", "_FB" "_3"};
-	for(QString guy : lll)
+	std::vector<QString> suffix{"", "_FB", "_2", "_3"};
+	for(const QString & guy : lll)
 	{
-		for(int i = 0; i < 3; ++i)
+		for(int i = 0; i < suffix.size(); ++i)
 		{
-			QString fff = ddd + guy + "/" + guy + suffix[i] + ".edf";
-			if(!QFile::exists(fff))
+
+			QString fff = ddd + guy + "/" + guy + suffix[i] + "_good.edf";
+
+			if(!QFile::exists(fff)) /// not FB
 			{
 				std::cout << guy << " " << i << " skipped" << std::endl;
 				continue;
 			}
 
+
+			std::cout << guy + suffix[i] + ".edf" << '\t'
+					  << autos::numMarkers(fff, {241}) << " "
+					  << autos::numMarkers(fff, {247}) << " "
+					  << std::endl;
+			continue;
+
+
 			if(autos::numMarkers(fff, {241, 247}) != 80)
 			{
 				autos::repairMarkersInNewFB(fff, i);
 
-				if(autos::numMarkers(ddd + guy + "/" + guy + suffix[i] + "_good239.edf", {241, 247}) != 80)
+				if(autos::numMarkers(ddd + guy + "/" + guy + suffix[i] + "_good.edf", {241, 247}) != 80)
 				{
 					std::cout << guy << " " << i << " still bad" << std::endl;
 				}
 				else
 				{
-					std::cout << guy << " " << i << " is OK" << std::endl;
+					std::cout << guy << " " << i << " now good" << std::endl;
 				}
 			}
 			else
@@ -265,7 +251,7 @@ void MainWindow::customFunc()
 		}
 	}
 	exit(0);
-	return;
+#endif
 
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
@@ -285,7 +271,7 @@ void MainWindow::customFunc()
 
 
 //	return;
-	exit(0);
+//	exit(0);
 	/// further goes unused and old
 
 #if 0
@@ -487,8 +473,8 @@ void MainWindow::customFunc()
 
 
 	QDir tmp("/media/Files/Data/FeedbackNew");
-	QDir dest("/media/Files/Data/FeedbackNew/UDFs");
-//	QDir dest("/media/michael/Seagate Expansion Drive/Michael/Data/BACKUPS/Twins");
+//	QDir dest("/media/Files/Data/FeedbackNew/UDFs");
+	QDir dest("/media/michael/Seagate Expansion Drive/Michael/Data/BACKUPS/FeedbackNew");
 
 	for(auto deer : tmp.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
@@ -498,15 +484,18 @@ void MainWindow::customFunc()
 		dest.mkdir(deer);
 		dest.cd(deer);
 
-		QString edfF = tmp.entryList(def::edfFilters, QDir::Files, QDir::Time|QDir::Reversed)[0];
-		QStringList udfF = tmp.entryList({"*.UDF", "*.Hdr"}, QDir::Files);
+		QStringList edfF = tmp.entryList(def::edfFilters, QDir::Files, QDir::Time|QDir::Reversed);
+//		QStringList udfF = tmp.entryList({"*.UDF", "*.Hdr"}, QDir::Files);
 //		std::cout << edfF << std::endl;
 
-		for(QString udfFin : udfF)
+//		for(QString udfFin : udfF)
+//		{
+//			QFile::rename(tmp.absolutePath() + slash + udfFin, dest.absolutePath() + slash + udfFin);
+//		}
+		for(QString edfIN : edfF)
 		{
-			QFile::rename(tmp.absolutePath() + slash + udfFin, dest.absolutePath() + slash + udfFin);
+			QFile::copy(tmp.absolutePath() + slash + edfIN, dest.absolutePath() + slash + edfIN);
 		}
-//		QFile::copy(tmp.absolutePath() + slash + edfF, dest.absolutePath() + slash + edfF);
 
 		tmp.cdUp();
 		dest.cdUp();

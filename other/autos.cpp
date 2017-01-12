@@ -343,70 +343,6 @@ void IITP(const QString & dirName, const QString & guyName)
 
 }
 
-//void repairMarkersIn13NewFB(QString edfPath, int)
-//{
-//	/// repair markers in my files
-
-//	edfFile fil;
-//	fil.readEdfFile(edfPath);
-//	const std::valarray<double> & markArr = fil.getData()[fil.getMarkChan()];
-//	std::vector<int> marks;
-
-//	for(int i = 0; i < markArr.size(); ++i)
-//	{
-//		if(markArr[i] == 239.)
-//		{
-//			marks.push_back(i);
-//		}
-//	}
-
-//	for(int i = 0; i < markArr.size(); ++i)
-//	{
-//		if(markArr[i] == 241. || markArr[i] == 247.)
-//		{
-//			fil.setData(fil.getMarkChan(), i, 0.);
-//		}
-//	}
-
-
-//	std::ifstream inStr;
-//	inStr.open("/media/Files/Data/FeedbackNew/Tables/types2.txt");
-//	std::vector<int> marksList;
-//	char c;
-//	while(!inStr.eof())
-//	{
-//		inStr >> c;
-//		if(!inStr.eof())
-//		{
-//			if(c == 's')
-//			{
-//				marksList.push_back(241);
-//			}
-//			else if(c == 'v')
-//			{
-//				marksList.push_back(247);
-//			}
-//		}
-//	}
-
-//	if(marksList.size() != marks.size())
-//	{
-//		std::cout << "inequal sizes: ";
-//		std::cout << marksList.size() << '\t';
-//		std::cout << marks.size() << std::endl;
-//		exit(1);
-//	}
-
-//	for(int i = 0; i < 80; ++i)
-//	{
-//		fil.setData(fil.getMarkChan(), marks[i][, marksList[i]);
-//	}
-//	edfPath.replace(".edf", "_good239.edf");
-//	fil.writeEdfFile(edfPath);
-
-//}
-
-
 void repairMarkersInNewFB(QString edfPath, int numSession)
 {
 	/// repair markers in my files
@@ -464,17 +400,18 @@ void repairMarkersInNewFB(QString edfPath, int numSession)
 
 	if(marksList.size() != marks.size())
 	{
+		std::cout << myLib::getExpNameLib(edfPath) << " ";
 		std::cout << "inequal sizes: ";
 		std::cout << marksList.size() << '\t';
 		std::cout << marks.size() << std::endl;
-		exit(1);
+		return;
 	}
 
 	for(int i = 0; i < 80; ++i)
 	{
 		fil.setData(fil.getMarkChan(), marks[i] - 1, marksList[i]);
 	}
-	edfPath.replace(".edf", "_good239.edf");
+	edfPath.replace(".edf", "_good.edf");
 	fil.writeEdfFile(edfPath);
 
 }
@@ -1240,11 +1177,145 @@ void GalyaFull(const QString & inDirPath,
 	autos::makeTableFromRows(waveletPath, outDirPath + slash + outFileNames + "_wavelet.txt");
 }
 
+void avTimesNew(const QString & edfPath, int numSession)
+
+{
+	int ans;
+	double tim;
+
+	std::vector<int> nums = {241, 247};
+
+	for(int i = 0; i < 2; ++i)
+	{
+		QString timesPath = myLib::getDirPathLib(edfPath) + "/times_"
+							+ QString::number(numSession) + "_"
+							+ QString::number(nums[i]) + ".txt";
+
+		std::ifstream inStr;
+		inStr.open(timesPath.toStdString());
+
+		std::vector<double> times[5];
+		while(!inStr.eof())
+		{
+			inStr >> ans;
+			inStr >> tim;
+			if(!inStr.eof())
+			{
+				times[ans].push_back(tim);
+				times[3].push_back(tim);
+				if(ans != 0) times[4].push_back(tim);
+			}
+		}
+		inStr.close();
+
+		QString fileName = timesPath.replace("times_", "avTimes_");
+		QFile::remove(fileName);
+
+		std::ofstream outStr;
+		outStr.open(fileName.toStdString());
+
+		outStr << "\t" << "\t" << "mean" << "\t" << "sigma" << "\r\n";
+		for(std::pair<int, QString> a : {std::pair<int, QString>(1, "corr"),
+			std::pair<int, QString>(2, "incorr"),
+			std::pair<int, QString>(4, "answrd"),
+			std::pair<int, QString>(3, "allll")})
+		{
+			auto valar = smallLib::vecToValar(times[a.first]);
+			outStr << a.second << "\t"
+				   << smallLib::doubleRound(smallLib::mean(valar), 2) << "\t"
+				   << smallLib::doubleRound(smallLib::sigma(valar), 2) << "\r\n";
+		}
+		outStr.close();
+	}
+}
+
+void timesNew(const QString & edfPath,
+			   int numSession)
+{
+	if(!QFile::exists(edfPath)) return;
+
+	edfFile fil;
+	fil.readEdfFile(edfPath);
+	const std::valarray<double> & marks = fil.getData()[fil.getMarkChan()];
+
+	std::ofstream out;
+
+	std::ifstream answers;
+	answers.open((myLib::getDirPathLib(edfPath) + "/ans"
+				  + QString::number(numSession) + ".txt").toStdString());
+
+
+	bool startFlag = false;
+	int sta = 0;
+	int fin = 0;
+	char ans;
+
+	std::vector<std::vector<int>> correctness(2, std::vector<int>(3));
+	std::vector<int> nums = {241, 247};
+	int num = -1;
+
+	for(int i = 0; i < nums.size(); ++i)
+	{
+		QFile::remove(myLib::getDirPathLib(edfPath) + "/correctness_"
+					  + QString::number(numSession) + "_"
+					  + QString::number(nums[i]) + ".txt");
+		QFile::remove(myLib::getDirPathLib(edfPath) + "/times_"
+					  + QString::number(numSession) + "_"
+					  + QString::number(nums[i]) + ".txt");
+	}
+
+	for(int i = 0; i < marks.size(); ++i)
+	{
+		if(marks[i] == 0.) continue;
+
+		int mark = marks[i];
+		if(mark == nums[0] || mark == nums[1])
+		{
+			sta = i;
+
+			if(mark == 241) num = 0;
+			else num = 1;
+
+			startFlag = true;
+		}
+		else if(mark == 254)
+		{
+			fin = i;
+			startFlag = false;
+
+			answers >> ans;
+			if(ans == '\n') answers >> ans;
+
+			++correctness[num][QString(ans).toInt()];
+
+			out.open((myLib::getDirPathLib(edfPath) + "/times_"
+					  + QString::number(numSession) + "_"
+					  + QString::number(nums[num]) + ".txt").toStdString(), std::ios_base::app);
+			out
+//					<< "ans = "
+					<< ans << "\t"
+//					<< "time = "
+					<< double(fin - sta) / fil.getFreq() << "\r\n";
+			out.close();
+		}
+	}
+	for(int i = 0; i < 2; ++i)
+	{
+		out.open((myLib::getDirPathLib(edfPath) + "/correctness_"
+				  + QString::number(numSession) + "_"
+				  + QString::number(nums[i]) + ".txt").toStdString(), std::ios_base::app);
+		out << "+\t-\t0" << std::endl;
+		out << correctness[i][1] << '\t' << correctness[i][2] << '\t' << correctness[i][0] << "\r\n";
+		out.close();
+	}
+
+	answers.close();
+}
 
 void avTime(const QString & realsDir)
 {
-	int shortThreshold = 2 * def::freq;
-	int longThreshold = 32 * def::freq - 125;
+	int shortThreshold = 3 * def::freq;
+	int longThreshold = 31.5 * def::freq;
 	int shortReals = 0;
 	int longReals = 0;
 
@@ -1252,9 +1323,7 @@ void avTime(const QString & realsDir)
 	means.resize(4); /// 4 types of mean - with or w/o shorts and longs
 
 	int num = 0;
-	std::ifstream inStr;
 
-	QStringList lst;
 	QString helpString;
 
 	QDir localDir;
@@ -1266,12 +1335,13 @@ void avTime(const QString & realsDir)
 		shortReals = 0;
 		longReals = 0;
 
-		lst = localDir.entryList({"*_" + tmp + "*"}, QDir::Files);
+		QStringList lst = QDir(realsDir).entryList({"*_" + tmp + "*"}, QDir::Files);
 		for(const QString & fileName : lst)
 		{
-			helpString = localDir.absolutePath() + slash + fileName;
+			helpString = realsDir + slash + fileName;
 
 			// read numOfSlices
+			std::ifstream inStr;
 			inStr.open(helpString.toStdString());
 			inStr.ignore(64, ' ');
 			inStr >> num;
@@ -1298,8 +1368,8 @@ void avTime(const QString & realsDir)
 		means[3] /= (lst.length() - shortReals - longReals);
 		means /= def::freq;
 
-		localDir.cdUp();
-		helpString = localDir.absolutePath() + slash + "avTime.txt";
+		helpString = realsDir + "/../" + "avTime.txt";
+
 		std::ofstream res;
 		res.open(helpString.toStdString(), std::ios_base::app);
 		res << "Reals type\t" << tmp << ":\r\n";
