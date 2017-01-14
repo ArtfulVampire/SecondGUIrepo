@@ -7,7 +7,7 @@ namespace myLib
 {
 
 
-QString matiCountByteStr(const double & marker)
+QString matiCountByteStr(double marker)
 {
     QString result;
     std::vector<bool> byteMarker;
@@ -21,7 +21,7 @@ QString matiCountByteStr(const double & marker)
     return result;
 
 }
-void matiPrintMarker(const double &marker, QString pre)
+void matiPrintMarker(double marker, QString pre)
 {
     std::vector<bool> byteMarker;
     byteMarker = matiCountByte(marker);
@@ -33,7 +33,7 @@ void matiPrintMarker(const double &marker, QString pre)
 	std::cout << marker << "\t" << matiCountByteStr(marker) << std::endl;
 }
 
-std::vector<bool> matiCountByte(double const &  marker)
+std::vector<bool> matiCountByte(double marker)
 {
     std::vector<bool> byteMarker;
     for(int h = 0; h < 16; ++h)

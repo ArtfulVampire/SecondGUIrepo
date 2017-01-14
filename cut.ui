@@ -317,7 +317,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -361,30 +361,6 @@
        </widget>
       </item>
      </layout>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="saveButton">
-      <property name="text">
-       <string>Save</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QPushButton" name="rewriteButton">
-      <property name="text">
-       <string>Rewrite</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QDoubleSpinBox" name="xNormDoubleSpinBox"/>
-    </item>
-    <item row="1" column="3">
-     <widget class="QLabel" name="label_12">
-      <property name="text">
-       <string>X norm</string>
-      </property>
-     </widget>
     </item>
     <item row="2" column="0">
      <widget class="QPushButton" name="zeroButton">
@@ -455,13 +431,6 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="3">
-     <widget class="QPushButton" name="cutButton">
-      <property name="text">
-       <string>Cut</string>
-      </property>
-     </widget>
-    </item>
     <item row="5" column="0">
      <widget class="QPushButton" name="backwardFrameButton">
       <property name="text">
@@ -507,6 +476,37 @@
      <widget class="QLabel" name="label_6">
       <property name="text">
        <string>paint length</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="rewriteButton">
+      <property name="text">
+       <string>Rewrite</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QPushButton" name="saveButton">
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QPushButton" name="saveSubsecPushButton">
+      <property name="text">
+       <string>Save subsec</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QLineEdit" name="saveSubsecAddNameLineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
      </widget>
     </item>

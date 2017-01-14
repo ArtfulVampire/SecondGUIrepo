@@ -409,7 +409,7 @@ matrix countWavelet(const signalType & inSignal)
 
 
 
-double red(const int & range, double j, double V, double S)
+double red(int range, double j, double V, double S)
 {
 	double part = j / double(range);
 	// matlab
@@ -427,7 +427,7 @@ double red(const int & range, double j, double V, double S)
 	else if(0.833 < part && part <= 1.000) return V - V*S*(part-0.833)/(1.000-0.833)/2.;
 	else return 0.0;
 }
-double green(const int & range, double j, double V, double S)
+double green(int range, double j, double V, double S)
 {
 	double part = j / double(range);
 	double hlp = 1.0;
@@ -447,7 +447,7 @@ double green(const int & range, double j, double V, double S)
 	else return 0.0;
 }
 
-double blue(const int & range, double j, double V, double S)
+double blue(int range, double j, double V, double S)
 {
 	double part = j / double(range);
 
@@ -469,7 +469,7 @@ double blue(const int & range, double j, double V, double S)
 	else return 0.0;
 }
 
-QColor hueJet(const int & range, double j)
+QColor hueJet(int range, double j)
 {
 	if(j > range) j = range; //bicycle for no black colour
 	if(j < 0) j = 0; //bicycle for no black colour

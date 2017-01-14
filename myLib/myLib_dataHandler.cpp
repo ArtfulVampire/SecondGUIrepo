@@ -228,7 +228,7 @@ void writePlainData(const QString outPath,
 void readPlainData(const QString & inPath,
                    matrix & data,
                    int & numOfSlices,
-                   const int & start)
+				   int start)
 {
 	std::ifstream inStr;
     inStr.open(inPath.toStdString());

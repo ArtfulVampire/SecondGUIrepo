@@ -205,8 +205,8 @@ void MainWindow::refilterDataSlot()
 	std::cout << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
-void MainWindow::refilterData(const double & lowFreq,
-                              const double & highFreq,
+void MainWindow::refilterData(double lowFreq,
+                              double highFreq,
                               const QString & newPath,
                               bool notch)
 {
@@ -262,7 +262,7 @@ void MainWindow::reduceChannelsSlot()
                                     chanStr.toInt() - 1));
     }
 	std::cout << "reduceChannelsSlot: excludeList = ";
-    for(const int & in : excludeList)
+    for(int in : excludeList)
     {
 		std::cout << in << "  ";
     }
@@ -281,7 +281,7 @@ void MainWindow::reduceChannelsSlot()
         helpString = (localDir.absolutePath()
                                               + slash + fileName);
 		myLib::readPlainData(helpString, dataR, NumOfSlices);
-        for(const int & exclChan : excludeList)
+        for(int exclChan : excludeList)
         {
             dataR.eraseRow(exclChan);
             --localNs;

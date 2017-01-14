@@ -22,20 +22,14 @@ INCLUDEPATH += ./DSP
 LIBS += -L../SecondGUI/DSP -ldspFilters
 
 #cwt
-#INCLUDEPATH += ./matlab/for_testing
-#DEPENDPATH += ./matlab/for_testing
-#INCLUDEPATH += ./matlab/mcr_extern_include
-#LIBS += -L../SecondGUI/matlab/libs -leng -lmwcpp11compat -lmwmclmcrrt -lcwt_r
+INCLUDEPATH += ./matlab/for_testing
+DEPENDPATH += ./matlab/for_testing
+INCLUDEPATH += ./matlab/mcr_extern_include
+LIBS += -L../SecondGUI/matlab/for_testing -lcwt_r
 
-
-#matlab cwt function
-LIBS += -L/media/Files/Matlab/Projects/libcwt_r/for_testing -lcwt_r
-INCLUDEPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
-DEPENDPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
-
-INCLUDEPATH += /media/Files/Matlab/MCR/v83/extern/include
 LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -leng -lmwcpp11compat
 LIBS += -L/media/Files/Matlab/MCR/v83/runtime/glnxa64 -lmwmclmcrrt
+
 
 
 SOURCES += main.cpp\

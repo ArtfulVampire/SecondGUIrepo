@@ -33,9 +33,9 @@ void myTransform(int & output, char * input);
 void myTransform(double & output, char * input);
 void myTransform(QString & output, char * input);
 
-void myTransform(const int & input, const int & len, char ** output);
-void myTransform(const double & input, const int & len, char ** output);
-void myTransform(const QString & input, const int & len, char ** output);
+void myTransform(int input, int len, char ** output);
+void myTransform(double input, int len, char ** output);
+void myTransform(const QString & input, int len, char ** output);
 
 
 
@@ -114,15 +114,15 @@ public:
 
     void handleData(bool readFlag,
                     FILE * edfForData);
-    void handleDatum(const int & currNs,
-                     const int & currTimeIndex,
+    void handleDatum(int currNs,
+                     int currTimeIndex,
                      bool readFlag,
                      QString & ntAnnot,
                      FILE * edfForDatum);
-    void writeMarker(const double & currDatum,
-                     const int & currTimeIndex) const;
-    void handleAnnotations(const int & currNs,
-                           const int & currentTimeIndex,
+    void writeMarker(double currDatum,
+                     int currTimeIndex) const;
+    void handleAnnotations(int currNs,
+                           int currentTimeIndex,
                            QString helpString,
 						   std::vector<QString> annotations);
 
@@ -137,10 +137,11 @@ public:
 	edfFile & divideChannels(std::vector<uint> chanNums = {}, double denom = 2.);
 	uint findChannel(const QString & str);
     void countFft();
-	edfFile refilter(const double & lowFreq,
-				  const double & highFreq,
-                  const QString & newPath = QString(),
-                  bool isNotch = false);
+	edfFile & refilter(double lowFreq,
+					   double highFreq,
+					   const QString & newPath = QString(),
+					   bool isNotch = false,
+					   std::vector<uint> chanList = {});
     void saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
@@ -245,13 +246,13 @@ public:
 //    const QString & getHeaderInit() const {return headerInitialInfo;}
     const std::string & getHeaderInit() const {return headerInitialInfo;}
 
-    const int & getBytes() const {return bytes;}
+    int getBytes() const {return bytes;}
     const QString & getHeaderReserved() const {return headerReservedField;}
 
-    const int & getNdr() const {return ndr;}
-    const double & getDdr() const {return ddr;}
-    const int & getNs() const {return ns;}
-	const int & getFreq() const {return srate;}
+    int getNdr() const {return ndr;}
+    double getDdr() const {return ddr;}
+    int getNs() const {return ns;}
+	int getFreq() const {return srate;}
 
 	const std::vector<QString> & getLabels() const {return labels;}
 	const std::vector<QString> & getTransducer() const {return transducerType;}

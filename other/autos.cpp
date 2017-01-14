@@ -265,7 +265,7 @@ void IITP(const QString & dirName, const QString & guyName)
 #if 01
 		/// with filtering
 #if 01
-		/// filter EMG notch
+		/// filter EMG notch + goniogramms
 		filePath = ExpNamePre + "_emg.edf";
 		if(!QFile::exists(filePath)) continue;
 		fil.readEdfFile(filePath);
@@ -274,10 +274,21 @@ void IITP(const QString & dirName, const QString & guyName)
 		{
 			fil.refilter(fr - 5, fr + 5, {}, true);
 		}
+		/// filter goniogramms
+		std::vector<uint> chanList;
+		for(int i = 0; i < fil.getNs(); ++i)
+		{
+			for(auto joint : {"elbow", "wrist", "knee", "ankle"})
+			{
+				if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive)) chanList.push_back(i);
+				break;
+			}
+		}
+		fil.refilter(0.1, 5, {}, false, chanList);
+
 		filePath = ExpNamePre + "_emg_f.edf";
 		fil.writeEdfFile(filePath);
 #endif
-//		continue;
 
 #if 01
 		/// filter EEG edfs, but not ECG
@@ -287,7 +298,6 @@ void IITP(const QString & dirName, const QString & guyName)
 		fil.readEdfFile(filePath);
 
 		filePath = ExpNamePre + "_eeg_f.edf";
-//		fil.refilter(95, 105, {}, true);
 		fil.refilter(45, 55, {}, true);
 		fil.refilter(0.5, 70, filePath);
 #endif
@@ -631,7 +641,7 @@ void cutOneFile(const QString & filePath,
 		initEdf.removeChannels({initEdf.getMarkChan()}); // remove Annotations
 	}
 
-	const int & fr = initEdf.getFreq();
+	int fr = initEdf.getFreq();
 	const int numOfWinds = ceil(initEdf.getDataLen() / fr / wndLen);
 
 
@@ -1152,6 +1162,7 @@ void GalyaFull(const QString & inDirPath,
 //	const QString waveletPath = inDirPath + slash + myLib::getFileName(inDirPath) + "_wavelet";
 	tmp.mkpath(waveletPath);
 
+#if 0
 	autos::GalyaProcessing(inDirPath,
 						   numChan,
 						   outPath);
@@ -1164,6 +1175,7 @@ void GalyaFull(const QString & inDirPath,
 								 outDirPath + slash + outFileNames + type + ".txt",
 								 type);
 	}
+#endif
 
 //	return;
 
@@ -1171,6 +1183,7 @@ void GalyaFull(const QString & inDirPath,
 	autos::GalyaWavelets(inDirPath,
 						 numChan, freq,
 						 waveletPath);
+	exit(0);
 
 	/// rename the folder in OUT to guy
 	autos::makeRightNumbers(waveletPath, rightNum);

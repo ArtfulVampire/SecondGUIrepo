@@ -26,8 +26,8 @@ Cut::Cut() :
 	ui->suffixComboBox->addItem("emg");
 	ui->suffixComboBox->addItem("sum");
 	ui->suffixComboBox->addItem("new");
-//	ui->suffixComboBox->setCurrentText("");
-	ui->suffixComboBox->setCurrentText("sum"); /// iitp
+	ui->suffixComboBox->setCurrentText("");
+//	ui->suffixComboBox->setCurrentText("sum"); /// iitp
 
 
     ui->eogDoubleSpinBox->setValue(2.40);
@@ -38,13 +38,6 @@ Cut::Cut() :
 	ui->yNormDoubleSpinBox->setMinimum(0.01);
 	ui->yNormDoubleSpinBox->setValue(1.);
 	ui->yNormDoubleSpinBox->setSingleStep(0.05);
-
-
-	ui->xNormDoubleSpinBox->setDecimals(2);
-	ui->xNormDoubleSpinBox->setMaximum(4.);
-	ui->xNormDoubleSpinBox->setMinimum(0.25);
-	ui->xNormDoubleSpinBox->setValue(1.);
-	ui->xNormDoubleSpinBox->setSingleStep(0.25);
 
 //    ui->paintStartDoubleSpinBox->setValue(0);
     ui->paintStartDoubleSpinBox->setDecimals(1);
@@ -64,16 +57,19 @@ Cut::Cut() :
 
     ui->nextButton->setShortcut(tr("d"));
     ui->prevButton->setShortcut(tr("a"));
-    ui->cutButton->setShortcut(tr("c"));
+	ui->saveSubsecPushButton->setShortcut(tr("c"));
     ui->zeroButton->setShortcut(tr("z"));
-    ui->saveButton->setShortcut(tr("s"));
+	ui->saveButton->setShortcut(tr("s"));
     ui->splitButton->setShortcut(tr("x"));
     ui->rewriteButton->setShortcut(tr("r"));
 	ui->forwardFrameButton->setShortcut(QKeySequence::Forward);
 	ui->backwardFrameButton->setShortcut(QKeySequence::Back);
 	ui->forwardFrameButton->setShortcut(tr("e"));
 	ui->backwardFrameButton->setShortcut(tr("q"));
-	QShortcut * undo = new QShortcut(QKeySequence(tr("Ctrl+z")), this);
+	QShortcut * undoShortcut = new QShortcut(QKeySequence(tr("Ctrl+z")), this);
+	QShortcut * copyShortcut = new QShortcut(QKeySequence(tr("Ctrl+c")), this);
+	QShortcut * pasteShortcut = new QShortcut(QKeySequence(tr("Ctrl+v")), this);
+	QShortcut * cutShortcut = new QShortcut(QKeySequence(tr("Ctrl+x")), this);
 	ui->setMark1PushButton->setShortcut(tr("1"));
 	ui->setMark2PushButton->setShortcut(tr("2"));
 
@@ -85,10 +81,6 @@ Cut::Cut() :
 
     ui->scrollArea->setWidget(ui->picLabel);
     ui->scrollArea->installEventFilter(this);
-
-
-
-
 
 
     ///////////////
@@ -110,30 +102,35 @@ Cut::Cut() :
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
 #endif
 
-	QObject::connect(undo, SIGNAL(activated()), this, SLOT(undoSlot()));
+	QObject::connect(undoShortcut, SIGNAL(activated()), this, SLOT(undoSlot()));
+	QObject::connect(copyShortcut, SIGNAL(activated()), this, SLOT(copySlot()));
+	QObject::connect(pasteShortcut, SIGNAL(activated()), this, SLOT(pasteSlot()));
+	QObject::connect(cutShortcut, SIGNAL(activated()), this, SLOT(cutSlot()));
+
 	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
 	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
 	QObject::connect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(resizeWidget(double)));
+	QObject::connect(this, SIGNAL(buttonPressed(char,int)), this, SLOT(mousePressSlot(char,int)));
 
-    QObject::connect(this, SIGNAL(buttonPressed(char,int)), this, SLOT(mousePressSlot(char,int)));
     QObject::connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(next()));
-    QObject::connect(ui->prevButton, SIGNAL(clicked()), this, SLOT(prev()));
-    QObject::connect(ui->cutButton, SIGNAL(clicked()), this, SLOT(cut()));
-    QObject::connect(ui->zeroButton, SIGNAL(clicked()), this, SLOT(zero()));
+	QObject::connect(ui->prevButton, SIGNAL(clicked()), this, SLOT(prev()));
     QObject::connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(save()));
-    QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
-	QObject::connect(this, SIGNAL(openFile(QString)), ui->lineEdit, SLOT(setText(QString)));
-    QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(const QString &)));
-    QObject::connect(ui->cutEyesButton, SIGNAL(clicked()), this, SLOT(cutEyesAll()));
-	QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(split()));
+	QObject::connect(ui->saveSubsecPushButton, SIGNAL(clicked()), this, SLOT(saveSubsecSlot()));
+	QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
 	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()), this, SLOT(subtractMeansSlot()));
+
+	QObject::connect(ui->zeroButton, SIGNAL(clicked()), this, SLOT(zeroSlot()));
+	QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitSlot()));
 	QObject::connect(ui->zeroFromZeroPushButton, SIGNAL(clicked()), this, SLOT(zeroFromZeroSlot()));
 	QObject::connect(ui->splitFromZeroPushButton, SIGNAL(clicked()), this, SLOT(splitFromZeroSlot()));
 	QObject::connect(ui->zeroTillEndPushButton, SIGNAL(clicked()), this, SLOT(zeroTillEndSlot()));
 	QObject::connect(ui->splitTillEndPushButton, SIGNAL(clicked()), this, SLOT(splitTillEndSlot()));
+
+	QObject::connect(this, SIGNAL(openFile(QString)), ui->lineEdit, SLOT(setText(QString)));
+    QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(const QString &)));
 
     QObject::connect(ui->forwardStepButton, SIGNAL(clicked()), this, SLOT(forwardStepSlot()));
     QObject::connect(ui->backwardStepButton, SIGNAL(clicked()), this, SLOT(backwardStepSlot()));
@@ -155,7 +152,7 @@ Cut::~Cut()
     delete ui;
 }
 
-void zeroData(matrix & inData, const int & leftLimit, const int & rightLimit)
+void zeroData(matrix & inData, int leftLimit, int rightLimit)
 {
 	for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
 	{
@@ -306,12 +303,12 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
             else if(myFileType == fileType::edf)
             {
 //                std::cout << "edf" << std::endl;
-                if((leftDrawLimit + ui->scrollArea->width() > NumOfSlices && offset > 0) ||
+				if((leftDrawLimit + ui->scrollArea->width() > data3.cols() && offset > 0) ||
                    (leftDrawLimit == 0 && offset < 0))
                 {
                     return false;
                 }
-                leftDrawLimit = std::min(leftDrawLimit + offset, NumOfSlices);
+				leftDrawLimit = std::min(leftDrawLimit + offset, int(data3.cols()));
 				ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
                 return true;
             }
@@ -345,151 +342,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
-void Cut::cutEyesAll()
-{
-#if 0
-    QString helpString;
-    // automatization
-    if(autoFlag)
-    {
-        ui->checkBox->setChecked(false);
-		def::dir->cd("Reals");
-        helpString = def::dir->entryList(QDir::Files)[0];
-        def::dir->cdUp();
-		helpString.prepend(def::dir->absolutePath() + slash + "Reals" + slash);
-		std::cout<<helpString.toStdString()<<std::endl;
-        emit openFile(helpString);
-    }
-
-
-    def::dir->cd(ui->dirBox->currentText());  // generality
-
-    QStringList nameFilters; /// generality
-    nameFilters << "*_241*";
-    nameFilters << "*_247*";
-    nameFilters << "*_254*"; // no need?
-
-    lst = def::dir->entryList(nameFilters, QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
-    def::dir->cdUp();
-
-	/// generality magic constant
-	int NumEog = 2;
-    double * thresholdEog = new double [NumEog];
-    for(int i = 0; i < NumEog; ++i)
-    {
-        thresholdEog[i]=0.;
-    }
-//    std::cout<<"2"<<std::endl;
-
-    double ** eogArray = new double* [NumEog];
-    for(int i = 0; i < NumEog; ++i)
-    {
-        eogArray[i] = new double [8192*50]; // 50, size generality
-    }
-    int currentSlice = 0;
-//    std::cout<<"3"<<std::endl;
-
-    for(int k = 0; k < int(lst.length()/4); ++k)
-    {
-        helpString = (def::dir->absolutePath()
-                                              + slash + ui->dirBox->currentText()
-                                              + slash + lst[rand()%lst.length()]);
-        emit openFile(helpString);
-
-        for(int j = 0; j < NumOfSlices; ++j)
-        {
-            for(int i = def::ns - NumEog; i < def::ns; ++i)
-            {
-                eogArray[i-(ns-NumEog)][currentSlice] = data3[i][j];
-            }
-            ++currentSlice;
-        }
-
-    }
-//    std::cout<<"4"<<std::endl;
-
-    for(int i = 0; i < NumEog; ++i)
-    {
-        for(int j = 0; j < currentSlice; ++j)
-        {
-            thresholdEog[i] += eogArray[i][j]*eogArray[i][j];
-        }
-        thresholdEog[i] /= currentSlice;
-        thresholdEog[i] = sqrt(thresholdEog[i]); // thresholdEog[i] = sigma
-    }
-
-    for(int i = 0; i < NumEog; ++i)
-    {
-        delete[] eogArray[i];
-    }
-    delete[] eogArray;
-
-//    std::cout<<"5"<<std::endl;
-    FILE * eyes;
-    helpString = (def::dir->absolutePath()
-                                          + slash + "eyesSlices");
-    eyes = fopen(helpString, "w");
-
-    int flag;
-    int NumOfEogSlices = 0;
-    int num = 0;
-    for(int i = 0; i<lst.length(); ++i)
-    {
-        helpString = (def::dir->absolutePath()
-                                              + slash + ui->dirBox->currentText()
-                                              + slash + lst[i]);
-
-        emit openFile(helpString);
-        num += NumOfSlices;
-        for(int i = 0; i < NumOfSlices; ++i)
-        {
-            flag = 1;
-            for(int j = 0; j < NumEog; ++j)
-            {
-                /// uncomment one of them
-//                if(std::abs(data3[def::ns - NumEog + j][i]) < ui->eogDoubleSpinBox->value()*thresholdEog[j] && !ui->markersCheckBox->isChecked()) flag = 0; // w/o markers
-//                if(std::abs(data3[def::ns - 1 - NumEog + j][i]) < ui->eogDoubleSpinBox->value()*thresholdEog[j] && ui->markersCheckBox->isChecked()) flag = 0; // with markers
-            }
-            if(flag == 1)
-            {
-                for(int k = 0; k < ns; ++k)
-                {
-                    fprintf(eyes, "%lf\n", data3[k][i]);
-                }
-                ++NumOfEogSlices;
-            }
-        }
-    }
-
-    fclose(eyes);
-    helpString = (def::dir->absolutePath()
-                                          + slash + "eyesSlices");
-    QFile *file = new QFile(helpString);
-    file->open(QIODevice::ReadOnly);
-    QByteArray contents = file->readAll();
-    file->close();
-    file->open(QIODevice::WriteOnly);
-    file->write("NumOfSlices ");
-    file->write(QString::number(NumOfEogSlices).toStdString().c_str());
-    file->write("\r\n");
-    file->write(contents);
-    file->close();
-    delete file;
-
-    ui->eyesSlicesSpinBox->setValue(NumOfEogSlices);
-
-    delete []thresholdEog;
-
-    helpString = "NumOfEyesSlices = " + QString::number(NumOfEogSlices);
-
-    // automatization
-    if(!autoFlag)
-    {
-//        QMessageBox::information((QWidget*)this, tr("Info"), helpString, QMessageBox::Ok);
-    }
-#endif
-}
-
 void Cut::setFileType(const QString & dataFileName)
 {
     if(dataFileName.endsWith(".edf", Qt::CaseInsensitive))
@@ -509,23 +361,23 @@ void Cut::createImage(const QString & dataFileName)
 
     if(this->myFileType == fileType::real)
     {
-		myLib::readPlainData(dataFileName, data3, NumOfSlices);
+		int tmp = 0;
+		myLib::readPlainData(dataFileName, data3, tmp);
         leftDrawLimit = 0;
-        rightDrawLimit = NumOfSlices;
+		rightDrawLimit = data3.cols();
     }
 	else if(this->myFileType == fileType::edf)
     {
         edfFil.readEdfFile(dataFileName);
 		def::ns = edfFil.getNs();
 		currFreq = edfFil.getFreq();
-        data3 = edfFil.getData();
-        NumOfSlices = data3.cols();
+		data3 = edfFil.getData();
         leftDrawLimit = 0;
 
 		ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
 		ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
 
-		ui->paintStartDoubleSpinBox->setMaximum(floor(NumOfSlices / currFreq));
+		ui->paintStartDoubleSpinBox->setMaximum(floor(data3.cols() / currFreq));
 		ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
 		ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
 		ui->paintLengthDoubleSpinBox->setValue((this->width() - 20) / currFreq);
@@ -595,7 +447,7 @@ void Cut::mousePressSlot(char btn, int coord)
 		leftLimit = coord;
 		ui->leftLimitSpinBox->setValue(leftLimit + leftDrawLimit);
 	}
-	if(btn == 'r' && coord > leftLimit && coord < NumOfSlices)
+	if(btn == 'r' && coord > leftLimit && coord < data3.cols())
 	{
 		rightLimit = coord;
 		ui->rightLimitSpinBox->setValue(rightLimit + leftDrawLimit);
@@ -610,7 +462,7 @@ void Cut::mousePressSlot(char btn, int coord)
     paint.setPen(QPen(QBrush("red"), 2));
     paint.drawLine(rightLimit, 0, rightLimit, currentPic.height());
 
-	ui->picLabel->setPixmap(tempPic.scaled(currentPic.width() / ui->xNormDoubleSpinBox->value() - 2,
+	ui->picLabel->setPixmap(tempPic.scaled(currentPic.width() - 2,
 											  ui->scrollArea->height() - 20));
     paint.end();
 }
@@ -618,6 +470,43 @@ void Cut::mousePressSlot(char btn, int coord)
 void Cut::setAutoProcessingFlag(bool a)
 {
     autoFlag = a;
+}
+
+void Cut::copySlot()
+{
+	this->copyData = data3.subCols(ui->leftLimitSpinBox->value(),
+								   ui->rightLimitSpinBox->value());
+	paint();
+}
+
+void Cut::cutSlot()
+{
+	this->copySlot();
+	this->splitSlot();
+}
+
+void Cut::paste(int start, const matrix & inData, bool addUndo)
+{
+	int cls = inData.cols();
+
+	if(addUndo)
+	{
+		undoAction = [start, cls, this]()
+		{
+			this->split(start, start + cls, false);
+		};
+		undos.push_back(undoAction);
+	}
+
+	matrix data2 = this->data3.subCols(ui->leftLimitSpinBox->value(), data3.cols());
+	data3.resizeCols(ui->leftLimitSpinBox->value());
+	data3.horzCat(inData).horzCat(data2);
+	paint();
+}
+
+void Cut::pasteSlot()
+{
+	this->paste(ui->leftLimitSpinBox->value(), copyData);
 }
 
 void Cut::next()
@@ -669,13 +558,13 @@ void Cut::prev()
 
 void Cut::forwardStepSlot()
 {
-    if(leftDrawLimit + ui->scrollArea->width() > NumOfSlices)
+	if(leftDrawLimit + ui->scrollArea->width() > data3.cols())
     {
 		std::cout << "end of file" << std::endl;
         return;
     }
 
-	leftDrawLimit = std::min(leftDrawLimit + currFreq, double(NumOfSlices));
+	leftDrawLimit = std::min(leftDrawLimit + currFreq, double(data3.cols()));
 	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
 }
 void Cut::backwardStepSlot()
@@ -690,14 +579,14 @@ void Cut::backwardStepSlot()
 }
 void Cut::forwardFrameSlot()
 {
-    if(leftDrawLimit + ui->scrollArea->width() > NumOfSlices)
+	if(leftDrawLimit + ui->scrollArea->width() > data3.cols())
     {
 		std::cout << "end of file" << std::endl;
         return;
     }
     leftDrawLimit = std::min(leftDrawLimit +
 							 ui->paintLengthDoubleSpinBox->value() * currFreq,
-                             double(NumOfSlices));
+							 double(data3.cols()));
 	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
 }
 void Cut::backwardFrameSlot()
@@ -720,6 +609,7 @@ void Cut::resizeWidget(double a)
 }
 
 
+/// make for opened edf
 void Cut::matiAdjustLimits() /////// should TEST !!!!!
 {
     QStringList lst = currentFile.split(QRegExp("[_.]"),
@@ -752,9 +642,9 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
         --newLeftLimit;
     }
 	while (!myLib::matiCountBit(data3[def::ns - 1][newRightLimit], 14)
-		   && newRightLimit < NumOfSlices)
+		   && newRightLimit < data3.cols())
     {
-        ++newRightLimit; // maximum of NumOfSlices
+		++newRightLimit; // maximum of Num Of Slices
     }
 
 
@@ -763,7 +653,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 
     // adjust limits if slice by whole count problems
     ++newLeftLimit;
-    if(newRightLimit != NumOfSlices) ++newRightLimit;
+	if(newRightLimit != data3.cols()) ++newRightLimit;
 
     leftLimit = newLeftLimit;
     rightLimit = newRightLimit;
@@ -798,15 +688,15 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     }
 
 
-    if(newRightLimit < NumOfSlices)
+	if(newRightLimit < data3.cols())
     {
         ++newRightLimit; // after the previous marker
     }
-	else if (myLib::matiCountBit(data3[def::ns - 1][NumOfSlices - 1], 14))
+	else if (myLib::matiCountBit(data3[def::ns - 1][data3.cols() - 1], 14))
     {
         //do nothing
     }
-    else // if(newRightLimit == NumOfSlices && bit == 0)
+	else // if(newRightLimit == data3.cols() && bit == 0)
     {
         // cut start in next file, suspect that there ARE count answers
         next();
@@ -834,15 +724,71 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 
 }
 
-void Cut::zero()
+
+void Cut::undoSlot()
+{
+	if(undos.empty())
+	{
+		std::cout << "Cut::undoSlot: undos empty" << std::endl;
+		return;
+	}
+	undos.back()();
+	undos.pop_back();
+    paint();
+}
+
+
+
+void Cut::setMarker(int inVal)
+{
+	if(myFileType == fileType::edf)
+	{
+		int num = edfFil.getMarkChan();
+		if(num <= 0)
+		{
+			std::cout << "Cut::set1MarkSlot: haven't found markers channel" << std::endl;
+			return;
+		}
+		int offset = ui->leftLimitSpinBox->value();
+		int val = data3[num][offset];
+		undoAction = [num, offset, val, this](){this->data3[num][offset] = val;};
+		undos.push_back(undoAction);
+
+		data3[num][offset] = inVal;
+	}
+	else if(myFileType == fileType::real)
+	{
+		int num = data3.rows() - 1; /// last channel
+		int offset = ui->leftLimitSpinBox->value();
+		int val = data3[num][offset];
+		undoAction = [num, offset, val, this](){data3[num][offset] = val;};
+		undos.push_back(undoAction);
+
+		data3[num][offset] = inVal;
+	}
+	paint();
+}
+
+void Cut::set1MarkerSlot()
+{
+	this->setMarker(ui->mark1LineEdit->text().toInt());
+}
+
+void Cut::set2MarkerSlot()
+{
+	this->setMarker(ui->mark2LineEdit->text().toInt());
+}
+
+void Cut::zero(int start, int end)
 {
 //    int h = 0;
 
-    // if MATI with counts - adjust limits to problem edges
-    // move leftLimit after the nearest marker
-    // move rightLimit after the nearest marker
-    // delete [leftLimit, rightLimit)
+	// if MATI with counts - adjust limits to problem edges
+	// move leftLimit after the nearest marker
+	// move rightLimit after the nearest marker
+	// delete [leftLimit, rightLimit)
 
+//	this->zero(ui->leftLimitSpinBox->value(), ui->rightLimitSpinBox->value());
 	/// MATI counting problem only
 	{
 		// ExpName.left(3)_fileSuffix_TYPE_SESSION_PIECE.MARKER
@@ -854,199 +800,77 @@ void Cut::zero()
 		}
 	}
 
-
-
-	int undoBegin = leftDrawLimit + leftLimit;
-	undoData.push_back(data3.subCols(undoBegin,
-									 undoBegin + rightLimit - leftLimit));
-
-	undoAction = [undoBegin, this]()
+	undoData.push_back(data3.subCols(start, end));
+	undoAction = [start, this]()
 	{
 		for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
 		{
 			std::copy(std::begin(undoData.back()[k]),
 					  std::end(undoData.back()[k]),
-					  std::begin(data3[k]) + undoBegin);
+					  std::begin(data3[k]) + start);
 		}
 		undoData.pop_back();
 	};
 	undos.push_back(undoAction);
 
 
-
-    zeroData(data3,
-			 undoBegin,
-			 leftDrawLimit + rightLimit);
-    paint();
-}
-
-void Cut::undoSlot()
-{
-	if(undos.empty())
-	{
-		std::cout << "Cut::undoSlot: undos empty" << std::endl;
-		return;
-	}
-
-	undos.back()();
-	undos.pop_back();
-    paint();
-}
-
-void Cut::cut()
-{
-    QString helpString;
-	helpString = def::dir->absolutePath() +
-				 slash + "winds" +
-				 slash + myLib::getFileName(currentFile) +
-				 "." + myLib::rightNumber(addNum++, 3);
-	myLib::writePlainData(helpString,
-						  data3,
-						  rightLimit - leftLimit,
-						  leftDrawLimit + leftLimit);
-
-    rightLimit = rightDrawLimit - leftDrawLimit;
-    leftLimit = 0;
-    paint();
-}
-
-/// DANGER markers
-void Cut::split()
-{
-	const int splitSize = rightLimit - leftLimit;
-	for(int i = leftDrawLimit + leftLimit; i < NumOfSlices - splitSize; ++i)
-    {
-		for(int k = 0; k < def::ns; ++k)
-        {
-			if(i == 0) // dont touch first marker value - reals
-            {
-                continue;
-            }
-			data3[k][i] = data3[k][i + splitSize];
-        }
-    }
-	NumOfSlices -= splitSize;
-	data3.resizeCols(NumOfSlices);
-    paint();
+	zeroData(data3,
+			 start,
+			 end);
+	paint();
 }
 
 
-void Cut::set1MarkerSlot()
+void Cut::zeroSlot()
 {
-	if(myFileType == fileType::edf)
-	{
-		int num = edfFil.getMarkChan();
-		if(num <= 0)
-		{
-			std::cout << "Cut::set1MarkSlot: haven't found markers channel" << std::endl;
-			return;
-		}
-		int offset = leftDrawLimit + leftLimit;
-
-		undoAction = [num, offset, this](){data3[num][offset] = 0.;};
-		undos.push_back(undoAction);
-
-		data3[num][offset] = ui->mark1LineEdit->text().toInt();
-		paint();
-	}
-}
-
-void Cut::set2MarkerSlot()
-{
-	if(myFileType == fileType::edf)
-	{
-		int num = edfFil.getMarkChan();
-		if(num <= 0)
-		{
-			std::cout << "Cut::set2MarkSlot: haven't found markers channel" << std::endl;
-			return;
-		}
-		int offset = leftDrawLimit + leftLimit;
-
-		undoAction = [num, offset, this](){data3[num][offset] = 0.;};
-		undos.push_back(undoAction);
-
-		data3[num][offset] = ui->mark2LineEdit->text().toInt();
-		paint();
-	}
+	this->zero(ui->leftLimitSpinBox->value(), ui->rightLimitSpinBox->value());
 }
 
 void Cut::zeroFromZeroSlot()
 {
-	int undoBegin = 0;
-	undoData.push_back(data3.subCols(undoBegin,
-									 undoBegin + leftDrawLimit + rightLimit));
+	this->zero(0, ui->rightLimitSpinBox->value());
+}
 
-	undoAction = [undoBegin, this]()
+void Cut::zeroTillEndSlot()
+{
+	this->zero(ui->leftLimitSpinBox->value(), data3.cols());
+}
+
+
+/// DANGER markers
+void Cut::split(int start, int end, bool addUndo)
+{
+	if(addUndo)
 	{
-		for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
+		undoData.push_back(data3.subCols(start, end));
+		undoAction = [start, this]()
 		{
-			std::copy(std::begin(undoData.back()[k]),
-					  std::end(undoData.back()[k]),
-					  std::begin(data3[k]) + undoBegin);
-		}
-		undoData.pop_back();
-	};
-	undos.push_back(undoAction);
+			this->paste(start, undoData.back(), false);
+			undoData.pop_back();
+		};
+		undos.push_back(undoAction);
+	}
 
-
-
-	zeroData(data3,
-			 undoBegin,
-			 leftDrawLimit + rightLimit);
+	matrix data2 = data3.subCols(end, data3.cols());
+	data3.resizeCols(start).horzCat(data2); /// +1 to save first marker in reals
 	paint();
+}
+
+void Cut::splitSlot()
+{
+	this->split(ui->leftLimitSpinBox->value(),
+				ui->rightLimitSpinBox->value());
 }
 
 void Cut::splitFromZeroSlot()
 {
-	const int splitSize = leftDrawLimit + rightLimit;
-	for(int i = 0; i < NumOfSlices - splitSize; ++i)
-	{
-		for(int k = 0; k < def::ns; ++k)
-		{
-			if(i == 0) // dont touch first marker value - for reals
-			{
-				continue;
-			}
-			data3[k][i] = data3[k][i + (splitSize)];
-		}
-	}
-	NumOfSlices -= splitSize;
-	data3.resizeCols(NumOfSlices);
+	this->split(0, ui->rightLimitSpinBox->value());
 	ui->paintStartDoubleSpinBox->setValue(0.);
-	paint();
-}
-
-
-void Cut::zeroTillEndSlot()
-{
-	int undoBegin = leftDrawLimit + leftLimit;
-	undoData.push_back(data3.subCols(undoBegin,
-									 NumOfSlices));
-
-	undoAction = [undoBegin, this]()
-	{
-		for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
-		{
-			std::copy(std::begin(undoData.back()[k]),
-					  std::end(undoData.back()[k]),
-					  std::begin(data3[k]) + undoBegin);
-		}
-		undoData.pop_back();
-	};
-	undos.push_back(undoAction);
-
-	zeroData(data3,
-			 undoBegin,
-			 NumOfSlices);
-	paint();
 }
 
 void Cut::splitTillEndSlot()
 {
-	const int splitSize = NumOfSlices - (leftDrawLimit + leftLimit);
-	NumOfSlices -= splitSize;
-	data3.resizeCols(NumOfSlices);
+	data3.resizeCols(ui->leftLimitSpinBox->value());
 	paint();
 }
 
@@ -1080,6 +904,43 @@ void Cut::save()
 
 }
 
+void Cut::saveSubsecSlot()
+{
+	if(myFileType == fileType::real)
+	{
+		QString helpString;
+		helpString = def::dir->absolutePath() +
+					 slash + "winds" +
+					 slash + myLib::getFileName(currentFile) +
+					 "." + myLib::rightNumber(addNum++, 3);
+		myLib::writePlainData(helpString,
+							  data3.subCols(ui->leftLimitSpinBox->value(),
+											ui->rightLimitSpinBox->value()));
+	}
+	else if(myFileType == fileType::edf)
+	{
+		QString newPath = currentFile;
+		QString ad = ui->saveSubsecAddNameLineEdit->text();
+		if( !ad.isEmpty())
+		{
+			newPath.insert(newPath.lastIndexOf('.'), "_" + ad);
+		}
+
+		int counter = 0;
+		while(QFile::exists(newPath))
+		{
+			newPath = currentFile;
+			newPath.insert(newPath.lastIndexOf('.'), "_" + QString::number(counter));
+			++counter;
+		}
+
+		edfFil.writeOtherData(data3.subCols(ui->leftLimitSpinBox->value(),
+											ui->rightLimitSpinBox->value()), newPath);
+		std::cout << "Cut::saveSubsecSlot: edfFile saved - " << newPath << std::endl;
+	}
+	paint();
+}
+
 
 void Cut::rewrite()
 {
@@ -1103,15 +964,12 @@ void Cut::paint() // save to tmp.jpg and display
     if(myFileType == fileType::edf)
     {
 		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * currFreq;
-        rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), NumOfSlices);
-
-		/// experimental xNorm
-		rightDrawLimit *= ui->xNormDoubleSpinBox->value();
+		rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), int(data3.cols()));
     }
     else if(myFileType == fileType::real)
     {
         leftDrawLimit = 0;
-        rightDrawLimit = NumOfSlices;
+		rightDrawLimit = data3.cols();
     }
 
 //    std::cout << "paint: left = " << leftDrawLimit << "\tright = " << rightDrawLimit << std::endl;
@@ -1147,7 +1005,7 @@ void Cut::paint() // save to tmp.jpg and display
 
     /// -20 for scroll bar generality
 	/// experimental xNorm
-	ui->picLabel->setPixmap(currentPic.scaled(currentPic.width() / ui->xNormDoubleSpinBox->value() - 2,
+	ui->picLabel->setPixmap(currentPic.scaled(currentPic.width() - 2,
 											  ui->scrollArea->height() - 20));
 
     rightLimit = rightDrawLimit - leftDrawLimit;

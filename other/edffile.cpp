@@ -654,8 +654,8 @@ void edfFile::handleData(bool readFlag,
     }
 }
 
-void edfFile::handleDatum(const int & currNs,
-                          const int & currTimeIndex,
+void edfFile::handleDatum(int currNs,
+                          int currTimeIndex,
                           bool readFlag,
                           QString & ntAnnot,
                           FILE * edfForDatum)
@@ -775,8 +775,8 @@ void edfFile::handleDatum(const int & currNs,
 }
 
 
-void edfFile::writeMarker(const double & currDatum,
-						  const int & currTimeIndex) const
+void edfFile::writeMarker(double currDatum,
+						  int currTimeIndex) const
 {
 	std::vector<bool> byteMarker;
 	QString helpString;
@@ -822,8 +822,8 @@ void edfFile::writeMarker(const double & currDatum,
     fclose(markers);
 }
 
-void edfFile::handleAnnotations(const int & currNs,
-                                const int & currentTimeIndex,
+void edfFile::handleAnnotations(int currNs,
+                                int currentTimeIndex,
                                 QString helpString,
 								std::vector<QString> annotations)
 {
@@ -1295,22 +1295,26 @@ void edfFile::countFft()
 	}
 }
 
-edfFile edfFile::refilter(const double & lowFreq,
-					   const double & highFreq,
-                       const QString & newPath,
-                       bool isNotch)
+edfFile & edfFile::refilter(double lowFreq,
+							double highFreq,
+							const QString & newPath,
+							bool isNotch,
+							std::vector<uint> chanList)
 {
-    std::vector<int> chanList;
-    for(int i = 0; i < this->ns; ++i)
-    {
-        /// filter only EEG, EOG signals - look labels!!!!
-		/// pewpew IITP - no filter ECG
-		if(this->labels[i].contains(QRegExp("E[OE]G")) ||
-		   (this->filterIITPflag && this->labels[i].startsWith("IT ")))
-        {
-            chanList.push_back(i);
-        }
+	if(chanList.empty())
+	{
+		for(int i = 0; i < this->ns; ++i)
+		{
+			/// filter only EEG, EOG signals - look labels!!!!
+			/// pewpew IITP - no filter ECG
+			if(this->labels[i].contains(QRegExp("E[OE]G")) ||
+			   (this->filterIITPflag && this->labels[i].startsWith("IT ")))
+			{
+				chanList.push_back(i);
+			}
+		}
 	}
+
 #if 01
 	/// new butterworth filtering
 	/// faster and better on lower frequencies
@@ -1889,19 +1893,19 @@ char * QStrToCharArr(const QString & input, int len = -1)
 	return array;
 }
 
-void myTransform(const int & input, const int & len, char ** output)
+void myTransform(int input, int len, char ** output)
 {
 	(*output) = QStrToCharArr(myLib::fitNumber(input, len));
 }
-void myTransform(const double & input, const int & len, char ** output)
+void myTransform(double input, int len, char ** output)
 {
 	(*output) = QStrToCharArr(myLib::fitNumber(input, len));
 }
-void myTransform(const QString & input, const int & len, char ** output)
+void myTransform(const QString & input, int len, char ** output)
 {
     (*output) = QStrToCharArr(input, len);
 }
-void myTransform(const std::string & input, const int & len, char ** output)
+void myTransform(const std::string & input, int len, char ** output)
 {
     (*output) = new char [len + 1];
     std::string tmp = input;

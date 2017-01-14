@@ -220,7 +220,7 @@ matrix operator + (const matrix & lhs, const matrix & rhs)
     return result;
 }
 
-matrix operator + (const matrix & lhs, const double & val)
+matrix operator + (const matrix & lhs, double val)
 {
     matrix result;
     for(uint i = 0; i < lhs.rows(); ++i)
@@ -245,7 +245,7 @@ matrix matrix::operator += (const matrix & other)
     return *this;
 }
 
-matrix matrix::operator += (const double & val)
+matrix matrix::operator += (double val)
 {
     for(uint i = 0; i < this->rows(); ++i)
     {
@@ -272,7 +272,7 @@ matrix operator - (const matrix & lhs, const matrix & rhs)
     return result;
 }
 
-matrix operator - (const matrix & lhs, const double & val)
+matrix operator - (const matrix & lhs, double val)
 {
     matrix result;
     for(uint i = 0; i < lhs.rows(); ++i)
@@ -297,7 +297,7 @@ matrix matrix::operator -= (const matrix & other)
     return *this;
 }
 
-matrix matrix::operator -= (const double & val)
+matrix matrix::operator -= (double val)
 {
     for(uint i = 0; i < this->rows(); ++i)
     {
@@ -374,7 +374,7 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
     return result;
 }
 
-matrix operator * (const matrix & lhs, const double & val)
+matrix operator * (const matrix & lhs, double val)
 {
     matrix result(lhs.rows(), lhs.cols());
 //#pragma omp parallel for
@@ -385,7 +385,7 @@ matrix operator * (const matrix & lhs, const double & val)
     return result;
 }
 
-matrix matrix::operator *= (const double & other)
+matrix matrix::operator *= (double other)
 {
     for(uint i = 0; i < this->rows(); ++i)
     {
@@ -438,7 +438,7 @@ std::valarray<double> operator * (const std::valarray<double> & lhs, const matri
 
 }
 
-matrix operator / (const matrix & lhs, const double & val)
+matrix operator / (const matrix & lhs, double val)
 {
     matrix result(lhs.rows(), lhs.cols());
 //#pragma omp parallel for
@@ -488,7 +488,7 @@ bool matrix::isEmpty() const
 }
 
 
-matrix matrix::operator /= (const double & other)
+matrix matrix::operator /= (double other)
 {
     for(uint i = 0; i < this->rows(); ++i)
     {

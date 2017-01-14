@@ -5,7 +5,7 @@
 namespace myLib
 {
 
-QString fitNumber(const double &input, int N) // append spaces
+QString fitNumber(double input, int N) // append spaces
 {
 	QString h;
 	h.setNum(input);

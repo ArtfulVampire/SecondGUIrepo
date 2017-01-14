@@ -148,7 +148,7 @@ void drawMapsICA(const QString &mapsFilePath,
                                       const int,
                                       const QString &,
                                       const QString &,
-                                      const double &,
+                                      double,
                                       const int,
                                       const ColorScale))
 {
@@ -267,7 +267,7 @@ void drawMapSpline(const matrix & matrixA,
                    const int numOfColoumn,
                    const QString & outDir,
                    const QString & outName,
-                   const double & maxAbs,
+                   double maxAbs,
                    const int picSize,
                    const ColorScale colorTheme)
 {
@@ -728,8 +728,8 @@ QPixmap drawTemplate(const QString & outPath,
 void drawArray(const QString & templPath,
                const matrix & inData,
                const QString & color,
-               const double & scaling,
-               const int & lineWidth)
+               double scaling,
+               int lineWidth)
 {
     QPixmap pic;
     QPainter paint;
@@ -827,8 +827,8 @@ void drawArray(const QString & templPath,
 void drawArray(const QString & templPath,
 			   const std::valarray<double> & inData,
                const QString & color,
-               const double & scaling,
-               const int & lineWidth)
+               double scaling,
+               int lineWidth)
 {
     matrix dataS;
     const int len = inData.size();
@@ -1396,7 +1396,7 @@ QPixmap drawOneSpectrum(const std::valarray<double> & signal,
 						double srate,
 						int numOfSmooth,
 						const QString & color,
-						const int & lineWidth)
+						int lineWidth)
 {
 	/// to namespace
 	const int gap = 20;
@@ -1443,7 +1443,7 @@ QPixmap drawOneArray(const QString & templPath,
 					 const std::valarray<double> & arr,
 					 const QString & outPath,
 					 const QString & color,
-					 const int & lineWidth)
+					 int lineWidth)
 {
 	/// to namespace
 	const int gap = 20;

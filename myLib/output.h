@@ -11,7 +11,7 @@ namespace myLib
 {
 
 QString rightNumber(const unsigned int input, int N); // prepend zeros
-QString fitNumber(const double & input, int N); // append spaces
+QString fitNumber(double input, int N); // append spaces
 QString fitString(const QString & input, int N); // append spaces
 
 }

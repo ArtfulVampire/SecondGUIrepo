@@ -116,7 +116,7 @@ QString rerefChannel(const QString & initialName,
 					 const QString & groundChan = "21",
 					 const std::vector<QString> & sign = {"-", "+"});
 void splitZeros(matrix & inData,
-				const int & inLength,
+				int inLength,
 				int & outLength,
 				const QString & logFile = QString(),
 				const QString & dataName = def::ExpName);

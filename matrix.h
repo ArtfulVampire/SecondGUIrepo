@@ -115,15 +115,15 @@ public:
 	matrix operator = (const matrixType & other);
 
     matrix operator += (const matrix & other);
-    matrix operator += (const double & val);
+    matrix operator += (double val);
 
     matrix operator -= (const matrix & other);
-    matrix operator -= (const double & val);
+    matrix operator -= (double val);
 
     matrix operator *= (const matrix & other);
-    matrix operator *= (const double & val);
+    matrix operator *= (double val);
 
-    matrix operator /= (const double & other);
+    matrix operator /= (double other);
     matrix operator -();
 
     bool operator == (const matrix & other);
@@ -167,14 +167,14 @@ public:
 
 
 matrix operator + (const matrix & lhs, const matrix & rhs);
-matrix operator + (const matrix & lhs, const double & val);
-matrix operator / (const matrix & lhs, const double & val);
+matrix operator + (const matrix & lhs, double val);
+matrix operator / (const matrix & lhs, double val);
 matrix operator * (const matrix & lhs, const matrix & rhs);
-matrix operator * (const matrix & lhs, const double & val);
+matrix operator * (const matrix & lhs, double val);
 std::valarray<double> operator * (const matrix & lhs, const std::valarray<double> & rhs);
 std::valarray<double> operator * (const std::valarray<double> & lhs, const matrix & rhs);
 matrix operator - (const matrix & lhs, const matrix & rhs);
-matrix operator - (const matrix & lhs, const double & val);
+matrix operator - (const matrix & lhs, double val);
 
 //template <typename matType1, typename matType2>
 void matrixProduct(const matrix & in1,

@@ -22,6 +22,10 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
+	return;
+
+#if 0
+	/// average time of solving
 	const QString pth = "/media/Files/Data/FeedbackNew/";
 	const QStringList lll = QDir(pth).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 //	const QStringList lll = {"CDV"};
@@ -58,6 +62,7 @@ void MainWindow::customFunc()
 	}
 	outStr.close();
 	exit(0);
+#endif
 
 #if 0
 	/// test coherency
@@ -77,17 +82,15 @@ void MainWindow::customFunc()
 	const int numChansEmg = 8;
 	const int minChansEmg = 20;
 	const int minFreq = 1;
-	const int numFreq = 45;
+	const int numFreq = 44;
 	const int numLen = 25;
 
 	std::ofstream ofile;
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
-//	int fileNum = 6;
 	{
 
 
 		if(!QFile::exists(filePath(fileNum))) continue;
-//		if(fileNum == 5 || fileNum == 6) continue;
 
 		ofile.open((direct + "Ira_" + rn(fileNum, 2) + "_res.txt").toStdString());
 
@@ -178,20 +181,20 @@ void MainWindow::customFunc()
 						return std::arg(in);
 					});
 
-					if(smallLib::mean(abss) > 0.2 &&
+					if(smallLib::mean(abss) > 0.15 &&
 					   smallLib::sigma(abss) * 3 < smallLib::mean(abss) &&
-					   smallLib::sigma(args) < 0.3
+					   smallLib::sigma(args) < 0.4
 					   )
 					{
 						ofile
-								<< "ch1 = " << c1 << '\t'
-								<< "ch2 = " << c2 + minChansEmg << '\t'
+								<< c1 << " " << dt.getLabels()[c1] << '\t'
+								<< c2 + minChansEmg << " " << dt.getLabels()[c2 + minChansEmg] << '\t'
 								<< "freq = " << fff + minFreq << '\t'
 								<< "val = " << smallLib::doubleRound(smallLib::mean(tmp), 3) << '\t'
 								<< "abs = " << smallLib::doubleRound(smallLib::mean(abss), 3) << '\t'
-								<< "s(abs) = " << smallLib::doubleRound(smallLib::sigma(abss), 3) << '\t'
+								<< "sgm = " << smallLib::doubleRound(smallLib::sigma(abss), 3) << '\t'
 								<< "arg = " << smallLib::doubleRound(smallLib::mean(args), 3) << '\t'
-								<< "s(arg) = " << smallLib::doubleRound(smallLib::sigma(args), 4) << '\t'
+								<< "sgm = " << smallLib::doubleRound(smallLib::sigma(args), 4) << '\t'
 								<< std::endl;
 
 						cohs[c1][c2][fff] = smallLib::mean(tmp);
@@ -203,6 +206,30 @@ void MainWindow::customFunc()
 	}
 	exit(0);
 #endif
+
+
+//	autos::IITP("Oleg", "Oleg");
+//	autos::IITP("LevikUS", "Levik");
+//	autos::IITP("BlinovE", "Egor");
+	autos::IITP("Irina", "Ira");
+//	autos::IITP("SelionovV", "Victor");
+//	autos::filtering_test();
+//	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
+//									 "/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
+//	autos::makeRightNumbersCF("/media/Files/Pictures/3exp", 81);
+//	autos::Xenia_TBI();
+//	autos::EEG_MRI({"Kabanov"}, false);
+//	exit(0);
+
+
+//	testNewClassifiers();
+//	testSuccessive()
+
+
+//	return;
+//	exit(0);
+	/// further goes unused and old
+
 
 #if 0
 	/// fix markers feedback new
@@ -252,27 +279,6 @@ void MainWindow::customFunc()
 	}
 	exit(0);
 #endif
-
-//	autos::IITP("Oleg", "Oleg");
-//	autos::IITP("LevikUS", "Levik");
-//	autos::IITP("BlinovE", "Egor");
-//	autos::IITP("Irina", "Ira");
-//	autos::IITP("SelionovV", "Victor");
-//	autos::filtering_test();
-//	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
-//									 "/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
-//	autos::makeRightNumbersCF("/media/Files/Pictures/3exp", 81);
-//	autos::Xenia_TBI();
-//	autos::EEG_MRI();
-
-
-//	testNewClassifiers();
-//	testSuccessive()
-
-
-//	return;
-//	exit(0);
-	/// further goes unused and old
 
 #if 0
 	/// filtering iitp

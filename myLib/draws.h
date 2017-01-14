@@ -72,7 +72,7 @@ QPixmap drawOneArray(const QString & templPath,
 					 const std::valarray<double> & arr,
 					 const QString & outPath =  QString(),
 					 const QString & color = "black",
-					 const int & lineWidth = 2);
+					 int lineWidth = 2);
 
 QPixmap drawTemplate(const QString & outPath = QString(),
 				  bool channelsFlag = true,
@@ -83,15 +83,15 @@ void drawArray(const QString & templPath,
 			   const matrix & inData,
 //               const spectraGraphsNormalization normType = 0, ////// TO DO
 			   const QString & color = "black",
-			   const double & scaling = 1.,
-			   const int & lineWidth = 3);
+			   double scaling = 1.,
+			   int lineWidth = 3);
 
 void drawArray(const QString & templPath,
 			   const std::valarray<double> & inData,
 //               const spectraGraphsNormalization normType = 0, ////// TO DO
 			   const QString & color = "black",
-			   const double & scaling = 1.,
-			   const int & lineWidth = 3);
+			   double scaling = 1.,
+			   int lineWidth = 3);
 
 void drawArrayWithSigma(const QString & templPath,
 						const std::valarray<double> & inData,
@@ -135,7 +135,7 @@ QPixmap drawOneSpectrum(const std::valarray<double> & signal,
 						double srate = def::freq,
 						int numOfSmooth = 10,
 						const QString & color = "black",
-						const int & lineWidth = 2);
+						int lineWidth = 2);
 
 void drawMannWitney(const QString & templPath,
 					const trivector<int> & inMW,
@@ -156,7 +156,7 @@ void drawMapSpline(const matrix & matrixA,
 				   const int numOfColoumn,
 				   const QString & outDir,
 				   const QString & outName,
-				   const double & maxAbs,
+				   double maxAbs,
 				   const int picSize = 240,
 				   const ColorScale colorTheme = ColorScale::jet);
 
@@ -168,7 +168,7 @@ void drawMapsICA(const QString & mapsFilePath,
 									  const int,
 									  const QString &,
 									  const QString &,
-									  const double &,
+									  double,
 									  const int,
 									  const ColorScale) = &drawMapSpline);
 

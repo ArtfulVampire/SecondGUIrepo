@@ -367,10 +367,10 @@ void countInvHessianAddDot(const mat & distOld,
     invHessian[1][0] = 0.;
     invHessian[1][1] = 0.;
 
-    const int & b = placedDots.back();
+	const int b = placedDots.back();
     for(unsigned int j = 0; j < placedDots.size() - 1; ++j)
     {
-        const int & i = placedDots[j];
+		const int i = placedDots[j];
         //dydy
         invHessian[0][0] +=
                 2. * (distOld[i][b] *
@@ -415,13 +415,13 @@ void countGradientAddDot(const mat & distOld,
 						 const std::vector<int> & placedDots,
 						 std::vector<double>  & gradient) // gradient for one dot
 {
-    const int & b = placedDots.back();
+	const int b = placedDots.back();
     gradient[0] = 0.;
     gradient[1] = 0.;
     for(unsigned int j = 0; j < placedDots.size() - 1; ++j)
     {
 
-        const int & i = placedDots[j];
+		const int i = placedDots[j];
         gradient[0] +=
                 2. * (1. - distOld[i][b] /
                       distNew[i][b]) *
@@ -440,10 +440,10 @@ void countDistNewAdd(mat & distNew, // change only last coloumn
 					 const coordType & crds,
 					 const std::vector<int> & placedDots)
 {
-    const int & b = placedDots.back(); // placedDots[placedDots.size() - 1];
+	const int b = placedDots.back(); // placedDots[placedDots.size() - 1];
     for(unsigned int i = 0; i < placedDots.size() - 1; ++i)
     {
-        const int & a = placedDots[i];
+		const int a = placedDots[i];
         distNew[a][b] = pow(pow(crds[i].first  - crds.back().first , 2) +
                             pow(crds[i].second - crds.back().second, 2),
                             0.5);

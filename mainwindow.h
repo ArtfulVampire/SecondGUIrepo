@@ -117,8 +117,8 @@ public:
 	void drawSpectra(const QString & inPath,
 					 const QString & outPath);
 
-	void refilterData(const double & lowFreq,
-					  const double & highFreq,
+	void refilterData(double lowFreq,
+					  double highFreq,
 					  const QString & newPath,
 					  bool notch);
 	void rereferenceData(const QString & newRef,

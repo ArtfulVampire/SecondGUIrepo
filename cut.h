@@ -39,35 +39,49 @@ public:
     bool eventFilter(QObject *obj, QEvent *event);
     void setAutoProcessingFlag(bool);
     void matiAdjustLimits();
+
+private:
     void setFileType(const QString & dataFileName);
+	void zero(int start, int end);
+	void split(int start, int end, bool addUndo = true);
+	void paste(int start, const matrix & inData, bool addUndo = true);
+	void setMarker(int inVal);
+	void drawSamples();
+
 
 public slots:
     void createImage(const QString & dataFileName);
     void mousePressSlot(char btn__, int coord__);
+
     void next();
-    void prev();
-    void cut();
-	void zero();
-	void split();
+    void prev();	
+	void zeroSlot();
+	void splitSlot();
 	void zeroFromZeroSlot();
 	void splitFromZeroSlot();
 	void zeroTillEndSlot();
 	void splitTillEndSlot();
 	void undoSlot();
-    void paint();
+	void copySlot();
+	void cutSlot();
+	void pasteSlot();
     void save();
+	void saveSubsecSlot();
     void rewrite();
-    void cutEyesAll();
+	void subtractMeansSlot();
+
+	void paint();
 	void browse();
-    void forwardStepSlot();
+	void resizeWidget(double);
+
+	void forwardStepSlot();
     void backwardStepSlot();
     void forwardFrameSlot();
     void backwardFrameSlot();
-    void resizeWidget(double);
+
 	void iitpAutoCorrSlot();
 	void iitpAutoJumpSlot();
 	void iitpManualSlot();
-	void subtractMeansSlot();
 	void set1MarkerSlot();
 	void set2MarkerSlot();
 
@@ -84,8 +98,6 @@ private:
     Ui::Cut *ui;
 
 	bool autoFlag;
-
-	void drawSamples();
 
 
     fileType myFileType{fileType::real};
@@ -105,8 +117,8 @@ private:
     int leftLimit; /// in slices
 
 	matrix data3{};
-	int NumOfSlices{0};
 
+	matrix copyData{};
 	std::vector<matrix> undoData;
 	std::function<void(void)> undoAction;
 	std::vector<std::function<void(void)>> undos;

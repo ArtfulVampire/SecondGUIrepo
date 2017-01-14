@@ -578,7 +578,7 @@ void MainWindow::sliceOneByOne()
         }
         else
         {
-            const int & finish = i;
+			const int finish = i;
 
             helpString = def::dir->absolutePath()
 						 + slash + "Reals"

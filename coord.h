@@ -186,9 +186,9 @@ namespace def
 
 }
 
-inline int fftLimit(const double & inFreq,
-					const double & sampleFreq = def::freq,
-					const int & fftL = def::fftLength)
+inline int fftLimit(double inFreq,
+					double sampleFreq = def::freq,
+					int fftL = def::fftLength)
 {
 	return ceil(inFreq / sampleFreq * fftL - 0.5);
 }

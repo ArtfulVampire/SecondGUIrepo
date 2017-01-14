@@ -34,33 +34,33 @@ inline bool isInt(const QString & in)
 	return QString::number(in.toInt()) == in;
 }
 
-inline double doubleRound(const double & in, const int & numSigns)
+inline double doubleRound(double in, int numSigns)
 {
 	return std::round(in * pow(10., numSigns)) / double(pow(10, numSigns));
 }
 
-inline std::complex<double> doubleRound(const std::complex<double> & in, const int & numSigns)
+inline std::complex<double> doubleRound(const std::complex<double> & in, int numSigns)
 {
 	return std::complex<double>(doubleRound(in.real(), numSigns),
 								doubleRound(in.imag(), numSigns));
 }
 
-inline double doubleRound(const double & in)
+inline double doubleRound(double in)
 {
     return doubleRound(in, 2 - floor(log10(in))); // 2 significant numbers
 }
 
-inline double doubleRoundFraq(const double & in, const int & denom)
+inline double doubleRoundFraq(double in, int denom)
 {
     return ceil(in * denom - 0.5) / denom;
 }
 
-inline double gaussian(const double & x, const double & sigma = 1.) // N(0,1)
+inline double gaussian(double x, double sigma = 1.) // N(0,1)
 {
     return 1./(sigma * sqrt(2. * pi)) * exp(-x * x / (2. * sigma * sigma) );
 }
 
-inline double sigmoid(const double & x, const double & t = 10.)
+inline double sigmoid(double x, double t = 10.)
 {
     return 1. / ( 1. + exp(-x/t) );
 }
@@ -94,7 +94,7 @@ inline std::valarray<Typ> vecToValar(const std::vector<Typ> & in)
 	return res;
 }
 
-inline int fftL(const int & in)
+inline int fftL(int in)
 {
     return pow(2., ceil(log2(in)));
 }

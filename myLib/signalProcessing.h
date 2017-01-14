@@ -83,10 +83,10 @@ int findJump(const std::valarray<double> & inSignal, int startSearch, double num
 
 void calcSpectre(const std::valarray<double> & inSignal,
 				 std::valarray<double> & outSpectre,
-				 const int & fftLength = def::fftLength,
-				 const int & NumOfSmooth = 0,
-				 const int & Eyes = 0,
-				 const double & powArg = 1.);
+				 int fftLength = def::fftLength,
+				 int NumOfSmooth = 0,
+				 int Eyes = 0,
+				 double powArg = 1.);
 
 
 
@@ -157,7 +157,7 @@ void svd(const matrix & initialData,
 		 matrix & eigenVectors,
 		 std::valarray<double> & eigenValues,
 		 const int dimension,
-		 const double & threshold = 1e-9,
+		 double threshold = 1e-9,
 		 int eigenVecNum = -1);
 
 

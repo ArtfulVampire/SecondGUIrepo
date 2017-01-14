@@ -36,10 +36,10 @@ matrix countWavelet(const signalType & inSignal);
 
 const double defV = 1.;
 const std::vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
-double red(const int &range, double j, double V = defV, double S = 1.0);
-double green(const int &range, double j, double V = defV, double S = 1.0);
-double blue(const int &range, double j, double V = defV, double S = 1.0);
-QColor hueJet(const int &range, double j);
+double red(int range, double j, double V = defV, double S = 1.0);
+double green(int range, double j, double V = defV, double S = 1.0);
+double blue(int range, double j, double V = defV, double S = 1.0);
+QColor hueJet(int range, double j);
 
 
 void drawWavelet(QString picPath,

@@ -1112,7 +1112,7 @@ void svd(const matrix & initialData,
          matrix & eigenVectors,
 		 std::valarray<double> & eigenValues,
          const int dimension, // length of the vectors
-         const double & threshold,
+         double threshold,
 		 int eigenVecNum) /// num of eigenVectors to count - add variance
 {
     if(eigenVecNum <= 0)
@@ -1199,7 +1199,7 @@ void svd(const matrix & initialData,
                                    end(inData[i]),
                                    begin(tempB),
                                    begin(tempLine),
-                                   [coef](const double & in1, const double & in2)
+                                   [coef](double in1, double in2)
                     {
                         return in1 - in2 * coef;
                     });
@@ -1257,7 +1257,7 @@ void svd(const matrix & initialData,
                                    end(inData[i]),
                                    begin(tempB),
                                    begin(tempLine),
-                                   [coef](const double & in1, const double & in2)
+                                   [coef](double in1, double in2)
                     {
                         return in1 - in2 * coef;
                     });
@@ -1295,7 +1295,7 @@ void svd(const matrix & initialData,
                            end(inData[i]),
                            begin(tempB),
                            begin(tempLine),
-                           [coef](const double & in1, const double & in2)
+                           [coef](double in1, double in2)
             {
                 return in1 - in2 * coef;
             });
@@ -1804,7 +1804,7 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 
 
 void splitZeros(matrix & dataIn,
-                const int & inLength,
+                int inLength,
 				int & outLength,
                 const QString & logFilePath,
                 const QString & dataName)
@@ -1921,10 +1921,10 @@ void splitZeros(matrix & dataIn,
 
 void calcSpectre(const std::valarray<double> & inSignal,
 				 std::valarray<double> & outSpectre,
-                 const int & fftLength,
-                 const int & NumOfSmooth,
-                 const int & Eyes,
-                 const double & powArg)
+                 int fftLength,
+                 int NumOfSmooth,
+                 int Eyes,
+                 double powArg)
 {
     if(inSignal.size() != fftLength)
     {
