@@ -22,7 +22,7 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-	return;
+//	return;
 
 #if 0
 	/// average time of solving
@@ -81,7 +81,7 @@ void MainWindow::customFunc()
 	const int numChansEeg = 19;
 	const int numChansEmg = 8;
 	const int minChansEmg = 20;
-	const int minFreq = 1;
+	const int minFreq = 8;
 	const int numFreq = 44;
 	const int numLen = 25;
 
@@ -207,11 +207,16 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+	return;
+	edfFile fil;
+	fil.readEdfFile("/media/Files/Data/iitp/Irina/Ira_sum_f_sync_new_gon.edf");
+//	autos::IITPgonios("Irina", "Ira"); exit(0);
+
 
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
-	autos::IITP("Irina", "Ira");
+//	autos::IITP("Irina", "Ira");
 //	autos::IITP("SelionovV", "Victor");
 //	autos::filtering_test();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",

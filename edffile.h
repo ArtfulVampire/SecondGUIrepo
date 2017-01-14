@@ -190,6 +190,11 @@ public:
 							   int startSearchEmg,
 							   bool byEeg = false);
 
+
+	edfFile & iitpStaging(const QString & chanName,
+						  int markerMax,
+						  int markerMin);
+
 protected:
 //    QString headerInitialInfo = QString();
     std::string headerInitialInfo = std::string();

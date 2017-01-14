@@ -221,13 +221,48 @@ void Xenia_TBI()
 #endif
 }
 
+void IITPgonios(const QString & dirName, const QString & guyName)
+{
+	def::ntFlag = true;
+	for(int fileNum = 0; fileNum < 30; ++fileNum)
+	{
+		if(fileNum == 6) break;
+		const QString ExpNamePre = def::iitpFolder + slash +
+								   dirName + slash +
+								   guyName + "_" + myLib::rightNumber(fileNum, 2);
+		QString filePath;
+		edfFile fil;
+
+		/// filter goniogramms
+		filePath = ExpNamePre + "_sum_f_sync_new.edf";
+		if(!QFile::exists(filePath)) continue;
+		fil.readEdfFile(filePath);
+
+		std::vector<uint> chanList;
+		for(int i = 0; i < fil.getNs(); ++i)
+		{
+			for(auto joint : {"elbow", "wrist", "knee", "ankle"})
+			{
+				if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive))
+				{
+					chanList.push_back(i);
+					break;
+				}
+			}
+		}
+
+		filePath = ExpNamePre + "_sum_f_sync_new_gon.edf";
+		fil.refilter(0.1, 6, filePath, false, chanList);
+	}
+}
+
 void IITP(const QString & dirName, const QString & guyName)
 {
 	def::ntFlag = true;
 
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-//		if(fileNum == 3) break;
+		if(fileNum == 6) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
@@ -280,11 +315,14 @@ void IITP(const QString & dirName, const QString & guyName)
 		{
 			for(auto joint : {"elbow", "wrist", "knee", "ankle"})
 			{
-				if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive)) chanList.push_back(i);
-				break;
+				if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive))
+				{
+					chanList.push_back(i);
+					break;
+				}
 			}
 		}
-		fil.refilter(0.1, 5, {}, false, chanList);
+		fil.refilter(0.1, 6, {}, false, chanList);
 
 		filePath = ExpNamePre + "_emg_f.edf";
 		fil.writeEdfFile(filePath);

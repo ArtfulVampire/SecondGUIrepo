@@ -1,6 +1,8 @@
 #include "cut.h"
 #include "ui_cut.h"
 
+#include <myLib/drw.h>
+
 
 using namespace myOut;
 
@@ -38,6 +40,9 @@ Cut::Cut() :
 	ui->yNormDoubleSpinBox->setMinimum(0.01);
 	ui->yNormDoubleSpinBox->setValue(1.);
 	ui->yNormDoubleSpinBox->setSingleStep(0.05);
+
+	ui->greenChanSpinBox->setMinimum(-1);
+	ui->greenChanSpinBox->setValue(-1);
 
 //    ui->paintStartDoubleSpinBox->setValue(0);
     ui->paintStartDoubleSpinBox->setDecimals(1);
@@ -142,6 +147,7 @@ Cut::Cut() :
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->setMark1PushButton, SIGNAL(clicked()), this, SLOT(set1MarkerSlot()));
 	QObject::connect(ui->setMark2PushButton, SIGNAL(clicked()), this, SLOT(set2MarkerSlot()));
+	QObject::connect(ui->greenChanSpinBox, SIGNAL(valueChanged(int)), this, SLOT(greenChanSlot()));
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -367,7 +373,7 @@ void Cut::createImage(const QString & dataFileName)
 		rightDrawLimit = data3.cols();
     }
 	else if(this->myFileType == fileType::edf)
-    {
+	{
         edfFil.readEdfFile(dataFileName);
 		def::ns = edfFil.getNs();
 		currFreq = edfFil.getFreq();
@@ -390,13 +396,9 @@ void Cut::createImage(const QString & dataFileName)
 			redStr = "ECG";
 			blueStr = "Artefac";
 		}
-		for(int i = 0; i < edfFil.getNs(); ++i)
-		{
-			if(edfFil.getLabels()[i].contains(redStr)) redCh = i;
-			else if(edfFil.getLabels()[i].contains(blueStr)) blueCh = i;
-		}
-//		redCh = 17;
-
+		redCh = edfFil.findChannel(redStr);
+		blueCh = edfFil.findChannel(blueStr);
+		ui->greenChanSpinBox->setMaximum(edfFil.getNs() - 1);
     }
 
 	paint();
@@ -779,6 +781,26 @@ void Cut::set2MarkerSlot()
 	this->setMarker(ui->mark2LineEdit->text().toInt());
 }
 
+
+void Cut::greenChanSlot()
+{
+	const int n = ui->greenChanSpinBox->value();
+	if(n >=0)
+	{
+		if(myFileType == fileType::edf)
+		{
+			QString ch = QString(edfFil.getLabels()[n]);
+			ui->greenChanLineEdit->setText(ch.remove("EEG ").remove("IT "));
+		}
+	}
+	else
+	{
+		ui->greenChanLineEdit->clear();
+	}
+	paint();
+
+}
+
 void Cut::zero(int start, int end)
 {
 //    int h = 0;
@@ -956,6 +978,24 @@ void Cut::rewrite()
     }
 }
 
+
+std::vector<std::pair<int, QColor>> Cut::makeColouredChans()
+{
+	std::vector<std::pair<int, QColor>> res;
+	for(std::pair<int, QColor> pairs : {
+		std::pair<int, QColor>{blueCh, "blue"},
+		std::pair<int, QColor>{redCh, "red"},
+		std::pair<int, QColor>{ui->greenChanSpinBox->value(), "green"}
+})
+	{
+		if(pairs.first >= 0)
+		{
+			res.push_back(pairs);
+		}
+	}
+	return res;
+}
+
 void Cut::paint() // save to tmp.jpg and display
 {
     QString helpString;
@@ -971,19 +1011,18 @@ void Cut::paint() // save to tmp.jpg and display
         leftDrawLimit = 0;
 		rightDrawLimit = data3.cols();
     }
-
-//    std::cout << "paint: left = " << leftDrawLimit << "\tright = " << rightDrawLimit << std::endl;
-
 	matrix subData = data3.subCols(leftDrawLimit, rightDrawLimit);
-	currentPic = myLib::drawEeg(subData,
-								def::ns,
-								rightDrawLimit - leftDrawLimit,
-								currFreq,
-								helpString,
-								ui->yNormDoubleSpinBox->value()
-								* ((ui->yNormInvertCheckBox->isChecked())? -1 : 1),
-								blueCh,
-								redCh); // generality.getFreq()
+	subData[edfFil.findChannel("ECG")] = 0; /// for iitp ecg
+
+	double coeff = ui->yNormDoubleSpinBox->value()
+				   * ((ui->yNormInvertCheckBox->isChecked())? -1 : 1);
+	auto colouredChans = this->makeColouredChans();
+
+	currentPic = myLib::drw::drawEeg(subData * coeff,
+									 currFreq,
+									 colouredChans);
+
+
 	/// draw markers numbers
 	if(1)
 	{

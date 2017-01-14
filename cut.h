@@ -47,6 +47,7 @@ private:
 	void paste(int start, const matrix & inData, bool addUndo = true);
 	void setMarker(int inVal);
 	void drawSamples();
+	std::vector<std::pair<int, QColor>> makeColouredChans();
 
 
 public slots:
@@ -84,6 +85,7 @@ public slots:
 	void iitpManualSlot();
 	void set1MarkerSlot();
 	void set2MarkerSlot();
+	void greenChanSlot();
 
 
 

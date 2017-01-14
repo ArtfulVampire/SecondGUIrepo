@@ -1045,7 +1045,7 @@ uint edfFile::findChannel(const QString & str)
 {
 	for(int i = 0; i < this->ns; ++i)
 	{
-		if(labels[i].contains(str)) return i;
+		if(labels[i].contains(str, Qt::CaseInsensitive)) return i;
 	}
 	return -1;
 }
@@ -1269,6 +1269,36 @@ edfFile & edfFile::iitpSyncManual(int offsetEeg,
 		}
 	}
 
+	return *this;
+}
+
+edfFile & edfFile::iitpStaging(const QString & chanName,
+							   int markerMax,
+							   int markerMin)
+{
+	int chanNum = this->findChannel(chanName);
+	const std::valarray<double> & chan = this->edfData[chanNum];
+	std::valarray<double> deriv = std::valarray<double>(chan).cshift(1) - chan;
+
+	int winLen = 10;
+	std::valarray<double> mean(deriv.size() - winLen);
+	for(int i = winLen/2; i < deriv.size() - winLen/2; ++i)
+	{
+		std::valarray<double> win = deriv[std::slice(i - winLen/2, winLen, 1)];
+		mean[i - winLen/2] = smallLib::mean(win);
+	}
+
+	for(int i = 0; i < mean.size() - i; ++i)
+	{
+		if(mean[i] >= 0. && mean[i + 1] < 0.)
+		{
+			this->edfData[this->markerChannel][i + winLen/2] = markerMax;
+		}
+		else if(mean[i] < 0. && mean[i + 1] > 0.)
+		{
+			this->edfData[this->markerChannel][i + winLen/2] = markerMin;
+		}
+	}
 	return *this;
 }
 
