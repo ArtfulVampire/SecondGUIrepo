@@ -207,9 +207,13 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-	return;
 	edfFile fil;
-	fil.readEdfFile("/media/Files/Data/iitp/Irina/Ira_sum_f_sync_new_gon.edf");
+	fil.readEdfFile("/media/Files/Data/iitp/Irina/Aaa_05.edf");
+	fil.iitpStaging("ankle_r", 110, 120);
+//	fil.iitpStaging("ankle_l", 130, 140);
+	fil.writeEdfFile("/media/Files/Data/Aaa_05_stage.edf");
+	return;
+	exit(0);
 //	autos::IITPgonios("Irina", "Ira"); exit(0);
 
 
