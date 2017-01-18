@@ -101,6 +101,7 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 /// iitpData class
 std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 {
+	/// plain
 //	if(chan1 > chan2) std::swap(chan1, chan2);
 //	std::vector<std::valarray<double>> sig1;
 //	std::vector<std::valarray<double>> sig2;
@@ -118,8 +119,7 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 		std::pair<int, int>(chan1, chan2)
 })
 	{
-		uint b = this->crossSpectra[a.first][a.second].size();
-		if(b == 0)
+		if(this->crossSpectra[a.first][a.second].size() == 0)
 		{
 			this->crossSpectrum(a.first, a.second);
 		}
@@ -133,7 +133,30 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 	int index = freq / this->spStep;
 
 	return coherencies[chan1][chan2][index];
+}
 
+std::complex<double> iitpData::coherencyR(int chan1, int chan2, double freq)
+{
+	if(chan1 > chan2)
+	{
+		std::swap(chan1, chan2);
+	}
+	if(coherenciesR[chan1][chan2].size() == 0)
+	{
+		coherenciesR[chan1][chan2].resize(this->piecesFFT[0][0].size());
+
+		for(int i = 0; i < this->piecesData.size(); ++i)
+		{
+			coherenciesR[chan1][chan2] += this->piecesFFT[i][chan1] *
+										  this->piecesFFT[i][chan2].apply(std::conj) /
+										  (this->piecesFFT[i][chan1].apply(smallLib::abs) *
+										   this->piecesFFT[i][chan2].apply(smallLib::abs));
+		}
+		coherenciesR[chan1][chan2] /= this->piecesData.size();
+	}
+	int index = freq / this->spStep;
+
+	return coherenciesR[chan1][chan2][index];
 }
 
 void iitpData::crossSpectrum(int chan1, int chan2)
@@ -161,6 +184,18 @@ void iitpData::crossSpectrum(int chan1, int chan2)
 	this->crossSpectra[chan1][chan2] = res;
 }
 
+void iitpData::countPiecesFFT()
+{
+	for(int i = 0; i < this->piecesData.size(); ++i)
+	{
+		for(int j = 0; j < this->ns; ++j)
+		{
+			this->piecesFFT[i][j] = myLib::spectreRtoCcomplex(this->piecesData[i][j],
+															  this->fftLen);
+		}
+	}
+}
+
 void iitpData::cutPieces(double length)
 {
 	this->piecesData.clear();
@@ -172,6 +207,9 @@ void iitpData::cutPieces(double length)
 	}
 	this->setFftLen();
 	this->clearCrossSpectra();
+
+	/// experimental for coherencyR
+	this->countPiecesFFT();
 }
 
 void iitpData::clearCrossSpectra()
@@ -188,6 +226,20 @@ void iitpData::clearCrossSpectra()
 	for(int i = 0; i < this->coherencies.size(); ++i)
 	{
 		this->coherencies[i].resize(this->ns, {});
+	}
+
+	this->coherenciesR.clear();
+	this->coherenciesR.resize(this->ns);
+	for(int i = 0; i < this->coherenciesR.size(); ++i)
+	{
+		this->coherenciesR[i].resize(this->ns, {});
+	}
+
+	this->piecesFFT.clear();
+	this->piecesFFT.resize(this->piecesData.size());
+	for(int i = 0; i < this->piecesFFT.size(); ++i)
+	{
+		this->piecesFFT[i].resize(this->ns, {});
 	}
 }
 

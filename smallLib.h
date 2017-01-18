@@ -99,6 +99,11 @@ inline int fftL(int in)
     return pow(2., ceil(log2(in)));
 }
 
+inline std::complex<double> abs(std::complex<double> in)
+{
+	return std::complex<double>(std::abs(in));
+}
+
 inline std::valarray<double> pop_front_valar(const std::valarray<double> & in, uint numOfPop)
 {
 	std::valarray<double> res(in.size() - numOfPop);

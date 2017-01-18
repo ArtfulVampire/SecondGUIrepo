@@ -96,18 +96,20 @@ void ANN::zeroParams()
     {
         for(auto & b : a)
         {
-            std::fill(std::begin(b),
-                      std::end(b),
-                      0.);
+			b = 0;
+//            std::fill(std::begin(b),
+//                      std::end(b),
+//                      0.);
         }
     }
 #endif
 
     for(auto & b : output)
     {
-        std::fill(std::begin(b),
-                  std::end(b),
-                  0.);
+		b = 0.;
+//        std::fill(std::begin(b),
+//                  std::end(b),
+//                  0.);
     }
 }
 
@@ -177,8 +179,7 @@ void ANN::countOutput()
 void ANN::countOutputDelta()
 {
     for(uint i = 1; i < dim.size(); ++i)
-    {
-//        std::cout << "pew" << std::endl;
+	{
 #if WEIGHT_MATRIX
         output[i] = weight[i - 1] * output[i - 1];
         smallLib::resizeValar(output[i], output[i].size() + 1);
@@ -189,7 +190,6 @@ void ANN::countOutputDelta()
             output[i][j] = smallLib::prod(weight[i - 1][j], output[i - 1]); // bias included
         }
 #endif
-//        std::cout << "pewpew" << std::endl;
         output[i] = activation(output[i]);
         output[i][ dim[i] ] = 1.; //bias, unused for the highest layer
     }
@@ -301,8 +301,6 @@ void ANN::learn(std::vector<uint> & indices)
         zeroParams();
     }
 
-	//    std::cout << "asdkjfjkrgwegb" << std::endl;
-
     double currentError = critError + 0.1;
     uint type;
 
@@ -331,24 +329,15 @@ void ANN::learn(std::vector<uint> & indices)
                      std::end(indices),
                      std::default_random_engine(seed));
 
-
-//        std::cout << "asdkjfjkrgwegb" << std::endl;
         for(int index : indices)
-        {
-
-//            std::cout << 123 << std::endl;
-            loadVector(index, type);
-//            std::cout << 124 << std::endl;
-            countOutput();
-//            std::cout << 125 << std::endl;
-            countError(type, currentError);
-//            std::cout << 126 << std::endl;
-            moveWeights(normCoeff, type);
-//            std::cout << 127 << std::endl;
-        }
-
-//        std::cout << "asdkjfjkrgwegb" << std::endl;
+		{
+			loadVector(index, type);
+			countOutput();
+			countError(type, currentError);
+			moveWeights(normCoeff, type);
+		}
         ++epoch;
+
         //count error
         if(errType == errorNetType::SME)
         {

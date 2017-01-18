@@ -32,7 +32,7 @@ void histogram(const signalType & arr,
 
 
 	double xMin, xMax;
-	if(xMinMax == std::pair<double, double>())
+	if(xMinMax == std::pair<double, double>()) /// if(xMinMax == isEmpty())
 	{
 		xMin = *std::min_element(std::begin(arr),
 								 std::end(arr));
@@ -571,15 +571,13 @@ void MannWhitneyFromMakepa(const QString & spectraDir, const QString & outPicPat
 template <typename Typ>
 double mean(const Typ & arr, int length, int shift)
 {
-	double res = 0.;
-	for(int i = shift; i < shift + length; ++i)
-	{
-		res += arr[i];
-	}
-	return res / length;
+	return std::accumulate(std::begin(arr) + shift,
+						   std::end(arr) + shift + length,
+						   0.)
+			/ length;
 }
-template double mean(const std::vector<double> &arr, int length, int shift);
-template double mean(const std::valarray<double> &arr, int length, int shift);
+template double mean(const std::vector<double> &, int, int);
+template double mean(const std::valarray<double> &, int, int);
 
 /// needed for fractal dimension
 template <typename Typ>

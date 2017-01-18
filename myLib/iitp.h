@@ -24,18 +24,25 @@ class iitpData : public edfFile
 {
 private:
 	std::vector<matrix> piecesData;
-	std::vector<std::vector< std::valarray<std::complex<double>> >> crossSpectra;
-	std::vector<std::vector< std::valarray<std::complex<double>> >> coherencies;
+
+	std::vector<std::vector<std::valarray<std::complex<double>>>> piecesFFT;
+	std::vector<std::vector<std::valarray<std::complex<double>>>> coherenciesR;
+
+
+	std::vector<std::vector<std::valarray<std::complex<double>>>> crossSpectra;
+	std::vector<std::vector<std::valarray<std::complex<double>>>> coherencies;
 
 	int fftLen = -1;
 	double spStep = 0.;
 
 public:
 	std::complex<double> coherency(int chan1, int chan2, double freq);
+	std::complex<double> coherencyR(int chan1, int chan2, double freq);
 	void crossSpectrum(int chan1, int chan2);
 
 	void setPieces(int mark1 = 10, int mark2 = 20);
 	void cutPieces(double length);
+	void countPiecesFFT();
 	void resizePieces(int in);
 	void getPiecesParams();
 	const std::vector<matrix> & getPieces() {return piecesData;}
