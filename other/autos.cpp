@@ -221,12 +221,40 @@ void Xenia_TBI()
 #endif
 }
 
+void IITPdat(const QString & dirName)
+{
+	def::ntFlag = true;
+	QStringList files = QDir(def::iitpFolder + "/" + dirName).entryList({"*.dat"},
+																		QDir::Files,
+																		QDir::Name);
+	std::ofstream outStr;
+	outStr.open((def::iitpFolder + "/" + dirName + "/" + dirName + "_dats.txt").toStdString());
+
+	for(const QString & fil : files)
+	{
+		const QString filePath = def::iitpFolder + slash +
+								 dirName + slash +
+								 fil;
+		int num = fil.mid(fil.indexOf('_') + 1, 2).toInt();
+//		std::cout << num << std::endl;
+
+		QFile f(filePath);
+		f.open(QIODevice::ReadOnly);
+		QTextStream ts(&f);
+		ts.readLine();
+		ts.setCodec("windows-1251");
+		outStr << num << "\t" << ts.readLine() << "\r\n";
+		f.close();
+	}
+	outStr.close();
+}
+
 void IITPgonios(const QString & dirName, const QString & guyName)
 {
 	def::ntFlag = true;
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-		if(fileNum == 6) break;
+//		if(fileNum == 6) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);

@@ -207,6 +207,13 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+
+	for(QString guy : QDir(def::iitpFolder).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+	{
+		autos::IITPdat(guy);
+	}
+	exit(0);
+
 	edfFile fil;
 	fil.readEdfFile("/media/Files/Data/iitp/Irina/Aaa_05.edf");
 	fil.iitpStaging("ankle_r", 110, 120);
@@ -217,7 +224,7 @@ void MainWindow::customFunc()
 //	autos::IITPgonios("Irina", "Ira"); exit(0);
 
 
-//	autos::IITP("Oleg", "Oleg");
+	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
 //	autos::IITP("Irina", "Ira");

@@ -50,7 +50,8 @@ void XeniaArrangeToLine(const QString & dirPath,
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 void Xenia_TBI();
 void IITP(const QString & dirName = "Oleg", const QString & guyName = "Oleg");
-void IITPgonios(const QString & dirName = "Irina", const QString & guyName = "Ira");
+void IITPgonios(const QString & dirName = "Irina", const QString & guyName = "Ira"); // filter
+void IITPdat(const QString & dirName = "Irina");
 
 void repairMarkersInNewFB(QString edfPath, int numSession);
 int numMarkers(const QString & edfPath, const std::vector<int> & markers);
