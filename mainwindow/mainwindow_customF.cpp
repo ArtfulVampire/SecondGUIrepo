@@ -208,26 +208,21 @@ void MainWindow::customFunc()
 #endif
 
 
-	for(QString guy : QDir(def::iitpFolder).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
-	{
-		autos::IITPdat(guy);
-	}
-	exit(0);
+//	for(QString guy : QDir(def::iitpFolder).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+//	{
+//		autos::IITPdat(guy);
+//	}
+//	exit(0);
 
-	edfFile fil;
-	fil.readEdfFile("/media/Files/Data/iitp/Irina/Aaa_05.edf");
-	fil.iitpStaging("ankle_r", 110, 120);
-//	fil.iitpStaging("ankle_l", 130, 140);
-	fil.writeEdfFile("/media/Files/Data/Aaa_05_stage.edf");
-	return;
-	exit(0);
+
+	autos::IITPrename("Ira", "Ira");
 //	autos::IITPgonios("Irina", "Ira"); exit(0);
 
 
-	autos::IITP("Oleg", "Oleg");
+//	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
-//	autos::IITP("Irina", "Ira");
+//	autos::IITP("Ira", "Ira");
 //	autos::IITP("SelionovV", "Victor");
 //	autos::filtering_test();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
@@ -243,7 +238,7 @@ void MainWindow::customFunc()
 
 
 //	return;
-//	exit(0);
+	exit(0);
 	/// further goes unused and old
 
 

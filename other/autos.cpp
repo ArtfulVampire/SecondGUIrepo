@@ -221,6 +221,44 @@ void Xenia_TBI()
 #endif
 }
 
+void IITPrename(const QString & dirName, const QString & guyName)
+{
+	const QString pth = def::iitpFolder + "/" + dirName + "/";
+	const QString suffix = "_rn";
+
+	std::ifstream inStr;
+	inStr.open((pth + "rename.txt").toStdString());
+	while(1)
+	{
+		int oldNum;
+		int newNum;
+		inStr >> oldNum >> newNum;
+		if(!inStr.eof())
+		{
+			for(QString nam : {"eeg", "emg"})
+			{
+				QString oldName = guyName + "_" + rn(oldNum, 2) + "_" + nam + ".edf";
+				QString newName = guyName + "_" + rn(newNum, 2) + "_" + nam + suffix + ".edf";
+				QFile::rename(pth + oldName,
+							  pth + newName);
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+	inStr.close();
+
+	for(QString nam : QDir(pth).entryList({"*" + suffix + "*"}))
+	{
+		QString newName = nam;
+		newName.remove(suffix);
+		QFile::rename(pth + nam,
+					  pth + newName);
+	}
+}
+
 void IITPdat(const QString & dirName)
 {
 	def::ntFlag = true;
@@ -290,7 +328,7 @@ void IITP(const QString & dirName, const QString & guyName)
 
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-		if(fileNum == 6) break;
+//		if(fileNum == 6) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
