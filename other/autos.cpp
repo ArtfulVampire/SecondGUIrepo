@@ -235,10 +235,14 @@ void IITPrename(const QString & dirName, const QString & guyName)
 		inStr >> oldNum >> newNum;
 		if(!inStr.eof())
 		{
-			for(QString nam : {"eeg", "emg"})
+			for(QString ending : {
+				"_eeg.edf",
+				"_emg.edf",
+				".dat"
+		})
 			{
-				QString oldName = guyName + "_" + rn(oldNum, 2) + "_" + nam + ".edf";
-				QString newName = guyName + "_" + rn(newNum, 2) + "_" + nam + suffix + ".edf";
+				QString oldName = guyName + "_" + rn(oldNum, 2) + ending;
+				QString newName = guyName + "_" + rn(newNum, 2) + suffix + ending;
 				QFile::rename(pth + oldName,
 							  pth + newName);
 			}
