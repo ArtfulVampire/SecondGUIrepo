@@ -162,9 +162,9 @@ void zeroData(matrix & inData, int leftLimit, int rightLimit)
 {
 	for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
 	{
-		std::for_each(std::begin(inData[k]) + leftLimit,
-					  std::begin(inData[k]) + rightLimit,
-					  [](double & in){in = 0.;});
+		std::fill(std::begin(inData[k]) + leftLimit,
+				  std::begin(inData[k]) + rightLimit,
+				  0.);
 	}
 }
 
@@ -378,7 +378,7 @@ void Cut::createImage(const QString & dataFileName)
 		def::ns = edfFil.getNs();
 		currFreq = edfFil.getFreq();
 		data3 = edfFil.getData();
-        leftDrawLimit = 0;
+		leftDrawLimit = 0;
 
 		ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
 		ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
@@ -399,6 +399,7 @@ void Cut::createImage(const QString & dataFileName)
 		redCh = edfFil.findChannel(redStr);
 		blueCh = edfFil.findChannel(blueStr);
 		ui->greenChanSpinBox->setMaximum(edfFil.getNs() - 1);
+		ui->greenChanSpinBox->setValue(-1);
     }
 
 	paint();
@@ -449,7 +450,7 @@ void Cut::mousePressSlot(char btn, int coord)
 		leftLimit = coord;
 		ui->leftLimitSpinBox->setValue(leftLimit + leftDrawLimit);
 	}
-	if(btn == 'r' && coord > leftLimit && coord < data3.cols())
+	else if(btn == 'r' && coord > leftLimit && coord < data3.cols())
 	{
 		rightLimit = coord;
 		ui->rightLimitSpinBox->setValue(rightLimit + leftDrawLimit);
@@ -803,6 +804,11 @@ void Cut::greenChanSlot()
 
 void Cut::zero(int start, int end)
 {
+	if(start > end)
+	{
+		std::cout << "Cut::split: leftEdge > rightEdge" << std::endl;
+		return;
+	}
 //    int h = 0;
 
 	// if MATI with counts - adjust limits to problem edges
@@ -862,6 +868,11 @@ void Cut::zeroTillEndSlot()
 /// DANGER markers
 void Cut::split(int start, int end, bool addUndo)
 {
+	if(start > end)
+	{
+		std::cout << "Cut::split: leftEdge > rightEdge" << std::endl;
+		return;
+	}
 	if(addUndo)
 	{
 		undoData.push_back(data3.subCols(start, end));
@@ -941,6 +952,11 @@ void Cut::saveSubsecSlot()
 	}
 	else if(myFileType == fileType::edf)
 	{
+		if(ui->leftLimitSpinBox->value() > ui->rightLimitSpinBox->value())
+		{
+			std::cout << "Cut::saveSubsecSlot: leftEdge > rightEdge" << std::endl;
+			return;
+		}
 		QString newPath = currentFile;
 		QString ad = ui->saveSubsecAddNameLineEdit->text();
 		if( !ad.isEmpty())
@@ -1012,7 +1028,7 @@ void Cut::paint() // save to tmp.jpg and display
 		rightDrawLimit = data3.cols();
     }
 	matrix subData = data3.subCols(leftDrawLimit, rightDrawLimit);
-	subData[edfFil.findChannel("ECG")] = 0; /// for iitp ecg
+//	subData[edfFil.findChannel("ECG")] = 0; /// for iitp ecg
 
 	double coeff = ui->yNormDoubleSpinBox->value()
 				   * ((ui->yNormInvertCheckBox->isChecked())? -1 : 1);
@@ -1026,20 +1042,25 @@ void Cut::paint() // save to tmp.jpg and display
 	/// draw markers numbers
 	if(1)
 	{
-		QPainter pnt;
-		pnt.begin(&currentPic);
-		pnt.setFont(QFont("", 14));
 		const int mrk = edfFil.getMarkChan();
-		for(int i = 0; i < subData.cols(); ++i)
+//		std::cout << mrk << std::endl;
+		if(mrk > 0)
 		{
-			if(subData[mrk][i] != 0.)
+			QPainter pnt;
+			pnt.begin(&currentPic);
+			pnt.setFont(QFont("", 14));
+
+			for(int i = 0; i < subData.cols(); ++i)
 			{
-				pnt.drawText(i,
-							 pnt.device()->height() * (mrk+1) / (subData.rows() + 2) - 3,
-							 QString::number(int(subData[mrk][i])));
+				if(subData[mrk][i] != 0.)
+				{
+					pnt.drawText(i,
+								 pnt.device()->height() * (mrk + 1) / (subData.rows() + 2) - 3,
+								 QString::number(int(subData[mrk][i])));
+				}
 			}
+			pnt.end();
 		}
-		pnt.end();
 	}
 
     /// -20 for scroll bar generality

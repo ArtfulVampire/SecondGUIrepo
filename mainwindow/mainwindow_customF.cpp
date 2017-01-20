@@ -22,7 +22,7 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-//	return;
+	return;
 
 #if 0
 	/// average time of solving
@@ -222,7 +222,7 @@ void MainWindow::customFunc()
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
-	autos::IITP("Ira", "Ira");
+//	autos::IITP("Ira", "Ira");
 //	autos::IITP("SelionovV", "Victor");
 //	autos::filtering_test();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",

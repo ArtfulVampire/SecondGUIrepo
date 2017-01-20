@@ -284,8 +284,6 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 								 );
 		this->adjustArraysByChannels();
 
-		std::cout << 1 << std::endl;
-
 		/// mix channels
 		std::vector<int> chanList;
 		for(QString lab : {
@@ -293,8 +291,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 			"Bf",
 			"Fcr",
 			"Ecr",
-			"Knee",
 			"Ankle",
+			"Knee",
 			"Elbow",
 			"Wrist"
 	})
@@ -308,6 +306,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		chanList.push_back(this->findChannel("Marker"));
 
 		*this = this->reduceChannels(chanList);
+
 	}
 }
 
@@ -988,7 +987,6 @@ void edfFile::adjustArraysByChannels()
     {
         this->reserved.push_back(this->channels[i].reserved);
     }
-
 	this->headerRest = QString();
 }
 

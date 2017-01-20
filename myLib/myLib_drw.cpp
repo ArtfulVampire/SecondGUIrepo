@@ -653,7 +653,7 @@ QPixmap drawEeg(const matrix & inData,
 	}
 	/// paint seconds marks
 	paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
-	for(int numSec = 0; numSec < inData.cols() / srate; ++numSec)
+	for(int numSec = 0; numSec < (inData.cols() / srate) + 1; ++numSec)
 	{
 		paint.drawLine(numSec * srate, pic.height(),
 					   numSec * srate, pic.height() - 32);
