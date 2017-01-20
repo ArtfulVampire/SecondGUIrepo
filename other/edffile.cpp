@@ -215,6 +215,16 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		this->labels.resize(this->ns);
 		for(int i = 0; i < this->ns; ++i)
 		{
+			iitpLabels[i] = iitpLabels[i].toLower();
+			iitpLabels[i][0] = iitpLabels[i][0].toUpper();
+			int s = iitpLabels[i].size();
+			if(iitpLabels[i].contains(QRegExp("[lLrR]$")) &&
+			   iitpLabels[i][s-2] != '_')
+			{
+				iitpLabels[i].insert(s-1, '_');
+			}
+
+
 			if(!iitpLabels[i].contains("Artefac"))
 			{
 				this->labels[i] = myLib::fitString("IT " + iitpLabels[i], 16);
@@ -274,6 +284,30 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 								 );
 		this->adjustArraysByChannels();
 
+		std::cout << 1 << std::endl;
+
+		/// mix channels
+		std::vector<int> chanList;
+		for(QString lab : {
+			"Ta",
+			"Bf",
+			"Fcr",
+			"Ecr",
+			"Knee",
+			"Ankle",
+			"Elbow",
+			"Wrist"
+	})
+		{
+			for(QString post : {"_l", "_r"})
+			{
+				chanList.push_back(this->findChannel(lab + post));
+			}
+		}
+		chanList.push_back(this->findChannel("Artefac"));
+		chanList.push_back(this->findChannel("Marker"));
+
+		*this = this->reduceChannels(chanList);
 	}
 }
 

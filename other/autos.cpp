@@ -328,7 +328,7 @@ void IITP(const QString & dirName, const QString & guyName)
 
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-//		if(fileNum == 6) break;
+		if(fileNum == 1) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
@@ -344,7 +344,7 @@ void IITP(const QString & dirName, const QString & guyName)
 		filePath = ExpNamePre + "_emg.edf";
 		fil1.writeEdfFile(filePath);
 #endif
-//		continue;
+		continue;
 
 #if 01
 		/// divide ECG chan to prevent oversclaing amplitude

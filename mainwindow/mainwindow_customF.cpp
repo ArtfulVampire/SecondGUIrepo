@@ -215,14 +215,14 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-	autos::IITPrename("Ira", "Ira");
+//	autos::IITPrename("Ira", "Ira");
 //	autos::IITPgonios("Irina", "Ira"); exit(0);
 
 
 //	autos::IITP("Oleg", "Oleg");
 //	autos::IITP("LevikUS", "Levik");
 //	autos::IITP("BlinovE", "Egor");
-//	autos::IITP("Ira", "Ira");
+	autos::IITP("Ira", "Ira");
 //	autos::IITP("SelionovV", "Victor");
 //	autos::filtering_test();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
