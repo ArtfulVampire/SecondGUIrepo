@@ -110,49 +110,7 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>560</x>
-     <y>40</y>
-     <width>231</width>
-     <height>95</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout_2">
-    <item row="0" column="0">
-     <widget class="QPushButton" name="cutEyesButton">
-      <property name="text">
-       <string>Cut Eyes</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QDoubleSpinBox" name="eogDoubleSpinBox"/>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>NumOfDispersion</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QSpinBox" name="eyesSlicesSpinBox"/>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>NumOfEyesSlices</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QComboBox" name="dirBox"/>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>851</x>
+     <x>920</x>
      <y>8</y>
      <width>491</width>
      <height>201</height>
@@ -248,8 +206,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>560</x>
-     <y>140</y>
+     <x>550</x>
+     <y>160</y>
      <width>191</width>
      <height>61</height>
     </rect>
@@ -288,8 +246,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>570</x>
-     <y>210</y>
+     <x>560</x>
+     <y>230</y>
      <width>161</width>
      <height>52</height>
     </rect>
@@ -323,14 +281,79 @@
      <x>10</x>
      <y>49</y>
      <width>531</width>
-     <height>251</height>
+     <height>241</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <item row="6" column="0">
+     <widget class="QDoubleSpinBox" name="paintStartDoubleSpinBox"/>
+    </item>
+    <item row="4" column="1">
+     <widget class="QPushButton" name="splitTillEndPushButton">
+      <property name="text">
+       <string>Split till end</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QPushButton" name="saveButton">
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="2">
+     <widget class="QPushButton" name="forwardStepButton">
+      <property name="text">
+       <string>&gt;</string>
+      </property>
+     </widget>
+    </item>
     <item row="0" column="0">
      <widget class="QPushButton" name="prevButton">
       <property name="text">
        <string>Prev</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="rewriteButton">
+      <property name="text">
+       <string>Rewrite</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QLabel" name="label_13">
+      <property name="text">
+       <string>leftLimit</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="2">
+     <widget class="QPushButton" name="subtractMeansPushButton">
+      <property name="text">
+       <string>subtract Means</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="3">
+     <widget class="QPushButton" name="forwardFrameButton">
+      <property name="text">
+       <string>&gt;&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
+     <widget class="QSpinBox" name="rightLimitSpinBox"/>
+    </item>
+    <item row="6" column="2">
+     <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox"/>
+    </item>
+    <item row="5" column="1">
+     <widget class="QPushButton" name="backwardStepButton">
+      <property name="text">
+       <string>&lt;</string>
       </property>
      </widget>
     </item>
@@ -341,8 +364,81 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="2">
-     <widget class="QDoubleSpinBox" name="yNormDoubleSpinBox"/>
+    <item row="6" column="1">
+     <widget class="QLabel" name="paintStartLabel">
+      <property name="text">
+       <string>paint start</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QSpinBox" name="leftLimitSpinBox"/>
+    </item>
+    <item row="3" column="3">
+     <widget class="QLabel" name="label_14">
+      <property name="text">
+       <string>rightLimit</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="3">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>paint length</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QPushButton" name="zeroFromZeroPushButton">
+      <property name="text">
+       <string>Zero from 0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QLineEdit" name="saveSubsecAddNameLineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QPushButton" name="zeroTillEndPushButton">
+      <property name="text">
+       <string>Zero till end</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QPushButton" name="backwardFrameButton">
+      <property name="text">
+       <string>&lt;&lt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QPushButton" name="zeroButton">
+      <property name="text">
+       <string>Zero</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QPushButton" name="splitButton">
+      <property name="text">
+       <string>Split</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="splitFromZeroPushButton">
+      <property name="text">
+       <string>Split from 0</string>
+      </property>
+     </widget>
     </item>
     <item row="0" column="3">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -362,137 +458,6 @@
       </item>
      </layout>
     </item>
-    <item row="2" column="0">
-     <widget class="QPushButton" name="zeroButton">
-      <property name="text">
-       <string>Zero</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QPushButton" name="splitButton">
-      <property name="text">
-       <string>Split</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QSpinBox" name="leftLimitSpinBox"/>
-    </item>
-    <item row="2" column="3">
-     <widget class="QLabel" name="label_13">
-      <property name="text">
-       <string>leftLimit</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="zeroFromZeroPushButton">
-      <property name="text">
-       <string>Zero from 0</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="splitFromZeroPushButton">
-      <property name="text">
-       <string>Split from 0</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="2">
-     <widget class="QSpinBox" name="rightLimitSpinBox"/>
-    </item>
-    <item row="3" column="3">
-     <widget class="QLabel" name="label_14">
-      <property name="text">
-       <string>rightLimit</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QPushButton" name="zeroTillEndPushButton">
-      <property name="text">
-       <string>Zero till end</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QPushButton" name="splitTillEndPushButton">
-      <property name="text">
-       <string>Split till end</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="2">
-     <widget class="QPushButton" name="subtractMeansPushButton">
-      <property name="text">
-       <string>subtract Means</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0">
-     <widget class="QPushButton" name="backwardFrameButton">
-      <property name="text">
-       <string>&lt;&lt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QPushButton" name="backwardStepButton">
-      <property name="text">
-       <string>&lt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="2">
-     <widget class="QPushButton" name="forwardStepButton">
-      <property name="text">
-       <string>&gt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="3">
-     <widget class="QPushButton" name="forwardFrameButton">
-      <property name="text">
-       <string>&gt;&gt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0">
-     <widget class="QDoubleSpinBox" name="paintStartDoubleSpinBox"/>
-    </item>
-    <item row="6" column="1">
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>paint start</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="2">
-     <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox"/>
-    </item>
-    <item row="6" column="3">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>paint length</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="rewriteButton">
-      <property name="text">
-       <string>Rewrite</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QPushButton" name="saveButton">
-      <property name="text">
-       <string>Save</string>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="2">
      <widget class="QPushButton" name="saveSubsecPushButton">
       <property name="text">
@@ -500,40 +465,86 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="3">
-     <widget class="QLineEdit" name="saveSubsecAddNameLineEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
+    <item row="0" column="2">
+     <widget class="QDoubleSpinBox" name="yNormDoubleSpinBox"/>
     </item>
    </layout>
   </widget>
   <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>570</x>
-     <y>270</y>
-     <width>254</width>
-     <height>25</height>
+     <x>550</x>
+     <y>50</y>
+     <width>311</width>
+     <height>91</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_3">
-    <item>
-     <widget class="QLabel" name="label_15">
-      <property name="text">
-       <string>green chan</string>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="2" column="1">
+     <widget class="QSpinBox" name="color3SpinBox"/>
+    </item>
+    <item row="2" column="2">
+     <widget class="QLineEdit" name="colorChan3LineEdit"/>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLineEdit" name="colorChan1LineEdit"/>
+    </item>
+    <item row="0" column="1">
+     <widget class="QSpinBox" name="color1SpinBox"/>
+    </item>
+    <item row="1" column="1">
+     <widget class="QSpinBox" name="color2SpinBox"/>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLineEdit" name="colorChan2LineEdit"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLineEdit" name="color3LineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>125</width>
+        <height>0</height>
+       </size>
       </property>
      </widget>
     </item>
-    <item>
-     <widget class="QSpinBox" name="greenChanSpinBox"/>
+    <item row="1" column="0">
+     <widget class="QLineEdit" name="color2LineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>125</width>
+        <height>0</height>
+       </size>
+      </property>
+     </widget>
     </item>
-    <item>
-     <widget class="QLineEdit" name="greenChanLineEdit"/>
+    <item row="0" column="0">
+     <widget class="QLineEdit" name="color1LineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>125</width>
+        <height>0</height>
+       </size>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

@@ -13,62 +13,25 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-	//	QString wndPath = "/media/Files/Data/FeedbackNew/PDI/SpectraSmooth/winds";
-//	QStringList lst = QDir(wndPath).entryList({"*.psd"}, QDir::Files, QDir::Name);
-//	for(int i = 0; i < lst.size() - 800; ++i)
+//	const QString p = "/media/Files/Data/iitp/test/";
+//	iitp::iitpData dt;
+//	dt.readEdfFile(p + "strong.edf");
+//	for(double len = 1.; len <= 1.024; len += 0.001)
 //	{
-//		QFile::remove(wndPath + "/" + lst[i]);
+//		dt.cutPieces(len);
+//		auto coh = dt.coherency(10, 24, 10);
+//		auto cohR = dt.coherencyR(10, 24, 10);
+//		vals1.push_back(coh);
+//		vals2.push_back(cohR);
+
+
 //	}
-//	exit(0);
 
-
-	return;
-
-#if 0
-	/// average time of solving
-	const QString pth = "/media/Files/Data/FeedbackNew/";
-	const QStringList lll = QDir(pth).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-//	const QStringList lll = {"CDV"};
-	const QString outFile = pth + "avTimes_247.txt";
-	std::ofstream outStr;
-	outStr.open(outFile.toStdString());
-	double tim;
-	for(const QString & guy : lll)
-	{
-//		const QStringList files = QDir(pth + guy).entryList({"*_good.edf"});
-
-//		for(const QString & fil : files)
-//		{
-//			if(fil.contains("_2") || fil.contains("_FB")) continue;
-//			int numSession = (fil.contains("_3")) ? 3 : 1;
-//			autos::timesNew(pth + guy + "/" + fil, numSession);
-//			autos::avTimesNew(pth + guy + "/" + fil, numSession);
-//		}
-
-		for(QString fileName : {
-			pth + guy + "/avTimes_1_247.txt",
-			pth + guy + "/avTimes_3_247.txt"})
-		{
-			std::ifstream inStr;
-			inStr.open(fileName.toStdString());
-			inStr.ignore(64, '\n');
-			inStr.ignore(64, '\t');
-			inStr >> tim;
-			inStr.close();
-
-			outStr << tim << '\t';
-		}
-		outStr << guy << "\r\n";
-	}
-	outStr.close();
-	exit(0);
-#endif
-
-#if 0
-	/// test coherency
+#if 01
+	/// test coherency in all files
 	iitp::iitpData dt;
-	const QString direct = "/media/Files/Data/iitp/Irina/";
-	const QString postfix = "_sum_f_sync_new.edf";
+	const QString direct = "/media/Files/Data/iitp/Ira/";
+	const QString postfix = "_sum_f_new.edf";
 	auto filePath = [=](int i) -> QString
 	{
 		return direct + "Ira_" + rn(i, 2) + postfix;
@@ -144,7 +107,7 @@ void MainWindow::customFunc()
 					{
 						if(c2 + minChansEmg == 35 || c2 + minChansEmg == 37) continue;
 
-						std::complex<double> tmpCoh = dt.coherency(c1,
+						std::complex<double> tmpCoh = dt.coherencyR(c1,
 																   c2 + minChansEmg,
 																   fff + minFreq);
 						vals[c1][c2][fff][lenInd] = tmpCoh;
@@ -208,22 +171,25 @@ void MainWindow::customFunc()
 #endif
 
 
+//	return;
 //	for(QString guy : QDir(def::iitpFolder).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 //	{
 //		autos::IITPdat(guy);
+//		autos::IITPrename(guy);
 //	}
+//	autos::IITPrename("Levik");
+//	autos::IITPgonios("Ira");
+//	autos::IITPdat("Levik");
 //	exit(0);
 
+//	autos::IITP("Oleg");
+//	autos::IITP("Levik");
+//	autos::IITP("Egor");
+//	autos::IITP("Ira");
+//	autos::IITP("Victor");
 
-//	autos::IITPrename("Ira", "Ira");
-//	autos::IITPgonios("Irina", "Ira"); exit(0);
 
 
-//	autos::IITP("Oleg", "Oleg");
-//	autos::IITP("LevikUS", "Levik");
-//	autos::IITP("BlinovE", "Egor");
-//	autos::IITP("Ira", "Ira");
-//	autos::IITP("SelionovV", "Victor");
 //	autos::filtering_test();
 //	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
 //									 "/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
@@ -241,6 +207,45 @@ void MainWindow::customFunc()
 	exit(0);
 	/// further goes unused and old
 
+#if 0
+	/// average time of solving
+	const QString pth = "/media/Files/Data/FeedbackNew/";
+	const QStringList lll = QDir(pth).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+//	const QStringList lll = {"CDV"};
+	const QString outFile = pth + "avTimes_247.txt";
+	std::ofstream outStr;
+	outStr.open(outFile.toStdString());
+	double tim;
+	for(const QString & guy : lll)
+	{
+//		const QStringList files = QDir(pth + guy).entryList({"*_good.edf"});
+
+//		for(const QString & fil : files)
+//		{
+//			if(fil.contains("_2") || fil.contains("_FB")) continue;
+//			int numSession = (fil.contains("_3")) ? 3 : 1;
+//			autos::timesNew(pth + guy + "/" + fil, numSession);
+//			autos::avTimesNew(pth + guy + "/" + fil, numSession);
+//		}
+
+		for(QString fileName : {
+			pth + guy + "/avTimes_1_247.txt",
+			pth + guy + "/avTimes_3_247.txt"})
+		{
+			std::ifstream inStr;
+			inStr.open(fileName.toStdString());
+			inStr.ignore(64, '\n');
+			inStr.ignore(64, '\t');
+			inStr >> tim;
+			inStr.close();
+
+			outStr << tim << '\t';
+		}
+		outStr << guy << "\r\n";
+	}
+	outStr.close();
+	exit(0);
+#endif
 
 #if 0
 	/// fix markers feedback new

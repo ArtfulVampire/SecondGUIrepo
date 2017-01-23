@@ -36,8 +36,7 @@ class Cut : public QWidget
 public:
     explicit Cut();
     ~Cut();
-    bool eventFilter(QObject *obj, QEvent *event);
-    void setAutoProcessingFlag(bool);
+	bool eventFilter(QObject *obj, QEvent *event);
     void matiAdjustLimits();
 
 private:
@@ -48,6 +47,10 @@ private:
 	void setMarker(int inVal);
 	void drawSamples();
 	std::vector<std::pair<int, QColor>> makeColouredChans();
+	void paintLimits();
+	void setValuesByEdf();
+
+	void iitpLog(const QString & typ, int num = 2, const QString & add = QString());
 
 
 public slots:
@@ -85,9 +88,10 @@ public slots:
 	void iitpManualSlot();
 	void set1MarkerSlot();
 	void set2MarkerSlot();
-	void greenChanSlot();
 
-
+	void color1SpinSlot();
+	void color2SpinSlot();
+	void color3SpinSlot();
 
 protected:
     void resizeEvent(QResizeEvent *);
@@ -99,32 +103,24 @@ signals:
 private:
     Ui::Cut *ui;
 
-	bool autoFlag;
+	QPixmap currentPic;
+	int leftDrawLimit; /// in slices
 
+	fileType myFileType{fileType::real};
 
-    fileType myFileType{fileType::real};
-    int leftDrawLimit; /// in slices
-	int rightDrawLimit{0}; /// in slices
 	edfFile edfFil;
+	matrix data3{};
 	double currFreq{250};
 
     QStringList lst;
     QString currentFile;
-	int currentNumber; /// in lst
+	int currentNumber{-1}; /// in lst
 	int addNum = 0; // for cut() winds
-
-    QPixmap currentPic;
-    int redCh, blueCh; // for drawing
-    int rightLimit; /// in slices
-    int leftLimit; /// in slices
-
-	matrix data3{};
 
 	matrix copyData{};
 	std::vector<matrix> undoData;
 	std::function<void(void)> undoAction;
 	std::vector<std::function<void(void)>> undos;
-
 
 };
 

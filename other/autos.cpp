@@ -221,9 +221,12 @@ void Xenia_TBI()
 #endif
 }
 
-void IITPrename(const QString & dirName, const QString & guyName)
+void IITPrename(const QString & dirName)
 {
 	const QString pth = def::iitpFolder + "/" + dirName + "/";
+	if(!QFile::exists(pth + "rename.txt")) return;
+
+	const QString & guyName = dirName;
 	const QString suffix = "_rn";
 
 	std::ifstream inStr;
@@ -243,8 +246,11 @@ void IITPrename(const QString & dirName, const QString & guyName)
 			{
 				QString oldName = guyName + "_" + rn(oldNum, 2) + ending;
 				QString newName = guyName + "_" + rn(newNum, 2) + suffix + ending;
-				QFile::rename(pth + oldName,
-							  pth + newName);
+				if(QFile::exists(pth + oldName))
+				{
+					QFile::rename(pth + oldName,
+								  pth + newName);
+				}
 			}
 		}
 		else
@@ -265,6 +271,7 @@ void IITPrename(const QString & dirName, const QString & guyName)
 
 void IITPdat(const QString & dirName)
 {
+
 	def::ntFlag = true;
 	QStringList files = QDir(def::iitpFolder + "/" + dirName).entryList({"*.dat"},
 																		QDir::Files,
@@ -291,8 +298,9 @@ void IITPdat(const QString & dirName)
 	outStr.close();
 }
 
-void IITPgonios(const QString & dirName, const QString & guyName)
+void IITPgonios(const QString & dirName)
 {
+	const QString & guyName = dirName;
 	def::ntFlag = true;
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
@@ -326,13 +334,15 @@ void IITPgonios(const QString & dirName, const QString & guyName)
 	}
 }
 
-void IITP(const QString & dirName, const QString & guyName)
+void IITP(const QString & dirName)
 {
+
+	const QString & guyName = dirName;
 	def::ntFlag = true;
 
 	for(int fileNum = 0; fileNum < 30; ++fileNum)
 	{
-		if(fileNum == 1) break;
+//		if(fileNum == 1) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
@@ -342,16 +352,51 @@ void IITP(const QString & dirName, const QString & guyName)
 #if 01
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
-		if(!QFile::exists(filePath)) continue;
-		edfFile fil1(filePath, inst::iitp);
-
-		filePath = ExpNamePre + "_emg.edf";
-		fil1.writeEdfFile(filePath);
+		if(QFile::exists(filePath))
+		{
+			edfFile fil1(filePath, inst::iitp);
+			filePath = ExpNamePre + "_emg.edf";
+			fil1.writeEdfFile(filePath);
+		}
 #endif
-		continue;
+
+		/// with filtering
+#if 01
+		/// filter EMG notch + goniogramms
+		filePath = ExpNamePre + "_emg.edf";
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
+
+			for(int fr = 50; fr <= 450; fr += 50)
+			{
+				fil.refilter(fr - 5, fr + 5, {}, true);
+			}
+
+			/// filter goniogramms
+			std::vector<uint> chanList;
+			for(int i = 0; i < fil.getNs(); ++i)
+			{
+				for(auto joint : {"elbow", "wrist", "knee", "ankle"})
+				{
+					if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive))
+					{
+						chanList.push_back(i);
+						break;
+					}
+				}
+			}
+			fil.refilter(0.1, 6, {}, false, chanList); /// magic constants
+
+			filePath = ExpNamePre + "_emg_f.edf";
+			fil.writeEdfFile(filePath);
+		}
+#endif
+
+
 
 #if 01
-		/// divide ECG chan to prevent oversclaing amplitude
+		/// divide EEG chans to prevent oversclaing amplitude
 		filePath = ExpNamePre + "_eeg.edf";
 		if(QFile::exists(filePath))
 		{
@@ -365,98 +410,48 @@ void IITP(const QString & dirName, const QString & guyName)
 		}
 #endif
 
-
-
-#if 01
-		/// with filtering
-#if 01
-		/// filter EMG notch + goniogramms
-		filePath = ExpNamePre + "_emg.edf";
-		if(!QFile::exists(filePath)) continue;
-		fil.readEdfFile(filePath);
-
-		for(int fr = 50; fr <= 450; fr += 50)
-		{
-			fil.refilter(fr - 5, fr + 5, {}, true);
-		}
-		/// filter goniogramms
-		std::vector<uint> chanList;
-		for(int i = 0; i < fil.getNs(); ++i)
-		{
-			for(auto joint : {"elbow", "wrist", "knee", "ankle"})
-			{
-				if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive))
-				{
-					chanList.push_back(i);
-					break;
-				}
-			}
-		}
-		fil.refilter(0.1, 6, {}, false, chanList);
-
-		filePath = ExpNamePre + "_emg_f.edf";
-		fil.writeEdfFile(filePath);
-#endif
-
 #if 01
 		/// filter EEG edfs, but not ECG
 //		filePath = ExpNamePre + "_eeg.edf";
 		filePath = ExpNamePre + "_eeg_div.edf";
-		if(!QFile::exists(filePath)) continue;
-		fil.readEdfFile(filePath);
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
 
-		filePath = ExpNamePre + "_eeg_f.edf";
-		fil.refilter(45, 55, {}, true);
-		fil.refilter(0.5, 70, filePath);
+			filePath = ExpNamePre + "_eeg_f.edf";
+			fil.refilter(45, 55, {}, true);
+			fil.refilter(0.5, 70, filePath);
+		}
 #endif
 
 #if 01
 		/// upsample EEGs
 		filePath = ExpNamePre + "_eeg_f.edf";
-		if(!QFile::exists(filePath)) continue;
-		fil.readEdfFile(filePath);
-		filePath = ExpNamePre + "_eeg_f_up.edf";
-		fil.upsample(1000., filePath);
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
+			filePath = ExpNamePre + "_eeg_f_up.edf";
+			fil.upsample(1000., filePath);
+		}
 #endif
+
 
 
 #if 01
 		/// vertcat eeg+emg
 		filePath = ExpNamePre + "_eeg_f_up.edf";
-		if(!QFile::exists(filePath)) continue;
-		fil.readEdfFile(filePath);
-		filePath = ExpNamePre + "_emg_f.edf";
-		fil = fil.vertcatFile(filePath, {});
-		filePath = ExpNamePre + "_sum_f.edf";
-		fil.writeEdfFile(filePath);
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
+			filePath = ExpNamePre + "_emg_f.edf";
+			if(QFile::exists(filePath))
+			{
+				fil = fil.vertcatFile(filePath, {});
+				filePath = ExpNamePre + "_sum_f.edf";
+				fil.writeEdfFile(filePath);
+			}
+		}
 #endif
-
-#else
-	/// w/o filtering
-
-#if 01
-		/// upsample EEGs
-//		filePath = ExpNamePre + "_eeg.edf";
-		filePath = ExpNamePre + "_eeg_div.edf";
-		if(!QFile::exists(filePath)) continue;
-		fil.readEdfFile(filePath);
-		filePath = ExpNamePre + "_eeg_up.edf";
-		fil.upsample(1000., filePath);
-#endif
-
-#if 01
-		/// vertcat eeg+emg
-		filePath = ExpNamePre + "_eeg_up.edf";
-		if(!QFile::exists(filePath)) continue;
-		fil.readEdfFile(filePath);
-		filePath = ExpNamePre + "_emg.edf";
-		fil = fil.vertcatFile(filePath, {});
-		filePath = ExpNamePre + "_sum.edf";
-		fil.writeEdfFile(filePath);
-#endif
-
-#endif
-
 	}
 
 }

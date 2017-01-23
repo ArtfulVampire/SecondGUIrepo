@@ -12,10 +12,6 @@ Cut::Cut() :
     ui->setupUi(this);
     this->setWindowTitle("Cut-e");
 
-    autoFlag = false;
-
-    redCh = -1;
-    blueCh = -1;
 
 	ui->subdirComboBox->addItem("");
 	ui->subdirComboBox->addItem("Reals");
@@ -32,33 +28,20 @@ Cut::Cut() :
 //	ui->suffixComboBox->setCurrentText("sum"); /// iitp
 
 
-    ui->eogDoubleSpinBox->setValue(2.40);
-    ui->eogDoubleSpinBox->setSingleStep(0.1);
-
 	ui->yNormDoubleSpinBox->setDecimals(2);
 	ui->yNormDoubleSpinBox->setMaximum(5.);
 	ui->yNormDoubleSpinBox->setMinimum(0.01);
 	ui->yNormDoubleSpinBox->setValue(1.);
 	ui->yNormDoubleSpinBox->setSingleStep(0.05);
 
-	ui->greenChanSpinBox->setMinimum(-1);
-	ui->greenChanSpinBox->setValue(-1);
 
-//    ui->paintStartDoubleSpinBox->setValue(0);
     ui->paintStartDoubleSpinBox->setDecimals(1);
     ui->paintStartDoubleSpinBox->setSingleStep(0.1);
+	ui->paintStartDoubleSpinBox->setValue(0);
 
-//    ui->paintLengthDoubleSpinBox->setValue(4);
     ui->paintLengthDoubleSpinBox->setDecimals(1);
 	ui->paintLengthDoubleSpinBox->setSingleStep(0.2);
-	/// can change
-	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
 
-
-	ui->dirBox->addItem("Reals");
-    ui->dirBox->addItem("cut");
-	ui->dirBox->addItem("winds");
-    ui->dirBox->setCurrentIndex(0);
 
     ui->nextButton->setShortcut(tr("d"));
     ui->prevButton->setShortcut(tr("a"));
@@ -81,15 +64,20 @@ Cut::Cut() :
 	ui->mark1LineEdit->setText("10");
 	ui->mark2LineEdit->setText("20");
 
+
     ui->picLabel->installEventFilter(this);
 	drawSamples();
 
     ui->scrollArea->setWidget(ui->picLabel);
     ui->scrollArea->installEventFilter(this);
 
+	ui->color1LineEdit->setText("blue");
+	ui->color2LineEdit->setText("red");
+	ui->color3LineEdit->setText("orange");
+	ui->color1SpinBox->setMinimum(-1); ui->color1SpinBox->setValue(-1);
+	ui->color2SpinBox->setMinimum(-1); ui->color2SpinBox->setValue(-1);
+	ui->color3SpinBox->setMinimum(-1); ui->color3SpinBox->setValue(-1);
 
-    ///////////////
-    currentNumber =- 1;
 
 #if 0
     QFileDialog * browser = new QFileDialog();
@@ -147,7 +135,13 @@ Cut::Cut() :
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->setMark1PushButton, SIGNAL(clicked()), this, SLOT(set1MarkerSlot()));
 	QObject::connect(ui->setMark2PushButton, SIGNAL(clicked()), this, SLOT(set2MarkerSlot()));
-	QObject::connect(ui->greenChanSpinBox, SIGNAL(valueChanged(int)), this, SLOT(greenChanSlot()));
+
+	QObject::connect(ui->color1SpinBox, SIGNAL(valueChanged(int)), this, SLOT(color1SpinSlot()));
+	QObject::connect(ui->color2SpinBox, SIGNAL(valueChanged(int)), this, SLOT(color2SpinSlot()));
+	QObject::connect(ui->color3SpinBox, SIGNAL(valueChanged(int)), this, SLOT(color3SpinSlot()));
+	QObject::connect(ui->color1LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
+	QObject::connect(ui->color2LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
+	QObject::connect(ui->color3LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -158,12 +152,12 @@ Cut::~Cut()
     delete ui;
 }
 
-void zeroData(matrix & inData, int leftLimit, int rightLimit)
+void zeroData(matrix & inData, int leftLim, int rightLim)
 {
-	for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
+	for(int k = 0; k < inData.rows() - 1; ++k) /// don't affect markers
 	{
-		std::fill(std::begin(inData[k]) + leftLimit,
-				  std::begin(inData[k]) + rightLimit,
+		std::fill(std::begin(inData[k]) + leftLim,
+				  std::begin(inData[k]) + rightLim,
 				  0.);
 	}
 }
@@ -360,52 +354,82 @@ void Cut::setFileType(const QString & dataFileName)
     }
 }
 
+void Cut::setValuesByEdf()
+{
+	currFreq = edfFil.getFreq();
+	data3 = edfFil.getData();
+
+	ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
+	ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
+	ui->leftLimitSpinBox->setValue(0);
+	ui->rightLimitSpinBox->setValue(edfFil.getDataLen());
+
+	ui->paintStartDoubleSpinBox->setMaximum(floor(data3.cols() / currFreq));
+	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
+	ui->paintStartLabel->setText("start (max " + nm(floor(data3.cols() / currFreq)) + ")");
+	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
+	ui->paintLengthDoubleSpinBox->setValue((this->width() - 20) / currFreq);
+
+	/// set coloured channels
+	QString redStr = "EOG1";
+	QString blueStr = "EOG2";
+	if(edfFil.getNs() > 35)
+	{
+		redStr = "ECG";
+		blueStr = "Artefac";
+	}
+
+	ui->color1SpinBox->setMaximum(edfFil.getNs() - 1);
+	ui->color2SpinBox->setMaximum(edfFil.getNs() - 1);
+	ui->color3SpinBox->setMaximum(edfFil.getNs() - 1);
+	ui->color1SpinBox->setValue(edfFil.findChannel(blueStr));
+	ui->color2SpinBox->setValue(edfFil.findChannel(redStr));
+	ui->color3SpinBox->setValue(-1);
+}
+
 void Cut::createImage(const QString & dataFileName)
 {
     addNum = 1;
     currentFile = dataFileName;
 
+	leftDrawLimit = 0;
     if(this->myFileType == fileType::real)
     {
 		int tmp = 0;
 		myLib::readPlainData(dataFileName, data3, tmp);
-        leftDrawLimit = 0;
-		rightDrawLimit = data3.cols();
     }
 	else if(this->myFileType == fileType::edf)
 	{
         edfFil.readEdfFile(dataFileName);
 		def::ns = edfFil.getNs();
-		currFreq = edfFil.getFreq();
-		data3 = edfFil.getData();
-		leftDrawLimit = 0;
+		setValuesByEdf();
 
-		ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
-		ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
-
-		ui->paintStartDoubleSpinBox->setMaximum(floor(data3.cols() / currFreq));
-		ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
-		ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
-		ui->paintLengthDoubleSpinBox->setValue((this->width() - 20) / currFreq);
-
-		/// set coloured channels
-		QString redStr = "EOG1";
-		QString blueStr = "EOG2";
-		if(edfFil.getNs() > 35)
-		{
-			redStr = "ECG";
-			blueStr = "Artefac";
-		}
-		redCh = edfFil.findChannel(redStr);
-		blueCh = edfFil.findChannel(blueStr);
-		ui->greenChanSpinBox->setMaximum(edfFil.getNs() - 1);
-		ui->greenChanSpinBox->setValue(-1);
     }
-
 	paint();
     ui->scrollArea->horizontalScrollBar()->setSliderPosition(0);
 }
 
+void Cut::iitpLog(const QString & typ, int num, const QString & add)
+{
+	std::ofstream outStr;
+	QString name = edfFil.getExpName();
+	name = name.left(name.indexOf('_'));
+	outStr.open((edfFil.getDirPath() + "/" +
+				 name + "_syncLog.txt").toStdString(), std::ios_base::app);
+	outStr << edfFil.getExpName() << "\t"
+		   << typ << "\t"
+		   << ui->leftLimitSpinBox->value() << "\t";
+	if(num == 2)
+	{
+		outStr << ui->rightLimitSpinBox->value() << "\t";
+	}
+	if(!add.isEmpty())
+	{
+		outStr << add << "\t";
+	}
+	outStr << std::endl;
+	outStr.close();
+}
 
 void Cut::iitpAutoCorrSlot()
 {
@@ -433,46 +457,30 @@ void Cut::iitpAutoJumpSlot()
 
 void Cut::iitpManualSlot()
 {
-	edfFile tmpFile = edfFil;
-	tmpFile.iitpSyncManual(ui->rightLimitSpinBox->value(),
-						   ui->leftLimitSpinBox->value(),
-						   200);
-	QString newName = tmpFile.getFileNam();
-	newName.replace(".edf", "_sync.edf");
-	std::cout << "iitpManualSlot: newFileName = " << newName << std::endl;
-	tmpFile.writeEdfFile(tmpFile.getDirPath() + slash + newName);
+
+	edfFil.iitpSyncManual(ui->rightLimitSpinBox->value(),
+						  ui->leftLimitSpinBox->value(),
+						  200);
+	iitpLog("sync");
+
+	setValuesByEdf();
+	paint();
 }
 
 void Cut::mousePressSlot(char btn, int coord)
 {
-	if(btn == 'l' && coord < rightLimit)
+	if(btn == 'l' &&
+	   coord + leftDrawLimit < ui->rightLimitSpinBox->value())
 	{
-		leftLimit = coord;
-		ui->leftLimitSpinBox->setValue(leftLimit + leftDrawLimit);
+		ui->leftLimitSpinBox->setValue(coord + leftDrawLimit);
 	}
-	else if(btn == 'r' && coord > leftLimit && coord < data3.cols())
+	else if(btn == 'r' &&
+			coord + leftDrawLimit > ui->leftLimitSpinBox->value() &&
+			coord < data3.cols())
 	{
-		rightLimit = coord;
-		ui->rightLimitSpinBox->setValue(rightLimit + leftDrawLimit);
+		ui->rightLimitSpinBox->setValue(coord + leftDrawLimit);
 	}
-
-	QPixmap tempPic = currentPic;
-    QPainter paint;
-	paint.begin(&tempPic);
-
-    paint.setPen(QPen(QBrush("blue"), 2));
-    paint.drawLine(leftLimit, 0, leftLimit, currentPic.height());
-    paint.setPen(QPen(QBrush("red"), 2));
-    paint.drawLine(rightLimit, 0, rightLimit, currentPic.height());
-
-	ui->picLabel->setPixmap(tempPic.scaled(currentPic.width() - 2,
-											  ui->scrollArea->height() - 20));
-    paint.end();
-}
-
-void Cut::setAutoProcessingFlag(bool a)
-{
-    autoFlag = a;
+	paintLimits();
 }
 
 void Cut::copySlot()
@@ -611,10 +619,11 @@ void Cut::resizeWidget(double a)
 	this->resize(a * currFreq + 20, this->height());
 }
 
-
+/// FULL REMAKE
 /// make for opened edf
 void Cut::matiAdjustLimits() /////// should TEST !!!!!
 {
+#if 0
     QStringList lst = currentFile.split(QRegExp("[_.]"),
                                         QString::SkipEmptyParts); // to detect session, type, piece
     int tempNum = 0;
@@ -628,13 +637,9 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     }
     int typeNum = lst[tempNum].toInt();
     int sesNum = lst[tempNum + 1].toInt();
-    int pieceNum = lst[tempNum + 2].toInt();
+	int pieceNum = lst[tempNum + 2].toInt();
 
-//    std::cout << "typeNum = " << typeNum << std::endl;
-//    std::cout << "sesNum = " << sesNum << std::endl;
-//    std::cout << "pieceNum = " << pieceNum << std::endl;
-
-    if(typeNum != 0 && typeNum != 2) return; // adjust only if count or composed activity
+	if(typeNum != 0 && typeNum != 2) return; // adjust only for counting or composed activity
 
     int newLeftLimit = leftLimit;
     int newRightLimit = rightLimit;
@@ -724,6 +729,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     }
     leftLimit = newLeftLimit;
     rightLimit = newRightLimit;
+#endif
 
 }
 
@@ -783,23 +789,58 @@ void Cut::set2MarkerSlot()
 }
 
 
-void Cut::greenChanSlot()
+void Cut::color1SpinSlot()
 {
-	const int n = ui->greenChanSpinBox->value();
+	const int n = ui->color1SpinBox->value();
 	if(n >=0)
 	{
 		if(myFileType == fileType::edf)
 		{
 			QString ch = QString(edfFil.getLabels()[n]);
-			ui->greenChanLineEdit->setText(ch.remove("EEG ").remove("IT "));
+			ui->colorChan1LineEdit->setText(ch.remove("EEG ").remove("IT ").remove("EOG "));
 		}
 	}
 	else
 	{
-		ui->greenChanLineEdit->clear();
+		ui->colorChan1LineEdit->clear();
 	}
 	paint();
+}
 
+void Cut::color2SpinSlot()
+{
+	const int n = ui->color2SpinBox->value();
+	if(n >=0)
+	{
+		if(myFileType == fileType::edf)
+		{
+			QString ch = QString(edfFil.getLabels()[n]);
+			ui->colorChan2LineEdit->setText(ch.remove("EEG ").remove("IT ").remove("EOG "));
+		}
+	}
+	else
+	{
+		ui->colorChan2LineEdit->clear();
+	}
+	paint();
+}
+
+void Cut::color3SpinSlot()
+{
+	const int n = ui->color3SpinBox->value();
+	if(n >=0)
+	{
+		if(myFileType == fileType::edf)
+		{
+			QString ch = QString(edfFil.getLabels()[n]);
+			ui->colorChan3LineEdit->setText(ch.remove("EEG ").remove("IT ").remove("EOG "));
+		}
+	}
+	else
+	{
+		ui->colorChan3LineEdit->clear();
+	}
+	paint();
 }
 
 void Cut::zero(int start, int end)
@@ -809,11 +850,10 @@ void Cut::zero(int start, int end)
 		std::cout << "Cut::split: leftEdge > rightEdge" << std::endl;
 		return;
 	}
-//    int h = 0;
 
-	// if MATI with counts - adjust limits to problem edges
-	// move leftLimit after the nearest marker
-	// move rightLimit after the nearest marker
+	// if MATI with counting - adjust limits to small task edges
+	// move leftLimit on the nearest prev marker
+	// move rightLimit on the nearest next marker
 	// delete [leftLimit, rightLimit)
 
 //	this->zero(ui->leftLimitSpinBox->value(), ui->rightLimitSpinBox->value());
@@ -831,7 +871,7 @@ void Cut::zero(int start, int end)
 	undoData.push_back(data3.subCols(start, end));
 	undoAction = [start, this]()
 	{
-		for(int k = 0; k < def::nsWOM(); ++k) /// don't affect markers
+		for(int k = 0; k < data3.rows() - 1; ++k) /// don't affect markers
 		{
 			std::copy(std::begin(undoData.back()[k]),
 					  std::end(undoData.back()[k]),
@@ -873,6 +913,12 @@ void Cut::split(int start, int end, bool addUndo)
 		std::cout << "Cut::split: leftEdge > rightEdge" << std::endl;
 		return;
 	}
+	if(std::find_if(std::begin(data3.back()),
+					std::end(data3.back()),
+					[](double in){return in != 0.;}) != std::end(data3.back()))
+	{
+		std::cout << "Cut::split: there are non-zero markers" << std::endl;
+	}
 	if(addUndo)
 	{
 		undoData.push_back(data3.subCols(start, end));
@@ -897,6 +943,8 @@ void Cut::splitSlot()
 
 void Cut::splitFromZeroSlot()
 {
+	iitpLog("split0", 1);
+
 	this->split(0, ui->rightLimitSpinBox->value());
 	ui->paintStartDoubleSpinBox->setValue(0.);
 }
@@ -952,11 +1000,6 @@ void Cut::saveSubsecSlot()
 	}
 	else if(myFileType == fileType::edf)
 	{
-		if(ui->leftLimitSpinBox->value() > ui->rightLimitSpinBox->value())
-		{
-			std::cout << "Cut::saveSubsecSlot: leftEdge > rightEdge" << std::endl;
-			return;
-		}
 		QString newPath = currentFile;
 		QString ad = ui->saveSubsecAddNameLineEdit->text();
 		if( !ad.isEmpty())
@@ -974,6 +1017,9 @@ void Cut::saveSubsecSlot()
 
 		edfFil.writeOtherData(data3.subCols(ui->leftLimitSpinBox->value(),
 											ui->rightLimitSpinBox->value()), newPath);
+
+		iitpLog("saveSub", 2, newPath);
+
 		std::cout << "Cut::saveSubsecSlot: edfFile saved - " << newPath << std::endl;
 	}
 	paint();
@@ -998,16 +1044,20 @@ void Cut::rewrite()
 std::vector<std::pair<int, QColor>> Cut::makeColouredChans()
 {
 	std::vector<std::pair<int, QColor>> res;
-	for(std::pair<int, QColor> pairs : {
-		std::pair<int, QColor>{blueCh, "blue"},
-		std::pair<int, QColor>{redCh, "red"},
-		std::pair<int, QColor>{ui->greenChanSpinBox->value(), "green"}
-})
+	if(ui->color1SpinBox->value() >= 0)
 	{
-		if(pairs.first >= 0)
-		{
-			res.push_back(pairs);
-		}
+		res.push_back(std::make_pair(ui->color1SpinBox->value(),
+									 QColor(ui->color1LineEdit->text())));
+	}
+	if(ui->color2SpinBox->value() >= 0)
+	{
+		res.push_back(std::make_pair(ui->color2SpinBox->value(),
+									 QColor(ui->color2LineEdit->text())));
+	}
+	if(ui->color3SpinBox->value() >= 0)
+	{
+		res.push_back(std::make_pair(ui->color3SpinBox->value(),
+									 QColor(ui->color3LineEdit->text())));
 	}
 	return res;
 }
@@ -1017,6 +1067,7 @@ void Cut::paint() // save to tmp.jpg and display
     QString helpString;
     helpString = def::dir->absolutePath() + slash + "tmp.jpg";
 
+	int rightDrawLimit = 0.;
     if(myFileType == fileType::edf)
     {
 		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * currFreq;
@@ -1063,12 +1114,39 @@ void Cut::paint() // save to tmp.jpg and display
 		}
 	}
 
+	paintLimits();
+
     /// -20 for scroll bar generality
 	/// experimental xNorm
-	ui->picLabel->setPixmap(currentPic.scaled(currentPic.width() - 2,
-											  ui->scrollArea->height() - 20));
+//	ui->picLabel->setPixmap(currentPic.scaled(currentPic.width() - 2,
+//											  ui->scrollArea->height() - 20));
 
-    rightLimit = rightDrawLimit - leftDrawLimit;
-    leftLimit = 0;
+//    rightLimit = rightDrawLimit - leftDrawLimit;
+//    leftLimit = 0;
+}
+
+void Cut::paintLimits()
+{
+	QPixmap tempPic = currentPic;
+	QPainter paint;
+	paint.begin(&tempPic);
+
+	int leftX = ui->leftLimitSpinBox->value() - leftDrawLimit;
+	if(leftX >= 0 && leftX < ui->paintLengthDoubleSpinBox->value() * this->currFreq)
+	{
+		paint.setPen(QPen(QBrush("blue"), 2));
+		paint.drawLine(leftX, 0, leftX, currentPic.height());
+	}
+
+	int rightX = ui->rightLimitSpinBox->value() - leftDrawLimit;
+	if(rightX >= 0 && rightX < ui->paintLengthDoubleSpinBox->value() * this->currFreq)
+	{
+		paint.setPen(QPen(QBrush("red"), 2));
+		paint.drawLine(rightX, 0, rightX, currentPic.height());
+	}
+
+	ui->picLabel->setPixmap(tempPic.scaled(currentPic.width() - 2,
+											  ui->scrollArea->height() - 20));
+	paint.end();
 }
 

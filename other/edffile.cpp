@@ -291,6 +291,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 			"Bf",
 			"Fcr",
 			"Ecr",
+			"Da",
+			"Dp",
 			"Ankle",
 			"Knee",
 			"Elbow",
@@ -299,14 +301,17 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		{
 			for(QString post : {"_l", "_r"})
 			{
-				chanList.push_back(this->findChannel(lab + post));
+				int i = this->findChannel(lab + post);
+				if(i >= 0)
+				{
+					chanList.push_back(i);
+				}
 			}
 		}
 		chanList.push_back(this->findChannel("Artefac"));
 		chanList.push_back(this->findChannel("Marker"));
 
 		*this = this->reduceChannels(chanList);
-
 	}
 }
 

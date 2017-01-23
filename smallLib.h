@@ -104,6 +104,16 @@ inline std::complex<double> abs(std::complex<double> in)
 	return std::complex<double>(std::abs(in));
 }
 
+inline std::valarray<double> abs(const std::valarray<std::complex<double>> & in)
+{
+	std::valarray<double> res(in.size());
+	std::transform(std::begin(in),
+				   std::end(in),
+				   std::begin(res),
+				   [](std::complex<double> a){ return std::abs(a);});
+	return res;
+}
+
 inline std::valarray<double> pop_front_valar(const std::valarray<double> & in, uint numOfPop)
 {
 	std::valarray<double> res(in.size() - numOfPop);
