@@ -84,20 +84,45 @@ inline std::valarray<double> softmax(const std::valarray<double> & in)
 
 }
 
-template <typename Typ>
-inline std::valarray<Typ> vecToValar(const std::vector<Typ> & in)
-{
-	std::valarray<Typ> res(in.size());
-	std::copy(std::begin(in),
-			  std::end(in),
-			  std::begin(res));
-	return res;
-}
-
 inline int fftL(int in)
 {
-    return pow(2., ceil(log2(in)));
+	return pow(2., ceil(log2(in)));
 }
+
+
+
+template <typename T>
+void eraseItems(std::vector<T> & inVect,
+				const std::vector<uint> & indices)
+{
+	const int initSize = inVect.size();
+	std::set<int, std::less<int>> excludeSet; // less first
+	for(auto item : indices)
+	{
+		excludeSet.emplace(item);
+	}
+	std::vector<int> excludeVector;
+	for(auto a : excludeSet)
+	{
+		excludeVector.push_back(a);
+	}
+	excludeVector.push_back(initSize);
+
+	for(int i = 0; i < int(excludeVector.size()) - 1; ++i)
+	{
+		for(int j = excludeVector[i] - i; j < excludeVector[i + 1] - i - 1; ++j)
+		{
+			inVect[j] = std::move(inVect[j + 1 + i]);
+		}
+	}
+	inVect.resize(initSize - excludeSet.size());
+}
+template void eraseItems(std::vector<std::valarray<double>> & inVect, const std::vector<uint> & indices);
+template void eraseItems(std::vector<int> & inVect, const std::vector<uint> & indices);
+template void eraseItems(std::vector<double> & inVect, const std::vector<uint> & indices);
+
+/// valarray part
+
 
 inline std::complex<double> abs(std::complex<double> in)
 {
@@ -114,6 +139,16 @@ inline std::valarray<double> abs(const std::valarray<std::complex<double>> & in)
 	return res;
 }
 
+inline std::valarray<std::complex<double>> toComplex(const std::valarray<double> & in)
+{
+	std::valarray<std::complex<double>> res(in.size());
+	std::transform(std::begin(in),
+				   std::end(in),
+				   std::begin(res),
+				   [](double a){ return std::complex<double>(a);});
+	return res;
+}
+
 inline std::valarray<double> pop_front_valar(const std::valarray<double> & in, uint numOfPop)
 {
 	std::valarray<double> res(in.size() - numOfPop);
@@ -121,24 +156,6 @@ inline std::valarray<double> pop_front_valar(const std::valarray<double> & in, u
 	return res;
 }
 
-template <typename Typ>
-inline void resizeValar(std::valarray<Typ> & in, int num)
-{
-	std::valarray<Typ> temp = in;
-	in.resize(num);
-	std::copy(std::begin(temp),
-			  std::begin(temp) + std::min(in.size(), temp.size()),
-			  std::begin(in));
-}
-
-//inline std::valarray<double> resizeValar(const std::valarray<double> & in, int num)
-//{
-//	std::valarray<double> temp(num);
-//	std::copy(std::begin(in),
-//			  std::begin(in) + std::min(in.size(), num),
-//			  std::begin(temp));
-//	return temp;
-//}
 
 inline std::valarray<double> eraseValar(const std::valarray<double> & in, uint num)
 {
@@ -152,14 +169,8 @@ inline std::valarray<double> eraseValar(const std::valarray<double> & in, uint n
     return res;
 }
 
-
 inline double prod(const std::valarray<double> & in1, const std::valarray<double> & in2)
 {
-//    if(in1.size() != in2.size())
-//    {
-//        std::cout << "smallLib::prod: sizes = " << in1.size() << "   " << in2.size() << std::endl;
-//        exit(1);
-//    }
     return std::inner_product(std::begin(in1),
                               std::end(in1),
                               std::begin(in2),
@@ -254,39 +265,30 @@ inline double distance(const std::valarray<double> & in1,
     return norma(in1 - in2);
 }
 
-template <typename T>
-void eraseItems(std::vector<T> & inVect,
-                const std::vector<uint> & indices)
+template <typename Typ>
+inline std::valarray<Typ> vecToValar(const std::vector<Typ> & in)
 {
-    const int initSize = inVect.size();
-    std::set<int, std::less<int>> excludeSet; // less first
-    for(auto item : indices)
-    {
-        excludeSet.emplace(item);
-    }
-    std::vector<int> excludeVector;
-    for(auto a : excludeSet)
-    {
-        excludeVector.push_back(a);
-    }
-    excludeVector.push_back(initSize);
-
-    for(int i = 0; i < int(excludeVector.size()) - 1; ++i)
-    {
-        for(int j = excludeVector[i] - i; j < excludeVector[i + 1] - i - 1; ++j)
-        {
-            inVect[j] = std::move(inVect[j + 1 + i]);
-        }
-    }
-    inVect.resize(initSize - excludeSet.size());
+	std::valarray<Typ> res(in.size());
+	std::copy(std::begin(in),
+			  std::end(in),
+			  std::begin(res));
+	return res;
 }
-template void eraseItems(std::vector<std::valarray<double>> & inVect, const std::vector<uint> & indices);
-template void eraseItems(std::vector<int> & inVect, const std::vector<uint> & indices);
-template void eraseItems(std::vector<double> & inVect, const std::vector<uint> & indices);
-template void resizeValar(std::valarray<double> & in, int num);
-template void resizeValar(std::valarray<std::complex<double>> & in, int num);
 template std::valarray<double> vecToValar(const std::vector<double> & in);
 template std::valarray<std::complex<double>> vecToValar(const std::vector<std::complex<double>> & in);
+
+template <typename Typ>
+inline void resizeValar(std::valarray<Typ> & in, int num)
+{
+	std::valarray<Typ> temp = in;
+	in.resize(num);
+	std::copy(std::begin(temp),
+			  std::begin(temp) + std::min(in.size(), temp.size()),
+			  std::begin(in));
+}
+
+template void resizeValar(std::valarray<double> & in, int num);
+template void resizeValar(std::valarray<std::complex<double>> & in, int num);
 
 } // namespace smallLib
 

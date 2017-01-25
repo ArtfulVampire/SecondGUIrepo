@@ -531,6 +531,11 @@ std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre)
 	return res;
 }
 
+double spectreNorm(int fftLen, int realSig, int srate)
+{
+	return 2. / (double(std::min(realSig, fftLen)) * srate);
+}
+
 /// works
 std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   double lowFreq,
@@ -652,11 +657,32 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
 	{
 		fftLen = smallLib::fftL(inputArray.size());
 	}
-	std::valarray<std::complex<double>> res(fftLen);
-	std::copy(std::begin(inputArray),
-			  std::end(inputArray),
+	std::valarray<std::complex<double>> res(std::complex<double>{}, fftLen);
+
+	if(fftLen > inputArray.size())
+	{
+		std::copy(std::begin(inputArray),
+				  std::end(inputArray),
+				  std::begin(res));
+	}
+	else
+	{
+
+#if 0
+	/// take last
+	int offset = inputArray.size() - res.size();
+#else
+	/// take mid
+	int offset = (inputArray.size() - res.size()) / 2;
+#endif
+	std::copy(std::begin(inputArray) + offset,
+			  std::begin(inputArray) + offset + fftLen,
 			  std::begin(res));
 
+	}
+
+	/// apply window
+//	res *= smallLib::toComplex(myLib::fftWindow(fftLen, myLib::windowName::Blackman));
 
 
 	// DFT
@@ -1726,50 +1752,63 @@ std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 //	return in;
 //}
 
-std::valarray<double> fftWindow(int length, const QString & name)
+
+std::valarray<double> fftWindow(int length, windowName name)
 {
-	std::valarray<double> res = std::valarray<double>(length);
+	std::valarray<double> res(length);
 	const double arg = 2. * pi / (length - 1.);
 	/// Hann/Hanning
-	if(name.startsWith("Han", Qt::CaseInsensitive))
+	switch(name)
+	{
+	case windowName::Hann:
 	{
 		for(int i = 0; i < length; ++i)
 		{
 			res[i] = 0.5 * (1. - cos (i * arg));
 		}
+		break;
 	}
-	/// Hamming
-	else if(name.startsWith("Ham", Qt::CaseInsensitive))
+	case windowName::Hamming:
 	{
 		for(int i = 0; i < length; ++i)
 		{
 			res[i] = 0.53836 - 0.46164 * cos (i * arg);
 		}
+		break;
 	}
-	/// Blackman
-	else if(name.startsWith("Bla", Qt::CaseInsensitive))
+	case windowName::Blackman:
 	{
 		double alpha = 1.;
 		for(int i = 0; i < length; ++i)
 		{
 			res[i] = 0.5 * (1. - alpha) - 0.5 * cos(i * arg) + 0.5 * alpha * cos(2 * i * arg);
 		}
+		break;
 	}
-	/// Kaiser
-//	else if(name.startsWith("Ka", Qt::CaseInsensitive))
-//	{
+		/// Kaiser
+	case windowName::Kaiser:
+	{
+		res = 1;
+
 //		const double beta = 5.; /// [4; 9]
 //		for(int i = 0; i < length; ++i)
 //		{
 //			res[i] = std::abs(bes0(beta * sqrt(1 - pow(2 * i - length + 1 / (length - 1), 2)))) /
 //					 std::abs(bes0(beta));
 //		}
-//	}
-	/// rectangular
-	else
+		break;
+	}
+	case windowName::rect:
+	{
+		res = 1;
+		break;
+	}
+	default:
 	{
 		res = 1;
 	}
+	}
+
 	return res;
 }
 

@@ -50,9 +50,12 @@ void four1(double * dataF, int nn, int isign);
 std::valarray<std::complex<double>> spectreCtoCcomplex(
 		const std::valarray<std::complex<double>> & inputArray,
 		int fftLen = -1);
+
 std::valarray<std::complex<double>> spectreRtoCcomplex(
 		const std::valarray<double> & inputArray,
 		int fftLen = -1);
+
+double spectreNorm(int fftLen, int realSig, int srate);
 
 
 /// by FFT
@@ -67,8 +70,8 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   bool isNotch = false,
 							   double srate = 250.);
 
-
-std::valarray<double> fftWindow(int length, const QString & name = "Hann");
+enum class windowName {Hann, Hamming, Blackman, Kaiser, rect};
+std::valarray<double> fftWindow(int length, windowName name = windowName::Hann);
 
 std::valarray<double> upsample(const std::valarray<double> & inSignal,
 							   double oldFreq,
@@ -87,9 +90,6 @@ void calcSpectre(const std::valarray<double> & inSignal,
 				 int NumOfSmooth = 0,
 				 int Eyes = 0,
 				 double powArg = 1.);
-
-
-
 
 
 

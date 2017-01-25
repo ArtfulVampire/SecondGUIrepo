@@ -40,8 +40,13 @@ public:
 	std::complex<double> coherencyR(int chan1, int chan2, double freq);
 	void crossSpectrum(int chan1, int chan2);
 
-	void setPieces(int mark1 = 10, int mark2 = 20);
+	iitpData & staging(const QString & chanName,
+					   int markerMax,
+					   int markerMin);
 	void cutPieces(double length);
+	void setPieces(int start = 10, int finish = 20);
+	QPixmap drawSpectra(int mark1, int mark2);
+
 	void countPiecesFFT();
 	void resizePieces(int in);
 	void getPiecesParams();

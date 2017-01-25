@@ -13,21 +13,7 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-//	const QString p = "/media/Files/Data/iitp/test/";
-//	iitp::iitpData dt;
-//	dt.readEdfFile(p + "strong.edf");
-//	for(double len = 1.; len <= 1.024; len += 0.001)
-//	{
-//		dt.cutPieces(len);
-//		auto coh = dt.coherency(10, 24, 10);
-//		auto cohR = dt.coherencyR(10, 24, 10);
-//		vals1.push_back(coh);
-//		vals2.push_back(cohR);
-
-
-//	}
-
-#if 01
+#if 0
 	/// test coherency in all files
 	iitp::iitpData dt;
 	const QString direct = "/media/Files/Data/iitp/Ira/";
@@ -144,7 +130,7 @@ void MainWindow::customFunc()
 						return std::arg(in);
 					});
 
-					if(smallLib::mean(abss) > 0.15 &&
+					if(smallLib::mean(abss) > 0.05 &&
 					   smallLib::sigma(abss) * 3 < smallLib::mean(abss) &&
 					   smallLib::sigma(args) < 0.4
 					   )
@@ -170,17 +156,61 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+	iitp::iitpData idt;
+#if 0
+	idt.readEdfFile(def::iitpFolder + "/test/feet.edf");
+	idt.staging("ankle_l", 110, 111);
+	idt.staging("ankle_r", 112, 113);
+	idt.writeEdfFile(def::iitpFolder + "/test/feet_stage.edf");
+#endif
+
+	idt.readEdfFile(def::iitpFolder + "/test/feet_stage.edf");
+	idt.setPieces(110, 111);
+	idt.setFftLen(1024);
+	std::cout << std::abs(idt.coherency(16, 20, 10)) << std::endl;
+	idt.drawSpectra(110, 111).save(def::iitpFolder + "/test/feet_stage.jpg", 0, 100);
+
+
+//	std::vector<std::vector<double>> vals;
+
+//	for(int c1 = 0; c1 < 19; ++c1)
+//	{
+//		for(int c2 = 20; c2 < 28; ++c2)
+//		{
+//			for(int fr : {10, 15, 20, 25})
+//			{
+//				vals.push_back(std::vector<double>{std::abs(idt.coherency(c1, c2, fr)),
+//												   c1,
+//												   c2,
+//												   fr});
+//			}
+//		}
+//	}
+//	std::sort(std::begin(vals), std::end(vals),
+//			  [](const std::vector<double> & in1, const std::vector<double> & in2)
+//	{
+//		return in1[0] > in2[0];
+//	});
+
+//	for(int i = 0; i < 10; ++i)
+//	{
+//		std::cout
+//				<< vals[i][1] << "\t"
+//							  << vals[i][2] << "\t"
+//							  << vals[i][3] << "\t"
+//							  << idt.coherency(vals[i][1], vals[i][2], vals[i][3])
+//				<< std::endl;
+//	}
+
+	exit(0);
+
 
 //	return;
 //	for(QString guy : QDir(def::iitpFolder).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 //	{
-//		autos::IITPdat(guy);
-//		autos::IITPrename(guy);
 //	}
-//	autos::IITPrename("Levik");
-//	autos::IITPgonios("Ira");
-//	autos::IITPdat("Levik");
-//	exit(0);
+
+
 
 //	autos::IITP("Oleg");
 //	autos::IITP("Levik");
@@ -188,22 +218,12 @@ void MainWindow::customFunc()
 //	autos::IITP("Ira");
 //	autos::IITP("Victor");
 
-
-
-//	autos::filtering_test();
-//	autos::repairMarkersInFirstNewFB("/media/Files/Data/FeedbackNew",
-//									 "/MIX/MIX_rr_f3.5-40_eyesClean_rdc_new_.edf");
-//	autos::makeRightNumbersCF("/media/Files/Pictures/3exp", 81);
 //	autos::Xenia_TBI();
 //	autos::EEG_MRI({"Kabanov"}, false);
 //	exit(0);
 
-
 //	testNewClassifiers();
 //	testSuccessive()
-
-
-//	return;
 	exit(0);
 	/// further goes unused and old
 

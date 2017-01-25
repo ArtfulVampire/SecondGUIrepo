@@ -1,6 +1,7 @@
 #include "iitp.h"
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
+#include <myLib/drw.h>
 
 using namespace myOut;
 
@@ -68,12 +69,6 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 		a11 = spec1 * myLib::spectreConj(spec1);
 		a22 = spec2 * myLib::spectreConj(spec2);
 
-//		std::cout << i << '\t'
-//				  << smallLib::doubleRound(std::abs(a12[index]), 6) << '\t'
-//				  << smallLib::doubleRound(std::abs(a11[index]), 6) << '\t'
-//				  << smallLib::doubleRound(std::abs(a22[index]), 6) << '\t'
-//				  << std::abs((a12 / sqrt(a11 * a22))[index]) << std::endl;
-
 		if(std::abs(a22[index]) > lowThreshold && std::abs(a11[index]) > lowThreshold)
 		{
 			R += a12 / sqrt(a11 * a22);
@@ -131,7 +126,6 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 											   this->crossSpectra[chan2][chan2]);
 	}
 	int index = freq / this->spStep;
-
 	return coherencies[chan1][chan2][index];
 }
 
@@ -204,22 +198,6 @@ void iitpData::countPiecesFFT()
 	}
 }
 
-void iitpData::cutPieces(double length)
-{
-	this->piecesData.clear();
-	const int numPieces = this->getDataLen() / (this->srate * length);
-	for(int i = 0; i < numPieces; ++i)
-	{
-		this->piecesData.push_back(this->edfData.subCols(length * this->srate * i,
-														 length * this->srate * (i + 1)));
-	}
-	this->setFftLen();
-	this->clearCrossSpectra();
-
-	/// experimental for coherencyR
-	this->countPiecesFFT();
-}
-
 void iitpData::clearCrossSpectra()
 {
 	this->crossSpectra.clear();
@@ -266,21 +244,35 @@ void iitpData::getPiecesParams()
 	std::cout << "length = " << this->piecesData[0].cols() << std::endl;
 }
 
-void iitpData::setPieces(int mark1, int mark2)
+void iitpData::cutPieces(double length)
 {
+	this->piecesData.clear();
+	const int numPieces = this->getDataLen() / (this->srate * length);
+	for(int i = 0; i < numPieces; ++i)
+	{
+		this->piecesData.push_back(this->edfData.subCols(length * this->srate * i,
+														 length * this->srate * (i + 1)));
+	}
+	this->setFftLen();
+	this->clearCrossSpectra();
+
+	/// experimental for coherencyR
+	this->countPiecesFFT();
+}
+
+void iitpData::setPieces(int start, int finish)
+{
+	piecesData.clear();
+
 	const int badBeg = -1;
 	int beg = badBeg;
 	for(int i = 0; i < this->edfData.cols(); ++i)
 	{
-		if(this->edfData[this->markerChannel][i] == mark1)
+		if(this->edfData[this->markerChannel][i] == start)
 		{
-			if(beg == badBeg)
-			{
-				std::cout << "iitpData::setPieces: something wrong with markers" << std::endl;
-			}
 			beg = i;
 		}
-		else if(this->edfData[this->markerChannel][i] == mark2)
+		else if(this->edfData[this->markerChannel][i] == finish)
 		{
 			if(beg == badBeg)
 			{
@@ -293,9 +285,141 @@ void iitpData::setPieces(int mark1, int mark2)
 			}
 		}
 	}
-	this->setFftLen();
 	this->clearCrossSpectra();
+	this->setFftLen();
 }
+
+QPixmap iitpData::drawSpectra(int mark1, int mark2)
+{
+	const double leftFr = 2;
+	const double rightFr = 40;
+	const int leftInd = leftFr / this->spStep;
+	const int rightInd = rightFr / this->spStep;
+	const int spLen = rightInd - leftInd;
+	const int localFftLen = 1024;
+	const int numCh = 19;
+
+	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
+
+	std::valarray<double> spectre(spLen * numCh);
+	matrix spectra(2);
+	std::valarray<double> spec(localFftLen);
+
+	this->setPieces(mark1, mark2);
+	this->setFftLen(localFftLen);
+	this->countPiecesFFT();
+	for(int i = 0; i < numCh; ++i)
+	{
+		spec = 0.;
+		for(int j = 0; j < this->piecesData.size(); ++j)
+		{
+			spec += smallLib::abs(this->piecesFFT[j][i]) *
+					myLib::spectreNorm(localFftLen,
+									   this->piecesData[j].cols(),
+									   this->srate);
+		}
+		spec /= this->piecesData.size();
+		std::copy(std::begin(spec) + leftInd,
+				  std::begin(spec) + rightInd,
+				  std::begin(spectre) + i * spLen);
+	}
+	spectra[0] = spectre;
+//	templ = myLib::drw::drawArray(templ, spectre, QColor("blue"));
+//	return templ;
+
+	this->setPieces(mark2, mark1);
+	this->setFftLen(localFftLen);
+	this->countPiecesFFT();
+	for(int i = 0; i < numCh; ++i)
+	{
+		spec = 0.;
+		for(int j = 0; j < this->piecesData.size(); ++j)
+		{
+			spec += smallLib::abs(this->piecesFFT[j][i]) *
+					myLib::spectreNorm(localFftLen,
+									   this->piecesData[j].cols(),
+									   this->srate);
+		}
+		spec /= this->piecesData.size();
+		std::copy(std::begin(spec) + leftInd,
+				  std::begin(spec) + rightInd,
+				  std::begin(spectre) + i * spLen);
+	}
+	spectra[1] = spectre;
+//	templ = myLib::drw::drawArray(templ, spectre, QColor("red"));
+	templ = myLib::drw::drawArrays(templ, spectra);
+	return templ;
+}
+
+
+iitpData & iitpData::staging(const QString & chanName,
+							 int markerMax,
+							 int markerMin)
+{
+	int chanNum = this->findChannel(chanName);
+	const std::valarray<double> & chan = this->edfData[chanNum];
+	std::valarray<double> & marks = this->edfData[this->markerChannel];
+	auto sign = [](double in) -> int
+	{
+		return (in > 0) ? 1 : -1;
+	};
+	int currSign = sign(chan[0]);
+	int start = 0;
+
+	for(int i = 0; i < chan.size(); ++i)
+	{
+		if(sign(chan[i]) != currSign)
+		{
+			int end = i - 1;
+
+//			std::cout << start << '\t' << end << std::endl;
+
+			auto val = std::valarray<double>(chan[std::slice(start, end - start, 1)]);
+			val = val.apply(std::abs);
+			uint nm = myLib::indexOfMax(val);
+			if(currSign == 1)
+			{
+				marks[start + nm] = markerMax;
+			}
+			else
+			{
+				marks[start + nm] = markerMin;
+			}
+
+			start = i;
+			currSign *= -1;
+		}
+	}
+	return *this;
+
+
+#if 0
+	/// via derivative
+	std::valarray<double> deriv = std::valarray<double>(chan).cshift(1) - chan;
+
+	int winLen = 20;
+	std::valarray<double> mean(deriv.size() - winLen);
+	for(int i = winLen/2; i < deriv.size() - winLen/2; ++i)
+	{
+		std::valarray<double> win = deriv[std::slice(i - winLen/2, winLen, 1)];
+		mean[i - winLen/2] = smallLib::mean(win);
+	}
+
+	for(int i = 0; i < mean.size() - 1; ++i)
+	{
+		if(mean[i] >= 0. && mean[i + 1] < 0.)
+		{
+			this->edfData[this->markerChannel][i + winLen/2] = markerMax;
+		}
+		else if(mean[i] <= 0. && mean[i + 1] > 0.)
+		{
+			this->edfData[this->markerChannel][i + winLen/2] = markerMin;
+		}
+	}
+	return *this;
+#endif
+}
+
 
 int iitpData::setFftLen()
 {
@@ -312,7 +436,7 @@ int iitpData::setFftLen()
 void iitpData::setFftLen(int in)
 {
 	this->fftLen = smallLib::fftL(in);
-	this->spStep = this->srate / this->fftLen;
+	this->spStep = this->srate / double(this->fftLen);
 }
 
 
