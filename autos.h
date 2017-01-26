@@ -51,7 +51,8 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 void Xenia_TBI();
 
 void IITP(const QString & dirName = "Ira");
-void IITPgonios(const QString & dirName = "Ira"); // filter
+void IITPstaging(const QString & dirName = "Ira", const QString & suffix = "_sum_f_new");
+void IITPgonios(const QString & dirName = "Ira"); // filter gonios
 void IITPdat(const QString & dirName = "Ira");
 void IITPrename(const QString & dirName = "Ira");
 

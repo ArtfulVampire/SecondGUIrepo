@@ -351,10 +351,18 @@ QPixmap iitpData::drawSpectra(int mark1, int mark2)
 	return templ;
 }
 
+iitpData & iitpData::staging(int numGonioChan)
+{
+	int minMarker = 100 +
+					(numGonioChan / 2 + 1) * 10 +
+					(numGonioChan % 2) * 2 + 0;
+	return this->staging(iitp::gonioNames[numGonioChan], minMarker + 1, minMarker);
+
+}
 
 iitpData & iitpData::staging(const QString & chanName,
-							 int markerMax,
-							 int markerMin)
+							 int markerMin,
+							 int markerMax)
 {
 	int chanNum = this->findChannel(chanName);
 	const std::valarray<double> & chan = this->edfData[chanNum];

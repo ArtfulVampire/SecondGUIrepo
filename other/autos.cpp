@@ -1,5 +1,6 @@
 #include "autos.h"
 #include <myLib/clustering.h>
+#include <myLib/iitp.h>
 
 using namespace myOut;
 
@@ -454,6 +455,39 @@ void IITP(const QString & dirName)
 #endif
 	}
 
+}
+
+
+void IITPstaging(const QString & dirName, const QString & suffix)
+{
+	const QString & guyName = dirName;
+	def::ntFlag = true;
+
+	for(int fileNum = 0; fileNum < 30; ++fileNum)
+	{
+		const QString ExpNamePre = def::iitpFolder + slash +
+								   dirName + slash +
+								   guyName + "_" + myLib::rightNumber(fileNum, 2);
+		QString filePath;
+		iitp::iitpData fil;
+
+		filePath = ExpNamePre + suffix + ".edf";
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
+
+			if(iitp::interestEmg.size() > fileNum)
+			{
+				for(int ch : iitp::interestEmg[fileNum])
+				{
+					fil = fil.staging(ch);
+				}
+			}
+			filePath = ExpNamePre + suffix + "_stag" + ".edf";
+			fil.writeEdfFile(filePath);
+		}
+
+	}
 }
 
 void repairMarkersInNewFB(QString edfPath, int numSession)
