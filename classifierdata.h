@@ -1,7 +1,7 @@
 #ifndef CLASSIFIERDATA_H
 #define CLASSIFIERDATA_H
 
-#include "smallLib.h"
+#include <myLib/small.h>
 #include "matrix.h"
 #include <valarray>
 #include <vector>

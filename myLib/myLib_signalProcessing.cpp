@@ -669,15 +669,18 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
 	{
 
 #if 0
-	/// take last
-	int offset = inputArray.size() - res.size();
+		/// take last
+		int offset = inputArray.size() - res.size();
+#elif 0
+		/// take mid
+		int offset = (inputArray.size() - res.size()) / 2;
 #else
-	/// take mid
-	int offset = (inputArray.size() - res.size()) / 2;
+		/// take first
+		int offset = 0;
 #endif
-	std::copy(std::begin(inputArray) + offset,
-			  std::begin(inputArray) + offset + fftLen,
-			  std::begin(res));
+		std::copy(std::begin(inputArray) + offset,
+				  std::begin(inputArray) + offset + fftLen,
+				  std::begin(res));
 
 	}
 

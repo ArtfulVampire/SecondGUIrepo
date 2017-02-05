@@ -232,6 +232,17 @@ uint indexOfMax(const Container & cont)
 	return ans;
 }
 
+template <typename Container, typename Typ>
+uint indexOfVal(const Container & cont, const Typ & val)
+{
+	int i = 0;
+	for(auto it = std::begin(cont); it < std::end(cont); ++it, ++i)
+	{
+		if(*it == val) break;
+	}
+	return i;
+}
+
 std::string funcName(std::string in)
 {
 	in.resize(in.find('('));
@@ -485,6 +496,7 @@ void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 
 
 
+template uint indexOfVal(const std::vector<QString> & cont, const QString & val);
 
 template uint indexOfMax(const std::vector<int> & cont);
 template uint indexOfMax(const std::vector<double> & cont);

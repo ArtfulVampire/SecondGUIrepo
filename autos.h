@@ -50,9 +50,19 @@ void XeniaArrangeToLine(const QString & dirPath,
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 void Xenia_TBI();
 
-void IITP(const QString & dirName = "Ira");
-void IITPstaging(const QString & dirName = "Ira", const QString & suffix = "_sum_f_new");
-void IITPgonios(const QString & dirName = "Ira"); // filter gonios
+const std::valarray<double> fileNums = smallLib::valarFromRange(0, 30);
+void IITPtestCoh(const QString & dirName = "Ira", const QString & postfix = "_sum_f_new");
+void IITPpre(const QString & dirName = "Ira");
+void IITPfilterGonios(const QString & guyName,
+				const QString & postfix = "_sum_f",
+				const std::vector<QString> & joints = {"elbow", "wrist", "knee", "ankle"});
+void IITPstaging(const QString & guyName,
+				 const QString & postfix = "_sum_f_new",
+				 const QString & dirPath = def::iitpSyncFolder);
+void IITPprocessStaged(const QString & guyName,
+					   const QString & postfix = "_sum_f_new_stag",
+					   const QString & dirPath = def::iitpSyncFolder);
+
 void IITPdat(const QString & dirName = "Ira");
 void IITPrename(const QString & dirName = "Ira");
 

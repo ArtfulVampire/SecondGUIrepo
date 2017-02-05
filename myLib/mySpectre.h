@@ -4,7 +4,7 @@
 #include <complex>
 #include <valarray>
 #include <myLib/signalProcessing.h>
-#include "smallLib.h"
+#include <myLib/small.h>
 
 namespace myLib
 {

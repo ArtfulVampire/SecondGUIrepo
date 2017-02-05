@@ -15,7 +15,7 @@
 
 #include "coord.h"
 #include "matrix.h"
-#include "smallLib.h"
+#include <myLib/small.h>
 
 #include <ios>
 #include <iostream>
@@ -101,6 +101,9 @@ int countSymbolsInFile(const QString & filePath, char inChar);
 
 template <typename Container>
 uint indexOfMax(const Container & cont);
+
+template <typename Container, typename Typ>
+uint indexOfVal(const Container & cont, const Typ & val);
 
 
 void makeSine(std::valarray<double> & in,

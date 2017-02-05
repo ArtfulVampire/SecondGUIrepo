@@ -1,5 +1,5 @@
 #include <myLib/output.h>
-#include "smallLib.h"
+#include <myLib/small.h>
 
 
 namespace myLib

@@ -1,7 +1,7 @@
 #ifndef CLASSIFIER_H
 #define CLASSIFIER_H
 
-#include "smallLib.h"
+#include <myLib/small.h>
 #include "library.h"
 #include "coord.h"
 #include "matrix.h"

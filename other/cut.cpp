@@ -245,7 +245,8 @@ void Cut::browse()
 			def::dir->cdUp();
 		}
 	}
-	lst = QDir(myLib::getDirPathLib(helpString)).entryList({"*." + myLib::getExt(helpString)});
+	lst = QDir(myLib::getDirPathLib(helpString)).entryList(
+	{"*" + ui->suffixComboBox->currentText() +  "*." + myLib::getExt(helpString)});
 
 	currentNumber = lst.indexOf(myLib::getFileName(helpString));
 
@@ -357,7 +358,7 @@ void Cut::setFileType(const QString & dataFileName)
 void Cut::setValuesByEdf()
 {
 	currFreq = edfFil.getFreq();
-	data3 = edfFil.getData();
+	data3 = edfFil.getData(); /// expensive
 
 	ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
 	ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
@@ -445,14 +446,14 @@ void Cut::iitpAutoCorrSlot()
 
 void Cut::iitpAutoJumpSlot()
 {
-	edfFile tmpFile = edfFil;
-	tmpFile.iitpSyncAutoJump(ui->rightLimitSpinBox->value(),
-							 ui->leftLimitSpinBox->value(),
-							 ui->iitpByEegCheckBox->isChecked());
-	QString newName = tmpFile.getFileNam();
-	newName.replace(".edf", "_sync.edf");
-	std::cout << "iitpAutoSlot: newFileName = " << newName << std::endl;
-	tmpFile.writeEdfFile(tmpFile.getDirPath() + slash + newName);
+	auto lims = edfFil.iitpSyncAutoJump(ui->rightLimitSpinBox->value(),
+										ui->leftLimitSpinBox->value(),
+										ui->iitpByEegCheckBox->isChecked());
+
+	ui->rightLimitSpinBox->setValue(lims.second);
+	ui->leftLimitSpinBox->setValue(lims.first);
+	paint();
+
 }
 
 void Cut::iitpManualSlot()
@@ -540,7 +541,6 @@ void Cut::next()
     }
     currentNumber = tmp;
 	std::cout << "next: bad number, too big" << std::endl;
-
 }
 
 void Cut::prev()
@@ -886,6 +886,9 @@ void Cut::zero(int start, int end)
 			 start,
 			 end);
 	paint();
+
+	ui->leftLimitSpinBox->setValue(0);
+	ui->rightLimitSpinBox->setValue(data3.cols());
 }
 
 
@@ -932,7 +935,11 @@ void Cut::split(int start, int end, bool addUndo)
 
 	matrix data2 = data3.subCols(end, data3.cols());
 	data3.resizeCols(start).horzCat(data2); /// +1 to save first marker in reals
+	ui->paintStartLabel->setText("start (max " + nm(floor(data3.cols() / currFreq)) + ")");
 	paint();
+
+	ui->leftLimitSpinBox->setValue(0);
+	ui->rightLimitSpinBox->setValue(data3.cols());
 }
 
 void Cut::splitSlot()
@@ -943,7 +950,7 @@ void Cut::splitSlot()
 
 void Cut::splitFromZeroSlot()
 {
-	iitpLog("split0", 1);
+	iitpLog("split0");
 
 	this->split(0, ui->rightLimitSpinBox->value());
 	ui->paintStartDoubleSpinBox->setValue(0.);
@@ -952,6 +959,7 @@ void Cut::splitFromZeroSlot()
 void Cut::splitTillEndSlot()
 {
 	data3.resizeCols(ui->leftLimitSpinBox->value());
+	ui->paintStartLabel->setText("start (max " + nm(floor(data3.cols() / currFreq)) + ")");
 	paint();
 }
 

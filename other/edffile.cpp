@@ -1270,9 +1270,9 @@ edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
 	return *this;
 }
 
-edfFile & edfFile::iitpSyncAutoJump(int startSearchEeg,
-									int startSearchEmg,
-									bool byEeg)
+std::pair<int, int> edfFile::iitpSyncAutoJump(int startSearchEeg,
+											  int startSearchEmg,
+											  bool byEeg)
 {
 	int numECG = this->findChannel("ECG");
 	int numArtefac = this->findChannel("Artefac");
@@ -1285,9 +1285,7 @@ edfFile & edfFile::iitpSyncAutoJump(int startSearchEeg,
 	int eegPoint = myLib::findJump(eegMarkChan, startSearchEeg);
 	int emgPoint = myLib::findJump(emgMarkChan, startSearchEmg);
 
-	std::cout << "emgPoint = " << emgPoint << '\t' << "eegPoint = " << eegPoint << std::endl;
-	this->iitpSyncManual(eegPoint, emgPoint, 200);
-	return *this;
+	return std::make_pair(emgPoint, eegPoint);
 }
 
 edfFile & edfFile::iitpSyncManual(int offsetEeg,

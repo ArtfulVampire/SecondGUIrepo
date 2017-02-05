@@ -180,6 +180,7 @@ namespace def
     const QString DashaFolder = "/media/Files/Data/Dasha/AUDIO";
     const QString uciFolder = "/media/Files/Data/UCI";
 	const QString iitpFolder = "/media/Files/Data/iitp";
+	const QString iitpSyncFolder = "/media/Files/Data/iitp/SYNCED";
 
     const bool opencl = true;
     const bool openmp = true;

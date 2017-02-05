@@ -5,7 +5,7 @@
 #include <myLib/draws.h>
 #include <fstream>
 
-#include "smallLib.h"
+#include <myLib/small.h>
 
 namespace myLib
 {

@@ -70,7 +70,8 @@ SOURCES += main.cpp\
     myLib/myLib_output.cpp \
     myLib/myLib_mati.cpp \
     myLib/myLib_smallFuncs.cpp \
-    myLib/myLib_iitp.cpp
+    myLib/myLib_iitp.cpp \
+    myLib/myLib_valar.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \
@@ -82,7 +83,6 @@ HEADERS  += mainwindow.h \
     matrix.h \
     coord.h \
     library.h \
-    smallLib.h \
     classifier.h \
     autos.h \
     classifierdata.h \
@@ -97,7 +97,9 @@ HEADERS  += mainwindow.h \
 DSP/DspFilters/Dsp.h \
     myLib/mati.h \
     myLib/iitp.h \
-    myLib/mySpectre.h
+    myLib/mySpectre.h \
+    myLib/valar.h \
+    myLib/small.h
 
 FORMS    += mainwindow.ui \
     cut.ui \

@@ -19,6 +19,9 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 							   const std::vector<std::valarray<double>> & sig2,
 							   double srate,
 							   double freq);
+
+
+int gonioMinMarker(int numGonioChan); /// max = min + 1
 //namespace marks
 //{
 ///// max - bend
@@ -64,27 +67,8 @@ const std::vector<QString> gonioNames {
 	"Wrist_l",
 	"Wrist_r"};
 
-enum emgChans {Ta_l		= 0,
-			   Ta_r		= 1,
-			   Bf_l		= 2,
-			   Bf_r		= 3,
-			   Fcr_l	= 4,
-			   Fcr_r	= 5,
-			   Ecr_l	= 6,
-			   Ecr_r	= 7};
-
-const std::vector<QString> emgNames {
-	"Ta_l",
-	"Ta_r",
-	"Bf_l",
-	"Bf_r",
-	"Fcr_l",
-	"Fcr_r",
-	"Ecr_l",
-	"Ecr_r"};
-
 /// [numFile] - interestingChannels
-const std::vector<std::vector<int>> interestEmg{
+const std::vector<std::valarray<int>> interestGonios{
 	// 0 eyes closed
 	{},
 	// 1 eyes open
@@ -134,6 +118,114 @@ const std::vector<std::vector<int>> interestEmg{
 	// 23 final eyes open
 	{}
 };
+
+
+enum emgChans {Ta_l		= 0,
+			   Ta_r		= 1,
+			   Bf_l		= 2,
+			   Bf_r		= 3,
+			   Fcr_l	= 4,
+			   Fcr_r	= 5,
+			   Ecr_l	= 6,
+			   Ecr_r	= 7,
+			   Da_l		= 8,
+			   Da_r		= 9,
+			   Dp_l		= 10,
+			   Dp_r		= 11
+			  };
+
+const std::vector<QString> emgNames {
+	"Ta_l",
+	"Ta_r",
+	"Bf_l",
+	"Bf_r",
+	"Fcr_l",
+	"Fcr_r",
+	"Ecr_l",
+	"Ecr_r",
+	"Da_l",
+	"Da_r",
+	"Dp_l",
+	"Dp_r"};
+
+/// [numFile] - interestingChannels
+const std::vector<std::valarray<int>> interestEmg{
+	// 0 eyes closed
+	{},
+	// 1 eyes open
+	{},
+	// 2 legs
+	{Bf_l, Bf_r},
+	// 3 legs imaginary
+	{},
+	// 4 feet
+	{Ta_l, Ta_r},
+	// 5 feet imaginary
+	{},
+	// 6 wrists
+	{Fcr_l, Fcr_r, Ecr_l, Ecr_r},
+	// 7 wrists imaginary
+	{},
+	// 8 feet + wrists
+	{Ta_l, Ta_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
+	// 9 feet + wrists imaginary
+	{},
+	// 10 legs + wrists
+	{Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
+	// 11 legs + wrists imaginary
+	{},
+	// 12 static stress
+	{},
+	// 13 middle eyes closed
+	{},
+	// 14 middle eyes open
+	{},
+	// 15 arms
+	{Da_l, Da_r, Dp_l, Dp_r},
+	// 16 arms imaginary
+	{},
+	// 17 arms + legs
+	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r},
+	// 18 arms + legs imaginagy
+	{},
+	// 19 legs passive
+	{Ta_l, Ta_r},
+	// 20 arms passive
+	{Da_l, Da_r, Dp_l, Dp_r},
+	// 21 arms+legs passive
+	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r},
+	// 22 final eyes closed
+	{},
+	// 23 final eyes open
+	{}
+};
+
+const std::valarray<int> interestEeg{
+//	0,	// Fp1
+//	1,	// Fp2,
+//	2,	// F7
+//	3,	// F3
+//	4,	// Fz
+//	5,	// F4
+//	6,	// F8
+//	7,	// T3
+	8,	// C3
+	9,	// Cz
+	10,	// C4
+//	11,	// T4
+//	12,	// T5
+//	13,	// P3
+//	14,	// Pz
+//	15,	// P4
+//	16,	// T5
+//	17,	// O1
+//	18	// O2
+};
+
+//const std::valarray<double> interestFrequencies = smallLib::valarFromRange(8, 45);
+//const std::valarray<double> fileNums = smallLib::valarFromRange(0, 30);
+const std::valarray<double> interestFrequencies{10};
+const std::valarray<double> fileNums{2};
 
 
 class iitpData : public edfFile

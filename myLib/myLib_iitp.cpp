@@ -351,11 +351,16 @@ QPixmap iitpData::drawSpectra(int mark1, int mark2)
 	return templ;
 }
 
+int gonioMinMarker(int numGonioChan)
+{
+	return 100 +
+			(numGonioChan / 2 + 1) * 10 +
+			(numGonioChan % 2) * 2 + 0;
+}
+
 iitpData & iitpData::staging(int numGonioChan)
 {
-	int minMarker = 100 +
-					(numGonioChan / 2 + 1) * 10 +
-					(numGonioChan % 2) * 2 + 0;
+	int minMarker = iitp::gonioMinMarker(numGonioChan);
 	return this->staging(iitp::gonioNames[numGonioChan], minMarker + 1, minMarker);
 
 }
@@ -385,13 +390,16 @@ iitpData & iitpData::staging(const QString & chanName,
 			auto val = std::valarray<double>(chan[std::slice(start, end - start, 1)]);
 			val = val.apply(std::abs);
 			uint nm = myLib::indexOfMax(val);
+			srand(time(NULL));
 			if(currSign == 1)
 			{
 				marks[start + nm] = markerMax;
+//				marks[start + nm + 10 - rand()%20] = markerMax;
 			}
 			else
 			{
 				marks[start + nm] = markerMin;
+//				marks[start + nm + 10 - rand()%20] = markerMin;
 			}
 
 			start = i;

@@ -228,7 +228,7 @@ void IITPrename(const QString & dirName)
 	if(!QFile::exists(pth + "rename.txt")) return;
 
 	const QString & guyName = dirName;
-	const QString suffix = "_rn";
+	const QString postfix = "_rn";
 
 	std::ifstream inStr;
 	inStr.open((pth + "rename.txt").toStdString());
@@ -246,7 +246,7 @@ void IITPrename(const QString & dirName)
 		})
 			{
 				QString oldName = guyName + "_" + rn(oldNum, 2) + ending;
-				QString newName = guyName + "_" + rn(newNum, 2) + suffix + ending;
+				QString newName = guyName + "_" + rn(newNum, 2) + postfix + ending;
 				if(QFile::exists(pth + oldName))
 				{
 					QFile::rename(pth + oldName,
@@ -261,15 +261,16 @@ void IITPrename(const QString & dirName)
 	}
 	inStr.close();
 
-	for(QString nam : QDir(pth).entryList({"*" + suffix + "*"}))
+	for(QString nam : QDir(pth).entryList({"*" + postfix + "*"}))
 	{
 		QString newName = nam;
-		newName.remove(suffix);
+		newName.remove(postfix);
 		QFile::rename(pth + nam,
 					  pth + newName);
 	}
 }
 
+/// *.dat headers to dats.txt
 void IITPdat(const QString & dirName)
 {
 
@@ -299,28 +300,28 @@ void IITPdat(const QString & dirName)
 	outStr.close();
 }
 
-void IITPgonios(const QString & dirName)
+/// filter gonios
+void IITPfilterGonios(const QString & guyName,
+					  const QString & postfix,
+					  const std::vector<QString> & joints)
 {
-	const QString & guyName = dirName;
-	def::ntFlag = true;
-	for(int fileNum = 0; fileNum < 30; ++fileNum)
+	for(int fileNum : iitp::fileNums)
 	{
-//		if(fileNum == 6) break;
 		const QString ExpNamePre = def::iitpFolder + slash +
-								   dirName + slash +
+								   guyName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
 		QString filePath;
 		edfFile fil;
 
 		/// filter goniogramms
-		filePath = ExpNamePre + "_sum_f_sync_new.edf";
+		filePath = ExpNamePre + postfix + ".edf";
 		if(!QFile::exists(filePath)) continue;
 		fil.readEdfFile(filePath);
 
 		std::vector<uint> chanList;
 		for(int i = 0; i < fil.getNs(); ++i)
 		{
-			for(auto joint : {"elbow", "wrist", "knee", "ankle"})
+			for(auto joint : joints)
 			{
 				if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive))
 				{
@@ -330,20 +331,175 @@ void IITPgonios(const QString & dirName)
 			}
 		}
 
-		filePath = ExpNamePre + "_sum_f_sync_new_gon.edf";
-		fil.refilter(0.1, 6, filePath, false, chanList);
+		filePath = ExpNamePre + postfix + "_gon" + ".edf";
+		fil.refilter(0.1, 3, filePath, false, chanList);
 	}
 }
 
-void IITP(const QString & dirName)
+void IITPtestCoh(const QString & dirName, const QString & postfix)
+{
+	/// test coherency in all files
+	iitp::iitpData dt;
+	const QString direct = def::iitpFolder + "/" + dirName + "/";
+
+	auto filePath = [=](int i) -> QString
+	{
+		return direct + dirName + "_" + rn(i, 2) + postfix + ".edf";
+	};
+
+	auto resPath = [=](int i) -> QString
+	{
+		return direct + dirName + "_" + rn(i, 2) + "_res.txt";
+	};
+
+	/// chan1, chan2, freq, len
+	std::vector<std::vector<std::vector<std::valarray<std::complex<double>>>>> vals;
+	std::vector<std::vector<std::vector<std::complex<double>>>> cohs;
+
+	std::valarray<int> eegChans = iitp::interestEeg;
+	std::valarray<int> emgChans;
+
+	const int minChansEmg = 20; /// 19 EEG + ECG
+
+	const int minFreq = 8;
+	const int numFreq = 44;
+	const int numLen = 25;
+
+	std::ofstream ofile;
+	for(int fileNum : iitp::fileNums)
+	{
+		if(!QFile::exists(filePath(fileNum))) continue;
+
+		ofile.open(resPath(fileNum).toStdString());
+		dt.readEdfFile(filePath(fileNum));
+
+		emgChans = iitp::interestEmg[fileNum];
+
+		/// test intresting EMGs
+		std::cout << "fileNum = " << fileNum << "\tinteresting:" << std::endl;
+		std::cout << eegChans << std::endl;
+		std::cout << emgChans << std::endl;
+
+		int numChansEeg = eegChans.size();
+		int numChansEmg = emgChans.size();
+
+		/// resize vals
+		vals.resize(numChansEeg);
+		cohs.resize(numChansEeg);
+		for(int c1 = 0; c1 < numChansEeg; ++c1)
+		{
+			vals[c1].resize(numChansEmg);
+			cohs[c1].resize(numChansEmg);
+
+			for(int c2 = 0; c2 < numChansEmg; ++c2)
+			{
+				vals[c1][c2].resize(numFreq);
+				cohs[c1][c2].resize(numFreq);
+
+				for(int fff = 0; fff < numFreq; ++fff)
+				{
+					vals[c1][c2][fff].resize(numLen);
+				}
+			}
+		}
+
+		/// fillVals
+		/// for each pieceLength
+		for(int lenInd = 0; lenInd < numLen; ++lenInd)
+		{
+			dt.cutPieces(1. + 0.001 * lenInd);
+
+			/// for each freq
+			for(int fff = 0; fff < numFreq; ++fff)
+			{
+//				for(int c1 = 0; c1 < numChansEeg; ++c1)
+				for(int c1 : eegChans)
+				{
+//					for(int c2 = 0; c2 < numChansEmg; ++c2)
+					for(int c2 : emgChans)
+					{
+						std::complex<double> tmpCoh = dt.coherencyR(c1,
+																	c2 + minChansEmg,
+																	fff + minFreq);
+						vals[c1][c2][fff][lenInd] = tmpCoh;
+					}
+				}
+			}
+		}
+		std::cout << "IITPfin: values counted" << std::endl;
+
+		/// are stable?
+		std::valarray<double> abss(numLen);
+		std::valarray<double> args(numLen);
+//		for(int c1 = 0; c1 < numChansEeg; ++c1)
+		for(int c1 : eegChans)
+		{
+//			for(int c2 = 0; c2 < numChansEmg; ++c2)
+			for(int c2 : emgChans)
+			{
+				for(int fff = 0; fff < numFreq; ++fff)
+				{
+					/// values for different pieceLengths
+					const std::valarray<std::complex<double>> & tmp = vals[c1][c2][fff];
+
+					std::transform(std::begin(tmp),
+								   std::end(tmp),
+								   std::begin(abss),
+								   [](const std::complex<double> & in)
+					{
+						return std::abs(in);
+					});
+
+					std::transform(std::begin(tmp),
+								   std::end(tmp),
+								   std::begin(args),
+								   [](const std::complex<double> & in)
+					{
+						return std::arg(in);
+					});
+
+					if(smallLib::mean(abss) > 0.05 &&
+					   smallLib::sigma(abss) * 3 < smallLib::mean(abss) &&
+					   smallLib::sigma(args) < 0.4
+					   )
+					{
+						ofile
+								<< c1 << '\t'
+								<< dt.getLabels()[c1] << '\t'
+
+								<< c2 + minChansEmg << '\t'
+								<< dt.getLabels()[c2 + minChansEmg] << '\t'
+
+								<< "freq = " << fff + minFreq << '\t'
+
+								<< "val = " << smallLib::doubleRound(smallLib::mean(tmp), 3) << '\t'
+
+								<< "abs = " << smallLib::doubleRound(smallLib::mean(abss), 3) << '\t'
+								<< "sgm = " << smallLib::doubleRound(smallLib::sigma(abss), 3) << '\t'
+
+								<< "arg = " << smallLib::doubleRound(smallLib::mean(args), 3) << '\t'
+								<< "sgm = " << smallLib::doubleRound(smallLib::sigma(args), 3) << '\t'
+
+								<< std::endl;
+
+//						cohs[c1][c2][fff] = smallLib::mean(tmp);
+					}
+				}
+			}
+		}
+		ofile.close();
+	}
+}
+
+void IITPpre(const QString & dirName)
 {
 
 	const QString & guyName = dirName;
 	def::ntFlag = true;
 
-	for(int fileNum = 0; fileNum < 30; ++fileNum)
+	for(int fileNum : iitp::fileNums)
 	{
-//		if(fileNum == 1) break;
+//		if(fileNum != 21) continue;
 		const QString ExpNamePre = def::iitpFolder + slash +
 								   dirName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
@@ -447,9 +603,7 @@ void IITP(const QString & dirName)
 			filePath = ExpNamePre + "_emg_f.edf";
 			if(QFile::exists(filePath))
 			{
-				fil = fil.vertcatFile(filePath, {});
-				filePath = ExpNamePre + "_sum_f.edf";
-				fil.writeEdfFile(filePath);
+				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
 			}
 		}
 #endif
@@ -457,36 +611,190 @@ void IITP(const QString & dirName)
 
 }
 
-
-void IITPstaging(const QString & dirName, const QString & suffix)
+void IITPstaging(const QString & guyName,
+				 const QString & postfix,
+				 const QString & dirPath)
 {
-	const QString & guyName = dirName;
-	def::ntFlag = true;
-
-	for(int fileNum = 0; fileNum < 30; ++fileNum)
+	for(int fileNum : iitp::fileNums)
 	{
-		const QString ExpNamePre = def::iitpFolder + slash +
-								   dirName + slash +
+		const QString ExpNamePre = dirPath + slash +
+								   guyName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
 		QString filePath;
 		iitp::iitpData fil;
 
-		filePath = ExpNamePre + suffix + ".edf";
+		filePath = ExpNamePre + postfix + ".edf";
 		if(QFile::exists(filePath))
 		{
 			fil.readEdfFile(filePath);
 
-			if(iitp::interestEmg.size() > fileNum)
+			if(iitp::interestGonios.size() > fileNum) /// interests only before 23th
 			{
-				for(int ch : iitp::interestEmg[fileNum])
+				for(int ch : iitp::interestGonios[fileNum])
 				{
-					fil = fil.staging(ch);
+					fil.staging(ch);
 				}
 			}
-			filePath = ExpNamePre + suffix + "_stag" + ".edf";
+			filePath = ExpNamePre + postfix + "_stag" + ".edf";
 			fil.writeEdfFile(filePath);
 		}
 
+	}
+}
+
+
+void IITPprocessStaged(const QString & guyName,
+					   const QString & postfix,
+					   const QString & dirPath)
+{
+	const QString direct = dirPath + "/" + guyName + "/";
+
+	const int minEmg = 20;
+
+	iitp::iitpData dt;
+
+	auto filePath = [=](int i) -> QString
+	{
+		return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
+	};
+
+	auto resBend = [=](int i) -> QString
+	{
+		return direct + guyName + "_" + rn(i, 2) + "_bending.txt";
+	};
+
+	auto resUnbend = [=](int i) -> QString
+	{
+		return direct + guyName + "_" + rn(i, 2) + "_UNbending.txt";
+	};
+
+	for(int fileNum : iitp::fileNums)
+	{
+		if(!QFile::exists(filePath(fileNum))) continue;
+		dt.readEdfFile(filePath(fileNum));
+
+		for(int gonio : iitp::interestGonios[fileNum])
+		{
+			int minMarker = iitp::gonioMinMarker(gonio);
+			for(int type : {0, 1}) /// 0 - bend, 1 - unbend
+			{
+				if(type == 0)
+				{
+					dt.setPieces(minMarker, minMarker + 1);
+				}
+				else
+				{
+					dt.setPieces(minMarker + 1, minMarker);
+				}
+
+				/// count coherency for all interesting (eeg, emg)
+				/// write to file
+				std::ofstream outStr;
+				if(type == 0)
+				{
+					outStr.open(resBend(fileNum).toStdString(), std::ios_base::app);
+				}
+				else
+				{
+					outStr.open(resUnbend(fileNum).toStdString(), std::ios_base::app);
+				}
+
+				for(int eeg : iitp::interestEeg)
+				{
+					for(int emg : iitp::interestEmg[fileNum])
+					{
+						for(double fr : iitp::interestFrequencies)
+						{
+
+							auto val = dt.coherency(eeg, emg + minEmg, fr);
+//							std::cout << std::abs(a) << std::endl;
+							if(std::abs(val) > 0.01)
+							{
+								outStr
+										<< "eegChan = "
+										<< eeg << '\t'
+
+										<< "eegName = "
+										<< QString(dt.getLabels()[eeg]).remove("EEG ").remove("-Ref") << '\t'
+
+										<< "emgChan = "
+										<< emg + minEmg << '\t'
+
+										<< "emgName = "
+										<< QString(dt.getLabels()[emg + minEmg]).remove("IT ") << '\t'
+
+										<< "freq = "
+										<< fr << '\t'
+
+										<< "val = "
+										<< smallLib::doubleRound(val, 3) << '\t'
+
+										<< "abs = "
+										<< smallLib::doubleRound(std::abs(val), 3) << '\t'
+
+										<< "arg = "
+										<< smallLib::doubleRound(std::arg(val), 3) << '\t'
+
+										<< std::endl;
+							}
+						}
+					}
+				}
+				outStr << std::endl;
+				outStr.close();
+			}
+		}
+	}
+}
+
+void IITPmaxCoh(const QString & filePath,
+				int markerStart, int markerFin,
+				int fftLen)
+{
+	int minFreq = 8;
+	int maxFreq = 30;
+
+	iitp::iitpData idt;
+	idt.readEdfFile(filePath);
+	if(markerStart != 0 && markerFin !=0)
+	{
+		idt.setPieces(markerStart, markerFin);
+	}
+	else
+	{
+		idt.cutPieces(fftLen / 1000.);
+	}
+	idt.setFftLen(fftLen);
+
+	std::vector<std::vector<double>> vals;
+
+	for(int c1 = 0; c1 < 19; ++c1)
+	{
+		for(int c2 = 20; c2 < 28; ++c2)
+		{
+			for(int fr = minFreq; fr < maxFreq; ++fr)
+			{
+				vals.push_back(std::vector<double>{std::abs(idt.coherency(c1, c2, fr)),
+												   double(c1),
+												   double(c2),
+												   double(fr)});
+			}
+		}
+	}
+	std::sort(std::begin(vals), std::end(vals),
+			  [](const std::vector<double> & in1, const std::vector<double> & in2)
+	{
+		return in1[0] > in2[0];
+	});
+
+	for(int i = 0; i < 10; ++i)
+	{
+		std::cout
+				<< vals[i][1] << "\t"
+							  << vals[i][2] << "\t"
+							  << vals[i][3] << "\t"
+							  << idt.coherency(vals[i][1], vals[i][2], vals[i][3])
+				<< std::endl;
 	}
 }
 

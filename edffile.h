@@ -2,7 +2,7 @@
 #define EDFFILE_H
 
 #include "library.h"
-#include "smallLib.h"
+#include <myLib/small.h>
 
 
 
@@ -186,7 +186,7 @@ public:
 							   bool byEeg = false);
 
 
-	edfFile & iitpSyncAutoJump(int startSearchEeg,
+	std::pair<int, int> iitpSyncAutoJump(int startSearchEeg,
 							   int startSearchEmg,
 							   bool byEeg = false);
 

@@ -3,7 +3,7 @@
 
 #include <valarray>
 #include <QString>
-#include "smallLib.h"
+#include <myLib/small.h>
 #include "matrix.h"
 
 
