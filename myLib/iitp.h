@@ -225,7 +225,7 @@ const std::valarray<int> interestEeg{
 //const std::valarray<double> interestFrequencies = smallLib::valarFromRange(8, 45);
 //const std::valarray<double> fileNums = smallLib::valarFromRange(0, 30);
 const std::valarray<double> interestFrequencies{10};
-const std::valarray<double> fileNums{2};
+const std::valarray<double> fileNums{21};
 
 
 class iitpData : public edfFile

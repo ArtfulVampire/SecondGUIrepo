@@ -13,12 +13,17 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-	autos::IITPstaging("Ira");
-	autos::IITPprocessStaged("Ira");
-//	autos::IITPgonios("Oleg",
-//					  "_emg_f");
-	exit(0);
-//	return;
+
+//	autos::IITPpre("Oleg");
+//	autos::IITPstaging("Ira");
+//	autos::IITPprocessStaged("Ira");
+//	autos::IITPfilterGonios("Oleg",
+//							"_emg_f");
+//	exit(0);
+	return;
+
+
+
 
 //	autos::Xenia_TBI();
 //	autos::EEG_MRI({"Kabanov"}, false);

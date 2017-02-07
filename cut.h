@@ -73,6 +73,7 @@ public slots:
 	void saveSubsecSlot();
     void rewrite();
 	void subtractMeansSlot();
+	void linearApproxSlot();
 
 	void paint();
 	void browse();

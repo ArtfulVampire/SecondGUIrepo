@@ -506,7 +506,7 @@ void IITPpre(const QString & dirName)
 		QString filePath;
 		edfFile fil;
 
-#if 01
+#if 0
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
 		if(QFile::exists(filePath))

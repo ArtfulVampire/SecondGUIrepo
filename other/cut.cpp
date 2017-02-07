@@ -114,6 +114,7 @@ Cut::Cut() :
 	QObject::connect(ui->saveSubsecPushButton, SIGNAL(clicked()), this, SLOT(saveSubsecSlot()));
 	QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
 	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()), this, SLOT(subtractMeansSlot()));
+	QObject::connect(ui->linearApproxPushButton, SIGNAL(clicked()), this, SLOT(linearApproxSlot()));
 
 	QObject::connect(ui->zeroButton, SIGNAL(clicked()), this, SLOT(zeroSlot()));
 	QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitSlot()));
@@ -960,6 +961,21 @@ void Cut::splitTillEndSlot()
 {
 	data3.resizeCols(ui->leftLimitSpinBox->value());
 	ui->paintStartLabel->setText("start (max " + nm(floor(data3.cols() / currFreq)) + ")");
+	paint();
+}
+
+void Cut::linearApproxSlot()
+{
+//	const int ch = ui->linearApproxSpinBox->value();
+	const int ch = ui->color3SpinBox->value();
+	const int lef = ui->leftLimitSpinBox->value();
+	const int rig = ui->rightLimitSpinBox->value();
+
+	const double coeff = (data3[ch][rig] - data3[ch][lef]) / (rig - lef);
+	for(int i = lef + 1; i < rig; ++i)
+	{
+		data3[ch][i] = data3[ch][lef] + coeff * (i - lef);
+	}
 	paint();
 }
 
