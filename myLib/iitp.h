@@ -74,7 +74,7 @@ const std::vector<std::valarray<int>> interestGonios{
 	// 1 eyes open
 	{},
 	// 2 legs
-	{Knee_l, Knee_r},
+	{Ankle_l, Ankle_r, Knee_l, Knee_r},
 	// 3 legs imaginary
 	{},
 	// 4 feet
@@ -90,7 +90,7 @@ const std::vector<std::valarray<int>> interestGonios{
 	// 9 feet + wrists imaginary
 	{},
 	// 10 legs + wrists
-	{Knee_l, Knee_r, Wrist_l, Wrist_r},
+	{Ankle_l, Ankle_r, Knee_l, Knee_r, Wrist_l, Wrist_r},
 	// 11 legs + wrists imaginary
 	{},
 	// 12 static stress
@@ -100,19 +100,19 @@ const std::vector<std::valarray<int>> interestGonios{
 	// 14 middle eyes open
 	{},
 	// 15 arms
-	{Elbow_l, Elbow_r},
+	{Elbow_l, Elbow_r, Wrist_l, Wrist_r},
 	// 16 arms imaginary
 	{},
 	// 17 arms + legs
-	{Elbow_l, Elbow_r, Knee_l, Knee_r},
+	{Elbow_l, Elbow_r, Wrist_l, Wrist_r, Ankle_l, Ankle_r, Knee_l, Knee_r},
 	// 18 arms + legs imaginagy
 	{},
 	// 19 legs passive
-	{Knee_l, Knee_r},
+	{Ankle_l, Ankle_r, Knee_l, Knee_r},
 	// 20 arms passive
-	{Elbow_l, Elbow_r},
+	{Elbow_l, Elbow_r, Wrist_l, Wrist_r},
 	// 21 arms+legs passive
-	{Elbow_l, Elbow_r, Knee_l, Knee_r},
+	{Elbow_l, Elbow_r, Wrist_l, Wrist_r, Ankle_l, Ankle_r, Knee_l, Knee_r},
 	// 22 final eyes closed
 	{},
 	// 23 final eyes open
@@ -155,25 +155,25 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 1 eyes open
 	{},
 	// 2 legs
-	{Bf_l, Bf_r},
+	{Ta_l, Ta_r, Bf_l, Bf_r},
 	// 3 legs imaginary
-	{},
+	{Ta_l, Ta_r, Bf_l, Bf_r},
 	// 4 feet
 	{Ta_l, Ta_r},
 	// 5 feet imaginary
-	{},
+	{Ta_l, Ta_r},
 	// 6 wrists
 	{Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 7 wrists imaginary
-	{},
+	{Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 8 feet + wrists
 	{Ta_l, Ta_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 9 feet + wrists imaginary
-	{},
+	{Ta_l, Ta_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 10 legs + wrists
-	{Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
+	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 11 legs + wrists imaginary
-	{},
+	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 12 static stress
 	{},
 	// 13 middle eyes closed
@@ -183,40 +183,61 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 15 arms
 	{Da_l, Da_r, Dp_l, Dp_r},
 	// 16 arms imaginary
-	{},
+	{Da_l, Da_r, Dp_l, Dp_r},
 	// 17 arms + legs
-	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r},
+	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	// 18 arms + legs imaginagy
-	{},
+	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	// 19 legs passive
-	{Ta_l, Ta_r},
+	{Ta_l, Ta_r, Bf_l, Bf_r},
 	// 20 arms passive
 	{Da_l, Da_r, Dp_l, Dp_r},
-	// 21 arms+legs passive
-	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r},
+	// 21 arms + legs passive
+	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	// 22 final eyes closed
 	{},
 	// 23 final eyes open
 	{}
 };
 
+const std::vector<QString> eegNames{
+	"Fp1",
+	"Fp2",
+	"F7",
+	"F3",
+	"Fz",
+	"F4",
+	"F8",
+	"T3",
+	"C3",
+	"Cz",
+	"C4",
+	"T4",
+	"T5",
+	"P3",
+	"Pz",
+	"P4",
+	"T6",
+	"O1",
+	"O2"};
+
 const std::valarray<int> interestEeg{
 //	0,	// Fp1
 //	1,	// Fp2,
 //	2,	// F7
-//	3,	// F3
-//	4,	// Fz
-//	5,	// F4
+	3,	// F3
+	4,	// Fz
+//	5,	// F4 - usually bad
 //	6,	// F8
-//	7,	// T3
+	7,	// T3
 	8,	// C3
 	9,	// Cz
 	10,	// C4
-//	11,	// T4
+	11,	// T4
 //	12,	// T5
-//	13,	// P3
-//	14,	// Pz
-//	15,	// P4
+	13,	// P3
+	14,	// Pz
+//	15,	// P4 - usually bad
 //	16,	// T5
 //	17,	// O1
 //	18	// O2
@@ -224,7 +245,7 @@ const std::valarray<int> interestEeg{
 
 //const std::valarray<double> interestFrequencies = smallLib::valarFromRange(8, 45);
 const std::valarray<double> fileNums = smallLib::valarFromRange(0, 30);
-const std::valarray<double> interestFrequencies{10, 11, 12, 13, 14, 19, 20, 21};
+const std::valarray<double> interestFrequencies{8, 9, 10, 11, 12, 18, 19, 20, 21, 22, 23, 24, 25};
 //const std::valarray<double> fileNums{21};
 
 

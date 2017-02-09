@@ -642,14 +642,19 @@ void IITPstaging(const QString & guyName,
 	}
 }
 
+void IITPdrawImaginary(const QString & guyName,
+					   const QString & postfix,
+					   const QString & dirPath)
+{
+
+}
+
 
 void IITPprocessStaged(const QString & guyName,
 					   const QString & postfix,
 					   const QString & dirPath)
 {
 	const QString direct = dirPath + "/" + guyName + "/";
-
-	const int minEmg = 20;
 
 	iitp::iitpData dt;
 
@@ -676,10 +681,10 @@ void IITPprocessStaged(const QString & guyName,
 		for(int gonio : iitp::interestGonios[fileNum])
 		{
 			int minMarker = iitp::gonioMinMarker(gonio);			
+
 			dt.drawSpectra(minMarker, minMarker + 1).save(
 						direct + guyName + "_" + rn(fileNum, 2) + "_" +
 						iitp::gonioNames[gonio] + ".jpg", 0, 100);
-//			continue;
 
 			for(int type : {0, 1}) /// 0 - bend, 1 - unbend
 			{
@@ -710,46 +715,52 @@ void IITPprocessStaged(const QString & guyName,
 
 				for(int eeg : iitp::interestEeg)
 				{
+					///eeg-eeg
+					for(int eeg2 : iitp::interestEeg)
+					{
+						if(eeg2 == eeg) continue;
+
+						for(double fr : iitp::interestFrequencies)
+						{
+							auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
+													dt.findChannel(iitp::eegNames[eeg2]),
+													fr);
+							if(std::abs(val) > 0.01)
+							{
+								outStr
+										<< QString(iitp::eegNames[eeg]) << '\t'
+										<< QString(iitp::eegNames[eeg2]) << '\t'
+										<< fr << '\t'
+										<< smallLib::doubleRound(val, 3) << '\t'
+										<< smallLib::doubleRound(std::abs(val), 3) << '\t'
+										<< smallLib::doubleRound(std::arg(val), 3) << '\t'
+										<< "\r\n";
+							}
+						}
+					}
+
+					/// eeg-emg
 					for(int emg : iitp::interestEmg[fileNum])
 					{
 						for(double fr : iitp::interestFrequencies)
 						{
-
-							auto val = dt.coherency(eeg, emg + minEmg, fr);
-//							std::cout << std::abs(a) << std::endl;
+							auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
+													dt.findChannel(iitp::emgNames[emg]),
+													fr);
 							if(std::abs(val) > 0.01)
 							{
 								outStr
-										<< "eegChan = "
-										<< eeg << '\t'
-
-										<< "eegName = "
-										<< QString(dt.getLabels()[eeg]).remove("EEG ").remove("-Ref") << '\t'
-
-										<< "emgChan = "
-										<< emg + minEmg << '\t'
-
-										<< "emgName = "
-										<< QString(dt.getLabels()[emg + minEmg]).remove("IT ") << '\t'
-
-										<< "freq = "
+										<< QString(iitp::eegNames[eeg]) << '\t'
+										<< QString(iitp::emgNames[emg]) << '\t'
 										<< fr << '\t'
-
-										<< "val = "
 										<< smallLib::doubleRound(val, 3) << '\t'
-
-										<< "abs = "
 										<< smallLib::doubleRound(std::abs(val), 3) << '\t'
-
-										<< "arg = "
 										<< smallLib::doubleRound(std::arg(val), 3) << '\t'
-
-										<< std::endl;
+										<< "\r\n";
 							}
 						}
 					}
 				}
-				outStr << std::endl;
 				outStr.close();
 			}
 		}
