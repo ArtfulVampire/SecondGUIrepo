@@ -15,14 +15,15 @@ void MainWindow::customFunc()
 
 
 //	autos::IITPpre("Oleg");
-//	autos::IITPstaging("Ira");
-//	autos::IITPprocessStaged("Ira");
+//	autos::IITPstaging("Victor",
+//					   "_sum_f_new_gon");
+//	autos::IITPprocessStaged("Victor",
+//							 "_sum_f_new_gon_stag");
+	autos::IITPprocessStaged("Ira");
 //	autos::IITPfilterGonios("Oleg",
 //							"_emg_f");
 //	exit(0);
 	return;
-
-
 
 
 //	autos::Xenia_TBI();

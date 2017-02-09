@@ -170,7 +170,10 @@ QPixmap drawArray(const QPixmap & templatePic,
 	QPixmap pic = templatePic;
 	QPainter paint;
 
-	if(maxVal <= 0.) maxVal = inData.maxAbsVal();
+	if(maxVal <= 0)
+	{
+		maxVal = inData.maxAbsVal();
+	}
 
 	for(int chanNum = 0; chanNum < inData.size(); ++chanNum)  //exept markers channel
 	{

@@ -658,14 +658,14 @@ void IITPprocessStaged(const QString & guyName,
 		return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
 	};
 
-	auto resBend = [=](int i) -> QString
+	auto resBend = [=](int i, QString goni) -> QString
 	{
-		return direct + guyName + "_" + rn(i, 2) + "_bending.txt";
+		return direct + guyName + "_" + rn(i, 2) + "_" + goni + "_bending.txt";
 	};
 
-	auto resUnbend = [=](int i) -> QString
+	auto resUnbend = [=](int i, QString goni) -> QString
 	{
-		return direct + guyName + "_" + rn(i, 2) + "_UNbending.txt";
+		return direct + guyName + "_" + rn(i, 2) + "_" + goni + "_UNbending.txt";
 	};
 
 	for(int fileNum : iitp::fileNums)
@@ -675,7 +675,12 @@ void IITPprocessStaged(const QString & guyName,
 
 		for(int gonio : iitp::interestGonios[fileNum])
 		{
-			int minMarker = iitp::gonioMinMarker(gonio);
+			int minMarker = iitp::gonioMinMarker(gonio);			
+			dt.drawSpectra(minMarker, minMarker + 1).save(
+						direct + guyName + "_" + rn(fileNum, 2) + "_" +
+						iitp::gonioNames[gonio] + ".jpg", 0, 100);
+//			continue;
+
 			for(int type : {0, 1}) /// 0 - bend, 1 - unbend
 			{
 				if(type == 0)
@@ -692,11 +697,15 @@ void IITPprocessStaged(const QString & guyName,
 				std::ofstream outStr;
 				if(type == 0)
 				{
-					outStr.open(resBend(fileNum).toStdString(), std::ios_base::app);
+					outStr.open(resBend(fileNum, iitp::gonioNames[gonio]).toStdString()
+//								, std::ios_base::app
+								);
 				}
 				else
 				{
-					outStr.open(resUnbend(fileNum).toStdString(), std::ios_base::app);
+					outStr.open(resUnbend(fileNum, iitp::gonioNames[gonio]).toStdString()
+//								, std::ios_base::app
+								);
 				}
 
 				for(int eeg : iitp::interestEeg)

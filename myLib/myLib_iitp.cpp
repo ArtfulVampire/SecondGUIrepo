@@ -293,16 +293,17 @@ QPixmap iitpData::drawSpectra(int mark1, int mark2)
 {
 	const double leftFr = 2;
 	const double rightFr = 40;
+	const int localFftLen = 1024;
+	this->setFftLen(localFftLen);
 	const int leftInd = leftFr / this->spStep;
 	const int rightInd = rightFr / this->spStep;
 	const int spLen = rightInd - leftInd;
-	const int localFftLen = 1024;
 	const int numCh = 19;
 
 	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
 
 	std::valarray<double> spectre(spLen * numCh);
-	matrix spectra(2);
+	matrix spectra{2, 1};
 	std::valarray<double> spec(localFftLen);
 
 	this->setPieces(mark1, mark2);
