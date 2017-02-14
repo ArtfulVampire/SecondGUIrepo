@@ -21,32 +21,9 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 							   double freq);
 
 
-int gonioMinMarker(int numGonioChan); /// max = min + 1
-//namespace marks
-//{
 ///// max - bend
 ///// min - unbend
-/// marker = 100 + (gonioNamesIndex / 2 + 1) * 10 + ("_l")?0:1 * 2 + ("_max")?1:0
-//const int Ankle_l_min	= 110;
-//const int Ankle_l_max	= 111;
-//const int Ankle_r_min	= 112;
-//const int Ankle_r_max	= 113;
-
-//const int Knee_l_min	= 120;
-//const int Knee_l_max	= 121;
-//const int Knee_r_min	= 122;
-//const int Knee_r_max	= 123;
-
-//const int Elbow_l_min	= 130;
-//const int Elbow_l_max	= 131;
-//const int Elbow_r_min	= 132;
-//const int Elbow_r_max	= 133;
-
-//const int Wrist_l_min	= 140;
-//const int Wrist_l_max	= 141;
-//const int Wrist_r_min	= 142;
-//const int Wrist_r_max	= 143;
-//}
+int gonioMinMarker(int numGonioChan); /// max = min + 1
 
 enum gonioChans {Ankle_l	= 0,
 				 Ankle_r	= 1,
@@ -116,6 +93,18 @@ const std::vector<std::valarray<int>> interestGonios{
 	// 22 final eyes closed
 	{},
 	// 23 final eyes open
+	{},
+	// 24 weak Ta_l
+	{},
+	// 25 weak Ta_r
+	{},
+	// 26 weak Fcr_l
+	{},
+	// 27 weak Fcr_r
+	{},
+	// 28 weak Ecr_l
+	{},
+	// 29 weak Ecr_r
 	{}
 };
 
@@ -197,7 +186,19 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 22 final eyes closed
 	{},
 	// 23 final eyes open
-	{}
+	{},
+	// 24 weak Ta_l
+	{Ta_l},
+	// 25 weak Ta_r
+	{Ta_r},
+	// 26 weak Fcr_l
+	{Fcr_l},
+	// 27 weak Fcr_r
+	{Fcr_r},
+	// 28 weak Ecr_l
+	{Ecr_l},
+	// 29 weak Ecr_r
+	{Ecr_r}
 };
 
 const std::vector<QString> eegNames{

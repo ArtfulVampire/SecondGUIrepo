@@ -1627,7 +1627,7 @@ void GalyaFull(const QString & inDirPath,
 //	const QString waveletPath = inDirPath + slash + myLib::getFileName(inDirPath) + "_wavelet";
 	tmp.mkpath(waveletPath);
 
-#if 0
+#if 01
 	autos::GalyaProcessing(inDirPath,
 						   numChan,
 						   outPath);

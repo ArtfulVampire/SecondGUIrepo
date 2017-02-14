@@ -78,6 +78,9 @@ Cut::Cut() :
 	ui->color2SpinBox->setMinimum(-1); ui->color2SpinBox->setValue(-1);
 	ui->color3SpinBox->setMinimum(-1); ui->color3SpinBox->setValue(-1);
 
+	ui->saveNewNumSpinBox->setMaximum(50);
+	ui->saveNewNumSpinBox->setValue(24);
+
 
 #if 0
     QFileDialog * browser = new QFileDialog();
@@ -134,6 +137,7 @@ Cut::Cut() :
 	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
 	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
+	QObject::connect(ui->saveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
 	QObject::connect(ui->setMark1PushButton, SIGNAL(clicked()), this, SLOT(set1MarkerSlot()));
 	QObject::connect(ui->setMark2PushButton, SIGNAL(clicked()), this, SLOT(set2MarkerSlot()));
 
@@ -405,7 +409,6 @@ void Cut::createImage(const QString & dataFileName)
         edfFil.readEdfFile(dataFileName);
 		def::ns = edfFil.getNs();
 		setValuesByEdf();
-
     }
 	paint();
     ui->scrollArea->horizontalScrollBar()->setSliderPosition(0);
@@ -959,6 +962,7 @@ void Cut::splitFromZeroSlot()
 
 void Cut::splitTillEndSlot()
 {
+	iitpLog("splitE");
 	data3.resizeCols(ui->leftLimitSpinBox->value());
 	ui->paintStartLabel->setText("start (max " + nm(floor(data3.cols() / currFreq)) + ")");
 	paint();
@@ -1006,6 +1010,20 @@ void Cut::save()
         edfFil.writeOtherData(data3, newPath);
 		std::cout << "Cut::save: edfFile saved - " << newPath << std::endl;
     }
+
+}
+
+void Cut::saveNewNumSlot()
+{
+	QString newName = edfFil.getFileNam();
+	newName.replace(QRegExp("[0-9]{2}"), rn(ui->saveNewNumSpinBox->value(), 2));
+
+	edfFil.writeOtherData(data3.subCols(ui->leftLimitSpinBox->value(),
+										ui->rightLimitSpinBox->value()),
+						  edfFil.getDirPath() + "/" + newName);
+
+	std::cout << "Cut::saveNewNumSlot: edfFile saved - " << newName << std::endl;
+	iitpLog("savNewN", 2, newName);
 
 }
 
@@ -1103,7 +1121,13 @@ void Cut::paint() // save to tmp.jpg and display
 		rightDrawLimit = data3.cols();
     }
 	matrix subData = data3.subCols(leftDrawLimit, rightDrawLimit);
-//	subData[edfFil.findChannel("ECG")] = 0; /// for iitp ecg
+
+
+	int ecg = edfFil.findChannel("ECG");
+	if(ui->disableEcgCheckBox->isChecked() && ecg >= 0)
+	{
+		subData[ecg] = 0; /// for iitp ecg
+	}
 
 	double coeff = ui->yNormDoubleSpinBox->value()
 				   * ((ui->yNormInvertCheckBox->isChecked())? -1 : 1);

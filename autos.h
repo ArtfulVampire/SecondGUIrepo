@@ -59,6 +59,9 @@ void IITPfilterGonios(const QString & guyName,
 															"wrist",
 															"knee",
 															"ankle"});
+
+
+
 void IITPstaging(const QString & guyName,
 				 const QString & postfix = "_sum_f_new",
 				 const QString & dirPath = def::iitpSyncFolder);

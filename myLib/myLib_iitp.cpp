@@ -307,6 +307,13 @@ QPixmap iitpData::drawSpectra(int mark1, int mark2)
 	std::valarray<double> spec(localFftLen);
 
 	this->setPieces(mark1, mark2);
+	/// if there are no markers
+	if(this->piecesData.empty())
+	{
+		/// really should draw whole file spectre and background resting spectre
+		return {};
+	}
+
 	this->setFftLen(localFftLen);
 	this->countPiecesFFT();
 	for(int i = 0; i < numCh; ++i)

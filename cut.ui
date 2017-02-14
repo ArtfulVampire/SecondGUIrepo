@@ -206,48 +206,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>800</x>
      <y>230</y>
-     <width>191</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout_4">
-    <item row="0" column="0">
-     <widget class="QPushButton" name="iitpAutoCorrPushButton">
-      <property name="text">
-       <string>IITP corr</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QCheckBox" name="iitpByEegCheckBox">
-      <property name="text">
-       <string>by EEG</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="iitpAutoJumpPushButton">
-      <property name="text">
-       <string>IITP jump</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QPushButton" name="iitpManualPushButton">
-      <property name="text">
-       <string>IITP manual</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>770</x>
-     <y>240</y>
      <width>161</width>
      <height>52</height>
     </rect>
@@ -570,6 +530,69 @@
      <height>23</height>
     </rect>
    </property>
+  </widget>
+  <widget class="QCheckBox" name="disableEcgCheckBox">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>180</y>
+     <width>101</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>disable ECG</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>200</y>
+     <width>211</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_4">
+    <item row="0" column="0">
+     <widget class="QPushButton" name="saveNewNumPushButton">
+      <property name="text">
+       <string>save newNum</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QSpinBox" name="saveNewNumSpinBox"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="iitpAutoCorrPushButton">
+      <property name="text">
+       <string>IITP corr</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QCheckBox" name="iitpByEegCheckBox">
+      <property name="text">
+       <string>by EEG</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QPushButton" name="iitpAutoJumpPushButton">
+      <property name="text">
+       <string>IITP jump</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QPushButton" name="iitpManualPushButton">
+      <property name="text">
+       <string>IITP manual</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

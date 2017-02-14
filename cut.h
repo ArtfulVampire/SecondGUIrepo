@@ -87,6 +87,7 @@ public slots:
 	void iitpAutoCorrSlot();
 	void iitpAutoJumpSlot();
 	void iitpManualSlot();
+	void saveNewNumSlot();
 	void set1MarkerSlot();
 	void set2MarkerSlot();
 
