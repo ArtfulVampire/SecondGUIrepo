@@ -125,6 +125,8 @@ QPixmap drawArrays(const QPixmap & templatePic,
 				   const std::vector<QColor> & colors = myLib::drw::defaultColors,
 				   std::vector<int> lineWidths = std::vector<int>());
 
+QPixmap drawArrays(const QPixmap & templatePic, const std::vector<QString> & filesPaths);
+
 QPixmap drawArraysInLine(const matrix & inMatrix,
 						 const std::vector<QColor> & colors = myLib::drw::defaultColors);
 

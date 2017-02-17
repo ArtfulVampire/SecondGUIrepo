@@ -158,7 +158,7 @@ void writeFileInLine(const QString & filePath,
 
 	if(asCol)
 	{
-		file << "FileLen " << outData.size() << '\t';
+		file << "FileLen " << outData.size() << "\t";
 		file << "Pewpew " << 1 << "\r\n";
 		for(auto out : outData)
 		{
@@ -167,8 +167,8 @@ void writeFileInLine(const QString & filePath,
 	}
 	else
 	{
-		file << "Pewpew " << 1 << "\r\n";
-		file << "FileLen " << outData.size() << '\t';
+		file << "Pewpew " << 1 << "\t";
+		file << "FileLen " << outData.size() << "\r\n";
 		for(auto out : outData)
 		{
 			file << smallLib::doubleRound(out, 3) << "\t";

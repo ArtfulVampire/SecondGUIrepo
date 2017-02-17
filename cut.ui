@@ -110,8 +110,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>920</x>
-     <y>8</y>
+     <x>1030</x>
+     <y>10</y>
      <width>491</width>
      <height>201</height>
     </rect>
@@ -206,8 +206,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>800</x>
-     <y>230</y>
+     <x>870</x>
+     <y>10</y>
      <width>161</width>
      <height>52</height>
     </rect>
@@ -511,24 +511,14 @@
   <widget class="QPushButton" name="linearApproxPushButton">
    <property name="geometry">
     <rect>
-     <x>740</x>
-     <y>150</y>
+     <x>870</x>
+     <y>110</y>
      <width>111</width>
      <height>22</height>
     </rect>
    </property>
    <property name="text">
     <string>linear approx</string>
-   </property>
-  </widget>
-  <widget class="QSpinBox" name="linearApproxSpinBox">
-   <property name="geometry">
-    <rect>
-     <x>680</x>
-     <y>150</y>
-     <width>47</width>
-     <height>23</height>
-    </rect>
    </property>
   </widget>
   <widget class="QCheckBox" name="disableEcgCheckBox">
@@ -544,7 +534,7 @@
     <string>disable ECG</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>550</x>
@@ -591,6 +581,58 @@
        <string>IITP manual</string>
       </property>
      </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>790</x>
+     <y>220</y>
+     <width>281</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_6">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_12">
+      <property name="text">
+       <string>chan</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>val</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>first</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QLabel" name="label_8">
+      <property name="text">
+       <string>second</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QSpinBox" name="linearApproxSpinBox"/>
+    </item>
+    <item row="1" column="1">
+     <widget class="QDoubleSpinBox" name="valDoubleSpinBox"/>
+    </item>
+    <item row="1" column="2">
+     <widget class="QDoubleSpinBox" name="firstDoubleSpinBox"/>
+    </item>
+    <item row="1" column="3">
+     <widget class="QDoubleSpinBox" name="secondDoubleSpinBox"/>
     </item>
    </layout>
   </widget>

@@ -331,6 +331,11 @@ void edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 	def::freq = srate;
 }
 
+void edfFile::rewriteEdfFile()
+{
+	this->handleEdfFile(this->getFilePath(), false);
+}
+
 void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
 {
     QTime myTime;
@@ -1523,6 +1528,8 @@ void edfFile::removeChannels(const std::vector<int> & chanList)
 
     for(int k : excludeSet)
 	{
+		if(k < 0) continue; /// good for -1 in findChannel
+
 		this->edfData.eraseRow(k);
         this->channels.erase(std::begin(this->channels) + k);
     }
@@ -1701,7 +1708,7 @@ void edfFile::fitData(int initSize) // append zeros to whole ndr's
 
 void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are allocated
 {
-	int currEnd = this->edfData.cols();
+	int currEnd = this->edfData.cols() - 1;
     bool doFlag = true;
 
     while(1)
@@ -1711,7 +1718,7 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
             /// for neurotravel cleaning - generality with digmaxmin
 			if(std::abs(this->edfData[j][currEnd - 1]) >= 30000) break; // do clean
 
-			if(this->edfData[j][currEnd - 1] != 0.)
+			if(this->edfData[j][currEnd - 1] != this->edfData[j][currEnd])
             {
                 doFlag = false;
                 break;
@@ -1727,7 +1734,7 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
         }
         doFlag = true;
 	}
-	this->edfData.resizeCols(currEnd);
+	this->edfData.resizeCols(currEnd + 1);
 
 	this->ndr = ceil(this->edfData.cols() / (this->srate * this->ddr)); // should be unchanged
 }

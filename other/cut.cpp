@@ -81,6 +81,13 @@ Cut::Cut() :
 	ui->saveNewNumSpinBox->setMaximum(50);
 	ui->saveNewNumSpinBox->setValue(24);
 
+	ui->valDoubleSpinBox->setMaximum(800);
+	ui->firstDoubleSpinBox->setMaximum(500);
+	ui->secondDoubleSpinBox->setMaximum(500);
+	ui->valDoubleSpinBox->setMinimum(-800);
+	ui->firstDoubleSpinBox->setMinimum(-500);
+	ui->secondDoubleSpinBox->setMinimum(-500);
+
 
 #if 0
     QFileDialog * browser = new QFileDialog();
@@ -472,12 +479,23 @@ void Cut::iitpManualSlot()
 	paint();
 }
 
+void Cut::showDerivatives()
+{
+	const std::valarray<double> & sig = data3[ui->linearApproxSpinBox->value()];
+	const int ind = ui->leftLimitSpinBox->value();
+	const int st = 5;
+	ui->valDoubleSpinBox->setValue(sig[ind]);
+	ui->firstDoubleSpinBox->setValue(sig[ind + st] -  sig[ind - st]);
+	ui->secondDoubleSpinBox->setValue(sig[ind + 2 * st] + sig[ind - 2 * st] - 2 * sig[ind]);
+}
+
 void Cut::mousePressSlot(char btn, int coord)
 {
 	if(btn == 'l' &&
 	   coord + leftDrawLimit < ui->rightLimitSpinBox->value())
 	{
 		ui->leftLimitSpinBox->setValue(coord + leftDrawLimit);
+		showDerivatives();
 	}
 	else if(btn == 'r' &&
 			coord + leftDrawLimit > ui->leftLimitSpinBox->value() &&

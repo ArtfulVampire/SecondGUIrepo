@@ -21,9 +21,94 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 							   double freq);
 
 
-///// max - bend
-///// min - unbend
+
+
+
+
+
+///// max - bend (flexed)
+///// min - unbend (extended)
 int gonioMinMarker(int numGonioChan); /// max = min + 1
+
+const std::vector<QString> trialTypesNames
+{
+	"rest",
+	"real",
+	"imag",
+	"passive",
+	"stat"
+};
+
+/// class because of simple names
+enum trialType {rest	= 0,
+				real	= 1,
+				imag	= 2,
+				passive	= 3,
+				stat	= 4};
+
+const std::valarray<int> trialTypes{
+	// 0 eyes closed
+	trialType::rest,
+	// 1 eyes open
+	trialType::rest,
+	// 2 legs
+	trialType::real,
+	// 3 legs imaginary
+	trialType::imag,
+	// 4 feet
+	trialType::real,
+	// 5 feet imaginary
+	trialType::imag,
+	// 6 wrists
+	trialType::real,
+	// 7 wrists imaginary
+	trialType::imag,
+	// 8 feet + wrists
+	trialType::real,
+	// 9 feet + wrists imaginary
+	trialType::imag,
+	// 10 legs + wrists
+	trialType::real,
+	// 11 legs + wrists imaginary
+	trialType::imag,
+	// 12 static stress
+	trialType::stat,
+	// 13 middle eyes closed
+	trialType::rest,
+	// 14 middle eyes open
+	trialType::rest,
+	// 15 arms
+	trialType::real,
+	// 16 arms imaginary
+	trialType::imag,
+	// 17 arms + legs
+	trialType::real,
+	// 18 arms + legs imaginagy
+	trialType::imag,
+	// 19 legs passive
+	trialType::passive,
+	// 20 arms passive
+	trialType::passive,
+	// 21 arms+legs passive
+	trialType::passive,
+	// 22 final eyes closed
+	trialType::rest,
+	// 23 final eyes open
+	trialType::rest,
+	// 24 weak Ta_l
+	trialType::stat,
+	// 25 weak Ta_r
+	trialType::stat,
+	// 26 weak Fcr_l
+	trialType::stat,
+	// 27 weak Fcr_r
+	trialType::stat,
+	// 28 weak Ecr_l
+	trialType::stat,
+	// 29 weak Ecr_r
+	trialType::stat
+};
+
 
 enum gonioChans {Ankle_l	= 0,
 				 Ankle_r	= 1,
@@ -107,6 +192,7 @@ const std::vector<std::valarray<int>> interestGonios{
 	// 29 weak Ecr_r
 	{}
 };
+
 
 
 enum emgChans {Ta_l		= 0,
@@ -244,10 +330,15 @@ const std::valarray<int> interestEeg{
 //	18	// O2
 };
 
-//const std::valarray<double> interestFrequencies = smallLib::valarFromRange(8, 45);
-const std::valarray<double> fileNums = smallLib::valarFromRange(0, 30);
+/// for spectra inspection
+const double leftFr = 4;
+const double rightFr = 40;
+
 const std::valarray<double> interestFrequencies{8, 9, 10, 11, 12, 18, 19, 20, 21, 22, 23, 24, 25};
-//const std::valarray<double> fileNums{21};
+//const std::valarray<double> interestFrequencies = smallLib::valarFromRange(8, 45);
+
+const std::valarray<double> fileNums = smallLib::valarFromRange(0, 29);
+//const std::valarray<double> fileNums{4};
 
 
 class iitpData : public edfFile
@@ -276,8 +367,9 @@ public:
 
 	iitpData & staging(int numGonioChan);
 	void cutPieces(double length);
-	void setPieces(int start = 10, int finish = 20);
-	QPixmap drawSpectra(int mark1, int mark2);
+	void setPieces(int startMark = 10, int finishMark = 20);
+	void countFlexExtSpectra(int mark1, int mark2);
+	void countImagPassSpectra();
 
 	void countPiecesFFT();
 	void resizePieces(int in);

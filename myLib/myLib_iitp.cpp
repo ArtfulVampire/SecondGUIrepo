@@ -260,7 +260,7 @@ void iitpData::cutPieces(double length)
 	this->countPiecesFFT();
 }
 
-void iitpData::setPieces(int start, int finish)
+void iitpData::setPieces(int startMark, int finishMark)
 {
 	piecesData.clear();
 
@@ -268,37 +268,71 @@ void iitpData::setPieces(int start, int finish)
 	int beg = badBeg;
 	for(int i = 0; i < this->edfData.cols(); ++i)
 	{
-		if(this->edfData[this->markerChannel][i] == start)
+		if(this->edfData[this->markerChannel][i] == startMark)
 		{
 			beg = i;
 		}
-		else if(this->edfData[this->markerChannel][i] == finish)
+		else if(this->edfData[this->markerChannel][i] == finishMark && beg != badBeg)
 		{
-			if(beg == badBeg)
-			{
-				std::cout << "iitpData::setPieces: something wrong with markers" << std::endl;
-			}
-			else
-			{
-				piecesData.push_back(this->edfData.subCols(beg, i));
-				beg = badBeg;
-			}
+			piecesData.push_back(this->edfData.subCols(beg, i));
+			beg = badBeg;
 		}
 	}
 	this->clearCrossSpectra();
 	this->setFftLen();
 }
 
-QPixmap iitpData::drawSpectra(int mark1, int mark2)
+void iitpData::countImagPassSpectra()
 {
-	const double leftFr = 2;
-	const double rightFr = 40;
 	const int localFftLen = 1024;
 	this->setFftLen(localFftLen);
-	const int leftInd = leftFr / this->spStep;
-	const int rightInd = rightFr / this->spStep;
+	const int leftInd = iitp::leftFr / this->spStep;
+	const int rightInd = iitp::rightFr / this->spStep;
 	const int spLen = rightInd - leftInd;
 	const int numCh = 19;
+
+	std::valarray<double> spectre(spLen * numCh);
+	std::valarray<double> spec(localFftLen);
+
+	this->cutPieces(localFftLen / double(this->srate));
+//	this->setFftLen(localFftLen);
+	this->countPiecesFFT();
+	for(int i = 0; i < numCh; ++i)
+	{
+		spec = 0.;
+		for(int j = 0; j < this->piecesData.size(); ++j)
+		{
+			spec += smallLib::abs(this->piecesFFT[j][i]);
+		}
+		spec *= (4. / localFftLen);
+		spec /= this->piecesData.size();
+		std::copy(std::begin(spec) + leftInd,
+				  std::begin(spec) + rightInd,
+				  std::begin(spectre) + i * spLen);
+	}
+	int num = this->ExpName.split("_", QString::SkipEmptyParts)[1].toInt();
+	QString add = iitp::trialTypesNames[trialTypes[num]];
+
+	myLib::writeFileInLine(this->getDirPath() + "/" +
+						   this->getExpName() + "_" + add + ".txt",
+						   spectre);
+
+	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
+	templ = myLib::drw::drawArray(templ, spectre);
+	templ.save(this->getDirPath() + "/" +
+			   this->getExpName() + ".jpg", 0, 100);
+}
+
+void iitpData::countFlexExtSpectra(int mark1, int mark2)
+{
+	const int localFftLen = 1024;
+	this->setFftLen(localFftLen);
+	const int leftInd = iitp::leftFr / this->spStep;
+	const int rightInd = iitp::rightFr / this->spStep;
+	const int spLen = rightInd - leftInd;
+	const int numCh = 19;
+	QString joint = "_" + iitp::gonioNames[(mark1 - 100) / 10 - 1 + (mark1 % 10) / 2];
+	std::cout << joint << std::endl;
 
 	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
 
@@ -307,12 +341,6 @@ QPixmap iitpData::drawSpectra(int mark1, int mark2)
 	std::valarray<double> spec(localFftLen);
 
 	this->setPieces(mark1, mark2);
-	/// if there are no markers
-	if(this->piecesData.empty())
-	{
-		/// really should draw whole file spectre and background resting spectre
-		return {};
-	}
 
 	this->setFftLen(localFftLen);
 	this->countPiecesFFT();
@@ -321,19 +349,18 @@ QPixmap iitpData::drawSpectra(int mark1, int mark2)
 		spec = 0.;
 		for(int j = 0; j < this->piecesData.size(); ++j)
 		{
-			spec += smallLib::abs(this->piecesFFT[j][i]) *
-					myLib::spectreNorm(localFftLen,
-									   this->piecesData[j].cols(),
-									   this->srate);
+			spec += smallLib::abs(this->piecesFFT[j][i]);
 		}
+		spec *= (4. / localFftLen);
 		spec /= this->piecesData.size();
 		std::copy(std::begin(spec) + leftInd,
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
 	spectra[0] = spectre;
-//	templ = myLib::drw::drawArray(templ, spectre, QColor("blue"));
-//	return templ;
+	myLib::writeFileInLine(this->getDirPath() + "/" +
+						   this->getExpName() + joint + "_flexion.txt",
+						   spectre);
 
 	this->setPieces(mark2, mark1);
 	this->setFftLen(localFftLen);
@@ -343,20 +370,21 @@ QPixmap iitpData::drawSpectra(int mark1, int mark2)
 		spec = 0.;
 		for(int j = 0; j < this->piecesData.size(); ++j)
 		{
-			spec += smallLib::abs(this->piecesFFT[j][i]) *
-					myLib::spectreNorm(localFftLen,
-									   this->piecesData[j].cols(),
-									   this->srate);
+			spec += smallLib::abs(this->piecesFFT[j][i]);
 		}
+		spec *= (4. / localFftLen);
 		spec /= this->piecesData.size();
 		std::copy(std::begin(spec) + leftInd,
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
 	spectra[1] = spectre;
-//	templ = myLib::drw::drawArray(templ, spectre, QColor("red"));
+	myLib::writeFileInLine(this->getDirPath() + "/" +
+						   this->getExpName() + joint + "_extension.txt",
+						   spectre);
 	templ = myLib::drw::drawArrays(templ, spectra);
-	return templ;
+	templ.save(this->getDirPath() + "/" +
+			   this->getExpName() + joint + ".jpg", 0, 100);
 }
 
 int gonioMinMarker(int numGonioChan)
@@ -369,7 +397,7 @@ int gonioMinMarker(int numGonioChan)
 iitpData & iitpData::staging(int numGonioChan)
 {
 	int minMarker = iitp::gonioMinMarker(numGonioChan);
-	return this->staging(iitp::gonioNames[numGonioChan], minMarker + 1, minMarker);
+	return this->staging(iitp::gonioNames[numGonioChan], minMarker, minMarker + 1);
 
 }
 
@@ -384,30 +412,83 @@ iitpData & iitpData::staging(const QString & chanName,
 	{
 		return (in > 0) ? 1 : -1;
 	};
+
+
+#if 0
+	/// test first and second derivatives
+
+	const int st = 5;
+	std::valarray<double> firstDeriv = chan.cshift(-st) - chan.cshift(st);
+
+	std::valarray<double> secondDeriv = chan.cshift(2 * st) - chan * 2. + chan.cshift(-2 * st);
+
+	for(int k = 0; k < st + 1; ++k)
+	{
+		firstDeriv[k] = 0.;
+		firstDeriv[firstDeriv.size() - 1 - k] = 0.;
+	}
+	for(int k = 0; k < 2 * st; ++k)
+	{
+		secondDeriv[k] = 0.;
+		secondDeriv[secondDeriv.size() - 1 - k] = 0.;
+	}
+
+	myLib::histogram(firstDeriv,
+					 50,
+					 "/media/Files/Data/deriv.jpg",
+	{-25, 25});
+
+	firstDeriv *= 10;
+	secondDeriv *= 30;
+
+	std::copy(std::begin(firstDeriv),
+			  std::end(firstDeriv),
+			  std::begin(this->edfData[this->findChannel("Ankle_r")]) + start);
+	std::copy(std::begin(secondDeriv),
+			  std::end(secondDeriv),
+			  std::begin(this->edfData[this->findChannel("Knee_l")]) + start);
+
+	return *this;
+#endif
+
+
+
+
 	int currSign = sign(chan[0]);
 	int start = 0;
+	const double alpha = 0.20;
 
 	for(int i = 0; i < chan.size(); ++i)
 	{
 		if(sign(chan[i]) != currSign)
 		{
-			int end = i - 1;
+			int end = i;
 
-//			std::cout << start << '\t' << end << std::endl;
 
-			auto val = std::valarray<double>(chan[std::slice(start, end - start, 1)]);
+			std::valarray<double> val = smallLib::valarSubsec(chan, start, end);
 			val = val.apply(std::abs);
-			uint nm = myLib::indexOfMax(val);
+
+			/// marker on 80% of peak
+			double maxVal = *std::max_element(std::begin(val), std::end(val));
+			double threshold = (1. - alpha) * maxVal;
+
 			srand(time(NULL));
-			if(currSign == 1)
+			for(int j = 0; j < val.size(); ++j)
 			{
-				marks[start + nm] = markerMax;
-//				marks[start + nm + 10 - rand()%20] = markerMax;
-			}
-			else
-			{
-				marks[start + nm] = markerMin;
-//				marks[start + nm + 10 - rand()%20] = markerMin;
+				if((val[j] - threshold) * (val[j-1] - threshold) <= 0.)
+				{
+					if(currSign == 1)
+					{
+						marks[start + j] = markerMax;
+		//				marks[start + nm + 10 - rand()%20] = markerMax;
+					}
+					else
+					{
+						marks[start + j] = markerMin;
+		//				marks[start + nm + 10 - rand()%20] = markerMin;
+					}
+				}
+
 			}
 
 			start = i;
@@ -415,33 +496,6 @@ iitpData & iitpData::staging(const QString & chanName,
 		}
 	}
 	return *this;
-
-
-#if 0
-	/// via derivative
-	std::valarray<double> deriv = std::valarray<double>(chan).cshift(1) - chan;
-
-	int winLen = 20;
-	std::valarray<double> mean(deriv.size() - winLen);
-	for(int i = winLen/2; i < deriv.size() - winLen/2; ++i)
-	{
-		std::valarray<double> win = deriv[std::slice(i - winLen/2, winLen, 1)];
-		mean[i - winLen/2] = smallLib::mean(win);
-	}
-
-	for(int i = 0; i < mean.size() - 1; ++i)
-	{
-		if(mean[i] >= 0. && mean[i + 1] < 0.)
-		{
-			this->edfData[this->markerChannel][i + winLen/2] = markerMax;
-		}
-		else if(mean[i] <= 0. && mean[i + 1] > 0.)
-		{
-			this->edfData[this->markerChannel][i + winLen/2] = markerMin;
-		}
-	}
-	return *this;
-#endif
 }
 
 

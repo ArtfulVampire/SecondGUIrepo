@@ -60,6 +60,7 @@ void IITPfilterGonios(const QString & guyName,
 															"knee",
 															"ankle"});
 
+void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
 
 
 void IITPstaging(const QString & guyName,

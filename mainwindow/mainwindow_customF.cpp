@@ -13,17 +13,30 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
+//return;
+	const QString guy = "Alex";
+
+//	iitp::iitpData d;
+//	d.readEdfFile(def::iitpSyncFolder +
+//				  "/" + guy +
+//				  "/" + guy + "_04_sum_f_new.edf");
+//	d.staging(iitp::gonioChans::Ankle_l).writeEdfFile(def::iitpSyncFolder +
+//													  "/" + guy +
+//													  "/" + guy + "_04_sum_f_new_stag.edf");
+//	exit(0);
 
 //	autos::IITPpre("Oleg");
-//	autos::IITPstaging("Victor",
-//					   "_sum_f_new_gon");
+	autos::IITPstaging("Alex");
+	autos::IITPprocessStaged("Alex");
+
+
+
 //	autos::IITPprocessStaged("Victor",
 //							 "_sum_f_new_gon_stag");
-	autos::IITPprocessStaged("Ira");
 //	autos::IITPfilterGonios("Oleg",
 //							"_emg_f");
 //	exit(0);
-	return;
+//	return;
 
 
 //	autos::Xenia_TBI();

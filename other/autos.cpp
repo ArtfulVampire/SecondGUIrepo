@@ -611,6 +611,27 @@ void IITPpre(const QString & dirName)
 
 }
 
+
+void IITPremoveZchans(const QString & hauptDir)
+{
+	const QStringList dirs = QDir(hauptDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+	for(const QString & dr : dirs)
+	{
+//		if(!dr.contains("Victor")) continue;
+		const QStringList fils = QDir(hauptDir + "/" + dr).entryList({"*.edf"});
+		for(const QString & fl : fils)
+		{
+//			if(!fl.contains("_1") && !fl.contains("_2")) continue;
+			edfFile fil;
+			fil.readEdfFile(hauptDir + "/" + dr + "/" + fl);
+			int a = fil.findChannel("Fpz");
+			int b = fil.findChannel("Oz");
+			fil.removeChannels({a, b});
+			fil.writeEdfFile(fil.getFilePath());
+		}
+	}
+}
+
 void IITPstaging(const QString & guyName,
 				 const QString & postfix,
 				 const QString & dirPath)
@@ -642,12 +663,6 @@ void IITPstaging(const QString & guyName,
 	}
 }
 
-void IITPdrawImaginary(const QString & guyName,
-					   const QString & postfix,
-					   const QString & dirPath)
-{
-
-}
 
 
 void IITPprocessStaged(const QString & guyName,
@@ -663,14 +678,14 @@ void IITPprocessStaged(const QString & guyName,
 		return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
 	};
 
-	auto resBend = [=](int i, QString goni) -> QString
+	auto resFlex = [=](int i, QString goni) -> QString
 	{
-		return direct + guyName + "_" + rn(i, 2) + "_" + goni + "_bending.txt";
+		return direct + guyName + "_" + rn(i, 2) + "_" + goni + "_flexion.txt";
 	};
 
-	auto resUnbend = [=](int i, QString goni) -> QString
+	auto resExt = [=](int i, QString goni) -> QString
 	{
-		return direct + guyName + "_" + rn(i, 2) + "_" + goni + "_UNbending.txt";
+		return direct + guyName + "_" + rn(i, 2) + "_" + goni + "_extension.txt";
 	};
 
 	for(int fileNum : iitp::fileNums)
@@ -678,47 +693,43 @@ void IITPprocessStaged(const QString & guyName,
 		if(!QFile::exists(filePath(fileNum))) continue;
 		dt.readEdfFile(filePath(fileNum));
 
+		if(iitp::interestGonios[fileNum].size() == 0)
+		{
+			dt.countImagPassSpectra();
+		}
+
 		for(int gonio : iitp::interestGonios[fileNum])
 		{
 			int minMarker = iitp::gonioMinMarker(gonio);			
 
-			dt.drawSpectra(minMarker, minMarker + 1).save(
-						direct + guyName + "_" + rn(fileNum, 2) + "_" +
-						iitp::gonioNames[gonio] + ".jpg", 0, 100);
+			dt.countFlexExtSpectra(minMarker, minMarker + 1);
 
-			for(int type : {0, 1}) /// 0 - bend, 1 - unbend
+			for(int type : {0, 1}) /// 0 - flexion, 1 - extension
 			{
+				std::ofstream outStr;
 				if(type == 0)
 				{
 					dt.setPieces(minMarker, minMarker + 1);
+
+					outStr.open(resFlex(fileNum, iitp::gonioNames[gonio]).toStdString()
+//								, std::ios_base::app
+								);
 				}
 				else
 				{
 					dt.setPieces(minMarker + 1, minMarker);
-				}
 
-				/// count coherency for all interesting (eeg, emg)
-				/// write to file
-				std::ofstream outStr;
-				if(type == 0)
-				{
-					outStr.open(resBend(fileNum, iitp::gonioNames[gonio]).toStdString()
-//								, std::ios_base::app
-								);
-				}
-				else
-				{
-					outStr.open(resUnbend(fileNum, iitp::gonioNames[gonio]).toStdString()
+					outStr.open(resExt(fileNum, iitp::gonioNames[gonio]).toStdString()
 //								, std::ios_base::app
 								);
 				}
 
+				///eeg-eeg
 				for(int eeg : iitp::interestEeg)
 				{
-					///eeg-eeg
 					for(int eeg2 : iitp::interestEeg)
 					{
-						if(eeg2 == eeg) continue;
+						if(eeg2 <= eeg) continue;
 
 						for(double fr : iitp::interestFrequencies)
 						{
@@ -738,8 +749,11 @@ void IITPprocessStaged(const QString & guyName,
 							}
 						}
 					}
+				}
 
-					/// eeg-emg
+				/// eeg-emg
+				for(int eeg : iitp::interestEeg)
+				{
 					for(int emg : iitp::interestEmg[fileNum])
 					{
 						for(double fr : iitp::interestFrequencies)

@@ -664,6 +664,8 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
 		std::copy(std::begin(inputArray),
 				  std::end(inputArray),
 				  std::begin(res));
+		/// norm for short signal
+		res *= fftLen / double(inputArray.size());
 	}
 	else
 	{
@@ -681,8 +683,9 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
 		std::copy(std::begin(inputArray) + offset,
 				  std::begin(inputArray) + offset + fftLen,
 				  std::begin(res));
-
 	}
+
+
 
 	/// apply window
 //	res *= smallLib::toComplex(myLib::fftWindow(fftLen, myLib::windowName::Blackman));
@@ -726,14 +729,8 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
         b = (((b & 0xff00ff00) >> 8) | ((b & 0x00ff00ff) << 8));
         b = ((b >> 16) | (b << 16)) >> (32 - m);
         if (b > a)
-        {
-#if 1
+		{
 			std::swap(res[a], res[b]);
-#else
-			std::complex<double> t = res[a];
-			res[a] = res[b];
-			res[b] = t;
-#endif
         }
     }
 	return res;

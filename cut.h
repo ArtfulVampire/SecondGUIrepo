@@ -51,6 +51,7 @@ private:
 	void setValuesByEdf();
 
 	void iitpLog(const QString & typ, int num = 2, const QString & add = QString());
+	void showDerivatives();
 
 
 public slots:

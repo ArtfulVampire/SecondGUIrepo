@@ -232,6 +232,26 @@ uint indexOfMax(const Container & cont)
 	return ans;
 }
 
+template <typename Container>
+uint indexOfMin(const Container & cont)
+{
+	uint res = 0;
+	uint ans = 0;
+	auto val = *(std::begin(cont));
+
+	for(auto it = std::begin(cont);
+		it != std::end(cont);
+		++it, ++res)
+	{
+		if(*it < val)
+		{
+			ans = res;
+			val = *it;
+		}
+	}
+	return ans;
+}
+
 template <typename Container, typename Typ>
 uint indexOfVal(const Container & cont, const Typ & val)
 {
@@ -502,6 +522,11 @@ template uint indexOfMax(const std::vector<int> & cont);
 template uint indexOfMax(const std::vector<double> & cont);
 template uint indexOfMax(const std::valarray<double> & cont);
 template uint indexOfMax(const std::list<double> & cont);
+
+template uint indexOfMin(const std::vector<int> & cont);
+template uint indexOfMin(const std::vector<double> & cont);
+template uint indexOfMin(const std::valarray<double> & cont);
+template uint indexOfMin(const std::list<double> & cont);
 
 
 } // namespace myLib

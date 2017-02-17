@@ -10,6 +10,8 @@ namespace smallLib
 {
 std::valarray<double> valarFromRange(int beg, int en); // include both edges
 
+std::valarray<double> valarSubsec(const std::valarray<double> & in, int beg, int en);
+
 inline std::valarray<double> logistic(const std::valarray<double> & in)
 {
 	const double temp = 10.;

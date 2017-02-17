@@ -188,6 +188,7 @@ QPixmap drawArray(const QPixmap & templatePic,
 									   myLib::drw::yc[chanNum]);
 	}
 
+
 	/// draw amplitude
 	paint.begin(&pic);
 	paint.setPen("black");
@@ -337,6 +338,11 @@ QPixmap drawArrays(const QPixmap & templatePic,
 		lineWidths = std::vector<int> (inData.size(), myLib::drw::lineWidth);
 	}
 
+	if(maxVal == 0.)
+	{
+		maxVal = inData.maxAbsVal();
+	}
+
 	QPixmap pic = templatePic;
 	for(int numArr = 0; numArr < inData.size(); ++numArr)
 	{
@@ -346,10 +352,27 @@ QPixmap drawArrays(const QPixmap & templatePic,
 									weightsFlag,
 									maxVal,
 									lineWidths[numArr]);
+
 	}
+
 	return pic;
 }
 
+QPixmap drawArrays(const QPixmap & templatePic, const std::vector<QString> & filesPaths)
+{
+	matrix dat{1};
+	dat.resizeRows(filesPaths.size());
+
+	for(int i = 0; i < filesPaths.size(); ++i)
+	{
+		if(!QFile::exists(filesPaths[i]))
+		{
+		   return {};
+		}
+		myLib::readFileInLine(filesPaths[i], dat[i]);
+	}
+	return drawArrays(templatePic, dat);
+}
 
 QPixmap drawArraysInLine(const matrix & inMatrix,
 						 const std::vector<QColor> & colors)
@@ -466,7 +489,6 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 	paint.setPen(QPen(QBrush(color), lineWidth_));
 
 //	std::cout << Y << std::endl;
-
 	if(inData.size() < myLib::drw::graphWidth)
 	{
 		const double indexScale = myLib::drw::graphWidth / inData.size();

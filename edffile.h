@@ -108,6 +108,8 @@ public:
 	/// read/write
     void readEdfFile(QString EDFpath, bool headerOnly = false);
     void writeEdfFile(QString EDFpath, bool asPlain = false);
+	void rewriteEdfFile();
+
     void handleEdfFile(QString EDFpath,
                        bool readFlag,
                        bool headerOnly = false);

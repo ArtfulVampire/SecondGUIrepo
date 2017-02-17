@@ -19,17 +19,6 @@ void histogram(const signalType & arr,
 			   int valueMax)
 {
 	std::vector<double> values(numSteps, 0.);
-	int length = arr.size();
-
-	QPixmap pic(1000, 400);
-	QPainter pnt;
-	pic.fill();
-	pnt.begin(&pic);
-
-	pnt.setPen("black");
-	pnt.setBrush(QBrush("black"));
-
-
 
 	double xMin, xMax;
 	if(xMinMax == std::pair<double, double>()) /// if(xMinMax == isEmpty())
@@ -46,14 +35,22 @@ void histogram(const signalType & arr,
 	}
 
 	int denom = floor(log10(xMax - xMin));
+
 	xMin = smallLib::doubleRoundFraq(xMin, denom);
 	xMax = smallLib::doubleRoundFraq(xMax, denom);
+	std::cout << denom  << "\t" << xMin << "\t" << xMax << std::endl;
 
-
-	for(int j = 0; j < length; ++j)
+	std::for_each(std::begin(arr),
+				  std::end(arr),
+				  [=, &values](double in)
 	{
-		values[ int(floor((arr[j] - xMin) / ((xMax-xMin) / numSteps))) ] += 1.;
-	}
+		int a = int(floor((in - xMin) / ((xMax-xMin) / numSteps)));
+		if(a >= 0 && a < numSteps)
+		{
+			values[ a ] += 1.;
+		}
+	});
+
 	if(valueMax <= 0)
 	{
 		valueMax = *std::max_element(std::begin(values),
@@ -61,7 +58,13 @@ void histogram(const signalType & arr,
 	}
 
 
+	QPixmap pic(1000, 400);
+	QPainter pnt;
+	pic.fill();
+	pnt.begin(&pic);
 
+	pnt.setPen("black");
+	pnt.setBrush(QBrush("black"));
 
 
 	pnt.setPen(color);
@@ -83,7 +86,7 @@ void histogram(const signalType & arr,
 				 pic.width(),
 				 pic.height() * 0.9);
 
-	for(double i = xMin; i <= xMax; i += 1/denom)
+	for(double i = xMin; i <= xMax; i += (xMax - xMin) / 20.)
 	{
 		const double X = pic.width() * (i - xMin) / (xMax - xMin);
 		pnt.drawLine(X, pic.height() * 0.9,
@@ -91,7 +94,7 @@ void histogram(const signalType & arr,
 		pnt.drawText(X - 5, pic.height() - 3,
 					 QString::number(i));
 	}
-	for(int i = 1; i <= valueMax; ++i)
+	for(double i = 1; i <= valueMax; i += valueMax / 20.)
 	{
 		const double Y = pic.height() * 0.9 * (1. - double(i) / valueMax);
 		pnt.drawLine(0, Y,
@@ -99,7 +102,6 @@ void histogram(const signalType & arr,
 		pnt.drawText(13, Y + 5,
 					 QString::number(i));
 	}
-
 
 	if(!picPath.isEmpty())
 	{
