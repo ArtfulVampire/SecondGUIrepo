@@ -547,8 +547,8 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 	std::valarray<double> spectr = spectreRtoC(inputSignal, fftLen);
 	const double spStep = srate / fftLen;
 	/// 2 because complex values
-	const int lowLim = floor(2. * lowFreq / spStep);
-	const int highLim = ceil(2. * highFreq / spStep);
+	const int lowLim = 2. * floor( lowFreq / spStep);
+	const int highLim = 2. * ceil( highFreq / spStep);
 
 	refilterSpectre(spectr, lowLim, highLim, isNotch);
 

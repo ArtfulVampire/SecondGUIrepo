@@ -606,12 +606,16 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         return;
     }
 
-    fpos_t *position = new fpos_t;
-    fgetpos(edfDescriptor, position);
+//    fpos_t *position = new fpos_t;
+//    fgetpos(edfDescriptor, position);
+
+
     fclose(edfDescriptor);
+
 	edfDescriptor = fopen(EDFpath, (readFlag ? "rb" : "ab"));
-    fsetpos(edfDescriptor, position);
-    delete position;
+	fseek(edfDescriptor, bytes, SEEK_SET);
+//    fsetpos(edfDescriptor, position);
+//    delete position;
 
     if(readFlag)
     {
