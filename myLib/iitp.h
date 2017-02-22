@@ -30,6 +30,9 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 ///// min - unbend (extended)
 int gonioMinMarker(int numGonioChan); /// max = min + 1
 
+QString getInitName(const QString & fileName);
+QString getPostfix(const QString & fileName);
+
 const std::vector<QString> trialTypesNames
 {
 	"rest",
@@ -224,6 +227,7 @@ const std::vector<QString> emgNames {
 	"Dp_r"};
 
 /// [numFile] - interestingChannels
+/// maybe all EMGs for rest and/or stat
 const std::vector<std::valarray<int>> interestEmg{
 	// 0 eyes closed
 	{},
@@ -338,6 +342,7 @@ const std::valarray<double> interestFrequencies{8, 9, 10, 11, 12, 18, 19, 20, 21
 //const std::valarray<double> interestFrequencies = smallLib::valarFromRange(8, 45);
 
 const std::valarray<double> fileNums = smallLib::valarFromRange(0, 29);
+//const std::valarray<double> fileNums = smallLib::valarFromRange(0, 5);
 //const std::valarray<double> fileNums{4};
 
 
@@ -361,11 +366,14 @@ public:
 	std::complex<double> coherencyR(int chan1, int chan2, double freq);
 	void crossSpectrum(int chan1, int chan2);
 
+	iitpData & staging(int numGonioChan);
 	iitpData & staging(const QString & chanName,
 					   int markerMin,
 					   int markerMax);
 
-	iitpData & staging(int numGonioChan);
+	QString getPost() {return iitp::getPostfix(this->ExpName);}
+	QString getInit() {return iitp::getInitName(this->ExpName);}
+
 	void cutPieces(double length);
 	void setPieces(int startMark = 10, int finishMark = 20);
 	void countFlexExtSpectra(int mark1, int mark2);

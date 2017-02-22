@@ -50,11 +50,11 @@ void XeniaArrangeToLine(const QString & dirPath,
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 void Xenia_TBI();
 
-void IITPpre(const QString & dirName = "Ira");
-void IITPtestCoh(const QString & dirName = "Ira",
-				 const QString & postfix = "_sum_f_new");
+
+
+void IITPpre(const QString & guyName = "Ira");
+void IITPtestCoh(const QString & guyName = "Ira");
 void IITPfilterGonios(const QString & guyName,
-					  const QString & postfix = "_sum_f",
 					  const std::vector<QString> & joints = {"elbow",
 															"wrist",
 															"knee",
@@ -64,14 +64,15 @@ void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
 
 
 void IITPstaging(const QString & guyName,
-				 const QString & postfix = "_sum_f_new",
 				 const QString & dirPath = def::iitpSyncFolder);
 void IITPprocessStaged(const QString & guyName,
-					   const QString & postfix = "_sum_f_new_stag",
 					   const QString & dirPath = def::iitpSyncFolder);
 
-void IITPdat(const QString & dirName = "Ira");
-void IITPrename(const QString & dirName = "Ira");
+void IITPdat(const QString & guyName = "Ira");
+void IITPrename(const QString & guyName = "Ira");
+
+
+
 
 void repairMarkersInNewFB(QString edfPath, int numSession);
 int numMarkers(const QString & edfPath, const std::vector<int> & markers);

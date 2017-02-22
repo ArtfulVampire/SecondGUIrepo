@@ -13,8 +13,7 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-//return;
-	const QString guy = "Alex";
+//	const QString guy = "Alex";
 
 //	iitp::iitpData d;
 //	d.readEdfFile(def::iitpSyncFolder +
@@ -24,10 +23,14 @@ void MainWindow::customFunc()
 //													  "/" + guy +
 //													  "/" + guy + "_04_sum_f_new_stag.edf");
 //	exit(0);
+//	return;
 
 //	autos::IITPpre("Oleg");
-	autos::IITPstaging("Alex");
-	autos::IITPprocessStaged("Alex");
+	for(QString guy : {"Alex", "Boris", "Ira", "Levik", "Oleg", "Victor"})
+	{
+//		autos::IITPstaging(guy);
+		autos::IITPprocessStaged(guy);
+	}
 
 
 

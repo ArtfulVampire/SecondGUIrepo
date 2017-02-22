@@ -93,6 +93,11 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 
 
 
+
+
+
+
+
 /// iitpData class
 std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 {
@@ -313,14 +318,16 @@ void iitpData::countImagPassSpectra()
 	int num = this->ExpName.split("_", QString::SkipEmptyParts)[1].toInt();
 	QString add = iitp::trialTypesNames[trialTypes[num]];
 
-	myLib::writeFileInLine(this->getDirPath() + "/" +
-						   this->getExpName() + "_" + add + ".txt",
+	myLib::writeFileInLine(this->getDirPath()
+						   + "/sp"
+						   + "/" + this->getInit() + "_sp.txt",
 						   spectre);
 
 	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
 	templ = myLib::drw::drawArray(templ, spectre);
-	templ.save(this->getDirPath() + "/" +
-			   this->getExpName() + ".jpg", 0, 100);
+	templ.save(this->getDirPath()
+			   + "/pic"
+			   + "/" + this->getInit() + ".jpg", 0, 100);
 }
 
 void iitpData::countFlexExtSpectra(int mark1, int mark2)
@@ -332,7 +339,6 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 	const int spLen = rightInd - leftInd;
 	const int numCh = 19;
 	QString joint = "_" + iitp::gonioNames[(mark1 - 100) / 10 - 1 + (mark1 % 10) / 2];
-	std::cout << joint << std::endl;
 
 	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
 
@@ -358,8 +364,9 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 				  std::begin(spectre) + i * spLen);
 	}
 	spectra[0] = spectre;
-	myLib::writeFileInLine(this->getDirPath() + "/" +
-						   this->getExpName() + joint + "_flexion.txt",
+	myLib::writeFileInLine(this->getDirPath()
+						   + "/sp"
+						   + "/" + this->getInit() + joint + "_flexion_sp.txt",
 						   spectre);
 
 	this->setPieces(mark2, mark1);
@@ -380,11 +387,13 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 	}
 	spectra[1] = spectre;
 	myLib::writeFileInLine(this->getDirPath() + "/" +
-						   this->getExpName() + joint + "_extension.txt",
+						   + "/sp"
+						   + "/" + this->getInit() + joint + "_extension_sp.txt",
 						   spectre);
 	templ = myLib::drw::drawArrays(templ, spectra);
-	templ.save(this->getDirPath() + "/" +
-			   this->getExpName() + joint + ".jpg", 0, 100);
+	templ.save(this->getDirPath()
+			   + "/pic"
+			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
 }
 
 int gonioMinMarker(int numGonioChan)
@@ -393,6 +402,20 @@ int gonioMinMarker(int numGonioChan)
 			(numGonioChan / 2 + 1) * 10 +
 			(numGonioChan % 2) * 2 + 0;
 }
+
+QString getInitName(const QString & fileName)
+{
+	int en = fileName.indexOf('_', fileName.indexOf('_') + 1);
+	return fileName.left(en);
+}
+
+QString getPostfix(const QString & fileName)
+{
+	int lef = fileName.indexOf('_', fileName.indexOf('_') + 1);
+	int rig = fileName.indexOf('.');
+	return fileName.mid(lef, rig-lef);
+}
+
 
 iitpData & iitpData::staging(int numGonioChan)
 {

@@ -222,12 +222,11 @@ void Xenia_TBI()
 #endif
 }
 
-void IITPrename(const QString & dirName)
+void IITPrename(const QString & guyName)
 {
-	const QString pth = def::iitpFolder + "/" + dirName + "/";
+	const QString pth = def::iitpFolder + "/" + guyName + "/";
 	if(!QFile::exists(pth + "rename.txt")) return;
 
-	const QString & guyName = dirName;
 	const QString postfix = "_rn";
 
 	std::ifstream inStr;
@@ -271,20 +270,20 @@ void IITPrename(const QString & dirName)
 }
 
 /// *.dat headers to dats.txt
-void IITPdat(const QString & dirName)
+void IITPdat(const QString & guyName)
 {
 
 	def::ntFlag = true;
-	QStringList files = QDir(def::iitpFolder + "/" + dirName).entryList({"*.dat"},
+	QStringList files = QDir(def::iitpFolder + "/" + guyName).entryList({"*.dat"},
 																		QDir::Files,
 																		QDir::Name);
 	std::ofstream outStr;
-	outStr.open((def::iitpFolder + "/" + dirName + "/" + dirName + "_dats.txt").toStdString());
+	outStr.open((def::iitpFolder + "/" + guyName + "/" + guyName + "_dats.txt").toStdString());
 
 	for(const QString & fil : files)
 	{
 		const QString filePath = def::iitpFolder + slash +
-								 dirName + slash +
+								 guyName + slash +
 								 fil;
 		int num = fil.mid(fil.indexOf('_') + 1, 2).toInt();
 //		std::cout << num << std::endl;
@@ -302,9 +301,9 @@ void IITPdat(const QString & dirName)
 
 /// filter gonios
 void IITPfilterGonios(const QString & guyName,
-					  const QString & postfix,
 					  const std::vector<QString> & joints)
 {
+	QString postfix = iitp::getPostfix(QDir(def::iitpFolder + "/" + guyName).entryList({"*.edf"})[0]);
 	for(int fileNum : iitp::fileNums)
 	{
 		const QString ExpNamePre = def::iitpFolder + slash +
@@ -336,20 +335,21 @@ void IITPfilterGonios(const QString & guyName,
 	}
 }
 
-void IITPtestCoh(const QString & dirName, const QString & postfix)
+void IITPtestCoh(const QString & guyName)
 {
 	/// test coherency in all files
 	iitp::iitpData dt;
-	const QString direct = def::iitpFolder + "/" + dirName + "/";
+	const QString direct = def::iitpFolder + "/" + guyName + "/";
+	QString postfix = iitp::getPostfix(QDir(direct).entryList({"*.edf"})[0]);
 
 	auto filePath = [=](int i) -> QString
 	{
-		return direct + dirName + "_" + rn(i, 2) + postfix + ".edf";
+		return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
 	};
 
 	auto resPath = [=](int i) -> QString
 	{
-		return direct + dirName + "_" + rn(i, 2) + "_res.txt";
+		return direct + guyName + "_" + rn(i, 2) + "_res.txt";
 	};
 
 	/// chan1, chan2, freq, len
@@ -491,17 +491,15 @@ void IITPtestCoh(const QString & dirName, const QString & postfix)
 	}
 }
 
-void IITPpre(const QString & dirName)
+void IITPpre(const QString & guyName)
 {
-
-	const QString & guyName = dirName;
 	def::ntFlag = true;
 
 	for(int fileNum : iitp::fileNums)
 	{
 //		if(fileNum != 21) continue;
 		const QString ExpNamePre = def::iitpFolder + slash +
-								   dirName + slash +
+								   guyName + slash +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
 		QString filePath;
 		edfFile fil;
@@ -633,9 +631,11 @@ void IITPremoveZchans(const QString & hauptDir)
 }
 
 void IITPstaging(const QString & guyName,
-				 const QString & postfix,
 				 const QString & dirPath)
 {
+	QString postfix = iitp::getPostfix(QDir(dirPath + "/" + guyName).entryList({"*.edf"})[0]);
+	postfix.remove("_stag");
+
 	for(int fileNum : iitp::fileNums)
 	{
 		const QString ExpNamePre = dirPath + slash +
@@ -666,10 +666,20 @@ void IITPstaging(const QString & guyName,
 
 
 void IITPprocessStaged(const QString & guyName,
-					   const QString & postfix,
 					   const QString & dirPath)
 {
+	QString postfix = iitp::getPostfix(QDir(dirPath + "/" + guyName).entryList({"*_stag.edf"})[0]);
 	const QString direct = dirPath + "/" + guyName + "/";
+	const QString resultsPathPrefix = def::iitpFolder + "/Results/";
+
+	QDir a(resultsPathPrefix);
+	a.mkdir(guyName);
+	a.cd(guyName);
+	a.mkdir("coh");
+	a.mkdir("sp");
+	a.mkdir("pic");
+//	exit(0);
+	return;
 
 	iitp::iitpData dt;
 
@@ -680,12 +690,12 @@ void IITPprocessStaged(const QString & guyName,
 
 	auto resFlex = [=](int i, QString goni) -> QString
 	{
-		return direct + guyName + "_" + rn(i, 2) + "_" + goni + "_flexion.txt";
+		return resultsPathPrefix + "coh/" + guyName + "_" + rn(i, 2) + "_" + goni + "_flexion.txt";
 	};
 
 	auto resExt = [=](int i, QString goni) -> QString
 	{
-		return direct + guyName + "_" + rn(i, 2) + "_" + goni + "_extension.txt";
+		return resultsPathPrefix + "coh/" + guyName + "_" + rn(i, 2) + "_" + goni + "_extension.txt";
 	};
 
 	for(int fileNum : iitp::fileNums)
@@ -695,8 +705,76 @@ void IITPprocessStaged(const QString & guyName,
 
 		if(iitp::interestGonios[fileNum].size() == 0)
 		{
-			dt.countImagPassSpectra();
+//			dt.countImagPassSpectra();
+//			if(iitp::trialTypes[fileNum] == iitp::trialType::stat)
+			{
+				dt.cutPieces(1.024);
+
+				std::ofstream outStr;
+				outStr.open((resultsPathPrefix + "coh/"
+							 + guyName + "_" + rn(fileNum, 2)
+							 + "_" + iitp::trialTypesNames[iitp::trialTypes[fileNum]]
+							+ ".txt").toStdString());
+
+				///eeg-eeg
+				for(int eeg : iitp::interestEeg)
+				{
+					for(int eeg2 : iitp::interestEeg)
+					{
+						if(eeg2 <= eeg) continue;
+
+						for(double fr : iitp::interestFrequencies)
+						{
+							auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
+													dt.findChannel(iitp::eegNames[eeg2]),
+													fr);
+							if(std::abs(val) > 0.01)
+							{
+								outStr
+										<< QString(iitp::eegNames[eeg]) << '\t'
+										<< QString(iitp::eegNames[eeg2]) << '\t'
+										<< fr << '\t'
+										<< smallLib::doubleRound(val, 3) << '\t'
+										<< smallLib::doubleRound(std::abs(val), 3) << '\t'
+										<< smallLib::doubleRound(std::arg(val), 3) << '\t'
+										<< "\r\n";
+							}
+						}
+					}
+				}
+
+				/// eeg-emg
+				for(int eeg : iitp::interestEeg)
+				{
+					for(int emg : iitp::interestEmg[fileNum])
+					{
+						for(double fr : iitp::interestFrequencies)
+						{
+							auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
+													dt.findChannel(iitp::emgNames[emg]),
+													fr);
+							if(std::abs(val) > 0.01)
+							{
+								outStr
+										<< QString(iitp::eegNames[eeg]) << '\t'
+										<< QString(iitp::emgNames[emg]) << '\t'
+										<< fr << '\t'
+										<< smallLib::doubleRound(val, 3) << '\t'
+										<< smallLib::doubleRound(std::abs(val), 3) << '\t'
+										<< smallLib::doubleRound(std::arg(val), 3) << '\t'
+										<< "\r\n";
+							}
+						}
+					}
+				}
+
+
+				outStr.close();
+			}
 		}
+		else continue;
+
+
 
 		for(int gonio : iitp::interestGonios[fileNum])
 		{
