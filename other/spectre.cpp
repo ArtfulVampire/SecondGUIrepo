@@ -670,7 +670,7 @@ void Spectre::writeSpectra(const double leftFreq,
                 for(int k = left + rangeLimits[j].first;
                     k < left + rangeLimits[j].second; ++k)
                 {
-					outStream << smallLib::doubleRound(dataFFT[i][j][k], 4) << '\t';
+					outStream << smLib::doubleRound(dataFFT[i][j][k], 4) << '\t';
                 }
 				for(int k = std::max(left + rangeLimits[j].first,
                                 left + rangeLimits[j].second);
@@ -813,7 +813,7 @@ void Spectre::countSpectra()
 		qApp->processEvents();
     }
 
-	smallLib::eraseItems(fileNames, exIndices);
+	smLib::eraseItems(fileNames, exIndices);
     dataFFT.resize(cnt);
 
     ui->progressBar->setValue(0);

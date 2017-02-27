@@ -14,7 +14,7 @@ WARD::WARD() : Classifier()
 double WARD::dist(const uint a, const uint b)
 {
     double res = 0.;
-	res = smallLib::distance((myData->getData().subRows(clusts[a])).averageRow(),
+	res = smLib::distance((myData->getData().subRows(clusts[a])).averageRow(),
 							 (myData->getData().subRows(clusts[b])).averageRow());
     /// Word distance
     res *= clusts[a].size() * clusts[b].size() / double((clusts[a].size() + clusts[b].size()));
@@ -131,7 +131,7 @@ std::pair<uint, double> WARD::classifyDatum(const uint & vecNum)
     for(uint j = 0; j < numOfClust; ++j)
     {
         /// Word distance
-		distances[j] = -smallLib::distance(myData->getData()[vecNum],
+		distances[j] = -smLib::distance(myData->getData()[vecNum],
                                            centers[j]) * clusts[j].size() / (clusts[j].size() + 1);
     }
     /// add fuzzy solving for first N clusters

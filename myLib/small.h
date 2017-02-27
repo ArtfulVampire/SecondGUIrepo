@@ -23,7 +23,7 @@ class twovector : public std::vector<std::vector<Typ>>
 
 const long double pi = 3.14159265358979323846L;
 
-namespace smallLib
+namespace smLib
 {
 
 inline bool isDouble(const QString & in)
@@ -108,7 +108,7 @@ template void eraseItems(std::vector<std::valarray<double>> & inVect, const std:
 template void eraseItems(std::vector<int> & inVect, const std::vector<uint> & indices);
 template void eraseItems(std::vector<double> & inVect, const std::vector<uint> & indices);
 
-} // namespace smallLib
+} // namespace smLib
 
 
 #endif // SMALLLIB_H

@@ -75,7 +75,7 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut)
 	for(auto in : toOut)
 	{
 //		os << in << separ;
-		os << smallLib::doubleRound(in, 1) << separ;
+		os << smLib::doubleRound(in, 1) << separ;
 	}
 	os.flush();
 	return os;
@@ -89,7 +89,7 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ, std::allocator<Typ
 	for(auto in : toOut)
 	{
 		os << in << separ;
-//		os << smallLib::doubleRound(in, 1) << separ;
+//		os << smLib::doubleRound(in, 1) << separ;
 	}
 	os.flush();
 	return os;

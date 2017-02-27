@@ -186,7 +186,7 @@ avType Classifier::averageClassification()
         const double num = confusionMatrix[i].sum();
         if(num != 0.)
         {
-            res << smallLib::doubleRound(confusionMatrix[i][i] * 100. / num, 2) << '\t';
+            res << smLib::doubleRound(confusionMatrix[i][i] * 100. / num, 2) << '\t';
         }
         else
         {
@@ -215,8 +215,8 @@ avType Classifier::averageClassification()
     kappa = 1. - (1. - corrSum / wholeNum) / (1. - pE);
 
 
-    res << smallLib::doubleRound(averageAccuracy, 2) << '\t';
-    res << smallLib::doubleRound(kappa, 3) << '\t';
+    res << smLib::doubleRound(averageAccuracy, 2) << '\t';
+    res << smLib::doubleRound(kappa, 3) << '\t';
 	res << def::ExpName.toStdString();
 	res << std::endl;
     res.close();
@@ -226,7 +226,7 @@ avType Classifier::averageClassification()
 #if 1
     confusionMatrix.print();
 	std::cout << "average accuracy = "
-			  << smallLib::doubleRound(averageAccuracy, 2) << '\t';
+			  << smLib::doubleRound(averageAccuracy, 2) << '\t';
 	std::cout << "kappa = " << kappa << '\t';
 	std::cout << std::endl << std::endl;
 #endif

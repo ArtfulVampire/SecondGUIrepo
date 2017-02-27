@@ -778,7 +778,7 @@ void edfFile::handleDatum(int currNs,
             // round better to N * 1/8.
             if(currNs < 21) // generality bicycle
             {
-				currDatum = smallLib::doubleRoundFraq(currDatum,
+				currDatum = smLib::doubleRoundFraq(currDatum,
 													  int( (digMax[currNs] - digMin[currNs] + 1)
 														   / (physMax[currNs] - physMin[currNs]) )
 													  ); // need for eyes cleaned EEG only
@@ -1100,7 +1100,7 @@ edfFile & edfFile::subtractMeans(const QString & outPath)
 {
 	for(int i = 0; i < this->ns; ++i)
 	{
-		this->edfData[i] -= smallLib::mean(this->edfData[i]);
+		this->edfData[i] -= smLib::mean(this->edfData[i]);
 	}
 	if(!outPath.isEmpty())
 	{
@@ -1258,7 +1258,7 @@ edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
 				  std::begin(eegMarkChan) + startSearchEeg + searchOffset + corrLength,
 				  std::begin(eegMarkSignal));
 
-		double a = smallLib::correlation(eegMarkSignal, emgMarkSignal);
+		double a = smLib::correlation(eegMarkSignal, emgMarkSignal);
 
 
 
@@ -1305,11 +1305,11 @@ edfFile & edfFile::iitpSyncManual(int offsetEeg,
 	{
 		if(!(labels[i].startsWith("IT ") || labels[i].startsWith("XX "))) /// XX Artefac
 		{
-			this->edfData[i] = smallLib::pop_front_valar(this->edfData[i], offsetEeg - addLeft);
+			this->edfData[i] = smLib::pop_front_valar(this->edfData[i], offsetEeg - addLeft);
 		}
 		else
 		{
-			this->edfData[i] = smallLib::pop_front_valar(this->edfData[i], offsetEmg - addLeft);
+			this->edfData[i] = smLib::pop_front_valar(this->edfData[i], offsetEmg - addLeft);
 		}
 	}
 
@@ -1578,7 +1578,7 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
             lst = leest[k].split(QRegExp(R"([\+\-\*\/])"), QString::SkipEmptyParts);
             for(int h = 0; h < lst.length(); ++h)
             {
-				if(!smallLib::isInt(lst[h]))
+				if(!smLib::isInt(lst[h]))
                 {
 					std::cout << "edfFile::reduceChannels: NAN between operators, return *this" << std::endl;
 					return *this;

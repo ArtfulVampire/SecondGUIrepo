@@ -194,9 +194,10 @@ QPixmap drawArray(const QPixmap & templatePic,
 	paint.setPen("black");
 	paint.setBrush(QBrush("black"));
 
+
+	maxVal = smLib::doubleRound(maxVal, 1);
 	QFont tmpF = QFont("Helvetica", myLib::drw::fontSizeChan);
 	paint.setFont(tmpF);
-	maxVal = smallLib::doubleRound(maxVal, 1);
 	paint.drawText(QPointF(myLib::drw::templateWidth * (myLib::drw::c(4) + 1/32.) + 5,
 						   myLib::drw::templateHeight * (myLib::drw::c(0) + 1/32.)
 						   + myLib::drw::graphHeight / 2.),
@@ -374,6 +375,58 @@ QPixmap drawArrays(const QPixmap & templatePic, const std::vector<QString> & fil
 	return drawArrays(templatePic, dat);
 }
 
+std::vector<int> zeroChans;
+std::vector<int> trueChans;
+std::vector<QPixmap> drawArraysSameScale(const QPixmap & templatePic,
+										 const std::vector<QString> & filesPaths)
+{
+	std::vector<QPixmap> res;
+
+	matrix dat{1};
+	dat.resizeRows(filesPaths.size());
+
+	for(int i = 0; i < filesPaths.size(); ++i)
+	{
+		if(!QFile::exists(filesPaths[i]))
+		{
+		   return {};
+		}
+		myLib::readFileInLine(filesPaths[i], dat[i]);
+	}
+
+	/// zero some channels - IITP
+	for(std::valarray<double> & row : dat)
+	{
+		zeroChans = myLib::leest19;
+		for(int trueNum : trueChans)
+		{
+			zeroChans.erase(std::find(std::begin(zeroChans),
+									  std::end(zeroChans),
+									  trueNum));
+		}
+//		std::cout << zeroChans << std::endl; exit(0);
+
+		for(int zeroNum : zeroChans)
+		{
+			int spLength = 36;
+			std::fill(std::begin(row) + zeroNum * spLength,
+					  std::begin(row) + (zeroNum + 1) * spLength,
+					  0.);
+		}
+	}
+
+
+	for(int i = 0; i < filesPaths.size(); ++i)
+	{
+		res.push_back(myLib::drw::drawArray(templatePic,
+											dat[i],
+											QColor("black"),
+											false,
+											dat.maxAbsVal()));
+	}
+	return res;
+}
+
 QPixmap drawArraysInLine(const matrix & inMatrix,
 						 const std::vector<QColor> & colors)
 {
@@ -454,12 +507,17 @@ QPixmap drawOneSpectrum(const std::valarray<double> & inData,
 						const QColor & color)
 {
 	std::valarray<double> drawArr = myLib::subSpectrumR(
-										myLib::smoothSpectre(myLib::spectreRtoR(inData),
-															 numOfSmooth),
+										myLib::smoothSpectre(
+											myLib::spectreRtoR(inData)
+											* myLib::spectreNorm(smLib::fftL(inData.size()),
+																 inData.size(),
+																 srate)
+											,
+											numOfSmooth),
 										leftFr,
 										rightFr,
 										srate);
-	std::cout << drawArr << std::endl;
+//	std::cout << drawArr << std::endl;
 	return myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(-1, false, leftFr, rightFr),
 									drawArr,
 									drawArr.max(),
@@ -512,6 +570,8 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 		}
 	}
 
+
+
 	/// zero line for weights
 	if(weightsFlag)
 	{
@@ -521,7 +581,15 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 					   QPointF(X + myLib::drw::graphWidth,
 							   Y));
 	}
-
+	else
+	{
+		/// draw max
+//		QFont tmpF = QFont("Helvetica", 12);
+//		paint.setFont(tmpF);
+//		paint.drawText(QPointF(myLib::drw::graphWidth,
+//							   myLib::drw::gap + myLib::drw::graphHeight / 2),
+//					   QString::number(maxVal) + " mcV^2/Hz");
+	}
 	paint.end();
 	return pic;
 }
@@ -931,7 +999,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		for(int y = 0; y < mapSize; ++y)
 		{
 			/// round shape
-			if(smallLib::distance(x, y, mapSize / 2, mapSize / 2) >
+			if(smLib::distance(x, y, mapSize / 2, mapSize / 2) >
 			   mapSize * 2. * sqrt(2.) / (dim - 1) ) continue;
 
 			val = myLib::splineOutput(inX, inYv, dim, Av, Bv, y * scale);

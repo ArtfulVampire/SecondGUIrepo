@@ -182,12 +182,12 @@ void ANN::countOutputDelta()
 	{
 #if WEIGHT_MATRIX
         output[i] = weight[i - 1] * output[i - 1];
-        smallLib::resizeValar(output[i], output[i].size() + 1);
+        smLib::resizeValar(output[i], output[i].size() + 1);
         output[i][output[i].size() - 1] = 1;
 #else
         for(int j = 0; j < dim[i]; ++j) //higher level, w/o bias
         {
-            output[i][j] = smallLib::prod(weight[i - 1][j], output[i - 1]); // bias included
+            output[i][j] = smLib::prod(weight[i - 1][j], output[i - 1]); // bias included
         }
 #endif
         output[i] = activation(output[i]);
@@ -346,7 +346,7 @@ void ANN::learn(std::vector<uint> & indices)
 	}
 	/// std::cout epoch
 //    std::cout << "epoch = " << epoch << "\t"
-//              << "error = " << smallLib::doubleRound(currentError, 4) << "\t"
+//              << "error = " << smLib::doubleRound(currentError, 4) << "\t"
 //              << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << std::endl;
 }
 
@@ -399,7 +399,7 @@ std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
     countError(type, res);
 
     std::valarray<double> forRes = output.back();
-	smallLib::resizeValar(forRes, myData->getNumOfCl());
+	smLib::resizeValar(forRes, myData->getNumOfCl());
     uint outClass = myLib::indexOfMax(forRes);
 
 #if 0
@@ -417,7 +417,7 @@ std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
 	std::cout << "type = " << type << '\t' << "(";
 	for(int i = 0; i < myData->getNumOfCl(); ++i)
     {
-		std::cout << smallLib::doubleRound(output[numOfLayers - 1][i], 3) << '\t';
+		std::cout << smLib::doubleRound(output[numOfLayers - 1][i], 3) << '\t';
     }
 	std::cout << ") " << ((type == outClass) ? "+ " : "- ") << "\t"
 			  << myData->getFileNames()[vecNum] << std::endl;

@@ -125,7 +125,6 @@ QPixmap drawArrays(const QPixmap & templatePic,
 				   const std::vector<QColor> & colors = myLib::drw::defaultColors,
 				   std::vector<int> lineWidths = std::vector<int>());
 
-QPixmap drawArrays(const QPixmap & templatePic, const std::vector<QString> & filesPaths);
 
 QPixmap drawArraysInLine(const matrix & inMatrix,
 						 const std::vector<QColor> & colors = myLib::drw::defaultColors);
@@ -141,6 +140,11 @@ void cutToChannels(const QString & inSpectraPath,
 				   int numOfChans,
 				   const QString & outDir,
 				   const QString & fileName);
+/// for iitp
+QPixmap drawArrays(const QPixmap & templatePic, const std::vector<QString> & filesPaths);
+extern std::vector<int> zeroChans;
+extern std::vector<int> trueChans;
+std::vector<QPixmap> drawArraysSameScale(const QPixmap & templatePic, const std::vector<QString> & filesPaths);
 
 /// for Baklushev
 QPixmap drawArrayWithSigma(const QPixmap & templatePic,

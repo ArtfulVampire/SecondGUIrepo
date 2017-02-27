@@ -27,7 +27,7 @@ void KNN::learn(std::vector<uint> & indices)
     {
         for(uint j = i + 1; j < num; ++j)
         {
-		   distances[i][j] = smallLib::distance(myData->getData()[i],
+		   distances[i][j] = smLib::distance(myData->getData()[i],
 					myData->getData()[j]);
            distances[j][i] = distances[i][j];
         }

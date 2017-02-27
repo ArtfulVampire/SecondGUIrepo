@@ -129,13 +129,13 @@ void ClassifierData::erase(const std::vector<uint> & indices)
 {
 
 	dataMatrix.eraseRows(indices);
-	smallLib::eraseItems(fileNames, indices);
+	smLib::eraseItems(fileNames, indices);
 
 	for(int index : indices)
 	{
 		classCount[ types[index] ] -= 1.;
 	}
-	smallLib::eraseItems(types, indices);
+	smLib::eraseItems(types, indices);
 
 	/// indices - just recount
 	/// check empty classes?
@@ -278,7 +278,7 @@ void ClassifierData::variancing(double var)
 	sigmaVector.resize(tmp.rows());
 	for(uint i = 0; i < tmp.rows(); ++i)
 	{
-		sigmaVector[i] = smallLib::sigma(tmp[i]);
+		sigmaVector[i] = smLib::sigma(tmp[i]);
 		if(sigmaVector[i] != 0.)
 		{
 			// to equal variance, 10 for reals, 5 winds
@@ -305,13 +305,13 @@ ClassifierData ClassifierData::toPca(int numOfPca, double var) const
 	/// is useless if centering is on
 	for(int i = 0; i < centeredMatrix.rows(); ++i)
 	{
-		centeredMatrix[i] -= smallLib::mean(centeredMatrix[i]);
+		centeredMatrix[i] -= smLib::mean(centeredMatrix[i]);
 	}
 
 	double trace = 0.;
 	for(int i = 0; i < centeredMatrix.rows(); ++i)
 	{
-		trace += smallLib::variance(centeredMatrix[i]);
+		trace += smLib::variance(centeredMatrix[i]);
 	}
 
 	matrix eigenVectors;

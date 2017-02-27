@@ -30,8 +30,11 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 ///// min - unbend (extended)
 int gonioMinMarker(int numGonioChan); /// max = min + 1
 
+QString getGuyName(const QString & fileName);
 QString getInitName(const QString & fileName);
 QString getPostfix(const QString & fileName);
+int getFileNum(const QString & fileName);
+
 
 const std::vector<QString> trialTypesNames
 {
@@ -338,11 +341,11 @@ const std::valarray<int> interestEeg{
 const double leftFr = 4;
 const double rightFr = 40;
 
-const std::valarray<double> interestFrequencies{8, 9, 10, 11, 12, 18, 19, 20, 21, 22, 23, 24, 25};
-//const std::valarray<double> interestFrequencies = smallLib::valarFromRange(8, 45);
+const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 30);
+//const std::valarray<double> interestFrequencies = smLib::range(8, 45);
 
-const std::valarray<double> fileNums = smallLib::valarFromRange(0, 29);
-//const std::valarray<double> fileNums = smallLib::valarFromRange(0, 5);
+const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 29);
+//const std::valarray<double> fileNums = smLib::range(0, 5);
 //const std::valarray<double> fileNums{4};
 
 
@@ -371,8 +374,11 @@ public:
 					   int markerMin,
 					   int markerMax);
 
+	QString getGuy() {return iitp::getGuyName(this->ExpName);}
 	QString getPost() {return iitp::getPostfix(this->ExpName);}
 	QString getInit() {return iitp::getInitName(this->ExpName);}
+	int getNum() {return iitp::getFileNum(this->ExpName);}
+
 
 	void cutPieces(double length);
 	void setPieces(int startMark = 10, int finishMark = 20);

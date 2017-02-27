@@ -268,7 +268,7 @@ void Cut::browse()
 void Cut::resizeEvent(QResizeEvent * event)
 {
     // adjust scrollArea size
-	double newLen = smallLib::doubleRound((event->size().width() - 10 * 2) / currFreq,
+	double newLen = smLib::doubleRound((event->size().width() - 10 * 2) / currFreq,
 										  ui->paintLengthDoubleSpinBox->decimals());
     ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
                                 ui->scrollArea->geometry().y(),
@@ -1005,7 +1005,7 @@ void Cut::subtractMeansSlot()
 {
 	for(auto & row : data3)
 	{
-		row -= smallLib::mean(row);
+		row -= smLib::mean(row);
 	}
 	paint();
 }

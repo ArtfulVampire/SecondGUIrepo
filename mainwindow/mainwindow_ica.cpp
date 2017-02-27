@@ -306,7 +306,7 @@ void MainWindow::ICA() //fastICA
     double sum1;
     for(uint i = 0; i < ns; ++i) // for each component
     {
-		sum1 = smallLib::norma(matrixA.getCol(i));
+		sum1 = smLib::norma(matrixA.getCol(i));
 
         for(uint k = 0; k < ns; ++k)
         {
@@ -322,7 +322,7 @@ void MainWindow::ICA() //fastICA
 
     for(uint i = 0; i < ns; ++i)
     {
-		sum1 = smallLib::variance(components[i]);
+		sum1 = smLib::variance(components[i]);
         sumSquares += sum1;
         colsNorms.push_back(std::make_pair(sum1, i));
     }
@@ -380,7 +380,7 @@ void MainWindow::ICA() //fastICA
     {
         explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
 		std::cout << "comp = " << i+1 << "\t";
-		std::cout << "explVar = " << smallLib::doubleRound(explainedVariance[i], 2) << std::endl;
+		std::cout << "explVar = " << smLib::doubleRound(explainedVariance[i], 2) << std::endl;
     }
 	helpString = (pathForAuxFiles
 				  + "/" + def::ExpName + "_explainedVariance.txt");
@@ -399,7 +399,7 @@ void MainWindow::ICA() //fastICA
         std::valarray<double> currCol = components.getCol(j, ns);
         for(uint i = 0; i < ns; ++i)
         {
-			sum1 = std::abs((centeredMatrix[i][j] - smallLib::prod(currCol, matrixA[i]))
+			sum1 = std::abs((centeredMatrix[i][j] - smLib::prod(currCol, matrixA[i]))
                        / centeredMatrix[i][j]);
             if(sum1 > 0.05
 			   && std::abs(centeredMatrix[i][j]) > 0.5)

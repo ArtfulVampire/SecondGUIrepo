@@ -414,7 +414,7 @@ std::valarray<double> operator * (const matrix & lhs, const std::valarray<double
 #endif
     for(uint i = 0; i < res.size(); ++i)
     {
-		res[i] = smallLib::prod(lhs[i], rhs);
+		res[i] = smLib::prod(lhs[i], rhs);
     }
     return res;
 }
@@ -575,7 +575,7 @@ matrix & matrix::pop_front(uint numOfCols)
 {
 	for(std::valarray<double> & row : myData)
 	{
-		row = smallLib::pop_front_valar(row, numOfCols);
+		row = smLib::pop_front_valar(row, numOfCols);
 	}
 	return *this;
 }
@@ -658,7 +658,7 @@ void matrix::resize(int newRows, int newCols)
 				  myData.end(),
                   [newCols](std::valarray<double> & in)
     {
-		smallLib::resizeValar(in, newCols);
+		smLib::resizeValar(in, newCols);
     });
 
 }
@@ -680,7 +680,7 @@ matrix & matrix::resizeRows(int newRows)
 					  myData.end(),
                       [cols](std::valarray<double> & in)
         {
-			smallLib::resizeValar(in, cols);
+			smLib::resizeValar(in, cols);
         });
     }
     return *this;
@@ -693,7 +693,7 @@ matrix & matrix::resizeCols(int newCols)
 				  myData.end(),
                   [newCols](std::valarray<double> & in)
     {
-		smallLib::resizeValar(in, newCols);
+		smLib::resizeValar(in, newCols);
     });
     return *this;
 }
@@ -837,7 +837,7 @@ std::valarray<double> matrix::sigmaOfCols() const
     for(uint i = 0; i < this->cols(); ++i)
     {
         std::valarray<double> W = this->getCol(i);
-        res[i] = smallLib::sigma(W);
+        res[i] = smLib::sigma(W);
     }
 #else
 
@@ -903,7 +903,7 @@ void matrix::print(uint rows, uint cols) const
     {
         for(uint j = 0; j < cols; ++j)
         {
-			std::cout << smallLib::doubleRound(myData[i][j], 3) << "\t";
+			std::cout << smLib::doubleRound(myData[i][j], 3) << "\t";
         }
 		std::cout << std::endl;
     }
@@ -1080,7 +1080,7 @@ matrix & matrix::eraseCol(uint j)
     {
 		for(std::valarray<double> & each : this->myData)
         {
-			each = smallLib::eraseValar(each, j);
+			each = smLib::eraseValar(each, j);
         }
     }
     return *this;
@@ -1090,7 +1090,7 @@ matrix & matrix::eraseCol(uint j)
 /// looks like okay
 matrix & matrix::eraseRows(const std::vector<uint> & indices)
 {
-	smallLib::eraseItems(this->myData, indices);
+	smLib::eraseItems(this->myData, indices);
     return *this;
 }
 
@@ -1177,7 +1177,7 @@ std::ostream & operator<<(std::ostream & os, const matrix & toOut)
 	{
 		for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
 		{
-			os << smallLib::doubleRound((*itt), 4) << "\t";
+			os << smLib::doubleRound((*itt), 4) << "\t";
 		}
 		os << std::endl;
 	}

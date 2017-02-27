@@ -31,7 +31,7 @@ public:
 			  int inFftLength = -1,
 			  int inEyes = 0) : sig(inData), srate(inSrate), fftLength(inFftLength), eyes(inEyes)
 	{
-		if(fftLength == -1) fftLength = smallLib::fftL(inData.size());
+		if(fftLength == -1) fftLength = smLib::fftL(inData.size());
 		spStep = srate / fftLength;
 
 		spec = myLib::spectreRtoCcomplex(sig, fftLength);

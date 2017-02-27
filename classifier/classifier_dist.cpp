@@ -49,7 +49,7 @@ std::pair<uint, double> DIST::classifyDatum(const uint & vecNum)
 	std::vector<double> distances(myData->getNumOfCl());
 	for(uint j = 0; j < myData->getNumOfCl(); ++j)
     {
-		distances[j] = -smallLib::distance(myData->getData()[vecNum],
+		distances[j] = -smLib::distance(myData->getData()[vecNum],
                                            centers[j]);
     }
     uint outClass = myLib::indexOfMax(distances);

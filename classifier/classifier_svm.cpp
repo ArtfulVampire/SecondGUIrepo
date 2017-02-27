@@ -85,7 +85,7 @@ void SVM::makeFile(const std::vector<uint> & indices,
 		for(uint l = 0; l < myData->getData().cols(); ++l)
         {
             outStream << l + 1 << ':'
-					  << smallLib::doubleRound(myData->getData()[ind][l], 4) << ' ';
+					  << smLib::doubleRound(myData->getData()[ind][l], 4) << ' ';
         }
 		outStream << std::endl;
     }

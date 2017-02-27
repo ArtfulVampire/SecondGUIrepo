@@ -223,14 +223,14 @@ void Net::pca()
 	for(int i = 0; i < NetLength; ++i)
 	{
 		// should be already zero because if loadData centering is on
-		centeredMatrix[i] -= smallLib::mean(centeredMatrix[i]);
+		centeredMatrix[i] -= smLib::mean(centeredMatrix[i]);
 	}
 
 	//covariation between different spectra-bins
 	double trace = 0.;
 	for(int i = 0; i < NetLength; ++i)
 	{
-		trace += smallLib::variance(centeredMatrix[i]);
+		trace += smLib::variance(centeredMatrix[i]);
 	}
 	std::cout << "trace covMatrix = " << trace << std::endl;
 

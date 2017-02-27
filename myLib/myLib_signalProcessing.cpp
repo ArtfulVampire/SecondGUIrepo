@@ -319,12 +319,11 @@ void four1(double * dataF, int nn, int isign)
 }
 
 std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
-//								  const double srate,
 								  int fftLen)
 {
 	if(fftLen <= 0)
 	{
-		fftLen = smallLib::fftL(inputSignal.size());
+		fftLen = smLib::fftL(inputSignal.size());
 	}
 
 //	double norm = 2. / (inputSignal.size() * srate);
@@ -352,12 +351,11 @@ std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
 }
 
 std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
-//								  const double srate,
 								  int fftLen)
 {
 	if(fftLen <= 0)
 	{
-		fftLen = smallLib::fftL(inputSignal.size());
+		fftLen = smLib::fftL(inputSignal.size());
 	}
 
 //	double norm = 2. / (inputSignal.size() * srate);
@@ -380,8 +378,42 @@ std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
 	return res;
 }
 
+std::valarray<std::complex<double>> spectreRtoC2(const std::valarray<double> & inputSignal,
+												int fftLen,
+												 double srate)
+{
+	if(fftLen <= 0)
+	{
+		fftLen = smLib::fftL(inputSignal.size());
+	}
+
+	double * pew = new double [2 * fftLen];
+	std::fill(pew, pew + 2 * fftLen, 0.);
+
+	/// hope, size() is not too big
+	for(int i = 0; i < std::min(fftLen, int(inputSignal.size())); ++i)
+	{
+		pew[2 * i] = inputSignal[i];
+	}
+
+	four1(pew - 1, fftLen, 1);
+
+	const double norm = sqrt(myLib::spectreNorm(fftLen,
+												inputSignal.size(),
+												srate));
+
+	std::valarray<std::complex<double>> res(fftLen);
+	for(int i = 0; i < res.size(); ++i)
+	{
+		res[i] = std::complex<double>(pew[2 * i], pew[2 * i + 1]);
+	}
+	res *= std::complex<double>(norm, 0.);
+
+	delete[] pew;
+	return res;
+}
+
 std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
-//								  const double srate.,
 								  int fftLen)
 {
 	{
@@ -391,7 +423,7 @@ std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
 
 	if(fftLen <= 0)
 	{
-		fftLen = smallLib::fftL(inputSignal.size());
+		fftLen = smLib::fftL(inputSignal.size());
 	}
 
 //	double norm = 2. / (inputSignal.size() * srate);
@@ -418,7 +450,6 @@ std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
 
 /// complex signal of fftLen = 2*fftLen numbers
 std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
-//								  const double srate,
 								  int fftLen) /// what is fftLen here?
 {
 //	{
@@ -428,7 +459,7 @@ std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 
 	if(fftLen <= 0)
 	{
-		fftLen = smallLib::fftL(inputSignal.size() / 2);
+		fftLen = smLib::fftL(inputSignal.size() / 2);
 	}
 
 //	double norm = 2. / (inputSignal.size() * srate);
@@ -456,7 +487,6 @@ std::valarray<double> spectreConj(
 	std::valarray<double> res{inputSpectre};
 	for(int i = 0; i < res.size() / 2; ++i)
 	{
-		/// check +1 or +0
 		res[2 * i + 1] = - res[2 * i + 1];
 	}
 	return res;
@@ -465,9 +495,7 @@ std::valarray<double> spectreConj(
 std::valarray<std::complex<double>> spectreConj(
 		const std::valarray<std::complex<double>> & inputSpectre)
 {
-	std::valarray<std::complex<double>> res{inputSpectre};
-	res = res.apply(std::conj);
-	return res;
+	return inputSpectre.apply(std::conj);
 }
 
 std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
@@ -498,6 +526,31 @@ std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre)
 	double * pew = new double [inputSpectre.size()];
 	std::fill(pew, pew + 2 * fftLen, 0.);
 	std::copy(std::begin(inputSpectre), std::end(inputSpectre), pew);
+
+	four1(pew - 1, fftLen, -1);
+
+	std::valarray<double> res(fftLen);
+	for(int i = 0; i < res.size(); ++i)
+	{
+		res[i] = pew[2 * i];
+	}
+	res /= fftLen;
+
+	delete[] pew;
+	return res;
+}
+
+std::valarray<double> spectreCtoRrev(const std::valarray<std::complex<double>> & inputSpectre)
+{
+	/// check size == pow(2, N) ?
+	int fftLen = inputSpectre.size();
+
+	double * pew = new double [inputSpectre.size() * 2];
+	for(int i = 0; i < inputSpectre.size(); ++i)
+	{
+		pew[2 * i] = inputSpectre[i].real();
+		pew[2 * i + 1] = inputSpectre[i].imag();
+	}
 
 	four1(pew - 1, fftLen, -1);
 
@@ -543,7 +596,7 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   bool isNotch,
 							   double srate)
 {
-	int fftLen = smallLib::fftL(inputSignal.size());
+	int fftLen = smLib::fftL(inputSignal.size());
 	std::valarray<double> spectr = spectreRtoC(inputSignal, fftLen);
 	const double spStep = srate / fftLen;
 	/// 2 because complex values
@@ -592,7 +645,7 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 	{
 		res[i] = res[i * rat];
 	}
-	smallLib::resizeValar(res, inSignal.size() / rat);
+	smLib::resizeValar(res, inSignal.size() / rat);
 	return res;
 }
 
@@ -602,7 +655,7 @@ int findJump(const std::valarray<double> & inSignal, int startSearch, double num
 	for(int i = startSearch; i < inSignal.size() - 1; ++i)
 	{
 		if(std::abs(inSignal[i + 1] - inSignal[i]) >
-		   numOfSigmas * smallLib::sigma(inSignal[std::slice(i - lenForSigma, lenForSigma, 1)]))
+		   numOfSigmas * smLib::sigma(inSignal[std::slice(i - lenForSigma, lenForSigma, 1)]))
 		{
 			return i;
 		}
@@ -655,21 +708,21 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
 	/// prepare
 	if(fftLen <= 0)
 	{
-		fftLen = smallLib::fftL(inputArray.size());
+		fftLen = smLib::fftL(inputArray.size());
 	}
 	std::valarray<std::complex<double>> res(std::complex<double>{}, fftLen);
 
-	if(fftLen > inputArray.size())
+	if(fftLen >= inputArray.size())
 	{
+		/// short signal
 		std::copy(std::begin(inputArray),
 				  std::end(inputArray),
 				  std::begin(res));
-		/// norm for short signal
-		res *= fftLen / double(inputArray.size());
+//		res *= fftLen / double(inputArray.size());
 	}
 	else
 	{
-
+		/// long signal
 #if 0
 		/// take last
 		int offset = inputArray.size() - res.size();
@@ -680,6 +733,7 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
 		/// take first
 		int offset = 0;
 #endif
+
 		std::copy(std::begin(inputArray) + offset,
 				  std::begin(inputArray) + offset + fftLen,
 				  std::begin(res));
@@ -688,7 +742,7 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
 
 
 	/// apply window
-//	res *= smallLib::toComplex(myLib::fftWindow(fftLen, myLib::windowName::Blackman));
+//	res *= smLib::toComplex(myLib::fftWindow(fftLen, myLib::windowName::Blackman));
 
 
 	// DFT
@@ -757,6 +811,13 @@ std::valarray<std::complex<double>> spectreRtoCcomplex(
 	return spectreCtoCcomplex(res, fftLen);
 }
 
+std::valarray<double> spectreRtoRcomplex(
+		const std::valarray<double> & inputArray,
+		int fftLen)
+{
+	return smLib::abs(spectreRtoCcomplex(inputArray, fftLen));
+}
+
 
 
 
@@ -805,7 +866,7 @@ double fractalDimension(const std::valarray<double> & arr,
     }
 
     //least square approximation
-	double slope = smallLib::covariance(drawK, drawL) / smallLib::covariance(drawK, drawK);
+	double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
 
     double drawX = 0.;
     double drawY = 0.;
@@ -837,7 +898,7 @@ double fractalDimension(const std::valarray<double> & arr,
         pnt.setBrush(QBrush("red"));
 
         // line passes (meanX, meanY)
-		double add = smallLib::mean(drawL) - slope * smallLib::mean(drawK);
+		double add = smLib::mean(drawL) - slope * smLib::mean(drawK);
 
         drawX = (1. - (slope * minX + add - minY) / lenY) * pic.height(); // startY
 		drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); // endY
@@ -879,7 +940,7 @@ void product1(const matrix & arr,
 
     for(int j = 0; j < length; ++j)
     {
-		sum = smallLib::prod(vect, arr[j]);
+		sum = smLib::prod(vect, arr[j]);
         outVector +=  tanh(sum) * arr[j];
     }
     outVector /= length;
@@ -903,7 +964,7 @@ void product2(const matrix & arr,
 
     for(int j = 0; j < length; ++j)
     {
-		sum = smallLib::prod(vect, arr[j]);
+		sum = smLib::prod(vect, arr[j]);
         sum1 += 1 - tanh(sum) * tanh(sum);
     }
     sum1 /= length;
@@ -921,7 +982,7 @@ void product3(const matrix & inMat,
     double sum = 0.;
     for(int j = 0; j < currNum; ++j)
     {
-		sum = smallLib::prod(inMat[currNum], inMat[j]); // short valarray, no difference
+		sum = smLib::prod(inMat[currNum], inMat[j]); // short valarray, no difference
         outVector += inMat[j] * sum;
     }
 }
@@ -933,7 +994,7 @@ void randomizeValar(std::valarray<double> & valar)
     {
         valar[i] = rand() % 50 - 25;
     }
-	smallLib::normalize(valar);
+	smLib::normalize(valar);
 }
 
 void countVectorW(matrix & vectorW,
@@ -971,7 +1032,7 @@ void countVectorW(matrix & vectorW,
             sum1 = 0.;
             for(int j = 0; j < dataLen; ++j)
             {
-				const double temp = tanh(smallLib::prod(vectorW[i], tempMatrix[j]));
+				const double temp = tanh(smLib::prod(vectorW[i], tempMatrix[j]));
 
                 vector1 += tempMatrix[j] * temp;
                 sum1 += (1. - temp * temp);
@@ -986,9 +1047,9 @@ void countVectorW(matrix & vectorW,
             //orthogonalization
 			myLib::product3(vectorW, ns, i, vector3);
             vectorW[i] -= vector3;
-			smallLib::normalize(vectorW[i]);
+			smLib::normalize(vectorW[i]);
 
-			sum2 = smallLib::norma(vectorOld - vectorW[i]);
+			sum2 = smLib::norma(vectorOld - vectorW[i]);
 
             ++counter;
             if(sum2 < vectorWTreshold || 2. - sum2 < vectorWTreshold) break;
@@ -997,7 +1058,7 @@ void countVectorW(matrix & vectorW,
 		std::cout << "vectW num = " << i << "\t";
 		std::cout << "iters = " << counter << "\t";
 		std::cout << "error = " << std::abs(sum2 - int(sum2 + 0.5)) << "\t";
-		std::cout << "time = " << smallLib::doubleRound(myTime.elapsed() / 1000., 1) << " sec" << std::endl;
+		std::cout << "time = " << smLib::doubleRound(myTime.elapsed() / 1000., 1) << " sec" << std::endl;
     }
 }
 
@@ -1019,7 +1080,7 @@ void dealWithEyes(matrix & inData,
 
     for(int i = 0; i < dimension; ++i)
     {
-        const double temp = - smallLib::mean(inData[i]) * realSignalFrac;
+		const double temp = - smLib::mean(inData[i]) * realSignalFrac;
 
         std::for_each(begin(inData[i]),
                       end(inData[i]),
@@ -1082,7 +1143,7 @@ void ica(const matrix & initialData,
     double sum1 {};
     for(int i = 0; i < ns; ++i)
     {
-		sum1 = smallLib::norma(matrixA.getCol(i)) / 2.;
+		sum1 = smLib::norma(matrixA.getCol(i)) / 2.;
 
         for(int k = 0; k < ns; ++k)
         {
@@ -1153,7 +1214,7 @@ void svd(const matrix & initialData,
     double trace = 0.;
     for(int i = 0; i < dimension; ++i)
     {
-        trace += smallLib::variance(initialData[i]);
+		trace += smLib::variance(initialData[i]);
     }
 
     eigenValues.resize(eigenVecNum);
@@ -1217,7 +1278,7 @@ void svd(const matrix & initialData,
 #if 0
                     F += 0.5 * pow(inData[i] - tempB * tempA[i], 2.).sum();
 #elif 1
-					F += 0.5 * smallLib::normaSq(inData[i] - tempB * tempA[i]);
+					F += 0.5 * smLib::normaSq(inData[i] - tempB * tempA[i]);
 #elif 1
                     // much faster in debug
                     const double coef = tempA[i];
@@ -1242,7 +1303,7 @@ void svd(const matrix & initialData,
             }
 
             //count vector tempB
-			sum2 = 1. / smallLib::normaSq(tempA);
+			sum2 = 1. / smLib::normaSq(tempA);
             for(int j = 0; j < dataLen; ++j)
             {
 //                tempB[j] = sum2 * (inDataTrans[j] * tempA).sum();
@@ -1251,11 +1312,11 @@ void svd(const matrix & initialData,
 //                                                     end(tempA), // begin + dimension
 //                                                     begin(inDataTrans[j]),
 //                                                     0.);
-				tempB[j] = sum2 * smallLib::prod(tempA, inDataTrans[j]);
+				tempB[j] = sum2 * smLib::prod(tempA, inDataTrans[j]);
             }
 
             //count vector tempA
-			sum2 = 1. / smallLib::normaSq(tempB);
+			sum2 = 1. / smLib::normaSq(tempB);
             for(int i = 0; i < dimension; ++i)
             {
 //                tempA[i] = sum2 * (tempB * inData[i]).sum();
@@ -1264,7 +1325,7 @@ void svd(const matrix & initialData,
 //                                                     end(tempB),
 //                                                     begin(inData[i]),
 //                                                     0.);
-				tempA[i] = sum2 * smallLib::prod(tempB, inData[i]);
+				tempA[i] = sum2 * smLib::prod(tempB, inData[i]);
             }
 
             if((counter) % errorStep == 0)
@@ -1275,7 +1336,7 @@ void svd(const matrix & initialData,
 #if 0
                     dF += 0.5 * pow((inData[i] - tempB * tempA[i]), 2.).sum();
 #elif 1
-					dF += 0.5 * smallLib::normaSq(inData[i] - tempB * tempA[i]);
+					dF += 0.5 * smLib::normaSq(inData[i] - tempB * tempA[i]);
 #elif 1
                     // much faster in debug
                     const double coef = tempA[i];
@@ -1330,8 +1391,8 @@ void svd(const matrix & initialData,
 
 
         //count eigenVectors && eigenValues
-		sum1 = smallLib::normaSq(tempA);
-		sum2 = smallLib::normaSq(tempB);
+		sum1 = smLib::normaSq(tempA);
+		sum2 = smLib::normaSq(tempB);
         eigenValues[k] = sum1 * sum2 / double(dataLen - 1.);
         tempA /= sqrt(sum1);
 
@@ -1340,11 +1401,11 @@ void svd(const matrix & initialData,
                                0.);
 
 		std::cout << k << "\t";
-		std::cout << "val = " << smallLib::doubleRound(eigenValues[k], 3) << "\t";
-		std::cout << "disp = " << smallLib::doubleRound(100. * eigenValues[k] / trace, 2) << "\t";
-		std::cout << "total = " << smallLib::doubleRound(100. * sum1 / trace, 2) << "\t";
+		std::cout << "val = " << smLib::doubleRound(eigenValues[k], 3) << "\t";
+		std::cout << "disp = " << smLib::doubleRound(100. * eigenValues[k] / trace, 2) << "\t";
+		std::cout << "total = " << smLib::doubleRound(100. * sum1 / trace, 2) << "\t";
 		std::cout << "iters = " << counter << "\t";
-		std::cout << smallLib::doubleRound(myTime.elapsed()/1000., 1) << " s" << std::endl;
+		std::cout << smLib::doubleRound(myTime.elapsed()/1000., 1) << " s" << std::endl;
 
         for(int i = 0; i < dimension; ++i)
         {
@@ -1442,6 +1503,7 @@ double splineOutput(const std::valarray<double> & inX,
 }
 
 
+/// UNUSED - MUST CHECK BEFORE USE
 std::valarray<double> hilbert(const std::valarray<double> & arr,
 							  double lowFreq,
 							  double highFreq,
@@ -1449,7 +1511,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 {
 
     const int inLength = arr.size();
-	const int fftLen = smallLib::fftL(inLength); // int(pow(2., ceil(log(inLength)/log(2.))));
+	const int fftLen = smLib::fftL(inLength); // int(pow(2., ceil(log(inLength)/log(2.))));
     const double spStep = def::freq / fftLen;
     const double normCoef = sqrt(fftLen / double(inLength));
 
@@ -1516,6 +1578,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
         out[2 * i + 0] = 0.;
         out[2 * i + 1] = 0.;
 	}
+	/// whaaaat?
 	spectreCtoCrev(out);
 
     for(int i = 0; i < inLength; ++i)
@@ -1588,7 +1651,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 	/// do hilbert transform for the first inLength bins
 	const double srate = def::freq; ///- to arguments
 	const int inLength = arr.size();
-	const int fftLen = smallLib::fftL(inLength) / 2;
+	const int fftLen = smLib::fftL(inLength) / 2;
 
 	std::valarray<double> outHilbert(inLength); /// result
 	std::valarray<double> tempArr[2];
@@ -1713,7 +1776,14 @@ void makeSine(std::valarray<double> & in,
 			  int numPoints,
 			  double srate)
 {
-	if(numPoints < 0) numPoints = in.size();
+	if(numPoints < 0)
+	{
+		numPoints = in.size();
+	}
+	else
+	{
+		in.resize(numPoints);
+	}
 	for(int i = 0; i < numPoints; ++i)
 	{
 		in[i] = sin(freq * 2 * pi * (i / srate) + phaseInRad);
@@ -2064,7 +2134,7 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 		{
 			for(uint z = j; z < Size; ++z)
 			{
-				matrixInit[j][z] = smallLib::prod(dataE[signalNums[j]],
+				matrixInit[j][z] = smLib::prod(dataE[signalNums[j]],
 						dataE[ signalNums[z]])
 						/ NumOfSlices;
 				// maybe (NumOfSlices-1), but it's not important here

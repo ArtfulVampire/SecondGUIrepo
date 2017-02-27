@@ -162,7 +162,7 @@ void writeFileInLine(const QString & filePath,
 		file << "Pewpew " << 1 << "\r\n";
 		for(auto out : outData)
 		{
-			file << smallLib::doubleRound(out, 3) << "\r\n";
+			file << smLib::doubleRound(out, 3) << "\r\n";
 		}
 	}
 	else
@@ -171,7 +171,7 @@ void writeFileInLine(const QString & filePath,
 		file << "FileLen " << outData.size() << "\r\n";
 		for(auto out : outData)
 		{
-			file << smallLib::doubleRound(out, 3) << "\t";
+			file << smLib::doubleRound(out, 3) << "\t";
 		}
 	}
 
@@ -214,7 +214,7 @@ void writePlainData(const QString outPath,
     {
         for(uint j = 0; j < data.rows(); ++j)
         {
-			outStr << smallLib::doubleRound(data[j][i + start], 3) << '\t';
+			outStr << smLib::doubleRound(data[j][i + start], 3) << '\t';
         }
         outStr << "\r\n";
     }
@@ -466,7 +466,7 @@ void writeMatrixFile(const QString & filePath,
     {
         for(uint j = 0; j < outData.cols(); ++j)
         {
-			file << smallLib::doubleRound(outData[i][j], 4) << '\t';
+			file << smLib::doubleRound(outData[i][j], 4) << '\t';
         }
         file << "\r\n";
     }

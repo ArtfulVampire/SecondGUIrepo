@@ -68,6 +68,8 @@ void IITPstaging(const QString & guyName,
 void IITPprocessStaged(const QString & guyName,
 					   const QString & dirPath = def::iitpSyncFolder);
 
+void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums);
+
 void IITPdat(const QString & guyName = "Ira");
 void IITPrename(const QString & guyName = "Ira");
 

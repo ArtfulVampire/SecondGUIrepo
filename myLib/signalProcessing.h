@@ -10,19 +10,22 @@ namespace myLib
 
 /// srate for norm
 std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
-//								  const double srate = 250.,
 								  int fftLen = -1);
 
 std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
-//								  const double srate = 250.,
 								  int fftLen = -1);
 
+std::valarray<std::complex<double>> spectreRtoC2(const std::valarray<double> & inputSignal,
+												 int fftLen = -1,
+												 double srate = 250.);
+
 std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
-//								  const double srate = 250.,
+								  int fftLen = -1);
+
+std::valarray<double> spectreCtoR(const std::valarray<std::complex<double>> & inputSignal,
 								  int fftLen = -1);
 
 std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
-//								  const double srate = 250.,
 								  int fftLen = -1);
 
 std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
@@ -36,6 +39,7 @@ std::valarray<std::complex<double>> spectreConj(
 		const std::valarray<std::complex<double>> & inputSpectre);
 
 std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre);
+std::valarray<double> spectreCtoRrev(const std::valarray<std::complex<double>> & inputSpectre);
 
 std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre);
 
@@ -45,8 +49,10 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 
 /// original FFT
 void four1(double * dataF, int nn, int isign);
+double spectreNorm(int fftLen, int realSig, int srate);
 
-/// from Rosetta stone - the same
+
+/// from Rosetta stone - norming on maxValue?
 std::valarray<std::complex<double>> spectreCtoCcomplex(
 		const std::valarray<std::complex<double>> & inputArray,
 		int fftLen = -1);
@@ -55,7 +61,10 @@ std::valarray<std::complex<double>> spectreRtoCcomplex(
 		const std::valarray<double> & inputArray,
 		int fftLen = -1);
 
-double spectreNorm(int fftLen, int realSig, int srate);
+std::valarray<double> spectreRtoRcomplex(
+		const std::valarray<double> & inputArray,
+		int fftLen = -1);
+
 
 
 /// by FFT
@@ -96,10 +105,12 @@ void calcSpectre(const std::valarray<double> & inSignal,
 double fractalDimension(const std::valarray<double> &arr,
 						const QString & picPath = QString());
 
-std::valarray<double> hilbert(const std::valarray<double> & arr,
-							  double lowFreq = def::leftFreq,
-							  double highFreq = def::rightFreq,
-							  QString picPath  = QString());
+
+/// UNUSED - MUST CHECK BEFORE USE
+//std::valarray<double> hilbert(const std::valarray<double> & arr,
+//							  double lowFreq = def::leftFreq,
+//							  double highFreq = def::rightFreq,
+//							  QString picPath  = QString());
 
 std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 									double sampleFreq,

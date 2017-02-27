@@ -181,6 +181,7 @@ namespace def
     const QString uciFolder = "/media/Files/Data/UCI";
 	const QString iitpFolder = "/media/Files/Data/iitp";
 	const QString iitpSyncFolder = "/media/Files/Data/iitp/SYNCED";
+	const QString iitpResFolder = "/media/Files/Data/iitp/Results";
 
     const bool opencl = true;
     const bool openmp = true;

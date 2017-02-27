@@ -6,8 +6,14 @@
 #include <complex>
 #include <iostream>
 
-namespace smallLib
+namespace smLib
 {
+template <typename Cont>
+Cont range(int beg, int en);
+
+template <typename Cont>
+Cont unite(const std::vector<Cont> & ranges);
+
 std::valarray<double> valarFromRange(int beg, int en); // include both edges
 
 std::valarray<double> valarSubsec(const std::valarray<double> & in, int beg, int en);

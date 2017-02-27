@@ -1,6 +1,7 @@
 #include "autos.h"
 #include <myLib/clustering.h>
 #include <myLib/iitp.h>
+#include <myLib/drw.h>
 
 using namespace myOut;
 
@@ -458,9 +459,9 @@ void IITPtestCoh(const QString & guyName)
 						return std::arg(in);
 					});
 
-					if(smallLib::mean(abss) > 0.05 &&
-					   smallLib::sigma(abss) * 3 < smallLib::mean(abss) &&
-					   smallLib::sigma(args) < 0.4
+					if(smLib::mean(abss) > 0.05 &&
+					   smLib::sigma(abss) * 3 < smLib::mean(abss) &&
+					   smLib::sigma(args) < 0.4
 					   )
 					{
 						ofile
@@ -472,17 +473,17 @@ void IITPtestCoh(const QString & guyName)
 
 								<< "freq = " << fff + minFreq << '\t'
 
-								<< "val = " << smallLib::doubleRound(smallLib::mean(tmp), 3) << '\t'
+								<< "val = " << smLib::doubleRound(smLib::mean(tmp), 3) << '\t'
 
-								<< "abs = " << smallLib::doubleRound(smallLib::mean(abss), 3) << '\t'
-								<< "sgm = " << smallLib::doubleRound(smallLib::sigma(abss), 3) << '\t'
+								<< "abs = " << smLib::doubleRound(smLib::mean(abss), 3) << '\t'
+								<< "sgm = " << smLib::doubleRound(smLib::sigma(abss), 3) << '\t'
 
-								<< "arg = " << smallLib::doubleRound(smallLib::mean(args), 3) << '\t'
-								<< "sgm = " << smallLib::doubleRound(smallLib::sigma(args), 3) << '\t'
+								<< "arg = " << smLib::doubleRound(smLib::mean(args), 3) << '\t'
+								<< "sgm = " << smLib::doubleRound(smLib::sigma(args), 3) << '\t'
 
 								<< std::endl;
 
-//						cohs[c1][c2][fff] = smallLib::mean(tmp);
+//						cohs[c1][c2][fff] = smLib::mean(tmp);
 					}
 				}
 			}
@@ -663,25 +664,50 @@ void IITPstaging(const QString & guyName,
 	}
 }
 
+void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums)
+{
+	std::vector<QString> paths;
+	const QString workDir = def::iitpResFolder + "/" + guyName + "/sp";
+	for(QString fileName : QDir(workDir).entryList({"*_sp.txt"}))
+	{
+		int fileNum = iitp::getFileNum(fileName);
+		if(std::find(std::begin(nums), std::end(nums), fileNum) != std::end(nums))
+		{
+			paths.push_back(workDir + "/" + fileName);
+		}
+	}
 
+	QPixmap templ = myLib::drw::drawTemplate(true, iitp::leftFr, iitp::rightFr, 19);
+
+	auto res = myLib::drw::drawArraysSameScale(templ, paths);
+
+	QString outPath;
+	for(int i = 0; i < res.size(); ++i)
+	{
+		outPath = paths[i];
+		outPath.replace("/sp/", "/pic/");
+		outPath.replace("_sp.txt", ".jpg");
+//		std::cout << outPath << std::endl;
+		res[i].save(outPath, 0, 100);
+	}
+//	exit(0);
+}
 
 void IITPprocessStaged(const QString & guyName,
 					   const QString & dirPath)
 {
 	QString postfix = iitp::getPostfix(QDir(dirPath + "/" + guyName).entryList({"*_stag.edf"})[0]);
 	const QString direct = dirPath + "/" + guyName + "/";
-	const QString resultsPathPrefix = def::iitpFolder + "/Results/";
+	QString resultsPathPrefix = def::iitpResFolder + "/" + guyName + "/";
 
-	QDir a(resultsPathPrefix);
+	QDir a(def::iitpResFolder);
 	a.mkdir(guyName);
 	a.cd(guyName);
 	a.mkdir("coh");
 	a.mkdir("sp");
 	a.mkdir("pic");
-//	exit(0);
-	return;
-
 	iitp::iitpData dt;
+
 
 	auto filePath = [=](int i) -> QString
 	{
@@ -700,12 +726,18 @@ void IITPprocessStaged(const QString & guyName,
 
 	for(int fileNum : iitp::fileNums)
 	{
+
+//		if(!(guyName == "Oleg" && fileNum == 6)  &&
+//		   !(guyName == "Boris" && fileNum == 2) &&
+//		   !(guyName == "Boris" && fileNum == 4)) continue;
+
 		if(!QFile::exists(filePath(fileNum))) continue;
 		dt.readEdfFile(filePath(fileNum));
 
 		if(iitp::interestGonios[fileNum].size() == 0)
 		{
-//			dt.countImagPassSpectra();
+			dt.countImagPassSpectra();
+//			continue;
 //			if(iitp::trialTypes[fileNum] == iitp::trialType::stat)
 			{
 				dt.cutPieces(1.024);
@@ -734,9 +766,9 @@ void IITPprocessStaged(const QString & guyName,
 										<< QString(iitp::eegNames[eeg]) << '\t'
 										<< QString(iitp::eegNames[eeg2]) << '\t'
 										<< fr << '\t'
-										<< smallLib::doubleRound(val, 3) << '\t'
-										<< smallLib::doubleRound(std::abs(val), 3) << '\t'
-										<< smallLib::doubleRound(std::arg(val), 3) << '\t'
+										<< smLib::doubleRound(val, 3) << '\t'
+										<< smLib::doubleRound(std::abs(val), 3) << '\t'
+										<< smLib::doubleRound(std::arg(val), 3) << '\t'
 										<< "\r\n";
 							}
 						}
@@ -759,9 +791,9 @@ void IITPprocessStaged(const QString & guyName,
 										<< QString(iitp::eegNames[eeg]) << '\t'
 										<< QString(iitp::emgNames[emg]) << '\t'
 										<< fr << '\t'
-										<< smallLib::doubleRound(val, 3) << '\t'
-										<< smallLib::doubleRound(std::abs(val), 3) << '\t'
-										<< smallLib::doubleRound(std::arg(val), 3) << '\t'
+										<< smLib::doubleRound(val, 3) << '\t'
+										<< smLib::doubleRound(std::abs(val), 3) << '\t'
+										<< smLib::doubleRound(std::arg(val), 3) << '\t'
 										<< "\r\n";
 							}
 						}
@@ -772,7 +804,7 @@ void IITPprocessStaged(const QString & guyName,
 				outStr.close();
 			}
 		}
-		else continue;
+//		else continue;
 
 
 
@@ -781,6 +813,7 @@ void IITPprocessStaged(const QString & guyName,
 			int minMarker = iitp::gonioMinMarker(gonio);			
 
 			dt.countFlexExtSpectra(minMarker, minMarker + 1);
+//			continue;
 
 			for(int type : {0, 1}) /// 0 - flexion, 1 - extension
 			{
@@ -820,9 +853,9 @@ void IITPprocessStaged(const QString & guyName,
 										<< QString(iitp::eegNames[eeg]) << '\t'
 										<< QString(iitp::eegNames[eeg2]) << '\t'
 										<< fr << '\t'
-										<< smallLib::doubleRound(val, 3) << '\t'
-										<< smallLib::doubleRound(std::abs(val), 3) << '\t'
-										<< smallLib::doubleRound(std::arg(val), 3) << '\t'
+										<< smLib::doubleRound(val, 3) << '\t'
+										<< smLib::doubleRound(std::abs(val), 3) << '\t'
+										<< smLib::doubleRound(std::arg(val), 3) << '\t'
 										<< "\r\n";
 							}
 						}
@@ -845,9 +878,9 @@ void IITPprocessStaged(const QString & guyName,
 										<< QString(iitp::eegNames[eeg]) << '\t'
 										<< QString(iitp::emgNames[emg]) << '\t'
 										<< fr << '\t'
-										<< smallLib::doubleRound(val, 3) << '\t'
-										<< smallLib::doubleRound(std::abs(val), 3) << '\t'
-										<< smallLib::doubleRound(std::arg(val), 3) << '\t'
+										<< smLib::doubleRound(val, 3) << '\t'
+										<< smLib::doubleRound(std::abs(val), 3) << '\t'
+										<< smLib::doubleRound(std::arg(val), 3) << '\t'
 										<< "\r\n";
 							}
 						}
@@ -1127,8 +1160,8 @@ matrix makeTestData(const QString & outPath)
 	double coeff = 10.;
 	for(uint i = 0; i < testSignals.rows(); ++i)
 	{
-		sum1 = smallLib::mean(testSignals[i]);
-		sum2 = smallLib::variance(testSignals[i]);
+		sum1 = smLib::mean(testSignals[i]);
+		sum2 = smLib::variance(testSignals[i]);
 
 		testSignals[i] -= sum1;
 		testSignals[i] /= sqrt(sum2);
@@ -1285,7 +1318,7 @@ void matToFile(const matrix & mat, std::ofstream & fil, double (*func)(const std
 {
 	for(int i = 0; i < mat.rows(); ++i)
 	{
-		fil << smallLib::doubleRound(func(mat[i]), 4) << "\t";
+		fil << smLib::doubleRound(func(mat[i]), 4) << "\t";
 	}
 }
 
@@ -1302,11 +1335,11 @@ void waveletOneFile(const matrix & inData,
 	for(int j = 0; j < numChan; ++j)
 	{
 		matrix m = wvlt::cwt(inData[j], freq);
-		for(auto foo : {smallLib::max,
-			smallLib::min,
-			smallLib::mean,
-			smallLib::median,
-			smallLib::sigma})
+		for(auto foo : {smLib::max,
+			smLib::min,
+			smLib::mean,
+			smLib::median,
+			smLib::sigma})
 		{
 			matToFile(m, outStr, foo);
 		}
@@ -1415,10 +1448,10 @@ void countSpectraFeatures(const QString & filePath,
 		helpInt = 0;
 		for(int k = fftLimit(alphaMaxLimLeft,
 							 fr,
-							 smallLib::fftL(dataL));
+							 smLib::fftL(dataL));
 			k < fftLimit(alphaMaxLimRight,
 						 fr,
-						 smallLib::fftL(dataL));
+						 smLib::fftL(dataL));
 			++k)
 		{
 			if(helpSpectre[k] > helpDouble)
@@ -1430,7 +1463,7 @@ void countSpectraFeatures(const QString & filePath,
 		// max alpha magnitude
 		outAlphaStr << helpDouble << "\t";
 		// max alpha freq
-		outAlphaStr << helpInt * fr / smallLib::fftL(dataL) << "\t";
+		outAlphaStr << helpInt * fr / smLib::fftL(dataL) << "\t";
 
 
 		// integrate spectre near the needed freqs
@@ -1443,10 +1476,10 @@ void countSpectraFeatures(const QString & filePath,
 			helpInt = 0;
 			for(int k = fftLimit(j - spectreStepFreq / 2.,
 								 fr,
-								 smallLib::fftL(dataL));
+								 smLib::fftL(dataL));
 				k < fftLimit(j + spectreStepFreq / 2.,
 							 fr,
-							 smallLib::fftL(dataL));
+							 smLib::fftL(dataL));
 				++k)
 			{
 				helpDouble += helpSpectre[k];
@@ -1480,7 +1513,7 @@ void countSpectraFeatures(const QString & filePath,
 			++it)
 		{
 
-			outSpectraStr << smallLib::doubleRound((*it), 4) << "\t";  // write
+			outSpectraStr << smLib::doubleRound((*it), 4) << "\t";  // write
 		}
 	}
 	outAlphaStr.close();
@@ -1539,7 +1572,7 @@ void countChaosFeatures(const QString & filePath,
 		for(int i = 0; i < numChan; ++i)
 		{
 			helpDouble = myLib::fractalDimension(currMat[i]);
-			outDimStr << smallLib::doubleRound(helpDouble, 4) << "\t";
+			outDimStr << smLib::doubleRound(helpDouble, 4) << "\t";
 		}
 
 #if 0
@@ -1604,19 +1637,19 @@ void countChaosFeatures(const QString & filePath,
 			sumSpec = 0.;
 
 			for(int j = 0;
-				j < fftLimit(hilbertFreqLimit, fr, smallLib::fftL(initEdf.getDataLen()));
+				j < fftLimit(hilbertFreqLimit, fr, smLib::fftL(initEdf.getDataLen()));
 				++j)
 			{
 				helpDouble += envSpec[j] * j;
 				sumSpec += envSpec[j];
 			}
 			helpDouble /= sumSpec;
-			helpDouble /= fftLimit(1., fr, smallLib::fftL(initEdf.getDataLen())); // convert to Hz
+			helpDouble /= fftLimit(1., fr, smLib::fftL(initEdf.getDataLen())); // convert to Hz
 
-			outHilbertStr << smallLib::doubleRound(helpDouble, 4) << "\t";
+			outHilbertStr << smLib::doubleRound(helpDouble, 4) << "\t";
 
 			/// experimental add
-			outHilbertStr << smallLib::doubleRound(smallLib::sigma(env) / smallLib::mean(env), 4)
+			outHilbertStr << smLib::doubleRound(smLib::sigma(env) / smLib::mean(env), 4)
 						  << "\t";
 		}
 	}
@@ -1671,7 +1704,7 @@ void GalyaProcessing(const QString & procDirPath,
 		}
 
 		std::cout << filesList[i] << '\t'
-			 << smallLib::doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << std::endl;
+			 << smLib::doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << std::endl;
 
 
 		countChaosFeatures(helpString, numChan, outPath);
@@ -1790,10 +1823,10 @@ void avTimesNew(const QString & edfPath, int numSession)
 			std::pair<int, QString>(4, "answrd"),
 			std::pair<int, QString>(3, "allll")})
 		{
-			auto valar = smallLib::vecToValar(times[a.first]);
+			auto valar = smLib::vecToValar(times[a.first]);
 			outStr << a.second << "\t"
-				   << smallLib::doubleRound(smallLib::mean(valar), 2) << "\t"
-				   << smallLib::doubleRound(smallLib::sigma(valar), 2) << "\r\n";
+				   << smLib::doubleRound(smLib::mean(valar), 2) << "\t"
+				   << smLib::doubleRound(smLib::sigma(valar), 2) << "\r\n";
 		}
 		outStr.close();
 	}
@@ -2002,7 +2035,7 @@ void clustering()
 		types[i] = i % 3;
 		for(int j = i+1; j < numRow; ++j)
 		{
-			temp[0] = smallLib::distance(cData[i], cData[j]);
+			temp[0] = smLib::distance(cData[i], cData[j]);
 			temp[1] = i;
 			temp[2] = j;
 			temp[3] = 0;

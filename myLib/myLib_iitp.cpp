@@ -35,7 +35,7 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 	{
 		fftLen = std::max(size_t(fftLen), in.size());
 	});
-	fftLen = smallLib::fftL(fftLen);
+	fftLen = smLib::fftL(fftLen);
 
 	const int index = freq * fftLen / srate;
 	const double lowThreshold = 1e-5;
@@ -44,8 +44,8 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 	std::valarray<std::complex<double>> spec1;
 	std::valarray<std::complex<double>> spec2;
 
-	spec1 = myLib::spectreRtoCcomplex(sig1[0], fftLen);
-	spec2 = myLib::spectreRtoCcomplex(sig2[0], fftLen);
+	spec1 = myLib::spectreRtoC2(sig1[0], fftLen, srate);
+	spec2 = myLib::spectreRtoC2(sig2[0], fftLen, srate);
 
 	std::valarray<std::complex<double>> res12 =
 			spec1 * myLib::spectreConj(spec2);
@@ -62,8 +62,8 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 
 	for(int i = 1; i < siz; ++i)
 	{
-		spec1 = myLib::spectreRtoCcomplex(sig1[i], fftLen);
-		spec2 = myLib::spectreRtoCcomplex(sig2[i], fftLen);
+		spec1 = myLib::spectreRtoC2(sig1[i], fftLen, srate);
+		spec2 = myLib::spectreRtoC2(sig2[i], fftLen, srate);
 
 		a12 = spec1 * myLib::spectreConj(spec2);
 		a11 = spec1 * myLib::spectreConj(spec1);
@@ -123,7 +123,7 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 		{
 			this->crossSpectrum(a.first, a.second);
 		}
-	}
+	}	
 	if(this->coherencies[chan1][chan2].size() == 0)
 	{
 		this->coherencies[chan1][chan2] = this->crossSpectra[chan1][chan2] /
@@ -149,14 +149,14 @@ std::complex<double> iitpData::coherencyR(int chan1, int chan2, double freq)
 #if 01
 			coherenciesR[chan1][chan2] += this->piecesFFT[i][chan1] *
 										  this->piecesFFT[i][chan2].apply(std::conj) /
-										  (this->piecesFFT[i][chan1].apply(smallLib::abs) *
-										   this->piecesFFT[i][chan2].apply(smallLib::abs));
+										  (this->piecesFFT[i][chan1].apply(smLib::abs) *
+										   this->piecesFFT[i][chan2].apply(smLib::abs));
 #else
 			/// OR
 			coherenciesR[chan1][chan2] += this->piecesFFT[i][chan1] *
 										  this->piecesFFT[i][chan2].apply(std::conj) /
-										  (smallLib::abs(this->piecesFFT[i][chan1]) *
-										   smallLib::abs(this->piecesFFT[i][chan2]));
+										  (smLib::abs(this->piecesFFT[i][chan1]) *
+										   smLib::abs(this->piecesFFT[i][chan2]));
 #endif
 		}
 		coherenciesR[chan1][chan2] /= this->piecesData.size();
@@ -176,15 +176,15 @@ void iitpData::crossSpectrum(int chan1, int chan2)
 	std::valarray<std::complex<double>> spec1;
 	std::valarray<std::complex<double>> spec2;
 
-	spec1 = myLib::spectreRtoCcomplex(this->piecesData[0][chan1], fftLen);
-	spec2 = myLib::spectreRtoCcomplex(this->piecesData[0][chan2], fftLen);
-	std::valarray<std::complex<double>> res = spec1 * myLib::spectreConj(spec2);
+	spec1 = myLib::spectreRtoC2(this->piecesData[0][chan1], fftLen, this->srate);
+	spec2 = myLib::spectreRtoC2(this->piecesData[0][chan2], fftLen, this->srate);
+	std::valarray<std::complex<double>> res = spec1 * spec2.apply(std::conj);
 
 	for(int i = 1; i < this->piecesData.size(); ++i)
 	{
-		spec1 = myLib::spectreRtoCcomplex(this->piecesData[i][chan1], fftLen);
-		spec2 = myLib::spectreRtoCcomplex(this->piecesData[i][chan2], fftLen);
-		res += spec1 * myLib::spectreConj(spec2);
+		spec1 = myLib::spectreRtoC2(this->piecesData[i][chan1], fftLen, this->srate);
+		spec2 = myLib::spectreRtoC2(this->piecesData[i][chan2], fftLen, this->srate);
+		res += spec1 * spec2.apply(std::conj);
 	}
 	res /= this->piecesData.size();
 
@@ -197,8 +197,9 @@ void iitpData::countPiecesFFT()
 	{
 		for(int j = 0; j < this->ns; ++j)
 		{
-			this->piecesFFT[i][j] = myLib::spectreRtoCcomplex(this->piecesData[i][j],
-															  this->fftLen);
+			this->piecesFFT[i][j] = myLib::spectreRtoC2(this->piecesData[i][j],
+														this->fftLen,
+														this->srate);
 		}
 	}
 }
@@ -307,27 +308,29 @@ void iitpData::countImagPassSpectra()
 		spec = 0.;
 		for(int j = 0; j < this->piecesData.size(); ++j)
 		{
-			spec += smallLib::abs(this->piecesFFT[j][i]);
+			spec += std::pow(smLib::abs(this->piecesFFT[j][i]), 2.);
 		}
-		spec *= (4. / localFftLen);
 		spec /= this->piecesData.size();
 		std::copy(std::begin(spec) + leftInd,
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
-	int num = this->ExpName.split("_", QString::SkipEmptyParts)[1].toInt();
+	int num = this->getNum();
 	QString add = iitp::trialTypesNames[trialTypes[num]];
 
-	myLib::writeFileInLine(this->getDirPath()
+	myLib::writeFileInLine(def::iitpResFolder
+						   + "/" + this->getGuy()
 						   + "/sp"
-						   + "/" + this->getInit() + "_sp.txt",
+						   + "/" + this->getInit()
+						   + "_" + iitp::trialTypesNames[iitp::trialTypes[this->getNum()]]
+						   + "_sp.txt",
 						   spectre);
 
-	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
-	templ = myLib::drw::drawArray(templ, spectre);
-	templ.save(this->getDirPath()
-			   + "/pic"
-			   + "/" + this->getInit() + ".jpg", 0, 100);
+//	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
+//	templ = myLib::drw::drawArray(templ, spectre);
+//	templ.save(def::iitpResFolder + "/" + this->getGuy()
+//			   + "/pic"
+//			   + "/" + this->getInit() + ".jpg", 0, 100);
 }
 
 void iitpData::countFlexExtSpectra(int mark1, int mark2)
@@ -340,7 +343,6 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 	const int numCh = 19;
 	QString joint = "_" + iitp::gonioNames[(mark1 - 100) / 10 - 1 + (mark1 % 10) / 2];
 
-	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
 
 	std::valarray<double> spectre(spLen * numCh);
 	matrix spectra{2, 1};
@@ -355,16 +357,16 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 		spec = 0.;
 		for(int j = 0; j < this->piecesData.size(); ++j)
 		{
-			spec += smallLib::abs(this->piecesFFT[j][i]);
+			spec += std::pow(smLib::abs(this->piecesFFT[j][i]), 2.);
 		}
-		spec *= (4. / localFftLen);
 		spec /= this->piecesData.size();
 		std::copy(std::begin(spec) + leftInd,
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
 	spectra[0] = spectre;
-	myLib::writeFileInLine(this->getDirPath()
+	myLib::writeFileInLine(def::iitpResFolder
+						   + "/" + this->getGuy()
 						   + "/sp"
 						   + "/" + this->getInit() + joint + "_flexion_sp.txt",
 						   spectre);
@@ -377,23 +379,26 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 		spec = 0.;
 		for(int j = 0; j < this->piecesData.size(); ++j)
 		{
-			spec += smallLib::abs(this->piecesFFT[j][i]);
+			spec += std::pow(smLib::abs(this->piecesFFT[j][i]), 2.);
 		}
-		spec *= (4. / localFftLen);
 		spec /= this->piecesData.size();
 		std::copy(std::begin(spec) + leftInd,
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
 	spectra[1] = spectre;
-	myLib::writeFileInLine(this->getDirPath() + "/" +
+	myLib::writeFileInLine(def::iitpResFolder
+						   + "/" + this->getGuy()
 						   + "/sp"
 						   + "/" + this->getInit() + joint + "_extension_sp.txt",
 						   spectre);
-	templ = myLib::drw::drawArrays(templ, spectra);
-	templ.save(this->getDirPath()
-			   + "/pic"
-			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
+
+
+//	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
+//	templ = myLib::drw::drawArrays(templ, spectra);
+//	templ.save(def::iitpResFolder + "/" + this->getGuy()
+//			   + "/pic"
+//			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
 }
 
 int gonioMinMarker(int numGonioChan)
@@ -401,6 +406,12 @@ int gonioMinMarker(int numGonioChan)
 	return 100 +
 			(numGonioChan / 2 + 1) * 10 +
 			(numGonioChan % 2) * 2 + 0;
+}
+
+
+QString getGuyName(const QString & fileName)
+{
+	return fileName.left(fileName.indexOf('_'));
 }
 
 QString getInitName(const QString & fileName)
@@ -414,6 +425,11 @@ QString getPostfix(const QString & fileName)
 	int lef = fileName.indexOf('_', fileName.indexOf('_') + 1);
 	int rig = fileName.indexOf('.');
 	return fileName.mid(lef, rig-lef);
+}
+
+int getFileNum(const QString & fileName)
+{
+	return fileName.split("_", QString::SkipEmptyParts)[1].toInt();
 }
 
 
@@ -488,7 +504,7 @@ iitpData & iitpData::staging(const QString & chanName,
 			int end = i;
 
 
-			std::valarray<double> val = smallLib::valarSubsec(chan, start, end);
+			std::valarray<double> val = smLib::valarSubsec(chan, start, end);
 			val = val.apply(std::abs);
 
 			/// marker on 80% of peak
@@ -527,7 +543,7 @@ int iitpData::setFftLen()
 	int res = 0;
 	for(const auto & in : this->piecesData)
 	{
-		res = std::max(smallLib::fftL(in.cols()), res);
+		res = std::max(smLib::fftL(in.cols()), res);
 	}
 	this->fftLen = res;
 	this->spStep = this->srate / double(this->fftLen);
@@ -536,7 +552,7 @@ int iitpData::setFftLen()
 
 void iitpData::setFftLen(int in)
 {
-	this->fftLen = smallLib::fftL(in);
+	this->fftLen = smLib::fftL(in);
 	this->spStep = this->srate / double(this->fftLen);
 }
 

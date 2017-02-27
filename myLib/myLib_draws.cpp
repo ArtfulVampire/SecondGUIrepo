@@ -364,7 +364,7 @@ void drawMapSpline(const matrix & matrixA,
         for(int y = 0; y < picSize; ++y)
         {
             /// round shape
-			if(smallLib::distance(x, y, picSize/2, picSize/2) >
+			if(smLib::distance(x, y, picSize/2, picSize/2) >
                picSize * 2. * sqrt(2.) / (dim - 1) ) continue;
 
             val = splineOutput(inX, inYv, dim, Av, Bv, y*scale1);
@@ -808,7 +808,7 @@ void drawArray(const QString & templPath,
     norm /= scaling;
     norm = graphHeight / norm;
     norm /= scaling;  //scaling generality
-	norm = smallLib::doubleRound(norm,
+	norm = smLib::doubleRound(norm,
 					   std::min(1., 2 - floor(log10(norm)) )
                        );
 
@@ -982,7 +982,7 @@ void drawArrayWithSigma(const QString &templPath,
 
 	//returning norm = max magnitude
 	norm = graphHeight / norm;
-	norm = smallLib::doubleRound(norm,
+	norm = smLib::doubleRound(norm,
 								 std::min(1., 2 - floor(log10(norm)) )
 								 );
 
@@ -1140,7 +1140,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 	norm /= scaling;
 	norm = graphHeight / norm;
 	norm /= scaling;  //scaling generality
-	norm = smallLib::doubleRound(norm,
+	norm = smLib::doubleRound(norm,
 								 std::min(1., 2 - floor(log10(norm)) )
 								 );
 	if(normType == spectraGraphsNormalization::all)
@@ -1303,7 +1303,7 @@ double drawArrays(const QString & templPath,
     norm /= scaling;
     norm = graphHeight / norm;
     norm /= scaling;  //scaling generality
-	norm = smallLib::doubleRound(norm,
+	norm = smLib::doubleRound(norm,
 								 std::min(1., 2 - floor(log10(norm)) )
 								 );
     if(normType == spectraGraphsNormalization::all)

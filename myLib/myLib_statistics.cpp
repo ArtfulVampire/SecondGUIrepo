@@ -36,8 +36,8 @@ void histogram(const signalType & arr,
 
 	int denom = floor(log10(xMax - xMin));
 
-	xMin = smallLib::doubleRoundFraq(xMin, denom);
-	xMax = smallLib::doubleRoundFraq(xMax, denom);
+	xMin = smLib::doubleRoundFraq(xMin, denom);
+	xMax = smLib::doubleRoundFraq(xMax, denom);
 	std::cout << denom  << "\t" << xMin << "\t" << xMax << std::endl;
 
 	std::for_each(std::begin(arr),
@@ -122,7 +122,7 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 	double sigma = 0.;
 	int length = arr.size();
 
-	sigma = smallLib::variance(arr);
+	sigma = smLib::variance(arr);
 	sigma = sqrt(sigma);
 	double h = 1.06 * sigma * pow(length, -0.2);
 
@@ -161,7 +161,7 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 		for(int j = 0; j < length; ++j)
 		{
 			values[i] += 1 / (length * h)
-						 * smallLib::gaussian((xMin + (xMax - xMin) / double(pic.width()) * i - arr[j]) / h);
+						 * smLib::gaussian((xMin + (xMax - xMin) / double(pic.width()) * i - arr[j]) / h);
 		}
 	}
 
@@ -275,8 +275,8 @@ void countRCP(QString filePath, QString picPath, double * outMean, double * outS
 	std::valarray<double> arr;
 	readFileInLine(filePath, arr);
 
-	(*outMean) = smallLib::mean(arr);
-	(*outSigma) = smallLib::sigma(arr);
+	(*outMean) = smLib::mean(arr);
+	(*outSigma) = smLib::sigma(arr);
 
 	if(!picPath.isEmpty())
 	{
@@ -305,7 +305,7 @@ void drawRCP(const std::valarray<double> & values, const QString & picPath)
 
 	for(int i = 0; i < pic.width(); ++i)
 	{
-		line[i] = smallLib::gaussian( (i - pic.width()/2) / (pic.width()/2.) * numOfDisp );
+		line[i] = smLib::gaussian( (i - pic.width()/2) / (pic.width()/2.) * numOfDisp );
 	}
 
 	line /= line.max();

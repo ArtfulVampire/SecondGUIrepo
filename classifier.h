@@ -131,7 +131,7 @@ private:
     /// deleberately private functions
     void allocParams(weightType & inMat);
     void zeroParams();
-    std::valarray<double> (*activation)(const std::valarray<double> & in) = smallLib::softmax;
+    std::valarray<double> (*activation)(const std::valarray<double> & in) = smLib::softmax;
     void loadVector(const uint vecNum, uint & type);
     void countOutput();
     void countOutputDelta();
