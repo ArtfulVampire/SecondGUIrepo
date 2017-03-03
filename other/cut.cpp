@@ -367,6 +367,13 @@ void Cut::setFileType(const QString & dataFileName)
     }
 }
 
+
+void Cut::resetLimits()
+{
+	ui->leftLimitSpinBox->setValue(0);
+	ui->rightLimitSpinBox->setValue(data3.cols());
+}
+
 void Cut::setValuesByEdf()
 {
 	currFreq = edfFil.getFreq();
@@ -374,8 +381,7 @@ void Cut::setValuesByEdf()
 
 	ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
 	ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
-	ui->leftLimitSpinBox->setValue(0);
-	ui->rightLimitSpinBox->setValue(edfFil.getDataLen());
+	resetLimits();
 
 	ui->paintStartDoubleSpinBox->setMaximum(floor(data3.cols() / currFreq));
 	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
@@ -907,10 +913,9 @@ void Cut::zero(int start, int end)
 	zeroData(data3,
 			 start,
 			 end);
+	resetLimits();
 	paint();
 
-	ui->leftLimitSpinBox->setValue(0);
-	ui->rightLimitSpinBox->setValue(data3.cols());
 }
 
 
@@ -958,10 +963,9 @@ void Cut::split(int start, int end, bool addUndo)
 	matrix data2 = data3.subCols(end, data3.cols());
 	data3.resizeCols(start).horzCat(data2); /// +1 to save first marker in reals
 	ui->paintStartLabel->setText("start (max " + nm(floor(data3.cols() / currFreq)) + ")");
-	paint();
 
-	ui->leftLimitSpinBox->setValue(0);
-	ui->rightLimitSpinBox->setValue(data3.cols());
+	resetLimits();
+	paint();
 }
 
 void Cut::splitSlot()
@@ -1047,8 +1051,9 @@ void Cut::saveNewNumSlot()
 
 void Cut::saveSubsecSlot()
 {
-	if(myFileType == fileType::real)
+	if(myFileType == fileType::real || 1) /// write plain windows (eyes)
 	{
+
 		QString helpString;
 		helpString = def::dir->absolutePath() +
 					 slash + "winds" +
@@ -1082,6 +1087,7 @@ void Cut::saveSubsecSlot()
 
 		std::cout << "Cut::saveSubsecSlot: edfFile saved - " << newPath << std::endl;
 	}
+	resetLimits();
 	paint();
 }
 

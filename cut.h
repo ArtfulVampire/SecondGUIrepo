@@ -49,6 +49,7 @@ private:
 	std::vector<std::pair<int, QColor>> makeColouredChans();
 	void paintLimits();
 	void setValuesByEdf();
+	void resetLimits();
 
 	void iitpLog(const QString & typ, int num = 2, const QString & add = QString());
 	void showDerivatives();

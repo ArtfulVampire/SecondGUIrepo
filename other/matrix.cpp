@@ -738,6 +738,7 @@ double matrix::maxAbsVal() const
     });
     return res;
 }
+
 double matrix::minAbsVal() const
 {
 	double res = myData[0][0];

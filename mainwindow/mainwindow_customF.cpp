@@ -12,49 +12,8 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
+	return;
 
-	/// test fft
-//	const double srate = 250;
-//	std::valarray<double> sig1;
-//	myLib::makeSine(sig1, 10, 0, 1023, srate);
-//	std::valarray<double> sig2;
-//	myLib::makeSine(sig2, 10, 0, 1020, srate);
-//	std::valarray<double> sig3;
-//	myLib::makeSine(sig3, 10, 0, 768, srate);
-
-//	for(auto sig : {sig1, sig2, sig3})
-//	{
-
-//		std::cout << pow(smLib::abs(myLib::spectreRtoC2(sig)), 2.).sum()
-//					 * myLib::spectreNorm(smLib::fftL(sig.size()),
-//										  sig.size(),
-//										  srate) << std::endl;
-//	}
-
-//	for(auto sig : {sig1, sig2, sig3})
-//	{
-//		std::cout << myLib::spectreRtoR(sig).sum()
-//					 * myLib::spectreNorm(smLib::fftL(sig.size()),
-//										  sig.size(),
-//										  srate) << std::endl;
-//	}
-
-//	myLib::drw::drawOneSpectrum(sig1, 5, 15, srate, 0).save("/media/Files/Data/1.jpg", 0, 100);
-//	myLib::drw::drawOneSpectrum(sig2, 5, 15, srate, 0).save("/media/Files/Data/2.jpg", 0, 100);
-//	myLib::drw::drawOneSpectrum(sig3, 5, 15, srate, 0).save("/media/Files/Data/3.jpg", 0, 100);
-//	exit(0);
-
-
-//	iitp::iitpData d;
-//	d.readEdfFile(def::iitpSyncFolder + "/Alex/Alex_04_sum_f_new_stag.edf");
-//	d.setPieces(110, 111);
-//	std::cout << d.coherency(d.findChannel("Cz"),
-//							 d.findChannel("Ta_l"),
-//							 10) << std::endl;
-
-//	exit(0);
-
-//return;
 //	autos::IITPpre("Oleg");
 	for(QString guy : {"Alex", "Boris", "Ira", "Levik", "Oleg", "Victor"})
 	{
