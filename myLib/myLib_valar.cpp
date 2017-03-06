@@ -1,4 +1,5 @@
 #include <myLib/valar.h>
+#include <chrono>
 
 namespace smLib
 {
@@ -10,7 +11,7 @@ Cont range(int beg, int en)
 	std::iota(std::begin(res), std::end(res), beg);
 	return res;
 }
-
+template std::vector<uint> range(int beg, int en);
 template std::vector<int> range(int beg, int en);
 template std::vector<double> range(int beg, int en);
 template std::valarray<int> range(int beg, int en);
@@ -41,10 +42,6 @@ template std::valarray<int> unite(const std::vector<std::valarray<int>> & ranges
 template std::valarray<double> unite(const std::vector<std::valarray<double>> & ranges);
 
 
-
-
-
-
 std::valarray<double> valarSubsec(const std::valarray<double> & in, int beg, int en)
 {
 	std::valarray<double> res(en - beg);
@@ -54,5 +51,27 @@ std::valarray<double> valarSubsec(const std::valarray<double> & in, int beg, int
 	return res;
 }
 
+template <typename Cont>
+Cont mixed(int num)
+{
+	Cont res(num);
+	std::iota(std::begin(res), std::end(res), 0);
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::shuffle(std::begin(res),
+				 std::end(res),
+				 std::default_random_engine(seed));
+	return res;
+}
+template std::vector<uint> mixed(int);
+
+template <typename Cont>
+void mix (Cont & in)
+{
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::shuffle(std::begin(in),
+				 std::end(in),
+				 std::default_random_engine(seed));
+}
+template void mix(std::vector<uint>&);
 
 } // end of namespace

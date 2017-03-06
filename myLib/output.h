@@ -34,6 +34,7 @@ std::istream & operator>> (std::istream &is, QString & in);
 std::ostream & operator<< (std::ostream &os, const QString & toOut);
 std::ostream & operator<< (std::ostream &os, QChar toOut);
 std::ostream & operator<< (std::ostream &os, const std::complex<double> & toOut);
+std::ostream & operator<< (std::ostream &os, const QStringList & toOut);
 
 // containers w/o allocators
 template <typename Typ, template <typename> class Cont>
@@ -42,6 +43,8 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut);
 // containers with allocators
 template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont>
 std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut);
+
+
 }
 
 

@@ -56,17 +56,13 @@ private:
     double loadDataNorm = 10.;
     std::valarray<double> averageDatum;
     std::valarray<double> sigmaVector;
+	void setClassifierParams();
 #endif
-
-
     /// classification
     Classifier * myClassifier = nullptr;
 	ClassifierData myClassifierData{};
 
 
-#if OLD_DATA
-    void setClassifierParams();
-#endif
 
     /// succesiive
     int numGoodNew;

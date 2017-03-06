@@ -5,6 +5,7 @@ void Net::successiveProcessing()
 {
     const QString trainMarker = "_train";
 	const QString testMarker = "_test";
+
     numGoodNew = 0;
 	const QString helpString = def::windsSpectraDir();
 
@@ -30,20 +31,21 @@ void Net::successiveProcessing()
 	QStringList leest = QDir(helpString).entryList(
     {def::ExpName.left(3) + "*" + testMarker + "*"}); /// special generality
 
-	this->passed.resize(this->myClassifierData.getNumOfCl());
 
-//	std::cout << 1 << std::endl;
+	this->passed.resize(this->myClassifierData.getNumOfCl());
+	this->passed = 0.;
+
     std::valarray<double> tempArr;
-    int type = -1;
+	int type = -1;
 //	int count = 0;
     for(const QString & fileNam : leest)
     {
-		myLib::readFileInLine(helpString + slash + fileNam,
-                       tempArr);
+		myLib::readFileInLine(helpString + "/" + fileNam,
+							  tempArr);
 		type = myLib::getTypeOfFileName(fileNam);
         successiveLearning(tempArr, type, fileNam);
 //		++count; if(count == 500) break;
-    }
+	}
     myClassifier->averageClassification();
 }
 
@@ -100,6 +102,7 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
                              const QString & newFileName)
 {
 	myClassifierData.addItem(newSpectre, newType, newFileName);
+
 	// take the last and increment confusion matrix
 	const std::pair<int, double> outType = myClassifier->classifyDatumLast();
 

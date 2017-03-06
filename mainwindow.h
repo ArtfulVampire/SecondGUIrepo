@@ -135,7 +135,7 @@ public:
 
 	void BaklushevDraw(const QString & workPath, const QString & edfName);
 	void testNewClassifiers();
-	void testSuccessive();
+	void testSuccessive(const std::vector<double> & vals = std::vector<double>{});
 
 
 private:

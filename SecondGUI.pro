@@ -71,7 +71,8 @@ SOURCES += main.cpp\
     myLib/myLib_mati.cpp \
     myLib/myLib_smallFuncs.cpp \
     myLib/myLib_iitp.cpp \
-    myLib/myLib_valar.cpp
+    myLib/myLib_valar.cpp \
+    classifier/classifier_lib.cpp
 
 HEADERS  += mainwindow.h \
     cut.h \

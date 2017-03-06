@@ -32,17 +32,6 @@ void DIST::learn(std::vector<uint> & indices)
     }
 }
 
-#if CLASS_TEST_VIRTUAL
-void DIST::test(const std::vector<int> & indices)
-{
-    for(int ind : indices)
-    {
-        auto res = classifyDatum(ind);
-		confusionMatrix[myData->getTypes()[ind]][res.first] += 1.;
-    }
-}
-#endif
-
 std::pair<uint, double> DIST::classifyDatum(const uint & vecNum)
 {
 

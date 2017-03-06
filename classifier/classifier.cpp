@@ -6,9 +6,14 @@
 Classifier::Classifier()
 {
 	myData = new ClassifierData();
-	confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
 	resultsPath = def::dir->absolutePath() + slash + "results.txt";
 	workDir = def::dir->absolutePath() + slash + "Help" + slash + "PA";
+	/// by myData
+	confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
+	outputLayer = std::valarray<double>(0., myData->getNumOfCl());
+#if INERTIA
+	fbVal = std::valarray<double>(0., myData->getNumOfCl());
+#endif
 }
 
 void Classifier::setClassifierData(ClassifierData & in)
@@ -17,7 +22,14 @@ void Classifier::setClassifierData(ClassifierData & in)
 	{
 		delete myData;
 		myData = &in;
+
 		confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
+		outputLayer = std::valarray<double>(0., myData->getNumOfCl());
+
+#if INERTIA
+		fbVal = std::valarray<double>(0., myData->getNumOfCl());
+#endif
+
 		this->adjustToNewData();
 	}
 }
@@ -39,11 +51,51 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 		QFile::remove(filesPath + slash + myData->getFileNames()[vecNum]);
     }
 }
+
+/// TEMPORARY, will be virtual=0
+void Classifier::classifyDatum1(const uint & vecNum)
+{
+	/// ALWAYS TRUE WITH ZERO ERROR
+	this->confusionMatrix[myData->getTypes()[vecNum]][myData->getTypes()[vecNum]] += 1.;
+	outputLayer = clLib::oneHot(myData->getNumOfCl(),
+								myData->getTypes()[vecNum]);
+}
+
+std::pair<uint, double> Classifier::classifyDatum(const uint & vecNum)
+{
+	this->classifyDatum1(vecNum); /// sometimes is not necessary, but won't be worse
+	return std::make_pair(myLib::indexOfMax(outputLayer),
+						  clLib::countError(outputLayer, myData->getTypes()[vecNum]));
+}
+
 std::pair<uint, double> Classifier::classifyDatumLast()
 {
-	auto a = this->classifyDatum(this->myData->getData().rows() - 1);
-	this->confusionMatrix[myData->getTypes().back()][a.first] += 1.;
-	return a;
+	classifyDatumLast1();
+
+#if INERTIA
+	return std::make_pair(myLib::indexOfMax(fbVal),
+						  clLib::countError(fbVal, myData->getTypes().back()));
+#else
+	return std::make_pair(myLib::indexOfMax(outputLayer),
+						  clLib::countError(outputLayer, myData->getTypes().back()));
+#endif
+}
+
+void Classifier::classifyDatumLast1()
+{
+#if INERTIA
+	classifyDatum1(myData->getData().rows() - 1);
+	if(curType != myData->getTypes().back())
+	{
+		fbVal = 0.;
+		curType = myData->getTypes().back();
+	}
+//	fbVal *= inertiaCoef;
+	fbVal *= def::inertiaCoef;
+	fbVal += outputLayer;
+#else
+	classifyDatum1(myData->getData().rows() - 1);
+#endif
 }
 
 void Classifier::printResult(const QString & fileName, uint predType, uint vecNum)
@@ -129,21 +181,18 @@ void Classifier::setApriori(const std::valarray<double> & in)
 
 #endif // OLD_DATA
 
-#if !CLASS_TEST_VIRTUAL
 void Classifier::test(const std::vector<uint> & indices)
 {
     for(int ind : indices)
-    {
-		auto res = classifyDatum(ind);
-		confusionMatrix[myData->getTypes()[ind]][res.first] += 1.;
+	{
+		classifyDatum1(ind); /// confusionMatrix inside
     }
 }
-#endif
 
 void Classifier::learnAll()
 {
 	std::vector<uint> ind(myData->getData().rows());
-    std::iota(std::begin(ind), std::end(ind), 0);
+	std::iota(std::begin(ind), std::end(ind), 0);
     learn(ind);
 }
 

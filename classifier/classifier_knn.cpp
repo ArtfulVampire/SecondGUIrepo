@@ -34,17 +34,6 @@ void KNN::learn(std::vector<uint> & indices)
     }
 }
 
-#if CLASS_TEST_VIRTUAL
-void KNN::test(const std::vector<int> & indices)
-{
-    for(int ind : indices)
-    {
-        auto res = classifyDatum(ind);
-		confusionMatrix[myData->getTypes()[ind]][res.first] += 1.;
-    }
-}
-#endif
-
 std::pair<uint, double> KNN::classifyDatum(const uint & vecNum)
 {
     std::vector<std::pair<double, int>> toSort;

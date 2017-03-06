@@ -97,9 +97,6 @@ void ANN::zeroParams()
         for(auto & b : a)
         {
 			b = 0;
-//            std::fill(std::begin(b),
-//                      std::end(b),
-//                      0.);
         }
     }
 #endif
@@ -107,9 +104,6 @@ void ANN::zeroParams()
     for(auto & b : output)
     {
 		b = 0.;
-//        std::fill(std::begin(b),
-//                  std::end(b),
-//                  0.);
     }
 }
 
@@ -193,6 +187,8 @@ void ANN::countOutputDelta()
         output[i] = activation(output[i]);
         output[i][ dim[i] ] = 1.; //bias, unused for the highest layer
     }
+	outputLayer = output.back();
+	smLib::resizeValar(outputLayer, outputLayer.size() - 1);
 }
 
 void ANN::countOutputBackprop()
@@ -227,7 +223,6 @@ void ANN::countOutputBackprop()
     }
 
 #endif
-
 }
 
 void ANN::moveWeights(const std::vector<double> & normCoeff,
@@ -267,15 +262,11 @@ void ANN::moveWeights(const std::vector<double> & normCoeff,
 #endif
 }
 
-void ANN::countError(uint type,
+void ANN::countError(uint trueType,
                      double & currentError)
 {
-    double err = 0.;
-    for(int j = 0; j < dim.back(); ++j)
-    {
-        err += pow((output.back()[j] - int(type == j) ), 2.);
-    }
-    err = sqrt(err);
+	double err = clLib::countError(outputLayer, trueType);
+
     if(errType == errorNetType::SME)
     {
         currentError += err;
@@ -321,13 +312,10 @@ void ANN::learn(std::vector<uint> & indices)
     epoch = 0;
 
     while(currentError > critError && epoch < epochLimit)
-    {
-        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	{
         currentError = 0.0;
-        // mix the sequence of input vectors
-        std::shuffle(std::begin(indices),
-                     std::end(indices),
-                     std::default_random_engine(seed));
+		// mix the sequence of input vectors
+		smLib::mix(indices);
 
         for(int index : indices)
 		{
@@ -375,63 +363,38 @@ int ANN::getEpoch()
     return epoch;
 }
 
-
-#if CLASS_TEST_VIRTUAL
-void ANN::test(const std::vector<int> & indices)
+/// should be virtual=0
+void ANN::classifyDatum1(const uint & vecNum)
 {
-    for(int ind : indices)
-    {
-        auto res = classifyDatum(ind);
-		confusionMatrix[myData->getTypes()[ind]][res.first] += 1.;
-    }
-}
-#endif
-
-std::pair<uint, double> ANN::classifyDatum(const uint & vecNum)
-{
-    uint type;
-
-    loadVector(vecNum, type);
-    countOutput();
-
-    /// effect on successive procedure
-    double res = 0.;
-    countError(type, res);
-
-    std::valarray<double> forRes = output.back();
-	smLib::resizeValar(forRes, myData->getNumOfCl());
-    uint outClass = myLib::indexOfMax(forRes);
+	uint type;
+	loadVector(vecNum, type);
+	countOutput();
+	confusionMatrix[myData->getTypes()[vecNum]][myLib::indexOfMax(outputLayer)] += 1.;
 
 #if 0
 	/// std::cout results
-    const int numOfLayers = dim.size();
-    std::ofstream resFile;
-    resFile.open((def::dir->absolutePath() +
-                  slash + "class.txt").toStdString(),
-                 std::ios_base::app);
+	const int numOfLayers = dim.size();
+	std::ofstream resFile;
+	resFile.open((def::dir->absolutePath() +
+				  slash + "class.txt").toStdString(),
+				 std::ios_base::app);
 
-    ///uncomment to write to file
+	///uncomment to write to file
 //    auto tmp = std::cout.rdbuf();
 //    std::cout.rdbuf(resFile.rdbuf());
 
 	std::cout << "type = " << type << '\t' << "(";
 	for(int i = 0; i < myData->getNumOfCl(); ++i)
-    {
+	{
 		std::cout << smLib::doubleRound(output[numOfLayers - 1][i], 3) << '\t';
-    }
+	}
 	std::cout << ") " << ((type == outClass) ? "+ " : "- ") << "\t"
 			  << myData->getFileNames()[vecNum] << std::endl;
 
 //    std::cout.rdbuf(tmp);
 
-    resFile.close();
+	resFile.close();
 #endif
-
-    deleteFile(vecNum, outClass);
-
-//    printResult("ANN.txt", outClass, vecNum);
-    return std::make_pair(outClass,
-                          res);
 }
 
 const ANN::weightType & ANN::getWeight()
@@ -546,14 +509,7 @@ void ANN::drawWeight(QString wtsPath,
 
 double ANN::adjustLearnRate()
 {
-    std::vector<uint> mixNum;
-	mixNum.resize(myData->getData().rows());
-    std::iota(mixNum.begin(), mixNum.end(), 0);
-
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::shuffle(mixNum.begin(),
-                 mixNum.end(),
-                 std::default_random_engine(seed));
+	std::vector<uint> mixNum = smLib::mixed<std::vector<uint>> (myData->getData().rows());
     /// const
     const int folds = 3;
     mixNum.resize(mixNum.size() * (folds - 1) / folds);

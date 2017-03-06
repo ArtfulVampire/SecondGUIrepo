@@ -23,17 +23,6 @@ void SVM::learn(std::vector<uint> & indices)
 //    std::cout << std::endl << "LEARN finish" << std::endl << std::endl;
 }
 
-#if CLASS_TEST_VIRTUAL
-void SVM::test(const std::vector<int> & indices)
-{
-    for(int ind : indices)
-    {
-        auto res = classifyDatum(ind);
-		confusionMatrix[myData->getTypes()[ind]][res.first] += 1.;
-    }
-}
-#endif
-
 std::pair<uint, double> SVM::classifyDatum(const uint & vecNum)
 {
     /// to write!

@@ -34,17 +34,6 @@ void NBC::learn(std::vector<uint> & indices)
     }
 }
 
-#if CLASS_TEST_VIRTUAL
-void NBC::test(const std::vector<int> & indices)
-{
-    for(int ind : indices)
-    {
-        auto res = classifyDatum(ind);
-		confusionMatrix[myData->getTypes()[ind]][res.first] += 1.;
-    }
-}
-#endif
-
 /// what with apriori???
 std::pair<uint, double> NBC::classifyDatum(const uint & vecNum)
 {

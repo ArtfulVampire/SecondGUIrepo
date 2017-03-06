@@ -12,6 +12,9 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
+
+	testSuccessive();
+	exit(0);
 	return;
 
 //	autos::IITPpre("Oleg");

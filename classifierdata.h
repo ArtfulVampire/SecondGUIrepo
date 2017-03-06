@@ -28,7 +28,7 @@ public:
 	const std::vector<QString> & getFileNames() const {return fileNames;} // unused
 	const std::valarray<double> & getClassCount() const {return classCount;}
 	const std::valarray<double> & getApriori() const {return apriori;}
-	const QString & getFilesPath() {return filesPath;}
+	const QString & getFilesPath() const {return filesPath;}
 
 	/// sets
 	void setApriori(const std::valarray<double> inApriori) {apriori = inApriori;}

@@ -12,7 +12,7 @@
 
 #include "coord.h"
 
-#define SPECTRA_EXP_NAME_SPECIFICITY 1
+#define SPECTRA_EXP_NAME_SPECIFICITY 0
 
 
 namespace Ui {

@@ -278,7 +278,7 @@ void Net::loadDataSlot()
     }
 	std::cout << helpString << std::endl;
 #if !OLD_DATA
-	myClassifierData = ClassifierData(helpString, QStringList());
+	myClassifierData = ClassifierData(helpString);
 #else
 	loadData(helpString, {}
              );

@@ -14,8 +14,6 @@ Cont range(int beg, int en);
 template <typename Cont>
 Cont unite(const std::vector<Cont> & ranges);
 
-std::valarray<double> valarFromRange(int beg, int en); // include both edges
-
 std::valarray<double> valarSubsec(const std::valarray<double> & in, int beg, int en);
 
 inline std::valarray<double> logistic(const std::valarray<double> & in)
@@ -68,7 +66,6 @@ inline std::valarray<double> pop_front_valar(const std::valarray<double> & in, u
 	return res;
 }
 
-
 inline std::valarray<double> eraseValar(const std::valarray<double> & in, uint index)
 {
 	std::valarray<double> res(in.size() - 1);
@@ -104,6 +101,7 @@ inline Typ mean(const std::valarray<Typ> & arr)
 }
 template std::complex<double> mean(const std::valarray<std::complex<double>> & arr);
 template double mean(const std::valarray<double> & arr);
+
 
 inline double variance(const std::valarray<double> & arr)
 {
@@ -185,14 +183,34 @@ template std::valarray<std::complex<double>> vecToValar(const std::vector<std::c
 template <typename Typ>
 inline void resizeValar(std::valarray<Typ> & in, int num)
 {
-	std::valarray<Typ> temp = in;
+	std::valarray<Typ> temp(in);
 	in.resize(num);
 	std::copy(std::begin(temp),
 			  std::begin(temp) + std::min(in.size(), temp.size()),
 			  std::begin(in));
 }
-
 template void resizeValar(std::valarray<double> & in, int num);
 template void resizeValar(std::valarray<std::complex<double>> & in, int num);
+
+inline std::valarray<double> pop_back_valar(const std::valarray<double> & in, uint numOfPop)
+{
+	std::valarray<double> res(in);
+	resizeValar(res, res.size() - numOfPop);
+	return res;
+}
+
+inline std::valarray<double> push_back_valar(const std::valarray<double> & in, double val)
+{
+	std::valarray<double> res(in);
+	resizeValar(res, res.size() + 1);
+	res[in.size()] = val;
+	return res;
+}
+
+template <typename Cont>
+Cont mixed (int num);
+
+template <typename Cont>
+void mix (Cont & in);
 
 } /// end of namespace

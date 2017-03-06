@@ -151,6 +151,8 @@ namespace def
 
 	extern double leftFreq;
 	extern double rightFreq;
+	extern double inertiaCoef;
+	extern double windLen;
 
     extern QString cfgFileName;
     extern QStringList fileMarkers;

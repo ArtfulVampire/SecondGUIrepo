@@ -20,7 +20,18 @@
 enum class ClassifierType {ANN, RDA, SVM, DIST, NBC, KNN, WARD};
 typedef std::pair<double, double> avType;
 
-#define CLASS_TEST_VIRTUAL 0
+namespace clLib
+{
+/// useful functions for classification
+double countError(const std::valarray<double> & vals, int trueType);
+
+std::valarray<double> oneHot(uint siz, uint hotIndex);
+
+} /// end of namespace clLib
+
+
+#define INERTIA 0
+
 class Classifier
 {
 protected:
@@ -36,13 +47,14 @@ protected:
     std::valarray<double> apriori;
 	uint myData.getNumOfCl();
 #else
-	/// to do
+	/// CHANGE this name to myClassData
 	ClassifierData * myData;
 #endif
 
-    matrix confusionMatrix; // rows - realClass, cols - outClass
+	matrix confusionMatrix; // [realClass] [predictedClass]
     double averageAccuracy;
 	double kappa;
+	std::valarray<double> outputLayer; /// output of classification
 
 	bool testCleanFlag  = false; /// delete wrong classified files
     bool resetFlag = true; /// reset learning values before new learning
@@ -53,6 +65,12 @@ protected:
 	QString workDir = def::dir->absolutePath() + slash + "Help" + slash + "PA";
 	QString filesPath = def::windsSpectraDir();
 
+#if INERTIA
+	std::valarray<double> fbVal;
+//	const double inertiaCoef = def::inertiaCoef;
+	uint curType = 15; // not any of types
+#endif
+
 
 public:
     const ClassifierType & getType() {return myType;}
@@ -60,7 +78,6 @@ public:
     void setTestCleanFlag(bool inFlag);
     void deleteFile(uint vecNum, uint predClass);
 	void printResult(const QString & fileName, uint predType, uint vecNum);
-	std::pair<uint, double> classifyDatumLast();
 
 #if !OLD_DATA
 	/// to do
@@ -75,31 +92,42 @@ public:
     void setApriori(const std::valarray<double> & in = std::valarray<double>());
 #endif
 
-    /// crutch
-    void confMatInc(int trueClass, int predClass){confusionMatrix[trueClass][predClass] += 1.;}
-
 public:
     Classifier();
     virtual ~Classifier();
 
     avType averageClassification(); /// on confusionMatrix
-    void learnAll();
-    virtual void learn(std::vector<uint> & indices) = 0;
-#if CLASS_TEST_VIRTUAL
-    virtual void test(const std::vector<uint> & indices) = 0;
-#else
+
+	virtual void learn(std::vector<uint> & indices) = 0;
+	void learnAll();
+
+	/// should be protected (i.e. the same for all classifiers)
+	virtual std::pair<uint, double> classifyDatum(const uint & vecNum); // class and error
+
+	/// should be = 0 and defined for all classes
+	virtual void classifyDatum1(const uint & vecNum);
+
+	void test(const std::vector<uint> & indices);
     void testAll();
-    void test(const std::vector<uint> & indices);
-#endif
-    virtual std::pair<uint, double> classifyDatum(const uint & vecNum) = 0;
+
+
+
     virtual void successiveRelearn();
 	virtual void printParams();
 	virtual void adjustToNewData() {}
+
+	std::pair<uint, double> classifyDatumLast();
+
+protected:
+
+	void classifyDatumLast1();
+
 };
 
 
 
 #define WEIGHT_MATRIX 0
+
 class ANN : public Classifier
 {
 #if WEIGHT_MATRIX
@@ -136,10 +164,11 @@ private:
     void countOutput();
     void countOutputDelta();
     void countOutputBackprop();
-    void countError(uint type,
-                    double & currentError);
+	void countError(uint trueType,
+					double & currentError);
     void moveWeights(const std::vector<double> & normCoeff,
                      const uint type);
+
 
 public:
     ANN();
@@ -161,13 +190,13 @@ public:
                     QString picPath = QString());
     double adjustLearnRate();
 
+	/// returning output layer values
+	/// should be made virtual = 0
+
 
 protected:
-    void learn(std::vector<uint> & indices) override;
-#if CLASS_TEST_VIRTUAL
-    void test(const std::vector<uint> & indices) override;
-#endif
-    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	void learn(std::vector<uint> & indices) override;
+	void classifyDatum1(const uint & vecNum) override;
     /// successive
     void successiveRelearn() override;
 	void adjustToNewData() override;
@@ -190,10 +219,7 @@ public:
 	void printParams() override;
 
 protected:
-    void learn(std::vector<uint> & indices) override;
-#if CLASS_TEST_VIRTUAL
-    void test(const std::vector<uint> & indices) override;
-#endif
+	void learn(std::vector<uint> & indices) override;
 	std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 	void adjustToNewData() override;
 };
@@ -217,10 +243,7 @@ public:
     void setSvmType(int inNum);
 
 protected:
-    void learn(std::vector<uint> & indices) override;
-#if CLASS_TEST_VIRTUAL
-    void test(const std::vector<uint> & indices) override;
-#endif
+	void learn(std::vector<uint> & indices) override;
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 //	void adjustToNewData() override;
 };
@@ -236,10 +259,7 @@ public:
     DIST();
 
 protected:
-    void learn(std::vector<uint> & indices) override;
-#if CLASS_TEST_VIRTUAL
-    void test(const std::vector<uint> & indices) override;
-#endif
+	void learn(std::vector<uint> & indices) override;
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 	void adjustToNewData() override;
 };
@@ -255,10 +275,7 @@ public:
     NBC();
 
 protected:
-    void learn(std::vector<uint> & indices) override;
-#if CLASS_TEST_VIRTUAL
-    void test(const std::vector<uint> & indices) override;
-#endif
+	void learn(std::vector<uint> & indices) override;
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 	void adjustToNewData() override;
 };
@@ -277,10 +294,7 @@ public:
     void setNumOfNear(int);
 
 protected:
-    void learn(std::vector<uint> & indices) override;
-#if CLASS_TEST_VIRTUAL
-    void test(const std::vector<uint> & indices) override;
-#endif
+	void learn(std::vector<uint> & indices) override;
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 //	void adjustToNewData() override;
 };
@@ -304,10 +318,7 @@ public:
     void setNumClust(int ii);
 
 protected:
-    void learn(std::vector<uint> & indices) override;
-#if CLASS_TEST_VIRTUAL
-    void test(const std::vector<uint> & indices) override;
-#endif
+	void learn(std::vector<uint> & indices) override;
     std::pair<uint, double> classifyDatum(const uint & vecNum) override;
 //	void adjustToNewData() override;
 };

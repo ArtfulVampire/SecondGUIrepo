@@ -151,7 +151,6 @@ void Net::leaveOneOutClassification()
 
 void Net::crossClassification()
 {
-	/// OLD_DATA
 	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
 	const std::vector<uint> & types = myClassifier->getClassifierData()->getTypes();
 
@@ -173,10 +172,7 @@ void Net::crossClassification()
         // mix arr for one "pair"-iteration
         for(int i = 0; i < def::numOfClasses(); ++i)
         {
-            unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-            std::shuffle(arr[i].begin(),
-                         arr[i].end(),
-                         std::default_random_engine(seed));
+			smLib::mix(arr[i]);
         }
 
         for(int numFold = 0; numFold < fold; ++numFold)

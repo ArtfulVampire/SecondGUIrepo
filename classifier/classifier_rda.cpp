@@ -76,17 +76,6 @@ void RDA::learn(std::vector<uint> & indices)
 	}
 }
 
-#if CLASS_TEST_VIRTUAL
-void RDA::test(const std::vector<int> & indices)
-{
-    for(int ind : indices)
-    {
-        auto res = classifyDatum(ind);
-		confusionMatrix[myData->getTypes()[ind]][res.first] += 1.;
-    }
-}
-#endif
-
 std::pair<uint, double> RDA::classifyDatum(const uint & vecNum)
 {
 	std::valarray<double> output(myData->getNumOfCl());

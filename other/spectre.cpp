@@ -847,6 +847,18 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
         });
     }
 
+
+	/// pewpewpepweepw
+	for(int i = 0; i < data2.rows(); ++i)
+	{
+		for(int j = def::windLen * 250.; j < data2.cols(); ++j)
+		{
+			data2[i][j] = 0.;
+		}
+	}
+
+
+
     int h = 0;
     for(int i = 0; i < def::fftLength; ++i)
     {
@@ -859,9 +871,9 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
     }
 
     //generality
-    if(def::fftLength - Eyes < def::freq * 3.5) // real signal less than 3.5 seconds
+	if(def::fftLength - Eyes < def::freq * 3.5) // real signal less than 3.5 seconds
     {
-        return false;
+//        return false;
     }
 
     /// calculate spectra for all channels, but write not all ???

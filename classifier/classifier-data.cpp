@@ -205,8 +205,8 @@ void ClassifierData::addItem(const std::valarray<double> & inDatum,
 							 uint inType,
 							 const QString & inFileName)
 {
-//	std::valarray<double> newDatum = (inDatum - averageDatum) / (sigmaVector * variance);
-	std::valarray<double> newDatum = inDatum / 20.;
+	std::valarray<double> newDatum = (inDatum - averageDatum) / (sigmaVector * variance);
+//	std::valarray<double> newDatum = inDatum / 20.;
 //	newDatum /= 20.; /// same as in z_transform();
 	this->push_back(newDatum, inType, inFileName);
 }
@@ -254,6 +254,9 @@ void ClassifierData::resizeRows(int newRows)
 {
 	this->dataMatrix.resizeRows(newRows);
 }
+
+
+/// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 void ClassifierData::resizeCols(int newCols)
 {
 

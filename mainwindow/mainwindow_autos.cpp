@@ -6,20 +6,34 @@
 
 using namespace myOut;
 
-void MainWindow::testSuccessive()
+void MainWindow::testSuccessive(const std::vector<double> & vals)
 {
 	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
 	setEdfFile(path + "GAS_train.edf");
 	readData();
+	myLib::cleanDir(path + "Reals");
+//	myLib::cleanDir(path + "winds/fromreal");
+//	myLib::cleanDir(path + "SpectraSmooth/winds");
 
 	const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"};
-//    const QStringList names {"GAS"};
+//	const QStringList names {"GAS"};
 
-//	bool sliceAndCount = true;
-	bool sliceAndCount = false;
+	bool sliceAndCount = true;
+//	bool sliceAndCount = false;
 
-	ui->timeShiftSpinBox->setValue(2.);
-	ui->windowLengthSpinBox->setValue(4.);
+
+	std::vector<double> locVals = {4., 4., 4., 8.};
+	std::copy(std::begin(vals),
+			  std::end(vals),
+			  std::begin(locVals));
+
+	const double windLength	= locVals[0];
+	const double shiftTest	= locVals[1];
+	const double shiftLearn	= locVals[2];
+	const int numSmooth		= locVals[3];
+
+
+	ui->windowLengthSpinBox->setValue(windLength);
 	ui->windsButton->setChecked(true); // sliceWindFromReal
 
 	for(QString name : names)
@@ -28,16 +42,19 @@ void MainWindow::testSuccessive()
 		setEdfFile(path + name + "_train.edf");
 
 		myLib::cleanDir(path + "Reals");
+		myLib::cleanDir(path + "winds/fromreal");
+		myLib::cleanDir(path + "SpectraSmooth/winds");
 
-		ui->timeShiftSpinBox->setValue(2.);
+		ui->timeShiftSpinBox->setValue(shiftLearn);
 		if(sliceAndCount)
 		{
 			sliceAll();
 			myLib::cleanDir(path + "Reals");
+//			countSpectraSimple(1024, numSmooth);
 
 
 			QStringList windsList;
-			// delete first three winds from each realisation
+			/// delete first three winds from each realisation
 			windsList = QDir(path + "winds/fromreal").entryList({"*_train*.00",
 																 "*_train*.01",
 																 "*_train*.02"},
@@ -58,16 +75,15 @@ void MainWindow::testSuccessive()
 				QFile::remove(path + "winds/fromreal/" + windsList[i]);
 			}
 		}
-
 		setEdfFile(path + name + "_test" + ".edf");
-		ui->timeShiftSpinBox->setValue(1.); /// really should be 0.5
-		/// DON'T CLEAR, TRAIN winds TAKEN BY SUCCESSIVE
+		ui->timeShiftSpinBox->setValue(shiftTest);
 
+		/// DON'T CLEAR, TRAIN winds TAKEN BY SUCCESSIVE
 		if(sliceAndCount)
 		{
 			sliceAll();
 			myLib::cleanDir(path + "Reals");
-			countSpectraSimple(1024, 8);
+//			countSpectraSimple(1024, numSmooth);
 		}
 		else
 		{
@@ -79,18 +95,26 @@ void MainWindow::testSuccessive()
 		suc::learnSetStay = 40;
 		suc::decayRate = 0.00;
 
-		/// should not change averageDatum and sigmaVector
-		Net * net = new Net();
-		net->loadData(def::windsSpectraDir(), {name + "_train"});
+//		for(double len = 3.2; len >= 2.0; len -= 0.1)
+		for(double len : {4.0, 3.6, 3.2, 3.0, 2.8, 2.6, 2.5, 2.4, 2.3, 2.2, 2.1, 2.0})
+		{
+			def::windLen = len;
+			std::cout << "len = " << len << std::endl;
 
-		net->setClassifier(ClassifierType::ANN);
-		net->setSource("w");
-		net->setMode("t"); // train-test
+			countSpectraSimple(1024, numSmooth);
+			/// should not change averageDatum and sigmaVector ?
+			Net * net = new Net();
+			net->loadData(def::windsSpectraDir(), {name + "_train"});
 
-		std::cout << name << std::endl;
-		net->successiveProcessing();
+			net->setClassifier(ClassifierType::ANN);
+			net->setSource("w");
+			net->setMode("t"); // train-test
 
-		delete net;
+			std::cout << name << std::endl;
+			net->successiveProcessing();
+			delete net;
+		}
+
 	}
 }
 

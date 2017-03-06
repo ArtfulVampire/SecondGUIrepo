@@ -67,6 +67,17 @@ std::ostream & operator<< (std::ostream &os, const std::complex<double> & toOut)
 	return os;
 }
 
+std::ostream & operator<< (std::ostream &os, const QStringList & toOut)
+{
+//	std::string separ = "\t";
+	std::string separ = "\r\n";
+	for(const QString & in : toOut)
+	{
+		os << in << separ;
+	}
+	return os;
+}
+
 template <typename Typ, template <typename> class Cont>
 std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut)
 {
