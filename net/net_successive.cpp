@@ -36,7 +36,7 @@ void Net::successiveByEDF(const QString & edfPath1,
 			else if(a.second == 247.) typ = 1;
 			else if(a.second == 254.) typ = 2;
 			i = i + myLib::indexOfVal(mark, a.second) + 1
-				+ 1. * freq1 /// to loose some first windows
+//				+ 1. * freq1 /// to loose some first windows
 				;
 			continue;
 		}
@@ -91,7 +91,6 @@ void Net::successiveByEDF(const QString & edfPath1,
 	this->passed = 0.;
 
 
-
 	edfFile fil2;
 	fil2.readEdfFile(edfPath2);
 
@@ -107,6 +106,7 @@ void Net::successiveByEDF(const QString & edfPath1,
 	else if(markers2[sta2 - 1] == 247.) typ = 1;
 
 	int count2 = 0;
+	numGoodNew = 0;
 	matrix dt2 = fil2.getData().subRows(smLib::range<std::vector<uint>>(0, 18)); /// EEG only
 	for(uint i = sta2; i < dt2.cols() - suc::windLength * freq2; i += freq2 * suc::shiftTest)
 	{

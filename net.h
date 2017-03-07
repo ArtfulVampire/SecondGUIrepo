@@ -65,7 +65,7 @@ private:
 
 
     /// succesiive
-    int numGoodNew;
+	int numGoodNew{};
 	std::valarray<int> passed{};
     matrix pcaMat{};
 	void successiveLearning(const std::valarray<double> & newSpectre,
