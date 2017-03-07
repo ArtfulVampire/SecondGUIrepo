@@ -578,11 +578,12 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
             }
             else if(ui->enRadio->isChecked())
             {
-                if(ui->windsButton->isChecked()) //bad work
+				if(ui->windsButton->isChecked())
                 {
-					sliceOneByOne();
-//                    sliceOneByOneNew();
-                    sliceWindFromReal();
+					sliceWinds();
+//					sliceOneByOne();
+//					sliceOneByOneNew();
+//					sliceWindFromReal();
                 }
                 else if(ui->justSliceButton->isChecked())
                 {

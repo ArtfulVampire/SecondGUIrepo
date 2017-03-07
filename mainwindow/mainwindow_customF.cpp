@@ -13,7 +13,13 @@ void MainWindow::customFunc()
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 
-	testSuccessive();
+	def::fftLength = 1024;
+	suc::shiftLearn = 2.;
+	suc::shiftTest = 2;
+	suc::numSmooth = 6;
+
+	testSuccessive2();
+//	testSuccessive();
 	exit(0);
 	return;
 

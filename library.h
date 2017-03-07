@@ -106,7 +106,13 @@ template <typename Container>
 uint indexOfMin(const Container & cont);
 
 template <typename Container, typename Typ>
-uint indexOfVal(const Container & cont, const Typ & val);
+uint indexOfVal(const Container & cont, Typ val);
+
+template <typename Container, typename Typ>
+bool contains(const Container & cont, Typ val);
+
+template <typename Container, typename Typ>
+std::pair<bool, Typ> contains(const Container & cont, const std::initializer_list<Typ> & val);
 
 
 void makeSine(std::valarray<double> & in,

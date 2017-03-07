@@ -253,15 +253,40 @@ uint indexOfMin(const Container & cont)
 }
 
 template <typename Container, typename Typ>
-uint indexOfVal(const Container & cont, const Typ & val)
+uint indexOfVal(const Container & cont, Typ val)
 {
 	int i = 0;
-	for(auto it = std::begin(cont); it < std::end(cont); ++it, ++i)
+	for(auto it = std::begin(cont); it != std::end(cont); ++it, ++i)
 	{
 		if(*it == val) break;
 	}
 	return i;
 }
+template uint indexOfVal(const std::valarray<double> & cont, double val);
+
+template <typename Container, typename Typ>
+bool contains(const Container & cont, Typ val)
+{
+	return indexOfVal(cont, val) != cont.size();
+	/// stl
+	return std::find(std::begin(cont), std::end(cont), val) != std::end(cont);
+}
+
+
+template <typename Container, typename Typ>
+std::pair<bool, Typ> contains(const Container & cont, const std::initializer_list<Typ> & val)
+{
+	for(Typ in : cont)
+	{
+		for(Typ v : val)
+		{
+			if(in == v) return std::make_pair(true, v);
+		}
+	}
+	return std::make_pair(false, 0);
+}
+template std::pair<bool, double> contains(const std::valarray<double> & cont,
+										  const std::initializer_list<double> & val);
 
 std::string funcName(std::string in)
 {

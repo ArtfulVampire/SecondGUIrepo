@@ -57,6 +57,8 @@ public slots:
 	// files
     void sliceAll();
 	void sliceWindFromReal();
+
+	void sliceWinds();
     void reduceChannelsSlot();
 	void drawReals();
     void drawSpectraSlot();
@@ -136,6 +138,7 @@ public:
 	void BaklushevDraw(const QString & workPath, const QString & edfName);
 	void testNewClassifiers();
 	void testSuccessive(const std::vector<double> & vals = std::vector<double>{});
+	void testSuccessive2();
 
 
 private:

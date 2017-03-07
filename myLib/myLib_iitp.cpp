@@ -345,7 +345,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 
 
 	std::valarray<double> spectre(spLen * numCh);
-	matrix spectra{2, 1};
+	matrix spectra(2, 1);
 	std::valarray<double> spec(localFftLen);
 
 	this->setPieces(mark1, mark2);

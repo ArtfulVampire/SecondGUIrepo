@@ -2,11 +2,13 @@
 #include <iostream>
 #include "library.h"
 
+using namespace myOut;
+
 //using namespace myLib;
 
 void ClassifierData::adjust()
 {
-	numOfCl = *std::max_element(std::begin(this->types), std::end(this->types)) + 1;
+	numOfCl = *std::max_element(std::begin(types), std::end(types)) + 1;
 	this->indices.resize(numOfCl, std::vector<uint>{});
 	for(uint i = 0; i < this->types.size(); ++i)
 	{
@@ -57,7 +59,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 	this->dataMatrix = matrix();
 	this->classCount.resize(this->numOfCl);
 	this->types.clear();
-	fileNames.clear();
+	this->fileNames.clear();
 	this->filesPath = inPath;
 	this->indices.resize(numOfCl);
 
@@ -88,15 +90,11 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 #endif
 
 	this->apriori = classCount;
-
-	/// paskdnfajfkqnwjklerqw
-//	this->dataMatrix.resizeCols(60);
-
 	this->z_transform();
 
 }
 
-void ClassifierData::erase(uint index)
+void ClassifierData::erase(const uint index)
 {
 	dataMatrix.eraseRow(index);
 	classCount[ types[index] ] -= 1.;
@@ -104,15 +102,18 @@ void ClassifierData::erase(uint index)
 	/// indices - or just recount?
 	/// check empty classes?
 #if 1
+
 	auto & al = indices[types[index]];
 	al.erase(std::find(std::begin(al), std::end(al), index));
+
 	for(auto & ind : indices)
 	{
-		std::for_each(std::begin(ind), std::end(ind), [index](uint & in)
+		for(auto & inInd : ind)
 		{
-			if(in > index) --in;
-		});
+			if(inInd > index) --inInd;
+		}
 	}
+
 #else
 	indices.resize(numOfCl, std::vector<double>{});
 	for(uint i = 0; i < inTypes.size(); ++i)
@@ -125,46 +126,64 @@ void ClassifierData::erase(uint index)
 	fileNames.erase(fileNames.begin() + index);
 }
 
-void ClassifierData::erase(const std::vector<uint> & indices)
+void ClassifierData::print()
+{
+	std::cout << "numOfClasses = " << numOfCl << std::endl;
+	std::cout << "data rows = " << dataMatrix.rows() << std::endl;
+	std::cout << "types size = " << types.size() << std::endl;
+	std::cout << "classCount = " << classCount << std::endl;
+	std::cout << "indices sizes = ";
+	for(const auto & in : indices)
+	{
+		std::cout << in.size() << "\t";
+	}
+	std::cout << std::endl;
+	std::cout << "fileNames size = " << fileNames.size() << std::endl;
+	std::cout << std::endl;
+}
+
+void ClassifierData::erase(const std::vector<uint> & eraseIndices)
 {
 
-	dataMatrix.eraseRows(indices);
-	smLib::eraseItems(fileNames, indices);
+	dataMatrix.eraseRows(eraseIndices);
+	smLib::eraseItems(fileNames, eraseIndices);
 
-	for(int index : indices)
+	for(int index : eraseIndices)
 	{
 		classCount[ types[index] ] -= 1.;
 	}
-	smLib::eraseItems(types, indices);
+	smLib::eraseItems(types, eraseIndices);
 
 	/// indices - just recount
-	/// check empty classes?
-	this->indices.resize(numOfCl, std::vector<uint>{});
-	for(uint i = 0; i < this->types.size(); ++i)
+	indices.resize(numOfCl);
+	for(int i = 0; i < numOfCl; ++i)
 	{
-		this->indices[this->types[i]].push_back(i);
+		indices[i].clear();
+	}
+	for(uint i = 0; i < types.size(); ++i)
+	{
+		indices[ types[i] ].push_back(i);
 	}
 }
 
 void ClassifierData::removeFirstItemOfType(uint type)
 {
-	uint num = std::distance(std::begin(types),
-							 std::find(std::begin(types),
-									   std::end(types),
-									   type));
+	uint num = *std::min_element(std::begin(indices[type]),
+								 std::end(indices[type]));
 	this->erase(num);
+
 }
 
 void ClassifierData::reduceSize(uint oneClass)
 {
 	std::vector<uint> eraseIndices{};
-	std::valarray<double> count = classCount;
+	std::valarray<double> localCount = classCount;
 	for(uint i = 0; i < dataMatrix.rows(); ++i)
 	{
-		if(count[ types[i] ] > oneClass)
+		if(localCount[ types[i] ] > oneClass)
 		{
 			eraseIndices.push_back(i);
-			count[ types[i] ] -= 1.;
+			localCount[ types[i] ] -= 1.;
 		}
 	}
 	this->erase(eraseIndices);
@@ -215,8 +234,10 @@ void ClassifierData::push_back(const std::valarray<double> & inDatum,
 							   uint inType,
 							   const QString & inFileName)
 {
-	indices[inType].push_back(dataMatrix.rows()); // index of a new
+	if(inType >= indices.size()) indices.resize(inType + 1);
+	if(inType >= classCount.size()) smLib::resizeValar(classCount, inType + 1);
 
+	indices[inType].push_back(dataMatrix.rows()); // index of a new
 	dataMatrix.push_back(inDatum);
 	classCount[inType] += 1.;
 	types.push_back(inType);
@@ -225,15 +246,16 @@ void ClassifierData::push_back(const std::valarray<double> & inDatum,
 
 void ClassifierData::pop_back()
 {
-#if 1
+#if 01
 	this->erase(dataMatrix.rows() - 1);
 #else
-	const uint typ = types.back();
-	auto & ind = indices[typ];
-	ind.erase(std::max(std::begin(ind), std::end(ind)));
+	const int index = dataMatrix.rows() - 1;
+	const int type = types[index];
 
+	/// inversed push_back
+	indices[type].pop_back();
 	dataMatrix.pop_back();
-	classCount[typ] -= 1.;
+	classCount[ type ] -= 1.;
 	types.pop_back();
 	fileNames.pop_back();
 #endif

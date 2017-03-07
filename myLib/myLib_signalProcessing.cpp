@@ -1,11 +1,13 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
+#include <myLib/output.h>
 #include <DspFilters/Dsp.h>
 #include <QPixmap>
 #include <QPainter>
 #include <QTime>
 #include <fstream>
 
+using namespace myOut;
 
 namespace btr
 {
@@ -326,8 +328,6 @@ std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
 		fftLen = smLib::fftL(inputSignal.size());
 	}
 
-//	double norm = 2. / (inputSignal.size() * srate);
-
     double * pew = new double [2 * fftLen];
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
@@ -343,10 +343,9 @@ std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
     for(int i = 0; i < fftLen; ++i)
     {
 		res[i] = (pew[2 * i] * pew[2 * i] + pew[2 * i + 1] * pew[2 * i + 1]) ;
-    }
-//	res *= norm;
-	delete[] pew;
+	}
 
+	delete[] pew;
     return res;
 }
 
@@ -358,7 +357,6 @@ std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
 		fftLen = smLib::fftL(inputSignal.size());
 	}
 
-//	double norm = 2. / (inputSignal.size() * srate);
 	double * pew = new double [2 * fftLen];
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
@@ -372,7 +370,6 @@ std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
 
 	std::valarray<double> res(2 * fftLen);
 	std::copy(pew, pew + 2 * fftLen, std::begin(res));
-//	res *= sqrt(norm);
 
 	delete[] pew;
 	return res;
@@ -426,7 +423,6 @@ std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
 		fftLen = smLib::fftL(inputSignal.size());
 	}
 
-//	double norm = 2. / (inputSignal.size() * srate);
 	double * pew = new double [2 * fftLen];
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
@@ -442,7 +438,6 @@ std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
 	{
 		res[i] = (pew[2 * i] * pew[2 * i] + pew[2 * i + 1] * pew[2 * i + 1]);
 	}
-//	res *= norm;
 	delete []pew;
 
 	return res;
@@ -462,7 +457,6 @@ std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 		fftLen = smLib::fftL(inputSignal.size() / 2);
 	}
 
-//	double norm = 2. / (inputSignal.size() * srate);
 	double * pew = new double [2 * fftLen];
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
@@ -475,7 +469,6 @@ std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 
 	std::valarray<double> res(2 * fftLen);
 	std::copy(pew, pew + 2 * fftLen, std::begin(res));
-//	res *= sqrt(norm);
 
 	delete []pew;
 	return res;
@@ -1909,6 +1902,55 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
     return result;
 }
 
+matrix countSpectre(const matrix & inData,
+					int fftLen,
+					int numSmooth)
+{
+	matrix data2 = inData;
+	if(data2.cols() < fftLen)
+	{
+		data2.resizeCols(fftLen);
+	}
+	else
+	{
+		data2.pop_front(data2.cols() - fftLen);
+	}
+
+
+	const double threshold = 0.125;
+	int eyes = 0;
+	int h = 0;
+	for(int i = 0; i < fftLen; ++i)
+	{
+		h = 0;
+		for(int j = 0; j < data2.rows(); ++j)
+		{
+			if(std::abs(data2[j][i]) <= threshold) ++h; // generality 1/8.
+		}
+		if(h == data2.rows()) eyes += 1;
+	}
+
+	if(fftLen - eyes < def::freq * 3.
+	   || eyes > 0.3 * fftLen
+	   )
+	{
+		return {};
+	}
+
+
+	matrix res(data2.rows(), 1);
+	/// calculate spectra for all channels, but write not all ???
+	for(uint i = 0; i < data2.rows(); ++i)
+	{
+		myLib::calcSpectre(data2[i],
+						   res[i],
+						   fftLen,
+						   numSmooth,
+						   eyes);
+	}
+	return res;
+}
+
 
 
 
@@ -2041,7 +2083,6 @@ void calcSpectre(const std::valarray<double> & inSignal,
         return;
     }
 
-    const double norm1 = sqrt(fftLength / double(fftLength - Eyes));
 #if 0
     const double norm2 = 2. / (def::freq * fftLength);
     std::vector<double> spectre (fftLength * 2, 0.); // can be valarray, but not important
@@ -2056,17 +2097,16 @@ void calcSpectre(const std::valarray<double> & inSignal,
 //        outSpectre[ i ] = pow ( outSpectre[ i ], powArg );
     }
 #else
-    const double nrm = 2. / (double(fftLength - Eyes) * def::freq);
+	const double nrm = 2. / (double(fftLength - Eyes) * def::freq);
 	outSpectre = spectreRtoR(inSignal, fftLength) * nrm;
 #endif
-//    outSpectre = pow(four2r(inSignal, fftLength, 1) * nrm, powArg);
 
 
-
+	const double norm1 = sqrt(fftLength / double(fftLength - Eyes));
     //smooth spectre
     const int leftSmoothLimit = 1;
     const int rightSmoothLimit = fftLength / 2 - 1;
-    double help1, help2;
+	double help1, help2;
 	for(int a = 0; a < (int)(NumOfSmooth / norm1); ++a)
     {
         help1 = outSpectre[leftSmoothLimit - 1];

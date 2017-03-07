@@ -9,7 +9,7 @@
 class ClassifierData
 {
 public:
-	ClassifierData() {}
+	ClassifierData() {numOfCl = 3;}
 	~ClassifierData() {}
 	ClassifierData(const matrix & inData, const std::vector<uint> & inTypes);
 	ClassifierData(const QString & inPath, const QStringList & filters = QStringList());
@@ -34,8 +34,11 @@ public:
 	void setApriori(const std::valarray<double> inApriori) {apriori = inApriori;}
 
 	/// matrix modifiers
-	void erase(uint index);
-	void erase(const std::vector<uint> & indices);
+	void erase(const uint index);
+
+	void erase(const std::vector<uint> & eraseIndices);
+	void print();
+
 	void push_back(const std::valarray<double> & inDatum,
 				   uint inType,
 				   const QString & inFileName);

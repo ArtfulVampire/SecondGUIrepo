@@ -14,7 +14,6 @@ int right() {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}
 double leftFreq = 5.;
 double rightFreq = 20.;
 double inertiaCoef = exp(-5. / 7);
-double windLen = 3.;
 
 double freq = 250.;
 int fftLength = 4096;
@@ -51,4 +50,9 @@ int numGoodNewLimit = 5;
 int learnSetStay = 60;
 double decayRate = 0.01;
 double errorThreshold = 1.0;
+
+double windLength = 4.;
+double shiftLearn = 0.2;
+double shiftTest = 0.2;
+double numSmooth = 8;
 }

@@ -361,8 +361,7 @@ QPixmap drawArrays(const QPixmap & templatePic,
 
 QPixmap drawArrays(const QPixmap & templatePic, const std::vector<QString> & filesPaths)
 {
-	matrix dat{1};
-	dat.resizeRows(filesPaths.size());
+	matrix dat(filesPaths.size(), 1);
 
 	for(int i = 0; i < filesPaths.size(); ++i)
 	{
@@ -382,8 +381,7 @@ std::vector<QPixmap> drawArraysSameScale(const QPixmap & templatePic,
 {
 	std::vector<QPixmap> res;
 
-	matrix dat{1};
-	dat.resizeRows(filesPaths.size());
+	matrix dat(filesPaths.size(), 1);
 
 	for(int i = 0; i < filesPaths.size(); ++i)
 	{

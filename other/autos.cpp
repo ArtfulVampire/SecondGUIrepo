@@ -1509,7 +1509,7 @@ void countSpectraFeatures(const QString & filePath,
 #endif
 
 		for(auto it = std::begin(fullSpectre);
-			it < std::end(fullSpectre);
+			it != std::end(fullSpectre);
 			++it)
 		{
 

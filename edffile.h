@@ -291,6 +291,7 @@ public:
 
 
 	const matrix & getData() const {return edfData;}
+	const std::valarray<double> & getMarkArr() const {return edfData[markerChannel];}
 	void setData(int chanNum, int timeBin, double val) {edfData[chanNum][timeBin] = val;}
 
     const std::valarray<double> & operator [](int i) const

@@ -110,6 +110,12 @@ extern int numGoodNewLimit;
 extern int learnSetStay;
 extern double decayRate;
 extern double errorThreshold;
+
+/// new successive by edf files
+extern double windLength;
+extern double shiftLearn;
+extern double shiftTest;
+extern double numSmooth;
 }
 
 
@@ -152,7 +158,6 @@ namespace def
 	extern double leftFreq;
 	extern double rightFreq;
 	extern double inertiaCoef;
-	extern double windLen;
 
     extern QString cfgFileName;
     extern QStringList fileMarkers;

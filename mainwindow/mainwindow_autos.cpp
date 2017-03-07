@@ -6,31 +6,50 @@
 
 using namespace myOut;
 
+
+void MainWindow::testSuccessive2()
+{
+	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
+
+//	const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"};
+	const QStringList names {"GAS"};
+
+	for(QString name : names)
+	{
+		/// current best set
+		suc::numGoodNewLimit = 3;
+		suc::learnSetStay = 40;
+		suc::decayRate = 0.00;
+
+
+		/// should not change averageDatum and sigmaVector ?
+		Net * net = new Net();
+
+		net->setSource("w");
+		net->setMode("t"); // train-test
+
+		net->successiveByEDF(path + name + "_train" + ".edf",
+							 path + name + "_test" + ".edf");
+		delete net;
+	}
+}
+
 void MainWindow::testSuccessive(const std::vector<double> & vals)
 {
 	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
-	setEdfFile(path + "GAS_train.edf");
-	readData();
-	myLib::cleanDir(path + "Reals");
-//	myLib::cleanDir(path + "winds/fromreal");
-//	myLib::cleanDir(path + "SpectraSmooth/winds");
 
-	const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"};
-//	const QStringList names {"GAS"};
+//	const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"};
+	const QStringList names {"GAS"};
 
 	bool sliceAndCount = true;
 //	bool sliceAndCount = false;
 
 
-	std::vector<double> locVals = {4., 4., 4., 8.};
-	std::copy(std::begin(vals),
-			  std::end(vals),
-			  std::begin(locVals));
 
-	const double windLength	= locVals[0];
-	const double shiftTest	= locVals[1];
-	const double shiftLearn	= locVals[2];
-	const int numSmooth		= locVals[3];
+	const double windLength	= suc::windLength;
+	const double shiftTest	= suc::shiftTest;
+	const double shiftLearn	= suc::shiftLearn;
+	const int numSmooth		= suc::numSmooth;
 
 
 	ui->windowLengthSpinBox->setValue(windLength);
@@ -95,25 +114,20 @@ void MainWindow::testSuccessive(const std::vector<double> & vals)
 		suc::learnSetStay = 40;
 		suc::decayRate = 0.00;
 
-//		for(double len = 3.2; len >= 2.0; len -= 0.1)
-		for(double len : {4.0, 3.6, 3.2, 3.0, 2.8, 2.6, 2.5, 2.4, 2.3, 2.2, 2.1, 2.0})
-		{
-			def::windLen = len;
-			std::cout << "len = " << len << std::endl;
 
-			countSpectraSimple(1024, numSmooth);
-			/// should not change averageDatum and sigmaVector ?
-			Net * net = new Net();
-			net->loadData(def::windsSpectraDir(), {name + "_train"});
+		countSpectraSimple(1024, numSmooth);
+		/// should not change averageDatum and sigmaVector ?
+		Net * net = new Net();
+		net->loadData(def::windsSpectraDir(), {name + "_train"});
 
-			net->setClassifier(ClassifierType::ANN);
-			net->setSource("w");
-			net->setMode("t"); // train-test
+		net->setClassifier(ClassifierType::ANN);
+		net->setSource("w");
+		net->setMode("t"); // train-test
 
-			std::cout << name << std::endl;
-			net->successiveProcessing();
-			delete net;
-		}
+		std::cout << name << std::endl;
+		net->successiveProcessing();
+		delete net;
+
 
 	}
 }

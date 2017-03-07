@@ -106,6 +106,7 @@ public:
     void autoClassification(const QString & spectraDir);
     /// NEED CHECK
     void successiveProcessing();
+	void successiveByEDF(const QString & edfPath1, const QString & edfPath2);
     void successivePreclean(const QString & spectraPath);
 
     /// setsgets

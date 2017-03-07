@@ -345,12 +345,10 @@ void ANN::successiveRelearn()
     const double rat = suc::decayRate;
     for(uint i = 0; i < dim.size() - 1; ++i)
     {
-        std::for_each(std::begin(weight[i]),
-                      std::end(weight[i]),
-                      [rat](std::valarray<double> & in)
-        {
-            in *= 1. - rat;
-        });
+		for(auto & in : weight[i])
+		{
+			in *= 1. - rat;
+		}
     }
 
     this->resetFlag = false;

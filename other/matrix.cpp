@@ -508,7 +508,7 @@ matrix::matrix(int rows, int cols, double value)
 
 matrix & matrix::fill(double value)
 {
-	for(auto it = std::begin(myData); it < std::end(myData); ++it)
+	for(auto it = std::begin(myData); it != std::end(myData); ++it)
 	{
 		(*it) = value;
     }
@@ -555,12 +555,12 @@ matrix & matrix::random(double low, double high)
     std::default_random_engine gen(std::chrono::system_clock::now().time_since_epoch().count());
 //    std::default_random_engine gen;
     std::uniform_real_distribution<double> distr(low, high);
-	for(auto it = std::begin(myData); it < std::end(myData); ++it)
+	for(auto it = std::begin(myData); it != std::end(myData); ++it)
     {
 #if MATRIX_OMP
 #pragma omp parallel for
 #endif
-        for(auto itt = std::begin(*it); itt < std::end(*it); ++itt)
+		for(auto itt = std::begin(*it); itt != std::end(*it); ++itt)
         {
             (*itt) = distr(gen);
         }
@@ -599,7 +599,7 @@ matrix matrix::subRows(const std::vector<int> & inds) const /// submatrix
 
 matrix matrix::subRows(const std::vector<uint> & inds) const /// submatrix
 {
-	matrix res = matrix();
+	matrix res{};
     for(int i : inds)
     {
 		res.myData.push_back(myData[i]);
@@ -1162,7 +1162,7 @@ std::valarray<double> matrix::matrixSystemSolveGauss(const std::valarray<double>
 
 std::ostream & operator<<(std::ostream & os, const matrix & toOut)
 {
-	for(auto it = std::begin(toOut.myData); it < std::end(toOut.myData); ++it)
+	for(auto it = std::begin(toOut.myData); it != std::end(toOut.myData); ++it)
 	{
 		/// uses myOut::operator<<(const std::valarray<double> &);
 		os << *it << std::endl;

@@ -1181,6 +1181,8 @@ double drawArrays(const QString & templPath,
 
     // test size
     int shouldSize = numOfChan * def::spLength();
+//	std::cout << "numOfChan = " << numOfChan << "\t"
+//			  << "spLength = " << def::spLength() << std::endl;
 
     std::for_each(inMatrix.begin(),
                   inMatrix.end(),
@@ -1188,7 +1190,8 @@ double drawArrays(const QString & templPath,
     {
         if(inData.size() > shouldSize)
         {
-			std::cout << "drawArrays: inappropriate array size = " << inData.size() << std::endl;
+//			std::cout << "drawArrays: inappropriate array size = " << inData.size()
+//					  << "should be = " << shouldSize << std::endl;
             return;
         }
     });
@@ -1799,7 +1802,7 @@ QPixmap drawEeg(const matrix & dataD,
         // same speed
         int c1 = 0;
         auto it = std::begin(dataD[c2]) + 1;
-        for(auto itt = std::begin(dataD[c2]); itt < std::end(dataD[c2]) - 1; ++itt, ++it, ++c1)
+        for(auto itt = std::begin(dataD[c2]); itt != std::end(dataD[c2]) - 1; ++itt, ++it, ++c1)
         {
             paint.drawLine(c1    , (c2 + 1) * pic.height() / (ns + 2) + *itt * norm,
                            c1 + 1, (c2 + 1) * pic.height() / (ns + 2) + *it  * norm);

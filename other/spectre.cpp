@@ -829,7 +829,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
     if(data2.cols() < def::fftLength)
     {
         /// fit with zeros to def::fftLength
-        data2.resizeCols(def::fftLength); /// clever resizing in matrix.cpp
+		data2.resizeCols(def::fftLength);
     }
     else
     {
@@ -849,13 +849,13 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
 
 
 	/// pewpewpepweepw
-	for(int i = 0; i < data2.rows(); ++i)
-	{
-		for(int j = def::windLen * 250.; j < data2.cols(); ++j)
-		{
-			data2[i][j] = 0.;
-		}
-	}
+//	for(int i = 0; i < data2.rows(); ++i)
+//	{
+//		for(int j = def::windLen * 250.; j < data2.cols(); ++j)
+//		{
+//			data2[i][j] = 0.;
+//		}
+//	}
 
 
 
@@ -873,7 +873,7 @@ bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
     //generality
 	if(def::fftLength - Eyes < def::freq * 3.5) // real signal less than 3.5 seconds
     {
-//        return false;
+		return false;
     }
 
     /// calculate spectra for all channels, but write not all ???

@@ -3,6 +3,61 @@
 
 using namespace myOut;
 
+
+void MainWindow::sliceWinds()
+{
+	QTime myTime;
+	myTime.start();
+
+	QString helpString;
+
+	const edfFile & fil = globalEdf;
+
+	const int timeShift = ui->timeShiftSpinBox->value() * fil.getFreq();
+	const int wndLength = ui->windowLengthSpinBox->value() * fil.getFreq();
+
+	const std::valarray<double> & marks = fil.getMarkArr();
+
+	uint sta = std::min(
+					myLib::indexOfVal(marks, 241.),
+					myLib::indexOfVal(marks, 247.)) + 1;
+
+
+	int typ = -1;
+
+	QString marker;
+	if(marks[sta - 1] == 241.) {typ = 0; marker = "241";}
+	else if(marks[sta - 1] == 247.) {typ = 1; marker = "247";}
+	else if(marks[sta - 1] == 254.) {typ = 2; marker = "254";}
+
+	int num = 0;
+	for(uint i = sta; i < fil.getDataLen() - wndLength; i += timeShift)
+	{
+		auto mark = smLib::valarSubsec(marks, i, i + wndLength);
+
+		std::pair<bool, double> a = myLib::contains(mark, {241., 247., 254.});
+		if(a.first)
+		{
+			if(a.second == 241.) typ = 0;
+			else if(a.second == 247.) typ = 1;
+			else if(a.second == 254.) typ = 2;
+
+			marker = nm(a.second);
+
+			i = i + myLib::indexOfVal(mark, a.second) + 1;
+		}
+		else
+		{
+			helpString = def::windsFromRealsDir()
+						 + "/" + fil.getExpName()
+						 + "." + rn(num++, 4)
+						 + "_" + marker;
+
+			fil.saveSubsection(i, i + wndLength, helpString, true);
+		}
+	}
+}
+
 void MainWindow::sliceWindFromReal()
 {
     QTime myTime;

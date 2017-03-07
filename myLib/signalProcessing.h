@@ -47,6 +47,10 @@ std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre)
 std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 									const int numOfSmooth);
 
+matrix countSpectre(const matrix & inData,
+					int fftLen,
+					int numSmooth);
+
 /// original FFT
 void four1(double * dataF, int nn, int isign);
 double spectreNorm(int fftLen, int realSig, int srate);
