@@ -1909,7 +1909,6 @@ matrix countSpectre(const matrix & inData,
 		data2.pop_front(data2.cols() - fftLen);
 	}
 
-
 	const double threshold = 0.125;
 	int eyes = 0;
 	int h = 0;
@@ -1929,7 +1928,6 @@ matrix countSpectre(const matrix & inData,
 	{
 		return {};
 	}
-
 
 	matrix res(data2.rows(), 1);
 	/// calculate spectra for all channels, but write not all ???

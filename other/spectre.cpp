@@ -824,69 +824,10 @@ void Spectre::countSpectra()
 }
 
 bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
-{
-    //correct Eyes number and dataLen
-    int Eyes = 0;
-    if(data2.cols() < def::fftLength)
-    {
-        /// fit with zeros to def::fftLength
-		data2.resizeCols(def::fftLength);
-    }
-    else
-    {
-        /// take the last def::fftLength samples
-        const int a = def::fftLength;
-
-        std::for_each(data2.begin(),
-                      data2.end(),
-                      [a](std::valarray<double> & in)
-		{
-			std::valarray<double> newArr = in[std::slice(in.size() - a,
-														 a,
-														 1)];
-            in = newArr;
-        });
-    }
-
-
-	/// pewpewpepweepw
-//	for(int i = 0; i < data2.rows(); ++i)
-//	{
-//		for(int j = def::windLen * 250.; j < data2.cols(); ++j)
-//		{
-//			data2[i][j] = 0.;
-//		}
-//	}
-
-
-
-    int h = 0;
-    for(int i = 0; i < def::fftLength; ++i)
-    {
-        h = 0;
-        for(int j = 0; j < def::nsWOM(); ++j)
-        {
-            if(std::abs(data2[j][i]) <= 0.125) ++h; // generality 1/8.
-        }
-        if(h == def::nsWOM()) Eyes += 1;
-    }
-
-    //generality
-	if(def::fftLength - Eyes < def::freq * 3.5) // real signal less than 3.5 seconds
-    {
-		return false;
-    }
-
-    /// calculate spectra for all channels, but write not all ???
-    for(uint i = 0; i < data2.rows(); ++i)
-    {
-		myLib::calcSpectre(data2[i],
-						   outData[i],
-						   def::fftLength,
-						   ui->smoothBox->value(),
-						   Eyes);
-    }
-    return true;
+{	
+	outData = myLib::countSpectre(data2, def::fftLength, ui->smoothBox->value());
+	if(outData.isEmpty()) return false;
+	return true;
 }
 
 void Spectre::drawWavelets()
