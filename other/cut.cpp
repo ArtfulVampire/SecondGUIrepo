@@ -89,21 +89,7 @@ Cut::Cut() :
 	ui->secondDoubleSpinBox->setMinimum(-500);
 
 
-#if 0
-    QFileDialog * browser = new QFileDialog();
-    browser->setDirectory(def::dir->absolutePath());
-    browser->setViewMode(QFileDialog::Detail);
-    QObject::connect(ui->browseButton, SIGNAL(clicked()), browser, SLOT(show()));
-    QObject::connect(ui->subdirComboBox, SIGNAL(currentTextChanged(QString)),
-                     this, SLOT(setBrowserDir()));
-    QObject::connect(browser, SIGNAL(fileSelected(QString)),
-                     ui->lineEdit, SLOT(setText(QString)));
-    QObject::connect(browser, SIGNAL(fileSelected(QString)),
-                     this, SLOT(createImage(QString)));
-    //    QObject::connect(browser, SIGNAL(fileSelected(QString)), browser, SLOT(hide()));
-#else
-    QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
-#endif
+	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
 
 	QObject::connect(undoShortcut, SIGNAL(activated()), this, SLOT(undoSlot()));
 	QObject::connect(copyShortcut, SIGNAL(activated()), this, SLOT(copySlot()));
@@ -647,8 +633,7 @@ void Cut::resizeWidget(double a)
 	this->resize(a * currFreq + 20, this->height());
 }
 
-/// FULL REMAKE
-/// make for opened edf
+/// FULL REMAKE with fileType::edf
 void Cut::matiAdjustLimits() /////// should TEST !!!!!
 {
 #if 0

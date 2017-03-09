@@ -24,7 +24,7 @@ void Net::successiveByEDF(const QString & edfPath1,
 
 
 	int count1 = 0;
-	matrix dt1 = fil1.getData().subRows(smLib::range<std::vector<uint>>(0, 18)); /// EEG only
+	matrix dt1 = fil1.getData().subRows(smLib::range<std::vector<uint>>(0, 18));
 	for(uint i = sta1; i < dt1.cols() - suc::windLength * freq1; i += freq1 * suc::shiftLearn)
 	{
 		auto mark = smLib::valarSubsec(markers1, i, i + suc::windLength * freq1);
@@ -106,7 +106,6 @@ void Net::successiveByEDF(const QString & edfPath1,
 	else if(markers2[sta2 - 1] == 247.) typ = 1;
 
 	int count2 = 0;
-	numGoodNew = 0;
 	matrix dt2 = fil2.getData().subRows(smLib::range<std::vector<uint>>(0, 18)); /// EEG only
 	for(uint i = sta2; i < dt2.cols() - suc::windLength * freq2; i += freq2 * suc::shiftTest)
 	{
@@ -144,7 +143,6 @@ void Net::successiveProcessing()
     const QString trainMarker = "_train";
 	const QString testMarker = "_test";
 
-    numGoodNew = 0;
 	const QString helpString = def::windsSpectraDir();
 
 	this->loadData(helpString, {def::ExpName.left(3) + "*" + trainMarker + "*"});
@@ -189,7 +187,6 @@ void Net::successivePreclean(const QString & spectraPath)
 {
     QStringList leest;
 	myLib::makeFullFileList(spectraPath, leest, {"*train*"});
-    // clean from first 2 winds from each realisation
 	std::cout << "clean first 2 winds" << std::endl;
 
     for(const QString & str : leest)
@@ -200,7 +197,6 @@ void Net::successivePreclean(const QString & spectraPath)
         }
     }
 
-    // clean by learnSetStay
 	std::cout << "clean by learnSetStay" << std::endl;
     std::vector<QStringList> leest2;
 	myLib::makeFileLists(spectraPath, leest2);
@@ -220,7 +216,6 @@ void Net::successivePreclean(const QString & spectraPath)
 
     setErrCrit(0.05);
 
-    // N-fold cleaning
 	std::cout << "N-fold cleaning" << std::endl;
 
     myClassifier->setTestCleanFlag(true);
@@ -237,6 +232,7 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
 							 const uint newType,
                              const QString & newFileName)
 {
+	static int numGoodNew = 0;
 	myClassifierData.addItem(newSpectre, newType, newFileName);
 
 	// take the last and increment confusion matrix
@@ -256,7 +252,7 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
 	}
 	++passed[newType];
 
-	if(numGoodNew == suc::numGoodNewLimit)
+	if(numGoodNew >= suc::numGoodNewLimit)
 	{
 		myClassifier->successiveRelearn();
 		numGoodNew = 0;

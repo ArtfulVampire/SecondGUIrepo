@@ -566,15 +566,9 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
         }
         if(ui->sliceCheckBox->isChecked())
         {
-            if(ui->ntRadio->isChecked()) // for Boris
+			if(ui->ntRadio->isChecked())
             {
-#if 0
-                slice(10, 49, "m"); //math.operation
-                slice(50, 89, "e"); //emotional verb
-                slice(90, 129, "v"); //verb
-                slice(130, 169, "n"); //noun
-                slice(170, 209, "a"); //number
-#endif
+				/// was for Boris, now empty
             }
             else if(ui->enRadio->isChecked())
             {

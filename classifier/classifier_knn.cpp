@@ -21,14 +21,14 @@ void KNN::learn(std::vector<uint> & indices)
 {
 	if(!distances.isEmpty()) return;
 
-	uint num = myData->getData().rows();
+	uint num = myClassData->getData().rows();
     distances = matrix(num, num, 0.);
     for(uint i = 0; i < num; ++i)
     {
         for(uint j = i + 1; j < num; ++j)
         {
-		   distances[i][j] = smLib::distance(myData->getData()[i],
-					myData->getData()[j]);
+		   distances[i][j] = smLib::distance(myClassData->getData()[i],
+					myClassData->getData()[j]);
            distances[j][i] = distances[i][j];
         }
     }
@@ -38,12 +38,12 @@ std::pair<uint, double> KNN::classifyDatum(const uint & vecNum)
 {
     std::vector<std::pair<double, int>> toSort;
 
-	for(uint i = 0; i < myData->getData().rows(); ++i)
+	for(uint i = 0; i < myClassData->getData().rows(); ++i)
     {
         if(i == vecNum) continue;
         toSort.push_back(std::make_pair(
                              distances[i][vecNum],
-							 myData->getTypes()[i])
+							 myClassData->getTypes()[i])
                          );
     }
     std::sort(std::begin(toSort),
@@ -55,7 +55,7 @@ std::pair<uint, double> KNN::classifyDatum(const uint & vecNum)
     );
 
     /// solving part
-	std::vector<double> numOfClass(myData->getNumOfCl(), 0);
+	std::vector<double> numOfClass(myClassData->getNumOfCl(), 0);
     double sgm = toSort[numOfNear].first / 3.;
 
     for(int i = 0; i < numOfNear; ++i)
@@ -73,5 +73,5 @@ std::pair<uint, double> KNN::classifyDatum(const uint & vecNum)
     printResult("KNN.txt", outClass, vecNum);
 
     return std::make_pair(outClass,
-						  double(outClass != myData->getTypes()[vecNum]));
+						  double(outClass != myClassData->getTypes()[vecNum]));
 }

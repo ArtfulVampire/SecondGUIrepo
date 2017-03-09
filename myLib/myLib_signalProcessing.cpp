@@ -211,8 +211,6 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 												highFreq,
 												isNotch,
 												srate);
-#if 01
-	// reverse signal
 	tmp = reverseArray(tmp);
 
 	tmp = refilterOneSide(tmp,
@@ -222,7 +220,6 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 						  srate);
 	// reverse back
 	tmp = reverseArray(tmp);
-#endif
 	return tmp;
 }
 
@@ -787,9 +784,6 @@ std::valarray<std::complex<double>> spectreRtoCcomplex(
 		const std::valarray<double> & inputArray,
 		int fftLen)
 {
-#if 0
-	std::valarray<std::complex<double>> res{inputArray};
-#else
 	std::valarray<std::complex<double>> res(inputArray.size());
 	std::transform(std::begin(inputArray),
 				   std::end(inputArray),
@@ -799,7 +793,6 @@ std::valarray<std::complex<double>> spectreRtoCcomplex(
 		return std::complex<double>(in);
 	}
 	);
-#endif
 
 	return spectreCtoCcomplex(res, fftLen);
 }
@@ -2083,23 +2076,9 @@ void calcSpectre(const std::valarray<double> & inSignal,
         return;
     }
 
-#if 0
-    const double norm2 = 2. / (def::freq * fftLength);
-    std::vector<double> spectre (fftLength * 2, 0.); // can be valarray, but not important
-    for(int i = 0; i < fftLength; ++i)
-    {
-        spectre[ i * 2 ] = inSignal[ i ] * norm1;
-    }
-    four1(spectre, fftLength, 1);
-    for(int i = 0; i < fftLength / 2; ++i )
-    {
-        outSpectre[ i ] = (pow(spectre[ i * 2 ], 2) + pow(spectre[ i * 2 + 1 ], 2)) * norm2;
-//        outSpectre[ i ] = pow ( outSpectre[ i ], powArg );
-    }
-#else
 	const double nrm = 2. / (double(fftLength - Eyes) * def::freq);
 	outSpectre = spectreRtoR(inSignal, fftLength) * nrm;
-#endif
+//	outSpectre = pow(outSpectre, powArg);
 
 
 	const double norm1 = sqrt(fftLength / double(fftLength - Eyes));

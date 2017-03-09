@@ -147,12 +147,13 @@ std::complex<double> iitpData::coherencyR(int chan1, int chan2, double freq)
 		for(int i = 0; i < this->piecesData.size(); ++i)
 		{
 #if 01
+			/// .apply(smLib::abs)
 			coherenciesR[chan1][chan2] += this->piecesFFT[i][chan1] *
 										  this->piecesFFT[i][chan2].apply(std::conj) /
 										  (this->piecesFFT[i][chan1].apply(smLib::abs) *
 										   this->piecesFFT[i][chan2].apply(smLib::abs));
 #else
-			/// OR
+			/// smLib::abs( )
 			coherenciesR[chan1][chan2] += this->piecesFFT[i][chan1] *
 										  this->piecesFFT[i][chan2].apply(std::conj) /
 										  (smLib::abs(this->piecesFFT[i][chan1]) *

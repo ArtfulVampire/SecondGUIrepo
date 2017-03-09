@@ -46,9 +46,6 @@
 #include <omp.h>
 #endif
 
-#define OLD_DATA 0
-
-
 #include <myLib/signalProcessing.h>
 #include <myLib/wavelet.h>
 #include <myLib/dataHandlers.h>

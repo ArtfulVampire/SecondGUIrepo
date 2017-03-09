@@ -12,15 +12,6 @@ Net::Net() :
 
     stopFlag = 0;
 
-
-
-//	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
-//	const std::vector<uint> & types = myClassifier->getClassifierData()->getTypes();
-//	const std::vector<QString> & fileNames = myClassifier->getClassifierData()->getFileNames();
-//	const std::valarray<double> & classCount = myClassifier->getClassifierData()->getClassCount();
-//	const double & numOfClasses = myClassifier->getClassifierData()->getNumOfCl();
-
-//    tempRandomMatrix = matrix(def::nsWOM(), def::nsWOM());
     /// 0
     myButtonGroup.push_back(new QButtonGroup());
     myButtonGroup.back()->addButton(ui->leaveOneOutRadioButton);
@@ -118,17 +109,14 @@ Net::Net() :
     ui->rdaLambdaSpinBox->setValue(0.1);
 
 
-//	std::cout << 11 << std::endl;
 	myClassifierData = ClassifierData();
-//	std::cout << 22 << std::endl;
 	myClassifier = new NBC();
-//	std::cout << 33 << std::endl;
 
 
 
     QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
-    QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopActivity()));
+	QObject::connect(ui->stopButton, &QPushButton::clicked, [this](){ this->stopFlag = true; });
 
     QObject::connect(ui->autoClassButton, SIGNAL(clicked()), this, SLOT(autoClassificationSimple()));
     QObject::connect(ui->autoClassDataPushButton, SIGNAL(clicked()), this, SLOT(autoClassification()));
@@ -224,7 +212,7 @@ void Net::writeWtsSlot()
             helpString += ".wts";
         }
     }
-    else /////////wtf?
+	else
     {
         do
         {
@@ -270,19 +258,9 @@ void Net::loadDataSlot()
                                                            def::dir->absolutePath());
     if(helpString.isEmpty())
     {
-//        QMessageBox::information((QWidget * )this,
-//                                 tr("Information"),
-//                                 tr("No directory was chosen"),
-//                                 QMessageBox::Ok);
         return;
-    }
-	std::cout << helpString << std::endl;
-#if !OLD_DATA
+	}
 	myClassifierData = ClassifierData(helpString);
-#else
-	loadData(helpString, {}
-             );
-#endif
 }
 
 

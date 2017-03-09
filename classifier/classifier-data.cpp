@@ -8,7 +8,9 @@ using namespace myOut;
 
 void ClassifierData::adjust()
 {
+	/// can be generilized via std::set and set.size()
 	numOfCl = *std::max_element(std::begin(types), std::end(types)) + 1;
+
 	this->indices.resize(numOfCl, std::vector<uint>{});
 	for(uint i = 0; i < this->types.size(); ++i)
 	{
@@ -21,7 +23,7 @@ void ClassifierData::adjust()
 		classCount[i] = indices[i].size();
 	}
 
-	fileNames.resize(this->types.size(), "pewpew_fileName");
+	fileNames.resize(this->types.size(), QString());
 
 	apriori = classCount;
 }
@@ -43,42 +45,18 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 
 ClassifierData::ClassifierData(const QString & inPath, const QStringList & filters)
 {
-#if 0
-	std::vector<QStringList> leest;
-	myLib::makeFileLists(inPath, leest, filters);
-	this->numOfCl = leest.size();
-#else
-
 	QStringList lst;
 	myLib::makeFullFileList(inPath, lst, filters);
+
 	this->numOfCl = def::fileMarkers.length();
-#endif
-
-
-
 	this->dataMatrix = matrix();
-	this->classCount.resize(this->numOfCl);
 	this->types.clear();
 	this->fileNames.clear();
 	this->filesPath = inPath;
 	this->indices.resize(numOfCl);
+	this->classCount.resize(this->numOfCl, 0.);
 
 	std::valarray<double> tempArr;
-
-#if 0
-	/// std::vector<QStringList>
-	for(uint i = 0; i < leest.size(); ++i)
-	{
-		classCount[i] = 0.;
-		for(const QString & fileName : leest[i])
-		{
-			myLib::readFileInLine(inPath + slash + fileName,
-								  tempArr);
-			this->push_back(tempArr, i, fileName);
-		}
-	}
-#else
-	classCount = 0;
 	for(const QString & fileName : lst)
 	{
 		myLib::readFileInLine(inPath + slash + fileName,
@@ -87,11 +65,8 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 						myLib::getTypeOfFileName(fileName),
 						fileName);
 	}
-#endif
-
 	this->apriori = classCount;
 	this->z_transform();
-
 }
 
 void ClassifierData::erase(const uint index)
@@ -99,10 +74,7 @@ void ClassifierData::erase(const uint index)
 	dataMatrix.eraseRow(index);
 	classCount[ types[index] ] -= 1.;
 
-	/// indices - or just recount?
 	/// check empty classes?
-#if 1
-
 	auto & al = indices[types[index]];
 	al.erase(std::find(std::begin(al), std::end(al), index));
 
@@ -113,14 +85,6 @@ void ClassifierData::erase(const uint index)
 			if(inInd > index) --inInd;
 		}
 	}
-
-#else
-	indices.resize(numOfCl, std::vector<double>{});
-	for(uint i = 0; i < inTypes.size(); ++i)
-	{
-		indices[inTypes[i]].push_back(i);
-	}
-#endif
 
 	types.erase(std::begin(types) + index);
 	fileNames.erase(fileNames.begin() + index);
@@ -246,7 +210,7 @@ void ClassifierData::push_back(const std::valarray<double> & inDatum,
 
 void ClassifierData::pop_back()
 {
-#if 01
+#if 0
 	this->erase(dataMatrix.rows() - 1);
 #else
 	const int index = dataMatrix.rows() - 1;

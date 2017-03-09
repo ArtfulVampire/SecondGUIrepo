@@ -1372,7 +1372,6 @@ edfFile & edfFile::refilter(double lowFreq,
 	}
 #else
 
-
 	/// old FFT filtering
 	int fftLength = fftL(this->dataLength);
 	double spStep = this->srate / double(fftLength);

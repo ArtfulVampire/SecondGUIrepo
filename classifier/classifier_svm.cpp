@@ -47,7 +47,7 @@ std::pair<uint, double> SVM::classifyDatum(const uint & vecNum)
     printResult("SVM.txt", outClass, vecNum);
 
     return std::make_pair(outClass,
-						  double(outClass != myData->getTypes()[vecNum]));
+						  double(outClass != myClassData->getTypes()[vecNum]));
 }
 
 
@@ -70,11 +70,11 @@ void SVM::makeFile(const std::vector<uint> & indices,
 
     for(int ind : indices)
     {
-		outStream << myData->getTypes()[ind] << ' ';
-		for(uint l = 0; l < myData->getData().cols(); ++l)
+		outStream << myClassData->getTypes()[ind] << ' ';
+		for(uint l = 0; l < myClassData->getData().cols(); ++l)
         {
             outStream << l + 1 << ':'
-					  << smLib::doubleRound(myData->getData()[ind][l], 4) << ' ';
+					  << smLib::doubleRound(myClassData->getData()[ind][l], 4) << ' ';
         }
 		outStream << std::endl;
     }

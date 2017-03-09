@@ -691,6 +691,7 @@ void Spectre::countSpectraSlot()
     defaultState();
     countSpectra();
     writeSpectra();
+
 #if 0
     /// if clean
     cleanSpectra(); // using mann-whitney

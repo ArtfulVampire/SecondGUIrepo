@@ -38,18 +38,8 @@ protected:
     ClassifierType myType;
     QString typeString;
 
-#if OLD_DATA
-	/// dataClass
-	const matrix * dataMatrix = nullptr; // biases for ANN are imaginary
-    const std::vector<uint> * types = nullptr;
-    const std::vector<QString> * fileNames = nullptr;
-    const std::valarray<double> * classCount = nullptr; // really int but...
-    std::valarray<double> apriori;
-	uint myData.getNumOfCl();
-#else
 	/// CHANGE this name to myClassData
-	ClassifierData * myData;
-#endif
+	ClassifierData * myClassData;
 
 	matrix confusionMatrix; // [realClass] [predictedClass]
     double averageAccuracy;
@@ -79,18 +69,9 @@ public:
     void deleteFile(uint vecNum, uint predClass);
 	void printResult(const QString & fileName, uint predType, uint vecNum);
 
-#if !OLD_DATA
-	/// to do
 	void setClassifierData(ClassifierData & in);
-	ClassifierData * getClassifierData() {return myData;}
-#else
-	void setData(matrix & inMat);
-    void setTypes(std::vector<uint> & inTypes);
-    void setClassCount(std::valarray<double> & inClassCount);
-    void setFileNames(std::vector<QString> & inFileNames);
-    void setFilesPath(const QString & inPath);
-    void setApriori(const std::valarray<double> & in = std::valarray<double>());
-#endif
+	ClassifierData * getClassifierData() {return myClassData;}
+
 
 public:
     Classifier();
@@ -135,6 +116,8 @@ class ANN : public Classifier
 #else
     typedef std::vector<std::vector<std::valarray<double>>> weightType;
 #endif
+
+
     typedef std::vector<std::valarray<double>> outputType;
 
 private:

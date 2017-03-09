@@ -48,10 +48,15 @@ void MainWindow::ICA() //fastICA
     const QString pathForAuxFiles = def::dir->absolutePath()
 									+ "/Help/ica";
 
-    matrix centeredMatrix = globalEdf.getData();
+#define NEW_9_3_17 1
 
-    matrix components(ns + 1, dataLength, 0.);
-    components[ns] = globalEdf.getData()[globalEdf.getMarkChan()];
+	matrix centeredMatrix = globalEdf.getData();
+	matrix resMatBackup = centeredMatrix.subRows(
+							  smLib::range<std::vector<uint>>(ns,
+															  centeredMatrix.rows() - 1));
+	centeredMatrix.resizeRows(ns);
+
+	matrix components(ns, dataLength, 0.);
 
 
     // count eigenvalue decomposition
@@ -106,19 +111,25 @@ void MainWindow::ICA() //fastICA
     matrix tmpMat{};
     tmpMat = D_minus_05 * matrix::transpose(eigenVectors);
 
-//    components = tmpMat * centeredMatrix;
+#if NEW_9_3_17
+	components = tmpMat * centeredMatrix;
+#else
     matrixProduct(tmpMat,
                   centeredMatrix,
                   components,
                   ns);
+#endif
 
 
     matrix dataICA{};
-//    dataICA = eigenVectors * components;
+#if NEW_9_3_17
+	dataICA = eigenVectors * components;
+#else
     matrixProduct(eigenVectors,
                   components,
                   dataICA,
                   ns);
+#endif
 
 
     //now dataICA are uncovariated signals with variance 1
@@ -142,11 +153,14 @@ void MainWindow::ICA() //fastICA
 
 
     //count components
-//    components = vectorW * dataICA;
+#if NEW_9_3_17
+	components = vectorW * dataICA;
+#else
     matrixProduct(vectorW,
                   dataICA,
                   components,
                   ns);
+#endif
 
 
     //count full mixing matrix A = E * D^0.5 * Et * Wt
@@ -169,33 +183,6 @@ void MainWindow::ICA() //fastICA
     matrixA = D_05 * matrixA;
 
     matrixA = eigenVectors * matrixA;
-#endif
-
-#if 0
-    //test  data = matrixA * comps;
-
-    counter = 0;
-    for(int j = 0; j < dataLength; ++j)
-    {
-        std::valarray<double> currCol = components.getCol(j, ns);
-        for(int i = 0; i < ns; ++i)
-        {
-			sum1 = std::abs((centeredMatrix[i][j] - prod(currCol, matrixA[i]))
-                       / centeredMatrix[i][j]);
-            if(sum1 > 0.05
-			   && std::abs(centeredMatrix[i][j]) > 0.5)
-            {
-                ++counter;
-#if 0
-				std::cout << "before norm" << "\t";
-				std::cout << i << "\t" << j << "\t";
-				std::cout << "err = " << doubleRound(sum1, 3) << "\t";
-				std::cout << "init value = " << doubleRound(centeredMatrix[i][j], 4) << std::endl;
-#endif
-            }
-        }
-    }
-	std::cout << "num of errors = " << counter << std::endl;
 #endif
 
 
@@ -370,10 +357,7 @@ void MainWindow::ICA() //fastICA
                                 [colsNorms, i](std::pair <double, int> in)
         {return in.second == colsNorms[i].second;});
 
-//        std::swap((*it1).second, (*it2).second);
-        tempIndex = (*it1).second;
-        (*it1).second = (*it2).second;
-        (*it2).second = tempIndex;
+		std::swap((*it1).second, (*it2).second);
     }
 
     for(uint i = 0; i < ns; ++i)
@@ -435,7 +419,10 @@ void MainWindow::ICA() //fastICA
     std::iota(chanList.begin(), chanList.end(), 0);
     chanList.push_back(globalEdf.getMarkChan());
 
-    components.push_back(globalEdf.getData()[globalEdf.getMarkChan()]);
+	/// drop all non-EEG channels ?
+//	components.vertCat(resMatBackup);
+	components.push_back(globalEdf.getMarkArr());
+
     globalEdf.writeOtherData(components, helpString, chanList);
     def::ns = ns + 1; // numOfICs + markers
 

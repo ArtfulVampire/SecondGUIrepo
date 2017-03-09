@@ -47,25 +47,13 @@ private:
     myMode Mode = myMode::N_fold;
     source Source = source::reals;
 
-#if OLD_DATA
-    matrix dataMatrix{}; // biases and types separately
-    std::vector<uint> types{};
-    std::vector<QString> fileNames{};
-    std::valarray<double> classCount{}; // really int but...
-//    matrix tempRandomMatrix; //test linear transform
-    double loadDataNorm = 10.;
-    std::valarray<double> averageDatum;
-    std::valarray<double> sigmaVector;
-	void setClassifierParams();
-#endif
     /// classification
     Classifier * myClassifier = nullptr;
 	ClassifierData myClassifierData{};
 
 
 
-    /// succesiive
-	int numGoodNew{};
+	/// succesiive
 	std::valarray<int> passed{};
     matrix pcaMat{};
 	void successiveLearning(const std::valarray<double> & newSpectre,
@@ -74,13 +62,6 @@ private:
 
 
     /// data
-    void normalizeDataMatrix();
-    void popBackDatum();
-    void pushBackDatum(const std::valarray<double> & inDatum,
-                     const uint & inType,
-                     const QString & inFileName);
-    void eraseDatum(const uint & index);
-    void eraseData(const std::vector<uint> & indices);
     std::pair<std::vector<uint>, std::vector<uint>> makeIndicesSetsCross(
             const std::vector<std::vector<uint> > & arr,
             const int numOfFold);
@@ -127,11 +108,7 @@ public:
     void loadData(const QString & spectraPath = def::dir->absolutePath()
                                                 + slash + "SpectraSmooth",
 				  const QStringList & filters = {});
-    void loadData(const matrix & inMat,
-                  const std::vector<uint> & inTypes);
-    void loadDataUCI(const QString & setName);
-//    void resizeData(uint newCols); /// OLD_DATA
-    void applyPCA(const QString & pcaMatFilePath);
+	void loadDataUCI(const QString & setName);
 
 
     ///wts
@@ -142,8 +119,7 @@ public:
                  QString picPath = QString());
 
 public slots:
-    void loadDataSlot();
-    void stopActivity();
+	void loadDataSlot();
     void pca();
 
     void autoClassificationSimple(); /// on SpectraSmooth + Source

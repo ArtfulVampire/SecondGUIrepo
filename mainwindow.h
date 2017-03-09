@@ -92,18 +92,10 @@ public slots:
 
 
 public:
-    void makeDirs();
-    void sliceGaps();
-    void slice(int marker1, int marker2, QString marker);
-    void sliceByNumberAfter(int marker1, int marker2, QString marker);
     void sliceBak(int marker1, int marker2, QString marker);
-    void readData();
-    void sliceWindow(int startSlice, int endSlice, int number, int marker);    
+	void readData();
 	void eyesFast();
-	void sliceIlya(const QString & fileName, QString marker);
-    void sliceIlya(int marker1, int marker2, QString marker);
-    void sliceFromTo(int marker1, int marker2, QString marker);
-    void sliceMati();
+	void sliceMati();
     void sliceMatiPieces(bool plainFlag = true);
     void sliceMatiSimple();
 

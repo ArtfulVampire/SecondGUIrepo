@@ -126,11 +126,6 @@ void Net::setFold(int in)
     ui->foldSpinBox->setValue(in);
 }
 
-void Net::stopActivity()
-{
-    stopFlag = 1;
-}
-
 void Net::setMode(const QString & in)
 {
     if(in.contains("k-fold", Qt::CaseInsensitive)
@@ -241,38 +236,20 @@ void Net::setClassifier(ClassifierType typ)
     }
 }
 
-#if OLD_DATA
-void Net::setClassifierParams()
-{
-    myClassifier->setClassCount(classCount);
-    myClassifier->setData(dataMatrix);
-    myClassifier->setFileNames(fileNames);
-    myClassifier->setTypes(types);
-    myClassifier->setFilesPath(filesPath);
-}
-#endif
-
 void Net::setClassifier(QAbstractButton * but, bool i)
 {
     if(!i) return;
     if(myClassifier != nullptr)
-    {
-//        std::cout << "delete classifier" << std::endl;
+	{
         delete myClassifier;
-    }
+	}
 
-
-//	std::cout << "sdfgsdfgs = " << myClassifierData.getNumOfCl() << std::endl;
     if(but->text() == "ANN")
     {
         myClassifier = new ANN();
         ANN * myANN = dynamic_cast<ANN *>(myClassifier);
 
 		myClassifier->setClassifierData(myClassifierData);
-
-#if OLD_DATA
-//        myANN->setData(dataMatrix); /// should be here to set dimensionality
-#endif
 
         myANN->setLrate(ui->learnRateBox->value());
         myANN->setCritError(ui->critErrorDoubleSpinBox->value());
@@ -315,18 +292,7 @@ void Net::setClassifier(QAbstractButton * but, bool i)
 		myWARD->setNumClust(ui->knnNumOfNearSpinBox->value());
 	}
 
-
-#if !OLD_DATA
-//	std::cout << "asdas = " << myClassifier->getClassifierData()->getNumOfCl() << std::endl;
 	myClassifier->setClassifierData(myClassifierData);
-//	std::cout << "asdas = " << myClassifier->getClassifierData()->getNumOfCl() << std::endl;
-//	setDimensionalitySlot(); /// ANN only
-#else
-	setClassifierParams(); // deprecate
-    myClassifier->setApriori(); /// depending on TRUE data but not datasets
-#endif
-
-
 }
 
 void Net::setSourceSlot(QAbstractButton * but)
@@ -353,30 +319,30 @@ void Net::setSourceSlot(QAbstractButton * but)
     }
 }
 
-/// ids from myButtonGroup[0]
 void Net::setModeSlot(QAbstractButton * but, bool i)
 {
-    if(i == false) return;
-    int a = myButtonGroup[0]->checkedId();
-    switch(a)
-    {
-    case -2:
-    {
-        Mode = myMode::N_fold; break;
+	if(i == false) return;
+
+	if(but->text().contains("N-fold"))
+	{
+		Mode = myMode::N_fold;
     }
-    case -3:
+	else if(but->text().contains("k-fold"))
     {
-        Mode = myMode::k_fold; break;
+		Mode = myMode::k_fold;
     }
-    case -4:
+	else if(but->text().contains("train"))
     {
-        Mode = myMode::train_test; break;
+		Mode = myMode::train_test;
     }
-    case -5:
+	else if(but->text().contains("half"))
     {
-        Mode = myMode::half_half; break;
+		Mode = myMode::half_half;
     }
-    default: {break;}
+	else
+	{
+		Mode = myMode::N_fold;
+		std::cout << "Net::setModeSlot: bad but->text(), N-fold set" << std::endl;
     }
 }
 

@@ -5,29 +5,28 @@
 
 Classifier::Classifier()
 {
-	myData = new ClassifierData();
+	myClassData = new ClassifierData();
 	resultsPath = def::dir->absolutePath() + slash + "results.txt";
 	workDir = def::dir->absolutePath() + slash + "Help" + slash + "PA";
-	/// by myData
-	confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
-	outputLayer = std::valarray<double>(0., myData->getNumOfCl());
+	/// by myClassData
+	confusionMatrix = matrix(myClassData->getNumOfCl(), myClassData->getNumOfCl(), 0.);
+	outputLayer = std::valarray<double>(0., myClassData->getNumOfCl());
 #if INERTIA
-	fbVal = std::valarray<double>(0., myData->getNumOfCl());
+	fbVal = std::valarray<double>(0., myClassData->getNumOfCl());
 #endif
 }
 
 void Classifier::setClassifierData(ClassifierData & in)
 {
-	if(&in != myData)
+	if(&in != myClassData)
 	{
-		delete myData;
-		myData = &in;
+		myClassData = &in;
 
-		confusionMatrix = matrix(myData->getNumOfCl(), myData->getNumOfCl(), 0.);
-		outputLayer = std::valarray<double>(0., myData->getNumOfCl());
+		confusionMatrix = matrix(myClassData->getNumOfCl(), myClassData->getNumOfCl(), 0.);
+		outputLayer = std::valarray<double>(0., myClassData->getNumOfCl());
 
 #if INERTIA
-		fbVal = std::valarray<double>(0., myData->getNumOfCl());
+		fbVal = std::valarray<double>(0., myClassData->getNumOfCl());
 #endif
 
 		this->adjustToNewData();
@@ -46,9 +45,9 @@ void Classifier::setTestCleanFlag(bool inFlag)
 
 void Classifier::deleteFile(uint vecNum, uint predType)
 {
-	if(this->testCleanFlag && (predType != myData->getTypes()[vecNum]))
+	if(this->testCleanFlag && (predType != myClassData->getTypes()[vecNum]))
     {
-		QFile::remove(filesPath + slash + myData->getFileNames()[vecNum]);
+		QFile::remove(filesPath + slash + myClassData->getFileNames()[vecNum]);
     }
 }
 
@@ -56,16 +55,16 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 void Classifier::classifyDatum1(const uint & vecNum)
 {
 	/// ALWAYS TRUE WITH ZERO ERROR
-	this->confusionMatrix[myData->getTypes()[vecNum]][myData->getTypes()[vecNum]] += 1.;
-	outputLayer = clLib::oneHot(myData->getNumOfCl(),
-								myData->getTypes()[vecNum]);
+	this->confusionMatrix[myClassData->getTypes()[vecNum]][myClassData->getTypes()[vecNum]] += 1.;
+	outputLayer = clLib::oneHot(myClassData->getNumOfCl(),
+								myClassData->getTypes()[vecNum]);
 }
 
 std::pair<uint, double> Classifier::classifyDatum(const uint & vecNum)
 {
 	this->classifyDatum1(vecNum); /// sometimes is not necessary, but won't be worse
 	return std::make_pair(myLib::indexOfMax(outputLayer),
-						  clLib::countError(outputLayer, myData->getTypes()[vecNum]));
+						  clLib::countError(outputLayer, myClassData->getTypes()[vecNum]));
 }
 
 std::pair<uint, double> Classifier::classifyDatumLast()
@@ -73,28 +72,29 @@ std::pair<uint, double> Classifier::classifyDatumLast()
 	classifyDatumLast1();
 
 #if INERTIA
+	/// myLib::indexOfMax(fbVal) or myLib::indexOfMax(outputLayer) ???
 	return std::make_pair(myLib::indexOfMax(fbVal),
-						  clLib::countError(fbVal, myData->getTypes().back()));
+						  clLib::countError(fbVal, myClassData->getTypes().back()));
 #else
 	return std::make_pair(myLib::indexOfMax(outputLayer),
-						  clLib::countError(outputLayer, myData->getTypes().back()));
+						  clLib::countError(outputLayer, myClassData->getTypes().back()));
 #endif
 }
 
 void Classifier::classifyDatumLast1()
 {
 #if INERTIA
-	classifyDatum1(myData->getData().rows() - 1);
-	if(curType != myData->getTypes().back())
+	classifyDatum1(myClassData->getData().rows() - 1);
+	if(curType != myClassData->getTypes().back())
 	{
 		fbVal = 0.;
-		curType = myData->getTypes().back();
+		curType = myClassData->getTypes().back();
 	}
 //	fbVal *= inertiaCoef;
 	fbVal *= def::inertiaCoef;
 	fbVal += outputLayer;
 #else
-	classifyDatum1(myData->getData().rows() - 1);
+	classifyDatum1(myClassData->getData().rows() - 1);
 #endif
 }
 
@@ -108,7 +108,7 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
 
     QString pew;
 
-	if(predType == myData->getTypes()[vecNum])
+	if(predType == myClassData->getTypes()[vecNum])
     {
         pew = "";
     }
@@ -116,70 +116,13 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
     {
 		pew = QString::number(vecNum) + "\n";
 
-		outStr << vecNum+2 << ":\ttrue = " << myData->getTypes()[vecNum] << "\tpred = " << predType << "\n";
+		outStr << vecNum+2 << ":\ttrue = " << myClassData->getTypes()[vecNum] << "\tpred = " << predType << "\n";
     }
 
 //    outStr << pew.toStdString();
 
     outStr.close();
 }
-#if OLD_DATA
-void Classifier::setData(matrix & inMat)
-{
-    this->dataMatrix = &inMat;
-}
-
-void Classifier::setTypes(std::vector<uint> & inTypes)
-{
-    this->types = &inTypes;
-}
-
-void Classifier::setClassCount(std::valarray<double> & inClassCount)
-{
-    this->classCount = &inClassCount;
-}
-
-void Classifier::setFileNames(std::vector<QString> & inFileNames)
-{
-    this->fileNames = &inFileNames;
-}
-
-void Classifier::setFilesPath(const QString & inPath)
-{
-    this->filesPath = inPath;
-}
-
-
-void Classifier::setApriori(const std::valarray<double> & in)
-{
-#if 1
-    /// w/o normalization
-    if(in.size() == 0)
-    {
-        apriori = *classCount;
-    }
-    else
-    {
-        apriori = in;
-	}
-#else
-    /// with normalization
-    std::valarray<double> * pew;
-    if(in.empty())
-    {
-        pew = &classCount;
-    }
-    else
-    {
-        pew = &in;
-	}
-	this->apriori = *pew / std::accumulate(std::begin(*pew),
-										   std::end(*pew),
-										   0.);
-#endif
-}
-
-#endif // OLD_DATA
 
 void Classifier::test(const std::vector<uint> & indices)
 {
@@ -191,14 +134,14 @@ void Classifier::test(const std::vector<uint> & indices)
 
 void Classifier::learnAll()
 {
-	std::vector<uint> ind(myData->getData().rows());
+	std::vector<uint> ind(myClassData->getData().rows());
 	std::iota(std::begin(ind), std::end(ind), 0);
     learn(ind);
 }
 
 void Classifier::testAll()
 {
-	std::vector<uint> ind(myData->getData().rows());
+	std::vector<uint> ind(myClassData->getData().rows());
     std::iota(std::begin(ind), std::end(ind), 0);
     test(ind);
 }
@@ -218,19 +161,21 @@ void Classifier::printParams()
 
 avType Classifier::averageClassification()
 {
-    std::ofstream res;
-	/// for successive
+#if 01
+	/// successive
 	resultsPath =
-//			def::dir->absolutePath()
-			"/media/Files/Dropbox/Successive/"
-				  + slash + "results"
-				  + "_" + QString::number(suc::numGoodNewLimit)
-				  + "_" + QString::number(suc::learnSetStay)
-				  + "_" + QString::number(suc::decayRate)
-				  + ".txt";
+			def::dir->absolutePath()
+			+ slash + "results"
+			+ "_" + QString::number(suc::numGoodNewLimit)
+			+ "_" + QString::number(suc::learnSetStay)
+			+ "_" + QString::number(suc::decayRate)
+			+ ".txt";
+#endif
+
+	std::ofstream res;
     res.open(resultsPath.toStdString(), std::ios_base::app);
 
-	for(uint i = 0; i < myData->getNumOfCl(); ++i)
+	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
         const double num = confusionMatrix[i].sum();
         if(num != 0.)
@@ -247,7 +192,7 @@ avType Classifier::averageClassification()
     double corrSum = 0.;
     double wholeNum = 0.;
 
-	for(uint i = 0; i < myData->getNumOfCl(); ++i)
+	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
         corrSum += confusionMatrix[i][i];
         wholeNum += confusionMatrix[i].sum();
@@ -257,7 +202,7 @@ avType Classifier::averageClassification()
     // kappa
     double pE = 0.; // for Cohen's kappa
     const double S = confusionMatrix.sum();
-	for(uint i = 0; i < myData->getNumOfCl(); ++i)
+	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
         pE += (confusionMatrix[i].sum() * confusionMatrix.getCol(i).sum()) / pow(S, 2);
     }
@@ -272,17 +217,15 @@ avType Classifier::averageClassification()
 
 
 	/// std::cout
-#if 1
     confusionMatrix.print();
 	std::cout << "average accuracy = "
 			  << smLib::doubleRound(averageAccuracy, 2) << '\t';
 	std::cout << "kappa = " << kappa << '\t';
 	std::cout << std::endl << std::endl;
-#endif
+
 
     confusionMatrix.fill(0.);
 
-    /// generality avType
     return std::make_pair(averageAccuracy, kappa);
 }
 

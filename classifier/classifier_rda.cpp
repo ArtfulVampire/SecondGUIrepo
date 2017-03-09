@@ -13,9 +13,9 @@ RDA::RDA() : Classifier()
 
 void RDA::adjustToNewData()
 {
-	covMat.resize(myData->getNumOfCl() + 1, matrix());
-	centers.resize(myData->getNumOfCl() + 1);
-	dets.resize(myData->getNumOfCl());
+	covMat.resize(myClassData->getNumOfCl() + 1, matrix());
+	centers.resize(myClassData->getNumOfCl() + 1);
+	dets.resize(myClassData->getNumOfCl());
 }
 
 
@@ -31,7 +31,7 @@ void RDA::setLambda(double in)
 
 void RDA::printParams()
 {
-	for(int i = 0; i < myData->getNumOfCl(); ++i)
+	for(int i = 0; i < myClassData->getNumOfCl(); ++i)
 	{
 //		std::cout << centers[i] << std::endl;
 	}
@@ -42,26 +42,26 @@ void RDA::printParams()
 void RDA::learn(std::vector<uint> & indices)
 {
 //	std::cout << lambda << "\t" << gamma << std::endl;
-	matrix oneClass[myData->getNumOfCl()];
-//	std::cout << myData->getNumOfCl() << "\t" << covMat.size() << std::endl;
-	covMat[myData->getNumOfCl()] = matrix(myData->getData().cols(), myData->getData().cols(), 0);
-	for(uint i = 0; i < myData->getNumOfCl(); ++i)
+	matrix oneClass[myClassData->getNumOfCl()];
+//	std::cout << myClassData->getNumOfCl() << "\t" << covMat.size() << std::endl;
+	covMat[myClassData->getNumOfCl()] = matrix(myClassData->getData().cols(), myClassData->getData().cols(), 0);
+	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
         for(int ind : indices)
         {
-			if(myData->getTypes()[ind] == i)
+			if(myClassData->getTypes()[ind] == i)
             {
-				oneClass[i].push_back(myData->getData()[ind]);
+				oneClass[i].push_back(myClassData->getData()[ind]);
             }
         }
         covMat[i] = oneClass[i].covMatCols(&(centers[i]));
-		covMat[myData->getNumOfCl()] += covMat[i];
+		covMat[myClassData->getNumOfCl()] += covMat[i];
 	}
 
-	for(uint i = 0; i < myData->getNumOfCl(); ++i)
+	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
         /// regularization
-		covMat[i] = covMat[i] * (1. - lambda) + covMat[myData->getNumOfCl()] * lambda;
+		covMat[i] = covMat[i] * (1. - lambda) + covMat[myClassData->getNumOfCl()] * lambda;
         covMat[i] /= (1. - lambda) * oneClass[i].rows() + lambda * indices.size();
 
         /// shrinkage
@@ -78,18 +78,18 @@ void RDA::learn(std::vector<uint> & indices)
 
 std::pair<uint, double> RDA::classifyDatum(const uint & vecNum)
 {
-	std::valarray<double> output(myData->getNumOfCl());
+	std::valarray<double> output(myClassData->getNumOfCl());
 
-	for(uint i = 0; i < myData->getNumOfCl(); ++i)
+	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
 	{
-		std::valarray<double> a = (myData->getData()[vecNum] - centers[i]);
+		std::valarray<double> a = (myClassData->getData()[vecNum] - centers[i]);
         matrix m1(a, 'r'); // row
         matrix m2(a, 'c'); // col
 		double tmp = (m1 * covMat[i] * m2)[0][0];
-		output[i] = - tmp - log(dets[i]) + 2 * log(myData->getApriori()[i]);
+		output[i] = - tmp - log(dets[i]) + 2 * log(myClassData->getApriori()[i]);
 	}
     uint outClass = myLib::indexOfMax(output);
     printResult("RDA.txt", outClass, vecNum);
     return std::make_pair(outClass,
-						  double(outClass != myData->getTypes()[vecNum]));
+						  double(outClass != myClassData->getTypes()[vecNum]));
 }

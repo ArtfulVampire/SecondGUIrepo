@@ -13,19 +13,19 @@ DIST::DIST() : Classifier()
 
 void DIST::adjustToNewData()
 {
-	centers.resize(myData->getNumOfCl());
+	centers.resize(myClassData->getNumOfCl());
 }
 
 void DIST::learn(std::vector<uint> & indices)
 {
-	for(uint i = 0; i < myData->getNumOfCl(); ++i)
+	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
         matrix oneClass{};
         for(int ind : indices)
         {
-			if(myData->getTypes()[ind] == i)
+			if(myClassData->getTypes()[ind] == i)
             {
-				oneClass.push_back(myData->getData()[ind]);
+				oneClass.push_back(myClassData->getData()[ind]);
             }
         }
         centers[i] = oneClass.averageRow();
@@ -35,10 +35,10 @@ void DIST::learn(std::vector<uint> & indices)
 std::pair<uint, double> DIST::classifyDatum(const uint & vecNum)
 {
 
-	std::vector<double> distances(myData->getNumOfCl());
-	for(uint j = 0; j < myData->getNumOfCl(); ++j)
+	std::vector<double> distances(myClassData->getNumOfCl());
+	for(uint j = 0; j < myClassData->getNumOfCl(); ++j)
     {
-		distances[j] = -smLib::distance(myData->getData()[vecNum],
+		distances[j] = -smLib::distance(myClassData->getData()[vecNum],
                                            centers[j]);
     }
     uint outClass = myLib::indexOfMax(distances);
@@ -46,5 +46,5 @@ std::pair<uint, double> DIST::classifyDatum(const uint & vecNum)
     printResult("DIST.txt", outClass, vecNum);
 
     return std::make_pair(outClass,
-						  double(outClass != myData->getTypes()[vecNum]));
+						  double(outClass != myClassData->getTypes()[vecNum]));
 }

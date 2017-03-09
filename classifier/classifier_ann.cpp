@@ -25,24 +25,6 @@ void ANN::setCritError(double in)
 }
 
 
-#if 0
-void ANN::forEachWeight(weightType & inWeight,
-                        void (*func)(double &, Args...))
-{
-    for(uint i = 0; i < weight.size(); ++i)
-    {
-        for(uint j = 0; j < weight[i].size(); ++j)
-        {
-            for(uint k = 0; k < weight[i][j].size(); ++k)
-            {
-                func(inWeight[i][j][k], Args...);
-            }
-        }
-    }
-}
-#endif
-
-
 /// not always for this->weight for drawWts
 void ANN::allocParams(weightType & inMat)
 {
@@ -110,16 +92,17 @@ void ANN::zeroParams()
 void ANN::setDim(const std::vector<int> & inDim)
 {
     dim.clear();
-	dim.push_back(myData->getData().cols());
+	dim.push_back(myClassData->getData().cols());
     for(uint i = 0; i < inDim.size(); ++i)
     {
         dim.push_back(inDim[i]);
     }
-	dim.push_back(myData->getNumOfCl());
+	dim.push_back(myClassData->getNumOfCl());
 
     allocParams(weight);
 
 #if 0
+	/// CHECK
     if(0) // if backprop
     {
         std::default_random_engine engine;
@@ -149,12 +132,12 @@ void ANN::setLrate(double inRate)
 
 void ANN::loadVector(uint vecNum, uint & type)
 {
-	/// out.size() == myData->getData().cols() + 1
-	std::copy(std::begin(myData->getData()[vecNum]),
-			  std::end(myData->getData()[vecNum]),
+	/// out.size() == myClassData->getData().cols() + 1
+	std::copy(std::begin(myClassData->getData()[vecNum]),
+			  std::end(myClassData->getData()[vecNum]),
               std::begin(output[0]));
     output[0][output[0].size() - 1] = 1.; //bias
-	type = myData->getTypes()[vecNum]; // true class
+	type = myClassData->getTypes()[vecNum]; // true class
 }
 
 void ANN::countOutput()
@@ -230,7 +213,7 @@ void ANN::moveWeights(const std::vector<double> & normCoeff,
 {
     if(learnStyl == learnStyle::delta)
     {
-		for(uint j = 0; j < myData->getNumOfCl(); ++j)
+		for(uint j = 0; j < myClassData->getNumOfCl(); ++j)
         {
             weight[0][j] += output[0]
                     * (learnRate * normCoeff[type]
@@ -241,6 +224,7 @@ void ANN::moveWeights(const std::vector<double> & normCoeff,
 
     }
 #if 0
+	/// CHECK
     else if(learnStyl == learnStyle::backprop)
     {
         /// check this sheet
@@ -296,15 +280,15 @@ void ANN::learn(std::vector<uint> & indices)
     uint type;
 
     /// edit due to Indices
-	std::vector<int> localClassCount(myData->getNumOfCl(), 0);
+	std::vector<int> localClassCount(myClassData->getNumOfCl(), 0);
     for(int index : indices)
     {
-		++localClassCount[myData->getTypes()[index]];
+		++localClassCount[myClassData->getTypes()[index]];
     }
     const double helpMin = *std::min_element(std::begin(localClassCount),
                                              std::end(localClassCount));
     std::vector<double> normCoeff;
-	for(uint i = 0; i < myData->getNumOfCl(); ++i)
+	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
         normCoeff.push_back(helpMin / double(localClassCount[i]));
     }
@@ -367,7 +351,7 @@ void ANN::classifyDatum1(const uint & vecNum)
 	uint type;
 	loadVector(vecNum, type);
 	countOutput();
-	confusionMatrix[myData->getTypes()[vecNum]][myLib::indexOfMax(outputLayer)] += 1.;
+	confusionMatrix[myClassData->getTypes()[vecNum]][myLib::indexOfMax(outputLayer)] += 1.;
 
 #if 0
 	/// std::cout results
@@ -382,12 +366,12 @@ void ANN::classifyDatum1(const uint & vecNum)
 //    std::cout.rdbuf(resFile.rdbuf());
 
 	std::cout << "type = " << type << '\t' << "(";
-	for(int i = 0; i < myData->getNumOfCl(); ++i)
+	for(int i = 0; i < myClassData->getNumOfCl(); ++i)
 	{
 		std::cout << smLib::doubleRound(output[numOfLayers - 1][i], 3) << '\t';
 	}
 	std::cout << ") " << ((type == outClass) ? "+ " : "- ") << "\t"
-			  << myData->getFileNames()[vecNum] << std::endl;
+			  << myClassData->getFileNames()[vecNum] << std::endl;
 
 //    std::cout.rdbuf(tmp);
 
@@ -507,7 +491,7 @@ void ANN::drawWeight(QString wtsPath,
 
 double ANN::adjustLearnRate()
 {
-	std::vector<uint> mixNum = smLib::mixed<std::vector<uint>> (myData->getData().rows());
+	std::vector<uint> mixNum = smLib::mixed<std::vector<uint>> (myClassData->getData().rows());
     /// const
     const int folds = 3;
     mixNum.resize(mixNum.size() * (folds - 1) / folds);
