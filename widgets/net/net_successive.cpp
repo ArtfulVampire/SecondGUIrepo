@@ -2,10 +2,11 @@
 #include <other/edffile.h>
 
 #include <myLib/signalProcessing.h>
+#include <myLib/dataHandlers.h>
 
 using namespace myOut;
 
-void Net::successiveByEDF(const QString & edfPath1,
+Classifier::avType Net::successiveByEDF(const QString & edfPath1,
 						  const QString & edfPath2)
 {
 	QTime myTime;
@@ -25,9 +26,10 @@ void Net::successiveByEDF(const QString & edfPath1,
 	if(markers1[sta1 - 1] == 241.) typ = 0;
 	else if(markers1[sta1 - 1] == 247.) typ = 1;
 
+	myClassifierData = ClassifierData();
 
 	int count1 = 0;
-	matrix dt1 = fil1.getData().subRows(smLib::range<std::vector<uint>>(0, 18));
+	matrix dt1 = fil1.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
 	for(uint i = sta1; i < dt1.cols() - suc::windLength * freq1; i += freq1 * suc::shiftLearn)
 	{
 		auto mark = smLib::valarSubsec(markers1, i, i + suc::windLength * freq1);
@@ -57,22 +59,20 @@ void Net::successiveByEDF(const QString & edfPath1,
 		myClassifierData.push_back(spec.toVectorByRows(), typ, "L " + nm(i));
 	}
 
-	std::cout << "successiveEdf: file 1 ready, time = "
+	std::cout << "file 1 time = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 	myTime.restart();
 
-
-	myClassifierData.erase(
-				smLib::range<std::vector<uint>>
-				(0,
-				 myClassifierData.getData().rows() - 800));
-
 	myClassifierData.setApriori(myClassifierData.getClassCount());
 
+//	myClassifierData.erase(
+//				smLib::range<std::vector<uint>>
+//				(0,
+//				 myClassifierData.getData().rows() - 600));
+
 	myClassifierData.z_transform();
-	myClassifierData.reduceSize(suc::learnSetStay);
 
-
+	this->setClassifier(ClassifierType::NBC);
 	this->setClassifier(ClassifierType::ANN);
 
 	/// consts - set prelearn
@@ -80,6 +80,7 @@ void Net::successiveByEDF(const QString & edfPath1,
 	setLrate(0.002);
 
 	myClassifier->learnAll(); /// get initial weights on train set
+	myClassifierData.reduceSize(suc::learnSetStay);
 
 	ANN * myANN = dynamic_cast<ANN *>(myClassifier);
 	myANN->writeWeight("/media/Files/Data/Feedback/SuccessClass/2.txt");
@@ -109,7 +110,7 @@ void Net::successiveByEDF(const QString & edfPath1,
 	else if(markers2[sta2 - 1] == 247.) typ = 1;
 
 	int count2 = 0;
-	matrix dt2 = fil2.getData().subRows(smLib::range<std::vector<uint>>(0, 18)); /// EEG only
+	matrix dt2 = fil2.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1)); /// EEG only
 	for(uint i = sta2; i < dt2.cols() - suc::windLength * freq2; i += freq2 * suc::shiftTest)
 	{
 		auto mark = smLib::valarSubsec(markers2, i, i + suc::windLength * freq2);
@@ -135,10 +136,10 @@ void Net::successiveByEDF(const QString & edfPath1,
 		successiveLearning(spec.toVectorByRows(), typ, "T " + nm(i));
 
 	}
-	std::cout << "successiveEdf: file 2 ready, time = "
+	std::cout << "file 2 time = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 
-	myClassifier->averageClassification();
+	return myClassifier->averageClassification();
 }
 
 void Net::successiveProcessing()
@@ -230,7 +231,6 @@ void Net::successivePreclean(const QString & spectraPath)
     myClassifier->setTestCleanFlag(false);
 }
 
-/// on one incoming vector
 void Net::successiveLearning(const std::valarray<double> & newSpectre,
 							 const uint newType,
                              const QString & newFileName)

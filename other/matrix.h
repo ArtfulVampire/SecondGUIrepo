@@ -1,14 +1,7 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#include <myLib/small.h>
-
-#include <QString>
-#include <QDir>
-
 #include <cmath>
-#include <cstdlib>
-#include <cstdio>
 #include <chrono>
 #include <ios>
 #include <iostream>
@@ -21,6 +14,12 @@
 #if _OPENMP
 #include <omp.h>
 #endif
+
+#include <myLib/small.h>
+#include <myLib/valar.h>
+
+#include <QString>
+#include <QDir>
 
 // omp not effective
 #define MATRIX_OMP _OPENMP&&0

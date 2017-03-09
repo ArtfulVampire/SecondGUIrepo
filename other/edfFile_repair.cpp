@@ -1,6 +1,6 @@
 #include <other/edffile.h>
 
-#include <QVector>
+#include <myLib/dataHandlers.h>
 
 using namespace myOut;
 

@@ -6,7 +6,9 @@ namespace smLib
 template <typename Cont>
 Cont range(int beg, int en)
 {
-	Cont res(en - beg + 1);
+	if(en <= beg) return Cont{};
+
+	Cont res(en - beg);
 	std::iota(std::begin(res), std::end(res), beg);
 	return res;
 }

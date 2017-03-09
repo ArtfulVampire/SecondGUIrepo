@@ -156,7 +156,7 @@ void Classifier::printParams()
 }
 
 
-avType Classifier::averageClassification()
+Classifier::avType Classifier::averageClassification()
 {
 #if 01
 	/// successive
@@ -217,9 +217,8 @@ avType Classifier::averageClassification()
     confusionMatrix.print();
 	std::cout << "average accuracy = "
 			  << smLib::doubleRound(averageAccuracy, 2) << '\t';
-	std::cout << "kappa = " << kappa << '\t';
+	std::cout << "kappa = " << smLib::doubleRound(kappa, 3) << '\t';
 	std::cout << std::endl << std::endl;
-
 
     confusionMatrix.fill(0.);
 

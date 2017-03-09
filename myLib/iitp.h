@@ -342,10 +342,10 @@ const std::valarray<int> interestEeg{
 const double leftFr = 4;
 const double rightFr = 40;
 
-const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 30);
+const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 30 + 1);
 //const std::valarray<double> interestFrequencies = smLib::range(8, 45);
 
-const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 29);
+const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 29 + 1);
 //const std::valarray<double> fileNums = smLib::range(0, 5);
 //const std::valarray<double> fileNums{4};
 

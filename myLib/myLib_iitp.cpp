@@ -3,9 +3,9 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
 #include <myLib/drw.h>
+#include <myLib/dataHandlers.h>
 
 using namespace myOut;
-
 
 namespace iitp
 {
@@ -14,8 +14,6 @@ std::complex<double> gFunc(const std::complex<double> & in)
 
 	return (1 - pow(std::abs(in), 2)) * pow(atanh(std::abs(in)), 2) / std::norm(in);
 }
-
-
 
 std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 							   const std::vector<std::valarray<double>> & sig2,

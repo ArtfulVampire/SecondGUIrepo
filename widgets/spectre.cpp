@@ -4,6 +4,10 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/wavelet.h>
 #include <myLib/statistics.h>
+#include <myLib/output.h>
+#include <myLib/dataHandlers.h>
+#include <myLib/draws.h>
+#include <myLib/drw.h>
 
 using namespace myOut;
 

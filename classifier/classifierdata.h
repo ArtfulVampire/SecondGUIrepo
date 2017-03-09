@@ -1,14 +1,15 @@
 #ifndef CLASSIFIERDATA_H
 #define CLASSIFIERDATA_H
 
-#include <myLib/small.h>
-#include <myLib/output.h>
-
-#include <other/matrix.h>
-
 #include <iostream>
 #include <valarray>
 #include <vector>
+
+#include <other/matrix.h>
+#include <myLib/small.h>
+#include <myLib/output.h>
+
+
 
 class ClassifierData
 {

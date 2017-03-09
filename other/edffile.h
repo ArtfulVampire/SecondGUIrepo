@@ -1,16 +1,13 @@
 #ifndef EDFFILE_H
 #define EDFFILE_H
 
-
-
 #include <other/matrix.h>
 #include <myLib/small.h>
-#include <myLib/dataHandlers.h>
 #include <myLib/output.h>
 #include <myLib/general.h>
 
-
-
+#include <QVector>
+#include <QTime>
 
 template <typename Typ>
 void handleParam(Typ & qStr,

@@ -3,10 +3,8 @@
 
 #include <myLib/drw.h>
 #include <myLib/iitp.h>
+
 using namespace myOut;
-
-
-
 
 void MainWindow::customFunc()
 {
@@ -15,7 +13,7 @@ void MainWindow::customFunc()
 
 	def::fftLength = 1024;
 	suc::shiftLearn = 2.;
-	suc::shiftTest = 2;
+	suc::shiftTest = 0.5;
 	suc::numSmooth = 6;
 
 	testSuccessive2();
@@ -62,8 +60,8 @@ void MainWindow::customFunc()
 		}
 
 		using Typ = std::vector<int>;
-		std::vector<int> nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11),
-												   smLib::range<Typ>(24, 29)});
+		std::vector<int> nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
+												   smLib::range<Typ>(24, 29 + 1)});
 		autos::IITPdrawSameScale(guy, nums);
 	}
 

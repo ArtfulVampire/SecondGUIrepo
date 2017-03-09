@@ -3,6 +3,7 @@
 
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
+#include <myLib/dataHandlers.h>
 
 using namespace myOut;
 
@@ -55,7 +56,7 @@ void MainWindow::ICA() //fastICA
 	matrix centeredMatrix = globalEdf.getData();
 	matrix resMatBackup = centeredMatrix.subRows(
 							  smLib::range<std::vector<uint>>(ns,
-															  centeredMatrix.rows() - 1));
+															  centeredMatrix.rows()));
 	centeredMatrix.resizeRows(ns);
 
 	matrix components(ns, dataLength, 0.);

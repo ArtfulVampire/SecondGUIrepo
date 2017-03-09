@@ -1,6 +1,5 @@
 #include <myLib/clustering.h>
 
-
 namespace clust
 {
 

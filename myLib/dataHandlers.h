@@ -17,8 +17,6 @@ void makeFileLists(const QString & path,
 				   std::vector<QStringList> & lst,
 				   const QStringList & auxFilters = QStringList());
 
-void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
-
 void readPlainData(const QString & inPath,
 				   matrix & data,
 				   int start = 0);

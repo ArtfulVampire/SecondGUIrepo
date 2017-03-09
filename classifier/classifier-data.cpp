@@ -188,9 +188,15 @@ void ClassifierData::addItem(const std::valarray<double> & inDatum,
 							 uint inType,
 							 const QString & inFileName)
 {
-	std::valarray<double> newDatum = (inDatum - averageDatum) / (sigmaVector * variance);
-//	std::valarray<double> newDatum = inDatum / 20.;
-//	newDatum /= 20.; /// same as in z_transform();
+	std::valarray<double> newDatum;
+	if((averageDatum.size() == inDatum.size()) && (sigmaVector.size() == inDatum.size()))
+	{
+		newDatum = (inDatum - averageDatum) / (sigmaVector * variance);
+	}
+	else
+	{
+		newDatum = inDatum;
+	}
 	this->push_back(newDatum, inType, inFileName);
 }
 

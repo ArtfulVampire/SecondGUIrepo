@@ -1,8 +1,6 @@
 #ifndef CUT_H
 #define CUT_H
 
-//#include <QtWidgets>
-
 #include <iostream>
 #include <cmath>
 #include <functional>

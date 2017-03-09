@@ -11,7 +11,6 @@
 #include <complex>
 
 #include <other/coord.h>
-#include <myLib/valar.h>
 
 
 template <typename Typ>

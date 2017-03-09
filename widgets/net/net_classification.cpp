@@ -48,7 +48,7 @@ void Net::autoClassification(const QString & spectraDir)
 }
 
 
-avType Net::autoClassification()
+Classifier::avType Net::autoClassification()
 {
     QTime myTime;
     myTime.start();

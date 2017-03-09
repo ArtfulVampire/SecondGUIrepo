@@ -16,7 +16,6 @@ QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
 
-
 #DSP
 INCLUDEPATH += ./DSP
 LIBS += -L../SecondGUI/DSP -ldspFilters
@@ -36,8 +35,6 @@ LIBS += -L../SecondGUI/matlab/for_testing -lcwt_r
 
 LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -leng -lmwcpp11compat
 LIBS += -L/media/Files/Matlab/MCR/v83/runtime/glnxa64 -lmwmclmcrrt
-
-
 
 SOURCES += main.cpp\
 widgets/mainwindow/mainwindow.cpp \
@@ -119,15 +116,15 @@ DSP/DspFilters/SmoothedFilter.h \
 DSP/DspFilters/State.h \
 DSP/DspFilters/Types.h \
 DSP/DspFilters/Utilities.h \
-    widgets/mainwindow.h \
-    widgets/net.h \
-    widgets/spectre.h \
-    classifier/classifier.h \
-    classifier/classifierdata.h \
-    other/autos.h \
-    other/coord.h \
-    other/matrix.h \
-    other/edffile.h
+widgets/mainwindow.h \
+widgets/net.h \
+widgets/spectre.h \
+classifier/classifier.h \
+classifier/classifierdata.h \
+other/autos.h \
+other/coord.h \
+other/matrix.h \
+other/edffile.h
 
 FORMS+= mainwindow.ui \
 cut.ui \
@@ -137,14 +134,3 @@ spectre.ui
 OTHER_FILES +=
 
 RESOURCES +=
-
-DISTFILES += \
-DSP/libdspFilters.so \
-DSP/libdspFilters.so.1 \
-matlab/for_redistribution_files_only/libcwt_r.so \
-matlab/for_testing/libcwt_r.so \
-matlab/libs/libcwt_r.so \
-matlab/libs/libeng.so \
-matlab/libs/libmwcpp11compat.so \
-matlab/libs/libmwmclmcrrt.so \
-matlab/libs/libmwmclmcrrt.so.8.3 \

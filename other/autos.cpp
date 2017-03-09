@@ -5,8 +5,8 @@
 #include <myLib/drw.h>
 #include <myLib/draws.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/dataHandlers.h>
 #include <myLib/wavelet.h>
-
 
 using namespace myOut;
 

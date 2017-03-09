@@ -1,6 +1,14 @@
 #ifndef CLASSIFIER_H
 #define CLASSIFIER_H
 
+#include <vector>
+#include <utility>
+#include <ios>
+#include <fstream>
+#include <iostream>
+#include <random>
+#include <chrono>
+
 #include <myLib/small.h>
 #include <myLib/output.h>
 #include <myLib/draws.h>
@@ -11,17 +19,10 @@
 #include <classifier/classifierdata.h>
 
 #include <QString>
-#include <vector>
-#include <utility>
-#include <ios>
-#include <fstream>
-#include <iostream>
-#include <random>
 #include <QTime>
-#include <chrono>
 
 enum class ClassifierType {ANN, RDA, SVM, DIST, NBC, KNN, WARD};
-typedef std::pair<double, double> avType;
+
 
 namespace clLib
 {
@@ -37,6 +38,9 @@ std::valarray<double> oneHot(uint siz, uint hotIndex);
 
 class Classifier
 {
+public:
+	typedef std::pair<double, double> avType;
+
 protected:
     ClassifierType myType;
     QString typeString;
@@ -80,7 +84,7 @@ public:
     Classifier();
     virtual ~Classifier();
 
-    avType averageClassification(); /// on confusionMatrix
+	avType averageClassification(); /// on confusionMatrix
 
 	virtual void learn(std::vector<uint> & indices) = 0;
 	void learnAll();

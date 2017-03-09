@@ -1,7 +1,6 @@
 #include <myLib/wavelet.h>
 #include <myLib/dataHandlers.h>
 
-
 namespace wvlt
 {
 

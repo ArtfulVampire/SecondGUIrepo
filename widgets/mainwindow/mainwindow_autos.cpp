@@ -3,6 +3,8 @@
 
 #include <myLib/drw.h>
 #include <myLib/mati.h>
+#include <myLib/dataHandlers.h>
+#include <myLib/general.h>
 
 using namespace myOut;
 
@@ -11,9 +13,11 @@ void MainWindow::testSuccessive2()
 {
 	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
 
-//	const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"};
-	const QStringList names {"GAS"};
+	const QStringList names {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"};
+//	const QStringList names {"GAS"};
 
+
+	std::vector<double> res;
 	for(QString name : names)
 	{
 		/// current best set
@@ -28,10 +32,15 @@ void MainWindow::testSuccessive2()
 		net->setSource("w");
 		net->setMode("t"); // train-test
 
-		net->successiveByEDF(path + name + "_train" + ".edf",
-							 path + name + "_test" + ".edf");
+		std::cout << name << std::endl;
+		res.push_back(
+					net->successiveByEDF(path + name + "_train" + ".edf",
+										 path + name + "_test" + ".edf")
+					.first);
 		delete net;
 	}
+	std::cout << "average by people = "
+			  << std::accumulate(std::begin(res), std::end(res), 0.) / res.size() << std::endl;
 }
 
 void MainWindow::testSuccessive(const std::vector<double> & vals)

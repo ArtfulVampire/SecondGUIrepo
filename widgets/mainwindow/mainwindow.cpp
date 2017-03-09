@@ -4,6 +4,8 @@
 #include <myLib/drw.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/mati.h>
+#include <myLib/general.h>
+#include <myLib/dataHandlers.h>
 
 using namespace myOut;
 

@@ -1,8 +1,9 @@
 #include <other/edffile.h>
-#include <QTime>
+
 #include <myLib/mati.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/drw.h>
+#include <myLib/dataHandlers.h>
 
 using namespace myOut;
 

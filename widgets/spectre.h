@@ -1,16 +1,16 @@
 #ifndef SPECTRE_H
 #define SPECTRE_H
 
+#include <other/coord.h>
+#include <other/matrix.h>
+
 #include <QWidget>
 #include <QDir>
 #include <QString>
 #include <QStringList>
 #include <QFileDialog>
-//#include <QMessageBox>
 #include <QtSvg>
-#include "mainwindow.h"
 
-#include <other/coord.h>
 
 #define SPECTRA_EXP_NAME_SPECIFICITY 0
 

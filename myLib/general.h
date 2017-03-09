@@ -40,6 +40,7 @@ QString getPicPath(const QString & dataPath,
 QString getFileMarker(const QString & fileName);
 int getTypeOfFileName(const QString & fileName);
 
+void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
 QString setFileName(const QString & initNameOrPath); //-> initName_i.ext
 

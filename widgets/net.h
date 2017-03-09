@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <cmath>
-#include <ctime>
 #include <fstream>
 #include <ios>
 #include <vector>
@@ -85,7 +84,7 @@ public:
     void autoClassification(const QString & spectraDir);
     /// NEED CHECK
     void successiveProcessing();
-	void successiveByEDF(const QString & edfPath1, const QString & edfPath2);
+	Classifier::avType successiveByEDF(const QString & edfPath1, const QString & edfPath2);
     void successivePreclean(const QString & spectraPath);
 
     /// setsgets
@@ -121,7 +120,7 @@ public slots:
     void pca();
 
     void autoClassificationSimple(); /// on SpectraSmooth + Source
-    avType autoClassification(); /// on dataMatrix + types
+	Classifier::avType autoClassification(); /// on dataMatrix + types
 
     void setSourceSlot(QAbstractButton*);
     void setModeSlot(QAbstractButton*, bool);
