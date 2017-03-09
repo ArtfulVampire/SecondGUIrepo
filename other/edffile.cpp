@@ -1414,9 +1414,7 @@ void edfFile::saveSubsection(int startBin,
     if(plainFlag)
 	{
 		myLib::writePlainData(outPath,
-					   this->edfData,
-                       finishBin - startBin,
-					   startBin);
+							  this->edfData.subCols(startBin, finishBin));
     }
     else
     {

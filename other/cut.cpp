@@ -399,9 +399,8 @@ void Cut::createImage(const QString & dataFileName)
 
 	leftDrawLimit = 0;
     if(this->myFileType == fileType::real)
-    {
-		int tmp = 0;
-		myLib::readPlainData(dataFileName, data3, tmp);
+	{
+		myLib::readPlainData(dataFileName, data3);
     }
 	else if(this->myFileType == fileType::edf)
 	{
@@ -1081,8 +1080,7 @@ void Cut::rewrite()
 {
     if(myFileType == fileType::real)
     {
-		myLib::writePlainData(currentFile,
-							  data3);
+		myLib::writePlainData(currentFile, data3);
 		currentPic.save(myLib::getPicPath(currentFile), 0, 100);
     }
     else if(myFileType == fileType::edf)

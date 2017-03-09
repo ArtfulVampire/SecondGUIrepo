@@ -755,71 +755,68 @@ void Spectre::setOutPath(const QString & out)
 
 void Spectre::countSpectra()
 {
-    QTime myTime;
-    myTime.start();
+	QTime myTime;
+	myTime.start();
 
-    const QString inDirPath = ui->lineEdit_1->text();
+	const QString inDirPath = ui->lineEdit_1->text();
 	QStringList lst;
-   myLib:: makeFullFileList(inDirPath,
-					 lst
-				 #if SPECTRA_EXP_NAME_SPECIFICITY
-					 ,{def::ExpName}
-				 #endif
-//					 , {def::ExpName.left(3)}
-//                     ,{def::plainDataExtension}
-                     );
-    const int numFiles = lst.length();
+	myLib::makeFullFileList(inDirPath,
+							lst
+						#if SPECTRA_EXP_NAME_SPECIFICITY
+							,{def::ExpName}
+						#endif
+							//					 , {def::ExpName.left(3)}
+							//                     ,{def::plainDataExtension}
+							);
+	const int numFiles = lst.length();
 
-    matrix dataIn;
-    QString helpString;
-    int NumOfSlices;
+	matrix dataIn;
+	QString helpString;
 
-    dataFFT.resize(numFiles);
-    for(matrix & datum : dataFFT)
-    {
-        datum.resize(def::ns, def::fftLength / 2, 0.);
-    }
+	dataFFT.resize(numFiles);
+	for(matrix & datum : dataFFT)
+	{
+		datum.resize(def::ns, def::fftLength / 2, 0.);
+	}
 
-    fileNames.resize(numFiles);
+	fileNames.resize(numFiles);
 	std::copy(std::begin(lst), std::end(lst), std::begin(fileNames));
 
-    int cnt = 0;
-    std::vector<uint> exIndices;
-    uint progressCounter = 0;
-    for(const QString & fileName : fileNames)
-    {
-        if(fileName.contains("_num") ||
-//           fileName.contains("_300") ||
-           fileName.contains("_sht")) continue;
+	int cnt = 0;
+	std::vector<uint> exIndices;
+	uint progressCounter = 0;
+	for(const QString & fileName : fileNames)
+	{
+		if(fileName.contains("_num") ||
+		   //           fileName.contains("_300") ||
+		   fileName.contains("_sht")) continue;
 
-        //read data file
+		//read data file
 		helpString = inDirPath + slash + fileName;
-		myLib::readPlainData(helpString,
-							 dataIn,
-							 NumOfSlices);
+		myLib::readPlainData(helpString,  dataIn);
 
 		if(ui->spectraRadioButton->isChecked())
-        {
-            if(countOneSpectre(dataIn, dataFFT[cnt]))
-            {
-                ++cnt;
-            }
-            else
-            {
-                exIndices.push_back(progressCounter);
-            }
+		{
+			if(countOneSpectre(dataIn, dataFFT[cnt]))
+			{
+				++cnt;
+			}
+			else
+			{
+				exIndices.push_back(progressCounter);
+			}
 		}
 
 		ui->progressBar->setValue(++progressCounter * 100. / numFiles);
 		qApp->processEvents();
-    }
+	}
 
 	smLib::eraseItems(fileNames, exIndices);
-    dataFFT.resize(cnt);
+	dataFFT.resize(cnt);
 
-    ui->progressBar->setValue(0);
+	ui->progressBar->setValue(0);
 
-    //generality
+	//generality
 	std::cout << "countSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
@@ -866,15 +863,12 @@ void Spectre::drawWavelets()
 
 	std::set<double, std::greater<double>> tempVec;
 
-    // count maxValue
-    int NumOfSlices = 0;
+	// count maxValue
     for(const QString & fileName : lst)
     {
         filePath = (ui->lineEdit_1->text()
                                             + slash + fileName);
-		myLib::readPlainData(filePath,
-							 signal,
-							 NumOfSlices);
+		myLib::readPlainData(filePath, signal);
 
         for(int chanNum = 0; chanNum < def::nsWOM(); ++chanNum)
         {

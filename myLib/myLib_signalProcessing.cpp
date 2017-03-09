@@ -2125,14 +2125,10 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 
 	//make dataE array to count covariation matrix
 	int NumOfSlices = 0;
-	int help;
 	for(auto filePath : leest)
 	{
-		readPlainData(filePath,
-					  dataE,
-					  help,
-					  NumOfSlices);
-		NumOfSlices += help;
+		readPlainData(filePath, dataE, NumOfSlices);
+		NumOfSlices = dataE.cols();
 	}
 
 	std::vector<int> signalNums;

@@ -242,7 +242,6 @@ void MainWindow::reduceChannelsSlot()
 {
 #if 1
 	// reduce channels in Reals
-    /// not the same as edfFile::reduceChannels
     QStringList lst;
     matrix dataR;
 
@@ -273,20 +272,20 @@ void MainWindow::reduceChannelsSlot()
     lst = localDir.entryList(QDir::Files, QDir::NoSort);
 
 
-    int NumOfSlices;
     int localNs;
     for(const QString & fileName : lst)
     {
         localNs = def::ns;
         helpString = (localDir.absolutePath()
                                               + slash + fileName);
-		myLib::readPlainData(helpString, dataR, NumOfSlices);
+		myLib::readPlainData(helpString, dataR);
+		localNs = dataR.rows(); /// needed?
         for(int exclChan : excludeList)
         {
             dataR.eraseRow(exclChan);
             --localNs;
         }
-		myLib::writePlainData(helpString, dataR, localNs, NumOfSlices);
+		myLib::writePlainData(helpString, dataR);
     }
 
     def::ns -= excludeList.size();
@@ -448,6 +447,7 @@ void MainWindow::constructEDFSlot()
     ui->textEdit->append(helpString);
 }
 
+/// check this sheet
 void MainWindow::constructEDF(const QString & newPath,
                               const QStringList & nameFilters)
 {
@@ -482,33 +482,23 @@ void MainWindow::constructEDF(const QString & newPath,
         return;
     }
 
-    matrix newData;
 
-    int NumOfSlices;
-    int currSlice = 0;
+	matrix newData = matrix();
 
     for(const QString & fileName : lst)
     {
         helpString = (def::dir->absolutePath()
 											  + slash + "Reals"
                                               + slash + fileName);
-		myLib::readPlainData(helpString, newData, NumOfSlices, currSlice);
-        currSlice += NumOfSlices;
-    }
-//    std::cout << "constructEDF: slices read from Reals = " << currSlice << std::endl;
-
-    int helpInt = currSlice;
-
-    /// why do I need this?
-    if(currSlice < 16 * def::freq)
-    {
-		std::cout << "constructEDF: too little data 1 =  " << currSlice << std::endl;
-        return;
-    }
+		/// changed 9.3.17
+		myLib::readPlainData(helpString, newData, newData.cols());
+	}
+	int helpInt = newData.cols();
 
 
-    int offset = 0;
-//    if(globalEdf.getMatiFlag())
+
+	int offset = 0;
+	int currSlice = newData.cols();
     if(ui->matiCheckBox->isChecked()) // bicycle generality
     {
 		QString fileName = myLib::getFileName(newPath);

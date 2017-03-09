@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <myLib/drw.h>
 using namespace myOut;
 
 MainWindow::MainWindow() :
@@ -766,7 +767,6 @@ void MainWindow::drawReals()
         }
     }
 
-    int NumOfSlices;
     for(int i = 0; i < lst.length(); ++i)
     {
         if(stopFlag)
@@ -775,24 +775,21 @@ void MainWindow::drawReals()
         }
         helpString = prePath + slash + lst[i];
 		myLib::readPlainData(helpString,
-                      dataD,
-                      NumOfSlices);
+					  dataD);
 
-        if(NumOfSlices > 15000)
+		if(dataD.cols() > 15000)
         {
             continue;
         }
 
 		helpString = myLib::getPicPath(helpString);
 
-		myLib::drawEeg(dataD,
-					   def::ns,
-					   NumOfSlices,
-					   def::freq,
-					   helpString,
-					   ui->drawCoeffSpinBox->value(),
-					   blueCh,
-					   redCh); // generality.getFreq()
+
+		myLib::drw::drawEeg(dataD * ui->drawCoeffSpinBox->value(),
+							def::freq,
+		{ std::make_pair(blueCh, "blue"), std::make_pair(redCh, "red") }).save(
+					helpString, 0, 100);
+
 
         ui->progressBar->setValue(100 * (i + 1) / lst.length());
         qApp->processEvents();

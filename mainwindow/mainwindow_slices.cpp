@@ -80,9 +80,7 @@ void MainWindow::sliceWindFromReal()
     matrix dataReal;
 
     int eyes;
-    int offset;
-    int NumOfSlices;
-
+	int offset;
     int localNs = def::ns;
     for(int i = 0; i < lst.length(); ++i)
     {
@@ -90,14 +88,14 @@ void MainWindow::sliceWindFromReal()
         helpString = (def::dir->absolutePath()
 											  + slash + "Reals"
                                               + slash + lst[i]);
-		myLib::readPlainData(helpString, dataReal, NumOfSlices);
+		myLib::readPlainData(helpString, dataReal);
 
         offset = 0;
-        for(int h = 0; h < ceil((NumOfSlices - wndLength) / double(timeShift)); ++h)
+		for(int h = 0; h < ceil((dataReal.cols() - wndLength) / double(timeShift)); ++h)
         {
             //correct eyes number
             eyes = 0;
-			for(int l = offset; l < std::min(offset + wndLength, NumOfSlices); ++l)
+			for(int l = offset; l < std::min(offset + wndLength, int(dataReal.cols())); ++l)
             {
                 eyesCounter = 0.;
                 for(int m = 0; m < localNs; ++m)
@@ -121,7 +119,7 @@ void MainWindow::sliceWindFromReal()
 						 + "." + myLib::rightNumber(h, 2);
 
             /// wowo wowoww wowowowo owowwowo
-			myLib::writePlainData(helpString, dataReal, wndLength, offset);
+			myLib::writePlainData(helpString, dataReal.subCols(offset, offset + wndLength));
 
             offset += timeShift;
         }
@@ -415,6 +413,7 @@ void MainWindow::sliceOneByOneNew()
 
 void MainWindow::sliceMatiSimple()
 {
+#if 0
     QTime myTime;
     myTime.start();
 
@@ -499,7 +498,8 @@ void MainWindow::sliceMatiSimple()
                                                           + '.' + fileMark);
 
 					int NumOfSlices = std::min(end - start - j * piece, piece);
-					myLib::writePlainData(helpString, fil.getData(), NumOfSlices, start + j * piece);
+					/// PEWPEWPEWPEWPEWPEWPEW
+//					myLib::writePlainData(helpString, fil.getData(), NumOfSlices, start + j * piece);
                 }
                 fileMark.clear();
                 ++session[type];
@@ -520,6 +520,7 @@ void MainWindow::sliceMatiSimple()
 
 	std::cout << "sliceMatiSimple: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
     stopFlag = 0;
+#endif
 }
 
 void MainWindow::sliceMati()

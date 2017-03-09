@@ -19,13 +19,10 @@ void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
 void readPlainData(const QString & inPath,
 				   matrix & data,
-				   int & numOfSlices,
 				   int start = 0);
 
 void writePlainData(const QString outPath,
-					const matrix & data,
-					int numOfSlices = 0,
-					int start = 0);
+					const matrix & data);
 
 void readMatrixFile(const QString & filePath,
 					matrix & outData);

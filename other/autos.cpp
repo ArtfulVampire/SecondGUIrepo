@@ -1175,10 +1175,8 @@ matrix makeTestData(const QString & outPath)
 
 	testSignals = pewM * testSignals;
 
-	myLib::writePlainData(outPath,
-						  testSignals);
-	myLib::writePlainData(outPath + "_",
-						  testSignals, 2000); // edit out time
+	myLib::writePlainData(outPath, testSignals);
+	myLib::writePlainData(outPath + "_", testSignals.resizeCols(2000)); // edit out time
 	return pewM;
 }
 

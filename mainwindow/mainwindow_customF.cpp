@@ -745,7 +745,6 @@ exit(0);
     dataMat.resize(20);
 
 
-    int newDataLen = 0;
 
     for(QString &oneFile : dataFiles)
     {
@@ -757,13 +756,12 @@ exit(0);
 
         helpString = pth + oneFile;
         readPlainData(helpString,
-                      dataMat,
-                      newDataLen);
-		std::cout << newDataLen << std::endl;
+					  dataMat);
+		std::cout << dataMat.cols() << std::endl;
 
         for(int i = 0; i < 20; ++i)
         {
-            dataMat[i].resize(newDataLen); // 1 hour
+			dataMat[i].resize(dataMat.cols()); // 1 hour
         }
 
         // add markers

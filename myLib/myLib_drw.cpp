@@ -699,8 +699,7 @@ QPixmap drawMannWitneyInLine(const QPixmap & templatePic,
 QPixmap drawRealisation(const QString & inPath, int srate)
 {
 	matrix inData;
-	int num = 0;
-	myLib::readPlainData(inPath, inData, num);
+	myLib::readPlainData(inPath, inData);
 
 	return drawEeg(inData, srate);
 }

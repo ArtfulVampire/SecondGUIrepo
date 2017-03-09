@@ -1743,8 +1743,7 @@ void drawColorScale(QString filePath, int range, ColorScale type, bool full)
 void drawRealisation(const QString & inPath)
 {
 	matrix inData;
-	int num = 0;
-	readPlainData(inPath, inData, num);
+	readPlainData(inPath, inData);
 
 	QString outPath = inPath;
 	outPath.resize(outPath.lastIndexOf('.'));

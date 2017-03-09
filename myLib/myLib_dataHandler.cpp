@@ -183,22 +183,8 @@ void writeFileInLine(const QString & filePath,
 
 /// in file and in matrix - transposed
 void writePlainData(const QString outPath,
-                    const matrix & data,
-                    int numOfSlices,
-                    int start)
+					const matrix & data)
 {
-    if(numOfSlices <= 0)
-    {
-        numOfSlices = data.cols();
-    }
-    else
-    {
-		numOfSlices = std::min(uint(numOfSlices),
-							   data.cols() - start);
-    }
-
-//    if(numOfSlices < 250) return; /// used for sliceWindFromReal() but Cut::cut() ...
-
 	std::ofstream outStr;
     if(outPath.endsWith(def::plainDataExtension))
     {
@@ -210,13 +196,13 @@ void writePlainData(const QString outPath,
         outPathNew.remove("." + def::plainDataExtension);
         outStr.open((outPathNew + '.' + def::plainDataExtension).toStdString());
     }
-    outStr << "NumOfSlices " << numOfSlices << '\t';
+	outStr << "NumOfSlices " << data.cols() << '\t';
     outStr << "NumOfChannels " << data.rows() << "\r\n";
-    for (int i = 0; i < numOfSlices; ++i)
+	for (int i = 0; i < data.cols(); ++i)
     {
         for(uint j = 0; j < data.rows(); ++j)
         {
-			outStr << smLib::doubleRound(data[j][i + start], 3) << '\t';
+			outStr << smLib::doubleRound(data[j][i], 3) << '\t';
         }
         outStr << "\r\n";
     }
@@ -224,12 +210,8 @@ void writePlainData(const QString outPath,
     outStr.close();
 }
 
-
-
-
 void readPlainData(const QString & inPath,
-                   matrix & data,
-                   int & numOfSlices,
+				   matrix & data,
 				   int start)
 {
 	std::ifstream inStr;
@@ -240,12 +222,13 @@ void readPlainData(const QString & inPath,
         return;
     }
     int localNs;
+	int numOfSlices;
     inStr.ignore(64, ' '); // "NumOfSlices "
     inStr >> numOfSlices;
     inStr.ignore(64, ' '); // "NumOfChannels "
     inStr >> localNs;
 
-    data.resize(localNs, numOfSlices + start);
+	data.resize(localNs, start + numOfSlices);
 
     for (int i = 0; i < numOfSlices; ++i)
     {

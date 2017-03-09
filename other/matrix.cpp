@@ -691,7 +691,6 @@ uint matrix::rows() const
    return myData.size();
 }
 
-
 double matrix::maxVal() const
 {
 	double res = myData[0][0];
