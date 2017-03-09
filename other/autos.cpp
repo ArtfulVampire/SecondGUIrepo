@@ -1,7 +1,12 @@
-#include "autos.h"
+#include <other/autos.h>
+
 #include <myLib/clustering.h>
 #include <myLib/iitp.h>
 #include <myLib/drw.h>
+#include <myLib/draws.h>
+#include <myLib/signalProcessing.h>
+#include <myLib/wavelet.h>
+
 
 using namespace myOut;
 
@@ -61,17 +66,19 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 	{
 		if(cutOnlyFlag)
 		{
-			autos::GalyaCut(def::mriFolder + slash + guy, 2);
+			autos::GalyaCut(def::mriFolder + "/" + guy, 2);
 			continue;
 		}
 
 		autos::GalyaFull(def::mriFolder +
-						 slash + guy +
-						 slash + guy + "_winds_cleaned");
+						 "/" + guy +
+						 "/" + guy + "_winds_cleaned");
 
 		QString outPath = def::mriFolder + "/OUT/" + guy;
 		QString dropPath = "/media/Files/Dropbox/DifferentData/EEG-MRI/Results";
 		QStringList files = QDir(outPath).entryList({"*.txt"});
+
+		/// make archive
 		QString cmd = "cd " + outPath + " && " +
 					  "rar a " + guy + ".rar ";
 		for(QString a : files)
@@ -79,13 +86,14 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 			cmd += a + " ";
 		}
 		system(cmd.toStdString().c_str());
-		/// check if exists
+
+		/// copy to Dropbox folder
 		cmd = "cp " + outPath + "/" + guy + ".rar " +
 			  dropPath + "/" + guy + ".rar";
 		system(cmd.toStdString().c_str());
 
 		/// copy link
-		std::this_thread::sleep_for(std::chrono::seconds(15));
+		std::this_thread::sleep_for(std::chrono::seconds(15)); /// wait for copy to end?
 		cmd = "./dropbox.py sharelink " +  dropPath + "/" + guy + ".rar" +
 			  " | xclip -selection clipboard";
 		system(cmd.toStdString().c_str());
@@ -116,7 +124,7 @@ void Xenia_TBI()
 	/// count
 	for(QString subdir : subdirs)
 	{
-		QString workPath = tbi_path + slash + subdir;
+		QString workPath = tbi_path + "/" + subdir;
 
 //		repair::deleteSpacesFolders(workPath);
 //		repair::toLatinDir(workPath, {});
@@ -128,7 +136,7 @@ void Xenia_TBI()
 		{
 //			if(!guy.contains("Shamukaeva")) continue;
 
-			QStringList t = QDir(workPath + slash + guy).entryList(def::edfFilters);
+			QStringList t = QDir(workPath + "/" + guy).entryList(def::edfFilters);
 			if(t.isEmpty()) continue;
 
 			QString ExpName = t[0];
@@ -137,16 +145,16 @@ void Xenia_TBI()
 			/// cut?
 			if(0)
 			{
-				autos::GalyaCut(workPath + slash + guy,
+				autos::GalyaCut(workPath + "/" + guy,
 								8,
-								workPath + "_cut" + slash + guy);
+								workPath + "_cut/" + guy);
 			}
 
-			autos::GalyaProcessing(workPath + slash + guy,
+			autos::GalyaProcessing(workPath + "/" + guy,
 								   19,
 								   workPath + "_tmp");
 
-			autos::GalyaWavelets(workPath + slash + guy,
+			autos::GalyaWavelets(workPath + "/" + guy,
 								 19,
 								 250,
 								 workPath + "_tmp");
@@ -182,11 +190,11 @@ void Xenia_TBI()
 	/// make tables by stimulus
 	for(QString subdir : subdirs)
 	{
-		QString workPath = tbi_path + slash + subdir + "_tmp2";
+		QString workPath = tbi_path + "/" + subdir + "_tmp2";
 		for(QString marker : markers)
 		{
 			autos::makeTableFromRows(workPath,
-									 tbi_path + slash + subdir + "_table" + marker + ".txt",
+									 tbi_path + "/" + subdir + "_table" + marker + ".txt",
 									 marker);
 		}
 	}
@@ -197,9 +205,9 @@ void Xenia_TBI()
 	/// make tables whole
 	for(QString subdir : subdirs)
 	{
-		QString workPath = tbi_path + slash + subdir + "_OUT";
+		QString workPath = tbi_path + "/" + subdir + "_OUT";
 		autos::makeTableFromRows(workPath,
-								 tbi_path + slash + subdir + "_all" + ".txt");
+								 tbi_path + "/" + subdir + "_all" + ".txt");
 	}
 #endif
 
@@ -207,8 +215,8 @@ void Xenia_TBI()
 	/// people list
 	for(QString subdir : subdirs)
 	{
-		QString workPath = tbi_path + slash + subdir + "_OUT";
-		QString outFile = tbi_path + slash + subdir + "_people.txt";
+		QString workPath = tbi_path + "/" + subdir + "_OUT";
+		QString outFile = tbi_path + "/" + subdir + "_people.txt";
 		std::ofstream outStr;
 		outStr.open(outFile.toStdString());
 
@@ -283,8 +291,8 @@ void IITPdat(const QString & guyName)
 
 	for(const QString & fil : files)
 	{
-		const QString filePath = def::iitpFolder + slash +
-								 guyName + slash +
+		const QString filePath = def::iitpFolder + "/" +
+								 guyName + "/" +
 								 fil;
 		int num = fil.mid(fil.indexOf('_') + 1, 2).toInt();
 //		std::cout << num << std::endl;
@@ -307,8 +315,8 @@ void IITPfilterGonios(const QString & guyName,
 	QString postfix = iitp::getPostfix(QDir(def::iitpFolder + "/" + guyName).entryList({"*.edf"})[0]);
 	for(int fileNum : iitp::fileNums)
 	{
-		const QString ExpNamePre = def::iitpFolder + slash +
-								   guyName + slash +
+		const QString ExpNamePre = def::iitpFolder + "/" +
+								   guyName + "/" +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
 		QString filePath;
 		edfFile fil;
@@ -499,8 +507,8 @@ void IITPpre(const QString & guyName)
 	for(int fileNum : iitp::fileNums)
 	{
 //		if(fileNum != 21) continue;
-		const QString ExpNamePre = def::iitpFolder + slash +
-								   guyName + slash +
+		const QString ExpNamePre = def::iitpFolder + "/" +
+								   guyName + "/" +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
 		QString filePath;
 		edfFile fil;
@@ -639,8 +647,8 @@ void IITPstaging(const QString & guyName,
 
 	for(int fileNum : iitp::fileNums)
 	{
-		const QString ExpNamePre = dirPath + slash +
-								   guyName + slash +
+		const QString ExpNamePre = dirPath + "/" +
+								   guyName + "/" +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
 		QString filePath;
 		iitp::iitpData fil;
@@ -1039,7 +1047,7 @@ int numMarkers(const QString & edfPath, const std::vector<int> & markers)
 void makeRightNumbersCF(const QString & dirPath, int startNum)
 {
 	std::ofstream outStr;
-	outStr.open((dirPath + slash + "ans.txt").toStdString());
+	outStr.open((dirPath + "/ans.txt").toStdString());
 
 	for(QString str : QDir(dirPath).entryList({"complex*.jpg"}, QDir::Files, QDir::Name))
 	{
@@ -1047,8 +1055,8 @@ void makeRightNumbersCF(const QString & dirPath, int startNum)
 		QString newName = "cf_" + myLib::rightNumber(startNum++, 3) + ".jpg";
 		outStr << newName << '\t' << parts[3] << "\r\n";
 
-		QFile::copy(dirPath + slash + str,
-					dirPath + slash + newName);
+		QFile::copy(dirPath + "/" + str,
+					dirPath + "/" + newName);
 	}
 	outStr.close();
 }
@@ -1075,8 +1083,8 @@ void makeRightNumbers(const QString & dirPath,
 		}
 		newName.remove(newName.length() - 1, 1); // remove last
 
-		QFile::rename(deer.absolutePath() + slash + oldName,
-					  deer.absolutePath() + slash + newName);
+		QFile::rename(deer.absolutePath() + "/" + oldName,
+					  deer.absolutePath() + "/" + newName);
 	}
 }
 
@@ -1091,7 +1099,7 @@ void makeTableFromRows(const QString & work,
 	{
 		deer.cdUp();
 		tablePath = deer.absolutePath()
-					+ slash + "table.txt";
+					+ "/table.txt";
 		deer.cd(work);
 	}
 	const QString tableName = myLib::getFileName(tablePath);
@@ -1106,7 +1114,7 @@ void makeTableFromRows(const QString & work,
 	{
 		if(fileName.contains(tableName)) continue;
 
-		QFile fil(deer.absolutePath() + slash + fileName);
+		QFile fil(deer.absolutePath() + "/" + fileName);
 		fil.open(QIODevice::ReadOnly);
 		auto contents = fil.readAll();
 		fil.close();
@@ -1191,7 +1199,7 @@ void XeniaArrangeToLine(const QString & dirPath,
 	std::ifstream inStr;
 	for(const QString & fileName : fileNames)
 	{
-		inStr.open((dirPath + slash + fileName).toStdString());
+		inStr.open((dirPath + "/" + fileName).toStdString());
 		double val;
 		while(inStr.good())
 		{
@@ -1240,9 +1248,9 @@ void cutOneFile(const QString & filePath,
 					fmin((i + 1) * fr * wndLen, initEdf.getDataLen()),
 					QString(outPath
 					#if ADD_DIR
-							+ slash + addDir
+							+ "/" + addDir
 					#endif
-							+ slash + initEdf.getExpName()
+							+ "/" + initEdf.getExpName()
 							+ "_wnd_" + myLib::rightNumber(
 								i + 1,
 								floor(log10(numOfWinds)) + 1)
@@ -1260,12 +1268,12 @@ void GalyaCut(const QString & path,
 
 	QDir tmpDir(path);
 	tmpDir.mkdir(smallsDir);
-	const QString smallsPath = tmpDir.absolutePath() + slash + smallsDir;
+	const QString smallsPath = tmpDir.absolutePath() + "/" + smallsDir;
 
 	if(outPath.isEmpty())
 	{
 		tmpDir.mkdir(outDir);
-		outPath = tmpDir.absolutePath() + slash + outDir;
+		outPath = tmpDir.absolutePath() + "/" + outDir;
 	}
 	else
 	{
@@ -1273,7 +1281,7 @@ void GalyaCut(const QString & path,
 	}
 
 	/// to change
-	const QString logPath = def::GalyaFolder + slash + "log.txt";
+	const QString logPath = def::GalyaFolder + "/log.txt";
 	std::ofstream logStream(logPath.toStdString(), std::ios_base::app);
 
 	const QStringList leest1 = tmpDir.entryList(def::edfFilters);
@@ -1287,16 +1295,16 @@ void GalyaCut(const QString & path,
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		std::cout << filesVec[i] << std::endl;
-		QString helpString = tmpDir.absolutePath() + slash + filesVec[i];
+		QString helpString = tmpDir.absolutePath() + "/" + filesVec[i];
 		edfFile initEdf;
 		initEdf.readEdfFile(helpString, true);
 
 		/// some check for small
 		if(initEdf.getNdr() * initEdf.getDdr() <= wndLen )
 		{
-			QFile::remove(smallsPath + slash + initEdf.getFileNam());
+			QFile::remove(smallsPath + "/" + initEdf.getFileNam());
 			QFile::copy(initEdf.getFilePath(),
-						smallsPath + slash + initEdf.getFileNam());
+						smallsPath + "/" + initEdf.getFileNam());
 
 			std::cout << "smallFile \t" << initEdf.getFileNam() << std::endl;
 			logStream << initEdf.getFilePath() << "\t" << "too small" << "\n";
@@ -1359,7 +1367,7 @@ void GalyaWavelets(const QString & inPath,
 	if(outPath.isEmpty())
 	{
 		tmpDir.mkdir("wavelet");
-		outPath = tmpDir.absolutePath() + slash + "wavelet";
+		outPath = tmpDir.absolutePath() + "/wavelet";
 	}
 	else
 	{
@@ -1375,7 +1383,7 @@ void GalyaWavelets(const QString & inPath,
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		std::cout << filesVec[i] << std::endl;
-		QString helpString = tmpDir.absolutePath() + slash + filesVec[i];
+		QString helpString = tmpDir.absolutePath() + "/" + filesVec[i];
 
 		edfFile initEdf;
 		initEdf.readEdfFile(helpString);
@@ -1383,7 +1391,7 @@ void GalyaWavelets(const QString & inPath,
 
 
 		helpString = outPath
-//					 + slash + exp
+//					 + "/" + exp
 					 + slash
 					 + myLib::getFileName(filesVec[i], false)
 					 + "_wavelet.txt";
@@ -1408,8 +1416,8 @@ void countSpectraFeatures(const QString & filePath,
 	const double alphaMaxLimRight = 13.;
 
 	const QString ExpName = myLib::getFileName(filePath, false);
-	const QString spectraFilePath = outPath + slash + ExpName + "_spectre.txt";
-	const QString alphaFilePath = outPath + slash + ExpName + "_alpha.txt";
+	const QString spectraFilePath = outPath + "/" + ExpName + "_spectre.txt";
+	const QString alphaFilePath = outPath + "/" + ExpName + "_alpha.txt";
 
 	// remove previous
 	QFile::remove(spectraFilePath);
@@ -1528,8 +1536,8 @@ void countChaosFeatures(const QString & filePath,
 	const double hilbertFreqLimit = 40.;
 
 	const QString ExpName = myLib::getFileName(filePath, false);
-	const QString d2dimFilePath = outPath + slash + ExpName + "_d2_dim.txt";
-	const QString hilbertFilePath = outPath + slash + ExpName + "_med_freq.txt";
+	const QString d2dimFilePath = outPath + "/" + ExpName + "_d2_dim.txt";
+	const QString hilbertFilePath = outPath + "/" + ExpName + "_med_freq.txt";
 
 	// remove previous
 	QFile::remove(d2dimFilePath);
@@ -1576,7 +1584,7 @@ void countChaosFeatures(const QString & filePath,
 #if 0
 		// write enthropy
 		helpString = outPath
-					 + slash + ExpName;
+					 + "/" + ExpName;
 #if 0
 		iffreqCounter != rightFreqLim)
 		{
@@ -1616,7 +1624,7 @@ void countChaosFeatures(const QString & filePath,
 			iffreqCounter <= rightFreqLim + stepFreq)
 			{
 				helpString = outPath
-							 + slash + ExpName
+							 + "/" + ExpName
 							 + "_" + QString::numberfreqCounter)
 							 + "_" + QString::number(numChan)
 							 + "_fSpec.jpg";
@@ -1666,7 +1674,7 @@ void GalyaProcessing(const QString & procDirPath,
 	if(outPath.isEmpty())
 	{
 		dir.mkdir(outDir);
-		outPath = dir.absolutePath() + slash + outDir;
+		outPath = dir.absolutePath() + "/" + outDir;
 	}
 	else
 	{
@@ -1682,7 +1690,7 @@ void GalyaProcessing(const QString & procDirPath,
 #pragma omp for nowait
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
-		QString helpString = dir.absolutePath() + slash + filesVec[i];
+		QString helpString = dir.absolutePath() + "/" + filesVec[i];
 		edfFile initEdf;
 
 		initEdf.readEdfFile(helpString, true);
@@ -1743,11 +1751,11 @@ void GalyaFull(const QString & inDirPath,
 
 
 	const QString outPath = inDirPath + "_out";
-//	const QString outPath = inDirPath + slash + myLib::getFileName(inDirPath) + "_out";
+//	const QString outPath = inDirPath + "/" + myLib::getFileName(inDirPath) + "_out";
 	tmp.mkpath(outPath);
 
 	const QString waveletPath = inDirPath + "_wavelet";
-//	const QString waveletPath = inDirPath + slash + myLib::getFileName(inDirPath) + "_wavelet";
+//	const QString waveletPath = inDirPath + "/" + myLib::getFileName(inDirPath) + "_wavelet";
 	tmp.mkpath(waveletPath);
 
 #if 01
@@ -1760,7 +1768,7 @@ void GalyaFull(const QString & inDirPath,
 	for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
 	{
 		autos::makeTableFromRows(outPath,
-								 outDirPath + slash + outFileNames + type + ".txt",
+								 outDirPath + "/" + outFileNames + type + ".txt",
 								 type);
 	}
 #endif
@@ -1775,7 +1783,7 @@ void GalyaFull(const QString & inDirPath,
 
 	/// rename the folder in OUT to guy
 	autos::makeRightNumbers(waveletPath, rightNum);
-	autos::makeTableFromRows(waveletPath, outDirPath + slash + outFileNames + "_wavelet.txt");
+	autos::makeTableFromRows(waveletPath, outDirPath + "/" + outFileNames + "_wavelet.txt");
 }
 
 void avTimesNew(const QString & edfPath, int numSession)
@@ -1939,7 +1947,7 @@ void avTime(const QString & realsDir)
 		QStringList lst = QDir(realsDir).entryList({"*_" + tmp + "*"}, QDir::Files);
 		for(const QString & fileName : lst)
 		{
-			helpString = realsDir + slash + fileName;
+			helpString = realsDir + "/" + fileName;
 
 			// read numOfSlices
 			std::ifstream inStr;

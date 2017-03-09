@@ -1,12 +1,16 @@
 #ifndef DRAWS_H
 #define DRAWS_H
 
-#include <QString>
+
 #include <valarray>
 #include <vector>
 
-#include "matrix.h"
-#include "coord.h"
+#include <other/matrix.h>
+#include <other/coord.h>
+
+#include <QPixmap>
+#include <QPainter>
+#include <QString>
 
 namespace myLib
 {

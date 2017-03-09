@@ -1,9 +1,14 @@
 #ifndef CLUSTERING_H
 #define CLUSTERING_H
 
+#include <iostream>
 #include <vector>
 #include <valarray>
+#include <cmath>
+
 #include <QString>
+#include <QPixmap>
+#include <QPainter>
 
 
 

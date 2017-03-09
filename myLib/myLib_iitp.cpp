@@ -1,4 +1,5 @@
-#include "iitp.h"
+#include <myLib/iitp.h>
+
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
 #include <myLib/drw.h>

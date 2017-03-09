@@ -5,8 +5,9 @@
 #include <valarray>
 #include <vector>
 #include <cmath>
-#include "matrix.h"
-#include "edffile.h"
+
+#include <other/matrix.h>
+#include <other/edffile.h>
 
 namespace iitp
 {

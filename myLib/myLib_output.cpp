@@ -1,6 +1,6 @@
 #include <myLib/output.h>
-#include <myLib/small.h>
 
+#include <myLib/small.h>
 
 namespace myLib
 {

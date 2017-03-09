@@ -10,8 +10,8 @@
 #include <numeric>
 #include <complex>
 
-#include "coord.h"
-#include "valar.h"
+#include <other/coord.h>
+#include <myLib/valar.h>
 
 
 template <typename Typ>

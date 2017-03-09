@@ -1,4 +1,4 @@
-#include "matrix.h"
+#include <other/matrix.h>
 
 matrix::matrix()
 {

@@ -1,6 +1,5 @@
-#include "classifier.h"
+#include <classifier/classifier.h>
 
-using namespace myLib;
 using namespace myOut;
 
 /// lowest distance to cluster center

@@ -1,9 +1,9 @@
 #include <myLib/draws.h>
+
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
 #include <myLib/signalProcessing.h>
-#include <QPixmap>
-#include <QPainter>
+
 using namespace myOut;
 
 namespace myLib
@@ -189,7 +189,7 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         helpString = mapsDirPath
-                     + slash + mapNam
+					 + "/" + mapNam
                      + "_map_" + QString::number(i) + "+.png";
         if(!QFile::exists(helpString))
         {
@@ -276,7 +276,7 @@ void drawMapSpline(const matrix & matrixA,
     pic.fill();
     painter.begin(&pic);
     QString savePath1 = outDir
-                        + slash + outName + "_map_"
+						+ "/" + outName + "_map_"
                         + QString::number(numOfColoumn) + "+.png";
 
     QPixmap pic1 = QPixmap(picSize, picSize);
@@ -284,7 +284,7 @@ void drawMapSpline(const matrix & matrixA,
     pic1.fill();
     painter1.begin(&pic1);
     QString savePath2 = outDir
-                        + slash + outName + "_map_"
+						+ "/" + outName + "_map_"
                         + QString::number(numOfColoumn) + "-.png";
 
     double val;

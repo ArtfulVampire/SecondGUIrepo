@@ -1,4 +1,8 @@
-#include "edffile.h"
+#include <other/edffile.h>
+#include <QTime>
+#include <myLib/mati.h>
+#include <myLib/signalProcessing.h>
+#include <myLib/drw.h>
 
 using namespace myOut;
 
@@ -101,7 +105,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 
 		this->filePath = txtFilePath;
 		this->ExpName = myLib::getExpNameLib(txtFilePath);
-		this->dirPath = txtFilePath.left(txtFilePath.lastIndexOf( slash ) );
+		this->dirPath = txtFilePath.left(txtFilePath.lastIndexOf( "/" ) );
 
 		this->ns = numOfParams;
 		this->ddr = 1.;
@@ -418,7 +422,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 	FILE * header = NULL;
 	if(readFlag && (writeHeaderFlag || headerOnly))
     {
-		helpString = dirPath + slash + "header.txt";
+		helpString = dirPath + "/header.txt";
         header = fopen(helpString, "w");
         if(header == NULL)
         {
@@ -498,7 +502,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
 	if(readFlag && writeLabelsFlag)
     {
-		helpString = dirPath + slash + "labels.txt";
+		helpString = dirPath + "/labels.txt";
 		FILE * labelsFile = NULL;
         labelsFile = fopen(helpString, "w");
 		if(labelsFile != NULL)
@@ -830,8 +834,8 @@ void edfFile::writeMarker(double currDatum,
 
     FILE * markers;
 	/// marker file name choose
-//    helpString = dirPath + slash + this->ExpName + "_markers.txt";
-	helpString = dirPath + slash + "markers.txt";
+//    helpString = dirPath + "/" + this->ExpName + "_markers.txt";
+	helpString = dirPath + "/markers.txt";
 
     markers = fopen(helpString, "a+");
     fprintf(markers, "%d %d", currTimeIndex, int(currDatum));
@@ -1433,12 +1437,8 @@ void edfFile::saveSubsection(int startBin,
 
 void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
 {
-	myLib::drawEeg(this->edfData,
-				   this->ns,
-				   startBin,
-				   finishBin,
-				   this->srate,
-				   outPath);
+	myLib::drw::drawEeg(this->edfData.subCols(startBin, finishBin),
+						this->srate).save(outPath, 0, 100);
 }
 
 void edfFile::cleanFromEyes(QString eyesPath,
@@ -1451,7 +1451,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
 
     if(eyesPath.isEmpty())
     {
-		eyesPath = this->dirPath + slash + "eyes.txt";
+		eyesPath = this->dirPath + "/eyes.txt";
     }
 
     matrix coefs;

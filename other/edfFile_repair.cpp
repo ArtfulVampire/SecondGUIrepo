@@ -1,4 +1,7 @@
-#include "edffile.h"
+#include <other/edffile.h>
+
+#include <QVector>
+
 using namespace myOut;
 
 namespace repair
@@ -9,7 +12,7 @@ void physMinMaxDir(const QString & dirPath)
     for(QString str : QDir(dirPath).entryList(def::edfFilters))
     {
         edfFile feel;
-        feel.readEdfFile(dirPath + slash + str);
+		feel.readEdfFile(dirPath + "/" + str);
 		feel.repairPhysEqual();
     }
 }
@@ -20,13 +23,13 @@ void physMinMaxCheck(const QString & dirPath)
     for(QString str : QDir(dirPath).entryList(def::edfFilters))
     {
         edfFile feel;
-        feel.readEdfFile(dirPath + slash + str);
+		feel.readEdfFile(dirPath + "/" + str);
         for(int i = 0; i < feel.getNs(); ++i)
         {
             if(feel.getPhysMin()[i] == feel.getPhysMax()[i])
             {
-                QFile::rename(dirPath + slash + str,
-                              dirPath + slash + "bad" + slash + str);
+				QFile::rename(dirPath + "/" + str,
+							  dirPath + "/bad/" + str);
             }
         }
     }
@@ -50,8 +53,8 @@ void toLatinFileOrFolder(const QString & fileOrFolderPath)
 		}
 	}
 	QDir tmp(fileOrFolderPath);
-	tmp.rename(fileOrFolderPath,  dirName + slash + newFileName);
-//	QFile::rename(fileOrFolderPath, dirName + slash + newFileName);
+	tmp.rename(fileOrFolderPath,  dirName + "/" + newFileName);
+//	QFile::rename(fileOrFolderPath, dirName + "/" + newFileName);
 }
 
 void toLatinDir(const QString & dirPath, const QStringList & filters)
@@ -68,7 +71,7 @@ void toLatinDir(const QString & dirPath, const QStringList & filters)
 
     for(const QString & str : leest)
     {
-		toLatinFileOrFolder(dirPath + slash + str);
+		toLatinFileOrFolder(dirPath + "/" + str);
     }
 }
 
@@ -81,7 +84,7 @@ void deleteSpacesFileOrFolder(const QString & fileOrFolderPath)
 	newName.remove(R"(')");
 	newName.replace(QRegExp("[_]{2,}"), "_");
 	tmp.rename(fileOrFolderPath,
-			   path + slash + newName);
+			   path + "/" + newName);
 }
 
 void deleteSpacesDir(const QString & dirPath, const QStringList & filters)
@@ -98,7 +101,7 @@ void deleteSpacesDir(const QString & dirPath, const QStringList & filters)
 	}
     for(const QString & fileName : lst)
 	{
-		deleteSpacesFileOrFolder(dirPath + slash + fileName);
+		deleteSpacesFileOrFolder(dirPath + "/" + fileName);
     }
 }
 
@@ -126,7 +129,7 @@ bool testChannelsOrderConsistency(const QString & dirPath)
     edfFile fil;
 	QStringList leest = QDir(dirPath).entryList(def::edfFilters);
 
-	fil.readEdfFile(dirPath + slash + leest[0], true);
+	fil.readEdfFile(dirPath + "/" + leest[0], true);
 	for(const QString & lbl : fil.getLabels())
 	{
 		if( lbl.startsWith("EEG ") )
@@ -140,7 +143,7 @@ bool testChannelsOrderConsistency(const QString & dirPath)
 
     for(const QString & guy : leest)
     {
-		fil.readEdfFile(dirPath + slash + guy, true);
+		fil.readEdfFile(dirPath + "/" + guy, true);
 		labels.clear();
 		for(const QString & lbl : fil.getLabels())
 		{
@@ -228,8 +231,8 @@ void channelsOrderDir(const QString & inDirPath,
         QString outName = vec[i];
 //        outName.replace(".edf", "_goodChan.edf", Qt::CaseInsensitive);
 //        std::cout << outName << std::endl;
-        channelsOrderFile(inDirPath + slash + vec[i],
-                            outDirPath + slash + outName,
+		channelsOrderFile(inDirPath + "/" + vec[i],
+							outDirPath + "/" + outName,
                             standard);
 //		break;
     }
@@ -279,8 +282,8 @@ void holesDir(const QString & inDirPath,
 
     for(int i = 0; i < vec.size(); ++i)
 	{
-		holesFile(inDirPath + slash + vec[i],
-				  outDirPath + slash + vec[i]);
+		holesFile(inDirPath + "/" + vec[i],
+				  outDirPath + "/" + vec[i]);
     }
 }
 
@@ -303,7 +306,7 @@ void toLowerFileOrFolder(const QString & fileOrFolderPath)
 		}
 	}
 	QDir tmp(fileOrFolderPath);
-	tmp.rename(fileOrFolderPath, dirName + slash + newFileName);
+	tmp.rename(fileOrFolderPath, dirName + "/" + newFileName);
 }
 
 void toLowerDir(const QString & dirPath, const QStringList & filters)
@@ -320,7 +323,7 @@ void toLowerDir(const QString & dirPath, const QStringList & filters)
 
 	for(const QString & str : leest)
 	{
-		toLowerFileOrFolder(dirPath + slash + str);
+		toLowerFileOrFolder(dirPath + "/" + str);
 	}
 }
 

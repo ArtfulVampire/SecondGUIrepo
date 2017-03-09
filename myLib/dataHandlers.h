@@ -1,9 +1,11 @@
 #ifndef DATAHANDLERS_H
 #define DATAHANDLERS_H
 
-#include <matrix.h>
-#include <QString>
 #include <valarray>
+
+#include <other/matrix.h>
+
+#include <QString>
 
 namespace myLib
 {

@@ -1,7 +1,5 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
-#include <fstream>
-#include <iostream>
 
 using namespace myOut;
 
@@ -405,11 +403,11 @@ void readUCIdataSet(const QString & setName,
                     std::vector<uint> & outTypes)
 {
     QString newName = setName.toUpper();
-    readMatrixFile(def::uciFolder + slash + newName + "_data.txt", outData);
+	readMatrixFile(def::uciFolder + "/" + newName + "_data.txt", outData);
 
 
 	std::ifstream inStr;
-    inStr.open((def::uciFolder + slash + newName + "_types.txt").toStdString());
+	inStr.open((def::uciFolder + "/" + newName + "_types.txt").toStdString());
 
     int num = 0;
     inStr >> num;

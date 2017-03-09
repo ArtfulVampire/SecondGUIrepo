@@ -2,8 +2,13 @@
 #define WAVELET_H
 
 #include <chrono>
+
+#include <other/matrix.h>
+#include <matlab/for_testing/libcwt_r.h>
+
 #include <QString>
-#include <matrix.h>
+#include <QPixmap>
+#include <QPainter>
 
 namespace wvlt
 {

@@ -2,6 +2,8 @@
 #define MATI_H
 
 #include <vector>
+#include <iostream>
+
 #include <QString>
 
 namespace myLib

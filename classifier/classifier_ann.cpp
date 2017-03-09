@@ -1,5 +1,5 @@
-#include "classifier.h"
-using namespace myLib;
+#include <classifier/classifier.h>
+
 using namespace myOut;
 
 ANN::ANN() : Classifier()
@@ -358,7 +358,7 @@ void ANN::classifyDatum1(const uint & vecNum)
 	const int numOfLayers = dim.size();
 	std::ofstream resFile;
 	resFile.open((def::dir->absolutePath() +
-				  slash + "class.txt").toStdString(),
+				  "/class.txt").toStdString(),
 				 std::ios_base::app);
 
 	///uncomment to write to file
@@ -391,7 +391,7 @@ void ANN::writeWeight(const QString & wtsPath)
     if(wtsPath.isEmpty())
     {
 		weightsFile.open((def::dir->absolutePath() + slash
-						  + "Help" + slash + "wts" + slash
+						  + "Help/wts" + slash
 						  + def::ExpName
 //						  + "_" + QString::number(wtsCounter++)
 						  + ".wts").toStdString());
@@ -462,7 +462,7 @@ void ANN::drawWeight(QString wtsPath,
     if(!QFile::exists(wtsPath))
     {
 		wtsPath = def::dir->absolutePath() + slash
-				  + "Help" + slash + "wts" + slash
+				  + "Help/wts" + slash
 				  + def::ExpName + ".wts";
         if(!QFile::exists(wtsPath))
         {
@@ -482,10 +482,10 @@ void ANN::drawWeight(QString wtsPath,
         picPath = wtsPath;
         picPath.replace(".wts", "_wts.jpg"); /// make default suffixes
     }
-    drawTemplate(picPath);
-    drawArrays(picPath,
-               drawWts,
-               true);
+	myLib::drawTemplate(picPath);
+	myLib::drawArrays(picPath,
+					  drawWts,
+					  true);
 }
 
 

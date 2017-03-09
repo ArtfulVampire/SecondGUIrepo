@@ -2,8 +2,11 @@
 #define OUTPUT_H
 
 #include <ios>
-#include <QString>
 #include <complex>
+#include <fstream>
+#include <iostream>
+
+#include <QString>
 
 const QString slash = "/"; // QString(QDir::separator());
 

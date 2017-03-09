@@ -3,8 +3,13 @@
 
 #include <valarray>
 #include <QString>
-#include <myLib/small.h>
-#include "matrix.h"
+
+#include <other/matrix.h>
+
+#include <fstream>
+#include <QPixmap>
+#include <QPainter>
+
 
 
 namespace myLib

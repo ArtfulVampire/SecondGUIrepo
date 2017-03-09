@@ -1,5 +1,4 @@
 #include <myLib/valar.h>
-#include <chrono>
 
 namespace smLib
 {

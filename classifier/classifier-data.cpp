@@ -1,10 +1,10 @@
-#include "classifierdata.h"
-#include <iostream>
-#include "library.h"
+#include <classifier/classifierdata.h>
+
+#include <myLib/dataHandlers.h>
+#include <myLib/general.h>
+#include <myLib/signalProcessing.h>
 
 using namespace myOut;
-
-//using namespace myLib;
 
 void ClassifierData::adjust()
 {
@@ -59,7 +59,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 	std::valarray<double> tempArr;
 	for(const QString & fileName : lst)
 	{
-		myLib::readFileInLine(inPath + slash + fileName,
+		myLib::readFileInLine(inPath + "/" + fileName,
 							  tempArr);
 		this->push_back(tempArr,
 						myLib::getTypeOfFileName(fileName),

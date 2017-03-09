@@ -1,8 +1,4 @@
 #include <myLib/clustering.h>
-#include <iostream>
-#include <cmath>
-#include <QPixmap>
-#include <QPainter>
 
 
 namespace clust

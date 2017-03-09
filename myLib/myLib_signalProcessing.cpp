@@ -2,10 +2,6 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
 #include <DspFilters/Dsp.h>
-#include <QPixmap>
-#include <QPainter>
-#include <QTime>
-#include <fstream>
 
 using namespace myOut;
 
@@ -1217,17 +1213,17 @@ void svd(const matrix & initialData,
     /// ICA test short
 
     const QString pathForAuxFiles = def::dir->absolutePath()
-                                    + slash + "Help"
-                                    + slash + "ica";
+									+ "/Help"
+									+ "/ica";
     QString helpString = pathForAuxFiles
-                         + slash + def::ExpName + "_eigenMatrix.txt";
+						 + "/" + def::ExpName + "_eigenMatrix.txt";
     readMatrixFile(helpString,
                     eigenVectors);
 
 
     // write eigenValues
     helpString = pathForAuxFiles
-                 + slash + def::ExpName + "_eigenValues.txt";
+				 + "/" + def::ExpName + "_eigenValues.txt";
     readFileInLine(helpString, eigenValues);
     return;
 #endif

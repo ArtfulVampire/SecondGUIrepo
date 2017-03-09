@@ -1,10 +1,7 @@
-#include <QPixmap>
-#include <QPainter>
 #include <myLib/statistics.h>
+
 #include <myLib/dataHandlers.h>
 #include <myLib/draws.h>
-#include <fstream>
-
 #include <myLib/small.h>
 
 namespace myLib

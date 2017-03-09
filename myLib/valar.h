@@ -5,6 +5,7 @@
 #include <numeric>
 #include <complex>
 #include <iostream>
+#include <chrono>
 
 namespace smLib
 {

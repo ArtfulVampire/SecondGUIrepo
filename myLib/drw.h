@@ -1,10 +1,13 @@
 #ifndef DRW_H
 #define DRW_H
-#include <matrix.h>
-#include <QColor>
-#include <QString>
+
 #include <valarray>
 #include <vector>
+
+#include <other/matrix.h>
+
+#include <QColor>
+#include <QString>
 #include <QPixmap>
 #include <QPainter>
 
