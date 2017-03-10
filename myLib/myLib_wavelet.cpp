@@ -4,9 +4,8 @@
 namespace wvlt
 {
 
+#if WAVELET_MATLAB
 bool isInit = false;
-
-
 
 int initMtlb()
 {
@@ -145,6 +144,9 @@ void drawWaveletMtlb(const matrix & inData, QString picPath)
 	pic.save(picPath, 0, 100);
 	painter.end();
 }
+#endif
+
+
 
 
 const int timeStep = ceil(0.02 * def::freq);

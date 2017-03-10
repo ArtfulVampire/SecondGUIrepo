@@ -28,7 +28,7 @@ void filtering_test()
 	auto signal = fil.getData().subCols(start, start + fftLen)[10];
 
 
-	auto signal2 = myDsp::refilter(signal,
+	auto signal2 = myLib::refilter(signal,
 								   lowFreq,
 								   highFreq - spStep,
 								   true, 250.);
@@ -1337,6 +1337,7 @@ void waveletOneFile(const matrix & inData,
 	std::ofstream outStr;
 	outStr.open(outFile.toStdString());
 
+#if WAVELET_MATLAB
 	/// can put OMP here, but wait when writing to file
 	for(int j = 0; j < numChan; ++j)
 	{
@@ -1350,6 +1351,10 @@ void waveletOneFile(const matrix & inData,
 			matToFile(m, outStr, foo);
 		}
 	}
+#else
+	std::cout << "waveletOneFile doesn't work" << std::endl;
+#endif
+
 	outStr.close();
 }
 
@@ -1568,7 +1573,9 @@ void countChaosFeatures(const QString & filePath,
 		/// remake further, non-filtered first
 		if(freqCounter != rightFreqLim)
 		{
-			currMat = myDsp::refilter(BACKUP, freqCounter, freqCounter + stepFreq);
+			currMat = myLib::refilterMat(BACKUP,
+										 freqCounter,
+										 freqCounter + stepFreq);
 		}
 		else
 		{
@@ -1610,12 +1617,10 @@ void countChaosFeatures(const QString & filePath,
 		{
 			//                helpString.clear(); // no pictures
 			env = myLib::hilbertPieces(currMat[i],
-//								initEdf.getDataLen(),
-								fr,
-								1., /// no difference - why?
-								40. /// no difference - why?
-								//                                    ,helpString
-								);
+									   fr,
+									   1., /// no difference - why?
+									   40. /// no difference - why?
+									   );
 
 			/// norming is not necessary here
 			envSpec = myLib::spectreRtoR(env);
@@ -1775,10 +1780,14 @@ void GalyaFull(const QString & inDirPath,
 
 //	return;
 
+#if WAVELET_MATLAB
 	if(!wvlt::isInit) wvlt::initMtlb();
 	autos::GalyaWavelets(inDirPath,
 						 numChan, freq,
 						 waveletPath);
+#else
+	std::cout << "GalyaFull: wavelets don't work" << std::endl;
+#endif
 	exit(0);
 
 	/// rename the folder in OUT to guy

@@ -23,16 +23,9 @@ inline std::valarray<double> logistic(const std::valarray<double> & in)
 	return 1. / (1. + exp(-in / temp));
 }
 
-inline std::valarray<double> softmax(const std::valarray<double> & in)
-{
-	// -1 for bias
-	std::valarray<double> tmp = exp(in);
-	double sum = std::accumulate(std::begin(tmp),
-								 std::end(tmp) - 1,
-								 0.);
-	return tmp / sum; // dont care about the last(bias)
+std::valarray<double> softmax(const std::valarray<double> & in);
 
-}
+std::valarray<double> reverseArray(const std::valarray<double> & in);
 
 
 inline std::complex<double> abs(std::complex<double> in)
@@ -85,6 +78,7 @@ inline double prod(const std::valarray<double> & in1, const std::valarray<double
 							  std::end(in1),
 							  std::begin(in2),
 							  0.);
+	return (in1 * in2).sum();
 }
 
 inline double normaSq(const std::valarray<double> & in)
@@ -124,19 +118,7 @@ inline double max(const std::valarray<double> & arr)
 	return arr.max();
 }
 
-inline double median(const std::valarray<double> & arr)
-{
-	auto arr2 = arr;
-	std::sort(std::begin(arr2), std::end(arr2));
-	if(arr2.size() % 2 == 1)
-	{
-		return arr2[arr2.size() / 2];
-	}
-	else
-	{
-		return 0.5 * (arr2[arr2.size() / 2] + arr2[arr2.size() / 2 - 1]);
-	}
-}
+double median(const std::valarray<double> & arr);
 
 inline double covariance(const std::valarray<double> & arr1, const std::valarray<double> & arr2)
 {
@@ -193,13 +175,6 @@ inline void resizeValar(std::valarray<Typ> & in, int num)
 template void resizeValar(std::valarray<double> & in, int num);
 template void resizeValar(std::valarray<std::complex<double>> & in, int num);
 
-inline std::valarray<double> pop_back_valar(const std::valarray<double> & in, uint numOfPop)
-{
-	std::valarray<double> res(in);
-	resizeValar(res, res.size() - numOfPop);
-	return res;
-}
-
 inline std::valarray<double> push_back_valar(const std::valarray<double> & in, double val)
 {
 	std::valarray<double> res(in);
@@ -209,7 +184,7 @@ inline std::valarray<double> push_back_valar(const std::valarray<double> & in, d
 }
 
 template <typename Cont>
-Cont mixed (int num);
+Cont mixed (int siz);
 
 template <typename Cont>
 void mix (Cont & in);

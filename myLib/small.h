@@ -61,11 +61,6 @@ inline double gaussian(double x, double sigma = 1.) // N(0,1)
     return 1./(sigma * sqrt(2. * pi)) * exp(-x * x / (2. * sigma * sigma) );
 }
 
-inline double sigmoid(double x, double t = 10.)
-{
-    return 1. / ( 1. + exp(-x/t) );
-}
-
 inline int fftL(int in)
 {
 	return pow(2., ceil(log2(in)));

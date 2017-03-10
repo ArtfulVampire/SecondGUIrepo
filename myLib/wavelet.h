@@ -13,6 +13,7 @@
 namespace wvlt
 {
 #define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
+
 extern const int timeStep;
 extern const double freqMax; // def::rightFreq
 extern const double freqMin; // def::leftFreq
@@ -50,6 +51,7 @@ QColor hueJet(int range, double j);
 void drawWavelet(QString picPath,
 				 const matrix &inData);
 
+#if WAVELET_MATLAB
 /// cwt, imported from matlab
 extern bool isInit;
 int initMtlb();
@@ -57,6 +59,7 @@ int termMtlb();
 matrix cwt(const std::valarray<double> & signal, double freq);
 void drawWaveletMtlb(const matrix & inData,
 					 QString picPath = QString());
+#endif
 }
 
 #endif // WAVELET_H

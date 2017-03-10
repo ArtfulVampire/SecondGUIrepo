@@ -3,6 +3,7 @@
 
 #include <myLib/drw.h>
 #include <myLib/iitp.h>
+#include <myLib/signalProcessing.h>
 
 using namespace myOut;
 
@@ -16,7 +17,18 @@ void MainWindow::customFunc()
 	suc::shiftTest = 0.5;
 	suc::numSmooth = 6;
 
-	testSuccessive2();
+	edfFile fil;
+	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+
+	auto arr = fil.getData()[10];
+	arr = smLib::valarSubsec(arr, 10000, 12000);
+	std::cout << arr.size() << std::endl;
+
+	myLib::hilbertPieces(arr, 250, 5., 15.,
+						 "/media/Files/Data/H.jpg");
+
+
+//	testSuccessive2();
 //	testSuccessive();
 	exit(0);
 	return;

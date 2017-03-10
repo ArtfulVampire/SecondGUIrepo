@@ -20,13 +20,6 @@ LIBS += -fopenmp
 INCLUDEPATH += ./DSP
 LIBS += -L../SecondGUI/DSP -ldspFilters
 
-#new arrangement
-#INCLUDEPATH += ./classifier
-#INCLUDEPATH += ./other
-#INCLUDEPATH += ./widgets
-#INCLUDEPATH += ./myLib
-#INCLUDEPATH += ./other
-
 #cwt
 INCLUDEPATH += ./matlab/for_testing
 DEPENDPATH += ./matlab/for_testing
@@ -94,28 +87,6 @@ myLib/valar.h \
 myLib/small.h \
 myLib/general.h \
 DSP/DspFilters/Dsp.h \
-DSP/DspFilters/Bessel.h \
-DSP/DspFilters/Biquad.h \
-DSP/DspFilters/Butterworth.h \
-DSP/DspFilters/Cascade.h \
-DSP/DspFilters/ChebyshevI.h \
-DSP/DspFilters/ChebyshevII.h \
-DSP/DspFilters/Common.h \
-DSP/DspFilters/Custom.h \
-DSP/DspFilters/Design.h \
-DSP/DspFilters/Elliptic.h \
-DSP/DspFilters/Filter.h \
-DSP/DspFilters/Layout.h \
-DSP/DspFilters/Legendre.h \
-DSP/DspFilters/MathSupplement.h \
-DSP/DspFilters/Params.h \
-DSP/DspFilters/PoleFilter.h \
-DSP/DspFilters/RBJ.h \
-DSP/DspFilters/RootFinder.h \
-DSP/DspFilters/SmoothedFilter.h \
-DSP/DspFilters/State.h \
-DSP/DspFilters/Types.h \
-DSP/DspFilters/Utilities.h \
 widgets/mainwindow.h \
 widgets/net.h \
 widgets/spectre.h \

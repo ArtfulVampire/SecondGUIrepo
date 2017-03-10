@@ -83,11 +83,21 @@ void refilterSpectre(std::valarray<double> & spectr,
 					 int highLim,
 					 bool isNotch);
 
-std::valarray<double> refilter(const std::valarray<double> & inputSignal,
-							   double lowFreq,
-							   double highFreq,
-							   bool isNotch = false,
-							   double srate = 250.);
+std::valarray<double> refilterFFT(const std::valarray<double> & inputSignal,
+								  double lowFreq,
+								  double highFreq,
+								  bool isNotch = false,
+								  double srate = 250.);
+
+std::valarray<double> lowPassFFT(const std::valarray<double> & inputSignal,
+								 double cutoffFreq,
+								 double srate = 250.);
+
+matrix refilterMat(const matrix & inputMatrix,
+				   double lowFreq,
+				   double highFreq,
+				   bool isNotch = false,
+				   double srate = 250.);
 
 enum class windowName {Hann, Hamming, Blackman, Kaiser, rect};
 std::valarray<double> fftWindow(int length, windowName name = windowName::Hann);
@@ -123,7 +133,7 @@ double fractalDimension(const std::valarray<double> &arr,
 //							  QString picPath  = QString());
 
 std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
-									double sampleFreq,
+									double srate,
 									double lowFreq,
 									double highFreq,
 									QString picPath = QString());
@@ -212,10 +222,9 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 
 
 
-
+#if DSP_LIB
 namespace myDsp
 {
-std::valarray<double> reverseArray(const std::valarray<double> & in);
 std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
 									 double cutoffFreq,
 									 double srate = 250.);
@@ -241,6 +250,33 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 									  bool isNotch = false,
 									  double srate = 250.);
 } // namespace myDsp
+#endif DSP_LIB
+
+namespace myLib
+{
+
+std::valarray<double> (* const refilter)(const std::valarray<double> & inputSignal,
+								  double lowFreq,
+								  double highFreq,
+								  bool isNotch,
+								  double srate) =
+		#if DSP_LIB
+		&myDsp::refilter;
+#else
+		&myLib::refilterFFT;
+#endif
+
+std::valarray<double> (* const lowPass)(const std::valarray<double> & inputSignal,
+								  double cutoffFreq,
+								  double srate) =
+		#if DSP_LIB
+		&myDsp::lowPass;
+#else
+		&myLib::lowPassFFT;
+#endif
+
+
+}
 
 
 #endif // SIGNALPROCESSING_H

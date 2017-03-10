@@ -1364,45 +1364,16 @@ edfFile & edfFile::refilter(double lowFreq,
 		}
 	}
 
-#if 01
-	/// new butterworth filtering
-	/// faster and better on lower frequencies
 	for(int j : chanList)
 	{
-		this->edfData[j] = myDsp::refilter(this->edfData[j],
+		/// new butterworth filtering if DSP_LIB, else FFT
+		this->edfData[j] = myLib::refilter(this->edfData[j],
 										   lowFreq,
 										   highFreq,
 										   isNotch,
 										   this->getNr()[j]);
 	}
-#else
 
-	/// old FFT filtering
-	int fftLength = fftL(this->dataLength);
-	double spStep = this->srate / double(fftLength);
-	std::valarray<double> spectre(2 * fftLength);
-
-    if(this->fftData.empty())
-	{
-        this->countFft();
-    }
-
-	const int lowLim = ceil(2. * lowFreq / spStep);
-	const int highLim = floor(2. * highFreq / spStep);
-
-    int i = 0;
-    for(int j : chanList)
-	{
-        std::copy(std::begin(fftData[i]),
-                  std::begin(fftData[i]) + 2 * fftLength,
-				  std::begin(spectre));
-		++i;
-
-		myLib::refilterSpectre(spectre, lowLim, highLim, isNotch);
-
-		this->edfData[j] = spectreCtoRrev(spectre);
-    }
-#endif
 
     if(!newPath.isEmpty())
     {

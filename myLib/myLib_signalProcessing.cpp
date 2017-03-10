@@ -1,7 +1,7 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
-#include <DspFilters/Dsp.h>
+#include <DSP/DspFilters/Dsp.h>
 
 using namespace myOut;
 
@@ -56,26 +56,18 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 {
 	std::valarray<double> res(in.size());
 	res = btr::butterworth(in, order, srate, (lowFreq + highFreq) / 2., (highFreq - lowFreq) / 2.);
-	res = myDsp::reverseArray(res);
+	res = smLib::reverseArray(res);
 	res = btr::butterworth(res, order, srate, (lowFreq + highFreq) / 2., (highFreq - lowFreq) / 2.);
-	res = myDsp::reverseArray(res);
+	res = smLib::reverseArray(res);
 	return res;
 }
 } // namespace btr
 
 
-
+#if DSP_LIB
 namespace myDsp
 {
-std::valarray<double> reverseArray(const std::valarray<double> & in)
-{
-	std::valarray<double> res(in.size());
-	for(int i = 0; i < in.size(); ++i)
-	{
-		res[i] = in[in.size() - 1 - i];
-	}
-	return res;
-}
+
 
 std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
 									 double cutoffFreq,
@@ -219,26 +211,8 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 	return tmp;
 }
 
-matrix refilter(const matrix & inputMatrix,
-				double lowFreq,
-				double highFreq,
-				bool isNotch,
-				double srate)
-{
-	matrix res = matrix();
-	for(int i = 0; i < inputMatrix.rows(); ++i)
-	{
-		res.push_back(myDsp::refilter(inputMatrix[i],
-									  lowFreq,
-									  highFreq,
-									  isNotch,
-									  srate));
-	}
-	return res;
 }
-
-}
-
+#endif // DSP_LIB
 
 
 
@@ -576,11 +550,11 @@ double spectreNorm(int fftLen, int realSig, int srate)
 }
 
 /// works
-std::valarray<double> refilter(const std::valarray<double> & inputSignal,
-							   double lowFreq,
-							   double highFreq,
-							   bool isNotch,
-							   double srate)
+std::valarray<double> refilterFFT(const std::valarray<double> & inputSignal,
+								  double lowFreq,
+								  double highFreq,
+								  bool isNotch,
+								  double srate)
 {
 	int fftLen = smLib::fftL(inputSignal.size());
 	std::valarray<double> spectr = spectreRtoC(inputSignal, fftLen);
@@ -601,6 +575,33 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 }
 
 
+std::valarray<double> lowPassFFT(const std::valarray<double> & inputSignal,
+								 double cutoffFreq,
+								 double srate)
+{
+	return refilterFFT(inputSignal, cutoffFreq, srate / 2., true, srate);
+}
+
+
+matrix refilterMat(const matrix & inputMatrix,
+				   double lowFreq,
+				   double highFreq,
+				   bool isNotch,
+				   double srate)
+{
+	matrix res = matrix();
+	for(int i = 0; i < inputMatrix.rows(); ++i)
+	{
+		res.push_back(myLib::refilter(inputMatrix[i],
+									  lowFreq,
+									  highFreq,
+									  isNotch,
+									  srate));
+	}
+	return res;
+}
+
+
 std::valarray<double> upsample(const std::valarray<double> & inSignal,
 							   double oldFreq,
 							   double newFreq)
@@ -612,7 +613,7 @@ std::valarray<double> upsample(const std::valarray<double> & inSignal,
 		res[i * rat] = inSignal[i];
 	}
 
-	res = myDsp::lowPass(res,
+	res = myLib::lowPass(res,
 						 oldFreq / 2, /// whaaaaaaat
 						 newFreq);
 	res *= rat;
@@ -625,7 +626,7 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 								 double newFreq)
 {
 	int rat = oldFreq / newFreq;
-	std::valarray<double> res = myDsp::lowPass(inSignal, newFreq / 2, oldFreq);
+	std::valarray<double> res = myLib::lowPass(inSignal, newFreq / 2, oldFreq);
 
 	for(int i = 0; i < inSignal.size() / rat; ++i)
 	{
@@ -1625,20 +1626,23 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 
 
 std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
-									double sampleFreq,
+									double srate,
 									double lowFreq,
 									double highFreq,
 									QString picPath)
 {
 	/// do hilbert transform for the first inLength bins
-	const double srate = def::freq; ///- to arguments
 	const int inLength = arr.size();
 	const int fftLen = smLib::fftL(inLength) / 2;
 
 	std::valarray<double> outHilbert(inLength); /// result
 	std::valarray<double> tempArr[2];
 
-	const std::valarray<double> filteredArr = myLib::refilter(arr, lowFreq, highFreq, srate);
+	const std::valarray<double> filteredArr = myLib::refilter(arr,
+															  lowFreq,
+															  highFreq,
+															  false,
+															  srate);
 
 	int start;
 	for(int i = 0; i < 2; ++i)
@@ -1657,14 +1661,16 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 		std::copy(std::begin(filteredArr) + start,
 				  std::begin(filteredArr) + start + fftLen,
 				  std::begin(tempArr[i]));
+
 		tempArr[i] = spectreRtoC(tempArr[i], fftLen);
+
 		std::fill(std::begin(tempArr[i]), std::begin(tempArr[i]) + fftLen, 0.);
 
 		const std::valarray<double> temp = spectreCtoCrev(tempArr[i]);
 		tempArr[i].resize(inLength);
 		for(int j = 0; j < fftLen; ++j)
 		{
-			tempArr[i][start + j] = temp[2 * j + 1]; // hilbert
+			tempArr[i][start + j] = temp[2 * j + 1]; // hilbert. Why +1?
 		}
 		tempArr[i] *= 2.;
 		//end Hilbert via FFT
@@ -1712,9 +1718,9 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
         for(int i = 0; i < pic.width()-1; ++i)
         {
             pnt.drawLine(i,
-                         pic.height()/2. * (1. - filteredArr[i] / maxVal),
+						 pic.height()/2. * (1. - filteredArr[i] / maxVal),
                          i+1,
-                         pic.height()/2. * (1. - filteredArr[i + 1] / maxVal)
+						 pic.height()/2. * (1. - filteredArr[i + 1] / maxVal)
                     );
         }
 

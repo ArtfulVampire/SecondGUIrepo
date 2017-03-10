@@ -11,6 +11,9 @@
 #include <QDir>
 #include <QColor>
 
+#define DSP_LIB 0
+#define WAVELET_MATLAB 0
+
 namespace coords
 {
 
