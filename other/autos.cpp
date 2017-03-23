@@ -110,11 +110,13 @@ void Xenia_TBI()
 //	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
 //						"_cry", "_fire", "_flower", "_wc"};
 
-	QString tbi_path = def::XeniaFolder + "/15Nov";
+	QString tbi_path = def::XeniaFolder + "/14Mar";
+//	QString tbi_path = def::XeniaFolder + "/15Nov";
 //	QString tbi_path = "/media/Files/Data/Dasha";
 //	QString tbi_path = "/media/michael/My Passport/TBI_all_results_20Nov";
 
-	QStringList subdirs{"healthy", "moderate_TBI", "severe_TBI"};
+//	QStringList subdirs{"healthy", "moderate_TBI", "severe_TBI"};
+	QStringList subdirs{"Norm_new", "TBI_new"};
 //	QStringList subdirs{"Totable"};
 
 
@@ -134,7 +136,14 @@ void Xenia_TBI()
 		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 		for(QString guy : guys)
 		{
-//			if(!guy.contains("Shamukaeva")) continue;
+
+//			repair::deleteSpacesFolders(workPath + "/" + guy);
+//			repair::toLatinDir(workPath + "/" + guy, {});
+//			repair::toLowerDir(workPath + "/" + guy, {});
+
+//			continue;
+
+
 
 			QStringList t = QDir(workPath + "/" + guy).entryList(def::edfFilters);
 			if(t.isEmpty()) continue;
@@ -142,22 +151,34 @@ void Xenia_TBI()
 			QString ExpName = t[0];
 			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
 
-			/// cut?
+			/// filter?
 			if(0)
+			{
+				autos::refilterFolder(workPath + "/" + guy,
+									  1.,
+									  30.);
+			}
+
+			/// cut?
+			if(1)
 			{
 				autos::GalyaCut(workPath + "/" + guy,
 								8,
 								workPath + "_cut/" + guy);
 			}
 
-			autos::GalyaProcessing(workPath + "/" + guy,
-								   19,
-								   workPath + "_tmp");
+			/// process?
+			if(1)
+			{
+				autos::GalyaProcessing(workPath + "/" + guy,
+									   19,
+									   workPath + "_tmp");
 
-			autos::GalyaWavelets(workPath + "/" + guy,
-								 19,
-								 250,
-								 workPath + "_tmp");
+				autos::GalyaWavelets(workPath + "/" + guy,
+									 19,
+									 250,
+									 workPath + "_tmp");
+			}
 
 			QStringList fileNames;
 			for(QString marker : markers)
@@ -211,7 +232,7 @@ void Xenia_TBI()
 	}
 #endif
 
-#if 0
+#if 01
 	/// people list
 	for(QString subdir : subdirs)
 	{
@@ -1666,6 +1687,25 @@ void countChaosFeatures(const QString & filePath,
 	}
 	outDimStr.close();
 	outHilbertStr.close();
+}
+
+void refilterFolder(const QString & procDirPath,
+					  double lowFreq,
+					  double highFreq,
+					  bool isNotch)
+{
+
+	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
+															  QDir::NoFilter,
+															  QDir::Size|QDir::Reversed);
+
+	for(const QString & fileName : filesList)
+	{
+		QString helpString = procDirPath + "/" + fileName;
+		edfFile fil;
+		fil.readEdfFile(helpString);
+		fil.refilter(lowFreq, highFreq, {}, isNotch).writeEdfFile(helpString);
+	}
 }
 
 void GalyaProcessing(const QString & procDirPath,

@@ -16,6 +16,10 @@ void filtering_test();
 
 matrix makeTestData(const QString & outPath);
 
+void refilterFolder(const QString & procDirPath,
+					double lowFreq,
+					double highFreq,
+					bool isNotch = false);
 void GalyaProcessing(const QString &procDirPath,
 					 const int numChan = 31,
 					 QString outPath = QString());

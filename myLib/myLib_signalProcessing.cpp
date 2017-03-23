@@ -139,13 +139,13 @@ std::valarray<double> lowPass(const std::valarray<double> & inputSignal,
 //	std::cout << std::endl;
 
 	// reverse signal
-	tmp = myDsp::reverseArray(tmp);
+	tmp = smLib::reverseArray(tmp);
 	tmp = lowPassOneSide(tmp,
 						 cutoffFreq,
 						 srate);
 
 	// reverse back
-	tmp = myDsp::reverseArray(tmp);
+	tmp = smLib::reverseArray(tmp);
 	return tmp;
 }
 
@@ -199,7 +199,7 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 												highFreq,
 												isNotch,
 												srate);
-	tmp = reverseArray(tmp);
+	tmp = smLib::reverseArray(tmp);
 
 	tmp = refilterOneSide(tmp,
 						  lowFreq,
@@ -207,7 +207,7 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 						  isNotch,
 						  srate);
 	// reverse back
-	tmp = reverseArray(tmp);
+	tmp = smLib::reverseArray(tmp);
 	return tmp;
 }
 

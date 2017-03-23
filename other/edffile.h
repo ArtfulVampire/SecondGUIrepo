@@ -344,6 +344,7 @@ void physMinMaxDir(const QString & dirPath, const QStringList & filters = def::e
 
 /// only renames files/dirs
 void deleteSpacesFileOrFolder(const QString & fileOrFolderPath);
+void deleteSpacesFolders(const QString & dirPath);
 void deleteSpacesDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
 
 void toLatinFileOrFolder(const QString & fileOrFolderPath);

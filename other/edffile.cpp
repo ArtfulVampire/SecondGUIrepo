@@ -1689,7 +1689,10 @@ void edfFile::cutZerosAtEnd() // cut zeros when readEdf, before edfChannels are 
         for(int j = 0; j < this->ns; ++j)
 		{
             /// for neurotravel cleaning - generality with digmaxmin
-			if(std::abs(this->edfData[j][currEnd - 1]) >= 30000) break; // do clean
+			if(std::abs(this->edfData[j][currEnd - 1]) >= 30000)
+			{
+				break; // do clean
+			}
 
 			if(this->edfData[j][currEnd - 1] != this->edfData[j][currEnd])
             {

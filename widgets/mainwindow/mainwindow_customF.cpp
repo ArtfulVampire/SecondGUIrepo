@@ -11,27 +11,30 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
+//	return;
 
-	def::fftLength = 1024;
-	suc::shiftLearn = 2.;
-	suc::shiftTest = 0.5;
-	suc::numSmooth = 6;
+//	def::fftLength = 1024;
+//	suc::shiftLearn = 2.;
+//	suc::shiftTest = 0.5;
+//	suc::numSmooth = 6;
 
-	edfFile fil;
-	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+//	edfFile fil;
+//	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
 
-	auto arr = fil.getData()[10];
-	arr = smLib::valarSubsec(arr, 10000, 12000);
-	std::cout << arr.size() << std::endl;
+//	auto arr = fil.getData()[10];
+//	arr = smLib::valarSubsec(arr, 10000, 12000);
+//	std::cout << arr.size() << std::endl;
 
-	myLib::hilbertPieces(arr, 250, 5., 15.,
-						 "/media/Files/Data/H.jpg");
+//	myLib::hilbertPieces(arr, 250, 5., 15.,
+//						 "/media/Files/Data/H.jpg");
 
 
 //	testSuccessive2();
 //	testSuccessive();
-	exit(0);
-	return;
+//	exit(0);
+//	return;
+#if 0
+	/// IITP
 
 //	autos::IITPpre("Oleg");
 	for(QString guy : {"Alex", "Boris", "Ira", "Levik", "Oleg", "Victor"})
@@ -85,11 +88,40 @@ void MainWindow::customFunc()
 //							"_emg_f");
 //	exit(0);
 //	return;
+#endif
 
 
-//	autos::Xenia_TBI();
-//	autos::EEG_MRI({"Kabanov"}, false);
+//	QString wrk = "/media/Files/Data/Xenia/14Mar/TBI_new_tmp";
+//	repair::toLowerDir(wrk, {});
+//	QDir dr(wrk);
+//	for(QString fil : dr.entryList({"*txt"}))
+//	{
+//		QString newName = fil;
+//		newName.replace("_Med_", "_med_");
+//		newName.replace("_Freq", "_freq");
+//		newName.replace("_Spectre", "_spectre");
+//		newName.replace("_D2_", "_d2_");
+//		newName.replace("_Dim_", "_dim_");
+//		newName.replace("_Wavelet", "_wavelet");
+
+
+//		newName.replace("_Kh_", "_kh_");
+//		newName.replace("_Cr_", "_cr_");
+//		newName.replace("_Bd_", "_bd_");
+//		newName.replace("_Bw_", "_bw_");
+//		newName.replace("_Fon_", "_fon_");
+//		newName.replace("_Sm_", "_sm_");
+//		newName.replace("_No_", "_no_");
+
+//		QFile::rename(wrk + "/" + fil, wrk + "/" + newName);
+//	}
 //	exit(0);
+
+//	repair::toLowerDir("/media/Files/Data/Xenia/14Mar/Norm_new_tmp", {});
+
+	autos::Xenia_TBI();
+//	autos::EEG_MRI({"Kabanov"}, false);
+	exit(0);
 
 //	testNewClassifiers();
 //	testSuccessive()
