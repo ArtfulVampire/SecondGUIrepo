@@ -395,6 +395,9 @@ public:
 	int setFftLen(); /// determine by piecesData lengths
 	void setFftLen(int in);
 
+	int getFftLen() { return fftLen; }
+	double getSpStep() { return spStep; }
+
 };
 
 } // namespace iitp

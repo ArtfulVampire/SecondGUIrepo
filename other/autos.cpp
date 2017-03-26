@@ -543,6 +543,7 @@ void IITPpre(const QString & guyName)
 			filePath = ExpNamePre + "_emg.edf";
 			fil1.writeEdfFile(filePath);
 		}
+
 #endif
 
 		/// with filtering
@@ -580,7 +581,7 @@ void IITPpre(const QString & guyName)
 
 
 
-#if 01
+#if 0
 		/// divide EEG chans to prevent oversclaing amplitude
 		filePath = ExpNamePre + "_eeg.edf";
 		if(QFile::exists(filePath))
@@ -595,7 +596,7 @@ void IITPpre(const QString & guyName)
 		}
 #endif
 
-#if 01
+#if 0
 		/// filter EEG edfs, but not ECG
 //		filePath = ExpNamePre + "_eeg.edf";
 		filePath = ExpNamePre + "_eeg_div.edf";
@@ -609,7 +610,7 @@ void IITPpre(const QString & guyName)
 		}
 #endif
 
-#if 01
+#if 0
 		/// upsample EEGs
 		filePath = ExpNamePre + "_eeg_f.edf";
 		if(QFile::exists(filePath))
@@ -772,11 +773,13 @@ void IITPprocessStaged(const QString & guyName,
 //		if(!(guyName == "Oleg" && fileNum == 6)  &&
 //		   !(guyName == "Boris" && fileNum == 2) &&
 //		   !(guyName == "Boris" && fileNum == 4)) continue;
+		if(!(guyName == "Victor" && fileNum == 6) ) continue;
 
 		if(!QFile::exists(filePath(fileNum))) continue;
+
 		dt.readEdfFile(filePath(fileNum));
 
-		if(iitp::interestGonios[fileNum].size() == 0)
+		if(iitp::interestGonios[fileNum].size() == 0) // rest, stat, imag
 		{
 			dt.countImagPassSpectra();
 //			continue;
@@ -846,10 +849,7 @@ void IITPprocessStaged(const QString & guyName,
 				outStr.close();
 			}
 		}
-//		else continue;
-
-
-
+		// else - real, passive
 		for(int gonio : iitp::interestGonios[fileNum])
 		{
 			int minMarker = iitp::gonioMinMarker(gonio);			
@@ -876,7 +876,12 @@ void IITPprocessStaged(const QString & guyName,
 //								, std::ios_base::app
 								);
 				}
+//				std::cout << filePath(fileNum) << "\t"
+//						  << "fftLen = " << dt.getFftLen() << "\t"
+//						  << "spStep = " << dt.getSpStep() << "\t"
+//						  << std::endl;
 
+#if 0
 				///eeg-eeg
 				for(int eeg : iitp::interestEeg)
 				{
@@ -903,7 +908,9 @@ void IITPprocessStaged(const QString & guyName,
 						}
 					}
 				}
+#endif
 
+#if 01
 				/// eeg-emg
 				for(int eeg : iitp::interestEeg)
 				{
@@ -928,6 +935,7 @@ void IITPprocessStaged(const QString & guyName,
 						}
 					}
 				}
+#endif
 				outStr.close();
 			}
 		}

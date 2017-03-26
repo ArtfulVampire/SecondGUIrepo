@@ -464,7 +464,7 @@ void Cut::iitpManualSlot()
 
 	edfFil.iitpSyncManual(ui->rightLimitSpinBox->value(),
 						  ui->leftLimitSpinBox->value(),
-						  200);
+						  std::min(200, ui->leftLimitSpinBox->value()));
 	iitpLog("sync");
 
 	setValuesByEdf();

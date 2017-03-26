@@ -10,7 +10,7 @@
 namespace smLib
 {
 template <typename Cont>
-Cont range(int beg, int en);
+Cont range(int beg, int en); // [beg, en)
 
 template <typename Cont>
 Cont unite(const std::vector<Cont> & ranges);

@@ -11,36 +11,19 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
-//	return;
+	return;
 
-//	def::fftLength = 1024;
-//	suc::shiftLearn = 2.;
-//	suc::shiftTest = 0.5;
-//	suc::numSmooth = 6;
-
-//	edfFile fil;
-//	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
-
-//	auto arr = fil.getData()[10];
-//	arr = smLib::valarSubsec(arr, 10000, 12000);
-//	std::cout << arr.size() << std::endl;
-
-//	myLib::hilbertPieces(arr, 250, 5., 15.,
-//						 "/media/Files/Data/H.jpg");
-
-
-//	testSuccessive2();
-//	testSuccessive();
-//	exit(0);
-//	return;
-#if 0
+#if 01
 	/// IITP
 
-//	autos::IITPpre("Oleg");
-	for(QString guy : {"Alex", "Boris", "Ira", "Levik", "Oleg", "Victor"})
+//	autos::IITPpre("Dima");
+//	exit(0);
+
+//	for(QString guy : {"Alex", "Boris", "Ira", "Levik", "Oleg", "Victor", "Dima"})
+	QString guy = "Victor";
 	{
 //		autos::IITPstaging(guy);
-//		autos::IITPprocessStaged(guy);
+		autos::IITPprocessStaged(guy);
 //		continue;
 
 		if(guy == "Alex")
@@ -73,10 +56,15 @@ void MainWindow::customFunc()
 			myLib::drw::zeroChans = {};
 			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
 		}
+		else if(guy == "Dima")
+		{
+			myLib::drw::zeroChans = {};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
+		}
 
 		using Typ = std::vector<int>;
-		std::vector<int> nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
-												   smLib::range<Typ>(24, 29 + 1)});
+		Typ nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
+									  smLib::range<Typ>(24, 29 + 1)});
 		autos::IITPdrawSameScale(guy, nums);
 	}
 

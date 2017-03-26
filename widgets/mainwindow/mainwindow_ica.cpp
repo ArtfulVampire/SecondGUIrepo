@@ -401,7 +401,7 @@ void MainWindow::ICA() //fastICA
 				 + "/" + def::ExpName + "_ica.edf";
 
     std::vector<int> chanList(ns);
-    std::iota(chanList.begin(), chanList.end(), 0);
+	std::iota(std::begin(chanList), std::end(chanList), 0);
     chanList.push_back(globalEdf.getMarkChan());
 
 	/// drop all non-EEG channels ?

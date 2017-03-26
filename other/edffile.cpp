@@ -1356,8 +1356,10 @@ edfFile & edfFile::refilter(double lowFreq,
 		{
 			/// filter only EEG, EOG signals - look labels!!!!
 			/// pewpew IITP - no filter ECG
-			if(this->labels[i].contains(QRegExp("E[OE]G")) ||
-			   (this->filterIITPflag && this->labels[i].startsWith("IT ")))
+			if(this->labels[i].contains(QRegExp("E[OE]G"))
+			   || (this->filterIITPflag && this->labels[i].startsWith("IT "))
+			   || this->labels[i].startsWith("XX ") // Artefac IITP channel
+			   )
 			{
 				chanList.push_back(i);
 			}

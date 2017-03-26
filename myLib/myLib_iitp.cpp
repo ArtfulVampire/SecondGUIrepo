@@ -129,6 +129,7 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 										  sqrt(this->crossSpectra[chan1][chan1] *
 											   this->crossSpectra[chan2][chan2]);
 	}
+
 	int index = freq / this->spStep;
 	return coherencies[chan1][chan2][index];
 }
@@ -541,10 +542,13 @@ iitpData & iitpData::staging(const QString & chanName,
 int iitpData::setFftLen()
 {
 	int res = 0;
+//	std::cout << this->ExpName << std::endl;
 	for(const auto & in : this->piecesData)
 	{
 		res = std::max(smLib::fftL(in.cols()), res);
+//		std::cout << res << "\t";
 	}
+//	std::cout << std::endl;
 	this->fftLen = res;
 	this->spStep = this->srate / double(this->fftLen);
 	return res;
