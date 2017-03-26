@@ -250,7 +250,7 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 									  bool isNotch = false,
 									  double srate = 250.);
 } // namespace myDsp
-#endif DSP_LIB
+#endif //DSP_LIB
 
 namespace myLib
 {

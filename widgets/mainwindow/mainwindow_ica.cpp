@@ -195,114 +195,97 @@ void MainWindow::ICA() //fastICA
 	// norm components - to equal dispersion
 	// sort by maps length
 
-    double coeff = 1.5;
     for(int i = 0; i < ns; ++i)
-    {
-        sum1 = 0.;
-        sum2 = 0.;
-
-        sum2 = variance(components[i], dataLength);
-
-        for(int j = 0; j < dataLength; ++j)
-        {
-            components[i][j] /= sqrt(sum2);
-            components[i][j] *= coeff;
-        }
-        for(int k = 0; k < ns; ++k)
-        {
-            matrixA[i][k] *= sqrt(sum2);
-            matrixA[i][k] /= coeff;
-        }
+	{
+		double sgm = smLib::sigma(components[i]) * 1.; /// it was coeff
+		components[i] /= sgm;
+		for(auto & row : matrixA)
+		{
+			row[i] *= sgm;
+		}
     }
 
-    //ordering components by sum of squares of the matrixA coloumn
+	// ordering components by sum of squares of the matrixA coloumn
     std::vector<std::pair <double, int>> colsNorms;
     double sumSquares = 0.;
     std::vector<double> explainedVariance;
 
-    for(int i = 0; i < ns; ++i) // w/o markers
+	for(int i = 0; i < ns; ++i)
     {
-        helpDouble = 0.;
-        for(int j = 0; j < ns; ++j)
-        {
-            helpDouble += pow(matrixA[j][i], 2.);
-        }
-        sumSquares += helpDouble;
-        colsNorms.push_back(std::make_pair(helpDouble, i));
+		double tmp = smLib::normaSq(matrixA.getCol(i));
+		sumSquares += tmp;
+		colsNorms.push_back(std::make_pair(tmp, i));
     }
-    std::sort(colsNorms.begin(),
-              colsNorms.end(),
+	std::sort(std::begin(colsNorms),
+			  std::end(colsNorms),
               [](std::pair <double, int> i, std::pair <double, int> j)
     {return i.first > j.first;});
 
-    for(int i = 0; i < ns; ++i)
+	for(const auto & par : colsNorms)
     {
-		std::cout << colsNorms[i].first << "\t" << colsNorms[i].second << std::endl;
+		std::cout << par.first << "\t" << par.second << std::endl;
     }
 
-    double * tempCol = new double [ns];
-    int tempIndex;
-    std::vector<double> tempComp;
     for(int i = 0; i < ns - 1; ++i) // dont move the last
     {
-        //swap cols and components
-
-        for(int j = 0; j < ns; ++j) // swap j'th elements in i'th and colsNorms[i].second'th cols
+		// swap cols and componentsfor(int j = 0; j < ns; ++j) // swap j'th elements in i'th and colsNorms[i].second'th cols
         {
-            tempCol[j] = matrixA[j][i];
-            matrixA[j][i] = matrixA[j][ colsNorms[i].second ];
-            matrixA[j][ colsNorms[i].second ] = tempCol[j];
+			/// new
+			std::swap(matrixA[j][i], matrixA[j][ colsNorms[i].second ]);
+			/// old
+//			tempCol[j] = matrixA[j][i];
+//			matrixA[j][i] = matrixA[j][ colsNorms[i].second ];
+//			matrixA[j][ colsNorms[i].second ] = tempCol[j];
         }
 
 		/// swap rows i and colsNorms[i].second
-        tempComp = components[i];
-        components[i] = components[ colsNorms[i].second ];
-        components[ colsNorms[i].second ] = tempComp;
+		/// new
+		std::swap(components[i], components[ colsNorms[i].second ]);
+		/// old
+//		tempComp = components[i];
+//		components[i] = components[ colsNorms[i].second ];
+//		components[ colsNorms[i].second ] = tempComp;
 
 		/// swap cols i and colsNorms[i].second
 		/// find first
-        auto it1 = std::find_if(colsNorms.begin(),
-                                colsNorms.end(),
+		auto it1 = std::find_if(std::begin(colsNorms),
+								std::end(colsNorms),
                                 [i](std::pair <double, int> in)
         {return in.second == i;});
 		/// find second
-        auto it2 = std::find_if(colsNorms.begin(),
-                                colsNorms.end(),
+		auto it2 = std::find_if(std::begin(colsNorms),
+								std::end(colsNorms),
                                 [colsNorms, i](std::pair <double, int> in)
         {return in.second == colsNorms[i].second;});
 
 		/// swap
-        tempIndex = (*it1).second;
-        (*it1).second = (*it2).second;
-        (*it2).second = tempIndex;
-    }
-    delete []tempCol;
+		std::swap((*it1).second, (*it2).second);
+	}
 
-    helpString = (def::dir->absolutePath()
-										  + "/Help"
-										  + "/" + def::ExpName + "_maps_after_var.txt");
-    writeMatrixFile(helpString, matrixA, ns); //generality 19-ns
+	helpString = def::dir->absolutePath()
+				 + "/Help"
+				 + "/" + def::ExpName + "_maps_after_var.txt";
+	myLib::writeMatrixFile(helpString, matrixA); //generality 19-ns
 
     for(int i = 0; i < ns; ++i)
     {
         explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
-		std::cout << "comp = " << i+1 << "\t";
-		std::cout << "explVar = " << doubleRound(explainedVariance[i], 2) << std::endl;
+		std::cout << "comp = " << i + 1 << "\t";
+		std::cout << "explVar = " << smLib::doubleRound(explainedVariance[i], 2) << std::endl;
     }
     //end componets ordering
 #else
     // norm components to 1-length of mapvector, order by dispersion
 
-    double sum1;
     for(uint i = 0; i < ns; ++i) // for each component
     {
-		sum1 = smLib::norma(matrixA.getCol(i));
+		double nrm = smLib::norma(matrixA.getCol(i));
 
-        for(uint k = 0; k < ns; ++k)
-        {
-            matrixA[k][i] /= sum1;
-        }
-        components[i] *= sum1;
+		for(auto & row : matrixA)
+		{
+			row[i] /= nrm;
+		}
+		components[i] *= nrm;
     }
 
     // ordering components by dispersion
@@ -312,9 +295,9 @@ void MainWindow::ICA() //fastICA
 
     for(uint i = 0; i < ns; ++i)
     {
-		sum1 = smLib::variance(components[i]);
-        sumSquares += sum1;
-        colsNorms.push_back(std::make_pair(sum1, i));
+		double var = smLib::variance(components[i]);
+		sumSquares += var;
+		colsNorms.push_back(std::make_pair(var, i));
     }
 
 	std::sort(std::begin(colsNorms),
@@ -324,7 +307,6 @@ void MainWindow::ICA() //fastICA
         return i.first > j.first;
     });
 
-    int tempIndex;
     for(uint i = 0; i < ns - 1; ++i) // dont move the last
     {
         // swap matrixA cols
@@ -351,12 +333,12 @@ void MainWindow::ICA() //fastICA
 #endif
 
         // swap i and colsNorms[i].second values in colsNorms
-        auto it1 = std::find_if(colsNorms.begin(),
-                                colsNorms.end(),
+		auto it1 = std::find_if(std::begin(colsNorms),
+								std::end(colsNorms),
                                 [i](std::pair <double, int> in)
         {return in.second == i;});
-        auto it2 = std::find_if(colsNorms.begin(),
-                                colsNorms.end(),
+		auto it2 = std::find_if(std::begin(colsNorms),
+								std::end(colsNorms),
                                 [colsNorms, i](std::pair <double, int> in)
         {return in.second == colsNorms[i].second;});
 
@@ -386,8 +368,8 @@ void MainWindow::ICA() //fastICA
         std::valarray<double> currCol = components.getCol(j, ns);
         for(uint i = 0; i < ns; ++i)
         {
-			sum1 = std::abs((centeredMatrix[i][j] - smLib::prod(currCol, matrixA[i]))
-                       / centeredMatrix[i][j]);
+			double sum1 = std::abs((centeredMatrix[i][j] - smLib::prod(currCol, matrixA[i]))
+								   / centeredMatrix[i][j]);
             if(sum1 > 0.05
 			   && std::abs(centeredMatrix[i][j]) > 0.5)
             {

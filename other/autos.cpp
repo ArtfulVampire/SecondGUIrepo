@@ -639,6 +639,19 @@ void IITPpre(const QString & guyName)
 
 }
 
+void IITPremoveZchans(const QString & guyName, const QString & dirPath)
+{
+	const QStringList fils = QDir(dirPath + "/" + guyName).entryList({"*.edf"});
+	for(const QString & fl : fils)
+	{
+		edfFile fil;
+		fil.readEdfFile(dirPath + "/" + guyName + "/" + fl);
+		int a = fil.findChannel("Fpz");
+		int b = fil.findChannel("Oz");
+		fil.removeChannels({a, b});
+		fil.writeEdfFile(fil.getFilePath());
+	}
+}
 
 void IITPremoveZchans(const QString & hauptDir)
 {
