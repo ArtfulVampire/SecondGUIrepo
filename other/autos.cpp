@@ -534,7 +534,7 @@ void IITPpre(const QString & guyName)
 		QString filePath;
 		edfFile fil;
 
-#if 0
+#if 01
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
 		if(QFile::exists(filePath))
@@ -581,7 +581,7 @@ void IITPpre(const QString & guyName)
 
 
 
-#if 0
+#if 01
 		/// divide EEG chans to prevent oversclaing amplitude
 		filePath = ExpNamePre + "_eeg.edf";
 		if(QFile::exists(filePath))
@@ -596,7 +596,7 @@ void IITPpre(const QString & guyName)
 		}
 #endif
 
-#if 0
+#if 01
 		/// filter EEG edfs, but not ECG
 //		filePath = ExpNamePre + "_eeg.edf";
 		filePath = ExpNamePre + "_eeg_div.edf";
@@ -610,7 +610,7 @@ void IITPpre(const QString & guyName)
 		}
 #endif
 
-#if 0
+#if 01
 		/// upsample EEGs
 		filePath = ExpNamePre + "_eeg_f.edf";
 		if(QFile::exists(filePath))
@@ -691,6 +691,8 @@ void IITPstaging(const QString & guyName,
 		filePath = ExpNamePre + postfix + ".edf";
 		if(QFile::exists(filePath))
 		{
+//			if(!(guyName == "Isakov" && fileNum == 8) ) continue;
+
 			fil.readEdfFile(filePath);
 
 			if(iitp::interestGonios.size() > fileNum) /// interests only before 23th
@@ -773,7 +775,7 @@ void IITPprocessStaged(const QString & guyName,
 //		if(!(guyName == "Oleg" && fileNum == 6)  &&
 //		   !(guyName == "Boris" && fileNum == 2) &&
 //		   !(guyName == "Boris" && fileNum == 4)) continue;
-		if(!(guyName == "Victor" && fileNum == 6) ) continue;
+//		if(!(guyName == "Isakov" && fileNum == 8) ) continue;
 
 		if(!QFile::exists(filePath(fileNum))) continue;
 
@@ -782,7 +784,6 @@ void IITPprocessStaged(const QString & guyName,
 		if(iitp::interestGonios[fileNum].size() == 0) // rest, stat, imag
 		{
 			dt.countImagPassSpectra();
-//			continue;
 //			if(iitp::trialTypes[fileNum] == iitp::trialType::stat)
 			{
 				dt.cutPieces(1.024);
@@ -855,7 +856,6 @@ void IITPprocessStaged(const QString & guyName,
 			int minMarker = iitp::gonioMinMarker(gonio);			
 
 			dt.countFlexExtSpectra(minMarker, minMarker + 1);
-//			continue;
 
 			for(int type : {0, 1}) /// 0 - flexion, 1 - extension
 			{
@@ -876,12 +876,8 @@ void IITPprocessStaged(const QString & guyName,
 //								, std::ios_base::app
 								);
 				}
-//				std::cout << filePath(fileNum) << "\t"
-//						  << "fftLen = " << dt.getFftLen() << "\t"
-//						  << "spStep = " << dt.getSpStep() << "\t"
-//						  << std::endl;
 
-#if 0
+#if 01
 				///eeg-eeg
 				for(int eeg : iitp::interestEeg)
 				{

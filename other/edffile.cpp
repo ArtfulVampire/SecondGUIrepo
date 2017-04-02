@@ -1358,7 +1358,7 @@ edfFile & edfFile::refilter(double lowFreq,
 			/// pewpew IITP - no filter ECG
 			if(this->labels[i].contains(QRegExp("E[OE]G"))
 			   || (this->filterIITPflag && this->labels[i].startsWith("IT "))
-			   || this->labels[i].startsWith("XX ") // Artefac IITP channel
+//			   || this->labels[i].startsWith("XX ") // Artefac IITP channel
 			   )
 			{
 				chanList.push_back(i);

@@ -435,7 +435,7 @@
     <rect>
      <x>550</x>
      <y>50</y>
-     <width>311</width>
+     <width>271</width>
      <height>91</height>
     </rect>
    </property>
@@ -511,8 +511,8 @@
   <widget class="QPushButton" name="linearApproxPushButton">
    <property name="geometry">
     <rect>
-     <x>870</x>
-     <y>110</y>
+     <x>840</x>
+     <y>120</y>
      <width>111</width>
      <height>22</height>
     </rect>
@@ -584,7 +584,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>790</x>
@@ -635,6 +635,32 @@
      <widget class="QDoubleSpinBox" name="secondDoubleSpinBox"/>
     </item>
    </layout>
+  </widget>
+  <widget class="QCheckBox" name="linearApproxAllEegCheckBox">
+   <property name="geometry">
+    <rect>
+     <x>840</x>
+     <y>90</y>
+     <width>71</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>all EEG</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="linearApproxAllGoniosCheckBox">
+   <property name="geometry">
+    <rect>
+     <x>910</x>
+     <y>90</y>
+     <width>81</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>all gonios</string>
+   </property>
   </widget>
  </widget>
  <resources/>

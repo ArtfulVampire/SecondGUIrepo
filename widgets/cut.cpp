@@ -409,6 +409,7 @@ void Cut::createImage(const QString & dataFileName)
 		def::ns = edfFil.getNs();
 		setValuesByEdf();
     }
+	ui->disableEcgCheckBox->setChecked(false);
 	paint();
     ui->scrollArea->horizontalScrollBar()->setSliderPosition(0);
 }
@@ -977,15 +978,33 @@ void Cut::splitTillEndSlot()
 
 void Cut::linearApproxSlot()
 {
-//	const int ch = ui->linearApproxSpinBox->value();
-	const int ch = ui->color3SpinBox->value();
 	const int lef = ui->leftLimitSpinBox->value();
 	const int rig = ui->rightLimitSpinBox->value();
-
-	const double coeff = (data3[ch][rig] - data3[ch][lef]) / (rig - lef);
-	for(int i = lef + 1; i < rig; ++i)
+	std::vector<int> chanList;
+	for(int i = 0; i < data3.rows(); ++i)
 	{
-		data3[ch][i] = data3[ch][lef] + coeff * (i - lef);
+		if(ui->linearApproxAllEegCheckBox->isChecked()
+		   && edfFil.getLabels()[i].startsWith("EEG "))
+		{
+			chanList.push_back(i);
+		}
+		else if(ui->linearApproxAllGoniosCheckBox->isChecked()
+		   && (edfFil.getLabels()[i].contains("_l") || edfFil.getLabels()[i].contains("_r")))
+		{
+			chanList.push_back(i);
+		}
+	}
+	if(chanList.empty() && ui->color3SpinBox->value() > 0)
+	{
+		chanList.push_back(ui->color3SpinBox->value());
+	}
+	for(int ch : chanList)
+	{
+		const double coeff = (data3[ch][rig] - data3[ch][lef]) / (rig - lef);
+		for(int i = lef + 1; i < rig; ++i)
+		{
+			data3[ch][i] = data3[ch][lef] + coeff * (i - lef);
+		}
 	}
 	paint();
 }

@@ -16,14 +16,15 @@ void MainWindow::customFunc()
 #if 01
 	/// IITP
 
-//	autos::IITPpre("Dima");
+//	autos::IITPpre("Isakov");
 //	exit(0);
 
 //	for(QString guy : {"Alex", "Boris", "Ira", "Levik", "Oleg", "Victor", "Dima"})
-	QString guy = "Victor";
+	QString guy = "Isakov";
 	{
+//		autos::IITPremoveZchans(guy, def::iitpSyncFolder); exit(0);
 //		autos::IITPstaging(guy);
-		autos::IITPprocessStaged(guy);
+//		autos::IITPprocessStaged(guy);
 //		continue;
 
 		if(guy == "Alex")
@@ -59,12 +60,18 @@ void MainWindow::customFunc()
 		else if(guy == "Dima")
 		{
 			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
+		}
+		else if(guy == "Isakov")
+		{
+			myLib::drw::zeroChans = {};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
 		}
 
 		using Typ = std::vector<int>;
 		Typ nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
 									  smLib::range<Typ>(24, 29 + 1)});
+		nums.erase(std::find(std::begin(nums), std::end(nums), 8));
 		autos::IITPdrawSameScale(guy, nums);
 	}
 
