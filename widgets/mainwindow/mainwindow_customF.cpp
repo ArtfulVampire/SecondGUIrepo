@@ -11,21 +11,33 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
-	return;
+//	return;
+
 
 #if 01
 	/// IITP
+	QStringList guyList{"Alex",
+						"Boris",
+						"Ira",
+						"Levik",
+						"Oleg",
+						"Egor",
+						"Victor",
+						"Dima",
+						"Isakov",
+						"Galya"
+					   };
 
-//	autos::IITPpre("Isakov");
-//	exit(0);
-
-//	for(QString guy : {"Alex", "Boris", "Ira", "Levik", "Oleg", "Victor", "Dima"})
-	QString guy = "Isakov";
+	for(QString guy : guyList)
+//	QString guy = "Galya";
 	{
-//		autos::IITPremoveZchans(guy, def::iitpSyncFolder); exit(0);
+//		autos::IITPtestCoh2(guy); exit(0);
+//		autos::IITPremoveZchans(guy, def::iitpFolder);
+//		autos::IITPpre(guy);
+//		exit(0);
+
 //		autos::IITPstaging(guy);
-//		autos::IITPprocessStaged(guy);
-//		continue;
+		autos::IITPprocessStaged(guy);
 
 		if(guy == "Alex")
 		{
@@ -67,12 +79,17 @@ void MainWindow::customFunc()
 			myLib::drw::zeroChans = {};
 			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
 		}
+		else if(guy == "Galya")
+		{
+			myLib::drw::zeroChans = {};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
+		}
 
-		using Typ = std::vector<int>;
-		Typ nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
-									  smLib::range<Typ>(24, 29 + 1)});
-		nums.erase(std::find(std::begin(nums), std::end(nums), 8));
-		autos::IITPdrawSameScale(guy, nums);
+//		using Typ = std::vector<int>;
+//		Typ nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
+//									  smLib::range<Typ>(24, 29 + 1)});
+//		nums.erase(std::find(std::begin(nums), std::end(nums), 8));
+//		autos::IITPdrawSameScale(guy, nums);
 	}
 
 
@@ -81,7 +98,7 @@ void MainWindow::customFunc()
 //							 "_sum_f_new_gon_stag");
 //	autos::IITPfilterGonios("Oleg",
 //							"_emg_f");
-//	exit(0);
+	exit(0);
 //	return;
 #endif
 
@@ -114,7 +131,7 @@ void MainWindow::customFunc()
 
 //	repair::toLowerDir("/media/Files/Data/Xenia/14Mar/Norm_new_tmp", {});
 
-	autos::Xenia_TBI();
+//	autos::Xenia_TBI();
 //	autos::EEG_MRI({"Kabanov"}, false);
 	exit(0);
 

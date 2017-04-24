@@ -84,8 +84,8 @@ QPixmap drawOneTemplate(const int chanNum,
 
 QPixmap drawOneArray(const QPixmap & templatePic,
 					 const std::valarray<double> & inData,
-					 double maxVal,
-					 const QColor & color,
+					 double maxVal = 0.,
+					 const QColor & color = "black",
 					 bool weightsFlag = false,
 					 int lineWidth_ = myLib::drw::lineWidth,
 					 double X = myLib::drw::gap,
@@ -100,6 +100,7 @@ QPixmap drawOneSpectrum(const std::valarray<double> & inData,
 						double srate,
 						int numOfSmooth,
 						const QColor & color = QColor("black"));
+
 /// many
 QPixmap drawTemplate(const bool channelsFlag = true,
 					 const double leftF = 5.0,

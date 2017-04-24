@@ -98,9 +98,9 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 
 
 /// iitpData class
-std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
+std::complex<double> iitpData::coherencyUsual(int chan1, int chan2, double freq)
 {
-	/// plain
+	/// usual
 //	if(chan1 > chan2) std::swap(chan1, chan2);
 //	std::vector<std::valarray<double>> sig1;
 //	std::vector<std::valarray<double>> sig2;
@@ -111,6 +111,11 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 //	}
 //	return iitp::coherency(sig1, sig2, this->srate, freq);
 
+
+	if(chan1 > chan2)
+	{
+		std::swap(chan1, chan2);
+	}
 
 	for(std::pair<int, int> a : {
 		std::pair<int, int>(chan1, chan1),
@@ -134,12 +139,14 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 	return coherencies[chan1][chan2][index];
 }
 
-std::complex<double> iitpData::coherencyR(int chan1, int chan2, double freq)
+std::complex<double> iitpData::coherencyMine(int chan1, int chan2, double freq)
 {
+	/// mine
 	if(chan1 > chan2)
 	{
 		std::swap(chan1, chan2);
 	}
+
 	if(coherenciesR[chan1][chan2].size() == 0)
 	{
 		coherenciesR[chan1][chan2].resize(this->piecesFFT[0][0].size());
@@ -166,6 +173,18 @@ std::complex<double> iitpData::coherencyR(int chan1, int chan2, double freq)
 
 	return coherenciesR[chan1][chan2][index];
 }
+
+
+std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
+{
+#if !COHERENCY_TYPE
+	return coherencyUsual(chan1, chan2, freq);
+#else
+	return coherencyMine(chan1, chan2, freq);
+#endif
+
+}
+
 
 void iitpData::crossSpectrum(int chan1, int chan2)
 {
@@ -342,15 +361,15 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 	const int rightInd = iitp::rightFr / this->spStep;
 	const int spLen = rightInd - leftInd;
 	const int numCh = 19;
-	QString joint = "_" + iitp::gonioNames[(mark1 - 100) / 10 - 1 + (mark1 % 10) / 2];
 
+	const QString joint = "_" + iitp::gonioName(mark1);
 
 	std::valarray<double> spectre(spLen * numCh);
-	matrix spectra(2, 1);
+//	matrix spectra(2, 1);
 	std::valarray<double> spec(localFftLen);
 
+	/// flexion
 	this->setPieces(mark1, mark2);
-
 	this->setFftLen(localFftLen);
 	this->countPiecesFFT();
 	for(int i = 0; i < numCh; ++i)
@@ -365,13 +384,14 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
-	spectra[0] = spectre;
+//	spectra[0] = spectre;
 	myLib::writeFileInLine(def::iitpResFolder
 						   + "/" + this->getGuy()
 						   + "/sp"
 						   + "/" + this->getInit() + joint + "_flexion_sp.txt",
 						   spectre);
 
+	/// extension
 	this->setPieces(mark2, mark1);
 	this->setFftLen(localFftLen);
 	this->countPiecesFFT();
@@ -387,7 +407,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
-	spectra[1] = spectre;
+//	spectra[1] = spectre;
 	myLib::writeFileInLine(def::iitpResFolder
 						   + "/" + this->getGuy()
 						   + "/sp"
@@ -404,9 +424,19 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 
 int gonioMinMarker(int numGonioChan)
 {
-	return 100 +
-			(numGonioChan / 2 + 1) * 10 +
-			(numGonioChan % 2) * 2 + 0;
+	return 110 +
+			(numGonioChan / 2) * 10 +
+			(numGonioChan % 2) * 2;
+}
+
+int gonioNum(int marker)
+{
+	return (marker - 110) / 10 * 2 + (marker % 10) / 2;
+}
+
+QString gonioName(int marker)
+{
+	return iitp::gonioNames[iitp::gonioNum(marker)];
 }
 
 

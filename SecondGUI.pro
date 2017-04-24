@@ -9,7 +9,7 @@ QT   += core gui svg
 TARGET = SecondGUI
 TEMPLATE = app
 CONFIG += console #for better display of processes with std::cout.flush()
-QMAKE_CXXFLAGS += -std=c++14
+QMAKE_CXXFLAGS += -std=c++17
 QMAKE_CXXFLAGS += -fopenmp
 QMAKE_CXXFLAGS += -Wno-sign-compare
 QMAKE_CXXFLAGS += -Wno-unused-parameter

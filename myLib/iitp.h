@@ -9,6 +9,7 @@
 #include <other/matrix.h>
 #include <other/edffile.h>
 
+
 namespace iitp
 {
 /// IITP
@@ -30,6 +31,8 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 ///// max - bend (flexed)
 ///// min - unbend (extended)
 int gonioMinMarker(int numGonioChan); /// max = min + 1
+int gonioNum(int marker);
+QString gonioName(int marker);
 
 QString getGuyName(const QString & fileName);
 QString getInitName(const QString & fileName);
@@ -234,9 +237,9 @@ const std::vector<QString> emgNames {
 /// maybe all EMGs for rest and/or stat
 const std::vector<std::valarray<int>> interestEmg{
 	// 0 eyes closed
-	{},
+	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 1 eyes open
-	{},
+	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 2 legs
 	{Ta_l, Ta_r, Bf_l, Bf_r},
 	// 3 legs imaginary
@@ -260,9 +263,9 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 12 static stress
 	{},
 	// 13 middle eyes closed
-	{},
+	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 14 middle eyes open
-	{},
+	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 15 arms
 	{Da_l, Da_r, Dp_l, Dp_r},
 	// 16 arms imaginary
@@ -278,9 +281,9 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 21 arms + legs passive
 	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	// 22 final eyes closed
-	{},
+	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	// 23 final eyes open
-	{},
+	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	// 24 weak Ta_l
 	{Ta_l},
 	// 25 weak Ta_r
@@ -342,12 +345,12 @@ const std::valarray<int> interestEeg{
 const double leftFr = 4;
 const double rightFr = 40;
 
-const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 30 + 1);
+const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 45 + 1);
 //const std::valarray<double> interestFrequencies = smLib::range(8, 45);
 
 const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 29 + 1);
 //const std::valarray<double> fileNums = smLib::range(0, 5);
-//const std::valarray<double> fileNums{4};
+//const std::valarray<double> fileNums{12};
 
 
 class iitpData : public edfFile
@@ -366,8 +369,11 @@ private:
 	double spStep = 0.;
 
 public:
+	std::complex<double> coherencyUsual(int chan1, int chan2, double freq);
+	std::complex<double> coherencyMine(int chan1, int chan2, double freq);
+
 	std::complex<double> coherency(int chan1, int chan2, double freq);
-	std::complex<double> coherencyR(int chan1, int chan2, double freq);
+
 	void crossSpectrum(int chan1, int chan2);
 
 	iitpData & staging(int numGonioChan);

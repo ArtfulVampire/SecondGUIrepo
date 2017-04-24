@@ -63,6 +63,8 @@ void Xenia_TBI();
 
 void IITPpre(const QString & guyName = "Ira");
 void IITPtestCoh(const QString & guyName = "Ira");
+void IITPtestCoh2(const QString & guyName = "Ira");
+
 void IITPfilterGonios(const QString & guyName,
 					  const std::vector<QString> & joints = {"elbow",
 															"wrist",

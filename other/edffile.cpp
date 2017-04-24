@@ -1155,12 +1155,13 @@ void edfFile::downsample(double newFreq,
 		chanList.resize(temp.ns);
 		std::iota(std::begin(chanList), std::end(chanList), 0);
 
-		/// really needed?
-		auto it = std::find(std::begin(chanList), std::end(chanList), temp.markerChannel);
-		if(it != std::end(chanList))
-		{
-			chanList.erase(it);
-		}
+		/// not downsample markers channel - really needed?
+//		auto it = std::find(std::begin(chanList), std::end(chanList), temp.markerChannel);
+//		if(it != std::end(chanList))
+//		{
+//			chanList.erase(it);
+//		}
+
 	}
 	for(int numChan : chanList)
 	{
