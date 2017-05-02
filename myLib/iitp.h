@@ -8,6 +8,7 @@
 
 #include <other/matrix.h>
 #include <other/edffile.h>
+#include <other/defaults.h>
 
 
 namespace iitp
@@ -235,6 +236,7 @@ const std::vector<QString> emgNames {
 
 /// [numFile] - interestingChannels
 /// maybe all EMGs for rest and/or stat
+/// 1 May - added Ta_l, Ta_r everywhere for maps drawing
 const std::vector<std::valarray<int>> interestEmg{
 	// 0 eyes closed
 	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
@@ -249,9 +251,9 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 5 feet imaginary
 	{Ta_l, Ta_r},
 	// 6 wrists
-	{Fcr_l, Fcr_r, Ecr_l, Ecr_r},
+	{Fcr_l, Fcr_r, Ecr_l, Ecr_r,    Ta_l, Ta_r},
 	// 7 wrists imaginary
-	{Fcr_l, Fcr_r, Ecr_l, Ecr_r},
+	{Fcr_l, Fcr_r, Ecr_l, Ecr_r,    Ta_l, Ta_r},
 	// 8 feet + wrists
 	{Ta_l, Ta_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 9 feet + wrists imaginary
@@ -267,9 +269,9 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 14 middle eyes open
 	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
 	// 15 arms
-	{Da_l, Da_r, Dp_l, Dp_r},
+	{Da_l, Da_r, Dp_l, Dp_r,    Ta_l, Ta_r},
 	// 16 arms imaginary
-	{Da_l, Da_r, Dp_l, Dp_r},
+	{Da_l, Da_r, Dp_l, Dp_r,    Ta_l, Ta_r},
 	// 17 arms + legs
 	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	// 18 arms + legs imaginagy
@@ -277,7 +279,7 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 19 legs passive
 	{Ta_l, Ta_r, Bf_l, Bf_r},
 	// 20 arms passive
-	{Da_l, Da_r, Dp_l, Dp_r},
+	{Da_l, Da_r, Dp_l, Dp_r,    Ta_l, Ta_r},
 	// 21 arms + legs passive
 	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	// 22 final eyes closed
@@ -285,17 +287,17 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 23 final eyes open
 	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	// 24 weak Ta_l
-	{Ta_l},
+	{Ta_l,    Ta_r},
 	// 25 weak Ta_r
-	{Ta_r},
+	{Ta_r,    Ta_l},
 	// 26 weak Fcr_l
-	{Fcr_l},
+	{Fcr_l,    Ta_l, Ta_r},
 	// 27 weak Fcr_r
-	{Fcr_r},
+	{Fcr_r,    Ta_l, Ta_r},
 	// 28 weak Ecr_l
-	{Ecr_l},
+	{Ecr_l,    Ta_l, Ta_r},
 	// 29 weak Ecr_r
-	{Ecr_r}
+	{Ecr_r,    Ta_l, Ta_r}
 };
 
 const std::vector<QString> eegNames{
@@ -348,22 +350,25 @@ const double rightFr = 40;
 const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 45 + 1);
 //const std::valarray<double> interestFrequencies = smLib::range(8, 45);
 
-const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 29 + 1);
+//const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 29 + 1);
 //const std::valarray<double> fileNums = smLib::range(0, 5);
 //const std::valarray<double> fileNums{12};
+const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
 
 
 class iitpData : public edfFile
 {
+public:
+	typedef std::vector<std::vector<std::valarray<std::complex<double>>>> cohsType;
 private:
 	std::vector<matrix> piecesData;
 
 	std::vector<std::vector<std::valarray<std::complex<double>>>> piecesFFT;
-	std::vector<std::vector<std::valarray<std::complex<double>>>> coherenciesR;
+	cohsType coherenciesMine;
 
 
 	std::vector<std::vector<std::valarray<std::complex<double>>>> crossSpectra;
-	std::vector<std::vector<std::valarray<std::complex<double>>>> coherencies;
+	cohsType coherenciesUsual;
 
 	int fftLen = -1;
 	double spStep = 0.;
@@ -371,8 +376,9 @@ private:
 public:
 	std::complex<double> coherencyUsual(int chan1, int chan2, double freq);
 	std::complex<double> coherencyMine(int chan1, int chan2, double freq);
-
 	std::complex<double> coherency(int chan1, int chan2, double freq);
+
+	const cohsType & getCoherencies();
 
 	void crossSpectrum(int chan1, int chan2);
 

@@ -2176,4 +2176,16 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 	std::cout << "eyesProcessing: time elapsed = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
+
+std::valarray<double> (* refilter)(const std::valarray<double> & inputSignal,
+								  double lowFreq,
+								  double highFreq,
+								  bool isNotch,
+								  double srate) =
+		#if DSP_LIB
+		&myDsp::refilter;
+#else
+		&myLib::refilterFFT;
+#endif
+
 }// namespace myLib

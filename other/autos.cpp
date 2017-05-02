@@ -371,45 +371,65 @@ void IITPtestCoh2(const QString & guyName)
 	/// test Cz-Tb_l/Ta_r coherency during static stress
 
 	iitp::iitpData dt;
-	const QString direct = def::iitpSyncFolder + "/" + guyName + "/";
-	QString postfix = iitp::getPostfix(QDir(direct).entryList({"*.edf"})[0]);
+//	const QString direct = def::iitpSyncFolder + "/" + guyName + "/";
+	const QString direct = def::iitpFolder + "/" + guyName + "/";
 
-	auto filePath = [=](int i) -> QString
+//	QString postfix = iitp::getPostfix(QDir(direct).entryList({"*.edf"})[0]);
+//	QString postfix = "_dsp_up";
+//	QString postfix = "_dsp_down";
+//	QString postfix = "_fft_up";
+//	QString postfix = "_fft_down";
+
+
+
+
+
+
+	for(QString postfix : {
+		"_dsp_up",
+		"_dsp_down",
+		"_fft_up",
+		"_fft_down"
+})
 	{
-		return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
-	};
 
-	std::vector<double> outCoh;
+		std::vector<double> outCoh;
+		auto filePath = [=](int i) -> QString
+		{
+			return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
+		};
 
-//	std::cout << filePath(24) << std::endl;
+		/// take Ta_l - file 24
+		outCoh.clear();
+		dt.readEdfFile(filePath(24));
+		dt.cutPieces(1.024);
+		for(double freq = 5.; freq <= 45.; freq += 1.)
+		{
+			outCoh.push_back(std::abs(dt.coherency(dt.findChannel("Cz"),
+												   dt.findChannel("Ta_l"),
+												   freq)));
+		}
+		myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(10, true, 5, 45),
+								 smLib::vecToValar(outCoh)).save(
+					"/media/Files/Data/iitp/coh_l" + postfix + ".jpg", 0, 100);
+		std::cout << postfix << std::endl;
+		std::cout << "left coh max = " << *std::max_element(std::begin(outCoh), std::end(outCoh)) << std::endl;
 
-	/// take Ta_l - file 24
-	dt.readEdfFile(filePath(24));
-	dt.cutPieces(1.024);
-	for(double freq = 5.; freq <= 45.; freq += 1.)
-	{
-		outCoh.push_back(std::abs(dt.coherency(dt.findChannel("Cz"),
-											   dt.findChannel("Ta_l"),
-											   freq)));
+		/// take Ta_l - file 25
+		outCoh.clear();
+		dt.readEdfFile(filePath(25));
+		dt.cutPieces(1.024);
+		for(double freq = 5.; freq <= 45.; freq += 1.)
+		{
+			outCoh.push_back(std::abs(dt.coherency(dt.findChannel("Cz"),
+												   dt.findChannel("Ta_r"),
+												   freq)));
+		}
+		myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(10, true, 5, 45),
+								 smLib::vecToValar(outCoh)).save(
+					"/media/Files/Data/iitp/coh_r" + postfix + ".jpg", 0, 100);
+		std::cout << "right coh max = " << *std::max_element(std::begin(outCoh), std::end(outCoh)) << std::endl;
 	}
-	myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(10, true, 5, 45),
-							 smLib::vecToValar(outCoh)).save(
-				"/media/Files/Data/iitp/coh_l.jpg", 0, 100);
-
-	/// take Ta_l - file 25
-	outCoh.clear();
-	dt.readEdfFile(filePath(25));
-	dt.cutPieces(1.024);
-	for(double freq = 5.; freq <= 45.; freq += 1.)
-	{
-		outCoh.push_back(std::abs(dt.coherency(dt.findChannel("Cz"),
-											   dt.findChannel("Ta_r"),
-											   freq)));
-	}
-	myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(10, true, 5, 45),
-							 smLib::vecToValar(outCoh)).save(
-				"/media/Files/Data/iitp/coh_r.jpg", 0, 100);
-
 
 }
 
@@ -572,15 +592,19 @@ void IITPtestCoh(const QString & guyName)
 
 void IITPpre(const QString & guyName)
 {
+
+/// iitp
 ///  0 - downsample EMG, 1 - upsample EEG
+#ifdef UP_DOWN_S
+#undef UP_DOWN_S
 #define UP_DOWN_S 0
+#endif
 
 
 	def::ntFlag = true;
 
 	for(int fileNum : iitp::fileNums)
 	{
-//		if(fileNum != 21) continue;
 		const QString ExpNamePre = def::iitpFolder + "/" +
 								   guyName + "/" +
 								   guyName + "_" + myLib::rightNumber(fileNum, 2);
@@ -599,7 +623,7 @@ void IITPpre(const QString & guyName)
 
 #endif
 
-#if 0
+#if 01
 		/// filter EMG notch + goniogramms
 		filePath = ExpNamePre + "_emg.edf";
 		if(QFile::exists(filePath))
@@ -648,9 +672,8 @@ void IITPpre(const QString & guyName)
 		}
 #endif
 
-#if 0
+#if 01
 		/// filter EEG edfs, but not ECG
-//		filePath = ExpNamePre + "_eeg.edf";
 		filePath = ExpNamePre + "_eeg_div.edf";
 		if(QFile::exists(filePath))
 		{
@@ -661,9 +684,6 @@ void IITPpre(const QString & guyName)
 			fil.refilter(0.5, 70, filePath);
 		}
 #endif
-
-
-
 
 
 #if 01
@@ -694,6 +714,13 @@ void IITPpre(const QString & guyName)
 
 #if 01
 		/// vertcat eeg+emg
+		QString addName;
+#if DSP_LIB
+		addName = "_dsp";
+		  #else
+		addName = "_fft";
+#endif
+
 #if UP_DOWN_S
 		/// upsampled EEG
 		filePath = ExpNamePre + "_eeg_f_up.edf";
@@ -703,7 +730,8 @@ void IITPpre(const QString & guyName)
 			filePath = ExpNamePre + "_emg_f.edf";
 			if(QFile::exists(filePath))
 			{
-				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
+//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
+				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_up.edf");
 			}
 		}
 #else
@@ -715,14 +743,201 @@ void IITPpre(const QString & guyName)
 			filePath = ExpNamePre + "_emg_f_down.edf";
 			if(QFile::exists(filePath))
 			{
-				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
+//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
+				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_down.edf");
 			}
 		}
 #endif
 
 #endif
 	}
+}
 
+
+
+
+
+/// dsp and fft, up adn down
+void IITPpre2(const QString & guyName)
+{
+	def::ntFlag = true;
+
+	for(int fileNum : iitp::fileNums)
+	{
+		const QString ExpNamePre = def::iitpFolder + "/" +
+								   guyName + "/" +
+								   guyName + "_" + myLib::rightNumber(fileNum, 2);
+		QString filePath;
+		edfFile fil;
+
+#if 01
+		/// dat to edf
+		filePath = ExpNamePre + ".dat";
+		if(QFile::exists(filePath))
+		{
+			edfFile fil1(filePath, inst::iitp);
+			filePath = ExpNamePre + "_emg.edf";
+			fil1.writeEdfFile(filePath);
+		}
+
+#endif
+
+
+#if 01
+		/// filter EMG notch + goniogramms
+		for(QString addName :{"dsp", "fft"})
+		{
+			if(addName == "dsp")
+			{
+				myLib::refilter = &myDsp::refilter;
+			}
+			else
+			{
+				myLib::refilter = &myLib::refilterFFT;
+			}
+
+			filePath = ExpNamePre + "_emg.edf";
+			if(QFile::exists(filePath))
+			{
+				fil.readEdfFile(filePath);
+
+				for(int fr = 50; fr <= 450; fr += 50)
+				{
+					fil.refilter(fr - 5, fr + 5, {}, true);
+				}
+
+				/// filter goniogramms
+				std::vector<uint> chanList;
+				for(int i = 0; i < fil.getNs(); ++i)
+				{
+					for(auto joint : {"elbow", "wrist", "knee", "ankle"})
+					{
+						if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive))
+						{
+							chanList.push_back(i);
+							break;
+						}
+					}
+				}
+				fil.refilter(0.1, 6, {}, false, chanList); /// magic constants
+
+				filePath = ExpNamePre + "_emg_" + addName + ".edf";
+				fil.writeEdfFile(filePath);
+			}
+		}
+#endif
+
+
+
+#if 01
+		/// divide EEG chans to prevent oversclaing amplitude
+		filePath = ExpNamePre + "_eeg.edf";
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
+			std::vector<uint> chanNums(fil.getNs());
+			std::iota(std::begin(chanNums), std::end(chanNums), 0.);
+//			chanNums.pop_back(); /// ECG
+			fil.divideChannels(chanNums, 2.);
+			filePath = ExpNamePre + "_eeg_div.edf";
+			fil.writeEdfFile(filePath);
+		}
+#endif
+
+
+#if 01
+		/// filter EEG edfs, but not ECG
+		for(QString addName :{"dsp", "fft"})
+		{
+			if(addName == "dsp")
+			{
+				myLib::refilter = &myDsp::refilter;
+			}
+			else
+			{
+				myLib::refilter = &myLib::refilterFFT;
+			}
+
+			filePath = ExpNamePre + "_eeg_div.edf";
+			if(QFile::exists(filePath))
+			{
+				fil.readEdfFile(filePath);
+
+				filePath = ExpNamePre + "_eeg_" + addName + ".edf";
+				fil.refilter(45, 55, {}, true);
+				fil.refilter(0.5, 70, filePath);
+			}
+		}
+#endif
+
+
+#if 01
+		/// resample
+		/// upsample EEGs
+		for(QString addName :{"dsp", "fft"})
+		{
+			if(addName == "dsp")
+			{
+				myLib::refilter = &myDsp::refilter;
+			}
+			else
+			{
+				myLib::refilter = &myLib::refilterFFT;
+			}
+
+			filePath = ExpNamePre + "_eeg_" + addName + ".edf";
+			if(QFile::exists(filePath))
+			{
+				fil.readEdfFile(filePath);
+				filePath = ExpNamePre + "_eeg_" + addName + "_up.edf";
+				fil.upsample(1000., filePath);
+			}
+
+			/// downsample EMGs
+			filePath = ExpNamePre + "_emg_" + addName + ".edf";
+			if(QFile::exists(filePath))
+			{
+				fil.readEdfFile(filePath);
+				filePath = ExpNamePre + "_emg_" + addName + "_down.edf";
+				fil.downsample(250., filePath);
+			}
+		}
+#endif
+
+
+
+
+
+		/// vertcat eeg+emg
+
+		for(QString addName :{"dsp", "fft"})
+		{
+			/// upsampled EEG
+			filePath = ExpNamePre + "_eeg_" + addName + "_up.edf";
+			if(QFile::exists(filePath))
+			{
+				fil.readEdfFile(filePath);
+				filePath = ExpNamePre + "_emg_" + addName + ".edf";
+				if(QFile::exists(filePath))
+				{
+//					fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
+					fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_" + addName + "_up.edf");
+				}
+			}
+			/// downsampled EMG
+			filePath = ExpNamePre + "_eeg_" + addName + ".edf";
+			if(QFile::exists(filePath))
+			{
+				fil.readEdfFile(filePath);
+				filePath = ExpNamePre + "_emg_" + addName + "_down.edf";
+				if(QFile::exists(filePath))
+				{
+//					fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
+					fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_" + addName + "_down.edf");
+				}
+			}
+		}
+	}
 }
 
 void IITPremoveZchans(const QString & guyName, const QString & dirPath)
@@ -836,6 +1051,7 @@ void IITPprocessStaged(const QString & guyName,
 	a.mkdir("coh");
 	a.mkdir("sp");
 	a.mkdir("pic");
+	a.mkdir("cohPics");
 	iitp::iitpData dt;
 
 
@@ -854,6 +1070,11 @@ void IITPprocessStaged(const QString & guyName,
 		return resultsPathPrefix + "coh/" + guyName + "_" + rn(i, 2) + "_" + goni + "_extension.txt";
 	};
 
+	static const std::vector<QString> cohTypes{"free", "flex", "ext"};
+	/// coh, fileNum, 0-rest, 1-flex, 2-ext
+	typedef std::tuple<iitp::iitpData::cohsType, int, int> cohItem;
+	std::vector<cohItem> cohs;
+
 	for(int fileNum : iitp::fileNums)
 	{
 
@@ -862,15 +1083,21 @@ void IITPprocessStaged(const QString & guyName,
 //		   !(guyName == "Boris" && fileNum == 4)) continue;
 //		if(!(guyName == "Isakov" && fileNum == 8) ) continue;
 
-		if(!QFile::exists(filePath(fileNum))) continue;
+		if(!QFile::exists(filePath(fileNum)))
+		{
+			std::cout << "IITPprocessStaged: file doesn't exist = "
+					  << filePath(fileNum) << std::endl;
+			continue;
+		}
 
 		dt.readEdfFile(filePath(fileNum));
+
 
 		// rest, stat, imag
 		if(iitp::interestGonios[fileNum].size() == 0)
 		{
 			dt.countImagPassSpectra();
-			continue;
+//			continue;
 //			if(iitp::trialTypes[fileNum] == iitp::trialType::stat)
 			{
 				dt.cutPieces(1.024);
@@ -932,10 +1159,9 @@ void IITPprocessStaged(const QString & guyName,
 						}
 					}
 				}
-
-
 				outStr.close();
 			}
+			cohs.push_back(cohItem(dt.getCoherencies(), fileNum, 0));
 		}
 
 		// else - real, passive
@@ -943,7 +1169,7 @@ void IITPprocessStaged(const QString & guyName,
 		{
 			int minMarker = iitp::gonioMinMarker(gonio);
 			dt.countFlexExtSpectra(minMarker, minMarker + 1);
-			continue;
+//			continue;
 
 			for(int type : {0, 1}) /// 0 - flexion, 1 - extension
 			{
@@ -1021,6 +1247,64 @@ void IITPprocessStaged(const QString & guyName,
 				}
 #endif
 				outStr.close();
+				cohs.push_back(cohItem(dt.getCoherencies(), fileNum, type + 1));
+			}
+		}
+	}
+	std::cout << "cohs size = " << cohs.size() << std::endl;
+	/// draw maps by cohs vector
+	/// find maxValue
+	double maxVal = 0.;
+	for(const auto & cohTuple : cohs)
+	{
+		for(const auto & chan1 : iitp::interestEeg)
+		{
+			for(const auto & chan2 : {iitp::Ta_l, iitp::Ta_r})
+			{
+				for(const auto & freq : iitp::interestFrequencies)
+				{
+					maxVal = std::max(maxVal,
+									  std::abs(
+										  std::get<0>(cohTuple)
+										  [dt.findChannel(iitp::eegNames[chan1])]
+							 [dt.findChannel(iitp::emgNames[chan2])]
+							 [freq]));
+				}
+			}
+		}
+	}
+	/// round to 1 decimal up
+	maxVal = std::ceil(maxVal * 10) / 10.;
+
+	std::cout << "guy = " << guyName << "\t"
+			  << "maxValue = " << maxVal << std::endl;
+
+	std::valarray<double> drawData(19);
+	drawData = 0;
+	for(const auto & cohTuple : cohs)
+	{
+		for(const auto & freq : iitp::interestFrequencies)
+		{
+			for(const auto & chan2 : {iitp::Ta_l, iitp::Ta_r})
+			{
+				for(const auto & chan1 : iitp::interestEeg)
+				{
+					drawData[chan1] = std::abs(
+										  std::get<0>(cohTuple)
+										  [dt.findChannel(iitp::eegNames[chan1])]
+									  [dt.findChannel(iitp::emgNames[chan2])]
+									  [freq]);
+				}
+				myLib::drw::drawOneMap(drawData, maxVal, myLib::drw::ColorScale::jet).save(
+							def::iitpResFolder + "/" + guyName + "/cohPics/" +
+							guyName +
+							"_" + rn(std::get<1>(cohTuple), 2) +		// fileNum
+							"_" + cohTypes[std::get<2>(cohTuple)] +		// free/flex/ext
+						"_" + iitp::emgNames[chan2] +					// Ta_l/Ta_r
+						"_fr_" + rn(freq, 2) +							// _fr_10
+						".jpg"
+						, 0, 100);
+				drawData = 0;
 			}
 		}
 	}

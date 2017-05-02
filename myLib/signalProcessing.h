@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include <other/matrix.h>
+#include <other/defaults.h>
 
 #include <QPixmap>
 #include <QPainter>
@@ -255,16 +256,11 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 namespace myLib
 {
 
-std::valarray<double> (* const refilter)(const std::valarray<double> & inputSignal,
+extern std::valarray<double> (* refilter)(const std::valarray<double> & inputSignal,
 								  double lowFreq,
 								  double highFreq,
 								  bool isNotch,
-								  double srate) =
-		#if DSP_LIB
-		&myDsp::refilter;
-#else
-		&myLib::refilterFFT;
-#endif
+								  double srate);
 
 std::valarray<double> (* const lowPass)(const std::valarray<double> & inputSignal,
 								  double cutoffFreq,

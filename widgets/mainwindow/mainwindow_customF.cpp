@@ -28,16 +28,16 @@ void MainWindow::customFunc()
 						"Galya"
 					   };
 
-	for(QString guy : guyList)
-//	QString guy = "Galya";
+//	for(QString guy : guyList)
+	QString guy = "Galya";
 	{
 //		autos::IITPtestCoh2(guy); exit(0);
 //		autos::IITPremoveZchans(guy, def::iitpFolder);
-//		autos::IITPpre(guy);
-//		exit(0);
+//		autos::IITPpre2(guy); exit(0);
 
 //		autos::IITPstaging(guy);
 		autos::IITPprocessStaged(guy);
+		exit(0);
 
 		if(guy == "Alex")
 		{

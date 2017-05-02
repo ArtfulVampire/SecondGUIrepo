@@ -910,6 +910,8 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 				   double maxAbs,
 				   const ColorScale & colorTheme)
 {
+	/// inData.size() == 19
+
 	QPixmap pic1 = QPixmap(mapSize, mapSize);
 	QPainter paint1;
 	pic1.fill();
@@ -1004,7 +1006,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 			if(maxAbs == 0)
 			{
 				// "private" limits
-				// each map frop deep blue to deep red
+				// each map from deep blue to deep red
 				drawArg = (val - minMagn)
 						  / (maxMagn - minMagn) * drawRange;
 			}
@@ -1012,8 +1014,14 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 			{
 				// global limits
 				// current variant
-				drawArg = (val + maxAbs)
-						  / (2 * maxAbs) * drawRange;
+
+
+				// deep blue ~ -maxAbs, deep red ~ +maxAbs
+//				drawArg = (val + maxAbs)
+//						  / (2 * maxAbs) * drawRange;
+
+				// deep blue ~ 0, deep red ~ +maxAbs
+				drawArg = val / maxAbs * drawRange;
 			}
 
 			QColor (*colorFunc)(int, int) = myLib::drw::grayScale;

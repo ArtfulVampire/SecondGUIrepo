@@ -11,16 +11,6 @@
 #include <QDir>
 #include <QColor>
 
-
-
-/// 0 - usual, 1 - with normalization
-#define COHERENCY_TYPE 0
-
-/// 0 - fft filtering, 1 - dsp filtering
-#define DSP_LIB 0
-
-#define WAVELET_MATLAB 01
-
 namespace coords
 {
 

@@ -62,6 +62,7 @@ void Xenia_TBI();
 
 
 void IITPpre(const QString & guyName = "Ira");
+void IITPpre2(const QString & guyName = "Ira");
 void IITPtestCoh(const QString & guyName = "Ira");
 void IITPtestCoh2(const QString & guyName = "Ira");
 

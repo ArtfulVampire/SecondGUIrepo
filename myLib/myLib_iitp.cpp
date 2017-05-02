@@ -101,17 +101,6 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 std::complex<double> iitpData::coherencyUsual(int chan1, int chan2, double freq)
 {
 	/// usual
-//	if(chan1 > chan2) std::swap(chan1, chan2);
-//	std::vector<std::valarray<double>> sig1;
-//	std::vector<std::valarray<double>> sig2;
-//	for(const matrix & m : this->piecesData)
-//	{
-//		sig1.push_back(m[chan1]);
-//		sig2.push_back(m[chan2]);
-//	}
-//	return iitp::coherency(sig1, sig2, this->srate, freq);
-
-
 	if(chan1 > chan2)
 	{
 		std::swap(chan1, chan2);
@@ -128,15 +117,15 @@ std::complex<double> iitpData::coherencyUsual(int chan1, int chan2, double freq)
 			this->crossSpectrum(a.first, a.second);
 		}
 	}	
-	if(this->coherencies[chan1][chan2].size() == 0)
+	if(this->coherenciesUsual[chan1][chan2].size() == 0)
 	{
-		this->coherencies[chan1][chan2] = this->crossSpectra[chan1][chan2] /
+		this->coherenciesUsual[chan1][chan2] = this->crossSpectra[chan1][chan2] /
 										  sqrt(this->crossSpectra[chan1][chan1] *
 											   this->crossSpectra[chan2][chan2]);
 	}
 
 	int index = freq / this->spStep;
-	return coherencies[chan1][chan2][index];
+	return coherenciesUsual[chan1][chan2][index];
 }
 
 std::complex<double> iitpData::coherencyMine(int chan1, int chan2, double freq)
@@ -147,15 +136,15 @@ std::complex<double> iitpData::coherencyMine(int chan1, int chan2, double freq)
 		std::swap(chan1, chan2);
 	}
 
-	if(coherenciesR[chan1][chan2].size() == 0)
+	if(coherenciesMine[chan1][chan2].size() == 0)
 	{
-		coherenciesR[chan1][chan2].resize(this->piecesFFT[0][0].size());
+		coherenciesMine[chan1][chan2].resize(this->piecesFFT[0][0].size());
 
 		for(int i = 0; i < this->piecesData.size(); ++i)
 		{
 #if 01
 			/// .apply(smLib::abs)
-			coherenciesR[chan1][chan2] += this->piecesFFT[i][chan1] *
+			coherenciesMine[chan1][chan2] += this->piecesFFT[i][chan1] *
 										  this->piecesFFT[i][chan2].apply(std::conj) /
 										  (this->piecesFFT[i][chan1].apply(smLib::abs) *
 										   this->piecesFFT[i][chan2].apply(smLib::abs));
@@ -167,16 +156,30 @@ std::complex<double> iitpData::coherencyMine(int chan1, int chan2, double freq)
 										   smLib::abs(this->piecesFFT[i][chan2]));
 #endif
 		}
-		coherenciesR[chan1][chan2] /= this->piecesData.size();
+		coherenciesMine[chan1][chan2] /= this->piecesData.size();
 	}
 	int index = freq / this->spStep;
 
-	return coherenciesR[chan1][chan2][index];
+	return coherenciesMine[chan1][chan2][index];
 }
 
+const iitpData::cohsType & iitpData::getCoherencies()
+{
+	return coherenciesUsual;
+//	return coherenciesMine;
+
+#if !COHERENCY_TYPE
+	return coherenciesUsual;
+#else
+	return coherenciesMine;
+#endif
+}
 
 std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 {
+	return coherencyUsual(chan1, chan2, freq);
+//	return coherencyMine(chan1, chan2, freq);
+
 #if !COHERENCY_TYPE
 	return coherencyUsual(chan1, chan2, freq);
 #else
@@ -233,18 +236,18 @@ void iitpData::clearCrossSpectra()
 		this->crossSpectra[i].resize(this->ns, {});
 	}
 
-	this->coherencies.clear();
-	this->coherencies.resize(this->ns);
-	for(int i = 0; i < this->coherencies.size(); ++i)
+	this->coherenciesUsual.clear();
+	this->coherenciesUsual.resize(this->ns);
+	for(int i = 0; i < this->coherenciesUsual.size(); ++i)
 	{
-		this->coherencies[i].resize(this->ns, {});
+		this->coherenciesUsual[i].resize(this->ns, {});
 	}
 
-	this->coherenciesR.clear();
-	this->coherenciesR.resize(this->ns);
-	for(int i = 0; i < this->coherenciesR.size(); ++i)
+	this->coherenciesMine.clear();
+	this->coherenciesMine.resize(this->ns);
+	for(int i = 0; i < this->coherenciesMine.size(); ++i)
 	{
-		this->coherenciesR[i].resize(this->ns, {});
+		this->coherenciesMine[i].resize(this->ns, {});
 	}
 
 	this->piecesFFT.clear();
@@ -273,16 +276,19 @@ void iitpData::getPiecesParams()
 void iitpData::cutPieces(double length)
 {
 	this->piecesData.clear();
+
+	double rat = 1.;
 	const int numPieces = this->getDataLen() / (this->srate * length);
-	for(int i = 0; i < numPieces; ++i)
+	for(int i = 0; i < numPieces * rat; ++i)
 	{
-		this->piecesData.push_back(this->edfData.subCols(length * this->srate * i,
-														 length * this->srate * (i + 1)));
+		int start = length * this->srate * i / rat;
+		this->piecesData.push_back(this->edfData.subCols(start,
+														 start + length * this->srate));
 	}
 	this->setFftLen();
 	this->clearCrossSpectra();
 
-	/// experimental for coherencyR
+	/// experimental for coherencyMine
 	this->countPiecesFFT();
 }
 

@@ -95,7 +95,8 @@ classifier/classifierdata.h \
 other/autos.h \
 other/coord.h \
 other/matrix.h \
-other/edffile.h
+other/edffile.h \
+    other/defaults.h
 
 FORMS+= mainwindow.ui \
 cut.ui \

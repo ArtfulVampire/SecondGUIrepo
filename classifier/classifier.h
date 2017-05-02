@@ -16,6 +16,7 @@
 
 #include <other/coord.h>
 #include <other/matrix.h>
+#include <other/defaults.h>
 #include <classifier/classifierdata.h>
 
 #include <QString>
@@ -32,9 +33,6 @@ double countError(const std::valarray<double> & vals, int trueType);
 std::valarray<double> oneHot(uint siz, uint hotIndex);
 
 } /// end of namespace clLib
-
-
-#define INERTIA 0
 
 class Classifier
 {

@@ -5,6 +5,7 @@
 
 #include <other/matrix.h>
 #include <matlab/for_testing/libcwt_r.h>
+#include <other/defaults.h>
 
 #include <QString>
 #include <QPixmap>
