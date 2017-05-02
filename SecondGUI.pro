@@ -16,8 +16,10 @@ QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
 
+#QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
+
 #DSP
-INCLUDEPATH += ./DSP
+INCLUDEPATH += ../SecondGUI/DSP
 LIBS += -L../SecondGUI/DSP -ldspFilters
 
 #cwt

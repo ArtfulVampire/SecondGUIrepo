@@ -97,6 +97,10 @@ Cut::Cut() :
 	QObject::connect(pasteShortcut, SIGNAL(activated()), this, SLOT(pasteSlot()));
 	QObject::connect(cutShortcut, SIGNAL(activated()), this, SLOT(cutSlot()));
 
+	QObject::connect(ui->disableEcgCheckBox, &QCheckBox::clicked,
+					 this, &Cut::paint);
+	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked,
+					 this, &Cut::paint);
 	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
 	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),

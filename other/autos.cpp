@@ -1161,7 +1161,7 @@ void IITPprocessStaged(const QString & guyName,
 				}
 				outStr.close();
 			}
-			cohs.push_back(cohItem(dt.getCoherencies(), fileNum, 0));
+//			cohs.push_back(cohItem(dt.getCoherencies(), fileNum, 0));
 		}
 
 		// else - real, passive
@@ -1247,10 +1247,13 @@ void IITPprocessStaged(const QString & guyName,
 				}
 #endif
 				outStr.close();
-				cohs.push_back(cohItem(dt.getCoherencies(), fileNum, type + 1));
+//				cohs.push_back(cohItem(dt.getCoherencies(), fileNum, type + 1));
 			}
 		}
 	}
+
+
+#if 0
 	std::cout << "cohs size = " << cohs.size() << std::endl;
 	/// draw maps by cohs vector
 	/// find maxValue
@@ -1308,6 +1311,7 @@ void IITPprocessStaged(const QString & guyName,
 			}
 		}
 	}
+#endif
 }
 
 void IITPmaxCoh(const QString & filePath,

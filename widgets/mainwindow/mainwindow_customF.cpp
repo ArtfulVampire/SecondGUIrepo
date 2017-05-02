@@ -16,7 +16,8 @@ void MainWindow::customFunc()
 
 #if 01
 	/// IITP
-	QStringList guyList{"Alex",
+	QStringList guyList{
+//		"Alex",
 						"Boris",
 						"Ira",
 						"Levik",
@@ -24,20 +25,20 @@ void MainWindow::customFunc()
 						"Egor",
 						"Victor",
 						"Dima",
-						"Isakov",
+//						"Isakov",
 						"Galya"
 					   };
 
-//	for(QString guy : guyList)
-	QString guy = "Galya";
+	for(QString guy : guyList)
+//	QString guy = "Galya";
 	{
 //		autos::IITPtestCoh2(guy); exit(0);
-//		autos::IITPremoveZchans(guy, def::iitpFolder);
+//		autos::IITPremoveZchans(guy, def::iitpSyncFolder); continue;
 //		autos::IITPpre2(guy); exit(0);
 
-//		autos::IITPstaging(guy);
-		autos::IITPprocessStaged(guy);
-		exit(0);
+//		autos::IITPstaging(guy); continue;
+		autos::IITPprocessStaged(guy); continue;
+//		exit(0);
 
 		if(guy == "Alex")
 		{
@@ -85,11 +86,11 @@ void MainWindow::customFunc()
 			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
 		}
 
-//		using Typ = std::vector<int>;
-//		Typ nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
-//									  smLib::range<Typ>(24, 29 + 1)});
+		using Typ = std::vector<int>;
+		Typ nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
+									  smLib::range<Typ>(24, 29 + 1)});
 //		nums.erase(std::find(std::begin(nums), std::end(nums), 8));
-//		autos::IITPdrawSameScale(guy, nums);
+		autos::IITPdrawSameScale(guy, nums);
 	}
 
 
