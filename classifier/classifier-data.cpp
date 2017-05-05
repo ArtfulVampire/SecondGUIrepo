@@ -40,6 +40,8 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 	this->dataMatrix = inData;
 
 	adjust();
+
+	this->z_transform();
 }
 
 

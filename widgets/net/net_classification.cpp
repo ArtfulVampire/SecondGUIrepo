@@ -91,7 +91,8 @@ Classifier::avType Net::autoClassification()
     }
     default: {break;}
     }
-    std::cout <<  "autoClassification: time elapsed = " << myTime.elapsed()/1000. << " sec" << std::endl;
+	std::cout <<  "autoClassification: time elapsed = "
+			   << myTime.elapsed() / 1000. << " sec" << std::endl;
     return myClassifier->averageClassification();
 }
 
@@ -128,7 +129,6 @@ void Net::autoClassificationSimple()
 void Net::leaveOneOutClassification()
 {
 	const auto & dataMatrix = myClassifier->getClassifierData()->getData();
-
 	std::vector<uint> learnIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {

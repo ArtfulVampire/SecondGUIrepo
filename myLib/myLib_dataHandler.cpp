@@ -403,7 +403,7 @@ void readUCIdataSet(const QString & setName,
                     std::vector<uint> & outTypes)
 {
     QString newName = setName.toUpper();
-	readMatrixFile(def::uciFolder + "/" + newName + "_data.txt", outData);
+	myLib::readMatrixFile(def::uciFolder + "/" + newName + "_data.txt", outData);
 
 
 	std::ifstream inStr;

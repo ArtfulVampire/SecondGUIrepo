@@ -110,14 +110,14 @@ void Xenia_TBI()
 //	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
 //						"_cry", "_fire", "_flower", "_wc"};
 
-	QString tbi_path = def::XeniaFolder + "/14Mar";
+	QString tbi_path = def::XeniaFolder + "/3May";
 //	QString tbi_path = def::XeniaFolder + "/15Nov";
 //	QString tbi_path = "/media/Files/Data/Dasha";
 //	QString tbi_path = "/media/michael/My Passport/TBI_all_results_20Nov";
 
 //	QStringList subdirs{"healthy", "moderate_TBI", "severe_TBI"};
-	QStringList subdirs{"Norm_new", "TBI_new"};
-//	QStringList subdirs{"Totable"};
+//	QStringList subdirs{"Norm_new", "TBI_new"};
+	QStringList subdirs{"Popova"};
 
 
 
@@ -139,7 +139,7 @@ void Xenia_TBI()
 
 //			repair::deleteSpacesFolders(workPath + "/" + guy);
 //			repair::toLatinDir(workPath + "/" + guy, {});
-//			repair::toLowerDir(workPath + "/" + guy, {});
+			repair::toLowerDir(workPath + "/" + guy, {});
 
 //			continue;
 
@@ -152,7 +152,7 @@ void Xenia_TBI()
 			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
 
 			/// filter?
-			if(0)
+			if(1)
 			{
 				autos::refilterFolder(workPath + "/" + guy,
 									  1.,
@@ -160,7 +160,7 @@ void Xenia_TBI()
 			}
 
 			/// cut?
-			if(1)
+			if(0)
 			{
 				autos::GalyaCut(workPath + "/" + guy,
 								8,
@@ -232,7 +232,7 @@ void Xenia_TBI()
 	}
 #endif
 
-#if 01
+#if 0
 	/// people list
 	for(QString subdir : subdirs)
 	{

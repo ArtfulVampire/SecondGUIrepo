@@ -43,7 +43,6 @@ protected:
     ClassifierType myType;
     QString typeString;
 
-	/// CHANGE this name to myClassData
 	ClassifierData * myClassData;
 
 	matrix confusionMatrix; // [realClass] [predictedClass]

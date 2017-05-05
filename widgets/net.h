@@ -106,6 +106,8 @@ public:
 												+ "/SpectraSmooth",
 				  const QStringList & filters = {});
 	void loadDataUCI(const QString & setName);
+	void loadDataXenia(const QString & filesPath = def::dataFolder + "/Xenia_tables",
+					   const QString & type = "bd_new");
 
 
     ///wts

@@ -14,7 +14,8 @@ void MainWindow::customFunc()
 //	return;
 
 
-#if 01
+
+#if 0
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -103,6 +104,112 @@ void MainWindow::customFunc()
 //	return;
 #endif
 
+#if 01
+	/// Xenia FD tables classification
+	const QString workDir = def::dataFolder + "/Xenia_tables/";
+
+	/// replace , -> .
+	if(0)
+	{
+		for(const QString & fileName : QDir(workDir).entryList({"*.txt"}))
+		{
+			QFile fil(workDir + fileName);
+			fil.open(QIODevice::ReadWrite);
+			auto arr = fil.readAll();
+			fil.reset();
+			arr.replace(",", ".");
+			fil.write(arr);
+			fil.close();
+		}
+	}
+
+	/// replace spaces
+	if(0)
+	{
+		for(const QString & fileName : QDir(workDir).entryList({"*.txt"}))
+		{
+			QFile fil(workDir + fileName);
+			fil.open(QIODevice::ReadWrite);
+			auto arr = fil.readAll();
+			arr.replace(" ", "_");
+			fil.reset();
+			fil.write(arr);
+			fil.close();
+		}
+	}
+
+	/// place names and group numbers in another files
+	if(0)
+	{
+		QString rest;
+		QString name;
+		int group;
+		QString namesName;
+		QString groupsName;
+		QString newName;
+
+
+		for(const QString & fileName : QDir(workDir).entryList({"??.txt", "???.txt"}))
+		{
+			QFile fil(workDir + fileName);
+			fil.open(QIODevice::ReadWrite);
+			QTextStream str(&fil);
+
+			namesName = fileName; namesName.replace(".txt", "_names.txt");
+			groupsName = fileName; groupsName.replace(".txt", "_groups.txt");
+			newName = fileName; newName.replace(".txt", "_new.txt");
+			QFile namesFil(workDir + namesName); namesFil.open(QIODevice::WriteOnly);
+			QFile groupsFil(workDir + groupsName); groupsFil.open(QIODevice::WriteOnly);
+			QFile newFil(workDir + newName); newFil.open(QIODevice::WriteOnly);
+			QTextStream namesStr(&namesFil);
+			QTextStream groupsStr(&groupsFil);
+			QTextStream newStr(&newFil);
+
+			while(1)
+			{
+				str >> name >> group;
+				if(str.atEnd())
+				{
+					break;
+				}
+				namesStr << name << "\r\n";
+				groupsStr << group << "\r\n";
+
+				str.skipWhiteSpace();
+				rest = str.readLine();
+				newStr << rest << "\r\n";
+			}
+
+			fil.close();
+			namesFil.close();
+			groupsFil.close();
+			newFil.close();
+//			exit(0);
+		}
+	}
+
+	/// classify
+	if(1)
+	{
+		Net * ann = new Net();
+		for(QString fileName : QDir(workDir).entryList({"*_new*"}))
+		{
+			fileName.remove(".txt");
+			std::cout << fileName << std::endl;
+			ann->loadDataXenia(def::dataFolder + "/Xenia_tables", fileName);
+//			ann->loadDataUCI("IRIS");
+			ann->setClassifier(ClassifierType::ANN);
+//			ann->setKnnNumSlot(1);
+			ann->setMode("N");
+			ann->autoClassification();
+//			exit(0);
+
+		}
+	}
+
+	exit(0);
+#endif
+
 
 //	QString wrk = "/media/Files/Data/Xenia/14Mar/TBI_new_tmp";
 //	repair::toLowerDir(wrk, {});
@@ -132,7 +239,7 @@ void MainWindow::customFunc()
 
 //	repair::toLowerDir("/media/Files/Data/Xenia/14Mar/Norm_new_tmp", {});
 
-//	autos::Xenia_TBI();
+	autos::Xenia_TBI();
 //	autos::EEG_MRI({"Kabanov"}, false);
 	exit(0);
 

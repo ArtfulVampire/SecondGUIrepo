@@ -17,7 +17,19 @@ void Net::loadData(const QString & spectraPath,
 				   const QStringList & filters)
 {
 	myClassifierData = ClassifierData(spectraPath, filters);
+}
 
+void Net::loadDataXenia(const QString & filesPath, const QString & type)
+{
+	matrix xeniaData{};
+	std::vector<uint> xeniaTypes{};
+	std::valarray<double> xeniaTypesTemp{};
+	myLib::readMatrixFileRaw(filesPath + "/" + type + ".txt", xeniaData);
+	myLib::readFileInLineRaw(filesPath + "/Groups.txt", xeniaTypesTemp);
+	xeniaTypes.resize(xeniaTypesTemp.size());
+	std::copy(std::begin(xeniaTypesTemp), std::end(xeniaTypesTemp), std::begin(xeniaTypes));
+	myClassifierData = ClassifierData(xeniaData, xeniaTypes);
+//	std::cout << "loadData ready" << std::endl;
 }
 
 void Net::pca()

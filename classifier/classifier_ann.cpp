@@ -497,38 +497,47 @@ double ANN::adjustLearnRate()
     mixNum.resize(mixNum.size() * (folds - 1) / folds);
 
 
-    double res = 1.;
+	double res = learnRate;
     int counter = 0;
     do
     {
+
         /// remake with indices
         const double currVal = learnRate;
 
         this->learn(mixNum);
 
+//		std::cout << "ANN::adjustLearnRate: lrate = " << learnRate << "\t"
+//				  << "epoch = " << epoch << std::endl;
+
         /// check limits
         if(epoch > ANN::epochHighLimit ||
            epoch < ANN::epochLowLimit)
         {
-            learnRate = (currVal * sqrt(epoch /
-                                        ((ANN::epochLowLimit + ANN::epochHighLimit) / 2.)));
+			learnRate = currVal * sqrt(epoch /
+									   ((ANN::epochLowLimit + ANN::epochHighLimit) / 2.));
+
+			res = learnRate;
         }
         else
         {
-            res = currVal;
+			res = currVal;
             break;
         }
 
         /// check lrate values
-        if(learnRate <= 0.001)
+		const double lowThr = 1e-8;
+		const double highThr = 2;
+		if(learnRate <= lowThr)
         {
-            learnRate = 0.001; break;
+			learnRate = lowThr; break;
         }
-        else if(learnRate >= 1.)
+		else if(learnRate >= highThr)
         {
-            learnRate = 1.; break;
+			learnRate = highThr; break;
         }
         ++counter;
+
     } while (counter < 10);
 
 	std::cout << "ANN::adjustLearnRate: lrate = " << res << "\t"
