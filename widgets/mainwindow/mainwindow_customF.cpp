@@ -13,7 +13,7 @@ void MainWindow::customFunc()
 	ui->realsButton->setChecked(true);
 //	return;
 
-#if 01
+#if 0
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -104,37 +104,28 @@ void MainWindow::customFunc()
 //	return;
 #endif
 
-#if 0
+#if 01
 	/// Xenia FD tables classification
 	const QString workDir = def::dataFolder + "/Xenia_tables/";
 
 	/// replace , -> .
+	/// and spaces
 	if(0)
 	{
-		for(const QString & fileName : QDir(workDir).entryList({"*.txt"}))
+		for(QString subdir : {"FD", "FFT", "SD_carr", "ampl_freq"})
 		{
-			QFile fil(workDir + fileName);
-			fil.open(QIODevice::ReadWrite);
-			auto arr = fil.readAll();
-			fil.reset();
-			arr.replace(",", ".");
-			fil.write(arr);
-			fil.close();
-		}
-	}
-
-	/// replace spaces
-	if(0)
-	{
-		for(const QString & fileName : QDir(workDir).entryList({"*.txt"}))
-		{
-			QFile fil(workDir + fileName);
-			fil.open(QIODevice::ReadWrite);
-			auto arr = fil.readAll();
-			arr.replace(" ", "_");
-			fil.reset();
-			fil.write(arr);
-			fil.close();
+			QString pewDir = workDir + subdir + "/";
+			for(const QString & fileName : QDir(pewDir).entryList({"*.txt"}))
+			{
+				QFile fil(pewDir + fileName);
+				fil.open(QIODevice::ReadWrite);
+				auto arr = fil.readAll();
+				fil.reset();
+				arr.replace(",", ".");
+				arr.replace(" ", "_");
+				fil.write(arr);
+				fil.close();
+			}
 		}
 	}
 
@@ -148,63 +139,76 @@ void MainWindow::customFunc()
 		QString groupsName;
 		QString newName;
 
-
-		for(const QString & fileName : QDir(workDir).entryList({"??.txt", "???.txt"}))
+		for(QString subdir : {"FD", "FFT", "SD_carr", "ampl_freq"})
 		{
-			QFile fil(workDir + fileName);
-			fil.open(QIODevice::ReadWrite);
-			QTextStream str(&fil);
-
-			namesName = fileName; namesName.replace(".txt", "_names.txt");
-			groupsName = fileName; groupsName.replace(".txt", "_groups.txt");
-			newName = fileName; newName.replace(".txt", "_new.txt");
-			QFile namesFil(workDir + namesName); namesFil.open(QIODevice::WriteOnly);
-			QFile groupsFil(workDir + groupsName); groupsFil.open(QIODevice::WriteOnly);
-			QFile newFil(workDir + newName); newFil.open(QIODevice::WriteOnly);
-			QTextStream namesStr(&namesFil);
-			QTextStream groupsStr(&groupsFil);
-			QTextStream newStr(&newFil);
-
-			while(1)
+			QString pewDir = workDir + subdir + "/";
+			for(const QString & fileName : QDir(pewDir).entryList({"*.txt"}))
 			{
-				str >> name >> group;
-				if(str.atEnd())
+				QFile fil(pewDir + fileName);
+				fil.open(QIODevice::ReadWrite);
+				QTextStream str(&fil);
+
+				namesName = fileName; namesName.replace(".txt", "_names.txt");
+				groupsName = fileName; groupsName.replace(".txt", "_groups.txt");
+				newName = fileName; newName.replace(".txt", "_new.txt");
+				QFile namesFil(pewDir + namesName); namesFil.open(QIODevice::WriteOnly);
+				QFile groupsFil(pewDir + groupsName); groupsFil.open(QIODevice::WriteOnly);
+				QFile newFil(pewDir + newName); newFil.open(QIODevice::WriteOnly);
+				QTextStream namesStr(&namesFil);
+				QTextStream groupsStr(&groupsFil);
+				QTextStream newStr(&newFil);
+
+				while(1)
 				{
-					break;
+					str >> name >> group;
+					if(str.atEnd())
+					{
+						break;
+					}
+					namesStr << name << "\r\n";
+					groupsStr << group << "\r\n";
+
+					str.skipWhiteSpace();
+					rest = str.readLine();
+					newStr << rest << "\r\n";
 				}
-				namesStr << name << "\r\n";
-				groupsStr << group << "\r\n";
 
-				str.skipWhiteSpace();
-				rest = str.readLine();
-				newStr << rest << "\r\n";
+				fil.close();
+				namesFil.close();
+				groupsFil.close();
+				newFil.close();
 			}
-
-			fil.close();
-			namesFil.close();
-			groupsFil.close();
-			newFil.close();
-//			exit(0);
 		}
 	}
 
 	/// classify
 	if(1)
 	{
-		Net * ann = new Net();
-		for(QString fileName : QDir(workDir).entryList({"*_new*"}))
-		{
-			fileName.remove(".txt");
-			std::cout << fileName << std::endl;
-			ann->loadDataXenia(def::dataFolder + "/Xenia_tables", fileName);
-//			ann->loadDataUCI("IRIS");
-			ann->setClassifier(ClassifierType::ANN);
-//			ann->setKnnNumSlot(1);
-			ann->setMode("N");
-			ann->autoClassification();
-//			exit(0);
 
-		}
+		std::ofstream res;
+		res.open((workDir + "res.txt").toStdString());
+
+//		for(QString subdir : {"FD", "FFT", "SD_carr", "ampl_freq"})
+//		{
+			QString pewDir = workDir;
+			pewDir.resize(pewDir.size() - 1);
+			for(QString fileName : QDir(pewDir).entryList({"*_new*"}))
+			{
+				Net * ann = new Net();
+				fileName.remove(".txt");
+				std::cout << fileName << std::endl;
+				ann->loadDataXenia(pewDir, fileName);
+				ann->setClassifier(ClassifierType::ANN);
+				ann->setKnnNumSlot(3);
+				ann->setMode("N");
+				res << fileName << "\t"
+					<< ann->autoClassification().first << "\r\n";
+				res.flush();
+				ann->close();
+			}
+			res.close();
+			exit(0);
+//		}
 	}
 
 	exit(0);

@@ -492,9 +492,13 @@ void ANN::drawWeight(QString wtsPath,
 double ANN::adjustLearnRate()
 {
 	std::vector<uint> mixNum = smLib::mixed<std::vector<uint>> (myClassData->getData().rows());
-    /// const
-    const int folds = 3;
-    mixNum.resize(mixNum.size() * (folds - 1) / folds);
+
+	/// fold
+	if(0)
+	{
+		const int folds = 3;
+		mixNum.resize(mixNum.size() * (folds - 1) / folds);
+	}
 
 
 	double res = learnRate;
@@ -538,7 +542,7 @@ double ANN::adjustLearnRate()
         }
         ++counter;
 
-    } while (counter < 10);
+	} while (counter < 20);
 
 	std::cout << "ANN::adjustLearnRate: lrate = " << res << "\t"
 			  << "epoch = " << epoch << std::endl;

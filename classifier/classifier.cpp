@@ -49,6 +49,7 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 }
 
 /// TEMPORARY, will be virtual=0
+/// SHOULD OVERRIDE FOR ALL CLASSIFIERS
 void Classifier::classifyDatum1(const uint & vecNum)
 {
 	/// ALWAYS TRUE WITH ZERO ERROR
@@ -125,7 +126,8 @@ void Classifier::test(const std::vector<uint> & indices)
 {
     for(int ind : indices)
 	{
-		classifyDatum1(ind); /// confusionMatrix inside
+		/// should affect confusionMatrix and outputLayer
+		classifyDatum1(ind);
     }
 }
 
@@ -185,7 +187,7 @@ Classifier::avType Classifier::averageClassification()
         }
     }
 
-    // count averages, kappas
+	/// count averages, kappas
     double corrSum = 0.;
     double wholeNum = 0.;
 
@@ -196,8 +198,8 @@ Classifier::avType Classifier::averageClassification()
     }
     averageAccuracy = corrSum * 100. / wholeNum;
 
-    // kappa
-    double pE = 0.; // for Cohen's kappa
+	/// kappa
+	double pE = 0.;
     const double S = confusionMatrix.sum();
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {

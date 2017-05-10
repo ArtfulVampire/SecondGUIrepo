@@ -37,7 +37,7 @@ std::valarray<double> oneHot(uint siz, uint hotIndex);
 class Classifier
 {
 public:
-	typedef std::pair<double, double> avType;
+	typedef std::pair<double, double> avType; /// average accuracy, kappa
 
 protected:
     ClassifierType myType;
@@ -89,7 +89,7 @@ public:
 	/// should be protected (i.e. the same for all classifiers)
 	virtual std::pair<uint, double> classifyDatum(const uint & vecNum); // class and error
 
-	/// should be = 0 and defined for all classes
+	/// should be = 0 and overriden for all classes
 	virtual void classifyDatum1(const uint & vecNum);
 
 	void test(const std::vector<uint> & indices);
@@ -282,7 +282,8 @@ public:
 
 protected:
 	void learn(std::vector<uint> & indices) override;
-    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	void classifyDatum1(const uint & vecNum) override;
 //	void adjustToNewData() override;
 };
 
