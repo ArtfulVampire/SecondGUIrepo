@@ -1092,7 +1092,7 @@ edfFile & edfFile::divideChannels(std::vector<uint> chanNums, double denom)
 	return *this;
 }
 
-uint edfFile::findChannel(const QString & str)
+uint edfFile::findChannel(const QString & str) const
 {
 	for(int i = 0; i < this->ns; ++i)
 	{
@@ -1228,10 +1228,9 @@ void edfFile::upsample(double newFreq,
 
 int edfFile::findJump(int channel,
 					  int startPoint,
-					  double numSigmas)
+					  double numSigmas) const
 {
-	const std::valarray<double> & chan = edfData[channel];
-	return myLib::findJump(chan, startPoint, numSigmas);
+	return myLib::findJump(edfData[channel], startPoint, numSigmas);
 }
 
 edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
@@ -1613,15 +1612,6 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
 
 }
 
-void edfFile::setLabels(char ** inLabels)
-{
-    for(int i = 0; i < this->ns; ++i)
-    {
-        this->channels[i].label = inLabels[i];
-        this->labels[i] = inLabels[i];
-    }
-}
-
 void edfFile::setLabels(const std::vector<QString> & inLabels)
 {
     if(this->ns != inLabels.size())
@@ -1651,7 +1641,7 @@ void edfFile::setChannels(const std::vector<edfChannel> & inChannels)
 
 void edfFile::writeOtherData(const matrix & newData,
                              const QString & outPath,
-                             std::vector<int> chanList)
+							 std::vector<int> chanList) const
 {
     edfFile temp(*this, true); // copy-construct everything but data
 

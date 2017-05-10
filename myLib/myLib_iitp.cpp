@@ -163,7 +163,7 @@ std::complex<double> iitpData::coherencyMine(int chan1, int chan2, double freq)
 	return coherenciesMine[chan1][chan2][index];
 }
 
-const iitpData::cohsType & iitpData::getCoherencies()
+const iitpData::cohsType & iitpData::getCoherencies() const
 {
 	return coherenciesUsual;
 //	return coherenciesMine;

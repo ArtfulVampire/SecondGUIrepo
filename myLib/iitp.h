@@ -322,25 +322,25 @@ const std::vector<QString> eegNames{
 	"O2"};
 
 const std::valarray<int> interestEeg{
-//	0,	// Fp1
-//	1,	// Fp2,
-//	2,	// F7
+	0,	// Fp1
+	1,	// Fp2,
+	2,	// F7
 	3,	// F3
 	4,	// Fz
-//	5,	// F4 - usually bad
-//	6,	// F8
+	5,	// F4 - usually bad
+	6,	// F8
 	7,	// T3
 	8,	// C3
 	9,	// Cz
 	10,	// C4
 	11,	// T4
-//	12,	// T5
+	12,	// T5
 	13,	// P3
 	14,	// Pz
-//	15,	// P4 - usually bad
-//	16,	// T5
-//	17,	// O1
-//	18	// O2
+	15,	// P4 - usually bad
+	16,	// T5
+	17,	// O1
+	18	// O2
 };
 
 /// for spectra inspection
@@ -355,13 +355,14 @@ const std::valarray<double> fileNums = smLib::unite<std::valarray<double>>(
 {smLib::range<std::valarray<double>>(0, 12), smLib::range<std::valarray<double>>(13, 29+1)});
 
 //const std::valarray<double> fileNums = smLib::range(0, 5);
-//const std::valarray<double> fileNums{12};
+//const std::valarray<double> fileNums{24};
 //const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
 
 
 class iitpData : public edfFile
 {
 public:
+	/// [chan1][chan2][freq]
 	typedef std::vector<std::vector<std::valarray<std::complex<double>>>> cohsType;
 private:
 	std::vector<matrix> piecesData;
@@ -381,7 +382,7 @@ public:
 	std::complex<double> coherencyMine(int chan1, int chan2, double freq);
 	std::complex<double> coherency(int chan1, int chan2, double freq);
 
-	const cohsType & getCoherencies();
+	const cohsType & getCoherencies() const;
 
 	void crossSpectrum(int chan1, int chan2);
 
@@ -390,10 +391,10 @@ public:
 					   int markerMin,
 					   int markerMax);
 
-	QString getGuy() {return iitp::getGuyName(this->ExpName);}
-	QString getPost() {return iitp::getPostfix(this->ExpName);}
-	QString getInit() {return iitp::getInitName(this->ExpName);}
-	int getNum() {return iitp::getFileNum(this->ExpName);}
+	QString getGuy() const {return iitp::getGuyName(this->ExpName);}
+	QString getPost() const {return iitp::getPostfix(this->ExpName);}
+	QString getInit() const {return iitp::getInitName(this->ExpName);}
+	int getNum() const {return iitp::getFileNum(this->ExpName);}
 
 
 	void cutPieces(double length);
@@ -404,14 +405,14 @@ public:
 	void countPiecesFFT();
 	void resizePieces(int in);
 	void getPiecesParams();
-	const std::vector<matrix> & getPieces() {return piecesData;}
+	const std::vector<matrix> & getPieces() const {return piecesData;}
 
 	void clearCrossSpectra();
 	int setFftLen(); /// determine by piecesData lengths
 	void setFftLen(int in);
 
-	int getFftLen() { return fftLen; }
-	double getSpStep() { return spStep; }
+	int getFftLen() const { return fftLen; }
+	double getSpStep() const { return spStep; }
 
 };
 

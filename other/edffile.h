@@ -140,7 +140,7 @@ public:
 	edfFile & subtractMeans(const QString & outPath = QString());
 	edfFile & divideChannel(uint chanNum, double denom);
 	edfFile & divideChannels(std::vector<uint> chanNums = {}, double denom = 2.);
-	uint findChannel(const QString & str);
+	uint findChannel(const QString & str) const;
     void countFft();
 	edfFile & refilter(double lowFreq,
 					   double highFreq,
@@ -154,21 +154,20 @@ public:
 	void removeChannels(const std::vector<int> & chanList);
 
     void setLabels(const std::vector<QString> & inLabels);
-    void setChannels(const std::vector<edfChannel> & inChannels);
-    void setLabels(char ** inLabels);
+	void setChannels(const std::vector<edfChannel> & inChannels);
     void cleanFromEyes(QString eyesPath = QString(),
                        bool removeEogChannels = false,
                        std::vector<int> eegNums = {},
                        std::vector<int> eogNums = {});
     void writeOtherData(const matrix & newData,
                         const QString & outPath,
-                        std::vector<int> chanList = {});
+						std::vector<int> chanList = {}) const;
     void fitData(int initSize);
     void cutZerosAtEnd();
 	void adjustMarkerChannel();
 
 
-	/// for iitp
+	/// for iitp - remake into edfFile &
 	void downsample(double newFreq,
 					QString outPath = QString(),
 					std::vector<int> chanList = std::vector<int>{}) const;
@@ -179,7 +178,7 @@ public:
 
 	int findJump(int channel,
 				 int startPoint,
-				 double numSigmas = 5);
+				 double numSigmas = 5) const;
 
 	/// modifying
 	edfFile & iitpSyncManual(int offsetEeg,

@@ -13,32 +13,31 @@ void MainWindow::customFunc()
 	ui->realsButton->setChecked(true);
 //	return;
 
-
-
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 //		"Alex",
-						"Boris",
-						"Ira",
-						"Levik",
-						"Oleg",
-						"Egor",
-						"Victor",
-						"Dima",
-//						"Isakov",
-						"Galya"
-					   };
+//		"Boris",
+		"Ira",
+		"Levik",
+		"Oleg",
+		"Egor",
+		"Victor",
+		"Dima",
+		"Isakov",
+		"Galya"
+	};
 
 	for(QString guy : guyList)
-//	QString guy = "Galya";
+//	QString guy = "Isakov";
 	{
 //		autos::IITPtestCoh2(guy); exit(0);
 //		autos::IITPremoveZchans(guy, def::iitpSyncFolder); continue;
 //		autos::IITPpre2(guy); exit(0);
 
 //		autos::IITPstaging(guy); continue;
-		autos::IITPprocessStaged(guy); continue;
+		autos::IITPprocessStaged(guy);
+		continue;
 //		exit(0);
 
 		if(guy == "Alex")
@@ -92,6 +91,7 @@ void MainWindow::customFunc()
 									  smLib::range<Typ>(24, 29 + 1)});
 //		nums.erase(std::find(std::begin(nums), std::end(nums), 8));
 		autos::IITPdrawSameScale(guy, nums);
+		exit(0);
 	}
 
 
@@ -104,7 +104,7 @@ void MainWindow::customFunc()
 //	return;
 #endif
 
-#if 01
+#if 0
 	/// Xenia FD tables classification
 	const QString workDir = def::dataFolder + "/Xenia_tables/";
 
