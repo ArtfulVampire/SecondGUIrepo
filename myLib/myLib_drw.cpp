@@ -960,12 +960,14 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 
 	// some approximation for square - Fp3, Fpz, Fp, O3, Oz, O4
 	auto & a = helpMatrix;
-	a[1][1] = (a[1][2] + a[2][1] + a[2][2]) / 3.;
-	a[1][3] = (a[1][2] + a[1][4] + a[2][2] + a[2][3] + a[2][4]) / 5.;
-	a[1][5] = (a[1][4] + a[2][4] + a[2][5]) / 3.;;
-	a[5][1] = (a[4][1] + a[4][2] + a[5][2]) / 3.;
-	a[5][3] = (a[5][2] + a[4][2] + a[4][3] + a[4][4] + a[4][5]) / 5.;
-	a[5][5] = (a[5][4] + a[4][4] + a[4][5]) / 3.;
+	const double c1 = 1 / 2.;
+	const double c2 = 1 / 1.2;
+	a[1][1] = (a[1][2] + a[2][1] + a[2][2]) / 3. * c1;
+	a[1][3] = (a[1][2] + a[1][4] + a[2][2] + a[2][3] + a[2][4]) / 5. * c2;
+	a[1][5] = (a[1][4] + a[2][4] + a[2][5]) / 3. * c1;
+	a[5][1] = (a[4][1] + a[4][2] + a[5][2]) / 3. * c1;
+	a[5][3] = (a[5][2] + a[4][2] + a[4][3] + a[4][4] + a[4][5]) / 5. * c2;
+	a[5][5] = (a[5][4] + a[4][4] + a[4][5]) / 3. * c1;
 
 	const double minMagn = helpMatrix.minVal();
 	const double maxMagn = helpMatrix.maxVal();

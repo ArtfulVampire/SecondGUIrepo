@@ -101,6 +101,56 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 
 }
 
+void Xenia_repairTable(const QString & initPath,
+					   const QString & repairedPath,
+					   const QString & groupsPath,
+					   const QString & namesPath)
+{
+	QFile fil(initPath);
+	fil.open(QIODevice::ReadWrite);
+	auto arr = fil.readAll();
+	fil.reset();
+	arr.replace(",", ".");
+	arr.replace(" ", "_");
+	fil.write(arr);
+
+	fil.reset();
+	QTextStream str(&fil);
+
+	QFile newFil(repairedPath); newFil.open(QIODevice::WriteOnly);
+	QTextStream newStr(&newFil);
+
+	QFile namesFil(namesPath); namesFil.open(QIODevice::WriteOnly);
+	QTextStream namesStr(&namesFil);
+
+	QFile groupsFil(groupsPath); groupsFil.open(QIODevice::WriteOnly);
+	QTextStream groupsStr(&groupsFil);
+
+	QString name;
+	int group;
+	QString rest;
+
+	while(1)
+	{
+		str >> name >> group;
+		if(str.atEnd())
+		{
+			break;
+		}
+		namesStr << name << "\r\n";
+		groupsStr << group << "\r\n";
+
+		str.skipWhiteSpace();
+		rest = str.readLine();
+		newStr << rest << "\r\n";
+	}
+
+	namesFil.close();
+	groupsFil.close();
+	newFil.close();
+	fil.close();
+}
+
 void Xenia_TBI()
 {
 	/// TBI Xenia cut, process, tables
@@ -110,14 +160,11 @@ void Xenia_TBI()
 //	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
 //						"_cry", "_fire", "_flower", "_wc"};
 
-	QString tbi_path = def::XeniaFolder + "/3May";
-//	QString tbi_path = def::XeniaFolder + "/15Nov";
-//	QString tbi_path = "/media/Files/Data/Dasha";
-//	QString tbi_path = "/media/michael/My Passport/TBI_all_results_20Nov";
+	QString tbi_path = def::XeniaFolder + "/11May";
 
 //	QStringList subdirs{"healthy", "moderate_TBI", "severe_TBI"};
 //	QStringList subdirs{"Norm_new", "TBI_new"};
-	QStringList subdirs{"Popova"};
+	QStringList subdirs{"1"};
 
 
 
@@ -128,17 +175,17 @@ void Xenia_TBI()
 	{
 		QString workPath = tbi_path + "/" + subdir;
 
-//		repair::deleteSpacesFolders(workPath);
-//		repair::toLatinDir(workPath, {});
-//		repair::toLowerDir(workPath, {});
+		repair::deleteSpacesFolders(workPath);
+		repair::toLatinDir(workPath, {});
+		repair::toLowerDir(workPath, {});
 
 		/// list of guys
 		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 		for(QString guy : guys)
 		{
 
-//			repair::deleteSpacesFolders(workPath + "/" + guy);
-//			repair::toLatinDir(workPath + "/" + guy, {});
+			repair::deleteSpacesFolders(workPath + "/" + guy);
+			repair::toLatinDir(workPath + "/" + guy, {});
 			repair::toLowerDir(workPath + "/" + guy, {});
 
 //			continue;
@@ -1341,6 +1388,18 @@ void IITPprocessStaged(const QString & guyName,
 		maxB = std::max(maxB, in.betaCoh.max());
 		maxG = std::max(maxG, in.gammaCoh.max());
 	}
+	/// round to 1 decimal?
+	if(0)
+	{
+		maxA = std::ceil(maxA * 10) / 10.;
+		maxB = std::ceil(maxB * 10) / 10.;
+		maxG = std::ceil(maxG * 10) / 10.;
+	}
+
+	std::cout << "max alpha = " << maxA << "\n"
+			  << "max beta = "  << maxB << "\n"
+			  << "max gamma = " << maxG << "\n"
+			  << std::endl;
 
 	/// draw
 	for(forMap in : forMapsVector)

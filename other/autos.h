@@ -54,10 +54,14 @@ void GalyaFull(const QString & inDirPath,
 void XeniaArrangeToLine(const QString & dirPath,
 						const QStringList & fileNames,
 						const QString & outFilePath);
+void Xenia_TBI();
+void Xenia_repairTable(const QString & initPath,
+					   const QString & repairedPath,
+					   const QString & groupsPath = QString(),
+					   const QString & namesPath = QString());
 
 
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
-void Xenia_TBI();
 
 
 
