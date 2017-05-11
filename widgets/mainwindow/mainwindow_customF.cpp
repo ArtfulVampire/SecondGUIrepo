@@ -11,6 +11,8 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
+	autos::makeRightNumbersCF("/media/Files/Pictures/NewCF", 1);
+	exit(0);
 //	return;
 
 #if 0

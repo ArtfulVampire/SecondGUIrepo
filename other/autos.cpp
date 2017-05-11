@@ -1644,19 +1644,31 @@ int numMarkers(const QString & edfPath, const std::vector<int> & markers)
 
 void makeRightNumbersCF(const QString & dirPath, int startNum)
 {
-	std::ofstream outStr;
-	outStr.open((dirPath + "/ans.txt").toStdString());
-
-	for(QString str : QDir(dirPath).entryList({"complex*.jpg"}, QDir::Files, QDir::Name))
+	for(QString oldName : QDir(dirPath).entryList({"*jpg"}, QDir::Files, QDir::Name))
 	{
-		QStringList parts = str.split(QRegExp(R"([_\.])"), QString::SkipEmptyParts);
-		QString newName = "cf_" + myLib::rightNumber(startNum++, 3) + ".jpg";
-		outStr << newName << '\t' << parts[3] << "\r\n";
+		QString newName = oldName;
+		QStringList parts = newName.split(QRegExp(R"([_\.])"), QString::SkipEmptyParts);
+		newName.clear();
+		for(QString & part : parts)
+		{
+			bool ok = false;
+			int a = part.toInt(&ok);
+			if(ok)
+			{
+				part = myLib::rightNumber(startNum++, 3);
+			}
+			newName += part + "_";
+		}
+		newName.remove(newName.length() - 1, 1); // remove last '_'
 
-		QFile::copy(dirPath + "/" + str,
-					dirPath + "/" + newName);
+//		std::cout << dirPath + "/" + oldName << "\t"
+//				  << dirPath + "/" + newName << std::endl;
+
+		newName.replace("_jpg", ".jpg");
+
+		QFile::rename(dirPath + "/" + oldName,
+					  dirPath + "/" + newName);
 	}
-	outStr.close();
 }
 
 void makeRightNumbers(const QString & dirPath,
