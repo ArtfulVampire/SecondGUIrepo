@@ -138,9 +138,7 @@ public:
 	edfFile vertcatFile(QString addEdfPath, QString outPath = QString()) const;
 	edfFile & concatFile(QString addEdfPath, QString outPath = QString());
 	edfFile & subtractMeans(const QString & outPath = QString());
-	edfFile & divideChannel(uint chanNum, double denom);
-	edfFile & divideChannels(std::vector<uint> chanNums = {}, double denom = 2.);
-	uint findChannel(const QString & str) const;
+
     void countFft();
 	edfFile & refilter(double lowFreq,
 					   double highFreq,
@@ -149,9 +147,15 @@ public:
 					   std::vector<uint> chanList = {});
     void saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag = false) const;
     void drawSubsection(int startBin, int finishBin, QString outPath) const;
+
+	/// channels modify
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
 	edfFile reduceChannels(const QString & chanStr) const;
 	void removeChannels(const std::vector<int> & chanList);
+	edfFile & divideChannel(uint chanNum, double denom);
+	edfFile & divideChannels(std::vector<uint> chanNums = {}, double denom = 2.);
+	edfFile & zeroChannels(const std::vector<uint> & chanNums = {});
+	uint findChannel(const QString & str) const;
 
     void setLabels(const std::vector<QString> & inLabels);
 	void setChannels(const std::vector<edfChannel> & inChannels);
@@ -290,16 +294,13 @@ public:
 	void setFilterIITPFlag(bool newFlag) {filterIITPflag = newFlag;}
 
     // operations with data
-
-
 	const matrix & getData() const {return edfData;}
-	const std::valarray<double> & getMarkArr() const {return edfData[markerChannel];}
-	void setData(int chanNum, int timeBin, double val) {edfData[chanNum][timeBin] = val;}
+	const std::valarray<double> & getMarkArr() const { return edfData[markerChannel]; }
+	void setData(int chanNum, int timeBin, double val) { edfData[chanNum][timeBin] = val; }
+	void setData(int chanNum, const std::valarray<double> & newChan) { edfData[chanNum] = newChan; }
+	void setData(const matrix & newData) { edfData = newData; }
 
-    const std::valarray<double> & operator [](int i) const
-    {
-		return edfData[i];
-    }
+	const std::valarray<double> & operator [](int i) const { return edfData[i]; }
 
 
 public:
@@ -316,7 +317,6 @@ public:
 	edfFile repairChannelsOrder(const std::vector<QString> & standard) const;
 	edfFile repairHoles() const;
 	edfFile repairPhysEqual() const;
-
 };
 
 

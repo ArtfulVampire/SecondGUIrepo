@@ -955,6 +955,7 @@ void Cut::split(int start, int end, bool addUndo)
 	ui->paintStartLabel->setText("start (max " + nm(floor(data3.cols() / currFreq)) + ")");
 
 	resetLimits();
+	ui->paintStartDoubleSpinBox->setValue(start / edfFil.getFreq() - 1.5);
 	paint();
 }
 

@@ -629,7 +629,8 @@ void Spectre::writeSpectra(const double leftFreq,
 
 	std::ofstream outStream;
     QString helpString;
-    const QString outDirPath = ui->lineEdit_2->text();
+	const QString outDirPath = ui->lineEdit_2->text();
+//	const QString outDirPath = "/media/Files/Data/FeedbackTest/GA/SpectraSmooth";
     if(!QDir(outDirPath).exists())
     {
 		std::cout << "writeSpectra: outDir doesn't exist" << std::endl;
@@ -650,9 +651,10 @@ void Spectre::writeSpectra(const double leftFreq,
 	for(uint i = 0; i < fileNames.size(); ++i)
     {
 		helpString = outDirPath + "/" + fileNames[i];
+//		std::cout << helpString << std::endl;
         helpString.remove("." + def::plainDataExtension);
         helpString += "." + def::spectraDataExtension;
-//        std::cout << helpString << std::endl;
+//		std::cout << helpString << std::endl;
 
         outStream.open(helpString.toStdString());
         if(!outStream.good())
@@ -787,7 +789,7 @@ void Spectre::countSpectra()
 		datum.resize(def::ns, def::fftLength / 2, 0.);
 	}
 
-	fileNames.resize(numFiles);
+	fileNames.resize(lst.length());
 	std::copy(std::begin(lst), std::end(lst), std::begin(fileNames));
 
 	int cnt = 0;
@@ -799,6 +801,7 @@ void Spectre::countSpectra()
 		   //           fileName.contains("_300") ||
 		   fileName.contains("_sht")) continue;
 
+//		std::cout << fileName << std::endl;
 		//read data file
 		helpString = inDirPath + "/" + fileName;
 		myLib::readPlainData(helpString,  dataIn);
@@ -811,6 +814,7 @@ void Spectre::countSpectra()
 			}
 			else
 			{
+//				std::cout << fileName << std::endl;
 				exIndices.push_back(progressCounter);
 			}
 		}

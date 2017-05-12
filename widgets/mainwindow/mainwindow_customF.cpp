@@ -11,11 +11,24 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
-	autos::makeRightNumbersCF("/media/Files/Pictures/NewCF", 1);
-	exit(0);
-//	return;
+//	autos::makeRightNumbersCF("/media/Files/Pictures/NewCF", 1);
+//	exit(0);
 
-#if 0
+//	edfFile f;
+//	f.readEdfFile("/media/Files/Data/FeedbackTest/GA/GA_1_f.edf");
+//	f.zeroChannels({ f.findChannel("O1"), f.findChannel("O2") }).writeEdfFile("/media/Files/Data/FeedbackTest/GA/GA_1_f_z.edf");
+//	exit(0);
+
+//	setEdfFile("/media/Files/Data/FeedbackTest/GA/GA_1_final.edf");
+//	readData();
+//	countSpectraSimple(4096, 15);
+//	exit(0);
+
+
+
+	return;
+
+#if 01
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -35,7 +48,7 @@ void MainWindow::customFunc()
 	{
 //		autos::IITPtestCoh2(guy); exit(0);
 //		autos::IITPremoveZchans(guy, def::iitpSyncFolder); continue;
-//		autos::IITPpre2(guy); exit(0);
+		autos::IITPpre(guy); exit(0);
 
 //		autos::IITPstaging(guy); continue;
 		autos::IITPprocessStaged(guy);

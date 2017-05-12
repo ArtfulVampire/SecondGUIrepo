@@ -107,6 +107,9 @@ void avTime(const QString & realsDir = def::dir->absolutePath() + "/Reals");
 void timesNew(const QString & edfPath, int numSession);
 void avTimesNew(const QString & edfPath, int numSession);
 
+
+void successivePrecleanWinds(const QString & windsPath);
+
 void clustering();
 }
 

@@ -205,9 +205,9 @@ void Net::successivePreclean(const QString & spectraPath)
     std::vector<QStringList> leest2;
 	myLib::makeFileLists(spectraPath, leest2);
 
-    for(int j = 0; j < def::numOfClasses(); ++j)
+	for(int j = 0; j < leest2.size(); ++j)
     {
-        auto it = leest2[j].begin();
+		auto it = std::begin(leest2[j]);
         for(int i = 0;
 			i < leest2[j].size() - suc::learnSetStay * 1.3; /// magic const generality
             ++i, ++it)

@@ -242,11 +242,22 @@
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="windsButton">
-         <property name="text">
-          <string>winds</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QRadioButton" name="windsButton">
+           <property name="text">
+            <string>winds</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="succPrecleanCheckBox">
+           <property name="text">
+            <string>for succ</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QRadioButton" name="justSliceButton">

@@ -87,7 +87,7 @@ void makeFullFileList(const QString & path,
 		lst = localDir.entryList(nameFilters,
 								 QDir::Files,
 								 QDir::Name); /// Name ~ order
-//		std::cout << lst.size() << std::endl;
+		std::cout << lst.size() << std::endl;
 	}
 }
 

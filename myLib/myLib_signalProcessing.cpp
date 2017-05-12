@@ -1924,8 +1924,9 @@ matrix countSpectre(const matrix & inData,
 		if(h == data2.rows()) eyes += 1;
 	}
 
-	if(fftLen - eyes < def::freq * 3.
-	   || eyes > 0.3 * fftLen
+	if(
+	   ( (fftLen - eyes) < def::freq * 3. )
+//	   || (eyes > 0.3 * fftLen) /// too much eyes
 	   )
 	{
 		return {};

@@ -28,9 +28,9 @@ void MainWindow::sliceWinds()
 	int typ = -1;
 
 	QString marker;
-	if(marks[sta - 1] == 241.) {typ = 0; marker = "241";}
-	else if(marks[sta - 1] == 247.) {typ = 1; marker = "247";}
-	else if(marks[sta - 1] == 254.) {typ = 2; marker = "254";}
+	if(marks[sta - 1] == 241.) { typ = 0; marker = "241"; }
+	else if(marks[sta - 1] == 247.) { typ = 1; marker = "247"; }
+	else if(marks[sta - 1] == 254.) { typ = 2; marker = "254"; }
 
 	int num = 0;
 	for(uint i = sta; i < fil.getDataLen() - wndLength; i += timeShift)
@@ -57,6 +57,12 @@ void MainWindow::sliceWinds()
 
 			fil.saveSubsection(i, i + wndLength, helpString, true);
 		}
+		ui->progressBar->setValue((i - sta) * 100. / (fil.getDataLen() - wndLength - sta);
+	}
+
+	if(ui->succPrecleanCheckBox->isChecked())
+	{
+		autos::successivePrecleanWinds(def::windsFromRealsDir());
 	}
 }
 

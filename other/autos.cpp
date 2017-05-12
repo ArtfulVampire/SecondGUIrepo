@@ -2619,18 +2619,48 @@ void avTime(const QString & realsDir)
 
 		std::ofstream res;
 		res.open(helpString.toStdString(), std::ios_base::app);
-		res << "Reals type\t" << tmp << ":\r\n";
-		res << "shortReals\t" << shortReals << "\r\n";
-		res << "longReals\t" << longReals << "\r\n";
-		res << "All together\t" << means[0] << "\r\n";
-		res << "w/o shorts\t" << means[1] << "\r\n";
-		res << "w/o longs\t" << means[2] << "\r\n";
-		res << "w/o both\t" << means[3] << "\r\n\r\n";
+		res << "Reals type\t"	<< tmp << ":\r\n";
+		res << "shortReals\t"	<< shortReals << "\r\n";
+		res << "longReals\t"	<< longReals << "\r\n";
+		res << "All together\t"	<< means[0] << "\r\n";
+		res << "w/o shorts\t"	<< means[1] << "\r\n";
+		res << "w/o longs\t"	<< means[2] << "\r\n";
+		res << "w/o both\t"		<< means[3] << "\r\n\r\n";
 		res.close();
 	}
 	std::cout << "avTime: finished" << std::endl;
 }
 
+void successivePrecleanWinds(const QString & windsPath)
+{
+	QStringList leest;
+	myLib::makeFullFileList(windsPath, leest, { def::plainDataExtension });
+
+	std::cout << "clean first 2 winds" << std::endl;
+	for(const QString & str : leest)
+	{
+		if(str.contains(QRegExp("\\.0[0-1]$"))) /// change to 0-x for x first winds to delete
+		{
+			QFile::remove(windsPath + "/" + str);
+		}
+	}
+
+	std::cout << "clean by learnSetStay * 2" << std::endl;
+	std::vector<QStringList> leest2;
+	myLib::makeFileLists(windsPath, leest2);
+
+	for(int j = 0; j < leest2.size(); ++j)
+	{
+		auto it = std::begin(leest2[j]);
+
+		for(int i = 0;
+			i < leest2[j].size() - suc::learnSetStay * 2.5; /// magic const generality
+			++i, ++it)
+		{
+			QFile::remove(windsPath + "/" + (*it));
+		}
+	}
+}
 
 void clustering()
 {

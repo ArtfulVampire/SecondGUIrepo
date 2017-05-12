@@ -1072,6 +1072,15 @@ edfFile & edfFile::divideChannel(uint chanNum, double denom)
 	return *this;
 }
 
+edfFile & edfFile::zeroChannels(const std::vector<uint> & chanNums)
+{
+	for(uint chan : chanNums)
+	{
+		this->edfData[chan] = 0;
+	}
+	return *this;
+}
+
 edfFile & edfFile::divideChannels(std::vector<uint> chanNums, double denom)
 {
 	if(chanNums.empty())
