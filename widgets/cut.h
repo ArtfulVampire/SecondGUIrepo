@@ -40,6 +40,7 @@ private:
 	void zero(int start, int end);
 	void split(int start, int end, bool addUndo = true);
 	void paste(int start, const matrix & inData, bool addUndo = true);
+	void saveAs(const QString & addToName);
 	void setMarker(int inVal);
 	void drawSamples();
 	std::vector<std::pair<int, QColor>> makeColouredChans();
@@ -49,6 +50,7 @@ private:
 
 	void iitpLog(const QString & typ, int num = 2, const QString & add = QString());
 	void showDerivatives();
+
 
 
 public slots:
@@ -81,6 +83,8 @@ public slots:
     void backwardStepSlot();
     void forwardFrameSlot();
     void backwardFrameSlot();
+	void findNextMark();
+	void cutPausesSlot();
 
 	void iitpAutoCorrSlot();
 	void iitpAutoJumpSlot();
@@ -113,7 +117,7 @@ private:
 	double currFreq{250};
 
     QStringList lst;
-    QString currentFile;
+	QString currentFile; /// deprecate
 	int currentNumber{-1}; /// in lst
 	int addNum = 0; // for cut() winds
 

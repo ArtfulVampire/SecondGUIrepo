@@ -41,17 +41,12 @@ public slots:
     void showCut();
 
 	// parameters processing
-    void setExpName();
-    void setFileMarkers();
-    void setNs();
-    void changeNsLine(int);
-    void setNsSlot(int);
-    void matiCheckBoxSlot(int a);
+	void setFileMarkers();
 
 	// in-window calculations, substantional actions
 	// files
     void sliceAll();
-	void sliceWindFromReal();
+	void sliceWindFromReal(); /// deprecated
 
 	void sliceWinds();
     void reduceChannelsSlot();

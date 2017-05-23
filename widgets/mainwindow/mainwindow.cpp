@@ -42,10 +42,10 @@ MainWindow::MainWindow() :
     ui->drawCoeffSpinBox->setValue(1.0); //draw coeff
     ui->drawCoeffSpinBox->setSingleStep(0.1); //draw coeff
     ui->sliceCheckBox->setChecked(true);
-    ui->eyesCleanCheckBox->setChecked(false);
+//    ui->eyesCleanCheckBox->setChecked(false);
 //    ui->eyesCleanCheckBox->setChecked(true);   ///for winds
-    ui->reduceChannelsCheckBox->setChecked(true);
-    ui->reduceChannelsCheckBox->setChecked(false);
+//    ui->reduceChannelsCheckBox->setChecked(true);
+//    ui->reduceChannelsCheckBox->setChecked(false);
     ui->progressBar->setValue(0);
     ui->setNsLine->property("S&et");
 
@@ -271,8 +271,17 @@ MainWindow::MainWindow() :
 
 	/// small things, ~constant edf
 	QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
-	QObject::connect(ui->Name, SIGNAL(returnPressed()), this, SLOT(setExpName()));
-	QObject::connect(ui->setNsLine, SIGNAL(returnPressed()), this, SLOT(setNs()));
+
+	QObject::connect(ui->setNsLine, &QLineEdit::returnPressed,
+					 [this]()
+	{
+		QString helpString;
+		def::ns = ui->setNsLine->text().toInt();
+
+		helpString = "ns equals to " + nm(def::ns);
+		ui->textEdit->append(helpString);
+		ui->setNsLine->clear();
+	});
 	QObject::connect(ui->fileMarkersLineEdit, SIGNAL(returnPressed()), this, SLOT(setFileMarkers()));
 	QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
 	QObject::connect(ui->cleanDirsCheckAllButton, SIGNAL(clicked()), this, SLOT(cleanDirsCheckAll()));
@@ -283,15 +292,27 @@ MainWindow::MainWindow() :
 
 	/// slice
 	QObject::connect(ui->cutEDF, SIGNAL(clicked()), this, SLOT(sliceAll()));
-    QObject::connect(ui->windFromRealButton, SIGNAL(clicked()), this, SLOT(sliceWindFromReal()));
+
+	/// deprecated
+//    QObject::connect(ui->windFromRealButton, SIGNAL(clicked()), this, SLOT(sliceWindFromReal()));
 
 	/// process edf
 	QObject::connect(ui->icaPushButton, SIGNAL(clicked()), this, SLOT(ICA()));
+	/// to deprecate
 	QObject::connect(ui->constructEdfButton, SIGNAL(clicked()), this, SLOT(constructEDFSlot()));
 
 	/// edit edf
-	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(highlighted(int)), this, SLOT(changeNsLine(int)));
-	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeNsLine(int)));
+	QObject::connect(ui->reduceChannelsComboBox, &QComboBox::highlighted,
+					 [this](int a)
+	{
+		ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
+	});
+	QObject::connect(ui->reduceChannelsComboBox, &QComboBox::currentIndexChanged,
+					 [this](int a)
+	{
+		ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
+	});
+
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));
 	QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
@@ -313,17 +334,14 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->markerBin1LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
 
 	QObject::connect(ui->markerSaveEdfPushButton, SIGNAL(clicked()), this, SLOT(markerSaveEdf()));
-    QObject::connect(ui->matiCheckBox, SIGNAL(stateChanged(int)), this, SLOT(matiCheckBoxSlot(int)));
+	QObject::connect(ui->matiCheckBox, &QCheckBox::stateChanged,
+					 [this](int a) { this->globalEdf.setMatiFlag(a); });
 
 
     globalEdf.setMatiFlag(ui->matiCheckBox->isChecked());
     customFunc();
 }
 
-void MainWindow::matiCheckBoxSlot(int a)
-{
-    globalEdf.setMatiFlag(a);
-}
 
 MainWindow::~MainWindow()
 {
@@ -514,139 +532,6 @@ void MainWindow::setEdfFile(const QString & filePath)
 
 }
 
-void MainWindow::setExpName()
-{
-    QString helpString;
-    def::ExpName = ui->Name->text();
-    helpString = "Name approved: " + def::ExpName + "\n";
-    ui->textEdit->append(helpString);
-}
-
-void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
-{
-    QTime myTime;
-    myTime.start();
-
-    readData();
-    edfFile & fil = globalEdf;
-
-    if(ui->matiCheckBox->isChecked())
-    {
-        if(ui->eyesCleanCheckBox->isChecked())
-        {
-            fil.cleanFromEyes();
-            def::ns = fil.getNs();
-        }
-        if(ui->reduceChannelsCheckBox->isChecked())
-        {
-            std::vector<int> chanList;
-            makeChanList(chanList);
-			fil = fil.reduceChannels(chanList);
-            def::ns = fil.getNs();
-        }
-        // almost equal time, should use sessionEdges
-        if(ui->sliceCheckBox->isChecked())
-        {
-#if 1
-            sliceMati();
-            sliceMatiPieces(true);
-#else
-            sliceMatiSimple();
-#endif
-        }
-    }
-    else //if !matiCheckBox->isChecked()
-    {
-        if(ui->eyesCleanCheckBox->isChecked()) /////////////////////////////////
-        {
-            fil.cleanFromEyes();
-            def::ns = fil.getNs();
-        }
-        if(ui->reduceChannelsCheckBox->isChecked())
-        {
-            // more general reduce channels
-            std::vector<int> chanList;
-            makeChanList(chanList);
-			fil = fil.reduceChannels(chanList);
-            def::ns = fil.getNs();
-        }
-        if(ui->sliceCheckBox->isChecked())
-        {
-			if(ui->ntRadio->isChecked())
-            {
-				/// was for Boris, now empty
-            }
-            else if(ui->enRadio->isChecked())
-            {
-				if(ui->windsButton->isChecked())
-                {
-					sliceWinds();
-//					sliceOneByOne();
-//					sliceOneByOneNew();
-//					sliceWindFromReal();
-                }
-                else if(ui->justSliceButton->isChecked())
-                {
-                    QString helpString;
-                    const double wndLen = ui->windowLengthSpinBox->value() * def::freq;
-
-                    for(int i = 0;
-						i < std::min(ceil(fil.getData().cols() / wndLen), 60.); /// const generality
-                        ++i)
-                    {
-                        helpString = (def::dir->absolutePath()
-															  + "/winds"
-															  + "/fromreal"
-															  + "/" + def::ExpName
-															  + "-" + myLib::rightNumber(i, 4)
-															  + "_" + nm(254)
-//                                                              + ".edf"
-                                                              );
-
-                        fil.saveSubsection(i * wndLen,
-										   std::min((i + 1) * wndLen,
-                                               double(fil.getData().cols())),
-                                           helpString,
-                                           true
-//                                           false
-                                           );
-
-                    }
-                }
-                else if(ui->realsButton->isChecked())
-                {
-                    if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) //generality
-                    {
-                        sliceBak(1, 60, "241");
-                        sliceBak(61, 120, "247");
-                        sliceBak(121, 180, "241");
-                        sliceBak(181, 240, "247");
-                    }
-                    else
-                    {
-//                        sliceOneByOneNew(); /// by number after 241/247
-                        sliceOneByOne();
-//                        sliceFromTo(241, 231, "241_pre");
-//                        sliceFromTo(247, 231, "247_pre");  //accord with presentation markers
-//                        sliceFromTo(247, 237, "247_pre");
-//                        helpString = def::dir->absolutePath() + "/Reals";
-//                        cleanDir(helpString, "_pre", false);
-                    }
-                }
-            }
-        }
-        ui->progressBar->setValue(0);
-    }
-
-    QString helpString = "data sliced ";
-    ui->textEdit->append(helpString);
-
-    helpString = "ns equals to ";
-    helpString += QString::number(def::ns);
-    ui->textEdit->append(helpString);
-
-	std::cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
-}
 
 void MainWindow::readData()
 {
@@ -1066,36 +951,9 @@ void MainWindow::stop()
     stopFlag = 1;
 }
 
-void MainWindow::changeNsLine(int a)
-{
-    ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
-}
-
 void MainWindow::setFileMarkers()
 {
     def::fileMarkers = ui->fileMarkersLineEdit->text().split(QRegExp(R"([,;])"),
                                                              QString::SkipEmptyParts);
     ui->textEdit->append(R"(fileMarkers renewed)");
-}
-
-void MainWindow::setNs()
-{
-    QString helpString;
-    def::ns = ui->setNsLine->text().toInt();
-
-    helpString = "ns equals to ";
-    helpString += QString::number(def::ns);
-    ui->textEdit->append(helpString);
-    ui->setNsLine->clear();
-}
-
-void MainWindow::setNsSlot(int a)
-{
-    QString helpString;
-    def::ns = a;
-
-    helpString = "ns equals to ";
-    helpString += QString::number(def::ns);
-    ui->textEdit->append(helpString);
-    ui->setNsLine->clear();
 }

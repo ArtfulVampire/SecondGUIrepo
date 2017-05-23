@@ -644,7 +644,7 @@ void IITPpre(const QString & guyName)
 ///  0 - downsample EMG, 1 - upsample EEG
 #ifdef UP_DOWN_S
 #undef UP_DOWN_S
-#define UP_DOWN_S 0
+#define UP_DOWN_S 01
 #endif
 
 
@@ -658,7 +658,7 @@ void IITPpre(const QString & guyName)
 		QString filePath;
 		edfFile fil;
 
-#if 0
+#if 01
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
 		if(QFile::exists(filePath))
@@ -704,7 +704,7 @@ void IITPpre(const QString & guyName)
 
 
 
-#if 0
+#if 01
 		/// divide EEG chans to prevent oversclaing amplitude
 		filePath = ExpNamePre + "_eeg.edf";
 		if(QFile::exists(filePath))
@@ -714,18 +714,6 @@ void IITPpre(const QString & guyName)
 			std::iota(std::begin(chanNums), std::end(chanNums), 0.);
 //			chanNums.pop_back(); /// ECG
 			fil.divideChannels(chanNums, 2.);
-			filePath = ExpNamePre + "_eeg_div.edf";
-			fil.writeEdfFile(filePath);
-		}
-#endif
-
-#if 01
-		/// filter EEG edfs, but not ECG
-		filePath = ExpNamePre + "_eeg_div.edf";
-		if(QFile::exists(filePath))
-		{
-			fil.readEdfFile(filePath);
-
 			filePath = ExpNamePre + "_eeg_f.edf";
 			fil.refilter(45, 55, {}, true);
 			fil.refilter(0.5, 70, filePath);
@@ -777,8 +765,8 @@ void IITPpre(const QString & guyName)
 			filePath = ExpNamePre + "_emg_f.edf";
 			if(QFile::exists(filePath))
 			{
-//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
-				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_up.edf");
+				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
+//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_up.edf");
 			}
 		}
 #else
@@ -2639,7 +2627,7 @@ void successivePrecleanWinds(const QString & windsPath)
 	std::cout << "clean first 2 winds" << std::endl;
 	for(const QString & str : leest)
 	{
-		if(str.contains(QRegExp("\\.0[0-1]$"))) /// change to 0-x for x first winds to delete
+		if(str.contains(QRegExp("\\.0[0-1]\\."))) /// change to 0-x for x first winds to delete
 		{
 			QFile::remove(windsPath + "/" + str);
 		}

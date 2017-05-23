@@ -339,6 +339,7 @@ void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPa
 			  << "\ttime = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
+/// to deprecate
 void MainWindow::constructEDFSlot()
 {
     QTime myTime;

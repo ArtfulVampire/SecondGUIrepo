@@ -89,6 +89,9 @@ Cut::Cut() :
 	ui->firstDoubleSpinBox->setMinimum(-500);
 	ui->secondDoubleSpinBox->setMinimum(-500);
 
+	ui->findMarkSpinBox->setMaximum(255);
+	ui->findMarkSpinBox->setValue(241);
+
 
 	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
 
@@ -123,6 +126,7 @@ Cut::Cut() :
 	QObject::connect(ui->splitFromZeroPushButton, SIGNAL(clicked()), this, SLOT(splitFromZeroSlot()));
 	QObject::connect(ui->zeroTillEndPushButton, SIGNAL(clicked()), this, SLOT(zeroTillEndSlot()));
 	QObject::connect(ui->splitTillEndPushButton, SIGNAL(clicked()), this, SLOT(splitTillEndSlot()));
+	QObject::connect(ui->cutPausesPushButton, SIGNAL(clicked()), this, SLOT(cutPausesSlot()));
 
 	QObject::connect(this, SIGNAL(openFile(QString)), ui->lineEdit, SLOT(setText(QString)));
     QObject::connect(this, SIGNAL(openFile(QString)), this, SLOT(createImage(const QString &)));
@@ -131,6 +135,7 @@ Cut::Cut() :
     QObject::connect(ui->backwardStepButton, SIGNAL(clicked()), this, SLOT(backwardStepSlot()));
     QObject::connect(ui->forwardFrameButton, SIGNAL(clicked()), this, SLOT(forwardFrameSlot()));
 	QObject::connect(ui->backwardFrameButton, SIGNAL(clicked()), this, SLOT(backwardFrameSlot()));
+	QObject::connect(ui->findMarkPushButton, SIGNAL(clicked()), this, SLOT(findNextMark()));
 
 	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
 	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
@@ -631,6 +636,52 @@ void Cut::backwardFrameSlot()
 	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
 }
 
+void Cut::findNextMark()
+{
+	if(myFileType == fileType::edf)
+	{
+		auto it = std::find(std::begin(edfFil.getMarkArr()) + leftDrawLimit + 150,
+							std::end(edfFil.getMarkArr()),
+							ui->findMarkSpinBox->value());
+		if(it == std::end(edfFil.getMarkArr()))
+		{
+			std::cout << "findNextMark: next marker not found" << std::endl;
+			return;
+		}
+		int index = std::distance(std::begin(edfFil.getMarkArr()), it);
+		ui->paintStartDoubleSpinBox->setValue(std::max(0., double(index) / edfFil.getFreq() - 0.5));
+		ui->leftLimitSpinBox->setValue(index);
+		paint();
+	}
+}
+
+void Cut::cutPausesSlot()
+{
+	const auto beg = std::begin(data3[edfFil.getMarkChan()]);
+
+	while(1)
+	{
+		const auto en = std::end(data3[edfFil.getMarkChan()]);
+		auto sta = std::find(beg,
+							 en,
+							 201);
+		auto fin = std::find(sta,
+							 en,
+							 202);
+		if( (sta != en) && (fin != en) )
+		{
+			this->split(std::distance(beg, sta) - 1, std::distance(beg, fin) + 1, false);
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	this->saveAs("_noPaus");
+	std::cout << "CutPausesSlot: edfFile saved" << std::endl;
+}
+
 
 void Cut::resizeWidget(double a)
 {
@@ -956,6 +1007,7 @@ void Cut::split(int start, int end, bool addUndo)
 
 	resetLimits();
 	ui->paintStartDoubleSpinBox->setValue(start / edfFil.getFreq() - 1.5);
+	ui->leftLimitSpinBox->setValue(start);
 	paint();
 }
 
@@ -1023,6 +1075,13 @@ void Cut::subtractMeansSlot()
 	paint();
 }
 
+void Cut::saveAs(const QString & addToName)
+{
+	QString newPath = currentFile;
+	newPath.insert(newPath.lastIndexOf('.'), addToName);
+	edfFil.writeOtherData(data3, newPath);
+}
+
 void Cut::save()
 {
     if(myFileType == fileType::real)
@@ -1036,10 +1095,8 @@ void Cut::save()
     }
     else if(myFileType == fileType::edf)
     {
-        QString newPath = currentFile;
-        newPath.insert(newPath.lastIndexOf('.'), "_new");
-        edfFil.writeOtherData(data3, newPath);
-		std::cout << "Cut::save: edfFile saved - " << newPath << std::endl;
+		this->saveAs("_new");
+		std::cout << "Cut::save: edfFile saved" << std::endl;
     }
 
 }

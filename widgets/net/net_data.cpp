@@ -25,9 +25,12 @@ void Net::loadDataXenia(const QString & filesPath, const QString & type)
 	std::vector<uint> xeniaTypes{};
 	std::valarray<double> xeniaTypesTemp{};
 	myLib::readMatrixFileRaw(filesPath + "/" + type + ".txt", xeniaData);
-	myLib::readFileInLineRaw(filesPath + "/Groups.txt", xeniaTypesTemp);
+	int num = QString(type[ type.indexOf("var") - 1]).toInt();
+	myLib::readFileInLineRaw(filesPath + "/Groups_" + QString::number(num) + ".txt", xeniaTypesTemp);
+	xeniaTypesTemp -= 1;
 	xeniaTypes.resize(xeniaTypesTemp.size());
 	std::copy(std::begin(xeniaTypesTemp), std::end(xeniaTypesTemp), std::begin(xeniaTypes));
+
 	myClassifierData = ClassifierData(xeniaData, xeniaTypes);
 //	std::cout << "loadData ready" << std::endl;
 }

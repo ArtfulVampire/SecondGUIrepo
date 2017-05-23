@@ -327,7 +327,7 @@ const std::valarray<int> interestEeg{
 	2,	// F7
 	3,	// F3
 	4,	// Fz
-	5,	// F4 - usually bad
+//	5,	// F4 - usually bad
 	6,	// F8
 	7,	// T3
 	8,	// C3
@@ -337,7 +337,7 @@ const std::valarray<int> interestEeg{
 	12,	// T5
 	13,	// P3
 	14,	// Pz
-	15,	// P4 - usually bad
+//	15,	// P4 - usually bad
 	16,	// T5
 	17,	// O1
 	18	// O2
@@ -353,9 +353,11 @@ const std::vector<double> interestFrequencies = smLib::range<std::vector<double>
 /// without 12th
 const std::valarray<double> fileNums = smLib::unite<std::valarray<double>>(
 {smLib::range<std::valarray<double>>(0, 12), smLib::range<std::valarray<double>>(13, 29+1)});
+/// with 12th
+//const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 29+1);
 
 //const std::valarray<double> fileNums = smLib::range(0, 5);
-//const std::valarray<double> fileNums{24};
+//const std::valarray<double> fileNums{12};
 //const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
 
 

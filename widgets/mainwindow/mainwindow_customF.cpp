@@ -28,7 +28,7 @@ void MainWindow::customFunc()
 
 	return;
 
-#if 01
+#if 0
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -44,16 +44,15 @@ void MainWindow::customFunc()
 	};
 
 //	for(QString guy : guyList)
-	QString guy = "Galya";
+	QString guy = "Aliev";
 	{
-//		autos::IITPtestCoh2(guy); exit(0);
-//		autos::IITPremoveZchans(guy, def::iitpSyncFolder); continue;
-		autos::IITPpre(guy); exit(0);
-
-//		autos::IITPstaging(guy); continue;
+//		autos::IITPtestCoh2(guy);
+//		autos::IITPremoveZchans(guy, def::iitpSyncFolder);
+//		autos::IITPpre(guy);
+		autos::IITPstaging(guy);
 		autos::IITPprocessStaged(guy);
 //		continue;
-//		exit(0);
+		exit(0);
 
 		if(guy == "Alex")
 		{
@@ -119,22 +118,26 @@ void MainWindow::customFunc()
 //	return;
 #endif
 
-#if 0
+#if 01
 	/// Xenia FD tables classification
 	const QString workDir = def::dataFolder + "/Xenia_tables/";
 
 	/// repair
 	if(0)
 	{
-		for(QString subdir : {"FD", "FFT", "SD_carr", "ampl_freq"})
+//		for(QString subdir : {"FD", "FFT", "SD_carr", "ampl_freq"})
+		QString subdir = "ThirdVersion";
 		{
 			QString pewDir = workDir + subdir + "/";
-			for(const QString & fileName : QDir(pewDir).entryList({"*.txt"}))
+			for(const QString & fileName : QDir(pewDir).entryList({"*FFT*var.txt"}))
 			{
+				int num = QString(fileName[ fileName.indexOf("var") - 1]).toInt();
+//				std::cout << num << std::endl; continue;
+
 				autos::Xenia_repairTable(pewDir + fileName,
 										 pewDir + QString(fileName).replace(".txt", "_new.txt"),
-										 pewDir + "Groups.txt",
-										 pewDir + "Names.txt");
+										 pewDir + "Groups_" + nm(num) + ".txt",
+										 pewDir + "Names_" + nm(num) + ".txt");
 			}
 		}
 	}
@@ -148,13 +151,13 @@ void MainWindow::customFunc()
 
 		QString pewDir = workDir;
 		pewDir.resize(pewDir.size() - 1);
-		for(QString fileName : QDir(pewDir).entryList({"*_new*"}))
+		for(QString fileName : QDir(pewDir).entryList({"*FFT*_new*"}))
 		{
 			Net * ann = new Net();
 			fileName.remove(".txt");
 			std::cout << fileName << std::endl;
 			ann->loadDataXenia(pewDir, fileName);
-			ann->setClassifier(ClassifierType::KNN);
+			ann->setClassifier(ClassifierType::ANN);
 			ann->setKnnNumSlot(4);
 			ann->setMode("N");
 			res << fileName << "\t"

@@ -189,6 +189,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="sliceCheckBox">
+           <property name="text">
+            <string>Slice?</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -204,31 +211,6 @@
           </widget>
          </item>
         </layout>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QCheckBox" name="sliceCheckBox">
-         <property name="text">
-          <string>Slice?</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="eyesCleanCheckBox">
-         <property name="text">
-          <string>clean from eyes?</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="reduceChannelsCheckBox">
-         <property name="text">
-          <string>reduce channels?</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
@@ -263,13 +245,6 @@
         <widget class="QRadioButton" name="justSliceButton">
          <property name="text">
           <string>just</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="windFromRealButton">
-         <property name="text">
-          <string>winds from real</string>
          </property>
         </widget>
        </item>
@@ -462,13 +437,6 @@
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="5" column="0">
-      <widget class="QPushButton" name="netButton">
-       <property name="text">
-        <string>&amp;Net</string>
-       </property>
-      </widget>
-     </item>
      <item row="5" column="1">
       <layout class="QVBoxLayout" name="verticalLayout_13">
        <item>
@@ -708,7 +676,7 @@
        <item>
         <widget class="QPushButton" name="reduceChannesPushButton">
          <property name="text">
-          <string>Reduce ns</string>
+          <string>Reduce ns in Reals</string>
          </property>
         </widget>
        </item>
@@ -871,6 +839,13 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="4" column="0">
+      <widget class="QPushButton" name="netButton">
+       <property name="text">
+        <string>&amp;Net</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>

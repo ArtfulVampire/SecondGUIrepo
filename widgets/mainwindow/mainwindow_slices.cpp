@@ -6,6 +6,98 @@
 
 using namespace myOut;
 
+
+void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
+{
+	QTime myTime;
+	myTime.start();
+
+	readData();
+	edfFile & fil = globalEdf;
+
+		if(ui->sliceCheckBox->isChecked())
+		{
+			if(ui->matiCheckBox->isChecked())
+			{
+				// almost equal time, should use sessionEdges
+		#if 1
+					sliceMati();
+					sliceMatiPieces(true);
+		#else
+					sliceMatiSimple();
+		#endif
+			}
+			else if(ui->ntRadio->isChecked())
+			{
+				/// was for Boris, now empty
+			}
+			else if(ui->enRadio->isChecked()) /// deprecate en/nt
+			{
+				if(ui->windsButton->isChecked())
+				{
+					sliceWinds();
+//					sliceOneByOne();
+//					sliceOneByOneNew();
+//					sliceWindFromReal();
+				}
+				else if(ui->justSliceButton->isChecked()) /// what for?
+				{
+					QString helpString;
+					const double wndLen = ui->windowLengthSpinBox->value() * def::freq;
+
+					for(int i = 0;
+						i < std::min(ceil(fil.getData().cols() / wndLen), 60.); /// const generality
+						++i)
+					{
+						helpString = (def::dir->absolutePath()
+															  + "/winds"
+															  + "/fromreal"
+															  + "/" + def::ExpName
+															  + "-" + myLib::rightNumber(i, 4)
+															  + "_" + nm(254)
+//                                                              + ".edf"
+															  );
+
+						fil.saveSubsection(i * wndLen,
+										   std::min((i + 1) * wndLen,
+											   double(fil.getData().cols())),
+										   helpString,
+										   true
+//                                           false
+										   );
+
+					}
+				}
+				else if(ui->realsButton->isChecked())
+				{
+					if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) //generality
+					{
+						sliceBak(1, 60, "241");
+						sliceBak(61, 120, "247");
+						sliceBak(121, 180, "241");
+						sliceBak(181, 240, "247");
+					}
+					else
+					{
+//                        sliceOneByOneNew(); /// by number after 241/247
+						sliceOneByOne();
+					}
+				}
+			}
+		}
+		ui->progressBar->setValue(0);
+
+
+	QString helpString = "data sliced ";
+	ui->textEdit->append(helpString);
+
+	helpString = "ns equals to ";
+	helpString += QString::number(def::ns);
+	ui->textEdit->append(helpString);
+
+	std::cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
+}
+
 void MainWindow::sliceWinds()
 {
 	QTime myTime;
@@ -32,11 +124,13 @@ void MainWindow::sliceWinds()
 	else if(marks[sta - 1] == 247.) { typ = 1; marker = "247"; }
 	else if(marks[sta - 1] == 254.) { typ = 2; marker = "254"; }
 
-	int num = 0;
+	int windowCounter = 0;
+	int numReal = 1;
 	for(uint i = sta; i < fil.getDataLen() - wndLength; i += timeShift)
 	{
 		auto mark = smLib::valarSubsec(marks, i, i + wndLength);
 
+		/// hope not some of them
 		std::pair<bool, double> a = myLib::contains(mark, {241., 247., 254.});
 		if(a.first)
 		{
@@ -44,6 +138,8 @@ void MainWindow::sliceWinds()
 			else if(a.second == 247.) typ = 1;
 			else if(a.second == 254.) typ = 2;
 
+			windowCounter = 0;
+			++numReal;
 			marker = nm(a.second);
 
 			i = i + myLib::indexOfVal(mark, a.second) + 1;
@@ -52,12 +148,13 @@ void MainWindow::sliceWinds()
 		{
 			helpString = def::windsFromRealsDir()
 						 + "/" + fil.getExpName()
-						 + "." + rn(num++, 4)
-						 + "_" + marker;
+						 + "." + rn(numReal, 4)
+						 + "_" + marker
+						 + "." + rn(windowCounter++, 2);
 
 			fil.saveSubsection(i, i + wndLength, helpString, true);
 		}
-		ui->progressBar->setValue((i - sta) * 100. / (fil.getDataLen() - wndLength - sta);
+		ui->progressBar->setValue( (i - sta) * 100. / (fil.getDataLen() - wndLength - sta) );
 	}
 
 	if(ui->succPrecleanCheckBox->isChecked())
@@ -66,6 +163,7 @@ void MainWindow::sliceWinds()
 	}
 }
 
+/// deprecated
 void MainWindow::sliceWindFromReal()
 {
     QTime myTime;
