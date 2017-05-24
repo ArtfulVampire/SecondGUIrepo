@@ -42,6 +42,7 @@ public slots:
 
 	// parameters processing
 	void setFileMarkers();
+	void changeRedNsLine(int a);
 
 	// in-window calculations, substantional actions
 	// files

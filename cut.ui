@@ -206,38 +206,6 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>870</x>
-     <y>10</y>
-     <width>161</width>
-     <height>52</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout_5">
-    <item row="0" column="0">
-     <widget class="QPushButton" name="setMark1PushButton">
-      <property name="text">
-       <string>set mark 1</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="mark1LineEdit"/>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="setMark2PushButton">
-      <property name="text">
-       <string>set mark 2</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="mark2LineEdit"/>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
      <x>10</x>
      <y>49</y>
      <width>531</width>
@@ -511,7 +479,7 @@
   <widget class="QPushButton" name="linearApproxPushButton">
    <property name="geometry">
     <rect>
-     <x>840</x>
+     <x>830</x>
      <y>120</y>
      <width>111</width>
      <height>22</height>
@@ -584,16 +552,68 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QCheckBox" name="linearApproxAllEegCheckBox">
    <property name="geometry">
     <rect>
-     <x>790</x>
-     <y>220</y>
-     <width>281</width>
-     <height>71</height>
+     <x>840</x>
+     <y>90</y>
+     <width>71</width>
+     <height>20</height>
     </rect>
    </property>
-   <layout class="QGridLayout" name="gridLayout_6">
+   <property name="text">
+    <string>all EEG</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="linearApproxAllGoniosCheckBox">
+   <property name="geometry">
+    <rect>
+     <x>910</x>
+     <y>90</y>
+     <width>81</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>all gonios</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="nextBadPointPushButton">
+   <property name="geometry">
+    <rect>
+     <x>900</x>
+     <y>170</y>
+     <width>111</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>next point</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="toLearnThresholdPushButton">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>170</y>
+     <width>111</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>to learn set</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>230</y>
+     <width>638</width>
+     <height>54</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_5">
     <item row="0" column="0">
      <widget class="QLabel" name="label_12">
       <property name="text">
@@ -622,6 +642,26 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="4">
+     <widget class="QPushButton" name="findMarkPushButton">
+      <property name="text">
+       <string>find next mark</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="5">
+     <widget class="QSpinBox" name="findMarkSpinBox"/>
+    </item>
+    <item row="0" column="6">
+     <widget class="QPushButton" name="setMark1PushButton">
+      <property name="text">
+       <string>set mark 1</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="7">
+     <widget class="QLineEdit" name="mark1LineEdit"/>
+    </item>
     <item row="1" column="0">
      <widget class="QSpinBox" name="linearApproxSpinBox"/>
     </item>
@@ -634,69 +674,24 @@
     <item row="1" column="3">
      <widget class="QDoubleSpinBox" name="secondDoubleSpinBox"/>
     </item>
+    <item row="1" column="4">
+     <widget class="QPushButton" name="cutPausesPushButton">
+      <property name="text">
+       <string>cut pauses</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="6">
+     <widget class="QPushButton" name="setMark2PushButton">
+      <property name="text">
+       <string>set mark 2</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="7">
+     <widget class="QLineEdit" name="mark2LineEdit"/>
+    </item>
    </layout>
-  </widget>
-  <widget class="QCheckBox" name="linearApproxAllEegCheckBox">
-   <property name="geometry">
-    <rect>
-     <x>840</x>
-     <y>90</y>
-     <width>71</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>all EEG</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="linearApproxAllGoniosCheckBox">
-   <property name="geometry">
-    <rect>
-     <x>910</x>
-     <y>90</y>
-     <width>81</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>all gonios</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="findMarkPushButton">
-   <property name="geometry">
-    <rect>
-     <x>1110</x>
-     <y>230</y>
-     <width>110</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>find next mark</string>
-   </property>
-  </widget>
-  <widget class="QSpinBox" name="findMarkSpinBox">
-   <property name="geometry">
-    <rect>
-     <x>1230</x>
-     <y>230</y>
-     <width>47</width>
-     <height>23</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="cutPausesPushButton">
-   <property name="geometry">
-    <rect>
-     <x>1110</x>
-     <y>260</y>
-     <width>110</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>cut pauses</string>
-   </property>
   </widget>
  </widget>
  <resources/>

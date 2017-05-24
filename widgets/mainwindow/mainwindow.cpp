@@ -275,11 +275,8 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->setNsLine, &QLineEdit::returnPressed,
 					 [this]()
 	{
-		QString helpString;
 		def::ns = ui->setNsLine->text().toInt();
-
-		helpString = "ns equals to " + nm(def::ns);
-		ui->textEdit->append(helpString);
+		ui->textEdit->append("ns equals to " + nm(def::ns));
 		ui->setNsLine->clear();
 	});
 	QObject::connect(ui->fileMarkersLineEdit, SIGNAL(returnPressed()), this, SLOT(setFileMarkers()));
@@ -302,16 +299,11 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->constructEdfButton, SIGNAL(clicked()), this, SLOT(constructEDFSlot()));
 
 	/// edit edf
-	QObject::connect(ui->reduceChannelsComboBox, &QComboBox::highlighted,
-					 [this](int a)
-	{
-		ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
-	});
-	QObject::connect(ui->reduceChannelsComboBox, &QComboBox::currentIndexChanged,
-					 [this](int a)
-	{
-		ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
-	});
+	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(highlighted(int)),
+					 this, SLOT(changeRedNsLine(int)));
+
+	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(currentIndexChanged(int)),
+					 this, SLOT(changeRedNsLine(int)));
 
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));
@@ -354,6 +346,11 @@ void QWidget::keyPressEvent(QKeyEvent *event)
     {
         this->close();
     }
+}
+
+void MainWindow::changeRedNsLine(int a)
+{
+	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
 }
 
 void MainWindow::showCountSpectra()

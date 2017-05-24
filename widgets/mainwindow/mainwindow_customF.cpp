@@ -118,7 +118,7 @@ void MainWindow::customFunc()
 //	return;
 #endif
 
-#if 01
+#if 0
 	/// Xenia FD tables classification
 	const QString workDir = def::dataFolder + "/Xenia_tables/";
 
@@ -171,6 +171,8 @@ void MainWindow::customFunc()
 
 	exit(0);
 #endif
+
+
 
 
 //	QString wrk = "/media/Files/Data/Xenia/14Mar/TBI_new_tmp";

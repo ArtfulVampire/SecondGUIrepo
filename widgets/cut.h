@@ -51,6 +51,8 @@ private:
 	void iitpLog(const QString & typ, int num = 2, const QString & add = QString());
 	void showDerivatives();
 
+	void countThrParams();
+
 
 
 public slots:
@@ -74,6 +76,8 @@ public slots:
     void rewrite();
 	void subtractMeansSlot();
 	void linearApproxSlot();
+	void toLearnSetSlot();
+	void nextBadPointSlot();
 
 	void paint();
 	void browse();
@@ -90,8 +94,6 @@ public slots:
 	void iitpAutoJumpSlot();
 	void iitpManualSlot();
 	void saveNewNumSlot();
-	void set1MarkerSlot();
-	void set2MarkerSlot();
 
 	void color1SpinSlot();
 	void color2SpinSlot();
@@ -105,6 +107,17 @@ signals:
     void buttonPressed(char btn, int coord);
 
 private:
+	struct thrParam
+	{
+//		QString name{};
+		double mean;
+		double sigma;
+		int numChan;
+		int numParam;
+	};
+	void setThrParamsFuncs();
+
+private:
     Ui::Cut *ui;
 
 	QPixmap currentPic;
@@ -114,10 +127,19 @@ private:
 
 	edfFile edfFil;
 	matrix data3{};
-	double currFreq{250};
+	double currFreq{250}; /// to deprecate
+
+	const int paramsChanNum = 19;
+	const int paramsWindLen = std::pow(2, 8);
+	std::vector<matrix> learnSet{}; /// to find bad points
+	std::vector<std::function<double(const std::valarray<double> &)>> paramFuncs{};
+	std::vector<QString> paramNames{};
+	std::vector<std::vector<thrParam>> thrParams{}; /// [channel][param]
+	std::vector<std::vector<std::vector<double>>> windParams{}; /// [windNum][channel][param]
+
 
     QStringList lst;
-	QString currentFile; /// deprecate
+	QString currentFile; /// deprecate to edfFile filePath
 	int currentNumber{-1}; /// in lst
 	int addNum = 0; // for cut() winds
 

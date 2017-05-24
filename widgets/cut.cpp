@@ -4,6 +4,7 @@
 #include <myLib/drw.h>
 #include <myLib/draws.h>
 #include <myLib/dataHandlers.h>
+#include <myLib/signalProcessing.h>
 
 using namespace myOut;
 
@@ -141,8 +142,18 @@ Cut::Cut() :
 	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->saveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
-	QObject::connect(ui->setMark1PushButton, SIGNAL(clicked()), this, SLOT(set1MarkerSlot()));
-	QObject::connect(ui->setMark2PushButton, SIGNAL(clicked()), this, SLOT(set2MarkerSlot()));
+	QObject::connect(ui->setMark1PushButton, &QPushButton::clicked,
+					 [this]()
+	{
+		this->setMarker(ui->mark1LineEdit->text().toInt());
+	});
+	QObject::connect(ui->setMark2PushButton, &QPushButton::clicked,
+					 [this]()
+	{
+		this->setMarker(ui->mark2LineEdit->text().toInt());
+	});
+	QObject::connect(ui->toLearnThresholdPushButton, SIGNAL(clicked()), this, SLOT(toLearnSetSlot()));
+	QObject::connect(ui->nextBadPointPushButton, SIGNAL(clicked()), this, SLOT(nextBadPointSlot()));
 
 	QObject::connect(ui->color1SpinBox, SIGNAL(valueChanged(int)), this, SLOT(color1SpinSlot()));
 	QObject::connect(ui->color2SpinBox, SIGNAL(valueChanged(int)), this, SLOT(color2SpinSlot()));
@@ -150,6 +161,9 @@ Cut::Cut() :
 	QObject::connect(ui->color1LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
 	QObject::connect(ui->color2LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
 	QObject::connect(ui->color3LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
+
+	setThrParamsFuncs();
+
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -847,16 +861,184 @@ void Cut::setMarker(int inVal)
 	paint();
 }
 
-void Cut::set1MarkerSlot()
+void Cut::toLearnSetSlot()
 {
-	this->setMarker(ui->mark1LineEdit->text().toInt());
+
+	matrix sub = data3.subCols(ui->leftLimitSpinBox->value(),
+							   ui->rightLimitSpinBox->value());
+
+	for(int i = 0; i < sub.cols() / paramsWindLen; ++i)
+	{
+		learnSet.push_back(sub.subCols(paramsWindLen * i, paramsWindLen * (i + 1)));
+	}
+
+	/// count params
+	if(learnSet.size() >= 50)
+	{
+		thrParams.resize(paramsChanNum);
+		for(int ch = 0; ch < paramsChanNum; ++ch)
+		{
+			thrParams[ch].resize(paramFuncs.size());
+
+			for(int numFunc = 0; numFunc < paramFuncs.size(); ++numFunc)
+			{
+				thrParam param;
+				std::valarray<double> vals(learnSet.size());
+				for(int windNum = 0; windNum < learnSet.size(); ++windNum)
+				{
+					vals[windNum] = paramFuncs[numFunc] (learnSet[windNum][ch]);
+				}
+//				param.name = paramNames[numFunc];
+				param.numParam = numFunc;
+				param.mean = smLib::mean(vals);
+				param.sigma = (smLib::sigma(vals) != 0) ? smLib::sigma(vals) : 1.;
+
+				param.numChan = ch;
+				thrParams[ch][numFunc] = param;
+			}
+		}
+
+		std::cout << "toLearnSetSlot: learning done" << std::endl;
+		countThrParams();
+	}
+	else
+	{
+		std::cout << "toLearnSetSlot: learning set size = " << learnSet.size() << std::endl;
+	}
+	resetLimits();
 }
 
-void Cut::set2MarkerSlot()
+void Cut::countThrParams()
 {
-	this->setMarker(ui->mark2LineEdit->text().toInt());
+	windParams.resize(data3.cols() / paramsWindLen);
+	for(int windNum = 0; windNum < windParams.size(); ++windNum)
+	{
+		matrix localData = data3.subCols(paramsWindLen * windNum,
+										 paramsWindLen * (windNum + 1));
+		windParams[windNum].resize(paramsChanNum);
+		for(int ch = 0; ch < paramsChanNum; ++ch)
+		{
+			windParams[windNum][ch].resize(paramFuncs.size());
+			for(int numFunc = 0; numFunc < paramFuncs.size(); ++numFunc)
+			{
+				windParams[windNum][ch][numFunc] = paramFuncs[numFunc] (localData[ch]);
+			}
+		}
+	}
+	std::cout << "countThrParams: done" << std::endl;
 }
 
+void Cut::setThrParamsFuncs()
+{
+	static const double norm = myLib::spectreNorm(smLib::fftL(paramsWindLen),
+												  paramsWindLen,
+												  edfFil.getFreq());
+	/// alpha
+	if(1)
+	{
+		paramFuncs.push_back([this](const std::valarray<double> & in) -> double
+		{
+			std::valarray<double> spec = myLib::spectreRtoR(in, paramsWindLen) * norm;
+			return std::accumulate(std::begin(spec) + fftLimit(8, edfFil.getFreq(), paramsWindLen),
+								   std::begin(spec) + fftLimit(13, edfFil.getFreq(), paramsWindLen),
+								   0.);
+		});
+		paramNames.push_back("alpha");
+	}
+
+	/// theta
+	if(1)
+	{
+		paramFuncs.push_back([this](const std::valarray<double> & in) -> double
+		{
+			std::valarray<double> spec = myLib::spectreRtoR(in, paramsWindLen) * norm;
+			return std::accumulate(std::begin(spec) + fftLimit(4, edfFil.getFreq(), paramsWindLen),
+								   std::begin(spec) + fftLimit(8, edfFil.getFreq(), paramsWindLen),
+								   0.);
+		});
+		paramNames.push_back("theta");
+	}
+
+	/// beta
+	if(1)
+	{
+		paramFuncs.push_back([this](const std::valarray<double> & in) -> double
+		{
+			std::valarray<double> spec = myLib::spectreRtoR(in, paramsWindLen) * norm;
+			return std::accumulate(std::begin(spec) + fftLimit(13, edfFil.getFreq(), paramsWindLen),
+								   std::begin(spec) + fftLimit(25, edfFil.getFreq(), paramsWindLen),
+								   0.);
+		});
+		paramNames.push_back("beta");
+	}
+
+	/// gamma
+	if(0)
+	{
+		paramFuncs.push_back([this](const std::valarray<double> & in) -> double
+		{
+			std::valarray<double> spec = myLib::spectreRtoR(in, paramsWindLen) * norm;
+			return std::accumulate(std::begin(spec) + fftLimit(25, edfFil.getFreq(), paramsWindLen),
+								   std::begin(spec) + fftLimit(40, edfFil.getFreq(), paramsWindLen),
+								   0.);
+		});
+		paramNames.push_back("gamma");
+	}
+
+	/// max ampl
+	if(1)
+	{
+		paramFuncs.push_back([this](const std::valarray<double> & in) -> double
+		{
+			return std::max(std::abs(in.max()), std::abs(in.min()));
+		});
+		paramNames.push_back("maxAmpl");
+	}
+
+}
+
+void Cut::nextBadPointSlot()
+{
+	int windNum = leftDrawLimit / paramsWindLen + 1; /// check
+	bool proceed = true;
+	while(proceed)
+	{
+//		std::cout << "windNum = " << windNum << std::endl;
+		for(int ch = 0; ch < paramsChanNum; ++ch)
+		{
+//			std::cout << "ch = " << ch << std::endl;
+			for(int numFunc = 0; numFunc < paramFuncs.size(); ++numFunc)
+			{
+//				std::cout << "numFunc = " << numFunc << std::endl;
+//				std::cout << "mean = " << thrParams[ch][numFunc].mean << std::endl;
+//				std::cout << "sigma = " << thrParams[ch][numFunc].sigma << std::endl;
+//				std::cout << "val = " << windParams[windNum][ch][numFunc] << std::endl;
+				double numSigmas = std::abs(windParams[windNum][ch][numFunc]
+											- thrParams[ch][numFunc].mean)
+								   /  thrParams[ch][numFunc].sigma;
+				if(numSigmas > 6.) /// spin box
+				{
+					std::cout << "nextBad: param = " << paramNames[numFunc] << " "
+							  << "chan = " << ch << " "
+//							  << "windNum = " << windNum << " "
+							  << "numSigmas = " << numSigmas << " "
+							  << std::endl;
+					proceed = false;
+					break;
+				}
+			}
+		}
+		++windNum;
+
+		if(windNum == data3.cols() / paramsWindLen - 1) return;
+	}
+	if(!proceed) std::cout << std::endl;
+
+	resetLimits();
+	ui->paintStartDoubleSpinBox->setValue(windNum * paramsWindLen / double(edfFil.getFreq()) - 0.5);
+	ui->leftLimitSpinBox->setValue(windNum * paramsWindLen);
+	paint();
+}
 
 void Cut::color1SpinSlot()
 {

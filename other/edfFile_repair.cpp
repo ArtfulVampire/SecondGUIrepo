@@ -108,7 +108,7 @@ void deleteSpacesDir(const QString & dirPath, const QStringList & filters)
 void deleteSpacesFolders(const QString & dirPath)
 {
     QDir tmp(dirPath);
-    QStringList lst = tmp.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	QStringList lst = tmp.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 
     QString newName;
     for(const QString & dirName : lst)
