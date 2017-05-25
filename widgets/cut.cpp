@@ -101,10 +101,8 @@ Cut::Cut() :
 	QObject::connect(pasteShortcut, SIGNAL(activated()), this, SLOT(pasteSlot()));
 	QObject::connect(cutShortcut, SIGNAL(activated()), this, SLOT(cutSlot()));
 
-	QObject::connect(ui->disableEcgCheckBox, &QCheckBox::clicked,
-					 this, &Cut::paint);
-	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked,
-					 this, &Cut::paint);
+	QObject::connect(ui->disableEcgCheckBox, &QCheckBox::clicked, this, &Cut::paint);
+	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked, this, &Cut::paint);
 	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
 	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
@@ -154,6 +152,13 @@ Cut::Cut() :
 	});
 	QObject::connect(ui->toLearnThresholdPushButton, SIGNAL(clicked()), this, SLOT(toLearnSetSlot()));
 	QObject::connect(ui->nextBadPointPushButton, SIGNAL(clicked()), this, SLOT(nextBadPointSlot()));
+	QObject::connect(ui->clearThresholdSetPushButton, &QPushButton::clicked,
+					 [this]()
+	{
+		learnSet.clear();
+		windParams.clear();
+		thrParams.clear();
+	});
 
 	QObject::connect(ui->color1SpinBox, SIGNAL(valueChanged(int)), this, SLOT(color1SpinSlot()));
 	QObject::connect(ui->color2SpinBox, SIGNAL(valueChanged(int)), this, SLOT(color2SpinSlot()));
@@ -883,11 +888,14 @@ void Cut::toLearnSetSlot()
 			for(int numFunc = 0; numFunc < paramFuncs.size(); ++numFunc)
 			{
 				thrParam param;
+
+
 				std::valarray<double> vals(learnSet.size());
 				for(int windNum = 0; windNum < learnSet.size(); ++windNum)
 				{
 					vals[windNum] = paramFuncs[numFunc] (learnSet[windNum][ch]);
 				}
+
 //				param.name = paramNames[numFunc];
 				param.numParam = numFunc;
 				param.mean = smLib::mean(vals);
@@ -910,6 +918,7 @@ void Cut::toLearnSetSlot()
 
 void Cut::countThrParams()
 {
+	/// should have placed windNum as last index ?
 	windParams.resize(data3.cols() / paramsWindLen);
 	for(int windNum = 0; windNum < windParams.size(); ++windNum)
 	{
@@ -925,6 +934,29 @@ void Cut::countThrParams()
 			}
 		}
 	}
+
+	/// cout max values
+	for(int numFunc = 0; numFunc < paramFuncs.size(); ++numFunc)
+	{
+		double maxVal = 0.;
+		int maxCh = -1;
+		int maxWind = -1;
+		for(int ch = 0; ch < paramsChanNum; ++ch)
+		{
+			for(int windNum = 0; windNum < windParams.size(); ++windNum)
+			{
+				if(windParams[windNum][ch][numFunc] > maxVal)
+				{
+					maxVal = windParams[windNum][ch][numFunc];
+					maxCh = ch;
+					maxWind = windNum;
+				}
+			}
+		}
+		std::cout << "max " << paramNames[numFunc] << " = " << maxVal << "\t"
+				  << "ch = " << maxCh << std::endl;
+	}
+
 	std::cout << "countThrParams: done" << std::endl;
 }
 
@@ -995,10 +1027,28 @@ void Cut::setThrParamsFuncs()
 		paramNames.push_back("maxAmpl");
 	}
 
+	/// integral
+	if(1)
+	{
+		paramFuncs.push_back([this](const std::valarray<double> & in) -> double
+		{
+			std::valarray<double> spec = myLib::spectreRtoR(in, paramsWindLen) * norm;
+			return std::accumulate(std::begin(spec) + fftLimit(4, edfFil.getFreq(), paramsWindLen),
+								   std::begin(spec) + fftLimit(40, edfFil.getFreq(), paramsWindLen),
+								   0.);
+		});
+		paramNames.push_back("integral");
+	}
+
 }
 
 void Cut::nextBadPointSlot()
 {
+	if(learnSet.empty() || thrParams.empty() || windParams.empty())
+	{
+		std::cout << "nextBadPointSlot: data not ready" << std::endl;
+		return;
+	}
 	int windNum = leftDrawLimit / paramsWindLen + 1; /// check
 	bool proceed = true;
 	while(proceed)
@@ -1030,7 +1080,11 @@ void Cut::nextBadPointSlot()
 		}
 		++windNum;
 
-		if(windNum == data3.cols() / paramsWindLen - 1) return;
+		if(windNum == data3.cols() / paramsWindLen - 1)
+		{
+			std::cout << "nextBadPointSlot: end of file" << std::endl;
+			return;
+		}
 	}
 	if(!proceed) std::cout << std::endl;
 

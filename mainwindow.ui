@@ -204,7 +204,7 @@
           <widget class="QSpinBox" name="matiPieceLengthSpinBox"/>
          </item>
          <item>
-          <widget class="QLabel" name="label_23">
+          <widget class="QLabel" name="matiPieceLenlabel">
            <property name="text">
             <string>mati pieceLen</string>
            </property>
@@ -291,116 +291,6 @@
         </widget>
        </item>
       </layout>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>21</x>
-      <y>481</y>
-      <width>214</width>
-      <height>262</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_8">
-     <item row="0" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_14">
-       <item>
-        <widget class="QPushButton" name="markerSetPushButton">
-         <property name="text">
-          <string>set marker</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_10">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="markerGetPushButton">
-       <property name="text">
-        <string>get marker</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLineEdit" name="markerDecimalLineEdit"/>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="label_17">
-       <property name="text">
-        <string>decimal</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLineEdit" name="markerBin0LineEdit"/>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label_16">
-       <property name="text">
-        <string>bin 0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLineEdit" name="markerBin1LineEdit"/>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLabel" name="label_19">
-       <property name="text">
-        <string>bin 1</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QSpinBox" name="markerBinTimeSpinBox"/>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLabel" name="label_18">
-       <property name="text">
-        <string>bin time</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QDoubleSpinBox" name="markerSecTimeDoubleSpinBox"/>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLabel" name="label_20">
-       <property name="text">
-        <string>sec time</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLineEdit" name="newEdfNameLineEdit"/>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLabel" name="label_21">
-       <property name="text">
-        <string>addName</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <widget class="QPushButton" name="markerSaveEdfPushButton">
-       <property name="text">
-        <string>Save</string>
-       </property>
-      </widget>
      </item>
     </layout>
    </widget>
@@ -844,6 +734,99 @@
       <widget class="QPushButton" name="netButton">
        <property name="text">
         <string>&amp;Net</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>22</x>
+      <y>487</y>
+      <width>213</width>
+      <height>222</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="matiGridLayout">
+     <item row="0" column="0">
+      <widget class="QPushButton" name="markerSetPushButton">
+       <property name="text">
+        <string>set marker</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="markerGetPushButton">
+       <property name="text">
+        <string>get marker</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="markerDecimalLineEdit"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label_17">
+       <property name="text">
+        <string>decimal</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLineEdit" name="markerBin0LineEdit"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_16">
+       <property name="text">
+        <string>bin 0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLineEdit" name="markerBin1LineEdit"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_19">
+       <property name="text">
+        <string>bin 1</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QSpinBox" name="markerBinTimeSpinBox"/>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_18">
+       <property name="text">
+        <string>bin time</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QDoubleSpinBox" name="markerSecTimeDoubleSpinBox"/>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="label_20">
+       <property name="text">
+        <string>sec time</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLineEdit" name="newEdfNameLineEdit"/>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="label_21">
+       <property name="text">
+        <string>addName</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QPushButton" name="markerSaveEdfPushButton">
+       <property name="text">
+        <string>Save</string>
        </property>
       </widget>
      </item>
