@@ -15,7 +15,9 @@ void MainWindow::customFunc()
 //	exit(0);
 
 //	edfFile f;
-//	f.readEdfFile("/media/Files/Data/FeedbackTest/GA/GA_1_f.edf");
+//	f.readEdfFile("/media/Files/Data/iitp/Aliev/Aliev_15_sum_f.edf");
+//	myLib::drw::drawOneSpectrum(f[f.findChannel("Da_r")], 160, 170, 1000, 1).save(
+//				"/media/Files/Data/iitp/Aliev_15_da_r.jpg", 0, 100);
 //	f.zeroChannels({ f.findChannel("O1"), f.findChannel("O2") }).writeEdfFile("/media/Files/Data/FeedbackTest/GA/GA_1_f_z.edf");
 //	exit(0);
 
@@ -26,9 +28,9 @@ void MainWindow::customFunc()
 
 
 
-	return;
+//	return;
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -44,13 +46,13 @@ void MainWindow::customFunc()
 	};
 
 //	for(QString guy : guyList)
-	QString guy = "Aliev";
+	QString guy = "Isakov";
 	{
-//		autos::IITPtestCoh2(guy);
-//		autos::IITPremoveZchans(guy, def::iitpSyncFolder);
 //		autos::IITPpre(guy);
-		autos::IITPstaging(guy);
-		autos::IITPprocessStaged(guy);
+//		autos::IITPremoveZchans(guy, def::iitpSyncFolder);
+//		autos::IITPstaging(guy);
+//		autos::IITPprocessStaged(guy);
+		autos::IITPdrawSpectralMaps(guy);
 //		continue;
 		exit(0);
 

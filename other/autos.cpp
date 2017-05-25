@@ -683,6 +683,7 @@ void IITPpre(const QString & guyName)
 		{
 			fil.readEdfFile(filePath);
 
+			/// notch
 			for(int fr = 50; fr <= 450; fr += 50)
 			{
 				fil.refilter(fr - 5, fr + 5, {}, true);
@@ -712,13 +713,13 @@ void IITPpre(const QString & guyName)
 
 #if 01
 		/// divide EEG chans to prevent oversclaing amplitude
+		/// and filter EEG but not ECG
 		filePath = ExpNamePre + "_eeg.edf";
 		if(QFile::exists(filePath))
 		{
 			fil.readEdfFile(filePath);
 			std::vector<uint> chanNums(fil.getNs());
 			std::iota(std::begin(chanNums), std::end(chanNums), 0.);
-//			chanNums.pop_back(); /// ECG
 			fil.divideChannels(chanNums, 2.);
 			filePath = ExpNamePre + "_eeg_f.edf";
 			fil.refilter(45, 55, {}, true);
@@ -1490,6 +1491,68 @@ void IITPprocessStaged(const QString & guyName,
 		}
 	}
 #endif
+}
+
+void IITPdrawSpectralMaps(const QString & guyName,
+						  const QString & dirPath)
+{
+	/// read sp [4; 40) Hz, draw maps
+
+	QDir a(def::iitpResFolder);
+	a.mkdir(guyName);
+	a.cd(guyName);
+	a.mkdir("specPics");
+
+	const QString inPath = dirPath + "/" + guyName + "/sp/";
+	const QString outPath = def::iitpResFolder + "/" + guyName + "/specPics/";
+
+	/// interesting fileNums
+	QStringList markers{"*_04_*", "*_06_*", "*_08_*"};
+
+	for(QString fileName : QDir(inPath).entryList(markers))
+	{
+		std::valarray<double> spec;
+		myLib::readFileInLine(inPath + fileName, spec);
+
+		matrix specMat(spec, uint(19));
+		std::valarray<double> drawSpec(19);
+		for(std::pair<int, int> a : {
+			std::make_pair(4, 8),
+			std::make_pair(8, 13),
+			std::make_pair(13, 25),
+			std::make_pair(25, 40)
+	})
+		{
+			for(int i = 0; i < 19; ++i)
+			{
+
+				drawSpec[i] = std::accumulate(std::begin(specMat[i]) + (a.first - 4),
+											  std::begin(specMat[i]) + (a.second - 4),
+											  0.);
+			}
+			/// repair T6
+			drawSpec[16] = 0.;
+			/// repair P4
+			drawSpec[15] = (drawSpec[14] + drawSpec[16] + drawSpec[18] + drawSpec[10]) / 4.;
+			/// repair F4
+			drawSpec[5] = (drawSpec[4] + drawSpec[6] + drawSpec[1] + drawSpec[10]) / 4.;
+
+
+			QString addName;
+			switch(a.first)
+			{
+			case 4: { addName = "_theta"; break; }
+			case 8: { addName = "_alpha"; break; }
+			case 13: { addName = "_beta"; break; }
+			case 25: { addName = "_gamma"; break; }
+			default: { addName = "_pew"; break; }
+			}
+
+			fileName.remove(".txt");
+			myLib::drw::drawOneMap(drawSpec, 0, myLib::drw::ColorScale::jet).save(
+						outPath + fileName + addName + ".jpg", 0, 100);
+		}
+	}
 }
 
 void IITPmaxCoh(const QString & filePath,

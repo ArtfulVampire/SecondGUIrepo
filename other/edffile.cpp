@@ -1384,8 +1384,6 @@ edfFile & edfFile::refilter(double lowFreq,
 										   isNotch,
 										   this->getNr()[j]);
 	}
-
-
     if(!newPath.isEmpty())
     {
         this->writeEdfFile(newPath);

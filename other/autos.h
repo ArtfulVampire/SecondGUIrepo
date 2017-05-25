@@ -84,6 +84,8 @@ void IITPstaging(const QString & guyName,
 				 const QString & dirPath = def::iitpSyncFolder);
 void IITPprocessStaged(const QString & guyName,
 					   const QString & dirPath = def::iitpSyncFolder);
+void IITPdrawSpectralMaps(const QString & guyName,
+						  const QString & dirPath = def::iitpResFolder);
 
 void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums);
 

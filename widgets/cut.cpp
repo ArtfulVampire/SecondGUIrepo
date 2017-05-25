@@ -80,8 +80,8 @@ Cut::Cut() :
 	ui->color2SpinBox->setMinimum(-1); ui->color2SpinBox->setValue(-1);
 	ui->color3SpinBox->setMinimum(-1); ui->color3SpinBox->setValue(-1);
 
-	ui->saveNewNumSpinBox->setMaximum(50);
-	ui->saveNewNumSpinBox->setValue(24);
+	ui->iitpSaveNewNumSpinBox->setMaximum(50);
+	ui->iitpSaveNewNumSpinBox->setValue(24);
 
 	ui->valDoubleSpinBox->setMaximum(800);
 	ui->firstDoubleSpinBox->setMaximum(500);
@@ -101,7 +101,7 @@ Cut::Cut() :
 	QObject::connect(pasteShortcut, SIGNAL(activated()), this, SLOT(pasteSlot()));
 	QObject::connect(cutShortcut, SIGNAL(activated()), this, SLOT(cutSlot()));
 
-	QObject::connect(ui->disableEcgCheckBox, &QCheckBox::clicked, this, &Cut::paint);
+	QObject::connect(ui->iitpDisableEcgCheckBox, &QCheckBox::clicked, this, &Cut::paint);
 	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked, this, &Cut::paint);
 	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
@@ -139,7 +139,7 @@ Cut::Cut() :
 	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
 	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
-	QObject::connect(ui->saveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
+	QObject::connect(ui->iitpSaveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
 	QObject::connect(ui->setMark1PushButton, &QPushButton::clicked,
 					 [this]()
 	{
@@ -437,7 +437,7 @@ void Cut::createImage(const QString & dataFileName)
 		def::ns = edfFil.getNs();
 		setValuesByEdf();
     }
-	ui->disableEcgCheckBox->setChecked(false);
+	ui->iitpDisableEcgCheckBox->setChecked(false);
 	paint();
     ui->scrollArea->horizontalScrollBar()->setSliderPosition(0);
 }
@@ -1340,7 +1340,7 @@ void Cut::save()
 void Cut::saveNewNumSlot()
 {
 	QString newName = edfFil.getFileNam();
-	newName.replace(QRegExp("[0-9]{2}"), rn(ui->saveNewNumSpinBox->value(), 2));
+	newName.replace(QRegExp("[0-9]{2}"), rn(ui->iitpSaveNewNumSpinBox->value(), 2));
 
 	edfFil.writeOtherData(data3.subCols(ui->leftLimitSpinBox->value(),
 										ui->rightLimitSpinBox->value()),
@@ -1449,7 +1449,7 @@ void Cut::paint() // save to tmp.jpg and display
 
 
 	int ecg = edfFil.findChannel("ECG");
-	if(ui->disableEcgCheckBox->isChecked() && ecg >= 0)
+	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg >= 0)
 	{
 		subData[ecg] = 0; /// for iitp ecg
 	}
