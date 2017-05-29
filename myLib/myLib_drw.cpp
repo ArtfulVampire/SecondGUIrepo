@@ -905,14 +905,146 @@ QColor grayScale(int range, int j)
 				  255. * (1. - double(j) / range));
 }
 
+auto colorFunction (ColorScale in) -> QColor (*)(int, int)
+{
+	switch(in)
+	{
+	case ColorScale::jet:
+	{
+		return myLib::drw::hueJet;
+	}
+	case ColorScale::htc:
+	{
+		return myLib::drw::hueOld;
+	}
+	case ColorScale::gray:
+	{
+		return myLib::drw::grayScale;
+	}
+	case ColorScale::matlab:
+	{
+		return myLib::drw::hueMatlab;
+	}
+	}
+}
+
+QPixmap drawColorScale(int range, ColorScale type, bool full)
+{
+	QPixmap pic;
+	if(full)
+	{
+		pic = QPixmap(744, 520); /// magic const
+	}
+	else
+	{
+		pic = QPixmap(20, 300); /// magic const
+	}
+	pic.fill();
+	QPainter painter;
+	painter.begin(&pic);
+
+	/// draw the very scale
+
+	QColor (*colorFunc)(int, int) = myLib::drw::colorFunction(type);
+
+	for(int i = 0; i < range; ++i)
+	{
+		painter.setBrush(QBrush(colorFunc(range, i)));
+		painter.setPen(colorFunc(range, i));
+
+		if(full)
+		{
+			painter.drawRect(i * pic.width() / double(range),
+							 0,
+							 (i + 1) * pic.width() / double(range),
+							 pic.height() * 0.07); /// magic const
+		}
+		else
+		{
+			painter.drawRect(0,
+							 (1. - (i + 1) / double(range)) * pic.height(),
+							 pic.width(),
+							 (1. / double(range)) * pic.height()); // vertical
+		}
+
+	}
+
+	/// draw curves
+	if(full)
+	{
+		for(int i = 0; i < range; ++i)
+		{
+			switch(type)
+			{
+			case ColorScale::jet:
+			{
+				painter.setPen(QPen(QBrush("red"), 2));
+				painter.drawLine(i * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * redJet(range, i),
+								 (i + 1) * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * redJet(range, int(i+1)));
+
+				painter.setPen(QPen(QBrush("green"), 2));
+				painter.drawLine(i * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * greenJet(range, i),
+								 (i + 1) * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * greenJet(range, int(i+1)));
+
+				painter.setPen(QPen(QBrush("blue"), 2));
+				painter.drawLine(i * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * blueJet(range, i),
+								 (i + 1) * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * blueJet(range, int(i+1)));
+				break;
+			}
+			case ColorScale::htc:
+			{
+				painter.setPen(QPen(QBrush("red"), 2));
+				painter.drawLine(i * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * redOld(range, i),
+								 (i + 1) * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * redOld(range, int(i+1)));
+
+				painter.setPen(QPen(QBrush("green"), 2));
+				painter.drawLine(i * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * greenOld(range, i),
+								 (i + 1) * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * greenOld(range, int(i+1)));
+
+				painter.setPen(QPen(QBrush("blue"), 2));
+				painter.drawLine(i * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * blueOld(range, i),
+								 (i + 1) * pic.width() / double(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * blueOld(range, int(i+1)));
+				break;
+			}
+			default:
+			{
+				break;
+			}
+			}
+
+		}
+	}
+	painter.end();
+	return pic;
+}
+
 
 QPixmap drawOneMap(const std::valarray<double> & inData,
 				   double maxAbs,
-				   const ColorScale & colorTheme)
+				   const ColorScale & colorTheme,
+				   bool drawScale)
 {
 	/// inData.size() == 19
 
-	QPixmap pic1 = QPixmap(mapSize, mapSize);
+	const int colorsWidth = 30;
+	const int valsWidth = 40;
+
+
+	QPixmap pic1 = QPixmap(mapSize
+						   + (colorsWidth + valsWidth) * drawScale,
+						   mapSize);
 	QPainter paint1;
 	pic1.fill();
 	paint1.begin(&pic1);
@@ -1027,26 +1159,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 				drawArg = val / maxAbs * drawRange;
 			}
 
-			QColor (*colorFunc)(int, int) = myLib::drw::grayScale;
-			switch(colorTheme)
-			{
-			case ColorScale::jet:
-			{
-				colorFunc = myLib::drw::hueJet; break;
-			}
-			case ColorScale::htc:
-			{
-				colorFunc = myLib::drw::hueOld; break;
-			}
-			case ColorScale::gray:
-			{
-				colorFunc = myLib::drw::grayScale; break;
-			}
-			case ColorScale::matlab:
-			{
-				colorFunc = myLib::drw::hueMatlab; break;
-			}
-			}
+			QColor (*colorFunc)(int, int) = myLib::drw::colorFunction(colorTheme);
 			paint1.setBrush(QBrush(colorFunc(drawRange, drawArg)));
 			paint1.setPen(colorFunc(drawRange, drawArg));
 			paint2.setBrush(QBrush(colorFunc(drawRange, drawRange - drawArg)));
@@ -1084,6 +1197,36 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		}
 	}
 	double sum = helpMatrix.sum();
+
+	/// draw colour scale with numbers
+
+	if(drawScale)
+	{
+		QPixmap scalePic = drw::drawColorScale(256, colorTheme, false).scaled(colorsWidth, mapSize);
+		QPixmap values(valsWidth, mapSize);
+		values.fill();
+		QPainter pnt;
+		pnt.begin(&values);
+
+		int fontSize = 15;
+		pnt.setFont(QFont("Times", fontSize));
+		pnt.drawText(2, fontSize + 2, QString::number(smLib::doubleRound(maxMagn)));
+		if(minMagn != 0)
+		{
+			pnt.drawText(2, values.height() - 2, QString::number(smLib::doubleRound(minMagn)));
+		}
+		else
+		{
+			pnt.drawText(2, values.height() - 2, "0.0");
+		}
+
+		paint1.drawPixmap(mapSize, 0, colorsWidth, mapSize, scalePic);
+		paint1.drawPixmap(mapSize + colorsWidth, 0, valsWidth, mapSize, values);
+
+		paint2.drawPixmap(mapSize, 0, colorsWidth, mapSize, scalePic);
+		paint2.drawPixmap(mapSize + colorsWidth, 0, valsWidth, mapSize, values);
+	}
+
 
 	paint1.end();
 	paint2.end();

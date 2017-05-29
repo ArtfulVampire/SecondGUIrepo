@@ -40,11 +40,11 @@ double red(int range, int j, double V, double S)
 {
     double part = j / double(range);
     // matlab
-	if    (0. <= part && part <= myLib::colDots[0]) return V*(1.-S);
-	else if(myLib::colDots[0] < part && part <= myLib::colDots[1]) return V*(1.-S);
-	else if(myLib::colDots[1] < part && part <= myLib::colDots[2]) return V*(1.-S) + V*S*(part-myLib::colDots[1])/(myLib::colDots[2] - myLib::colDots[1]);
-	else if(myLib::colDots[2] < part && part <= myLib::colDots[3]) return V;
-	else if(myLib::colDots[3] < part && part <= 1.) return V - V*S*(part-myLib::colDots[3])/(1 - myLib::colDots[3])/2.;
+	if    (0. <= part && part <= myLib::colDots_2[0]) return V*(1.-S);
+	else if(myLib::colDots_2[0] < part && part <= myLib::colDots_2[1]) return V*(1.-S);
+	else if(myLib::colDots_2[1] < part && part <= myLib::colDots_2[2]) return V*(1.-S) + V*S*(part-myLib::colDots_2[1])/(myLib::colDots_2[2] - myLib::colDots_2[1]);
+	else if(myLib::colDots_2[2] < part && part <= myLib::colDots_2[3]) return V;
+	else if(myLib::colDots_2[3] < part && part <= 1.) return V - V*S*(part-myLib::colDots_2[3])/(1 - myLib::colDots_2[3])/2.;
     // old
     if    (0.000 <= part && part <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(part)*3.;
     else if(0.167 < part && part <= 0.400) return V*(1.-S);
@@ -59,11 +59,11 @@ double green(int range, int j, double V, double S)
     double part = j / double(range);
     double hlp = 1.0;
     // matlab
-	if    (0.0 <= part && part <= myLib::colDots[0]) return V*(1.-S);
-	else if(myLib::colDots[0] < part && part <= myLib::colDots[1]) return V*(1.-S) + V*S*(part-myLib::colDots[0])/(myLib::colDots[1] - myLib::colDots[0]);
-	else if(myLib::colDots[1] < part && part <= myLib::colDots[2]) return V;
-	else if(myLib::colDots[2] < part && part <= myLib::colDots[3]) return V - V*S*(part-myLib::colDots[2])/(myLib::colDots[3] - myLib::colDots[2]);
-	else if(myLib::colDots[3] < part && part <= 1.) return V*(1.-S);
+	if    (0.0 <= part && part <= myLib::colDots_2[0]) return V*(1.-S);
+	else if(myLib::colDots_2[0] < part && part <= myLib::colDots_2[1]) return V*(1.-S) + V*S*(part-myLib::colDots_2[0])/(myLib::colDots_2[1] - myLib::colDots_2[0]);
+	else if(myLib::colDots_2[1] < part && part <= myLib::colDots_2[2]) return V;
+	else if(myLib::colDots_2[2] < part && part <= myLib::colDots_2[3]) return V - V*S*(part-myLib::colDots_2[2])/(myLib::colDots_2[3] - myLib::colDots_2[2]);
+	else if(myLib::colDots_2[3] < part && part <= 1.) return V*(1.-S);
     // old
     if    (0.000 <= part && part <= 0.167) return V*(1.-S);
     else if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
@@ -78,11 +78,11 @@ double blue(int range, int j, double V, double S)
 {
     double part = j / double(range);
 
-	if    (0.0 <= part && part <= myLib::colDots[0]) return V -V*S/2. + V*S*(part)/(myLib::colDots[0] - 0.0)/2.;
-	else if(myLib::colDots[0] < part && part <= myLib::colDots[1]) return V;
-	else if(myLib::colDots[1] < part && part <= myLib::colDots[2]) return V - V*S*(part-myLib::colDots[1])/(myLib::colDots[2] - myLib::colDots[1]);
-	else if(myLib::colDots[2] < part && part <= myLib::colDots[3]) return V*(1.-S);
-	else if(myLib::colDots[3] < part && part <= 1.) return V*(1.-S);
+	if    (0.0 <= part && part <= myLib::colDots_2[0]) return V -V*S/2. + V*S*(part)/(myLib::colDots_2[0] - 0.0)/2.;
+	else if(myLib::colDots_2[0] < part && part <= myLib::colDots_2[1]) return V;
+	else if(myLib::colDots_2[1] < part && part <= myLib::colDots_2[2]) return V - V*S*(part-myLib::colDots_2[1])/(myLib::colDots_2[2] - myLib::colDots_2[1]);
+	else if(myLib::colDots_2[2] < part && part <= myLib::colDots_2[3]) return V*(1.-S);
+	else if(myLib::colDots_2[3] < part && part <= 1.) return V*(1.-S);
 
     // old
     if    (0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;

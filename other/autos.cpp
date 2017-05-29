@@ -1549,7 +1549,7 @@ void IITPdrawSpectralMaps(const QString & guyName,
 			}
 
 			fileName.remove(".txt");
-			myLib::drw::drawOneMap(drawSpec, 0, myLib::drw::ColorScale::jet).save(
+			myLib::drw::drawOneMap(drawSpec, 0, myLib::drw::ColorScale::jet, true).save(
 						outPath + fileName + addName + ".jpg", 0, 100);
 		}
 	}

@@ -195,10 +195,13 @@ double greenMatlab(int range, int j, double V = defV, double S = defS);
 double blueMatlab(int range, int j, double V = defV, double S = defS);
 QColor hueMatlab(int range, int j);
 
+auto colorFunction(ColorScale in) -> QColor (*)(int, int);
+
 /// ica maps
 QPixmap drawOneMap(const std::valarray<double> & inData,
 				   double maxAbs,
-				   const ColorScale & colorTheme);
+				   const ColorScale & colorTheme,
+				   bool drawScale = false);
 void drawMapsICA(const QString & mapsFilePath,
 				 const QString & outDir,
 				 const QString & outName,
@@ -206,6 +209,8 @@ void drawMapsICA(const QString & mapsFilePath,
 QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
 						  const QString & mapsDirPath,
 						  const QString & mapsName);
+
+QPixmap drawColorScale(int range, ColorScale type, bool full);
 
 } // namespace drw
 

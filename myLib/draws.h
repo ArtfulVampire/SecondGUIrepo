@@ -17,7 +17,7 @@ namespace myLib
 
 // jet
 const double defV = 1.;
-const std::vector<double> colDots = {1/9., 3.25/9., 5.5/9., 7.75/9.};
+const std::vector<double> colDots_2 = {1/9., 3.25/9., 5.5/9., 7.75/9.};
 
 double red(int range, int j, double V = defV, double S = 1.0);
 double green(int range, int j, double V = defV, double S = 1.0);
