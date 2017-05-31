@@ -26,11 +26,32 @@ void MainWindow::customFunc()
 //	countSpectraSimple(4096, 15);
 //	exit(0);
 
-
-
 //	return;
 
+
 #if 01
+	/// draw Wts from a folder
+	const QString inDir = "/media/Files/Data/FeedbackTest/GA_FB/GA_FB_weights";
+	ANN * net = new ANN();
+	ClassifierData cl = ClassifierData("/media/Files/Data/FeedbackTest/GA_FB/winds/fromreal");
+	net->setClassifierData(cl);
+
+//	std::cout << net->getClassifierData()->getData().cols() << std::endl;
+	def::fftLength = 1024;
+
+	for(QString fileName : QDir(inDir).entryList({"*.wts"}))
+	{
+		QString drawName = fileName;
+		drawName.replace(".wts", ".jpg");
+		net->drawWeight(inDir + "/" + fileName,
+					   inDir + "/" + drawName);
+//		break;
+	}
+	exit(0);
+#endif
+
+
+#if 0
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -173,8 +194,6 @@ void MainWindow::customFunc()
 
 	exit(0);
 #endif
-
-
 
 
 //	QString wrk = "/media/Files/Data/Xenia/14Mar/TBI_new_tmp";

@@ -440,6 +440,9 @@ void ANN::readWeight(const QString & fileName,
     }
     allocParams((*wtsMatrix));
 
+	/// first row with "numOfRows N	numOfCols M"
+	wtsStr.ignore(128, '\n');
+
     for(uint i = 0; i < weight.size(); ++i) // numOfLayers
     {
         for(uint j = 0; j < weight[i].size(); ++j) // top layer
@@ -470,8 +473,8 @@ void ANN::drawWeight(QString wtsPath,
             return;
         }
     }
-    twovector<std::valarray<double>> tempWeights;
-    readWeight(wtsPath, &tempWeights);
+	twovector<std::valarray<double>> tempWeights; /// [0][3][NetLen]
+	readWeight(wtsPath, &tempWeights);
     matrix drawWts; // 3 arrays of weights
 
     drawWts = tempWeights[0];

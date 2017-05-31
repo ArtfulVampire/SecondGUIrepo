@@ -1,5 +1,4 @@
 #include <myLib/drw.h>
-
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
