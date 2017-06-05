@@ -354,9 +354,9 @@ void Net::aaDefaultSettings()
 //    ui->trainTestRadioButton->setChecked(true); /// train-test
 
     /// source
-//        ui->realsRadioButton->setChecked(true); /// reals
+		ui->realsRadioButton->setChecked(true); /// reals
 //        ui->windsRadioButton->setChecked(true); /// winds
-    ui->pcaRadioButton->setChecked(true); /// PCA
+//    ui->pcaRadioButton->setChecked(true); /// PCA
 
     ui->foldSpinBox->setValue(2); /////// fold
     ui->numOfPairsBox->setValue(1); //// pairs

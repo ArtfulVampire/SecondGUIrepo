@@ -116,7 +116,8 @@ Cut::Cut() :
     QObject::connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(save()));
 	QObject::connect(ui->saveSubsecPushButton, SIGNAL(clicked()), this, SLOT(saveSubsecSlot()));
 	QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
-	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()), this, SLOT(subtractMeansSlot()));
+	QObject::connect(ui->subtractMeansPushButton, &QPushButton::clicked,
+					 [this](){ 	for(auto & row : data3) { row -= smLib::mean(row); } paint(); });
 	QObject::connect(ui->linearApproxPushButton, SIGNAL(clicked()), this, SLOT(linearApproxSlot()));
 
 	QObject::connect(ui->zeroButton, SIGNAL(clicked()), this, SLOT(zeroSlot()));
@@ -914,6 +915,7 @@ void Cut::toLearnSetSlot()
 		std::cout << "toLearnSetSlot: learning set size = " << learnSet.size() << std::endl;
 	}
 	resetLimits();
+	paint();
 }
 
 void Cut::countThrParams()
@@ -976,6 +978,7 @@ void Cut::setThrParamsFuncs()
 								   0.);
 		});
 		paramNames.push_back("alpha");
+		paramSigmaThreshold.push_back(10); /// check and adjust
 	}
 
 	/// theta
@@ -989,6 +992,7 @@ void Cut::setThrParamsFuncs()
 								   0.);
 		});
 		paramNames.push_back("theta");
+		paramSigmaThreshold.push_back(15); /// check and adjust
 	}
 
 	/// beta
@@ -1002,6 +1006,7 @@ void Cut::setThrParamsFuncs()
 								   0.);
 		});
 		paramNames.push_back("beta");
+		paramSigmaThreshold.push_back(10); /// check and adjust
 	}
 
 	/// gamma
@@ -1015,6 +1020,7 @@ void Cut::setThrParamsFuncs()
 								   0.);
 		});
 		paramNames.push_back("gamma");
+		paramSigmaThreshold.push_back(15); /// check and adjust
 	}
 
 	/// max ampl
@@ -1025,6 +1031,7 @@ void Cut::setThrParamsFuncs()
 			return std::max(std::abs(in.max()), std::abs(in.min()));
 		});
 		paramNames.push_back("maxAmpl");
+		paramSigmaThreshold.push_back(10); /// check and adjust
 	}
 
 	/// integral
@@ -1038,6 +1045,7 @@ void Cut::setThrParamsFuncs()
 								   0.);
 		});
 		paramNames.push_back("integral");
+		paramSigmaThreshold.push_back(5); /// check and adjust
 	}
 
 }
@@ -1066,7 +1074,8 @@ void Cut::nextBadPointSlot()
 				double numSigmas = std::abs(windParams[windNum][ch][numFunc]
 											- thrParams[ch][numFunc].mean)
 								   /  thrParams[ch][numFunc].sigma;
-				if(numSigmas > 6.) /// spin box
+
+				if(numSigmas > paramSigmaThreshold[numFunc]) /// add spin box
 				{
 					std::cout << "nextBad: param = " << paramNames[numFunc] << " "
 							  << "chan = " << ch << " "
@@ -1074,11 +1083,11 @@ void Cut::nextBadPointSlot()
 							  << "numSigmas = " << numSigmas << " "
 							  << std::endl;
 					proceed = false;
-					break;
+					break; /// from while(proceed)
 				}
 			}
 		}
-		++windNum;
+		if(proceed) ++windNum;
 
 		if(windNum == data3.cols() / paramsWindLen - 1)
 		{
@@ -1086,6 +1095,7 @@ void Cut::nextBadPointSlot()
 			return;
 		}
 	}
+
 	if(!proceed) std::cout << std::endl;
 
 	resetLimits();
@@ -1298,15 +1308,6 @@ void Cut::linearApproxSlot()
 		{
 			data3[ch][i] = data3[ch][lef] + coeff * (i - lef);
 		}
-	}
-	paint();
-}
-
-void Cut::subtractMeansSlot()
-{
-	for(auto & row : data3)
-	{
-		row -= smLib::mean(row);
 	}
 	paint();
 }

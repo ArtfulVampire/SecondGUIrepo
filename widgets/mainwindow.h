@@ -56,8 +56,6 @@ public slots:
     void drawDirSlot();
     void setEdfFileSlot();
 	void cleanDirs();
-	void cleanDirsCheckAll();
-	void cleanDirsUncheckAll();
     void drawMapsSlot();
     void constructEDFSlot();
     void reduceChannelsEDFSlot();

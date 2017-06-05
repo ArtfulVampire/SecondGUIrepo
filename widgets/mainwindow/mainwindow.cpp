@@ -17,7 +17,6 @@ MainWindow::MainWindow() :
     setlocale(LC_NUMERIC, "C");
 
     autoProcessingFlag = false;
-
 	stdOutBuf = std::cout.rdbuf();
 
     staSlice = 0;
@@ -46,8 +45,7 @@ MainWindow::MainWindow() :
 //    ui->eyesCleanCheckBox->setChecked(true);   ///for winds
 //    ui->reduceChannelsCheckBox->setChecked(true);
 //    ui->reduceChannelsCheckBox->setChecked(false);
-    ui->progressBar->setValue(0);
-    ui->setNsLine->property("S&et");
+	ui->progressBar->setValue(0);
 
 	ui->drawDirBox->addItem("Reals");
     ui->drawDirBox->addItem("cut");
@@ -293,7 +291,7 @@ MainWindow::MainWindow() :
 #endif
 
 
-	/// widgets
+	/// open other widgets
     QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(setEdfFileSlot()));
 	QObject::connect(ui->cut_e, SIGNAL(clicked()), this, SLOT(showCut()));
 	QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(showNet()));
@@ -301,18 +299,12 @@ MainWindow::MainWindow() :
 
 	/// small things, ~constant edf
 	QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
-
-	QObject::connect(ui->setNsLine, &QLineEdit::returnPressed,
-					 [this]()
-	{
-		def::ns = ui->setNsLine->text().toInt();
-		ui->textEdit->append("ns equals to " + nm(def::ns));
-		ui->setNsLine->clear();
-	});
 	QObject::connect(ui->fileMarkersLineEdit, SIGNAL(returnPressed()), this, SLOT(setFileMarkers()));
 	QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
-	QObject::connect(ui->cleanDirsCheckAllButton, SIGNAL(clicked()), this, SLOT(cleanDirsCheckAll()));
-	QObject::connect(ui->cleanDirsUncheckAllButton, SIGNAL(clicked()), this, SLOT(cleanDirsUncheckAll()));
+	QObject::connect(ui->cleanDirsCheckAllButton, &QPushButton::clicked,
+					 [this](){ this->cleanDirsAll(true); });
+	QObject::connect(ui->cleanDirsUncheckAllButton, &QPushButton::clicked,
+					 [this](){ this->cleanDirsAll(false); });
 	QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawDirSlot()));
 	QObject::connect(ui->drawMapsPushButton, SIGNAL(clicked()), this, SLOT(drawMapsSlot()));
 	QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(processEyes()));
@@ -331,10 +323,8 @@ MainWindow::MainWindow() :
 	/// edit edf
 	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(highlighted(int)),
 					 this, SLOT(changeRedNsLine(int)));
-
 	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(currentIndexChanged(int)),
 					 this, SLOT(changeRedNsLine(int)));
-
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));
 	QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
@@ -462,9 +452,7 @@ void MainWindow::setEdfFile(const QString & filePath)
     ui->filePathLineEdit->setText((helpString));
 
     //set ExpName
-
 	def::ExpName = myLib::getExpNameLib(filePath);
-    ui->Name->setText(def::ExpName);
 
 	helpString.resize(helpString.lastIndexOf(slash));
     def::dir->cd(helpString);
@@ -476,9 +464,9 @@ void MainWindow::setEdfFile(const QString & filePath)
         {
             generalLogStream.close();
         }
-        helpString += QString(slash) + "generalLog.txt";
+		helpString +=  "/generalLog.txt";
 
-		generalLogStream.open(helpString.toStdString().c_str(), std::ios_base::app);
+		generalLogStream.open(helpString.toStdString(), std::ios_base::app);
 		generalLogStream << std::endl << std::endl << std::endl;
 
 		std::cout.rdbuf(generalLogStream.rdbuf());
@@ -644,6 +632,7 @@ void MainWindow::drawReals()
     int blueCh = -1;
     const edfFile & fil = globalEdf;
 
+	/// magic const, switch
     if(def::ns == 41)
     {
         redCh = 21;
@@ -659,7 +648,7 @@ void MainWindow::drawReals()
         redCh = 21;
         blueCh = 22;
     }
-    else // not the best solution
+	else /// not the best solution
     {
         for(int i = 0; i < fil.getNs(); ++i)
         {
@@ -697,11 +686,7 @@ void MainWindow::drawReals()
     }
     ui->progressBar->setValue(0);
 
-    helpString = "signals are drawn ";
-    ui->textEdit->append(helpString);
-
-    helpString = "ns equals to ";
-    helpString.append(QString::number(def::ns));
+	helpString = QString("signals are drawn\n") + "ns equals to " + nm(def::ns);
     ui->textEdit->append(helpString);
 
     stopFlag = 0;
@@ -719,16 +704,6 @@ void MainWindow::cleanDirsAll(bool fl)
 	ui->cleanFromRealsCheckBox->setChecked(fl);
 	ui->cleanMarkersCheckBox->setChecked(fl);
 	ui->cleanSpectraImgCheckBox->setChecked(fl);
-}
-
-void MainWindow::cleanDirsCheckAll()
-{
-	cleanDirsAll(true);
-}
-
-void MainWindow::cleanDirsUncheckAll()
-{
-	cleanDirsAll(false);
 }
 
 void MainWindow::cleanDirs()

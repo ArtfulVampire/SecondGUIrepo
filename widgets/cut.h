@@ -132,10 +132,16 @@ private:
 	const int paramsChanNum = 19;
 	const int paramsWindLen = std::pow(2, 8);
 	std::vector<matrix> learnSet{}; /// to find bad points
-	std::vector<std::function<double(const std::valarray<double> &)>> paramFuncs{};
-	std::vector<QString> paramNames{};
+
 	std::vector<std::vector<thrParam>> thrParams{}; /// [channel][param]
 	std::vector<std::vector<std::vector<double>>> windParams{}; /// [windNum][channel][param]
+
+	/// to struct?
+	std::vector<std::function<double(const std::valarray<double> &)>> paramFuncs{};
+	std::vector<QString> paramNames{};
+	std::vector<double> paramSigmaThreshold{};
+
+
 
 
     QStringList lst;

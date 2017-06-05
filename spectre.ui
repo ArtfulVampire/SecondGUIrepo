@@ -209,7 +209,7 @@
     <rect>
      <x>261</x>
      <y>381</y>
-     <width>225</width>
+     <width>242</width>
      <height>98</height>
     </rect>
    </property>
@@ -281,13 +281,13 @@
     <string>Compare</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>120</y>
-     <width>241</width>
-     <height>261</height>
+     <width>246</width>
+     <height>264</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -363,7 +363,7 @@
         <item>
          <widget class="QPushButton" name="countButton">
           <property name="text">
-           <string>set spValues</string>
+           <string>count</string>
           </property>
          </widget>
         </item>

@@ -463,6 +463,10 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			{
 				labels[i] = myLib::fitString("EOG EOG2-A1", 16);
 			}
+			else if(labels[i].contains("EOG 3"))
+			{
+				labels[i] = myLib::fitString("EOG EOG3-A1", 16); /// CHECK - A1 is OK
+			}
 			/// set marker channel
 			else if(labels[i].contains("Marker") ||
 					labels[i].contains("Status"))

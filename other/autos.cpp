@@ -160,12 +160,12 @@ void Xenia_TBI()
 //	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
 //						"_cry", "_fire", "_flower", "_wc"};
 
-	QString tbi_path = def::XeniaFolder + "/11May";
-//	QString tbi_path = def::GalyaFolder + "/24May17";
+//	QString tbi_path = def::XeniaFolder + "/11May";
+	QString tbi_path = def::GalyaFolder + "/Kids5June";
 
 //	QStringList subdirs{"healthy", "moderate_TBI", "severe_TBI"};
 //	QStringList subdirs{"Norm_new", "TBI_new"};
-	QStringList subdirs{"1"};
+	QStringList subdirs{""};
 
 //	subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 
@@ -181,9 +181,9 @@ void Xenia_TBI()
 		repair::toLatinDir(workPath, {});
 		repair::toLowerDir(workPath, {});
 
-//		repair::deleteSpacesDir(workPath);
-//		autos::GalyaCut(workPath, 8);
-//		continue;
+		repair::deleteSpacesDir(workPath);
+		autos::GalyaCut(workPath, 8);
+		continue;
 
 		/// list of guys
 		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);

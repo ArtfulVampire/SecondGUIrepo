@@ -41,10 +41,6 @@ Net::Net() :
         ui->trainTestRadioButton->setChecked(true); /// train-test
     }
 
-//    ui->realsRadioButton->setChecked(true); /// reals
-    ui->windsRadioButton->setChecked(true); /// winds
-//    ui->pcaRadioButton->setChecked(true); /// PCA
-
     ui->backpropRadioButton->setChecked(false);
     ui->deltaRadioButton->setChecked(false);
 

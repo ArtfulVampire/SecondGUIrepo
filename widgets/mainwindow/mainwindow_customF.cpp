@@ -26,10 +26,10 @@ void MainWindow::customFunc()
 //	countSpectraSimple(4096, 15);
 //	exit(0);
 
-//	return;
+	return;
 
 
-#if 01
+#if 0
 	/// draw Wts from a folder
 	const QString inDir = "/media/Files/Data/FeedbackTest/GA_FB/GA_FB_weights";
 	ANN * net = new ANN();
