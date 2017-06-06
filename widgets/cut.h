@@ -73,8 +73,7 @@ public slots:
 	void pasteSlot();
     void save();
 	void saveSubsecSlot();
-    void rewrite();
-	void subtractMeansSlot();
+	void rewrite();
 	void linearApproxSlot();
 	void toLearnSetSlot();
 	void nextBadPointSlot();

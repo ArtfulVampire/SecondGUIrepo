@@ -329,7 +329,7 @@ void MainWindow::sliceOneByOne()
 
             if(finish > start)
             {
-                if(finish - start <= def::freq * 42) /// const generality limit
+				if(finish - start <= def::freq * 62) /// const generality limit
                 {
                     helpString += "_" + marker;
                     fil.saveSubsection(start,

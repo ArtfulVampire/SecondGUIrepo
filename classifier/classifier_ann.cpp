@@ -478,7 +478,7 @@ void ANN::drawWeight(QString wtsPath,
     matrix drawWts; // 3 arrays of weights
 
     drawWts = tempWeights[0];
-    drawWts.resizeCols(drawWts.cols() - 1); // fck the bias?
+	drawWts.resizeCols(drawWts.cols() - 1); // fck the bias?
 
     if(picPath.isEmpty())
     {
