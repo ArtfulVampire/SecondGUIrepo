@@ -608,9 +608,3 @@ void MainWindow::constructEDF(const QString & newPath,
 	std::cout << "constructEDF: " << myLib::getFileName(newPath)
 			  << "\ttime = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
-
-void MainWindow::eyesFast()  //generality
-{
-    globalEdf.cleanFromEyes();
-}
-

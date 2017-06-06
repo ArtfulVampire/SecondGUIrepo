@@ -165,11 +165,22 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QRadioButton" name="realsButton">
-         <property name="text">
-          <string>Reals</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QRadioButton" name="realsButton">
+           <property name="text">
+            <string>Reals</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="elenaSliceCheckBox">
+           <property name="text">
+            <string>Elena</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -188,13 +199,6 @@
           </widget>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="justSliceButton">
-         <property name="text">
-          <string>just</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
@@ -219,24 +223,6 @@
        </item>
        <item row="1" column="0">
         <widget class="QDoubleSpinBox" name="timeShiftSpinBox"/>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QRadioButton" name="ntRadio">
-         <property name="text">
-          <string>NeuroTravel</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="enRadio">
-         <property name="text">
-          <string>Encephalan</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
@@ -288,69 +274,30 @@
        <item row="0" column="1">
         <widget class="QCheckBox" name="cleanRealsSpectraCheckBox">
          <property name="text">
-          <string>RealsSpectra</string>
+          <string>SpectraSmooth</string>
          </property>
         </widget>
-       </item>
-       <item row="0" column="3">
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
        <item row="1" column="0">
         <widget class="QCheckBox" name="cleanWindsCheckBox">
          <property name="text">
-          <string>Winds</string>
+          <string>winds</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
         <widget class="QCheckBox" name="cleanWindsSpectraCheckBox">
          <property name="text">
-          <string>WindsSpectra</string>
+          <string>SpectraSmooth/winds</string>
          </property>
         </widget>
        </item>
        <item row="2" column="0">
         <widget class="QCheckBox" name="cleanFromRealsCheckBox">
          <property name="text">
-          <string>fromreals</string>
+          <string>winds/fromreals</string>
          </property>
         </widget>
-       </item>
-       <item row="2" column="3">
-        <spacer name="horizontalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="3">
-        <spacer name="horizontalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
        <item row="2" column="1">
         <widget class="QCheckBox" name="cleanMarkersCheckBox">
@@ -362,7 +309,7 @@
        <item row="0" column="2">
         <widget class="QCheckBox" name="cleanRealsSignalsCheckBox">
          <property name="text">
-          <string>RealsSignals</string>
+          <string>Signals</string>
          </property>
         </widget>
        </item>
@@ -376,7 +323,7 @@
        <item row="1" column="2">
         <widget class="QCheckBox" name="cleanWindsSignalsCheckBox">
          <property name="text">
-          <string>WindsSignals</string>
+          <string>Signals/winds</string>
          </property>
         </widget>
        </item>
@@ -767,7 +714,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>12</x>

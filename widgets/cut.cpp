@@ -83,10 +83,11 @@ Cut::Cut() :
 	ui->iitpSaveNewNumSpinBox->setMaximum(50);
 	ui->iitpSaveNewNumSpinBox->setValue(24);
 
-	ui->valDoubleSpinBox->setMaximum(800);
+
+	ui->valDoubleSpinBox->setMaximum(1000);
 	ui->firstDoubleSpinBox->setMaximum(500);
 	ui->secondDoubleSpinBox->setMaximum(500);
-	ui->valDoubleSpinBox->setMinimum(-800);
+	ui->valDoubleSpinBox->setMinimum(-1000);
 	ui->firstDoubleSpinBox->setMinimum(-500);
 	ui->secondDoubleSpinBox->setMinimum(-500);
 
@@ -361,6 +362,20 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 
 			return true;
 		}
+		else if(event->type() == QEvent::KeyPress)
+		{
+			QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
+			if(keyEvent->key() == Qt::Key_Left)
+			{
+				ui->leftLimitSpinBox->stepDown();
+			}
+			else if(keyEvent->key() == Qt::Key_Right)
+			{
+				ui->leftLimitSpinBox->stepUp();
+			}
+			showDerivatives();
+			paintLimits();
+		}
 
         else
 		{
@@ -395,6 +410,7 @@ void Cut::setValuesByEdf()
 	currFreq = edfFil.getFreq();
 	data3 = edfFil.getData(); /// expensive
 
+
 	ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
 	ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
 	resetLimits();
@@ -420,6 +436,9 @@ void Cut::setValuesByEdf()
 	ui->color1SpinBox->setValue(edfFil.findChannel(blueStr));
 	ui->color2SpinBox->setValue(edfFil.findChannel(redStr));
 	ui->color3SpinBox->setValue(-1);
+
+	ui->linearApproxSpinBox->setMaximum(edfFil.getNs());
+	ui->linearApproxSpinBox->setValue(edfFil.getNs() - 1); // markers
 }
 
 void Cut::createImage(const QString & dataFileName)
@@ -1283,6 +1302,7 @@ void Cut::linearApproxSlot()
 {
 	const int lef = ui->leftLimitSpinBox->value();
 	const int rig = ui->rightLimitSpinBox->value();
+
 	std::vector<int> chanList;
 	for(int i = 0; i < data3.rows(); ++i)
 	{

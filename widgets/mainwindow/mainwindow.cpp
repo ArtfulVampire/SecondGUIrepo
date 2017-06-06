@@ -28,23 +28,14 @@ MainWindow::MainWindow() :
 
     // what with deletion?
     QButtonGroup * group1, *group2;
-    group1 = new QButtonGroup();
-    group1->addButton(ui->enRadio);
-    group1->addButton(ui->ntRadio);
+	group1 = new QButtonGroup();
     group2 = new QButtonGroup();
     group2->addButton(ui->windsButton);
-    group2->addButton(ui->realsButton);
-    group2->addButton(ui->justSliceButton);
-
-    ui->enRadio->setChecked(true);
+	group2->addButton(ui->realsButton);
 
     ui->drawCoeffSpinBox->setValue(1.0); //draw coeff
     ui->drawCoeffSpinBox->setSingleStep(0.1); //draw coeff
-    ui->sliceCheckBox->setChecked(true);
-//    ui->eyesCleanCheckBox->setChecked(false);
-//    ui->eyesCleanCheckBox->setChecked(true);   ///for winds
-//    ui->reduceChannelsCheckBox->setChecked(true);
-//    ui->reduceChannelsCheckBox->setChecked(false);
+	ui->sliceCheckBox->setChecked(true);
 	ui->progressBar->setValue(0);
 
 	ui->drawDirBox->addItem("Reals");
@@ -266,7 +257,7 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->matiPreprocessingPushButton, SIGNAL(clicked()), this, SLOT(matiPreprocessingSlot()));
 	QObject::connect(ui->markerGetPushButton, SIGNAL(clicked()), this, SLOT(markerGetSlot()));
 	QObject::connect(ui->markerSetPushButton, SIGNAL(clicked()), this, SLOT(markerSetSlot()));
-	QObject::connect(ui->markerBinTimeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(markerSetSecTime(int)));
+	QObject::connect(ui->markerBinTimeSpinBox, SIGNAL(valueChanged(int))this, SLOT(markerSetSecTime(int)));
 
 //	QObject::connect(ui->markerDecimalLineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetBinValueSlot()));
 	QObject::connect(ui->markerDecimalLineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetBinValueSlot()));
@@ -545,15 +536,13 @@ void MainWindow::readData()
 		std::cout << "readData: edf file doent exist\n" << helpString.toStdString() << std::endl;
         return;
     }
-
     globalEdf.readEdfFile(helpString);
     def::ns = globalEdf.getNs();
 
-    helpString = "data have been read ";
+	helpString = "data have been read\n";
+	helpString += "ns equals to " + nm(def::ns);
     ui->textEdit->append(helpString);
 
-    helpString = "ns equals to " + QString::number(def::ns);
-    ui->textEdit->append(helpString);
     ui->markerSecTimeDoubleSpinBox->setMaximum(globalEdf.getDataLen() / def::freq);
     ui->markerBinTimeSpinBox->setMaximum(globalEdf.getDataLen());
 }
@@ -563,7 +552,7 @@ void MainWindow::drawDirSlot()
     const QString deer = ui->drawDirBox->currentText();
     if(deer.contains("spectr", Qt::CaseInsensitive))
     {
-        drawSpectraSlot();
+		drawSpectraSlot();
     }
     else
     {
@@ -716,94 +705,25 @@ void MainWindow::cleanDirs()
         return;
     }
 
-	// winds
-	if(ui->cleanWindsCheckBox->isChecked())
-    {
-        helpString = def::dir->absolutePath()
-				+ "/winds";
-		myLib::cleanDir(helpString);
-    }
-
-	// SpectraSmooth/winds
-	if(ui->cleanWindsSpectraCheckBox->isChecked())
-    {
-        helpString = def::dir->absolutePath()
-				+ "/SpectraSmooth"
-				+ "/winds";
-		myLib::cleanDir(helpString);
-    }
-
-    // SpectraSmooth
-    if(ui->cleanRealsSpectraCheckBox->isChecked())
-    {
-        helpString = def::dir->absolutePath()
-				+ "/SpectraSmooth";
-		myLib::cleanDir(helpString);
-    }
-
-	// winds/fromreal
-    if(ui->cleanFromRealsCheckBox->isChecked())
-    {
-        helpString = def::dir->absolutePath()
-				+ "/winds"
-				+ "/fromreal";
-		myLib::cleanDir(helpString);
-    }
-
-	// Reals
-	if(ui->cleanRealsCheckBox->isChecked())
-    {
-        helpString = def::dir->absolutePath()
-				+ "/Reals";
-		myLib::cleanDir(helpString);
-    }
-
-    // SpectraImg
-    if(ui->cleanSpectraImgCheckBox->isChecked())
-    {
-        helpString = def::dir->absolutePath()
-					 + "/SpectraImg";
-		myLib::cleanDir(helpString);
-    }
-
-    // signals
-	if(ui->cleanRealsSignalsCheckBox->isChecked())
-    {
-        helpString = def::dir->absolutePath()
-					 + "/Signals" + slash;
-
-        for(auto str2 : {"before", "after", "other"})
-        {
-			myLib::cleanDir(helpString + str2);
-        }
-    }
-
-
-
-	// signals winds
-	if(ui->cleanWindsSignalsCheckBox->isChecked())
-    {
-        helpString = def::dir->absolutePath()
-					 + "/Signals/winds" + slash;
-
-        for(auto str2 : {"before", "after", "other"})
-        {
-			myLib::cleanDir(helpString + str2);
-        }
-    }
-
-    // markers
-    if(ui->cleanMarkersCheckBox->isChecked())
-    {
-        helpString = def::dir->absolutePath();
-		myLib::cleanDir(helpString, "markers", 0);
-    }
-
-    helpString = "dirs cleaned ";
-    ui->textEdit->append(helpString);
-
-    helpString = "ns equals to ";
-    helpString += QString::number(def::ns);
+	for(int i = 0; i < ui->cleanDirsLayout->count(); ++i)
+	{
+		QCheckBox * item = dynamic_cast<QCheckBox*>(ui->cleanDirsLayout->itemAt(i)->widget());
+		if(item)
+		{
+			if(item->text() == "markers")
+			{
+				helpString = def::dir->absolutePath();
+				myLib::cleanDir(helpString, "markers", 0);
+			}
+			else
+			{
+				helpString = def::dir->absolutePath()+ "/" + item->text();
+				myLib::cleanDir(helpString);
+			}
+		}
+	}
+	helpString = "dirs cleaned\n";
+	helpString += "ns equals to " + nm(def::ns);
     ui->textEdit->append(helpString);
 }
 

@@ -11,88 +11,54 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 {
 	QTime myTime;
 	myTime.start();
-
 	readData();
-	edfFile & fil = globalEdf;
-
-		if(ui->sliceCheckBox->isChecked())
+	if(ui->sliceCheckBox->isChecked())
+	{
+		if(ui->matiCheckBox->isChecked())
 		{
-			if(ui->matiCheckBox->isChecked())
+			// almost equal time, should use sessionEdges
+#if 1
+			sliceMati();
+			sliceMatiPieces(true);
+#else
+			sliceMatiSimple();
+#endif
+		}
+		else
+		{
+			if(ui->windsButton->isChecked())
 			{
-				// almost equal time, should use sessionEdges
-		#if 1
-					sliceMati();
-					sliceMatiPieces(true);
-		#else
-					sliceMatiSimple();
-		#endif
+				sliceWinds();
 			}
-			else if(ui->ntRadio->isChecked())
+			else if(ui->realsButton->isChecked())
 			{
-				/// was for Boris, now empty
-			}
-			else if(ui->enRadio->isChecked()) /// deprecate en/nt
-			{
-				if(ui->windsButton->isChecked())
+				if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) //generality
 				{
-					sliceWinds();
-//					sliceOneByOne();
-//					sliceOneByOneNew();
-//					sliceWindFromReal();
+					sliceBak(1, 60, "241");
+					sliceBak(61, 120, "247");
+					sliceBak(121, 180, "241");
+					sliceBak(181, 240, "247");
 				}
-				else if(ui->justSliceButton->isChecked()) /// what for?
+				else
 				{
-					QString helpString;
-					const double wndLen = ui->windowLengthSpinBox->value() * def::freq;
-
-					for(int i = 0;
-						i < std::min(ceil(fil.getData().cols() / wndLen), 60.); /// const generality
-						++i)
+					//						sliceOneByOneNew(); /// by number after 241/247
+					if(ui->elenaSliceCheckBox->isChecked())
 					{
-						helpString = (def::dir->absolutePath()
-															  + "/winds"
-															  + "/fromreal"
-															  + "/" + def::ExpName
-															  + "-" + myLib::rightNumber(i, 4)
-															  + "_" + nm(254)
-//                                                              + ".edf"
-															  );
-
-						fil.saveSubsection(i * wndLen,
-										   std::min((i + 1) * wndLen,
-											   double(fil.getData().cols())),
-										   helpString,
-										   true
-//                                           false
-										   );
-
-					}
-				}
-				else if(ui->realsButton->isChecked())
-				{
-					if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) //generality
-					{
-						sliceBak(1, 60, "241");
-						sliceBak(61, 120, "247");
-						sliceBak(121, 180, "241");
-						sliceBak(181, 240, "247");
+						sliceElena();
 					}
 					else
 					{
-//                        sliceOneByOneNew(); /// by number after 241/247
 						sliceOneByOne();
 					}
 				}
 			}
 		}
-		ui->progressBar->setValue(0);
+	}
+	ui->progressBar->setValue(0);
 
-
-	QString helpString = "data sliced ";
-	ui->textEdit->append(helpString);
-
-	helpString = "ns equals to ";
-	helpString += QString::number(def::ns);
+	QString helpString = "data sliced\n";
+	helpString += "ns equals to ";
+	helpString += nm(def::ns);
 	ui->textEdit->append(helpString);
 
 	std::cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
@@ -249,6 +215,112 @@ void MainWindow::sliceWindFromReal()
 	std::cout << "sliceWindFromReal: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
+
+void MainWindow::sliceElena()
+{
+	QString helpString;
+	int marker = -1;
+	int number = -1;
+	int start = -1;
+	bool startFlag = false;
+
+	const edfFile & fil = globalEdf;
+	const std::valarray<double> & markChanArr = fil.getMarkArr();
+
+	std::set<int> allNumbers;
+	for(int i = 1; i < 240; ++i)
+	{
+		allNumbers.emplace(i);
+	}
+
+	// (241-244) - instruction, (1-240) - number(start), (255) - optional click,
+	// (245-254) - operational, 255 - ready for next task
+	for(int i = 0; i < fil.getDataLen(); ++i)
+	{
+		if(!startFlag)
+		{
+			if(241 <= markChanArr[i] && markChanArr[i] <= 244)
+			{
+				marker = markChanArr[i];
+				startFlag = true;
+			}
+			else if(markChanArr[i] != 0 && markChanArr[i] != 255)
+			{
+				std::cout << "sliceElena: startFlag == false, "
+						  << "bad marker " << markChanArr[i] << ", "
+						  << "time = " << i / 250. << " sec" << std::endl;
+			}
+			else
+			{
+				// 0 or 255 - do nothing
+			}
+		}
+		else // if(startFlag)
+		{
+			if(1 <= markChanArr[i] && markChanArr[i] <= 240) // task number
+			{
+				number = markChanArr[i];
+				start = i;
+			}
+			else if(245 <= markChanArr[i] && markChanArr[i] <= 254) // task end
+			{
+				helpString = def::dir->absolutePath()
+							 + "/Reals"
+							 + "/" + def::ExpName
+							 + "_n_" + nm(number)
+							 + "_m_" + nm(marker)
+							 + "_t_" + nm(markChanArr[i]);
+
+				if(start != -1)
+				{
+					if(i - start < 60 * fil.getFreq())
+					{
+						fil.saveSubsection(start,
+										   i,
+										   helpString,
+										   true);
+						allNumbers.erase(number);
+					}
+					else
+					{
+						std::cout << "sliceElena: too long piece, "
+								  << "start time = " << start / 250. << " sec, "
+								  << "end time = " << i / 250. << " sec" << std::endl;
+					}
+				}
+				else
+				{
+					std::cout << "sliceElena: startFlag == true, "
+							  << "end mark = " << markChanArr[i] << ", "
+							  << "start == -1, "
+							  << "end time = " << i / 250. << " sec" << std::endl;
+				}
+
+				startFlag = false;
+				start = -1;
+				marker = 0;
+
+
+				ui->progressBar->setValue(i * 100. / fil.getDataLen());
+				qApp->processEvents();
+				if(stopFlag)
+				{
+					stopFlag = 0;
+					return;
+				}
+
+			}
+		}
+	}
+
+	std::cout << "sliceElena: not detected reals:" << std::endl;
+	for(auto each : allNumbers)
+	{
+		std::cout << each << " "; std::cout.flush();
+	}
+	std::cout << std::endl;
+
+}
 
 
 void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning - from mark1 to mark 2, end 250. Marker - included in filename

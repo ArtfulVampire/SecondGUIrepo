@@ -48,16 +48,15 @@ public slots:
 	// files
     void sliceAll();
 	void sliceWindFromReal(); /// deprecated
-
 	void sliceWinds();
-    void reduceChannelsSlot();
-	void drawReals();
+
     void drawSpectraSlot();
     void drawDirSlot();
     void setEdfFileSlot();
 	void cleanDirs();
     void drawMapsSlot();
     void constructEDFSlot();
+	void reduceChannelsSlot();
     void reduceChannelsEDFSlot();
 	void cleanEdfFromEyesSlot();
 
@@ -82,30 +81,32 @@ public slots:
 
 public:
     void sliceBak(int marker1, int marker2, QString marker);
-	void readData();
-	void eyesFast();
 	void sliceMati();
     void sliceMatiPieces(bool plainFlag = true);
     void sliceMatiSimple();
-
-
-    void countSpectraSimple(int fftLen, int inSmooth = -1);
     void sliceOneByOne();
 	void sliceOneByOneNew();
+	void sliceElena();
+
+
 	void setEdfFile(const QString & filePath);
+	void readData();
+	void countSpectraSimple(int fftLen, int inSmooth = -1);
+
 	void makeChanList(std::vector<int> & chanList);
 	void cleanDirsAll(bool);
 
 
+	void drawReals();
 	void drawSpectra(const QString & inPath,
 					 const QString & outPath);
 
+	void rereferenceData(const QString & newRef,
+						 const QString & newPath);
 	void refilterData(double lowFreq,
 					  double highFreq,
 					  const QString & newPath,
 					  bool notch);
-	void rereferenceData(const QString & newRef,
-						 const QString & newPath);
 	void reduceChannelsEDF(const QString & newFilePath);
 	void constructEDF(const QString & newPath,
 					  const QStringList & nameFilters = QStringList());
