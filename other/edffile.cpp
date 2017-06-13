@@ -467,7 +467,9 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			}
 			else if(labels[i].contains("EOG 3"))
 			{
-				labels[i] = myLib::fitString("EOG EOG3-A1", 16); /// CHECK - A1 is OK
+				/// CHECK - A1 is OK
+				/// or bipolar?
+				labels[i] = myLib::fitString("EOG EOG3", 16);
 			}
 			/// set marker channel
 			else if(labels[i].contains("Marker") ||
@@ -733,7 +735,7 @@ void edfFile::handleDatum(int currNs,
                     + (physMax[currNs] - physMin[currNs])
                     * (double(a) - digMin[currNs])
                     / (digMax[currNs] - digMin[currNs]
-                       + (def::ntFlag ? 0 : 1));
+					   + (this->ntFlag ? 0 : 1));
             /// neurotravel + 0
             /// encephalan + 1
 
@@ -797,7 +799,7 @@ void edfFile::handleDatum(int currNs,
 
             a = (qint16)((currDatum - physMin[currNs])
                         * (digMax[currNs] - digMin[currNs]
-                           + (def::ntFlag ? 0 : 1))
+						   + (this->ntFlag ? 0 : 1))
                         / (physMax[currNs] - physMin[currNs])
 						+ digMin[currNs]);
 

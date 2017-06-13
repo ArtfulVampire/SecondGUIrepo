@@ -20,14 +20,14 @@ LIBS += -fopenmp
 
 #DSP
 INCLUDEPATH += ../SecondGUI/DSP
-LIBS += -L../SecondGUI/DSP -ldspFilters
+#LIBS += -L../SecondGUI/DSP -ldspFilters
 
 #cwt
 INCLUDEPATH += ./matlab/for_testing
 DEPENDPATH += ./matlab/for_testing
 INCLUDEPATH += ./matlab/mcr_extern_include
 LIBS += -L../SecondGUI/matlab/for_testing -lcwt_r
-
+#linux-only
 LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -leng -lmwcpp11compat
 LIBS += -L/media/Files/Matlab/MCR/v83/runtime/glnxa64 -lmwmclmcrrt
 
@@ -71,7 +71,22 @@ widgets/net/net_setsgets.cpp \
 widgets/net/net_successive.cpp \
 widgets/net/net_data.cpp \
 widgets/spectre.cpp \
-widgets/cut.cpp
+widgets/cut.cpp \
+    DSP/DspFilters/Biquad.cpp \
+    DSP/DspFilters/Butterworth.cpp \
+    DSP/DspFilters/Cascade.cpp \
+    DSP/DspFilters/ChebyshevI.cpp \
+    DSP/DspFilters/Custom.cpp \
+    DSP/DspFilters/Design.cpp \
+    DSP/DspFilters/Documentation.cpp \
+    DSP/DspFilters/Elliptic.cpp \
+    DSP/DspFilters/Filter.cpp \
+    DSP/DspFilters/Legendre.cpp \
+    DSP/DspFilters/Param.cpp \
+    DSP/DspFilters/PoleFilter.cpp \
+    DSP/DspFilters/RootFinder.cpp \
+    DSP/DspFilters/Bessel.cpp \
+    DSP/DspFilters/ChebyshevII.cpp
 
 HEADERS  += \
 widgets/cut.h \

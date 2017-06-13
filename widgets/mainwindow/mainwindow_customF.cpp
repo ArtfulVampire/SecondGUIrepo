@@ -11,8 +11,11 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
-	autos::makeRightNumbersCF("/media/Files/Pictures/CF_3", 81);
-	exit(0);
+//	ui->elenaSliceCheckBox->setChecked(true); // Elena
+//	ui->eogBipolarCheckBox->setChecked(true); // Elena
+
+//	autos::makeRightNumbersCF("/media/Files/Pictures/CF_3", 81);
+//	exit(0);
 
 //	edfFile f;
 //	f.readEdfFile("/media/Files/Data/iitp/Aliev/Aliev_15_sum_f.edf");
@@ -25,6 +28,15 @@ void MainWindow::customFunc()
 //	readData();
 //	countSpectraSimple(4096, 15);
 //	exit(0);
+
+
+	QRegExp forRef(R"([\-].{1,4}[ ])");
+	forRef.indexIn("EOG Eog3");
+	QString refName = forRef.cap();
+	refName.remove(QRegExp(R"([\-\s])"));
+	std::cout << refName.size() << std::endl;
+
+	exit(0);
 
 	return;
 

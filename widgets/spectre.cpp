@@ -502,9 +502,9 @@ void Spectre::compare()
 
         for(int j = 0; j < NumOfPatterns; ++j)
         {
-            helpString = (filesPath
-                                                  + slash
-                                                  + lst[j]);
+			helpString = (filesPath
+						  + slash
+						  + lst[j]);
 			myLib::readFileInLine(helpString, tempVec);
 
             meanVec += tempVec;

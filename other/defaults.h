@@ -27,12 +27,12 @@
 #define INERTIA 0
 #endif
 
-/// classifier - should check
+
 #ifndef SHOW_MATI_WIDGETS
 #define SHOW_MATI_WIDGETS 0
 #endif
 
-/// classifier - should check
+
 #ifndef SHOW_IITP_WIDGETS
 #define SHOW_IITP_WIDGETS 0
 #endif

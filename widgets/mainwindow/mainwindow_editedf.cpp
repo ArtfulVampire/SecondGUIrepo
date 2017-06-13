@@ -56,28 +56,23 @@ void MainWindow::rereferenceData(const QString & newRef,
               chanList.end(),
               0);
 
-    int groundChan = -1; //A1-N
-    int earsChan1 = -1; //A1-A2
-    int earsChan2 = -1; //A2-A1
-	std::cout << def::ns << std::endl;
+	int groundChan = -1;	// A1-N
+	int earsChan1 = -1;		// A1-A2
+	int earsChan2 = -1;		// A2-A1
+	int eog1 = -1;			// EOG1-A1
+	int eog2 = -1;			// EOG2-A2
+
     for(int i = 0; i < def::ns; ++i)
     {
-        if(label[i].contains("A1-N"))
-        {
-            groundChan = i;
-        }
-        else if(label[i].contains("A1-A2"))
-        {
-            earsChan1 = i;
-        }
-        else if(label[i].contains("A2-A1"))
-        {
-            earsChan2 = i;
-        }
+		if(label[i].contains("A1-N"))		{ groundChan = i; }
+		else if(label[i].contains("A1-A2"))	{ earsChan1 = i; }
+		else if(label[i].contains("A2-A1"))	{ earsChan2 = i; }
+		else if(label[i].contains("EOG1"))	{ eog1 = i; }
+		else if(label[i].contains("EOG2"))	{ eog2 = i; }
     }
     if(groundChan == -1 || (earsChan1 == -1 && earsChan2 == -1))
     {
-		std::cout << "some of reref channels are absent" << std::endl;
+		std::cout << "rereferenceData: some of ref channels are absent" << std::endl;
         return;
     }
 
@@ -97,21 +92,29 @@ void MainWindow::rereferenceData(const QString & newRef,
     const QString earsChanStr = QString::number(earsChan + 1);
     const QString groundChanStr = QString::number(groundChan + 1);
 
+
     for(int i = 0; i < def::ns; ++i) //ns -> 21
     {
         const QString currNumStr = QString::number(i + 1);
 
-        if((label[i].contains("EOG") && ui->eogAsIsCheckBox->isChecked()) ||
-           (i == groundChan || i == earsChan))
-        {
-            helpString += currNumStr + " "; continue;
-        }
-
-        if(!label[i].contains(QRegExp("E[EO]G"))) /// generality
+		if(!label[i].contains(QRegExp("E[EO]G"))) /// not EOG, not EEG
         {
             helpString += currNumStr + " ";
-        }
-        else
+		}
+		else if(label[i].contains("EOG") && ui->eogAsIsCheckBox->isChecked())
+		{
+			helpString += currNumStr + " ";
+		}
+		else if(label[i].contains("EOG") && ui->eogBipolarCheckBox->isChecked())
+		{
+			if(label[i].contains("EOG1")) { /* do nothing */ }
+			else if(label[i].contains("EOG2")) /// make bipolar EOG1-EOG2
+			{
+				helpString += eog1 + "-" + eog2 + sign[1] + earsChan;
+			}
+			else { helpString += currNumStr + " "; }
+		}
+		else /// EEG and usual EOG
         {
             // define current ref
             QRegExp forRef(R"([\-].{1,4}[ ])");
@@ -119,9 +122,13 @@ void MainWindow::rereferenceData(const QString & newRef,
             QString refName = forRef.cap();
             refName.remove(QRegExp(R"([\-\s])"));
 
+			/// if no reference found - leave as is
+			if(refName.isEmpty()) { helpString += currNumStr + " "; }
+
 			QString chanName = myLib::getLabelName(label[i]);
 
             QString targetRef = newRef;
+
             /// if newRef == "Base"
             if(!(newRef == "A1" ||
                  newRef == "A2" ||
@@ -149,7 +156,8 @@ void MainWindow::rereferenceData(const QString & newRef,
             helpString2 = label[i];
             helpString2.replace(refName, targetRef);
             label[i] = helpString2;
-        }
+		}
+
     }
 	std::cout << "rereferenceData: " << newRef << "\n" << helpString.toStdString() << std::endl;
     ui->reduceChannelsLineEdit->setText(helpString);

@@ -141,49 +141,20 @@ namespace def
 	const QStringList edfFilters = {"*.edf", "*.EDF"};
 	const QStringList plainFilters = {"*.scg"};
 
-	extern QDir * dir;
-	inline QString realsDir() {return def::dir->absolutePath() + "/Reals";}
-	inline QString windsDir() {return def::dir->absolutePath() + "/winds";}
-	inline QString windsFromRealsDir() {return def::dir->absolutePath() + "/winds/fromreal";}
-	inline QString realsSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth";}
-	inline QString windsSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth/winds";}
-	inline QString pcaSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth/PCA";}
-	inline QString paDir() {return def::dir->absolutePath() + "/Help/PA";}
-
-    extern bool ntFlag;
-
-	extern QString ExpName;
-    extern int ns;
-
-	extern double freq;
-    extern int fftLength;
-
-	extern double leftFreq;
-	extern double rightFreq;
-	extern double inertiaCoef;
-
-    extern QString cfgFileName;
-    extern QStringList fileMarkers;
-    extern std::vector<QColor> colours;
+	const std::vector<QColor> colours { QColor("blue"),
+				QColor("red"),
+				QColor("green"),
+				QColor("black"),
+				QColor("gray")
+									  };
 
     extern double drawNorm;
     extern spectraGraphsNormalization drawNormTyp;
 
-    inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
-	inline int numOfClasses()
-	{
-//		return 6;
-		return def::fileMarkers.length();
-	}
-
-    extern int right();
-    extern int left();
-    inline int spLength() {return def::right() - def::left();}
-	inline double spStep() {return def::freq / def::fftLength;}
-
 //    Atanov
     const QString dataFolder = "/media/Files/Data";
-//    const QString dataFolder = "D:/MichaelAtanov/workData";
+//	const QString dataFolder = "D:/MichaelAtanov/workData";
+//	const QString dataFolder = "C:/Michael/Data";
     const QString XeniaFolder = "/media/Files/Data/Xenia";
     const QString mriFolder = "/media/Files/Data/MRI";
     const QString GalyaFolder = "/media/Files/Data/Galya";
@@ -195,6 +166,47 @@ namespace def
 
     const bool opencl = true;
     const bool openmp = true;
+
+
+
+
+
+
+	/// to def class
+
+	extern QDir * dir;
+	inline QString realsDir() {return def::dir->absolutePath() + "/Reals";}
+	inline QString windsDir() {return def::dir->absolutePath() + "/winds";}
+	inline QString windsFromRealsDir() {return def::dir->absolutePath() + "/winds/fromreal";}
+	inline QString realsSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth";}
+	inline QString windsSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth/winds";}
+	inline QString pcaSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth/PCA";}
+	inline QString paDir() {return def::dir->absolutePath() + "/Help/PA";}
+
+	extern bool ntFlag;
+	extern int ns;
+
+	extern double freq;
+	extern int fftLength;
+
+	extern double leftFreq;
+	extern double rightFreq;
+	extern double inertiaCoef;
+
+	extern QStringList fileMarkers;
+	extern QString ExpName;
+
+	inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
+	inline int numOfClasses()
+	{
+//		return 6;
+		return def::fileMarkers.length();
+	}
+
+	extern int right();
+	extern int left();
+	inline int spLength() {return def::right() - def::left();}
+	inline double spStep() {return def::freq / def::fftLength;}
 
 }
 

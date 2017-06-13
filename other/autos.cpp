@@ -355,7 +355,6 @@ void IITPrename(const QString & guyName)
 /// *.dat headers to dats.txt
 void IITPdat(const QString & guyName)
 {
-
 	def::ntFlag = true;
 	QStringList files = QDir(def::iitpFolder + "/" + guyName).entryList({"*.dat"},
 																		QDir::Files,
@@ -1718,8 +1717,8 @@ void makeRightNumbersCF(const QString & dirPath, int startNum)
 			newName += part + "_";
 		}
 
-		std::cout << dirPath + "/" + oldName << std::endl
-				  << dirPath + "/" + newName << std::endl << std::endl;
+//		std::cout << dirPath + "/" + oldName << std::endl
+//				  << dirPath + "/" + newName << std::endl << std::endl;
 
 		QFile::rename(dirPath + "/" + oldName,
 					  dirPath + "/" + newName);
@@ -1733,8 +1732,8 @@ void makeRightNumbersCF(const QString & dirPath, int startNum)
 		QString newName = oldName;
 		newName.replace("_jpg_", ".jpg");
 
-		std::cout << dirPath + "/" + oldName << std::endl
-				  << dirPath + "/" + newName << std::endl << std::endl;
+//		std::cout << dirPath + "/" + oldName << std::endl
+//				  << dirPath + "/" + newName << std::endl << std::endl;
 
 		QFile::rename(dirPath + "/" + oldName,
 					  dirPath + "/" + newName);
