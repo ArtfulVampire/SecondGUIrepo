@@ -4,8 +4,11 @@
 #include <chrono>
 
 #include <other/matrix.h>
-#include <matlab/for_testing/libcwt_r.h>
 #include <other/defaults.h>
+
+#if WAVELET_MATLAB
+#include <matlab/for_testing/libcwt_r.h>
+#endif
 
 #include <QString>
 #include <QPixmap>

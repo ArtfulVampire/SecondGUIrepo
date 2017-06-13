@@ -1713,15 +1713,28 @@ void makeRightNumbersCF(const QString & dirPath, int startNum)
 			if(ok)
 			{
 				part = myLib::rightNumber(startNum++, 3);
+				std::cout << a << "\t" << part << std::endl;
 			}
 			newName += part + "_";
 		}
-		newName.remove(newName.length() - 1, 1); // remove last '_'
 
-//		std::cout << dirPath + "/" + oldName << "\t"
-//				  << dirPath + "/" + newName << std::endl;
+		std::cout << dirPath + "/" + oldName << std::endl
+				  << dirPath + "/" + newName << std::endl << std::endl;
 
-		newName.replace("_jpg", ".jpg");
+		QFile::rename(dirPath + "/" + oldName,
+					  dirPath + "/" + newName);
+	}
+
+
+	for(QString oldName : QDir(dirPath).entryList({"*_jpg_*"}, QDir::Files, QDir::Name))
+	{
+		std::cout << oldName << std::endl;
+
+		QString newName = oldName;
+		newName.replace("_jpg_", ".jpg");
+
+		std::cout << dirPath + "/" + oldName << std::endl
+				  << dirPath + "/" + newName << std::endl << std::endl;
 
 		QFile::rename(dirPath + "/" + oldName,
 					  dirPath + "/" + newName);

@@ -11,8 +11,8 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
-//	autos::makeRightNumbersCF("/media/Files/Pictures/NewCF", 1);
-//	exit(0);
+	autos::makeRightNumbersCF("/media/Files/Pictures/CF_3", 81);
+	exit(0);
 
 //	edfFile f;
 //	f.readEdfFile("/media/Files/Data/iitp/Aliev/Aliev_15_sum_f.edf");
