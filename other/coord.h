@@ -11,6 +11,8 @@
 #include <QDir>
 #include <QColor>
 
+#include <other/defaults.h> // for uint typedef and dataFolder
+
 namespace coords
 {
 
@@ -152,9 +154,12 @@ namespace def
     extern spectraGraphsNormalization drawNormTyp;
 
 //    Atanov
-    const QString dataFolder = "/media/Files/Data";
-//	const QString dataFolder = "D:/MichaelAtanov/workData";
+#if ELENA_VARIANT
 //	const QString dataFolder = "C:/Michael/Data";
+#else
+    const QString dataFolder = "/media/Files/Data";
+//	const QString dataFolder = "D:/MichaelAtanov/workData"; // on O.D. comp
+#endif
     const QString XeniaFolder = "/media/Files/Data/Xenia";
     const QString mriFolder = "/media/Files/Data/MRI";
     const QString GalyaFolder = "/media/Files/Data/Galya";

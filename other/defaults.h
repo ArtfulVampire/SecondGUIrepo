@@ -1,6 +1,8 @@
 #ifndef DEFAULTS_H
 #define DEFAULTS_H
 
+typedef unsigned int uint;
+
 /// 0 - usual, 1 - mine, with normalization
 #ifndef COHERENCY_TYPE
 #define COHERENCY_TYPE 01
@@ -10,7 +12,6 @@
 #ifndef DSP_LIB
 #define DSP_LIB 01
 #endif
-
 
 #ifndef WAVELET_MATLAB
 #define WAVELET_MATLAB 01
@@ -27,7 +28,6 @@
 #define INERTIA 0
 #endif
 
-
 #ifndef SHOW_MATI_WIDGETS
 #define SHOW_MATI_WIDGETS 0
 #endif
@@ -38,7 +38,7 @@
 #endif
 
 #ifndef ELENA_VARIANT
-#define ELENA_VARIANT 1
+#define ELENA_VARIANT 0
 #endif
 
 

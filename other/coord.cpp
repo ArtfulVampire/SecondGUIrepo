@@ -1,5 +1,4 @@
 #include <other/coord.h>
-#include <other/defaults.h>
 
 namespace def
 {

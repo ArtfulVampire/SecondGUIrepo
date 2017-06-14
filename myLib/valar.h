@@ -6,6 +6,7 @@
 #include <complex>
 #include <iostream>
 #include <chrono>
+#include <other/defaults.h> // for uint typedef
 
 namespace smLib
 {
