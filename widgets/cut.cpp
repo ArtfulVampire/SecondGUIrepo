@@ -136,7 +136,10 @@ Cut::Cut() :
     QObject::connect(ui->backwardStepButton, SIGNAL(clicked()), this, SLOT(backwardStepSlot()));
     QObject::connect(ui->forwardFrameButton, SIGNAL(clicked()), this, SLOT(forwardFrameSlot()));
 	QObject::connect(ui->backwardFrameButton, SIGNAL(clicked()), this, SLOT(backwardFrameSlot()));
-	QObject::connect(ui->findMarkPushButton, SIGNAL(clicked()), this, SLOT(findNextMark()));
+	QObject::connect(ui->findMarkPushButton, &QPushButton::clicked,
+					 [this](){ findNextMark(ui->findMarkSpinBox->value()); });
+	QObject::connect(ui->findNonzeroMarkPushButton, &QPushButton::clicked,
+					 [this](){ findNextMark(-1); });
 
 	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
 	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
@@ -675,18 +678,30 @@ void Cut::backwardFrameSlot()
 	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
 }
 
-void Cut::findNextMark()
+void Cut::findNextMark(int mark)
 {
 	if(myFileType == fileType::edf)
 	{
-		auto it = std::find(std::begin(edfFil.getMarkArr()) + leftDrawLimit + 150,
-							std::end(edfFil.getMarkArr()),
-							ui->findMarkSpinBox->value());
+		auto it = std::begin(edfFil.getMarkArr());
+		if(mark > 0)
+		{
+			it = std::find(std::begin(edfFil.getMarkArr()) + leftDrawLimit + 150,
+						   std::end(edfFil.getMarkArr()),
+						   mark);
+		}
+		else
+		{
+			it = std::find_if(std::begin(edfFil.getMarkArr()) + leftDrawLimit + 150,
+							  std::end(edfFil.getMarkArr()),
+							  [](double in){ return in != 0.; });
+		}
+
 		if(it == std::end(edfFil.getMarkArr()))
 		{
-			std::cout << "findNextMark: next marker not found" << std::endl;
+			std::cout << "findNextMark: marker not found" << std::endl;
 			return;
 		}
+
 		int index = std::distance(std::begin(edfFil.getMarkArr()), it);
 		ui->paintStartDoubleSpinBox->setValue(std::max(0., double(index) / edfFil.getFreq() - 0.5));
 		ui->leftLimitSpinBox->setValue(index);

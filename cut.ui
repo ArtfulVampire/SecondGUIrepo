@@ -543,7 +543,7 @@
     <string>all gonios</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>750</x>
@@ -595,13 +595,13 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>830</x>
      <y>50</y>
      <width>181</width>
-     <height>91</height>
+     <height>109</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="markersGridLayout">
@@ -615,29 +615,36 @@
     <item row="0" column="1">
      <widget class="QSpinBox" name="findMarkSpinBox"/>
     </item>
-    <item row="1" column="0">
+    <item row="2" column="0">
      <widget class="QPushButton" name="setMark1PushButton">
       <property name="text">
        <string>set mark 1</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="1">
+    <item row="2" column="1">
      <widget class="QLineEdit" name="mark1LineEdit"/>
     </item>
-    <item row="2" column="0">
+    <item row="3" column="0">
      <widget class="QPushButton" name="setMark2PushButton">
       <property name="text">
        <string>set mark 2</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
+    <item row="3" column="1">
      <widget class="QLineEdit" name="mark2LineEdit"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="findNonzeroMarkPushButton">
+      <property name="text">
+       <string>next nonzero mark</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>550</x>

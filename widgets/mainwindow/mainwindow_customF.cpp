@@ -18,50 +18,19 @@ void MainWindow::customFunc()
 //	exit(0);
 
 //	edfFile f;
-//	f.readEdfFile("/media/Files/Data/iitp/Aliev/Aliev_15_sum_f.edf");
+//	f.readEdfFile("/media/Files/Data/Elena/Tetereva/Tetereva_1.edf");
+//	f.concatFile("/media/Files/Data/Elena/Tetereva/Tetereva_2.edf",
+//				 "/media/Files/Data/Elena/Tetereva/Tetereva_3.edf");
+//	exit(0);
+
 //	myLib::drw::drawOneSpectrum(f[f.findChannel("Da_r")], 160, 170, 1000, 1).save(
 //				"/media/Files/Data/iitp/Aliev_15_da_r.jpg", 0, 100);
-//	f.zeroChannels({ f.findChannel("O1"), f.findChannel("O2") }).writeEdfFile("/media/Files/Data/FeedbackTest/GA/GA_1_f_z.edf");
+//	f.zeroChannels({ f.findChannel("O1"),
+//					 f.findChannel("O2") }).writeEdfFile(
+//				"/media/Files/Data/FeedbackTest/GA/GA_1_f_z.edf");
 //	exit(0);
-
-//	setEdfFile("/media/Files/Data/FeedbackTest/GA/GA_1_final.edf");
-//	readData();
-//	countSpectraSimple(4096, 15);
-//	exit(0);
-
-
-	QRegExp forRef(R"([\-].{1,4}[ ])");
-	forRef.indexIn("EOG Eog3");
-	QString refName = forRef.cap();
-	refName.remove(QRegExp(R"([\-\s])"));
-	std::cout << refName.size() << std::endl;
-
-	exit(0);
 
 	return;
-
-
-#if 0
-	/// draw Wts from a folder
-	const QString inDir = "/media/Files/Data/FeedbackTest/GA_FB/GA_FB_weights";
-	ANN * net = new ANN();
-	ClassifierData cl = ClassifierData("/media/Files/Data/FeedbackTest/GA_FB/winds/fromreal");
-	net->setClassifierData(cl);
-
-//	std::cout << net->getClassifierData()->getData().cols() << std::endl;
-	def::fftLength = 1024;
-
-	for(QString fileName : QDir(inDir).entryList({"*.wts"}))
-	{
-		QString drawName = fileName;
-		drawName.replace(".wts", ".jpg");
-		net->drawWeight(inDir + "/" + fileName,
-					   inDir + "/" + drawName);
-//		break;
-	}
-	exit(0);
-#endif
-
 
 #if 0
 	/// IITP
@@ -207,6 +176,27 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+#if 0
+	/// draw Wts from a folder
+	const QString inDir = "/media/Files/Data/FeedbackTest/GA_FB/GA_FB_weights";
+	ANN * net = new ANN();
+	ClassifierData cl = ClassifierData("/media/Files/Data/FeedbackTest/GA_FB/winds/fromreal");
+	net->setClassifierData(cl);
+
+//	std::cout << net->getClassifierData()->getData().cols() << std::endl;
+	def::fftLength = 1024;
+
+	for(QString fileName : QDir(inDir).entryList({"*.wts"}))
+	{
+		QString drawName = fileName;
+		drawName.replace(".wts", ".jpg");
+		net->drawWeight(inDir + "/" + fileName,
+					   inDir + "/" + drawName);
+//		break;
+	}
+	exit(0);
+#endif
+
 
 //	QString wrk = "/media/Files/Data/Xenia/14Mar/TBI_new_tmp";
 //	repair::toLowerDir(wrk, {});
@@ -220,7 +210,6 @@ void MainWindow::customFunc()
 //		newName.replace("_D2_", "_d2_");
 //		newName.replace("_Dim_", "_dim_");
 //		newName.replace("_Wavelet", "_wavelet");
-
 
 //		newName.replace("_Kh_", "_kh_");
 //		newName.replace("_Cr_", "_cr_");

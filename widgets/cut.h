@@ -53,7 +53,7 @@ private:
 
 	void countThrParams();
 
-
+	void findNextMark(int mark);
 
 public slots:
     void createImage(const QString & dataFileName);
@@ -85,8 +85,7 @@ public slots:
 	void forwardStepSlot();
     void backwardStepSlot();
     void forwardFrameSlot();
-    void backwardFrameSlot();
-	void findNextMark();
+	void backwardFrameSlot();
 	void cutPausesSlot();
 
 	void iitpAutoCorrSlot();
