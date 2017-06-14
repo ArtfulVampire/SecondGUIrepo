@@ -2,26 +2,22 @@
 #include "ui_net.h"
 
 
-void Net::autoClassification(const QString & spectraDir)
+Classifier::avType Net::autoClassification(const QString & spectraDir)
 {
     QTime myTime;
     myTime.start();
 
-#if 0
-    //set random matrix - add in PaIntoMatrixByName
-    for(int i = 0; i < def::nsWOM(); ++i)
-    {
-        for(int j = 0; j < def::nsWOM(); ++j)
-        {
-            tempRandomMatrix[i][j] = (i == j); //identity matrix
-//            tempRandomMatrix[i][j] = (i == j) * (5 + rand()%36) / 10.; //random diagonal
-//            tempRandomMatrix[i][j] = (5. + rand()%36) / 50.; //full random
-//            tempRandomMatrix[i][j] = (i == j) * (1. + (rand()%8 == 0) * (5. + rand()%35) / 5.); //random diagonal
-        }
-    }
-#endif
+	if(!spectraDir.isEmpty())
+	{
+		loadData(spectraDir);
+	}
 
-    loadData(spectraDir);
+	if(myClassifier->getType() == ClassifierType::ANN)
+	{
+		/// adjust learnRate
+		ANN * myANN = dynamic_cast<ANN*>(myClassifier);
+		myANN->adjustLearnRate();
+	}
 
     switch(Mode)
     {
@@ -42,66 +38,16 @@ void Net::autoClassification(const QString & spectraDir)
         halfHalfClassification(); break;
     }
     default: {break;}
-    }
-	myClassifier->averageClassification();
-    std::cout <<  "AutoClass: time elapsed = " << myTime.elapsed()/1000. << " sec" << std::endl;
-}
-
-
-Classifier::avType Net::autoClassification()
-{
-    QTime myTime;
-    myTime.start();
-
-	if(myClassifier->getType() == ClassifierType::ANN)
-	{
-		/// adjust learnRate
-		ANN * myANN = dynamic_cast<ANN *>(myClassifier);
-		myANN->adjustLearnRate();
 	}
-
-    switch(Mode)
-    {
-    case myMode::k_fold:
-    {
-        crossClassification();
-//		std::cout << "cross classification:" << std::endl;
-        break;
-    }
-    case myMode::N_fold:
-	{
-		leaveOneOutClassification();
-
-		myClassifier->learnAll();
-		myClassifier->printParams();
-//		std::cout << "N-fold cross-validation:" << std::endl;
-        break;
-    }
-    case myMode::train_test:
-    {
-        trainTestClassification();
-//		std::cout << "train-test classification:" << std::endl;
-        break;
-    }
-    case myMode::half_half:
-    {
-        halfHalfClassification();
-//		std::cout << "half-half classification:" << std::endl;
-        break;
-    }
-    default: {break;}
-    }
-	std::cout <<  "autoClassification: time elapsed = "
-			   << myTime.elapsed() / 1000. << " sec" << std::endl;
-    return myClassifier->averageClassification();
+	std::cout << "autoClassification: time elapsed = "
+			  << myTime.elapsed() / 1000. << " sec" << std::endl;
+	return myClassifier->averageClassification();
 }
-
 
 void Net::autoClassificationSimple()
 {
     QString helpString = def::dir->absolutePath()
 						 + "/SpectraSmooth";
-
     switch(Source)
     {
     case source::winds:

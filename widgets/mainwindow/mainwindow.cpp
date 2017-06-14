@@ -18,8 +18,6 @@ MainWindow::MainWindow() :
 
     autoProcessingFlag = false;
 	stdOutBuf = std::cout.rdbuf();
-
-    staSlice = 0;
     stopFlag = 0;
 
     def::dir->cd(QDir::root().absolutePath());
@@ -28,24 +26,23 @@ MainWindow::MainWindow() :
 
     // what with deletion?
     QButtonGroup * group1, *group2;
-	group1 = new QButtonGroup();
-    group2 = new QButtonGroup();
+	group1 = new QButtonGroup(this);
+	group2 = new QButtonGroup(this);
     group2->addButton(ui->windsButton);
 	group2->addButton(ui->realsButton);
 
-    ui->drawCoeffSpinBox->setValue(1.0); //draw coeff
-    ui->drawCoeffSpinBox->setSingleStep(0.1); //draw coeff
+	ui->drawCoeffSpinBox->setValue(1.0);
+	ui->drawCoeffSpinBox->setSingleStep(0.1);
 	ui->sliceCheckBox->setChecked(true);
 	ui->progressBar->setValue(0);
 
 	ui->drawDirBox->addItem("Reals");
     ui->drawDirBox->addItem("cut");
 	ui->drawDirBox->addItem("winds");
-
     ui->drawDirBox->addItem("SpectraSmooth");
 	ui->drawDirBox->addItem("SpectraSmooth/winds");
 	ui->drawDirBox->addItem("winds/SpectraSmooth"); /// tcpClient test
-	ui->drawDirBox->addItem("winds/fromreal"); //generality
+	ui->drawDirBox->addItem("winds/fromreal");
 
     /// set fileMarks lineEdit
     helpString.clear();
@@ -174,12 +171,12 @@ MainWindow::MainWindow() :
     var = QVariant(helpString);
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
 
-    ui->reduceChannelsComboBox->setCurrentText("MyCurrent");
-//    ui->reduceChannelsComboBox->setCurrentText("20");
+//    ui->reduceChannelsComboBox->setCurrentText("MyCurrent");
+	ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
     ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(ui->reduceChannelsComboBox->currentIndex()).toString());
 
 
-    /// seconds !!!!!
+	/// in seconds !!!!!
     ui->timeShiftSpinBox->setMinimum(0.1);
     ui->timeShiftSpinBox->setMaximum(32);
     ui->timeShiftSpinBox->setValue(0.5);
@@ -228,7 +225,6 @@ MainWindow::MainWindow() :
 	ui->cleanWindsSignalsCheckBox->setChecked(true);
 	ui->cleanFromRealsCheckBox->setChecked(true);
     ui->cleanMarkersCheckBox->setChecked(true);
-
     ui->cleanSpectraImgCheckBox->setChecked(true);
 
     ui->highFreqFilterDoubleSpinBox->setValue(40.);
@@ -240,7 +236,7 @@ MainWindow::MainWindow() :
     ui->rereferenceDataComboBox->addItem("A2");
     ui->rereferenceDataComboBox->addItem("Ar");
     ui->rereferenceDataComboBox->addItem("N");
-    ui->rereferenceDataComboBox->addItem("Base");
+	ui->rereferenceDataComboBox->addItem("Base");
     ui->rereferenceDataComboBox->setCurrentText("Ar");
 
     ui->matiPieceLengthSpinBox->setMaximum(64);

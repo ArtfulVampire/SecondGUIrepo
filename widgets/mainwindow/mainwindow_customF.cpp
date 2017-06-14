@@ -11,8 +11,10 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
-//	ui->elenaSliceCheckBox->setChecked(true); // Elena
-//	ui->eogBipolarCheckBox->setChecked(true); // Elena
+#if ELENA_VARIANT
+	ui->elenaSliceCheckBox->setChecked(true); // Elena
+	ui->eogBipolarCheckBox->setChecked(true); // Elena
+#endif
 
 //	autos::makeRightNumbersCF("/media/Files/Pictures/CF_3", 81);
 //	exit(0);

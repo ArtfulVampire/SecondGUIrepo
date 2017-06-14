@@ -129,8 +129,7 @@ private:
     std::ofstream generalLogStream;
 	std::streambuf * stdOutBuf;
 
-    edfFile globalEdf;
-    int staSlice;
+	edfFile globalEdf;
 
     matrix spocMixMatrix;
 	std::valarray<double> spocWVector;

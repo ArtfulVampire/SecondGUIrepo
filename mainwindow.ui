@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1207</width>
-    <height>840</height>
+    <height>775</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -753,19 +753,6 @@
      </item>
     </layout>
    </widget>
-   <zorder>browseButton</zorder>
-   <zorder>filePathLineEdit</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>makeTestDataPushButton</zorder>
-   <zorder>numComponentsSpinBox</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>fileMarkersLineEdit</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>eogAsIsCheckBox</zorder>
-   <zorder>eogAsIsCheckBox</zorder>
-   <zorder>eogAsIsCheckBox_2</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

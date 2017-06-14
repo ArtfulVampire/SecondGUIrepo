@@ -1508,7 +1508,7 @@ void Cut::paint() // save to tmp.jpg and display
 		{
 			QPainter pnt;
 			pnt.begin(&currentPic);
-			pnt.setFont(QFont("", 14));
+			pnt.setFont(QFont("", 16));
 
 			for(int i = 0; i < subData.cols(); ++i)
 			{

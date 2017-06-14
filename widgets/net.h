@@ -81,7 +81,7 @@ public:
     void customF();
 
     /// classification
-    void autoClassification(const QString & spectraDir);
+	Classifier::avType autoClassification(const QString & spectraDir = QString());
     /// NEED CHECK
     void successiveProcessing();
 	Classifier::avType successiveByEDF(const QString & edfPath1, const QString & edfPath2);
@@ -121,8 +121,7 @@ public slots:
 	void loadDataSlot();
     void pca();
 
-    void autoClassificationSimple(); /// on SpectraSmooth + Source
-	Classifier::avType autoClassification(); /// on dataMatrix + types
+	void autoClassificationSimple();			/// on SpectraSmooth + Source
 
     void setSourceSlot(QAbstractButton*);
     void setModeSlot(QAbstractButton*, bool);

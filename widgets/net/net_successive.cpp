@@ -225,7 +225,7 @@ void Net::successivePreclean(const QString & spectraPath)
     myClassifier->setTestCleanFlag(true);
     for(int i = 0; i < 0; ++i)
     {
-        autoClassification(spectraPath);
+		autoClassification(spectraPath);
         if(myClassifier->averageClassification().first == 100.) break;
     }
     myClassifier->setTestCleanFlag(false);

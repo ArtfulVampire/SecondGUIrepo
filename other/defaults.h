@@ -37,5 +37,9 @@
 #define SHOW_IITP_WIDGETS 0
 #endif
 
+#ifndef ELENA_VARIANT
+#define ELENA_VARIANT 1
+#endif
+
 
 #endif

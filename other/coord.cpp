@@ -1,4 +1,5 @@
 #include <other/coord.h>
+#include <other/defaults.h>
 
 namespace def
 {
@@ -25,8 +26,12 @@ double freq = 250.;
 int fftLength = 4096;
 //int fftLength = 1024;
 
-QStringList fileMarkers{"_241", "_247", "_254 _244"};
-//QStringList fileMarkers{"_241", "_242", "_243", "_244"}; // Elena
+
+#if ELENA_VARIANT
+QStringList fileMarkers{"_241", "_242", "_243", "_244"}; // Elena
+#else
+QStringList fileMarkers{"_241", "_247", "_254 _244"}; // Me
+#endif
 
 //QStringList fileMarkers{"_241", "_242", "_245", "_246"}; // Ossadtchi
 //QStringList fileMarkers{"_241 _242", "_245 _246"}; // Ossadtchi

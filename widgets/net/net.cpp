@@ -113,12 +113,17 @@ Net::Net() :
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
 	QObject::connect(ui->stopButton, &QPushButton::clicked, [this](){ this->stopFlag = true; });
 
-    QObject::connect(ui->autoClassButton, SIGNAL(clicked()), this, SLOT(autoClassificationSimple()));
-    QObject::connect(ui->autoClassDataPushButton, SIGNAL(clicked()), this, SLOT(autoClassification()));
+	QObject::connect(ui->autoClassButton, &QPushButton::clicked,
+					 [this](){ autoClassificationSimple(); });
+	QObject::connect(ui->autoClassDataPushButton, &QPushButton::clicked,
+					 [this](){ autoClassification(); });
 
-    QObject::connect(myButtonGroup[0], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setModeSlot(QAbstractButton*, bool)));
-    QObject::connect(myButtonGroup[1], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setSourceSlot(QAbstractButton*)));
-    QObject::connect(myButtonGroup[2], SIGNAL(buttonToggled(QAbstractButton*, bool)), this, SLOT(setClassifier(QAbstractButton*, bool)));
+	QObject::connect(myButtonGroup[0], SIGNAL(buttonToggled(QAbstractButton*, bool)),
+			this, SLOT(setModeSlot(QAbstractButton*, bool)));
+	QObject::connect(myButtonGroup[1], SIGNAL(buttonToggled(QAbstractButton*, bool)),
+			this, SLOT(setSourceSlot(QAbstractButton*)));
+	QObject::connect(myButtonGroup[2], SIGNAL(buttonToggled(QAbstractButton*, bool)),
+			this, SLOT(setClassifier(QAbstractButton*, bool)));
 
     /// ANN
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWtsSlot()));
