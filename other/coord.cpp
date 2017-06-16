@@ -14,8 +14,8 @@ bool ntFlag = false;
 double drawNorm = -1.;
 spectraGraphsNormalization drawNormTyp = spectraGraphsNormalization::all;
 
-int left()  {return fftLimit(def::leftFreq, def::freq, def::fftLength);}
-int right() {return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1;}
+int left()  { return fftLimit(def::leftFreq, def::freq, def::fftLength); }
+int right() { return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1; }
 
 double leftFreq = 5.;
 double rightFreq = 20.;

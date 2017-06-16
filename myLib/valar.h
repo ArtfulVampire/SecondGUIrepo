@@ -40,7 +40,7 @@ inline std::valarray<double> abs(const std::valarray<std::complex<double>> & in)
 	std::transform(std::begin(in),
 				   std::end(in),
 				   std::begin(res),
-				   [](std::complex<double> a){ return std::abs(a);});
+				   [](std::complex<double> a){ return std::abs(a); });
 	return res;
 }
 
@@ -50,7 +50,7 @@ inline std::valarray<std::complex<double>> toComplex(const std::valarray<double>
 	std::transform(std::begin(in),
 				   std::end(in),
 				   std::begin(res),
-				   [](double a){ return std::complex<double>(a);});
+				   [](double a){ return std::complex<double>(a); });
 	return res;
 }
 

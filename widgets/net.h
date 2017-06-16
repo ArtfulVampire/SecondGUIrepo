@@ -98,8 +98,8 @@ public:
     void setSource(const QString & in = "reals");
     void setClassifier(const QString &);
     void setClassifier(ClassifierType);
-	const Classifier & getClassifier() const {return *myClassifier;}
-	const ClassifierData & getClassifierData() const {return myClassifierData;}
+	const Classifier & getClassifier() const { return *myClassifier; }
+	const ClassifierData & getClassifierData() const { return myClassifierData; }
 
 	/// data
     void loadData(const QString & spectraPath = def::dir->absolutePath()

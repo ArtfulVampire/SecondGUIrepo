@@ -251,51 +251,56 @@ protected:
 	bool writeHeaderFlag = false;
 
 public:
-//    const QString & getHeaderInit() const {return headerInitialInfo;}
-    const std::string & getHeaderInit() const {return headerInitialInfo;}
+//    const QString & getHeaderInit() const { return headerInitialInfo; }
+	const std::string & getHeaderInit() const { return headerInitialInfo; }
 
-    int getBytes() const {return bytes;}
-    const QString & getHeaderReserved() const {return headerReservedField;}
+	int getBytes() const { return bytes; }
+	const QString & getHeaderReserved() const { return headerReservedField; }
 
-    int getNdr() const {return ndr;}
-    double getDdr() const {return ddr;}
-    int getNs() const {return ns;}
-	int getFreq() const {return srate;}
+	int getNdr() const { return ndr; }
+	double getDdr() const { return ddr; }
+	int getNs() const { return ns; }
+	int getFreq() const { return srate; }
 
-	const std::vector<QString> & getLabels() const {return labels;}
-	const std::vector<QString> & getTransducer() const {return transducerType;}
-	const std::vector<QString> & getPrefiltering() const {return prefiltering;}
-	const std::vector<QString> & getPhysDim() const {return physDim;}
-	const std::vector<QString> & getReserved() const {return reserved;}
-	const std::valarray<double> & getPhysMax() const {return physMax;}
-	const std::valarray<double> & getPhysMin() const {return physMin;}
-	const std::valarray<double> & getDigMax() const {return digMax;}
-	const std::valarray<double> & getDigMin() const {return digMin;}
-	const std::valarray<double> & getNr() const {return nr;}
-    const QString & getHeaderRest() const {return headerRest;}
+	const std::vector<QString> & getLabels() const { return labels; }
+	const QString & getLabels(int i) const { return labels[i]; }
+	const std::vector<QString> & getTransducer() const { return transducerType; }
+	const std::vector<QString> & getPrefiltering() const { return prefiltering; }
+	const std::vector<QString> & getPhysDim() const { return physDim; }
+	const std::vector<QString> & getReserved() const { return reserved; }
+	const std::valarray<double> & getPhysMax() const { return physMax; }
+	const std::valarray<double> & getPhysMin() const { return physMin; }
+	const std::valarray<double> & getDigMax() const { return digMax; }
+	const std::valarray<double> & getDigMin() const { return digMin; }
+	const std::valarray<double> & getNr() const { return nr; }
+	const QString & getHeaderRest() const { return headerRest; }
 
-    const std::vector<edfChannel> & getChannels() const {return channels;}
+	const std::vector<edfChannel> & getChannels() const { return channels; }
 
-	int getDataLen() const {return edfData.cols();}
-	int getMarkChan() const {return markerChannel;}
+	const QString & getFilePath() const { return filePath; }
+	const QString & getDirPath() const  { return dirPath; }
+	const QString & getExpName() const { return ExpName; }
+	QString getFileNam() const { return myLib::getFileName(filePath); }
 
-    const QString & getFilePath() const {return filePath;}
-    const QString & getDirPath() const  {return dirPath;}
-    const QString & getExpName() const {return ExpName;}
-    QString getFileNam() const {return myLib::getFileName(filePath);}
-
-    const bool & getMatiFlag() const {return matiFlag;}
-    const bool & getNtFlag() const {return ntFlag;}
-    const bool & getEdfPlusFlag() const {return edfPlusFlag;}
-
-    void setMatiFlag(bool newFlag) {matiFlag = newFlag;}
-    void setNtFlag(bool newFlag) {ntFlag = newFlag;}
-    void setEdfPlusFlag(bool newFlag) {edfPlusFlag = newFlag;}
-	void setFilterIITPFlag(bool newFlag) {filterIITPflag = newFlag;}
+	// flags
+	// gets
+	bool getMatiFlag() const { return matiFlag; }
+	bool getNtFlag() const { return ntFlag; }
+	bool getEdfPlusFlag() const { return edfPlusFlag; }
+	// sets
+	void setMatiFlag(bool newFlag) {matiFlag = newFlag; }
+	void setNtFlag(bool newFlag) {ntFlag = newFlag; }
+	void setEdfPlusFlag(bool newFlag) {edfPlusFlag = newFlag; }
+	void setFilterIITPFlag(bool newFlag) {filterIITPflag = newFlag; }
 
     // operations with data
-	const matrix & getData() const {return edfData;}
+	// gets
+	const matrix & getData() const { return edfData; }
+	const std::valarray<double> & getData(int i) const { return edfData[i]; }
 	const std::valarray<double> & getMarkArr() const { return edfData[markerChannel]; }
+	int getDataLen() const { return edfData.cols(); }
+	int getMarkChan() const { return markerChannel; }
+	// sets
 	void setData(int chanNum, int timeBin, double val) { edfData[chanNum][timeBin] = val; }
 	void setData(int chanNum, const std::valarray<double> & newChan) { edfData[chanNum] = newChan; }
 	void setData(const matrix & newData) { edfData = newData; }

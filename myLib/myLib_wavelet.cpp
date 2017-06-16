@@ -1,5 +1,8 @@
 #include <myLib/wavelet.h>
 #include <myLib/dataHandlers.h>
+#include <myLib/output.h>
+
+using namespace myOut;
 
 namespace wvlt
 {
@@ -126,7 +129,7 @@ void drawWaveletMtlb(const matrix & inData, QString picPath)
 						 i * barH);
 		painter.drawText(0,
 						 pic.height() - (i + 0.5) * barH,
-						 QString::number(i + 2)); /// +2 from scales [2:1:20]
+						 nm(i + 2)); /// +2 from scales [2:1:20]
 	}
 
 	painter.setPen(Qt::SolidLine);
@@ -138,7 +141,7 @@ void drawWaveletMtlb(const matrix & inData, QString picPath)
 						 pic.height() - 20);
 		painter.drawText(i * def::freq * barL - 8,
 						 pic.height() - 2,
-						 QString::number(i));
+						 nm(i));
 
 	}
 	pic.save(picPath, 0, 100);
@@ -215,7 +218,7 @@ void wavelet(QString filePath,
 	//    const int num = ceil(fileData.cols() / wvlt::timeStep);
 	//    std::for_each(temp.begin(),
 	//                  temp.end(),
-	//                  [num](vec & in){in.resize(num, 0.);});
+	//                  [num](vec & in){in.resize(num, 0.); });
 
 	double tempR = 0., tempI = 0.;
 	int kMin = 0, kMax = 0;
@@ -330,7 +333,7 @@ void wavelet(QString filePath,
 						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
 		painter.drawText(0,
 						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
-						 QString::number(i));
+						 nm(i));
 
 	}
 	painter.setPen(Qt::SolidLine);
@@ -342,7 +345,7 @@ void wavelet(QString filePath,
 						 pic.height() - 20);
 		painter.drawText(pic.width() * i * def::freq / fileData.cols() - 8,
 						 pic.height() - 2,
-						 QString::number(i));
+						 nm(i));
 
 	}
 	pic.save(picPath, 0, 100);
@@ -545,7 +548,7 @@ void drawWavelet(QString picPath,
 						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin));
 		painter.drawText(0,
 						 pic.height() * (wvlt::freqMax - i) / (wvlt::freqMax - wvlt::freqMin) - 2,
-						 QString::number(i));
+						 nm(i));
 
 	}
 	painter.setPen(Qt::SolidLine);
@@ -557,7 +560,7 @@ void drawWavelet(QString picPath,
 						 pic.height() - 20);
 		painter.drawText(pic.width() * i * def::freq / NumOfSlices - 8,
 						 pic.height() - 2,
-						 QString::number(i));
+						 nm(i));
 
 	}
 	pic.save(picPath, 0, 100);

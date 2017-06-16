@@ -85,7 +85,7 @@ QPixmap drawOneTemplate(const int chanNum,
 
 	//draw Herzes
 	const double unit = (rightF - leftF) / myLib::drw::graphWidth;
-	auto currFreq = [unit, leftF](int in) -> double {return leftF + in * unit;};
+	auto currFreq = [unit, leftF](int in) -> double { return leftF + in * unit; };
 	const int lineLen = 5;
 
 	paint.setFont(QFont("Helvitica", myLib::drw::fontSizeHz));
@@ -99,7 +99,7 @@ QPixmap drawOneTemplate(const int chanNum,
 						   QPointF(X + k,
 								   Y + lineLen)); /// magic const
 
-			helpString = QString::number(std::round(cF));
+			helpString = nm(std::round(cF));
 
 			if(helpString.toInt() % 5 != 0) continue;
 
@@ -124,12 +124,12 @@ QPixmap drawOneTemplate(const int chanNum,
 		if(channelsFlag)
 		{
 			helpString = coords::lbl21[chanNum]
-						 + "(" + QString::number(chanNum + 1) + ")" // can be commented
+						 + "(" + nm(chanNum + 1) + ")" // can be commented
 						 ;
 		}
 		else
 		{
-			helpString = QString::number(chanNum + 1);
+			helpString = nm(chanNum + 1);
 
 		}
 		paint.drawText(QPointF(X - myLib::drw::fontSizeChan * 2/3,
@@ -201,7 +201,7 @@ QPixmap drawArray(const QPixmap & templatePic,
 	paint.drawText(QPointF(myLib::drw::templateWidth * (myLib::drw::c(4) + 1/32.) + 5,
 						   myLib::drw::templateHeight * (myLib::drw::c(0) + 1/32.)
 						   + myLib::drw::graphHeight / 2.),
-				   QString::number(maxVal) + " mcV^2/Hz");
+				   nm(maxVal) + " mcV^2/Hz");
 	paint.end();
 
 	return pic;
@@ -315,7 +315,7 @@ QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 //	paint.drawText(QPointF(myLib::drw::templateWidth * myLib::drw::c(4),
 //						   myLib::drw::templateHeight * myLib::drw::c(0)
 //						   + myLib::drw::graphHeight / 2),
-//				   QString::number(maxVal) + " mcV^2/Hz");
+//				   nm(maxVal) + " mcV^2/Hz");
 
 	paint.end();
 	return pic;
@@ -479,7 +479,7 @@ void cutToChannels(const QPixmap & inSpectraPic,
 	for(int i = 0; i < numOfChans; ++i)
 	{
 		myLib::drw::drawCutOneChannel(inSpectraPic, i).save(
-					outDir + "/" + fileName + "_" + QString::number(i) + ".jpg", nullptr, 100);
+					outDir + "/" + fileName + "_" + nm(i) + ".jpg", nullptr, 100);
 	}
 }
 
@@ -586,7 +586,7 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 //		paint.setFont(tmpF);
 //		paint.drawText(QPointF(myLib::drw::graphWidth,
 //							   myLib::drw::gap + myLib::drw::graphHeight / 2),
-//					   QString::number(maxVal) + " mcV^2/Hz");
+//					   nm(maxVal) + " mcV^2/Hz");
 	}
 	paint.end();
 	return pic;
@@ -749,7 +749,7 @@ QPixmap drawEeg(const matrix & inData,
 					   numSec * srate, pic.height() - 32);
 		paint.drawText(numSec * srate,
 					   pic.height() - 35,
-					   QString::number(numSec));
+					   nm(numSec));
 
 		for(int subSec = 1; subSec < 5; ++subSec) /// const 5
 		{
@@ -923,6 +923,10 @@ auto colorFunction (ColorScale in) -> QColor (*)(int, int)
 	case ColorScale::matlab:
 	{
 		return myLib::drw::hueMatlab;
+	}
+	default:
+	{
+		return myLib::drw::grayScale;
 	}
 	}
 }
@@ -1209,10 +1213,10 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 
 		int fontSize = 15;
 		pnt.setFont(QFont("Times", fontSize));
-		pnt.drawText(2, fontSize + 2, QString::number(smLib::doubleRound(maxMagn)));
+		pnt.drawText(2, fontSize + 2, nm(smLib::doubleRound(maxMagn)));
 		if(minMagn != 0)
 		{
-			pnt.drawText(2, values.height() - 2, QString::number(smLib::doubleRound(minMagn)));
+			pnt.drawText(2, values.height() - 2, nm(smLib::doubleRound(minMagn)));
 		}
 		else
 		{
@@ -1253,7 +1257,7 @@ QString mapPath(const QString & dir,
 				const QString & name,
 				int i)
 {
-	return dir + "/" + name + "_" + QString::number(i) + ".png";
+	return dir + "/" + name + "_" + nm(i) + ".png";
 }
 
 void drawMapsICA(const QString & mapsFilePath,

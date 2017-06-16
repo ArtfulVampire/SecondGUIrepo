@@ -219,7 +219,7 @@ void MainWindow::ICA() //fastICA
 	std::sort(std::begin(colsNorms),
 			  std::end(colsNorms),
               [](std::pair <double, int> i, std::pair <double, int> j)
-    {return i.first > j.first;});
+	{ return i.first > j.first; });
 
 	for(const auto & par : colsNorms)
     {
@@ -251,12 +251,12 @@ void MainWindow::ICA() //fastICA
 		auto it1 = std::find_if(std::begin(colsNorms),
 								std::end(colsNorms),
                                 [i](std::pair <double, int> in)
-        {return in.second == i;});
+		{ return in.second == i; });
 		/// find second
 		auto it2 = std::find_if(std::begin(colsNorms),
 								std::end(colsNorms),
                                 [colsNorms, i](std::pair <double, int> in)
-        {return in.second == colsNorms[i].second;});
+		{ return in.second == colsNorms[i].second; });
 
 		/// swap
 		std::swap((*it1).second, (*it2).second);
@@ -336,11 +336,11 @@ void MainWindow::ICA() //fastICA
 		auto it1 = std::find_if(std::begin(colsNorms),
 								std::end(colsNorms),
                                 [i](std::pair <double, int> in)
-        {return in.second == i;});
+		{ return in.second == i; });
 		auto it2 = std::find_if(std::begin(colsNorms),
 								std::end(colsNorms),
                                 [colsNorms, i](std::pair <double, int> in)
-        {return in.second == colsNorms[i].second;});
+		{ return in.second == colsNorms[i].second; });
 
 		std::swap((*it1).second, (*it2).second);
     }

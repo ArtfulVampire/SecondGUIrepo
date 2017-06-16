@@ -14,7 +14,7 @@
 class ClassifierData
 {
 public:
-	ClassifierData() {numOfCl = 3;}
+	ClassifierData() {numOfCl = 3; }
 	~ClassifierData() {}
 	ClassifierData(const matrix & inData, const std::vector<uint> & inTypes);
 	ClassifierData(const QString & inPath, const QStringList & filters = QStringList());
@@ -26,17 +26,17 @@ public:
 	void adjust();
 
 	/// gets
-	uint getNumOfCl() const {return numOfCl;}
-	const matrix & getData() const {return dataMatrix;}
-	const std::vector<uint> & getTypes() const {return types;}
-	const std::vector<std::vector<uint>> & getIndices() const {return indices;}
-	const std::vector<QString> & getFileNames() const {return fileNames;} // unused
-	const std::valarray<double> & getClassCount() const {return classCount;}
-	const std::valarray<double> & getApriori() const {return apriori;}
-	const QString & getFilesPath() const {return filesPath;}
+	uint getNumOfCl() const { return numOfCl; }
+	const matrix & getData() const { return dataMatrix; }
+	const std::vector<uint> & getTypes() const { return types; }
+	const std::vector<std::vector<uint>> & getIndices() const { return indices; }
+	const std::vector<QString> & getFileNames() const { return fileNames; } // unused
+	const std::valarray<double> & getClassCount() const { return classCount; }
+	const std::valarray<double> & getApriori() const { return apriori; }
+	const QString & getFilesPath() const { return filesPath; }
 
 	/// sets
-	void setApriori(const std::valarray<double> inApriori) {apriori = inApriori;}
+	void setApriori(const std::valarray<double> inApriori) {apriori = inApriori; }
 
 	/// matrix modifiers
 	void erase(const uint index);

@@ -1167,7 +1167,7 @@ void ica(const matrix & initialData,
         auto it2 = std::find_if(colsNorms.begin(),
                                 colsNorms.end(),
                                 [colsNorms, i](std::pair <double, int> in)
-        {return in.second == colsNorms[i].second;});
+        { return in.second == colsNorms[i].second; });
 
 //        std::swap((*it1).second, (*it2).second);
 
@@ -2038,7 +2038,7 @@ void splitZeros(matrix & dataIn,
                     // valarray, resizing further
                     std::remove_if(begin(dataIn[j]) + start,
                                    begin(dataIn[j]) + finish,
-                                   [](double){return true;});
+                                   [](double){ return true; });
                 }
                 flags.erase(flags.begin() + start,
                             flags.begin() + finish);

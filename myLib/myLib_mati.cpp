@@ -16,7 +16,7 @@ QString matiCountByteStr(double marker)
 
     for(int h = 15; h >= 0; --h)
     {
-        result += QString::number(int(byteMarker[h]));
+        result += nm(int(byteMarker[h]));
         if(h == 8) result += " ";
     }
     return result;

@@ -188,7 +188,7 @@ void MainWindow::sliceWindFromReal()
 						 + "/winds"
 						 + "/fromreal"
 						 + "/" + lst[i]
-						 + "." + myLib::rightNumber(h, 2);
+						 + "." + rn(h, 2);
 
             /// wowo wowoww wowowowo owowwowo
 			myLib::writePlainData(helpString, dataReal.subCols(offset, offset + wndLength));
@@ -209,7 +209,7 @@ void MainWindow::sliceWindFromReal()
 	helpString = "winds from Reals sliced ";
     ui->textEdit->append(helpString);
 
-    helpString = "ns equals to " + QString::number(def::ns);
+	helpString = "ns equals to " + nm(def::ns);
     ui->textEdit->append(helpString);
 
 	std::cout << "sliceWindFromReal: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
@@ -357,7 +357,7 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning 
 					+ "/Reals"
 					+ "/" + def::ExpName
                     + "_" + marker
-					+ "." + myLib::rightNumber(number, 4);
+					+ "." + rn(number, 4);
 
             // to test?
             fil.saveSubsection(j, k, helpString, true);
@@ -396,7 +396,7 @@ void MainWindow::sliceOneByOne()
             helpString = def::dir->absolutePath()
 						 + "/Reals"
 						 + "/" + def::ExpName
-						 + "." + myLib::rightNumber(number++, 4);
+						 + "." + rn(number++, 4);
 
 
             if(finish > start)
@@ -435,7 +435,7 @@ void MainWindow::sliceOneByOne()
                 return;
             }
 
-            marker = QString::number(markChanArr[finish]);
+			marker = nm(markChanArr[finish]);
             start = finish;
         }
     }
@@ -444,7 +444,7 @@ void MainWindow::sliceOneByOne()
         helpString = def::dir->absolutePath()
 					 + "/Reals"
 					 + "/" + def::ExpName
-					 + "." + myLib::rightNumber(number++, 4);
+					 + "." + rn(number++, 4);
         if(fil.getDataLen() - start < 40 * def::freq) /// if last realisation or interstimulus
         {
             helpString += "_" + marker;
@@ -517,7 +517,7 @@ void MainWindow::sliceOneByOneNew()
             helpString = def::dir->absolutePath()
 						 + "/Reals"
 						 + "/" + def::ExpName
-						 + "." + myLib::rightNumber(number++, 4);
+						 + "." + rn(number++, 4);
 //            std::cout << helpString << std::endl;
             if(i > j)
             {
@@ -564,7 +564,7 @@ void MainWindow::sliceOneByOneNew()
         helpString = def::dir->absolutePath()
 					 + "/Reals"
 					 + "/" + def::ExpName
-					 + "." + myLib::rightNumber(number++, 4);
+					 + "." + rn(number++, 4);
         if(fil.getDataLen() - j < 40 * def::freq) /// if last realisation or interstimulus
         {
             helpString += "_" + marker;
@@ -672,7 +672,7 @@ void MainWindow::sliceMatiSimple()
 														  + "/" + def::ExpName
 														  + "_" + nm(type)
 														  + "_" + nm(session[type])
-														  + "_" + myLib::rightNumber(j, 2)
+														  + "_" + rn(j, 2)
                                                           + '.' + fileMark);
 
 					int NumOfSlices = std::min(end - start - j * piece, piece);
@@ -778,8 +778,8 @@ void MainWindow::sliceMati()
 													  + "/auxEdfs"
 
 													  + "/" + def::ExpName
-                                                      + "_" + QString::number(type)
-                                                      + "_" + QString::number(session[type])
+													  + "_" + nm(type)
+													  + "_" + nm(session[type])
                                                       + ".edf");
 
                 fil.saveSubsection(start,
@@ -892,7 +892,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 						helpString = def::dir->absolutePath()
 									 + "/" + folder
 									 + "/" + fil.getExpName()
-									 + "_" + myLib::rightNumber(pieceNum, 2)
+									 + "_" + rn(pieceNum, 2)
 									 + '_' + fileMark;
 
 
@@ -910,7 +910,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                         helpString = (def::dir->absolutePath()
 															  + "/" + folder
 															  + "/" + fil.getExpName()
-															  + "_" + myLib::rightNumber(pieceNum, 2)
+															  + "_" + rn(pieceNum, 2)
                                                               + '_' + fileMark);
                         fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
                         ++pieceNum;

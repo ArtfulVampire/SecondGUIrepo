@@ -91,10 +91,10 @@ public:
 
 	void setEdfFile(const QString & filePath);
 	void readData();
-	void countSpectraSimple(int fftLen, int inSmooth = -1);
+
 
 	void makeChanList(std::vector<int> & chanList);
-	void cleanDirsAll(bool);
+	void cleanDirsCheckAllBoxes(bool);
 
 
 	void drawReals();
@@ -103,25 +103,25 @@ public:
 
 	void rereferenceData(const QString & newRef,
 						 const QString & newPath);
-	void refilterData(double lowFreq,
-					  double highFreq,
-					  const QString & newPath,
-					  bool notch);
 	void reduceChannelsEDF(const QString & newFilePath);
+
+	/// to deprecate
 	void constructEDF(const QString & newPath,
 					  const QStringList & nameFilters = QStringList());
-
-
-	// local autos
+	/// to deprecate
     void concatenateEDFs(QString inPath1, QString inPath2, QString outPath);
+	/// to deprecate
     void concatenateEDFs(QStringList inPath, QString outPath);
+
+
+
 	void customFunc();
 
+	void countSpectraSimple(int fftLen, int inSmooth = -1);
 	void BaklushevDraw(const QString & workPath, const QString & edfName);
 	void testNewClassifiers();
 	void testSuccessive(const std::vector<double> & vals = std::vector<double>{});
 	void testSuccessive2();
-
 
 private:
     Ui::MainWindow *ui;

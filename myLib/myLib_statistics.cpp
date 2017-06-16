@@ -3,6 +3,9 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/draws.h>
 #include <myLib/small.h>
+#include <myLib/output.h>
+
+using namespace myOut;
 
 namespace myLib
 {
@@ -89,7 +92,7 @@ void histogram(const signalType & arr,
 		pnt.drawLine(X, pic.height() * 0.9,
 					 X, pic.height() * 0.95);
 		pnt.drawText(X - 5, pic.height() - 3,
-					 QString::number(i));
+					 nm(i));
 	}
 	for(double i = 1; i <= valueMax; i += valueMax / 20.)
 	{
@@ -97,7 +100,7 @@ void histogram(const signalType & arr,
 		pnt.drawLine(0, Y,
 					 10, Y);
 		pnt.drawText(13, Y + 5,
-					 QString::number(i));
+					 nm(i));
 	}
 
 	if(!picPath.isEmpty())
@@ -188,7 +191,7 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 					 pic.height());
 		pnt.drawText((i - xMin) / (xMax - xMin) * pic.width(),
 					 pic.height() * 0.95,
-					 QString::number(i));
+					 nm(i));
 	}
 	pic.save(picPath, 0, 100);
 }
@@ -353,18 +356,18 @@ int MannWhitney(const std::valarray<double> & arr1,
 	std::for_each(std::begin(arr1),
 				  std::end(arr1),
 				  [&arr](double in)
-	{arr.push_back(std::make_pair(in, 0));});
+	{arr.push_back(std::make_pair(in, 0)); });
 
 	// fill second array
 	std::for_each(std::begin(arr2),
 				  std::end(arr2),
 				  [&arr](double in)
-	{arr.push_back(std::make_pair(in, 1));});
+	{arr.push_back(std::make_pair(in, 1)); });
 
 	std::sort(std::begin(arr),
 			  std::end(arr),
 			  [](std::pair<double, int> i,
-			  std::pair<double, int> j) {return i.first > j.first;});
+			  std::pair<double, int> j) { return i.first > j.first; });
 
 	int sum0 = 0;
 	int sumAll;

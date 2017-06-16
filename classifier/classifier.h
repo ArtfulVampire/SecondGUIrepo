@@ -67,14 +67,14 @@ protected:
 
 
 public:
-    const ClassifierType & getType() {return myType;}
-    const QString & getTypeString() {return typeString;}
+    const ClassifierType & getType() { return myType; }
+    const QString & getTypeString() { return typeString; }
     void setTestCleanFlag(bool inFlag);
     void deleteFile(uint vecNum, uint predClass);
 	void printResult(const QString & fileName, uint predType, uint vecNum);
 
 	void setClassifierData(ClassifierData & in);
-	ClassifierData * getClassifierData() {return myClassData;}
+	ClassifierData * getClassifierData() { return myClassData; }
 
 
 public:

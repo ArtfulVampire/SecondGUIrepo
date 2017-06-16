@@ -393,10 +393,10 @@ public:
 					   int markerMin,
 					   int markerMax);
 
-	QString getGuy() const {return iitp::getGuyName(this->ExpName);}
-	QString getPost() const {return iitp::getPostfix(this->ExpName);}
-	QString getInit() const {return iitp::getInitName(this->ExpName);}
-	int getNum() const {return iitp::getFileNum(this->ExpName);}
+	QString getGuy() const { return iitp::getGuyName(this->ExpName); }
+	QString getPost() const { return iitp::getPostfix(this->ExpName); }
+	QString getInit() const { return iitp::getInitName(this->ExpName); }
+	int getNum() const { return iitp::getFileNum(this->ExpName); }
 
 
 	void cutPieces(double length);
@@ -407,7 +407,7 @@ public:
 	void countPiecesFFT();
 	void resizePieces(int in);
 	void getPiecesParams();
-	const std::vector<matrix> & getPieces() const {return piecesData;}
+	const std::vector<matrix> & getPieces() const { return piecesData; }
 
 	void clearCrossSpectra();
 	int setFftLen(); /// determine by piecesData lengths

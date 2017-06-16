@@ -28,7 +28,6 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1,
 
 	myClassifierData = ClassifierData();
 
-	int count1 = 0;
 	matrix dt1 = fil1.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
 	for(uint i = sta1; i < dt1.cols() - suc::windLength * freq1; i += freq1 * suc::shiftLearn)
 	{
@@ -109,7 +108,6 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1,
 	if(markers2[sta2 - 1] == 241.) typ = 0;
 	else if(markers2[sta2 - 1] == 247.) typ = 1;
 
-	int count2 = 0;
 	matrix dt2 = fil2.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1)); /// EEG only
 	for(uint i = sta2; i < dt2.cols() - suc::windLength * freq2; i += freq2 * suc::shiftTest)
 	{

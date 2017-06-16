@@ -217,7 +217,7 @@ void Net::writeWtsSlot()
         do
         {
             helpString = def::dir->absolutePath()
-						 + "/" + def::ExpName + QString::number(wtsCounter) + ".wts";
+						 + "/" + def::ExpName + nm(wtsCounter) + ".wts";
             ++wtsCounter;
         } while(QFile::exists(helpString));
     }

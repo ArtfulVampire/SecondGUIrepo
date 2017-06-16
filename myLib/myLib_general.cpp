@@ -104,7 +104,7 @@ QString setFileName(const QString & initNameOrPath) // append _num before the do
     int counter = 0;
     while (QFile::exists(helpString))
     {
-        helpString = beforeDot + "_" + QString::number(counter++) + afterDot;
+        helpString = beforeDot + "_" + nm(counter++) + afterDot;
     }
     return helpString;
 }

@@ -630,7 +630,7 @@ void sammonProj(const mat & distOld,
         {
             if(std::find(placedDots.begin(),
                          placedDots.end(),
-                         i) != placedDots.end()) {continue;}
+						 i) != placedDots.end()) {continue; }
 
             helpDist = distOld[placedDots[0]][placedDots[1]];
             for(uint j = 0; j > placedDots.size(); ++j)

@@ -180,13 +180,13 @@ namespace def
 	/// to def class
 
 	extern QDir * dir;
-	inline QString realsDir() {return def::dir->absolutePath() + "/Reals";}
-	inline QString windsDir() {return def::dir->absolutePath() + "/winds";}
-	inline QString windsFromRealsDir() {return def::dir->absolutePath() + "/winds/fromreal";}
-	inline QString realsSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth";}
-	inline QString windsSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth/winds";}
-	inline QString pcaSpectraDir() {return def::dir->absolutePath() + "/SpectraSmooth/PCA";}
-	inline QString paDir() {return def::dir->absolutePath() + "/Help/PA";}
+	inline QString realsDir() { return def::dir->absolutePath() + "/Reals"; }
+	inline QString windsDir() { return def::dir->absolutePath() + "/winds"; }
+	inline QString windsFromRealsDir() { return def::dir->absolutePath() + "/winds/fromreal"; }
+	inline QString realsSpectraDir() { return def::dir->absolutePath() + "/SpectraSmooth"; }
+	inline QString windsSpectraDir() { return def::dir->absolutePath() + "/SpectraSmooth/winds"; }
+	inline QString pcaSpectraDir() { return def::dir->absolutePath() + "/SpectraSmooth/PCA"; }
+	inline QString paDir() { return def::dir->absolutePath() + "/Help/PA"; }
 
 	extern bool ntFlag;
 	extern int ns;
@@ -201,7 +201,7 @@ namespace def
 	extern QStringList fileMarkers;
 	extern QString ExpName;
 
-	inline int nsWOM() {return def::ns - 1 * def::withMarkersFlag;}
+	inline int nsWOM() { return def::ns - 1 * def::withMarkersFlag; }
 	inline int numOfClasses()
 	{
 //		return 6;
@@ -210,8 +210,8 @@ namespace def
 
 	extern int right();
 	extern int left();
-	inline int spLength() {return def::right() - def::left();}
-	inline double spStep() {return def::freq / def::fftLength;}
+	inline int spLength() { return def::right() - def::left(); }
+	inline double spStep() { return def::freq / def::fftLength; }
 
 }
 

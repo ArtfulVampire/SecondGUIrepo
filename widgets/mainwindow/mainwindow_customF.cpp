@@ -780,7 +780,7 @@ exit(0);
     for(int i = 0; i < def::ns; ++i)
     {
         if(std::find(exclude.begin(), exclude.end(), i) != exclude.end()) continue;
-        helpString += QString::number(i + 1) + " ";
+		helpString += nm(i + 1) + " ";
     }
     ui->reduceChannelsLineEdit->setText(helpString);
     reduceChannelsSlot();

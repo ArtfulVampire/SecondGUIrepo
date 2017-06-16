@@ -88,7 +88,7 @@
      <height>31</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QHBoxLayout" name="browseLayout">
     <item>
      <widget class="QLineEdit" name="lineEdit"/>
     </item>
@@ -116,7 +116,7 @@
      <height>201</height>
     </rect>
    </property>
-   <layout class="QGridLayout" name="gridLayout_3">
+   <layout class="QGridLayout" name="samplesGridLayout">
     <item row="0" column="0">
      <widget class="QLabel" name="label_2">
       <property name="text">
@@ -212,7 +212,7 @@
      <height>231</height>
     </rect>
    </property>
-   <layout class="QGridLayout" name="gridLayout">
+   <layout class="QGridLayout" name="mainGridLayout">
     <item row="3" column="3">
      <widget class="QLabel" name="label_14">
       <property name="text">
@@ -432,10 +432,10 @@
      <x>550</x>
      <y>40</y>
      <width>271</width>
-     <height>81</height>
+     <height>83</height>
     </rect>
    </property>
-   <layout class="QGridLayout" name="gridLayout_2">
+   <layout class="QGridLayout" name="colorGridLayout">
     <item row="2" column="1">
      <widget class="QSpinBox" name="color3SpinBox"/>
     </item>

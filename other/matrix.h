@@ -74,10 +74,10 @@ public:
 	matrixType::const_iterator begin() const;
 	matrixType::const_iterator end() const;
 	bool isEmpty() const;
-	std::valarray<double> & last() {return myData.back();}
-	std::valarray<double> & back() {return myData.back();}
-	std::valarray<double> & front() {return myData.front();}
-	std::valarray<double> & first() {return myData.front();}
+	std::valarray<double> & last() { return myData.back(); }
+	std::valarray<double> & back() { return myData.back(); }
+	std::valarray<double> & front() { return myData.front(); }
+	std::valarray<double> & first() { return myData.front(); }
 
 	std::valarray<double> toVectorByRows() const;
 	std::valarray<double> toVectorByCols() const;
@@ -92,8 +92,8 @@ public:
 	void push_back(const std::vector<double> &in);
 
 	// for compability with vector< std::vector<Type> >
-	void clear() {this->myData.clear();}
-	uint size() const {return myData.size();}
+	void clear() {this->myData.clear(); }
+	uint size() const { return myData.size(); }
 
 	void resize(int rows, int cols, double val);
 	void resize(int rows, int cols);

@@ -190,7 +190,7 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
     {
         helpString = mapsDirPath
 					 + "/" + mapNam
-                     + "_map_" + QString::number(i) + "+.png";
+					 + "_map_" + nm(i) + "+.png";
         if(!QFile::exists(helpString))
         {
             helpString.replace("+.png", "-.png");
@@ -277,7 +277,7 @@ void drawMapSpline(const matrix & matrixA,
     painter.begin(&pic);
     QString savePath1 = outDir
 						+ "/" + outName + "_map_"
-                        + QString::number(numOfColoumn) + "+.png";
+						+ nm(numOfColoumn) + "+.png";
 
     QPixmap pic1 = QPixmap(picSize, picSize);
     QPainter painter1;
@@ -285,7 +285,7 @@ void drawMapSpline(const matrix & matrixA,
     painter1.begin(&pic1);
     QString savePath2 = outDir
 						+ "/" + outName + "_map_"
-                        + QString::number(numOfColoumn) + "-.png";
+						+ nm(numOfColoumn) + "-.png";
 
     double val;
     double drawArg;
@@ -551,7 +551,7 @@ QPixmap drawOneTemplate(const int chanNum,
 	paint.setFont(QFont("Helvitica", int(hzFontSize)));
 
 	const double unit = (rightF - leftF) / graphWidth;
-	auto currFreq = [unit, leftF](int in) -> double {return leftF + in * unit;};
+	auto currFreq = [unit, leftF](int in) -> double { return leftF + in * unit; };
 
 	for(int k = 0; k < graphWidth + 1; ++k)
 	{
@@ -563,7 +563,7 @@ QPixmap drawOneTemplate(const int chanNum,
 						   QPointF(X + k,
 								   Y + 5)); /// magic const
 
-			helpString = QString::number(std::round(cF));
+			helpString = nm(std::round(cF));
 
 			/// Hz to draw - useless
 			if(helpString.toInt() % 5 != 0) continue;
@@ -589,12 +589,12 @@ QPixmap drawOneTemplate(const int chanNum,
 		if(channelsFlag)
 		{
 			helpString = coords::lbl21[chanNum]
-						 + "(" + QString::number(chanNum + 1) + ")" // can be commented
+						 + "(" + nm(chanNum + 1) + ")" // can be commented
 						 ;
 		}
 		else
 		{
-			helpString = QString::number(chanNum + 1);
+			helpString = nm(chanNum + 1);
 
 		}
 		paint.drawText(QPointF(X - fontSize / 2,
@@ -678,7 +678,7 @@ QPixmap drawTemplate(const QString & outPath,
                                QPointF(X + k,
                                        Y + 5 * scaleY));
 
-                helpString = QString::number(int((def::left() + k * graphScale) * def::spStep() + 0.5));
+				helpString = nm(int((def::left() + k * graphScale) * def::spStep() + 0.5));
 
                 /// Hz to draw
                 if(helpString.toInt() % 5 != 0) continue;
@@ -702,12 +702,12 @@ QPixmap drawTemplate(const QString & outPath,
         if(channelsFlag)
         {
             helpString = coords::lbl21[c2]
-                         + "(" + QString::number(c2 + 1) + ")" // can be commented
+						 + "(" + nm(c2 + 1) + ")" // can be commented
                          ;
         }
         else
         {
-            helpString = QString::number(c2 + 1);
+			helpString = nm(c2 + 1);
 
         }
         paint.drawText(QPointF(X - 16 * scaleX,
@@ -907,10 +907,10 @@ void drawArrayWithSigma(const QString &templPath,
 	{
 		for(int c2 = 0; c2 < BaklushevChans; ++c2)  //exept markers channel
 		{
-			auto index = [=](int in) -> int
-			{
-				return c2 * spL + in * graphScale;
-			};
+//			auto index = [=](int in) -> int
+//			{
+//				return c2 * spL + in * graphScale;
+//			};
 
 			auto index2 = [=](int in) -> int
 			{
@@ -956,10 +956,10 @@ void drawArrayWithSigma(const QString &templPath,
 		{
 			return c2 * spL + in;
 		};
-		auto index = [=](int in) -> int
-		{
-			return c2 * spL + in * graphScale;
-		};
+//		auto index = [=](int in) -> int
+//		{
+//			return c2 * spL + in * graphScale;
+//		};
 
 		const double Y = paint.device()->height() * coords::y[c2];
 		const double X = paint.device()->width() * coords::x[c2];
@@ -1090,7 +1090,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 							   #if 0
 			paint.drawText(QPointF(X + graphWidth * 0.4,
 								   Y - graphHeight - 5 * scaleY),
-						   QString::number(doubleRound(norm)));
+						   nm(doubleRound(norm)));
 							   #endif
 
 			// make drawNorm
@@ -1260,7 +1260,7 @@ double drawArrays(const QString & templPath,
                                #if 0
             paint.drawText(QPointF(X + graphWidth * 0.4,
                                    Y - graphHeight - 5 * scaleY),
-                           QString::number(doubleRound(norm)));
+						   nm(doubleRound(norm)));
                                #endif
 
             // make drawNorm
@@ -1379,7 +1379,7 @@ void drawCutOneChannel(const QString & inSpectraPath,
                        const int numChan)
 {
     QString outPath = inSpectraPath;
-    outPath.replace(".", QString("_" + QString::number(numChan) + "."));
+	outPath.replace(".", QString("_" + nm(numChan) + "."));
 
     QPixmap pic = QPixmap(inSpectraPath);
     QPixmap cut = pic.copy(QRect(coords::x[numChan] * pic.width() - 20,
@@ -1816,7 +1816,7 @@ QPixmap drawEeg(const matrix & dataD,
         else if(c3%5  == 0) norm = 15.;
 
 		paint.drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2*norm);
-		paint.drawText(c3 * freq, pic.height() - 35, QString::number(c3));
+		paint.drawText(c3 * freq, pic.height() - 35, nm(c3));
         norm = 10.;
     }
 
@@ -1883,7 +1883,7 @@ QPixmap drawEeg(const matrix & dataD,
         else if(c3%5  == 0) norm = 15.;
 
 		paint.drawLine(c3 * freq/5, pic.height() - 2, c3 * freq/5, pic.height() - 2 * norm);
-		paint.drawText(c3 * freq, pic.height() - 35, QString::number(c3));
+		paint.drawText(c3 * freq, pic.height() - 35, nm(c3));
         norm = 10.;
     }
     pic.save(picPath, 0, 100);

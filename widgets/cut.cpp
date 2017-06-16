@@ -705,6 +705,7 @@ void Cut::findNextMark(int mark)
 		int index = std::distance(std::begin(edfFil.getMarkArr()), it);
 		ui->paintStartDoubleSpinBox->setValue(std::max(0., double(index) / edfFil.getFreq() - 0.5));
 		ui->leftLimitSpinBox->setValue(index);
+		showDerivatives();
 		paint();
 	}
 }
@@ -731,8 +732,7 @@ void Cut::cutPausesSlot()
 			break;
 		}
 	}
-
-	this->saveAs("_noPaus");
+//	this->saveAs("_noPaus");
 	std::cout << "CutPausesSlot: edfFile saved" << std::endl;
 }
 
@@ -752,7 +752,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     int tempNum = 0;
     for(int i = 0; i < lst.length(); ++i)
     {
-        if(QString::number(lst[i].toInt()) == lst[i])
+		if(nm(lst[i].toInt()) == lst[i])
         {
             tempNum = i;
             break;
@@ -883,7 +883,7 @@ void Cut::setMarker(int inVal)
 		}
 		int offset = ui->leftLimitSpinBox->value();
 		int val = data3[num][offset];
-		undoAction = [num, offset, val, this](){this->data3[num][offset] = val;};
+		undoAction = [num, offset, val, this](){this->data3[num][offset] = val; };
 		undos.push_back(undoAction);
 
 		data3[num][offset] = inVal;
@@ -893,7 +893,7 @@ void Cut::setMarker(int inVal)
 		int num = data3.rows() - 1; /// last channel
 		int offset = ui->leftLimitSpinBox->value();
 		int val = data3[num][offset];
-		undoAction = [num, offset, val, this](){data3[num][offset] = val;};
+		undoAction = [num, offset, val, this](){data3[num][offset] = val; };
 		undos.push_back(undoAction);
 
 		data3[num][offset] = inVal;
@@ -976,7 +976,7 @@ void Cut::countThrParams()
 	{
 		double maxVal = 0.;
 		int maxCh = -1;
-		int maxWind = -1;
+//		int maxWind = -1;
 		for(int ch = 0; ch < paramsChanNum; ++ch)
 		{
 			for(int windNum = 0; windNum < windParams.size(); ++windNum)
@@ -985,7 +985,7 @@ void Cut::countThrParams()
 				{
 					maxVal = windParams[windNum][ch][numFunc];
 					maxCh = ch;
-					maxWind = windNum;
+//					maxWind = windNum;
 				}
 			}
 		}
@@ -1266,7 +1266,7 @@ void Cut::split(int start, int end, bool addUndo)
 	}
 	if(std::find_if(std::begin(data3.back()),
 					std::end(data3.back()),
-					[](double in){return in != 0.;}) != std::end(data3.back()))
+					[](double in){ return in != 0.; }) != std::end(data3.back()))
 	{
 		std::cout << "Cut::split: there are non-zero markers" << std::endl;
 	}
@@ -1396,7 +1396,7 @@ void Cut::saveSubsecSlot()
 		helpString = def::dir->absolutePath() +
 					 "/winds" +
 					 "/" + myLib::getFileName(currentFile) +
-					 "." + myLib::rightNumber(addNum++, 3);
+					 "." + rn(addNum++, 3);
 		myLib::writePlainData(helpString,
 							  data3.subCols(ui->leftLimitSpinBox->value(),
 											ui->rightLimitSpinBox->value()));
@@ -1414,7 +1414,7 @@ void Cut::saveSubsecSlot()
 		while(QFile::exists(newPath))
 		{
 			newPath = currentFile;
-			newPath.insert(newPath.lastIndexOf('.'), "_" + QString::number(counter));
+			newPath.insert(newPath.lastIndexOf('.'), "_" + nm(counter));
 			++counter;
 		}
 
@@ -1516,7 +1516,7 @@ void Cut::paint() // save to tmp.jpg and display
 				{
 					pnt.drawText(i,
 								 pnt.device()->height() * (mrk + 1) / (subData.rows() + 2) - 3,
-								 QString::number(int(subData[mrk][i])));
+								 nm(int(subData[mrk][i])));
 				}
 			}
 			pnt.end();

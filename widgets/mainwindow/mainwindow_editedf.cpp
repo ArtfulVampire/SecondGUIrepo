@@ -51,11 +51,6 @@ void MainWindow::rereferenceData(const QString & newRef,
     readData();
 	auto label = globalEdf.getLabels();
 
-    std::vector<int> chanList(def::ns);
-    std::iota(chanList.begin(),
-              chanList.end(),
-              0);
-
 	int groundChan = -1;	// A1-N
 	int earsChan1 = -1;		// A1-A2
 	int earsChan2 = -1;		// A2-A1
@@ -89,13 +84,13 @@ void MainWindow::rereferenceData(const QString & newRef,
         sign = {"+", "-"};
     }
 
-    const QString earsChanStr = QString::number(earsChan + 1);
-    const QString groundChanStr = QString::number(groundChan + 1);
+	const QString earsChanStr = nm(earsChan + 1);
+	const QString groundChanStr = nm(groundChan + 1);
 
 
     for(int i = 0; i < def::ns; ++i) //ns -> 21
     {
-        const QString currNumStr = QString::number(i + 1);
+		const QString currNumStr = nm(i + 1);
 
 		if(!label[i].contains(QRegExp("E[EO]G"))) /// not EOG, not EEG
         {
@@ -153,30 +148,25 @@ void MainWindow::rereferenceData(const QString & newRef,
 											  groundChanStr,
 											  sign) + " ";
 
-            helpString2 = label[i];
-            helpString2.replace(refName, targetRef);
-            label[i] = helpString2;
+			label[i].replace(refName, targetRef);
 		}
 
     }
-	std::cout << "rereferenceData: " << newRef << "\n" << helpString.toStdString() << std::endl;
+//	std::cout << "rereferenceData: " << newRef << "\n"
+//			  << helpString.toStdString() << std::endl;
+
     ui->reduceChannelsLineEdit->setText(helpString);
 
-    //change labels
+	// change labels
     globalEdf.setLabels(label);
 	globalEdf = globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
 	def::ns = globalEdf.getNs();
 
-    //set all of channels to the lineedit
-    helpString.clear();
-    for(int i = 0; i < def::ns; ++i)
-    {
-        helpString += QString::number(i + 1) + " ";
-    }
-    ui->reduceChannelsLineEdit->setText(helpString);
+	// set back channels string
+	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->currentData().toString());
 
-    globalEdf.writeEdfFile(newPath);
-	std::cout << "rereferenceData: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
+	globalEdf.writeEdfFile(newPath);
+	std::cout << "rereferenceData: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::refilterDataSlot()
@@ -197,31 +187,18 @@ void MainWindow::refilterDataSlot()
     {
         helpString.replace(".edf",
                            "_f"
-                           + QString::number(lowFreq) + '-' + QString::number(highFreq)
+						   + nm(lowFreq) + '-' + nm(highFreq)
                            + ".edf");
     }
     else
     {
         helpString.replace(".edf",
 						   "_n"
-                           + QString::number(lowFreq) + '-' + QString::number(highFreq)
+						   + nm(lowFreq) + '-' + nm(highFreq)
                            + ".edf");
     }
-
-    refilterData(lowFreq, highFreq, helpString, notch);
-    int tmp = ui->reduceChannelsComboBox->currentIndex();
-    ui->reduceChannelsComboBox->setCurrentIndex(0);
-    ui->reduceChannelsComboBox->setCurrentIndex(tmp);
-
+	globalEdf.refilter(lowFreq, highFreq, helpString, notch);
 	std::cout << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
-}
-
-void MainWindow::refilterData(double lowFreq,
-                              double highFreq,
-                              const QString & newPath,
-                              bool notch)
-{
-    globalEdf.refilter(lowFreq, highFreq, newPath, notch);
 }
 
 void MainWindow::reduceChannelsEDFSlot()
@@ -236,6 +213,7 @@ void MainWindow::reduceChannelsEDF(const QString & newFilePath)
 {
     QTime myTime;
     myTime.start();
+
     edfFile temp;
     temp.readEdfFile(ui->filePathLineEdit->text());
 
@@ -305,14 +283,14 @@ void MainWindow::reduceChannelsSlot()
     ui->textEdit->append(helpString);
 
     helpString = "ns equals to ";
-    helpString += QString::number(def::ns);
+	helpString += nm(def::ns);
     ui->textEdit->append(helpString);
 
 	std::cout << "reduceChannelsSlot: finished";
 #endif
 }
 
-
+/// to deprecate
 void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
 {
     if(inPath.isEmpty())
@@ -336,6 +314,7 @@ void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
 			  << "\ttime = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
+/// to deprecate
 void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPath)
 {
     QTime myTime;
@@ -384,8 +363,8 @@ void MainWindow::constructEDFSlot()
                 filters.clear();
 				// filter for Reals
                 helpString = def::ExpName
-                        + "_" + QString::number(i)
-                        + "_" + QString::number(j)
+						+ "_" + nm(i)
+						+ "_" + nm(j)
                         + "*";
                 filters << helpString;
 
@@ -396,8 +375,8 @@ void MainWindow::constructEDFSlot()
 
 						+ "/" + def::ExpName
                         + "_c"
-                        + "_" + QString::number(i)
-                        + "_" + QString::number(j)
+						+ "_" + nm(i)
+						+ "_" + nm(j)
                         + ".edf";
 
 				constructEDF(helpString, filters); // construct 1 session from Reals
@@ -410,7 +389,7 @@ void MainWindow::constructEDFSlot()
             // template for session edfs
             helpString = def::ExpName
                     + "_c"
-                    + "_" + QString::number(i)
+					+ "_" + nm(i)
                     + "_*.edf";
             QStringList lst = def::dir->entryList(QStringList(helpString));  //filter for edfs
 
@@ -424,7 +403,7 @@ void MainWindow::constructEDFSlot()
             //outPath for concatenated
             helpString = def::dir->absolutePath()
 					+ "/" + def::ExpName.left(3)
-                    + "_" + QString::number(i)
+					+ "_" + nm(i)
                     + ".edf";
 
 //            def::dir->cdUp(); // if save concatenated into auxEdfs
@@ -455,11 +434,11 @@ void MainWindow::constructEDFSlot()
 
     helpString = "constructEdf finished\n";
     helpString += "ns equals to ";
-    helpString += QString::number(def::ns);
+	helpString += nm(def::ns);
     ui->textEdit->append(helpString);
 }
 
-/// check this sheet
+/// check this sheet and deprecate
 void MainWindow::constructEDF(const QString & newPath,
                               const QStringList & nameFilters)
 {
@@ -554,7 +533,7 @@ void MainWindow::constructEDF(const QString & newPath,
                 newData[i] = newArr;
 //                std::remove_if(begin(newData[i]),
 //                               begin(newData[i]) + offset,
-//                               [](double){return true;});
+//                               [](double){ return true; });
             }
 
             newData[ns - 1][0] = saveMarker;

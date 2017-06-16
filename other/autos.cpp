@@ -390,7 +390,7 @@ void IITPfilterGonios(const QString & guyName,
 	{
 		const QString ExpNamePre = def::iitpFolder + "/" +
 								   guyName + "/" +
-								   guyName + "_" + myLib::rightNumber(fileNum, 2);
+								   guyName + "_" + rn(fileNum, 2);
 		QString filePath;
 		edfFile fil;
 
@@ -659,7 +659,7 @@ void IITPpre(const QString & guyName)
 	{
 		const QString ExpNamePre = def::iitpFolder + "/" +
 								   guyName + "/" +
-								   guyName + "_" + myLib::rightNumber(fileNum, 2);
+								   guyName + "_" + rn(fileNum, 2);
 		QString filePath;
 		edfFile fil;
 
@@ -807,7 +807,7 @@ void IITPpre2(const QString & guyName)
 	{
 		const QString ExpNamePre = def::iitpFolder + "/" +
 								   guyName + "/" +
-								   guyName + "_" + myLib::rightNumber(fileNum, 2);
+								   guyName + "_" + rn(fileNum, 2);
 		QString filePath;
 		edfFile fil;
 
@@ -1025,7 +1025,7 @@ void IITPstaging(const QString & guyName,
 	{
 		const QString ExpNamePre = dirPath + "/" +
 								   guyName + "/" +
-								   guyName + "_" + myLib::rightNumber(fileNum, 2);
+								   guyName + "_" + rn(fileNum, 2);
 		QString filePath;
 		iitp::iitpData fil;
 
@@ -1641,7 +1641,7 @@ void repairMarkersInNewFB(QString edfPath, int numSession)
 
 	std::ifstream inStr;
 	inStr.open(("/media/Files/Data/FeedbackNew/Tables/types"
-				+ QString::number(numSession + 1) + ".txt").toStdString());
+				+ nm(numSession + 1) + ".txt").toStdString());
 	std::vector<int> marksList;
 	char c;
 	while(!inStr.eof())
@@ -1711,7 +1711,7 @@ void makeRightNumbersCF(const QString & dirPath, int startNum)
 			int a = part.toInt(&ok);
 			if(ok)
 			{
-				part = myLib::rightNumber(startNum++, 3);
+				part = rn(startNum++, 3);
 				std::cout << a << "\t" << part << std::endl;
 			}
 			newName += part + "_";
@@ -1756,7 +1756,7 @@ void makeRightNumbers(const QString & dirPath,
 			int a = part.toInt(&ok);
 			if(ok)
 			{
-				part = myLib::rightNumber(a, length);
+				part = rn(a, length);
 			}
 			newName += part + "_";
 		}
@@ -1930,7 +1930,7 @@ void cutOneFile(const QString & filePath,
 							+ "/" + addDir
 					#endif
 							+ "/" + initEdf.getExpName()
-							+ "_wnd_" + myLib::rightNumber(
+							+ "_wnd_" + rn(
 								i + 1,
 								floor(log10(numOfWinds)) + 1)
 							+ ".edf"));
@@ -2310,7 +2310,7 @@ void countChaosFeatures(const QString & filePath,
 				helpString = outPath
 							 + "/" + ExpName
 							 + "_" + QString::numberfreqCounter)
-							 + "_" + QString::number(numChan)
+							 + "_" + nm(numChan)
 							 + "_fSpec.jpg";
 			}
 			else
@@ -2504,8 +2504,8 @@ void avTimesNew(const QString & edfPath, int numSession)
 	for(int i = 0; i < 2; ++i)
 	{
 		QString timesPath = myLib::getDirPathLib(edfPath) + "/times_"
-							+ QString::number(numSession) + "_"
-							+ QString::number(nums[i]) + ".txt";
+							+ nm(numSession) + "_"
+							+ nm(nums[i]) + ".txt";
 
 		std::ifstream inStr;
 		inStr.open(timesPath.toStdString());
@@ -2558,7 +2558,7 @@ void timesNew(const QString & edfPath,
 
 	std::ifstream answers;
 	answers.open((myLib::getDirPathLib(edfPath) + "/ans"
-				  + QString::number(numSession) + ".txt").toStdString());
+				  + nm(numSession) + ".txt").toStdString());
 
 
 	bool startFlag = false;
@@ -2573,11 +2573,11 @@ void timesNew(const QString & edfPath,
 	for(int i = 0; i < nums.size(); ++i)
 	{
 		QFile::remove(myLib::getDirPathLib(edfPath) + "/correctness_"
-					  + QString::number(numSession) + "_"
-					  + QString::number(nums[i]) + ".txt");
+					  + nm(numSession) + "_"
+					  + nm(nums[i]) + ".txt");
 		QFile::remove(myLib::getDirPathLib(edfPath) + "/times_"
-					  + QString::number(numSession) + "_"
-					  + QString::number(nums[i]) + ".txt");
+					  + nm(numSession) + "_"
+					  + nm(nums[i]) + ".txt");
 	}
 
 	for(int i = 0; i < marks.size(); ++i)
@@ -2605,8 +2605,8 @@ void timesNew(const QString & edfPath,
 			++correctness[num][QString(ans).toInt()];
 
 			out.open((myLib::getDirPathLib(edfPath) + "/times_"
-					  + QString::number(numSession) + "_"
-					  + QString::number(nums[num]) + ".txt").toStdString(), std::ios_base::app);
+					  + nm(numSession) + "_"
+					  + nm(nums[num]) + ".txt").toStdString(), std::ios_base::app);
 			out
 //					<< "ans = "
 					<< ans << "\t"
@@ -2618,8 +2618,8 @@ void timesNew(const QString & edfPath,
 	for(int i = 0; i < 2; ++i)
 	{
 		out.open((myLib::getDirPathLib(edfPath) + "/correctness_"
-				  + QString::number(numSession) + "_"
-				  + QString::number(nums[i]) + ".txt").toStdString(), std::ios_base::app);
+				  + nm(numSession) + "_"
+				  + nm(nums[i]) + ".txt").toStdString(), std::ios_base::app);
 		out << "+\t-\t0" << std::endl;
 		out << correctness[i][1] << '\t' << correctness[i][2] << '\t' << correctness[i][0] << "\r\n";
 		out.close();

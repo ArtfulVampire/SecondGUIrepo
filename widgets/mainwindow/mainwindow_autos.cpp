@@ -465,8 +465,8 @@ void MainWindow::matiPreprocessingSlot()
 							+ "/" + dirList[dirNum]
 							+ "/auxEdfs"
 							+ "/" + dirList[dirNum] + fileSuffix
-                            + "_" + QString::number(type)
-                            + "_" + QString::number(session)
+							+ "_" + nm(type)
+							+ "_" + nm(session)
                             + ".edf";
 
                     if(!QFile(helpString).exists())
@@ -482,8 +482,8 @@ void MainWindow::matiPreprocessingSlot()
 							+ "/" + dirList[dirNum]
 							+ "/auxEdfs"
 							+ "/" + dirList[dirNum]
-                            + "_" + QString::number(type)
-                            + "_" + QString::number(session)
+							+ "_" + nm(type)
+							+ "_" + nm(session)
                             + "_amod.edf"; // generality
 
                     // eeg+amod path
@@ -492,8 +492,8 @@ void MainWindow::matiPreprocessingSlot()
 							+ "/auxEdfs"
 							+ "/" + dirList[dirNum] + fileSuffix
                             + "_a"
-                            + "_" + QString::number(type)
-                            + "_" + QString::number(session)
+							+ "_" + nm(type)
+							+ "_" + nm(session)
                             + ".edf"; // generality
 
                     tempEdf.vertcatFile(addPath, outPath);
@@ -506,8 +506,8 @@ void MainWindow::matiPreprocessingSlot()
 								 + "/amod"
 								 + "/" + dirList[dirNum] + fileSuffix
                                  + "_a"
-                                 + "_" + QString::number(type)
-                                 + "_" + QString::number(session)
+								 + "_" + nm(type)
+								 + "_" + nm(session)
                                  + ".edf"; // generality
                     if(QFile::exists(helpString)) QFile::remove(helpString);
                     QFile::copy(outPath, helpString);
@@ -540,8 +540,8 @@ void MainWindow::matiPreprocessingSlot()
 
 							+ "/" + dirList[dirNum] + fileSuffix
                             + "_a"
-                            + "_" + QString::number(type)
-                            + "_" + QString::number(session)
+							+ "_" + nm(type)
+							+ "_" + nm(session)
                             + ".edf";
                     if(!QFile::exists(helpString)) continue;
 

@@ -25,15 +25,8 @@ const long double pi = 3.14159265358979323846L;
 namespace smLib
 {
 
-inline bool isDouble(const QString & in)
-{
-	return QString::number(in.toDouble()) == in;
-}
-
-inline bool isInt(const QString & in)
-{
-	return QString::number(in.toInt()) == in;
-}
+inline bool isDouble(const QString & in) { return QString::number(in.toDouble()) == in; }
+inline bool isInt(const QString & in) { return QString::number(in.toInt()) == in; }
 
 inline double doubleRound(double in, int numSigns)
 {

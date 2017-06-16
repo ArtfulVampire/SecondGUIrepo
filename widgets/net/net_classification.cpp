@@ -37,7 +37,7 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
     {
         halfHalfClassification(); break;
     }
-    default: {break;}
+    default: {break; }
 	}
 	std::cout << "autoClassification: time elapsed = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
@@ -62,7 +62,7 @@ void Net::autoClassificationSimple()
     {
 		helpString += "/PCA"; break;
     }
-    default: {break;}
+    default: {break; }
     }
 
     if(!helpString.isEmpty())

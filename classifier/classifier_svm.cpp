@@ -16,9 +16,9 @@ void SVM::learn(std::vector<uint> & indices)
     QString helpString = "cd "
                          + workDir
                          + " && svm-train "
-                         + " -s " + QString::number(svmType)
+                         + " -s " + nm(svmType)
 //                         + " -v " + fold
-                         + " -t " + QString::number(kernelNum) + " -q "
+                         + " -t " + nm(kernelNum) + " -q "
                          + learnFileName;
     system(helpString.toStdString().c_str());
 //    std::cout << std::endl << "LEARN finish" << std::endl << std::endl;

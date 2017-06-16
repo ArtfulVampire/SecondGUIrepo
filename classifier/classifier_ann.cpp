@@ -393,7 +393,7 @@ void ANN::writeWeight(const QString & wtsPath)
 		weightsFile.open((def::dir->absolutePath() + slash
 						  + "Help/wts" + slash
 						  + def::ExpName
-//						  + "_" + QString::number(wtsCounter++)
+//						  + "_" + nm(wtsCounter++)
 						  + ".wts").toStdString());
     }
     else

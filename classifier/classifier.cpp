@@ -1,4 +1,7 @@
 #include <classifier/classifier.h>
+#include <myLib/output.h>
+
+using namespace myOut;
 
 Classifier::Classifier()
 {
@@ -112,7 +115,7 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
     }
     else
     {
-		pew = QString::number(vecNum) + "\n";
+		pew = nm(vecNum) + "\n";
 
 		outStr << vecNum+2 << ":\ttrue = " << myClassData->getTypes()[vecNum] << "\tpred = " << predType << "\n";
     }
@@ -165,9 +168,9 @@ Classifier::avType Classifier::averageClassification()
 	resultsPath =
 			def::dir->absolutePath()
 			+ "/results"
-			+ "_" + QString::number(suc::numGoodNewLimit)
-			+ "_" + QString::number(suc::learnSetStay)
-			+ "_" + QString::number(suc::decayRate)
+			+ "_" + nm(suc::numGoodNewLimit)
+			+ "_" + nm(suc::learnSetStay)
+			+ "_" + nm(suc::decayRate)
 			+ ".txt";
 #endif
 

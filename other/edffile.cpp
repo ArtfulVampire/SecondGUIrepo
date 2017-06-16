@@ -1552,7 +1552,7 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
 
     for(int k = 0; k < leest.length(); ++k)
     {
-        if(QString::number(leest[k].toInt()) == leest[k]) // just copy
+		if(nm(leest[k].toInt()) == leest[k]) // just copy
 		{
 //			this->edfData[k] = this->edfData[leest[k].toInt() - 1];
 			temp.edfData[k] = this->edfData[leest[k].toInt() - 1];
@@ -1624,7 +1624,6 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
 	temp.ns = leest.length();
 	temp.adjustArraysByChannels();
 	return temp;
-
 }
 
 void edfFile::setLabels(const std::vector<QString> & inLabels)
@@ -1891,10 +1890,10 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
 
 
 /// non-members for static operation
-void myTransform(int & output, char * input) {output = atoi(input);}
-void myTransform(double & output, char * input) {output = atof(input);}
-void myTransform(QString & output, char * input) {output = QString(input);}
-void myTransform(std::string & output, char * input) {output = std::string(input);}
+void myTransform(int & output, char * input) {output = atoi(input); }
+void myTransform(double & output, char * input) {output = atof(input); }
+void myTransform(QString & output, char * input) {output = QString(input); }
+void myTransform(std::string & output, char * input) {output = std::string(input); }
 
 char * QStrToCharArr(const QString & input, int len = -1)
 {

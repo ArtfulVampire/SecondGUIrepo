@@ -3,6 +3,9 @@
 
 #include <myLib/dataHandlers.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/output.h>
+
+using namespace myOut;
 
 void Net::loadDataUCI(const QString & setName)
 {
@@ -26,7 +29,7 @@ void Net::loadDataXenia(const QString & filesPath, const QString & type)
 	std::valarray<double> xeniaTypesTemp{};
 	myLib::readMatrixFileRaw(filesPath + "/" + type + ".txt", xeniaData);
 	int num = QString(type[ type.indexOf("var") - 1]).toInt();
-	myLib::readFileInLineRaw(filesPath + "/Groups_" + QString::number(num) + ".txt", xeniaTypesTemp);
+	myLib::readFileInLineRaw(filesPath + "/Groups_" + nm(num) + ".txt", xeniaTypesTemp);
 	xeniaTypesTemp -= 1;
 	xeniaTypes.resize(xeniaTypesTemp.size());
 	std::copy(std::begin(xeniaTypesTemp), std::end(xeniaTypesTemp), std::begin(xeniaTypes));

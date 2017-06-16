@@ -272,12 +272,12 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     else if(but->text() == "DIST")
     {
         myClassifier = new DIST();
-        DIST * myDIST = dynamic_cast<DIST *>(myClassifier);
+//        DIST * myDIST = dynamic_cast<DIST *>(myClassifier);
     }
     else if(but->text() == "NBC")
     {
         myClassifier = new NBC();
-        NBC * myNBC = dynamic_cast<NBC *>(myClassifier);
+//        NBC * myNBC = dynamic_cast<NBC *>(myClassifier);
     }
     else if(but->text() == "KNN")
     {

@@ -25,8 +25,9 @@ MainWindow::MainWindow() :
     QString helpString;
 
     // what with deletion?
-    QButtonGroup * group1, *group2;
-	group1 = new QButtonGroup(this);
+//    QButtonGroup * group1;
+	QButtonGroup * group2;
+//	group1 = new QButtonGroup(this);
 	group2 = new QButtonGroup(this);
     group2->addButton(ui->windsButton);
 	group2->addButton(ui->realsButton);
@@ -124,7 +125,7 @@ MainWindow::MainWindow() :
     helpString.clear();
     for(int i = 0; i < 41; ++i)
     {
-        helpString += QString::number(i+1) + " ";
+		helpString += nm(i+1) + " ";
     }
     var = QVariant(helpString);
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
@@ -134,7 +135,7 @@ MainWindow::MainWindow() :
     helpString.clear();
     for(int i = 0; i < 41; ++i)
     {
-        helpString += QString::number(i+1) + " ";
+		helpString += nm(i+1) + " ";
     }
     helpString.remove(" 22 23");
     var = QVariant(helpString);
@@ -145,7 +146,7 @@ MainWindow::MainWindow() :
     helpString.clear();
     for(int i = 0; i < 20; ++i)
     {
-        helpString += QString::number(i+1) + " ";
+		helpString += nm(i+1) + " ";
     }
     var = QVariant(helpString);
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
@@ -155,7 +156,7 @@ MainWindow::MainWindow() :
     helpString.clear();
     for(int i = 0; i < 22; ++i)
     {
-        helpString += QString::number(i+1) + " ";
+		helpString += nm(i+1) + " ";
     }
     var = QVariant(helpString);
     ui->reduceChannelsComboBox->setItemData(helpInt++, var);
@@ -165,7 +166,7 @@ MainWindow::MainWindow() :
     helpString.clear();
     for(int i = 0; i < 19; ++i)
     {
-        helpString += QString::number(i+1) + " ";
+		helpString += nm(i+1) + " ";
     }
     helpString += "22";
     var = QVariant(helpString);
@@ -289,9 +290,9 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->fileMarkersLineEdit, SIGNAL(returnPressed()), this, SLOT(setFileMarkers()));
 	QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
 	QObject::connect(ui->cleanDirsCheckAllButton, &QPushButton::clicked,
-					 [this](){ this->cleanDirsAll(true); });
+					 [this](){ this->cleanDirsCheckAllBoxes(true); });
 	QObject::connect(ui->cleanDirsUncheckAllButton, &QPushButton::clicked,
-					 [this](){ this->cleanDirsAll(false); });
+					 [this](){ this->cleanDirsCheckAllBoxes(false); });
 	QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawDirSlot()));
 	QObject::connect(ui->drawMapsPushButton, SIGNAL(clicked()), this, SLOT(drawMapsSlot()));
 	QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(processEyes()));
@@ -505,7 +506,7 @@ void MainWindow::setEdfFile(const QString & filePath)
 //	for(int i = 0; i < 19; ++i)
 //	{
 //		helpString = "visualisation/wavelets/";
-//		def::dir->mkdir(helpString.append(QString::number(i)));
+//		def::dir->mkdir(helpString.append(nm(i)));
 //	}
 
 
@@ -513,7 +514,7 @@ void MainWindow::setEdfFile(const QString & filePath)
     ui->textEdit->append(helpString);
 
     helpString="ns equals to ";
-    helpString.append(QString::number(def::ns));
+	helpString.append(nm(def::ns));
     ui->textEdit->append(helpString);
 
 }
@@ -532,8 +533,7 @@ void MainWindow::readData()
 		std::cout << "readData: edf file doent exist\n" << helpString.toStdString() << std::endl;
         return;
     }
-    globalEdf.readEdfFile(helpString);
-    def::ns = globalEdf.getNs();
+	globalEdf.readEdfFile(helpString);
 
 	helpString = "data have been read\n";
 	helpString += "ns equals to " + nm(def::ns);
@@ -678,7 +678,7 @@ void MainWindow::drawReals()
 	std::cout << "drawReals: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
-void MainWindow::cleanDirsAll(bool fl)
+void MainWindow::cleanDirsCheckAllBoxes(bool fl)
 {
 	ui->cleanRealsCheckBox->setChecked(fl);
 	ui->cleanRealsSpectraCheckBox->setChecked(fl);
@@ -746,18 +746,18 @@ void MainWindow::markerGetSlot()
     helpString.clear();
     for(int h = 0; h < 8; ++h)
     {
-        helpString += QString::number(byteMarker[h]);
+		helpString += nm(byteMarker[h]);
     }
     ui->markerBin0LineEdit->setText(helpString);
 
     helpString.clear();
     for(int h = 0; h < 8; ++h)
     {
-        helpString += QString::number(byteMarker[h + 8]);
+		helpString += nm(byteMarker[h + 8]);
     }
     ui->markerBin1LineEdit->setText(helpString);
 
-    ui->markerDecimalLineEdit->setText(QString::number(marker));
+	ui->markerDecimalLineEdit->setText(nm(marker));
 }
 
 void MainWindow::markerSetSlot()
@@ -785,7 +785,7 @@ void MainWindow::markerSetDecValueSlot()
         if(helpString[h] != '0' && helpString[h] != '1') return;
         marker += (helpString[h] == '1') * pow(2, 7-h);
     }
-    ui->markerDecimalLineEdit->setText(QString::number(marker));
+	ui->markerDecimalLineEdit->setText(nm(marker));
 }
 
 void MainWindow::markerSetBinValueSlot()

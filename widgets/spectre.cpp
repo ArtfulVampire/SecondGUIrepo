@@ -140,7 +140,7 @@ void Spectre::defaultState()
 
 void Spectre::setFftLength(int i)
 {
-    ui->fftComboBox->setCurrentText(QString::number(i));
+	ui->fftComboBox->setCurrentText(nm(i));
 }
 
 void Spectre::setPow(double a)
@@ -161,9 +161,9 @@ int findChannel(int x, int y, QSize siz)
         if(a == 1) return 0;
         if(a == 3) return 1;
     }
-    case 1:{num += 2; break;}
-    case 2:{num += 7; break;}
-    case 3:{num += 12; break;}
+	case 1:{num += 2; break; }
+	case 2:{num += 7; break; }
+	case 3:{num += 12; break; }
     case 4:
     {
         if(a == 1) return 17;
@@ -390,7 +390,7 @@ void Spectre::psaSlot()
     {
         helpString = (psaPath
 					  + "/" + def::ExpName
-					  + "_class_" + QString::number(i + 1)
+					  + "_class_" + nm(i + 1)
 					  + ".psa");
 		myLib::readFileInLine(helpString, tempVec);
 
@@ -488,7 +488,6 @@ void Spectre::compare()
 			  #if SPECTRA_EXP_NAME_SPECIFICITY
 				  ,{def::ExpName}
 			  #endif
-
 //                  ,{def::spectraDataExtension}
                   );
 
@@ -514,7 +513,7 @@ void Spectre::compare()
         // psa name
 		helpString = (savePath
 					  + "/" + def::ExpName
-					  + "_class_" + QString::number(i + 1)
+					  + "_class_" + nm(i + 1)
 					  + ".psa");
         /// maybe make as spectraFile?
 		myLib::writeFileInLine(helpString, meanVec);
@@ -523,7 +522,7 @@ void Spectre::compare()
 		helpString = (def::dir->absolutePath()
 					  + "/Help"
 					  + "/" + def::ExpName
-					  + "_class_" + QString::number(i + 1)
+					  + "_class_" + nm(i + 1)
 					  + ".jpg");
         drawTemplate(helpString);
         drawArray(helpString, meanVec);
@@ -601,7 +600,7 @@ void Spectre::setRight()
     /// changed
     /// -1 to compensate +1 in def::right()
     def::rightFreq = (ui->rightSpinBox->value() - 1) * def::spStep();
-    ui->rightHzEdit->setText(QString::number(def::rightFreq));
+	ui->rightHzEdit->setText(nm(def::rightFreq));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         rangeLimits[i].second = def::spLength();
@@ -612,7 +611,7 @@ void Spectre::setLeft()
 {
     /// changed
     def::leftFreq = ui->leftSpinBox->value() * def::spStep();
-    ui->leftHzEdit->setText(QString::number(def::leftFreq));
+	ui->leftHzEdit->setText(nm(def::leftFreq));
     for(int i = 0; i < def::nsWOM(); ++i)
     {
         rangeLimits[i].second = def::spLength();
@@ -852,15 +851,15 @@ void Spectre::drawWavelets()
     //make dirs
     for(int i = 0; i < def::nsWOM(); ++i)
     {
-        localDir.mkdir(QString::number(i));
+		localDir.mkdir(nm(i));
 
         if(ui->phaseWaveletButton->isChecked())
         {
             //for phase
-            localDir.cd(QString::number(i));
+			localDir.cd(nm(i));
             for(int j = 0; j < def::ns; ++j)
             {
-                localDir.mkdir(QString::number(j));
+				localDir.mkdir(nm(j));
             }
             localDir.cdUp();
         }
@@ -891,7 +890,7 @@ void Spectre::drawWavelets()
             helpString = (def::dir->absolutePath()
 												  + "/visualisation"
 												  + "/wavelets"
-												  + "/" + QString::number(chanNum) + ".txt");
+												  + "/" + nm(chanNum) + ".txt");
 
 			outStr.open(helpString.toStdString(), std::ios_base::app);
 			outStr << coefs.maxVal() << std::endl;
@@ -904,7 +903,7 @@ void Spectre::drawWavelets()
 //        helpString = (def::dir->absolutePath()
 //                                              + "/visualisation"
 //                                              + "/wavelets"
-//                                              + "/" + QString::number(chanNum) + ".txt");
+//                                              + "/" + nm(chanNum) + ".txt");
 //        readFileInLine(helpString, tempVec);
 //        std::sort(tempVec.begin(), tempVec.end());
 //        std::cout << tempVec.front() << "\t" << tempVec.back() << std::endl;
@@ -926,9 +925,9 @@ void Spectre::drawWavelets()
                 helpString = (backupDirPath
 													  + "/visualisation"
 													  + "/wavelets"
-													  + "/" + QString::number(channel)
+													  + "/" + nm(channel)
 													  + "/" + helpString
-                                                      + "_wavelet_" + QString::number(channel)
+													  + "_wavelet_" + nm(channel)
                                                       + ".jpg");
 				std::cout << helpString.toStdString() << std::endl;
                 wvlt::wavelet(filePath, helpString, channel, def::ns);
@@ -945,11 +944,11 @@ void Spectre::drawWavelets()
                     helpString = (backupDirPath
 														  + "/visualisation"
 														  + "/wavelets"
-														  + "/" + QString::number(channel1)
-														  + "/" + QString::number(channel2)
+														  + "/" + nm(channel1)
+														  + "/" + nm(channel2)
 														  + "/" + helpString
-                                                          + "_wavelet_" + QString::number(channel1)
-                                                          + "_" + QString::number(channel2)
+														  + "_wavelet_" + nm(channel1)
+														  + "_" + nm(channel2)
                                                           + ".jpg");
 					std::cout << helpString.toStdString() << std::endl;
                     /// remake waveletPhase
