@@ -712,11 +712,11 @@ void Cut::findNextMark(int mark)
 
 void Cut::cutPausesSlot()
 {
-	const auto beg = std::begin(data3[edfFil.getMarkChan()]);
-
 	while(1)
 	{
+		const auto beg = std::begin(data3[edfFil.getMarkChan()]);
 		const auto en = std::end(data3[edfFil.getMarkChan()]);
+
 		auto sta = std::find(beg,
 							 en,
 							 201);
@@ -733,7 +733,7 @@ void Cut::cutPausesSlot()
 		}
 	}
 //	this->saveAs("_noPaus");
-	std::cout << "CutPausesSlot: edfFile saved" << std::endl;
+	std::cout << "CutPausesSlot: pauses cut" << std::endl;
 }
 
 

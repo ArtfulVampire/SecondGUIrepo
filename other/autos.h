@@ -95,8 +95,6 @@ void IITPrename(const QString & guyName = "Ira");
 
 
 
-void repairMarkersInNewFB(QString edfPath, int numSession);
-int numMarkers(const QString & edfPath, const std::vector<int> & markers);
 
 void makeRightNumbersCF(const QString & dirPath, int startNum);
 void makeRightNumbers(const QString & dirPath,
@@ -105,6 +103,8 @@ void makeTableFromRows(const QString & work,
 					   QString tablePath = QString(),
 					   const QString & auxFilter = QString());
 
+void repairMarkersInNewFB(QString edfPath, int numSession);
+int numMarkers(const QString & edfPath, const std::vector<int> & markers);
 void avTime(const QString & realsDir = def::dir->absolutePath() + "/Reals");
 void timesNew(const QString & edfPath, int numSession);
 void avTimesNew(const QString & edfPath, int numSession);

@@ -19,17 +19,17 @@ void MainWindow::customFunc()
 //	autos::makeRightNumbersCF("/media/Files/Pictures/CF_3", 81);
 //	exit(0);
 
-//	edfFile f;
-//	f.readEdfFile("/media/Files/Data/Elena/Tetereva/Tetereva_1.edf");
-//	f.concatFile("/media/Files/Data/Elena/Tetereva/Tetereva_2.edf",
-//				 "/media/Files/Data/Elena/Tetereva/Tetereva_3.edf");
-//	exit(0);
-
 //	myLib::drw::drawOneSpectrum(f[f.findChannel("Da_r")], 160, 170, 1000, 1).save(
 //				"/media/Files/Data/iitp/Aliev_15_da_r.jpg", 0, 100);
-//	f.zeroChannels({ f.findChannel("O1"),
-//					 f.findChannel("O2") }).writeEdfFile(
-//				"/media/Files/Data/FeedbackTest/GA/GA_1_f_z.edf");
+//	exit(0);
+
+	/// count correctness and average times
+//	autos::timesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_1_fin.edf", 1);
+//	autos::timesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_2_fin.edf", 2);
+//	autos::timesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_3_fin.edf", 3);
+//	autos::avTimesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_1_fin.edf", 1);
+//	autos::avTimesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_2_fin.edf", 2);
+//	autos::avTimesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_3_fin.edf", 3);
 //	exit(0);
 
 	return;
