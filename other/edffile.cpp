@@ -1639,6 +1639,9 @@ void edfFile::setLabels(const std::vector<QString> & inLabels)
         this->channels[i].label = inLabels[i];
         this->labels[i] = inLabels[i];
     }
+	std::cout << std::endl;
+	std:: cout << "setLabels:" << std::endl;
+	std::cout << this->labels << std::endl;
 }
 
 /// exceptions

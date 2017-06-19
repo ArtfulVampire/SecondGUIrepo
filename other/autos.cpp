@@ -1683,9 +1683,8 @@ int numMarkers(const QString & edfPath, const std::vector<int> & markers)
 {
 	edfFile fil;
 	fil.readEdfFile(edfPath);
-	const std::valarray<double> & mrk = fil.getData()[fil.getMarkChan()];
 	int res = 0;
-	for(double i : mrk)
+	for(double i : fil.getMarkArr())
 	{
 		if(std::find(std::begin(markers),
 					 std::end(markers),
@@ -1697,6 +1696,50 @@ int numMarkers(const QString & edfPath, const std::vector<int> & markers)
 	return res;
 
 }
+
+void mixNumbersCF(const QString & dirPath)
+{
+	auto fileList = QDir(dirPath).entryList({"*.jpg"}, QDir::Files, QDir::Name);
+	std::vector<int> newNums(fileList.size());
+	std::iota(std::begin(newNums), std::end(newNums), 0);
+	std::shuffle(std::begin(newNums), std::end(newNums),
+				 std::default_random_engine(
+					 std::chrono::system_clock::now().time_since_epoch().count()));
+
+	int numCounter = 0;
+	for(QString oldName : fileList)
+	{
+		QString newName = oldName;
+		QStringList parts = newName.split(QRegExp(R"([_\.])"), QString::SkipEmptyParts);
+		newName.clear();
+		for(QString & part : parts)
+		{
+			bool ok = false;
+			int a = part.toInt(&ok);
+			if(ok)
+			{
+				part = rn(newNums[numCounter++], 3);
+//				std::cout << a << "\t" << part << std::endl;
+			}
+			newName += part + "_";
+		}
+		QFile::rename(dirPath + "/" + oldName,
+					  dirPath + "/" + newName);
+	}
+
+
+	for(QString oldName : QDir(dirPath).entryList({"*_jpg_*"}, QDir::Files, QDir::Name))
+	{
+		std::cout << oldName << std::endl;
+
+		QString newName = oldName;
+		newName.replace("_jpg_", ".jpg");
+
+		QFile::rename(dirPath + "/" + oldName,
+					  dirPath + "/" + newName);
+	}
+}
+
 
 void makeRightNumbersCF(const QString & dirPath, int startNum)
 {

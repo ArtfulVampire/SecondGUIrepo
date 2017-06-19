@@ -38,15 +38,14 @@ void MainWindow::rereferenceDataSlot()
 void MainWindow::rereferenceData(const QString & newRef,
 								 const QString & newPath)
 {
-    //A1, A2, Ar, N
-    //A1-A2, A1-N
+	// A1, A2, Ar, N
+	// A1-A2, A1-N
     // Ar means 0.5*(A1+A2)
 
     QTime myTime;
     myTime.start();
 
-    QString helpString;
-    QString helpString2;
+	QString helpString;
 
     readData();
 	auto label = globalEdf.getLabels();
@@ -105,7 +104,7 @@ void MainWindow::rereferenceData(const QString & newRef,
 			if(label[i].contains("EOG1")) { /* do nothing */ }
 			else if(label[i].contains("EOG2")) /// make bipolar EOG1-EOG2
 			{
-				helpString += eog1 + "-" + eog2 + sign[1] + earsChan;
+				helpString += nm(eog1) + "-" + nm(eog2) + sign[1] + nm(earsChan) + " ";
 			}
 			else { helpString += currNumStr + " "; }
 		}
@@ -152,12 +151,37 @@ void MainWindow::rereferenceData(const QString & newRef,
 		}
 
     }
+
+	// fix EOG1-EOG2 label when bipolar
+	/// generality
+	if(ui->eogBipolarCheckBox->isChecked())
+	{
+		/// erase EOG1-A1
+		label.erase(std::find_if(std::begin(label),
+								 std::end(label),
+								 [](const QString & in)
+		{ return in.contains("EOG1-"); }));
+
+		/// insert EOG1-EOG2
+		label.insert(std::find_if(std::begin(label),
+								  std::end(label),
+								  [](const QString & in)
+		 { return in.contains("EOG2-"); }),
+					 myLib::fitString("EOG EOG1-EOG2", 16));
+
+		/// erase EOG2-A2
+		label.erase(std::find_if(std::begin(label),
+								 std::end(label),
+								 [](const QString & in)
+		{ return in.contains("EOG2-"); }));
+	}
 //	std::cout << "rereferenceData: " << newRef << "\n"
 //			  << helpString.toStdString() << std::endl;
 
     ui->reduceChannelsLineEdit->setText(helpString);
 
 	// change labels
+	std::cout << label << std::endl;
     globalEdf.setLabels(label);
 	globalEdf = globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
 	def::ns = globalEdf.getNs();

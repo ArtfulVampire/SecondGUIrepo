@@ -81,7 +81,8 @@ std::ostream & operator<< (std::ostream &os, const QStringList & toOut)
 template <typename Typ, template <typename> class Cont>
 std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut)
 {
-	std::string separ = "\t";
+//	std::string separ = "\t";
+	std::string separ = "\n";
 	//if(is_container<Typ>) separ = std::endl;
 	for(auto in : toOut)
 	{
@@ -95,7 +96,8 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut)
 template <typename Typ, template <typename, typename> class Cont>
 std::ostream & operator<< (std::ostream &os, const Cont <Typ, std::allocator<Typ>> & toOut)
 {
-	std::string separ = "\t";
+//	std::string separ = "\t";
+	std::string separ = "\n";
 	//if(is_container<Typ>) separ = std::endl;
 	for(auto in : toOut)
 	{

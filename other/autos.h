@@ -96,6 +96,7 @@ void IITPrename(const QString & guyName = "Ira");
 
 
 
+void mixNumbersCF(const QString & dirPath);
 void makeRightNumbersCF(const QString & dirPath, int startNum);
 void makeRightNumbers(const QString & dirPath,
 					  int length = 3);
