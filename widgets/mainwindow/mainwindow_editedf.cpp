@@ -53,8 +53,9 @@ void MainWindow::rereferenceData(const QString & newRef,
 	int groundChan = -1;	// A1-N
 	int earsChan1 = -1;		// A1-A2
 	int earsChan2 = -1;		// A2-A1
-	int eog1 = -1;			// EOG1-A1
-	int eog2 = -1;			// EOG2-A2
+	int eog1 = -1;			// EOG1
+	int eog2 = -1;			// EOG2
+	/// EOG references unclear, look edfFile::handleEdfFile()
 
     for(int i = 0; i < def::ns; ++i)
     {
@@ -91,7 +92,11 @@ void MainWindow::rereferenceData(const QString & newRef,
     {
 		const QString currNumStr = nm(i + 1);
 
-		if(!label[i].contains(QRegExp("E[EO]G"))) /// not EOG, not EEG
+		if(i == groundChan || i == earsChan1 || i == earsChan2) /// reref chans
+		{
+			helpString += currNumStr + " ";
+		}
+		else if(!label[i].contains(QRegExp("E[EO]G"))) /// not EOG, not EEG
         {
             helpString += currNumStr + " ";
 		}
@@ -104,7 +109,9 @@ void MainWindow::rereferenceData(const QString & newRef,
 			if(label[i].contains("EOG1")) { /* do nothing */ }
 			else if(label[i].contains("EOG2")) /// make bipolar EOG1-EOG2
 			{
-				helpString += nm(eog1) + "-" + nm(eog2) + sign[1] + nm(earsChan) + " ";
+				/// sign[0] for EOG1-A2; sign[0] for EOG1-A2
+				helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[0] + nm(earsChan + 1) + " ";
+				/// for Elena->Baklushev and Twins->SZR sign[1] too curvy, sign[0] smoother
 			}
 			else { helpString += currNumStr + " "; }
 		}
@@ -181,9 +188,9 @@ void MainWindow::rereferenceData(const QString & newRef,
     ui->reduceChannelsLineEdit->setText(helpString);
 
 	// change labels
-	std::cout << label << std::endl;
-    globalEdf.setLabels(label);
+//	std::cout << label << std::endl;
 	globalEdf = globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
+    globalEdf.setLabels(label);
 	def::ns = globalEdf.getNs();
 
 	// set back channels string

@@ -459,15 +459,16 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			/// edit EOG channels to encephalan
 			if(labels[i].contains("EOG 1"))
 			{
+				/// EOG1-A2 for sure
 				labels[i] = myLib::fitString("EOG EOG1-A2", 16);
 			}
 			else if(labels[i].contains("EOG 2"))
 			{
+				/// EOG2-A1 for sure
 				labels[i] = myLib::fitString("EOG EOG2-A1", 16);
 			}
 			else if(labels[i].contains("EOG 3"))
 			{
-				/// CHECK - A1 is OK
 				/// or bipolar?
 				labels[i] = myLib::fitString("EOG EOG3", 16);
 			}
@@ -1639,9 +1640,9 @@ void edfFile::setLabels(const std::vector<QString> & inLabels)
         this->channels[i].label = inLabels[i];
         this->labels[i] = inLabels[i];
     }
-	std::cout << std::endl;
-	std:: cout << "setLabels:" << std::endl;
-	std::cout << this->labels << std::endl;
+//	std::cout << std::endl;
+//	std::cout << "setLabels:" << std::endl;
+//	std::cout << this->labels << std::endl;
 }
 
 /// exceptions

@@ -427,20 +427,26 @@ void Cut::setValuesByEdf()
 	/// set coloured channels
 	QString redStr = "EOG1";
 	QString blueStr = "EOG2";
+
+	/// iitp
 	if(edfFil.getNs() > 35)
 	{
 		redStr = "ECG";
 		blueStr = "Artefac";
 	}
 
+	int eog1 = edfFil.findChannel(blueStr);
+	int eog2 = edfFil.findChannel(redStr);
+	if(eog2 == eog1) { eog2 = edfFil.findChannel("EOG3"); }
+
 	ui->color1SpinBox->setMaximum(edfFil.getNs() - 1);
 	ui->color2SpinBox->setMaximum(edfFil.getNs() - 1);
 	ui->color3SpinBox->setMaximum(edfFil.getNs() - 1);
-	ui->color1SpinBox->setValue(edfFil.findChannel(blueStr));
-	ui->color2SpinBox->setValue(edfFil.findChannel(redStr));
+	ui->color1SpinBox->setValue(eog1);
+	ui->color2SpinBox->setValue(eog2);
 	ui->color3SpinBox->setValue(-1);
 
-	ui->linearApproxSpinBox->setMaximum(edfFil.getNs());
+	ui->linearApproxSpinBox->setMaximum(edfFil.getNs() - 1);
 	ui->linearApproxSpinBox->setValue(edfFil.getNs() - 1); // markers
 }
 
