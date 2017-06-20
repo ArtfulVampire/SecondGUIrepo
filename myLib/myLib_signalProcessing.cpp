@@ -1925,7 +1925,7 @@ matrix countSpectre(const matrix & inData,
 	}
 
 	if(
-	   ( (fftLen - eyes) < def::freq * 3. )
+	   ( (fftLen - eyes) < def::freq * 3. ) // real signal shorter than 3 sec
 //	   || (eyes > 0.3 * fftLen) /// too much eyes
 	   )
 	{

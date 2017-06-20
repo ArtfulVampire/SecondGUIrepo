@@ -793,7 +793,9 @@ void Spectre::countSpectra()
 
 	int cnt = 0;
 	std::vector<uint> exIndices;
-	uint progressCounter = 0;
+	uint fileNumber = 0;
+	std::vector<uint> exFileNumbers;
+
 	for(const QString & fileName : fileNames)
 	{
 		if(fileName.contains("_num") ||
@@ -813,13 +815,22 @@ void Spectre::countSpectra()
 			}
 			else
 			{
-//				std::cout << fileName << std::endl;
-				exIndices.push_back(progressCounter);
+				QRegExp reg(R"(_[0-9]{1,}_)");
+				reg.indexIn(fileName);
+				exFileNumbers.push_back(reg.cap().remove("_" ).toInt());
+
+				exIndices.push_back(fileNumber);
 			}
 		}
 
-		ui->progressBar->setValue(++progressCounter * 100. / numFiles);
+		ui->progressBar->setValue(++fileNumber * 100. / numFiles);
 		qApp->processEvents();
+	}
+
+	if(!exFileNumbers.empty())
+	{
+		std::cout << "countSpectra: haven't calculated files - " << std::endl;
+		std::cout << exFileNumbers << std::endl;
 	}
 
 	smLib::eraseItems(fileNames, exIndices);
