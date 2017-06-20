@@ -14,6 +14,8 @@ void NBC::adjustToNewData()
 {
 	centers.resize(myClassData->getNumOfCl());
 	sigmas.resize(myClassData->getNumOfCl());
+	/// make something with apriori
+//	myClassData->setApriori();
 }
 
 void NBC::learn(std::vector<uint> & indices)
@@ -34,26 +36,20 @@ void NBC::learn(std::vector<uint> & indices)
 }
 
 /// what with apriori???
-std::pair<uint, double> NBC::classifyDatum(const uint & vecNum)
+void NBC::classifyDatum1(uint vecNum)
 {
-	std::vector<double> res(myClassData->getNumOfCl());
+	outputLayer.resize(myClassData->getNumOfCl()); outputLayer = 0;
 	std::valarray<double> vec[myClassData->getNumOfCl()];
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
 		vec[i] = myClassData->getData()[vecNum] - centers[i];
-		res[i] = myClassData->getApriori()[i]; /// ???
+		outputLayer[i] = myClassData->getApriori()[i]; /// ???
         std::valarray<double> pewpew = 1. / sigmas[i]
                                        * exp( - pow(vec[i], 2.) / (2. * pow(sigmas[i], 2.)));
         for(double item : pewpew)
         {
-            res[i] *= item;
+			outputLayer[i] *= item;
         }
-		res[i] *= myClassData->getApriori()[i]; /// ???
-    }
-    uint outClass = myLib::indexOfMax(res);
-
-    printResult("NBC.txt", outClass, vecNum);
-
-    return std::make_pair(outClass,
-						  double(outClass != myClassData->getTypes()[vecNum]));
+		outputLayer[i] *= myClassData->getApriori()[i]; /// ???
+	}
 }

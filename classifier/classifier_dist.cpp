@@ -31,19 +31,12 @@ void DIST::learn(std::vector<uint> & indices)
     }
 }
 
-std::pair<uint, double> DIST::classifyDatum(const uint & vecNum)
+void DIST::classifyDatum1(uint vecNum)
 {
-
-	std::vector<double> distances(myClassData->getNumOfCl());
+	outputLayer.resize(myClassData->getNumOfCl()); outputLayer = 0;
 	for(uint j = 0; j < myClassData->getNumOfCl(); ++j)
     {
-		distances[j] = -smLib::distance(myClassData->getData()[vecNum],
+		outputLayer[j] = -smLib::distance(myClassData->getData()[vecNum],
                                            centers[j]);
-    }
-    uint outClass = myLib::indexOfMax(distances);
-
-    printResult("DIST.txt", outClass, vecNum);
-
-    return std::make_pair(outClass,
-						  double(outClass != myClassData->getTypes()[vecNum]));
+	}
 }

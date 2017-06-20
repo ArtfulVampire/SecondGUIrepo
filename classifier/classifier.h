@@ -76,6 +76,18 @@ public:
 	void setClassifierData(ClassifierData & in);
 	ClassifierData * getClassifierData() { return myClassData; }
 
+	///
+	void leaveOneOutClassification();
+	void crossClassification(int numOfPairs, int fold);
+	void trainTestClassification(const QString & trainTemplate = "_train",
+								 const QString & testTemplate = "_test");
+	void halfHalfClassification();
+
+private:
+	std::pair<std::vector<uint>, std::vector<uint>> makeIndicesSetsCross(
+			const std::vector<std::vector<uint>> & arr,
+			int numOfFolds,
+			const int currentFold);
 
 public:
     Classifier();
@@ -86,16 +98,8 @@ public:
 	virtual void learn(std::vector<uint> & indices) = 0;
 	void learnAll();
 
-	/// should be protected (i.e. the same for all classifiers)
-	virtual std::pair<uint, double> classifyDatum(const uint & vecNum); // class and error
-
-	/// should be = 0 and overriden for all classes
-	virtual void classifyDatum1(const uint & vecNum);
-
 	void test(const std::vector<uint> & indices);
     void testAll();
-
-
 
     virtual void successiveRelearn();
 	virtual void printParams();
@@ -104,7 +108,8 @@ public:
 	std::pair<uint, double> classifyDatumLast();
 
 protected:
-
+	std::pair<uint, double> classifyDatum(uint vecNum); // return class and error
+	virtual void classifyDatum1(uint vecNum) = 0;
 	void classifyDatumLast1();
 
 };
@@ -147,7 +152,7 @@ private:
     void allocParams(weightType & inMat);
     void zeroParams();
     std::valarray<double> (*activation)(const std::valarray<double> & in) = smLib::softmax;
-    void loadVector(const uint vecNum, uint & type);
+	void loadVector(uint vecNum, uint & type);
     void countOutput();
     void countOutputDelta();
     void countOutputBackprop();
@@ -183,7 +188,7 @@ public:
 
 protected:
 	void learn(std::vector<uint> & indices) override;
-	void classifyDatum1(const uint & vecNum) override;
+	void classifyDatum1(uint vecNum) override;
     /// successive
     void successiveRelearn() override;
 	void adjustToNewData() override;
@@ -207,7 +212,7 @@ public:
 
 protected:
 	void learn(std::vector<uint> & indices) override;
-	std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	void classifyDatum1(uint vecNum) override;
 	void adjustToNewData() override;
 };
 
@@ -231,7 +236,7 @@ public:
 
 protected:
 	void learn(std::vector<uint> & indices) override;
-    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	void classifyDatum1(uint vecNum) override;
 //	void adjustToNewData() override;
 };
 
@@ -247,7 +252,7 @@ public:
 
 protected:
 	void learn(std::vector<uint> & indices) override;
-    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	void classifyDatum1(uint vecNum) override;
 	void adjustToNewData() override;
 };
 
@@ -263,7 +268,7 @@ public:
 
 protected:
 	void learn(std::vector<uint> & indices) override;
-    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	void classifyDatum1(uint vecNum) override;
 	void adjustToNewData() override;
 };
 
@@ -282,8 +287,7 @@ public:
 
 protected:
 	void learn(std::vector<uint> & indices) override;
-	std::pair<uint, double> classifyDatum(const uint & vecNum) override;
-	void classifyDatum1(const uint & vecNum) override;
+	void classifyDatum1(uint vecNum) override;
 //	void adjustToNewData() override;
 };
 
@@ -307,7 +311,7 @@ public:
 
 protected:
 	void learn(std::vector<uint> & indices) override;
-    std::pair<uint, double> classifyDatum(const uint & vecNum) override;
+	void classifyDatum1(uint vecNum) override;
 //	void adjustToNewData() override;
 };
 

@@ -285,7 +285,8 @@ MainWindow::MainWindow() :
 
 	/// small things, ~constant edf
 	QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
-	QObject::connect(ui->fileMarkersLineEdit, SIGNAL(returnPressed()), this, SLOT(setFileMarkers()));
+	QObject::connect(ui->fileMarkersLineEdit, SIGNAL(editingFinished()), this, SLOT(setFileMarkers()));
+
 	QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
 	QObject::connect(ui->cleanDirsCheckAllButton, &QPushButton::clicked,
 					 [this](){ this->cleanDirsCheckAllBoxes(true); });
@@ -297,9 +298,6 @@ MainWindow::MainWindow() :
 
 	/// slice
 	QObject::connect(ui->cutEDF, SIGNAL(clicked()), this, SLOT(sliceAll()));
-
-	/// deprecated
-//    QObject::connect(ui->windFromRealButton, SIGNAL(clicked()), this, SLOT(sliceWindFromReal()));
 
 	/// process edf
 	QObject::connect(ui->icaPushButton, SIGNAL(clicked()), this, SLOT(ICA()));

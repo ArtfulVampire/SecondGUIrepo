@@ -23,19 +23,20 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
     {
     case myMode::k_fold:
     {
-        crossClassification(); break;
+		myClassifier->crossClassification(ui->numOfPairsBox->value(),
+										  ui->foldSpinBox->value()); break;
     }
     case myMode::N_fold:
     {
-        leaveOneOutClassification(); break;
+		myClassifier->leaveOneOutClassification(); break;
     }
     case myMode::train_test:
     {
-        trainTestClassification(); break;
+		myClassifier->trainTestClassification(); break;
     }
     case myMode::half_half:
     {
-        halfHalfClassification(); break;
+		myClassifier->halfHalfClassification(); break;
     }
     default: {break; }
 	}
@@ -74,7 +75,7 @@ void Net::autoClassificationSimple()
 
 void Net::leaveOneOutClassification()
 {
-	const auto & dataMatrix = myClassifier->getClassifierData()->getData();
+	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
 	std::vector<uint> learnIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
@@ -91,8 +92,7 @@ void Net::leaveOneOutClassification()
 
 		myClassifier->learn(learnIndices);
 		myClassifier->test({i});
-    }
-//    std::cout << std::endl;
+	}
 }
 
 void Net::crossClassification()
@@ -144,7 +144,7 @@ std::vector<uint>> Net::makeIndicesSetsCross(
                        const int numOfFold)
 {
 	const std::valarray<double> & classCount = myClassifier->getClassifierData()->getClassCount();
-	const double & numOfClasses = myClassifier->getClassifierData()->getNumOfCl();
+	const double numOfClasses = myClassifier->getClassifierData()->getNumOfCl();
 
     std::vector<uint> learnInd;
     std::vector<uint> tallInd;
@@ -171,7 +171,7 @@ std::vector<uint>> Net::makeIndicesSetsCross(
 
 void Net::halfHalfClassification()
 {
-	const auto & dataMatrix = myClassifier->getClassifierData()->getData();
+	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
     std::vector<uint> learnIndices;
     std::vector<uint> tallIndices;
 
@@ -192,7 +192,7 @@ void Net::halfHalfClassification()
 void Net::trainTestClassification(const QString & trainTemplate,
                                   const QString & testTemplate)
 {
-	const auto & dataMatrix = myClassifier->getClassifierData()->getData();
+	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
 	const std::vector<QString> & fileNames = myClassifier->getClassifierData()->getFileNames();
 
     std::vector<uint> learnIndices;

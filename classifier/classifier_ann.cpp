@@ -136,7 +136,7 @@ void ANN::loadVector(uint vecNum, uint & type)
 	std::copy(std::begin(myClassData->getData()[vecNum]),
 			  std::end(myClassData->getData()[vecNum]),
               std::begin(output[0]));
-    output[0][output[0].size() - 1] = 1.; //bias
+	output[0][output[0].size() - 1] = 1.; // bias
 	type = myClassData->getTypes()[vecNum]; // true class
 }
 
@@ -345,13 +345,11 @@ int ANN::getEpoch()
     return epoch;
 }
 
-/// should be virtual=0
-void ANN::classifyDatum1(const uint & vecNum)
+void ANN::classifyDatum1(uint vecNum)
 {
 	uint type;
 	loadVector(vecNum, type);
-	countOutput();
-	confusionMatrix[myClassData->getTypes()[vecNum]][myLib::indexOfMax(outputLayer)] += 1.;
+	countOutput(); // provides outputLayer
 
 #if 0
 	/// std::cout results

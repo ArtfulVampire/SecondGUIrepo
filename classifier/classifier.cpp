@@ -53,17 +53,20 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 
 /// TEMPORARY, will be virtual=0
 /// SHOULD OVERRIDE FOR ALL CLASSIFIERS
-void Classifier::classifyDatum1(const uint & vecNum)
-{
-	/// ALWAYS TRUE WITH ZERO ERROR
-	this->confusionMatrix[myClassData->getTypes()[vecNum]][myClassData->getTypes()[vecNum]] += 1.;
-	outputLayer = clLib::oneHot(myClassData->getNumOfCl(),
-								myClassData->getTypes()[vecNum]);
-}
+//void Classifier::classifyDatum1(uint vecNum)
+//{
+//	/// ALWAYS TRUE WITH ZERO ERROR
+//	this->confusionMatrix[myClassData->getTypes()[vecNum]][myClassData->getTypes()[vecNum]] += 1.;
+//	outputLayer = clLib::oneHot(myClassData->getNumOfCl(),
+//								myClassData->getTypes()[vecNum]);
+//}
 
-std::pair<uint, double> Classifier::classifyDatum(const uint & vecNum)
+std::pair<uint, double> Classifier::classifyDatum(uint vecNum)
 {
-	this->classifyDatum1(vecNum); /// sometimes is not necessary, but won't be worse
+	this->classifyDatum1(vecNum);
+	confusionMatrix[myClassData->getTypes()[vecNum]][myLib::indexOfMax(outputLayer)] += 1.;
+	printResult(typeString + ".txt", myLib::indexOfMax(outputLayer), vecNum);
+	smLib::normalize(outputLayer); /// for clLib::countError
 	return std::make_pair(myLib::indexOfMax(outputLayer),
 						  clLib::countError(outputLayer, myClassData->getTypes()[vecNum]));
 }
@@ -130,7 +133,7 @@ void Classifier::test(const std::vector<uint> & indices)
     for(int ind : indices)
 	{
 		/// should affect confusionMatrix and outputLayer
-		classifyDatum1(ind);
+		classifyDatum(ind);
     }
 }
 
@@ -228,5 +231,131 @@ Classifier::avType Classifier::averageClassification()
     confusionMatrix.fill(0.);
 
     return std::make_pair(averageAccuracy, kappa);
+}
+
+void Classifier::leaveOneOutClassification()
+{
+	const auto & dataMatrix = this->myClassData->getData();
+	std::vector<uint> learnIndices;
+	for(uint i = 0; i < dataMatrix.rows(); ++i)
+	{
+
+		learnIndices.clear();
+		learnIndices.resize(dataMatrix.rows() - 1);
+		std::iota(std::begin(learnIndices),
+				  std::begin(learnIndices) + i,
+				  0);
+		std::iota(std::begin(learnIndices) + i,
+				  std::end(learnIndices),
+				  i + 1);
+
+		this->learn(learnIndices);
+		this->test({i});
+	}
+}
+
+
+std::pair<std::vector<uint>,
+std::vector<uint>> Classifier::makeIndicesSetsCross(
+		const std::vector<std::vector<uint> > & arr,
+		int numOfFolds,
+		const int currentFold)
+{
+	const std::valarray<double> & classCount = this->myClassData->getClassCount();
+	const double numOfClasses = this->myClassData->getNumOfCl();
+
+	std::vector<uint> learnInd;
+	std::vector<uint> tallInd;
+
+	for(int i = 0; i < numOfClasses; ++i)
+	{
+		for(int j = 0; j < classCount[i]; ++j)
+		{
+			if(j >= (classCount[i] * currentFold / numOfFolds) &&
+			   j < (classCount[i] * (currentFold + 1) / numOfFolds))
+			{
+				tallInd.push_back(arr[i][j]);
+			}
+			else
+			{
+				learnInd.push_back(arr[i][j]);
+			}
+		}
+	}
+	return make_pair(learnInd, tallInd);
+}
+
+void Classifier::crossClassification(int numOfPairs, int fold)
+{
+	const matrix & dataMatrix = this->myClassData->getData();
+	const auto & types = this->myClassData->getTypes();
+
+	std::vector<std::vector<uint>> arr; // [class][index]
+	arr.resize(def::numOfClasses());
+	for(uint i = 0; i < dataMatrix.rows(); ++i)
+	{
+		arr[ types[i] ].push_back(i);
+	}
+
+	for(int i = 0; i < numOfPairs; ++i)
+	{
+		// mix arr for one "pair"-iteration
+		for(int i = 0; i < def::numOfClasses(); ++i)
+		{
+			smLib::mix(arr[i]);
+		}
+		for(int numFold = 0; numFold < fold; ++numFold)
+		{
+			auto sets = this->makeIndicesSetsCross(arr, fold, numFold); // on const arr
+			this->learn(sets.first);
+			this->test(sets.second);
+		}
+	}
+}
+
+void Classifier::trainTestClassification(const QString & trainTemplate,
+										 const QString & testTemplate)
+{
+	const matrix & dataMatrix = this->myClassData->getData();
+	const auto & fileNames = this->myClassData->getFileNames();
+
+	std::vector<uint> learnIndices;
+	std::vector<uint> tallIndices;
+	for(uint i = 0; i < dataMatrix.rows(); ++i)
+	{
+		if(fileNames[i].contains(trainTemplate))
+		{
+			learnIndices.push_back(i);
+		}
+		else if(fileNames[i].contains(testTemplate))
+		{
+			tallIndices.push_back(i);
+		}
+	}
+	if(learnIndices.empty() || tallIndices.empty())
+	{
+		return;
+	}
+	this->learn(learnIndices);
+	this->test(tallIndices);
+}
+
+void Classifier::halfHalfClassification()
+{
+	const auto & dataMatrix = this->myClassData->getData();
+	std::vector<uint> learnIndices;
+	std::vector<uint> tallIndices;
+
+	for(uint i = 0; i < dataMatrix.rows() / 2; ++i)
+	{
+		learnIndices.push_back(i);
+		tallIndices.push_back(i + dataMatrix.rows() / 2);
+	}
+	if(learnIndices.empty() || tallIndices.empty())
+	{
+		return;
+	}
+	this->learn(learnIndices);
+	this->test(tallIndices);
 }
 

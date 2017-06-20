@@ -124,7 +124,7 @@ void WARD::merge(const uint one, const uint two)
 }
 
 
-std::pair<uint, double> WARD::classifyDatum(const uint & vecNum)
+void WARD::classifyDatum1(uint vecNum)
 {
 
     std::vector<double> distances(numOfClust);
@@ -137,18 +137,10 @@ std::pair<uint, double> WARD::classifyDatum(const uint & vecNum)
     /// add fuzzy solving for first N clusters
     int ind = myLib::indexOfMax(distances);
 
-	std::valarray<double> numOfClass(0., myClassData->getNumOfCl());
+	outputLayer.resize(myClassData->getNumOfCl()); outputLayer = 0;
     for(uint i = 0; i < clusts[ind].size(); ++i)
     {
-		numOfClass[ myClassData->getTypes()[ clusts[ind][i] ] ] += 1;
+		outputLayer[ myClassData->getTypes()[ clusts[ind][i] ] ] += 1;
     }
-	numOfClass /= myClassData->getApriori();
-    uint outClass = myLib::indexOfMax(numOfClass);
-
-
-    printResult("WARD.txt", outClass, vecNum);
-
-    return std::make_pair(outClass,
-						  double(outClass != myClassData->getTypes()[vecNum]));
-
+	outputLayer /= myClassData->getApriori();
 }

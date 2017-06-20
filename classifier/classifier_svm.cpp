@@ -24,7 +24,7 @@ void SVM::learn(std::vector<uint> & indices)
 //    std::cout << std::endl << "LEARN finish" << std::endl << std::endl;
 }
 
-std::pair<uint, double> SVM::classifyDatum(const uint & vecNum)
+void SVM::classifyDatum1(uint vecNum)
 {
     /// to write!
     const QString fileName = "oneVec";
@@ -45,10 +45,7 @@ std::pair<uint, double> SVM::classifyDatum(const uint & vecNum)
     inStr >> outClass;
     inStr.close();
 
-    printResult("SVM.txt", outClass, vecNum);
-
-    return std::make_pair(outClass,
-						  double(outClass != myClassData->getTypes()[vecNum]));
+	outputLayer = clLib::oneHot(myClassData->getNumOfCl(), outClass);
 }
 
 

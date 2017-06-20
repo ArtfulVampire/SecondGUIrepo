@@ -75,9 +75,9 @@ void RDA::learn(std::vector<uint> & indices)
 	}
 }
 
-std::pair<uint, double> RDA::classifyDatum(const uint & vecNum)
+void RDA::classifyDatum1(uint vecNum)
 {
-	std::valarray<double> output(myClassData->getNumOfCl());
+	outputLayer.resize(myClassData->getNumOfCl()); outputLayer = 0;
 
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
 	{
@@ -85,10 +85,6 @@ std::pair<uint, double> RDA::classifyDatum(const uint & vecNum)
         matrix m1(a, 'r'); // row
         matrix m2(a, 'c'); // col
 		double tmp = (m1 * covMat[i] * m2)[0][0];
-		output[i] = - tmp - log(dets[i]) + 2 * log(myClassData->getApriori()[i]);
+		outputLayer[i] = - tmp - log(dets[i]) + 2 * log(myClassData->getApriori()[i]);
 	}
-    uint outClass = myLib::indexOfMax(output);
-    printResult("RDA.txt", outClass, vecNum);
-    return std::make_pair(outClass,
-						  double(outClass != myClassData->getTypes()[vecNum]));
 }

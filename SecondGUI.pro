@@ -58,7 +58,6 @@ classifier/classifier_svm.cpp \
 classifier/classifier_dist.cpp \
 classifier/classifier_nbc.cpp \
 classifier/classifier_knn.cpp \
-classifier/classifier_word.cpp \
 classifier/classifier_rda.cpp \
 other/autos.cpp \
 other/edffile.cpp \
@@ -89,7 +88,8 @@ DSP/DspFilters/PoleFilter.cpp \
 DSP/DspFilters/RBJ.cpp \
 DSP/DspFilters/RootFinder.cpp \
 DSP/DspFilters/State.cpp \
-myLib/myLib_qtlib.cpp
+myLib/myLib_qtlib.cpp \
+    classifier/classifier_ward.cpp
 
 HEADERS  += \
 widgets/cut.h \
