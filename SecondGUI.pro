@@ -87,7 +87,8 @@ widgets/cut.cpp \
     DSP/DspFilters/PoleFilter.cpp \
     DSP/DspFilters/RootFinder.cpp \
     DSP/DspFilters/Bessel.cpp \
-    DSP/DspFilters/ChebyshevII.cpp
+    DSP/DspFilters/ChebyshevII.cpp \
+    myLib/myLib_qtlib.cpp
 
 HEADERS  += \
 widgets/cut.h \
@@ -114,7 +115,8 @@ other/autos.h \
 other/coord.h \
 other/matrix.h \
 other/edffile.h \
-    other/defaults.h
+    other/defaults.h \
+    myLib/qtlib.h
 
 FORMS+= mainwindow.ui \
 cut.ui \

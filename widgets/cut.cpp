@@ -5,6 +5,7 @@
 #include <myLib/draws.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/qtlib.h>
 
 using namespace myOut;
 
@@ -13,7 +14,6 @@ Cut::Cut() :
 {
     ui->setupUi(this);
     this->setWindowTitle("Cut-e");
-
 
 	ui->subdirComboBox->addItem("");
 	ui->subdirComboBox->addItem("Reals");
@@ -29,13 +29,11 @@ Cut::Cut() :
 	ui->suffixComboBox->setCurrentText("");
 //	ui->suffixComboBox->setCurrentText("sum"); /// iitp
 
-
 	ui->yNormDoubleSpinBox->setDecimals(2);
 	ui->yNormDoubleSpinBox->setMaximum(5.);
 	ui->yNormDoubleSpinBox->setMinimum(0.01);
 	ui->yNormDoubleSpinBox->setValue(1.);
 	ui->yNormDoubleSpinBox->setSingleStep(0.05);
-
 
     ui->paintStartDoubleSpinBox->setDecimals(1);
     ui->paintStartDoubleSpinBox->setSingleStep(0.1);
@@ -45,13 +43,46 @@ Cut::Cut() :
 	ui->paintLengthDoubleSpinBox->setSingleStep(0.2);
 
 
-    ui->nextButton->setShortcut(tr("d"));
-    ui->prevButton->setShortcut(tr("a"));
+	/// make spin box ?
+	ui->mark1LineEdit->setText("10");
+	ui->mark2LineEdit->setText("20");
+
+    ui->picLabel->installEventFilter(this);
+	drawSamples();
+
+    ui->scrollArea->setWidget(ui->picLabel);
+    ui->scrollArea->installEventFilter(this);
+
+	ui->color1LineEdit->setText("blue");
+	ui->color2LineEdit->setText("red");
+	ui->color3LineEdit->setText("orange");
+	for(auto * colSpin : {ui->color1SpinBox, ui->color2SpinBox, ui->color3SpinBox})
+	{
+		colSpin->setMinimum(-1); colSpin->setMaximum(24); colSpin->setValue(-1);
+	}
+
+	ui->iitpSaveNewNumSpinBox->setMaximum(50);
+	ui->iitpSaveNewNumSpinBox->setValue(24);
+
+
+	// derivativesGridLayout
+	ui->valDoubleSpinBox->setMaximum(1000);
+	ui->firstDoubleSpinBox->setMaximum(500);
+	ui->secondDoubleSpinBox->setMaximum(500);
+	ui->valDoubleSpinBox->setMinimum(-1000);
+	ui->firstDoubleSpinBox->setMinimum(-500);
+	ui->secondDoubleSpinBox->setMinimum(-500);
+
+	ui->findMarkSpinBox->setMaximum(255);
+	ui->findMarkSpinBox->setValue(241);
+
+	ui->nextButton->setShortcut(tr("d"));
+	ui->prevButton->setShortcut(tr("a"));
 	ui->saveSubsecPushButton->setShortcut(tr("c"));
-    ui->zeroButton->setShortcut(tr("z"));
+	ui->zeroButton->setShortcut(tr("z"));
 	ui->saveButton->setShortcut(tr("s"));
-    ui->splitButton->setShortcut(tr("x"));
-    ui->rewriteButton->setShortcut(tr("r"));
+	ui->splitButton->setShortcut(tr("x"));
+	ui->rewriteButton->setShortcut(tr("r"));
 	ui->forwardFrameButton->setShortcut(QKeySequence::Forward);
 	ui->backwardFrameButton->setShortcut(QKeySequence::Back);
 	ui->forwardFrameButton->setShortcut(tr("e"));
@@ -63,39 +94,8 @@ Cut::Cut() :
 	ui->setMark1PushButton->setShortcut(tr("1"));
 	ui->setMark2PushButton->setShortcut(tr("2"));
 
-	ui->mark1LineEdit->setText("10");
-	ui->mark2LineEdit->setText("20");
 
-
-    ui->picLabel->installEventFilter(this);
-	drawSamples();
-
-    ui->scrollArea->setWidget(ui->picLabel);
-    ui->scrollArea->installEventFilter(this);
-
-	ui->color1LineEdit->setText("blue");
-	ui->color2LineEdit->setText("red");
-	ui->color3LineEdit->setText("orange");
-	ui->color1SpinBox->setMinimum(-1); ui->color1SpinBox->setValue(-1);
-	ui->color2SpinBox->setMinimum(-1); ui->color2SpinBox->setValue(-1);
-	ui->color3SpinBox->setMinimum(-1); ui->color3SpinBox->setValue(-1);
-
-	ui->iitpSaveNewNumSpinBox->setMaximum(50);
-	ui->iitpSaveNewNumSpinBox->setValue(24);
-
-
-	ui->valDoubleSpinBox->setMaximum(1000);
-	ui->firstDoubleSpinBox->setMaximum(500);
-	ui->secondDoubleSpinBox->setMaximum(500);
-	ui->valDoubleSpinBox->setMinimum(-1000);
-	ui->firstDoubleSpinBox->setMinimum(-500);
-	ui->secondDoubleSpinBox->setMinimum(-500);
-
-	ui->findMarkSpinBox->setMaximum(255);
-	ui->findMarkSpinBox->setValue(241);
-
-
-	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browse()));
+	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browseSlot()));
 
 	QObject::connect(undoShortcut, SIGNAL(activated()), this, SLOT(undoSlot()));
 	QObject::connect(copyShortcut, SIGNAL(activated()), this, SLOT(copySlot()));
@@ -118,7 +118,7 @@ Cut::Cut() :
 	QObject::connect(ui->saveSubsecPushButton, SIGNAL(clicked()), this, SLOT(saveSubsecSlot()));
 	QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
 	QObject::connect(ui->subtractMeansPushButton, &QPushButton::clicked,
-					 [this](){ 	for(auto & row : data3) { row -= smLib::mean(row); } paint(); });
+					 [this](){ 	for(auto & row : dataCutLocal) { row -= smLib::mean(row); } paint(); });
 	QObject::connect(ui->linearApproxPushButton, SIGNAL(clicked()), this, SLOT(linearApproxSlot()));
 
 	QObject::connect(ui->zeroButton, SIGNAL(clicked()), this, SLOT(zeroSlot()));
@@ -221,7 +221,7 @@ void Cut::drawSamples()
 //									ui->hzLayout->sizeHint().height()));
 }
 
-void Cut::browse()
+void Cut::browseSlot()
 {
 	QString path;
 	if(def::dir->isRoot())
@@ -249,12 +249,11 @@ void Cut::browse()
 		filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + in + " ";
 	}
 	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + def::plainDataExtension;
-	QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
-													  tr("Open file"),
-													  path,
-													  filter);
 
-
+	const QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
+															tr("Open file"),
+															path,
+															filter);
     if(helpString.isEmpty())
     {
 //        QMessageBox::information((QWidget*)this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
@@ -277,10 +276,12 @@ void Cut::browse()
 			def::dir->cdUp();
 		}
 	}
-	lst = QDir(myLib::getDirPathLib(helpString)).entryList(
+	filesList = QDir(myLib::getDirPathLib(helpString)).entryList(
 	{"*" + ui->suffixComboBox->currentText() +  "*." + myLib::getExt(helpString)});
 
-	currentNumber = lst.indexOf(myLib::getFileName(helpString));
+	fileListIter = std::find(std::begin(filesList),
+							 std::end(filesList),
+							 myLib::getFileName(helpString));
 
     createImage(helpString);
 }
@@ -295,7 +296,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 								newLen * currFreq,
                                 ui->scrollArea->geometry().height());
 	ui->paintLengthDoubleSpinBox->setValue(newLen);
-	if(!data3.isEmpty())
+	if(!dataCutLocal.isEmpty())
 	{
 		paint();
 	}
@@ -336,12 +337,12 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
             else if(myFileType == fileType::edf)
             {
 //                std::cout << "edf" << std::endl;
-				if((leftDrawLimit + ui->scrollArea->width() > data3.cols() && offset > 0) ||
+				if((leftDrawLimit + ui->scrollArea->width() > dataCutLocal.cols() && offset > 0) ||
                    (leftDrawLimit == 0 && offset < 0))
                 {
                     return false;
                 }
-				leftDrawLimit = std::min(leftDrawLimit + offset, int(data3.cols()));
+				leftDrawLimit = std::min(leftDrawLimit + offset, int(dataCutLocal.cols()));
 				ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
                 return true;
             }
@@ -404,23 +405,26 @@ void Cut::setFileType(const QString & dataFileName)
 
 void Cut::resetLimits()
 {
+	if( !fileOpened ) { return; }
 	ui->leftLimitSpinBox->setValue(0);
-	ui->rightLimitSpinBox->setValue(data3.cols());
+	ui->rightLimitSpinBox->setValue(dataCutLocal.cols());
 }
 
 void Cut::setValuesByEdf()
 {
+	if( !fileOpened ) { return; }
+
 	currFreq = edfFil.getFreq();
-	data3 = edfFil.getData(); /// expensive
+	dataCutLocal = edfFil.getData(); /// expensive
 
 
 	ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
 	ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
 	resetLimits();
 
-	ui->paintStartDoubleSpinBox->setMaximum(floor(data3.cols() / currFreq));
+	ui->paintStartDoubleSpinBox->setMaximum(floor(dataCutLocal.cols() / currFreq));
 	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
-	ui->paintStartLabel->setText("start (max " + nm(floor(data3.cols() / currFreq)) + ")");
+	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
 	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
 	ui->paintLengthDoubleSpinBox->setValue((this->width() - 20) / currFreq);
 
@@ -458,13 +462,15 @@ void Cut::createImage(const QString & dataFileName)
 	leftDrawLimit = 0;
     if(this->myFileType == fileType::real)
 	{
-		myLib::readPlainData(dataFileName, data3);
+		myLib::readPlainData(dataFileName, dataCutLocal);
+		fileOpened = true;
     }
 	else if(this->myFileType == fileType::edf)
 	{
         edfFil.readEdfFile(dataFileName);
+		fileOpened = true;
 		def::ns = edfFil.getNs();
-		setValuesByEdf();
+		setValuesByEdf(); /// needs fileOpened
     }
 	ui->iitpDisableEcgCheckBox->setChecked(false);
 	paint();
@@ -531,7 +537,9 @@ void Cut::iitpManualSlot()
 
 void Cut::showDerivatives()
 {
-	const std::valarray<double> & sig = data3[ui->linearApproxSpinBox->value()];
+	if( !fileOpened ) { return; }
+
+	const std::valarray<double> & sig = dataCutLocal[ui->linearApproxSpinBox->value()];
 	const int ind = ui->leftLimitSpinBox->value();
 	const int st = 5;
 	ui->valDoubleSpinBox->setValue(sig[ind]);
@@ -549,7 +557,7 @@ void Cut::mousePressSlot(char btn, int coord)
 	}
 	else if(btn == 'r' &&
 			coord + leftDrawLimit > ui->leftLimitSpinBox->value() &&
-			coord < data3.cols())
+			coord < dataCutLocal.cols())
 	{
 		ui->rightLimitSpinBox->setValue(coord + leftDrawLimit);
 	}
@@ -558,7 +566,9 @@ void Cut::mousePressSlot(char btn, int coord)
 
 void Cut::copySlot()
 {
-	this->copyData = data3.subCols(ui->leftLimitSpinBox->value(),
+	if( !fileOpened ) { return; }
+
+	this->copyData = dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
 								   ui->rightLimitSpinBox->value());
 	paint();
 }
@@ -571,6 +581,8 @@ void Cut::cutSlot()
 
 void Cut::paste(int start, const matrix & inData, bool addUndo)
 {
+	if( !fileOpened ) { return; }
+
 	int cls = inData.cols();
 
 	if(addUndo)
@@ -582,9 +594,9 @@ void Cut::paste(int start, const matrix & inData, bool addUndo)
 		undos.push_back(undoAction);
 	}
 
-	matrix data2 = this->data3.subCols(ui->leftLimitSpinBox->value(), data3.cols());
-	data3.resizeCols(ui->leftLimitSpinBox->value());
-	data3.horzCat(inData).horzCat(data2);
+	matrix data2 = this->dataCutLocal.subCols(ui->leftLimitSpinBox->value(), dataCutLocal.cols());
+	dataCutLocal.resizeCols(ui->leftLimitSpinBox->value());
+	dataCutLocal.horzCat(inData).horzCat(data2);
 	paint();
 }
 
@@ -595,63 +607,63 @@ void Cut::pasteSlot()
 
 void Cut::next()
 {
-
     QString helpString;
-    int tmp = currentNumber;
-    for(; currentNumber < lst.length() - 1; ++currentNumber)  // generality
-    {
-        /// remake regexps or not?
-        if(lst[currentNumber + 1].contains("_num") ||
-           lst[currentNumber + 1].contains("_000") || /// number starts with .000
-           lst[currentNumber + 1].contains("_sht"))
-        {
-            continue;
-        }
-		helpString = myLib::getDirPathLib(currentFile) + "/" + lst[++currentNumber];
-        emit openFile(helpString);
-        return;
-    }
-    currentNumber = tmp;
+
+	auto iterBackup = fileListIter;
+	fileListIter++;
+	for(; fileListIter != std::end(filesList); ++fileListIter)
+	{
+		if((*fileListIter).contains(QRegExp(R"({_num|_000|_sht})")))
+		{
+			std::cout << "next: bad name" << std::endl;
+			continue;
+		}
+		helpString = myLib::getDirPathLib(currentFile) + "/" + (*fileListIter);
+		emit openFile(helpString);
+		return;
+	}
+	fileListIter = iterBackup;
 	std::cout << "next: bad number, too big" << std::endl;
 }
 
 void Cut::prev()
 {
-
     QString helpString;
-    int tmp = currentNumber;
-    for(; currentNumber > 0 + 1; --currentNumber)  // generality
-    {
-        /// remake regexps or not?
-        if(lst[currentNumber - 1].contains("_num") ||
-           lst[currentNumber - 1].contains("_000") || /// number starts with .000
-           lst[currentNumber - 1].contains("_sht"))
-        {
-            continue;
-        }
-		helpString = myLib::getDirPathLib(currentFile) + "/" + lst[--currentNumber];
-        emit openFile(helpString);
-        return;
-    }
-    currentNumber = tmp;
+
+	auto iterBackup = fileListIter;
+	fileListIter--;
+	for(; fileListIter != std::begin(filesList); --fileListIter)
+	{
+		if((*fileListIter).contains(QRegExp(R"({_num|_000|_sht})")))
+		{
+			std::cout << "prev: bad name" << std::endl;
+			continue;
+		}
+		helpString = myLib::getDirPathLib(currentFile) + "/" + (*fileListIter);
+		emit openFile(helpString);
+		return;
+	}
+	fileListIter = iterBackup;
 	std::cout << "prev: bad number, too little" << std::endl;
-
 }
-
 
 void Cut::forwardStepSlot()
 {
-	if(leftDrawLimit + ui->scrollArea->width() > data3.cols())
+	if( !fileOpened ) { return; }
+
+	if(leftDrawLimit + ui->scrollArea->width() > dataCutLocal.cols())
     {
 		std::cout << "end of file" << std::endl;
         return;
     }
 
-	leftDrawLimit = std::min(leftDrawLimit + currFreq, double(data3.cols()));
+	leftDrawLimit = std::min(leftDrawLimit + currFreq, double(dataCutLocal.cols()));
 	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
 }
 void Cut::backwardStepSlot()
 {
+	if( !fileOpened ) { return; }
+
     if(leftDrawLimit == 0)
     {
 		std::cout << "begin of file" << std::endl;
@@ -662,18 +674,22 @@ void Cut::backwardStepSlot()
 }
 void Cut::forwardFrameSlot()
 {
-	if(leftDrawLimit + ui->scrollArea->width() > data3.cols())
+	if( !fileOpened ) { return; }
+
+	if(leftDrawLimit + ui->scrollArea->width() > dataCutLocal.cols())
     {
 		std::cout << "end of file" << std::endl;
         return;
     }
     leftDrawLimit = std::min(leftDrawLimit +
 							 ui->paintLengthDoubleSpinBox->value() * currFreq,
-							 double(data3.cols()));
+							 double(dataCutLocal.cols()));
 	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
 }
 void Cut::backwardFrameSlot()
 {
+	if( !fileOpened ) { return; }
+
     if(leftDrawLimit == 0)
     {
 		std::cout << "begin of file" << std::endl;
@@ -686,6 +702,8 @@ void Cut::backwardFrameSlot()
 
 void Cut::findNextMark(int mark)
 {
+	if( !fileOpened ) { return; }
+
 	if(myFileType == fileType::edf)
 	{
 		auto it = std::begin(edfFil.getMarkArr());
@@ -718,10 +736,12 @@ void Cut::findNextMark(int mark)
 
 void Cut::cutPausesSlot()
 {
+	if( !fileOpened ) { return; }
+
 	while(1)
 	{
-		const auto beg = std::begin(data3[edfFil.getMarkChan()]);
-		const auto en = std::end(data3[edfFil.getMarkChan()]);
+		const auto beg = std::begin(dataCutLocal[edfFil.getMarkChan()]);
+		const auto en = std::end(dataCutLocal[edfFil.getMarkChan()]);
 
 		auto sta = std::find(beg,
 							 en,
@@ -879,6 +899,8 @@ void Cut::undoSlot()
 
 void Cut::setMarker(int inVal)
 {
+	if( !fileOpened ) { return; }
+
 	if(myFileType == fileType::edf)
 	{
 		int num = edfFil.getMarkChan();
@@ -888,29 +910,30 @@ void Cut::setMarker(int inVal)
 			return;
 		}
 		int offset = ui->leftLimitSpinBox->value();
-		int val = data3[num][offset];
-		undoAction = [num, offset, val, this](){this->data3[num][offset] = val; };
+		int val = dataCutLocal[num][offset];
+		undoAction = [num, offset, val, this](){this->dataCutLocal[num][offset] = val; };
 		undos.push_back(undoAction);
 
-		data3[num][offset] = inVal;
+		dataCutLocal[num][offset] = inVal;
 	}
 	else if(myFileType == fileType::real)
 	{
-		int num = data3.rows() - 1; /// last channel
+		int num = dataCutLocal.rows() - 1; /// last channel
 		int offset = ui->leftLimitSpinBox->value();
-		int val = data3[num][offset];
-		undoAction = [num, offset, val, this](){data3[num][offset] = val; };
+		int val = dataCutLocal[num][offset];
+		undoAction = [num, offset, val, this](){dataCutLocal[num][offset] = val; };
 		undos.push_back(undoAction);
 
-		data3[num][offset] = inVal;
+		dataCutLocal[num][offset] = inVal;
 	}
 	paint();
 }
 
 void Cut::toLearnSetSlot()
 {
+	if( !fileOpened ) { return; }
 
-	matrix sub = data3.subCols(ui->leftLimitSpinBox->value(),
+	matrix sub = dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
 							   ui->rightLimitSpinBox->value());
 
 	for(int i = 0; i < sub.cols() / paramsWindLen; ++i)
@@ -960,11 +983,13 @@ void Cut::toLearnSetSlot()
 
 void Cut::countThrParams()
 {
+	if( !fileOpened ) { return; }
+
 	/// should have placed windNum as last index ?
-	windParams.resize(data3.cols() / paramsWindLen);
+	windParams.resize(dataCutLocal.cols() / paramsWindLen);
 	for(int windNum = 0; windNum < windParams.size(); ++windNum)
 	{
-		matrix localData = data3.subCols(paramsWindLen * windNum,
+		matrix localData = dataCutLocal.subCols(paramsWindLen * windNum,
 										 paramsWindLen * (windNum + 1));
 		windParams[windNum].resize(paramsChanNum);
 		for(int ch = 0; ch < paramsChanNum; ++ch)
@@ -1092,6 +1117,8 @@ void Cut::setThrParamsFuncs()
 
 void Cut::nextBadPointSlot()
 {
+	if( !fileOpened ) { return; }
+
 	if(learnSet.empty() || thrParams.empty() || windParams.empty())
 	{
 		std::cout << "nextBadPointSlot: data not ready" << std::endl;
@@ -1129,7 +1156,7 @@ void Cut::nextBadPointSlot()
 		}
 		if(proceed) ++windNum;
 
-		if(windNum == data3.cols() / paramsWindLen - 1)
+		if(windNum == dataCutLocal.cols() / paramsWindLen - 1)
 		{
 			std::cout << "nextBadPointSlot: end of file" << std::endl;
 			return;
@@ -1149,7 +1176,7 @@ void Cut::color1SpinSlot()
 	const int n = ui->color1SpinBox->value();
 	if(n >=0)
 	{
-		if(myFileType == fileType::edf)
+		if(myFileType == fileType::edf && !edfFil.isEmpty())
 		{
 			QString ch = QString(edfFil.getLabels()[n]);
 			ui->colorChan1LineEdit->setText(ch.remove("EEG ").remove("IT ").remove("EOG "));
@@ -1167,7 +1194,7 @@ void Cut::color2SpinSlot()
 	const int n = ui->color2SpinBox->value();
 	if(n >=0)
 	{
-		if(myFileType == fileType::edf)
+		if(myFileType == fileType::edf && !edfFil.isEmpty())
 		{
 			QString ch = QString(edfFil.getLabels()[n]);
 			ui->colorChan2LineEdit->setText(ch.remove("EEG ").remove("IT ").remove("EOG "));
@@ -1185,7 +1212,7 @@ void Cut::color3SpinSlot()
 	const int n = ui->color3SpinBox->value();
 	if(n >=0)
 	{
-		if(myFileType == fileType::edf)
+		if(myFileType == fileType::edf && !edfFil.isEmpty())
 		{
 			QString ch = QString(edfFil.getLabels()[n]);
 			ui->colorChan3LineEdit->setText(ch.remove("EEG ").remove("IT ").remove("EOG "));
@@ -1200,6 +1227,8 @@ void Cut::color3SpinSlot()
 
 void Cut::zero(int start, int end)
 {
+	if( !fileOpened ) { return; }
+
 	if(start > end)
 	{
 		std::cout << "Cut::split: leftEdge > rightEdge" << std::endl;
@@ -1223,21 +1252,21 @@ void Cut::zero(int start, int end)
 		}
 	}
 
-	undoData.push_back(data3.subCols(start, end));
+	undoData.push_back(dataCutLocal.subCols(start, end));
 	undoAction = [start, this]()
 	{
-		for(int k = 0; k < data3.rows() - 1; ++k) /// don't affect markers
+		for(int k = 0; k < dataCutLocal.rows() - 1; ++k) /// don't affect markers
 		{
 			std::copy(std::begin(undoData.back()[k]),
 					  std::end(undoData.back()[k]),
-					  std::begin(data3[k]) + start);
+					  std::begin(dataCutLocal[k]) + start);
 		}
 		undoData.pop_back();
 	};
 	undos.push_back(undoAction);
 
 
-	zeroData(data3,
+	zeroData(dataCutLocal,
 			 start,
 			 end);
 	resetLimits();
@@ -1258,27 +1287,29 @@ void Cut::zeroFromZeroSlot()
 
 void Cut::zeroTillEndSlot()
 {
-	this->zero(ui->leftLimitSpinBox->value(), data3.cols());
+	this->zero(ui->leftLimitSpinBox->value(), dataCutLocal.cols());
 }
 
 
 /// DANGER markers
 void Cut::split(int start, int end, bool addUndo)
 {
+	if( !fileOpened ) { return; }
+
 	if(start > end)
 	{
 		std::cout << "Cut::split: leftEdge > rightEdge" << std::endl;
 		return;
 	}
-	if(std::find_if(std::begin(data3.back()),
-					std::end(data3.back()),
-					[](double in){ return in != 0.; }) != std::end(data3.back()))
+	if(std::find_if(std::begin(dataCutLocal.back()),
+					std::end(dataCutLocal.back()),
+					[](double in){ return in != 0.; }) != std::end(dataCutLocal.back()))
 	{
 		std::cout << "Cut::split: there are non-zero markers" << std::endl;
 	}
 	if(addUndo)
 	{
-		undoData.push_back(data3.subCols(start, end));
+		undoData.push_back(dataCutLocal.subCols(start, end));
 		undoAction = [start, this]()
 		{
 			this->paste(start, undoData.back(), false);
@@ -1287,9 +1318,9 @@ void Cut::split(int start, int end, bool addUndo)
 		undos.push_back(undoAction);
 	}
 
-	matrix data2 = data3.subCols(end, data3.cols());
-	data3.resizeCols(start).horzCat(data2); /// +1 to save first marker in reals
-	ui->paintStartLabel->setText("start (max " + nm(floor(data3.cols() / currFreq)) + ")");
+	matrix data2 = dataCutLocal.subCols(end, dataCutLocal.cols());
+	dataCutLocal.resizeCols(start).horzCat(data2); /// +1 to save first marker in reals
+	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
 
 	resetLimits();
 	ui->paintStartDoubleSpinBox->setValue(start / edfFil.getFreq() - 1.5);
@@ -1314,18 +1345,20 @@ void Cut::splitFromZeroSlot()
 void Cut::splitTillEndSlot()
 {
 	iitpLog("splitE");
-	data3.resizeCols(ui->leftLimitSpinBox->value());
-	ui->paintStartLabel->setText("start (max " + nm(floor(data3.cols() / currFreq)) + ")");
+	dataCutLocal.resizeCols(ui->leftLimitSpinBox->value());
+	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
 	paint();
 }
 
 void Cut::linearApproxSlot()
 {
+	if( !fileOpened ) { return; }
+
 	const int lef = ui->leftLimitSpinBox->value();
 	const int rig = ui->rightLimitSpinBox->value();
 
 	std::vector<int> chanList;
-	for(int i = 0; i < data3.rows(); ++i)
+	for(int i = 0; i < dataCutLocal.rows(); ++i)
 	{
 		if(ui->linearApproxAllEegCheckBox->isChecked()
 		   && edfFil.getLabels()[i].startsWith("EEG "))
@@ -1344,10 +1377,10 @@ void Cut::linearApproxSlot()
 	}
 	for(int ch : chanList)
 	{
-		const double coeff = (data3[ch][rig] - data3[ch][lef]) / (rig - lef);
+		const double coeff = (dataCutLocal[ch][rig] - dataCutLocal[ch][lef]) / (rig - lef);
 		for(int i = lef + 1; i < rig; ++i)
 		{
-			data3[ch][i] = data3[ch][lef] + coeff * (i - lef);
+			dataCutLocal[ch][i] = dataCutLocal[ch][lef] + coeff * (i - lef);
 		}
 	}
 	paint();
@@ -1355,13 +1388,17 @@ void Cut::linearApproxSlot()
 
 void Cut::saveAs(const QString & addToName)
 {
+	if( !fileOpened ) { return; }
+
 	QString newPath = currentFile;
 	newPath.insert(newPath.lastIndexOf('.'), addToName);
-	edfFil.writeOtherData(data3, newPath);
+	edfFil.writeOtherData(dataCutLocal, newPath);
 }
 
 void Cut::save()
 {
+	if( !fileOpened ) { return; }
+
     if(myFileType == fileType::real)
     {
         QString helpString = def::dir->absolutePath()
@@ -1369,7 +1406,7 @@ void Cut::save()
 							 + "/" + myLib::getFileName(currentFile);
 
         // new
-		myLib::writePlainData(helpString, data3);
+		myLib::writePlainData(helpString, dataCutLocal);
     }
     else if(myFileType == fileType::edf)
     {
@@ -1384,7 +1421,7 @@ void Cut::saveNewNumSlot()
 	QString newName = edfFil.getFileNam();
 	newName.replace(QRegExp("[0-9]{2}"), rn(ui->iitpSaveNewNumSpinBox->value(), 2));
 
-	edfFil.writeOtherData(data3.subCols(ui->leftLimitSpinBox->value(),
+	edfFil.writeOtherData(dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
 										ui->rightLimitSpinBox->value()),
 						  edfFil.getDirPath() + "/" + newName);
 
@@ -1395,6 +1432,8 @@ void Cut::saveNewNumSlot()
 
 void Cut::saveSubsecSlot()
 {
+	if( !fileOpened ) { return; }
+
 	if(myFileType == fileType::real || 1) /// write plain windows (eyes)
 	{
 
@@ -1404,7 +1443,7 @@ void Cut::saveSubsecSlot()
 					 "/" + myLib::getFileName(currentFile) +
 					 "." + rn(addNum++, 3);
 		myLib::writePlainData(helpString,
-							  data3.subCols(ui->leftLimitSpinBox->value(),
+							  dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
 											ui->rightLimitSpinBox->value()));
 	}
 	else if(myFileType == fileType::edf)
@@ -1424,7 +1463,7 @@ void Cut::saveSubsecSlot()
 			++counter;
 		}
 
-		edfFil.writeOtherData(data3.subCols(ui->leftLimitSpinBox->value(),
+		edfFil.writeOtherData(dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
 											ui->rightLimitSpinBox->value()), newPath);
 
 		iitpLog("saveSub", 2, newPath);
@@ -1438,9 +1477,11 @@ void Cut::saveSubsecSlot()
 
 void Cut::rewrite()
 {
+	if( !fileOpened ) { return; }
+
     if(myFileType == fileType::real)
     {
-		myLib::writePlainData(currentFile, data3);
+		myLib::writePlainData(currentFile, dataCutLocal);
 		currentPic.save(myLib::getPicPath(currentFile), 0, 100);
     }
     else if(myFileType == fileType::edf)
@@ -1473,6 +1514,8 @@ std::vector<std::pair<int, QColor>> Cut::makeColouredChans()
 
 void Cut::paint() // save to tmp.jpg and display
 {
+	if(dataCutLocal.isEmpty()) return;
+
     QString helpString;
 	helpString = def::dir->absolutePath() + "/tmp.jpg";
 
@@ -1480,15 +1523,14 @@ void Cut::paint() // save to tmp.jpg and display
     if(myFileType == fileType::edf)
     {
 		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * currFreq;
-		rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), int(data3.cols()));
+		rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), int(dataCutLocal.cols()));
     }
     else if(myFileType == fileType::real)
     {
         leftDrawLimit = 0;
-		rightDrawLimit = data3.cols();
+		rightDrawLimit = dataCutLocal.cols();
     }
-	matrix subData = data3.subCols(leftDrawLimit, rightDrawLimit);
-
+	matrix subData = dataCutLocal.subCols(leftDrawLimit, rightDrawLimit);
 
 	int ecg = edfFil.findChannel("ECG");
 	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg >= 0)
@@ -1514,12 +1556,13 @@ void Cut::paint() // save to tmp.jpg and display
 		{
 			QPainter pnt;
 			pnt.begin(&currentPic);
-			pnt.setFont(QFont("", 16));
+			pnt.setFont(QFont("", 18)); /// magic const
 
 			for(int i = 0; i < subData.cols(); ++i)
 			{
 				if(subData[mrk][i] != 0.)
 				{
+					/// magic consts
 					pnt.drawText(i,
 								 pnt.device()->height() * (mrk + 1) / (subData.rows() + 2) - 3,
 								 nm(int(subData[mrk][i])));
@@ -1542,6 +1585,8 @@ void Cut::paint() // save to tmp.jpg and display
 
 void Cut::paintLimits()
 {
+	if( !fileOpened ) { return; }
+
 	QPixmap tempPic = currentPic;
 	QPainter paint;
 	paint.begin(&tempPic);

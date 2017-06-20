@@ -37,56 +37,58 @@ public:
 
 private:
     void setFileType(const QString & dataFileName);
+
+	/// read or modify data3
 	void zero(int start, int end);
 	void split(int start, int end, bool addUndo = true);
 	void paste(int start, const matrix & inData, bool addUndo = true);
 	void saveAs(const QString & addToName);
 	void setMarker(int inVal);
-	void drawSamples();
-	std::vector<std::pair<int, QColor>> makeColouredChans();
 	void paintLimits();
 	void setValuesByEdf();
 	void resetLimits();
-
-	void iitpLog(const QString & typ, int num = 2, const QString & add = QString());
 	void showDerivatives();
-
 	void countThrParams();
-
 	void findNextMark(int mark);
 
-public slots:
-    void createImage(const QString & dataFileName);
-    void mousePressSlot(char btn__, int coord__);
+	void drawSamples();
+	std::vector<std::pair<int, QColor>> makeColouredChans();
+	void iitpLog(const QString & typ, int num = 2, const QString & add = QString());
 
-    void next();
-    void prev();	
+public slots:
+	void browseSlot();
+    void createImage(const QString & dataFileName);
+	void next();
+	void prev();
+
+	void save();
+	void saveSubsecSlot();
+	void rewrite();
+
 	void zeroSlot();
 	void splitSlot();
 	void zeroFromZeroSlot();
 	void splitFromZeroSlot();
 	void zeroTillEndSlot();
 	void splitTillEndSlot();
+	void cutPausesSlot();
+	void mousePressSlot(char btn__, int coord__);
+
 	void undoSlot();
 	void copySlot();
 	void cutSlot();
 	void pasteSlot();
-    void save();
-	void saveSubsecSlot();
-	void rewrite();
 	void linearApproxSlot();
 	void toLearnSetSlot();
 	void nextBadPointSlot();
 
 	void paint();
-	void browse();
 	void resizeWidget(double);
 
 	void forwardStepSlot();
     void backwardStepSlot();
     void forwardFrameSlot();
 	void backwardFrameSlot();
-	void cutPausesSlot();
 
 	void iitpAutoCorrSlot();
 	void iitpAutoJumpSlot();
@@ -118,15 +120,31 @@ private:
 private:
     Ui::Cut *ui;
 
+	/// draw
 	QPixmap currentPic;
 	int leftDrawLimit; /// in slices
 
-	fileType myFileType{fileType::real};
-
-	edfFile edfFil;
-	matrix data3{};
+	/// edf and related globals
+	edfFile edfFil{};
+	fileType myFileType{fileType::edf};
+	bool fileOpened{false};
+	matrix dataCutLocal{};
 	double currFreq{250}; /// to deprecate
 
+	/// next/prev
+	QStringList filesList;
+	QStringList::iterator fileListIter{};
+	QString currentFile; /// deprecate to edfFile filePath
+	int addNum = 0; // for cut() winds
+
+	/// copy, split, paste, undo
+	matrix copyData{};
+	std::vector<matrix> undoData;
+	std::function<void(void)> undoAction;
+	std::vector<std::function<void(void)>> undos;
+
+
+	/// for auto lookup for bad points
 	const int paramsChanNum = 19;
 	const int paramsWindLen = std::pow(2, 8);
 	std::vector<matrix> learnSet{}; /// to find bad points
@@ -138,19 +156,6 @@ private:
 	std::vector<std::function<double(const std::valarray<double> &)>> paramFuncs{};
 	std::vector<QString> paramNames{};
 	std::vector<double> paramSigmaThreshold{};
-
-
-
-
-    QStringList lst;
-	QString currentFile; /// deprecate to edfFile filePath
-	int currentNumber{-1}; /// in lst
-	int addNum = 0; // for cut() winds
-
-	matrix copyData{};
-	std::vector<matrix> undoData;
-	std::function<void(void)> undoAction;
-	std::vector<std::function<void(void)>> undos;
 
 };
 

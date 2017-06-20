@@ -6,6 +6,7 @@
 #include <myLib/mati.h>
 #include <myLib/general.h>
 #include <myLib/dataHandlers.h>
+#include <myLib/qtlib.h>
 
 using namespace myOut;
 
@@ -267,16 +268,13 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->matiCheckBox, &QCheckBox::stateChanged,
 					 [this](int a) { this->globalEdf.setMatiFlag(a); });
 #else
-	for(int i = 0; i < ui->matiGridLayout->count(); ++i)
-	{
-		auto * a = ui->matiGridLayout->itemAt(i)->widget();
-		if(a) { a->hide(); }
-	}
+	qtLib::hideLayout(ui->matiGridLayout);
 	ui->matiPieceLengthSpinBox->hide();
 	ui->matiCheckBox->hide();
 	ui->matiPreprocessingPushButton->hide();
 	ui->matiPieceLenlabel->hide();
 #endif
+	qtLib::hideLayout(ui->testDataGridLayout);
 
 
 	/// open other widgets

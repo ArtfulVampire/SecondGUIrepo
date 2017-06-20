@@ -101,17 +101,23 @@ public:
 	edfFile()=default;
 	~edfFile() {}
 
-
 	edfFile(const edfFile & other, bool noData = false);
 	edfFile(const QString & txtFilePath, inst which = inst::mati);
 
 	edfFile & operator=(const edfFile & other)=default;
 	edfFile & operator=(edfFile && other)=default;
+	bool isEmpty() { return edfData.isEmpty(); }
 
 	/// read/write
     void readEdfFile(QString EDFpath, bool headerOnly = false);
     void writeEdfFile(QString EDFpath, bool asPlain = false);
 	void rewriteEdfFile();
+	void writeOtherData(const matrix & newData,
+						const QString & outPath,
+						std::vector<int> chanList = {}) const;
+	void saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag = false) const;
+	void drawSubsection(int startBin, int finishBin, QString outPath) const;
+
 
     void handleEdfFile(QString EDFpath,
                        bool readFlag,
@@ -134,7 +140,6 @@ public:
 	/// make edfFile & func(...);
 	/// and  edfFile   func(...) const;
 	/// modify
-    void adjustArraysByChannels();
 	edfFile vertcatFile(QString addEdfPath, QString outPath = QString()) const;
 	edfFile & concatFile(QString addEdfPath, QString outPath = QString());
 	edfFile & subtractMeans(const QString & outPath = QString());
@@ -145,8 +150,6 @@ public:
 					   const QString & newPath = QString(),
 					   bool isNotch = false,
 					   std::vector<uint> chanList = {});
-    void saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag = false) const;
-    void drawSubsection(int startBin, int finishBin, QString outPath) const;
 
 	/// channels modify
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
@@ -163,9 +166,9 @@ public:
                        bool removeEogChannels = false,
                        std::vector<int> eegNums = {},
                        std::vector<int> eogNums = {});
-    void writeOtherData(const matrix & newData,
-                        const QString & outPath,
-						std::vector<int> chanList = {}) const;
+
+	/// private
+	void adjustArraysByChannels();
     void fitData(int initSize);
     void cutZerosAtEnd();
 	void adjustMarkerChannel();
