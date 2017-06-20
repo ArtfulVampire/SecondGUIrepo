@@ -79,7 +79,8 @@ void IITPfilterGonios(const QString & guyName,
 void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
 void IITPremoveZchans(const QString & guyName, const QString & dirPath = def::iitpSyncFolder);
 
-
+void IITPstagedToEnveloped(const QString & guyName,
+						   const QString & dirPath = def::iitpSyncFolder);
 void IITPstaging(const QString & guyName,
 				 const QString & dirPath = def::iitpSyncFolder);
 void IITPprocessStaged(const QString & guyName,

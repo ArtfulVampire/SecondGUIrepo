@@ -161,13 +161,13 @@ void Xenia_TBI()
 //						"_cry", "_fire", "_flower", "_wc"};
 
 //	QString tbi_path = def::XeniaFolder + "/11May";
-	QString tbi_path = def::GalyaFolder + "/Kids5June";
+	QString tbi_path = def::GalyaFolder + "/20Jun2017";
 
 //	QStringList subdirs{"healthy", "moderate_TBI", "severe_TBI"};
 //	QStringList subdirs{"Norm_new", "TBI_new"};
 	QStringList subdirs{""};
 
-//	subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+	subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 
 
 
@@ -177,9 +177,9 @@ void Xenia_TBI()
 	{
 		QString workPath = tbi_path + "/" + subdir;
 
-		repair::deleteSpacesFolders(workPath);
-		repair::toLatinDir(workPath, {});
-		repair::toLowerDir(workPath, {});
+//		repair::deleteSpacesFolders(workPath);
+//		repair::toLatinDir(workPath, {});
+//		repair::toLowerDir(workPath, {});
 
 		repair::deleteSpacesDir(workPath);
 		autos::GalyaCut(workPath, 8);
@@ -191,8 +191,8 @@ void Xenia_TBI()
 		{
 
 			repair::deleteSpacesFolders(workPath + "/" + guy);
-			repair::toLatinDir(workPath + "/" + guy, {});
-			repair::toLowerDir(workPath + "/" + guy, {});
+//			repair::toLatinDir(workPath + "/" + guy, {});
+//			repair::toLowerDir(workPath + "/" + guy, {});
 
 //			continue;
 
@@ -423,8 +423,8 @@ void IITPtestCoh2(const QString & guyName)
 	/// test Cz-Tb_l/Ta_r coherency during static stress
 
 	iitp::iitpData dt;
-//	const QString direct = def::iitpSyncFolder + "/" + guyName + "/";
-	const QString direct = def::iitpFolder + "/" + guyName + "/";
+	const QString direct = def::iitpSyncFolder + "/" + guyName + "/";
+//	const QString direct = def::iitpFolder + "/" + guyName + "/";
 
 //	QString postfix = iitp::getPostfix(QDir(direct).entryList({"*.edf"})[0]);
 //	QString postfix = "_dsp_up";
@@ -437,12 +437,13 @@ void IITPtestCoh2(const QString & guyName)
 
 
 
-	for(QString postfix : {
-		"_dsp_up",
-		"_dsp_down",
-		"_fft_up",
-		"_fft_down"
-})
+//	for(QString postfix : {
+//		"_dsp_up",
+//		"_dsp_down",
+//		"_fft_up",
+//		"_fft_down"
+//})
+	QString postfix = "_sum_f_new_stag";
 	{
 
 		std::vector<double> outCoh;
@@ -1012,6 +1013,48 @@ void IITPremoveZchans(const QString & hauptDir)
 			fil.removeChannels({a, b});
 			fil.writeEdfFile(fil.getFilePath());
 		}
+	}
+}
+
+
+void IITPstagedToEnveloped(const QString & guyName,
+						   const QString & dirPath)
+{
+	/// replace EMG with its envelope
+	QString postfix = iitp::getPostfix(QDir(dirPath + "/" + guyName).entryList({"*_stag.edf"})[0]);
+	const QString direct = dirPath + "/" + guyName + "/";
+
+	auto filePath = [=](int i) -> QString
+	{
+		return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
+	};
+
+	auto outPath = [=](int i) -> QString
+	{
+		return direct + guyName + "_" + rn(i, 2) + postfix + "_env.edf";
+	};
+
+	iitp::iitpData dt;
+
+	for(int fileNum : iitp::fileNums)
+	{
+		if(!QFile::exists(filePath(fileNum)))
+		{
+			std::cout << "IITPstagedToEnveloped: file doesn't exist = "
+					  << filePath(fileNum) << std::endl;
+			continue;
+		}
+
+		dt.readEdfFile(filePath(fileNum));
+		for(QString emgChan : iitp::emgNames)
+		{
+			int num = dt.findChannel(emgChan);
+			if(num == -1) { continue; }
+
+			auto env = myLib::hilbertPieces(dt.getData()[num], dt.getFreq(), 0.01, 450.);
+			dt.setData(num, env);
+		}
+		dt.writeEdfFile(outPath(fileNum));
 	}
 }
 

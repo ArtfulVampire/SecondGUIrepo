@@ -33,7 +33,7 @@ void MainWindow::customFunc()
 //	autos::avTimesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_3_fin.edf", 3);
 //	exit(0);
 
-	return;
+//	return;
 
 #if 0
 	/// IITP
@@ -228,6 +228,7 @@ void MainWindow::customFunc()
 
 //	repair::toLowerDir("/media/Files/Data/Xenia/14Mar/Norm_new_tmp", {});
 
+	return;
 	autos::Xenia_TBI();
 //	autos::EEG_MRI({"Kabanov"}, false);
 	exit(0);

@@ -313,8 +313,15 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 				}
 			}
 		}
-		chanList.push_back(this->findChannel("Artefac"));
-		chanList.push_back(this->findChannel("Marker"));
+		int a;
+		if((a = this->findChannel("Artefac")) >= 0)
+		{
+			chanList.push_back(a);
+		}
+		if((a = this->findChannel("Marker")) >= 0)
+		{
+			chanList.push_back(a);
+		}
 
 		*this = this->reduceChannels(chanList);
 	}
