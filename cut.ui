@@ -507,60 +507,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>730</x>
-     <y>200</y>
-     <width>291</width>
-     <height>50</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="derivativesGridLayout">
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_12">
-      <property name="text">
-       <string>chan</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>val</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="2">
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>first der</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>second der</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QSpinBox" name="linearApproxSpinBox"/>
-    </item>
-    <item row="1" column="1">
-     <widget class="QDoubleSpinBox" name="valDoubleSpinBox"/>
-    </item>
-    <item row="1" column="2">
-     <widget class="QDoubleSpinBox" name="firstDoubleSpinBox"/>
-    </item>
-    <item row="1" column="3">
-     <widget class="QDoubleSpinBox" name="secondDoubleSpinBox"/>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
      <x>830</x>
-     <y>30</y>
+     <y>20</y>
      <width>181</width>
      <height>109</height>
     </rect>
@@ -665,13 +613,20 @@
   <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>540</x>
-     <y>110</y>
+     <x>730</x>
+     <y>140</y>
      <width>253</width>
      <height>24</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QHBoxLayout" name="linearApproxHorizontalLayout">
+    <item>
+     <widget class="QPushButton" name="linearApproxPushButton">
+      <property name="text">
+       <string>linear approx</string>
+      </property>
+     </widget>
+    </item>
     <item>
      <widget class="QCheckBox" name="linearApproxAllEegCheckBox">
       <property name="text">
@@ -686,12 +641,69 @@
       </property>
      </widget>
     </item>
-    <item>
-     <widget class="QPushButton" name="linearApproxPushButton">
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>730</x>
+     <y>170</y>
+     <width>280</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="derivativesGridLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_12">
       <property name="text">
-       <string>linear approx</string>
+       <string>chan</string>
       </property>
      </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>val</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>first der</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QLabel" name="label_8">
+      <property name="text">
+       <string>second der</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QSpinBox" name="derivChan1SpinBox"/>
+    </item>
+    <item row="1" column="1">
+     <widget class="QDoubleSpinBox" name="derivVal1SpinBox"/>
+    </item>
+    <item row="1" column="2">
+     <widget class="QDoubleSpinBox" name="derivFirst1SpinBox"/>
+    </item>
+    <item row="1" column="3">
+     <widget class="QDoubleSpinBox" name="derivSecond1SpinBox"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QSpinBox" name="derivChan2SpinBox"/>
+    </item>
+    <item row="2" column="1">
+     <widget class="QDoubleSpinBox" name="derivVal2SpinBox"/>
+    </item>
+    <item row="2" column="2">
+     <widget class="QDoubleSpinBox" name="derivFirst2SpinBox"/>
+    </item>
+    <item row="2" column="3">
+     <widget class="QDoubleSpinBox" name="derivSecond2SpinBox"/>
     </item>
    </layout>
   </widget>

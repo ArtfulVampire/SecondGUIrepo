@@ -12,7 +12,8 @@ using namespace myOut;
 Cut::Cut() :
     ui(new Ui::Cut)
 {
-    ui->setupUi(this);
+	ui->setupUi(this);
+	this->setAttribute(Qt::WA_DeleteOnClose);
     this->setWindowTitle("Cut-e");
 
 	ui->subdirComboBox->addItem("");
@@ -47,7 +48,6 @@ Cut::Cut() :
 	ui->mark1LineEdit->setText("10");
 	ui->mark2LineEdit->setText("20");
 
-    ui->picLabel->installEventFilter(this);
 	drawSamples();
 
     ui->scrollArea->setWidget(ui->picLabel);
@@ -66,12 +66,12 @@ Cut::Cut() :
 
 
 	// derivativesGridLayout
-	ui->valDoubleSpinBox->setMaximum(1000);
-	ui->firstDoubleSpinBox->setMaximum(500);
-	ui->secondDoubleSpinBox->setMaximum(500);
-	ui->valDoubleSpinBox->setMinimum(-1000);
-	ui->firstDoubleSpinBox->setMinimum(-500);
-	ui->secondDoubleSpinBox->setMinimum(-500);
+	ui->derivVal1SpinBox->setMaximum(1000);		ui->derivVal1SpinBox->setMinimum(-1000);
+	ui->derivVal2SpinBox->setMaximum(1000);		ui->derivVal2SpinBox->setMinimum(-1000);
+	ui->derivFirst1SpinBox->setMaximum(500);	ui->derivFirst1SpinBox->setMinimum(-500);
+	ui->derivFirst2SpinBox->setMaximum(500);	ui->derivFirst2SpinBox->setMinimum(-500);
+	ui->derivSecond1SpinBox->setMaximum(500);	ui->derivSecond1SpinBox->setMinimum(-500);
+	ui->derivSecond2SpinBox->setMaximum(500);	ui->derivSecond2SpinBox->setMinimum(-500);
 
 	ui->findMarkSpinBox->setMaximum(255);
 	ui->findMarkSpinBox->setValue(241);
@@ -101,6 +101,7 @@ Cut::Cut() :
 	QObject::connect(copyShortcut, SIGNAL(activated()), this, SLOT(copySlot()));
 	QObject::connect(pasteShortcut, SIGNAL(activated()), this, SLOT(pasteSlot()));
 	QObject::connect(cutShortcut, SIGNAL(activated()), this, SLOT(cutSlot()));
+
 
 	QObject::connect(ui->iitpDisableEcgCheckBox, &QCheckBox::clicked, this, &Cut::paint);
 	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked, this, &Cut::paint);
@@ -171,12 +172,9 @@ Cut::Cut() :
 	QObject::connect(ui->color1LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
 	QObject::connect(ui->color2LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
 	QObject::connect(ui->color3LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
+	ui->picLabel->installEventFilter(this);
 
 	setThrParamsFuncs();
-
-
-    this->setAttribute(Qt::WA_DeleteOnClose);
-
 }
 
 Cut::~Cut()
@@ -369,16 +367,26 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		else if(event->type() == QEvent::KeyPress)
 		{
 			QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
-			if(keyEvent->key() == Qt::Key_Left)
+
+			if((keyEvent->key() == Qt::Key_Left) || (keyEvent->key() == Qt::Key_Right))
 			{
-				ui->leftLimitSpinBox->stepDown();
+				auto * targetSpin = ui->leftLimitSpinBox;
+				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
+				{
+					targetSpin = ui->rightLimitSpinBox;
+				}
+
+				if(keyEvent->key() == Qt::Key_Left)
+				{
+					targetSpin->stepDown();
+				}
+				else if(keyEvent->key() == Qt::Key_Right)
+				{
+					targetSpin->stepUp();
+				}
+				showDerivatives();
+				paintLimits();
 			}
-			else if(keyEvent->key() == Qt::Key_Right)
-			{
-				ui->leftLimitSpinBox->stepUp();
-			}
-			showDerivatives();
-			paintLimits();
 		}
 
         else
@@ -450,8 +458,10 @@ void Cut::setValuesByEdf()
 	ui->color2SpinBox->setValue(eog2);
 	ui->color3SpinBox->setValue(-1);
 
-	ui->linearApproxSpinBox->setMaximum(edfFil.getNs() - 1);
-	ui->linearApproxSpinBox->setValue(edfFil.getNs() - 1); // markers
+	ui->derivChan1SpinBox->setMaximum(edfFil.getNs() - 1);
+	ui->derivChan2SpinBox->setMaximum(edfFil.getNs() - 1);
+	ui->derivChan2SpinBox->setValue(edfFil.getNs() - 1); // markers
+	ui->derivChan1SpinBox->setValue(edfFil.getNs() - 1); // markers
 }
 
 void Cut::createImage(const QString & dataFileName)
@@ -539,12 +549,33 @@ void Cut::showDerivatives()
 {
 	if( !fileOpened ) { return; }
 
-	const std::valarray<double> & sig = dataCutLocal[ui->linearApproxSpinBox->value()];
-	const int ind = ui->leftLimitSpinBox->value();
 	const int st = 5;
-	ui->valDoubleSpinBox->setValue(sig[ind]);
-	ui->firstDoubleSpinBox->setValue(sig[ind + st] -  sig[ind - st]);
-	ui->secondDoubleSpinBox->setValue(sig[ind + 2 * st] + sig[ind - 2 * st] - 2 * sig[ind]);
+
+	const std::valarray<double> & sig1 = dataCutLocal[ui->derivChan1SpinBox->value()];
+	const int ind1 = ui->leftLimitSpinBox->value();
+	ui->derivVal1SpinBox->setValue(sig1[ind1]);
+	if(ind1 + st < sig1.size() && ind1 - st >=0)
+	{
+		ui->derivFirst1SpinBox->setValue(sig1[ind1 + st] -  sig1[ind1 - st]);
+	}
+	if(ind1 + 2 * st < sig1.size() && ind1 - 2 * st >=0)
+	{
+		ui->derivSecond1SpinBox->setValue(sig1[ind1 + 2 * st] + sig1[ind1 - 2 * st] - 2 * sig1[ind1]);
+	}
+
+	const std::valarray<double> & sig2 = dataCutLocal[ui->derivChan2SpinBox->value()];
+	const int ind2 = ui->rightLimitSpinBox->value();
+	ui->derivVal2SpinBox->setValue(sig2[ind2]);
+	if(ind2 + st < sig2.size() && ind2 - st >=0)
+	{
+		ui->derivFirst2SpinBox->setValue(sig2[ind2 + st] -  sig2[ind2 - st]);
+	}
+	if(ind2 + 2 * st < sig2.size() && ind2 - 2 * st >=0)
+	{
+		ui->derivSecond2SpinBox->setValue(sig2[ind2 + 2 * st] + sig2[ind2 - 2 * st] - 2 * sig2[ind2]);
+	}
+
+
 }
 
 void Cut::mousePressSlot(char btn, int coord)
@@ -553,7 +584,6 @@ void Cut::mousePressSlot(char btn, int coord)
 	   coord + leftDrawLimit < ui->rightLimitSpinBox->value())
 	{
 		ui->leftLimitSpinBox->setValue(coord + leftDrawLimit);
-		showDerivatives();
 	}
 	else if(btn == 'r' &&
 			coord + leftDrawLimit > ui->leftLimitSpinBox->value() &&
@@ -561,6 +591,7 @@ void Cut::mousePressSlot(char btn, int coord)
 	{
 		ui->rightLimitSpinBox->setValue(coord + leftDrawLimit);
 	}
+	showDerivatives();
 	paintLimits();
 }
 
@@ -728,7 +759,7 @@ void Cut::findNextMark(int mark)
 
 		int index = std::distance(std::begin(edfFil.getMarkArr()), it);
 		ui->paintStartDoubleSpinBox->setValue(std::max(0., double(index) / edfFil.getFreq() - 0.5));
-		ui->leftLimitSpinBox->setValue(index);
+//		ui->leftLimitSpinBox->setValue(index);
 		showDerivatives();
 		paint();
 	}
