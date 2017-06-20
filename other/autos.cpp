@@ -1730,8 +1730,6 @@ void mixNumbersCF(const QString & dirPath)
 
 	for(QString oldName : QDir(dirPath).entryList({"*_jpg_*"}, QDir::Files, QDir::Name))
 	{
-		std::cout << oldName << std::endl;
-
 		QString newName = oldName;
 		newName.replace("_jpg_", ".jpg");
 

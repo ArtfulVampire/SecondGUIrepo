@@ -313,13 +313,15 @@ void MainWindow::sliceElena()
 		}
 	}
 
-	std::cout << "sliceElena: not detected reals:" << std::endl;
-	for(auto each : allNumbers)
+	if(!allNumbers.empty())
 	{
-		std::cout << each << " "; std::cout.flush();
+		std::cout << "sliceElena: not detected reals:" << std::endl;
+		for(auto each : allNumbers)
+		{
+			std::cout << each << " "; std::cout.flush();
+		}
+		std::cout << std::endl;
 	}
-	std::cout << std::endl;
-
 }
 
 

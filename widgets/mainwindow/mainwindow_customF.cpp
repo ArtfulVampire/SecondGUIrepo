@@ -17,6 +17,7 @@ void MainWindow::customFunc()
 #endif
 
 //	autos::makeRightNumbersCF("/media/Files/Pictures/CF_3", 81);
+//	autos::mixNumbersCF("/media/Files/Pictures/NewestCF");
 //	exit(0);
 
 //	myLib::drw::drawOneSpectrum(f[f.findChannel("Da_r")], 160, 170, 1000, 1).save(
@@ -164,7 +165,7 @@ void MainWindow::customFunc()
 			std::cout << fileName << std::endl;
 			ann->loadDataXenia(pewDir, fileName);
 			ann->setClassifier(ClassifierType::ANN);
-			ann->setKnnNumSlot(4);
+			ann->setKnnNumSlot(4);Колокорльцев
 			ann->setMode("N");
 			res << fileName << "\t"
 				<< ann->autoClassification().first << "\r\n";
