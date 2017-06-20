@@ -16,7 +16,6 @@ QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
 
-
 #QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
 
 #DSP
@@ -73,22 +72,24 @@ widgets/net/net_successive.cpp \
 widgets/net/net_data.cpp \
 widgets/spectre.cpp \
 widgets/cut.cpp \
-    DSP/DspFilters/Biquad.cpp \
-    DSP/DspFilters/Butterworth.cpp \
-    DSP/DspFilters/Cascade.cpp \
-    DSP/DspFilters/ChebyshevI.cpp \
-    DSP/DspFilters/Custom.cpp \
-    DSP/DspFilters/Design.cpp \
-    DSP/DspFilters/Documentation.cpp \
-    DSP/DspFilters/Elliptic.cpp \
-    DSP/DspFilters/Filter.cpp \
-    DSP/DspFilters/Legendre.cpp \
-    DSP/DspFilters/Param.cpp \
-    DSP/DspFilters/PoleFilter.cpp \
-    DSP/DspFilters/RootFinder.cpp \
-    DSP/DspFilters/Bessel.cpp \
-    DSP/DspFilters/ChebyshevII.cpp \
-    myLib/myLib_qtlib.cpp
+DSP/DspFilters/Bessel.cpp \
+DSP/DspFilters/Biquad.cpp \
+DSP/DspFilters/Butterworth.cpp \
+DSP/DspFilters/Cascade.cpp \
+DSP/DspFilters/ChebyshevI.cpp \
+DSP/DspFilters/ChebyshevII.cpp \
+DSP/DspFilters/Custom.cpp \
+DSP/DspFilters/Design.cpp \
+DSP/DspFilters/Documentation.cpp \
+DSP/DspFilters/Elliptic.cpp \
+DSP/DspFilters/Filter.cpp \
+DSP/DspFilters/Legendre.cpp \
+DSP/DspFilters/Param.cpp \
+DSP/DspFilters/PoleFilter.cpp \
+DSP/DspFilters/RBJ.cpp \
+DSP/DspFilters/RootFinder.cpp \
+DSP/DspFilters/State.cpp \
+myLib/myLib_qtlib.cpp
 
 HEADERS  += \
 widgets/cut.h \

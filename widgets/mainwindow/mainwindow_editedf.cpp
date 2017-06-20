@@ -109,9 +109,9 @@ void MainWindow::rereferenceData(const QString & newRef,
 			if(label[i].contains("EOG1")) { /* do nothing */ }
 			else if(label[i].contains("EOG2")) /// make bipolar EOG1-EOG2
 			{
-				/// sign[0] for EOG1-A2; sign[0] for EOG1-A2
-				helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[0] + nm(earsChan + 1) + " ";
-				/// for Elena->Baklushev and Twins->SZR sign[1] too curvy, sign[0] smoother
+				/// sign[0] for EOG1-A2; sign[1] for EOG1-A1
+				/// sign[1] for sure 20.06.2017, look also edfFile::handleEdfFile()
+				helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[1] + nm(earsChan + 1) + " ";
 			}
 			else { helpString += currNumStr + " "; }
 		}

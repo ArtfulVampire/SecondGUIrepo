@@ -459,13 +459,13 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			/// edit EOG channels to encephalan
 			if(labels[i].contains("EOG 1"))
 			{
-				/// EOG1-A2 for sure
-				labels[i] = myLib::fitString("EOG EOG1-A2", 16);
+				/// EOG1-A1 for sure 20.06.2017
+				labels[i] = myLib::fitString("EOG EOG1-A1", 16);
 			}
 			else if(labels[i].contains("EOG 2"))
 			{
-				/// EOG2-A1 for sure
-				labels[i] = myLib::fitString("EOG EOG2-A1", 16);
+				/// EOG2-A2 for sure 20.06.2017
+				labels[i] = myLib::fitString("EOG EOG2-A2", 16);
 			}
 			else if(labels[i].contains("EOG 3"))
 			{
