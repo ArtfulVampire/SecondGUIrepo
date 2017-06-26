@@ -120,6 +120,12 @@ void MainWindow::sliceWinds()
 
 			fil.saveSubsection(i, i + wndLength, helpString, true);
 		}
+		qApp->processEvents();
+		if(stopFlag)
+		{
+			stopFlag = false;
+			break;
+		}
 		ui->progressBar->setValue( (i - sta) * 100. / (fil.getDataLen() - wndLength - sta) );
 	}
 

@@ -59,7 +59,7 @@
       <x>280</x>
       <y>190</y>
       <width>796</width>
-      <height>370</height>
+      <height>378</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
@@ -178,7 +178,7 @@
        <item row="2" column="0">
         <widget class="QCheckBox" name="cleanFromRealsCheckBox">
          <property name="text">
-          <string>winds/fromreals</string>
+          <string>winds/fromreal</string>
          </property>
         </widget>
        </item>
@@ -568,7 +568,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>281</x>
@@ -722,7 +722,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>920</x>

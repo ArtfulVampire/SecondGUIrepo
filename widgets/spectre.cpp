@@ -815,9 +815,13 @@ void Spectre::countSpectra()
 			}
 			else
 			{
+#if ELENA_VARIANT
 				QRegExp reg(R"(_[0-9]{1,}_)");
+#else
+				QRegExp reg(R"([._][0-9]{4}[._])"); /// winds
+#endif
 				reg.indexIn(fileName);
-				exFileNumbers.push_back(reg.cap().remove("_" ).toInt());
+				exFileNumbers.push_back(reg.cap().remove("_").remove(".").toInt());
 
 				exIndices.push_back(fileNumber);
 			}
@@ -827,11 +831,13 @@ void Spectre::countSpectra()
 		qApp->processEvents();
 	}
 
+#if ELENA_VARIANT
 	if(!exFileNumbers.empty())
 	{
 		std::cout << "countSpectra: haven't calculated files - " << std::endl;
 		std::cout << exFileNumbers << std::endl;
 	}
+#endif
 
 	smLib::eraseItems(fileNames, exIndices);
 	dataFFT.resize(cnt);

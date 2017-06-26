@@ -735,6 +735,7 @@ void Cut::findNextMark(int mark)
 {
 	if( !fileOpened ) { return; }
 
+	/// make on dataCutLocal
 	if(myFileType == fileType::edf)
 	{
 		auto it = std::begin(edfFil.getMarkArr());
