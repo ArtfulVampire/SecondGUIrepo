@@ -43,13 +43,14 @@ private:
 	void split(int start, int end, bool addUndo = true);
 	void paste(int start, const matrix & inData, bool addUndo = true);
 	void saveAs(const QString & addToName);
-	void setMarker(int inVal);
+	void setMarker(int inVal, bool left = true);
 	void paintLimits();
 	void setValuesByEdf();
 	void resetLimits();
 	void showDerivatives();
 	void countThrParams();
 	void findNextMark(int mark);
+	void findPrevMark(double mark);
 
 	void drawSamples();
 	std::vector<std::pair<int, QColor>> makeColouredChans();
@@ -73,6 +74,7 @@ public slots:
 	void splitTillEndSlot();
 	void cutPausesSlot();
 	void mousePressSlot(char btn__, int coord__);
+	void timesAndDiffSlot();
 
 	void undoSlot();
 	void copySlot();

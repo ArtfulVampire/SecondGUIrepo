@@ -128,6 +128,17 @@ void MainWindow::sliceWinds()
 		}
 		ui->progressBar->setValue( (i - sta) * 100. / (fil.getDataLen() - wndLength - sta) );
 	}
+	/// delete the very last _254 winds
+	QString lastFileNumReal = helpString
+							  .mid(def::windsFromRealsDir().length() + 1) // +1 for slash
+							  .mid(fil.getExpName().length(), 5);
+	for(QString str : QDir(def::windsFromRealsDir()).entryList(
+	{fil.getExpName() + lastFileNumReal + "*"}))
+	{
+
+//		std::cout << "sliceWinds: to delete\t" << str << std::endl;
+		QFile::remove(def::windsFromRealsDir() + "/" + str);
+	}
 
 	if(ui->succPrecleanCheckBox->isChecked())
 	{

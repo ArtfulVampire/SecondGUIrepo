@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1515</width>
-    <height>750</height>
+    <height>781</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -36,7 +36,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>260</y>
+     <y>290</y>
      <width>1501</width>
      <height>470</height>
     </rect>
@@ -206,233 +206,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>30</y>
-     <width>531</width>
-     <height>220</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="mainGridLayout">
-    <item row="3" column="3">
-     <widget class="QLabel" name="label_14">
-      <property name="text">
-       <string>rightLimit</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="3">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>paint length</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="zeroFromZeroPushButton">
-      <property name="text">
-       <string>Zero from 0</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <widget class="QLineEdit" name="saveSubsecAddNameLineEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QPushButton" name="zeroTillEndPushButton">
-      <property name="text">
-       <string>Zero till end</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0">
-     <widget class="QPushButton" name="backwardFrameButton">
-      <property name="text">
-       <string>&lt;&lt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QPushButton" name="zeroButton">
-      <property name="text">
-       <string>Zero</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QPushButton" name="splitButton">
-      <property name="text">
-       <string>Split</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="2">
-     <widget class="QDoubleSpinBox" name="yNormDoubleSpinBox"/>
-    </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="splitFromZeroPushButton">
-      <property name="text">
-       <string>Split from 0</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3">
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Y norm</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="yNormInvertCheckBox">
-        <property name="text">
-         <string>invert Y</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="saveSubsecPushButton">
-      <property name="text">
-       <string>Save subsec</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="0">
-     <widget class="QDoubleSpinBox" name="paintStartDoubleSpinBox"/>
-    </item>
-    <item row="4" column="1">
-     <widget class="QPushButton" name="splitTillEndPushButton">
-      <property name="text">
-       <string>Split till end</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QPushButton" name="saveButton">
-      <property name="text">
-       <string>Save</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="2">
-     <widget class="QPushButton" name="forwardStepButton">
-      <property name="text">
-       <string>&gt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QPushButton" name="prevButton">
-      <property name="text">
-       <string>Prev</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="rewriteButton">
-      <property name="text">
-       <string>Rewrite</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="3">
-     <widget class="QLabel" name="label_13">
-      <property name="text">
-       <string>leftLimit</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="2">
-     <widget class="QSpinBox" name="rightLimitSpinBox"/>
-    </item>
-    <item row="4" column="2">
-     <widget class="QPushButton" name="subtractMeansPushButton">
-      <property name="text">
-       <string>subtract Means</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="2">
-     <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox"/>
-    </item>
-    <item row="6" column="3">
-     <widget class="QPushButton" name="forwardFrameButton">
-      <property name="text">
-       <string>&gt;&gt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QPushButton" name="backwardStepButton">
-      <property name="text">
-       <string>&lt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QPushButton" name="nextButton">
-      <property name="text">
-       <string>Next</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QSpinBox" name="leftLimitSpinBox"/>
-    </item>
-    <item row="7" column="1">
-     <widget class="QLabel" name="paintStartLabel">
-      <property name="text">
-       <string>paint start</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0">
-     <widget class="QPushButton" name="toLearnThresholdPushButton">
-      <property name="text">
-       <string>to learn set</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QPushButton" name="clearThresholdSetPushButton">
-      <property name="text">
-       <string>clear set</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="2">
-     <widget class="QPushButton" name="nextBadPointPushButton">
-      <property name="text">
-       <string>next point</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="3">
-     <widget class="QPushButton" name="cutPausesPushButton">
-      <property name="text">
-       <string>cut pauses</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
      <x>540</x>
-     <y>30</y>
+     <y>40</y>
      <width>271</width>
-     <height>80</height>
+     <height>83</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="colorGridLayout">
@@ -507,57 +284,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>830</x>
-     <y>20</y>
-     <width>181</width>
-     <height>109</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="markersGridLayout">
-    <item row="0" column="0">
-     <widget class="QPushButton" name="findMarkPushButton">
-      <property name="text">
-       <string>find next mark</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QSpinBox" name="findMarkSpinBox"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QPushButton" name="setMark1PushButton">
-      <property name="text">
-       <string>set mark 1</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLineEdit" name="mark1LineEdit"/>
-    </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="setMark2PushButton">
-      <property name="text">
-       <string>set mark 2</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLineEdit" name="mark2LineEdit"/>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="findNonzeroMarkPushButton">
-      <property name="text">
-       <string>next nonzero mark</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
      <x>540</x>
-     <y>140</y>
+     <y>170</y>
      <width>185</width>
      <height>110</height>
     </rect>
@@ -610,11 +338,11 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>730</x>
-     <y>140</y>
+     <x>540</x>
+     <y>130</y>
      <width>253</width>
      <height>24</height>
     </rect>
@@ -643,11 +371,11 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>730</x>
-     <y>170</y>
+     <x>740</x>
+     <y>200</y>
      <width>280</width>
      <height>80</height>
     </rect>
@@ -704,6 +432,318 @@
     </item>
     <item row="2" column="3">
      <widget class="QDoubleSpinBox" name="derivSecond2SpinBox"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>31</y>
+     <width>521</width>
+     <height>255</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <widget class="QPushButton" name="prevButton">
+      <property name="text">
+       <string>Prev</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QPushButton" name="nextButton">
+      <property name="text">
+       <string>Next</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QDoubleSpinBox" name="yNormDoubleSpinBox"/>
+    </item>
+    <item row="0" column="3">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Y norm</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="yNormInvertCheckBox">
+        <property name="text">
+         <string>invert Y</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="rewriteButton">
+      <property name="text">
+       <string>Rewrite</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QPushButton" name="saveButton">
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QPushButton" name="saveSubsecPushButton">
+      <property name="text">
+       <string>Save subsec</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QLineEdit" name="saveSubsecAddNameLineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QPushButton" name="zeroButton">
+      <property name="text">
+       <string>Zero</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QPushButton" name="splitButton">
+      <property name="text">
+       <string>Split</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2" rowspan="3" colspan="2">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QSpinBox" name="leftLimitSpinBox"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string>left</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QDoubleSpinBox" name="leftTimeSpinBox"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QSpinBox" name="rightLimitSpinBox"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_14">
+        <property name="text">
+         <string>right</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QDoubleSpinBox" name="rightTimeSpinBox"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QSpinBox" name="diffLimitSpinBox"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="label_17">
+        <property name="text">
+         <string>diff</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QDoubleSpinBox" name="diffTimeSpinBox"/>
+      </item>
+     </layout>
+    </item>
+    <item row="3" column="0">
+     <widget class="QPushButton" name="zeroFromZeroPushButton">
+      <property name="text">
+       <string>Zero from 0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="splitFromZeroPushButton">
+      <property name="text">
+       <string>Split from 0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QPushButton" name="zeroTillEndPushButton">
+      <property name="text">
+       <string>Zero till end</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QPushButton" name="splitTillEndPushButton">
+      <property name="text">
+       <string>Split till end</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QPushButton" name="subtractMeansPushButton">
+      <property name="text">
+       <string>subtract Means</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QPushButton" name="cutPausesPushButton">
+      <property name="text">
+       <string>cut pauses</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QPushButton" name="toLearnThresholdPushButton">
+      <property name="text">
+       <string>to learn set</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QPushButton" name="clearThresholdSetPushButton">
+      <property name="text">
+       <string>clear set</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="2">
+     <widget class="QPushButton" name="nextBadPointPushButton">
+      <property name="text">
+       <string>next point</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QPushButton" name="backwardFrameButton">
+      <property name="text">
+       <string>&lt;&lt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QPushButton" name="backwardStepButton">
+      <property name="text">
+       <string>&lt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="2">
+     <widget class="QPushButton" name="forwardStepButton">
+      <property name="text">
+       <string>&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="3">
+     <widget class="QPushButton" name="forwardFrameButton">
+      <property name="text">
+       <string>&gt;&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QDoubleSpinBox" name="paintStartDoubleSpinBox"/>
+    </item>
+    <item row="8" column="1">
+     <widget class="QLabel" name="paintStartLabel">
+      <property name="text">
+       <string>paint start</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="2">
+     <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox"/>
+    </item>
+    <item row="8" column="3">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>paint length</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>822</x>
+     <y>13</y>
+     <width>177</width>
+     <height>168</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
+     <widget class="QPushButton" name="findNextMarkPushButton">
+      <property name="text">
+       <string>find next mark</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QSpinBox" name="findNextMarkSpinBox"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="findNextNonzeroMarkPushButton">
+      <property name="text">
+       <string>next nonzero mark</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QPushButton" name="findPrevMarkPushButton">
+      <property name="text">
+       <string>find prev mark</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QSpinBox" name="findPrevMarkSpinBox"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QPushButton" name="findPrevNonzeroMarkPushButton">
+      <property name="text">
+       <string>prev nonzero mark</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QPushButton" name="setMarkLeftPushButton">
+      <property name="text">
+       <string>set mark left</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QSpinBox" name="setMarkLeftSpinBox"/>
+    </item>
+    <item row="5" column="0">
+     <widget class="QPushButton" name="setMarkRightPushButton">
+      <property name="text">
+       <string>set mark right</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QSpinBox" name="setMarkRightSpinBox"/>
     </item>
    </layout>
   </widget>

@@ -66,6 +66,18 @@ bool contains(const Container & cont, Typ val);
 template <typename Container, typename Typ>
 std::pair<bool, Typ> contains(const Container & cont, const std::initializer_list<Typ> & val);
 
+template <class InputIterator, class Typ>
+InputIterator find_back(InputIterator last, InputIterator first, const Typ & val);
+
+template <class InputIterator, class Pred>
+InputIterator find_back_if(InputIterator last, InputIterator first, Pred pred);
+
+template <class Typ>
+bool isNotZero(const Typ in)
+{
+	return in != Typ(0);
+}
+
 
 void makeSine(std::valarray<double> & in,
 			  double freq = 10.,

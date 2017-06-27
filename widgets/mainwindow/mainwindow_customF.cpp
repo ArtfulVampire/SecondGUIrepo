@@ -16,10 +16,6 @@ void MainWindow::customFunc()
 	ui->eogBipolarCheckBox->setChecked(true); // Elena
 #endif
 
-//	autos::makeRightNumbersCF("/media/Files/Pictures/CF_3", 81);
-//	autos::mixNumbersCF("/media/Files/Pictures/NewestCF");
-//	exit(0);
-
 //	myLib::drw::drawOneSpectrum(f[f.findChannel("Da_r")], 160, 170, 1000, 1).save(
 //				"/media/Files/Data/iitp/Aliev_15_da_r.jpg", 0, 100);
 //	exit(0);
@@ -33,7 +29,10 @@ void MainWindow::customFunc()
 //	autos::avTimesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_3_fin.edf", 3);
 //	exit(0);
 
-//	return;
+//	autos::successivePrecleanWinds("/media/Files/Data/FeedbackTest/DIA/winds/fromreal");
+//	exit(0);
+
+	return;
 
 #if 0
 	/// IITP

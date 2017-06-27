@@ -289,6 +289,28 @@ std::pair<bool, Typ> contains(const Container & cont, const std::initializer_lis
 template std::pair<bool, double> contains(const std::valarray<double> & cont,
 										  const std::initializer_list<double> & val);
 
+
+
+template <class InputIterator, class Typ>
+InputIterator find_back(InputIterator last, InputIterator first, const Typ & val)
+{
+	while (last!=first) {
+	   if (*last==val) return last;
+	   --last;
+	 }
+	 return first;
+}
+
+template <class InputIterator, class Pred>
+InputIterator find_back_if(InputIterator last, InputIterator first, Pred pred)
+{
+	while (last!=first) {
+	   if (pred(*last)) return last;
+	   --last;
+	 }
+	 return first;
+}
+
 std::string funcName(std::string in)
 {
 	in.resize(in.find('('));

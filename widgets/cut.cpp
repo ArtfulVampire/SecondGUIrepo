@@ -44,9 +44,10 @@ Cut::Cut() :
 	ui->paintLengthDoubleSpinBox->setSingleStep(0.2);
 
 
-	/// make spin box ?
-	ui->mark1LineEdit->setText("10");
-	ui->mark2LineEdit->setText("20");
+	ui->setMarkLeftSpinBox->setMaximum(255);
+	ui->setMarkRightSpinBox->setMaximum(255);
+	ui->setMarkLeftSpinBox->setValue(241);
+	ui->setMarkRightSpinBox->setValue(0);
 
 	drawSamples();
 
@@ -73,8 +74,10 @@ Cut::Cut() :
 	ui->derivSecond1SpinBox->setMaximum(500);	ui->derivSecond1SpinBox->setMinimum(-500);
 	ui->derivSecond2SpinBox->setMaximum(500);	ui->derivSecond2SpinBox->setMinimum(-500);
 
-	ui->findMarkSpinBox->setMaximum(255);
-	ui->findMarkSpinBox->setValue(241);
+	ui->findNextMarkSpinBox->setMaximum(255);
+	ui->findNextMarkSpinBox->setValue(241);
+	ui->findPrevMarkSpinBox->setMaximum(255);
+	ui->findPrevMarkSpinBox->setValue(241);
 
 	ui->nextButton->setShortcut(tr("d"));
 	ui->prevButton->setShortcut(tr("a"));
@@ -91,8 +94,8 @@ Cut::Cut() :
 	QShortcut * copyShortcut = new QShortcut(QKeySequence(tr("Ctrl+c")), this);
 	QShortcut * pasteShortcut = new QShortcut(QKeySequence(tr("Ctrl+v")), this);
 	QShortcut * cutShortcut = new QShortcut(QKeySequence(tr("Ctrl+x")), this);
-	ui->setMark1PushButton->setShortcut(tr("1"));
-	ui->setMark2PushButton->setShortcut(tr("2"));
+//	ui->setMarkLeftPushButton->setShortcut(tr("1"));
+//	ui->setMarkRightPushButton->setShortcut(tr("2"));
 
 
 	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browseSlot()));
@@ -137,24 +140,28 @@ Cut::Cut() :
     QObject::connect(ui->backwardStepButton, SIGNAL(clicked()), this, SLOT(backwardStepSlot()));
     QObject::connect(ui->forwardFrameButton, SIGNAL(clicked()), this, SLOT(forwardFrameSlot()));
 	QObject::connect(ui->backwardFrameButton, SIGNAL(clicked()), this, SLOT(backwardFrameSlot()));
-	QObject::connect(ui->findMarkPushButton, &QPushButton::clicked,
-					 [this](){ findNextMark(ui->findMarkSpinBox->value()); });
-	QObject::connect(ui->findNonzeroMarkPushButton, &QPushButton::clicked,
+	QObject::connect(ui->findNextMarkPushButton, &QPushButton::clicked,
+					 [this](){ findNextMark(ui->findNextMarkSpinBox->value()); });
+	QObject::connect(ui->findNextNonzeroMarkPushButton, &QPushButton::clicked,
 					 [this](){ findNextMark(-1); });
+	QObject::connect(ui->findPrevMarkPushButton, &QPushButton::clicked,
+					 [this](){ findPrevMark(ui->findPrevMarkSpinBox->value()); });
+	QObject::connect(ui->findPrevNonzeroMarkPushButton, &QPushButton::clicked,
+					 [this](){ findPrevMark(-1); });
 
 	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
 	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->iitpSaveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
-	QObject::connect(ui->setMark1PushButton, &QPushButton::clicked,
+	QObject::connect(ui->setMarkLeftPushButton, &QPushButton::clicked,
 					 [this]()
 	{
-		this->setMarker(ui->mark1LineEdit->text().toInt());
+		this->setMarker(ui->setMarkLeftSpinBox->value(), true);
 	});
-	QObject::connect(ui->setMark2PushButton, &QPushButton::clicked,
+	QObject::connect(ui->setMarkRightPushButton, &QPushButton::clicked,
 					 [this]()
 	{
-		this->setMarker(ui->mark2LineEdit->text().toInt());
+		this->setMarker(ui->setMarkRightSpinBox->value(), false);
 	});
 	QObject::connect(ui->toLearnThresholdPushButton, SIGNAL(clicked()), this, SLOT(toLearnSetSlot()));
 	QObject::connect(ui->nextBadPointPushButton, SIGNAL(clicked()), this, SLOT(nextBadPointSlot()));
@@ -165,6 +172,12 @@ Cut::Cut() :
 		windParams.clear();
 		thrParams.clear();
 	});
+
+	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
+					 this, SLOT(timesAndDiffSlot()));
+
+	QObject::connect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
+					 this, SLOT(timesAndDiffSlot()));
 
 	QObject::connect(ui->color1SpinBox, SIGNAL(valueChanged(int)), this, SLOT(color1SpinSlot()));
 	QObject::connect(ui->color2SpinBox, SIGNAL(valueChanged(int)), this, SLOT(color2SpinSlot()));
@@ -190,6 +203,17 @@ void zeroData(matrix & inData, int leftLim, int rightLim)
 				  std::begin(inData[k]) + rightLim,
 				  0.);
 	}
+}
+
+void Cut::timesAndDiffSlot()
+{
+	ui->rightTimeSpinBox->setValue(ui->rightLimitSpinBox->value() / currFreq);
+	ui->leftTimeSpinBox->setValue(ui->leftLimitSpinBox->value() / currFreq);
+	ui->diffLimitSpinBox->setValue(ui->rightLimitSpinBox->value() -
+								   ui->leftLimitSpinBox->value());
+	ui->diffTimeSpinBox->setValue(ui->diffLimitSpinBox->value() / currFreq);
+	showDerivatives();
+	paintLimits();
 }
 
 void Cut::drawSamples()
@@ -428,6 +452,13 @@ void Cut::setValuesByEdf()
 
 	ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
 	ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
+	ui->diffLimitSpinBox->setMaximum(edfFil.getDataLen());
+	ui->leftTimeSpinBox->setMaximum(edfFil.getDataLen() / edfFil.getFreq());
+	ui->leftTimeSpinBox->setDecimals(1);
+	ui->rightTimeSpinBox->setMaximum(edfFil.getDataLen() / edfFil.getFreq());
+	ui->rightTimeSpinBox->setDecimals(1);
+	ui->diffTimeSpinBox->setMaximum(edfFil.getDataLen() / edfFil.getFreq());
+	ui->diffTimeSpinBox->setDecimals(1);
 	resetLimits();
 
 	ui->paintStartDoubleSpinBox->setMaximum(floor(dataCutLocal.cols() / currFreq));
@@ -766,6 +797,47 @@ void Cut::findNextMark(int mark)
 	}
 }
 
+
+void Cut::findPrevMark(double mark)
+{
+	if( !fileOpened ) { return; }
+
+	/// make on dataCutLocal
+	if(myFileType == fileType::edf)
+	{
+		const auto beg = std::begin(edfFil.getMarkArr());
+		auto it = std::begin(edfFil.getMarkArr()) + leftDrawLimit;
+		if(mark > 0)
+		{
+			while (it != beg)
+			{
+				if (*it == mark) { break; }
+				else { --it; }
+			}
+		}
+		else
+		{
+			while (it != beg)
+			{
+				if (*it != 0.) { break; }
+				else { --it; }
+			}
+		}
+
+		if(it == beg)
+		{
+			std::cout << "findNextMark: marker not found" << std::endl;
+			return;
+		}
+
+		int index = std::distance(beg, it);
+		ui->paintStartDoubleSpinBox->setValue(std::max(0., double(index) / edfFil.getFreq() - 0.5));
+//		ui->leftLimitSpinBox->setValue(index);
+		showDerivatives();
+		paint();
+	}
+}
+
 void Cut::cutPausesSlot()
 {
 	if( !fileOpened ) { return; }
@@ -929,7 +1001,7 @@ void Cut::undoSlot()
 
 
 
-void Cut::setMarker(int inVal)
+void Cut::setMarker(int inVal, bool left)
 {
 	if( !fileOpened ) { return; }
 
@@ -938,12 +1010,16 @@ void Cut::setMarker(int inVal)
 		int num = edfFil.getMarkChan();
 		if(num <= 0)
 		{
-			std::cout << "Cut::set1MarkSlot: haven't found markers channel" << std::endl;
+			std::cout << "Cut::setMarker: haven't found markers channel" << std::endl;
 			return;
 		}
-		int offset = ui->leftLimitSpinBox->value();
+
+		int offset = 0;
+		if(left)	{ offset = ui->leftLimitSpinBox->value(); }
+		else		{ offset = ui->rightLimitSpinBox->value(); }
+
 		int val = dataCutLocal[num][offset];
-		undoAction = [num, offset, val, this](){this->dataCutLocal[num][offset] = val; };
+		undoAction = [num, offset, val, this](){ this->dataCutLocal[num][offset] = val; };
 		undos.push_back(undoAction);
 
 		dataCutLocal[num][offset] = inVal;
@@ -951,9 +1027,13 @@ void Cut::setMarker(int inVal)
 	else if(myFileType == fileType::real)
 	{
 		int num = dataCutLocal.rows() - 1; /// last channel
-		int offset = ui->leftLimitSpinBox->value();
+
+		int offset = 0;
+		if(left)	{ offset = ui->leftLimitSpinBox->value(); }
+		else		{ offset = ui->rightLimitSpinBox->value(); }
+
 		int val = dataCutLocal[num][offset];
-		undoAction = [num, offset, val, this](){dataCutLocal[num][offset] = val; };
+		undoAction = [num, offset, val, this](){ dataCutLocal[num][offset] = val; };
 		undos.push_back(undoAction);
 
 		dataCutLocal[num][offset] = inVal;
