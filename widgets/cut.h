@@ -123,7 +123,7 @@ private:
     Ui::Cut *ui;
 
 	/// draw
-	QPixmap currentPic;
+	QPixmap currentPic{};
 	int leftDrawLimit; /// in slices
 
 	/// edf and related globals

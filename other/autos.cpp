@@ -432,9 +432,17 @@ void IITPtestCoh2(const QString & guyName)
 //	QString postfix = "_fft_up";
 //	QString postfix = "_fft_down";
 
+	const double lowFreq = 8.;
+	const double highFreq = 45.;
 
+	/// Test guy
+	std::vector<int> nums{1,2,3,4};
+	std::vector<QString> names{"1_e", "2_e", "3_e", "4_e"}; /// enveloped
+//	std::vector<QString> names{"1", "2", "3", "4"};
 
-
+	/// take Ta_l - file 24 and Ta_r - file 25
+//	std::vector<int> nums{24, 25};
+//	std::vector<QString> names{"coh_l", "coh_r"};
 
 
 //	for(QString postfix : {
@@ -443,7 +451,7 @@ void IITPtestCoh2(const QString & guyName)
 //		"_fft_up",
 //		"_fft_down"
 //})
-	QString postfix = "_sum_f_new_stag";
+	QString postfix = "_sum_f_new_env";
 	{
 
 		std::vector<double> outCoh;
@@ -452,36 +460,30 @@ void IITPtestCoh2(const QString & guyName)
 			return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
 		};
 
-		/// take Ta_l - file 24
-		outCoh.clear();
-		dt.readEdfFile(filePath(24));
-		dt.cutPieces(1.024);
-		for(double freq = 5.; freq <= 45.; freq += 1.)
+		for(int i = 0; i < nums.size(); ++i)
 		{
-			outCoh.push_back(std::abs(dt.coherency(dt.findChannel("Cz"),
-												   dt.findChannel("Ta_l"),
-												   freq)));
-		}
-		myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(10, true, 5, 45),
-								 smLib::vecToValar(outCoh)).save(
-					"/media/Files/Data/iitp/coh_l" + postfix + ".jpg", 0, 100);
-		std::cout << postfix << std::endl;
-		std::cout << "left coh max = " << *std::max_element(std::begin(outCoh), std::end(outCoh)) << std::endl;
+			if(!QFile::exists(filePath(nums[i])))
+			{
+				std::cout << "IITPtestCoh2: file doesn't exist: "
+						  << filePath(nums[i]) << std::endl;
+				continue;
+			}
 
-		/// take Ta_l - file 25
-		outCoh.clear();
-		dt.readEdfFile(filePath(25));
-		dt.cutPieces(1.024);
-		for(double freq = 5.; freq <= 45.; freq += 1.)
-		{
-			outCoh.push_back(std::abs(dt.coherency(dt.findChannel("Cz"),
-												   dt.findChannel("Ta_r"),
-												   freq)));
+			outCoh.clear();
+			dt.readEdfFile(filePath(nums[i]));
+			dt.cutPieces(1.024);
+			for(double freq = lowFreq; freq <= highFreq; freq += 1.)
+			{
+				outCoh.push_back(std::abs(dt.coherency(dt.findChannel("Cz"),
+													   dt.findChannel("Ta_r"),
+													   freq)));
+			}
+			myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(10, true, lowFreq, highFreq),
+									 smLib::vecToValar(outCoh)).save(
+						"/media/Files/Data/iitp/" + names[i] + postfix + ".jpg", 0, 100);
+			std::cout << postfix << std::endl;
+			std::cout << names[i] << " coh max = " << *std::max_element(std::begin(outCoh), std::end(outCoh)) << std::endl;
 		}
-		myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(10, true, 5, 45),
-								 smLib::vecToValar(outCoh)).save(
-					"/media/Files/Data/iitp/coh_r" + postfix + ".jpg", 0, 100);
-		std::cout << "right coh max = " << *std::max_element(std::begin(outCoh), std::end(outCoh)) << std::endl;
 	}
 
 }
@@ -490,7 +492,8 @@ void IITPtestCoh(const QString & guyName)
 {
 	/// test coherency in all files
 	iitp::iitpData dt;
-	const QString direct = def::iitpFolder + "/" + guyName + "/";
+//	const QString direct = def::iitpFolder + "/" + guyName + "/";
+	const QString direct = def::iitpSyncFolder + "/" + guyName + "/";
 	QString postfix = iitp::getPostfix(QDir(direct).entryList({"*.edf"})[0]);
 
 	auto filePath = [=](int i) -> QString
@@ -510,11 +513,9 @@ void IITPtestCoh(const QString & guyName)
 	std::valarray<int> eegChans = iitp::interestEeg;
 	std::valarray<int> emgChans;
 
-	const int minChansEmg = 20; /// 19 EEG + ECG
-
 	const int minFreq = 8;
 	const int numFreq = 44;
-	const int numLen = 25;
+	const int numLen = 1;
 
 	std::ofstream ofile;
 	for(int fileNum : iitp::fileNums)
@@ -524,12 +525,14 @@ void IITPtestCoh(const QString & guyName)
 		ofile.open(resPath(fileNum).toStdString());
 		dt.readEdfFile(filePath(fileNum));
 
-		emgChans = iitp::interestEmg[fileNum];
+		/// Test Guy
+//		emgChans = iitp::interestEmg[fileNum];
+		emgChans = {iitp::emgChans::Ta_r, iitp::emgChans::Fcr_r};
 
 		/// test intresting EMGs
 		std::cout << "fileNum = " << fileNum << "\tinteresting:" << std::endl;
-		std::cout << eegChans << std::endl;
-		std::cout << emgChans << std::endl;
+//		std::cout << eegChans << std::endl;
+//		std::cout << emgChans << std::endl;
 
 		int numChansEeg = eegChans.size();
 		int numChansEmg = emgChans.size();
@@ -557,23 +560,31 @@ void IITPtestCoh(const QString & guyName)
 		/// fillVals
 		/// for each pieceLength
 		for(int lenInd = 0; lenInd < numLen; ++lenInd)
+//		int lenInd = 24;
 		{
-			dt.cutPieces(1. + 0.001 * lenInd);
+//			dt.cutPieces(1. + 0.001 * lenInd);
+			dt.cutPieces(1.024);
 
 			/// for each freq
 			for(int fff = 0; fff < numFreq; ++fff)
 			{
 //				for(int c1 = 0; c1 < numChansEeg; ++c1)
+				int eegCounter = -1;
 				for(int c1 : eegChans)
 				{
+					++eegCounter;
 //					for(int c2 = 0; c2 < numChansEmg; ++c2)
+					int emgCounter = -1;
 					for(int c2 : emgChans)
 					{
+						++emgCounter;
 						/// coherencyMine or coherencyUsual
-						std::complex<double> tmpCoh = dt.coherency(c1,
-																   c2 + minChansEmg,
-																   fff + minFreq);
-						vals[c1][c2][fff][lenInd] = tmpCoh;
+						std::complex<double> tmpCoh =
+								dt.coherency(
+									dt.findChannel(iitp::eegNames[c1]),
+									dt.findChannel(iitp::emgNames[c2]),
+									fff + minFreq);
+						vals[eegCounter][emgCounter][fff][lenInd] = tmpCoh;
 					}
 				}
 			}
@@ -584,15 +595,19 @@ void IITPtestCoh(const QString & guyName)
 		std::valarray<double> abss(numLen);
 		std::valarray<double> args(numLen);
 //		for(int c1 = 0; c1 < numChansEeg; ++c1)
+		int eegCounter = -1;
 		for(int c1 : eegChans)
 		{
+			++eegCounter;
 //			for(int c2 = 0; c2 < numChansEmg; ++c2)
+			int emgCounter = -1;
 			for(int c2 : emgChans)
 			{
+				++emgCounter;
 				for(int fff = 0; fff < numFreq; ++fff)
 				{
 					/// values for different pieceLengths
-					const std::valarray<std::complex<double>> & tmp = vals[c1][c2][fff];
+					const std::valarray<std::complex<double>> & tmp = vals[eegCounter][emgCounter][fff];
 
 					std::transform(std::begin(tmp),
 								   std::end(tmp),
@@ -610,17 +625,18 @@ void IITPtestCoh(const QString & guyName)
 						return std::arg(in);
 					});
 
-					if(smLib::mean(abss) > 0.05 &&
-					   smLib::sigma(abss) * 3 < smLib::mean(abss) &&
-					   smLib::sigma(args) < 0.4
+					if(smLib::mean(abss) > 0.05
+//					   && smLib::sigma(abss) * 2 < smLib::mean(abss)
+//					   && smLib::sigma(args) < 0.4
 					   )
 					{
 						ofile
 								<< c1 << '\t'
-								<< dt.getLabels()[c1] << '\t'
+								<< dt.getLabels(dt.findChannel(iitp::eegNames[c1])) << '\t'
 
-								<< c2 + minChansEmg << '\t'
-								<< dt.getLabels()[c2 + minChansEmg] << '\t'
+
+								<< c2 << '\t'
+								<< dt.getLabels(dt.findChannel(iitp::emgNames[c2])) << '\t'
 
 								<< "freq = " << fff + minFreq << '\t'
 
@@ -664,7 +680,7 @@ void IITPpre(const QString & guyName)
 		QString filePath;
 		edfFile fil;
 
-#if 01
+#if 0
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
 		if(QFile::exists(filePath))
@@ -708,6 +724,7 @@ void IITPpre(const QString & guyName)
 			fil.writeEdfFile(filePath);
 		}
 #endif
+		continue;
 
 
 
@@ -1022,6 +1039,9 @@ void IITPstagedToEnveloped(const QString & guyName,
 {
 	/// replace EMG with its envelope
 	QString postfix = iitp::getPostfix(QDir(dirPath + "/" + guyName).entryList({"*_stag.edf"})[0]);
+	/// Test guy
+//	QString postfix = iitp::getPostfix(QDir(dirPath + "/" + guyName).entryList({"*_new.edf"})[0]);
+
 	const QString direct = dirPath + "/" + guyName + "/";
 
 	auto filePath = [=](int i) -> QString
@@ -1051,7 +1071,7 @@ void IITPstagedToEnveloped(const QString & guyName,
 			int num = dt.findChannel(emgChan);
 			if(num == -1) { continue; }
 
-			auto env = myLib::hilbertPieces(dt.getData()[num], dt.getFreq(), 0.01, 450.);
+			auto env = myLib::hilbertPieces(dt.getData(num), dt.getFreq(), 0.01, 450.);
 			dt.setData(num, env);
 		}
 		dt.writeEdfFile(outPath(fileNum));

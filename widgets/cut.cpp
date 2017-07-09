@@ -438,6 +438,7 @@ void Cut::setFileType(const QString & dataFileName)
 void Cut::resetLimits()
 {
 	if( !fileOpened ) { return; }
+
 	ui->leftLimitSpinBox->setValue(0);
 	ui->rightLimitSpinBox->setValue(dataCutLocal.cols());
 }
@@ -459,13 +460,14 @@ void Cut::setValuesByEdf()
 	ui->rightTimeSpinBox->setDecimals(1);
 	ui->diffTimeSpinBox->setMaximum(edfFil.getDataLen() / edfFil.getFreq());
 	ui->diffTimeSpinBox->setDecimals(1);
-	resetLimits();
 
 	ui->paintStartDoubleSpinBox->setMaximum(floor(dataCutLocal.cols() / currFreq));
 	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
 	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
 	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
 	ui->paintLengthDoubleSpinBox->setValue((this->width() - 20) / currFreq);
+
+	resetLimits();
 
 	/// set coloured channels
 	QString redStr = "EOG1";
@@ -1628,9 +1630,6 @@ void Cut::paint() // save to tmp.jpg and display
 {
 	if(dataCutLocal.isEmpty()) return;
 
-    QString helpString;
-	helpString = def::dir->absolutePath() + "/tmp.jpg";
-
 	int rightDrawLimit = 0.;
     if(myFileType == fileType::edf)
     {
@@ -1685,19 +1684,12 @@ void Cut::paint() // save to tmp.jpg and display
 	}
 
 	paintLimits();
-
-    /// -20 for scroll bar generality
-	/// experimental xNorm
-//	ui->picLabel->setPixmap(currentPic.scaled(currentPic.width() - 2,
-//											  ui->scrollArea->height() - 20));
-
-//    rightLimit = rightDrawLimit - leftDrawLimit;
-//    leftLimit = 0;
 }
 
 void Cut::paintLimits()
 {
 	if( !fileOpened ) { return; }
+	if(currentPic.isNull()) { return; }
 
 	QPixmap tempPic = currentPic;
 	QPainter paint;
@@ -1707,17 +1699,17 @@ void Cut::paintLimits()
 	if(leftX >= 0 && leftX < ui->paintLengthDoubleSpinBox->value() * this->currFreq)
 	{
 		paint.setPen(QPen(QBrush("blue"), 2));
-		paint.drawLine(leftX, 0, leftX, currentPic.height());
+		paint.drawLine(leftX, 0, leftX, tempPic.height());
 	}
 
 	int rightX = ui->rightLimitSpinBox->value() - leftDrawLimit;
 	if(rightX >= 0 && rightX < ui->paintLengthDoubleSpinBox->value() * this->currFreq)
 	{
 		paint.setPen(QPen(QBrush("red"), 2));
-		paint.drawLine(rightX, 0, rightX, currentPic.height());
+		paint.drawLine(rightX, 0, rightX, tempPic.height());
 	}
 
-	ui->picLabel->setPixmap(tempPic.scaled(currentPic.width() - 2,
+	ui->picLabel->setPixmap(tempPic.scaled(tempPic.width() - 2,
 											  ui->scrollArea->height() - 20));
 	paint.end();
 }

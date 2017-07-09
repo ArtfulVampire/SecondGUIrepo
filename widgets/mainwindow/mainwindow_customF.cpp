@@ -32,9 +32,9 @@ void MainWindow::customFunc()
 //	autos::successivePrecleanWinds("/media/Files/Data/FeedbackTest/DIA/winds/fromreal");
 //	exit(0);
 
-	return;
+//	return;
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -50,13 +50,16 @@ void MainWindow::customFunc()
 	};
 
 //	for(QString guy : guyList)
-	QString guy = "Isakov";
+	QString guy = "Test";
 	{
 //		autos::IITPpre(guy);
 //		autos::IITPremoveZchans(guy, def::iitpSyncFolder);
 //		autos::IITPstaging(guy);
+//		autos::IITPstagedToEnveloped(guy);
+		autos::IITPtestCoh2(guy);
+//		autos::IITPtestCoh(guy);
 //		autos::IITPprocessStaged(guy);
-		autos::IITPdrawSpectralMaps(guy);
+//		autos::IITPdrawSpectralMaps(guy);
 //		continue;
 		exit(0);
 
