@@ -1819,9 +1819,6 @@ QPixmap drawEeg(const matrix & dataD,
 		paint.drawText(c3 * freq, pic.height() - 35, nm(c3));
         norm = 10.;
     }
-
-
-    norm = 1;
     pic.save(picPath, 0, 100);
 
     paint.end();

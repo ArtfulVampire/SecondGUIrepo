@@ -807,7 +807,7 @@ void drawSammon(const coordType & plainCoords,
 			//            painter.setBrush(QBrush("red"));
 			//            painter.setPen("red");
 
-			pew = int(255.*i/NumberOfVectors);
+			pew = int(255. * i / NumberOfVectors);
 			painter.setBrush(QBrush(QColor(pew,0,pew)));
 			painter.setPen(QColor(pew,0,pew));
 		}
