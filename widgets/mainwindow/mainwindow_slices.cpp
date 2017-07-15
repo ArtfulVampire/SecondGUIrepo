@@ -49,6 +49,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 					else
 					{
 						sliceOneByOne();
+//						sliceOneByOneNew();
 					}
 				}
 			}
