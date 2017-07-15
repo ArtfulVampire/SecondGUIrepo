@@ -351,10 +351,9 @@ const std::vector<double> interestFrequencies = smLib::range<std::vector<double>
 //const std::valarray<double> interestFrequencies = smLib::range(8, 45);
 
 /// without 12th
-const std::valarray<double> fileNums = smLib::unite<std::valarray<double>>(
-{smLib::range<std::valarray<double>>(0, 12), smLib::range<std::valarray<double>>(13, 29+1)});
+//const std::valarray<double> fileNums = smLib::unite({smLib::range(0, 12), smLib::range(13, 29+1)});
 /// with 12th
-//const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 29+1);
+const std::valarray<double> fileNums = smLib::range(0, 29+1);
 
 //const std::valarray<double> fileNums = smLib::range(0, 5);
 //const std::valarray<double> fileNums{12};

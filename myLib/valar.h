@@ -10,10 +10,10 @@
 
 namespace smLib
 {
-template <typename Cont>
+template <class Cont = std::valarray<double>>
 Cont range(int beg, int en); // [beg, en)
 
-template <typename Cont>
+template <class Cont = std::valarray<double>>
 Cont unite(const std::vector<Cont> & ranges);
 
 std::valarray<double> valarSubsec(const std::valarray<double> & in, int beg, int en);

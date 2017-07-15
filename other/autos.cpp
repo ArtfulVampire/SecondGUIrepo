@@ -677,6 +677,7 @@ void IITPpre(const QString & guyName)
 		const QString ExpNamePre = def::iitpFolder + "/" +
 								   guyName + "/" +
 								   guyName + "_" + rn(fileNum, 2);
+//		std::cout << ExpNamePre << std::endl;
 		QString filePath;
 		edfFile fil;
 
@@ -692,7 +693,7 @@ void IITPpre(const QString & guyName)
 
 #endif
 
-#if 01
+#if 0
 		/// filter EMG notch + goniogramms
 		filePath = ExpNamePre + "_emg.edf";
 		if(QFile::exists(filePath))
@@ -724,11 +725,11 @@ void IITPpre(const QString & guyName)
 			fil.writeEdfFile(filePath);
 		}
 #endif
-		continue;
+//		continue;
 
 
 
-#if 01
+#if 0
 		/// divide EEG chans to prevent oversclaing amplitude
 		/// and filter EEG but not ECG
 		filePath = ExpNamePre + "_eeg.edf";
@@ -749,19 +750,23 @@ void IITPpre(const QString & guyName)
 		/// resample
 #if UP_DOWN_S
 		/// upsample EEGs
-		filePath = ExpNamePre + "_eeg_f.edf";
+		filePath = ExpNamePre + "_eeg.edf";
+//		filePath = ExpNamePre + "_eeg_f.edf";
 		if(QFile::exists(filePath))
 		{
 			fil.readEdfFile(filePath);
-			filePath = ExpNamePre + "_eeg_f_up.edf";
+			filePath = ExpNamePre + "_eeg_up.edf";
+//			filePath = ExpNamePre + "_eeg_f_up.edf";
 			fil.upsample(1000., filePath);
 		}
 #else
 		/// downsample EMGs
+//		filePath = ExpNamePre + "_emg.edf";
 		filePath = ExpNamePre + "_emg_f.edf";
 		if(QFile::exists(filePath))
 		{
 			fil.readEdfFile(filePath);
+//			filePath = ExpNamePre + "_emg_down.edf";
 			filePath = ExpNamePre + "_emg_f_down.edf";
 			fil.downsample(250., filePath);
 		}
@@ -782,28 +787,34 @@ void IITPpre(const QString & guyName)
 
 #if UP_DOWN_S
 		/// upsampled EEG
+//		filePath = ExpNamePre + "_eeg_up.edf";
 		filePath = ExpNamePre + "_eeg_f_up.edf";
 		if(QFile::exists(filePath))
 		{
 			fil.readEdfFile(filePath);
+//			filePath = ExpNamePre + "_emg.edf";
 			filePath = ExpNamePre + "_emg_f.edf";
 			if(QFile::exists(filePath))
 			{
+//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum.edf");
 				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
 //				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_up.edf");
 			}
 		}
 #else
 		/// downsampled EMG
+//		filePath = ExpNamePre + "_eeg.edf";
 		filePath = ExpNamePre + "_eeg_f.edf";
 		if(QFile::exists(filePath))
 		{
 			fil.readEdfFile(filePath);
+//			filePath = ExpNamePre + "_emg_down.edf";
 			filePath = ExpNamePre + "_emg_f_down.edf";
 			if(QFile::exists(filePath))
 			{
-//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
-				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_down.edf");
+//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum.edf");
+				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
+//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_down.edf");
 			}
 		}
 #endif
@@ -1778,7 +1789,8 @@ void mixNumbersCF(const QString & dirPath)
 		for(QString & part : parts)
 		{
 			bool ok = false;
-			int a = part.toInt(&ok);
+			part.toInt(&ok);
+			/// if part is a number
 			if(ok)
 			{
 				part = rn(newNums[numCounter++], 3);
@@ -2665,7 +2677,7 @@ void timesNew(const QString & edfPath,
 				  + nm(numSession) + ".txt").toStdString());
 
 
-	bool startFlag = false;
+//	bool startFlag = false;
 	int sta = 0;
 	int fin = 0;
 	char ans;
@@ -2696,12 +2708,12 @@ void timesNew(const QString & edfPath,
 			if(mark == 241) num = 0;
 			else num = 1;
 
-			startFlag = true;
+//			startFlag = true;
 		}
 		else if(mark == 254)
 		{
 			fin = i;
-			startFlag = false;
+//			startFlag = false;
 
 			answers >> ans;
 			if(ans == '\n') answers >> ans;

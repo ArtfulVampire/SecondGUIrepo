@@ -32,7 +32,7 @@ void MainWindow::customFunc()
 //	autos::successivePrecleanWinds("/media/Files/Data/FeedbackTest/DIA/winds/fromreal");
 //	exit(0);
 
-//	return;
+	return;
 
 #if 01
 	/// IITP
@@ -50,13 +50,15 @@ void MainWindow::customFunc()
 	};
 
 //	for(QString guy : guyList)
-	QString guy = "Test";
+//	QString guy = "Test";
+	QString guy = "Galya_test_new";
 	{
-//		autos::IITPpre(guy);
+		autos::IITPpre(guy);
 //		autos::IITPremoveZchans(guy, def::iitpSyncFolder);
+//		autos::IITPremoveZchans(guy, def::iitpFolder);
 //		autos::IITPstaging(guy);
 //		autos::IITPstagedToEnveloped(guy);
-		autos::IITPtestCoh2(guy);
+//		autos::IITPtestCoh2(guy);
 //		autos::IITPtestCoh(guy);
 //		autos::IITPprocessStaged(guy);
 //		autos::IITPdrawSpectralMaps(guy);
