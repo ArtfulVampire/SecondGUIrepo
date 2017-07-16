@@ -87,7 +87,7 @@ void MainWindow::sliceWinds()
 	std::vector<std::tuple<int, int, QString>> forSave;
 
 	const int succMax = suc::learnSetStay * 1.3;
-	std::vector<int> succCounter(3, 1);
+	std::valarray<int> succCounter(3, 1);
 
 	int typ = -1;
 
@@ -137,7 +137,6 @@ void MainWindow::sliceWinds()
 			stopFlag = false;
 			break;
 		}
-//		ui->progressBar->setValue( (i - sta) * 100. / (fil.getDataLen() - wndLength - sta) );
 	}
 
 	auto it = std::end(forSave); --it;
@@ -147,7 +146,7 @@ void MainWindow::sliceWinds()
 	if(ui->succPrecleanCheckBox->isChecked())
 	{
 		/// save succMax each type
-		for(; succCounter != std::vector<int>(3, succMax); --it)
+		for(; succCounter != succMax; --it)
 		{
 			int locTyp = std::get<1>(*it);
 			if(succCounter[locTyp] < succMax)
@@ -157,17 +156,24 @@ void MainWindow::sliceWinds()
 								   std::get<2>(*it),
 								   true);
 				++succCounter[locTyp];
+
+				ui->progressBar->setValue( succCounter.sum() * 100. / (3. * succMax));
 			}
 		}
 	}
 	else
 	{
+		int siz = std::distance(std::begin(forSave), it);
+		int c = 0;
 		while(1)
 		{
 			fil.saveSubsection(std::get<0>(*it),
 							   std::get<0>(*it) + wndLength,
 							   std::get<2>(*it),
 							   true);
+
+			ui->progressBar->setValue(c++ * 100. / siz);
+
 			if(it == std::begin(forSave)) { break; }
 			--it;
 		}
