@@ -1293,7 +1293,12 @@ void Cut::color1SpinSlot()
 		if(myFileType == fileType::edf && !edfFil.isEmpty())
 		{
 			QString ch = QString(edfFil.getLabels()[n]);
-			ui->colorChan1LineEdit->setText(ch.remove("EEG ").remove("IT ").remove("EOG "));
+			ui->colorChan1LineEdit->setText(ch
+											.remove("EEG ")
+											.remove("IT ")
+											.remove("EOG ")
+											.remove("EMG ")
+											);
 		}
 	}
 	else
@@ -1311,7 +1316,12 @@ void Cut::color2SpinSlot()
 		if(myFileType == fileType::edf && !edfFil.isEmpty())
 		{
 			QString ch = QString(edfFil.getLabels()[n]);
-			ui->colorChan2LineEdit->setText(ch.remove("EEG ").remove("IT ").remove("EOG "));
+			ui->colorChan2LineEdit->setText(ch
+											.remove("EEG ")
+											.remove("IT ")
+											.remove("EOG ")
+											.remove("EMG ")
+											);
 		}
 	}
 	else
@@ -1329,7 +1339,12 @@ void Cut::color3SpinSlot()
 		if(myFileType == fileType::edf && !edfFil.isEmpty())
 		{
 			QString ch = QString(edfFil.getLabels()[n]);
-			ui->colorChan3LineEdit->setText(ch.remove("EEG ").remove("IT ").remove("EOG "));
+			ui->colorChan3LineEdit->setText(ch
+											.remove("EEG ")
+											.remove("IT ")
+											.remove("EOG ")
+											.remove("EMG ")
+											);
 		}
 	}
 	else

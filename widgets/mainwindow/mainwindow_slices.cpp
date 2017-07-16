@@ -83,33 +83,42 @@ void MainWindow::sliceWinds()
 					myLib::indexOfVal(marks, 241.),
 					myLib::indexOfVal(marks, 247.)) + 1;
 
+	/// start, typ, filepath
+	std::vector<std::tuple<int, int, QString>> forSave;
+
+	const int succMax = suc::learnSetStay * 1.3;
+	std::vector<int> succCounter(3, 1);
 
 	int typ = -1;
 
 	QString marker;
 	if(marks[sta - 1] == 241.) { typ = 0; marker = "241"; }
 	else if(marks[sta - 1] == 247.) { typ = 1; marker = "247"; }
-	else if(marks[sta - 1] == 254.) { typ = 2; marker = "254"; }
 
 	int windowCounter = 0;
 	int numReal = 1;
+
+	forSave.reserve(fil.getDataLen() / timeShift);
 	for(uint i = sta; i < fil.getDataLen() - wndLength; i += timeShift)
 	{
 		auto mark = smLib::valarSubsec(marks, i, i + wndLength);
 
-		/// hope not some of them
+		/// hope only one of them occurs
 		std::pair<bool, double> a = myLib::contains(mark, {241., 247., 254.});
 		if(a.first)
 		{
 			if(a.second == 241.) typ = 0;
 			else if(a.second == 247.) typ = 1;
 			else if(a.second == 254.) typ = 2;
-
-			windowCounter = 0;
-			++numReal;
 			marker = nm(a.second);
 
-			i = i + myLib::indexOfVal(mark, a.second) + 1;
+			++numReal;
+
+			/// jump to the beginning of a real/rest
+			i = i + myLib::indexOfVal(mark, a.second) + 1
+				- timeShift		/// comment for not taking the first window
+				;
+			windowCounter = 0;	/// = 1 if not taking the first window
 		}
 		else
 		{
@@ -117,9 +126,10 @@ void MainWindow::sliceWinds()
 						 + "/" + fil.getExpName()
 						 + "." + rn(numReal, 4)
 						 + "_" + marker
+//						 + "_typ_" + typ
 						 + "." + rn(windowCounter++, 2);
-
-			fil.saveSubsection(i, i + wndLength, helpString, true);
+			forSave.push_back(std::tuple<int, int, QString>(i, typ, helpString));
+//			fil.saveSubsection(i, i + wndLength, helpString, true);
 		}
 		qApp->processEvents();
 		if(stopFlag)
@@ -127,23 +137,40 @@ void MainWindow::sliceWinds()
 			stopFlag = false;
 			break;
 		}
-		ui->progressBar->setValue( (i - sta) * 100. / (fil.getDataLen() - wndLength - sta) );
-	}
-	/// delete the very last _254 winds
-	QString lastFileNumReal = helpString
-							  .mid(def::windsFromRealsDir().length() + 1) // +1 for slash
-							  .mid(fil.getExpName().length(), 5);
-	for(QString str : QDir(def::windsFromRealsDir()).entryList(
-	{fil.getExpName() + lastFileNumReal + "*"}))
-	{
-
-//		std::cout << "sliceWinds: to delete\t" << str << std::endl;
-		QFile::remove(def::windsFromRealsDir() + "/" + str);
+//		ui->progressBar->setValue( (i - sta) * 100. / (fil.getDataLen() - wndLength - sta) );
 	}
 
+	auto it = std::end(forSave); --it;
+	while(std::get<1>(*it) == 2) { --it; } /// don't see last rest
+
+	/// save all or some last
 	if(ui->succPrecleanCheckBox->isChecked())
 	{
-		autos::successivePrecleanWinds(def::windsFromRealsDir());
+		/// save succMax each type
+		for(; succCounter != std::vector<int>(3, succMax); --it)
+		{
+			int locTyp = std::get<1>(*it);
+			if(succCounter[locTyp] < succMax)
+			{
+				fil.saveSubsection(std::get<0>(*it),
+								   std::get<0>(*it) + wndLength,
+								   std::get<2>(*it),
+								   true);
+				++succCounter[locTyp];
+			}
+		}
+	}
+	else
+	{
+		while(1)
+		{
+			fil.saveSubsection(std::get<0>(*it),
+							   std::get<0>(*it) + wndLength,
+							   std::get<2>(*it),
+							   true);
+			if(it == std::begin(forSave)) { break; }
+			--it;
+		}
 	}
 }
 

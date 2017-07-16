@@ -221,16 +221,27 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		for(int i = 0; i < this->ns; ++i)
 		{
 			iitpLabels[i] = iitpLabels[i].toLower();
-			iitpLabels[i][0] = iitpLabels[i][0].toUpper();
+			iitpLabels[i][0] = iitpLabels[i][0].toUpper(); /// First capital
 			int s = iitpLabels[i].size();
-			if(iitpLabels[i].contains(QRegExp("[lLrR]$")) &&
+
+			/// add _ if not _l or _r
+			if(iitpLabels[i].contains(QRegExp("[lr]$")) &&
 			   iitpLabels[i][s-2] != '_')
 			{
 				iitpLabels[i].insert(s-1, '_');
 			}
 
 
-			if(!iitpLabels[i].contains("Artefac"))
+
+
+			auto f = [ iitpLabels, i ](const QString & s) -> bool
+			{ return iitpLabels[i].startsWith(s); };
+
+			if(f("Ta") || f("Bf") || f("Fcr") || f("Ecr") || f("Da") || f("Dp"))
+			{
+				this->labels[i] = myLib::fitString("IT EMG " + iitpLabels[i], 16);
+			}
+			else if(!iitpLabels[i].contains("Artefac"))
 			{
 				this->labels[i] = myLib::fitString("IT " + iitpLabels[i], 16);
 			}
@@ -1124,6 +1135,33 @@ uint edfFile::findChannel(const QString & str) const
 		if(labels[i].contains(str, Qt::CaseInsensitive)) return i;
 	}
 	return -1;
+}
+
+std::vector<uint> edfFile::findChannels(const QString & str) const
+{
+	std::vector<uint> res{};
+	for(int i = 0; i < this->ns; ++i)
+	{
+		if(labels[i].contains(str, Qt::CaseInsensitive)) { res.push_back(i); }
+	}
+	return res;
+}
+
+std::vector<uint> edfFile::findChannels(const std::vector<QString> & strs) const
+{
+	std::vector<uint> res{};
+	for(int i = 0; i < this->ns; ++i)
+	{
+		for(QString str : strs)
+		{
+			if(labels[i].contains(str, Qt::CaseInsensitive))
+			{
+				res.push_back(i);
+				break;
+			}
+		}
+	}
+	return res;
 }
 
 edfFile & edfFile::subtractMeans(const QString & outPath)

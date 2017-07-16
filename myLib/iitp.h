@@ -220,6 +220,16 @@ enum emgChans {Ta_l		= 0,
 			   Dp_r		= 11
 			  };
 
+const std::vector<QString> emgNamesPrefixes {
+	"Ta",
+	"Bf",
+	"Fcr",
+	"Ecr",
+	"Da",
+	"Dp"
+};
+
+
 const std::vector<QString> emgNames {
 	"Ta_l",
 	"Ta_r",

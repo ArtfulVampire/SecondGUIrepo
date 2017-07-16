@@ -159,6 +159,8 @@ public:
 	edfFile & divideChannels(std::vector<uint> chanNums = {}, double denom = 2.);
 	edfFile & zeroChannels(const std::vector<uint> & chanNums = {});
 	uint findChannel(const QString & str) const;
+	std::vector<uint> findChannels(const QString & str) const;
+	std::vector<uint> findChannels(const std::vector<QString> & strs) const;
 
     void setLabels(const std::vector<QString> & inLabels);
 	void setChannels(const std::vector<edfChannel> & inChannels);

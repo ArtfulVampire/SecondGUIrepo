@@ -659,15 +659,14 @@ void IITPtestCoh(const QString & guyName)
 	}
 }
 
-void IITPpre(const QString & guyName)
+void IITPconcat(const QString & guyName)
 {
-
-/// iitp
-///  0 - downsample EMG, 1 - upsample EEG
-#ifdef UP_DOWN_S
-#undef UP_DOWN_S
-#define UP_DOWN_S 01
-#endif
+	/// iitp
+	///  0 - downsample EMG, 1 - upsample EEG
+	#ifdef UP_DOWN_S
+	#undef UP_DOWN_S
+	#define UP_DOWN_S 01
+	#endif
 
 
 	def::ntFlag = true;
@@ -677,11 +676,89 @@ void IITPpre(const QString & guyName)
 		const QString ExpNamePre = def::iitpFolder + "/" +
 								   guyName + "/" +
 								   guyName + "_" + rn(fileNum, 2);
-//		std::cout << ExpNamePre << std::endl;
+		//		std::cout << ExpNamePre << std::endl;
 		QString filePath;
 		edfFile fil;
 
-#if 0
+
+
+#if 01
+		/// resample
+#if UP_DOWN_S
+		/// upsample EEGs
+		filePath = ExpNamePre + "_eeg_new.edf";
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
+			filePath = ExpNamePre + "_eeg_up.edf";
+			fil.upsample(1000., filePath);
+		}
+#else
+		/// downsample EMGs
+		filePath = ExpNamePre + "_emg.edf";
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
+			filePath = ExpNamePre + "_emg_down.edf";
+			fil.downsample(250., filePath);
+		}
+#endif
+
+#endif
+
+
+#if 01
+		/// vertcat eeg+emg
+		QString addName;
+#if DSP_LIB
+		addName = "_dsp";
+#else
+		addName = "_fft";
+#endif
+
+#if UP_DOWN_S
+		/// upsampled EEG
+		filePath = ExpNamePre + "_eeg_up.edf";
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
+			filePath = ExpNamePre + "_emg.edf";
+			if(QFile::exists(filePath))
+			{
+				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum.edf");
+				//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_up.edf");
+			}
+		}
+#else
+		/// downsampled EMG
+		filePath = ExpNamePre + "_eeg.edf";
+		if(QFile::exists(filePath))
+		{
+			fil.readEdfFile(filePath);
+			filePath = ExpNamePre + "_emg_down.edf";
+			if(QFile::exists(filePath))
+			{
+				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum.edf");
+				//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_down.edf");
+			}
+		}
+#endif
+
+#endif
+	}
+}
+
+void IITPdatToEdf(const QString & guyName)
+{
+	def::ntFlag = true;
+
+	for(int fileNum : iitp::fileNums)
+	{
+		const QString ExpNamePre = def::iitpFolder + "/" +
+								   guyName + "/" +
+								   guyName + "_" + rn(fileNum, 2);
+		QString filePath;
+
 		/// dat to edf
 		filePath = ExpNamePre + ".dat";
 		if(QFile::exists(filePath))
@@ -690,136 +767,58 @@ void IITPpre(const QString & guyName)
 			filePath = ExpNamePre + "_emg.edf";
 			fil1.writeEdfFile(filePath);
 		}
+	}
+}
 
-#endif
 
-#if 0
-		/// filter EMG notch + goniogramms
-		filePath = ExpNamePre + "_emg.edf";
+void IITPfilter(const QString & guyName)
+{
+	def::ntFlag = true;
+
+	for(int fileNum : iitp::fileNums)
+	{
+		const QString ExpNamePre = def::iitpFolder + "/" +
+								   guyName + "/" +
+								   guyName + "_" + rn(fileNum, 2);
+		QString filePath;
+		edfFile fil;
+
+		filePath = ExpNamePre + "_sum_new.edf";
 		if(QFile::exists(filePath))
 		{
 			fil.readEdfFile(filePath);
 
-			/// notch
-			for(int fr = 50; fr <= 450; fr += 50)
+			/// notch EMG
+			auto emgChans = fil.findChannels(iitp::emgNamesPrefixes);
+			if(!emgChans.empty())
 			{
-				fil.refilter(fr - 5, fr + 5, {}, true);
-			}
-
-			/// filter goniogramms
-			std::vector<uint> chanList;
-			for(int i = 0; i < fil.getNs(); ++i)
-			{
-				for(auto joint : {"elbow", "wrist", "knee", "ankle"})
+				for(int fr = 50; fr <= 450; fr += 50)
 				{
-					if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive))
-					{
-						chanList.push_back(i);
-						break;
-					}
+					fil.refilter(fr - 5, fr + 5, {}, true, emgChans);
 				}
+//				fil.refilter(0., 8, {}, true, emgChans);
 			}
-			fil.refilter(0.1, 6, {}, false, chanList); /// magic constants
 
-			filePath = ExpNamePre + "_emg_f.edf";
+			/// gonios
+			auto gonioChans = fil.findChannels({"elbow", "wrist", "knee", "ankle"});
+			if(!gonioChans.empty())
+			{
+				fil.refilter(0.1, 6, {}, false, gonioChans); /// magic constants
+			}
+
+
+			/// filter EEG
+			auto eegChans = fil.findChannels("EEG ");
+			if(!eegChans.empty())
+			{
+				fil.refilter(45, 55, {}, true, eegChans);
+				fil.refilter(0.5, 70, {}, false, eegChans);
+			}
+
+
+			filePath = ExpNamePre + "_sum_new_f.edf";
 			fil.writeEdfFile(filePath);
 		}
-#endif
-//		continue;
-
-
-
-#if 0
-		/// divide EEG chans to prevent oversclaing amplitude
-		/// and filter EEG but not ECG
-		filePath = ExpNamePre + "_eeg.edf";
-		if(QFile::exists(filePath))
-		{
-			fil.readEdfFile(filePath);
-			std::vector<uint> chanNums(fil.getNs());
-			std::iota(std::begin(chanNums), std::end(chanNums), 0.);
-			fil.divideChannels(chanNums, 2.);
-			filePath = ExpNamePre + "_eeg_f.edf";
-			fil.refilter(45, 55, {}, true);
-			fil.refilter(0.5, 70, filePath);
-		}
-#endif
-
-
-#if 01
-		/// resample
-#if UP_DOWN_S
-		/// upsample EEGs
-		filePath = ExpNamePre + "_eeg.edf";
-//		filePath = ExpNamePre + "_eeg_f.edf";
-		if(QFile::exists(filePath))
-		{
-			fil.readEdfFile(filePath);
-			filePath = ExpNamePre + "_eeg_up.edf";
-//			filePath = ExpNamePre + "_eeg_f_up.edf";
-			fil.upsample(1000., filePath);
-		}
-#else
-		/// downsample EMGs
-//		filePath = ExpNamePre + "_emg.edf";
-		filePath = ExpNamePre + "_emg_f.edf";
-		if(QFile::exists(filePath))
-		{
-			fil.readEdfFile(filePath);
-//			filePath = ExpNamePre + "_emg_down.edf";
-			filePath = ExpNamePre + "_emg_f_down.edf";
-			fil.downsample(250., filePath);
-		}
-#endif
-
-#endif
-
-
-
-#if 01
-		/// vertcat eeg+emg
-		QString addName;
-#if DSP_LIB
-		addName = "_dsp";
-		  #else
-		addName = "_fft";
-#endif
-
-#if UP_DOWN_S
-		/// upsampled EEG
-//		filePath = ExpNamePre + "_eeg_up.edf";
-		filePath = ExpNamePre + "_eeg_f_up.edf";
-		if(QFile::exists(filePath))
-		{
-			fil.readEdfFile(filePath);
-//			filePath = ExpNamePre + "_emg.edf";
-			filePath = ExpNamePre + "_emg_f.edf";
-			if(QFile::exists(filePath))
-			{
-//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum.edf");
-				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
-//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_up.edf");
-			}
-		}
-#else
-		/// downsampled EMG
-//		filePath = ExpNamePre + "_eeg.edf";
-		filePath = ExpNamePre + "_eeg_f.edf";
-		if(QFile::exists(filePath))
-		{
-			fil.readEdfFile(filePath);
-//			filePath = ExpNamePre + "_emg_down.edf";
-			filePath = ExpNamePre + "_emg_f_down.edf";
-			if(QFile::exists(filePath))
-			{
-//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum.edf");
-				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
-//				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + addName + "_down.edf");
-			}
-		}
-#endif
-
-#endif
 	}
 }
 
@@ -1046,12 +1045,31 @@ void IITPremoveZchans(const QString & hauptDir)
 
 
 void IITPstagedToEnveloped(const QString & guyName,
+						   QString postfix,
 						   const QString & dirPath)
 {
 	/// replace EMG with its envelope
-	QString postfix = iitp::getPostfix(QDir(dirPath + "/" + guyName).entryList({"*_stag.edf"})[0]);
-	/// Test guy
-//	QString postfix = iitp::getPostfix(QDir(dirPath + "/" + guyName).entryList({"*_new.edf"})[0]);
+	if(postfix.isEmpty())
+	{
+		QStringList l = QDir(dirPath + "/" + guyName).entryList({"*_stag.edf"});
+		if(!l.isEmpty())
+		{
+			postfix = iitp::getPostfix(l[0]);
+		}
+	}
+	if(postfix.isEmpty())
+	{
+		QStringList l = QDir(dirPath + "/" + guyName).entryList({"*_new.edf"});
+		if(!l.isEmpty())
+		{
+			postfix = iitp::getPostfix(l[0]);
+		}
+	}
+	if(postfix.isEmpty())
+	{
+		std::cout << "IITPstagedToEnveloped: empty postfix" << std::endl;
+		return;
+	}
 
 	const QString direct = dirPath + "/" + guyName + "/";
 

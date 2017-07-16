@@ -50,14 +50,15 @@ void MainWindow::customFunc()
 	};
 
 //	for(QString guy : guyList)
-//	QString guy = "Test";
-	QString guy = "Galya_test_new";
+	QString guy = "Testt";
+//	QString guy = "Galya_test_new";
 	{
-		autos::IITPpre(guy);
-//		autos::IITPremoveZchans(guy, def::iitpSyncFolder);
+//		autos::IITPdatToEdf(guy);
+//		autos::IITPfilter(guy);
 //		autos::IITPremoveZchans(guy, def::iitpFolder);
+//		autos::IITPremoveZchans(guy, def::iitpSyncFolder);
 //		autos::IITPstaging(guy);
-//		autos::IITPstagedToEnveloped(guy);
+		autos::IITPstagedToEnveloped(guy, "_sum_new_f");
 //		autos::IITPtestCoh2(guy);
 //		autos::IITPtestCoh(guy);
 //		autos::IITPprocessStaged(guy);

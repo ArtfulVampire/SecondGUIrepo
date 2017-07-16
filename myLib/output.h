@@ -30,7 +30,6 @@ template QString nm(double in);
 
 inline QString rn(double in, int num) { return myLib::rightNumber(in, num); }
 
-
 FILE * fopen(QString filePath, const char *__modes);
 
 std::istream & operator>> (std::istream &is, QString & in);

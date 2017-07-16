@@ -64,8 +64,10 @@ void Xenia_repairTable(const QString & initPath,
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 
 
+void IITPconcat(const QString & guyName = "Ira");
+void IITPdatToEdf(const QString & guyName = "Ira");
+void IITPfilter(const QString & guyName = "Ira");
 
-void IITPpre(const QString & guyName = "Ira");
 void IITPpre2(const QString & guyName = "Ira");
 void IITPtestCoh(const QString & guyName = "Ira");
 void IITPtestCoh2(const QString & guyName = "Ira");
@@ -80,6 +82,7 @@ void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
 void IITPremoveZchans(const QString & guyName, const QString & dirPath = def::iitpSyncFolder);
 
 void IITPstagedToEnveloped(const QString & guyName,
+						   QString postfix = "_sum_new_f",
 						   const QString & dirPath = def::iitpSyncFolder);
 void IITPstaging(const QString & guyName,
 				 const QString & dirPath = def::iitpSyncFolder);
