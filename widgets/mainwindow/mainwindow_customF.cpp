@@ -29,10 +29,12 @@ void MainWindow::customFunc()
 //	autos::avTimesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_3_fin.edf", 3);
 //	exit(0);
 
-//	autos::successivePrecleanWinds("/media/Files/Data/FeedbackTest/DIA/winds/fromreal");
-//	exit(0);
 
-	return;
+	autos::Xenia_TBI(def::dataFolder + "/Temp");
+	exit(0);
+
+
+//	return;
 
 #if 01
 	/// IITP
@@ -234,7 +236,7 @@ void MainWindow::customFunc()
 //	repair::toLowerDir("/media/Files/Data/Xenia/14Mar/Norm_new_tmp", {});
 
 	return;
-	autos::Xenia_TBI();
+//	autos::Xenia_TBI();
 //	autos::EEG_MRI({"Kabanov"}, false);
 	exit(0);
 

@@ -151,7 +151,7 @@ void Xenia_repairTable(const QString & initPath,
 	fil.close();
 }
 
-void Xenia_TBI()
+void Xenia_TBI(const QString & tbi_path)
 {
 	/// TBI Xenia cut, process, tables
 	def::ntFlag = false;
@@ -160,15 +160,19 @@ void Xenia_TBI()
 //	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
 //						"_cry", "_fire", "_flower", "_wc"};
 
-//	QString tbi_path = def::XeniaFolder + "/11May";
-	QString tbi_path = def::GalyaFolder + "/20Jun2017";
 
-//	QStringList subdirs{"healthy", "moderate_TBI", "severe_TBI"};
-//	QStringList subdirs{"Norm_new", "TBI_new"};
-	QStringList subdirs{""};
 
-	subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-
+	QStringList subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+	if(subdirs.isEmpty())
+	{
+		subdirs = QStringList{""};
+	}
+	else
+	{
+		repair::toLatinDir(tbi_path, {});
+		repair::deleteSpacesFolders(tbi_path);
+		subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+	}
 
 
 #if 01
@@ -177,11 +181,10 @@ void Xenia_TBI()
 	{
 		QString workPath = tbi_path + "/" + subdir;
 
-//		repair::deleteSpacesFolders(workPath);
-//		repair::toLatinDir(workPath, {});
-//		repair::toLowerDir(workPath, {});
+		repair::toLatinDir(workPath, {});
+		repair::toLowerDir(workPath, {});
+		repair::deleteSpacesDir(workPath, {});
 
-		repair::deleteSpacesDir(workPath);
 		autos::GalyaCut(workPath, 8);
 		continue;
 
@@ -260,7 +263,7 @@ void Xenia_TBI()
 	}
 #endif
 
-#if 01
+#if 0
 	/// make tables by stimulus
 	for(QString subdir : subdirs)
 	{
@@ -275,7 +278,7 @@ void Xenia_TBI()
 #endif
 
 
-#if 01
+#if 0
 	/// make tables whole
 	for(QString subdir : subdirs)
 	{

@@ -146,7 +146,7 @@ void MainWindow::sliceWinds()
 	if(ui->succPrecleanCheckBox->isChecked())
 	{
 		/// save succMax each type
-		for(; succCounter != succMax; --it)
+		for(; (succCounter != succMax).max(); --it)
 		{
 			int locTyp = std::get<1>(*it);
 			if(succCounter[locTyp] < succMax)
