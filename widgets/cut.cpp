@@ -771,27 +771,28 @@ void Cut::findNextMark(int mark)
 	/// make on dataCutLocal
 	if(myFileType == fileType::edf)
 	{
-		auto it = std::begin(edfFil.getMarkArr());
+		const std::valarray<double> & markArr = dataCutLocal[edfFil.getMarkChan()];
+		auto it = std::begin(markArr);
 		if(mark > 0)
 		{
-			it = std::find(std::begin(edfFil.getMarkArr()) + leftDrawLimit + 150,
-						   std::end(edfFil.getMarkArr()),
+			it = std::find(std::begin(markArr) + leftDrawLimit + 150,
+						   std::end(markArr),
 						   mark);
 		}
 		else
 		{
-			it = std::find_if(std::begin(edfFil.getMarkArr()) + leftDrawLimit + 150,
-							  std::end(edfFil.getMarkArr()),
+			it = std::find_if(std::begin(markArr) + leftDrawLimit + 150,
+							  std::end(markArr),
 							  [](double in){ return in != 0.; });
 		}
 
-		if(it == std::end(edfFil.getMarkArr()))
+		if(it == std::end(markArr))
 		{
 			std::cout << "findNextMark: marker not found" << std::endl;
 			return;
 		}
 
-		int index = std::distance(std::begin(edfFil.getMarkArr()), it);
+		int index = std::distance(std::begin(markArr), it);
 		ui->paintStartDoubleSpinBox->setValue(std::max(0., double(index) / edfFil.getFreq() - 0.5));
 //		ui->leftLimitSpinBox->setValue(index);
 		showDerivatives();
@@ -807,8 +808,9 @@ void Cut::findPrevMark(double mark)
 	/// make on dataCutLocal
 	if(myFileType == fileType::edf)
 	{
-		const auto beg = std::begin(edfFil.getMarkArr());
-		auto it = std::begin(edfFil.getMarkArr()) + leftDrawLimit;
+		const std::valarray<double> & markArr = dataCutLocal[edfFil.getMarkChan()];
+		const auto beg = std::begin(markArr);
+		auto it = std::begin(markArr) + leftDrawLimit;
 		if(mark > 0)
 		{
 			while (it != beg)
