@@ -1000,7 +1000,6 @@ exit(0);
 //        sliceAll();
 //        ns = 19;
 //        ui->reduceChannelsLineEdit->setText("1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
-//        constructEDFSlot();
         return;
 
         QDir * tDir = new QDir();

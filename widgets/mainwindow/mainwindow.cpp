@@ -128,9 +128,7 @@ MainWindow::MainWindow() :
     ui->matiPieceLengthSpinBox->setValue(16);
     ui->matiCheckBox->setChecked(def::matiFlag);
     ui->markerBinTimeSpinBox->setMaximum(250*60*60*2);   //2 hours
-    ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); //2 hours
-
-    ui->roundOffsetCheckBox->setChecked(true); // for mati constructEDF
+	ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); //2 hours
 
 #if SHOW_MATI_WIDGETS
 	/// mati
@@ -183,8 +181,6 @@ MainWindow::MainWindow() :
 
 	/// process edf
 	QObject::connect(ui->icaPushButton, SIGNAL(clicked()), this, SLOT(ICA()));
-	/// to deprecate
-	QObject::connect(ui->constructEdfButton, SIGNAL(clicked()), this, SLOT(constructEDFSlot()));
 
 	/// edit edf
 	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(highlighted(int)),
@@ -194,7 +190,11 @@ MainWindow::MainWindow() :
 
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));
+
+#if 1
+	ui->reduceChannesPushButton->hide();
 	QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
+#endif
     QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
     QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
     QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));

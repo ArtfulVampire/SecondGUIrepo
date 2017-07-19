@@ -54,8 +54,7 @@ public slots:
     void drawDirSlot();
     void setEdfFileSlot();
 	void cleanDirs();
-    void drawMapsSlot();
-    void constructEDFSlot();
+	void drawMapsSlot();
 	void reduceChannelsSlot();
     void reduceChannelsEDFSlot();
 	void cleanEdfFromEyesSlot();
@@ -105,9 +104,6 @@ public:
 						 const QString & newPath);
 	void reduceChannelsEDF(const QString & newFilePath);
 
-	/// to deprecate
-	void constructEDF(const QString & newPath,
-					  const QStringList & nameFilters = QStringList());
 	/// to deprecate
     void concatenateEDFs(QString inPath1, QString inPath2, QString outPath);
 	/// to deprecate
