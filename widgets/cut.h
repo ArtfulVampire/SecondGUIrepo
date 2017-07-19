@@ -142,7 +142,7 @@ private:
 	/// copy, split, paste, undo
 	matrix copyData{};
 	std::vector<matrix> undoData;
-	std::function<void(void)> undoAction;
+//	std::function<void(void)> undoAction;
 	std::vector<std::function<void(void)>> undos;
 
 

@@ -299,13 +299,6 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QPushButton" name="reduceChannelsNewEDFPushButton">
-       <property name="text">
-        <string>Reduce -&gt; New EDF</string>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="0">
       <layout class="QVBoxLayout" name="verticalLayout_17">
        <item>
@@ -389,6 +382,27 @@
           </widget>
          </item>
         </layout>
+       </item>
+      </layout>
+     </item>
+     <item row="2" column="0">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QPushButton" name="reduceChannesPushButton">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Reduce NS in reals</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="reduceChannelsNewEDFPushButton">
+         <property name="text">
+          <string>Reduce -&gt; New EDF</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -690,22 +704,6 @@
       <widget class="QSpinBox" name="numComponentsSpinBox"/>
      </item>
     </layout>
-   </widget>
-   <widget class="QPushButton" name="reduceChannesPushButton">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>290</x>
-      <y>580</y>
-      <width>110</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Reduce in reals</string>
-    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

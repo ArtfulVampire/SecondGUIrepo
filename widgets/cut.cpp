@@ -305,6 +305,11 @@ void Cut::browseSlot()
 							 std::end(filesList),
 							 myLib::getFileName(helpString));
 
+
+	undoData.clear();
+	undos.clear();
+	copyData.clear();
+
     createImage(helpString);
 }
 
@@ -651,7 +656,7 @@ void Cut::paste(int start, const matrix & inData, bool addUndo)
 
 	if(addUndo)
 	{
-		undoAction = [start, cls, this]()
+		auto undoAction = [start, cls, this]()
 		{
 			this->split(start, start + cls, false);
 		};
@@ -666,6 +671,7 @@ void Cut::paste(int start, const matrix & inData, bool addUndo)
 
 void Cut::pasteSlot()
 {
+	if(copyData.isEmpty()) return;
 	this->paste(ui->leftLimitSpinBox->value(), copyData);
 }
 
@@ -674,7 +680,7 @@ void Cut::next()
     QString helpString;
 
 	auto iterBackup = fileListIter;
-	fileListIter++;
+	++fileListIter;
 	for(; fileListIter != std::end(filesList); ++fileListIter)
 	{
 		if((*fileListIter).contains(QRegExp(R"({_num|_000|_sht})")))
@@ -695,7 +701,7 @@ void Cut::prev()
     QString helpString;
 
 	auto iterBackup = fileListIter;
-	fileListIter--;
+	--fileListIter;
 	for(; fileListIter != std::begin(filesList); --fileListIter)
 	{
 		if((*fileListIter).contains(QRegExp(R"({_num|_000|_sht})")))
@@ -1023,7 +1029,7 @@ void Cut::setMarker(int inVal, bool left)
 		else		{ offset = ui->rightLimitSpinBox->value(); }
 
 		int val = dataCutLocal[num][offset];
-		undoAction = [num, offset, val, this](){ this->dataCutLocal[num][offset] = val; };
+		auto undoAction = [num, offset, val, this](){ this->dataCutLocal[num][offset] = val; };
 		undos.push_back(undoAction);
 
 		dataCutLocal[num][offset] = inVal;
@@ -1037,7 +1043,7 @@ void Cut::setMarker(int inVal, bool left)
 		else		{ offset = ui->rightLimitSpinBox->value(); }
 
 		int val = dataCutLocal[num][offset];
-		undoAction = [num, offset, val, this](){ dataCutLocal[num][offset] = val; };
+		auto undoAction = [num, offset, val, this](){ dataCutLocal[num][offset] = val; };
 		undos.push_back(undoAction);
 
 		dataCutLocal[num][offset] = inVal;
@@ -1384,7 +1390,7 @@ void Cut::zero(int start, int end)
 	}
 
 	undoData.push_back(dataCutLocal.subCols(start, end));
-	undoAction = [start, this]()
+	auto undoAction = [start, this]()
 	{
 		for(int k = 0; k < dataCutLocal.rows() - 1; ++k) /// don't affect markers
 		{
@@ -1441,7 +1447,7 @@ void Cut::split(int start, int end, bool addUndo)
 	if(addUndo)
 	{
 		undoData.push_back(dataCutLocal.subCols(start, end));
-		undoAction = [start, this]()
+		auto undoAction = [start, this]()
 		{
 			this->paste(start, undoData.back(), false);
 			undoData.pop_back();

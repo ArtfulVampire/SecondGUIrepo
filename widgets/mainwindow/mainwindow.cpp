@@ -144,6 +144,7 @@ MainWindow::MainWindow() :
 //	QObject::connect(ui->markerBin1LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
 	QObject::connect(ui->markerBin1LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
 
+	globalEdf.setMatiFlag(ui->matiCheckBox->isChecked());
 	QObject::connect(ui->markerSaveEdfPushButton, SIGNAL(clicked()), this, SLOT(markerSaveEdf()));
 	QObject::connect(ui->matiCheckBox, &QCheckBox::stateChanged,
 					 [this](int a) { this->globalEdf.setMatiFlag(a); });
@@ -199,9 +200,6 @@ MainWindow::MainWindow() :
     QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
     QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
 
-
-
-    globalEdf.setMatiFlag(ui->matiCheckBox->isChecked());
     customFunc();
 }
 
