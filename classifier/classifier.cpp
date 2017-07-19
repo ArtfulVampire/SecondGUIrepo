@@ -237,8 +237,10 @@ void Classifier::leaveOneOutClassification()
 {
 	const auto & dataMatrix = this->myClassData->getData();
 	std::vector<uint> learnIndices;
+	std::cout << "LOO: max = " << dataMatrix.rows() << std::endl;
 	for(uint i = 0; i < dataMatrix.rows(); ++i)
 	{
+		if((i + 1) % 10 == 0) { std::cout << i + 1 << " "; std::cout.flush(); }
 
 		learnIndices.clear();
 		learnIndices.resize(dataMatrix.rows() - 1);
@@ -297,19 +299,23 @@ void Classifier::crossClassification(int numOfPairs, int fold)
 		arr[ types[i] ].push_back(i);
 	}
 
+	std::cout << "Cross-Class: max = " << numOfPairs << std::endl;
 	for(int i = 0; i < numOfPairs; ++i)
 	{
-		// mix arr for one "pair"-iteration
+		std::cout << i + 1 << ":  "; std::cout.flush();
+
 		for(int i = 0; i < def::numOfClasses(); ++i)
 		{
 			smLib::mix(arr[i]);
 		}
 		for(int numFold = 0; numFold < fold; ++numFold)
 		{
+			std::cout << numFold + 1 << " ";  std::cout.flush();
 			auto sets = this->makeIndicesSetsCross(arr, fold, numFold); // on const arr
 			this->learn(sets.first);
 			this->test(sets.second);
 		}
+		std::cout << std::endl;
 	}
 }
 

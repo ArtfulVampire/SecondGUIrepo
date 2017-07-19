@@ -545,8 +545,10 @@ double ANN::adjustLearnRate()
 
 	} while (counter < 20);
 
-	std::cout << "ANN::adjustLearnRate: lrate = " << res << "\t"
-			  << "epoch = " << epoch << std::endl;
+	std::cout << "ANN::adjustLearnRate: lrate = " << res
+			  << "\t" << "epoch = " << epoch
+			  << "\t" << "numIters = " << counter
+			  << std::endl;
 
     return res;
 }

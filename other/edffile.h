@@ -318,6 +318,8 @@ public:
                                    const matrix & matrixW,
                                    const QString & newEdfPath);
     static double checkDdr(const QString & inPath);
+	static bool isRerefChannel(const QString & inLabel);
+
 
     std::list<std::valarray<double>> getDataAsList() const;
     void setDataFromList(const std::list<std::valarray<double>> & inList);

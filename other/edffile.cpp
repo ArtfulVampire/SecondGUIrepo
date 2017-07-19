@@ -1787,7 +1787,15 @@ double edfFile::checkDdr(const QString & inPath)
     fclose(tmp);
 
     return localDdr;
+}
 
+bool edfFile::isRerefChannel(const QString & inLabel)
+{
+	for(QString str: {"A1-A2", "A2-A1", "A1-N", "A2-N"})
+	{
+		if(inLabel.contains(str)) return true;
+	}
+	return false;
 }
 
 edfFile edfFile::repairDataScaling(int denominator) const

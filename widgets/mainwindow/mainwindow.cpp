@@ -58,23 +58,7 @@ MainWindow::MainWindow() :
 
     int helpInt = 0;
     QVariant var;
-    /*
-    ui->reduceChannelsComboBox->addItem("old En->real-time");   //encephalan for real time
-    var = QVariant("19 18 16 14 11 9 6 4 2 1 17 13 12 8 7 3 15 10 5 24");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    ui->reduceChannelsComboBox->addItem("En-19");   //encephalan w/o veget channels
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    ui->reduceChannelsComboBox->addItem("LN->En");
-    var = QVariant("1 2 11 3 17 4 12 13 5 18 6 14 15 7 19 8 16 9 10");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    ui->reduceChannelsComboBox->addItem("Boris Nt->En");
-    var = QVariant("1 3 7 4 5 6 8 25 14 15 16 26 27 20 21 22 28 29 31");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-*/
+#if 0
 
     //0
     ui->reduceChannelsComboBox->addItem("MichaelBak");
@@ -176,7 +160,12 @@ MainWindow::MainWindow() :
 //    ui->reduceChannelsComboBox->setCurrentText("MyCurrent");
 	ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
     ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(ui->reduceChannelsComboBox->currentIndex()).toString());
-
+#else
+	ui->reduceChannelsComboBox->addItem("EEG,reref,EOG,mark");
+	ui->reduceChannelsComboBox->addItem("EEG,reref,mark");
+	ui->reduceChannelsComboBox->addItem("EEG,EOG,mark");
+	ui->reduceChannelsComboBox->addItem("EEG,mark");
+#endif
 
 	/// in seconds !!!!!
     ui->timeShiftSpinBox->setMinimum(0.1);
@@ -309,6 +298,7 @@ MainWindow::MainWindow() :
 					 this, SLOT(changeRedNsLine(int)));
 	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(currentIndexChanged(int)),
 					 this, SLOT(changeRedNsLine(int)));
+
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));
 	QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
@@ -338,7 +328,51 @@ void QWidget::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::changeRedNsLine(int a)
 {
+	if(!QFile::exists(ui->filePathLineEdit->text()))
+	{
+		std::cout << "changeRedNsLine: file doesn't exist" << std::endl;
+		return;
+	}
+	if(globalEdf.isEmpty())
+	{
+		this->readData();
+	}
+
+#if 0
 	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
+#else
+	QString str = ui->reduceChannelsComboBox->itemText(a);
+	std::cout << str << std::endl;
+	QString outStr;
+	bool eeg = str.contains("EEG");
+	bool reref = str.contains("reref");
+	bool emg = str.contains("EMG");
+	bool eog = str.contains("EOG");
+	bool mark = str.contains("mark");
+	for(int i = 0; i < globalEdf.getNs(); ++i)
+	{
+		const QString & lab = globalEdf.getLabels(i);
+
+		if(lab.contains("EEG"))
+		{
+			if(
+			   !(
+				   (eeg && !edfFile::isRerefChannel(lab))
+				   || (reref && edfFile::isRerefChannel(lab))
+				)
+			   )
+			{
+				continue;
+			}
+		}
+		else if(lab.contains("EMG") && !emg) { continue; }
+		else if(lab.contains("EOG") && !eog) { continue; }
+		else if(lab.contains("Marker") && !mark) { continue; }
+
+		outStr += nm(i + 1) + " ";
+	}
+	ui->reduceChannelsLineEdit->setText(outStr);
+#endif
 }
 
 void MainWindow::showCountSpectra()

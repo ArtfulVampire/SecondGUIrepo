@@ -3,7 +3,7 @@
 namespace smLib
 {
 
-template <typename Cont>
+template <class Cont>
 Cont range(int beg, int en)
 {
 	if(en <= beg) return Cont{};
@@ -18,7 +18,7 @@ template std::vector<double> range(int beg, int en);
 template std::valarray<int> range(int beg, int en);
 template std::valarray<double> range(int beg, int en);
 
-template <typename Cont>
+template <class Cont>
 Cont unite(const std::vector<Cont> & ranges)
 {
 	int siz = 0;
