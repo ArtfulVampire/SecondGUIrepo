@@ -66,7 +66,7 @@ void toLatinDir(const QString & dirPath, const QStringList & filters)
     }
     else
     {
-        leest = QDir(dirPath).entryList();
+		leest = QDir(dirPath).entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
     }
 
     for(const QString & str : leest)

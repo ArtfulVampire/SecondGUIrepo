@@ -29,12 +29,10 @@ void MainWindow::customFunc()
 //	autos::avTimesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_3_fin.edf", 3);
 //	exit(0);
 
+//	autos::Xenia_TBI(def::dataFolder + "/Temp");
+//	exit(0);
 
-	autos::Xenia_TBI(def::dataFolder + "/Temp");
-	exit(0);
-
-
-//	return;
+	return;
 
 #if 01
 	/// IITP
