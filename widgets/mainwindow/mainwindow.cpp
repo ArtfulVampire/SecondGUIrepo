@@ -23,9 +23,7 @@ MainWindow::MainWindow() :
 
     def::dir->cd(QDir::root().absolutePath());
 
-    QString helpString;
 
-    // what with deletion?
 //    QButtonGroup * group1;
 	QButtonGroup * group2;
 //	group1 = new QButtonGroup(this);
@@ -46,8 +44,8 @@ MainWindow::MainWindow() :
 	ui->drawDirBox->addItem("winds/SpectraSmooth"); /// tcpClient test
 	ui->drawDirBox->addItem("winds/fromreal");
 
-    /// set fileMarks lineEdit
-    helpString.clear();
+	/// set fileMarks lineEdit
+	QString helpString;
     for(const QString & fileMark : def::fileMarkers)
     {
         helpString += fileMark + "; ";
@@ -55,117 +53,12 @@ MainWindow::MainWindow() :
     helpString.resize(helpString.size() - 2); // remove the last "; "
     ui->fileMarkersLineEdit->setText(helpString);
 
-
-    int helpInt = 0;
-    QVariant var;
-#if 0
-
-    //0
-    ui->reduceChannelsComboBox->addItem("MichaelBak");
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 23 24 31");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //1
-    ui->reduceChannelsComboBox->addItem("MichaelBakNew");
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 23 24 27");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //2
-    ui->reduceChannelsComboBox->addItem("MichaelBakNewNoEyes");
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 27");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //3
-    ui->reduceChannelsComboBox->addItem("MyCurrent");
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22 23 24");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //4
-    ui->reduceChannelsComboBox->addItem("MyCurrentNoEyes");
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 24");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //5
-    ui->reduceChannelsComboBox->addItem("NewEnceph");
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22-23-20 24 25");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //6
-    ui->reduceChannelsComboBox->addItem("NewEncephNoEyes");
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 25");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //7
-    ui->reduceChannelsComboBox->addItem("Mati");
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22 23 28");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //8
-    ui->reduceChannelsComboBox->addItem("MatiNoEyes");
-    var = QVariant("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //9
-    ui->reduceChannelsComboBox->addItem("MatiAmod");
-    helpString.clear();
-    for(int i = 0; i < 41; ++i)
-    {
-		helpString += nm(i+1) + " ";
-    }
-    var = QVariant(helpString);
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //10
-    ui->reduceChannelsComboBox->addItem("MatiAmodNoEyes");
-    helpString.clear();
-    for(int i = 0; i < 41; ++i)
-    {
-		helpString += nm(i+1) + " ";
-    }
-    helpString.remove(" 22 23");
-    var = QVariant(helpString);
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //11
-    ui->reduceChannelsComboBox->addItem("20");
-    helpString.clear();
-    for(int i = 0; i < 20; ++i)
-    {
-		helpString += nm(i+1) + " ";
-    }
-    var = QVariant(helpString);
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //12
-    ui->reduceChannelsComboBox->addItem("22");
-    helpString.clear();
-    for(int i = 0; i < 22; ++i)
-    {
-		helpString += nm(i+1) + " ";
-    }
-    var = QVariant(helpString);
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-    //13
-    ui->reduceChannelsComboBox->addItem("22NoEyes");
-    helpString.clear();
-    for(int i = 0; i < 19; ++i)
-    {
-		helpString += nm(i+1) + " ";
-    }
-    helpString += "22";
-    var = QVariant(helpString);
-    ui->reduceChannelsComboBox->setItemData(helpInt++, var);
-
-//    ui->reduceChannelsComboBox->setCurrentText("MyCurrent");
-	ui->reduceChannelsComboBox->setCurrentText("MyCurrentNoEyes");
-    ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(ui->reduceChannelsComboBox->currentIndex()).toString());
-#else
 	ui->reduceChannelsComboBox->addItem("EEG,reref,EOG,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,reref,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,EOG,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,mark");
-#endif
+
+	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
 
 	/// in seconds !!!!!
     ui->timeShiftSpinBox->setMinimum(0.1);
@@ -540,11 +433,8 @@ void MainWindow::setEdfFile(const QString & filePath)
 //	}
 
 
-    helpString = "EDF file read successfull";
-    ui->textEdit->append(helpString);
-
-    helpString="ns equals to ";
-	helpString.append(nm(def::ns));
+	helpString = R"(EDF file read successfull"
+				 "ns equals to )" + nm(def::ns);
     ui->textEdit->append(helpString);
 
 }
@@ -565,9 +455,12 @@ void MainWindow::readData()
     }
 	globalEdf.readEdfFile(helpString);
 
-	helpString = "data have been read\n";
-	helpString += "ns equals to " + nm(def::ns);
+	helpString = R"(data have been read"
+				 "ns equals to )" + nm(def::ns);
     ui->textEdit->append(helpString);
+
+	ui->reduceChannelsComboBox->currentIndexChanged(ui->reduceChannelsComboBox->currentIndex());
+
 
     ui->markerSecTimeDoubleSpinBox->setMaximum(globalEdf.getDataLen() / def::freq);
     ui->markerBinTimeSpinBox->setMaximum(globalEdf.getDataLen());
@@ -701,7 +594,8 @@ void MainWindow::drawReals()
     }
     ui->progressBar->setValue(0);
 
-	helpString = QString("signals are drawn\n") + "ns equals to " + nm(def::ns);
+	helpString = R"(signals are drawn"
+				 "ns equals to )" + nm(def::ns);
     ui->textEdit->append(helpString);
 
     stopFlag = 0;
@@ -748,8 +642,8 @@ void MainWindow::cleanDirs()
 			}
 		}
 	}
-	helpString = "dirs cleaned\n";
-	helpString += "ns equals to " + nm(def::ns);
+	helpString = R"(dirs cleaned"
+				 "ns equals to )" + nm(def::ns);
     ui->textEdit->append(helpString);
 }
 
