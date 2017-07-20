@@ -8,6 +8,10 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/wavelet.h>
 
+#include <widgets/net.h>
+
+#include <memory>
+
 using namespace myOut;
 
 namespace autos
@@ -2837,35 +2841,50 @@ void avTime(const QString & realsDir)
 	std::cout << "avTime: finished" << std::endl;
 }
 
+void successiveNetPrecleanWinds(const QString & windsPath)
+{
+	Net * ann = new Net();
+	ann->loadData(windsPath, {"*.psd"});
+	ann->setClassifier(ClassifierType::ANN);
+	ann->successivePreclean(windsPath, {});
+	delete ann;
+}
+
 void successivePrecleanWinds(const QString & windsPath)
 {
 	QStringList leest;
 	myLib::makeFullFileList(windsPath, leest, { def::plainDataExtension });
 
-	std::cout << "clean first 2 winds" << std::endl;
-	for(const QString & str : leest)
-	{
-		if(str.contains(QRegExp("\\.0[0-1]\\."))) /// change to 0-x for x first winds to delete
-		{
-			QFile::remove(windsPath + "/" + str);
-		}
-	}
+	/// moved to sliceWinds()
+//	std::cout << "clean first 2 winds" << std::endl;
+//	for(const QString & str : leest)
+//	{
+//		if(str.contains(QRegExp("\\.0[0-1]\\."))) /// change to 0-x for x first winds to delete
+//		{
+//			QFile::remove(windsPath + "/" + str);
+//		}
+//	}
 
-	std::cout << "clean by learnSetStay * 2" << std::endl;
-	std::vector<QStringList> leest2;
-	myLib::makeFileLists(windsPath, leest2);
+	/// moved to sliceWinds()
+//	std::cout << "clean by learnSetStay * 2" << std::endl;
+//	std::vector<QStringList> leest2;
+//	myLib::makeFileLists(windsPath, leest2);
 
-	for(int j = 0; j < leest2.size(); ++j)
-	{
-		auto it = std::begin(leest2[j]);
+//	for(int j = 0; j < leest2.size(); ++j)
+//	{
+//		auto it = std::begin(leest2[j]);
 
-		for(int i = 0;
-			i < leest2[j].size() - suc::learnSetStay * 2.5; /// magic const generality
-			++i, ++it)
-		{
-			QFile::remove(windsPath + "/" + (*it));
-		}
-	}
+//		for(int i = 0;
+//			i < leest2[j].size() - suc::learnSetStay * 2.5; /// magic const generality
+//			++i, ++it)
+//		{
+//			QFile::remove(windsPath + "/" + (*it));
+//		}
+//	}
+
+
+
+
 }
 
 void clustering()

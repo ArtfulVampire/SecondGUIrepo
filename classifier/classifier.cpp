@@ -64,10 +64,16 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 std::pair<uint, double> Classifier::classifyDatum(uint vecNum)
 {
 	this->classifyDatum1(vecNum);
-	confusionMatrix[myClassData->getTypes()[vecNum]][myLib::indexOfMax(outputLayer)] += 1.;
-	printResult(typeString + ".txt", myLib::indexOfMax(outputLayer), vecNum);
+	const int outClass = myLib::indexOfMax(outputLayer);
+
+	if(this->testCleanFlag) /// here or inside deleteFile ?
+	{
+		this->deleteFile(vecNum, outClass); /// delete if wrong class
+	}
+	confusionMatrix[myClassData->getTypes()[vecNum]][outClass] += 1.;
+	printResult(typeString + ".txt", outClass, vecNum);
 	smLib::normalize(outputLayer); /// for clLib::countError
-	return std::make_pair(myLib::indexOfMax(outputLayer),
+	return std::make_pair(outClass,
 						  clLib::countError(outputLayer, myClassData->getTypes()[vecNum]));
 }
 

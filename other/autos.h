@@ -116,6 +116,7 @@ void avTimesNew(const QString & edfPath, int numSession);
 
 
 void successivePrecleanWinds(const QString & windsPath);
+void successiveNetPrecleanWinds(const QString & windsPath);
 
 void clustering();
 }

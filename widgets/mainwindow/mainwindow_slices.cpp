@@ -11,7 +11,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 {
 	QTime myTime;
 	myTime.start();
-	readData();
+//	readData();
 	if(ui->sliceCheckBox->isChecked())
 	{
 		if(ui->matiCheckBox->isChecked())
@@ -57,9 +57,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	}
 	ui->progressBar->setValue(0);
 
-	QString helpString = "data sliced\n";
-	helpString += "ns equals to ";
-	helpString += nm(def::ns);
+	QString helpString = "data sliced\nns equals to " + nm(def::ns);
 	ui->textEdit->append(helpString);
 
 	std::cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
@@ -86,8 +84,6 @@ void MainWindow::sliceWinds()
 	/// start, typ, filepath
 	std::vector<std::tuple<int, int, QString>> forSave;
 
-	const int succMax = suc::learnSetStay * 1.3;
-	std::valarray<int> succCounter(3, 1);
 
 	int typ = -1;
 
@@ -95,8 +91,11 @@ void MainWindow::sliceWinds()
 	if(marks[sta - 1] == 241.) { typ = 0; marker = "241"; }
 	else if(marks[sta - 1] == 247.) { typ = 1; marker = "247"; }
 
+	int numSkipStartWinds = 2;
 	int windowCounter = 0;
 	int numReal = 1;
+
+
 
 	forSave.reserve(fil.getDataLen() / timeShift);
 	for(uint i = sta; i < fil.getDataLen() - wndLength; i += timeShift)
@@ -116,9 +115,9 @@ void MainWindow::sliceWinds()
 
 			/// jump to the beginning of a real/rest
 			i = i + myLib::indexOfVal(mark, a.second) + 1
-				- timeShift		/// comment for not taking the first window
+				+ timeShift * (numSkipStartWinds - 1)
 				;
-			windowCounter = 0;	/// = 1 if not taking the first window
+			windowCounter = numSkipStartWinds;	/// = 1 if not taking the first window
 		}
 		else
 		{
@@ -142,11 +141,16 @@ void MainWindow::sliceWinds()
 	auto it = std::end(forSave); --it;
 	while(std::get<1>(*it) == 2) { --it; } /// don't see last rest
 
+
+
 	/// save all or some last
 	if(ui->succPrecleanCheckBox->isChecked())
 	{
+		const int succMax = suc::learnSetStay * 2;
+		std::valarray<int> succCounter(3); succCounter = 1; /// 3 - numOfClasses
+
 		/// save succMax each type
-		for(; (succCounter != succMax).max(); --it)
+		for(; (succCounter != succMax).max() && it != std::begin(forSave); --it)
 		{
 			int locTyp = std::get<1>(*it);
 			if(succCounter[locTyp] < succMax)

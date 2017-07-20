@@ -32,6 +32,13 @@ void MainWindow::customFunc()
 //	autos::Xenia_TBI(def::dataFolder + "/Temp");
 //	exit(0);
 
+//	exit(0);
+	setEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_1_fin.edf");
+	autos::successiveNetPrecleanWinds("/media/Files/Data/FeedbackFinal/Ilyin/SpectraSmooth/winds");
+
+
+	exit(0);
+
 	return;
 
 #if 01
@@ -170,7 +177,7 @@ void MainWindow::customFunc()
 			std::cout << fileName << std::endl;
 			ann->loadDataXenia(pewDir, fileName);
 			ann->setClassifier(ClassifierType::ANN);
-			ann->setKnnNumSlot(4);Колокорльцев
+			ann->setKnnNumSlot(4);
 			ann->setMode("N");
 			res << fileName << "\t"
 				<< ann->autoClassification().first << "\r\n";

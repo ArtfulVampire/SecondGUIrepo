@@ -91,11 +91,6 @@ QString rerefChannel(const QString & initialName,
 					 const QString & earsChan = "20",
 					 const QString & groundChan = "21",
 					 const std::vector<QString> & sign = {"-", "+"});
-void splitZeros(matrix & inData,
-				int inLength,
-				int & outLength,
-				const QString & logFile = QString(),
-				const QString & dataName = def::ExpName);
 void dealWithEyes(matrix & inData,
 				  const int dimension);
 

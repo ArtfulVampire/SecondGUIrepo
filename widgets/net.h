@@ -85,7 +85,8 @@ public:
     /// NEED CHECK
     void successiveProcessing();
 	Classifier::avType successiveByEDF(const QString & edfPath1, const QString & edfPath2);
-    void successivePreclean(const QString & spectraPath);
+	void successivePreclean(const QString & spectraPath,
+							const QStringList & filters = {"*_train*"});
 
     /// setsgets
     void setErrCrit(double in);
@@ -94,8 +95,8 @@ public:
     void setNumOfPairs(int num);
     void setFold(int in);
     void setAutoProcessingFlag(bool);
-    void setMode(const QString & in = "N-fold");
-    void setSource(const QString & in = "reals");
+	void setMode(const QString & in = "N-fold"); /// make myMode
+	void setSource(const QString & in = "reals"); /// make Source
     void setClassifier(const QString &);
     void setClassifier(ClassifierType);
 	const Classifier & getClassifier() const { return *myClassifier; }
@@ -104,7 +105,7 @@ public:
 	/// data
     void loadData(const QString & spectraPath = def::dir->absolutePath()
 												+ "/SpectraSmooth",
-				  const QStringList & filters = {});
+				  const QStringList & filters = {"*.psd"});
 	void loadDataUCI(const QString & setName);
 	void loadDataXenia(const QString & filesPath = def::dataFolder + "/Xenia_tables",
 					   const QString & type = "bd_new");

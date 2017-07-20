@@ -185,34 +185,34 @@ void Net::successiveProcessing()
     myClassifier->averageClassification();
 }
 
-void Net::successivePreclean(const QString & spectraPath)
+void Net::successivePreclean(const QString & spectraPath, const QStringList & filters)
 {
     QStringList leest;
-	myLib::makeFullFileList(spectraPath, leest, {"*train*"});
-	std::cout << "clean first 2 winds" << std::endl;
+	myLib::makeFullFileList(spectraPath, leest, filters);
 
-    for(const QString & str : leest)
-    {
-		if(str.contains(QRegExp("\\.0[0-1]$"))) /// change to 0-x for x first winds to delete
-        {
-			QFile::remove(spectraPath + "/" + str);
-        }
-    }
+//	std::cout << "clean first 2 winds" << std::endl;
+//	for(const QString & str : leest)
+//	{
+//		if(str.contains(QRegExp("\\.0[0-1]\\."))) /// change to 0-x for x first winds to delete
+//		{
+//			QFile::remove(spectraPath + "/" + str);
+//		}
+//	}
 
-	std::cout << "clean by learnSetStay" << std::endl;
-    std::vector<QStringList> leest2;
-	myLib::makeFileLists(spectraPath, leest2);
+//	std::cout << "clean by learnSetStay" << std::endl;
+//	std::vector<QStringList> leest2;
+//	myLib::makeFileLists(spectraPath, leest2);
 
-	for(int j = 0; j < leest2.size(); ++j)
-    {
-		auto it = std::begin(leest2[j]);
-        for(int i = 0;
-			i < leest2[j].size() - suc::learnSetStay * 1.3; /// magic const generality
-            ++i, ++it)
-        {
-			QFile::remove(spectraPath + "/" + (*it));
-        }
-    }
+//	for(int j = 0; j < leest2.size(); ++j)
+//	{
+//		auto it = std::begin(leest2[j]);
+//		for(int i = 0;
+//			i < leest2[j].size() - suc::learnSetStay * 2; /// magic const generality
+//			++i, ++it)
+//		{
+//			QFile::remove(spectraPath + "/" + (*it));
+//		}
+//	}
     Source = source::winds;
     Mode = myMode::N_fold;
 
@@ -221,10 +221,9 @@ void Net::successivePreclean(const QString & spectraPath)
 	std::cout << "N-fold cleaning" << std::endl;
 
     myClassifier->setTestCleanFlag(true);
-    for(int i = 0; i < 0; ++i)
+	for(int i = 0; i < 5; ++i)
     {
-		autoClassification(spectraPath);
-        if(myClassifier->averageClassification().first == 100.) break;
+		if(autoClassification(spectraPath).first == 100.) break;
     }
     myClassifier->setTestCleanFlag(false);
 }

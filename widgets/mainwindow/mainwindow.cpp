@@ -407,34 +407,12 @@ void MainWindow::setEdfFile(const QString & filePath)
 //	def::dir->mkdir("amod");
 //	def::dir->mkdir("auxEdfs");
 
-//	def::dir->mkdir("Signals/before");
-//	def::dir->mkdir("Signals/after");
-//	def::dir->mkdir("Signals/other");
-//	def::dir->mkdir("Signals/winds/after");
-//	def::dir->mkdir("Signals/winds/before");
-//	def::dir->mkdir("Signals/winds/other");
-//	def::dir->mkdir("SignalsCut");
-//	def::dir->mkdir("SignalsCut/before");
-//	def::dir->mkdir("SignalsCut/after");
-//	def::dir->mkdir("SpectraSmooth/Bayes");
-//	def::dir->mkdir("SpectraSmooth/PCA");
-//	def::dir->mkdir("SpectraSmooth/Clean");
-//	def::dir->mkdir("cut");
-
-//	def::dir->mkdir("visualisation");
-//	def::dir->mkdir("visualisation/video");
-//	def::dir->mkdir("visualisation/wavelets");
-//	for(int i = 0; i < 19; ++i)
-//	{
-//		helpString = "visualisation/wavelets/";
-//		def::dir->mkdir(helpString.append(nm(i)));
-//	}
+	readData();
 
 
-	helpString = R"(EDF file read successfull"
-				 "ns equals to )" + nm(def::ns);
+	helpString = "EDF file read successfull\nns equals to " + nm(globalEdf.getNs());
+
     ui->textEdit->append(helpString);
-
 }
 
 
@@ -445,7 +423,7 @@ void MainWindow::readData()
     myTime.start();
 
     QString helpString;
-    helpString = ( ui->filePathLineEdit->text() );
+	helpString = ui->filePathLineEdit->text();
     if(!QFile::exists(helpString))
     {
 		std::cout << "readData: edf file doent exist\n" << helpString.toStdString() << std::endl;
@@ -453,12 +431,10 @@ void MainWindow::readData()
     }
 	globalEdf.readEdfFile(helpString);
 
-	helpString = R"(data have been read"
-				 "ns equals to )" + nm(def::ns);
+	helpString = "data have been read\nns equals to " + nm(globalEdf.getNs());
     ui->textEdit->append(helpString);
 
 	ui->reduceChannelsComboBox->currentIndexChanged(ui->reduceChannelsComboBox->currentIndex());
-
 
     ui->markerSecTimeDoubleSpinBox->setMaximum(globalEdf.getDataLen() / def::freq);
     ui->markerBinTimeSpinBox->setMaximum(globalEdf.getDataLen());
@@ -539,17 +515,17 @@ void MainWindow::drawReals()
     const edfFile & fil = globalEdf;
 
 	/// magic const, switch
-    if(def::ns == 41)
+	if(globalEdf.getNs() == 41)
     {
         redCh = 21;
         blueCh = 22;
     }
-    else if(def::ns == 22 || def::ns == 21)
+	else if(globalEdf.getNs() == 22 || globalEdf.getNs() == 21)
     {
         redCh = 19;
         blueCh = 20;
     }
-    else if(def::ns == 24)
+	else if(globalEdf.getNs() == 24)
     {
         redCh = 21;
         blueCh = 22;
@@ -592,8 +568,7 @@ void MainWindow::drawReals()
     }
     ui->progressBar->setValue(0);
 
-	helpString = R"(signals are drawn"
-				 "ns equals to )" + nm(def::ns);
+	helpString = "signals are drawn\nns equals to " + nm(globalEdf.getNs());
     ui->textEdit->append(helpString);
 
     stopFlag = 0;
@@ -626,7 +601,7 @@ void MainWindow::cleanDirs()
 	for(int i = 0; i < ui->cleanDirsLayout->count(); ++i)
 	{
 		QCheckBox * item = dynamic_cast<QCheckBox*>(ui->cleanDirsLayout->itemAt(i)->widget());
-		if(item)
+		if(item && item->isChecked())
 		{
 			if(item->text() == "markers")
 			{
@@ -640,8 +615,7 @@ void MainWindow::cleanDirs()
 			}
 		}
 	}
-	helpString = R"(dirs cleaned"
-				 "ns equals to )" + nm(def::ns);
+	helpString = "dirs cleaned\nns equals to " + nm(globalEdf.getNs());
     ui->textEdit->append(helpString);
 }
 
