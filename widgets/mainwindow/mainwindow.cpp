@@ -233,7 +233,6 @@ void MainWindow::changeRedNsLine(int a)
 	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
 #else
 	QString str = ui->reduceChannelsComboBox->itemText(a);
-	std::cout << str << std::endl;
 	QString outStr;
 	bool eeg = str.contains("EEG");
 	bool reref = str.contains("reref");

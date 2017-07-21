@@ -6,14 +6,15 @@
 
 using namespace myOut;
 
-void MainWindow::makeChanList(std::vector<int> & chanList)
+std::vector<int> MainWindow::makeChanList()
 {
-    chanList.clear();
+	std::vector<int> chanList{};
     QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
     for(auto str : lst)
     {
         chanList.push_back(str.toInt() - 1);
     }
+	return chanList;
 }
 
 
@@ -21,34 +22,41 @@ void MainWindow::cleanEdfFromEyesSlot()
 {
     readData();
     globalEdf.cleanFromEyes();
-    QString helpString = def::dir->absolutePath()
-						 + "/" + def::ExpName + "_eyesClean.edf";
+	QString helpString = globalEdf.getFilePath();
+	helpString.replace(".edf", "_eyesClean.edf", Qt::CaseInsensitive);
     globalEdf.writeEdfFile(helpString);
 }
 
 void MainWindow::rereferenceDataSlot()
 {
-	QString helpString = def::dir->absolutePath() + "/" + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
-    helpString.replace(".edf", "_rr.edf");
-    rereferenceData(ui->rereferenceDataComboBox->currentText(), helpString);
+	QTime myTime;
+	myTime.start();
+
+	QString helpString = globalEdf.getFilePath();
+	helpString.replace(".edf", "_rr.edf", Qt::CaseInsensitive);
+	rereferenceData(ui->rereferenceDataComboBox->currentText());
+
+	if(1)
+	{
+		globalEdf.writeEdfFile(helpString);
+	}
+	else
+	{
+		/// do nothing
+	}
+	std::cout << "rereferenceData: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 
 
-void MainWindow::rereferenceData(const QString & newRef,
-								 const QString & newPath)
+void MainWindow::rereferenceData(const QString & newRef)
 {
+	/// could be in edfFile
 	// A1, A2, Ar, N
 	// A1-A2, A1-N
     // Ar means 0.5*(A1+A2)
 
-    QTime myTime;
-    myTime.start();
 
-	QString helpString;
-
-    readData();
-	auto label = globalEdf.getLabels();
 
 	int groundChan = -1;	// A1-N
 	int earsChan1 = -1;		// A1-A2
@@ -57,6 +65,8 @@ void MainWindow::rereferenceData(const QString & newRef,
 	int eog2 = -1;			// EOG2
 	/// EOG references unclear, look edfFile::handleEdfFile()
 
+	auto label = globalEdf.getLabels();
+//	std::cout << label << std::endl;
     for(int i = 0; i < def::ns; ++i)
     {
 		if(label[i].contains("A1-N"))		{ groundChan = i; }
@@ -87,8 +97,8 @@ void MainWindow::rereferenceData(const QString & newRef,
 	const QString earsChanStr = nm(earsChan + 1);
 	const QString groundChanStr = nm(groundChan + 1);
 
-
-    for(int i = 0; i < def::ns; ++i) //ns -> 21
+	QString helpString;
+	for(int i = 0; i < globalEdf.getNs(); ++i)
     {
 		const QString currNumStr = nm(i + 1);
 
@@ -109,9 +119,16 @@ void MainWindow::rereferenceData(const QString & newRef,
 			if(label[i].contains("EOG1")) { /* do nothing */ }
 			else if(label[i].contains("EOG2")) /// make bipolar EOG1-EOG2
 			{
-				/// sign[0] for EOG1-A2; sign[1] for EOG1-A1
-				/// sign[1] for sure 20.06.2017, look also edfFile::handleEdfFile()
-				helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[1] + nm(earsChan + 1) + " ";
+				if(globalEdf.getEogType() == eogType::cross)
+				{
+					/// sign[0] for EOG1-A2; sign[1] for EOG1-A1
+					helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[0] + nm(earsChan + 1) + " ";
+				}
+				else if(globalEdf.getEogType() == eogType::correspond)
+				{
+					/// sign[1] for sure 20.06.2017, look also edfFile::handleEdfFile()
+					helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[1] + nm(earsChan + 1) + " ";
+				}
 			}
 			else { helpString += currNumStr + " "; }
 		}
@@ -159,7 +176,7 @@ void MainWindow::rereferenceData(const QString & newRef,
 
     }
 
-	// fix EOG1-EOG2 label when bipolar
+	/// fix EOG1-EOG2 label when bipolar
 	/// generality
 	if(ui->eogBipolarCheckBox->isChecked())
 	{
@@ -182,22 +199,16 @@ void MainWindow::rereferenceData(const QString & newRef,
 								 [](const QString & in)
 		{ return in.contains("EOG2-"); }));
 	}
-//	std::cout << "rereferenceData: " << newRef << "\n"
-//			  << helpString.toStdString() << std::endl;
-
     ui->reduceChannelsLineEdit->setText(helpString);
+	std::cout << helpString << std::endl;
 
 	// change labels
-//	std::cout << label << std::endl;
 	globalEdf = globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
     globalEdf.setLabels(label);
 	def::ns = globalEdf.getNs();
 
 	// set back channels string
 	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->currentData().toString());
-
-	globalEdf.writeEdfFile(newPath);
-	std::cout << "rereferenceData: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::refilterDataSlot()
@@ -210,10 +221,9 @@ void MainWindow::refilterDataSlot()
     const double highFreq = ui->highFreqFilterDoubleSpinBox->value();
     const bool notch = ui->notchCheckBox->isChecked();
 
-    QString helpString = def::dir->absolutePath()
-			+ "/" + def::ExpName + ".edf"; //ui->filePathLineEdit->text()
-    readData();
-	/// EDF case sensitivity !!!
+	readData();
+
+	QString helpString = globalEdf.getFilePath();
     if(!notch)
     {
         helpString.replace(".edf",
@@ -228,31 +238,38 @@ void MainWindow::refilterDataSlot()
 						   + nm(lowFreq) + '-' + nm(highFreq)
                            + ".edf");
     }
-	globalEdf.refilter(lowFreq, highFreq, helpString, notch);
+
+	globalEdf.refilter(lowFreq, highFreq, notch);
+
+	if(1)
+	{
+		globalEdf.writeEdfFile(helpString);
+	}
+	else
+	{
+		/// do nothing
+	}
 	std::cout << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::reduceChannelsEDFSlot()
 {
-    QString helpString;
-    helpString = def::dir->absolutePath()
-				 + "/" + def::ExpName + "_rdc.edf";
-    reduceChannelsEDF(helpString);
-}
+	QTime myTime;
+	myTime.start();
 
-void MainWindow::reduceChannelsEDF(const QString & newFilePath)
-{
-    QTime myTime;
-    myTime.start();
+	QString helpString = globalEdf.getFilePath();
+	helpString.replace(".edf", "_rdc.edf", Qt::CaseInsensitive);
 
-    edfFile temp;
-    temp.readEdfFile(ui->filePathLineEdit->text());
+	globalEdf = globalEdf.reduceChannels(this->makeChanList());
 
-	std::vector<int> chanList;
-    makeChanList(chanList);
-
-	temp = temp.reduceChannels(chanList);
-    temp.writeEdfFile(newFilePath);
+	if(1)
+	{
+		globalEdf.writeEdfFile(helpString);
+	}
+	else
+	{
+		/// do nothing
+	}
 
 	std::cout << "reduceChannelsEDF: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
@@ -319,40 +336,4 @@ void MainWindow::reduceChannelsSlot()
 
 	std::cout << "reduceChannelsSlot: finished";
 #endif
-}
-
-/// to deprecate
-void MainWindow::concatenateEDFs(QStringList inPath, QString outPath)
-{
-    if(inPath.isEmpty())
-    {
-		std::cout << "concatenateEDFs: input list is empty" << std::endl;
-        return;
-    }
-    QTime myTime;
-    myTime.start();
-
-    //assume the files are concatenable
-    edfFile * resultEdf = new edfFile;
-    resultEdf->readEdfFile(inPath[0]);
-    for(int k = 1; k < inPath.length(); ++k)
-    {
-        resultEdf->concatFile(inPath[k]);
-    }
-    resultEdf->writeEdfFile(outPath);
-    delete resultEdf;
-	std::cout << "concatenateEDF: " << myLib::getFileName(outPath)
-			  << "\ttime = " << myTime.elapsed()/1000. << " sec" << std::endl;
-}
-
-/// to deprecate
-void MainWindow::concatenateEDFs(QString inPath1, QString inPath2, QString outPath)
-{
-    QTime myTime;
-    myTime.start();
-    QStringList lst;
-    lst << inPath1 << inPath2;
-    concatenateEDFs(lst, outPath);
-	std::cout << "concatenateEDFs: " << myLib::getFileName(outPath)
-			  << "\ttime = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }

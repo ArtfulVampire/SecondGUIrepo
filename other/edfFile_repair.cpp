@@ -238,6 +238,15 @@ void channelsOrderDir(const QString & inDirPath,
     }
 }
 
+
+void invertEogs(const QString & inFilePath)
+{
+	edfFile fil;
+	fil.readEdfFile(inFilePath);
+	fil.divideChannels(fil.findChannels({"EOG1-A1", "EOG2-A2"}), -1).writeEdfFile(inFilePath);
+}
+
+
 void holesFile(const QString & inFilePath,
 			   QString outFilePath)
 {

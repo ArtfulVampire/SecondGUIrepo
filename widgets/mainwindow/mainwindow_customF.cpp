@@ -16,28 +16,28 @@ void MainWindow::customFunc()
 	ui->eogBipolarCheckBox->setChecked(true); // Elena
 #endif
 
-//	myLib::drw::drawOneSpectrum(f[f.findChannel("Da_r")], 160, 170, 1000, 1).save(
-//				"/media/Files/Data/iitp/Aliev_15_da_r.jpg", 0, 100);
-//	exit(0);
-
 	/// count correctness and average times
-//	autos::timesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_1_fin.edf", 1);
-//	autos::timesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_2_fin.edf", 2);
-//	autos::timesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_3_fin.edf", 3);
-//	autos::avTimesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_1_fin.edf", 1);
-//	autos::avTimesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_2_fin.edf", 2);
-//	autos::avTimesNew(def::dataFolder + "/FeedbackTest/BAV/BAV_3_fin.edf", 3);
+//	QString guy = "IAE";
+//	auto name = [guy](int i)
+//	{
+//		return def::dataFolder + "/FeedbackFinal/"
+//				+ guy + "/"
+//				+ guy + "_" + nm(i) + "_fin.edf";
+//	};
+//	for(int i : {1, 2, 3})
+//	{
+//		autos::timesNew(name(i), i);
+//		autos::avTimesNew(name(i), i);
+//	}
 //	exit(0);
 
 //	autos::Xenia_TBI(def::dataFolder + "/Temp");
 //	exit(0);
 
 //	exit(0);
-	setEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_1_fin.edf");
-	autos::successiveNetPrecleanWinds("/media/Files/Data/FeedbackFinal/Ilyin/SpectraSmooth/winds");
-
-
-	exit(0);
+//	setEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_1_fin.edf");
+//	autos::successiveNetPrecleanWinds("/media/Files/Data/FeedbackFinal/Ilyin/SpectraSmooth/winds");
+//	exit(0);
 
 	return;
 
@@ -348,7 +348,7 @@ void MainWindow::customFunc()
 	for(int i = 1; i <=9; ++i)
 	{
 		ir.readEdfFile(p + nm(i) + ".edf");
-		ir.refilter(i * 50 - 5, i * 50 + 5, p + nm(i + 1) + ".edf", true);
+		ir.refilter(i * 50 - 5, i * 50 + 5, true).writeEdfFile(p + nm(i + 1) + ".edf");
 	}
 	exit(0);
 #endif
@@ -984,9 +984,10 @@ exit(0);
 	/// MATI
     if(1)
     {
-        concatenateEDFs("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF",
-                        "/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
-                        "/media/Files/IHNA/Data/MATI/archive/NOS.EDF");
+		/// deprecated, use edfFile.concat
+//        concatenateEDFs("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF",
+//                        "/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
+//                        "/media/Files/IHNA/Data/MATI/archive/NOS.EDF");
         exit(0);
 
 //        QString helpString1 = "/media/Files/Data/Mati/PYV/PY_3.edf";

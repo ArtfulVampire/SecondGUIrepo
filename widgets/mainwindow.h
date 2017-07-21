@@ -92,7 +92,7 @@ public:
 	void readData();
 
 
-	void makeChanList(std::vector<int> & chanList);
+	std::vector<int> makeChanList();
 	void cleanDirsCheckAllBoxes(bool);
 
 
@@ -100,15 +100,7 @@ public:
 	void drawSpectra(const QString & inPath,
 					 const QString & outPath);
 
-	void rereferenceData(const QString & newRef,
-						 const QString & newPath);
-	void reduceChannelsEDF(const QString & newFilePath);
-
-	/// to deprecate
-    void concatenateEDFs(QString inPath1, QString inPath2, QString outPath);
-	/// to deprecate
-    void concatenateEDFs(QStringList inPath, QString outPath);
-
+	void rereferenceData(const QString & newRef);
 
 
 	void customFunc();

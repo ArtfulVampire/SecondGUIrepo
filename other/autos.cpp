@@ -420,7 +420,7 @@ void IITPfilterGonios(const QString & guyName,
 		}
 
 		filePath = ExpNamePre + postfix + "_gon" + ".edf";
-		fil.refilter(0.1, 3, filePath, false, chanList);
+		fil.refilter(0.1, 3, false, chanList).writeEdfFile(filePath);
 	}
 }
 
@@ -801,16 +801,16 @@ void IITPfilter(const QString & guyName)
 			{
 				for(int fr = 50; fr <= 450; fr += 50)
 				{
-					fil.refilter(fr - 5, fr + 5, {}, true, emgChans);
+					fil.refilter(fr - 5, fr + 5, true, emgChans);
 				}
-//				fil.refilter(0., 8, {}, true, emgChans);
+//				fil.refilter(0., 8, true, emgChans);
 			}
 
 			/// gonios
 			auto gonioChans = fil.findChannels({"elbow", "wrist", "knee", "ankle"});
 			if(!gonioChans.empty())
 			{
-				fil.refilter(0.1, 6, {}, false, gonioChans); /// magic constants
+				fil.refilter(0.1, 6, false, gonioChans); /// magic constants
 			}
 
 
@@ -818,8 +818,8 @@ void IITPfilter(const QString & guyName)
 			auto eegChans = fil.findChannels("EEG ");
 			if(!eegChans.empty())
 			{
-				fil.refilter(45, 55, {}, true, eegChans);
-				fil.refilter(0.5, 70, {}, false, eegChans);
+				fil.refilter(45, 55, true, eegChans);
+				fil.refilter(0.5, 70, false, eegChans);
 			}
 
 
@@ -879,7 +879,7 @@ void IITPpre2(const QString & guyName)
 
 				for(int fr = 50; fr <= 450; fr += 50)
 				{
-					fil.refilter(fr - 5, fr + 5, {}, true);
+					fil.refilter(fr - 5, fr + 5, true);
 				}
 
 				/// filter goniogramms
@@ -895,10 +895,9 @@ void IITPpre2(const QString & guyName)
 						}
 					}
 				}
-				fil.refilter(0.1, 6, {}, false, chanList); /// magic constants
-
 				filePath = ExpNamePre + "_emg_" + addName + ".edf";
-				fil.writeEdfFile(filePath);
+				/// magic constants
+				fil.refilter(0.1, 6, false, chanList).writeEdfFile(filePath);
 			}
 		}
 #endif
@@ -940,8 +939,7 @@ void IITPpre2(const QString & guyName)
 				fil.readEdfFile(filePath);
 
 				filePath = ExpNamePre + "_eeg_" + addName + ".edf";
-				fil.refilter(45, 55, {}, true);
-				fil.refilter(0.5, 70, filePath);
+				fil.refilter(45, 55, true).refilter(0.5, 70).writeEdfFile(filePath);
 			}
 		}
 #endif
@@ -2503,7 +2501,7 @@ void refilterFolder(const QString & procDirPath,
 		QString helpString = procDirPath + "/" + fileName;
 		edfFile fil;
 		fil.readEdfFile(helpString);
-		fil.refilter(lowFreq, highFreq, {}, isNotch).writeEdfFile(helpString);
+		fil.refilter(lowFreq, highFreq, isNotch).writeEdfFile(helpString);
 	}
 }
 

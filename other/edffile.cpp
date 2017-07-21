@@ -477,19 +477,39 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			/// edit EOG channels to encephalan
 			if(labels[i].contains("EOG 1"))
 			{
-				/// EOG1-A1 for sure 20.06.2017
-				labels[i] = myLib::fitString("EOG EOG1-A1", 16);
+				if(this->edfEogType == eogType::cross)
+				{
+					/// EOG1-A2 for sure 13.07.2017
+					labels[i] = myLib::fitString("EOG EOG1-A2", 16);
+				}
+				else if(this->edfEogType == eogType::correspond)
+				{
+					/// EOG1-A1 for sure 20.06.2017
+					labels[i] = myLib::fitString("EOG EOG1-A1", 16);
+				}
 			}
 			else if(labels[i].contains("EOG 2"))
 			{
-				/// EOG2-A2 for sure 20.06.2017
-				labels[i] = myLib::fitString("EOG EOG2-A2", 16);
+				if(this->edfEogType == eogType::cross)
+				{
+					/// EOG2-A1 for sure 17.07.2017
+					labels[i] = myLib::fitString("EOG EOG2-A1", 16);
+				}
+				else if(this->edfEogType == eogType::correspond)
+				{
+					/// EOG2-A2 for sure 20.06.2017
+					labels[i] = myLib::fitString("EOG EOG2-A2", 16);
+				}
 			}
 			else if(labels[i].contains("EOG 3"))
 			{
 				/// or bipolar?
 				labels[i] = myLib::fitString("EOG EOG3", 16);
 			}
+//			else if(labels[i].contains("A1-A2"))
+//			{
+//				labels[i] = myLib::fitString("EEG A2-A1", 16);
+//			}
 			/// set marker channel
 			else if(labels[i].contains("Marker") ||
 					labels[i].contains("Status"))
@@ -632,34 +652,20 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     }
 
 
-    if(headerOnly)
-    {
-        fclose(edfDescriptor);
-        return;
-    }
-
-//    fpos_t *position = new fpos_t;
-//    fgetpos(edfDescriptor, position);
-
-
+	if(headerOnly) { fclose(edfDescriptor); return; }
     fclose(edfDescriptor);
+
 
 	edfDescriptor = fopen(EDFpath, (readFlag ? "rb" : "ab"));
 	fseek(edfDescriptor, bytes, SEEK_SET);
-//    fsetpos(edfDescriptor, position);
-//    delete position;
 
-    if(readFlag)
-    {
-        annotations.clear();
-	}
+	if(readFlag) { annotations.clear(); }
 
+	/// read write data
     handleData(readFlag, edfDescriptor);
 	fclose(edfDescriptor);
-	if(readFlag)
-	{
-		this->cutZerosAtEnd();
-	}
+
+	if(readFlag) { this->cutZerosAtEnd(); }
 
     /// experimental annotations
     if(this->edfPlusFlag)
@@ -1112,6 +1118,7 @@ edfFile & edfFile::divideChannels(std::vector<uint> chanNums, double denom)
 {
 	if(chanNums.empty())
 	{
+		std::cout << "edfFile::divideChannels: chanList is empty" << std::endl;
 		for(uint i = 0; i < this->getNs(); ++i)
 		{
 			if(i != this->markerChannel)
@@ -1409,7 +1416,6 @@ void edfFile::countFft()
 
 edfFile & edfFile::refilter(double lowFreq,
 							double highFreq,
-							const QString & newPath,
 							bool isNotch,
 							std::vector<uint> chanList)
 {
@@ -1437,10 +1443,6 @@ edfFile & edfFile::refilter(double lowFreq,
 										   highFreq,
 										   isNotch,
 										   this->getNr()[j]);
-	}
-    if(!newPath.isEmpty())
-    {
-        this->writeEdfFile(newPath);
 	}
 	return *this;
 }
@@ -1578,7 +1580,6 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
     QTime myTime;
 	myTime.start();
 
-    QStringList lst;
     QStringList leest = chanStr.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
     if(leest.last().toInt() - 1 != this->markerChannel)
     {
@@ -1596,65 +1597,65 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
     double sign = 0.;
     int lengthCounter = 0; //length of the expression in chars
 
-    for(int k = 0; k < leest.length(); ++k)
+	int itemCounter = 0;
+	for(auto item : leest)
     {
-		if(nm(leest[k].toInt()) == leest[k]) // just copy
+		int accordNum = item.toInt() - 1;
+		if(smLib::isInt(item)) // just copy
 		{
-//			this->edfData[k] = this->edfData[leest[k].toInt() - 1];
-			temp.edfData[k] = this->edfData[leest[k].toInt() - 1];
-			temp.channels[k] = this->channels[leest[k].toInt() - 1];
+//			this->edfData[k] = this->edfData[accordNum];
+
+			temp.edfData[itemCounter] = this->edfData[accordNum];
+			temp.channels[itemCounter] = this->channels[accordNum];
         }
-        else if(leest[k].contains(QRegExp(R"([\+\-\*\/])")))
+		else if(item.contains(QRegExp(R"([\+\-\*\/])")))
         {
             lengthCounter = 0;
-            lst = leest[k].split(QRegExp(R"([\+\-\*\/])"), QString::SkipEmptyParts);
-            for(int h = 0; h < lst.length(); ++h)
+			auto lst = item.split(QRegExp(R"([\+\-\*\/])"), QString::SkipEmptyParts);
+//			std::cout << lst << std::endl;
+			/// check that nums between operators
+			for(auto in : lst)
             {
-				if(!smLib::isInt(lst[h]))
+				if(!smLib::isInt(in))
                 {
 					std::cout << "edfFile::reduceChannels: NAN between operators, return *this" << std::endl;
 					return *this;
                 }
             }
-//            this->channels[k] = this->channels[lst[0].toInt() - 1];
-			temp.channels[k] = this->channels[lst[0].toInt() - 1];
 
-            lengthCounter += lst[0].length();
-            for(int h = 1; h < lst.length(); ++h)
+			temp.channels[itemCounter] = this->channels[lst.front().toInt() - 1];
+			temp.edfData[itemCounter] = this->edfData[lst.front().toInt() - 1];
+			lengthCounter += lst.front().length();
+
+			for(auto lstIter = std::begin(lst) + 1; lstIter != std::end(lst); ++lstIter)
             {
-                if(leest[k][lengthCounter] == '+') sign = 1.;
-                else if(leest[k][lengthCounter] == '-') sign = -1.;
-                else //this should never happen!
+				if(item[lengthCounter] == '+') sign = 1.;
+				else if(item[lengthCounter] == '-') sign = -1.;
+				else // this should never happen!
                 {
 					std::cout << "edfFile::reduceChannels: first sign is not + or -, return * this" << std::endl;
-					return * this;;
+					return *this;
                 }
-                lengthCounter += 1; //sign length
-                lengthCounter += lst[h].length();
+				lengthCounter += 1; // sign length
+				lengthCounter += (*lstIter).length();
 
                 //check '/' and '*'
-                if(leest[k][lengthCounter] == '/')
+				if(item[lengthCounter] == '/')
                 {
-                    sign /= lst[h+1].toDouble();
+					sign /= (*(lstIter+1)).toDouble(); // already checked for being int
                 }
-                else if(leest[k][lengthCounter] == '*')
+				else if(item[lengthCounter] == '*')
                 {
-                    sign *= lst[h+1].toDouble();
+					sign *= (*(lstIter+1)).toDouble(); // already checked for being int
                 }
 
-//                this->edfData[k] = this->edfData[lst[0].toInt() - 1]
-//                        + sign * this->edfData[lst[h].toInt() - 1];
+				temp.edfData[itemCounter] += sign * this->edfData[(*lstIter).toInt() - 1];
 
-				temp.edfData[k] = this->edfData[lst[0].toInt() - 1]
-						+ sign * this->edfData[lst[h].toInt() - 1];
-
-                if(leest[k][lengthCounter] == '/' || leest[k][lengthCounter] == '*')
-                {
-                    lengthCounter += 1; // / or *
-                    lengthCounter += lst[h+1].length(); //what was divided onto
-                    ++h;
-                }
-                /// here should stop, no following h-iteration
+				if(item[lengthCounter] == '/' || item[lengthCounter] == '*')
+				{
+					lengthCounter += 1 + (*lstIter+1).length(); // sign and argument
+					++lstIter;
+				}
             }
         }
         else
@@ -1662,6 +1663,7 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
 			std::cout << "edfFile::reduceChannels: unknown format of the string, return *this" << std::endl;
 			return *this;
         }
+		++itemCounter;
 	}
 	std::cout << "reduceChannelsFast: ns = " << ns;
 	std::cout << ", time = " << myTime.elapsed() / 1000. << " sec";

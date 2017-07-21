@@ -41,5 +41,4 @@ typedef unsigned int uint;
 #define ELENA_VARIANT 0
 #endif
 
-
 #endif

@@ -93,6 +93,7 @@ public:
 
 
 enum class inst {mati, iitp};
+enum class eogType {cross, correspond};
 
 class edfFile
 {
@@ -147,7 +148,6 @@ public:
     void countFft();
 	edfFile & refilter(double lowFreq,
 					   double highFreq,
-					   const QString & newPath = QString(),
 					   bool isNotch = false,
 					   std::vector<uint> chanList = {});
 
@@ -212,6 +212,10 @@ protected:
     int ndr = 0;
     double ddr = 1.;
 	int ns = 0;
+
+	/// cross EOG1-A2, EOG2-A1
+	/// correspond EOG1-A1, EOG2-A2
+	eogType edfEogType = eogType::correspond; /// true story, 21.07.17
 
 
     //channels arrays start
@@ -292,11 +296,13 @@ public:
 	bool getMatiFlag() const { return matiFlag; }
 	bool getNtFlag() const { return ntFlag; }
 	bool getEdfPlusFlag() const { return edfPlusFlag; }
+	eogType getEogType() const { return this->edfEogType; }
 	// sets
 	void setMatiFlag(bool newFlag) {matiFlag = newFlag; }
 	void setNtFlag(bool newFlag) {ntFlag = newFlag; }
 	void setEdfPlusFlag(bool newFlag) {edfPlusFlag = newFlag; }
 	void setFilterIITPFlag(bool newFlag) {filterIITPflag = newFlag; }
+	void setEogType(eogType in) { this->edfEogType = in; }
 
     // operations with data
 	// gets
@@ -344,6 +350,7 @@ void channelsOrderDir(const QString & inDirPath,
                       const QString & outDirPath,
                       const std::vector<QString> & standard = coords::lbl31_more);
 
+void invertEogs(const QString & inFilePath);
 void holesFile(const QString & inFilePath,
                QString outFilePath = QString());
 void holesDir(const QString & inDirPath,
