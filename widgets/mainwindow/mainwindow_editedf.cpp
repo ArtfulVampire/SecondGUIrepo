@@ -164,12 +164,23 @@ void MainWindow::rereferenceData(const QString & newRef)
                     targetRef = "A2";
                 }
             }
+
+			/// if usual EOG
+			if(label[i].contains("EOG"))
+			{
+				std::swap(sign[0], sign[1]);
+			}
 			helpString += myLib::rerefChannel(refName,
 											  targetRef,
 											  currNumStr,
 											  earsChanStr,
 											  groundChanStr,
 											  sign) + " ";
+			/// if usual EOG - make back
+			if(label[i].contains("EOG"))
+			{
+				std::swap(sign[0], sign[1]);
+			}
 
 			label[i].replace(refName, targetRef);
 		}

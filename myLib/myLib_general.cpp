@@ -75,7 +75,7 @@ QString rerefChannel(const QString & initialRef,
     else if(targetRef == "Ar")
     {
         if(initialRef == "A1")
-        {
+		{
             return currentNum + sign[1] + earsChan + "/2";
         }
         else if(initialRef == "A2")

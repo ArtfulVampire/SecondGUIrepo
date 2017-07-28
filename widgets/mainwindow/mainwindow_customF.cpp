@@ -34,10 +34,10 @@ void MainWindow::customFunc()
 //	autos::Xenia_TBI(def::dataFolder + "/Temp");
 //	exit(0);
 
-//	exit(0);
 //	setEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_1_fin.edf");
 //	autos::successiveNetPrecleanWinds("/media/Files/Data/FeedbackFinal/Ilyin/SpectraSmooth/winds");
 //	exit(0);
+//	repair::invertEogs("/media/Files/Data/FeedbackFinal/Ilyin/IAE_1.EDF"); exit(0);
 
 	return;
 
