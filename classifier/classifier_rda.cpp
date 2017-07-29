@@ -66,7 +66,7 @@ void RDA::learn(std::vector<uint> & indices)
         /// shrinkage
         double tmpTrace = covMat[i].trace();
         covMat[i] *= (1. - gamma);
-//#pragma omp parallel for
+// #pragma omp parallel for
         for(uint j = 0; j < covMat[i].rows(); ++j)
         {
             covMat[i][j][j] += gamma * tmpTrace / covMat[i].rows();

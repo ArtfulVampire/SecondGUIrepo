@@ -7,7 +7,7 @@
 
 using namespace myOut;
 
-void MainWindow::ICA() //fastICA
+void MainWindow::ICA() // fastICA
 {
 
 #define MATRICES_ICA_0 1
@@ -18,15 +18,15 @@ void MainWindow::ICA() //fastICA
 #define MATRICES_ICA_5 1
 #define MATRICES_ICA_6 1
 
-    //we have data[ns][ndr*nr], ns, ndr, nr
-    //at first - whiten signals using eigen linear superposition to get E as covMatrix
-    //then count matrixW
+	// we have data[ns][ndr*nr], ns, ndr, nr
+	// at first - whiten signals using eigen linear superposition to get E as covMatrix
+	// then count matrixW
 
-    //data = A * comps, comps = W * data
+	// data = A * comps, comps = W * data
 
-    //count components = matrixW*data and write to def::ExpName_ICA.edf
-    //count inverse matrixA = matrixW^-1 and draw maps of components
-    //write automatization for classification different sets of components, find best set, explain
+	// count components = matrixW*data and write to def::ExpName_ICA.edf
+	// count inverse matrixA = matrixW^-1 and draw maps of components
+	// write automatization for classification different sets of components, find best set, explain
 
     QTime wholeTime;
     wholeTime.start();
@@ -42,7 +42,7 @@ void MainWindow::ICA() //fastICA
 	std::cout << "Ica started: " << helpString << std::endl;
     readData();
 
-    const uint ns = ui->numOfIcSpinBox->value(); //generality. Bind to reduceChannelsLineEdit?
+	const uint ns = ui->numOfIcSpinBox->value(); // generality. Bind to reduceChannelsLineEdit?
     const int dataLength = globalEdf.getDataLen();
 
 
@@ -135,7 +135,7 @@ void MainWindow::ICA() //fastICA
 #endif
 
 
-    //now dataICA are uncovariated signals with variance 1
+	// now dataICA are uncovariated signals with variance 1
     // ICA itself!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // fastIca wiki - first function
 
@@ -155,7 +155,7 @@ void MainWindow::ICA() //fastICA
 //                     vectorW);
 
 
-    //count components
+	// count components
 #if NEW_9_3_17
 	components = vectorW * dataICA;
 #else
@@ -166,7 +166,7 @@ void MainWindow::ICA() //fastICA
 #endif
 
 
-    //count full mixing matrix A = E * D^0.5 * Et * Wt
+	// count full mixing matrix A = E * D^0.5 * Et * Wt
     matrix matrixA(ns, ns, 0.);
     matrix D_05(ns, ns, 0.);
     for(uint i = 0; i < ns; ++i)
@@ -180,9 +180,9 @@ void MainWindow::ICA() //fastICA
 
     matrixA = matrix::transpose(vectorW); // A = Wt
 
-    matrixA = matrix::transpose(eigenVectors) * matrixA; //A = Et * Wt
+	matrixA = matrix::transpose(eigenVectors) * matrixA; // A = Et * Wt
 
-    //A = D^0.5 * Et * Wt
+	// A = D^0.5 * Et * Wt
     matrixA = D_05 * matrixA;
 
     matrixA = eigenVectors * matrixA;
@@ -265,7 +265,7 @@ void MainWindow::ICA() //fastICA
 	helpString = def::dir->absolutePath()
 				 + "/Help"
 				 + "/" + def::ExpName + "_maps_after_var.txt";
-	myLib::writeMatrixFile(helpString, matrixA); //generality 19-ns
+	myLib::writeMatrixFile(helpString, matrixA); // generality 19-ns
 
     for(int i = 0; i < ns; ++i)
     {
@@ -273,7 +273,7 @@ void MainWindow::ICA() //fastICA
 		std::cout << "comp = " << i + 1 << "\t";
 		std::cout << "explVar = " << smLib::doubleRound(explainedVariance[i], 2) << std::endl;
     }
-    //end componets ordering
+	// end componets ordering
 #else
     // norm components to 1-length of mapvector, order by dispersion
 
@@ -354,7 +354,7 @@ void MainWindow::ICA() //fastICA
 	helpString = (pathForAuxFiles
 				  + "/" + def::ExpName + "_explainedVariance.txt");
 	myLib::writeFileInLine(helpString, explainedVariance);
-    //end componets ordering
+	// end componets ordering
 #endif
 
 
@@ -387,10 +387,10 @@ void MainWindow::ICA() //fastICA
 #endif
 
 
-    //now should draw amplitude maps OR write to file
+	// now should draw amplitude maps OR write to file
         helpString = pathForAuxFiles
 					 + "/" + def::ExpName + "_maps.txt";
-		myLib::writeMatrixFile(helpString, matrixA); //generality 19-ns
+		myLib::writeMatrixFile(helpString, matrixA); // generality 19-ns
 		myLib::drawMapsICA(helpString,
 						   def::dir->absolutePath() + "/Help/ica",
 						   def::ExpName);
@@ -408,8 +408,7 @@ void MainWindow::ICA() //fastICA
 //	components.vertCat(resMatBackup);
 	components.push_back(globalEdf.getMarkArr());
 
-    globalEdf.writeOtherData(components, helpString, chanList);
-    def::ns = ns + 1; // numOfICs + markers
+	globalEdf.writeOtherData(components, helpString, chanList);
 
 	std::cout << "ICA ended. time = " << wholeTime.elapsed()/1000. << " sec" << std::endl;
 }

@@ -19,7 +19,7 @@ Cut::Cut() :
 	ui->subdirComboBox->addItem("");
 	ui->subdirComboBox->addItem("Reals");
 	ui->subdirComboBox->addItem("winds");
-	ui->subdirComboBox->addItem("winds/fromreal"); //generality
+	ui->subdirComboBox->addItem("winds/fromreal"); // generality
 	ui->subdirComboBox->setCurrentText(""); /// me
 
 	ui->suffixComboBox->addItem("");
@@ -475,8 +475,8 @@ void Cut::setValuesByEdf()
 	resetLimits();
 
 	/// set coloured channels
-	QString redStr = "EOG1";
-	QString blueStr = "EOG2";
+	QString redStr = "EOG1";	// ~horizontal
+	QString blueStr = "EOG2";	// ~vertical
 
 	/// iitp
 	if(edfFil.getNs() > 35)
@@ -517,7 +517,6 @@ void Cut::createImage(const QString & dataFileName)
 	{
         edfFil.readEdfFile(dataFileName);
 		fileOpened = true;
-		def::ns = edfFil.getNs();
 		setValuesByEdf(); /// needs fileOpened
     }
 	ui->iitpDisableEcgCheckBox->setChecked(false);
@@ -907,12 +906,12 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     int newLeftLimit = leftLimit;
     int newRightLimit = rightLimit;
 
-	while (!myLib::matiCountBit(data3[def::ns - 1][newLeftLimit], 14)
+	while (!myLib::matiCountBit(data3[edfFil.getNs() - 1][newLeftLimit], 14)
 		   && newLeftLimit > 0)
     {
         --newLeftLimit;
     }
-	while (!myLib::matiCountBit(data3[def::ns - 1][newRightLimit], 14)
+	while (!myLib::matiCountBit(data3[edfFil.getNs() - 1][newRightLimit], 14)
 		   && newRightLimit < data3.cols())
     {
 		++newRightLimit; // maximum of Num Of Slices
@@ -933,7 +932,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 
 
     // adjust limits if slice by N seconds
-	if(newLeftLimit > 0 || myLib::matiCountBit(data3[def::ns - 1][0], 14))
+	if(newLeftLimit > 0 || myLib::matiCountBit(data3[edfFil.getNs() - 1][0], 14))
     {
         ++newLeftLimit; // after the previous marker
     }
@@ -945,7 +944,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 //            std::cout << "zero prev file" << std::endl;
             prev();
             leftLimit = rightLimit;
-			while (!myLib::matiCountBit(data3[def::ns - 1][leftLimit], 14)) // there ARE count answers
+			while (!myLib::matiCountBit(data3[edfFil.getNs() - 1][leftLimit], 14)) // there ARE count answers
             {
                 --leftLimit;
             }
@@ -963,9 +962,9 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
     {
         ++newRightLimit; // after the previous marker
     }
-	else if (myLib::matiCountBit(data3[def::ns - 1][data3.cols() - 1], 14))
+	else if (myLib::matiCountBit(data3[edfFil.getNs() - 1][data3.cols() - 1], 14))
     {
-        //do nothing
+		// do nothing
     }
 	else // if(newRightLimit == data3.cols() && bit == 0)
     {
@@ -978,7 +977,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 			&& lst[tempNum + 2].toInt() == pieceNum + 1) // if next piece is ok
         {
             rightLimit = leftLimit;
-			while (!myLib::matiCountBit(data3[def::ns - 1][rightLimit], 14)) // there ARE count answers
+			while (!myLib::matiCountBit(data3[edfFil.getNs() - 1][rightLimit], 14)) // there ARE count answers
             {
                 ++rightLimit;
             }

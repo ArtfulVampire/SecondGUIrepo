@@ -31,9 +31,9 @@ void histogram(const signalType & arr,
 double quantile(double arg);
 
 double rankit(int i, int length, double k = 0.375);
-//bool gaussApproval(double * arr, int length); // not finished?
-//bool gaussApproval(QString filePath); // not finished?
-//bool gaussApproval2(double * arr, int length); // not finished?
+// bool gaussApproval(double * arr, int length); // not finished?
+// bool gaussApproval(QString filePath); // not finished?
+// bool gaussApproval2(double * arr, int length); // not finished?
 
 /// Mann-Whitney
 int MannWhitney(const std::valarray<double> & arr1,

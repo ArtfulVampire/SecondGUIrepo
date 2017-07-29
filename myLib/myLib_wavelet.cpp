@@ -236,7 +236,7 @@ void wavelet(QString filePath,
 	   freq -= wvlt::freqStep)
 #endif
 	{
-		//        timeStep = def::freqFreq / 2.5;  //in time-bins 250 Hz
+		//        timeStep = def::freqFreq / 2.5;  // in time-bins 250 Hz
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < fileData.cols(); currSlice += wvlt::timeStep)
 		{
@@ -245,7 +245,7 @@ void wavelet(QString filePath,
 			tempI = 0.;
 
 			/////// TO LOOK
-			//set left & right limits of counting - should be 2.5 * morletFall... but works so
+			// set left & right limits of counting - should be 2.5 * morletFall... but works so
 			kMin = std::max(0, int(currSlice - 3 * morletFall * def::freq / freq));
 			kMax = std::min(int(fileData.cols()), int(currSlice + 3 * morletFall * def::freq / freq));
 
@@ -284,7 +284,7 @@ void wavelet(QString filePath,
 	   freq -= wvlt::freqStep)
 #endif
 	{
-		//        timeStep = def::freqFreq / 2.5;  //in time-bins 250 Hz
+		//        timeStep = def::freqFreq / 2.5;  // in time-bins 250 Hz
 
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < fileData.cols(); currSlice += wvlt::timeStep)
@@ -379,7 +379,7 @@ matrix countWavelet(const signalType & inSignal)
 	   freq -= wvlt::freqStep)
 #endif
 	{
-		//        timeStep = def::freqFreq / 2.5;  //in time-bins 250 Hz
+		//        timeStep = def::freqFreq / 2.5;  // in time-bins 250 Hz
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
 		{
@@ -388,7 +388,7 @@ matrix countWavelet(const signalType & inSignal)
 			tempI = 0.;
 
 			/////// TO LOOK
-			//set left & right limits of counting - should be 2.5 * morletFall... but works so
+			// set left & right limits of counting - should be 2.5 * morletFall... but works so
 			kMin = std::max(0, int(currSlice - 3 * morletFall * def::freq / freq));
 			kMax = std::min(NumOfSlices, int(currSlice + 3 * morletFall * def::freq / freq));
 
@@ -419,7 +419,7 @@ double red(int range, double j, double V, double S)
 	else if(wvlt::colDots[2] < part && part <= wvlt::colDots[3]) return V;
 	else if(wvlt::colDots[3] < part && part <= 1.) return V - V*S*(part-wvlt::colDots[3])/(1 - wvlt::colDots[3])/2.;
 	// old
-	if    (0.000 <= part && part <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(part)*3.;
+	if    (0.000 <= part && part <= 0.167) return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.;
 	else if(0.167 < part && part <= 0.400) return V*(1.-S);
 	else if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
 	else if(0.500 < part && part <= 0.600) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
@@ -471,8 +471,8 @@ double blue(int range, double j, double V, double S)
 
 QColor hueJet(int range, double j)
 {
-	if(j > range) j = range; //bicycle for no black colour
-	if(j < 0) j = 0; //bicycle for no black colour
+	if(j > range) j = range; // bicycle for no black colour
+	if(j < 0) j = 0; // bicycle for no black colour
 	//    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
 	return QColor(255. * red(range, j),
 				  255. * green(range, j),

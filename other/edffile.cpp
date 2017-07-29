@@ -80,10 +80,10 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 	if(which == inst::mati)
 	{
 
-		//quant, time
-		//amplX, amplY, freqX, freqY
-		//targX, targY, mousX, mousY
-		//traceSuccessXY, secondBit
+		// quant, time
+		// amplX, amplY, freqX, freqY
+		// targX, targY, mousX, mousY
+		// traceSuccessXY, secondBit
 		// right, wrong, skipped answers
 
 		FILE* inStr;
@@ -424,7 +424,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     }
 
     FILE * edfDescriptor;
-	edfDescriptor = fopen(EDFpath, (readFlag ? "r" : "w")); //generality
+	edfDescriptor = fopen(EDFpath, (readFlag ? "r" : "w")); // generality
     if(edfDescriptor == NULL)
     {
 		std::cout << "handleFile: cannot open edf file " << EDFpath << std::endl;
@@ -475,16 +475,16 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 		for(int i = 0; i < ns; ++i)
 		{
 			/// edit EOG channels to encephalan
+			/// it is A1-EOG1 and A2-EOG2
+			/// inversion is made in edfFile::reduceChannels(QString)
 			if(labels[i].contains("EOG 1"))
 			{
 				if(this->edfEogType == eogType::cross)
 				{
-					/// EOG1-A2 for sure 13.07.2017
 					labels[i] = myLib::fitString("EOG EOG1-A2", 16);
 				}
 				else if(this->edfEogType == eogType::correspond)
 				{
-					/// EOG1-A1 for sure 20.06.2017
 					labels[i] = myLib::fitString("EOG EOG1-A1", 16);
 				}
 			}
@@ -492,18 +492,15 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			{
 				if(this->edfEogType == eogType::cross)
 				{
-					/// EOG2-A1 for sure 17.07.2017
 					labels[i] = myLib::fitString("EOG EOG2-A1", 16);
 				}
 				else if(this->edfEogType == eogType::correspond)
 				{
-					/// EOG2-A2 for sure 20.06.2017
 					labels[i] = myLib::fitString("EOG EOG2-A2", 16);
 				}
 			}
 			else if(labels[i].contains("EOG 3"))
 			{
-				/// or bipolar?
 				labels[i] = myLib::fitString("EOG EOG3", 16);
 			}
 //			else if(labels[i].contains("A1-A2"))
@@ -555,7 +552,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
         labelsFile = fopen(helpString, "w");
 		if(labelsFile != NULL)
 		{
-			for(int i = 0; i < ns; ++i)                         //labels write in file
+			for(int i = 0; i < ns; ++i)                         // labels write in file
 			{
 				fprintf(labelsFile, "%s\n", labels[i].toStdString().c_str());
 			}
@@ -641,7 +638,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 		ndr = int(realNdr); /// sometimes ndr from file is a lie
     }
     handleParamArray(reserved, ns, 32, readFlag, edfDescriptor, header);
-    //end channels read
+	// end channels read
 
 
     handleParam(headerRest, int(bytes - (ns + 1) * 256), readFlag, edfDescriptor, header);
@@ -767,11 +764,11 @@ void edfFile::handleDatum(int currNs,
 //            currDatum = a * 1./8.; // generality encephalan
 
         }
-        else //if markers channel
+		else // if markers channel
         {
             if(this->edfPlusFlag)
             {
-                //edf+
+				// edf+
                 fread(&helpChar, sizeof(char), 1, edfForDatum);
                 ntAnnot += helpChar;
                 fread(&helpChar, sizeof(char), 1, edfForDatum);
@@ -799,7 +796,7 @@ void edfFile::handleDatum(int currNs,
                         * (double(a) - digMin[currNs])
                         / (digMax[currNs] - digMin[currNs]);
 
-//                currDatum = a; //generality encephalan
+//                currDatum = a; // generality encephalan
             }
 			if(writeMarkersFlag &&
 			   !edfPlusFlag &&
@@ -809,7 +806,7 @@ void edfFile::handleDatum(int currNs,
             }
         }
     }
-    else //if write
+	else // if write
     {
         if(currNs != markerChannel) // usual data write
         {
@@ -830,11 +827,11 @@ void edfFile::handleDatum(int currNs,
 
             fwrite(&a, sizeof(qint16), 1, edfForDatum);
         }
-        else //if markers channel
+		else // if markers channel
         {
             if(this->edfPlusFlag) ////////////////////////// to do???
             {
-                //edf+
+				// edf+
 //                fwrite(&helpChar, sizeof(char), 1, edfDescriptor);
             }
             else if(this->matiFlag)
@@ -883,7 +880,7 @@ void edfFile::writeMarker(double currDatum,
             fprintf(markers, "%d", int(byteMarker[s]));
             if(s == 8)
             {
-                fprintf(markers, " ");  //byte delimiter
+				fprintf(markers, " ");  // byte delimiter
             }
         }
         if(byteMarker[10])
@@ -940,15 +937,15 @@ void edfFile::handleAnnotations(int currNs,
             markNum[0]='\0';
             markValue="";
             sscanf(annotations[j].toStdString().c_str(), "+%lf\24", &markTime);
-            //set time into helpString with 3 float numbers
+			// set time into helpString with 3 float numbers
             helpString.setNum(markTime);
-            if(helpString[helpString.length()-3]=='.') helpString.append("0"); //float part - 2 or 3 signs
+			if(helpString[helpString.length()-3]=='.') helpString.append("0"); // float part - 2 or 3 signs
             else
             {
                 if(helpString[helpString.length()-2]=='.') helpString.append("00");
                 else helpString.append(".000");
             }
-            for(int i = helpString.length()+2; i < annotations[j].length(); ++i) //+2 because of '+' and '\24'
+			for(int i = helpString.length()+2; i < annotations[j].length(); ++i) // +2 because of '+' and '\24'
             {
                 markValue.append(annotations[j][i]);
             }
@@ -1099,12 +1096,6 @@ edfFile edfFile::vertcatFile(QString addEdfPath, QString outPath) const
 	return temp;
 }
 
-edfFile & edfFile::divideChannel(uint chanNum, double denom)
-{
-	this->edfData[chanNum] /= denom;
-	return *this;
-}
-
 edfFile & edfFile::zeroChannels(const std::vector<uint> & chanNums)
 {
 	for(uint chan : chanNums)
@@ -1114,11 +1105,17 @@ edfFile & edfFile::zeroChannels(const std::vector<uint> & chanNums)
 	return *this;
 }
 
+edfFile & edfFile::divideChannel(uint chanNum, double denom)
+{
+	this->edfData[chanNum] /= denom;
+	return *this;
+}
+
 edfFile & edfFile::divideChannels(std::vector<uint> chanNums, double denom)
 {
 	if(chanNums.empty())
 	{
-		std::cout << "edfFile::divideChannels: chanList is empty" << std::endl;
+		std::cout << "edfFile::divideChannels: chanList is empty, divide all" << std::endl;
 		for(uint i = 0; i < this->getNs(); ++i)
 		{
 			if(i != this->markerChannel)
@@ -1131,6 +1128,33 @@ edfFile & edfFile::divideChannels(std::vector<uint> chanNums, double denom)
 	for(uint ind : chanNums)
 	{
 		this->edfData[ind] /= denom;
+	}
+	return *this;
+}
+
+edfFile & edfFile::multiplyChannel(uint chanNum, double mult)
+{
+	this->edfData[chanNum] *= mult;
+	return *this;
+}
+
+edfFile & edfFile::multiplyChannels(std::vector<uint> chanNums, double mult)
+{
+	if(chanNums.empty())
+	{
+		std::cout << "edfFile::multiplyChannels: chanList is empty, multiply all" << std::endl;
+		for(uint i = 0; i < this->getNs(); ++i)
+		{
+			if(i != this->markerChannel)
+			{
+				chanNums.push_back(i);
+			}
+		}
+	}
+
+	for(uint ind : chanNums)
+	{
+		this->edfData[ind] *= mult;
 	}
 	return *this;
 }
@@ -1576,7 +1600,6 @@ void edfFile::removeChannels(const std::vector<int> & chanList)
 
 edfFile edfFile::reduceChannels(const QString & chanStr) const
 {
-    /// need fix, doesn't work properly
     QTime myTime;
 	myTime.start();
 
@@ -1592,10 +1615,9 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
 	temp.edfData.resize(leest.length());
 	temp.channels.resize(leest.length());
 
-    /// need write a check of channel sequence
+	const QRegExp eogNotBipolar{R"(EOG[12]-(?!EOG))"};
 
-    double sign = 0.;
-    int lengthCounter = 0; //length of the expression in chars
+    /// need write a check of channel sequence
 
 	int itemCounter = 0;
 	for(auto item : leest)
@@ -1603,16 +1625,15 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
 		int accordNum = item.toInt() - 1;
 		if(smLib::isInt(item)) // just copy
 		{
-//			this->edfData[k] = this->edfData[accordNum];
-
 			temp.edfData[itemCounter] = this->edfData[accordNum];
 			temp.channels[itemCounter] = this->channels[accordNum];
         }
 		else if(item.contains(QRegExp(R"([\+\-\*\/])")))
         {
-            lengthCounter = 0;
+			int lengthCounter = 0; // length of the expression in chars
 			auto lst = item.split(QRegExp(R"([\+\-\*\/])"), QString::SkipEmptyParts);
 //			std::cout << lst << std::endl;
+
 			/// check that nums between operators
 			for(auto in : lst)
             {
@@ -1627,8 +1648,17 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
 			temp.edfData[itemCounter] = this->edfData[lst.front().toInt() - 1];
 			lengthCounter += lst.front().length();
 
+			/// invert EOG channes, then invert back EOG inverse
+			const bool eogNotBipolarFlag =
+					this->labels[lst.front().toInt() - 1].contains(eogNotBipolar);
+			if(eogNotBipolarFlag)
+			{
+				temp.edfData[itemCounter] *= -1.;
+			}
+
 			for(auto lstIter = std::begin(lst) + 1; lstIter != std::end(lst); ++lstIter)
             {
+				double sign = 0.;
 				if(item[lengthCounter] == '+') sign = 1.;
 				else if(item[lengthCounter] == '-') sign = -1.;
 				else // this should never happen!
@@ -1639,7 +1669,7 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
 				lengthCounter += 1; // sign length
 				lengthCounter += (*lstIter).length();
 
-                //check '/' and '*'
+				// check '/' and '*'
 				if(item[lengthCounter] == '/')
                 {
 					sign /= (*(lstIter+1)).toDouble(); // already checked for being int
@@ -1649,7 +1679,14 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
 					sign *= (*(lstIter+1)).toDouble(); // already checked for being int
                 }
 
-				temp.edfData[itemCounter] += sign * this->edfData[(*lstIter).toInt() - 1];
+				/// for bipolar EOG because of EOG inverse
+				double eogSign = 1.;
+				if(this->labels[(*lstIter).toInt() - 1].contains(eogNotBipolar))
+				{
+					eogSign = -1.;
+				}
+
+				temp.edfData[itemCounter] += sign * eogSign * this->edfData[(*lstIter).toInt() - 1];
 
 				if(item[lengthCounter] == '/' || item[lengthCounter] == '*')
 				{
@@ -1657,6 +1694,12 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
 					++lstIter;
 				}
             }
+			/// invert EOG back EOG inverse
+			/// will inverse EOG1-EOG2
+			if(eogNotBipolarFlag)
+			{
+				temp.edfData[itemCounter] *= -1.;
+			}
         }
         else
         {
@@ -1665,13 +1708,18 @@ edfFile edfFile::reduceChannels(const QString & chanStr) const
         }
 		++itemCounter;
 	}
-	std::cout << "reduceChannelsFast: ns = " << ns;
-	std::cout << ", time = " << myTime.elapsed() / 1000. << " sec";
-	std::cout << std::endl;
+	std::cout << "edfFile::reduceChannels: ns = " << leest.length() << " "
+			  << "time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 
 	temp.ns = leest.length();
 	temp.adjustArraysByChannels();
 	return temp;
+}
+
+void edfFile::setLabel(int i, const QString & inLabel)
+{
+	this->channels[i].label = inLabel;
+	this->labels[i] = inLabel;
 }
 
 void edfFile::setLabels(const std::vector<QString> & inLabels)
@@ -1702,7 +1750,7 @@ void edfFile::setChannels(const std::vector<edfChannel> & inChannels)
 }
 
 
-//template
+// template
 
 void edfFile::writeOtherData(const matrix & newData,
                              const QString & outPath,
@@ -1936,7 +1984,7 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
                   newData,
                   uint(def::nsWOM())); // w/o markers from globalEdf data
 
-    newData.push_back(fil.getData()[fil.getMarkChan()]); //copy markers
+	newData.push_back(fil.getData()[fil.getMarkChan()]); // copy markers
     fil.writeOtherData(newData, newEdfPath);
 	std::cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }

@@ -81,6 +81,9 @@ void IITPfilterGonios(const QString & guyName,
 void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
 void IITPremoveZchans(const QString & guyName, const QString & dirPath = def::iitpSyncFolder);
 
+void IITPemgToAbs(const QString & guyName,
+				  QString postfix = "_sum_new",
+				  const QString & dirPath = def::iitpSyncFolder);
 void IITPstagedToEnveloped(const QString & guyName,
 						   QString postfix = "_sum_new_f",
 						   const QString & dirPath = def::iitpSyncFolder);

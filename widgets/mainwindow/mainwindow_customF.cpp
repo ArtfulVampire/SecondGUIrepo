@@ -41,7 +41,7 @@ void MainWindow::customFunc()
 
 	return;
 
-#if 01
+#if 0
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -212,146 +212,10 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
-//	QString wrk = "/media/Files/Data/Xenia/14Mar/TBI_new_tmp";
-//	repair::toLowerDir(wrk, {});
-//	QDir dr(wrk);
-//	for(QString fil : dr.entryList({"*txt"}))
-//	{
-//		QString newName = fil;
-//		newName.replace("_Med_", "_med_");
-//		newName.replace("_Freq", "_freq");
-//		newName.replace("_Spectre", "_spectre");
-//		newName.replace("_D2_", "_d2_");
-//		newName.replace("_Dim_", "_dim_");
-//		newName.replace("_Wavelet", "_wavelet");
-
-//		newName.replace("_Kh_", "_kh_");
-//		newName.replace("_Cr_", "_cr_");
-//		newName.replace("_Bd_", "_bd_");
-//		newName.replace("_Bw_", "_bw_");
-//		newName.replace("_Fon_", "_fon_");
-//		newName.replace("_Sm_", "_sm_");
-//		newName.replace("_No_", "_no_");
-
-//		QFile::rename(wrk + "/" + fil, wrk + "/" + newName);
-//	}
-//	exit(0);
-
-//	repair::toLowerDir("/media/Files/Data/Xenia/14Mar/Norm_new_tmp", {});
-
-	return;
-//	autos::Xenia_TBI();
-//	autos::EEG_MRI({"Kabanov"}, false);
-	exit(0);
-
 //	testNewClassifiers();
 //	testSuccessive()
 	exit(0);
-	/// further goes unused and old
 
-#if 0
-	/// average time of solving
-	const QString pth = "/media/Files/Data/FeedbackNew/";
-	const QStringList lll = QDir(pth).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-//	const QStringList lll = {"CDV"};
-	const QString outFile = pth + "avTimes_247.txt";
-	std::ofstream outStr;
-	outStr.open(outFile.toStdString());
-	double tim;
-	for(const QString & guy : lll)
-	{
-//		const QStringList files = QDir(pth + guy).entryList({"*_good.edf"});
-
-//		for(const QString & fil : files)
-//		{
-//			if(fil.contains("_2") || fil.contains("_FB")) continue;
-//			int numSession = (fil.contains("_3")) ? 3 : 1;
-//			autos::timesNew(pth + guy + "/" + fil, numSession);
-//			autos::avTimesNew(pth + guy + "/" + fil, numSession);
-//		}
-
-		for(QString fileName : {
-			pth + guy + "/avTimes_1_247.txt",
-			pth + guy + "/avTimes_3_247.txt"})
-		{
-			std::ifstream inStr;
-			inStr.open(fileName.toStdString());
-			inStr.ignore(64, '\n');
-			inStr.ignore(64, '\t');
-			inStr >> tim;
-			inStr.close();
-
-			outStr << tim << '\t';
-		}
-		outStr << guy << "\r\n";
-	}
-	outStr.close();
-	exit(0);
-#endif
-
-#if 0
-	/// fix markers feedback new
-	const QString ddd = "/media/Files/Data/FeedbackNew/";
-	QStringList lll = QDir(ddd).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-//	QStringList lll = {"PDI"};
-	std::vector<QString> suffix{"", "_FB", "_2", "_3"};
-	for(const QString & guy : lll)
-	{
-		for(int i = 0; i < suffix.size(); ++i)
-		{
-
-			QString fff = ddd + guy + "/" + guy + suffix[i] + "_good.edf";
-
-			if(!QFile::exists(fff)) /// not FB
-			{
-				std::cout << guy << " " << i << " skipped" << std::endl;
-				continue;
-			}
-
-
-			std::cout << guy + suffix[i] + ".edf" << '\t'
-					  << autos::numMarkers(fff, {241}) << " "
-					  << autos::numMarkers(fff, {247}) << " "
-					  << std::endl;
-			continue;
-
-
-			if(autos::numMarkers(fff, {241, 247}) != 80)
-			{
-				autos::repairMarkersInNewFB(fff, i);
-
-				if(autos::numMarkers(ddd + guy + "/" + guy + suffix[i] + "_good.edf", {241, 247}) != 80)
-				{
-					std::cout << guy << " " << i << " still bad" << std::endl;
-				}
-				else
-				{
-					std::cout << guy << " " << i << " now good" << std::endl;
-				}
-			}
-			else
-			{
-				std::cout << guy << " " << i << " is OK" << std::endl;
-			}
-		}
-	}
-	exit(0);
-#endif
-
-#if 0
-	/// filtering iitp
-	QString p = "/media/Files/Data/iitp/Irina/";
-	edfFile ir;
-	QFile::copy(p + "Ira_02_emg.edf",
-				p + "1.edf");
-	for(int i = 1; i <=9; ++i)
-	{
-		ir.readEdfFile(p + nm(i) + ".edf");
-		ir.refilter(i * 50 - 5, i * 50 + 5, true).writeEdfFile(p + nm(i + 1) + ".edf");
-	}
-	exit(0);
-#endif
 
 #if 0
 	/// Baklushev histograms
@@ -532,7 +396,7 @@ void MainWindow::customFunc()
 #if 0
 	/// backuping
 	///
-	/// find -type f -regextype sed -iregex ".*/[^/]\{3,5\}\.edf" | sed 's/\.\//\/media\/Files\/Data\/Feedback\//g'
+	/// find -type f -regextype sed -iregex ".*/[^/]\{3,5\}\.edf" | sed 's/\.\// \/media\/Files\/Data\/Feedback\// g'
 	/// find -type f -regextype sed -iregex ".*/[^/]\{3\}\(_train\|_test\|_FB\|E\)\.edf"
 	/// find -type f -regextype sed -iregex ".*/[^/]\{3\}\(_train\|_test\|_FB\|E\|_1\|_3\)\.edf"
 
@@ -1040,7 +904,7 @@ exit(0);
         exit(0);
     }
 
-    //test matiMarkers functions
+	// test matiMarkers functions
     if(0)
     {
         double doub1 = 0b0000010110000000;
@@ -1049,12 +913,12 @@ exit(0);
         double & firstMarker = doub1;
         double & lastMarker  = doub2;
 
-        matiFixMarker(firstMarker); //fix the start marker for this small edf file
-        matiFixMarker(lastMarker);  //fix the last  marker for this small edf file
-        if(matiCountBit(firstMarker, 10) != matiCountBit(lastMarker, 10)) //if not one of them is the end of some session
+		matiFixMarker(firstMarker); // fix the start marker for this small edf file
+		matiFixMarker(lastMarker);  // fix the last  marker for this small edf file
+		if(matiCountBit(firstMarker, 10) != matiCountBit(lastMarker, 10)) // if not one of them is the end of some session
         {
             lastMarker = firstMarker
-				+ pow(2, 10) * (matiCountBit(firstMarker, 10) ? -1 : 1); //adjust the last marker
+				+ pow(2, 10) * (matiCountBit(firstMarker, 10) ? -1 : 1); // adjust the last marker
         }
         matiPrintMarker(lastMarker, "last");
         matiPrintMarker(doub2, "newData");

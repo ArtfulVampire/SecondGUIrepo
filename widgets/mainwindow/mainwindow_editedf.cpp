@@ -48,6 +48,64 @@ void MainWindow::rereferenceDataSlot()
 }
 
 
+void MainWindow::rereferenceCARSlot()
+{
+	QTime myTime;
+	myTime.start();
+
+	QString helpString = globalEdf.getFilePath();
+
+	rereferenceData("N");
+
+	const auto & usedLabels = coords::lbl19;	/// to build reref array
+	const auto & rerefLabels = coords::lbl21;	/// list to reref (with EOG)
+
+	/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - N
+	std::valarray<double> refArr(globalEdf.getDataLen());
+	for(QString chanName : usedLabels)
+	{
+		int ref = globalEdf.findChannel(chanName);
+		QString newLabel = globalEdf.getLabels(ref);
+		newLabel = myLib::fitString(newLabel.left(newLabel.indexOf('-') + 1) + "CAR", 16);
+		globalEdf.setLabel(ref, newLabel);
+
+		refArr += globalEdf.getData(ref);
+	}
+	refArr /= usedLabels.size();
+
+	for(int i = 0; i < globalEdf.getNs(); ++i)
+	{
+		auto it = std::find_if(std::begin(rerefLabels), std::end(rerefLabels),
+							   [this, i](const QString & in)
+		{ return globalEdf.getLabels(i).contains(in); });
+
+		if(it != std::end(rerefLabels))
+		{
+			if(!(*it).contains("EOG"))
+			{
+				globalEdf.setData(i, globalEdf.getData(i) - refArr);
+			}
+			else
+			{
+				/// N-EOG1, N-EOG2
+				/// crutch because inversed EOG
+				globalEdf.setData(i, globalEdf.getData(i) + refArr);
+			}
+		}
+	}
+
+	helpString.replace(".edf", "_car.edf", Qt::CaseInsensitive);
+	if(1)
+	{
+		globalEdf.writeEdfFile(helpString);
+	}
+	else
+	{
+		/// do nothing
+	}
+	std::cout << "rereferenceDataCAR: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+}
+
 
 void MainWindow::rereferenceData(const QString & newRef)
 {
@@ -63,11 +121,10 @@ void MainWindow::rereferenceData(const QString & newRef)
 	int earsChan2 = -1;		// A2-A1
 	int eog1 = -1;			// EOG1
 	int eog2 = -1;			// EOG2
-	/// EOG references unclear, look edfFile::handleEdfFile()
 
 	auto label = globalEdf.getLabels();
 //	std::cout << label << std::endl;
-    for(int i = 0; i < def::ns; ++i)
+	for(int i = 0; i < globalEdf.getNs(); ++i)
     {
 		if(label[i].contains("A1-N"))		{ groundChan = i; }
 		else if(label[i].contains("A1-A2"))	{ earsChan1 = i; }
@@ -119,14 +176,17 @@ void MainWindow::rereferenceData(const QString & newRef)
 			if(label[i].contains("EOG1")) { /* do nothing */ }
 			else if(label[i].contains("EOG2")) /// make bipolar EOG1-EOG2
 			{
+				/// EOG inversion is made in edfFile::reduceChannels
+				/// here deal with them like EOG*-A*
+
 				if(globalEdf.getEogType() == eogType::cross)
 				{
-					/// sign[0] for EOG1-A2; sign[1] for EOG1-A1
+					/// (EOG1-A2) - (EOG2-A1) - (A1-A2)
 					helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[0] + nm(earsChan + 1) + " ";
 				}
 				else if(globalEdf.getEogType() == eogType::correspond)
 				{
-					/// sign[1] for sure 20.06.2017, look also edfFile::handleEdfFile()
+					/// (EOG1-A1) - (EOG2-A2) + (A1-A2)
 					helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[1] + nm(earsChan + 1) + " ";
 				}
 			}
@@ -164,24 +224,12 @@ void MainWindow::rereferenceData(const QString & newRef)
                     targetRef = "A2";
                 }
             }
-
-			/// if usual EOG
-			if(label[i].contains("EOG"))
-			{
-				std::swap(sign[0], sign[1]);
-			}
 			helpString += myLib::rerefChannel(refName,
 											  targetRef,
 											  currNumStr,
 											  earsChanStr,
 											  groundChanStr,
 											  sign) + " ";
-			/// if usual EOG - make back
-			if(label[i].contains("EOG"))
-			{
-				std::swap(sign[0], sign[1]);
-			}
-
 			label[i].replace(refName, targetRef);
 		}
 
@@ -213,10 +261,19 @@ void MainWindow::rereferenceData(const QString & newRef)
     ui->reduceChannelsLineEdit->setText(helpString);
 	std::cout << helpString << std::endl;
 
-	// change labels
+	/// the very processing
 	globalEdf = globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
-    globalEdf.setLabels(label);
-	def::ns = globalEdf.getNs();
+	globalEdf.setLabels(label); /// necessary after the processing
+
+	/// inverse EOG2-EOG1 back (look edfFile::reduceChannels near the end)
+	if(int a = globalEdf.findChannel("EOG1-EOG2") != -1)
+	{
+		globalEdf.multiplyChannel(a, -1.);
+	}
+	else
+	{
+		std::cout << "rereferenceData: no bipolar EOG" << std::endl;
+	}
 
 	// set back channels string
 	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->currentData().toString());

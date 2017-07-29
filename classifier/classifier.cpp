@@ -53,13 +53,13 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 
 /// TEMPORARY, will be virtual=0
 /// SHOULD OVERRIDE FOR ALL CLASSIFIERS
-//void Classifier::classifyDatum1(uint vecNum)
-//{
+// void Classifier::classifyDatum1(uint vecNum)
+// {
 //	/// ALWAYS TRUE WITH ZERO ERROR
 //	this->confusionMatrix[myClassData->getTypes()[vecNum]][myClassData->getTypes()[vecNum]] += 1.;
 //	outputLayer = clLib::oneHot(myClassData->getNumOfCl(),
 //								myClassData->getTypes()[vecNum]);
-//}
+// }
 
 std::pair<uint, double> Classifier::classifyDatum(uint vecNum)
 {

@@ -9,7 +9,7 @@ using namespace myOut;
 namespace myLib
 {
 
-//hot-to-cold, http://stackoverflow.com/questions/7706339/grayscale-to-red-green-blue-matlab-jet-color-scale
+// hot-to-cold, http:// stackoverflow.com/questions/7706339/grayscale-to-red-green-blue-matlab-jet-color-scale
 double red1(int range, int j)
 {
     double part = j / double(range);
@@ -35,7 +35,7 @@ double blue1(int range, int j)
     else return 0.0;
 }
 
-//jet
+// jet
 double red(int range, int j, double V, double S)
 {
     double part = j / double(range);
@@ -46,7 +46,7 @@ double red(int range, int j, double V, double S)
 	else if(myLib::colDots_2[2] < part && part <= myLib::colDots_2[3]) return V;
 	else if(myLib::colDots_2[3] < part && part <= 1.) return V - V*S*(part-myLib::colDots_2[3])/(1 - myLib::colDots_2[3])/2.;
     // old
-    if    (0.000 <= part && part <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(part)*3.;
+    if    (0.000 <= part && part <= 0.167) return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.;
     else if(0.167 < part && part <= 0.400) return V*(1.-S);
     else if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
     else if(0.500 < part && part <= 0.600) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
@@ -178,8 +178,8 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
     QRect earRect;
 
     const double offsetX = 0.7;
-    const int earSize = 8; //generality
-    const double shitCoeff = 1.05; //smth about width of map on spectra pic
+    const int earSize = 8; // generality
+    const double shitCoeff = 1.05; // smth about width of map on spectra pic
 
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
@@ -217,7 +217,7 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
 
         paint.setPen(QPen(QBrush("black"), 2));
 
-        //draw the nose
+        // draw the nose
                        // left side
         paint.drawLine(X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2 - 4,
                        Y - graphHeight + 2,
@@ -294,7 +294,7 @@ void drawMapSpline(const matrix & matrixA,
     int dim = 7;
     double scale1 = double(dim-1)/picSize;
 
-    matrix helpMatrix(dim, dim, 0.); //generality for ns = 19
+    matrix helpMatrix(dim, dim, 0.); // generality for ns = 19
 
     int currIndex = 0.;
     for(int i = 0; i < dim * dim; ++i)
@@ -302,17 +302,17 @@ void drawMapSpline(const matrix & matrixA,
         const int rest = i % dim;
         const int quot = i / dim;
 
-        if(quot % (dim - 1) == 0|| rest % (dim-1) == 0)  //set 0 to all edge values
+        if(quot % (dim - 1) == 0|| rest % (dim-1) == 0)  // set 0 to all edge values
         {
             helpMatrix[quot][rest] = 0.;
         }
         else if(quot == 1
-                && (rest - 1) * (rest - 3) * (rest - 5) == 0) //Fp3, Fpz, Fp4
+                && (rest - 1) * (rest - 3) * (rest - 5) == 0) // Fp3, Fpz, Fp4
         {
             helpMatrix[quot][rest] = 0.;
         }
         else if(quot == 5
-                && (rest - 1) * (rest - 3) * (rest - 5) == 0) //O3, Oz, O4
+                && (rest - 1) * (rest - 3) * (rest - 5) == 0) // O3, Oz, O4
         {
             helpMatrix[quot][rest] = 0.;
         }
@@ -322,9 +322,9 @@ void drawMapSpline(const matrix & matrixA,
         }
     }
 
-    //
+    // 
 //    for(int)
-    //approximation for square - Fp3, Fpz, Fp, O3, Oz, O4
+    // approximation for square - Fp3, Fpz, Fp, O3, Oz, O4
     helpMatrix[1][1] = (helpMatrix[1][2] + helpMatrix[2][1] + helpMatrix[2][2])/3.;
     helpMatrix[1][3] = (helpMatrix[1][2] + helpMatrix[1][4] + helpMatrix[2][2] + helpMatrix[2][3] + helpMatrix[2][4])/5.;
     helpMatrix[1][5] = (helpMatrix[1][4] + helpMatrix[2][4] + helpMatrix[2][5])/3.;;
@@ -343,7 +343,7 @@ void drawMapSpline(const matrix & matrixA,
 	std::valarray<double> Av(dim - 1);
 	std::valarray<double> Bv(dim - 1);
 
-    std::iota(std::begin(inX), std::end(inX), 0); //hope, it's constant
+    std::iota(std::begin(inX), std::end(inX), 0); // hope, it's constant
 
     for(int i = 1; i < dim - 1; ++i) // number of helpMatrix row
     {
@@ -355,7 +355,7 @@ void drawMapSpline(const matrix & matrixA,
     {
         for(int k = 1; k < dim - 1; ++k)
         {
-            inY = helpMatrix[k]; //set inX and inY for k'th row of helpMatrix
+            inY = helpMatrix[k]; // set inX and inY for k'th row of helpMatrix
             inYv[k] = splineOutput(inX, inY, dim, Ah[k - 1], Bh[k - 1], x * scale1);
         }
         inYv[0] = 0.;
@@ -424,7 +424,7 @@ void drawMapSpline(const matrix & matrixA,
         }
     }
 
-    if(1) //draw channels locations
+    if(1) // draw channels locations
     {
         // zero for absent electrodes
         helpMatrix[1][1] = 0.;
@@ -464,7 +464,7 @@ void drawMapSpline(const matrix & matrixA,
     }
 
 #if 1
-    //+- solver
+    // +- solver
     if(std::abs(maxMagn) > 1.5 * std::abs(minMagn))
     {
         QFile::remove(savePath2);
@@ -535,7 +535,7 @@ QPixmap drawOneTemplate(const int chanNum,
 	const double X = gap;
 	const double Y = pic.height() - gap;
 
-	//draw axes
+	// draw axes
 	paint.setPen("black");
 	paint.drawLine(QPointF(X,
 						   Y),
@@ -546,7 +546,7 @@ QPixmap drawOneTemplate(const int chanNum,
 				   QPointF(X + graphWidth,
 						   Y));
 
-	//draw Herzes
+	// draw Herzes
 	const double hzFontSize = fontSize / 3;
 	paint.setFont(QFont("Helvitica", int(hzFontSize)));
 
@@ -647,14 +647,14 @@ QPixmap drawTemplate(const QString & outPath,
 	{
 		return def::left() * def::spStep() + in * unit;
 	};
-    for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
+    for(int c2 = 0; c2 < numOfChan; ++c2)  // exept markers channel
     {
 		/// replace with drawOneTemplate
 
         const double Y = paint.device()->height() * coords::y[c2];
         const double X = paint.device()->width() * coords::x[c2];
 
-        //draw axes
+        // draw axes
         paint.setPen("black");
         paint.drawLine(QPointF(X,
                                Y),
@@ -665,9 +665,9 @@ QPixmap drawTemplate(const QString & outPath,
                        QPointF(X + graphWidth,
                                Y));
 
-        //draw Herzes
+        // draw Herzes
         paint.setFont(QFont("Helvitica", int(12 * scaleY)));
-        for(int k = 0; k < graphWidth; ++k) //for every Hz generality
+        for(int k = 0; k < graphWidth; ++k) // for every Hz generality
         {
 
 			const double cF = currFreq(k);
@@ -715,7 +715,7 @@ QPixmap drawTemplate(const QString & outPath,
                        helpString);
 
     }
-    //write channels labels
+    // write channels labels
 
 	paint.end();
 	if(!outPath.isEmpty() && !outPath.contains(".svg"))
@@ -762,10 +762,10 @@ void drawArray(const QString & templPath,
     const double scaleY = paint.device()->height() / 1600.;
     const double scaleX = paint.device()->width() / 1600.;
 
-    norm = graphHeight / norm ; //250 - pixels per graph, generality
+    norm = graphHeight / norm ; // 250 - pixels per graph, generality
     norm *= scaling;
 
-    for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
+    for(int c2 = 0; c2 < numOfChan; ++c2)  // exept markers channel
     {
 
         const double Y = paint.device()->height() * coords::y[c2];
@@ -780,7 +780,7 @@ void drawArray(const QString & templPath,
                         Y - graphHeight / 2));
 #endif
 
-        //draw spectra
+        // draw spectra
         for(int k = 0; k < graphWidth - 1; ++k)
         {
             paint.setPen(QPen(QBrush(QColor(color)), lineWidth));
@@ -804,10 +804,10 @@ void drawArray(const QString & templPath,
         }
     }
 
-    //returning norm = max magnitude
+    // returning norm = max magnitude
     norm /= scaling;
     norm = graphHeight / norm;
-    norm /= scaling;  //scaling generality
+    norm /= scaling;  // scaling generality
 	norm = smLib::doubleRound(norm,
 					   std::min(1., 2 - floor(log10(norm)) )
                        );
@@ -897,7 +897,7 @@ void drawArrayWithSigma(const QString &templPath,
 	const double scaleY = paint.device()->height() / 1600.;
 	const double scaleX = paint.device()->width() / 1600.;
 
-	norm = graphHeight / norm ; //250 - pixels per graph, generality
+	norm = graphHeight / norm ; // 250 - pixels per graph, generality
 
 	const auto lowLine = inData - inSigma;
 	const auto highLine = inData + inSigma;
@@ -905,7 +905,7 @@ void drawArrayWithSigma(const QString &templPath,
 
 	for(auto drawLine : std::vector<std::valarray<double>>{inData, lowLine, highLine})
 	{
-		for(int c2 = 0; c2 < BaklushevChans; ++c2)  //exept markers channel
+		for(int c2 = 0; c2 < BaklushevChans; ++c2)  // exept markers channel
 		{
 //			auto index = [=](int in) -> int
 //			{
@@ -922,7 +922,7 @@ void drawArrayWithSigma(const QString &templPath,
 
 
 
-			//draw spectra
+			// draw spectra
 //			for(int k = 0; k < graphWidth - 1; ++k)
 			for(int k = 0; k < spL - 1; ++k)
 			{
@@ -980,7 +980,7 @@ void drawArrayWithSigma(const QString &templPath,
 
 
 
-	//returning norm = max magnitude
+	// returning norm = max magnitude
 	norm = graphHeight / norm;
 	norm = smLib::doubleRound(norm,
 								 std::min(1., 2 - floor(log10(norm)) )
@@ -1051,12 +1051,12 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 	const double scaleY = paint.device()->height() / 1600.;
 	const double scaleX = paint.device()->width() / 1600.;
 
-	norm = graphHeight / norm ; //250 - pixels per graph, generality
+	norm = graphHeight / norm ; // 250 - pixels per graph, generality
 	norm *= scaling;
 
 	const double normBC = norm;
 
-	for(int c2 = 0; c2 < BaklushevChans; ++c2)  //exept markers channel
+	for(int c2 = 0; c2 < BaklushevChans; ++c2)  // exept markers channel
 	{
 		const double Y = paint.device()->height() * coords::y[c2];
 		const double X = paint.device()->width() * coords::x[c2];
@@ -1094,7 +1094,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 							   #endif
 
 			// make drawNorm
-			norm = graphHeight / norm ; //250 - pixels per graph, generality
+			norm = graphHeight / norm ; // 250 - pixels per graph, generality
 			norm *= scaling;
 		}
 
@@ -1103,7 +1103,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 		for(uint numVec = 0; numVec < inMatrix.size(); ++numVec)
 		{
 			const std::valarray<double> & inData = inMatrix[numVec];
-			//draw spectra
+			// draw spectra
 //			for(int k = 0; k < graphWidth - 1; ++k)
 			for(int k = 0; k < def::spLength() - 1; ++k)
 			{
@@ -1139,7 +1139,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 	// returning norm = max magnitude
 	norm /= scaling;
 	norm = graphHeight / norm;
-	norm /= scaling;  //scaling generality
+	norm /= scaling;  // scaling generality
 	norm = smLib::doubleRound(norm,
 								 std::min(1., 2 - floor(log10(norm)) )
 								 );
@@ -1220,12 +1220,12 @@ double drawArrays(const QString & templPath,
     const double scaleY = paint.device()->height() / 1600.;
     const double scaleX = paint.device()->width() / 1600.;
 
-    norm = graphHeight / norm ; //250 - pixels per graph, generality
+    norm = graphHeight / norm ; // 250 - pixels per graph, generality
     norm *= scaling;
 
     const double normBC = norm;
 
-    for(int c2 = 0; c2 < numOfChan; ++c2)  //exept markers channel
+    for(int c2 = 0; c2 < numOfChan; ++c2)  // exept markers channel
     {
         const double Y = paint.device()->height() * coords::y[c2];
         const double X = paint.device()->width() * coords::x[c2];
@@ -1264,7 +1264,7 @@ double drawArrays(const QString & templPath,
                                #endif
 
             // make drawNorm
-            norm = graphHeight / norm ; //250 - pixels per graph, generality
+            norm = graphHeight / norm ; // 250 - pixels per graph, generality
             norm *= scaling;
         }
 
@@ -1272,7 +1272,7 @@ double drawArrays(const QString & templPath,
         for(uint numVec = 0; numVec < inMatrix.size(); ++numVec)
         {
 			std::valarray<double> inData = inMatrix[numVec];
-            //draw spectra
+            // draw spectra
             for(int k = 0; k < graphWidth - 1; ++k)
             {
                 paint.setPen(QPen(QBrush(QColor(colors[numVec])), lineWidth));
@@ -1305,7 +1305,7 @@ double drawArrays(const QString & templPath,
 	// returning norm = max magnitude
     norm /= scaling;
     norm = graphHeight / norm;
-    norm /= scaling;  //scaling generality
+    norm /= scaling;  // scaling generality
 	norm = smLib::doubleRound(norm,
 								 std::min(1., 2 - floor(log10(norm)) )
 								 );
@@ -1502,13 +1502,13 @@ void drawMannWitney(const QString & templPath,
     const double graphWidth = paint.device()->width() * coords::scale;
     const double ext = def::spLength() / graphWidth;
 
-    for(int c2 = 0; c2 < def::nsWOM(); ++c2)  //exept markers channel
+    for(int c2 = 0; c2 < def::nsWOM(); ++c2)  // exept markers channel
     {
         const double X = paint.device()->width() * coords::x[c2];
         const double Y = paint.device()->height() * coords::y[c2];
         const int offset = c2 * def::spLength();
 
-        //statistic difference bars
+        // statistic difference bars
         int barCounter = 0;
         for(int h = 0; h < def::numOfClasses(); ++h) // class1
         {
@@ -1609,10 +1609,10 @@ void drawColorScale(QString filePath, int range, ColorScale type, bool full)
     //    double offG = range*(0.5 + 0.25);
     //    double offB = range*(0.0 + 0.15);
 
-    //type == 0 - hueJet
-    //type == 1 - hueOld
-    //type == 2 - 3gauss
-    //type == 3 - grayScale
+    // type == 0 - hueJet
+    // type == 1 - hueOld
+    // type == 2 - 3gauss
+    // type == 3 - grayScale
     QPixmap pic;
     if(full)
     {

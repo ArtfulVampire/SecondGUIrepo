@@ -148,7 +148,7 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 	//    xMin -= 0.1 * sigma;
 	//    xMax += 0.1 * sigma;
 
-	//    //generality
+	//    // generality
 	//    xMin = -20;
 	//    xMax = 20;
 
@@ -197,7 +197,7 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 }
 
 /*
-bool gaussApproval(double * arr, int length) //kobzar page 239
+bool gaussApproval(double * arr, int length) // kobzar page 239
 {
 	double z;
 	int m = int(length/2);
@@ -211,7 +211,7 @@ bool gaussApproval(double * arr, int length) //kobzar page 239
 	{
 		z = (length - 2*j + 1.) / (length - 0.5);
 		a[j] = a[0] * (z + 1483 / pow(3.-z, 10.845) + pow(71.61, -10.) / pow(1.1-z, 8.26));
-		B += a[j] * (arr[length-j+1] - arr[j-1]); //or without +1
+		B += a[j] * (arr[length-j+1] - arr[j-1]); // or without +1
 	}
 	B *= B;
 	W = (1 - 0.6695 / pow(length, 0.6518)) * disp / B;
@@ -228,7 +228,7 @@ bool gaussApproval(QString filePath)
 	return gaussApproval(arr.data(), arr.size());
 }
 
-bool gaussApproval2(double * arr, int length) //kobzar page 238
+bool gaussApproval2(double * arr, int length) // kobzar page 238
 {
 	double W = 0.;
 	double disp = variance(arr, length) * length;
@@ -325,14 +325,14 @@ void drawRCP(const std::valarray<double> & values, const QString & picPath)
 
 	int coordinate;
 
-	for(int i = 0; i < length; ++i) //draw the values
+	for(int i = 0; i < length; ++i) // draw the values
 	{
 		coordinate = pic.width()/2. * (1. + values[i] / numOfDisp);
-		if(i%2 == 0) //raw data
+		if(i%2 == 0) // raw data
 		{
 			pnt.setPen("blue");
 		}
-		else //ica data
+		else // ica data
 		{
 			pnt.setPen("red");
 		}
@@ -380,7 +380,7 @@ int MannWhitney(const std::valarray<double> & arr1,
 	double U = 0.;
 
 
-	//count sums
+	// count sums
 	for(unsigned int i = 0; i < arr.size(); ++i)
 	{
 		if(arr[i].second == 0)
@@ -454,7 +454,7 @@ void countMannWhitney(trivector<int> & outMW,
 
 	QString helpString;
 	const QDir dir_(spectraPath);
-	std::vector<QStringList> lst; //0 - Spatial, 1 - Verbal, 2 - Rest
+	std::vector<QStringList> lst; // 0 - Spatial, 1 - Verbal, 2 - Rest
 	std::vector<matrix> spectra(numOfClasses);
 
 	matrix averageSpectra(numOfClasses, NetLength, 0);

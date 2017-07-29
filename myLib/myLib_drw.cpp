@@ -72,7 +72,7 @@ QPixmap drawOneTemplate(const int chanNum,
 	const double X = myLib::drw::gap;
 	const double Y = pic.height() - myLib::drw::gap;
 
-	//draw axes
+	// draw axes
 	paint.setPen("black");
 	paint.drawLine(QPointF(X,
 						   Y),
@@ -83,7 +83,7 @@ QPixmap drawOneTemplate(const int chanNum,
 				   QPointF(X + myLib::drw::graphWidth,
 						   Y));
 
-	//draw Herzes
+	// draw Herzes
 	const double unit = (rightF - leftF) / myLib::drw::graphWidth;
 	auto currFreq = [unit, leftF](int in) -> double { return leftF + in * unit; };
 	const int lineLen = 5;
@@ -175,7 +175,7 @@ QPixmap drawArray(const QPixmap & templatePic,
 		maxVal = inData.maxAbsVal();
 	}
 
-	for(int chanNum = 0; chanNum < inData.size(); ++chanNum)  //exept markers channel
+	for(int chanNum = 0; chanNum < inData.size(); ++chanNum)  // exept markers channel
 	{
 
 		pic = myLib::drw::drawOneArray(pic,
@@ -309,7 +309,7 @@ QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 	paint.setOpacity(1.0);
 
 
-	//returning norm = max magnitude
+	// returning norm = max magnitude
 //	paint.setPen("black");
 //	paint.setFont(QFont("Helvetica", myLib::drw::fontSizeChan));
 //	paint.drawText(QPointF(myLib::drw::templateWidth * myLib::drw::c(4),
@@ -607,11 +607,11 @@ QPixmap drawMannWitney(const QPixmap & templatePic,
 	const int spLength = inMW[0][0].size() / numOfChannels;
 	const double normX = myLib::drw::graphWidth / spLength;
 
-	for(int chanNum = 0; chanNum < numOfChannels; ++chanNum)  //exept markers channel
+	for(int chanNum = 0; chanNum < numOfChannels; ++chanNum)  // exept markers channel
 	{
 		const int offset = chanNum * spLength;
 
-		//statistic difference bars
+		// statistic difference bars
 		int barCounter = 0;
 		for(int h = 0; h < numOfClasses; ++h) // class1
 		{
@@ -762,7 +762,7 @@ QPixmap drawEeg(const matrix & inData,
 }
 
 
-// hot-to-cold, http://stackoverflow.com/questions/7706339/grayscale-to-red-green-blue-matlab-jet-color-scale
+// hot-to-cold, http:// stackoverflow.com/questions/7706339/grayscale-to-red-green-blue-matlab-jet-color-scale
 double redOld(int range, int j)
 {
 	double part = j / double(range);
@@ -848,7 +848,7 @@ double redJet(int range, int j, double V, double S)
 	double part = j / double(range);
 
 	// old
-	if    (0.000 <= part && part <= 0.167) return V*(1.-S); ///2. - V*S/2. + V*S*(part)*3.;
+	if    (0.000 <= part && part <= 0.167) return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.;
 	else if(0.167 < part && part <= 0.400) return V*(1.-S);
 	else if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
 	else if(0.500 < part && part <= 0.600) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
@@ -1173,7 +1173,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		}
 	}
 
-	if(1) //draw channels locations
+	if(1) // draw channels locations
 	{
 		// zero for absent electrodes
 		helpMatrix[1][1] = 0.;
@@ -1234,7 +1234,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	paint1.end();
 	paint2.end();
 
-	//+- solver
+	// +- solver
 	if(std::abs(maxMagn) > 1.5 * std::abs(minMagn))
 	{
 		return pic1;
@@ -1291,7 +1291,7 @@ QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
 	QRect earRect;
 
 	const double offsetX = 0.7;
-	const int earSize = 8; //generality
+	const int earSize = 8; // generality
 	const double shitCoeff = 1.05; // smth about width of map on spectra pic
 
 	for(int i = 0; i < 21; ++i) // not more than
@@ -1316,7 +1316,7 @@ QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
 
 		paint.setPen(QPen(QBrush("black"), 2));
 
-		//draw the nose
+		// draw the nose
 		// left side
 		paint.drawLine(X + coeff - 4,
 					   Y + 2,

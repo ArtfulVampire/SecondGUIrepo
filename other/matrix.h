@@ -129,7 +129,7 @@ public:
 	bool operator != (const matrix & other);
 
 
-	//"static"
+	// "static"
 	static matrix transpose(const matrix & input);
 	static matrix ident(int dim);
 	static matrix vertCat(const matrix & upper, const matrix & lower);
@@ -175,7 +175,7 @@ std::valarray<double> operator * (const std::valarray<double> & lhs, const matri
 matrix operator - (const matrix & lhs, const matrix & rhs);
 matrix operator - (const matrix & lhs, double val);
 
-//template <typename matType1, typename matType2>
+// template <typename matType1, typename matType2>
 void matrixProduct(const matrix & in1,
 				   const matrix & in2,
 				   matrix & result,

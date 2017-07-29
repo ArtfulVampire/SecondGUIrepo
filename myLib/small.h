@@ -1,4 +1,4 @@
-//#pragma once
+// #pragma once
 #ifndef SMALLLIB_H
 #define SMALLLIB_H
 

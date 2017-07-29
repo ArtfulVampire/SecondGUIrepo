@@ -42,7 +42,7 @@ int getTypeOfFileName(const QString & fileName);
 
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
-QString setFileName(const QString & initNameOrPath); //-> initName_i.ext
+QString setFileName(const QString & initNameOrPath); // -> initName_i.ext
 
 
 

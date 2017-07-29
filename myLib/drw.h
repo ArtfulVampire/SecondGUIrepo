@@ -16,7 +16,7 @@ namespace myLib {
 
 namespace drw {
 
-///consts
+/// consts
 const int templateWidth = 1600;
 const int templateHeight = 1600;
 const int gap = 20; // for template - from bottom to Hz axis

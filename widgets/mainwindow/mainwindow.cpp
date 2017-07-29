@@ -81,7 +81,7 @@ MainWindow::MainWindow() :
 	ui->highFreqFilterDoubleSpinBox->setMaximum(500);
 	ui->lowFreqFilterDoubleSpinBox->setMaximum(500);
 
-    ui->numOfIcSpinBox->setMaximum(19); //generality
+	ui->numOfIcSpinBox->setMaximum(19); // generality
     ui->numOfIcSpinBox->setMinimum(2);
     ui->numOfIcSpinBox->setValue(19);
 
@@ -127,8 +127,8 @@ MainWindow::MainWindow() :
     ui->matiPieceLengthSpinBox->setMinimum(4);
     ui->matiPieceLengthSpinBox->setValue(16);
     ui->matiCheckBox->setChecked(def::matiFlag);
-    ui->markerBinTimeSpinBox->setMaximum(250*60*60*2);   //2 hours
-	ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); //2 hours
+	ui->markerBinTimeSpinBox->setMaximum(250*60*60*2);   // 2 hours
+	ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); // 2 hours
 
 #if SHOW_MATI_WIDGETS
 	/// mati
@@ -188,17 +188,19 @@ MainWindow::MainWindow() :
 					 this, SLOT(changeRedNsLine(int)));
 	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(currentIndexChanged(int)),
 					 this, SLOT(changeRedNsLine(int)));
+	QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
+	QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
+	QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
+	QObject::connect(ui->rereferenceCARPushButton, SIGNAL(clicked()), this, SLOT(rereferenceCARSlot()));
 
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));
 
+	QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
 #if 1
 	ui->reduceChannesPushButton->hide();
-	QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
 #endif
-    QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
-    QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
-    QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
+
 
     customFunc();
 }
@@ -359,7 +361,7 @@ void MainWindow::setEdfFile(const QString & filePath)
 
     ui->filePathLineEdit->setText((helpString));
 
-    //set ExpName
+	// set ExpName
 	def::ExpName = myLib::getExpNameLib(filePath);
 
 	helpString.resize(helpString.lastIndexOf(slash));
@@ -367,7 +369,7 @@ void MainWindow::setEdfFile(const QString & filePath)
 
 	if(def::redirectStdOutFlag)
     {
-		//redirect std::cout to logfile
+		// redirect std::cout to logfile
         if(generalLogStream.is_open())
         {
             generalLogStream.close();
@@ -533,8 +535,8 @@ void MainWindow::drawReals()
     {
         for(int i = 0; i < fil.getNs(); ++i)
         {
-            if(fil.getLabels()[i].contains("EOG1")) redCh = i;
-            else if(fil.getLabels()[i].contains("EOG2")) blueCh = i;
+			if(fil.getLabels(i).contains("EOG1")) redCh = i;
+			else if(fil.getLabels(i).contains("EOG2")) blueCh = i;
         }
     }
 

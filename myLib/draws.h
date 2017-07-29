@@ -104,7 +104,7 @@ void drawArrayWithSigma(const QString & templPath,
 						const QString & color = "blue",
 						int lineWidth = 3);
 
-//inMatrix supposed to be def::spLength() * 19 size
+// inMatrix supposed to be def::spLength() * 19 size
 double drawArrays(const QString & templPath,
 				const matrix & inMatrix,
 				const bool weightsFlag = false,

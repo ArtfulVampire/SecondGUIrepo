@@ -367,7 +367,7 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
             result[i] += lhs[i][j] * rhs[j];
         }
     }
-#endif //omp
+#endif // omp
 
 
 #endif
@@ -377,7 +377,7 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
 matrix operator * (const matrix & lhs, double val)
 {
     matrix result(lhs.rows(), lhs.cols());
-//#pragma omp parallel for
+// #pragma omp parallel for
     for(uint i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] * val;
@@ -441,7 +441,7 @@ std::valarray<double> operator * (const std::valarray<double> & lhs, const matri
 matrix operator / (const matrix & lhs, double val)
 {
     matrix result(lhs.rows(), lhs.cols());
-//#pragma omp parallel for
+// #pragma omp parallel for
     for(uint i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] / val;
@@ -991,28 +991,28 @@ matrix & matrix::invert(double * det)
 
 //    std::cout << "start first cycle" << std::endl;
 
-    //1) make higher-triangular
-    for(uint i = 0; i < size - 1; ++i) //which line to substract
+    // 1) make higher-triangular
+    for(uint i = 0; i < size - 1; ++i) // which line to substract
     {
-        for(uint j = i + 1; j < size; ++j) //FROM which line to substract
+        for(uint j = i + 1; j < size; ++j) // FROM which line to substract
         {
             coeff = initMat[j][i] / initMat[i][i]; // coefficient
 
-            //row[j] -= coeff * row[i] for both (temp & init) matrices
+            // row[j] -= coeff * row[i] for both (temp & init) matrices
             initMat[j] -= initMat[i] * coeff;
             tempMat[j] -= tempMat[i] * coeff;
         }
     }
 
 //    std::cout << "start second cycle" << std::endl;
-    //2) make diagonal
-    for(int i = size - 1; i > 0; --i) //which line to substract (bottom -> up)
+    // 2) make diagonal
+    for(int i = size - 1; i > 0; --i) // which line to substract (bottom -> up)
     {
-        for(int j = i - 1; j >= 0; --j) //FROM which line to substract
+        for(int j = i - 1; j >= 0; --j) // FROM which line to substract
         {
             coeff = initMat[j][i] / initMat[i][i];
 
-            //row[j] -= coeff * row[i] for both matrices
+            // row[j] -= coeff * row[i] for both matrices
             initMat[j] -= initMat[i] * coeff;
             tempMat[j] -= tempMat[i] * coeff;
         }
@@ -1028,8 +1028,8 @@ matrix & matrix::invert(double * det)
         }
     }
 
-    //3) divide on diagonal elements
-    for(uint i = 0; i < size; ++i) //which line to divide
+    // 3) divide on diagonal elements
+    for(uint i = 0; i < size; ++i) // which line to divide
     {
         tempMat[i] /= initMat[i][i];
     }
@@ -1082,7 +1082,7 @@ matrix & matrix::eraseRows(const std::vector<uint> & indices)
     return *this;
 }
 
-//template <typename matType1, typename matType2>
+// template <typename matType1, typename matType2>
 void matrixProduct(const matrix & in1,
                    const matrix & in2,
                    matrix & result,

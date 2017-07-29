@@ -233,7 +233,7 @@ void four1(double * dataF, int nn, int isign)
     double wtemp,wr,wpr,wpi,wi,theta;
     double tempr,tempi;
 
-    n = nn << 1; //n = 2 * fftLength
+	n = nn << 1; // n = 2 * fftLength
     j = 1;
     for (i = 1; i < n; i += 2)
     {
@@ -246,14 +246,14 @@ void four1(double * dataF, int nn, int isign)
         while (m >= 2 && j > m)
         {
             j -= m;
-            m >>= 1; //m /= 2;
+			m >>= 1; // m /= 2;
         }
         j += m;
     }
     mmax = 2;
     while (n > mmax)
     {
-        istep = mmax << 1; //istep = mmax * 2;
+		istep = mmax << 1; // istep = mmax * 2;
         theta = isign * (2 * pi / mmax);
         wtemp = sin(0.5 * theta);
 
@@ -809,8 +809,8 @@ std::valarray<double> spectreRtoRcomplex(
 double fractalDimension(const std::valarray<double> & arr,
                         const QString & picPath)
 {
-    int timeShift; //timeShift
-    long double L = 0.; //average length
+	int timeShift; // timeShift
+	long double L = 0.; // average length
     long double tempL = 0.;
     long double coeff = 0.;
 
@@ -848,7 +848,7 @@ double fractalDimension(const std::valarray<double> & arr,
 		drawL[h - minLimit] = log(L);
     }
 
-    //least square approximation
+	// least square approximation
 	double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
 
     double drawX = 0.;
@@ -905,17 +905,17 @@ double fractalDimension(const std::valarray<double> & arr,
 
 
 
-//products for ICA
+// products for ICA
 void product1(const matrix & arr,
               const int length,
               const int ns,
 			  const std::valarray<double> & vect,
 			  std::valarray<double> & outVector)
 {
-    //<X*g(Wt*X)>
-    //vec = Wt
-    //X[j] = arr[][j] dimension = ns
-    //average over j
+	// <X*g(Wt*X)>
+	// vec = Wt
+	// X[j] = arr[][j] dimension = ns
+	// average over j
 
     outVector.resize(ns); // and fill zeros
 
@@ -937,10 +937,10 @@ void product2(const matrix & arr,
 			  const std::valarray<double> & vect,
 			  std::valarray<double> & outVector)
 {
-    //g'(Wt*X)*1*W
-    //vec = Wt
-    //X = arr[][j]
-    //average over j
+	// g'(Wt*X)*1*W
+	// vec = Wt
+	// X = arr[][j]
+	// average over j
 
     double sum = 0.;
     double sum1 = 0.;
@@ -959,7 +959,7 @@ void product3(const matrix & inMat,
               const int currNum,
 			  std::valarray<double> & outVector)
 {
-    //sum(Wt*Wi*Wi)
+	// sum(Wt*Wi*Wi)
     outVector.resize(ns);
 
     double sum = 0.;
@@ -1000,7 +1000,7 @@ void countVectorW(matrix & vectorW,
 
     const matrix tempMatrix = matrix::transpose(dataICA);
 
-    for(int i = 0; i < ns; ++i) //number of current vectorW
+	for(int i = 0; i < ns; ++i) // number of current vectorW
     {
         myTime.restart();
         counter = 0;
@@ -1027,7 +1027,7 @@ void countVectorW(matrix & vectorW,
 
 
             vectorW[i] = vector1 - vector2;
-            //orthogonalization
+			// orthogonalization
 			myLib::product3(vectorW, ns, i, vector3);
             vectorW[i] -= vector3;
 			smLib::normalize(vectorW[i]);
@@ -1206,7 +1206,7 @@ void svd(const matrix & initialData,
 	std::valarray<double> tempA(dimension);
 	std::valarray<double> tempB(dataLen);
 
-    double sum1, sum2; //temporary help values
+	double sum1, sum2; // temporary help values
     double dF, F;
     int counter;
 
@@ -1237,7 +1237,7 @@ void svd(const matrix & initialData,
     const matrix inDataTrans = matrix::transpose(initialData);
     QTime myTime;
     myTime.start();
-    //counter j - for B, i - for A
+	// counter j - for B, i - for A
     for(int k = 0; k < eigenVecNum; ++k)
     {
         myTime.restart();
@@ -1248,13 +1248,13 @@ void svd(const matrix & initialData,
         tempA = 1. / sqrt(dimension);
         tempB = 1. / sqrt(dataLen);
 
-        //approximate P[i] = tempA x tempB;
+		// approximate P[i] = tempA x tempB;
         counter = 0;
-        while(1) //when stop approximate?
+		while(1) // when stop approximate?
         {
             if((counter) % errorStep == 0)
             {
-                //countF - error
+				// countF - error
                 F = 0.;
                 for(int i = 0; i < dimension; ++i)
                 {
@@ -1285,7 +1285,7 @@ void svd(const matrix & initialData,
                 }
             }
 
-            //count vector tempB
+			// count vector tempB
 			sum2 = 1. / smLib::normaSq(tempA);
             for(int j = 0; j < dataLen; ++j)
             {
@@ -1298,7 +1298,7 @@ void svd(const matrix & initialData,
 				tempB[j] = sum2 * smLib::prod(tempA, inDataTrans[j]);
             }
 
-            //count vector tempA
+			// count vector tempA
 			sum2 = 1. / smLib::normaSq(tempB);
             for(int i = 0; i < dimension; ++i)
             {
@@ -1348,10 +1348,10 @@ void svd(const matrix & initialData,
                 break;
             }
             ++counter;
-            if(std::abs(dF) < threshold) break; //crucial cap
+			if(std::abs(dF) < threshold) break; // crucial cap
         }
 
-        //edit currMatrix
+		// edit currMatrix
         /// test!
         for(int i = 0; i < dimension; ++i)
         {
@@ -1373,7 +1373,7 @@ void svd(const matrix & initialData,
         }
 
 
-        //count eigenVectors && eigenValues
+		// count eigenVectors && eigenValues
 		sum1 = smLib::normaSq(tempA);
 		sum2 = smLib::normaSq(tempB);
         eigenValues[k] = sum1 * sum2 / double(dataLen - 1.);
@@ -1417,12 +1417,12 @@ void splineCoeffCount(const std::valarray<double> & inX,
 					  std::valarray<double> & outB)
 {
 
-    //[inX[i-1]...inX[i]] - q[i-1] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+	// [inX[i-1]...inX[i]] - q[i-1] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
     matrix coefsMatrix(dim, dim, 0);
 	std::valarray<double> rightVec(dim);
 	std::valarray<double> vectorK(dim);
 
-    //set coefs and rightVec
+	// set coefs and rightVec
     coefsMatrix[0][0] = 2.*(inX[1] - inX[0]);
     coefsMatrix[0][1] = (inX[1] - inX[0]);
     rightVec[0] = 3. * (inY[1] - inY[0]);
@@ -1430,7 +1430,7 @@ void splineCoeffCount(const std::valarray<double> & inX,
     coefsMatrix[dim-1][dim-1] = 2.*(inX[dim-1] - inX[dim-2]);
     coefsMatrix[dim-1][dim-2] = (inX[dim-1] - inX[dim-2]);
     rightVec[dim-1] = 3. * (inY[dim-1] - inY[dim-2]);
-    for(int i = 1; i < dim-1; ++i) //besides first and last rows
+	for(int i = 1; i < dim-1; ++i) // besides first and last rows
     {
         coefsMatrix[i][i-1] = 1 / (inX[i] - inX[i-1]);
         coefsMatrix[i][i] = 2 * (1 / (inX[i] - inX[i-1]) + 1 / (inX[i+1] - inX[i]));
@@ -1438,7 +1438,7 @@ void splineCoeffCount(const std::valarray<double> & inX,
 
         rightVec[i] = 3 * ( (inY[i] - inY[i-1]) / ( (inX[i] - inX[i-1]) * (inX[i] - inX[i-1]) ) + (inY[i+1] - inY[i]) / ( (inX[i+1] - inX[i]) * (inX[i+1] - inX[i]) ));
     }
-	if(0) //std::cout matrix and rightvec - OK
+	if(0) // std::cout matrix and rightvec - OK
     {
         for(int i = 0; i < dim; ++i)
         {
@@ -1449,10 +1449,10 @@ void splineCoeffCount(const std::valarray<double> & inX,
 			std::cout << rightVec[i] << std::endl;
         }
     }
-    //count K's
+	// count K's
     vectorK = coefsMatrix.matrixSystemSolveGauss(rightVec);
-    //count outA and outB
-    for(int i = 1; i < dim; ++i) //there is dim-1 intervals between dim points
+	// count outA and outB
+	for(int i = 1; i < dim; ++i) // there is dim-1 intervals between dim points
     {
         outA[i-1] =  vectorK[i - 1] * (inX[i] - inX[i - 1]) - (inY[i] - inY[i - 1]);
         outB[i-1] = -vectorK    [i] * (inX[i] - inX[i - 1]) + (inY[i] - inY[i - 1]);
@@ -1466,10 +1466,10 @@ double splineOutput(const std::valarray<double> & inX,
 					const std::valarray<double> & B,
                     double probeX)
 {
-    //[inX[i-1]...inX[i]] - q[i] = (1-t)*inY[i1] + t*inY[i] + t(1-t)(outA[i](1-t) + outB[i]t));
+	// [inX[i-1]...inX[i]] - q[i] = (1-t)*inY[i1] + t*inY[i] + t(1-t)(outA[i](1-t) + outB[i]t));
     double t;
-    //which interval we have?
-    int num = -1; //number of interval
+	// which interval we have?
+	int num = -1; // number of interval
     for(int i = 0; i < dim-1; ++i)
     {
         if(inX[i] <= probeX && probeX < inX[i + 1])
@@ -1516,7 +1516,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 
 	spectreCtoC(out, fftLen);
 
-    //start filtering
+	// start filtering
     for(int i = 0; i < fftLen; ++i)
     {
         if(i < 2. * lowFreq / spStep
@@ -1534,7 +1534,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
     out[1] = 0.;
     out[fftLen] = 0.;
     out[fftLen+1] = 0.;
-    //end filtering
+	// end filtering
 
 	spectreCtoRrev(out);
     for(int i = 0; i < inLength; ++i)
@@ -1543,7 +1543,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
     }
 
 
-    //Hilbert via FFT
+	// Hilbert via FFT
     for(int i = 0; i < inLength; ++i)
     {
         out[2 * i + 0] = filteredArr[i] * normCoef;
@@ -1566,9 +1566,9 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 
     for(int i = 0; i < inLength; ++i)
     {
-        tempArr[i] = out[2 * i + 1] / fftLen * 2; //hilbert
+		tempArr[i] = out[2 * i + 1] / fftLen * 2; // hilbert
     }
-    //end Hilbert via FFT
+	// end Hilbert via FFT
 
 
     for(int i = 0; i < fftLen; ++i)
@@ -1580,7 +1580,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
     if(!picPath.isEmpty())
     {
 
-        //start check draw - OK
+		// start check draw - OK
         QPixmap pic(fftLen, 600);
         QPainter pnt;
         pic.fill();
@@ -1619,7 +1619,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
         pic.fill();
         pnt.end();
 		std::cout << "hilber drawn" << std::endl;
-        //end check draw
+		// end check draw
     }
     return out;
 }
@@ -1656,7 +1656,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 			start = inLength - fftLen;
 		}
 
-		//Hilbert via FFT
+		// Hilbert via FFT
 		tempArr[i].resize(fftLen);
 		std::copy(std::begin(filteredArr) + start,
 				  std::begin(filteredArr) + start + fftLen,
@@ -1673,7 +1673,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 			tempArr[i][start + j] = temp[2 * j + 1]; // hilbert. Why +1?
 		}
 		tempArr[i] *= 2.;
-		//end Hilbert via FFT
+		// end Hilbert via FFT
 	}
 
 	for(int i = 0; i < fftLen; ++i)
@@ -1706,7 +1706,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
     if(!picPath.isEmpty())
     {
 
-        //start check draw - OK
+		// start check draw - OK
 		QPixmap pic(inLength, 600);
         QPainter pnt;
         pic.fill();
@@ -1753,7 +1753,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 
         pnt.end();
         pic.save(picPath, 0, 100);
-        //end check draw
+		// end check draw
     }
     return outHilbert;
 }
@@ -1781,7 +1781,7 @@ void makeSine(std::valarray<double> & in,
 std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 								 int numOfIntervals)
 {
-    double maxAmpl = 80.; //generality
+	double maxAmpl = 80.; // generality
     int helpInt;
 	std::valarray<double> out(0., numOfIntervals);
 
@@ -1791,7 +1791,7 @@ std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 
 		if(helpInt != std::min(std::max(0, helpInt), numOfIntervals - 1))
         {
-            continue; //if helpInt not in range
+			continue; // if helpInt not in range
         }
         out[helpInt] += 1;
     }
@@ -1804,11 +1804,11 @@ std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 
 
 /// for fftWindow
-//double bes0(double in)
-//{
-//https://en.wikipedia.org/wiki/Bessel_function#Modified_Bessel_functions
+// double bes0(double in)
+// {
+// https:// en.wikipedia.org/wiki/Bessel_function#Modified_Bessel_functions
 //	return in;
-//}
+// }
 
 
 std::valarray<double> fftWindow(int length, windowName name)
@@ -1965,7 +1965,7 @@ void calcSpectre(const std::valarray<double> & inSignal,
 
 
 	const double norm1 = sqrt(fftLength / double(fftLength - Eyes));
-    //smooth spectre
+	// smooth spectre
     const int leftSmoothLimit = 1;
     const int rightSmoothLimit = fftLength / 2 - 1;
 	double help1, help2;
@@ -2008,7 +2008,7 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 
 	matrix dataE{};
 
-	//make dataE array to count covariation matrix
+	// make dataE array to count covariation matrix
 	int NumOfSlices = 0;
 	for(auto filePath : leest)
 	{

@@ -123,7 +123,7 @@ void clustering::readFile(QString filePath)
 	std::vector<std::vector<double> >::iterator itt;
     while (contains(isolDots.begin(), isolDots.end(), true))
     {
-        //adjust dists[i][3]
+        // adjust dists[i][3]
 		for(std::vector<std::vector<double> >::iterator iit = dists.begin();
             iit < dists.end();
             ++iit)
@@ -366,7 +366,7 @@ void countInvHessianAddDot(const mat & distOld,
     for(unsigned int j = 0; j < placedDots.size() - 1; ++j)
     {
 		const int i = placedDots[j];
-        //dydy
+        // dydy
         invHessian[0][0] +=
                 2. * (distOld[i][b] *
                       (pow(distNew[i][b], -3.) *
@@ -375,7 +375,7 @@ void countInvHessianAddDot(const mat & distOld,
                        )
                       + 1.)
                 * pow(distOld[i][b], -2.);
-        //dxdx
+        // dxdx
         invHessian[1][1] +=
                 2. * (distOld[i][b] *
                       (pow(distNew[i][b], -3.) *
@@ -470,7 +470,7 @@ void sammonAddDot(const mat & distOld,
 
 	plainCoords.push_back(std::make_pair(helpX, helpY));
 
-	//std::cout all the dots
+	// std::cout all the dots
 
 
 
@@ -596,7 +596,7 @@ void sammonProj(const mat & distOld,
         }
     }
 	//    std::cout << "maxDist = " << maxDist << std::endl;
-    //count third dot coords
+    // count third dot coords
     double tm = (pow(distOld[num1][num3], 2.) +
                  pow(distOld[num1][num1], 2.) -
                  pow(distOld[num2][num3], 2.)
@@ -625,7 +625,7 @@ void sammonProj(const mat & distOld,
     for(int addNum = 3; addNum < size; ++addNum)
     {
         maxDist = 0.;
-        //search max distant dot
+        // search max distant dot
         for(int i = 0; i < size; ++i)
         {
             if(std::find(placedDots.begin(),
@@ -646,12 +646,12 @@ void sammonProj(const mat & distOld,
         }
 		//        std::cout << "newDotNum = " << num3 << std::endl;
 
-        //place this dot
+        // place this dot
         placedDots.push_back(num3);
         sammonAddDot(distOld, distNew, plainCoords, placedDots);
         if(addNum >= int(sqrt(size)))
         {
-            ////TODO
+            //// TODO
             //            adjustSkeletonDots(distOld, distNew, plainCoords, placedDots);
         }
     }
@@ -674,11 +674,11 @@ void sammonProj(const mat & distOld,
 
 void drawSammon(const coordType & plainCoords,
 				const std::vector<int> & types,
-				const QString & picPath) //uses coords array
+				const QString & picPath) // uses coords array
 {
 
 	const int NumberOfVectors = plainCoords.size();
-	//draw the points
+	// draw the points
 	QPixmap pic(1200, 1200);
 	pic.fill();
 	QPainter painter;
@@ -852,7 +852,7 @@ void drawShepard(const mat & distOld,
 {
 	//    std::cout << distNew << std::endl;
 	const int num = distOld.size();
-	//draw the points
+	// draw the points
 	QPixmap pic(1200, 1200);
 	pic.fill();
 	QPainter painter;

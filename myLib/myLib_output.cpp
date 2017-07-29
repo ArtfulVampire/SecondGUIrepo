@@ -83,7 +83,7 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut)
 {
 	std::string separ = "\t";
 //	std::string separ = "\n";
-	//if(is_container<Typ>) separ = std::endl;
+	// if(is_container<Typ>) separ = std::endl;
 	for(auto in : toOut)
 	{
 //		os << in << separ;
@@ -98,7 +98,7 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ, std::allocator<Typ
 {
 	std::string separ = "\t";
 //	std::string separ = "\n";
-	//if(is_container<Typ>) separ = std::endl;
+	// if(is_container<Typ>) separ = std::endl;
 	for(auto in : toOut)
 	{
 		os << in << separ;

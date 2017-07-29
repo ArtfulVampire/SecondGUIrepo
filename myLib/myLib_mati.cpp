@@ -46,7 +46,7 @@ std::vector<bool> matiCountByte(double marker)
 
 void matiFixMarker(double & marker)
 {
-    //throw 10000000 00000000 and 00000000 10000000 and 00000000 00000000
+    // throw 10000000 00000000 and 00000000 10000000 and 00000000 00000000
     if(marker == pow(2, 15) || marker == pow(2, 7) || marker == 0)
     {
         marker = 0;
@@ -56,9 +56,9 @@ void matiFixMarker(double & marker)
     std::vector<bool> byteMarker = matiCountByte(marker);
     bool boolBuf;
 
-    if(!byteMarker[7]) //elder byte should start with 0 and younger - with 1
+    if(!byteMarker[7]) // elder byte should start with 0 and younger - with 1
     {
-        //swap bytes if wrong order
+        // swap bytes if wrong order
         for(int h = 0; h < 8; ++h)
         {
             boolBuf = byteMarker[h];

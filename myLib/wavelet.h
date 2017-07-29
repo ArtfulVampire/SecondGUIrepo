@@ -24,7 +24,7 @@ extern const double freqMin; // def::leftFreq
 extern const double freqStep;
 extern const int range;
 extern const int numberOfFreqs;
-//wavelets
+// wavelets
 
 double morletCos(double const freq1, double const timeShift, double const pot, double const time);
 double morletSin(double const freq1, double const timeShift, double const pot, double const time);

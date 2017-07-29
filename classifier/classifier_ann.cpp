@@ -162,13 +162,13 @@ void ANN::countOutputDelta()
         smLib::resizeValar(output[i], output[i].size() + 1);
         output[i][output[i].size() - 1] = 1;
 #else
-        for(int j = 0; j < dim[i]; ++j) //higher level, w/o bias
+        for(int j = 0; j < dim[i]; ++j) // higher level, w/o bias
         {
             output[i][j] = smLib::prod(weight[i - 1][j], output[i - 1]); // bias included
         }
 #endif
         output[i] = activation(output[i]);
-        output[i][ dim[i] ] = 1.; //bias, unused for the highest layer
+        output[i][ dim[i] ] = 1.; // bias, unused for the highest layer
     }
 	outputLayer = output.back();
 	smLib::resizeValar(outputLayer, outputLayer.size() - 1);
@@ -179,23 +179,23 @@ void ANN::countOutputBackprop()
 #if 0
     /// count deltaWeights
     /// CHECK
-    //count deltaweights (used for backprop only)
-    //for the last layer
+    // count deltaweights (used for backprop only)
+    // for the last layer
     for(uint j = 0; j < dim[numOfLayers - 1]; ++j)
     {
         deltaWeights[numOfLayers-1][j] = -1. / temp
                                          * output[numOfLayers-1][j]
                                          * (1. - output[numOfLayers-1][j])
-                * ((type == j) - output[numOfLayers-1][j]); //~0.1
+                * ((type == j) - output[numOfLayers-1][j]); // ~0.1
     }
 
-    //for the other layers, besides the input one, upside->down
+    // for the other layers, besides the input one, upside->down
     for(int i = numOfLayers - 2; i >= 1; --i)
     {
-        for(int j = 0; j < dim[i] + 1; ++j) //+1 for bias
+        for(int j = 0; j < dim[i] + 1; ++j) // +1 for bias
         {
             deltaWeights[i][j] = 0.;
-            for(int k = 0; k < dim[i + 1]; ++k) //connected to the higher-layer
+            for(int k = 0; k < dim[i + 1]; ++k) // connected to the higher-layer
             {
                 deltaWeights[i][j] += deltaWeights[i + 1][k] * weight[i][j][k];
             }
@@ -310,7 +310,7 @@ void ANN::learn(std::vector<uint> & indices)
 		}
         ++epoch;
 
-        //count error
+        // count error
         if(errType == errorNetType::SME)
         {
             currentError /= indices.size();
@@ -359,7 +359,7 @@ void ANN::classifyDatum1(uint vecNum)
 				  "/class.txt").toStdString(),
 				 std::ios_base::app);
 
-	///uncomment to write to file
+	/// uncomment to write to file
 //    auto tmp = std::cout.rdbuf();
 //    std::cout.rdbuf(resFile.rdbuf());
 

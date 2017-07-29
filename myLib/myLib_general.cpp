@@ -96,7 +96,7 @@ QString setFileName(const QString & initNameOrPath) // append _num before the do
     QString beforeDot = initNameOrPath;
     beforeDot.resize(beforeDot.lastIndexOf('.'));
 
-    QString afterDot = initNameOrPath; //with the dot
+    QString afterDot = initNameOrPath; // with the dot
     afterDot = afterDot.right(afterDot.length() - afterDot.lastIndexOf('.'));
 
     QString helpString;
@@ -117,7 +117,7 @@ QString getExpNameLib(const QString & filePath, bool shortened) // getFileName
     hlp = hlp.left(hlp.lastIndexOf('.')); // ExpName
 	if(shortened)
 	{
-		hlp = hlp.left(hlp.indexOf('_')); //
+		hlp = hlp.left(hlp.indexOf('_')); // 
 	}
     return hlp;
 }
@@ -342,7 +342,7 @@ void writeBytes(FILE * fil, int value, int numBytes)
 }
 
 
-int len(const QString & s) //lentgh till double \0-byte for EDF+annotations
+int len(const QString & s) // lentgh till double \0-byte for EDF+annotations
 {
 	int l = 0;
 	for(int i = 0; i < 100500; ++i)
@@ -477,7 +477,7 @@ void cleanDir(QString dirPath, QString nameFilter, bool ext)
 
 void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 {
-	// http://soundfile.sapp.org/doc/WaveFormat/
+	// http:// soundfile.sapp.org/doc/WaveFormat/
 
 
 	FILE * outFile;
@@ -498,16 +498,16 @@ void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 	const int byteRate = sampleFreq * numChannels * bitsPerSample / 8;
 	const int blockAlign = numChannels * bitsPerSample / 8;
 
-	//RIFF
+	// RIFF
 	writeByte(outFile, 0x52);
 	writeByte(outFile, 0x49);
 	writeByte(outFile, 0x46);
 	writeByte(outFile, 0x46);
 
-	//chunksize = 44 + ns * numSamples * bytesPerSample
+	// chunksize = 44 + ns * numSamples * bytesPerSample
 	writeBytes(outFile, chunkSize, 4);
 
-	//WAVE
+	// WAVE
 	writeByte(outFile, 0x57);
 	writeByte(outFile, 0x41);
 	writeByte(outFile, 0x56);
@@ -519,37 +519,37 @@ void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 	writeByte(outFile, 0x74);
 	writeByte(outFile, 0x20);
 
-	//Subchunk1Size = 16 for pcm
+	// Subchunk1Size = 16 for pcm
 	writeBytes(outFile, 16, 4);
 
-	//audioFormat = 1 PCM
+	// audioFormat = 1 PCM
 	writeBytes(outFile, 1, 2);
 
-	//numChannels
+	// numChannels
 	writeBytes(outFile, numChannels, 2);
 
-	//sampleRate
+	// sampleRate
 	writeBytes(outFile, sampleFreq, 4);
 
-	//BYTErate
+	// BYTErate
 	writeBytes(outFile, byteRate, 4);
 
-	//block align
+	// block align
 	writeBytes(outFile, blockAlign, 2);
 
-	//bitsPerSample
+	// bitsPerSample
 	writeBytes(outFile, bitsPerSample, 2);
 
-	//data
+	// data
 	writeByte(outFile, 0x64);
 	writeByte(outFile, 0x61);
 	writeByte(outFile, 0x74);
 	writeByte(outFile, 0x61);
 
-	//subchunk2size
+	// subchunk2size
 	writeBytes(outFile, subchunk2size, 4);
 
-	//the data itself
+	// the data itself
 	int currVal;
 	for(int i = 0; i < numSamples; ++i)
 	{

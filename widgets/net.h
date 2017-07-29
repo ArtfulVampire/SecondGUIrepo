@@ -111,7 +111,7 @@ public:
 					   const QString & type = "bd_new");
 
 
-    ///wts
+    /// wts
     void readWtsByName(const QString & fileName,
                        twovector<std::valarray<double>> * wtsMatrix = nullptr);
     void writeWts(const QString & wtsPath = QString());

@@ -60,7 +60,7 @@ void Net::pca()
 		centeredMatrix[i] -= smLib::mean(centeredMatrix[i]);
 	}
 
-	//covariation between different spectra-bins
+	// covariation between different spectra-bins
 	double trace = 0.;
 	for(int i = 0; i < NetLength; ++i)
 	{

@@ -626,10 +626,9 @@ void Spectre::writeSpectra(const double leftFreq,
     QTime myTime;
     myTime.start();
 
-	std::ofstream outStream;
-    QString helpString;
 	const QString outDirPath = ui->lineEdit_2->text();
 //	const QString outDirPath = "/media/Files/Data/FeedbackTest/GA/SpectraSmooth";
+
     if(!QDir(outDirPath).exists())
     {
 		std::cout << "writeSpectra: outDir doesn't exist" << std::endl;
@@ -642,11 +641,14 @@ void Spectre::writeSpectra(const double leftFreq,
     QStringList lst = ui->dropChannelsLineEdit->text().split(
                           QRegExp("[,;\\s]"), QString::SkipEmptyParts);
 	std::cout << "writeSpectra: num of dropped channels = " << lst.length() << std::endl;
+
     for(QString str : lst)
     {
         rangeLimits[str.toInt() - 1] = {0, 0}; // to fill with zeros
     }
 
+	std::ofstream outStream;
+	QString helpString;
 	for(uint i = 0; i < fileNames.size(); ++i)
     {
 		helpString = outDirPath + "/" + fileNames[i];
@@ -670,7 +672,7 @@ void Spectre::writeSpectra(const double leftFreq,
         if(ui->spectraRadioButton->isChecked())
         {
             /// which channels to write ???
-            for(int j = 0; j < def::nsWOM(); ++j) //
+			for(int j = 0; j < def::nsWOM(); ++j) //
 			{
                 for(int k = left; k < left + rangeLimits[j].first; ++k)
                 {
@@ -799,11 +801,11 @@ void Spectre::countSpectra()
 	for(const QString & fileName : fileNames)
 	{
 		if(fileName.contains("_num") ||
-		   //           fileName.contains("_300") ||
+//		   fileName.contains("_300") ||
 		   fileName.contains("_sht")) continue;
 
 //		std::cout << fileName << std::endl;
-		//read data file
+		// read data file
 		helpString = inDirPath + "/" + fileName;
 		myLib::readPlainData(helpString,  dataIn);
 
@@ -815,6 +817,7 @@ void Spectre::countSpectra()
 			}
 			else
 			{
+				/// if can't calculate spectre, e.g. too short real/wind
 #if ELENA_VARIANT
 				QRegExp reg(R"(_[0-9]{1,}_)");
 #else
@@ -822,7 +825,6 @@ void Spectre::countSpectra()
 #endif
 				reg.indexIn(fileName);
 				exFileNumbers.push_back(reg.cap().remove("_").remove(".").toInt());
-
 				exIndices.push_back(fileNumber);
 			}
 		}
@@ -844,7 +846,7 @@ void Spectre::countSpectra()
 
 	ui->progressBar->setValue(0);
 
-	//generality
+	// generality
 	std::cout << "countSpectra: time elapsed " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
@@ -865,14 +867,14 @@ void Spectre::drawWavelets()
 										  + "/wavelets");
     localDir.cd(helpString);
 
-    //make dirs
+	// make dirs
     for(int i = 0; i < def::nsWOM(); ++i)
     {
 		localDir.mkdir(nm(i));
 
         if(ui->phaseWaveletButton->isChecked())
         {
-            //for phase
+			// for phase
 			localDir.cd(nm(i));
             for(int j = 0; j < def::ns; ++j)
             {
@@ -931,8 +933,8 @@ void Spectre::drawWavelets()
     for(auto it = lst.begin(); it != lst.end(); ++it)
     {
         const QString & fileName = (*it);
-        filePath = (def::dir->absolutePath()
-											  + "/" + fileName);
+		filePath = def::dir->absolutePath()
+				   + "/" + fileName;
         if(ui->amplitudeWaveletButton->isChecked())
         {
             for(int channel = 0; channel < def::nsWOM(); ++channel)

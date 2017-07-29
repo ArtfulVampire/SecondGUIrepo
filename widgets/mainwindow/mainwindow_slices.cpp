@@ -11,7 +11,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 {
 	QTime myTime;
 	myTime.start();
-//	readData();
+
 	if(ui->sliceCheckBox->isChecked())
 	{
 		if(ui->matiCheckBox->isChecked())
@@ -32,7 +32,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 			}
 			else if(ui->realsButton->isChecked())
 			{
-				if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) //generality
+				if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) // generality
 				{
 					sliceBak(1, 60, "241");
 					sliceBak(61, 120, "247");
@@ -57,7 +57,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	}
 	ui->progressBar->setValue(0);
 
-	QString helpString = "data sliced\nns equals to " + nm(def::ns);
+	QString helpString = "data sliced\nns equals to " + nm(globalEdf.getNs());
 	ui->textEdit->append(helpString);
 
 	std::cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
@@ -184,93 +184,6 @@ void MainWindow::sliceWinds()
 	}
 }
 
-/// deprecated
-void MainWindow::sliceWindFromReal()
-{
-    QTime myTime;
-    myTime.start();
-
-    QString helpString;
-    int eyesCounter;
-
-
-    QStringList lst;
-	myLib::makeFullFileList(def::dir->absolutePath()
-							+ "/Reals",
-							lst
-							, {def::ExpName}
-							);
-
-    const int timeShift = ui->timeShiftSpinBox->value() * def::freq;
-    const int wndLength = ui->windowLengthSpinBox->value() * def::freq;
-
-    matrix dataReal;
-
-    int eyes;
-	int offset;
-    int localNs = def::ns;
-    for(int i = 0; i < lst.length(); ++i)
-    {
-        localNs = def::ns;
-        helpString = (def::dir->absolutePath()
-											  + "/Reals"
-											  + "/" + lst[i]);
-		myLib::readPlainData(helpString, dataReal);
-
-        offset = 0;
-		for(int h = 0; h < ceil((dataReal.cols() - wndLength) / double(timeShift)); ++h)
-        {
-            //correct eyes number
-            eyes = 0;
-			for(int l = offset; l < std::min(offset + wndLength, int(dataReal.cols())); ++l)
-            {
-                eyesCounter = 0.;
-                for(int m = 0; m < localNs; ++m)
-                {
-                    if(dataReal[m][l] == 0.)  //generality different nr
-                    eyesCounter += 1;
-                }
-                if(eyesCounter >= (localNs - 1)) eyes += 1;
-            }
-
-            if(eyes / double(wndLength) > 0.3)  //generality coefficient
-            {
-                continue;
-            }
-
-            //else
-            helpString = def::dir->absolutePath()
-						 + "/winds"
-						 + "/fromreal"
-						 + "/" + lst[i]
-						 + "." + rn(h, 2);
-
-            /// wowo wowoww wowowowo owowwowo
-			myLib::writePlainData(helpString, dataReal.subCols(offset, offset + wndLength));
-
-            offset += timeShift;
-        }
-        qApp->processEvents();
-        if(stopFlag)
-        {
-            stopFlag = false;
-            break;
-        }
-
-        ui->progressBar->setValue(i * 100. / lst.length());
-    }
-
-    ui->progressBar->setValue(0);
-	helpString = "winds from Reals sliced ";
-    ui->textEdit->append(helpString);
-
-	helpString = "ns equals to " + nm(def::ns);
-    ui->textEdit->append(helpString);
-
-	std::cout << "sliceWindFromReal: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
-}
-
-
 void MainWindow::sliceElena()
 {
 	QString helpString;
@@ -380,15 +293,15 @@ void MainWindow::sliceElena()
 }
 
 
-void MainWindow::sliceBak(int marker1, int marker2, QString marker) //beginning - from mark1 to mark 2, end 250. Marker - included in filename
+void MainWindow::sliceBak(int marker1, int marker2, QString marker) // beginning - from mark1 to mark 2, end 250. Marker - included in filename
 {
     // for Baklushev
     QString helpString;
 
     int number = 0;
     int k;
-    int j = 0;                                     //flag of marker1 read
-    int h = 0;                                     //flag of marker2 read
+	int j = 0;                                     // flag of marker1 read
+	int h = 0;                                     // flag of marker2 read
     const edfFile & fil = globalEdf;
 	const auto & markerChan = fil.getData()[fil.getMarkChan()];
 
@@ -535,7 +448,7 @@ void MainWindow::sliceOneByOneNew()
     QString helpString;
     int number = 0;
     int j = 0;
-    int h = 0; //h == 0 - 241, h == 1 - 247
+	int h = 0; // h == 0 - 241, h == 1 - 247
     QString marker = "000";
 
     const edfFile & fil = globalEdf;
@@ -553,7 +466,7 @@ void MainWindow::sliceOneByOneNew()
         else if((markChanArr[i] > 200 && markChanArr[i] < 241) ||
                 markChanArr[i] == 255 ||
                 markChanArr[i] == 250 ||
-                markChanArr[i] == 251) //all not interesting markers
+				markChanArr[i] == 251) // all not interesting markers
         {
             continue;
         }
@@ -564,7 +477,7 @@ void MainWindow::sliceOneByOneNew()
             else if (markChanArr[i] == 247) h = 1;
             continue; // wait for num marker
         }
-        else if(true) //marker can be num <= 200, ==254, smth else
+		else if(true) // marker can be num <= 200, ==254, smth else
         {
             if(marker.isEmpty())
             {
@@ -658,7 +571,7 @@ void MainWindow::sliceMatiSimple()
     std::vector<bool> markers;
     bool state[3];
     QString fileMark;
-    int session[4]; //generality
+	int session[4]; // generality
     int type = 3;
 
     for(int i = 0; i < 4; ++i)
@@ -681,41 +594,41 @@ void MainWindow::sliceMatiSimple()
         else
         {
 			markers = myLib::matiCountByte(currMarker);
-            //decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
+			// decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
             for(int i = 0; i < 3; ++i)
             {
-                state[i] = markers[i + 8]; //always elder byte is for count adn type of the session
+				state[i] = markers[i + 8]; // always elder byte is for count adn type of the session
             }
 
             if(!(state[0] || state[1] || state[2])) continue; // if all are zeros
 
-            if(state[2] == 1) //the end of a session
+			if(state[2] == 1) // the end of a session
             {
-                if(state[1] == 0 && state[0] == 1) //end of a counting session
+				if(state[1] == 0 && state[0] == 1) // end of a counting session
                 {
                     type = 0;
-                    fileMark = "241"; //count
+					fileMark = "241"; // count
                 }
-                if(state[1] == 1 && state[0] == 0) //end of a tracking session
+				if(state[1] == 1 && state[0] == 0) // end of a tracking session
                 {
                     type = 1;
-                    fileMark = "247"; //follow
+					fileMark = "247"; // follow
                 }
-                if(state[1] == 1 && state[0] == 1) //end of a composed session
+				if(state[1] == 1 && state[0] == 1) // end of a composed session
                 {
                     type = 2;
-                    fileMark = "244"; //composed
+					fileMark = "244"; // composed
                 }
             }
-            else //if the start of a session
+			else // if the start of a session
             {
                 type = 3;
-                fileMark = "254"; //rest. start of the session is sliced too
+				fileMark = "254"; // rest. start of the session is sliced too
             }
             end = i + 1; // end marker should be included
         }
 
-        //save session edf
+		// save session edf
         if(end > start)
         {
             if(state[2]) // if not rest
@@ -769,7 +682,7 @@ void MainWindow::sliceMati()
     std::vector<bool> markers;
     bool state[3];
     QString fileMark;
-    int session[4]; //generality
+	int session[4]; // generality
     int type = 3;
 
     for(int i = 0; i < 4; ++i)
@@ -791,41 +704,41 @@ void MainWindow::sliceMati()
         else
         {
 			markers = myLib::matiCountByte(currMarker);
-            //decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
+			// decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
             for(int i = 0; i < 3; ++i)
             {
-                state[i] = markers[i + 8]; //always elder byte is for count adn type of the session
+				state[i] = markers[i + 8]; // always elder byte is for count adn type of the session
             }
 
             if(!(state[0] || state[1] || state[2])) continue; // if all are zeros
 
-            if(state[2] == 1) //the end of a session
+			if(state[2] == 1) // the end of a session
             {
-                if(state[1] == 0 && state[0] == 1) //end of a counting session
+				if(state[1] == 0 && state[0] == 1) // end of a counting session
                 {
                     type = 0;
-                    fileMark = "241"; //count
+					fileMark = "241"; // count
                 }
-                if(state[1] == 1 && state[0] == 0) //end of a tracking session
+				if(state[1] == 1 && state[0] == 0) // end of a tracking session
                 {
                     type = 1;
-                    fileMark = "247"; //follow
+					fileMark = "247"; // follow
                 }
-                if(state[1] == 1 && state[0] == 1) //end of a composed session
+				if(state[1] == 1 && state[0] == 1) // end of a composed session
                 {
                     type = 2;
-                    fileMark = "244"; //composed
+					fileMark = "244"; // composed
                 }
             }
-            else //if the start of a session
+			else // if the start of a session
             {
                 type = 3;
-                fileMark = "254"; //rest. start of the session is sliced too
+				fileMark = "254"; // rest. start of the session is sliced too
             }
             end = i + 1; // end marker should be included
         }
 
-        //save session edf
+		// save session edf
         if(end > start)
         {
             if(type != 3) // dont write rests
@@ -844,7 +757,7 @@ void MainWindow::sliceMati()
                                    helpString);
             }
 
-            start = end - 1; //start marker should be included
+			start = end - 1; // start marker should be included
             end = -1;
             ++session[type];
         }

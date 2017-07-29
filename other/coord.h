@@ -16,7 +16,7 @@
 namespace coords
 {
 
-//relative coords
+// relative coords
 const double scale = 250./1600.;
 
 /// + 2 EOG

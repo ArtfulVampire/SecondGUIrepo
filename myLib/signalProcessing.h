@@ -128,7 +128,7 @@ double fractalDimension(const std::valarray<double> &arr,
 
 
 /// UNUSED - MUST CHECK BEFORE USE
-//std::valarray<double> hilbert(const std::valarray<double> & arr,
+// std::valarray<double> hilbert(const std::valarray<double> & arr,
 //							  double lowFreq = def::leftFreq,
 //							  double highFreq = def::rightFreq,
 //							  QString picPath  = QString());
@@ -147,7 +147,7 @@ void splineCoeffCount(const std::valarray<double> & inX,
 					  const std::valarray<double> & inY,
 					  int dim,
 					  std::valarray<double> & outA,
-					  std::valarray<double> & outB); //[inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+					  std::valarray<double> & outB); // [inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
 double splineOutput(const std::valarray<double> & inX,
 					const std::valarray<double> & inY,
 					int dim,
@@ -251,7 +251,7 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 									  bool isNotch = false,
 									  double srate = 250.);
 } // namespace myDsp
-#endif //DSP_LIB
+#endif // DSP_LIB
 
 namespace myLib
 {

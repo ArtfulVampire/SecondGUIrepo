@@ -42,7 +42,7 @@ void myTransform(const QString & input, int len, char ** output);
 
 
 
-//typedef matrix edfDataType;
+// typedef matrix edfDataType;
 
 struct edfChannel
 {
@@ -155,14 +155,21 @@ public:
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
 	edfFile reduceChannels(const QString & chanStr) const;
 	void removeChannels(const std::vector<int> & chanList);
+
+	edfFile & multiplyChannel(uint chanNum, double mult);
+	edfFile & multiplyChannels(std::vector<uint> chanNums = {}, double mult = 2.);
+
 	edfFile & divideChannel(uint chanNum, double denom);
 	edfFile & divideChannels(std::vector<uint> chanNums = {}, double denom = 2.);
+
 	edfFile & zeroChannels(const std::vector<uint> & chanNums = {});
 	uint findChannel(const QString & str) const;
 	std::vector<uint> findChannels(const QString & str) const;
 	std::vector<uint> findChannels(const std::vector<QString> & strs) const;
 
     void setLabels(const std::vector<QString> & inLabels);
+	void setLabel(int i, const QString & inLabel);
+
 	void setChannels(const std::vector<edfChannel> & inChannels);
     void cleanFromEyes(QString eyesPath = QString(),
                        bool removeEogChannels = false,
@@ -215,10 +222,11 @@ protected:
 
 	/// cross EOG1-A2, EOG2-A1
 	/// correspond EOG1-A1, EOG2-A2
+	/// but really it is A*-EOG*
 	eogType edfEogType = eogType::correspond; /// true story, 21.07.17
 
 
-    //channels arrays start
+	// channels arrays start
 	std::vector<QString> labels;
 	std::vector<QString> transducerType;
 	std::vector<QString> physDim;
@@ -231,7 +239,7 @@ protected:
 	std::vector<QString> reserved;
 	std::vector<QString> annotations;
 
-    //channels arrays end
+	// channels arrays end
 
     QString headerRest = QString();
 
@@ -350,7 +358,7 @@ void channelsOrderDir(const QString & inDirPath,
                       const QString & outDirPath,
                       const std::vector<QString> & standard = coords::lbl31_more);
 
-void invertEogs(const QString & inFilePath);
+// void invertEogs(const QString & inFilePath);
 void holesFile(const QString & inFilePath,
                QString outFilePath = QString());
 void holesDir(const QString & inDirPath,

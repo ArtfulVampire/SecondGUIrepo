@@ -457,7 +457,7 @@ void IITPtestCoh2(const QString & guyName)
 //		"_dsp_down",
 //		"_fft_up",
 //		"_fft_down"
-//})
+// })
 	QString postfix = "_sum_f_new_env";
 	{
 
@@ -1049,6 +1049,53 @@ void IITPremoveZchans(const QString & hauptDir)
 }
 
 
+void IITPemgToAbs(const QString & guyName,
+				  QString postfix,
+				  const QString & dirPath)
+{
+	/// replace EMG with its abs
+	if(postfix.isEmpty())
+	{
+		std::cout << "IITPstagedToEnveloped: empty postfix" << std::endl;
+		return;
+	}
+
+	const QString direct = dirPath + "/" + guyName + "/";
+
+	auto filePath = [=](int i) -> QString
+	{
+		return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
+	};
+
+	auto outPath = [=](int i) -> QString
+	{
+		return direct + guyName + "_" + rn(i, 2) + postfix + "_env.edf";
+	};
+
+	iitp::iitpData dt;
+
+	for(int fileNum : iitp::fileNums)
+	{
+		if(!QFile::exists(filePath(fileNum)))
+		{
+			std::cout << "IITPstagedToEnveloped: file doesn't exist = "
+					  << filePath(fileNum) << std::endl;
+			continue;
+		}
+
+		dt.readEdfFile(filePath(fileNum));
+		for(QString emgChan : iitp::emgNames)
+		{
+			int num = dt.findChannel(emgChan);
+			if(num == -1) { continue; }
+
+			auto ab = std::abs(dt.getData(num));
+			dt.setData(num, ab);
+		}
+		dt.writeEdfFile(outPath(fileNum));
+	}
+}
+
 void IITPstagedToEnveloped(const QString & guyName,
 						   QString postfix,
 						   const QString & dirPath)
@@ -1306,7 +1353,7 @@ void IITPprocessStaged(const QString & guyName,
 							 + "_" + iitp::trialTypesNames[iitp::trialTypes[fileNum]]
 							+ ".txt").toStdString());
 
-				///eeg-eeg
+				/// eeg-eeg
 				for(int eeg : iitp::interestEeg)
 				{
 					for(int eeg2 : iitp::interestEeg)
@@ -1402,7 +1449,7 @@ void IITPprocessStaged(const QString & guyName,
 				}
 
 #if 01
-				///eeg-eeg
+				/// eeg-eeg
 				for(int eeg : iitp::interestEeg)
 				{
 					for(int eeg2 : iitp::interestEeg)
@@ -1948,7 +1995,7 @@ matrix makeTestData(const QString & outPath)
 {
 	matrix testSignals(8, 250 * 60 * 3); /// 3 min
 
-	//signals
+	// signals
 	double helpDouble;
 	double x, y;
 
@@ -1969,7 +2016,7 @@ matrix makeTestData(const QString & outPath)
 		y = distr(gen);
 		testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * pi * y); // gauss?
 
-		testSignals[4][i] = std::abs(i % 22 - 11); //triangle
+		testSignals[4][i] = std::abs(i % 22 - 11); // triangle
 
 		testSignals[5][i] = rand() % 27; // noise
 
@@ -2201,8 +2248,8 @@ void GalyaWavelets(const QString & inPath,
 
 	const auto filesVec = lst.toVector();
 
-//#pragma omp parallel
-//#pragma omp for nowait
+// #pragma omp parallel
+// #pragma omp for nowait
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		std::cout << filesVec[i] << std::endl;
@@ -2947,7 +2994,7 @@ void clustering()
 	clust::sammonProj(distOld, types,
 					  "/media/Files/Data/Mati/sammon.jpg");
 #if 0
-	//test
+	// test
 
 	const int N = 15;
 	const int dim = 2;
@@ -3002,7 +3049,7 @@ return;
 
 
 #if 0
-	//smallest tree
+	// smallest tree
 	std::sort(dists.begin(), dists.end(), mySort);
 	// make first bound
 
@@ -3020,7 +3067,7 @@ return;
 	std::vector<std::vector<double> >::iterator itt;
 	while (contains(isolDots.begin(), isolDots.end(), true))
 	{
-		//adjust dists[i][3]
+		// adjust dists[i][3]
 		for(std::vector<std::vector<double> >::iterator iit = dists.begin();
 			iit < dists.end();
 			++iit)

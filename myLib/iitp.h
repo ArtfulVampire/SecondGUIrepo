@@ -358,16 +358,16 @@ const double leftFr = 4;
 const double rightFr = 40;
 
 const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 45 + 1);
-//const std::valarray<double> interestFrequencies = smLib::range(8, 45);
+// const std::valarray<double> interestFrequencies = smLib::range(8, 45);
 
 /// without 12th
-//const std::valarray<double> fileNums = smLib::unite({smLib::range(0, 12), smLib::range(13, 29+1)});
+// const std::valarray<double> fileNums = smLib::unite({smLib::range(0, 12), smLib::range(13, 29+1)});
 /// with 12th
 const std::valarray<double> fileNums = smLib::range(0, 29+1);
 
-//const std::valarray<double> fileNums = smLib::range(0, 5);
-//const std::valarray<double> fileNums{12};
-//const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
+// const std::valarray<double> fileNums = smLib::range(0, 5);
+// const std::valarray<double> fileNums{12};
+// const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
 
 
 class iitpData : public edfFile

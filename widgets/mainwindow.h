@@ -46,8 +46,7 @@ public slots:
 
 	// in-window calculations, substantional actions
 	// files
-    void sliceAll();
-	void sliceWindFromReal(); /// deprecated
+	void sliceAll();
 	void sliceWinds();
 
     void drawSpectraSlot();
@@ -73,6 +72,7 @@ public slots:
     void ICA();
     void refilterDataSlot();
     void rereferenceDataSlot();
+	void rereferenceCARSlot();
 
 	// other
     void stop();

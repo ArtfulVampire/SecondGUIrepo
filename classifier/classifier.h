@@ -76,7 +76,7 @@ public:
 	void setClassifierData(ClassifierData & in);
 	ClassifierData * getClassifierData() { return myClassData; }
 
-	///
+	/// 
 	void leaveOneOutClassification();
 	void crossClassification(int numOfPairs, int fold);
 	void trainTestClassification(const QString & trainTemplate = "_train",
@@ -261,7 +261,7 @@ class NBC : public Classifier
 {
 private:
     std::vector<std::valarray<double>> centers;
-    std::vector<std::valarray<double>> sigmas; //[class][feature]
+    std::vector<std::valarray<double>> sigmas; // [class][feature]
 
 public:
     NBC();

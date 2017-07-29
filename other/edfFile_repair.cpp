@@ -224,8 +224,8 @@ void channelsOrderDir(const QString & inDirPath,
     const auto leest = QDir(inDirPath).entryList(def::edfFilters, QDir::Files);
     const auto vec = leest.toVector();
 
-//#pragma omp parallel
-//#pragma omp for nowait schedule(dynamic,3)
+// #pragma omp parallel
+// #pragma omp for nowait schedule(dynamic,3)
     for(int i = 0; i < vec.size(); ++i)
     {
         QString outName = vec[i];
@@ -239,12 +239,12 @@ void channelsOrderDir(const QString & inDirPath,
 }
 
 
-void invertEogs(const QString & inFilePath)
-{
-	edfFile fil;
-	fil.readEdfFile(inFilePath);
-	fil.divideChannels(fil.findChannels({"EOG1-A1", "EOG2-A2"}), -1).writeEdfFile(inFilePath);
-}
+// void invertEogs(const QString & inFilePath)
+// {
+//	edfFile fil;
+//	fil.readEdfFile(inFilePath);
+//	fil.divideChannels(fil.findChannels({"EOG1-A1", "EOG2-A2"}), -1).writeEdfFile(inFilePath);
+// }
 
 
 void holesFile(const QString & inFilePath,
