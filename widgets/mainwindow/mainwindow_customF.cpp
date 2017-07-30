@@ -4,6 +4,7 @@
 #include <myLib/drw.h>
 #include <myLib/iitp.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/temp.h>
 
 using namespace myOut;
 
@@ -38,6 +39,8 @@ void MainWindow::customFunc()
 //	autos::successiveNetPrecleanWinds("/media/Files/Data/FeedbackFinal/Ilyin/SpectraSmooth/winds");
 //	exit(0);
 //	repair::invertEogs("/media/Files/Data/FeedbackFinal/Ilyin/IAE_1.EDF"); exit(0);
+
+
 
 	return;
 
@@ -135,6 +138,30 @@ void MainWindow::customFunc()
 //							"_emg_f");
 	exit(0);
 //	return;
+#endif
+
+
+#if 0
+	/// check new butter:: filters
+//	const QString prePath = "/media/Files/Data/FeedbackFinal/Burtcev/BAV_1_car";
+//	double lF = 3.5;
+//	double rF = 12.;
+//	for(QString postPath : {"", "_but", "_dsp"})
+//	{
+//		edfFile fil;
+//		fil.readEdfFile(prePath + postPath + ".edf");
+//		if(0)
+//		{
+//			myLib::refilter = &butter::refilter;
+//			fil.refilter(lF, rF, true).writeEdfFile(prePath + "_but" + ".edf");
+//			myLib::refilter = &myDsp::refilter;
+//			fil.refilter(lF, rF, true).writeEdfFile(prePath + "_dsp" + ".edf");
+//			break;
+//		}
+//		myLib::drw::drawOneSpectrum(smLib::valarSubsec(fil.getData(9), 10000, 10000 + 8192),
+//									lF-0.5, rF + 0.5, 250., 5).save(prePath + postPath + ".jpg");
+//	}
+//	exit(0);
 #endif
 
 #if 0

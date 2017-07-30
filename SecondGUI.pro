@@ -9,7 +9,7 @@ QT   += core gui svg
 TARGET = SecondGUI
 TEMPLATE = app
 CONFIG += console #for better display of processes with std::cout.flush()
-QMAKE_CXXFLAGS += -std=c++1z
+QMAKE_CXXFLAGS += -std=c++17
 QMAKE_CXXFLAGS += -fopenmp
 QMAKE_CXXFLAGS += -Wno-sign-compare
 QMAKE_CXXFLAGS += -Wno-unused-parameter
@@ -89,7 +89,8 @@ DSP/DspFilters/RBJ.cpp \
 DSP/DspFilters/RootFinder.cpp \
 DSP/DspFilters/State.cpp \
 myLib/myLib_qtlib.cpp \
-    classifier/classifier_ward.cpp
+    classifier/classifier_ward.cpp \
+    myLib/myLib_temp.cpp
 
 HEADERS  += \
 widgets/cut.h \
@@ -117,7 +118,8 @@ other/coord.h \
 other/matrix.h \
 other/edffile.h \
     other/defaults.h \
-    myLib/qtlib.h
+    myLib/qtlib.h \
+    myLib/temp.h
 
 FORMS+= mainwindow.ui \
 cut.ui \

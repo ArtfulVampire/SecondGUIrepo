@@ -12,7 +12,7 @@ QDir * dir = new QDir();
 bool ntFlag = false;
 
 double drawNorm = -1.;
-spectraGraphsNormalization drawNormTyp = spectraGraphsNormalization::all;
+def::spectraGraphsNormalization drawNormTyp = def::spectraGraphsNormalization::all;
 
 int left()  { return fftLimit(def::leftFreq, def::freq, def::fftLength); }
 int right() { return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1; }

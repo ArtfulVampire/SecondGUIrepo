@@ -717,11 +717,7 @@ void IITPconcat(const QString & guyName)
 #if 01
 		/// vertcat eeg+emg
 		QString addName;
-#if DSP_LIB
 		addName = "_dsp";
-#else
-		addName = "_fft";
-#endif
 
 #if UP_DOWN_S
 		/// upsampled EEG
@@ -863,14 +859,14 @@ void IITPpre2(const QString & guyName)
 		/// filter EMG notch + goniogramms
 		for(QString addName :{"dsp", "fft"})
 		{
-			if(addName == "dsp")
-			{
-				myLib::refilter = &myDsp::refilter;
-			}
-			else
-			{
-				myLib::refilter = &myLib::refilterFFT;
-			}
+//			if(addName == "dsp")
+//			{
+//				myLib::refilter = &myDsp::refilter;
+//			}
+//			else
+//			{
+//				myLib::refilter = &myLib::refilterFFT;
+//			}
 
 			filePath = ExpNamePre + "_emg.edf";
 			if(QFile::exists(filePath))
@@ -924,14 +920,14 @@ void IITPpre2(const QString & guyName)
 		/// filter EEG edfs, but not ECG
 		for(QString addName :{"dsp", "fft"})
 		{
-			if(addName == "dsp")
-			{
-				myLib::refilter = &myDsp::refilter;
-			}
-			else
-			{
-				myLib::refilter = &myLib::refilterFFT;
-			}
+//			if(addName == "dsp")
+//			{
+//				myLib::refilter = &myDsp::refilter;
+//			}
+//			else
+//			{
+//				myLib::refilter = &myLib::refilterFFT;
+//			}
 
 			filePath = ExpNamePre + "_eeg_div.edf";
 			if(QFile::exists(filePath))
@@ -950,14 +946,14 @@ void IITPpre2(const QString & guyName)
 		/// upsample EEGs
 		for(QString addName :{"dsp", "fft"})
 		{
-			if(addName == "dsp")
-			{
-				myLib::refilter = &myDsp::refilter;
-			}
-			else
-			{
-				myLib::refilter = &myLib::refilterFFT;
-			}
+//			if(addName == "dsp")
+//			{
+//				myLib::refilter = &myDsp::refilter;
+//			}
+//			else
+//			{
+//				myLib::refilter = &myLib::refilterFFT;
+//			}
 
 			filePath = ExpNamePre + "_eeg_" + addName + ".edf";
 			if(QFile::exists(filePath))

@@ -125,11 +125,13 @@ extern double numSmooth;
 
 
 
-/// all channels the same or each channel has self coefficient
-enum class spectraGraphsNormalization {all, each};
+
 
 namespace def
 {
+	enum class filteringTyp{butterworth, fft, dsp};
+	const filteringTyp filterType = filteringTyp::butterworth;
+
     const bool matiFlag = false;
 
     const bool withMarkersFlag = true; /// should check everywhere if changed to false
@@ -149,9 +151,10 @@ namespace def
 				QColor("black"),
 				QColor("gray")
 									  };
-
-    extern double drawNorm;
-    extern spectraGraphsNormalization drawNormTyp;
+	/// all channels the same or each channel has self coefficient
+	enum class spectraGraphsNormalization {all, each};
+	extern spectraGraphsNormalization drawNormTyp;
+	extern double drawNorm;
 
 //    Atanov
 #if ELENA_VARIANT
@@ -171,8 +174,6 @@ namespace def
 
     const bool opencl = true;
     const bool openmp = true;
-
-
 
 
 

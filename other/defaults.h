@@ -8,11 +8,6 @@ typedef unsigned int uint;
 #define COHERENCY_TYPE 01
 #endif
 
-/// 0 - fft filtering, 1 - dsp filtering
-#ifndef DSP_LIB
-#define DSP_LIB 01
-#endif
-
 #ifndef WAVELET_MATLAB
 #define WAVELET_MATLAB 01
 #endif

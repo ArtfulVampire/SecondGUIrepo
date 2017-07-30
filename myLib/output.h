@@ -38,6 +38,21 @@ std::ostream & operator<< (std::ostream &os, QChar toOut);
 std::ostream & operator<< (std::ostream &os, const std::complex<double> & toOut);
 std::ostream & operator<< (std::ostream &os, const QStringList & toOut);
 
+inline std::ostream & myWrite (std::ostream & os)
+{
+	os << std::endl;
+	return os;
+}
+
+template<class input, class... inputs>
+inline std::ostream & myWrite (std::ostream & os, input in, inputs... ins)
+{
+	os << in << "\t";
+	myWrite(os, ins...);
+	return os;
+}
+
+
 // containers w/o allocators
 template <typename Typ, template <typename> class Cont>
 std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut);

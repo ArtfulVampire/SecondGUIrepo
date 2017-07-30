@@ -1461,7 +1461,6 @@ edfFile & edfFile::refilter(double lowFreq,
 
 	for(int j : chanList)
 	{
-		/// new butterworth filtering if DSP_LIB, else FFT
 		this->edfData[j] = myLib::refilter(this->edfData[j],
 										   lowFreq,
 										   highFreq,

@@ -5,6 +5,333 @@
 
 using namespace myOut;
 
+namespace butter
+{
+
+std::valarray<double> butterworthBandStop(const std::valarray<double> & in,
+										  double fLow,
+										  double fHigh,
+										  double srate,
+										  int n)
+{
+	//n = filter order 4,8,12,...
+	//s = sampling frequency
+	//f1 = upper half power frequency
+	//f2 = lower half power frequency
+
+
+	if(n % 4 != 0)
+	{
+		std::cout << "Order must be 4,8,12,16,..." << std::endl;
+		return {};
+	}
+
+	double a = std::cos(M_PI * (fHigh + fLow) / srate) /
+			   std::cos(M_PI * (fHigh - fLow) / srate);
+	double a2 = std::pow(a, 2);
+
+	double b = std::tan(M_PI * (fHigh - fLow) / srate);
+	double b2 = std::pow(b, 2);
+
+
+	n /= 4;
+	std::valarray<double> A(n);
+	std::valarray<double> d1(n);
+	std::valarray<double> d2(n);
+	std::valarray<double> d3(n);
+	std::valarray<double> d4(n);
+	std::valarray<double> w0(n);
+	std::valarray<double> w1(n);
+	std::valarray<double> w2(n);
+	std::valarray<double> w3(n);
+	std::valarray<double> w4(n);
+//	std::valarray<double> r(n);
+	double r;
+
+	for(int i = 0; i < n; ++i)
+	{
+		r = sin(M_PI * (2.0 * i + 1.0) / (4.0 * n));
+		srate = b2 + 2.0 * b * r + 1.0;
+
+		A[i] = 1.0 / srate;
+		d1[i] = 4.0 * a * (1.0 + b * r) / srate;
+		d2[i] = 2.0 * (b2 - 2.0 * a2 - 1.0) / srate;
+		d3[i] = 4.0 * a * (1.0 - b * r) / srate;
+		d4[i] = -(b2 - 2.0 * b * r + 1.0) / srate;
+	}
+	r = 4.0 * a;
+	srate = 4.0 * a2 + 2.0;
+
+	std::valarray<double> res(in.size());
+	int count = 0;
+	for(double x : in)
+	{
+		for(int i = 0; i < n; ++i)
+		{
+			w0[i] = d1[i] * w1[i] + d2[i] * w2[i]+ d3[i] * w3[i]+ d4[i] * w4[i] + x;
+			x = A[i] * (w0[i] - r * w1[i] + srate * w2[i]- r * w3[i] + w4[i]);
+
+			w4[i] = w3[i];
+			w3[i] = w2[i];
+			w2[i] = w1[i];
+			w1[i] = w0[i];
+		}
+		res[count++] = x;
+	}
+
+	return res;
+}
+
+
+std::valarray<double> butterworthBandPass(const std::valarray<double> & in,
+										  double fLow,
+										  double fHigh,
+										  double srate,
+										  int n)
+{
+//	Butterworth bandpass filter
+//	n = filter order 4,8,12
+//	s = sampling frequency
+//	f1 = upper half power frequency
+//	fLow = lower half power frequency
+
+	if(n % 4 != 0)
+	{
+		std::cout << "Order must be 4,8,12,16,..." << std::endl;
+		return {};
+	}
+
+	double a = std::cos(M_PI * (fHigh + fLow) / srate) /
+			   std::cos(M_PI * (fHigh - fLow) / srate);
+	double a2 = std::pow(a, 2);
+
+	double b = std::tan(M_PI * (fHigh - fLow) / srate);
+	double b2 = std::pow(b, 2);
+
+
+	n /= 4;
+	std::valarray<double> A(n);
+	std::valarray<double> d1(n);
+	std::valarray<double> d2(n);
+	std::valarray<double> d3(n);
+	std::valarray<double> d4(n);
+	std::valarray<double> w0(n);
+	std::valarray<double> w1(n);
+	std::valarray<double> w2(n);
+	std::valarray<double> w3(n);
+	std::valarray<double> w4(n);
+//	std::valarray<double> r(n);
+	double r;
+
+	for(int i = 0; i < n; ++i)
+	{
+		r = std::sin(M_PI * (2.0 * i + 1.0) / (4.0 * n));
+		srate = b2 + 2.0 * b * r + 1.0;
+
+		A[i] = b2 / srate;
+		d1[i] = 4.0 * a * (1.0 + b * r) / srate;
+		d2[i] = 2.0 * (b2 - 2.0 * a2 - 1.0) / srate;
+		d3[i] = 4.0 * a * (1.0 - b * r) / srate;
+		d4[i] = -(b2 - 2.0 * b * r + 1.0) / srate;
+	}
+
+	std::valarray<double> res(in.size());
+	int count = 0;
+	for(double x : in)
+	{
+		for(int i = 0; i < n; ++i)
+		{
+			w0[i] = d1[i] * w1[i] + d2[i] * w2[i]+ d3[i] * w3[i]+ d4[i] * w4[i] + x;
+			x = A[i] * (w0[i] - 2.0 * w2[i] + w4[i]);
+
+			w4[i] = w3[i];
+			w3[i] = w2[i];
+			w2[i] = w1[i];
+			w1[i] = w0[i];
+		}
+		res[count++] = x;
+	}
+	return res;
+}
+
+std::valarray<double> butterworthHighPass(const std::valarray<double> & in,
+										  double cutoff,
+										  double srate,
+										  int n)
+{
+//	Butterworth highpass filter
+//	n = filter order 2,4,6
+//	srate = sampling frequency
+//	cutoff = half power frequency
+
+	if(n % 2 != 0)
+	{
+		std::cout << "Order must be 2,4,6,..." << std::endl;
+		return {};
+	}
+
+	double a = std::tan(M_PI * cutoff / srate);
+	double a2 = std::pow(a, 2);
+
+
+	n /= 2;
+	std::valarray<double> A(n);
+	std::valarray<double> d1(n);
+	std::valarray<double> d2(n);
+	std::valarray<double> w0(n);
+	std::valarray<double> w1(n);
+	std::valarray<double> w2(n);
+//	std::valarray<double> r(n);
+	double r;
+
+	for(int i = 0; i < n; ++i)
+	{
+		r = std::sin(M_PI * (2.0 * i + 1.0) / (4.0 * n));
+		srate = a2 + 2.0 * a * r + 1.0;
+		A[i] = 1.0 / srate;
+		d1[i] = 2.0 * (1 - a2) / srate;
+		d2[i] = -(a2 - 2.0 * a * r + 1.0) / srate;
+	}
+
+	std::valarray<double> res(in.size());
+	int count = 0;
+	for(double x : in)
+	{
+		for(int i = 0; i < n; ++i)
+		{
+			w0[i] = d1[i] * w1[i] + d2[i] * w2[i] + x;
+			x = A[i] * (w0[i] - 2.0 * w1[i] + w2[i]);
+
+			w2[i] = w1[i];
+			w1[i] = w0[i];
+		}
+		res[count++] = x;
+	}
+	return res;
+}
+
+std::valarray<double> butterworthLowPass(const std::valarray<double> & in,
+										 double cutoff,
+										 double srate,
+										 int n)
+{
+	//	Butterworth lowpass filter
+	//	n = filter order 2,4,6
+	//	srate = sampling frequency
+	//	cutoff = half power frequency
+
+	if(n % 2 != 0)
+	{
+		std::cout << "Order must be 2,4,6,..." << std::endl;
+		return {};
+	}
+
+	double a = std::tan(M_PI * cutoff / srate);
+	double a2 = std::pow(a, 2);
+
+
+	n /= 2;
+	std::valarray<double> A(n);
+	std::valarray<double> d1(n);
+	std::valarray<double> d2(n);
+	std::valarray<double> w0(n);
+	std::valarray<double> w1(n);
+	std::valarray<double> w2(n);
+//	std::valarray<double> r(n);
+	double r;
+
+	for(int i = 0; i < n; ++i)
+	{
+		r = std::sin(M_PI * (2.0 * i + 1.0) / (4.0 * n));
+		srate = a2 + 2.0 * a * r + 1.0;
+		A[i] = a2 / srate;
+		d1[i] = 2.0 * (1 - a2) / srate;
+		d2[i] = -(a2 - 2.0 * a * r + 1.0) / srate;
+	}
+
+	std::valarray<double> res(in.size());
+	int count = 0;
+	for(double x : in)
+	{
+		for(int i = 0; i < n; ++i)
+		{
+			w0[i] = d1[i] * w1[i] + d2[i] * w2[i] + x;
+			x = A[i] * (w0[i] + 2.0 * w1[i] + w2[i]);
+
+			w2[i] = w1[i];
+			w1[i] = w0[i];
+		}
+		res[count++] = x;
+	}
+	return res;
+}
+
+std::valarray<double> butterworthBandStopTwoSided(const std::valarray<double> & in,
+												  double fLow,
+												  double fHigh,
+												  double srate)
+{
+	std::valarray<double> res1 = butterworthBandStop(in, fLow, fHigh, srate);
+	std::valarray<double> res2 = smLib::reverseArray(res1);
+	res1 = butterworthBandStop(res2, fLow, fHigh, srate);
+	return smLib::reverseArray(res1);
+}
+
+std::valarray<double> butterworthBandPassTwoSided(const std::valarray<double> & in,
+												  double fLow,
+												  double fHigh,
+												  double srate)
+{
+	std::valarray<double> res1 = butterworthBandPass(in, fLow, fHigh, srate);
+	std::valarray<double> res2 = smLib::reverseArray(res1);
+	res1 = butterworthBandPass(res2, fLow, fHigh, srate);
+	return smLib::reverseArray(res1);
+}
+
+std::valarray<double> butterworthHighPassTwoSided(const std::valarray<double> & in,
+												  double cutoff,
+												  double srate)
+{
+	std::valarray<double> res1 = butterworthHighPass(in, cutoff, srate);
+	std::valarray<double> res2 = smLib::reverseArray(res1);
+	res1 = butterworthHighPass(res2, cutoff, srate);
+	return smLib::reverseArray(res1);
+}
+
+std::valarray<double> butterworthLowPassTwoSided(const std::valarray<double> & in,
+												  double cutoff,
+												  double srate)
+{
+	std::valarray<double> res1 = butterworthLowPass(in, cutoff, srate);
+	std::valarray<double> res2 = smLib::reverseArray(res1);
+	res1 = butterworthLowPass(res2, cutoff, srate);
+	return smLib::reverseArray(res1);
+}
+
+std::valarray<double> refilter(const std::valarray<double> & inputSignal,
+							   double lowFreq,
+							   double highFreq,
+							   bool isNotch,
+							   double srate)
+{
+	if(isNotch)
+	{
+		return butter::butterworthBandStopTwoSided(inputSignal,
+												   lowFreq,
+												   highFreq,
+												   srate);
+	}
+	else
+	{
+		return butter::butterworthBandPassTwoSided(inputSignal,
+												   lowFreq,
+												   highFreq,
+												   srate);
+	}
+}
+
+} // namespace butter
+
 namespace btr
 {
 std::valarray<double> butterworth(const std::valarray<double> & in,
@@ -64,16 +391,13 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 } // namespace btr
 
 
-#if DSP_LIB
 namespace myDsp
 {
-
-
 std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
 									 double cutoffFreq,
 									 double srate)
 {
-	const int order = 6;
+	const int order = 10;
 
 	double * tempArr;
 	try
@@ -130,15 +454,9 @@ std::valarray<double> lowPass(const std::valarray<double> & inputSignal,
 							  double cutoffFreq,
 							  double srate)
 {
-	std::valarray<double> tmp;
-	tmp = lowPassOneSide(inputSignal,
-						 cutoffFreq,
-						 srate);
-
-//	myLib::operator <<(std::cout, tmp);
-//	std::cout << std::endl;
-
-	// reverse signal
+	std::valarray<double> tmp = lowPassOneSide(inputSignal,
+											   cutoffFreq,
+											   srate);
 	tmp = smLib::reverseArray(tmp);
 	tmp = lowPassOneSide(tmp,
 						 cutoffFreq,
@@ -212,8 +530,6 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 }
 
 }
-#endif // DSP_LIB
-
 
 
 
@@ -2065,10 +2381,7 @@ std::valarray<double> (* refilter)(const std::valarray<double> & inputSignal,
 								  double highFreq,
 								  bool isNotch,
 								  double srate) =
-		#if DSP_LIB
-		&myDsp::refilter;
-#else
-		&myLib::refilterFFT;
-#endif
+//		&myDsp::refilter;
+		&butter::refilter;
 
 }// namespace myLib

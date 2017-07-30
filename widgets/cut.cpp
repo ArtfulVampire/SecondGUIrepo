@@ -524,6 +524,18 @@ void Cut::createImage(const QString & dataFileName)
     ui->scrollArea->horizontalScrollBar()->setSliderPosition(0);
 }
 
+template<class... params>
+void Cut::logAction(const params &... par)
+{
+	std::ofstream outStr;
+	QString name = edfFil.getExpName();
+	name = name.left(name.indexOf('_')); /// hope no '_' in dirPath
+	outStr.open((edfFil.getDirPath() + "/" +
+				 name + "_cutLog.txt").toStdString(), std::ios_base::app);
+	myWrite(outStr, par...);
+	outStr.close();
+}
+
 void Cut::iitpLog(const QString & typ, int num, const QString & add)
 {
 	std::ofstream outStr;
@@ -638,6 +650,8 @@ void Cut::copySlot()
 
 	this->copyData = dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
 								   ui->rightLimitSpinBox->value());
+
+	logAction("copy");
 	paint();
 }
 
@@ -665,6 +679,7 @@ void Cut::paste(int start, const matrix & inData, bool addUndo)
 	matrix data2 = this->dataCutLocal.subCols(ui->leftLimitSpinBox->value(), dataCutLocal.cols());
 	dataCutLocal.resizeCols(ui->leftLimitSpinBox->value());
 	dataCutLocal.horzCat(inData).horzCat(data2);
+	logAction("paste", start, addUndo);
 	paint();
 }
 
@@ -1005,6 +1020,8 @@ void Cut::undoSlot()
 	}
 	undos.back()();
 	undos.pop_back();
+
+	logAction("undo");
     paint();
 }
 
@@ -1032,6 +1049,8 @@ void Cut::setMarker(int inVal, bool left)
 		undos.push_back(undoAction);
 
 		dataCutLocal[num][offset] = inVal;
+
+		logAction("setMarker", inVal, offset, left);
 	}
 	else if(myFileType == fileType::real)
 	{
@@ -1402,6 +1421,7 @@ void Cut::zero(int start, int end)
 	undos.push_back(undoAction);
 
 
+	logAction("zeroData", start, end);
 	zeroData(dataCutLocal,
 			 start,
 			 end);
@@ -1458,6 +1478,7 @@ void Cut::split(int start, int end, bool addUndo)
 	dataCutLocal.resizeCols(start).horzCat(data2); /// +1 to save first marker in reals
 	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
 
+	logAction("split", start, end);
 	resetLimits();
 	ui->paintStartDoubleSpinBox->setValue(start / edfFil.getFreq() - 1.5);
 	ui->leftLimitSpinBox->setValue(start);
@@ -1473,7 +1494,6 @@ void Cut::splitSlot()
 void Cut::splitFromZeroSlot()
 {
 	iitpLog("split0");
-
 	this->split(0, ui->rightLimitSpinBox->value());
 	ui->paintStartDoubleSpinBox->setValue(0.);
 }
@@ -1481,6 +1501,7 @@ void Cut::splitFromZeroSlot()
 void Cut::splitTillEndSlot()
 {
 	iitpLog("splitE");
+	logAction("splitTillEnd", ui->leftLimitSpinBox->value());
 	dataCutLocal.resizeCols(ui->leftLimitSpinBox->value());
 	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
 	paint();
@@ -1492,6 +1513,7 @@ void Cut::linearApproxSlot()
 
 	const int lef = ui->leftLimitSpinBox->value();
 	const int rig = ui->rightLimitSpinBox->value();
+
 
 	std::vector<int> chanList;
 	for(int i = 0; i < dataCutLocal.rows(); ++i)
@@ -1519,6 +1541,9 @@ void Cut::linearApproxSlot()
 			dataCutLocal[ch][i] = dataCutLocal[ch][lef] + coeff * (i - lef);
 		}
 	}
+
+
+	logAction("linearApprox", lef, rig, chanList);
 	paint();
 }
 
@@ -1529,6 +1554,7 @@ void Cut::saveAs(const QString & addToName)
 	QString newPath = currentFile;
 	newPath.insert(newPath.lastIndexOf('.'), addToName);
 	edfFil.writeOtherData(dataCutLocal, newPath);
+	logAction("saveAs", addToName);
 }
 
 void Cut::save()

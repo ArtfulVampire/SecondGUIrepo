@@ -44,6 +44,7 @@ private:
 	void paste(int start, const matrix & inData, bool addUndo = true);
 	void saveAs(const QString & addToName);
 	void setMarker(int inVal, bool left = true);
+
 	void paintLimits();
 	void setValuesByEdf();
 	void resetLimits();
@@ -54,6 +55,8 @@ private:
 
 	void drawSamples();
 	std::vector<std::pair<int, QColor>> makeColouredChans();
+	template<class...params>
+	void logAction(const params &... par);
 	void iitpLog(const QString & typ, int num = 2, const QString & add = QString());
 
 public slots:

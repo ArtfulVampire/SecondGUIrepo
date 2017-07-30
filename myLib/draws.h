@@ -85,14 +85,14 @@ QPixmap drawTemplate(const QString & outPath = QString(),
 
 void drawArray(const QString & templPath,
 			   const matrix & inData,
-//               const spectraGraphsNormalization normType = 0, ////// TO DO
+//               const def::spectraGraphsNormalization normType = 0, ////// TO DO
 			   const QString & color = "black",
 			   double scaling = 1.,
 			   int lineWidth = 3);
 
 void drawArray(const QString & templPath,
 			   const std::valarray<double> & inData,
-//               const spectraGraphsNormalization normType = 0, ////// TO DO
+//               const def::spectraGraphsNormalization normType = 0, ////// TO DO
 			   const QString & color = "black",
 			   double scaling = 1.,
 			   int lineWidth = 3);
@@ -108,7 +108,7 @@ void drawArrayWithSigma(const QString & templPath,
 double drawArrays(const QString & templPath,
 				const matrix & inMatrix,
 				const bool weightsFlag = false,
-				const spectraGraphsNormalization normType = spectraGraphsNormalization::all,
+				const def::spectraGraphsNormalization normType = def::spectraGraphsNormalization::all,
 				double norm = 0.,
 				const std::vector<QColor> & colors = def::colours,
 				const double scaling = 1.,
@@ -117,7 +117,7 @@ double drawArrays(const QString & templPath,
 QPixmap drawArrays(const QPixmap & templPixmap,
 				const matrix & inMatrix,
 				const bool weightsFlag = false,
-				const spectraGraphsNormalization normType = spectraGraphsNormalization::all,
+				const def::spectraGraphsNormalization normType = def::spectraGraphsNormalization::all,
 				double norm = 0.,
 				const std::vector<QColor> & colors = def::colours,
 				const double scaling = 1.,
