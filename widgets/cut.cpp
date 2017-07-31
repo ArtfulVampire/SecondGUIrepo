@@ -231,7 +231,7 @@ void Cut::drawSamples()
 	for(int num = 0; num < 6; ++num)
 	{
 		int freq = 5 * (num + 1);
-		myLib::makeSine(seen, freq, 0, -1, 250.);
+		seen = myLib::makeSine(150, freq);
 		QPixmap pic = myLib::drawOneSignal(seen, 50);
 
 		picLabels[num]->setPixmap(pic);

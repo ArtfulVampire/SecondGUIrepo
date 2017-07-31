@@ -38,9 +38,70 @@ void MainWindow::customFunc()
 //	setEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_1_fin.edf");
 //	autos::successiveNetPrecleanWinds("/media/Files/Data/FeedbackFinal/Ilyin/SpectraSmooth/winds");
 //	exit(0);
-//	repair::invertEogs("/media/Files/Data/FeedbackFinal/Ilyin/IAE_1.EDF"); exit(0);
+
+	edfFile fil;
+	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+
+	auto sig1 = smLib::valarSubsec(fil.getData(13),
+								   250 * 60 * 15,
+								   250 * 60 * 15 + 250 * 40);
+	auto sig2 = myLib::refilter(
+					sig1,
+					4, 8,
+					false, 250.);
 
 
+
+	const int M = 250 * 60 * 5;
+	std::valarray<double> sig3(M);
+
+	auto getAmpl = std::bind(std::uniform_real_distribution<>(1., 10.),
+							 std::default_random_engine{});
+	auto getFreq = std::bind(std::uniform_real_distribution<>(1., 20.),
+							 std::default_random_engine{});
+	auto getPhase = std::bind(std::uniform_real_distribution<>(0., M_PI),
+							  std::default_random_engine{});
+	for(int i = 0; i < 50; ++i)
+	{
+		sig3 += getAmpl() * myLib::makeSine(M, getFreq(), 250., getPhase());
+	}
+
+	int N = pow(2, 17);
+	std::valarray<double> Y(N);
+
+//	std::ofstream ostr("/media/Files/Data/Y.txt");
+//	for(int i = 0; i < N; ++i)
+//	{
+//		if( (i - 1) % int(pow(2, 12)) == 0)
+//		{
+//			std::cout << (i - 1) / pow(2, 12) << std::endl;
+//		}
+
+//		for(int j = 0; j < 200 + i / pow(2, 5); ++j)
+//		{
+//			Y[i] += getNum();
+//		}
+//		ostr << Y[i] << "\n";
+//	}
+//	ostr.flush();
+//	ostr.close();
+//	exit(0);
+
+	std::ifstream istr("/media/Files/Data/Y.txt");
+	for(int i = 0; i < N; ++i)
+	{
+		istr >> Y[i];
+	}
+	istr.close();
+
+//	myLib::drw::drawOneSignal(
+//				smLib::valarSubsec(Y, 0, 4000)).save("/media/Files/Data/Y.jpg");
+
+
+	std::cout << myLib::fractalDimensionBySpectre(Y,
+												  "/media/Files/Data/AAX/AAX_fd_9.jpg")
+			  << std::endl;
+	exit(0);
 
 	return;
 

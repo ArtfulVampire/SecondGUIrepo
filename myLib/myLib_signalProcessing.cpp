@@ -1125,44 +1125,63 @@ std::valarray<double> spectreRtoRcomplex(
 double fractalDimension(const std::valarray<double> & arr,
                         const QString & picPath)
 {
-	int timeShift; // timeShift
-	long double L = 0.; // average length
-    long double tempL = 0.;
-    long double coeff = 0.;
-
     /// what are the limits?
     int N = arr.size();
-    int maxLimit = floor( log(N) * 4. - 5.);
+	int maxLimit = floor( log2(N) * 4. - 5.);
 
-    maxLimit = 100;
+	maxLimit = 1000;
 
 	int minLimit = std::max(maxLimit - 10, 3);
 
-    minLimit = 15;
+	minLimit = 1;
 
 	int arrSize = maxLimit - minLimit;
 
 	std::valarray<double> drawK(arrSize);
 	std::valarray<double> drawL(arrSize);
 
-    for(int h = minLimit; h < maxLimit; ++h)
-    {
-        timeShift = h;
-        L = 0.;
+	std::vector<double> drawK_{};
+	std::vector<double> drawL_{};
+
+	/// make collection of timeShifts
+	std::vector<int> timeShifts;
+//	timeShifts = {1, 2, 3, 4}; // initialize
+	for(int i = 11; i < log2(N / 8) * 4 + 1 ; ++i)
+	{
+		timeShifts.push_back(floor(pow(2, (i - 1)/4.)));
+	}
+
+	for(int timeShift : timeShifts)
+	{
+		double L = 0.;
         for(int m = 0; m < timeShift; ++m) // m = startShift
         {
-            tempL = 0.;
-            coeff = (N - 1) / (floor((N - m) / timeShift)) / timeShift;
-            for(int i = 1; i < floor((N - m) / timeShift); ++i)
-            {
-				tempL += std::abs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]) * coeff;
+			double coeff = (N - 1) / double(timeShift)
+						   / double( (N - m) / timeShift )
+						   ; /// ~1
+//			std::cout << N << " " << timeShift << " " << m << " " << coeff << std::endl;
 
-            }
-            L += tempL / timeShift;
+			double Lm = 0.;
+			for(int i = 1; i < (N - m) / timeShift; ++i)
+            {
+				Lm += std::abs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]);
+
+			}
+			L += Lm * coeff;
         }
-        drawK[h - minLimit] = log(timeShift);
-		drawL[h - minLimit] = log(L);
+		L /= timeShift; // big "/ k"
+//		L /= timeShift; // average Lm (+1 to D)
+
+//		drawK[timeShift - minLimit] = log(timeShift);
+//		drawL[timeShift - minLimit] = log(L);
+
+		drawK_.push_back(log(timeShift));
+		drawL_.push_back(log(L));
     }
+	drawK = smLib::vecToValar(drawK_);
+	drawL = smLib::vecToValar(drawL_);
+
+
 
 	// least square approximation
 	double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
@@ -1179,18 +1198,22 @@ double fractalDimension(const std::valarray<double> & arr,
         pnt.setPen("black");
         pnt.setBrush(QBrush("black"));
 
-		double minX = std::min(drawK[0], drawK[drawK.size() - 1]);
-		double maxX = std::max(drawK[0], drawK[drawK.size() - 1]);
-		double minY = std::min(drawL[0], drawL[drawL.size() - 1]);
-		double maxY = std::max(drawL[0], drawL[drawL.size() - 1]);
+		double minX = drawK.min();
+		double maxX = drawK.max();
+		double minY = drawL.min();
+		double maxY = drawL.max();
         double lenX = maxX - minX;
         double lenY = maxY - minY;
 
-        for(int h = 0; h < maxLimit - minLimit; ++h) // drawK, drawL [last] is bottom-left
-        {
-			drawX = std::abs(drawK[h] - minX) / lenX * pic.width() - 3;
-			drawY = (1. - std::abs(drawL[h] - minY) / lenY) * pic.height() - 3;
-            pnt.drawRect(QRect(int(drawX), int(drawY), 3, 3));
+		int frame = 10;
+		int rectSize = 3;
+		for(int h = 0; h < timeShifts.size(); ++h) // drawK, drawL [last] is bottom-left
+		{
+			drawX = frame + std::abs(drawK[h] - minX) / lenX
+					* (pic.width() - 2 * frame) - rectSize;
+			drawY = frame + (1. - std::abs(drawL[h] - minY) / lenY)
+					* (pic.height() - 2 * frame) - rectSize;
+			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
         }
 
         pnt.setPen("red");
@@ -1212,6 +1235,114 @@ double fractalDimension(const std::valarray<double> & arr,
         pic.save(picPath, 0, 100);
 	}
     return -slope;
+}
+
+
+double fractalDimensionBySpectre(const std::valarray<double> & arr,
+								 const QString & picPath)
+{
+	const double srate = 250.;
+
+
+	int N = arr.size();
+	const int windowSize = 512;
+	const int timeShift = 128;
+	const double freqStep = srate / windowSize;
+//	std::cout << freqStep << std::endl;
+
+	std::valarray<double> avSpectre = myLib::spectreRtoR(smLib::valarSubsec(arr,
+																			0,
+																			windowSize));
+	int numWinds = (N - windowSize) / timeShift;
+	for(int i = 0; i < numWinds; ++i)
+	{
+		auto windSpec = myLib::spectreRtoR(smLib::valarSubsec(arr,
+															  i * timeShift,
+															  i * timeShift + windowSize),
+						   windowSize);
+		avSpectre += windSpec;
+	}
+	avSpectre /= numWinds;
+	avSpectre *= myLib::spectreNorm(windowSize, windowSize, srate);
+
+	std::vector<double> drawK_{};
+	std::vector<double> drawL_{};
+
+//	for(double fr = freqStep; fr < 15.; fr += freqStep)
+//	{
+//		drawK_.push_back(log(fr));
+//		drawL_.push_back(log(avSpectre[int(fr / freqStep)]));
+//	}
+	for(int fr = 1; fr < 150; ++fr)
+	{
+		drawK_.push_back(log(fr));
+		drawL_.push_back(log(avSpectre[fr]));
+	}
+//	std::cout << drawK_.size() << " " << drawL_.size() << std::endl;
+
+	std::valarray<double> drawK = smLib::vecToValar(drawK_);
+	std::valarray<double> drawL = smLib::vecToValar(drawL_);
+
+//	std::cout << drawK.size() << " " << drawL.size() << std::endl;
+
+	for(int i = 0; i < 20; ++i)
+	{
+		std::cout << drawK[i] << " " << drawL[i] << std::endl;
+	}
+
+	// least square approximation
+	double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
+
+	double drawX = 0.;
+	double drawY = 0.;
+	if(!picPath.isEmpty())
+	{
+		QPixmap pic = QPixmap(800, 600);
+		QPainter pnt;
+		pic.fill();
+		pnt.begin(&pic);
+
+		pnt.setPen("black");
+		pnt.setBrush(QBrush("black"));
+
+		double minX = drawK.min();
+		double maxX = drawK.max();
+		double minY = drawL.min();
+		double maxY = drawL.max();
+		double lenX = maxX - minX;
+		double lenY = maxY - minY;
+
+		int frame = 10; // pixels
+		int rectSize = 3;
+		for(int h = 0; h < drawK.size(); ++h) // drawK, drawL [last] is bottom-left
+		{
+			drawX = frame + std::abs(drawK[h] - minX) / lenX
+					* (pic.width() - 2 * frame) - rectSize;
+			drawY = frame + (1. - std::abs(drawL[h] - minY) / lenY)
+					* (pic.height() - 2 * frame) - rectSize;
+			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
+		}
+
+		pnt.setPen("red");
+		pnt.setBrush(QBrush("red"));
+
+		// line passes (meanX, meanY)
+		/// check this with frame
+		double add = smLib::mean(drawL) - slope * smLib::mean(drawK);
+
+		drawX = (1. - (slope * minX + add - minY) / lenY) * pic.height(); // startY
+		drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); // endY
+
+		pnt.drawLine(0,
+					 drawX,
+					 pic.width(),
+					 drawY
+					 );
+
+		pnt.end();
+		pic.save(picPath, 0, 100);
+	}
+	return (5. + slope) / 2.;
 }
 
 
@@ -2074,24 +2205,17 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
     return outHilbert;
 }
 
-void makeSine(std::valarray<double> & in,
-			  double freq,
-			  double phaseInRad,
-			  int numPoints,
-			  double srate)
+std::valarray<double> makeSine(int numPoints,
+							   double freq,
+							   double srate,
+							   double startPhase)
 {
-	if(numPoints < 0)
-	{
-		numPoints = in.size();
-	}
-	else
-	{
-		in.resize(numPoints);
-	}
+	std::valarray<double> res (numPoints);
 	for(int i = 0; i < numPoints; ++i)
 	{
-		in[i] = sin(freq * 2 * pi * (i / srate) + phaseInRad);
+		res[i] = sin(freq * 2 * pi * (i / srate) + startPhase);
 	}
+	return res;
 }
 
 std::valarray<double> bayesCount(const std::valarray<double> & dataIn,

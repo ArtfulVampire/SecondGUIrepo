@@ -122,8 +122,12 @@ void calcSpectre(const std::valarray<double> & inSignal,
 				 double powArg = 1.);
 
 
-
+/// Higuchi
 double fractalDimension(const std::valarray<double> &arr,
+						const QString & picPath = QString());
+
+
+double fractalDimensionBySpectre(const std::valarray<double> &arr,
 						const QString & picPath = QString());
 
 
