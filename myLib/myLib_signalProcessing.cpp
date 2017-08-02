@@ -1154,23 +1154,23 @@ double fractalDimension(const std::valarray<double> & arr,
 	for(int timeShift : timeShifts)
 	{
 		double L = 0.;
+
         for(int m = 0; m < timeShift; ++m) // m = startShift
         {
-			double coeff = (N - 1) / double(timeShift)
-						   / double( (N - m) / timeShift )
+			const double coeff = (N - 1) / double(timeShift)
+						   / floor( (N - m) / timeShift )
 						   ; /// ~1
 //			std::cout << N << " " << timeShift << " " << m << " " << coeff << std::endl;
 
 			double Lm = 0.;
-			for(int i = 1; i < (N - m) / timeShift; ++i)
+			for(int i = 1; i < floor( (N - m) / timeShift); ++i)
             {
 				Lm += std::abs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]);
-
 			}
 			L += Lm * coeff;
         }
 		L /= timeShift; // big "/ k"
-//		L /= timeShift; // average Lm (+1 to D)
+		L /= timeShift; // average Lm
 
 //		drawK[timeShift - minLimit] = log(timeShift);
 //		drawL[timeShift - minLimit] = log(L);
@@ -1184,7 +1184,7 @@ double fractalDimension(const std::valarray<double> & arr,
 
 
 	// least square approximation
-	double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
+	const double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
 
     double drawX = 0.;
     double drawY = 0.;

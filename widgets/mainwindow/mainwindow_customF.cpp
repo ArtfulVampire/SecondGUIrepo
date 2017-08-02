@@ -68,38 +68,48 @@ void MainWindow::customFunc()
 
 	int N = pow(2, 17);
 	std::valarray<double> Y(N);
+	std::valarray<double> Z(N + 1010);
 
-//	std::ofstream ostr("/media/Files/Data/Y.txt");
-//	for(int i = 0; i < N; ++i)
-//	{
-//		if( (i - 1) % int(pow(2, 12)) == 0)
-//		{
-//			std::cout << (i - 1) / pow(2, 12) << std::endl;
-//		}
+	std::ofstream ostr("/media/Files/Data/Y2.txt");
+	auto getNum = std::bind(std::normal_distribution<double>(0., 1.),
+							std::default_random_engine{});
 
-//		for(int j = 0; j < 200 + i / pow(2, 5); ++j)
-//		{
-//			Y[i] += getNum();
-//		}
-//		ostr << Y[i] << "\n";
-//	}
-//	ostr.flush();
-//	ostr.close();
-//	exit(0);
+	for(int i = 0; i < Z.size(); ++i)
+	{
+		Z[i] = getNum();
+	}
 
-	std::ifstream istr("/media/Files/Data/Y.txt");
 	for(int i = 0; i < N; ++i)
 	{
-		istr >> Y[i];
+		if( (i - 1) % int(pow(2, 12)) == 0)
+		{
+			std::cout << (i - 1) / pow(2, 12) << std::endl;
+		}
+
+		for(int j = 0; j < 1000 + i; ++j)
+		{
+			Y[i] += Z[j];
+		}
+		ostr << Y[i] << "\n";
 	}
-	istr.close();
+	ostr.flush();
+	ostr.close();
+	std::cout << 6125671 << std::endl;
+//	exit(0);
 
-//	myLib::drw::drawOneSignal(
-//				smLib::valarSubsec(Y, 0, 4000)).save("/media/Files/Data/Y.jpg");
+//	std::ifstream istr("/media/Files/Data/Y2.txt");
+//	for(int i = 0; i < N; ++i)
+//	{
+//		istr >> Y[i];
+//	}
+//	istr.close();
+
+	myLib::drw::drawOneSignal(
+				smLib::valarSubsec(Y, 0, 1000)).save("/media/Files/Data/Y.jpg");
 
 
-	std::cout << myLib::fractalDimensionBySpectre(Y,
-												  "/media/Files/Data/AAX/AAX_fd_9.jpg")
+	std::cout << myLib::fractalDimension(Y,
+										 "/media/Files/Data/Y_FD.jpg")
 			  << std::endl;
 	exit(0);
 
