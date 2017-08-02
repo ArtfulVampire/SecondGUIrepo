@@ -42,59 +42,53 @@ void MainWindow::customFunc()
 	edfFile fil;
 	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
 
-	auto sig1 = smLib::valarSubsec(fil.getData(13),
+	auto sig1 = smLib::valarSubsec(fil.getData(9),
 								   250 * 60 * 15,
 								   250 * 60 * 15 + 250 * 40);
 	auto sig2 = myLib::refilter(
 					sig1,
-					4, 8,
+					8, 9,
 					false, 250.);
 
 
 
-	const int M = 250 * 60 * 5;
-	std::valarray<double> sig3(M);
+	const int K = 250 * 60 * 5;
+	std::valarray<double> sig3(K);
 
 	auto getAmpl = std::bind(std::uniform_real_distribution<>(1., 10.),
 							 std::default_random_engine{});
-	auto getFreq = std::bind(std::uniform_real_distribution<>(1., 20.),
+	auto getFreq = std::bind(std::uniform_real_distribution<>(0.5, 80.),
 							 std::default_random_engine{});
 	auto getPhase = std::bind(std::uniform_real_distribution<>(0., M_PI),
 							  std::default_random_engine{});
-	for(int i = 0; i < 50; ++i)
+	for(int i = 0; i < 100; ++i)
 	{
-		sig3 += getAmpl() * myLib::makeSine(M, getFreq(), 250., getPhase());
+		sig3 += getAmpl() * myLib::makeSine(K, getFreq(), 250., getPhase());
 	}
 
+	/// from Higichi 1998 FD = 1.5
 	int N = pow(2, 17);
 	std::valarray<double> Y(N);
-	std::valarray<double> Z(N + 1010);
+//	std::ofstream ostr("/media/Files/Data/Y2.txt");
+//	auto getNum = std::bind(std::normal_distribution<double>(0., 1.),
+//							std::default_random_engine{});
 
-	std::ofstream ostr("/media/Files/Data/Y2.txt");
-	auto getNum = std::bind(std::normal_distribution<double>(0., 1.),
-							std::default_random_engine{});
+//	for(int i = 0; i < 0; ++i)
+//	{
+//		getNum();
+//	}
 
-	for(int i = 0; i < Z.size(); ++i)
-	{
-		Z[i] = getNum();
-	}
-
-	for(int i = 0; i < N; ++i)
-	{
-		if( (i - 1) % int(pow(2, 12)) == 0)
-		{
-			std::cout << (i - 1) / pow(2, 12) << std::endl;
-		}
-
-		for(int j = 0; j < 1000 + i; ++j)
-		{
-			Y[i] += Z[j];
-		}
-		ostr << Y[i] << "\n";
-	}
-	ostr.flush();
-	ostr.close();
-	std::cout << 6125671 << std::endl;
+//	for(int i = 1; i < N; ++i)
+//	{
+//		if( (i - 1) % int(pow(2, 12)) == 0)
+//		{
+//			std::cout << (i - 1) / pow(2, 12) << std::endl;
+//		}
+//		Y[i] = Y[i-1] + getNum();
+//		ostr << Y[i] << "\n";
+//	}
+//	ostr.flush();
+//	ostr.close();
 //	exit(0);
 
 //	std::ifstream istr("/media/Files/Data/Y2.txt");
@@ -104,13 +98,64 @@ void MainWindow::customFunc()
 //	}
 //	istr.close();
 
-	myLib::drw::drawOneSignal(
-				smLib::valarSubsec(Y, 0, 1000)).save("/media/Files/Data/Y.jpg");
+//	myLib::drw::drawOneSignal(
+//				smLib::valarSubsec(Y, 0, 1000)).save("/media/Files/Data/Y.jpg");
+//	std::cout << myLib::fractalDimension(Y,
+//										 "/media/Files/Data/AAX_FD.jpg")
+//			  << std::endl;
 
+	/// from poli... 2010, Weierstrass
+	const int LEN = 800;
+	const double lambda = 5.;
+	const int M = 26;
 
-	std::cout << myLib::fractalDimension(Y,
-										 "/media/Files/Data/Y_FD.jpg")
-			  << std::endl;
+	std::valarray<double> powLam1(M+1);
+	std::valarray<double> powLam2(M+1);
+	for(int i = 0; i <= M; ++i)
+	{
+		powLam1[i] = pow(lambda, i);
+	}
+
+	std::valarray<double> FDarr(9);
+	std::iota(std::begin(FDarr), std::end(FDarr), 11);
+	FDarr /= 10.;
+
+	for(int rightLim = 3; rightLim < 60; ++rightLim)
+	{
+		double MSE = 0.;
+		for(double FD : FDarr)
+		{
+			const double H = 2. - FD;
+
+			for(int i = 0; i <= M; ++i)
+			{
+				powLam2[i] = std::pow(lambda, -i * H);
+			}
+
+			std::valarray<double> res(LEN);
+			std::valarray<double> tmp(LEN);
+			for(int i = 0; i <= M; ++i)
+			{
+				const double a = 2. * M_PI * powLam1[i];
+				for(int j = 0; j < LEN; ++j)
+				{
+					tmp[j] = cos(a * j / LEN);
+				}
+				res += tmp * powLam2[i];
+			}
+			myLib::drw::drawOneSignal(res).save("/media/Files/Data/FD/Weier_" + nm(FD) + ".jpg");
+			QString picPath = QString("/media/Files/Data/FD/Weier")
+							  + "_" + nm(rightLim)
+							  + "_" + nm(FD)
+							  + ".jpg";
+
+			double FDest = myLib::fractalDimension(res, rightLim, picPath);
+			MSE += std::pow(FDest - FD, 2.);
+		}
+//		MSE /= FDarr.size();
+		std::cout << rightLim - 1 << "\t" << MSE << std::endl;
+//		std::cout << MSE << std::endl;
+	}
 	exit(0);
 
 	return;

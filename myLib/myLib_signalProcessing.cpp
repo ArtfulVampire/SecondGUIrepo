@@ -1123,33 +1123,26 @@ std::valarray<double> spectreRtoRcomplex(
 
 
 double fractalDimension(const std::valarray<double> & arr,
-                        const QString & picPath)
+						int Kmax,
+						const QString & picPath)
 {
     /// what are the limits?
-    int N = arr.size();
-	int maxLimit = floor( log2(N) * 4. - 5.);
-
-	maxLimit = 1000;
-
-	int minLimit = std::max(maxLimit - 10, 3);
-
-	minLimit = 1;
-
-	int arrSize = maxLimit - minLimit;
-
-	std::valarray<double> drawK(arrSize);
-	std::valarray<double> drawL(arrSize);
+	int N = arr.size();
 
 	std::vector<double> drawK_{};
 	std::vector<double> drawL_{};
 
 	/// make collection of timeShifts
-	std::vector<int> timeShifts;
+	std::vector<int> timeShifts = smLib::range<std::vector<int>>(1, Kmax);
+//	std::cout << timeShifts << std::endl;
+
+	/// for long scale signals
+//	std::vector<int> timeShifts;
 //	timeShifts = {1, 2, 3, 4}; // initialize
-	for(int i = 11; i < log2(N / 8) * 4 + 1 ; ++i)
-	{
-		timeShifts.push_back(floor(pow(2, (i - 1)/4.)));
-	}
+//	for(int i = 11; i < log2(N / 4) * 4 + 1 ; ++i)
+//	{
+//		timeShifts.push_back(floor(pow(2, (i - 1)/4.)));
+//	}
 
 	for(int timeShift : timeShifts)
 	{
@@ -1160,7 +1153,6 @@ double fractalDimension(const std::valarray<double> & arr,
 			const double coeff = (N - 1) / double(timeShift)
 						   / floor( (N - m) / timeShift )
 						   ; /// ~1
-//			std::cout << N << " " << timeShift << " " << m << " " << coeff << std::endl;
 
 			double Lm = 0.;
 			for(int i = 1; i < floor( (N - m) / timeShift); ++i)
@@ -1172,19 +1164,21 @@ double fractalDimension(const std::valarray<double> & arr,
 		L /= timeShift; // big "/ k"
 		L /= timeShift; // average Lm
 
-//		drawK[timeShift - minLimit] = log(timeShift);
-//		drawL[timeShift - minLimit] = log(L);
-
 		drawK_.push_back(log(timeShift));
 		drawL_.push_back(log(L));
     }
-	drawK = smLib::vecToValar(drawK_);
-	drawL = smLib::vecToValar(drawL_);
 
-
+	const std::valarray<double> drawK = smLib::vecToValar(drawK_);
+	const std::valarray<double> drawL = smLib::vecToValar(drawL_);
 
 	// least square approximation
 	const double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
+
+//	std::cout << "kMax = " << Kmax << "\t"
+//			  << "R^2 = " << smLib::doubleRound(pow(smLib::correlation(drawL, drawK), 2), 3)
+//			  << std::endl;
+
+
 
     double drawX = 0.;
     double drawY = 0.;
@@ -1205,6 +1199,7 @@ double fractalDimension(const std::valarray<double> & arr,
         double lenX = maxX - minX;
         double lenY = maxY - minY;
 
+		/// draw squares
 		int frame = 10;
 		int rectSize = 3;
 		for(int h = 0; h < timeShifts.size(); ++h) // drawK, drawL [last] is bottom-left
@@ -1216,20 +1211,37 @@ double fractalDimension(const std::valarray<double> & arr,
 			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
         }
 
+		/// draw line (passes (meanX, meanY))
+		double add = smLib::mean(drawL) - slope * smLib::mean(drawK);
         pnt.setPen("red");
         pnt.setBrush(QBrush("red"));
 
-        // line passes (meanX, meanY)
-		double add = smLib::mean(drawL) - slope * smLib::mean(drawK);
-
-        drawX = (1. - (slope * minX + add - minY) / lenY) * pic.height(); // startY
-		drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); // endY
+		const double startY	= (1. - (slope * minX + add - minY) / lenY) * pic.height();
+		const double endY	= (1. - (slope * maxX + add - minY) / lenY) * pic.height();
 
         pnt.drawLine(0,
-                     drawX,
+					 startY,
                      pic.width(),
-                     drawY
+					 endY
                      );
+
+		/// draw results
+		pnt.setPen("black");
+		pnt.setBrush(QBrush("black"));
+		pnt.setFont(QFont("Helvetica", 18));
+		pnt.drawText(pic.width() * 0.7,
+					 pic.height() * 0.2,
+					 QString("FD = " + nm(smLib::doubleRound(-slope, 3)))
+					 );
+		pnt.drawText(pic.width() * 0.7,
+					 pic.height() * 0.2 + 25,
+					 QString("R^2 = " + nm(smLib::doubleRound(
+											   pow(smLib::correlation(drawL, drawK), 2), 3
+											   )
+										   )
+							 )
+					 );
+
 
         pnt.end();
         pic.save(picPath, 0, 100);

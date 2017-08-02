@@ -86,8 +86,8 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut)
 	// if(is_container<Typ>) separ = std::endl;
 	for(auto in : toOut)
 	{
-//		os << in << separ;
-		os << smLib::doubleRound(in, 1) << separ;
+		os << in << separ;
+//		os << smLib::doubleRound(in, 1) << separ;
 	}
 	os.flush();
 	return os;
