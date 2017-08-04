@@ -38,6 +38,7 @@ void MainWindow::customFunc()
 //	setEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_1_fin.edf");
 //	autos::successiveNetPrecleanWinds("/media/Files/Data/FeedbackFinal/Ilyin/SpectraSmooth/winds");
 //	exit(0);
+//	return;
 
 	edfFile fil;
 	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
@@ -47,7 +48,7 @@ void MainWindow::customFunc()
 								   250 * 60 * 15 + 250 * 40);
 	auto sig2 = myLib::refilter(
 					sig1,
-					8, 9,
+					1, 30,
 					false, 250.);
 
 
@@ -100,10 +101,14 @@ void MainWindow::customFunc()
 
 //	myLib::drw::drawOneSignal(
 //				smLib::valarSubsec(Y, 0, 1000)).save("/media/Files/Data/Y.jpg");
-//	std::cout << myLib::fractalDimension(Y,
-//										 "/media/Files/Data/AAX_FD.jpg")
-//			  << std::endl;
+	std::cout << myLib::fractalDimension(sig2,
+										 6,
+										 "/media/Files/Data/AAX_FD.jpg")
+			  << std::endl;
+	exit(0);
 
+	if(0)
+	{
 	/// from poli... 2010, Weierstrass
 	const int LEN = 800;
 	const double lambda = 5.;
@@ -156,7 +161,9 @@ void MainWindow::customFunc()
 		std::cout << rightLim - 1 << "\t" << MSE << std::endl;
 //		std::cout << MSE << std::endl;
 	}
+	}
 	exit(0);
+
 
 	return;
 
