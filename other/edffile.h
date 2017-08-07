@@ -31,6 +31,29 @@ void handleParamArray(std::valarray<Typ> & qStr,
                       FILE * ioFile,
                       FILE * headerFile);
 
+template <typename Typ>
+void handleParam(Typ & qStr,
+				 int length,
+				 bool readFlag,
+				 std::fstream & ioFile,
+				 std::fstream & headerFile);
+
+template <typename Typ>
+void handleParamArray(std::vector<Typ> & qStr,
+					  int number,
+					  int length,
+					  bool readFlag,
+					  std::fstream & ioFile,
+					  std::fstream & headerFile);
+template <typename Typ>
+void handleParamArray(std::valarray<Typ> & qStr,
+					  int number,
+					  int length,
+					  bool readFlag,
+					  std::fstream & ioFile,
+					  std::fstream & headerFile);
+
+
 
 void myTransform(int & output, char * input);
 void myTransform(double & output, char * input);
@@ -40,9 +63,6 @@ void myTransform(int input, int len, char ** output);
 void myTransform(double input, int len, char ** output);
 void myTransform(const QString & input, int len, char ** output);
 
-
-
-// typedef matrix edfDataType;
 
 struct edfChannel
 {
@@ -94,6 +114,12 @@ public:
 
 enum class inst {mati, iitp};
 enum class eogType {cross, correspond};
+#define EDFSTREAM 01
+
+#if EDFSTREAM
+#else
+#endif
+
 
 class edfFile
 {
@@ -123,6 +149,13 @@ public:
     void handleEdfFile(QString EDFpath,
                        bool readFlag,
                        bool headerOnly = false);
+	void handleData(bool readFlag,
+					std::fstream & edfForData);
+	void handleDatum(int currNs,
+					 int currTimeIndex,
+					 bool readFlag,
+					 QString & ntAnnot,
+					 std::fstream & edfForDatum);
 
     void handleData(bool readFlag,
                     FILE * edfForData);
@@ -131,6 +164,7 @@ public:
                      bool readFlag,
                      QString & ntAnnot,
                      FILE * edfForDatum);
+
     void writeMarker(double currDatum,
                      int currTimeIndex) const;
     void handleAnnotations(int currNs,
@@ -265,7 +299,7 @@ protected:
 
 	bool writeMarkersFlag = true;
 	bool writeLabelsFlag = false;
-	bool writeHeaderFlag = false;
+	bool writeHeaderFlag = true;
 
 public:
 //    const QString & getHeaderInit() const { return headerInitialInfo; }

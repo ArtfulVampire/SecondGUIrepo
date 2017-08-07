@@ -41,7 +41,17 @@ void MainWindow::customFunc()
 //	return;
 
 	edfFile fil;
-	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+//	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+//	fil.writeEdfFile("/media/Files/Data/AAX/AAX_final_str.edf");
+
+	myLib::areEqualFiles("/media/Files/Data/AAX/AAX_final.edf", "/media/Files/Data/AAX/AAX_final_str.edf");
+	exit(0);
+
+	std::fstream str("/media/Files/Data/AAX/AAX_final_str.edf", std::ios_base::out);
+	char * array = "asdfasdf";
+	str.write(array, strlen(array));
+	str.close();
+	exit(0);
 
 	auto sig1 = smLib::valarSubsec(fil.getData(9),
 								   250 * 60 * 15,
@@ -53,114 +63,139 @@ void MainWindow::customFunc()
 
 
 
-	const int K = 250 * 60 * 5;
-	std::valarray<double> sig3(K);
-
-	auto getAmpl = std::bind(std::uniform_real_distribution<>(1., 10.),
-							 std::default_random_engine{});
-	auto getFreq = std::bind(std::uniform_real_distribution<>(0.5, 80.),
-							 std::default_random_engine{});
-	auto getPhase = std::bind(std::uniform_real_distribution<>(0., M_PI),
-							  std::default_random_engine{});
-	for(int i = 0; i < 100; ++i)
+	if(0)
 	{
-		sig3 += getAmpl() * myLib::makeSine(K, getFreq(), 250., getPhase());
+		const int K = 250 * 60 * 5;
+		std::valarray<double> sig3(K);
+
+		auto getAmpl = std::bind(std::uniform_real_distribution<>(1., 10.),
+								 std::default_random_engine{});
+		auto getFreq = std::bind(std::uniform_real_distribution<>(0.5, 80.),
+								 std::default_random_engine{});
+		auto getPhase = std::bind(std::uniform_real_distribution<>(0., M_PI),
+								  std::default_random_engine{});
+		for(int i = 0; i < 100; ++i)
+		{
+			sig3 += getAmpl() * myLib::makeSine(K, getFreq(), 250., getPhase());
+		}
 	}
+
+
 
 	/// from Higichi 1998 FD = 1.5
 	int N = pow(2, 17);
 	std::valarray<double> Y(N);
-//	std::ofstream ostr("/media/Files/Data/Y2.txt");
-//	auto getNum = std::bind(std::normal_distribution<double>(0., 1.),
-//							std::default_random_engine{});
+	/// count
+	if(0)
+	{
+		std::ofstream ostr("/media/Files/Data/Y2.txt");
+		auto getNum = std::bind(std::normal_distribution<double>(0., 1.),
+								std::default_random_engine{});
 
-//	for(int i = 0; i < 0; ++i)
-//	{
-//		getNum();
-//	}
+		for(int i = 0; i < 0; ++i)
+		{
+			getNum();
+		}
 
-//	for(int i = 1; i < N; ++i)
-//	{
-//		if( (i - 1) % int(pow(2, 12)) == 0)
-//		{
-//			std::cout << (i - 1) / pow(2, 12) << std::endl;
-//		}
-//		Y[i] = Y[i-1] + getNum();
-//		ostr << Y[i] << "\n";
-//	}
-//	ostr.flush();
-//	ostr.close();
-//	exit(0);
-
-//	std::ifstream istr("/media/Files/Data/Y2.txt");
-//	for(int i = 0; i < N; ++i)
-//	{
-//		istr >> Y[i];
-//	}
-//	istr.close();
-
-//	myLib::drw::drawOneSignal(
-//				smLib::valarSubsec(Y, 0, 1000)).save("/media/Files/Data/Y.jpg");
-	std::cout << myLib::fractalDimension(sig2,
-										 6,
-										 "/media/Files/Data/AAX_FD.jpg")
-			  << std::endl;
-	exit(0);
+		for(int i = 1; i < N; ++i)
+		{
+			if( (i - 1) % int(pow(2, 12)) == 0)
+			{
+				std::cout << (i - 1) / pow(2, 12) << std::endl;
+			}
+			Y[i] = Y[i-1] + getNum();
+			ostr << Y[i] << "\n";
+		}
+		ostr.flush();
+		ostr.close();
+	}
+	/// read
+	if(0)
+	{
+		std::ifstream istr("/media/Files/Data/Y2.txt");
+		for(int i = 0; i < N; ++i)
+		{
+			istr >> Y[i];
+		}
+		istr.close();
+	}
 
 	if(0)
 	{
-	/// from poli... 2010, Weierstrass
-	const int LEN = 800;
-	const double lambda = 5.;
-	const int M = 26;
-
-	std::valarray<double> powLam1(M+1);
-	std::valarray<double> powLam2(M+1);
-	for(int i = 0; i <= M; ++i)
-	{
-		powLam1[i] = pow(lambda, i);
+		myLib::drw::drawOneSignal(
+					smLib::valarSubsec(Y, 0, 1000)).save("/media/Files/Data/Y.jpg");
 	}
 
-	std::valarray<double> FDarr(9);
-	std::iota(std::begin(FDarr), std::end(FDarr), 11);
-	FDarr /= 10.;
-
-	for(int rightLim = 3; rightLim < 60; ++rightLim)
+	if(0)
 	{
-		double MSE = 0.;
-		for(double FD : FDarr)
+		std::cout << myLib::fractalDimension(sig2,
+											 6,
+											 "/media/Files/Data/AAX_FD.jpg")
+				  << std::endl;
+	}
+
+
+	if(1)
+	{
+		/// from poli... 2010, Weierstrass cosines
+		const double lambda = 5.;
+		const int M = 26;
+//		const int LEN = 1600;
+		for(int LEN : {100, 300, 500, 1000, 1500, 1800, 2500})
 		{
-			const double H = 2. - FD;
+			std::cout << LEN << std::endl;
 
+			std::valarray<double> powLam1(M+1);
+			std::valarray<double> powLam2(M+1);
 			for(int i = 0; i <= M; ++i)
 			{
-				powLam2[i] = std::pow(lambda, -i * H);
+				powLam1[i] = pow(lambda, i);
 			}
 
-			std::valarray<double> res(LEN);
-			std::valarray<double> tmp(LEN);
-			for(int i = 0; i <= M; ++i)
+			std::valarray<double> FDarr(9);
+			std::iota(std::begin(FDarr), std::end(FDarr), 11);
+			FDarr /= 10.;
+
+			for(int rightLim = 3; rightLim < 20; ++rightLim)
 			{
-				const double a = 2. * M_PI * powLam1[i];
-				for(int j = 0; j < LEN; ++j)
+				double MSE = 0.;
+				for(double FD : FDarr)
 				{
-					tmp[j] = cos(a * j / LEN);
-				}
-				res += tmp * powLam2[i];
-			}
-			myLib::drw::drawOneSignal(res).save("/media/Files/Data/FD/Weier_" + nm(FD) + ".jpg");
-			QString picPath = QString("/media/Files/Data/FD/Weier")
-							  + "_" + nm(rightLim)
-							  + "_" + nm(FD)
-							  + ".jpg";
+					const double H = 2. - FD;
 
-			double FDest = myLib::fractalDimension(res, rightLim, picPath);
-			MSE += std::pow(FDest - FD, 2.);
+					for(int i = 0; i <= M; ++i)
+					{
+						powLam2[i] = std::pow(lambda, -i * H);
+					}
+
+					std::valarray<double> res(LEN);
+					std::valarray<double> tmp(LEN);
+					for(int i = 0; i <= M; ++i)
+					{
+						const double a = 2. * M_PI * powLam1[i];
+						for(int j = 0; j < LEN; ++j)
+						{
+							tmp[j] = cos(a * j / LEN);
+						}
+						res += tmp * powLam2[i];
+					}
+					myLib::drw::drawOneSignal(res)
+							;
+//					.save("/media/Files/Data/FD/Weier_" + nm(FD) + ".jpg");
+					QString picPath = QString("/media/Files/Data/FD/Weier")
+									  + "_" + nm(rightLim)
+									  + "_" + nm(FD)
+									  + ".jpg";
+
+					double FDest = myLib::fractalDimension(res, rightLim
+//														   , picPath
+														   );
+					MSE += std::pow(FDest - FD, 2.);
+				}
+				MSE /= FDarr.size();
+				std::cout << rightLim - 1 << "\t" << MSE << std::endl;
+			}
 		}
-//		MSE /= FDarr.size();
-		std::cout << rightLim - 1 << "\t" << MSE << std::endl;
-//		std::cout << MSE << std::endl;
-	}
 	}
 	exit(0);
 
