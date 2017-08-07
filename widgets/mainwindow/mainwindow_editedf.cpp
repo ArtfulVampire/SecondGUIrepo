@@ -65,10 +65,6 @@ void MainWindow::rereferenceCARSlot()
 	for(QString chanName : usedLabels)
 	{
 		int ref = globalEdf.findChannel(chanName);
-		QString newLabel = globalEdf.getLabels(ref);
-		newLabel = myLib::fitString(newLabel.left(newLabel.indexOf('-') + 1) + "CAR", 16);
-		globalEdf.setLabel(ref, newLabel);
-
 		refArr += globalEdf.getData(ref);
 	}
 	refArr /= usedLabels.size();
@@ -91,6 +87,11 @@ void MainWindow::rereferenceCARSlot()
 				/// crutch because inversed EOG
 				globalEdf.setData(i, globalEdf.getData(i) + refArr);
 			}
+
+			/// set new label *-CAR
+			QString newLabel = globalEdf.getLabels(i);
+			newLabel = myLib::fitString(newLabel.left(newLabel.indexOf('-') + 1) + "CAR", 16);
+			globalEdf.setLabel(i, newLabel);
 		}
 	}
 
