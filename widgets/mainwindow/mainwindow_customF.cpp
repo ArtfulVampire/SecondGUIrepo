@@ -32,25 +32,20 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
+//	edfFile file1;
+//	file1.readEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_3_1.edf");
+//	file1.concatFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_3_2.edf",
+//					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_3.edf");
+//	exit(0);
+
 //	autos::Xenia_TBI(def::dataFolder + "/Temp");
 //	exit(0);
 
-//	setEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_1_fin.edf");
-//	autos::successiveNetPrecleanWinds("/media/Files/Data/FeedbackFinal/Ilyin/SpectraSmooth/winds");
-//	exit(0);
-//	return;
+	return;
 
 	edfFile fil;
 //	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
 //	fil.writeEdfFile("/media/Files/Data/AAX/AAX_final_str.edf");
-
-	myLib::areEqualFiles("/media/Files/Data/AAX/AAX_final.edf", "/media/Files/Data/AAX/AAX_final_str.edf");
-	exit(0);
-
-	std::fstream str("/media/Files/Data/AAX/AAX_final_str.edf", std::ios_base::out);
-	char * array = "asdfasdf";
-	str.write(array, strlen(array));
-	str.close();
 	exit(0);
 
 	auto sig1 = smLib::valarSubsec(fil.getData(9),
@@ -198,9 +193,6 @@ void MainWindow::customFunc()
 		}
 	}
 	exit(0);
-
-
-	return;
 
 #if 0
 	/// IITP

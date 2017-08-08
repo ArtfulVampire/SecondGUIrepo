@@ -2230,6 +2230,50 @@ std::valarray<double> makeSine(int numPoints,
 	return res;
 }
 
+
+
+std::valarray<double> derivative(const std::valarray<double> & inSignal)
+{
+	const int step = 2;
+	std::valarray<double> res(inSignal.size());
+
+	/// first some points - one-sided deriv
+	for(int i = 0; i < step; ++i)
+	{
+		res[i] = (inSignal[i + step] - inSignal[i]) / step;
+	}
+
+	for(int i = step; i < inSignal.size() - step; ++i)
+	{
+		res[i] = (inSignal[i + step] - inSignal[i - step]) / (2. * step);
+	}
+
+	/// last some points - one-sided deriv
+	for(int i = inSignal.size() - step; i < inSignal.size(); ++i)
+	{
+		res[i] = (inSignal[i] - inSignal[i - step]) / step;
+	}
+	return res;
+
+}
+
+double hjorthActivity(const std::valarray<double> & inSignal)
+{
+	return smLib::variance(inSignal);
+}
+double hjorthMobility(const std::valarray<double> & inSignal)
+{
+	return sqrt(smLib::variance(derivative(inSignal)) /
+				smLib::variance(inSignal));
+}
+double hjorthComplexity(const std::valarray<double> & inSignal)
+{
+	/// second derivative
+	return sqrt(smLib::variance(derivative(derivative(inSignal))) /
+				smLib::variance(inSignal));
+}
+
+
 std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 								 int numOfIntervals)
 {

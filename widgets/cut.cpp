@@ -1386,7 +1386,13 @@ void Cut::zero(int start, int end)
 
 	if(start > end)
 	{
-		std::cout << "Cut::split: leftEdge > rightEdge" << std::endl;
+		std::cout << "Cut::zero: leftEdge > rightEdge" << std::endl;
+		return;
+	}
+
+	if(end - start == this->dataCutLocal.cols())
+	{
+		std::cout << "Cut::zero: you want zero whole file" << std::endl;
 		return;
 	}
 
@@ -1457,12 +1463,23 @@ void Cut::split(int start, int end, bool addUndo)
 		std::cout << "Cut::split: leftEdge > rightEdge" << std::endl;
 		return;
 	}
+
+	if(end - start == this->dataCutLocal.cols()
+	   /// magic const 5 min
+	   || (start == this->dataCutLocal.cols() && end - start > this->edfFil.getFreq() * 60 * 5)
+	   )
+	{
+		std::cout << "Cut::split: you want split whole file" << std::endl;
+		return;
+	}
+
 	if(std::find_if(std::begin(dataCutLocal.back()),
 					std::end(dataCutLocal.back()),
 					[](double in){ return in != 0.; }) != std::end(dataCutLocal.back()))
 	{
 		std::cout << "Cut::split: there are non-zero markers" << std::endl;
 	}
+
 	if(addUndo)
 	{
 		undoData.push_back(dataCutLocal.subCols(start, end));
@@ -1481,7 +1498,7 @@ void Cut::split(int start, int end, bool addUndo)
 	logAction("split", start, end);
 	resetLimits();
 	ui->paintStartDoubleSpinBox->setValue(start / edfFil.getFreq() - 1.5);
-	ui->leftLimitSpinBox->setValue(start);
+	ui->leftLimitSpinBox->setValue(start); /// really needed?
 	paint();
 }
 

@@ -176,6 +176,9 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->drawButton, SIGNAL(clicked()), this, SLOT(drawDirSlot()));
 	QObject::connect(ui->drawMapsPushButton, SIGNAL(clicked()), this, SLOT(drawMapsSlot()));
 	QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(processEyes()));
+	QObject::connect(ui->succPrecleanPushButton, &QPushButton::clicked,
+					 [this](){ autos::successiveNetPrecleanWinds(
+					this->globalEdf.getDirPath() + "/SpectraSmooth/winds"); });
 
 	/// slice
 	QObject::connect(ui->cutEDF, SIGNAL(clicked()), this, SLOT(sliceAll()));

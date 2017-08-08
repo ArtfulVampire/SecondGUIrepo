@@ -187,8 +187,8 @@ void Net::successiveProcessing()
 
 void Net::successivePreclean(const QString & spectraPath, const QStringList & filters)
 {
-    QStringList leest;
-	myLib::makeFullFileList(spectraPath, leest, filters);
+//	QStringList leest;
+//	myLib::makeFullFileList(spectraPath, leest, filters);
 
 //	std::cout << "clean first 2 winds" << std::endl;
 //	for(const QString & str : leest)
@@ -213,6 +213,7 @@ void Net::successivePreclean(const QString & spectraPath, const QStringList & fi
 //			QFile::remove(spectraPath + "/" + (*it));
 //		}
 //	}
+
     Source = source::winds;
     Mode = myMode::N_fold;
 

@@ -63,7 +63,9 @@ void four1(double * dataF, int nn, int isign);
 double spectreNorm(int fftLen, int realSig, int srate);
 
 
+
 /// from Rosetta stone - norming on maxValue?
+/// currently unused
 std::valarray<std::complex<double>> spectreCtoCcomplex(
 		const std::valarray<std::complex<double>> & inputArray,
 		int fftLen = -1);
@@ -94,6 +96,8 @@ std::valarray<double> lowPassFFT(const std::valarray<double> & inputSignal,
 								 double cutoffFreq,
 								 double srate = 250.);
 
+/// add highPassFFT
+
 matrix refilterMat(const matrix & inputMatrix,
 				   double lowFreq,
 				   double highFreq,
@@ -102,6 +106,7 @@ matrix refilterMat(const matrix & inputMatrix,
 
 enum class windowName {Hann, Hamming, Blackman, Kaiser, rect};
 std::valarray<double> fftWindow(int length, windowName name = windowName::Hann);
+
 
 std::valarray<double> upsample(const std::valarray<double> & inSignal,
 							   double oldFreq,
@@ -146,6 +151,11 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 
 std::valarray<double> bayesCount(const std::valarray<double> & dataIn, int numOfIntervals);
 
+std::valarray<double> derivative(const std::valarray<double> & inSignal);
+
+double hjorthActivity(const std::valarray<double> & inSignal);
+double hjorthMobility(const std::valarray<double> & inSignal);
+double hjorthComplexity(const std::valarray<double> & inSignal);
 
 /// whaaaaat???
 void splineCoeffCount(const std::valarray<double> & inX,
@@ -159,6 +169,8 @@ double splineOutput(const std::valarray<double> & inX,
 					const std::valarray<double> & A,
 					const std::valarray<double> & B,
 					double probeX);
+
+
 
 /// ICA
 void product1(const matrix & arr,
@@ -214,6 +226,7 @@ void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 e
 namespace btr
 {
 /// from GA fortran
+/// unused, unchecked
 std::valarray<double> butterworth(const std::valarray<double> & in,
 								  int order,
 								  double srate,

@@ -293,13 +293,6 @@
        </item>
       </layout>
      </item>
-     <item row="4" column="0">
-      <widget class="QPushButton" name="netButton">
-       <property name="text">
-        <string>&amp;Net</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="0">
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
@@ -408,6 +401,24 @@
         <widget class="QPushButton" name="cleanDirsUncheckAllButton">
          <property name="text">
           <string>UncheckAll</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="4" column="0">
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QPushButton" name="netButton">
+         <property name="text">
+          <string>&amp;Net</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="succPrecleanPushButton">
+         <property name="text">
+          <string>Net succ preclean</string>
          </property>
         </widget>
        </item>

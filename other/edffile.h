@@ -114,7 +114,7 @@ public:
 
 enum class inst {mati, iitp};
 enum class eogType {cross, correspond};
-#define EDFSTREAM 01
+#define EDFSTREAM 0
 
 #if EDFSTREAM
 #else
@@ -299,7 +299,7 @@ protected:
 
 	bool writeMarkersFlag = true;
 	bool writeLabelsFlag = false;
-	bool writeHeaderFlag = true;
+	bool writeHeaderFlag = false;
 
 public:
 //    const QString & getHeaderInit() const { return headerInitialInfo; }
