@@ -2333,7 +2333,7 @@ void countSpectraFeatures(const QString & filePath,
 			}
 		}
 		// max alpha magnitude
-		outAlphaStr << helpDouble << "\t";
+//		outAlphaStr << helpDouble << "\t";
 		// max alpha freq
 		outAlphaStr << helpInt * fr / smLib::fftL(dataL) << "\t";
 

@@ -1198,13 +1198,7 @@ double drawArrays(const QString & templPath,
 
     if(norm <= 0.)
     {
-        std::for_each(inMatrix.begin(),
-                      inMatrix.end(),
-					  [&norm](std::valarray<double> inData)
-        {
-			norm = std::max(norm, std::abs(inData).max()); // fabs for negative weights e.g.
-        });
-
+		norm = inMatrix.maxAbsVal();
         if(weightsFlag)
         {
             // for weights

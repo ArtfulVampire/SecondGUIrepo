@@ -241,6 +241,13 @@
       </item>
      </layout>
     </item>
+    <item row="1" column="1">
+     <widget class="QPushButton" name="learnAllButton">
+      <property name="text">
+       <string>Learn All</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QWidget" name="layoutWidget">
@@ -446,7 +453,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>

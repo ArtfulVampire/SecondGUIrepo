@@ -115,78 +115,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
-   <property name="geometry">
-    <rect>
-     <x>270</x>
-     <y>290</y>
-     <width>230</width>
-     <height>107</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" colspan="2">
-     <widget class="QPushButton" name="avButton">
-      <property name="text">
-       <string>Compare</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0" colspan="2">
-     <widget class="QPushButton" name="psaButton">
-      <property name="text">
-       <string>Compare PSA</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QRadioButton" name="svgButton">
-      <property name="text">
-       <string>svg</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <widget class="QRadioButton" name="grayRadioButton">
-      <property name="text">
-       <string>gray</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QDoubleSpinBox" name="scalingDoubleSpinBox"/>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLabel" name="label_11">
-      <property name="text">
-       <string>scaling</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QRadioButton" name="jpgButton">
-      <property name="text">
-       <string>jpg</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="3">
-     <widget class="QRadioButton" name="colourRadioButton">
-      <property name="text">
-       <string>colour</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0" colspan="2">
-     <widget class="QCheckBox" name="MWcheckBox">
-      <property name="text">
-       <string>Mann-Whitney?</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -304,6 +233,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="bypassCheckBox">
+        <property name="text">
+         <string>bypass</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer_2">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -365,7 +301,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>270</x>
@@ -391,6 +327,77 @@
     </item>
     <item row="1" column="0" colspan="2">
      <widget class="QLineEdit" name="integrateLineEdit"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>271</x>
+     <y>291</y>
+     <width>240</width>
+     <height>107</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0" colspan="2">
+     <widget class="QPushButton" name="avButton">
+      <property name="text">
+       <string>Compare</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="2">
+     <widget class="QPushButton" name="psaButton">
+      <property name="text">
+       <string>Compare PSA</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QRadioButton" name="svgButton">
+      <property name="text">
+       <string>svg</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QRadioButton" name="grayRadioButton">
+      <property name="text">
+       <string>gray</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QDoubleSpinBox" name="scalingDoubleSpinBox"/>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLabel" name="label_11">
+      <property name="text">
+       <string>maxVal</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QRadioButton" name="jpgButton">
+      <property name="text">
+       <string>jpg</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QRadioButton" name="colourRadioButton">
+      <property name="text">
+       <string>colour</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="3">
+     <widget class="QCheckBox" name="MWcheckBox">
+      <property name="text">
+       <string>Mann-Whitney?</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

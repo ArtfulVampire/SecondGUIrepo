@@ -439,7 +439,7 @@ void ANN::readWeight(const QString & fileName,
     allocParams((*wtsMatrix));
 
 	/// first row with "numOfRows N	numOfCols M"
-	wtsStr.ignore(128, '\n');
+//	wtsStr.ignore(128, '\n');
 
     for(uint i = 0; i < weight.size(); ++i) // numOfLayers
     {

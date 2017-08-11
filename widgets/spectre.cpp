@@ -58,8 +58,10 @@ Spectre::Spectre() :
 
     ui->integrateLineEdit->setText("5-8; 8-9.5; 9.5-13; 13-20");
 
-    ui->scalingDoubleSpinBox->setValue(1.0);
-    ui->scalingDoubleSpinBox->setSingleStep(0.05);
+	ui->scalingDoubleSpinBox->setMinimum(-1.0);
+	ui->scalingDoubleSpinBox->setMaximum(200.0);
+	ui->scalingDoubleSpinBox->setSingleStep(0.1);
+	ui->scalingDoubleSpinBox->setValue(-1.0);
 
     ui->powDoubleSpinBox->setDecimals(2);
     ui->powDoubleSpinBox->setSingleStep(0.05);
@@ -397,16 +399,16 @@ void Spectre::psaSlot()
         drawData.push_back(tempVec);
     }
 
-    helpString = (def::dir->absolutePath()
-										  + "/Help"
-										  + "/" + def::ExpName + "_all.jpg");
+	helpString = def::dir->absolutePath()
+				 + "/Help"
+				 + "/" + def::ExpName + "_all.jpg";
 
     trivector<int> MW;
 
     if(ui->MWcheckBox->isChecked())
     {
 		myLib::countMannWhitney(MW,
-                         ui->lineEdit_1->text());
+								ui->lineEdit_1->text());
     }
 
     if(drawData.cols() == 19 * def::spLength() ||
@@ -429,21 +431,12 @@ void Spectre::psaSlot()
             }
         }
 
-//        def::drawNorm = -1;
-		/// old
-//        def::drawNorm = drawArrays(helpString,
-//                                   drawData,
-//                                   false,
-//                                   def::drawNormTyp,
-//                                   def::drawNorm,
-//                                   colors);
-
 		myLib::drawArrays(helpString,
-				   drawData,
-				   false,
-				   def::drawNormTyp,
-				   -1,
-				   colors);
+						  drawData,
+						  false,
+						  def::drawNormTyp,
+						  ui->scalingDoubleSpinBox->value(),
+						  colors);
 
         if(ui->MWcheckBox->isChecked())
         {
@@ -700,8 +693,11 @@ void Spectre::writeSpectra(const double leftFreq,
 void Spectre::countSpectraSlot()
 {
     defaultState();
-    countSpectra();
-    writeSpectra();
+	if(!ui->bypassCheckBox->isChecked())
+	{
+		countSpectra();
+		writeSpectra();
+	}
 
 #if 0
     /// if clean

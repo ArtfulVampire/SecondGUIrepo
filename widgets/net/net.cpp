@@ -125,6 +125,9 @@ Net::Net() :
 	QObject::connect(myButtonGroup[2], SIGNAL(buttonToggled(QAbstractButton*, bool)),
 			this, SLOT(setClassifier(QAbstractButton*, bool)));
 
+	QObject::connect(ui->learnAllButton, &QPushButton::clicked,
+					 [this](){ if(!myClassifier) myClassifier->learnAll(); });
+
     /// ANN
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWtsSlot()));
     QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(writeWtsSlot()));
