@@ -346,6 +346,7 @@ void edfFile::readEdfFile(QString EDFpath, bool headerOnly)
     QTime myTime;
     myTime.start();
     this->fftData.clear(); /// crucial
+	this->markers.clear();
 
     handleEdfFile(EDFpath, true, headerOnly);
 
@@ -885,6 +886,7 @@ void edfFile::handleDatum(int currNs,
 						+ (physMax[currNs] - physMin[currNs])
 						* (double(a) - digMin[currNs])
 						/ (digMax[currNs] - digMin[currNs]);
+				markers.push_back(std::make_pair(currTimeIndex, currDatum));
 
 //                currDatum = a; // generality encephalan
 			}

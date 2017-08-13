@@ -107,6 +107,12 @@ public:
 
 	void countSpectraSimple(int fftLen, int inSmooth = -1);
 	void BaklushevDraw(const QString & workPath, const QString & edfName);
+	void makeEvoked(const QString & edfPath,
+					const std::valarray<double> & startMarkers,
+					const QString outPath);
+	void makeEvoked(const QString & realsPath,
+					const QStringList & fileFilters,
+					const QString outPath);
 	void testNewClassifiers();
 	void testSuccessive(const std::vector<double> & vals = std::vector<double>{});
 	void testSuccessive2();

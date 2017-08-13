@@ -280,7 +280,7 @@ protected:
 	/// my fields
 
 	// fast access for slicing (time-bin, marker)
-	std::vector<std::pair<int, double>> sessionEdges = std::vector<std::pair<int, double>>();
+	std::vector<std::pair<int, double>> markers{};
 	int srate = 250;
 
     std::vector<edfChannel> channels;
@@ -324,6 +324,7 @@ public:
 	const std::valarray<double> & getDigMax() const { return digMax; }
 	const std::valarray<double> & getDigMin() const { return digMin; }
 	const std::valarray<double> & getNr() const { return nr; }
+	const std::vector<std::pair<int, double>> & getMarkers() const { return markers; }
 	const QString & getHeaderRest() const { return headerRest; }
 
 	const std::vector<edfChannel> & getChannels() const { return channels; }

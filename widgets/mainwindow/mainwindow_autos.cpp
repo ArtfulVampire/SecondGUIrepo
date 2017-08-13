@@ -8,6 +8,56 @@
 
 using namespace myOut;
 
+matrix countEvoked(const std::vector<matrix> & inData, int length)
+{
+	matrix res(inData[0].rows(), length);
+
+	for(const matrix & in : inData)
+	{
+		res += in.subCols(0, length);
+	}
+	res /= inData.size();
+	return res;
+}
+
+void MainWindow::makeEvoked(const QString & edfPath,
+							const std::valarray<double> & startMarkers,
+							const QString outPath)
+{
+	const int length = 600;
+	edfFile fil;
+	fil.readEdfFile(edfPath);
+	std::vector<matrix> dat;
+	for(auto mark : fil.getMarkers())
+	{
+		if(std::find(std::begin(startMarkers),
+					 std::end(startMarkers),
+					 mark.second) != std::end(startMarkers))
+		{
+			dat.push_back(fil.getData().subCols(mark.first, mark.first + length));
+		}
+	}
+	auto res = countEvoked(dat, length);
+	myLib::writeMatrixFile(outPath, res);
+}
+
+void MainWindow::makeEvoked(const QString & realsPath,
+							const QStringList & fileFilters,
+							const QString outPath)
+{
+	const int length = 600;
+	QStringList reals = QDir(realsPath).entryList(fileFilters);
+
+	std::vector<matrix> dat(reals.size());
+	int i = 0;
+	for(QString fileName : reals)
+	{
+		myLib::readMatrixFile(realsPath + "/" + fileName,
+							  dat[i++]);
+	}
+	auto res = countEvoked(dat, length);
+	myLib::writeMatrixFile(outPath, res);
+}
 
 void MainWindow::testSuccessive2()
 {
