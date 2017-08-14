@@ -35,6 +35,9 @@ void writeMatrixFile(const QString & filePath,
 					 const QString & rowsString = "NumOfRows",
 					 const QString & colsString = "NumOfCols");
 
+void invertMatrixFile(const QString & inPath,
+					  const QString & outPath);
+
 
 matrix readIITPfile(const QString & filePath);
 

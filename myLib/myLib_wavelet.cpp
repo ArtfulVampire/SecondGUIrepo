@@ -47,7 +47,7 @@ int termMtlb()
 	return 1;
 }
 
-matrix cwt(const std::valarray<double> & signal, double freq)
+matrix cwt(const std::valarray<double> & signal, double srate)
 {
 	if(!isInit)
 	{
@@ -55,7 +55,7 @@ matrix cwt(const std::valarray<double> & signal, double freq)
 	}
 	const int numFreqs = 19; /// number of frequencies in cwt.m (2:1:20)
 
-	mxArray * srate = mxCreateDoubleScalar(freq);
+	mxArray * srate_ = mxCreateDoubleScalar(srate);
 	mxArray * inData = mxCreateDoubleMatrix(1, signal.size(), mxREAL);
 	double * it = mxGetPr(inData);
 	for(auto datum : signal)
@@ -65,7 +65,7 @@ matrix cwt(const std::valarray<double> & signal, double freq)
 	}
 	mxArray * res = mxCreateDoubleMatrix(numFreqs, signal.size(), mxCOMPLEX);
 
-	mlfCWT(1, &res, inData, srate);
+	mlfCWT(1, &res, inData, srate_);
 	double * itt = mxGetPr(res);
 
 	matrix result(numFreqs, signal.size());
@@ -81,7 +81,7 @@ matrix cwt(const std::valarray<double> & signal, double freq)
 	}
 	mxDestroyArray(res);
 	mxDestroyArray(inData);
-	mxDestroyArray(srate);
+	mxDestroyArray(srate_);
 
 	return result;
 }

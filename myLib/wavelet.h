@@ -60,7 +60,7 @@ void drawWavelet(QString picPath,
 extern bool isInit;
 int initMtlb();
 int termMtlb();
-matrix cwt(const std::valarray<double> & signal, double freq);
+matrix cwt(const std::valarray<double> & signal, double srate);
 void drawWaveletMtlb(const matrix & inData,
 					 QString picPath = QString());
 #endif

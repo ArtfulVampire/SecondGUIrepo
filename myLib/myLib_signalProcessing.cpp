@@ -1250,112 +1250,182 @@ double fractalDimension(const std::valarray<double> & arr,
 }
 
 
-double fractalDimensionBySpectre(const std::valarray<double> & arr,
-								 const QString & picPath)
+double alphaPeakFreq(const std::valarray<double> & spectreR,
+					 int initSigLen,
+					 double srate,
+					 double leftLimFreq,
+					 double rightLimFreq)
 {
-	const double srate = 250.;
-
-
-	int N = arr.size();
-	const int windowSize = 512;
-	const int timeShift = 128;
-	const double freqStep = srate / windowSize;
-//	std::cout << freqStep << std::endl;
-
-	std::valarray<double> avSpectre = myLib::spectreRtoR(smLib::valarSubsec(arr,
-																			0,
-																			windowSize));
-	int numWinds = (N - windowSize) / timeShift;
-	for(int i = 0; i < numWinds; ++i)
+	double helpDouble = 0.;
+	int helpInt = 0;
+	const int hlp = smLib::fftL(initSigLen);
+	for(int k = fftLimit(leftLimFreq,
+						 srate,
+						 hlp);
+		k < fftLimit(rightLimFreq,
+					 srate,
+					 hlp);
+		++k)
 	{
-		auto windSpec = myLib::spectreRtoR(smLib::valarSubsec(arr,
-															  i * timeShift,
-															  i * timeShift + windowSize),
-						   windowSize);
-		avSpectre += windSpec;
+		if(spectreR[k] > helpDouble)
+		{
+			helpDouble = spectreR[k];
+			helpInt = k;
+		}
 	}
-	avSpectre /= numWinds;
-	avSpectre *= myLib::spectreNorm(windowSize, windowSize, srate);
+	return helpInt * srate / hlp;
+}
 
-	std::vector<double> drawK_{};
-	std::vector<double> drawL_{};
+std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
+									 int initSigLen,
+									 double srate,
+									 double leftFreqLim,
+									 double rightFreqLim,
+									 double spectreStepFreq)
+{
+	std::vector<double> fullSpectre{};
+	for(double j = leftFreqLim;
+		j <= rightFreqLim;
+		j += spectreStepFreq)
+	{
+		double helpDouble = 0.;
+		int helpInt = 0;
+		for(int k = fftLimit(j - spectreStepFreq / 2.,
+							 srate,
+							 smLib::fftL(initSigLen));
+			k < fftLimit(j + spectreStepFreq / 2.,
+						 srate,
+						 smLib::fftL(initSigLen));
+			++k)
+		{
+			helpDouble += spectreR[k];
+			++helpInt;
+		}
+		/// normalize spectre to unit sum ?
+		fullSpectre.push_back(helpDouble / helpInt);
+	}
 
-//	for(double fr = freqStep; fr < 15.; fr += freqStep)
+#if 0
+	/// normalize spectre for unit sum
+	/// 20. for not too small values
+	double helpDouble = 20. / std::accumulate(std::begin(fullSpectre),
+											  std::end(fullSpectre),
+											  0.) ;
+	for(auto & in : fullSpectre)
+	{
+		in *= helpDouble;
+	}
+#endif
+	return fullSpectre;
+}
+
+
+//double fractalDimensionBySpectre(const std::valarray<double> & arr,
+//								 const QString & picPath)
+//{
+//	const double srate = 250.;
+
+
+//	int N = arr.size();
+//	const int windowSize = 512;
+//	const int timeShift = 128;
+//	const double freqStep = srate / windowSize;
+////	std::cout << freqStep << std::endl;
+
+//	std::valarray<double> avSpectre = myLib::spectreRtoR(smLib::valarSubsec(arr,
+//																			0,
+//																			windowSize));
+//	int numWinds = (N - windowSize) / timeShift;
+//	for(int i = 0; i < numWinds; ++i)
+//	{
+//		auto windSpec = myLib::spectreRtoR(smLib::valarSubsec(arr,
+//															  i * timeShift,
+//															  i * timeShift + windowSize),
+//						   windowSize);
+//		avSpectre += windSpec;
+//	}
+//	avSpectre /= numWinds;
+//	avSpectre *= myLib::spectreNorm(windowSize, windowSize, srate);
+
+//	std::vector<double> drawK_{};
+//	std::vector<double> drawL_{};
+
+////	for(double fr = freqStep; fr < 15.; fr += freqStep)
+////	{
+////		drawK_.push_back(log(fr));
+////		drawL_.push_back(log(avSpectre[int(fr / freqStep)]));
+////	}
+//	for(int fr = 1; fr < 150; ++fr)
 //	{
 //		drawK_.push_back(log(fr));
-//		drawL_.push_back(log(avSpectre[int(fr / freqStep)]));
+//		drawL_.push_back(log(avSpectre[fr]));
 //	}
-	for(int fr = 1; fr < 150; ++fr)
-	{
-		drawK_.push_back(log(fr));
-		drawL_.push_back(log(avSpectre[fr]));
-	}
-//	std::cout << drawK_.size() << " " << drawL_.size() << std::endl;
+////	std::cout << drawK_.size() << " " << drawL_.size() << std::endl;
 
-	std::valarray<double> drawK = smLib::vecToValar(drawK_);
-	std::valarray<double> drawL = smLib::vecToValar(drawL_);
+//	std::valarray<double> drawK = smLib::vecToValar(drawK_);
+//	std::valarray<double> drawL = smLib::vecToValar(drawL_);
 
-//	std::cout << drawK.size() << " " << drawL.size() << std::endl;
+////	std::cout << drawK.size() << " " << drawL.size() << std::endl;
 
-	for(int i = 0; i < 20; ++i)
-	{
-		std::cout << drawK[i] << " " << drawL[i] << std::endl;
-	}
+//	for(int i = 0; i < 20; ++i)
+//	{
+//		std::cout << drawK[i] << " " << drawL[i] << std::endl;
+//	}
 
-	// least square approximation
-	double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
+//	// least square approximation
+//	double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
 
-	double drawX = 0.;
-	double drawY = 0.;
-	if(!picPath.isEmpty())
-	{
-		QPixmap pic = QPixmap(800, 600);
-		QPainter pnt;
-		pic.fill();
-		pnt.begin(&pic);
+//	double drawX = 0.;
+//	double drawY = 0.;
+//	if(!picPath.isEmpty())
+//	{
+//		QPixmap pic = QPixmap(800, 600);
+//		QPainter pnt;
+//		pic.fill();
+//		pnt.begin(&pic);
 
-		pnt.setPen("black");
-		pnt.setBrush(QBrush("black"));
+//		pnt.setPen("black");
+//		pnt.setBrush(QBrush("black"));
 
-		double minX = drawK.min();
-		double maxX = drawK.max();
-		double minY = drawL.min();
-		double maxY = drawL.max();
-		double lenX = maxX - minX;
-		double lenY = maxY - minY;
+//		double minX = drawK.min();
+//		double maxX = drawK.max();
+//		double minY = drawL.min();
+//		double maxY = drawL.max();
+//		double lenX = maxX - minX;
+//		double lenY = maxY - minY;
 
-		int frame = 10; // pixels
-		int rectSize = 3;
-		for(int h = 0; h < drawK.size(); ++h) // drawK, drawL [last] is bottom-left
-		{
-			drawX = frame + std::abs(drawK[h] - minX) / lenX
-					* (pic.width() - 2 * frame) - rectSize;
-			drawY = frame + (1. - std::abs(drawL[h] - minY) / lenY)
-					* (pic.height() - 2 * frame) - rectSize;
-			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
-		}
+//		int frame = 10; // pixels
+//		int rectSize = 3;
+//		for(int h = 0; h < drawK.size(); ++h) // drawK, drawL [last] is bottom-left
+//		{
+//			drawX = frame + std::abs(drawK[h] - minX) / lenX
+//					* (pic.width() - 2 * frame) - rectSize;
+//			drawY = frame + (1. - std::abs(drawL[h] - minY) / lenY)
+//					* (pic.height() - 2 * frame) - rectSize;
+//			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
+//		}
 
-		pnt.setPen("red");
-		pnt.setBrush(QBrush("red"));
+//		pnt.setPen("red");
+//		pnt.setBrush(QBrush("red"));
 
-		// line passes (meanX, meanY)
-		/// check this with frame
-		double add = smLib::mean(drawL) - slope * smLib::mean(drawK);
+//		// line passes (meanX, meanY)
+//		/// check this with frame
+//		double add = smLib::mean(drawL) - slope * smLib::mean(drawK);
 
-		drawX = (1. - (slope * minX + add - minY) / lenY) * pic.height(); // startY
-		drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); // endY
+//		drawX = (1. - (slope * minX + add - minY) / lenY) * pic.height(); // startY
+//		drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); // endY
 
-		pnt.drawLine(0,
-					 drawX,
-					 pic.width(),
-					 drawY
-					 );
+//		pnt.drawLine(0,
+//					 drawX,
+//					 pic.width(),
+//					 drawY
+//					 );
 
-		pnt.end();
-		pic.save(picPath, 0, 100);
-	}
-	return (5. + slope) / 2.;
-}
+//		pnt.end();
+//		pic.save(picPath, 0, 100);
+//	}
+//	return (5. + slope) / 2.;
+//}
 
 
 
@@ -2084,25 +2154,15 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 }
 
 
-std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
-									double srate,
-									double lowFreq,
-									double highFreq,
+std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 									QString picPath)
 {
 	/// do hilbert transform for the first inLength bins
-	const int inLength = arr.size();
+	const int inLength = inArr.size();
 	const int fftLen = smLib::fftL(inLength) / 2;
 
 	std::valarray<double> outHilbert(inLength); /// result
 	std::valarray<double> tempArr[2];
-
-	const std::valarray<double> filteredArr = myLib::refilter(arr,
-															  lowFreq,
-															  highFreq,
-															  false,
-															  srate);
-
 	int start;
 	for(int i = 0; i < 2; ++i)
 	{
@@ -2117,8 +2177,8 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 
 		// Hilbert via FFT
 		tempArr[i].resize(fftLen);
-		std::copy(std::begin(filteredArr) + start,
-				  std::begin(filteredArr) + start + fftLen,
+		std::copy(std::begin(inArr) + start,
+				  std::begin(inArr) + start + fftLen,
 				  std::begin(tempArr[i]));
 
 		tempArr[i] = spectreRtoC(tempArr[i], fftLen);
@@ -2137,7 +2197,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 
 	for(int i = 0; i < fftLen; ++i)
 	{
-		outHilbert[i] = sqrt(pow(tempArr[0][i], 2.) + pow(filteredArr[i], 2.));
+		outHilbert[i] = sqrt(pow(tempArr[0][i], 2.) + pow(inArr[i], 2.));
 	}
 
     int startReplace = 0;
@@ -2147,7 +2207,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
     for(int i = inLength - fftLen; i < fftLen; ++i)
     {
 		helpDouble = outHilbert[i] - pow(pow(tempArr[1][i], 2.) +
-                                         pow(filteredArr[i], 2.), 0.5);
+										 pow(inArr[i], 2.), 0.5);
 		/// could add derivative
         if(std::abs(helpDouble) <= std::abs(minD))
         {
@@ -2158,7 +2218,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
 
     for(int i = startReplace; i < inLength; ++i)
     {
-		outHilbert[i] = sqrt(pow(tempArr[1][i], 2.) + pow(filteredArr[i], 2.));
+		outHilbert[i] = sqrt(pow(tempArr[1][i], 2.) + pow(inArr[i], 2.));
     }
 
 
@@ -2170,16 +2230,16 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
         QPainter pnt;
         pic.fill();
         pnt.begin(&pic);
-		double maxVal = *std::max_element(std::begin(filteredArr),
-										  std::end(filteredArr)) * 1.1;
+		double maxVal = *std::max_element(std::begin(inArr),
+										  std::end(inArr)) * 1.1;
 
         pnt.setPen("black");
         for(int i = 0; i < pic.width()-1; ++i)
         {
             pnt.drawLine(i,
-						 pic.height()/2. * (1. - filteredArr[i] / maxVal),
+						 pic.height()/2. * (1. - inArr[i] / maxVal),
                          i+1,
-						 pic.height()/2. * (1. - filteredArr[i + 1] / maxVal)
+						 pic.height()/2. * (1. - inArr[i + 1] / maxVal)
                     );
         }
 
@@ -2369,8 +2429,12 @@ std::valarray<double> fftWindow(int length, windowName name)
 
 
 std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
-									const int numOfSmooth)
+									int numOfSmooth)
 {
+	if(numOfSmooth < 0)
+	{
+		numOfSmooth = std::ceil(12 * sqrt(inSpectre.size() / 4096)); /// magic constant
+	}
 	std::valarray<double> result = inSpectre;
     double help1, help2;
 

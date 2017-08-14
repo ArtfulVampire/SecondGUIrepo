@@ -20,6 +20,7 @@ void refilterFolder(const QString & procDirPath,
 					double lowFreq,
 					double highFreq,
 					bool isNotch = false);
+
 void GalyaProcessing(const QString &procDirPath,
 					 const int numChan = 31,
 					 QString outPath = QString());
@@ -29,6 +30,8 @@ void countSpectraFeatures(const QString & filePath,
 void countChaosFeatures(const QString & filePath,
 						  const int numChan,
 						  const QString & outPath);
+
+
 void GalyaCut(const QString & path,
 			  const int wndLen = 16,
 			  QString outPath = QString());
@@ -37,11 +40,10 @@ void cutOneFile(const QString & filePath,
 				const QString & outPath);
 void GalyaWavelets(const QString & inPath,
 				   int numChan = 19,
-				   double freq = 250,
 				   QString outPath = QString());
 void waveletOneFile(const matrix & inData,
 					int numChan,
-					double freq,
+					double srate,
 					const QString & outFile);
 
 void GalyaFull(const QString & inDirPath,
@@ -59,6 +61,10 @@ void Xenia_repairTable(const QString & initPath,
 					   const QString & repairedPath,
 					   const QString & groupsPath = QString(),
 					   const QString & namesPath = QString());
+
+
+void Xenia_TBI_final(const QString & finalPath,
+					 QString outPath = QString());
 
 
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);

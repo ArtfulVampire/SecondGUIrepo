@@ -4,6 +4,7 @@
 #include <myLib/drw.h>
 #include <myLib/iitp.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/dataHandlers.h>
 #include <myLib/temp.h>
 
 using namespace myOut;
@@ -38,10 +39,161 @@ void MainWindow::customFunc()
 //					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_3.edf");
 //	exit(0);
 
-//	autos::Xenia_TBI(def::dataFolder + "/Temp");
+	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL",
+						   def::XeniaFolder + "/FINAL_out");
+	exit(0);
+
+//	QString ss = "/media/Files/Data/Xenia/FINAL/";
+//	std::vector<QString> drs{"Healthy", "Moderate", "Severe"};
+//	qint64 s = 10000000;
+//	for( auto dr : drs)
+//	{
+//		QStringList in = QDir(ss + dr).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+//		for(auto g : in)
+//		{
+//			auto in = QDir(ss + dr + "/" + g).entryInfoList(def::edfFilters);
+//			for(auto i : in)
+//			{
+//				s = std::min(s, i.size());
+//				if(i.size() == 427936) std::cout << dr << " " << g << std::endl;
+//			}
+//		}
+//	}
+//	std::cout << s << std::endl;
 //	exit(0);
 
+
+	exit(0);
 	return;
+
+
+
+
+
+#if 0
+	/// IITP
+	QStringList guyList{
+//		"Alex",
+//		"Boris",
+		"Ira",
+		"Levik",
+		"Oleg",
+		"Egor",
+		"Victor",
+		"Dima",
+		"Isakov",
+		"Galya"
+	};
+
+//	for(QString guy : guyList)
+	QString guy = "Testt";
+//	QString guy = "Galya_test_new";
+	{
+//		autos::IITPdatToEdf(guy);
+//		autos::IITPfilter(guy);
+//		autos::IITPremoveZchans(guy, def::iitpFolder);
+//		autos::IITPremoveZchans(guy, def::iitpSyncFolder);
+//		autos::IITPstaging(guy);
+		autos::IITPstagedToEnveloped(guy, "_sum_new_f");
+//		autos::IITPtestCoh2(guy);
+//		autos::IITPtestCoh(guy);
+//		autos::IITPprocessStaged(guy);
+//		autos::IITPdrawSpectralMaps(guy);
+//		continue;
+		exit(0);
+
+		if(guy == "Alex")
+		{
+			myLib::drw::zeroChans = {};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
+		}
+		else if(guy == "Boris")
+		{
+			myLib::drw::zeroChans = {0, 1, 5, 7, 15};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
+		}
+		else if(guy == "Ira")
+		{
+			myLib::drw::zeroChans = {0, 1};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
+		}
+		else if(guy == "Levik")
+		{
+			myLib::drw::zeroChans = {0, 1};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
+		}
+		else if(guy == "Oleg")
+		{
+			myLib::drw::zeroChans = {5, 15, 16, 18};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
+		}
+		else if(guy == "Victor")
+		{
+			myLib::drw::zeroChans = {};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
+		}
+		else if(guy == "Dima")
+		{
+			myLib::drw::zeroChans = {};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
+		}
+		else if(guy == "Isakov")
+		{
+			myLib::drw::zeroChans = {};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
+		}
+		else if(guy == "Galya")
+		{
+			myLib::drw::zeroChans = {};
+			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
+		}
+
+		using Typ = std::vector<int>;
+		Typ nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
+									  smLib::range<Typ>(24, 29 + 1)});
+//		nums.erase(std::find(std::begin(nums), std::end(nums), 8));
+		autos::IITPdrawSameScale(guy, nums);
+		exit(0);
+	}
+
+
+
+//	autos::IITPprocessStaged("Victor",
+//							 "_sum_f_new_gon_stag");
+//	autos::IITPfilterGonios("Oleg",
+//							"_emg_f");
+	exit(0);
+//	return;
+#endif
+
+
+#if 0
+	/// check new butter:: filters
+//	const QString prePath = "/media/Files/Data/FeedbackFinal/Burtcev/BAV_1_car";
+//	double lF = 3.5;
+//	double rF = 12.;
+//	for(QString postPath : {"", "_but", "_dsp"})
+//	{
+//		edfFile fil;
+//		fil.readEdfFile(prePath + postPath + ".edf");
+//		if(0)
+//		{
+//			myLib::refilter = &butter::refilter;
+//			fil.refilter(lF, rF, true).writeEdfFile(prePath + "_but" + ".edf");
+//			myLib::refilter = &myDsp::refilter;
+//			fil.refilter(lF, rF, true).writeEdfFile(prePath + "_dsp" + ".edf");
+//			break;
+//		}
+//		myLib::drw::drawOneSpectrum(smLib::valarSubsec(fil.getData(9), 10000, 10000 + 8192),
+//									lF-0.5, rF + 0.5, 250., 5).save(prePath + postPath + ".jpg");
+//	}
+//	exit(0);
+#endif
+
+#if 0
+	/// many Higuchi tests
+
+
 
 	edfFile fil;
 //	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
@@ -192,126 +344,67 @@ void MainWindow::customFunc()
 			}
 		}
 	}
-	exit(0);
-
-#if 0
-	/// IITP
-	QStringList guyList{
-//		"Alex",
-//		"Boris",
-		"Ira",
-		"Levik",
-		"Oleg",
-		"Egor",
-		"Victor",
-		"Dima",
-		"Isakov",
-		"Galya"
-	};
-
-//	for(QString guy : guyList)
-	QString guy = "Testt";
-//	QString guy = "Galya_test_new";
-	{
-//		autos::IITPdatToEdf(guy);
-//		autos::IITPfilter(guy);
-//		autos::IITPremoveZchans(guy, def::iitpFolder);
-//		autos::IITPremoveZchans(guy, def::iitpSyncFolder);
-//		autos::IITPstaging(guy);
-		autos::IITPstagedToEnveloped(guy, "_sum_new_f");
-//		autos::IITPtestCoh2(guy);
-//		autos::IITPtestCoh(guy);
-//		autos::IITPprocessStaged(guy);
-//		autos::IITPdrawSpectralMaps(guy);
-//		continue;
-		exit(0);
-
-		if(guy == "Alex")
-		{
-			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
-		}
-		else if(guy == "Boris")
-		{
-			myLib::drw::zeroChans = {0, 1, 5, 7, 15};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
-		}
-		else if(guy == "Ira")
-		{
-			myLib::drw::zeroChans = {0, 1};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
-		}
-		else if(guy == "Levik")
-		{
-			myLib::drw::zeroChans = {0, 1};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
-		}
-		else if(guy == "Oleg")
-		{
-			myLib::drw::zeroChans = {5, 15, 16, 18};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
-		}
-		else if(guy == "Victor")
-		{
-			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
-		}
-		else if(guy == "Dima")
-		{
-			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
-		}
-		else if(guy == "Isakov")
-		{
-			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
-		}
-		else if(guy == "Galya")
-		{
-			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
-		}
-
-		using Typ = std::vector<int>;
-		Typ nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
-									  smLib::range<Typ>(24, 29 + 1)});
-//		nums.erase(std::find(std::begin(nums), std::end(nums), 8));
-		autos::IITPdrawSameScale(guy, nums);
-		exit(0);
-	}
-
-
-
-//	autos::IITPprocessStaged("Victor",
-//							 "_sum_f_new_gon_stag");
-//	autos::IITPfilterGonios("Oleg",
-//							"_emg_f");
-	exit(0);
-//	return;
 #endif
 
-
 #if 0
-	/// check new butter:: filters
-//	const QString prePath = "/media/Files/Data/FeedbackFinal/Burtcev/BAV_1_car";
-//	double lF = 3.5;
-//	double rF = 12.;
-//	for(QString postPath : {"", "_but", "_dsp"})
-//	{
-//		edfFile fil;
-//		fil.readEdfFile(prePath + postPath + ".edf");
-//		if(0)
-//		{
-//			myLib::refilter = &butter::refilter;
-//			fil.refilter(lF, rF, true).writeEdfFile(prePath + "_but" + ".edf");
-//			myLib::refilter = &myDsp::refilter;
-//			fil.refilter(lF, rF, true).writeEdfFile(prePath + "_dsp" + ".edf");
-//			break;
-//		}
-//		myLib::drw::drawOneSpectrum(smLib::valarSubsec(fil.getData(9), 10000, 10000 + 8192),
-//									lF-0.5, rF + 0.5, 250., 5).save(prePath + postPath + ".jpg");
-//	}
-//	exit(0);
+	/// Xenia test 30 sec, 15+15 sec
+	const QString pth = "/media/Files/Data/Xenia/1408/";
+	const int Kmax = 8;
+	QStringList lest = QDir(pth).entryList(def::edfFilters);
+	std::ofstream outStr;
+	outStr.open((pth + "res.txt").toStdString());
+
+	for(QString fileNam : lest)
+	{
+		edfFile filee;
+		filee.readEdfFile(pth + fileNam);
+		filee.refilter(1.6, 30.);
+
+		matrix subData = filee.getData().subCols(0, 250 * 30);
+		matrix subData1 = filee.getData().subCols(0, 250 * 15);
+		matrix subData2 = filee.getData().subCols(250 * 15, 250 * 30);
+		outStr << fileNam << std::endl;
+		outStr << std::fixed;
+		outStr.precision(3);
+
+		double av0 = 0.;
+		double av = 0.;
+		double av1 = 0.;
+		double av2 = 0.;
+		for(int i = 0; i < 19; ++i)
+		{
+			double z = myLib::fractalDimension(filee.getData(i), Kmax
+//											   , pth + "pics/" + filee.getExpName() + "_" + nm(i) + "_0.jpg"
+											   );
+			double a = myLib::fractalDimension(subData[i], Kmax
+//											   , pth + "pics/" + filee.getExpName() + "_" + nm(i) + ".jpg"
+											   );
+			double b = myLib::fractalDimension(subData1[i], Kmax
+//											   , pth + "pics/" + filee.getExpName() + "_" + nm(i) + "_1.jpg"
+											   );
+			double c = myLib::fractalDimension(subData2[i], Kmax
+//											   , pth + "pics/" + filee.getExpName() + "_" + nm(i) + "_2.jpg"
+											   );
+			outStr << z << "\t"
+				   << a << "\t"
+				   << b << "\t"
+				   << c << "\t"
+				   << std::abs(b-c) / a * 100. << "\t"
+				   << std::abs(z-a) / (a + z) * 200.
+				   << std::endl;
+			av += a;
+			av1 += b;
+			av2 +=c;
+			av0 += z;
+		}
+		outStr << av0 / 19. << "\t"
+			   << av / 19. << "\t"
+			   << av1 / 19. << "\t"
+			   << av2 / 19. << "\t"
+			   << std::endl;
+	}
+	exit(0);
+
 #endif
 
 #if 0

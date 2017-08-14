@@ -579,6 +579,12 @@ matrix & matrix::pop_front(uint numOfCols)
 
 matrix matrix::subCols(int beginCol, int endCol) const /// submatrix
 {
+	if(endCol > this->cols())
+	{
+		std::cout << "matrix::subCols: too few cols" << std::endl;
+		endCol = this->cols();
+	}
+
     matrix res(this->rows(), endCol - beginCol);
 	for(int i = 0; i < this->rows(); ++i)
 	{

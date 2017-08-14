@@ -7,13 +7,13 @@ using namespace myOut;
 namespace repair
 {
 
-void physMinMaxDir(const QString & dirPath)
+void physMinMaxDir(const QString & dirPath, const QStringList & filters)
 {
-    for(QString str : QDir(dirPath).entryList(def::edfFilters))
+	for(QString str : QDir(dirPath).entryList(filters))
     {
         edfFile feel;
 		feel.readEdfFile(dirPath + "/" + str);
-		feel.repairPhysEqual();
+		feel.repairPhysEqual().writeEdfFile(dirPath + "/" + str);
     }
 }
 

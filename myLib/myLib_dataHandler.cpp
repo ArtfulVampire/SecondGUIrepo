@@ -1,5 +1,6 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
+#include <QTextStream>
 
 using namespace myOut;
 
@@ -427,6 +428,62 @@ void readUCIdataSet(const QString & setName,
                   i);
         beg += cls[i];
     }
+}
+
+
+void invertMatrixFile(const QString & inPath,
+					  const QString & outPath)
+{
+	std::vector<std::vector<QString>> mtrx;
+	QFile inFil(inPath);
+	inFil.open(QIODevice::ReadOnly);
+//	auto line1 = inFil.readLine();
+//	int cols = line1.count('\t') + 1;
+//	inFil.reset(); /// set to the beginning
+
+	while(1)
+	{
+		auto bytArr = inFil.readLine();
+		int cols = bytArr.count('\t') + 1;
+		if(!bytArr.isEmpty())
+		{
+			mtrx.push_back(std::vector<QString>(cols));
+			QTextStream inStr(bytArr);
+			for(int i = 0; i < cols; ++i)
+			{
+				inStr >> mtrx.back()[i];
+			}
+		}
+		else break;
+
+	}
+	inFil.close();
+
+	// make equal length
+//	std::vector<QString>::size_type maxLen = 0;
+//	for(auto in : mtrx)
+//	{
+//		maxLen = std::max(maxLen, in.size());
+//	}
+//	for(std::vector<QString> & in : mtrx)
+//	{
+//		in.resize(maxLen, "");
+//	}
+
+
+
+	std::ofstream outStr;
+	outStr.open(outPath.toStdString());
+
+	for(int j = 0; j < mtrx[0].size(); ++j)
+	{
+		for(int i = 0; i < mtrx.size(); ++i)
+		{
+			outStr << mtrx[i][j] << "\t";
+		}
+		outStr << "\n";
+	}
+	outStr.close();
 }
 
 

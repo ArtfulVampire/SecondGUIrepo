@@ -586,6 +586,13 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 				}
 			}
 		}
+
+		if(std::find(std::begin(labels), std::end(labels), "Markers") == std::end(labels)
+		   || std::find(std::begin(labels), std::end(labels), "Annotations") == std::end(labels)
+		   )
+		{
+			this->writeMarkersFlag = false;
+		}
 	}
 
 	if(readFlag && writeLabelsFlag)

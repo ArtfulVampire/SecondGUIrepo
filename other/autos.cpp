@@ -236,7 +236,6 @@ void Xenia_TBI(const QString & tbi_path)
 
 				autos::GalyaWavelets(workPath + "/" + guy,
 									 19,
-									 250,
 									 workPath + "_tmp");
 			}
 
@@ -310,6 +309,128 @@ void Xenia_TBI(const QString & tbi_path)
 		outStr.close();
 	}
 #endif
+}
+
+
+void Xenia_TBI_final(const QString & finalPath,
+					 QString outPath)
+{
+	/// TBI Xenia cut, process, tables
+	def::ntFlag = false;
+	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+
+	QStringList subdirs = QDir(finalPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	if(subdirs.isEmpty())
+	{
+		subdirs = QStringList{""};
+	}
+	else
+	{
+		repair::toLatinDir(finalPath, {});
+		repair::deleteSpacesFolders(finalPath);
+		subdirs = QDir(finalPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	}
+
+	if(outPath == QString())
+	{
+		outPath = finalPath + "_out";
+	}
+
+	if(!QDir(outPath).exists())
+	{
+		QDir().mkpath(outPath);
+	}
+
+
+	/// count
+	for(QString subdir : subdirs)
+	{
+		const QString groupPath = finalPath + "/" + subdir;
+
+		repair::toLatinDir(groupPath, {});
+		repair::toLowerDir(groupPath, {});
+		repair::deleteSpacesDir(groupPath, {});
+
+		/// list of guys
+		QStringList guys = QDir(groupPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+		for(QString guy : guys)
+		{
+			const QString guyPath = groupPath + "/" + guy;
+
+			repair::deleteSpacesFolders(guyPath);
+			repair::toLatinDir(guyPath);
+			repair::toLowerDir(guyPath);
+
+			QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
+			if(edfs.isEmpty())
+			{
+				std::cout << "Xenia_TBI_final: guyPath is empty " << guyPath << std::endl;
+				continue;
+			}
+			QString ExpName = edfs[0];
+			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
+
+			/// filter?
+			if(0)
+			{
+				autos::refilterFolder(guyPath,
+									  1.6,
+									  30.);
+			}
+
+
+			/// cut?
+			if(0)
+			{
+				autos::GalyaCut(guyPath,
+								8,
+								groupPath + "_cut/" + guy);
+			}
+
+
+			outPath = guyPath + "/out";
+
+			/// process?
+			if(1)
+			{
+
+				autos::GalyaProcessing(guyPath, 19, outPath);
+				autos::GalyaWavelets(guyPath, 19, outPath);
+
+			}
+
+			/// make one line for each stimulus
+			if(1)
+			{
+				for(QString mark : tbiMarkers)
+				{
+					QStringList fileNamesToArrange;
+					for(QString func : {"_spectre", "_fracDim", "_Hilbert", "_wavelet", "_alpha"})
+					{
+						fileNamesToArrange.push_back(ExpName + mark + func + ".txt");
+					}
+					std::cout << fileNamesToArrange << std::endl << std::endl;
+					autos::XeniaArrangeToLine(outPath,
+											  fileNamesToArrange,
+											  outPath + "/" + ExpName + mark + ".txt");
+				}
+			}
+
+			/// make whole line from all stimuli
+			if(1)
+			{
+				QStringList fileNamesToArrange;
+				for(QString mark : tbiMarkers)
+				{
+					fileNamesToArrange.push_back(ExpName + mark + ".txt");
+				}
+				autos::XeniaArrangeToLine(outPath,
+										  fileNamesToArrange,
+										  outPath + "/" + ExpName + ".txt");
+			}
+			return;
+		}
+	}
 }
 
 void IITPrename(const QString & guyName)
@@ -1148,7 +1269,7 @@ void IITPstagedToEnveloped(const QString & guyName,
 			int num = dt.findChannel(emgChan);
 			if(num == -1) { continue; }
 
-			auto env = myLib::hilbertPieces(dt.getData(num), dt.getFreq(), 0.01, 450.);
+			auto env = myLib::hilbertPieces(dt.getData(num));
 			dt.setData(num, env);
 		}
 		dt.writeEdfFile(outPath(fileNum));
@@ -2180,36 +2301,43 @@ void GalyaCut(const QString & path,
 
 }
 
-/// local
-void matToFile(const matrix & mat, std::ofstream & fil, double (*func)(const std::valarray<double>&))
-{
-	for(int i = 0; i < mat.rows(); ++i)
-	{
-		fil << smLib::doubleRound(func(mat[i]), 4) << "\t";
-	}
-}
-
 void waveletOneFile(const matrix & inData,
 					int numChan,
-					double freq,
+					double srate,
 					const QString & outFile)
 {
 
 	std::ofstream outStr;
 	outStr.open(outFile.toStdString());
 
+	const int numOfFreqs = wvlt::cwt(inData[0], srate).rows(); /// pewpew
+
 #if WAVELET_MATLAB
-	/// can put OMP here, but wait when writing to file
-	for(int j = 0; j < numChan; ++j)
+	for(auto func : {
+	//			smLib::max,
+	//			smLib::min,
+				smLib::mean,
+				smLib::median,
+				smLib::sigma
+})
 	{
-		matrix m = wvlt::cwt(inData[j], freq);
-		for(auto foo : {smLib::max,
-			smLib::min,
-			smLib::mean,
-			smLib::median,
-			smLib::sigma})
+		matrix dataToWrite(numOfFreqs, numChan);
+
+		for(int j = 0; j < numChan; ++j)
 		{
-			matToFile(m, outStr, foo);
+			matrix m = wvlt::cwt(inData[j], srate);
+			for(int i = 0; i < numOfFreqs; ++i) /// each frequency
+			{
+				dataToWrite[i][j] = func(m[i]);
+			}
+		}
+
+		for(int i = 0; i < numOfFreqs; ++i)
+		{
+			for(int j = 0; j < numChan; ++j)
+			{
+				outStr << dataToWrite[i][j] << "\t";
+			}
 		}
 	}
 #else
@@ -2221,26 +2349,25 @@ void waveletOneFile(const matrix & inData,
 
 void GalyaWavelets(const QString & inPath,
 				   int numChan,
-				   double freq,
 				   QString outPath)
 {
 	QDir tmpDir(inPath);
 
 	const QStringList lst = tmpDir.entryList(def::edfFilters);
-//	const QString exp = myLib::getExpNameLib(lst.first(), true);
 //	std::cout << lst.length() << std::endl;
+
+//	const QString exp = myLib::getExpNameLib(lst.first(), true);
 
 	if(outPath.isEmpty())
 	{
 		tmpDir.mkdir("wavelet");
 		outPath = tmpDir.absolutePath() + "/wavelet";
 	}
-	else
+	else if(!QDir(outPath).exists())
 	{
 //		tmpDir.mkpath(outPath + exp);
 		tmpDir.mkpath(outPath);
 	}
-
 
 	const auto filesVec = lst.toVector();
 
@@ -2258,11 +2385,11 @@ void GalyaWavelets(const QString & inPath,
 
 		helpString = outPath
 //					 + "/" + exp
-					 + slash
+					 + "/"
 					 + myLib::getFileName(filesVec[i], false)
 					 + "_wavelet.txt";
 
-		waveletOneFile(initEdf.getData(), numChan, freq, helpString);
+		waveletOneFile(initEdf.getData(), numChan, initEdf.getFreq(), helpString);
 	}
 //	if(wvlt::isInit) wvlt::termMtlb();
 }
@@ -2278,8 +2405,9 @@ void countSpectraFeatures(const QString & filePath,
 	const double rightFreqLim = 20.;
 	const double spectreStepFreq = 1.;
 
-	const double alphaMaxLimLeft = 8.;
-	const double alphaMaxLimRight = 13.;
+	/// moved to myLib::alphaPeakFreq
+//	const double alphaMaxLimLeft = 8.;
+//	const double alphaMaxLimRight = 13.;
 
 	const QString ExpName = myLib::getFileName(filePath, false);
 	const QString spectraFilePath = outPath + "/" + ExpName + "_spectre.txt";
@@ -2294,9 +2422,6 @@ void countSpectraFeatures(const QString & filePath,
 	outSpectraStr.open(spectraFilePath.toStdString());
 	outAlphaStr.open(alphaFilePath.toStdString());
 
-	int helpInt;
-	double helpDouble;
-	std::vector<double> fullSpectre;
 	std::valarray<double> helpSpectre;
 
 	edfFile initEdf;
@@ -2304,88 +2429,34 @@ void countSpectraFeatures(const QString & filePath,
 	initEdf.readEdfFile(filePath);
 
 
-	const int dataL = initEdf.getDataLen();
-	const double fr = initEdf.getFreq();
+	/// Galya
+//	const matrix procData = initEdf.getData();
+	/// Xenia
+	const matrix procData = initEdf.getData().subCols(0, 30 * 250);
+
+	std::vector<std::vector<double>> spectra(numChan); /// [chan][freq]
+
+	const int dataLen = procData.cols();
+	const double srate = initEdf.getFreq();
 
 	for(int i = 0; i < numChan; ++i)
 	{
 		/// norming is necessary
-		helpSpectre = myLib::spectreRtoR(initEdf.getData()[i]) *
-					  (2. / (double(initEdf.getData()[i].size()) * initEdf.getNr()[i]));
-		helpSpectre = myLib::smoothSpectre(helpSpectre,
-										   ceil(10 * sqrt(dataL / 4096.))); /// magic constant
+		helpSpectre = myLib::spectreRtoR(procData[i]) *
+					  myLib::spectreNorm(smLib::fftL(dataLen),
+										 dataLen,
+										 srate);
+		helpSpectre = myLib::smoothSpectre(helpSpectre, -1);
+		outAlphaStr << myLib::alphaPeakFreq(helpSpectre, dataLen, srate) << "\t";
 
-		// count individual alpha peak
-		helpDouble = 0.;
-		helpInt = 0;
-		for(int k = fftLimit(alphaMaxLimLeft,
-							 fr,
-							 smLib::fftL(dataL));
-			k < fftLimit(alphaMaxLimRight,
-						 fr,
-						 smLib::fftL(dataL));
-			++k)
+		spectra[i] = myLib::integrateSpectre(helpSpectre, dataLen, srate);
+	}
+
+	for(int j = 0; j < spectra[0].size(); ++j)
+	{
+		for(int i = 0; i < numChan; ++i)
 		{
-			if(helpSpectre[k] > helpDouble)
-			{
-				helpDouble = helpSpectre[k];
-				helpInt = k;
-			}
-		}
-		// max alpha magnitude
-//		outAlphaStr << helpDouble << "\t";
-		// max alpha freq
-		outAlphaStr << helpInt * fr / smLib::fftL(dataL) << "\t";
-
-
-		// integrate spectre near the needed freqs
-		fullSpectre.clear();
-		for(double j = leftFreqLim;
-			j <= rightFreqLim;
-			j += spectreStepFreq)
-		{
-			helpDouble = 0.;
-			helpInt = 0;
-			for(int k = fftLimit(j - spectreStepFreq / 2.,
-								 fr,
-								 smLib::fftL(dataL));
-				k < fftLimit(j + spectreStepFreq / 2.,
-							 fr,
-							 smLib::fftL(dataL));
-				++k)
-			{
-				helpDouble += helpSpectre[k];
-				++helpInt;
-			}
-			/// normalize spectre to unit sum
-			fullSpectre.push_back(helpDouble / helpInt);
-		}
-
-#if 0
-		// normalize spectre for 1 integral
-		// rewrite lib::normalize()
-		helpDouble = 0.;
-		for(auto it = fullSpectre.begin();
-			it != fullSpectre.end();
-			++it)
-		{
-			helpDouble += (*it);
-		}
-		helpDouble = 1. / helpDouble;
-		for(auto it = fullSpectre.begin();
-			it < fullSpectre.end();
-			++it)
-		{
-			(*it) *= helpDouble * 20.;
-		}
-#endif
-
-		for(auto it = std::begin(fullSpectre);
-			it != std::end(fullSpectre);
-			++it)
-		{
-
-			outSpectraStr << smLib::doubleRound((*it), 4) << "\t";  // write
+			outSpectraStr << smLib::doubleRound(spectra[i][j], 4) << "\t";
 		}
 	}
 	outAlphaStr.close();
@@ -2396,23 +2467,26 @@ void countChaosFeatures(const QString & filePath,
 						const int numChan,
 						const QString & outPath)
 {
-	const double leftFreqLim = 2.;
-	const double rightFreqLim = 20.;
-	const double stepFreq = 2.;
 	const double hilbertFreqLimit = 40.;
 
 	const QString ExpName = myLib::getFileName(filePath, false);
-	const QString d2dimFilePath = outPath + "/" + ExpName + "_d2_dim.txt";
-	const QString hilbertFilePath = outPath + "/" + ExpName + "_med_freq.txt";
+
+	const QString d2dimFilePath = outPath + "/" + ExpName + "_fracDim.txt";
+	const QString hilbertFilePath = outPath + "/" + ExpName + "_Hilbert.txt";
 
 	// remove previous
 	QFile::remove(d2dimFilePath);
 	QFile::remove(hilbertFilePath);
 
 	std::ofstream outDimStr;
-	std::ofstream outHilbertStr;
 	outDimStr.open(d2dimFilePath.toStdString());
+	outDimStr << std::fixed;
+	outDimStr.precision(4);
+
+	std::ofstream outHilbertStr;
 	outHilbertStr.open(hilbertFilePath.toStdString());
+	outHilbertStr << std::fixed;
+	outHilbertStr.precision(4);
 
 	double helpDouble;
 	double sumSpec = 0.;
@@ -2423,108 +2497,86 @@ void countChaosFeatures(const QString & filePath,
 	initEdf.setMatiFlag(false);
 	initEdf.readEdfFile(filePath);
 
-	const matrix BACKUP = initEdf.getData();
-	matrix currMat = matrix();
-	const double fr = initEdf.getFreq();
+	/// Galya
+//	const matrix BACKUP = initEdf.getData();
+	/// Xenia
+	const matrix BACKUP = initEdf.getData().subCols(0, 30 * 250);
+	const double srate = initEdf.getFreq();
+	const int dataLen = BACKUP.cols();
 
-	for(double freqCounter = leftFreqLim;
-		freqCounter <= rightFreqLim;
-		freqCounter += stepFreq)
+	std::vector<std::pair<double, double>> filters{
+		std::make_pair(0.5, 70), /// i.e. no filter
+		std::make_pair(4, 6),
+		std::make_pair(8, 13)};
+	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); // [filter][chan][0-carr, 1-SD]
+
+	for(int numFilt = 0; numFilt < filters.size(); ++numFilt)
 	{
-		/// remake further, non-filtered first
-		if(freqCounter != rightFreqLim)
-		{
-			currMat = myLib::refilterMat(BACKUP,
-										 freqCounter,
-										 freqCounter + stepFreq);
-		}
-		else
-		{
-			currMat = BACKUP;
-		}
+		std::pair<double, double> filterLims = filters[numFilt];
 
+		matrix currMat = myLib::refilterMat(BACKUP,
+											filterLims.first,
+											filterLims.second);
+
+		hilb[numFilt].resize(numChan);
 		for(int i = 0; i < numChan; ++i)
 		{
-			helpDouble = myLib::fractalDimension(currMat[i]);
-			outDimStr << smLib::doubleRound(helpDouble, 4) << "\t";
-		}
+			if(numFilt == 0)
+			{
+				/// fractalDimension only for whole spectre
+//				outDimStr << smLib::doubleRound(myLib::fractalDimension(currMat[i]), 4) << "\t";
+				outDimStr << myLib::fractalDimension(currMat[i]) << "\t";
+			}
 
-#if 0
-		// write enthropy
-		helpString = outPath
-					 + "/" + ExpName;
-#if 0
-		iffreqCounter != rightFreqLim)
-		{
-			helpString += "_" + QString::numberfreqCounter)
-						  + "-" + QString::numberfreqCounter + stepFreq);
-		}
-#endif
-		helpString += "_" + enthropyFileName;
-		outStr.open(helpString.toStdString().c_str(), ios_base::app);
-		for(int i = 0; i < numChan; ++i)
-		{
-			helpDouble = enthropy(initEdf.getData()[i].data(),
-								  initEdf.getDataLen());
-			outStr << doubleRound(helpDouble, 4) << "\t";
-		}
-		outStr.close();
-#endif
-
-
-
-		// write envelope median spectre
-		for(int i = 0; i < numChan; ++i)
-		{
-			//                helpString.clear(); // no pictures
-			env = myLib::hilbertPieces(currMat[i],
-									   fr,
-									   1., /// no difference - why?
-									   40. /// no difference - why?
-									   );
-
-			/// norming is not necessary here
+			// write envelope median spectre
+			env = myLib::hilbertPieces(currMat[i]) ;
 			envSpec = myLib::spectreRtoR(env);
 			envSpec[0] = 0.;
-#if 0
-			iffreqCounter <= rightFreqLim + stepFreq)
-			{
-				helpString = outPath
-							 + "/" + ExpName
-							 + "_" + QString::numberfreqCounter)
-							 + "_" + nm(numChan)
-							 + "_fSpec.jpg";
-			}
-			else
-			{
-				helpString.clear();
-			}
-			helpString.clear(); // no picture of spectre
-
-			drawOneSignal(envSpec,
-						 helpString);
-#endif
 
 			helpDouble = 0.;
 			sumSpec = 0.;
-
 			for(int j = 0;
-				j < fftLimit(hilbertFreqLimit, fr, smLib::fftL(initEdf.getDataLen()));
+				j < fftLimit(hilbertFreqLimit,
+							 srate,
+							 smLib::fftL( dataLen ));
 				++j)
 			{
 				helpDouble += envSpec[j] * j;
 				sumSpec += envSpec[j];
 			}
 			helpDouble /= sumSpec;
-			helpDouble /= fftLimit(1., fr, smLib::fftL(initEdf.getDataLen())); // convert to Hz
+			helpDouble /= fftLimit(1.,
+								   srate,
+								   smLib::fftL( dataLen )); // convert to Hz
 
-			outHilbertStr << smLib::doubleRound(helpDouble, 4) << "\t";
+			hilb[numFilt][i] = {helpDouble, smLib::sigma(env) / smLib::mean(env)};
+		}
 
-			/// experimental add
-			outHilbertStr << smLib::doubleRound(smLib::sigma(env) / smLib::mean(env), 4)
-						  << "\t";
+	}
+	/// Galya
+//	for(int func : {0, 1})
+//	{
+//		for(int filt : {0, 2}) /// whole and alpha
+//		{
+//			for(int ch = 0; ch < chanNum; ++ch)
+//			{
+//				outHilbertStr << hilb[filt][ch][func] << "\t";
+//			}
+//		}
+//	}
+
+	/// Xenia
+	for(int filt : {0, 1, 2}) /// whole and alpha
+	{
+		for(int func : {0, 1})
+		{
+			for(int ch = 0; ch < numChan; ++ch)
+			{
+				outHilbertStr << hilb[filt][ch][func] << "\t";
+			}
 		}
 	}
+
 	outDimStr.close();
 	outHilbertStr.close();
 }
@@ -2537,7 +2589,7 @@ void refilterFolder(const QString & procDirPath,
 
 	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
 															  QDir::NoFilter,
-															  QDir::Size|QDir::Reversed);
+															  QDir::Size | QDir::Reversed);
 
 	for(const QString & fileName : filesList)
 	{
@@ -2576,8 +2628,8 @@ void GalyaProcessing(const QString & procDirPath,
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		QString helpString = dir.absolutePath() + "/" + filesVec[i];
-		edfFile initEdf;
 
+		edfFile initEdf;
 		initEdf.readEdfFile(helpString, true);
 
 		/// different checks
@@ -2595,7 +2647,7 @@ void GalyaProcessing(const QString & procDirPath,
 		}
 
 		std::cout << filesList[i] << '\t'
-			 << smLib::doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << std::endl;
+				  << smLib::doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << std::endl;
 
 
 		countChaosFeatures(helpString, numChan, outPath);
@@ -2610,18 +2662,19 @@ void GalyaFull(const QString & inDirPath,
 			   int freq,
 			   int rightNum)
 {
-	if(!QDir().exists(inDirPath))
+	QDir tmp(inDirPath);
+	if(!tmp.exists())
 	{
 		std::cout << "GalyaFull: path = " << inDirPath << " is wrong" << std::endl;
 		return;
 	}
 
-	QDir tmp(inDirPath);
 	if(outFileNames.isEmpty())
 	{
 		const QString firstName = tmp.entryList(def::edfFilters)[0];
 		outFileNames = firstName.left(firstName.indexOf('_'));
 	}
+
 	if(outDirPath.isEmpty())
 	{
 		tmp.cdUp();
@@ -2650,7 +2703,8 @@ void GalyaFull(const QString & inDirPath,
 	autos::makeRightNumbers(outPath,
 							rightNum);
 
-	for(QString type : {"_spectre", "_alpha", "_d2_dim", "_med_freq"})
+	/// Galya
+	for(QString type : {"_alpha", "_spectre", "_Hilbert",  "_fracDim"})
 	{
 		autos::makeTableFromRows(outPath,
 								 outDirPath + "/" + outFileNames + type + ".txt",
@@ -2663,7 +2717,7 @@ void GalyaFull(const QString & inDirPath,
 #if WAVELET_MATLAB
 	if(!wvlt::isInit) wvlt::initMtlb();
 	autos::GalyaWavelets(inDirPath,
-						 numChan, freq,
+						 numChan,
 						 waveletPath);
 #else
 	std::cout << "GalyaFull: wavelets don't work" << std::endl;

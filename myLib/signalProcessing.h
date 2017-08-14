@@ -52,7 +52,7 @@ std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre)
 
 
 std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
-									const int numOfSmooth);
+									int numOfSmooth = 0);
 
 matrix countSpectre(const matrix & inData,
 					int fftLen,
@@ -127,26 +127,29 @@ void calcSpectre(const std::valarray<double> & inSignal,
 				 double powArg = 1.);
 
 
+///some features, double(const std::valarray<double> & in)
+
 /// Higuchi
-double fractalDimension(const std::valarray<double> &arr,
-						int Kmax = 6,
+double fractalDimension(const std::valarray<double> & arr,
+						int Kmax = 8,
 						const QString & picPath = QString());
+double alphaPeakFreq(const std::valarray<double> & spectreR,
+					 int initSigLen,
+					 double srate = 250.,
+					 double leftLimFreq = 8.,
+					 double rightLimFreq = 13.);
+std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
+									 int initSigLen,
+									 double srate = 250.,
+									 double leftFreqLim = 2.,
+									 double rightFreqLim = 20.,
+									 double spectreStepFreq = 1.);
 
+double hilbertCarr(const std::valarray<double> & arr);
+double hilbertSD(const std::valarray<double> & arr);
 
-double fractalDimensionBySpectre(const std::valarray<double> &arr,
-						const QString & picPath = QString());
-
-
-/// UNUSED - MUST CHECK BEFORE USE
-// std::valarray<double> hilbert(const std::valarray<double> & arr,
-//							  double lowFreq = def::leftFreq,
-//							  double highFreq = def::rightFreq,
-//							  QString picPath  = QString());
 
 std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
-									double srate,
-									double lowFreq,
-									double highFreq,
 									QString picPath = QString());
 
 std::valarray<double> bayesCount(const std::valarray<double> & dataIn, int numOfIntervals);
@@ -170,6 +173,16 @@ double splineOutput(const std::valarray<double> & inX,
 					const std::valarray<double> & B,
 					double probeX);
 
+
+//double fractalDimensionBySpectre(const std::valarray<double> &arr,
+//						const QString & picPath = QString());
+
+
+/// UNUSED - MUST CHECK BEFORE USE
+// std::valarray<double> hilbert(const std::valarray<double> & arr,
+//							  double lowFreq = def::leftFreq,
+//							  double highFreq = def::rightFreq,
+//							  QString picPath  = QString());
 
 
 /// ICA
