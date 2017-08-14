@@ -39,8 +39,7 @@ void MainWindow::customFunc()
 //					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_3.edf");
 //	exit(0);
 
-	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL",
-						   def::XeniaFolder + "/FINAL_out");
+	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
 	exit(0);
 
 //	QString ss = "/media/Files/Data/Xenia/FINAL/";
@@ -683,7 +682,7 @@ void MainWindow::customFunc()
 		dest.mkdir(deer);
 		dest.cd(deer);
 
-		QStringList edfF = tmp.entryList(def::edfFilters, QDir::Files, QDir::Time|QDir::Reversed);
+		QStringList edfF = tmp.entryList(def::edfFilters, QDir::Files, QDir::Time | QDir::Reversed);
 //		QStringList udfF = tmp.entryList({"*.UDF", "*.Hdr"}, QDir::Files);
 //		std::cout << edfF << std::endl;
 

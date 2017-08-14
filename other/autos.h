@@ -113,8 +113,8 @@ void mixNumbersCF(const QString & dirPath);
 void makeRightNumbersCF(const QString & dirPath, int startNum);
 void makeRightNumbers(const QString & dirPath,
 					  int length = 3);
-void makeTableFromRows(const QString & work,
-					   QString tablePath = QString(),
+void makeTableFromRows(const QString & inPath,
+					   QString outTablePath = QString(),
 					   const QString & auxFilter = QString());
 
 void repairMarkersInNewFB(QString edfPath, int numSession);

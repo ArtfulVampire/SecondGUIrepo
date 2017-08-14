@@ -315,6 +315,9 @@ void Xenia_TBI(const QString & tbi_path)
 void Xenia_TBI_final(const QString & finalPath,
 					 QString outPath)
 {
+	QTime myTime;
+	myTime.start();
+
 	/// TBI Xenia cut, process, tables
 	def::ntFlag = false;
 	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
@@ -370,14 +373,29 @@ void Xenia_TBI_final(const QString & finalPath,
 			QString ExpName = edfs[0];
 			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
 
+
+			/// rereference
+			if(1)
+			{
+
+			}
+
+			/// repair Holes and PhysMinMax
+			if(1)
+			{
+
+			}
+
 			/// filter?
-			if(0)
+			if(1)
 			{
 				autos::refilterFolder(guyPath,
 									  1.6,
 									  30.);
 			}
 
+
+			continue;
 
 			/// cut?
 			if(0)
@@ -389,7 +407,6 @@ void Xenia_TBI_final(const QString & finalPath,
 
 
 			outPath = guyPath + "/out";
-
 			/// process?
 			if(1)
 			{
@@ -427,10 +444,18 @@ void Xenia_TBI_final(const QString & finalPath,
 				autos::XeniaArrangeToLine(outPath,
 										  fileNamesToArrange,
 										  outPath + "/" + ExpName + ".txt");
+
+				QFile::copy(outPath + "/" + ExpName + ".txt",
+							finalPath + "_out/" + ExpName + ".txt");
 			}
-			return;
 		}
 	}
+	/// make tables whole and people list
+	autos::makeTableFromRows(finalPath + "_out",
+							 finalPath + "_out/all.txt");
+
+	std::cout << "Xenia_TBI_final: time elapsed = "
+			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void IITPrename(const QString & guyName)
@@ -2071,30 +2096,35 @@ void makeRightNumbers(const QString & dirPath,
 }
 
 
-void makeTableFromRows(const QString & work,
-					   QString tablePath,
+void makeTableFromRows(const QString & inPath,
+					   QString outTablePath,
 					   const QString & auxFilter)
 {
-	QDir deer(work);
+	QDir deer(inPath);
 
-	if(tablePath.isEmpty())
+	if(outTablePath.isEmpty())
 	{
 		deer.cdUp();
-		tablePath = deer.absolutePath()
-					+ "/table.txt";
-		deer.cd(work);
+		outTablePath = deer.absolutePath() + "/table.txt";
+		deer.cd(inPath);
 	}
-	const QString tableName = myLib::getFileName(tablePath);
+	const QString tableName = myLib::getFileName(outTablePath);
 
 
-	QFile outStr(tablePath);
+	QFile outStr(outTablePath);
 	outStr.open(QIODevice::WriteOnly);
+
+	std::ofstream fileNames;
+	fileNames.open((inPath + "/people.txt").toStdString());
 
 	for(const QString & fileName : deer.entryList({"*" + auxFilter +".txt"},
 												  QDir::Files,
-												  QDir::Name))
+												  QDir::Time
+//												  | QDir::Reversed
+												  ))
 	{
 		if(fileName.contains(tableName)) continue;
+		fileNames << fileName << "\n";
 
 		QFile fil(deer.absolutePath() + "/" + fileName);
 		fil.open(QIODevice::ReadOnly);
@@ -2103,7 +2133,7 @@ void makeTableFromRows(const QString & work,
 		outStr.write(contents);
 		outStr.write("\r\n");
 	}
-
+	fileNames.close();
 	outStr.close();
 }
 
@@ -2388,8 +2418,10 @@ void GalyaWavelets(const QString & inPath,
 					 + "/"
 					 + myLib::getFileName(filesVec[i], false)
 					 + "_wavelet.txt";
-
+		/// Galya
 		waveletOneFile(initEdf.getData(), numChan, initEdf.getFreq(), helpString);
+		/// Xenia
+		waveletOneFile(initEdf.getData().subCols(0, 30 * 250), numChan, initEdf.getFreq(), helpString);
 	}
 //	if(wvlt::isInit) wvlt::termMtlb();
 }
@@ -2604,12 +2636,12 @@ void GalyaProcessing(const QString & procDirPath,
 					 const int numChan,
 					 QString outPath)
 {
-	const QString outDir = myLib::getFileName(procDirPath) + "_out";
 
 	QDir dir;
 	dir.cd(procDirPath);
 	if(outPath.isEmpty())
 	{
+		const QString outDir = myLib::getFileName(procDirPath) + "_out";
 		dir.mkdir(outDir);
 		outPath = dir.absolutePath() + "/" + outDir;
 	}
@@ -2620,7 +2652,9 @@ void GalyaProcessing(const QString & procDirPath,
 
 	const QStringList filesList = dir.entryList(def::edfFilters,
 												QDir::NoFilter,
-												QDir::Size|QDir::Reversed);
+												QDir::Size
+												| QDir::Reversed
+												);
 	const auto filesVec = filesList.toVector();
 
 #pragma omp parallel
