@@ -693,9 +693,12 @@ void Spectre::writeSpectra(const double leftFreq,
 void Spectre::countSpectraSlot()
 {
     defaultState();
-	if(!ui->bypassCheckBox->isChecked())
+	if(!ui->bypassCountCheckBox->isChecked())
 	{
 		countSpectra();
+	}
+	if(!ui->bypassWriteCheckBox->isChecked())
+	{
 		writeSpectra();
 	}
 

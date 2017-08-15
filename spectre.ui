@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1072</width>
-    <height>575</height>
+    <width>1324</width>
+    <height>825</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,8 +57,8 @@
     <rect>
      <x>510</x>
      <y>10</y>
-     <width>550</width>
-     <height>550</height>
+     <width>800</width>
+     <height>800</height>
     </rect>
    </property>
    <property name="text">
@@ -120,7 +120,7 @@
     <rect>
      <x>10</x>
      <y>122</y>
-     <width>256</width>
+     <width>262</width>
      <height>318</height>
     </rect>
    </property>
@@ -233,9 +233,16 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="bypassCheckBox">
+       <widget class="QCheckBox" name="bypassCountCheckBox">
         <property name="text">
-         <string>bypass</string>
+         <string>bypass count</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="bypassWriteCheckBox">
+        <property name="text">
+         <string>bypass write</string>
         </property>
        </widget>
       </item>
@@ -330,7 +337,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>271</x>

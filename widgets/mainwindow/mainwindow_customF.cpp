@@ -39,8 +39,8 @@ void MainWindow::customFunc()
 //					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_3.edf");
 //	exit(0);
 
-	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
-	exit(0);
+//	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
+//	exit(0);
 
 //	QString ss = "/media/Files/Data/Xenia/FINAL/";
 //	std::vector<QString> drs{"Healthy", "Moderate", "Severe"};
@@ -62,7 +62,7 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-	exit(0);
+
 	return;
 
 

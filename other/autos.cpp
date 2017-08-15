@@ -387,8 +387,9 @@ void Xenia_TBI_final(const QString & finalPath,
 			}
 
 			/// filter?
-			if(1)
+			if(0)
 			{
+				/// already done ?
 				autos::refilterFolder(guyPath,
 									  1.6,
 									  30.);
@@ -2419,7 +2420,7 @@ void GalyaWavelets(const QString & inPath,
 					 + myLib::getFileName(filesVec[i], false)
 					 + "_wavelet.txt";
 		/// Galya
-		waveletOneFile(initEdf.getData(), numChan, initEdf.getFreq(), helpString);
+//		waveletOneFile(initEdf.getData(), numChan, initEdf.getFreq(), helpString);
 		/// Xenia
 		waveletOneFile(initEdf.getData().subCols(0, 30 * 250), numChan, initEdf.getFreq(), helpString);
 	}

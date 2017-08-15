@@ -126,7 +126,13 @@ Net::Net() :
 			this, SLOT(setClassifier(QAbstractButton*, bool)));
 
 	QObject::connect(ui->learnAllButton, &QPushButton::clicked,
-					 [this](){ if(!myClassifier) myClassifier->learnAll(); });
+					 [this](){
+		if(myClassifier)
+		{
+			std::cout << "Net: learnAll" << std::endl;
+			myClassifier->learnAll();
+		}
+	});
 
     /// ANN
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWtsSlot()));
