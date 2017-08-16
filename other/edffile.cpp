@@ -1778,6 +1778,179 @@ edfFile & edfFile::refilter(double lowFreq,
 	return *this;
 }
 
+
+edfFile edfFile::rereferenceData(const QString & newRef) const
+{
+	return *this;
+//	// A1, A2, Ar, N
+//	// A1-A2, A1-N
+//    // Ar means 0.5*(A1+A2)
+
+//	int groundChan = -1;	// A1-N
+//	int earsChan1 = -1;		// A1-A2
+//	int earsChan2 = -1;		// A2-A1
+//	int eog1 = -1;			// EOG1
+//	int eog2 = -1;			// EOG2
+
+//	bool eogAsIs = false;
+//	bool bipolarEog12 = false;
+
+//	for(int i = 0; i < globalEdf.getNs(); ++i)
+//    {
+//		if(this->labels[i].contains("A1-N"))		{ groundChan = i; }
+//		else if(this->labels[i].contains("A1-A2"))	{ earsChan1 = i; }
+//		else if(this->labels[i].contains("A2-A1"))	{ earsChan2 = i; }
+//		else if(this->labels[i].contains("EOG1"))	{ eog1 = i; }
+//		else if(this->labels[i].contains("EOG2"))	{ eog2 = i; }
+//    }
+//    if(groundChan == -1 || (earsChan1 == -1 && earsChan2 == -1))
+//    {
+//		std::cout << "edfFile::rereferenceData: some of ref channels are absent" << std::endl;
+//        return;
+//    }
+
+//    int earsChan;
+//    std::vector<QString> sign;
+//    if(earsChan1 != -1)
+//    {
+//        earsChan = earsChan1;
+//        sign = {"-", "+"};
+//    }
+//    else
+//    {
+//        earsChan = earsChan2;
+//        sign = {"+", "-"};
+//    }
+
+//	const QString earsChanStr = nm(earsChan + 1);
+//	const QString groundChanStr = nm(groundChan + 1);
+
+//	QString helpString;
+//	for(int i = 0; i < this->ns; ++i)
+//    {
+//		const QString currNumStr = nm(i + 1);
+
+//		if(i == groundChan || i == earsChan1 || i == earsChan2) /// reref chans
+//		{
+//			helpString += currNumStr + " ";
+//		}
+//		else if(!this->labels[i].contains(QRegExp("E[EO]G"))) /// not EOG, not EEG
+//        {
+//            helpString += currNumStr + " ";
+//		}
+//		else if(this->labels[i].contains("EOG") && eogAsIs)
+//		{
+//			helpString += currNumStr + " ";
+//		}
+//		else if(this->labels[i].contains("EOG") && bipolarEog12)
+//		{
+//			if(this->labels[i].contains("EOG1")) { /* do nothing */ }
+//			else if(this->labels[i].contains("EOG2")) /// make bipolar EOG1-EOG2
+//			{
+//				/// EOG inversion is made in edfFile::reduceChannels
+//				/// here deal with them like EOG*-A*
+
+//				if(globalEdf.getEogType() == eogType::cross)
+//				{
+//					/// (EOG1-A2) - (EOG2-A1) - (A1-A2)
+//					helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[0] + nm(earsChan + 1) + " ";
+//				}
+//				else if(globalEdf.getEogType() == eogType::correspond)
+//				{
+//					/// (EOG1-A1) - (EOG2-A2) + (A1-A2)
+//					helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[1] + nm(earsChan + 1) + " ";
+//				}
+//			}
+//			else { helpString += currNumStr + " "; }
+//		}
+//		else /// EEG and usual EOG
+//        {
+//            // define current ref
+//            QRegExp forRef(R"([\-].{1,4}[ ])");
+//            forRef.indexIn(this->labels[i]);
+//            QString refName = forRef.cap();
+//            refName.remove(QRegExp(R"([\-\s])"));
+
+//			/// if no reference found - leave as is
+//			if(refName.isEmpty()) { helpString += currNumStr + " "; }
+
+//			QString chanName = myLib::getLabelName(this->labels[i]);
+
+//            QString targetRef = newRef;
+
+//            /// if newRef == "Base"
+//            if(!(newRef == "A1" ||
+//                 newRef == "A2" ||
+//                 newRef == "Ar" ||
+//                 newRef == "N"))
+//            {
+//                if(std::find(std::begin(coords::lbl_A1),
+//                             std::end(coords::lbl_A1),
+//                             chanName) != std::end(coords::lbl_A1))
+//                {
+//                    targetRef = "A1";
+//                }
+//                else
+//                {
+//                    targetRef = "A2";
+//                }
+//            }
+//			helpString += myLib::rerefChannel(refName,
+//											  targetRef,
+//											  currNumStr,
+//											  earsChanStr,
+//											  groundChanStr,
+//											  sign) + " ";
+//			this->labels[i].replace(refName, targetRef);
+//		}
+
+//    }
+
+//	/// fix EOG1-EOG2 label when bipolar
+//	/// generality
+//	if(bipolarEog12)
+//	{
+//		/// erase EOG1-A1
+//		label.erase(std::find_if(std::begin(label),
+//								 std::end(label),
+//								 [](const QString & in)
+//		{ return in.contains("EOG1-"); }));
+
+//		/// insert EOG1-EOG2
+//		label.insert(std::find_if(std::begin(label),
+//								  std::end(label),
+//								  [](const QString & in)
+//		 { return in.contains("EOG2-"); }),
+//					 myLib::fitString("EOG EOG1-EOG2", 16));
+
+//		/// erase EOG2-A2
+//		label.erase(std::find_if(std::begin(label),
+//								 std::end(label),
+//								 [](const QString & in)
+//		{ return in.contains("EOG2-"); }));
+//	}
+//    ui->reduceChannelsLineEdit->setText(helpString);
+//	std::cout << helpString << std::endl;
+
+//	/// the very processing
+//	globalEdf = globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
+//	globalEdf.setLabels(label); /// necessary after the processing
+
+//	/// inverse EOG2-EOG1 back (look edfFile::reduceChannels near the end)
+//	if(int a = globalEdf.findChannel("EOG1-EOG2") != -1)
+//	{
+//		globalEdf.multiplyChannel(a, -1.);
+//	}
+//	else
+//	{
+//		std::cout << "rereferenceData: no bipolar EOG" << std::endl;
+//	}
+
+//	// set back channels string
+//	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->currentData().toString());
+
+}
+
 void edfFile::saveSubsection(int startBin,
                              int finishBin,
                              const QString & outPath,

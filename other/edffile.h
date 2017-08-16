@@ -114,6 +114,7 @@ public:
 
 enum class inst {mati, iitp};
 enum class eogType {cross, correspond};
+enum class reference{A1, A2, Ar, CAR, Base};
 #define EDFSTREAM 0
 
 #if EDFSTREAM
@@ -184,6 +185,9 @@ public:
 					   double highFreq,
 					   bool isNotch = false,
 					   std::vector<uint> chanList = {});
+
+	edfFile rereferenceData(const QString & newRef) const;
+	edfFile rereferenceData(reference newRef) const;
 
 	/// channels modify
 	edfFile reduceChannels(const std::vector<int> & chanList) const;

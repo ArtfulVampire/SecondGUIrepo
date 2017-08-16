@@ -142,7 +142,7 @@ std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
 									 int initSigLen,
 									 double srate = 250.,
 									 double leftFreqLim = 2.,
-									 double rightFreqLim = 20.,
+									 double rightFreqLim = 19.,
 									 double spectreStepFreq = 1.);
 
 double hilbertCarr(const std::valarray<double> & arr);

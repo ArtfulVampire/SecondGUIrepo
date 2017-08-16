@@ -348,6 +348,7 @@ void Xenia_TBI_final(const QString & finalPath,
 	/// count
 	for(QString subdir : subdirs)
 	{
+		break;
 		const QString groupPath = finalPath + "/" + subdir;
 
 		repair::toLatinDir(groupPath, {});
@@ -360,9 +361,12 @@ void Xenia_TBI_final(const QString & finalPath,
 		{
 			const QString guyPath = groupPath + "/" + guy;
 
-			repair::deleteSpacesFolders(guyPath);
-			repair::toLatinDir(guyPath);
-			repair::toLowerDir(guyPath);
+			if(1) /// repair fileNames
+			{
+				repair::deleteSpacesFolders(guyPath);
+				repair::toLatinDir(guyPath);
+				repair::toLowerDir(guyPath);
+			}
 
 			QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
 			if(edfs.isEmpty())
@@ -374,20 +378,21 @@ void Xenia_TBI_final(const QString & finalPath,
 			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
 
 
-			/// rereference
+			/// physMinMax & holes
 			if(1)
 			{
-
+				repair::physMinMaxDir(guyPath);
+				repair::holesDir(guyPath, guyPath);	/// rewrite after repair
 			}
 
-			/// repair Holes and PhysMinMax
-			if(1)
+			/// rereference
+			if(0)
 			{
-
+//				autos::rereferenceFolder(guyPath, "Ar");
 			}
 
 			/// filter?
-			if(0)
+			if(1)
 			{
 				/// already done ?
 				autos::refilterFolder(guyPath,
@@ -396,7 +401,7 @@ void Xenia_TBI_final(const QString & finalPath,
 			}
 
 
-			continue;
+//			continue;
 
 			/// cut?
 			if(0)
@@ -408,16 +413,15 @@ void Xenia_TBI_final(const QString & finalPath,
 
 
 			outPath = guyPath + "/out";
+
 			/// process?
 			if(1)
 			{
-
 				autos::GalyaProcessing(guyPath, 19, outPath);
 				autos::GalyaWavelets(guyPath, 19, outPath);
-
 			}
 
-			/// make one line for each stimulus
+			/// make one line file for each stimulus
 			if(1)
 			{
 				for(QString mark : tbiMarkers)
@@ -449,6 +453,7 @@ void Xenia_TBI_final(const QString & finalPath,
 				QFile::copy(outPath + "/" + ExpName + ".txt",
 							finalPath + "_out/" + ExpName + ".txt");
 			}
+//			return; /// only first guy from first subdir
 		}
 	}
 	/// make tables whole and people list
@@ -2121,10 +2126,11 @@ void makeTableFromRows(const QString & inPath,
 	for(const QString & fileName : deer.entryList({"*" + auxFilter +".txt"},
 												  QDir::Files,
 												  QDir::Time
-//												  | QDir::Reversed
+												  | QDir::Reversed
 												  ))
 	{
-		if(fileName.contains(tableName)) continue;
+		if(fileName.contains(tableName)
+		   || fileName.contains("people")) continue;
 		fileNames << fileName << "\n";
 
 		QFile fil(deer.absolutePath() + "/" + fileName);
@@ -2340,6 +2346,8 @@ void waveletOneFile(const matrix & inData,
 
 	std::ofstream outStr;
 	outStr.open(outFile.toStdString());
+	outStr << std::fixed;
+	outStr.precision(4);
 
 	const int numOfFreqs = wvlt::cwt(inData[0], srate).rows(); /// pewpew
 
@@ -2434,10 +2442,6 @@ void countSpectraFeatures(const QString & filePath,
 						  const int numChan,
 						  const QString & outPath)
 {
-	const double leftFreqLim = 2.;
-	const double rightFreqLim = 20.;
-	const double spectreStepFreq = 1.;
-
 	/// moved to myLib::alphaPeakFreq
 //	const double alphaMaxLimLeft = 8.;
 //	const double alphaMaxLimRight = 13.;
@@ -2613,6 +2617,23 @@ void countChaosFeatures(const QString & filePath,
 	outDimStr.close();
 	outHilbertStr.close();
 }
+
+
+//void rereferenceFolder(const QString & procDirPath,
+//					   const QString & newRef)
+//{
+//	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
+//															  QDir::NoFilter,
+//															  QDir::Size | QDir::Reversed);
+
+//	for(const QString & fileName : filesList)
+//	{
+//		QString helpString = procDirPath + "/" + fileName;
+//		edfFile fil;
+//		fil.readEdfFile(helpString);
+//		.writeEdfFile(helpString);
+//	}
+//}
 
 void refilterFolder(const QString & procDirPath,
 					  double lowFreq,
