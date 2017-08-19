@@ -39,91 +39,8 @@ void MainWindow::customFunc()
 //					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_3.edf");
 //	exit(0);
 
-	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Xenia/FINAL_out/labels3.txt",
-										   '\t') << std::endl;
-	exit(0);
 
-	std::ofstream lab;
-	lab.open((def::XeniaFolder + "/FINAL_out/labels3.txt").toStdString()
-//			 , std::ios_base::app
-			 );
-
-	std::vector<QString> labels1 = coords::lbl19;
-	for(QString & in : labels1)
-	{
-		in = in.toLower();
-	}
-
-	for(QString mark : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
-	{
-		for(int i = 2; i <= 20; ++i)
-		{
-			for(QString lbl : labels1)
-			{
-				lab << mark + "_" << "fft_" << nm(i) << "_" << nm(i+1) << "_"  << lbl << "\t";
-			}
-		}
-
-		for(QString fir : {
-			"fd",
-			"hilb_carr",
-			"hilb_sd",
-			"hilb_4_6_carr",
-			"hilb_4_6_sd",
-			"hilb_8_13_carr",
-			"hilb_8_13_sd"
-	}
-			)
-		{
-			for(QString lbl : labels1)
-			{
-				lab << mark + "_" << fir + "_" + lbl << "\t";
-			}
-		}
-		for(QString fir : {"mean", "med", "sgm"})
-		{
-			for(int i = 2; i <= 20; ++i)
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark + "_" << "wav_" << fir + "_" << nm(i) << "_" << lbl << "\t";
-				}
-			}
-		}
-		for(QString lbl : labels1)
-		{
-			lab << mark + "_" << "alpha_" + lbl << "\t";
-		}
-	}
-	lab.close();
-	exit(0);
-
-
-	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
-//	myLib::invertMatrixFile("/media/Files/Data/Xenia/FINAL_out/labels2.txt",
-//							"/media/Files/Data/Xenia/FINAL_out/labels2_inv.txt");
-//	exit(0);
-
-//	QString ss = "/media/Files/Data/Xenia/FINAL/";
-//	std::vector<QString> drs{"Healthy", "Moderate", "Severe"};
-//	qint64 s = 10000000;
-//	for( auto dr : drs)
-//	{
-//		QStringList in = QDir(ss + dr).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-//		for(auto g : in)
-//		{
-//			auto in = QDir(ss + dr + "/" + g).entryInfoList(def::edfFilters);
-//			for(auto i : in)
-//			{
-//				s = std::min(s, i.size());
-//				if(i.size() == 427936) std::cout << dr << " " << g << std::endl;
-//			}
-//		}
-//	}
-//	std::cout << s << std::endl;
-//	exit(0);
-
-	return;
+//	return;
 
 #if 0
 	/// IITP
@@ -141,19 +58,26 @@ void MainWindow::customFunc()
 	};
 
 //	for(QString guy : guyList)
-	QString guy = "Testt";
+	QString guy = "Test";
 //	QString guy = "Galya_test_new";
 	{
 //		autos::IITPdatToEdf(guy);
-//		autos::IITPfilter(guy);
 //		autos::IITPremoveZchans(guy, def::iitpFolder);
-//		autos::IITPremoveZchans(guy, def::iitpSyncFolder);
-//		autos::IITPstaging(guy);
-		autos::IITPstagedToEnveloped(guy, "_sum_new_f");
-//		autos::IITPtestCoh2(guy);
+//		autos::IITPrerefCAR(guy);
+//		return; /// clean init eeg - zero in the beginning
+//		autos::IITPconcat(guy);
+//		return; /// manual sync
+
+//		/// copy files to SYNCED
+
+		autos::IITPemgToAbs(guy);
+//		autos::IITPstaging(guy);	/// flex/extend
+//		autos::IITPfilter(guy);		/// optional
 //		autos::IITPtestCoh(guy);
+		autos::IITPtestCoh2(guy);
 //		autos::IITPprocessStaged(guy);
 //		autos::IITPdrawSpectralMaps(guy);
+
 //		continue;
 		exit(0);
 
@@ -399,6 +323,94 @@ void MainWindow::customFunc()
 			}
 		}
 	}
+#endif
+
+#if 0
+	/// Xenia FINAL labels
+	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Xenia/FINAL_out/labels3.txt",
+										   '\t') << std::endl;
+	exit(0);
+
+	std::ofstream lab;
+	lab.open((def::XeniaFolder + "/FINAL_out/labels3.txt").toStdString()
+//			 , std::ios_base::app
+			 );
+
+	std::vector<QString> labels1 = coords::lbl19;
+	for(QString & in : labels1)
+	{
+		in = in.toLower();
+	}
+
+	for(QString mark : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
+	{
+		for(int i = 2; i <= 20; ++i)
+		{
+			for(QString lbl : labels1)
+			{
+				lab << mark + "_" << "fft_" << nm(i) << "_" << nm(i+1) << "_"  << lbl << "\t";
+			}
+		}
+
+		for(QString fir : {
+			"fd",
+			"hilb_carr",
+			"hilb_sd",
+			"hilb_4_6_carr",
+			"hilb_4_6_sd",
+			"hilb_8_13_carr",
+			"hilb_8_13_sd"
+	}
+			)
+		{
+			for(QString lbl : labels1)
+			{
+				lab << mark + "_" << fir + "_" + lbl << "\t";
+			}
+		}
+		for(QString fir : {"mean", "med", "sgm"})
+		{
+			for(int i = 2; i <= 20; ++i)
+			{
+				for(QString lbl : labels1)
+				{
+					lab << mark + "_" << "wav_" << fir + "_" << nm(i) << "_" << lbl << "\t";
+				}
+			}
+		}
+		for(QString lbl : labels1)
+		{
+			lab << mark + "_" << "alpha_" + lbl << "\t";
+		}
+	}
+	lab.close();
+	exit(0);
+
+	/// count
+	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
+	myLib::invertMatrixFile("/media/Files/Data/Xenia/FINAL_out/labels2.txt",
+							"/media/Files/Data/Xenia/FINAL_out/labels2_inv.txt");
+	exit(0);
+
+	/// check files sizes
+	QString ss = "/media/Files/Data/Xenia/FINAL/";
+	std::vector<QString> drs{"Healthy", "Moderate", "Severe"};
+	qint64 s = 10000000;
+	for( auto dr : drs)
+	{
+		QStringList in = QDir(ss + dr).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		for(auto g : in)
+		{
+			auto in = QDir(ss + dr + "/" + g).entryInfoList(def::edfFilters);
+			for(auto i : in)
+			{
+				s = std::min(s, i.size());
+				if(i.size() == 427936) std::cout << dr << " " << g << std::endl;
+			}
+		}
+	}
+	std::cout << s << std::endl;
+	exit(0);
 #endif
 
 #if 0

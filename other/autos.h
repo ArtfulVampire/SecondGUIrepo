@@ -72,7 +72,11 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 
 void IITPconcat(const QString & guyName = "Ira");
 void IITPdatToEdf(const QString & guyName = "Ira");
-void IITPfilter(const QString & guyName = "Ira");
+//void IITPdownsampleEmgs(const QString & guyName);
+void IITPfilter(const QString & guyName = "Ira",
+				bool emg = true,
+				bool gonios = true,
+				bool eeg = true);
 
 void IITPpre2(const QString & guyName = "Ira");
 void IITPtestCoh(const QString & guyName = "Ira");
@@ -86,6 +90,8 @@ void IITPfilterGonios(const QString & guyName,
 
 void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
 void IITPremoveZchans(const QString & guyName, const QString & dirPath = def::iitpSyncFolder);
+
+void IITPrerefCAR(const QString & guyName);
 
 void IITPemgToAbs(const QString & guyName,
 				  QString postfix = "_sum_new",

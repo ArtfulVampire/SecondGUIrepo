@@ -479,7 +479,7 @@ void Cut::setValuesByEdf()
 	QString blueStr = "EOG2";	// ~vertical
 
 	/// iitp
-	if(edfFil.getNs() > 35)
+	if(edfFil.getNs() > 35 || edfFil.getNs() == 24)
 	{
 		redStr = "ECG";
 		blueStr = "Artefac";
