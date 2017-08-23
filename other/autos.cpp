@@ -16,1246 +16,14 @@ using namespace myOut;
 namespace autos
 {
 
-void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
+QString getFeatureString(int in)
 {
-	def::ntFlag = false;
-
-	for(QString guy : guyList)
-	{
-		if(cutOnlyFlag)
-		{
-			autos::GalyaCut(def::mriFolder + "/" + guy, 2);
-			continue;
-		}
-
-		autos::GalyaFull(def::mriFolder +
-						 "/" + guy +
-						 "/" + guy + "_winds_cleaned");
-
-		QString outPath = def::mriFolder + "/OUT/" + guy;
-		QString dropPath = "/media/Files/Dropbox/DifferentData/EEG-MRI/Results";
-		QStringList files = QDir(outPath).entryList({"*.txt"});
-
-		/// make archive
-		QString cmd = "cd " + outPath + " && " +
-					  "rar a " + guy + ".rar ";
-		for(QString a : files)
-		{
-			cmd += a + " ";
-		}
-		system(cmd.toStdString().c_str());
-
-		/// copy to Dropbox folder
-		cmd = "cp " + outPath + "/" + guy + ".rar " +
-			  dropPath + "/" + guy + ".rar";
-		system(cmd.toStdString().c_str());
-
-		/// copy link
-		std::this_thread::sleep_for(std::chrono::seconds(15)); /// wait for copy to end?
-		cmd = "./dropbox.py sharelink " +  dropPath + "/" + guy + ".rar" +
-			  " | xclip -selection clipboard";
-		system(cmd.toStdString().c_str());
-	}
-
+	return std::get<1>(
+				*std::find_if(std::begin(autos::FEATURES),
+							  std::end(autos::FEATURES),
+							  [in](const auto & i) { return std::get<0>(i) == in; }));
 }
 
-
-void Xenia_TBI(const QString & tbi_path)
-{
-	/// TBI Xenia cut, process, tables
-	def::ntFlag = false;
-
-	QStringList markers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-//	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
-//						"_cry", "_fire", "_flower", "_wc"};
-
-
-
-	QStringList subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-	if(subdirs.isEmpty())
-	{
-		subdirs = QStringList{""};
-	}
-	else
-	{
-		repair::toLatinDir(tbi_path, {});
-		repair::deleteSpacesFolders(tbi_path);
-		subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-	}
-
-
-#if 01
-	/// count
-	for(QString subdir : subdirs)
-	{
-		QString workPath = tbi_path + "/" + subdir;
-
-		repair::toLatinDir(workPath, {});
-		repair::toLowerDir(workPath, {});
-		repair::deleteSpacesDir(workPath, {});
-
-		autos::GalyaCut(workPath, 8);
-		continue;
-
-		/// list of guys
-		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-		for(QString guy : guys)
-		{
-
-			repair::deleteSpacesFolders(workPath + "/" + guy);
-//			repair::toLatinDir(workPath + "/" + guy, {});
-//			repair::toLowerDir(workPath + "/" + guy, {});
-
-//			continue;
-
-
-
-			QStringList t = QDir(workPath + "/" + guy).entryList(def::edfFilters);
-			if(t.isEmpty()) continue;
-
-			QString ExpName = t[0];
-			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
-
-			/// filter?
-			if(1)
-			{
-				autos::refilterFolder(workPath + "/" + guy,
-									  1.,
-									  30.);
-			}
-
-			/// cut?
-			if(0)
-			{
-				autos::GalyaCut(workPath + "/" + guy,
-								8,
-								workPath + "_cut/" + guy);
-			}
-
-			/// process?
-			if(1)
-			{
-				autos::GalyaProcessing(workPath + "/" + guy,
-									   19,
-									   workPath + "_tmp");
-
-				autos::GalyaWavelets(workPath + "/" + guy,
-									 19,
-									 workPath + "_tmp");
-			}
-
-			QStringList fileNames;
-			for(QString marker : markers)
-			{
-				fileNames.clear();
-				for(QString typ : {"_alpha", "_d2_dim", "_med_freq", "_spectre", "_wavelet"})
-				{
-					fileNames << ExpName + marker + typ + ".txt";
-				}
-				autos::XeniaArrangeToLine(workPath + "_tmp",
-										  fileNames,
-										  workPath + "_tmp2" + slash
-										  + ExpName + marker + ".txt"); /// guy <-> ExpName
-			}
-
-			fileNames.clear();
-			for(QString marker : markers)
-			{
-				fileNames <<  ExpName + marker + ".txt"; /// guy <-> ExpName
-			}
-			autos::XeniaArrangeToLine(workPath + "_tmp2",
-									  fileNames,
-									  workPath + "_OUT" + slash
-									  + ExpName + ".txt"); /// guy <-> ExpName
-		}
-	}
-#endif
-
-#if 0
-	/// make tables by stimulus
-	for(QString subdir : subdirs)
-	{
-		QString workPath = tbi_path + "/" + subdir + "_tmp2";
-		for(QString marker : markers)
-		{
-			autos::makeTableFromRows(workPath,
-									 tbi_path + "/" + subdir + "_table" + marker + ".txt",
-									 marker);
-		}
-	}
-#endif
-
-
-#if 0
-	/// make tables whole
-	for(QString subdir : subdirs)
-	{
-		QString workPath = tbi_path + "/" + subdir + "_OUT";
-		autos::makeTableFromRows(workPath,
-								 tbi_path + "/" + subdir + "_all" + ".txt");
-	}
-#endif
-
-#if 0
-	/// people list
-	for(QString subdir : subdirs)
-	{
-		QString workPath = tbi_path + "/" + subdir + "_OUT";
-		QString outFile = tbi_path + "/" + subdir + "_people.txt";
-		std::ofstream outStr;
-		outStr.open(outFile.toStdString());
-
-		for(QString fileName : QDir(workPath).entryList({"*.txt"},
-														QDir::Files,
-														QDir::Name))
-		{
-			outStr << fileName.remove(".txt") << std::endl;
-		}
-		outStr.close();
-	}
-#endif
-}
-
-
-void Xenia_TBI_final(const QString & finalPath,
-					 QString outPath)
-{
-	QTime myTime;
-	myTime.start();
-
-	/// TBI Xenia cut, process, tables
-	def::ntFlag = false;
-	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-
-	QStringList subdirs = QDir(finalPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-	if(subdirs.isEmpty())
-	{
-		subdirs = QStringList{""};
-	}
-	else
-	{
-		repair::toLatinDir(finalPath, {});
-		repair::deleteSpacesFolders(finalPath);
-		subdirs = QDir(finalPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-	}
-
-	if(outPath == QString())
-	{
-		outPath = finalPath + "_out";
-	}
-
-	if(!QDir(outPath).exists())
-	{
-		QDir().mkpath(outPath);
-	}
-
-
-	/// count
-	for(QString subdir : subdirs)
-	{
-		break;
-		const QString groupPath = finalPath + "/" + subdir;
-
-		repair::toLatinDir(groupPath, {});
-		repair::toLowerDir(groupPath, {});
-		repair::deleteSpacesDir(groupPath, {});
-
-		/// list of guys
-		QStringList guys = QDir(groupPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-		for(QString guy : guys)
-		{
-			const QString guyPath = groupPath + "/" + guy;
-
-			if(1) /// repair fileNames
-			{
-				repair::deleteSpacesFolders(guyPath);
-				repair::toLatinDir(guyPath);
-				repair::toLowerDir(guyPath);
-			}
-
-			QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
-			if(edfs.isEmpty())
-			{
-				std::cout << "Xenia_TBI_final: guyPath is empty " << guyPath << std::endl;
-				continue;
-			}
-			QString ExpName = edfs[0];
-			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
-
-
-			/// physMinMax & holes
-			if(1)
-			{
-				repair::physMinMaxDir(guyPath);
-				repair::holesDir(guyPath, guyPath);	/// rewrite after repair
-			}
-
-			/// rereference
-			if(0)
-			{
-//				autos::rereferenceFolder(guyPath, "Ar");
-			}
-
-			/// filter?
-			if(1)
-			{
-				/// already done ?
-				autos::refilterFolder(guyPath,
-									  1.6,
-									  30.);
-			}
-
-
-//			continue;
-
-			/// cut?
-			if(0)
-			{
-				autos::GalyaCut(guyPath,
-								8,
-								groupPath + "_cut/" + guy);
-			}
-
-
-			outPath = guyPath + "/out";
-
-			/// process?
-			if(1)
-			{
-				autos::GalyaProcessing(guyPath, 19, outPath);
-				autos::GalyaWavelets(guyPath, 19, outPath);
-			}
-
-			/// make one line file for each stimulus
-			if(1)
-			{
-				for(QString mark : tbiMarkers)
-				{
-					QStringList fileNamesToArrange;
-					for(QString func : {"_spectre", "_fracDim", "_Hilbert", "_wavelet", "_alpha"})
-					{
-						fileNamesToArrange.push_back(ExpName + mark + func + ".txt");
-					}
-					std::cout << fileNamesToArrange << std::endl << std::endl;
-					autos::XeniaArrangeToLine(outPath,
-											  fileNamesToArrange,
-											  outPath + "/" + ExpName + mark + ".txt");
-				}
-			}
-
-			/// make whole line from all stimuli
-			if(1)
-			{
-				QStringList fileNamesToArrange;
-				for(QString mark : tbiMarkers)
-				{
-					fileNamesToArrange.push_back(ExpName + mark + ".txt");
-				}
-				autos::XeniaArrangeToLine(outPath,
-										  fileNamesToArrange,
-										  outPath + "/" + ExpName + ".txt");
-
-				QFile::copy(outPath + "/" + ExpName + ".txt",
-							finalPath + "_out/" + ExpName + ".txt");
-			}
-//			return; /// only first guy from first subdir
-		}
-	}
-	/// make tables whole and people list
-	autos::makeTableFromRows(finalPath + "_out",
-							 finalPath + "_out/all.txt");
-
-	std::cout << "Xenia_TBI_final: time elapsed = "
-			  << myTime.elapsed() / 1000. << " sec" << std::endl;
-}
-
-
-
-
-
-
-
-
-/// end of IITP
-
-void repairMarkersInNewFB(QString edfPath, int numSession)
-{
-	/// repair markers in my files
-
-	edfFile fil;
-	fil.readEdfFile(edfPath);
-
-	const std::valarray<double> & mrk = fil.getData()[fil.getMarkChan()];
-	std::vector<int> marks;
-
-	bool startFlag = true;
-	for(int i = 0; i < mrk.size(); ++i)
-	{
-		if(mrk[i] == 239 && startFlag == true)
-		{
-			marks.push_back(i);
-			startFlag = false;
-		}
-		else if(mrk[i] == 254)
-		{
-			startFlag = true;
-		}
-
-	}
-
-	for(int i = 0; i < mrk.size(); ++i)
-	{
-		if(mrk[i] == 241. || mrk[i] == 247.)
-		{
-			fil.setData(fil.getMarkChan(), i, 0.);
-		}
-	}
-
-
-	std::ifstream inStr;
-	inStr.open(("/media/Files/Data/FeedbackNew/Tables/types"
-				+ nm(numSession + 1) + ".txt").toStdString());
-	std::vector<int> marksList;
-	char c;
-	while(!inStr.eof())
-	{
-		inStr >> c;
-		if(!inStr.eof())
-		{
-			if(c =='s')
-			{
-				marksList.push_back(241);
-			}
-			else if(c == 'v')
-			{
-				marksList.push_back(247);
-			}
-		}
-	}
-
-	if(marksList.size() != marks.size())
-	{
-		std::cout << myLib::getExpNameLib(edfPath) << " ";
-		std::cout << "inequal sizes: ";
-		std::cout << marksList.size() << '\t';
-		std::cout << marks.size() << std::endl;
-		return;
-	}
-
-	for(int i = 0; i < 80; ++i)
-	{
-		fil.setData(fil.getMarkChan(), marks[i] - 1, marksList[i]);
-	}
-	edfPath.replace(".edf", "_good.edf");
-	fil.writeEdfFile(edfPath);
-
-}
-
-
-int numMarkers(const QString & edfPath, const std::vector<int> & markers)
-{
-	edfFile fil;
-	fil.readEdfFile(edfPath);
-	int res = 0;
-	for(double i : fil.getMarkArr())
-	{
-		if(std::find(std::begin(markers),
-					 std::end(markers),
-					 std::round(i)) != std::end(markers))
-		{
-			++res;
-		}
-	}
-	return res;
-
-}
-
-void mixNumbersCF(const QString & dirPath)
-{
-	auto fileList = QDir(dirPath).entryList({"*.jpg"}, QDir::Files, QDir::Name);
-	std::vector<int> newNums(fileList.size());
-	std::iota(std::begin(newNums), std::end(newNums), 0);
-	std::shuffle(std::begin(newNums), std::end(newNums),
-				 std::default_random_engine(
-					 std::chrono::system_clock::now().time_since_epoch().count()));
-
-	int numCounter = 0;
-	for(QString oldName : fileList)
-	{
-		QString newName = oldName;
-		QStringList parts = newName.split(QRegExp(R"([_\.])"), QString::SkipEmptyParts);
-		newName.clear();
-		for(QString & part : parts)
-		{
-			bool ok = false;
-			part.toInt(&ok);
-			/// if part is a number
-			if(ok)
-			{
-				part = rn(newNums[numCounter++], 3);
-//				std::cout << a << "\t" << part << std::endl;
-			}
-			newName += part + "_";
-		}
-		QFile::rename(dirPath + "/" + oldName,
-					  dirPath + "/" + newName);
-	}
-
-
-	for(QString oldName : QDir(dirPath).entryList({"*_jpg_*"}, QDir::Files, QDir::Name))
-	{
-		QString newName = oldName;
-		newName.replace("_jpg_", ".jpg");
-
-		QFile::rename(dirPath + "/" + oldName,
-					  dirPath + "/" + newName);
-	}
-}
-
-
-void makeRightNumbersCF(const QString & dirPath, int startNum)
-{
-	for(QString oldName : QDir(dirPath).entryList({"*jpg"}, QDir::Files, QDir::Name))
-	{
-		QString newName = oldName;
-		QStringList parts = newName.split(QRegExp(R"([_\.])"), QString::SkipEmptyParts);
-		newName.clear();
-		for(QString & part : parts)
-		{
-			bool ok = false;
-			int a = part.toInt(&ok);
-			if(ok)
-			{
-				part = rn(startNum++, 3);
-				std::cout << a << "\t" << part << std::endl;
-			}
-			newName += part + "_";
-		}
-
-//		std::cout << dirPath + "/" + oldName << std::endl
-//				  << dirPath + "/" + newName << std::endl << std::endl;
-
-		QFile::rename(dirPath + "/" + oldName,
-					  dirPath + "/" + newName);
-	}
-
-
-	for(QString oldName : QDir(dirPath).entryList({"*_jpg_*"}, QDir::Files, QDir::Name))
-	{
-		std::cout << oldName << std::endl;
-
-		QString newName = oldName;
-		newName.replace("_jpg_", ".jpg");
-
-//		std::cout << dirPath + "/" + oldName << std::endl
-//				  << dirPath + "/" + newName << std::endl << std::endl;
-
-		QFile::rename(dirPath + "/" + oldName,
-					  dirPath + "/" + newName);
-	}
-}
-
-void makeRightNumbers(const QString & dirPath,
-					  int length)
-{
-	QDir deer(dirPath);
-	QStringList leest = deer.entryList(QDir::Files);
-	for(const QString & oldName : leest)
-	{
-		QString newName = oldName;
-		QStringList parts = newName.split('_');
-		newName.clear();
-		for(QString & part : parts)
-		{
-			bool ok = false;
-			int a = part.toInt(&ok);
-			if(ok)
-			{
-				part = rn(a, length);
-			}
-			newName += part + "_";
-		}
-		newName.remove(newName.length() - 1, 1); // remove last
-
-		QFile::rename(deer.absolutePath() + "/" + oldName,
-					  deer.absolutePath() + "/" + newName);
-	}
-}
-
-
-void makeTableFromRows(const QString & inPath,
-					   QString outTablePath,
-					   const QString & auxFilter)
-{
-	QDir deer(inPath);
-
-	if(outTablePath.isEmpty())
-	{
-		deer.cdUp();
-		outTablePath = deer.absolutePath() + "/table.txt";
-		deer.cd(inPath);
-	}
-	const QString tableName = myLib::getFileName(outTablePath);
-
-
-	QFile outStr(outTablePath);
-	outStr.open(QIODevice::WriteOnly);
-
-	std::ofstream fileNames;
-	fileNames.open((inPath + "/people.txt").toStdString());
-
-	for(const QString & fileName : deer.entryList({"*" + auxFilter +".txt"},
-												  QDir::Files,
-												  QDir::Time
-												  | QDir::Reversed
-												  ))
-	{
-		if(fileName.contains(tableName)
-		   || fileName.contains("people")) continue;
-		fileNames << fileName << "\n";
-
-		QFile fil(deer.absolutePath() + "/" + fileName);
-		fil.open(QIODevice::ReadOnly);
-		auto contents = fil.readAll();
-		fil.close();
-		outStr.write(contents);
-		outStr.write("\r\n");
-	}
-	fileNames.close();
-	outStr.close();
-}
-
-
-matrix makeTestData(const QString & outPath)
-{
-	matrix testSignals(8, 250 * 60 * 3); /// 3 min
-
-	// signals
-	double helpDouble;
-	double x, y;
-
-	std::default_random_engine gen(std::chrono::system_clock::now().time_since_epoch().count());
-
-	std::uniform_real_distribution<double> distr(0, 1);
-
-	for(uint i = 0; i < testSignals.cols(); ++i)
-	{
-		helpDouble = 2. * pi * i / def::freq * 12.5; // 12.5 Hz = 20 bins
-		testSignals[0][i] = sin(helpDouble); // sine
-
-		testSignals[1][i] = (i + 2) % 29;      // saw
-
-		testSignals[2][i] = (i % 26 >= 13); // rectangle
-
-		x = distr(gen);
-		y = distr(gen);
-		testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * pi * y); // gauss?
-
-		testSignals[4][i] = std::abs(i % 22 - 11); // triangle
-
-		testSignals[5][i] = rand() % 27; // noise
-
-		x = distr(gen);
-		y = distr(gen);
-		testSignals[6][i] = sqrt(-2. * log(x)) * cos(2. * pi * y); // gauss?
-
-		testSignals[7][i] = pow(rand() % 13, 3); // non-white noise
-	}
-
-
-	double sum1, sum2;
-	// normalize by dispersion = coeff
-	double coeff = 10.;
-	for(uint i = 0; i < testSignals.rows(); ++i)
-	{
-		sum1 = smLib::mean(testSignals[i]);
-		sum2 = smLib::variance(testSignals[i]);
-
-		testSignals[i] -= sum1;
-		testSignals[i] /= sqrt(sum2);
-		testSignals[i] *= coeff;
-
-	}
-	matrix pewM(testSignals.rows(),
-				testSignals.rows());
-	pewM.random(-1., 1.);
-
-
-	testSignals = pewM * testSignals;
-
-	myLib::writePlainData(outPath, testSignals);
-	myLib::writePlainData(outPath + "_", testSignals.resizeCols(2000)); // edit out time
-	return pewM;
-}
-
-
-void XeniaArrangeToLine(const QString & dirPath,
-						const QStringList & fileNames,
-						const QString & outFilePath)
-{
-	QDir().mkpath(myLib::getDirPathLib(outFilePath));
-	std::ofstream outStr;
-	outStr.open(outFilePath.toStdString());
-	std::ifstream inStr;
-	for(const QString & fileName : fileNames)
-	{
-		inStr.open((dirPath + "/" + fileName).toStdString());
-		double val;
-		while(inStr.good())
-		{
-			inStr >> val;
-			if(!inStr.eof())
-			{
-				outStr << val << '\t';
-			}
-		}
-		inStr.close();
-	}
-	outStr.close();
-}
-
-
-
-void cutOneFile(const QString & filePath,
-				const int wndLen,
-				const QString & outPath)
-{
-	edfFile initEdf;
-	initEdf.readEdfFile(filePath);
-
-
-#define ADD_DIR 0
-#if ADD_DIR
-	QString addDir = initEdf.getExpName();
-	addDir.resize(addDir.indexOf("_"));
-	QDir(outPath).mkdir(addDir);
-#endif
-
-	/// generality experimental
-	if(initEdf.getEdfPlusFlag()) // if annotations
-	{
-		initEdf.removeChannels({initEdf.getMarkChan()}); // remove Annotations
-	}
-
-	int fr = initEdf.getFreq();
-	const int numOfWinds = ceil(initEdf.getDataLen() / fr / wndLen);
-
-
-	for(int i = 0; i < numOfWinds; ++i)
-	{
-		initEdf.saveSubsection(
-					i * fr * wndLen,
-					fmin((i + 1) * fr * wndLen, initEdf.getDataLen()),
-					QString(outPath
-					#if ADD_DIR
-							+ "/" + addDir
-					#endif
-							+ "/" + initEdf.getExpName()
-							+ "_wnd_" + rn(
-								i + 1,
-								floor(log10(numOfWinds)) + 1)
-							+ ".edf"));
-	}
-}
-
-void GalyaCut(const QString & path,
-			  const int wndLen,
-			  QString outPath)
-{
-
-	const QString outDir = myLib::getFileName(path) + "_winds";
-	const QString smallsDir = myLib::getFileName(path) + "_smalls";
-
-	QDir tmpDir(path);
-	tmpDir.mkdir(smallsDir);
-	const QString smallsPath = tmpDir.absolutePath() + "/" + smallsDir;
-
-	if(outPath.isEmpty())
-	{
-		tmpDir.mkdir(outDir);
-		outPath = tmpDir.absolutePath() + "/" + outDir;
-	}
-	else
-	{
-		tmpDir.mkpath(outPath);
-	}
-
-	/// to change
-	const QString logPath = def::GalyaFolder + "/log.txt";
-	std::ofstream logStream(logPath.toStdString(), std::ios_base::app);
-
-	const QStringList leest1 = tmpDir.entryList(def::edfFilters);
-	const auto filesVec = leest1.toVector();
-
-	/// ??????????????????????
-	omp_set_dynamic(0);
-	omp_set_num_threads(3);
-#pragma omp parallel
-#pragma omp for nowait schedule(dynamic,2)
-	for(int i = 0; i < filesVec.size(); ++i)
-	{
-		std::cout << filesVec[i] << std::endl;
-		QString helpString = tmpDir.absolutePath() + "/" + filesVec[i];
-		edfFile initEdf;
-		initEdf.readEdfFile(helpString, true);
-
-		/// some check for small
-		if(initEdf.getNdr() * initEdf.getDdr() <= wndLen )
-		{
-			QFile::remove(smallsPath + "/" + initEdf.getFileNam());
-			QFile::copy(initEdf.getFilePath(),
-						smallsPath + "/" + initEdf.getFileNam());
-
-			std::cout << "smallFile \t" << initEdf.getFileNam() << std::endl;
-			logStream << initEdf.getFilePath() << "\t" << "too small" << "\n";
-			continue;
-		}
-
-		cutOneFile(helpString,
-				   wndLen,
-				   outPath);
-	}
-	logStream.close();
-
-}
-
-void waveletOneFile(const matrix & inData,
-					int numChan,
-					double srate,
-					const QString & outFile)
-{
-
-	std::ofstream outStr;
-	outStr.open(outFile.toStdString());
-	outStr << std::fixed;
-	outStr.precision(4);
-
-	const int numOfFreqs = wvlt::cwt(inData[0], srate).rows(); /// pewpew
-
-#if WAVELET_MATLAB
-	for(auto func : {
-	//			smLib::max,
-	//			smLib::min,
-				smLib::mean,
-				smLib::median,
-				smLib::sigma
-})
-	{
-		matrix dataToWrite(numOfFreqs, numChan);
-
-		for(int j = 0; j < numChan; ++j)
-		{
-			matrix m = wvlt::cwt(inData[j], srate);
-			for(int i = 0; i < numOfFreqs; ++i) /// each frequency
-			{
-				dataToWrite[i][j] = func(m[i]);
-			}
-		}
-
-		for(int i = 0; i < numOfFreqs; ++i)
-		{
-			for(int j = 0; j < numChan; ++j)
-			{
-				outStr << dataToWrite[i][j] << "\t";
-			}
-		}
-	}
-#else
-	std::cout << "waveletOneFile doesn't work" << std::endl;
-#endif
-
-	outStr.close();
-}
-
-void GalyaHjorth(const QString & inPath,
-				   int numChan,
-				   QString outPath)
-{
-	QDir tmpDir(inPath);
-
-	const QStringList lst = tmpDir.entryList(def::edfFilters);
-
-	if(outPath.isEmpty())
-	{
-		tmpDir.mkdir("hjorth");
-		outPath = tmpDir.absolutePath() + "/hjorth";
-	}
-	else if(!QDir(outPath).exists())
-	{
-		tmpDir.mkpath(outPath);
-	}
-
-	const auto filesVec = lst.toVector();
-
-// #pragma omp parallel
-// #pragma omp for nowait
-	for(int i = 0; i < filesVec.size(); ++i)
-	{
-		std::cout << filesVec[i] << std::endl;
-		QString helpString = tmpDir.absolutePath() + "/" + filesVec[i];
-
-		edfFile initEdf;
-		initEdf.readEdfFile(helpString);
-
-		helpString = outPath
-//					 + "/" + exp
-					 + "/"
-					 + myLib::getFileName(filesVec[i], false)
-					 + "_hjorth.txt";
-		switch(def::currAutosUser)
-		{
-			case def::autosUser::Galya:
-			{
-				countHjorth(initEdf.getData(), numChan, helpString);
-				break;
-			}
-			case def::autosUser::Xenia:
-			{
-				countHjorth(initEdf.getData().subCols(0, 30 * 250), numChan, helpString);
-				break;
-			}
-			default:
-			{ /* do nothing */ }
-		}
-	}
-}
-
-void countHjorth(const matrix & inData,
-				 int numChan,
-				 const QString & outPath)
-{
-	std::ofstream outStr;
-	outStr.open(outPath.toStdString());
-
-	outStr << std::fixed;
-	outStr.precision(4);
-
-	for(auto f : {myLib::hjorthMobility, myLib::hjorthComplexity})
-	{
-		for(int ch = 0; ch < numChan; ++ch)
-		{
-			outStr << f(inData[ch]) << "\t";
-		}
-	}
-	outStr.close();
-}
-
-void GalyaWavelets(const QString & inPath,
-				   int numChan,
-				   QString outPath)
-{
-	QDir tmpDir(inPath);
-
-	const QStringList lst = tmpDir.entryList(def::edfFilters);
-//	std::cout << lst.length() << std::endl;
-
-//	const QString exp = myLib::getExpNameLib(lst.first(), true);
-
-	if(outPath.isEmpty())
-	{
-		tmpDir.mkdir("wavelet");
-		outPath = tmpDir.absolutePath() + "/wavelet";
-	}
-	else if(!QDir(outPath).exists())
-	{
-//		tmpDir.mkpath(outPath + exp);
-		tmpDir.mkpath(outPath);
-	}
-
-	const auto filesVec = lst.toVector();
-
-// #pragma omp parallel
-// #pragma omp for nowait
-	for(int i = 0; i < filesVec.size(); ++i)
-	{
-		std::cout << filesVec[i] << std::endl;
-		QString helpString = tmpDir.absolutePath() + "/" + filesVec[i];
-
-		edfFile initEdf;
-		initEdf.readEdfFile(helpString);
-
-
-
-		helpString = outPath
-//					 + "/" + exp
-					 + "/"
-					 + myLib::getFileName(filesVec[i], false)
-					 + "_wavelet.txt";
-
-		switch(def::currAutosUser)
-		{
-			case def::autosUser::Galya:
-			{
-				waveletOneFile(initEdf.getData(), numChan, initEdf.getFreq(), helpString);
-				break;
-			}
-			case def::autosUser::Xenia:
-			{
-				waveletOneFile(initEdf.getData().subCols(0, 30 * 250), numChan, initEdf.getFreq(), helpString);
-				break;
-			}
-			default:
-			{ /* do nothing */ }
-		}
-	}
-//	if(wvlt::isInit) wvlt::termMtlb();
-}
-
-
-
-
-void countSpectraFeatures(const QString & filePath,
-						  const int numChan,
-						  const QString & outPath)
-{
-	/// moved to myLib::alphaPeakFreq
-
-	const QString ExpName = myLib::getFileName(filePath, false);
-	const QString spectraFilePath = outPath + "/" + ExpName + "_spectre.txt";
-	const QString alphaFilePath = outPath + "/" + ExpName + "_alpha.txt";
-
-	// remove previous
-	QFile::remove(spectraFilePath);
-	QFile::remove(alphaFilePath);
-
-	std::ofstream outSpectraStr;
-	std::ofstream outAlphaStr;
-	outSpectraStr.open(spectraFilePath.toStdString());
-	outAlphaStr.open(alphaFilePath.toStdString());
-
-	std::valarray<double> helpSpectre;
-
-	edfFile initEdf;
-	initEdf.setMatiFlag(false);
-	initEdf.readEdfFile(filePath);
-
-
-	matrix tmpData;
-	switch(def::currAutosUser)
-	{
-		case def::autosUser::Galya:
-		{
-			tmpData = initEdf.getData();
-			break;
-		}
-		case def::autosUser::Xenia:
-		{
-			tmpData = initEdf.getData().subCols(0, 30 * 250);
-			break;
-		}
-		default:
-		{ /* do nothing */ }
-	}
-	const matrix procData = std::move(tmpData);
-
-
-	std::vector<std::vector<double>> spectra(numChan); /// [chan][freq]
-
-	const int dataLen = procData.cols();
-	const double srate = initEdf.getFreq();
-
-	for(int i = 0; i < numChan; ++i)
-	{
-		/// norming is necessary
-		helpSpectre = myLib::spectreRtoR(procData[i]) *
-					  myLib::spectreNorm(smLib::fftL(dataLen),
-										 dataLen,
-										 srate);
-		helpSpectre = myLib::smoothSpectre(helpSpectre, -1);
-		outAlphaStr << myLib::alphaPeakFreq(helpSpectre, dataLen, srate) << "\t";
-
-		spectra[i] = myLib::integrateSpectre(helpSpectre, dataLen, srate);
-	}
-
-	for(int j = 0; j < spectra[0].size(); ++j)
-	{
-		for(int i = 0; i < numChan; ++i)
-		{
-			outSpectraStr << smLib::doubleRound(spectra[i][j], 4) << "\t";
-		}
-	}
-	outAlphaStr.close();
-	outSpectraStr.close();
-}
-
-void countChaosFeatures(const QString & filePath,
-						const int numChan,
-						const QString & outPath)
-{
-	const double hilbertFreqLimit = 40.;
-
-	const QString ExpName = myLib::getFileName(filePath, false);
-
-	const QString d2dimFilePath = outPath + "/" + ExpName + "_fracDim.txt";
-	const QString hilbertFilePath = outPath + "/" + ExpName + "_Hilbert.txt";
-
-	// remove previous
-	QFile::remove(d2dimFilePath);
-	QFile::remove(hilbertFilePath);
-
-	std::ofstream outDimStr;
-	outDimStr.open(d2dimFilePath.toStdString());
-	outDimStr << std::fixed;
-	outDimStr.precision(4);
-
-	std::ofstream outHilbertStr;
-	outHilbertStr.open(hilbertFilePath.toStdString());
-	outHilbertStr << std::fixed;
-	outHilbertStr.precision(4);
-
-	double helpDouble;
-	double sumSpec = 0.;
-	std::valarray<double> env;
-	std::valarray<double> envSpec;
-
-	edfFile initEdf;
-	initEdf.setMatiFlag(false);
-	initEdf.readEdfFile(filePath);
-
-	matrix tmpData;
-	switch(def::currAutosUser)
-	{
-		case def::autosUser::Galya:
-		{
-			tmpData = initEdf.getData();
-			break;
-		}
-		case def::autosUser::Xenia:
-		{
-			tmpData = initEdf.getData().subCols(0, 30 * 250);
-			break;
-		}
-		default:
-		{ /* do nothing */ }
-	}
-	const matrix BACKUP = std::move(tmpData);
-
-	const double srate = initEdf.getFreq();
-	const int dataLen = BACKUP.cols();
-
-	std::vector<std::pair<double, double>> filters{
-		std::make_pair(0.5, 70), /// i.e. no filter
-		std::make_pair(4, 6),
-		std::make_pair(8, 13)};
-	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); // [filter][chan][0-carr, 1-SD]
-
-	for(int numFilt = 0; numFilt < filters.size(); ++numFilt)
-	{
-		std::pair<double, double> filterLims = filters[numFilt];
-
-		matrix currMat = myLib::refilterMat(BACKUP,
-											filterLims.first,
-											filterLims.second);
-
-		hilb[numFilt].resize(numChan);
-		for(int i = 0; i < numChan; ++i)
-		{
-			if(numFilt == 0)
-			{
-				/// fractalDimension only for whole spectre
-//				outDimStr << smLib::doubleRound(myLib::fractalDimension(currMat[i]), 4) << "\t";
-				outDimStr << myLib::fractalDimension(currMat[i]) << "\t";
-			}
-
-			// write envelope median spectre
-			env = myLib::hilbertPieces(currMat[i]) ;
-			envSpec = myLib::spectreRtoR(env);
-			envSpec[0] = 0.;
-
-			helpDouble = 0.;
-			sumSpec = 0.;
-			for(int j = 0;
-				j < fftLimit(hilbertFreqLimit,
-							 srate,
-							 smLib::fftL( dataLen ));
-				++j)
-			{
-				helpDouble += envSpec[j] * j;
-				sumSpec += envSpec[j];
-			}
-			helpDouble /= sumSpec;
-			helpDouble /= fftLimit(1.,
-								   srate,
-								   smLib::fftL( dataLen )); // convert to Hz
-
-			hilb[numFilt][i] = {helpDouble, smLib::sigma(env) / smLib::mean(env)};
-		}
-
-	}
-
-	switch(def::currAutosUser)
-	{
-		case def::autosUser::Galya:
-		{
-			for(int func : {0, 1})
-			{
-				for(int filt : {0, 2}) /// whole and alpha
-				{
-					for(int ch = 0; ch < numChan; ++ch)
-					{
-						outHilbertStr << hilb[filt][ch][func] << "\t";
-					}
-				}
-			}
-			break;
-		}
-		case def::autosUser::Xenia:
-		{
-			for(int filt : {0, 1, 2}) /// whole and alpha
-			{
-				for(int func : {0, 1})
-				{
-					for(int ch = 0; ch < numChan; ++ch)
-					{
-						outHilbertStr << hilb[filt][ch][func] << "\t";
-					}
-				}
-			}
-			break;
-		}
-		default:
-		{ /* do nothing */ }
-	}
-
-	outDimStr.close();
-	outHilbertStr.close();
-}
-
-
-//void rereferenceFolder(const QString & procDirPath,
-//					   const QString & newRef)
-//{
-//	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
-//															  QDir::NoFilter,
-//															  QDir::Size | QDir::Reversed);
-
-//	for(const QString & fileName : filesList)
-//	{
-//		QString helpString = procDirPath + "/" + fileName;
-//		edfFile fil;
-//		fil.readEdfFile(helpString);
-//		.writeEdfFile(helpString);
-//	}
-//}
-
-void refilterFolder(const QString & procDirPath,
-					  double lowFreq,
-					  double highFreq,
-					  bool isNotch)
-{
-
-	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
-															  QDir::NoFilter,
-															  QDir::Size | QDir::Reversed);
-
-	for(const QString & fileName : filesList)
-	{
-		QString helpString = procDirPath + "/" + fileName;
-		edfFile fil;
-		fil.readEdfFile(helpString);
-		fil.refilter(lowFreq, highFreq, isNotch).writeEdfFile(helpString);
-	}
-}
 
 void GalyaProcessing(const QString & procDirPath,
 					 const int numChan,
@@ -1282,8 +50,47 @@ void GalyaProcessing(const QString & procDirPath,
 												);
 	const auto filesVec = filesList.toVector();
 
-//#pragma omp parallel
-//#pragma omp for nowait
+
+	int Mask;
+	switch(def::currAutosUser)
+	{
+		case def::autosUser::Galya:
+		{
+			Mask = autos::featuresMask::alpha |
+				   autos::featuresMask::spectre |
+				   autos::featuresMask::Hilbert |
+				   autos::featuresMask::fracDim |
+				   autos::featuresMask::Hjotrh;
+			break;
+		}
+		case def::autosUser::Xenia:
+		{
+			Mask = autos::featuresMask::alpha |
+				   autos::featuresMask::spectre |
+				   autos::featuresMask::Hilbert |
+				   autos::featuresMask::fracDim |
+				   autos::featuresMask::wavelet;
+			break;
+		}
+		default:
+		{ /* do nothing */ }
+	}
+
+	if(Mask & autos::featuresMask::wavelet)
+	{
+#if WAVELET_MATLAB
+		if(!wvlt::isInit)
+		{
+			wvlt::initMtlb();
+		}
+#endif
+	}
+
+
+	omp_set_dynamic(0);
+	omp_set_num_threads(3);
+#pragma omp parallel
+#pragma omp for nowait
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		QString helpString = dir.absolutePath() + "/" + filesVec[i];
@@ -1307,32 +114,19 @@ void GalyaProcessing(const QString & procDirPath,
 		std::cout << filesList[i] << '\t'
 				  << smLib::doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << std::endl;
 
-
-		const QString ExpName = myLib::getFileName(helpString, false);
-		const QString preOutPath = outPath + "/" + ExpName;
+		const QString preOutPath = outPath + "/" + myLib::getFileName(helpString, false);
 
 		matrix tmpData = initEdf.getData();
 		tmpData.resizeRows(numChan); /// saves the data stored in first numChan rows
-		int Mask;
 		switch(def::currAutosUser)
 		{
 			case def::autosUser::Galya:
 			{
-				Mask = autos::featuresMask::alpha |
-					   autos::featuresMask::spectre |
-					   autos::featuresMask::Hilbert |
-					   autos::featuresMask::fracDim |
-					   autos::featuresMask::Hjotrh;
 				break;
 			}
 			case def::autosUser::Xenia:
 			{
 				tmpData = tmpData.subCols(0, 30 * 250); /// not resizeCols
-				Mask = autos::featuresMask::alpha |
-//					   autos::featuresMask::spectre |
-//					   autos::featuresMask::Hilbert |
-//					   autos::featuresMask::fracDim |
-					   autos::featuresMask::wavelet;
 				break;
 			}
 			default:
@@ -1565,6 +359,852 @@ void countHjorth(const matrix & inData,
 	}
 }
 
+/// further generalizations
+
+void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
+{
+	def::ntFlag = false;
+
+	for(QString guy : guyList)
+	{
+		if(cutOnlyFlag)
+		{
+			autos::GalyaCut(def::mriFolder + "/" + guy, 2);
+			continue;
+		}
+
+		autos::GalyaFull(def::mriFolder +
+						 "/" + guy +
+						 "/" + guy + "_winds_cleaned");
+
+		QString outPath = def::mriFolder + "/OUT/" + guy;
+		QString dropPath = "/media/Files/Dropbox/DifferentData/EEG-MRI/Results";
+		QStringList files = QDir(outPath).entryList({"*.txt"});
+
+		/// make archive
+		QString cmd = "cd " + outPath + " && " +
+					  "rar a " + guy + ".rar ";
+		for(QString a : files)
+		{
+			cmd += a + " ";
+		}
+		system(cmd.toStdString().c_str());
+
+		/// copy to Dropbox folder
+		cmd = "cp " + outPath + "/" + guy + ".rar " +
+			  dropPath + "/" + guy + ".rar";
+		system(cmd.toStdString().c_str());
+
+		/// copy link
+		std::this_thread::sleep_for(std::chrono::seconds(15)); /// wait for copy to end?
+		cmd = "./dropbox.py sharelink " +  dropPath + "/" + guy + ".rar" +
+			  " | xclip -selection clipboard";
+		system(cmd.toStdString().c_str());
+	}
+
+}
+
+/// old
+void Xenia_TBI(const QString & tbi_path)
+{
+	/// TBI Xenia cut, process, tables
+	def::ntFlag = false;
+
+	QStringList markers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+//	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
+//						"_cry", "_fire", "_flower", "_wc"};
+
+
+
+	QStringList subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+	if(subdirs.isEmpty())
+	{
+		subdirs = QStringList{""};
+	}
+	else
+	{
+		repair::toLatinDir(tbi_path, {});
+		repair::deleteSpacesFolders(tbi_path);
+		subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+	}
+
+
+#if 01
+	/// count
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + "/" + subdir;
+
+		repair::toLatinDir(workPath, {});
+		repair::toLowerDir(workPath, {});
+		repair::deleteSpacesDir(workPath, {});
+
+		autos::GalyaCut(workPath, 8);
+		continue;
+
+		/// list of guys
+		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+		for(QString guy : guys)
+		{
+
+			repair::deleteSpacesFolders(workPath + "/" + guy);
+//			repair::toLatinDir(workPath + "/" + guy, {});
+//			repair::toLowerDir(workPath + "/" + guy, {});
+
+//			continue;
+
+
+
+			QStringList t = QDir(workPath + "/" + guy).entryList(def::edfFilters);
+			if(t.isEmpty()) continue;
+
+			QString ExpName = t[0];
+			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
+
+			/// filter?
+			if(1)
+			{
+				autos::refilterFolder(workPath + "/" + guy,
+									  1.,
+									  30.);
+			}
+
+			/// cut?
+			if(0)
+			{
+				autos::GalyaCut(workPath + "/" + guy,
+								8,
+								workPath + "_cut/" + guy);
+			}
+
+			/// process?
+			if(1)
+			{
+				autos::GalyaProcessing(workPath + "/" + guy,
+									   19,
+									   workPath + "_tmp");
+			}
+
+			QStringList fileNames;
+			for(QString marker : markers)
+			{
+				fileNames.clear();
+				for(int type : {
+					autos::featuresMask::alpha,
+					autos::featuresMask::fracDim,
+					autos::featuresMask::Hilbert,
+					autos::featuresMask::spectre,
+					autos::featuresMask::wavelet})
+				{
+					QString typ = "_" + autos::getFeatureString(type);
+					fileNames << ExpName + marker + typ + ".txt";
+				}
+				autos::XeniaArrangeToLine(workPath + "_tmp",
+										  fileNames,
+										  workPath + "_tmp2" + slash
+										  + ExpName + marker + ".txt"); /// guy <-> ExpName
+			}
+
+			fileNames.clear();
+			for(QString marker : markers)
+			{
+				fileNames <<  ExpName + marker + ".txt"; /// guy <-> ExpName
+			}
+			autos::XeniaArrangeToLine(workPath + "_tmp2",
+									  fileNames,
+									  workPath + "_OUT" + slash
+									  + ExpName + ".txt"); /// guy <-> ExpName
+		}
+	}
+#endif
+
+#if 0
+	/// make tables by stimulus
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + "/" + subdir + "_tmp2";
+		for(QString marker : markers)
+		{
+			autos::makeTableFromRows(workPath,
+									 tbi_path + "/" + subdir + "_table" + marker + ".txt",
+									 marker);
+		}
+	}
+#endif
+
+
+#if 0
+	/// make tables whole
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + "/" + subdir + "_OUT";
+		autos::makeTableFromRows(workPath,
+								 tbi_path + "/" + subdir + "_all" + ".txt");
+	}
+#endif
+
+#if 0
+	/// people list
+	for(QString subdir : subdirs)
+	{
+		QString workPath = tbi_path + "/" + subdir + "_OUT";
+		QString outFile = tbi_path + "/" + subdir + "_people.txt";
+		std::ofstream outStr;
+		outStr.open(outFile.toStdString());
+
+		for(QString fileName : QDir(workPath).entryList({"*.txt"},
+														QDir::Files,
+														QDir::Name))
+		{
+			outStr << fileName.remove(".txt") << std::endl;
+		}
+		outStr.close();
+	}
+#endif
+}
+
+
+void Xenia_TBI_final(const QString & finalPath,
+					 QString outPath)
+{
+	QTime myTime;
+	myTime.start();
+
+	/// TBI Xenia cut, process, tables
+	def::ntFlag = false;
+	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+
+	QStringList subdirs = QDir(finalPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	if(subdirs.isEmpty())
+	{
+		subdirs = QStringList{""};
+	}
+	else
+	{
+		repair::toLatinDir(finalPath, {});
+		repair::deleteSpacesFolders(finalPath);
+		subdirs = QDir(finalPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	}
+
+	if(outPath == QString())
+	{
+		outPath = finalPath + "_out";
+	}
+
+	if(!QDir(outPath).exists())
+	{
+		QDir().mkpath(outPath);
+	}
+
+
+	/// count
+	for(QString subdir : subdirs)
+	{
+		break;
+		const QString groupPath = finalPath + "/" + subdir;
+
+		repair::toLatinDir(groupPath, {});
+		repair::toLowerDir(groupPath, {});
+		repair::deleteSpacesDir(groupPath, {});
+
+		/// list of guys
+		QStringList guys = QDir(groupPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+		for(QString guy : guys)
+		{
+			const QString guyPath = groupPath + "/" + guy;
+
+			if(1) /// repair fileNames
+			{
+				repair::deleteSpacesFolders(guyPath);
+				repair::toLatinDir(guyPath);
+				repair::toLowerDir(guyPath);
+			}
+
+			QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
+			if(edfs.isEmpty())
+			{
+				std::cout << "Xenia_TBI_final: guyPath is empty " << guyPath << std::endl;
+				continue;
+			}
+			QString ExpName = edfs[0];
+			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
+
+
+			/// physMinMax & holes
+			if(1)
+			{
+				repair::physMinMaxDir(guyPath);
+				repair::holesDir(guyPath, guyPath);	/// rewrite after repair
+			}
+
+			/// rereference
+			if(0)
+			{
+//				autos::rereferenceFolder(guyPath, "Ar");
+			}
+
+			/// filter?
+			if(1)
+			{
+				/// already done ?
+				autos::refilterFolder(guyPath,
+									  1.6,
+									  30.);
+			}
+
+//			continue;
+
+			/// cut?
+			if(0)
+			{
+				autos::GalyaCut(guyPath,
+								8,
+								groupPath + "_cut/" + guy);
+			}
+
+
+			outPath = guyPath + "/out";
+
+			/// process?
+			if(1)
+			{
+				autos::GalyaProcessing(guyPath, 19, outPath);
+			}
+
+			/// make one line file for each stimulus
+			if(1)
+			{
+				for(QString mark : tbiMarkers)
+				{
+					QStringList fileNamesToArrange;
+					for(int func : {
+						autos::featuresMask::spectre,
+						autos::featuresMask::fracDim,
+						autos::featuresMask::Hilbert,
+						autos::featuresMask::wavelet,
+						autos::featuresMask::alpha})
+					{
+						fileNamesToArrange.push_back(ExpName + mark
+													 + "_" + autos::getFeatureString(func) + ".txt");
+					}
+					std::cout << fileNamesToArrange << std::endl << std::endl;
+					autos::XeniaArrangeToLine(outPath,
+											  fileNamesToArrange,
+											  outPath + "/" + ExpName + mark + ".txt");
+				}
+			}
+
+			/// make whole line from all stimuli
+			if(1)
+			{
+				QStringList fileNamesToArrange;
+				for(QString mark : tbiMarkers)
+				{
+					fileNamesToArrange.push_back(ExpName + mark + ".txt");
+				}
+				autos::XeniaArrangeToLine(outPath,
+										  fileNamesToArrange,
+										  outPath + "/" + ExpName + ".txt");
+
+				QFile::copy(outPath + "/" + ExpName + ".txt",
+							finalPath + "_out/" + ExpName + ".txt");
+			}
+//			return; /// only first guy from first subdir
+		}
+	}
+	/// make tables whole and people list
+	autos::makeTableFromRows(finalPath + "_out",
+							 finalPath + "_out/all.txt");
+
+	std::cout << "Xenia_TBI_final: time elapsed = "
+			  << myTime.elapsed() / 1000. << " sec" << std::endl;
+}
+
+
+
+
+
+
+void repairMarkersInNewFB(QString edfPath, int numSession)
+{
+	/// repair markers in my files
+
+	edfFile fil;
+	fil.readEdfFile(edfPath);
+
+	const std::valarray<double> & mrk = fil.getData()[fil.getMarkChan()];
+	std::vector<int> marks;
+
+	bool startFlag = true;
+	for(int i = 0; i < mrk.size(); ++i)
+	{
+		if(mrk[i] == 239 && startFlag == true)
+		{
+			marks.push_back(i);
+			startFlag = false;
+		}
+		else if(mrk[i] == 254)
+		{
+			startFlag = true;
+		}
+
+	}
+
+	for(int i = 0; i < mrk.size(); ++i)
+	{
+		if(mrk[i] == 241. || mrk[i] == 247.)
+		{
+			fil.setData(fil.getMarkChan(), i, 0.);
+		}
+	}
+
+
+	std::ifstream inStr;
+	inStr.open(("/media/Files/Data/FeedbackNew/Tables/types"
+				+ nm(numSession + 1) + ".txt").toStdString());
+	std::vector<int> marksList;
+	char c;
+	while(!inStr.eof())
+	{
+		inStr >> c;
+		if(!inStr.eof())
+		{
+			if(c =='s')
+			{
+				marksList.push_back(241);
+			}
+			else if(c == 'v')
+			{
+				marksList.push_back(247);
+			}
+		}
+	}
+
+	if(marksList.size() != marks.size())
+	{
+		std::cout << myLib::getExpNameLib(edfPath) << " ";
+		std::cout << "inequal sizes: ";
+		std::cout << marksList.size() << '\t';
+		std::cout << marks.size() << std::endl;
+		return;
+	}
+
+	for(int i = 0; i < 80; ++i)
+	{
+		fil.setData(fil.getMarkChan(), marks[i] - 1, marksList[i]);
+	}
+	edfPath.replace(".edf", "_good.edf");
+	fil.writeEdfFile(edfPath);
+
+}
+
+
+int numMarkers(const QString & edfPath, const std::vector<int> & markers)
+{
+	edfFile fil;
+	fil.readEdfFile(edfPath);
+	int res = 0;
+	for(double i : fil.getMarkArr())
+	{
+		if(std::find(std::begin(markers),
+					 std::end(markers),
+					 std::round(i)) != std::end(markers))
+		{
+			++res;
+		}
+	}
+	return res;
+
+}
+
+/// not in use
+void mixNumbersCF(const QString & dirPath)
+{
+	auto fileList = QDir(dirPath).entryList({"*.jpg"}, QDir::Files, QDir::Name);
+	std::vector<int> newNums(fileList.size());
+	std::iota(std::begin(newNums), std::end(newNums), 0);
+	std::shuffle(std::begin(newNums), std::end(newNums),
+				 std::default_random_engine(
+					 std::chrono::system_clock::now().time_since_epoch().count()));
+
+	int numCounter = 0;
+	for(QString oldName : fileList)
+	{
+		QString newName = oldName;
+		QStringList parts = newName.split(QRegExp(R"([_\.])"), QString::SkipEmptyParts);
+		newName.clear();
+		for(QString & part : parts)
+		{
+			bool ok = false;
+			part.toInt(&ok);
+			/// if part is a number
+			if(ok)
+			{
+				part = rn(newNums[numCounter++], 3);
+//				std::cout << a << "\t" << part << std::endl;
+			}
+			newName += part + "_";
+		}
+		QFile::rename(dirPath + "/" + oldName,
+					  dirPath + "/" + newName);
+	}
+
+
+	for(QString oldName : QDir(dirPath).entryList({"*_jpg_*"}, QDir::Files, QDir::Name))
+	{
+		QString newName = oldName;
+		newName.replace("_jpg_", ".jpg");
+
+		QFile::rename(dirPath + "/" + oldName,
+					  dirPath + "/" + newName);
+	}
+}
+
+/// not in use
+void makeRightNumbersCF(const QString & dirPath, int startNum)
+{
+	for(QString oldName : QDir(dirPath).entryList({"*jpg"}, QDir::Files, QDir::Name))
+	{
+		QString newName = oldName;
+		QStringList parts = newName.split(QRegExp(R"([_\.])"), QString::SkipEmptyParts);
+		newName.clear();
+		for(QString & part : parts)
+		{
+			bool ok = false;
+			int a = part.toInt(&ok);
+			if(ok)
+			{
+				part = rn(startNum++, 3);
+				std::cout << a << "\t" << part << std::endl;
+			}
+			newName += part + "_";
+		}
+
+//		std::cout << dirPath + "/" + oldName << std::endl
+//				  << dirPath + "/" + newName << std::endl << std::endl;
+
+		QFile::rename(dirPath + "/" + oldName,
+					  dirPath + "/" + newName);
+	}
+
+
+	for(QString oldName : QDir(dirPath).entryList({"*_jpg_*"}, QDir::Files, QDir::Name))
+	{
+		std::cout << oldName << std::endl;
+
+		QString newName = oldName;
+		newName.replace("_jpg_", ".jpg");
+
+//		std::cout << dirPath + "/" + oldName << std::endl
+//				  << dirPath + "/" + newName << std::endl << std::endl;
+
+		QFile::rename(dirPath + "/" + oldName,
+					  dirPath + "/" + newName);
+	}
+}
+
+void makeRightNumbers(const QString & dirPath,
+					  int length)
+{
+	QDir deer(dirPath);
+	QStringList leest = deer.entryList(QDir::Files);
+	for(const QString & oldName : leest)
+	{
+		QString newName = oldName;
+		QStringList parts = newName.split('_');
+		newName.clear();
+		for(QString & part : parts)
+		{
+			bool ok = false;
+			int a = part.toInt(&ok);
+			if(ok)
+			{
+				part = rn(a, length);
+			}
+			newName += part + "_";
+		}
+		newName.remove(newName.length() - 1, 1); // remove last
+
+		QFile::rename(deer.absolutePath() + "/" + oldName,
+					  deer.absolutePath() + "/" + newName);
+	}
+}
+
+
+void makeTableFromRows(const QString & inPath,
+					   QString outTablePath,
+					   const QString & auxFilter)
+{
+	QDir deer(inPath);
+
+	if(outTablePath.isEmpty())
+	{
+		deer.cdUp();
+		outTablePath = deer.absolutePath() + "/table.txt";
+		deer.cd(inPath);
+	}
+	const QString tableName = myLib::getFileName(outTablePath);
+
+
+	QFile outStr(outTablePath);
+	outStr.open(QIODevice::WriteOnly);
+
+	std::ofstream fileNames;
+	fileNames.open((inPath + "/people.txt").toStdString());
+
+	for(const QString & fileName : deer.entryList({"*" + auxFilter +".txt"},
+												  QDir::Files,
+												  QDir::Time
+												  | QDir::Reversed
+												  ))
+	{
+		if(fileName.contains(tableName)
+		   || fileName.contains("people")) continue;
+		fileNames << fileName << "\n";
+
+		QFile fil(deer.absolutePath() + "/" + fileName);
+		fil.open(QIODevice::ReadOnly);
+		auto contents = fil.readAll();
+		fil.close();
+		outStr.write(contents);
+		outStr.write("\r\n");
+	}
+	fileNames.close();
+	outStr.close();
+}
+
+
+matrix makeTestData(const QString & outPath)
+{
+	matrix testSignals(8, 250 * 60 * 3); /// 3 min
+
+	// signals
+	double helpDouble;
+	double x, y;
+
+	std::default_random_engine gen(std::chrono::system_clock::now().time_since_epoch().count());
+
+	std::uniform_real_distribution<double> distr(0, 1);
+
+	for(uint i = 0; i < testSignals.cols(); ++i)
+	{
+		helpDouble = 2. * pi * i / def::freq * 12.5; // 12.5 Hz ~ 20 bins per period
+		testSignals[0][i] = sin(helpDouble); // sine
+
+		testSignals[1][i] = (i + 2) % 29;      // saw
+
+		testSignals[2][i] = (i % 26 >= 13); // rectangle
+
+		x = distr(gen);
+		y = distr(gen);
+		testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * pi * y); // gauss?
+
+		testSignals[4][i] = std::abs(i % 22 - 11); // triangle
+
+		testSignals[5][i] = rand() % 27; // noise
+
+		x = distr(gen);
+		y = distr(gen);
+		testSignals[6][i] = sqrt(-2. * log(x)) * cos(2. * pi * y); // gauss?
+
+		testSignals[7][i] = pow(rand() % 13, 3); // non-white noise
+	}
+
+
+	double sum1, sum2;
+	// normalize by dispersion = coeff
+	double coeff = 10.;
+	for(uint i = 0; i < testSignals.rows(); ++i)
+	{
+		sum1 = smLib::mean(testSignals[i]);
+		sum2 = smLib::variance(testSignals[i]);
+
+		testSignals[i] -= sum1;
+		testSignals[i] /= sqrt(sum2);
+		testSignals[i] *= coeff;
+
+	}
+	matrix pewM(testSignals.rows(),
+				testSignals.rows());
+	pewM.random(-1., 1.);
+
+
+	testSignals = pewM * testSignals;
+
+	myLib::writePlainData(outPath, testSignals);
+	myLib::writePlainData(outPath + "_", testSignals.resizeCols(2000)); // edit out time
+	return pewM;
+}
+
+
+void XeniaArrangeToLine(const QString & dirPath,
+						const QStringList & fileNames,
+						const QString & outFilePath)
+{
+	QDir().mkpath(myLib::getDirPathLib(outFilePath));
+	std::ofstream outStr;
+	outStr.open(outFilePath.toStdString());
+	std::ifstream inStr;
+	for(const QString & fileName : fileNames)
+	{
+		inStr.open((dirPath + "/" + fileName).toStdString());
+		double val;
+		while(inStr.good())
+		{
+			inStr >> val;
+			if(!inStr.eof())
+			{
+				outStr << val << '\t';
+			}
+		}
+		inStr.close();
+	}
+	outStr.close();
+}
+
+
+
+void cutOneFile(const QString & filePath,
+				const int wndLen,
+				const QString & outPath)
+{
+	edfFile initEdf;
+	initEdf.readEdfFile(filePath);
+
+
+#define ADD_DIR 0
+#if ADD_DIR
+	QString addDir = initEdf.getExpName();
+	addDir.resize(addDir.indexOf("_"));
+	QDir(outPath).mkdir(addDir);
+#endif
+
+	/// generality experimental
+	if(initEdf.getEdfPlusFlag()) // if annotations
+	{
+		initEdf.removeChannels({initEdf.getMarkChan()}); // remove Annotations
+	}
+
+	int fr = initEdf.getFreq();
+	const int numOfWinds = ceil(initEdf.getDataLen() / fr / wndLen);
+
+
+	for(int i = 0; i < numOfWinds; ++i)
+	{
+		initEdf.saveSubsection(
+					i * fr * wndLen,
+					fmin((i + 1) * fr * wndLen, initEdf.getDataLen()),
+					QString(outPath
+					#if ADD_DIR
+							+ "/" + addDir
+					#endif
+							+ "/" + initEdf.getExpName()
+							+ "_wnd_" + rn(
+								i + 1,
+								floor(log10(numOfWinds)) + 1)
+							+ ".edf"));
+	}
+}
+
+void GalyaCut(const QString & path,
+			  const int wndLen,
+			  QString outPath)
+{
+
+	const QString outDir = myLib::getFileName(path) + "_winds";
+	const QString smallsDir = myLib::getFileName(path) + "_smalls";
+
+	QDir tmpDir(path);
+	tmpDir.mkdir(smallsDir);
+	const QString smallsPath = tmpDir.absolutePath() + "/" + smallsDir;
+
+	if(outPath.isEmpty())
+	{
+		tmpDir.mkdir(outDir);
+		outPath = tmpDir.absolutePath() + "/" + outDir;
+	}
+	else
+	{
+		tmpDir.mkpath(outPath);
+	}
+
+	/// to change
+	const QString logPath = def::GalyaFolder + "/log.txt";
+	std::ofstream logStream(logPath.toStdString(), std::ios_base::app);
+
+	const QStringList leest1 = tmpDir.entryList(def::edfFilters);
+	const auto filesVec = leest1.toVector();
+
+	/// ??????????????????????
+	omp_set_dynamic(0);
+	omp_set_num_threads(3);
+#pragma omp parallel
+#pragma omp for nowait
+	for(int i = 0; i < filesVec.size(); ++i)
+	{
+		std::cout << filesVec[i] << std::endl;
+		QString helpString = tmpDir.absolutePath() + "/" + filesVec[i];
+		edfFile initEdf;
+		initEdf.readEdfFile(helpString, true);
+
+		/// some check for small
+		if(initEdf.getNdr() * initEdf.getDdr() <= wndLen )
+		{
+			QFile::remove(smallsPath + "/" + initEdf.getFileNam());
+			QFile::copy(initEdf.getFilePath(),
+						smallsPath + "/" + initEdf.getFileNam());
+
+			std::cout << "smallFile \t" << initEdf.getFileNam() << std::endl;
+			logStream << initEdf.getFilePath() << "\t" << "too small" << "\n";
+			continue;
+		}
+
+		cutOneFile(helpString,
+				   wndLen,
+				   outPath);
+	}
+	logStream.close();
+
+}
+
+
+
+void rereferenceFolder(const QString & procDirPath,
+					   const QString & newRef)
+{
+	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
+															  QDir::NoFilter,
+															  QDir::Size | QDir::Reversed);
+
+	for(const QString & fileName : filesList)
+	{
+		QString helpString = procDirPath + "/" + fileName;
+		edfFile fil;
+		fil.readEdfFile(helpString);
+		fil.rereferenceData(newRef).writeEdfFile(helpString);
+	}
+}
+
+void refilterFolder(const QString & procDirPath,
+					  double lowFreq,
+					  double highFreq,
+					  bool isNotch)
+{
+
+	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
+															  QDir::NoFilter,
+															  QDir::Size | QDir::Reversed);
+
+	for(const QString & fileName : filesList)
+	{
+		QString helpString = procDirPath + "/" + fileName;
+		edfFile fil;
+		fil.readEdfFile(helpString);
+		fil.refilter(lowFreq, highFreq, isNotch).writeEdfFile(helpString);
+	}
+}
+
+
 
 void GalyaFull(const QString & inDirPath,
 			   QString outDirPath,
@@ -1615,25 +1255,22 @@ void GalyaFull(const QString & inDirPath,
 							rightNum);
 
 	/// Galya
-	for(QString type : {"_alpha", "_spectre", "_Hilbert",  "_fracDim"})
+	for(int typ : {
+		featuresMask::alpha,
+		featuresMask::spectre,
+		featuresMask::Hilbert,
+		featuresMask::fracDim})
 	{
+		QString type = autos::getFeatureString(typ);
 		autos::makeTableFromRows(outPath,
-								 outDirPath + "/" + outFileNames + type + ".txt",
+								 outDirPath + "/" + outFileNames
+								 + "_" + type + ".txt",
 								 type);
 	}
 #endif
 
-//	return;
-
-#if WAVELET_MATLAB
-	if(!wvlt::isInit) wvlt::initMtlb();
-	autos::GalyaWavelets(inDirPath,
-						 numChan,
-						 waveletPath);
-#else
-	std::cout << "GalyaFull: wavelets don't work" << std::endl;
-#endif
-	exit(0);
+	return;
+//	exit(0);
 
 	/// rename the folder in OUT to guy
 	autos::makeRightNumbers(waveletPath, rightNum);

@@ -48,6 +48,8 @@ const std::vector<std::tuple<int, QString, featureFuncType>> FEATURES {
 	std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet),
 	std::make_tuple(featuresMask::Hjotrh,	"Hjorth",	autos::countHjorth)
 };
+QString getFeatureString(int in);
+
 
 
 void countFeatures(const matrix & inData,
@@ -71,36 +73,7 @@ void cutOneFile(const QString & filePath,
 				const int wndLen,
 				const QString & outPath);
 
-
-
-/// deprecated
-void countSpectraFeatures(const QString & filePath,
-						  const int numChan,
-						  const QString & outPath);
-/// deprecated
-void countChaosFeatures(const QString & filePath,
-						  const int numChan,
-						  const QString & outPath);
-
-/// deprecated
-void GalyaWavelets(const QString & inPath,
-				   int numChan = 19,
-				   QString outPath = QString());
-/// deprecated
-void GalyaHjorth(const QString & inPath,
-				   int numChan = 19,
-				   QString outPath = QString());
-
-/// deprecated
-void countHjorth(const matrix & inData,
-				 int numChan,
-				 const QString & outPath);
-/// deprecated
-void waveletOneFile(const matrix & inData,
-					int numChan,
-					double srate,
-					const QString & outFile);
-/// deprecated
+/// temporary
 void GalyaFull(const QString & inDirPath,
 			   QString outDirPath = QString(),
 			   QString outFileNames = QString(),
@@ -129,6 +102,11 @@ void refilterFolder(const QString & procDirPath,
 					double lowFreq,
 					double highFreq,
 					bool isNotch = false);
+
+void rereferenceFolder(const QString & procDirPath,
+					   const QString & newRef);
+
+
 
 
 
