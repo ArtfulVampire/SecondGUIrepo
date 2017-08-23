@@ -5,7 +5,7 @@ namespace def
 /// to def class
 
 //const username currUser = username::MichaelA;
-const autosUser currAutosUser = autosUser::Xenia;
+autosUser currAutosUser = autosUser::Xenia;
 
 // assigned in readData, reduce channels, etc
 int ns = 20;

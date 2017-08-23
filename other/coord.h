@@ -135,7 +135,7 @@ namespace def
 //	extern const username currUser;
 
 	enum class autosUser {Xenia, Galya};
-	extern const autosUser currAutosUser;
+	extern autosUser currAutosUser;
 
     const bool matiFlag = false;
 

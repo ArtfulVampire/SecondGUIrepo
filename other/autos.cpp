@@ -23,6 +23,13 @@ QString getFeatureString(int in)
 							  std::end(autos::FEATURES),
 							  [in](const auto & i) { return std::get<0>(i) == in; }));
 }
+int getFileLength(int in)
+{
+	return std::get<3>(
+				*std::find_if(std::begin(autos::FEATURES),
+							  std::end(autos::FEATURES),
+							  [in](const auto & i) { return std::get<0>(i) == in; }));
+}
 
 
 void GalyaProcessing(const QString & procDirPath,
@@ -60,7 +67,7 @@ void GalyaProcessing(const QString & procDirPath,
 				   autos::featuresMask::spectre |
 				   autos::featuresMask::Hilbert |
 				   autos::featuresMask::fracDim |
-				   autos::featuresMask::Hjotrh;
+				   autos::featuresMask::Hjorth;
 			break;
 		}
 		case def::autosUser::Xenia:
@@ -600,7 +607,7 @@ void Xenia_TBI_final(const QString & finalPath,
 	/// count
 	for(QString subdir : subdirs)
 	{
-		break;
+//		break;
 		const QString groupPath = finalPath + "/" + subdir;
 
 		repair::toLatinDir(groupPath, {});
@@ -1042,12 +1049,16 @@ void XeniaArrangeToLine(const QString & dirPath,
 						const QString & outFilePath)
 {
 	QDir().mkpath(myLib::getDirPathLib(outFilePath));
+
 	std::ofstream outStr;
 	outStr.open(outFilePath.toStdString());
+
 	std::ifstream inStr;
+
 	for(const QString & fileName : fileNames)
 	{
 		inStr.open((dirPath + "/" + fileName).toStdString());
+
 		double val;
 		while(inStr.good())
 		{
@@ -1204,6 +1215,145 @@ void refilterFolder(const QString & procDirPath,
 	}
 }
 
+void Galya_tactile(const QString & inPath,
+				   QString outPath)
+{
+
+	QTime myTime;
+	myTime.start();
+
+	def::ntFlag = false;
+	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
+
+	if(outPath == QString())
+	{
+		outPath = inPath + "_out";
+	}
+
+	if(!QDir(outPath).exists())
+	{
+		QDir().mkpath(outPath);
+	}
+
+
+	/// count
+
+	const QString guyPath = inPath;
+
+	if(1) /// repair fileNames
+	{
+		repair::deleteSpacesFolders(guyPath);
+		repair::toLatinDir(guyPath);
+		repair::toLowerDir(guyPath);
+	}
+
+	QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
+	if(edfs.isEmpty())
+	{
+		std::cout << "Galya_tactile: inPath is empty " << inPath << std::endl;
+	}
+	QString ExpName = edfs[0];
+	ExpName = ExpName.left(ExpName.lastIndexOf('_'));
+
+
+	/// physMinMax & holes
+	if(1)
+	{
+		repair::physMinMaxDir(guyPath);
+		repair::holesDir(guyPath, guyPath);	/// rewrite after repair
+	}
+
+	/// rereference
+	if(0)
+	{
+//		autos::rereferenceFolder(guyPath, "Ar");
+	}
+
+	/// filter?
+	if(0)
+	{
+		/// already done ?
+		autos::refilterFolder(guyPath,
+							  1.6,
+							  30.);
+	}
+
+	/// cut?
+	if(0)
+	{
+		autos::GalyaCut(guyPath,
+						8,
+						inPath + "_cut/");
+	}
+
+
+	outPath = guyPath + "/out";
+
+	/// process?
+	if(1)
+	{
+		autos::GalyaProcessing(guyPath, 19, outPath);
+	}
+
+	/// make one line file for each stimulus
+	if(1)
+	{
+		for(QString mark : markers)
+		{
+			QStringList fileNamesToArrange;
+			for(int func : {
+				autos::featuresMask::alpha,
+				autos::featuresMask::spectre,
+				autos::featuresMask::Hilbert,
+				autos::featuresMask::fracDim,
+				autos::featuresMask::Hjorth})
+			{
+				fileNamesToArrange.push_back(ExpName + mark
+											 + "_" + autos::getFeatureString(func) + ".txt");
+
+				if(!QFile::exists(outPath + "/" + ExpName + mark
+								  + "_" + autos::getFeatureString(func) + ".txt"))
+				{
+					std::ofstream outStr;
+					outStr.open((outPath + "/" + ExpName + mark
+								 + "_" + autos::getFeatureString(func) + ".txt").toStdString());
+					for(int i = 0; i < autos::getFileLength(func); ++i)
+					{
+						outStr << 0.0 << '\t';
+					}
+					outStr.close();
+				}
+			}
+			std::cout << fileNamesToArrange << std::endl << std::endl;
+			autos::XeniaArrangeToLine(outPath,
+									  fileNamesToArrange,
+									  outPath + "/" + ExpName + mark + ".txt");
+		}
+	}
+
+	/// make whole line from all stimuli
+	if(1)
+	{
+		QStringList fileNamesToArrange;
+		for(QString mark : markers)
+		{
+			fileNamesToArrange.push_back(ExpName + mark + ".txt");
+		}
+		autos::XeniaArrangeToLine(outPath,
+								  fileNamesToArrange,
+								  outPath + "/" + ExpName + ".txt");
+
+		QFile::copy(outPath + "/" + ExpName + ".txt",
+					inPath + "_out/" + ExpName + ".txt");
+	}
+
+	/// make tables whole and people list
+	autos::makeTableFromRows(inPath + "_out",
+							 inPath + "_out/all.txt");
+
+	std::cout << "Xenia_TBI_final: time elapsed = "
+			  << myTime.elapsed() / 1000. << " sec" << std::endl;
+}
 
 
 void GalyaFull(const QString & inDirPath,

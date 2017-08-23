@@ -39,8 +39,8 @@ void MainWindow::customFunc()
 //					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_3.edf");
 //	exit(0);
 
-	autos::GalyaProcessing("/media/Files/Data/Xenia/AAA",
-						   19);
+	def::currAutosUser = def::autosUser::Galya;
+	autos::Galya_tactile("/media/Files/Data/Galya/AllTactile");
 	exit(0);
 
 //	return;

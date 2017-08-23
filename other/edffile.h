@@ -114,7 +114,7 @@ public:
 
 enum class inst {mati, iitp};
 enum class eogType {cross, correspond};
-enum class reference{A1, A2, Ar, CAR, Base};
+//enum class reference{A1, A2, Ar, CAR, Base};
 #define EDFSTREAM 01
 
 #if EDFSTREAM
@@ -186,8 +186,11 @@ public:
 					   bool isNotch = false,
 					   std::vector<uint> chanList = {});
 
+	/// need check
 	edfFile rereferenceData(const QString & newRef) const;
-	edfFile rereferenceData(reference newRef) const;
+//	edfFile rereferenceData(reference newRef) const;
+	/// need check
+	edfFile rereferenceDataCAR() const;
 
 	/// channels modify
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
@@ -249,20 +252,24 @@ public:
 							   bool byEeg = false);
 
 protected:
-//    QString headerInitialInfo = QString();
-    std::string headerInitialInfo = std::string();
-    int bytes = 256;
-    QString headerReservedField = QString();
+	QString filePath = QString();
+	QString ExpName = QString();
+	QString dirPath = QString();
+
+	int bytes = 256;
+	std::string headerInitialInfo{};
+	QString headerReservedField{};
+	QString headerRest{};
 
     int ndr = 0;
     double ddr = 1.;
 	int ns = 0;
+	int srate = 250;
 
 	/// cross EOG1-A2, EOG2-A1
 	/// correspond EOG1-A1, EOG2-A2
 	/// but really it is A*-EOG*
 	eogType edfEogType = eogType::correspond; /// true story, 21.07.17
-
 
 	// channels arrays start
 	std::vector<QString> labels;
@@ -276,25 +283,18 @@ protected:
 	std::valarray<double> nr; // it is int really
 	std::vector<QString> reserved;
 	std::vector<QString> annotations;
-
 	// channels arrays end
 
-    QString headerRest = QString();
 
 	/// my fields
-
-	// fast access for slicing (time-bin, marker)
-	std::vector<std::pair<int, double>> markers{};
-	int srate = 250;
-
-    std::vector<edfChannel> channels;
 	matrix edfData; // matrix.cpp
 	std::vector<std::valarray<double>> fftData{}; // mutable?
 
-    int markerChannel = -1;
-    QString filePath = QString();
-    QString ExpName = QString();
-    QString dirPath = QString();
+	// fast access for slicing (time-bin, marker)
+	std::vector<std::pair<int, double>> markers{};
+	int markerChannel = -1;
+
+    std::vector<edfChannel> channels;
 
     bool matiFlag = def::matiFlag;
     bool ntFlag = def::ntFlag;

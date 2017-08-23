@@ -36,19 +36,20 @@ enum featuresMask {spectre	= 0x01,
 				   fracDim	= 0x04,
 				   Hilbert	= 0x08,
 				   wavelet	= 0x10,
-				   Hjotrh	= 0x20};
+				   Hjorth	= 0x20};
 
 using featureFuncType = std::function<void(const matrix &, double, std::ostream &)>;
 
-const std::vector<std::tuple<int, QString, featureFuncType>> FEATURES {
-	std::make_tuple(featuresMask::spectre,	"spectre",	autos::countFFT),
-	std::make_tuple(featuresMask::alpha,	"alpha",	autos::countAlpha),
-	std::make_tuple(featuresMask::fracDim,	"fracDim",	autos::countFracDim),
-	std::make_tuple(featuresMask::Hilbert,	"Hilbert",	autos::countHilbert),
-	std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet),
-	std::make_tuple(featuresMask::Hjotrh,	"Hjorth",	autos::countHjorth)
+const std::vector<std::tuple<int, QString, featureFuncType, int>> FEATURES {
+	std::make_tuple(featuresMask::spectre,	"spectre",	autos::countFFT,		18 * 19),
+	std::make_tuple(featuresMask::alpha,	"alpha",	autos::countAlpha,		1 * 19),
+	std::make_tuple(featuresMask::fracDim,	"fracDim",	autos::countFracDim,	1 * 19),
+	std::make_tuple(featuresMask::Hilbert,	"Hilbert",	autos::countHilbert,	6 * 19),
+	std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet,	3 * 19 * 19),
+	std::make_tuple(featuresMask::Hjorth,	"Hjorth",	autos::countHjorth,		2 * 19)
 };
 QString getFeatureString(int in);
+int getFileLength(int in);
 
 
 
@@ -63,6 +64,9 @@ void GalyaProcessing(const QString & procDirPath,
 					 const int numChan = 31,
 					 QString outPath = QString());
 
+void Galya_tactile(const QString & inPath,
+				   QString outPath = QString());
+void Xenia_TBI(const QString & tbi_path);
 void Xenia_TBI_final(const QString & finalPath,
 					 QString outPath = QString());
 
@@ -87,7 +91,6 @@ void GalyaFull(const QString & inDirPath,
 void XeniaArrangeToLine(const QString & dirPath,
 						const QStringList & fileNames,
 						const QString & outFilePath);
-void Xenia_TBI(const QString & tbi_path);
 void Xenia_repairTable(const QString & initPath,
 					   const QString & repairedPath,
 					   const QString & groupsPath = QString(),

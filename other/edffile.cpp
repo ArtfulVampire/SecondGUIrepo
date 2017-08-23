@@ -42,6 +42,7 @@ edfFile::edfFile(const edfFile &other, bool noData)
     this->headerInitialInfo = other.getHeaderInit();
     this->bytes = other.getBytes();
     this->headerReservedField = other.getHeaderReserved();
+	this->headerRest = other.getHeaderRest();
 
     this->ndr = other.getNdr();
     this->ddr = other.getDdr();
@@ -58,10 +59,13 @@ edfFile::edfFile(const edfFile &other, bool noData)
     this->prefiltering = other.getPrefiltering();
     this->nr = other.getNr();
     this->reserved = other.getReserved();
-    this->headerRest = other.getHeaderRest();
+
+	this->annotations = other.annotations;
+
+	this->markers = other.getMarkers();
+	this->markerChannel = other.getMarkChan();
 
     this->channels = other.getChannels();
-	this->markerChannel = other.getMarkChan();
 
     if(!noData)
     {
@@ -73,6 +77,15 @@ edfFile::edfFile(const edfFile &other, bool noData)
 		this->edfData = matrix();
 		this->fftData.clear();
     }
+
+	this->matiFlag = other.matiFlag;
+	this->ntFlag = other.ntFlag;
+	this->edfPlusFlag = other.edfPlusFlag;
+	this->filterIITPflag = other.filterIITPflag;
+
+	this->writeMarkersFlag = other.writeMarkersFlag;
+	this->writeLabelsFlag = other.writeLabelsFlag;
+	this->writeHeaderFlag = other.writeHeaderFlag;
 }
 
 edfFile::edfFile(const QString & txtFilePath, inst which)
@@ -1784,177 +1797,222 @@ edfFile & edfFile::refilter(double lowFreq,
 	return *this;
 }
 
-
+/// need check
 edfFile edfFile::rereferenceData(const QString & newRef) const
 {
-	return *this;
-//	// A1, A2, Ar, N
-//	// A1-A2, A1-N
-//    // Ar means 0.5*(A1+A2)
+	if(newRef.contains("CAR", Qt::CaseInsensitive))
+	{
+		return this->rereferenceDataCAR();
+	}
 
-//	int groundChan = -1;	// A1-N
-//	int earsChan1 = -1;		// A1-A2
-//	int earsChan2 = -1;		// A2-A1
-//	int eog1 = -1;			// EOG1
-//	int eog2 = -1;			// EOG2
+	// A1, A2, Ar, N
+	// A1-A2, A1-N
+	// Ar means 0.5*(A1+A2)
 
-//	bool eogAsIs = false;
-//	bool bipolarEog12 = false;
+	edfFile temp(*this);
 
-//	for(int i = 0; i < globalEdf.getNs(); ++i)
-//    {
-//		if(this->labels[i].contains("A1-N"))		{ groundChan = i; }
-//		else if(this->labels[i].contains("A1-A2"))	{ earsChan1 = i; }
-//		else if(this->labels[i].contains("A2-A1"))	{ earsChan2 = i; }
-//		else if(this->labels[i].contains("EOG1"))	{ eog1 = i; }
-//		else if(this->labels[i].contains("EOG2"))	{ eog2 = i; }
-//    }
-//    if(groundChan == -1 || (earsChan1 == -1 && earsChan2 == -1))
-//    {
-//		std::cout << "edfFile::rereferenceData: some of ref channels are absent" << std::endl;
-//        return;
-//    }
+	int groundChan = -1;	// A1-N
+	int earsChan1 = -1;		// A1-A2
+	int earsChan2 = -1;		// A2-A1
+	int eog1 = -1;			// EOG1
+	int eog2 = -1;			// EOG2
 
-//    int earsChan;
-//    std::vector<QString> sign;
-//    if(earsChan1 != -1)
-//    {
-//        earsChan = earsChan1;
-//        sign = {"-", "+"};
-//    }
-//    else
-//    {
-//        earsChan = earsChan2;
-//        sign = {"+", "-"};
-//    }
+	bool eogAsIs = false;
+	bool bipolarEog12 = false;
 
-//	const QString earsChanStr = nm(earsChan + 1);
-//	const QString groundChanStr = nm(groundChan + 1);
+	for(int i = 0; i < temp.ns; ++i)
+	{
+		if(temp.labels[i].contains("A1-N"))		{ groundChan = i; }
+		else if(temp.labels[i].contains("A1-A2"))	{ earsChan1 = i; }
+		else if(temp.labels[i].contains("A2-A1"))	{ earsChan2 = i; }
+		else if(temp.labels[i].contains("EOG1"))	{ eog1 = i; }
+		else if(temp.labels[i].contains("EOG2"))	{ eog2 = i; }
+	}
+	if(groundChan == -1 || (earsChan1 == -1 && earsChan2 == -1))
+	{
+		std::cout << "edfFile::rereferenceData: some of ref channels are absent" << std::endl;
+		return {};
+	}
 
-//	QString helpString;
-//	for(int i = 0; i < this->ns; ++i)
-//    {
-//		const QString currNumStr = nm(i + 1);
+	int earsChan;
+	std::vector<QString> sign;
+	if(earsChan1 != -1)
+	{
+		earsChan = earsChan1;
+		sign = {"-", "+"};
+	}
+	else
+	{
+		earsChan = earsChan2;
+		sign = {"+", "-"};
+	}
 
-//		if(i == groundChan || i == earsChan1 || i == earsChan2) /// reref chans
-//		{
-//			helpString += currNumStr + " ";
-//		}
-//		else if(!this->labels[i].contains(QRegExp("E[EO]G"))) /// not EOG, not EEG
-//        {
-//            helpString += currNumStr + " ";
-//		}
-//		else if(this->labels[i].contains("EOG") && eogAsIs)
-//		{
-//			helpString += currNumStr + " ";
-//		}
-//		else if(this->labels[i].contains("EOG") && bipolarEog12)
-//		{
-//			if(this->labels[i].contains("EOG1")) { /* do nothing */ }
-//			else if(this->labels[i].contains("EOG2")) /// make bipolar EOG1-EOG2
-//			{
-//				/// EOG inversion is made in edfFile::reduceChannels
-//				/// here deal with them like EOG*-A*
+	const QString earsChanStr = nm(earsChan + 1);
+	const QString groundChanStr = nm(groundChan + 1);
 
-//				if(globalEdf.getEogType() == eogType::cross)
-//				{
-//					/// (EOG1-A2) - (EOG2-A1) - (A1-A2)
-//					helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[0] + nm(earsChan + 1) + " ";
-//				}
-//				else if(globalEdf.getEogType() == eogType::correspond)
-//				{
-//					/// (EOG1-A1) - (EOG2-A2) + (A1-A2)
-//					helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[1] + nm(earsChan + 1) + " ";
-//				}
-//			}
-//			else { helpString += currNumStr + " "; }
-//		}
-//		else /// EEG and usual EOG
-//        {
-//            // define current ref
-//            QRegExp forRef(R"([\-].{1,4}[ ])");
-//            forRef.indexIn(this->labels[i]);
-//            QString refName = forRef.cap();
-//            refName.remove(QRegExp(R"([\-\s])"));
+	QString helpString;
+	for(int i = 0; i < temp.ns; ++i)
+	{
+		const QString currNumStr = nm(i + 1);
 
-//			/// if no reference found - leave as is
-//			if(refName.isEmpty()) { helpString += currNumStr + " "; }
+		if(i == groundChan || i == earsChan1 || i == earsChan2) /// reref chans
+		{
+			helpString += currNumStr + " ";
+		}
+		else if(!temp.labels[i].contains(QRegExp("E[EO]G"))) /// not EOG, not EEG
+		{
+			helpString += currNumStr + " ";
+		}
+		else if(temp.labels[i].contains("EOG") && eogAsIs)
+		{
+			helpString += currNumStr + " ";
+		}
+		else if(temp.labels[i].contains("EOG") && bipolarEog12)
+		{
+			if(temp.labels[i].contains("EOG1")) { /* do nothing */ }
+			else if(temp.labels[i].contains("EOG2")) /// make bipolar EOG1-EOG2
+			{
+				/// EOG inversion is made in edfFile::reduceChannels
+				/// here deal with them like EOG*-A*
 
-//			QString chanName = myLib::getLabelName(this->labels[i]);
+				if(temp.edfEogType== eogType::cross)
+				{
+					/// (EOG1-A2) - (EOG2-A1) - (A1-A2)
+					helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[0] + nm(earsChan + 1) + " ";
+				}
+				else if(temp.edfEogType== eogType::correspond)
+				{
+					/// (EOG1-A1) - (EOG2-A2) + (A1-A2)
+					helpString += nm(eog1 + 1) + "-" + nm(eog2 + 1) + sign[1] + nm(earsChan + 1) + " ";
+				}
+			}
+			else { helpString += currNumStr + " "; }
+		}
+		else /// EEG and usual EOG
+		{
+			// define current ref
+			QRegExp forRef(R"([\-].{1,4}[ ])");
+			forRef.indexIn(temp.labels[i]);
+			QString refName = forRef.cap();
+			refName.remove(QRegExp(R"([\-\s])"));
 
-//            QString targetRef = newRef;
+			/// if no reference found - leave as is
+			if(refName.isEmpty()) { helpString += currNumStr + " "; }
 
-//            /// if newRef == "Base"
-//            if(!(newRef == "A1" ||
-//                 newRef == "A2" ||
-//                 newRef == "Ar" ||
-//                 newRef == "N"))
-//            {
-//                if(std::find(std::begin(coords::lbl_A1),
-//                             std::end(coords::lbl_A1),
-//                             chanName) != std::end(coords::lbl_A1))
-//                {
-//                    targetRef = "A1";
-//                }
-//                else
-//                {
-//                    targetRef = "A2";
-//                }
-//            }
-//			helpString += myLib::rerefChannel(refName,
-//											  targetRef,
-//											  currNumStr,
-//											  earsChanStr,
-//											  groundChanStr,
-//											  sign) + " ";
-//			this->labels[i].replace(refName, targetRef);
-//		}
+			QString chanName = myLib::getLabelName(temp.labels[i]);
 
-//    }
+			QString targetRef = newRef;
 
-//	/// fix EOG1-EOG2 label when bipolar
-//	/// generality
-//	if(bipolarEog12)
-//	{
-//		/// erase EOG1-A1
-//		label.erase(std::find_if(std::begin(label),
-//								 std::end(label),
-//								 [](const QString & in)
-//		{ return in.contains("EOG1-"); }));
+			if(newRef == "Base")
+			{
+				if(std::find(std::begin(coords::lbl_A1),
+							 std::end(coords::lbl_A1),
+							 chanName) != std::end(coords::lbl_A1))
+				{
+					targetRef = "A1";
+				}
+				else
+				{
+					targetRef = "A2";
+				}
+			}
+			helpString += myLib::rerefChannel(refName,
+											  targetRef,
+											  currNumStr,
+											  earsChanStr,
+											  groundChanStr,
+											  sign) + " ";
+			temp.labels[i].replace(refName, targetRef);
+		}
 
-//		/// insert EOG1-EOG2
-//		label.insert(std::find_if(std::begin(label),
-//								  std::end(label),
-//								  [](const QString & in)
-//		 { return in.contains("EOG2-"); }),
-//					 myLib::fitString("EOG EOG1-EOG2", 16));
+	}
 
-//		/// erase EOG2-A2
-//		label.erase(std::find_if(std::begin(label),
-//								 std::end(label),
-//								 [](const QString & in)
-//		{ return in.contains("EOG2-"); }));
-//	}
-//    ui->reduceChannelsLineEdit->setText(helpString);
-//	std::cout << helpString << std::endl;
+	/// the very processing
+	temp = this->reduceChannels(helpString);
 
-//	/// the very processing
-//	globalEdf = globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
-//	globalEdf.setLabels(label); /// necessary after the processing
+	/// fix EOG1-EOG2 label when bipolar
+	/// generality
+	if(bipolarEog12)
+	{
+		/// erase EOG1-A1
+		temp.labels.erase(std::find_if(std::begin(temp.labels),
+									   std::end(temp.labels),
+									   [](const QString & in)
+		{ return in.contains("EOG1-"); }));
 
-//	/// inverse EOG2-EOG1 back (look edfFile::reduceChannels near the end)
-//	if(int a = globalEdf.findChannel("EOG1-EOG2") != -1)
-//	{
-//		globalEdf.multiplyChannel(a, -1.);
-//	}
-//	else
-//	{
-//		std::cout << "rereferenceData: no bipolar EOG" << std::endl;
-//	}
+		/// insert EOG1-EOG2
+		temp.labels.insert(std::find_if(std::begin(temp.labels),
+										std::end(temp.labels),
+										[](const QString & in)
+		{ return in.contains("EOG2-"); }),
+						   myLib::fitString("EOG EOG1-EOG2", 16));
 
-//	// set back channels string
-//	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->currentData().toString());
+		/// erase EOG2-A2
+		temp.labels.erase(std::find_if(std::begin(temp.labels),
+									   std::end(temp.labels),
+									   [](const QString & in)
+		{ return in.contains("EOG2-"); }));
+	}
 
+	/// inverse EOG2-EOG1 back (look edfFile::reduceChannels near the end)
+	if(int a = temp.findChannel("EOG1-EOG2") != -1)
+	{
+		temp.multiplyChannel(a, -1.);
+	}
+	else
+	{
+//		std::cout << "edfFile::rereferenceData: no bipolar EOG" << std::endl;
+	}
+	return temp;
+}
+
+/// need check
+edfFile edfFile::rereferenceDataCAR() const
+{
+	edfFile temp(*this, false);
+
+	/// check the same reference
+	/// if not - reref to N
+	temp = this->rereferenceData("N");
+
+	const auto & usedLabels = coords::lbl19;	/// to build reref array
+	const auto & rerefLabels = coords::lbl21;	/// list to reref (with EOG)
+
+	/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - N
+	std::valarray<double> refArr(temp.edfData.cols());
+	for(QString chanName : usedLabels)
+	{
+		int ref = temp.findChannel(chanName);
+		refArr += temp[ref];
+	}
+	refArr /= usedLabels.size();
+
+	for(int i = 0; i < temp.ns; ++i)
+	{
+		auto it = std::find_if(std::begin(rerefLabels), std::end(rerefLabels),
+							   [temp, i](const QString & in)
+		{ return temp.labels[i].contains(in); });
+
+		if(it != std::end(rerefLabels))
+		{
+			if(!(*it).contains("EOG"))
+			{
+				temp.edfData[i] -= refArr;
+			}
+			else
+			{
+				/// N-EOG1, N-EOG2
+				/// crutch because inversed EOG
+				temp.edfData[i] += refArr;
+			}
+
+			/// set new label *-CAR
+			QString newLabel = temp.labels[i];
+			newLabel = myLib::fitString(newLabel.left(newLabel.indexOf('-') + 1) + "CAR", 16);
+			temp.labels[i] = newLabel;
+		}
+	}
+	return temp;
 }
 
 void edfFile::saveSubsection(int startBin,
