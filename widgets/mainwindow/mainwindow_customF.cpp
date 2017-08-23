@@ -39,6 +39,9 @@ void MainWindow::customFunc()
 //					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_3.edf");
 //	exit(0);
 
+	autos::GalyaProcessing("/media/Files/Data/Xenia/AAA",
+						   19);
+	exit(0);
 
 //	return;
 

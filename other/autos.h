@@ -12,25 +12,57 @@
 namespace autos
 {
 
-void filtering_test();
+void countFFT(const matrix & inData,
+			  double srate,
+			  std::ostream & outStr);
+void countAlpha(const matrix & inData,
+				double srate,
+				std::ostream & outStr);
+void countFracDim(const matrix & inData,
+				  double srate,
+				  std::ostream & outStr);
+void countHilbert(const matrix & inData,
+				  double srate,
+				  std::ostream & outStr);
+void countWavelet(const matrix & inData,
+				  double srate,
+				  std::ostream & outStr);
+void countHjorth(const matrix & inData,
+				 double srate,
+				 std::ostream & outStr);
 
-matrix makeTestData(const QString & outPath);
+enum featuresMask {spectre	= 0x01,
+				   alpha	= 0x02,
+				   fracDim	= 0x04,
+				   Hilbert	= 0x08,
+				   wavelet	= 0x10,
+				   Hjotrh	= 0x20};
 
-void refilterFolder(const QString & procDirPath,
-					double lowFreq,
-					double highFreq,
-					bool isNotch = false);
+using featureFuncType = std::function<void(const matrix &, double, std::ostream &)>;
 
-void GalyaProcessing(const QString &procDirPath,
+const std::vector<std::tuple<int, QString, featureFuncType>> FEATURES {
+	std::make_tuple(featuresMask::spectre,	"spectre",	autos::countFFT),
+	std::make_tuple(featuresMask::alpha,	"alpha",	autos::countAlpha),
+	std::make_tuple(featuresMask::fracDim,	"fracDim",	autos::countFracDim),
+	std::make_tuple(featuresMask::Hilbert,	"Hilbert",	autos::countHilbert),
+	std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet),
+	std::make_tuple(featuresMask::Hjotrh,	"Hjorth",	autos::countHjorth)
+};
+
+
+void countFeatures(const matrix & inData,
+				   double srate,
+				   const int Mask,
+				   const QString & preOutPath);
+
+
+/// main function
+void GalyaProcessing(const QString & procDirPath,
 					 const int numChan = 31,
 					 QString outPath = QString());
-void countSpectraFeatures(const QString & filePath,
-						  const int numChan,
-						  const QString & outPath);
-void countChaosFeatures(const QString & filePath,
-						  const int numChan,
-						  const QString & outPath);
 
+void Xenia_TBI_final(const QString & finalPath,
+					 QString outPath = QString());
 
 void GalyaCut(const QString & path,
 			  const int wndLen = 16,
@@ -38,20 +70,46 @@ void GalyaCut(const QString & path,
 void cutOneFile(const QString & filePath,
 				const int wndLen,
 				const QString & outPath);
+
+
+
+/// deprecated
+void countSpectraFeatures(const QString & filePath,
+						  const int numChan,
+						  const QString & outPath);
+/// deprecated
+void countChaosFeatures(const QString & filePath,
+						  const int numChan,
+						  const QString & outPath);
+
+/// deprecated
 void GalyaWavelets(const QString & inPath,
 				   int numChan = 19,
 				   QString outPath = QString());
+/// deprecated
+void GalyaHjorth(const QString & inPath,
+				   int numChan = 19,
+				   QString outPath = QString());
+
+/// deprecated
+void countHjorth(const matrix & inData,
+				 int numChan,
+				 const QString & outPath);
+/// deprecated
 void waveletOneFile(const matrix & inData,
 					int numChan,
 					double srate,
 					const QString & outFile);
-
+/// deprecated
 void GalyaFull(const QString & inDirPath,
 			   QString outDirPath = QString(),
 			   QString outFileNames = QString(),
 			   int numChan = 32,
 			   int freq = 256,
 			   int rightNum = 3);
+
+
+
 
 void XeniaArrangeToLine(const QString & dirPath,
 						const QStringList & fileNames,
@@ -63,11 +121,16 @@ void Xenia_repairTable(const QString & initPath,
 					   const QString & namesPath = QString());
 
 
-void Xenia_TBI_final(const QString & finalPath,
-					 QString outPath = QString());
-
 
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
+
+
+void refilterFolder(const QString & procDirPath,
+					double lowFreq,
+					double highFreq,
+					bool isNotch = false);
+
+
 
 
 void IITPconcat(const QString & guyName = "Ira");
@@ -133,6 +196,9 @@ void avTimesNew(const QString & edfPath, int numSession);
 void successivePrecleanWinds(const QString & windsPath);
 void successiveNetPrecleanWinds(const QString & windsPath);
 
+
+matrix makeTestData(const QString & outPath);
+void filtering_test();
 void clustering();
 }
 

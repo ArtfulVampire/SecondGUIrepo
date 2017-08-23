@@ -126,11 +126,16 @@ extern double numSmooth;
 
 
 
-
 namespace def
 {
 	enum class filteringTyp{butterworth, fft, dsp};
 	const filteringTyp filterType = filteringTyp::butterworth;
+
+//	enum class username {MichaelA, MichaelB, Elena, Xenia, Galya, Olga, Ossadtchi, Mati, IITP};
+//	extern const username currUser;
+
+	enum class autosUser {Xenia, Galya};
+	extern const autosUser currAutosUser;
 
     const bool matiFlag = false;
 

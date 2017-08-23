@@ -4,6 +4,9 @@ namespace def
 {
 /// to def class
 
+//const username currUser = username::MichaelA;
+const autosUser currAutosUser = autosUser::Xenia;
+
 // assigned in readData, reduce channels, etc
 int ns = 20;
 QString ExpName;
@@ -23,18 +26,13 @@ double inertiaCoef = exp(-5. / 7);
 
 double freq = 250.;
 int fftLength = 4096;
-// int fftLength = 1024;
 
-
-#if ELENA_VARIANT
-QStringList fileMarkers{"_241", "_242", "_243", "_244"}; // Elena
-#else
+//QStringList fileMarkers;
 QStringList fileMarkers{"_241", "_247", "_254 _244"}; // Me
-#endif
-
-// QStringList fileMarkers{"_241", "_242", "_245", "_246"}; // Ossadtchi
-// QStringList fileMarkers{"_241 _242", "_245 _246"}; // Ossadtchi
-// QStringList fileMarkers{"_242", "_245"}; // Ossadtchi
+//QStringList fileMarkers{"_241", "_242", "_243", "_244"}; // Elena
+//QStringList fileMarkers{"_241", "_242", "_245", "_246"}; // Ossadtchi
+//QStringList fileMarkers{"_241 _242", "_245 _246"}; // Ossadtchi
+//QStringList fileMarkers{"_242", "_245"}; // Ossadtchi
 }
 
 

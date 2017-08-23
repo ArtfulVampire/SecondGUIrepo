@@ -231,9 +231,6 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 				iitpLabels[i].insert(s-1, '_');
 			}
 
-
-
-
 			auto f = [ iitpLabels, i ](const QString & s) -> bool
 			{ return iitpLabels[i].startsWith(s); };
 
@@ -587,9 +584,16 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			}
 		}
 
-		if(std::find(std::begin(labels), std::end(labels), "Markers") == std::end(labels)
-		   || std::find(std::begin(labels), std::end(labels), "Annotations") == std::end(labels)
-		   )
+		if(std::find_if(std::begin(labels),
+						std::end(labels),
+						[](const QString & in)
+		{
+						if(
+							in.contains("Markers")
+							|| in.contains("Annotations")
+							|| in.contains("Status")) { return true; }
+						else { return false; }
+	}) == std::end(labels))
 		{
 			this->writeMarkersFlag = false;
 		}
@@ -1136,7 +1140,9 @@ void edfFile::writeMarker(double currDatum,
 	helpString = dirPath + "/markers.txt";
 #if MARKERS_STREAM
 	std::ofstream markersStream(helpString.toStdString(), std::ios_base::app);
-	markersStream << currTimeIndex << " " << currDatum;
+	markersStream << currTimeIndex << "\t"
+				  << currTimeIndex / double(this->srate) << "\t"
+				  << currDatum;
 #else
 	FILE * markers;
     markers = fopen(helpString, "a+");

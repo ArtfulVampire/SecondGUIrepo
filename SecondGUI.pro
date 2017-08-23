@@ -90,7 +90,8 @@ DSP/DspFilters/RootFinder.cpp \
 DSP/DspFilters/State.cpp \
 myLib/myLib_qtlib.cpp \
     classifier/classifier_ward.cpp \
-    myLib/myLib_temp.cpp
+    myLib/myLib_temp.cpp \
+    other/autos_iitp.cpp
 
 HEADERS  += \
 widgets/cut.h \
