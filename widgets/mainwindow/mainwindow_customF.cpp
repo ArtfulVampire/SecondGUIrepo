@@ -39,9 +39,56 @@ void MainWindow::customFunc()
 //					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_3.edf");
 //	exit(0);
 
-	def::currAutosUser = def::autosUser::Galya;
-	autos::Galya_tactile("/media/Files/Data/Galya/AllTactile");
-	exit(0);
+
+
+
+
+//	def::currAutosUser = def::autosUser::Xenia;
+//	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
+
+//	QString str19;
+//	for(int i = 0; i < 19; ++i)
+//	{
+//		str19 += nm(i + 1) + " ";
+//	}
+
+//	const QString tact = "/media/Files/Data/Galya/AllTactile_backup";
+//	auto dirList = QDir(tact).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+//	for(QString dr : dirList)
+//	{
+//		auto filList = QDir(tact + "/" + dr).entryList(def::edfFilters);
+//		for(QString fl : filList)
+//		{
+
+
+//			edfFile file;
+//			file.readEdfFile(tact + "/" + dr + "/" + fl, true);
+//			QString helpString{};
+//			for(int i = 0; i < 19; ++i)
+//			{
+//				helpString += nm(file.findChannel(coords::lbl19[i]) + 1) + " ";
+//			}
+//			if(helpString != str19)
+//			{
+//				file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
+//			}
+//		}
+//	}
+//	exit(0);
+
+//	auto txtLst = QDir("/media/Files/Data/Galya/AllTactile_out/").entryList({"*.txt"});
+//	for(QString txt : txtLst)
+//	{
+//		std::cout << myLib::countSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/" + txt,
+//								  '\t') << std::endl;
+//	}
+//	exit(0);
+
+//	def::currAutosUser = def::autosUser::Galya;
+//	autos::Galya_tactile("/media/Files/Data/Galya/AllTactile");
+//	exit(0);
+
+
 
 //	return;
 
@@ -330,12 +377,15 @@ void MainWindow::customFunc()
 
 #if 0
 	/// Xenia FINAL labels
-	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Xenia/FINAL_out/labels3.txt",
+	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Xenia/FINAL_out/labels1.txt",
 										   '\t') << std::endl;
 	exit(0);
 
+	const QString sep{"\t"};
+//	const QString sep{"\r\n"};
+
 	std::ofstream lab;
-	lab.open((def::XeniaFolder + "/FINAL_out/labels3.txt").toStdString()
+	lab.open((def::XeniaFolder + "/FINAL_out/labels1_6.txt").toStdString()
 //			 , std::ios_base::app
 			 );
 
@@ -345,45 +395,68 @@ void MainWindow::customFunc()
 		in = in.toLower();
 	}
 
-	for(QString mark : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
+	const QString initFreq = "_1.6-30";
+
+//	for(QString mark : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
+	for(QString mark : {"no", "kh", "sm", "cr", "bw", "bd", "fon"})
 	{
-		for(int i = 2; i <= 20; ++i)
+		/// FFT
+		for(int i = 2; i < 20; ++i)
 		{
 			for(QString lbl : labels1)
 			{
-				lab << mark + "_" << "fft_" << nm(i) << "_" << nm(i+1) << "_"  << lbl << "\t";
+				lab << mark
+					<< "_" << "fft"
+					<< "_" << nm(i)
+					<< "-" << nm(i+1)
+					<< "_"  << lbl << sep;
 			}
 		}
 
+		/// CHAOS
 		for(QString fir : {
-			"fd",
-			"hilb_carr",
-			"hilb_sd",
-			"hilb_4_6_carr",
-			"hilb_4_6_sd",
-			"hilb_8_13_carr",
-			"hilb_8_13_sd"
+			QString("fd")		+ initFreq,
+			QString("hilbcarr")	+ initFreq,
+			QString("hilbsd")	+ initFreq,
+			QString("hilbcarr")	+ "_4-6",
+			QString("hilbsd")	+ "_4-6",
+			QString("hilbcarr")	+ "_8-13",
+			QString("hilbsd")	+ "_8-13"
 	}
 			)
 		{
 			for(QString lbl : labels1)
 			{
-				lab << mark + "_" << fir + "_" + lbl << "\t";
+				lab << mark
+					<< "_" << fir
+					<< "_"
+					<< lbl << sep;
 			}
 		}
-		for(QString fir : {"mean", "med", "sgm"})
+
+		/// WAVELET
+		for(QString fir : {"wavmean", "wavmed", "wavsgm"})
 		{
 			for(int i = 2; i <= 20; ++i)
 			{
 				for(QString lbl : labels1)
 				{
-					lab << mark + "_" << "wav_" << fir + "_" << nm(i) << "_" << lbl << "\t";
+					lab << mark
+						<< "_" << fir
+						<< "_" << nm(i)
+						<< "-" << nm(i+1)
+						<< "_" << lbl << sep;
 				}
 			}
 		}
+
+		/// ALPHA
 		for(QString lbl : labels1)
 		{
-			lab << mark + "_" << "alpha_" + lbl << "\t";
+			lab << mark
+				<< "_" << "alpha"
+				<< initFreq
+				<< "_" << lbl << sep;
 		}
 	}
 	lab.close();
@@ -413,6 +486,88 @@ void MainWindow::customFunc()
 		}
 	}
 	std::cout << s << std::endl;
+	exit(0);
+#endif
+
+#if 01
+	/// Galya tactile labels
+	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/Alexey_Coma.txt",
+										   '\t') << std::endl;
+	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/labels.txt",
+										   '\t') << std::endl;
+	exit(0);
+
+	const QString sep{"\t"};
+//	const QString sep{"\r\n"};
+
+	std::ofstream lab;
+	lab.open((def::GalyaFolder + "/AllTactile_out/labels.txt").toStdString());
+
+	std::vector<QString> labels1 = coords::lbl19;
+	for(QString & in : labels1)
+	{
+		in = in.toLower();
+	}
+
+	const QString initFreq = "_1_30";
+
+	for(QString mark : {"buk", "kis", "rol", "sch", "og", "zg"})
+	{
+		/// ALPHA
+		for(QString lbl : labels1)
+		{
+			lab << mark
+				<< "_" << "alpha"
+				<< initFreq
+				<< "_" << lbl << sep;
+		}
+
+		/// FFT
+		for(int i = 2; i < 20; ++i)
+		{
+			for(QString lbl : labels1)
+			{
+				lab << mark
+					<< "_" << "fft"
+					<< "_" << nm(i)
+					<< "_" << nm(i+1)
+					<< "_"  << lbl << sep;
+			}
+		}
+
+		/// CHAOS
+		for(QString fir : {
+			QString("hilbcarr")	+ initFreq,
+			QString("hilbcarr")	+ "_8_13",
+			QString("hilbsd")	+ initFreq,
+			QString("hilbsd")	+ "_8_13",
+			QString("fd")		+ initFreq
+	}
+			)
+		{
+			for(QString lbl : labels1)
+			{
+				lab << mark
+					<< "_" << fir
+					<< "_"
+					<< lbl << sep;
+			}
+		}
+
+		/// HJORTH
+		for(QString fir : {"hjorthcom", "hjorthmob"})
+		{
+			for(QString lbl : labels1)
+			{
+				lab << mark
+					<< "_" << fir
+					<< initFreq
+					<< "_" << lbl << sep;
+			}
+
+		}
+	}
+	lab.close();
 	exit(0);
 #endif
 

@@ -44,7 +44,7 @@ const std::vector<std::tuple<int, QString, featureFuncType, int>> FEATURES {
 	std::make_tuple(featuresMask::spectre,	"spectre",	autos::countFFT,		18 * 19),
 	std::make_tuple(featuresMask::alpha,	"alpha",	autos::countAlpha,		1 * 19),
 	std::make_tuple(featuresMask::fracDim,	"fracDim",	autos::countFracDim,	1 * 19),
-	std::make_tuple(featuresMask::Hilbert,	"Hilbert",	autos::countHilbert,	6 * 19),
+	std::make_tuple(featuresMask::Hilbert,	"Hilbert",	autos::countHilbert,	2 * 2 * 19),	/// 2 * 3 * 19 Xenia
 	std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet,	3 * 19 * 19),
 	std::make_tuple(featuresMask::Hjorth,	"Hjorth",	autos::countHjorth,		2 * 19)
 };
@@ -63,6 +63,8 @@ void countFeatures(const matrix & inData,
 void GalyaProcessing(const QString & procDirPath,
 					 const int numChan = 31,
 					 QString outPath = QString());
+void GalyaToFolders(const QString & inPath);
+
 
 void Galya_tactile(const QString & inPath,
 				   QString outPath = QString());
