@@ -195,7 +195,6 @@ void MainWindow::customFunc()
 //	return;
 #endif
 
-
 #if 0
 	/// check new butter:: filters
 //	const QString prePath = "/media/Files/Data/FeedbackFinal/Burtcev/BAV_1_car";
@@ -489,7 +488,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// Galya tactile labels
 	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/Alexey_Coma.txt",
 										   '\t') << std::endl;

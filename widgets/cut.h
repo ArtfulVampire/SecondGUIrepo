@@ -40,10 +40,14 @@ private:
 
 	/// read or modify data3
 	void zero(int start, int end);
-	void split(int start, int end, bool addUndo = true);
+	void splitSemiSlot(int start, int end, bool addUndo = true);
+	void split(int start, int end);
+	void linearApprox(int lef, int rig, std::vector<int> chanList = std::vector<int>{});
+	void copy(int lef, int rig);
 	void paste(int start, const matrix & inData, bool addUndo = true);
+	void undo();
 	void saveAs(const QString & addToName);
-	void setMarker(int inVal, bool left = true);
+	void setMarker(int offset, int newVal);
 
 	void paintLimits();
 	void setValuesByEdf();
@@ -57,6 +61,7 @@ private:
 	std::vector<std::pair<int, QColor>> makeColouredChans();
 	template<class...params>
 	void logAction(const params &... par);
+	void applyLog(const QString & logPath);
 	void iitpLog(const QString & typ, int num = 2, const QString & add = QString());
 
 public slots:
@@ -65,7 +70,7 @@ public slots:
 	void next();
 	void prev();
 
-	void save();
+	void saveSlot();
 	void saveSubsecSlot();
 	void rewrite();
 
@@ -78,6 +83,8 @@ public slots:
 	void cutPausesSlot();
 	void mousePressSlot(char btn__, int coord__);
 	void timesAndDiffSlot();
+
+	void setMarkerSlot(bool);
 
 	void undoSlot();
 	void copySlot();
