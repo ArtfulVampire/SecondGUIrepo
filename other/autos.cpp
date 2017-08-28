@@ -70,6 +70,7 @@ void GalyaProcessing(const QString & procDirPath,
 				   autos::featuresMask::Hjorth;
 
 //			Mask = autos::featuresMask::Hilbert;
+//			Mask = autos::featuresMask::fracDim;
 
 			break;
 		}
@@ -426,33 +427,23 @@ void EEG_MRI_FD()
 		}
 		continue;
 
-		autos::GalyaFull(def::mriFolder +
-						 "/" + guy +
-						 "/" + guy + "_winds_cleaned");
+		myLib::cleanDir(def::mriFolder +
+						"/" + guy +
+						"/" + guy + "_winds_cleaned_out");
 
-		QString outPath = def::mriFolder + "/OUT/" + guy;
-		QString dropPath = "/media/Files/Dropbox/DifferentData/EEG-MRI/Results";
-		QStringList files = QDir(outPath).entryList({"*.txt"});
+		autos::GalyaProcessing(def::mriFolder +
+							   "/" + guy +
+							   "/" + guy + "_winds_cleaned",
+							   32,
+							   def::mriFolder +
+							   "/" + guy +
+							   "/" + guy + "_winds_cleaned_out");
+		/// list in order
 
-		/// make archive
-		QString cmd = "cd " + outPath + " && " +
-					  "rar a " + guy + ".rar ";
-		for(QString a : files)
-		{
-			cmd += a + " ";
-		}
-		system(cmd.toStdString().c_str());
+		/// arrange to table
 
-		/// copy to Dropbox folder
-		cmd = "cp " + outPath + "/" + guy + ".rar " +
-			  dropPath + "/" + guy + ".rar";
-		system(cmd.toStdString().c_str());
+		/// copy to MRI/OUT
 
-		/// copy link
-		std::this_thread::sleep_for(std::chrono::seconds(15)); /// wait for copy to end?
-		cmd = "./dropbox.py sharelink " +  dropPath + "/" + guy + ".rar" +
-			  " | xclip -selection clipboard";
-		system(cmd.toStdString().c_str());
 	}
 }
 
