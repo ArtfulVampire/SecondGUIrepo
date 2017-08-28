@@ -70,7 +70,7 @@ void GalyaProcessing(const QString & procDirPath,
 				   autos::featuresMask::Hjorth;
 
 //			Mask = autos::featuresMask::Hilbert;
-//			Mask = autos::featuresMask::fracDim;
+			Mask = autos::featuresMask::fracDim;
 
 			break;
 		}
@@ -221,6 +221,7 @@ void countAlpha(const matrix & inData,
 									   srate) << "\t";
 	}
 }
+
 void countFracDim(const matrix & inData,
 				  double srate,
 				  std::ostream & outStr)
@@ -230,6 +231,7 @@ void countFracDim(const matrix & inData,
 		outStr << myLib::fractalDimension(inData[i]) << "\t";
 	}
 }
+
 void countHilbert(const matrix & inData,
 				  double srate,
 				  std::ostream & outStr)
@@ -417,34 +419,33 @@ void EEG_MRI_FD()
 {
 	def::ntFlag = false;
 
-	QStringList guyList = QDir(def::mriFolder).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+	const QString workDir = "/media/Files/Data/MRI_winds";
+	const QString OUT = "/media/Files/Data/MRI_winds_out";
+	if(!QDir(OUT).exists())
+	{
+		QDir().mkpath(OUT);
+	}
+
+	QStringList guyList = QDir(workDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 
 	for(QString guy : guyList)
 	{
-		if(!QDir(def::mriFolder + "/" + guy + "/" + guy + "_windows_cleaned").exists())
-		{
-			std::cout << guy << std::endl;
-		}
-		continue;
+		break;
+		const QString outPath = workDir + "/" + guy + "/out";
 
-		myLib::cleanDir(def::mriFolder +
-						"/" + guy +
-						"/" + guy + "_winds_cleaned_out");
-
-		autos::GalyaProcessing(def::mriFolder +
-							   "/" + guy +
-							   "/" + guy + "_winds_cleaned",
+		myLib::cleanDir(outPath);
+		autos::GalyaProcessing(workDir + "/" + guy,
 							   32,
-							   def::mriFolder +
-							   "/" + guy +
-							   "/" + guy + "_winds_cleaned_out");
+							   outPath);
 		/// list in order
-
-		/// arrange to table
-
-		/// copy to MRI/OUT
-
+		auto lst = QDir(outPath).entryList(QDir::Files, QDir::Name);
+		/// arrange to tables
+		autos::makeTableFromRows(outPath,
+								 OUT + "/" + guy + ".txt");
 	}
+	autos::makeTableFromRows(OUT,
+							 OUT + "/all.txt",
+							 true);
 }
 
 
@@ -758,7 +759,8 @@ void Xenia_TBI_final(const QString & finalPath,
 	}
 	/// make tables whole and people list
 	autos::makeTableFromRows(finalPath + "_out",
-							 finalPath + "_out/all.txt");
+							 finalPath + "_out/all.txt",
+							 true);
 
 	std::cout << "Xenia_TBI_final: time elapsed = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
@@ -977,6 +979,7 @@ void makeRightNumbers(const QString & dirPath,
 
 void makeTableFromRows(const QString & inPath,
 					   QString outTablePath,
+					   bool writePeople,
 					   const QString & auxFilter)
 {
 	QDir deer(inPath);
@@ -994,7 +997,10 @@ void makeTableFromRows(const QString & inPath,
 	outStr.open(QIODevice::WriteOnly);
 
 	std::ofstream fileNames;
-	fileNames.open((inPath + "/people.txt").toStdString());
+	if(writePeople)
+	{
+		fileNames.open((inPath + "/people.txt").toStdString());
+	}
 
 	for(const QString & fileName : deer.entryList({"*" + auxFilter +".txt"},
 												  QDir::Files,
@@ -1004,7 +1010,10 @@ void makeTableFromRows(const QString & inPath,
 	{
 		if(fileName.contains(tableName)
 		   || fileName.contains("people")) continue;
-		fileNames << fileName << "\n";
+		if(writePeople)
+		{
+			fileNames << fileName << "\n";
+		}
 
 		QFile fil(deer.absolutePath() + "/" + fileName);
 		fil.open(QIODevice::ReadOnly);
@@ -1013,7 +1022,10 @@ void makeTableFromRows(const QString & inPath,
 		outStr.write(contents);
 		outStr.write("\r\n");
 	}
-	fileNames.close();
+	if(writePeople)
+	{
+		fileNames.close();
+	}
 	outStr.close();
 }
 
@@ -1418,6 +1430,7 @@ void Galya_tactile(const QString & inPath,
 }
 
 
+/// to deprecate
 void GalyaFull(const QString & inDirPath,
 			   QString outDirPath,
 			   QString outFileNames,
@@ -1477,6 +1490,7 @@ void GalyaFull(const QString & inDirPath,
 		autos::makeTableFromRows(outPath,
 								 outDirPath + "/" + outFileNames
 								 + "_" + type + ".txt",
+								 false,
 								 type);
 	}
 #endif
@@ -1486,7 +1500,8 @@ void GalyaFull(const QString & inDirPath,
 
 	/// rename the folder in OUT to guy
 	autos::makeRightNumbers(waveletPath, rightNum);
-	autos::makeTableFromRows(waveletPath, outDirPath + "/" + outFileNames + "_wavelet.txt");
+	autos::makeTableFromRows(waveletPath,
+							 outDirPath + "/" + outFileNames + "_wavelet.txt");
 }
 
 void avTimesNew(const QString & edfPath, int numSession)

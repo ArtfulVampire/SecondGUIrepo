@@ -167,6 +167,7 @@ void makeRightNumbers(const QString & dirPath,
 					  int length = 3);
 void makeTableFromRows(const QString & inPath,
 					   QString outTablePath = QString(),
+					   bool writePeople = false,
 					   const QString & auxFilter = QString());
 
 void repairMarkersInNewFB(QString edfPath, int numSession);

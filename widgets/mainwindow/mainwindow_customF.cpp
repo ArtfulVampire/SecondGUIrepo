@@ -109,6 +109,31 @@ void MainWindow::customFunc()
 //	myLib::areEqualFiles("/media/Files/Data/Galya/AllTactile_out/all.txt",
 //						 "/media/Files/Data/Galya/AllTactile_out/all_.txt");
 
+//	const QString from = "/media/Seagate Expansion Drive/Michael/Data/MRI";
+//	const QString to = "/media/Files/Data/MRI_winds";
+//	auto drList = QDir(to).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+//	for(QString dr : drList)
+//	{
+//		QString dr1 = dr;
+//		dr1.remove("_windows_cleaned");
+//		QDir().rename(to + "/" + dr,
+//					  to + "/" + dr1);
+//		continue;
+
+//		QString interest = from + "/" + dr + "/" + dr + "_windows_cleaned";
+//		QString TO = to + "/" + dr + "_windows_cleaned";
+//		if(QDir(interest).exists())
+//		{
+//			QDir().mkpath(TO);
+//			for(QString fn : QDir(interest).entryList(QDir::Files))
+//			{
+//				QFile::copy(interest + "/" + fn,
+//							TO + "/" + fn);
+//			}
+//		}
+//	}
+
+	def::currAutosUser = def::autosUser::Galya;
 	autos::EEG_MRI_FD();
 	exit(0);
 

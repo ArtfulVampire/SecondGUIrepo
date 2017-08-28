@@ -133,6 +133,11 @@ void calcSpectre(const std::valarray<double> & inSignal,
 double fractalDimension(const std::valarray<double> & arr,
 						int Kmax = 8,
 						const QString & picPath = QString());
+
+double fractalDimensionForTest(const std::valarray<double> & arr,
+							   int Kmax,
+							   const QString & picPath);
+
 double alphaPeakFreq(const std::valarray<double> & spectreR,
 					 int initSigLen,
 					 double srate = 250.,

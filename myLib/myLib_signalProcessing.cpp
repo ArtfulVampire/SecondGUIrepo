@@ -1250,6 +1250,152 @@ double fractalDimension(const std::valarray<double> & arr,
 }
 
 
+double fractalDimensionForTest(const std::valarray<double> & arr,
+							   int Kmax,
+							   const QString & picPath)
+{
+	std::vector<double> drawK_{};
+	std::vector<double> drawL_{};
+	const int N = arr.size();
+
+	/// make collection of timeShifts
+//	std::vector<int> timeShifts = smLib::range<std::vector<int>>(1, Kmax);
+
+	/// for long scale signals
+	std::vector<int> timeShifts;
+	timeShifts = {1, 2, 3, 4}; // initialize
+	for(int i = 11; i < log2(N / 4) * 4 + 1 ; ++i)
+	{
+		timeShifts.push_back(floor(pow(2, (i - 1)/4.)));
+	}
+
+	for(int timeShift : timeShifts)
+	{
+		double L = 0.;
+		for(int m = 0; m < timeShift; ++m) // m = startShift
+		{
+			const double coeff = (N - 1) / double(timeShift)
+						   / floor( (N - m) / timeShift )
+						   ; /// ~1
+
+			double Lm = 0.;
+			for(int i = 1; i < floor( (N - m) / timeShift); ++i)
+			{
+				Lm += std::abs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]);
+			}
+			L += Lm * coeff;
+		}
+		L /= timeShift; // big "/ k"
+		L /= timeShift; // average Lm
+
+		drawK_.push_back(log(timeShift));
+		drawL_.push_back(log(L));
+	}
+
+	const std::valarray<double> drawK = smLib::vecToValar(drawK_);
+	const std::valarray<double> drawL = smLib::vecToValar(drawL_);
+
+	const std::valarray<double> drawK8 = drawK[std::slice(0, 8, 1)];
+	const std::valarray<double> drawL8 = drawL[std::slice(0, 8, 1)];
+
+	// least square approximation
+	const double slope = smLib::covariance(drawK8,
+										   drawL8)
+						 / smLib::covariance(drawK8,
+											 drawK8);
+
+
+	double drawX = 0.;
+	double drawY = 0.;
+	if(!picPath.isEmpty())
+	{
+		QPixmap pic = QPixmap(800, 600);
+		QPainter pnt;
+		pic.fill();
+		pnt.begin(&pic);
+
+		pnt.setPen("black");
+		pnt.setBrush(QBrush("black"));
+
+		/// draw axes
+		double gap = 0.06;
+		int frame = 10; /// from top and right
+		pnt.drawLine(pic.width() * gap, pic.height() * (1. - gap),
+					 pic.width() - frame, pic.height() * (1. - gap)); /// x
+
+		pnt.drawLine(pic.width() * gap, frame,
+					 pic.width() * gap, pic.height() * (1. - gap)); /// y
+
+		double minX = drawK.min(); std::cout << minX << std::endl;
+		double maxX = drawK.max(); std::cout << maxX << std::endl;
+		double minY = drawL.min(); std::cout << minY << std::endl;
+		double maxY = drawL.max(); std::cout << maxY << std::endl;
+		double lenX = maxX - minX; std::cout << lenX << std::endl;
+		double lenY = maxY - minY; std::cout << lenY << std::endl;
+
+		/// draw values
+		pnt.setFont(QFont("Helvetica", 12));
+		/// y
+		pnt.drawText(0, pic.height() * (1. - gap) + 12 / 2,
+					 nm(smLib::doubleRound(minY, 2)));
+		pnt.drawText(0, + 12 + 12 / 2,
+					 nm(smLib::doubleRound(maxY, 2)));
+		/// x
+		pnt.drawText(pic.width() * gap, pic.height() * (1. - gap) + 12 * 1.5,
+					 nm(smLib::doubleRound(minX, 2)));
+		pnt.drawText(pic.width() - frame - 20, pic.height() * (1. - gap) + 12 * 1.5,
+					 nm(smLib::doubleRound(maxX, 2)));
+
+		/// draw squares
+		int rectSize = 3;
+		for(int h = 0; h < timeShifts.size(); ++h) // drawK, drawL [last] is bottom-left
+		{
+			drawX = pic.width() * gap + std::abs(drawK[h] - minX) / lenX
+					* (pic.width() * (1. - gap) - frame) - rectSize;
+			drawY = frame + (1. - std::abs(drawL[h] - minY) / lenY)
+					* (pic.height() * (1. - gap) - frame) - rectSize;
+			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
+		}
+
+		/// draw line (passes (meanX, meanY))
+		double add = smLib::mean(drawL8) - slope * smLib::mean(drawK8);
+		pnt.setPen("red");
+		pnt.setBrush(QBrush("red"));
+
+		const double startY	= frame + (1. - (slope * minX + add - minY) / lenY) * (pic.height() * (1. - gap) - frame);
+		const double endY	= frame + (1. - (slope * maxX + add - minY) / lenY) * (pic.height() * (1. - gap) - frame);
+
+		pnt.drawLine(pic.width() * gap,
+					 startY,
+					 pic.width(),
+					 endY
+					 );
+
+		/// draw results
+		pnt.setPen("black");
+		pnt.setBrush(QBrush("black"));
+		pnt.setFont(QFont("Helvetica", 18));
+		pnt.drawText(pic.width() * 0.7,
+					 pic.height() * 0.2,
+					 QString("FD = " + nm(smLib::doubleRound(-slope, 3)))
+					 );
+		pnt.drawText(pic.width() * 0.7,
+					 pic.height() * 0.2 + 25,
+					 QString("R^2 = " + nm(smLib::doubleRound(
+											   pow(smLib::correlation(drawL, drawK), 2), 3
+											   )
+										   )
+							 )
+					 );
+
+
+		pnt.end();
+		pic.save(picPath, 0, 100);
+	}
+	return -slope;
+}
+
+
 double alphaPeakFreq(const std::valarray<double> & spectreR,
 					 int initSigLen,
 					 double srate,
