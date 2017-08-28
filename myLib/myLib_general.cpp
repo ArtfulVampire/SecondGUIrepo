@@ -437,7 +437,23 @@ int countSymbolsInFile(const QString & filePath, char inChar)
 	return res;
 }
 
+void replaceSymbolsInFile(const QString & filePath,
+						  QString inChar,
+						  QString outChar,
+						  QString outPath)
+{
+	QFile fil(filePath);
+	fil.open(QIODevice::ReadOnly);
+	auto dat = fil.readAll();
+	dat.replace(inChar, outChar.toStdString().c_str());
+	fil.close();
 
+	if(outPath.isEmpty()) { outPath = filePath; }
+	QFile outFil(outPath);
+	outFil.open(QIODevice::WriteOnly);
+	outFil.write(dat);
+	outFil.close();
+}
 
 
 void cleanDir(QString dirPath, QString nameFilter, bool ext)

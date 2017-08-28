@@ -69,7 +69,7 @@ void GalyaProcessing(const QString & procDirPath,
 				   autos::featuresMask::fracDim |
 				   autos::featuresMask::Hjorth;
 
-			Mask = autos::featuresMask::Hilbert;
+//			Mask = autos::featuresMask::Hilbert;
 
 			break;
 		}
@@ -96,12 +96,10 @@ void GalyaProcessing(const QString & procDirPath,
 #endif
 	}
 
-	std::cout << 1 << std::endl;
-
-	omp_set_dynamic(0);
-	omp_set_num_threads(3);
-#pragma omp parallel
-#pragma omp for nowait
+//	omp_set_dynamic(0);
+//	omp_set_num_threads(3);
+//#pragma omp parallel
+//#pragma omp for nowait
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		QString helpString = dir.absolutePath() + "/" + filesVec[i];
@@ -371,7 +369,6 @@ void countHjorth(const matrix & inData,
 }
 
 /// further generalizations
-
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 {
 	def::ntFlag = false;
@@ -412,8 +409,53 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 			  " | xclip -selection clipboard";
 		system(cmd.toStdString().c_str());
 	}
-
 }
+
+/// recount FD
+void EEG_MRI_FD()
+{
+	def::ntFlag = false;
+
+	QStringList guyList = QDir(def::mriFolder).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+
+	for(QString guy : guyList)
+	{
+		if(!QDir(def::mriFolder + "/" + guy + "/" + guy + "_windows_cleaned").exists())
+		{
+			std::cout << guy << std::endl;
+		}
+		continue;
+
+		autos::GalyaFull(def::mriFolder +
+						 "/" + guy +
+						 "/" + guy + "_winds_cleaned");
+
+		QString outPath = def::mriFolder + "/OUT/" + guy;
+		QString dropPath = "/media/Files/Dropbox/DifferentData/EEG-MRI/Results";
+		QStringList files = QDir(outPath).entryList({"*.txt"});
+
+		/// make archive
+		QString cmd = "cd " + outPath + " && " +
+					  "rar a " + guy + ".rar ";
+		for(QString a : files)
+		{
+			cmd += a + " ";
+		}
+		system(cmd.toStdString().c_str());
+
+		/// copy to Dropbox folder
+		cmd = "cp " + outPath + "/" + guy + ".rar " +
+			  dropPath + "/" + guy + ".rar";
+		system(cmd.toStdString().c_str());
+
+		/// copy link
+		std::this_thread::sleep_for(std::chrono::seconds(15)); /// wait for copy to end?
+		cmd = "./dropbox.py sharelink " +  dropPath + "/" + guy + ".rar" +
+			  " | xclip -selection clipboard";
+		system(cmd.toStdString().c_str());
+	}
+}
+
 
 /// old
 void Xenia_TBI(const QString & tbi_path)
@@ -1311,13 +1353,16 @@ void Galya_tactile(const QString & inPath,
 		outPath = guyPath + "/out";
 
 		/// process?
-		if(1)
+		if(0)
 		{
+			/// clear outFolder
+			myLib::cleanDir(guyPath + "/out", "txt", true);
+
 			autos::GalyaProcessing(guyPath, 19, outPath);
 		}
 
 		/// make one line file for each stimulus
-		if(1)
+		if(0)
 		{
 			for(QString mark : markers)
 			{
@@ -1333,22 +1378,19 @@ void Galya_tactile(const QString & inPath,
 												 + "_" + autos::getFeatureString(func) + ".txt");
 
 					if(!QFile::exists(outPath + "/" + ExpName + mark
-									  + "_" + autos::getFeatureString(func) + ".txt")
-					   || (QFile::exists(outPath + "/" + ExpName + mark
-										 + "_" + autos::getFeatureString(func) + ".txt") &&
-						   autos::getFeatureString(func).contains("Hilb")))
+									  + "_" + autos::getFeatureString(func) + ".txt"))
 					{
 						std::ofstream outStr;
 						outStr.open((outPath + "/" + ExpName + mark
 									 + "_" + autos::getFeatureString(func) + ".txt").toStdString());
 						for(int i = 0; i < autos::getFileLength(func); ++i)
 						{
-							outStr << 0.0 << '\t';
+							outStr << 0 << '\t';
 						}
 						outStr.close();
 					}
 				}
-				std::cout << fileNamesToArrange << std::endl << std::endl;
+//				std::cout << fileNamesToArrange << std::endl << std::endl;
 				autos::XeniaArrangeToLine(outPath,
 										  fileNamesToArrange,
 										  outPath + "/" + ExpName + mark + ".txt");
@@ -1356,7 +1398,7 @@ void Galya_tactile(const QString & inPath,
 		}
 
 		/// make whole line from all stimuli
-		if(1)
+		if(0)
 		{
 			QStringList fileNamesToArrange;
 			for(QString mark : markers)
@@ -1366,7 +1408,11 @@ void Galya_tactile(const QString & inPath,
 			autos::XeniaArrangeToLine(outPath,
 									  fileNamesToArrange,
 									  outPath + "/" + ExpName + ".txt");
+		}
 
+		/// copy files into _out
+		if(1)
+		{
 			QFile::copy(outPath + "/" + ExpName + ".txt",
 						inPath + "_out/" + ExpName + ".txt");
 		}

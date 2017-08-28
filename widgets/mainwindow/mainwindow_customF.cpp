@@ -84,9 +84,33 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
+
+//	return;
+//	const QString pp = "/media/Files/Data/Galya/AllTactile_backup/bad/Mustafina_Karina_6";
+//	auto ll = QDir(pp).entryList(def::edfFilters);
+//	for(auto fn : ll)
+//	{
+//		edfFile fil;
+//		fil.readEdfFile(pp + "/" + fn);
+//		edfChannel newChan = fil.getChannels()[16];
+//		newChan.label = "EEG T6-A1";
+//		fil.insertChannel(16, fil.getData(16), newChan).writeEdfFile(pp + "/T6/" + fn);
+//	}
+//	exit(0);
+
+//	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Umanskaya_d2_dim.txt", '\t') << std::endl;
+//	exit(0);
 //	def::currAutosUser = def::autosUser::Galya;
 //	autos::Galya_tactile("/media/Files/Data/Galya/AllTactile");
-//	exit(0);
+//	myLib::replaceSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/all_.txt",
+//								"\n0\t",
+//								"\n \t",
+//								"/media/Files/Data/Galya/AllTactile_out/all__.txt");
+//	myLib::areEqualFiles("/media/Files/Data/Galya/AllTactile_out/all.txt",
+//						 "/media/Files/Data/Galya/AllTactile_out/all_.txt");
+
+	autos::EEG_MRI_FD();
+	exit(0);
 
 
 

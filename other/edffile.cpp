@@ -2284,6 +2284,14 @@ void edfFile::setLabels(const std::vector<QString> & inLabels)
 //	std::cout << this->labels << std::endl;
 }
 
+edfFile & edfFile::insertChannel(int num, const std::valarray<double> & dat, edfChannel ch)
+{
+	this->channels.insert(std::begin(this->channels) + num, ch);
+	this->edfData.myData.insert(std::begin(this->edfData.myData) + num, dat);
+	this->adjustArraysByChannels();
+	return *this;
+}
+
 /// exceptions
 void edfFile::setChannels(const std::vector<edfChannel> & inChannels)
 {

@@ -50,6 +50,10 @@ bool areEqualFiles(QString path1, QString path2);
 double areSimilarFiles(const QString & path1,
 					   const QString & path2);
 int countSymbolsInFile(const QString & filePath, char inChar);
+void replaceSymbolsInFile(const QString & filePath,
+						  QString inChar,
+						  QString outChar,
+						  QString outPath);
 
 template <typename Container>
 uint indexOfMax(const Container & cont);

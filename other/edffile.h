@@ -196,6 +196,7 @@ public:
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
 	edfFile reduceChannels(const QString & chanStr) const;
 	void removeChannels(const std::vector<int> & chanList);
+	edfFile & insertChannel(int num, const std::valarray<double> & dat, edfChannel ch);
 
 	edfFile & multiplyChannel(uint chanNum, double mult);
 	edfFile & multiplyChannels(std::vector<uint> chanNums = {}, double mult = 2.);
@@ -210,6 +211,7 @@ public:
 
     void setLabels(const std::vector<QString> & inLabels);
 	void setLabel(int i, const QString & inLabel);
+
 
 	void setChannels(const std::vector<edfChannel> & inChannels);
     void cleanFromEyes(QString eyesPath = QString(),

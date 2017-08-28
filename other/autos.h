@@ -99,7 +99,7 @@ void Xenia_repairTable(const QString & initPath,
 					   const QString & namesPath = QString());
 
 
-
+void EEG_MRI_FD();
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 
 
