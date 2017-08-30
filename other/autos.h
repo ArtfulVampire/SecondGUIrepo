@@ -172,9 +172,15 @@ void makeTableFromRows(const QString & inPath,
 
 void repairMarkersInNewFB(QString edfPath, int numSession);
 int numMarkers(const QString & edfPath, const std::vector<int> & markers);
+
+
+
 void avTime(const QString & realsDir = def::dir->absolutePath() + "/Reals");
-void timesNew(const QString & edfPath, int numSession);
-void avTimesNew(const QString & edfPath, int numSession);
+void createAnsFiles(const QString & edfPath, QString guy);
+void timesNew(const QString & edfPath, const QString & guy, int numSession);
+void avTimesNew(const QString & edfPath, const QString & guy, int numSession);
+void feedbackFinalTimes(const QString & edfsPath,
+						const QString & expName);
 
 
 void successivePrecleanWinds(const QString & windsPath);

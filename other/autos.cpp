@@ -1504,7 +1504,128 @@ void GalyaFull(const QString & inDirPath,
 							 outDirPath + "/" + outFileNames + "_wavelet.txt");
 }
 
-void avTimesNew(const QString & edfPath, int numSession)
+void feedbackFinalTimes(const QString & edfsPath,
+						const QString & expName)
+{
+
+	std::ofstream outStr;
+	outStr.open((edfsPath + "/" + expName + "_" + "timesResults" + ".txt").toStdString());
+
+	for(int numSess : {1, 2, 3})
+	{
+		auto filePath = [edfsPath, expName](int i) -> QString
+		{
+			return edfsPath + "/" + expName + "_" + nm(i) + ".edf";
+		};
+
+		edfFile fil;
+		fil.readEdfFile(filePath(numSess));
+		const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
+
+
+		std::vector<int> nums = {241, 247};
+		int sta = 0;
+		int fin = 0;
+		int num = -1;
+
+		/// [time, corr, type]
+		std::vector<std::tuple<double, int, int>> values; values.reserve(80);
+
+		/// read answers file
+		std::vector<int> corrs; corrs.reserve(80);
+		std::ifstream answers;
+		answers.open((edfsPath + "/" + expName + "_ans" + nm(numSess) + ".txt").toStdString());
+		char ans;
+		while(answers >> ans)
+		{
+			if(ans == '\n' || ans == '\r') answers >> ans;
+			corrs.push_back(QString(ans).toInt());
+		}
+		answers.close();
+
+
+//		std::cout << corrs.size() << std::endl;
+
+		int count = 0;
+		for(const std::pair<int, int> & mrk : markers)
+		{
+			int mark = mrk.second;
+
+			if(myLib::contains(nums, mark))
+			{
+				sta = mrk.first;
+				num = (mark == 241) ? 0 : 1;
+			}
+			else if(mark == 254)
+			{
+				values.push_back(std::make_tuple(mrk.first - sta,
+												 corrs[count++],
+												 num)
+								 );
+			}
+		}
+
+//		std::cout << values.size() << std::endl;
+//		for(auto in : values)
+//		{
+//			std::cout << std::get<0>(in) << "\t" // time
+//					  << std::get<1>(in) << "\t" // corr
+//					  << std::get<2>(in) << "\t" // type
+//					  << std::endl;
+//		}
+//		return;
+
+
+		/// write in a row:
+		/// (corr, incorr, answrd) x (mean, median, sgm) + - 0
+
+		for(int typ : {0, 1}) /// 241, 247
+		{
+
+			outStr << std::fixed;
+			outStr.precision(1);
+
+			for(std::vector<int> anss :
+				std::vector<std::vector<int>>{{1}, {2}, {1,2}}) /// corr, incorr, answrd
+			{
+				std::vector<double> vals{};
+
+				std::for_each(std::begin(values),
+							  std::end(values),
+							  [&vals, typ, anss](const auto & in)
+				{
+					if(std::get<2>(in) == typ && myLib::contains(anss, std::get<1>(in)))
+					{
+						vals.push_back(std::get<0>(in));
+					}
+				});
+				auto vl = smLib::vecToValar(vals);
+				vl /= fil.getFreq();
+				outStr << smLib::mean(vl) << "\t"
+					   << smLib::median(vl) << "\t"
+					   << smLib::sigma(vl) << "\t";
+			}
+			outStr << std::defaultfloat;
+
+			for(int ans : {1, 2, 0})
+			{
+				outStr << std::count_if(std::begin(values),
+										std::end(values),
+										[typ, ans](const auto & in)
+				{
+					return (std::get<2>(in) == typ) && (std::get<1>(in) == ans);
+				})
+					   << "\t";
+			}
+		}
+		outStr << "\r\n";
+	}
+	outStr.close();
+}
+
+void avTimesNew(const QString & edfPath,
+				const QString & guy,
+				int numSession)
 
 {
 	int ans;
@@ -1514,7 +1635,7 @@ void avTimesNew(const QString & edfPath, int numSession)
 
 	for(int i = 0; i < 2; ++i)
 	{
-		QString timesPath = myLib::getDirPathLib(edfPath) + "/times_"
+		QString timesPath = myLib::getDirPathLib(edfPath) + "/" + guy + "_times_"
 							+ nm(numSession) + "_"
 							+ nm(nums[i]) + ".txt";
 
@@ -1535,7 +1656,7 @@ void avTimesNew(const QString & edfPath, int numSession)
 		}
 		inStr.close();
 
-		QString fileName = timesPath.replace("times_", "avTimes_");
+		QString fileName = timesPath.replace("_times_", "_avTimes_");
 		QFile::remove(fileName);
 
 		std::ofstream outStr;
@@ -1556,86 +1677,97 @@ void avTimesNew(const QString & edfPath, int numSession)
 	}
 }
 
+void createAnsFiles(const QString & dirPath, QString guy)
+{
+	for(int i : {1, 2, 3})
+	{
+		QFile fil(dirPath + "/" + guy + "_ans" + nm(i) + ".txt");
+		fil.open(QIODevice::WriteOnly);
+		fil.close();
+	}
+}
+
 void timesNew(const QString & edfPath,
-			   int numSession)
+			  const QString & guy,
+			  int numSession)
 {
 	if(!QFile::exists(edfPath)) return;
 
 	edfFile fil;
 	fil.readEdfFile(edfPath);
-	const std::valarray<double> & marks = fil.getData()[fil.getMarkChan()];
+	const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
 
+	const QString outPath = myLib::getDirPathLib(edfPath) + "/times/";
+	QDir().mkpath(outPath);
 	std::ofstream out;
 
 	std::ifstream answers;
-	answers.open((myLib::getDirPathLib(edfPath) + "/ans"
+	answers.open((myLib::getDirPathLib(edfPath)
+				  + "/" + guy + "_ans"
 				  + nm(numSession) + ".txt").toStdString());
 
 
-//	bool startFlag = false;
 	int sta = 0;
 	int fin = 0;
 	char ans;
 
-	std::vector<std::vector<int>> correctness(2, std::vector<int>(3));
+	std::vector<std::vector<int>> corr(2, std::vector<int>(3)); // [241|247][0, +, -]
 	std::vector<int> nums = {241, 247};
 	int num = -1;
 
-	for(int i = 0; i < nums.size(); ++i)
+	for(int i : nums)
 	{
-		QFile::remove(myLib::getDirPathLib(edfPath) + "/correctness_"
+		QFile::remove(outPath
+					  + guy + "_correctness_"
 					  + nm(numSession) + "_"
 					  + nm(nums[i]) + ".txt");
-		QFile::remove(myLib::getDirPathLib(edfPath) + "/times_"
+		QFile::remove(outPath
+					  + guy + "_times_"
 					  + nm(numSession) + "_"
 					  + nm(nums[i]) + ".txt");
 	}
 
-	for(int i = 0; i < marks.size(); ++i)
+	for(const std::pair<int, int> & mrk : markers)
 	{
-		if(marks[i] == 0.) continue;
+		int mark = mrk.second;
 
-		int mark = marks[i];
 		if(mark == nums[0] || mark == nums[1])
 		{
-			sta = i;
+			sta = mrk.first;
 
 			if(mark == 241) num = 0;
 			else num = 1;
-
-//			startFlag = true;
 		}
 		else if(mark == 254)
 		{
-			fin = i;
-//			startFlag = false;
+			fin = mrk.first;
 
 			answers >> ans;
-			if(ans == '\n') answers >> ans;
+			if(ans == '\n' || ans == '\r') answers >> ans;
 
-			++correctness[num][QString(ans).toInt()];
+			++corr[num][QString(ans).toInt()];
 
-			out.open((myLib::getDirPathLib(edfPath) + "/times_"
+			out.open((outPath
+					  + guy + "_times_"
 					  + nm(numSession) + "_"
 					  + nm(nums[num]) + ".txt").toStdString(), std::ios_base::app);
 			out
-//					<< "ans = "
 					<< ans << "\t"
-//					<< "time = "
-					<< double(fin - sta) / fil.getFreq() << "\r\n";
+					<< (fin - sta) / fil.getFreq() << "\r\n";
 			out.close();
 		}
 	}
-	for(int i = 0; i < 2; ++i)
+	for(int i = 0; i < nums.size(); ++i)
 	{
-		out.open((myLib::getDirPathLib(edfPath) + "/correctness_"
+		out.open((outPath + guy + "_correctness_"
 				  + nm(numSession) + "_"
 				  + nm(nums[i]) + ".txt").toStdString(), std::ios_base::app);
-		out << "+\t-\t0" << std::endl;
-		out << correctness[i][1] << '\t' << correctness[i][2] << '\t' << correctness[i][0] << "\r\n";
+		out << "+" << "\t"
+			<< "-" << "\t"
+			<< "0" << std::endl;
+		out << corr[i][1] << '\t' << corr[i][2] << '\t' << corr[i][0] << "\r\n";
 		out.close();
 	}
-
 	answers.close();
 }
 

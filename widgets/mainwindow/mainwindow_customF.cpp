@@ -18,128 +18,193 @@ void MainWindow::customFunc()
 	ui->eogBipolarCheckBox->setChecked(true); // Elena
 #endif
 
-	/// count correctness and average times
-//	QString guy = "IAE";
-//	auto name = [guy](int i)
-//	{
-//		return def::dataFolder + "/FeedbackFinal/"
-//				+ guy + "/"
-//				+ guy + "_" + nm(i) + "_fin.edf";
-//	};
-//	for(int i : {1, 2, 3})
-//	{
-//		autos::timesNew(name(i), i);
-//		autos::avTimesNew(name(i), i);
-//	}
-//	exit(0);
 
 //	edfFile file1;
-//	file1.readEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_3_1.edf");
-//	file1.concatFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_3_2.edf",
-//					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_3.edf");
+//	file1.readEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_FB_1.EDF");
+//	file1.concatFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_FB_2.EDF",
+//					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_2.edf");
 //	exit(0);
 
 
 
+	/// count correctness and average times
+	std::vector<std::pair<QString, QString>> guys{
+		std::make_pair("Beketova", "BAM"),
+				std::make_pair("Burtcev", "BAV"),
+				std::make_pair("Dovbyish", "DEG"),
+				std::make_pair("Evstratov_n", "ENV"),
+				std::make_pair("Ilyin", "IAE"),
+				std::make_pair("Matasov", "MII"),
+				std::make_pair("Nikonenko", "NUA"),
+				std::make_pair("Semyonov_n", "SAV"),
+				std::make_pair("Sergeev_n", "SAA")
+	};
 
+	for(auto in : guys)
+	{
+		autos::feedbackFinalTimes(def::dataFolder + "/FeedbackFinalMark/" + in.first,
+								  in.second);
+//		exit(0);
+		continue;
+		const QString dr = in.first;
+		const QString guy = in.second;
 
-//	def::currAutosUser = def::autosUser::Xenia;
-//	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
-
-//	QString str19;
-//	for(int i = 0; i < 19; ++i)
-//	{
-//		str19 += nm(i + 1) + " ";
-//	}
-
-//	const QString tact = "/media/Files/Data/Galya/AllTactile_backup";
-//	auto dirList = QDir(tact).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-//	for(QString dr : dirList)
-//	{
-//		auto filList = QDir(tact + "/" + dr).entryList(def::edfFilters);
-//		for(QString fl : filList)
-//		{
-
-
-//			edfFile file;
-//			file.readEdfFile(tact + "/" + dr + "/" + fl, true);
-//			QString helpString{};
-//			for(int i = 0; i < 19; ++i)
-//			{
-//				helpString += nm(file.findChannel(coords::lbl19[i]) + 1) + " ";
-//			}
-//			if(helpString != str19)
-//			{
-//				file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
-//			}
-//		}
-//	}
-//	exit(0);
-
-//	auto txtLst = QDir("/media/Files/Data/Galya/AllTactile_out/").entryList({"*.txt"});
-//	for(QString txt : txtLst)
-//	{
-//		std::cout << myLib::countSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/" + txt,
-//								  '\t') << std::endl;
-//	}
-//	exit(0);
-
-
-//	return;
-//	const QString pp = "/media/Files/Data/Galya/AllTactile_backup/bad/Mustafina_Karina_6";
-//	auto ll = QDir(pp).entryList(def::edfFilters);
-//	for(auto fn : ll)
-//	{
-//		edfFile fil;
-//		fil.readEdfFile(pp + "/" + fn);
-//		edfChannel newChan = fil.getChannels()[16];
-//		newChan.label = "EEG T6-A1";
-//		fil.insertChannel(16, fil.getData(16), newChan).writeEdfFile(pp + "/T6/" + fn);
-//	}
-//	exit(0);
-
-//	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Umanskaya_d2_dim.txt", '\t') << std::endl;
-//	exit(0);
-//	def::currAutosUser = def::autosUser::Galya;
-//	autos::Galya_tactile("/media/Files/Data/Galya/AllTactile");
-//	myLib::replaceSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/all_.txt",
-//								"\n0\t",
-//								"\n \t",
-//								"/media/Files/Data/Galya/AllTactile_out/all__.txt");
-//	myLib::areEqualFiles("/media/Files/Data/Galya/AllTactile_out/all.txt",
-//						 "/media/Files/Data/Galya/AllTactile_out/all_.txt");
-
-//	const QString from = "/media/Seagate Expansion Drive/Michael/Data/MRI";
-//	const QString to = "/media/Files/Data/MRI_winds";
-//	auto drList = QDir(to).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-//	for(QString dr : drList)
-//	{
-//		QString dr1 = dr;
-//		dr1.remove("_windows_cleaned");
-//		QDir().rename(to + "/" + dr,
-//					  to + "/" + dr1);
-//		continue;
-
-//		QString interest = from + "/" + dr + "/" + dr + "_windows_cleaned";
-//		QString TO = to + "/" + dr + "_windows_cleaned";
-//		if(QDir(interest).exists())
-//		{
-//			QDir().mkpath(TO);
-//			for(QString fn : QDir(interest).entryList(QDir::Files))
-//			{
-//				QFile::copy(interest + "/" + fn,
-//							TO + "/" + fn);
-//			}
-//		}
-//	}
-
-	def::currAutosUser = def::autosUser::Galya;
-	autos::EEG_MRI_FD();
+		auto name = [dr, guy](int i) -> QString
+		{
+			return def::dataFolder + "/FeedbackFinalMark/"
+					+ dr + "/"
+					+ guy + "_" + nm(i) + ".edf";
+		};
+		for(int i : {1, 2, 3})
+		{
+			autos::timesNew(name(i), guy, i);
+			autos::avTimesNew(name(i), guy, i);
+		}
+	}
 	exit(0);
 
-
+//	autos::createAnsFiles("/media/Files/Data/FeedbackFinal/Beketova",
+//						  "BAM");
+//	exit(0);
 
 //	return;
+
+
+#if 0
+	/// my fcking with markers in FeedbackFinal
+	/// count correctness and average times
+	std::vector<std::pair<QString, QString>> guys{
+		std::make_pair("Beketova", "BAM"),
+				std::make_pair("Burtcev", "BAV"),
+				std::make_pair("Dovbyish", "DEG"),
+				std::make_pair("Evstratov_n", "ENV"),
+				std::make_pair("Ilyin", "IAE"),
+				std::make_pair("Matasov", "MII"),
+				std::make_pair("Nikonenko", "NUA"),
+				std::make_pair("Semyonov_n", "SAV"),
+				std::make_pair("Sergeev_n", "SAA")
+	};
+
+	for(auto in : guys)
+	{
+		const QString dr = in.first;
+		const QString guy = in.second;
+
+		QDir().mkpath(def::dataFolder + "/FeedbackFinalMark/" + dr);
+
+
+		auto name1 = [dr, guy](int i) -> QString
+		{
+			return def::dataFolder + "/FeedbackFinal/"
+					+ dr + "/"
+					+ guy + "_" + nm(i) + "_new.EDF";
+		};
+		auto name2 = [dr, guy](int i) -> QString
+		{
+			return def::dataFolder + "/FeedbackFinal/"
+					+ dr + "/"
+					+ guy + "_" + nm(i) + ".EDF";
+		};
+		auto name3 = [dr, guy](int i) -> QString
+		{
+			return def::dataFolder + "/FeedbackFinalMark/"
+					+ dr + "/"
+					+ guy + "_" + nm(i) + ".edf";
+		};
+		for(int i : {1, 2, 3})
+		{
+			std::function<QString(int)> name = name1;
+			if(!QFile(name(i)).exists())
+			{
+//				std::cout << name(i) << " doesn't exist" << std::endl;
+//				continue;
+
+				name = name2;
+			}
+//			QFile::remove(def::dataFolder + "/FeedbackFinalMark/"
+//						  + dr + "/"
+//						  + guy + "_" + nm(i) + ".edf");
+//			QFile::copy(name(i),
+//						def::dataFolder + "/FeedbackFinalMark/"
+//											+ dr + "/"
+//											+ guy + "_" + nm(i) + ".edf");
+//			QFile::copy(def::dataFolder + "/FeedbackFinal/"
+//						+ dr + "/"
+//						+ guy + "_ans" + nm(i) + ".txt",
+//						def::dataFolder + "/FeedbackFinalMark/"
+//						+ dr + "/"
+//						+ guy + "_ans" + nm(i) + ".txt");
+//			continue;
+
+			/// markers check
+			edfFile fil;
+			fil.readEdfFile(name(i));
+//			continue;
+
+			std::cout << name(i).remove(0, name(i).lastIndexOf('/') + 1);
+			std::vector<uint> a = fil.countMarkers({241, 247, 254});
+			if(a != std::vector<uint>{40, 40, 80})
+			{
+				std::cout << "_" << nm(i)
+						  << "\t" << a;
+			}
+			std::cout << std::endl;
+
+			std::pair<int, int> prev{0, 254};
+			int problems = 1;
+//			std::vector<double> rests;
+			for(std::pair<int, int> in : fil.getMarkers())
+			{
+				if(in.second != 241 && in.second != 247 && in.second != 254) { continue; }
+
+
+				/// rest min = 7.6, mean = 8.4, max = 9.2
+				/// after cross min = 0.54, mean = 0.63, max = 0.75
+				if(in.second == 254 && prev.second == 254)
+				{
+					std::cout << "missed 241/247" << "\t"
+							  << prev.first / fil.getFreq() + 8.4
+							  << "\tproblem " << problems << " started"
+							  << std::endl;
+				}
+				if(in.second == 254) { ++problems; }
+
+				if((in.second == 241 || in.second == 247) &&
+				   (prev.second == 241 || prev.second == 247))
+				{
+					std::cout << "missed 254" << "\t"
+							  << in.first / fil.getFreq() - 8.4
+							  << "\tproblem " << problems << " finished"
+							  << std::endl;
+					++problems;
+				}
+
+
+//				if((in.second == 241 || in.second == 247) && prev.second == 255)
+//				{
+//					double a = (in.first - prev.first) / fil.getFreq();
+//					if(a < 15)
+//					{
+//						rests.push_back(a);
+//					}
+//				}
+				prev = in;
+			}
+			std::cout << std::endl << std::endl;
+
+//			std::valarray<double> val = smLib::vecToValar(rests);
+//			std::cout << "mean  = " << smLib::mean(val) << "\t"
+//					  << "sigma = " << smLib::sigma(val) << "\t"
+//					  << "min   = " << smLib::min(val) << "\t"
+//					  << "max   = " << smLib::max(val) << "\t"
+//					  << std::endl;
+
+//			autos::timesNew(name(i), guy, i);
+//			autos::avTimesNew(name(i), guy, i);
+		}
+	}
+	exit(0);
+#endif
 
 #if 0
 	/// IITP
@@ -424,6 +489,11 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
+	/// Xenia final count
+	def::currAutosUser = def::autosUser::Xenia;
+	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
+	exit(0);
+
 	/// Xenia FINAL labels
 	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Xenia/FINAL_out/labels1.txt",
 										   '\t') << std::endl;
@@ -535,6 +605,100 @@ void MainWindow::customFunc()
 	}
 	std::cout << s << std::endl;
 	exit(0);
+#endif
+
+#if 0
+	/// Galya_tactile things
+//	QString str19;
+//	for(int i = 0; i < 19; ++i)
+//	{
+//		str19 += nm(i + 1) + " ";
+//	}
+
+//	const QString tact = "/media/Files/Data/Galya/AllTactile_backup";
+//	auto dirList = QDir(tact).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+//	for(QString dr : dirList)
+//	{
+//		auto filList = QDir(tact + "/" + dr).entryList(def::edfFilters);
+//		for(QString fl : filList)
+//		{
+
+
+//			edfFile file;
+//			file.readEdfFile(tact + "/" + dr + "/" + fl, true);
+//			QString helpString{};
+//			for(int i = 0; i < 19; ++i)
+//			{
+//				helpString += nm(file.findChannel(coords::lbl19[i]) + 1) + " ";
+//			}
+//			if(helpString != str19)
+//			{
+//				file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
+//			}
+//		}
+//	}
+//	exit(0);
+
+//	auto txtLst = QDir("/media/Files/Data/Galya/AllTactile_out/").entryList({"*.txt"});
+//	for(QString txt : txtLst)
+//	{
+//		std::cout << myLib::countSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/" + txt,
+//								  '\t') << std::endl;
+//	}
+//	exit(0);
+
+
+//	return;
+//	const QString pp = "/media/Files/Data/Galya/AllTactile_backup/bad/Mustafina_Karina_6";
+//	auto ll = QDir(pp).entryList(def::edfFilters);
+//	for(auto fn : ll)
+//	{
+//		edfFile fil;
+//		fil.readEdfFile(pp + "/" + fn);
+//		edfChannel newChan = fil.getChannels()[16];
+//		newChan.label = "EEG T6-A1";
+//		fil.insertChannel(16, fil.getData(16), newChan).writeEdfFile(pp + "/T6/" + fn);
+//	}
+//	exit(0);
+
+//	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Umanskaya_d2_dim.txt", '\t') << std::endl;
+//	exit(0);
+//	def::currAutosUser = def::autosUser::Galya;
+//	autos::Galya_tactile("/media/Files/Data/Galya/AllTactile");
+//	myLib::replaceSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/all_.txt",
+//								"\n0\t",
+//								"\n \t",
+//								"/media/Files/Data/Galya/AllTactile_out/all__.txt");
+//	myLib::areEqualFiles("/media/Files/Data/Galya/AllTactile_out/all.txt",
+//						 "/media/Files/Data/Galya/AllTactile_out/all_.txt");
+
+//	const QString from = "/media/Seagate Expansion Drive/Michael/Data/MRI";
+//	const QString to = "/media/Files/Data/MRI_winds";
+//	auto drList = QDir(to).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+//	for(QString dr : drList)
+//	{
+//		QString dr1 = dr;
+//		dr1.remove("_windows_cleaned");
+//		QDir().rename(to + "/" + dr,
+//					  to + "/" + dr1);
+//		continue;
+
+//		QString interest = from + "/" + dr + "/" + dr + "_windows_cleaned";
+//		QString TO = to + "/" + dr + "_windows_cleaned";
+//		if(QDir(interest).exists())
+//		{
+//			QDir().mkpath(TO);
+//			for(QString fn : QDir(interest).entryList(QDir::Files))
+//			{
+//				QFile::copy(interest + "/" + fn,
+//							TO + "/" + fn);
+//			}
+//		}
+//	}
+
+//	def::currAutosUser = def::autosUser::Galya;
+//	autos::EEG_MRI_FD();
+//	exit(0);
 #endif
 
 #if 0

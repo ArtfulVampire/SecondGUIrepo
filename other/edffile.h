@@ -209,9 +209,11 @@ public:
 	std::vector<uint> findChannels(const QString & str) const;
 	std::vector<uint> findChannels(const std::vector<QString> & strs) const;
 
+	uint countMarker(int mrk) const;
+	std::vector<uint> countMarkers(const std::vector<int> & mrks) const;
+
     void setLabels(const std::vector<QString> & inLabels);
 	void setLabel(int i, const QString & inLabel);
-
 
 	void setChannels(const std::vector<edfChannel> & inChannels);
     void cleanFromEyes(QString eyesPath = QString(),
@@ -219,11 +221,7 @@ public:
                        std::vector<int> eegNums = {},
                        std::vector<int> eogNums = {});
 
-	/// private
-	void adjustArraysByChannels();
-    void fitData(int initSize);
-    void cutZerosAtEnd();
-	void adjustMarkerChannel();
+
 
 
 	/// for iitp - remake into edfFile &
@@ -252,6 +250,12 @@ public:
 	std::pair<int, int> iitpSyncAutoJump(int startSearchEeg,
 							   int startSearchEmg,
 							   bool byEeg = false);
+
+private:
+	void adjustArraysByChannels();
+	void fitData(int initSize);
+	void cutZerosAtEnd();
+	void adjustMarkerChannel();
 
 protected:
 	QString filePath = QString();
@@ -293,7 +297,7 @@ protected:
 	std::vector<std::valarray<double>> fftData{}; // mutable?
 
 	// fast access for slicing (time-bin, marker)
-	std::vector<std::pair<int, double>> markers{};
+	std::vector<std::pair<int, int>> markers{};
 	int markerChannel = -1;
 
     std::vector<edfChannel> channels;
@@ -317,7 +321,7 @@ public:
 	int getNdr() const { return ndr; }
 	double getDdr() const { return ddr; }
 	int getNs() const { return ns; }
-	int getFreq() const { return srate; }
+	double getFreq() const { return srate; } /// wow wow
 
 	const std::vector<QString> & getLabels() const { return labels; }
 	const QString & getLabels(int i) const { return labels[i]; }
@@ -330,7 +334,7 @@ public:
 	const std::valarray<double> & getDigMax() const { return digMax; }
 	const std::valarray<double> & getDigMin() const { return digMin; }
 	const std::valarray<double> & getNr() const { return nr; }
-	const std::vector<std::pair<int, double>> & getMarkers() const { return markers; }
+	const std::vector<std::pair<int, int>> & getMarkers() const { return markers; }
 	const QString & getHeaderRest() const { return headerRest; }
 
 	const std::vector<edfChannel> & getChannels() const { return channels; }

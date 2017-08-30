@@ -264,15 +264,17 @@ uint indexOfVal(const Container & cont, Typ val)
 	return i;
 }
 template uint indexOfVal(const std::valarray<double> & cont, double val);
+template uint indexOfVal(const std::vector<double> & cont, double val);
+template uint indexOfVal(const std::vector<int> & cont, int val);
 
 template <typename Container, typename Typ>
 bool contains(const Container & cont, Typ val)
 {
-	return indexOfVal(cont, val) != cont.size();
+//	return indexOfVal(cont, val) != cont.size();
 	/// stl
 	return std::find(std::begin(cont), std::end(cont), val) != std::end(cont);
 }
-
+template bool contains(const std::vector<int> & cont, int val);
 
 template <typename Container, typename Typ>
 std::pair<bool, Typ> contains(const Container & cont, const std::initializer_list<Typ> & val)

@@ -344,24 +344,33 @@ void MainWindow::sliceOneByOne()
     QString helpString;
     int number = 0;
     QString marker = "000";
-    int start = 0;
+	int start = 0;
 
     const edfFile & fil = globalEdf;
-    const std::valarray<double> & markChanArr = fil.getData()[fil.getMarkChan()];
+//	const std::valarray<double> & markChanArr = fil.getMarkArr();
+	const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
 
     // 200, (241||247, (1), 254, 255)
-    for(int i = 0; i < fil.getDataLen(); ++i)
+//	for(int i = 0; i < fil.getDataLen(); ++i)
+	for(const std::pair<int, int> & in : markers)
     {
-        if(markChanArr[i] == 0 ||
-           !(markChanArr[i] == 241 ||
-             markChanArr[i] == 247 ||
-             markChanArr[i] == 254))
-        {
-            continue;
-        }
+//		if(markChanArr[i] == 0 ||
+//		   !(markChanArr[i] == 241 ||
+//			 markChanArr[i] == 247 ||
+//			 markChanArr[i] == 254))
+//		{
+//			continue;
+//		}
+		if(in.second != 241
+		   && in.second != 247
+		   && in.second != 254)
+		{
+			continue;
+		}
         else
         {
-			const int finish = i;
+//			const int finish = i;
+			const int finish = in.first;
 
             helpString = def::dir->absolutePath()
 						 + "/Reals"
@@ -389,14 +398,16 @@ void MainWindow::sliceOneByOne()
                     }
                     else
                     {
-                        helpString += "_" + marker;
-                        matrix tempData(fil.getNs(), 100, 0.);
-                        tempData[fil.getMarkChan()][0] = markChanArr[start];
-						myLib::writePlainData(helpString, tempData);
+						/// why do I need this?
+//						helpString += "_" + marker;
+//						matrix tempData(fil.getNs(), 100, 0.);
+//						tempData[fil.getMarkChan()][0] = markChanArr[start];
+//						myLib::writePlainData(helpString, tempData);
                     }
-                }
-            }
-            ui->progressBar->setValue(i * 100. / fil.getDataLen());
+				}
+			}
+//			ui->progressBar->setValue(i * 100. / fil.getDataLen());
+			ui->progressBar->setValue(in.first * 100. / fil.getDataLen());
 
             qApp->processEvents();
             if(stopFlag)
@@ -405,8 +416,9 @@ void MainWindow::sliceOneByOne()
                 return;
             }
 
-			marker = nm(markChanArr[finish]);
-            start = finish;
+//			marker = nm(markChanArr[finish]);
+			marker = nm(in.second);
+			start = finish;
         }
     }
     /// write final
@@ -433,10 +445,10 @@ void MainWindow::sliceOneByOne()
             }
             else /// not to loose the last marker
             {
-                helpString += "_" + marker;
-                matrix tempData(fil.getNs(), 100, 0.);
-                tempData[fil.getMarkChan()][0] = markChanArr[start];
-				myLib::writePlainData(helpString, tempData);
+//				helpString += "_" + marker;
+//				matrix tempData(fil.getNs(), 100, 0.);
+//				tempData[fil.getMarkChan()][0] = markChanArr[start];
+//				myLib::writePlainData(helpString, tempData);
             }
         }
     }

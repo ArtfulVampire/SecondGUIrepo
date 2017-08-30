@@ -910,15 +910,19 @@ void edfFile::handleDatum(int currNs,
 						+ (physMax[currNs] - physMin[currNs])
 						* (double(a) - digMin[currNs])
 						/ (digMax[currNs] - digMin[currNs]);
-				markers.push_back(std::make_pair(currTimeIndex, currDatum));
 
 //                currDatum = a; // generality encephalan
 			}
-			if(writeMarkersFlag &&
-			   !edfPlusFlag &&
-			   currDatum != 0) // make markers file when read only
+
+			/// read marker into special array
+			if(currDatum != 0.)
 			{
-				writeMarker(currDatum, currTimeIndex);
+				markers.push_back(std::make_pair(currTimeIndex, currDatum));
+
+				if(writeMarkersFlag && !edfPlusFlag)
+				{
+					writeMarker(currDatum, currTimeIndex);
+				}
 			}
 		}
 	}
@@ -972,6 +976,27 @@ void edfFile::handleDatum(int currNs,
 			}
 		}
 	}
+}
+
+uint edfFile::countMarker(int mrk) const
+{
+	return std::count_if(std::begin(this->markers),
+						 std::end(this->markers),
+						 [mrk](const std::pair<int, int> & in){ return in.second == mrk; });
+}
+
+std::vector<uint> edfFile::countMarkers(const std::vector<int> & mrks) const
+{
+	std::vector<uint> res(mrks.size(), 0);
+	for(auto in : this->markers)
+	{
+		int a = myLib::indexOfVal(mrks, in.second);
+		if(a < mrks.size())
+		{
+			++res[a];
+		}
+	}
+	return res;
 }
 
 void edfFile::handleData(bool readFlag,
@@ -1148,9 +1173,13 @@ void edfFile::writeMarker(double currDatum,
 	std::vector<bool> byteMarker;
 	QString helpString;
 
+//	if(currDatum == 1 || currDatum == 255) { return; } /// for FeedbackFinal
+
 	/// marker file name choose
-//    helpString = dirPath + "/" + this->ExpName + "_markers.txt";
-	helpString = dirPath + "/markers.txt";
+	helpString = dirPath + "/"
+//				 + this->ExpName + "_" /// for FeedbackFinal
+				 + "markers.txt";
+
 #if MARKERS_STREAM
 	std::ofstream markersStream(helpString.toStdString(), std::ios_base::app);
 	markersStream << currTimeIndex << "\t"
