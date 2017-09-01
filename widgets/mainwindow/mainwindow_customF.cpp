@@ -25,7 +25,7 @@ void MainWindow::customFunc()
 //					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_2.edf");
 //	exit(0);
 
-
+	return;
 
 	/// count correctness and average times
 	std::vector<std::pair<QString, QString>> guys{
@@ -44,30 +44,12 @@ void MainWindow::customFunc()
 	{
 		autos::feedbackFinalTimes(def::dataFolder + "/FeedbackFinalMark/" + in.first,
 								  in.second);
-//		exit(0);
-		continue;
-		const QString dr = in.first;
-		const QString guy = in.second;
-
-		auto name = [dr, guy](int i) -> QString
-		{
-			return def::dataFolder + "/FeedbackFinalMark/"
-					+ dr + "/"
-					+ guy + "_" + nm(i) + ".edf";
-		};
-		for(int i : {1, 2, 3})
-		{
-			autos::timesNew(name(i), guy, i);
-			autos::avTimesNew(name(i), guy, i);
-		}
 	}
-	exit(0);
-
 //	autos::createAnsFiles("/media/Files/Data/FeedbackFinal/Beketova",
 //						  "BAM");
-//	exit(0);
+	exit(0);
 
-//	return;
+
 
 
 #if 0

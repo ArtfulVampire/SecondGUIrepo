@@ -2758,7 +2758,7 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 	}
 
 	writeMatrixFile(outFilePath,
-					coefficients,
+					coefficients, 0, -1,
 					"NumOfEegChannels",
 					"NumOfEogChannels");
 

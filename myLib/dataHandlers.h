@@ -22,7 +22,9 @@ void readPlainData(const QString & inPath,
 				   int start = 0);
 
 void writePlainData(const QString outPath,
-					const matrix & data);
+					const matrix & data,
+					int sta = 0,
+					int fin = -1);
 
 void readMatrixFile(const QString & filePath,
 					matrix & outData);
@@ -32,8 +34,15 @@ void readMatrixFileRaw(const QString & filePath,
 
 void writeMatrixFile(const QString & filePath,
 					 const matrix & outData,
+					 int sta = 0,
+					 int fin = -1,
 					 const QString & rowsString = "NumOfRows",
 					 const QString & colsString = "NumOfCols");
+
+void writeSubmatrixFile(const QString & filePath,
+						const matrix & outData,
+						const QString & rowsString = "NumOfRows",
+						const QString & colsString = "NumOfCols");
 
 void invertMatrixFile(const QString & inPath,
 					  const QString & outPath);

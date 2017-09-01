@@ -341,36 +341,53 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker) // beginning
 
 void MainWindow::sliceOneByOne()
 {
+
+#define USE_MARKERS 01
+
     QString helpString;
     int number = 0;
     QString marker = "000";
 	int start = 0;
 
     const edfFile & fil = globalEdf;
-//	const std::valarray<double> & markChanArr = fil.getMarkArr();
+#if USE_MARKERS
 	const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
+#else
+	const std::valarray<double> & markChanArr = fil.getMarkArr();
+#endif
 
     // 200, (241||247, (1), 254, 255)
-//	for(int i = 0; i < fil.getDataLen(); ++i)
+#if USE_MARKERS
 	for(const std::pair<int, int> & in : markers)
+#else
+	for(int i = 0; i < fil.getDataLen(); ++i)
+#endif
     {
-//		if(markChanArr[i] == 0 ||
-//		   !(markChanArr[i] == 241 ||
-//			 markChanArr[i] == 247 ||
-//			 markChanArr[i] == 254))
-//		{
-//			continue;
-//		}
+
+
+#if USE_MARKERS
 		if(in.second != 241
 		   && in.second != 247
 		   && in.second != 254)
 		{
 			continue;
 		}
+#else
+		if(markChanArr[i] == 0 ||
+		   !(markChanArr[i] == 241 ||
+			 markChanArr[i] == 247 ||
+			 markChanArr[i] == 254))
+		{
+			continue;
+		}
+#endif
         else
         {
-//			const int finish = i;
+#if USE_MARKERS
 			const int finish = in.first;
+#else
+			const int finish = i;
+#endif
 
             helpString = def::dir->absolutePath()
 						 + "/Reals"
@@ -383,9 +400,9 @@ void MainWindow::sliceOneByOne()
 				if(finish - start <= def::freq * 62) /// const generality limit
                 {
                     helpString += "_" + marker;
-                    fil.saveSubsection(start,
-                                       finish,
-                                       helpString, true);
+					fil.saveSubsection(start,
+									   finish,
+									   helpString, true);
                 }
                 else /// pause rest
                 {
@@ -406,8 +423,11 @@ void MainWindow::sliceOneByOne()
                     }
 				}
 			}
-//			ui->progressBar->setValue(i * 100. / fil.getDataLen());
+#if USE_MARKERS
 			ui->progressBar->setValue(in.first * 100. / fil.getDataLen());
+#else
+			ui->progressBar->setValue(i * 100. / fil.getDataLen());
+#endif
 
             qApp->processEvents();
             if(stopFlag)
@@ -415,12 +435,16 @@ void MainWindow::sliceOneByOne()
                 stopFlag = 0;
                 return;
             }
-
-//			marker = nm(markChanArr[finish]);
+#if USE_MARKERS
 			marker = nm(in.second);
+#else
+			marker = nm(markChanArr[finish]);
+#endif
 			start = finish;
         }
     }
+
+
     /// write final
     {
         helpString = def::dir->absolutePath()
