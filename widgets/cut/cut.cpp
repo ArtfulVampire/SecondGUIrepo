@@ -50,7 +50,7 @@ Cut::Cut() :
 	ui->setMarkLeftSpinBox->setValue(241);
 	ui->setMarkRightSpinBox->setValue(0);
 
-	drawSamples();
+//	drawSamples();
 
     ui->scrollArea->setWidget(ui->picLabel);
     ui->scrollArea->installEventFilter(this);
@@ -162,9 +162,15 @@ Cut::Cut() :
 		this->setMarkerSlot(false);
 
 	});
-	QObject::connect(ui->toLearnThresholdPushButton, SIGNAL(clicked()), this, SLOT(smartFindLearnSlot()));
-	QObject::connect(ui->nextBadPointPushButton, SIGNAL(clicked()), this, SLOT(smartFindNextSlot()));
-	QObject::connect(ui->clearThresholdSetPushButton, &QPushButton::clicked,
+
+	QObject::connect(ui->smartFindShowPushButton, &QPushButton::clicked,
+					 [this](){ this->smartFindShowValues(); });
+	QObject::connect(ui->smartFindLearnPushButton, SIGNAL(clicked()), this, SLOT(smartFindLearnSlot()));
+	QObject::connect(ui->smartFindNextPushButton, &QPushButton::clicked,
+					 [this](){ this->smartFindFind(true);});
+	QObject::connect(ui->smartFindPrevPushButton, &QPushButton::clicked,
+					 [this](){ this->smartFindFind(false);});
+	QObject::connect(ui->smartFindClearPushButton, &QPushButton::clicked,
 					 [this]()
 	{
 		smartFindLearnData.clear();
@@ -174,11 +180,11 @@ Cut::Cut() :
 
 	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
 					 this, SLOT(timesAndDiffSlot()));
-
 	QObject::connect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
 					 this, SLOT(timesAndDiffSlot()));
 
-
+	/// make good
+	QObject::connect(ui->color1SpinBox, SIGNAL(valueChanged(int)), ui->color1SpinBox, SLOT(update()));
 	QObject::connect(ui->color1SpinBox, &QSpinBox::editingFinished,
 					 [this](){ this->colorSpinSlot(ui->color1SpinBox, ui->colorChan1LineEdit);});
 	QObject::connect(ui->color2SpinBox, &QSpinBox::editingFinished,
@@ -211,32 +217,32 @@ void Cut::timesAndDiffSlot()
 	paintLimits();
 }
 
-void Cut::drawSamples()
-{
-	std::vector<QLabel *> picLabels{
-		ui->hz5Label,
-				ui->hz10Label,
-				ui->hz15Label,
-				ui->hz20Label,
-				ui->hz25Label,
-				ui->hz30Label
-	};
+//void Cut::drawSamples()
+//{
+//	std::vector<QLabel *> picLabels{
+//		ui->hz5Label,
+//				ui->hz10Label,
+//				ui->hz15Label,
+//				ui->hz20Label,
+//				ui->hz25Label,
+//				ui->hz30Label
+//	};
 
-	std::valarray<double> seen(150);
-	for(int num = 0; num < 6; ++num)
-	{
-		int freq = 5 * (num + 1);
-		seen = myLib::makeSine(150, freq);
-		QPixmap pic = myLib::drawOneSignal(seen, 50);
+//	std::valarray<double> seen(150);
+//	for(int num = 0; num < 6; ++num)
+//	{
+//		int freq = 5 * (num + 1);
+//		seen = myLib::makeSine(150, freq);
+//		QPixmap pic = myLib::drawOneSignal(seen, 50);
 
-		picLabels[num]->setPixmap(pic);
-//		picLabels[num]->setPixmap(pic.scaledToHeight(picLabels[num]->height()));
-	}
-//	ui->hzLayout->setGeometry(QRect(ui->hzLayout->geometry().x(),
-//									ui->hzLayout->geometry().y(),
-//									ui->hzLayout->sizeHint().width(),
-//									ui->hzLayout->sizeHint().height()));
-}
+//		picLabels[num]->setPixmap(pic);
+////		picLabels[num]->setPixmap(pic.scaledToHeight(picLabels[num]->height()));
+//	}
+////	ui->hzLayout->setGeometry(QRect(ui->hzLayout->geometry().x(),
+////									ui->hzLayout->geometry().y(),
+////									ui->hzLayout->sizeHint().width(),
+////									ui->hzLayout->sizeHint().height()));
+//}
 
 void Cut::resizeEvent(QResizeEvent * event)
 {

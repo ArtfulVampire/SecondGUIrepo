@@ -60,8 +60,11 @@ private:
 	void smartFindCountParams();
 	void findNextMark(int mark);
 	void findPrevMark(double mark);
+	void smartFindFind(bool forward);
+	void smartFindShowValues();
+//	bool smartFindCheck(); // return true if bad window
 
-	void drawSamples();
+//	void drawSamples();
 	std::vector<std::pair<int, QColor>> makeColouredChans();
 	template<class...params> void logAction(const params &... par);
 	void applyLog(const QString & logPath);
@@ -96,6 +99,7 @@ public slots:
 	void linearApproxSlot();
 	void smartFindLearnSlot();
 	void smartFindNextSlot();
+	void smartFindPrevSlot();
 
 	void paint();
 	void resizeWidget(double);

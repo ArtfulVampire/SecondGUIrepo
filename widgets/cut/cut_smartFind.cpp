@@ -131,6 +131,7 @@ void Cut::smartFindSetFuncs()
 		});
 		paramNames.push_back("alpha");
 		paramSigmaThreshold.push_back(10); /// check and adjust
+		paramAbsThreshold.push_back(400); /// check and adjust
 	}
 
 	/// theta
@@ -145,6 +146,7 @@ void Cut::smartFindSetFuncs()
 		});
 		paramNames.push_back("theta");
 		paramSigmaThreshold.push_back(15); /// check and adjust
+		paramAbsThreshold.push_back(150); /// check and adjust
 	}
 
 	/// beta
@@ -159,6 +161,7 @@ void Cut::smartFindSetFuncs()
 		});
 		paramNames.push_back("beta");
 		paramSigmaThreshold.push_back(10); /// check and adjust
+		paramAbsThreshold.push_back(100); /// check and adjust
 	}
 
 	/// gamma
@@ -173,6 +176,7 @@ void Cut::smartFindSetFuncs()
 		});
 		paramNames.push_back("gamma");
 		paramSigmaThreshold.push_back(15); /// check and adjust
+		paramAbsThreshold.push_back(80); /// check and adjust
 	}
 
 	/// max ampl
@@ -182,8 +186,9 @@ void Cut::smartFindSetFuncs()
 		{
 			return std::max(std::abs(in.max()), std::abs(in.min()));
 		});
-		paramNames.push_back("maxAmpl");
+		paramNames.push_back("maxAmp");
 		paramSigmaThreshold.push_back(10); /// check and adjust
+		paramAbsThreshold.push_back(30); /// check and adjust
 	}
 
 	/// integral
@@ -196,19 +201,159 @@ void Cut::smartFindSetFuncs()
 								   std::begin(spec) + fftLimit(40, edfFil.getFreq(), smartFindWindLen),
 								   0.);
 		});
-		paramNames.push_back("integral");
+		paramNames.push_back("intgrl");
 		paramSigmaThreshold.push_back(5); /// check and adjust
+		paramAbsThreshold.push_back(1000); /// check and adjust
 	}
 
 }
 
-void Cut::smartFindNextSlot()
+
+void Cut::smartFindShowValues()
+{
+
+	int windNum = ui->leftLimitSpinBox->value() / smartFindWindLen;
+	ui->leftLimitSpinBox->setValue(windNum * smartFindWindLen);
+	ui->rightLimitSpinBox->setValue((windNum + 1) * smartFindWindLen);
+#if 0
+	for(int numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
+	{
+		double maxAbs = 0;
+		int indexAbs = 0;
+		double maxSgm = 0;
+		int indexSgm = 0;
+
+		for(int ch = 0; ch < smartFindNumCh; ++ch)
+		{
+			double abs_ = smartFindWindParams[windNum][ch][numFunc];
+			double sgm_ = std::abs(smartFindWindParams[windNum][ch][numFunc]
+								  - smartFindThresholds[ch][numFunc].mean)
+			 /  smartFindThresholds[ch][numFunc].sigma;
+
+			if(abs_ > maxAbs) { maxAbs = abs_; indexAbs = ch; }
+			if(sgm_ > maxSgm) { maxSgm = sgm_; indexSgm = ch; }
+
+		}
+		std::cout << paramNames[numFunc] << "\t"
+				  << "maxAbs = " << maxAbs << " in " << edfFil.getLabels(indexAbs)
+				  << "maxSgm = " << maxSgm << " in " << edfFil.getLabels(indexSgm)
+				  << std::endl;
+	}
+	std::cout << std::endl;
+#else
+	std::cout << std::fixed;
+	std::cout.precision(2);
+
+	std::cout << "         " << "\t";
+	for(int numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
+	{
+		std::cout << paramNames[numFunc] << "\t";
+		std::cout << paramNames[numFunc] << "\t";
+	}
+	std::cout << std::endl;
+
+
+	for(int ch = 0; ch < smartFindNumCh; ++ch)
+	{
+		std::cout << edfFil.getLabels(ch);
+		for(int numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
+		{
+			double abs_ = smartFindWindParams[windNum][ch][numFunc];
+			double sgm_ = std::abs(smartFindWindParams[windNum][ch][numFunc]
+								  - smartFindThresholds[ch][numFunc].mean)
+			 /  smartFindThresholds[ch][numFunc].sigma;
+
+			std::cout << abs_ << "\t"
+					  << sgm_ << "\t";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+#endif
+}
+
+void Cut::smartFindFind(bool forward)
 {
 	if( !fileOpened ) { return; }
 
 	if(smartFindLearnData.empty() || smartFindThresholds.empty() || smartFindWindParams.empty())
 	{
-		std::cout << "nextBadPointSlot: data not ready" << std::endl;
+		std::cout << "smartFindNextSlot: data not ready" << std::endl;
+		return;
+	}
+	double timeLeftGap = 0.5;
+	int windNum = (leftDrawLimit + timeLeftGap * edfFil.getFreq()) / smartFindWindLen
+						 + (forward ? 2 : -2);
+	bool proceed = true;
+	while(proceed)
+	{
+		for(int ch = 0; ch < smartFindNumCh; ++ch)
+		{
+			for(int numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
+			{
+//				std::cout << "numFunc = " << numFunc << std::endl;
+//				std::cout << "mean = " << thrParams[ch][numFunc].mean << std::endl;
+//				std::cout << "sigma = " << thrParams[ch][numFunc].sigma << std::endl;
+//				std::cout << "val = " << windParams[windNum][ch][numFunc] << std::endl;
+				double numSigmas = std::abs(smartFindWindParams[windNum][ch][numFunc]
+											- smartFindThresholds[ch][numFunc].mean)
+								   /  smartFindThresholds[ch][numFunc].sigma;
+
+				if(numSigmas > paramSigmaThreshold[numFunc]) /// add spin box
+				{
+					std::cout << "nextBad: param = " << paramNames[numFunc] << " "
+							  << "chan = " << edfFil.getLabels(ch) << " "
+							  << "numSigmas = " << numSigmas << " "
+							  << std::endl;
+					proceed = false;
+				}
+				else if(smartFindWindParams[windNum][ch][numFunc] > paramAbsThreshold[numFunc])
+				{
+					std::cout << "nextBad: param = " << paramNames[numFunc] << " "
+							  << "chan = " << edfFil.getLabels(ch) << " "
+							  << "value = " << smartFindWindParams[windNum][ch][numFunc] << " "
+							  << std::endl;
+					proceed = false;
+				}
+			}
+		}
+		if(proceed) { if(forward) { ++windNum; } else { --windNum; } }
+
+		if(windNum == dataCutLocal.cols() / smartFindWindLen - 1
+		   || windNum == 1
+		   )
+		{
+			std::cout << "smartFindNextSlot: end of file" << std::endl;
+			return;
+		}
+	}
+	if(!proceed) std::cout << std::endl;
+
+	resetLimits();
+	ui->paintStartDoubleSpinBox->setValue(
+				windNum * smartFindWindLen / edfFil.getFreq() - timeLeftGap);
+	ui->leftLimitSpinBox->setValue(windNum * smartFindWindLen);
+	paint();
+}
+
+
+void Cut::smartFindPrevSlot()
+{
+	this->smartFindFind(false);
+}
+
+void Cut::smartFindNextSlot()
+{
+
+	this->smartFindFind(true); return;
+
+
+
+	if( !fileOpened ) { return; }
+
+	if(smartFindLearnData.empty() || smartFindThresholds.empty() || smartFindWindParams.empty())
+	{
+		std::cout << "smartFindNextSlot: data not ready" << std::endl;
 		return;
 	}
 	double timeLeftGap = 0.5;
@@ -238,13 +383,23 @@ void Cut::smartFindNextSlot()
 					proceed = false;
 					break; /// from while(proceed)
 				}
+				else if(smartFindWindParams[windNum][ch][numFunc] > paramAbsThreshold[numFunc])
+				{
+					std::cout << "nextBad: param = " << paramNames[numFunc] << " "
+							  << "chan = " << edfFil.getLabels(ch) << " "
+//							  << "windNum = " << windNum << " "
+							  << "value = " << smartFindWindParams[windNum][ch][numFunc] << " "
+							  << std::endl;
+					proceed = false;
+					break; /// from while(proceed)
+				}
 			}
 		}
 		if(proceed) ++windNum;
 
 		if(windNum == dataCutLocal.cols() / smartFindWindLen - 1)
 		{
-			std::cout << "nextBadPointSlot: end of file" << std::endl;
+			std::cout << "smartFindNextSlot: end of file" << std::endl;
 			return;
 		}
 	}
