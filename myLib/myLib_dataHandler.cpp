@@ -186,6 +186,8 @@ void writePlainData(const QString outPath,
 					int sta,
 					int fin)
 {
+	if(fin == -1) { fin = data.cols(); }
+
 	std::ofstream outStr;
     if(outPath.endsWith(def::plainDataExtension))
     {
@@ -197,13 +199,13 @@ void writePlainData(const QString outPath,
 		outPathNew.remove("." + def::plainDataExtension); /// what is this for?
         outStr.open((outPathNew + '.' + def::plainDataExtension).toStdString());
     }
-	outStr << "NumOfSlices " << data.cols() << '\t';
+	outStr << "NumOfSlices " << fin - sta << '\t';
     outStr << "NumOfChannels " << data.rows() << "\r\n";
 
 	outStr << std::fixed;
 	outStr.precision(3);
 
-	if(fin == -1) { fin = data.cols(); }
+
 
 	for (int i = sta; i < fin; ++i)
     {
@@ -502,6 +504,8 @@ void writeMatrixFile(const QString & filePath,
 					 const QString & rowsString,
 					 const QString & colsString)
 {
+	if(fin == -1) { fin = outData.cols(); }
+
 	std::ofstream file(filePath.toStdString());
     if(!file.good())
     {
@@ -510,11 +514,10 @@ void writeMatrixFile(const QString & filePath,
     }
 
     file << rowsString << " " << outData.rows() << '\t';
-    file << colsString << " " << outData.cols() << "\r\n";
+	file << colsString << " " << fin - sta << "\r\n";
 
 	file << std::fixed;
 	file.precision(4);
-	if(fin == -1) { fin = outData.cols(); }
 
     for(uint i = 0; i < outData.rows(); ++i)
     {

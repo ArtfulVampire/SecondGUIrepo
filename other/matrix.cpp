@@ -588,7 +588,7 @@ matrix matrix::subCols(int beginCol, int endCol) const /// submatrix
     matrix res(this->rows(), endCol - beginCol);
 	for(int i = 0; i < this->rows(); ++i)
 	{
-		res[i] = std::move(smLib::valarSubsec(myData[i], beginCol, endCol));
+		res[i] = smLib::valarSubsec(myData[i], beginCol, endCol);
 	}
     return res;
 }

@@ -18,6 +18,8 @@
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QShortcut>
+#include <QSpinBox>
+#include <QLineEdit>
 
 namespace Ui {
     class Cut;
@@ -48,25 +50,26 @@ private:
 	void undo();
 	void saveAs(const QString & addToName);
 	void setMarker(int offset, int newVal);
+	bool checkBadRange(int start, int end, QString func); // return true if too long
 
+	void colorSpinSlot(QSpinBox * spin, QLineEdit * lin);
 	void paintLimits();
 	void setValuesByEdf();
 	void resetLimits();
 	void showDerivatives();
-	void countThrParams();
+	void smartFindCountParams();
 	void findNextMark(int mark);
 	void findPrevMark(double mark);
 
 	void drawSamples();
 	std::vector<std::pair<int, QColor>> makeColouredChans();
-	template<class...params>
-	void logAction(const params &... par);
+	template<class...params> void logAction(const params &... par);
 	void applyLog(const QString & logPath);
-	void iitpLog(const QString & typ, int num = 2, const QString & add = QString());
+	void iitpLog(const QString & typ, int num = 2, const QString & add = QString()); // to deprecate
 
 public slots:
 	void browseSlot();
-    void createImage(const QString & dataFileName);
+	void openFile(const QString & dataFileName);
 	void next();
 	void prev();
 
@@ -91,8 +94,8 @@ public slots:
 	void cutSlot();
 	void pasteSlot();
 	void linearApproxSlot();
-	void toLearnSetSlot();
-	void nextBadPointSlot();
+	void smartFindLearnSlot();
+	void smartFindNextSlot();
 
 	void paint();
 	void resizeWidget(double);
@@ -107,15 +110,10 @@ public slots:
 	void iitpManualSlot();
 	void saveNewNumSlot();
 
-	void color1SpinSlot();
-	void color2SpinSlot();
-	void color3SpinSlot();
-
 protected:
     void resizeEvent(QResizeEvent *);
 
 signals:
-    void openFile(QString);
     void buttonPressed(char btn, int coord);
 
 private:
@@ -127,7 +125,7 @@ private:
 		int numChan;
 		int numParam;
 	};
-	void setThrParamsFuncs();
+	void smartFindSetFuncs();
 
 private:
     Ui::Cut *ui;
@@ -157,18 +155,18 @@ private:
 
 
 	/// for auto lookup for bad points
-	const int paramsChanNum = 19;
-	const int paramsWindLen = std::pow(2, 8);
-	std::vector<matrix> learnSet{}; /// to find bad points
+	const int smartFindNumCh = 19;
+	const int smartFindWindLen = std::pow(2, 7); // = 128 = 0.5 sec
+	std::vector<matrix> smartFindLearnData{}; /// to find bad points
 
-	std::vector<std::vector<thrParam>> thrParams{}; /// [channel][param]
-	std::vector<std::vector<std::vector<double>>> windParams{}; /// [windNum][channel][param]
+	std::vector<std::vector<thrParam>> smartFindThresholds{}; /// [channel][param]
+	std::vector<std::vector<std::vector<double>>> smartFindWindParams{}; /// [windNum][channel][param]
 
 	/// to struct?
-	std::vector<std::function<double(const std::valarray<double> &)>> paramFuncs{};
+	std::vector<std::function<double(const std::valarray<double> &)>> smartFindFuncs{};
 	std::vector<QString> paramNames{};
 	std::vector<double> paramSigmaThreshold{};
-
+	std::vector<double> paramAbsThreshold{};
 };
 
 #endif // CUT_H

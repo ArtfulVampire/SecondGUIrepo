@@ -71,7 +71,6 @@ widgets/net/net_setsgets.cpp \
 widgets/net/net_successive.cpp \
 widgets/net/net_data.cpp \
 widgets/spectre.cpp \
-widgets/cut.cpp \
 DSP/DspFilters/Bessel.cpp \
 DSP/DspFilters/Biquad.cpp \
 DSP/DspFilters/Butterworth.cpp \
@@ -92,7 +91,13 @@ DSP/DspFilters/State.cpp \
 myLib/myLib_qtlib.cpp \
     classifier/classifier_ward.cpp \
     myLib/myLib_temp.cpp \
-    other/autos_iitp.cpp
+    other/autos_iitp.cpp \
+    widgets/cut/cut.cpp \
+    widgets/cut/cut_smartFind.cpp \
+    widgets/cut/cut_modify.cpp \
+    widgets/cut/cut_navi.cpp \
+    widgets/cut/cut_iitp.cpp \
+    widgets/cut/cut_files.cpp
 
 HEADERS  += \
 widgets/cut.h \
