@@ -58,10 +58,13 @@ Cut::Cut() :
 	ui->color1LineEdit->setText("blue");
 	ui->color2LineEdit->setText("red");
 	ui->color3LineEdit->setText("orange");
-	for(auto * colSpin : {ui->color1SpinBox, ui->color2SpinBox, ui->color3SpinBox})
+	const std::vector<std::tuple<QSpinBox*, QLineEdit*, QLineEdit*>> forColor
 	{
-		colSpin->setMinimum(-1); colSpin->setMaximum(24); colSpin->setValue(-1);
-	}
+		std::make_tuple(ui->color1SpinBox, ui->colorChan1LineEdit, ui->color1LineEdit),
+		std::make_tuple(ui->color2SpinBox, ui->colorChan2LineEdit, ui->color2LineEdit),
+		std::make_tuple(ui->color3SpinBox, ui->colorChan3LineEdit, ui->color3LineEdit)
+	};
+
 
 	ui->iitpSaveNewNumSpinBox->setMaximum(50);
 	ui->iitpSaveNewNumSpinBox->setValue(24);
@@ -183,18 +186,14 @@ Cut::Cut() :
 	QObject::connect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
 					 this, SLOT(timesAndDiffSlot()));
 
-	/// make good
-	QObject::connect(ui->color1SpinBox, SIGNAL(valueChanged(int)), ui->color1SpinBox, SLOT(update()));
-	QObject::connect(ui->color1SpinBox, &QSpinBox::editingFinished,
-					 [this](){ this->colorSpinSlot(ui->color1SpinBox, ui->colorChan1LineEdit);});
-	QObject::connect(ui->color2SpinBox, &QSpinBox::editingFinished,
-					 [this](){ this->colorSpinSlot(ui->color2SpinBox, ui->colorChan2LineEdit);});
-	QObject::connect(ui->color3SpinBox, &QSpinBox::editingFinished,
-					 [this](){ this->colorSpinSlot(ui->color3SpinBox, ui->colorChan3LineEdit);});
 
-	QObject::connect(ui->color1LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
-	QObject::connect(ui->color2LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
-	QObject::connect(ui->color3LineEdit, SIGNAL(returnPressed()), this, SLOT(paint()));
+	for(auto p : forColor)
+	{
+		QObject::connect(std::get<0>(p), static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+						 [this, p](){ this->colorSpinSlot(std::get<0>(p), std::get<1>(p)); } );
+		QObject::connect(std::get<2>(p), SIGNAL(returnPressed()), this, SLOT(paint()));
+		std::get<0>(p)->setMinimum(-1); std::get<0>(p)->setMaximum(24); std::get<0>(p)->setValue(-1);
+	}
 	ui->picLabel->installEventFilter(this);
 
 	smartFindSetFuncs();

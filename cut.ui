@@ -111,84 +111,6 @@
    <property name="geometry">
     <rect>
      <x>900</x>
-     <y>10</y>
-     <width>271</width>
-     <height>83</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="colorGridLayout">
-    <item row="2" column="1">
-     <widget class="QSpinBox" name="color3SpinBox"/>
-    </item>
-    <item row="2" column="2">
-     <widget class="QLineEdit" name="colorChan3LineEdit"/>
-    </item>
-    <item row="0" column="2">
-     <widget class="QLineEdit" name="colorChan1LineEdit"/>
-    </item>
-    <item row="0" column="1">
-     <widget class="QSpinBox" name="color1SpinBox"/>
-    </item>
-    <item row="1" column="1">
-     <widget class="QSpinBox" name="color2SpinBox"/>
-    </item>
-    <item row="1" column="2">
-     <widget class="QLineEdit" name="colorChan2LineEdit"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLineEdit" name="color3LineEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>125</width>
-        <height>0</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLineEdit" name="color2LineEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>125</width>
-        <height>0</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLineEdit" name="color1LineEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>125</width>
-        <height>0</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>900</x>
      <y>130</y>
      <width>271</width>
      <height>110</height>
@@ -746,6 +668,84 @@
        <string>paint length</string>
       </property>
      </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>900</x>
+     <y>10</y>
+     <width>311</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_5">
+    <item row="0" column="0">
+     <widget class="QLineEdit" name="color1LineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>125</width>
+        <height>0</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QSpinBox" name="color1SpinBox"/>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLineEdit" name="colorChan1LineEdit"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLineEdit" name="color2LineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>125</width>
+        <height>0</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QSpinBox" name="color2SpinBox"/>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLineEdit" name="colorChan2LineEdit"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLineEdit" name="color3LineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>125</width>
+        <height>0</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QSpinBox" name="color3SpinBox"/>
+    </item>
+    <item row="2" column="2">
+     <widget class="QLineEdit" name="colorChan3LineEdit"/>
     </item>
    </layout>
   </widget>
