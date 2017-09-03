@@ -4,7 +4,7 @@ using namespace myOut;
 
 ANN::ANN() : Classifier()
 {
-    myType = ClassifierType::ANN;
+    myType = ModelType::ANN;
     typeString = "ANN";
 }
 
@@ -382,7 +382,7 @@ const ANN::weightType & ANN::getWeight()
     return weight;
 }
 
-void ANN::writeWeight(const QString & wtsPath)
+void ANN::writeWeight(const QString & wtsPath) const
 {
 //    static int wtsCounter = 0;
     std::ofstream weightsFile;
@@ -406,6 +406,9 @@ void ANN::writeWeight(const QString & wtsPath)
         return;
     }
 
+	weightsFile << std::fixed;
+	weightsFile.precision(4);
+
     for(uint i = 0; i < weight.size(); ++i) // numOfLayers
     {
         for(uint j = 0; j < weight[i].size(); ++j) // top layer
@@ -422,7 +425,7 @@ void ANN::writeWeight(const QString & wtsPath)
 }
 
 void ANN::readWeight(const QString & fileName,
-                     weightType * wtsMatrix)
+					 weightType * wtsMatrix)
 {
     std::ifstream wtsStr;
     wtsStr.open(fileName.toStdString());
@@ -456,7 +459,7 @@ void ANN::readWeight(const QString & fileName,
 
 
 void ANN::drawWeight(QString wtsPath,
-                     QString picPath)
+					 QString picPath)
 {
     if( dim.size() != 2 ) return;
 

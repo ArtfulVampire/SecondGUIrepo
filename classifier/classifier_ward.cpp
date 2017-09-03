@@ -6,7 +6,7 @@ WARD::WARD() : Classifier()
 {
     this->numOfClust = 15;
     centers.resize(numOfClust);
-    this->myType = ClassifierType::WARD;
+    this->myType = ModelType::WARD;
     typeString = "WARD";
 }
 

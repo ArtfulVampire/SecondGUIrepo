@@ -42,8 +42,8 @@ void Net::pca()
 {
 	QTime myTime;
 	myTime.start();
-	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
-	const std::vector<QString> & fileNames = myClassifier->getClassifierData()->getFileNames();
+	const matrix & dataMatrix = myModel->getClassifierData()->getData();
+	const std::vector<QString> & fileNames = myModel->getClassifierData()->getFileNames();
 
 	const int NumberOfVectors = dataMatrix.rows();
 	const int NetLength = dataMatrix.cols();

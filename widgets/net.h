@@ -31,10 +31,12 @@ class Net : public QWidget
 
 private:
     Ui::Net * ui;
+
     /// ui things
     std::vector<QButtonGroup *> myButtonGroup;
     bool stopFlag = false;
     bool autoFlag = false;
+
     /// ui private methods
     void aaDefaultSettings();
 
@@ -45,10 +47,8 @@ private:
     source Source = source::reals;
 
     /// classification
-    Classifier * myClassifier = nullptr;
+	Classifier * myModel = nullptr;
 	ClassifierData myClassifierData{};
-
-
 
 	/// succesiive
 	std::valarray<int> passed{};
@@ -65,7 +65,7 @@ private:
 
     QString filesPath;
 
-    /// class
+	/// class - deprecated, moved to Classifier
     void crossClassification();
     void leaveOneOutClassification();
     void halfHalfClassification();
@@ -82,6 +82,7 @@ public:
 
     /// classification
 	Classifier::avType autoClassification(const QString & spectraDir = QString());
+
     /// NEED CHECK
     void successiveProcessing();
 	Classifier::avType successiveByEDF(const QString & edfPath1, const QString & edfPath2);
@@ -89,17 +90,17 @@ public:
 							const QStringList & filters = {"*_train*"});
 
     /// setsgets
-    void setErrCrit(double in);
+	void setErrCrit(double in);
     void setLrate(double in);
-    double getLrate();
+	double getLrate() const;
     void setNumOfPairs(int num);
     void setFold(int in);
     void setAutoProcessingFlag(bool);
 	void setMode(const QString & in = "N-fold"); /// make myMode
 	void setSource(const QString & in = "reals"); /// make Source
     void setClassifier(const QString &);
-    void setClassifier(ClassifierType);
-	const Classifier & getClassifier() const { return *myClassifier; }
+	void setClassifier(ModelType);
+	const Classifier & getClassifier() const { return *myModel; }
 	const ClassifierData & getClassifierData() const { return myClassifierData; }
 
 	/// data
@@ -116,7 +117,7 @@ public:
                        twovector<std::valarray<double>> * wtsMatrix = nullptr);
     void writeWts(const QString & wtsPath = QString());
     void drawWts(QString wtsPath = QString(),
-                 QString picPath = QString());
+				 QString picPath = QString()) const;
 
 public slots:
 	void loadDataSlot();
@@ -129,30 +130,12 @@ public slots:
     void setClassifier(QAbstractButton*, bool);
 
 
-    /// ANN
-    void setLrateSlot(double in);
-    void setErrCritSlot(double in);
+	/// ANN
     void setDimensionalitySlot();
 
-    void readWtsSlot();
+	void readWtsSlot();
     void drawWtsSlot();
     void writeWtsSlot();
-
-    /// SVM
-    void setSvmTypeSlot(int);
-    void setSvmKernelNumSlot(int);
-
-    /// KNN
-    void setKnnNumSlot(int);
-
-    /// WARD
-    void setWordNumSlot(int);
-
-    /// LDA/QDA
-    void setRdaShrinkSlot(double);
-    void setRdaLambdaSlot(double);
-
-
 };
 
 #endif // NET_H

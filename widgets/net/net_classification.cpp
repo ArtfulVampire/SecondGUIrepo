@@ -12,10 +12,10 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
 		loadData(spectraDir);
 	}
 
-	if(myClassifier->getType() == ClassifierType::ANN)
+	if(myModel->getType() == ModelType::ANN)
 	{
 		/// adjust learnRate
-		ANN * myANN = dynamic_cast<ANN*>(myClassifier);
+		ANN * myANN = dynamic_cast<ANN*>(myModel);
 		myANN->adjustLearnRate();
 	}
 
@@ -23,26 +23,26 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
     {
     case myMode::k_fold:
     {
-		myClassifier->crossClassification(ui->numOfPairsBox->value(),
+		myModel->crossClassification(ui->numOfPairsBox->value(),
 										  ui->foldSpinBox->value()); break;
     }
     case myMode::N_fold:
     {
-		myClassifier->leaveOneOutClassification(); break;
+		myModel->leaveOneOutClassification(); break;
     }
     case myMode::train_test:
     {
-		myClassifier->trainTestClassification(); break;
+		myModel->trainTestClassification(); break;
     }
     case myMode::half_half:
     {
-		myClassifier->halfHalfClassification(); break;
+		myModel->halfHalfClassification(); break;
     }
     default: {break; }
 	}
 	std::cout << "autoClassification: time elapsed = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
-	return myClassifier->averageClassification();
+	return myModel->averageClassification();
 }
 
 void Net::autoClassificationSimple()
@@ -75,7 +75,7 @@ void Net::autoClassificationSimple()
 
 void Net::leaveOneOutClassification()
 {
-	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
+	const matrix & dataMatrix = myModel->getClassifierData()->getData();
 	std::vector<uint> learnIndices;
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
@@ -90,15 +90,15 @@ void Net::leaveOneOutClassification()
                   std::end(learnIndices),
                   i + 1);
 
-		myClassifier->learn(learnIndices);
-		myClassifier->test({i});
+		myModel->learn(learnIndices);
+		myModel->test({i});
 	}
 }
 
 void Net::crossClassification()
 {
-	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
-	const std::vector<uint> & types = myClassifier->getClassifierData()->getTypes();
+	const matrix & dataMatrix = myModel->getClassifierData()->getData();
+	const std::vector<uint> & types = myModel->getClassifierData()->getTypes();
 
     const int numOfPairs = ui->numOfPairsBox->value();
     const int fold = ui->foldSpinBox->value();
@@ -124,8 +124,8 @@ void Net::crossClassification()
         for(int numFold = 0; numFold < fold; ++numFold)
         {
             auto sets = makeIndicesSetsCross(arr, numFold); // on const arr
-            myClassifier->learn(sets.first);
-            myClassifier->test(sets.second);
+            myModel->learn(sets.first);
+            myModel->test(sets.second);
         }
 
         qApp->processEvents();
@@ -143,8 +143,8 @@ std::vector<uint>> Net::makeIndicesSetsCross(
                        const std::vector<std::vector<uint> > & arr,
                        const int numOfFold)
 {
-	const std::valarray<double> & classCount = myClassifier->getClassifierData()->getClassCount();
-	const double numOfClasses = myClassifier->getClassifierData()->getNumOfCl();
+	const std::valarray<double> & classCount = myModel->getClassifierData()->getClassCount();
+	const double numOfClasses = myModel->getClassifierData()->getNumOfCl();
 
     std::vector<uint> learnInd;
     std::vector<uint> tallInd;
@@ -171,7 +171,7 @@ std::vector<uint>> Net::makeIndicesSetsCross(
 
 void Net::halfHalfClassification()
 {
-	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
+	const matrix & dataMatrix = myModel->getClassifierData()->getData();
     std::vector<uint> learnIndices;
     std::vector<uint> tallIndices;
 
@@ -185,15 +185,15 @@ void Net::halfHalfClassification()
         std::cout << "Net::halfHalfClassification: indicesArray empty, return" << std::endl;
         return;
     }
-    myClassifier->learn(learnIndices);
-    myClassifier->test(tallIndices);
+    myModel->learn(learnIndices);
+    myModel->test(tallIndices);
 }
 
 void Net::trainTestClassification(const QString & trainTemplate,
                                   const QString & testTemplate)
 {
-	const matrix & dataMatrix = myClassifier->getClassifierData()->getData();
-	const std::vector<QString> & fileNames = myClassifier->getClassifierData()->getFileNames();
+	const matrix & dataMatrix = myModel->getClassifierData()->getData();
+	const std::vector<QString> & fileNames = myModel->getClassifierData()->getFileNames();
 
     std::vector<uint> learnIndices;
     std::vector<uint> tallIndices;
@@ -213,8 +213,8 @@ void Net::trainTestClassification(const QString & trainTemplate,
         std::cout << "Net::trainTestClassification: indicesArray empty, return" << std::endl;
         return;
     }
-    myClassifier->learn(learnIndices);
-    myClassifier->test(tallIndices);
+    myModel->learn(learnIndices);
+    myModel->test(tallIndices);
 }
 
 

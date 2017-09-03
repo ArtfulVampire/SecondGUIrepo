@@ -22,7 +22,7 @@
 #include <QString>
 #include <QTime>
 
-enum class ClassifierType {ANN, RDA, SVM, DIST, NBC, KNN, WARD};
+enum class ModelType {ANN, RDA, SVM, DIST, NBC, KNN, WARD};
 
 
 namespace clLib
@@ -40,7 +40,7 @@ public:
 	typedef std::pair<double, double> avType; /// average accuracy, kappa
 
 protected:
-    ClassifierType myType;
+	ModelType myType;
     QString typeString;
 
 	ClassifierData * myClassData;
@@ -67,7 +67,7 @@ protected:
 
 
 public:
-    const ClassifierType & getType() { return myType; }
+	const ModelType & getType() { return myType; }
     const QString & getTypeString() { return typeString; }
     void setTestCleanFlag(bool inFlag);
     void deleteFile(uint vecNum, uint predClass);
@@ -143,7 +143,7 @@ private:
     double critError = 0.04;
     double learnRate = 0.05;
 
-    weightType weight{};
+	mutable weightType weight{};
     outputType output{};
     std::vector<int> dim{}; /// only intermediate layers
     std::vector<std::valarray<double>> deltaWeights{};
@@ -176,10 +176,10 @@ public:
     const weightType & getWeight();
 
     void readWeight(const QString & fileName,
-                    weightType * wtsMatrix = nullptr);
-    void writeWeight(const QString & wtsPath = QString());
+					weightType * wtsMatrix = nullptr);
+	void writeWeight(const QString & wtsPath = QString()) const;
     void drawWeight(QString wtsPath = QString(),
-                    QString picPath = QString());
+					QString picPath = QString());
     double adjustLearnRate();
 
 	/// returning output layer values

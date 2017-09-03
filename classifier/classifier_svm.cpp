@@ -5,7 +5,7 @@ using namespace myOut;
 SVM::SVM() : Classifier()
 {
     kernelNum = 0;
-    myType = ClassifierType::SVM;
+    myType = ModelType::SVM;
     typeString = "SVM";
 }
 

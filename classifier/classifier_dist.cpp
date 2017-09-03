@@ -6,7 +6,7 @@ using namespace myOut;
 
 DIST::DIST() : Classifier()
 {
-    myType = ClassifierType::DIST;
+    myType = ModelType::DIST;
     typeString = "DIST";
 }
 

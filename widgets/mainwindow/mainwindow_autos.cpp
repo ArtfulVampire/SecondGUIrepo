@@ -179,7 +179,7 @@ void MainWindow::testSuccessive(const std::vector<double> & vals)
 		Net * net = new Net();
 		net->loadData(def::windsSpectraDir(), {name + "_train"});
 
-		net->setClassifier(ClassifierType::ANN);
+		net->setClassifier(ModelType::ANN);
 		net->setSource("w");
 		net->setMode("t"); // train-test
 
@@ -207,7 +207,7 @@ void MainWindow::testNewClassifiers()
 			Net * net = new Net();
 			net->loadData(paath + "/SpectraSmooth/winds", {def::ExpName});
 
-			net->setClassifier(ClassifierType::ANN);
+			net->setClassifier(ModelType::ANN);
 			net->setMode("k");
 			net->setSource("w");
 			net->setNumOfPairs(30);

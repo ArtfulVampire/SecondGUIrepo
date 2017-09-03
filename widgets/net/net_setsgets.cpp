@@ -6,36 +6,21 @@ void Net::setAutoProcessingFlag(bool a)
     autoFlag = a;
 }
 
-double Net::getLrate()
+double Net::getLrate() const
 {
-    if(myClassifier->getType() != ClassifierType::ANN)
+	if(myModel->getType() != ModelType::ANN)
     {
         return -1;
     }
-    ANN * myANN = dynamic_cast<ANN *>(myClassifier);
+	ANN * myANN = dynamic_cast<ANN *>(myModel);
     return myANN->getLrate();
 }
 
-void Net::setErrCrit(double in)
-{
-    ui->critErrorDoubleSpinBox->setValue(in);
-}
-
-void Net::setErrCritSlot(double in)
-{
-    if(myClassifier->getType() == ClassifierType::ANN)
-    {
-        ANN * myANN = dynamic_cast<ANN *>(myClassifier);
-        myANN->setCritError(in);
-    }
-}
-
-
 void Net::setDimensionalitySlot()
 {
-    if(myClassifier->getType() == ClassifierType::ANN)
+	if(myModel->getType() == ModelType::ANN)
     {
-        ANN * myANN = dynamic_cast<ANN *>(myClassifier);
+		ANN * myANN = dynamic_cast<ANN *>(myModel);
         std::vector<int> pewpew;
         auto strList = ui->dimensionalityLineEdit->text().split(' ', QString::SkipEmptyParts);
         for(QString peww : strList)
@@ -46,75 +31,15 @@ void Net::setDimensionalitySlot()
     }
 }
 
+void Net::setErrCrit(double in)
+{
+	ui->critErrorDoubleSpinBox->setValue(in);
+}
+
 void Net::setLrate(double in)
 {
     ui->learnRateBox->setValue(in);
 }
-
-void Net::setLrateSlot(double in)
-{
-    if(myClassifier->getType() == ClassifierType::ANN)
-    {
-        ANN * myANN = dynamic_cast<ANN *>(myClassifier);
-        myANN->setLrate(in);
-    }
-}
-
-void Net::setSvmTypeSlot(int in)
-{
-    if(myClassifier->getType() == ClassifierType::SVM)
-    {
-        SVM * mySVM = dynamic_cast<SVM *>(myClassifier);
-        mySVM->setSvmType(in);
-    }
-}
-
-void Net::setSvmKernelNumSlot(int in)
-{
-    if(myClassifier->getType() == ClassifierType::SVM)
-    {
-        SVM * mySVM = dynamic_cast<SVM *>(myClassifier);
-        mySVM->setKernelNum(in);
-    }
-}
-
-void Net::setKnnNumSlot(int in)
-{
-    if(myClassifier->getType() == ClassifierType::KNN)
-    {
-        KNN * myKNN = dynamic_cast<KNN *>(myClassifier);
-        myKNN->setNumOfNear(in);
-    }
-}
-
-void Net::setWordNumSlot(int in)
-{
-    if(myClassifier->getType() == ClassifierType::WARD)
-    {
-        WARD * myWARD = dynamic_cast<WARD *>(myClassifier);
-		myWARD->setNumClust(in);
-    }
-}
-
-void Net::setRdaShrinkSlot(double in)
-{
-    if(myClassifier->getType() == ClassifierType::RDA)
-    {
-        RDA * myRDA = dynamic_cast<RDA *>(myClassifier);
-        myRDA->setShrinkage(in);
-    }
-}
-
-void Net::setRdaLambdaSlot(double in)
-{
-    if(myClassifier->getType() == ClassifierType::RDA)
-    {
-        RDA * myRDA = dynamic_cast<RDA *>(myClassifier);
-        myRDA->setLambda(in);
-    }
-}
-
-
 
 void Net::setNumOfPairs(int num)
 {
@@ -204,33 +129,33 @@ void Net::setClassifier(const QString & in)
     }
 }
 
-void Net::setClassifier(ClassifierType typ)
+void Net::setClassifier(ModelType typ)
 {
-    if(typ == ClassifierType::ANN)
+	if(typ == ModelType::ANN)
     {
         ui->classANNRadioButton->setChecked(true);
     }
-    else if(typ == ClassifierType::RDA)
+	else if(typ == ModelType::RDA)
     {
         ui->classRDARadioButton->setChecked(true);
     }
-    else if(typ == ClassifierType::SVM)
+	else if(typ == ModelType::SVM)
     {
         ui->classSVMRadioButton->setChecked(true);
     }
-    else if(typ == ClassifierType::DIST)
+	else if(typ == ModelType::DIST)
     {
         ui->classDISTRadioButton->setChecked(true);
     }
-    else if(typ == ClassifierType::NBC)
+	else if(typ == ModelType::NBC)
     {
         ui->classNBCRadioButton->setChecked(true);
     }
-    else if(typ == ClassifierType::KNN)
+	else if(typ == ModelType::KNN)
     {
         ui->classKNNRadioButton->setChecked(true);
     }
-    else if(typ == ClassifierType::WARD)
+	else if(typ == ModelType::WARD)
     {
         ui->classWARDRadioButton->setChecked(true);
     }
@@ -239,17 +164,17 @@ void Net::setClassifier(ClassifierType typ)
 void Net::setClassifier(QAbstractButton * but, bool i)
 {
     if(!i) return;
-    if(myClassifier != nullptr)
+	if(myModel != nullptr)
 	{
-        delete myClassifier;
+		delete myModel;
 	}
 
     if(but->text() == "ANN")
     {
-        myClassifier = new ANN();
-        ANN * myANN = dynamic_cast<ANN *>(myClassifier);
+		myModel = new ANN();
+		ANN * myANN = dynamic_cast<ANN *>(myModel);
 
-		myClassifier->setClassifierData(myClassifierData);
+		myModel->setClassifierData(myClassifierData);
 
         myANN->setLrate(ui->learnRateBox->value());
         myANN->setCritError(ui->critErrorDoubleSpinBox->value());
@@ -257,42 +182,42 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     }
     else if(but->text() == "RDA")
 	{
-        myClassifier = new RDA();
-        RDA * myRDA = dynamic_cast<RDA *>(myClassifier);
+		myModel = new RDA();
+		RDA * myRDA = dynamic_cast<RDA *>(myModel);
         myRDA->setShrinkage(ui->rdaShrinkSpinBox->value());
         myRDA->setLambda(ui->rdaLambdaSpinBox->value());
 
     }
     else if(but->text() == "SVM")
     {
-        myClassifier = new SVM();
-        SVM * mySVM = dynamic_cast<SVM *>(myClassifier);
+		myModel = new SVM();
+		SVM * mySVM = dynamic_cast<SVM *>(myModel);
         mySVM->setKernelNum(ui->svmKernelSpinBox->value());
     }
     else if(but->text() == "DIST")
     {
-        myClassifier = new DIST();
+		myModel = new DIST();
 //        DIST * myDIST = dynamic_cast<DIST *>(myClassifier);
     }
     else if(but->text() == "NBC")
     {
-        myClassifier = new NBC();
+		myModel = new NBC();
 //        NBC * myNBC = dynamic_cast<NBC *>(myClassifier);
     }
     else if(but->text() == "KNN")
     {
-        myClassifier = new KNN();
-        KNN * myKNN = dynamic_cast<KNN *>(myClassifier);
+		myModel = new KNN();
+		KNN * myKNN = dynamic_cast<KNN *>(myModel);
         myKNN->setNumOfNear(ui->knnNumOfNearSpinBox->value());
     }
     else if(but->text() == "WARD")
     {
-        myClassifier = new WARD();
-        WARD * myWARD = dynamic_cast<WARD *>(myClassifier);
+		myModel = new WARD();
+		WARD * myWARD = dynamic_cast<WARD *>(myModel);
 		myWARD->setNumClust(ui->knnNumOfNearSpinBox->value());
 	}
 
-	myClassifier->setClassifierData(myClassifierData);
+	myModel->setClassifierData(myClassifierData);
 }
 
 void Net::setSourceSlot(QAbstractButton * but)

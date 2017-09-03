@@ -71,17 +71,17 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1,
 
 	myClassifierData.z_transform();
 
-	this->setClassifier(ClassifierType::NBC);
-	this->setClassifier(ClassifierType::ANN);
+	this->setClassifier(ModelType::NBC);
+	this->setClassifier(ModelType::ANN);
 
 	/// consts - set prelearn
 	setErrCrit(0.05);
 	setLrate(0.002);
 
-	myClassifier->learnAll(); /// get initial weights on train set
+	myModel->learnAll(); /// get initial weights on train set
 	myClassifierData.reduceSize(suc::learnSetStay);
 
-	ANN * myANN = dynamic_cast<ANN *>(myClassifier);
+	ANN * myANN = dynamic_cast<ANN *>(myModel);
 	myANN->writeWeight("/media/Files/Data/Feedback/SuccessClass/2.txt");
 	myANN->drawWeight("/media/Files/Data/Feedback/SuccessClass/2.txt",
 					  "/media/Files/Data/Feedback/SuccessClass/2.jpg");
@@ -137,7 +137,7 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1,
 	std::cout << "file 2 time = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 
-	return myClassifier->averageClassification();
+	return myModel->averageClassification();
 }
 
 void Net::successiveProcessing()
@@ -156,9 +156,9 @@ void Net::successiveProcessing()
     setErrCrit(0.05);
     setLrate(0.002);
 
-    myClassifier->learnAll(); /// get initial weights on train set
+    myModel->learnAll(); /// get initial weights on train set
 
-	ANN * myANN = dynamic_cast<ANN *>(myClassifier);
+	ANN * myANN = dynamic_cast<ANN *>(myModel);
 	myANN->writeWeight("/media/Files/Data/Feedback/SuccessClass/1.txt");
 	myANN->drawWeight("/media/Files/Data/Feedback/SuccessClass/1.txt",
 					  "/media/Files/Data/Feedback/SuccessClass/1.jpg");
@@ -182,7 +182,7 @@ void Net::successiveProcessing()
 		type = myLib::getTypeOfFileName(fileNam);
 		successiveLearning(tempArr, type, fileNam);
 	}
-    myClassifier->averageClassification();
+    myModel->averageClassification();
 }
 
 void Net::successivePreclean(const QString & spectraPath, const QStringList & filters)
@@ -221,12 +221,12 @@ void Net::successivePreclean(const QString & spectraPath, const QStringList & fi
 
 	std::cout << "N-fold cleaning" << std::endl;
 
-    myClassifier->setTestCleanFlag(true);
+    myModel->setTestCleanFlag(true);
 	for(int i = 0; i < 5; ++i)
     {
 		if(autoClassification(spectraPath).first == 100.) break;
     }
-    myClassifier->setTestCleanFlag(false);
+    myModel->setTestCleanFlag(false);
 }
 
 void Net::successiveLearning(const std::valarray<double> & newSpectre,
@@ -237,7 +237,7 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
 	myClassifierData.addItem(newSpectre, newType, newFileName);
 
 	// take the last and increment confusion matrix
-	const std::pair<int, double> outType = myClassifier->classifyDatumLast();
+	const std::pair<int, double> outType = myModel->classifyDatumLast();
 
 	if((outType.first == newType && outType.second < suc::errorThreshold)
 	   || passed[newType] < suc::learnSetStay /// add first learnSetStay windows unconditionally
@@ -255,7 +255,7 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
 
 	if(numGoodNew >= suc::numGoodNewLimit)
 	{
-		myClassifier->successiveRelearn();
+		myModel->successiveRelearn();
 		numGoodNew = 0;
 	}
 }

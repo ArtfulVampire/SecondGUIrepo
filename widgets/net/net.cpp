@@ -105,7 +105,7 @@ Net::Net() :
 
 
 	myClassifierData = ClassifierData();
-	myClassifier = new NBC();
+	myModel = new NBC();
 
 
 
@@ -126,11 +126,12 @@ Net::Net() :
 			this, SLOT(setClassifier(QAbstractButton*, bool)));
 
 	QObject::connect(ui->learnAllButton, &QPushButton::clicked,
-					 [this](){
-		if(myClassifier)
+					 [this]()
+	{
+		if(myModel)
 		{
 			std::cout << "Net: learnAll" << std::endl;
-			myClassifier->learnAll();
+			myModel->learnAll();
 		}
 	});
 
@@ -138,33 +139,52 @@ Net::Net() :
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWtsSlot()));
     QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(writeWtsSlot()));
     QObject::connect(ui->drawWtsButton, SIGNAL(clicked()), this, SLOT(drawWtsSlot()));
-    QObject::connect(ui->learnRateBox, SIGNAL(valueChanged(double)),
-                     this, SLOT(setLrateSlot(double)));
-    QObject::connect(ui->critErrorDoubleSpinBox, SIGNAL(valueChanged(double)),
-                     this, SLOT(setErrCritSlot(double)));
+	QObject::connect(ui->learnRateBox,
+					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+					 [this](double in)
+	{ if(myModel->getType() == ModelType::ANN) { dynamic_cast<ANN*>(myModel)->setLrate(in); } });
+
+	QObject::connect(ui->critErrorDoubleSpinBox,
+					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+					 [this](double in)
+	{ if(myModel->getType() == ModelType::ANN) { dynamic_cast<ANN*>(myModel)->setCritError(in); } });
+
     QObject::connect(ui->dimensionalityLineEdit, SIGNAL(returnPressed()),
                      this, SLOT(setDimensionalitySlot()));
 
     /// SVM
-    QObject::connect(ui->svmKernelSpinBox, SIGNAL(valueChanged(int)),
-                     this, SLOT(setSvmKernelNumSlot(int)));
-    QObject::connect(ui->svmTypeSpinBox, SIGNAL(valueChanged(int)),
-                     this, SLOT(setSvmTypeSlot(int)));
+	QObject::connect(ui->svmKernelSpinBox,
+					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+					 [this](int in)
+	{ if(myModel->getType() == ModelType::SVM) { dynamic_cast<SVM*>(myModel)->setKernelNum(in); } });
+
+	QObject::connect(ui->svmTypeSpinBox,
+					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+					 [this](int in)
+	{ if(myModel->getType() == ModelType::SVM) { dynamic_cast<SVM*>(myModel)->setSvmType(in); } });
 
     /// KNN
-    QObject::connect(ui->knnNumOfNearSpinBox, SIGNAL(valueChanged(int)),
-                     this, SLOT(setKnnNumSlot(int)));
+	QObject::connect(ui->knnNumOfNearSpinBox,
+					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+					 [this](int in)
+	{ if(myModel->getType() == ModelType::KNN) { dynamic_cast<KNN*>(myModel)->setNumOfNear(in); } });
 
     /// WARD
-    QObject::connect(ui->wordNumOfClustSpinBox, SIGNAL(valueChanged(int)),
-                     this, SLOT(setWordNumSlot(int)));
+	QObject::connect(ui->wordNumOfClustSpinBox,
+					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+					 [this](int in)
+	{ if(myModel->getType() == ModelType::WARD) { dynamic_cast<WARD*>(myModel)->setNumClust(in); } });
 
     /// LDA/QDA
-    QObject::connect(ui->rdaShrinkSpinBox, SIGNAL(valueChanged(double)),
-                     this, SLOT(setRdaShrinkSlot(double)));
-    QObject::connect(ui->rdaLambdaSpinBox, SIGNAL(valueChanged(double)),
-                     this, SLOT(setRdaLambdaSlot(double)));
+	QObject::connect(ui->rdaShrinkSpinBox,
+					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+					 [this](double in)
+	{ if(myModel->getType() == ModelType::RDA) { dynamic_cast<RDA*>(myModel)->setShrinkage(in); } });
 
+	QObject::connect(ui->rdaLambdaSpinBox,
+					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+					 [this](double in)
+	{ if(myModel->getType() == ModelType::RDA) { dynamic_cast<RDA*>(myModel)->setLambda(in); } });
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -185,7 +205,7 @@ Net::~Net()
 
 void Net::drawWtsSlot()
 {
-    if(myClassifier->getType() != ClassifierType::ANN)
+	if(myModel->getType() != ModelType::ANN)
     {
         return;
     }
@@ -197,14 +217,13 @@ void Net::drawWtsSlot()
     {
         return;
     }
-    ANN * myANN = dynamic_cast<ANN *>(myClassifier);
-    myANN->drawWeight(helpString);
+	dynamic_cast<ANN *>(myModel)->drawWeight(helpString);
 }
 
 
 void Net::writeWtsSlot()
 {
-    if(myClassifier->getType() != ClassifierType::ANN)
+	if(myModel->getType() != ModelType::ANN)
     {
         return;
     }
@@ -237,13 +256,12 @@ void Net::writeWtsSlot()
         return;
     }
 
-    ANN * myANN = dynamic_cast<ANN *>(myClassifier);
-    myANN->writeWeight(helpString);
+	dynamic_cast<ANN *>(myModel)->writeWeight(helpString);
 }
 
 void Net::readWtsSlot()
 {
-    if(myClassifier->getType() != ClassifierType::ANN)
+	if(myModel->getType() != ModelType::ANN)
     {
         return;
     }
@@ -255,7 +273,7 @@ void Net::readWtsSlot()
 	{
         return;
     }
-    ANN * myANN = dynamic_cast<ANN *>(myClassifier);
+	ANN * myANN = dynamic_cast<ANN *>(myModel);
     myANN->readWeight(helpString);
 }
 

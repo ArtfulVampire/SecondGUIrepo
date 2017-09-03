@@ -5,7 +5,7 @@ using namespace myOut;
 KNN::KNN()
 {
     numOfNear = 10;
-    myType = ClassifierType::KNN;    
+    myType = ModelType::KNN;    
     typeString = "KNN";
 }
 

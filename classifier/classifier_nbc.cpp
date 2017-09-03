@@ -6,7 +6,7 @@ NBC::NBC() : Classifier()
 {
 //	std::cout << myClassData->getNumOfCl() << std::endl;
 
-    myType = ClassifierType::NBC;
+    myType = ModelType::NBC;
     typeString = "NBC";
 }
 
