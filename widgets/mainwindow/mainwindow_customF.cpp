@@ -25,8 +25,9 @@ void MainWindow::customFunc()
 //					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_2.edf");
 //	exit(0);
 
-	return;
+//	return;
 
+#if 0
 	/// count correctness and average times
 	std::vector<std::pair<QString, QString>> guys{
 		std::make_pair("Beketova", "BAM"),
@@ -48,13 +49,13 @@ void MainWindow::customFunc()
 //	autos::createAnsFiles("/media/Files/Data/FeedbackFinal/Beketova",
 //						  "BAM");
 	exit(0);
+#endif
 
 
 
 
 #if 0
 	/// my fcking with markers in FeedbackFinal
-	/// count correctness and average times
 	std::vector<std::pair<QString, QString>> guys{
 		std::make_pair("Beketova", "BAM"),
 				std::make_pair("Burtcev", "BAV"),
@@ -589,37 +590,72 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// Galya_tactile things
-//	QString str19;
-//	for(int i = 0; i < 19; ++i)
-//	{
-//		str19 += nm(i + 1) + " ";
-//	}
-
-//	const QString tact = "/media/Files/Data/Galya/AllTactile_backup";
-//	auto dirList = QDir(tact).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-//	for(QString dr : dirList)
-//	{
-//		auto filList = QDir(tact + "/" + dr).entryList(def::edfFilters);
-//		for(QString fl : filList)
-//		{
 
 
-//			edfFile file;
-//			file.readEdfFile(tact + "/" + dr + "/" + fl, true);
-//			QString helpString{};
-//			for(int i = 0; i < 19; ++i)
-//			{
-//				helpString += nm(file.findChannel(coords::lbl19[i]) + 1) + " ";
-//			}
-//			if(helpString != str19)
-//			{
-//				file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
-//			}
-//		}
-//	}
-//	exit(0);
+	if(0)
+	{
+		/// initial copying
+		for(QString add : {"young", "adults"})
+		{
+			const QString workPath = def::GalyaFolder + "/NormSept17/" + add;
+			repair::toLatinDir(workPath);
+			repair::deleteSpacesDir(workPath);
+
+			/// clear names
+			for(QString fileName : QDir(workPath).entryList(def::edfFilters))
+			{
+				QString newName = fileName;
+				newName.replace("_DL_", "_", Qt::CaseInsensitive);
+				newName.replace("_dl.", ".", Qt::CaseInsensitive);
+				newName.replace("_PR.", ".", Qt::CaseInsensitive);
+				QFile::rename(workPath + "/" + fileName,
+							  workPath + "/" + newName);
+			}
+
+			repair::toLowerDir(workPath);
+			autos::GalyaToFolders(workPath);
+		}
+		exit(0);
+	}
+
+	if(0)
+	{
+		/// checks and corrects channels order consistency
+		QString str19;
+		for(int i = 0; i < 19; ++i)
+		{
+			str19 += nm(i + 1) + " ";
+		}
+
+		for(QString add : {"young", "adults"})
+		{
+			const QString tact = def::GalyaFolder + "/NormSept17/" + add;
+			auto dirList = QDir(tact).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(QString dr : dirList)
+			{
+				auto filList = QDir(tact + "/" + dr).entryList(def::edfFilters);
+				for(QString fl : filList)
+				{
+					edfFile file;
+					file.readEdfFile(tact + "/" + dr + "/" + fl, true);
+					QString helpString{};
+					for(int i = 0; i < 19; ++i)
+					{
+						helpString += nm(file.findChannel(coords::lbl19[i]) + 1) + " ";
+					}
+					if(helpString != str19)
+					{
+						std::cout << add + "/" + dr + "/" + fl << std::endl;
+						/// rewrite file with correct chan order
+						file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
+					}
+				}
+			}
+		}
+		exit(0);
+	}
 
 //	auto txtLst = QDir("/media/Files/Data/Galya/AllTactile_out/").entryList({"*.txt"});
 //	for(QString txt : txtLst)
@@ -630,7 +666,6 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-//	return;
 //	const QString pp = "/media/Files/Data/Galya/AllTactile_backup/bad/Mustafina_Karina_6";
 //	auto ll = QDir(pp).entryList(def::edfFilters);
 //	for(auto fn : ll)
@@ -645,14 +680,23 @@ void MainWindow::customFunc()
 
 //	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Umanskaya_d2_dim.txt", '\t') << std::endl;
 //	exit(0);
-//	def::currAutosUser = def::autosUser::Galya;
-//	autos::Galya_tactile("/media/Files/Data/Galya/AllTactile");
-//	myLib::replaceSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/all_.txt",
-//								"\n0\t",
-//								"\n \t",
-//								"/media/Files/Data/Galya/AllTactile_out/all__.txt");
-//	myLib::areEqualFiles("/media/Files/Data/Galya/AllTactile_out/all.txt",
-//						 "/media/Files/Data/Galya/AllTactile_out/all_.txt");
+
+	if(1)
+	{
+		/// counting
+		def::currAutosUser = def::autosUser::Galya;
+		for(QString add : {"young", "adults"})
+		{
+			autos::Galya_tactile(def::GalyaFolder + "/NormSept17/" + add);
+		}
+//		myLib::replaceSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/all_.txt",
+//									"\n0\t",
+//									"\n \t",
+//									"/media/Files/Data/Galya/AllTactile_out/all__.txt");
+//		myLib::areEqualFiles("/media/Files/Data/Galya/AllTactile_out/all.txt",
+//							 "/media/Files/Data/Galya/AllTactile_out/all_.txt");
+	exit(0);
+	}
 
 //	const QString from = "/media/Seagate Expansion Drive/Michael/Data/MRI";
 //	const QString to = "/media/Files/Data/MRI_winds";

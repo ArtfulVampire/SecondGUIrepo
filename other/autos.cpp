@@ -1282,12 +1282,13 @@ void GalyaToFolders(const QString & inPath)
 void Galya_tactile(const QString & inPath,
 				   QString outPath)
 {
-
 	QTime myTime;
 	myTime.start();
 
 	def::ntFlag = false;
-	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
+//	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
+	const std::vector<QString> markers{"_2sv", "_2zv", "_4sv", "_4zv",
+									   "_8sv", "_8zv", "_16sv", "_16zv", "_og", "_zg"};
 
 	if(outPath == QString())
 	{
@@ -1365,7 +1366,7 @@ void Galya_tactile(const QString & inPath,
 		}
 
 		/// make one line file for each stimulus
-		if(0)
+		if(1)
 		{
 			for(QString mark : markers)
 			{
@@ -1401,7 +1402,7 @@ void Galya_tactile(const QString & inPath,
 		}
 
 		/// make whole line from all stimuli
-		if(0)
+		if(1)
 		{
 			QStringList fileNamesToArrange;
 			for(QString mark : markers)
@@ -1423,7 +1424,8 @@ void Galya_tactile(const QString & inPath,
 
 	/// make tables whole and people list
 	autos::makeTableFromRows(inPath + "_out",
-							 inPath + "_out/all.txt");
+							 inPath + "_out/all.txt",
+							 true);
 
 	std::cout << "Xenia_TBI_final: time elapsed = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
