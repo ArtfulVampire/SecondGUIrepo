@@ -136,7 +136,8 @@ private:
 
 	/// draw
 	QPixmap currentPic{};
-	int leftDrawLimit; /// in slices
+	int leftDrawLimit; /// in slices	
+	std::vector<std::tuple<QSpinBox*, QLineEdit*, QLineEdit*>> colouredWidgets;
 
 	/// edf and related globals
 	edfFile edfFil{};

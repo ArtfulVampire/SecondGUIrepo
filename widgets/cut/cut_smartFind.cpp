@@ -119,6 +119,21 @@ void Cut::smartFindSetFuncs()
 	static const double norm = myLib::spectreNorm(smLib::fftL(smartFindWindLen),
 												  smartFindWindLen,
 												  edfFil.getFreq());
+	/// theta
+	if(1)
+	{
+		smartFindFuncs.push_back([this](const std::valarray<double> & in) -> double
+		{
+			std::valarray<double> spec = myLib::spectreRtoR(in, smartFindWindLen) * norm;
+			return std::accumulate(std::begin(spec) + fftLimit(4, edfFil.getFreq(), smartFindWindLen),
+								   std::begin(spec) + fftLimit(8, edfFil.getFreq(), smartFindWindLen),
+								   0.);
+		});
+		paramNames.push_back("theta");
+		paramSigmaThreshold.push_back(15); /// check and adjust
+		paramAbsThreshold.push_back(100); /// check and adjust
+	}
+
 	/// alpha
 	if(1)
 	{
@@ -134,20 +149,6 @@ void Cut::smartFindSetFuncs()
 		paramAbsThreshold.push_back(100); /// check and adjust
 	}
 
-	/// theta
-	if(1)
-	{
-		smartFindFuncs.push_back([this](const std::valarray<double> & in) -> double
-		{
-			std::valarray<double> spec = myLib::spectreRtoR(in, smartFindWindLen) * norm;
-			return std::accumulate(std::begin(spec) + fftLimit(4, edfFil.getFreq(), smartFindWindLen),
-								   std::begin(spec) + fftLimit(8, edfFil.getFreq(), smartFindWindLen),
-								   0.);
-		});
-		paramNames.push_back("theta");
-		paramSigmaThreshold.push_back(15); /// check and adjust
-		paramAbsThreshold.push_back(100); /// check and adjust
-	}
 
 	/// beta
 	if(1)
@@ -165,7 +166,7 @@ void Cut::smartFindSetFuncs()
 	}
 
 	/// gamma
-	if(0)
+	if(1)
 	{
 		smartFindFuncs.push_back([this](const std::valarray<double> & in) -> double
 		{
@@ -188,7 +189,7 @@ void Cut::smartFindSetFuncs()
 		});
 		paramNames.push_back("maxAmp");
 		paramSigmaThreshold.push_back(10); /// check and adjust
-		paramAbsThreshold.push_back(50); /// check and adjust
+		paramAbsThreshold.push_back(35); /// check and adjust
 	}
 
 	/// integral
@@ -206,7 +207,7 @@ void Cut::smartFindSetFuncs()
 		});
 #endif
 		paramNames.push_back("intgrl");
-		paramSigmaThreshold.push_back(5); /// check and adjust
+		paramSigmaThreshold.push_back(10); /// check and adjust
 		paramAbsThreshold.push_back(100); /// check and adjust
 	}
 
@@ -280,13 +281,15 @@ void Cut::smartFindFind(bool forward)
 {
 	if( !fileOpened ) { return; }
 
+	const bool checkSigmas = true;
+
 	if(smartFindLearnData.empty() || smartFindThresholds.empty() || smartFindWindParams.empty())
 	{
 		std::cout << "smartFindFind: data not ready" << std::endl;
 		return;
 	}
-	double timeLeftGap = 0.5;
-	int windNum = (leftDrawLimit + timeLeftGap * edfFil.getFreq()) / smartFindWindLen
+	double timeLeftGap = 1.0;
+	int windNum = std::round((leftDrawLimit + timeLeftGap * edfFil.getFreq()) / smartFindWindLen)
 						 + (forward ? 1 : -1);
 	bool proceed = true;
 	while(proceed)
@@ -303,9 +306,9 @@ void Cut::smartFindFind(bool forward)
 											- smartFindThresholds[ch][numFunc].mean)
 								   /  smartFindThresholds[ch][numFunc].sigma;
 
-				if(numSigmas > paramSigmaThreshold[numFunc]) /// add spin box
+				if(numSigmas > paramSigmaThreshold[numFunc] && checkSigmas) /// add spin box
+//				if(numSigmas > 10. && checkSigmas) /// add spin box
 				{
-
 					std::cout << paramNames[numFunc] << "\t"
 							  << edfFil.getLabels(ch) << "\t"
 							  << "sgm" << "\t"

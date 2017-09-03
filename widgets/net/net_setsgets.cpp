@@ -12,22 +12,25 @@ double Net::getLrate() const
     {
         return -1;
     }
-	ANN * myANN = dynamic_cast<ANN *>(myModel);
-    return myANN->getLrate();
+	else
+	{
+		if(ANN * myANN = dynamic_cast<ANN *>(myModel)) { return myANN->getLrate(); }
+		else { std::cout << "Net::getLrate: ANN bad cast" << std::endl; return -1; }
+	}
 }
 
 void Net::setDimensionalitySlot()
 {
 	if(myModel->getType() == ModelType::ANN)
-    {
-		ANN * myANN = dynamic_cast<ANN *>(myModel);
+	{
         std::vector<int> pewpew;
         auto strList = ui->dimensionalityLineEdit->text().split(' ', QString::SkipEmptyParts);
         for(QString peww : strList)
         {
             pewpew.push_back(peww.toInt());
         }
-        myANN->setDim(pewpew);
+		if(ANN * myANN = dynamic_cast<ANN *>(myModel)) { myANN->setDim(pewpew); }
+		else { std::cout << "Net::setDimensionalitySlot: bad cast" << std::endl; }
     }
 }
 
@@ -172,51 +175,56 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     if(but->text() == "ANN")
     {
 		myModel = new ANN();
-		ANN * myANN = dynamic_cast<ANN *>(myModel);
+		if(ANN * myANN = dynamic_cast<ANN *>(myModel))
+		{
+			myModel->setClassifierData(myClassifierData);
 
-		myModel->setClassifierData(myClassifierData);
-
-        myANN->setLrate(ui->learnRateBox->value());
-        myANN->setCritError(ui->critErrorDoubleSpinBox->value());
-		setDimensionalitySlot();
+			myANN->setLrate(ui->learnRateBox->value());
+			myANN->setCritError(ui->critErrorDoubleSpinBox->value());
+			setDimensionalitySlot();
+		}
+		else { std::cout << "Net::setClassifier: ANN bad cast" << std::endl; }
     }
     else if(but->text() == "RDA")
 	{
 		myModel = new RDA();
-		RDA * myRDA = dynamic_cast<RDA *>(myModel);
-        myRDA->setShrinkage(ui->rdaShrinkSpinBox->value());
-        myRDA->setLambda(ui->rdaLambdaSpinBox->value());
+		if(RDA * myRDA = dynamic_cast<RDA *>(myModel))
+		{
+			myRDA->setShrinkage(ui->rdaShrinkSpinBox->value());
+			myRDA->setLambda(ui->rdaLambdaSpinBox->value());
+		}
+		else { std::cout << "Net::setClassifier: RDA bad cast" << std::endl; }
 
     }
     else if(but->text() == "SVM")
     {
 		myModel = new SVM();
-		SVM * mySVM = dynamic_cast<SVM *>(myModel);
-        mySVM->setKernelNum(ui->svmKernelSpinBox->value());
+		if(SVM * mySVM = dynamic_cast<SVM *>(myModel))
+		{ mySVM->setKernelNum(ui->svmKernelSpinBox->value()); }
+		else { std::cout << "Net::setClassifier: SVM bad cast" << std::endl; }
     }
     else if(but->text() == "DIST")
     {
 		myModel = new DIST();
-//        DIST * myDIST = dynamic_cast<DIST *>(myClassifier);
     }
     else if(but->text() == "NBC")
     {
 		myModel = new NBC();
-//        NBC * myNBC = dynamic_cast<NBC *>(myClassifier);
     }
     else if(but->text() == "KNN")
     {
 		myModel = new KNN();
-		KNN * myKNN = dynamic_cast<KNN *>(myModel);
-        myKNN->setNumOfNear(ui->knnNumOfNearSpinBox->value());
+		if(KNN * myKNN = dynamic_cast<KNN *>(myModel))
+		{ myKNN->setNumOfNear(ui->knnNumOfNearSpinBox->value()); }
+		else { std::cout << "Net::setClassifier: KNN bad cast" << std::endl; }
     }
     else if(but->text() == "WARD")
     {
 		myModel = new WARD();
-		WARD * myWARD = dynamic_cast<WARD *>(myModel);
-		myWARD->setNumClust(ui->knnNumOfNearSpinBox->value());
+		if(WARD * myWARD = dynamic_cast<WARD *>(myModel))
+		{ myWARD->setNumClust(ui->knnNumOfNearSpinBox->value()); }
+		else { std::cout << "Net::setClassifier: WARD bad cast" << std::endl; }
 	}
-
 	myModel->setClassifierData(myClassifierData);
 }
 

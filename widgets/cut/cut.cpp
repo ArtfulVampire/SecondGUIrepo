@@ -17,6 +17,7 @@ Cut::Cut() :
 	this->setAttribute(Qt::WA_DeleteOnClose);
     this->setWindowTitle("Cut-e");
 
+	/// files
 	ui->subdirComboBox->addItem("");
 	ui->subdirComboBox->addItem("Reals");
 	ui->subdirComboBox->addItem("winds");
@@ -31,6 +32,7 @@ Cut::Cut() :
 	ui->suffixComboBox->setCurrentText("");
 //	ui->suffixComboBox->setCurrentText("sum"); /// iitp
 
+	/// draws
 	ui->yNormDoubleSpinBox->setDecimals(2);
 	ui->yNormDoubleSpinBox->setMaximum(5.);
 	ui->yNormDoubleSpinBox->setMinimum(0.01);
@@ -44,33 +46,23 @@ Cut::Cut() :
     ui->paintLengthDoubleSpinBox->setDecimals(1);
 	ui->paintLengthDoubleSpinBox->setSingleStep(0.2);
 
-
-	ui->setMarkLeftSpinBox->setMaximum(255);
-	ui->setMarkRightSpinBox->setMaximum(255);
-	ui->setMarkLeftSpinBox->setValue(241);
-	ui->setMarkRightSpinBox->setValue(0);
-
 //	drawSamples();
 
     ui->scrollArea->setWidget(ui->picLabel);
     ui->scrollArea->installEventFilter(this);
+	ui->picLabel->installEventFilter(this);
 
 	ui->color1LineEdit->setText("blue");
 	ui->color2LineEdit->setText("red");
 	ui->color3LineEdit->setText("orange");
-	const std::vector<std::tuple<QSpinBox*, QLineEdit*, QLineEdit*>> forColor
+	colouredWidgets =
 	{
 		std::make_tuple(ui->color1SpinBox, ui->colorChan1LineEdit, ui->color1LineEdit),
 		std::make_tuple(ui->color2SpinBox, ui->colorChan2LineEdit, ui->color2LineEdit),
 		std::make_tuple(ui->color3SpinBox, ui->colorChan3LineEdit, ui->color3LineEdit)
 	};
 
-
-	ui->iitpSaveNewNumSpinBox->setMaximum(50);
-	ui->iitpSaveNewNumSpinBox->setValue(24);
-
-
-	// derivativesGridLayout
+	/// derivativesGridLayout
 	ui->derivVal1SpinBox->setMaximum(1000);		ui->derivVal1SpinBox->setMinimum(-1000);
 	ui->derivVal2SpinBox->setMaximum(1000);		ui->derivVal2SpinBox->setMinimum(-1000);
 	ui->derivFirst1SpinBox->setMaximum(500);	ui->derivFirst1SpinBox->setMinimum(-500);
@@ -78,11 +70,35 @@ Cut::Cut() :
 	ui->derivSecond1SpinBox->setMaximum(500);	ui->derivSecond1SpinBox->setMinimum(-500);
 	ui->derivSecond2SpinBox->setMaximum(500);	ui->derivSecond2SpinBox->setMinimum(-500);
 
+	/// markers
+	ui->setMarkLeftSpinBox->setMaximum(255);
+	ui->setMarkRightSpinBox->setMaximum(255);
+	ui->setMarkLeftSpinBox->setValue(241);
+	ui->setMarkRightSpinBox->setValue(0);
 	ui->findNextMarkSpinBox->setMaximum(255);
 	ui->findNextMarkSpinBox->setValue(241);
 	ui->findPrevMarkSpinBox->setMaximum(255);
 	ui->findPrevMarkSpinBox->setValue(241);
 
+	/// smartFind
+	for(QDoubleSpinBox * a : qtLib::widgetsOfLayout<QDoubleSpinBox>(ui->smartFindGrid))
+	{
+		a->setMaximum(500.);
+		a->setMinimum(10.);
+		a->setSingleStep(5.);
+	}
+	ui->smartFindThetaSpinBox->setValue(80);
+	ui->smartFindAlphaSpinBox->setValue(100);
+	ui->smartFindBetaSpinBox->setValue(50);
+	ui->smartFindGammaSpinBox->setValue(40);
+	ui->smartFindAmplSpinBox->setValue(35);
+	ui->smartFindIntgrlSpinBox->setValue(150);
+
+	/// iitp
+	ui->iitpSaveNewNumSpinBox->setMaximum(35);
+	ui->iitpSaveNewNumSpinBox->setValue(24);
+
+	/// shortcuts
 	ui->nextButton->setShortcut(tr("d"));
 	ui->prevButton->setShortcut(tr("a"));
 	ui->saveSubsecPushButton->setShortcut(tr("c"));
@@ -98,37 +114,21 @@ Cut::Cut() :
 	QShortcut * copyShortcut = new QShortcut(QKeySequence(tr("Ctrl+c")), this);
 	QShortcut * pasteShortcut = new QShortcut(QKeySequence(tr("Ctrl+v")), this);
 	QShortcut * cutShortcut = new QShortcut(QKeySequence(tr("Ctrl+x")), this);
-//	ui->setMarkLeftPushButton->setShortcut(tr("1"));
-//	ui->setMarkRightPushButton->setShortcut(tr("2"));
 
-
+	/// files
 	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browseSlot()));
-
-	QObject::connect(undoShortcut, SIGNAL(activated()), this, SLOT(undoSlot()));
-	QObject::connect(copyShortcut, SIGNAL(activated()), this, SLOT(copySlot()));
-	QObject::connect(pasteShortcut, SIGNAL(activated()), this, SLOT(pasteSlot()));
-	QObject::connect(cutShortcut, SIGNAL(activated()), this, SLOT(cutSlot()));
-
-
-	QObject::connect(ui->iitpDisableEcgCheckBox, &QCheckBox::clicked, this, &Cut::paint);
-	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked, this, &Cut::paint);
-	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
-					 this, SLOT(paint()));
-	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
-					 this, SLOT(paint()));
-	QObject::connect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
-					 this, SLOT(resizeWidget(double)));
-	QObject::connect(this, SIGNAL(buttonPressed(char,int)), this, SLOT(mousePressSlot(char,int)));
-
     QObject::connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(next()));
 	QObject::connect(ui->prevButton, SIGNAL(clicked()), this, SLOT(prev()));
 	QObject::connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(saveSlot()));
 	QObject::connect(ui->saveSubsecPushButton, SIGNAL(clicked()), this, SLOT(saveSubsecSlot()));
 	QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
-	QObject::connect(ui->subtractMeansPushButton, &QPushButton::clicked,
-					 [this](){ 	for(auto & row : dataCutLocal) { row -= smLib::mean(row); } paint(); });
-	QObject::connect(ui->linearApproxPushButton, SIGNAL(clicked()), this, SLOT(linearApproxSlot()));
 
+	/// modify
+	QObject::connect(undoShortcut, SIGNAL(activated()), this, SLOT(undoSlot()));
+	QObject::connect(copyShortcut, SIGNAL(activated()), this, SLOT(copySlot()));
+	QObject::connect(pasteShortcut, SIGNAL(activated()), this, SLOT(pasteSlot()));
+	QObject::connect(cutShortcut, SIGNAL(activated()), this, SLOT(cutSlot()));
+	QObject::connect(ui->linearApproxPushButton, SIGNAL(clicked()), this, SLOT(linearApproxSlot()));
 	QObject::connect(ui->zeroButton, SIGNAL(clicked()), this, SLOT(zeroSlot()));
 	QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitSlot()));
 	QObject::connect(ui->zeroFromZeroPushButton, SIGNAL(clicked()), this, SLOT(zeroFromZeroSlot()));
@@ -136,7 +136,15 @@ Cut::Cut() :
 	QObject::connect(ui->zeroTillEndPushButton, SIGNAL(clicked()), this, SLOT(zeroTillEndSlot()));
 	QObject::connect(ui->splitTillEndPushButton, SIGNAL(clicked()), this, SLOT(splitTillEndSlot()));
 	QObject::connect(ui->cutPausesPushButton, SIGNAL(clicked()), this, SLOT(cutPausesSlot()));
+	QObject::connect(ui->subtractMeansPushButton, &QPushButton::clicked,
+					 [this]()
+	{ for(auto & row : dataCutLocal) { row -= smLib::mean(row); } paint(); }); /// MARKERS!
+	QObject::connect(ui->setMarkLeftPushButton, &QPushButton::clicked,
+					 [this]() { this->setMarkerSlot(true); });
+	QObject::connect(ui->setMarkRightPushButton, &QPushButton::clicked,
+					 [this]() { this->setMarkerSlot(false); });
 
+	/// navi
     QObject::connect(ui->forwardStepButton, SIGNAL(clicked()), this, SLOT(forwardStepSlot()));
     QObject::connect(ui->backwardStepButton, SIGNAL(clicked()), this, SLOT(backwardStepSlot()));
     QObject::connect(ui->forwardFrameButton, SIGNAL(clicked()), this, SLOT(forwardFrameSlot()));
@@ -150,22 +158,29 @@ Cut::Cut() :
 	QObject::connect(ui->findPrevNonzeroMarkPushButton, &QPushButton::clicked,
 					 [this](){ findPrevMark(-1); });
 
-	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
-	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
-	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
-	QObject::connect(ui->iitpSaveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
-	QObject::connect(ui->setMarkLeftPushButton, &QPushButton::clicked,
-					 [this]()
-	{
-		this->setMarkerSlot(true);
-	});
-	QObject::connect(ui->setMarkRightPushButton, &QPushButton::clicked,
-					 [this]()
-	{
-		this->setMarkerSlot(false);
 
-	});
+	/// draws
+	QObject::connect(ui->iitpDisableEcgCheckBox, &QCheckBox::clicked, this, &Cut::paint);
+	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked, this, &Cut::paint);
+	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(paint()));
+	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(paint()));
+	QObject::connect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(resizeWidget(double)));
+	QObject::connect(this, SIGNAL(buttonPressed(char,int)), this, SLOT(mousePressSlot(char,int)));
+	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
+					 this, SLOT(timesAndDiffSlot()));
+	QObject::connect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
+					 this, SLOT(timesAndDiffSlot()));
+	for(auto p : colouredWidgets)
+	{
+		QObject::connect(std::get<0>(p), static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+						 [this, p](){ this->colorSpinSlot(std::get<0>(p), std::get<1>(p)); } );
+		QObject::connect(std::get<2>(p), SIGNAL(returnPressed()), this, SLOT(paint()));
+	}
 
+	/// smartFind
 	QObject::connect(ui->smartFindShowPushButton, &QPushButton::clicked,
 					 [this](){ this->smartFindShowValues(); });
 	QObject::connect(ui->smartFindLearnPushButton, SIGNAL(clicked()), this, SLOT(smartFindLearnSlot()));
@@ -180,23 +195,25 @@ Cut::Cut() :
 		smartFindWindParams.clear();
 		smartFindThresholds.clear();
 	});
-
-	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
-					 this, SLOT(timesAndDiffSlot()));
-	QObject::connect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
-					 this, SLOT(timesAndDiffSlot()));
-
-
-	for(auto p : forColor)
+	QObject::connect(ui->smartFindSetAbsThrPushButton, &QPushButton::clicked,
+					 [this]()
 	{
-		QObject::connect(std::get<0>(p), static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-						 [this, p](){ this->colorSpinSlot(std::get<0>(p), std::get<1>(p)); } );
-		QObject::connect(std::get<2>(p), SIGNAL(returnPressed()), this, SLOT(paint()));
-		std::get<0>(p)->setMinimum(-1); std::get<0>(p)->setMaximum(24); std::get<0>(p)->setValue(-1);
-	}
-	ui->picLabel->installEventFilter(this);
+		this->paramAbsThreshold.clear();
+		for(auto p : qtLib::widgetsOfLayout<QDoubleSpinBox>(ui->smartFindGrid))
+		{
+			this->paramAbsThreshold.push_back(p->value()); /// CARE ABOUT ORDER
+		}
+		std::cout << "smartFindAbsThrSet: " << this->paramAbsThreshold << std::endl;
+	});
+
+	/// IITP
+	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
+	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
+	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
+	QObject::connect(ui->iitpSaveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
 
 	smartFindSetFuncs();
+	ui->smartFindSetAbsThrPushButton->click();
 }
 
 Cut::~Cut()
@@ -455,20 +472,16 @@ void Cut::colorSpinSlot(QSpinBox * spin, QLineEdit * lin)
 std::vector<std::pair<int, QColor>> Cut::makeColouredChans()
 {
 	std::vector<std::pair<int, QColor>> res;
-	if(ui->color1SpinBox->value() >= 0)
+	for(auto p : this->colouredWidgets)
 	{
-		res.push_back(std::make_pair(ui->color1SpinBox->value(),
-									 QColor(ui->color1LineEdit->text())));
-	}
-	if(ui->color2SpinBox->value() >= 0)
-	{
-		res.push_back(std::make_pair(ui->color2SpinBox->value(),
-									 QColor(ui->color2LineEdit->text())));
-	}
-	if(ui->color3SpinBox->value() >= 0)
-	{
-		res.push_back(std::make_pair(ui->color3SpinBox->value(),
-									 QColor(ui->color3LineEdit->text())));
+		if(
+		   std::get<0>(p)->value() >= 0 &&
+		   std::get<0>(p)->value() < edfFil.getNs()
+		   )
+		{
+			res.push_back(std::make_pair(std::get<0>(p)->value(),
+										 QColor(std::get<2>(p)->text())));
+		}
 	}
 	return res;
 }

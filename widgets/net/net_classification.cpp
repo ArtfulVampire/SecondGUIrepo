@@ -15,8 +15,8 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
 	if(myModel->getType() == ModelType::ANN)
 	{
 		/// adjust learnRate
-		ANN * myANN = dynamic_cast<ANN*>(myModel);
-		myANN->adjustLearnRate();
+		if(ANN * myANN = dynamic_cast<ANN*>(myModel)) { myANN->adjustLearnRate(); }
+		else { std::cout << "Net::autoClassification: ANN bad cast (adjustLrate)" << std::endl; }
 	}
 
     switch(Mode)
@@ -224,10 +224,13 @@ void Net::customF()
 #if 0
 	/// get wts pics from classifier
 
-	ANN * myANN = dynamic_cast<ANN *>(myClassifier);
-	myANN->learnAll();
-	myANN->writeWeight();
-	myANN->drawWeight();
+	if(ANN * myANN = dynamic_cast<ANN *>(myModel))
+	{
+		myANN->learnAll();
+		myANN->writeWeight();
+		myANN->drawWeight();
+	}
+	else { std::cout << "Net::customF: ANN bad cast" << std::endl; }
 	return;
 #endif
 

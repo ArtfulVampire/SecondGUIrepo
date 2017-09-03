@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1515</width>
-    <height>750</height>
+    <height>823</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -36,7 +36,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>270</y>
+     <y>340</y>
      <width>1501</width>
      <height>470</height>
     </rect>
@@ -110,9 +110,9 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>900</x>
-     <y>130</y>
-     <width>271</width>
+     <x>910</x>
+     <y>156</y>
+     <width>220</width>
      <height>110</height>
     </rect>
    </property>
@@ -167,13 +167,13 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>900</x>
-     <y>100</y>
+     <x>910</x>
+     <y>120</y>
      <width>253</width>
-     <height>24</height>
+     <height>28</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="linearApproxHorizontalLayout">
+   <layout class="QHBoxLayout" name="linearApproxHorLayout">
     <item>
      <widget class="QPushButton" name="linearApproxPushButton">
       <property name="text">
@@ -200,10 +200,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>500</x>
-     <y>39</y>
+     <x>420</x>
+     <y>36</y>
      <width>280</width>
-     <height>80</height>
+     <height>79</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="derivativesGridLayout">
@@ -211,13 +211,6 @@
      <widget class="QLabel" name="label_12">
       <property name="text">
        <string>chan</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>val</string>
       </property>
      </widget>
     </item>
@@ -259,15 +252,22 @@
     <item row="2" column="3">
      <widget class="QDoubleSpinBox" name="derivSecond2SpinBox"/>
     </item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>val</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>500</x>
-     <y>125</y>
-     <width>371</width>
-     <height>116</height>
+     <x>12</x>
+     <y>32</y>
+     <width>401</width>
+     <height>121</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
@@ -284,49 +284,6 @@
        <string>Split</string>
       </property>
      </widget>
-    </item>
-    <item row="0" column="2" rowspan="3">
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QSpinBox" name="leftLimitSpinBox"/>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string>left</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QDoubleSpinBox" name="leftTimeSpinBox"/>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="label_14">
-        <property name="text">
-         <string>right</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QDoubleSpinBox" name="rightTimeSpinBox"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QSpinBox" name="diffLimitSpinBox"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLabel" name="label_17">
-        <property name="text">
-         <string>diff</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QDoubleSpinBox" name="diffTimeSpinBox"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QSpinBox" name="rightLimitSpinBox"/>
-      </item>
-     </layout>
     </item>
     <item row="1" column="0">
      <widget class="QPushButton" name="zeroFromZeroPushButton">
@@ -391,28 +348,58 @@
       </item>
      </layout>
     </item>
+    <item row="0" column="2" rowspan="3">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QSpinBox" name="leftLimitSpinBox"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string>left</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QDoubleSpinBox" name="leftTimeSpinBox"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_14">
+        <property name="text">
+         <string>right</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QDoubleSpinBox" name="rightTimeSpinBox"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QSpinBox" name="diffLimitSpinBox"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="label_17">
+        <property name="text">
+         <string>diff</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QDoubleSpinBox" name="diffTimeSpinBox"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QSpinBox" name="rightLimitSpinBox"/>
+      </item>
+     </layout>
+    </item>
    </layout>
   </widget>
-  <widget class="QPushButton" name="smartFindShowPushButton">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>240</y>
-     <width>118</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>smartFindShow</string>
-   </property>
-  </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>40</y>
-     <width>480</width>
-     <height>194</height>
+     <y>160</y>
+     <width>450</width>
+     <height>171</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -443,9 +430,6 @@
        <string>set mark right</string>
       </property>
      </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QSpinBox" name="findPrevMarkSpinBox"/>
     </item>
     <item row="1" column="1" colspan="2">
      <spacer name="horizontalSpacer_5">
@@ -478,19 +462,6 @@
     </item>
     <item row="1" column="5">
      <widget class="QSpinBox" name="setMarkLeftSpinBox"/>
-    </item>
-    <item row="1" column="6" colspan="2">
-     <spacer name="horizontalSpacer_3">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>18</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
     </item>
     <item row="1" column="8">
      <widget class="QSpinBox" name="setMarkRightSpinBox"/>
@@ -571,6 +542,16 @@
       </property>
      </widget>
     </item>
+    <item row="4" column="8" colspan="2">
+     <widget class="QLineEdit" name="saveSubsecAddNameLineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
     <item row="4" column="3" colspan="2">
      <widget class="QPushButton" name="forwardFrameButton">
       <property name="text">
@@ -585,48 +566,29 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="8" colspan="2">
-     <widget class="QLineEdit" name="saveSubsecAddNameLineEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+    <item row="1" column="6" colspan="2">
+     <spacer name="horizontalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
-     </widget>
-    </item>
-    <item row="5" column="0" colspan="3">
-     <widget class="QPushButton" name="smartFindPrevPushButton">
-      <property name="text">
-       <string>smartFindPrev</string>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>18</width>
+        <height>20</height>
+       </size>
       </property>
-     </widget>
+     </spacer>
     </item>
-    <item row="5" column="3" colspan="2">
-     <widget class="QPushButton" name="smartFindNextPushButton">
-      <property name="text">
-       <string>smartFindNext</string>
-      </property>
-     </widget>
+    <item row="1" column="0">
+     <widget class="QSpinBox" name="findPrevMarkSpinBox"/>
     </item>
-    <item row="5" column="5" colspan="3">
-     <widget class="QPushButton" name="smartFindClearPushButton">
-      <property name="text">
-       <string>smartFindClear</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="8" colspan="2">
-     <widget class="QPushButton" name="smartFindLearnPushButton">
-      <property name="text">
-       <string>smartFindLearn</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0" colspan="2">
+    <item row="5" column="0" colspan="2">
      <widget class="QDoubleSpinBox" name="paintStartDoubleSpinBox"/>
     </item>
-    <item row="6" column="2">
+    <item row="5" column="5" colspan="2">
+     <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox"/>
+    </item>
+    <item row="5" column="2">
      <spacer name="horizontalSpacer">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -639,17 +601,14 @@
       </property>
      </spacer>
     </item>
-    <item row="6" column="3" colspan="2">
+    <item row="5" column="3" colspan="2">
      <widget class="QLabel" name="paintStartLabel">
       <property name="text">
        <string>paint start</string>
       </property>
      </widget>
     </item>
-    <item row="6" column="5" colspan="2">
-     <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox"/>
-    </item>
-    <item row="6" column="7">
+    <item row="5" column="7">
      <spacer name="horizontalSpacer_2">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -662,7 +621,7 @@
       </property>
      </spacer>
     </item>
-    <item row="6" column="8" colspan="2">
+    <item row="5" column="8" colspan="2">
      <widget class="QLabel" name="label_6">
       <property name="text">
        <string>paint length</string>
@@ -671,11 +630,11 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>900</x>
-     <y>10</y>
+     <x>780</x>
+     <y>35</y>
      <width>311</width>
      <height>81</height>
     </rect>
@@ -749,6 +708,120 @@
     </item>
    </layout>
   </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>160</y>
+     <width>344</width>
+     <height>170</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="smartFindGrid">
+    <item row="0" column="0">
+     <widget class="QPushButton" name="smartFindLearnPushButton">
+      <property name="text">
+       <string>smartFindLearn</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QPushButton" name="smartFindClearPushButton">
+      <property name="text">
+       <string>smartFindClear</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="label_7">
+      <property name="text">
+       <string>theta</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QDoubleSpinBox" name="smartFindThetaSpinBox"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="smartFindShowPushButton">
+      <property name="text">
+       <string>smartFindShow</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>alpha</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QDoubleSpinBox" name="smartFindAlphaSpinBox"/>
+    </item>
+    <item row="2" column="2">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>beta</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QDoubleSpinBox" name="smartFindBetaSpinBox"/>
+    </item>
+    <item row="3" column="2">
+     <widget class="QLabel" name="label_11">
+      <property name="text">
+       <string>gamma</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="3">
+     <widget class="QDoubleSpinBox" name="smartFindGammaSpinBox"/>
+    </item>
+    <item row="4" column="2">
+     <widget class="QLabel" name="label_9">
+      <property name="text">
+       <string>ampl</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="3">
+     <widget class="QDoubleSpinBox" name="smartFindAmplSpinBox"/>
+    </item>
+    <item row="5" column="0">
+     <widget class="QPushButton" name="smartFindPrevPushButton">
+      <property name="text">
+       <string>smartFindPrev</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QPushButton" name="smartFindNextPushButton">
+      <property name="text">
+       <string>smartFindNext</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="2">
+     <widget class="QLabel" name="label_10">
+      <property name="text">
+       <string>integral</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="3">
+     <widget class="QDoubleSpinBox" name="smartFindIntgrlSpinBox"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="smartFindSetAbsThrPushButton">
+      <property name="text">
+       <string>smartFindSetThr</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <zorder>picLabel</zorder>
   <zorder>scrollArea</zorder>
   <zorder>layoutWidget</zorder>
@@ -758,19 +831,24 @@
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
-  <zorder>findNextMarkPushButton</zorder>
-  <zorder>findNextMarkSpinBox</zorder>
-  <zorder>rightLimitSpinBox</zorder>
-  <zorder>smartFindPrevPushButton</zorder>
-  <zorder>horizontalSpacer</zorder>
-  <zorder>horizontalSpacer_2</zorder>
-  <zorder>horizontalSpacer_3</zorder>
-  <zorder>horizontalSpacer_4</zorder>
-  <zorder>horizontalSpacer_5</zorder>
-  <zorder>horizontalSpacer_6</zorder>
-  <zorder></zorder>
-  <zorder>smartFindLearnPushButton</zorder>
   <zorder>smartFindShowPushButton</zorder>
+  <zorder>label_4</zorder>
+  <zorder>smartFindPrevPushButton</zorder>
+  <zorder>smartFindLearnPushButton</zorder>
+  <zorder>smartFindNextPushButton</zorder>
+  <zorder>smartFindClearPushButton</zorder>
+  <zorder>label_2</zorder>
+  <zorder>label_3</zorder>
+  <zorder>label_7</zorder>
+  <zorder>label_9</zorder>
+  <zorder>label_10</zorder>
+  <zorder>smartFindThetaSpinBox</zorder>
+  <zorder>smartFindAlphaSpinBox</zorder>
+  <zorder>smartFindBetaSpinBox</zorder>
+  <zorder>smartFindAmplSpinBox</zorder>
+  <zorder>smartFindIntgrlSpinBox</zorder>
+  <zorder>label_11</zorder>
+  <zorder>smartFindGammaSpinBox</zorder>
  </widget>
  <resources/>
  <connections/>

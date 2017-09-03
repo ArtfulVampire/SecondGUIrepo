@@ -581,15 +581,10 @@ void MainWindow::drawReals()
 
 void MainWindow::cleanDirsCheckAllBoxes(bool fl)
 {
-	ui->cleanRealsCheckBox->setChecked(fl);
-	ui->cleanRealsSpectraCheckBox->setChecked(fl);
-	ui->cleanWindsCheckBox->setChecked(fl);
-	ui->cleanWindsSpectraCheckBox->setChecked(fl);
-	ui->cleanRealsSignalsCheckBox->setChecked(fl);
-	ui->cleanWindsSignalsCheckBox->setChecked(fl);
-	ui->cleanFromRealsCheckBox->setChecked(fl);
-	ui->cleanMarkersCheckBox->setChecked(fl);
-	ui->cleanSpectraImgCheckBox->setChecked(fl);
+	for(auto ch : qtLib::widgetsOfLayout<QCheckBox>(ui->cleanDirsGrid))
+	{
+		ch->setChecked(fl);
+	}
 }
 
 void MainWindow::cleanDirs()
@@ -602,21 +597,14 @@ void MainWindow::cleanDirs()
         return;
     }
 
-	for(int i = 0; i < ui->cleanDirsLayout->count(); ++i)
+	for(auto item : qtLib::widgetsOfLayout<QCheckBox>(ui->cleanDirsGrid))
 	{
-		QCheckBox * item = dynamic_cast<QCheckBox*>(ui->cleanDirsLayout->itemAt(i)->widget());
-		if(item && item->isChecked())
+		if(item->isChecked())
 		{
 			if(item->text() == "markers")
-			{
-				helpString = def::dir->absolutePath();
-				myLib::cleanDir(helpString, "markers", 0);
-			}
+			{ myLib::cleanDir(def::dir->absolutePath(), "markers", 0); }
 			else
-			{
-				helpString = def::dir->absolutePath()+ "/" + item->text();
-				myLib::cleanDir(helpString);
-			}
+			{ myLib::cleanDir(def::dir->absolutePath() + "/" + item->text()); }
 		}
 	}
 	helpString = "dirs cleaned\nns equals to " + nm(globalEdf.getNs());

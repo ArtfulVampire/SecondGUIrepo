@@ -135,6 +135,8 @@ Net::Net() :
 		}
 	});
 
+	/// SHOLD I CHECK BAD CAST IF I CHECK ModelType?
+
     /// ANN
     QObject::connect(ui->loadWtsButton, SIGNAL(clicked()), this, SLOT(readWtsSlot()));
     QObject::connect(ui->saveWtsButton, SIGNAL(clicked()), this, SLOT(writeWtsSlot()));
@@ -217,6 +219,7 @@ void Net::drawWtsSlot()
     {
         return;
     }
+	/// check bad cast?
 	dynamic_cast<ANN *>(myModel)->drawWeight(helpString);
 }
 
@@ -255,7 +258,7 @@ void Net::writeWtsSlot()
 		std::cout << "saveWtsSlot: no file is chosen to save" << std::endl;
         return;
     }
-
+	/// check bad cast?
 	dynamic_cast<ANN *>(myModel)->writeWeight(helpString);
 }
 
@@ -273,8 +276,8 @@ void Net::readWtsSlot()
 	{
         return;
     }
-	ANN * myANN = dynamic_cast<ANN *>(myModel);
-    myANN->readWeight(helpString);
+	if(ANN * myANN = dynamic_cast<ANN *>(myModel)) { myANN->readWeight(helpString); }
+	else { std::cout << "Net::readWtsSlot: ANN bad cast" << std::endl; }
 }
 
 

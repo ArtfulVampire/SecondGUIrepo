@@ -58,7 +58,7 @@ void GalyaProcessing(const QString & procDirPath,
 	const auto filesVec = filesList.toVector();
 
 
-	int Mask;
+	int Mask{};
 	switch(def::currAutosUser)
 	{
 		case def::autosUser::Galya:
@@ -70,7 +70,7 @@ void GalyaProcessing(const QString & procDirPath,
 				   autos::featuresMask::Hjorth;
 
 //			Mask = autos::featuresMask::Hilbert;
-			Mask = autos::featuresMask::fracDim;
+//			Mask = autos::featuresMask::fracDim;
 
 			break;
 		}
@@ -1525,7 +1525,7 @@ void feedbackFinalTimes(const QString & edfsPath,
 
 		std::vector<int> nums = {241, 247};
 		int sta = 0;
-		int fin = 0;
+//		int fin = 0;
 		int num = -1;
 
 		/// [time, corr, type]

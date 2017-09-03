@@ -315,7 +315,7 @@
       </layout>
      </item>
      <item row="3" column="2">
-      <layout class="QGridLayout" name="cleanDirsLayout">
+      <layout class="QGridLayout" name="cleanDirsGrid">
        <item row="0" column="0">
         <widget class="QCheckBox" name="cleanRealsCheckBox">
          <property name="text">

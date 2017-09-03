@@ -270,17 +270,19 @@ void Cut::setValuesByEdf()
 	int eog2 = edfFil.findChannel(redStr);
 	if(eog2 == eog1) { eog2 = edfFil.findChannel("EOG3"); }
 
-	ui->color1SpinBox->setMaximum(edfFil.getNs() - 1);
-	ui->color2SpinBox->setMaximum(edfFil.getNs() - 1);
-	ui->color3SpinBox->setMaximum(edfFil.getNs() - 1);
+	for(auto p : colouredWidgets)
+	{
+		std::get<0>(p)->setMaximum(edfFil.getNs() - 1);
+	}
 	ui->color1SpinBox->setValue(eog1);
 	ui->color2SpinBox->setValue(eog2);
 	ui->color3SpinBox->setValue(-1);
 
-	ui->derivChan1SpinBox->setMaximum(edfFil.getNs() - 1);
-	ui->derivChan2SpinBox->setMaximum(edfFil.getNs() - 1);
-	ui->derivChan2SpinBox->setValue(edfFil.getNs() - 1); // markers
-	ui->derivChan1SpinBox->setValue(edfFil.getNs() - 1); // markers
+	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
+	{
+		a->setMaximum(edfFil.getNs() - 1);
+		a->setValue(edfFil.getNs() - 1); // markers
+	}
 }
 
 void Cut::openFile(const QString & dataFileName)

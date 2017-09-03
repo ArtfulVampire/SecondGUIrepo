@@ -82,6 +82,8 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1,
 	myClassifierData.reduceSize(suc::learnSetStay);
 
 	ANN * myANN = dynamic_cast<ANN *>(myModel);
+	if(!myANN) { std::cout << "Net::successiveByEDF: ANN bad cast" << std::endl; } // return?
+
 	myANN->writeWeight("/media/Files/Data/Feedback/SuccessClass/2.txt");
 	myANN->drawWeight("/media/Files/Data/Feedback/SuccessClass/2.txt",
 					  "/media/Files/Data/Feedback/SuccessClass/2.jpg");
@@ -159,6 +161,8 @@ void Net::successiveProcessing()
     myModel->learnAll(); /// get initial weights on train set
 
 	ANN * myANN = dynamic_cast<ANN *>(myModel);
+	if(!myANN) { std::cout << "Net::successiveProcessing: ANN bad cast" << std::endl; } // return?
+
 	myANN->writeWeight("/media/Files/Data/Feedback/SuccessClass/1.txt");
 	myANN->drawWeight("/media/Files/Data/Feedback/SuccessClass/1.txt",
 					  "/media/Files/Data/Feedback/SuccessClass/1.jpg");
