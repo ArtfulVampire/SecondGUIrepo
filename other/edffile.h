@@ -205,7 +205,7 @@ public:
 	edfFile & divideChannels(std::vector<uint> chanNums = {}, double denom = 2.);
 
 	edfFile & zeroChannels(const std::vector<uint> & chanNums = {});
-	uint findChannel(const QString & str) const;
+	int findChannel(const QString & str) const;
 	std::vector<uint> findChannels(const QString & str) const;
 	std::vector<uint> findChannels(const std::vector<QString> & strs) const;
 
@@ -364,6 +364,16 @@ public:
 	const std::valarray<double> & getMarkArr() const { return edfData[markerChannel]; }
 	int getDataLen() const { return edfData.cols(); }
 	int getMarkChan() const { return markerChannel; }
+	const std::valarray<double> & getData(const QString & ch) const
+	 {
+		int a = this->findChannel(ch);
+		if(a == -1)
+		{
+			std::cout << "edfFile::getData(QString): no such label - " << ch.toStdString() << std::endl;
+			return {};
+		}
+		return edfData[a];
+	}
 	// sets
 	void setData(int chanNum, int timeBin, double val) { edfData[chanNum][timeBin] = val; }
 	void setData(int chanNum, const std::valarray<double> & newChan) { edfData[chanNum] = newChan; }

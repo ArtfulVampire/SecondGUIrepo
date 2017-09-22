@@ -757,22 +757,6 @@ std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 	return res;
 }
 
-std::valarray<double> spectreConj(
-		const std::valarray<double> & inputSpectre)
-{
-	std::valarray<double> res{inputSpectre};
-	for(int i = 0; i < res.size() / 2; ++i)
-	{
-		res[2 * i + 1] = - res[2 * i + 1];
-	}
-	return res;
-}
-
-std::valarray<std::complex<double>> spectreConj(
-		const std::valarray<std::complex<double>> & inputSpectre)
-{
-	return inputSpectre.apply(std::conj);
-}
 
 std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 								  double leftFreq,

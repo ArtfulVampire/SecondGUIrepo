@@ -25,7 +25,63 @@ void MainWindow::customFunc()
 //					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_2.edf");
 //	exit(0);
 
+//	testNewClassifiers();
+//	testSuccessive();
+//	exit(0);
+
+
+
+
+//	setEdfFile(def::iitpSyncFolder +
+//			   + "/Test/Test_02_sum_new.edf");
+
+//	iitp::phaseDifferences(globalEdf.getData("Cz"),
+//						   globalEdf.getData("Fcr"),
+//						   globalEdf.getFreq(),
+//						   24,
+//						   1024).save("/media/Files/Data/phases1.jpg", 0, 100);
+//	exit(0);
+
 //	return;
+
+#if 0
+	/// prepare for eyes clean
+	const QString path = def::dataFolder + "/FeedbackFinalMark";
+	std::vector<std::pair<QString, QString>> guys{
+//		std::make_pair("Beketova", "BAM"),
+//				std::make_pair("Burtcev", "BAV"),
+				std::make_pair("Dovbyish", "DEG"),
+				std::make_pair("Evstratov_n", "ENV"),
+				std::make_pair("Ilyin", "IAE"),
+				std::make_pair("Matasov", "MII"),
+				std::make_pair("Nikonenko", "NUA"),
+				std::make_pair("Semyonov_n", "SAV"),
+				std::make_pair("Sergeev_n", "SAA")
+	};
+	Cut * cut = new Cut();
+	for(auto in : guys)
+	{
+		const QString dr = std::get<0>(in);
+		const QString ExpName = std::get<1>(in);
+
+		for(int i : {1, 2, 3})
+		{
+			QString fn = path + "/" + dr + "/" + ExpName + "_" + nm(i);
+
+//			cut->openFile(fn + ".edf");
+//			cut->cutPausesSlot();
+//			cut->saveSlot();
+
+			this->setEdfFile(fn + "_new.edf");
+			this->rereferenceDataSlot();
+			this->setEdfFile(fn + "_new_rr.edf");
+			this->refilterDataSlot();
+		}
+//		break;
+	}
+	cut->close();
+	exit(0);
+#endif
 
 #if 0
 	/// count correctness and average times
@@ -290,6 +346,57 @@ void MainWindow::customFunc()
 //							"_emg_f");
 	exit(0);
 //	return;
+#endif
+
+#if 0
+	/// iitp test model data
+	const int fftLen = 1024;
+	const int wndN = 150;
+	const double srate = 250.;
+	const double interestFreq = 24.;
+	std::valarray<double> sig1 = myLib::makeSine(fftLen * wndN, interestFreq, srate, 0);
+	std::valarray<double> sig2 = myLib::makeSine(fftLen * wndN, interestFreq, srate, 0.5);
+	for(int i = 0; i < sig1.size() - fftLen; i += fftLen)
+	{
+		auto t = myLib::makeSine(fftLen * wndN, interestFreq, srate,
+								 (rand() % 2 - 0.5) * 2 * (rand() % 100) / 100. * 3);
+		for(int j = 0; j < fftLen; ++j)
+		{
+			sig2[j + i] = t[j + i];
+		}
+	}
+//	sig2 += myLib::makeSine(102400, 22, srate, 0.7);
+//	sig2 += myLib::makeSine(102400, 10, srate, 0.1);
+//	sig2 += myLib::makeSine(102400, 2, srate, 0.5);
+
+
+	auto mine = iitp::coherencyMine(sig1,
+									sig2,
+									srate,
+									interestFreq,
+									fftLen);
+	auto usual = iitp::coherencyUsual(sig1,
+									  sig2,
+									  srate,
+									  interestFreq,
+									  fftLen);
+	std::cout << "mine:  "
+			  << mine << "\t"
+			  << std::abs(mine) << "\t"
+			  << std::arg(mine) << "\t"
+			  << std::endl;
+	std::cout << "usual: "
+			  << usual << "\t"
+			  << std::abs(usual) << "\t"
+			  << std::arg(usual) << "\t"
+			  << std::endl;
+
+	iitp::phaseDifferences(sig1,
+						   sig2,
+						   srate,
+						   interestFreq,
+						   fftLen).save("/media/Files/Data/phases.jpg", 0, 100);
+	exit(0);
 #endif
 
 #if 0
@@ -590,7 +697,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// Galya_tactile things
 
 
@@ -681,7 +788,7 @@ void MainWindow::customFunc()
 //	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Umanskaya_d2_dim.txt", '\t') << std::endl;
 //	exit(0);
 
-	if(1)
+	if(0)
 	{
 		/// counting
 		def::currAutosUser = def::autosUser::Galya;
@@ -689,14 +796,16 @@ void MainWindow::customFunc()
 		{
 			autos::Galya_tactile(def::GalyaFolder + "/NormSept17/" + add);
 		}
-//		myLib::replaceSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/all_.txt",
-//									"\n0\t",
-//									"\n \t",
-//									"/media/Files/Data/Galya/AllTactile_out/all__.txt");
-//		myLib::areEqualFiles("/media/Files/Data/Galya/AllTactile_out/all.txt",
-//							 "/media/Files/Data/Galya/AllTactile_out/all_.txt");
+
 	exit(0);
 	}
+
+//	myLib::replaceSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/all_.txt",
+//								"\n0\t",
+//								"\n \t",
+//								"/media/Files/Data/Galya/AllTactile_out/all__.txt");
+//	myLib::areEqualFiles("/media/Files/Data/Galya/AllTactile_out/all.txt",
+//						 "/media/Files/Data/Galya/AllTactile_out/all_.txt");
 
 //	const QString from = "/media/Seagate Expansion Drive/Michael/Data/MRI";
 //	const QString to = "/media/Files/Data/MRI_winds";
@@ -944,11 +1053,6 @@ void MainWindow::customFunc()
 	}
 	exit(0);
 #endif
-
-//	testNewClassifiers();
-//	testSuccessive()
-	exit(0);
-
 
 #if 0
 	/// Baklushev histograms

@@ -61,6 +61,10 @@ Cut::Cut() :
 		std::make_tuple(ui->color2SpinBox, ui->colorChan2LineEdit, ui->color2LineEdit),
 		std::make_tuple(ui->color3SpinBox, ui->colorChan3LineEdit, ui->color3LineEdit)
 	};
+	for(auto in : colouredWidgets)
+	{
+		std::get<0>(in)->setMinimum(-1);
+	}
 
 	/// derivativesGridLayout
 	ui->derivVal1SpinBox->setMaximum(1000);		ui->derivVal1SpinBox->setMinimum(-1000);

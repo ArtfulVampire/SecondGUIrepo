@@ -28,7 +28,8 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 		{
 			if(ui->windsButton->isChecked())
 			{
-				sliceWinds();
+//				sliceWinds();
+				sliceJustWinds(); /// IITP
 			}
 			else if(ui->realsButton->isChecked())
 			{
@@ -63,6 +64,33 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	std::cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
 }
 
+void MainWindow::sliceJustWinds()
+{
+	const edfFile & fil = globalEdf;
+
+	const int timeShift = ui->timeShiftSpinBox->value() * fil.getFreq();
+	const int wndLength = ui->windowLengthSpinBox->value() * fil.getFreq();
+
+	int windowCounter = 0;
+	for(int i = 0; i < fil.getDataLen() - wndLength; i += timeShift)
+	{
+		QString helpString = def::windsFromRealsDir()
+							 + "/" + fil.getExpName()
+							 + "." + rn(windowCounter++, 4);
+		fil.saveSubsection(i, i + wndLength, helpString, true);
+
+		ui->progressBar->setValue( i * 100. / fil.getDataLen() );
+
+		qApp->processEvents();
+		if(stopFlag)
+		{
+			stopFlag = false;
+			break;
+		}
+	}
+	ui->progressBar->setValue(0);
+}
+
 void MainWindow::sliceWinds()
 {
 	QTime myTime;
@@ -83,7 +111,6 @@ void MainWindow::sliceWinds()
 
 	/// start, typ, filepath
 	std::vector<std::tuple<int, int, QString>> forSave;
-
 
 	int typ = -1;
 

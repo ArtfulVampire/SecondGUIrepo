@@ -509,8 +509,6 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 					  << a << std::endl;
 		}
 	}
-	std::cout << 123 << std::endl;
-
 
 	if(addUndo)
 	{

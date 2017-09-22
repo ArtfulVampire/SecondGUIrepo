@@ -48,6 +48,7 @@ public slots:
 	// files
 	void sliceAll();
 	void sliceWinds();
+	void sliceJustWinds();
 
     void drawSpectraSlot();
     void drawDirSlot();

@@ -40,11 +40,6 @@ std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 								   double rightFreq,
 								   double srate = 250.);
 
-std::valarray<double> spectreConj(const std::valarray<double> & inputSpectre);
-
-std::valarray<std::complex<double>> spectreConj(
-		const std::valarray<std::complex<double>> & inputSpectre);
-
 std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre);
 std::valarray<double> spectreCtoRrev(const std::valarray<std::complex<double>> & inputSpectre);
 

@@ -15,6 +15,137 @@ std::complex<double> gFunc(const std::complex<double> & in)
 	return (1 - pow(std::abs(in), 2)) * pow(atanh(std::abs(in)), 2) / std::norm(in);
 }
 
+QPixmap phaseDifferences(const std::valarray<double> & sig1,
+						 const std::valarray<double> & sig2,
+						 double srate,
+						 double freq,
+						 int fftLen)
+{
+	if(sig1.size() != sig2.size())
+	{
+		return {};
+	}
+	int siz = sig1.size();
+
+	const int index = freq * fftLen / srate;
+
+	const int picSize = 400;
+	QPixmap pic(picSize, picSize);
+	pic.fill();
+	QPainter pnt;
+	pnt.begin(&pic);
+
+	pnt.drawArc(pic.rect(), 0, 360 * 16); /// a circle
+
+	std::vector<double> phis;
+	phis.reserve(250);
+
+	for(int start = 0; start < siz - fftLen; start += fftLen)
+	{
+		auto part1 = smLib::valarSubsec(sig1, start, start + fftLen);
+		auto part2 = smLib::valarSubsec(sig2, start, start + fftLen);
+
+		auto spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
+		auto spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
+		auto res12 = spec1 * spec2.apply(std::conj);
+
+		auto phi = std::arg(res12[index]);
+		phis.push_back(phi);
+		pnt.drawLine(picSize / 2, picSize / 2,
+					 picSize / 2 * (1. + cos(phi)), picSize / 2 * (1. - sin(phi)));
+
+	}
+
+	return pic;
+}
+
+std::complex<double> coherencyUsual(const std::valarray<double> & sig1,
+									const std::valarray<double> & sig2,
+									double srate,
+									double freq, int fftLen)
+{
+	if(sig1.size() != sig2.size())
+	{
+		return {};
+	}
+	int siz = sig1.size();
+
+	const int index = freq * fftLen / srate;
+
+	std::complex<double> res{};
+
+	int counter = 0;
+	for(int start = 0; start < siz - fftLen; start += fftLen, ++counter)
+	{
+		auto part1 = smLib::valarSubsec(sig1, start, start + fftLen);
+		auto part2 = smLib::valarSubsec(sig2, start, start + fftLen);
+
+		const auto spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
+		const auto spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
+		auto res11 = spec1 * spec1.apply(std::conj);
+		auto res12 = spec1 * spec2.apply(std::conj);
+		auto res22 = spec2 * spec2.apply(std::conj);
+
+		auto tmp = res12[index] / sqrt(res11[index] * res22[index]);
+		std::cout << "usual, "
+				  << "abs(tmp) = " << std::abs(tmp) << "\t"
+				  << "arg(tmp) = " << std::arg(tmp) << "\t"
+				  << std::endl;
+
+		res += tmp;
+	}
+	return res / std::complex<double>(counter);
+
+}
+
+std::complex<double> coherencyMine(const std::valarray<double> & sig1,
+								   const std::valarray<double> & sig2,
+								   double srate,
+								   double freq, int fftLen)
+{
+	if(sig1.size() != sig2.size())
+	{
+		return {};
+	}
+	int siz = sig1.size();
+
+	const int index = freq * fftLen / srate;
+
+	std::complex<double> nom{};
+	std::complex<double> den{};
+
+	for(int start = 0; start < siz - fftLen; start += fftLen)
+	{
+		auto part1 = smLib::valarSubsec(sig1, start, start + fftLen);
+		auto part2 = smLib::valarSubsec(sig2, start, start + fftLen);
+
+		const auto spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
+		const auto spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
+
+		auto res11 = spec1 * spec1.apply(std::conj);
+		auto res12 = spec1 * spec2.apply(std::conj);
+		auto res22 = spec2 * spec2.apply(std::conj);
+
+//		std::cout << res11[index] << "\t"
+//				  << std::abs(res11[index]) << "\t"
+//				  << std::arg(res11[index]) << "\t"
+//				  << std::endl;
+//		std::cout << res22[index] << "\t"
+//				  << std::abs(res22[index]) << "\t"
+//				  << std::arg(res22[index]) << "\t"
+//				  << std::endl << std::endl;
+		std::cout << "mine, "
+				  << "abs(nom+) = " << std::abs(res12[index]) << "\t"
+				  << "abs(den+) = " << std::abs(sqrt(res11[index] * res22[index])) << "\t"
+				  << "arg(den+) = " << std::arg(sqrt(res11[index] * res22[index])) << "\t"
+				  << std::endl;
+
+		nom += res12[index];
+		den += sqrt(res11[index] * res22[index]);
+	}
+	return nom / den;
+}
+
 std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 							   const std::vector<std::valarray<double>> & sig2,
 							   double srate,
@@ -47,16 +178,16 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 	spec2 = myLib::spectreRtoC2(sig2[0], fftLen, srate);
 
 	std::valarray<std::complex<double>> res12 =
-			spec1 * myLib::spectreConj(spec2);
+			spec1 * spec2.apply(std::conj);
 	std::valarray<std::complex<double>> res11 =
-			spec1 * myLib::spectreConj(spec1);
+			spec1 * spec1.apply(std::conj);
 	std::valarray<std::complex<double>> res22 =
-			spec2 * myLib::spectreConj(spec2);
+			spec2 * spec2.apply(std::conj);
 
 	std::valarray<std::complex<double>> res1122 =
 			sqrt(res11 * res22);
 	std::valarray<std::complex<double>> R = res12 /
-											sqrt(res11 * res22);
+											res1122;
 	std::valarray<std::complex<double>> a12, a11, a22;
 
 	for(int i = 1; i < siz; ++i)
@@ -64,9 +195,9 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 		spec1 = myLib::spectreRtoC2(sig1[i], fftLen, srate);
 		spec2 = myLib::spectreRtoC2(sig2[i], fftLen, srate);
 
-		a12 = spec1 * myLib::spectreConj(spec2);
-		a11 = spec1 * myLib::spectreConj(spec1);
-		a22 = spec2 * myLib::spectreConj(spec2);
+		a12 = spec1 * spec2.apply(std::conj);
+		a11 = spec1 * spec1.apply(std::conj);
+		a22 = spec2 * spec2.apply(std::conj);
 
 		if(std::abs(a22[index]) > lowThreshold && std::abs(a11[index]) > lowThreshold)
 		{
@@ -114,16 +245,30 @@ std::complex<double> iitpData::coherencyUsual(int chan1, int chan2, double freq)
 	{
 		if(this->crossSpectra[a.first][a.second].size() == 0)
 		{
-			this->crossSpectrum(a.first, a.second);
+			this->countCrossSpectrum(a.first, a.second);
 		}
 	}	
 	if(this->coherenciesUsual[chan1][chan2].size() == 0)
 	{
-		this->coherenciesUsual[chan1][chan2] = this->crossSpectra[chan1][chan2] /
-										  sqrt(this->crossSpectra[chan1][chan1] *
-											   this->crossSpectra[chan2][chan2]);
-	}
+		/// WHAT THE FUCK ???
+//		this->coherenciesUsual[chan1][chan2] = this->crossSpectra[chan1][chan2] /
+//										  sqrt(this->crossSpectra[chan1][chan1] *
+//											   this->crossSpectra[chan2][chan2]);
 
+
+		/// replace 19.09.2017 - MEAN OF COMPLEX UNITS
+		coherenciesUsual[chan1][chan2].resize(this->piecesFFT[0][0].size());
+
+		for(int i = 0; i < this->piecesData.size(); ++i)
+		{
+			coherenciesUsual[chan1][chan2] += this->piecesFFT[i][chan1] *
+											  this->piecesFFT[i][chan2].apply(std::conj) /
+											  (this->piecesFFT[i][chan1].apply(smLib::abs) *
+											   this->piecesFFT[i][chan2].apply(smLib::abs));
+		}
+		coherenciesUsual[chan1][chan2] /= this->piecesData.size();
+
+	}
 	int index = freq / this->spStep;
 	return coherenciesUsual[chan1][chan2][index];
 }
@@ -140,23 +285,31 @@ std::complex<double> iitpData::coherencyMine(int chan1, int chan2, double freq)
 	{
 		coherenciesMine[chan1][chan2].resize(this->piecesFFT[0][0].size());
 
+
+		/// WHAT THE FUCK ??? - MEAN OF COMPLEX UNITS
+//		for(int i = 0; i < this->piecesData.size(); ++i)
+//		{
+//			coherenciesMine[chan1][chan2] += this->piecesFFT[i][chan1] *
+//										  this->piecesFFT[i][chan2].apply(std::conj) /
+//										  (this->piecesFFT[i][chan1].apply(smLib::abs) *
+//										   this->piecesFFT[i][chan2].apply(smLib::abs));
+//		}
+//		coherenciesMine[chan1][chan2] /= this->piecesData.size();
+
+
+		/// replace 19.09.2017 - SUM OF A_j*exp(i * phi_j) / SUM OF A_j
+		std::valarray<std::complex<double>> nominator(this->piecesFFT[0][0].size());
+		std::valarray<std::complex<double>> denominator(this->piecesFFT[0][0].size());
+
 		for(int i = 0; i < this->piecesData.size(); ++i)
 		{
-#if 01
-			/// .apply(smLib::abs)
-			coherenciesMine[chan1][chan2] += this->piecesFFT[i][chan1] *
-										  this->piecesFFT[i][chan2].apply(std::conj) /
-										  (this->piecesFFT[i][chan1].apply(smLib::abs) *
-										   this->piecesFFT[i][chan2].apply(smLib::abs));
-#else
-			/// smLib::abs( )
-			coherenciesR[chan1][chan2] += this->piecesFFT[i][chan1] *
-										  this->piecesFFT[i][chan2].apply(std::conj) /
-										  (smLib::abs(this->piecesFFT[i][chan1]) *
-										   smLib::abs(this->piecesFFT[i][chan2]));
-#endif
+			nominator += this->piecesFFT[i][chan1] *
+						 this->piecesFFT[i][chan2].apply(std::conj);
+			denominator += this->piecesFFT[i][chan1].apply(smLib::abs) *
+						   this->piecesFFT[i][chan2].apply(smLib::abs);
 		}
-		coherenciesMine[chan1][chan2] /= this->piecesData.size();
+		coherenciesMine[chan1][chan2] = nominator / denominator;
+
 	}
 	int index = freq / this->spStep;
 
@@ -165,9 +318,6 @@ std::complex<double> iitpData::coherencyMine(int chan1, int chan2, double freq)
 
 const iitpData::cohsType & iitpData::getCoherencies() const
 {
-	return coherenciesUsual;
-//	return coherenciesMine;
-
 #if !COHERENCY_TYPE
 	return coherenciesUsual;
 #else
@@ -177,9 +327,6 @@ const iitpData::cohsType & iitpData::getCoherencies() const
 
 std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 {
-	return coherencyUsual(chan1, chan2, freq);
-//	return coherencyMine(chan1, chan2, freq);
-
 #if !COHERENCY_TYPE
 	return coherencyUsual(chan1, chan2, freq);
 #else
@@ -189,7 +336,7 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 }
 
 
-void iitpData::crossSpectrum(int chan1, int chan2)
+void iitpData::countCrossSpectrum(int chan1, int chan2)
 {
 	if(chan1 > chan2)
 	{

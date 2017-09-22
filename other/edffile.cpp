@@ -1515,7 +1515,7 @@ edfFile & edfFile::multiplyChannels(std::vector<uint> chanNums, double mult)
 	return *this;
 }
 
-uint edfFile::findChannel(const QString & str) const
+int edfFile::findChannel(const QString & str) const
 {
 	for(int i = 0; i < this->ns; ++i)
 	{

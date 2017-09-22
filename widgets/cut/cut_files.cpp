@@ -118,6 +118,13 @@ void Cut::saveSubsecSlot()
 	}
 	else if(myFileType == fileType::edf)
 	{
+		if(checkBadRange(ui->leftLimitSpinBox->value(),
+						 ui->rightLimitSpinBox->value(),
+						 "saveSubsec"))
+		{
+			return;
+		}
+
 		QString newPath = currentFile;
 		QString ad = ui->saveSubsecAddNameLineEdit->text();
 		if( !ad.isEmpty())
@@ -134,7 +141,7 @@ void Cut::saveSubsecSlot()
 		}
 
 		edfFil.writeOtherData(dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
-											ui->rightLimitSpinBox->value()), newPath);
+												   ui->rightLimitSpinBox->value()), newPath);
 
 		iitpLog("saveSub", 2, newPath);
 

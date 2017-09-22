@@ -23,6 +23,21 @@ std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
 							   double srate,
 							   double freq);
 
+/// standalone for testing
+QPixmap phaseDifferences(const std::valarray<double> & sig1,
+						 const std::valarray<double> & sig2,
+						 double srate,
+						 double freq, int fftLen);
+
+std::complex<double> coherencyUsual(const std::valarray<double> & sig1,
+									const std::valarray<double> & sig2,
+									double srate,
+									double freq, int fftLen);
+std::complex<double> coherencyMine(const std::valarray<double> & sig1,
+								   const std::valarray<double> & sig2,
+								   double srate,
+								   double freq, int fftLen);
+
 
 
 
@@ -378,11 +393,12 @@ public:
 private:
 	std::vector<matrix> piecesData;
 
+	/// [pieceNumber][channel][array of complex FFT]
 	std::vector<std::vector<std::valarray<std::complex<double>>>> piecesFFT;
-	cohsType coherenciesMine;
-
-
+	/// [chan1][chan2][array of complex] - average crossSpecrum over pieces
 	std::vector<std::vector<std::valarray<std::complex<double>>>> crossSpectra;
+
+	cohsType coherenciesMine;
 	cohsType coherenciesUsual;
 
 	int fftLen = -1;
@@ -395,7 +411,7 @@ public:
 
 	const cohsType & getCoherencies() const;
 
-	void crossSpectrum(int chan1, int chan2);
+	void countCrossSpectrum(int chan1, int chan2);
 
 	iitpData & staging(int numGonioChan);
 	iitpData & staging(const QString & chanName,
