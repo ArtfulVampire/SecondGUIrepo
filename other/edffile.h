@@ -270,7 +270,7 @@ protected:
     int ndr = 0;
     double ddr = 1.;
 	int ns = 0;
-	int srate = 250;
+	double srate = 250.;
 
 	/// cross EOG1-A2, EOG2-A1
 	/// correspond EOG1-A1, EOG2-A2

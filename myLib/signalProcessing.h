@@ -15,6 +15,16 @@
 namespace myLib
 {
 
+
+std::valarray<double> makeSine(int numPoints = 4096,
+							   double freq = 10.,
+							   double srate = 250.,
+							   double startPhase = 0.);
+
+std::valarray<double> makeNoise(int numPoints = 4096);
+
+
+
 /// srate for norm
 std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
 								  int fftLen = -1);
@@ -23,8 +33,8 @@ std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
 								  int fftLen = -1);
 
 std::valarray<std::complex<double>> spectreRtoC2(const std::valarray<double> & inputSignal,
-												 int fftLen = -1,
-												 double srate = 250.);
+												 int fftLen,
+												 double srate);
 
 std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
 								  int fftLen = -1);
@@ -38,7 +48,7 @@ std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 								   double leftFreq,
 								   double rightFreq,
-								   double srate = 250.);
+								   double srate);
 
 std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre);
 std::valarray<double> spectreCtoRrev(const std::valarray<std::complex<double>> & inputSpectre);
@@ -55,7 +65,7 @@ matrix countSpectre(const matrix & inData,
 
 /// original FFT
 void four1(double * dataF, int nn, int isign);
-double spectreNorm(int fftLen, int realSig, int srate);
+double spectreNorm(int fftLen, int realSig, double srate);
 
 
 
@@ -84,20 +94,20 @@ void refilterSpectre(std::valarray<double> & spectr,
 std::valarray<double> refilterFFT(const std::valarray<double> & inputSignal,
 								  double lowFreq,
 								  double highFreq,
-								  bool isNotch = false,
-								  double srate = 250.);
+								  bool isNotch,
+								  double srate);
 
 std::valarray<double> lowPassFFT(const std::valarray<double> & inputSignal,
 								 double cutoffFreq,
-								 double srate = 250.);
+								 double srate);
 
 /// add highPassFFT
 
 matrix refilterMat(const matrix & inputMatrix,
 				   double lowFreq,
 				   double highFreq,
-				   bool isNotch = false,
-				   double srate = 250.);
+				   bool isNotch,
+				   double srate);
 
 enum class windowName {Hann, Hamming, Blackman, Kaiser, rect};
 std::valarray<double> fftWindow(int length, windowName name = windowName::Hann);
@@ -135,12 +145,12 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 
 double alphaPeakFreq(const std::valarray<double> & spectreR,
 					 int initSigLen,
-					 double srate = 250.,
+					 double srate,
 					 double leftLimFreq = 8.,
 					 double rightLimFreq = 13.);
 std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
 									 int initSigLen,
-									 double srate = 250.,
+									 double srate,
 									 double leftFreqLim = 2.,
 									 double rightFreqLim = 19.,
 									 double spectreStepFreq = 1.);
@@ -258,28 +268,28 @@ namespace myDsp
 {
 std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
 									 double cutoffFreq,
-									 double srate = 250.);
+									 double srate);
 std::valarray<double> lowPass(const std::valarray<double> & inputSignal,
 							  double cutoffFreq,
-							  double srate = 250.);
+							  double srate);
 
 
 /// bandPass/bandStop
 std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 							   double lowFreq,
 							   double highFreq,
-							   bool isNotch = false,
-							   double srate = 250.);
+							   bool isNotch,
+							   double srate);
 matrix refilter(const matrix & inputMatrix,
 				double lowFreq,
 				double highFreq,
-				bool isNotch = false,
-				double srate = 250.);
+				bool isNotch,
+				double srate);
 std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 									  double lowFreq,
 									  double highFreq,
-									  bool isNotch = false,
-									  double srate = 250.);
+									  bool isNotch,
+									  double srate);
 } // namespace myDsp
 
 namespace butter

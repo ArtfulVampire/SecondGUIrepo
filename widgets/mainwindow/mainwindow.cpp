@@ -127,8 +127,8 @@ MainWindow::MainWindow() :
     ui->matiPieceLengthSpinBox->setMinimum(4);
     ui->matiPieceLengthSpinBox->setValue(16);
     ui->matiCheckBox->setChecked(def::matiFlag);
-	ui->markerBinTimeSpinBox->setMaximum(250*60*60*2);   // 2 hours
-	ui->markerSecTimeDoubleSpinBox->setMaximum(60*60*2); // 2 hours
+	ui->markerBinTimeSpinBox->setMaximum(250 * 60 * 60 * 2);   // 2 hours
+	ui->markerSecTimeDoubleSpinBox->setMaximum(60 * 60 * 2); // 2 hours
 
 #if SHOW_MATI_WIDGETS
 	/// mati

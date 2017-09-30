@@ -154,8 +154,8 @@ void writeFileInLine(const QString & filePath,
         return;
     }
 
-	bool asCol = false;
-//	bool asCol = true;
+//	bool asCol = false;
+	bool asCol = true;
 
 	if(asCol)
 	{
@@ -566,5 +566,6 @@ void writeSubmatrixFile(const QString & filePath,
 
 template void writeFileInLine(const QString & filePath, const std::vector<double> & outData);
 template void writeFileInLine(const QString & filePath, const std::valarray<double> & outData);
+template void writeFileInLine(const QString & filePath, const std::valarray<std::complex<double>> & outData);
 
 } /// end of namespace myLib

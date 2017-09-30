@@ -659,7 +659,7 @@ std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
 }
 
 std::valarray<std::complex<double>> spectreRtoC2(const std::valarray<double> & inputSignal,
-												int fftLen,
+												 int fftLen,
 												 double srate)
 {
 	if(fftLen <= 0)
@@ -844,7 +844,7 @@ std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre)
 	return res;
 }
 
-double spectreNorm(int fftLen, int realSig, int srate)
+double spectreNorm(int fftLen, int realSig, double srate)
 {
 	return 2. / (double(std::min(realSig, fftLen)) * srate);
 }
@@ -2412,13 +2412,26 @@ std::valarray<double> makeSine(int numPoints,
 							   double srate,
 							   double startPhase)
 {
-	std::valarray<double> res (numPoints);
+	std::valarray<double> res(numPoints);
 	for(int i = 0; i < numPoints; ++i)
 	{
-		res[i] = sin(freq * 2 * pi * (i / srate) + startPhase);
+		res[i] = sin(freq * 2. * pi * (double(i) / srate) + startPhase);
 	}
 	return res;
 }
+
+
+std::valarray<double> makeNoise(int numPoints)
+{
+	srand(time(0));
+	std::valarray<double> res(numPoints);
+	for(int i = 0; i < numPoints; ++i)
+	{
+		res[i] = (rand() % 1000 - 500) / 500.;
+	}
+	return res;
+}
+
 
 
 

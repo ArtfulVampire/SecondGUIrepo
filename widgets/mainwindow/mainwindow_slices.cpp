@@ -243,7 +243,7 @@ void MainWindow::sliceElena()
 			{
 				std::cout << "sliceElena: startFlag == false, "
 						  << "bad marker " << markChanArr[i] << ", "
-						  << "time = " << i / 250. << " sec" << std::endl;
+						  << "time = " << i / fil.getFreq() << " sec" << std::endl;
 			}
 			else
 			{
@@ -279,8 +279,8 @@ void MainWindow::sliceElena()
 					else
 					{
 						std::cout << "sliceElena: too long piece, "
-								  << "start time = " << start / 250. << " sec, "
-								  << "end time = " << i / 250. << " sec" << std::endl;
+								  << "start time = " << start / fil.getFreq() << " sec, "
+								  << "end time = " << i / fil.getFreq() << " sec" << std::endl;
 					}
 				}
 				else
@@ -288,7 +288,7 @@ void MainWindow::sliceElena()
 					std::cout << "sliceElena: startFlag == true, "
 							  << "end mark = " << markChanArr[i] << ", "
 							  << "start == -1, "
-							  << "end time = " << i / 250. << " sec" << std::endl;
+							  << "end time = " << i / fil.getFreq() << " sec" << std::endl;
 				}
 
 				startFlag = false;
@@ -319,8 +319,8 @@ void MainWindow::sliceElena()
 	}
 }
 
-
-void MainWindow::sliceBak(int marker1, int marker2, QString marker) // beginning - from mark1 to mark 2, end 250. Marker - included in filename
+// beginning - from mark1 to mark 2, end 250 Marker - included in filename
+void MainWindow::sliceBak(int marker1, int marker2, QString marker)
 {
     // for Baklushev
     QString helpString;

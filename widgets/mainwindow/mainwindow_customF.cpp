@@ -108,8 +108,6 @@ void MainWindow::customFunc()
 #endif
 
 
-
-
 #if 0
 	/// my fcking with markers in FeedbackFinal
 	std::vector<std::pair<QString, QString>> guys{
@@ -246,6 +244,18 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
+	/// IITP file into two files
+
+	iitp::iitpData fil;
+	fil.readEdfFile("/media/Files/Data/iitp/SYNCED/Test/Test_04_sum_new_abs.edf");
+	myLib::writeFileInLine("/media/Files/Data/iitp1.txt",
+						   fil.getData("Cz"));
+	myLib::writeFileInLine("/media/Files/Data/iitp2.txt",
+						   fil.getData("Ta"));
+	exit(0);
+#endif
+
+#if 0
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -268,16 +278,16 @@ void MainWindow::customFunc()
 //		autos::IITPremoveZchans(guy, def::iitpFolder);
 //		autos::IITPrerefCAR(guy);
 //		return; /// clean init eeg - zero in the beginning
-//		autos::IITPconcat(guy);
+//		autos::IITPconcat(guy); // eeg + emg
 //		return; /// manual sync
 
 //		/// copy files to SYNCED
 
 		autos::IITPemgToAbs(guy);
-//		autos::IITPstaging(guy);	/// flex/extend
+//		autos::IITPstaging(guy);	/// flex/extend markers
 //		autos::IITPfilter(guy);		/// optional
 //		autos::IITPtestCoh(guy);
-		autos::IITPtestCoh2(guy);
+//		autos::IITPtestCoh2(guy);
 //		autos::IITPprocessStaged(guy);
 //		autos::IITPdrawSpectralMaps(guy);
 
@@ -348,54 +358,151 @@ void MainWindow::customFunc()
 //	return;
 #endif
 
-#if 0
-	/// iitp test model data
+
+
+#if 01
+	/// IITP test model data
 	const int fftLen = 1024;
-	const int wndN = 150;
+	const int wndN = 64;
 	const double srate = 250.;
-	const double interestFreq = 24.;
+	const double spStep = srate / fftLen;
+	const double intFr = 17.2;
+	const double interestFreq = std::round(intFr / spStep) * spStep;
+//	const double interestFreq = 17.2;
+	std::cout << "interestFreq = " << interestFreq << std::endl;
+
 	std::valarray<double> sig1 = myLib::makeSine(fftLen * wndN, interestFreq, srate, 0);
+	sig1 += myLib::makeNoise(sig1.size()) * 0.01;
 	std::valarray<double> sig2 = myLib::makeSine(fftLen * wndN, interestFreq, srate, 0.5);
+//	sig2 += myLib::makeNoise(sig2.size()) * 0.05;
+
 	for(int i = 0; i < sig1.size() - fftLen; i += fftLen)
 	{
 		auto t = myLib::makeSine(fftLen * wndN, interestFreq, srate,
-								 (rand() % 2 - 0.5) * 2 * (rand() % 100) / 100. * 3);
+								 (rand() % 2 - 0.5) * 2 * (rand() % 100) / 100. * 0.5);
 		for(int j = 0; j < fftLen; ++j)
 		{
 			sig2[j + i] = t[j + i];
 		}
 	}
-//	sig2 += myLib::makeSine(102400, 22, srate, 0.7);
-//	sig2 += myLib::makeSine(102400, 10, srate, 0.1);
-//	sig2 += myLib::makeSine(102400, 2, srate, 0.5);
+	std::this_thread::sleep_for(std::chrono::seconds{2});
+	sig2 += myLib::makeNoise(sig2.size()) * 0.01;
 
 
-	auto mine = iitp::coherencyMine(sig1,
-									sig2,
-									srate,
-									interestFreq,
-									fftLen);
-	auto usual = iitp::coherencyUsual(sig1,
+	myLib::writeFileInLine("/media/Files/Data/sig1.txt",
+						   sig1);
+	myLib::writeFileInLine("/media/Files/Data/sig2.txt",
+						   sig2);
+//	exit(0);
+
+
+//	myLib::readFileInLine("/media/Files/Data/sig1.txt",
+//						   sig1);
+//	myLib::readFileInLine("/media/Files/Data/sig2.txt",
+//						   sig2);
+
+//	auto spec1 = myLib::spectreRtoC2(sig1);
+//	auto spec2 = myLib::spectreRtoC2(sig2);
+//	decltype(spec1) cross = spec1 * spec2.apply(std::conj);
+
+//	myLib::writeFileInLine("/media/Files/Data/spec1.txt",
+//						   spec1);
+//	myLib::writeFileInLine("/media/Files/Data/spec2.txt",
+//						   spec2);
+//	myLib::writeFileInLine("/media/Files/Data/cross.txt",
+//						   cross);
+//	exit(0);
+
+
+
+
+
+
+
+
+	auto mine = iitp::coherenciesMine(sig1,
 									  sig2,
 									  srate,
-									  interestFreq,
 									  fftLen);
-	std::cout << "mine:  "
-			  << mine << "\t"
-			  << std::abs(mine) << "\t"
-			  << std::arg(mine) << "\t"
-			  << std::endl;
-	std::cout << "usual: "
-			  << usual << "\t"
-			  << std::abs(usual) << "\t"
-			  << std::arg(usual) << "\t"
-			  << std::endl;
 
-	iitp::phaseDifferences(sig1,
+
+	auto usual = iitp::coherenciesUsual(sig1,
+										sig2,
+										srate,
+										fftLen);
+	const double confidence = 1. - std::pow(0.05, 1. / (sig1.size() / fftLen - 1));
+	std::cout << "confidence = " << confidence << std::endl;
+
+	const double freqC = fftLen / srate;
+	std::cout << "freqC = " << freqC << std::endl;
+	const int numFreq = 45;
+	const int siz = freqC * numFreq;
+	std::cout << "siz = " << siz << std::endl;
+
+
+	std::valarray<double> mineDraw(siz);
+	std::valarray<double> usualDraw(siz);
+	for(int i = 0; i < siz; ++i)
+	{
+		mineDraw[i] = std::abs(mine[i]);
+		usualDraw[i] = std::abs(usual[i]);
+	}
+
+#if 0
+	const auto & arr = mineDraw;
+	const QString nam = "Mine";
+#else
+	const auto & arr = usualDraw;
+	const QString nam = "Usual";
+#endif
+
+//	std::cout << arr.max() << std::endl;
+
+	QPixmap pic(800, 600);
+	pic.fill();
+	QPainter pnt;
+	pnt.begin(&pic);
+	for(int i = 0; i < siz-1; ++i)
+	{
+//		std::cout << i << "\t" << arr[i] << std::endl;
+		pnt.drawLine( pic.width() * i / double(siz),
+					  pic.height() * (1. - arr[i]),
+					  pic.width() * (i + 1) / double(siz),
+					  pic.height() * (1. - arr[i + 1]));
+	}
+	/// draw Hz
+	const QFont font = QFont("Helvetica", 8);
+	pnt.setFont(font);
+	for(int i = 0; i < numFreq; ++i)
+	{
+		pnt.drawLine( pic.width() * i / numFreq,
+					  pic.height() * 1,
+					  pic.width() * i / numFreq,
+					  pic.height() * (1. - 0.03));
+		pnt.drawText(pic.width() * i / numFreq,
+					 pic.height() * (1. - 0.03) + QFontMetrics(font).xHeight(),
+					 QString::number(i));
+	}
+	/// confidence line
+	pnt.drawLine(0,
+				 pic.height() * (1. - confidence),
+				 pic.width(),
+				 pic.height() * (1. - confidence));
+	pnt.end();
+	pic.save("/media/Files/Data/cCoh" + nam + ".jpg", 0, 100);
+
+
+
+	exit(0);
+	for(int i = 1; i < 40; ++i)
+
+	{
+		iitp::phaseDifferences(sig1,
 						   sig2,
 						   srate,
-						   interestFreq,
-						   fftLen).save("/media/Files/Data/phases.jpg", 0, 100);
+						   i,
+						   fftLen).save("/media/Files/Data/phases_" + nm (i) + ".jpg", 0, 100);
+	}
 	exit(0);
 #endif
 

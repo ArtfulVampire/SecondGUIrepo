@@ -8,6 +8,8 @@
 
 using namespace myOut;
 
+namespace autos
+{
 void IITPrename(const QString & guyName)
 {
 	const QString pth = def::iitpFolder + "/" + guyName + "/";
@@ -1478,5 +1480,7 @@ void IITPmaxCoh(const QString & filePath,
 				<< std::endl;
 	}
 }
+
+} // end namespace autos
 
 

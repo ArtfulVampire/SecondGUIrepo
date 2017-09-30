@@ -76,12 +76,6 @@ InputIterator find_back(InputIterator last, InputIterator first, const Typ & val
 template <class InputIterator, class Pred>
 InputIterator find_back_if(InputIterator last, InputIterator first, Pred pred);
 
-
-std::valarray<double> makeSine(int numPoints = 4096,
-							   double freq = 10.,
-							   double srate = 250,
-							   double startPhase = 0.);
-
 QString rerefChannel(const QString & initialName,
 					 const QString & targetRef = "Ar",
 					 const QString & currentNum = "1",

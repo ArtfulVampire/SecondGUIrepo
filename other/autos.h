@@ -188,7 +188,6 @@ void successiveNetPrecleanWinds(const QString & windsPath);
 
 
 matrix makeTestData(const QString & outPath);
-void filtering_test();
 void clustering();
 }
 

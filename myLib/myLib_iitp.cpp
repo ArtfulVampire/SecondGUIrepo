@@ -1,4 +1,5 @@
 #include <myLib/iitp.h>
+#include <typeinfo>
 
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
@@ -38,7 +39,7 @@ QPixmap phaseDifferences(const std::valarray<double> & sig1,
 	pnt.drawArc(pic.rect(), 0, 360 * 16); /// a circle
 
 	std::vector<double> phis;
-	phis.reserve(250);
+	phis.reserve(300);
 
 	for(int start = 0; start < siz - fftLen; start += fftLen)
 	{
@@ -59,6 +60,68 @@ QPixmap phaseDifferences(const std::valarray<double> & sig1,
 	return pic;
 }
 
+std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double> & sig1,
+													 const std::valarray<double> & sig2,
+													 double srate,
+													 int fftLen)
+{
+	if(sig1.size() != sig2.size())
+	{
+		return {};
+	}
+
+
+	using specType = std::valarray<std::complex<double>>;
+//	specType res{};
+	specType av11{};
+	specType av12{};
+	specType av22{};
+
+	const auto wnd = myLib::fftWindow(fftLen, myLib::windowName::rect);
+
+	const int windNum = std::floor(sig1.size() / fftLen);
+	for(int windCounter = 0; windCounter < windNum; ++windCounter)
+	{
+		decltype(sig1) part1 = smLib::valarSubsec(sig1,
+												  windCounter * fftLen,
+												  (windCounter + 1) * fftLen)
+							   * wnd
+							   ;
+		decltype(sig2) part2 = smLib::valarSubsec(sig2,
+												  windCounter * fftLen,
+												  (windCounter + 1) * fftLen)
+							   * wnd
+							   ;
+
+		const specType spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
+		const specType spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
+		specType res11 = spec1 * spec1.apply(std::conj);
+		specType res12 = spec1 * spec2.apply(std::conj);
+		specType res22 = spec2 * spec2.apply(std::conj);
+
+		if(av11.size() != res11.size())
+		{
+			av11.resize(res11.size());
+			av12.resize(res11.size());
+			av22.resize(res11.size());
+		}
+
+		av11 += res11;
+		av12 += res12;
+		av22 += res22;
+
+//		specType tmp = res12 / sqrt(res11 * res22);
+
+//		if(res.size() != tmp.size()) { res.resize(tmp.size()); }
+//		res += tmp;
+	}
+	av11 /= windNum;
+	av12 /= windNum;
+	av22 /= windNum;
+//	return res / std::complex<double>(counter);
+	return av12 / sqrt(av11 * av22);
+}
+
 std::complex<double> coherencyUsual(const std::valarray<double> & sig1,
 									const std::valarray<double> & sig2,
 									double srate,
@@ -68,34 +131,61 @@ std::complex<double> coherencyUsual(const std::valarray<double> & sig1,
 	{
 		return {};
 	}
-	int siz = sig1.size();
 
 	const int index = freq * fftLen / srate;
+	return coherenciesUsual(sig1, sig2, srate, fftLen)[index];
+}
 
-	std::complex<double> res{};
-
-	int counter = 0;
-	for(int start = 0; start < siz - fftLen; start += fftLen, ++counter)
+std::valarray<std::complex<double>> coherenciesMine(const std::valarray<double> & sig1,
+													 const std::valarray<double> & sig2,
+													 double srate,
+													 int fftLen)
+{
+	if(sig1.size() != sig2.size())
 	{
-		auto part1 = smLib::valarSubsec(sig1, start, start + fftLen);
-		auto part2 = smLib::valarSubsec(sig2, start, start + fftLen);
-
-		const auto spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
-		const auto spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
-		auto res11 = spec1 * spec1.apply(std::conj);
-		auto res12 = spec1 * spec2.apply(std::conj);
-		auto res22 = spec2 * spec2.apply(std::conj);
-
-		auto tmp = res12[index] / sqrt(res11[index] * res22[index]);
-		std::cout << "usual, "
-				  << "abs(tmp) = " << std::abs(tmp) << "\t"
-				  << "arg(tmp) = " << std::arg(tmp) << "\t"
-				  << std::endl;
-
-		res += tmp;
+		return {};
 	}
-	return res / std::complex<double>(counter);
+	int siz = sig1.size();
 
+	using specType = std::valarray<std::complex<double>>;
+
+	specType nom{};
+	specType den{};
+
+	const auto wnd = myLib::fftWindow(fftLen, myLib::windowName::Hamming);
+
+	const int windNum = std::floor(sig1.size() / fftLen);
+	for(int windCounter = 0; windCounter < windNum; ++windCounter)
+	{
+		decltype(sig1) part1 = smLib::valarSubsec(sig1,
+												  windCounter * fftLen,
+												  (windCounter + 1) * fftLen)
+							   * wnd
+							   ;
+		decltype(sig2) part2 = smLib::valarSubsec(sig2,
+												  windCounter * fftLen,
+												  (windCounter + 1) * fftLen)
+							   * wnd
+							   ;
+
+		const specType spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
+		const specType spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
+
+		specType res11 = spec1 * spec1.apply(std::conj);
+		specType res12 = spec1 * spec2.apply(std::conj);
+		specType res22 = spec2 * spec2.apply(std::conj);
+
+
+		if(nom.size() != res12.size())
+		{
+			nom.resize(res12.size());
+			den.resize(res12.size());
+		}
+
+		nom += res12;
+		den += sqrt(res11 * res22);
+	}
+	return nom / den;
 }
 
 std::complex<double> coherencyMine(const std::valarray<double> & sig1,
@@ -107,43 +197,8 @@ std::complex<double> coherencyMine(const std::valarray<double> & sig1,
 	{
 		return {};
 	}
-	int siz = sig1.size();
-
 	const int index = freq * fftLen / srate;
-
-	std::complex<double> nom{};
-	std::complex<double> den{};
-
-	for(int start = 0; start < siz - fftLen; start += fftLen)
-	{
-		auto part1 = smLib::valarSubsec(sig1, start, start + fftLen);
-		auto part2 = smLib::valarSubsec(sig2, start, start + fftLen);
-
-		const auto spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
-		const auto spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
-
-		auto res11 = spec1 * spec1.apply(std::conj);
-		auto res12 = spec1 * spec2.apply(std::conj);
-		auto res22 = spec2 * spec2.apply(std::conj);
-
-//		std::cout << res11[index] << "\t"
-//				  << std::abs(res11[index]) << "\t"
-//				  << std::arg(res11[index]) << "\t"
-//				  << std::endl;
-//		std::cout << res22[index] << "\t"
-//				  << std::abs(res22[index]) << "\t"
-//				  << std::arg(res22[index]) << "\t"
-//				  << std::endl << std::endl;
-		std::cout << "mine, "
-				  << "abs(nom+) = " << std::abs(res12[index]) << "\t"
-				  << "abs(den+) = " << std::abs(sqrt(res11[index] * res22[index])) << "\t"
-				  << "arg(den+) = " << std::arg(sqrt(res11[index] * res22[index])) << "\t"
-				  << std::endl;
-
-		nom += res12[index];
-		den += sqrt(res11[index] * res22[index]);
-	}
-	return nom / den;
+	return coherenciesMine(sig1, sig2, srate, fftLen)[index];
 }
 
 std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
