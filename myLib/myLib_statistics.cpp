@@ -10,8 +10,7 @@ using namespace myOut;
 namespace myLib
 {
 
-template <typename signalType>
-void histogram(const signalType & arr,
+void histogram(const std::valarray<double> & arr,
 			   int numSteps,
 			   const QString & picPath,
 			   std::pair<double, double> xMinMax,
@@ -58,7 +57,7 @@ void histogram(const signalType & arr,
 	}
 
 
-	QPixmap pic(1000, 400);
+	QPixmap pic(numSteps * 30, 400);
 	QPainter pnt;
 	pic.fill();
 	pnt.begin(&pic);
@@ -602,21 +601,5 @@ double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool 
 }
 template double covariance(const std::vector<double> &arr1, const std::vector<double> &arr2, int length, int shift, bool fromZero);
 template double covariance(const std::valarray<double> &arr1, const std::valarray<double> &arr2, int length, int shift, bool fromZero);
-
-
-template
-void histogram(const std::valarray<double> & arr,
-			   int numSteps,
-			   const QString & picPath,
-			   std::pair<double, double> xMinMax,
-			   const QString & color,
-			   int valueMax);
-template
-void histogram(const std::vector<double> & arr,
-			   int numSteps,
-			   const QString & picPath,
-			   std::pair<double, double> xMinMax,
-			   const QString & color,
-			   int valueMax);
 
 } // namespace myLib

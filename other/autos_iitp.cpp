@@ -10,6 +10,61 @@ using namespace myOut;
 
 namespace autos
 {
+QPixmap IITPdrawCoh(const std::valarray<double> & inData,
+					double maxVal,
+					double confidence)
+{
+	const int numFreq = 45;
+	maxVal = ceil(maxVal * 10.) / 10.; /// = n * 0.1
+
+	QPixmap pic(800, 600);
+	pic.fill();
+	QPainter pnt;
+	pnt.begin(&pic);
+	for(int i = 0; i < inData.size()-1; ++i)
+	{
+//		std::cout << i << "\t" << arr[i] << std::endl;
+		pnt.drawLine( pic.width() * i / double(inData.size()),
+					  pic.height() * (1. - inData[i] / maxVal),
+					  pic.width() * (i + 1) / double(inData.size()),
+					  pic.height() * (1. - inData[i + 1] / maxVal));
+	}
+
+	const QFont font = QFont("Helvetica", 8);
+	pnt.setFont(font);
+	/// values
+	const double numVals = std::ceil(maxVal * 10);
+	for(int i = 1; i < numVals; ++i)
+	{
+		pnt.drawLine( 0,
+					  pic.height() * (1. - i * 0.1 / maxVal),
+					  10,
+					  pic.height() * (1. - i * 0.1 / maxVal));
+		pnt.drawText(10 + 2,
+					 pic.height() * (1. - i * 0.1 / maxVal) + QFontMetrics(font).xHeight() / 2,
+					 QString::number(i * 0.1));
+	}
+	/// draw Hz
+	for(int i = 0; i < numFreq; ++i)
+	{
+		pnt.drawLine( pic.width() * i / numFreq,
+					  pic.height() * 1,
+					  pic.width() * i / numFreq,
+					  pic.height() * (1. - 0.03));
+		pnt.drawText(pic.width() * i / numFreq,
+					 pic.height() * (1. - 0.03) + QFontMetrics(font).xHeight(),
+					 QString::number(i));
+	}
+	/// confidence line
+	pnt.drawLine(0,
+				 pic.height() * (1. - confidence),
+				 pic.width(),
+				 pic.height() * (1. - confidence));
+
+	pnt.end();
+	return pic;
+}
+
 void IITPrename(const QString & guyName)
 {
 	const QString pth = def::iitpFolder + "/" + guyName + "/";

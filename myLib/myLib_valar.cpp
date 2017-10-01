@@ -79,6 +79,8 @@ std::valarray<double> reverseArray(const std::valarray<double> & in)
 
 std::valarray<double> valarSubsec(const std::valarray<double> & in, int beg, int en)
 {
+//	return in[std::slice(beg, en-beg, 1)];
+
 	std::valarray<double> res(en - beg);
 	std::copy(std::begin(in) + beg,
 			  std::begin(in) + en,

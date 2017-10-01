@@ -77,24 +77,23 @@ std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double>
 	specType av12{};
 	specType av22{};
 
-	const auto wnd = myLib::fftWindow(fftLen, myLib::windowName::rect);
+	const std::valarray<double> wnd = myLib::fftWindow(fftLen, myLib::windowName::Hamming);
 
 	const int windNum = std::floor(sig1.size() / fftLen);
 	for(int windCounter = 0; windCounter < windNum; ++windCounter)
 	{
-		decltype(sig1) part1 = smLib::valarSubsec(sig1,
-												  windCounter * fftLen,
-												  (windCounter + 1) * fftLen)
-							   * wnd
-							   ;
-		decltype(sig2) part2 = smLib::valarSubsec(sig2,
-												  windCounter * fftLen,
-												  (windCounter + 1) * fftLen)
-							   * wnd
-							   ;
+		std::valarray<double> part1 = smLib::valarSubsec(sig1,
+														 windCounter * fftLen,
+														 (windCounter + 1) * fftLen);
+		part1 *= wnd;
+		std::valarray<double> part2 = smLib::valarSubsec(sig2,
+														 windCounter * fftLen,
+														 (windCounter + 1) * fftLen);
+		part2 *= wnd;
 
 		const specType spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
 		const specType spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
+
 		specType res11 = spec1 * spec1.apply(std::conj);
 		specType res12 = spec1 * spec2.apply(std::conj);
 		specType res22 = spec2 * spec2.apply(std::conj);
@@ -109,16 +108,15 @@ std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double>
 		av11 += res11;
 		av12 += res12;
 		av22 += res22;
-
-//		specType tmp = res12 / sqrt(res11 * res22);
-
-//		if(res.size() != tmp.size()) { res.resize(tmp.size()); }
-//		res += tmp;
 	}
 	av11 /= windNum;
 	av12 /= windNum;
 	av22 /= windNum;
-//	return res / std::complex<double>(counter);
+
+	myLib::writeFileInLine("/media/Files/Data/cSpec1.txt", smLib::abs(av11));
+	myLib::writeFileInLine("/media/Files/Data/cSpec2.txt", smLib::abs(av22));
+	myLib::writeFileInLine("/media/Files/Data/cSpec12.txt", smLib::abs(av12));
+
 	return av12 / sqrt(av11 * av22);
 }
 

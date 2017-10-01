@@ -157,6 +157,9 @@ void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums);
 void IITPdat(const QString & guyName = "Ira");
 void IITPrename(const QString & guyName = "Ira");
 
+QPixmap IITPdrawCoh(const std::valarray<double> & inData, double maxVal,
+					double confidence);
+
 
 
 

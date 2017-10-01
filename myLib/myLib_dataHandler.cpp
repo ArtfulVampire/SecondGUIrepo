@@ -157,13 +157,16 @@ void writeFileInLine(const QString & filePath,
 //	bool asCol = false;
 	bool asCol = true;
 
+	file << std::fixed;
+	file.precision(6);
+
 	if(asCol)
 	{
 		file << "FileLen " << outData.size() << "\t";
 		file << "Pewpew " << 1 << "\r\n";
 		for(auto out : outData)
 		{
-			file << smLib::doubleRound(out, 3) << "\r\n";
+			file << out << "\r\n";
 		}
 	}
 	else
@@ -172,7 +175,7 @@ void writeFileInLine(const QString & filePath,
 		file << "FileLen " << outData.size() << "\r\n";
 		for(auto out : outData)
 		{
-			file << smLib::doubleRound(out, 3) << "\t";
+			file << out << "\t";
 		}
 	}
 
@@ -203,7 +206,7 @@ void writePlainData(const QString outPath,
     outStr << "NumOfChannels " << data.rows() << "\r\n";
 
 	outStr << std::fixed;
-	outStr.precision(3);
+	outStr.precision(4);
 
 
 

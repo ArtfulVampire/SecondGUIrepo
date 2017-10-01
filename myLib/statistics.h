@@ -19,8 +19,7 @@ namespace myLib
 void kernelEst(const std::valarray<double> & arr, QString picPath);
 void kernelEst(QString filePath, QString picPath);
 
-template <typename signalType = std::valarray<double>>
-void histogram(const signalType & arr,
+void histogram(const std::valarray<double> & arr,
 			   int numSteps,
 			   const QString & picPath = QString(),
 			   std::pair<double, double> xMinMax = {},
