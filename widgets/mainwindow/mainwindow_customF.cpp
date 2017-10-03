@@ -43,7 +43,7 @@ void MainWindow::customFunc()
 //						   1024).save("/media/Files/Data/phases1.jpg", 0, 100);
 //	exit(0);
 
-//	return;
+	return;
 
 #if 0
 	/// prepare for eyes clean
@@ -366,7 +366,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// IITP file into two files
 
 	iitp::iitpData fil;

@@ -94,8 +94,9 @@ std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double>
 		const specType spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
 		const specType spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
 
-		specType res11 = spec1 * spec1.apply(std::conj);
 		specType res12 = spec1 * spec2.apply(std::conj);
+
+		specType res11 = spec1 * spec1.apply(std::conj);
 		specType res22 = spec2 * spec2.apply(std::conj);
 
 		if(av11.size() != res11.size())

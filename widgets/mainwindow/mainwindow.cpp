@@ -76,7 +76,7 @@ MainWindow::MainWindow() :
     {
         ui->timeShiftSpinBox->setValue(10);
         ui->windowLengthSpinBox->setValue(10);
-    }
+	}
 
 	ui->highFreqFilterDoubleSpinBox->setMaximum(500);
 	ui->lowFreqFilterDoubleSpinBox->setMaximum(500);
@@ -263,6 +263,7 @@ void MainWindow::changeRedNsLine(int a)
 		else if(lab.contains("EMG") && !emg) { continue; }
 		else if(lab.contains("EOG") && !eog) { continue; }
 		else if(lab.contains("Marker") && !mark) { continue; }
+		/// else /* if("any other channels") */ { they remain in a list }
 
 		outStr += nm(i + 1) + " ";
 	}

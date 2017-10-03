@@ -325,9 +325,10 @@ void countWavelet(const matrix & inData,
 				  double srate,
 				  std::ostream & outStr)
 {
-	const int numOfFreqs = wvlt::cwt(inData[0], srate).rows(); /// pewpew
 
 #if WAVELET_MATLAB
+	const int numOfFreqs = wvlt::cwt(inData[0], srate).rows(); /// pewpew
+
 	for(auto func : {
 	//			smLib::max,
 	//			smLib::min,
