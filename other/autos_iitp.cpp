@@ -15,7 +15,7 @@ QPixmap IITPdrawCoh(const std::valarray<double> & inData,
 					double confidence)
 {
 	const int numFreq = 45;
-	maxVal = ceil(maxVal * 10.) / 10.; /// = n * 0.1
+	maxVal = ceil(maxVal * 20.) / 20.; /// = n * 0.05
 
 	QPixmap pic(800, 600);
 	pic.fill();

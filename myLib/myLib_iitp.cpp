@@ -62,6 +62,7 @@ QPixmap phaseDifferences(const std::valarray<double> & sig1,
 
 std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double> & sig1,
 													 const std::valarray<double> & sig2,
+													 double overlapRatio,
 													 double srate,
 													 int fftLen)
 {
@@ -77,18 +78,20 @@ std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double>
 	specType av12{};
 	specType av22{};
 
+	const int windStep = fftLen * (1. - overlapRatio);
 	const std::valarray<double> wnd = myLib::fftWindow(fftLen, myLib::windowName::Hamming);
 
-	const int windNum = std::floor(sig1.size() / fftLen);
-	for(int windCounter = 0; windCounter < windNum; ++windCounter)
+	for(int windStart = 0;
+		windStart < sig1.size() - fftLen;
+		windStart += windStep)
 	{
 		std::valarray<double> part1 = smLib::valarSubsec(sig1,
-														 windCounter * fftLen,
-														 (windCounter + 1) * fftLen);
+														 windStart,
+														 windStart + fftLen);
 		part1 *= wnd;
 		std::valarray<double> part2 = smLib::valarSubsec(sig2,
-														 windCounter * fftLen,
-														 (windCounter + 1) * fftLen);
+														 windStart,
+														 windStart + fftLen);
 		part2 *= wnd;
 
 		const specType spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
@@ -110,15 +113,8 @@ std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double>
 		av12 += res12;
 		av22 += res22;
 	}
-	av11 /= windNum;
-	av12 /= windNum;
-	av22 /= windNum;
 
-	myLib::writeFileInLine("/media/Files/Data/cSpec1.txt", smLib::abs(av11));
-	myLib::writeFileInLine("/media/Files/Data/cSpec2.txt", smLib::abs(av22));
-	myLib::writeFileInLine("/media/Files/Data/cSpec12.txt", smLib::abs(av12));
-
-	return av12 / sqrt(av11 * av22);
+	return std::pow(std::abs(av12) / std::sqrt(av11 * av22), 2);
 }
 
 std::complex<double> coherencyUsual(const std::valarray<double> & sig1,
@@ -132,7 +128,7 @@ std::complex<double> coherencyUsual(const std::valarray<double> & sig1,
 	}
 
 	const int index = freq * fftLen / srate;
-	return coherenciesUsual(sig1, sig2, srate, fftLen)[index];
+	return coherenciesUsual(sig1, sig2, 0., srate, fftLen)[index];
 }
 
 std::valarray<std::complex<double>> coherenciesMine(const std::valarray<double> & sig1,

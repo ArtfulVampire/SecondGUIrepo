@@ -846,6 +846,7 @@ std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre)
 
 double spectreNorm(int fftLen, int realSig, double srate)
 {
+//	return 1.;
 	return 2. / (double(std::min(realSig, fftLen)) * srate);
 }
 

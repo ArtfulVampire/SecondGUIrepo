@@ -30,7 +30,7 @@ QPixmap phaseDifferences(const std::valarray<double> & sig1,
 						 double freq, int fftLen);
 
 std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double> & sig1,
-													 const std::valarray<double> & sig2,
+													 const std::valarray<double> & sig2, double overlapPercent,
 													 double srate,
 													 int fftLen);
 std::valarray<std::complex<double>> coherenciesMine(const std::valarray<double> & sig1,

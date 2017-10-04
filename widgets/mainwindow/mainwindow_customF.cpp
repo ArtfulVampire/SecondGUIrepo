@@ -352,12 +352,15 @@ void MainWindow::customFunc()
 #if 0
 	/// check ratio crossSpectrum my and matlab
 	using TT = std::valarray<double>;
+
 	TT c1;
 	myLib::readFileInLine("/media/Files/Data/cSpec12.txt", c1);
-//	c1 *= 10000.;
+
 	TT m1;
 	myLib::readFileInLineRaw("/media/Files/Data/mSpec12.txt", m1);
-	std::cout << c1.size() << "   " << m1.size() << std::endl;
+
+//	smLib::resizeValar(c1, m1.size());
+
 	std::cout << std::valarray<double>(c1 / m1) << std::endl;
 
 //	myLib::histogram(c1 / m1, 50, "/media/Files/Data/hist.jpg"
@@ -370,18 +373,20 @@ void MainWindow::customFunc()
 	/// IITP file into two files
 
 	iitp::iitpData fil;
-	fil.readEdfFile("/media/Files/Data/iitp/SYNCED/Test/Test_04_sum_new.edf");
-	std::valarray<double> iitp1 = fil.getData("Cz");
-	std::valarray<double> iitp2 = fil.getData("Fcr");
-//	std::valarray<double> iitp2 = fil.getData("Ta");
+	fil.readEdfFile("/media/Files/Data/iitp/SYNCED/Test/Test_03_sum_new_abs.edf");
+	std::valarray<double> iitp1 = fil.getData("C3");
+	iitp1 -= smLib::mean( iitp1 );
+//	std::valarray<double> iitp2 = fil.getData("Fcr");
+	std::valarray<double> iitp2 = fil.getData("Ta");
+	iitp2 -= smLib::mean( iitp2 );
 
-	if(0)
+	if(01)
 	{
 		myLib::writeFileInLine("/media/Files/Data/iitp1.txt",
 							   iitp1);
 		myLib::writeFileInLine("/media/Files/Data/iitp2.txt",
 							   iitp2);
-		exit(0);
+//		exit(0);
 	}
 
 
@@ -389,14 +394,17 @@ void MainWindow::customFunc()
 	const int fftLen = 256;
 	const double srate = 250.;
 	const double spStep = srate / fftLen;
+	const double overlap = 0.6;
 
 	auto usual = iitp::coherenciesUsual(iitp1,
 										iitp2,
+										overlap,
 										srate,
 										fftLen);
+	usual[0] = {0.};
 
-	const int windNum = iitp1.size() / fftLen;
-	const double confidence = 1. - std::pow(0.05, 1. / (iitp1.size() / fftLen - 1));
+	const int windNum = (iitp1.size() - fftLen) / (fftLen * (1. - overlap));
+	const double confidence = 1. - std::pow(0.05, 1. / (windNum - 1));
 	std::cout << "windNum = " << windNum << std::endl;
 	std::cout << "confidence = " << confidence << std::endl;
 
@@ -414,20 +422,22 @@ void MainWindow::customFunc()
 	}
 
 
+//	std::valarray<double> fromMatlab;
+//	myLib::readFileInLineRaw("/media/Files/Data/mCoh.txt", fromMatlab);
+//	smLib::resizeValar(fromMatlab, siz);
+//	double m = std::max(fromMatlab.max(), usualDraw.max());
 
-	std::valarray<double> fromMatlab;
-	myLib::readFileInLineRaw("/media/Files/Data/mCoh.txt", fromMatlab);
-	double m = std::max(fromMatlab.max(), usualDraw.max());
+//	std::valarray<double> rat = usualDraw / fromMatlab;
+//	std::cout << rat << std::endl;
+//	myLib::histogram(rat, 20, "/media/Files/Data/rat.jpg"
+//					 , std::make_pair(5,20)
+//					 );
+//	autos::IITPdrawCoh(fromMatlab, m, confidence).
+//			save("/media/Files/Data/mCoh.jpg", 0, 100);
 
-	std::valarray<double> rat = usualDraw / smLib::valarSubsec(fromMatlab, 0, siz);
-	myLib::histogram(rat, 20, "/media/Files/Data/rat.jpg",
-					 std::make_pair(5,20));
-
-	autos::IITPdrawCoh(usualDraw, m, confidence).
+	autos::IITPdrawCoh(usualDraw, usualDraw.max(), confidence).
 			save("/media/Files/Data/cCohUsual.jpg", 0, 100);
 
-	autos::IITPdrawCoh(fromMatlab, m, confidence).
-			save("/media/Files/Data/mCoh.jpg", 0, 100);
 
 
 	exit(0);
