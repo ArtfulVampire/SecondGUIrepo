@@ -228,7 +228,7 @@ bool Cut::checkBadRange(int start, int end, QString func)
 {
 	if(end - start == this->dataCutLocal.cols()
 	   /// magic const 5 min
-	   || (start == this->dataCutLocal.cols() && end - start > this->edfFil.getFreq() * 60 * 5)
+	   || (end - start > this->edfFil.getFreq() * 60 * 5)
 	   )
 	{
 		std::cout << "Cut::" << func << ":"

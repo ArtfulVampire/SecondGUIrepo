@@ -300,8 +300,14 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
     if(obj == ui->scrollArea)
     {
         if(event->type() == QEvent::Wheel)
-        {
+		{
             QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
+			if(scrollEvent->modifiers() & Qt::ControlModifier)
+			{
+				ui->yNormDoubleSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
+				return true;
+			}
+
             int offset = -0.8 * scrollEvent->delta();
 
             if(myFileType == fileType::real)
