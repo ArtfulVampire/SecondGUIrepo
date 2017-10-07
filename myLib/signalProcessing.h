@@ -109,8 +109,8 @@ matrix refilterMat(const matrix & inputMatrix,
 				   bool isNotch,
 				   double srate);
 
-enum class windowName {Hann, Hamming, Blackman, Kaiser, rect};
-std::valarray<double> fftWindow(int length, windowName name = windowName::Hann);
+enum class windowName {Hann, Hamming, Blackman, Kaiser, rect, triang, Parzen, Welch, sine, Nuttal, BlackmanNuttal, BlackmanHarris, FlatTop};
+std::valarray<double> fftWindow(int N, windowName name = windowName::Hann);
 
 
 std::valarray<double> upsample(const std::valarray<double> & inSignal,

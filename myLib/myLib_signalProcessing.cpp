@@ -2511,16 +2511,16 @@ std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 // }
 
 
-std::valarray<double> fftWindow(int length, windowName name)
+std::valarray<double> fftWindow(int N, windowName name)
 {
-	std::valarray<double> res(length);
-	const double arg = 2. * pi / (length - 1.);
+	std::valarray<double> res(N);
+	const double arg = 2. * pi / (N - 1.);
 	/// Hann/Hanning
 	switch(name)
 	{
 	case windowName::Hann:
 	{
-		for(int i = 0; i < length; ++i)
+		for(int i = 0; i < N; ++i)
 		{
 			res[i] = 0.5 * (1. - cos (i * arg));
 		}
@@ -2528,22 +2528,82 @@ std::valarray<double> fftWindow(int length, windowName name)
 	}
 	case windowName::Hamming:
 	{
-		for(int i = 0; i < length; ++i)
+		for(int i = 0; i < N; ++i)
 		{
 			res[i] = 0.53836 - 0.46164 * cos (i * arg);
+//			res[i] = 0.54 - 0.46 * cos (i * arg);
 		}
 		break;
 	}
 	case windowName::Blackman:
 	{
-		double alpha = 1.;
-		for(int i = 0; i < length; ++i)
+		const double a = 0.16;
+		const double a0 = (1. - a) / 2.;
+		const double a1 = 0.5;
+		const double a2 = a / 2.;
+		for(int i = 0; i < N; ++i)
 		{
-			res[i] = 0.5 * (1. - alpha) - 0.5 * cos(i * arg) + 0.5 * alpha * cos(2 * i * arg);
+			res[i] = a0 - a1 * cos(i * arg) + a2 * cos(2 * i * arg);
 		}
 		break;
 	}
-		/// Kaiser
+	case windowName::Nuttal:
+	{
+
+		const double a0 = 0.355768;
+		const double a1 = 0.487396;
+		const double a2 = 0.144232;
+		const double a3 = 0.012604;
+		for(int i = 0; i < N; ++i)
+		{
+			res[i] = a0 - a1 * cos(i * arg) + a2 * cos(2 * i * arg) - a3 * cos(3 * i * arg);
+		}
+		break;
+	}
+	case windowName::BlackmanNuttal:
+	{
+
+		const double a0 = 0.3635819;
+		const double a1 = 0.4891775;
+		const double a2 = 0.1365995;
+		const double a3 = 0.0106411;
+		for(int i = 0; i < N; ++i)
+		{
+			res[i] = a0 - a1 * cos(i * arg) + a2 * cos(2 * i * arg) - a3 * cos(3 * i * arg);
+		}
+		break;
+	}
+	case windowName::BlackmanHarris:
+	{
+
+		const double a0 = 0.35875;
+		const double a1 = 0.48829;
+		const double a2 = 0.14128;
+		const double a3 = 0.01168;
+		for(int i = 0; i < N; ++i)
+		{
+			res[i] = a0 - a1 * cos(i * arg) + a2 * cos(2 * i * arg) - a3 * cos(3 * i * arg);
+		}
+		break;
+	}
+	case windowName::FlatTop:
+	{
+
+		const double a0 = 1.;
+		const double a1 = 1.93;
+		const double a2 = 1.29;
+		const double a3 = 0.388;
+		const double a4 = 0.028;
+		for(int i = 0; i < N; ++i)
+		{
+			res[i] = a0
+					 - a1 * cos(i * arg)
+					 + a2 * cos(2 * i * arg)
+					 - a3 * cos(3 * i * arg)
+					 + a4 * cos(4 * i * arg);
+		}
+		break;
+	}
 	case windowName::Kaiser:
 	{
 		res = 1;
@@ -2561,6 +2621,43 @@ std::valarray<double> fftWindow(int length, windowName name)
 		res = 1;
 		break;
 	}
+	case windowName::triang:
+	{
+		for(int i = 0; i < N; ++i)
+		{
+			res[i] = 1. - std::abs(2. * (i - (N - 1) / 2.) / N);
+		}
+	}
+	case windowName::Parzen:
+	{
+		for(int i = 0; i <= N / 4; ++i)
+		{
+			res[i] = 1. - 6. * std::pow(2. * i / N, 2.) * (1. - 2 * i / N);
+			res[N - 1 - i] = res[i];
+		}
+		for(int i = N / 4 + 1; i <= N / 2; ++i)
+		{
+			res[i] = 2. * std::pow(1. - 2 * i / N, 3.);
+			res[N - 1 - i] = res[i];
+		}
+	}
+	case windowName::Welch:
+	{
+		for(int i = 0; i < N; ++i)
+		{
+			res[i] = 1. - std::pow((i - (N - 1) / 2.) / ((N - 1.) / 2.), 2.);
+		}
+	}
+	case windowName::sine:
+	{
+		for(int i = 0; i < N; ++i)
+		{
+			res[i] = std::sin(M_PI * i / (N - 1));
+		}
+	}
+
+
+
 	default:
 	{
 		res = 1;
