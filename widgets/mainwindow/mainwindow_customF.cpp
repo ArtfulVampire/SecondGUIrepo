@@ -49,8 +49,8 @@ void MainWindow::customFunc()
 	/// prepare for eyes clean
 	const QString path = def::dataFolder + "/FeedbackFinalMark";
 	std::vector<std::pair<QString, QString>> guys{
-//		std::make_pair("Beketova", "BAM"),
-//				std::make_pair("Burtcev", "BAV"),
+		std::make_pair("Beketova", "BAM"),
+				std::make_pair("Burtcev", "BAV"),
 				std::make_pair("Dovbyish", "DEG"),
 				std::make_pair("Evstratov_n", "ENV"),
 				std::make_pair("Ilyin", "IAE"),

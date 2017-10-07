@@ -103,49 +103,50 @@ void Cut::saveSubsecSlot()
 {
 	if( !fileOpened ) { return; }
 
-	if(myFileType == fileType::real || 1) /// write plain windows (eyes)
+	if(!checkBadRange(ui->leftLimitSpinBox->value(),
+					  ui->rightLimitSpinBox->value(),
+					  "saveSubsec"))
 	{
 
-		QString helpString;
-		helpString = def::dir->absolutePath() +
-					 "/winds" +
-					 "/" + myLib::getFileName(currentFile) +
-					 "." + rn(addNum++, 3);
-		myLib::writePlainData(helpString,
-							  dataCutLocal,
-							  ui->leftLimitSpinBox->value(),
-							  ui->rightLimitSpinBox->value());
-	}
-	else if(myFileType == fileType::edf)
-	{
-		if(checkBadRange(ui->leftLimitSpinBox->value(),
-						 ui->rightLimitSpinBox->value(),
-						 "saveSubsec"))
+		if(myFileType == fileType::real || 1) /// write plain windows (eyes)
 		{
-			return;
-		}
 
-		QString newPath = currentFile;
-		QString ad = ui->saveSubsecAddNameLineEdit->text();
-		if( !ad.isEmpty())
+			QString helpString;
+			helpString = def::dir->absolutePath() +
+						 "/winds" +
+						 "/" + myLib::getFileName(currentFile) +
+						 "." + rn(addNum++, 3);
+			myLib::writePlainData(helpString,
+								  dataCutLocal,
+								  ui->leftLimitSpinBox->value(),
+								  ui->rightLimitSpinBox->value());
+		}
+		else if(myFileType == fileType::edf)
 		{
-			newPath.insert(newPath.lastIndexOf('.'), "_" + ad);
+
+
+			QString newPath = currentFile;
+			QString ad = ui->saveSubsecAddNameLineEdit->text();
+			if( !ad.isEmpty())
+			{
+				newPath.insert(newPath.lastIndexOf('.'), "_" + ad);
+			}
+
+			int counter = 0;
+			while(QFile::exists(newPath))
+			{
+				newPath = currentFile;
+				newPath.insert(newPath.lastIndexOf('.'), "_" + nm(counter));
+				++counter;
+			}
+
+			edfFil.writeOtherData(dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
+													   ui->rightLimitSpinBox->value()), newPath);
+
+			iitpLog("saveSub", 2, newPath);
+
+			std::cout << "Cut::saveSubsecSlot: edfFile saved - " << newPath << std::endl;
 		}
-
-		int counter = 0;
-		while(QFile::exists(newPath))
-		{
-			newPath = currentFile;
-			newPath.insert(newPath.lastIndexOf('.'), "_" + nm(counter));
-			++counter;
-		}
-
-		edfFil.writeOtherData(dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
-												   ui->rightLimitSpinBox->value()), newPath);
-
-		iitpLog("saveSub", 2, newPath);
-
-		std::cout << "Cut::saveSubsecSlot: edfFile saved - " << newPath << std::endl;
 	}
 	resetLimits();
 	paint();
