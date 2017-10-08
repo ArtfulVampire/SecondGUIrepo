@@ -2604,16 +2604,32 @@ std::valarray<double> fftWindow(int N, windowName name)
 		}
 		break;
 	}
-	case windowName::Kaiser:
+	case windowName::RifeVincent:
 	{
-		res = 1;
-
-//		const double beta = 5.; /// [4; 9]
-//		for(int i = 0; i < length; ++i)
-//		{
-//			res[i] = std::abs(bes0(beta * sqrt(1 - pow(2 * i - length + 1 / (length - 1), 2)))) /
-//					 std::abs(bes0(beta));
-//		}
+		const double a0 = 1.;
+		const double a1 = 4 / 3.;
+		const double a2 = 1 / 3.;
+		for(int i = 0; i < N; ++i)
+		{
+			res[i] = a0 - a1 * cos(i * arg) + a2 * cos(2 * i * arg);
+		}
+		break;
+	}
+	case windowName::Gaussian:
+	{
+		const double s = 0.4; /// < 0.5
+		for(int i = 0; i < N; ++i)
+		{
+			res[i] = std::exp(-0.5 * std::pow((i - (N - 1) / 2.) / (s * (N - 1) / 2.) , 2));
+		}
+		break;
+	}
+	case windowName::Lanczos:
+	{
+		for(int i = 0; i < N; ++i)
+		{
+			res[i] = std::sin(M_PI * (2. * i / (N - 1) - 1)) / (M_PI * (2. * i / (N - 1) - 1));
+		}
 		break;
 	}
 	case windowName::rect:
@@ -2627,40 +2643,46 @@ std::valarray<double> fftWindow(int N, windowName name)
 		{
 			res[i] = 1. - std::abs(2. * (i - (N - 1) / 2.) / N);
 		}
+		break;
 	}
 	case windowName::Parzen:
 	{
+		auto val = [N](int i) { return 2. * i / double(N); };
 		for(int i = 0; i <= N / 4; ++i)
+//		for(int i = N / 4 + 1; i <= N / 2; ++i)
 		{
-			res[i] = 1. - 6. * std::pow(2. * i / N, 2.) * (1. - 2 * i / N);
+			res[i] = 6. * std::pow(val(i), 2.) * (1. - val(i));
 			res[N - 1 - i] = res[i];
 		}
 		for(int i = N / 4 + 1; i <= N / 2; ++i)
+//		for(int i = 0; i <= N / 4; ++i)
 		{
-			res[i] = 2. * std::pow(1. - 2 * i / N, 3.);
+			res[i] = 1. - 2. * std::pow(1. - val(i), 3.);
 			res[N - 1 - i] = res[i];
 		}
+		break;
 	}
 	case windowName::Welch:
 	{
 		for(int i = 0; i < N; ++i)
 		{
-			res[i] = 1. - std::pow((i - (N - 1) / 2.) / ((N - 1.) / 2.), 2.);
+			res[i] = 1. - std::pow((i - (N - 1.) / 2.) / ((N - 1.) / 2.), 2.);
 		}
+		break;
 	}
 	case windowName::sine:
 	{
 		for(int i = 0; i < N; ++i)
 		{
-			res[i] = std::sin(M_PI * i / (N - 1));
+			res[i] = std::sin(M_PI * i / (N - 1.));
 		}
+		break;
 	}
-
-
-
 	default:
 	{
+		std::cout << "default window" << std::endl;
 		res = 1;
+		break;
 	}
 	}
 

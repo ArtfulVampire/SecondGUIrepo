@@ -43,7 +43,30 @@ void MainWindow::customFunc()
 //						   1024).save("/media/Files/Data/phases1.jpg", 0, 100);
 //	exit(0);
 
-	return;
+//	return;
+
+#if 01
+	/// test windows
+	int counter = 0;
+	for(myLib::windowName wind : {
+		myLib::windowName::Blackman,
+		myLib::windowName::BlackmanHarris,
+		myLib::windowName::BlackmanNuttal,
+		myLib::windowName::FlatTop,
+		myLib::windowName::Gaussian,
+		myLib::windowName::Lanczos,
+		myLib::windowName::Nuttal,
+		myLib::windowName::Parzen,
+		myLib::windowName::RifeVincent,
+		myLib::windowName::sine,
+		myLib::windowName::Welch
+})
+	{
+		myLib::drw::drawOneGraph(myLib::fftWindow(1024, wind),
+								 1024).save("/media/Files/Data/wind_" + nm(counter++) + ".jpg");
+	}
+	exit(0);
+#endif
 
 #if 0
 	/// prepare for eyes clean

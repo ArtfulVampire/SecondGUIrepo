@@ -94,6 +94,10 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 QPixmap drawOneSignal(const std::valarray<double> & inData,
 					  int picHeight = 600);
 
+QPixmap drawOneGraph(const std::valarray<double> & inData,
+					 int picHeight = 600,
+					 std::pair<double, double> lims = std::pair<double, double>{});
+
 QPixmap drawOneSpectrum(const std::valarray<double> & inData,
 						double leftFr,
 						double rightFr,

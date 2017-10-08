@@ -56,6 +56,34 @@ QPixmap drawOneSignal(const std::valarray<double> & inData,
 	return pic;
 }
 
+QPixmap drawOneGraph(const std::valarray<double> & inData,
+					 int picHeight,
+					 std::pair<double, double> lims)
+{
+	QPixmap pic(inData.size(), picHeight);
+	QPainter paint;
+	pic.fill();
+	paint.begin(&pic);
+
+	if(lims == std::pair<double, double>{})
+	{
+		lims.first = inData.min();
+		lims.second = inData.max();
+	}
+
+	const double norm =  1. / (lims.second - lims.first);
+	paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
+	for(int i = 0; i < pic.width() - 1; ++i)
+	{
+		paint.drawLine(i,
+					   pic.height() * (1. - (inData[i] - lims.first) * norm),
+					   i + 1,
+					   pic.height() * (1. - (inData[i + 1] - lims.first) * norm));
+	}
+	paint.end();
+	return pic;
+}
+
 QPixmap drawOneTemplate(const int chanNum,
 						const bool channelsFlag,
 						const double leftF,
