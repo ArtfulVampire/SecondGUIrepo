@@ -67,7 +67,9 @@ void GalyaProcessing(const QString & procDirPath,
 				   autos::featuresMask::spectre |
 				   autos::featuresMask::Hilbert |
 				   autos::featuresMask::fracDim |
-				   autos::featuresMask::Hjorth;
+				   autos::featuresMask::Hjorth |
+				   autos::featuresMask::wavelet
+				   ;
 
 //			Mask = autos::featuresMask::Hilbert;
 //			Mask = autos::featuresMask::fracDim;
@@ -330,11 +332,12 @@ void countWavelet(const matrix & inData,
 	const int numOfFreqs = wvlt::cwt(inData[0], srate).rows(); /// pewpew
 
 	for(auto func : {
-	//			smLib::max,
-	//			smLib::min,
-				smLib::mean,
-				smLib::median,
-				smLib::sigma
+//		smLib::max,
+//		smLib::min,
+//		smLib::mean,
+//		smLib::median,
+//		smLib::sigma,
+		smLib::sigmaToMean
 })
 	{
 		matrix dataToWrite(numOfFreqs, inData.rows());
@@ -547,7 +550,7 @@ void Xenia_TBI(const QString & tbi_path)
 					QString typ = "_" + autos::getFeatureString(type);
 					fileNames << ExpName + marker + typ + ".txt";
 				}
-				autos::XeniaArrangeToLine(workPath + "_tmp",
+				autos::ArrangeFilesToLine(workPath + "_tmp",
 										  fileNames,
 										  workPath + "_tmp2" + slash
 										  + ExpName + marker + ".txt"); /// guy <-> ExpName
@@ -558,7 +561,7 @@ void Xenia_TBI(const QString & tbi_path)
 			{
 				fileNames <<  ExpName + marker + ".txt"; /// guy <-> ExpName
 			}
-			autos::XeniaArrangeToLine(workPath + "_tmp2",
+			autos::ArrangeFilesToLine(workPath + "_tmp2",
 									  fileNames,
 									  workPath + "_OUT" + slash
 									  + ExpName + ".txt"); /// guy <-> ExpName
@@ -736,7 +739,7 @@ void Xenia_TBI_final(const QString & finalPath,
 													 + "_" + autos::getFeatureString(func) + ".txt");
 					}
 					std::cout << fileNamesToArrange << std::endl << std::endl;
-					autos::XeniaArrangeToLine(outPath,
+					autos::ArrangeFilesToLine(outPath,
 											  fileNamesToArrange,
 											  outPath + "/" + ExpName + mark + ".txt");
 				}
@@ -750,7 +753,7 @@ void Xenia_TBI_final(const QString & finalPath,
 				{
 					fileNamesToArrange.push_back(ExpName + mark + ".txt");
 				}
-				autos::XeniaArrangeToLine(outPath,
+				autos::ArrangeFilesToLine(outPath,
 										  fileNamesToArrange,
 										  outPath + "/" + ExpName + ".txt");
 
@@ -1096,7 +1099,7 @@ matrix makeTestData(const QString & outPath)
 }
 
 
-void XeniaArrangeToLine(const QString & dirPath,
+void ArrangeFilesToLine(const QString & dirPath,
 						const QStringList & fileNames,
 						const QString & outFilePath)
 {
@@ -1267,7 +1270,7 @@ void refilterFolder(const QString & procDirPath,
 	}
 }
 
-void GalyaToFolders(const QString & inPath)
+void EdfsToFolders(const QString & inPath)
 {
 	auto lst = QDir(inPath).entryList(def::edfFilters);
 	for(QString in : lst)
@@ -1282,13 +1285,143 @@ void GalyaToFolders(const QString & inPath)
 	}
 }
 
-void Galya_tactile(const QString & inPath,
+void ProcessAllInOneFolder(const QString & inPath,
+						   QString outPath)
+{
+	QTime myTime;
+	myTime.start();
+
+	def::ntFlag = false;
+
+	if(outPath == QString())
+	{
+		outPath = inPath + "_out";
+	}
+
+	if(!QDir(outPath).exists())
+	{
+		QDir().mkpath(outPath);
+	}
+
+
+	QStringList edfs = QDir(inPath).entryList(def::edfFilters);
+	if(edfs.isEmpty())
+	{
+		std::cout << "Galya_tactile: inPath is empty " << inPath << std::endl;
+	}
+
+	if(0) /// repair fileNames
+	{
+		repair::deleteSpacesFolders(inPath);
+		repair::toLatinDir(inPath);
+		repair::toLowerDir(inPath);
+	}
+
+	if(0)
+	{
+		repair::physMinMaxDir(inPath);
+		repair::holesDir(inPath, inPath);	/// rewrite after repair
+	}
+
+	/// rereference
+	if(0)
+	{
+		//		autos::rereferenceFolder(inPath, "Ar");
+	}
+
+	/// filter?
+	if(0)
+	{
+		/// already done ?
+		autos::refilterFolder(inPath,
+							  1.6,
+							  30.);
+	}
+
+	/// cut?
+	if(0)
+	{
+		autos::GalyaCut(inPath,
+						8,
+						inPath + "_cut/");
+	}
+
+	outPath = inPath + "/out";
+
+	/// process?
+	if(01)
+	{
+		/// clear outFolder
+		myLib::cleanDir(inPath + "/out", "txt", true);
+		autos::GalyaProcessing(inPath, 19, outPath);
+	}
+
+
+	/// make one line file for each guy
+	if(1)
+	{
+		for(QString ExpName : edfs)
+		{
+			ExpName = ExpName.left(ExpName.indexOf('.'));
+
+			QStringList fileNamesToArrange;
+			for(int func : {
+				autos::featuresMask::alpha,
+				autos::featuresMask::spectre,
+				autos::featuresMask::Hilbert,
+				autos::featuresMask::fracDim,
+				autos::featuresMask::Hjorth,
+				autos::featuresMask::wavelet
+		})
+			{
+				const QString fileName = ExpName
+										 + "_" + autos::getFeatureString(func) + ".txt";
+				fileNamesToArrange.push_back(fileName);
+
+				if(!QFile::exists(outPath + "/" + fileName))
+				{
+					std::cout << "File doesn't exist: " << fileName << std::endl;
+					std::ofstream outStr;
+					outStr.open((outPath + "/" + fileName).toStdString());
+					for(int i = 0; i < autos::getFileLength(func); ++i)
+					{
+						outStr << 0 << '\t';
+					}
+					outStr.close();
+				}
+			}
+			autos::ArrangeFilesToLine(outPath,
+									  fileNamesToArrange,
+									  outPath + "/" + ExpName + ".txt");
+
+			/// copy files into _out
+			if(1)
+			{
+				QFile::copy(outPath + "/" + ExpName + ".txt",
+							inPath + "_out/" + ExpName + ".txt");
+			}
+		}
+	}
+
+
+
+	/// make tables whole and people list
+	autos::makeTableFromRows(inPath + "_out",
+							 inPath + "_out/all.txt",
+							 true);
+
+	std::cout << "Xenia_TBI_final: time elapsed = "
+			  << myTime.elapsed() / 1000. << " sec" << std::endl;
+}
+
+void ProcessByFolders(const QString & inPath,
 				   QString outPath)
 {
 	QTime myTime;
 	myTime.start();
 
 	def::ntFlag = false;
+//	const std::vector<QString> markers{"_rest"};
 //	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
 	const std::vector<QString> markers{"_2sv", "_2zv", "_4sv", "_4zv",
 									   "_8sv", "_8zv", "_16sv", "_16zv", "_og", "_zg"};
@@ -1360,7 +1493,7 @@ void Galya_tactile(const QString & inPath,
 		outPath = guyPath + "/out";
 
 		/// process?
-		if(0)
+		if(01)
 		{
 			/// clear outFolder
 			myLib::cleanDir(guyPath + "/out", "txt", true);
@@ -1381,15 +1514,15 @@ void Galya_tactile(const QString & inPath,
 					autos::featuresMask::fracDim,
 					autos::featuresMask::Hjorth})
 				{
-					fileNamesToArrange.push_back(ExpName + mark
-												 + "_" + autos::getFeatureString(func) + ".txt");
+					const QString fileName = ExpName + mark
+											 + "_" + autos::getFeatureString(func) + ".txt";
+					fileNamesToArrange.push_back(fileName);
 
-					if(!QFile::exists(outPath + "/" + ExpName + mark
-									  + "_" + autos::getFeatureString(func) + ".txt"))
+					if(!QFile::exists(outPath + "/" + fileName))
 					{
+						std::cout << "File doesn't exist: " << fileName << std::endl;
 						std::ofstream outStr;
-						outStr.open((outPath + "/" + ExpName + mark
-									 + "_" + autos::getFeatureString(func) + ".txt").toStdString());
+						outStr.open((outPath + "/" + fileName).toStdString());
 						for(int i = 0; i < autos::getFileLength(func); ++i)
 						{
 							outStr << 0 << '\t';
@@ -1398,7 +1531,7 @@ void Galya_tactile(const QString & inPath,
 					}
 				}
 //				std::cout << fileNamesToArrange << std::endl << std::endl;
-				autos::XeniaArrangeToLine(outPath,
+				autos::ArrangeFilesToLine(outPath,
 										  fileNamesToArrange,
 										  outPath + "/" + ExpName + mark + ".txt");
 			}
@@ -1412,7 +1545,7 @@ void Galya_tactile(const QString & inPath,
 			{
 				fileNamesToArrange.push_back(ExpName + mark + ".txt");
 			}
-			autos::XeniaArrangeToLine(outPath,
+			autos::ArrangeFilesToLine(outPath,
 									  fileNamesToArrange,
 									  outPath + "/" + ExpName + ".txt");
 		}

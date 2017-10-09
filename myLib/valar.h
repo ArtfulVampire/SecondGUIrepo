@@ -109,6 +109,11 @@ inline double sigma(const std::valarray<double> & arr)
 	return sqrt(variance(arr));
 }
 
+inline double sigmaToMean(const std::valarray<double> & arr)
+{
+	return sigma(arr) / mean(arr);
+}
+
 inline double min(const std::valarray<double> & arr)
 {
 	return arr.min();

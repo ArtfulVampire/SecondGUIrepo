@@ -63,14 +63,17 @@ void countFeatures(const matrix & inData,
 void GalyaProcessing(const QString & procDirPath,
 					 const int numChan = 31,
 					 QString outPath = QString());
-void GalyaToFolders(const QString & inPath);
+void EdfsToFolders(const QString & inPath);
 
 
-void Galya_tactile(const QString & inPath,
+void ProcessByFolders(const QString & inPath,
 				   QString outPath = QString());
 void Xenia_TBI(const QString & tbi_path);
 void Xenia_TBI_final(const QString & finalPath,
 					 QString outPath = QString());
+
+void ProcessAllInOneFolder(const QString & inPath,
+						   QString outPath = QString());
 
 void GalyaCut(const QString & path,
 			  const int wndLen = 16,
@@ -90,7 +93,7 @@ void GalyaFull(const QString & inDirPath,
 
 
 
-void XeniaArrangeToLine(const QString & dirPath,
+void ArrangeFilesToLine(const QString & dirPath,
 						const QStringList & fileNames,
 						const QString & outFilePath);
 void Xenia_repairTable(const QString & initPath,
