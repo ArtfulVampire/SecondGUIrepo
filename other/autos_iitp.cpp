@@ -15,7 +15,7 @@ QPixmap IITPdrawCoh(const std::valarray<double> & inData,
 					double confidence)
 {
 	const int numFreq = 45;
-	maxVal = ceil(maxVal * 20.) / 20.; /// = n * 0.05
+	maxVal = std::ceil(maxVal * 20.) / 20.; /// = n * 0.05
 
 	QPixmap pic(800, 600);
 	pic.fill();
@@ -33,16 +33,16 @@ QPixmap IITPdrawCoh(const std::valarray<double> & inData,
 	const QFont font = QFont("Helvetica", 8);
 	pnt.setFont(font);
 	/// values
-	const double numVals = std::ceil(maxVal * 10);
-	for(int i = 1; i < numVals; ++i)
+	const double valStep = std::pow(10., std::floor(log10(maxVal)));
+	for(double val = 0.; val < maxVal; val += valStep)
 	{
 		pnt.drawLine( 0,
-					  pic.height() * (1. - i * 0.1 / maxVal),
+					  pic.height() * (1. - val / maxVal),
 					  10,
-					  pic.height() * (1. - i * 0.1 / maxVal));
+					  pic.height() * (1. - val / maxVal));
 		pnt.drawText(10 + 2,
-					 pic.height() * (1. - i * 0.1 / maxVal) + QFontMetrics(font).xHeight() / 2,
-					 QString::number(i * 0.1));
+					 pic.height() * (1. - val / maxVal) + QFontMetrics(font).xHeight() / 2,
+					 QString::number(val));
 	}
 	/// draw Hz
 	for(int i = 0; i < numFreq; ++i)
@@ -55,11 +55,12 @@ QPixmap IITPdrawCoh(const std::valarray<double> & inData,
 					 pic.height() * (1. - 0.03) + QFontMetrics(font).xHeight(),
 					 QString::number(i));
 	}
+
 	/// confidence line
 	pnt.drawLine(0,
-				 pic.height() * (1. - confidence),
+				 pic.height() * (1. - confidence / maxVal),
 				 pic.width(),
-				 pic.height() * (1. - confidence));
+				 pic.height() * (1. - confidence / maxVal));
 
 	pnt.end();
 	return pic;
