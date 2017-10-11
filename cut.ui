@@ -162,6 +162,13 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="1">
+     <widget class="QPushButton" name="iitpRectifyEmgPushButton">
+      <property name="text">
+       <string>Rectify EMG</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QWidget" name="layoutWidget">
@@ -200,8 +207,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>420</x>
-     <y>36</y>
+     <x>460</x>
+     <y>34</y>
      <width>280</width>
      <height>79</height>
     </rect>
@@ -266,7 +273,7 @@
     <rect>
      <x>12</x>
      <y>32</y>
-     <width>401</width>
+     <width>421</width>
      <height>121</height>
     </rect>
    </property>
@@ -316,7 +323,7 @@
     <item row="3" column="0">
      <widget class="QPushButton" name="subtractMeansPushButton">
       <property name="text">
-       <string>subtract av</string>
+       <string>subtract mean</string>
       </property>
      </widget>
     </item>
@@ -397,9 +404,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>160</y>
-     <width>450</width>
-     <height>171</height>
+     <y>170</y>
+     <width>441</width>
+     <height>161</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -636,7 +643,7 @@
      <x>780</x>
      <y>35</y>
      <width>311</width>
-     <height>81</height>
+     <height>83</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_5">
@@ -708,10 +715,10 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>470</x>
+     <x>520</x>
      <y>160</y>
      <width>344</width>
      <height>170</height>
@@ -822,6 +829,7 @@
     </item>
    </layout>
   </widget>
+  <zorder>layoutWidget</zorder>
   <zorder>picLabel</zorder>
   <zorder>scrollArea</zorder>
   <zorder>layoutWidget</zorder>
@@ -831,24 +839,6 @@
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
-  <zorder>smartFindShowPushButton</zorder>
-  <zorder>label_4</zorder>
-  <zorder>smartFindPrevPushButton</zorder>
-  <zorder>smartFindLearnPushButton</zorder>
-  <zorder>smartFindNextPushButton</zorder>
-  <zorder>smartFindClearPushButton</zorder>
-  <zorder>label_2</zorder>
-  <zorder>label_3</zorder>
-  <zorder>label_7</zorder>
-  <zorder>label_9</zorder>
-  <zorder>label_10</zorder>
-  <zorder>smartFindThetaSpinBox</zorder>
-  <zorder>smartFindAlphaSpinBox</zorder>
-  <zorder>smartFindBetaSpinBox</zorder>
-  <zorder>smartFindAmplSpinBox</zorder>
-  <zorder>smartFindIntgrlSpinBox</zorder>
-  <zorder>label_11</zorder>
-  <zorder>smartFindGammaSpinBox</zorder>
  </widget>
  <resources/>
  <connections/>

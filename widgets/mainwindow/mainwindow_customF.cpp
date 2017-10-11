@@ -393,11 +393,11 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// IITP file into two files
 
 	iitp::iitpData fil;
-	fil.readEdfFile("/media/Files/Data/iitp/SYNCED/Test/Test_03_sum_new_abs.edf");
+	fil.readEdfFile("/media/Files/Data/iitp/SYNCED/Test/Test_04_sum_new.edf");
 	std::valarray<double> iitp1 = fil.getData("C3");
 	iitp1 -= smLib::mean( iitp1 );
 //	std::valarray<double> iitp2 = fil.getData("Fcr");
@@ -418,7 +418,7 @@ void MainWindow::customFunc()
 	const int fftLen = 256;
 	const double srate = 250.;
 	const double spStep = srate / fftLen;
-	const double overlap = 0.6;
+	const double overlap = 0.5;
 
 	auto usual = iitp::coherenciesUsual(iitp1,
 										iitp2,

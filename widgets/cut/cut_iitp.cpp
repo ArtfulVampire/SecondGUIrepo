@@ -35,6 +35,19 @@ void Cut::iitpAutoJumpSlot()
 
 }
 
+void Cut::rectifyEmgSlot()
+{
+	this->subtractMeansSlot();
+	for(int i = 0; i < edfFil.getNs(); ++i)
+	{
+		if(edfFil.getLabels(i).contains("EMG", Qt::CaseInsensitive))
+		{
+			dataCutLocal[i] = dataCutLocal[i].apply(std::abs);
+		}
+	}
+	paint();
+}
+
 void Cut::iitpManualSlot()
 {
 

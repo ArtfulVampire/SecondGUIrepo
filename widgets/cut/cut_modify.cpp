@@ -18,6 +18,16 @@ void zeroData(matrix & inData, int leftLim, int rightLim)
 	}
 }
 
+void Cut::subtractMeansSlot()
+{
+	for(int i = 0; i < dataCutLocal.rows(); ++i)
+	{
+		if(myFileType == fileType::edf && edfFil.getMarkChan() == i) { continue; }
+		dataCutLocal[i] -= smLib::mean(dataCutLocal[i]);
+	}
+	paint();
+}
+
 /// FULL REMAKE with fileType::edf
 void Cut::matiAdjustLimits() /////// should TEST !!!!!
 {

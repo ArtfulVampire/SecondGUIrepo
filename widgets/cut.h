@@ -87,6 +87,7 @@ public slots:
 	void zeroTillEndSlot();
 	void splitTillEndSlot();
 	void cutPausesSlot();
+	void subtractMeansSlot();
 	void mousePressSlot(char btn__, int coord__);
 	void timesAndDiffSlot();
 
@@ -109,16 +110,15 @@ public slots:
     void forwardFrameSlot();
 	void backwardFrameSlot();
 
+	/// iitp
 	void iitpAutoCorrSlot();
 	void iitpAutoJumpSlot();
 	void iitpManualSlot();
 	void saveNewNumSlot();
+	void rectifyEmgSlot();
 
 protected:
     void resizeEvent(QResizeEvent *);
-
-signals:
-    void buttonPressed(char btn, int coord);
 
 private:
 	struct thrParam

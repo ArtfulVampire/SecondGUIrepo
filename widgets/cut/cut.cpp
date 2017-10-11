@@ -140,9 +140,10 @@ Cut::Cut() :
 	QObject::connect(ui->zeroTillEndPushButton, SIGNAL(clicked()), this, SLOT(zeroTillEndSlot()));
 	QObject::connect(ui->splitTillEndPushButton, SIGNAL(clicked()), this, SLOT(splitTillEndSlot()));
 	QObject::connect(ui->cutPausesPushButton, SIGNAL(clicked()), this, SLOT(cutPausesSlot()));
-	QObject::connect(ui->subtractMeansPushButton, &QPushButton::clicked,
-					 [this]()
-	{ for(auto & row : dataCutLocal) { row -= smLib::mean(row); } paint(); }); /// MARKERS!
+	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()),
+					 this, SLOT(subtractMeansSlot()));
+
+
 	QObject::connect(ui->setMarkLeftPushButton, &QPushButton::clicked,
 					 [this]() { this->setMarkerSlot(true); });
 	QObject::connect(ui->setMarkRightPushButton, &QPushButton::clicked,
@@ -172,7 +173,6 @@ Cut::Cut() :
 					 this, SLOT(paint()));
 	QObject::connect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(resizeWidget(double)));
-	QObject::connect(this, SIGNAL(buttonPressed(char,int)), this, SLOT(mousePressSlot(char,int)));
 	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
 					 this, SLOT(timesAndDiffSlot()));
 	QObject::connect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
@@ -215,6 +215,8 @@ Cut::Cut() :
 	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->iitpSaveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
+	QObject::connect(ui->iitpRectifyEmgPushButton, SIGNAL(clicked()), this, SLOT(rectifyEmgSlot()));
+
 
 	smartFindSetFuncs();
 	ui->smartFindSetAbsThrPushButton->click();
@@ -282,75 +284,61 @@ void Cut::resizeEvent(QResizeEvent * event)
 
 bool Cut::eventFilter(QObject *obj, QEvent *event)
 {
-    if(obj == ui->picLabel)
-    {
-        if (event->type() == QEvent::MouseButtonPress)
-        {
-            QMouseEvent * mouseEvent = static_cast<QMouseEvent*>(event);
-            if(mouseEvent->button() == Qt::LeftButton) emit buttonPressed('l', mouseEvent->x());
-            if(mouseEvent->button() == Qt::RightButton) emit buttonPressed('r', mouseEvent->x());
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     if(obj == ui->scrollArea)
     {
-        if(event->type() == QEvent::Wheel)
+		switch(event->type())
 		{
-            QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
-			if(scrollEvent->modifiers() & Qt::ControlModifier)
+
+		case QEvent::Wheel:
+		{
+			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
+			if(scrollEvent->modifiers().testFlag(Qt::ControlModifier))
 			{
 				ui->yNormDoubleSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
 				return true;
 			}
 
-            int offset = -0.8 * scrollEvent->delta();
+			int offset = -0.8 * scrollEvent->delta();
 
-            if(myFileType == fileType::real)
-            {
-//                std::cout << "real" << std::endl;
-                ui->scrollArea->horizontalScrollBar()->setSliderPosition(
-                            ui->scrollArea->horizontalScrollBar()->sliderPosition() +
-                            offset);
-                return true;
-            }
-            else if(myFileType == fileType::edf)
-            {
-//                std::cout << "edf" << std::endl;
+			if(myFileType == fileType::real)
+			{
+				ui->scrollArea->horizontalScrollBar()->setSliderPosition(
+							ui->scrollArea->horizontalScrollBar()->sliderPosition() +
+							offset);
+				return true;
+			}
+			else if(myFileType == fileType::edf)
+			{
 				if((leftDrawLimit + ui->scrollArea->width() > dataCutLocal.cols() && offset > 0) ||
-                   (leftDrawLimit == 0 && offset < 0))
-                {
-                    return false;
-                }
+				   (leftDrawLimit == 0 && offset < 0))
+				{
+					return false;
+				}
 				leftDrawLimit = std::min(leftDrawLimit + offset, int(dataCutLocal.cols()));
 				ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
-                return true;
-            }
-            else
-            {
-//                std::cout << "none" << std::endl;
-                return false;
-            }
-        }
-		else if(event->type() == QEvent::MouseButtonRelease)
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+			break;
+		}
+		case QEvent::MouseButtonRelease:
 		{
 			QMouseEvent * clickEvent = static_cast<QMouseEvent*>(event);
-			if(clickEvent->button() == Qt::BackButton)
+			switch(clickEvent->button())
 			{
-				this->backwardFrameSlot();
-			}
-			else if(clickEvent->button() == Qt::ForwardButton)
-			{
-				this->forwardFrameSlot();
+			case Qt::BackButton:	{ this->backwardFrameSlot(); break; }
+			case Qt::ForwardButton:	{ this->forwardFrameSlot(); break; }
+			case Qt::LeftButton:	{ this->mousePressSlot('l', clickEvent->x()); break; }
+			case Qt::RightButton:	{ this->mousePressSlot('r', clickEvent->x()); break; }
+			case Qt::MiddleButton:	{ ui->yNormDoubleSpinBox->setValue(1.); break; }
 			}
 
 			return true;
 		}
-		else if(event->type() == QEvent::KeyPress)
+		case QEvent::KeyPress:
 		{
 			QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
 
@@ -372,15 +360,16 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				}
 				showDerivatives();
 				paintLimits();
+				return true;
 			}
+			break;
 		}
-
-        else
+		default:
 		{
-            return false;
-        }
+			return false;
+		}
+		}
     }
-
     return QWidget::eventFilter(obj, event);
 }
 
