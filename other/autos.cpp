@@ -1342,7 +1342,7 @@ void ProcessAllInOneFolder(const QString & inPath,
 	if(0)
 	{
 		autos::GalyaCut(inPath,
-						8,
+						10,
 						inPath + "_cut/");
 	}
 
@@ -1656,8 +1656,11 @@ void feedbackFinalTimes(const QString & edfsPath,
 			return edfsPath + "/" + expName + "_" + nm(i) + ".edf";
 		};
 
+		if(!QFile::exists(filePath(numSess))) { continue; }
+
 		edfFile fil;
 		fil.readEdfFile(filePath(numSess));
+
 		const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
 
 
@@ -1680,9 +1683,8 @@ void feedbackFinalTimes(const QString & edfsPath,
 			corrs.push_back(QString(ans).toInt());
 		}
 		answers.close();
-
-
-//		std::cout << corrs.size() << std::endl;
+//		std::cout << "corrs = " << corrs << std::endl;
+		std::cout << "corrs.sizee() = " << corrs.size() << std::endl;
 
 		int count = 0;
 		for(const std::pair<int, int> & mrk : markers)
@@ -1702,8 +1704,8 @@ void feedbackFinalTimes(const QString & edfsPath,
 								 );
 			}
 		}
+		std::cout << values.size() << std::endl;
 
-//		std::cout << values.size() << std::endl;
 //		for(auto in : values)
 //		{
 //			std::cout << std::get<0>(in) << "\t" // time

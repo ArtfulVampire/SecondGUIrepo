@@ -69,7 +69,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-	/// prepare for eyes clean
+	/// prepare FeedbackFinalMark for eyes clean
 	const QString path = def::dataFolder + "/FeedbackFinalMark";
 	std::vector<std::pair<QString, QString>> guys{
 		std::make_pair("Beketova", "BAM"),
@@ -110,15 +110,16 @@ void MainWindow::customFunc()
 #if 0
 	/// count correctness and average times
 	std::vector<std::pair<QString, QString>> guys{
-		std::make_pair("Beketova", "BAM"),
-				std::make_pair("Burtcev", "BAV"),
-				std::make_pair("Dovbyish", "DEG"),
-				std::make_pair("Evstratov_n", "ENV"),
-				std::make_pair("Ilyin", "IAE"),
-				std::make_pair("Matasov", "MII"),
-				std::make_pair("Nikonenko", "NUA"),
-				std::make_pair("Semyonov_n", "SAV"),
-				std::make_pair("Sergeev_n", "SAA")
+//		std::make_pair("Beketova", "BAM"),
+//				std::make_pair("Burtcev", "BAV"),
+//				std::make_pair("Dovbyish", "DEG"),
+//				std::make_pair("Evstratov_n", "ENV"),
+//				std::make_pair("Ilyin", "IAE"),
+//				std::make_pair("Matasov", "MII"),
+//				std::make_pair("Nikonenko", "NUA"),
+//				std::make_pair("Semyonov_n", "SAV"),
+//				std::make_pair("Sergeev_n", "SAA"),
+				std::make_pair("Laszov", "LMA")
 	};
 
 	for(auto in : guys)
