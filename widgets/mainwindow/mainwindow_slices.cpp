@@ -28,8 +28,8 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 		{
 			if(ui->windsButton->isChecked())
 			{
-//				sliceWinds();
-				sliceJustWinds(); /// IITP
+				sliceWinds();
+//				sliceJustWinds(); /// IITP
 			}
 			else if(ui->realsButton->isChecked())
 			{
@@ -42,7 +42,6 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 				}
 				else
 				{
-					//						sliceOneByOneNew(); /// by number after 241/247
 					if(ui->elenaSliceCheckBox->isChecked())
 					{
 						sliceElena();
@@ -50,7 +49,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 					else
 					{
 						sliceOneByOne();
-//						sliceOneByOneNew();
+//						sliceOneByOneNew(); /// by number after 241/247
 					}
 				}
 			}

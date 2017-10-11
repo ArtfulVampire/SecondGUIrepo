@@ -88,7 +88,7 @@ public slots:
 	void splitTillEndSlot();
 	void cutPausesSlot();
 	void subtractMeansSlot();
-	void mousePressSlot(char btn__, int coord__);
+	void mousePressSlot(Qt::MouseButton btn, int coord);
 	void timesAndDiffSlot();
 
 	void setMarkerSlot(bool);

@@ -217,7 +217,6 @@ Cut::Cut() :
 	QObject::connect(ui->iitpSaveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
 	QObject::connect(ui->iitpRectifyEmgPushButton, SIGNAL(clicked()), this, SLOT(rectifyEmgSlot()));
 
-
 	smartFindSetFuncs();
 	ui->smartFindSetAbsThrPushButton->click();
 }
@@ -288,7 +287,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
     {
 		switch(event->type())
 		{
-
 		case QEvent::Wheel:
 		{
 			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
@@ -309,6 +307,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			}
 			else if(myFileType == fileType::edf)
 			{
+				/// scroll overflow/underflow
 				if((leftDrawLimit + ui->scrollArea->width() > dataCutLocal.cols() && offset > 0) ||
 				   (leftDrawLimit == 0 && offset < 0))
 				{
@@ -318,10 +317,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
 				return true;
 			}
-			else
-			{
-				return false;
-			}
+			else { return false; }
 			break;
 		}
 		case QEvent::MouseButtonRelease:
@@ -331,43 +327,35 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			{
 			case Qt::BackButton:	{ this->backwardFrameSlot(); break; }
 			case Qt::ForwardButton:	{ this->forwardFrameSlot(); break; }
-			case Qt::LeftButton:	{ this->mousePressSlot('l', clickEvent->x()); break; }
-			case Qt::RightButton:	{ this->mousePressSlot('r', clickEvent->x()); break; }
+			case Qt::LeftButton:	{ this->mousePressSlot(clickEvent->button(), clickEvent->x()); break; }
+			case Qt::RightButton:	{ this->mousePressSlot(clickEvent->button(), clickEvent->x()); break; }
 			case Qt::MiddleButton:	{ ui->yNormDoubleSpinBox->setValue(1.); break; }
+			default: { return false; }
 			}
-
 			return true;
 		}
 		case QEvent::KeyPress:
 		{
 			QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
-
-			if((keyEvent->key() == Qt::Key_Left) || (keyEvent->key() == Qt::Key_Right))
+			auto * targetSpin = ui->leftLimitSpinBox;
+			if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
 			{
-				auto * targetSpin = ui->leftLimitSpinBox;
-				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
-				{
-					targetSpin = ui->rightLimitSpinBox;
-				}
-
-				if(keyEvent->key() == Qt::Key_Left)
-				{
-					targetSpin->stepDown();
-				}
-				else if(keyEvent->key() == Qt::Key_Right)
-				{
-					targetSpin->stepUp();
-				}
-				showDerivatives();
-				paintLimits();
-				return true;
+				targetSpin = ui->rightLimitSpinBox;
 			}
+
+			switch(keyEvent->key())
+			{
+			case Qt::Key_Left:	{ targetSpin->stepDown(); break; }
+			case Qt::Key_Right:	{ targetSpin->stepUp(); break; }
+			default:			{ return false; }
+			}
+			showDerivatives();
+			paintLimits();
+			return true;
+
 			break;
 		}
-		default:
-		{
-			return false;
-		}
+		default: { return false; }
 		}
     }
     return QWidget::eventFilter(obj, event);
@@ -382,7 +370,6 @@ void Cut::resetLimits()
 	ui->rightLimitSpinBox->setValue(dataCutLocal.cols());
 }
 
-
 void Cut::showDerivatives()
 {
 	if( !fileOpened ) { return; }
@@ -396,7 +383,7 @@ void Cut::showDerivatives()
 	{
 		ui->derivFirst1SpinBox->setValue(sig1[ind1 + st] -  sig1[ind1 - st]);
 	}
-	if(ind1 + 2 * st < sig1.size() && ind1 - 2 * st >=0)
+	if(ind1 + 2 * st < sig1.size() && ind1 - 2 * st >= 0)
 	{
 		ui->derivSecond1SpinBox->setValue(sig1[ind1 + 2 * st] + sig1[ind1 - 2 * st] - 2 * sig1[ind1]);
 	}
@@ -408,7 +395,7 @@ void Cut::showDerivatives()
 	{
 		ui->derivFirst2SpinBox->setValue(sig2[ind2 + st] -  sig2[ind2 - st]);
 	}
-	if(ind2 + 2 * st < sig2.size() && ind2 - 2 * st >=0)
+	if(ind2 + 2 * st < sig2.size() && ind2 - 2 * st >= 0)
 	{
 		ui->derivSecond2SpinBox->setValue(sig2[ind2 + 2 * st] + sig2[ind2 - 2 * st] - 2 * sig2[ind2]);
 	}
@@ -416,16 +403,14 @@ void Cut::showDerivatives()
 
 }
 
-
-
-void Cut::mousePressSlot(char btn, int coord)
+void Cut::mousePressSlot(Qt::MouseButton btn, int coord)
 {
-	if(btn == 'l' &&
+	if(btn == Qt::LeftButton &&
 	   coord + leftDrawLimit < ui->rightLimitSpinBox->value())
 	{
 		ui->leftLimitSpinBox->setValue(coord + leftDrawLimit);
 	}
-	else if(btn == 'r' &&
+	else if(btn == Qt::RightButton &&
 			coord + leftDrawLimit > ui->leftLimitSpinBox->value() &&
 			coord < dataCutLocal.cols())
 	{
@@ -434,10 +419,6 @@ void Cut::mousePressSlot(char btn, int coord)
 	showDerivatives();
 	paintLimits();
 }
-
-
-
-
 
 void Cut::resizeWidget(double a)
 {

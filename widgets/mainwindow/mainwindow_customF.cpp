@@ -43,7 +43,7 @@ void MainWindow::customFunc()
 //						   1024).save("/media/Files/Data/phases1.jpg", 0, 100);
 //	exit(0);
 
-//	return;
+	return;
 
 #if 0
 	/// test windows
