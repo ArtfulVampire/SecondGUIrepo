@@ -242,6 +242,7 @@ void Cut::setValuesByEdf()
 	currFreq = edfFil.getFreq();
 	dataCutLocal = edfFil.getData(); /// expensive
 
+	const bool iitpFlag = edfFil.getDirPath().contains("iitp", Qt::CaseInsensitive);
 
 	ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
 	ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
@@ -261,14 +262,18 @@ void Cut::setValuesByEdf()
 
 	resetLimits();
 
+	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
+	{
+		a->setMaximum(edfFil.getNs() - 1);
+		a->setValue(edfFil.getNs() - 1); // markers
+	}
+
 	/// set coloured channels
 	QString redStr = "EOG1";	// ~horizontal
 	QString blueStr = "EOG2";	// ~vertical
 
 	/// iitp
-	if(edfFil.getNs() > 35
-	   || (edfFil.getNs() == 24 && edfFil.getDirPath().contains("iitp", Qt::CaseInsensitive))
-	   )
+	if(iitpFlag)
 	{
 		redStr = "ECG";
 		blueStr = "Artefac";
@@ -278,6 +283,12 @@ void Cut::setValuesByEdf()
 	int eog2 = edfFil.findChannel(redStr);
 	if(eog2 == eog1) { eog2 = edfFil.findChannel("EOG3"); }
 
+	if(iitpFlag)
+	{
+		ui->derivChan1SpinBox->setValue(eog1); /// ECG
+		ui->derivChan2SpinBox->setValue(eog2); /// Artefac
+	}
+
 	for(auto p : colouredWidgets)
 	{
 		std::get<0>(p)->setMaximum(edfFil.getNs() - 1);
@@ -286,11 +297,7 @@ void Cut::setValuesByEdf()
 	ui->color2SpinBox->setValue(eog2);
 	ui->color3SpinBox->setValue(-1);
 
-	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
-	{
-		a->setMaximum(edfFil.getNs() - 1);
-		a->setValue(edfFil.getNs() - 1); // markers
-	}
+
 }
 
 void Cut::openFile(const QString & dataFileName)

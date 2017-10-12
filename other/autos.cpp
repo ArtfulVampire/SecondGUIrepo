@@ -1202,10 +1202,12 @@ void GalyaCut(const QString & path,
 	const auto filesVec = leest1.toVector();
 
 	/// ??????????????????????
+#ifdef _OPENMP
 	omp_set_dynamic(0);
 	omp_set_num_threads(3);
 #pragma omp parallel
 #pragma omp for nowait
+#endif
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		std::cout << filesVec[i] << std::endl;

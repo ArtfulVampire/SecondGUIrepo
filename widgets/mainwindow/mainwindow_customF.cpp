@@ -43,7 +43,7 @@ void MainWindow::customFunc()
 //						   1024).save("/media/Files/Data/phases1.jpg", 0, 100);
 //	exit(0);
 
-	return;
+//	return;
 
 #if 0
 	/// test windows
@@ -291,14 +291,13 @@ void MainWindow::customFunc()
 	{
 //		autos::IITPdatToEdf(guy);
 //		autos::IITPremoveZchans(guy, def::iitpFolder);
-//		autos::IITPrerefCAR(guy);
+//		autos::IITPrerefCAR(guy, "_eeg");
 //		return; /// clean init eeg - zero in the beginning
-//		autos::IITPconcat(guy); // eeg + emg
+//		autos::IITPconcat(guy, "_eeg_car_new"); // eeg + emg
 //		return; /// manual sync
 
 //		/// copy files to SYNCED
 
-		autos::IITPemgToAbs(guy);
 //		autos::IITPstaging(guy);	/// flex/extend markers
 //		autos::IITPfilter(guy);		/// optional
 //		autos::IITPtestCoh(guy);
@@ -397,14 +396,14 @@ void MainWindow::customFunc()
 	/// IITP file into two files
 
 	iitp::iitpData fil;
-	fil.readEdfFile("/media/Files/Data/iitp/SYNCED/Test/Test_04_sum_new.edf");
-	std::valarray<double> iitp1 = fil.getData("C3");
+	fil.readEdfFile("/media/Files/Data/iitp/SYNCED/Test/Test_01_sum_new.edf");
+	std::valarray<double> iitp1 = fil.getData("P4");
 	iitp1 -= smLib::mean( iitp1 );
 //	std::valarray<double> iitp2 = fil.getData("Fcr");
 	std::valarray<double> iitp2 = fil.getData("Ta");
 	iitp2 -= smLib::mean( iitp2 );
 
-	if(01)
+	if(0)
 	{
 		myLib::writeFileInLine("/media/Files/Data/iitp1.txt",
 							   iitp1);
@@ -417,8 +416,7 @@ void MainWindow::customFunc()
 	/// IITP test coh two files
 	const int fftLen = 256;
 	const double srate = 250.;
-	const double spStep = srate / fftLen;
-	const double overlap = 0.5;
+	const double overlap = 0.0;
 
 	auto usual = iitp::coherenciesUsual(iitp1,
 										iitp2,
@@ -431,19 +429,6 @@ void MainWindow::customFunc()
 	const double confidence = 1. - std::pow(0.05, 1. / (windNum - 1));
 	std::cout << "windNum = " << windNum << std::endl;
 	std::cout << "confidence = " << confidence << std::endl;
-
-	const double freqC = fftLen / srate;
-	std::cout << "freqC = " << freqC << std::endl;
-	const int numFreq = 45;
-	const int siz = std::ceil(freqC * numFreq);
-	std::cout << "siz = " << siz << std::endl;
-	std::cout << "spSte * (siz-1) = " << spStep * (siz-1) << std::endl;
-
-	std::valarray<double> usualDraw(siz);
-	for(int i = 0; i < siz; ++i)
-	{
-		usualDraw[i] = std::abs(usual[i]);
-	}
 
 
 //	std::valarray<double> fromMatlab;
@@ -459,7 +444,13 @@ void MainWindow::customFunc()
 //	autos::IITPdrawCoh(fromMatlab, m, confidence).
 //			save("/media/Files/Data/mCoh.jpg", 0, 100);
 
-	autos::IITPdrawCoh(usualDraw, usualDraw.max(), confidence).
+	autos::IITPdrawCoh(usual,
+					   8.,
+					   45.,
+					   srate,
+					   fftLen,
+					   0.,
+					   confidence).
 			save("/media/Files/Data/cCohUsual.jpg", 0, 100);
 
 

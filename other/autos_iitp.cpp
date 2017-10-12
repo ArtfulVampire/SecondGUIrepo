@@ -10,57 +10,96 @@ using namespace myOut;
 
 namespace autos
 {
-QPixmap IITPdrawCoh(const std::valarray<double> & inData,
+QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
+					double minFreq,
+					double maxFreq,
+					double srate,
+					double fftLen,
 					double maxVal,
 					double confidence)
 {
-	const int numFreq = 45;
-	maxVal = std::ceil(maxVal * 20.) / 20.; /// = n * 0.05
+
+	const double graphHeight = 0.95;
+	const double leftGap = 0.05;
+	const double rightGap = 0.01;
+
+	const double spStep = srate / fftLen;
+	const int beg = std::floor(minFreq / spStep);
+	const int en  = std::floor(maxFreq / spStep);
+
+	std::valarray<double> drawData(en - beg);
+	for(int i = 0; i < drawData.size(); ++i)
+	{
+		drawData[i] = std::abs(inData[beg + i]);
+	}
+
+	std::cout << drawData.size() << std::endl;
+
+	if( maxVal == 0.) { maxVal = drawData.max(); }
+
+	maxVal = std::ceil(maxVal * 100.) / 100.; /// = n * 0.01
+
+
 
 	QPixmap pic(800, 600);
 	pic.fill();
 	QPainter pnt;
 	pnt.begin(&pic);
-	for(int i = 0; i < inData.size()-1; ++i)
+	for(int i = 0; i < drawData.size() - 1; ++i)
 	{
 //		std::cout << i << "\t" << arr[i] << std::endl;
-		pnt.drawLine( pic.width() * i / double(inData.size()),
-					  pic.height() * (1. - inData[i] / maxVal),
-					  pic.width() * (i + 1) / double(inData.size()),
-					  pic.height() * (1. - inData[i + 1] / maxVal));
+		pnt.drawLine( pic.width() * (leftGap + i / double(drawData.size()) * (1. - (leftGap +  rightGap))),
+					  pic.height() * (1. - drawData[i] / maxVal) * graphHeight,
+					  pic.width() * (leftGap + (i + 1) / double(drawData.size()) * (1. - (leftGap +  rightGap))),
+					  pic.height() * (1. - drawData[i + 1] / maxVal) * graphHeight);
 	}
-
 	const QFont font = QFont("Helvetica", 8);
 	pnt.setFont(font);
-	/// values
+
+	/// Y values
 	const double valStep = std::pow(10., std::floor(log10(maxVal)));
 	for(double val = 0.; val < maxVal; val += valStep)
 	{
+		const double y = pic.height() * (1. - val / maxVal) * graphHeight;
 		pnt.drawLine( 0,
-					  pic.height() * (1. - val / maxVal),
+					  y,
 					  10,
-					  pic.height() * (1. - val / maxVal));
+					  y);
 		pnt.drawText(10 + 2,
-					 pic.height() * (1. - val / maxVal) + QFontMetrics(font).xHeight() / 2,
+					 y + QFontMetrics(font).height() / 2,
 					 QString::number(val));
 	}
+
 	/// draw Hz
-	for(int i = 0; i < numFreq; ++i)
+	for(int i = beg; i < en; ++i)
 	{
-		pnt.drawLine( pic.width() * i / numFreq,
-					  pic.height() * 1,
-					  pic.width() * i / numFreq,
-					  pic.height() * (1. - 0.03));
-		pnt.drawText(pic.width() * i / numFreq,
-					 pic.height() * (1. - 0.03) + QFontMetrics(font).xHeight(),
+		const double x = pic.width() * (leftGap + (i - beg) / double(en - beg) * (1. - (leftGap +  rightGap)));
+		pnt.drawLine( x,
+					  pic.height() * graphHeight,
+					  x,
+					  pic.height() * (graphHeight + 0.03));
+		pnt.drawText(x - 4,
+					 pic.height() * (graphHeight + 0.03) + QFontMetrics(font).height() / 2,
 					 QString::number(i));
 	}
 
 	/// confidence line
 	pnt.drawLine(0,
-				 pic.height() * (1. - confidence / maxVal),
+				 pic.height() * (1. - confidence / maxVal) * graphHeight,
 				 pic.width(),
-				 pic.height() * (1. - confidence / maxVal));
+				 pic.height() * (1. - confidence / maxVal) * graphHeight);
+
+	/// zero line
+	pnt.drawLine(0,
+				 pic.height() * graphHeight,
+				 pic.width(),
+				 pic.height() * graphHeight);
+
+	/// left line
+	pnt.drawLine(pic.width() * leftGap,
+				 0,
+				 pic.width() * leftGap,
+				 pic.height() * graphHeight);
 
 	pnt.end();
 	return pic;
@@ -412,14 +451,17 @@ void IITPtestCoh(const QString & guyName)
 	}
 }
 
-void IITPconcat(const QString & guyName)
+void IITPconcat(const QString & guyName,
+				const QString & eegPostfix)
 {
 	/// iitp
 	///  0 - downsample EMG, 1 - upsample EEG
 #ifdef UP_DOWN_S
 #undef UP_DOWN_S
-#define UP_DOWN_S 01
+#define UP_DOWN_S 0
 #endif
+
+
 
 	def::ntFlag = true;
 
@@ -435,11 +477,11 @@ void IITPconcat(const QString & guyName)
 		/// resample
 #if UP_DOWN_S
 		/// upsample EEGs
-		filePath = ExpNamePre + "_eeg_new.edf";
+		filePath = ExpNamePre + eegPostfix + ".edf";
 		if(QFile::exists(filePath))
 		{
 			fil.readEdfFile(filePath);
-			filePath = ExpNamePre + "_eeg_up.edf";
+			filePath = ExpNamePre + eegPostfix + "_up.edf";
 			fil.upsample(1000., filePath);
 		}
 #else
@@ -460,7 +502,7 @@ void IITPconcat(const QString & guyName)
 		/// vertcat eeg+emg
 #if UP_DOWN_S
 		/// upsampled EEG
-		filePath = ExpNamePre + "_eeg_up.edf";
+		filePath = ExpNamePre + eegPostfix + "_up.edf";
 		if(QFile::exists(filePath))
 		{
 			fil.readEdfFile(filePath);
@@ -472,7 +514,7 @@ void IITPconcat(const QString & guyName)
 		}
 #else
 		/// downsampled EMG
-		filePath = ExpNamePre + "_eeg_new.edf";
+		filePath = ExpNamePre + eegPostfix + ".edf";
 		if(QFile::exists(filePath))
 		{
 			fil.readEdfFile(filePath);
@@ -839,7 +881,7 @@ void IITPemgToAbs(const QString & guyName,
 	}
 }
 
-void IITPrerefCAR(const QString & guyName)
+void IITPrerefCAR(const QString & guyName, const QString & addFilter)
 {
 
 	const auto & usedLabels = coords::lbl19;	/// to build reref array
@@ -849,6 +891,8 @@ void IITPrerefCAR(const QString & guyName)
 
 	for(QString fileName : edfs)
 	{
+		if(!addFilter.isEmpty() && !fileName.contains(addFilter)) { continue; }
+
 		edfFile fil;
 		fil.readEdfFile(def::iitpFolder + "/" + guyName + "/" + fileName);
 
@@ -863,7 +907,8 @@ void IITPrerefCAR(const QString & guyName)
 
 		for(int i = 0; i < fil.getNs(); ++i)
 		{
-			auto it = std::find_if(std::begin(rerefLabels), std::end(rerefLabels),
+			auto it = std::find_if(std::begin(rerefLabels),
+								   std::end(rerefLabels),
 								   [fil, i](const QString & in)
 			{ return fil.getLabels(i).contains(in); });
 
@@ -874,12 +919,12 @@ void IITPrerefCAR(const QString & guyName)
 
 				/// set new label *-CAR
 				QString newLabel = fil.getLabels(i);
-				newLabel = myLib::fitString(newLabel.left(newLabel.indexOf('-') + 1) + "CAR", 16);
+				newLabel = myLib::fitString(newLabel.left(newLabel.indexOf('-')) + "-CAR", 16);
 				fil.setLabel(i, newLabel);
 			}
 		}
 		fil.writeEdfFile(def::iitpFolder + "/" + guyName + "/" + fileName
-//						 .replace(".edf", "_car.edf") /// add name or not
+						 .replace(".edf", "_car.edf") /// add name or not
 						 );
 	}
 }

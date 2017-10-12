@@ -119,17 +119,17 @@ void rereferenceFolder(const QString & procDirPath,
 
 
 
-void IITPconcat(const QString & guyName = "Ira");
-void IITPdatToEdf(const QString & guyName = "Ira");
+void IITPconcat(const QString & guyName, const QString & eegPostfix);
+void IITPdatToEdf(const QString & guyName);
 //void IITPdownsampleEmgs(const QString & guyName);
-void IITPfilter(const QString & guyName = "Ira",
+void IITPfilter(const QString & guyName,
 				bool emg = true,
 				bool gonios = true,
 				bool eeg = true);
 
-void IITPpre2(const QString & guyName = "Ira");
-void IITPtestCoh(const QString & guyName = "Ira");
-void IITPtestCoh2(const QString & guyName = "Ira");
+void IITPpre2(const QString & guyName);
+void IITPtestCoh(const QString & guyName);
+void IITPtestCoh2(const QString & guyName);
 
 void IITPfilterGonios(const QString & guyName,
 					  const std::vector<QString> & joints = {"elbow",
@@ -140,7 +140,7 @@ void IITPfilterGonios(const QString & guyName,
 void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
 void IITPremoveZchans(const QString & guyName, const QString & dirPath = def::iitpSyncFolder);
 
-void IITPrerefCAR(const QString & guyName);
+void IITPrerefCAR(const QString & guyName, const QString & addFilter = QString());
 
 void IITPemgToAbs(const QString & guyName,
 				  QString postfix = "_sum_new",
@@ -160,7 +160,12 @@ void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums);
 void IITPdat(const QString & guyName = "Ira");
 void IITPrename(const QString & guyName = "Ira");
 
-QPixmap IITPdrawCoh(const std::valarray<double> & inData, double maxVal,
+QPixmap IITPdrawCoh(const std::valarray<std::complex<double> > & inData,
+					double minFreq,
+					double maxFreq,
+					double srate,
+					double fftLen,
+					double maxVal,
 					double confidence);
 
 

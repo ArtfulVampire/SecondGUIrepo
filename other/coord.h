@@ -2,6 +2,7 @@
 #define COORD_H
 
 #include <map>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
