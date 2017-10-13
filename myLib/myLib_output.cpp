@@ -111,6 +111,22 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ, std::allocator<Typ
 	return os;
 }
 
+std::ostream & myWrite (std::ostream & os)
+{
+	os << std::endl;
+	return os;
+}
+
+template<class input, class... inputs>
+std::ostream & myWrite (std::ostream & os, input in, inputs... ins)
+{
+	os << in << "\t";
+	myWrite(os, ins...);
+	return os;
+}
+template <class... inputs> std::ostream & myWrite(std::ostream & os, QString in, inputs... ins);
+template <class... inputs> std::ostream & myWrite(std::ostream & os, int in, inputs... ins);
+
 // with allocators
 template std::ostream & operator << (std::ostream & os, const std::vector<std::vector<double>> & toOut);
 template std::ostream & operator << (std::ostream & os, const std::vector<int> & toOut);
