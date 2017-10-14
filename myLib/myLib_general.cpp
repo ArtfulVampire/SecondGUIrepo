@@ -313,6 +313,17 @@ InputIterator find_back_if(InputIterator last, InputIterator first, Pred pred)
 	 return first;
 }
 
+std::vector<int> splitStringIntoVec(const QString & in)
+{
+	std::vector<int> res{};
+	QStringList lst = in.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
+	for(QString p : lst)
+	{
+		res.push_back(p.toInt());
+	}
+	return res;
+}
+
 std::string funcName(std::string in)
 {
 	in.resize(in.find('('));

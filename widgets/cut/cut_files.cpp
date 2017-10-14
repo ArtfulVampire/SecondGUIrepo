@@ -316,6 +316,7 @@ void Cut::openFile(const QString & dataFileName)
 	{
 		edfFil.readEdfFile(dataFileName);
 		fileOpened = true;
+		logAction(edfFil.getExpName());
 		setValuesByEdf(); /// needs fileOpened
 	}
 	ui->iitpDisableEcgCheckBox->setChecked(false);

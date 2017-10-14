@@ -70,6 +70,12 @@ std::valarray<std::complex<double>> spectreWelchCross(const std::valarray<double
 													  myLib::windowName window,
 													  int fftLen);
 
+std::valarray<std::complex<double>> spectreCross(const std::valarray<double> & inputSignal1,
+												 const std::valarray<double> & inputSignal2,
+												 double srate,
+												 const std::valarray<double> & wnd,
+												 int fftLen);
+
 std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 								   double leftFreq,
 								   double rightFreq,

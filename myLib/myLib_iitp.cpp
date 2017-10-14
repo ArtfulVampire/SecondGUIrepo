@@ -141,6 +141,11 @@ std::complex<double> coherencyUsual(const std::valarray<double> & sig1,
 /// iitpData class
 std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 {
+	if(chan1 == -1 || chan2 == -1)
+	{
+		std::cout << "coherency: no such channel" << std::endl;
+		return {};
+	}
 	/// usual
 	if(chan1 > chan2)
 	{
@@ -155,46 +160,23 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 	{
 		if(this->crossSpectra[a.first][a.second].size() == 0)
 		{
-			this->countCrossSpectrum(a.first, a.second);
+			this->countCrossSpectrumW(a.first, a.second, 0.5);
 		}
-	}	
-	if(this->coherenciesUsual[chan1][chan2].size() == 0)
-	{
-		/// WHAT THE FUCK ???
-//		this->coherenciesUsual[chan1][chan2] = this->crossSpectra[chan1][chan2] /
-//										  sqrt(this->crossSpectra[chan1][chan1] *
-//											   this->crossSpectra[chan2][chan2]);
-
-
-		/// replace 19.09.2017 - MEAN OF COMPLEX UNITS
-		coherenciesUsual[chan1][chan2].resize(this->piecesFFT[0][0].size());
-
-		for(int i = 0; i < this->piecesData.size(); ++i)
-		{
-			coherenciesUsual[chan1][chan2] += this->piecesFFT[i][chan1] *
-											  this->piecesFFT[i][chan2].apply(std::conj) /
-											  (this->piecesFFT[i][chan1].apply(smLib::abs) *
-											   this->piecesFFT[i][chan2].apply(smLib::abs));
-		}
-		coherenciesUsual[chan1][chan2] /= this->piecesData.size();
-
 	}
-	int index = freq / this->spStep;
-	return coherenciesUsual[chan1][chan2][index];
+	if(this->coherencies[chan1][chan2].size() == 0)
+	{
+		coherencies[chan1][chan2] = this->crossSpectra[chan1][chan2] /
+									std::sqrt(this->crossSpectra[chan1][chan1] *
+											  this->crossSpectra[chan2][chan2]);
+		mscoherencies[chan1][chan2] = std::pow(smLib::abs(coherencies[chan1][chan2]), 2.);
+	}
+	int index = freq / getSpStepW();
+	return coherencies[chan1][chan2][index];
 }
-
-const iitpData::cohsType & iitpData::getCoherencies() const
-{
-	return coherenciesUsual;
-}
-
 
 void iitpData::countCrossSpectrum(int chan1, int chan2)
 {
-	if(chan1 > chan2)
-	{
-		std::swap(chan1, chan2);
-	}
+	if(chan1 > chan2) { std::swap(chan1, chan2); }
 
 	std::valarray<std::complex<double>> spec1;
 	std::valarray<std::complex<double>> spec2;
@@ -218,26 +200,30 @@ void iitpData::countCrossSpectrumW(int chan1, int chan2, double overlap)
 {
 	if(chan1 > chan2) { std::swap(chan1, chan2); }
 
+
 	const auto fileType = iitp::trialTypes[iitp::getFileNum(myLib::getFileName(this->filePath))];
 
-		/// just to be sure it's empty
+	/// just to be sure it's empty
 	this->crossSpectra[chan1][chan2].resize(fftLenW);
 	this->crossSpectra[chan1][chan2] = 0.;
+
+
+	const std::valarray<double> wnd = myLib::fftWindow(fftLenW, iitp::iitpWindow);
 
 	/// periodic task
 	if(fileType == iitp::trialType::real
 	   ||fileType == iitp::trialType::passive )
 	{
+
 		for(int i = 0; i < this->piecesData.size(); ++i)
 		{
-			this->crossSpectra[chan1][chan2] += myLib::spectreWelchCross(this->piecesData[i][chan1],
-																		 this->piecesData[i][chan2],
-																		 overlap,
-																		 srate,
-																		 iitp::iitpWindow,
-																		 fftLenW);
+			this->crossSpectra[chan1][chan2] += myLib::spectreCross(this->piecesData[i][chan1],
+																	this->piecesData[i][chan2],
+																	srate,
+																	wnd,
+																	fftLenW);
 		}
-		this->crossSpectra[chan1][chan2] /= this->piecesData.size();
+		this->crossSpectra[chan1][chan2] /= std::complex<double>(this->piecesData.size(), 0);
 	}
 	else /// continious task
 	{
@@ -272,11 +258,18 @@ void iitpData::clearCrossSpectra()
 		this->crossSpectra[i].resize(this->ns, {});
 	}
 
-	this->coherenciesUsual.clear();
-	this->coherenciesUsual.resize(this->ns);
-	for(int i = 0; i < this->coherenciesUsual.size(); ++i)
+	this->coherencies.clear();
+	this->coherencies.resize(this->ns);
+	for(int i = 0; i < this->coherencies.size(); ++i)
 	{
-		this->coherenciesUsual[i].resize(this->ns, {});
+		this->coherencies[i].resize(this->ns, {});
+	}
+
+	this->mscoherencies.clear();
+	this->mscoherencies.resize(this->ns);
+	for(int i = 0; i < this->mscoherencies.size(); ++i)
+	{
+		this->mscoherencies[i].resize(this->ns, {});
 	}
 
 
@@ -372,10 +365,22 @@ void iitpData::setPiecesW(int startMark, int finishMark, double overlap)
 		}
 		else if(this->edfData[this->markerChannel][i] == finishMark && beg != badBeg)
 		{
-			const double windStep = fftLenW * (1. - overlap);
-			for(int windStart = beg; windStart < i - fftLenW; windStart += windStep)
+			if(i - beg < fftLenW)
 			{
-				piecesData.push_back(this->edfData.subCols(windStart, windStart + fftLenW));
+				int sta = (beg + i - fftLenW) / 2;
+				int fin = sta + fftLenW;
+				if(sta >= 0 && fin < edfData.cols())
+				{
+					piecesData.push_back(this->edfData.subCols(sta, fin));
+				}
+			}
+			else
+			{
+				const double windStep = fftLenW * (1. - overlap);
+				for(int windStart = beg; windStart < i - fftLenW; windStart += windStep)
+				{
+					piecesData.push_back(this->edfData.subCols(windStart, windStart + fftLenW));
+				}
 			}
 			beg = badBeg;
 		}
@@ -431,12 +436,12 @@ void iitpData::countContiniousTaskSpectra()
 
 void iitpData::countContiniousTaskSpectraW(double overlap)
 {
-	const int leftInd = iitp::leftFr / (this->srate / this->fftLenW);
-	const int rightInd = iitp::rightFr / (this->srate / this->fftLenW);
+	const int leftInd = iitp::leftFr / getSpStepW();
+	const int rightInd = iitp::rightFr / getSpStepW();
 	const int spLen = rightInd - leftInd;
 	const int numCh = 19;
 
-	std::valarray<double> spectre(spLen * numCh);
+	std::valarray<double> spectre(spLen * numCh); spectre = 0.;
 	std::valarray<double> spec;
 
 	for(int i = 0; i < numCh; ++i)
@@ -447,9 +452,12 @@ void iitpData::countContiniousTaskSpectraW(double overlap)
 									   iitp::iitpWindow,
 									   fftLenW);
 
-		std::copy(std::begin(spec) + leftInd,
-				  std::begin(spec) + rightInd,
-				  std::begin(spectre) + i * spLen);
+		if(myLib::contains(iitp::interestEeg, i))
+		{
+			std::copy(std::begin(spec) + leftInd,
+					  std::begin(spec) + rightInd,
+					  std::begin(spectre) + i * spLen);
+		}
 	}
 	myLib::writeFileInLine(def::iitpResFolder
 						   + "/" + this->getGuy()
@@ -459,11 +467,11 @@ void iitpData::countContiniousTaskSpectraW(double overlap)
 						   + "_sp.txt",
 						   spectre);
 
-	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
-	templ = myLib::drw::drawArray(templ, spectre);
-	templ.save(def::iitpResFolder + "/" + this->getGuy()
-			   + "/pic"
-			   + "/" + this->getInit() + ".jpg", 0, 100);
+//	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
+//	templ = myLib::drw::drawArray(templ, spectre);
+//	templ.save(def::iitpResFolder + "/" + this->getGuy()
+//			   + "/pic"
+//			   + "/" + this->getInit() + ".jpg", 0, 100);
 }
 
 void iitpData::countFlexExtSpectra(int mark1, int mark2)
@@ -478,7 +486,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 	const QString joint = "_" + iitp::gonioName(mark1);
 
 	std::valarray<double> spectre(spLen * numCh);
-//	matrix spectra(2, 1);
+	matrix spectra(2, 1);
 	std::valarray<double> spec(localFftLen);
 
 	/// flexion
@@ -497,7 +505,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
-//	spectra[0] = spectre;
+	spectra[0] = spectre;
 	myLib::writeFileInLine(def::iitpResFolder
 						   + "/" + this->getGuy()
 						   + "/sp"
@@ -520,78 +528,6 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
-//	spectra[1] = spectre;
-	myLib::writeFileInLine(def::iitpResFolder
-						   + "/" + this->getGuy()
-						   + "/sp"
-						   + "/" + this->getInit() + joint + "_extension_sp.txt",
-						   spectre);
-
-
-//	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
-//	templ = myLib::drw::drawArrays(templ, spectra);
-//	templ.save(def::iitpResFolder + "/" + this->getGuy()
-//			   + "/pic"
-//			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
-}
-
-
-void iitpData::countFlexExtSpectraW(int mark1, int mark2, double overlap)
-{
-	const int leftInd = iitp::leftFr / (this->srate / this->fftLenW);
-	const int rightInd = iitp::rightFr / (this->srate / this->fftLenW);
-	const int spLen = rightInd - leftInd;
-	const int numCh = 19;
-
-	const QString joint = "_" + iitp::gonioName(mark1);
-
-	std::valarray<double> spectre(spLen * numCh);
-	std::valarray<double> spec(fftLenW);
-	matrix spectra(2, 1); /// to draw
-
-	/// flexion
-	this->setPiecesW(mark1, mark2, overlap);
-	for(int i = 0; i < numCh; ++i)
-	{
-		spec = 0.;
-		for(int i = 0; i < this->getPieces().size(); ++i)
-		{
-			spec += myLib::spectreWelchRtoR(this->piecesData[i][numCh],
-											overlap,
-											this->srate,
-											iitp::iitpWindow,
-											fftLenW);
-		}
-
-		std::copy(std::begin(spec) + leftInd,
-				  std::begin(spec) + rightInd,
-				  std::begin(spectre) + i * spLen);
-	}
-	spectra[0] = spectre;
-	myLib::writeFileInLine(def::iitpResFolder
-						   + "/" + this->getGuy()
-						   + "/sp"
-						   + "/" + this->getInit() + joint + "_flexion_sp.txt",
-						   spectre);
-
-	/// extension
-	this->setPiecesW(mark2, mark1, overlap);
-	for(int i = 0; i < numCh; ++i)
-	{
-		spec = 0.;
-		for(int i = 0; i < this->getPieces().size(); ++i)
-		{
-			spec += myLib::spectreWelchRtoR(this->piecesData[i][numCh],
-											overlap,
-											this->srate,
-											iitp::iitpWindow,
-											fftLenW);
-		}
-
-		std::copy(std::begin(spec) + leftInd,
-				  std::begin(spec) + rightInd,
-				  std::begin(spectre) + i * spLen);
-	}
 	spectra[1] = spectre;
 	myLib::writeFileInLine(def::iitpResFolder
 						   + "/" + this->getGuy()
@@ -605,6 +541,86 @@ void iitpData::countFlexExtSpectraW(int mark1, int mark2, double overlap)
 	templ.save(def::iitpResFolder + "/" + this->getGuy()
 			   + "/pic"
 			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
+}
+
+
+void iitpData::countFlexExtSpectraW(int mark1, int mark2, double overlap)
+{
+	const int leftInd = iitp::leftFr / getSpStepW();
+	const int rightInd = iitp::rightFr / getSpStepW();
+	const int spLen = rightInd - leftInd;
+
+	const int numCh = 19;
+
+	const QString joint = "_" + iitp::gonioName(mark1);
+
+	std::valarray<double> spectre(spLen * numCh);
+	std::valarray<double> spec(fftLenW);
+	matrix spectra(2, 1); /// to draw
+
+	const std::valarray<double> wnd = myLib::fftWindow(fftLenW, iitp::iitpWindow);
+
+	/// flexion
+	this->setPiecesW(mark1, mark2, overlap);
+//	std::cout << this->getFileNam() << "\t" << this->piecesData.size() << std::endl;
+	for(int i = 0; i < numCh; ++i)
+	{
+		spec = 0.;
+		for(int j = 0; j < this->getPieces().size(); ++j)
+		{
+			spec += std::pow(smLib::abs(myLib::spectreRtoC2(this->piecesData[j][i] * wnd,
+															this->fftLenW,
+															this->srate)), 2.);
+		}
+		spec /= this->getPieces().size();
+
+		if(myLib::contains(iitp::interestEeg, i))
+		{
+			std::copy(std::begin(spec) + leftInd,
+					  std::begin(spec) + rightInd,
+					  std::begin(spectre) + i * spLen);
+		}
+	}
+	spectra[0] = spectre;
+	myLib::writeFileInLine(def::iitpResFolder
+						   + "/" + this->getGuy()
+						   + "/sp"
+						   + "/" + this->getInit() + joint + "_flexion_sp.txt",
+						   spectre);
+
+	/// extension
+	this->setPiecesW(mark2, mark1, overlap);
+	for(int i = 0; i < numCh; ++i)
+	{
+		spec = 0.;
+		for(int j = 0; j < this->getPieces().size(); ++j)
+		{
+			spec += std::pow(smLib::abs(myLib::spectreRtoC2(this->piecesData[j][i] * wnd,
+															this->fftLenW,
+															this->srate)), 2.);
+		}
+		spec /= this->getPieces().size();
+
+		if(myLib::contains(iitp::interestEeg, i))
+		{
+			std::copy(std::begin(spec) + leftInd,
+					  std::begin(spec) + rightInd,
+					  std::begin(spectre) + i * spLen);
+		}
+	}
+	spectra[1] = spectre;
+	myLib::writeFileInLine(def::iitpResFolder
+						   + "/" + this->getGuy()
+						   + "/sp"
+						   + "/" + this->getInit() + joint + "_extension_sp.txt",
+						   spectre);
+
+
+//	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
+//	templ = myLib::drw::drawArrays(templ, spectra);
+//	templ.save(def::iitpResFolder + "/" + this->getGuy()
+//			   + "/pic"
+//			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
 }
 
 int gonioMinMarker(int numGonioChan)

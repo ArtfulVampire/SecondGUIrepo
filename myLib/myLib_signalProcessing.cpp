@@ -675,6 +675,24 @@ std::valarray<double> spectreWelchRtoR(const std::valarray<double> & inputSignal
 									   fftLen));
 }
 
+std::valarray<std::complex<double>> spectreCross(const std::valarray<double> & inputSignal1,
+												 const std::valarray<double> & inputSignal2,
+												 double srate,
+												 const std::valarray<double> & wnd,
+												 int fftLen)
+{
+	if(inputSignal1.size() != inputSignal2.size())
+	{
+		return {};
+	}
+	using specType = std::valarray<std::complex<double>>;
+
+	const specType spec1 = myLib::spectreRtoC2(inputSignal1 * wnd, fftLen, srate);
+	const specType spec2 = myLib::spectreRtoC2(inputSignal2 * wnd, fftLen, srate);
+	specType res = spec1 * spec2.apply(std::conj);
+	return res;
+}
+
 std::valarray<std::complex<double>> spectreWelchCross(const std::valarray<double> & inputSignal1,
 													  const std::valarray<double> & inputSignal2,
 													  double overlap,

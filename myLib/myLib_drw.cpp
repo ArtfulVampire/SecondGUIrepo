@@ -404,6 +404,7 @@ QPixmap drawArrays(const QPixmap & templatePic, const std::vector<QString> & fil
 
 std::vector<int> zeroChans;
 std::vector<int> trueChans;
+
 std::vector<QPixmap> drawArraysSameScale(const QPixmap & templatePic,
 										 const std::vector<QString> & filesPaths)
 {
@@ -415,7 +416,8 @@ std::vector<QPixmap> drawArraysSameScale(const QPixmap & templatePic,
 	{
 		if(!QFile::exists(filesPaths[i]))
 		{
-		   return {};
+			std::cout << "drawArraysSameScale: no such file - " <<  filesPaths[i] << std::endl;
+			return {}; /// this should never happen
 		}
 		myLib::readFileInLine(filesPaths[i], dat[i]);
 	}
@@ -430,18 +432,17 @@ std::vector<QPixmap> drawArraysSameScale(const QPixmap & templatePic,
 									  std::end(zeroChans),
 									  trueNum));
 		}
-//		std::cout << zeroChans << std::endl; exit(0);
 
 		for(int zeroNum : zeroChans)
 		{
-			int spLength = 36;
+			int spLength = row.size() / 19; /// 36 for 256 fftLenW, 18 for 128
 			std::fill(std::begin(row) + zeroNum * spLength,
 					  std::begin(row) + (zeroNum + 1) * spLength,
 					  0.);
 		}
 	}
 
-
+	/// draw each separate in black
 	for(int i = 0; i < filesPaths.size(); ++i)
 	{
 		res.push_back(myLib::drw::drawArray(templatePic,
@@ -1230,7 +1231,6 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	double sum = helpMatrix.sum();
 
 	/// draw colour scale with numbers
-
 	if(drawScale)
 	{
 		QPixmap scalePic = drw::drawColorScale(256, colorTheme, false).scaled(colorsWidth, mapSize);
@@ -1239,12 +1239,27 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		QPainter pnt;
 		pnt.begin(&values);
 
-		int fontSize = 15;
+		int fontSize = 12;
 		pnt.setFont(QFont("Times", fontSize));
-		pnt.drawText(2, fontSize + 2, nm(smLib::doubleRound(maxMagn)));
+		if(maxAbs == 0)
+		{
+			pnt.drawText(2, fontSize + 2, nm(smLib::doubleRound(maxMagn, 3)));
+		}
+		else
+		{
+			pnt.drawText(2, fontSize + 2, nm(smLib::doubleRound(maxAbs, 3)));
+
+			/// draw maxMagn line
+			pnt.setPen(QPen(QBrush("black"), 2));
+			const int h = values.height() * (1. - maxMagn / maxAbs);
+			pnt.drawLine(0, h, /// what about minMagn ?
+						 pnt.device()->width(), h);
+//			pnt.drawText(2, h + fontSize + 2, nm(smLib::doubleRound(maxMagn, 3)));
+		}
+
 		if(minMagn != 0)
 		{
-			pnt.drawText(2, values.height() - 2, nm(smLib::doubleRound(minMagn)));
+			pnt.drawText(2, values.height() - 2, nm(smLib::doubleRound(minMagn, 3)));
 		}
 		else
 		{

@@ -270,7 +270,7 @@ void MainWindow::customFunc()
 
 
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -286,15 +286,19 @@ void MainWindow::customFunc()
 	};
 
 //	for(QString guy : guyList)
-	QString guy = "Test";
+	QString guy = "Galya";
 //	QString guy = "Galya_test_new";
 	{
+//		autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
+
 //		autos::IITPdatToEdf(guy);
-//		autos::IITPremoveZchans(guy, def::iitpFolder);
-//		autos::IITPrerefCAR(guy, "_eeg");
-//		return; /// clean init eeg - zero in the beginning
-//		autos::IITPconcat(guy, "_eeg_car_new"); // eeg + emg
+//		autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
+//		return; /// clean init eeg - zero in the beginning for better filering
+
+//		autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
+//		autos::IITPconcat(guy, "_eeg_new", "_emg");			/// (resampling inside) eeg + emg
 //		return; /// manual sync
+//		autos::IITPrerefCAR(guy, "_sum_new_stag", def::iitpSyncFolder); /// optional
 
 //		/// copy files to SYNCED
 
@@ -302,63 +306,21 @@ void MainWindow::customFunc()
 //		autos::IITPfilter(guy);		/// optional
 //		autos::IITPtestCoh(guy);
 //		autos::IITPtestCoh2(guy);
-//		autos::IITPprocessStaged(guy);
+
+		autos::IITPprocessStaged(guy);
 //		autos::IITPdrawSpectralMaps(guy);
 
 //		continue;
 		exit(0);
 
-		if(guy == "Alex")
-		{
-			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
-		}
-		else if(guy == "Boris")
-		{
-			myLib::drw::zeroChans = {0, 1, 5, 7, 15};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
-		}
-		else if(guy == "Ira")
-		{
-			myLib::drw::zeroChans = {0, 1};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
-		}
-		else if(guy == "Levik")
-		{
-			myLib::drw::zeroChans = {0, 1};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
-		}
-		else if(guy == "Oleg")
-		{
-			myLib::drw::zeroChans = {5, 15, 16, 18};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
-		}
-		else if(guy == "Victor")
-		{
-			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14, 15};
-		}
-		else if(guy == "Dima")
-		{
-			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
-		}
-		else if(guy == "Isakov")
-		{
-			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
-		}
-		else if(guy == "Galya")
-		{
-			myLib::drw::zeroChans = {};
-			myLib::drw::trueChans = {7, 8, 9, 10, 11, 13, 14};
-		}
+		/// deleted lists 14.10.2017
+		myLib::drw::trueChans = iitp::interestEeg;
 
 		using Typ = std::vector<int>;
 		Typ nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
 									  smLib::range<Typ>(24, 29 + 1)});
 //		nums.erase(std::find(std::begin(nums), std::end(nums), 8));
-		autos::IITPdrawSameScale(guy, nums);
+		autos::IITPdrawSameScale(guy, smLib::range<Typ>(0, 11 + 1));
 		exit(0);
 	}
 
@@ -392,7 +354,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// IITP file into two files
 
 	iitp::iitpData fil;

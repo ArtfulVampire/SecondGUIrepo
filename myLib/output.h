@@ -33,8 +33,8 @@ inline QString rn(double in, int num) { return myLib::rightNumber(in, num); }
 FILE * fopen(QString filePath, const char *__modes);
 
 std::istream & operator>> (std::istream &is, QString & in);
-std::ostream & operator<< (std::ostream &os, const QString & toOut);
 std::ostream & operator<< (std::ostream &os, QChar toOut);
+std::ostream & operator<< (std::ostream &os, const QString & toOut);
 std::ostream & operator<< (std::ostream &os, const std::complex<double> & toOut);
 std::ostream & operator<< (std::ostream &os, const QStringList & toOut);
 
@@ -45,7 +45,7 @@ inline std::ostream & myWrite (std::ostream & os)
 }
 
 template<class input, class... inputs>
-inline std::ostream & myWrite (std::ostream & os, input in, inputs... ins)
+inline std::ostream & myWrite (std::ostream & os, const input & in, const inputs &... ins)
 {
 	os << in << "\t";
 	myWrite(os, ins...);

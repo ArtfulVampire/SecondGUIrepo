@@ -344,9 +344,9 @@ const std::vector<QString> eegNames{
 	"O1",
 	"O2"};
 
-const std::valarray<int> interestEeg{
-	0,	// Fp1
-	1,	// Fp2,
+const std::vector<int> interestEeg{
+//	0,	// Fp1
+//	1,	// Fp2,
 	2,	// F7
 	3,	// F3
 	4,	// Fz
@@ -379,7 +379,8 @@ const std::vector<double> interestFrequencies = smLib::range<std::vector<double>
 //const std::valarray<double> fileNums = smLib::range(0, 29+1);
 
 /// test
- const std::valarray<double> fileNums = smLib::range(0, 5);
+//const std::valarray<double> fileNums = smLib::range(0, 29+1);
+ const std::valarray<double> fileNums = smLib::range(0, 11);
 // const std::valarray<double> fileNums{12};
 // const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
 
@@ -388,7 +389,8 @@ class iitpData : public edfFile
 {
 public:
 	/// [chan1][chan2][freq]
-	typedef std::vector<std::vector<std::valarray<std::complex<double>>>> cohsType;
+	using cohsType = std::vector<std::vector<std::valarray<std::complex<double>>>>;
+	using mscohsType = std::vector<std::vector<std::valarray<double>>>;
 private:
 	std::vector<matrix> piecesData;
 
@@ -397,7 +399,9 @@ private:
 	/// [chan1][chan2][array of complex] - average crossSpecrum over pieces
 	std::vector<std::vector<std::valarray<std::complex<double>>>> crossSpectra;
 
-	cohsType coherenciesUsual;
+	/// [chan1][chan2][freq]
+	cohsType coherencies;
+	mscohsType mscoherencies;
 
 	int fftLen = -1;
 	int fftLenW = 256; /// ~1 sec
@@ -406,7 +410,11 @@ private:
 public:
 	std::complex<double> coherency(int chan1, int chan2, double freq);
 
-	const cohsType & getCoherencies() const;
+	double confidence(double level) const
+	{ return 1. - std::pow(level, 1. / (piecesData.size() - 1)); }
+
+	const cohsType & getCoherencies() const { return coherencies; }
+	const mscohsType & getMSCoherencies() const { return mscoherencies; }
 
 	void countCrossSpectrum(int chan1, int chan2);
 	void countCrossSpectrumW(int chan1, int chan2, double overlap);
@@ -444,6 +452,7 @@ public:
 
 	int getFftLen() const { return fftLen; }
 	double getSpStep() const { return spStep; }
+	double getSpStepW() const { return srate / fftLenW; }
 
 };
 

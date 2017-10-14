@@ -119,10 +119,13 @@ void rereferenceFolder(const QString & procDirPath,
 
 
 
-void IITPconcat(const QString & guyName, const QString & eegPostfix);
+void IITPconcat(const QString & guyName,
+				const QString & eegPostfix,
+				const QString emgPostfix);
 void IITPdatToEdf(const QString & guyName);
 //void IITPdownsampleEmgs(const QString & guyName);
 void IITPfilter(const QString & guyName,
+				const QString & postfix,
 				bool emg = true,
 				bool gonios = true,
 				bool eeg = true);
@@ -140,7 +143,9 @@ void IITPfilterGonios(const QString & guyName,
 void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
 void IITPremoveZchans(const QString & guyName, const QString & dirPath = def::iitpSyncFolder);
 
-void IITPrerefCAR(const QString & guyName, const QString & addFilter = QString());
+void IITPrerefCAR(const QString & guyName,
+				  const QString & addFilter = QString(),
+				  const QString & dirPath = def::iitpFolder);
 
 void IITPemgToAbs(const QString & guyName,
 				  QString postfix = "_sum_new",

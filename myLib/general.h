@@ -55,6 +55,8 @@ void replaceSymbolsInFile(const QString & filePath,
 						  QString outChar,
 						  QString outPath);
 
+std::vector<int> splitStringIntoVec(const QString & in);
+
 template <typename Container>
 uint indexOfMax(const Container & cont);
 

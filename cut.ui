@@ -110,8 +110,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>910</x>
-     <y>156</y>
+     <x>890</x>
+     <y>160</y>
      <width>220</width>
      <height>110</height>
     </rect>
@@ -174,7 +174,7 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>910</x>
+     <x>890</x>
      <y>120</y>
      <width>253</width>
      <height>28</height>
@@ -406,7 +406,7 @@
      <x>10</x>
      <y>170</y>
      <width>441</width>
-     <height>161</height>
+     <height>166</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -829,6 +829,28 @@
     </item>
    </layout>
   </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>1150</x>
+     <y>50</y>
+     <width>172</width>
+     <height>44</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="label_15">
+      <property name="text">
+       <string>channels to zero when paint</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="zeroChannelsLineEdit"/>
+    </item>
+   </layout>
+  </widget>
   <zorder>layoutWidget</zorder>
   <zorder>picLabel</zorder>
   <zorder>scrollArea</zorder>
@@ -839,6 +861,8 @@
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
+  <zorder>zeroChannelsLineEdit</zorder>
+  <zorder>label_15</zorder>
  </widget>
  <resources/>
  <connections/>

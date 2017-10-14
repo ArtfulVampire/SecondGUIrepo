@@ -57,6 +57,7 @@ void Cut::iitpManualSlot()
 	iitpLog("sync");
 
 	setValuesByEdf();
+	ui->iitpDisableEcgCheckBox->setChecked(true);
 	paint();
 }
 

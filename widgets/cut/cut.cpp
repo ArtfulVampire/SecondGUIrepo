@@ -183,6 +183,9 @@ Cut::Cut() :
 						 [this, p](){ this->colorSpinSlot(std::get<0>(p), std::get<1>(p)); } );
 		QObject::connect(std::get<2>(p), SIGNAL(returnPressed()), this, SLOT(paint()));
 	}
+	QObject::connect(ui->zeroChannelsLineEdit, &QLineEdit::editingFinished,
+					 [this](){ zeroedChannels = myLib::splitStringIntoVec(
+													ui->zeroChannelsLineEdit->text()); });
 
 	/// smartFind
 	QObject::connect(ui->smartFindShowPushButton, &QPushButton::clicked,
@@ -483,11 +486,17 @@ void Cut::paint() // save to tmp.jpg and display
     }
 	matrix subData = dataCutLocal.subCols(leftDrawLimit, rightDrawLimit);
 
+	/// zero some channels
 	int ecg = edfFil.findChannel("ECG");
 	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg >= 0)
 	{
 		subData[ecg] = 0; /// for iitp ecg
 	}
+	for(int ch : this->zeroedChannels)
+	{
+		subData[ch] = 0; /// for iitp ecg
+	}
+
 
 	double coeff = ui->yNormDoubleSpinBox->value()
 				   * ((ui->yNormInvertCheckBox->isChecked())? -1 : 1);

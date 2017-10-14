@@ -145,7 +145,7 @@ template<class... params> void Cut::logAction(const params &... par)
 {
 	std::ofstream outStr;
 	QString name = edfFil.getExpName();
-	name = name.left(name.indexOf('_')); /// hope no '_' in dirPath
+	name = name.left(name.indexOf('_'));
 	outStr.open((edfFil.getDirPath() + "/" +
 				 name + "_cutLog.txt").toStdString(), std::ios_base::app);
 	myWrite(outStr, par...);
@@ -556,7 +556,9 @@ void Cut::splitFromZeroSlot()
 
 void Cut::splitTillEndSlot()
 {
+	double pos = ui->paintStartDoubleSpinBox->value();
 	this->splitSemiSlot(ui->leftLimitSpinBox->value(), dataCutLocal.cols(), true);
+	ui->paintStartDoubleSpinBox->setValue(pos);
 }
 
 void Cut::linearApprox(int lef, int rig, std::vector<int> chanList)
@@ -608,3 +610,5 @@ void Cut::linearApproxSlot()
 	logAction("linearApprox", lef, rig, chanList);
 	paint();
 }
+
+template void Cut::logAction(const QString & in);
