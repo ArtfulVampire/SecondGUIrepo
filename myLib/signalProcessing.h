@@ -25,13 +25,19 @@ std::valarray<double> makeNoise(int numPoints = 4096);
 
 
 
-/// srate for norm
+
+enum class windowName {Hann, Hamming, Blackman, rect, triang, Parzen, Welch,
+					   sine, Nuttal, BlackmanNuttal, BlackmanHarris, FlatTop, RifeVincent,
+					   Gaussian, Lanczos};
+std::valarray<double> fftWindow(int N, windowName name = windowName::Hann);
+
 std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
 								  int fftLen = -1);
 
 std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
 								  int fftLen = -1);
 
+/// srate for norm
 std::valarray<std::complex<double>> spectreRtoC2(const std::valarray<double> & inputSignal,
 												 int fftLen,
 												 double srate);
@@ -44,6 +50,25 @@ std::valarray<double> spectreCtoR(const std::valarray<std::complex<double>> & in
 
 std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 								  int fftLen = -1);
+
+std::valarray<double> spectreWelchRtoR(const std::valarray<double> & inputSignal,
+									   double overlap,
+									   double srate,
+									   myLib::windowName window,
+									   int fftLen);
+
+std::valarray<std::complex<double>> spectreWelchRtoC(const std::valarray<double> & inputSignal,
+													 double overlap,
+													 double srate,
+													 myLib::windowName window,
+													 int fftLen);
+
+std::valarray<std::complex<double>> spectreWelchCross(const std::valarray<double> & inputSignal1,
+													  const std::valarray<double> & inputSignal2,
+													  double overlap,
+													  double srate,
+													  myLib::windowName window,
+													  int fftLen);
 
 std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 								   double leftFreq,
@@ -109,10 +134,7 @@ matrix refilterMat(const matrix & inputMatrix,
 				   bool isNotch,
 				   double srate);
 
-enum class windowName {Hann, Hamming, Blackman, rect, triang, Parzen, Welch,
-					   sine, Nuttal, BlackmanNuttal, BlackmanHarris, FlatTop, RifeVincent,
-					   Gaussian, Lanczos};
-std::valarray<double> fftWindow(int N, windowName name = windowName::Hann);
+
 
 
 std::valarray<double> upsample(const std::valarray<double> & inSignal,

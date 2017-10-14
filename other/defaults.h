@@ -3,11 +3,6 @@
 
 typedef unsigned int uint;
 
-/// 0 - usual, 1 - mine, with normalization
-#ifndef COHERENCY_TYPE
-#define COHERENCY_TYPE 01
-#endif
-
 #ifndef WAVELET_MATLAB
 #define WAVELET_MATLAB 01
 #endif

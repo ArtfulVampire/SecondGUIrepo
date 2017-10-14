@@ -632,6 +632,89 @@ std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
     return res;
 }
 
+std::valarray<std::complex<double>> spectreWelchRtoC(const std::valarray<double> & inputSignal,
+									   double overlap,
+									   double srate,
+									   myLib::windowName window,
+									   int fftLen)
+{
+	using specType = std::valarray<std::complex<double>>;
+
+	const int windStep = fftLen * (1. - overlap);
+	const std::valarray<double> wnd = myLib::fftWindow(fftLen, window);
+
+	specType res;
+	int num = 0;
+	for(int windStart = 0;
+		windStart < inputSignal.size() - fftLen;
+		windStart += windStep, ++num)
+	{
+		std::valarray<double> part1 = smLib::valarSubsec(inputSignal,
+														 windStart,
+														 windStart + fftLen) * wnd;
+		const specType spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
+		specType tmp = spec1 * spec1.apply(std::conj);
+		if(res.size() != tmp.size()) { res.resize(tmp.size()); }
+		res += tmp;
+	}
+	res /= num;
+
+	return res;
+}
+
+std::valarray<double> spectreWelchRtoR(const std::valarray<double> & inputSignal,
+									   double overlap,
+									   double srate,
+									   myLib::windowName window,
+									   int fftLen)
+{
+	return smLib::abs(spectreWelchRtoC(inputSignal,
+									   overlap,
+									   srate,
+									   window,
+									   fftLen));
+}
+
+std::valarray<std::complex<double>> spectreWelchCross(const std::valarray<double> & inputSignal1,
+													  const std::valarray<double> & inputSignal2,
+													  double overlap,
+													  double srate,
+													  myLib::windowName window,
+													  int fftLen)
+{
+	if(inputSignal1.size() != inputSignal2.size())
+	{
+		return {};
+	}
+
+	using specType = std::valarray<std::complex<double>>;
+
+	const int windStep = fftLen * (1. - overlap);
+	const std::valarray<double> wnd = myLib::fftWindow(fftLen, window);
+
+	specType res;
+	int num = 0;
+	for(int windStart = 0;
+		windStart < inputSignal1.size() - fftLen;
+		windStart += windStep, ++num)
+	{
+		std::valarray<double> part1 = smLib::valarSubsec(inputSignal1,
+														 windStart,
+														 windStart + fftLen) * wnd;
+		std::valarray<double> part2 = smLib::valarSubsec(inputSignal2,
+														 windStart,
+														 windStart + fftLen) * wnd;
+		const specType spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
+		const specType spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
+		specType tmp = spec1 * spec2.apply(std::conj);
+		if(res.size() != tmp.size()) { res.resize(tmp.size()); }
+		res += tmp;
+	}
+	res /= num;
+
+	return res;
+}
+
 std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
 								  int fftLen)
 {
@@ -658,6 +741,7 @@ std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
 	return res;
 }
 
+/// return size = fftLen
 std::valarray<std::complex<double>> spectreRtoC2(const std::valarray<double> & inputSignal,
 												 int fftLen,
 												 double srate)
@@ -770,8 +854,10 @@ std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 		return {};
 	}
 	int fftLen = inputSpectre.size();
+
 	int left = fftLimit(leftFreq, srate, fftLen);
 	int right = fftLimit(rightFreq, srate, fftLen);
+
 	std::valarray<double> res(right - left);
 	std::copy(std::begin(inputSpectre) + left,
 			  std::begin(inputSpectre) + right,

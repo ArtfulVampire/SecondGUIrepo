@@ -9,6 +9,7 @@
 #include <other/matrix.h>
 #include <other/edffile.h>
 #include <other/defaults.h>
+#include <myLib/signalProcessing.h>
 
 
 namespace iitp
@@ -17,11 +18,6 @@ namespace iitp
 std::complex<double> gFunc(const std::complex<double> & in);
 /// PHI  = PHI(w) = crossSpectrum(w).arg();
 
-
-std::complex<double> coherency(const std::vector<std::valarray<double>> & sig1,
-							   const std::vector<std::valarray<double>> & sig2,
-							   double srate,
-							   double freq);
 
 /// standalone for testing
 QPixmap phaseDifferences(const std::valarray<double> & sig1,
@@ -33,18 +29,12 @@ std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double>
 													 const std::valarray<double> & sig2, double overlapPercent,
 													 double srate,
 													 int fftLen);
-std::valarray<std::complex<double>> coherenciesMine(const std::valarray<double> & sig1,
-													const std::valarray<double> & sig2,
-													double srate,
-													int fftLen);
+
 std::complex<double> coherencyUsual(const std::valarray<double> & sig1,
 									const std::valarray<double> & sig2,
 									double srate,
 									double freq, int fftLen);
-std::complex<double> coherencyMine(const std::valarray<double> & sig1,
-								   const std::valarray<double> & sig2,
-								   double srate,
-								   double freq, int fftLen);
+
 
 
 
@@ -269,7 +259,7 @@ const std::vector<QString> emgNames {
 
 /// [numFile] - interestingChannels
 /// maybe all EMGs for rest and/or stat
-/// 1 May - added Ta_l, Ta_r everywhere for maps drawing
+/// 1 May 17 - added Ta_l, Ta_r everywhere for maps drawing
 const std::vector<std::valarray<int>> interestEmg{
 	// 0 eyes closed
 	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
@@ -379,15 +369,16 @@ const std::valarray<int> interestEeg{
 /// for spectra inspection
 const double leftFr = 4;
 const double rightFr = 40;
+const myLib::windowName iitpWindow = myLib::windowName::Hamming;
 
 const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 45 + 1);
-// const std::valarray<double> interestFrequencies = smLib::range(8, 45);
 
-/// without 12th
+/// all without 12th
 // const std::valarray<double> fileNums = smLib::unite({smLib::range(0, 12), smLib::range(13, 29+1)});
-/// with 12th
+/// all with 12th
 //const std::valarray<double> fileNums = smLib::range(0, 29+1);
 
+/// test
  const std::valarray<double> fileNums = smLib::range(0, 5);
 // const std::valarray<double> fileNums{12};
 // const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
@@ -406,20 +397,19 @@ private:
 	/// [chan1][chan2][array of complex] - average crossSpecrum over pieces
 	std::vector<std::vector<std::valarray<std::complex<double>>>> crossSpectra;
 
-	cohsType coherenciesMine;
 	cohsType coherenciesUsual;
 
 	int fftLen = -1;
+	int fftLenW = 256; /// ~1 sec
 	double spStep = 0.;
 
 public:
-	std::complex<double> coherencyUsual(int chan1, int chan2, double freq);
-	std::complex<double> coherencyMine(int chan1, int chan2, double freq);
 	std::complex<double> coherency(int chan1, int chan2, double freq);
 
 	const cohsType & getCoherencies() const;
 
 	void countCrossSpectrum(int chan1, int chan2);
+	void countCrossSpectrumW(int chan1, int chan2, double overlap);
 
 	iitpData & staging(int numGonioChan);
 	iitpData & staging(const QString & chanName,
@@ -431,11 +421,17 @@ public:
 	QString getInit() const { return iitp::getInitName(this->ExpName); }
 	int getNum() const { return iitp::getFileNum(this->ExpName); }
 
-
+	/// continious task
 	void cutPieces(double length);
+	void cutPiecesW(double overlap);
+	void countContiniousTaskSpectra();
+	void countContiniousTaskSpectraW(double overlap);
+
+	/// periodic task
 	void setPieces(int startMark = 10, int finishMark = 20);
+	void setPiecesW(int startMark, int finishMark, double overlap);
 	void countFlexExtSpectra(int mark1, int mark2);
-	void countImagPassSpectra();
+	void countFlexExtSpectraW(int mark1, int mark2, double overlap);
 
 	void countPiecesFFT();
 	void resizePieces(int in);

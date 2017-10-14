@@ -1072,7 +1072,6 @@ void IITPprocessStaged(const QString & guyName,
 	a.mkdir("cohPics");
 	iitp::iitpData dt;
 
-
 	auto filePath = [=](int i) -> QString
 	{
 		return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
@@ -1149,12 +1148,6 @@ void IITPprocessStaged(const QString & guyName,
 
 	for(int fileNum : iitp::fileNums)
 	{
-
-//		if(!(guyName == "Oleg" && fileNum == 6)  &&
-//		   !(guyName == "Boris" && fileNum == 2) &&
-//		   !(guyName == "Boris" && fileNum == 4)) continue;
-//		if(!(guyName == "Isakov" && fileNum == 8) ) continue;
-
 		if(!QFile::exists(filePath(fileNum)))
 		{
 			std::cout << "IITPprocessStaged: file doesn't exist = "
@@ -1164,21 +1157,14 @@ void IITPprocessStaged(const QString & guyName,
 
 		dt.readEdfFile(filePath(fileNum));
 
-
-		// rest, stat, imag
+		/// rest, stat, imag - continious task
 		if(iitp::interestGonios[fileNum].size() == 0)
 		{
-			dt.countImagPassSpectra();
-//			continue;
-//			if(iitp::trialTypes[fileNum] == iitp::trialType::stat)
+//			dt.countContiniousTaskSpectra();
+			dt.countContiniousTaskSpectraW(0.5);
+			dt.cutPiecesW(0.5);
+			/// coherencies
 			{
-//				if(!interestingForTaR.contains(fileNum))
-//				{
-//					continue;
-//				}
-
-
-				dt.cutPieces(1.024);
 
 				std::ofstream outStr;
 				outStr.open((resultsPathPrefix + "coh/"
@@ -1187,21 +1173,21 @@ void IITPprocessStaged(const QString & guyName,
 							+ ".txt").toStdString());
 
 				/// eeg-eeg
-				for(int eeg : iitp::interestEeg)
+				for(int eeg1 : iitp::interestEeg)
 				{
 					for(int eeg2 : iitp::interestEeg)
 					{
-						if(eeg2 <= eeg) continue;
+						if(eeg2 <= eeg1) continue;
 
 						for(double fr : iitp::interestFrequencies)
 						{
-							auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
+							auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg1]),
 													dt.findChannel(iitp::eegNames[eeg2]),
 													fr);
 							if(std::abs(val) > 0.01)
 							{
 								outStr
-										<< QString(iitp::eegNames[eeg]) << '\t'
+										<< QString(iitp::eegNames[eeg1]) << '\t'
 										<< QString(iitp::eegNames[eeg2]) << '\t'
 										<< fr << '\t'
 										<< smLib::doubleRound(val, 3) << '\t'
@@ -1246,104 +1232,91 @@ void IITPprocessStaged(const QString & guyName,
 			}
 		}
 
-		// else - real, passive
-		for(int gonio : iitp::interestGonios[fileNum])
+		else /// real or passive - periodic task
 		{
-			int minMarker = iitp::gonioMinMarker(gonio);
-			dt.countFlexExtSpectra(minMarker, minMarker + 1);
-//			continue;
-
-			for(int type : {0, 1}) /// 0 - flexion, 1 - extension
+			for(int gonio : iitp::interestGonios[fileNum]) /// for each joint
 			{
+				int minMarker = iitp::gonioMinMarker(gonio);
+//				dt.countFlexExtSpectra(minMarker, minMarker + 1);
+				dt.countFlexExtSpectraW(minMarker, minMarker + 1, 0.5);
 
-//				if(!(interestingForTaR.contains(fileNum) && type == 0))
-//				{
-//					continue;
-//				}
-
-
-
-				std::ofstream outStr;
-				if(type == 0)
+				for(int type : {0, 1}) /// 0 - flexion, 1 - extension
 				{
-					dt.setPieces(minMarker, minMarker + 1);
-
-					outStr.open(resFlex(fileNum, iitp::gonioNames[gonio]).toStdString()
-//								, std::ios_base::app
-								);
-				}
-				else
-				{
-					dt.setPieces(minMarker + 1, minMarker);
-
-					outStr.open(resExt(fileNum, iitp::gonioNames[gonio]).toStdString()
-//								, std::ios_base::app
-								);
-				}
-
-#if 01
-				/// eeg-eeg
-				for(int eeg : iitp::interestEeg)
-				{
-					for(int eeg2 : iitp::interestEeg)
+					std::ofstream outStr;
+					if(type == 0)
 					{
-						if(eeg2 <= eeg) continue;
+//						dt.setPieces(minMarker, minMarker + 1);
+						dt.setPiecesW(minMarker, minMarker + 1, 0.5);
 
-						for(double fr : iitp::interestFrequencies)
+						outStr.open(resFlex(fileNum, iitp::gonioNames[gonio]).toStdString());
+					}
+					else
+					{
+//						dt.setPieces(minMarker + 1, minMarker);
+						dt.setPiecesW(minMarker + 1, minMarker, 0.5);
+						outStr.open(resExt(fileNum, iitp::gonioNames[gonio]).toStdString());
+					}
+
+					/// eeg-eeg
+					for(int eeg1 : iitp::interestEeg)
+					{
+						for(int eeg2 : iitp::interestEeg)
 						{
-							auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
-													dt.findChannel(iitp::eegNames[eeg2]),
-													fr);
-							if(std::abs(val) > 0.01)
+							if(eeg2 <= eeg1) continue;
+
+							for(double fr : iitp::interestFrequencies)
 							{
-								outStr
-										<< QString(iitp::eegNames[eeg]) << '\t'
-										<< QString(iitp::eegNames[eeg2]) << '\t'
-										<< fr << '\t'
-										<< smLib::doubleRound(val, 3) << '\t'
-										<< smLib::doubleRound(std::abs(val), 3) << '\t'
-										<< smLib::doubleRound(std::arg(val), 3) << '\t'
-										<< "\r\n";
+								auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg1]),
+														dt.findChannel(iitp::eegNames[eeg2]),
+														fr);
+								if(std::abs(val) > 0.01)
+								{
+									outStr
+											<< QString(iitp::eegNames[eeg1]) << '\t'
+											<< QString(iitp::eegNames[eeg2]) << '\t'
+											<< fr << '\t'
+											<< smLib::doubleRound(val, 3) << '\t'
+											<< smLib::doubleRound(std::abs(val), 3) << '\t'
+											<< smLib::doubleRound(std::arg(val), 3) << '\t'
+											<< "\r\n";
+								}
 							}
 						}
 					}
-				}
-#endif
 
-#if 01
-				/// eeg-emg
-				for(int eeg : iitp::interestEeg)
-				{
-					for(int emg : iitp::interestEmg[fileNum])
+					/// eeg-emg
+					for(int eeg : iitp::interestEeg)
 					{
-						for(double fr : iitp::interestFrequencies)
+						for(int emg : iitp::interestEmg[fileNum])
 						{
-							auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
-													dt.findChannel(iitp::emgNames[emg]),
-													fr);
-							if(std::abs(val) > 0.01)
+							for(double fr : iitp::interestFrequencies)
 							{
-								outStr
-										<< QString(iitp::eegNames[eeg]) << '\t'
-										<< QString(iitp::emgNames[emg]) << '\t'
-										<< fr << '\t'
-										<< smLib::doubleRound(val, 3) << '\t'
-										<< smLib::doubleRound(std::abs(val), 3) << '\t'
-										<< smLib::doubleRound(std::arg(val), 3) << '\t'
-										<< "\r\n";
+								auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
+														dt.findChannel(iitp::emgNames[emg]),
+														fr);
+								if(std::abs(val) > 0.01)
+								{
+									outStr
+											<< QString(iitp::eegNames[eeg]) << '\t'
+											<< QString(iitp::emgNames[emg]) << '\t'
+											<< fr << '\t'
+											<< smLib::doubleRound(val, 3) << '\t'
+											<< smLib::doubleRound(std::abs(val), 3) << '\t'
+											<< smLib::doubleRound(std::arg(val), 3) << '\t'
+											<< "\r\n";
+								}
 							}
 						}
 					}
-				}
-#endif
-				outStr.close();
-				if(interestingForTaR.contains(fileNum) && type == 0) // flexion only
-				{
-//					cohs.push_back(cohItem(dt.getCoherencies(), fileNum, type + 1));
-					forMapsVector.push_back(forMap(dt.getCoherencies(), dt, fileNum, "flex"));
-				}
-			}
-		}
+					outStr.close();
+					if(interestingForTaR.contains(fileNum) && type == 0) // flexion only
+					{
+//						cohs.push_back(cohItem(dt.getCoherencies(), fileNum, type + 1));
+						forMapsVector.push_back(forMap(dt.getCoherencies(), dt, fileNum, "flex"));
+					}
+				} /// end for flex/ext
+			} /// end for gonio joints
+		} /// end of real/passive
 	}
 
 
