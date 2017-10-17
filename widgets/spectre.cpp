@@ -339,9 +339,13 @@ void Spectre::integrate()
     {
         nameFilters = item.split('-', QString::SkipEmptyParts);
 
-		begins.push_back(std::max(fftLimit(nameFilters[0].toDouble()) - def::left() + 1,
+		begins.push_back(std::max(fftLimit(nameFilters[0].toDouble(),
+								  def::freq,
+								  ui->fftComboBox->currentText().toInt()) - def::left() + 1,
 						 0));
-		ends.push_back(std::min(fftLimit(nameFilters[1].toDouble()) - def::left() + 1,
+		ends.push_back(std::min(fftLimit(nameFilters[1].toDouble(),
+								def::freq,
+								ui->fftComboBox->currentText().toInt()) - def::left() + 1,
 					   def::spLength()));
     }
 
@@ -628,8 +632,8 @@ void Spectre::writeSpectra(const double leftFreq,
         return;
     }
 
-    const int left = fftLimit(leftFreq); /// = def::left()
-    const int right = fftLimit(rightFreq) + 1; /// = def::right()
+	const int left = def::left();
+	const int right = def::right();
 
     QStringList lst = ui->dropChannelsLineEdit->text().split(
                           QRegExp("[,;\\s]"), QString::SkipEmptyParts);

@@ -19,7 +19,6 @@ QString fitString(const QString & input, int N); // append spaces
 
 }
 
-
 namespace myOut
 {
 

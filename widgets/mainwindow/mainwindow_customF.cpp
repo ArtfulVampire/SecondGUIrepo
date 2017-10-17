@@ -68,33 +68,36 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// prepare FeedbackFinalMark for eyes clean
 	const QString path = def::dataFolder + "/FeedbackFinalMark";
 	std::vector<std::pair<QString, QString>> guys{
-		std::make_pair("Beketova", "BAM"),
-				std::make_pair("Burtcev", "BAV"),
-				std::make_pair("Dovbyish", "DEG"),
-				std::make_pair("Evstratov_n", "ENV"),
-				std::make_pair("Ilyin", "IAE"),
-				std::make_pair("Matasov", "MII"),
-				std::make_pair("Nikonenko", "NUA"),
-				std::make_pair("Semyonov_n", "SAV"),
-				std::make_pair("Sergeev_n", "SAA")
+//		std::make_pair("Beketova", "BAM"),
+//				std::make_pair("Burtcev", "BAV"),
+//				std::make_pair("Dovbyish", "DEG"),
+//				std::make_pair("Evstratov_n", "ENV"),
+//				std::make_pair("Ilyin", "IAE"),
+				std::make_pair("Laszov", "LMA")
+//				std::make_pair("Matasov", "MII"),
+//				std::make_pair("Nikonenko", "NUA"),
+//				std::make_pair("Semyonov_n", "SAV"),
+//				std::make_pair("Sergeev_n", "SAA")
 	};
-	Cut * cut = new Cut();
 	for(auto in : guys)
 	{
 		const QString dr = std::get<0>(in);
 		const QString ExpName = std::get<1>(in);
 
-		for(int i : {1, 2, 3})
+		for(int i : {2, 3})
 		{
 			QString fn = path + "/" + dr + "/" + ExpName + "_" + nm(i);
 
-//			cut->openFile(fn + ".edf");
-//			cut->cutPausesSlot();
-//			cut->saveSlot();
+
+			Cut * cut = new Cut();
+			cut->openFile(fn + ".edf");
+			cut->cutPausesSlot();
+			cut->saveSlot();
+			cut->close();
 
 			this->setEdfFile(fn + "_new.edf");
 			this->rereferenceDataSlot();
@@ -103,7 +106,6 @@ void MainWindow::customFunc()
 		}
 //		break;
 	}
-	cut->close();
 	exit(0);
 #endif
 
@@ -270,7 +272,7 @@ void MainWindow::customFunc()
 
 
 
-#if 01
+#if 0
 	/// IITP
 	QStringList guyList{
 //		"Alex",

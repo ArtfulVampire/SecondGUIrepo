@@ -10,7 +10,7 @@ TARGET = SecondGUI
 TEMPLATE = app
 CONFIG += console #for better display of processes with std::cout.flush()
 
-CONFIG += c++14
+CONFIG += c++1z
 QMAKE_CXXFLAGS += -fopenmp
 QMAKE_CXXFLAGS += -Wno-sign-compare
 QMAKE_CXXFLAGS += -Wno-unused-parameter

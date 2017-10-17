@@ -117,6 +117,8 @@ extern int learnSetStay;
 extern double decayRate;
 extern double errorThreshold;
 
+extern double inertiaCoeff;
+
 /// new successive by edf files
 extern double windLength;
 extern double shiftLearn;
@@ -124,6 +126,13 @@ extern double shiftTest;
 extern double numSmooth;
 }
 
+
+inline int fftLimit(double inFreq,
+					double sampleFreq,
+					int fftL)
+{
+	return ceil(inFreq / sampleFreq * fftL - 0.5);
+}
 
 
 
@@ -140,7 +149,7 @@ namespace def
 
     const bool matiFlag = false;
 
-    const bool withMarkersFlag = true; /// should check everywhere if changed to false
+	const bool withMarkersFlag = true; /// should check everywhere if changed to false
     const bool OssadtchiFlag = false;
 
 	const bool writeLongStartEnd = true; // for slice
@@ -187,13 +196,13 @@ namespace def
 	/// to def class
 
 	extern QDir * dir;
-	inline QString realsDir() { return def::dir->absolutePath() + "/Reals"; }
-	inline QString windsDir() { return def::dir->absolutePath() + "/winds"; }
-	inline QString windsFromRealsDir() { return def::dir->absolutePath() + "/winds/fromreal"; }
-	inline QString realsSpectraDir() { return def::dir->absolutePath() + "/SpectraSmooth"; }
-	inline QString windsSpectraDir() { return def::dir->absolutePath() + "/SpectraSmooth/winds"; }
-	inline QString pcaSpectraDir() { return def::dir->absolutePath() + "/SpectraSmooth/PCA"; }
-	inline QString paDir() { return def::dir->absolutePath() + "/Help/PA"; }
+	inline QString realsDir()			{ return def::dir->absolutePath() + "/Reals"; }
+	inline QString windsDir()			{ return def::dir->absolutePath() + "/winds"; }
+	inline QString windsFromRealsDir()	{ return def::dir->absolutePath() + "/winds/fromreal"; }
+	inline QString realsSpectraDir()	{ return def::dir->absolutePath() + "/SpectraSmooth"; }
+	inline QString windsSpectraDir()	{ return def::dir->absolutePath() + "/SpectraSmooth/winds"; }
+	inline QString pcaSpectraDir()		{ return def::dir->absolutePath() + "/SpectraSmooth/PCA"; }
+	inline QString paDir()				{ return def::dir->absolutePath() + "/Help/PA"; }
 
 	extern bool ntFlag;
 	extern int ns;
@@ -215,19 +224,70 @@ namespace def
 		return def::fileMarkers.length();
 	}
 
-	extern int right();
-	extern int left();
-	inline int spLength() { return def::right() - def::left(); }
-	inline double spStep() { return def::freq / def::fftLength; }
-
+	inline int right()		{ return fftLimit(def::leftFreq, def::freq, def::fftLength); }
+	inline int left()		{ return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1; }
+	inline int spLength()	{ return def::right() - def::left(); }
+	inline double spStep()	{ return def::freq / def::fftLength; }
 }
 
-inline int fftLimit(double inFreq,
-					double sampleFreq = def::freq,
-					int fftL = def::fftLength)
+
+
+
+class defs
 {
-	return ceil(inFreq / sampleFreq * fftL - 0.5);
-}
+public:
+	static defs & inst()
+	{
+		static defs d{};
+		return d;
+	}
+private:
+	defs(){}
+	defs(const defs &){}
+	defs & operator=(const defs &){}
+
+
+public:
+	QString realsDir()			{ return this->dir->absolutePath() + "/Reals"; }
+	QString windsDir()			{ return this->dir->absolutePath() + "/winds"; }
+	QString windsFromRealsDir()	{ return this->dir->absolutePath() + "/winds/fromreal"; }
+	QString realsSpectraDir()	{ return this->dir->absolutePath() + "/SpectraSmooth"; }
+	QString windsSpectraDir()	{ return this->dir->absolutePath() + "/SpectraSmooth/winds"; }
+	QString pcaSpectraDir()		{ return this->dir->absolutePath() + "/SpectraSmooth/PCA"; }
+	QString paDir()				{ return this->dir->absolutePath() + "/Help/PA"; }
+
+
+	int numOfClasses() { return this->fileMarkers.length(); }
+
+	int right()		{ return fftLimit(this->leftFreq, this->freq, this->fftLength); }
+	int left()		{ return fftLimit(this->rightFreq, this->freq, this->fftLength) + 1; }
+	int spLength()	{ return this->right() - this->left(); }
+	double spStep()	{ return this->freq / this->fftLength; }
+
+private:
+	QDir * dir;
+
+//	enum class username {MichaelA, MichaelB, Elena, Xenia, Galya, Olga, Ossadtchi, Mati, IITP};
+	enum class autosUser {Xenia, Galya};
+	autosUser currAutosUser{autosUser::Xenia};
+
+	/// all channels the same or each channel has self coefficient
+	enum class spectraGraphsNormalization {all, each};
+	spectraGraphsNormalization drawNormTyp{spectraGraphsNormalization::all};
+
+	double drawNorm{-1.};
+
+	bool ntFlag{false};
+	int ns{20};
+
+	double freq{250.};
+	int fftLength{4096};
+
+	double leftFreq{5.};
+	double rightFreq{20.};
+
+	QStringList fileMarkers{"_241", "_247", "_254 _244"};
+};
 
 
 namespace subjects
