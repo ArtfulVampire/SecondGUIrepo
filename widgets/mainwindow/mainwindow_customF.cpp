@@ -19,6 +19,8 @@ void MainWindow::customFunc()
 	ui->eogBipolarCheckBox->setChecked(true); // Elena
 #endif
 
+//	vvv += 7;
+
 
 //	edfFile file1;
 //	file1.readEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_FB_1.EDF");

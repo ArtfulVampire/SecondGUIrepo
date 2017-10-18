@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 #include <QString>
 
@@ -16,7 +17,7 @@ int matiCountDecimal(std::vector<bool> byteMarker);
 int matiCountDecimal(QString byteMarker);
 inline bool matiCountBit(double const & marker, int num)
 {
-	return (int(marker) / int(pow(2, num))) % 2;
+	return (int(marker) / int(std::pow(2, num))) % 2;
 }
 
 }

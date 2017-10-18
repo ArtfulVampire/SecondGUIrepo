@@ -161,16 +161,18 @@ int findChannel(int x, int y, QSize siz)
     case 0:
     {
         if(a == 1) return 0;
-        if(a == 3) return 1;
+		else if(a == 3) return 1;
+		break;
     }
-	case 1:{num += 2; break; }
-	case 2:{num += 7; break; }
-	case 3:{num += 12; break; }
+	case 1: { num += 2; break; }
+	case 2: { num += 7; break; }
+	case 3: { num += 12; break; }
     case 4:
     {
         if(a == 1) return 17;
         if(a == 3) return 18;
-    }
+		break;
+	}
     }
     num += a;
     return num;
@@ -499,7 +501,7 @@ void Spectre::compare()
         for(int j = 0; j < NumOfPatterns; ++j)
         {
 			helpString = (filesPath
-						  + slash
+						  + "/"
 						  + lst[j]);
 			myLib::readFileInLine(helpString, tempVec);
 

@@ -551,7 +551,7 @@ void MannWhitneyFromMakepa(const QString & spectraDir, const QString & outPicPat
 	outStr.open(helpString.toStdString(), std::ios_base::app);
 	if(!outStr.good())
 	{
-		std::cout << "can't open log file: " << helpString.toStdString() << std::endl;
+		std::cout << "can't open log file: " << helpString << std::endl;
 	}
 	else
 	{

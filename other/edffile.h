@@ -6,6 +6,10 @@
 #include <myLib/output.h>
 #include <myLib/general.h>
 
+//#include <optional>
+
+using namespace myOut;
+
 #include <QVector>
 #include <QTime>
 
@@ -365,12 +369,14 @@ public:
 	int getDataLen() const { return edfData.cols(); }
 	int getMarkChan() const { return markerChannel; }
 	const std::valarray<double> & getData(const QString & ch) const
-	 {
+	{
+		static std::valarray<double> badRes{};
 		int a = this->findChannel(ch);
 		if(a == -1)
 		{
-			std::cout << "edfFile::getData(QString): no such label - " << ch.toStdString() << std::endl;
-			return {};
+			std::cout << "edfFile::getData(QString): no such label - ";
+			std::cout << ch << std::endl;
+			return badRes;
 		}
 		return edfData[a];
 	}

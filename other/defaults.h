@@ -3,6 +3,13 @@
 
 typedef unsigned int uint;
 
+
+#if __cplusplus >= 201703L
+#define CPP17 1
+#else
+#define CPP17 0
+#endif
+
 #ifndef WAVELET_MATLAB
 #define WAVELET_MATLAB 01
 #endif

@@ -294,6 +294,7 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 
 
 
+#if 0
 namespace myDsp
 {
 std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
@@ -321,6 +322,7 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 									  bool isNotch,
 									  double srate);
 } // namespace myDsp
+#endif
 
 namespace butter
 {

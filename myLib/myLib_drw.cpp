@@ -1342,7 +1342,7 @@ QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
 		helpString = mapPath(mapsDirPath, mapsName, i);
 		if(!QFile::exists(helpString))
 		{
-			std::cout << "drawMapsOnSpectra: no map file found " << helpString.toStdString() << std::endl;
+			std::cout << "drawMapsOnSpectra: no map file found " << helpString << std::endl;
 			break;
 		}
 		pic1 = QPixmap(helpString);

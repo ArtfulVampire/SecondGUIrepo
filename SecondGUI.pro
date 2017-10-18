@@ -10,17 +10,21 @@ TARGET = SecondGUI
 TEMPLATE = app
 CONFIG += console #for better display of processes with std::cout.flush()
 
-CONFIG += c++1z
+CONFIG += c++14
 QMAKE_CXXFLAGS += -fopenmp
 QMAKE_CXXFLAGS += -Wno-sign-compare
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
 
+INCLUDEPATH += /usr/local/include/c++/7.2.0
+INCLUDEPATH += /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.2.0/include
+
 #QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
 
+
 #DSP
-INCLUDEPATH += ../SecondGUI/DSP
+#INCLUDEPATH += ../SecondGUI/DSP
 #LIBS += -L../SecondGUI/DSP -ldspFilters
 
 #cwt
@@ -71,23 +75,23 @@ widgets/net/net_setsgets.cpp \
 widgets/net/net_successive.cpp \
 widgets/net/net_data.cpp \
 widgets/spectre.cpp \
-DSP/DspFilters/Bessel.cpp \
-DSP/DspFilters/Biquad.cpp \
-DSP/DspFilters/Butterworth.cpp \
-DSP/DspFilters/Cascade.cpp \
-DSP/DspFilters/ChebyshevI.cpp \
-DSP/DspFilters/ChebyshevII.cpp \
-DSP/DspFilters/Custom.cpp \
-DSP/DspFilters/Design.cpp \
-DSP/DspFilters/Documentation.cpp \
-DSP/DspFilters/Elliptic.cpp \
-DSP/DspFilters/Filter.cpp \
-DSP/DspFilters/Legendre.cpp \
-DSP/DspFilters/Param.cpp \
-DSP/DspFilters/PoleFilter.cpp \
-DSP/DspFilters/RBJ.cpp \
-DSP/DspFilters/RootFinder.cpp \
-DSP/DspFilters/State.cpp \
+#DSP/DspFilters/Bessel.cpp \
+#DSP/DspFilters/Biquad.cpp \
+#DSP/DspFilters/Butterworth.cpp \
+#DSP/DspFilters/Cascade.cpp \
+#DSP/DspFilters/ChebyshevI.cpp \
+#DSP/DspFilters/ChebyshevII.cpp \
+#DSP/DspFilters/Custom.cpp \
+#DSP/DspFilters/Design.cpp \
+#DSP/DspFilters/Documentation.cpp \
+#DSP/DspFilters/Elliptic.cpp \
+#DSP/DspFilters/Filter.cpp \
+#DSP/DspFilters/Legendre.cpp \
+#DSP/DspFilters/Param.cpp \
+#DSP/DspFilters/PoleFilter.cpp \
+#DSP/DspFilters/RBJ.cpp \
+#DSP/DspFilters/RootFinder.cpp \
+#DSP/DspFilters/State.cpp \
 myLib/myLib_qtlib.cpp \
     classifier/classifier_ward.cpp \
     myLib/myLib_temp.cpp \
@@ -114,7 +118,7 @@ myLib/iitp.h \
 myLib/valar.h \
 myLib/small.h \
 myLib/general.h \
-DSP/DspFilters/Dsp.h \
+#DSP/DspFilters/Dsp.h \
 widgets/mainwindow.h \
 widgets/net.h \
 widgets/spectre.h \

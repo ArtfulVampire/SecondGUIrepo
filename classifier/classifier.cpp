@@ -128,9 +128,6 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
 
 		outStr << vecNum+2 << ":\ttrue = " << myClassData->getTypes()[vecNum] << "\tpred = " << predType << "\n";
     }
-
-//    outStr << pew.toStdString();
-
     outStr.close();
 }
 
@@ -166,7 +163,7 @@ void Classifier::successiveRelearn()
 
 void Classifier::printParams()
 {
-//	std::cout << typeString.toStdString() << std::endl;
+//	std::cout << typeString << std::endl;
 }
 
 
@@ -222,7 +219,7 @@ Classifier::avType Classifier::averageClassification()
 
     res << smLib::doubleRound(averageAccuracy, 2) << '\t';
     res << smLib::doubleRound(kappa, 3) << '\t';
-	res << def::ExpName.toStdString();
+	res << def::ExpName;
 	res << std::endl;
     res.close();
 

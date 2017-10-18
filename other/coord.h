@@ -2,6 +2,7 @@
 #define COORD_H
 
 #include <map>
+#include <cmath>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -131,10 +132,10 @@ inline int fftLimit(double inFreq,
 					double sampleFreq,
 					int fftL)
 {
-	return ceil(inFreq / sampleFreq * fftL - 0.5);
+	return std::ceil(inFreq / sampleFreq * fftL - 0.5);
 }
 
-
+//inline int vvv = 8;
 
 namespace def
 {
@@ -243,8 +244,8 @@ public:
 	}
 private:
 	defs(){}
-	defs(const defs &){}
-	defs & operator=(const defs &){}
+	defs(const defs &)=delete;
+	defs & operator=(const defs &)=delete;
 
 
 public:

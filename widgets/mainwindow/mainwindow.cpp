@@ -368,7 +368,7 @@ void MainWindow::setEdfFile(const QString & filePath)
 	// set ExpName
 	def::ExpName = myLib::getExpNameLib(filePath);
 
-	helpString.resize(helpString.lastIndexOf(slash));
+	helpString.resize(helpString.lastIndexOf(QDir::separator()));
     def::dir->cd(helpString);
 
 	if(def::redirectStdOutFlag)
@@ -431,7 +431,7 @@ void MainWindow::readData()
 	helpString = ui->filePathLineEdit->text();
     if(!QFile::exists(helpString))
     {
-		std::cout << "readData: edf file doent exist\n" << helpString.toStdString() << std::endl;
+		std::cout << "readData: edf file doent exist\n" << helpString << std::endl;
         return;
     }
 	globalEdf.readEdfFile(helpString);

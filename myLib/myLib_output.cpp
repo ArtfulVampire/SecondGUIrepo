@@ -86,7 +86,7 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut)
 //	std::string separ = "\n";
 
 	// if(is_container<Typ>) separ = std::endl;
-	for(auto in : toOut)
+	for(const auto & in : toOut)
 	{
 		os << in << separ;
 //		os << smLib::doubleRound(in, 1) << separ;
@@ -102,7 +102,7 @@ std::ostream & operator<< (std::ostream &os, const Cont <Typ, std::allocator<Typ
 	std::string separ = "\t";
 //	std::string separ = "\n";
 	// if(is_container<Typ>) separ = std::endl;
-	for(auto in : toOut)
+	for(const auto & in : toOut)
 	{
 		os << in << separ;
 //		os << smLib::doubleRound(in, 1) << separ;
@@ -120,6 +120,7 @@ template std::ostream & operator << (std::ostream & os, const std::vector<QStrin
 template std::ostream & operator << (std::ostream & os, const std::list<int> & toOut);
 template std::ostream & operator << (std::ostream & os, const std::list<double> & toOut);
 template std::ostream & operator << (std::ostream & os, const std::list<QString> & toOut);
+//template std::ostream & operator << (std::ostream & os, const QString & toOut);
 
 // w/o allocators
 template std::ostream & operator << (std::ostream & os, const std::valarray<double> & toOut);

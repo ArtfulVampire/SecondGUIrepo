@@ -29,7 +29,7 @@ void matiPrintMarker(double marker, QString pre)
 
     if(!pre.isEmpty())
     {
-		std::cout << pre.toStdString() << " = ";
+		std::cout << pre << " = ";
     }
 	std::cout << marker << "\t" << matiCountByteStr(marker) << std::endl;
 }

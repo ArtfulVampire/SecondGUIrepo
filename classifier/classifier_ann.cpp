@@ -388,8 +388,8 @@ void ANN::writeWeight(const QString & wtsPath) const
     std::ofstream weightsFile;
     if(wtsPath.isEmpty())
     {
-		weightsFile.open((def::dir->absolutePath() + slash
-						  + "Help/wts" + slash
+		weightsFile.open((def::dir->absolutePath()
+						  + "/Help/wts/"
 						  + def::ExpName
 //						  + "_" + nm(wtsCounter++)
 						  + ".wts").toStdString());
@@ -465,8 +465,8 @@ void ANN::drawWeight(QString wtsPath,
 
     if(!QFile::exists(wtsPath))
     {
-		wtsPath = def::dir->absolutePath() + slash
-				  + "Help/wts" + slash
+		wtsPath = def::dir->absolutePath()
+				  + "/Help/wts/"
 				  + def::ExpName + ".wts";
         if(!QFile::exists(wtsPath))
         {

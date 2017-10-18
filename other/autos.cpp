@@ -552,7 +552,7 @@ void Xenia_TBI(const QString & tbi_path)
 				}
 				autos::ArrangeFilesToLine(workPath + "_tmp",
 										  fileNames,
-										  workPath + "_tmp2" + slash
+										  workPath + "_tmp2" + "/"
 										  + ExpName + marker + ".txt"); /// guy <-> ExpName
 			}
 
@@ -563,7 +563,7 @@ void Xenia_TBI(const QString & tbi_path)
 			}
 			autos::ArrangeFilesToLine(workPath + "_tmp2",
 									  fileNames,
-									  workPath + "_OUT" + slash
+									  workPath + "_OUT" + "/"
 									  + ExpName + ".txt"); /// guy <-> ExpName
 		}
 	}
@@ -1048,7 +1048,7 @@ matrix makeTestData(const QString & outPath)
 
 	std::uniform_real_distribution<double> distr(0, 1);
 
-	for(uint i = 0; i < testSignals.cols(); ++i)
+	for(int i = 0; i < testSignals.cols(); ++i)
 	{
 		helpDouble = 2. * pi * i / def::freq * 12.5; // 12.5 Hz ~ 20 bins per period
 		testSignals[0][i] = sin(helpDouble); // sine

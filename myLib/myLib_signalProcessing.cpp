@@ -1,7 +1,6 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
-#include <DSP/DspFilters/Dsp.h>
 
 using namespace myOut;
 
@@ -390,7 +389,7 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 }
 } // namespace btr
 
-
+#if 0
 namespace myDsp
 {
 std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
@@ -529,8 +528,8 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 	return tmp;
 }
 
-}
-
+} // end namespace myDsp
+#endif
 
 
 

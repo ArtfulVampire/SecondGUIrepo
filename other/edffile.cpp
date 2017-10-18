@@ -460,7 +460,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 	if(readFlag)
 	{
 		filePath = EDFpath;
-		dirPath = EDFpath.left(EDFpath.lastIndexOf(slash));
+		dirPath = EDFpath.left(EDFpath.lastIndexOf(QDir::separator()));
 		ExpName = myLib::getExpNameLib(filePath);
 
 		QFile::remove(dirPath + "/markers.txt"); /// delete markers file

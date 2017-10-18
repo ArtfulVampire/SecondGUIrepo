@@ -512,7 +512,7 @@ void writeMatrixFile(const QString & filePath,
 	std::ofstream file(filePath.toStdString());
     if(!file.good())
     {
-		std::cout << "writeMatrixFile: bad output file\n" << filePath.toStdString() << std::endl;
+		std::cout << "writeMatrixFile: bad output file\n" << filePath << std::endl;
         return;
     }
 
@@ -544,7 +544,7 @@ void writeSubmatrixFile(const QString & filePath,
 	std::ofstream file(filePath.toStdString());
 	if(!file.good())
 	{
-		std::cout << "writeMatrixFile: bad output file\n" << filePath.toStdString() << std::endl;
+		std::cout << "writeMatrixFile: bad output file\n" << filePath << std::endl;
 		return;
 	}
 

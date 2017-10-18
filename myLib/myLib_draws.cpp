@@ -196,7 +196,7 @@ void drawMapsOnSpectra(const QString &inSpectraFilePath,
             helpString.replace("+.png", "-.png");
             if(!QFile::exists(helpString))
             {
-				std::cout << "drawMapsOnSpectra: no map file found " << helpString.toStdString() << std::endl;
+				std::cout << "drawMapsOnSpectra: no map file found " << helpString << std::endl;
                 return;
             }
         }

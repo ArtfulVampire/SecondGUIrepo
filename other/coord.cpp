@@ -39,7 +39,7 @@ int learnSetStay = 60;
 double decayRate = 0.01;
 double errorThreshold = 1.0;
 
-double inertiaCoef = exp(-5. / 7);
+double inertiaCoef = std::exp(-5. / 7);
 
 double windLength = 4.;
 double shiftLearn = 0.2;

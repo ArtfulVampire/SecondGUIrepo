@@ -2,13 +2,17 @@
 #define OUTPUT_H
 
 #include <ios>
-#include <complex>
-#include <fstream>
 #include <iostream>
+#include <fstream>
+#include <complex>
+#include <string>
+#include <vector>
+#include <valarray>
+#include <list>
 
 #include <QString>
-
-const QString slash = "/"; // QString(QDir::separator());
+#include <QStringList>
+#include <QList>
 
 namespace myLib
 {

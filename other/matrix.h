@@ -10,6 +10,7 @@
 #include <vector>
 #include <valarray>
 #include <set>
+#include <random>
 
 #if _OPENMP
 #include <omp.h>
