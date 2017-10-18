@@ -10,31 +10,30 @@ TARGET = SecondGUI
 TEMPLATE = app
 CONFIG += console #for better display of processes with std::cout.flush()
 
-CONFIG += c++14
 QMAKE_CXXFLAGS += -fopenmp
 QMAKE_CXXFLAGS += -Wno-sign-compare
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
 
+CONFIG += c++14
+#CONFIG += c++1z
+#for c++1z
 INCLUDEPATH += /usr/local/include/c++/7.2.0
 INCLUDEPATH += /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.2.0/include
+QMAKE_CXXFLAGS += -D_GLIBCXX_USE_CXX11_ABI=0
+
 
 #QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
-
-
-#DSP
-#INCLUDEPATH += ../SecondGUI/DSP
-#LIBS += -L../SecondGUI/DSP -ldspFilters
 
 #cwt
 INCLUDEPATH += ./matlab/for_testing
 DEPENDPATH += ./matlab/for_testing
 INCLUDEPATH += ./matlab/mcr_extern_include
-LIBS += -L../SecondGUI/matlab/for_testing -lcwt_r
+#LIBS += -L../SecondGUI/matlab/for_testing -lcwt_r
 #linux-only
-LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -leng -lmwcpp11compat
-LIBS += -L/media/Files/Matlab/MCR/v83/runtime/glnxa64 -lmwmclmcrrt
+#LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -leng -lmwcpp11compat
+#LIBS += -L/media/Files/Matlab/MCR/v83/runtime/glnxa64 -lmwmclmcrrt
 
 SOURCES += main.cpp\
 widgets/mainwindow/mainwindow.cpp \

@@ -11,7 +11,7 @@ typedef unsigned int uint;
 #endif
 
 #ifndef WAVELET_MATLAB
-#define WAVELET_MATLAB 01
+#define WAVELET_MATLAB 0
 #endif
 
 /// iitp

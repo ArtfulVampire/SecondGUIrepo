@@ -9,6 +9,7 @@
 #include <vector>
 #include <valarray>
 #include <list>
+#include <type_traits>
 
 #include <QString>
 #include <QStringList>
@@ -57,13 +58,17 @@ inline std::ostream & myWrite (std::ostream & os, const input & in, const inputs
 
 
 // containers w/o allocators
-template <typename Typ, template <typename> class Cont>
-std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut);
+template <typename Typ,
+		  template <typename> class Cont
+		  ,	typename = typename std::enable_if<!std::is_same<Cont<Typ>, std::string>::value>::type
+		  >
+std::ostream & operator<< (std::ostream &os, const Cont<Typ> & toOut);
 
 // containers with allocators
-template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont>
-std::ostream & operator<< (std::ostream &os, const Cont <Typ> & toOut);
-
+template <typename Typ,
+		  template <typename, typename = std::allocator<Typ>> class Cont
+		  >
+std::ostream & operator<< (std::ostream &os, const Cont<Typ> & toOut);
 
 }
 
