@@ -1,6 +1,8 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
+#include <other/defaults.h>
+
 #include <ios>
 #include <iostream>
 #include <fstream>
@@ -42,6 +44,25 @@ std::ostream & operator<< (std::ostream &os, const QString & toOut);
 std::ostream & operator<< (std::ostream &os, const std::complex<double> & toOut);
 std::ostream & operator<< (std::ostream &os, const QStringList & toOut);
 
+
+#if CPP17
+template <typename T
+		  , typename = typename std::enable_if<!std::is_same<T,char>::value &&
+											   !std::is_same<T,std::string>::value>::type
+		  >
+inline std::ostream & operator+= (std::ostream & os, const T & in)
+{
+	os << in << "\t";
+	return os;
+}
+template<class... inputs>
+inline std::ostream & myWrite (std::ostream & os, const inputs &... ins)
+{
+	(os += ... += ins);
+	os << std::endl;
+	return os;
+}
+#else
 inline std::ostream & myWrite (std::ostream & os)
 {
 	os << std::endl;
@@ -55,6 +76,7 @@ inline std::ostream & myWrite (std::ostream & os, const input & in, const inputs
 	myWrite(os, ins...);
 	return os;
 }
+#endif
 
 
 // containers w/o allocators
@@ -62,13 +84,33 @@ template <typename Typ,
 		  template <typename> class Cont
 		  ,	typename = typename std::enable_if<!std::is_same<Cont<Typ>, std::string>::value>::type
 		  >
-std::ostream & operator<< (std::ostream &os, const Cont<Typ> & toOut);
+inline std::ostream & operator<< (std::ostream &os, const Cont<Typ> & toOut)
+{
+	std::string separ = "\t";
+//	std::string separ = "\n";
+	for(const auto & in : toOut)
+	{
+		os << in << separ;
+	}
+	os.flush();
+	return os;
+}
 
 // containers with allocators
 template <typename Typ,
 		  template <typename, typename = std::allocator<Typ>> class Cont
 		  >
-std::ostream & operator<< (std::ostream &os, const Cont<Typ> & toOut);
+inline std::ostream & operator<< (std::ostream &os, const Cont<Typ> & toOut)
+{
+	std::string separ = "\t";
+//	std::string separ = "\n";
+	for(const auto & in : toOut)
+	{
+		os << in << separ;
+	}
+	os.flush();
+	return os;
+}
 
 }
 

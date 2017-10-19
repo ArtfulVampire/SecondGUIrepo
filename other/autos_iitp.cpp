@@ -843,7 +843,7 @@ void IITPemgToAbs(const QString & guyName,
 	/// replace EMG with its abs
 	if(postfix.isEmpty())
 	{
-		std::cout << "IITPstagedToEnveloped: empty postfix" << std::endl;
+		std::cout << "IITPemgToAbs: empty postfix" << std::endl;
 		return;
 	}
 
@@ -856,7 +856,7 @@ void IITPemgToAbs(const QString & guyName,
 
 	auto outPath = [=](int i) -> QString
 	{
-		return direct + guyName + "_" + rn(i, 2) + postfix + "_abs.edf";
+		return direct + guyName + "_" + rn(i, 2) + postfix + ".edf"; /// rewrite
 	};
 
 	iitp::iitpData dt;
@@ -865,7 +865,7 @@ void IITPemgToAbs(const QString & guyName,
 	{
 		if(!QFile::exists(filePath(fileNum)))
 		{
-			std::cout << "IITPstagedToEnveloped: file doesn't exist = "
+			std::cout << "IITPemgToAbs: file doesn't exist = "
 					  << filePath(fileNum) << std::endl;
 			continue;
 		}
@@ -873,10 +873,12 @@ void IITPemgToAbs(const QString & guyName,
 		dt.readEdfFile(filePath(fileNum));
 		for(QString emgChan : iitp::emgNames)
 		{
-			int num = dt.findChannel(emgChan);
+			auto num = dt.findChannel(emgChan);
 			if(num == -1) { continue; }
 
-			auto ab = std::abs(dt.getData(num));
+			auto ab = dt.getData(num);
+			ab -= smLib::mean(ab);
+			ab = ab.apply(std::abs);
 			dt.setData(num, ab);
 		}
 		dt.writeEdfFile(outPath(fileNum));

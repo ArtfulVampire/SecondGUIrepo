@@ -35,6 +35,11 @@ namespace myOut
 {
 
 
+#if CPP17
+#else
+#endif
+
+
 FILE * fopen(QString filePath, const char *__modes)
 {
 	return std::fopen(filePath.toStdString().c_str(), __modes);
@@ -78,59 +83,22 @@ std::ostream & operator<< (std::ostream &os, const QStringList & toOut)
 	return os;
 }
 
-/// std::valarray
-template <typename Typ,
-		  template <typename> class Cont
-		  , typename
-		  >
-std::ostream & operator<< (std::ostream &os, const Cont<Typ> & toOut)
-{
-	std::string separ = "\t";
-//	std::string separ = "\n";
 
-	// if(is_container<Typ>) separ = std::endl;
-	for(const auto & in : toOut)
-	{
-		os << in << separ;
-//		os << smLib::doubleRound(in, 1) << separ;
-	}
-	os.flush();
-	return os;
-}
+//// with allocators
+//template std::ostream & operator << (std::ostream & os, const std::vector<std::vector<double>> & toOut);
+//template std::ostream & operator << (std::ostream & os, const std::vector<int> & toOut);
+//template std::ostream & operator << (std::ostream & os, const std::vector<uint> & toOut);
+//template std::ostream & operator << (std::ostream & os, const std::vector<double> & toOut);
+//template std::ostream & operator << (std::ostream & os, const std::vector<QString> & toOut);
+//template std::ostream & operator << (std::ostream & os, const std::list<int> & toOut);
+//template std::ostream & operator << (std::ostream & os, const std::list<double> & toOut);
+//template std::ostream & operator << (std::ostream & os, const std::list<QString> & toOut);
+////template std::ostream & operator << (std::ostream & os, const QString & toOut);
 
-/// std::vector
-template <typename Typ,
-		  template <typename, typename> class Cont
-		  >
-std::ostream & operator<< (std::ostream &os, const Cont<Typ, std::allocator<Typ>> & toOut)
-{
-	std::string separ = "\t";
-//	std::string separ = "\n";
-	// if(is_container<Typ>) separ = std::endl;
-	for(const auto & in : toOut)
-	{
-		os << in << separ;
-//		os << smLib::doubleRound(in, 1) << separ;
-	}
-	os.flush();
-	return os;
-}
-
-// with allocators
-template std::ostream & operator << (std::ostream & os, const std::vector<std::vector<double>> & toOut);
-template std::ostream & operator << (std::ostream & os, const std::vector<int> & toOut);
-template std::ostream & operator << (std::ostream & os, const std::vector<uint> & toOut);
-template std::ostream & operator << (std::ostream & os, const std::vector<double> & toOut);
-template std::ostream & operator << (std::ostream & os, const std::vector<QString> & toOut);
-template std::ostream & operator << (std::ostream & os, const std::list<int> & toOut);
-template std::ostream & operator << (std::ostream & os, const std::list<double> & toOut);
-template std::ostream & operator << (std::ostream & os, const std::list<QString> & toOut);
-//template std::ostream & operator << (std::ostream & os, const QString & toOut);
-
-// w/o allocators
-template std::ostream & operator << (std::ostream & os, const std::valarray<double> & toOut);
-template std::ostream & operator << (std::ostream & os, const std::valarray<std::complex<double>> & toOut);
-template std::ostream & operator << (std::ostream & os, const std::valarray<int> & toOut);
-template std::ostream & operator << (std::ostream & os, const QList<int> & toOut);
-template std::ostream & operator << (std::ostream & os, const QList<double> & toOut);
+//// w/o allocators
+//template std::ostream & operator << (std::ostream & os, const std::valarray<double> & toOut);
+//template std::ostream & operator << (std::ostream & os, const std::valarray<std::complex<double>> & toOut);
+//template std::ostream & operator << (std::ostream & os, const std::valarray<int> & toOut);
+//template std::ostream & operator << (std::ostream & os, const QList<int> & toOut);
+//template std::ostream & operator << (std::ostream & os, const QList<double> & toOut);
 } // namespace myOut

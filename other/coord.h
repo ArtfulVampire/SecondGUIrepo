@@ -236,6 +236,7 @@ namespace def
 
 class defs
 {
+	/// Singleton
 public:
 	static defs & inst()
 	{
@@ -246,7 +247,7 @@ private:
 	defs(){}
 	defs(const defs &)=delete;
 	defs & operator=(const defs &)=delete;
-
+	/// Singleton end
 
 public:
 	QString realsDir()			{ return this->dir->absolutePath() + "/Reals"; }

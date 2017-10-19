@@ -16,11 +16,8 @@ void MainWindow::customFunc()
 	ui->realsButton->setChecked(true);
 #if ELENA_VARIANT
 	ui->elenaSliceCheckBox->setChecked(true); // Elena
-	ui->eogBipolarCheckBox->setChecked(true); // Elena
+	ui->eogBipolarCheckBox->setChecked(false); // Elena
 #endif
-
-//	vvv += 7;
-
 
 //	edfFile file1;
 //	file1.readEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_FB_1.EDF");
@@ -31,9 +28,6 @@ void MainWindow::customFunc()
 //	testNewClassifiers();
 //	testSuccessive();
 //	exit(0);
-
-
-
 
 //	setEdfFile(def::iitpSyncFolder +
 //			   + "/Test/Test_02_sum_new.edf");
@@ -70,7 +64,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// prepare FeedbackFinalMark for eyes clean
 	const QString path = def::dataFolder + "/FeedbackFinalMark";
 	std::vector<std::pair<QString, QString>> guys{
@@ -274,7 +268,7 @@ void MainWindow::customFunc()
 
 
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -302,11 +296,12 @@ void MainWindow::customFunc()
 //		autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
 //		autos::IITPconcat(guy, "_eeg_new", "_emg");			/// (resampling inside) eeg + emg
 //		return; /// manual sync
-//		autos::IITPrerefCAR(guy, "_sum_new_stag", def::iitpSyncFolder); /// optional
 
 //		/// copy files to SYNCED
 
 //		autos::IITPstaging(guy);	/// flex/extend markers
+//		autos::IITPrerefCAR(guy, "_sum_new_stag", def::iitpSyncFolder); /// optional
+//		autos::IITPemgToAbs(guy, "_sum_new_stag_car");
 //		autos::IITPfilter(guy);		/// optional
 //		autos::IITPtestCoh(guy);
 //		autos::IITPtestCoh2(guy);
