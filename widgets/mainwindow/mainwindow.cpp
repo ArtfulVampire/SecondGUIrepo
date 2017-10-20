@@ -159,7 +159,8 @@ MainWindow::MainWindow() :
 
 
 	/// open other widgets
-    QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(setEdfFileSlot()));
+	QObject::connect(ui->browseButton, SIGNAL(clicked()),
+					 this, SLOT(setEdfFileSlot()));
 	QObject::connect(ui->cut_e, SIGNAL(clicked()), this, SLOT(showCut()));
 	QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(showNet()));
 	QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(showCountSpectra()));
@@ -203,7 +204,6 @@ MainWindow::MainWindow() :
 #if 1
 	ui->reduceChannesPushButton->hide();
 #endif
-
 
     customFunc();
 }
@@ -260,9 +260,10 @@ void MainWindow::changeRedNsLine(int a)
 				continue;
 			}
 		}
-		else if(lab.contains("EMG") && !emg) { continue; }
-		else if(lab.contains("EOG") && !eog) { continue; }
-		else if(lab.contains("Marker") && !mark) { continue; }
+		else if(lab.contains("EMG")) { if(!emg) continue; }
+		else if(lab.contains("EOG")) { if(!eog) continue; }
+		else if(lab.contains("Marker")) { if(!mark) continue; }
+		else { continue; } /// any other channel DOES NOT remain
 		/// else /* if("any other channels") */ { they remain in a list }
 
 		outStr += nm(i + 1) + " ";

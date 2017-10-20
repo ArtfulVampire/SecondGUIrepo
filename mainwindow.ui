@@ -432,7 +432,7 @@
       <x>20</x>
       <y>500</y>
       <width>213</width>
-      <height>222</height>
+      <height>246</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="matiGridLayout">
@@ -553,7 +553,7 @@
       <x>281</x>
       <y>71</y>
       <width>791</width>
-      <height>113</height>
+      <height>125</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_6">
@@ -706,8 +706,8 @@
      <rect>
       <x>920</x>
       <y>0</y>
-      <width>151</width>
-      <height>25</height>
+      <width>162</width>
+      <height>28</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="testDataGridLayout">
@@ -730,7 +730,7 @@
      <x>0</x>
      <y>0</y>
      <width>1100</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
