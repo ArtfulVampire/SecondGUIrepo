@@ -41,28 +41,6 @@ void MainWindow::customFunc()
 
 //	return;
 
-#if 0
-	/// test windows
-	int counter = 0;
-	for(myLib::windowName wind : {
-		myLib::windowName::Blackman,
-		myLib::windowName::BlackmanHarris,
-		myLib::windowName::BlackmanNuttal,
-		myLib::windowName::FlatTop,
-		myLib::windowName::Gaussian,
-		myLib::windowName::Lanczos,
-		myLib::windowName::Nuttal,
-		myLib::windowName::Parzen,
-		myLib::windowName::RifeVincent,
-		myLib::windowName::sine,
-		myLib::windowName::Welch
-})
-	{
-		myLib::drw::drawOneGraph(myLib::fftWindow(1024, wind),
-								 1024).save("/media/Files/Data/wind_" + nm(counter++) + ".jpg");
-	}
-	exit(0);
-#endif
 
 #if 0
 	/// prepare FeedbackFinalMark for eyes clean
@@ -130,141 +108,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
-#if 0
-	/// my fcking with markers in FeedbackFinal
-	std::vector<std::pair<QString, QString>> guys{
-		std::make_pair("Beketova", "BAM"),
-				std::make_pair("Burtcev", "BAV"),
-				std::make_pair("Dovbyish", "DEG"),
-				std::make_pair("Evstratov_n", "ENV"),
-				std::make_pair("Ilyin", "IAE"),
-				std::make_pair("Matasov", "MII"),
-				std::make_pair("Nikonenko", "NUA"),
-				std::make_pair("Semyonov_n", "SAV"),
-				std::make_pair("Sergeev_n", "SAA")
-	};
-
-	for(auto in : guys)
-	{
-		const QString dr = in.first;
-		const QString guy = in.second;
-
-		QDir().mkpath(def::dataFolder + "/FeedbackFinalMark/" + dr);
-
-
-		auto name1 = [dr, guy](int i) -> QString
-		{
-			return def::dataFolder + "/FeedbackFinal/"
-					+ dr + "/"
-					+ guy + "_" + nm(i) + "_new.EDF";
-		};
-		auto name2 = [dr, guy](int i) -> QString
-		{
-			return def::dataFolder + "/FeedbackFinal/"
-					+ dr + "/"
-					+ guy + "_" + nm(i) + ".EDF";
-		};
-		auto name3 = [dr, guy](int i) -> QString
-		{
-			return def::dataFolder + "/FeedbackFinalMark/"
-					+ dr + "/"
-					+ guy + "_" + nm(i) + ".edf";
-		};
-		for(int i : {1, 2, 3})
-		{
-			std::function<QString(int)> name = name1;
-			if(!QFile(name(i)).exists())
-			{
-//				std::cout << name(i) << " doesn't exist" << std::endl;
-//				continue;
-
-				name = name2;
-			}
-//			QFile::remove(def::dataFolder + "/FeedbackFinalMark/"
-//						  + dr + "/"
-//						  + guy + "_" + nm(i) + ".edf");
-//			QFile::copy(name(i),
-//						def::dataFolder + "/FeedbackFinalMark/"
-//											+ dr + "/"
-//											+ guy + "_" + nm(i) + ".edf");
-//			QFile::copy(def::dataFolder + "/FeedbackFinal/"
-//						+ dr + "/"
-//						+ guy + "_ans" + nm(i) + ".txt",
-//						def::dataFolder + "/FeedbackFinalMark/"
-//						+ dr + "/"
-//						+ guy + "_ans" + nm(i) + ".txt");
-//			continue;
-
-			/// markers check
-			edfFile fil;
-			fil.readEdfFile(name(i));
-//			continue;
-
-			std::cout << name(i).remove(0, name(i).lastIndexOf('/') + 1);
-			std::vector<uint> a = fil.countMarkers({241, 247, 254});
-			if(a != std::vector<uint>{40, 40, 80})
-			{
-				std::cout << "_" << nm(i)
-						  << "\t" << a;
-			}
-			std::cout << std::endl;
-
-			std::pair<int, int> prev{0, 254};
-			int problems = 1;
-//			std::vector<double> rests;
-			for(std::pair<int, int> in : fil.getMarkers())
-			{
-				if(in.second != 241 && in.second != 247 && in.second != 254) { continue; }
-
-
-				/// rest min = 7.6, mean = 8.4, max = 9.2
-				/// after cross min = 0.54, mean = 0.63, max = 0.75
-				if(in.second == 254 && prev.second == 254)
-				{
-					std::cout << "missed 241/247" << "\t"
-							  << prev.first / fil.getFreq() + 8.4
-							  << "\tproblem " << problems << " started"
-							  << std::endl;
-				}
-				if(in.second == 254) { ++problems; }
-
-				if((in.second == 241 || in.second == 247) &&
-				   (prev.second == 241 || prev.second == 247))
-				{
-					std::cout << "missed 254" << "\t"
-							  << in.first / fil.getFreq() - 8.4
-							  << "\tproblem " << problems << " finished"
-							  << std::endl;
-					++problems;
-				}
-
-
-//				if((in.second == 241 || in.second == 247) && prev.second == 255)
-//				{
-//					double a = (in.first - prev.first) / fil.getFreq();
-//					if(a < 15)
-//					{
-//						rests.push_back(a);
-//					}
-//				}
-				prev = in;
-			}
-			std::cout << std::endl << std::endl;
-
-//			std::valarray<double> val = smLib::vecToValar(rests);
-//			std::cout << "mean  = " << smLib::mean(val) << "\t"
-//					  << "sigma = " << smLib::sigma(val) << "\t"
-//					  << "min   = " << smLib::min(val) << "\t"
-//					  << "max   = " << smLib::max(val) << "\t"
-//					  << std::endl;
-
-//			autos::timesNew(name(i), guy, i);
-//			autos::avTimesNew(name(i), guy, i);
-		}
-	}
-	exit(0);
-#endif
 
 
 
@@ -595,6 +438,143 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+
+#if 0
+	/// my fcking with markers in FeedbackFinal
+	std::vector<std::pair<QString, QString>> guys{
+		std::make_pair("Beketova", "BAM"),
+				std::make_pair("Burtcev", "BAV"),
+				std::make_pair("Dovbyish", "DEG"),
+				std::make_pair("Evstratov_n", "ENV"),
+				std::make_pair("Ilyin", "IAE"),
+				std::make_pair("Matasov", "MII"),
+				std::make_pair("Nikonenko", "NUA"),
+				std::make_pair("Semyonov_n", "SAV"),
+				std::make_pair("Sergeev_n", "SAA")
+	};
+
+	for(auto in : guys)
+	{
+		const QString dr = in.first;
+		const QString guy = in.second;
+
+		QDir().mkpath(def::dataFolder + "/FeedbackFinalMark/" + dr);
+
+
+		auto name1 = [dr, guy](int i) -> QString
+		{
+			return def::dataFolder + "/FeedbackFinal/"
+					+ dr + "/"
+					+ guy + "_" + nm(i) + "_new.EDF";
+		};
+		auto name2 = [dr, guy](int i) -> QString
+		{
+			return def::dataFolder + "/FeedbackFinal/"
+					+ dr + "/"
+					+ guy + "_" + nm(i) + ".EDF";
+		};
+		auto name3 = [dr, guy](int i) -> QString
+		{
+			return def::dataFolder + "/FeedbackFinalMark/"
+					+ dr + "/"
+					+ guy + "_" + nm(i) + ".edf";
+		};
+		for(int i : {1, 2, 3})
+		{
+			std::function<QString(int)> name = name1;
+			if(!QFile(name(i)).exists())
+			{
+//				std::cout << name(i) << " doesn't exist" << std::endl;
+//				continue;
+
+				name = name2;
+			}
+//			QFile::remove(def::dataFolder + "/FeedbackFinalMark/"
+//						  + dr + "/"
+//						  + guy + "_" + nm(i) + ".edf");
+//			QFile::copy(name(i),
+//						def::dataFolder + "/FeedbackFinalMark/"
+//											+ dr + "/"
+//											+ guy + "_" + nm(i) + ".edf");
+//			QFile::copy(def::dataFolder + "/FeedbackFinal/"
+//						+ dr + "/"
+//						+ guy + "_ans" + nm(i) + ".txt",
+//						def::dataFolder + "/FeedbackFinalMark/"
+//						+ dr + "/"
+//						+ guy + "_ans" + nm(i) + ".txt");
+//			continue;
+
+			/// markers check
+			edfFile fil;
+			fil.readEdfFile(name(i));
+//			continue;
+
+			std::cout << name(i).remove(0, name(i).lastIndexOf('/') + 1);
+			std::vector<uint> a = fil.countMarkers({241, 247, 254});
+			if(a != std::vector<uint>{40, 40, 80})
+			{
+				std::cout << "_" << nm(i)
+						  << "\t" << a;
+			}
+			std::cout << std::endl;
+
+			std::pair<int, int> prev{0, 254};
+			int problems = 1;
+//			std::vector<double> rests;
+			for(std::pair<int, int> in : fil.getMarkers())
+			{
+				if(in.second != 241 && in.second != 247 && in.second != 254) { continue; }
+
+
+				/// rest min = 7.6, mean = 8.4, max = 9.2
+				/// after cross min = 0.54, mean = 0.63, max = 0.75
+				if(in.second == 254 && prev.second == 254)
+				{
+					std::cout << "missed 241/247" << "\t"
+							  << prev.first / fil.getFreq() + 8.4
+							  << "\tproblem " << problems << " started"
+							  << std::endl;
+				}
+				if(in.second == 254) { ++problems; }
+
+				if((in.second == 241 || in.second == 247) &&
+				   (prev.second == 241 || prev.second == 247))
+				{
+					std::cout << "missed 254" << "\t"
+							  << in.first / fil.getFreq() - 8.4
+							  << "\tproblem " << problems << " finished"
+							  << std::endl;
+					++problems;
+				}
+
+
+//				if((in.second == 241 || in.second == 247) && prev.second == 255)
+//				{
+//					double a = (in.first - prev.first) / fil.getFreq();
+//					if(a < 15)
+//					{
+//						rests.push_back(a);
+//					}
+//				}
+				prev = in;
+			}
+			std::cout << std::endl << std::endl;
+
+//			std::valarray<double> val = smLib::vecToValar(rests);
+//			std::cout << "mean  = " << smLib::mean(val) << "\t"
+//					  << "sigma = " << smLib::sigma(val) << "\t"
+//					  << "min   = " << smLib::min(val) << "\t"
+//					  << "max   = " << smLib::max(val) << "\t"
+//					  << std::endl;
+
+//			autos::timesNew(name(i), guy, i);
+//			autos::avTimesNew(name(i), guy, i);
+		}
+	}
+	exit(0);
+#endif
+
+
 #if 0
 	/// check new butter:: filters
 //	const QString prePath = "/media/Files/Data/FeedbackFinal/Burtcev/BAV_1_car";
@@ -892,6 +872,30 @@ void MainWindow::customFunc()
 	std::cout << s << std::endl;
 	exit(0);
 #endif
+
+#if 0
+	/// test draw windows
+	int counter = 0;
+	for(myLib::windowName wind : {
+		myLib::windowName::Blackman,
+		myLib::windowName::BlackmanHarris,
+		myLib::windowName::BlackmanNuttal,
+		myLib::windowName::FlatTop,
+		myLib::windowName::Gaussian,
+		myLib::windowName::Lanczos,
+		myLib::windowName::Nuttal,
+		myLib::windowName::Parzen,
+		myLib::windowName::RifeVincent,
+		myLib::windowName::sine,
+		myLib::windowName::Welch
+})
+	{
+		myLib::drw::drawOneGraph(myLib::fftWindow(1024, wind),
+								 1024).save("/media/Files/Data/wind_" + nm(counter++) + ".jpg");
+	}
+	exit(0);
+#endif
+
 
 #if 0
 	/// Galya_tactile things

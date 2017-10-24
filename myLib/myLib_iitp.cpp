@@ -393,7 +393,7 @@ void iitpData::countContiniousTaskSpectra()
 	const int localFftLen = 1024;
 	this->setFftLen(localFftLen);
 	const int leftInd = iitp::leftFr / this->spStep;
-	const int rightInd = iitp::rightFr / this->spStep;
+	const int rightInd = iitp::rightFr / this->spStep + 1;
 	const int spLen = rightInd - leftInd;
 	const int numCh = 19;
 
@@ -437,7 +437,7 @@ void iitpData::countContiniousTaskSpectra()
 void iitpData::countContiniousTaskSpectraW(double overlap)
 {
 	const int leftInd = iitp::leftFr / getSpStepW();
-	const int rightInd = iitp::rightFr / getSpStepW();
+	const int rightInd = iitp::rightFr / getSpStepW() + 1;
 	const int spLen = rightInd - leftInd;
 	const int numCh = 19;
 
@@ -446,6 +446,7 @@ void iitpData::countContiniousTaskSpectraW(double overlap)
 
 	for(int i = 0; i < numCh; ++i)
 	{
+		/// could use piecesData
 		spec = myLib::spectreWelchRtoR(edfData[i],
 									   overlap,
 									   this->srate,
@@ -479,7 +480,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 	const int localFftLen = 1024;
 	this->setFftLen(localFftLen);
 	const int leftInd = iitp::leftFr / this->spStep;
-	const int rightInd = iitp::rightFr / this->spStep;
+	const int rightInd = iitp::rightFr / this->spStep + 1;
 	const int spLen = rightInd - leftInd;
 	const int numCh = 19;
 
@@ -547,7 +548,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 void iitpData::countFlexExtSpectraW(int mark1, int mark2, double overlap)
 {
 	const int leftInd = iitp::leftFr / getSpStepW();
-	const int rightInd = iitp::rightFr / getSpStepW();
+	const int rightInd = iitp::rightFr / getSpStepW() + 1;
 	const int spLen = rightInd - leftInd;
 
 	const int numCh = 19;

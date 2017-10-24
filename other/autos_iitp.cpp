@@ -1065,6 +1065,10 @@ void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums)
 void IITPprocessStaged(const QString & guyName,
 					   const QString & dirPath)
 {
+	const double periodicOverlap	= 0.5;
+	const double continiousOverlap	= 0.5;
+	const double confidenceLevel	= 0.05; /// for threshold value only
+
 	QString postfix = iitp::getPostfix(QDir(dirPath + "/" + guyName).entryList({"*_stag.edf"})[0]);
 	const QString direct = dirPath + "/" + guyName + "/";
 	QString resultsPathPrefix = def::iitpResFolder + "/" + guyName + "/";
@@ -1165,8 +1169,8 @@ void IITPprocessStaged(const QString & guyName,
 		if(iitp::interestGonios[fileNum].size() == 0)
 		{
 //			dt.countContiniousTaskSpectra();
-			dt.cutPiecesW(0.5);
-			dt.countContiniousTaskSpectraW(0.5);
+			dt.cutPiecesW(continiousOverlap);
+			dt.countContiniousTaskSpectraW(continiousOverlap);
 //			continue;
 
 			/// coherencies
@@ -1234,7 +1238,9 @@ void IITPprocessStaged(const QString & guyName,
 						}
 					}
 				}
-				outStr << "confidence level(p < 0.05) = " << dt.confidence(0.05) << std::endl;
+				outStr << "confidenceLevel " << dt.confidence(confidenceLevel)
+					   << "\tnumOfPieces " << dt.getPieces().size()
+					   << std::endl;
 				outStr.close();
 			}
 			if(interestingForTaR.contains(fileNum))
@@ -1251,7 +1257,7 @@ void IITPprocessStaged(const QString & guyName,
 				int minMarker = iitp::gonioMinMarker(gonio);
 //				dt.countFlexExtSpectra(minMarker, minMarker + 1);
 //				std::cout << iitp::gonioNames[gonio] << "\t";
-				dt.countFlexExtSpectraW(minMarker, minMarker + 1, 0.5);
+				dt.countFlexExtSpectraW(minMarker, minMarker + 1, periodicOverlap);
 //				continue;
 
 
@@ -1261,13 +1267,13 @@ void IITPprocessStaged(const QString & guyName,
 					if(type == 0)
 					{
 //						dt.setPieces(minMarker, minMarker + 1);
-						dt.setPiecesW(minMarker, minMarker + 1, 0.5);
+						dt.setPiecesW(minMarker, minMarker + 1, periodicOverlap);
 						outStr.open(resFlex(fileNum, iitp::gonioNames[gonio]).toStdString());
 					}
 					else
 					{
 //						dt.setPieces(minMarker + 1, minMarker);
-						dt.setPiecesW(minMarker + 1, minMarker, 0.5);
+						dt.setPiecesW(minMarker + 1, minMarker, periodicOverlap);
 						outStr.open(resExt(fileNum, iitp::gonioNames[gonio]).toStdString());
 					}
 
@@ -1326,7 +1332,9 @@ void IITPprocessStaged(const QString & guyName,
 							}
 						}
 					}
-					outStr << "confidence level(p < 0.05) = " << dt.confidence(0.05) << std::endl;
+					outStr << "confidenceLevel " << dt.confidence(confidenceLevel)
+						   << "\tnumOfPieces " << dt.getPieces().size()
+						   << std::endl;
 					outStr.close();
 					if(interestingForTaR.contains(fileNum) && type == 0) // flexion only
 					{

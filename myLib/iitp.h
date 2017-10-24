@@ -367,19 +367,20 @@ const std::vector<int> interestEeg{
 };
 
 /// for spectra inspection
-const double leftFr = 4;
-const double rightFr = 40;
+const double leftFr = 4.;
+const double rightFr = 40.;
 const myLib::windowName iitpWindow = myLib::windowName::Hamming;
 
 const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 45 + 1);
 
 /// all without 12th
-// const std::valarray<double> fileNums = smLib::unite({smLib::range(0, 12), smLib::range(13, 29+1)});
+ const std::valarray<double> fileNums = smLib::unite({smLib::range(0,  11 + 1),
+													  smLib::range(13, 29 + 1)});
 /// all with 12th
 //const std::valarray<double> fileNums = smLib::range(0, 29+1);
 
 /// test
-const std::valarray<double> fileNums = smLib::range(24, 29+1);
+//const std::valarray<double> fileNums = smLib::range(24, 29+1);
 // const std::valarray<double> fileNums = smLib::range(0, 11);
 // const std::valarray<double> fileNums{12};
 // const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
@@ -390,6 +391,7 @@ class iitpData : public edfFile
 public:
 	/// [chan1][chan2][freq]
 	using cohsType = std::vector<std::vector<std::valarray<std::complex<double>>>>;
+	/// [chan1][chan2][freq]
 	using mscohsType = std::vector<std::vector<std::valarray<double>>>;
 private:
 	std::vector<matrix> piecesData;
