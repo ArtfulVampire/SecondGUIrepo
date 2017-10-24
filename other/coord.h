@@ -242,8 +242,8 @@ namespace def
 		return def::fileMarkers.length();
 	}
 
-	inline int right()		{ return fftLimit(def::leftFreq, def::freq, def::fftLength); }
-	inline int left()		{ return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1; }
+	inline int left()		{ return fftLimit(def::leftFreq, def::freq, def::fftLength); }
+	inline int right()		{ return fftLimit(def::rightFreq, def::freq, def::fftLength) + 1; }
 	inline int spLength()	{ return def::right() - def::left(); }
 	inline double spStep()	{ return def::freq / def::fftLength; }
 }

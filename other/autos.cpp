@@ -1425,7 +1425,7 @@ void ProcessByFolders(const QString & inPath,
 {
 	QTime myTime;
 	myTime.start();
-
+	/// to arguments
 //	const std::vector<QString> markers{"_rest"};
 //	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
 //	const std::vector<QString> markers{"_2sv", "_2zv", "_4sv", "_4zv",
@@ -1483,7 +1483,7 @@ void ProcessByFolders(const QString & inPath,
 		}
 
 		/// filter?
-		if(01)
+		if(0)
 		{
 			/// already done ?
 			autos::refilterFolder(guyPath,
@@ -1509,7 +1509,7 @@ void ProcessByFolders(const QString & inPath,
 			/// clear outFolder
 			myLib::cleanDir(guyPath + "/out", "txt", true);
 
-			autos::GalyaProcessing(guyPath, 31, outPath);
+			autos::GalyaProcessing(guyPath, 19, outPath);
 		}
 
 		/// make one line file for each stimulus

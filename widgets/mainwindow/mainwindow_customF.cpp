@@ -7,6 +7,7 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/temp.h>
 #include <myLib/statistics.h>
+#include <thread>
 
 using namespace myOut;
 
@@ -38,7 +39,6 @@ void MainWindow::customFunc()
 //						   24,
 //						   1024).save("/media/Files/Data/phases1.jpg", 0, 100);
 //	exit(0);
-
 //	return;
 
 #if 0
@@ -609,21 +609,73 @@ void MainWindow::customFunc()
 //	exit(0);
 
 	def::ntFlag = true; /// for Dasha's and EEGMRI
-	return;
+//	return;
 
-	const QString pth = def::dataFolder + "/Dasha/Totable_new_ord_hol_fil";
+	const QString pth = def::dataFolder + "/Dasha/Totable_best";
 
 	for(auto str : QDir(pth).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
+		if(0) /// delete old, remain new
+		{
+			for(const QString fil : QDir(pth + "/" + str).entryList(def::edfFilters))
+			{
+				if(fil.contains("_new.edf")) { continue; }
+
+				const QString fileName = pth + "/" + str + "/" + fil;
+
+				QString filC = fil;
+				filC.replace(".edf", "_new.edf");
+				const QString fileNameNew = pth + "/" + str + "/" + filC;
+
+				if(QFile::exists(fileNameNew))
+				{
+					QFile::remove(fileName);
+					QFile::rename(fileNameNew, fileName);
+				}
+			}
+		}
+		if(0) /// delete all but edfs
+		{
+			/// dirs
+			for(const QString dr : QDir(pth + "/" + str).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+			{
+				QDir(pth + "/" + str + "/" + dr).removeRecursively();
+			}
+			/// files
+			for(const QString fl : QDir(pth + "/" + str).entryList(QDir::Files))
+			{
+				if(!fl.contains(".edf", Qt::CaseInsensitive))
+				{
+					QFile::remove(pth + "/" + str + "/" + fl);
+				}
+			}
+		}
 //		repair::channelsOrderDir(pth + "/" + str,
 //								 pth + "/" + str,
 //								 coords::lbl31_good);
 //		repair::testChannelsOrderConsistency(pth + "/" + str);
 //		deleteSpaces(def::DashaFolder + "/" + str);
 	}
-	def::currAutosUser = def::autosUser::Galya;
-	autos::ProcessByFolders(pth);
-	return;
+//	def::currAutosUser = def::autosUser::Galya;
+//	autos::ProcessByFolders(pth);
+//	return;
+	if(01) /// labels
+	{
+		std::ofstream labStr;
+		labStr.open((pth + "_out/labels.txt").toStdString());
+		const std::vector<QString> markers{"brush", "cry", "fire", "flower",
+										   "isopropanol", "needles", "vanilla", "wc"};
+
+		for(QString mrk : markers)
+		{
+			for(QString lab : coords::lbl19)
+			{
+				labStr << mrk << "_FD_" << lab << "\t";
+			}
+		}
+		labStr.close();
+	}
+
 	exit(0);
 #endif
 
