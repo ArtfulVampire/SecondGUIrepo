@@ -72,7 +72,7 @@ void GalyaProcessing(const QString & procDirPath,
 				   ;
 
 //			Mask = autos::featuresMask::Hilbert;
-//			Mask = autos::featuresMask::fracDim;
+			Mask = autos::featuresMask::fracDim;
 
 			break;
 		}
@@ -685,7 +685,9 @@ void Xenia_TBI_final(const QString & finalPath,
 			if(0)
 			{
 				repair::physMinMaxDir(guyPath);
-				repair::holesDir(guyPath, guyPath);	/// rewrite after repair
+				repair::holesDir(guyPath,
+								 19,
+								 guyPath);	/// rewrite after repair
 			}
 
 			/// rereference
@@ -1322,7 +1324,9 @@ void ProcessAllInOneFolder(const QString & inPath,
 	if(0)
 	{
 		repair::physMinMaxDir(inPath);
-		repair::holesDir(inPath, inPath);	/// rewrite after repair
+		repair::holesDir(inPath,
+						 19,		/// HOW MANY CHANNELS ???
+						 inPath);	/// rewrite after repair
 	}
 
 	/// rereference
@@ -1417,16 +1421,17 @@ void ProcessAllInOneFolder(const QString & inPath,
 }
 
 void ProcessByFolders(const QString & inPath,
-				   QString outPath)
+					  QString outPath)
 {
 	QTime myTime;
 	myTime.start();
-
-	def::ntFlag = false;
+	/// to arguments
 //	const std::vector<QString> markers{"_rest"};
 //	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
-	const std::vector<QString> markers{"_2sv", "_2zv", "_4sv", "_4zv",
-									   "_8sv", "_8zv", "_16sv", "_16zv", "_og", "_zg"};
+//	const std::vector<QString> markers{"_2sv", "_2zv", "_4sv", "_4zv",
+//									   "_8sv", "_8zv", "_16sv", "_16zv", "_og", "_zg"};
+	const std::vector<QString> markers{"_brush", "_cry", "_fire", "_flower",
+									   "_isopropanol", "_needles", "_vanilla", "_wc"};
 
 	if(outPath == QString())
 	{
@@ -1464,8 +1469,11 @@ void ProcessByFolders(const QString & inPath,
 		/// physMinMax & holes
 		if(0)
 		{
-			repair::physMinMaxDir(guyPath);
-			repair::holesDir(guyPath, guyPath);	/// rewrite after repair
+//			repair::physMinMaxDir(guyPath);
+			repair::holesDir(guyPath,
+							 31,
+							 guyPath);	/// rewrite after repair
+			continue;
 		}
 
 		/// rereference
@@ -1481,6 +1489,7 @@ void ProcessByFolders(const QString & inPath,
 			autos::refilterFolder(guyPath,
 								  1.6,
 								  30.);
+			continue;
 		}
 
 		/// cut?
@@ -1509,29 +1518,35 @@ void ProcessByFolders(const QString & inPath,
 			for(QString mark : markers)
 			{
 				QStringList fileNamesToArrange;
-				for(int func : {
-					autos::featuresMask::alpha,
-					autos::featuresMask::spectre,
-					autos::featuresMask::Hilbert,
-					autos::featuresMask::fracDim,
-					autos::featuresMask::Hjorth})
-				{
-					const QString fileName = ExpName + mark
-											 + "_" + autos::getFeatureString(func) + ".txt";
-					fileNamesToArrange.push_back(fileName);
 
-					if(!QFile::exists(outPath + "/" + fileName))
+					for(int func : {
+//						autos::featuresMask::alpha,
+//						autos::featuresMask::spectre,
+//						autos::featuresMask::Hilbert,
+						autos::featuresMask::fracDim
+//						, autos::featuresMask::Hjorth
+				})
 					{
-						std::cout << "File doesn't exist: " << fileName << std::endl;
-						std::ofstream outStr;
-						outStr.open((outPath + "/" + fileName).toStdString());
-						for(int i = 0; i < autos::getFileLength(func); ++i)
+						const QString fileName = ExpName + mark
+												 + "_" + autos::getFeatureString(func) + ".txt";
+						fileNamesToArrange.push_back(fileName);
+
+						if(0) /// create files if they are absent
 						{
-							outStr << 0 << '\t';
+							if(!QFile::exists(outPath + "/" + fileName))
+							{
+								std::cout << "File doesn't exist: " << fileName << std::endl;
+								std::ofstream outStr;
+								outStr.open((outPath + "/" + fileName).toStdString());
+								for(int i = 0; i < autos::getFileLength(func); ++i)
+								{
+									outStr << 0 << '\t';
+								}
+								outStr.close();
+							}
 						}
-						outStr.close();
 					}
-				}
+
 //				std::cout << fileNamesToArrange << std::endl << std::endl;
 				autos::ArrangeFilesToLine(outPath,
 										  fileNamesToArrange,
@@ -1565,7 +1580,7 @@ void ProcessByFolders(const QString & inPath,
 							 inPath + "_out/all.txt",
 							 true);
 
-	std::cout << "Xenia_TBI_final: time elapsed = "
+	std::cout << "ProcessByFolders: time elapsed = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 

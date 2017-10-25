@@ -662,11 +662,11 @@ void Spectre::writeSpectra(const double leftFreq,
 			std::cout << "bad outStream" << std::endl;
             continue;
         }
+		outStream << "NumOfChannels " << def::nsWOM() << '\t';
+		outStream << "spLength " << right - left << "\r\n";
 
-
-        outStream << "NumOfChannels " << def::nsWOM() << '\t';
-        outStream << "spLength " << right - left << "\r\n";
-//        outStream.flush();
+		outStream << std::fixed;
+		outStream.precision(4);
 
         if(ui->spectraRadioButton->isChecked())
         {
@@ -680,7 +680,7 @@ void Spectre::writeSpectra(const double leftFreq,
                 for(int k = left + rangeLimits[j].first;
                     k < left + rangeLimits[j].second; ++k)
                 {
-					outStream << smLib::doubleRound(dataFFT[i][j][k], 4) << '\t';
+					outStream << dataFFT[i][j][k] << '\t';
                 }
 				for(int k = std::max(left + rangeLimits[j].first,
                                 left + rangeLimits[j].second);

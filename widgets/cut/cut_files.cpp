@@ -19,7 +19,7 @@ void Cut::next()
 	++fileListIter;
 	for(; fileListIter != std::end(filesList); ++fileListIter)
 	{
-		if((*fileListIter).contains(QRegExp(R"({_num|_000|_sht})")))
+		if((*fileListIter).contains(QRegExp(R"({_num|_000|_sht})"))) /// magig const regexp
 		{
 			std::cout << "next: bad name" << std::endl;
 			continue;
@@ -40,7 +40,7 @@ void Cut::prev()
 	--fileListIter;
 	for(; fileListIter != std::begin(filesList); --fileListIter)
 	{
-		if((*fileListIter).contains(QRegExp(R"({_num|_000|_sht})")))
+		if((*fileListIter).contains(QRegExp(R"({_num|_000|_sht})"))) /// magig const regexp
 		{
 			std::cout << "prev: bad name" << std::endl;
 			continue;
@@ -65,7 +65,7 @@ void Cut::rewrite()
 	}
 	else if(myFileType == fileType::edf)
 	{
-		std::cout << "Cut::rewrite: deliberately forbidden for edfs, use Save instead" << std::endl;
+		std::cout << "Cut:: Rewrite deliberately forbidden for edfs, use Save instead" << std::endl;
 	}
 }
 

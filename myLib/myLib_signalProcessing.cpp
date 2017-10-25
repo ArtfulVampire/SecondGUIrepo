@@ -1483,6 +1483,10 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 	return -slope;
 }
 
+std::pair<double, double> signalBand(const std::valarray<double> & inSignal)
+{
+	return {0., 0.};
+}
 
 double alphaPeakFreq(const std::valarray<double> & spectreR,
 					 int initSigLen,

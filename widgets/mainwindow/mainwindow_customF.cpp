@@ -7,6 +7,7 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/temp.h>
 #include <myLib/statistics.h>
+#include <thread>
 
 using namespace myOut;
 
@@ -38,7 +39,6 @@ void MainWindow::customFunc()
 //						   24,
 //						   1024).save("/media/Files/Data/phases1.jpg", 0, 100);
 //	exit(0);
-
 //	return;
 
 
@@ -111,7 +111,7 @@ void MainWindow::customFunc()
 
 
 
-#if 01
+#if 0
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -438,7 +438,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
 #if 0
 	/// my fcking with markers in FeedbackFinal
 	std::vector<std::pair<QString, QString>> guys{
@@ -574,6 +573,89 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+
+//	edfFile f;
+//	f.readEdfFile("/media/Files/Data/Dasha/Totable_new/Berlin/Berlin_wc.edf");
+//	myLib::drw::drawOneSpectrum(f.getData().subCols(0, 2048)[0],
+//			0.5, 4, 250., 0).save("/media/Files/Data/D.jpg");
+//	exit(0);
+
+#if 01
+	/// Dasha ToTable processing for Galya's paper
+//	myLib::areEqualFiles("/media/Files/Data/Dasha/Totable/Berlin_brush.edf",
+//						 "/media/Files/Data/Dasha/Totable/Berlin/Berlin_brush.edf");
+//	exit(0);
+
+	def::ntFlag = true; /// for Dasha's and EEGMRI
+//	return;
+
+	const QString pth = def::dataFolder + "/Dasha/Totable_best";
+
+	for(auto str : QDir(pth).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+	{
+		if(0) /// delete old, remain new
+		{
+			for(const QString fil : QDir(pth + "/" + str).entryList(def::edfFilters))
+			{
+				if(fil.contains("_new.edf")) { continue; }
+
+				const QString fileName = pth + "/" + str + "/" + fil;
+
+				QString filC = fil;
+				filC.replace(".edf", "_new.edf");
+				const QString fileNameNew = pth + "/" + str + "/" + filC;
+
+				if(QFile::exists(fileNameNew))
+				{
+					QFile::remove(fileName);
+					QFile::rename(fileNameNew, fileName);
+				}
+			}
+		}
+		if(0) /// delete all but edfs
+		{
+			/// dirs
+			for(const QString dr : QDir(pth + "/" + str).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+			{
+				QDir(pth + "/" + str + "/" + dr).removeRecursively();
+			}
+			/// files
+			for(const QString fl : QDir(pth + "/" + str).entryList(QDir::Files))
+			{
+				if(!fl.contains(".edf", Qt::CaseInsensitive))
+				{
+					QFile::remove(pth + "/" + str + "/" + fl);
+				}
+			}
+		}
+//		repair::channelsOrderDir(pth + "/" + str,
+//								 pth + "/" + str,
+//								 coords::lbl31_good);
+//		repair::testChannelsOrderConsistency(pth + "/" + str);
+//		deleteSpaces(def::DashaFolder + "/" + str);
+	}
+//	def::currAutosUser = def::autosUser::Galya;
+//	autos::ProcessByFolders(pth);
+//	return;
+	if(01) /// labels
+	{
+		std::ofstream labStr;
+		labStr.open((pth + "_out/labels.txt").toStdString());
+		const std::vector<QString> markers{"brush", "cry", "fire", "flower",
+										   "isopropanol", "needles", "vanilla", "wc"};
+
+		for(QString mrk : markers)
+		{
+			for(QString lab : coords::lbl19)
+			{
+				labStr << mrk << "_FD_" << lab << "\t";
+			}
+		}
+		labStr.close();
+	}
+
+	exit(0);
+#endif
 
 #if 0
 	/// check new butter:: filters
@@ -1545,35 +1627,6 @@ void MainWindow::customFunc()
 
 	}
 exit(0);
-#endif
-
-#if 0
-    /// Dasha processing
-
-    def::ntFlag = true; /// for Dasha's and EEGMRI
-//    def::ntFlag = false; /// encephalan (+1)
-
-
-
-    /// 32 channels for EEGMRI
-    for(auto str : leest_more)
-    {
-		testChannelsOrderConsistency(def::DashaFolder + "/" + str);
-		deleteSpaces(def::DashaFolder + "/" + str);
-//        channelsOrderDir(def::DashaFolder + "/" + str,
-//                       def::DashaFolder + "/Nonaudio_to_less",
-//                       coords::lbl31_less);
-
-//        GalyaProcessing(def::DashaFolder + "/AUDIO/" + str,
-//                        31,
-//                        def::DashaFolder + "/AUDIO/CHANS/Audio_to_less_out_ALL");
-//            GalyaCut(def::DashaFolder + "/NONAUDIO/" + str,
-//                     16,
-//                     def::DashaFolder + "/AUDIO/CHANS/Audio_to_less_13");
-
-    }
-
-    exit(0);
 #endif
 
 #if 0

@@ -130,10 +130,14 @@ bool testChannelsOrderConsistency(const QString & dirPath)
 	QStringList leest = QDir(dirPath).entryList(def::edfFilters);
 
 	fil.readEdfFile(dirPath + "/" + leest[0], true);
-	for(const QString & lbl : fil.getLabels())
+	for(QString lbl : fil.getLabels())
 	{
 		if( lbl.startsWith("EEG ") )
 		{
+			lbl.remove("EEG ");
+			lbl.truncate(lbl.indexOf('-'));
+			if(lbl.contains("Pg") || lbl.contains("Cb")) { continue; }
+
 			labelsBC.push_back(lbl);
         }
     }
@@ -145,10 +149,14 @@ bool testChannelsOrderConsistency(const QString & dirPath)
     {
 		fil.readEdfFile(dirPath + "/" + guy, true);
 		labels.clear();
-		for(const QString & lbl : fil.getLabels())
+		for(QString lbl : fil.getLabels())
 		{
 			if( lbl.startsWith("EEG ") )
 			{
+				lbl.remove("EEG ");
+				lbl.truncate(lbl.indexOf('-'));
+				if(lbl.contains("Pg") || lbl.contains("Cb")) { continue; }
+
 				labels.push_back(lbl);
 			}
 		}
@@ -173,37 +181,37 @@ void channelsOrderFile(const QString & inFilePath,
         outFilePath.replace(".edf", "_goodChan.edf");
     }
 
-    std::vector<int> reorderChanList{};
     edfFile initFile;
-    initFile.readEdfFile(inFilePath, true);
+	initFile.readEdfFile(inFilePath, true);
+
+	std::vector<int> reorderChanList{};
+	reorderChanList.reserve(initFile.getNs());
+
+	std::set<int> leftChannels;
+	for(int i = 0; i < initFile.getNs(); ++i) { leftChannels.emplace(i); }
+
     for(uint i = 0; i < standard.size(); ++i) /// only for 31 channels
     {
         for(int j = 0; j < initFile.getNs(); ++j)
         {
-            if(initFile.getLabels()[j].contains(standard[i]))
+			if(initFile.getLabels(j).contains(standard[i]))
             {
                 reorderChanList.push_back(j);
+				leftChannels.erase(j);
                 break;
             }
         }
-    }
-    // fill the rest of channels
-    for(int j = 0; j < initFile.getNs(); ++j)
-    {
-        if(std::find(std::begin(reorderChanList),
-                     std::end(reorderChanList),
-                     j)
-           == std::end(reorderChanList))
-        {
-            reorderChanList.push_back(j);
-        }
-    }
+	}
+	for(int j : leftChannels) { reorderChanList.push_back(j); }
 
-//	std::cout << inFilePath << std::endl;
-//	std::cout << reorderChanList << std::endl;
+//	for(int k : reorderChanList)
+//	{
+//		std::cout << initFile.getLabels(k) << std::endl;
+//	}
+//	std::cout << std::endl;
+//	return;
 
-    std::vector<int> ident(initFile.getNs());
-    std::iota(std::begin(ident), std::end(ident), 0);
+	std::vector<int> ident = smLib::range<std::vector<int>>(0, initFile.getNs() + 1);
 
     if(reorderChanList != ident)
     {
@@ -232,8 +240,8 @@ void channelsOrderDir(const QString & inDirPath,
 //        outName.replace(".edf", "_goodChan.edf", Qt::CaseInsensitive);
 //        std::cout << outName << std::endl;
 		channelsOrderFile(inDirPath + "/" + vec[i],
-							outDirPath + "/" + outName,
-                            standard);
+						  outDirPath + "/" + outName,
+						  standard);
 //		break;
     }
 }
@@ -248,6 +256,7 @@ void channelsOrderDir(const QString & inDirPath,
 
 
 void holesFile(const QString & inFilePath,
+			   int numChan,
 			   QString outFilePath)
 {
     if(outFilePath.isEmpty())
@@ -260,30 +269,41 @@ void holesFile(const QString & inFilePath,
 
     edfFile fil;
     fil.readEdfFile(inFilePath);
+
     auto dataList = fil.getDataAsList();
     for(auto it = std::begin(dataList); it != std::end(dataList); ++it)
     {
         std::valarray<double> & col = *it;
         int count = 0;
-        for(uint i = 0; i < col.size(); ++i)
-        {
-            if(col[i] > (1. - thr) * fil.getDigMax()[i] + thr * fil.getDigMin()[i] ||
-               col[i] < (1. - thr) * fil.getDigMin()[i] + thr * fil.getDigMax()[i])
+		for(uint i = 0; i < numChan; ++i)
+		{
+			auto highLim = (1. - thr) * fil.getPhysMax()[i] + thr * fil.getPhysMin()[i];
+			if(std::abs(col[i]) > highLim)
             {
                 ++count;
             }
         }
-        if(count > 19)
+		if(count == numChan)
         {
+//			std::cout << smLib::valarSubsec(col, 0, 31)  << std::endl << std::endl;
             it = dataList.erase(it);
-            --it;
+			--it;
         }
     }
+
+	int a = fil.getDataLen() - dataList.size();
+	if(a != 0)
+	{
+		std::cout << myLib::getFileName(inFilePath, false)
+				  << "\t" << a << std::endl;
+
+	}
     fil.setDataFromList(dataList);
     fil.writeOtherData(fil.getData(), outFilePath);
 }
 
 void holesDir(const QString & inDirPath,
+			  int numChan,
 			  const QString & outDirPath)
 {
     const auto leest = QDir(inDirPath).entryList(def::edfFilters, QDir::Files);
@@ -292,6 +312,7 @@ void holesDir(const QString & inDirPath,
     for(int i = 0; i < vec.size(); ++i)
 	{
 		holesFile(inDirPath + "/" + vec[i],
+				  numChan,
 				  outDirPath + "/" + vec[i]);
     }
 }

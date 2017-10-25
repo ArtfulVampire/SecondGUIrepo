@@ -866,10 +866,10 @@ void edfFile::handleDatum(int currNs,
 //            fread(&a, sizeof(qint16), 1, edfForDatum);
 
 			currDatum = physMin[currNs]
-					+ (physMax[currNs] - physMin[currNs])
-					* (double(a) - digMin[currNs])
-					/ (digMax[currNs] - digMin[currNs]
-					   + (this->ntFlag ? 0 : 1));
+						+ (double(a) - digMin[currNs])
+						* (physMax[currNs] - physMin[currNs])
+						/ (digMax[currNs] - digMin[currNs]
+						   + (this->ntFlag ? 0 : 1));
 			/// neurotravel + 0
 			/// encephalan + 1
 
@@ -892,9 +892,9 @@ void edfFile::handleDatum(int currNs,
 				edfForDatum.read((char*)&markA, sizeof(qint16));
 //                fread(&markA, sizeof(quint16), 1, edfForDatum);
 				currDatum = physMin[currNs]
-						+ (physMax[currNs] - physMin[currNs])
-						* (double(markA) - digMin[currNs])
-						/ (digMax[currNs] - digMin[currNs]);
+							+ (double(markA) - digMin[currNs])
+							* (physMax[currNs] - physMin[currNs])
+							/ (digMax[currNs] - digMin[currNs]);
 //                currDatum = markA;
 
 				if(currDatum != 0 )

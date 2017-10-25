@@ -55,8 +55,11 @@ MainWindow::MainWindow() :
 
 	ui->reduceChannelsComboBox->addItem("EEG,reref,EOG,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,reref,mark");
+	ui->reduceChannelsComboBox->addItem("EEG,EOG,other,mark");
+	ui->reduceChannelsComboBox->addItem("EEG,other,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,EOG,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,mark");
+
 
 	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
 
@@ -159,7 +162,8 @@ MainWindow::MainWindow() :
 
 
 	/// open other widgets
-    QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(setEdfFileSlot()));
+	QObject::connect(ui->browseButton, SIGNAL(clicked()),
+					 this, SLOT(setEdfFileSlot()));
 	QObject::connect(ui->cut_e, SIGNAL(clicked()), this, SLOT(showCut()));
 	QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(showNet()));
 	QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(showCountSpectra()));
@@ -204,7 +208,6 @@ MainWindow::MainWindow() :
 	ui->reduceChannesPushButton->hide();
 #endif
 
-
     customFunc();
 }
 
@@ -244,6 +247,7 @@ void MainWindow::changeRedNsLine(int a)
 	bool emg = str.contains("EMG");
 	bool eog = str.contains("EOG");
 	bool mark = str.contains("mark");
+	bool oth = str.contains("other");
 	for(int i = 0; i < globalEdf.getNs(); ++i)
 	{
 		const QString & lab = globalEdf.getLabels(i);
@@ -260,10 +264,10 @@ void MainWindow::changeRedNsLine(int a)
 				continue;
 			}
 		}
-		else if(lab.contains("EMG") && !emg) { continue; }
-		else if(lab.contains("EOG") && !eog) { continue; }
-		else if(lab.contains("Marker") && !mark) { continue; }
-		/// else /* if("any other channels") */ { they remain in a list }
+		else if(lab.contains("EMG"))	{ if(!emg)	continue; }
+		else if(lab.contains("EOG"))	{ if(!eog)	continue; }
+		else if(lab.contains("Marker"))	{ if(!mark)	continue; }
+		else /*any other channel*/		{ if(!oth)	continue; }
 
 		outStr += nm(i + 1) + " ";
 	}

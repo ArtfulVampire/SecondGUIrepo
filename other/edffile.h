@@ -414,16 +414,17 @@ namespace repair
 bool testChannelsOrderConsistency(const QString & dirPath);
 void channelsOrderFile(const QString & inFilePath,
                        QString outFilePath = QString(),
-                       const std::vector<QString> & standard = coords::lbl31_more);
+					   const std::vector<QString> & standard = coords::lbl31_more_withEOG);
 void channelsOrderDir(const QString & inDirPath,
                       const QString & outDirPath,
-                      const std::vector<QString> & standard = coords::lbl31_more);
+					  const std::vector<QString> & standard = coords::lbl31_more_withEOG);
 
 // void invertEogs(const QString & inFilePath);
-void holesFile(const QString & inFilePath,
-               QString outFilePath = QString());
+void holesFile(const QString & inFilePath, int numChan,
+			   QString outFilePath = QString());
 void holesDir(const QString & inDirPath,
-              const QString & outDirPath);
+			  int numChan,
+			  const QString & outDirPath);
 
 void physMinMaxCheck(const QString & dirPath);
 void physMinMaxDir(const QString & dirPath, const QStringList & filters = def::edfFilters);

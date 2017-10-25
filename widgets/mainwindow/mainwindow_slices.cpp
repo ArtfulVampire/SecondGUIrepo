@@ -99,8 +99,9 @@ void MainWindow::sliceWinds()
 
 	const edfFile & fil = globalEdf;
 
-	const int timeShift = ui->timeShiftSpinBox->value() * fil.getFreq();
-	const int wndLength = ui->windowLengthSpinBox->value() * fil.getFreq();
+	const int wndLength = std::round(fil.getFreq() * ui->windowLengthSpinBox->value());
+	const int timeShift = std::round(fil.getFreq() * ui->timeShiftSpinBox->value());
+//	std::cout << timeShift << std::endl;
 
 	const std::valarray<double> & marks = fil.getMarkArr();
 
@@ -165,14 +166,19 @@ void MainWindow::sliceWinds()
 	}
 
 	auto it = std::end(forSave); --it;
-	while(std::get<1>(*it) == 2) { --it; } /// don't see last rest
+	while(std::get<1>(*it) == 2) { --it; } /// don't save last rest
 
-
+//	int n = 0;
+//	for(auto bit = it; bit != std::begin(forSave); --bit)
+//	{
+//		if(std::get<1>(*bit) == 2) { ++n; }
+//	}
+//	std::cout << n << std::endl;
 
 	/// save all or some last
 	if(ui->succPrecleanCheckBox->isChecked())
 	{
-		const int succMax = suc::learnSetStay * 2;
+		const int succMax = suc::learnSetStay * 2; /// ~=120
 		std::valarray<int> succCounter(3); succCounter = 1; /// 3 - numOfClasses
 
 		/// save succMax each type
@@ -189,6 +195,7 @@ void MainWindow::sliceWinds()
 
 				ui->progressBar->setValue( succCounter.sum() * 100. / (3. * succMax));
 			}
+//			std::cout << succCounter << std::endl;
 		}
 	}
 	else
