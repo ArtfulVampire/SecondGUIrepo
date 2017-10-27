@@ -324,7 +324,7 @@ public:
 	double spStep()	{ return this->freq / this->fftLength; }
 
 private:
-	QDir * dir{new QDir()};
+	QDir * dir{new QDir(QDir::root())};
 
 	autosUser currAutosUser{autosUser::Xenia};
 
@@ -333,8 +333,8 @@ private:
 	spectraNorming specNormTyp{spectraNorming::all};
 	double drawNorm{-1.};
 
-	bool opencl{false};
-	bool openmp{false};
+	bool opencl{false};		/// unused now
+	bool openmp{false};		/// unused now
 	bool ntFlag{false};
 
 	QString ExpName;		/// to deprecate

@@ -202,18 +202,21 @@ public:
 
 	edfFile & removeChannels(const std::vector<int> & chanList);
 	edfFile & removeChannels(const QStringList & chanList);
+	edfFile & removeChannel(int num);
+	edfFile & removeChannel(const QString & nam);
 
 	edfFile & insertChannel(int num, const std::valarray<double> & dat, edfChannel ch);
 
 	edfFile & multiplyChannel(uint chanNum, double mult);
-	edfFile & multiplyChannels(std::vector<uint> chanNums = {}, double mult = 2.);
+	edfFile & multiplyChannels(std::vector<uint> chanNums, double mult);
 
 	edfFile & divideChannel(uint chanNum, double denom);
-	edfFile & divideChannels(std::vector<uint> chanNums = {}, double denom = 2.);
+	edfFile & divideChannels(std::vector<uint> chanNums, double denom);
 
-	edfFile & zeroChannels(const std::vector<uint> & chanNums = {});
+	edfFile & zeroChannels(const std::vector<uint> & chanNums);
+
 	int findChannel(const QString & str) const;
-	std::vector<uint> findChannels(const QString & str) const;
+	std::vector<uint> findChannels(const QString & filter) const;
 	std::vector<uint> findChannels(const std::vector<QString> & strs) const;
 
 	uint countMarker(int mrk) const;

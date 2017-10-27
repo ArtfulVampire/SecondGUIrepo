@@ -1524,12 +1524,12 @@ int edfFile::findChannel(const QString & str) const
 	return -1;
 }
 
-std::vector<uint> edfFile::findChannels(const QString & str) const
+std::vector<uint> edfFile::findChannels(const QString & filter) const
 {
 	std::vector<uint> res{};
 	for(int i = 0; i < this->ns; ++i)
 	{
-		if(labels[i].contains(str, Qt::CaseInsensitive)) { res.push_back(i); }
+		if(labels[i].contains(filter, Qt::CaseInsensitive)) { res.push_back(i); }
 	}
 	return res;
 }
@@ -2193,6 +2193,38 @@ edfFile & edfFile::removeChannels(const QStringList & chanList)
 		this->channels.erase(std::begin(this->channels) + k);
 	}
 	this->adjustArraysByChannels();
+	return *this;
+}
+
+edfFile & edfFile::removeChannel(int num)
+{
+	if(num < 0 || num > this->getNs() - 1)
+	{
+		std::cout << "edfFile::removeChannel(int): bad channel num " << num << std::endl;
+	}
+	else
+	{
+		this->edfData.eraseRow(num);
+		this->channels.erase(std::begin(this->channels) + num);
+		this->adjustArraysByChannels();
+	}
+	return *this;
+}
+edfFile & edfFile::removeChannel(const QString & nam)
+{
+//	return this->removeChannel(this->findChannel(nam)); /// for short
+
+	int num = this->findChannel(nam);
+	if(num == -1)
+	{
+		std::cout << "edfFile::removeChannel(str): no such channel " << nam << std::endl;
+	}
+	else
+	{
+		this->edfData.eraseRow(num);
+		this->channels.erase(std::begin(this->channels) + num);
+		this->adjustArraysByChannels();
+	}
 	return *this;
 }
 

@@ -42,6 +42,21 @@ void MainWindow::customFunc()
 //	return;
 
 
+#if 01
+	/// defs Singleton test
+	{
+		auto & S = defs::inst();
+		defs d1;
+
+
+		std::cout << S.getDirPath() << std::endl;
+		S.setDir("/media/Files");
+		std::cout << S.getDirPath() << std::endl;
+
+		exit(0);
+	}
+#endif
+
 #if 0
 	/// prepare FeedbackFinalMark for eyes clean
 	const QString path = def::dataFolder + "/FeedbackFinalMark";
