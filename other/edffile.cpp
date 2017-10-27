@@ -774,10 +774,10 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 
 	if(readFlag) { this->cutZerosAtEnd(); }
 
-    /// experimental annotations
+	/// experimental annotations - just delete
     if(this->edfPlusFlag)
     {
-        this->removeChannels({this->markerChannel}); /// it should be zero
+		this->removeChannels({this->markerChannel});
         this->edfPlusFlag = false;
         this->markerChannel = -1;
     }
@@ -2155,12 +2155,12 @@ edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much
 	return temp;
 }
 
-void edfFile::removeChannels(const std::vector<int> & chanList)
+edfFile & edfFile::removeChannels(const std::vector<int> & chanList)
 {
     std::set<int, std::greater<int>> excludeSet;
     for(int val : chanList)
     {
-        excludeSet.emplace(val);
+		excludeSet.emplace(val);
     }
 
     for(int k : excludeSet)
@@ -2171,14 +2171,37 @@ void edfFile::removeChannels(const std::vector<int> & chanList)
         this->channels.erase(std::begin(this->channels) + k);
     }
     this->adjustArraysByChannels();
+	return *this;
 }
 
-edfFile edfFile::reduceChannels(const QString & chanStr) const
+edfFile & edfFile::removeChannels(const QStringList & chanList)
+{
+	std::set<int, std::greater<int>> excludeSet;
+	for(const QString & ch : chanList)
+	{
+		int val = this->findChannel(ch);
+		if(val != -1) { excludeSet.emplace(val); }
+		else { std::cout << "edfFile::removeChannels(vector<QString>): bad channel "
+						 << ch << std::endl; }
+	}
+
+	for(int k : excludeSet)
+	{
+		if(k < 0) continue; /// for -1 in findChannel
+
+		this->edfData.eraseRow(k);
+		this->channels.erase(std::begin(this->channels) + k);
+	}
+	this->adjustArraysByChannels();
+	return *this;
+}
+
+edfFile edfFile::reduceChannels(const QString & chanString) const
 {
     QTime myTime;
 	myTime.start();
 
-    QStringList leest = chanStr.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
+	QStringList leest = chanString.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
     if(leest.last().toInt() - 1 != this->markerChannel)
     {
 		std::cout << "edfFile::reduceChannels: warning - last is not marker" << std::endl;

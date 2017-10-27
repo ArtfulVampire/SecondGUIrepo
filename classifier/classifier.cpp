@@ -6,8 +6,8 @@ using namespace myOut;
 Classifier::Classifier()
 {
 	myClassData = new ClassifierData();
-	resultsPath = def::dir->absolutePath() + "/results.txt";
-	workDir = def::dir->absolutePath() + "/Help/PA";
+	resultsPath = def::dirPath() + "/results.txt";
+	workDir = def::dirPath() + "/Help/PA";
 	/// by myClassData
 	confusionMatrix = matrix(myClassData->getNumOfCl(), myClassData->getNumOfCl(), 0.);
 	outputLayer = std::valarray<double>(0., myClassData->getNumOfCl());
@@ -172,7 +172,7 @@ Classifier::avType Classifier::averageClassification()
 #if 01
 	/// successive
 	resultsPath =
-			def::dir->absolutePath()
+			def::dirPath()
 			+ "/results"
 			+ "_" + nm(suc::numGoodNewLimit)
 			+ "_" + nm(suc::learnSetStay)

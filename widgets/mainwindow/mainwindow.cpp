@@ -21,12 +21,11 @@ MainWindow::MainWindow() :
 	stdOutBuf = std::cout.rdbuf();
     stopFlag = 0;
 
-    def::dir->cd(QDir::root().absolutePath());
 
-
-//    QButtonGroup * group1;
-	QButtonGroup * group2;
+//	QButtonGroup * group1;
 //	group1 = new QButtonGroup(this);
+
+	QButtonGroup * group2;
 	group2 = new QButtonGroup(this);
     group2->addButton(ui->windsButton);
 	group2->addButton(ui->realsButton);
@@ -59,7 +58,6 @@ MainWindow::MainWindow() :
 	ui->reduceChannelsComboBox->addItem("EEG,other,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,EOG,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,mark");
-
 
 	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
 
@@ -157,6 +155,7 @@ MainWindow::MainWindow() :
 	ui->matiCheckBox->hide();
 	ui->matiPreprocessingPushButton->hide();
 	ui->matiPieceLenlabel->hide();
+	ui->matiAdjustPiecesCheckBox->hide();
 #endif
 	qtLib::hideLayout(ui->testDataGridLayout);
 
@@ -327,7 +326,7 @@ void MainWindow::setEdfFileSlot()
 {
     QString helpString;
 
-    if(def::dir->absolutePath() == QDir::root().absolutePath())
+	if(def::dir->isRoot())
     {
         helpString = QFileDialog::getOpenFileName((QWidget*)this,
                                                   tr("EDF to open"),
@@ -338,16 +337,11 @@ void MainWindow::setEdfFileSlot()
     {
         helpString = QFileDialog::getOpenFileName((QWidget*)this,
                                                   tr("EDF to open"),
-                                                  def::dir->absolutePath(),
+												  def::dirPath(),
                                                   tr("EDF files (*.EDF *.edf)"));
     }
 
-    if(helpString.isEmpty())
-    {
-//        QMessageBox::warning((QWidget*)this, tr("Warning"), tr("no EDF file was chosen"), QMessageBox::Ok);
-        return;
-    }
-    setEdfFile(helpString);
+	if(!helpString.isEmpty()) { setEdfFile(helpString); }
 }
 
 void MainWindow::setEdfFile(const QString & filePath)
@@ -355,24 +349,11 @@ void MainWindow::setEdfFile(const QString & filePath)
     QString helpString;
     helpString = filePath;
 
+	ui->filePathLineEdit->setText(helpString);
 
-    if(!helpString.endsWith(".edf", Qt::CaseInsensitive))
-    {
-        helpString += ".edf";
-    }
-    if(!QFile::exists(helpString))
-    {
-        helpString = "Cannot open EDF file:\n" + helpString;
-		std::cout << helpString << std::endl;
-        return;
-    }
-
-    ui->filePathLineEdit->setText((helpString));
-
-	// set ExpName
 	def::ExpName = myLib::getExpNameLib(filePath);
 
-	helpString.resize(helpString.lastIndexOf(QDir::separator()));
+	helpString.resize(helpString.lastIndexOf("/"));
     def::dir->cd(helpString);
 
 	if(def::redirectStdOutFlag)
@@ -417,11 +398,7 @@ void MainWindow::setEdfFile(const QString & filePath)
 //	def::dir->mkdir("auxEdfs");
 
 	readData();
-
-
-	helpString = "EDF file read successfull\nns equals to " + nm(globalEdf.getNs());
-
-    ui->textEdit->append(helpString);
+	ui->textEdit->append("EDF file read successfull\nns equals to " + nm(globalEdf.getNs()));
 }
 
 
@@ -465,8 +442,8 @@ void MainWindow::drawDirSlot()
 
 void MainWindow::drawSpectraSlot()
 {
-	const QString prePath = def::dir->absolutePath() + "/" + ui->drawDirBox->currentText();
-	const QString outPath = def::dir->absolutePath() + "/SpectraImg";
+	const QString prePath = def::dirPath() + "/" + ui->drawDirBox->currentText();
+	const QString outPath = def::dirPath() + "/SpectraImg";
     drawSpectra(prePath, outPath);
 }
 
@@ -513,7 +490,7 @@ void MainWindow::drawReals()
     ui->progressBar->setValue(0);
     matrix dataD;
 
-	QString prePath = def::dir->absolutePath() + "/" + ui->drawDirBox->currentText();
+	QString prePath = def::dirPath() + "/" + ui->drawDirBox->currentText();
 //    makeFullFileList(prePath, lst);
 
 	auto a = def::edfFilters + QStringList("*." + def::plainDataExtension);
@@ -597,8 +574,8 @@ void MainWindow::cleanDirs()
     QString helpString;
 
     if(def::dir->isRoot())
-    {
-        QMessageBox::critical((QWidget*)this, tr("Warning"), tr("No dir"), QMessageBox::Ok);
+	{
+		std::cout << "cleanDirs: def::dir is root, return" << std::endl;
         return;
     }
 
@@ -607,9 +584,9 @@ void MainWindow::cleanDirs()
 		if(item->isChecked())
 		{
 			if(item->text() == "markers")
-			{ myLib::cleanDir(def::dir->absolutePath(), "markers", 0); }
+			{ myLib::cleanDir(def::dirPath(), "markers", 0); }
 			else
-			{ myLib::cleanDir(def::dir->absolutePath() + "/" + item->text()); }
+			{ myLib::cleanDir(def::dirPath() + "/" + item->text()); }
 		}
 	}
 	helpString = "dirs cleaned\nns equals to " + nm(globalEdf.getNs());
@@ -618,112 +595,16 @@ void MainWindow::cleanDirs()
 
 
 
-void MainWindow::markerSetSecTime(int a)
-{
-    ui->markerSecTimeDoubleSpinBox->setValue(double(a) / def::freq);
-}
-
-void MainWindow::markerGetSlot()
-{
-    bool byteMarker[16];
-    int timeIndex = ui->markerBinTimeSpinBox->value();
-    int marker = 0;
-    marker = globalEdf.getData()[globalEdf.getMarkChan()][timeIndex];
-    QString helpString;
-
-    for(int h = 0; h < 16; ++h)
-    {
-        byteMarker[16-1 - h] = (marker%(int(pow(2, h+1)))) / (int(pow(2,h)));
-    }
-
-    helpString.clear();
-    for(int h = 0; h < 8; ++h)
-    {
-		helpString += nm(byteMarker[h]);
-    }
-    ui->markerBin0LineEdit->setText(helpString);
-
-    helpString.clear();
-    for(int h = 0; h < 8; ++h)
-    {
-		helpString += nm(byteMarker[h + 8]);
-    }
-    ui->markerBin1LineEdit->setText(helpString);
-
-	ui->markerDecimalLineEdit->setText(nm(marker));
-}
-
-void MainWindow::markerSetSlot()
-{
-    int timeIndex = ui->markerBinTimeSpinBox->value();
-    int marker = ui->markerDecimalLineEdit->text().toInt();
-    globalEdf.setData(globalEdf.getMarkChan(), timeIndex, marker);
-}
-
-void MainWindow::markerSetDecValueSlot()
-{
-    int marker = 0;
-    QString helpString;
-
-    helpString = ui->markerBin0LineEdit->text();
-    for(int h = 0; h < 8; ++h)
-    {
-        if(helpString[h] != '0' && helpString[h] != '1') return;
-        marker += pow(2, 8) * (helpString[h] == '1') * pow(2, 7-h);
-    }
-
-    helpString = ui->markerBin1LineEdit->text();
-    for(int h = 0; h < 8; ++h)
-    {
-        if(helpString[h] != '0' && helpString[h] != '1') return;
-        marker += (helpString[h] == '1') * pow(2, 7-h);
-    }
-	ui->markerDecimalLineEdit->setText(nm(marker));
-}
-
-void MainWindow::markerSetBinValueSlot()
-{
-    int marker = ui->markerDecimalLineEdit->text().toInt();
-    QString helpString;
-
-	std::vector<bool> byteMarker = myLib::matiCountByte(double(marker));
-
-    helpString.clear();
-    for(int h = 15; h >= 8; --h)
-    {
-		helpString += (byteMarker[h] ? "1" : "0");
-    }
-    ui->markerBin0LineEdit->setText(helpString);
-
-    helpString.clear();
-    for(int h = 7; h >= 0; --h)
-    {
-		helpString += (byteMarker[h] ? "1" : "0");
-    }
-    ui->markerBin1LineEdit->setText(helpString);
-}
-
-void MainWindow::markerSaveEdf()
-{
-    QString helpString;
-	helpString = def::dir->absolutePath() + "/" + def::ExpName + ui->newEdfNameLineEdit->text();
-    if(!helpString.endsWith(".edf", Qt::CaseInsensitive))
-    {
-        helpString += ".edf";
-    }
-	helpString = myLib::setFileName(helpString);
-    globalEdf.writeEdfFile(helpString);
-}
 
 void MainWindow::drawMapsSlot()
 {
     QString helpString = QFileDialog::getOpenFileName(this,
                                                       tr("Choose maps file"),
-                                                      def::dir->absolutePath(),
+													  def::dirPath(),
                                                       tr("*.txt"));
     if(helpString.isEmpty())
     {
-        helpString = def::dir->absolutePath()
+		helpString = def::dirPath()
 					 + "/Help"
 					 + "/" + def::ExpName
                      + "_maps.txt";
@@ -734,7 +615,7 @@ void MainWindow::drawMapsSlot()
         return;
     }
 	myLib::drawMapsICA(helpString,
-					   def::dir->absolutePath()
+					   def::dirPath()
 					   + "/Help"
 					   + "/Maps",
 					   def::ExpName);

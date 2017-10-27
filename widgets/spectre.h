@@ -60,15 +60,17 @@ public slots:
 private:
     Ui::Spectre * ui;
     QString backupDirPath;
-    QString defaultInPath = def::dir->absolutePath()
+
+	/// replace in code
+	QString defaultInPath = def::dirPath()
                             + "/" +"Reals";
-    QString defaultOutPath = def::dir->absolutePath()
+	QString defaultOutPath = def::dirPath()
                              + "/" +"SpectraSmooth";
 
-    QString defaultInPathW = def::dir->absolutePath()
+	QString defaultInPathW = def::dirPath()
                              + "/winds"
                              + "/fromreal";
-    QString defaultOutPathW = def::dir->absolutePath()
+	QString defaultOutPathW = def::dirPath()
                              + "/SpectraSmooth"
                              + "/winds";
 

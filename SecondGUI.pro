@@ -100,7 +100,8 @@ myLib/myLib_qtlib.cpp \
     widgets/cut/cut_modify.cpp \
     widgets/cut/cut_navi.cpp \
     widgets/cut/cut_iitp.cpp \
-    widgets/cut/cut_files.cpp
+    widgets/cut/cut_files.cpp \
+    widgets/mainwindow/mainwindow_mati.cpp
 
 HEADERS  += \
 widgets/cut.h \

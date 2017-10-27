@@ -583,7 +583,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="adjustPiecesCheckBox">
+          <widget class="QCheckBox" name="matiAdjustPiecesCheckBox">
            <property name="text">
             <string>adjust</string>
            </property>

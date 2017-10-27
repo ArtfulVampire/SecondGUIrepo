@@ -265,7 +265,7 @@ void MainWindow::sliceElena()
 			}
 			else if(245 <= markChanArr[i] && markChanArr[i] <= 254) // task end
 			{
-				helpString = def::dir->absolutePath()
+				helpString = def::dirPath()
 							 + "/Reals"
 							 + "/" + def::ExpName
 							 + "_n_" + nm(number)
@@ -356,7 +356,7 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker)
         if(h == 2)
         {
             ++number;
-            helpString = def::dir->absolutePath()
+            helpString = def::dirPath()
 					+ "/Reals"
 					+ "/" + def::ExpName
                     + "_" + marker
@@ -422,7 +422,7 @@ void MainWindow::sliceOneByOne()
 			const int finish = i;
 #endif
 
-            helpString = def::dir->absolutePath()
+            helpString = def::dirPath()
 						 + "/Reals"
 						 + "/" + def::ExpName
 						 + "." + rn(number++, 4);
@@ -480,7 +480,7 @@ void MainWindow::sliceOneByOne()
 
     /// write final
     {
-        helpString = def::dir->absolutePath()
+        helpString = def::dirPath()
 					 + "/Reals"
 					 + "/" + def::ExpName
 					 + "." + rn(number++, 4);
@@ -553,7 +553,7 @@ void MainWindow::sliceOneByOneNew()
                 marker = "sht";
             }
 
-            helpString = def::dir->absolutePath()
+            helpString = def::dirPath()
 						 + "/Reals"
 						 + "/" + def::ExpName
 						 + "." + rn(number++, 4);
@@ -600,7 +600,7 @@ void MainWindow::sliceOneByOneNew()
     }
     /// write final
     {
-        helpString = def::dir->absolutePath()
+        helpString = def::dirPath()
 					 + "/Reals"
 					 + "/" + def::ExpName
 					 + "." + rn(number++, 4);
@@ -706,7 +706,7 @@ void MainWindow::sliceMatiSimple()
 
                 for(int j = 0; j < number; ++j) // num of pieces
                 {
-                    helpString = (def::dir->absolutePath()
+                    helpString = (def::dirPath()
 														  + "/Reals"
 														  + "/" + def::ExpName
 														  + "_" + nm(type)
@@ -812,7 +812,7 @@ void MainWindow::sliceMati()
         {
             if(type != 3) // dont write rests
             {
-                helpString = (def::dir->absolutePath()
+                helpString = (def::dirPath()
 
 													  + "/auxEdfs"
 
@@ -857,7 +857,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     int currStart;
     int currEnd;
     const double pieceLength = ui->matiPieceLengthSpinBox->value();
-    const bool adjustPieces = ui->adjustPiecesCheckBox->isChecked();
+	const bool adjustPieces = ui->matiAdjustPiecesCheckBox->isChecked();
 
     def::dir->cd(globalEdf.getDirPath());
     edfFile fil;
@@ -871,19 +871,17 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 		folder = "Reals";
     }
 
-    for(int type = 0; type < 3; ++type)
+	for(int type = 0; type < 3; ++type) /// magic const
     {
-        for(int session = 0; session < 15; ++session)
+		for(int session = 0; session < 15; ++session) /// magic const
         {
             // edf session path
-            helpString = (def::dir->absolutePath()
-
-												  + "/auxEdfs"
-
-												  + "/" + globalEdf.getExpName()
-												  + "_" + nm(type)
-												  + "_" + nm(session)
-                                                  + ".edf");
+			helpString = def::dirPath()
+						 + "/auxEdfs"
+						 + "/" + globalEdf.getExpName()
+						 + "_" + nm(type)
+						 + "_" + nm(session)
+						 + ".edf";
 
             if(QFile::exists(helpString))
             {
@@ -893,10 +891,13 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                 currStart = 0;
                 currEnd = -1; // [currStart, currEnd)
 
-                if(type == 0)       fileMark = "241";
-                else if(type == 1)  fileMark = "247";
-                else if(type == 2)  fileMark = "244";
-                else                fileMark = "254";
+				switch(type)
+				{
+				case 0:		{ fileMark = "241"; break; }
+				case 1:		{ fileMark = "247"; break; }
+				case 2:		{ fileMark = "244"; break; }
+				default:	{ fileMark = "254"; break; }
+				}
 
                 if(adjustPieces)
                 {
@@ -928,7 +929,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 
                         // type and session already in the fil.ExpName
 
-						helpString = def::dir->absolutePath()
+						helpString = def::dirPath()
 									 + "/" + folder
 									 + "/" + fil.getExpName()
 									 + "_" + rn(pieceNum, 2)
@@ -946,7 +947,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                     while(currStart < dataLen)
                     {
 						currEnd = std::min(int(currStart + pieceLength * def::freq), dataLen);
-                        helpString = (def::dir->absolutePath()
+                        helpString = (def::dirPath()
 															  + "/" + folder
 															  + "/" + fil.getExpName()
 															  + "_" + rn(pieceNum, 2)

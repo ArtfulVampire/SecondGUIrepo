@@ -37,7 +37,7 @@ void MainWindow::ICA() // fastICA
     QString helpString;
     int counter;
 
-    helpString = def::dir->absolutePath()
+    helpString = def::dirPath()
 				 + "/" + def::ExpName + ".edf";
 	std::cout << "Ica started: " << helpString << std::endl;
     readData();
@@ -48,7 +48,7 @@ void MainWindow::ICA() // fastICA
 
     const double eigenValuesTreshold = pow(10., - ui->svdDoubleSpinBox->value());
     const double vectorWTreshold = pow(10., - ui->vectwDoubleSpinBox->value());
-    const QString pathForAuxFiles = def::dir->absolutePath()
+    const QString pathForAuxFiles = def::dirPath()
 									+ "/Help/ica";
 
 #define NEW_9_3_17 1
@@ -262,7 +262,7 @@ void MainWindow::ICA() // fastICA
 		std::swap((*it1).second, (*it2).second);
 	}
 
-	helpString = def::dir->absolutePath()
+	helpString = def::dirPath()
 				 + "/Help"
 				 + "/" + def::ExpName + "_maps_after_var.txt";
 	myLib::writeMatrixFile(helpString, matrixA); // generality 19-ns
@@ -392,12 +392,12 @@ void MainWindow::ICA() // fastICA
 					 + "/" + def::ExpName + "_maps.txt";
 		myLib::writeMatrixFile(helpString, matrixA); // generality 19-ns
 		myLib::drawMapsICA(helpString,
-						   def::dir->absolutePath() + "/Help/ica",
+						   def::dirPath() + "/Help/ica",
 						   def::ExpName);
 
 
     // save components
-    helpString = def::dir->absolutePath()
+    helpString = def::dirPath()
 				 + "/" + def::ExpName + "_ica.edf";
 
     std::vector<int> chanList(ns);

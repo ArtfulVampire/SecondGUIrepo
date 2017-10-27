@@ -97,7 +97,7 @@ void Net::pca()
 
 	/// save pca matrix
 	QString helpString;
-	helpString = def::dir->absolutePath()
+	helpString = def::dirPath()
 				 + "/Help"
 				 + "/ica"
 				 + "/" + def::ExpName + "_pcaMat.txt";
@@ -110,7 +110,7 @@ void Net::pca()
 
 	for(int j = 0; j < NumberOfVectors; ++j)
 	{
-		helpString = def::dir->absolutePath()
+		helpString = def::dirPath()
 					 + "/SpectraSmooth"
 					 + "/PCA"
 					 + "/" + fileNames[j];
@@ -120,7 +120,7 @@ void Net::pca()
 
 	eigenVectors.transpose();
 	eigenVectors.resizeRows(3); /// ???
-	helpString = def::dir->absolutePath()
+	helpString = def::dirPath()
 				 + "/Help"
 				 + "/ica"
 				 + "/" + def::ExpName + "_pcas.jpg";

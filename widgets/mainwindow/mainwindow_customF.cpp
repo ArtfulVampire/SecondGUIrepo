@@ -1794,7 +1794,7 @@ exit(0);
 
         Net * net = new Net();
 
-        net->autoClassification(def::dir->absolutePath()
+		net->autoClassification(def::dirPath()
 								+ "/SpectraSmooth"
 								+ "/winds");
 
@@ -1884,8 +1884,8 @@ exit(0);
     const QString init = "/media/Files/Data/Mati/ICAstudy/";
     const QString pth = "/media/Files/Data/Mati/ICAstudy/Help/";
     QString helpString;
-    def::dir->cd(pth);
-    QStringList dataFiles = def::dir->entryList(QStringList("*_ica.txt"));
+	QDir locDir(pth);
+	QStringList dataFiles = locDir.entryList(QStringList("*_ica.txt"));
 
     mat dataMat;
     dataMat.resize(20);
@@ -1901,7 +1901,7 @@ exit(0);
         }
 
         helpString = pth + oneFile;
-        readPlainData(helpString,
+		myLib::readPlainData(helpString,
 					  dataMat);
 		std::cout << dataMat.cols() << std::endl;
 
@@ -1933,18 +1933,18 @@ exit(0);
 
 #if 0
 	/// concat all mati sessions
-    def::dir->cd("/media/Files/Data/Mati");
-    QStringList dirLst = def::dir->entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
+	QDir locDir(def::matiFolder);
+	QStringList dirLst = locDir.entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
     for(QString & guy : dirLst)
     {
-        def::dir->cd(guy);
-        def::dir->cd("auxEdfs");
+		locDir.cd(guy);
+		locDir.cd("auxEdfs");
 
-		QString helpString = def::dir->absolutePath() + "/" + guy + "_0.edf";
+		QString helpString = locDir.absolutePath() + "/" + guy + "_0.edf";
         if(!QFile::exists(helpString))
         {
-            def::dir->cdUp();
-            def::dir->cdUp();
+			locDir.cdUp();
+			locDir.cdUp();
             continue;
         }
         edfFile initFile;
@@ -1954,10 +1954,10 @@ exit(0);
         helpString.replace("_1.edf", "_2.edf");
         initFile.concatFile(helpString);
 
-        def::dir->cdUp();
-		QString helpString2 = def::dir->absolutePath() + "/" + guy + "_full.edf";
+		locDir.cdUp();
+		QString helpString2 = locDir.absolutePath() + "/" + guy + "_full.edf";
         initFile.writeEdfFile(helpString2);
-        def::dir->cdUp();
+		locDir.cdUp();
     }
     exit(0);
 #endif
@@ -1992,31 +1992,30 @@ exit(0);
 //        ui->reduceChannelsLineEdit->setText("1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
         return;
 
-        QDir * tDir = new QDir();
-        tdef::dir->cd("/media/Files/Data/Mati");
+		QDir locDir(def::matiFolder);
         QStringList nameFilters;
         nameFilters << "*.edf" << "*.EDF";
         QString fileName;
         QString helpString;
 
-        QStringList lst = tdef::dir->entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+		QStringList lst = locDir.entryList(QDir::Dirs|QDir::NoDotAndDotDot);
         for(int i = 0; i < lst.length(); ++i)
         {
-            tdef::dir->cd(lst[i]);
+			locDir.cd(lst[i]);
 
-            helpString = tdef::dir->absolutePath() + "/" + lst[i] + ".EDF";
+			helpString = locDir.absolutePath() + "/" + lst[i] + ".EDF";
             setEdfFile(helpString);
             rereferenceDataSlot();
 
-            helpString = tdef::dir->absolutePath() + "/" + lst[i] + "_rr.edf";
+			helpString = locDir.absolutePath() + "/" + lst[i] + "_rr.edf";
             setEdfFile(helpString);
             refilterDataSlot();
 
-            helpString = tdef::dir->absolutePath() + "/" + lst[i] + "_rr_f.edf";
+			helpString = locDir.absolutePath() + "/" + lst[i] + "_rr_f.edf";
             setEdfFile(helpString);
             sliceAll();
 			drawReals();
-            tdef::dir->cdUp();
+			locDir.cdUp();
 
         }
         exit(0);

@@ -213,7 +213,7 @@ void Net::drawWtsSlot()
     }
     QString helpString = QFileDialog::getOpenFileName((QWidget * )this,
                                                       tr("wts to draw"),
-                                                      def::dir->absolutePath(),
+                                                      def::dirPath(),
                                                       tr("wts files (*.wts)"));
     if(helpString.isEmpty())
     {
@@ -236,7 +236,7 @@ void Net::writeWtsSlot()
     {
         helpString = QFileDialog::getSaveFileName((QWidget * )this,
                                                   tr("wts to save"),
-                                                  def::dir->absolutePath(),
+                                                  def::dirPath(),
                                                   tr("wts files (*.wts)"));
         if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
         {
@@ -247,7 +247,7 @@ void Net::writeWtsSlot()
     {
         do
         {
-            helpString = def::dir->absolutePath()
+            helpString = def::dirPath()
 						 + "/" + def::ExpName + nm(wtsCounter) + ".wts";
             ++wtsCounter;
         } while(QFile::exists(helpString));
@@ -270,7 +270,7 @@ void Net::readWtsSlot()
     }
     QString helpString = QFileDialog::getOpenFileName((QWidget * )NULL,
                                                       tr("load wts"),
-                                                      def::dir->absolutePath(),
+                                                      def::dirPath(),
                                                       tr("wts files (*.wts)"));
     if(helpString.isEmpty())
 	{
@@ -285,7 +285,7 @@ void Net::loadDataSlot()
 {
 	QString helpString = QFileDialog::getExistingDirectory(nullptr,
                                                            tr("load data"),
-                                                           def::dir->absolutePath());
+                                                           def::dirPath());
     if(helpString.isEmpty())
     {
         return;

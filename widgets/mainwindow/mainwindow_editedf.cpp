@@ -373,7 +373,7 @@ void MainWindow::reduceChannelsSlot()
     }
 	std::cout << std::endl;
 
-    QDir localDir(def::dir->absolutePath());
+    QDir localDir(def::dirPath());
 	localDir.cd("Reals");
     lst = localDir.entryList(QDir::Files, QDir::NoSort);
 

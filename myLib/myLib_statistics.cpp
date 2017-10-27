@@ -546,7 +546,7 @@ void MannWhitneyFromMakepa(const QString & spectraDir, const QString & outPicPat
 	drawMannWitney(outPicPath,
 				   MW);
 
-	QString helpString = def::dir->absolutePath() + "/results.txt";
+	QString helpString = def::dirPath() + "/results.txt";
 	std::ofstream outStr;
 	outStr.open(helpString.toStdString(), std::ios_base::app);
 	if(!outStr.good())

@@ -1000,7 +1000,7 @@ void drawArrayWithSigma(const QString &templPath,
 QPixmap drawArrays(const QPixmap & templPixmap,
 				  const matrix & inMatrix,
 				  const bool weightsFlag,
-				  const def::spectraGraphsNormalization normType,
+				  const def::spectraNormTyp normType,
 				  double norm,
 				  const std::vector<QColor> & colors,
 				  const double scaling,
@@ -1070,7 +1070,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 		}
 
 		norm = normBC;
-		if(normType == def::spectraGraphsNormalization::each)
+		if(normType == def::spectraNormTyp::each)
 		{
 			// norm each channel by max peak
 			norm = 0;
@@ -1143,7 +1143,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 	norm = smLib::doubleRound(norm,
 								 std::min(1., 2 - floor(log10(norm)) )
 								 );
-	if(normType == def::spectraGraphsNormalization::all)
+	if(normType == def::spectraNormTyp::all)
 	{
 		paint.drawLine(QPointF(paint.device()->width() * coords::x[6],
 					   paint.device()->height() * coords::y[1]),
@@ -1165,7 +1165,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 double drawArrays(const QString & templPath,
                   const matrix & inMatrix,
                   const bool weightsFlag,
-                  const def::spectraGraphsNormalization normType,
+                  const def::spectraNormTyp normType,
                   double norm,
 				  const std::vector<QColor> & colors,
                   const double scaling,
@@ -1234,7 +1234,7 @@ double drawArrays(const QString & templPath,
         }
 
         norm = normBC;
-        if(normType == def::spectraGraphsNormalization::each)
+        if(normType == def::spectraNormTyp::each)
         {
             // norm each channel by max peak
             norm = 0;
@@ -1303,7 +1303,7 @@ double drawArrays(const QString & templPath,
 	norm = smLib::doubleRound(norm,
 								 std::min(1., 2 - floor(log10(norm)) )
 								 );
-    if(normType == def::spectraGraphsNormalization::all)
+    if(normType == def::spectraNormTyp::all)
     {
         paint.drawLine(QPointF(paint.device()->width() * coords::x[6],
                        paint.device()->height() * coords::y[1]),

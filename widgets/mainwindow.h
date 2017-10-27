@@ -80,10 +80,12 @@ public slots:
 
 
 public:
-    void sliceBak(int marker1, int marker2, QString marker);
+	// mati
 	void sliceMati();
     void sliceMatiPieces(bool plainFlag = true);
     void sliceMatiSimple();
+
+	void sliceBak(int marker1, int marker2, QString marker);
     void sliceOneByOne();
 	void sliceOneByOneNew();
 	void sliceElena();

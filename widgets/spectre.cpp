@@ -18,7 +18,7 @@ Spectre::Spectre() :
 
     this->setWindowTitle("Spectra Counter");
 
-    backupDirPath = def::dir->absolutePath();
+	backupDirPath = def::dirPath();
 
     QButtonGroup * group1 = new QButtonGroup;
     group1->addButton(ui->jpgButton);
@@ -212,7 +212,7 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
             }
 
 
-            QString helpString = (def::dir->absolutePath()
+			QString helpString = (def::dirPath()
 														  + "/Help"
 														  + "/" + def::ExpName + "_all.jpg");
             QPixmap pic;
@@ -390,7 +390,7 @@ void Spectre::psaSlot()
     matrix drawData;
     std::valarray<double> tempVec(def::spLength() * def::nsWOM());
     QString helpString;
-    const QString psaPath = def::dir->absolutePath()
+	const QString psaPath = def::dirPath()
 							+ "/Help"
 							+ "/psa";
 
@@ -405,7 +405,7 @@ void Spectre::psaSlot()
         drawData.push_back(tempVec);
     }
 
-	helpString = def::dir->absolutePath()
+	helpString = def::dirPath()
 				 + "/Help"
 				 + "/" + def::ExpName + "_all.jpg";
 
@@ -478,7 +478,7 @@ void Spectre::compare()
     std::valarray<double> meanVec(0., def::spLength() * def::nsWOM());
 
     const QString filesPath = ui->lineEdit_1->text();
-    const QString savePath = def::dir->absolutePath()
+	const QString savePath = def::dirPath()
 							 + "/Help"
 							 + "/psa";
 
@@ -518,7 +518,7 @@ void Spectre::compare()
 		myLib::writeFileInLine(helpString, meanVec);
 #if 0
 		/// draw average for one type
-		helpString = (def::dir->absolutePath()
+		helpString = (def::dirPath()
 					  + "/Help"
 					  + "/" + def::ExpName
 					  + "_class_" + nm(i + 1)
@@ -548,7 +548,7 @@ void Spectre::center()
 {
     QString helpString = QFileDialog::getExistingDirectory(this,
                                                            tr("Choose dir"),
-                                                           def::dir->absolutePath());
+														   def::dirPath());
     if(helpString.isEmpty())
     {
         return;
@@ -561,7 +561,7 @@ void Spectre::center()
 
     for(const QString & fileName : lst)
     {
-        helpString = (def::dir->absolutePath()
+		helpString = (def::dirPath()
 											  + "/" + fileName);
 		myLib::readMatrixFile(helpString,
                         tempData);
@@ -573,7 +573,7 @@ void Spectre::center()
 
     for(const QString & fileName : lst)
     {
-        helpString = (def::dir->absolutePath()
+		helpString = (def::dirPath()
 											  + "/" + fileName);
 		myLib::readMatrixFile(helpString,
                         tempData);
@@ -714,7 +714,7 @@ void Spectre::countSpectraSlot()
 #endif
 
     ui->lineEdit_1->setText(ui->lineEdit_2->text());
-	ui->lineEdit_2->setText(def::dir->absolutePath() + "/Help");
+	ui->lineEdit_2->setText(def::dirPath() + "/Help");
 }
 
 void Spectre::cleanSpectra()
@@ -866,8 +866,8 @@ void Spectre::drawWavelets()
 {
     QString helpString;
     QString filePath;
-    QDir localDir(def::dir->absolutePath());
-    helpString = (def::dir->absolutePath()
+	QDir localDir(def::dirPath());
+	helpString = (def::dirPath()
 										  + "/visualisation"
 										  + "/wavelets");
     localDir.cd(helpString);
@@ -911,7 +911,7 @@ void Spectre::drawWavelets()
             tempVec.emplace(coefs.maxVal());
             continue;
 
-            helpString = (def::dir->absolutePath()
+			helpString = (def::dirPath()
 												  + "/visualisation"
 												  + "/wavelets"
 												  + "/" + nm(chanNum) + ".txt");
@@ -924,7 +924,7 @@ void Spectre::drawWavelets()
 
 //    for(int chanNum = 0; chanNum < def::nsWOM(); ++chanNum)
 //    {
-//        helpString = (def::dir->absolutePath()
+//        helpString = (def::dirPath()
 //                                              + "/visualisation"
 //                                              + "/wavelets"
 //                                              + "/" + nm(chanNum) + ".txt");
@@ -938,7 +938,7 @@ void Spectre::drawWavelets()
     for(auto it = lst.begin(); it != lst.end(); ++it)
     {
         const QString & fileName = (*it);
-		filePath = def::dir->absolutePath()
+		filePath = def::dirPath()
 				   + "/" + fileName;
         if(ui->amplitudeWaveletButton->isChecked())
         {

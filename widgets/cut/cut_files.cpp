@@ -83,7 +83,7 @@ void Cut::saveSlot()
 
 	if(myFileType == fileType::real)
 	{
-		QString helpString = def::dir->absolutePath()
+		QString helpString = def::dirPath()
 							 + "/cut"
 							 + "/" + myLib::getFileName(currentFile);
 
@@ -112,7 +112,7 @@ void Cut::saveSubsecSlot()
 		{
 
 			QString helpString;
-			helpString = def::dir->absolutePath() +
+			helpString = def::dirPath() +
 						 "/winds" +
 						 "/" + myLib::getFileName(currentFile) +
 						 "." + rn(addNum++, 3);
@@ -167,12 +167,13 @@ void Cut::browseSlot()
 		}
 		else if(this->myFileType == fileType::real)
 		{
-			path = def::dir->absolutePath() +
+			path = def::dirPath() +
 				   "/" + ui->subdirComboBox->currentText();
 		}
 
 	}
 
+	/// filter bu suffix
 	const QString suffix = ui->suffixComboBox->currentText();
 	QString filter{};
 	for(const QString & in : def::edfFilters)
@@ -180,29 +181,21 @@ void Cut::browseSlot()
 		filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + in + " ";
 	}
 	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + def::plainDataExtension;
-
 	const QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
 															tr("Open file"),
 															path,
 															filter);
-	if(helpString.isEmpty())
-	{
-//        QMessageBox::information((QWidget*)this, tr("Warning"), tr("No file was chosen"), QMessageBox::Ok);
-		return;
-	}
-	ui->lineEdit->setText(helpString);
+	if(helpString.isEmpty()) { return; }
 
+
+
+	ui->lineEdit->setText(helpString);
 	setFileType(helpString);
 
-	/// set def::dir
 	if(def::dir->isRoot())
 	{
 		def::dir->cd(myLib::getDirPathLib(helpString));
-		if(this->myFileType == fileType::edf)
-		{
-			// do nothing
-		}
-		else if(this->myFileType == fileType::real)
+		if(this->myFileType == fileType::real)
 		{
 			def::dir->cdUp();
 		}

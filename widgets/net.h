@@ -104,7 +104,7 @@ public:
 	const ClassifierData & getClassifierData() const { return myClassifierData; }
 
 	/// data
-    void loadData(const QString & spectraPath = def::dir->absolutePath()
+    void loadData(const QString & spectraPath = def::dirPath()
 												+ "/SpectraSmooth",
 				  const QStringList & filters = {"*.psd"});
 	void loadDataUCI(const QString & setName);

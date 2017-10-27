@@ -49,7 +49,7 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
 
 void Net::autoClassificationSimple()
 {
-    QString helpString = def::dir->absolutePath()
+    QString helpString = def::dirPath()
 						 + "/SpectraSmooth";
     switch(Source)
     {
@@ -267,7 +267,7 @@ void Net::customF()
         });
 
         ofstream outStr;
-        outStr.open((def::dir->absolutePath()
+        outStr.open((def::dirPath()
 					 + "/" + outFileName).toStdString(), std::ios_base::app);
         outStr << def::ExpName << std::endl;
 

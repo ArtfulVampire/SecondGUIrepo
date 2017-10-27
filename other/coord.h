@@ -185,8 +185,8 @@ namespace def
 				QColor("gray")
 									  };
 	/// all channels the same or each channel has self coefficient
-	enum class spectraGraphsNormalization {all, each};
-	extern spectraGraphsNormalization drawNormTyp;
+	enum class spectraNormTyp {all, each};
+	extern spectraNormTyp drawNormTyp;
 	extern double drawNorm;
 
 //    Atanov
@@ -198,6 +198,7 @@ namespace def
 #endif
     const QString XeniaFolder = "/media/Files/Data/Xenia";
     const QString mriFolder = "/media/Files/Data/MRI";
+	const QString matiFolder = "/media/Files/Data/Mati";
     const QString GalyaFolder = "/media/Files/Data/Galya";
     const QString DashaFolder = "/media/Files/Data/Dasha/AUDIO";
     const QString uciFolder = "/media/Files/Data/UCI";
@@ -214,13 +215,14 @@ namespace def
 	/// to def class
 
 	extern QDir * dir;
-	inline QString realsDir()			{ return def::dir->absolutePath() + "/Reals"; }
-	inline QString windsDir()			{ return def::dir->absolutePath() + "/winds"; }
-	inline QString windsFromRealsDir()	{ return def::dir->absolutePath() + "/winds/fromreal"; }
-	inline QString realsSpectraDir()	{ return def::dir->absolutePath() + "/SpectraSmooth"; }
-	inline QString windsSpectraDir()	{ return def::dir->absolutePath() + "/SpectraSmooth/winds"; }
-	inline QString pcaSpectraDir()		{ return def::dir->absolutePath() + "/SpectraSmooth/PCA"; }
-	inline QString paDir()				{ return def::dir->absolutePath() + "/Help/PA"; }
+	inline QString dirPath()			{ return def::dir->absolutePath(); }
+	inline QString realsDir()			{ return def::dirPath() + "/Reals"; }
+	inline QString windsDir()			{ return def::dirPath() + "/winds"; }
+	inline QString windsFromRealsDir()	{ return def::dirPath() + "/winds/fromreal"; }
+	inline QString realsSpectraDir()	{ return def::dirPath() + "/SpectraSmooth"; }
+	inline QString windsSpectraDir()	{ return def::dirPath() + "/SpectraSmooth/winds"; }
+	inline QString pcaSpectraDir()		{ return def::dirPath() + "/SpectraSmooth/PCA"; }
+	inline QString paDir()				{ return def::dirPath() + "/Help/PA"; }
 
 	extern bool ntFlag;
 	extern int ns;
@@ -253,7 +255,7 @@ namespace def
 
 class defs
 {
-	/// Singleton
+	/// Singleton begin
 public:
 	static defs & inst()
 	{
@@ -261,10 +263,47 @@ public:
 		return d;
 	}
 private:
-	defs(){}
+	defs()
+	{
+
+	}
 	defs(const defs &)=delete;
 	defs & operator=(const defs &)=delete;
 	/// Singleton end
+
+public:
+	/// enums
+	enum class username {MichaelA, MichaelB, ElenaC, XeniaG, GalyaP, OlgaK, Ossadtchi, Mati, IITP};
+	enum class autosUser {Xenia, Galya};
+	enum class spectraNorming {all, each};
+
+	/// consts
+	static const bool matiFlag{false};			/// replace with username mati
+	static const bool OssadtchiFlag{false};		/// replace with username Ossadtchi
+
+	static const bool withMarkersFlag{true}; /// remove everywhere as true
+
+	static const bool writeLongStartEnd{true};
+	static const bool redirectStdOutFlag{false};
+
+	static const QString plainDataExtension;
+	static const QString spectraDataExtension;
+	static const QStringList edfFilters;
+	static const QStringList plainFilters;
+	static const std::vector<QColor> colours;
+
+	static const QString XeniaFolder;
+	static const QString mriFolder;
+	static const QString matiFolder;
+	static const QString GalyaFolder;
+	static const QString DashaFolder;
+	static const QString uciFolder;
+
+
+	static const QString iitpFolder;
+	static const QString iitpSyncFolder;
+	static const QString iitpResFolder;
+
 
 public:
 	QString realsDir()			{ return this->dir->absolutePath() + "/Reals"; }
@@ -274,9 +313,10 @@ public:
 	QString windsSpectraDir()	{ return this->dir->absolutePath() + "/SpectraSmooth/winds"; }
 	QString pcaSpectraDir()		{ return this->dir->absolutePath() + "/SpectraSmooth/PCA"; }
 	QString paDir()				{ return this->dir->absolutePath() + "/Help/PA"; }
+	QString dataFolder();		/// depending on username
 
-
-	int numOfClasses() { return this->fileMarkers.length(); }
+	/// to deprecate
+	int numOfClasses()			{ return this->fileMarkers.length(); }
 
 	int right()		{ return fftLimit(this->leftFreq, this->freq, this->fftLength); }
 	int left()		{ return fftLimit(this->rightFreq, this->freq, this->fftLength) + 1; }
@@ -284,29 +324,75 @@ public:
 	double spStep()	{ return this->freq / this->fftLength; }
 
 private:
-	QDir * dir;
+	QDir * dir{new QDir()};
 
-//	enum class username {MichaelA, MichaelB, Elena, Xenia, Galya, Olga, Ossadtchi, Mati, IITP};
-	enum class autosUser {Xenia, Galya};
 	autosUser currAutosUser{autosUser::Xenia};
 
-	/// all channels the same or each channel has self coefficient
-	enum class spectraGraphsNormalization {all, each};
-	spectraGraphsNormalization drawNormTyp{spectraGraphsNormalization::all};
+	username currUser{username::MichaelA};
 
+	spectraNorming specNormTyp{spectraNorming::all};
 	double drawNorm{-1.};
 
+	bool opencl{false};
+	bool openmp{false};
 	bool ntFlag{false};
-	int ns{20};
 
-	double freq{250.};
-	int fftLength{4096};
+	QString ExpName;		/// to deprecate
+	int ns{20};				/// to deprecate
+	double freq{250.};		/// to deprecate
+	int fftLength{4096};	/// to deprecate
 
 	double leftFreq{5.};
 	double rightFreq{20.};
 
 	QStringList fileMarkers{"_241", "_247", "_254 _244"};
+public:
+	/// gets/sets
+	void setDir(const QString & in)				{ this->dir->setPath(in); }
+	auto getDir()								{ return this->dir; }
+	auto getDirPath()							{ return this->dir->absolutePath(); }
+
+	void setAutosUser(autosUser in)				{ this->currAutosUser = in; }
+	auto getAutosUser()							{ return this->currAutosUser; }
+
+	void setUser(username in)					{ this->currUser = in; }
+	auto getUser()								{ return this->currUser; }
+
+	void setSpecNorm(spectraNorming in)			{ this->specNormTyp = in; }
+	auto getSpecNorm()							{ return this->specNormTyp; }
+
+	void setDrawNorm(double in)					{ this->drawNorm = in; }
+	auto getDrawNorm()							{ return this->drawNorm; }
+
+	void setExpName(const QString & in)			{ this->ExpName = in; }
+	auto getExpName()							{ return this->ExpName; }
+
+	void setNs(int in)							{ this->ns = in; }
+	auto getNs()								{ return this->ns; }
+
+	void setFreq(double in)						{ this->freq = in; }
+	auto getFreq()								{ return this->freq; }
+
+	void setFftLen(int in)						{ this->fftLength = in; }
+	auto getFftLen()							{ return this->fftLength; }
+
+	void setLeftFreq(double in)					{ this->leftFreq = in; }
+	auto getLeftFreq()							{ return this->leftFreq; }
+
+	void setRightFreq(double in)				{ this->rightFreq = in; }
+	auto getRightFreq()							{ return this->rightFreq; }
+
+	void setFileMarks(const QStringList & in)	{ this->fileMarkers = in; }
+	auto getFileMarks()							{ return this->fileMarkers; }
 };
+
+
+
+
+
+
+
+
 
 
 namespace subjects

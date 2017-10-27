@@ -198,8 +198,11 @@ public:
 
 	/// channels modify
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
-	edfFile reduceChannels(const QString & chanStr) const;
-	void removeChannels(const std::vector<int> & chanList);
+	edfFile reduceChannels(const QString & chanString) const;
+
+	edfFile & removeChannels(const std::vector<int> & chanList);
+	edfFile & removeChannels(const QStringList & chanList);
+
 	edfFile & insertChannel(int num, const std::valarray<double> & dat, edfChannel ch);
 
 	edfFile & multiplyChannel(uint chanNum, double mult);

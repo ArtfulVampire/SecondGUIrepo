@@ -192,7 +192,7 @@ int numMarkers(const QString & edfPath, const std::vector<int> & markers);
 
 
 
-void avTime(const QString & realsDir = def::dir->absolutePath() + "/Reals");
+void avTime(const QString & realsDir = def::dirPath() + "/Reals");
 void createAnsFiles(const QString & edfPath, QString guy);
 void timesNew(const QString & edfPath, const QString & guy, int numSession);
 void avTimesNew(const QString & edfPath, const QString & guy, int numSession);

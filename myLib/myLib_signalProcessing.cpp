@@ -1980,7 +1980,7 @@ void svd(const matrix & initialData,
 #if 0
     /// ICA test short
 
-    const QString pathForAuxFiles = def::dir->absolutePath()
+    const QString pathForAuxFiles = def::dirPath()
 									+ "/Help"
 									+ "/ica";
     QString helpString = pathForAuxFiles

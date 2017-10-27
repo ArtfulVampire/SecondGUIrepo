@@ -55,8 +55,8 @@ protected:
 
 
 /// sheeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeet
-	QString resultsPath = def::dir->absolutePath() + "/results.txt";
-	QString workDir = def::dir->absolutePath() + "/Help/PA";
+	QString resultsPath = def::dirPath() + "/results.txt";
+	QString workDir = def::dirPath() + "/Help/PA";
 	QString filesPath = def::windsSpectraDir();
 
 #if INERTIA

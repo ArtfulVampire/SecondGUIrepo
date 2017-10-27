@@ -36,7 +36,7 @@ QString getDirPathLib(const QString & filePath);
 QString getExt(const QString & filePath);
 QString getLabelName(const QString & label);
 QString getPicPath(const QString & dataPath,
-				   const QString & ExpNameDir = def::dir->absolutePath());
+				   const QString & ExpNameDir = def::dirPath());
 QString getFileMarker(const QString & fileName);
 int getTypeOfFileName(const QString & fileName);
 

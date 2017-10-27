@@ -355,7 +355,7 @@ void ANN::classifyDatum1(uint vecNum)
 	/// std::cout results
 	const int numOfLayers = dim.size();
 	std::ofstream resFile;
-	resFile.open((def::dir->absolutePath() +
+	resFile.open((def::dirPath() +
 				  "/class.txt").toStdString(),
 				 std::ios_base::app);
 
@@ -388,7 +388,7 @@ void ANN::writeWeight(const QString & wtsPath) const
     std::ofstream weightsFile;
     if(wtsPath.isEmpty())
     {
-		weightsFile.open((def::dir->absolutePath()
+		weightsFile.open((def::dirPath()
 						  + "/Help/wts/"
 						  + def::ExpName
 //						  + "_" + nm(wtsCounter++)
@@ -465,7 +465,7 @@ void ANN::drawWeight(QString wtsPath,
 
     if(!QFile::exists(wtsPath))
     {
-		wtsPath = def::dir->absolutePath()
+		wtsPath = def::dirPath()
 				  + "/Help/wts/"
 				  + def::ExpName + ".wts";
         if(!QFile::exists(wtsPath))

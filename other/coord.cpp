@@ -10,12 +10,12 @@ autosUser currAutosUser = autosUser::Xenia;
 // assigned in readData, reduce channels, etc
 int ns = 20;
 QString ExpName;
-QDir * dir = new QDir();
+QDir * dir = new QDir(QDir::root());
 
 bool ntFlag = false;
 
 double drawNorm = -1.;
-def::spectraGraphsNormalization drawNormTyp = def::spectraGraphsNormalization::all;
+def::spectraNormTyp drawNormTyp = def::spectraNormTyp::all;
 
 double leftFreq = 5.;
 double rightFreq = 20.;
@@ -31,6 +31,28 @@ QStringList fileMarkers{"_241", "_247", "_254 _244"}; // Me
 //QStringList fileMarkers{"_242", "_245"}; // Ossadtchi
 }
 
+/// begin defs Singleton
+/// define static consts
+const QString		defs::plainDataExtension = QString("scg");
+const QString		defs::spectraDataExtension = QString("scg");
+const QStringList	defs::edfFilters = QStringList{"*.edf", "*.EDF"};
+const QStringList	defs::plainFilters = QStringList{"*.scg"};
+const std::vector<QColor> defs::colours { QColor("blue"),
+			   QColor("red"),
+			   QColor("green"),
+			   QColor("black"),
+			   QColor("gray")};
+const QString defs::XeniaFolder{"/media/Files/Data/Xenia"};
+const QString defs::mriFolder{"/media/Files/Data/MRI"};
+const QString defs::GalyaFolder{"/media/Files/Data/Galya"};
+const QString defs::DashaFolder{"/media/Files/Data/Dasha/AUDIO"};
+const QString defs::uciFolder{"/media/Files/Data/UCI"};
+
+const QString defs::iitpFolder{"/media/Files/Data/iitp"};
+const QString defs::iitpSyncFolder{"/media/Files/Data/iitp/SYNCED"};
+const QString defs::iitpResFolder{"/media/Files/Data/iitp/Results"};
+const QString defs::matiFolder{"/media/Files/Data/Mati"};
+/// end defs Singleton
 
 namespace suc
 {
