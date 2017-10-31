@@ -407,9 +407,10 @@ void readIITPfile(const QString & filePath,
 
 	for(int i = 0; i < outData.rows(); ++i)
 	{
-		outData[i] -= outData[i].sum() / outData[i].size();
+		outData[i] -= smLib::mean(outData[i]);
 		outData[i] *= 1000; /// magic const
 	}
+//	return outData;
 }
 
 void readUCIdataSet(const QString & setName,

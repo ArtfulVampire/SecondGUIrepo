@@ -142,20 +142,23 @@ void MainWindow::customFunc()
 	};
 
 //	for(QString guy : guyList)
-	QString guy = "Alex";
-//	QString guy = "Galya_test_new";
+	QString guy = "Boris";
 	{
-//		autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
+		if(01)
+		{
+//			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
+			autos::IITPdatToEdf(guy);
+//			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
+			return; /// clean init eeg - zero in the beginning for better filering
+		}
+		if(0)
+		{
+			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
+			autos::IITPconcat(guy, "_eeg_new", "_emg");			/// (resampling inside) eeg + emg
+			return; /// manual sync
+		}
 
-//		autos::IITPdatToEdf(guy);
-//		autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
-//		return; /// clean init eeg - zero in the beginning for better filering
-
-//		autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
-//		autos::IITPconcat(guy, "_eeg_new", "_emg");			/// (resampling inside) eeg + emg
-		return; /// manual sync
-
-//		/// copy files to SYNCED
+		/// copy files to SYNCED
 
 //		autos::IITPstaging(guy);	/// flex/extend markers
 //		autos::IITPrerefCAR(guy, "_sum_new_stag", def::iitpSyncFolder); /// optional

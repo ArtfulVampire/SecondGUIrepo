@@ -1821,7 +1821,7 @@ edfFile & edfFile::refilter(double lowFreq,
 										   lowFreq,
 										   highFreq,
 										   isNotch,
-										   this->getNr()[j]);
+										   this->getNr()[j] / this->getDdr());
 	}
 	return *this;
 }

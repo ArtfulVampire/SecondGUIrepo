@@ -305,15 +305,12 @@ void Cut::resizeEvent(QResizeEvent * event)
 
 bool Cut::eventFilter(QObject *obj, QEvent *event)
 {
-	std::cout << std::endl;
-	std::cout << "eventFilterStart" << std::endl;
     if(obj == ui->scrollArea)
     {
 		switch(event->type())
 		{
 		case QEvent::Wheel:
 		{
-			std::cout << 123 << std::endl;
 			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);			
 			if(scrollEvent->modifiers().testFlag(Qt::ControlModifier))
 			{
@@ -383,7 +380,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		default: { return false; }
 		}
     }
-	std::cout << "eventFilterReturn" << std::endl;
     return QWidget::eventFilter(obj, event);
 }
 
@@ -549,7 +545,6 @@ void Cut::paint()
 	}
 
 	paintLimits();
-	std::cout << "painted" << std::endl;
 }
 
 void Cut::paintLimits()
