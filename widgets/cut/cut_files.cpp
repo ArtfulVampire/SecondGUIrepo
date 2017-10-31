@@ -248,10 +248,10 @@ void Cut::setValuesByEdf()
 	ui->diffTimeSpinBox->setDecimals(1);
 
 	ui->paintStartDoubleSpinBox->setMaximum(floor(dataCutLocal.cols() / currFreq));
-	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed?
+	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed? -> paint
 	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
-	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - 20) / currFreq);
-	ui->paintLengthDoubleSpinBox->setValue((this->width() - 20) / currFreq);
+	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - scrollAreaGapX) / currFreq);
+	ui->paintLengthDoubleSpinBox->setValue((this->width() - scrollAreaGapX) / currFreq); /// -> paint
 
 	resetLimits();
 
@@ -286,15 +286,15 @@ void Cut::setValuesByEdf()
 	{
 		std::get<0>(p)->setMaximum(edfFil.getNs() - 1);
 	}
-	ui->color1SpinBox->setValue(eog1);
-	ui->color2SpinBox->setValue(eog2);
-	ui->color3SpinBox->setValue(-1);
-
-
+	ui->color1SpinBox->setValue(eog1);	/// -> paint
+	ui->color2SpinBox->setValue(eog2);	/// -> paint
+	ui->color3SpinBox->setValue(-1);	/// maybe -> paint
 }
 
 void Cut::openFile(const QString & dataFileName)
 {
+	fileOpened = false; /// to prevent many paints
+
 	addNum = 1;
 	currentFile = dataFileName;
 	ui->lineEdit->setText(dataFileName);
@@ -310,11 +310,12 @@ void Cut::openFile(const QString & dataFileName)
 		edfFil.readEdfFile(dataFileName);
 		fileOpened = true;
 		logAction(edfFil.getExpName());
+		drawFlag = false;
 		setValuesByEdf(); /// needs fileOpened
 	}
 	ui->iitpDisableEcgCheckBox->setChecked(false);
+	drawFlag = true;
 	paint();
-	ui->scrollArea->horizontalScrollBar()->setSliderPosition(0);
 }
 
 

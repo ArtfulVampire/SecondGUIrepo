@@ -103,7 +103,6 @@ public slots:
 	void smartFindPrevSlot();
 
 	void paint();
-	void resizeWidget(double);
 
 	void forwardStepSlot();
     void backwardStepSlot();
@@ -139,6 +138,10 @@ private:
 	int leftDrawLimit; /// in slices	
 	std::vector<int> zeroedChannels;
 	std::vector<std::tuple<QSpinBox*, QLineEdit*, QLineEdit*>> colouredWidgets;
+	static const int scrollAreaGapX = 20;
+	static const int scrollAreaGapY = 15;
+	static const int picScaleGapY = 20;
+	bool drawFlag{false}; /// to prevent many slices in e.g. setValuesByEdf()
 
 	/// edf and related globals
 	edfFile edfFil{};

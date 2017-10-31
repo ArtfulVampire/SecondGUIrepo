@@ -42,7 +42,7 @@ void MainWindow::customFunc()
 //	return;
 
 
-#if 01
+#if 0
 	/// defs Singleton test
 	{
 		auto & S = defs::inst();
@@ -126,7 +126,7 @@ void MainWindow::customFunc()
 
 
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 //		"Alex",
@@ -142,7 +142,7 @@ void MainWindow::customFunc()
 	};
 
 //	for(QString guy : guyList)
-	QString guy = "Galya";
+	QString guy = "Alex";
 //	QString guy = "Galya_test_new";
 	{
 //		autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
@@ -153,7 +153,7 @@ void MainWindow::customFunc()
 
 //		autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
 //		autos::IITPconcat(guy, "_eeg_new", "_emg");			/// (resampling inside) eeg + emg
-//		return; /// manual sync
+		return; /// manual sync
 
 //		/// copy files to SYNCED
 
@@ -164,7 +164,7 @@ void MainWindow::customFunc()
 //		autos::IITPtestCoh(guy);
 //		autos::IITPtestCoh2(guy);
 
-		autos::IITPprocessStaged(guy);
+//		autos::IITPprocessStaged(guy);
 //		autos::IITPdrawSpectralMaps(guy);
 
 //		continue;

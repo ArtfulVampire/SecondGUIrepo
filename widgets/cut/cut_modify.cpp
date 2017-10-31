@@ -237,8 +237,7 @@ void Cut::applyLog(const QString & logPath)
 bool Cut::checkBadRange(int start, int end, QString func)
 {
 	if(end - start == this->dataCutLocal.cols()
-	   /// magic const 5 min
-	   || (end - start > this->edfFil.getFreq() * 60 * 5)
+	   || (end - start > this->edfFil.getFreq() * 60 * 5)	/// magic const 5 min
 	   )
 	{
 		std::cout << "Cut::" << func << ":"
@@ -313,10 +312,10 @@ void Cut::cutPausesSlot()
 
 		auto sta = std::find(beg,
 							 en,
-							 201);
+							 201); /// magic const pause Presentation
 		auto fin = std::find(sta,
 							 en,
-							 202);
+							 202); /// magic const resume Presentation
 
 
 		if( (sta != en) && (fin != en) )
@@ -509,8 +508,8 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 	{
 		auto a = *it;
 		if((a != 0)
-		   && (a != 201)	// pause
-		   && (a != 202)	// resume
+		   && (a != 201)	/// magic const pause
+		   && (a != 202)	/// magic const resume
 		   )
 		{
 			std::cout << "Cut::splitSemiSlot: nonzero marker "

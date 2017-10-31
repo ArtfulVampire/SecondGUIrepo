@@ -171,8 +171,13 @@ Cut::Cut() :
 					 this, SLOT(paint()));
 	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
-	QObject::connect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
-					 this, SLOT(resizeWidget(double)));
+	QObject::connect(ui->paintLengthDoubleSpinBox,
+					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+					 [this](double a)
+	{
+		if(this->size().width() == a * currFreq + scrollAreaGapX) return;
+		this->resize(a * currFreq + scrollAreaGapX, this->height());
+	});
 	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
 					 this, SLOT(timesAndDiffSlot()));
 	QObject::connect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
@@ -270,29 +275,46 @@ void Cut::timesAndDiffSlot()
 
 void Cut::resizeEvent(QResizeEvent * event)
 {
+	if(event->size() == event->oldSize()) { return; }
+
     // adjust scrollArea size
-	double newLen = smLib::doubleRound((event->size().width() - 10 * 2) / currFreq,
-										  ui->paintLengthDoubleSpinBox->decimals());
+	double newLen = smLib::doubleRound((event->size().width() - scrollAreaGapX) / currFreq,
+									   ui->paintLengthDoubleSpinBox->decimals());
+	double newHei = std::max(int(smLib::doubleRound(event->size().height(), -1)),
+							 this->minimumHeight())
+					- ui->scrollArea->geometry().y() - scrollAreaGapY;
+
     ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
                                 ui->scrollArea->geometry().y(),
 								newLen * currFreq,
-                                ui->scrollArea->geometry().height());
+								newHei);
 	ui->paintLengthDoubleSpinBox->setValue(newLen);
+
 	if(!dataCutLocal.isEmpty())
 	{
-		paint();
+		if(event->size().width() != event->oldSize().width())
+		{
+			paint();
+		}
+		else // if(event->size().height() != event->oldSize().height())
+		{
+			paintLimits();
+		}
 	}
 }
 
 bool Cut::eventFilter(QObject *obj, QEvent *event)
 {
+	std::cout << std::endl;
+	std::cout << "eventFilterStart" << std::endl;
     if(obj == ui->scrollArea)
     {
 		switch(event->type())
 		{
 		case QEvent::Wheel:
 		{
-			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
+			std::cout << 123 << std::endl;
+			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);			
 			if(scrollEvent->modifiers().testFlag(Qt::ControlModifier))
 			{
 				ui->yNormDoubleSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
@@ -304,8 +326,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			if(myFileType == fileType::real)
 			{
 				ui->scrollArea->horizontalScrollBar()->setSliderPosition(
-							ui->scrollArea->horizontalScrollBar()->sliderPosition() +
-							offset);
+							ui->scrollArea->horizontalScrollBar()->sliderPosition() + offset);
 				return true;
 			}
 			else if(myFileType == fileType::edf)
@@ -316,8 +337,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				{
 					return false;
 				}
-				leftDrawLimit = std::min(leftDrawLimit + offset, int(dataCutLocal.cols()));
-				ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
+				ui->paintStartDoubleSpinBox->stepBy(offset > 0 ? 4 : -4);
 				return true;
 			}
 			else { return false; }
@@ -336,6 +356,8 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			default: { return false; }
 			}
 			return true;
+
+			break;
 		}
 		case QEvent::KeyPress:
 		{
@@ -361,6 +383,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		default: { return false; }
 		}
     }
+	std::cout << "eventFilterReturn" << std::endl;
     return QWidget::eventFilter(obj, event);
 }
 
@@ -423,12 +446,6 @@ void Cut::mousePressSlot(Qt::MouseButton btn, int coord)
 	paintLimits();
 }
 
-void Cut::resizeWidget(double a)
-{
-	if(this->size().width() == a * currFreq + 20) return;
-	this->resize(a * currFreq + 20, this->height());
-}
-
 void Cut::colorSpinSlot(QSpinBox * spin, QLineEdit * lin)
 {
 	const int n = spin->value();
@@ -469,9 +486,9 @@ std::vector<std::pair<int, QColor>> Cut::makeColouredChans()
 	return res;
 }
 
-void Cut::paint() // save to tmp.jpg and display
+void Cut::paint()
 {
-	if(dataCutLocal.isEmpty()) return;
+	if(dataCutLocal.isEmpty() || !drawFlag || !fileOpened) return;
 
 	int rightDrawLimit = 0.;
     if(myFileType == fileType::edf)
@@ -511,7 +528,6 @@ void Cut::paint() // save to tmp.jpg and display
 	if(1)
 	{
 		const int mrk = edfFil.getMarkChan();
-//		std::cout << mrk << std::endl;
 		if(mrk > 0)
 		{
 			QPainter pnt;
@@ -533,6 +549,7 @@ void Cut::paint() // save to tmp.jpg and display
 	}
 
 	paintLimits();
+	std::cout << "painted" << std::endl;
 }
 
 void Cut::paintLimits()
@@ -558,8 +575,8 @@ void Cut::paintLimits()
 		paint.drawLine(rightX, 0, rightX, tempPic.height());
 	}
 
-	ui->picLabel->setPixmap(tempPic.scaled(tempPic.width() - 2,
-											  ui->scrollArea->height() - 20));
+	ui->picLabel->setPixmap(tempPic.scaled(tempPic.width() - 2,				/// magic const
+										   ui->scrollArea->height() - 2));	/// magic const
 	paint.end();
 }
 
