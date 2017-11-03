@@ -437,9 +437,9 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 #if EDFSTREAM
 	std::fstream edfStream;
 	if(readFlag)
-	{ edfStream.open(EDFpath.toStdString(), std::ios_base::in); }
+	{ edfStream.open(EDFpath.toStdString(), std::ios_base::in | std::ios_base::binary); }
 	else
-	{ edfStream.open(EDFpath.toStdString(), std::ios_base::out); }
+	{ edfStream.open(EDFpath.toStdString(), std::ios_base::out | std::ios_base::binary); }
 
 	if(!edfStream.good())
 	{
@@ -460,7 +460,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 	if(readFlag)
 	{
 		filePath = EDFpath;
-		dirPath = EDFpath.left(EDFpath.lastIndexOf(QDir::separator()));
+		dirPath = EDFpath.left(EDFpath.lastIndexOf('/'));
 		ExpName = myLib::getExpNameLib(filePath);
 
 		QFile::remove(dirPath + "/markers.txt"); /// delete markers file
@@ -736,29 +736,31 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 	handleParam(headerRest, int(bytes - (ns + 1) * 256), readFlag, edfDescriptor, header);
 #endif
 
-
+	/// files are already opened as binary, no need to reopen
+	if(0)
+	{
 #if !EDFSTREAM
-	if(readFlag && (header != NULL))
-    {
-        fclose(header);
-    }
-	if(headerOnly) { fclose(edfDescriptor); return; }
-    fclose(edfDescriptor);
+		if(readFlag && (header != NULL))
+		{
+			fclose(header);
+		}
+		if(headerOnly) { fclose(edfDescriptor); return; }
+		fclose(edfDescriptor);
 
 
-	edfDescriptor = fopen(EDFpath, (readFlag ? "rb" : "ab"));
-	fseek(edfDescriptor, bytes, SEEK_SET);
+		edfDescriptor = fopen(EDFpath, (readFlag ? "rb" : "ab"));
+		fseek(edfDescriptor, bytes, SEEK_SET);
 #else
-	/// headerStream will close by itself
-	///
-	auto pos = (readFlag ? edfStream.tellg() : edfStream.tellp());
-	edfStream.close();
-	edfStream.open(EDFpath.toStdString(),
-				   std::ios_base::binary | std::ios_base::app |
-				   (readFlag ? std::ios_base::in : std::ios_base::out));
-	if(readFlag) { edfStream.seekg(pos); }
-	else { edfStream.seekp(pos); };
+		/// headerStream will close by itself
+		///
+		auto pos = (readFlag ? edfStream.tellg() : edfStream.tellp());
+		edfStream.close();
+		edfStream.open(EDFpath.toStdString(),
+					   std::ios_base::binary | std::ios_base::app |
+					   (readFlag ? std::ios_base::in : std::ios_base::out));
+		(readFlag ? edfStream.seekg(pos) : edfStream.seekp(pos));
 #endif
+	}
 
 	if(readFlag) { annotations.clear(); }
 
@@ -2635,10 +2637,10 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
 
 
 /// non-members for static operation
-void myTransform(int & output, char * input) {output = atoi(input); }
-void myTransform(double & output, char * input) {output = atof(input); }
-void myTransform(QString & output, char * input) {output = QString(input); }
-void myTransform(std::string & output, char * input) {output = std::string(input); }
+void myTransform(int & output, char * input)			{ output = atoi(input); }
+void myTransform(double & output, char * input)			{ output = atof(input); }
+void myTransform(QString & output, char * input)		{ output = QString(input); }
+void myTransform(std::string & output, char * input)	{ output = std::string(input); }
 
 char * QStrToCharArr(const QString & input, int len = -1)
 {
