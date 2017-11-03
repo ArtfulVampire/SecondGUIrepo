@@ -285,6 +285,7 @@ protected:
 	/// cross EOG1-A2, EOG2-A1
 	/// correspond EOG1-A1, EOG2-A2
 	/// but really it is A*-EOG*
+	/// EOG1 is on the right side (horizontal) and EOG2 on the left (vertical)
 	eogType edfEogType = eogType::correspond; /// true story, 21.07.17
 
 	// channels arrays start

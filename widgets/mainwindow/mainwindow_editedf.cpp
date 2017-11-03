@@ -298,14 +298,18 @@ void MainWindow::refilterDataSlot()
         helpString.replace(".edf",
                            "_f"
 						   + nm(lowFreq) + '-' + nm(highFreq)
-                           + ".edf");
+						   + ".edf"
+						   , Qt::CaseInsensitive
+						   );
     }
     else
     {
         helpString.replace(".edf",
 						   "_n"
 						   + nm(lowFreq) + '-' + nm(highFreq)
-                           + ".edf");
+						   + ".edf"
+						   , Qt::CaseInsensitive
+						   );
     }
 
 	globalEdf.refilter(lowFreq, highFreq, notch);

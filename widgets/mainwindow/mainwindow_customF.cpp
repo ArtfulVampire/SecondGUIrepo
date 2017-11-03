@@ -39,7 +39,11 @@ void MainWindow::customFunc()
 //						   24,
 //						   1024).save("/media/Files/Data/phases1.jpg", 0, 100);
 //	exit(0);
-//	return;
+//	edfFile f;
+//	f.readEdfFile("/media/Files/Data/Baklushev/Petrunina/PETRUNINAEL.EDF");
+//	f.writeEdfFile("/media/Files/Data/Baklushev/Petrunina/PETRUNINAEL_g.EDF");
+//	exit(0);
+	return;
 
 
 #if 0

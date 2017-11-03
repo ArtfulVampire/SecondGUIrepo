@@ -224,9 +224,12 @@ Cut::Cut() :
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->iitpSaveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
 	QObject::connect(ui->iitpRectifyEmgPushButton, SIGNAL(clicked()), this, SLOT(rectifyEmgSlot()));
+	qtLib::hideLayout(ui->iitpGridLayout);
+	qtLib::hideLayout(ui->linearApproxHorLayout);
 
 	smartFindSetFuncs();
 	ui->smartFindSetAbsThrPushButton->click();
+	qtLib::hideLayout(ui->smartFindGrid);
 }
 
 Cut::~Cut()
@@ -543,7 +546,6 @@ void Cut::paint()
 			pnt.end();
 		}
 	}
-
 	paintLimits();
 }
 

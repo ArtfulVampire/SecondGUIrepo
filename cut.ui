@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>1515</width>
-    <height>823</height>
+    <height>685</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>800</width>
-    <height>750</height>
+    <height>650</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -36,9 +36,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>340</y>
+     <y>230</y>
      <width>1501</width>
-     <height>470</height>
+     <height>441</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -74,7 +74,7 @@
       <x>0</x>
       <y>0</y>
       <width>1499</width>
-      <height>468</height>
+      <height>439</height>
      </rect>
     </property>
    </widget>
@@ -110,10 +110,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>890</x>
-     <y>160</y>
+     <x>1290</x>
+     <y>210</y>
      <width>220</width>
-     <height>110</height>
+     <height>121</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="iitpGridLayout">
@@ -174,9 +174,9 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>890</x>
-     <y>120</y>
-     <width>253</width>
+     <x>1180</x>
+     <y>140</y>
+     <width>274</width>
      <height>28</height>
     </rect>
    </property>
@@ -207,10 +207,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>460</x>
-     <y>34</y>
-     <width>280</width>
-     <height>79</height>
+     <x>990</x>
+     <y>130</y>
+     <width>281</width>
+     <height>83</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="derivativesGridLayout">
@@ -271,10 +271,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>12</x>
-     <y>32</y>
-     <width>421</width>
-     <height>121</height>
+     <x>490</x>
+     <y>30</y>
+     <width>481</width>
+     <height>140</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
@@ -403,10 +403,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>170</y>
-     <width>441</width>
-     <height>166</height>
+     <x>0</x>
+     <y>30</y>
+     <width>483</width>
+     <height>184</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -640,10 +640,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>780</x>
-     <y>35</y>
+     <x>980</x>
+     <y>10</y>
      <width>311</width>
-     <height>83</height>
+     <height>123</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_5">
@@ -685,11 +685,14 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QSpinBox" name="color2SpinBox"/>
+    <item row="2" column="1">
+     <widget class="QSpinBox" name="color3SpinBox"/>
     </item>
     <item row="1" column="2">
      <widget class="QLineEdit" name="colorChan2LineEdit"/>
+    </item>
+    <item row="2" column="2">
+     <widget class="QLineEdit" name="colorChan3LineEdit"/>
     </item>
     <item row="2" column="0">
      <widget class="QLineEdit" name="color3LineEdit">
@@ -707,21 +710,18 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
-     <widget class="QSpinBox" name="color3SpinBox"/>
-    </item>
-    <item row="2" column="2">
-     <widget class="QLineEdit" name="colorChan3LineEdit"/>
+    <item row="1" column="1">
+     <widget class="QSpinBox" name="color2SpinBox"/>
     </item>
    </layout>
   </widget>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>520</x>
-     <y>160</y>
-     <width>344</width>
-     <height>170</height>
+     <x>1300</x>
+     <y>10</y>
+     <width>379</width>
+     <height>188</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="smartFindGrid">
@@ -832,13 +832,16 @@
   <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>1150</x>
-     <y>50</y>
-     <width>172</width>
-     <height>44</height>
+     <x>580</x>
+     <y>180</y>
+     <width>341</width>
+     <height>27</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QLineEdit" name="zeroChannelsLineEdit"/>
+    </item>
     <item>
      <widget class="QLabel" name="label_15">
       <property name="text">
@@ -846,11 +849,9 @@
       </property>
      </widget>
     </item>
-    <item>
-     <widget class="QLineEdit" name="zeroChannelsLineEdit"/>
-    </item>
    </layout>
   </widget>
+  <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>picLabel</zorder>
   <zorder>scrollArea</zorder>
@@ -861,8 +862,6 @@
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
-  <zorder>zeroChannelsLineEdit</zorder>
-  <zorder>label_15</zorder>
  </widget>
  <resources/>
  <connections/>
