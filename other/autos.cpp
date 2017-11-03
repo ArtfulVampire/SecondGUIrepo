@@ -11,6 +11,11 @@
 
 #include <widgets/net.h>
 
+ /// for std::defaultfloat
+#include <ios>
+#include <iostream>
+#include <bits/ios_base.h>
+
 using namespace myOut;
 
 namespace autos

@@ -5,6 +5,7 @@
 #include <vector>
 #include <valarray>
 #include <cmath>
+#include <ctime>
 
 #include <QString>
 #include <QPixmap>

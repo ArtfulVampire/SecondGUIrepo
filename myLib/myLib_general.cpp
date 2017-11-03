@@ -113,7 +113,7 @@ QString getExpNameLib(const QString & filePath, bool shortened) // getFileName
 {
     QString hlp;
     hlp = (filePath);
-	hlp = hlp.right(hlp.length() - hlp.lastIndexOf(QDir::separator()) - 1); // ExpName.edf
+	hlp = hlp.right(hlp.length() - hlp.lastIndexOf('/') - 1); // ExpName.edf
     hlp = hlp.left(hlp.lastIndexOf('.')); // ExpName
 	if(shortened)
 	{
@@ -124,7 +124,7 @@ QString getExpNameLib(const QString & filePath, bool shortened) // getFileName
 
 QString getDirPathLib(const QString & filePath)
 {
-	return filePath.left(filePath.lastIndexOf(QDir::separator()));
+	return filePath.left(filePath.lastIndexOf('/'));
 }
 
 
@@ -161,7 +161,7 @@ QString getExt(const QString & filePath)
 QString getFileName(const QString & filePath, bool withExtension)
 {
     QString helpString = (filePath);
-	helpString = helpString.right(helpString.length() - helpString.lastIndexOf(QDir::separator()) - 1);
+	helpString = helpString.right(helpString.length() - helpString.lastIndexOf('/') - 1);
     if(!withExtension)
     {
         helpString = helpString.left(helpString.lastIndexOf("."));

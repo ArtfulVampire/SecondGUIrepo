@@ -119,7 +119,7 @@ public:
 enum class inst {mati, iitp};
 enum class eogType {cross, correspond};
 //enum class reference{A1, A2, Ar, CAR, Base};
-#define EDFSTREAM 01
+#define EDFSTREAM 0
 
 #if EDFSTREAM
 #else
