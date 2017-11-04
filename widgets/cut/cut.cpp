@@ -190,7 +190,8 @@ Cut::Cut() :
 	}
 	QObject::connect(ui->zeroChannelsLineEdit, &QLineEdit::editingFinished,
 					 [this](){ zeroedChannels = myLib::splitStringIntoVec(
-													ui->zeroChannelsLineEdit->text()); });
+													ui->zeroChannelsLineEdit->text());
+		paint(); this->setFocus(); });
 
 	/// smartFind
 	QObject::connect(ui->smartFindShowPushButton, &QPushButton::clicked,
@@ -224,12 +225,14 @@ Cut::Cut() :
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->iitpSaveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
 	QObject::connect(ui->iitpRectifyEmgPushButton, SIGNAL(clicked()), this, SLOT(rectifyEmgSlot()));
+#if !SHOW_IITP_WIDGETS
 	qtLib::hideLayout(ui->iitpGridLayout);
-	qtLib::hideLayout(ui->linearApproxHorLayout);
+	qtLib::hideLayout(ui->linearApproxVertLayout);
+#endif
 
 	smartFindSetFuncs();
 	ui->smartFindSetAbsThrPushButton->click();
-	qtLib::hideLayout(ui->smartFindGrid);
+	qtLib::hideLayout(ui->smartFindGrid);		/// for better times
 }
 
 Cut::~Cut()

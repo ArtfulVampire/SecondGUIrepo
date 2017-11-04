@@ -30,20 +30,7 @@ void MainWindow::customFunc()
 //	testSuccessive();
 //	exit(0);
 
-//	setEdfFile(def::iitpSyncFolder +
-//			   + "/Test/Test_02_sum_new.edf");
-
-//	iitp::phaseDifferences(globalEdf.getData("Cz"),
-//						   globalEdf.getData("Fcr"),
-//						   globalEdf.getFreq(),
-//						   24,
-//						   1024).save("/media/Files/Data/phases1.jpg", 0, 100);
-//	exit(0);
-//	edfFile f;
-//	f.readEdfFile("/media/Files/Data/Baklushev/Petrunina/PETRUNINAEL.EDF");
-//	f.writeEdfFile("/media/Files/Data/Baklushev/Petrunina/PETRUNINAEL_g.EDF");
-//	exit(0);
-	return;
+//	return;
 
 
 #if 0
@@ -133,49 +120,50 @@ void MainWindow::customFunc()
 #if 01
 	/// IITP
 	QStringList guyList{
-//		"Alex",
-//		"Boris",
-		"Ira",
-		"Levik",
-		"Oleg",
+		"Alex",
+		"Boris",
+		"Dima",		//
 		"Egor",
-		"Victor",
-		"Dima",
-		"Isakov",
-		"Galya"
+		"Galya",	//
+		"Ira",
+		"Isakov",	//
+		"Levik",
+		"Oleg",		//
+		"Victor"	//
 	};
 
 //	for(QString guy : guyList)
-	QString guy = "Boris";
+//	return;
+	QString guy = "Victor";
 	{
-		if(01)
+		if(0)
 		{
 //			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
 			autos::IITPdatToEdf(guy);
-//			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
+			autos::IITPcopyChannel(guy, "Wrist_r", "Artefac");		/// rewrites _emg.edf
+			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
 		if(0)
 		{
 			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
-			autos::IITPconcat(guy, "_eeg_new", "_emg");			/// (resampling inside) eeg + emg
+			autos::IITPconcat(guy, "_eeg_new", "_emg");				/// resampling inside
 			return; /// manual sync
 		}
 
 		/// copy files to SYNCED
 
-//		autos::IITPstaging(guy);	/// flex/extend markers
-//		autos::IITPrerefCAR(guy, "_sum_new_stag", def::iitpSyncFolder); /// optional
-//		autos::IITPemgToAbs(guy, "_sum_new_stag_car");
-//		autos::IITPfilter(guy);		/// optional
-//		autos::IITPtestCoh(guy);
-//		autos::IITPtestCoh2(guy);
-
-//		autos::IITPprocessStaged(guy);
-//		autos::IITPdrawSpectralMaps(guy);
+		if(01)
+		{
+			autos::IITPstaging(guy);							/// flex/extend markers
+			autos::IITPcopyToCar(guy);							/// copy *_stag.edf to guy_car
+			autos::IITPrerefCAR(guy);							/// rewrites edfs in SYNCED/guy_car
+			autos::IITPprocessStaged(guy);						/// both -Ref and -car
+			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
+			exit(0);
+		}
 
 //		continue;
-		exit(0);
 
 		/// deleted lists 14.10.2017
 		myLib::drw::trueChans = iitp::interestEeg;

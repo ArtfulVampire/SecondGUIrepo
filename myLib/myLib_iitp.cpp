@@ -678,6 +678,12 @@ iitpData & iitpData::staging(const QString & chanName,
 							 int markerMax)
 {
 	int chanNum = this->findChannel(chanName);
+	if(chanNum == -1)
+	{
+		std::cout << "iitpData::staging: no such channel: " << chanName << "\n"
+				  << "fileName: " << this->getFileNam() << ", return *this;" << std::endl;
+		return *this;
+	}
 	const std::valarray<double> & chan = this->edfData[chanNum];
 	std::valarray<double> & marks = this->edfData[this->markerChannel];
 	auto sign = [](double in) -> int
@@ -734,7 +740,7 @@ iitpData & iitpData::staging(const QString & chanName,
 	{
 		if(sign(chan[i]) != currSign)
 		{
-			int end = i;
+			int end = i - 1;
 
 
 			std::valarray<double> val = smLib::valarSubsec(chan, start, end);
@@ -745,26 +751,27 @@ iitpData & iitpData::staging(const QString & chanName,
 			double threshold = (1. - alpha) * maxVal;
 
 			srand(time(NULL));
-			for(int j = 0; j < val.size(); ++j)
+			for(int j = 0; j < val.size() - 1; ++j)
 			{
-				if((val[j] - threshold) * (val[j-1] - threshold) <= 0.)
+				/// val[j] <= threshold <= val[j + 1]
+				/// val[j] >= threshold >= val[j + 1]
+				if((val[j] - threshold) * (val[j + 1] - threshold) <= 0.)
 				{
 					if(currSign == 1)
 					{
 						marks[start + j] = markerMax;
-		//				marks[start + nm + 10 - rand()%20] = markerMax;
+		//				marks[start + j + 10 - rand()%20] = markerMax;
 					}
 					else
 					{
 						marks[start + j] = markerMin;
-		//				marks[start + nm + 10 - rand()%20] = markerMin;
+		//				marks[start + j + 10 - rand()%20] = markerMin;
 					}
 				}
 
 			}
-
 			start = i;
-			currSign *= -1;
+			currSign *= -1; /// currSign = sign(chan[start]);
 		}
 	}
 	return *this;

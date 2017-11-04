@@ -110,8 +110,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>1290</x>
-     <y>210</y>
+     <x>840</x>
+     <y>100</y>
      <width>220</width>
      <height>121</height>
     </rect>
@@ -174,43 +174,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>1180</x>
-     <y>140</y>
-     <width>274</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="linearApproxHorLayout">
-    <item>
-     <widget class="QPushButton" name="linearApproxPushButton">
-      <property name="text">
-       <string>linear approx</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QCheckBox" name="linearApproxAllEegCheckBox">
-      <property name="text">
-       <string>all EEG</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QCheckBox" name="linearApproxAllGoniosCheckBox">
-      <property name="text">
-       <string>all gonios</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>1000</x>
-     <y>140</y>
-     <width>281</width>
-     <height>83</height>
+     <x>410</x>
+     <y>146</y>
+     <width>310</width>
+     <height>77</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="derivativesGridLayout">
@@ -271,10 +238,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>490</x>
-     <y>30</y>
-     <width>481</width>
-     <height>140</height>
+     <x>408</x>
+     <y>31</y>
+     <width>420</width>
+     <height>110</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
@@ -405,8 +372,8 @@
     <rect>
      <x>0</x>
      <y>30</y>
-     <width>483</width>
-     <height>184</height>
+     <width>400</width>
+     <height>192</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -640,10 +607,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>1000</x>
-     <y>10</y>
+     <x>835</x>
+     <y>4</y>
      <width>311</width>
-     <height>123</height>
+     <height>87</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_5">
@@ -718,8 +685,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>1300</x>
-     <y>10</y>
+     <x>1270</x>
+     <y>20</y>
      <width>379</width>
      <height>188</height>
     </rect>
@@ -832,22 +799,62 @@
   <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>580</x>
-     <y>180</y>
-     <width>341</width>
-     <height>27</height>
+     <x>1150</x>
+     <y>0</y>
+     <width>90</width>
+     <height>102</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QVBoxLayout" name="linearApproxVertLayout">
     <item>
-     <widget class="QLineEdit" name="zeroChannelsLineEdit"/>
+     <widget class="QPushButton" name="linearApproxPushButton">
+      <property name="text">
+       <string>linear approx</string>
+      </property>
+     </widget>
     </item>
+    <item>
+     <widget class="QCheckBox" name="linearApproxAllEegCheckBox">
+      <property name="text">
+       <string>all EEG</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="linearApproxAllEmgCheckBox">
+      <property name="text">
+       <string>all EMG</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="linearApproxAllGoniosCheckBox">
+      <property name="text">
+       <string>all gonios</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>1070</x>
+     <y>100</y>
+     <width>172</width>
+     <height>44</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <widget class="QLabel" name="label_15">
       <property name="text">
        <string>channels to zero when paint</string>
       </property>
      </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="zeroChannelsLineEdit"/>
     </item>
    </layout>
   </widget>

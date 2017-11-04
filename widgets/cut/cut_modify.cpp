@@ -556,8 +556,9 @@ void Cut::splitFromZeroSlot()
 void Cut::splitTillEndSlot()
 {
 	double pos = ui->paintStartDoubleSpinBox->value();
+	bool fl = pos < ui->leftLimitSpinBox->value() / def::freq;
 	this->splitSemiSlot(ui->leftLimitSpinBox->value(), dataCutLocal.cols(), true);
-	ui->paintStartDoubleSpinBox->setValue(pos);
+	if(fl) { ui->paintStartDoubleSpinBox->setValue(pos); }
 }
 
 void Cut::linearApprox(int lef, int rig, std::vector<int> chanList)
@@ -590,14 +591,21 @@ void Cut::linearApproxSlot()
 	for(int i = 0; i < dataCutLocal.rows(); ++i)
 	{
 		if(ui->linearApproxAllEegCheckBox->isChecked()
-		   && edfFil.getLabels()[i].startsWith("EEG "))
+		   && edfFil.getLabels(i).startsWith("EEG "))
 		{
-			chanList.push_back(i);
+			chanList.push_back(i); continue;
 		}
-		else if(ui->linearApproxAllGoniosCheckBox->isChecked()
-		   && (edfFil.getLabels()[i].contains("_l") || edfFil.getLabels()[i].contains("_r")))
+		if(ui->linearApproxAllGoniosCheckBox->isChecked()
+		   && edfFil.getLabels(i).contains("IT")
+		   && !edfFil.getLabels(i).contains("EMG"))
 		{
-			chanList.push_back(i);
+			chanList.push_back(i); continue;
+		}
+		if(ui->linearApproxAllEmgCheckBox->isChecked()
+		   && edfFil.getLabels(i).contains("IT")
+		   && edfFil.getLabels(i).contains("EMG"))
+		{
+			chanList.push_back(i); continue;
 		}
 	}
 	if(chanList.empty() && ui->color3SpinBox->value() > 0)

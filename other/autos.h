@@ -124,6 +124,12 @@ void IITPconcat(const QString & guyName,
 				const QString & eegPostfix,
 				const QString emgPostfix);
 void IITPdatToEdf(const QString & guyName);
+
+
+void IITPcopyChannel(const QString & guy,
+					 const QString & whatChan,
+					 const QString & whereChan);
+
 //void IITPdownsampleEmgs(const QString & guyName);
 void IITPfilter(const QString & guyName,
 				const QString & postfix,
@@ -144,9 +150,12 @@ void IITPfilterGonios(const QString & guyName,
 void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
 void IITPremoveZchans(const QString & guyName, const QString & dirPath = def::iitpSyncFolder);
 
+
+void IITPcopyToCar(const QString & guyName);
+
 void IITPrerefCAR(const QString & guyName,
-				  const QString & addFilter = QString(),
-				  const QString & dirPath = def::iitpFolder);
+				  const QString & dirPath = def::iitpSyncFolder,
+				  const QString & addFilter = QString());
 
 void IITPemgToAbs(const QString & guyName,
 				  QString postfix = "_sum_new",

@@ -31,7 +31,7 @@ typedef unsigned int uint;
 
 
 #ifndef SHOW_IITP_WIDGETS
-#define SHOW_IITP_WIDGETS 0
+#define SHOW_IITP_WIDGETS 01
 #endif
 
 #ifndef ELENA_VARIANT

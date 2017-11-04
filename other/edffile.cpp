@@ -351,7 +351,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 
 
 
-void edfFile::readEdfFile(QString EDFpath, bool headerOnly)
+edfFile & edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 {
     QTime myTime;
     myTime.start();
@@ -363,6 +363,8 @@ void edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 	/// experimental
 	def::ns = this->ns;
 	def::freq = srate;
+
+	return *this;
 }
 
 void edfFile::rewriteEdfFile()
@@ -758,7 +760,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 		edfStream.open(EDFpath.toStdString(),
 					   std::ios_base::binary | std::ios_base::app |
 					   (readFlag ? std::ios_base::in : std::ios_base::out));
-		(readFlag ? edfStream.seekg(pos) : edfStream.seekp(pos));
+		if(readFlag)	{ edfStream.seekg(pos); }
+		else			{ edfStream.seekp(pos); }
 #endif
 	}
 

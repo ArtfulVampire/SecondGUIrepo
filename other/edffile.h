@@ -141,7 +141,7 @@ public:
 	bool isEmpty() { return edfData.isEmpty(); }
 
 	/// read/write
-    void readEdfFile(QString EDFpath, bool headerOnly = false);
+	edfFile & readEdfFile(QString EDFpath, bool headerOnly = false);
     void writeEdfFile(QString EDFpath, bool asPlain = false);
 	void rewriteEdfFile();
 	void writeOtherData(const matrix & newData,
@@ -387,10 +387,13 @@ public:
 		}
 		return edfData[a];
 	}
+
+	/// make edfFile&
 	// sets
 	void setData(int chanNum, int timeBin, double val) { edfData[chanNum][timeBin] = val; }
 	void setData(int chanNum, const std::valarray<double> & newChan) { edfData[chanNum] = newChan; }
-	void setData(const matrix & newData) { edfData = newData; }
+
+//	void setData(const matrix & newData) { edfData = newData; } /// DANGER ndr ddr and shit
 
 	const std::valarray<double> & operator [](int i) const { return edfData[i]; }
 
