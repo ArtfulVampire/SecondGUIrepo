@@ -115,39 +115,55 @@ void MainWindow::customFunc()
 #endif
 
 
-
-
 #if 01
 	/// IITP
 	QStringList guyList{
-		"Alex",
-		"Boris",
+		"Alex",		//
+		"Boris",	//
 		"Dima",		//
-		"Egor",
+		"Egor",		//
 		"Galya",	//
-		"Ira",
+		"Ira",		//
 		"Isakov",	//
 		"Levik",
 		"Oleg",		//
 		"Victor"	//
 	};
 
+
+	//	edfFile f;
+	//	f.readEdfFile("/media/Files/Data/iitp/Alex/Alex_05_sum_new.edf");
+	//	auto z = f.getData(0); z = 0;
+	//	for(uint emg : f.findChannels("EMG"))
+	//	{
+	//		f.setData(emg, z);
+	//	}
+	//	f.writeEdfFile("/media/Files/Data/iitp/Alex/Alex_05_sum_new.edf");
+	//	exit(0);
+
+//	autos::IITPfilter("Levik", "_sum_new", false, false, true);			/// rewrites _sum_new.edf
+//	exit(0);
+
+	return;
+
+	QString guy = "Levik";
 //	for(QString guy : guyList)
-//	return;
-	QString guy = "Victor";
 	{
 		if(0)
 		{
 //			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
 			autos::IITPdatToEdf(guy);
-			autos::IITPcopyChannel(guy, "Wrist_r", "Artefac");		/// rewrites _emg.edf
+			if(guy == "Victor")
+			{
+//				autos::IITPcopyChannel(guy, "Wrist_r", "Artefac");		/// rewrites _emg.edf
+			}
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
-		if(0)
+		if(01)
 		{
-			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
-			autos::IITPconcat(guy, "_eeg_new", "_emg");				/// resampling inside
+//			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
+			autos::IITPconcat(guy, "_eeg", "_emg");				/// resampling inside
 			return; /// manual sync
 		}
 
