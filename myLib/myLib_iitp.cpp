@@ -143,7 +143,7 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 {
 	if(chan1 == -1 || chan2 == -1)
 	{
-		std::cout << "coherency: no such channel" << std::endl;
+		std::cout << "iitpData::coherency: no such channel " << std::endl;
 		return {};
 	}
 	/// usual
@@ -692,6 +692,7 @@ iitpData & iitpData::staging(const QString & chanName,
 	};
 
 
+
 #if 0
 	/// test first and second derivatives
 
@@ -735,11 +736,18 @@ iitpData & iitpData::staging(const QString & chanName,
 	int currSign = sign(chan[0]);
 	int start = 0;
 	const double alpha = 0.20;
+	const int lefrig = 8;
 
+	std::ofstream of("/media/Files/Data/iitp/out.txt", std::ios_base::app);
+	std::ostream & os = of;
+
+//	os << chanName << std::endl;
 	for(int i = 0; i < chan.size(); ++i)
 	{
+
 		if(sign(chan[i]) != currSign)
 		{
+//			os << "start = " << start << std::endl;
 			int end = i - 1;
 
 
@@ -750,6 +758,8 @@ iitpData & iitpData::staging(const QString & chanName,
 			double maxVal = *std::max_element(std::begin(val), std::end(val));
 			double threshold = (1. - alpha) * maxVal;
 
+			std::vector<int> candidates;
+
 			srand(time(NULL));
 			for(int j = 0; j < val.size() - 1; ++j)
 			{
@@ -759,21 +769,73 @@ iitpData & iitpData::staging(const QString & chanName,
 				{
 					if(currSign == 1)
 					{
-						marks[start + j] = markerMax;
+						/// look for zero marker in the neighbourhood
+						for(int k = 0; k < lefrig; ++k)
+						{
+							if(start + j + k < marks.size() && marks[start + j + k] == 0.)
+							{
+//								os << start + j + k << std::endl;
+//								marks[start + j + k] = markerMax;
+								candidates.push_back(start + j + k);
+								break;
+							}
+							else if(start + j - k > 0 && marks[start + j - k] == 0.)
+							{
+//								os << start + j - k << std::endl;
+//								marks[start + j - k] = markerMax;
+								candidates.push_back(start + j - k);
+								break;
+							}
+						}
 		//				marks[start + j + 10 - rand()%20] = markerMax;
 					}
 					else
 					{
-						marks[start + j] = markerMin;
+						/// look for zero marker in the neighbourhood
+						for(int k = 0; k < lefrig; ++k)
+						{
+							if(start + j + k < marks.size() && marks[start + j + k] == 0.)
+							{
+//								os << start + j + k << std::endl;
+//								marks[start + j + k] = markerMin;
+								candidates.push_back(start + j + k);
+								break;
+							}
+							else if(start + j - k > 0 && marks[start + j - k] == 0.)
+							{
+//								os << start + j - k << std::endl;
+//								marks[start + j - k] = markerMin;
+								candidates.push_back(start + j - k);
+								break;
+							}
+						}
 		//				marks[start + j + 10 - rand()%20] = markerMin;
 					}
 				}
 
 			}
+			/// mark only first and last threshold crossing
+			if(!candidates.empty())
+			{
+				marks[candidates.front()] = ((currSign == 1) ? markerMax : markerMin);
+				marks[candidates.back()]  = ((currSign == 1) ? markerMax : markerMin);
+			}
+			else
+			{
+				of << "iitpData::staging: candidates empty, "
+				   << "file = " << this->ExpName << "   "
+				   << "chan = " << chanName << "   "
+				   << "start = " << start << "   "
+				   << std::endl;
+			}
+
+
 			start = i;
 			currSign *= -1; /// currSign = sign(chan[start]);
+//			os << "end = " << end << std::endl;
 		}
 	}
+	of.close();
 	return *this;
 }
 

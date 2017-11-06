@@ -122,10 +122,10 @@ void MainWindow::customFunc()
 		"Boris",	//
 		"Dima",		//
 		"Egor",		//
-		"Galya",	//
+//		"Galya",	//
 		"Ira",		//
 		"Isakov",	//
-		"Levik",
+		"Levik",	//
 		"Oleg",		//
 		"Victor"	//
 	};
@@ -144,10 +144,10 @@ void MainWindow::customFunc()
 //	autos::IITPfilter("Levik", "_sum_new", false, false, true);			/// rewrites _sum_new.edf
 //	exit(0);
 
-	return;
+//	return;
 
-	QString guy = "Levik";
-//	for(QString guy : guyList)
+//	QString guy = "Boris";
+	for(QString guy : guyList)
 	{
 		if(0)
 		{
@@ -160,7 +160,7 @@ void MainWindow::customFunc()
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
-		if(01)
+		if(0)
 		{
 //			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
 			autos::IITPconcat(guy, "_eeg", "_emg");				/// resampling inside
@@ -172,11 +172,12 @@ void MainWindow::customFunc()
 		if(01)
 		{
 			autos::IITPstaging(guy);							/// flex/extend markers
-			autos::IITPcopyToCar(guy);							/// copy *_stag.edf to guy_car
-			autos::IITPrerefCAR(guy);							/// rewrites edfs in SYNCED/guy_car
-			autos::IITPprocessStaged(guy);						/// both -Ref and -car
-			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
-			exit(0);
+//			autos::IITPcopyToCar(guy);							/// copy *_stag.edf to guy_car
+//			autos::IITPrerefCAR(guy);							/// rewrites edfs in SYNCED/guy_car
+//			autos::IITPprocessStaged(guy);						/// both -Ref and -car
+//			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
+			continue;
+//			exit(0);
 		}
 
 //		continue;

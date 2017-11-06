@@ -1257,6 +1257,15 @@ void IITPprocessStaged(const QString & guyName,
 								auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg1]),
 														dt.findChannel(iitp::eegNames[eeg2]),
 														fr);
+								if(val == std::complex<double>{})
+								{
+									std::cout << "IITPprocessStaged: bad val static eeg-eeg, "
+											  << "fileNum = " << fileNum << ", "
+											  << "chan1 = " << iitp::eegNames[eeg1]
+											  << ", "
+											  << "chan2 = " << iitp::eegNames[eeg2]
+											  << std::endl;
+								}
 
 								//							if(std::abs(val) > 0.01)
 								{
@@ -1283,6 +1292,16 @@ void IITPprocessStaged(const QString & guyName,
 								auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
 														dt.findChannel(iitp::emgNames[emg]),
 														fr);
+								if(val == std::complex<double>{})
+								{
+									std::cout << "IITPprocessStaged: bad val static eeg-emg, "
+											  << "fileNum = " << fileNum << ", "
+											  << "chan1 = " << iitp::eegNames[eeg]
+											  << ", "
+											  << "chan2 = " << iitp::emgNames[emg]
+											  << std::endl;
+								}
+
 								//							if(std::abs(val) > 0.01)
 								{
 									outStr
@@ -1351,6 +1370,15 @@ void IITPprocessStaged(const QString & guyName,
 									auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg1]),
 															dt.findChannel(iitp::eegNames[eeg2]),
 															fr);
+									if(val == std::complex<double>{})
+									{
+										std::cout << "IITPprocessStaged: bad val period eeg-eeg, "
+												  << "fileNum = " << fileNum << ", "
+												  << "chan1 = " << iitp::eegNames[eeg1]
+												  << ", "
+												  << "chan2 = " << iitp::eegNames[eeg2]
+												  << std::endl;
+									}
 
 //									if(std::abs(val) > 0.01)
 									{
@@ -1377,6 +1405,15 @@ void IITPprocessStaged(const QString & guyName,
 									auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
 															dt.findChannel(iitp::emgNames[emg]),
 															fr);
+									if(val == std::complex<double>{})
+									{
+										std::cout << "IITPprocessStaged: bad val period eeg-emg, "
+												  << "fileNum = " << fileNum << ", "
+												  << "chan1 = " << iitp::eegNames[eeg]
+												  << ", "
+												  << "chan2 = " << iitp::emgNames[emg]
+												  << std::endl;
+									}
 //									if(std::abs(val) > 0.01)
 									{
 										outStr
