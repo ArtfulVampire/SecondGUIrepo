@@ -154,6 +154,7 @@ const std::vector<QString> gonioNames {
 	"Wrist_r"};
 
 /// [numFile] - interestingChannels
+/// commented wrists and ankles - letter 7-Nov-17
 const std::vector<std::valarray<int>> interestGonios{
 	// 0 eyes closed
 	{},
@@ -176,7 +177,7 @@ const std::vector<std::valarray<int>> interestGonios{
 	// 9 feet + wrists imaginary
 	{},
 	// 10 legs + wrists
-	{Ankle_l, Ankle_r, Knee_l, Knee_r, Wrist_l, Wrist_r},
+	{ /*Ankle_l, Ankle_r, */ Knee_l, Knee_r, Wrist_l, Wrist_r},
 	// 11 legs + wrists imaginary
 	{},
 	// 12 static stress
@@ -186,19 +187,19 @@ const std::vector<std::valarray<int>> interestGonios{
 	// 14 middle eyes open
 	{},
 	// 15 arms
-	{Elbow_l, Elbow_r, Wrist_l, Wrist_r},
+	{Elbow_l, Elbow_r /*, Wrist_l, Wrist_r*/ },
 	// 16 arms imaginary
 	{},
 	// 17 arms + legs
-	{Elbow_l, Elbow_r, Wrist_l, Wrist_r, Ankle_l, Ankle_r, Knee_l, Knee_r},
+	{Elbow_l, Elbow_r, Knee_l, Knee_r /*, Ankle_l, Ankle_r, Wrist_l, Wrist_r*/ },
 	// 18 arms + legs imaginagy
 	{},
 	// 19 legs passive
-	{Ankle_l, Ankle_r, Knee_l, Knee_r},
+	{Knee_l, Knee_r  /*,Ankle_l, Ankle_r*/ },
 	// 20 arms passive
-	{Elbow_l, Elbow_r, Wrist_l, Wrist_r},
+	{Elbow_l, Elbow_r /*, Wrist_l, Wrist_r*/ },
 	// 21 arms+legs passive
-	{Elbow_l, Elbow_r, Wrist_l, Wrist_r, Ankle_l, Ankle_r, Knee_l, Knee_r},
+	{Elbow_l, Elbow_r, Knee_l, Knee_r /*, Wrist_l, Wrist_r, Ankle_l, Ankle_r*/ },
 	// 22 final eyes closed
 	{},
 	// 23 final eyes open
@@ -435,13 +436,13 @@ public:
 	void cutPieces(double length);
 	void cutPiecesW(double overlap);
 	void countContiniousTaskSpectra();
-	void countContiniousTaskSpectraW(double overlap);
+	void countContiniousTaskSpectraW(const QString & resPath, double overlap);
 
 	/// periodic task
 	void setPieces(int startMark = 10, int finishMark = 20);
 	void setPiecesW(int startMark, int finishMark, double overlap);
 	void countFlexExtSpectra(int mark1, int mark2);
-	void countFlexExtSpectraW(int mark1, int mark2, double overlap);
+	void countFlexExtSpectraW(const QString & resPath, int mark1, int mark2, double overlap);
 
 	void countPiecesFFT();
 	void resizePieces(int in);
