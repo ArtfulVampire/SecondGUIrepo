@@ -115,7 +115,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 01
+#if 0
 	/// IITP
 	QStringList guyList{
 		"Alex",		//
@@ -607,7 +607,7 @@ void MainWindow::customFunc()
 //			0.5, 4, 250., 0).save("/media/Files/Data/D.jpg");
 //	exit(0);
 
-#if 01
+#if 0
 	/// Dasha ToTable processing for Galya's paper
 //	myLib::areEqualFiles("/media/Files/Data/Dasha/Totable/Berlin_brush.edf",
 //						 "/media/Files/Data/Dasha/Totable/Berlin/Berlin_brush.edf");
@@ -617,6 +617,73 @@ void MainWindow::customFunc()
 //	return;
 
 	const QString pth = def::dataFolder + "/Dasha/Totable_best";
+	const QString cut = def::dataFolder + "/Dasha/Totable_best_cut";
+
+	if(0)
+	{
+		/// by letter 30-31 Oct 17
+
+
+		/// Cut 10 sec
+		if(0)
+		{
+			for(auto str : QDir(pth).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+			{
+				autos::GalyaCut(pth + "/" + str,  10, cut);
+			}
+			exit(0);
+		}
+		/// process cut
+		if(0)
+		{
+			def::currAutosUser = def::autosUser::Galya;
+			autos::ProcessAllInOneFolder(cut);
+			exit(0);
+		}
+		/// labels
+		if(0) /// labels
+		{
+			std::ofstream labStr;
+
+			labStr.open((cut + "/out/alpha_labels.txt").toStdString());
+			for(QString lab : coords::lbl19)
+			{
+				labStr << "alpha_" << lab << "\t";
+			}
+			labStr.close();
+
+			labStr.open((cut + "/out/fracDim_labels.txt").toStdString());
+			for(QString lab : coords::lbl19)
+			{
+				labStr << "FD_" << lab << "\t";
+			}
+			labStr.close();
+
+			labStr.open((cut + "/out/spectre_labels.txt").toStdString());
+			for(int lf = 2; lf <= 19; ++lf)
+			{
+				for(QString lab : coords::lbl19)
+				{
+					labStr << "FFT_" << lf << "_" << lf+1 << "_" << lab << "\t";
+				}
+			}
+			labStr.close();
+
+			labStr.open((cut + "/out/Hilbert_labels.txt").toStdString());
+			for(QString func : {"_carr_", "_sd_"})
+			{
+				for(QString lab : coords::lbl19)
+				{
+					labStr << "Hilb" << func << lab << "\t";
+				}
+			}
+			labStr.close();
+
+			exit(0);
+		}
+	}
+
+
 
 	for(auto str : QDir(pth).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
@@ -655,6 +722,7 @@ void MainWindow::customFunc()
 				}
 			}
 		}
+
 //		repair::channelsOrderDir(pth + "/" + str,
 //								 pth + "/" + str,
 //								 coords::lbl31_good);

@@ -21,7 +21,7 @@ using namespace myOut;
 namespace autos
 {
 
-QString getFeatureString(int in)
+QString getFeatureString(featuresMask in)
 {
 	return std::get<1>(
 				*std::find_if(std::begin(autos::FEATURES),
@@ -71,13 +71,10 @@ void GalyaProcessing(const QString & procDirPath,
 			Mask = autos::featuresMask::alpha |
 				   autos::featuresMask::spectre |
 				   autos::featuresMask::Hilbert |
-				   autos::featuresMask::fracDim |
-				   autos::featuresMask::Hjorth |
-				   autos::featuresMask::wavelet
+				   autos::featuresMask::fracDim
+//				   autos::featuresMask::Hjorth |
+//				   autos::featuresMask::wavelet
 				   ;
-
-//			Mask = autos::featuresMask::Hilbert;
-			Mask = autos::featuresMask::fracDim;
 
 			break;
 		}
@@ -103,17 +100,18 @@ void GalyaProcessing(const QString & procDirPath,
 		}
 #endif
 	}
-
+//#ifdef _OPENMP
 //	omp_set_dynamic(0);
 //	omp_set_num_threads(3);
 //#pragma omp parallel
 //#pragma omp for nowait
+//#endif
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		QString helpString = dir.absolutePath() + "/" + filesVec[i];
 
 		edfFile initEdf;
-		initEdf.readEdfFile(helpString, true);
+		initEdf.readEdfFile(helpString);
 
 		/// different checks
 		if(initEdf.getNdr() == 0)
@@ -174,9 +172,12 @@ void countFeatures(const matrix & inData,
 			outStr << std::fixed;
 			outStr.precision(4);
 
-			std::get<2>(FEATURES[num])(inData,
-									   srate,
-									   outStr);
+
+			auto f = std::get<2>(FEATURES[num]);
+			f(inData,
+			  srate,
+			  outStr);
+
 			outStr.close();
 		}
 	}
@@ -252,7 +253,9 @@ void countHilbert(const matrix & inData,
 	std::vector<std::pair<double, double>> filters{
 		std::make_pair(0.5, 70), /// i.e. no filter
 		std::make_pair(4, 6),
-		std::make_pair(8, 13)};
+		std::make_pair(8, 13)
+	};
+
 	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); // [filter][chan][0-carr, 1-SD]
 
 	for(int numFilt = 0; numFilt < filters.size(); ++numFilt)
@@ -451,10 +454,10 @@ void EEG_MRI_FD()
 		/// list in order
 		auto lst = QDir(outPath).entryList(QDir::Files, QDir::Name);
 		/// arrange to tables
-		autos::makeTableFromRows(outPath,
+		autos::ArrangeFilesToTable(outPath,
 								 OUT + "/" + guy + ".txt");
 	}
-	autos::makeTableFromRows(OUT,
+	autos::ArrangeFilesToTable(OUT,
 							 OUT + "/all.txt",
 							 true);
 }
@@ -545,7 +548,7 @@ void Xenia_TBI(const QString & tbi_path)
 			for(QString marker : markers)
 			{
 				fileNames.clear();
-				for(int type : {
+				for(autos::featuresMask type : {
 					autos::featuresMask::alpha,
 					autos::featuresMask::fracDim,
 					autos::featuresMask::Hilbert,
@@ -735,7 +738,7 @@ void Xenia_TBI_final(const QString & finalPath,
 				for(QString mark : tbiMarkers)
 				{
 					QStringList fileNamesToArrange;
-					for(int func : {
+					for(autos::featuresMask func : {
 						autos::featuresMask::spectre,
 						autos::featuresMask::fracDim,
 						autos::featuresMask::Hilbert,
@@ -771,7 +774,7 @@ void Xenia_TBI_final(const QString & finalPath,
 		}
 	}
 	/// make tables whole and people list
-	autos::makeTableFromRows(finalPath + "_out",
+	autos::ArrangeFilesToTable(finalPath + "_out",
 							 finalPath + "_out/all.txt",
 							 true);
 
@@ -990,10 +993,10 @@ void makeRightNumbers(const QString & dirPath,
 }
 
 
-void makeTableFromRows(const QString & inPath,
-					   QString outTablePath,
-					   bool writePeople,
-					   const QString & auxFilter)
+void ArrangeFilesToTable(const QString & inPath,
+						 QString outTablePath,
+						 bool writePeople,
+						 const QString & auxFilter)
 {
 	QDir deer(inPath);
 
@@ -1012,17 +1015,20 @@ void makeTableFromRows(const QString & inPath,
 	std::ofstream fileNames;
 	if(writePeople)
 	{
-		fileNames.open((inPath + "/people.txt").toStdString());
+		QString peoplePath = outTablePath;
+		peoplePath.replace(".txt", "_people.txt");
+		fileNames.open(peoplePath.toStdString());
 	}
 
-	for(const QString & fileName : deer.entryList({"*" + auxFilter +".txt"},
+	for(const QString & fileName : deer.entryList({"*" + auxFilter + "*.txt"},
 												  QDir::Files,
-												  QDir::Time
-												  | QDir::Reversed
+												  QDir::Name
+//												  | QDir::Reversed
 												  ))
 	{
-		if(fileName.contains(tableName)
+		if((fileName == tableName)
 		   || fileName.contains("people")) continue;
+
 		if(writePeople)
 		{
 			fileNames << fileName << "\n";
@@ -1136,7 +1142,6 @@ void ArrangeFilesToLine(const QString & dirPath,
 }
 
 
-
 void cutOneFile(const QString & filePath,
 				const int wndLen,
 				const QString & outPath)
@@ -1209,12 +1214,12 @@ void GalyaCut(const QString & path,
 	const auto filesVec = leest1.toVector();
 
 	/// ??????????????????????
-#ifdef _OPENMP
-	omp_set_dynamic(0);
-	omp_set_num_threads(3);
-#pragma omp parallel
-#pragma omp for nowait
-#endif
+//#ifdef _OPENMP
+//	omp_set_dynamic(0);
+//	omp_set_num_threads(3);
+//#pragma omp parallel
+//#pragma omp for nowait
+//#endif
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		std::cout << filesVec[i] << std::endl;
@@ -1360,7 +1365,7 @@ void ProcessAllInOneFolder(const QString & inPath,
 	outPath = inPath + "/out";
 
 	/// process?
-	if(01)
+	if(0)
 	{
 		/// clear outFolder
 		myLib::cleanDir(inPath + "/out", "txt", true);
@@ -1369,14 +1374,14 @@ void ProcessAllInOneFolder(const QString & inPath,
 
 
 	/// make one line file for each guy
-	if(1)
+	if(0)
 	{
 		for(QString ExpName : edfs)
 		{
 			ExpName = ExpName.left(ExpName.indexOf('.'));
 
 			QStringList fileNamesToArrange;
-			for(int func : {
+			for(autos::featuresMask func : {
 				autos::featuresMask::alpha,
 				autos::featuresMask::spectre,
 				autos::featuresMask::Hilbert,
@@ -1415,13 +1420,34 @@ void ProcessAllInOneFolder(const QString & inPath,
 	}
 
 
+	if(01)
+	{
+		/// make table for each feature
+		for(autos::featuresMask func : {
+			autos::featuresMask::alpha,
+			autos::featuresMask::spectre,
+			autos::featuresMask::Hilbert,
+			autos::featuresMask::fracDim
+	})
+		{
+			const auto str = autos::getFeatureString(func);
+			autos::ArrangeFilesToTable(outPath,
+									   outPath + "/" + str + ".txt",
+									   true,
+									   str);
+		}
+	}
 
-	/// make tables whole and people list
-	autos::makeTableFromRows(inPath + "_out",
-							 inPath + "_out/all.txt",
-							 true);
 
-	std::cout << "Xenia_TBI_final: time elapsed = "
+	if(0)
+	{
+		/// make tables whole and people list
+		autos::ArrangeFilesToTable(inPath + "_out",
+								 inPath + "_out/all.txt",
+								 true);
+	}
+
+	std::cout << "ProcessAllInOneFolder: time elapsed = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
@@ -1524,7 +1550,7 @@ void ProcessByFolders(const QString & inPath,
 			{
 				QStringList fileNamesToArrange;
 
-					for(int func : {
+					for(autos::featuresMask func : {
 //						autos::featuresMask::alpha,
 //						autos::featuresMask::spectre,
 //						autos::featuresMask::Hilbert,
@@ -1581,7 +1607,7 @@ void ProcessByFolders(const QString & inPath,
 	}
 
 	/// make tables whole and people list
-	autos::makeTableFromRows(inPath + "_out",
+	autos::ArrangeFilesToTable(inPath + "_out",
 							 inPath + "_out/all.txt",
 							 true);
 
@@ -1640,14 +1666,14 @@ void GalyaFull(const QString & inDirPath,
 							rightNum);
 
 	/// Galya
-	for(int typ : {
-		featuresMask::alpha,
-		featuresMask::spectre,
-		featuresMask::Hilbert,
-		featuresMask::fracDim})
+	for(autos::featuresMask typ : {
+		autos::featuresMask::alpha,
+		autos::featuresMask::spectre,
+		autos::featuresMask::Hilbert,
+		autos::featuresMask::fracDim})
 	{
 		QString type = autos::getFeatureString(typ);
-		autos::makeTableFromRows(outPath,
+		autos::ArrangeFilesToTable(outPath,
 								 outDirPath + "/" + outFileNames
 								 + "_" + type + ".txt",
 								 false,
@@ -1660,7 +1686,7 @@ void GalyaFull(const QString & inDirPath,
 
 	/// rename the folder in OUT to guy
 	autos::makeRightNumbers(waveletPath, rightNum);
-	autos::makeTableFromRows(waveletPath,
+	autos::ArrangeFilesToTable(waveletPath,
 							 outDirPath + "/" + outFileNames + "_wavelet.txt");
 }
 

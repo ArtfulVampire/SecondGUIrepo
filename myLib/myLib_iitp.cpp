@@ -739,7 +739,7 @@ iitpData & iitpData::staging(const QString & chanName,
 	const int lefrig = 8;
 
 	std::ofstream of("/media/Files/Data/iitp/out.txt", std::ios_base::app);
-	std::ostream & os = of;
+//	std::ostream & os = of;
 
 //	os << chanName << std::endl;
 	for(int i = 0; i < chan.size(); ++i)

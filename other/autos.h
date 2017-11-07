@@ -49,7 +49,7 @@ const std::vector<std::tuple<int, QString, featureFuncType, int>> FEATURES {
 	std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet,	3 * 19 * 19),
 	std::make_tuple(featuresMask::Hjorth,	"Hjorth",	autos::countHjorth,		2 * 19)
 };
-QString getFeatureString(int in);
+QString getFeatureString(featuresMask in);
 int getFileLength(int in);
 
 
@@ -191,7 +191,7 @@ void mixNumbersCF(const QString & dirPath);
 void makeRightNumbersCF(const QString & dirPath, int startNum);
 void makeRightNumbers(const QString & dirPath,
 					  int length = 3);
-void makeTableFromRows(const QString & inPath,
+void ArrangeFilesToTable(const QString & inPath,
 					   QString outTablePath = QString(),
 					   bool writePeople = false,
 					   const QString & auxFilter = QString());
