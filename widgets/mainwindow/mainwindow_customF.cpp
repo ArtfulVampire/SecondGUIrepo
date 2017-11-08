@@ -118,11 +118,11 @@ void MainWindow::customFunc()
 #if 0
 	/// IITP
 	QStringList guyList{
-		"Alex",		//
-		"Boris",	//
+//		"Alex",		//
+//		"Boris",	//
 		"Dima",		//
 		"Egor",		//
-//		"Galya",	//
+		"Galya",	//
 		"Ira",		//
 		"Isakov",	//
 		"Levik",	//
@@ -146,7 +146,7 @@ void MainWindow::customFunc()
 
 //	return;
 
-//	QString guy = "Boris";
+//	QString guy = "Alex";
 	for(QString guy : guyList)
 	{
 		if(0)
@@ -171,11 +171,11 @@ void MainWindow::customFunc()
 
 		if(01)
 		{
-			autos::IITPstaging(guy);							/// flex/extend markers
+//			autos::IITPstaging(guy);							/// flex/extend markers
 //			autos::IITPcopyToCar(guy);							/// copy *_stag.edf to guy_car
 //			autos::IITPrerefCAR(guy);							/// rewrites edfs in SYNCED/guy_car
-//			autos::IITPprocessStaged(guy);						/// both -Ref and -car
-//			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
+			autos::IITPprocessStaged(guy);						/// both -Ref and -car
+			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
 			continue;
 //			exit(0);
 		}

@@ -434,7 +434,7 @@ void iitpData::countContiniousTaskSpectra()
 }
 
 
-void iitpData::countContiniousTaskSpectraW(double overlap)
+void iitpData::countContiniousTaskSpectraW(const QString & resPath, double overlap)
 {
 	const int leftInd = iitp::leftFr / getSpStepW();
 	const int rightInd = iitp::rightFr / getSpStepW() + 1;
@@ -460,8 +460,7 @@ void iitpData::countContiniousTaskSpectraW(double overlap)
 					  std::begin(spectre) + i * spLen);
 		}
 	}
-	myLib::writeFileInLine(def::iitpResFolder
-						   + "/" + this->getGuy()
+	myLib::writeFileInLine(resPath
 						   + "/sp"
 						   + "/" + this->getInit()
 						   + "_" + iitp::trialTypesNames[iitp::trialTypes[this->getNum()]]
@@ -545,7 +544,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 }
 
 
-void iitpData::countFlexExtSpectraW(int mark1, int mark2, double overlap)
+void iitpData::countFlexExtSpectraW(const QString & resPath, int mark1, int mark2, double overlap)
 {
 	const int leftInd = iitp::leftFr / getSpStepW();
 	const int rightInd = iitp::rightFr / getSpStepW() + 1;
@@ -583,8 +582,7 @@ void iitpData::countFlexExtSpectraW(int mark1, int mark2, double overlap)
 		}
 	}
 	spectra[0] = spectre;
-	myLib::writeFileInLine(def::iitpResFolder
-						   + "/" + this->getGuy()
+	myLib::writeFileInLine(resPath
 						   + "/sp"
 						   + "/" + this->getInit() + joint + "_flexion_sp.txt",
 						   spectre);
@@ -610,8 +608,7 @@ void iitpData::countFlexExtSpectraW(int mark1, int mark2, double overlap)
 		}
 	}
 	spectra[1] = spectre;
-	myLib::writeFileInLine(def::iitpResFolder
-						   + "/" + this->getGuy()
+	myLib::writeFileInLine(resPath
 						   + "/sp"
 						   + "/" + this->getInit() + joint + "_extension_sp.txt",
 						   spectre);

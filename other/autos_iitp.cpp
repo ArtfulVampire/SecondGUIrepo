@@ -1229,7 +1229,8 @@ void IITPprocessStaged(const QString & guyName,
 			{
 //				dt.countContiniousTaskSpectra();
 				dt.cutPiecesW(continiousOverlap);
-				dt.countContiniousTaskSpectraW(continiousOverlap);
+				dt.countContiniousTaskSpectraW(def::iitpResFolder + "/" + guyDir,
+											   continiousOverlap);
 //				continue;
 
 				/// coherencies
@@ -1335,7 +1336,8 @@ void IITPprocessStaged(const QString & guyName,
 					int minMarker = iitp::gonioMinMarker(gonio);
 //					dt.countFlexExtSpectra(minMarker, minMarker + 1);
 //					std::cout << iitp::gonioNames[gonio] << "\t";
-					dt.countFlexExtSpectraW(minMarker, minMarker + 1, periodicOverlap);
+					dt.countFlexExtSpectraW(def::iitpResFolder + "/" + guyDir,
+											minMarker, minMarker + 1, periodicOverlap);
 //					continue;
 
 
