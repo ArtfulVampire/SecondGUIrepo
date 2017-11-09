@@ -383,7 +383,7 @@ const std::valarray<double> fileNums = smLib::range(0, 29+1);
 /// test
 //const std::valarray<double> fileNums = smLib::range(24, 29+1);
 //const std::valarray<double> fileNums = smLib::range(0, 12);
-//const std::valarray<double> fileNums{10};
+//const std::valarray<double> fileNums{13, 14};
 //const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
 
 
