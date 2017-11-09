@@ -32,6 +32,15 @@ void MainWindow::customFunc()
 
 //	return;
 
+//	const QString p = "/media/Files/Data/Galya/SomeData9Nov17/out/";
+//	const QString d = "/media/Files/Data/Galya/SomeData9Nov17/out2/";
+//	for(QString n :{"fracDim", "spectre", "Hilbert", "alpha"})
+//	{
+//		QFile::copy(p + n + "_people.txt",
+//					d + n + "_people.txt");
+//	}
+//	exit(0);
+
 
 #if 0
 	/// defs Singleton test
@@ -607,7 +616,7 @@ void MainWindow::customFunc()
 //			0.5, 4, 250., 0).save("/media/Files/Data/D.jpg");
 //	exit(0);
 
-#if 0
+#if 01
 	/// Dasha ToTable processing for Galya's paper
 //	myLib::areEqualFiles("/media/Files/Data/Dasha/Totable/Berlin_brush.edf",
 //						 "/media/Files/Data/Dasha/Totable/Berlin/Berlin_brush.edf");
@@ -616,10 +625,14 @@ void MainWindow::customFunc()
 	def::ntFlag = true; /// for Dasha's and EEGMRI
 //	return;
 
-	const QString pth = def::dataFolder + "/Dasha/Totable_best";
-	const QString cut = def::dataFolder + "/Dasha/Totable_best_cut";
+//	const QString pth = def::dataFolder + "/Dasha/Totable_best";
+//	const QString cut = def::dataFolder + "/Dasha/Totable_best_cut";
 
-	if(0)
+	def::ntFlag = false;
+	const QString pth{};
+	const QString cut = "/media/Files/Data/Galya/SomeData9Nov17";
+
+	if(01)
 	{
 		/// by letter 30-31 Oct 17
 
@@ -634,7 +647,7 @@ void MainWindow::customFunc()
 			exit(0);
 		}
 		/// process cut
-		if(0)
+		if(01)
 		{
 			def::currAutosUser = def::autosUser::Galya;
 			autos::ProcessAllInOneFolder(cut);

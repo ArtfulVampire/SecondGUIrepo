@@ -1365,7 +1365,7 @@ void ProcessAllInOneFolder(const QString & inPath,
 	outPath = inPath + "/out";
 
 	/// process?
-	if(0)
+	if(01)
 	{
 		/// clear outFolder
 		myLib::cleanDir(inPath + "/out", "txt", true);
@@ -1420,9 +1420,10 @@ void ProcessAllInOneFolder(const QString & inPath,
 	}
 
 
+	/// make table for each feature
 	if(01)
 	{
-		/// make table for each feature
+		QDir().mkpath(inPath + "/out2");
 		for(autos::featuresMask func : {
 			autos::featuresMask::alpha,
 			autos::featuresMask::spectre,
@@ -1432,16 +1433,16 @@ void ProcessAllInOneFolder(const QString & inPath,
 		{
 			const auto str = autos::getFeatureString(func);
 			autos::ArrangeFilesToTable(outPath,
-									   outPath + "/" + str + ".txt",
+									   inPath + "/out2/" + str + ".txt",
 									   true,
 									   str);
 		}
 	}
 
 
+	/// make tables whole and people list
 	if(0)
 	{
-		/// make tables whole and people list
 		autos::ArrangeFilesToTable(inPath + "_out",
 								 inPath + "_out/all.txt",
 								 true);
