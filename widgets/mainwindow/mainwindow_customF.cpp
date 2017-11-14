@@ -162,11 +162,11 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
-//		"Alex",		//
-//		"Boris",	//
+		"Alex",		//
+		"Boris",	//
 		"Dima",		//
 		"Egor",		//
 		"Galya",	//
@@ -176,6 +176,7 @@ void MainWindow::customFunc()
 		"Oleg",		//
 		"Victor"	//
 	};
+
 
 
 	//	edfFile f;
@@ -193,9 +194,29 @@ void MainWindow::customFunc()
 
 //	return;
 
-//	QString guy = "Alex";
-	for(QString guy : guyList)
+	QString guy = "Boris";
+//	for(QString guy : guyList)
 	{
+		if(0)
+		{
+			/// check Da/Dp channels
+			const QString ph = def::iitpSyncFolder + "/" + guy;
+			for(QString fn : QDir(ph).entryList({"*_sum_new.edf"}))
+			{
+				edfFile fl;
+				fl.readEdfFile(ph + "/" + fn, true);
+				if(fl.findChannel("Da") != -1)
+				{
+					std::cout << "Da: " << fn << std::endl;
+				}
+				if(fl.findChannel("Dp") != -1)
+				{
+					std::cout << "Dp: " << fn << std::endl;
+				}
+			}
+//			continue;
+//			exit(0);
+		}
 		if(0)
 		{
 //			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
@@ -219,14 +240,15 @@ void MainWindow::customFunc()
 		if(01)
 		{
 //			autos::IITPstaging(guy);							/// flex/extend markers
-//			autos::IITPcopyToCar(guy);							/// copy *_stag.edf to guy_car
-//			autos::IITPrerefCAR(guy);							/// rewrites edfs in SYNCED/guy_car
+//			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
+//			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
 			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
-			continue;
-//			exit(0);
+//			continue;
+			exit(0);
 		}
 
+//		exit(0);
 //		continue;
 
 		/// deleted lists 14.10.2017
