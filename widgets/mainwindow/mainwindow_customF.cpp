@@ -41,6 +41,43 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
+#if 0
+	/// check for significance of efficiency
+	for(int i = 29; i < 40; ++i)
+	{
+		std::cout << i << "   " << myLib::binomialOneTailed(29, i, 40) << std::endl;
+	}
+	exit(0);
+
+	/// [guy][1-spat, 3-spat, 1-verb, 3-verb]
+	std::vector<QString> names {"BAM", "BAV", "DEG", "ENV_n", "IAE", "LMA_n", "MAM", "MII", "NUA", "SAA_n", "SAV_n"};
+	std::vector<std::vector<double>> ppp{
+		{24, 28, 13, 14}, // BAM
+		{29, 36, 12, 22}, // BAV
+		{19, 25, 14, 19}, // DEG
+		{16, 18, 17, 27}, // ENV
+		{21, 32, 14, 21}, // IAE
+		{22, 31, 34, 36}, // LMA
+		{18, 22, 9, 13}, // MAM
+		{26, 30, 14, 26}, // MII
+		{25, 29, 8, 11}, // NUA
+		{23, 29, 15, 18}, // SAA
+		{21, 28, 11, 15} // SAV
+	};
+	std::cout << std::fixed;
+	std::cout.precision(2);
+	for(int i = 0; i < names.size(); ++i)
+	{
+		std::cout << names[i] << std::endl;
+		std::cout << "spat = " <<  myLib::binomialOneTailed(ppp[i][0], ppp[i][1], 40)
+				<< "\t" << (ppp[i][1] - ppp[i][0]) / ppp[i][0] << "\t";
+		std::cout << "verb = " <<  myLib::binomialOneTailed(ppp[i][2], ppp[i][3], 40)
+				<< "\t" << (ppp[i][3] - ppp[i][2]) / ppp[i][2] << std::endl;
+		std::cout << std::endl;
+	}
+	std::cout << std::defaultfloat;
+	exit(0);
+#endif
 
 #if 0
 	/// defs Singleton test
@@ -106,6 +143,7 @@ void MainWindow::customFunc()
 //				std::make_pair("Dovbyish", "DEG"),
 //				std::make_pair("Evstratov_n", "ENV"),
 //				std::make_pair("Ilyin", "IAE"),
+//		std::make_pair("Markina", "MAM"),
 //				std::make_pair("Matasov", "MII"),
 //				std::make_pair("Nikonenko", "NUA"),
 //				std::make_pair("Semyonov_n", "SAV"),
@@ -118,8 +156,8 @@ void MainWindow::customFunc()
 		autos::feedbackFinalTimes(def::dataFolder + "/FeedbackFinalMark/" + in.first,
 								  in.second);
 	}
-//	autos::createAnsFiles("/media/Files/Data/FeedbackFinal/Beketova",
-//						  "BAM");
+//	autos::createAnsFiles("/media/Files/Data/FeedbackFinal/Markina",
+//						  "MAM");
 	exit(0);
 #endif
 

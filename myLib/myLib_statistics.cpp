@@ -10,6 +10,38 @@ using namespace myOut;
 namespace myLib
 {
 
+long long combination(int k, int n)
+{
+	double ans = 1.;
+	for(int i = 0; i < std::min(k, n-k); ++i)
+	{
+		ans *= (n - i);
+		ans /= (i + 1);
+	}
+	return int(ans);
+}
+
+double binomialOneTailed(int num1, int num2, int numAll)
+{
+	double p = num1 / double(numAll);
+
+
+	double sum = 0.;
+	for(int i = num2; i <= numAll; ++i)
+	{
+		/// combination inside, too large values
+		long double a = std::pow(1. - p, numAll - i) * std::pow(p, i);
+		for(int j = 0; j < std::min(i, numAll - i); ++j)
+		{
+			a *= (numAll - j);
+			a /= (j + 1);
+		}
+//		std::cout << a << std::endl;
+		sum += a;
+	}
+	return sum;
+}
+
 void histogram(const std::valarray<double> & arr,
 			   int numSteps,
 			   const QString & picPath,

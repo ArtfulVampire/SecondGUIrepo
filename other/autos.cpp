@@ -1733,7 +1733,7 @@ void feedbackFinalTimes(const QString & edfsPath,
 		}
 		answers.close();
 //		std::cout << "corrs = " << corrs << std::endl;
-		std::cout << "corrs.sizee() = " << corrs.size() << std::endl;
+//		std::cout << "corrs.sizee() = " << corrs.size() << std::endl;
 
 		int count = 0;
 		for(const std::pair<int, int> & mrk : markers)
@@ -1753,7 +1753,7 @@ void feedbackFinalTimes(const QString & edfsPath,
 								 );
 			}
 		}
-		std::cout << values.size() << std::endl;
+//		std::cout << values.size() << std::endl;
 
 //		for(auto in : values)
 //		{
