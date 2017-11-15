@@ -206,7 +206,8 @@ void createAnsFiles(const QString & edfPath, QString guy);
 void timesNew(const QString & edfPath, const QString & guy, int numSession);
 void avTimesNew(const QString & edfPath, const QString & guy, int numSession);
 void feedbackFinalTimes(const QString & edfsPath,
-						const QString & expName);
+						const QString & expName,
+						const QString & postfix);
 
 
 void successivePrecleanWinds(const QString & windsPath);

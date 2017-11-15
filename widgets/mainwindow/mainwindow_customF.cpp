@@ -41,13 +41,13 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-#if 0
+#if 01
 	/// check for significance of efficiency
-	for(int i = 29; i < 40; ++i)
-	{
-		std::cout << i << "   " << myLib::binomialOneTailed(29, i, 40) << std::endl;
-	}
-	exit(0);
+//	for(int i = 29; i < 40; ++i)
+//	{
+//		std::cout << i << "   " << myLib::binomialOneTailed(29, i, 40) << std::endl;
+//	}
+//	exit(0);
 
 	/// [guy][1-spat, 3-spat, 1-verb, 3-verb]
 	std::vector<QString> names {"BAM", "BAV", "DEG", "ENV_n", "IAE", "LMA_n", "MAM", "MII", "NUA", "SAA_n", "SAV_n"};
@@ -64,6 +64,25 @@ void MainWindow::customFunc()
 		{23, 29, 15, 18}, // SAA
 		{21, 28, 11, 15} // SAV
 	};
+
+//	/// [guy][1-spat, 3-spat, 1-verb, 3-verb]
+//	std::vector<QString> names {"CDV_n", "KKS_n", "KNL", "MID_n", "MSM", "PDI", "PNA", "SKI", "SRV", "TAA", "TihAA", "UIA"};
+//	std::vector<std::vector<double>> ppp{
+//		{31, 14, 18, 17}, // CDV_n
+//		{23, 16, 16, 20}, // KKS_n
+//		{20, 18, 23, 15}, // KNL
+//		{28, 21, 21, 28}, // MID_n
+//		{27, 19, 22, 23}, // MSM
+//		{28, 25, 17, 26}, // PDI
+//		{20, 17, 31, 31}, // PNA
+//		{23, 20, 36, 32}, // SKI
+//		{29, 24, 14, 15}, // SRV
+//		{29, 20, 29, 30}, // TAA
+//		{23, 16, 28, 17}, // TihAA
+//		{30, 22, 18, 22} // UIA
+//	};
+
+
 	std::cout << std::fixed;
 	std::cout.precision(2);
 	for(int i = 0; i < names.size(); ++i)
@@ -136,7 +155,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-	/// count correctness and average times
+	/// count correctness and average times - FeedbackFinal
 	std::vector<std::pair<QString, QString>> guys{
 //		std::make_pair("Beketova", "BAM"),
 //				std::make_pair("Burtcev", "BAV"),
@@ -154,15 +173,40 @@ void MainWindow::customFunc()
 	for(auto in : guys)
 	{
 		autos::feedbackFinalTimes(def::dataFolder + "/FeedbackFinalMark/" + in.first,
-								  in.second);
+								  in.second, {});
 	}
 //	autos::createAnsFiles("/media/Files/Data/FeedbackFinal/Markina",
 //						  "MAM");
 	exit(0);
 #endif
 
+#if 0
+	/// count correctness and average times - FeedbackNew
+	std::vector<std::pair<QString, QString>> guys{
+		std::make_pair("CDV_n", "CDV"),
+				std::make_pair("KKS_n", "KKS"),
+				std::make_pair("KNL", "KNL"),
+				std::make_pair("MSM", "MSM"),
+				std::make_pair("PDI", "PDI"),
+				std::make_pair("PNA", "PNA"),
+				std::make_pair("SKI", "SKI"),
+				std::make_pair("SRV", "SRV"),
+				std::make_pair("TAA", "TAA"),
+				std::make_pair("TihAA", "TihAA"),
+				std::make_pair("UIA", "UIA")
+	};
 
-#if 01
+	for(auto in : guys)
+	{
+
+		autos::feedbackFinalTimes(def::dataFolder + "/FeedbackNewMark/" + in.first,
+								  in.second, "_good");
+	}
+	exit(0);
+#endif
+
+
+#if 0
 	/// IITP
 	QStringList guyList{
 		"Alex",		//

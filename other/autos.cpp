@@ -1692,7 +1692,8 @@ void GalyaFull(const QString & inDirPath,
 }
 
 void feedbackFinalTimes(const QString & edfsPath,
-						const QString & expName)
+						const QString & expName,
+						const QString & postfix)
 {
 
 	std::ofstream outStr;
@@ -1700,9 +1701,9 @@ void feedbackFinalTimes(const QString & edfsPath,
 
 	for(int numSess : {1, 2, 3})
 	{
-		auto filePath = [edfsPath, expName](int i) -> QString
+		auto filePath = [edfsPath, expName, postfix](int i) -> QString
 		{
-			return edfsPath + "/" + expName + "_" + nm(i) + ".edf";
+			return edfsPath + "/" + expName + "_" + nm(i) + postfix + ".edf";
 		};
 
 		if(!QFile::exists(filePath(numSess))) { continue; }
