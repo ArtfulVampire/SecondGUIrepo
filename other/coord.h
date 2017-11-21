@@ -395,8 +395,40 @@ public:
 
 
 
-namespace subjects
+namespace subj
 {
+
+const std::vector<std::pair<QString, QString>> guysFBnew {
+	std::make_pair("CDV_n", "CDV"),
+			std::make_pair("KKS_n", "KKS"),
+			std::make_pair("KNL", "KNL"),
+			std::make_pair("MSM", "MSM"),
+//			std::make_pair("MID", "MID"), /// no third file
+			std::make_pair("PDI", "PDI"),
+			std::make_pair("PNA", "PNA"),
+			std::make_pair("SKI", "SKI"),
+			std::make_pair("SRV", "SRV"),
+			std::make_pair("TAA", "TAA"),
+			std::make_pair("TihAA", "TihAA"),
+			std::make_pair("UIA", "UIA")
+};
+
+const std::vector<std::pair<QString, QString>> guysFBfinal {
+	std::make_pair("Beketova", "BAM"),
+			std::make_pair("Broshevitskaya", "BND"),
+			std::make_pair("Burtcev", "BAV"),
+			std::make_pair("Dovbyish", "DEG"),
+			std::make_pair("Evstratov_n", "ENV"),
+			std::make_pair("Ilyin", "IAE"),
+			std::make_pair("Kartavova", "KKE"),
+			std::make_pair("Korchun", "KAV"),
+			std::make_pair("Laszov", "LMA"),
+			std::make_pair("Matasov", "MII"),
+			std::make_pair("Nikonenko", "NUA"),
+			std::make_pair("Semyonov_n", "SAV"),
+			std::make_pair("Sergeev_n", "SAA")
+};
+
 const QStringList leest_less = {
 	"Berlin-Henis",
 	"Bushenkov",

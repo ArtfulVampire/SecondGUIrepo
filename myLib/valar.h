@@ -1,3 +1,6 @@
+#ifndef VALAR_H
+#define VALAR_H
+
 #include <cmath>
 #include <vector>
 #include <valarray>
@@ -197,3 +200,5 @@ template <typename Cont>
 void mix (Cont & in);
 
 } /// end of namespace
+
+#endif // VALAR_H

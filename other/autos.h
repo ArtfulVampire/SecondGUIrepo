@@ -13,6 +13,7 @@
 namespace autos
 {
 
+/// features
 void countFFT(const matrix & inData,
 			  double srate,
 			  std::ostream & outStr);
@@ -53,73 +54,66 @@ QString getFeatureString(featuresMask in);
 int getFileLength(int in);
 
 
-
+/// what to do with files
 void countFeatures(const matrix & inData,
 				   double srate,
 				   const int Mask,
 				   const QString & preOutPath);
+void cutOneFile(const QString & filePath,
+				const int wndLen,
+				const QString & outPath);
+void cutFilesInFolder(const QString & path,
+			  const int wndLen = 16,
+			  QString outPath = QString());
+void refilterFolder(const QString & procDirPath,
+					double lowFreq,
+					double highFreq,
+					bool isNotch = false);
+void rereferenceFolder(const QString & procDirPath,
+					   const QString & newRef);
+
 
 
 /// main function
 void GalyaProcessing(const QString & procDirPath,
 					 const int numChan = 31,
 					 QString outPath = QString());
+
+/// quite useful general functions
 void EdfsToFolders(const QString & inPath);
-
-
 void ProcessByFolders(const QString & inPath,
 				   QString outPath = QString());
-void Xenia_TBI(const QString & tbi_path);
-void Xenia_TBI_final(const QString & finalPath,
-					 QString outPath = QString());
-
 void ProcessAllInOneFolder(const QString & inPath,
 						   QString outPath = QString());
-
-void GalyaCut(const QString & path,
-			  const int wndLen = 16,
-			  QString outPath = QString());
-void cutOneFile(const QString & filePath,
-				const int wndLen,
-				const QString & outPath);
-
-/// temporary
-void GalyaFull(const QString & inDirPath,
-			   QString outDirPath = QString(),
-			   QString outFileNames = QString(),
-			   int numChan = 32,
-			   int freq = 256,
-			   int rightNum = 3);
-
-
-
-
+void ArrangeFilesToTable(const QString & inPath,
+					   QString outTablePath = QString(),
+					   bool writePeople = false,
+					   const QString & auxFilter = QString());
 void ArrangeFilesToLine(const QString & dirPath,
 						const QStringList & fileNames,
 						const QString & outFilePath);
+
+
+/// some special variants
+void Xenia_TBI(const QString & tbi_path);
+void Xenia_TBI_final(const QString & finalPath,
+					 QString outPath = QString());
+void EEG_MRI_FD();
+void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
+
 void Xenia_repairTable(const QString & initPath,
 					   const QString & repairedPath,
 					   const QString & groupsPath = QString(),
 					   const QString & namesPath = QString());
 
 
-void EEG_MRI_FD();
-void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
-
-
-void refilterFolder(const QString & procDirPath,
-					double lowFreq,
-					double highFreq,
-					bool isNotch = false);
-
-void rereferenceFolder(const QString & procDirPath,
-					   const QString & newRef);
 
 
 
 
 
 
+/// IITP
 void IITPconcat(const QString & guyName,
 				const QString & eegPostfix,
 				const QString emgPostfix);
@@ -187,35 +181,26 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double> > & inData,
 
 
 
-void mixNumbersCF(const QString & dirPath);
-void makeRightNumbersCF(const QString & dirPath, int startNum);
-void makeRightNumbers(const QString & dirPath,
-					  int length = 3);
-void ArrangeFilesToTable(const QString & inPath,
-					   QString outTablePath = QString(),
-					   bool writePeople = false,
-					   const QString & auxFilter = QString());
-
-void repairMarkersInNewFB(QString edfPath, int numSession);
-int numMarkers(const QString & edfPath, const std::vector<int> & markers);
-
-
-
-void avTime(const QString & realsDir = def::dirPath() + "/Reals");
+/// FB
 void createAnsFiles(const QString & edfPath, QString guy);
-void timesNew(const QString & edfPath, const QString & guy, int numSession);
-void avTimesNew(const QString & edfPath, const QString & guy, int numSession);
+void checkMarkFBfinal(const QString & edfPath);
+void timesSolving(const QString & guyPath,
+				  const QString & guyName,
+				  const QString & postfix = QString());
+std::vector<double> timesFromFile(const QString & timesPath, int howSolved);
 void feedbackFinalTimes(const QString & edfsPath,
 						const QString & expName,
-						const QString & postfix);
-
-
-void successivePrecleanWinds(const QString & windsPath);
+						const QString & postfix = QString());
+void checkStatTimes(const QString & guyPath, const QString & guyName);
 void successiveNetPrecleanWinds(const QString & windsPath);
 
 
+
+
+/// OTHER
 matrix makeTestData(const QString & outPath);
 void clustering();
+
 }
 
 #endif // AUTOS_H

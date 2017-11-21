@@ -381,27 +381,30 @@ int MannWhitney(const std::valarray<double> & arr1,
 				const std::valarray<double> & arr2,
 				const double p)
 {
+	/// check output!
+	/// 0 - not different
+	/// 1 - arr1 > arr2
+	/// 2 - arr2 > arr1
+
 	std::vector<std::pair <double, int>> arr;
 
 	// fill first array
 	std::for_each(std::begin(arr1),
 				  std::end(arr1),
 				  [&arr](double in)
-	{arr.push_back(std::make_pair(in, 0)); });
+	{ arr.push_back(std::make_pair(in, 0)); });
 
 	// fill second array
 	std::for_each(std::begin(arr2),
 				  std::end(arr2),
 				  [&arr](double in)
-	{arr.push_back(std::make_pair(in, 1)); });
+	{ arr.push_back(std::make_pair(in, 1)); });
 
 	std::sort(std::begin(arr),
 			  std::end(arr),
 			  [](std::pair<double, int> i,
 			  std::pair<double, int> j) { return i.first > j.first; });
 
-	int sum0 = 0;
-	int sumAll;
 	const int N1 = arr1.size();
 	const int N2 = arr2.size();
 
@@ -412,6 +415,7 @@ int MannWhitney(const std::valarray<double> & arr1,
 
 
 	// count sums
+	int sum0 = 0;
 	for(unsigned int i = 0; i < arr.size(); ++i)
 	{
 		if(arr[i].second == 0)
@@ -420,21 +424,16 @@ int MannWhitney(const std::valarray<double> & arr1,
 		}
 	}
 
-	//    std::cout << "vec " << sum0 << std::endl;
-
-	sumAll = ( N1 + N2 )
-			 * (N1 + N2 + 1) / 2;
+	int sumAll = (N1 + N2) * (N1 + N2 + 1) / 2;
 
 	if(sum0 > sumAll/2 )
 	{
-		U = double(N1 * N2
-				   + N1 * (N1 + 1) /2. - sum0);
+		U = double(N1 * N2 + N1 * (N1 + 1) /2. - sum0);
 	}
 	else
 	{
 
-		U = double(N1 * N2
-				   + N2 * (N2 + 1) /2. - (sumAll - sum0));
+		U = double(N1 * N2 + N2 * (N2 + 1) /2. - (sumAll - sum0));
 	}
 
 	const double beliefLimit = quantile( (1.00 + (1. - p) ) / 2.);
@@ -443,8 +442,6 @@ int MannWhitney(const std::valarray<double> & arr1,
 	// old
 	if(std::abs(ourValue) > beliefLimit)
 	{
-//        if(s1 > s2)
-		// new
 		if(sum0 < sumAll / 2 )
 		{
 			return 1;

@@ -394,7 +394,7 @@ void Cut::resetLimits()
 {
 	if( !fileOpened ) { return; }
 
-	ui->leftLimitSpinBox->setValue(0);
+	ui->leftLimitSpinBox->setValue(0); /// sometimes fails under Windows
 	ui->rightLimitSpinBox->setValue(dataCutLocal.cols());
 }
 

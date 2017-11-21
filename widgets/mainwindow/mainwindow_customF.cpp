@@ -30,7 +30,9 @@ void MainWindow::customFunc()
 //	testSuccessive();
 //	exit(0);
 
-//	return;
+//	autos::checkMarkFBfinal("/media/Files/Data/FeedbackFinalMark/Broshevitskaya/BND_1.EDF");
+//	exit(0);
+
 
 //	const QString p = "/media/Files/Data/Galya/SomeData9Nov17/out/";
 //	const QString d = "/media/Files/Data/Galya/SomeData9Nov17/out2/";
@@ -41,60 +43,17 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-#if 01
+
+//	return;
+
+
+#if 0
 	/// check for significance of efficiency
-//	for(int i = 29; i < 40; ++i)
-//	{
-//		std::cout << i << "   " << myLib::binomialOneTailed(29, i, 40) << std::endl;
-//	}
-//	exit(0);
-
-	/// [guy][1-spat, 3-spat, 1-verb, 3-verb]
-	std::vector<QString> names {"BAM", "BAV", "DEG", "ENV_n", "IAE", "LMA_n", "MAM", "MII", "NUA", "SAA_n", "SAV_n"};
-	std::vector<std::vector<double>> ppp{
-		{24, 28, 13, 14}, // BAM
-		{29, 36, 12, 22}, // BAV
-		{19, 25, 14, 19}, // DEG
-		{16, 18, 17, 27}, // ENV
-		{21, 32, 14, 21}, // IAE
-		{22, 31, 34, 36}, // LMA
-		{18, 22, 9, 13}, // MAM
-		{26, 30, 14, 26}, // MII
-		{25, 29, 8, 11}, // NUA
-		{23, 29, 15, 18}, // SAA
-		{21, 28, 11, 15} // SAV
-	};
-
-//	/// [guy][1-spat, 3-spat, 1-verb, 3-verb]
-//	std::vector<QString> names {"CDV_n", "KKS_n", "KNL", "MID_n", "MSM", "PDI", "PNA", "SKI", "SRV", "TAA", "TihAA", "UIA"};
-//	std::vector<std::vector<double>> ppp{
-//		{31, 14, 18, 17}, // CDV_n
-//		{23, 16, 16, 20}, // KKS_n
-//		{20, 18, 23, 15}, // KNL
-//		{28, 21, 21, 28}, // MID_n
-//		{27, 19, 22, 23}, // MSM
-//		{28, 25, 17, 26}, // PDI
-//		{20, 17, 31, 31}, // PNA
-//		{23, 20, 36, 32}, // SKI
-//		{29, 24, 14, 15}, // SRV
-//		{29, 20, 29, 30}, // TAA
-//		{23, 16, 28, 17}, // TihAA
-//		{30, 22, 18, 22} // UIA
-//	};
-
-
-	std::cout << std::fixed;
-	std::cout.precision(2);
-	for(int i = 0; i < names.size(); ++i)
+	for(auto guy : subj::guysFBfinal)
 	{
-		std::cout << names[i] << std::endl;
-		std::cout << "spat = " <<  myLib::binomialOneTailed(ppp[i][0], ppp[i][1], 40)
-				<< "\t" << (ppp[i][1] - ppp[i][0]) / ppp[i][0] << "\t";
-		std::cout << "verb = " <<  myLib::binomialOneTailed(ppp[i][2], ppp[i][3], 40)
-				<< "\t" << (ppp[i][3] - ppp[i][2]) / ppp[i][2] << std::endl;
-		std::cout << std::endl;
+		autos::checkStatTimes("/media/Files/Data/FeedbackFinalMark/" + guy.first,
+							  guy.second);
 	}
-	std::cout << std::defaultfloat;
 	exit(0);
 #endif
 
@@ -116,19 +75,8 @@ void MainWindow::customFunc()
 #if 0
 	/// prepare FeedbackFinalMark for eyes clean
 	const QString path = def::dataFolder + "/FeedbackFinalMark";
-	std::vector<std::pair<QString, QString>> guys{
-//		std::make_pair("Beketova", "BAM"),
-//				std::make_pair("Burtcev", "BAV"),
-//				std::make_pair("Dovbyish", "DEG"),
-//				std::make_pair("Evstratov_n", "ENV"),
-//				std::make_pair("Ilyin", "IAE"),
-				std::make_pair("Laszov", "LMA")
-//				std::make_pair("Matasov", "MII"),
-//				std::make_pair("Nikonenko", "NUA"),
-//				std::make_pair("Semyonov_n", "SAV"),
-//				std::make_pair("Sergeev_n", "SAA")
-	};
-	for(auto in : guys)
+
+	for(auto in : subj::guysFBfinal)
 	{
 		const QString dr = std::get<0>(in);
 		const QString ExpName = std::get<1>(in);
@@ -154,53 +102,19 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
-	/// count correctness and average times - FeedbackFinal
-	std::vector<std::pair<QString, QString>> guys{
-//		std::make_pair("Beketova", "BAM"),
-//				std::make_pair("Burtcev", "BAV"),
-//				std::make_pair("Dovbyish", "DEG"),
-//				std::make_pair("Evstratov_n", "ENV"),
-//				std::make_pair("Ilyin", "IAE"),
-//		std::make_pair("Markina", "MAM"),
-//				std::make_pair("Matasov", "MII"),
-//				std::make_pair("Nikonenko", "NUA"),
-//				std::make_pair("Semyonov_n", "SAV"),
-//				std::make_pair("Sergeev_n", "SAA"),
-				std::make_pair("Laszov", "LMA")
-	};
 
-	for(auto in : guys)
+#if 01
+	/// count correctness and average times
+//	for(auto in : subj::guysFBnew)
+	for(auto in : subj::guysFBfinal)
 	{
-		autos::feedbackFinalTimes(def::dataFolder + "/FeedbackFinalMark/" + in.first,
-								  in.second, {});
-	}
-//	autos::createAnsFiles("/media/Files/Data/FeedbackFinal/Markina",
-//						  "MAM");
-	exit(0);
-#endif
+		const QString guyPath = def::dataFolder
+								+ "/FeedbackNewMark/"
+								+ in.first;
 
-#if 0
-	/// count correctness and average times - FeedbackNew
-	std::vector<std::pair<QString, QString>> guys{
-		std::make_pair("CDV_n", "CDV"),
-				std::make_pair("KKS_n", "KKS"),
-				std::make_pair("KNL", "KNL"),
-				std::make_pair("MSM", "MSM"),
-				std::make_pair("PDI", "PDI"),
-				std::make_pair("PNA", "PNA"),
-				std::make_pair("SKI", "SKI"),
-				std::make_pair("SRV", "SRV"),
-				std::make_pair("TAA", "TAA"),
-				std::make_pair("TihAA", "TihAA"),
-				std::make_pair("UIA", "UIA")
-	};
-
-	for(auto in : guys)
-	{
-
-		autos::feedbackFinalTimes(def::dataFolder + "/FeedbackNewMark/" + in.first,
-								  in.second, "_good");
+		autos::feedbackFinalTimes(guyPath, in.second);
+		autos::timesSolving(guyPath, in.second);
+		autos::checkStatTimes(guyPath, in.second);
 	}
 	exit(0);
 #endif
@@ -579,32 +493,18 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-	/// my fcking with markers in FeedbackFinal
-	std::vector<std::pair<QString, QString>> guys{
-		std::make_pair("Beketova", "BAM"),
-				std::make_pair("Burtcev", "BAV"),
-				std::make_pair("Dovbyish", "DEG"),
-				std::make_pair("Evstratov_n", "ENV"),
-				std::make_pair("Ilyin", "IAE"),
-				std::make_pair("Matasov", "MII"),
-				std::make_pair("Nikonenko", "NUA"),
-				std::make_pair("Semyonov_n", "SAV"),
-				std::make_pair("Sergeev_n", "SAA")
-	};
+	/// check markers in FeedbackFinal
 
-	for(auto in : guys)
+	for(auto in : subj::guysFBfinal)
 	{
 		const QString dr = in.first;
 		const QString guy = in.second;
-
-		QDir().mkpath(def::dataFolder + "/FeedbackFinalMark/" + dr);
-
 
 		auto name1 = [dr, guy](int i) -> QString
 		{
 			return def::dataFolder + "/FeedbackFinal/"
 					+ dr + "/"
-					+ guy + "_" + nm(i) + "_new.EDF";
+					+ guy + "_" + nm(i) + "_new.edf";
 		};
 		auto name2 = [dr, guy](int i) -> QString
 		{
@@ -612,102 +512,14 @@ void MainWindow::customFunc()
 					+ dr + "/"
 					+ guy + "_" + nm(i) + ".EDF";
 		};
-		auto name3 = [dr, guy](int i) -> QString
-		{
-			return def::dataFolder + "/FeedbackFinalMark/"
-					+ dr + "/"
-					+ guy + "_" + nm(i) + ".edf";
-		};
-		for(int i : {1, 2, 3})
+		for(int i : {1, 2, 3}) /// numSession
 		{
 			std::function<QString(int)> name = name1;
 			if(!QFile(name(i)).exists())
 			{
-//				std::cout << name(i) << " doesn't exist" << std::endl;
-//				continue;
-
 				name = name2;
 			}
-//			QFile::remove(def::dataFolder + "/FeedbackFinalMark/"
-//						  + dr + "/"
-//						  + guy + "_" + nm(i) + ".edf");
-//			QFile::copy(name(i),
-//						def::dataFolder + "/FeedbackFinalMark/"
-//											+ dr + "/"
-//											+ guy + "_" + nm(i) + ".edf");
-//			QFile::copy(def::dataFolder + "/FeedbackFinal/"
-//						+ dr + "/"
-//						+ guy + "_ans" + nm(i) + ".txt",
-//						def::dataFolder + "/FeedbackFinalMark/"
-//						+ dr + "/"
-//						+ guy + "_ans" + nm(i) + ".txt");
-//			continue;
-
-			/// markers check
-			edfFile fil;
-			fil.readEdfFile(name(i));
-//			continue;
-
-			std::cout << name(i).remove(0, name(i).lastIndexOf('/') + 1);
-			std::vector<uint> a = fil.countMarkers({241, 247, 254});
-			if(a != std::vector<uint>{40, 40, 80})
-			{
-				std::cout << "_" << nm(i)
-						  << "\t" << a;
-			}
-			std::cout << std::endl;
-
-			std::pair<int, int> prev{0, 254};
-			int problems = 1;
-//			std::vector<double> rests;
-			for(std::pair<int, int> in : fil.getMarkers())
-			{
-				if(in.second != 241 && in.second != 247 && in.second != 254) { continue; }
-
-
-				/// rest min = 7.6, mean = 8.4, max = 9.2
-				/// after cross min = 0.54, mean = 0.63, max = 0.75
-				if(in.second == 254 && prev.second == 254)
-				{
-					std::cout << "missed 241/247" << "\t"
-							  << prev.first / fil.getFreq() + 8.4
-							  << "\tproblem " << problems << " started"
-							  << std::endl;
-				}
-				if(in.second == 254) { ++problems; }
-
-				if((in.second == 241 || in.second == 247) &&
-				   (prev.second == 241 || prev.second == 247))
-				{
-					std::cout << "missed 254" << "\t"
-							  << in.first / fil.getFreq() - 8.4
-							  << "\tproblem " << problems << " finished"
-							  << std::endl;
-					++problems;
-				}
-
-
-//				if((in.second == 241 || in.second == 247) && prev.second == 255)
-//				{
-//					double a = (in.first - prev.first) / fil.getFreq();
-//					if(a < 15)
-//					{
-//						rests.push_back(a);
-//					}
-//				}
-				prev = in;
-			}
-			std::cout << std::endl << std::endl;
-
-//			std::valarray<double> val = smLib::vecToValar(rests);
-//			std::cout << "mean  = " << smLib::mean(val) << "\t"
-//					  << "sigma = " << smLib::sigma(val) << "\t"
-//					  << "min   = " << smLib::min(val) << "\t"
-//					  << "max   = " << smLib::max(val) << "\t"
-//					  << std::endl;
-
-//			autos::timesNew(name(i), guy, i);
-//			autos::avTimesNew(name(i), guy, i);
+			autos::checkMarkFBfinal(name(i));
 		}
 	}
 	exit(0);
@@ -720,7 +532,7 @@ void MainWindow::customFunc()
 //			0.5, 4, 250., 0).save("/media/Files/Data/D.jpg");
 //	exit(0);
 
-#if 01
+#if 0
 	/// Dasha ToTable processing for Galya's paper
 //	myLib::areEqualFiles("/media/Files/Data/Dasha/Totable/Berlin_brush.edf",
 //						 "/media/Files/Data/Dasha/Totable/Berlin/Berlin_brush.edf");
@@ -1919,7 +1731,7 @@ exit(0);
 
 #if 0
     /// clean "new" Dasha files
-	QStringList leest_audio = subjects::leest_more + subjects::leest_less;
+	QStringList leest_audio = subj::leest_more + subj::leest_less;
 	leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
     const QString work = def::DashaFolder + "/CHANS/Audio_to_less_out_ALL";
     QDir deer(work);
