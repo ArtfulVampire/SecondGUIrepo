@@ -182,16 +182,21 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double> > & inData,
 
 
 /// FB
-void createAnsFiles(const QString & edfPath, QString guy);
-void checkMarkFBfinal(const QString & edfPath);
+void createAnsFiles(const QString & guyPath, QString guyName);
+void checkMarkFBfinal(const QString & filePath);
 void timesSolving(const QString & guyPath,
 				  const QString & guyName,
 				  const QString & postfix = QString());
+QString timesPath(const QString & guyPath,
+				  const QString & guyName,
+				  int numSes,
+				  int typ);
 std::vector<double> timesFromFile(const QString & timesPath, int howSolved);
-void feedbackFinalTimes(const QString & edfsPath,
-						const QString & expName,
+void feedbackFinalTimes(const QString & guyPath,
+						const QString & guyName,
 						const QString & postfix = QString());
-void checkStatTimes(const QString & guyPath, const QString & guyName);
+void checkStatResults(const QString & guyPath, const QString & guyName);
+
 void successiveNetPrecleanWinds(const QString & windsPath);
 
 

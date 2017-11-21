@@ -46,7 +46,6 @@ void MainWindow::customFunc()
 
 //	return;
 
-
 #if 0
 	/// check for significance of efficiency
 	for(auto guy : subj::guysFBfinal)
@@ -109,12 +108,12 @@ void MainWindow::customFunc()
 	for(auto in : subj::guysFBfinal)
 	{
 		const QString guyPath = def::dataFolder
-								+ "/FeedbackNewMark/"
+								+ "/FeedbackFinalMark/"
 								+ in.first;
 
 		autos::feedbackFinalTimes(guyPath, in.second);
 		autos::timesSolving(guyPath, in.second);
-		autos::checkStatTimes(guyPath, in.second);
+		autos::checkStatResults(guyPath, in.second);
 	}
 	exit(0);
 #endif

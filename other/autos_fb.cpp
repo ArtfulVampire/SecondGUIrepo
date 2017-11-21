@@ -18,19 +18,19 @@ using namespace myOut;
 
 namespace autos
 {
-void checkMarkFBfinal(const QString & edfPath)
+void checkMarkFBfinal(const QString & filePath)
 {
 	/// checks number of 241, 247, 254 markers
 	/// and couts possible missings
 
-	if(!QFile(edfPath).exists())
+	if(!QFile::exists(filePath))
 	{
 		return;
 	}
 
 	/// markers check
 	edfFile fil;
-	fil.readEdfFile(edfPath);
+	fil.readEdfFile(filePath);
 	std::cout << fil.getExpName() << std::endl;
 
 	bool ok = true;
@@ -79,13 +79,19 @@ void checkMarkFBfinal(const QString & edfPath)
 void checkStatTimesSolving(const QString & guyPath, const QString & guyName, int typ)
 {
 	/// couts statistics of solving time
-
-	std::valarray<double> vals1 = smLib::vecToValar(autos::timesFromFile(guyPath + "/"
-											  + guyName + "_times_1_" + nm(typ) + ".txt", 1));
-	std::valarray<double> vals2 = smLib::vecToValar(autos::timesFromFile(guyPath + "/"
-											  + guyName + "_times_3_" + nm(typ) + ".txt", 1));
-	if(typ == 241)		{ std::cout << "spatTime:" << "/n"; }
-	else if(typ == 247)	{ std::cout << "verbTime:" << "/n"; }
+	int howSolved = 1; /// 0 - skip, 1 - correct, 2 - incorrect
+	std::valarray<double> vals1 = smLib::vecToValar(
+									  autos::timesFromFile(
+										  autos::timesPath(guyPath, guyName, 1, typ),
+										  howSolved)
+									  );
+	std::valarray<double> vals2 = smLib::vecToValar(
+									  autos::timesFromFile(
+										  autos::timesPath(guyPath, guyName, 3, typ),
+										  howSolved)
+									  );
+	if(typ == 241)		{ std::cout << "spatTime:" << "\n"; }
+	else if(typ == 247)	{ std::cout << "verbTime:" << "\n"; }
 	else				{ std::cout << "checkStatTimesSolving: bad typ = "
 									<< typ << std::endl; return; }
 
@@ -102,7 +108,7 @@ void checkStatTimesSolving(const QString & guyPath, const QString & guyName, int
 			  << std::endl;
 }
 
-void checkStatTimes(const QString & guyPath, const QString & guyName)
+void checkStatResults(const QString & guyPath, const QString & guyName)
 {
 	/// couts statistics of solving - number of solved tasks and av.time
 
@@ -111,7 +117,7 @@ void checkStatTimes(const QString & guyPath, const QString & guyName)
 	QFile inFil(timesPath);
 	if(!inFil.exists())
 	{
-		std::cout << "checkStatTimes: no " << guyName << "_timesResults.txt file" << std::endl;
+		std::cout << "checkStatTimes: timesResults file not found " << guyName << std::endl;
 		return;
 	}
 	inFil.open(QIODevice::ReadOnly);
@@ -119,6 +125,12 @@ void checkStatTimes(const QString & guyPath, const QString & guyName)
 	std::vector<std::vector<double>> vals(3);
 	for(int i = 0; i < 3; ++i)
 	{
+		if(inFil.atEnd())
+		{
+			std::cout << "checkStatResults: timesResults file atEnd "
+					  << guyName << " " << i << std::endl;
+			return;
+		}
 		auto lst = QString(inFil.readLine()).split("\t", QString::SkipEmptyParts);
 		bool ok{};
 		for(const QString & str : lst)
@@ -151,12 +163,7 @@ void checkStatTimes(const QString & guyPath, const QString & guyName)
 			  << "p-value = " <<  myLib::binomialOneTailed(vals[0][9], vals[2][9], 40)
 			<< "\t" << "improvement = " << (vals[2][9] - vals[0][9]) / vals[0][9]
 			<< std::endl << std::endl;
-
-//	/// can check _times.txt files and apply Mann-Whitney for significance
-//	std::cout << "spatTime:" << "\n"
-//			  << "av.acceleration = " << (vals[0][0] - vals[2][0]) / vals[0][0]
-//			<< std::endl << std::endl;
-	autos::checkStatTimesSolving(guyPath, guyName, 241);
+	autos::checkStatTimesSolving(guyPath, guyName, 241); std::cout << std::endl;
 
 
 
@@ -165,22 +172,17 @@ void checkStatTimes(const QString & guyPath, const QString & guyName)
 			  << "p-value = " <<  myLib::binomialOneTailed(vals[0][21], vals[2][21], 40)
 			<< "\t" << "improvement = " << (vals[2][21] - vals[0][21]) / vals[0][21]
 			<< std::endl << std::endl;
-
-//	/// can check _times.txt files and apply Mann-Whitney for significance
-//	std::cout << "verbTime:" << "\n"
-//			  << "av.acceleration = " << (vals[0][12] - vals[2][12]) / vals[0][12]
-//			<< std::endl << std::endl;
 	autos::checkStatTimesSolving(guyPath, guyName, 247);
 
 	std::cout << std::endl;
 	std::cout << std::defaultfloat;
 }
 
-void feedbackFinalTimes(const QString & edfsPath,
-						const QString & expName,
+void feedbackFinalTimes(const QString & guyPath,
+						const QString & guyName,
 						const QString & postfix)
 {
-	/// creates *_timesResults.txt file
+	/// creates timesResults.txt file
 	/// spatial
 	/// 0, 1, 2 - mean, median, sigma of correct
 	/// 3, 4, 5 - mean, median, sigma of incorrect
@@ -193,22 +195,26 @@ void feedbackFinalTimes(const QString & edfsPath,
 	/// 21, 22, 23 - correct, incorrect, not answered
 
 	std::ofstream outStr;
-	outStr.open((edfsPath + "/" + expName + "_timesResults.txt").toStdString());
+	outStr.open((guyPath + "/" + guyName + "_timesResults.txt").toStdString());
 
 	for(int numSess : {1, 2, 3})
 	{
-		auto filePath = [edfsPath, expName, postfix](int i) -> QString
+		auto filePath = [guyPath, guyName, postfix](int i) -> QString
 		{
-			return edfsPath + "/" + expName + "_" + nm(i) + postfix + ".edf";
+			return guyPath + "/" + guyName + "_" + nm(i) + postfix + ".edf";
 		};
 
-		if(!QFile::exists(filePath(numSess))) { continue; }
+		if(!QFile::exists(filePath(numSess)))
+		{
+			std::cout << "feedbackFinalTimes: file not found - " << filePath(numSess) << std::endl;
+			continue;
+			return;
+		}
 
 		edfFile fil;
 		fil.readEdfFile(filePath(numSess));
 
 		const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
-
 
 		std::vector<int> nums = {241, 247};
 		int sta = 0;
@@ -221,7 +227,14 @@ void feedbackFinalTimes(const QString & edfsPath,
 		/// read answers file
 		std::vector<int> corrs; corrs.reserve(80);
 		std::ifstream answers;
-		answers.open((edfsPath + "/" + expName + "_ans" + nm(numSess) + ".txt").toStdString());
+		const QString ansPath = guyPath + "/" + guyName + "_ans" + nm(numSess) + ".txt";
+		if(!QFile::exists(ansPath))
+		{
+			std::cout << "feedbackFinalTimes: file not found - " << ansPath << std::endl;
+			continue;
+			return;
+		}
+		answers.open(ansPath.toStdString());
 		char ans;
 		while(answers >> ans)
 		{
@@ -258,7 +271,6 @@ void feedbackFinalTimes(const QString & edfsPath,
 //					  << std::endl;
 //		}
 //		return;
-
 
 		/// write in a row:
 		/// spatial
@@ -316,26 +328,43 @@ void feedbackFinalTimes(const QString & edfsPath,
 	outStr.close();
 }
 
-void createAnsFiles(const QString & dirPath, QString guy)
+void createAnsFiles(const QString & guyPath, QString guyName)
 {
 	for(int i : {1, 2, 3})
 	{
-		QFile fil(dirPath + "/" + guy + "_ans" + nm(i) + ".txt");
+		QFile fil(guyPath + "/" + guyName + "_ans" + nm(i) + ".txt");
 		fil.open(QIODevice::WriteOnly);
 		fil.close();
 	}
+}
+
+QString timesPath(const QString & guyPath,
+				  const QString & guyName,
+				  int numSes,
+				  int typ)
+{
+	return guyPath
+			+ guyName + "_times_"
+			+ nm(numSes) + "_"
+			+ nm(typ) + ".txt";
 }
 
 void timesSolving(const QString & guyPath,
 				  const QString & guyName,
 				  const QString & postfix)
 {
-	/// creates _times_numSes_241/247.txt files with correctness and solving time
+	/// creates times files with correctness and solving time
 
 	for(int numSession : {1, 3})
 	{
 		const QString filePath = guyPath + "/"
 							  + guyName + "_" + nm(numSession) + postfix + ".edf";
+		if(!QFile::exists(filePath))
+		{
+			std::cout << "timesSolving: edf file not found - " << filePath << std::endl;
+			continue;
+			return;
+		}
 
 		edfFile fil;
 		fil.readEdfFile(filePath);
@@ -350,19 +379,24 @@ void timesSolving(const QString & guyPath,
 		const std::vector<int> nums = {241, 247};
 		int typ = -1;
 
-		/// remove old files
+		/// remove old times files
 		for(int i : nums)
 		{
-			QFile::remove(guyPath
-						  + guyName + "_times_"
-						  + nm(numSession) + "_"
-						  + nm(nums[i]) + ".txt");
+			QFile::remove(autos::timesPath(guyPath, guyName, numSession, i));
 		}
 
 		std::ifstream answers;
-		answers.open((guyPath
-					  + "/" + guyName + "_ans"
-					  + nm(numSession) + ".txt").toStdString());
+		const QString ansPath = guyPath
+								+ "/" + guyName + "_ans"
+								+ nm(numSession) + ".txt";
+		if(!QFile::exists(ansPath))
+		{
+			std::cout << "timesSolving: ans file not found - " << ansPath << std::endl;
+			continue;
+			return;
+		}
+
+		answers.open(ansPath.toStdString());
 
 		std::ofstream out;
 		for(const std::pair<int, int> & mrk : markers)
@@ -384,10 +418,7 @@ void timesSolving(const QString & guyPath,
 				answers >> ans;
 				if(ans == '\n' || ans == '\r') answers >> ans; /// skip bad symbols
 
-				out.open((guyPath
-						  + guyName + "_times_"
-						  + nm(numSession) + "_"
-						  + nm(nums[typ]) + ".txt").toStdString(), std::ios_base::app);
+				out.open((autos::timesPath(guyPath, guyName, numSession, nums[typ])).toStdString(), std::ios_base::app);
 				out << ans << "\t"
 					<< (fin - sta) / fil.getFreq() << "\r\n";
 				out.close();
@@ -399,7 +430,7 @@ void timesSolving(const QString & guyPath,
 
 std::vector<double> timesFromFile(const QString & timesPath, int howSolved)
 {
-	/// data from *_times_numSes_241/247.txt file into vector
+	/// data from times file into vector
 
 	QFile fil(timesPath);
 	if(!fil.exists())
@@ -411,14 +442,20 @@ std::vector<double> timesFromFile(const QString & timesPath, int howSolved)
 
 	std::vector<double> res;
 
-	while(fil.canReadLine())
+	int numRead = 0;
+	while(!fil.atEnd())
 	{
-		QStringList lst = QString(fil.readLine()).split("\t", QString::SkipEmptyParts);
+		QString A = fil.readLine();
+		if(A.isEmpty()) { break; }
+		++numRead;
+		QStringList lst = A.split("\t", QString::SkipEmptyParts);
+
 		if(lst[0].toInt() == howSolved)
 		{
 			res.push_back(lst[1].toDouble());
 		}
 	}
+//	std::cout << "timesFromFile: num lines read = " << numRead << std::endl;
 	fil.close();
 	return res;
 }
@@ -459,8 +496,8 @@ void repairMarkersInNewFB(QString edfPath, int numSession)
 		}
 	}
 
-
 	std::ifstream inStr;
+	/// magic const string
 	inStr.open(("/media/Files/Data/FeedbackNew/Tables/types"
 				+ nm(numSession + 1) + ".txt").toStdString());
 	std::vector<int> marksList;
