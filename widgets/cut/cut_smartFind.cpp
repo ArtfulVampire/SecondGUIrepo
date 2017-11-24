@@ -196,7 +196,7 @@ void Cut::smartFindSetFuncs()
 	if(1)
 	{
 #if 01
-		smartFindFuncs.push_back(smLib::variance);
+		smartFindFuncs.push_back(smLib::variance<std::valarray<double>>);
 #else
 		smartFindFuncs.push_back([this](const std::valarray<double> & in) -> double
 		{

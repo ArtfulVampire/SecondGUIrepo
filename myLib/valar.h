@@ -14,14 +14,92 @@
 
 namespace smLib
 {
-template <class Cont = std::valarray<double>>
-Cont range(int beg, int en); // [beg, en)
 
-template <class Cont = std::valarray<double>>
-Cont unite(const std::vector<Cont> & ranges);
+/// any Container
+/// usually std::vector<double> and std::valarray<double>
+template <class Container = std::valarray<double>>
+Container range(int beg, int en); // [beg, en)
 
-std::valarray<double> valarSubsec(const std::valarray<double> & in, int beg, int en);
+template <class Container = std::valarray<double>>
+Container unite(const std::vector<Container> & ranges);
 
+template <typename Container>
+Container mixed (int siz);
+
+template <typename Container>
+void mix (Container & in);
+
+template <class Container>
+Container contReverse(const Container & in);
+
+template <typename Container>
+Container contSubsec(const Container & in, int beg, int en);
+
+template <class Container>
+Container contPopFront(const Container & in, uint numOfPop);
+
+template <class Typ>
+Typ mean(const std::valarray<Typ> & in1);
+
+template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont = std::vector>
+Typ mean(const Cont<Typ> & in1);
+
+
+
+
+/// Container<double>
+
+template <class Container>
+double min(const Container & in1);
+
+template <class Container>
+double max(const Container & in1);
+
+template <class Container>
+double prod(const Container & in1, const Container & in2);
+
+template <class Container>
+double norma(const Container & in);
+
+template <class Container>
+double normaSq(const Container & in);
+
+template <class Container>
+double variance(const Container & arr);
+
+template <class Container>
+double sigma(const Container & arr);
+
+template <class Container>
+double covariance(const Container & arr1, const Container & arr2);
+
+template <class Container>
+double correlation(const Container & arr1, const Container & arr2);
+
+template <class Container>
+double sigmaToMean(const Container & arr);
+
+template <class Container>
+double median(const Container & arr);
+
+template <class Container>
+Container centered(const Container & arr);
+
+
+
+/// other
+inline std::complex<double> abs(std::complex<double> in)
+{
+	return std::complex<double>(std::abs(in));
+}
+
+template <typename Typ>
+std::valarray<Typ> vecToValar(const std::vector<Typ> & in);
+
+
+
+
+/// pure valarray
 inline std::valarray<double> logistic(const std::valarray<double> & in)
 {
 	const double temp = 10.;
@@ -29,14 +107,6 @@ inline std::valarray<double> logistic(const std::valarray<double> & in)
 }
 
 std::valarray<double> softmax(const std::valarray<double> & in);
-
-std::valarray<double> reverseArray(const std::valarray<double> & in);
-
-
-inline std::complex<double> abs(std::complex<double> in)
-{
-	return std::complex<double>(std::abs(in));
-}
 
 inline std::valarray<double> abs(const std::valarray<std::complex<double>> & in)
 {
@@ -48,24 +118,7 @@ inline std::valarray<double> abs(const std::valarray<std::complex<double>> & in)
 	return res;
 }
 
-inline std::valarray<std::complex<double>> toComplex(const std::valarray<double> & in)
-{
-	std::valarray<std::complex<double>> res(in.size());
-	std::transform(std::begin(in),
-				   std::end(in),
-				   std::begin(res),
-				   [](double a){ return std::complex<double>(a); });
-	return res;
-}
-
-inline std::valarray<double> pop_front_valar(const std::valarray<double> & in, uint numOfPop)
-{
-	std::valarray<double> res(in.size() - numOfPop);
-	std::copy(std::begin(in) + numOfPop, std::end(in), std::begin(res));
-	return res;
-}
-
-inline std::valarray<double> eraseValar(const std::valarray<double> & in, uint index)
+inline std::valarray<double> valarErase(const std::valarray<double> & in, uint index)
 {
 	std::valarray<double> res(in.size() - 1);
 	std::copy(std::begin(in),
@@ -77,104 +130,29 @@ inline std::valarray<double> eraseValar(const std::valarray<double> & in, uint i
 	return res;
 }
 
-inline double prod(const std::valarray<double> & in1, const std::valarray<double> & in2)
-{
-	return std::inner_product(std::begin(in1),
-							  std::end(in1),
-							  std::begin(in2),
-							  0.);
-	return (in1 * in2).sum();
-}
-
-inline double normaSq(const std::valarray<double> & in)
-{
-	return std::inner_product(std::begin(in),
-							  std::end(in),
-							  std::begin(in),
-							  0.);
-}
-
-template <typename Typ>
-inline Typ mean(const std::valarray<Typ> & arr)
-{
-	return arr.sum() / Typ(arr.size());
-}
-template std::complex<double> mean(const std::valarray<std::complex<double>> & arr);
-template double mean(const std::valarray<double> & arr);
-
-
-inline double variance(const std::valarray<double> & arr)
-{
-	return normaSq(arr - mean(arr)) / arr.size();
-}
-
-inline double sigma(const std::valarray<double> & arr)
-{
-	return sqrt(variance(arr));
-}
-
-inline double sigmaToMean(const std::valarray<double> & arr)
-{
-	return sigma(arr) / mean(arr);
-}
-
-inline double min(const std::valarray<double> & arr)
-{
-	return arr.min();
-}
-
-inline double max(const std::valarray<double> & arr)
-{
-	return arr.max();
-}
-
-double median(const std::valarray<double> & arr);
-
-inline double covariance(const std::valarray<double> & arr1, const std::valarray<double> & arr2)
-{
-	return prod(arr1 - mean(arr1), arr2 - mean(arr2));
-}
-
-inline double correlation(const std::valarray<double> & arr1, const std::valarray<double> & arr2)
-{
-	return covariance(arr1, arr2) / (sigma(arr1) * sigma(arr2) * arr1.size());
-}
-
-inline double norma(const std::valarray<double> & in)
-{
-	return sqrt(normaSq(in));
-}
-
 inline void normalize(std::valarray<double> & in)
 {
 	in /= norma(in);
 }
 
+inline std::valarray<double> normalized(const std::valarray<double> & in)
+{
+	return in / norma(in);
+}
+
 inline double distance(const std::valarray<double> & in1,
 					   const std::valarray<double> & in2)
 {
-	if(in1.size() != in2.size())
-	{
-		std::cout << "distance: std::valarray<double>s of different size" << std::endl;
-		return 0.; /// exception
-	}
-	return norma(in1 - in2);
+//	if(in1.size() != in2.size())
+//	{
+//		std::cout << "distance: std::valarray<double>s of different size" << std::endl;
+//		return 0.; /// exception
+//	}
+	return norma(std::valarray<double>(in1 - in2));
 }
 
 template <typename Typ>
-inline std::valarray<Typ> vecToValar(const std::vector<Typ> & in)
-{
-	std::valarray<Typ> res(in.size());
-	std::copy(std::begin(in),
-			  std::end(in),
-			  std::begin(res));
-	return res;
-}
-template std::valarray<double> vecToValar(const std::vector<double> & in);
-template std::valarray<std::complex<double>> vecToValar(const std::vector<std::complex<double>> & in);
-
-template <typename Typ>
-inline void resizeValar(std::valarray<Typ> & in, int num)
+inline void valarResize(std::valarray<Typ> & in, int num)
 {
 	std::valarray<Typ> temp(in);
 	in.resize(num);
@@ -182,22 +160,18 @@ inline void resizeValar(std::valarray<Typ> & in, int num)
 			  std::begin(temp) + std::min(in.size(), temp.size()),
 			  std::begin(in));
 }
-template void resizeValar(std::valarray<double> & in, int num);
-template void resizeValar(std::valarray<std::complex<double>> & in, int num);
+template void valarResize(std::valarray<double> & in, int num);
+template void valarResize(std::valarray<std::complex<double>> & in, int num);
 
-inline std::valarray<double> push_back_valar(const std::valarray<double> & in, double val)
+
+inline std::valarray<double> valarPushBack(const std::valarray<double> & in, double val)
 {
 	std::valarray<double> res(in);
-	resizeValar(res, res.size() + 1);
+	valarResize(res, res.size() + 1);
 	res[in.size()] = val;
 	return res;
 }
 
-template <typename Cont>
-Cont mixed (int siz);
-
-template <typename Cont>
-void mix (Cont & in);
 
 } /// end of namespace
 

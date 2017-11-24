@@ -127,7 +127,7 @@ void MainWindow::sliceWinds()
 	forSave.reserve(fil.getDataLen() / timeShift);
 	for(uint i = sta; i < fil.getDataLen() - wndLength; i += timeShift)
 	{
-		auto mark = smLib::valarSubsec(marks, i, i + wndLength);
+		auto mark = smLib::contSubsec(marks, i, i + wndLength);
 
 		/// hope only one of them occurs
 		std::pair<bool, double> a = myLib::contains(mark, {241., 247., 254.});

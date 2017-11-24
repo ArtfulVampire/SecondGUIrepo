@@ -43,8 +43,8 @@ QPixmap phaseDifferences(const std::valarray<double> & sig1,
 
 	for(int start = 0; start < siz - fftLen; start += fftLen)
 	{
-		auto part1 = smLib::valarSubsec(sig1, start, start + fftLen);
-		auto part2 = smLib::valarSubsec(sig2, start, start + fftLen);
+		auto part1 = smLib::contSubsec(sig1, start, start + fftLen);
+		auto part2 = smLib::contSubsec(sig2, start, start + fftLen);
 
 		auto spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
 		auto spec2 = myLib::spectreRtoC2(part2, fftLen, srate);
@@ -85,11 +85,11 @@ std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double>
 		windStart < sig1.size() - fftLen;
 		windStart += windStep)
 	{
-		std::valarray<double> part1 = smLib::valarSubsec(sig1,
+		std::valarray<double> part1 = smLib::contSubsec(sig1,
 														 windStart,
 														 windStart + fftLen);
 		part1 *= wnd;
-		std::valarray<double> part2 = smLib::valarSubsec(sig2,
+		std::valarray<double> part2 = smLib::contSubsec(sig2,
 														 windStart,
 														 windStart + fftLen);
 		part2 *= wnd;
@@ -748,7 +748,7 @@ iitpData & iitpData::staging(const QString & chanName,
 			int end = i - 1;
 
 
-			std::valarray<double> val = smLib::valarSubsec(chan, start, end);
+			std::valarray<double> val = smLib::contSubsec(chan, start, end);
 			val = val.apply(std::abs);
 
 			/// marker on 80% of peak

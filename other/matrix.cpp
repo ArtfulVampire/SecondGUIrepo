@@ -572,7 +572,7 @@ matrix & matrix::pop_front(uint numOfCols)
 {
 	for(std::valarray<double> & row : myData)
 	{
-		row = smLib::pop_front_valar(row, numOfCols);
+		row = smLib::contPopFront(row, numOfCols);
 	}
 	return *this;
 }
@@ -588,7 +588,7 @@ matrix matrix::subCols(int beginCol, int endCol) const /// submatrix
     matrix res(this->rows(), endCol - beginCol);
 	for(int i = 0; i < this->rows(); ++i)
 	{
-		res[i] = smLib::valarSubsec(myData[i], beginCol, endCol);
+		res[i] = smLib::contSubsec(myData[i], beginCol, endCol);
 	}
     return res;
 }
@@ -652,7 +652,7 @@ void matrix::resize(int newRows, int newCols)
 				  std::end(myData),
                   [newCols](std::valarray<double> & in)
     {
-		smLib::resizeValar(in, newCols);
+		smLib::valarResize(in, newCols);
     });
 
 }
@@ -674,7 +674,7 @@ matrix & matrix::resizeRows(int newRows)
 					  std::end(myData),
                       [cols](std::valarray<double> & in)
         {
-			smLib::resizeValar(in, cols);
+			smLib::valarResize(in, cols);
         });
     }
     return *this;
@@ -687,7 +687,7 @@ matrix & matrix::resizeCols(int newCols)
 				  std::end(myData),
                   [newCols](std::valarray<double> & in)
     {
-		smLib::resizeValar(in, newCols);
+		smLib::valarResize(in, newCols);
     });
     return *this;
 }
@@ -1074,7 +1074,7 @@ matrix & matrix::eraseCol(uint j)
     {
 		for(std::valarray<double> & each : myData)
         {
-			each = smLib::eraseValar(each, j);
+			each = smLib::valarErase(each, j);
         }
     }
     return *this;

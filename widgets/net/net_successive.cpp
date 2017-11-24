@@ -31,7 +31,7 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1,
 	matrix dt1 = fil1.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
 	for(uint i = sta1; i < dt1.cols() - suc::windLength * freq1; i += freq1 * suc::shiftLearn)
 	{
-		auto mark = smLib::valarSubsec(markers1, i, i + suc::windLength * freq1);
+		auto mark = smLib::contSubsec(markers1, i, i + suc::windLength * freq1);
 
 		std::pair<bool, double> a = myLib::contains(mark, {241., 247., 254.});
 		if(a.first)
@@ -113,7 +113,7 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1,
 	matrix dt2 = fil2.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1)); /// EEG only
 	for(uint i = sta2; i < dt2.cols() - suc::windLength * freq2; i += freq2 * suc::shiftTest)
 	{
-		auto mark = smLib::valarSubsec(markers2, i, i + suc::windLength * freq2);
+		auto mark = smLib::contSubsec(markers2, i, i + suc::windLength * freq2);
 
 		std::pair<bool, double> a = myLib::contains(mark, {241., 247., 254.});
 		if(a.first)

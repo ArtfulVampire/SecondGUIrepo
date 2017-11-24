@@ -30,8 +30,6 @@ void MainWindow::customFunc()
 //	testSuccessive();
 //	exit(0);
 
-//	autos::checkMarkFBfinal("/media/Files/Data/FeedbackFinalMark/Broshevitskaya/BND_1.EDF");
-//	exit(0);
 
 
 //	const QString p = "/media/Files/Data/Galya/SomeData9Nov17/out/";
@@ -44,7 +42,9 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-//	return;
+//	autos::checkMarkFBfinal("/media/Files/Data/FeedbackFinal/Kartavova/KKE_1.EDF");
+//	exit(0);
+	return;
 
 #if 0
 	/// check for significance of efficiency
@@ -102,7 +102,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 01
+#if 0
 	/// count correctness and average times
 //	for(auto in : subj::guysFBnew)
 	for(auto in : subj::guysFBfinal)

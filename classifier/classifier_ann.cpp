@@ -171,7 +171,7 @@ void ANN::countOutputDelta()
         output[i][ dim[i] ] = 1.; // bias, unused for the highest layer
     }
 	outputLayer = output.back();
-	smLib::resizeValar(outputLayer, outputLayer.size() - 1);
+	smLib::valarResize(outputLayer, outputLayer.size() - 1);
 }
 
 void ANN::countOutputBackprop()

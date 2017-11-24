@@ -1765,11 +1765,11 @@ edfFile & edfFile::iitpSyncManual(int offsetEeg,
 	{
 		if(!(labels[i].startsWith("IT ") || labels[i].startsWith("XX "))) /// XX Artefac
 		{
-			this->edfData[i] = smLib::pop_front_valar(this->edfData[i], offsetEeg - addLeft);
+			this->edfData[i] = smLib::contPopFront(this->edfData[i], offsetEeg - addLeft);
 		}
 		else
 		{
-			this->edfData[i] = smLib::pop_front_valar(this->edfData[i], offsetEmg - addLeft);
+			this->edfData[i] = smLib::contPopFront(this->edfData[i], offsetEmg - addLeft);
 		}
 	}
 

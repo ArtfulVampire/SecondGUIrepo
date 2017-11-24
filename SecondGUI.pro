@@ -103,7 +103,8 @@ myLib/myLib_qtlib.cpp \
     widgets/mainwindow/mainwindow_mati.cpp \
     other/autos_fb.cpp \
     other/autos_galya.cpp \
-    other/autos.cpp
+    other/autos.cpp \
+    myLib/myLib_vectr.cpp
 
 HEADERS  += \
 widgets/cut.h \
@@ -132,7 +133,8 @@ other/matrix.h \
 other/edffile.h \
     other/defaults.h \
     myLib/qtlib.h \
-    myLib/temp.h
+    myLib/temp.h \
+    myLib/vectr.h
 
 FORMS+= mainwindow.ui \
 cut.ui \

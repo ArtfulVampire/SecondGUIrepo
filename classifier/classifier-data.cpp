@@ -207,7 +207,7 @@ void ClassifierData::push_back(const std::valarray<double> & inDatum,
 							   const QString & inFileName)
 {
 	if(inType >= indices.size()) indices.resize(inType + 1);
-	if(inType >= classCount.size()) smLib::resizeValar(classCount, inType + 1);
+	if(inType >= classCount.size()) smLib::valarResize(classCount, inType + 1);
 
 	indices[inType].push_back(dataMatrix.rows()); // index of a new
 	dataMatrix.push_back(inDatum);

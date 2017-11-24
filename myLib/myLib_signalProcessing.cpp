@@ -271,9 +271,9 @@ std::valarray<double> butterworthBandStopTwoSided(const std::valarray<double> & 
 												  double srate)
 {
 	std::valarray<double> res1 = butterworthBandStop(in, fLow, fHigh, srate);
-	std::valarray<double> res2 = smLib::reverseArray(res1);
+	std::valarray<double> res2 = smLib::contReverse(res1);
 	res1 = butterworthBandStop(res2, fLow, fHigh, srate);
-	return smLib::reverseArray(res1);
+	return smLib::contReverse(res1);
 }
 
 std::valarray<double> butterworthBandPassTwoSided(const std::valarray<double> & in,
@@ -282,9 +282,9 @@ std::valarray<double> butterworthBandPassTwoSided(const std::valarray<double> & 
 												  double srate)
 {
 	std::valarray<double> res1 = butterworthBandPass(in, fLow, fHigh, srate);
-	std::valarray<double> res2 = smLib::reverseArray(res1);
+	std::valarray<double> res2 = smLib::contReverse(res1);
 	res1 = butterworthBandPass(res2, fLow, fHigh, srate);
-	return smLib::reverseArray(res1);
+	return smLib::contReverse(res1);
 }
 
 std::valarray<double> butterworthHighPassTwoSided(const std::valarray<double> & in,
@@ -292,9 +292,9 @@ std::valarray<double> butterworthHighPassTwoSided(const std::valarray<double> & 
 												  double srate)
 {
 	std::valarray<double> res1 = butterworthHighPass(in, cutoff, srate);
-	std::valarray<double> res2 = smLib::reverseArray(res1);
+	std::valarray<double> res2 = smLib::contReverse(res1);
 	res1 = butterworthHighPass(res2, cutoff, srate);
-	return smLib::reverseArray(res1);
+	return smLib::contReverse(res1);
 }
 
 std::valarray<double> butterworthLowPassTwoSided(const std::valarray<double> & in,
@@ -302,9 +302,9 @@ std::valarray<double> butterworthLowPassTwoSided(const std::valarray<double> & i
 												  double srate)
 {
 	std::valarray<double> res1 = butterworthLowPass(in, cutoff, srate);
-	std::valarray<double> res2 = smLib::reverseArray(res1);
+	std::valarray<double> res2 = smLib::contReverse(res1);
 	res1 = butterworthLowPass(res2, cutoff, srate);
-	return smLib::reverseArray(res1);
+	return smLib::contReverse(res1);
 }
 
 std::valarray<double> refilter(const std::valarray<double> & inputSignal,
@@ -382,9 +382,9 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 {
 	std::valarray<double> res(in.size());
 	res = btr::butterworth(in, order, srate, (lowFreq + highFreq) / 2., (highFreq - lowFreq) / 2.);
-	res = smLib::reverseArray(res);
+	res = smLib::contReverse(res);
 	res = btr::butterworth(res, order, srate, (lowFreq + highFreq) / 2., (highFreq - lowFreq) / 2.);
-	res = smLib::reverseArray(res);
+	res = smLib::contReverse(res);
 	return res;
 }
 } // namespace btr
@@ -648,7 +648,7 @@ std::valarray<std::complex<double>> spectreWelchRtoC(const std::valarray<double>
 		windStart < inputSignal.size() - fftLen;
 		windStart += windStep, ++num)
 	{
-		std::valarray<double> part1 = smLib::valarSubsec(inputSignal,
+		std::valarray<double> part1 = smLib::contSubsec(inputSignal,
 														 windStart,
 														 windStart + fftLen) * wnd;
 		const specType spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
@@ -715,10 +715,10 @@ std::valarray<std::complex<double>> spectreWelchCross(const std::valarray<double
 		windStart < inputSignal1.size() - fftLen;
 		windStart += windStep, ++num)
 	{
-		std::valarray<double> part1 = smLib::valarSubsec(inputSignal1,
+		std::valarray<double> part1 = smLib::contSubsec(inputSignal1,
 														 windStart,
 														 windStart + fftLen) * wnd;
-		std::valarray<double> part2 = smLib::valarSubsec(inputSignal2,
+		std::valarray<double> part2 = smLib::contSubsec(inputSignal2,
 														 windStart,
 														 windStart + fftLen) * wnd;
 		const specType spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
@@ -1036,7 +1036,7 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 	{
 		res[i] = res[i * rat];
 	}
-	smLib::resizeValar(res, inSignal.size() / rat);
+	smLib::valarResize(res, inSignal.size() / rat);
 	return res;
 }
 
@@ -1046,7 +1046,10 @@ int findJump(const std::valarray<double> & inSignal, int startSearch, double num
 	for(int i = startSearch; i < inSignal.size() - 1; ++i)
 	{
 		if(std::abs(inSignal[i + 1] - inSignal[i]) >
-		   numOfSigmas * smLib::sigma(inSignal[std::slice(i - lenForSigma, lenForSigma, 1)]))
+		   numOfSigmas * smLib::sigma(std::valarray<double>(
+										  inSignal[std::slice(i - lenForSigma, lenForSigma, 1)] )
+									  )
+		   )
 		{
 			return i;
 		}
@@ -1799,7 +1802,7 @@ void countVectorW(matrix & vectorW,
             vectorW[i] -= vector3;
 			smLib::normalize(vectorW[i]);
 
-			sum2 = smLib::norma(vectorOld - vectorW[i]);
+			sum2 = smLib::norma(std::valarray<double>(vectorOld - vectorW[i]));
 
             ++counter;
             if(sum2 < vectorWTreshold || 2. - sum2 < vectorWTreshold) break;
@@ -2028,7 +2031,8 @@ void svd(const matrix & initialData,
 #if 0
                     F += 0.5 * pow(inData[i] - tempB * tempA[i], 2.).sum();
 #elif 1
-					F += 0.5 * smLib::normaSq(inData[i] - tempB * tempA[i]);
+					F += 0.5 * smLib::normaSq(
+							 std::valarray<double>(inData[i] - tempB * tempA[i]));
 #elif 1
                     // much faster in debug
                     const double coef = tempA[i];
@@ -2086,7 +2090,7 @@ void svd(const matrix & initialData,
 #if 0
                     dF += 0.5 * pow((inData[i] - tempB * tempA[i]), 2.).sum();
 #elif 1
-					dF += 0.5 * smLib::normaSq(inData[i] - tempB * tempA[i]);
+					dF += 0.5 * smLib::normaSq(std::valarray<double>(inData[i] - tempB * tempA[i]));
 #elif 1
                     // much faster in debug
                     const double coef = tempA[i];
