@@ -292,7 +292,6 @@ template std::pair<bool, double> contains(const std::valarray<double> & cont,
 										  const std::initializer_list<double> & val);
 
 
-
 template <class InputIterator, class Typ>
 InputIterator find_back(InputIterator last, InputIterator first, const Typ & val)
 {

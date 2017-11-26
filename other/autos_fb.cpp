@@ -153,6 +153,7 @@ void checkStatResults(const QString & guyPath, const QString & guyName)
 	/// 18, 19, 20 - mean, median, sigma of answered
 	/// 21, 22, 23 - correct, incorrect, not answered
 
+
 	std::cout << std::fixed;
 	std::cout.precision(2);
 
@@ -174,8 +175,11 @@ void checkStatResults(const QString & guyPath, const QString & guyName)
 			<< std::endl << std::endl;
 	autos::checkStatTimesSolving(guyPath, guyName, 247);
 
+
 	std::cout << std::endl;
 	std::cout << std::defaultfloat;
+
+
 }
 
 void feedbackFinalTimes(const QString & guyPath,
@@ -343,7 +347,7 @@ QString timesPath(const QString & guyPath,
 				  int numSes,
 				  int typ)
 {
-	return guyPath
+	return guyPath + "/"
 			+ guyName + "_times_"
 			+ nm(numSes) + "_"
 			+ nm(typ) + ".txt";
@@ -544,6 +548,251 @@ void successiveNetPrecleanWinds(const QString & windsPath)
 	ann->setClassifier(ModelType::ANN);
 	ann->successivePreclean(windsPath, {});
 	delete ann;
+}
+
+void FeedbackClass::countTimes()
+{
+	auto filePath = [this](int numSes) -> QString
+	{
+		return this->guyPath + "/" + this->guyName + "_" + nm(numSes) + this->postfix + ".edf";
+	};
+	std::vector<int> numSes = {1, 3};
+
+	for(int j : numSes)
+	{
+		if(!QFile::exists(filePath(j)))
+		{
+			std::cout << "FeedbackClass::countTimes: file not found - "
+					  << filePath(j) << std::endl;
+			return;
+		}
+	}
+	for(int j : numSes)
+	{
+		if(!QFile::exists(ansPath(j)))
+		{
+			std::cout << "FeedbackClass::countTimes: file not found - "
+					  << ansPath(j) << std::endl;
+			return;
+		}
+	}
+
+	for(int i : {0, 1})
+	{
+		/// read markers
+		edfFile fil;
+		fil.readEdfFile(filePath(numSes[i]));
+		const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
+
+		std::vector<int> corrs = readAnsFile(numSes[i]);
+
+		/// calc times
+		for(auto tim : times[i]) { tim.clear(); } /// clear previous
+		int count = 0;
+		int sta = 0;
+		int num = 0;
+		std::vector<int> nums = {241, 247};
+		for(const std::pair<int, int> & mrk : markers)
+		{
+			int mark = mrk.second;
+
+			if(myLib::contains(nums, mark))
+			{
+				sta = mrk.first;
+				num = ((mark == 241) ? 0 : 1);
+			}
+			else if(mark == 254)
+			{
+				times[i][num].push_back(std::make_pair(corrs[count++],
+										(mrk.first - sta) / fil.getFreq())
+						);
+			}
+		}
+		for(auto tim : times[i])
+		{
+			if(tim.size() != numTasks)
+			{
+				std::cout << "FeedbackClass::countTimes: unexpected num of tasks = "
+						  << tim.size() << ", expected = " << numTasks
+						  << ", numSes = " << numSes[i] << std::endl;
+			}
+		}
+	}
+}
+
+std::valarray<double> FeedbackClass::timesToArray(taskType typ, fileNum filNum, ansType howSolved)
+{
+	std::vector<double> res;
+	for(auto in : times[int(filNum)][int(typ)])
+	{
+		if(in.first == int(howSolved)) { res.push_back(in.second); }
+	}
+	return smLib::vecToValar(res);
+}
+
+std::vector<int> FeedbackClass::readAnsFile(int numSes)
+{
+	/// read answers
+	std::vector<int> corrs; corrs.reserve(80);
+	std::ifstream answers;
+
+	answers.open(ansPath(numSes).toStdString());
+	char ans;
+	while(answers >> ans)
+	{
+		if(ans == '\n' || ans == '\r') { answers >> ans; }
+		bool ok{};
+		int tmp = QString(ans).toInt(&ok);
+
+		if(ok) { corrs.push_back(tmp); }
+		else
+		{
+			std::cout << "FeedbackClass::readAnsFile: wrong char in file = "
+					  << ans << std::endl;
+		}
+	}
+	answers.close();
+
+	if(corrs.size() != 2 * numTasks)
+	{
+		std::cout << "FeedbackClass::readAnsFile: wrong num of anwers = " << corrs.size()
+				  << ", expected = " << 2 * numTasks << std::endl;
+	}
+
+	return corrs;
+}
+
+void FeedbackClass::checkStatTimes(taskType typ, ansType howSolved)
+{
+	std::valarray<double> vals1 = timesToArray(typ, fileNum::first, howSolved);
+	std::valarray<double> vals2 = timesToArray(typ, fileNum::third, howSolved);
+
+
+	if(typ == taskType::spat)		{ std::cout << "spatTime:" << "\n"; }
+	else if(typ == taskType::verb)	{ std::cout << "verbTime:" << "\n"; }
+
+	switch(myLib::MannWhitney(vals1, vals2, 0.05))
+	{
+	case 0: { std::cout << "not different"; break; }
+	case 1: { std::cout << "time1 > time3"; break; }
+	case 2: { std::cout << "time1 < time3"; break; }
+	default: { break; }
+	}
+
+	std::cout << "\t"
+			  << "av.acceleration = "
+			  << (smLib::mean(vals1) - smLib::mean(vals2)) / smLib::mean(vals1)
+			  << std::endl;
+}
+
+void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
+{
+	int num1 = 0;
+	for(auto in : times[int(fileNum::first)][int(typ)])
+	{
+		if(in.first == int(howSolved)) { ++num1; }
+
+	}
+//	std::cout << std::endl;
+	int num2 = 0;
+	for(auto in : times[int(fileNum::third)][int(typ)])
+	{
+		if(in.first == int(howSolved)) { ++num2; }
+	}
+
+	if(typ == taskType::spat)		{ std::cout << "spatTime:" << "\n"; }
+	else if(typ == taskType::verb)	{ std::cout << "verbTime:" << "\n"; }
+
+	std::cout << "p-value = " <<  myLib::binomialOneTailed(num1, num2, numTasks)
+			  << "\t" << "improvement = " << double(num2 - num1) / num1
+			  << std::endl;
+}
+
+void FeedbackClass::checkStat()
+{
+	std::cout << std::fixed;
+	std::cout.precision(2);
+	for(auto typ : {taskType::spat, taskType::verb})
+	{
+		checkStatSolving(typ, ansType::right);
+		std::cout << std::endl;
+		checkStatTimes(typ, ansType::right);
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+	std::cout << std::defaultfloat;
+}
+
+void FeedbackClass::writeFile()
+{
+	std::ofstream outStr;
+	outStr.open((this->guyPath + "/" + this->guyName + "_timesResults_new.txt").toStdString());
+
+	/// write in a row:
+	/// spatial
+	/// 0, 1, 2 - mean, median, sigma of correct
+	/// 3, 4, 5 - mean, median, sigma of incorrect
+	/// 6, 7, 8 - mean, median, sigma of answered
+	/// 9, 10, 11 - correct, incorrect, not answered
+	/// verbal
+	/// 12, 13, 14 - mean, median, sigma of correct
+	/// 15, 16, 17 - mean, median, sigma of incorrect
+	/// 18, 19, 20 - mean, median, sigma of answered
+	/// 21, 22, 23 - correct, incorrect, not answered
+
+
+	for(int i = 0; i < 2; ++i)
+	{
+		for(int j = 0; j < 2; ++j)
+		{
+			const auto & tsk = times[i][j];
+
+			outStr << std::fixed;
+			outStr.precision(1);
+
+			for(std::vector<int> ans : {
+			std::vector<int>{int(ansType::right)},
+			std::vector<int>{int(ansType::wrong)},
+			std::vector<int>{int(ansType::right), int(ansType::wrong)}
+		})
+			{
+				std::vector<double> vals{};
+
+				std::for_each(std::begin(tsk),
+							  std::end(tsk),
+							  [&vals, ans](const auto & in)
+				{
+					if(myLib::contains(ans, std::get<0>(in)))
+					{
+						vals.push_back(std::get<1>(in));
+					}
+				});
+				auto vl = smLib::vecToValar(vals);
+				outStr << smLib::mean(vl) << "\t"
+					   << smLib::median(vl) << "\t"
+					   << smLib::sigma(vl) << "\t";
+			}
+			outStr << std::defaultfloat;
+
+			for(ansType ans : {ansType::right, ansType::wrong, ansType::skip})
+			{
+				outStr << std::count_if(std::begin(tsk),
+										std::end(tsk),
+										[ans](const auto & in)
+				{
+					return std::get<0>(in) == int(ans);
+				});
+				outStr << "\t";
+			}
+		}
+		outStr << "\r\n";
+	}
+	outStr.close();
+}
+
+QString FeedbackClass::ansPath(int numSes)
+{
+	return this->guyPath + "/" + this->guyName + "_ans" + nm(numSes) + ".txt";
 }
 
 

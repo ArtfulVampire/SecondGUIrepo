@@ -44,7 +44,7 @@ void MainWindow::customFunc()
 
 //	autos::checkMarkFBfinal("/media/Files/Data/FeedbackFinal/Kartavova/KKE_1.EDF");
 //	exit(0);
-	return;
+//	return;
 
 #if 0
 	/// check for significance of efficiency
@@ -102,7 +102,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
+#if 01
 	/// count correctness and average times
 //	for(auto in : subj::guysFBnew)
 	for(auto in : subj::guysFBfinal)
@@ -111,9 +111,17 @@ void MainWindow::customFunc()
 								+ "/FeedbackFinalMark/"
 								+ in.first;
 
-		autos::feedbackFinalTimes(guyPath, in.second);
-		autos::timesSolving(guyPath, in.second);
-		autos::checkStatResults(guyPath, in.second);
+		if(!QDir(guyPath).exists()) { continue; }
+
+		autos::FeedbackClass fb(guyPath, in.second, "");
+		std::cout << in.second << std::endl;
+		fb.countTimes();
+		fb.checkStat();
+		fb.writeFile();
+
+//		autos::feedbackFinalTimes(guyPath, in.second);
+//		autos::timesSolving(guyPath, in.second);
+//		autos::checkStatResults(guyPath, in.second);
 	}
 	exit(0);
 #endif

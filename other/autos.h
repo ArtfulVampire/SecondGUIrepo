@@ -180,6 +180,42 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double> > & inData,
 
 
 
+class FeedbackClass
+{
+public:
+	FeedbackClass() {}
+	FeedbackClass(const QString & guyPath_,
+				  const QString & guyName_,
+				  const QString & postfix_)
+		: guyPath(guyPath_), guyName(guyName_), postfix(postfix_) {}
+	~FeedbackClass() {}
+
+	enum class taskType : int {spat = 0, verb = 1};
+	enum class fileNum  : int {first = 0, third = 1};
+	enum class ansType  : int {skip = 0, right = 1, wrong = 2};
+
+	void checkStat();
+	void writeFile();
+
+	void checkStatTimes(taskType in, ansType howSolved);
+	void checkStatSolving(taskType typ, ansType howSolved);
+	void countTimes();
+
+	static const int numTasks = 40;
+
+private:
+	QString ansPath(int numSes);
+	std::vector<int> readAnsFile(int numSes);
+	std::valarray<double> timesToArray(taskType in, fileNum filNum, ansType howSolved);
+
+private:
+	QString guyPath;
+	QString guyName;
+	QString postfix;
+
+	std::vector<std::pair<int, double>> times[2][2]; /// [numFile][taskType][taskNum][ansType, time]
+
+};
 
 /// FB
 void createAnsFiles(const QString & guyPath, QString guyName);
@@ -195,7 +231,7 @@ std::vector<double> timesFromFile(const QString & timesPath, int howSolved);
 void feedbackFinalTimes(const QString & guyPath,
 						const QString & guyName,
 						const QString & postfix = QString());
-void checkStatResults(const QString & guyPath, const QString & guyName);
+void  checkStatResults(const QString & guyPath, const QString & guyName);
 
 void successiveNetPrecleanWinds(const QString & windsPath);
 
