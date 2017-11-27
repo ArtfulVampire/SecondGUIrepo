@@ -202,7 +202,7 @@ void MainWindow::rereferenceData(const QString & newRef)
             refName.remove(QRegExp(R"([\-\s])"));
 
 			/// if no reference found - leave as is
-			if(refName.isEmpty()) { helpString += currNumStr + " "; }
+			if(refName.isEmpty()) { helpString += currNumStr + " "; continue; }
 
 			QString chanName = myLib::getLabelName(label[i]);
 

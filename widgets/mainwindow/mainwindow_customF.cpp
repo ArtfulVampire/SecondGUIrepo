@@ -31,7 +31,6 @@ void MainWindow::customFunc()
 //	exit(0);
 
 
-
 //	const QString p = "/media/Files/Data/Galya/SomeData9Nov17/out/";
 //	const QString d = "/media/Files/Data/Galya/SomeData9Nov17/out2/";
 //	for(QString n :{"fracDim", "spectre", "Hilbert", "alpha"})
@@ -41,17 +40,49 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-
-//	autos::checkMarkFBfinal("/media/Files/Data/FeedbackFinal/Kartavova/KKE_1.EDF");
-//	exit(0);
 //	return;
 
 #if 0
-	/// check for significance of efficiency
-	for(auto guy : subj::guysFBfinal)
+	/// check marks
+	const QString path = QString("/media/Files/Data/FeedbackFinal/")
+						 + "Korchun";
+	for(QString fl : QDir(path).entryList(def::edfFilters))
 	{
-		autos::checkStatTimes("/media/Files/Data/FeedbackFinalMark/" + guy.first,
-							  guy.second);
+		autos::checkMarkFBfinal(path + "/" + fl);
+	}
+	exit(0);
+#endif
+
+#if 0
+	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
+						  "Broshevitskaya", "BND");
+	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
+						  "Kartavova", "KKE");
+	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
+						  "Korchun", "KAV");
+	exit(0);
+#endif
+
+#if 01
+	/// count correctness and average times
+//	for(auto in : subj::guysFBnew)
+	for(auto in : subj::guysFBfinal)
+	{
+		const QString guyPath = def::dataFolder
+								+ "/FeedbackFinalMark/"
+								+ in.first;
+
+		if(!QDir(guyPath).exists()) { continue; }
+
+		autos::FeedbackClass fb(guyPath, in.second, "");
+		std::cout << in.second << std::endl;
+		fb.countTimes();
+		fb.checkStat();
+		fb.writeFile();
+
+//		autos::feedbackFinalTimes(guyPath, in.second);
+//		autos::timesSolving(guyPath, in.second);
+//		autos::checkStatResults(guyPath, in.second);
 	}
 	exit(0);
 #endif

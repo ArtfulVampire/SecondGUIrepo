@@ -700,8 +700,8 @@ void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 		if(in.first == int(howSolved)) { ++num2; }
 	}
 
-	if(typ == taskType::spat)		{ std::cout << "spatTime:" << "\n"; }
-	else if(typ == taskType::verb)	{ std::cout << "verbTime:" << "\n"; }
+	if(typ == taskType::spat)		{ std::cout << "spatNum:" << "\n"; }
+	else if(typ == taskType::verb)	{ std::cout << "verbNum:" << "\n"; }
 
 	std::cout << "p-value = " <<  myLib::binomialOneTailed(num1, num2, numTasks)
 			  << "\t" << "improvement = " << double(num2 - num1) / num1
