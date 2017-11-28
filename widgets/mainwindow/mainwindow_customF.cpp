@@ -63,7 +63,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// count correctness and average times
 //	for(auto in : subj::guysFBnew)
 	for(auto in : subj::guysFBfinal)
@@ -133,7 +133,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 01
+#if 0
 	/// count correctness and average times
 //	for(auto in : subj::guysFBnew)
 	for(auto in : subj::guysFBfinal)
@@ -158,7 +158,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 		"Alex",		//
@@ -190,8 +190,8 @@ void MainWindow::customFunc()
 
 //	return;
 
-	QString guy = "Boris";
-//	for(QString guy : guyList)
+//	QString guy = "Boris";
+	for(QString guy : guyList)
 	{
 		if(0)
 		{
@@ -239,7 +239,7 @@ void MainWindow::customFunc()
 //			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
 //			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
-			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
+//			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
 //			continue;
 			exit(0);
 		}

@@ -1170,7 +1170,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 			   mapSize * 2. * sqrt(2.) / (dim - 1) ) continue;
 
 			val = myLib::splineOutput(inX, inYv, dim, Av, Bv, y * scale);
-			if(maxAbs == 0)
+			if(maxAbs == 0.)
 			{
 				// "private" limits
 				// each map from deep blue to deep red

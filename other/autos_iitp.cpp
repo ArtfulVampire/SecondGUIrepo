@@ -1,6 +1,5 @@
 #include <other/autos.h>
 
-#include <myLib/iitp.h>
 #include <myLib/drw.h>
 #include <myLib/draws.h>
 #include <myLib/signalProcessing.h>
@@ -1121,6 +1120,7 @@ void IITPprocessStaged(const QString & guyName,
 		a.mkdir("sp");
 		a.mkdir("pic");
 		a.mkdir("cohPics");
+		a.mkdir("cohPicsMax");
 
 		auto filePath = [=](int i) -> QString
 		{
@@ -1137,83 +1137,26 @@ void IITPprocessStaged(const QString & guyName,
 			return resultsPathPrefix + "coh/" + guyName + "_" + rn(i, 2) + "_" + goni + "_extension.txt";
 		};
 
-		///
-		static const std::vector<QString> cohTypes{"free", "flex", "ext"};
-		/// coh, fileNum, 0-rest, 1-flex, 2-ext
-		typedef std::tuple<iitp::iitpData::cohsType, int, int> cohItem;
-		std::vector<cohItem> cohs;
+//		///
+//		static const std::vector<QString> cohTypes{"free", "flex", "ext"};
+//		/// coh, fileNum, 0-rest, 1-flex, 2-ext
+//		typedef std::tuple<iitp::iitpData::cohsType, int, int> cohItem;
+//		std::vector<cohItem> cohs;
 
 		/// added 2, 6, 10 due to letter 03.11.17
-		QVector<int> interestingForTaR{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 25};  /// for maps drawing
+		QVector<int> interestingForLegs{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 25};  /// for maps drawing
 
-		struct forMap
-		{
-			int fileNum;
-			QString fileType;
-//			iitp::iitpData::cohsType cohData;
-			std::valarray<double> alphaCoh;
-			std::valarray<double> betaCoh;
-			std::valarray<double> gammaCoh;
+		/// added due to talk 28.11.17
+		QVector<int> interestingForWrists{0, 1, 6, 8, 10, 13, 14, 26, 27, 28, 29};  /// for maps drawing
 
-			std::valarray<double> alphaCohL;
-			std::valarray<double> betaCohL;
-			std::valarray<double> gammaCohL;
 
-			forMap(const iitp::iitpData::mscohsType & in,
-				   const iitp::iitpData & inFile,
-				   int filNum,
-				   QString typ)
-			{
-				fileNum = filNum;
-				fileType = typ;
 
-				alphaCoh.resize(19);	alphaCoh = 0;
-				betaCoh.resize(19);		betaCoh = 0;
-				gammaCoh.resize(19);	gammaCoh = 0;
+		std::vector<iitp::forMap> forMapsVector; forMapsVector.reserve(100);
 
-				alphaCohL.resize(19);	alphaCohL = 0;
-				betaCohL.resize(19);	betaCohL = 0;
-				gammaCohL.resize(19);	gammaCohL = 0;
-
-				const int TA_R = inFile.findChannel(iitp::emgNames[iitp::emgChans::Ta_r]);
-
-				/// added TA_L due to letter 03.11.17
-				const int TA_L = inFile.findChannel(iitp::emgNames[iitp::emgChans::Ta_l]);
-
-				for(int eegNum : iitp::interestEeg)
-				{
-					for(int alphaFr = 8; alphaFr < 13; ++alphaFr)
-					{
-						alphaCoh[eegNum] += in[eegNum][TA_R][alphaFr / inFile.getSpStepW()];
-						alphaCohL[eegNum] += in[eegNum][TA_L][alphaFr / inFile.getSpStepW()];
-					}
-					for(int betaFr = 13; betaFr < 25; ++betaFr)
-					{
-						betaCoh[eegNum] += in[eegNum][TA_R][betaFr / inFile.getSpStepW()];
-						betaCohL[eegNum] += in[eegNum][TA_L][betaFr / inFile.getSpStepW()];
-					}
-					for(int gammaFr = 25; gammaFr < 45; ++gammaFr)
-					{
-						gammaCoh[eegNum] += in[eegNum][TA_R][gammaFr / inFile.getSpStepW()];
-						gammaCohL[eegNum] += in[eegNum][TA_L][gammaFr / inFile.getSpStepW()];
-					}
-				}
-				/// move limits to constants
-				alphaCoh /= 13 - 8;
-				betaCoh /= 25 - 13;
-				gammaCoh /= 45 - 25;
-
-				alphaCohL /= 13 - 8;
-				betaCohL /= 25 - 13;
-				gammaCohL /= 45 - 25;
-			}
-
-		};
-
-		std::vector<forMap> forMapsVector{};
-
+		std::cout << guyName << std::endl;
 		for(int fileNum : iitp::fileNums)
 		{
+			std::cout << "file " << fileNum << " in process" << std::endl;
 			if(!QFile::exists(filePath(fileNum)))
 			{
 				std::cout << "IITPprocessStaged: file doesn't exist = "
@@ -1322,10 +1265,17 @@ void IITPprocessStaged(const QString & guyName,
 						   << std::endl;
 					outStr.close();
 				}
-				if(interestingForTaR.contains(fileNum))
+				if(interestingForLegs.contains(fileNum)
+				   || interestingForWrists.contains(fileNum)
+				   )
 				{
 //					cohs.push_back(cohItem(dt.getCoherencies(), fileNum, 0));
-					forMapsVector.push_back(forMap(dt.getMSCoherencies(), dt, fileNum, "free"));
+//					std::cout << 1 << std::endl;
+					auto a = iitp::forMap(dt.getMSCoherencies(), dt, fileNum, "free");
+//					std::cout << 2 << std::endl;
+					forMapsVector.push_back(a);
+//					std::cout << 3 << std::endl;
+//					exit(0);
 				}
 			}
 
@@ -1434,130 +1384,23 @@ void IITPprocessStaged(const QString & guyName,
 							   << "\tnumOfPieces " << dt.getPieces().size()
 							   << std::endl;
 						outStr.close();
-						if(interestingForTaR.contains(fileNum) && type == 0) // flexion only
+						if((interestingForLegs.contains(fileNum) && type == 0) // flexion only
+						   || (interestingForWrists.contains(fileNum) && type == 0)
+					)
 						{
 //							cohs.push_back(cohItem(dt.getCoherencies(), fileNum, type + 1));
-							forMapsVector.push_back(forMap(dt.getMSCoherencies(), dt, fileNum, "flex"));
+							forMapsVector.push_back(iitp::forMap(dt.getMSCoherencies(), dt, fileNum, "flex"));
 						}
 					} /// end for flex/ext
 				} /// end for gonio joints
 			} /// end of real/passive
-		}
+		} /// end for all fileNums
 
+		std::cout << forMapsVector.size() << std::endl;
 
 
 #if 01
-		/// add something about left leg due to letter 3.11.17
-		/// find maxs
-		double maxA = 0.;
-		double maxB = 0.;
-		double maxG = 0.;
-
-		double maxAL = 0.;
-		double maxBL = 0.;
-		double maxGL = 0.;
-
-		for(forMap in : forMapsVector)
-		{
-			maxA = std::max(maxA, in.alphaCoh.max());
-			maxB = std::max(maxB, in.betaCoh.max());
-			maxG = std::max(maxG, in.gammaCoh.max());
-
-			maxAL = std::max(maxAL, in.alphaCohL.max());
-			maxBL = std::max(maxBL, in.betaCohL.max());
-			maxGL = std::max(maxGL, in.gammaCohL.max());
-		}
-		/// round to 1 decimal?
-		if(0)
-		{
-			maxA = std::ceil(maxA * 10) / 10.;
-			maxB = std::ceil(maxB * 10) / 10.;
-			maxG = std::ceil(maxG * 10) / 10.;
-
-			maxAL = std::ceil(maxAL * 10) / 10.;
-			maxBL = std::ceil(maxBL * 10) / 10.;
-			maxGL = std::ceil(maxGL * 10) / 10.;
-		}
-
-		std::cout << "max alpha = " << maxA << "\n"
-				  << "max beta = "  << maxB << "\n"
-				  << "max gamma = " << maxG << "\n"
-				  << std::endl;
-		std::cout << "max alphaL = " << maxAL << "\n"
-				  << "max betaL = "  << maxBL << "\n"
-				  << "max gammaL = " << maxGL << "\n"
-				  << std::endl;
-
-		/// draw
-		for(forMap in : forMapsVector)
-		{
-			/// alpha right
-			myLib::drw::drawOneMap(in.alphaCoh, maxA, myLib::drw::ColorScale::jet, true).save(
-						resultsPathPrefix + "cohPics/" +
-						guyName +
-						"_" + rn(in.fileNum, 2) +	// fileNum
-						"_" + in.fileType +			// free/flex/ext
-						"_Ta_r" +					// Ta_l/Ta_r
-						"_alpha" +					// rhythm
-						".jpg"
-						, 0, 100);
-
-			/// alpha left
-			myLib::drw::drawOneMap(in.alphaCohL, maxAL, myLib::drw::ColorScale::jet, true).save(
-						resultsPathPrefix + "cohPics/" +
-						guyName +
-						"_" + rn(in.fileNum, 2) +	// fileNum
-						"_" + in.fileType +			// free/flex/ext
-						"_Ta_l" +					// Ta_l/Ta_r
-						"_alpha" +					// rhythm
-						".jpg"
-						, 0, 100);
-
-			/// beta right
-			myLib::drw::drawOneMap(in.betaCoh, maxB, myLib::drw::ColorScale::jet, true).save(
-						resultsPathPrefix + "cohPics/" +
-						guyName +
-						"_" + rn(in.fileNum, 2) +	// fileNum
-						"_" + in.fileType +			// free/flex/ext
-						"_Ta_r" +					// Ta_l/Ta_r
-						"_beta" +					// rhythm
-						".jpg"
-						, 0, 100);
-
-			/// beta left
-			myLib::drw::drawOneMap(in.betaCohL, maxBL, myLib::drw::ColorScale::jet, true).save(
-						resultsPathPrefix + "cohPics/" +
-						guyName +
-						"_" + rn(in.fileNum, 2) +	// fileNum
-						"_" + in.fileType +			// free/flex/ext
-						"_Ta_l" +					// Ta_l/Ta_r
-						"_beta" +					// rhythm
-						".jpg"
-						, 0, 100);
-
-			/// gamma right
-			myLib::drw::drawOneMap(in.gammaCoh, maxG, myLib::drw::ColorScale::jet, true).save(
-						resultsPathPrefix + "cohPics/" +
-						guyName +
-						"_" + rn(in.fileNum, 2) +	// fileNum
-						"_" + in.fileType +			// free/flex/ext
-						"_Ta_r" +					// Ta_l/Ta_r
-						"_gamma" +					// rhythm
-						".jpg"
-						, 0, 100);
-
-			/// gamma left
-			myLib::drw::drawOneMap(in.gammaCohL, maxGL, myLib::drw::ColorScale::jet, true).save(
-						resultsPathPrefix + "cohPics/" +
-						guyName +
-						"_" + rn(in.fileNum, 2) +	// fileNum
-						"_" + in.fileType +			// free/flex/ext
-						"_Ta_l" +					// Ta_l/Ta_r
-						"_gamma" +					// rhythm
-						".jpg"
-						, 0, 100);
-
-		}
+		IITPdrawCohMaps(forMapsVector, guyName, resultsPathPrefix);
 #elif 0
 		/// old
 		std::cout << "cohs size = " << cohs.size() << std::endl;
@@ -1619,6 +1462,214 @@ void IITPprocessStaged(const QString & guyName,
 			}
 		}
 #endif
+	}
+}
+
+void IITPdrawCohMaps(const std::vector<iitp::forMap> & forMapsVector,
+					 const QString & guyName,
+					 const QString & resultsPathPrefix)
+{
+	/// add something about left leg due to letter 3.11.17
+	/// find maxs
+//	double maxA = 0.;
+//	double maxB = 0.;
+//	double maxG = 0.;
+
+//	double maxAL = 0.;
+//	double maxBL = 0.;
+//	double maxGL = 0.;
+
+	const int numEmgs = iitp::forMapEmgNames.size();
+	const int numRhythms = iitp::forMapRangeNames.size();
+
+	/// for meanVal
+	matrix maxes(numEmgs, numRhythms); /// [numEmg][numRange]
+	maxes = 0.;
+
+	/// for maxVal
+	matrix maxesM(numEmgs, numRhythms); /// [numEmg][numRange]
+	maxesM = 0.;
+
+	for(iitp::forMap in : forMapsVector)
+	{
+		for(int i = 0; i < numEmgs; ++i)
+		{
+			if(in.fmChans[i] == -1) { continue; } /// e.g. no Wrists after 13th file
+			for(int j = 0; j < numRhythms; ++j)
+			{
+				maxes[i][j] = std::max(maxes[i][j],
+									   in.forMapRanges[i][j].meanVal.max());
+				maxesM[i][j] = std::max(maxesM[i][j],
+										in.forMapRanges[i][j].maxVal.max());
+			}
+		}
+
+//		maxA = std::max(maxA, in.alphaCoh.max());
+//		maxB = std::max(maxB, in.betaCoh.max());
+//		maxG = std::max(maxG, in.gammaCoh.max());
+
+//		maxAL = std::max(maxAL, in.alphaCohL.max());
+//		maxBL = std::max(maxBL, in.betaCohL.max());
+//		maxGL = std::max(maxGL, in.gammaCohL.max());
+	}
+
+
+
+
+
+	/// round to 1 decimal?
+	if(0)
+	{
+		for(int i = 0; i < numEmgs; ++i)
+		{
+			for(int j = 0; j < numRhythms; ++j)
+			{
+				maxes[i][j] = std::ceil(maxes[i][j] * 10) / 10.;
+				maxesM[i][j] = std::ceil(maxesM[i][j] * 10) / 10.;
+			}
+		}
+
+
+//		maxA = std::ceil(maxA * 10) / 10.;
+//		maxB = std::ceil(maxB * 10) / 10.;
+//		maxG = std::ceil(maxG * 10) / 10.;
+
+//		maxAL = std::ceil(maxAL * 10) / 10.;
+//		maxBL = std::ceil(maxBL * 10) / 10.;
+//		maxGL = std::ceil(maxGL * 10) / 10.;
+	}
+
+
+
+
+
+	for(int i = 0; i < numEmgs; ++i)
+	{
+		std::cout << iitp::forMapEmgNames[i] << std::endl;
+		for(int j = 0; j < numRhythms; ++j)
+		{
+			std::cout << "max " << iitp::forMapRangeNames[j] << " = "
+					  << maxes[i][j] << "\n";
+		}
+		std::cout << std::endl;
+
+	}
+//	std::cout << "max alpha = " << maxA << "\n"
+//			  << "max beta = "  << maxB << "\n"
+//			  << "max gamma = " << maxG << "\n"
+//			  << std::endl;
+//	std::cout << "max alphaL = " << maxAL << "\n"
+//			  << "max betaL = "  << maxBL << "\n"
+//			  << "max gammaL = " << maxGL << "\n"
+//			  << std::endl;
+
+
+
+	/// draw
+	for(iitp::forMap in : forMapsVector)
+	{
+		for(int i = 0; i < numEmgs; ++i)
+		{
+			if(in.fmChans[i] == -1) { continue; } /// e.g. no Wrists after 13th file
+			for(int j = 0; j < numRhythms; ++j)
+			{
+
+				myLib::drw::drawOneMap(in.forMapRanges[i][j].meanVal,
+									   maxes[i][j],
+									   myLib::drw::ColorScale::jet,
+									   true).save(
+							resultsPathPrefix + "cohPics/" +
+							guyName +
+							"_" + rn(in.fileNum, 2) +			// fileNum
+							"_" + in.fileType +					// free/flex/ext
+							"_" + iitp::forMapEmgNames[i] +		// muscle
+							"_" + iitp::forMapRangeNames[j] +	// rhythm
+							".jpg"
+							, 0, 100);
+
+
+				/// doubt
+				myLib::drw::drawOneMap(in.forMapRanges[i][j].maxVal,
+									   maxesM[i][j],
+									   myLib::drw::ColorScale::jet,
+									   true).save(
+							resultsPathPrefix + "cohPicsMax/" +
+							guyName +
+							"_" + rn(in.fileNum, 2) +			// fileNum
+							"_" + in.fileType +					// free/flex/ext
+							"_" + iitp::forMapEmgNames[i] +		// muscle
+							"_" + iitp::forMapRangeNames[j] +	// rhythm
+							".jpg"
+							, 0, 100);
+			}
+		}
+
+//		/// alpha right
+//		myLib::drw::drawOneMap(in.alphaCoh, maxA, myLib::drw::ColorScale::jet, true).save(
+//					resultsPathPrefix + "cohPics/" +
+//					guyName +
+//					"_" + rn(in.fileNum, 2) +	// fileNum
+//					"_" + in.fileType +			// free/flex/ext
+//					"_Ta_r" +					// Ta_l/Ta_r
+//					"_alpha" +					// rhythm
+//					".jpg"
+//					, 0, 100);
+
+//		/// alpha left
+//		myLib::drw::drawOneMap(in.alphaCohL, maxAL, myLib::drw::ColorScale::jet, true).save(
+//					resultsPathPrefix + "cohPics/" +
+//					guyName +
+//					"_" + rn(in.fileNum, 2) +	// fileNum
+//					"_" + in.fileType +			// free/flex/ext
+//					"_Ta_l" +					// Ta_l/Ta_r
+//					"_alpha" +					// rhythm
+//					".jpg"
+//					, 0, 100);
+
+//		/// beta right
+//		myLib::drw::drawOneMap(in.betaCoh, maxB, myLib::drw::ColorScale::jet, true).save(
+//					resultsPathPrefix + "cohPics/" +
+//					guyName +
+//					"_" + rn(in.fileNum, 2) +	// fileNum
+//					"_" + in.fileType +			// free/flex/ext
+//					"_Ta_r" +					// Ta_l/Ta_r
+//					"_beta" +					// rhythm
+//					".jpg"
+//					, 0, 100);
+
+//		/// beta left
+//		myLib::drw::drawOneMap(in.betaCohL, maxBL, myLib::drw::ColorScale::jet, true).save(
+//					resultsPathPrefix + "cohPics/" +
+//					guyName +
+//					"_" + rn(in.fileNum, 2) +	// fileNum
+//					"_" + in.fileType +			// free/flex/ext
+//					"_Ta_l" +					// Ta_l/Ta_r
+//					"_beta" +					// rhythm
+//					".jpg"
+//					, 0, 100);
+
+//		/// gamma right
+//		myLib::drw::drawOneMap(in.gammaCoh, maxG, myLib::drw::ColorScale::jet, true).save(
+//					resultsPathPrefix + "cohPics/" +
+//					guyName +
+//					"_" + rn(in.fileNum, 2) +	// fileNum
+//					"_" + in.fileType +			// free/flex/ext
+//					"_Ta_r" +					// Ta_l/Ta_r
+//					"_gamma" +					// rhythm
+//					".jpg"
+//					, 0, 100);
+
+//		/// gamma left
+//		myLib::drw::drawOneMap(in.gammaCohL, maxGL, myLib::drw::ColorScale::jet, true).save(
+//					resultsPathPrefix + "cohPics/" +
+//					guyName +
+//					"_" + rn(in.fileNum, 2) +	// fileNum
+//					"_" + in.fileType +			// free/flex/ext
+//					"_Ta_l" +					// Ta_l/Ta_r
+//					"_gamma" +					// rhythm
+//					".jpg"
+//					, 0, 100);
+
 	}
 }
 
