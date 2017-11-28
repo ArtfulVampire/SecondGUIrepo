@@ -1144,19 +1144,36 @@ void IITPprocessStaged(const QString & guyName,
 //		std::vector<cohItem> cohs;
 
 		/// added 2, 6, 10 due to letter 03.11.17
-		QVector<int> interestingForLegs{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 25};  /// for maps drawing
+		QVector<int> interestingForLegs{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 24, 25};  /// for maps drawing
 
 		/// added due to talk 28.11.17
 		QVector<int> interestingForWrists{0, 1, 6, 8, 10, 13, 14, 26, 27, 28, 29};  /// for maps drawing
 
 
 
-		std::vector<iitp::forMap> forMapsVector; forMapsVector.reserve(100);
+		std::vector<iitp::forMap> forMapsVector;
 
 		std::cout << guyName << std::endl;
 		for(int fileNum : iitp::fileNums)
 		{
 			std::cout << "file " << fileNum << " in process" << std::endl;
+
+			/// check bad files - no EMG, terrible EMG, etc
+			try
+			{
+				if(myLib::contains(iitp::badFiles.at(guyName), fileNum))
+				{
+					std::cout << "IITPprocessStaged: bad file = "
+							  << guyName << " " << fileNum << std::endl;
+					continue;
+				}
+			}
+			catch (...)
+			{
+				continue;
+			}
+
+
 			if(!QFile::exists(filePath(fileNum)))
 			{
 				std::cout << "IITPprocessStaged: file doesn't exist = "

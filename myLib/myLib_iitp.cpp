@@ -169,6 +169,12 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 									std::sqrt(this->crossSpectra[chan1][chan1] *
 											  this->crossSpectra[chan2][chan2]);
 		mscoherencies[chan1][chan2] = std::pow(smLib::abs(coherencies[chan1][chan2]), 2.);
+
+		/// crutch
+//		if(mscoherencies[chan1][chan2].max() > 1.0)
+//		{
+//			mscoherencies[chan1][chan2] = 0.;
+//		}
 	}
 	int index = freq / getSpStepW();
 	return coherencies[chan1][chan2][index];
