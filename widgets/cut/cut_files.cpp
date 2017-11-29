@@ -317,6 +317,7 @@ void Cut::openFile(const QString & dataFileName)
 	else if(this->myFileType == fileType::edf)
 	{
 		edfFil.readEdfFile(dataFileName);
+		currentPic = QPixmap{};
 		fileOpened = true;
 		logAction(edfFil.getExpName());
 		drawFlag = false;

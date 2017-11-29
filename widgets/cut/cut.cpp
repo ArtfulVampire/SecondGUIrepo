@@ -555,7 +555,7 @@ void Cut::paint()
 void Cut::paintLimits()
 {
 	if( !fileOpened ) { return; }
-	if(currentPic.isNull()) { return; }
+	if(currentPic.isNull() || !drawFlag) { return; }
 
 	QPixmap tempPic = currentPic;
 	QPainter paint;
