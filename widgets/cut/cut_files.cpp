@@ -264,7 +264,6 @@ void Cut::setValuesByEdf()
 	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - scrollAreaGapX) / currFreq);
 	ui->paintLengthDoubleSpinBox->setValue((this->width() - scrollAreaGapX) / currFreq); /// -> paint
 
-
 	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
 	{
 		a->setMaximum(edfFil.getNs() - 1);

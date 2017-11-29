@@ -233,6 +233,23 @@ void MainWindow::customFunc()
 
 		/// copy files to SYNCED
 
+//		return;
+
+		std::cout << 1 << std::endl;
+		std::valarray<double> drawThing{0,	0,
+			0.06399744,	0.04252348,	0.001983,	0,	0.00257324,
+			0.00359005,	0.00174666,	0.00243207,	0.00294025,	0.00430815,
+			0.00256283,	0.00187166,	0.00312526,	0,	0.00420443,
+			0.0035522,	0.00442235};
+		double mx = 0.0838959;
+		QString pPath = "/media/Files/Data/iitp/Results/Alex/cohPics/Alex_00_free_Ta_l_alpha.jpg";
+		myLib::drw::drawOneMap(drawThing,
+							   mx,
+							   myLib::drw::ColorScale::jet,
+							   true).save(pPath, 0, 100);
+		exit(0);
+
+
 		if(01)
 		{
 //			autos::IITPstaging(guy);							/// flex/extend markers

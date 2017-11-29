@@ -384,8 +384,8 @@ const std::vector<double> interestFrequencies = smLib::range<std::vector<double>
 
 /// test
 //const std::valarray<double> fileNums = smLib::range(22, 22+1);
-//const std::valarray<double> fileNums = smLib::range(0, 12);
-const std::valarray<double> fileNums{15, 16, 17, 18, 22, 23, 24, 25, 26, 27};
+const std::valarray<double> fileNums = smLib::range(0, 8);
+//const std::valarray<double> fileNums{15, 16, 17, 18, 22, 23, 24, 25, 26, 27};
 //const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
 
 
@@ -554,6 +554,7 @@ struct forMap
 		fileNum = filNum;
 		fileType = typ;
 
+		fmChans.clear();
 		for(QString emgNam : iitp::forMapEmgNames)
 		{
 			fmChans.push_back(inFile.findChannel(emgNam));
@@ -638,15 +639,33 @@ struct forMap
 		for(int i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
 		{
 			if(fmChans[i] == -1) { continue; } /// e.g. no Wrists after 13th file
+			if(!myLib::contains(iitp::interestEmg[fileNum],
+								myLib::indexOfVal(iitp::emgNames,
+												  iitp::forMapEmgNames[i]))) { continue; }
 			for(int j = 0; j < forMapRanges[i].size(); ++j) /// j ~ alpha/beta/gamma
 			{
 //				std::cout << i << " " << j <<std::endl;
 				fmRange & pewpew = forMapRanges[i][j];
+				/// just to be sure
+				pewpew.meanVal = 0.;
+				pewpew.maxVal = 0.;
+
 				for(int eegNum : iitp::interestEeg)
 				{
 					for(int FR = pewpew.leftLim; FR < pewpew.rightLim; ++FR)
 					{
 						const auto & val = in[eegNum][fmChans[i]][FR / inFile.getSpStepW()];
+						if(std::abs(val) >= 1.0)
+						{
+							std::cout << "abs(coh) > 1"
+									  << " fileNum " << fileNum
+									  << " type " << typ
+										 << " eeg " << inFile.getLabels(eegNum)
+										 << " EMG " << iitp::forMapEmgNames[i]
+										 << " freq " << FR
+										 << " rhythm " << iitp::forMapRangeNames[j]
+											<< std::endl;
+						}
 						pewpew.meanVal[eegNum] += val;
 						pewpew.maxVal[eegNum] = std::max(pewpew.maxVal[eegNum], val);
 					}
