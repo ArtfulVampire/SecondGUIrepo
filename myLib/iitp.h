@@ -258,6 +258,8 @@ const std::vector<QString> emgNames {
 	"Dp_l",
 	"Dp_r"};
 
+
+
 /// [numFile] - interestingChannels
 /// maybe all EMGs for rest and/or stat
 /// 1 May 17 - added Ta_l, Ta_r everywhere for maps drawing
@@ -378,12 +380,12 @@ const std::vector<double> interestFrequencies = smLib::range<std::vector<double>
 //const std::valarray<double> fileNums = smLib::unite({smLib::range(0,  11 + 1),
 //													 smLib::range(13, 29 + 1)});
 /// all with 12th
-const std::valarray<double> fileNums = smLib::range(0, 29+1);
+//const std::valarray<double> fileNums = smLib::range(0, 29+1);
 
 /// test
-//const std::valarray<double> fileNums = smLib::range(24, 29+1);
+//const std::valarray<double> fileNums = smLib::range(22, 22+1);
 //const std::valarray<double> fileNums = smLib::range(0, 12);
-//const std::valarray<double> fileNums{13, 14};
+const std::valarray<double> fileNums{15, 16, 17, 18, 22, 23, 24, 25, 26, 27};
 //const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
 
 
@@ -458,6 +460,244 @@ public:
 	double getSpStepW() const { return srate / fftLenW; }
 
 };
+
+/// EXPERIMENTAL
+struct fmRange // ~fmValue
+{
+	double leftLim{};
+	double rightLim{};
+	std::valarray<double> meanVal;	std::valarray<double> maxVal;
+	fmRange(double left, double right) : leftLim(left), rightLim(right)
+	{
+		meanVal.resize(19); meanVal = 0.;
+		maxVal.resize(19); maxVal = 0.;
+	}
+	~fmRange() {}
+};
+
+/// EXPERIMENTAL
+struct fmRanges
+{
+	/// alpha beta gamma
+	std::vector<fmRange> ranges{{8., 13.}, {13., 25.}, {25., 45.}};
+
+	std::vector<fmRange>::iterator begin() { return std::begin(ranges); }
+	std::vector<fmRange>::iterator end() { return std::end(ranges); }
+	fmRange & operator[](int i) { return ranges[i]; }
+	int size() { return ranges.size(); }
+	fmRanges() {}
+	~fmRanges() {}
+};
+
+
+struct fmValue
+{
+	static constexpr double alphaLeft = 8.;		static constexpr double alphaRight = 13.;
+	static constexpr double betaLeft = 13.;		static constexpr double betaRight = 25.;
+	static constexpr double gammaLeft = 25.;	static constexpr double gammaRight = 45.;
+
+	/// added max* for another topograms
+	std::valarray<double> alpha{0., 19};	std::valarray<double> maxAlpha{0., 19};
+	std::valarray<double> beta{0., 19};		std::valarray<double> maxBeta{0., 19};
+	std::valarray<double> gamma{0., 19};	std::valarray<double> maxGamma{0., 19};
+	fmValue()  {}
+	~fmValue() {}
+};
+
+const std::vector<QString> forMapEmgNames {
+	"Ta_l",
+	"Ta_r",
+	"Fcr_l",
+	"Fcr_r",
+	"Ecr_l",
+	"Ecr_r"
+};
+
+const std::vector<QString> forMapRangeNames {
+	"alpha",
+	"beta",
+	"gamma"
+};
+
+struct forMap
+{
+	int fileNum{-1};
+	QString fileType{"notype"};
+
+#if 0
+	/// old 28.11.17
+	std::valarray<double> alphaCoh;
+	std::valarray<double> betaCoh;
+	std::valarray<double> gammaCoh;
+
+	std::valarray<double> alphaCohL;
+	std::valarray<double> betaCohL;
+	std::valarray<double> gammaCohL;
+#elif 0
+	/// new 28.11.17
+
+	/// 0 - Ta_l, 1- Ta_r, 2 - Fcr_l, 3 - Fcr_r, 4 - Ecr_l, 5 - Ecr_r
+	std::vector<fmValue> fmValues{6};
+#else
+	/// EXPERIMENTAL
+	std::vector<fmRanges> forMapRanges{6};
+#endif
+	std::vector<int> fmChans;
+
+	~forMap(){}
+	forMap(){}
+	forMap(const iitp::iitpData::mscohsType & in,
+		   const iitp::iitpData & inFile,
+		   int filNum,
+		   QString typ)
+	{
+		fileNum = filNum;
+		fileType = typ;
+
+		for(QString emgNam : iitp::forMapEmgNames)
+		{
+			fmChans.push_back(inFile.findChannel(emgNam));
+		}
+#if 0
+	/// old 28.11.17
+		alphaCoh.resize(19);	alphaCoh = 0;
+		betaCoh.resize(19);		betaCoh = 0;
+		gammaCoh.resize(19);	gammaCoh = 0;
+
+		alphaCohL.resize(19);	alphaCohL = 0;
+		betaCohL.resize(19);	betaCohL = 0;
+		gammaCohL.resize(19);	gammaCohL = 0;
+
+		const int TA_R = inFile.findChannel(iitp::emgNames[iitp::emgChans::Ta_r]);
+
+		/// added TA_L due to letter 03.11.17
+		const int TA_L = inFile.findChannel(iitp::emgNames[iitp::emgChans::Ta_l]);
+
+#endif
+		/// added due to talk 28.11.17
+//		const int FCR_L = inFile.findChannel(iitp::emgNames[iitp::emgChans::Fcr_l]);
+//		const int FCR_R = inFile.findChannel(iitp::emgNames[iitp::emgChans::Fcr_r]);
+//		const int ECR_L = inFile.findChannel(iitp::emgNames[iitp::emgChans::Ecr_l]);
+//		const int ECR_R = inFile.findChannel(iitp::emgNames[iitp::emgChans::Ecr_r]);
+
+
+
+
+#if 0
+		/// old 28.11.17
+		for(int eegNum : iitp::interestEeg)
+		{
+			for(int alphaFr = 8; alphaFr < 13; ++alphaFr)
+			{
+				alphaCoh[eegNum] += in[eegNum][TA_R][alphaFr / inFile.getSpStepW()];
+				alphaCohL[eegNum] += in[eegNum][TA_L][alphaFr / inFile.getSpStepW()];
+			}
+			for(int betaFr = 13; betaFr < 25; ++betaFr)
+			{
+				betaCoh[eegNum] += in[eegNum][TA_R][betaFr / inFile.getSpStepW()];
+				betaCohL[eegNum] += in[eegNum][TA_L][betaFr / inFile.getSpStepW()];
+			}
+			for(int gammaFr = 25; gammaFr < 45; ++gammaFr)
+			{
+				gammaCoh[eegNum] += in[eegNum][TA_R][gammaFr / inFile.getSpStepW()];
+				gammaCohL[eegNum] += in[eegNum][TA_L][gammaFr / inFile.getSpStepW()];
+			}
+		}
+#elif 0
+		/// new 28.11.17
+		for(int eegNum : iitp::interestEeg)
+		{
+			for(int i = 0; i < fmChans.size(); ++i)
+			{
+				for(int alphaFr = fmValue::alphaLeft; alphaFr < fmValue::alphaRight; ++alphaFr)
+				{
+					const auto & val = in[eegNum][fmChans[i]][alphaFr / inFile.getSpStepW()];
+					fmValues[i].alpha[eegNum] += val;
+					fmValues[i].maxAlpha[eegNum] = std::max(fmValues[i].maxAlpha[eegNum], val);
+
+				}
+				for(int betaFr = fmValue::betaLeft; betaFr < fmValue::betaRight; ++betaFr)
+				{
+					const auto & val = in[eegNum][fmChans[i]][betaFr / inFile.getSpStepW()];
+					fmValues[i].beta[eegNum] += val;
+					fmValues[i].maxBeta = std::max(fmValues[i].maxBeta[eegNum], val);
+
+				}
+				for(int gammaFr = fmValue::gammaLeft; gammaFr < fmValue::gammaRight; ++gammaFr)
+				{
+					const auto & val = in[eegNum][fmChans[i]][gammaFr / inFile.getSpStepW()];
+					fmValues[i].gamma[eegNum] += val;
+					fmValues[i].maxGamma = std::max(fmValues[i].maxGamma[eegNum], val);
+
+				}
+			}
+		}
+#else
+		/// new 28.11.17 - EXPERIMENTAL
+//		std::cout << fmChans << std::endl;
+		for(int i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
+		{
+			if(fmChans[i] == -1) { continue; } /// e.g. no Wrists after 13th file
+			for(int j = 0; j < forMapRanges[i].size(); ++j) /// j ~ alpha/beta/gamma
+			{
+//				std::cout << i << " " << j <<std::endl;
+				fmRange & pewpew = forMapRanges[i][j];
+				for(int eegNum : iitp::interestEeg)
+				{
+					for(int FR = pewpew.leftLim; FR < pewpew.rightLim; ++FR)
+					{
+						const auto & val = in[eegNum][fmChans[i]][FR / inFile.getSpStepW()];
+						pewpew.meanVal[eegNum] += val;
+						pewpew.maxVal[eegNum] = std::max(pewpew.maxVal[eegNum], val);
+					}
+				}
+				pewpew.meanVal /= pewpew.rightLim - pewpew.leftLim;
+			}
+		}
+
+
+//		std::cout << std::fixed;
+//		std::cout.precision(3);
+//		for(int i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
+//		{
+//			for(int j = 0; j < forMapRanges[i].size(); ++j) /// j ~ alpha/beta/gamma
+//			{
+//				fmRange & pewpew = forMapRanges[i][j];
+//				std::cout << pewpew.meanVal << std::endl;
+//			}
+//			std::cout << std::endl;
+//		}
+//		std::cout << std::defaultfloat;
+
+#endif
+
+#if 0
+		/// old 28.11.17
+		/// move limits to constants
+		alphaCoh /= 13 - 8;
+		betaCoh /= 25 - 13;
+		gammaCoh /= 45 - 25;
+
+		alphaCohL /= 13 - 8;
+		betaCohL /= 25 - 13;
+		gammaCohL /= 45 - 25;
+#elif 0
+		/// new 28.11.17
+		for(int i = 0; i < fmChans.size(); ++i)
+		{
+			fmValues[i].alpha	/= fmValue::alphaRight	- fmValue::alphaLeft;
+			fmValues[i].beta	/= fmValue::betaRight	- fmValue::betaLeft;
+			fmValues[i].gamma	/= fmValue::gammaRight	- fmValue::gammaLeft;
+		}
+#else
+		/// EXPERIMENTAL - averaging above
+#endif
+	}
+
+};
+
+
+
 
 } // namespace iitp
 

@@ -6,6 +6,7 @@
 #include <functional>
 
 #include <other/edffile.h>
+#include <myLib/iitp.h>
 
 #include <QTime>
 #include <QTextStream>
@@ -161,6 +162,12 @@ void IITPstaging(const QString & guyName,
 				 const QString & dirPath = def::iitpSyncFolder);
 void IITPprocessStaged(const QString & guyName,
 					   const QString & dirPath = def::iitpSyncFolder);
+/// func 28.11.17
+void IITPdrawCohMaps(const std::vector<iitp::forMap> & forMapsVector,
+					 const QString & guyName,
+					 const QString & resultsPathPrefix);
+
+
 void IITPdrawSpectralMaps(const QString & guyName,
 						  const QString & dirPath = def::iitpResFolder);
 
