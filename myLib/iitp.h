@@ -383,10 +383,11 @@ const std::vector<double> interestFrequencies = smLib::range<std::vector<double>
 const std::valarray<double> fileNums = smLib::range(0, 29+1);
 
 /// test
+//const std::valarray<double> fileNums = smLib::range(0, 8);
 //const std::valarray<double> fileNums = smLib::range(22, 22+1);
 //const std::valarray<double> fileNums = smLib::range(0, 12);
 //const std::valarray<double> fileNums{0, 1, 8, 22, 23, 26, 27};
-//const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 5 + 1);
+//const std::valarray<double> fileNums{15, 16, 17, 18, 22, 23, 24, 25, 26, 27};
 
 const std::map<QString, std::vector<int>> badFiles{
 	{"Alex",	{0, 1, 2, 3, 4, 5}},
@@ -471,31 +472,55 @@ public:
 };
 
 /// EXPERIMENTAL
-struct fmRange // ~fmValue
+class fmRange // ~fmValue
 {
+private:
 	double leftLim{};
 	double rightLim{};
-	std::valarray<double> meanVal;	std::valarray<double> maxVal;
+	std::valarray<double> meanVal{};
+	std::valarray<double> maxVal{};
+
+public:
 	fmRange(double left, double right) : leftLim(left), rightLim(right)
 	{
 		meanVal.resize(19); meanVal = 0.;
 		maxVal.resize(19); maxVal = 0.;
 	}
 	~fmRange() {}
+
+	const std::valarray<double> & getMeanVal() const{ return meanVal; }
+	double getMeanVal(int i) const					{ return meanVal[i]; }
+	void setMeanVal(int i, double val)				{ meanVal[i] = val; }
+	void meanValZero()								{ meanVal = 0.; }
+	void meanValDivide(double denom)				{ meanVal /= denom; }
+
+	const std::valarray<double> & getMaxVal() const	{ return maxVal; }
+	double getMaxVal(int i) const					{ return maxVal[i]; }
+	void setMaxVal(int i, double val)				{ maxVal[i] = val; }
+	void maxValZero()								{ maxVal = 0.; }
+
+	double lef() const								{ return leftLim; }
+	double rig() const								{ return rightLim; }
+
 };
 
 /// EXPERIMENTAL
-struct fmRanges
+class fmRanges
 {
+private:
 	/// alpha beta gamma
 	std::vector<fmRange> ranges{{8., 13.}, {13., 25.}, {25., 45.}};
-
 	std::vector<fmRange>::iterator begin() { return std::begin(ranges); }
 	std::vector<fmRange>::iterator end() { return std::end(ranges); }
-	fmRange & operator[](int i) { return ranges[i]; }
-	int size() { return ranges.size(); }
+
+public:
 	fmRanges() {}
 	~fmRanges() {}
+
+	fmRange & operator[](int i) { return ranges[i]; } /// bad incapsulation
+	const fmRange & operator[](int i) const { return ranges[i]; } /// bad incapsulation
+
+	int size() const { return ranges.size(); }
 };
 
 const std::vector<QString> forMapEmgNames {
@@ -517,19 +542,42 @@ struct forMap
 {
 	int fileNum{-1};
 	QString fileType{"notype"};
+	QString gonio;
 	std::vector<fmRanges> forMapRanges{6};
 	std::vector<int> fmChans;
+
+	bool isBad(int numEmg) const
+	{
+		/// may not have such Emg channel
+		/// OR it is not interesting EMG,
+		/// i.e. the signal may be bad and coherencies weren't calced
+		///
+//		std::cout << "isGood(" << numEmg << "):" << std::endl;
+//		std::cout << "num of chan (should != -1) " << fmChans[numEmg] << std::endl;
+//		std::cout << "is emg in interest chans? " << myLib::contains(iitp::interestEmg[fileNum],
+//																	 myLib::indexOfVal(iitp::emgNames,
+//																					   iitp::forMapEmgNames[numEmg])) << std::endl;
+		return (fmChans[numEmg] == -1) ||
+				(!myLib::contains(iitp::interestEmg[fileNum],
+								 myLib::indexOfVal(iitp::emgNames,
+												   iitp::forMapEmgNames[numEmg])));
+	}
 
 	~forMap(){}
 	forMap(){}
 	forMap(const iitp::iitpData::mscohsType & in,
 		   const iitp::iitpData & inFile,
 		   int filNum,
-		   QString typ)
+		   QString typ,
+		   QString gon)
 	{
 		fileNum = filNum;
 		fileType = typ;
+		gonio = gon;
 
+
+
+		fmChans.clear();
 		for(QString emgNam : iitp::forMapEmgNames)
 		{
 			fmChans.push_back(inFile.findChannel(emgNam));
@@ -539,32 +587,46 @@ struct forMap
 //		std::cout << fmChans << std::endl;
 		for(int i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
 		{
+			if(isBad(i)) { continue; }
+
 			for(int j = 0; j < forMapRanges[i].size(); ++j) /// j ~ alpha/beta/gamma
 			{
-//				std::cout << i << " " << j <<std::endl;
+
 				fmRange & pewpew = forMapRanges[i][j];
 
-				if(fmChans[i] == -1)  /// e.g. no Wrists after 13th file
-				{
-					pewpew.meanVal = 0.;
-					pewpew.maxVal = 0.;
-					continue;
-				}
+				pewpew.maxValZero();
+				pewpew.meanValZero();
 
 				for(int eegNum : iitp::interestEeg)
 				{
-					for(int FR = pewpew.leftLim; FR < pewpew.rightLim; ++FR)
+					for(int FR = pewpew.lef(); FR < pewpew.rig(); ++FR)
 					{
 						const auto & val = in[eegNum][fmChans[i]][FR / inFile.getSpStepW()];
-						pewpew.meanVal[eegNum] += val;
-						pewpew.maxVal[eegNum] = std::max(pewpew.maxVal[eegNum], val);
+						if(std::abs(val) >= 1.0)
+						{
+							std::cout << "abs(coh) > 1"
+									  << " fileNum " << fileNum
+									  << " type " << typ
+										 << " eeg " << inFile.getLabels(eegNum)
+										 << " EMG " << iitp::forMapEmgNames[i]
+										 << " freq " << FR
+										 << " rhythm " << iitp::forMapRangeNames[j]
+											<< std::endl;
+						}
+//						pewpew.meanVal[eegNum] += val;
+//						pewpew.maxVal[eegNum] = std::max(pewpew.maxVal[eegNum], val);
+
+						pewpew.setMeanVal(eegNum, val);
+						pewpew.setMaxVal(eegNum,
+										 std::max(pewpew.getMaxVal(eegNum), val));
 					}
 				}
-				pewpew.meanVal /= pewpew.rightLim - pewpew.leftLim;
+//				pewpew.meanVal /= pewpew.rightLim - pewpew.leftLim;
+				pewpew.meanValDivide(pewpew.rig() - pewpew.lef());
 			}
 		}
 
-		if(01)
+		if(0)
 		{
 			std::cout << fileType << std::endl;
 			std::cout << std::fixed;
@@ -573,8 +635,14 @@ struct forMap
 			{
 				for(int j = 0; j < forMapRanges[i].size(); ++j) /// j ~ alpha/beta/gamma
 				{
-					fmRange & pewpew = forMapRanges[i][j];
-					std::cout << pewpew.meanVal << std::endl;
+					const fmRange & pewpew = forMapRanges[i][j];
+
+					std::cout << fileNum << " " << i << " " << j << " : " << std::endl;
+//					std::cout << pewpew.meanVal << std::endl;
+//					std::cout << pewpew.maxVal << std::endl;
+
+					std::cout << pewpew.getMeanVal() << std::endl;
+					std::cout << pewpew.getMaxVal() << std::endl;
 				}
 				std::cout << std::endl;
 			}

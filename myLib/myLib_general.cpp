@@ -266,6 +266,7 @@ uint indexOfVal(const Container & cont, Typ val)
 template uint indexOfVal(const std::valarray<double> & cont, double val);
 template uint indexOfVal(const std::vector<double> & cont, double val);
 template uint indexOfVal(const std::vector<int> & cont, int val);
+template uint indexOfVal(const std::vector<QString> & cont, QString val);
 
 template <typename Container, typename Typ>
 bool contains(const Container & cont, Typ val)
@@ -275,6 +276,9 @@ bool contains(const Container & cont, Typ val)
 	return std::find(std::begin(cont), std::end(cont), val) != std::end(cont);
 }
 template bool contains(const std::vector<int> & cont, int val);
+template bool contains(const std::valarray<int> & cont, int val);
+template bool contains(const std::valarray<int> & cont, uint val);
+template bool contains(const std::vector<QString> & cont, QString val);
 
 template <typename Container, typename Typ>
 std::pair<bool, Typ> contains(const Container & cont, const std::initializer_list<Typ> & val)

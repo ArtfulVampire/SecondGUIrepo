@@ -237,23 +237,32 @@ void Cut::setValuesByEdf()
 
 	const bool iitpFlag = edfFil.getDirPath().contains("iitp", Qt::CaseInsensitive);
 
-	ui->leftLimitSpinBox->setMaximum(edfFil.getDataLen());
-	ui->rightLimitSpinBox->setMaximum(edfFil.getDataLen());
-	ui->diffLimitSpinBox->setMaximum(edfFil.getDataLen());
-	ui->leftTimeSpinBox->setMaximum(edfFil.getDataLen() / edfFil.getFreq());
+	ui->leftLimitSpinBox->setMinimum(0);
+	ui->leftLimitSpinBox->setMaximum(dataCutLocal.cols());
+	ui->leftTimeSpinBox->setMinimum(0);
+	ui->leftTimeSpinBox->setMaximum(dataCutLocal.cols() / edfFil.getFreq());
 	ui->leftTimeSpinBox->setDecimals(1);
-	ui->rightTimeSpinBox->setMaximum(edfFil.getDataLen() / edfFil.getFreq());
+
+	ui->rightLimitSpinBox->setMinimum(0);
+	ui->rightLimitSpinBox->setMaximum(dataCutLocal.cols());
+	ui->rightTimeSpinBox->setMinimum(0);
+	ui->rightTimeSpinBox->setMaximum(dataCutLocal.cols() / edfFil.getFreq());
 	ui->rightTimeSpinBox->setDecimals(1);
-	ui->diffTimeSpinBox->setMaximum(edfFil.getDataLen() / edfFil.getFreq());
+
+	resetLimits();
+
+	ui->diffLimitSpinBox->setMinimum(0);
+	ui->diffLimitSpinBox->setMaximum(dataCutLocal.cols());
+	ui->diffTimeSpinBox->setMinimum(0);
+	ui->diffTimeSpinBox->setMaximum(dataCutLocal.cols() / edfFil.getFreq());
 	ui->diffTimeSpinBox->setDecimals(1);
+
 
 	ui->paintStartDoubleSpinBox->setMaximum(floor(dataCutLocal.cols() / currFreq));
 	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed? -> paint
 	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
 	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - scrollAreaGapX) / currFreq);
 	ui->paintLengthDoubleSpinBox->setValue((this->width() - scrollAreaGapX) / currFreq); /// -> paint
-
-	resetLimits();
 
 	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
 	{
@@ -308,6 +317,7 @@ void Cut::openFile(const QString & dataFileName)
 	else if(this->myFileType == fileType::edf)
 	{
 		edfFil.readEdfFile(dataFileName);
+		currentPic = QPixmap{};
 		fileOpened = true;
 		logAction(edfFil.getExpName());
 		drawFlag = false;

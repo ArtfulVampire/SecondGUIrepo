@@ -1,6 +1,7 @@
 #ifndef AUTOS_H
 #define AUTOS_H
 
+#include <chrono>
 #include <thread>
 #include <fstream>
 #include <functional>
